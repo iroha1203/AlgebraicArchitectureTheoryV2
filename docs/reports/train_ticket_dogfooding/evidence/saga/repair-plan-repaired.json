@@ -1,0 +1,364 @@
+{
+ "schema": "archsig-repair-plan/v0.5.3",
+ "id": "repair-plan:train-ticket-money-repaired",
+ "residual": {
+  "kind": "supplied"
+ },
+ "complex": {
+  "charts": [
+   "ctx:cancel-surface",
+   "ctx:inside-payment-surface",
+   "ctx:order-surface",
+   "ctx:consign-surface",
+   "ctx:consign-price-surface",
+   "ctx:preserve-surface"
+  ],
+  "overlaps": [
+   {
+    "id": "overlap:cancel-insidepay",
+    "left": "ctx:cancel-surface",
+    "right": "ctx:inside-payment-surface"
+   },
+   {
+    "id": "overlap:insidepay-order",
+    "left": "ctx:inside-payment-surface",
+    "right": "ctx:order-surface"
+   },
+   {
+    "id": "overlap:cancel-order",
+    "left": "ctx:cancel-surface",
+    "right": "ctx:order-surface"
+   },
+   {
+    "id": "overlap:consign-consignprice",
+    "left": "ctx:consign-surface",
+    "right": "ctx:consign-price-surface"
+   },
+   {
+    "id": "overlap:preserve-consign",
+    "left": "ctx:preserve-surface",
+    "right": "ctx:consign-surface"
+   },
+   {
+    "id": "overlap:preserve-consignprice",
+    "left": "ctx:preserve-surface",
+    "right": "ctx:consign-price-surface"
+   }
+  ],
+  "tripleOverlaps": [
+   {
+    "id": "triple:consign-fee-region",
+    "overlapRefs": [
+     "overlap:consign-consignprice",
+     "overlap:preserve-consign",
+     "overlap:preserve-consignprice"
+    ]
+   }
+  ],
+  "enumerationComplete": true
+ },
+ "primitives": [
+  {
+   "id": "primitive:cancel-insidepay",
+   "overlapRef": "overlap:cancel-insidepay",
+   "resL": [],
+   "resR": [],
+   "support": {
+    "kind": "supplied",
+    "variables": []
+   }
+  },
+  {
+   "id": "primitive:insidepay-order",
+   "overlapRef": "overlap:insidepay-order",
+   "resL": [],
+   "resR": [],
+   "support": {
+    "kind": "supplied",
+    "variables": []
+   }
+  },
+  {
+   "id": "primitive:cancel-order",
+   "overlapRef": "overlap:cancel-order",
+   "resL": [],
+   "resR": [],
+   "support": {
+    "kind": "supplied",
+    "variables": []
+   }
+  },
+  {
+   "id": "primitive:consign-consignprice",
+   "overlapRef": "overlap:consign-consignprice",
+   "resL": [],
+   "resR": [],
+   "support": {
+    "kind": "supplied",
+    "variables": []
+   }
+  },
+  {
+   "id": "primitive:preserve-consign",
+   "overlapRef": "overlap:preserve-consign",
+   "resL": [],
+   "resR": [],
+   "support": {
+    "kind": "supplied",
+    "variables": []
+   }
+  },
+  {
+   "id": "primitive:preserve-consignprice",
+   "overlapRef": "overlap:preserve-consignprice",
+   "resL": [],
+   "resR": [],
+   "support": {
+    "kind": "supplied",
+    "variables": []
+   }
+  }
+ ],
+ "semanticProjection": {
+  "lambda": [],
+  "k": [],
+  "pi": []
+ },
+ "faithfulness": {
+  "mode": "supplied",
+  "supplied": {
+   "zeroPrimitiveRef": "primitive:consign-consignprice",
+   "residualSupportPredicate": {
+    "kind": "finite-support",
+    "supportVariables": [],
+    "zeroOnZeroPrimitive": true
+   },
+   "faithfulnessLaw": "the refund rounding witness projects one-to-one onto the cancel-service reconciliation observation"
+  }
+ },
+ "coefficient": "f2-additive",
+ "trueSheafCertificate": {
+  "kind": "true-sheaf-certificate",
+  "coverRef": "cover:money-settlement-loop",
+  "memberCharts": [
+   "ctx:cancel-surface",
+   "ctx:inside-payment-surface",
+   "ctx:order-surface",
+   "ctx:consign-surface",
+   "ctx:consign-price-surface",
+   "ctx:preserve-surface"
+  ],
+  "globalCondition": "assumed"
+ },
+ "gluingData": {
+  "kind": "gluing-data",
+  "overlapRefs": [
+   "overlap:cancel-insidepay",
+   "overlap:insidepay-order",
+   "overlap:cancel-order",
+   "overlap:consign-consignprice",
+   "overlap:preserve-consign",
+   "overlap:preserve-consignprice"
+  ],
+  "sectionRefs": [
+   {
+    "overlapRef": "overlap:cancel-insidepay",
+    "sectionRef": "section:money-cancel-insidepay"
+   },
+   {
+    "overlapRef": "overlap:insidepay-order",
+    "sectionRef": "section:money-insidepay-order"
+   },
+   {
+    "overlapRef": "overlap:cancel-order",
+    "sectionRef": "section:money-cancel-order"
+   },
+   {
+    "overlapRef": "overlap:consign-consignprice",
+    "sectionRef": "section:money-consign-consignprice"
+   },
+   {
+    "overlapRef": "overlap:preserve-consign",
+    "sectionRef": "section:money-preserve-consign"
+   },
+   {
+    "overlapRef": "overlap:preserve-consignprice",
+    "sectionRef": "section:money-preserve-consignprice"
+   }
+  ]
+ },
+ "grounding": {
+  "kind": "saga-grounding",
+  "surfaceRef": "law-surface:train-ticket-money-saga-v053",
+  "profileRef": "profile:train-ticket-money-saga@1"
+ },
+ "comparison": {
+  "kind": "saga-comparison",
+  "incidenceBridge": {
+   "kind": "explicit",
+   "sourceComplexRef": "complex:repair",
+   "targetComplexRef": "complex:cech",
+   "targetComplex": {
+    "charts": [
+     "ctx:cancel-surface",
+     "ctx:inside-payment-surface",
+     "ctx:order-surface",
+     "ctx:consign-surface",
+     "ctx:consign-price-surface",
+     "ctx:preserve-surface"
+    ],
+    "overlaps": [
+     {
+      "id": "overlap:cancel-insidepay",
+      "left": "ctx:cancel-surface",
+      "right": "ctx:inside-payment-surface"
+     },
+     {
+      "id": "overlap:insidepay-order",
+      "left": "ctx:inside-payment-surface",
+      "right": "ctx:order-surface"
+     },
+     {
+      "id": "overlap:cancel-order",
+      "left": "ctx:cancel-surface",
+      "right": "ctx:order-surface"
+     },
+     {
+      "id": "overlap:consign-consignprice",
+      "left": "ctx:consign-surface",
+      "right": "ctx:consign-price-surface"
+     },
+     {
+      "id": "overlap:preserve-consign",
+      "left": "ctx:preserve-surface",
+      "right": "ctx:consign-surface"
+     },
+     {
+      "id": "overlap:preserve-consignprice",
+      "left": "ctx:preserve-surface",
+      "right": "ctx:consign-price-surface"
+     }
+    ],
+    "tripleOverlaps": [
+     {
+      "id": "triple:consign-fee-region",
+      "overlapRefs": [
+       "overlap:consign-consignprice",
+       "overlap:preserve-consign",
+       "overlap:preserve-consignprice"
+      ]
+     }
+    ],
+    "enumerationComplete": true
+   }
+  },
+  "h1ComparisonData": {
+   "schema": "h1-comparison-data/v0.5.3",
+   "kind": "explicit",
+   "cochainMapRef": "comparison:cochain-map",
+   "sourceComplexFingerprint": "66727f00f5552a62f31d4f899089f8c5d7ee2de0121114733e1bab611a112cc5",
+   "targetComplexFingerprint": "66727f00f5552a62f31d4f899089f8c5d7ee2de0121114733e1bab611a112cc5",
+   "targetCochainSupport": [
+    {
+     "overlapRef": "overlap:cancel-insidepay",
+     "support": []
+    },
+    {
+     "overlapRef": "overlap:insidepay-order",
+     "support": []
+    },
+    {
+     "overlapRef": "overlap:cancel-order",
+     "support": []
+    },
+    {
+     "overlapRef": "overlap:consign-consignprice",
+     "support": []
+    },
+    {
+     "overlapRef": "overlap:preserve-consign",
+     "support": []
+    },
+    {
+     "overlapRef": "overlap:preserve-consignprice",
+     "support": []
+    }
+   ],
+   "cochainMap": {
+    "degreeZero": [
+     {
+      "sourceChartRef": "ctx:cancel-surface",
+      "targetChartRef": "ctx:cancel-surface",
+      "variableMap": []
+     },
+     {
+      "sourceChartRef": "ctx:inside-payment-surface",
+      "targetChartRef": "ctx:inside-payment-surface",
+      "variableMap": []
+     },
+     {
+      "sourceChartRef": "ctx:order-surface",
+      "targetChartRef": "ctx:order-surface",
+      "variableMap": []
+     },
+     {
+      "sourceChartRef": "ctx:consign-surface",
+      "targetChartRef": "ctx:consign-surface",
+      "variableMap": []
+     },
+     {
+      "sourceChartRef": "ctx:consign-price-surface",
+      "targetChartRef": "ctx:consign-price-surface",
+      "variableMap": []
+     },
+     {
+      "sourceChartRef": "ctx:preserve-surface",
+      "targetChartRef": "ctx:preserve-surface",
+      "variableMap": []
+     }
+    ],
+    "degreeOne": [
+     {
+      "sourceOverlapRef": "overlap:cancel-insidepay",
+      "targetOverlapRef": "overlap:cancel-insidepay",
+      "variableMap": []
+     },
+     {
+      "sourceOverlapRef": "overlap:insidepay-order",
+      "targetOverlapRef": "overlap:insidepay-order",
+      "variableMap": []
+     },
+     {
+      "sourceOverlapRef": "overlap:cancel-order",
+      "targetOverlapRef": "overlap:cancel-order",
+      "variableMap": []
+     },
+     {
+      "sourceOverlapRef": "overlap:consign-consignprice",
+      "targetOverlapRef": "overlap:consign-consignprice",
+      "variableMap": []
+     },
+     {
+      "sourceOverlapRef": "overlap:preserve-consign",
+      "targetOverlapRef": "overlap:preserve-consign",
+      "variableMap": []
+     },
+     {
+      "sourceOverlapRef": "overlap:preserve-consignprice",
+      "targetOverlapRef": "overlap:preserve-consignprice",
+      "variableMap": []
+     }
+    ],
+    "degreeTwo": {
+     "basisMap": [
+      {
+       "sourceTripleRef": "triple:consign-fee-region",
+       "targetTripleRef": "triple:consign-fee-region"
+      }
+     ],
+     "zeroImage": []
+    }
+   }
+  }
+ }
+}

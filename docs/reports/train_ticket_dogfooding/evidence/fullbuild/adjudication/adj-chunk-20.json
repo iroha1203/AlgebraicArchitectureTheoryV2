@@ -1,0 +1,2684 @@
+{
+  "chunkId": "chunk-20",
+  "adjudications": [
+    {
+      "key": "authority|travel.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-maxage-3600-on-/** via WebMvcConfigurer corsConfigurer",
+      "candidateAtomId": "atom:authority:travel-securityconfig:allowscrossorigin-global-wildcard",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/config/SecurityConfig.java:52-57 — registry.addMapping(\"/**\").allowedOrigins(ALL).allowedMethods(ALL).allowedHeaders(ALL).allowCredentials(false).maxAge(3600) confirms the global CORS wildcard. Same fact as the other pass's SecurityConfig CORS atom (naming drift travel.SecurityConfig vs travel.config.SecurityConfig); kept as one canonical atom with union refs.",
+      "canonicalAtom": {
+        "id": "atom:authority:ts-travel-service-securityconfig:allowscrossorigin-global-wildcard",
+        "kind": "authority",
+        "subject": "ts-travel-service.SecurityConfig",
+        "axis": "authority",
+        "predicate": "allowsCrossOrigin",
+        "object": "all-origins-all-methods-all-headers-credentials-false-maxage-3600-on-/** via WebMvcConfigurer corsConfigurer bean CorsRegistry mapping",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:52",
+          "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:53",
+          "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:56",
+          "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:57"
+        ]
+      }
+    },
+    {
+      "key": "authority|travel.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/travelservice/**",
+      "candidateAtomId": "atom:authority:travel-securityconfig:permitsunauthenticated-travelservice-api",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/config/SecurityConfig.java:75 — .antMatchers(\"/api/v1/travelservice/**\").permitAll() confirmed. Same fact across both passes (subject naming drift only); merged.",
+      "canonicalAtom": {
+        "id": "atom:authority:ts-travel-service-securityconfig:permitsunauthenticated-travelservice-api",
+        "kind": "authority",
+        "subject": "ts-travel-service.SecurityConfig",
+        "axis": "authority",
+        "predicate": "permitsUnauthenticated",
+        "object": "permit-all-on-/api/v1/travelservice/**",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:75"
+        ]
+      }
+    },
+    {
+      "key": "authority|travel.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+      "candidateAtomId": "atom:authority:travel-securityconfig:permitsunauthenticated-swagger-paths",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/config/SecurityConfig.java:76-77 — .antMatchers(swagger paths...).permitAll() confirmed. Same fact across both passes; merged with union refs.",
+      "canonicalAtom": {
+        "id": "atom:authority:ts-travel-service-securityconfig:permitsunauthenticated-swagger-paths",
+        "kind": "authority",
+        "subject": "ts-travel-service.SecurityConfig",
+        "axis": "authority",
+        "predicate": "permitsUnauthenticated",
+        "object": "permit-all-on-/swagger-ui.html,/webjars/**,/images/**,/configuration/**,/swagger-resources/**,/v2/**",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:76",
+          "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:77"
+        ]
+      }
+    },
+    {
+      "key": "authority|travel.SecurityConfig|authority|requiresRole|ADMIN on DELETE /api/v1/travelservice/trips/*",
+      "candidateAtomId": "atom:authority:travel-securityconfig:requiresrole-delete-trips",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/config/SecurityConfig.java:74 — .antMatchers(HttpMethod.DELETE, \"/api/v1/travelservice/trips/*\").hasAnyRole(\"ADMIN\") confirmed. Identical fact and ref in both passes; merged.",
+      "canonicalAtom": {
+        "id": "atom:authority:ts-travel-service-securityconfig:requiresrole-admin-delete-trips",
+        "kind": "authority",
+        "subject": "ts-travel-service.SecurityConfig",
+        "axis": "authority",
+        "predicate": "requiresRole",
+        "object": "ADMIN on DELETE /api/v1/travelservice/trips/*",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:74"
+        ]
+      }
+    },
+    {
+      "key": "authority|travel.SecurityConfig|authority|requiresRole|ADMIN on PUT /api/v1/travelservice/trips",
+      "candidateAtomId": "atom:authority:travel-securityconfig:requiresrole-put-trips",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/config/SecurityConfig.java:73 — .antMatchers(HttpMethod.PUT, \"/api/v1/travelservice/trips\").hasAnyRole(\"ADMIN\") confirmed. Identical fact and ref in both passes; merged.",
+      "canonicalAtom": {
+        "id": "atom:authority:ts-travel-service-securityconfig:requiresrole-admin-put-trips",
+        "kind": "authority",
+        "subject": "ts-travel-service.SecurityConfig",
+        "axis": "authority",
+        "predicate": "requiresRole",
+        "object": "ADMIN on PUT /api/v1/travelservice/trips",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:73"
+        ]
+      }
+    },
+    {
+      "key": "authority|travel.TravelController|authority|allowsCrossOrigin|wildcard-origin-via-method-level-crossorigin-annotation-on-trip-mutation-and-query-endpoints-but-not-on-welcome-traintypes-routes-tripsbyroutes-endpoints",
+      "candidateAtomId": "atom:authority:travel-travelcontroller:allowscrossorigin-annotation-wildcard",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/controller/TravelController.java — nine methods (createTrip 66, retrieve 81, updateTrip 89, deleteTrip 97, queryInfo 112, queryInfoInparallel 133, getTripAllDetailInfo 154, queryAll 163, adminQueryAll 171) carry @CrossOrigin(origins=\"*\"); welcome/getTrainTypeByTripId/getRouteByTripId/getTripByRoute do not. Pass A cited all 9 lines, Pass B cited a subset (81,89,97) of the same fact with a narrower object listing all 9 methods; merged using Pass A's fuller ref set.",
+      "canonicalAtom": {
+        "id": "atom:authority:ts-travel-service-travelcontroller:allowscrossorigin-mutating-endpoints",
+        "kind": "authority",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "authority",
+        "predicate": "allowsCrossOrigin",
+        "object": "method-level @CrossOrigin(origins=\"*\") on createTrip/retrieve/updateTrip/deleteTrip/queryInfo/queryInfoInparallel/getTripAllDetailInfo/queryAll/adminQueryAll, not present on welcome/getTrainTypeByTripId/getRouteByTripId/getTripByRoute, and includes updateTrip and deleteTrip which SecurityConfig separately gates to ADMIN role",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:66",
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:81",
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:89",
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:97",
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:112",
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:133",
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:154",
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:163",
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:171"
+        ]
+      }
+    },
+    {
+      "key": "capability|travel.TravelController|capability|exposesEndpoint|DELETE /api/v1/travelservice/trips/{tripId}",
+      "candidateAtomId": "atom:capability:travel-travelcontroller:deletetrip",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/controller/TravelController.java:97 — confirmed ts-travel-service.TravelController exposesEndpoint DELETE /api/v1/travelservice/trips/{tripId}. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-service-travelcontroller:deletetrip",
+        "kind": "capability",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "DELETE /api/v1/travelservice/trips/{tripId}",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:97",
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:98"
+        ]
+      }
+    },
+    {
+      "key": "capability|travel.TravelController|capability|exposesEndpoint|GET /api/v1/travelservice/admin_trip",
+      "candidateAtomId": "atom:capability:travel-travelcontroller:adminqueryall",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/controller/TravelController.java:172 — confirmed ts-travel-service.TravelController exposesEndpoint GET /api/v1/travelservice/admin_trip. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-service-travelcontroller:adminqueryall",
+        "kind": "capability",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET /api/v1/travelservice/admin_trip",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:172"
+        ]
+      }
+    },
+    {
+      "key": "capability|travel.TravelController|capability|exposesEndpoint|GET /api/v1/travelservice/routes/{tripId}",
+      "candidateAtomId": "atom:capability:travel-travelcontroller:routesbytripid",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/controller/TravelController.java:50 — confirmed ts-travel-service.TravelController exposesEndpoint GET /api/v1/travelservice/routes/{tripId}. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-service-travelcontroller:routesbytripid",
+        "kind": "capability",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET /api/v1/travelservice/routes/{tripId}",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:50"
+        ]
+      }
+    },
+    {
+      "key": "capability|travel.TravelController|capability|exposesEndpoint|GET /api/v1/travelservice/train_types/{tripId}",
+      "candidateAtomId": "atom:capability:travel-travelcontroller:traintypesbytripid",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/controller/TravelController.java:42 — confirmed ts-travel-service.TravelController exposesEndpoint GET /api/v1/travelservice/train_types/{tripId}. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-service-travelcontroller:traintypesbytripid",
+        "kind": "capability",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET /api/v1/travelservice/train_types/{tripId}",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:42"
+        ]
+      }
+    },
+    {
+      "key": "capability|travel.TravelController|capability|exposesEndpoint|GET /api/v1/travelservice/trips",
+      "candidateAtomId": "atom:capability:travel-travelcontroller:queryall",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/controller/TravelController.java:164 — confirmed ts-travel-service.TravelController exposesEndpoint GET /api/v1/travelservice/trips. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-service-travelcontroller:queryall",
+        "kind": "capability",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET /api/v1/travelservice/trips",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:164"
+        ]
+      }
+    },
+    {
+      "key": "capability|travel.TravelController|capability|exposesEndpoint|GET /api/v1/travelservice/trips/{tripId}",
+      "candidateAtomId": "atom:capability:travel-travelcontroller:retrievetrip",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/controller/TravelController.java:81 — confirmed ts-travel-service.TravelController exposesEndpoint GET /api/v1/travelservice/trips/{tripId}. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-service-travelcontroller:retrievetrip",
+        "kind": "capability",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET /api/v1/travelservice/trips/{tripId}",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:81",
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:82"
+        ]
+      }
+    },
+    {
+      "key": "capability|travel.TravelController|capability|exposesEndpoint|GET /api/v1/travelservice/welcome",
+      "candidateAtomId": "atom:capability:travel-travelcontroller:welcome",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/controller/TravelController.java:37 — confirmed ts-travel-service.TravelController exposesEndpoint GET /api/v1/travelservice/welcome. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-service-travelcontroller:welcome",
+        "kind": "capability",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET /api/v1/travelservice/welcome",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:37"
+        ]
+      }
+    },
+    {
+      "key": "capability|travel.TravelController|capability|exposesEndpoint|POST /api/v1/travelservice/trip_detail",
+      "candidateAtomId": "atom:capability:travel-travelcontroller:tripdetail",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/controller/TravelController.java:155 — confirmed ts-travel-service.TravelController exposesEndpoint POST /api/v1/travelservice/trip_detail. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-service-travelcontroller:tripdetail",
+        "kind": "capability",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "POST /api/v1/travelservice/trip_detail",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:155"
+        ]
+      }
+    },
+    {
+      "key": "capability|travel.TravelController|capability|exposesEndpoint|POST /api/v1/travelservice/trips",
+      "candidateAtomId": "atom:capability:travel-travelcontroller:createtrip",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/controller/TravelController.java:66 — confirmed ts-travel-service.TravelController exposesEndpoint POST /api/v1/travelservice/trips. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-service-travelcontroller:createtrip",
+        "kind": "capability",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "POST /api/v1/travelservice/trips",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:66",
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:67"
+        ]
+      }
+    },
+    {
+      "key": "capability|travel.TravelController|capability|exposesEndpoint|POST /api/v1/travelservice/trips/left",
+      "candidateAtomId": "atom:capability:travel-travelcontroller:queryleft",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/controller/TravelController.java:113 — confirmed ts-travel-service.TravelController exposesEndpoint POST /api/v1/travelservice/trips/left. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-service-travelcontroller:queryleft",
+        "kind": "capability",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "POST /api/v1/travelservice/trips/left",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:113"
+        ]
+      }
+    },
+    {
+      "key": "capability|travel.TravelController|capability|exposesEndpoint|POST /api/v1/travelservice/trips/left_parallel",
+      "candidateAtomId": "atom:capability:travel-travelcontroller:queryleftparallel",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/controller/TravelController.java:134 — confirmed ts-travel-service.TravelController exposesEndpoint POST /api/v1/travelservice/trips/left_parallel. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-service-travelcontroller:queryleftparallel",
+        "kind": "capability",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "POST /api/v1/travelservice/trips/left_parallel",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:134"
+        ]
+      }
+    },
+    {
+      "key": "capability|travel.TravelController|capability|exposesEndpoint|POST /api/v1/travelservice/trips/routes",
+      "candidateAtomId": "atom:capability:travel-travelcontroller:tripsbyroutes",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/controller/TravelController.java:58 — confirmed ts-travel-service.TravelController exposesEndpoint POST /api/v1/travelservice/trips/routes. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-service-travelcontroller:tripsbyroutes",
+        "kind": "capability",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "POST /api/v1/travelservice/trips/routes",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:58"
+        ]
+      }
+    },
+    {
+      "key": "capability|travel.TravelController|capability|exposesEndpoint|PUT /api/v1/travelservice/trips",
+      "candidateAtomId": "atom:capability:travel-travelcontroller:updatetrip",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/controller/TravelController.java:89 — confirmed ts-travel-service.TravelController exposesEndpoint PUT /api/v1/travelservice/trips. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-service-travelcontroller:updatetrip",
+        "kind": "capability",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "PUT /api/v1/travelservice/trips",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:89",
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:90"
+        ]
+      }
+    },
+    {
+      "key": "capability|travel.TripRepository|capability|servesQuery|findAll() returning ArrayList<Trip>",
+      "candidateAtomId": "atom:capability:travel-triprepository:findall",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-travel-service/src/main/java/travel/repository/TripRepository.java:21 — confirmed ts-travel-service.TripRepository servesQuery findAll() returning ArrayList<Trip>. Genuine observation present in only this pass for this chunk; no equivalent atom exists in the other pass's candidate packet or survey rows.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-service-triprepository:findall",
+        "kind": "capability",
+        "subject": "ts-travel-service.TripRepository",
+        "axis": "capability",
+        "predicate": "servesQuery",
+        "object": "findAll() returning ArrayList<Trip>",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/repository/TripRepository.java:21"
+        ]
+      }
+    },
+    {
+      "key": "capability|travel.TripRepository|capability|servesQuery|findByRouteId(String routeId)",
+      "candidateAtomId": "atom:capability:travel-triprepository:findbyrouteid",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-travel-service/src/main/java/travel/repository/TripRepository.java:23 — confirmed ts-travel-service.TripRepository servesQuery findByRouteId(String routeId). Genuine observation present in only this pass for this chunk; no equivalent atom exists in the other pass's candidate packet or survey rows.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-service-triprepository:findbyrouteid",
+        "kind": "capability",
+        "subject": "ts-travel-service.TripRepository",
+        "axis": "capability",
+        "predicate": "servesQuery",
+        "object": "findByRouteId(String routeId)",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/repository/TripRepository.java:23"
+        ]
+      }
+    },
+    {
+      "key": "capability|travel.TripRepository|capability|servesQuery|findByTripId(TripId)",
+      "candidateAtomId": "atom:capability:travel-triprepository:findbytripid",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-travel-service/src/main/java/travel/repository/TripRepository.java:16 — confirmed ts-travel-service.TripRepository servesQuery findByTripId(TripId). Genuine observation present in only this pass for this chunk; no equivalent atom exists in the other pass's candidate packet or survey rows.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-service-triprepository:findbytripid",
+        "kind": "capability",
+        "subject": "ts-travel-service.TripRepository",
+        "axis": "capability",
+        "predicate": "servesQuery",
+        "object": "findByTripId(TripId)",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/repository/TripRepository.java:16"
+        ]
+      }
+    },
+    {
+      "key": "capability|travelplan.TravelPlanController|capability|exposesEndpoint|GET /api/v1/travelplanservice/welcome",
+      "candidateAtomId": "atom:capability:travelplan-travelplancontroller:welcome",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:27 — confirmed ts-travel-plan-service.TravelPlanController exposesEndpoint GET /api/v1/travelplanservice/welcome. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-plan-service-travelplancontroller:welcome",
+        "kind": "capability",
+        "subject": "ts-travel-plan-service.TravelPlanController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET /api/v1/travelplanservice/welcome",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:27"
+        ]
+      }
+    },
+    {
+      "key": "capability|travelplan.TravelPlanController|capability|exposesEndpoint|POST /api/v1/travelplanservice/travelPlan/cheapest",
+      "candidateAtomId": "atom:capability:travelplan-travelplancontroller:cheapest",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:38 — confirmed ts-travel-plan-service.TravelPlanController exposesEndpoint POST /api/v1/travelplanservice/travelPlan/cheapest. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-plan-service-travelplancontroller:cheapest",
+        "kind": "capability",
+        "subject": "ts-travel-plan-service.TravelPlanController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "POST /api/v1/travelplanservice/travelPlan/cheapest",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:38"
+        ]
+      }
+    },
+    {
+      "key": "capability|travelplan.TravelPlanController|capability|exposesEndpoint|POST /api/v1/travelplanservice/travelPlan/minStation",
+      "candidateAtomId": "atom:capability:travelplan-travelplancontroller:minstation",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:50 — confirmed ts-travel-plan-service.TravelPlanController exposesEndpoint POST /api/v1/travelplanservice/travelPlan/minStation. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-plan-service-travelplancontroller:minstation",
+        "kind": "capability",
+        "subject": "ts-travel-plan-service.TravelPlanController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "POST /api/v1/travelplanservice/travelPlan/minStation",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:50"
+        ]
+      }
+    },
+    {
+      "key": "capability|travelplan.TravelPlanController|capability|exposesEndpoint|POST /api/v1/travelplanservice/travelPlan/quickest",
+      "candidateAtomId": "atom:capability:travelplan-travelplancontroller:quickest",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:44 — confirmed ts-travel-plan-service.TravelPlanController exposesEndpoint POST /api/v1/travelplanservice/travelPlan/quickest. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-plan-service-travelplancontroller:quickest",
+        "kind": "capability",
+        "subject": "ts-travel-plan-service.TravelPlanController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "POST /api/v1/travelplanservice/travelPlan/quickest",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:44"
+        ]
+      }
+    },
+    {
+      "key": "capability|travelplan.TravelPlanController|capability|exposesEndpoint|POST /api/v1/travelplanservice/travelPlan/transferResult",
+      "candidateAtomId": "atom:capability:travelplan-travelplancontroller:transferresult",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:32 — confirmed ts-travel-plan-service.TravelPlanController exposesEndpoint POST /api/v1/travelplanservice/travelPlan/transferResult. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-plan-service-travelplancontroller:transferresult",
+        "kind": "capability",
+        "subject": "ts-travel-plan-service.TravelPlanController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "POST /api/v1/travelplanservice/travelPlan/transferResult",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:32"
+        ]
+      }
+    },
+    {
+      "key": "component|travel.AdminTrip|static||",
+      "candidateAtomId": "atom:component:travel-admintrip",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread s — file defines class AdminTrip, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-service-admintrip",
+        "kind": "component",
+        "subject": "ts-travel-service.AdminTrip",
+        "axis": "static",
+        "refs": "src:ts-travel-service/src/main/java/travel/entity/AdminTrip.java"
+      }
+    },
+    {
+      "key": "component|travel.InitData|static||",
+      "candidateAtomId": "atom:component:travel-initdata",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread s — file defines class InitData, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-service-initdata",
+        "kind": "component",
+        "subject": "ts-travel-service.InitData",
+        "axis": "static",
+        "refs": "src:ts-travel-service/src/main/java/travel/init/InitData.java"
+      }
+    },
+    {
+      "key": "component|travel.SecurityConfig|static||",
+      "candidateAtomId": "atom:component:travel-securityconfig",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread s — file defines class SecurityConfig, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-service-securityconfig",
+        "kind": "component",
+        "subject": "ts-travel-service.SecurityConfig",
+        "axis": "static",
+        "refs": "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java"
+      }
+    },
+    {
+      "key": "component|travel.TravelController|static||",
+      "candidateAtomId": "atom:component:travel-travelcontroller",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread s — file defines class TravelController, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-service-travelcontroller",
+        "kind": "component",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "static",
+        "refs": "src:ts-travel-service/src/main/java/travel/controller/TravelController.java"
+      }
+    },
+    {
+      "key": "component|travel.TravelServiceImpl|static||",
+      "candidateAtomId": "atom:component:travel-travelserviceimpl",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread s — file defines class TravelServiceImpl, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-service-travelserviceimpl",
+        "kind": "component",
+        "subject": "ts-travel-service.TravelServiceImpl",
+        "axis": "static",
+        "refs": "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java"
+      }
+    },
+    {
+      "key": "component|travel.TravelService|static||",
+      "candidateAtomId": "atom:component:travel-travelservice",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread s — file defines class TravelService, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-service-travelservice",
+        "kind": "component",
+        "subject": "ts-travel-service.TravelService",
+        "axis": "static",
+        "refs": "src:ts-travel-service/src/main/java/travel/service/TravelService.java"
+      }
+    },
+    {
+      "key": "component|travel.Travel|static||",
+      "candidateAtomId": "atom:component:travel-travel",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread s — file defines class Travel, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-service-travel",
+        "kind": "component",
+        "subject": "ts-travel-service.Travel",
+        "axis": "static",
+        "refs": "src:ts-travel-service/src/main/java/travel/entity/Travel.java"
+      }
+    },
+    {
+      "key": "component|travel.TripAllDetail|static||",
+      "candidateAtomId": "atom:component:travel-tripalldetail",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread s — file defines class TripAllDetail, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-service-tripalldetail",
+        "kind": "component",
+        "subject": "ts-travel-service.TripAllDetail",
+        "axis": "static",
+        "refs": "src:ts-travel-service/src/main/java/travel/entity/TripAllDetail.java"
+      }
+    },
+    {
+      "key": "component|travel.TripRepository|static||",
+      "candidateAtomId": "atom:component:travel-triprepository",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread s — file defines class TripRepository, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-service-triprepository",
+        "kind": "component",
+        "subject": "ts-travel-service.TripRepository",
+        "axis": "static",
+        "refs": "src:ts-travel-service/src/main/java/travel/repository/TripRepository.java"
+      }
+    },
+    {
+      "key": "component|travel.Trip|static||",
+      "candidateAtomId": "atom:component:travel-trip",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread s — file defines class Trip, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-service-trip",
+        "kind": "component",
+        "subject": "ts-travel-service.Trip",
+        "axis": "static",
+        "refs": "src:ts-travel-service/src/main/java/travel/entity/Trip.java"
+      }
+    },
+    {
+      "key": "component|travelplan.TransferTravelInfo|static||",
+      "candidateAtomId": "atom:component:travelplan-transfertravelinfo",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread s — file defines class TransferTravelInfo, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-plan-service-transfertravelinfo",
+        "kind": "component",
+        "subject": "ts-travel-plan-service.TransferTravelInfo",
+        "axis": "static",
+        "refs": "src:ts-travel-plan-service/src/main/java/travelplan/entity/TransferTravelInfo.java"
+      }
+    },
+    {
+      "key": "component|travelplan.TransferTravelResult|static||",
+      "candidateAtomId": "atom:component:travelplan-transfertravelresult",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread s — file defines class TransferTravelResult, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-plan-service-transfertravelresult",
+        "kind": "component",
+        "subject": "ts-travel-plan-service.TransferTravelResult",
+        "axis": "static",
+        "refs": "src:ts-travel-plan-service/src/main/java/travelplan/entity/TransferTravelResult.java"
+      }
+    },
+    {
+      "key": "component|travelplan.TravelAdvanceResultUnit|static||",
+      "candidateAtomId": "atom:component:travelplan-traveladvanceresultunit",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread s — file defines class TravelAdvanceResultUnit, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-plan-service-traveladvanceresultunit",
+        "kind": "component",
+        "subject": "ts-travel-plan-service.TravelAdvanceResultUnit",
+        "axis": "static",
+        "refs": "src:ts-travel-plan-service/src/main/java/travelplan/entity/TravelAdvanceResultUnit.java"
+      }
+    },
+    {
+      "key": "component|travelplan.TravelPlanController|static||",
+      "candidateAtomId": "atom:component:travelplan-travelplancontroller",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread s — file defines class TravelPlanController, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-plan-service-travelplancontroller",
+        "kind": "component",
+        "subject": "ts-travel-plan-service.TravelPlanController",
+        "axis": "static",
+        "refs": "src:ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java"
+      }
+    },
+    {
+      "key": "component|travelplan.TravelPlanServiceImpl|static||",
+      "candidateAtomId": "atom:component:travelplan-travelplanserviceimpl",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread s — file defines class TravelPlanServiceImpl, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-plan-service-travelplanserviceimpl",
+        "kind": "component",
+        "subject": "ts-travel-plan-service.TravelPlanServiceImpl",
+        "axis": "static",
+        "refs": "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java"
+      }
+    },
+    {
+      "key": "component|travelplan.TravelPlanService|static||",
+      "candidateAtomId": "atom:component:travelplan-travelplanservice",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread s — file defines class TravelPlanService, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-plan-service-travelplanservice",
+        "kind": "component",
+        "subject": "ts-travel-plan-service.TravelPlanService",
+        "axis": "static",
+        "refs": "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanService.java"
+      }
+    },
+    {
+      "key": "contract|travel.Trip|specification|requires|trainTypeName, startStationName, terminalStationName, startTime, endTime are @NotNull while routeId and stationsName are not",
+      "candidateAtomId": "atom:contract:travel-trip:requires-nonnull-core-fields",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-travel-service/src/main/java/travel/entity/Trip.java:32 — confirmed ts-travel-service.Trip requires trainTypeName, startStationName, terminalStationName, startTime, endTime are @NotNull while routeId and stationsName are not. Genuine observation present in only this pass for this chunk; no equivalent atom exists in the other pass's candidate packet or survey rows.",
+      "canonicalAtom": {
+        "id": "atom:contract:ts-travel-service-trip:requires-nonnull-core-fields",
+        "kind": "contract",
+        "subject": "ts-travel-service.Trip",
+        "axis": "specification",
+        "predicate": "requires",
+        "object": "trainTypeName, startStationName, terminalStationName, startTime, endTime are @NotNull while routeId and stationsName are not",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/entity/Trip.java:32",
+          "src:ts-travel-service/src/main/java/travel/entity/Trip.java:39",
+          "src:ts-travel-service/src/main/java/travel/entity/Trip.java:46",
+          "src:ts-travel-service/src/main/java/travel/entity/Trip.java:50",
+          "src:ts-travel-service/src/main/java/travel/entity/Trip.java:54"
+        ]
+      }
+    },
+    {
+      "key": "contract|travelplan.TransferTravelInfo|specification|shapedAs|fields startStation, viaStation, endStation, travelDate, trainType as JSON request body for /travelPlan/transferResult",
+      "candidateAtomId": "atom:contract:travelplan-transfertravelinfo:shapedas-request-body",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/entity/TransferTravelInfo.java:12 — confirmed ts-travel-plan-service.TransferTravelInfo shapedAs fields startStation, viaStation, endStation, travelDate, trainType as JSON request body for /travelPlan/transferResult. Genuine observation present in only this pass for this chunk; no equivalent atom exists in the other pass's candidate packet or survey rows.",
+      "canonicalAtom": {
+        "id": "atom:contract:ts-travel-plan-service-transfertravelinfo:shapedas-request-body",
+        "kind": "contract",
+        "subject": "ts-travel-plan-service.TransferTravelInfo",
+        "axis": "specification",
+        "predicate": "shapedAs",
+        "object": "fields startStation, viaStation, endStation, travelDate, trainType as JSON request body for /travelPlan/transferResult",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/entity/TransferTravelInfo.java:12",
+          "src:ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:33"
+        ]
+      }
+    },
+    {
+      "key": "effect|travel.InitData|effect|callsProvider|invokes travelService.create for five hardcoded trips on application startup via CommandLineRunner",
+      "candidateAtomId": "atom:effect:travel-initdata:seeds-initial-trips",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/init/InitData.java:37,47,57,67,77 — five service.create(info,null) calls inside CommandLineRunner.run(). Pass B cited all five call sites; Pass A cited only two call sites (37,77) plus the method-start line 25. Same observation; merged with the union of refs.",
+      "canonicalAtom": {
+        "id": "atom:effect:ts-travel-service-initdata:seeds-trips-at-startup",
+        "kind": "effect",
+        "subject": "ts-travel-service.InitData",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "invokes ts-travel-service.TravelService.create five times for hardcoded trips on CommandLineRunner startup",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/init/InitData.java:25",
+          "src:ts-travel-service/src/main/java/travel/init/InitData.java:37",
+          "src:ts-travel-service/src/main/java/travel/init/InitData.java:47",
+          "src:ts-travel-service/src/main/java/travel/init/InitData.java:57",
+          "src:ts-travel-service/src/main/java/travel/init/InitData.java:67",
+          "src:ts-travel-service/src/main/java/travel/init/InitData.java:77"
+        ]
+      }
+    },
+    {
+      "key": "effect|travel.TravelServiceImpl|effect|callsProvider|GET ts-route-service/api/v1/routeservice/routes/{routeId}",
+      "candidateAtomId": "atom:effect:travel-travelserviceimpl:callsprovider-route-byid",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:517 — confirmed ts-travel-service.TravelServiceImpl callsProvider GET ts-route-service/api/v1/routeservice/routes/{routeId}. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:effect:ts-travel-service-travelserviceimpl:callsprovider-route-byid",
+        "kind": "effect",
+        "subject": "ts-travel-service.TravelServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "GET ts-route-service/api/v1/routeservice/routes/{routeId}",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:517",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:520",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:521"
+        ]
+      }
+    },
+    {
+      "key": "effect|travel.TravelServiceImpl|effect|callsProvider|GET ts-train-service/api/v1/trainservice/trains/byName/{trainTypeName}",
+      "candidateAtomId": "atom:effect:travel-travelserviceimpl:callsprovider-train-byname",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:504 — confirmed ts-travel-service.TravelServiceImpl callsProvider GET ts-train-service/api/v1/trainservice/trains/byName/{trainTypeName}. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:effect:ts-travel-service-travelserviceimpl:callsprovider-train-byname",
+        "kind": "effect",
+        "subject": "ts-travel-service.TravelServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "GET ts-train-service/api/v1/trainservice/trains/byName/{trainTypeName}",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:504",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:506",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:508"
+        ]
+      }
+    },
+    {
+      "key": "effect|travel.TravelServiceImpl|effect|callsProvider|POST ts-basic-service/api/v1/basicservice/basic/travel",
+      "candidateAtomId": "atom:effect:travel-travelserviceimpl:callsprovider-basic-travel",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:379 — confirmed ts-travel-service.TravelServiceImpl callsProvider POST ts-basic-service/api/v1/basicservice/basic/travel. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:effect:ts-travel-service-travelserviceimpl:callsprovider-basic-travel",
+        "kind": "effect",
+        "subject": "ts-travel-service.TravelServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "POST ts-basic-service/api/v1/basicservice/basic/travel",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:379",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:395",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:397"
+        ]
+      }
+    },
+    {
+      "key": "effect|travel.TravelServiceImpl|effect|callsProvider|POST ts-basic-service/api/v1/basicservice/basic/travels",
+      "candidateAtomId": "atom:effect:travel-travelserviceimpl:callsprovider-basic-travels",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:322 — confirmed ts-travel-service.TravelServiceImpl callsProvider POST ts-basic-service/api/v1/basicservice/basic/travels. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:effect:ts-travel-service-travelserviceimpl:callsprovider-basic-travels",
+        "kind": "effect",
+        "subject": "ts-travel-service.TravelServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "POST ts-basic-service/api/v1/basicservice/basic/travels",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:322",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:346",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:348"
+        ]
+      }
+    },
+    {
+      "key": "effect|travel.TravelServiceImpl|effect|callsProvider|POST ts-seat-service/api/v1/seatservice/seats/left_tickets",
+      "candidateAtomId": "atom:effect:travel-travelserviceimpl:callsprovider-seat-lefttickets",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:537 — confirmed ts-travel-service.TravelServiceImpl callsProvider POST ts-seat-service/api/v1/seatservice/seats/left_tickets. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:effect:ts-travel-service-travelserviceimpl:callsprovider-seat-lefttickets",
+        "kind": "effect",
+        "subject": "ts-travel-service.TravelServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "POST ts-seat-service/api/v1/seatservice/seats/left_tickets",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:537",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:551",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:552"
+        ]
+      }
+    },
+    {
+      "key": "effect|travelplan.TravelPlanServiceImpl|effect|callsProvider|GET ts-train-service/api/v1/trainservice/trains/byName/{trainTypeName}",
+      "candidateAtomId": "atom:effect:travelplan-travelplanserviceimpl:callsprovider-train-byname",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:317 — confirmed ts-travel-plan-service.TravelPlanServiceImpl callsProvider GET ts-train-service/api/v1/trainservice/trains/byName/{trainTypeName}. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:effect:ts-travel-plan-service-travelplanserviceimpl:callsprovider-train-byname",
+        "kind": "effect",
+        "subject": "ts-travel-plan-service.TravelPlanServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "GET ts-train-service/api/v1/trainservice/trains/byName/{trainTypeName}",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:317",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:319",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:321"
+        ]
+      }
+    },
+    {
+      "key": "effect|travelplan.TravelPlanServiceImpl|effect|callsProvider|POST ts-route-plan-service/api/v1/routeplanservice/routePlan/cheapestRoute",
+      "candidateAtomId": "atom:effect:travelplan-travelplanserviceimpl:callsprovider-routeplan-cheapest",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:254 — confirmed ts-travel-plan-service.TravelPlanServiceImpl callsProvider POST ts-route-plan-service/api/v1/routeplanservice/routePlan/cheapestRoute. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:effect:ts-travel-plan-service-travelplanserviceimpl:callsprovider-routeplan-cheapest",
+        "kind": "effect",
+        "subject": "ts-travel-plan-service.TravelPlanServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "POST ts-route-plan-service/api/v1/routeplanservice/routePlan/cheapestRoute",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:254",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:256",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:258"
+        ]
+      }
+    },
+    {
+      "key": "effect|travelplan.TravelPlanServiceImpl|effect|callsProvider|POST ts-route-plan-service/api/v1/routeplanservice/routePlan/minStopStations",
+      "candidateAtomId": "atom:effect:travelplan-travelplanserviceimpl:callsprovider-routeplan-minstation",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:279 — confirmed ts-travel-plan-service.TravelPlanServiceImpl callsProvider POST ts-route-plan-service/api/v1/routeplanservice/routePlan/minStopStations. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:effect:ts-travel-plan-service-travelplanserviceimpl:callsprovider-routeplan-minstation",
+        "kind": "effect",
+        "subject": "ts-travel-plan-service.TravelPlanServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "POST ts-route-plan-service/api/v1/routeplanservice/routePlan/minStopStations",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:279",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:281",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:283"
+        ]
+      }
+    },
+    {
+      "key": "effect|travelplan.TravelPlanServiceImpl|effect|callsProvider|POST ts-route-plan-service/api/v1/routeplanservice/routePlan/quickestRoute",
+      "candidateAtomId": "atom:effect:travelplan-travelplanserviceimpl:callsprovider-routeplan-quickest",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:266 — confirmed ts-travel-plan-service.TravelPlanServiceImpl callsProvider POST ts-route-plan-service/api/v1/routeplanservice/routePlan/quickestRoute. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:effect:ts-travel-plan-service-travelplanserviceimpl:callsprovider-routeplan-quickest",
+        "kind": "effect",
+        "subject": "ts-travel-plan-service.TravelPlanServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "POST ts-route-plan-service/api/v1/routeplanservice/routePlan/quickestRoute",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:266",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:268",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:270"
+        ]
+      }
+    },
+    {
+      "key": "effect|travelplan.TravelPlanServiceImpl|effect|callsProvider|POST ts-seat-service/api/v1/seatservice/seats/left_tickets",
+      "candidateAtomId": "atom:effect:travelplan-travelplanserviceimpl:callsprovider-seat-lefttickets",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:230 — confirmed ts-travel-plan-service.TravelPlanServiceImpl callsProvider POST ts-seat-service/api/v1/seatservice/seats/left_tickets. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:effect:ts-travel-plan-service-travelplanserviceimpl:callsprovider-seat-lefttickets",
+        "kind": "effect",
+        "subject": "ts-travel-plan-service.TravelPlanServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "POST ts-seat-service/api/v1/seatservice/seats/left_tickets",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:230",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:243",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:245"
+        ]
+      }
+    },
+    {
+      "key": "effect|travelplan.TravelPlanServiceImpl|effect|callsProvider|POST ts-travel-service/api/v1/travelservice/trips/left",
+      "candidateAtomId": "atom:effect:travelplan-travelplanserviceimpl:callsprovider-travel-tripsleft",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:291 — confirmed ts-travel-plan-service.TravelPlanServiceImpl callsProvider POST ts-travel-service/api/v1/travelservice/trips/left. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:effect:ts-travel-plan-service-travelplanserviceimpl:callsprovider-travel-tripsleft",
+        "kind": "effect",
+        "subject": "ts-travel-plan-service.TravelPlanServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "POST ts-travel-service/api/v1/travelservice/trips/left",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:291",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:293",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:295"
+        ]
+      }
+    },
+    {
+      "key": "effect|travelplan.TravelPlanServiceImpl|effect|callsProvider|POST ts-travel2-service/api/v1/travel2service/trips/left",
+      "candidateAtomId": "atom:effect:travelplan-travelplanserviceimpl:callsprovider-travel2-tripsleft",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:303 — confirmed ts-travel-plan-service.TravelPlanServiceImpl callsProvider POST ts-travel2-service/api/v1/travel2service/trips/left. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:effect:ts-travel-plan-service-travelplanserviceimpl:callsprovider-travel2-tripsleft",
+        "kind": "effect",
+        "subject": "ts-travel-plan-service.TravelPlanServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "POST ts-travel2-service/api/v1/travel2service/trips/left",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:303",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:306",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:308"
+        ]
+      }
+    },
+    {
+      "key": "relation|travel.TravelController|relation|dependsOn|travel.TravelService",
+      "candidateAtomId": "atom:relation:travel-travelcontroller:dependson-travelservice",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/controller/TravelController.java:32 — confirmed ts-travel-service.TravelController dependsOn ts-travel-service.TravelService. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-travel-service-travelcontroller:dependson-travelservice",
+        "kind": "relation",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "relation",
+        "predicate": "dependsOn",
+        "object": "ts-travel-service.TravelService",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:32"
+        ]
+      }
+    },
+    {
+      "key": "relation|travel.TravelServiceImpl|relation|dependsOn|travel.TripRepository",
+      "candidateAtomId": "atom:relation:travel-travelserviceimpl:dependson-triprepository",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:38-39 — @Autowired (38) annotates the TripRepository repository field (39). Same dependency fact, passes cited the annotation line vs the field-declaration line respectively; merged with both refs.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-travel-service-travelserviceimpl:dependson-triprepository",
+        "kind": "relation",
+        "subject": "ts-travel-service.TravelServiceImpl",
+        "axis": "relation",
+        "predicate": "dependsOn",
+        "object": "ts-travel-service.TripRepository",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:38",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:39"
+        ]
+      }
+    },
+    {
+      "key": "relation|travel.TravelServiceImpl|relation|implements|travel.TravelService",
+      "candidateAtomId": "atom:relation:travel-travelserviceimpl:implements-travelservice",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:36 — confirmed ts-travel-service.TravelServiceImpl implements ts-travel-service.TravelService. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-travel-service-travelserviceimpl:implements-travelservice",
+        "kind": "relation",
+        "subject": "ts-travel-service.TravelServiceImpl",
+        "axis": "relation",
+        "predicate": "implements",
+        "object": "ts-travel-service.TravelService",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:36"
+        ]
+      }
+    },
+    {
+      "key": "relation|travel.TripRepository|relation|dependsOn|travel.Trip",
+      "candidateAtomId": "atom:relation:travel-triprepository:dependson-trip",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/repository/TripRepository.java:14 — confirmed ts-travel-service.TripRepository dependsOn ts-travel-service.Trip. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-travel-service-triprepository:dependson-trip",
+        "kind": "relation",
+        "subject": "ts-travel-service.TripRepository",
+        "axis": "relation",
+        "predicate": "dependsOn",
+        "object": "ts-travel-service.Trip",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/repository/TripRepository.java:14"
+        ]
+      }
+    },
+    {
+      "key": "relation|travelplan.TravelPlanController|relation|dependsOn|travelplan.TravelPlanService",
+      "candidateAtomId": "atom:relation:travelplan-travelplancontroller:dependson-travelplanservice",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:22 — confirmed ts-travel-plan-service.TravelPlanController dependsOn ts-travel-plan-service.TravelPlanService. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-travel-plan-service-travelplancontroller:dependson-travelplanservice",
+        "kind": "relation",
+        "subject": "ts-travel-plan-service.TravelPlanController",
+        "axis": "relation",
+        "predicate": "dependsOn",
+        "object": "ts-travel-plan-service.TravelPlanService",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:22"
+        ]
+      }
+    },
+    {
+      "key": "relation|travelplan.TravelPlanServiceImpl|relation|implements|travelplan.TravelPlanService",
+      "candidateAtomId": "atom:relation:travelplan-travelplanserviceimpl:implements-travelplanservice",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:33 — confirmed ts-travel-plan-service.TravelPlanServiceImpl implements ts-travel-plan-service.TravelPlanService. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-travel-plan-service-travelplanserviceimpl:implements-travelplanservice",
+        "kind": "relation",
+        "subject": "ts-travel-plan-service.TravelPlanServiceImpl",
+        "axis": "relation",
+        "predicate": "implements",
+        "object": "ts-travel-plan-service.TravelPlanService",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:33"
+        ]
+      }
+    },
+    {
+      "key": "semantic|ctx:travel-trip-crud-and-query|cech|sectionValue|section=money-amount:price-value-taken-from-map-lookup-and-assigned-unparsed-at-travel-service-site",
+      "candidateAtomId": "atom:semantic:ctx-travel-trip-crud-and-query:cech-section-money-amount",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:461 — confirmed ctx:travel-service-ticket-pricing-flow sectionValue section=money-amount:priceForConfortClass/priceForEconomyClass on TripResponse are assigned directly from a string-keyed prices map lookup (tr.getPrices().get(\"confortClass\"/\"economyClass\")) in setResponse without parsing. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ctx-travel-service-ticket-pricing-flow:cech-section-money-amount",
+        "kind": "semantic",
+        "subject": "ctx:travel-service-ticket-pricing-flow",
+        "axis": "cech",
+        "predicate": "sectionValue",
+        "object": "section=money-amount:priceForConfortClass/priceForEconomyClass on TripResponse are assigned directly from a string-keyed prices map lookup (tr.getPrices().get(\"confortClass\"/\"economyClass\")) in setResponse without parsing",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:461",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:462"
+        ]
+      }
+    },
+    {
+      "key": "semantic|ctx:travelplan-transfer-cheapest-quickest-minstation-search|cech|sectionValue|section=money-amount:string-price-passed-through-unparsed-at-travelplan-site",
+      "candidateAtomId": "atom:semantic:ctx-travelplan-transfer-cheapest-quickest-minstation-search:cech-section-money-amount",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:108 — confirmed ctx:travel-plan-advance-search-flow sectionValue section=money-amount:priceForFirstClassSeat and priceForSecondClassSeat are declared String-typed on TravelAdvanceResultUnit and copied directly from the upstream route-plan result at the cheapest/quickest/minStation call sites without local parsing. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ctx-travel-plan-advance-search-flow:cech-section-money-amount",
+        "kind": "semantic",
+        "subject": "ctx:travel-plan-advance-search-flow",
+        "axis": "cech",
+        "predicate": "sectionValue",
+        "object": "section=money-amount:priceForFirstClassSeat and priceForSecondClassSeat are declared String-typed on TravelAdvanceResultUnit and copied directly from the upstream route-plan result at the cheapest/quickest/minStation call sites without local parsing",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:108",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:109",
+          "src:ts-travel-plan-service/src/main/java/travelplan/entity/TravelAdvanceResultUnit.java:24",
+          "src:ts-travel-plan-service/src/main/java/travelplan/entity/TravelAdvanceResultUnit.java:28"
+        ]
+      }
+    },
+    {
+      "key": "semantic|travel.TravelServiceImpl|semantic|meansInUse|application.yml declares train-service, order-service, route-service, basic-service and seat-service base URL properties, but call sites build provider URLs via getServiceUrl(serviceName) string concatenation on the literal service name rather than reading those properties",
+      "candidateAtomId": "atom:semantic:travel-travelserviceimpl:meansinuse-hardcoded-service-urls-not-yml-injected",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-travel-service/src/main/resources/application.yml:28 — confirmed ts-travel-service.TravelServiceImpl meansInUse application.yml declares train-service, order-service, route-service, basic-service and seat-service base URL properties, but getServiceUrl(serviceName) builds provider URLs by concatenating \"http://\" with the literal service name rather than reading those yml properties. Genuine observation present in only this pass for this chunk; no equivalent atom exists in the other pass's candidate packet or survey rows.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-travel-service-travelserviceimpl:meansinuse-hardcoded-service-urls-not-yml-injected",
+        "kind": "semantic",
+        "subject": "ts-travel-service.TravelServiceImpl",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "application.yml declares train-service, order-service, route-service, basic-service and seat-service base URL properties, but getServiceUrl(serviceName) builds provider URLs by concatenating \"http://\" with the literal service name rather than reading those yml properties",
+        "refs": [
+          "src:ts-travel-service/src/main/resources/application.yml:28",
+          "src:ts-travel-service/src/main/resources/application.yml:31",
+          "src:ts-travel-service/src/main/resources/application.yml:34",
+          "src:ts-travel-service/src/main/resources/application.yml:37",
+          "src:ts-travel-service/src/main/resources/application.yml:40",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:51"
+        ]
+      }
+    },
+    {
+      "key": "semantic|travel.TravelServiceImpl|semantic|meansInUse|ts-basic-service response status 0 selects the no-travel-result-data branch, causing an empty list or null return without a separate content check",
+      "candidateAtomId": "atom:semantic:travel-travelserviceimpl:meansinuse-basicservice-status0-empty-branch",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:354 — confirmed ts-travel-service.TravelServiceImpl meansInUse ts-basic-service response status 0 selects the no-travel-result-data branch in both getTicketsByBatch and getTickets, returning an empty list or null without a separate content check. Genuine observation present in only this pass for this chunk; no equivalent atom exists in the other pass's candidate packet or survey rows.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-travel-service-travelserviceimpl:meansinuse-basicservice-status0-empty-branch",
+        "kind": "semantic",
+        "subject": "ts-travel-service.TravelServiceImpl",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "ts-basic-service response status 0 selects the no-travel-result-data branch in both getTicketsByBatch and getTickets, returning an empty list or null without a separate content check",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:354",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:403"
+        ]
+      }
+    },
+    {
+      "key": "semantic|travel.TravelServiceImpl|semantic|statusGates|status-1-on-both-trip-created-branch-and-tripid-already-exists-branch-for-create",
+      "candidateAtomId": "atom:semantic:travel-travelserviceimpl:statusgates-unconditional-status1-create",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:66 — confirmed ts-travel-service.TravelServiceImpl statusGates status-1 on both the newly-created branch and the tripId-already-exists branch of create(). Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-travel-service-travelserviceimpl:statusgates-create-branch",
+        "kind": "semantic",
+        "subject": "ts-travel-service.TravelServiceImpl",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "status-1 on both the newly-created branch and the tripId-already-exists branch of create()",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:66",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:69"
+        ]
+      }
+    },
+    {
+      "key": "semantic|travel.TravelServiceImpl|semantic|statusGates|status-1-on-both-trip-updated-branch-and-trip-not-found-branch-for-update",
+      "candidateAtomId": "atom:semantic:travel-travelserviceimpl:statusgates-unconditional-status1-update",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:155 — confirmed ts-travel-service.TravelServiceImpl statusGates status-1 on both the updated branch and the tripId-not-found branch of update(). Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-travel-service-travelserviceimpl:statusgates-update-branch",
+        "kind": "semantic",
+        "subject": "ts-travel-service.TravelServiceImpl",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "status-1 on both the updated branch and the tripId-not-found branch of update()",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:155",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:158"
+        ]
+      }
+    },
+    {
+      "key": "semantic|travel.TravelServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-no-content-branch-for-getroutebytripid-gettraintypebytripid-gettripbyroute-retrieve-delete-queryall-queryinparallel-admin-queryall-gettripalldetailinfo",
+      "candidateAtomId": "atom:semantic:travel-travelserviceimpl:statusgates-branch-result-or-notfound",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java — getRouteByTripId(86,89), getTrainTypeByTripId(104,107), getTripByRoute(122,125), retrieve(135,138), delete(168,171) and queryAll(472,475) each return status 1 on the result-carrying branch and status 0 on the not-found/no-content branch. Pass A grouped all six methods into one atom (object text over-claimed queryInParallel/adminQueryAll/getTripAllDetailInfo without ref support, trimmed here); Pass B split the same fact into a general atom (86,89,135,138,472,475) plus a separate delete-only atom (168,171) covering the identical delete lines already inside Pass A's set. All three rows point to one canonical atom using Pass A's fuller, ref-supported six-method set.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-travel-service-travelserviceimpl:statusgates-branch-result-or-notfound",
+        "kind": "semantic",
+        "subject": "ts-travel-service.TravelServiceImpl",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "status-1 on the result-carrying branch, status-0 on the not-found/no-content branch, for getRouteByTripId, getTrainTypeByTripId, getTripByRoute, retrieve, delete, and queryAll",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:86",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:89",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:104",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:107",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:122",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:125",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:135",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:138",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:168",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:171",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:472",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:475"
+        ]
+      }
+    },
+    {
+      "key": "semantic|travel.Trip|semantic|identifiedBy|startStationName, stationsName and terminalStationName are normalized to lowercase at trip-creation site via StringUtils.String2Lower, while trainTypeName is stored as-is",
+      "candidateAtomId": "atom:semantic:travel-trip:identifiedby-lowercased-station-names",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/entity/Trip.java:57-84 — StringUtils.String2Lower is applied to startStationName/stationsName/terminalStationName only inside the seven-arg constructor (lines 60-62); the three-arg (71-73) and no-arg (80-82) constructors instead assign empty strings, unlowercased. Same underlying observation as Pass A's atom but Pass B's version captures the constructor-scoping nuance with fuller evidence (adds refs 71,80); merged using Pass B's more precise object text.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-travel-service-trip:identifiedby-lowercased-station-names",
+        "kind": "semantic",
+        "subject": "ts-travel-service.Trip",
+        "axis": "semantic",
+        "predicate": "identifiedBy",
+        "object": "startStationName, stationsName and terminalStationName are normalized to lowercase via StringUtils.String2Lower only in the seven-arg constructor used by create(); the three-arg and no-arg constructors leave them as unlowercased empty strings",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/entity/Trip.java:60",
+          "src:ts-travel-service/src/main/java/travel/entity/Trip.java:61",
+          "src:ts-travel-service/src/main/java/travel/entity/Trip.java:62",
+          "src:ts-travel-service/src/main/java/travel/entity/Trip.java:71",
+          "src:ts-travel-service/src/main/java/travel/entity/Trip.java:80"
+        ]
+      }
+    },
+    {
+      "key": "semantic|travelplan.TravelPlanServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-rejected-branch-for-getcheapest-getquickest-getminstation",
+      "candidateAtomId": "atom:semantic:travelplan-travelplanserviceimpl:statusgates-branch-result-or-notfound",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java — getCheapest(127,130), getQuickest(175,178) and getMinStation(223,226) each return status 1 with results, status 0/cannotFind when routePlanResultUnits is empty; verified identical pattern at all three call sites. Pass A cited all three methods' refs; Pass B cited only getCheapest's refs (127,130) under a generically-worded object describing the same pattern. Merged using Pass A's fuller ref set.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-travel-plan-service-travelplanserviceimpl:statusgates-branch-result-or-notfound",
+        "kind": "semantic",
+        "subject": "ts-travel-plan-service.TravelPlanServiceImpl",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "status-1 on the result-carrying branch, status-0 on the cannotFind/rejected branch, for getCheapest, getQuickest and getMinStation",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:127",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:130",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:175",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:178",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:223",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:226"
+        ]
+      }
+    },
+    {
+      "key": "semantic|travelplan.TravelPlanServiceImpl|semantic|statusGates|status-1-unconditionally-on-gettransfersearch-with-no-not-found-or-rejected-branch",
+      "candidateAtomId": "atom:semantic:travelplan-travelplanserviceimpl:statusgates-unconditional-success-transfersearch",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:84 — confirmed ts-travel-plan-service.TravelPlanServiceImpl statusGates status-1 unconditionally on getTransferSearch, with no not-found or rejected branch. Genuine observation present in only this pass for this chunk; no equivalent atom exists in the other pass's candidate packet or survey rows.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-travel-plan-service-travelplanserviceimpl:statusgates-unconditional-success-transfersearch",
+        "kind": "semantic",
+        "subject": "ts-travel-plan-service.TravelPlanServiceImpl",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "status-1 unconditionally on getTransferSearch, with no not-found or rejected branch",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:84"
+        ]
+      }
+    },
+    {
+      "key": "state|travel.TripRepository|state|transitionsTo|trip row removed for the given TripId",
+      "candidateAtomId": "atom:state:travel-triprepository:deletebytripid-transitionsto",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread ts-travel-service/src/main/java/travel/repository/TripRepository.java:18 — confirmed ts-travel-service.TripRepository transitionsTo trip row removed for the given TripId. Genuine observation present in only this pass for this chunk; no equivalent atom exists in the other pass's candidate packet or survey rows.",
+      "canonicalAtom": {
+        "id": "atom:state:ts-travel-service-triprepository:deletebytripid-transitionsto",
+        "kind": "state",
+        "subject": "ts-travel-service.TripRepository",
+        "axis": "state",
+        "predicate": "transitionsTo",
+        "object": "trip row removed for the given TripId",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/repository/TripRepository.java:18"
+        ]
+      }
+    },
+    {
+      "key": "state|travel.Trip|state|persistsIn|relational row via JPA @Entity with jpa-uuid generated id column length 36",
+      "candidateAtomId": "atom:state:travel-trip:persistsin-jpa-table",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/entity/Trip.java:19-25 (JPA @Entity, jpa-uuid generator, id column length 36) and ts-travel-service/src/main/resources/application.yml:13,20 (datasource url embeds ts-travel-mysql, hibernate ddl-auto=update). Both passes describe the same Trip persistence fact from different evidence angles (entity annotations vs datastore config); merged into one atom combining both aspects with the union of refs.",
+      "canonicalAtom": {
+        "id": "atom:state:ts-travel-service-trip:persistsin-travel-mysql",
+        "kind": "state",
+        "subject": "ts-travel-service.Trip",
+        "axis": "state",
+        "predicate": "persistsIn",
+        "object": "relational row via JPA @Entity (jpa-uuid generator, id column length 36) persisted through ts-travel-service.TripRepository into the ts-travel-mysql database (MySQL5Dialect, hibernate ddl-auto=update)",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/entity/Trip.java:19",
+          "src:ts-travel-service/src/main/java/travel/entity/Trip.java:24",
+          "src:ts-travel-service/src/main/java/travel/entity/Trip.java:25",
+          "src:ts-travel-service/src/main/java/travel/repository/TripRepository.java:14",
+          "src:ts-travel-service/src/main/resources/application.yml:13",
+          "src:ts-travel-service/src/main/resources/application.yml:20"
+        ]
+      }
+    },
+    {
+      "key": "authority|travel.config.SecurityConfig|authority|allowsCrossOrigin|WebMvcConfigurer CorsRegistry mapping /** to allowedOrigins=ALL, allowedMethods=ALL, allowedHeaders=ALL, allowCredentials=false",
+      "candidateAtomId": "atom:authority:travel-config-securityconfig:allows-cross-origin-global",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/config/SecurityConfig.java:52-57 — registry.addMapping(\"/**\").allowedOrigins(ALL).allowedMethods(ALL).allowedHeaders(ALL).allowCredentials(false).maxAge(3600) confirms the global CORS wildcard. Same fact as the other pass's SecurityConfig CORS atom (naming drift travel.SecurityConfig vs travel.config.SecurityConfig); kept as one canonical atom with union refs.",
+      "canonicalAtom": {
+        "id": "atom:authority:ts-travel-service-securityconfig:allowscrossorigin-global-wildcard",
+        "kind": "authority",
+        "subject": "ts-travel-service.SecurityConfig",
+        "axis": "authority",
+        "predicate": "allowsCrossOrigin",
+        "object": "all-origins-all-methods-all-headers-credentials-false-maxage-3600-on-/** via WebMvcConfigurer corsConfigurer bean CorsRegistry mapping",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:52",
+          "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:53",
+          "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:56",
+          "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:57"
+        ]
+      }
+    },
+    {
+      "key": "authority|travel.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/travelservice/**",
+      "candidateAtomId": "atom:authority:travel-config-securityconfig:permits-unauthenticated-travelservice",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/config/SecurityConfig.java:75 — .antMatchers(\"/api/v1/travelservice/**\").permitAll() confirmed. Same fact across both passes (subject naming drift only); merged.",
+      "canonicalAtom": {
+        "id": "atom:authority:ts-travel-service-securityconfig:permitsunauthenticated-travelservice-api",
+        "kind": "authority",
+        "subject": "ts-travel-service.SecurityConfig",
+        "axis": "authority",
+        "predicate": "permitsUnauthenticated",
+        "object": "permit-all-on-/api/v1/travelservice/**",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:75"
+        ]
+      }
+    },
+    {
+      "key": "authority|travel.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/swagger-ui.html,/webjars/**,/images/**,/configuration/**,/swagger-resources/**,/v2/**",
+      "candidateAtomId": "atom:authority:travel-config-securityconfig:permits-unauthenticated-swagger",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/config/SecurityConfig.java:76-77 — .antMatchers(swagger paths...).permitAll() confirmed. Same fact across both passes; merged with union refs.",
+      "canonicalAtom": {
+        "id": "atom:authority:ts-travel-service-securityconfig:permitsunauthenticated-swagger-paths",
+        "kind": "authority",
+        "subject": "ts-travel-service.SecurityConfig",
+        "axis": "authority",
+        "predicate": "permitsUnauthenticated",
+        "object": "permit-all-on-/swagger-ui.html,/webjars/**,/images/**,/configuration/**,/swagger-resources/**,/v2/**",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:76",
+          "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:77"
+        ]
+      }
+    },
+    {
+      "key": "authority|travel.config.SecurityConfig|authority|requiresRole|ADMIN on DELETE /api/v1/travelservice/trips/*",
+      "candidateAtomId": "atom:authority:travel-config-securityconfig:requires-role-admin-delete-trips",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/config/SecurityConfig.java:74 — .antMatchers(HttpMethod.DELETE, \"/api/v1/travelservice/trips/*\").hasAnyRole(\"ADMIN\") confirmed. Identical fact and ref in both passes; merged.",
+      "canonicalAtom": {
+        "id": "atom:authority:ts-travel-service-securityconfig:requiresrole-admin-delete-trips",
+        "kind": "authority",
+        "subject": "ts-travel-service.SecurityConfig",
+        "axis": "authority",
+        "predicate": "requiresRole",
+        "object": "ADMIN on DELETE /api/v1/travelservice/trips/*",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:74"
+        ]
+      }
+    },
+    {
+      "key": "authority|travel.config.SecurityConfig|authority|requiresRole|ADMIN on PUT /api/v1/travelservice/trips",
+      "candidateAtomId": "atom:authority:travel-config-securityconfig:requires-role-admin-put-trips",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/config/SecurityConfig.java:73 — .antMatchers(HttpMethod.PUT, \"/api/v1/travelservice/trips\").hasAnyRole(\"ADMIN\") confirmed. Identical fact and ref in both passes; merged.",
+      "canonicalAtom": {
+        "id": "atom:authority:ts-travel-service-securityconfig:requiresrole-admin-put-trips",
+        "kind": "authority",
+        "subject": "ts-travel-service.SecurityConfig",
+        "axis": "authority",
+        "predicate": "requiresRole",
+        "object": "ADMIN on PUT /api/v1/travelservice/trips",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java:73"
+        ]
+      }
+    },
+    {
+      "key": "authority|travel.controller.TravelController|authority|allowsCrossOrigin|method-level @CrossOrigin(origins=\"*\") on createTrip/retrieve/updateTrip/deleteTrip/queryInfo/queryInfoInparallel/getTripAllDetailInfo/queryAll/adminQueryAll, including the two endpoints SecurityConfig gates with requiresRole ADMIN",
+      "candidateAtomId": "atom:authority:travel-controller-travelcontroller:allows-cross-origin-mutating-endpoints",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/controller/TravelController.java — nine methods (createTrip 66, retrieve 81, updateTrip 89, deleteTrip 97, queryInfo 112, queryInfoInparallel 133, getTripAllDetailInfo 154, queryAll 163, adminQueryAll 171) carry @CrossOrigin(origins=\"*\"); welcome/getTrainTypeByTripId/getRouteByTripId/getTripByRoute do not. Pass A cited all 9 lines, Pass B cited a subset (81,89,97) of the same fact with a narrower object listing all 9 methods; merged using Pass A's fuller ref set.",
+      "canonicalAtom": {
+        "id": "atom:authority:ts-travel-service-travelcontroller:allowscrossorigin-mutating-endpoints",
+        "kind": "authority",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "authority",
+        "predicate": "allowsCrossOrigin",
+        "object": "method-level @CrossOrigin(origins=\"*\") on createTrip/retrieve/updateTrip/deleteTrip/queryInfo/queryInfoInparallel/getTripAllDetailInfo/queryAll/adminQueryAll, not present on welcome/getTrainTypeByTripId/getRouteByTripId/getTripByRoute, and includes updateTrip and deleteTrip which SecurityConfig separately gates to ADMIN role",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:66",
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:81",
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:89",
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:97",
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:112",
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:133",
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:154",
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:163",
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:171"
+        ]
+      }
+    },
+    {
+      "key": "capability|travel.controller.TravelController|capability|exposesEndpoint|DELETE /api/v1/travelservice/trips/{tripId}",
+      "candidateAtomId": "atom:capability:travel-controller-travelcontroller:delete-trip",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/controller/TravelController.java:97 — confirmed ts-travel-service.TravelController exposesEndpoint DELETE /api/v1/travelservice/trips/{tripId}. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-service-travelcontroller:deletetrip",
+        "kind": "capability",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "DELETE /api/v1/travelservice/trips/{tripId}",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:97",
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:98"
+        ]
+      }
+    },
+    {
+      "key": "capability|travel.controller.TravelController|capability|exposesEndpoint|GET /api/v1/travelservice/admin_trip",
+      "candidateAtomId": "atom:capability:travel-controller-travelcontroller:admin-query-all",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/controller/TravelController.java:172 — confirmed ts-travel-service.TravelController exposesEndpoint GET /api/v1/travelservice/admin_trip. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-service-travelcontroller:adminqueryall",
+        "kind": "capability",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET /api/v1/travelservice/admin_trip",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:172"
+        ]
+      }
+    },
+    {
+      "key": "capability|travel.controller.TravelController|capability|exposesEndpoint|GET /api/v1/travelservice/routes/{tripId}",
+      "candidateAtomId": "atom:capability:travel-controller-travelcontroller:routes-by-trip",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/controller/TravelController.java:50 — confirmed ts-travel-service.TravelController exposesEndpoint GET /api/v1/travelservice/routes/{tripId}. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-service-travelcontroller:routesbytripid",
+        "kind": "capability",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET /api/v1/travelservice/routes/{tripId}",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:50"
+        ]
+      }
+    },
+    {
+      "key": "capability|travel.controller.TravelController|capability|exposesEndpoint|GET /api/v1/travelservice/train_types/{tripId}",
+      "candidateAtomId": "atom:capability:travel-controller-travelcontroller:train-types",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/controller/TravelController.java:42 — confirmed ts-travel-service.TravelController exposesEndpoint GET /api/v1/travelservice/train_types/{tripId}. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-service-travelcontroller:traintypesbytripid",
+        "kind": "capability",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET /api/v1/travelservice/train_types/{tripId}",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:42"
+        ]
+      }
+    },
+    {
+      "key": "capability|travel.controller.TravelController|capability|exposesEndpoint|GET /api/v1/travelservice/trips",
+      "candidateAtomId": "atom:capability:travel-controller-travelcontroller:query-all",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/controller/TravelController.java:164 — confirmed ts-travel-service.TravelController exposesEndpoint GET /api/v1/travelservice/trips. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-service-travelcontroller:queryall",
+        "kind": "capability",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET /api/v1/travelservice/trips",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:164"
+        ]
+      }
+    },
+    {
+      "key": "capability|travel.controller.TravelController|capability|exposesEndpoint|GET /api/v1/travelservice/trips/{tripId}",
+      "candidateAtomId": "atom:capability:travel-controller-travelcontroller:retrieve-trip",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/controller/TravelController.java:81 — confirmed ts-travel-service.TravelController exposesEndpoint GET /api/v1/travelservice/trips/{tripId}. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-service-travelcontroller:retrievetrip",
+        "kind": "capability",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET /api/v1/travelservice/trips/{tripId}",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:81",
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:82"
+        ]
+      }
+    },
+    {
+      "key": "capability|travel.controller.TravelController|capability|exposesEndpoint|GET /api/v1/travelservice/welcome",
+      "candidateAtomId": "atom:capability:travel-controller-travelcontroller:welcome",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/controller/TravelController.java:37 — confirmed ts-travel-service.TravelController exposesEndpoint GET /api/v1/travelservice/welcome. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-service-travelcontroller:welcome",
+        "kind": "capability",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET /api/v1/travelservice/welcome",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:37"
+        ]
+      }
+    },
+    {
+      "key": "capability|travel.controller.TravelController|capability|exposesEndpoint|POST /api/v1/travelservice/trip_detail",
+      "candidateAtomId": "atom:capability:travel-controller-travelcontroller:trip-detail",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/controller/TravelController.java:155 — confirmed ts-travel-service.TravelController exposesEndpoint POST /api/v1/travelservice/trip_detail. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-service-travelcontroller:tripdetail",
+        "kind": "capability",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "POST /api/v1/travelservice/trip_detail",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:155"
+        ]
+      }
+    },
+    {
+      "key": "capability|travel.controller.TravelController|capability|exposesEndpoint|POST /api/v1/travelservice/trips",
+      "candidateAtomId": "atom:capability:travel-controller-travelcontroller:create-trip",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/controller/TravelController.java:66 — confirmed ts-travel-service.TravelController exposesEndpoint POST /api/v1/travelservice/trips. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-service-travelcontroller:createtrip",
+        "kind": "capability",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "POST /api/v1/travelservice/trips",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:66",
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:67"
+        ]
+      }
+    },
+    {
+      "key": "capability|travel.controller.TravelController|capability|exposesEndpoint|POST /api/v1/travelservice/trips/left",
+      "candidateAtomId": "atom:capability:travel-controller-travelcontroller:trips-left",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/controller/TravelController.java:113 — confirmed ts-travel-service.TravelController exposesEndpoint POST /api/v1/travelservice/trips/left. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-service-travelcontroller:queryleft",
+        "kind": "capability",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "POST /api/v1/travelservice/trips/left",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:113"
+        ]
+      }
+    },
+    {
+      "key": "capability|travel.controller.TravelController|capability|exposesEndpoint|POST /api/v1/travelservice/trips/left_parallel",
+      "candidateAtomId": "atom:capability:travel-controller-travelcontroller:trips-left-parallel",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/controller/TravelController.java:134 — confirmed ts-travel-service.TravelController exposesEndpoint POST /api/v1/travelservice/trips/left_parallel. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-service-travelcontroller:queryleftparallel",
+        "kind": "capability",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "POST /api/v1/travelservice/trips/left_parallel",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:134"
+        ]
+      }
+    },
+    {
+      "key": "capability|travel.controller.TravelController|capability|exposesEndpoint|POST /api/v1/travelservice/trips/routes",
+      "candidateAtomId": "atom:capability:travel-controller-travelcontroller:trips-by-routes",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/controller/TravelController.java:58 — confirmed ts-travel-service.TravelController exposesEndpoint POST /api/v1/travelservice/trips/routes. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-service-travelcontroller:tripsbyroutes",
+        "kind": "capability",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "POST /api/v1/travelservice/trips/routes",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:58"
+        ]
+      }
+    },
+    {
+      "key": "capability|travel.controller.TravelController|capability|exposesEndpoint|PUT /api/v1/travelservice/trips",
+      "candidateAtomId": "atom:capability:travel-controller-travelcontroller:update-trip",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/controller/TravelController.java:89 — confirmed ts-travel-service.TravelController exposesEndpoint PUT /api/v1/travelservice/trips. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-service-travelcontroller:updatetrip",
+        "kind": "capability",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "PUT /api/v1/travelservice/trips",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:89",
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:90"
+        ]
+      }
+    },
+    {
+      "key": "capability|travelplan.controller.TravelPlanController|capability|exposesEndpoint|GET /api/v1/travelplanservice/welcome",
+      "candidateAtomId": "atom:capability:travelplan-controller-travelplancontroller:welcome",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:27 — confirmed ts-travel-plan-service.TravelPlanController exposesEndpoint GET /api/v1/travelplanservice/welcome. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-plan-service-travelplancontroller:welcome",
+        "kind": "capability",
+        "subject": "ts-travel-plan-service.TravelPlanController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "GET /api/v1/travelplanservice/welcome",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:27"
+        ]
+      }
+    },
+    {
+      "key": "capability|travelplan.controller.TravelPlanController|capability|exposesEndpoint|POST /api/v1/travelplanservice/travelPlan/cheapest",
+      "candidateAtomId": "atom:capability:travelplan-controller-travelplancontroller:cheapest",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:38 — confirmed ts-travel-plan-service.TravelPlanController exposesEndpoint POST /api/v1/travelplanservice/travelPlan/cheapest. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-plan-service-travelplancontroller:cheapest",
+        "kind": "capability",
+        "subject": "ts-travel-plan-service.TravelPlanController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "POST /api/v1/travelplanservice/travelPlan/cheapest",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:38"
+        ]
+      }
+    },
+    {
+      "key": "capability|travelplan.controller.TravelPlanController|capability|exposesEndpoint|POST /api/v1/travelplanservice/travelPlan/minStation",
+      "candidateAtomId": "atom:capability:travelplan-controller-travelplancontroller:minstation",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:50 — confirmed ts-travel-plan-service.TravelPlanController exposesEndpoint POST /api/v1/travelplanservice/travelPlan/minStation. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-plan-service-travelplancontroller:minstation",
+        "kind": "capability",
+        "subject": "ts-travel-plan-service.TravelPlanController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "POST /api/v1/travelplanservice/travelPlan/minStation",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:50"
+        ]
+      }
+    },
+    {
+      "key": "capability|travelplan.controller.TravelPlanController|capability|exposesEndpoint|POST /api/v1/travelplanservice/travelPlan/quickest",
+      "candidateAtomId": "atom:capability:travelplan-controller-travelplancontroller:quickest",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:44 — confirmed ts-travel-plan-service.TravelPlanController exposesEndpoint POST /api/v1/travelplanservice/travelPlan/quickest. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-plan-service-travelplancontroller:quickest",
+        "kind": "capability",
+        "subject": "ts-travel-plan-service.TravelPlanController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "POST /api/v1/travelplanservice/travelPlan/quickest",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:44"
+        ]
+      }
+    },
+    {
+      "key": "capability|travelplan.controller.TravelPlanController|capability|exposesEndpoint|POST /api/v1/travelplanservice/travelPlan/transferResult",
+      "candidateAtomId": "atom:capability:travelplan-controller-travelplancontroller:transferresult",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:32 — confirmed ts-travel-plan-service.TravelPlanController exposesEndpoint POST /api/v1/travelplanservice/travelPlan/transferResult. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:capability:ts-travel-plan-service-travelplancontroller:transferresult",
+        "kind": "capability",
+        "subject": "ts-travel-plan-service.TravelPlanController",
+        "axis": "capability",
+        "predicate": "exposesEndpoint",
+        "object": "POST /api/v1/travelplanservice/travelPlan/transferResult",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:32"
+        ]
+      }
+    },
+    {
+      "key": "component|travel.config.SecurityConfig|static||",
+      "candidateAtomId": "atom:component:travel-config-securityconfig",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread s — file defines class SecurityConfig, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-service-securityconfig",
+        "kind": "component",
+        "subject": "ts-travel-service.SecurityConfig",
+        "axis": "static",
+        "refs": "src:ts-travel-service/src/main/java/travel/config/SecurityConfig.java"
+      }
+    },
+    {
+      "key": "component|travel.controller.TravelController|static||",
+      "candidateAtomId": "atom:component:travel-controller-travelcontroller",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread s — file defines class TravelController, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-service-travelcontroller",
+        "kind": "component",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "static",
+        "refs": "src:ts-travel-service/src/main/java/travel/controller/TravelController.java"
+      }
+    },
+    {
+      "key": "component|travel.entity.AdminTrip|static||",
+      "candidateAtomId": "atom:component:travel-entity-admintrip",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread s — file defines class AdminTrip, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-service-admintrip",
+        "kind": "component",
+        "subject": "ts-travel-service.AdminTrip",
+        "axis": "static",
+        "refs": "src:ts-travel-service/src/main/java/travel/entity/AdminTrip.java"
+      }
+    },
+    {
+      "key": "component|travel.entity.Travel|static||",
+      "candidateAtomId": "atom:component:travel-entity-travel",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread s — file defines class Travel, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-service-travel",
+        "kind": "component",
+        "subject": "ts-travel-service.Travel",
+        "axis": "static",
+        "refs": "src:ts-travel-service/src/main/java/travel/entity/Travel.java"
+      }
+    },
+    {
+      "key": "component|travel.entity.TripAllDetail|static||",
+      "candidateAtomId": "atom:component:travel-entity-tripalldetail",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread s — file defines class TripAllDetail, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-service-tripalldetail",
+        "kind": "component",
+        "subject": "ts-travel-service.TripAllDetail",
+        "axis": "static",
+        "refs": "src:ts-travel-service/src/main/java/travel/entity/TripAllDetail.java"
+      }
+    },
+    {
+      "key": "component|travel.entity.Trip|static||",
+      "candidateAtomId": "atom:component:travel-entity-trip",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread s — file defines class Trip, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-service-trip",
+        "kind": "component",
+        "subject": "ts-travel-service.Trip",
+        "axis": "static",
+        "refs": "src:ts-travel-service/src/main/java/travel/entity/Trip.java"
+      }
+    },
+    {
+      "key": "component|travel.init.InitData|static||",
+      "candidateAtomId": "atom:component:travel-init-initdata",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread s — file defines class InitData, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-service-initdata",
+        "kind": "component",
+        "subject": "ts-travel-service.InitData",
+        "axis": "static",
+        "refs": "src:ts-travel-service/src/main/java/travel/init/InitData.java"
+      }
+    },
+    {
+      "key": "component|travel.repository.TripRepository|static||",
+      "candidateAtomId": "atom:component:travel-repository-triprepository",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread s — file defines class TripRepository, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-service-triprepository",
+        "kind": "component",
+        "subject": "ts-travel-service.TripRepository",
+        "axis": "static",
+        "refs": "src:ts-travel-service/src/main/java/travel/repository/TripRepository.java"
+      }
+    },
+    {
+      "key": "component|travel.service.TravelServiceImpl|static||",
+      "candidateAtomId": "atom:component:travel-service-travelserviceimpl",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread s — file defines class TravelServiceImpl, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-service-travelserviceimpl",
+        "kind": "component",
+        "subject": "ts-travel-service.TravelServiceImpl",
+        "axis": "static",
+        "refs": "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java"
+      }
+    },
+    {
+      "key": "component|travel.service.TravelService|static||",
+      "candidateAtomId": "atom:component:travel-service-travelservice",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread s — file defines class TravelService, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-service-travelservice",
+        "kind": "component",
+        "subject": "ts-travel-service.TravelService",
+        "axis": "static",
+        "refs": "src:ts-travel-service/src/main/java/travel/service/TravelService.java"
+      }
+    },
+    {
+      "key": "component|travelplan.controller.TravelPlanController|static||",
+      "candidateAtomId": "atom:component:travelplan-controller-travelplancontroller",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread s — file defines class TravelPlanController, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-plan-service-travelplancontroller",
+        "kind": "component",
+        "subject": "ts-travel-plan-service.TravelPlanController",
+        "axis": "static",
+        "refs": "src:ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java"
+      }
+    },
+    {
+      "key": "component|travelplan.entity.TransferTravelInfo|static||",
+      "candidateAtomId": "atom:component:travelplan-entity-transfertravelinfo",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread s — file defines class TransferTravelInfo, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-plan-service-transfertravelinfo",
+        "kind": "component",
+        "subject": "ts-travel-plan-service.TransferTravelInfo",
+        "axis": "static",
+        "refs": "src:ts-travel-plan-service/src/main/java/travelplan/entity/TransferTravelInfo.java"
+      }
+    },
+    {
+      "key": "component|travelplan.entity.TransferTravelResult|static||",
+      "candidateAtomId": "atom:component:travelplan-entity-transfertravelresult",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread s — file defines class TransferTravelResult, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-plan-service-transfertravelresult",
+        "kind": "component",
+        "subject": "ts-travel-plan-service.TransferTravelResult",
+        "axis": "static",
+        "refs": "src:ts-travel-plan-service/src/main/java/travelplan/entity/TransferTravelResult.java"
+      }
+    },
+    {
+      "key": "component|travelplan.entity.TravelAdvanceResultUnit|static||",
+      "candidateAtomId": "atom:component:travelplan-entity-traveladvanceresultunit",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread s — file defines class TravelAdvanceResultUnit, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-plan-service-traveladvanceresultunit",
+        "kind": "component",
+        "subject": "ts-travel-plan-service.TravelAdvanceResultUnit",
+        "axis": "static",
+        "refs": "src:ts-travel-plan-service/src/main/java/travelplan/entity/TravelAdvanceResultUnit.java"
+      }
+    },
+    {
+      "key": "component|travelplan.service.TravelPlanServiceImpl|static||",
+      "candidateAtomId": "atom:component:travelplan-service-travelplanserviceimpl",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread s — file defines class TravelPlanServiceImpl, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-plan-service-travelplanserviceimpl",
+        "kind": "component",
+        "subject": "ts-travel-plan-service.TravelPlanServiceImpl",
+        "axis": "static",
+        "refs": "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java"
+      }
+    },
+    {
+      "key": "component|travelplan.service.TravelPlanService|static||",
+      "candidateAtomId": "atom:component:travelplan-service-travelplanservice",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread s — file defines class TravelPlanService, confirming the component. Same class observed by both passes under differing subject package-depth conventions (short package vs full Java package path); kept as one canonical component atom, naming normalized to service-dir.ClassName.",
+      "canonicalAtom": {
+        "id": "atom:component:ts-travel-plan-service-travelplanservice",
+        "kind": "component",
+        "subject": "ts-travel-plan-service.TravelPlanService",
+        "axis": "static",
+        "refs": "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanService.java"
+      }
+    },
+    {
+      "key": "contract|travel.repository.TripRepository|specification|shapedAs|CrudRepository<Trip,TripId> plus findByTripId/deleteByTripId/findByRouteId lookups keyed by embedded TripId or routeId",
+      "candidateAtomId": "atom:contract:travel-repository-triprepository:shaped-as",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-travel-service/src/main/java/travel/repository/TripRepository.java:14 — confirmed ts-travel-service.TripRepository shapedAs CrudRepository<Trip,TripId> plus findByTripId/deleteByTripId/findByRouteId lookups keyed by embedded TripId or routeId. Genuine observation present in only this pass for this chunk; no equivalent atom exists in the other pass's candidate packet or survey rows.",
+      "canonicalAtom": {
+        "id": "atom:contract:ts-travel-service-triprepository:shapedas",
+        "kind": "contract",
+        "subject": "ts-travel-service.TripRepository",
+        "axis": "specification",
+        "predicate": "shapedAs",
+        "object": "CrudRepository<Trip,TripId> plus findByTripId/deleteByTripId/findByRouteId lookups keyed by embedded TripId or routeId",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/repository/TripRepository.java:14",
+          "src:ts-travel-service/src/main/java/travel/repository/TripRepository.java:16",
+          "src:ts-travel-service/src/main/java/travel/repository/TripRepository.java:18",
+          "src:ts-travel-service/src/main/java/travel/repository/TripRepository.java:23"
+        ]
+      }
+    },
+    {
+      "key": "effect|travel.init.InitData|effect|callsProvider|travel.service.TravelService.create invoked five times on CommandLineRunner startup",
+      "candidateAtomId": "atom:effect:travel-init-initdata:seeds-trips-at-startup",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/init/InitData.java:37,47,57,67,77 — five service.create(info,null) calls inside CommandLineRunner.run(). Pass B cited all five call sites; Pass A cited only two call sites (37,77) plus the method-start line 25. Same observation; merged with the union of refs.",
+      "canonicalAtom": {
+        "id": "atom:effect:ts-travel-service-initdata:seeds-trips-at-startup",
+        "kind": "effect",
+        "subject": "ts-travel-service.InitData",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "invokes ts-travel-service.TravelService.create five times for hardcoded trips on CommandLineRunner startup",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/init/InitData.java:25",
+          "src:ts-travel-service/src/main/java/travel/init/InitData.java:37",
+          "src:ts-travel-service/src/main/java/travel/init/InitData.java:47",
+          "src:ts-travel-service/src/main/java/travel/init/InitData.java:57",
+          "src:ts-travel-service/src/main/java/travel/init/InitData.java:67",
+          "src:ts-travel-service/src/main/java/travel/init/InitData.java:77"
+        ]
+      }
+    },
+    {
+      "key": "effect|travel.service.TravelServiceImpl|effect|callsProvider|ts-basic-service /api/v1/basicservice/basic/travel",
+      "candidateAtomId": "atom:effect:travel-service-travelserviceimpl:calls-basic-single",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:379 — confirmed ts-travel-service.TravelServiceImpl callsProvider POST ts-basic-service/api/v1/basicservice/basic/travel. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:effect:ts-travel-service-travelserviceimpl:callsprovider-basic-travel",
+        "kind": "effect",
+        "subject": "ts-travel-service.TravelServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "POST ts-basic-service/api/v1/basicservice/basic/travel",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:379",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:395",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:397"
+        ]
+      }
+    },
+    {
+      "key": "effect|travel.service.TravelServiceImpl|effect|callsProvider|ts-basic-service /api/v1/basicservice/basic/travels",
+      "candidateAtomId": "atom:effect:travel-service-travelserviceimpl:calls-basic-batch",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:322 — confirmed ts-travel-service.TravelServiceImpl callsProvider POST ts-basic-service/api/v1/basicservice/basic/travels. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:effect:ts-travel-service-travelserviceimpl:callsprovider-basic-travels",
+        "kind": "effect",
+        "subject": "ts-travel-service.TravelServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "POST ts-basic-service/api/v1/basicservice/basic/travels",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:322",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:346",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:348"
+        ]
+      }
+    },
+    {
+      "key": "effect|travel.service.TravelServiceImpl|effect|callsProvider|ts-route-service /api/v1/routeservice/routes/{routeId}",
+      "candidateAtomId": "atom:effect:travel-service-travelserviceimpl:calls-route-service",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:517 — confirmed ts-travel-service.TravelServiceImpl callsProvider GET ts-route-service/api/v1/routeservice/routes/{routeId}. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:effect:ts-travel-service-travelserviceimpl:callsprovider-route-byid",
+        "kind": "effect",
+        "subject": "ts-travel-service.TravelServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "GET ts-route-service/api/v1/routeservice/routes/{routeId}",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:517",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:520",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:521"
+        ]
+      }
+    },
+    {
+      "key": "effect|travel.service.TravelServiceImpl|effect|callsProvider|ts-seat-service /api/v1/seatservice/seats/left_tickets",
+      "candidateAtomId": "atom:effect:travel-service-travelserviceimpl:calls-seat-service",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:537 — confirmed ts-travel-service.TravelServiceImpl callsProvider POST ts-seat-service/api/v1/seatservice/seats/left_tickets. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:effect:ts-travel-service-travelserviceimpl:callsprovider-seat-lefttickets",
+        "kind": "effect",
+        "subject": "ts-travel-service.TravelServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "POST ts-seat-service/api/v1/seatservice/seats/left_tickets",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:537",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:551",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:552"
+        ]
+      }
+    },
+    {
+      "key": "effect|travel.service.TravelServiceImpl|effect|callsProvider|ts-train-service /api/v1/trainservice/trains/byName/{name}",
+      "candidateAtomId": "atom:effect:travel-service-travelserviceimpl:calls-train-service",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:504 — confirmed ts-travel-service.TravelServiceImpl callsProvider GET ts-train-service/api/v1/trainservice/trains/byName/{trainTypeName}. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:effect:ts-travel-service-travelserviceimpl:callsprovider-train-byname",
+        "kind": "effect",
+        "subject": "ts-travel-service.TravelServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "GET ts-train-service/api/v1/trainservice/trains/byName/{trainTypeName}",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:504",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:506",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:508"
+        ]
+      }
+    },
+    {
+      "key": "effect|travelplan.service.TravelPlanServiceImpl|effect|callsProvider|ts-route-plan-service /api/v1/routeplanservice/routePlan/cheapestRoute",
+      "candidateAtomId": "atom:effect:travelplan-service-travelplanserviceimpl:calls-route-plan-cheapest",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:254 — confirmed ts-travel-plan-service.TravelPlanServiceImpl callsProvider POST ts-route-plan-service/api/v1/routeplanservice/routePlan/cheapestRoute. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:effect:ts-travel-plan-service-travelplanserviceimpl:callsprovider-routeplan-cheapest",
+        "kind": "effect",
+        "subject": "ts-travel-plan-service.TravelPlanServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "POST ts-route-plan-service/api/v1/routeplanservice/routePlan/cheapestRoute",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:254",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:256",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:258"
+        ]
+      }
+    },
+    {
+      "key": "effect|travelplan.service.TravelPlanServiceImpl|effect|callsProvider|ts-route-plan-service /api/v1/routeplanservice/routePlan/minStopStations",
+      "candidateAtomId": "atom:effect:travelplan-service-travelplanserviceimpl:calls-route-plan-minstation",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:279 — confirmed ts-travel-plan-service.TravelPlanServiceImpl callsProvider POST ts-route-plan-service/api/v1/routeplanservice/routePlan/minStopStations. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:effect:ts-travel-plan-service-travelplanserviceimpl:callsprovider-routeplan-minstation",
+        "kind": "effect",
+        "subject": "ts-travel-plan-service.TravelPlanServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "POST ts-route-plan-service/api/v1/routeplanservice/routePlan/minStopStations",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:279",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:281",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:283"
+        ]
+      }
+    },
+    {
+      "key": "effect|travelplan.service.TravelPlanServiceImpl|effect|callsProvider|ts-route-plan-service /api/v1/routeplanservice/routePlan/quickestRoute",
+      "candidateAtomId": "atom:effect:travelplan-service-travelplanserviceimpl:calls-route-plan-quickest",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:266 — confirmed ts-travel-plan-service.TravelPlanServiceImpl callsProvider POST ts-route-plan-service/api/v1/routeplanservice/routePlan/quickestRoute. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:effect:ts-travel-plan-service-travelplanserviceimpl:callsprovider-routeplan-quickest",
+        "kind": "effect",
+        "subject": "ts-travel-plan-service.TravelPlanServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "POST ts-route-plan-service/api/v1/routeplanservice/routePlan/quickestRoute",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:266",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:268",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:270"
+        ]
+      }
+    },
+    {
+      "key": "effect|travelplan.service.TravelPlanServiceImpl|effect|callsProvider|ts-seat-service /api/v1/seatservice/seats/left_tickets",
+      "candidateAtomId": "atom:effect:travelplan-service-travelplanserviceimpl:calls-seat-service",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:230 — confirmed ts-travel-plan-service.TravelPlanServiceImpl callsProvider POST ts-seat-service/api/v1/seatservice/seats/left_tickets. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:effect:ts-travel-plan-service-travelplanserviceimpl:callsprovider-seat-lefttickets",
+        "kind": "effect",
+        "subject": "ts-travel-plan-service.TravelPlanServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "POST ts-seat-service/api/v1/seatservice/seats/left_tickets",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:230",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:243",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:245"
+        ]
+      }
+    },
+    {
+      "key": "effect|travelplan.service.TravelPlanServiceImpl|effect|callsProvider|ts-train-service /api/v1/trainservice/trains/byName/{name}",
+      "candidateAtomId": "atom:effect:travelplan-service-travelplanserviceimpl:calls-train-service",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:317 — confirmed ts-travel-plan-service.TravelPlanServiceImpl callsProvider GET ts-train-service/api/v1/trainservice/trains/byName/{trainTypeName}. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:effect:ts-travel-plan-service-travelplanserviceimpl:callsprovider-train-byname",
+        "kind": "effect",
+        "subject": "ts-travel-plan-service.TravelPlanServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "GET ts-train-service/api/v1/trainservice/trains/byName/{trainTypeName}",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:317",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:319",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:321"
+        ]
+      }
+    },
+    {
+      "key": "effect|travelplan.service.TravelPlanServiceImpl|effect|callsProvider|ts-travel-service /api/v1/travelservice/trips/left",
+      "candidateAtomId": "atom:effect:travelplan-service-travelplanserviceimpl:calls-travel-service",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:291 — confirmed ts-travel-plan-service.TravelPlanServiceImpl callsProvider POST ts-travel-service/api/v1/travelservice/trips/left. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:effect:ts-travel-plan-service-travelplanserviceimpl:callsprovider-travel-tripsleft",
+        "kind": "effect",
+        "subject": "ts-travel-plan-service.TravelPlanServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "POST ts-travel-service/api/v1/travelservice/trips/left",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:291",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:293",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:295"
+        ]
+      }
+    },
+    {
+      "key": "effect|travelplan.service.TravelPlanServiceImpl|effect|callsProvider|ts-travel2-service /api/v1/travel2service/trips/left",
+      "candidateAtomId": "atom:effect:travelplan-service-travelplanserviceimpl:calls-travel2-service",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:303 — confirmed ts-travel-plan-service.TravelPlanServiceImpl callsProvider POST ts-travel2-service/api/v1/travel2service/trips/left. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:effect:ts-travel-plan-service-travelplanserviceimpl:callsprovider-travel2-tripsleft",
+        "kind": "effect",
+        "subject": "ts-travel-plan-service.TravelPlanServiceImpl",
+        "axis": "effect",
+        "predicate": "callsProvider",
+        "object": "POST ts-travel2-service/api/v1/travel2service/trips/left",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:303",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:306",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:308"
+        ]
+      }
+    },
+    {
+      "key": "relation|travel.controller.TravelController|restriction|dependsOn|travel.service.TravelService",
+      "candidateAtomId": "atom:relation:travel-controller-travelcontroller:dependsOn",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/controller/TravelController.java:32 — confirmed ts-travel-service.TravelController dependsOn ts-travel-service.TravelService. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-travel-service-travelcontroller:dependson-travelservice",
+        "kind": "relation",
+        "subject": "ts-travel-service.TravelController",
+        "axis": "relation",
+        "predicate": "dependsOn",
+        "object": "ts-travel-service.TravelService",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/controller/TravelController.java:32"
+        ]
+      }
+    },
+    {
+      "key": "relation|travel.init.InitData|restriction|dependsOn|travel.service.TravelService",
+      "candidateAtomId": "atom:relation:travel-init-initdata:dependsOn",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread ts-travel-service/src/main/java/travel/init/InitData.java:17 — confirmed ts-travel-service.InitData dependsOn ts-travel-service.TravelService. Genuine observation present in only this pass for this chunk; no equivalent atom exists in the other pass's candidate packet or survey rows.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-travel-service-initdata:dependson-travelservice",
+        "kind": "relation",
+        "subject": "ts-travel-service.InitData",
+        "axis": "relation",
+        "predicate": "dependsOn",
+        "object": "ts-travel-service.TravelService",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/init/InitData.java:17"
+        ]
+      }
+    },
+    {
+      "key": "relation|travel.repository.TripRepository|restriction|dependsOn|travel.entity.Trip",
+      "candidateAtomId": "atom:relation:travel-repository-triprepository:persists-trip",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/repository/TripRepository.java:14 — confirmed ts-travel-service.TripRepository dependsOn ts-travel-service.Trip. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-travel-service-triprepository:dependson-trip",
+        "kind": "relation",
+        "subject": "ts-travel-service.TripRepository",
+        "axis": "relation",
+        "predicate": "dependsOn",
+        "object": "ts-travel-service.Trip",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/repository/TripRepository.java:14"
+        ]
+      }
+    },
+    {
+      "key": "relation|travel.service.TravelServiceImpl|restriction|dependsOn|travel.repository.TripRepository",
+      "candidateAtomId": "atom:relation:travel-service-travelserviceimpl:dependsOn-triprepository",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:38-39 — @Autowired (38) annotates the TripRepository repository field (39). Same dependency fact, passes cited the annotation line vs the field-declaration line respectively; merged with both refs.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-travel-service-travelserviceimpl:dependson-triprepository",
+        "kind": "relation",
+        "subject": "ts-travel-service.TravelServiceImpl",
+        "axis": "relation",
+        "predicate": "dependsOn",
+        "object": "ts-travel-service.TripRepository",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:38",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:39"
+        ]
+      }
+    },
+    {
+      "key": "relation|travel.service.TravelServiceImpl|restriction|implements|travel.service.TravelService",
+      "candidateAtomId": "atom:relation:travel-service-travelserviceimpl:implements",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:36 — confirmed ts-travel-service.TravelServiceImpl implements ts-travel-service.TravelService. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-travel-service-travelserviceimpl:implements-travelservice",
+        "kind": "relation",
+        "subject": "ts-travel-service.TravelServiceImpl",
+        "axis": "relation",
+        "predicate": "implements",
+        "object": "ts-travel-service.TravelService",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:36"
+        ]
+      }
+    },
+    {
+      "key": "relation|travelplan.controller.TravelPlanController|restriction|dependsOn|travelplan.service.TravelPlanService",
+      "candidateAtomId": "atom:relation:travelplan-controller-travelplancontroller:dependsOn",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:22 — confirmed ts-travel-plan-service.TravelPlanController dependsOn ts-travel-plan-service.TravelPlanService. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-travel-plan-service-travelplancontroller:dependson-travelplanservice",
+        "kind": "relation",
+        "subject": "ts-travel-plan-service.TravelPlanController",
+        "axis": "relation",
+        "predicate": "dependsOn",
+        "object": "ts-travel-plan-service.TravelPlanService",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/controller/TravelPlanController.java:22"
+        ]
+      }
+    },
+    {
+      "key": "relation|travelplan.service.TravelPlanServiceImpl|restriction|implements|travelplan.service.TravelPlanService",
+      "candidateAtomId": "atom:relation:travelplan-service-travelplanserviceimpl:implements",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:33 — confirmed ts-travel-plan-service.TravelPlanServiceImpl implements ts-travel-plan-service.TravelPlanService. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-travel-plan-service-travelplanserviceimpl:implements-travelplanservice",
+        "kind": "relation",
+        "subject": "ts-travel-plan-service.TravelPlanServiceImpl",
+        "axis": "relation",
+        "predicate": "implements",
+        "object": "ts-travel-plan-service.TravelPlanService",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:33"
+        ]
+      }
+    },
+    {
+      "key": "semantic|ctx:travel-plan-advance-search-flow|cech|sectionValue|section=money-amount:string-price-field-passed-through-from-upstream-route-plan-result-without-parsing",
+      "candidateAtomId": "atom:component:ctx-travel-plan-advance-search-flow:cech-section-money-amount",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:108 — confirmed ctx:travel-plan-advance-search-flow sectionValue section=money-amount:priceForFirstClassSeat and priceForSecondClassSeat are declared String-typed on TravelAdvanceResultUnit and copied directly from the upstream route-plan result at the cheapest/quickest/minStation call sites without local parsing. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ctx-travel-plan-advance-search-flow:cech-section-money-amount",
+        "kind": "semantic",
+        "subject": "ctx:travel-plan-advance-search-flow",
+        "axis": "cech",
+        "predicate": "sectionValue",
+        "object": "section=money-amount:priceForFirstClassSeat and priceForSecondClassSeat are declared String-typed on TravelAdvanceResultUnit and copied directly from the upstream route-plan result at the cheapest/quickest/minStation call sites without local parsing",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:108",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:109",
+          "src:ts-travel-plan-service/src/main/java/travelplan/entity/TravelAdvanceResultUnit.java:24",
+          "src:ts-travel-plan-service/src/main/java/travelplan/entity/TravelAdvanceResultUnit.java:28"
+        ]
+      }
+    },
+    {
+      "key": "semantic|ctx:travel-service-ticket-pricing-flow|cech|sectionValue|section=money-amount:price-value-read-from-string-keyed-prices-map-and-passed-through-unparsed-into-tripresponse",
+      "candidateAtomId": "atom:component:ctx-travel-service-ticket-pricing-flow:cech-section-money-amount",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:461 — confirmed ctx:travel-service-ticket-pricing-flow sectionValue section=money-amount:priceForConfortClass/priceForEconomyClass on TripResponse are assigned directly from a string-keyed prices map lookup (tr.getPrices().get(\"confortClass\"/\"economyClass\")) in setResponse without parsing. Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ctx-travel-service-ticket-pricing-flow:cech-section-money-amount",
+        "kind": "semantic",
+        "subject": "ctx:travel-service-ticket-pricing-flow",
+        "axis": "cech",
+        "predicate": "sectionValue",
+        "object": "section=money-amount:priceForConfortClass/priceForEconomyClass on TripResponse are assigned directly from a string-keyed prices map lookup (tr.getPrices().get(\"confortClass\"/\"economyClass\")) in setResponse without parsing",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:461",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:462"
+        ]
+      }
+    },
+    {
+      "key": "semantic|travel.entity.Trip|semantic|identifiedBy|start-stations-terminal-station-names-lowercased-only-in-the-seven-arg-constructor-used-by-create-not-in-the-three-arg-or-no-arg-constructors",
+      "candidateAtomId": "atom:semantic:travel-entity-trip:meansInUse:station-name-lowercasing",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/entity/Trip.java:57-84 — StringUtils.String2Lower is applied to startStationName/stationsName/terminalStationName only inside the seven-arg constructor (lines 60-62); the three-arg (71-73) and no-arg (80-82) constructors instead assign empty strings, unlowercased. Same underlying observation as Pass A's atom but Pass B's version captures the constructor-scoping nuance with fuller evidence (adds refs 71,80); merged using Pass B's more precise object text.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-travel-service-trip:identifiedby-lowercased-station-names",
+        "kind": "semantic",
+        "subject": "ts-travel-service.Trip",
+        "axis": "semantic",
+        "predicate": "identifiedBy",
+        "object": "startStationName, stationsName and terminalStationName are normalized to lowercase via StringUtils.String2Lower only in the seven-arg constructor used by create(); the three-arg and no-arg constructors leave them as unlowercased empty strings",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/entity/Trip.java:60",
+          "src:ts-travel-service/src/main/java/travel/entity/Trip.java:61",
+          "src:ts-travel-service/src/main/java/travel/entity/Trip.java:62",
+          "src:ts-travel-service/src/main/java/travel/entity/Trip.java:71",
+          "src:ts-travel-service/src/main/java/travel/entity/Trip.java:80"
+        ]
+      }
+    },
+    {
+      "key": "semantic|travel.service.TravelServiceImpl|semantic|statusGates|status-1-on-both-newly-created-branch-and-tripid-already-exists-branch-of-create",
+      "candidateAtomId": "atom:semantic:travel-service-travelserviceimpl:meansInUse:create-status-branch",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:66 — confirmed ts-travel-service.TravelServiceImpl statusGates status-1 on both the newly-created branch and the tripId-already-exists branch of create(). Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-travel-service-travelserviceimpl:statusgates-create-branch",
+        "kind": "semantic",
+        "subject": "ts-travel-service.TravelServiceImpl",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "status-1 on both the newly-created branch and the tripId-already-exists branch of create()",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:66",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:69"
+        ]
+      }
+    },
+    {
+      "key": "semantic|travel.service.TravelServiceImpl|semantic|statusGates|status-1-on-both-updated-branch-and-tripid-not-found-branch-of-update",
+      "candidateAtomId": "atom:semantic:travel-service-travelserviceimpl:meansInUse:update-status-branch",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:155 — confirmed ts-travel-service.TravelServiceImpl statusGates status-1 on both the updated branch and the tripId-not-found branch of update(). Same source-grounded observation as the paired row in the other pass (subject/ref phrasing drift only); merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-travel-service-travelserviceimpl:statusgates-update-branch",
+        "kind": "semantic",
+        "subject": "ts-travel-service.TravelServiceImpl",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "status-1 on both the updated branch and the tripId-not-found branch of update()",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:155",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:158"
+        ]
+      }
+    },
+    {
+      "key": "semantic|travel.service.TravelServiceImpl|semantic|statusGates|status-1-on-deleted-branch-status-0-on-tripid-not-found-branch-of-delete",
+      "candidateAtomId": "atom:semantic:travel-service-travelserviceimpl:meansInUse:delete-status-branch",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java — getRouteByTripId(86,89), getTrainTypeByTripId(104,107), getTripByRoute(122,125), retrieve(135,138), delete(168,171) and queryAll(472,475) each return status 1 on the result-carrying branch and status 0 on the not-found/no-content branch. Pass A grouped all six methods into one atom (object text over-claimed queryInParallel/adminQueryAll/getTripAllDetailInfo without ref support, trimmed here); Pass B split the same fact into a general atom (86,89,135,138,472,475) plus a separate delete-only atom (168,171) covering the identical delete lines already inside Pass A's set. All three rows point to one canonical atom using Pass A's fuller, ref-supported six-method set.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-travel-service-travelserviceimpl:statusgates-branch-result-or-notfound",
+        "kind": "semantic",
+        "subject": "ts-travel-service.TravelServiceImpl",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "status-1 on the result-carrying branch, status-0 on the not-found/no-content branch, for getRouteByTripId, getTrainTypeByTripId, getTripByRoute, retrieve, delete, and queryAll",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:86",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:89",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:104",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:107",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:122",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:125",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:135",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:138",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:168",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:171",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:472",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:475"
+        ]
+      }
+    },
+    {
+      "key": "semantic|travel.service.TravelServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-empty-branch",
+      "candidateAtomId": "atom:semantic:travel-service-travelserviceimpl:meansInUse:response-envelope-general",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java — getRouteByTripId(86,89), getTrainTypeByTripId(104,107), getTripByRoute(122,125), retrieve(135,138), delete(168,171) and queryAll(472,475) each return status 1 on the result-carrying branch and status 0 on the not-found/no-content branch. Pass A grouped all six methods into one atom (object text over-claimed queryInParallel/adminQueryAll/getTripAllDetailInfo without ref support, trimmed here); Pass B split the same fact into a general atom (86,89,135,138,472,475) plus a separate delete-only atom (168,171) covering the identical delete lines already inside Pass A's set. All three rows point to one canonical atom using Pass A's fuller, ref-supported six-method set.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-travel-service-travelserviceimpl:statusgates-branch-result-or-notfound",
+        "kind": "semantic",
+        "subject": "ts-travel-service.TravelServiceImpl",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "status-1 on the result-carrying branch, status-0 on the not-found/no-content branch, for getRouteByTripId, getTrainTypeByTripId, getTripByRoute, retrieve, delete, and queryAll",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:86",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:89",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:104",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:107",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:122",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:125",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:135",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:138",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:168",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:171",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:472",
+          "src:ts-travel-service/src/main/java/travel/service/TravelServiceImpl.java:475"
+        ]
+      }
+    },
+    {
+      "key": "semantic|travelplan.service.TravelPlanServiceImpl|semantic|statusGates|status-1-on-route-plan-result-carrying-branch-status-0-on-empty-route-plan-result-branch",
+      "candidateAtomId": "atom:semantic:travelplan-service-travelplanserviceimpl:meansInUse:response-envelope",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java — getCheapest(127,130), getQuickest(175,178) and getMinStation(223,226) each return status 1 with results, status 0/cannotFind when routePlanResultUnits is empty; verified identical pattern at all three call sites. Pass A cited all three methods' refs; Pass B cited only getCheapest's refs (127,130) under a generically-worded object describing the same pattern. Merged using Pass A's fuller ref set.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-travel-plan-service-travelplanserviceimpl:statusgates-branch-result-or-notfound",
+        "kind": "semantic",
+        "subject": "ts-travel-plan-service.TravelPlanServiceImpl",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "status-1 on the result-carrying branch, status-0 on the cannotFind/rejected branch, for getCheapest, getQuickest and getMinStation",
+        "refs": [
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:127",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:130",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:175",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:178",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:223",
+          "src:ts-travel-plan-service/src/main/java/travelplan/service/TravelPlanServiceImpl.java:226"
+        ]
+      }
+    },
+    {
+      "key": "state|travel.entity.Trip|state|persistsIn|ts-travel-mysql (JPA @Entity via TripRepository, MySQL5Dialect, ddl-auto=update)",
+      "candidateAtomId": "atom:state:travel-entity-trip:persists-in-travel-mysql",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread ts-travel-service/src/main/java/travel/entity/Trip.java:19-25 (JPA @Entity, jpa-uuid generator, id column length 36) and ts-travel-service/src/main/resources/application.yml:13,20 (datasource url embeds ts-travel-mysql, hibernate ddl-auto=update). Both passes describe the same Trip persistence fact from different evidence angles (entity annotations vs datastore config); merged into one atom combining both aspects with the union of refs.",
+      "canonicalAtom": {
+        "id": "atom:state:ts-travel-service-trip:persistsin-travel-mysql",
+        "kind": "state",
+        "subject": "ts-travel-service.Trip",
+        "axis": "state",
+        "predicate": "persistsIn",
+        "object": "relational row via JPA @Entity (jpa-uuid generator, id column length 36) persisted through ts-travel-service.TripRepository into the ts-travel-mysql database (MySQL5Dialect, hibernate ddl-auto=update)",
+        "refs": [
+          "src:ts-travel-service/src/main/java/travel/entity/Trip.java:19",
+          "src:ts-travel-service/src/main/java/travel/entity/Trip.java:24",
+          "src:ts-travel-service/src/main/java/travel/entity/Trip.java:25",
+          "src:ts-travel-service/src/main/java/travel/repository/TripRepository.java:14",
+          "src:ts-travel-service/src/main/resources/application.yml:13",
+          "src:ts-travel-service/src/main/resources/application.yml:20"
+        ]
+      }
+    }
+  ]
+}

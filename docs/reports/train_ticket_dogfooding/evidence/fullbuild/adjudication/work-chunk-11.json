@@ -1,0 +1,1531 @@
+{
+ "onlyInPassA": [
+  {
+   "key": "authority|ts-inside-payment-service.SecurityConfig|authority|allowsCrossOrigin|cors-allow-all-origins-methods-headers-credentials-false-maxage-3600-on-/**",
+   "candidateAtomId": "atom:authority:ts-inside-payment-service-securityconfig-allowscrossorigin",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/config/SecurityConfig.java:51-56"
+   ]
+  },
+  {
+   "key": "authority|ts-inside-payment-service.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-webjars-and-images-and-configuration-and-swagger-resources-and-v2-paths",
+   "candidateAtomId": "atom:authority:ts-inside-payment-service-securityconfig-permitsunauthenticated",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/config/SecurityConfig.java:72-73"
+   ]
+  },
+  {
+   "key": "authority|ts-inside-payment-service.SecurityConfig|authority|requiresRole|role-admin-or-user-required-on-/api/v1/inside_pay_service/**",
+   "candidateAtomId": "atom:authority:ts-inside-payment-service-securityconfig-requiresrole",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "capability|ts-food-service.FoodOrderRepository|capability|handlesCommand|deleteById",
+   "candidateAtomId": "atom:capability:ts-food-service-foodorderrepository-handlescommand-deletebyid",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/repository/FoodOrderRepository.java:22"
+   ]
+  },
+  {
+   "key": "capability|ts-food-service.FoodOrderRepository|capability|handlesCommand|deleteFoodOrderByOrderId",
+   "candidateAtomId": "atom:capability:ts-food-service-foodorderrepository-handlescommand-deletefoodorderbyorderid",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/repository/FoodOrderRepository.java:24"
+   ]
+  },
+  {
+   "key": "capability|ts-food-service.FoodOrderRepository|capability|servesQuery|findAll",
+   "candidateAtomId": "atom:capability:ts-food-service-foodorderrepository-servesquery-findall",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/repository/FoodOrderRepository.java:20"
+   ]
+  },
+  {
+   "key": "capability|ts-food-service.FoodOrderRepository|capability|servesQuery|findByOrderId",
+   "candidateAtomId": "atom:capability:ts-food-service-foodorderrepository-servesquery-findbyorderid",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/repository/FoodOrderRepository.java:17"
+   ]
+  },
+  {
+   "key": "capability|ts-food-service.FoodService|capability|handlesCommand|createFoodOrder",
+   "candidateAtomId": "atom:capability:ts-food-service-foodservice-handlescommand-createfoodorder",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodService.java:12"
+   ]
+  },
+  {
+   "key": "capability|ts-food-service.FoodService|capability|handlesCommand|createFoodOrdersInBatch",
+   "candidateAtomId": "atom:capability:ts-food-service-foodservice-handlescommand-createfoodordersinbatch",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodService.java:14"
+   ]
+  },
+  {
+   "key": "capability|ts-food-service.FoodService|capability|handlesCommand|deleteFoodOrder",
+   "candidateAtomId": "atom:capability:ts-food-service-foodservice-handlescommand-deletefoodorder",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodService.java:16"
+   ]
+  },
+  {
+   "key": "capability|ts-food-service.FoodService|capability|handlesCommand|updateFoodOrder",
+   "candidateAtomId": "atom:capability:ts-food-service-foodservice-handlescommand-updatefoodorder",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodService.java:20"
+   ]
+  },
+  {
+   "key": "capability|ts-food-service.FoodService|capability|servesQuery|findAllFoodOrder",
+   "candidateAtomId": "atom:capability:ts-food-service-foodservice-servesquery-findallfoodorder",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodService.java:22"
+   ]
+  },
+  {
+   "key": "capability|ts-food-service.FoodService|capability|servesQuery|findByOrderId",
+   "candidateAtomId": "atom:capability:ts-food-service-foodservice-servesquery-findbyorderid",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodService.java:18"
+   ]
+  },
+  {
+   "key": "capability|ts-food-service.FoodService|capability|servesQuery|getAllFood",
+   "candidateAtomId": "atom:capability:ts-food-service-foodservice-servesquery-getallfood",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodService.java:24"
+   ]
+  },
+  {
+   "key": "capability|ts-inside-payment-service.InsidePaymentController|capability|exposesEndpoint|GET /api/v1/inside_pay_service/inside_payment/account",
+   "candidateAtomId": "atom:capability:ts-inside-payment-service-insidepaymentcontroller-exposesendpoint-queryaccount",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:56"
+   ]
+  },
+  {
+   "key": "capability|ts-inside-payment-service.InsidePaymentController|capability|exposesEndpoint|GET /api/v1/inside_pay_service/inside_payment/drawback/{userId}/{money}",
+   "candidateAtomId": "atom:capability:ts-inside-payment-service-insidepaymentcontroller-exposesendpoint-drawback",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:62"
+   ]
+  },
+  {
+   "key": "capability|ts-inside-payment-service.InsidePaymentController|capability|exposesEndpoint|GET /api/v1/inside_pay_service/inside_payment/money",
+   "candidateAtomId": "atom:capability:ts-inside-payment-service-insidepaymentcontroller-exposesendpoint-queryaddmoney",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:74"
+   ]
+  },
+  {
+   "key": "capability|ts-inside-payment-service.InsidePaymentController|capability|exposesEndpoint|GET /api/v1/inside_pay_service/inside_payment/payment",
+   "candidateAtomId": "atom:capability:ts-inside-payment-service-insidepaymentcontroller-exposesendpoint-querypayment",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:50"
+   ]
+  },
+  {
+   "key": "capability|ts-inside-payment-service.InsidePaymentController|capability|exposesEndpoint|GET /api/v1/inside_pay_service/inside_payment/{userId}/{money}",
+   "candidateAtomId": "atom:capability:ts-inside-payment-service-insidepaymentcontroller-exposesendpoint-addmoney",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:43"
+   ]
+  },
+  {
+   "key": "capability|ts-inside-payment-service.InsidePaymentController|capability|exposesEndpoint|GET /api/v1/inside_pay_service/welcome",
+   "candidateAtomId": "atom:capability:ts-inside-payment-service-insidepaymentcontroller-exposesendpoint-welcome",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:26"
+   ]
+  },
+  {
+   "key": "capability|ts-inside-payment-service.InsidePaymentController|capability|exposesEndpoint|POST /api/v1/inside_pay_service/inside_payment",
+   "candidateAtomId": "atom:capability:ts-inside-payment-service-insidepaymentcontroller-exposesendpoint-pay",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:31"
+   ]
+  },
+  {
+   "key": "capability|ts-inside-payment-service.InsidePaymentController|capability|exposesEndpoint|POST /api/v1/inside_pay_service/inside_payment/account",
+   "candidateAtomId": "atom:capability:ts-inside-payment-service-insidepaymentcontroller-exposesendpoint-createaccount",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:37"
+   ]
+  },
+  {
+   "key": "capability|ts-inside-payment-service.InsidePaymentController|capability|exposesEndpoint|POST /api/v1/inside_pay_service/inside_payment/difference",
+   "candidateAtomId": "atom:capability:ts-inside-payment-service-insidepaymentcontroller-exposesendpoint-paydifference",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:68"
+   ]
+  },
+  {
+   "key": "component|ts-food-service.AllTripFood|static||",
+   "candidateAtomId": "atom:component:ts-food-service-alltripfood",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/entity/AllTripFood.java"
+   ]
+  },
+  {
+   "key": "component|ts-food-service.Delivery|static||",
+   "candidateAtomId": "atom:component:ts-food-service-delivery",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/entity/Delivery.java"
+   ]
+  },
+  {
+   "key": "component|ts-food-service.FoodOrderRepository|static||",
+   "candidateAtomId": "atom:component:ts-food-service-foodorderrepository",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/repository/FoodOrderRepository.java"
+   ]
+  },
+  {
+   "key": "component|ts-food-service.FoodOrder|static||",
+   "candidateAtomId": "atom:component:ts-food-service-foodorder",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/entity/FoodOrder.java"
+   ]
+  },
+  {
+   "key": "component|ts-food-service.FoodServiceImpl|static||",
+   "candidateAtomId": "atom:component:ts-food-service-foodserviceimpl",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java"
+   ]
+  },
+  {
+   "key": "component|ts-food-service.FoodService|static||",
+   "candidateAtomId": "atom:component:ts-food-service-foodservice",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodService.java"
+   ]
+  },
+  {
+   "key": "component|ts-food-service.RabbitSend|static||",
+   "candidateAtomId": "atom:component:ts-food-service-rabbitsend",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/mq/RabbitSend.java"
+   ]
+  },
+  {
+   "key": "component|ts-gateway-service.GatewayApplication|static||",
+   "candidateAtomId": "atom:component:ts-gateway-service-gatewayapplication",
+   "refs": [
+    "src:ts-gateway-service/src/main/java/gateway/GatewayApplication.java"
+   ]
+  },
+  {
+   "key": "component|ts-gateway-service.GatewayConfiguration|static||",
+   "candidateAtomId": "atom:component:ts-gateway-service-gatewayconfiguration",
+   "refs": [
+    "src:ts-gateway-service/src/main/java/gateway/GatewayConfiguration.java"
+   ]
+  },
+  {
+   "key": "component|ts-inside-payment-service.AccountInfo|static||",
+   "candidateAtomId": "atom:component:ts-inside-payment-service-accountinfo",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/AccountInfo.java"
+   ]
+  },
+  {
+   "key": "component|ts-inside-payment-service.AsyncTask|static||",
+   "candidateAtomId": "atom:component:ts-inside-payment-service-asynctask",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/async/AsyncTask.java"
+   ]
+  },
+  {
+   "key": "component|ts-inside-payment-service.Balance|static||",
+   "candidateAtomId": "atom:component:ts-inside-payment-service-balance",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Balance.java"
+   ]
+  },
+  {
+   "key": "component|ts-inside-payment-service.ExecutorConfig|static||",
+   "candidateAtomId": "atom:component:ts-inside-payment-service-executorconfig",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/async/ExecutorConfig.java"
+   ]
+  },
+  {
+   "key": "component|ts-inside-payment-service.InsidePaymentApplication|static||",
+   "candidateAtomId": "atom:component:ts-inside-payment-service-insidepaymentapplication",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/InsidePaymentApplication.java"
+   ]
+  },
+  {
+   "key": "component|ts-inside-payment-service.InsidePaymentController|static||",
+   "candidateAtomId": "atom:component:ts-inside-payment-service-insidepaymentcontroller",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java"
+   ]
+  },
+  {
+   "key": "component|ts-inside-payment-service.MoneyType|static||",
+   "candidateAtomId": "atom:component:ts-inside-payment-service-moneytype",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/MoneyType.java"
+   ]
+  },
+  {
+   "key": "component|ts-inside-payment-service.Money|static||",
+   "candidateAtomId": "atom:component:ts-inside-payment-service-money",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Money.java"
+   ]
+  },
+  {
+   "key": "component|ts-inside-payment-service.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:ts-inside-payment-service-securityconfig",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/config/SecurityConfig.java"
+   ]
+  },
+  {
+   "key": "contract|ts-food-service.FoodOrder|specification|shapedAs|id-uuid-string-length-36-generated-by-jpa-uuid-generator",
+   "candidateAtomId": "atom:contract:ts-food-service-foodorder-shapedas",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/entity/FoodOrder.java:21-24"
+   ]
+  },
+  {
+   "key": "contract|ts-food-service.FoodServiceImpl|specification|ensures|food-order-save-commits-independently-of-delivery-mq-publish-outcome-exception-caught-and-logged",
+   "candidateAtomId": "atom:contract:ts-food-service-foodserviceimpl-ensures-mq-best-effort",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:101-108",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:140-146"
+   ]
+  },
+  {
+   "key": "contract|ts-inside-payment-service.Balance|specification|requires|userid-and-balance-fields-non-null-string-defaulted-to-empty-string-in-constructor",
+   "candidateAtomId": "atom:contract:ts-inside-payment-service-balance-requires-nonnull",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Balance.java:13-25"
+   ]
+  },
+  {
+   "key": "contract|ts-inside-payment-service.ExecutorConfig|specification|ensures|mysimpleasync-bean-used-by-asynctask-has-no-explicit-rejectedexecutionhandler-corepoolsize-10-maxpoolsize-200-queuecapacity-10",
+   "candidateAtomId": "atom:contract:ts-inside-payment-service-executorconfig-ensures-mysimpleasync-default-rejection",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/async/ExecutorConfig.java:24-33"
+   ]
+  },
+  {
+   "key": "contract|ts-inside-payment-service.ExecutorConfig|specification|retriesWith|myasync-bean-uses-callerrunspolicy-on-pool-saturation-corepoolsize-10-maxpoolsize-200-queuecapacity-10",
+   "candidateAtomId": "atom:contract:ts-inside-payment-service-executorconfig-retrieswith-myasync",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/async/ExecutorConfig.java:36-47"
+   ]
+  },
+  {
+   "key": "contract|ts-inside-payment-service.Money|specification|requires|id-and-userid-and-money-and-type-fields-non-null-money-defaulted-to-empty-string-in-constructor",
+   "candidateAtomId": "atom:contract:ts-inside-payment-service-money-requires-nonnull",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Money.java:22-47"
+   ]
+  },
+  {
+   "key": "effect|ts-food-service.FoodServiceImpl|effect|callsProvider|ts-station-food-service:/api/v1/stationfoodservice/stationfoodstores",
+   "candidateAtomId": "atom:effect:ts-food-service-foodserviceimpl-callsprovider-station-food-service",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:285-291"
+   ]
+  },
+  {
+   "key": "effect|ts-food-service.FoodServiceImpl|effect|callsProvider|ts-train-food-service:/api/v1/trainfoodservice/trainfoods/{tripId}",
+   "candidateAtomId": "atom:effect:ts-food-service-foodserviceimpl-callsprovider-train-food-service",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:228-234"
+   ]
+  },
+  {
+   "key": "effect|ts-food-service.FoodServiceImpl|effect|callsProvider|ts-travel-service:/api/v1/travelservice/routes/{tripId}",
+   "candidateAtomId": "atom:effect:ts-food-service-foodserviceimpl-callsprovider-travel-service",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:250-256"
+   ]
+  },
+  {
+   "key": "effect|ts-food-service.FoodServiceImpl|effect|publishes|delivery-json-via-rabbitsend-send-on-create-and-batch-create",
+   "candidateAtomId": "atom:effect:ts-food-service-foodserviceimpl-publishes-delivery",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:101-108",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:140-146"
+   ]
+  },
+  {
+   "key": "effect|ts-food-service.RabbitSend|effect|publishes|foodsearch.config.Queues.queueName",
+   "candidateAtomId": "atom:effect:ts-food-service-rabbitsend-publishes",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/mq/RabbitSend.java:21"
+   ]
+  },
+  {
+   "key": "effect|ts-gateway-service.GatewayConfiguration|effect|limitsRequestRate|route-admin-basic-info-qps-cap-20-per-1-second-window",
+   "candidateAtomId": "atom:effect:ts-gateway-service-gatewayconfiguration-limits-request-rate",
+   "refs": [
+    "src:ts-gateway-service/src/main/java/gateway/GatewayConfiguration.java:107-119"
+   ]
+  },
+  {
+   "key": "effect|ts-inside-payment-service.AsyncTask|effect|callsProvider|rest-service-external:16100/greet",
+   "candidateAtomId": "atom:effect:ts-inside-payment-service-asynctask-callsprovider-external-rest-service",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/async/AsyncTask.java:27"
+   ]
+  },
+  {
+   "key": "relation|ts-food-service.FoodServiceImpl|relation|dependsOn|ts-food-service.FoodOrderRepository",
+   "candidateAtomId": "atom:relation:ts-food-service-foodserviceimpl-dependson-foodorderrepository",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:39"
+   ]
+  },
+  {
+   "key": "relation|ts-food-service.FoodServiceImpl|relation|dependsOn|ts-food-service.RabbitSend",
+   "candidateAtomId": "atom:relation:ts-food-service-foodserviceimpl-dependson-rabbitsend",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:42"
+   ]
+  },
+  {
+   "key": "relation|ts-food-service.FoodServiceImpl|relation|implements|ts-food-service.FoodService",
+   "candidateAtomId": "atom:relation:ts-food-service-foodserviceimpl-implements-foodservice",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:33"
+   ]
+  },
+  {
+   "key": "relation|ts-gateway-service.GatewayConfiguration|relation|dependsOn|ts-food-service",
+   "candidateAtomId": "atom:relation:ts-gateway-service-gatewayconfiguration-dependson-food-service",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:96-99"
+   ]
+  },
+  {
+   "key": "relation|ts-gateway-service.GatewayConfiguration|relation|dependsOn|ts-inside-payment-service",
+   "candidateAtomId": "atom:relation:ts-gateway-service-gatewayconfiguration-dependson-inside-payment-service",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:101-104"
+   ]
+  },
+  {
+   "key": "relation|ts-inside-payment-service.InsidePaymentController|relation|dependsOn|inside_payment.service.InsidePaymentService",
+   "candidateAtomId": "atom:relation:ts-inside-payment-service-insidepaymentcontroller-dependson-service",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:22"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-food-service-order-lifecycle|cech|sectionValue|section=money-amount:double-price-field-on-food-order-entity",
+   "candidateAtomId": "atom:semantic:ts-food-service-order-lifecycle-cech-section-money-amount",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/entity/FoodOrder.java:37"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-inside-payment-money-boundary|cech|sectionValue|section=money-amount:string-money-field-on-accountinfo-balance-money-entities-and-path-variable",
+   "candidateAtomId": "atom:semantic:ts-inside-payment-money-boundary-cech-section-money-amount",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/AccountInfo.java:13",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Balance.java:19",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Money.java:36",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:43-48"
+   ]
+  },
+  {
+   "key": "semantic|ts-food-service.FoodOrder|semantic|meansInUse|foodtype-1-selects-train-food-2-selects-food-store-per-declaring-comment",
+   "candidateAtomId": "atom:semantic:ts-food-service-foodorder-foodtype-code-vocabulary",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/entity/FoodOrder.java:28-29"
+   ]
+  },
+  {
+   "key": "semantic|ts-food-service.FoodServiceImpl|semantic|statusGates|foodtype-value-1-selects-copying-stationname-and-storename-on-update-path",
+   "candidateAtomId": "atom:semantic:ts-food-service-foodserviceimpl-foodtype-gates-update-station-fields",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:187"
+   ]
+  },
+  {
+   "key": "semantic|ts-food-service.FoodServiceImpl|semantic|statusGates|foodtype-value-2-selects-copying-stationname-and-storename-on-create-and-batch-create-paths",
+   "candidateAtomId": "atom:semantic:ts-food-service-foodserviceimpl-foodtype-gates-create-and-batch-station-fields",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:81",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:125"
+   ]
+  },
+  {
+   "key": "semantic|ts-food-service.FoodServiceImpl|semantic|statusGates|response-status-1-selects-data-carrying-success-branch-status-0-selects-not-found-or-rejected-branch",
+   "candidateAtomId": "atom:semantic:ts-food-service-foodserviceimpl-response-status-envelope",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:72",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:110",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:148",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:158",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:171",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:184",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:204",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:245",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:310"
+   ]
+  },
+  {
+   "key": "semantic|ts-gateway-service.GatewayConfiguration|semantic|meansInUse|response-code-0-selects-blocked-by-flow-control-branch-in-initblockhandlers-registration-not-invoked-from-doinit",
+   "candidateAtomId": "atom:semantic:ts-gateway-service-gatewayconfiguration-blocked-response-code",
+   "refs": [
+    "src:ts-gateway-service/src/main/java/gateway/GatewayConfiguration.java:88-97",
+    "src:ts-gateway-service/src/main/java/gateway/GatewayConfiguration.java:77"
+   ]
+  },
+  {
+   "key": "semantic|ts-inside-payment-service.AccountInfo|semantic|meansInUse|money-field-represented-as-string-on-account-info-dto",
+   "candidateAtomId": "atom:semantic:ts-inside-payment-service-accountinfo-money-string-representation",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/AccountInfo.java:13"
+   ]
+  },
+  {
+   "key": "semantic|ts-inside-payment-service.Balance|semantic|meansInUse|balance-field-represented-as-string-defaulted-to-empty-string",
+   "candidateAtomId": "atom:semantic:ts-inside-payment-service-balance-money-string-representation",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Balance.java:19",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Balance.java:24"
+   ]
+  },
+  {
+   "key": "semantic|ts-inside-payment-service.InsidePaymentController|semantic|meansInUse|money-amount-passed-as-string-path-variable-on-addmoney-and-drawback-endpoints",
+   "candidateAtomId": "atom:semantic:ts-inside-payment-service-insidepaymentcontroller-money-path-variable-string",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:43-48",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:62-66"
+   ]
+  },
+  {
+   "key": "semantic|ts-inside-payment-service.MoneyType|semantic|meansInUse|moneytype-code-1-selects-add-money-a-2-selects-drawback-money-d",
+   "candidateAtomId": "atom:semantic:ts-inside-payment-service-moneytype-code-vocabulary",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/MoneyType.java:13",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/MoneyType.java:17"
+   ]
+  },
+  {
+   "key": "semantic|ts-inside-payment-service.Money|semantic|meansInUse|money-field-represented-as-string-persisted-on-inside-money-jpa-entity",
+   "candidateAtomId": "atom:semantic:ts-inside-payment-service-money-money-string-representation",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Money.java:36"
+   ]
+  },
+  {
+   "key": "state|ts-food-service.application.yml|state|persistsIn|mysql-datasource-ts-food-mysql-hibernate-ddl-auto-update-dialect-mysql5",
+   "candidateAtomId": "atom:state:ts-food-service-application-yml-datasource",
+   "refs": [
+    "src:ts-food-service/src/main/resources/application.yml:11-21"
+   ]
+  }
+ ],
+ "onlyInPassB": [
+  {
+   "key": "authority|inside_payment.SecurityConfig|authority|allowsCrossOrigin|allowed-origins-all-methods-all-headers-all-credentials-false-maxage-3600-on-/**",
+   "candidateAtomId": "atom:authority:inside_payment.securityconfig:allowscrossorigin:all-origins-on-all-paths",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/config/SecurityConfig.java:51",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/config/SecurityConfig.java:52",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/config/SecurityConfig.java:53",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/config/SecurityConfig.java:54",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/config/SecurityConfig.java:55",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/config/SecurityConfig.java:56",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/config/SecurityConfig.java:57"
+   ]
+  },
+  {
+   "key": "authority|inside_payment.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/swagger-ui.html-/webjars/**-/images/**-/configuration/**-/swagger-resources/**-/v2/**",
+   "candidateAtomId": "atom:authority:inside_payment.securityconfig:permitsunauthenticated:swagger-and-webjars-paths",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/config/SecurityConfig.java:72",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/config/SecurityConfig.java:73"
+   ]
+  },
+  {
+   "key": "authority|inside_payment.SecurityConfig|authority|requiresRole|role-admin-or-user-required-on-/api/v1/inside_pay_service/**",
+   "candidateAtomId": "atom:authority:inside_payment.securityconfig:requiresrole:inside-pay-service-path",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "capability|foodsearch.FoodOrderRepository|capability|handlesCommand|deletebyid",
+   "candidateAtomId": "atom:capability:foodsearch.foodorderrepository:handlescommand:deletebyid",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/repository/FoodOrderRepository.java:22"
+   ]
+  },
+  {
+   "key": "capability|foodsearch.FoodOrderRepository|capability|handlesCommand|deletefoodorderbyorderid",
+   "candidateAtomId": "atom:capability:foodsearch.foodorderrepository:handlescommand:deletefoodorderbyorderid",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/repository/FoodOrderRepository.java:24",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:161"
+   ]
+  },
+  {
+   "key": "capability|foodsearch.FoodOrderRepository|capability|servesQuery|findall",
+   "candidateAtomId": "atom:capability:foodsearch.foodorderrepository:servesquery:findall",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/repository/FoodOrderRepository.java:20"
+   ]
+  },
+  {
+   "key": "capability|foodsearch.FoodOrderRepository|capability|servesQuery|findbyid",
+   "candidateAtomId": "atom:capability:foodsearch.foodorderrepository:servesquery:findbyid",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/repository/FoodOrderRepository.java:15"
+   ]
+  },
+  {
+   "key": "capability|foodsearch.FoodOrderRepository|capability|servesQuery|findbyorderid",
+   "candidateAtomId": "atom:capability:foodsearch.foodorderrepository:servesquery:findbyorderid",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/repository/FoodOrderRepository.java:17"
+   ]
+  },
+  {
+   "key": "capability|foodsearch.FoodService|capability|handlesCommand|createfoodorder",
+   "candidateAtomId": "atom:capability:foodsearch.foodservice:handlescommand:createfoodorder",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodService.java:12",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:114",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:150"
+   ]
+  },
+  {
+   "key": "capability|foodsearch.FoodService|capability|handlesCommand|createfoodordersinbatch",
+   "candidateAtomId": "atom:capability:foodsearch.foodservice:handlescommand:createfoodordersinbatch",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodService.java:14",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:57",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:111"
+   ]
+  },
+  {
+   "key": "capability|foodsearch.FoodService|capability|handlesCommand|deletefoodorder",
+   "candidateAtomId": "atom:capability:foodsearch.foodservice:handlescommand:deletefoodorder",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodService.java:16",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:154",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:165"
+   ]
+  },
+  {
+   "key": "capability|foodsearch.FoodService|capability|handlesCommand|updatefoodorder",
+   "candidateAtomId": "atom:capability:foodsearch.foodservice:handlescommand:updatefoodorder",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodService.java:20",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:180",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:197"
+   ]
+  },
+  {
+   "key": "capability|foodsearch.FoodService|capability|servesQuery|findallfoodorder",
+   "candidateAtomId": "atom:capability:foodsearch.foodservice:servesquery:findallfoodorder",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodService.java:22",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:168",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:176"
+   ]
+  },
+  {
+   "key": "capability|foodsearch.FoodService|capability|servesQuery|findbyorderid",
+   "candidateAtomId": "atom:capability:foodsearch.foodservice:servesquery:findbyorderid",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodService.java:18",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:200",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:209"
+   ]
+  },
+  {
+   "key": "capability|foodsearch.FoodService|capability|servesQuery|getallfood",
+   "candidateAtomId": "atom:capability:foodsearch.foodservice:servesquery:getallfood",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodService.java:24",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:213",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:311"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.InsidePaymentController|capability|handlesCommand|addmoney",
+   "candidateAtomId": "atom:capability:inside_payment.insidepaymentcontroller:handlescommand:addmoney",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:43",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:48"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.InsidePaymentController|capability|handlesCommand|createaccount",
+   "candidateAtomId": "atom:capability:inside_payment.insidepaymentcontroller:handlescommand:createaccount",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:37",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:41"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.InsidePaymentController|capability|handlesCommand|drawback",
+   "candidateAtomId": "atom:capability:inside_payment.insidepaymentcontroller:handlescommand:drawback",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:62",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:66"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.InsidePaymentController|capability|handlesCommand|pay",
+   "candidateAtomId": "atom:capability:inside_payment.insidepaymentcontroller:handlescommand:pay",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:31",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:35"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.InsidePaymentController|capability|handlesCommand|paydifference",
+   "candidateAtomId": "atom:capability:inside_payment.insidepaymentcontroller:handlescommand:paydifference",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:68",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:72"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.InsidePaymentController|capability|servesQuery|queryaccount",
+   "candidateAtomId": "atom:capability:inside_payment.insidepaymentcontroller:servesquery:queryaccount",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:56",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:60"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.InsidePaymentController|capability|servesQuery|queryaddmoney",
+   "candidateAtomId": "atom:capability:inside_payment.insidepaymentcontroller:servesquery:queryaddmoney",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:74",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:78"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.InsidePaymentController|capability|servesQuery|querypayment",
+   "candidateAtomId": "atom:capability:inside_payment.insidepaymentcontroller:servesquery:querypayment",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:50",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:54"
+   ]
+  },
+  {
+   "key": "capability|inside_payment.InsidePaymentController|capability|servesQuery|welcome",
+   "candidateAtomId": "atom:capability:inside_payment.insidepaymentcontroller:servesquery:welcome",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:26",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:29"
+   ]
+  },
+  {
+   "key": "component|foodsearch.AllTripFood|static||",
+   "candidateAtomId": "atom:component:foodsearch.alltripfood",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/entity/AllTripFood.java"
+   ]
+  },
+  {
+   "key": "component|foodsearch.Delivery|static||",
+   "candidateAtomId": "atom:component:foodsearch.delivery",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/entity/Delivery.java"
+   ]
+  },
+  {
+   "key": "component|foodsearch.FoodOrderRepository|static||",
+   "candidateAtomId": "atom:component:foodsearch.foodorderrepository",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/repository/FoodOrderRepository.java"
+   ]
+  },
+  {
+   "key": "component|foodsearch.FoodOrder|static||",
+   "candidateAtomId": "atom:component:foodsearch.foodorder",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/entity/FoodOrder.java"
+   ]
+  },
+  {
+   "key": "component|foodsearch.FoodServiceImpl|static||",
+   "candidateAtomId": "atom:component:foodsearch.foodserviceimpl",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java"
+   ]
+  },
+  {
+   "key": "component|foodsearch.FoodService|static||",
+   "candidateAtomId": "atom:component:foodsearch.foodservice",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodService.java"
+   ]
+  },
+  {
+   "key": "component|foodsearch.RabbitSend|static||",
+   "candidateAtomId": "atom:component:foodsearch.rabbitsend",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/mq/RabbitSend.java"
+   ]
+  },
+  {
+   "key": "component|gateway.GatewayApplication|static||",
+   "candidateAtomId": "atom:component:gateway.gatewayapplication",
+   "refs": [
+    "src:ts-gateway-service/src/main/java/gateway/GatewayApplication.java"
+   ]
+  },
+  {
+   "key": "component|gateway.GatewayConfiguration|static||",
+   "candidateAtomId": "atom:component:gateway.gatewayconfiguration",
+   "refs": [
+    "src:ts-gateway-service/src/main/java/gateway/GatewayConfiguration.java"
+   ]
+  },
+  {
+   "key": "component|gateway.RouteTable|static||",
+   "candidateAtomId": "atom:component:gateway.routetable",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:14",
+    "src:ts-gateway-service/src/main/resources/application.yml:15"
+   ]
+  },
+  {
+   "key": "component|inside_payment.AccountInfo|static||",
+   "candidateAtomId": "atom:component:inside_payment.accountinfo",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/AccountInfo.java"
+   ]
+  },
+  {
+   "key": "component|inside_payment.AsyncTask|static||",
+   "candidateAtomId": "atom:component:inside_payment.asynctask",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/async/AsyncTask.java"
+   ]
+  },
+  {
+   "key": "component|inside_payment.Balance|static||",
+   "candidateAtomId": "atom:component:inside_payment.balance",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Balance.java"
+   ]
+  },
+  {
+   "key": "component|inside_payment.ExecutorConfig|static||",
+   "candidateAtomId": "atom:component:inside_payment.executorconfig",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/async/ExecutorConfig.java"
+   ]
+  },
+  {
+   "key": "component|inside_payment.InsidePaymentApplication|static||",
+   "candidateAtomId": "atom:component:inside_payment.insidepaymentapplication",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/InsidePaymentApplication.java"
+   ]
+  },
+  {
+   "key": "component|inside_payment.InsidePaymentController|static||",
+   "candidateAtomId": "atom:component:inside_payment.insidepaymentcontroller",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java"
+   ]
+  },
+  {
+   "key": "component|inside_payment.MoneyType|static||",
+   "candidateAtomId": "atom:component:inside_payment.moneytype",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/MoneyType.java"
+   ]
+  },
+  {
+   "key": "component|inside_payment.Money|static||",
+   "candidateAtomId": "atom:component:inside_payment.money",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Money.java"
+   ]
+  },
+  {
+   "key": "component|inside_payment.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:inside_payment.securityconfig",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/config/SecurityConfig.java"
+   ]
+  },
+  {
+   "key": "contract|foodsearch.FoodOrderRepository|specification|shapedAs|lookup-by-orderid-string-field-not-primary-key",
+   "candidateAtomId": "atom:contract:foodsearch.foodorderrepository:shapedas:lookup-by-orderid-string-field",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/repository/FoodOrderRepository.java:17",
+    "src:ts-food-service/src/main/java/foodsearch/entity/FoodOrder.java:26"
+   ]
+  },
+  {
+   "key": "contract|foodsearch.FoodServiceImpl|specification|requires|tripid-length-greater-than-two-required-to-proceed-with-getallfood",
+   "candidateAtomId": "atom:contract:foodsearch.foodserviceimpl:requires:tripid-length-greater-than-two",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:217",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:220"
+   ]
+  },
+  {
+   "key": "contract|gateway.GatewayConfiguration|specification|limitsRate|qps-count-20-per-1-second-interval-control-behavior-default-on-admin-basic-info-route",
+   "candidateAtomId": "atom:contract:gateway.gatewayconfiguration:limitsrate:admin-basic-info-route",
+   "refs": [
+    "src:ts-gateway-service/src/main/java/gateway/GatewayConfiguration.java:107",
+    "src:ts-gateway-service/src/main/java/gateway/GatewayConfiguration.java:112",
+    "src:ts-gateway-service/src/main/java/gateway/GatewayConfiguration.java:113",
+    "src:ts-gateway-service/src/main/java/gateway/GatewayConfiguration.java:114",
+    "src:ts-gateway-service/src/main/java/gateway/GatewayConfiguration.java:115",
+    "src:ts-gateway-service/src/main/java/gateway/GatewayConfiguration.java:116",
+    "src:ts-gateway-service/src/main/java/gateway/GatewayConfiguration.java:118"
+   ]
+  },
+  {
+   "key": "contract|inside_payment.ExecutorConfig|specification|retriesWith|myasync-bean-threadpoolexecutor-callerrunspolicy-when-pool-and-queue-are-full",
+   "candidateAtomId": "atom:contract:inside_payment.executorconfig:retrieswith:caller-runs-policy",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/async/ExecutorConfig.java:45"
+   ]
+  },
+  {
+   "key": "contract|inside_payment.ExecutorConfig|specification|shapedAs|coresize-10-maxsize-200-queuecapacity-10-shared-defaults-for-mysimpleasync-and-myasync-beans",
+   "candidateAtomId": "atom:contract:inside_payment.executorconfig:shapedas:pool-bounds",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/async/ExecutorConfig.java:18",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/async/ExecutorConfig.java:20",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/async/ExecutorConfig.java:22"
+   ]
+  },
+  {
+   "key": "effect|foodsearch.FoodServiceImpl|effect|callsProvider|ts-station-food-service-stationfoodstores-endpoint",
+   "candidateAtomId": "atom:effect:foodsearch.foodserviceimpl:callsprovider:ts-station-food-service",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:284",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:286",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:291",
+    "src:ts-food-service/src/main/resources/application.yml:37",
+    "src:ts-food-service/src/main/resources/application.yml:38"
+   ]
+  },
+  {
+   "key": "effect|foodsearch.FoodServiceImpl|effect|callsProvider|ts-train-food-service-trainfoods-endpoint",
+   "candidateAtomId": "atom:effect:foodsearch.foodserviceimpl:callsprovider:ts-train-food-service",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:228",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:229",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:234",
+    "src:ts-food-service/src/main/resources/application.yml:34",
+    "src:ts-food-service/src/main/resources/application.yml:35"
+   ]
+  },
+  {
+   "key": "effect|foodsearch.FoodServiceImpl|effect|callsProvider|ts-travel-service-routes-endpoint",
+   "candidateAtomId": "atom:effect:foodsearch.foodserviceimpl:callsprovider:ts-travel-service",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:250",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:251",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:256",
+    "src:ts-food-service/src/main/resources/application.yml:31",
+    "src:ts-food-service/src/main/resources/application.yml:32"
+   ]
+  },
+  {
+   "key": "effect|foodsearch.FoodServiceImpl|effect|writesTo|deletes-foodorder-row-by-orderid-on-cancel",
+   "candidateAtomId": "atom:effect:foodsearch.foodserviceimpl:writesto:foodorder-deleted-row",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:161"
+   ]
+  },
+  {
+   "key": "effect|foodsearch.FoodServiceImpl|effect|writesTo|inserts-new-foodorder-row-with-random-uuid-id-on-create",
+   "candidateAtomId": "atom:effect:foodsearch.foodserviceimpl:writesto:foodorder-created-row",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:77",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:87",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:121",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:131"
+   ]
+  },
+  {
+   "key": "effect|foodsearch.FoodServiceImpl|effect|writesTo|updates-existing-foodorder-row-fields-on-update",
+   "candidateAtomId": "atom:effect:foodsearch.foodserviceimpl:writesto:foodorder-updated-row",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:186",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:193"
+   ]
+  },
+  {
+   "key": "effect|foodsearch.RabbitSend|effect|publishes|delivery-json-payload-to-queues.queuename-amqp-queue",
+   "candidateAtomId": "atom:effect:foodsearch.rabbitsend:publishes:food-delivery-queue",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/mq/RabbitSend.java:19",
+    "src:ts-food-service/src/main/java/foodsearch/mq/RabbitSend.java:21"
+   ]
+  },
+  {
+   "key": "effect|inside_payment.AsyncTask|effect|callsProvider|hardcoded-http-host-rest-service-external-port-16100-path-/greet-bypasses-loadbalanced-discovery-resttemplate",
+   "candidateAtomId": "atom:effect:inside_payment.asynctask:callsprovider:rest-service-external",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/async/AsyncTask.java:27"
+   ]
+  },
+  {
+   "key": "relation|foodsearch.FoodOrderRepository|relation|dependsOn|ts-food-mysql-datasource",
+   "candidateAtomId": "atom:relation:foodsearch.foodorderrepository:dependson:ts-food-mysql",
+   "refs": [
+    "src:ts-food-service/src/main/resources/application.yml:11",
+    "src:ts-food-service/src/main/resources/application.yml:12"
+   ]
+  },
+  {
+   "key": "relation|foodsearch.FoodServiceImpl|relation|calls|foodsearch.RabbitSend",
+   "candidateAtomId": "atom:relation:foodsearch.foodserviceimpl:calls:rabbitsend",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:104",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:143"
+   ]
+  },
+  {
+   "key": "relation|foodsearch.FoodServiceImpl|relation|dependsOn|configured-via-station-service.url-property-no-call-site-observed-in-chunk",
+   "candidateAtomId": "atom:relation:foodsearch.foodserviceimpl:dependson:ts-station-service",
+   "refs": [
+    "src:ts-food-service/src/main/resources/application.yml:28",
+    "src:ts-food-service/src/main/resources/application.yml:29"
+   ]
+  },
+  {
+   "key": "relation|foodsearch.FoodServiceImpl|relation|dependsOn|foodsearch.FoodOrderRepository",
+   "candidateAtomId": "atom:relation:foodsearch.foodserviceimpl:dependson:foodorderrepository",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:39"
+   ]
+  },
+  {
+   "key": "relation|foodsearch.RabbitSend|relation|dependsOn|rabbitmq-host-config-property",
+   "candidateAtomId": "atom:relation:foodsearch.rabbitsend:dependson:rabbitmq-host",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/mq/RabbitSend.java:16",
+    "src:ts-food-service/src/main/resources/application.yml:22",
+    "src:ts-food-service/src/main/resources/application.yml:23"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-admin-basic-info-service-via-path-/api/v1/adminbasicservice/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:admin-basic-info",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:16",
+    "src:ts-gateway-service/src/main/resources/application.yml:17",
+    "src:ts-gateway-service/src/main/resources/application.yml:18"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-admin-order-service-via-path-/api/v1/adminorderservice/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:admin-order",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:21",
+    "src:ts-gateway-service/src/main/resources/application.yml:22",
+    "src:ts-gateway-service/src/main/resources/application.yml:23"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-admin-route-service-via-path-/api/v1/adminrouteservice/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:admin-route",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:26",
+    "src:ts-gateway-service/src/main/resources/application.yml:27",
+    "src:ts-gateway-service/src/main/resources/application.yml:28"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-admin-travel-service-via-path-/api/v1/admintravelservice/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:admin-travel",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:31",
+    "src:ts-gateway-service/src/main/resources/application.yml:32",
+    "src:ts-gateway-service/src/main/resources/application.yml:33"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-admin-user-service-via-path-/api/v1/adminuserservice/users/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:admin-user",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:36",
+    "src:ts-gateway-service/src/main/resources/application.yml:37",
+    "src:ts-gateway-service/src/main/resources/application.yml:38"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-assurance-service-via-path-/api/v1/assuranceservice/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:assurance",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:41",
+    "src:ts-gateway-service/src/main/resources/application.yml:42",
+    "src:ts-gateway-service/src/main/resources/application.yml:43"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-auth-service-via-path-/api/v1/auth/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:auth",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:46",
+    "src:ts-gateway-service/src/main/resources/application.yml:47",
+    "src:ts-gateway-service/src/main/resources/application.yml:48"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-auth-service-via-path-/api/v1/users/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:auth-user",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:51",
+    "src:ts-gateway-service/src/main/resources/application.yml:52",
+    "src:ts-gateway-service/src/main/resources/application.yml:53"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-avatar-service-via-path-/api/v1/avatar/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:avatar",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:56",
+    "src:ts-gateway-service/src/main/resources/application.yml:57",
+    "src:ts-gateway-service/src/main/resources/application.yml:58"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-basic-service-via-path-/api/v1/basicservice/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:basic",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:61",
+    "src:ts-gateway-service/src/main/resources/application.yml:62",
+    "src:ts-gateway-service/src/main/resources/application.yml:63"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-cancel-service-via-path-/api/v1/cancelservice/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:cancel",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:66",
+    "src:ts-gateway-service/src/main/resources/application.yml:67",
+    "src:ts-gateway-service/src/main/resources/application.yml:68"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-config-service-via-path-/api/v1/configservice/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:config",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:71",
+    "src:ts-gateway-service/src/main/resources/application.yml:72",
+    "src:ts-gateway-service/src/main/resources/application.yml:73"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-consign-price-service-via-path-/api/v1/consignpriceservice/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:consign-price",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:76",
+    "src:ts-gateway-service/src/main/resources/application.yml:77",
+    "src:ts-gateway-service/src/main/resources/application.yml:78"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-consign-service-via-path-/api/v1/consignservice/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:consign",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:81",
+    "src:ts-gateway-service/src/main/resources/application.yml:82",
+    "src:ts-gateway-service/src/main/resources/application.yml:83"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-contacts-service-via-path-/api/v1/contactservice/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:contacts",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:86",
+    "src:ts-gateway-service/src/main/resources/application.yml:87",
+    "src:ts-gateway-service/src/main/resources/application.yml:88"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-execute-service-via-path-/api/v1/executeservice/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:execute",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:91",
+    "src:ts-gateway-service/src/main/resources/application.yml:92",
+    "src:ts-gateway-service/src/main/resources/application.yml:93"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-food-service-via-path-/api/v1/foodservice/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:food",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:96",
+    "src:ts-gateway-service/src/main/resources/application.yml:97",
+    "src:ts-gateway-service/src/main/resources/application.yml:98"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-inside-payment-service-via-path-/api/v1/inside_pay_service/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:inside-payment",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:101",
+    "src:ts-gateway-service/src/main/resources/application.yml:102",
+    "src:ts-gateway-service/src/main/resources/application.yml:103"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-notification-service-via-path-/api/v1/notifyservice/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:notification",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:106",
+    "src:ts-gateway-service/src/main/resources/application.yml:107",
+    "src:ts-gateway-service/src/main/resources/application.yml:108"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-order-other-service-via-path-/api/v1/orderOtherService/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:order-other",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:111",
+    "src:ts-gateway-service/src/main/resources/application.yml:112",
+    "src:ts-gateway-service/src/main/resources/application.yml:113"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-order-service-via-path-/api/v1/orderservice/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:order",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:116",
+    "src:ts-gateway-service/src/main/resources/application.yml:117",
+    "src:ts-gateway-service/src/main/resources/application.yml:118"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-payment-service-via-path-/api/v1/paymentservice/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:payment",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:121",
+    "src:ts-gateway-service/src/main/resources/application.yml:122",
+    "src:ts-gateway-service/src/main/resources/application.yml:123"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-preserve-other-service-via-path-/api/v1/preserveotherservice/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:preserve-other",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:126",
+    "src:ts-gateway-service/src/main/resources/application.yml:127",
+    "src:ts-gateway-service/src/main/resources/application.yml:128"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-preserve-service-via-path-/api/v1/preserveservice/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:preserve",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:131",
+    "src:ts-gateway-service/src/main/resources/application.yml:132",
+    "src:ts-gateway-service/src/main/resources/application.yml:133"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-price-service-via-path-/api/v1/priceservice/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:price",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:136",
+    "src:ts-gateway-service/src/main/resources/application.yml:137",
+    "src:ts-gateway-service/src/main/resources/application.yml:138"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-rebook-service-via-path-/api/v1/rebookservice/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:rebook",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:141",
+    "src:ts-gateway-service/src/main/resources/application.yml:142",
+    "src:ts-gateway-service/src/main/resources/application.yml:143"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-route-plan-service-via-path-/api/v1/routeplanservice/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:route-plan",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:146",
+    "src:ts-gateway-service/src/main/resources/application.yml:147",
+    "src:ts-gateway-service/src/main/resources/application.yml:148"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-route-service-via-path-/api/v1/routeservice/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:route",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:151",
+    "src:ts-gateway-service/src/main/resources/application.yml:152",
+    "src:ts-gateway-service/src/main/resources/application.yml:153"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-seat-service-via-path-/api/v1/seatservice/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:seat",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:156",
+    "src:ts-gateway-service/src/main/resources/application.yml:157",
+    "src:ts-gateway-service/src/main/resources/application.yml:158"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-security-service-via-path-/api/v1/securityservice/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:security",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:161",
+    "src:ts-gateway-service/src/main/resources/application.yml:162",
+    "src:ts-gateway-service/src/main/resources/application.yml:163"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-station-food-service-via-path-/api/v1/stationfoodservice/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:station-food",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:166",
+    "src:ts-gateway-service/src/main/resources/application.yml:167",
+    "src:ts-gateway-service/src/main/resources/application.yml:168"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-station-service-via-path-/api/v1/stationservice/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:station",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:171",
+    "src:ts-gateway-service/src/main/resources/application.yml:172",
+    "src:ts-gateway-service/src/main/resources/application.yml:173"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-train-food-service-via-path-/api/v1/trainfoodservice/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:train-food",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:176",
+    "src:ts-gateway-service/src/main/resources/application.yml:177",
+    "src:ts-gateway-service/src/main/resources/application.yml:178"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-train-service-via-path-/api/v1/trainservice/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:train",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:181",
+    "src:ts-gateway-service/src/main/resources/application.yml:182",
+    "src:ts-gateway-service/src/main/resources/application.yml:183"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-travel-plan-service-via-path-/api/v1/travelplanservice/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:travel-plan",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:191",
+    "src:ts-gateway-service/src/main/resources/application.yml:192",
+    "src:ts-gateway-service/src/main/resources/application.yml:193"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-travel-service-via-path-/api/v1/travelservice/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:travel",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:196",
+    "src:ts-gateway-service/src/main/resources/application.yml:197",
+    "src:ts-gateway-service/src/main/resources/application.yml:198"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-travel2-service-via-path-/api/v1/travel2service/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:travel2",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:186",
+    "src:ts-gateway-service/src/main/resources/application.yml:187",
+    "src:ts-gateway-service/src/main/resources/application.yml:188"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-user-service-via-path-/api/v1/userservice/users/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:user",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:201",
+    "src:ts-gateway-service/src/main/resources/application.yml:202",
+    "src:ts-gateway-service/src/main/resources/application.yml:203"
+   ]
+  },
+  {
+   "key": "relation|gateway.RouteTable|relation|routesTo|ts-verification-code-service-via-path-/api/v1/verifycode/**",
+   "candidateAtomId": "atom:relation:gateway.routetable:routesto:verification-code",
+   "refs": [
+    "src:ts-gateway-service/src/main/resources/application.yml:206",
+    "src:ts-gateway-service/src/main/resources/application.yml:207",
+    "src:ts-gateway-service/src/main/resources/application.yml:208"
+   ]
+  },
+  {
+   "key": "relation|inside_payment.AsyncTask|relation|dependsOn|async-mysimpleasync-bean-defined-in-executorconfig",
+   "candidateAtomId": "atom:relation:inside_payment.asynctask:dependson:executorconfig",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/async/AsyncTask.java:24",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/async/ExecutorConfig.java:25"
+   ]
+  },
+  {
+   "key": "relation|inside_payment.SecurityConfig|relation|calls|edu.fudan.common.security.jwt.JWTFilter-added-before-usernamepasswordauthenticationfilter",
+   "candidateAtomId": "atom:relation:inside_payment.securityconfig:calls:jwtfilter",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/config/SecurityConfig.java:76"
+   ]
+  },
+  {
+   "key": "semantic|ctx:food-order-create-flow|cech|sectionValue|section=money-amount:double-price-field-no-parsing-set-directly-from-request-dto",
+   "candidateAtomId": "atom:semantic:food-order-create-flow:cech-section-money-amount",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/entity/FoodOrder.java:37",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:86",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:130",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:192"
+   ]
+  },
+  {
+   "key": "semantic|ctx:inside-payment-money-representation|cech|sectionValue|section=money-amount:string-money-field-on-account-balance-and-money-entities-and-path-variables-no-parsing-visible-in-chunk",
+   "candidateAtomId": "atom:semantic:inside-payment-money-representation:cech-section-money-amount",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/AccountInfo.java:13",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Balance.java:19",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Money.java:36",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:44",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:45",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:63"
+   ]
+  },
+  {
+   "key": "semantic|foodsearch.FoodOrder|semantic|meansInUse|foodtype-1-selects-train-food-2-selects-station-store-per-source-comment",
+   "candidateAtomId": "atom:semantic:foodsearch.foodorder:meansinuse:foodtype-1-train-2-station-store",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/entity/FoodOrder.java:28",
+    "src:ts-food-service/src/main/java/foodsearch/entity/FoodOrder.java:29"
+   ]
+  },
+  {
+   "key": "semantic|foodsearch.FoodServiceImpl|semantic|meansInUse|discoveryclient-autowired-field-present-with-no-observed-call-site-in-this-file",
+   "candidateAtomId": "atom:semantic:foodsearch.foodserviceimpl:meansinuse:discoveryclient-field-unused",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:44",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:45"
+   ]
+  },
+  {
+   "key": "semantic|foodsearch.FoodServiceImpl|semantic|meansInUse|foodtype-equals-1-selects-branch-setting-stationname-and-storename-on-update-path",
+   "candidateAtomId": "atom:semantic:foodsearch.foodserviceimpl:meansinuse:foodtype-equals-1-selects-branch-on-update",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:187",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:188",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:189"
+   ]
+  },
+  {
+   "key": "semantic|foodsearch.FoodServiceImpl|semantic|meansInUse|foodtype-equals-2-selects-branch-setting-stationname-and-storename-on-create-path",
+   "candidateAtomId": "atom:semantic:foodsearch.foodserviceimpl:meansinuse:foodtype-equals-2-selects-branch-on-create",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:81",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:82",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:83",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:125",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:126",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:127"
+   ]
+  },
+  {
+   "key": "semantic|foodsearch.FoodServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-rejected-branch",
+   "candidateAtomId": "atom:semantic:foodsearch.foodserviceimpl:statusgates:response-status-1-0",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:72",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:110",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:119",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:148",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:158",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:163",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:171",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:174",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:184",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:195",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:204",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:207",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:219",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:245",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:302",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:306",
+    "src:ts-food-service/src/main/java/foodsearch/service/FoodServiceImpl.java:310"
+   ]
+  },
+  {
+   "key": "semantic|gateway.GatewayConfiguration|semantic|meansInUse|initblockhandlers-method-defined-but-invocation-commented-out-so-default-sentinel-block-response-applies",
+   "candidateAtomId": "atom:semantic:gateway.gatewayconfiguration:meansinuse:blockhandler-not-registered",
+   "refs": [
+    "src:ts-gateway-service/src/main/java/gateway/GatewayConfiguration.java:77",
+    "src:ts-gateway-service/src/main/java/gateway/GatewayConfiguration.java:88",
+    "src:ts-gateway-service/src/main/java/gateway/GatewayConfiguration.java:97"
+   ]
+  },
+  {
+   "key": "semantic|inside_payment.InsidePaymentController|semantic|meansInUse|money-amount-received-as-string-path-variable-on-addmoney-and-drawback-endpoints",
+   "candidateAtomId": "atom:semantic:inside_payment.insidepaymentcontroller:meansinuse:money-pathvariable-string",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:44",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:45",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:63"
+   ]
+  },
+  {
+   "key": "semantic|inside_payment.MoneyType|semantic|meansInUse|index-1-selects-add-money-type-name-index-2-selects-draw-back-money-type-name",
+   "candidateAtomId": "atom:semantic:inside_payment.moneytype:meansinuse:index-1-add-money-2-drawback",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/MoneyType.java:13",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/MoneyType.java:17",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/MoneyType.java:27",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/MoneyType.java:28",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/MoneyType.java:29",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/MoneyType.java:30",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/MoneyType.java:31",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/MoneyType.java:32",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/MoneyType.java:33"
+   ]
+  },
+  {
+   "key": "semantic|inside_payment.Money|semantic|meansInUse|money-and-balance-amount-fields-stored-as-string-type-flagged-nosonar-not-bigdecimal-or-double",
+   "candidateAtomId": "atom:semantic:inside_payment.money:meansinuse:money-string-field-nosonar",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Money.java:36",
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Balance.java:19"
+   ]
+  },
+  {
+   "key": "state|foodsearch.FoodOrder|state|persistsIn|jpa-entity-table-generated-from-classname-ddl-auto-update",
+   "candidateAtomId": "atom:state:foodsearch.foodorder:persistsin",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/entity/FoodOrder.java:16",
+    "src:ts-food-service/src/main/java/foodsearch/entity/FoodOrder.java:21",
+    "src:ts-food-service/src/main/resources/application.yml:16"
+   ]
+  },
+  {
+   "key": "state|inside_payment.Money|state|persistsIn|table-name-inside_money-jpa-entity",
+   "candidateAtomId": "atom:state:inside_payment.money:persistsin:inside-money-table",
+   "refs": [
+    "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Money.java:19"
+   ]
+  }
+ ]
+}

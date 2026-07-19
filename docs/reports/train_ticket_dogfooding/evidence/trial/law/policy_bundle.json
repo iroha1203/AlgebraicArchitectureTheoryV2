@@ -1,0 +1,12 @@
+{
+  "schema": "archsig-policy-bundle/v0.5.3",
+  "id": "policy-bundle:archsig-v052",
+  "lawPolicyRef": "law_policy.json",
+  "lawSurfaceRef": "law_surface.json",
+  "measurementProfileRef": "measurement_profile.json",
+  "componentFingerprints": {
+    "lawPolicy": "sha256:64830a08819baa438f0cc64c2bf1ab77827ede56d4c73be5cdcc29f862d14563",
+    "lawSurface": "sha256:4a0727decd1415881a1ca152b063bbfc929e57e6f66183bb3442e21121438d1d",
+    "measurementProfile": "sha256:2bfa3a920bed427febc115976a3c0a0295ba89b24b18f95ccdafc93991a7e526"
+  }
+}

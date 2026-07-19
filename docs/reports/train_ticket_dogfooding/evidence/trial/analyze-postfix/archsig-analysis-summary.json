@@ -1,0 +1,167 @@
+{
+  "assumptionSummary": {
+    "assumedCount": 7,
+    "checkedCount": 4,
+    "violatedCount": 1
+  },
+  "componentFingerprints": {
+    "lawPolicy": "sha256:64830a08819baa438f0cc64c2bf1ab77827ede56d4c73be5cdcc29f862d14563",
+    "lawSurface": "sha256:4a0727decd1415881a1ca152b063bbfc929e57e6f66183bb3442e21121438d1d",
+    "measurementProfile": "sha256:2bfa3a920bed427febc115976a3c0a0295ba89b24b18f95ccdafc93991a7e526"
+  },
+  "conclusion": "AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE",
+  "inputDigests": {
+    "archmap": {
+      "path": "input:archmap.json",
+      "sha256": "b9e91fc8afe889b9c7434a892ae648ca9d33c7ed0b86b9d07fcc6a8a640c027f"
+    },
+    "lawPolicy": {
+      "path": "input:law_policy.json",
+      "sha256": "64830a08819baa438f0cc64c2bf1ab77827ede56d4c73be5cdcc29f862d14563"
+    },
+    "lawSurface": {
+      "path": "input:law_surface.json",
+      "sha256": "4a0727decd1415881a1ca152b063bbfc929e57e6f66183bb3442e21121438d1d"
+    },
+    "measurementProfile": {
+      "path": "input:measurement_profile.json",
+      "sha256": "2bfa3a920bed427febc115976a3c0a0295ba89b24b18f95ccdafc93991a7e526"
+    },
+    "measurementProfiles": [
+      {
+        "path": "input:measurement_profile.json",
+        "sha256": "2bfa3a920bed427febc115976a3c0a0295ba89b24b18f95ccdafc93991a7e526"
+      }
+    ],
+    "profileFingerprint": {
+      "basis": "archmap shape + LawPolicy measurementProfileRef + external MeasurementProfile artifact",
+      "sha256": "7b09620bacbfc0c613626f84d422b624db3e9a2484f33a9c471915004323d066"
+    },
+    "siteCoverDigest": {
+      "basis": "normalized contexts + covers + derived finite cover nerve",
+      "sha256": "5dadfdc048397e3dd99c7cb8e92ef2d43b3bbc819043724cacf27f4b2972529b",
+      "status": "computed"
+    }
+  },
+  "insightArtifacts": {
+    "insightBrief": "archsig-insight-brief.md",
+    "insightReport": "archsig-insight-report.json",
+    "viewerData": "archsig-atom-viewer-data.json"
+  },
+  "measurementPacketSchema": "archsig-measurement-packet/v0.5.3",
+  "nonConclusions": [
+    "Summary conclusion is relative to MeasurementProfile and assumption ledger.",
+    "Schema foundation rows do not claim completed AG invariant computation."
+  ],
+  "profileRef": "profile:train-ticket-cancel-refund@1",
+  "readThisFirst": {
+    "boundary": "Profile-relative. 7 assumptions declared. 1 non-terminal rows.",
+    "conclusion": "AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE",
+    "heading": "Read this first",
+    "nextAction": "Open archsig-insight-brief.md or the viewer Insight Queue.",
+    "whatItMeans": "ArchSig produced a profile-relative foundation result with unmeasured, unknown, or not_computed rows still visible.",
+    "whereToLookFirst": "See archsig-insight-report.json#/insightCards/0/evidence"
+  },
+  "runId": "run:0dab4af827e5",
+  "schema": "archsig-analysis-summary/v0.5.3",
+  "structuralVerdictSummary": {
+    "measuredNonzeroCount": 0,
+    "nonTerminalCount": 1,
+    "rowCount": 1,
+    "unmeasuredCount": 0
+  },
+  "toolVersion": "0.5.3",
+  "translationRule": {
+    "boundary": "Supply the missing evaluator support named by boundaryStatements before reading a terminal conclusion.",
+    "conclusionCode": "AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE",
+    "concreteSupportRefs": [],
+    "emitsLawSatisfiedWithoutLawCheck": false,
+    "generatedDiscipline": "generated foundation readiness surface",
+    "principalText": "ArchSig produced a profile-relative foundation result with non-terminal rows still visible.",
+    "supportDiscipline": "nonzero conclusions must name concrete selected support in active translationRule.concreteSupportRefs",
+    "theoremRef": null
+  },
+  "translationRuleTable": [
+    {
+      "boundary": "Supply a different complete-support residual or Stage 2 comparison data before claiming repair gluing.",
+      "conclusionCode": "MEASURED_NONGLUING_RESIDUAL",
+      "emitsLawSatisfiedWithoutLawCheck": false,
+      "generatedDiscipline": "generated complete-support boundary-membership detection",
+      "principalText": "The selected SAGA residual is measured outside B1 with concrete residual support; complete-support faithfulness is reported separately.",
+      "supportDiscipline": "nonzero conclusions must name concrete selected support in active translationRule.concreteSupportRefs",
+      "theoremRef": "part10/3.4"
+    },
+    {
+      "boundary": "Supply Stage 2 law surface and comparison artifacts before claiming global semantic repair.",
+      "conclusionCode": "REPAIR_GLUES_WITHIN_SELECTED_COMPLEX",
+      "emitsLawSatisfiedWithoutLawCheck": false,
+      "generatedDiscipline": "generated complete-support boundary-membership detection",
+      "principalText": "The selected SAGA residual is measured inside B1 and the selected residual component is covered and faithful.",
+      "supportDiscipline": "nonzero conclusions must name concrete selected support in active translationRule.concreteSupportRefs",
+      "theoremRef": "part10/3.5"
+    },
+    {
+      "boundary": "Supply non-abelian torsor, stacky descent, or gerbe data before speaking outside the selected abelian coefficient sheaf.",
+      "conclusionCode": "COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION",
+      "emitsLawSatisfiedWithoutLawCheck": false,
+      "generatedDiscipline": "generated cover-shape detection",
+      "principalText": "The selected abelian cover shape and explicit restriction-surjectivity witnesses exclude a gluing obstruction in this Stage 1 profile.",
+      "supportDiscipline": "nonzero conclusions must name concrete selected support in active translationRule.concreteSupportRefs",
+      "theoremRef": "part4/12.4"
+    },
+    {
+      "boundary": "Supply a different selected cover, coefficient sheaf, or restriction data before changing this profile-relative reading.",
+      "conclusionCode": "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE",
+      "emitsLawSatisfiedWithoutLawCheck": false,
+      "generatedDiscipline": "generated Cech support detection",
+      "principalText": "The selected cover has a concrete H1 support measured by the finite F2 Cech detector.",
+      "supportDiscipline": "nonzero conclusions must name concrete selected support in active translationRule.concreteSupportRefs",
+      "theoremRef": "part4/12.3"
+    },
+    {
+      "boundary": "Supply semantic repair operations before treating hitting sets as automatic repairs.",
+      "conclusionCode": "REPAIR_TARGETS_IDENTIFIED",
+      "emitsLawSatisfiedWithoutLawCheck": false,
+      "generatedDiscipline": "generated square-free hitting-set detection",
+      "principalText": "The selected square-free obstruction invariant identifies combinatorial repair target supports.",
+      "supportDiscipline": "nonzero conclusions must name concrete selected support in active translationRule.concreteSupportRefs",
+      "theoremRef": "part8/5.2"
+    },
+    {
+      "boundary": "Supply the relevant theoremRef-bearing evaluator row before reading this as a proved theorem attribution.",
+      "conclusionCode": "MEASURED_AG_OBSTRUCTION_UNDER_PROFILE",
+      "emitsLawSatisfiedWithoutLawCheck": false,
+      "generatedDiscipline": "generated profile-relative detection",
+      "principalText": "Review the theoremRef-bearing structural verdict rows before reading any selected AG obstruction claim.",
+      "supportDiscipline": "nonzero conclusions must name concrete selected support in active translationRule.concreteSupportRefs",
+      "theoremRef": null
+    },
+    {
+      "boundary": "Supply a selected nonzero cocycle support or different profile before claiming an H1 obstruction.",
+      "conclusionCode": "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE",
+      "emitsLawSatisfiedWithoutLawCheck": false,
+      "generatedDiscipline": "generated Cech zero detection",
+      "principalText": "No selected H1 glue mismatch was measured under the profile.",
+      "supportDiscipline": "nonzero conclusions must name concrete selected support in active translationRule.concreteSupportRefs",
+      "theoremRef": "part4/12.3"
+    },
+    {
+      "boundary": "Supply the missing evaluator support named by boundaryStatements before reading a terminal conclusion.",
+      "conclusionCode": "AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE",
+      "emitsLawSatisfiedWithoutLawCheck": false,
+      "generatedDiscipline": "generated foundation readiness surface",
+      "principalText": "ArchSig produced a profile-relative foundation result with non-terminal rows still visible.",
+      "supportDiscipline": "nonzero conclusions must name concrete selected support in active translationRule.concreteSupportRefs",
+      "theoremRef": null
+    },
+    {
+      "boundary": "Supply the missing evaluator support named by boundaryStatements before reading a terminal conclusion.",
+      "conclusionCode": "AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE",
+      "emitsLawSatisfiedWithoutLawCheck": false,
+      "generatedDiscipline": "generated foundation readiness surface",
+      "principalText": "ArchSig produced a profile-relative foundation result with non-terminal rows still visible.",
+      "supportDiscipline": "nonzero conclusions must name concrete selected support in active translationRule.concreteSupportRefs",
+      "theoremRef": null
+    }
+  ]
+}

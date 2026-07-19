@@ -1,0 +1,106 @@
+{
+  "checks": [
+    {
+      "id": "measurement-packet-schema052-unknown-fields",
+      "result": "pass",
+      "title": "measurement packet objects reject unknown fields"
+    },
+    {
+      "id": "measurement-packet-schema052-schema",
+      "result": "pass",
+      "title": "measurement packet uses archsig-measurement-packet/v0.5.3"
+    },
+    {
+      "id": "measurement-packet-schema052-five-verdict-values",
+      "result": "pass",
+      "title": "structural verdicts are limited to the five v0.5.3 values"
+    },
+    {
+      "id": "measurement-packet-schema052-structural-verdict-evaluators",
+      "result": "pass",
+      "title": "structural verdict rows are limited to registered AG measurement evaluators"
+    },
+    {
+      "id": "measurement-packet-schema052-verdict-data-boundary",
+      "result": "pass",
+      "title": "VerdictData keeps zero, nonzero, unmeasured, unknown, and not_computed separate"
+    },
+    {
+      "id": "measurement-packet-schema052-structural-verdict-new-shape",
+      "result": "pass",
+      "title": "structural verdict rows carry target and computed invariant evidence"
+    },
+    {
+      "id": "measurement-packet-schema052-computed-invariants-typed",
+      "result": "pass",
+      "title": "computed invariants expose invariantId, kind, value, and representation"
+    },
+    {
+      "id": "measurement-packet-schema052-theorem-candidate-analytic-only",
+      "result": "pass",
+      "title": "theorem-candidate readings are flagged analytic readings and do not generate structural verdicts"
+    },
+    {
+      "id": "measurement-packet-schema052-assumption-ledger",
+      "result": "pass",
+      "title": "assumption ledger records checked / assumed / violated and row-level verdict dependencies"
+    },
+    {
+      "id": "measurement-packet-schema052-supplied-data-ledger",
+      "result": "pass",
+      "title": "suppliedData ledger is present and typed when entries exist"
+    },
+    {
+      "id": "measurement-packet-schema052-boundary-statements",
+      "result": "pass",
+      "title": "boundaryStatements provide typed, scoped non-conclusion qualifiers with nonConclusions compatibility"
+    }
+  ],
+  "componentFingerprints": {
+    "lawPolicy": "sha256:3eadf3fe287a543585b90e88e426ddee8284fee1978bffe27e8f8b919303a9de",
+    "lawSurface": "sha256:a861f2b9d4b7f5528cb5733868f185cb8cac6d6e056da28e61f8e4704a1c7be8",
+    "measurementProfile": "sha256:27ed8fc227fbdce9f1589f783396688f2fae7fc0e6bb05d7c1b6c393781685d3"
+  },
+  "inputDigests": {
+    "archmap": {
+      "path": "input:archmap-status-variant.json",
+      "sha256": "4b58261bbbbb2ec9e50f5baac19f8a0116497c785a8ffd6fb9b8a809fce3834b"
+    },
+    "lawPolicy": {
+      "path": "input:law-policy-status.json",
+      "sha256": "3eadf3fe287a543585b90e88e426ddee8284fee1978bffe27e8f8b919303a9de"
+    },
+    "lawSurface": {
+      "path": "input:law-surface-status.json",
+      "sha256": "a861f2b9d4b7f5528cb5733868f185cb8cac6d6e056da28e61f8e4704a1c7be8"
+    },
+    "measurementProfile": {
+      "path": "input:measurement-profile-status.json",
+      "sha256": "27ed8fc227fbdce9f1589f783396688f2fae7fc0e6bb05d7c1b6c393781685d3"
+    },
+    "measurementProfiles": [
+      {
+        "path": "input:measurement-profile-status.json",
+        "sha256": "27ed8fc227fbdce9f1589f783396688f2fae7fc0e6bb05d7c1b6c393781685d3"
+      }
+    ],
+    "profileFingerprint": {
+      "basis": "archmap shape + LawPolicy measurementProfileRef + external MeasurementProfile artifact",
+      "sha256": "23c50f7d2fdc1f9b7159d3184761595f018ef03cb7b6430404ddb1c1bbdb0ad6"
+    },
+    "siteCoverDigest": {
+      "basis": "normalized contexts + covers + derived finite cover nerve",
+      "sha256": "4546e2c0edc04fd62bdbfd92ecb1e171670709a86146e70c582e72f2bf9e8342",
+      "status": "computed"
+    }
+  },
+  "packetSchema": "archsig-measurement-packet/v0.5.3",
+  "runId": "run:ad99b1fd221a",
+  "schema": "archsig-measurement-packet-validation-report/v0.5.3",
+  "summary": {
+    "failedCheckCount": 0,
+    "result": "pass",
+    "warningCheckCount": 0
+  },
+  "toolVersion": "0.5.3"
+}

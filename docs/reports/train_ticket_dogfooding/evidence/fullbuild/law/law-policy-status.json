@@ -1,0 +1,33 @@
+{
+ "schema": "law-policy/v0.5.3",
+ "id": "train-ticket-status-convention-policy",
+ "lawSurfaceRef": "law-surface:train-ticket-status-v053",
+ "measurementProfileRef": "profile:train-ticket-status-convention@1",
+ "policies": [
+  {
+   "law": "surface:cech-surface-v052",
+   "evaluator": "ag.cech-obstruction",
+   "basis": [
+    "policy-basis:shared-convention-consistency"
+   ],
+   "scope": [
+    "ts-cancel-service/",
+    "ts-execute-service/",
+    "ts-order-service/",
+    "ts-order-other-service/",
+    "ts-preserve-service/",
+    "ts-preserve-other-service/",
+    "ts-wait-order-service/"
+   ],
+   "severity": "high"
+  }
+ ],
+ "basisLedger": [
+  {
+   "basisId": "policy-basis:shared-convention-consistency",
+   "kind": "repo-document",
+   "path": "docs/aat/algebraic_geometric_theory/README.md",
+   "revision": "aat-ag-current"
+  }
+ ]
+}

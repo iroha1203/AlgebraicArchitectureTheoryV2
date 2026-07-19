@@ -1,0 +1,807 @@
+{
+ "onlyInPassA": [
+  {
+   "key": "authority|basic.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-maxage-3600-on-/**",
+   "candidateAtomId": "atom:authority:basic-securityconfig:allowscrossorigin",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:51-57"
+   ]
+  },
+  {
+   "key": "authority|basic.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+   "candidateAtomId": "atom:authority:basic-securityconfig:permitsunauthenticated-swagger",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:72-73"
+   ]
+  },
+  {
+   "key": "authority|cancel.CancelController|authority|allowsCrossOrigin|wildcard-origin-method-level-annotation-on-cancel-refound-and-cancel-orderid-loginid-endpoints",
+   "candidateAtomId": "atom:authority:cancel-cancelcontroller:allowscrossorigin",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:32",
+    "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:39"
+   ]
+  },
+  {
+   "key": "authority|cancel.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+   "candidateAtomId": "atom:authority:cancel-securityconfig:permitsunauthenticated-swagger",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:72-73"
+   ]
+  },
+  {
+   "key": "authority|cancel.SecurityConfig|authority|requiresRole|ADMIN-or-USER-role-on-/api/v1/cancelservice/**",
+   "candidateAtomId": "atom:authority:cancel-securityconfig:requiresrole-api",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "capability|auth.TokenService|capability|handlesCommand|IssueToken",
+   "candidateAtomId": "atom:capability:auth-tokenservice:handlescommand-issuetoken",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/TokenService.java:19",
+    "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:58-96"
+   ]
+  },
+  {
+   "key": "capability|auth.UserService|capability|handlesCommand|CreateDefaultAuthUser",
+   "candidateAtomId": "atom:capability:auth-userservice:handlescommand-createdefaultauthuser",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/UserService.java:38",
+    "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:52-66"
+   ]
+  },
+  {
+   "key": "capability|auth.UserService|capability|handlesCommand|DeleteByUserId",
+   "candidateAtomId": "atom:capability:auth-userservice:handlescommand-deletebyuserid",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/UserService.java:47",
+    "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:69-74"
+   ]
+  },
+  {
+   "key": "capability|basic.BasicService|capability|servesQuery|QueryForTravel-and-QueryForTravels",
+   "candidateAtomId": "atom:capability:basic-basicservice:servesquery-queryfortravel",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicService.java:23",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicService.java:25"
+   ]
+  },
+  {
+   "key": "capability|cancel.CancelService|capability|handlesCommand|CancelOrder",
+   "candidateAtomId": "atom:capability:cancel-cancelservice:handlescommand-cancelorder",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelService.java:20",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:46"
+   ]
+  },
+  {
+   "key": "capability|cancel.CancelService|capability|servesQuery|CalculateRefund",
+   "candidateAtomId": "atom:capability:cancel-cancelservice:servesquery-calculaterefund",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelService.java:29",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:157"
+   ]
+  },
+  {
+   "key": "contract|auth.TokenServiceImpl|specification|ensures|returns-tokendto-with-userid-username-and-jwt-on-success-branch",
+   "candidateAtomId": "atom:contract:auth-tokenserviceimpl:ensures-tokendto",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:94-96"
+   ]
+  },
+  {
+   "key": "contract|auth.TokenServiceImpl|specification|requires|when-verifyCode-is-supplied-it-must-verify-true-against-verification-code-service-before-username-password-authentication-proceeds",
+   "candidateAtomId": "atom:contract:auth-tokenserviceimpl:requires-verification-code",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:65-79"
+   ]
+  },
+  {
+   "key": "contract|cancel.CancelServiceImpl|specification|ensures|order-status-set-to-cancel-and-refund-amount-computed-and-drawn-back-to-account-on-success-branch",
+   "candidateAtomId": "atom:contract:cancel-cancelserviceimpl:ensures-cancel-and-refund",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:59-66",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:117-123"
+   ]
+  },
+  {
+   "key": "contract|cancel.CancelServiceImpl|specification|ensures|refund-is-zero-when-travel-start-time-already-passed-otherwise-eighty-percent-of-price",
+   "candidateAtomId": "atom:contract:cancel-cancelserviceimpl:calculaterefund-ensures",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:224-234"
+   ]
+  },
+  {
+   "key": "contract|cancel.CancelServiceImpl|specification|requires|order-status-must-be-notpaid-paid-or-change-for-cancellation-to-proceed",
+   "candidateAtomId": "atom:contract:cancel-cancelserviceimpl:requires-order-status",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:52-53",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:109-110"
+   ]
+  },
+  {
+   "key": "contract|cancel.GetAccountByIdInfo|specification|shapedAs|accountId:String",
+   "candidateAtomId": "atom:contract:cancel-getaccountbyidinfo:shapedas",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/entity/GetAccountByIdInfo.java:11"
+   ]
+  },
+  {
+   "key": "contract|cancel.GetAccountByIdResult|specification|shapedAs|status:boolean,message:String,account:Account",
+   "candidateAtomId": "atom:contract:cancel-getaccountbyidresult:shapedas",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/entity/GetAccountByIdResult.java:13-17"
+   ]
+  },
+  {
+   "key": "contract|cancel.GetOrderByIdInfo|specification|shapedAs|orderId:String",
+   "candidateAtomId": "atom:contract:cancel-getorderbyidinfo:shapedas",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/entity/GetOrderByIdInfo.java:11"
+   ]
+  },
+  {
+   "key": "contract|common.SwaggerConfig|specification|requires|swagger.controllerPackage-property-supplied-per-service-fdse.microservice.controller-for-basic-cancel.controller-for-cancel",
+   "candidateAtomId": "atom:contract:common-swaggerconfig:requires-controllerpackage",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/config/SwaggerConfig.java:21-22",
+    "src:ts-basic-service/src/main/resources/application.yml:13",
+    "src:ts-cancel-service/src/main/resources/application.yml:13"
+   ]
+  },
+  {
+   "key": "effect|cancel.CancelServiceImpl|effect|callsProvider|GET ts-inside-payment-service drawback endpoint to credit refund amount to the paying account",
+   "candidateAtomId": "atom:effect:cancel-cancelserviceimpl:callsprovider-drawbackmoney",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:278-292"
+   ]
+  },
+  {
+   "key": "effect|cancel.CancelServiceImpl|effect|callsProvider|POST ts-notification-service order_cancel_success notification, method present but its call site in cancelOrder is a source comment rather than an active statement",
+   "candidateAtomId": "atom:effect:cancel-cancelserviceimpl:callsprovider-sendemail",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:143-154",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:86-87"
+   ]
+  },
+  {
+   "key": "effect|cancel.CancelServiceImpl|effect|callsProvider|PUT ts-order-other-service to persist order status change",
+   "candidateAtomId": "atom:effect:cancel-cancelserviceimpl:callsprovider-cancelfromotherorder",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:263-276"
+   ]
+  },
+  {
+   "key": "effect|cancel.CancelServiceImpl|effect|callsProvider|PUT ts-order-service to persist order status change",
+   "candidateAtomId": "atom:effect:cancel-cancelserviceimpl:callsprovider-cancelfromorder",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:238-252"
+   ]
+  },
+  {
+   "key": "relation|auth.TokenServiceImpl|static|calls|JWTProvider.createToken",
+   "candidateAtomId": "atom:relation:auth-tokenserviceimpl:calls-jwtprovider-createtoken",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:94"
+   ]
+  },
+  {
+   "key": "relation|auth.TokenServiceImpl|static|calls|UserRepository.findByUsername",
+   "candidateAtomId": "atom:relation:auth-tokenserviceimpl:calls-userrepository-findbyusername",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:90-93"
+   ]
+  },
+  {
+   "key": "relation|auth.TokenServiceImpl|static|calls|ts-verification-code-service:/api/v1/verifycode/verify/{verifyCode}",
+   "candidateAtomId": "atom:relation:auth-tokenserviceimpl:calls-verifycode-service",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:64-71"
+   ]
+  },
+  {
+   "key": "relation|auth.UserServiceImpl|static|dependsOn|PasswordEncoder.encode",
+   "candidateAtomId": "atom:relation:auth-userserviceimpl:dependson-passwordencoder",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:57"
+   ]
+  },
+  {
+   "key": "relation|basic.BasicServiceImpl|static|calls|ts-price-service:/api/v1/priceservice/prices/{routeId}/{trainType} and /byRouteIdsAndTrainTypes",
+   "candidateAtomId": "atom:relation:basic-basicserviceimpl:calls-price-service",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:445-450",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:460-465"
+   ]
+  },
+  {
+   "key": "relation|basic.BasicServiceImpl|static|calls|ts-route-service:/api/v1/routeservice/routes/{routeId} and /byIds/",
+   "candidateAtomId": "atom:relation:basic-basicserviceimpl:calls-route-service",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:406-411",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:426-431"
+   ]
+  },
+  {
+   "key": "relation|basic.BasicServiceImpl|static|calls|ts-station-service:/api/v1/stationservice/stations/id/{stationName} and /stations/idlist",
+   "candidateAtomId": "atom:relation:basic-basicserviceimpl:calls-station-service",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:328-332",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:345-349",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:362-366"
+   ]
+  },
+  {
+   "key": "relation|basic.BasicServiceImpl|static|calls|ts-train-service:/api/v1/trainservice/trains/byName/{name} and /byNames",
+   "candidateAtomId": "atom:relation:basic-basicserviceimpl:calls-train-service",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:376-380",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:392-397"
+   ]
+  },
+  {
+   "key": "relation|cancel.CancelServiceImpl|static|calls|ts-inside-payment-service:GET /api/v1/inside_pay_service/inside_payment/drawback/{userId}/{money}",
+   "candidateAtomId": "atom:relation:cancel-cancelserviceimpl:calls-inside-payment-service",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:283-288"
+   ]
+  },
+  {
+   "key": "relation|cancel.CancelServiceImpl|static|calls|ts-notification-service:POST /api/v1/notifyservice/notification/order_cancel_success, method defined and called only from a source line kept as a comment in cancelOrder",
+   "candidateAtomId": "atom:relation:cancel-cancelserviceimpl:calls-notification-service",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:148-153",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:87"
+   ]
+  },
+  {
+   "key": "relation|cancel.CancelServiceImpl|static|calls|ts-order-other-service:GET/PUT /api/v1/orderOtherService/orderOther(/{orderId})",
+   "candidateAtomId": "atom:relation:cancel-cancelserviceimpl:calls-order-other-service",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:268-273",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:326-332"
+   ]
+  },
+  {
+   "key": "relation|cancel.CancelServiceImpl|static|calls|ts-order-service:GET/PUT /api/v1/orderservice/order(/{orderId})",
+   "candidateAtomId": "atom:relation:cancel-cancelserviceimpl:calls-order-service",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:244-249",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:312-318"
+   ]
+  },
+  {
+   "key": "relation|cancel.CancelServiceImpl|static|calls|ts-user-service:GET /api/v1/userservice/users/id/{accountId}",
+   "candidateAtomId": "atom:relation:cancel-cancelserviceimpl:calls-user-service",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:298-303"
+   ]
+  },
+  {
+   "key": "semantic|auth.TokenServiceImpl|semantic|meansInUse|status-1-on-login-success-branch-status-0-on-verification-code-or-credential-rejection-branch",
+   "candidateAtomId": "atom:semantic:auth-tokenserviceimpl:meansinuse-response-status",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:77",
+    "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:87",
+    "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:96"
+   ]
+  },
+  {
+   "key": "semantic|basic.BasicServiceImpl|semantic|identifiedBy|station-existence-checked-via-endpoint-path-segment-named-id-while-the-value-passed-is-a-station-name-string",
+   "candidateAtomId": "atom:semantic:basic-basicserviceimpl:identifiedby-station-lookup",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:328-329",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:362-363"
+   ]
+  },
+  {
+   "key": "semantic|basic.BasicServiceImpl|semantic|meansInUse|status-1-on-successful-query-branch-status-0-on-station-traintype-route-or-price-lookup-not-found-branch",
+   "candidateAtomId": "atom:semantic:basic-basicserviceimpl:meansinuse-response-status",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:45-46",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:53",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:65-67"
+   ]
+  },
+  {
+   "key": "semantic|cancel.CancelServiceImpl|semantic|identifiedBy|getAccount-http-call-parameter-declared-as-orderId-carries-the-order-owner-account-id-value-passed-by-the-caller",
+   "candidateAtomId": "atom:semantic:cancel-cancelserviceimpl:identifiedby-user-lookup-param-name",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:70",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:294-303"
+   ]
+  },
+  {
+   "key": "semantic|cancel.CancelServiceImpl|semantic|identifiedBy|order-id-looked-up-first-against-order-service-then-order-other-service-on-not-found-fallback",
+   "candidateAtomId": "atom:semantic:cancel-cancelserviceimpl:identifiedby-order-lookup",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:48",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:104"
+   ]
+  },
+  {
+   "key": "semantic|cancel.CancelServiceImpl|semantic|meansInUse|status-1-on-cancel-or-refund-success-branch-status-0-on-order-not-found-or-cancel-not-permitted-branch",
+   "candidateAtomId": "atom:semantic:cancel-cancelserviceimpl:meansinuse-response-status",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:92",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:100-101",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:138"
+   ]
+  },
+  {
+   "key": "semantic|ctx:basic-service-travel-query-aggregation|cech|sectionValue|section=money-amount:price-computed-as-double-distance-times-rate-then-converted-to-string-via-plain-string-concatenation-with-no-explicit-rounding-or-format",
+   "candidateAtomId": "atom:semantic:ctx-basic-service-travel-query-aggregation:cech-section-money-amount",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:106-109",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:299-302"
+   ]
+  },
+  {
+   "key": "semantic|ctx:cancel-service-order-cancellation-flow|cech|sectionValue|section=money-amount:string-price-parsed-to-double-via-Double-parseDouble-at-use-site-refund-formatted-back-to-string-with-decimalformat-0.00",
+   "candidateAtomId": "atom:semantic:ctx-cancel-service-order-cancellation-flow:cech-section-money-amount",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:228-231",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:63-64",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:278"
+   ]
+  },
+  {
+   "key": "semantic|ctx:cancel-service-order-cancellation-flow|cech|sectionValue|section=order-status-code:codes-referenced-via-OrderStatus-enum-accessor-getCode-not-hardcoded-int-literal-at-this-site-covering-NOTPAID-PAID-CHANGE-CANCEL",
+   "candidateAtomId": "atom:semantic:ctx-cancel-service-order-cancellation-flow:cech-section-order-status-code",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:52-53",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:109-110",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:240",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:265"
+   ]
+  },
+  {
+   "key": "state|cancel.Order|state|transitionsTo|status-set-to-OrderStatus-CANCEL-code-before-persisting-through-order-or-order-other-service",
+   "candidateAtomId": "atom:state:cancel-order:transitionsto-cancel",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:240",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:265"
+   ]
+  }
+ ],
+ "onlyInPassB": [
+  {
+   "key": "authority|basic.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-on-/**",
+   "candidateAtomId": "atom:authority:basic-security-config:allows-cross-origin:all-paths",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:47",
+    "src:ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:58"
+   ]
+  },
+  {
+   "key": "authority|basic.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-docs-paths",
+   "candidateAtomId": "atom:authority:basic-security-config:permits-unauthenticated:swagger-ui",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:72",
+    "src:ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:73"
+   ]
+  },
+  {
+   "key": "authority|cancel.CancelController|authority|allowsCrossOrigin|all-origins-explicit-crossorigin-on-refund-calculate-and-cancel-ticket-endpoints",
+   "candidateAtomId": "atom:authority:cancel-controller:allows-cross-origin:cancel-endpoints",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:32",
+    "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:39"
+   ]
+  },
+  {
+   "key": "authority|cancel.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-on-/**",
+   "candidateAtomId": "atom:authority:cancel-security-config:allows-cross-origin:all-paths",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:47",
+    "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:58"
+   ]
+  },
+  {
+   "key": "authority|cancel.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-and-docs-paths",
+   "candidateAtomId": "atom:authority:cancel-security-config:permits-unauthenticated:swagger-ui",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:72",
+    "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:73"
+   ]
+  },
+  {
+   "key": "authority|cancel.SecurityConfig|authority|requiresRole|role-admin-or-role-user-on-/api/v1/cancelservice/**",
+   "candidateAtomId": "atom:authority:cancel-security-config:requires-role:cancelservice-api",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "capability|auth.TokenServiceImpl|capability|handlesCommand|IssueToken",
+   "candidateAtomId": "atom:capability:auth-token-service-impl:handles-command:issue-token",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:58",
+    "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:97"
+   ]
+  },
+  {
+   "key": "capability|auth.UserServiceImpl|capability|handlesCommand|CreateDefaultAuthUser",
+   "candidateAtomId": "atom:capability:auth-user-service-impl:handles-command:create-default-auth-user",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:51",
+    "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:66"
+   ]
+  },
+  {
+   "key": "capability|auth.UserServiceImpl|capability|handlesCommand|DeleteByUserId",
+   "candidateAtomId": "atom:capability:auth-user-service-impl:handles-command:delete-by-user-id",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:69",
+    "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:74"
+   ]
+  },
+  {
+   "key": "capability|auth.UserServiceImpl|capability|servesQuery|GetAllUser",
+   "candidateAtomId": "atom:capability:auth-user-service-impl:serves-query:get-all-user",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:40"
+   ]
+  },
+  {
+   "key": "capability|basic.BasicServiceImpl|capability|servesQuery|QueryForStationId",
+   "candidateAtomId": "atom:capability:basic-service-impl:serves-query:query-for-station-id",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:323",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:339"
+   ]
+  },
+  {
+   "key": "capability|basic.BasicServiceImpl|capability|servesQuery|QueryForTravel",
+   "candidateAtomId": "atom:capability:basic-service-impl:serves-query:query-for-travel",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:39",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:121"
+   ]
+  },
+  {
+   "key": "capability|basic.BasicServiceImpl|capability|servesQuery|QueryForTravels",
+   "candidateAtomId": "atom:capability:basic-service-impl:serves-query:query-for-travels",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:123",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:321"
+   ]
+  },
+  {
+   "key": "capability|cancel.CancelServiceImpl|capability|handlesCommand|CancelOrder",
+   "candidateAtomId": "atom:capability:cancel-service-impl:handles-command:cancel-order",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:46",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:141"
+   ]
+  },
+  {
+   "key": "capability|cancel.CancelServiceImpl|capability|servesQuery|CalculateRefund",
+   "candidateAtomId": "atom:capability:cancel-service-impl:serves-query:calculate-refund",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:157",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:198"
+   ]
+  },
+  {
+   "key": "component|cancel.GetAccountByIdInfo|static||",
+   "candidateAtomId": "atom:component:cancel-get-account-by-id-info",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/entity/GetAccountByIdInfo.java"
+   ]
+  },
+  {
+   "key": "component|cancel.GetAccountByIdResult|static||",
+   "candidateAtomId": "atom:component:cancel-get-account-by-id-result",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/entity/GetAccountByIdResult.java"
+   ]
+  },
+  {
+   "key": "component|cancel.GetOrderByIdInfo|static||",
+   "candidateAtomId": "atom:component:cancel-get-order-by-id-info",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/entity/GetOrderByIdInfo.java"
+   ]
+  },
+  {
+   "key": "contract|cancel.CancelServiceImpl|specification|ensures|refund-amount-zero-when-current-time-is-after-travel-start-time-else-price-times-0.8-formatted-to-two-decimals",
+   "candidateAtomId": "atom:contract:cancel-service-impl:ensures:refund-amount-rule",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:200",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:224",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:228",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:234"
+   ]
+  },
+  {
+   "key": "contract|cancel.CancelServiceImpl|specification|requires|authorization-header-copied-from-incoming-request-into-downstream-order-user-payment-notification-calls-when-present",
+   "candidateAtomId": "atom:contract:cancel-service-impl:requires:forwarded-authorization-header",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:254",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:260"
+   ]
+  },
+  {
+   "key": "contract|cancel.CancelServiceImpl|specification|requires|order-status-notpaid-or-paid-or-change-required-before-cancel-proceeds-else-cancel-not-permitted-branch-returned",
+   "candidateAtomId": "atom:contract:cancel-service-impl:requires:order-status-eligible-for-cancel",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:52",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:53",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:109",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:110"
+   ]
+  },
+  {
+   "key": "effect|cancel.CancelServiceImpl|effect|callsProvider|GET ts-inside-payment-service drawback endpoint with userId and money path segments",
+   "candidateAtomId": "atom:effect:cancel-service-impl:calls-provider:drawback-money",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:278",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:292"
+   ]
+  },
+  {
+   "key": "effect|cancel.CancelServiceImpl|effect|callsProvider|POST ts-notification-service order_cancel_success endpoint, method present but call left commented out at the cancelOrder call site",
+   "candidateAtomId": "atom:effect:cancel-service-impl:calls-provider:send-email",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:143",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:87"
+   ]
+  },
+  {
+   "key": "effect|cancel.CancelServiceImpl|effect|callsProvider|PUT ts-order-other-service /api/v1/orderOtherService/orderOther to persist cancel status",
+   "candidateAtomId": "atom:effect:cancel-service-impl:calls-provider:cancel-from-other-order",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:263",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:276"
+   ]
+  },
+  {
+   "key": "effect|cancel.CancelServiceImpl|effect|callsProvider|PUT ts-order-service /api/v1/orderservice/order to persist cancel status",
+   "candidateAtomId": "atom:effect:cancel-service-impl:calls-provider:cancel-from-order",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:238",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:252"
+   ]
+  },
+  {
+   "key": "relation|auth.TokenServiceImpl|relation|calls|AuthenticationManager.authenticate",
+   "candidateAtomId": "atom:relation:auth-token-service-impl:calls:authentication-manager",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:82",
+    "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:88"
+   ]
+  },
+  {
+   "key": "relation|auth.TokenServiceImpl|relation|calls|ts-verification-code-service /api/v1/verifycode/verify/{code}",
+   "candidateAtomId": "atom:relation:auth-token-service-impl:calls:verification-code-service",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:64",
+    "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:71"
+   ]
+  },
+  {
+   "key": "relation|auth.TokenServiceImpl|relation|dependsOn|auth.security.jwt.JWTProvider",
+   "candidateAtomId": "atom:relation:auth-token-service-impl:depends-on:jwt-provider",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:40",
+    "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:94"
+   ]
+  },
+  {
+   "key": "relation|auth.UserServiceImpl|relation|dependsOn|org.springframework.security.crypto.password.PasswordEncoder",
+   "candidateAtomId": "atom:relation:auth-user-service-impl:depends-on:password-encoder",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:33",
+    "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:57"
+   ]
+  },
+  {
+   "key": "relation|basic.BasicServiceImpl|relation|calls|ts-price-service /api/v1/priceservice/prices/**",
+   "candidateAtomId": "atom:relation:basic-service-impl:calls:price-service",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:445",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:460"
+   ]
+  },
+  {
+   "key": "relation|basic.BasicServiceImpl|relation|calls|ts-route-service /api/v1/routeservice/routes/**",
+   "candidateAtomId": "atom:relation:basic-service-impl:calls:route-service",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:406",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:426"
+   ]
+  },
+  {
+   "key": "relation|basic.BasicServiceImpl|relation|calls|ts-station-service /api/v1/stationservice/stations/**",
+   "candidateAtomId": "atom:relation:basic-service-impl:calls:station-service",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:326",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:344",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:361"
+   ]
+  },
+  {
+   "key": "relation|basic.BasicServiceImpl|relation|calls|ts-train-service /api/v1/trainservice/trains/**",
+   "candidateAtomId": "atom:relation:basic-service-impl:calls:train-service",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:375",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:392"
+   ]
+  },
+  {
+   "key": "relation|cancel.CancelServiceImpl|relation|calls|ts-inside-payment-service /api/v1/inside_pay_service/inside_payment/drawback/{userId}/{money}",
+   "candidateAtomId": "atom:relation:cancel-service-impl:calls:inside-payment-service",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:283",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:285"
+   ]
+  },
+  {
+   "key": "relation|cancel.CancelServiceImpl|relation|calls|ts-notification-service /api/v1/notifyservice/notification/order_cancel_success",
+   "candidateAtomId": "atom:relation:cancel-service-impl:calls:notification-service",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:147",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:149"
+   ]
+  },
+  {
+   "key": "relation|cancel.CancelServiceImpl|relation|calls|ts-order-other-service /api/v1/orderOtherService/orderOther/**",
+   "candidateAtomId": "atom:relation:cancel-service-impl:calls:order-other-service",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:268",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:326"
+   ]
+  },
+  {
+   "key": "relation|cancel.CancelServiceImpl|relation|calls|ts-order-service /api/v1/orderservice/order/**",
+   "candidateAtomId": "atom:relation:cancel-service-impl:calls:order-service",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:244",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:312"
+   ]
+  },
+  {
+   "key": "relation|cancel.CancelServiceImpl|relation|calls|ts-user-service /api/v1/userservice/users/id/{id}",
+   "candidateAtomId": "atom:relation:cancel-service-impl:calls:user-service",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:298",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:300"
+   ]
+  },
+  {
+   "key": "semantic|auth.TokenServiceImpl|semantic|meansInUse|password-value-included-in-warn-level-log-message-on-authentication-rejected-branch",
+   "candidateAtomId": "atom:semantic:auth-token-service-impl:means-in-use:credential-value-in-log",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:86"
+   ]
+  },
+  {
+   "key": "semantic|auth.TokenServiceImpl|semantic|statusGates|status-1-on-login-success-branch-status-0-on-verification-or-credential-rejected-branch",
+   "candidateAtomId": "atom:semantic:auth-token-service-impl:status-gates:response-envelope",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:77",
+    "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:87",
+    "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:96"
+   ]
+  },
+  {
+   "key": "semantic|auth.UserServiceImpl|semantic|meansInUse|saveuser-method-body-returns-null-without-calling-the-repository",
+   "candidateAtomId": "atom:semantic:auth-user-service-impl:means-in-use:save-user-no-op",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:36",
+    "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:38"
+   ]
+  },
+  {
+   "key": "semantic|basic.BasicServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-rejected-branch",
+   "candidateAtomId": "atom:semantic:basic-service-impl:status-gates:response-envelope",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:45",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:53",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:66",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:126",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:203",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:333"
+   ]
+  },
+  {
+   "key": "semantic|cancel.CancelController|semantic|statusGates|status-1-on-controller-catch-block-branch-for-a-caught-exception-status-0-on-service-rejected-branch-for-the-same-cancel-flow",
+   "candidateAtomId": "atom:semantic:cancel-controller:status-gates:response-envelope-diverging-branch",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:48",
+    "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:50"
+   ]
+  },
+  {
+   "key": "semantic|cancel.CancelServiceImpl|semantic|identifiedBy|order-id-looked-up-first-against-ts-order-service-then-against-ts-order-other-service-on-the-not-found-branch",
+   "candidateAtomId": "atom:semantic:cancel-service-impl:identified-by:order-lookup-fallback",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:48",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:104"
+   ]
+  },
+  {
+   "key": "semantic|cancel.CancelServiceImpl|semantic|meansInUse|getaccount-parameter-named-orderid-receives-the-order-accountid-value-at-the-cancelorder-call-site-and-is-used-as-the-user-lookup-path-segment",
+   "candidateAtomId": "atom:semantic:cancel-service-impl:means-in-use:orderid-param-carries-account-id",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:70",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:294",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:300"
+   ]
+  },
+  {
+   "key": "semantic|cancel.CancelServiceImpl|semantic|meansInUse|notifyinfo-object-populated-with-email-price-seat-and-trip-fields-on-the-successful-drawback-branch-while-the-sendemail-call-at-this-site-is-left-commented-out",
+   "candidateAtomId": "atom:semantic:cancel-service-impl:means-in-use:notify-info-built-but-send-not-invoked",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:74",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:84",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:87"
+   ]
+  },
+  {
+   "key": "semantic|cancel.CancelServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-rejected-branch",
+   "candidateAtomId": "atom:semantic:cancel-service-impl:status-gates:response-envelope",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:49",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:59",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:92",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:95",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:160",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:291"
+   ]
+  },
+  {
+   "key": "semantic|ctx:basic-service-travel-query|cech|sectionValue|section=money-amount:double-price-computed-from-distance-times-rate-then-concatenated-to-string-with-plus-operator-no-decimal-formatting-fallback-literal-strings-95.0-and-120.0-on-exception",
+   "candidateAtomId": "atom:semantic:basic-service-travel-query:cech-section-money-amount",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:106",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:109",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:111",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:112",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:299",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:305"
+   ]
+  },
+  {
+   "key": "semantic|ctx:cancel-service-order-cancellation|cech|sectionValue|section=order-status-code:enum-code-accessor-notpaid-paid-change-cancel-used-as-guard-and-transition-value",
+   "candidateAtomId": "atom:semantic:cancel-service-order-cancellation:cech-section-order-status-code",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:52",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:53",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:109",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:110",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:240",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:265"
+   ]
+  },
+  {
+   "key": "semantic|ctx:cancel-service-refund-calculation|cech|sectionValue|section=money-amount:string-price-parsed-to-double-with-double-parsedouble-refund-formatted-back-to-string-via-decimalformat-0.00-or-literal-0-string-on-zero-branches",
+   "candidateAtomId": "atom:semantic:cancel-service-refund-calculation:cech-section-money-amount",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:166",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:184",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:200",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:228",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:230",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:233"
+   ]
+  },
+  {
+   "key": "state|cancel.CancelServiceImpl|state|transitionsTo|OrderStatus.CANCEL before PUT to ts-order-other-service",
+   "candidateAtomId": "atom:state:cancel-service-impl:transitions-to:cancel-status-via-order-other-service",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:265"
+   ]
+  },
+  {
+   "key": "state|cancel.CancelServiceImpl|state|transitionsTo|OrderStatus.CANCEL before PUT to ts-order-service",
+   "candidateAtomId": "atom:state:cancel-service-impl:transitions-to:cancel-status-via-order-service",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:240"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,136 @@
+{
+  "assumptionLedger": [
+    {
+      "assumedBy": "repair-plan author",
+      "assumption": "repair-plan complex enumeration completeness",
+      "source": "complex.enumerationComplete",
+      "status": "assumed",
+      "theoremRef": "part10/3.1"
+    }
+  ],
+  "checks": [
+    {
+      "id": "repair-plan-schema052-schema",
+      "result": "pass",
+      "title": "RepairPlan uses the v0.5.3 schema discriminator"
+    },
+    {
+      "count": 0,
+      "id": "repair-plan-schema052-supplied-slots",
+      "result": "pass",
+      "title": "Stage 2 supplied slots are explicit and checked before evaluator use"
+    },
+    {
+      "count": 0,
+      "id": "repair-plan-schema052-no-conclusion-tokens",
+      "result": "pass",
+      "title": "RepairPlan input does not supply theorem conclusion tokens"
+    },
+    {
+      "count": 0,
+      "id": "repair-plan-schema052-reference-resolution",
+      "result": "pass",
+      "title": "RepairPlan chart, overlap, primitive, triple, and comparison references resolve"
+    },
+    {
+      "count": 0,
+      "id": "repair-plan-schema052-archmap-bindings",
+      "result": "pass",
+      "title": "RepairPlan charts and semantic projection resolve against the supplied ArchMap"
+    },
+    {
+      "count": 0,
+      "id": "repair-plan-schema052-measured-residual-binding",
+      "result": "pass",
+      "title": "Measured residuals are bound to supplied packet evidence"
+    },
+    {
+      "count": 0,
+      "id": "repair-plan-schema052-stage1-regime",
+      "result": "pass",
+      "title": "RepairPlan uses the Stage 1 residual, faithfulness, and coefficient vocabulary"
+    },
+    {
+      "count": 0,
+      "id": "repair-plan-schema052-overlap-primitive-bijection",
+      "result": "pass",
+      "title": "Every complex overlap is represented by exactly one primitive before SAGA evaluation"
+    },
+    {
+      "count": 0,
+      "id": "repair-plan-schema052-restriction-difference-rule",
+      "result": "pass",
+      "title": "Supplied primitives satisfy the restriction-difference rule before use"
+    },
+    {
+      "count": 0,
+      "id": "repair-plan-schema052-delta-cocycle",
+      "result": "pass",
+      "title": "Supplied residual satisfies delta1(delta0)=0 and delta1(r)=0 checks"
+    },
+    {
+      "count": 0,
+      "id": "repair-plan-schema052-complete-support-cross-check",
+      "result": "pass",
+      "title": "Complete-support mode cross-checks every primitive support declaration"
+    },
+    {
+      "id": "repair-plan-schema052-enumeration-assumption",
+      "reason": "complex.enumerationComplete=true is recorded in the assumption ledger with assumed_by=repair-plan author",
+      "result": "warn",
+      "title": "Enumeration completeness is recorded as an author assumption, not verified"
+    }
+  ],
+  "componentFingerprints": {
+    "lawPolicy": "sha256:c0ad1a54d53d4729df4f6275b95a04c26627f33b9669dd0c6764c8e70b8fe703",
+    "lawSurface": "sha256:a777170547b52f2aa4889f964f7a67b6f36a9f84b062c7406a5b41d020363061",
+    "measurementProfile": "sha256:1e79f93e5e37e4e8486091e76dbbcba5ed5e6efcf21172ff16844c85b0fe6434"
+  },
+  "input": {
+    "archmapRef": "train-ticket-money-saga-repaired/v0.5.3",
+    "id": "repair-plan:train-ticket-money-repaired",
+    "path": "input:repair-plan-repaired.json",
+    "schema": "archsig-repair-plan/v0.5.3"
+  },
+  "inputDigests": {
+    "archmap": {
+      "path": "input:archmap-saga-repaired.json",
+      "sha256": "176f0dbebf81e469b5e3c4893dcc522cbd597ac466018dc0d67b61ea225f2b00"
+    },
+    "lawPolicy": {
+      "path": "input:law-policy-saga.json",
+      "sha256": "c0ad1a54d53d4729df4f6275b95a04c26627f33b9669dd0c6764c8e70b8fe703"
+    },
+    "lawSurface": {
+      "path": "input:law-surface-saga.json",
+      "sha256": "a777170547b52f2aa4889f964f7a67b6f36a9f84b062c7406a5b41d020363061"
+    },
+    "measurementProfile": {
+      "path": "input:measurement-profile-saga.json",
+      "sha256": "1e79f93e5e37e4e8486091e76dbbcba5ed5e6efcf21172ff16844c85b0fe6434"
+    },
+    "measurementProfiles": [
+      {
+        "path": "input:measurement-profile-saga.json",
+        "sha256": "1e79f93e5e37e4e8486091e76dbbcba5ed5e6efcf21172ff16844c85b0fe6434"
+      }
+    ],
+    "profileFingerprint": {
+      "basis": "archmap shape + LawPolicy measurementProfileRef + external MeasurementProfile artifact",
+      "sha256": "6b279c52cfdc78171dbd8e78e171055947b22f7ad84ee9846f012a90138415ce"
+    },
+    "siteCoverDigest": {
+      "basis": "normalized contexts + covers + derived finite cover nerve",
+      "sha256": "c75cd524da051ad25472f1faad2d3fc44456db4fe6f0a1f90851d76e7b069b1a",
+      "status": "computed"
+    }
+  },
+  "runId": "run:1f657023d7e8",
+  "schema": "archsig-repair-plan-validation-report/v0.5.3",
+  "summary": {
+    "failedCheckCount": 0,
+    "result": "warn",
+    "warningCheckCount": 1
+  },
+  "toolVersion": "0.5.3"
+}

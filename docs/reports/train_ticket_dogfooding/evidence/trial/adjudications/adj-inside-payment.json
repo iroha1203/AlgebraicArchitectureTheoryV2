@@ -1,0 +1,1182 @@
+{
+  "service": "ts-inside-payment-service",
+  "adjudications": [
+    {
+      "key": "authority|ts-inside-payment-service.SecurityConfig|authority|checksPermission|JWT bearer token via JWTFilter before UsernamePasswordAuthenticationFilter",
+      "decision": "merged",
+      "basis": "JWTFilter added before UsernamePasswordAuthenticationFilter at inside_payment/config/SecurityConfig.java:76; kept atom:authority:ts-inside-payment-service-securityconfig:checkspermission-jwt-filter, merged with pass-B jwt-filter key."
+    },
+    {
+      "key": "authority|ts-inside-payment-service.SecurityConfig|authority|checksPermission|jwt-filter-before-username-password-auth",
+      "decision": "merged",
+      "basis": "JWTFilter added before UsernamePasswordAuthenticationFilter at inside_payment/config/SecurityConfig.java:76; kept atom:authority:ts-inside-payment-service-securityconfig:checkspermission-jwt-filter, merged with pass-B jwt-filter key."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.AddMoneyRepository|capability|servesQuery|findByUserId",
+      "decision": "merged",
+      "basis": "findByUserId declared at inside_payment/repository/AddMoneyRepository.java:20; kept atom:capability:ts-inside-payment-service.AddMoneyRepository:servesQuery:findByUserId, merged with pass-B static-axis key of the same query."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.AddMoneyRepository|static|servesQuery|findByUserId",
+      "decision": "merged",
+      "basis": "findByUserId declared at inside_payment/repository/AddMoneyRepository.java:20; kept atom:capability:ts-inside-payment-service.AddMoneyRepository:servesQuery:findByUserId, merged with pass-B static-axis key of the same query."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.InsidePaymentController|capability|exposesEndpoint|POST /api/v1/inside_pay_service/inside_payment (pay, body PaymentInfo)",
+      "decision": "merged",
+      "basis": "POST /inside_payment pay endpoint at inside_payment/controller/InsidePaymentController.java:31; kept atom:capability:ts-inside-payment-service-insidepaymentcontroller:exposesendpoint-post-pay, merged with pass-B object variant."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.InsidePaymentController|capability|exposesEndpoint|POST /api/v1/inside_pay_service/inside_payment (pay)",
+      "decision": "merged",
+      "basis": "POST /inside_payment pay endpoint at inside_payment/controller/InsidePaymentController.java:31; kept atom:capability:ts-inside-payment-service-insidepaymentcontroller:exposesendpoint-post-pay, merged with pass-B object variant."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.InsidePaymentController|capability|exposesEndpoint|POST /api/v1/inside_pay_service/inside_payment/account (createAccount, body AccountInfo)",
+      "decision": "merged",
+      "basis": "POST /inside_payment/account createAccount endpoint at inside_payment/controller/InsidePaymentController.java:37; kept atom:capability:ts-inside-payment-service-insidepaymentcontroller:exposesendpoint-post-create-account, merged with pass-B object variant."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.InsidePaymentController|capability|exposesEndpoint|POST /api/v1/inside_pay_service/inside_payment/account (createAccount)",
+      "decision": "merged",
+      "basis": "POST /inside_payment/account createAccount endpoint at inside_payment/controller/InsidePaymentController.java:37; kept atom:capability:ts-inside-payment-service-insidepaymentcontroller:exposesendpoint-post-create-account, merged with pass-B object variant."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.InsidePaymentController|capability|exposesEndpoint|POST /api/v1/inside_pay_service/inside_payment/difference (payDifference, body PaymentInfo)",
+      "decision": "merged",
+      "basis": "POST /inside_payment/difference payDifference endpoint at inside_payment/controller/InsidePaymentController.java:68; kept atom:capability:ts-inside-payment-service-insidepaymentcontroller:exposesendpoint-post-pay-difference, merged with pass-B object variant."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.InsidePaymentController|capability|exposesEndpoint|POST /api/v1/inside_pay_service/inside_payment/difference (payDifference)",
+      "decision": "merged",
+      "basis": "POST /inside_payment/difference payDifference endpoint at inside_payment/controller/InsidePaymentController.java:68; kept atom:capability:ts-inside-payment-service-insidepaymentcontroller:exposesendpoint-post-pay-difference, merged with pass-B object variant."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.InsidePaymentService|capability|handlesCommand|addMoney",
+      "decision": "merged",
+      "basis": "addMoney declared at inside_payment/service/InsidePaymentService.java:40; kept atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:addMoney, merged with pass-B static-axis key."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.InsidePaymentService|static|handlesCommand|addMoney",
+      "decision": "merged",
+      "basis": "addMoney declared at inside_payment/service/InsidePaymentService.java:40; kept atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:addMoney, merged with pass-B static-axis key."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.InsidePaymentService|capability|handlesCommand|createAccount",
+      "decision": "merged",
+      "basis": "createAccount declared at inside_payment/service/InsidePaymentService.java:30; kept atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:createAccount, merged with pass-B static-axis key."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.InsidePaymentService|static|handlesCommand|createAccount",
+      "decision": "merged",
+      "basis": "createAccount declared at inside_payment/service/InsidePaymentService.java:30; kept atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:createAccount, merged with pass-B static-axis key."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.InsidePaymentService|capability|handlesCommand|drawBack",
+      "decision": "merged",
+      "basis": "drawBack declared at inside_payment/service/InsidePaymentService.java:66; kept atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:drawBack, merged with pass-B static-axis key."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.InsidePaymentService|static|handlesCommand|drawBack",
+      "decision": "merged",
+      "basis": "drawBack declared at inside_payment/service/InsidePaymentService.java:66; kept atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:drawBack, merged with pass-B static-axis key."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.InsidePaymentService|capability|handlesCommand|initPayment",
+      "decision": "merged",
+      "basis": "initPayment declared at inside_payment/service/InsidePaymentService.java:92; kept atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:initPayment, merged with pass-B static-axis key."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.InsidePaymentService|static|handlesCommand|initPayment",
+      "decision": "merged",
+      "basis": "initPayment declared at inside_payment/service/InsidePaymentService.java:92; kept atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:initPayment, merged with pass-B static-axis key."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.InsidePaymentService|capability|handlesCommand|pay",
+      "decision": "merged",
+      "basis": "pay declared at inside_payment/service/InsidePaymentService.java:21; kept atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:pay, merged with pass-B static-axis key."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.InsidePaymentService|static|handlesCommand|pay",
+      "decision": "merged",
+      "basis": "pay declared at inside_payment/service/InsidePaymentService.java:21; kept atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:pay, merged with pass-B static-axis key."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.InsidePaymentService|capability|handlesCommand|payDifference",
+      "decision": "merged",
+      "basis": "payDifference declared at inside_payment/service/InsidePaymentService.java:75; kept atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:payDifference, merged with pass-B static-axis key."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.InsidePaymentService|static|handlesCommand|payDifference",
+      "decision": "merged",
+      "basis": "payDifference declared at inside_payment/service/InsidePaymentService.java:75; kept atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:payDifference, merged with pass-B static-axis key."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.InsidePaymentService|capability|servesQuery|queryAccount",
+      "decision": "merged",
+      "basis": "queryAccount declared at inside_payment/service/InsidePaymentService.java:56; kept atom:capability:ts-inside-payment-service.InsidePaymentService:servesQuery:queryAccount, merged with pass-B static-axis key."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.InsidePaymentService|static|servesQuery|queryAccount",
+      "decision": "merged",
+      "basis": "queryAccount declared at inside_payment/service/InsidePaymentService.java:56; kept atom:capability:ts-inside-payment-service.InsidePaymentService:servesQuery:queryAccount, merged with pass-B static-axis key."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.InsidePaymentService|capability|servesQuery|queryAddMoney",
+      "decision": "merged",
+      "basis": "queryAddMoney declared at inside_payment/service/InsidePaymentService.java:83; kept atom:capability:ts-inside-payment-service.InsidePaymentService:servesQuery:queryAddMoney, merged with pass-B static-axis key."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.InsidePaymentService|static|servesQuery|queryAddMoney",
+      "decision": "merged",
+      "basis": "queryAddMoney declared at inside_payment/service/InsidePaymentService.java:83; kept atom:capability:ts-inside-payment-service.InsidePaymentService:servesQuery:queryAddMoney, merged with pass-B static-axis key."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.InsidePaymentService|capability|servesQuery|queryPayment",
+      "decision": "merged",
+      "basis": "queryPayment declared at inside_payment/service/InsidePaymentService.java:48; kept atom:capability:ts-inside-payment-service.InsidePaymentService:servesQuery:queryPayment, merged with pass-B static-axis key."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.InsidePaymentService|static|servesQuery|queryPayment",
+      "decision": "merged",
+      "basis": "queryPayment declared at inside_payment/service/InsidePaymentService.java:48; kept atom:capability:ts-inside-payment-service.InsidePaymentService:servesQuery:queryPayment, merged with pass-B static-axis key."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.PaymentRepository|capability|servesQuery|findByOrderId",
+      "decision": "merged",
+      "basis": "findByOrderId declared at inside_payment/repository/PaymentRepository.java:29; kept atom:capability:ts-inside-payment-service.PaymentRepository:servesQuery:findByOrderId, merged with pass-B static-axis key."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.PaymentRepository|static|servesQuery|findByOrderId",
+      "decision": "merged",
+      "basis": "findByOrderId declared at inside_payment/repository/PaymentRepository.java:29; kept atom:capability:ts-inside-payment-service.PaymentRepository:servesQuery:findByOrderId, merged with pass-B static-axis key."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.PaymentRepository|capability|servesQuery|findByUserId",
+      "decision": "merged",
+      "basis": "findByUserId declared at inside_payment/repository/PaymentRepository.java:45; kept atom:capability:ts-inside-payment-service.PaymentRepository:servesQuery:findByUserId, merged with pass-B static-axis key."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.PaymentRepository|static|servesQuery|findByUserId",
+      "decision": "merged",
+      "basis": "findByUserId declared at inside_payment/repository/PaymentRepository.java:45; kept atom:capability:ts-inside-payment-service.PaymentRepository:servesQuery:findByUserId, merged with pass-B static-axis key."
+    },
+    {
+      "key": "contract|ts-inside-payment-service.AccountInfo|specification|shapedAs|userId:String, money:String",
+      "decision": "merged",
+      "basis": "AccountInfo fields userId and money at inside_payment/entity/AccountInfo.java:11; kept atom:contract:ts-inside-payment-service-accountinfo:shapedas-userid-money, merged with pass-B DTO-phrase key."
+    },
+    {
+      "key": "contract|ts-inside-payment-service.AccountInfo|specification|shapedAs|userId+money account creation DTO",
+      "decision": "merged",
+      "basis": "AccountInfo fields userId and money at inside_payment/entity/AccountInfo.java:11; kept atom:contract:ts-inside-payment-service-accountinfo:shapedas-userid-money, merged with pass-B DTO-phrase key."
+    },
+    {
+      "key": "contract|ts-inside-payment-service.Balance|specification|shapedAs|userId:String @NotNull, balance:String @NotNull",
+      "decision": "merged",
+      "basis": "Balance fields userId and balance with NotNull at inside_payment/entity/Balance.java:13; kept atom:contract:ts-inside-payment-service-balance:shapedas-userid-balance, merged with pass-B DTO-phrase key."
+    },
+    {
+      "key": "contract|ts-inside-payment-service.Balance|specification|shapedAs|userId+balance DTO with NotNull validation",
+      "decision": "merged",
+      "basis": "Balance fields userId and balance with NotNull at inside_payment/entity/Balance.java:13; kept atom:contract:ts-inside-payment-service-balance:shapedas-userid-balance, merged with pass-B DTO-phrase key."
+    },
+    {
+      "key": "contract|ts-inside-payment-service.CookieUtil|specification|ensures|added-cookies-carry-http-only-attribute",
+      "decision": "merged",
+      "basis": "addCookie sets httpOnly and path '/' at inside_payment/util/CookieUtil.java:21; kept atom:contract:ts-inside-payment-service.CookieUtil.addCookie:ensures:http-only-cookie with the method-qualified subject, merged with pass-A class-level key."
+    },
+    {
+      "key": "contract|ts-inside-payment-service.CookieUtil.addCookie|specification|ensures|http-only-cookie-with-root-path",
+      "decision": "merged",
+      "basis": "addCookie sets httpOnly and path '/' at inside_payment/util/CookieUtil.java:21; kept atom:contract:ts-inside-payment-service.CookieUtil.addCookie:ensures:http-only-cookie with the method-qualified subject, merged with pass-A class-level key."
+    },
+    {
+      "key": "contract|ts-inside-payment-service.OutsidePaymentInfo|specification|shapedAs|orderId:String, price:String, userId:String",
+      "decision": "merged",
+      "basis": "OutsidePaymentInfo fields orderId, price, userId at inside_payment/entity/OutsidePaymentInfo.java:14; kept atom:contract:ts-inside-payment-service-outsidepaymentinfo:shapedas-orderid-price-userid, merged with pass-B DTO-phrase key."
+    },
+    {
+      "key": "contract|ts-inside-payment-service.OutsidePaymentInfo|specification|shapedAs|orderId+price+userId outside payment DTO",
+      "decision": "merged",
+      "basis": "OutsidePaymentInfo fields orderId, price, userId at inside_payment/entity/OutsidePaymentInfo.java:14; kept atom:contract:ts-inside-payment-service-outsidepaymentinfo:shapedas-orderid-price-userid, merged with pass-B DTO-phrase key."
+    },
+    {
+      "key": "contract|ts-inside-payment-service.PaymentInfo|specification|shapedAs|payment-request-dto-userId-orderId-tripId-price",
+      "decision": "merged",
+      "basis": "PaymentInfo fields userId, orderId, tripId, price at inside_payment/entity/PaymentInfo.java:16; kept atom:contract:ts-inside-payment-service.PaymentInfo:shapedAs:payment-request-dto, merged with pass-B object variant."
+    },
+    {
+      "key": "contract|ts-inside-payment-service.PaymentInfo|specification|shapedAs|userId-orderId-tripId-price-payment-request",
+      "decision": "merged",
+      "basis": "PaymentInfo fields userId, orderId, tripId, price at inside_payment/entity/PaymentInfo.java:16; kept atom:contract:ts-inside-payment-service.PaymentInfo:shapedAs:payment-request-dto, merged with pass-B object variant."
+    },
+    {
+      "key": "effect|ts-inside-payment-service.AsyncTask|effect|callsProvider|GET http://rest-service-external:16100/greet returning Boolean",
+      "decision": "merged",
+      "basis": "getForObject to http://rest-service-external:16100/greet at inside_payment/async/AsyncTask.java:27; kept atom:effect:ts-inside-payment-service-asynctask:callsprovider-rest-service-external-greet with the exact URL object, merged with pass-B method-qualified key."
+    },
+    {
+      "key": "effect|ts-inside-payment-service.AsyncTask.sendAsyncCallToPaymentService|effect|callsProvider|external rest-service greet endpoint (async, boolean result)",
+      "decision": "merged",
+      "basis": "getForObject to http://rest-service-external:16100/greet at inside_payment/async/AsyncTask.java:27; kept atom:effect:ts-inside-payment-service-asynctask:callsprovider-rest-service-external-greet with the exact URL object, merged with pass-B method-qualified key."
+    },
+    {
+      "key": "relation|ts-inside-payment-service.AsyncTask|relation|dependsOn|mySimpleAsync thread-pool executor bean",
+      "decision": "merged",
+      "basis": "@Async(\"mySimpleAsync\") at inside_payment/async/AsyncTask.java:24 binds to the bean at inside_payment/async/ExecutorConfig.java:25; kept atom:relation:ts-inside-payment-service.AsyncTask:dependsOn:mySimpleAsync-executor, merged with pass-A key."
+    },
+    {
+      "key": "relation|ts-inside-payment-service.AsyncTask|restriction|dependsOn|ts-inside-payment-service.ExecutorConfig.mySimpleAsync",
+      "decision": "merged",
+      "basis": "@Async(\"mySimpleAsync\") at inside_payment/async/AsyncTask.java:24 binds to the bean at inside_payment/async/ExecutorConfig.java:25; kept atom:relation:ts-inside-payment-service.AsyncTask:dependsOn:mySimpleAsync-executor, merged with pass-A key."
+    },
+    {
+      "key": "relation|ts-inside-payment-service.InitData|relation|calls|ts-inside-payment-service.InsidePaymentService.createAccount",
+      "decision": "merged",
+      "basis": "service.createAccount call at inside_payment/init/InitData.java:30; kept atom:relation:ts-inside-payment-service.InitData:calls:createAccount, merged with pass-B restriction-axis key."
+    },
+    {
+      "key": "relation|ts-inside-payment-service.InitData|restriction|calls|ts-inside-payment-service.InsidePaymentService.createAccount",
+      "decision": "merged",
+      "basis": "service.createAccount call at inside_payment/init/InitData.java:30; kept atom:relation:ts-inside-payment-service.InitData:calls:createAccount, merged with pass-B restriction-axis key."
+    },
+    {
+      "key": "relation|ts-inside-payment-service.InitData|relation|calls|ts-inside-payment-service.InsidePaymentService.initPayment",
+      "decision": "merged",
+      "basis": "service.initPayment call at inside_payment/init/InitData.java:38; kept atom:relation:ts-inside-payment-service.InitData:calls:initPayment, merged with pass-B restriction-axis key."
+    },
+    {
+      "key": "relation|ts-inside-payment-service.InitData|restriction|calls|ts-inside-payment-service.InsidePaymentService.initPayment",
+      "decision": "merged",
+      "basis": "service.initPayment call at inside_payment/init/InitData.java:38; kept atom:relation:ts-inside-payment-service.InitData:calls:initPayment, merged with pass-B restriction-axis key."
+    },
+    {
+      "key": "relation|ts-inside-payment-service.InsidePaymentApplication|relation|dependsOn|spring-cloud-discovery-client",
+      "decision": "merged",
+      "basis": "@EnableDiscoveryClient at inside_payment/InsidePaymentApplication.java:23; kept atom:relation:ts-inside-payment-service-insidepaymentapplication:dependson-spring-cloud-discovery with the annotated-class subject, merged with pass-B service-level key."
+    },
+    {
+      "key": "relation|ts-inside-payment-service|restriction|dependsOn|spring-cloud-service-discovery",
+      "decision": "merged",
+      "basis": "@EnableDiscoveryClient at inside_payment/InsidePaymentApplication.java:23; kept atom:relation:ts-inside-payment-service-insidepaymentapplication:dependson-spring-cloud-discovery with the annotated-class subject, merged with pass-B service-level key."
+    },
+    {
+      "key": "relation|ts-inside-payment-service.InsidePaymentController|relation|calls|ts-inside-payment-service.InsidePaymentService",
+      "decision": "merged",
+      "basis": "Autowired InsidePaymentService used at inside_payment/controller/InsidePaymentController.java:22; kept atom:relation:ts-inside-payment-service-insidepaymentcontroller:calls-insidepaymentservice, merged with pass-B restriction-axis key."
+    },
+    {
+      "key": "relation|ts-inside-payment-service.InsidePaymentController|restriction|calls|ts-inside-payment-service.InsidePaymentService",
+      "decision": "merged",
+      "basis": "Autowired InsidePaymentService used at inside_payment/controller/InsidePaymentController.java:22; kept atom:relation:ts-inside-payment-service-insidepaymentcontroller:calls-insidepaymentservice, merged with pass-B restriction-axis key."
+    },
+    {
+      "key": "relation|ts-inside-payment-service.InsidePaymentServiceImpl|relation|calls|ts-order-other-service",
+      "decision": "merged",
+      "basis": "orderOther status GET built at inside_payment/service/InsidePaymentServiceImpl.java:350; kept endpoint-specific atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:calls:order-other-service-status-update; the orderOther read at InsidePaymentServiceImpl.java:56 is recorded separately."
+    },
+    {
+      "key": "relation|ts-inside-payment-service.InsidePaymentServiceImpl|restriction|calls|ts-order-other-service:/api/v1/orderOtherService/orderOther/status/{orderId}/{status}",
+      "decision": "merged",
+      "basis": "orderOther status GET built at inside_payment/service/InsidePaymentServiceImpl.java:350; kept endpoint-specific atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:calls:order-other-service-status-update; the orderOther read at InsidePaymentServiceImpl.java:56 is recorded separately."
+    },
+    {
+      "key": "relation|ts-inside-payment-service.InsidePaymentServiceImpl|relation|calls|ts-order-service",
+      "decision": "merged",
+      "basis": "orderservice status GET built at inside_payment/service/InsidePaymentServiceImpl.java:340; kept endpoint-specific atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:calls:order-service-status-update; the order read at InsidePaymentServiceImpl.java:54 is recorded separately."
+    },
+    {
+      "key": "relation|ts-inside-payment-service.InsidePaymentServiceImpl|restriction|calls|ts-order-service:/api/v1/orderservice/order/status/{orderId}/{status}",
+      "decision": "merged",
+      "basis": "orderservice status GET built at inside_payment/service/InsidePaymentServiceImpl.java:340; kept endpoint-specific atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:calls:order-service-status-update; the order read at InsidePaymentServiceImpl.java:54 is recorded separately."
+    },
+    {
+      "key": "relation|ts-inside-payment-service.InsidePaymentServiceImpl|relation|writesTo|ts-inside-payment-service.AddMoneyRepository",
+      "decision": "merged",
+      "basis": "addMoneyRepository.save at inside_payment/service/InsidePaymentServiceImpl.java:149; kept atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:writesTo:add-money-repository, merged with pass-B restriction-axis key."
+    },
+    {
+      "key": "relation|ts-inside-payment-service.InsidePaymentServiceImpl|restriction|writesTo|ts-inside-payment-service.AddMoneyRepository",
+      "decision": "merged",
+      "basis": "addMoneyRepository.save at inside_payment/service/InsidePaymentServiceImpl.java:149; kept atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:writesTo:add-money-repository, merged with pass-B restriction-axis key."
+    },
+    {
+      "key": "relation|ts-inside-payment-service.InsidePaymentServiceImpl|relation|writesTo|ts-inside-payment-service.PaymentRepository",
+      "decision": "merged",
+      "basis": "paymentRepository.save at inside_payment/service/InsidePaymentServiceImpl.java:120 and 314; kept atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:writesTo:PaymentRepository whose refs cover all save sites, merged with pass-A key."
+    },
+    {
+      "key": "relation|ts-inside-payment-service.InsidePaymentServiceImpl|restriction|writesTo|ts-inside-payment-service.PaymentRepository",
+      "decision": "merged",
+      "basis": "paymentRepository.save at inside_payment/service/InsidePaymentServiceImpl.java:120 and 314; kept atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:writesTo:PaymentRepository whose refs cover all save sites, merged with pass-A key."
+    },
+    {
+      "key": "relation|ts-inside-payment-service|relation|dependsOn|nacos-service-discovery",
+      "decision": "merged",
+      "basis": "nacos discovery server-addr at ts-inside-payment-service/src/main/resources/application.yml:6; kept atom:relation:ts-inside-payment-service:dependsOn:nacos-discovery, merged with pass-B restriction-axis key."
+    },
+    {
+      "key": "relation|ts-inside-payment-service|restriction|dependsOn|nacos-service-discovery",
+      "decision": "merged",
+      "basis": "nacos discovery server-addr at ts-inside-payment-service/src/main/resources/application.yml:6; kept atom:relation:ts-inside-payment-service:dependsOn:nacos-discovery, merged with pass-B restriction-axis key."
+    },
+    {
+      "key": "semantic|ts-inside-payment-service.MoneyType.A|semantic|meansInUse|account-credit-record-on-create-account-and-add-money",
+      "decision": "merged",
+      "basis": "MoneyType.A set on createAccount and addMoney at inside_payment/service/InsidePaymentServiceImpl.java:148 and 163; kept atom:semantic:ts-inside-payment-service.MoneyType.A:meansInUse:account-credit-record, merged with pass-B deposit-record key."
+    },
+    {
+      "key": "semantic|ts-inside-payment-service.MoneyType.A|semantic|meansInUse|account-deposit-money-record",
+      "decision": "merged",
+      "basis": "MoneyType.A set on createAccount and addMoney at inside_payment/service/InsidePaymentServiceImpl.java:148 and 163; kept atom:semantic:ts-inside-payment-service.MoneyType.A:meansInUse:account-credit-record, merged with pass-B deposit-record key."
+    },
+    {
+      "key": "semantic|ts-inside-payment-service.MoneyType.A|semantic|meansInUse|add-money-ledger-entry-type-persisted-on-inside-money-records",
+      "decision": "merged",
+      "basis": "MoneyType.A declared 'Add Money' at inside_payment/entity/MoneyType.java:13, persisted as string at inside_payment/entity/Money.java:40; kept atom:semantic:ts-inside-payment-service-moneytype-a:meansinuse-add-money-ledger-entry, merged with pass-B key."
+    },
+    {
+      "key": "semantic|ts-inside-payment-service.MoneyType.A|semantic|meansInUse|add-money-ledger-entry",
+      "decision": "merged",
+      "basis": "MoneyType.A declared 'Add Money' at inside_payment/entity/MoneyType.java:13, persisted as string at inside_payment/entity/Money.java:40; kept atom:semantic:ts-inside-payment-service-moneytype-a:meansinuse-add-money-ledger-entry, merged with pass-B key."
+    },
+    {
+      "key": "semantic|ts-inside-payment-service.MoneyType.D|semantic|meansInUse|draw-back-money-ledger-entry-type-persisted-on-inside-money-records",
+      "decision": "merged",
+      "basis": "MoneyType.D declared 'Draw Back Money' at inside_payment/entity/MoneyType.java:17; kept atom:semantic:ts-inside-payment-service-moneytype-d:meansinuse-drawback-ledger-entry, merged with pass-B key."
+    },
+    {
+      "key": "semantic|ts-inside-payment-service.MoneyType.D|semantic|meansInUse|draw-back-money-ledger-entry",
+      "decision": "merged",
+      "basis": "MoneyType.D declared 'Draw Back Money' at inside_payment/entity/MoneyType.java:17; kept atom:semantic:ts-inside-payment-service-moneytype-d:meansinuse-drawback-ledger-entry, merged with pass-B key."
+    },
+    {
+      "key": "semantic|ts-inside-payment-service.MoneyType.D|semantic|meansInUse|drawback-refund-credit-record-on-drawBack",
+      "decision": "merged",
+      "basis": "MoneyType.D set in drawBack at inside_payment/service/InsidePaymentServiceImpl.java:250; kept atom:semantic:ts-inside-payment-service.MoneyType.D:meansInUse:drawback-refund-credit-record, merged with pass-B refund-record key."
+    },
+    {
+      "key": "semantic|ts-inside-payment-service.MoneyType.D|semantic|meansInUse|drawback-refund-money-record",
+      "decision": "merged",
+      "basis": "MoneyType.D set in drawBack at inside_payment/service/InsidePaymentServiceImpl.java:250; kept atom:semantic:ts-inside-payment-service.MoneyType.D:meansInUse:drawback-refund-credit-record, merged with pass-B refund-record key."
+    },
+    {
+      "key": "semantic|ts-inside-payment-service.Order.status|semantic|meansInUse|status-value-1-order-paid-and-not-collected",
+      "decision": "merged",
+      "basis": "orderStatus=1 commented 'order paid and not collected' at inside_payment/service/InsidePaymentServiceImpl.java:332; kept atom:semantic:ts-inside-payment-service.InsidePaymentServiceImpl.orderStatus:meansInUse:paid-and-not-collected whose subject names the observed local variable, merged with pass-A Order.status key."
+    },
+    {
+      "key": "semantic|ts-inside-payment-service.InsidePaymentServiceImpl.orderStatus|semantic|meansInUse|status-code-1-paid-and-not-collected",
+      "decision": "merged",
+      "basis": "orderStatus=1 commented 'order paid and not collected' at inside_payment/service/InsidePaymentServiceImpl.java:332; kept atom:semantic:ts-inside-payment-service.InsidePaymentServiceImpl.orderStatus:meansInUse:paid-and-not-collected whose subject names the observed local variable, merged with pass-A Order.status key."
+    },
+    {
+      "key": "semantic|ts-inside-payment-service.OrderStatus.NOTPAID|semantic|statusGates|pay-allowed-only-for-notpaid-order",
+      "decision": "merged",
+      "basis": "pay returns error unless order status is NOTPAID at inside_payment/service/InsidePaymentServiceImpl.java:70; kept semantic atom:semantic:ts-inside-payment-service.OrderStatus.NOTPAID:statusGates:pay-only-when-notpaid, merged with pass-B contract-requires reading of the same gate."
+    },
+    {
+      "key": "contract|ts-inside-payment-service.InsidePaymentService.pay|specification|requires|order-status-NOTPAID-before-pay",
+      "decision": "merged",
+      "basis": "pay returns error unless order status is NOTPAID at inside_payment/service/InsidePaymentServiceImpl.java:70; kept semantic atom:semantic:ts-inside-payment-service.OrderStatus.NOTPAID:statusGates:pay-only-when-notpaid, merged with pass-B contract-requires reading of the same gate."
+    },
+    {
+      "key": "semantic|ts-inside-payment-service.PaymentInfo.tripId|semantic|meansInUse|trip-prefix-G-or-D-selects-order-service-else-order-other-service",
+      "decision": "merged",
+      "basis": "tripId prefix G/D selects ts-order-service else ts-order-other-service at inside_payment/service/InsidePaymentServiceImpl.java:53 and 335; kept atom:semantic:ts-inside-payment-service.PaymentInfo.tripId:meansInUse:train-prefix-routes-order-lookup, merged with pass-B key."
+    },
+    {
+      "key": "semantic|ts-inside-payment-service.PaymentInfo.tripId|semantic|meansInUse|prefix-G-or-D-routes-to-ts-order-service-else-ts-order-other-service",
+      "decision": "merged",
+      "basis": "tripId prefix G/D selects ts-order-service else ts-order-other-service at inside_payment/service/InsidePaymentServiceImpl.java:53 and 335; kept atom:semantic:ts-inside-payment-service.PaymentInfo.tripId:meansInUse:train-prefix-routes-order-lookup, merged with pass-B key."
+    },
+    {
+      "key": "semantic|ts-inside-payment-service.PaymentType.E|semantic|meansInUse|difference-payment-record-in-payDifference",
+      "decision": "merged",
+      "basis": "PaymentType.E set in payDifference at inside_payment/service/InsidePaymentServiceImpl.java:305 and 313; kept atom:semantic:ts-inside-payment-service.PaymentType.E:meansInUse:difference-payment-record, merged with pass-B key."
+    },
+    {
+      "key": "semantic|ts-inside-payment-service.PaymentType.E|semantic|meansInUse|difference-payment-record-inside-or-outside",
+      "decision": "merged",
+      "basis": "PaymentType.E set in payDifference at inside_payment/service/InsidePaymentServiceImpl.java:305 and 313; kept atom:semantic:ts-inside-payment-service.PaymentType.E:meansInUse:difference-payment-record, merged with pass-B key."
+    },
+    {
+      "key": "semantic|ts-inside-payment-service.PaymentType.O|semantic|meansInUse|outside-payment-record-after-external-pay-success",
+      "decision": "merged",
+      "basis": "PaymentType.O set after external pay success at inside_payment/service/InsidePaymentServiceImpl.java:119; kept atom:semantic:ts-inside-payment-service.PaymentType.O:meansInUse:outside-payment-record, merged with pass-B key."
+    },
+    {
+      "key": "semantic|ts-inside-payment-service.PaymentType.O|semantic|meansInUse|outside-provider-payment-record",
+      "decision": "merged",
+      "basis": "PaymentType.O set after external pay success at inside_payment/service/InsidePaymentServiceImpl.java:119; kept atom:semantic:ts-inside-payment-service.PaymentType.O:meansInUse:outside-payment-record, merged with pass-B key."
+    },
+    {
+      "key": "state|ts-inside-payment-service.Money|static|persistsIn|JPA table inside_money (id uuid, userId, money, type MoneyType stored as string)",
+      "decision": "merged",
+      "basis": "@Table(name=\"inside_money\") at inside_payment/entity/Money.java:19 with enum stored as string at Money.java:40; kept atom:state:ts-inside-payment-service-money:persistsin-inside-money, merged with pass-B table-name key."
+    },
+    {
+      "key": "state|ts-inside-payment-service.Money|static|persistsIn|table:inside_money",
+      "decision": "merged",
+      "basis": "@Table(name=\"inside_money\") at inside_payment/entity/Money.java:19 with enum stored as string at Money.java:40; kept atom:state:ts-inside-payment-service-money:persistsin-inside-money, merged with pass-B table-name key."
+    },
+    {
+      "key": "state|ts-inside-payment-service.Payment|static|persistsIn|JPA table inside_payment (id uuid, orderId, userId, price, type PaymentType stored as string)",
+      "decision": "merged",
+      "basis": "@Table(name=\"inside_payment\") at inside_payment/entity/Payment.java:19; kept atom:state:ts-inside-payment-service-payment:persistsin-inside-payment, merged with pass-B table-name key."
+    },
+    {
+      "key": "state|ts-inside-payment-service.Payment|static|persistsIn|table:inside_payment",
+      "decision": "merged",
+      "basis": "@Table(name=\"inside_payment\") at inside_payment/entity/Payment.java:19; kept atom:state:ts-inside-payment-service-payment:persistsin-inside-payment, merged with pass-B table-name key."
+    },
+    {
+      "key": "state|ts-inside-payment-service|static|persistsIn|mysql-datasource-jpa-ddl-auto-update",
+      "decision": "merged",
+      "basis": "mysql datasource url at ts-inside-payment-service/src/main/resources/application.yml:13 with ddl-auto update at application.yml:19; kept atom:state:ts-inside-payment-service:persistsIn:mysql-datasource, merged with pass-B datasource key."
+    },
+    {
+      "key": "state|ts-inside-payment-service|static|persistsIn|mysql-datasource-ts-inside-payment-mysql",
+      "decision": "merged",
+      "basis": "mysql datasource url at ts-inside-payment-service/src/main/resources/application.yml:13 with ddl-auto update at application.yml:19; kept atom:state:ts-inside-payment-service:persistsIn:mysql-datasource, merged with pass-B datasource key."
+    },
+    {
+      "key": "capability|ts-inside-payment-service.InsidePaymentController|capability|exposesEndpoint|GET /api/v1/inside_pay_service/welcome",
+      "decision": "adopted",
+      "basis": "GET /welcome endpoint at inside_payment/controller/InsidePaymentController.java:26; only pass A recorded it and the reread confirms it."
+    },
+    {
+      "key": "component|ts-inside-payment-service.Money|static||",
+      "decision": "adopted",
+      "basis": "Entity class at inside_payment/entity/Money.java exists; only pass A recorded the component and the reread confirms it."
+    },
+    {
+      "key": "component|ts-inside-payment-service.Payment|static||",
+      "decision": "adopted",
+      "basis": "Entity class at inside_payment/entity/Payment.java exists; only pass A recorded the component and the reread confirms it."
+    },
+    {
+      "key": "contract|ts-inside-payment-service.InsidePaymentServiceImpl|specification|requires|balance-covers-total-expand-for-inside-payment-else-outside-payment-branch",
+      "decision": "adopted",
+      "basis": "totalExpand.compareTo(money)>0 selects the outside-payment branch at inside_payment/service/InsidePaymentServiceImpl.java:99 and 288; reread confirms the balance condition."
+    },
+    {
+      "key": "semantic|ts-inside-payment-service.AsyncTask.sendAsyncCallToPaymentService|semantic|meansInUse|async-boolean-greet-call-to-rest-service-external-not-a-payment-service-call-in-observed-body",
+      "decision": "adopted",
+      "basis": "sendAsyncCallToPaymentService body only calls rest-service-external /greet at inside_payment/async/AsyncTask.java:27; reread confirms the observed-use meaning."
+    },
+    {
+      "key": "contract|ts-inside-payment-service.ExecutorConfig.myAsync|specification|ensures|caller-runs rejection policy when thread pool is saturated",
+      "decision": "adopted",
+      "basis": "CallerRunsPolicy set on myAsync at inside_payment/async/ExecutorConfig.java:45; only pass B recorded it and the reread confirms it."
+    },
+    {
+      "key": "contract|ts-inside-payment-service.InsidePaymentService.createAccount|specification|requires|no-existing-money-record-for-user",
+      "decision": "adopted",
+      "basis": "createAccount proceeds only when findByUserId returns empty at inside_payment/service/InsidePaymentServiceImpl.java:143; reread confirms the precondition."
+    },
+    {
+      "key": "contract|ts-inside-payment-service.InsidePaymentService.pay|specification|ensures|order-status-set-to-paid-not-collected-after-successful-payment",
+      "decision": "adopted",
+      "basis": "setOrderStatus(orderStatus=1) invoked after successful pay at inside_payment/service/InsidePaymentServiceImpl.java:121, 128 and 332; reread confirms the postcondition."
+    },
+    {
+      "key": "relation|ts-inside-payment-service.InsidePaymentServiceImpl|restriction|readsFrom|ts-order-other-service:/api/v1/orderOtherService/orderOther/{orderId}",
+      "decision": "adopted",
+      "basis": "orderOther query GET built at inside_payment/service/InsidePaymentServiceImpl.java:56; reread confirms the read edge."
+    },
+    {
+      "key": "relation|ts-inside-payment-service.InsidePaymentServiceImpl|restriction|readsFrom|ts-order-service:/api/v1/orderservice/order/{orderId}",
+      "decision": "adopted",
+      "basis": "orderservice query GET built at inside_payment/service/InsidePaymentServiceImpl.java:54; reread confirms the read edge."
+    },
+    {
+      "key": "semantic|ts-inside-payment-service.Balance.balance|semantic|meansInUse|per-user-deposit-minus-payment-expenditure",
+      "decision": "adopted",
+      "basis": "balance computed as add-money sum minus payment sum at inside_payment/service/InsidePaymentServiceImpl.java:196-202; reread confirms the observed meaning."
+    },
+    {
+      "key": "semantic|ts-inside-payment-service|semantic|identifiedBy|spring-application-name-resolved-through-discovery-urls",
+      "decision": "adopted",
+      "basis": "spring.application.name ts-inside-payment-service at ts-inside-payment-service/src/main/resources/application.yml:10 is used to build discovery URLs at inside_payment/service/InsidePaymentServiceImpl.java:41; reread confirms."
+    },
+    {
+      "key": "effect|ts-inside-payment-service.InsidePaymentServiceImpl|effect|callsProvider|order-status-modify-endpoint-per-trip-prefix",
+      "decision": "not-adopted",
+      "basis": "Same status-modify calls at inside_payment/service/InsidePaymentServiceImpl.java:340 and 350 are fully covered by merged atoms atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:calls:order-service-status-update and atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:calls:order-other-service-status-update."
+    },
+    {
+      "key": "relation|ts-inside-payment-service.InsidePaymentServiceImpl|relation|calls|ts-payment-service",
+      "decision": "not-adopted",
+      "basis": "POST to ts-payment-service /api/v1/paymentservice/payment at inside_payment/service/InsidePaymentServiceImpl.java:110 and 297 is fully covered by the matched atom effect|ts-inside-payment-service.InsidePaymentServiceImpl|effect|callsProvider|ts-payment-service:/api/v1/paymentservice/payment."
+    },
+    {
+      "key": "component|ts-inside-payment-service|static||",
+      "decision": "not-adopted",
+      "basis": "Service component at ts-inside-payment-service/src/main/resources/application.yml:10 is already covered by the matched atom component|ts-inside-payment-service|static||; this pass-B row is a surplus duplicate."
+    }
+  ],
+  "canonicalAtoms": [
+    {
+      "id": "atom:authority:ts-inside-payment-service-securityconfig:checkspermission-jwt-filter",
+      "kind": "authority",
+      "subject": "ts-inside-payment-service.SecurityConfig",
+      "axis": "authority",
+      "predicate": "checksPermission",
+      "object": "JWT bearer token via JWTFilter before UsernamePasswordAuthenticationFilter",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/config/SecurityConfig.java:76"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-inside-payment-service.AddMoneyRepository:servesQuery:findByUserId",
+      "kind": "capability",
+      "subject": "ts-inside-payment-service.AddMoneyRepository",
+      "axis": "capability",
+      "predicate": "servesQuery",
+      "object": "findByUserId",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/repository/AddMoneyRepository.java:20"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-inside-payment-service-insidepaymentcontroller:exposesendpoint-post-pay",
+      "kind": "capability",
+      "subject": "ts-inside-payment-service.InsidePaymentController",
+      "axis": "capability",
+      "predicate": "exposesEndpoint",
+      "object": "POST /api/v1/inside_pay_service/inside_payment (pay, body PaymentInfo)",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:31"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-inside-payment-service-insidepaymentcontroller:exposesendpoint-post-create-account",
+      "kind": "capability",
+      "subject": "ts-inside-payment-service.InsidePaymentController",
+      "axis": "capability",
+      "predicate": "exposesEndpoint",
+      "object": "POST /api/v1/inside_pay_service/inside_payment/account (createAccount, body AccountInfo)",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:37"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-inside-payment-service-insidepaymentcontroller:exposesendpoint-post-pay-difference",
+      "kind": "capability",
+      "subject": "ts-inside-payment-service.InsidePaymentController",
+      "axis": "capability",
+      "predicate": "exposesEndpoint",
+      "object": "POST /api/v1/inside_pay_service/inside_payment/difference (payDifference, body PaymentInfo)",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:68"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:addMoney",
+      "kind": "capability",
+      "subject": "ts-inside-payment-service.InsidePaymentService",
+      "axis": "capability",
+      "predicate": "handlesCommand",
+      "object": "addMoney",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentService.java:40",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:158"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:createAccount",
+      "kind": "capability",
+      "subject": "ts-inside-payment-service.InsidePaymentService",
+      "axis": "capability",
+      "predicate": "handlesCommand",
+      "object": "createAccount",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentService.java:30",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:142"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:drawBack",
+      "kind": "capability",
+      "subject": "ts-inside-payment-service.InsidePaymentService",
+      "axis": "capability",
+      "predicate": "handlesCommand",
+      "object": "drawBack",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentService.java:66",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:245"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:initPayment",
+      "kind": "capability",
+      "subject": "ts-inside-payment-service.InsidePaymentService",
+      "axis": "capability",
+      "predicate": "handlesCommand",
+      "object": "initPayment",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentService.java:92",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:361"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:pay",
+      "kind": "capability",
+      "subject": "ts-inside-payment-service.InsidePaymentService",
+      "axis": "capability",
+      "predicate": "handlesCommand",
+      "object": "pay",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentService.java:21",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:46"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:payDifference",
+      "kind": "capability",
+      "subject": "ts-inside-payment-service.InsidePaymentService",
+      "axis": "capability",
+      "predicate": "handlesCommand",
+      "object": "payDifference",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentService.java:75",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:260"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-inside-payment-service.InsidePaymentService:servesQuery:queryAccount",
+      "kind": "capability",
+      "subject": "ts-inside-payment-service.InsidePaymentService",
+      "axis": "capability",
+      "predicate": "servesQuery",
+      "object": "queryAccount",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentService.java:56",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:173"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-inside-payment-service.InsidePaymentService:servesQuery:queryAddMoney",
+      "kind": "capability",
+      "subject": "ts-inside-payment-service.InsidePaymentService",
+      "axis": "capability",
+      "predicate": "servesQuery",
+      "object": "queryAddMoney",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentService.java:83",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:320"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-inside-payment-service.InsidePaymentService:servesQuery:queryPayment",
+      "kind": "capability",
+      "subject": "ts-inside-payment-service.InsidePaymentService",
+      "axis": "capability",
+      "predicate": "servesQuery",
+      "object": "queryPayment",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentService.java:48",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:234"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-inside-payment-service.PaymentRepository:servesQuery:findByOrderId",
+      "kind": "capability",
+      "subject": "ts-inside-payment-service.PaymentRepository",
+      "axis": "capability",
+      "predicate": "servesQuery",
+      "object": "findByOrderId",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/repository/PaymentRepository.java:29"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-inside-payment-service.PaymentRepository:servesQuery:findByUserId",
+      "kind": "capability",
+      "subject": "ts-inside-payment-service.PaymentRepository",
+      "axis": "capability",
+      "predicate": "servesQuery",
+      "object": "findByUserId",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/repository/PaymentRepository.java:45"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-inside-payment-service-accountinfo:shapedas-userid-money",
+      "kind": "contract",
+      "subject": "ts-inside-payment-service.AccountInfo",
+      "axis": "specification",
+      "predicate": "shapedAs",
+      "object": "userId:String, money:String",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/entity/AccountInfo.java:11",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/entity/AccountInfo.java",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:38"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-inside-payment-service-balance:shapedas-userid-balance",
+      "kind": "contract",
+      "subject": "ts-inside-payment-service.Balance",
+      "axis": "specification",
+      "predicate": "shapedAs",
+      "object": "userId:String @NotNull, balance:String @NotNull",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Balance.java:13",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Balance.java"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-inside-payment-service.CookieUtil.addCookie:ensures:http-only-cookie",
+      "kind": "contract",
+      "subject": "ts-inside-payment-service.CookieUtil.addCookie",
+      "axis": "specification",
+      "predicate": "ensures",
+      "object": "http-only-cookie-with-root-path",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/util/CookieUtil.java:20",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/util/CookieUtil.java:21"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-inside-payment-service-outsidepaymentinfo:shapedas-orderid-price-userid",
+      "kind": "contract",
+      "subject": "ts-inside-payment-service.OutsidePaymentInfo",
+      "axis": "specification",
+      "predicate": "shapedAs",
+      "object": "orderId:String, price:String, userId:String",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/entity/OutsidePaymentInfo.java:14",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/async/AsyncTask.java:25",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/entity/OutsidePaymentInfo.java"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-inside-payment-service.PaymentInfo:shapedAs:payment-request-dto",
+      "kind": "contract",
+      "subject": "ts-inside-payment-service.PaymentInfo",
+      "axis": "specification",
+      "predicate": "shapedAs",
+      "object": "payment-request-dto-userId-orderId-tripId-price",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/entity/PaymentInfo.java:16"
+      ]
+    },
+    {
+      "id": "atom:effect:ts-inside-payment-service-asynctask:callsprovider-rest-service-external-greet",
+      "kind": "effect",
+      "subject": "ts-inside-payment-service.AsyncTask",
+      "axis": "effect",
+      "predicate": "callsProvider",
+      "object": "GET http://rest-service-external:16100/greet returning Boolean",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/async/AsyncTask.java:27"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-inside-payment-service.AsyncTask:dependsOn:mySimpleAsync-executor",
+      "kind": "relation",
+      "subject": "ts-inside-payment-service.AsyncTask",
+      "axis": "restriction",
+      "predicate": "dependsOn",
+      "object": "ts-inside-payment-service.ExecutorConfig.mySimpleAsync",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/async/AsyncTask.java:24",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/async/ExecutorConfig.java:25"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-inside-payment-service.InitData:calls:createAccount",
+      "kind": "relation",
+      "subject": "ts-inside-payment-service.InitData",
+      "axis": "relation",
+      "predicate": "calls",
+      "object": "ts-inside-payment-service.InsidePaymentService.createAccount",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/init/InitData.java:30"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-inside-payment-service.InitData:calls:initPayment",
+      "kind": "relation",
+      "subject": "ts-inside-payment-service.InitData",
+      "axis": "relation",
+      "predicate": "calls",
+      "object": "ts-inside-payment-service.InsidePaymentService.initPayment",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/init/InitData.java:38"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-inside-payment-service-insidepaymentapplication:dependson-spring-cloud-discovery",
+      "kind": "relation",
+      "subject": "ts-inside-payment-service.InsidePaymentApplication",
+      "axis": "relation",
+      "predicate": "dependsOn",
+      "object": "spring-cloud-discovery-client",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/InsidePaymentApplication.java:23",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/InsidePaymentApplication.java:30"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-inside-payment-service-insidepaymentcontroller:calls-insidepaymentservice",
+      "kind": "relation",
+      "subject": "ts-inside-payment-service.InsidePaymentController",
+      "axis": "relation",
+      "predicate": "calls",
+      "object": "ts-inside-payment-service.InsidePaymentService",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:22",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:34"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:calls:order-other-service-status-update",
+      "kind": "relation",
+      "subject": "ts-inside-payment-service.InsidePaymentServiceImpl",
+      "axis": "restriction",
+      "predicate": "calls",
+      "object": "ts-order-other-service:/api/v1/orderOtherService/orderOther/status/{orderId}/{status}",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:350"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:calls:order-service-status-update",
+      "kind": "relation",
+      "subject": "ts-inside-payment-service.InsidePaymentServiceImpl",
+      "axis": "restriction",
+      "predicate": "calls",
+      "object": "ts-order-service:/api/v1/orderservice/order/status/{orderId}/{status}",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:340"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:writesTo:add-money-repository",
+      "kind": "relation",
+      "subject": "ts-inside-payment-service.InsidePaymentServiceImpl",
+      "axis": "relation",
+      "predicate": "writesTo",
+      "object": "ts-inside-payment-service.AddMoneyRepository",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:149",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:164",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:251"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:writesTo:PaymentRepository",
+      "kind": "relation",
+      "subject": "ts-inside-payment-service.InsidePaymentServiceImpl",
+      "axis": "restriction",
+      "predicate": "writesTo",
+      "object": "ts-inside-payment-service.PaymentRepository",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:120",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:130",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:306",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:314",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:364"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-inside-payment-service:dependsOn:nacos-discovery",
+      "kind": "relation",
+      "subject": "ts-inside-payment-service",
+      "axis": "relation",
+      "predicate": "dependsOn",
+      "object": "nacos-service-discovery",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/resources/application.yml:6",
+        "src:ts-inside-payment-service/src/main/resources/application.yml:5"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-inside-payment-service.MoneyType.A:meansInUse:account-credit-record",
+      "kind": "semantic",
+      "subject": "ts-inside-payment-service.MoneyType.A",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "account-credit-record-on-create-account-and-add-money",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:148",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:163"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-inside-payment-service-moneytype-a:meansinuse-add-money-ledger-entry",
+      "kind": "semantic",
+      "subject": "ts-inside-payment-service.MoneyType.A",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "add-money-ledger-entry-type-persisted-on-inside-money-records",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/entity/MoneyType.java:13",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Money.java:40",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Money.java:41"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-inside-payment-service-moneytype-d:meansinuse-drawback-ledger-entry",
+      "kind": "semantic",
+      "subject": "ts-inside-payment-service.MoneyType.D",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "draw-back-money-ledger-entry-type-persisted-on-inside-money-records",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/entity/MoneyType.java:17",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Money.java:40",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Money.java:41"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-inside-payment-service.MoneyType.D:meansInUse:drawback-refund-credit-record",
+      "kind": "semantic",
+      "subject": "ts-inside-payment-service.MoneyType.D",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "drawback-refund-credit-record-on-drawBack",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:250"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-inside-payment-service.InsidePaymentServiceImpl.orderStatus:meansInUse:paid-and-not-collected",
+      "kind": "semantic",
+      "subject": "ts-inside-payment-service.InsidePaymentServiceImpl.orderStatus",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "status-code-1-paid-and-not-collected",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:332",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:333"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-inside-payment-service.OrderStatus.NOTPAID:statusGates:pay-only-when-notpaid",
+      "kind": "semantic",
+      "subject": "ts-inside-payment-service.OrderStatus.NOTPAID",
+      "axis": "semantic",
+      "predicate": "statusGates",
+      "object": "pay-allowed-only-for-notpaid-order",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:70"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-inside-payment-service.PaymentInfo.tripId:meansInUse:train-prefix-routes-order-lookup",
+      "kind": "semantic",
+      "subject": "ts-inside-payment-service.PaymentInfo.tripId",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "trip-prefix-G-or-D-selects-order-service-else-order-other-service",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:53",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:335"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-inside-payment-service.PaymentType.E:meansInUse:difference-payment-record",
+      "kind": "semantic",
+      "subject": "ts-inside-payment-service.PaymentType.E",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "difference-payment-record-in-payDifference",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/entity/PaymentType.java:25",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:305",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:313"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-inside-payment-service.PaymentType.O:meansInUse:outside-payment-record",
+      "kind": "semantic",
+      "subject": "ts-inside-payment-service.PaymentType.O",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "outside-payment-record-after-external-pay-success",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/entity/PaymentType.java:21",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:119"
+      ]
+    },
+    {
+      "id": "atom:state:ts-inside-payment-service-money:persistsin-inside-money",
+      "kind": "state",
+      "subject": "ts-inside-payment-service.Money",
+      "axis": "static",
+      "predicate": "persistsIn",
+      "object": "JPA table inside_money (id uuid, userId, money, type MoneyType stored as string)",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Money.java:19",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Money.java:40"
+      ]
+    },
+    {
+      "id": "atom:state:ts-inside-payment-service-payment:persistsin-inside-payment",
+      "kind": "state",
+      "subject": "ts-inside-payment-service.Payment",
+      "axis": "static",
+      "predicate": "persistsIn",
+      "object": "JPA table inside_payment (id uuid, orderId, userId, price, type PaymentType stored as string)",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Payment.java:19",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Payment.java:43"
+      ]
+    },
+    {
+      "id": "atom:state:ts-inside-payment-service:persistsIn:mysql-datasource",
+      "kind": "state",
+      "subject": "ts-inside-payment-service",
+      "axis": "static",
+      "predicate": "persistsIn",
+      "object": "mysql-datasource-jpa-ddl-auto-update",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/resources/application.yml:13",
+        "src:ts-inside-payment-service/src/main/resources/application.yml:12"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-inside-payment-service-insidepaymentcontroller:exposesendpoint-get-welcome",
+      "kind": "capability",
+      "subject": "ts-inside-payment-service.InsidePaymentController",
+      "axis": "capability",
+      "predicate": "exposesEndpoint",
+      "object": "GET /api/v1/inside_pay_service/welcome",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java:26"
+      ]
+    },
+    {
+      "id": "atom:component:ts-inside-payment-service-money",
+      "kind": "component",
+      "subject": "ts-inside-payment-service.Money",
+      "axis": "static",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Money.java"
+      ]
+    },
+    {
+      "id": "atom:component:ts-inside-payment-service-payment",
+      "kind": "component",
+      "subject": "ts-inside-payment-service.Payment",
+      "axis": "static",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Payment.java"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-inside-payment-service.InsidePaymentServiceImpl:requires:balance-covers-total-expand",
+      "kind": "contract",
+      "subject": "ts-inside-payment-service.InsidePaymentServiceImpl",
+      "axis": "specification",
+      "predicate": "requires",
+      "object": "balance-covers-total-expand-for-inside-payment-else-outside-payment-branch",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:99",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:288"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-inside-payment-service-asynctask-sendasynccalltopaymentservice:meansinuse-external-greet-call",
+      "kind": "semantic",
+      "subject": "ts-inside-payment-service.AsyncTask.sendAsyncCallToPaymentService",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "async-boolean-greet-call-to-rest-service-external-not-a-payment-service-call-in-observed-body",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/async/AsyncTask.java:25",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/async/AsyncTask.java:27"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-inside-payment-service.ExecutorConfig.myAsync:ensures:caller-runs-when-pool-saturated",
+      "kind": "contract",
+      "subject": "ts-inside-payment-service.ExecutorConfig.myAsync",
+      "axis": "specification",
+      "predicate": "ensures",
+      "object": "caller-runs rejection policy when thread pool is saturated",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/async/ExecutorConfig.java:45"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-inside-payment-service.InsidePaymentService.createAccount:requires:no-existing-money-record",
+      "kind": "contract",
+      "subject": "ts-inside-payment-service.InsidePaymentService.createAccount",
+      "axis": "specification",
+      "predicate": "requires",
+      "object": "no-existing-money-record-for-user",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:143"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-inside-payment-service.InsidePaymentService.pay:ensures:order-status-set-paid",
+      "kind": "contract",
+      "subject": "ts-inside-payment-service.InsidePaymentService.pay",
+      "axis": "specification",
+      "predicate": "ensures",
+      "object": "order-status-set-to-paid-not-collected-after-successful-payment",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:121",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:128",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:330"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:readsFrom:order-other-service-order-query",
+      "kind": "relation",
+      "subject": "ts-inside-payment-service.InsidePaymentServiceImpl",
+      "axis": "restriction",
+      "predicate": "readsFrom",
+      "object": "ts-order-other-service:/api/v1/orderOtherService/orderOther/{orderId}",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:56"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:readsFrom:order-service-order-query",
+      "kind": "relation",
+      "subject": "ts-inside-payment-service.InsidePaymentServiceImpl",
+      "axis": "restriction",
+      "predicate": "readsFrom",
+      "object": "ts-order-service:/api/v1/orderservice/order/{orderId}",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:54"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-inside-payment-service.Balance.balance:meansInUse:deposit-minus-expenditure",
+      "kind": "semantic",
+      "subject": "ts-inside-payment-service.Balance.balance",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "per-user-deposit-minus-payment-expenditure",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:196",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:202"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-inside-payment-service:identifiedBy:spring-application-name",
+      "kind": "semantic",
+      "subject": "ts-inside-payment-service",
+      "axis": "semantic",
+      "predicate": "identifiedBy",
+      "object": "spring-application-name-resolved-through-discovery-urls",
+      "refs": [
+        "src:ts-inside-payment-service/src/main/resources/application.yml:9",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java:41"
+      ]
+    }
+  ],
+  "coverage": {
+    "assignedEntryCount": 103,
+    "adjudicatedEntryCount": 103
+  }
+}

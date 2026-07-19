@@ -1,0 +1,993 @@
+{
+ "onlyInPassA": [
+  {
+   "key": "authority|food_delivery.config.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-maxage-3600-on-/**",
+   "candidateAtomId": "atom:authority:food-delivery-config-securityconfig:allowscrossorigin-all",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/config/SecurityConfig.java:44"
+   ]
+  },
+  {
+   "key": "authority|food_delivery.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/fooddeliveryservice/**",
+   "candidateAtomId": "atom:authority:food-delivery-config-securityconfig:permitsunauthenticated-fooddeliveryservice-root",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/config/SecurityConfig.java:64"
+   ]
+  },
+  {
+   "key": "authority|foodsearch.config.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-maxage-3600-on-/**",
+   "candidateAtomId": "atom:authority:foodsearch-config-securityconfig:allowscrossorigin-all",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:47"
+   ]
+  },
+  {
+   "key": "authority|foodsearch.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/foodservice/**",
+   "candidateAtomId": "atom:authority:foodsearch-config-securityconfig:permitsunauthenticated-foodservice-root",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "authority|foodsearch.config.SecurityConfig|authority|requiresRole|admin-role-on-DELETE-/api/v1/foodservice/orders/*",
+   "candidateAtomId": "atom:authority:foodsearch-config-securityconfig:requiresrole-admin-delete-orders",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:72"
+   ]
+  },
+  {
+   "key": "authority|foodsearch.config.SecurityConfig|authority|requiresRole|admin-role-on-POST-/api/v1/foodservice/orders",
+   "candidateAtomId": "atom:authority:foodsearch-config-securityconfig:requiresrole-admin-post-orders",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:74"
+   ]
+  },
+  {
+   "key": "authority|foodsearch.config.SecurityConfig|authority|requiresRole|admin-role-on-PUT-/api/v1/foodservice/orders",
+   "candidateAtomId": "atom:authority:foodsearch-config-securityconfig:requiresrole-admin-put-orders",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:73"
+   ]
+  },
+  {
+   "key": "capability|execute.serivce.ExecuteService|capability|handlesCommand|ticketCollect",
+   "candidateAtomId": "atom:capability:execute-serivce-executeservice:handlescommand-ticketcollect",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteService.java:27"
+   ]
+  },
+  {
+   "key": "capability|execute.serivce.ExecuteService|capability|handlesCommand|ticketExecute",
+   "candidateAtomId": "atom:capability:execute-serivce-executeservice:handlescommand-ticketexecute",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteService.java:18"
+   ]
+  },
+  {
+   "key": "capability|food_delivery.controller.FoodDeliveryController|capability|exposesEndpoint|DELETE /api/v1/fooddeliveryservice/orders/d/{orderId}",
+   "candidateAtomId": "atom:capability:food-delivery-controller-fooddeliverycontroller:exposesendpoint-delete-orders-d-orderid",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:40"
+   ]
+  },
+  {
+   "key": "capability|food_delivery.controller.FoodDeliveryController|capability|exposesEndpoint|GET /api/v1/fooddeliveryservice/orders/all",
+   "candidateAtomId": "atom:capability:food-delivery-controller-fooddeliverycontroller:exposesendpoint-get-orders-all",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:52"
+   ]
+  },
+  {
+   "key": "capability|food_delivery.controller.FoodDeliveryController|capability|exposesEndpoint|GET /api/v1/fooddeliveryservice/orders/store/{storeId}",
+   "candidateAtomId": "atom:capability:food-delivery-controller-fooddeliverycontroller:exposesendpoint-get-orders-store-storeid",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:58"
+   ]
+  },
+  {
+   "key": "capability|food_delivery.controller.FoodDeliveryController|capability|exposesEndpoint|GET /api/v1/fooddeliveryservice/orders/{orderId}",
+   "candidateAtomId": "atom:capability:food-delivery-controller-fooddeliverycontroller:exposesendpoint-get-orders-orderid",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:46"
+   ]
+  },
+  {
+   "key": "capability|food_delivery.controller.FoodDeliveryController|capability|exposesEndpoint|GET /api/v1/fooddeliveryservice/welcome",
+   "candidateAtomId": "atom:capability:food-delivery-controller-fooddeliverycontroller:exposesendpoint-get-welcome",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:28"
+   ]
+  },
+  {
+   "key": "capability|food_delivery.controller.FoodDeliveryController|capability|exposesEndpoint|POST /api/v1/fooddeliveryservice/orders",
+   "candidateAtomId": "atom:capability:food-delivery-controller-fooddeliverycontroller:exposesendpoint-post-orders",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:34"
+   ]
+  },
+  {
+   "key": "capability|food_delivery.controller.FoodDeliveryController|capability|exposesEndpoint|PUT /api/v1/fooddeliveryservice/orders/dtime",
+   "candidateAtomId": "atom:capability:food-delivery-controller-fooddeliverycontroller:exposesendpoint-put-orders-dtime",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:76"
+   ]
+  },
+  {
+   "key": "capability|food_delivery.controller.FoodDeliveryController|capability|exposesEndpoint|PUT /api/v1/fooddeliveryservice/orders/seatno",
+   "candidateAtomId": "atom:capability:food-delivery-controller-fooddeliverycontroller:exposesendpoint-put-orders-seatno",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:70"
+   ]
+  },
+  {
+   "key": "capability|food_delivery.controller.FoodDeliveryController|capability|exposesEndpoint|PUT /api/v1/fooddeliveryservice/orders/tripid",
+   "candidateAtomId": "atom:capability:food-delivery-controller-fooddeliverycontroller:exposesendpoint-put-orders-tripid",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:64"
+   ]
+  },
+  {
+   "key": "capability|foodsearch.controller.FoodController|capability|exposesEndpoint|DELETE /api/v1/foodservice/orders/{orderId}",
+   "candidateAtomId": "atom:capability:foodsearch-controller-foodcontroller:exposesendpoint-delete-orders-orderid",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:76"
+   ]
+  },
+  {
+   "key": "capability|foodsearch.controller.FoodController|capability|exposesEndpoint|GET /api/v1/foodservice/foods/{date}/{startStation}/{endStation}/{tripId}",
+   "candidateAtomId": "atom:capability:foodsearch-controller-foodcontroller:exposesendpoint-get-foods-date-startstation-endstation-tripid",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:89"
+   ]
+  },
+  {
+   "key": "capability|foodsearch.controller.FoodController|capability|exposesEndpoint|GET /api/v1/foodservice/orders",
+   "candidateAtomId": "atom:capability:foodsearch-controller-foodcontroller:exposesendpoint-get-orders",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:50"
+   ]
+  },
+  {
+   "key": "capability|foodsearch.controller.FoodController|capability|exposesEndpoint|GET /api/v1/foodservice/orders/{orderId}",
+   "candidateAtomId": "atom:capability:foodsearch-controller-foodcontroller:exposesendpoint-get-orders-orderid",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:82"
+   ]
+  },
+  {
+   "key": "capability|foodsearch.controller.FoodController|capability|exposesEndpoint|GET /api/v1/foodservice/test_send_delivery",
+   "candidateAtomId": "atom:capability:foodsearch-controller-foodcontroller:exposesendpoint-get-test-send-delivery",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:37"
+   ]
+  },
+  {
+   "key": "capability|foodsearch.controller.FoodController|capability|exposesEndpoint|GET /api/v1/foodservice/welcome",
+   "candidateAtomId": "atom:capability:foodsearch-controller-foodcontroller:exposesendpoint-get-welcome",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:32"
+   ]
+  },
+  {
+   "key": "capability|foodsearch.controller.FoodController|capability|exposesEndpoint|POST /api/v1/foodservice/createOrderBatch",
+   "candidateAtomId": "atom:capability:foodsearch-controller-foodcontroller:exposesendpoint-post-createorderbatch",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:62"
+   ]
+  },
+  {
+   "key": "capability|foodsearch.controller.FoodController|capability|exposesEndpoint|POST /api/v1/foodservice/orders",
+   "candidateAtomId": "atom:capability:foodsearch-controller-foodcontroller:exposesendpoint-post-orders",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:56"
+   ]
+  },
+  {
+   "key": "capability|foodsearch.controller.FoodController|capability|exposesEndpoint|PUT /api/v1/foodservice/orders",
+   "candidateAtomId": "atom:capability:foodsearch-controller-foodcontroller:exposesendpoint-put-orders",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:69"
+   ]
+  },
+  {
+   "key": "component|execute.serivce.ExecuteServiceImpl|static||",
+   "candidateAtomId": "atom:component:execute-serivce-executeserviceimpl",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java"
+   ]
+  },
+  {
+   "key": "component|execute.serivce.ExecuteService|static||",
+   "candidateAtomId": "atom:component:execute-serivce-executeservice",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteService.java"
+   ]
+  },
+  {
+   "key": "component|food_delivery.config.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:food-delivery-config-securityconfig",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/config/SecurityConfig.java"
+   ]
+  },
+  {
+   "key": "component|food_delivery.controller.FoodDeliveryController|static||",
+   "candidateAtomId": "atom:component:food-delivery-controller-fooddeliverycontroller",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java"
+   ]
+  },
+  {
+   "key": "component|food_delivery.entity.DeliveryInfo|static||",
+   "candidateAtomId": "atom:component:food-delivery-entity-deliveryinfo",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/entity/DeliveryInfo.java"
+   ]
+  },
+  {
+   "key": "component|food_delivery.entity.FoodDeliveryOrder|static||",
+   "candidateAtomId": "atom:component:food-delivery-entity-fooddeliveryorder",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java"
+   ]
+  },
+  {
+   "key": "component|food_delivery.entity.SeatInfo|static||",
+   "candidateAtomId": "atom:component:food-delivery-entity-seatinfo",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/entity/SeatInfo.java"
+   ]
+  },
+  {
+   "key": "component|food_delivery.entity.StationFoodStoreInfo|static||",
+   "candidateAtomId": "atom:component:food-delivery-entity-stationfoodstoreinfo",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/entity/StationFoodStoreInfo.java"
+   ]
+  },
+  {
+   "key": "component|food_delivery.entity.TripOrderInfo|static||",
+   "candidateAtomId": "atom:component:food-delivery-entity-triporderinfo",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/entity/TripOrderInfo.java"
+   ]
+  },
+  {
+   "key": "component|food_delivery.init.InitData|static||",
+   "candidateAtomId": "atom:component:food-delivery-init-initdata",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/init/InitData.java"
+   ]
+  },
+  {
+   "key": "component|food_delivery.repository.FoodDeliveryOrderRepository|static||",
+   "candidateAtomId": "atom:component:food-delivery-repository-fooddeliveryorderrepository",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/repository/FoodDeliveryOrderRepository.java"
+   ]
+  },
+  {
+   "key": "component|food_delivery.service.FoodDeliveryServiceImpl|static||",
+   "candidateAtomId": "atom:component:food-delivery-service-fooddeliveryserviceimpl",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java"
+   ]
+  },
+  {
+   "key": "component|food_delivery.service.FoodDeliveryService|static||",
+   "candidateAtomId": "atom:component:food-delivery-service-fooddeliveryservice",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryService.java"
+   ]
+  },
+  {
+   "key": "component|foodsearch.config.Queues|static||",
+   "candidateAtomId": "atom:component:foodsearch-config-queues",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/config/Queues.java"
+   ]
+  },
+  {
+   "key": "component|foodsearch.config.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:foodsearch-config-securityconfig",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java"
+   ]
+  },
+  {
+   "key": "component|foodsearch.controller.FoodController|static||",
+   "candidateAtomId": "atom:component:foodsearch-controller-foodcontroller",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java"
+   ]
+  },
+  {
+   "key": "contract|food_delivery.entity.DeliveryInfo|specification|shapedAs|orderId(String), deliveryTime(String)",
+   "candidateAtomId": "atom:contract:food-delivery-entity-deliveryinfo:shapedas-fields",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/entity/DeliveryInfo.java:10"
+   ]
+  },
+  {
+   "key": "contract|food_delivery.entity.FoodDeliveryOrder|specification|shapedAs|id, stationFoodStoreId, foodList[Food], tripId, seatNo(int), createdTime(String), deliveryTime(String), deliveryFee(double)",
+   "candidateAtomId": "atom:contract:food-delivery-entity-fooddeliveryorder:shapedas-fields",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:19"
+   ]
+  },
+  {
+   "key": "contract|food_delivery.entity.SeatInfo|specification|shapedAs|orderId(String), seatNo(int)",
+   "candidateAtomId": "atom:contract:food-delivery-entity-seatinfo:shapedas-fields",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/entity/SeatInfo.java:10"
+   ]
+  },
+  {
+   "key": "contract|food_delivery.entity.StationFoodStoreInfo|specification|shapedAs|id, stationId, storeName, telephone, businessTime, deliveryFee(double), foodList[Food]",
+   "candidateAtomId": "atom:contract:food-delivery-entity-stationfoodstoreinfo:shapedas-fields",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/entity/StationFoodStoreInfo.java:17"
+   ]
+  },
+  {
+   "key": "contract|food_delivery.entity.TripOrderInfo|specification|shapedAs|orderId(String), tripId(String)",
+   "candidateAtomId": "atom:contract:food-delivery-entity-triporderinfo:shapedas-fields",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/entity/TripOrderInfo.java:10"
+   ]
+  },
+  {
+   "key": "effect|execute.serivce.ExecuteServiceImpl|effect|callsProvider|ts-order-other-service orderOther status update (/api/v1/orderOtherService/orderOther/status/{orderId}/{status}) and orderOther get (/api/v1/orderOtherService/orderOther/{orderId}) endpoints via RestTemplate",
+   "candidateAtomId": "atom:effect:execute-serivce-executeserviceimpl:callsprovider-ts-order-other-service",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:150",
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:177"
+   ]
+  },
+  {
+   "key": "effect|execute.serivce.ExecuteServiceImpl|effect|callsProvider|ts-order-service order status update (/api/v1/orderservice/order/status/{orderId}/{status}) and order get (/api/v1/orderservice/order/{orderId}) endpoints via RestTemplate",
+   "candidateAtomId": "atom:effect:execute-serivce-executeserviceimpl:callsprovider-ts-order-service",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:140",
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:163"
+   ]
+  },
+  {
+   "key": "effect|food_delivery.service.FoodDeliveryServiceImpl|effect|callsProvider|ts-station-food-service GET /api/v1/stationfoodservice/stationfoodstores/bystoreid/{stationFoodStoreId} endpoint via RestTemplate, called synchronously during order creation",
+   "candidateAtomId": "atom:effect:food-delivery-service-fooddeliveryserviceimpl:callsprovider-ts-station-food-service",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:47"
+   ]
+  },
+  {
+   "key": "effect|foodsearch.controller.FoodController|effect|publishes|food_delivery queue message via RabbitSend.send(deliveryJson) on the test_send_delivery endpoint",
+   "candidateAtomId": "atom:effect:foodsearch-controller-foodcontroller:publishes-food-delivery-queue",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:46"
+   ]
+  },
+  {
+   "key": "relation|food_delivery.controller.FoodDeliveryController|relation|dependsOn|food_delivery.service.FoodDeliveryService",
+   "candidateAtomId": "atom:relation:food-delivery-controller-fooddeliverycontroller:dependson-fooddeliveryservice",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:24"
+   ]
+  },
+  {
+   "key": "relation|food_delivery.init.InitData|relation|readsFrom|classpath resource food_delivery_orders.txt",
+   "candidateAtomId": "atom:relation:food-delivery-init-initdata:readsfrom-food-delivery-orders-txt",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/init/InitData.java:25"
+   ]
+  },
+  {
+   "key": "relation|foodsearch.controller.FoodController|relation|dependsOn|foodsearch.service.FoodService",
+   "candidateAtomId": "atom:relation:foodsearch-controller-foodcontroller:dependson-foodservice",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:25"
+   ]
+  },
+  {
+   "key": "relation|ts-execute-service|relation|dependsOn|nacos service-discovery cluster (NACOS_ADDRS)",
+   "candidateAtomId": "atom:relation:ts-execute-service:dependson-nacos-discovery",
+   "refs": [
+    "src:ts-execute-service/src/main/resources/application.yml:4"
+   ]
+  },
+  {
+   "key": "relation|ts-food-delivery-service|relation|dependsOn|nacos service-discovery cluster (NACOS_ADDRS)",
+   "candidateAtomId": "atom:relation:ts-food-delivery-service:dependson-nacos-discovery",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/resources/application.yml:4"
+   ]
+  },
+  {
+   "key": "semantic|ctx:execute-service-ticket-flow|cech|sectionValue|section=order-status-code:enum-orderstatus-getcode-accessor-used-for-collected-used-paid-change-values-not-raw-hardcoded-int-literals-at-this-site",
+   "candidateAtomId": "atom:semantic:ctx-execute-service-ticket-flow:cech-section-order-status-code",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:50",
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:56",
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:98",
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:104"
+   ]
+  },
+  {
+   "key": "semantic|ctx:food-delivery-order-lifecycle|cech|sectionValue|section=money-amount:double-deliveryfee-field-summed-from-per-food-double-prices-plus-store-double-deliveryfee-at-order-create-site",
+   "candidateAtomId": "atom:semantic:ctx-food-delivery-order-lifecycle:cech-section-money-amount",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:39",
+    "src:ts-food-delivery-service/src/main/java/food_delivery/entity/StationFoodStoreInfo.java:27",
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:58",
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:70"
+   ]
+  },
+  {
+   "key": "semantic|execute.serivce.ExecuteServiceImpl|semantic|meansInUse|headers-parameter-reassigned-to-null-before-every-downstream-call-so-incoming-request-headers-are-not-forwarded-to-order-or-order-other-service",
+   "candidateAtomId": "atom:semantic:execute-serivce-executeserviceimpl:meansinuse-headers-nulled",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:44",
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:92",
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:138",
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:165"
+   ]
+  },
+  {
+   "key": "semantic|execute.serivce.ExecuteServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-rejected-branch",
+   "candidateAtomId": "atom:semantic:execute-serivce-executeserviceimpl:statusgates-response-status",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:47",
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:57",
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:95"
+   ]
+  },
+  {
+   "key": "semantic|food_delivery.entity.FoodDeliveryOrder|semantic|meansInUse|deliveryFee-field-typed-double-populated-by-summing-per-food-double-prices-from-station-food-store-plus-the-store-double-deliveryFee-at-order-creation-site",
+   "candidateAtomId": "atom:semantic:food-delivery-entity-fooddeliveryorder:meansinuse-deliveryfee-double-summed",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:39",
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:58",
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:70"
+   ]
+  },
+  {
+   "key": "semantic|food_delivery.repository.FoodDeliveryOrderRepository|semantic|identifiedBy|lookup-by-primary-key-id-uuid-string-via-crudrepository-findbyid-orelse-null-then-null-checked-by-caller",
+   "candidateAtomId": "atom:semantic:food-delivery-repository-fooddeliveryorderrepository:identifiedby-findbyid",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:78",
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:91",
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:129"
+   ]
+  },
+  {
+   "key": "semantic|food_delivery.service.FoodDeliveryServiceImpl|semantic|meansInUse|findall-and-findbystationfoodstoreid-results-null-checked-branch-though-crudrepository-collection-methods-typically-return-empty-not-null",
+   "candidateAtomId": "atom:semantic:food-delivery-service-fooddeliveryserviceimpl:meansinuse-null-checked-collection-results",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:103",
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:115"
+   ]
+  },
+  {
+   "key": "semantic|food_delivery.service.FoodDeliveryServiceImpl|semantic|statusGates|status-1-on-saved-or-found-branch-status-0-on-not-found-or-rejected-branch",
+   "candidateAtomId": "atom:semantic:food-delivery-service-fooddeliveryserviceimpl:statusgates-response-status",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:66",
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:81",
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:94"
+   ]
+  },
+  {
+   "key": "semantic|foodsearch.controller.FoodController|semantic|meansInUse|delete-food-order-endpoint-sets-http-202-accepted-via-responsestatus-annotation-a-transport-status-distinct-from-the-response-body-status-field",
+   "candidateAtomId": "atom:semantic:foodsearch-controller-foodcontroller:meansinuse-delete-endpoint-http-202",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:75"
+   ]
+  },
+  {
+   "key": "state|food_delivery.entity.FoodDeliveryOrder|state|persistsIn|JPA entity with generated jpa-uuid primary key id (length 36)",
+   "candidateAtomId": "atom:state:food-delivery-entity-fooddeliveryorder:persistsin-jpa-uuid-pk",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:14",
+    "src:ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:21"
+   ]
+  },
+  {
+   "key": "state|ts-food-delivery-service|state|persistsIn|mysql datasource ts-food-delivery-mysql with jpa hibernate ddl-auto update and MySQL5Dialect",
+   "candidateAtomId": "atom:state:ts-food-delivery-service:persistsin-mysql-datasource",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/resources/application.yml:12",
+    "src:ts-food-delivery-service/src/main/resources/application.yml:18"
+   ]
+  }
+ ],
+ "onlyInPassB": [
+  {
+   "key": "authority|food_delivery.SecurityConfig|authority|allowsCrossOrigin|allow-all-origins-methods-headers-credentials-false-maxage-3600",
+   "candidateAtomId": "atom:authority:food-delivery-securityconfig:cors",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/config/SecurityConfig.java:44"
+   ]
+  },
+  {
+   "key": "authority|food_delivery.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/fooddeliveryservice/**",
+   "candidateAtomId": "atom:authority:food-delivery-securityconfig:permit-all",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/config/SecurityConfig.java:64"
+   ]
+  },
+  {
+   "key": "authority|food_delivery.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-and-webjars-paths",
+   "candidateAtomId": "atom:authority:food-delivery-securityconfig:permit-all-swagger",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/config/SecurityConfig.java:65"
+   ]
+  },
+  {
+   "key": "authority|foodsearch.SecurityConfig|authority|allowsCrossOrigin|allow-all-origins-methods-headers-credentials-false-maxage-3600",
+   "candidateAtomId": "atom:authority:foodsearch-securityconfig:cors",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:51"
+   ]
+  },
+  {
+   "key": "authority|foodsearch.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/foodservice/**",
+   "candidateAtomId": "atom:authority:foodsearch-securityconfig:permit-all",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "authority|foodsearch.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-and-webjars-paths",
+   "candidateAtomId": "atom:authority:foodsearch-securityconfig:permit-all-swagger",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:75"
+   ]
+  },
+  {
+   "key": "authority|foodsearch.SecurityConfig|authority|requiresRole|admin-role-required-for-delete-/api/v1/foodservice/orders/*",
+   "candidateAtomId": "atom:authority:foodsearch-securityconfig:role-delete",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:72"
+   ]
+  },
+  {
+   "key": "authority|foodsearch.SecurityConfig|authority|requiresRole|admin-role-required-for-post-/api/v1/foodservice/orders",
+   "candidateAtomId": "atom:authority:foodsearch-securityconfig:role-post",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:74"
+   ]
+  },
+  {
+   "key": "authority|foodsearch.SecurityConfig|authority|requiresRole|admin-role-required-for-put-/api/v1/foodservice/orders",
+   "candidateAtomId": "atom:authority:foodsearch-securityconfig:role-put",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java:73"
+   ]
+  },
+  {
+   "key": "capability|execute.ExecuteServiceImpl|capability|handlesCommand|TicketCollect",
+   "candidateAtomId": "atom:capability:execute-executeserviceimpl:ticket-collect",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteService.java:27",
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:89"
+   ]
+  },
+  {
+   "key": "capability|execute.ExecuteServiceImpl|capability|handlesCommand|TicketExecute",
+   "candidateAtomId": "atom:capability:execute-executeserviceimpl:ticket-execute",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteService.java:18",
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:41"
+   ]
+  },
+  {
+   "key": "capability|food_delivery.FoodDeliveryController|capability|exposesEndpoint|delete-/api/v1/fooddeliveryservice/orders/d/{orderId}",
+   "candidateAtomId": "atom:capability:food-delivery-fooddeliverycontroller:delete-food-delivery-order",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:40"
+   ]
+  },
+  {
+   "key": "capability|food_delivery.FoodDeliveryController|capability|exposesEndpoint|get-/api/v1/fooddeliveryservice/orders/all",
+   "candidateAtomId": "atom:capability:food-delivery-fooddeliverycontroller:get-all-food-delivery-orders",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:52"
+   ]
+  },
+  {
+   "key": "capability|food_delivery.FoodDeliveryController|capability|exposesEndpoint|get-/api/v1/fooddeliveryservice/orders/store/{storeId}",
+   "candidateAtomId": "atom:capability:food-delivery-fooddeliverycontroller:get-food-delivery-order-by-store-id",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:58"
+   ]
+  },
+  {
+   "key": "capability|food_delivery.FoodDeliveryController|capability|exposesEndpoint|get-/api/v1/fooddeliveryservice/orders/{orderId}",
+   "candidateAtomId": "atom:capability:food-delivery-fooddeliverycontroller:get-food-delivery-order-by-id",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:46"
+   ]
+  },
+  {
+   "key": "capability|food_delivery.FoodDeliveryController|capability|exposesEndpoint|post-/api/v1/fooddeliveryservice/orders",
+   "candidateAtomId": "atom:capability:food-delivery-fooddeliverycontroller:create-food-delivery-order",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:34"
+   ]
+  },
+  {
+   "key": "capability|food_delivery.FoodDeliveryController|capability|exposesEndpoint|put-/api/v1/fooddeliveryservice/orders/dtime",
+   "candidateAtomId": "atom:capability:food-delivery-fooddeliverycontroller:update-delivery-time",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:76"
+   ]
+  },
+  {
+   "key": "capability|food_delivery.FoodDeliveryController|capability|exposesEndpoint|put-/api/v1/fooddeliveryservice/orders/seatno",
+   "candidateAtomId": "atom:capability:food-delivery-fooddeliverycontroller:update-seat-no",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:70"
+   ]
+  },
+  {
+   "key": "capability|food_delivery.FoodDeliveryController|capability|exposesEndpoint|put-/api/v1/fooddeliveryservice/orders/tripid",
+   "candidateAtomId": "atom:capability:food-delivery-fooddeliverycontroller:update-trip-id",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java:64"
+   ]
+  },
+  {
+   "key": "capability|food_delivery.FoodDeliveryOrderRepository|capability|servesQuery|food-delivery-orders-by-stationfoodstoreid",
+   "candidateAtomId": "atom:capability:food-delivery-fooddeliveryorderrepository:find-by-station-food-store-id",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/repository/FoodDeliveryOrderRepository.java:10"
+   ]
+  },
+  {
+   "key": "capability|foodsearch.FoodController|capability|exposesEndpoint|delete-/api/v1/foodservice/orders/{orderId}",
+   "candidateAtomId": "atom:capability:foodsearch-foodcontroller:delete-food-order",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:76"
+   ]
+  },
+  {
+   "key": "capability|foodsearch.FoodController|capability|exposesEndpoint|get-/api/v1/foodservice/foods/{date}/{startStation}/{endStation}/{tripId}",
+   "candidateAtomId": "atom:capability:foodsearch-foodcontroller:get-all-food",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:89"
+   ]
+  },
+  {
+   "key": "capability|foodsearch.FoodController|capability|exposesEndpoint|get-/api/v1/foodservice/orders",
+   "candidateAtomId": "atom:capability:foodsearch-foodcontroller:find-all-food-order",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:50"
+   ]
+  },
+  {
+   "key": "capability|foodsearch.FoodController|capability|exposesEndpoint|get-/api/v1/foodservice/orders/{orderId}",
+   "candidateAtomId": "atom:capability:foodsearch-foodcontroller:find-food-order-by-order-id",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:82"
+   ]
+  },
+  {
+   "key": "capability|foodsearch.FoodController|capability|exposesEndpoint|get-/api/v1/foodservice/test_send_delivery",
+   "candidateAtomId": "atom:capability:foodsearch-foodcontroller:test-send-delivery",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:37"
+   ]
+  },
+  {
+   "key": "capability|foodsearch.FoodController|capability|exposesEndpoint|post-/api/v1/foodservice/createOrderBatch",
+   "candidateAtomId": "atom:capability:foodsearch-foodcontroller:create-food-orders-in-batch",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:62"
+   ]
+  },
+  {
+   "key": "capability|foodsearch.FoodController|capability|exposesEndpoint|post-/api/v1/foodservice/orders",
+   "candidateAtomId": "atom:capability:foodsearch-foodcontroller:create-food-order",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:56"
+   ]
+  },
+  {
+   "key": "capability|foodsearch.FoodController|capability|exposesEndpoint|put-/api/v1/foodservice/orders",
+   "candidateAtomId": "atom:capability:foodsearch-foodcontroller:update-food-order",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:69"
+   ]
+  },
+  {
+   "key": "component|execute.ExecuteServiceImpl|static||",
+   "candidateAtomId": "atom:component:execute-executeserviceimpl",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java"
+   ]
+  },
+  {
+   "key": "component|execute.ExecuteService|static||",
+   "candidateAtomId": "atom:component:execute-executeservice",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteService.java"
+   ]
+  },
+  {
+   "key": "component|food_delivery.DeliveryInfo|static||",
+   "candidateAtomId": "atom:component:food-delivery-deliveryinfo",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/entity/DeliveryInfo.java"
+   ]
+  },
+  {
+   "key": "component|food_delivery.FoodDeliveryController|static||",
+   "candidateAtomId": "atom:component:food-delivery-fooddeliverycontroller",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/controller/FoodDeliveryController.java"
+   ]
+  },
+  {
+   "key": "component|food_delivery.FoodDeliveryOrderRepository|static||",
+   "candidateAtomId": "atom:component:food-delivery-fooddeliveryorderrepository",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/repository/FoodDeliveryOrderRepository.java"
+   ]
+  },
+  {
+   "key": "component|food_delivery.FoodDeliveryOrder|static||",
+   "candidateAtomId": "atom:component:food-delivery-fooddeliveryorder",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java"
+   ]
+  },
+  {
+   "key": "component|food_delivery.FoodDeliveryServiceImpl|static||",
+   "candidateAtomId": "atom:component:food-delivery-fooddeliveryserviceimpl",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java"
+   ]
+  },
+  {
+   "key": "component|food_delivery.FoodDeliveryService|static||",
+   "candidateAtomId": "atom:component:food-delivery-fooddeliveryservice",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryService.java"
+   ]
+  },
+  {
+   "key": "component|food_delivery.InitData|static||",
+   "candidateAtomId": "atom:component:food-delivery-initdata",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/init/InitData.java"
+   ]
+  },
+  {
+   "key": "component|food_delivery.SeatInfo|static||",
+   "candidateAtomId": "atom:component:food-delivery-seatinfo",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/entity/SeatInfo.java"
+   ]
+  },
+  {
+   "key": "component|food_delivery.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:food-delivery-securityconfig",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/config/SecurityConfig.java"
+   ]
+  },
+  {
+   "key": "component|food_delivery.StationFoodStoreInfo|static||",
+   "candidateAtomId": "atom:component:food-delivery-stationfoodstoreinfo",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/entity/StationFoodStoreInfo.java"
+   ]
+  },
+  {
+   "key": "component|food_delivery.TripOrderInfo|static||",
+   "candidateAtomId": "atom:component:food-delivery-triporderinfo",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/entity/TripOrderInfo.java"
+   ]
+  },
+  {
+   "key": "component|foodsearch.FoodController|static||",
+   "candidateAtomId": "atom:component:foodsearch-foodcontroller",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java"
+   ]
+  },
+  {
+   "key": "component|foodsearch.Queues|static||",
+   "candidateAtomId": "atom:component:foodsearch-queues",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/config/Queues.java"
+   ]
+  },
+  {
+   "key": "component|foodsearch.SecurityConfig|static||",
+   "candidateAtomId": "atom:component:foodsearch-securityconfig",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/config/SecurityConfig.java"
+   ]
+  },
+  {
+   "key": "component|mq.food_delivery-queue|static||",
+   "candidateAtomId": "atom:component:mq-food-delivery-queue",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/config/Queues.java:10",
+    "src:ts-food-service/src/main/java/foodsearch/config/Queues.java:14"
+   ]
+  },
+  {
+   "key": "contract|foodsearch.FoodController|specification|ensures|returns-202-accepted-http-status-on-delete-food-order-request",
+   "candidateAtomId": "atom:contract:foodsearch-foodcontroller:delete-food-order-status",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:75"
+   ]
+  },
+  {
+   "key": "effect|food_delivery.InitData|effect|terminatesProcess|system-exit-1-called-on-exception-reading-food_delivery_orders.txt",
+   "candidateAtomId": "atom:effect:food-delivery-initdata:terminates-on-read-error",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/init/InitData.java:48",
+    "src:ts-food-delivery-service/src/main/java/food_delivery/init/InitData.java:51"
+   ]
+  },
+  {
+   "key": "effect|foodsearch.FoodController|effect|enqueues|food_delivery-queue-via-rabbitsend-send",
+   "candidateAtomId": "atom:effect:foodsearch-foodcontroller:enqueues-food-delivery-queue",
+   "refs": [
+    "src:ts-food-service/src/main/java/foodsearch/controller/FoodController.java:46",
+    "src:ts-food-service/src/main/java/foodsearch/config/Queues.java:10"
+   ]
+  },
+  {
+   "key": "relation|execute.ExecuteServiceImpl|relation|calls|ts-order-other-service",
+   "candidateAtomId": "atom:relation:execute-executeserviceimpl:calls-ts-order-other-service",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:154",
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:181"
+   ]
+  },
+  {
+   "key": "relation|execute.ExecuteServiceImpl|relation|calls|ts-order-service",
+   "candidateAtomId": "atom:relation:execute-executeserviceimpl:calls-ts-order-service",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:140",
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:167"
+   ]
+  },
+  {
+   "key": "relation|food_delivery.FoodDeliveryServiceImpl|relation|calls|ts-station-food-service",
+   "candidateAtomId": "atom:relation:food-delivery-fooddeliveryserviceimpl:calls-ts-station-food-service",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:49"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-execute-service-ticket-lifecycle|cech|sectionValue|section=order-status-code:enum-referenced-via-orderstatus-collected-used-paid-change-not-hardcoded-literal",
+   "candidateAtomId": "atom:semantic:ts-execute-service-ticket-lifecycle:cech-section-order-status-code",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:50",
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:98"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-food-delivery-service-order-management|cech|sectionValue|section=money-amount:double-summed-from-food-price-double-field-at-use-site",
+   "candidateAtomId": "atom:semantic:ts-food-delivery-service-order-management:cech-section-money-amount",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:58",
+    "src:ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:39",
+    "src:ts-food-delivery-service/src/main/java/food_delivery/entity/StationFoodStoreInfo.java:27"
+   ]
+  },
+  {
+   "key": "semantic|execute.ExecuteServiceImpl|semantic|meansInUse|headers-parameter-set-to-null-before-every-downstream-order-service-call",
+   "candidateAtomId": "atom:semantic:execute-executeserviceimpl:headers-discarded",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:44",
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:92",
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:138",
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:152",
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:165",
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:179"
+   ]
+  },
+  {
+   "key": "semantic|execute.ExecuteServiceImpl|semantic|meansInUse|order-status-code-referenced-via-orderstatus-enum-collected-used-paid-change-not-a-literal",
+   "candidateAtomId": "atom:semantic:execute-executeserviceimpl:order-status-enum",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:50",
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:56",
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:98",
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:104",
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:116",
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:121"
+   ]
+  },
+  {
+   "key": "semantic|execute.ExecuteServiceImpl|semantic|statusGates|status-1-on-success-or-found-branch-status-0-on-error-or-not-found-branch",
+   "candidateAtomId": "atom:semantic:execute-executeserviceimpl:response-envelope",
+   "refs": [
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:47",
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:57",
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:95",
+    "src:ts-execute-service/src/main/java/execute/serivce/ExecuteServiceImpl.java:113"
+   ]
+  },
+  {
+   "key": "semantic|food_delivery.FoodDeliveryOrder|semantic|identifiedBy|deliveryfee-field-declared-as-primitive-double",
+   "candidateAtomId": "atom:semantic:food-delivery-fooddeliveryorder:deliveryfee-type",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:39"
+   ]
+  },
+  {
+   "key": "semantic|food_delivery.FoodDeliveryServiceImpl|semantic|identifiedBy|food-delivery-orders-looked-up-by-primary-key-id-via-findbyid",
+   "candidateAtomId": "atom:semantic:food-delivery-fooddeliveryserviceimpl:lookup-by-id",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:78",
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:91",
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:129"
+   ]
+  },
+  {
+   "key": "semantic|food_delivery.FoodDeliveryServiceImpl|semantic|meansInUse|deliveryfee-computed-as-double-sum-of-food-price-double-values-plus-store-deliveryfee-at-use-site",
+   "candidateAtomId": "atom:semantic:food-delivery-fooddeliveryserviceimpl:deliveryfee-computation",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:58",
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:70"
+   ]
+  },
+  {
+   "key": "semantic|food_delivery.FoodDeliveryServiceImpl|semantic|statusGates|status-1-on-success-branch-status-0-on-error-or-not-found-branch",
+   "candidateAtomId": "atom:semantic:food-delivery-fooddeliveryserviceimpl:response-envelope",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:66",
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:81",
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:106"
+   ]
+  },
+  {
+   "key": "semantic|food_delivery.InitData|semantic|meansInUse|commandlinerunner-startup-body-fully-commented-out-effectively-no-op-at-boot",
+   "candidateAtomId": "atom:semantic:food-delivery-initdata:body-disabled",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/init/InitData.java:26",
+    "src:ts-food-delivery-service/src/main/java/food_delivery/init/InitData.java:47"
+   ]
+  },
+  {
+   "key": "semantic|food_delivery.StationFoodStoreInfo|semantic|identifiedBy|deliveryfee-field-declared-as-primitive-double",
+   "candidateAtomId": "atom:semantic:food-delivery-stationfoodstoreinfo:deliveryfee-type",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/entity/StationFoodStoreInfo.java:27"
+   ]
+  },
+  {
+   "key": "state|food_delivery.FoodDeliveryOrder|state|persistsIn|jpa-entity-persisted-via-crudrepository-uuid-generated-id",
+   "candidateAtomId": "atom:state:food-delivery-fooddeliveryorder:persists",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/entity/FoodDeliveryOrder.java:14",
+    "src:ts-food-delivery-service/src/main/java/food_delivery/repository/FoodDeliveryOrderRepository.java:8"
+   ]
+  },
+  {
+   "key": "state|food_delivery.FoodDeliveryServiceImpl|state|transitionsTo|food-delivery-order-saved-or-updated-via-repository-save-on-create-triporder-seat-deliverytime-update",
+   "candidateAtomId": "atom:state:food-delivery-fooddeliveryserviceimpl:persists-order-writes",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:72",
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:135",
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:151",
+    "src:ts-food-delivery-service/src/main/java/food_delivery/service/FoodDeliveryServiceImpl.java:167"
+   ]
+  },
+  {
+   "key": "state|ts-food-delivery-service|state|persistsIn|mysql-ts-food-delivery-mysql-database-jpa-ddl-auto-update",
+   "candidateAtomId": "atom:state:ts-food-delivery-service-config:datasource",
+   "refs": [
+    "src:ts-food-delivery-service/src/main/resources/application.yml:12",
+    "src:ts-food-delivery-service/src/main/resources/application.yml:19"
+   ]
+  }
+ ]
+}

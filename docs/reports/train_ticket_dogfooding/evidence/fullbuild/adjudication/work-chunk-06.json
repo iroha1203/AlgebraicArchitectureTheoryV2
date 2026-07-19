@@ -1,0 +1,472 @@
+{
+ "onlyInPassA": [
+  {
+   "key": "contract|common.RouteInfo|specification|shapedAs|stationlist-and-distancelist-comma-separated-string-fields-parsed-to-list-via-split-at-getter",
+   "candidateAtomId": "atom:contract:common-routeinfo:shaped-as",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/RouteInfo.java:23",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/RouteInfo.java:29",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/RouteInfo.java:30",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/RouteInfo.java:34",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/RouteInfo.java:35"
+   ]
+  },
+  {
+   "key": "contract|common.Route|specification|shapedAs|stations-and-distances-parallel-lists-indexed-by-position",
+   "candidateAtomId": "atom:contract:common-route:shaped-as",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Route.java:18",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Route.java:20"
+   ]
+  },
+  {
+   "key": "contract|common.Seat|specification|ensures|default-construction-sets-string-fields-to-empty-and-seattype-and-totalnum-to-zero-rather-than-null",
+   "candidateAtomId": "atom:contract:common-seat:ensures",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Seat.java:43",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Seat.java:50"
+   ]
+  },
+  {
+   "key": "contract|common.SoldTicket|specification|ensures|unsold-seat-counts-default-to-zero-per-seat-class-category-on-construction",
+   "candidateAtomId": "atom:contract:common-soldticket:ensures",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/SoldTicket.java:35",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/SoldTicket.java:44"
+   ]
+  },
+  {
+   "key": "contract|common.TravelResult|specification|shapedAs|status-boolean-field-paired-with-traintype-route-and-prices-payload-fields-and-percent-numeric-field",
+   "candidateAtomId": "atom:contract:common-travelresult:shaped-as",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TravelResult.java:12",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TravelResult.java:14",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TravelResult.java:16",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TravelResult.java:18",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TravelResult.java:20"
+   ]
+  },
+  {
+   "key": "contract|common.TripAllDetail|specification|shapedAs|status-boolean-field-paired-with-message-string-field-and-payload-fields-tripresponse-and-trip",
+   "candidateAtomId": "atom:contract:common-tripalldetail:shaped-as",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripAllDetail.java:15",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripAllDetail.java:17",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripAllDetail.java:19",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripAllDetail.java:21"
+   ]
+  },
+  {
+   "key": "contract|common.TripId|specification|shapedAs|tostring-reconstructs-train-number-by-concatenating-type-name-and-number",
+   "candidateAtomId": "atom:contract:common-tripid:shaped-as",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripId.java:42",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripId.java:43"
+   ]
+  },
+  {
+   "key": "contract|common.Trip|specification|shapedAs|starttime-and-endtime-stored-as-raw-string-fields-date-conversion-getters-and-setters-present-but-commented-out",
+   "candidateAtomId": "atom:contract:common-trip:shaped-as",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Trip.java:30",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Trip.java:32",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Trip.java:63",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Trip.java:77"
+   ]
+  },
+  {
+   "key": "relation|common.StationFoodStore|relation|dependsOn|common.Food",
+   "candidateAtomId": "atom:relation:common-stationfoodstore:depends-on",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/StationFoodStore.java:24"
+   ]
+  },
+  {
+   "key": "relation|common.TrainFood|relation|dependsOn|common.Food",
+   "candidateAtomId": "atom:relation:common-trainfood:depends-on",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TrainFood.java:20"
+   ]
+  },
+  {
+   "key": "relation|common.TravelResult|relation|dependsOn|common.Route",
+   "candidateAtomId": "atom:relation:common-travelresult:depends-on-route",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TravelResult.java:18"
+   ]
+  },
+  {
+   "key": "relation|common.TravelResult|relation|dependsOn|common.TrainType",
+   "candidateAtomId": "atom:relation:common-travelresult:depends-on-traintype",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TravelResult.java:16"
+   ]
+  },
+  {
+   "key": "relation|common.Travel|relation|dependsOn|common.Trip",
+   "candidateAtomId": "atom:relation:common-travel:depends-on",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Travel.java:14"
+   ]
+  },
+  {
+   "key": "relation|common.TripAllDetail|relation|dependsOn|common.Trip",
+   "candidateAtomId": "atom:relation:common-tripalldetail:depends-on-trip",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripAllDetail.java:21"
+   ]
+  },
+  {
+   "key": "relation|common.TripAllDetail|relation|dependsOn|common.TripResponse",
+   "candidateAtomId": "atom:relation:common-tripalldetail:depends-on-tripresponse",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripAllDetail.java:19"
+   ]
+  },
+  {
+   "key": "relation|common.TripId|relation|dependsOn|common.Type",
+   "candidateAtomId": "atom:relation:common-tripid:depends-on",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripId.java:12",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripId.java:22",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripId.java:30"
+   ]
+  },
+  {
+   "key": "relation|common.Trip|relation|dependsOn|common.TripId",
+   "candidateAtomId": "atom:relation:common-trip:depends-on",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Trip.java:19",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Trip.java:34"
+   ]
+  },
+  {
+   "key": "semantic|common.RoutePlanInfo|semantic|meansInUse|startstation-and-endstation-getters-lowercase-the-raw-field-for-lookup-key-normalization",
+   "candidateAtomId": "atom:semantic:common-routeplaninfo:means-in-use",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/RoutePlanInfo.java:28",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/RoutePlanInfo.java:32"
+   ]
+  },
+  {
+   "key": "semantic|common.Route|semantic|identifiedBy|uuid-random-generated-on-default-construction-when-id-not-supplied",
+   "candidateAtomId": "atom:semantic:common-route:identified-by",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Route.java:26",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Route.java:27"
+   ]
+  },
+  {
+   "key": "semantic|common.SeatClass|semantic|meansInUse|getnamebycode-code-not-matched-among-declared-values-falls-back-to-first-enum-constant-noseat-name-branch",
+   "candidateAtomId": "atom:semantic:common-seatclass:means-in-use",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/SeatClass.java:61",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/SeatClass.java:68"
+   ]
+  },
+  {
+   "key": "semantic|common.SeatClass|semantic|statusGates|seat-type-int-codes-0-noseat-1-business-2-firstclass-3-secondclass-4-hardseat-5-softseat-6-hardbed-7-softbed-8-highsoftbed",
+   "candidateAtomId": "atom:semantic:common-seatclass:status-gates",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/SeatClass.java:11",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/SeatClass.java:43"
+   ]
+  },
+  {
+   "key": "semantic|common.Seat|semantic|meansInUse|seattype-declared-as-primitive-int-required-field-rather-than-a-typed-enum-reference",
+   "candidateAtomId": "atom:semantic:common-seat:means-in-use",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Seat.java:35",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Seat.java:37"
+   ]
+  },
+  {
+   "key": "semantic|common.SoldTicket|semantic|meansInUse|field-names-mirror-seatclass-enum-constant-names-one-count-field-per-seat-class-category",
+   "candidateAtomId": "atom:semantic:common-soldticket:means-in-use",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/SoldTicket.java:17",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/SoldTicket.java:33",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/SeatClass.java:11",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/SeatClass.java:43"
+   ]
+  },
+  {
+   "key": "semantic|common.Station|semantic|identifiedBy|station-name-normalized-by-stripping-spaces-and-lowercasing-at-set-and-construct-site",
+   "candidateAtomId": "atom:semantic:common-station:identified-by",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Station.java:19",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Station.java:20",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Station.java:23",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Station.java:28"
+   ]
+  },
+  {
+   "key": "semantic|common.TripAllDetailInfo|semantic|meansInUse|from-and-to-getters-lowercase-the-raw-field-for-lookup-key-normalization",
+   "candidateAtomId": "atom:semantic:common-tripalldetailinfo:means-in-use",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripAllDetailInfo.java:28",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripAllDetailInfo.java:32"
+   ]
+  },
+  {
+   "key": "semantic|common.TripId|semantic|meansInUse|first-character-of-train-number-selects-type-z-t-k-g-d-remaining-substring-is-the-numeric-part-unmatched-leading-character-leaves-type-unset",
+   "candidateAtomId": "atom:semantic:common-tripid:means-in-use",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripId.java:21",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripId.java:35",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripId.java:38"
+   ]
+  },
+  {
+   "key": "semantic|common.TripInfo|semantic|meansInUse|startplace-and-endplace-getters-lowercase-the-raw-field-for-lookup-key-normalization",
+   "candidateAtomId": "atom:semantic:common-tripinfo:means-in-use",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripInfo.java:36",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripInfo.java:40"
+   ]
+  },
+  {
+   "key": "semantic|common.Trip|semantic|identifiedBy|startstationname-stationsname-and-terminalstationname-lowercased-at-construction-via-stringutils-string2lower",
+   "candidateAtomId": "atom:semantic:common-trip:identified-by",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Trip.java:37",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Trip.java:38",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Trip.java:39"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-common-routeplanresultunit-price|cech|sectionValue|section=money-amount:string-price-field-unparsed-at-dto-level-priceforsecondclassseat-and-priceforfirstclassseat",
+   "candidateAtomId": "atom:semantic:ts-common-routeplanresultunit-price:cech-section-money-amount",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/RoutePlanResultUnit.java:29",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/RoutePlanResultUnit.java:31"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-common-stationfoodstore-fee|cech|sectionValue|section=money-amount:double-deliveryfee-field-parsed-arithmetic-type-at-dto-level",
+   "candidateAtomId": "atom:semantic:ts-common-stationfoodstore-fee:cech-section-money-amount",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/StationFoodStore.java:22"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-common-travelresult-prices|cech|sectionValue|section=money-amount:map-of-string-to-string-prices-field-keyed-by-seat-class-name-values-unparsed-at-dto-level",
+   "candidateAtomId": "atom:semantic:ts-common-travelresult-prices:cech-section-money-amount",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TravelResult.java:20"
+   ]
+  }
+ ],
+ "onlyInPassB": [
+  {
+   "key": "contract|common.Seat|specification|requires|traveldate-trainnumber-startstation-deststation-seattype-must-be-non-null-and-valid-per-javax-validation-annotations",
+   "candidateAtomId": "atom:contract:common-seat:requires-non-null-fields",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Seat.java:18-37"
+   ]
+  },
+  {
+   "key": "contract|common.TripInfo|specification|requires|startplace-endplace-departuretime-must-be-non-null-and-valid-per-javax-validation-annotations",
+   "candidateAtomId": "atom:contract:common-tripinfo:requires-non-null-fields",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripInfo.java:17-27"
+   ]
+  },
+  {
+   "key": "relation|common.StationFoodStore|restriction|dependsOn|common.Food",
+   "candidateAtomId": "atom:relation:common-stationfoodstore:depends-on-food",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/StationFoodStore.java:24"
+   ]
+  },
+  {
+   "key": "relation|common.TrainFood|restriction|dependsOn|common.Food",
+   "candidateAtomId": "atom:relation:common-trainfood:depends-on-food",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TrainFood.java:20"
+   ]
+  },
+  {
+   "key": "relation|common.TravelResult|restriction|dependsOn|common.Route",
+   "candidateAtomId": "atom:relation:common-travelresult:depends-on-route",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TravelResult.java:18"
+   ]
+  },
+  {
+   "key": "relation|common.TravelResult|restriction|dependsOn|common.TrainType",
+   "candidateAtomId": "atom:relation:common-travelresult:depends-on-traintype",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TravelResult.java:16"
+   ]
+  },
+  {
+   "key": "relation|common.Travel|restriction|dependsOn|common.Trip",
+   "candidateAtomId": "atom:relation:common-travel:depends-on-trip",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Travel.java:14"
+   ]
+  },
+  {
+   "key": "relation|common.TripAllDetail|restriction|dependsOn|common.Trip",
+   "candidateAtomId": "atom:relation:common-tripalldetail:depends-on-trip",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripAllDetail.java:21"
+   ]
+  },
+  {
+   "key": "relation|common.Trip|restriction|dependsOn|common.TripId",
+   "candidateAtomId": "atom:relation:common-trip:depends-on-tripid",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Trip.java:19"
+   ]
+  },
+  {
+   "key": "semantic|common.RouteInfo|semantic|meansInUse|station-and-distance-lists-stored-as-single-comma-separated-string-fields-and-split-into-list-of-string-at-getter-call-site-distances-not-parsed-to-integer",
+   "candidateAtomId": "atom:semantic:common-routeinfo:means-in-use-csv-lists",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/RouteInfo.java:29-37"
+   ]
+  },
+  {
+   "key": "semantic|common.RoutePlanInfo|semantic|identifiedBy|start-and-end-station-names-lowercased-via-stringutils-string2lower-at-getter-call-site-for-route-plan-lookup",
+   "candidateAtomId": "atom:semantic:common-routeplaninfo:identified-by-lowercased-station",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/RoutePlanInfo.java:28-34"
+   ]
+  },
+  {
+   "key": "semantic|common.RoutePlanResultUnit|semantic|meansInUse|priceforsecondclassseat-and-pricefirstclassseat-represented-as-string-typed-fields-not-parsed-to-a-numeric-type-at-declaration-site",
+   "candidateAtomId": "atom:semantic:common-routeplanresultunit:means-in-use-price-as-string",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/RoutePlanResultUnit.java:29-31"
+   ]
+  },
+  {
+   "key": "semantic|common.Route|semantic|meansInUse|route-id-auto-generated-as-random-uuid-when-no-id-argument-is-supplied-to-constructor",
+   "candidateAtomId": "atom:semantic:common-route:means-in-use-id-generation",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Route.java:26-28",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Route.java:38-44"
+   ]
+  },
+  {
+   "key": "semantic|common.SeatClass|semantic|meansInUse|seat-class-integer-code-vocabulary-0-noseat-1-greenseat-business-2-firstclassseat-3-secondclassseat-4-hardseat-5-softseat-6-hardbed-7-softbed-8-highsoftseat",
+   "candidateAtomId": "atom:semantic:common-seatclass:means-in-use-code-vocabulary",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/SeatClass.java:11-43"
+   ]
+  },
+  {
+   "key": "semantic|common.SeatClass|semantic|statusGates|getnamebycode-returns-first-declared-enum-constant-name-noseat-on-not-found-unmatched-code-branch",
+   "candidateAtomId": "atom:semantic:common-seatclass:status-gates-default-branch",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/SeatClass.java:61-69"
+   ]
+  },
+  {
+   "key": "semantic|common.SoldTicket|semantic|meansInUse|seat-count-fields-declared-in-same-order-as-seatclass-integer-codes-0-through-8-noseat-through-highsoftbed-with-no-explicit-code-field-linking-them",
+   "candidateAtomId": "atom:semantic:common-soldticket:means-in-use-field-order-correspondence",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/SoldTicket.java:13-33",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/SeatClass.java:11-43"
+   ]
+  },
+  {
+   "key": "semantic|common.StationFoodStore|semantic|meansInUse|deliveryfee-represented-as-primitive-double-typed-field",
+   "candidateAtomId": "atom:semantic:common-stationfoodstore:means-in-use-fee-as-double",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/StationFoodStore.java:22"
+   ]
+  },
+  {
+   "key": "semantic|common.Station|semantic|identifiedBy|station-name-normalized-by-stripping-spaces-and-lowercasing-in-both-setname-and-constructor-as-identity-key",
+   "candidateAtomId": "atom:semantic:common-station:identified-by-normalized-name",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Station.java:19-21",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Station.java:23-25",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Station.java:28-31"
+   ]
+  },
+  {
+   "key": "semantic|common.TrainFood|semantic|identifiedBy|trip-referenced-by-raw-string-tripid-field-not-by-a-typed-trip-object-reference",
+   "candidateAtomId": "atom:semantic:common-trainfood:identified-by-string-tripid",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TrainFood.java:18"
+   ]
+  },
+  {
+   "key": "semantic|common.TravelInfo|semantic|meansInUse|starttime-and-endtime-kept-as-raw-string-fields-crossing-the-dto-boundary-date-conversion-getters-present-in-source-but-commented-out-disabled",
+   "candidateAtomId": "atom:semantic:common-travelinfo:means-in-use-raw-string-time",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TravelInfo.java:31-33",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TravelInfo.java:35-41"
+   ]
+  },
+  {
+   "key": "semantic|common.TravelResult|semantic|meansInUse|prices-represented-as-map-string-string-keyed-by-seat-class-name-with-string-typed-price-values-not-a-numeric-type",
+   "candidateAtomId": "atom:semantic:common-travelresult:means-in-use-prices-map",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TravelResult.java:20"
+   ]
+  },
+  {
+   "key": "semantic|common.TravelResult|semantic|statusGates|boolean-status-field-accompanies-traintype-route-and-prices-payload-fields-in-a-single-response-object-no-separate-message-field",
+   "candidateAtomId": "atom:semantic:common-travelresult:status-gates-payload",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TravelResult.java:12-24"
+   ]
+  },
+  {
+   "key": "semantic|common.TripAllDetailInfo|semantic|identifiedBy|from-and-to-place-names-lowercased-via-stringutils-string2lower-at-getter-call-site-for-trip-detail-lookup",
+   "candidateAtomId": "atom:semantic:common-tripalldetailinfo:identified-by-lowercased-place",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripAllDetailInfo.java:28-34"
+   ]
+  },
+  {
+   "key": "semantic|common.TripAllDetail|semantic|statusGates|boolean-status-plus-message-string-fields-accompany-tripresponse-and-trip-payload-fields-in-a-single-response-envelope-object",
+   "candidateAtomId": "atom:semantic:common-tripalldetail:status-gates-envelope",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripAllDetail.java:15-21"
+   ]
+  },
+  {
+   "key": "semantic|common.TripId|semantic|statusGates|leading-character-of-raw-train-number-string-selects-trip-type-branch-z-t-k-g-d-on-recognized-branch-type-left-unset-on-unrecognized-default-branch",
+   "candidateAtomId": "atom:semantic:common-tripid:status-gates-leading-char",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripId.java:20-39"
+   ]
+  },
+  {
+   "key": "semantic|common.TripInfo|semantic|identifiedBy|start-and-end-place-names-lowercased-via-stringutils-string2lower-at-getter-call-site-for-trip-lookup",
+   "candidateAtomId": "atom:semantic:common-tripinfo:identified-by-lowercased-place",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripInfo.java:36-42"
+   ]
+  },
+  {
+   "key": "semantic|common.Trip|semantic|identifiedBy|start-stations-and-terminal-station-names-lowercased-via-stringutils-string2lower-in-full-constructor-branch-short-routeid-constructor-leaves-them-blank-not-lowered",
+   "candidateAtomId": "atom:semantic:common-trip:identified-by-lowercased-station-names",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Trip.java:34-42",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Trip.java:44-52"
+   ]
+  },
+  {
+   "key": "semantic|ctx:common-entity-price-as-double|cech|sectionValue|section=money-amount:primitive-double-typed-fee-field",
+   "candidateAtomId": "atom:semantic:common-entity-price-as-double:cech-section-money-amount",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/StationFoodStore.java:22"
+   ]
+  },
+  {
+   "key": "semantic|ctx:common-entity-price-as-string|cech|sectionValue|section=money-amount:string-typed-price-fields-not-parsed-to-numeric-type-at-declaration-site",
+   "candidateAtomId": "atom:semantic:common-entity-price-as-string:cech-section-money-amount",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/RoutePlanResultUnit.java:29-31",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TravelResult.java:20"
+   ]
+  }
+ ]
+}

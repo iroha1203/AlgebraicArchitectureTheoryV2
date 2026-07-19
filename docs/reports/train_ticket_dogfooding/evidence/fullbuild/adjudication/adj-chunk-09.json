@@ -1,0 +1,659 @@
+{
+ "chunkId": "chunk-09",
+ "adjudications": [
+  {
+   "key": "authority|contacts.config.SecurityConfig|authority|allowsCrossOrigin|allow-all-origins-methods-headers-without-credentials-maxage-3600-on-/**",
+   "candidateAtomId": "atom:authority:contacts.config.SecurityConfig:allows-cross-origin",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-contacts-service/src/main/java/contacts/config/SecurityConfig.java:47-56 — corsConfigurer() bean registers /** with allowedOrigins/Methods/Headers=ALL, allowCredentials(false), maxAge(3600). Pass-b's line-47 citation is the same bean; kept as one atom with union refs.",
+   "canonicalAtom": { "id": "atom:authority:contacts.config.SecurityConfig:allows-cross-origin", "kind": "authority", "subject": "contacts.config.SecurityConfig", "axis": "authority", "predicate": "allowsCrossOrigin", "object": "all-origins-all-methods-all-headers-allowed-credentials-false-maxage-3600-on-/**", "refs": ["src:ts-contacts-service/src/main/java/contacts/config/SecurityConfig.java:47", "src:ts-contacts-service/src/main/java/contacts/config/SecurityConfig.java:51", "src:ts-contacts-service/src/main/java/contacts/config/SecurityConfig.java:56"] }
+  },
+  {
+   "key": "authority|contacts.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+   "candidateAtomId": "atom:authority:contacts.config.SecurityConfig:permits-unauthenticated",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread SecurityConfig.java:72-73 — antMatchers list swagger-ui.html, webjars/**, images/**, configuration/**, swagger-resources/**, v2/** as permitAll. Pass-b's object dropped swagger-resources; kept pass-a's fuller enumeration as canonical, same evidence.",
+   "canonicalAtom": { "id": "atom:authority:contacts.config.SecurityConfig:permits-unauthenticated", "kind": "authority", "subject": "contacts.config.SecurityConfig", "axis": "authority", "predicate": "permitsUnauthenticated", "object": "permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths", "refs": ["src:ts-contacts-service/src/main/java/contacts/config/SecurityConfig.java:72", "src:ts-contacts-service/src/main/java/contacts/config/SecurityConfig.java:73"] }
+  },
+  {
+   "key": "authority|contacts.config.SecurityConfig|authority|requiresRole|ADMIN-or-USER-role-on-/api/v1/contactservice/**",
+   "candidateAtomId": "atom:authority:contacts.config.SecurityConfig:requires-role",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread SecurityConfig.java:71 — antMatchers(\"/api/v1/contactservice/**\").hasAnyRole(\"ADMIN\",\"USER\"). Same line cited by both passes, only phrasing differs.",
+   "canonicalAtom": { "id": "atom:authority:contacts.config.SecurityConfig:requires-role", "kind": "authority", "subject": "contacts.config.SecurityConfig", "axis": "authority", "predicate": "requiresRole", "object": "hasAnyRole-ADMIN-USER-on-/api/v1/contactservice/**", "refs": ["src:ts-contacts-service/src/main/java/contacts/config/SecurityConfig.java:71"] }
+  },
+  {
+   "key": "authority|contacts.controller.ContactsController|authority|allowsCrossOrigin|method-level-allow-all-origins-on-contacts-crud-endpoints",
+   "candidateAtomId": "atom:authority:contacts.controller.ContactsController:allows-cross-origin",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ContactsController.java:34,41,49,58,65,72,80 — @CrossOrigin(origins=\"*\") repeated on every mutating/lookup endpoint (all but /contacts/welcome). Pass-b cited only line 34; union refs kept, same fact.",
+   "canonicalAtom": { "id": "atom:authority:contacts.controller.ContactsController:allows-cross-origin", "kind": "authority", "subject": "contacts.controller.ContactsController", "axis": "authority", "predicate": "allowsCrossOrigin", "object": "wildcard-origin-crossorigin-annotation-on-all-contacts-endpoints-except-welcome", "refs": ["src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:34", "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:41", "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:49", "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:58", "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:65", "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:72", "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:80"] }
+  },
+  {
+   "key": "authority|execute.config.SecurityConfig|authority|allowsCrossOrigin|allow-all-origins-methods-headers-without-credentials-maxage-3600-on-/**",
+   "candidateAtomId": "atom:authority:execute.config.SecurityConfig:allows-cross-origin",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-execute-service/src/main/java/execute/config/SecurityConfig.java:47-56 — identical corsConfigurer() bean shape as contacts service. Same fact as pass-b's line-47 citation.",
+   "canonicalAtom": { "id": "atom:authority:execute.config.SecurityConfig:allows-cross-origin", "kind": "authority", "subject": "execute.config.SecurityConfig", "axis": "authority", "predicate": "allowsCrossOrigin", "object": "all-origins-all-methods-all-headers-allowed-credentials-false-maxage-3600-on-/**", "refs": ["src:ts-execute-service/src/main/java/execute/config/SecurityConfig.java:47", "src:ts-execute-service/src/main/java/execute/config/SecurityConfig.java:51", "src:ts-execute-service/src/main/java/execute/config/SecurityConfig.java:56"] }
+  },
+  {
+   "key": "authority|execute.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+   "candidateAtomId": "atom:authority:execute.config.SecurityConfig:permits-unauthenticated",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread execute/config/SecurityConfig.java:72-73 — same permitAll matcher list as contacts service. Pass-b omitted swagger-resources from the object text; kept fuller enumeration.",
+   "canonicalAtom": { "id": "atom:authority:execute.config.SecurityConfig:permits-unauthenticated", "kind": "authority", "subject": "execute.config.SecurityConfig", "axis": "authority", "predicate": "permitsUnauthenticated", "object": "permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths", "refs": ["src:ts-execute-service/src/main/java/execute/config/SecurityConfig.java:72", "src:ts-execute-service/src/main/java/execute/config/SecurityConfig.java:73"] }
+  },
+  {
+   "key": "authority|execute.config.SecurityConfig|authority|requiresRole|ADMIN-or-USER-role-on-/api/v1/executeservice/**",
+   "candidateAtomId": "atom:authority:execute.config.SecurityConfig:requires-role",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread execute/config/SecurityConfig.java:71 — antMatchers(\"/api/v1/executeservice/**\").hasAnyRole(\"ADMIN\",\"USER\"). Same line, phrasing-only drift.",
+   "canonicalAtom": { "id": "atom:authority:execute.config.SecurityConfig:requires-role", "kind": "authority", "subject": "execute.config.SecurityConfig", "axis": "authority", "predicate": "requiresRole", "object": "hasAnyRole-ADMIN-USER-on-/api/v1/executeservice/**", "refs": ["src:ts-execute-service/src/main/java/execute/config/SecurityConfig.java:71"] }
+  },
+  {
+   "key": "authority|execute.controller.ExecuteControlller|authority|allowsCrossOrigin|method-level-allow-all-origins-on-execute-and-collect-endpoints",
+   "candidateAtomId": "atom:authority:execute.controller.ExecuteControlller:allows-cross-origin",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ExecuteControlller.java:30,38 — @CrossOrigin(origins=\"*\") on executeTicket and collectTicket. No matching pass-b atom for this controller's CORS (pass-b's onlyInPassB set has no execute.controller allows-cross-origin row); genuine unique finding.",
+   "canonicalAtom": { "id": "atom:authority:execute.controller.ExecuteControlller:allows-cross-origin", "kind": "authority", "subject": "execute.controller.ExecuteControlller", "axis": "authority", "predicate": "allowsCrossOrigin", "object": "wildcard-origin-crossorigin-annotation-on-execute-and-collect-endpoints", "refs": ["src:ts-execute-service/src/main/java/execute/controller/ExecuteControlller.java:30", "src:ts-execute-service/src/main/java/execute/controller/ExecuteControlller.java:38"] }
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|DELETE /api/v1/contactservice/contacts/{contactsId}",
+   "candidateAtomId": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-delete-contacts-by-id",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ContactsController.java:59 — @DeleteMapping(path=\"/contacts/{contactsId}\"). Same endpoint as pass-b row, casing/hyphen drift only.",
+   "canonicalAtom": { "id": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-delete-contacts-by-id", "kind": "capability", "subject": "contacts.controller.ContactsController", "axis": "capability", "predicate": "exposesEndpoint", "object": "DELETE /api/v1/contactservice/contacts/{contactsId}", "refs": ["src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:59"] }
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|GET /api/v1/contactservice/contacts",
+   "candidateAtomId": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-get-contacts",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ContactsController.java:35 — @GetMapping(path=\"/contacts\"). Same endpoint as pass-b row.",
+   "canonicalAtom": { "id": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-get-contacts", "kind": "capability", "subject": "contacts.controller.ContactsController", "axis": "capability", "predicate": "exposesEndpoint", "object": "GET /api/v1/contactservice/contacts", "refs": ["src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:35"] }
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|GET /api/v1/contactservice/contacts/account/{accountId}",
+   "candidateAtomId": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-get-contacts-by-account-id",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ContactsController.java:73 — @GetMapping(path=\"/contacts/account/{accountId}\"). Same endpoint as pass-b row.",
+   "canonicalAtom": { "id": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-get-contacts-by-account-id", "kind": "capability", "subject": "contacts.controller.ContactsController", "axis": "capability", "predicate": "exposesEndpoint", "object": "GET /api/v1/contactservice/contacts/account/{accountId}", "refs": ["src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:73"] }
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|GET /api/v1/contactservice/contacts/welcome",
+   "candidateAtomId": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-get-welcome",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ContactsController.java:29 — @GetMapping(path=\"/contacts/welcome\"). Same endpoint as pass-b row.",
+   "canonicalAtom": { "id": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-get-welcome", "kind": "capability", "subject": "contacts.controller.ContactsController", "axis": "capability", "predicate": "exposesEndpoint", "object": "GET /api/v1/contactservice/contacts/welcome", "refs": ["src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:29"] }
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|GET /api/v1/contactservice/contacts/{id}",
+   "candidateAtomId": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-get-contacts-by-id",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ContactsController.java:81 — @GetMapping(path=\"/contacts/{id}\"). Same endpoint as pass-b row.",
+   "canonicalAtom": { "id": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-get-contacts-by-id", "kind": "capability", "subject": "contacts.controller.ContactsController", "axis": "capability", "predicate": "exposesEndpoint", "object": "GET /api/v1/contactservice/contacts/{id}", "refs": ["src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:81"] }
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|POST /api/v1/contactservice/contacts",
+   "candidateAtomId": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-post-contacts",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ContactsController.java:42 — @PostMapping(path=\"/contacts\"). Same endpoint as pass-b row.",
+   "canonicalAtom": { "id": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-post-contacts", "kind": "capability", "subject": "contacts.controller.ContactsController", "axis": "capability", "predicate": "exposesEndpoint", "object": "POST /api/v1/contactservice/contacts", "refs": ["src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:42"] }
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|POST /api/v1/contactservice/contacts/admin",
+   "candidateAtomId": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-post-contacts-admin",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ContactsController.java:50 — @PostMapping(path=\"/contacts/admin\"). Same endpoint as pass-b row.",
+   "canonicalAtom": { "id": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-post-contacts-admin", "kind": "capability", "subject": "contacts.controller.ContactsController", "axis": "capability", "predicate": "exposesEndpoint", "object": "POST /api/v1/contactservice/contacts/admin", "refs": ["src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:50"] }
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|PUT /api/v1/contactservice/contacts",
+   "candidateAtomId": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-put-contacts",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ContactsController.java:66 — @PutMapping(path=\"/contacts\"). Same endpoint as pass-b row.",
+   "canonicalAtom": { "id": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-put-contacts", "kind": "capability", "subject": "contacts.controller.ContactsController", "axis": "capability", "predicate": "exposesEndpoint", "object": "PUT /api/v1/contactservice/contacts", "refs": ["src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:66"] }
+  },
+  {
+   "key": "capability|delivery.mq.RabbitReceive|capability|handlesCommand|food_delivery-queue-message-consumption",
+   "candidateAtomId": "atom:capability:delivery.mq.RabbitReceive:handles-command-food-delivery-queue",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread RabbitReceive.java:35 (@RabbitListener(queues=Queues.queueName)) and Queues.java:10 (queue name food_delivery). Consumption triggers a persistence side-effect (deliveryRepository.save at line 50), so handlesCommand is the accurate predicate; pass-b's servesQuery mislabels this fire-and-forget event consumer as a query responder. Canonicalized under pass-a's predicate.",
+   "canonicalAtom": { "id": "atom:capability:delivery.mq.RabbitReceive:handles-command-food-delivery-queue", "kind": "capability", "subject": "delivery.mq.RabbitReceive", "axis": "capability", "predicate": "handlesCommand", "object": "food_delivery-queue-message-consumption-via-rabbit-listener", "refs": ["src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:35", "src:ts-delivery-service/src/main/java/delivery/config/Queues.java:10"] }
+  },
+  {
+   "key": "capability|execute.controller.ExecuteControlller|capability|exposesEndpoint|GET /api/v1/executeservice/execute/collected/{orderId}",
+   "candidateAtomId": "atom:capability:execute.controller.ExecuteControlller:exposes-endpoint-get-collect-ticket",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ExecuteControlller.java:39 — @GetMapping(path=\"/execute/collected/{orderId}\"). Same endpoint as pass-b row.",
+   "canonicalAtom": { "id": "atom:capability:execute.controller.ExecuteControlller:exposes-endpoint-get-collect-ticket", "kind": "capability", "subject": "execute.controller.ExecuteControlller", "axis": "capability", "predicate": "exposesEndpoint", "object": "GET /api/v1/executeservice/execute/collected/{orderId}", "refs": ["src:ts-execute-service/src/main/java/execute/controller/ExecuteControlller.java:39"] }
+  },
+  {
+   "key": "capability|execute.controller.ExecuteControlller|capability|exposesEndpoint|GET /api/v1/executeservice/execute/execute/{orderId}",
+   "candidateAtomId": "atom:capability:execute.controller.ExecuteControlller:exposes-endpoint-get-execute-ticket",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ExecuteControlller.java:31 — @GetMapping(path=\"/execute/execute/{orderId}\"). Same endpoint as pass-b row.",
+   "canonicalAtom": { "id": "atom:capability:execute.controller.ExecuteControlller:exposes-endpoint-get-execute-ticket", "kind": "capability", "subject": "execute.controller.ExecuteControlller", "axis": "capability", "predicate": "exposesEndpoint", "object": "GET /api/v1/executeservice/execute/execute/{orderId}", "refs": ["src:ts-execute-service/src/main/java/execute/controller/ExecuteControlller.java:31"] }
+  },
+  {
+   "key": "capability|execute.controller.ExecuteControlller|capability|exposesEndpoint|GET /api/v1/executeservice/welcome",
+   "candidateAtomId": "atom:capability:execute.controller.ExecuteControlller:exposes-endpoint-get-welcome",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ExecuteControlller.java:25 — @GetMapping(path=\"/welcome\"). Same endpoint as pass-b row.",
+   "canonicalAtom": { "id": "atom:capability:execute.controller.ExecuteControlller:exposes-endpoint-get-welcome", "kind": "capability", "subject": "execute.controller.ExecuteControlller", "axis": "capability", "predicate": "exposesEndpoint", "object": "GET /api/v1/executeservice/welcome", "refs": ["src:ts-execute-service/src/main/java/execute/controller/ExecuteControlller.java:25"] }
+  },
+  {
+   "key": "contract|contacts.entity.Contacts|specification|ensures|unique-combination-of-account_id-document_number-document_type-columns",
+   "candidateAtomId": "atom:contract:contacts.entity.Contacts:unique-account-document-index",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread Contacts.java:21 (@Table unique index on account_id/document_number/document_type), ContactsRepository.java:49 (native lookup by same triplet), ContactsServiceImpl.java:50,63 (createContacts/create both query the triplet and reject with status 0 before insert). No pass-b contract-axis atom exists for this chunk at all; genuine unique specification-level finding combining DB constraint and app-level enforcement.",
+   "canonicalAtom": { "id": "atom:contract:contacts.entity.Contacts:unique-account-document-index", "kind": "contract", "subject": "contacts.entity.Contacts", "axis": "specification", "predicate": "ensures", "object": "unique-combination-of-account_id-document_number-document_type-columns", "refs": ["src:ts-contacts-service/src/main/java/contacts/entity/Contacts.java:21", "src:ts-contacts-service/src/main/java/contacts/repository/ContactsRepository.java:49", "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:50", "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:63"] }
+  },
+  {
+   "key": "contract|contacts.repository.ContactsRepository|specification|shapedAs|native-sql-lookup-by-account_id-document_number-document_type-triplet",
+   "candidateAtomId": "atom:contract:contacts.repository.ContactsRepository:native-lookup-shape",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ContactsRepository.java:49 — @Query(value=\"SELECT * FROM contacts WHERE account_id=?1 AND document_number=?2 AND document_type=?3\", nativeQuery=true). No pass-b contract-axis atom in this chunk; unique finding about the query's implementation shape.",
+   "canonicalAtom": { "id": "atom:contract:contacts.repository.ContactsRepository:native-lookup-shape", "kind": "contract", "subject": "contacts.repository.ContactsRepository", "axis": "specification", "predicate": "shapedAs", "object": "native-sql-lookup-by-account_id-document_number-document_type-triplet", "refs": ["src:ts-contacts-service/src/main/java/contacts/repository/ContactsRepository.java:49"] }
+  },
+  {
+   "key": "contract|delivery.mq.RabbitReceive|specification|requires|json-payload-deserialized-to-delivery-entity-and-null-checked-before-repository-save",
+   "candidateAtomId": "atom:contract:delivery.mq.RabbitReceive:payload-null-checked-before-persist",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread RabbitReceive.java:37 (JsonUtils.json2Object deserialize) and :39-42 (null check returns early before deliveryRepository.save at line 50). No pass-b contract-axis atom in this chunk; unique finding.",
+   "canonicalAtom": { "id": "atom:contract:delivery.mq.RabbitReceive:payload-null-checked-before-persist", "kind": "contract", "subject": "delivery.mq.RabbitReceive", "axis": "specification", "predicate": "requires", "object": "json-payload-deserialized-to-delivery-entity-and-null-checked-before-repository-save", "refs": ["src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:37", "src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:42"] }
+  },
+  {
+   "key": "contract|delivery.repository.DeliveryRepository|specification|shapedAs|lookup-by-orderId-uuid-field-distinct-from-primary-key-id",
+   "candidateAtomId": "atom:contract:delivery.repository.DeliveryRepository:lookup-by-order-id",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread DeliveryRepository.java:19 (findByOrderId(UUID orderId)) against Delivery.java:26-31, where id (String, @Id) and orderId (UUID) are distinct fields. No pass-b contract-axis atom in this chunk; unique finding.",
+   "canonicalAtom": { "id": "atom:contract:delivery.repository.DeliveryRepository:lookup-by-order-id", "kind": "contract", "subject": "delivery.repository.DeliveryRepository", "axis": "specification", "predicate": "shapedAs", "object": "lookup-by-orderId-uuid-field-distinct-from-primary-key-id", "refs": ["src:ts-delivery-service/src/main/java/delivery/repository/DeliveryRepository.java:19"] }
+  },
+  {
+   "key": "relation|contacts.controller.ContactsController|relation|dependsOn|contacts.service.ContactsService",
+   "candidateAtomId": "atom:relation:contacts.controller.ContactsController:depends-on-contacts-service",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ContactsController.java:25 — @Autowired private ContactsService contactsService. Plain static field dependency, no restriction/cech/runtime evidence, so axis normalized to relation (pass-b had mislabeled it restriction).",
+   "canonicalAtom": { "id": "atom:relation:contacts.controller.ContactsController:depends-on-contacts-service", "kind": "relation", "subject": "contacts.controller.ContactsController", "axis": "relation", "predicate": "dependsOn", "object": "contacts.service.ContactsService", "refs": ["src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:25"] }
+  },
+  {
+   "key": "relation|contacts.init.InitData|relation|dependsOn|contacts.service.ContactsService",
+   "candidateAtomId": "atom:relation:contacts.init.InitData:depends-on-contacts-service",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread InitData.java:18 (@Autowired ContactsService service) and :29,:38 (service.create call sites). Pass-b cited only line 18; union refs kept, axis normalized to relation.",
+   "canonicalAtom": { "id": "atom:relation:contacts.init.InitData:depends-on-contacts-service", "kind": "relation", "subject": "contacts.init.InitData", "axis": "relation", "predicate": "dependsOn", "object": "contacts.service.ContactsService", "refs": ["src:ts-contacts-service/src/main/java/contacts/init/InitData.java:18", "src:ts-contacts-service/src/main/java/contacts/init/InitData.java:29", "src:ts-contacts-service/src/main/java/contacts/init/InitData.java:38"] }
+  },
+  {
+   "key": "relation|contacts.service.ContactsServiceImpl|relation|dependsOn|contacts.repository.ContactsRepository",
+   "candidateAtomId": "atom:relation:contacts.service.ContactsServiceImpl:depends-on-contacts-repository",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ContactsServiceImpl.java:23 — @Autowired private ContactsRepository contactsRepository. Axis normalized to relation (plain field dependency, no restriction evidence).",
+   "canonicalAtom": { "id": "atom:relation:contacts.service.ContactsServiceImpl:depends-on-contacts-repository", "kind": "relation", "subject": "contacts.service.ContactsServiceImpl", "axis": "relation", "predicate": "dependsOn", "object": "contacts.repository.ContactsRepository", "refs": ["src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:23"] }
+  },
+  {
+   "key": "relation|contacts.service.ContactsServiceImpl|relation|implements|contacts.service.ContactsService",
+   "candidateAtomId": "atom:relation:contacts.service.ContactsServiceImpl:implements-contacts-service",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ContactsServiceImpl.java:20 — public class ContactsServiceImpl implements ContactsService. Axis normalized to relation.",
+   "canonicalAtom": { "id": "atom:relation:contacts.service.ContactsServiceImpl:implements-contacts-service", "kind": "relation", "subject": "contacts.service.ContactsServiceImpl", "axis": "relation", "predicate": "implements", "object": "contacts.service.ContactsService", "refs": ["src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:20"] }
+  },
+  {
+   "key": "relation|delivery.mq.RabbitReceive|relation|dependsOn|delivery.config.Queues",
+   "candidateAtomId": "atom:relation:delivery.mq.RabbitReceive:depends-on-queues",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread RabbitReceive.java:3 (import delivery.config.Queues) and :35 (@RabbitListener(queues=Queues.queueName)). Pass-b cited only line 35; union refs kept, axis normalized to relation.",
+   "canonicalAtom": { "id": "atom:relation:delivery.mq.RabbitReceive:depends-on-queues", "kind": "relation", "subject": "delivery.mq.RabbitReceive", "axis": "relation", "predicate": "dependsOn", "object": "delivery.config.Queues", "refs": ["src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:3", "src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:35"] }
+  },
+  {
+   "key": "relation|delivery.mq.RabbitReceive|relation|dependsOn|delivery.repository.DeliveryRepository",
+   "candidateAtomId": "atom:relation:delivery.mq.RabbitReceive:depends-on-delivery-repository",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread RabbitReceive.java:32 (@Autowired private DeliveryRepository deliveryRepository) and :50 (deliveryRepository.save call). Pass-b cited only line 32; union refs kept, axis normalized to relation.",
+   "canonicalAtom": { "id": "atom:relation:delivery.mq.RabbitReceive:depends-on-delivery-repository", "kind": "relation", "subject": "delivery.mq.RabbitReceive", "axis": "relation", "predicate": "dependsOn", "object": "delivery.repository.DeliveryRepository", "refs": ["src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:32", "src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:50"] }
+  },
+  {
+   "key": "relation|execute.controller.ExecuteControlller|relation|dependsOn|execute.serivce.ExecuteService",
+   "candidateAtomId": "atom:relation:execute.controller.ExecuteControlller:depends-on-execute-service",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ExecuteControlller.java:3 (import execute.serivce.ExecuteService — source-verbatim package typo \"serivce\") and :21 (@Autowired private ExecuteService executeService). Pass-b cited only line 3; union refs kept, axis normalized to relation.",
+   "canonicalAtom": { "id": "atom:relation:execute.controller.ExecuteControlller:depends-on-execute-service", "kind": "relation", "subject": "execute.controller.ExecuteControlller", "axis": "relation", "predicate": "dependsOn", "object": "execute.serivce.ExecuteService", "refs": ["src:ts-execute-service/src/main/java/execute/controller/ExecuteControlller.java:3", "src:ts-execute-service/src/main/java/execute/controller/ExecuteControlller.java:21"] }
+  },
+  {
+   "key": "semantic|contacts.service.ContactsServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-not-found-or-already-exists-or-rejected-branch",
+   "candidateAtomId": "atom:semantic:contacts.service.ContactsServiceImpl:status-gates-response-envelope",
+   "pass": "pass-a",
+   "decision": "not-adopted",
+   "basis": "Reread ContactsServiceImpl.java findContactsById(33,37), createContacts(51,56), create(65,69), delete(79,83), modify(94,104), getAllContacts(111,115) — six distinct methods each with their own condition and message pair (e.g. \"Already Exists\" vs \"Contacts already exists\" vs \"Contacts not found\"). This single combined atom collapses six genuinely distinct branch semantics into one generic bucket, losing per-method specificity that the reread confirms are separate observations (alias preservation). Superseded by six finer adopted atoms."
+  },
+  {
+   "key": "state|contacts.entity.Contacts|state|persistsIn|contacts-repository-jpa-crud-over-ts-contacts-mysql",
+   "candidateAtomId": "atom:state:contacts.entity.Contacts:persists-in-repository",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ContactsServiceImpl.java:55,69,102 (contactsRepository.save call sites), application.yml:11 (datasource block) and Contacts.java:21 (@Table unique index). Pass-b's paired row cited only the table/index angle (Contacts.java:21); combined into one persistsIn fact covering both the CRUD flow and the table shape.",
+   "canonicalAtom": { "id": "atom:state:contacts.entity.Contacts:persists-in-repository", "kind": "state", "subject": "contacts.entity.Contacts", "axis": "state", "predicate": "persistsIn", "object": "contacts-repository-jpa-crud-over-ts-contacts-mysql-table-with-unique-index-on-account-id-document-number-document-type", "refs": ["src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:55", "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:69", "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:102", "src:ts-contacts-service/src/main/resources/application.yml:11", "src:ts-contacts-service/src/main/java/contacts/entity/Contacts.java:21"] }
+  },
+  {
+   "key": "state|delivery.entity.Delivery|state|persistsIn|delivery-repository-jpa-crud-over-ts-delivery-mysql-persisted-on-queue-message-receipt",
+   "candidateAtomId": "atom:state:delivery.entity.Delivery:persists-in-repository",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread RabbitReceive.java:50 (deliveryRepository.save), DeliveryRepository.java:14 (CrudRepository interface) and application.yml:11 (datasource block), plus Delivery.java:29-34 (id/orderId/foodName/storeName/stationName fields) cited by pass-b's paired row. Combined into one persistsIn fact covering both the MQ-triggered CRUD flow and the entity's persisted field shape.",
+   "canonicalAtom": { "id": "atom:state:delivery.entity.Delivery:persists-in-repository", "kind": "state", "subject": "delivery.entity.Delivery", "axis": "state", "predicate": "persistsIn", "object": "delivery-repository-jpa-crud-over-ts-delivery-mysql-persisted-on-queue-message-receipt-with-order-id-food-name-store-name-station-name-fields", "refs": ["src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:50", "src:ts-delivery-service/src/main/java/delivery/repository/DeliveryRepository.java:14", "src:ts-delivery-service/src/main/resources/application.yml:11", "src:ts-delivery-service/src/main/java/delivery/entity/Delivery.java:29"] }
+  },
+  {
+   "key": "state|ts-consign-service|state|persistsIn|ts-consign-mysql-database-via-jpa-hibernate-ddl-auto-update",
+   "candidateAtomId": "atom:state:ts-consign-service:persists-in-mysql",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-consign-service/src/main/resources/application.yml:9 (jdbc:mysql://...ts-consign-mysql url, under the datasource key beginning at line 8) and :16 (hibernate ddl-auto:update, under jpa key at line 14). Pass-b cited only the datasource line; kept pass-a's fuller jpa/hibernate evidence.",
+   "canonicalAtom": { "id": "atom:state:ts-consign-service:persists-in-mysql", "kind": "state", "subject": "ts-consign-service", "axis": "state", "predicate": "persistsIn", "object": "ts-consign-mysql-database-via-jpa-hibernate-ddl-auto-update", "refs": ["src:ts-consign-service/src/main/resources/application.yml:8", "src:ts-consign-service/src/main/resources/application.yml:14"] }
+  },
+  {
+   "key": "authority|contacts.config.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-max-age-3600-on-/**",
+   "candidateAtomId": "atom:authority:contacts.config.security-config:allows-cross-origin",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread SecurityConfig.java:47-56 corsConfigurer() bean. Same fact as pass-a's row; canonicalized together.",
+   "canonicalAtom": { "id": "atom:authority:contacts.config.SecurityConfig:allows-cross-origin", "kind": "authority", "subject": "contacts.config.SecurityConfig", "axis": "authority", "predicate": "allowsCrossOrigin", "object": "all-origins-all-methods-all-headers-allowed-credentials-false-maxage-3600-on-/**", "refs": ["src:ts-contacts-service/src/main/java/contacts/config/SecurityConfig.java:47", "src:ts-contacts-service/src/main/java/contacts/config/SecurityConfig.java:51", "src:ts-contacts-service/src/main/java/contacts/config/SecurityConfig.java:56"] }
+  },
+  {
+   "key": "authority|contacts.config.SecurityConfig|authority|checksPermission|jwt-filter-added-before-username-password-authentication-filter",
+   "candidateAtomId": "atom:authority:contacts.config.security-config:checks-permission-jwt-filter",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread SecurityConfig.java:76 — .addFilterBefore(new JWTFilter(), UsernamePasswordAuthenticationFilter.class). No pass-a atom captures this ordering fact (pass-a has no JWTFilter-related atom for contacts.config.SecurityConfig); genuine unique finding.",
+   "canonicalAtom": { "id": "atom:authority:contacts.config.SecurityConfig:checks-permission-jwt-filter", "kind": "authority", "subject": "contacts.config.SecurityConfig", "axis": "authority", "predicate": "checksPermission", "object": "jwt-filter-added-before-username-password-authentication-filter", "refs": ["src:ts-contacts-service/src/main/java/contacts/config/SecurityConfig.java:76"] }
+  },
+  {
+   "key": "authority|contacts.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-v2-paths",
+   "candidateAtomId": "atom:authority:contacts.config.security-config:permits-unauthenticated",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread SecurityConfig.java:72-73 — same permitAll matcher set as pass-a's row (pass-b's object omitted swagger-resources, corrected in canonical).",
+   "canonicalAtom": { "id": "atom:authority:contacts.config.SecurityConfig:permits-unauthenticated", "kind": "authority", "subject": "contacts.config.SecurityConfig", "axis": "authority", "predicate": "permitsUnauthenticated", "object": "permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths", "refs": ["src:ts-contacts-service/src/main/java/contacts/config/SecurityConfig.java:72", "src:ts-contacts-service/src/main/java/contacts/config/SecurityConfig.java:73"] }
+  },
+  {
+   "key": "authority|contacts.config.SecurityConfig|authority|requiresRole|hasAnyRole-ADMIN-USER-on-/api/v1/contactservice/**",
+   "candidateAtomId": "atom:authority:contacts.config.security-config:requires-role",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread SecurityConfig.java:71 — same hasAnyRole(\"ADMIN\",\"USER\") gate as pass-a's row.",
+   "canonicalAtom": { "id": "atom:authority:contacts.config.SecurityConfig:requires-role", "kind": "authority", "subject": "contacts.config.SecurityConfig", "axis": "authority", "predicate": "requiresRole", "object": "hasAnyRole-ADMIN-USER-on-/api/v1/contactservice/**", "refs": ["src:ts-contacts-service/src/main/java/contacts/config/SecurityConfig.java:71"] }
+  },
+  {
+   "key": "authority|contacts.controller.ContactsController|authority|allowsCrossOrigin|wildcard-origin-per-endpoint-annotation-on-all-mutating-and-lookup-endpoints-except-welcome",
+   "candidateAtomId": "atom:authority:contacts.controller.contacts-controller:allows-cross-origin",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ContactsController.java:34,41,49,58,65,72,80 — same @CrossOrigin pattern as pass-a's row; pass-b only cited line 34, union refs kept.",
+   "canonicalAtom": { "id": "atom:authority:contacts.controller.ContactsController:allows-cross-origin", "kind": "authority", "subject": "contacts.controller.ContactsController", "axis": "authority", "predicate": "allowsCrossOrigin", "object": "wildcard-origin-crossorigin-annotation-on-all-contacts-endpoints-except-welcome", "refs": ["src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:34", "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:41", "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:49", "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:58", "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:65", "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:72", "src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:80"] }
+  },
+  {
+   "key": "authority|execute.config.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-max-age-3600-on-/**",
+   "candidateAtomId": "atom:authority:execute.config.security-config:allows-cross-origin",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread execute/config/SecurityConfig.java:47-56 corsConfigurer() bean, identical shape to contacts service. Same fact as pass-a's row.",
+   "canonicalAtom": { "id": "atom:authority:execute.config.SecurityConfig:allows-cross-origin", "kind": "authority", "subject": "execute.config.SecurityConfig", "axis": "authority", "predicate": "allowsCrossOrigin", "object": "all-origins-all-methods-all-headers-allowed-credentials-false-maxage-3600-on-/**", "refs": ["src:ts-execute-service/src/main/java/execute/config/SecurityConfig.java:47", "src:ts-execute-service/src/main/java/execute/config/SecurityConfig.java:51", "src:ts-execute-service/src/main/java/execute/config/SecurityConfig.java:56"] }
+  },
+  {
+   "key": "authority|execute.config.SecurityConfig|authority|checksPermission|jwt-filter-added-before-username-password-authentication-filter",
+   "candidateAtomId": "atom:authority:execute.config.security-config:checks-permission-jwt-filter",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread execute/config/SecurityConfig.java:76 — .addFilterBefore(new JWTFilter(), UsernamePasswordAuthenticationFilter.class). No pass-a atom captures this for execute service; genuine unique finding.",
+   "canonicalAtom": { "id": "atom:authority:execute.config.SecurityConfig:checks-permission-jwt-filter", "kind": "authority", "subject": "execute.config.SecurityConfig", "axis": "authority", "predicate": "checksPermission", "object": "jwt-filter-added-before-username-password-authentication-filter", "refs": ["src:ts-execute-service/src/main/java/execute/config/SecurityConfig.java:76"] }
+  },
+  {
+   "key": "authority|execute.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-v2-paths",
+   "candidateAtomId": "atom:authority:execute.config.security-config:permits-unauthenticated",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread execute/config/SecurityConfig.java:72-73 — same permitAll matcher set as pass-a's row.",
+   "canonicalAtom": { "id": "atom:authority:execute.config.SecurityConfig:permits-unauthenticated", "kind": "authority", "subject": "execute.config.SecurityConfig", "axis": "authority", "predicate": "permitsUnauthenticated", "object": "permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths", "refs": ["src:ts-execute-service/src/main/java/execute/config/SecurityConfig.java:72", "src:ts-execute-service/src/main/java/execute/config/SecurityConfig.java:73"] }
+  },
+  {
+   "key": "authority|execute.config.SecurityConfig|authority|requiresRole|hasAnyRole-ADMIN-USER-on-/api/v1/executeservice/**",
+   "candidateAtomId": "atom:authority:execute.config.security-config:requires-role",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread execute/config/SecurityConfig.java:71 — same hasAnyRole gate as pass-a's row.",
+   "canonicalAtom": { "id": "atom:authority:execute.config.SecurityConfig:requires-role", "kind": "authority", "subject": "execute.config.SecurityConfig", "axis": "authority", "predicate": "requiresRole", "object": "hasAnyRole-ADMIN-USER-on-/api/v1/executeservice/**", "refs": ["src:ts-execute-service/src/main/java/execute/config/SecurityConfig.java:71"] }
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|DELETE-/api/v1/contactservice/contacts/{contactsId}",
+   "candidateAtomId": "atom:capability:contacts.controller.contacts-controller:exposes-endpoint-delete-contacts-id",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ContactsController.java:59 — same @DeleteMapping as pass-a's row.",
+   "canonicalAtom": { "id": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-delete-contacts-by-id", "kind": "capability", "subject": "contacts.controller.ContactsController", "axis": "capability", "predicate": "exposesEndpoint", "object": "DELETE /api/v1/contactservice/contacts/{contactsId}", "refs": ["src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:59"] }
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|GET-/api/v1/contactservice/contacts",
+   "candidateAtomId": "atom:capability:contacts.controller.contacts-controller:exposes-endpoint-get-contacts",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ContactsController.java:35 — same @GetMapping as pass-a's row.",
+   "canonicalAtom": { "id": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-get-contacts", "kind": "capability", "subject": "contacts.controller.ContactsController", "axis": "capability", "predicate": "exposesEndpoint", "object": "GET /api/v1/contactservice/contacts", "refs": ["src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:35"] }
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|GET-/api/v1/contactservice/contacts/account/{accountId}",
+   "candidateAtomId": "atom:capability:contacts.controller.contacts-controller:exposes-endpoint-get-contacts-by-account-id",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ContactsController.java:73 — same @GetMapping as pass-a's row.",
+   "canonicalAtom": { "id": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-get-contacts-by-account-id", "kind": "capability", "subject": "contacts.controller.ContactsController", "axis": "capability", "predicate": "exposesEndpoint", "object": "GET /api/v1/contactservice/contacts/account/{accountId}", "refs": ["src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:73"] }
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|GET-/api/v1/contactservice/contacts/welcome",
+   "candidateAtomId": "atom:capability:contacts.controller.contacts-controller:exposes-endpoint-get-welcome",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ContactsController.java:29 — same @GetMapping as pass-a's row.",
+   "canonicalAtom": { "id": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-get-welcome", "kind": "capability", "subject": "contacts.controller.ContactsController", "axis": "capability", "predicate": "exposesEndpoint", "object": "GET /api/v1/contactservice/contacts/welcome", "refs": ["src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:29"] }
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|GET-/api/v1/contactservice/contacts/{id}",
+   "candidateAtomId": "atom:capability:contacts.controller.contacts-controller:exposes-endpoint-get-contacts-by-id",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ContactsController.java:81 — same @GetMapping as pass-a's row.",
+   "canonicalAtom": { "id": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-get-contacts-by-id", "kind": "capability", "subject": "contacts.controller.ContactsController", "axis": "capability", "predicate": "exposesEndpoint", "object": "GET /api/v1/contactservice/contacts/{id}", "refs": ["src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:81"] }
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|POST-/api/v1/contactservice/contacts",
+   "candidateAtomId": "atom:capability:contacts.controller.contacts-controller:exposes-endpoint-post-contacts",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ContactsController.java:42 — same @PostMapping as pass-a's row.",
+   "canonicalAtom": { "id": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-post-contacts", "kind": "capability", "subject": "contacts.controller.ContactsController", "axis": "capability", "predicate": "exposesEndpoint", "object": "POST /api/v1/contactservice/contacts", "refs": ["src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:42"] }
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|POST-/api/v1/contactservice/contacts/admin",
+   "candidateAtomId": "atom:capability:contacts.controller.contacts-controller:exposes-endpoint-post-contacts-admin",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ContactsController.java:50 — same @PostMapping as pass-a's row.",
+   "canonicalAtom": { "id": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-post-contacts-admin", "kind": "capability", "subject": "contacts.controller.ContactsController", "axis": "capability", "predicate": "exposesEndpoint", "object": "POST /api/v1/contactservice/contacts/admin", "refs": ["src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:50"] }
+  },
+  {
+   "key": "capability|contacts.controller.ContactsController|capability|exposesEndpoint|PUT-/api/v1/contactservice/contacts",
+   "candidateAtomId": "atom:capability:contacts.controller.contacts-controller:exposes-endpoint-put-contacts",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ContactsController.java:66 — same @PutMapping as pass-a's row.",
+   "canonicalAtom": { "id": "atom:capability:contacts.controller.ContactsController:exposes-endpoint-put-contacts", "kind": "capability", "subject": "contacts.controller.ContactsController", "axis": "capability", "predicate": "exposesEndpoint", "object": "PUT /api/v1/contactservice/contacts", "refs": ["src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:66"] }
+  },
+  {
+   "key": "capability|delivery.mq.RabbitReceive|capability|servesQuery|rabbit-listener-on-queue-food_delivery",
+   "candidateAtomId": "atom:capability:delivery.mq.rabbit-receive:listens-on-queue",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread RabbitReceive.java:35 and Queues.java:10 — same listener/queue as pass-a's row. The listener persists a record (deliveryRepository.save at line 50) with no response returned to the broker, so this is command handling, not query serving; canonicalized under pass-a's handlesCommand predicate.",
+   "canonicalAtom": { "id": "atom:capability:delivery.mq.RabbitReceive:handles-command-food-delivery-queue", "kind": "capability", "subject": "delivery.mq.RabbitReceive", "axis": "capability", "predicate": "handlesCommand", "object": "food_delivery-queue-message-consumption-via-rabbit-listener", "refs": ["src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:35", "src:ts-delivery-service/src/main/java/delivery/config/Queues.java:10"] }
+  },
+  {
+   "key": "capability|execute.controller.ExecuteControlller|capability|exposesEndpoint|GET-/api/v1/executeservice/execute/collected/{orderId}",
+   "candidateAtomId": "atom:capability:execute.controller.execute-controlller:exposes-endpoint-get-collect",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ExecuteControlller.java:39 — same @GetMapping as pass-a's row.",
+   "canonicalAtom": { "id": "atom:capability:execute.controller.ExecuteControlller:exposes-endpoint-get-collect-ticket", "kind": "capability", "subject": "execute.controller.ExecuteControlller", "axis": "capability", "predicate": "exposesEndpoint", "object": "GET /api/v1/executeservice/execute/collected/{orderId}", "refs": ["src:ts-execute-service/src/main/java/execute/controller/ExecuteControlller.java:39"] }
+  },
+  {
+   "key": "capability|execute.controller.ExecuteControlller|capability|exposesEndpoint|GET-/api/v1/executeservice/execute/execute/{orderId}",
+   "candidateAtomId": "atom:capability:execute.controller.execute-controlller:exposes-endpoint-get-execute",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ExecuteControlller.java:31 — same @GetMapping as pass-a's row.",
+   "canonicalAtom": { "id": "atom:capability:execute.controller.ExecuteControlller:exposes-endpoint-get-execute-ticket", "kind": "capability", "subject": "execute.controller.ExecuteControlller", "axis": "capability", "predicate": "exposesEndpoint", "object": "GET /api/v1/executeservice/execute/execute/{orderId}", "refs": ["src:ts-execute-service/src/main/java/execute/controller/ExecuteControlller.java:31"] }
+  },
+  {
+   "key": "capability|execute.controller.ExecuteControlller|capability|exposesEndpoint|GET-/api/v1/executeservice/welcome",
+   "candidateAtomId": "atom:capability:execute.controller.execute-controlller:exposes-endpoint-get-welcome",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ExecuteControlller.java:25 — same @GetMapping as pass-a's row.",
+   "canonicalAtom": { "id": "atom:capability:execute.controller.ExecuteControlller:exposes-endpoint-get-welcome", "kind": "capability", "subject": "execute.controller.ExecuteControlller", "axis": "capability", "predicate": "exposesEndpoint", "object": "GET /api/v1/executeservice/welcome", "refs": ["src:ts-execute-service/src/main/java/execute/controller/ExecuteControlller.java:25"] }
+  },
+  {
+   "key": "effect|contacts.service.ContactsServiceImpl|effect|writesTo|contacts-repository-delete-by-id-on-delete-path",
+   "candidateAtomId": "atom:effect:contacts.service.contacts-service-impl:writes-to-contacts-store-delete",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ContactsServiceImpl.java:77 — contactsRepository.deleteById(contactsId) inside delete(). Pass-a produced no effect-axis atoms in this chunk at all; genuine unique finding.",
+   "canonicalAtom": { "id": "atom:effect:contacts.service.ContactsServiceImpl:writes-to-contacts-store-delete", "kind": "effect", "subject": "contacts.service.ContactsServiceImpl", "axis": "effect", "predicate": "writesTo", "object": "contacts-repository-delete-by-id-on-delete-path", "refs": ["src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:77"] }
+  },
+  {
+   "key": "effect|contacts.service.ContactsServiceImpl|effect|writesTo|contacts-repository-save-on-create-and-create-contacts-and-modify-paths",
+   "candidateAtomId": "atom:effect:contacts.service.contacts-service-impl:writes-to-contacts-store-create",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ContactsServiceImpl.java:55 (createContacts save), :69 (create save), :102 (modify save) — all three contactsRepository.save call sites. Genuine unique finding, no pass-a effect atoms exist in this chunk.",
+   "canonicalAtom": { "id": "atom:effect:contacts.service.ContactsServiceImpl:writes-to-contacts-store-create", "kind": "effect", "subject": "contacts.service.ContactsServiceImpl", "axis": "effect", "predicate": "writesTo", "object": "contacts-repository-save-on-create-and-create-contacts-and-modify-paths", "refs": ["src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:55", "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:69", "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:102"] }
+  },
+  {
+   "key": "effect|delivery.mq.RabbitReceive|effect|writesTo|delivery-repository-save-on-rabbit-message-consumption",
+   "candidateAtomId": "atom:effect:delivery.mq.rabbit-receive:writes-to-delivery-store",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread RabbitReceive.java:50 — deliveryRepository.save(delivery) inside the @RabbitListener process() method. Genuine unique finding, no pass-a effect atoms in this chunk.",
+   "canonicalAtom": { "id": "atom:effect:delivery.mq.RabbitReceive:writes-to-delivery-store", "kind": "effect", "subject": "delivery.mq.RabbitReceive", "axis": "effect", "predicate": "writesTo", "object": "delivery-repository-save-on-rabbit-message-consumption", "refs": ["src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:50"] }
+  },
+  {
+   "key": "effect|ts-delivery-service|effect|callsProvider|rabbitmq-broker-configured-host-port-for-queue-consumption",
+   "candidateAtomId": "atom:effect:ts-delivery-service:calls-provider-rabbitmq",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-delivery-service/src/main/resources/application.yml:16-18 (rabbitmq host/port block) and RabbitReceive.java:35 (@RabbitListener consuming from that broker). Genuine unique finding, no pass-a effect atoms in this chunk.",
+   "canonicalAtom": { "id": "atom:effect:ts-delivery-service:calls-provider-rabbitmq", "kind": "effect", "subject": "ts-delivery-service", "axis": "effect", "predicate": "callsProvider", "object": "rabbitmq-broker-configured-host-port-for-queue-consumption", "refs": ["src:ts-delivery-service/src/main/resources/application.yml:16", "src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:35"] }
+  },
+  {
+   "key": "relation|contacts.config.SecurityConfig|restriction|dependsOn|edu.fudan.common.security.jwt.JWTFilter",
+   "candidateAtomId": "atom:relation:contacts.config.security-config:depends-on:jwt-filter",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread SecurityConfig.java:76 — new JWTFilter() constructed and wired via addFilterBefore. No pass-a atom for this dependency. Axis normalized to relation (plain static filter-chain wiring, no cech/runtime measurement evidence to justify restriction).",
+   "canonicalAtom": { "id": "atom:relation:contacts.config.SecurityConfig:depends-on-jwt-filter", "kind": "relation", "subject": "contacts.config.SecurityConfig", "axis": "relation", "predicate": "dependsOn", "object": "edu.fudan.common.security.jwt.JWTFilter", "refs": ["src:ts-contacts-service/src/main/java/contacts/config/SecurityConfig.java:76"] }
+  },
+  {
+   "key": "relation|contacts.controller.ContactsController|restriction|dependsOn|contacts.service.ContactsService",
+   "candidateAtomId": "atom:relation:contacts.controller.contacts-controller:depends-on:contacts.service.contacts-service",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ContactsController.java:25 — same field dependency as pass-a's row; axis normalized to relation.",
+   "canonicalAtom": { "id": "atom:relation:contacts.controller.ContactsController:depends-on-contacts-service", "kind": "relation", "subject": "contacts.controller.ContactsController", "axis": "relation", "predicate": "dependsOn", "object": "contacts.service.ContactsService", "refs": ["src:ts-contacts-service/src/main/java/contacts/controller/ContactsController.java:25"] }
+  },
+  {
+   "key": "relation|contacts.init.InitData|restriction|dependsOn|contacts.service.ContactsService",
+   "candidateAtomId": "atom:relation:contacts.init.init-data:depends-on:contacts.service.contacts-service",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread InitData.java:18 — same field dependency as pass-a's row (which also cited lines 29,38 call sites); axis normalized to relation.",
+   "canonicalAtom": { "id": "atom:relation:contacts.init.InitData:depends-on-contacts-service", "kind": "relation", "subject": "contacts.init.InitData", "axis": "relation", "predicate": "dependsOn", "object": "contacts.service.ContactsService", "refs": ["src:ts-contacts-service/src/main/java/contacts/init/InitData.java:18", "src:ts-contacts-service/src/main/java/contacts/init/InitData.java:29", "src:ts-contacts-service/src/main/java/contacts/init/InitData.java:38"] }
+  },
+  {
+   "key": "relation|contacts.service.ContactsServiceImpl|restriction|dependsOn|contacts.repository.ContactsRepository",
+   "candidateAtomId": "atom:relation:contacts.service.contacts-service-impl:depends-on:contacts.repository.contacts-repository",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ContactsServiceImpl.java:23 — same field dependency as pass-a's row; axis normalized to relation.",
+   "canonicalAtom": { "id": "atom:relation:contacts.service.ContactsServiceImpl:depends-on-contacts-repository", "kind": "relation", "subject": "contacts.service.ContactsServiceImpl", "axis": "relation", "predicate": "dependsOn", "object": "contacts.repository.ContactsRepository", "refs": ["src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:23"] }
+  },
+  {
+   "key": "relation|contacts.service.ContactsServiceImpl|restriction|implements|contacts.service.ContactsService",
+   "candidateAtomId": "atom:relation:contacts.service.contacts-service-impl:implements:contacts.service.contacts-service",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ContactsServiceImpl.java:20 — same implements clause as pass-a's row; axis normalized to relation.",
+   "canonicalAtom": { "id": "atom:relation:contacts.service.ContactsServiceImpl:implements-contacts-service", "kind": "relation", "subject": "contacts.service.ContactsServiceImpl", "axis": "relation", "predicate": "implements", "object": "contacts.service.ContactsService", "refs": ["src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:20"] }
+  },
+  {
+   "key": "relation|delivery.mq.RabbitReceive|restriction|dependsOn|delivery.config.Queues",
+   "candidateAtomId": "atom:relation:delivery.mq.rabbit-receive:depends-on:delivery.config.queues",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread RabbitReceive.java:35 — same Queues dependency as pass-a's row (which also cited line 3 import); axis normalized to relation.",
+   "canonicalAtom": { "id": "atom:relation:delivery.mq.RabbitReceive:depends-on-queues", "kind": "relation", "subject": "delivery.mq.RabbitReceive", "axis": "relation", "predicate": "dependsOn", "object": "delivery.config.Queues", "refs": ["src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:3", "src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:35"] }
+  },
+  {
+   "key": "relation|delivery.mq.RabbitReceive|restriction|dependsOn|delivery.repository.DeliveryRepository",
+   "candidateAtomId": "atom:relation:delivery.mq.rabbit-receive:depends-on:delivery.repository.delivery-repository",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread RabbitReceive.java:32 — same DeliveryRepository field dependency as pass-a's row (which also cited line 50 save call); axis normalized to relation.",
+   "canonicalAtom": { "id": "atom:relation:delivery.mq.RabbitReceive:depends-on-delivery-repository", "kind": "relation", "subject": "delivery.mq.RabbitReceive", "axis": "relation", "predicate": "dependsOn", "object": "delivery.repository.DeliveryRepository", "refs": ["src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:32", "src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:50"] }
+  },
+  {
+   "key": "relation|execute.config.SecurityConfig|restriction|dependsOn|edu.fudan.common.security.jwt.JWTFilter",
+   "candidateAtomId": "atom:relation:execute.config.security-config:depends-on:jwt-filter",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread execute/config/SecurityConfig.java:76 — new JWTFilter() wired via addFilterBefore. No pass-a atom for this. Axis normalized to relation.",
+   "canonicalAtom": { "id": "atom:relation:execute.config.SecurityConfig:depends-on-jwt-filter", "kind": "relation", "subject": "execute.config.SecurityConfig", "axis": "relation", "predicate": "dependsOn", "object": "edu.fudan.common.security.jwt.JWTFilter", "refs": ["src:ts-execute-service/src/main/java/execute/config/SecurityConfig.java:76"] }
+  },
+  {
+   "key": "relation|execute.controller.ExecuteControlller|restriction|dependsOn|execute.serivce.ExecuteService",
+   "candidateAtomId": "atom:relation:execute.controller.execute-controlller:depends-on:execute.serivce.execute-service",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ExecuteControlller.java:3 — same import as pass-a's row (which also cited line 21 field); axis normalized to relation.",
+   "canonicalAtom": { "id": "atom:relation:execute.controller.ExecuteControlller:depends-on-execute-service", "kind": "relation", "subject": "execute.controller.ExecuteControlller", "axis": "relation", "predicate": "dependsOn", "object": "execute.serivce.ExecuteService", "refs": ["src:ts-execute-service/src/main/java/execute/controller/ExecuteControlller.java:3", "src:ts-execute-service/src/main/java/execute/controller/ExecuteControlller.java:21"] }
+  },
+  {
+   "key": "semantic|contacts.entity.Contacts|semantic|identifiedBy|unique-by-account-id-document-number-document-type-tuple-not-by-name-or-phone",
+   "candidateAtomId": "atom:semantic:contacts.entity.contacts:identified-by",
+   "pass": "pass-b",
+   "decision": "not-adopted",
+   "basis": "Reread Contacts.java:44-61 equals() — includes name, accountId, documentNumber, phoneNumber AND documentType, contradicting the claim 'not by name or phone' if read as the entity's actual Java identity. The cited refs (Contacts.java:21, ContactsRepository.java:49) only show the DB unique-index/native-query shape, already captured by the adopted contract atom atom:contract:contacts.entity.Contacts:unique-account-document-index; no service-layer use-site (ServiceImpl:50,63) is cited to ground an in-use identity claim distinct from that contract fact."
+  },
+  {
+   "key": "semantic|contacts.service.ContactsServiceImpl|semantic|statusGates|status-0-on-account-document-number-document-type-tuple-already-existing-branch-status-1-on-create-success-branch",
+   "candidateAtomId": "atom:semantic:contacts.service.contacts-service-impl:create-contacts-status-gates",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ContactsServiceImpl.java:51 (if contactsTemp != null) returning status 0 'Already Exists' at line 53, else save and return status 1 'Create Success' at line 56, inside createContacts(). Distinct method from create(); no pass-a atom isolates this branch (pass-a's single combined atom was not-adopted as too coarse).",
+   "canonicalAtom": { "id": "atom:semantic:contacts.service.ContactsServiceImpl:create-contacts-status-gates", "kind": "semantic", "subject": "contacts.service.ContactsServiceImpl", "axis": "semantic", "predicate": "statusGates", "object": "status-0-on-account-document-number-document-type-tuple-already-existing-branch-status-1-on-create-success-branch", "refs": ["src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:51", "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:56"] }
+  },
+  {
+   "key": "semantic|contacts.service.ContactsServiceImpl|semantic|statusGates|status-0-on-existing-contacts-found-branch-status-1-on-create-success-with-saved-entity-returned-branch",
+   "candidateAtomId": "atom:semantic:contacts.service.contacts-service-impl:create-status-gates",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ContactsServiceImpl.java:65 (if c != null) returning status 0 'Contacts already exists' at line 67, else save and return status 1 'Create contacts success' with the saved entity at line 71, inside create(). Distinct from createContacts(); no pass-a per-method atom.",
+   "canonicalAtom": { "id": "atom:semantic:contacts.service.ContactsServiceImpl:create-status-gates", "kind": "semantic", "subject": "contacts.service.ContactsServiceImpl", "axis": "semantic", "predicate": "statusGates", "object": "status-0-on-existing-contacts-found-branch-status-1-on-create-success-with-saved-entity-returned-branch", "refs": ["src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:65", "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:69"] }
+  },
+  {
+   "key": "semantic|contacts.service.ContactsServiceImpl|semantic|statusGates|status-0-on-existing-contacts-not-found-branch-status-1-on-modify-success-branch",
+   "candidateAtomId": "atom:semantic:contacts.service.contacts-service-impl:modify-status-gates",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ContactsServiceImpl.java:94 (if oldContacts == null) returning status 0 'Contacts not found' at line 96, else field copy/save and return status 1 'Modify success' at line 104, inside modify(). Distinct per-method branch not isolated by pass-a's combined atom.",
+   "canonicalAtom": { "id": "atom:semantic:contacts.service.ContactsServiceImpl:modify-status-gates", "kind": "semantic", "subject": "contacts.service.ContactsServiceImpl", "axis": "semantic", "predicate": "statusGates", "object": "status-0-on-existing-contacts-not-found-branch-status-1-on-modify-success-branch", "refs": ["src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:94", "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:104"] }
+  },
+  {
+   "key": "semantic|contacts.service.ContactsServiceImpl|semantic|statusGates|status-1-on-contacts-found-branch-status-0-on-not-found-branch",
+   "candidateAtomId": "atom:semantic:contacts.service.contacts-service-impl:find-contacts-by-id-status-gates",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ContactsServiceImpl.java:33 (if contacts != null) returning status 1 at line 34, else status 0 'No contacts according to contacts id' at line 37, inside findContactsById(). Distinct per-method branch not isolated by pass-a's combined atom.",
+   "canonicalAtom": { "id": "atom:semantic:contacts.service.ContactsServiceImpl:find-contacts-by-id-status-gates", "kind": "semantic", "subject": "contacts.service.ContactsServiceImpl", "axis": "semantic", "predicate": "statusGates", "object": "status-1-on-contacts-found-branch-status-0-on-not-found-branch", "refs": ["src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:33", "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:37"] }
+  },
+  {
+   "key": "semantic|contacts.service.ContactsServiceImpl|semantic|statusGates|status-1-on-non-empty-contacts-list-branch-status-0-on-null-or-empty-list-branch",
+   "candidateAtomId": "atom:semantic:contacts.service.contacts-service-impl:get-all-contacts-status-gates",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ContactsServiceImpl.java:111 (if contacts != null && !contacts.isEmpty()) returning status 1 at line 112, else status 0 'No content' at line 115, inside getAllContacts(). Distinct per-method branch not isolated by pass-a's combined atom.",
+   "canonicalAtom": { "id": "atom:semantic:contacts.service.ContactsServiceImpl:get-all-contacts-status-gates", "kind": "semantic", "subject": "contacts.service.ContactsServiceImpl", "axis": "semantic", "predicate": "statusGates", "object": "status-1-on-non-empty-contacts-list-branch-status-0-on-null-or-empty-list-branch", "refs": ["src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:111", "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:115"] }
+  },
+  {
+   "key": "semantic|contacts.service.ContactsServiceImpl|semantic|statusGates|status-1-on-post-delete-lookup-empty-branch-status-0-on-post-delete-lookup-still-found-branch",
+   "candidateAtomId": "atom:semantic:contacts.service.contacts-service-impl:delete-status-gates",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ContactsServiceImpl.java:77-79 (deleteById then re-query, if contacts == null) returning status 1 'Delete success' at line 81, else status 0 'Delete failed' at line 84, inside delete(). Distinct per-method branch not isolated by pass-a's combined atom.",
+   "canonicalAtom": { "id": "atom:semantic:contacts.service.ContactsServiceImpl:delete-status-gates", "kind": "semantic", "subject": "contacts.service.ContactsServiceImpl", "axis": "semantic", "predicate": "statusGates", "object": "status-1-on-post-delete-lookup-empty-branch-status-0-on-post-delete-lookup-still-found-branch", "refs": ["src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:79", "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:83"] }
+  },
+  {
+   "key": "semantic|delivery.mq.RabbitReceive|semantic|meansInUse|no-op-return-on-null-deserialized-payload-branch-else-generates-uuid-when-incoming-id-is-absent-branch",
+   "candidateAtomId": "atom:semantic:delivery.mq.rabbit-receive:process-means-in-use",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread RabbitReceive.java:39-41 (if delivery == null, log and return) and :45-46 (if delivery.getId() == null, set random UUID) inside process(). No pass-a semantic atom for this class in this chunk; genuine unique finding.",
+   "canonicalAtom": { "id": "atom:semantic:delivery.mq.RabbitReceive:process-means-in-use", "kind": "semantic", "subject": "delivery.mq.RabbitReceive", "axis": "semantic", "predicate": "meansInUse", "object": "no-op-return-on-null-deserialized-payload-branch-else-generates-uuid-when-incoming-id-is-absent-branch", "refs": ["src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:39", "src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:45"] }
+  },
+  {
+   "key": "state|contacts.entity.Contacts|state|persistsIn|contacts-table-with-unique-index-on-account-id-document-number-document-type",
+   "candidateAtomId": "atom:state:contacts.entity.contacts:persists-in",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread Contacts.java:21 — same @Table unique-index evidence folded into pass-a's persistsIn atom together with the repository CRUD flow refs.",
+   "canonicalAtom": { "id": "atom:state:contacts.entity.Contacts:persists-in-repository", "kind": "state", "subject": "contacts.entity.Contacts", "axis": "state", "predicate": "persistsIn", "object": "contacts-repository-jpa-crud-over-ts-contacts-mysql-table-with-unique-index-on-account-id-document-number-document-type", "refs": ["src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:55", "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:69", "src:ts-contacts-service/src/main/java/contacts/service/ContactsServiceImpl.java:102", "src:ts-contacts-service/src/main/resources/application.yml:11", "src:ts-contacts-service/src/main/java/contacts/entity/Contacts.java:21"] }
+  },
+  {
+   "key": "state|delivery.entity.Delivery|state|persistsIn|delivery-table-with-order-id-food-name-store-name-station-name-fields",
+   "candidateAtomId": "atom:state:delivery.entity.delivery:persists-in",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread Delivery.java:29-34 — id/orderId/foodName/storeName/stationName fields, folded into pass-a's persistsIn atom together with the MQ-triggered CRUD flow refs.",
+   "canonicalAtom": { "id": "atom:state:delivery.entity.Delivery:persists-in-repository", "kind": "state", "subject": "delivery.entity.Delivery", "axis": "state", "predicate": "persistsIn", "object": "delivery-repository-jpa-crud-over-ts-delivery-mysql-persisted-on-queue-message-receipt-with-order-id-food-name-store-name-station-name-fields", "refs": ["src:ts-delivery-service/src/main/java/delivery/mq/RabbitReceive.java:50", "src:ts-delivery-service/src/main/java/delivery/repository/DeliveryRepository.java:14", "src:ts-delivery-service/src/main/resources/application.yml:11", "src:ts-delivery-service/src/main/java/delivery/entity/Delivery.java:29"] }
+  },
+  {
+   "key": "state|ts-consign-service|state|persistsIn|ts-consign-mysql-database-via-jdbc",
+   "candidateAtomId": "atom:state:ts-consign-service:persists-in",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-consign-service application.yml:9 (jdbc:mysql url) folded into pass-a's persistsIn atom, which additionally cites the jpa/hibernate ddl-auto:update evidence at line 16.",
+   "canonicalAtom": { "id": "atom:state:ts-consign-service:persists-in-mysql", "kind": "state", "subject": "ts-consign-service", "axis": "state", "predicate": "persistsIn", "object": "ts-consign-mysql-database-via-jpa-hibernate-ddl-auto-update", "refs": ["src:ts-consign-service/src/main/resources/application.yml:8", "src:ts-consign-service/src/main/resources/application.yml:14"] }
+  },
+  {
+   "key": "state|ts-contacts-service|state|persistsIn|ts-contacts-mysql-database-via-jdbc",
+   "candidateAtomId": "atom:state:ts-contacts-service:persists-in",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-contacts-service/src/main/resources/application.yml:11-12 — datasource url jdbc:mysql://...ts-contacts-mysql. Distinct subject (service-level component) from the existing entity-level contacts.entity.Contacts persistsIn atom; pass-a produced no service-level persistsIn atom for ts-contacts-service in this chunk.",
+   "canonicalAtom": { "id": "atom:state:ts-contacts-service:persists-in-mysql", "kind": "state", "subject": "ts-contacts-service", "axis": "state", "predicate": "persistsIn", "object": "ts-contacts-mysql-database-via-jdbc", "refs": ["src:ts-contacts-service/src/main/resources/application.yml:12"] }
+  },
+  {
+   "key": "state|ts-delivery-service|state|persistsIn|ts-delivery-mysql-database-via-jdbc",
+   "candidateAtomId": "atom:state:ts-delivery-service:persists-in",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-delivery-service/src/main/resources/application.yml:11-12 — datasource url jdbc:mysql://...ts-delivery-mysql. Distinct subject (service-level component) from the existing entity-level delivery.entity.Delivery persistsIn atom; pass-a produced no service-level persistsIn atom for ts-delivery-service in this chunk.",
+   "canonicalAtom": { "id": "atom:state:ts-delivery-service:persists-in-mysql", "kind": "state", "subject": "ts-delivery-service", "axis": "state", "predicate": "persistsIn", "object": "ts-delivery-mysql-database-via-jdbc", "refs": ["src:ts-delivery-service/src/main/resources/application.yml:12"] }
+  }
+ ]
+}

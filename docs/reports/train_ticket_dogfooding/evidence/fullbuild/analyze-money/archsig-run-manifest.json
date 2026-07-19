@@ -1,0 +1,111 @@
+{
+  "archmapInputPath": "input:archmap-money-variant.json",
+  "artifactLinks": {
+    "insightBrief": "archsig-insight-brief.md",
+    "insightReport": "archsig-insight-report.json",
+    "measurementPacket": "archsig-measurement-packet.json",
+    "summary": "archsig-analysis-summary.json",
+    "viewerData": "archsig-atom-viewer-data.json"
+  },
+  "commandName": "analyze",
+  "componentFingerprints": {
+    "lawPolicy": "sha256:07af43360e9f10e99dd4ff3e7d6352bd13e9722254a032b69617f49a3abe013a",
+    "lawSurface": "sha256:5c18b79b154e6759ecfae7c5e1b3d048e1bd3c8f5a7d5bff8c2c43f865d606e6",
+    "measurementProfile": "sha256:d27209344f3e88d1a0985f08b3aa5d56c3a9c1be41fa48d2df53254ad4be76e0"
+  },
+  "conclusionCode": null,
+  "generatedArtifacts": [
+    "archmap-validation.json",
+    "law-policy-validation.json",
+    "law-surface-validation.json",
+    "normalized-archmap.json",
+    "archsig-measurement-packet.json",
+    "archsig-analysis-validation.json",
+    "archsig-analysis-summary.json",
+    "archsig-insight-report.json",
+    "archsig-insight-brief.md",
+    "archsig-atom-viewer-data.json",
+    "archsig-run-manifest.json"
+  ],
+  "inputDigests": {
+    "archmap": {
+      "path": "input:archmap-money-variant.json",
+      "sha256": "fc59dd11611b6bd511531810a6a307feef1fa71d56cd472db7d7fb7dc2e2483c"
+    },
+    "lawPolicy": {
+      "path": "input:law-policy-money.json",
+      "sha256": "07af43360e9f10e99dd4ff3e7d6352bd13e9722254a032b69617f49a3abe013a"
+    },
+    "lawSurface": {
+      "path": "input:law-surface-money.json",
+      "sha256": "5c18b79b154e6759ecfae7c5e1b3d048e1bd3c8f5a7d5bff8c2c43f865d606e6"
+    },
+    "measurementProfile": {
+      "path": "input:measurement-profile-money.json",
+      "sha256": "d27209344f3e88d1a0985f08b3aa5d56c3a9c1be41fa48d2df53254ad4be76e0"
+    },
+    "measurementProfiles": [
+      {
+        "path": "input:measurement-profile-money.json",
+        "sha256": "d27209344f3e88d1a0985f08b3aa5d56c3a9c1be41fa48d2df53254ad4be76e0"
+      }
+    ],
+    "profileFingerprint": {
+      "basis": "archmap shape + LawPolicy measurementProfileRef + external MeasurementProfile artifact",
+      "sha256": "d4c2beb634b2eaa33a8d18c07ae444ffd469846b1071e39e9506c8715d47964a"
+    },
+    "siteCoverDigest": {
+      "basis": "normalized contexts + covers + derived finite cover nerve",
+      "sha256": "4546e2c0edc04fd62bdbfd92ecb1e171670709a86146e70c582e72f2bf9e8342",
+      "status": "computed"
+    }
+  },
+  "lawPolicyInputPath": "input:law-policy-money.json",
+  "lawSurfaceInputPath": "input:law-surface-money.json",
+  "measurementProfileInputPath": "input:measurement-profile-money.json",
+  "measurementProfileInputPaths": [
+    "input:measurement-profile-money.json"
+  ],
+  "mode": "measurement",
+  "nonConclusions": [
+    "Finite-poset-site run manifest records the v0.5.3 AG measurement foundation artifacts.",
+    "Foundation packet rows are not completed AG invariant evaluator computation."
+  ],
+  "omittedArtifacts": [],
+  "rawArtifactPaths": null,
+  "rawArtifactRetention": "omitted",
+  "repairPlanInputPath": null,
+  "runId": "run:856b95734cf7",
+  "schema": "archsig-run-manifest/v0.5.3",
+  "toolVersion": "0.5.3",
+  "validationReports": {
+    "analysis": "archsig-analysis-validation.json",
+    "archmap": "archmap-validation.json",
+    "lawPolicy": "law-policy-validation.json",
+    "lawSurface": "law-surface-validation.json",
+    "repairPlan": null
+  },
+  "validationResultSummary": {
+    "analysis": {
+      "failedCheckCount": 0,
+      "result": "pass",
+      "warningCheckCount": 0
+    },
+    "archmap": {
+      "failedCheckCount": 0,
+      "result": "pass",
+      "warningCheckCount": 0
+    },
+    "lawPolicy": {
+      "failedCheckCount": 0,
+      "result": "pass",
+      "warningCheckCount": 0
+    },
+    "lawSurface": {
+      "failedCheckCount": 0,
+      "result": "pass",
+      "warningCheckCount": 0
+    },
+    "repairPlan": null
+  }
+}

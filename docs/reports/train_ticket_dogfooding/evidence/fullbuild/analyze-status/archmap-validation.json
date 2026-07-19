@@ -1,0 +1,111 @@
+{
+  "archmapRef": "input:archmap-status-variant.json",
+  "checks": [
+    {
+      "id": "archmap-schema052-schema",
+      "result": "pass",
+      "title": "ArchMap v2 uses the finite poset site schema discriminator"
+    },
+    {
+      "id": "archmap-schema052-extraction-doctrine-ref",
+      "result": "pass",
+      "title": "ArchMap v2 uses the fixed AAT canonical doctrine; authors do not select doctrine"
+    },
+    {
+      "id": "archmap-schema052-sources-resolve",
+      "result": "pass",
+      "title": "sources table is present and internally resolvable"
+    },
+    {
+      "id": "archmap-schema052-atom-ids",
+      "result": "pass",
+      "title": "atom ids are non-empty and unique"
+    },
+    {
+      "id": "archmap-schema052-no-diagnostic-shortcuts",
+      "result": "pass",
+      "title": "ArchMap v2 atom id / predicate fields do not pre-author diagnostic conclusions"
+    },
+    {
+      "id": "archmap-schema052-atom-kind-vocabulary",
+      "metric": "aat-atom-vocabulary:ag-archmap@1",
+      "result": "pass",
+      "title": "ATOMS_WITHIN_DECLARED_VOCABULARY: atom kinds are members of aat-atom-vocabulary/v1"
+    },
+    {
+      "id": "archmap-schema052-aat-binding-vocabulary",
+      "result": "pass",
+      "title": "ArchMap authoring and law-surface validation resolve one versioned binding manifest"
+    },
+    {
+      "id": "archmap-schema052-atom-subject-axis-refs",
+      "result": "pass",
+      "title": "atoms carry subject / axis decorations and source refs resolve"
+    },
+    {
+      "id": "archmap-schema052-context-poset-refs",
+      "result": "pass",
+      "title": "contexts form a finite source-grounded poset over atom subfamilies"
+    },
+    {
+      "id": "archmap-schema052-cover-refs",
+      "result": "pass",
+      "title": "covers select finite source-grounded context families"
+    }
+  ],
+  "componentFingerprints": {
+    "lawPolicy": "sha256:3eadf3fe287a543585b90e88e426ddee8284fee1978bffe27e8f8b919303a9de",
+    "lawSurface": "sha256:a861f2b9d4b7f5528cb5733868f185cb8cac6d6e056da28e61f8e4704a1c7be8",
+    "measurementProfile": "sha256:27ed8fc227fbdce9f1589f783396688f2fae7fc0e6bb05d7c1b6c393781685d3"
+  },
+  "inputDigests": {
+    "archmap": {
+      "path": "input:archmap-status-variant.json",
+      "sha256": "4b58261bbbbb2ec9e50f5baac19f8a0116497c785a8ffd6fb9b8a809fce3834b"
+    },
+    "lawPolicy": {
+      "path": "input:law-policy-status.json",
+      "sha256": "3eadf3fe287a543585b90e88e426ddee8284fee1978bffe27e8f8b919303a9de"
+    },
+    "lawSurface": {
+      "path": "input:law-surface-status.json",
+      "sha256": "a861f2b9d4b7f5528cb5733868f185cb8cac6d6e056da28e61f8e4704a1c7be8"
+    },
+    "measurementProfile": {
+      "path": "input:measurement-profile-status.json",
+      "sha256": "27ed8fc227fbdce9f1589f783396688f2fae7fc0e6bb05d7c1b6c393781685d3"
+    },
+    "measurementProfiles": [
+      {
+        "path": "input:measurement-profile-status.json",
+        "sha256": "27ed8fc227fbdce9f1589f783396688f2fae7fc0e6bb05d7c1b6c393781685d3"
+      }
+    ],
+    "profileFingerprint": {
+      "basis": "archmap shape + LawPolicy measurementProfileRef + external MeasurementProfile artifact",
+      "sha256": "23c50f7d2fdc1f9b7159d3184761595f018ef03cb7b6430404ddb1c1bbdb0ad6"
+    },
+    "siteCoverDigest": {
+      "basis": "normalized contexts + covers + derived finite cover nerve",
+      "sha256": "4546e2c0edc04fd62bdbfd92ecb1e171670709a86146e70c582e72f2bf9e8342",
+      "status": "computed"
+    }
+  },
+  "inputSchema": "archmap/v0.5.3",
+  "nonConclusions": [
+    "ArchMap v2 validation checks the finite poset site observation contract; it does not prove source extraction soundness, U-adequacy, architecture lawfulness, or Lean theorem discharge.",
+    "Contexts and covers are source-grounded observations; selected measurement coefficients, witnesses, and verdict predicates belong to MeasurementProfile."
+  ],
+  "runId": "run:ad99b1fd221a",
+  "schema": "archmap-validation-report/v0.5.3",
+  "summary": {
+    "atomCount": 2094,
+    "contextCount": 43,
+    "coverCount": 3,
+    "failedCheckCount": 0,
+    "result": "pass",
+    "sourceCount": 440,
+    "warningCheckCount": 0
+  },
+  "toolVersion": "0.5.3"
+}

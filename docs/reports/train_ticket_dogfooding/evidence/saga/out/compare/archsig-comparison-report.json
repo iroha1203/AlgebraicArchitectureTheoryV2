@@ -1,0 +1,174 @@
+{
+  "artifactRefs": {
+    "archmapDiff": "archmap-diff.json",
+    "baseMeasurementPacket": "base-run/archsig-measurement-packet.json",
+    "headMeasurementPacket": "head-run/archsig-measurement-packet.json"
+  },
+  "boundaryStatements": [],
+  "classTransport": {
+    "nonConclusion": "comparison does not identify or transport a class without a checked coarse-to-fine refinement artifact",
+    "reason": "refinement_data_not_supplied",
+    "status": "silence_by_design"
+  },
+  "comparability": {
+    "basis": "identical requires archmap, LawPolicy, law-surface, and MeasurementProfile component fingerprints plus tool version equality; verdict-row requires all three LawPolicy, law-surface, and MeasurementProfile component fingerprints, site cover digest, and tool version equality",
+    "level": "verdict-row",
+    "sameArchmapDigest": false,
+    "sameComponentFingerprints": true,
+    "sameLawPolicyDigest": true,
+    "sameLawSurfaceFingerprint": true,
+    "sameProfileFingerprint": true,
+    "sameSiteCoverDigest": true,
+    "sameToolVersion": true
+  },
+  "conclusionCode": "MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE",
+  "discipline": "Comparison is a record-level juxtaposition of two ArchSig runs. It does not claim causal repair, semantic equivalence, or preserved obstruction identity; a class-zero reading is available only under a checked coarse-to-fine refinement contract.",
+  "independentConclusions": {
+    "base": {
+      "conclusionCode": null,
+      "mode": "measurement",
+      "runId": "run:7a94d68ac5d7",
+      "structuralVerdictCounts": {
+        "measured_nonzero": 4,
+        "measured_zero": 1
+      }
+    },
+    "head": {
+      "conclusionCode": null,
+      "mode": "measurement",
+      "runId": "run:1f657023d7e8",
+      "structuralVerdictCounts": {
+        "measured_zero": 5
+      }
+    }
+  },
+  "inputDigests": {
+    "baseRun": {
+      "archmap": {
+        "path": "input:archmap-saga-head.json",
+        "sha256": "add27eecaedffdd2cd07b3c0534c1024f93040c23e7ea460ac7cb5fa7972c327"
+      },
+      "componentFingerprints": {
+        "lawPolicy": "sha256:c0ad1a54d53d4729df4f6275b95a04c26627f33b9669dd0c6764c8e70b8fe703",
+        "lawSurface": "sha256:a777170547b52f2aa4889f964f7a67b6f36a9f84b062c7406a5b41d020363061",
+        "measurementProfile": "sha256:1e79f93e5e37e4e8486091e76dbbcba5ed5e6efcf21172ff16844c85b0fe6434"
+      },
+      "lawPolicy": {
+        "path": "input:law-policy-saga.json",
+        "sha256": "c0ad1a54d53d4729df4f6275b95a04c26627f33b9669dd0c6764c8e70b8fe703"
+      },
+      "measurementPacket": {
+        "path": "head/archsig-measurement-packet.json",
+        "sha256": "4b417cdc44a281bdcdae51edc1089a73345951cb1110677cc938b38b89e10dc6"
+      },
+      "path": "head/archsig-run-manifest.json",
+      "profileFingerprint": {
+        "basis": "archmap shape + LawPolicy measurementProfileRef + external MeasurementProfile artifact",
+        "sha256": "6b279c52cfdc78171dbd8e78e171055947b22f7ad84ee9846f012a90138415ce"
+      },
+      "runId": "run:7a94d68ac5d7",
+      "siteCoverDigest": {
+        "basis": "normalized contexts + covers + derived finite cover nerve",
+        "sha256": "c75cd524da051ad25472f1faad2d3fc44456db4fe6f0a1f90851d76e7b069b1a",
+        "status": "computed"
+      },
+      "toolVersion": "0.5.3"
+    },
+    "headRun": {
+      "archmap": {
+        "path": "input:archmap-saga-repaired.json",
+        "sha256": "176f0dbebf81e469b5e3c4893dcc522cbd597ac466018dc0d67b61ea225f2b00"
+      },
+      "componentFingerprints": {
+        "lawPolicy": "sha256:c0ad1a54d53d4729df4f6275b95a04c26627f33b9669dd0c6764c8e70b8fe703",
+        "lawSurface": "sha256:a777170547b52f2aa4889f964f7a67b6f36a9f84b062c7406a5b41d020363061",
+        "measurementProfile": "sha256:1e79f93e5e37e4e8486091e76dbbcba5ed5e6efcf21172ff16844c85b0fe6434"
+      },
+      "lawPolicy": {
+        "path": "input:law-policy-saga.json",
+        "sha256": "c0ad1a54d53d4729df4f6275b95a04c26627f33b9669dd0c6764c8e70b8fe703"
+      },
+      "measurementPacket": {
+        "path": "repaired/archsig-measurement-packet.json",
+        "sha256": "743aa0c5ca61910295d579145db11aff3e3c9056412c7ad59422c052b90a9e49"
+      },
+      "path": "repaired/archsig-run-manifest.json",
+      "profileFingerprint": {
+        "basis": "archmap shape + LawPolicy measurementProfileRef + external MeasurementProfile artifact",
+        "sha256": "6b279c52cfdc78171dbd8e78e171055947b22f7ad84ee9846f012a90138415ce"
+      },
+      "runId": "run:1f657023d7e8",
+      "siteCoverDigest": {
+        "basis": "normalized contexts + covers + derived finite cover nerve",
+        "sha256": "c75cd524da051ad25472f1faad2d3fc44456db4fe6f0a1f90851d76e7b069b1a",
+        "status": "computed"
+      },
+      "toolVersion": "0.5.3"
+    }
+  },
+  "nonConclusions": [
+    "Comparison report records run-local verdict rows and deterministic ArchMap diff intersections.",
+    "Comparison report does not infer class transport, obstruction identity transport, repair causality, or semantic equivalence without the checked refinement or comparison contract that supplies the corresponding data.",
+    "Cover or context changes are boundary data and map to other_transition for gate policy evaluation."
+  ],
+  "profileConclusionCode": null,
+  "schema": "archsig-comparison-report/v0.5.3",
+  "toolVersion": "0.5.3",
+  "verdictTransitions": [
+    {
+      "baseRowRef": "structuralVerdict/ag-cech-obstruction/surface-cech-surface-v052/finite-f2-cech-computed",
+      "baseVerdict": "measured_nonzero",
+      "deltaRefs": [],
+      "discipline": "Comparison is a record-level juxtaposition of two ArchSig runs. It does not claim causal repair, semantic equivalence, or preserved obstruction identity; a class-zero reading is available only under a checked coarse-to-fine refinement contract.",
+      "headRowRef": "structuralVerdict/ag-cech-obstruction/surface-cech-surface-v052/finite-f2-cech-computed",
+      "headVerdict": "measured_zero",
+      "introducedByChangeCategory": "cleared",
+      "rowKey": "ag.cech-obstruction|surface:cech-surface-v052|{\"coefficient\":\"F2\",\"coverRef\":\"cover:money-settlement-loop\",\"kind\":\"cover-relative-cech-h1-class\",\"scopeSize\":{\"contexts\":1,\"edges\":1,\"triangles\":0}}",
+      "transition": "measured_obstruction_no_longer_recorded"
+    },
+    {
+      "baseRowRef": "structuralVerdict/ag-saga-descent/saga-global-coherence/residual-not-in-b1",
+      "baseVerdict": "measured_nonzero",
+      "deltaRefs": [],
+      "discipline": "Comparison is a record-level juxtaposition of two ArchSig runs. It does not claim causal repair, semantic equivalence, or preserved obstruction identity; a class-zero reading is available only under a checked coarse-to-fine refinement contract.",
+      "headRowRef": "structuralVerdict/ag-saga-descent/saga-global-coherence/complete-support-global-coherent",
+      "headVerdict": "measured_zero",
+      "introducedByChangeCategory": "cleared",
+      "rowKey": "ag.saga-descent|saga.global-coherence|{\"coefficient\":\"F2\",\"coverRef\":\"cover:money-settlement-loop\",\"kind\":\"saga-residual-boundary-membership\",\"scopeSize\":{\"contexts\":1,\"edges\":0,\"triangles\":0}}",
+      "transition": "measured_obstruction_no_longer_recorded"
+    },
+    {
+      "baseRowRef": "structuralVerdict/ag-saga-descent/saga-residual-boundary-membership/residual-not-in-b1",
+      "baseVerdict": "measured_nonzero",
+      "deltaRefs": [],
+      "discipline": "Comparison is a record-level juxtaposition of two ArchSig runs. It does not claim causal repair, semantic equivalence, or preserved obstruction identity; a class-zero reading is available only under a checked coarse-to-fine refinement contract.",
+      "headRowRef": "structuralVerdict/ag-saga-descent/saga-residual-boundary-membership/residual-in-b1",
+      "headVerdict": "measured_zero",
+      "introducedByChangeCategory": "cleared",
+      "rowKey": "ag.saga-descent|saga.residual-boundary-membership|{\"coefficient\":\"F2\",\"coverRef\":\"cover:money-settlement-loop\",\"kind\":\"saga-residual-boundary-membership\",\"scopeSize\":{\"contexts\":1,\"edges\":0,\"triangles\":0}}",
+      "transition": "measured_obstruction_no_longer_recorded"
+    },
+    {
+      "baseRowRef": "structuralVerdict/ag-saga-descent/saga-residual-class/nonzero-class-representative",
+      "baseVerdict": "measured_nonzero",
+      "deltaRefs": [],
+      "discipline": "Comparison is a record-level juxtaposition of two ArchSig runs. It does not claim causal repair, semantic equivalence, or preserved obstruction identity; a class-zero reading is available only under a checked coarse-to-fine refinement contract.",
+      "headRowRef": "structuralVerdict/ag-saga-descent/saga-residual-class/zero-class-representative",
+      "headVerdict": "measured_zero",
+      "introducedByChangeCategory": "cleared",
+      "rowKey": "ag.saga-descent|saga.residual-class|{\"coefficient\":\"F2\",\"coverRef\":\"cover:money-settlement-loop\",\"kind\":\"saga-residual-class\",\"scopeSize\":{\"contexts\":1,\"edges\":0,\"triangles\":0}}",
+      "transition": "measured_obstruction_no_longer_recorded"
+    },
+    {
+      "baseRowRef": "structuralVerdict/ag-saga-grounded/law-money-settlement-convention/holds-criterion-raw-value-zero",
+      "baseVerdict": "measured_zero",
+      "deltaRefs": [],
+      "discipline": "Comparison is a record-level juxtaposition of two ArchSig runs. It does not claim causal repair, semantic equivalence, or preserved obstruction identity; a class-zero reading is available only under a checked coarse-to-fine refinement contract.",
+      "headRowRef": "structuralVerdict/ag-saga-grounded/law-money-settlement-convention/holds-criterion-raw-value-zero",
+      "headVerdict": "measured_zero",
+      "introducedByChangeCategory": "preexisting",
+      "rowKey": "ag.saga-grounded|law:money-settlement-convention|{\"coefficient\":\"F2\",\"coverRef\":\"cover:money-settlement-loop\",\"kind\":\"profile-relative-structural-verdict\",\"scopeSize\":{\"contexts\":1,\"edges\":0,\"triangles\":0}}",
+      "transition": "preexisting_recorded_row"
+    }
+  ]
+}

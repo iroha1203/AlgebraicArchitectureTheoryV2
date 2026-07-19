@@ -1,0 +1,232 @@
+{
+ "schema": "law-equation-surface/v0.5.3",
+ "id": "law-surface:train-ticket-money-saga-v053",
+ "laws": [
+  {
+   "lawId": "surface:cech-surface-v052",
+   "conditionType": "closed-equational",
+   "witnessVariables": [
+    {
+     "variable": "e_cancel_insidepay",
+     "binding": {
+      "edge": [
+       "ctx:cancel-surface",
+       "ctx:inside-payment-surface"
+      ],
+      "axis": "cech",
+      "predicate": "sectionValue"
+     }
+    },
+    {
+     "variable": "e_insidepay_order",
+     "binding": {
+      "edge": [
+       "ctx:inside-payment-surface",
+       "ctx:order-surface"
+      ],
+      "axis": "cech",
+      "predicate": "sectionValue"
+     }
+    },
+    {
+     "variable": "e_cancel_order",
+     "binding": {
+      "edge": [
+       "ctx:cancel-surface",
+       "ctx:order-surface"
+      ],
+      "axis": "cech",
+      "predicate": "sectionValue"
+     }
+    },
+    {
+     "variable": "e_consign_consignprice",
+     "binding": {
+      "edge": [
+       "ctx:consign-surface",
+       "ctx:consign-price-surface"
+      ],
+      "axis": "cech",
+      "predicate": "sectionValue"
+     }
+    }
+   ],
+   "forbiddenSupportGenerators": [
+    {
+     "support": [
+      "e_cancel_insidepay"
+     ]
+    },
+    {
+     "support": [
+      "e_insidepay_order"
+     ]
+    },
+    {
+     "support": [
+      "e_cancel_order"
+     ]
+    },
+    {
+     "support": [
+      "e_consign_consignprice"
+     ]
+    }
+   ]
+  },
+  {
+   "lawId": "law:money-settlement-convention",
+   "conditionType": "closed-equational",
+   "witnessVariables": [
+    {
+     "variable": "e_cancel_insidepay",
+     "binding": {
+      "edge": [
+       "ctx:cancel-surface",
+       "ctx:inside-payment-surface"
+      ],
+      "axis": "cech",
+      "predicate": "sectionValue"
+     }
+    },
+    {
+     "variable": "e_insidepay_order",
+     "binding": {
+      "edge": [
+       "ctx:inside-payment-surface",
+       "ctx:order-surface"
+      ],
+      "axis": "cech",
+      "predicate": "sectionValue"
+     }
+    },
+    {
+     "variable": "e_cancel_order",
+     "binding": {
+      "edge": [
+       "ctx:cancel-surface",
+       "ctx:order-surface"
+      ],
+      "axis": "cech",
+      "predicate": "sectionValue"
+     }
+    },
+    {
+     "variable": "e_consign_consignprice",
+     "binding": {
+      "edge": [
+       "ctx:consign-surface",
+       "ctx:consign-price-surface"
+      ],
+      "axis": "cech",
+      "predicate": "sectionValue"
+     }
+    }
+   ],
+   "forbiddenSupportGenerators": [
+    {
+     "support": [
+      "e_cancel_insidepay",
+      "e_insidepay_order",
+      "e_cancel_order",
+      "e_consign_consignprice"
+     ]
+    }
+   ]
+  },
+  {
+   "lawId": "law:money-repair-descent",
+   "conditionType": "descent",
+   "evaluatorRef": "ag.saga-descent"
+  }
+ ],
+ "skeleton": [
+  {
+   "simplex": "vertex:money-cancel",
+   "supportAtomRef": "atom:semantic:cancel-surface:cech-section-money-amount",
+   "requiredLawId": "law:money-settlement-convention"
+  },
+  {
+   "simplex": "vertex:money-inside-payment",
+   "supportAtomRef": "atom:semantic:inside-payment-surface:cech-section-money-amount",
+   "requiredLawId": "law:money-settlement-convention"
+  },
+  {
+   "simplex": "vertex:money-order",
+   "supportAtomRef": "atom:semantic:order-surface:cech-section-money-amount",
+   "requiredLawId": "law:money-settlement-convention"
+  },
+  {
+   "simplex": "vertex:money-consign",
+   "supportAtomRef": "atom:semantic:consign-surface:cech-section-money-amount",
+   "requiredLawId": "law:money-settlement-convention"
+  },
+  {
+   "simplex": "vertex:money-consign-price",
+   "supportAtomRef": "atom:semantic:consign-price-surface:cech-section-money-amount",
+   "requiredLawId": "law:money-settlement-convention"
+  },
+  {
+   "simplex": "vertex:money-preserve",
+   "supportAtomRef": "atom:semantic:preserve-surface:cech-section-money-amount",
+   "requiredLawId": "law:money-settlement-convention"
+  }
+ ],
+ "defectSources": [
+  {
+   "lawId": "law:money-settlement-convention",
+   "coverRef": "cover:money-settlement-loop",
+   "chartDefects": [
+    {
+     "chart": "ctx:cancel-surface",
+     "defectObservable": {
+      "axis": "square-free",
+      "predicate": "support"
+     }
+    },
+    {
+     "chart": "ctx:inside-payment-surface",
+     "defectObservable": {
+      "axis": "square-free",
+      "predicate": "support"
+     }
+    },
+    {
+     "chart": "ctx:order-surface",
+     "defectObservable": {
+      "axis": "square-free",
+      "predicate": "support"
+     }
+    },
+    {
+     "chart": "ctx:consign-surface",
+     "defectObservable": {
+      "axis": "square-free",
+      "predicate": "support"
+     }
+    },
+    {
+     "chart": "ctx:consign-price-surface",
+     "defectObservable": {
+      "axis": "square-free",
+      "predicate": "support"
+     }
+    },
+    {
+     "chart": "ctx:preserve-surface",
+     "defectObservable": {
+      "axis": "square-free",
+      "predicate": "support"
+     }
+    }
+   ],
+   "holdsCriterion": {
+    "kind": "defect-raw-value-zero",
+    "zeroSense": "empty-witness-set"
+   }
+  }
+ ],
+ "quotientSheafCondition": {
+  "mode": "assumed"
+ }
+}

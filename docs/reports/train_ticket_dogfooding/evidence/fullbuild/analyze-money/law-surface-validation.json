@@ -1,0 +1,111 @@
+{
+  "checks": [
+    {
+      "id": "law-equation-surface-v052-schema",
+      "result": "pass",
+      "title": "law-equation-surface uses the v0.5.3 schema discriminator"
+    },
+    {
+      "id": "law-equation-surface-v052-identity",
+      "result": "pass",
+      "title": "surface identity and law declarations are present"
+    },
+    {
+      "id": "law-equation-surface-v052-law-ids",
+      "result": "pass",
+      "title": "law identifiers are non-empty and unique"
+    },
+    {
+      "id": "law-equation-surface-v052-condition-types",
+      "result": "pass",
+      "title": "conditionType uses the six declared law condition types"
+    },
+    {
+      "id": "law-equation-surface-v052-evaluator-refs",
+      "result": "pass",
+      "title": "non-closed evaluator references resolve through the law evaluator registry"
+    },
+    {
+      "id": "law-equation-surface-v052-shape-rules",
+      "result": "pass",
+      "title": "conditionType controls equation-surface fields"
+    },
+    {
+      "id": "law-equation-surface-v052-bindings",
+      "result": "pass",
+      "title": "binding declarations resolve through the shared vocabulary manifest"
+    },
+    {
+      "id": "law-equation-surface-v052-support-generators",
+      "result": "pass",
+      "title": "forbidden support generators are square-free declarations over witness variables"
+    },
+    {
+      "id": "law-equation-surface-v052-stage3-contract",
+      "result": "pass",
+      "title": "Stage 3 law surface fields satisfy the v0.5.3 supplied contract"
+    },
+    {
+      "id": "law-equation-surface-v052-no-conclusion-shortcuts",
+      "result": "pass",
+      "title": "law identifiers and witness variable names contain no conclusion shortcuts"
+    },
+    {
+      "id": "law-equation-surface-v052-binding-vocabulary",
+      "result": "pass",
+      "title": "law surface and authoring use a non-empty versioned binding vocabulary"
+    }
+  ],
+  "componentFingerprints": {
+    "lawPolicy": "sha256:07af43360e9f10e99dd4ff3e7d6352bd13e9722254a032b69617f49a3abe013a",
+    "lawSurface": "sha256:5c18b79b154e6759ecfae7c5e1b3d048e1bd3c8f5a7d5bff8c2c43f865d606e6",
+    "measurementProfile": "sha256:d27209344f3e88d1a0985f08b3aa5d56c3a9c1be41fa48d2df53254ad4be76e0"
+  },
+  "input": {
+    "id": "law-surface:train-ticket-money-v053",
+    "path": "input:law-surface-money.json",
+    "schema": "law-equation-surface/v0.5.3"
+  },
+  "inputDigests": {
+    "archmap": {
+      "path": "input:archmap-money-variant.json",
+      "sha256": "fc59dd11611b6bd511531810a6a307feef1fa71d56cd472db7d7fb7dc2e2483c"
+    },
+    "lawPolicy": {
+      "path": "input:law-policy-money.json",
+      "sha256": "07af43360e9f10e99dd4ff3e7d6352bd13e9722254a032b69617f49a3abe013a"
+    },
+    "lawSurface": {
+      "path": "input:law-surface-money.json",
+      "sha256": "5c18b79b154e6759ecfae7c5e1b3d048e1bd3c8f5a7d5bff8c2c43f865d606e6"
+    },
+    "measurementProfile": {
+      "path": "input:measurement-profile-money.json",
+      "sha256": "d27209344f3e88d1a0985f08b3aa5d56c3a9c1be41fa48d2df53254ad4be76e0"
+    },
+    "measurementProfiles": [
+      {
+        "path": "input:measurement-profile-money.json",
+        "sha256": "d27209344f3e88d1a0985f08b3aa5d56c3a9c1be41fa48d2df53254ad4be76e0"
+      }
+    ],
+    "profileFingerprint": {
+      "basis": "archmap shape + LawPolicy measurementProfileRef + external MeasurementProfile artifact",
+      "sha256": "d4c2beb634b2eaa33a8d18c07ae444ffd469846b1071e39e9506c8715d47964a"
+    },
+    "siteCoverDigest": {
+      "basis": "normalized contexts + covers + derived finite cover nerve",
+      "sha256": "4546e2c0edc04fd62bdbfd92ecb1e171670709a86146e70c582e72f2bf9e8342",
+      "status": "computed"
+    }
+  },
+  "runId": "run:856b95734cf7",
+  "schema": "law-equation-surface-validation-report/v0.5.3",
+  "summary": {
+    "failedCheckCount": 0,
+    "lawCount": 1,
+    "result": "pass",
+    "warningCheckCount": 0
+  },
+  "toolVersion": "0.5.3"
+}

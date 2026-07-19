@@ -1,0 +1,1697 @@
+{
+  "analyticReadings": [
+    {
+      "claimStatus": "candidate",
+      "evaluator": "ag.foundation",
+      "fidelity": "proxy",
+      "readingId": "candidate-regime:stability-placeholder",
+      "regime": "theorem-candidate",
+      "structuralVerdictRef": null,
+      "value": {
+        "reason": "theorem-candidate readings are analytic-only until a follow-up evaluator computes them",
+        "state": "not_evaluated"
+      }
+    }
+  ],
+  "assumptions": [
+    {
+      "assumption": "finite site",
+      "assumptionId": "assumption:part8-4-2:finite-site",
+      "checkedBy": "archmap-schema052-validation.contexts-finite",
+      "scopeRefs": [
+        "part8/4.2"
+      ],
+      "status": "checked",
+      "theoremRef": "part8/4.2"
+    },
+    {
+      "assumedBy": "measurement-profile:profile:train-ticket-cancel-refund@1",
+      "assumption": "U-adequate cover",
+      "assumptionId": "assumption:part8-4-2:U-adequate-cover",
+      "scopeRefs": [
+        "part8/4.2"
+      ],
+      "status": "assumed",
+      "theoremRef": "part8/4.2"
+    },
+    {
+      "assumption": "F2 finite coefficient field",
+      "assumptionId": "assumption:part8-B-8-2:F2-finite-coefficient-field",
+      "checkedBy": "measurement-profile:profile:train-ticket-cancel-refund@1.coefficient=F2",
+      "scopeRefs": [
+        "part8/B.8.2"
+      ],
+      "status": "checked",
+      "theoremRef": "part8/B.8.2"
+    },
+    {
+      "assumption": "cover-relative Cech reading",
+      "assumptionId": "assumption:part8-B-8-2:cover-relative-Cech-reading",
+      "checkedBy": "measurement-profile:profile:train-ticket-cancel-refund@1.coverRef",
+      "scopeRefs": [
+        "part8/B.8.2"
+      ],
+      "status": "checked",
+      "theoremRef": "part8/B.8.2"
+    },
+    {
+      "assumedBy": "measurement-profile:profile:train-ticket-cancel-refund@1",
+      "assumption": "Leray / acyclicity comparison to sheaf cohomology",
+      "assumptionId": "assumption:part8-B-8-2:Leray---acyclicity-comparison-to-sheaf-cohomology",
+      "scopeRefs": [
+        "part8/B.8.2"
+      ],
+      "status": "assumed",
+      "theoremRef": "part8/B.8.2"
+    },
+    {
+      "assumption": "constant coefficient nerve b1 comparison",
+      "assumptionId": "assumption:part4-12-3:constant-coefficient-nerve-b1-comparison",
+      "checkedBy": "measurement-profile:profile:train-ticket-cancel-refund@1.coefficient=F2",
+      "scopeRefs": [
+        "part4/12.3"
+      ],
+      "status": "checked",
+      "theoremRef": "part4/12.3"
+    },
+    {
+      "assumedBy": "measurement-profile:profile:train-ticket-cancel-refund@1",
+      "assumption": "local lawful sections form an effective Ob_U-torsor",
+      "assumptionId": "assumption:part4-11-1:local-lawful-sections-form-an-effective-Ob-U-torsor",
+      "scopeRefs": [
+        "part4/11.1"
+      ],
+      "status": "assumed",
+      "theoremRef": "part4/11.1"
+    },
+    {
+      "assumedBy": "measurement-profile:profile:train-ticket-cancel-refund@1",
+      "assumption": "local adjustment action is fixed and effective",
+      "assumptionId": "assumption:part4-11-1:local-adjustment-action-is-fixed-and-effective",
+      "scopeRefs": [
+        "part4/11.1"
+      ],
+      "status": "assumed",
+      "theoremRef": "part4/11.1"
+    },
+    {
+      "assumedBy": "measurement-profile:profile:train-ticket-cancel-refund@1",
+      "assumption": "coefficient object satisfies descent",
+      "assumptionId": "assumption:part4-11-1:coefficient-object-satisfies-descent",
+      "scopeRefs": [
+        "part4/11.1"
+      ],
+      "status": "assumed",
+      "theoremRef": "part4/11.1"
+    },
+    {
+      "assumedBy": "measurement-profile:profile:train-ticket-cancel-refund@1",
+      "assumption": "restriction maps are surjective",
+      "assumptionId": "assumption:part4-12-4:restriction-maps-are-surjective",
+      "scopeRefs": [
+        "part4/12.4"
+      ],
+      "status": "assumed",
+      "theoremRef": "part4/12.4"
+    },
+    {
+      "assumedBy": "measurement-profile:profile:train-ticket-cancel-refund@1",
+      "assumption": "selected Cech nerve is a forest with no triple-overlap faces",
+      "assumptionId": "assumption:part4-12-4:selected-Cech-nerve-is-a-forest-with-no-triple-overlap-faces",
+      "scopeRefs": [
+        "part4/12.4"
+      ],
+      "status": "assumed",
+      "theoremRef": "part4/12.4"
+    },
+    {
+      "assumedBy": "measurement-profile:profile:train-ticket-cancel-refund@1",
+      "assumption": "section observations cover at least one selected Cech edge",
+      "assumptionId": "assumption:part8-B-8-2-sections-not-observed:section-observations-cover-at-least-one-selected-Cech-edge",
+      "scopeRefs": [
+        "part8/B.8.2-sections-not-observed"
+      ],
+      "status": "violated",
+      "theoremRef": "part8/B.8.2-sections-not-observed"
+    }
+  ],
+  "boundaryStatements": [
+    {
+      "id": "boundary:silence-by-design:0",
+      "kind": "silence_by_design",
+      "reason": "compat_non_conclusion",
+      "scopeRefs": [
+        "measurement:archmap:train-ticket-cancel-refund-trial@1"
+      ],
+      "text": "ArchSig v0.5.3 foundation packet is computed from input:archmap.json and input:law_policy.json; it is not a Lean proof object."
+    },
+    {
+      "id": "boundary:silence-by-design:1",
+      "kind": "silence_by_design",
+      "reason": "compat_non_conclusion",
+      "scopeRefs": [
+        "measurement:archmap:train-ticket-cancel-refund-trial@1"
+      ],
+      "text": "Unmeasured AG evaluator rows are schema handoff rows, not measured zero."
+    },
+    {
+      "id": "boundary:silence-by-design:2",
+      "kind": "silence_by_design",
+      "reason": "compat_non_conclusion",
+      "scopeRefs": [
+        "measurement:archmap:train-ticket-cancel-refund-trial@1"
+      ],
+      "text": "Theorem-candidate readings are analytic-only and cannot generate structural verdicts."
+    },
+    {
+      "id": "boundary:m8:higher-hn-silence",
+      "kind": "silence_by_design",
+      "reason": "higher_hn_n_ge_3_part_iv_scope_boundary",
+      "scopeRefs": [
+        "measurement:archmap:train-ticket-cancel-refund-trial@1"
+      ],
+      "text": "Cohomological readings in degrees n>=3 are silent by design in this finite AG measurement packet: they are a Part IV scope boundary, not a measured zero result or a remaining task."
+    },
+    {
+      "id": "boundary:m8:non-abelian-stack-gerbe-vocabulary",
+      "kind": "out_of_selected_vocabulary",
+      "reason": "non_abelian_stack_gerbe_outside_abelian_f2_vocabulary",
+      "scopeRefs": [
+        "measurement:archmap:train-ticket-cancel-refund-trial@1"
+      ],
+      "text": "Non-abelian stack/gerbe degree-2 descent data is outside the selected banded abelian F2 vocabulary; banding-violated inputs remain outside this measurement lens."
+    },
+    {
+      "id": "boundary:m8:higher-tor-unmeasured-support",
+      "kind": "unmeasured_support",
+      "reason": "higher_tor_i_ge_2_unmeasured_support",
+      "scopeRefs": [
+        "measurement:archmap:train-ticket-cancel-refund-trial@1"
+      ],
+      "text": "Higher Tor_i for i>=2 remains unmeasured support: degree-1 Tor_1 readings do not discharge derived transversality or all higher Tor vanishing."
+    },
+    {
+      "id": "boundary:silence-by-design:cech-sections-not-observed:0",
+      "kind": "silence_by_design",
+      "reason": "sections_not_observed",
+      "scopeRefs": [
+        "structuralVerdict/ag-cech-obstruction/surface-cech-surface-v052/sections-not-observed"
+      ],
+      "text": "sections_not_observed: no sectionValue or cocycleValue observation covers any selected Cech edge; supply section observations on both endpoint contexts of a selected edge (or an explicit cocycleValue for the edge) before the H1 class can be measured"
+    },
+    {
+      "id": "boundary:not-applicable:0",
+      "kind": "not_applicable",
+      "reason": "analytic_only",
+      "scopeRefs": [
+        "candidate-regime:stability-placeholder"
+      ],
+      "text": "Theorem-candidate reading is analytic-only and cannot generate a structural verdict."
+    },
+    {
+      "id": "boundary:violated-assumption:11",
+      "kind": "violated_assumption",
+      "reason": "violated",
+      "scopeRefs": [
+        "assumption:part8-B-8-2-sections-not-observed:section-observations-cover-at-least-one-selected-Cech-edge",
+        "structuralVerdict/ag-cech-obstruction/surface-cech-surface-v052/sections-not-observed"
+      ],
+      "text": "Assumption part8/B.8.2-sections-not-observed is violated for the selected measurement packet."
+    }
+  ],
+  "componentFingerprints": {
+    "lawPolicy": "sha256:64830a08819baa438f0cc64c2bf1ab77827ede56d4c73be5cdcc29f862d14563",
+    "lawSurface": "sha256:4a0727decd1415881a1ca152b063bbfc929e57e6f66183bb3442e21121438d1d",
+    "measurementProfile": "sha256:2bfa3a920bed427febc115976a3c0a0295ba89b24b18f95ccdafc93991a7e526"
+  },
+  "computedInvariants": [
+    {
+      "archmapRef": "input:archmap.json",
+      "atomCount": 431,
+      "contextCount": 16,
+      "coverCount": 7,
+      "doctrineFingerprint": "sha256:aat-canonical-doctrine-schema052",
+      "evaluator": "ag.foundation",
+      "invariantId": "finite-poset-site-shape",
+      "kind": "measurement-invariant",
+      "representation": {
+        "archmapRef": "input:archmap.json",
+        "atomCount": 431,
+        "contextCount": 16,
+        "coverCount": 7,
+        "doctrineFingerprint": "sha256:aat-canonical-doctrine-schema052",
+        "invariantId": "finite-poset-site-shape"
+      },
+      "value": {}
+    },
+    {
+      "boundaryNote": "COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION is relative to the selected abelian coefficient sheaf; non-abelian torsor, stacky descent, and gerbe obstructions are not excluded.",
+      "claimScope": "selected-cover 1-skeleton Cech cochain calculation",
+      "classSupport": {
+        "edgeRefs": [],
+        "kind": "selected-cover-edge-support",
+        "supportAtomRefs": []
+      },
+      "coefficient": "F2",
+      "contextCount": 16,
+      "coverNerveProjection": {
+        "coverRef": "cover:cancel-refund-flow-surface",
+        "edges": [
+          {
+            "edgeId": "ctx:cancel-order-command-flow->ctx:order-lookup-boundary",
+            "objectKind": "nerveEdge",
+            "sectionObservation": "not_observed",
+            "source": "selected cover restriction edge",
+            "sourceContextRef": "ctx:cancel-order-command-flow",
+            "supportAtomRefs": [],
+            "targetContextRef": "ctx:order-lookup-boundary",
+            "value": 0
+          },
+          {
+            "edgeId": "ctx:cancel-order-command-flow->ctx:order-status-boundary",
+            "objectKind": "nerveEdge",
+            "sectionObservation": "not_observed",
+            "source": "selected cover restriction edge",
+            "sourceContextRef": "ctx:cancel-order-command-flow",
+            "supportAtomRefs": [],
+            "targetContextRef": "ctx:order-status-boundary",
+            "value": 0
+          },
+          {
+            "edgeId": "ctx:inside-payment-pay-flow->ctx:order-lookup-boundary",
+            "objectKind": "nerveEdge",
+            "sectionObservation": "not_observed",
+            "source": "selected cover restriction edge",
+            "sourceContextRef": "ctx:inside-payment-pay-flow",
+            "supportAtomRefs": [],
+            "targetContextRef": "ctx:order-lookup-boundary",
+            "value": 0
+          },
+          {
+            "edgeId": "ctx:inside-payment-pay-flow->ctx:order-status-boundary",
+            "objectKind": "nerveEdge",
+            "sectionObservation": "not_observed",
+            "source": "selected cover restriction edge",
+            "sourceContextRef": "ctx:inside-payment-pay-flow",
+            "supportAtomRefs": [],
+            "targetContextRef": "ctx:order-status-boundary",
+            "value": 0
+          }
+        ],
+        "faceSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v0.5.3; not inferred by the viewer",
+        "faces": [
+          {
+            "coherenceClaim": "not_visualized",
+            "contextRefs": [
+              "ctx:cancel-order-command-flow",
+              "ctx:cancel-refund-quote-flow",
+              "ctx:cancel-security-boundary"
+            ],
+            "coverRef": "cover:cancel-refund-flow-surface",
+            "edgeRefs": [],
+            "faceId": "nerve-face:ctx:cancel-order-command-flow:ctx:cancel-refund-quote-flow:ctx:cancel-security-boundary",
+            "objectKind": "nerveTriangle",
+            "sharedAtomRefs": [
+              "atom:contract:ts-cancel-service.CancelServiceImpl.getAuthorizationHeadersFrom:ensures:authorization-header-forwarding"
+            ],
+            "source": "selected cover triple overlap with shared atom refs"
+          },
+          {
+            "coherenceClaim": "not_visualized",
+            "contextRefs": [
+              "ctx:cancel-order-command-flow",
+              "ctx:cancel-refund-quote-flow",
+              "ctx:drawback-boundary"
+            ],
+            "coverRef": "cover:cancel-refund-flow-surface",
+            "edgeRefs": [],
+            "faceId": "nerve-face:ctx:cancel-order-command-flow:ctx:cancel-refund-quote-flow:ctx:drawback-boundary",
+            "objectKind": "nerveTriangle",
+            "sharedAtomRefs": [
+              "atom:contract:ts-cancel-service.CancelServiceImpl.getAuthorizationHeadersFrom:ensures:authorization-header-forwarding"
+            ],
+            "source": "selected cover triple overlap with shared atom refs"
+          },
+          {
+            "coherenceClaim": "not_visualized",
+            "contextRefs": [
+              "ctx:cancel-order-command-flow",
+              "ctx:cancel-refund-quote-flow",
+              "ctx:order-lookup-boundary"
+            ],
+            "coverRef": "cover:cancel-refund-flow-surface",
+            "edgeRefs": [
+              "ctx:cancel-order-command-flow->ctx:order-lookup-boundary"
+            ],
+            "faceId": "nerve-face:ctx:cancel-order-command-flow:ctx:cancel-refund-quote-flow:ctx:order-lookup-boundary",
+            "objectKind": "nerveTriangle",
+            "sharedAtomRefs": [
+              "atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-order-other-service-get-order",
+              "atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-order-service-get-order"
+            ],
+            "source": "selected cover triple overlap with shared atom refs"
+          },
+          {
+            "coherenceClaim": "not_visualized",
+            "contextRefs": [
+              "ctx:cancel-order-command-flow",
+              "ctx:cancel-security-boundary",
+              "ctx:drawback-boundary"
+            ],
+            "coverRef": "cover:cancel-refund-flow-surface",
+            "edgeRefs": [],
+            "faceId": "nerve-face:ctx:cancel-order-command-flow:ctx:cancel-security-boundary:ctx:drawback-boundary",
+            "objectKind": "nerveTriangle",
+            "sharedAtomRefs": [
+              "atom:contract:ts-cancel-service.CancelServiceImpl.getAuthorizationHeadersFrom:ensures:authorization-header-forwarding"
+            ],
+            "source": "selected cover triple overlap with shared atom refs"
+          },
+          {
+            "coherenceClaim": "not_visualized",
+            "contextRefs": [
+              "ctx:cancel-refund-quote-flow",
+              "ctx:cancel-security-boundary",
+              "ctx:drawback-boundary"
+            ],
+            "coverRef": "cover:cancel-refund-flow-surface",
+            "edgeRefs": [],
+            "faceId": "nerve-face:ctx:cancel-refund-quote-flow:ctx:cancel-security-boundary:ctx:drawback-boundary",
+            "objectKind": "nerveTriangle",
+            "sharedAtomRefs": [
+              "atom:contract:ts-cancel-service.CancelServiceImpl.getAuthorizationHeadersFrom:ensures:authorization-header-forwarding"
+            ],
+            "source": "selected cover triple overlap with shared atom refs"
+          },
+          {
+            "coherenceClaim": "not_visualized",
+            "contextRefs": [
+              "ctx:drawback-boundary",
+              "ctx:inside-payment-account-ledger",
+              "ctx:inside-payment-drawback-flow"
+            ],
+            "coverRef": "cover:cancel-refund-flow-surface",
+            "edgeRefs": [],
+            "faceId": "nerve-face:ctx:drawback-boundary:ctx:inside-payment-account-ledger:ctx:inside-payment-drawback-flow",
+            "objectKind": "nerveTriangle",
+            "sharedAtomRefs": [
+              "atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:drawBack"
+            ],
+            "source": "selected cover triple overlap with shared atom refs"
+          },
+          {
+            "coherenceClaim": "not_visualized",
+            "contextRefs": [
+              "ctx:drawback-boundary",
+              "ctx:inside-payment-drawback-flow",
+              "ctx:inside-payment-pay-flow"
+            ],
+            "coverRef": "cover:cancel-refund-flow-surface",
+            "edgeRefs": [],
+            "faceId": "nerve-face:ctx:drawback-boundary:ctx:inside-payment-drawback-flow:ctx:inside-payment-pay-flow",
+            "objectKind": "nerveTriangle",
+            "sharedAtomRefs": [
+              "atom:authority:ts-inside-payment-service-securityconfig:requiresrole-admin-user"
+            ],
+            "source": "selected cover triple overlap with shared atom refs"
+          },
+          {
+            "coherenceClaim": "not_visualized",
+            "contextRefs": [
+              "ctx:drawback-boundary",
+              "ctx:inside-payment-drawback-flow",
+              "ctx:inside-payment-security-boundary"
+            ],
+            "coverRef": "cover:cancel-refund-flow-surface",
+            "edgeRefs": [],
+            "faceId": "nerve-face:ctx:drawback-boundary:ctx:inside-payment-drawback-flow:ctx:inside-payment-security-boundary",
+            "objectKind": "nerveTriangle",
+            "sharedAtomRefs": [
+              "atom:authority:ts-inside-payment-service-securityconfig:requiresrole-admin-user"
+            ],
+            "source": "selected cover triple overlap with shared atom refs"
+          },
+          {
+            "coherenceClaim": "not_visualized",
+            "contextRefs": [
+              "ctx:drawback-boundary",
+              "ctx:inside-payment-pay-flow",
+              "ctx:inside-payment-security-boundary"
+            ],
+            "coverRef": "cover:cancel-refund-flow-surface",
+            "edgeRefs": [],
+            "faceId": "nerve-face:ctx:drawback-boundary:ctx:inside-payment-pay-flow:ctx:inside-payment-security-boundary",
+            "objectKind": "nerveTriangle",
+            "sharedAtomRefs": [
+              "atom:authority:ts-inside-payment-service-securityconfig:requiresrole-admin-user"
+            ],
+            "source": "selected cover triple overlap with shared atom refs"
+          },
+          {
+            "coherenceClaim": "not_visualized",
+            "contextRefs": [
+              "ctx:inside-payment-drawback-flow",
+              "ctx:inside-payment-pay-flow",
+              "ctx:inside-payment-security-boundary"
+            ],
+            "coverRef": "cover:cancel-refund-flow-surface",
+            "edgeRefs": [],
+            "faceId": "nerve-face:ctx:inside-payment-drawback-flow:ctx:inside-payment-pay-flow:ctx:inside-payment-security-boundary",
+            "objectKind": "nerveTriangle",
+            "sharedAtomRefs": [
+              "atom:authority:ts-inside-payment-service-securityconfig:requiresrole-admin-user"
+            ],
+            "source": "selected cover triple overlap with shared atom refs"
+          },
+          {
+            "coherenceClaim": "not_visualized",
+            "contextRefs": [
+              "ctx:inside-payment-drawback-flow",
+              "ctx:inside-payment-pay-flow",
+              "ctx:outside-payment-boundary"
+            ],
+            "coverRef": "cover:cancel-refund-flow-surface",
+            "edgeRefs": [],
+            "faceId": "nerve-face:ctx:inside-payment-drawback-flow:ctx:inside-payment-pay-flow:ctx:outside-payment-boundary",
+            "objectKind": "nerveTriangle",
+            "sharedAtomRefs": [
+              "atom:effect:ts-inside-payment-service.InsidePaymentServiceImpl:callsProvider:outside-payment-endpoint"
+            ],
+            "source": "selected cover triple overlap with shared atom refs"
+          }
+        ],
+        "h2CoherenceVisualized": false,
+        "vertices": [
+          {
+            "atomRefs": [
+              "atom:capability:ts-cancel-service-cancelcontroller:exposesendpoint-get-cancel-order",
+              "atom:capability:ts-cancel-service-cancelservice:handlescommand-cancelorder",
+              "atom:component:ts-cancel-service-cancelserviceimpl",
+              "atom:contract:ts-cancel-service-cancelcontroller:ensures-exception-response-shape",
+              "atom:contract:ts-cancel-service.CancelServiceImpl.getAuthorizationHeadersFrom:ensures:authorization-header-forwarding",
+              "atom:effect:ts-cancel-service-cancelserviceimpl:callsprovider-ts-inside-payment-drawback",
+              "atom:effect:ts-cancel-service-cancelserviceimpl:callsprovider-ts-order-other-service-put-order",
+              "atom:effect:ts-cancel-service-cancelserviceimpl:callsprovider-ts-order-service-put-order",
+              "atom:relation:ts-cancel-service-cancelcontroller:calls-cancelservice",
+              "atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-notification-order-cancel-success",
+              "atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-order-other-service-get-order",
+              "atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-order-service-get-order",
+              "atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-user-service-get-user",
+              "atom:relation:ts-cancel-service-cancelserviceimpl:implements-cancelservice",
+              "atom:semantic:common-order:meansinuse-order-store-partition",
+              "atom:semantic:common-orderstatus:statusgates-cancelable",
+              "atom:semantic:common-response-status:meansinuse-one-proceed-zero-fallback",
+              "atom:semantic:ts-cancel-service.Response.status:meansInUse:one-paired-with-error-message-on-exception",
+              "atom:state:common-order-status:transitionsto-cancel"
+            ],
+            "contextRef": "ctx:cancel-order-command-flow",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:capability:ts-cancel-service-cancelcontroller:exposesendpoint-get-cancel-refound",
+              "atom:capability:ts-cancel-service-cancelservice:servesquery-calculaterefund",
+              "atom:contract:ts-cancel-service.CancelServiceImpl.calculateRefund:ensures:refund-rule",
+              "atom:contract:ts-cancel-service.CancelServiceImpl.getAuthorizationHeadersFrom:ensures:authorization-header-forwarding",
+              "atom:relation:ts-cancel-service-cancelcontroller:calls-cancelservice",
+              "atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-order-other-service-get-order",
+              "atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-order-service-get-order",
+              "atom:semantic:common-orderstatus:statusgates-refund-quotable",
+              "atom:semantic:common-response-status:meansinuse-one-proceed-zero-fallback",
+              "atom:semantic:ts-cancel-service-refund:meansinuse-eighty-percent-before-departure",
+              "atom:semantic:ts-cancel-service-refund:meansinuse-zero-when-notpaid-or-departed"
+            ],
+            "contextRef": "ctx:cancel-refund-quote-flow",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:ts-cancel-service-securityconfig:requiresrole-admin-user",
+              "atom:authority:ts-cancel-service.SecurityConfig:checksPermission:jwt-filter",
+              "atom:component:ts-cancel-service-securityconfig",
+              "atom:contract:ts-cancel-service.CancelServiceImpl.getAuthorizationHeadersFrom:ensures:authorization-header-forwarding"
+            ],
+            "contextRef": "ctx:cancel-security-boundary",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:ts-inside-payment-service-securityconfig:requiresrole-admin-user",
+              "atom:capability:ts-inside-payment-service-insidepaymentcontroller:exposesendpoint-get-drawback",
+              "atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:drawBack",
+              "atom:contract:ts-cancel-service.CancelServiceImpl.getAuthorizationHeadersFrom:ensures:authorization-header-forwarding",
+              "atom:effect:ts-cancel-service-cancelserviceimpl:callsprovider-ts-inside-payment-drawback",
+              "atom:relation:ts-cancel-service.CancelServiceImpl:calls:ts-inside-payment-service"
+            ],
+            "contextRef": "ctx:drawback-boundary",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:capability:ts-inside-payment-service.AddMoneyRepository:servesQuery:findByUserId",
+              "atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:addMoney",
+              "atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:createAccount",
+              "atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:drawBack",
+              "atom:capability:ts-inside-payment-service.InsidePaymentService:servesQuery:queryAccount",
+              "atom:capability:ts-inside-payment-service.InsidePaymentService:servesQuery:queryAddMoney",
+              "atom:capability:ts-inside-payment-service.InsidePaymentService:servesQuery:queryPayment",
+              "atom:capability:ts-inside-payment-service.PaymentRepository:servesQuery:findByOrderId",
+              "atom:capability:ts-inside-payment-service.PaymentRepository:servesQuery:findByUserId",
+              "atom:component:ts-inside-payment-service-money",
+              "atom:component:ts-inside-payment-service-payment",
+              "atom:component:ts-inside-payment-service.AddMoneyRepository",
+              "atom:component:ts-inside-payment-service.PaymentRepository",
+              "atom:contract:ts-inside-payment-service-accountinfo:shapedas-userid-money",
+              "atom:contract:ts-inside-payment-service-balance:shapedas-userid-balance",
+              "atom:contract:ts-inside-payment-service-outsidepaymentinfo:shapedas-orderid-price-userid",
+              "atom:contract:ts-inside-payment-service.InsidePaymentService.createAccount:requires:no-existing-money-record",
+              "atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:writesTo:add-money-repository",
+              "atom:semantic:ts-inside-payment-service-moneytype-a:meansinuse-add-money-ledger-entry",
+              "atom:semantic:ts-inside-payment-service-moneytype-d:meansinuse-drawback-ledger-entry",
+              "atom:semantic:ts-inside-payment-service.Balance.balance:meansInUse:deposit-minus-expenditure",
+              "atom:semantic:ts-inside-payment-service.MoneyType.A:meansInUse:account-credit-record",
+              "atom:semantic:ts-inside-payment-service.MoneyType.D:meansInUse:drawback-refund-credit-record",
+              "atom:state:ts-inside-payment-service-money:persistsin-inside-money"
+            ],
+            "contextRef": "ctx:inside-payment-account-ledger",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:ts-inside-payment-service-securityconfig:requiresrole-admin-user",
+              "atom:capability:ts-inside-payment-service-insidepaymentcontroller:exposesendpoint-get-drawback",
+              "atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:drawBack",
+              "atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:payDifference",
+              "atom:effect:ts-inside-payment-service.InsidePaymentServiceImpl:callsProvider:outside-payment-endpoint",
+              "atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:writesTo:add-money-repository",
+              "atom:semantic:ts-inside-payment-service.MoneyType.D:meansInUse:drawback-refund-credit-record",
+              "atom:semantic:ts-inside-payment-service.PaymentType.E:meansInUse:difference-payment-record"
+            ],
+            "contextRef": "ctx:inside-payment-drawback-flow",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:ts-inside-payment-service-securityconfig:requiresrole-admin-user",
+              "atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:pay",
+              "atom:contract:ts-inside-payment-service.InsidePaymentService.pay:ensures:order-status-set-paid",
+              "atom:contract:ts-inside-payment-service.InsidePaymentServiceImpl:requires:balance-covers-total-expand",
+              "atom:effect:ts-inside-payment-service.InsidePaymentServiceImpl:callsProvider:outside-payment-endpoint",
+              "atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:calls:order-other-service-status-update",
+              "atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:calls:order-service-status-update",
+              "atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:readsFrom:order-other-service-order-query",
+              "atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:readsFrom:order-service-order-query",
+              "atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:writesTo:PaymentRepository",
+              "atom:semantic:ts-inside-payment-service.Balance.balance:meansInUse:deposit-minus-expenditure",
+              "atom:semantic:ts-inside-payment-service.InsidePaymentServiceImpl.orderStatus:meansInUse:paid-and-not-collected",
+              "atom:semantic:ts-inside-payment-service.OrderStatus.NOTPAID:statusGates:pay-only-when-notpaid",
+              "atom:semantic:ts-inside-payment-service.PaymentInfo.tripId:meansInUse:train-prefix-routes-order-lookup",
+              "atom:semantic:ts-inside-payment-service.PaymentType.O:meansInUse:outside-payment-record",
+              "atom:semantic:ts-inside-payment-service.PaymentType.P:meansInUse:inside-balance-payment-record",
+              "atom:state:ts-inside-payment-service.Payment:persistsIn:payment-repository"
+            ],
+            "contextRef": "ctx:inside-payment-pay-flow",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:ts-inside-payment-service-securityconfig:checkspermission-jwt-filter",
+              "atom:authority:ts-inside-payment-service-securityconfig:requiresrole-admin-user",
+              "atom:component:ts-inside-payment-service-securityconfig"
+            ],
+            "contextRef": "ctx:inside-payment-security-boundary",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:ts-notification-service.SecurityConfig:checksPermission:jwt-filter-authenticated-routes",
+              "atom:authority:ts-notification-service.SecurityConfig:checksPermission:permit-all-notifyservice",
+              "atom:capability:ts-notification-service.NotificationController:exposesEndpoint:notification-order-cancel-success",
+              "atom:capability:ts-notification-service.NotificationController:exposesEndpoint:notification-order-changed-success",
+              "atom:capability:ts-notification-service.NotificationController:exposesEndpoint:notification-order-create-success",
+              "atom:capability:ts-notification-service.NotificationController:exposesEndpoint:notification-preserve-success",
+              "atom:capability:ts-notification-service.NotificationController:exposesEndpoint:test-send-mail",
+              "atom:capability:ts-notification-service.NotificationController:exposesEndpoint:test-send-mq",
+              "atom:capability:ts-notification-service.NotificationController:exposesEndpoint:welcome",
+              "atom:capability:ts-notification-service.NotificationService:handlesCommand:orderCancelSuccess",
+              "atom:capability:ts-notification-service.NotificationService:handlesCommand:orderChangedSuccess",
+              "atom:capability:ts-notification-service.NotificationService:handlesCommand:orderCreateSuccess",
+              "atom:capability:ts-notification-service.NotificationService:handlesCommand:preserveSuccess",
+              "atom:capability:ts-notification-service.RabbitReceive:handlesCommand:email-queue-message",
+              "atom:component:ts-notification-service",
+              "atom:component:ts-notification-service.MailService",
+              "atom:component:ts-notification-service.NotificationController",
+              "atom:component:ts-notification-service.NotificationService",
+              "atom:component:ts-notification-service.NotificationServiceImpl",
+              "atom:component:ts-notification-service.Queues",
+              "atom:component:ts-notification-service.RabbitReceive",
+              "atom:component:ts-notification-service.RabbitSend",
+              "atom:contract:ts-notification-service.EmailProperties:shapedAs:email-connection-properties",
+              "atom:contract:ts-notification-service.NotificationServiceImpl:ensures:returns-false-on-mail-send-exception"
+            ],
+            "contextRef": "ctx:notification-delivery",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:ts-notification-service.SecurityConfig:checksPermission:permit-all-notifyservice",
+              "atom:capability:ts-notification-service.NotificationController:exposesEndpoint:notification-order-cancel-success",
+              "atom:capability:ts-notification-service.NotificationService:handlesCommand:orderCancelSuccess",
+              "atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-notification-order-cancel-success"
+            ],
+            "contextRef": "ctx:notification-trigger-boundary",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:get-orderother-orderid",
+              "atom:capability:ts-order-service.OrderController:exposesEndpoint:get-order-orderid",
+              "atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-order-other-service-get-order",
+              "atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-order-service-get-order",
+              "atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:readsFrom:order-other-service-order-query",
+              "atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:readsFrom:order-service-order-query",
+              "atom:semantic:common-order:meansinuse-order-store-partition",
+              "atom:semantic:ts-inside-payment-service.PaymentInfo.tripId:meansInUse:train-prefix-routes-order-lookup"
+            ],
+            "contextRef": "ctx:order-lookup-boundary",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:ts-order-other-service.SecurityConfig:checksPermission:jwt-filter",
+              "atom:authority:ts-order-other-service.SecurityConfig:checksPermission:permit-all-orderother-subtree",
+              "atom:authority:ts-order-other-service.SecurityConfig:requiresRole:admin-or-user-orderother-write",
+              "atom:authority:ts-order-other-service.SecurityConfig:requiresRole:admin-orderother-admin",
+              "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:delete-orderother-orderid",
+              "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:get-orderother-findall",
+              "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:get-orderother-orderid",
+              "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:get-orderother-orderpay",
+              "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:get-orderother-price",
+              "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:get-orderother-security",
+              "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:get-orderother-status",
+              "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:get-orderother-traveldate-trainnumber",
+              "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:get-welcome",
+              "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:post-orderother",
+              "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:post-orderother-admin",
+              "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:post-orderother-query",
+              "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:post-orderother-refresh",
+              "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:post-orderother-tickets",
+              "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:put-orderother",
+              "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:put-orderother-admin",
+              "atom:capability:ts-order-other-service.OrderOtherRepository:servesQuery:findByAccountId",
+              "atom:capability:ts-order-other-service.OrderOtherRepository:servesQuery:findByTravelDateAndTrainNumber",
+              "atom:capability:ts-order-other-service.OrderOtherService:handlesCommand:alterOrder",
+              "atom:capability:ts-order-other-service.OrderOtherService:handlesCommand:cancelOrder"
+            ],
+            "contextRef": "ctx:order-other-service-lifecycle",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:ts-order-service.SecurityConfig:checksPermission:jwt-filter",
+              "atom:authority:ts-order-service.SecurityConfig:checksPermission:permit-all-order-subtree",
+              "atom:authority:ts-order-service.SecurityConfig:requiresRole:order-admin-routes-admin",
+              "atom:authority:ts-order-service.SecurityConfig:requiresRole:order-write-admin-or-user",
+              "atom:capability:ts-order-service.OrderController:exposesEndpoint:delete-order-orderid",
+              "atom:capability:ts-order-service.OrderController:exposesEndpoint:get-order-findall",
+              "atom:capability:ts-order-service.OrderController:exposesEndpoint:get-order-orderid",
+              "atom:capability:ts-order-service.OrderController:exposesEndpoint:get-order-orderpay",
+              "atom:capability:ts-order-service.OrderController:exposesEndpoint:get-order-price",
+              "atom:capability:ts-order-service.OrderController:exposesEndpoint:get-order-security",
+              "atom:capability:ts-order-service.OrderController:exposesEndpoint:get-order-status",
+              "atom:capability:ts-order-service.OrderController:exposesEndpoint:get-order-traveldate-trainnumber",
+              "atom:capability:ts-order-service.OrderController:exposesEndpoint:get-welcome",
+              "atom:capability:ts-order-service.OrderController:exposesEndpoint:post-order",
+              "atom:capability:ts-order-service.OrderController:exposesEndpoint:post-order-admin",
+              "atom:capability:ts-order-service.OrderController:exposesEndpoint:post-order-query",
+              "atom:capability:ts-order-service.OrderController:exposesEndpoint:post-order-refresh",
+              "atom:capability:ts-order-service.OrderController:exposesEndpoint:post-order-tickets",
+              "atom:capability:ts-order-service.OrderController:exposesEndpoint:put-order",
+              "atom:capability:ts-order-service.OrderController:exposesEndpoint:put-order-admin",
+              "atom:capability:ts-order-service.OrderRepository:servesQuery:findByAccountId",
+              "atom:capability:ts-order-service.OrderRepository:servesQuery:findByTravelDateAndTrainNumber",
+              "atom:capability:ts-order-service.OrderServiceImpl:handlesCommand:alterOrder",
+              "atom:capability:ts-order-service.OrderServiceImpl:handlesCommand:cancelOrder"
+            ],
+            "contextRef": "ctx:order-service-lifecycle",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:put-orderother",
+              "atom:capability:ts-order-service.OrderController:exposesEndpoint:put-order",
+              "atom:capability:ts-order-service.OrderServiceImpl:handlesCommand:modifyOrder",
+              "atom:contract:ts-inside-payment-service.InsidePaymentService.pay:ensures:order-status-set-paid",
+              "atom:effect:ts-cancel-service-cancelserviceimpl:callsprovider-ts-order-other-service-put-order",
+              "atom:effect:ts-cancel-service-cancelserviceimpl:callsprovider-ts-order-service-put-order",
+              "atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:calls:order-other-service-status-update",
+              "atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:calls:order-service-status-update",
+              "atom:semantic:ts-inside-payment-service.InsidePaymentServiceImpl.orderStatus:meansInUse:paid-and-not-collected",
+              "atom:state:ts-order-service.Order.status:transitionsTo:caller-specified-on-modifyOrder"
+            ],
+            "contextRef": "ctx:order-status-boundary",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:payDifference",
+              "atom:capability:ts-payment-service.PaymentController:exposesEndpoint:post-payment",
+              "atom:capability:ts-payment-service.PaymentServiceImpl:handlesCommand:pay",
+              "atom:effect:ts-inside-payment-service.InsidePaymentServiceImpl:callsProvider:outside-payment-endpoint",
+              "atom:semantic:ts-inside-payment-service.PaymentType.E:meansInUse:difference-payment-record",
+              "atom:semantic:ts-inside-payment-service.PaymentType.O:meansInUse:outside-payment-record"
+            ],
+            "contextRef": "ctx:outside-payment-boundary",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:ts-payment-service.SecurityConfig:checksPermission:jwt-filter",
+              "atom:authority:ts-payment-service.SecurityConfig:checksPermission:swagger-paths-permit-all",
+              "atom:authority:ts-payment-service.SecurityConfig:requiresRole:admin-or-user-for-paymentservice-api",
+              "atom:capability:ts-payment-service.PaymentController:exposesEndpoint:get-payment",
+              "atom:capability:ts-payment-service.PaymentController:exposesEndpoint:post-payment",
+              "atom:capability:ts-payment-service.PaymentController:exposesEndpoint:post-payment-money",
+              "atom:capability:ts-payment-service.PaymentRepository:servesQuery:findByOrderId",
+              "atom:capability:ts-payment-service.PaymentRepository:servesQuery:findByUserId",
+              "atom:capability:ts-payment-service.PaymentServiceImpl:handlesCommand:addMoney",
+              "atom:capability:ts-payment-service.PaymentServiceImpl:handlesCommand:pay",
+              "atom:capability:ts-payment-service.PaymentServiceImpl:servesQuery:query",
+              "atom:component:ts-payment-service.AddMoneyRepository",
+              "atom:component:ts-payment-service.InitData",
+              "atom:component:ts-payment-service.PaymentController",
+              "atom:component:ts-payment-service.PaymentRepository",
+              "atom:component:ts-payment-service.SecurityConfig",
+              "atom:contract:ts-payment-service.Money.money:shapedAs:string-amount",
+              "atom:contract:ts-payment-service.Payment:shapedAs:payment-record-notnull-strings",
+              "atom:contract:ts-payment-service.PaymentServiceImpl.initPayment:requires:payment-id-not-already-present",
+              "atom:contract:ts-payment-service.PaymentServiceImpl.pay:requires:no-existing-payment-for-orderId",
+              "atom:contract:ts-payment-service.SecurityConfig:ensures:stateless-session-policy",
+              "atom:effect:ts-payment-service.InitData:writesTo:startup-seed-payment",
+              "atom:relation:ts-payment-service.InitData:calls:PaymentService-initPayment",
+              "atom:relation:ts-payment-service.PaymentController:calls:ts-payment-service.PaymentService"
+            ],
+            "contextRef": "ctx:payment-provider-surface",
+            "objectKind": "nerveVertex"
+          }
+        ]
+      },
+      "dimensions": {
+        "H0": 13,
+        "H1": 1
+      },
+      "evaluator": "ag.cech-obstruction",
+      "invariantId": "cech-cohomology:profile:train-ticket-cancel-refund@1",
+      "kind": "cech-h1-rank",
+      "method": "finite-f2-incidence-graph-cochain@1",
+      "methodStatus": "sections_not_observed",
+      "nerveShape": {
+        "b1": 1,
+        "capacityLowerBound": 0,
+        "eulerCharacteristic": 23,
+        "isForest": false,
+        "oneSkeletonB1": 1
+      },
+      "observedCocycle": {
+        "classNonzero": false,
+        "mismatchSupportRefs": [],
+        "representative": []
+      },
+      "observedEdgeCount": 0,
+      "rankD0": 3,
+      "reason": "sections_not_observed: no sectionValue or cocycleValue observation covers any selected Cech edge",
+      "representation": {
+        "boundaryNote": "COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION is relative to the selected abelian coefficient sheaf; non-abelian torsor, stacky descent, and gerbe obstructions are not excluded.",
+        "claimScope": "selected-cover 1-skeleton Cech cochain calculation",
+        "classSupport": {
+          "edgeRefs": [],
+          "kind": "selected-cover-edge-support",
+          "supportAtomRefs": []
+        },
+        "coefficient": "F2",
+        "contextCount": 16,
+        "coverNerveProjection": {
+          "coverRef": "cover:cancel-refund-flow-surface",
+          "edges": [
+            {
+              "edgeId": "ctx:cancel-order-command-flow->ctx:order-lookup-boundary",
+              "objectKind": "nerveEdge",
+              "sectionObservation": "not_observed",
+              "source": "selected cover restriction edge",
+              "sourceContextRef": "ctx:cancel-order-command-flow",
+              "supportAtomRefs": [],
+              "targetContextRef": "ctx:order-lookup-boundary",
+              "value": 0
+            },
+            {
+              "edgeId": "ctx:cancel-order-command-flow->ctx:order-status-boundary",
+              "objectKind": "nerveEdge",
+              "sectionObservation": "not_observed",
+              "source": "selected cover restriction edge",
+              "sourceContextRef": "ctx:cancel-order-command-flow",
+              "supportAtomRefs": [],
+              "targetContextRef": "ctx:order-status-boundary",
+              "value": 0
+            },
+            {
+              "edgeId": "ctx:inside-payment-pay-flow->ctx:order-lookup-boundary",
+              "objectKind": "nerveEdge",
+              "sectionObservation": "not_observed",
+              "source": "selected cover restriction edge",
+              "sourceContextRef": "ctx:inside-payment-pay-flow",
+              "supportAtomRefs": [],
+              "targetContextRef": "ctx:order-lookup-boundary",
+              "value": 0
+            },
+            {
+              "edgeId": "ctx:inside-payment-pay-flow->ctx:order-status-boundary",
+              "objectKind": "nerveEdge",
+              "sectionObservation": "not_observed",
+              "source": "selected cover restriction edge",
+              "sourceContextRef": "ctx:inside-payment-pay-flow",
+              "supportAtomRefs": [],
+              "targetContextRef": "ctx:order-status-boundary",
+              "value": 0
+            }
+          ],
+          "faceSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v0.5.3; not inferred by the viewer",
+          "faces": [
+            {
+              "coherenceClaim": "not_visualized",
+              "contextRefs": [
+                "ctx:cancel-order-command-flow",
+                "ctx:cancel-refund-quote-flow",
+                "ctx:cancel-security-boundary"
+              ],
+              "coverRef": "cover:cancel-refund-flow-surface",
+              "edgeRefs": [],
+              "faceId": "nerve-face:ctx:cancel-order-command-flow:ctx:cancel-refund-quote-flow:ctx:cancel-security-boundary",
+              "objectKind": "nerveTriangle",
+              "sharedAtomRefs": [
+                "atom:contract:ts-cancel-service.CancelServiceImpl.getAuthorizationHeadersFrom:ensures:authorization-header-forwarding"
+              ],
+              "source": "selected cover triple overlap with shared atom refs"
+            },
+            {
+              "coherenceClaim": "not_visualized",
+              "contextRefs": [
+                "ctx:cancel-order-command-flow",
+                "ctx:cancel-refund-quote-flow",
+                "ctx:drawback-boundary"
+              ],
+              "coverRef": "cover:cancel-refund-flow-surface",
+              "edgeRefs": [],
+              "faceId": "nerve-face:ctx:cancel-order-command-flow:ctx:cancel-refund-quote-flow:ctx:drawback-boundary",
+              "objectKind": "nerveTriangle",
+              "sharedAtomRefs": [
+                "atom:contract:ts-cancel-service.CancelServiceImpl.getAuthorizationHeadersFrom:ensures:authorization-header-forwarding"
+              ],
+              "source": "selected cover triple overlap with shared atom refs"
+            },
+            {
+              "coherenceClaim": "not_visualized",
+              "contextRefs": [
+                "ctx:cancel-order-command-flow",
+                "ctx:cancel-refund-quote-flow",
+                "ctx:order-lookup-boundary"
+              ],
+              "coverRef": "cover:cancel-refund-flow-surface",
+              "edgeRefs": [
+                "ctx:cancel-order-command-flow->ctx:order-lookup-boundary"
+              ],
+              "faceId": "nerve-face:ctx:cancel-order-command-flow:ctx:cancel-refund-quote-flow:ctx:order-lookup-boundary",
+              "objectKind": "nerveTriangle",
+              "sharedAtomRefs": [
+                "atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-order-other-service-get-order",
+                "atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-order-service-get-order"
+              ],
+              "source": "selected cover triple overlap with shared atom refs"
+            },
+            {
+              "coherenceClaim": "not_visualized",
+              "contextRefs": [
+                "ctx:cancel-order-command-flow",
+                "ctx:cancel-security-boundary",
+                "ctx:drawback-boundary"
+              ],
+              "coverRef": "cover:cancel-refund-flow-surface",
+              "edgeRefs": [],
+              "faceId": "nerve-face:ctx:cancel-order-command-flow:ctx:cancel-security-boundary:ctx:drawback-boundary",
+              "objectKind": "nerveTriangle",
+              "sharedAtomRefs": [
+                "atom:contract:ts-cancel-service.CancelServiceImpl.getAuthorizationHeadersFrom:ensures:authorization-header-forwarding"
+              ],
+              "source": "selected cover triple overlap with shared atom refs"
+            },
+            {
+              "coherenceClaim": "not_visualized",
+              "contextRefs": [
+                "ctx:cancel-refund-quote-flow",
+                "ctx:cancel-security-boundary",
+                "ctx:drawback-boundary"
+              ],
+              "coverRef": "cover:cancel-refund-flow-surface",
+              "edgeRefs": [],
+              "faceId": "nerve-face:ctx:cancel-refund-quote-flow:ctx:cancel-security-boundary:ctx:drawback-boundary",
+              "objectKind": "nerveTriangle",
+              "sharedAtomRefs": [
+                "atom:contract:ts-cancel-service.CancelServiceImpl.getAuthorizationHeadersFrom:ensures:authorization-header-forwarding"
+              ],
+              "source": "selected cover triple overlap with shared atom refs"
+            },
+            {
+              "coherenceClaim": "not_visualized",
+              "contextRefs": [
+                "ctx:drawback-boundary",
+                "ctx:inside-payment-account-ledger",
+                "ctx:inside-payment-drawback-flow"
+              ],
+              "coverRef": "cover:cancel-refund-flow-surface",
+              "edgeRefs": [],
+              "faceId": "nerve-face:ctx:drawback-boundary:ctx:inside-payment-account-ledger:ctx:inside-payment-drawback-flow",
+              "objectKind": "nerveTriangle",
+              "sharedAtomRefs": [
+                "atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:drawBack"
+              ],
+              "source": "selected cover triple overlap with shared atom refs"
+            },
+            {
+              "coherenceClaim": "not_visualized",
+              "contextRefs": [
+                "ctx:drawback-boundary",
+                "ctx:inside-payment-drawback-flow",
+                "ctx:inside-payment-pay-flow"
+              ],
+              "coverRef": "cover:cancel-refund-flow-surface",
+              "edgeRefs": [],
+              "faceId": "nerve-face:ctx:drawback-boundary:ctx:inside-payment-drawback-flow:ctx:inside-payment-pay-flow",
+              "objectKind": "nerveTriangle",
+              "sharedAtomRefs": [
+                "atom:authority:ts-inside-payment-service-securityconfig:requiresrole-admin-user"
+              ],
+              "source": "selected cover triple overlap with shared atom refs"
+            },
+            {
+              "coherenceClaim": "not_visualized",
+              "contextRefs": [
+                "ctx:drawback-boundary",
+                "ctx:inside-payment-drawback-flow",
+                "ctx:inside-payment-security-boundary"
+              ],
+              "coverRef": "cover:cancel-refund-flow-surface",
+              "edgeRefs": [],
+              "faceId": "nerve-face:ctx:drawback-boundary:ctx:inside-payment-drawback-flow:ctx:inside-payment-security-boundary",
+              "objectKind": "nerveTriangle",
+              "sharedAtomRefs": [
+                "atom:authority:ts-inside-payment-service-securityconfig:requiresrole-admin-user"
+              ],
+              "source": "selected cover triple overlap with shared atom refs"
+            },
+            {
+              "coherenceClaim": "not_visualized",
+              "contextRefs": [
+                "ctx:drawback-boundary",
+                "ctx:inside-payment-pay-flow",
+                "ctx:inside-payment-security-boundary"
+              ],
+              "coverRef": "cover:cancel-refund-flow-surface",
+              "edgeRefs": [],
+              "faceId": "nerve-face:ctx:drawback-boundary:ctx:inside-payment-pay-flow:ctx:inside-payment-security-boundary",
+              "objectKind": "nerveTriangle",
+              "sharedAtomRefs": [
+                "atom:authority:ts-inside-payment-service-securityconfig:requiresrole-admin-user"
+              ],
+              "source": "selected cover triple overlap with shared atom refs"
+            },
+            {
+              "coherenceClaim": "not_visualized",
+              "contextRefs": [
+                "ctx:inside-payment-drawback-flow",
+                "ctx:inside-payment-pay-flow",
+                "ctx:inside-payment-security-boundary"
+              ],
+              "coverRef": "cover:cancel-refund-flow-surface",
+              "edgeRefs": [],
+              "faceId": "nerve-face:ctx:inside-payment-drawback-flow:ctx:inside-payment-pay-flow:ctx:inside-payment-security-boundary",
+              "objectKind": "nerveTriangle",
+              "sharedAtomRefs": [
+                "atom:authority:ts-inside-payment-service-securityconfig:requiresrole-admin-user"
+              ],
+              "source": "selected cover triple overlap with shared atom refs"
+            },
+            {
+              "coherenceClaim": "not_visualized",
+              "contextRefs": [
+                "ctx:inside-payment-drawback-flow",
+                "ctx:inside-payment-pay-flow",
+                "ctx:outside-payment-boundary"
+              ],
+              "coverRef": "cover:cancel-refund-flow-surface",
+              "edgeRefs": [],
+              "faceId": "nerve-face:ctx:inside-payment-drawback-flow:ctx:inside-payment-pay-flow:ctx:outside-payment-boundary",
+              "objectKind": "nerveTriangle",
+              "sharedAtomRefs": [
+                "atom:effect:ts-inside-payment-service.InsidePaymentServiceImpl:callsProvider:outside-payment-endpoint"
+              ],
+              "source": "selected cover triple overlap with shared atom refs"
+            }
+          ],
+          "h2CoherenceVisualized": false,
+          "vertices": [
+            {
+              "atomRefs": [
+                "atom:capability:ts-cancel-service-cancelcontroller:exposesendpoint-get-cancel-order",
+                "atom:capability:ts-cancel-service-cancelservice:handlescommand-cancelorder",
+                "atom:component:ts-cancel-service-cancelserviceimpl",
+                "atom:contract:ts-cancel-service-cancelcontroller:ensures-exception-response-shape",
+                "atom:contract:ts-cancel-service.CancelServiceImpl.getAuthorizationHeadersFrom:ensures:authorization-header-forwarding",
+                "atom:effect:ts-cancel-service-cancelserviceimpl:callsprovider-ts-inside-payment-drawback",
+                "atom:effect:ts-cancel-service-cancelserviceimpl:callsprovider-ts-order-other-service-put-order",
+                "atom:effect:ts-cancel-service-cancelserviceimpl:callsprovider-ts-order-service-put-order",
+                "atom:relation:ts-cancel-service-cancelcontroller:calls-cancelservice",
+                "atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-notification-order-cancel-success",
+                "atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-order-other-service-get-order",
+                "atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-order-service-get-order",
+                "atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-user-service-get-user",
+                "atom:relation:ts-cancel-service-cancelserviceimpl:implements-cancelservice",
+                "atom:semantic:common-order:meansinuse-order-store-partition",
+                "atom:semantic:common-orderstatus:statusgates-cancelable",
+                "atom:semantic:common-response-status:meansinuse-one-proceed-zero-fallback",
+                "atom:semantic:ts-cancel-service.Response.status:meansInUse:one-paired-with-error-message-on-exception",
+                "atom:state:common-order-status:transitionsto-cancel"
+              ],
+              "contextRef": "ctx:cancel-order-command-flow",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:capability:ts-cancel-service-cancelcontroller:exposesendpoint-get-cancel-refound",
+                "atom:capability:ts-cancel-service-cancelservice:servesquery-calculaterefund",
+                "atom:contract:ts-cancel-service.CancelServiceImpl.calculateRefund:ensures:refund-rule",
+                "atom:contract:ts-cancel-service.CancelServiceImpl.getAuthorizationHeadersFrom:ensures:authorization-header-forwarding",
+                "atom:relation:ts-cancel-service-cancelcontroller:calls-cancelservice",
+                "atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-order-other-service-get-order",
+                "atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-order-service-get-order",
+                "atom:semantic:common-orderstatus:statusgates-refund-quotable",
+                "atom:semantic:common-response-status:meansinuse-one-proceed-zero-fallback",
+                "atom:semantic:ts-cancel-service-refund:meansinuse-eighty-percent-before-departure",
+                "atom:semantic:ts-cancel-service-refund:meansinuse-zero-when-notpaid-or-departed"
+              ],
+              "contextRef": "ctx:cancel-refund-quote-flow",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:ts-cancel-service-securityconfig:requiresrole-admin-user",
+                "atom:authority:ts-cancel-service.SecurityConfig:checksPermission:jwt-filter",
+                "atom:component:ts-cancel-service-securityconfig",
+                "atom:contract:ts-cancel-service.CancelServiceImpl.getAuthorizationHeadersFrom:ensures:authorization-header-forwarding"
+              ],
+              "contextRef": "ctx:cancel-security-boundary",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:ts-inside-payment-service-securityconfig:requiresrole-admin-user",
+                "atom:capability:ts-inside-payment-service-insidepaymentcontroller:exposesendpoint-get-drawback",
+                "atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:drawBack",
+                "atom:contract:ts-cancel-service.CancelServiceImpl.getAuthorizationHeadersFrom:ensures:authorization-header-forwarding",
+                "atom:effect:ts-cancel-service-cancelserviceimpl:callsprovider-ts-inside-payment-drawback",
+                "atom:relation:ts-cancel-service.CancelServiceImpl:calls:ts-inside-payment-service"
+              ],
+              "contextRef": "ctx:drawback-boundary",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:capability:ts-inside-payment-service.AddMoneyRepository:servesQuery:findByUserId",
+                "atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:addMoney",
+                "atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:createAccount",
+                "atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:drawBack",
+                "atom:capability:ts-inside-payment-service.InsidePaymentService:servesQuery:queryAccount",
+                "atom:capability:ts-inside-payment-service.InsidePaymentService:servesQuery:queryAddMoney",
+                "atom:capability:ts-inside-payment-service.InsidePaymentService:servesQuery:queryPayment",
+                "atom:capability:ts-inside-payment-service.PaymentRepository:servesQuery:findByOrderId",
+                "atom:capability:ts-inside-payment-service.PaymentRepository:servesQuery:findByUserId",
+                "atom:component:ts-inside-payment-service-money",
+                "atom:component:ts-inside-payment-service-payment",
+                "atom:component:ts-inside-payment-service.AddMoneyRepository",
+                "atom:component:ts-inside-payment-service.PaymentRepository",
+                "atom:contract:ts-inside-payment-service-accountinfo:shapedas-userid-money",
+                "atom:contract:ts-inside-payment-service-balance:shapedas-userid-balance",
+                "atom:contract:ts-inside-payment-service-outsidepaymentinfo:shapedas-orderid-price-userid",
+                "atom:contract:ts-inside-payment-service.InsidePaymentService.createAccount:requires:no-existing-money-record",
+                "atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:writesTo:add-money-repository",
+                "atom:semantic:ts-inside-payment-service-moneytype-a:meansinuse-add-money-ledger-entry",
+                "atom:semantic:ts-inside-payment-service-moneytype-d:meansinuse-drawback-ledger-entry",
+                "atom:semantic:ts-inside-payment-service.Balance.balance:meansInUse:deposit-minus-expenditure",
+                "atom:semantic:ts-inside-payment-service.MoneyType.A:meansInUse:account-credit-record",
+                "atom:semantic:ts-inside-payment-service.MoneyType.D:meansInUse:drawback-refund-credit-record",
+                "atom:state:ts-inside-payment-service-money:persistsin-inside-money"
+              ],
+              "contextRef": "ctx:inside-payment-account-ledger",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:ts-inside-payment-service-securityconfig:requiresrole-admin-user",
+                "atom:capability:ts-inside-payment-service-insidepaymentcontroller:exposesendpoint-get-drawback",
+                "atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:drawBack",
+                "atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:payDifference",
+                "atom:effect:ts-inside-payment-service.InsidePaymentServiceImpl:callsProvider:outside-payment-endpoint",
+                "atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:writesTo:add-money-repository",
+                "atom:semantic:ts-inside-payment-service.MoneyType.D:meansInUse:drawback-refund-credit-record",
+                "atom:semantic:ts-inside-payment-service.PaymentType.E:meansInUse:difference-payment-record"
+              ],
+              "contextRef": "ctx:inside-payment-drawback-flow",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:ts-inside-payment-service-securityconfig:requiresrole-admin-user",
+                "atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:pay",
+                "atom:contract:ts-inside-payment-service.InsidePaymentService.pay:ensures:order-status-set-paid",
+                "atom:contract:ts-inside-payment-service.InsidePaymentServiceImpl:requires:balance-covers-total-expand",
+                "atom:effect:ts-inside-payment-service.InsidePaymentServiceImpl:callsProvider:outside-payment-endpoint",
+                "atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:calls:order-other-service-status-update",
+                "atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:calls:order-service-status-update",
+                "atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:readsFrom:order-other-service-order-query",
+                "atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:readsFrom:order-service-order-query",
+                "atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:writesTo:PaymentRepository",
+                "atom:semantic:ts-inside-payment-service.Balance.balance:meansInUse:deposit-minus-expenditure",
+                "atom:semantic:ts-inside-payment-service.InsidePaymentServiceImpl.orderStatus:meansInUse:paid-and-not-collected",
+                "atom:semantic:ts-inside-payment-service.OrderStatus.NOTPAID:statusGates:pay-only-when-notpaid",
+                "atom:semantic:ts-inside-payment-service.PaymentInfo.tripId:meansInUse:train-prefix-routes-order-lookup",
+                "atom:semantic:ts-inside-payment-service.PaymentType.O:meansInUse:outside-payment-record",
+                "atom:semantic:ts-inside-payment-service.PaymentType.P:meansInUse:inside-balance-payment-record",
+                "atom:state:ts-inside-payment-service.Payment:persistsIn:payment-repository"
+              ],
+              "contextRef": "ctx:inside-payment-pay-flow",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:ts-inside-payment-service-securityconfig:checkspermission-jwt-filter",
+                "atom:authority:ts-inside-payment-service-securityconfig:requiresrole-admin-user",
+                "atom:component:ts-inside-payment-service-securityconfig"
+              ],
+              "contextRef": "ctx:inside-payment-security-boundary",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:ts-notification-service.SecurityConfig:checksPermission:jwt-filter-authenticated-routes",
+                "atom:authority:ts-notification-service.SecurityConfig:checksPermission:permit-all-notifyservice",
+                "atom:capability:ts-notification-service.NotificationController:exposesEndpoint:notification-order-cancel-success",
+                "atom:capability:ts-notification-service.NotificationController:exposesEndpoint:notification-order-changed-success",
+                "atom:capability:ts-notification-service.NotificationController:exposesEndpoint:notification-order-create-success",
+                "atom:capability:ts-notification-service.NotificationController:exposesEndpoint:notification-preserve-success",
+                "atom:capability:ts-notification-service.NotificationController:exposesEndpoint:test-send-mail",
+                "atom:capability:ts-notification-service.NotificationController:exposesEndpoint:test-send-mq",
+                "atom:capability:ts-notification-service.NotificationController:exposesEndpoint:welcome",
+                "atom:capability:ts-notification-service.NotificationService:handlesCommand:orderCancelSuccess",
+                "atom:capability:ts-notification-service.NotificationService:handlesCommand:orderChangedSuccess",
+                "atom:capability:ts-notification-service.NotificationService:handlesCommand:orderCreateSuccess",
+                "atom:capability:ts-notification-service.NotificationService:handlesCommand:preserveSuccess",
+                "atom:capability:ts-notification-service.RabbitReceive:handlesCommand:email-queue-message",
+                "atom:component:ts-notification-service",
+                "atom:component:ts-notification-service.MailService",
+                "atom:component:ts-notification-service.NotificationController",
+                "atom:component:ts-notification-service.NotificationService",
+                "atom:component:ts-notification-service.NotificationServiceImpl",
+                "atom:component:ts-notification-service.Queues",
+                "atom:component:ts-notification-service.RabbitReceive",
+                "atom:component:ts-notification-service.RabbitSend",
+                "atom:contract:ts-notification-service.EmailProperties:shapedAs:email-connection-properties",
+                "atom:contract:ts-notification-service.NotificationServiceImpl:ensures:returns-false-on-mail-send-exception"
+              ],
+              "contextRef": "ctx:notification-delivery",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:ts-notification-service.SecurityConfig:checksPermission:permit-all-notifyservice",
+                "atom:capability:ts-notification-service.NotificationController:exposesEndpoint:notification-order-cancel-success",
+                "atom:capability:ts-notification-service.NotificationService:handlesCommand:orderCancelSuccess",
+                "atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-notification-order-cancel-success"
+              ],
+              "contextRef": "ctx:notification-trigger-boundary",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:get-orderother-orderid",
+                "atom:capability:ts-order-service.OrderController:exposesEndpoint:get-order-orderid",
+                "atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-order-other-service-get-order",
+                "atom:relation:ts-cancel-service-cancelserviceimpl:calls-ts-order-service-get-order",
+                "atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:readsFrom:order-other-service-order-query",
+                "atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:readsFrom:order-service-order-query",
+                "atom:semantic:common-order:meansinuse-order-store-partition",
+                "atom:semantic:ts-inside-payment-service.PaymentInfo.tripId:meansInUse:train-prefix-routes-order-lookup"
+              ],
+              "contextRef": "ctx:order-lookup-boundary",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:ts-order-other-service.SecurityConfig:checksPermission:jwt-filter",
+                "atom:authority:ts-order-other-service.SecurityConfig:checksPermission:permit-all-orderother-subtree",
+                "atom:authority:ts-order-other-service.SecurityConfig:requiresRole:admin-or-user-orderother-write",
+                "atom:authority:ts-order-other-service.SecurityConfig:requiresRole:admin-orderother-admin",
+                "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:delete-orderother-orderid",
+                "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:get-orderother-findall",
+                "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:get-orderother-orderid",
+                "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:get-orderother-orderpay",
+                "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:get-orderother-price",
+                "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:get-orderother-security",
+                "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:get-orderother-status",
+                "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:get-orderother-traveldate-trainnumber",
+                "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:get-welcome",
+                "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:post-orderother",
+                "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:post-orderother-admin",
+                "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:post-orderother-query",
+                "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:post-orderother-refresh",
+                "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:post-orderother-tickets",
+                "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:put-orderother",
+                "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:put-orderother-admin",
+                "atom:capability:ts-order-other-service.OrderOtherRepository:servesQuery:findByAccountId",
+                "atom:capability:ts-order-other-service.OrderOtherRepository:servesQuery:findByTravelDateAndTrainNumber",
+                "atom:capability:ts-order-other-service.OrderOtherService:handlesCommand:alterOrder",
+                "atom:capability:ts-order-other-service.OrderOtherService:handlesCommand:cancelOrder"
+              ],
+              "contextRef": "ctx:order-other-service-lifecycle",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:ts-order-service.SecurityConfig:checksPermission:jwt-filter",
+                "atom:authority:ts-order-service.SecurityConfig:checksPermission:permit-all-order-subtree",
+                "atom:authority:ts-order-service.SecurityConfig:requiresRole:order-admin-routes-admin",
+                "atom:authority:ts-order-service.SecurityConfig:requiresRole:order-write-admin-or-user",
+                "atom:capability:ts-order-service.OrderController:exposesEndpoint:delete-order-orderid",
+                "atom:capability:ts-order-service.OrderController:exposesEndpoint:get-order-findall",
+                "atom:capability:ts-order-service.OrderController:exposesEndpoint:get-order-orderid",
+                "atom:capability:ts-order-service.OrderController:exposesEndpoint:get-order-orderpay",
+                "atom:capability:ts-order-service.OrderController:exposesEndpoint:get-order-price",
+                "atom:capability:ts-order-service.OrderController:exposesEndpoint:get-order-security",
+                "atom:capability:ts-order-service.OrderController:exposesEndpoint:get-order-status",
+                "atom:capability:ts-order-service.OrderController:exposesEndpoint:get-order-traveldate-trainnumber",
+                "atom:capability:ts-order-service.OrderController:exposesEndpoint:get-welcome",
+                "atom:capability:ts-order-service.OrderController:exposesEndpoint:post-order",
+                "atom:capability:ts-order-service.OrderController:exposesEndpoint:post-order-admin",
+                "atom:capability:ts-order-service.OrderController:exposesEndpoint:post-order-query",
+                "atom:capability:ts-order-service.OrderController:exposesEndpoint:post-order-refresh",
+                "atom:capability:ts-order-service.OrderController:exposesEndpoint:post-order-tickets",
+                "atom:capability:ts-order-service.OrderController:exposesEndpoint:put-order",
+                "atom:capability:ts-order-service.OrderController:exposesEndpoint:put-order-admin",
+                "atom:capability:ts-order-service.OrderRepository:servesQuery:findByAccountId",
+                "atom:capability:ts-order-service.OrderRepository:servesQuery:findByTravelDateAndTrainNumber",
+                "atom:capability:ts-order-service.OrderServiceImpl:handlesCommand:alterOrder",
+                "atom:capability:ts-order-service.OrderServiceImpl:handlesCommand:cancelOrder"
+              ],
+              "contextRef": "ctx:order-service-lifecycle",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:put-orderother",
+                "atom:capability:ts-order-service.OrderController:exposesEndpoint:put-order",
+                "atom:capability:ts-order-service.OrderServiceImpl:handlesCommand:modifyOrder",
+                "atom:contract:ts-inside-payment-service.InsidePaymentService.pay:ensures:order-status-set-paid",
+                "atom:effect:ts-cancel-service-cancelserviceimpl:callsprovider-ts-order-other-service-put-order",
+                "atom:effect:ts-cancel-service-cancelserviceimpl:callsprovider-ts-order-service-put-order",
+                "atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:calls:order-other-service-status-update",
+                "atom:relation:ts-inside-payment-service.InsidePaymentServiceImpl:calls:order-service-status-update",
+                "atom:semantic:ts-inside-payment-service.InsidePaymentServiceImpl.orderStatus:meansInUse:paid-and-not-collected",
+                "atom:state:ts-order-service.Order.status:transitionsTo:caller-specified-on-modifyOrder"
+              ],
+              "contextRef": "ctx:order-status-boundary",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:capability:ts-inside-payment-service.InsidePaymentService:handlesCommand:payDifference",
+                "atom:capability:ts-payment-service.PaymentController:exposesEndpoint:post-payment",
+                "atom:capability:ts-payment-service.PaymentServiceImpl:handlesCommand:pay",
+                "atom:effect:ts-inside-payment-service.InsidePaymentServiceImpl:callsProvider:outside-payment-endpoint",
+                "atom:semantic:ts-inside-payment-service.PaymentType.E:meansInUse:difference-payment-record",
+                "atom:semantic:ts-inside-payment-service.PaymentType.O:meansInUse:outside-payment-record"
+              ],
+              "contextRef": "ctx:outside-payment-boundary",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:ts-payment-service.SecurityConfig:checksPermission:jwt-filter",
+                "atom:authority:ts-payment-service.SecurityConfig:checksPermission:swagger-paths-permit-all",
+                "atom:authority:ts-payment-service.SecurityConfig:requiresRole:admin-or-user-for-paymentservice-api",
+                "atom:capability:ts-payment-service.PaymentController:exposesEndpoint:get-payment",
+                "atom:capability:ts-payment-service.PaymentController:exposesEndpoint:post-payment",
+                "atom:capability:ts-payment-service.PaymentController:exposesEndpoint:post-payment-money",
+                "atom:capability:ts-payment-service.PaymentRepository:servesQuery:findByOrderId",
+                "atom:capability:ts-payment-service.PaymentRepository:servesQuery:findByUserId",
+                "atom:capability:ts-payment-service.PaymentServiceImpl:handlesCommand:addMoney",
+                "atom:capability:ts-payment-service.PaymentServiceImpl:handlesCommand:pay",
+                "atom:capability:ts-payment-service.PaymentServiceImpl:servesQuery:query",
+                "atom:component:ts-payment-service.AddMoneyRepository",
+                "atom:component:ts-payment-service.InitData",
+                "atom:component:ts-payment-service.PaymentController",
+                "atom:component:ts-payment-service.PaymentRepository",
+                "atom:component:ts-payment-service.SecurityConfig",
+                "atom:contract:ts-payment-service.Money.money:shapedAs:string-amount",
+                "atom:contract:ts-payment-service.Payment:shapedAs:payment-record-notnull-strings",
+                "atom:contract:ts-payment-service.PaymentServiceImpl.initPayment:requires:payment-id-not-already-present",
+                "atom:contract:ts-payment-service.PaymentServiceImpl.pay:requires:no-existing-payment-for-orderId",
+                "atom:contract:ts-payment-service.SecurityConfig:ensures:stateless-session-policy",
+                "atom:effect:ts-payment-service.InitData:writesTo:startup-seed-payment",
+                "atom:relation:ts-payment-service.InitData:calls:PaymentService-initPayment",
+                "atom:relation:ts-payment-service.PaymentController:calls:ts-payment-service.PaymentService"
+              ],
+              "contextRef": "ctx:payment-provider-surface",
+              "objectKind": "nerveVertex"
+            }
+          ]
+        },
+        "dimensions": {
+          "H0": 13,
+          "H1": 1
+        },
+        "evaluator": "ag.cech-obstruction",
+        "invariantId": "cech-cohomology:profile:train-ticket-cancel-refund@1",
+        "method": "finite-f2-incidence-graph-cochain@1",
+        "methodStatus": "sections_not_observed",
+        "nerveShape": {
+          "b1": 1,
+          "capacityLowerBound": 0,
+          "eulerCharacteristic": 23,
+          "isForest": false,
+          "oneSkeletonB1": 1
+        },
+        "observedCocycle": {
+          "classNonzero": false,
+          "mismatchSupportRefs": [],
+          "representative": []
+        },
+        "observedEdgeCount": 0,
+        "rankD0": 3,
+        "reason": "sections_not_observed: no sectionValue or cocycleValue observation covers any selected Cech edge",
+        "restrictionEdgeCount": 4,
+        "selectedCoverRef": "cover:cancel-refund-flow-surface",
+        "selectedH2": {
+          "dimension": null,
+          "reason": "triple-overlap faces are projected for viewer geometry only; H2 coherence remains outside this measurement",
+          "status": "not_measured_for_triple_overlap_faces"
+        },
+        "status": "not_computed",
+        "theorem12_4Discharge": {
+          "conclusionCode": null,
+          "coverShapeExcludesGluingObstruction": false,
+          "isForest": {
+            "checkedBy": null,
+            "holds": false,
+            "status": "not_discharged"
+          },
+          "restrictionMapsSurjective": {
+            "checkedBy": null,
+            "holds": false,
+            "status": "not_discharged"
+          },
+          "restrictionSurjectivityWitnesses": [],
+          "theoremRef": "part4/12.4",
+          "tripleOverlapsEmpty": {
+            "checkedBy": null,
+            "holds": false,
+            "status": "not_discharged"
+          }
+        },
+        "unobservedEdgeRefs": [
+          "ctx:cancel-order-command-flow->ctx:order-lookup-boundary",
+          "ctx:cancel-order-command-flow->ctx:order-status-boundary",
+          "ctx:inside-payment-pay-flow->ctx:order-lookup-boundary",
+          "ctx:inside-payment-pay-flow->ctx:order-status-boundary"
+        ]
+      },
+      "restrictionEdgeCount": 4,
+      "selectedCoverRef": "cover:cancel-refund-flow-surface",
+      "selectedH2": {
+        "dimension": null,
+        "reason": "triple-overlap faces are projected for viewer geometry only; H2 coherence remains outside this measurement",
+        "status": "not_measured_for_triple_overlap_faces"
+      },
+      "status": "not_computed",
+      "theorem12_4Discharge": {
+        "conclusionCode": null,
+        "coverShapeExcludesGluingObstruction": false,
+        "isForest": {
+          "checkedBy": null,
+          "holds": false,
+          "status": "not_discharged"
+        },
+        "restrictionMapsSurjective": {
+          "checkedBy": null,
+          "holds": false,
+          "status": "not_discharged"
+        },
+        "restrictionSurjectivityWitnesses": [],
+        "theoremRef": "part4/12.4",
+        "tripleOverlapsEmpty": {
+          "checkedBy": null,
+          "holds": false,
+          "status": "not_discharged"
+        }
+      },
+      "unobservedEdgeRefs": [
+        "ctx:cancel-order-command-flow->ctx:order-lookup-boundary",
+        "ctx:cancel-order-command-flow->ctx:order-status-boundary",
+        "ctx:inside-payment-pay-flow->ctx:order-lookup-boundary",
+        "ctx:inside-payment-pay-flow->ctx:order-status-boundary"
+      ],
+      "value": {
+        "b1": 1,
+        "capacityLowerBound": 0,
+        "eulerCharacteristic": 23,
+        "isForest": false,
+        "oneSkeletonB1": 1
+      }
+    },
+    {
+      "b1NerveReading": {
+        "distinction": "oneSkeletonB1 counts graph cycles before selected triple-overlap faces are quotiented; nerveComplexB1 includes those faces and may be smaller.",
+        "nerveComplexB1": 1,
+        "nerveComplexMethod": "finite-f2-simplicial-homology-with-selected-2-faces@1",
+        "nonClaim": "capacityLowerBound and b1NerveReading are capacity/accounting readings, not new structural verdicts and not concrete H1 class existence claims.",
+        "oneSkeletonB1": 1,
+        "oneSkeletonMethod": "graph-cycle-rank@1"
+      },
+      "boundaryNote": "Part IV principle 11.3 is referenced only as the Cohomological Non-Claim boundary; this row does not import any Part VII numbering or create a viewer verdict.",
+      "capacityFormula": "max(0, dimC1 - dimC0 - dimC2)",
+      "capacityLowerBound": 0,
+      "coefficient": "F2",
+      "dimensions": {
+        "dimC0": 16,
+        "dimC1": 4,
+        "dimC2": 11
+      },
+      "eulerCharacteristic": 23,
+      "eulerFormula": "dimC0 - dimC1 + dimC2",
+      "evaluator": "ag.cech-obstruction",
+      "invariantId": "topological-debt-capacity:profile:train-ticket-cancel-refund@1",
+      "kind": "cech-h1-rank",
+      "measuredCechVerdictEcho": {
+        "certRef": "computedInvariants/cech-cohomology:profile:train-ticket-cancel-refund@1",
+        "evaluator": "ag.cech-obstruction",
+        "h1ClassNonzero": false,
+        "note": "This is an echo of the separate Cech structural verdict, not a capacity-derived class claim."
+      },
+      "method": "finite-f2-rank-nullity-nerve-capacity@1",
+      "methodStatus": "finite_f2_nerve_capacity_computed",
+      "representation": {
+        "b1NerveReading": {
+          "distinction": "oneSkeletonB1 counts graph cycles before selected triple-overlap faces are quotiented; nerveComplexB1 includes those faces and may be smaller.",
+          "nerveComplexB1": 1,
+          "nerveComplexMethod": "finite-f2-simplicial-homology-with-selected-2-faces@1",
+          "nonClaim": "capacityLowerBound and b1NerveReading are capacity/accounting readings, not new structural verdicts and not concrete H1 class existence claims.",
+          "oneSkeletonB1": 1,
+          "oneSkeletonMethod": "graph-cycle-rank@1"
+        },
+        "boundaryNote": "Part IV principle 11.3 is referenced only as the Cohomological Non-Claim boundary; this row does not import any Part VII numbering or create a viewer verdict.",
+        "capacityFormula": "max(0, dimC1 - dimC0 - dimC2)",
+        "capacityLowerBound": 0,
+        "coefficient": "F2",
+        "dimensions": {
+          "dimC0": 16,
+          "dimC1": 4,
+          "dimC2": 11
+        },
+        "eulerCharacteristic": 23,
+        "eulerFormula": "dimC0 - dimC1 + dimC2",
+        "evaluator": "ag.cech-obstruction",
+        "invariantId": "topological-debt-capacity:profile:train-ticket-cancel-refund@1",
+        "measuredCechVerdictEcho": {
+          "certRef": "computedInvariants/cech-cohomology:profile:train-ticket-cancel-refund@1",
+          "evaluator": "ag.cech-obstruction",
+          "h1ClassNonzero": false,
+          "note": "This is an echo of the separate Cech structural verdict, not a capacity-derived class claim."
+        },
+        "method": "finite-f2-rank-nullity-nerve-capacity@1",
+        "methodStatus": "finite_f2_nerve_capacity_computed",
+        "selectedCoverRef": "cover:cancel-refund-flow-surface",
+        "status": "computed",
+        "structuralVerdictRef": null
+      },
+      "selectedCoverRef": "cover:cancel-refund-flow-surface",
+      "status": "computed",
+      "structuralVerdictRef": null,
+      "value": {}
+    }
+  ],
+  "inputDigests": {
+    "archmap": {
+      "path": "input:archmap.json",
+      "sha256": "b9e91fc8afe889b9c7434a892ae648ca9d33c7ed0b86b9d07fcc6a8a640c027f"
+    },
+    "lawPolicy": {
+      "path": "input:law_policy.json",
+      "sha256": "64830a08819baa438f0cc64c2bf1ab77827ede56d4c73be5cdcc29f862d14563"
+    },
+    "lawSurface": {
+      "path": "input:law_surface.json",
+      "sha256": "4a0727decd1415881a1ca152b063bbfc929e57e6f66183bb3442e21121438d1d"
+    },
+    "measurementProfile": {
+      "path": "input:measurement_profile.json",
+      "sha256": "2bfa3a920bed427febc115976a3c0a0295ba89b24b18f95ccdafc93991a7e526"
+    },
+    "measurementProfiles": [
+      {
+        "path": "input:measurement_profile.json",
+        "sha256": "2bfa3a920bed427febc115976a3c0a0295ba89b24b18f95ccdafc93991a7e526"
+      }
+    ],
+    "profileFingerprint": {
+      "basis": "archmap shape + LawPolicy measurementProfileRef + external MeasurementProfile artifact",
+      "sha256": "7b09620bacbfc0c613626f84d422b624db3e9a2484f33a9c471915004323d066"
+    },
+    "siteCoverDigest": {
+      "basis": "normalized contexts + covers + derived finite cover nerve",
+      "sha256": "5dadfdc048397e3dd99c7cb8e92ef2d43b3bbc819043724cacf27f4b2972529b",
+      "status": "computed"
+    }
+  },
+  "nonConclusions": [
+    "ArchSig v0.5.3 foundation packet is computed from input:archmap.json and input:law_policy.json; it is not a Lean proof object.",
+    "Unmeasured AG evaluator rows are schema handoff rows, not measured zero.",
+    "Theorem-candidate readings are analytic-only and cannot generate structural verdicts."
+  ],
+  "packetId": "measurement:archmap:train-ticket-cancel-refund-trial@1",
+  "profile": {
+    "certSelector": "finite-certificate@1",
+    "coefficient": "F2",
+    "coverRef": "cover:cancel-refund-flow-surface",
+    "domain": "finite-poset-site",
+    "effCoeff": "finite-linear-algebra@1",
+    "finiteBounds": {
+      "maxBoundaryResidueVariables": 16,
+      "maxCoherenceContexts": 12,
+      "maxLaplacianCells": 16,
+      "maxPeriodCycles": 16,
+      "maxSquareFreeWitnessVariables": 12,
+      "maxTorWitnessVariables": 12,
+      "maxTransferTargets": 16
+    },
+    "nonZeroPredicate": "rank-positive@1",
+    "profileId": "profile:train-ticket-cancel-refund@1",
+    "resolutionSelector": "taylor@1",
+    "schema": "measurement-profile/v0.5.3",
+    "siteRef": "archmap:/contexts",
+    "verdictDiscipline": "five-valued-structural-verdict@1",
+    "zeroPredicate": "rank-zero@1"
+  },
+  "runId": "run:0dab4af827e5",
+  "schema": "archsig-measurement-packet/v0.5.3",
+  "structuralVerdict": [
+    {
+      "dependsOnAssumptions": [
+        "assumption:part4-11-1:coefficient-object-satisfies-descent",
+        "assumption:part4-11-1:local-adjustment-action-is-fixed-and-effective",
+        "assumption:part4-11-1:local-lawful-sections-form-an-effective-Ob-U-torsor",
+        "assumption:part4-12-3:constant-coefficient-nerve-b1-comparison",
+        "assumption:part4-12-4:restriction-maps-are-surjective",
+        "assumption:part4-12-4:selected-Cech-nerve-is-a-forest-with-no-triple-overlap-faces",
+        "assumption:part8-B-8-2-sections-not-observed:section-observations-cover-at-least-one-selected-Cech-edge",
+        "assumption:part8-B-8-2:F2-finite-coefficient-field",
+        "assumption:part8-B-8-2:Leray---acyclicity-comparison-to-sheaf-cohomology",
+        "assumption:part8-B-8-2:cover-relative-Cech-reading"
+      ],
+      "evaluator": "ag.cech-obstruction",
+      "evidence": {
+        "computedInvariantRefs": [],
+        "sourceRefs": []
+      },
+      "law": "surface:cech-surface-v052",
+      "reason": "sections_not_observed: no sectionValue or cocycleValue observation covers any selected Cech edge; supply section observations on both endpoint contexts of a selected edge (or an explicit cocycleValue for the edge) before the H1 class can be measured",
+      "target": {
+        "classRef": "structuralVerdict/ag-cech-obstruction/surface-cech-surface-v052/sections-not-observed",
+        "coefficient": "F2",
+        "coverRef": "cover:cancel-refund-flow-surface",
+        "kind": "cover-relative-cech-h1-class",
+        "scopeSize": {
+          "contexts": 0,
+          "edges": 0,
+          "triangles": 0
+        }
+      },
+      "verdict": "not_computed",
+      "verdictData": {
+        "inScope": true,
+        "methodStatus": "sections_not_observed",
+        "nonZero": false,
+        "zero": false
+      },
+      "verdictRef": "structuralVerdict/ag-cech-obstruction/surface-cech-surface-v052/sections-not-observed"
+    }
+  ],
+  "suppliedData": [
+    {
+      "conformance": {
+        "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim",
+        "checkRef": "archmap/v0.5.3-validation",
+        "status": "validated"
+      },
+      "kind": "archmap",
+      "sourceArtifactRef": "input:archmap.json",
+      "suppliedId": "supplied:archmap"
+    },
+    {
+      "conformance": {
+        "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim",
+        "checkRef": "law-policy/v0.5.3-validation",
+        "status": "validated"
+      },
+      "kind": "law-policy",
+      "sourceArtifactRef": "input:law_policy.json",
+      "suppliedId": "supplied:law-policy"
+    },
+    {
+      "conformance": {
+        "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim",
+        "checkRef": "measurement-profile/v0.5.3-validation",
+        "status": "validated"
+      },
+      "kind": "measurement-profile",
+      "sourceArtifactRef": "input:measurement_profile.json",
+      "suppliedId": "supplied:measurement-profile"
+    },
+    {
+      "conformance": {
+        "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim",
+        "checkRef": "law-equation-surface/v0.5.3-validation",
+        "status": "validated"
+      },
+      "kind": "law-equation-surface",
+      "sourceArtifactRef": "input:law_surface.json",
+      "suppliedId": "supplied:law-surface"
+    }
+  ],
+  "toolVersion": "0.5.3"
+}

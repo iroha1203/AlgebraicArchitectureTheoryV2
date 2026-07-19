@@ -1,0 +1,12 @@
+{
+  "schema": "archsig-policy-bundle/v0.5.3",
+  "id": "policy-bundle:train-ticket-status@1",
+  "lawPolicyRef": "law-policy-status.json",
+  "lawSurfaceRef": "law-surface-status.json",
+  "measurementProfileRef": "measurement-profile-status.json",
+  "componentFingerprints": {
+    "lawPolicy": "sha256:3eadf3fe287a543585b90e88e426ddee8284fee1978bffe27e8f8b919303a9de",
+    "lawSurface": "sha256:a861f2b9d4b7f5528cb5733868f185cb8cac6d6e056da28e61f8e4704a1c7be8",
+    "measurementProfile": "sha256:27ed8fc227fbdce9f1589f783396688f2fae7fc0e6bb05d7c1b6c393781685d3"
+  }
+}

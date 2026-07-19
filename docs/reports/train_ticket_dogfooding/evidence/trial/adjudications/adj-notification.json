@@ -1,0 +1,935 @@
+{
+  "service": "ts-notification-service",
+  "adjudications": [
+    {
+      "key": "authority|ts-notification-service.SecurityConfig|authority|checksPermission|jwt-filter-and-authenticated-any-other-request",
+      "decision": "merged",
+      "basis": "SecurityConfig.java:75-77 chains anyRequest().authenticated() with JWTFilter before UsernamePasswordAuthenticationFilter; kept atom:authority:ts-notification-service.SecurityConfig:checksPermission:jwt-filter-authenticated-routes."
+    },
+    {
+      "key": "authority|ts-notification-service.SecurityConfig|authority|checksPermission|jwt-filter-on-remaining-authenticated-routes",
+      "decision": "merged",
+      "basis": "SecurityConfig.java:75-77 chains anyRequest().authenticated() with JWTFilter before UsernamePasswordAuthenticationFilter; kept atom:authority:ts-notification-service.SecurityConfig:checksPermission:jwt-filter-authenticated-routes."
+    },
+    {
+      "key": "authority|ts-notification-service.SecurityConfig|authority|permitsAll|/api/v1/notifyservice/**",
+      "decision": "merged",
+      "basis": "SecurityConfig.java:71 permitAll on /api/v1/notifyservice/**; kept catalog-predicate atom atom:authority:ts-notification-service.SecurityConfig:checksPermission:permit-all-notifyservice over catalog-external permitsAll."
+    },
+    {
+      "key": "authority|ts-notification-service.SecurityConfig|authority|checksPermission|permitAll-on-/api/v1/notifyservice/**",
+      "decision": "merged",
+      "basis": "SecurityConfig.java:71 permitAll on /api/v1/notifyservice/**; kept catalog-predicate atom atom:authority:ts-notification-service.SecurityConfig:checksPermission:permit-all-notifyservice over catalog-external permitsAll."
+    },
+    {
+      "key": "capability|ts-notification-service.NotificationController|capability|exposesEndpoint|GET /api/v1/notifyservice/test_send_mail",
+      "decision": "merged",
+      "basis": "NotificationController.java:39 @GetMapping /test_send_mail under /api/v1/notifyservice; kept atom:capability:ts-notification-service.NotificationController:exposesEndpoint:test-send-mail."
+    },
+    {
+      "key": "capability|ts-notification-service.NotificationController|static|exposesEndpoint|GET:/api/v1/notifyservice/test_send_mail",
+      "decision": "merged",
+      "basis": "NotificationController.java:39 @GetMapping /test_send_mail under /api/v1/notifyservice; kept atom:capability:ts-notification-service.NotificationController:exposesEndpoint:test-send-mail."
+    },
+    {
+      "key": "capability|ts-notification-service.NotificationController|capability|exposesEndpoint|GET /api/v1/notifyservice/test_send_mq",
+      "decision": "merged",
+      "basis": "NotificationController.java:33 @GetMapping /test_send_mq; kept atom:capability:ts-notification-service.NotificationController:exposesEndpoint:test-send-mq."
+    },
+    {
+      "key": "capability|ts-notification-service.NotificationController|static|exposesEndpoint|GET:/api/v1/notifyservice/test_send_mq",
+      "decision": "merged",
+      "basis": "NotificationController.java:33 @GetMapping /test_send_mq; kept atom:capability:ts-notification-service.NotificationController:exposesEndpoint:test-send-mq."
+    },
+    {
+      "key": "capability|ts-notification-service.NotificationController|capability|exposesEndpoint|POST /api/v1/notifyservice/notification/order_cancel_success",
+      "decision": "merged",
+      "basis": "NotificationController.java:72 @PostMapping /notification/order_cancel_success; kept atom:capability:ts-notification-service.NotificationController:exposesEndpoint:notification-order-cancel-success."
+    },
+    {
+      "key": "capability|ts-notification-service.NotificationController|static|exposesEndpoint|POST:/api/v1/notifyservice/notification/order_cancel_success",
+      "decision": "merged",
+      "basis": "NotificationController.java:72 @PostMapping /notification/order_cancel_success; kept atom:capability:ts-notification-service.NotificationController:exposesEndpoint:notification-order-cancel-success."
+    },
+    {
+      "key": "capability|ts-notification-service.NotificationController|capability|exposesEndpoint|POST /api/v1/notifyservice/notification/order_changed_success",
+      "decision": "merged",
+      "basis": "NotificationController.java:67 @PostMapping /notification/order_changed_success; kept atom:capability:ts-notification-service.NotificationController:exposesEndpoint:notification-order-changed-success."
+    },
+    {
+      "key": "capability|ts-notification-service.NotificationController|static|exposesEndpoint|POST:/api/v1/notifyservice/notification/order_changed_success",
+      "decision": "merged",
+      "basis": "NotificationController.java:67 @PostMapping /notification/order_changed_success; kept atom:capability:ts-notification-service.NotificationController:exposesEndpoint:notification-order-changed-success."
+    },
+    {
+      "key": "capability|ts-notification-service.NotificationController|capability|exposesEndpoint|POST /api/v1/notifyservice/notification/order_create_success",
+      "decision": "merged",
+      "basis": "NotificationController.java:62 @PostMapping /notification/order_create_success; kept atom:capability:ts-notification-service.NotificationController:exposesEndpoint:notification-order-create-success."
+    },
+    {
+      "key": "capability|ts-notification-service.NotificationController|static|exposesEndpoint|POST:/api/v1/notifyservice/notification/order_create_success",
+      "decision": "merged",
+      "basis": "NotificationController.java:62 @PostMapping /notification/order_create_success; kept atom:capability:ts-notification-service.NotificationController:exposesEndpoint:notification-order-create-success."
+    },
+    {
+      "key": "capability|ts-notification-service.NotificationController|capability|exposesEndpoint|POST /api/v1/notifyservice/notification/preserve_success",
+      "decision": "merged",
+      "basis": "NotificationController.java:57 @PostMapping /notification/preserve_success; kept atom:capability:ts-notification-service.NotificationController:exposesEndpoint:notification-preserve-success."
+    },
+    {
+      "key": "capability|ts-notification-service.NotificationController|static|exposesEndpoint|POST:/api/v1/notifyservice/notification/preserve_success",
+      "decision": "merged",
+      "basis": "NotificationController.java:57 @PostMapping /notification/preserve_success; kept atom:capability:ts-notification-service.NotificationController:exposesEndpoint:notification-preserve-success."
+    },
+    {
+      "key": "capability|ts-notification-service.NotifyRepository|capability|servesQuery|findById",
+      "decision": "merged",
+      "basis": "NotifyRepository.java:14 declares Optional<NotifyInfo> findById(String id); kept atom:capability:ts-notification-service.NotifyRepository:servesQuery:findById."
+    },
+    {
+      "key": "capability|ts-notification-service.NotifyRepository|static|servesQuery|findById",
+      "decision": "merged",
+      "basis": "NotifyRepository.java:14 declares Optional<NotifyInfo> findById(String id); kept atom:capability:ts-notification-service.NotifyRepository:servesQuery:findById."
+    },
+    {
+      "key": "contract|ts-notification-service.EmailProperties|specification|shapedAs|email-prefix-bound-host-port-username-password",
+      "decision": "merged",
+      "basis": "EmailProperties.java:10-16 binds @ConfigurationProperties(\"email\") host/port/username/password; kept atom:contract:ts-notification-service.EmailProperties:shapedAs:email-connection-properties."
+    },
+    {
+      "key": "contract|ts-notification-service.EmailProperties|specification|shapedAs|email-prefix-host-port-username-password-config",
+      "decision": "merged",
+      "basis": "EmailProperties.java:10-16 binds @ConfigurationProperties(\"email\") host/port/username/password; kept atom:contract:ts-notification-service.EmailProperties:shapedAs:email-connection-properties."
+    },
+    {
+      "key": "contract|ts-notification-service.Mail|specification|shapedAs|mail-message-dto-default-content-type-text-plain",
+      "decision": "merged",
+      "basis": "Mail.java:13-31 defines the mail message DTO and Mail.java:34 defaults contentType to text/plain; kept atom:contract:ts-notification-service.Mail:shapedAs:mail-message-dto."
+    },
+    {
+      "key": "contract|ts-notification-service.Mail|specification|shapedAs|from-to-cc-bcc-subject-content-model-mail-message",
+      "decision": "merged",
+      "basis": "Mail.java:13-31 defines the mail message DTO and Mail.java:34 defaults contentType to text/plain; kept atom:contract:ts-notification-service.Mail:shapedAs:mail-message-dto."
+    },
+    {
+      "key": "effect|ts-notification-service.MailService|effect|callsProvider|javamail-smtp-send",
+      "decision": "merged",
+      "basis": "MailService.java:31 createMimeMessage and MailService.java:46 sender.send via JavaMailSender; kept atom:effect:ts-notification-service.MailService:callsProvider:javamail-smtp-send."
+    },
+    {
+      "key": "effect|ts-notification-service.MailService|effect|callsProvider|smtp-mail-send",
+      "decision": "merged",
+      "basis": "MailService.java:31 createMimeMessage and MailService.java:46 sender.send via JavaMailSender; kept atom:effect:ts-notification-service.MailService:callsProvider:javamail-smtp-send."
+    },
+    {
+      "key": "effect|ts-notification-service.NotificationServiceImpl|effect|publishes|email:order_cancel_success.ftl",
+      "decision": "merged",
+      "basis": "NotificationServiceImpl.java:130 sends mail with order_cancel_success.ftl; kept atom:effect:ts-notification-service.NotificationServiceImpl:callsProvider:order-cancel-success-template-mail."
+    },
+    {
+      "key": "effect|ts-notification-service.NotificationServiceImpl|effect|callsProvider|mail-template:order_cancel_success.ftl",
+      "decision": "merged",
+      "basis": "NotificationServiceImpl.java:130 sends mail with order_cancel_success.ftl; kept atom:effect:ts-notification-service.NotificationServiceImpl:callsProvider:order-cancel-success-template-mail."
+    },
+    {
+      "key": "effect|ts-notification-service.NotificationServiceImpl|effect|publishes|email:order_changed_success.ftl",
+      "decision": "merged",
+      "basis": "NotificationServiceImpl.java:109 sends mail with order_changed_success.ftl; kept atom:effect:ts-notification-service.NotificationServiceImpl:callsProvider:order-changed-success-template-mail."
+    },
+    {
+      "key": "effect|ts-notification-service.NotificationServiceImpl|effect|callsProvider|mail-template:order_changed_success.ftl",
+      "decision": "merged",
+      "basis": "NotificationServiceImpl.java:109 sends mail with order_changed_success.ftl; kept atom:effect:ts-notification-service.NotificationServiceImpl:callsProvider:order-changed-success-template-mail."
+    },
+    {
+      "key": "effect|ts-notification-service.NotificationServiceImpl|effect|publishes|email:order_create_success.ftl",
+      "decision": "merged",
+      "basis": "NotificationServiceImpl.java:82 sends mail with order_create_success.ftl; kept atom:effect:ts-notification-service.NotificationServiceImpl:callsProvider:order-create-success-template-mail."
+    },
+    {
+      "key": "effect|ts-notification-service.NotificationServiceImpl|effect|callsProvider|mail-template:order_create_success.ftl",
+      "decision": "merged",
+      "basis": "NotificationServiceImpl.java:82 sends mail with order_create_success.ftl; kept atom:effect:ts-notification-service.NotificationServiceImpl:callsProvider:order-create-success-template-mail."
+    },
+    {
+      "key": "effect|ts-notification-service.NotificationServiceImpl|effect|publishes|email:preserve_success.ftl",
+      "decision": "merged",
+      "basis": "NotificationServiceImpl.java:55 sends mail with preserve_success.ftl; kept atom:effect:ts-notification-service.NotificationServiceImpl:callsProvider:preserve-success-template-mail."
+    },
+    {
+      "key": "effect|ts-notification-service.NotificationServiceImpl|effect|callsProvider|mail-template:preserve_success.ftl",
+      "decision": "merged",
+      "basis": "NotificationServiceImpl.java:55 sends mail with preserve_success.ftl; kept atom:effect:ts-notification-service.NotificationServiceImpl:callsProvider:preserve-success-template-mail."
+    },
+    {
+      "key": "effect|ts-notification-service.RabbitReceive|effect|callsProvider|mail-service-send-with-preserve-success-template",
+      "decision": "merged",
+      "basis": "RabbitReceive.java:79 calls mailService.sendEmail(mail, \"preserve_success.ftl\"); kept atom:effect:ts-notification-service.RabbitReceive:callsProvider:mail-send-preserve-success-template."
+    },
+    {
+      "key": "effect|ts-notification-service.RabbitReceive|effect|callsProvider|mail-service-send-with-preserve_success-template",
+      "decision": "merged",
+      "basis": "RabbitReceive.java:79 calls mailService.sendEmail(mail, \"preserve_success.ftl\"); kept atom:effect:ts-notification-service.RabbitReceive:callsProvider:mail-send-preserve-success-template."
+    },
+    {
+      "key": "effect|ts-notification-service.RabbitSend|effect|enqueues|email-queue",
+      "decision": "merged",
+      "basis": "RabbitSend.java:20 convertAndSend(Queues.queueName, val) targets the queue named email; kept atom:effect:ts-notification-service.RabbitSend:enqueues:email-queue."
+    },
+    {
+      "key": "effect|ts-notification-service.RabbitSend|effect|enqueues|rabbitmq-queue-named-email",
+      "decision": "merged",
+      "basis": "RabbitSend.java:20 convertAndSend(Queues.queueName, val) targets the queue named email; kept atom:effect:ts-notification-service.RabbitSend:enqueues:email-queue."
+    },
+    {
+      "key": "effect|ts-notification-service|effect|callsProvider|smtp:smtp.163.com:465",
+      "decision": "merged",
+      "basis": "application.yml:13-14 configures spring.mail host smtp.163.com port 465; kept atom:effect:ts-notification-service:callsProvider:smtp-163-com-465."
+    },
+    {
+      "key": "effect|ts-notification-service|effect|callsProvider|smtp-host:smtp.163.com:465",
+      "decision": "merged",
+      "basis": "application.yml:13-14 configures spring.mail host smtp.163.com port 465; kept atom:effect:ts-notification-service:callsProvider:smtp-163-com-465."
+    },
+    {
+      "key": "relation|ts-notification-service.MailService|relation|dependsOn|freemarker-template-rendering",
+      "decision": "merged",
+      "basis": "MailService.java:36-39 loads and renders freemarker templates via Configuration/Template; kept atom:relation:ts-notification-service.MailService:dependsOn:freemarker-template-engine."
+    },
+    {
+      "key": "relation|ts-notification-service.MailService|restriction|dependsOn|freemarker-template-engine",
+      "decision": "merged",
+      "basis": "MailService.java:36-39 loads and renders freemarker templates via Configuration/Template; kept atom:relation:ts-notification-service.MailService:dependsOn:freemarker-template-engine."
+    },
+    {
+      "key": "relation|ts-notification-service.NotificationApplication|relation|dependsOn|discovery-client-with-load-balanced-rest-template",
+      "decision": "merged",
+      "basis": "NotificationApplication.java:17 @EnableDiscoveryClient and NotificationApplication.java:23 @LoadBalanced RestTemplate bean; kept atom:relation:ts-notification-service.NotificationApplication:dependsOn:discovery-load-balanced-rest."
+    },
+    {
+      "key": "relation|ts-notification-service.NotificationApplication|restriction|dependsOn|discovery-client-load-balanced-rest-template",
+      "decision": "merged",
+      "basis": "NotificationApplication.java:17 @EnableDiscoveryClient and NotificationApplication.java:23 @LoadBalanced RestTemplate bean; kept atom:relation:ts-notification-service.NotificationApplication:dependsOn:discovery-load-balanced-rest."
+    },
+    {
+      "key": "relation|ts-notification-service.NotificationController|relation|calls|ts-notification-service.NotificationService",
+      "decision": "merged",
+      "basis": "NotificationController.java:20 injects NotificationService and NotificationController.java:59-74 calls it from each notification endpoint; kept atom:relation:ts-notification-service.NotificationController:calls:NotificationService."
+    },
+    {
+      "key": "relation|ts-notification-service.NotificationController|restriction|calls|ts-notification-service.NotificationService",
+      "decision": "merged",
+      "basis": "NotificationController.java:20 injects NotificationService and NotificationController.java:59-74 calls it from each notification endpoint; kept atom:relation:ts-notification-service.NotificationController:calls:NotificationService."
+    },
+    {
+      "key": "relation|ts-notification-service.NotificationController|relation|calls|ts-notification-service.RabbitSend",
+      "decision": "merged",
+      "basis": "NotificationController.java:35 calls sender.send(\"test\") on the injected RabbitSend (NotificationController.java:22); kept atom:relation:ts-notification-service.NotificationController:calls:rabbit-send."
+    },
+    {
+      "key": "relation|ts-notification-service.NotificationController|restriction|calls|ts-notification-service.RabbitSend.send",
+      "decision": "merged",
+      "basis": "NotificationController.java:35 calls sender.send(\"test\") on the injected RabbitSend (NotificationController.java:22); kept atom:relation:ts-notification-service.NotificationController:calls:rabbit-send."
+    },
+    {
+      "key": "relation|ts-notification-service.NotificationServiceImpl|relation|calls|ts-notification-service.MailService",
+      "decision": "merged",
+      "basis": "NotificationServiceImpl.java:55 calls mailService.sendEmail; kept atom:relation:ts-notification-service.NotificationServiceImpl:calls:MailService."
+    },
+    {
+      "key": "relation|ts-notification-service.NotificationServiceImpl|restriction|calls|ts-notification-service.MailService",
+      "decision": "merged",
+      "basis": "NotificationServiceImpl.java:55 calls mailService.sendEmail; kept atom:relation:ts-notification-service.NotificationServiceImpl:calls:MailService."
+    },
+    {
+      "key": "relation|ts-notification-service.RabbitReceive|relation|writesTo|ts-notification-service.NotifyRepository",
+      "decision": "merged",
+      "basis": "RabbitReceive.java:90 calls notifyRepository.save(info); kept atom:relation:ts-notification-service.RabbitReceive:writesTo:NotifyRepository."
+    },
+    {
+      "key": "relation|ts-notification-service.RabbitReceive|restriction|writesTo|ts-notification-service.NotifyRepository",
+      "decision": "merged",
+      "basis": "RabbitReceive.java:90 calls notifyRepository.save(info); kept atom:relation:ts-notification-service.RabbitReceive:writesTo:NotifyRepository."
+    },
+    {
+      "key": "relation|ts-notification-service|relation|dependsOn|nacos-service-discovery",
+      "decision": "merged",
+      "basis": "application.yml:9 sets spring.cloud.nacos.discovery.server-addr; kept atom:relation:ts-notification-service:dependsOn:nacos-discovery."
+    },
+    {
+      "key": "relation|ts-notification-service|restriction|dependsOn|nacos-service-discovery",
+      "decision": "merged",
+      "basis": "application.yml:9 sets spring.cloud.nacos.discovery.server-addr; kept atom:relation:ts-notification-service:dependsOn:nacos-discovery."
+    },
+    {
+      "key": "relation|ts-notification-service|relation|dependsOn|rabbitmq-broker",
+      "decision": "merged",
+      "basis": "application.yml:39 sets spring.rabbitmq.host; kept atom:relation:ts-notification-service:dependsOn:rabbitmq."
+    },
+    {
+      "key": "relation|ts-notification-service|restriction|dependsOn|rabbitmq-host-config",
+      "decision": "merged",
+      "basis": "application.yml:39 sets spring.rabbitmq.host; kept atom:relation:ts-notification-service:dependsOn:rabbitmq."
+    },
+    {
+      "key": "semantic|ts-notification-service.NotifyInfo.price|semantic|meansInUse|order-cancel-success-mail-model-price-field",
+      "decision": "merged",
+      "basis": "NotificationServiceImpl.java:126 puts price into the order-cancel-success mail model; kept atom:semantic:ts-notification-service.NotifyInfo.price:meansInUse:order-cancel-success-mail-model-price."
+    },
+    {
+      "key": "semantic|ts-notification-service.NotifyInfo.price|semantic|meansInUse|cancel-mail-payload-price-with-username-only",
+      "decision": "merged",
+      "basis": "NotificationServiceImpl.java:126 puts price into the order-cancel-success mail model; kept atom:semantic:ts-notification-service.NotifyInfo.price:meansInUse:order-cancel-success-mail-model-price."
+    },
+    {
+      "key": "semantic|ts-notification-service.NotifyInfo.price|semantic|meansInUse|preserve-success-mail-model-price-field",
+      "decision": "merged",
+      "basis": "NotificationServiceImpl.java:51 puts price into the preserve-success mail model; kept atom:semantic:ts-notification-service.NotifyInfo.price:meansInUse:preserve-success-mail-model-price."
+    },
+    {
+      "key": "semantic|ts-notification-service.NotifyInfo.price|semantic|meansInUse|preserve-mail-payload-price-with-full-trip-details",
+      "decision": "merged",
+      "basis": "NotificationServiceImpl.java:51 puts price into the preserve-success mail model; kept atom:semantic:ts-notification-service.NotifyInfo.price:meansInUse:preserve-success-mail-model-price."
+    },
+    {
+      "key": "semantic|ts-notification-service.NotifyInfo.sendStatus|semantic|meansInUse|email-delivery-outcome-flag-set-per-send-attempt",
+      "decision": "merged",
+      "basis": "RabbitReceive.java:81 and RabbitReceive.java:84 set sendStatus true/false per mail send attempt; kept atom:semantic:ts-notification-service.NotifyInfo.sendStatus:meansInUse:email-delivery-outcome-flag."
+    },
+    {
+      "key": "semantic|ts-notification-service.NotifyInfo.sendStatus|semantic|meansInUse|email-delivery-outcome-flag",
+      "decision": "merged",
+      "basis": "RabbitReceive.java:81 and RabbitReceive.java:84 set sendStatus true/false per mail send attempt; kept atom:semantic:ts-notification-service.NotifyInfo.sendStatus:meansInUse:email-delivery-outcome-flag."
+    },
+    {
+      "key": "semantic|ts-notification-service.Queues.queueName|semantic|meansInUse|email-queue-as-generic-send-channel",
+      "decision": "merged",
+      "basis": "Queues.java:10 defines queueName \"email\" used as the mail delivery channel by RabbitSend.java:20, NotificationController.java:35 and RabbitReceive.java:51; kept atom:semantic:ts-notification-service.Queues.queueName:meansInUse:email-notification-delivery-channel."
+    },
+    {
+      "key": "semantic|ts-notification-service.Queues.queueName|semantic|meansInUse|email-notification-delivery-channel",
+      "decision": "merged",
+      "basis": "Queues.java:10 defines queueName \"email\" used as the mail delivery channel by RabbitSend.java:20, NotificationController.java:35 and RabbitReceive.java:51; kept atom:semantic:ts-notification-service.Queues.queueName:meansInUse:email-notification-delivery-channel."
+    },
+    {
+      "key": "state|ts-notification-service.NotifyInfo|static|persistsIn|notify-crud-repository-jpa-entity",
+      "decision": "merged",
+      "basis": "NotifyInfo.java:24 @Entity persisted through NotifyRepository.java:12 CrudRepository and saved at RabbitReceive.java:90; kept atom:state:ts-notification-service.NotifyInfo:persistsIn:notify-repository."
+    },
+    {
+      "key": "state|ts-notification-service.NotifyInfo|static|persistsIn|notify-crud-repository",
+      "decision": "merged",
+      "basis": "NotifyInfo.java:24 @Entity persisted through NotifyRepository.java:12 CrudRepository and saved at RabbitReceive.java:90; kept atom:state:ts-notification-service.NotifyInfo:persistsIn:notify-repository."
+    },
+    {
+      "key": "capability|ts-notification-service.NotificationController|capability|exposesEndpoint|GET /api/v1/notifyservice/welcome",
+      "decision": "adopted",
+      "basis": "NotificationController.java:28 @GetMapping /welcome returns the welcome string."
+    },
+    {
+      "key": "contract|ts-notification-service.NotificationServiceImpl|specification|ensures|returns-false-on-mail-send-exception",
+      "decision": "adopted",
+      "basis": "NotificationServiceImpl.java:57-59 and NotificationServiceImpl.java:132-134 catch the send exception and return false."
+    },
+    {
+      "key": "relation|ts-notification-service.RabbitReceive|relation|readsFrom|email-queue",
+      "decision": "adopted",
+      "basis": "RabbitReceive.java:51 @RabbitListener(queues = Queues.queueName) consumes the email queue."
+    },
+    {
+      "key": "semantic|ts-notification-service.NotificationServiceImpl.orderCancelSuccess|semantic|meansInUse|cancel-mail-model-carries-username-and-price-only",
+      "decision": "adopted",
+      "basis": "NotificationServiceImpl.java:124-127 builds the cancel mail model with username and price only."
+    },
+    {
+      "key": "semantic|ts-notification-service.Queues.queueName|semantic|meansInUse|email-queue-payload-consumed-as-preserve-success-notify-info",
+      "decision": "adopted",
+      "basis": "RabbitReceive.java:53 parses the queue payload as NotifyInfo and RabbitReceive.java:65-79 sends it as a preserve-success mail."
+    },
+    {
+      "key": "capability|ts-notification-service.RabbitReceive|static|handlesCommand|email-queue-message",
+      "decision": "adopted",
+      "basis": "RabbitReceive.java:51-52 process(String) handles messages from the email queue."
+    },
+    {
+      "key": "capability|ts-notification-service|capability|exposesEndpoint|http:17853",
+      "decision": "adopted",
+      "basis": "application.yml:3 sets server.port 17853."
+    },
+    {
+      "key": "contract|ts-notification-service.NotifyInfo|specification|shapedAs|email-order-number-trip-fields-price-notification-payload",
+      "decision": "adopted",
+      "basis": "NotifyInfo.java:40-49 carries email, orderNumber, trip fields and price as the notification payload."
+    },
+    {
+      "key": "contract|ts-notification-service.SecurityConfig|specification|ensures|stateless-session-policy",
+      "decision": "adopted",
+      "basis": "SecurityConfig.java:68 sets SessionCreationPolicy.STATELESS."
+    },
+    {
+      "key": "relation|ts-notification-service.EmailConfig|restriction|dependsOn|ts-notification-service.EmailProperties",
+      "decision": "adopted",
+      "basis": "EmailConfig.java:14-15 autowires EmailProperties."
+    },
+    {
+      "key": "relation|ts-notification-service.NotificationServiceImpl|restriction|implements|ts-notification-service.NotificationService",
+      "decision": "adopted",
+      "basis": "NotificationServiceImpl.java:18 declares implements NotificationService."
+    },
+    {
+      "key": "semantic|ts-notification-service.RabbitReceive.mailSubject|semantic|meansInUse|preserve-success-subject-applied-to-every-consumed-queue-message",
+      "decision": "adopted",
+      "basis": "RabbitReceive.java:65 applies the fixed \"Preserve Success\" subject to every consumed queue message."
+    },
+    {
+      "key": "state|ts-notification-service.NotifyInfo|static|persistsIn|jpa-entity-with-uuid-id",
+      "decision": "adopted",
+      "basis": "NotifyInfo.java:24-25 declare @Entity with uuid generator and NotifyInfo.java:33-35 a 36-char String @Id."
+    },
+    {
+      "key": "state|ts-notification-service.emailQueue|static|persistsIn|rabbitmq-queue-named-email",
+      "decision": "adopted",
+      "basis": "Queues.java:10-14 declares the rabbitmq queue bean named email."
+    },
+    {
+      "key": "contract|ts-notification-service.Mail|specification|shapedAs|mail-envelope-with-template-model",
+      "decision": "not-adopted",
+      "basis": "MailService.java:41 uses the same Mail shape already covered by merged atom atom:contract:ts-notification-service.Mail:shapedAs:mail-message-dto (Mail.java:13); no separate shape observed."
+    }
+  ],
+  "canonicalAtoms": [
+    {
+      "id": "atom:authority:ts-notification-service.SecurityConfig:checksPermission:jwt-filter-authenticated-routes",
+      "kind": "authority",
+      "subject": "ts-notification-service.SecurityConfig",
+      "axis": "authority",
+      "predicate": "checksPermission",
+      "object": "jwt-filter-on-remaining-authenticated-routes",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/config/SecurityConfig.java:75",
+        "src:ts-notification-service/src/main/java/notification/config/SecurityConfig.java:77"
+      ]
+    },
+    {
+      "id": "atom:authority:ts-notification-service.SecurityConfig:checksPermission:permit-all-notifyservice",
+      "kind": "authority",
+      "subject": "ts-notification-service.SecurityConfig",
+      "axis": "authority",
+      "predicate": "checksPermission",
+      "object": "permitAll-on-/api/v1/notifyservice/**",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/config/SecurityConfig.java:71"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-notification-service.NotificationController:exposesEndpoint:test-send-mail",
+      "kind": "capability",
+      "subject": "ts-notification-service.NotificationController",
+      "axis": "capability",
+      "predicate": "exposesEndpoint",
+      "object": "GET /api/v1/notifyservice/test_send_mail",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:39"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-notification-service.NotificationController:exposesEndpoint:test-send-mq",
+      "kind": "capability",
+      "subject": "ts-notification-service.NotificationController",
+      "axis": "capability",
+      "predicate": "exposesEndpoint",
+      "object": "GET /api/v1/notifyservice/test_send_mq",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:33"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-notification-service.NotificationController:exposesEndpoint:notification-order-cancel-success",
+      "kind": "capability",
+      "subject": "ts-notification-service.NotificationController",
+      "axis": "capability",
+      "predicate": "exposesEndpoint",
+      "object": "POST /api/v1/notifyservice/notification/order_cancel_success",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:72"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-notification-service.NotificationController:exposesEndpoint:notification-order-changed-success",
+      "kind": "capability",
+      "subject": "ts-notification-service.NotificationController",
+      "axis": "capability",
+      "predicate": "exposesEndpoint",
+      "object": "POST /api/v1/notifyservice/notification/order_changed_success",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:67"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-notification-service.NotificationController:exposesEndpoint:notification-order-create-success",
+      "kind": "capability",
+      "subject": "ts-notification-service.NotificationController",
+      "axis": "capability",
+      "predicate": "exposesEndpoint",
+      "object": "POST /api/v1/notifyservice/notification/order_create_success",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:62"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-notification-service.NotificationController:exposesEndpoint:notification-preserve-success",
+      "kind": "capability",
+      "subject": "ts-notification-service.NotificationController",
+      "axis": "capability",
+      "predicate": "exposesEndpoint",
+      "object": "POST /api/v1/notifyservice/notification/preserve_success",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:57"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-notification-service.NotifyRepository:servesQuery:findById",
+      "kind": "capability",
+      "subject": "ts-notification-service.NotifyRepository",
+      "axis": "capability",
+      "predicate": "servesQuery",
+      "object": "findById",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/repository/NotifyRepository.java:14"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-notification-service.EmailProperties:shapedAs:email-connection-properties",
+      "kind": "contract",
+      "subject": "ts-notification-service.EmailProperties",
+      "axis": "specification",
+      "predicate": "shapedAs",
+      "object": "email-prefix-bound-host-port-username-password",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/config/EmailProperties.java:10"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-notification-service.Mail:shapedAs:mail-message-dto",
+      "kind": "contract",
+      "subject": "ts-notification-service.Mail",
+      "axis": "specification",
+      "predicate": "shapedAs",
+      "object": "mail-message-dto-default-content-type-text-plain",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/entity/Mail.java:13",
+        "src:ts-notification-service/src/main/java/notification/entity/Mail.java:34"
+      ]
+    },
+    {
+      "id": "atom:effect:ts-notification-service.MailService:callsProvider:javamail-smtp-send",
+      "kind": "effect",
+      "subject": "ts-notification-service.MailService",
+      "axis": "effect",
+      "predicate": "callsProvider",
+      "object": "javamail-smtp-send",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/service/MailService.java:31",
+        "src:ts-notification-service/src/main/java/notification/service/MailService.java:46"
+      ]
+    },
+    {
+      "id": "atom:effect:ts-notification-service.NotificationServiceImpl:callsProvider:order-cancel-success-template-mail",
+      "kind": "effect",
+      "subject": "ts-notification-service.NotificationServiceImpl",
+      "axis": "effect",
+      "predicate": "callsProvider",
+      "object": "mail-template:order_cancel_success.ftl",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:130"
+      ]
+    },
+    {
+      "id": "atom:effect:ts-notification-service.NotificationServiceImpl:callsProvider:order-changed-success-template-mail",
+      "kind": "effect",
+      "subject": "ts-notification-service.NotificationServiceImpl",
+      "axis": "effect",
+      "predicate": "callsProvider",
+      "object": "mail-template:order_changed_success.ftl",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:109"
+      ]
+    },
+    {
+      "id": "atom:effect:ts-notification-service.NotificationServiceImpl:callsProvider:order-create-success-template-mail",
+      "kind": "effect",
+      "subject": "ts-notification-service.NotificationServiceImpl",
+      "axis": "effect",
+      "predicate": "callsProvider",
+      "object": "mail-template:order_create_success.ftl",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:82"
+      ]
+    },
+    {
+      "id": "atom:effect:ts-notification-service.NotificationServiceImpl:callsProvider:preserve-success-template-mail",
+      "kind": "effect",
+      "subject": "ts-notification-service.NotificationServiceImpl",
+      "axis": "effect",
+      "predicate": "callsProvider",
+      "object": "mail-template:preserve_success.ftl",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:55"
+      ]
+    },
+    {
+      "id": "atom:effect:ts-notification-service.RabbitReceive:callsProvider:mail-send-preserve-success-template",
+      "kind": "effect",
+      "subject": "ts-notification-service.RabbitReceive",
+      "axis": "effect",
+      "predicate": "callsProvider",
+      "object": "mail-service-send-with-preserve_success-template",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:79"
+      ]
+    },
+    {
+      "id": "atom:effect:ts-notification-service.RabbitSend:enqueues:email-queue",
+      "kind": "effect",
+      "subject": "ts-notification-service.RabbitSend",
+      "axis": "effect",
+      "predicate": "enqueues",
+      "object": "email-queue",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/mq/RabbitSend.java:20"
+      ]
+    },
+    {
+      "id": "atom:effect:ts-notification-service:callsProvider:smtp-163-com-465",
+      "kind": "effect",
+      "subject": "ts-notification-service",
+      "axis": "effect",
+      "predicate": "callsProvider",
+      "object": "smtp:smtp.163.com:465",
+      "refs": [
+        "src:ts-notification-service/src/main/resources/application.yml:13",
+        "src:ts-notification-service/src/main/resources/application.yml:14"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-notification-service.MailService:dependsOn:freemarker-template-engine",
+      "kind": "relation",
+      "subject": "ts-notification-service.MailService",
+      "axis": "restriction",
+      "predicate": "dependsOn",
+      "object": "freemarker-template-engine",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/service/MailService.java:36",
+        "src:ts-notification-service/src/main/java/notification/service/MailService.java:38",
+        "src:ts-notification-service/src/main/java/notification/service/MailService.java:39"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-notification-service.NotificationApplication:dependsOn:discovery-load-balanced-rest",
+      "kind": "relation",
+      "subject": "ts-notification-service.NotificationApplication",
+      "axis": "restriction",
+      "predicate": "dependsOn",
+      "object": "discovery-client-load-balanced-rest-template",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/NotificationApplication.java:17",
+        "src:ts-notification-service/src/main/java/notification/NotificationApplication.java:23"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-notification-service.NotificationController:calls:NotificationService",
+      "kind": "relation",
+      "subject": "ts-notification-service.NotificationController",
+      "axis": "restriction",
+      "predicate": "calls",
+      "object": "ts-notification-service.NotificationService",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:19",
+        "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:59",
+        "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:64",
+        "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:69",
+        "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:74"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-notification-service.NotificationController:calls:rabbit-send",
+      "kind": "relation",
+      "subject": "ts-notification-service.NotificationController",
+      "axis": "relation",
+      "predicate": "calls",
+      "object": "ts-notification-service.RabbitSend",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:22",
+        "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:35"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-notification-service.NotificationServiceImpl:calls:MailService",
+      "kind": "relation",
+      "subject": "ts-notification-service.NotificationServiceImpl",
+      "axis": "restriction",
+      "predicate": "calls",
+      "object": "ts-notification-service.MailService",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:55"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-notification-service.RabbitReceive:writesTo:NotifyRepository",
+      "kind": "relation",
+      "subject": "ts-notification-service.RabbitReceive",
+      "axis": "restriction",
+      "predicate": "writesTo",
+      "object": "ts-notification-service.NotifyRepository",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:90"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-notification-service:dependsOn:nacos-discovery",
+      "kind": "relation",
+      "subject": "ts-notification-service",
+      "axis": "restriction",
+      "predicate": "dependsOn",
+      "object": "nacos-service-discovery",
+      "refs": [
+        "src:ts-notification-service/src/main/resources/application.yml:9"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-notification-service:dependsOn:rabbitmq",
+      "kind": "relation",
+      "subject": "ts-notification-service",
+      "axis": "restriction",
+      "predicate": "dependsOn",
+      "object": "rabbitmq-host-config",
+      "refs": [
+        "src:ts-notification-service/src/main/resources/application.yml:39"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-notification-service.NotifyInfo.price:meansInUse:order-cancel-success-mail-model-price",
+      "kind": "semantic",
+      "subject": "ts-notification-service.NotifyInfo.price",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "order-cancel-success-mail-model-price-field",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:126"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-notification-service.NotifyInfo.price:meansInUse:preserve-success-mail-model-price",
+      "kind": "semantic",
+      "subject": "ts-notification-service.NotifyInfo.price",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "preserve-success-mail-model-price-field",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:51"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-notification-service.NotifyInfo.sendStatus:meansInUse:email-delivery-outcome-flag",
+      "kind": "semantic",
+      "subject": "ts-notification-service.NotifyInfo.sendStatus",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "email-delivery-outcome-flag-set-per-send-attempt",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:81",
+        "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:84"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-notification-service.Queues.queueName:meansInUse:email-notification-delivery-channel",
+      "kind": "semantic",
+      "subject": "ts-notification-service.Queues.queueName",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "email-notification-delivery-channel",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/config/Queues.java:10",
+        "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:35",
+        "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:51",
+        "src:ts-notification-service/src/main/java/notification/mq/RabbitSend.java:20"
+      ]
+    },
+    {
+      "id": "atom:state:ts-notification-service.NotifyInfo:persistsIn:notify-repository",
+      "kind": "state",
+      "subject": "ts-notification-service.NotifyInfo",
+      "axis": "static",
+      "predicate": "persistsIn",
+      "object": "notify-crud-repository-jpa-entity",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/entity/NotifyInfo.java:24",
+        "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:90",
+        "src:ts-notification-service/src/main/java/notification/repository/NotifyRepository.java:12"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-notification-service.NotificationController:exposesEndpoint:welcome",
+      "kind": "capability",
+      "subject": "ts-notification-service.NotificationController",
+      "axis": "capability",
+      "predicate": "exposesEndpoint",
+      "object": "GET /api/v1/notifyservice/welcome",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/controller/NotificationController.java:28"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-notification-service.NotificationServiceImpl:ensures:returns-false-on-mail-send-exception",
+      "kind": "contract",
+      "subject": "ts-notification-service.NotificationServiceImpl",
+      "axis": "specification",
+      "predicate": "ensures",
+      "object": "returns-false-on-mail-send-exception",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:57",
+        "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:132"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-notification-service.RabbitReceive:readsFrom:email-queue",
+      "kind": "relation",
+      "subject": "ts-notification-service.RabbitReceive",
+      "axis": "relation",
+      "predicate": "readsFrom",
+      "object": "email-queue",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:51"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-notification-service.NotificationServiceImpl.orderCancelSuccess:meansInUse:cancel-mail-model-username-and-price-only",
+      "kind": "semantic",
+      "subject": "ts-notification-service.NotificationServiceImpl.orderCancelSuccess",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "cancel-mail-model-carries-username-and-price-only",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:124",
+        "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:126"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-notification-service.Queues.queueName:meansInUse:preserve-success-mail-trigger",
+      "kind": "semantic",
+      "subject": "ts-notification-service.Queues.queueName",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "email-queue-payload-consumed-as-preserve-success-notify-info",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:51",
+        "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:65",
+        "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:79"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-notification-service.RabbitReceive:handlesCommand:email-queue-message",
+      "kind": "capability",
+      "subject": "ts-notification-service.RabbitReceive",
+      "axis": "static",
+      "predicate": "handlesCommand",
+      "object": "email-queue-message",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:51"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-notification-service:exposesEndpoint:http-17853",
+      "kind": "capability",
+      "subject": "ts-notification-service",
+      "axis": "capability",
+      "predicate": "exposesEndpoint",
+      "object": "http:17853",
+      "refs": [
+        "src:ts-notification-service/src/main/resources/application.yml:3"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-notification-service.NotifyInfo:shapedAs:order-notification-payload",
+      "kind": "contract",
+      "subject": "ts-notification-service.NotifyInfo",
+      "axis": "specification",
+      "predicate": "shapedAs",
+      "object": "email-order-number-trip-fields-price-notification-payload",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/entity/NotifyInfo.java:40"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-notification-service.SecurityConfig:ensures:stateless-session-policy",
+      "kind": "contract",
+      "subject": "ts-notification-service.SecurityConfig",
+      "axis": "specification",
+      "predicate": "ensures",
+      "object": "stateless-session-policy",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/config/SecurityConfig.java:68"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-notification-service.EmailConfig:dependsOn:EmailProperties",
+      "kind": "relation",
+      "subject": "ts-notification-service.EmailConfig",
+      "axis": "restriction",
+      "predicate": "dependsOn",
+      "object": "ts-notification-service.EmailProperties",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/config/EmailConfig.java:14"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-notification-service.NotificationServiceImpl:implements:NotificationService",
+      "kind": "relation",
+      "subject": "ts-notification-service.NotificationServiceImpl",
+      "axis": "restriction",
+      "predicate": "implements",
+      "object": "ts-notification-service.NotificationService",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:18"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-notification-service.RabbitReceive.mailSubject:meansInUse:preserve-success-subject-for-all-messages",
+      "kind": "semantic",
+      "subject": "ts-notification-service.RabbitReceive.mailSubject",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "preserve-success-subject-applied-to-every-consumed-queue-message",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/mq/RabbitReceive.java:65"
+      ]
+    },
+    {
+      "id": "atom:state:ts-notification-service.NotifyInfo:persistsIn:jpa-entity-uuid-id",
+      "kind": "state",
+      "subject": "ts-notification-service.NotifyInfo",
+      "axis": "static",
+      "predicate": "persistsIn",
+      "object": "jpa-entity-with-uuid-id",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/entity/NotifyInfo.java:24",
+        "src:ts-notification-service/src/main/java/notification/entity/NotifyInfo.java:33"
+      ]
+    },
+    {
+      "id": "atom:state:ts-notification-service.emailQueue:persistsIn:rabbitmq-queue-email",
+      "kind": "state",
+      "subject": "ts-notification-service.emailQueue",
+      "axis": "static",
+      "predicate": "persistsIn",
+      "object": "rabbitmq-queue-named-email",
+      "refs": [
+        "src:ts-notification-service/src/main/java/notification/config/Queues.java:10"
+      ]
+    }
+  ],
+  "coverage": {
+    "assignedEntryCount": 79,
+    "adjudicatedEntryCount": 79
+  }
+}

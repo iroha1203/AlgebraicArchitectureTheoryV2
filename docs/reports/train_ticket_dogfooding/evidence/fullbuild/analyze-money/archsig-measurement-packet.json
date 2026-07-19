@@ -1,0 +1,2322 @@
+{
+  "analyticReadings": [
+    {
+      "claimStatus": "candidate",
+      "evaluator": "ag.foundation",
+      "fidelity": "proxy",
+      "readingId": "candidate-regime:stability-placeholder",
+      "regime": "theorem-candidate",
+      "structuralVerdictRef": null,
+      "value": {
+        "reason": "theorem-candidate readings are analytic-only until a follow-up evaluator computes them",
+        "state": "not_evaluated"
+      }
+    }
+  ],
+  "assumptions": [
+    {
+      "assumption": "finite site",
+      "assumptionId": "assumption:part8-4-2:finite-site",
+      "checkedBy": "archmap-schema052-validation.contexts-finite",
+      "scopeRefs": [
+        "part8/4.2"
+      ],
+      "status": "checked",
+      "theoremRef": "part8/4.2"
+    },
+    {
+      "assumedBy": "measurement-profile:profile:train-ticket-money-convention@1",
+      "assumption": "U-adequate cover",
+      "assumptionId": "assumption:part8-4-2:U-adequate-cover",
+      "scopeRefs": [
+        "part8/4.2"
+      ],
+      "status": "assumed",
+      "theoremRef": "part8/4.2"
+    },
+    {
+      "assumption": "F2 finite coefficient field",
+      "assumptionId": "assumption:part8-B-8-2:F2-finite-coefficient-field",
+      "checkedBy": "measurement-profile:profile:train-ticket-money-convention@1.coefficient=F2",
+      "scopeRefs": [
+        "part8/B.8.2"
+      ],
+      "status": "checked",
+      "theoremRef": "part8/B.8.2"
+    },
+    {
+      "assumption": "cover-relative Cech reading",
+      "assumptionId": "assumption:part8-B-8-2:cover-relative-Cech-reading",
+      "checkedBy": "measurement-profile:profile:train-ticket-money-convention@1.coverRef",
+      "scopeRefs": [
+        "part8/B.8.2"
+      ],
+      "status": "checked",
+      "theoremRef": "part8/B.8.2"
+    },
+    {
+      "assumedBy": "measurement-profile:profile:train-ticket-money-convention@1",
+      "assumption": "Leray / acyclicity comparison to sheaf cohomology",
+      "assumptionId": "assumption:part8-B-8-2:Leray---acyclicity-comparison-to-sheaf-cohomology",
+      "scopeRefs": [
+        "part8/B.8.2"
+      ],
+      "status": "assumed",
+      "theoremRef": "part8/B.8.2"
+    },
+    {
+      "assumption": "constant coefficient nerve b1 comparison",
+      "assumptionId": "assumption:part4-12-3:constant-coefficient-nerve-b1-comparison",
+      "checkedBy": "measurement-profile:profile:train-ticket-money-convention@1.coefficient=F2",
+      "scopeRefs": [
+        "part4/12.3"
+      ],
+      "status": "checked",
+      "theoremRef": "part4/12.3"
+    },
+    {
+      "assumedBy": "measurement-profile:profile:train-ticket-money-convention@1",
+      "assumption": "local lawful sections form an effective Ob_U-torsor",
+      "assumptionId": "assumption:part4-11-1:local-lawful-sections-form-an-effective-Ob-U-torsor",
+      "scopeRefs": [
+        "part4/11.1"
+      ],
+      "status": "assumed",
+      "theoremRef": "part4/11.1"
+    },
+    {
+      "assumedBy": "measurement-profile:profile:train-ticket-money-convention@1",
+      "assumption": "local adjustment action is fixed and effective",
+      "assumptionId": "assumption:part4-11-1:local-adjustment-action-is-fixed-and-effective",
+      "scopeRefs": [
+        "part4/11.1"
+      ],
+      "status": "assumed",
+      "theoremRef": "part4/11.1"
+    },
+    {
+      "assumedBy": "measurement-profile:profile:train-ticket-money-convention@1",
+      "assumption": "coefficient object satisfies descent",
+      "assumptionId": "assumption:part4-11-1:coefficient-object-satisfies-descent",
+      "scopeRefs": [
+        "part4/11.1"
+      ],
+      "status": "assumed",
+      "theoremRef": "part4/11.1"
+    },
+    {
+      "assumedBy": "measurement-profile:profile:train-ticket-money-convention@1",
+      "assumption": "restriction maps are surjective",
+      "assumptionId": "assumption:part4-12-4:restriction-maps-are-surjective",
+      "scopeRefs": [
+        "part4/12.4"
+      ],
+      "status": "assumed",
+      "theoremRef": "part4/12.4"
+    },
+    {
+      "assumption": "selected Cech nerve is a forest with no triple-overlap faces",
+      "assumptionId": "assumption:part4-12-4:selected-Cech-nerve-is-a-forest-with-no-triple-overlap-faces",
+      "checkedBy": "cover-nerve:cover:money-amount-convention-surface:forest=true:no-triple-overlap-faces=true",
+      "scopeRefs": [
+        "part4/12.4"
+      ],
+      "status": "checked",
+      "theoremRef": "part4/12.4"
+    }
+  ],
+  "boundaryStatements": [
+    {
+      "id": "boundary:silence-by-design:0",
+      "kind": "silence_by_design",
+      "reason": "compat_non_conclusion",
+      "scopeRefs": [
+        "measurement:archmap:train-ticket-fullbuild@1"
+      ],
+      "text": "ArchSig v0.5.3 foundation packet is computed from input:archmap-money-variant.json and input:law-policy-money.json; it is not a Lean proof object."
+    },
+    {
+      "id": "boundary:silence-by-design:1",
+      "kind": "silence_by_design",
+      "reason": "compat_non_conclusion",
+      "scopeRefs": [
+        "measurement:archmap:train-ticket-fullbuild@1"
+      ],
+      "text": "Unmeasured AG evaluator rows are schema handoff rows, not measured zero."
+    },
+    {
+      "id": "boundary:silence-by-design:2",
+      "kind": "silence_by_design",
+      "reason": "compat_non_conclusion",
+      "scopeRefs": [
+        "measurement:archmap:train-ticket-fullbuild@1"
+      ],
+      "text": "Theorem-candidate readings are analytic-only and cannot generate structural verdicts."
+    },
+    {
+      "id": "boundary:m8:higher-hn-silence",
+      "kind": "silence_by_design",
+      "reason": "higher_hn_n_ge_3_part_iv_scope_boundary",
+      "scopeRefs": [
+        "measurement:archmap:train-ticket-fullbuild@1"
+      ],
+      "text": "Cohomological readings in degrees n>=3 are silent by design in this finite AG measurement packet: they are a Part IV scope boundary, not a measured zero result or a remaining task."
+    },
+    {
+      "id": "boundary:m8:non-abelian-stack-gerbe-vocabulary",
+      "kind": "out_of_selected_vocabulary",
+      "reason": "non_abelian_stack_gerbe_outside_abelian_f2_vocabulary",
+      "scopeRefs": [
+        "measurement:archmap:train-ticket-fullbuild@1"
+      ],
+      "text": "Non-abelian stack/gerbe degree-2 descent data is outside the selected banded abelian F2 vocabulary; banding-violated inputs remain outside this measurement lens."
+    },
+    {
+      "id": "boundary:m8:higher-tor-unmeasured-support",
+      "kind": "unmeasured_support",
+      "reason": "higher_tor_i_ge_2_unmeasured_support",
+      "scopeRefs": [
+        "measurement:archmap:train-ticket-fullbuild@1"
+      ],
+      "text": "Higher Tor_i for i>=2 remains unmeasured support: degree-1 Tor_1 readings do not discharge derived transversality or all higher Tor vanishing."
+    },
+    {
+      "id": "boundary:not-applicable:0",
+      "kind": "not_applicable",
+      "reason": "analytic_only",
+      "scopeRefs": [
+        "candidate-regime:stability-placeholder"
+      ],
+      "text": "Theorem-candidate reading is analytic-only and cannot generate a structural verdict."
+    }
+  ],
+  "componentFingerprints": {
+    "lawPolicy": "sha256:07af43360e9f10e99dd4ff3e7d6352bd13e9722254a032b69617f49a3abe013a",
+    "lawSurface": "sha256:5c18b79b154e6759ecfae7c5e1b3d048e1bd3c8f5a7d5bff8c2c43f865d606e6",
+    "measurementProfile": "sha256:d27209344f3e88d1a0985f08b3aa5d56c3a9c1be41fa48d2df53254ad4be76e0"
+  },
+  "computedInvariants": [
+    {
+      "archmapRef": "input:archmap-money-variant.json",
+      "atomCount": 2111,
+      "contextCount": 43,
+      "coverCount": 3,
+      "doctrineFingerprint": "sha256:aat-canonical-doctrine-schema052",
+      "evaluator": "ag.foundation",
+      "invariantId": "finite-poset-site-shape",
+      "kind": "measurement-invariant",
+      "representation": {
+        "archmapRef": "input:archmap-money-variant.json",
+        "atomCount": 2111,
+        "contextCount": 43,
+        "coverCount": 3,
+        "doctrineFingerprint": "sha256:aat-canonical-doctrine-schema052",
+        "invariantId": "finite-poset-site-shape"
+      },
+      "value": {}
+    },
+    {
+      "boundaryNote": "COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION is relative to the selected abelian coefficient sheaf; non-abelian torsor, stacky descent, and gerbe obstructions are not excluded.",
+      "claimScope": "selected-cover 1-skeleton Cech cochain calculation",
+      "classSupport": {
+        "edgeRefs": [
+          "ctx:cancel-surface->ctx:inside-payment-surface",
+          "ctx:cancel-surface->ctx:order-surface",
+          "ctx:inside-payment-surface->ctx:payment-surface",
+          "ctx:preserve-surface->ctx:basic-surface",
+          "ctx:travel-surface->ctx:basic-surface"
+        ],
+        "kind": "selected-cover-edge-support",
+        "supportAtomRefs": [
+          "atom:semantic:basic-surface:cech-section-money-amount",
+          "atom:semantic:cancel-surface:cech-section-money-amount",
+          "atom:semantic:inside-payment-surface:cech-section-money-amount",
+          "atom:semantic:order-surface:cech-section-money-amount",
+          "atom:semantic:payment-surface:cech-section-money-amount",
+          "atom:semantic:preserve-surface:cech-section-money-amount",
+          "atom:semantic:travel-surface:cech-section-money-amount"
+        ]
+      },
+      "coefficient": "F2",
+      "contextCount": 24,
+      "coverNerveProjection": {
+        "coverRef": "cover:money-amount-convention-surface",
+        "edges": [
+          {
+            "edgeId": "ctx:cancel-surface->ctx:inside-payment-surface",
+            "objectKind": "nerveEdge",
+            "sectionObservation": "observed",
+            "source": "selected cover restriction edge",
+            "sourceContextRef": "ctx:cancel-surface",
+            "supportAtomRefs": [
+              "atom:semantic:cancel-surface:cech-section-money-amount",
+              "atom:semantic:inside-payment-surface:cech-section-money-amount"
+            ],
+            "targetContextRef": "ctx:inside-payment-surface",
+            "value": 1
+          },
+          {
+            "edgeId": "ctx:cancel-surface->ctx:order-surface",
+            "objectKind": "nerveEdge",
+            "sectionObservation": "observed",
+            "source": "selected cover restriction edge",
+            "sourceContextRef": "ctx:cancel-surface",
+            "supportAtomRefs": [
+              "atom:semantic:cancel-surface:cech-section-money-amount",
+              "atom:semantic:order-surface:cech-section-money-amount"
+            ],
+            "targetContextRef": "ctx:order-surface",
+            "value": 1
+          },
+          {
+            "edgeId": "ctx:consign-surface->ctx:consign-price-surface",
+            "objectKind": "nerveEdge",
+            "sectionObservation": "observed",
+            "source": "selected cover restriction edge",
+            "sourceContextRef": "ctx:consign-surface",
+            "supportAtomRefs": [],
+            "targetContextRef": "ctx:consign-price-surface",
+            "value": 0
+          },
+          {
+            "edgeId": "ctx:inside-payment-surface->ctx:payment-surface",
+            "objectKind": "nerveEdge",
+            "sectionObservation": "observed",
+            "source": "selected cover restriction edge",
+            "sourceContextRef": "ctx:inside-payment-surface",
+            "supportAtomRefs": [
+              "atom:semantic:inside-payment-surface:cech-section-money-amount",
+              "atom:semantic:payment-surface:cech-section-money-amount"
+            ],
+            "targetContextRef": "ctx:payment-surface",
+            "value": 1
+          },
+          {
+            "edgeId": "ctx:preserve-surface->ctx:basic-surface",
+            "objectKind": "nerveEdge",
+            "sectionObservation": "observed",
+            "source": "selected cover restriction edge",
+            "sourceContextRef": "ctx:preserve-surface",
+            "supportAtomRefs": [
+              "atom:semantic:basic-surface:cech-section-money-amount",
+              "atom:semantic:preserve-surface:cech-section-money-amount"
+            ],
+            "targetContextRef": "ctx:basic-surface",
+            "value": 1
+          },
+          {
+            "edgeId": "ctx:travel-surface->ctx:basic-surface",
+            "objectKind": "nerveEdge",
+            "sectionObservation": "observed",
+            "source": "selected cover restriction edge",
+            "sourceContextRef": "ctx:travel-surface",
+            "supportAtomRefs": [
+              "atom:semantic:basic-surface:cech-section-money-amount",
+              "atom:semantic:travel-surface:cech-section-money-amount"
+            ],
+            "targetContextRef": "ctx:basic-surface",
+            "value": 1
+          }
+        ],
+        "faceSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v0.5.3; not inferred by the viewer",
+        "faces": [],
+        "h2CoherenceVisualized": false,
+        "vertices": [
+          {
+            "atomRefs": [
+              "atom:authority:ts-admin-basic-info-service-adminbasicinfocontroller:allows-cross-origin-per-endpoint",
+              "atom:authority:ts-admin-basic-info-service-securityconfig:allows-cross-origin",
+              "atom:authority:ts-admin-basic-info-service-securityconfig:checks-jwt-filter",
+              "atom:authority:ts-admin-basic-info-service-securityconfig:permits-unauthenticated-get-resources",
+              "atom:authority:ts-admin-basic-info-service-securityconfig:permits-unauthenticated-swagger",
+              "atom:authority:ts-admin-basic-info-service-securityconfig:requires-role-admin",
+              "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addconfig",
+              "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addcontacts",
+              "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addprice",
+              "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addstation",
+              "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addtrain",
+              "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deleteconfig",
+              "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deletecontacts",
+              "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deleteprice",
+              "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deletestation",
+              "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deletetrain",
+              "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallconfigs",
+              "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallcontacts",
+              "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallprices",
+              "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallstations",
+              "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getalltrains",
+              "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:home",
+              "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifyconfig",
+              "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifycontacts"
+            ],
+            "contextRef": "ctx:admin-basic-info-surface",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:assurance-assurancecontroller:allows-cross-origin-all-endpoints",
+              "atom:authority:assurance-securityconfig:allows-cross-origin",
+              "atom:authority:assurance-securityconfig:permits-unauthenticated",
+              "atom:authority:assurance-securityconfig:requires-role",
+              "atom:capability:assurance-assurancecontroller:create-new-assurance",
+              "atom:capability:assurance-assurancecontroller:delete-assurance",
+              "atom:capability:assurance-assurancecontroller:delete-assurance-by-order-id",
+              "atom:capability:assurance-assurancecontroller:find-assurance-by-order-id",
+              "atom:capability:assurance-assurancecontroller:get-all-assurance-types",
+              "atom:capability:assurance-assurancecontroller:get-all-assurances",
+              "atom:capability:assurance-assurancecontroller:get-assurance-by-id",
+              "atom:capability:assurance-assurancecontroller:modify-assurance",
+              "atom:capability:assurance-assurancecontroller:welcome",
+              "atom:capability:ts-assurance-service-assurancerepository:handles-command-remove-assurance-by-order-id",
+              "atom:capability:ts-assurance-service-assurancerepository:serves-query-find-by-order-id",
+              "atom:capability:ts-assurance-service-assuranceserviceimpl:handles-command-create",
+              "atom:capability:ts-assurance-service-assuranceserviceimpl:handles-command-delete-by-id",
+              "atom:capability:ts-assurance-service-assuranceserviceimpl:handles-command-delete-by-order-id",
+              "atom:capability:ts-assurance-service-assuranceserviceimpl:handles-command-modify",
+              "atom:capability:ts-assurance-service-assuranceserviceimpl:serves-query-find-assurance-by-id",
+              "atom:capability:ts-assurance-service-assuranceserviceimpl:serves-query-find-assurance-by-order-id",
+              "atom:capability:ts-assurance-service-assuranceserviceimpl:serves-query-get-all-assurance-types",
+              "atom:capability:ts-assurance-service-assuranceserviceimpl:serves-query-get-all-assurances",
+              "atom:component:assurance-assurance"
+            ],
+            "contextRef": "ctx:assurance-surface",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:basic-securityconfig:allowscrossorigin",
+              "atom:authority:basic-securityconfig:permitsunauthenticated-api",
+              "atom:authority:basic-securityconfig:permitsunauthenticated-swagger",
+              "atom:capability:basic-basiccontroller:exposesendpoint-basic-stationname",
+              "atom:capability:basic-basiccontroller:exposesendpoint-basic-travel",
+              "atom:capability:basic-basiccontroller:exposesendpoint-basic-travels",
+              "atom:capability:basic-basiccontroller:exposesendpoint-welcome",
+              "atom:capability:basic-basicserviceimpl:servesquery-queryforstationid",
+              "atom:capability:basic-basicserviceimpl:servesquery-queryfortravel",
+              "atom:capability:basic-basicserviceimpl:servesquery-queryfortravels",
+              "atom:component:basic-basicapplication",
+              "atom:component:basic-basiccontroller",
+              "atom:component:basic-basicservice",
+              "atom:component:basic-basicserviceimpl",
+              "atom:component:basic-securityconfig",
+              "atom:relation:basic-basicserviceimpl:calls-priceservice",
+              "atom:relation:basic-basicserviceimpl:calls-routeservice",
+              "atom:relation:basic-basicserviceimpl:calls-stationservice",
+              "atom:relation:basic-basicserviceimpl:calls-trainservice",
+              "atom:semantic:basic-basicserviceimpl:identifiedby-stationlookup",
+              "atom:semantic:basic-basicserviceimpl:statusgates-responseenvelope"
+            ],
+            "contextRef": "ctx:basic-surface",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:cancel-cancelcontroller:allowscrossorigin",
+              "atom:authority:cancel-securityconfig:allowscrossorigin",
+              "atom:authority:cancel-securityconfig:permitsunauthenticated-swagger",
+              "atom:authority:cancel-securityconfig:requiresrole-api",
+              "atom:capability:cancel-cancelcontroller:exposesendpoint-cancel-orderid-loginid",
+              "atom:capability:cancel-cancelcontroller:exposesendpoint-cancel-refound",
+              "atom:capability:cancel-cancelcontroller:exposesendpoint-welcome",
+              "atom:capability:cancel-cancelserviceimpl:handlescommand-cancelorder",
+              "atom:capability:cancel-cancelserviceimpl:servesquery-calculaterefund",
+              "atom:component:cancel-cancelapplication",
+              "atom:component:cancel-cancelcontroller",
+              "atom:component:cancel-cancelservice",
+              "atom:component:cancel-cancelserviceimpl",
+              "atom:component:cancel-getaccountbyidinfo",
+              "atom:component:cancel-getaccountbyidresult",
+              "atom:component:cancel-getorderbyidinfo",
+              "atom:component:cancel-securityconfig",
+              "atom:contract:cancel-cancelserviceimpl:ensures-cancel-and-refund",
+              "atom:contract:cancel-cancelserviceimpl:ensures-refundamountrule",
+              "atom:contract:cancel-cancelserviceimpl:requires-forwardedauthorizationheader",
+              "atom:contract:cancel-cancelserviceimpl:requires-orderstatuseligibleforcancel",
+              "atom:contract:cancel-getaccountbyidinfo:shapedas",
+              "atom:contract:cancel-getaccountbyidresult:shapedas",
+              "atom:contract:cancel-getorderbyidinfo:shapedas"
+            ],
+            "contextRef": "ctx:cancel-surface",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:ts-consign-price-service-security-config:allows-cross-origin",
+              "atom:authority:ts-consign-price-service-security-config:permits-unauthenticated",
+              "atom:authority:ts-consign-price-service-security-config:requires-role",
+              "atom:capability:ts-consign-price-service-consign-price-controller:exposes-modify-price-config",
+              "atom:capability:ts-consign-price-service-consign-price-controller:exposes-price-by-weight-and-region",
+              "atom:capability:ts-consign-price-service-consign-price-controller:exposes-price-config",
+              "atom:capability:ts-consign-price-service-consign-price-controller:exposes-price-info",
+              "atom:capability:ts-consign-price-service-consign-price-controller:exposes-welcome",
+              "atom:component:consignprice-consign-price-application",
+              "atom:component:consignprice-consign-price-config-repository",
+              "atom:component:consignprice-consign-price-controller",
+              "atom:component:consignprice-consign-price-entity",
+              "atom:component:consignprice-consign-price-service",
+              "atom:component:consignprice-consign-price-service-impl",
+              "atom:component:consignprice-init-data",
+              "atom:component:consignprice-security-config",
+              "atom:component:ts-consign-price-service-application-yml",
+              "atom:contract:ts-consign-price-service-consign-price-service-impl:ensures-price-equals-initial-price-plus-extra-weight-times-region-rate",
+              "atom:effect:ts-consign-price-service-init-data:calls-provider-seeds-initial-price-config",
+              "atom:relation:consignprice-consign-price-controller:depends-on-consign-price-service-impl",
+              "atom:relation:ts-consign-price-service-consign-price-application:depends-on-nacos-discovery",
+              "atom:relation:ts-consign-price-service-consign-price-config-repository:reads-from-consign-price-by-index",
+              "atom:relation:ts-consign-price-service-consign-price-service-impl:depends-on-consign-price-config-repository",
+              "atom:relation:ts-consign-price-service-consign-price-service-impl:implements-consign-price-service"
+            ],
+            "contextRef": "ctx:consign-price-surface",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:ts-consign-service-security-config:allows-cross-origin",
+              "atom:authority:ts-consign-service-security-config:permits-unauthenticated",
+              "atom:authority:ts-consign-service-security-config:requires-role",
+              "atom:capability:ts-consign-service-consign-controller:exposes-find-by-account-id",
+              "atom:capability:ts-consign-service-consign-controller:exposes-find-by-consignee",
+              "atom:capability:ts-consign-service-consign-controller:exposes-find-by-order-id",
+              "atom:capability:ts-consign-service-consign-controller:exposes-insert-consign",
+              "atom:capability:ts-consign-service-consign-controller:exposes-update-consign",
+              "atom:capability:ts-consign-service-consign-controller:exposes-welcome",
+              "atom:component:consign-consign-application",
+              "atom:component:consign-consign-controller",
+              "atom:component:consign-consign-entity",
+              "atom:component:consign-consign-record-entity",
+              "atom:component:consign-consign-repository",
+              "atom:component:consign-consign-service",
+              "atom:component:consign-consign-service-impl",
+              "atom:component:consign-get-price-domain",
+              "atom:component:consign-init-data",
+              "atom:component:consign-insert-consign-record-result",
+              "atom:component:consign-security-config",
+              "atom:component:ts-consign-service",
+              "atom:contract:ts-consign-service-consign-service-impl:ensures-fallback-to-insert-on-missing-id",
+              "atom:contract:ts-consign-service-consign-service-impl:ensures-price-recomputed-only-when-weight-differs-on-update",
+              "atom:contract:ts-consign-service-consign-service-impl:requires-forwarded-headers-on-price-lookup"
+            ],
+            "contextRef": "ctx:consign-surface",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:ts-food-delivery-service-securityconfig:allowscrossorigin-all",
+              "atom:authority:ts-food-delivery-service-securityconfig:permitsunauthenticated-fooddeliveryservice-root",
+              "atom:authority:ts-food-delivery-service-securityconfig:permitsunauthenticated-swagger",
+              "atom:capability:ts-food-delivery-service-fooddeliverycontroller:createfooddeliveryorder",
+              "atom:capability:ts-food-delivery-service-fooddeliverycontroller:deletefooddeliveryorder",
+              "atom:capability:ts-food-delivery-service-fooddeliverycontroller:exposesendpoint-get-welcome",
+              "atom:capability:ts-food-delivery-service-fooddeliverycontroller:getallfooddeliveryorders",
+              "atom:capability:ts-food-delivery-service-fooddeliverycontroller:getfooddeliveryorderbyid",
+              "atom:capability:ts-food-delivery-service-fooddeliverycontroller:getfooddeliveryorderbystoreid",
+              "atom:capability:ts-food-delivery-service-fooddeliverycontroller:updatedeliverytime",
+              "atom:capability:ts-food-delivery-service-fooddeliverycontroller:updateseatno",
+              "atom:capability:ts-food-delivery-service-fooddeliverycontroller:updatetripid",
+              "atom:capability:ts-food-delivery-service-fooddeliveryorderrepository:servesquery-by-stationfoodstoreid",
+              "atom:component:food-delivery-fooddeliveryapplication",
+              "atom:component:ts-food-delivery-service",
+              "atom:component:ts-food-delivery-service-deliveryinfo",
+              "atom:component:ts-food-delivery-service-fooddeliverycontroller",
+              "atom:component:ts-food-delivery-service-fooddeliveryorder",
+              "atom:component:ts-food-delivery-service-fooddeliveryorderrepository",
+              "atom:component:ts-food-delivery-service-fooddeliveryservice",
+              "atom:component:ts-food-delivery-service-fooddeliveryserviceimpl",
+              "atom:component:ts-food-delivery-service-initdata",
+              "atom:component:ts-food-delivery-service-seatinfo",
+              "atom:component:ts-food-delivery-service-securityconfig"
+            ],
+            "contextRef": "ctx:food-delivery-surface",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:ts-food-service-securityconfig:allowscrossorigin-all",
+              "atom:authority:ts-food-service-securityconfig:permitsunauthenticated-foodservice-root",
+              "atom:authority:ts-food-service-securityconfig:permitsunauthenticated-swagger",
+              "atom:authority:ts-food-service-securityconfig:requiresrole-admin-delete-orders",
+              "atom:authority:ts-food-service-securityconfig:requiresrole-admin-post-orders",
+              "atom:authority:ts-food-service-securityconfig:requiresrole-admin-put-orders",
+              "atom:capability:ts-food-service-foodcontroller:createfoodorder",
+              "atom:capability:ts-food-service-foodcontroller:createfoodordersinbatch",
+              "atom:capability:ts-food-service-foodcontroller:deletefoodorder",
+              "atom:capability:ts-food-service-foodcontroller:exposesendpoint-get-welcome",
+              "atom:capability:ts-food-service-foodcontroller:findallfoodorder",
+              "atom:capability:ts-food-service-foodcontroller:findfoodorderbyorderid",
+              "atom:capability:ts-food-service-foodcontroller:getallfood",
+              "atom:capability:ts-food-service-foodcontroller:testsenddelivery",
+              "atom:capability:ts-food-service-foodcontroller:updatefoodorder",
+              "atom:capability:ts-food-service-foodorderrepository-handlescommand-deletebyid",
+              "atom:capability:ts-food-service-foodorderrepository-handlescommand-deletefoodorderbyorderid",
+              "atom:capability:ts-food-service-foodorderrepository-servesquery-findall",
+              "atom:capability:ts-food-service-foodorderrepository-servesquery-findbyid",
+              "atom:capability:ts-food-service-foodorderrepository-servesquery-findbyorderid",
+              "atom:capability:ts-food-service-foodservice-handlescommand-createfoodorder",
+              "atom:capability:ts-food-service-foodservice-handlescommand-createfoodordersinbatch",
+              "atom:capability:ts-food-service-foodservice-handlescommand-deletefoodorder",
+              "atom:capability:ts-food-service-foodservice-handlescommand-updatefoodorder"
+            ],
+            "contextRef": "ctx:food-surface",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:ts-inside-payment-service-securityconfig-allowscrossorigin",
+              "atom:authority:ts-inside-payment-service-securityconfig-permitsunauthenticated",
+              "atom:authority:ts-inside-payment-service-securityconfig-requiresrole",
+              "atom:capability:ts-inside-payment-service-addmoneyrepository:serves-query-findbyuserid",
+              "atom:capability:ts-inside-payment-service-insidepaymentcontroller-exposesendpoint-addmoney",
+              "atom:capability:ts-inside-payment-service-insidepaymentcontroller-exposesendpoint-createaccount",
+              "atom:capability:ts-inside-payment-service-insidepaymentcontroller-exposesendpoint-drawback",
+              "atom:capability:ts-inside-payment-service-insidepaymentcontroller-exposesendpoint-pay",
+              "atom:capability:ts-inside-payment-service-insidepaymentcontroller-exposesendpoint-paydifference",
+              "atom:capability:ts-inside-payment-service-insidepaymentcontroller-exposesendpoint-queryaccount",
+              "atom:capability:ts-inside-payment-service-insidepaymentcontroller-exposesendpoint-queryaddmoney",
+              "atom:capability:ts-inside-payment-service-insidepaymentcontroller-exposesendpoint-querypayment",
+              "atom:capability:ts-inside-payment-service-insidepaymentcontroller-exposesendpoint-welcome",
+              "atom:capability:ts-inside-payment-service-insidepaymentcontroller-handlescommand-addmoney",
+              "atom:capability:ts-inside-payment-service-insidepaymentcontroller-handlescommand-createaccount",
+              "atom:capability:ts-inside-payment-service-insidepaymentcontroller-handlescommand-drawback",
+              "atom:capability:ts-inside-payment-service-insidepaymentcontroller-handlescommand-pay",
+              "atom:capability:ts-inside-payment-service-insidepaymentcontroller-handlescommand-paydifference",
+              "atom:capability:ts-inside-payment-service-insidepaymentcontroller-servesquery-queryaccount",
+              "atom:capability:ts-inside-payment-service-insidepaymentcontroller-servesquery-queryaddmoney",
+              "atom:capability:ts-inside-payment-service-insidepaymentcontroller-servesquery-querypayment",
+              "atom:capability:ts-inside-payment-service-insidepaymentcontroller-servesquery-welcome",
+              "atom:capability:ts-inside-payment-service-insidepaymentservice:handles-command-back",
+              "atom:capability:ts-inside-payment-service-insidepaymentservice:handles-command-createaccount"
+            ],
+            "contextRef": "ctx:inside-payment-surface",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:ts-notification-service-securityconfig:allows-cross-origin-all-origins",
+              "atom:authority:ts-notification-service-securityconfig:checks-permission-authenticated-required",
+              "atom:authority:ts-notification-service-securityconfig:permits-unauthenticated-notifyservice-paths",
+              "atom:authority:ts-notification-service-securityconfig:permits-unauthenticated-swagger-paths",
+              "atom:capability:ts-notification-service-notificationcontroller:exposes-endpoint-order-cancel-success",
+              "atom:capability:ts-notification-service-notificationcontroller:exposes-endpoint-order-changed-success",
+              "atom:capability:ts-notification-service-notificationcontroller:exposes-endpoint-order-create-success",
+              "atom:capability:ts-notification-service-notificationcontroller:exposes-endpoint-preserve-success",
+              "atom:capability:ts-notification-service-notificationcontroller:exposes-endpoint-test-send-mail",
+              "atom:capability:ts-notification-service-notificationcontroller:exposes-endpoint-test-send-mq",
+              "atom:capability:ts-notification-service-notificationcontroller:exposes-endpoint-welcome",
+              "atom:capability:ts-notification-service-rabbitreceive:handles-command-consume-email-queue",
+              "atom:capability:ts-notification-service.notificationserviceimpl:handlescommand-ordercancelsuccess",
+              "atom:capability:ts-notification-service.notificationserviceimpl:handlescommand-orderchangedsuccess",
+              "atom:capability:ts-notification-service.notificationserviceimpl:handlescommand-ordercreatesuccess",
+              "atom:capability:ts-notification-service.notificationserviceimpl:handlescommand-preservesuccess",
+              "atom:component:notification-notificationapplication",
+              "atom:component:notification.mq.RabbitSend",
+              "atom:component:notification.repository.NotifyRepository",
+              "atom:component:notification.service.MailService",
+              "atom:component:notification.service.NotificationService",
+              "atom:component:notification.service.NotificationServiceImpl",
+              "atom:component:ts-notification-service",
+              "atom:component:ts-notification-service-emailconfig"
+            ],
+            "contextRef": "ctx:notification-surface",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:other.config.SecurityConfig:permitsUnauthenticated:orderOther-base",
+              "atom:authority:ts-order-other-service.securityconfig:allowscrossorigin-corsconfigurer",
+              "atom:authority:ts-order-other-service.securityconfig:permitsunauthenticated-swagger",
+              "atom:authority:ts-order-other-service.securityconfig:requiresrole-admin-orderother-admin",
+              "atom:authority:ts-order-other-service.securityconfig:requiresrole-post-put-delete-orderother",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-admin-create",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-admin-update",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-calculatesold",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-create",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-delete",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-findall",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-getbyid",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-modify",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-pay",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-price",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-query",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-refresh",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-save",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-security",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-tickets",
+              "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-welcome",
+              "atom:component:other.OrderOtherApplication",
+              "atom:component:other.config.SecurityConfig",
+              "atom:component:other.controller.OrderOtherController"
+            ],
+            "contextRef": "ctx:order-other-surface",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:order.config.SecurityConfig:permitsUnauthenticated:order-base",
+              "atom:authority:ts-order-service.ordercontroller:allowscrossorigin-endpoint-annotations",
+              "atom:authority:ts-order-service.securityconfig:allowscrossorigin-corsconfigurer",
+              "atom:authority:ts-order-service.securityconfig:permitsunauthenticated-swagger",
+              "atom:authority:ts-order-service.securityconfig:requiresrole-admin-order-admin",
+              "atom:authority:ts-order-service.securityconfig:requiresrole-post-put-delete-order",
+              "atom:capability:order.repository.orderrepository:serves-query-by-account-id",
+              "atom:capability:order.repository.orderrepository:serves-query-by-travel-date-and-train-number",
+              "atom:capability:order.service.orderservice:handles-command-add-new-order",
+              "atom:capability:order.service.orderservice:handles-command-cancel-order-declared",
+              "atom:capability:order.service.orderservice:handles-command-delete-order",
+              "atom:capability:order.service.orderservice:handles-command-modify-order",
+              "atom:capability:order.service.orderservice:handles-command-pay-order-declared",
+              "atom:capability:order.service.orderservice:handles-command-update-order",
+              "atom:capability:order.service.orderservice:serves-query-find-order-by-id",
+              "atom:capability:order.service.orderserviceimpl:handles-command-alter-order",
+              "atom:capability:order.service.orderserviceimpl:handles-command-cancel-order",
+              "atom:capability:order.service.orderserviceimpl:handles-command-create",
+              "atom:capability:order.service.orderserviceimpl:handles-command-pay-order",
+              "atom:capability:order.service.orderserviceimpl:serves-query-order-price",
+              "atom:capability:order.service.orderserviceimpl:serves-query-orders-with-filter-flags",
+              "atom:capability:order.service.orderserviceimpl:serves-query-sold-tickets",
+              "atom:capability:ts-order-service.ordercontroller:exposesendpoint-admin-create",
+              "atom:capability:ts-order-service.ordercontroller:exposesendpoint-admin-update"
+            ],
+            "contextRef": "ctx:order-surface",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:com.trainticket.config.securityconfig:allows-cross-origin",
+              "atom:authority:com.trainticket.config.securityconfig:checks-permission-via-jwt-filter",
+              "atom:authority:com.trainticket.config.securityconfig:permits-unauthenticated-swagger-paths",
+              "atom:authority:com.trainticket.config.securityconfig:requires-role-on-paymentservice-path",
+              "atom:capability:com.trainticket.controller.paymentcontroller:exposes-endpoint-add-money",
+              "atom:capability:com.trainticket.controller.paymentcontroller:exposes-endpoint-pay",
+              "atom:capability:com.trainticket.controller.paymentcontroller:exposes-endpoint-query",
+              "atom:capability:com.trainticket.controller.paymentcontroller:exposes-endpoint-welcome",
+              "atom:capability:com.trainticket.repository.addmoneyrepository:persists-money-entities",
+              "atom:capability:com.trainticket.repository.paymentrepository:serves-query-by-order-id",
+              "atom:capability:com.trainticket.repository.paymentrepository:serves-query-by-user-id",
+              "atom:capability:com.trainticket.service.paymentserviceimpl:handles-command-add-money",
+              "atom:capability:com.trainticket.service.paymentserviceimpl:handles-command-pay",
+              "atom:capability:com.trainticket.service.paymentserviceimpl:serves-query-list-payments",
+              "atom:component:com.trainticket.config.securityconfig",
+              "atom:component:com.trainticket.controller.paymentcontroller",
+              "atom:component:com.trainticket.entity.money",
+              "atom:component:com.trainticket.entity.payment",
+              "atom:component:com.trainticket.init.initdata",
+              "atom:component:com.trainticket.paymentapplication",
+              "atom:component:com.trainticket.repository.addmoneyrepository",
+              "atom:component:com.trainticket.repository.paymentrepository",
+              "atom:component:com.trainticket.service.paymentservice",
+              "atom:component:com.trainticket.service.paymentserviceimpl"
+            ],
+            "contextRef": "ctx:payment-surface",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:preserveother-controller:allowscrossorigin-method-level",
+              "atom:authority:preserveother-securityconfig:allowscrossorigin-global",
+              "atom:authority:preserveother-securityconfig:permitsunauthenticated-swagger",
+              "atom:authority:preserveother-securityconfig:requiresrole-admin-user",
+              "atom:capability:preserveother-controller:exposesendpoint-preserveother",
+              "atom:capability:preserveother-controller:exposesendpoint-welcome",
+              "atom:capability:preserveother-serviceimpl:preserve-orchestration",
+              "atom:component:preserveother-application-yml",
+              "atom:component:preserveother-controller",
+              "atom:component:preserveother-queues",
+              "atom:component:preserveother-rabbitsend",
+              "atom:component:preserveother-securityconfig",
+              "atom:component:preserveother-service-iface",
+              "atom:component:preserveother-serviceimpl",
+              "atom:component:preserveother.preserveotherapplication",
+              "atom:contract:preserveother-serviceimpl:order-dto-shape",
+              "atom:effect:preserveother-rabbitsend-publishes-email-queue",
+              "atom:relation:preserveother-controller:dependson-preserveother-service",
+              "atom:relation:preserveother-rabbitsend:dependson-preserveother-queues",
+              "atom:relation:preserveother-serviceimpl:calls-assurance-service",
+              "atom:relation:preserveother-serviceimpl:calls-basic-service",
+              "atom:relation:preserveother-serviceimpl:calls-consign-service",
+              "atom:relation:preserveother-serviceimpl:calls-contacts-service",
+              "atom:relation:preserveother-serviceimpl:calls-food-service"
+            ],
+            "contextRef": "ctx:preserve-other-surface",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:preserve-controller:allowscrossorigin-method-level",
+              "atom:authority:preserve-securityconfig:allowscrossorigin-global",
+              "atom:authority:preserve-securityconfig:permitsunauthenticated-swagger",
+              "atom:authority:preserve-securityconfig:requiresrole-admin-user",
+              "atom:capability:preserve-controller:exposesendpoint-preserve",
+              "atom:capability:preserve-controller:exposesendpoint-welcome",
+              "atom:capability:preserve-serviceimpl:preserve-orchestration",
+              "atom:component:preserve-application",
+              "atom:component:preserve-application-yml",
+              "atom:component:preserve-controller",
+              "atom:component:preserve-queues",
+              "atom:component:preserve-rabbitsend",
+              "atom:component:preserve-securityconfig",
+              "atom:component:preserve-service-iface",
+              "atom:component:preserve-serviceimpl",
+              "atom:contract:preserve-serviceimpl:order-dto-shape",
+              "atom:effect:preserve-rabbitsend-publishes-email-queue",
+              "atom:relation:preserve-controller:dependson-preserve-service",
+              "atom:relation:preserve-rabbitsend:dependson-preserve-queues",
+              "atom:relation:preserve-serviceimpl:calls-assurance-service",
+              "atom:relation:preserve-serviceimpl:calls-basic-service",
+              "atom:relation:preserve-serviceimpl:calls-consign-service",
+              "atom:relation:preserve-serviceimpl:calls-contacts-service",
+              "atom:relation:preserve-serviceimpl:calls-food-service"
+            ],
+            "contextRef": "ctx:preserve-surface",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:price-securityconfig:allowscrossorigin-global",
+              "atom:authority:price-securityconfig:permitsunauthenticated-broad-matcher",
+              "atom:authority:price-securityconfig:permitsunauthenticated-swagger",
+              "atom:authority:price-securityconfig:requiresrole-write-methods-admin",
+              "atom:capability:price-controller:exposesendpoint-prices-by-route-ids-traintypes",
+              "atom:capability:price-controller:exposesendpoint-prices-by-route-traintype",
+              "atom:capability:price-controller:exposesendpoint-prices-create",
+              "atom:capability:price-controller:exposesendpoint-prices-delete",
+              "atom:capability:price-controller:exposesendpoint-prices-query-all",
+              "atom:capability:price-controller:exposesendpoint-prices-update",
+              "atom:capability:price-controller:exposesendpoint-prices-welcome",
+              "atom:capability:price.PriceConfigRepository:findByRouteIdAndTrainType",
+              "atom:capability:price.PriceServiceImpl:deletePriceConfig",
+              "atom:capability:price.PriceServiceImpl:updatePriceConfig",
+              "atom:capability:price.priceconfigrepository:serves-query-findbyrouteidsandtraintypes",
+              "atom:capability:price.priceserviceimpl:handles-command-createnewpriceconfig",
+              "atom:capability:price.priceserviceimpl:serves-query-findallpriceconfig",
+              "atom:capability:price.priceserviceimpl:serves-query-findbyid",
+              "atom:capability:price.priceserviceimpl:serves-query-findbyrouteidandtraintype",
+              "atom:capability:price.priceserviceimpl:serves-query-findbyrouteidsandtraintypes",
+              "atom:capability:ts-price-service.applicationyml:exposes-endpoint-16579",
+              "atom:component:price-application",
+              "atom:component:price-config-entity",
+              "atom:component:price-controller"
+            ],
+            "contextRef": "ctx:price-surface",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:rebook.securityconfig:allows-cross-origin",
+              "atom:authority:rebook.securityconfig:permits-unauthenticated-swagger",
+              "atom:authority:rebook.securityconfig:requires-role-rebookservice",
+              "atom:capability:rebook.rebookcontroller:exposes-endpoint-get-welcome",
+              "atom:capability:rebook.rebookcontroller:exposes-endpoint-rebook",
+              "atom:capability:rebook.rebookcontroller:exposes-endpoint-rebook-difference",
+              "atom:capability:rebook.rebookserviceimpl:handles-command-paydifference",
+              "atom:capability:rebook.rebookserviceimpl:handles-command-rebook",
+              "atom:component:rebook.RebookApplication",
+              "atom:component:ts-rebook-service.applicationyml",
+              "atom:component:ts-rebook-service.rebookcontroller",
+              "atom:component:ts-rebook-service.rebookinfo",
+              "atom:component:ts-rebook-service.rebookserviceimpl",
+              "atom:component:ts-rebook-service.securityconfig",
+              "atom:contract:rebook.rebookinfo:shapedas",
+              "atom:contract:rebook.rebookserviceimpl:ticketprice-shapedas",
+              "atom:effect:rebook.rebookserviceimpl:callsprovider-inside-payment-difference",
+              "atom:effect:rebook.rebookserviceimpl:callsprovider-inside-payment-drawback",
+              "atom:relation:rebook.rebookcontroller:dependson-rebookinfo",
+              "atom:relation:rebook.rebookcontroller:dependson-rebookservice",
+              "atom:relation:rebook.rebookserviceimpl:calls-ts-order-other-service",
+              "atom:relation:rebook.rebookserviceimpl:calls-ts-order-service",
+              "atom:relation:rebook.rebookserviceimpl:calls-ts-route-service",
+              "atom:relation:rebook.rebookserviceimpl:calls-ts-seat-service"
+            ],
+            "contextRef": "ctx:rebook-surface",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:plan.securityconfig:allows-cross-origin",
+              "atom:authority:plan.securityconfig:permits-unauthenticated-routeplanservice",
+              "atom:authority:plan.securityconfig:permits-unauthenticated-swagger",
+              "atom:capability:plan.routeplancontroller:exposes-endpoint-cheapestroute",
+              "atom:capability:plan.routeplancontroller:exposes-endpoint-minstopstations",
+              "atom:capability:plan.routeplancontroller:exposes-endpoint-quickestroute",
+              "atom:component:plan.RoutePlanApplication",
+              "atom:component:ts-route-plan-service.applicationyml",
+              "atom:component:ts-route-plan-service.routeplancontroller",
+              "atom:component:ts-route-plan-service.routeplanserviceimpl",
+              "atom:component:ts-route-plan-service.securityconfig",
+              "atom:contract:plan.routeplanserviceimpl:priceforeconomyclass-shapedas",
+              "atom:relation:plan.routeplancontroller:dependson-routeplanservice",
+              "atom:relation:plan.routeplanserviceimpl:calls-ts-route-service",
+              "atom:relation:plan.routeplanserviceimpl:calls-ts-travel-service",
+              "atom:relation:plan.routeplanserviceimpl:calls-ts-travel2-service",
+              "atom:relation:ts-route-plan-service.applicationyml:dependson-nacos",
+              "atom:semantic:ctx-route-plan-search-flow:cech-section-money-amount",
+              "atom:semantic:plan.routeplanserviceimpl:minstopstations-route-lookup-statusgates",
+              "atom:semantic:plan.routeplanserviceimpl:searchcheapestresult-selection",
+              "atom:semantic:plan.routeplanserviceimpl:searchquickestresult-selection",
+              "atom:semantic:plan.routeplanserviceimpl:tripid-prefix-selects-service"
+            ],
+            "contextRef": "ctx:route-plan-surface",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:food-config-securityconfig:allows-cross-origin-global",
+              "atom:authority:food-config-securityconfig:permits-unauthenticated-stationfoodservice-paths",
+              "atom:authority:food-config-securityconfig:permits-unauthenticated-swagger-paths",
+              "atom:authority:food-config-securityconfig:requires-authentication-fallback",
+              "atom:authority:food-controller-stationfoodcontroller:allows-cross-origin-per-endpoint",
+              "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-get-all-food-stores",
+              "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-get-food-list-by-store-id",
+              "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-get-food-stores-by-station-names",
+              "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-get-food-stores-of-station",
+              "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-welcome",
+              "atom:capability:food-repository-stationfoodrepository:serves-query-find-by-station-name",
+              "atom:capability:food-repository-stationfoodrepository:serves-query-find-by-station-name-in",
+              "atom:capability:food-service-stationfoodserviceimpl:handles-command-create-food-store",
+              "atom:capability:food-service-stationfoodserviceimpl:serves-query-get-food-stores-by-station-names",
+              "atom:capability:food-service-stationfoodserviceimpl:serves-query-get-station-food-store-by-id",
+              "atom:capability:food-service-stationfoodserviceimpl:serves-query-list-food-stores",
+              "atom:capability:food-service-stationfoodserviceimpl:serves-query-list-food-stores-by-station-name",
+              "atom:component:food-entity-stationfoodstore",
+              "atom:component:food-repository-stationfoodrepository",
+              "atom:component:food-service-stationfoodservice",
+              "atom:component:food-service-stationfoodserviceimpl",
+              "atom:component:food-stationfoodapplication",
+              "atom:component:food.config.SecurityConfig",
+              "atom:component:food.controller.StationFoodController"
+            ],
+            "contextRef": "ctx:station-food-surface",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:trainfood-config-securityconfig:permits-unauthenticated-trainfoodservice-api",
+              "atom:authority:ts-train-food-service-securityconfig:allows-cross-origin",
+              "atom:authority:ts-train-food-service-securityconfig:checks-permission-jwt-filter",
+              "atom:authority:ts-train-food-service-securityconfig:permits-unauthenticated-swagger-paths",
+              "atom:authority:ts-train-food-service-trainfoodcontroller:allows-cross-origin-endpoint-level",
+              "atom:capability:trainfood-controller-trainfoodcontroller:exposes-endpoint-get-trainfoods-welcome",
+              "atom:capability:trainfood-repository-trainfoodrepository:serves-query-find-by-trip-id",
+              "atom:capability:ts-train-food-service-trainfoodcontroller:exposes-endpoint-get-trainfoods",
+              "atom:capability:ts-train-food-service-trainfoodcontroller:exposes-endpoint-get-trainfoods-by-tripid",
+              "atom:capability:ts-train-food-service-trainfoodrepository:serves-query-find-by-id-uuid-param",
+              "atom:component:trainfood-config-securityconfig",
+              "atom:component:trainfood-controller-trainfoodcontroller",
+              "atom:component:trainfood-entity-trainfood",
+              "atom:component:trainfood-init-initdata",
+              "atom:component:trainfood-repository-trainfoodrepository",
+              "atom:component:trainfood-service-trainfoodservice",
+              "atom:component:trainfood-service-trainfoodserviceimpl",
+              "atom:component:trainfood-trainfoodapplication",
+              "atom:component:ts-train-food-service-application-yml",
+              "atom:contract:ts-train-food-service-trainfood:ensures-tripid-unique",
+              "atom:contract:ts-train-food-service-trainfoodservice:shaped-as-crud",
+              "atom:effect:ts-train-food-service-trainfoodserviceimpl:writes-to-trainfoodrepository",
+              "atom:relation:trainfood-controller-trainfoodcontroller:depends-on-trainfoodservice",
+              "atom:relation:trainfood-init-initdata:depends-on-trainfoodservice"
+            ],
+            "contextRef": "ctx:train-food-surface",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:travelplan-config-securityconfig:permits-unauthenticated-travelplanservice-api",
+              "atom:authority:ts-travel-plan-service-securityconfig:allows-cross-origin",
+              "atom:authority:ts-travel-plan-service-securityconfig:checks-permission-jwt-filter",
+              "atom:authority:ts-travel-plan-service-securityconfig:permits-unauthenticated-swagger-paths",
+              "atom:capability:ts-travel-plan-service-travelplancontroller:cheapest",
+              "atom:capability:ts-travel-plan-service-travelplancontroller:minstation",
+              "atom:capability:ts-travel-plan-service-travelplancontroller:quickest",
+              "atom:capability:ts-travel-plan-service-travelplancontroller:transferresult",
+              "atom:capability:ts-travel-plan-service-travelplancontroller:welcome",
+              "atom:component:travelplan-config-securityconfig",
+              "atom:component:travelplan-travelplanapplication",
+              "atom:component:ts-travel-plan-service-transfertravelinfo",
+              "atom:component:ts-travel-plan-service-transfertravelresult",
+              "atom:component:ts-travel-plan-service-traveladvanceresultunit",
+              "atom:component:ts-travel-plan-service-travelplancontroller",
+              "atom:component:ts-travel-plan-service-travelplanservice",
+              "atom:component:ts-travel-plan-service-travelplanserviceimpl",
+              "atom:contract:ts-travel-plan-service-transfertravelinfo:shapedas-request-body",
+              "atom:effect:ts-travel-plan-service-travelplanserviceimpl:callsprovider-routeplan-cheapest",
+              "atom:effect:ts-travel-plan-service-travelplanserviceimpl:callsprovider-routeplan-minstation",
+              "atom:effect:ts-travel-plan-service-travelplanserviceimpl:callsprovider-routeplan-quickest",
+              "atom:effect:ts-travel-plan-service-travelplanserviceimpl:callsprovider-seat-lefttickets",
+              "atom:effect:ts-travel-plan-service-travelplanserviceimpl:callsprovider-train-byname",
+              "atom:effect:ts-travel-plan-service-travelplanserviceimpl:callsprovider-travel-tripsleft"
+            ],
+            "contextRef": "ctx:travel-plan-surface",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:ts-travel-service-securityconfig:allowscrossorigin-global-wildcard",
+              "atom:authority:ts-travel-service-securityconfig:permitsunauthenticated-swagger-paths",
+              "atom:authority:ts-travel-service-securityconfig:permitsunauthenticated-travelservice-api",
+              "atom:authority:ts-travel-service-securityconfig:requiresrole-admin-delete-trips",
+              "atom:authority:ts-travel-service-securityconfig:requiresrole-admin-put-trips",
+              "atom:authority:ts-travel-service-travelcontroller:allowscrossorigin-mutating-endpoints",
+              "atom:capability:ts-travel-service-travelcontroller:adminqueryall",
+              "atom:capability:ts-travel-service-travelcontroller:createtrip",
+              "atom:capability:ts-travel-service-travelcontroller:deletetrip",
+              "atom:capability:ts-travel-service-travelcontroller:queryall",
+              "atom:capability:ts-travel-service-travelcontroller:queryleft",
+              "atom:capability:ts-travel-service-travelcontroller:queryleftparallel",
+              "atom:capability:ts-travel-service-travelcontroller:retrievetrip",
+              "atom:capability:ts-travel-service-travelcontroller:routesbytripid",
+              "atom:capability:ts-travel-service-travelcontroller:traintypesbytripid",
+              "atom:capability:ts-travel-service-travelcontroller:tripdetail",
+              "atom:capability:ts-travel-service-travelcontroller:tripsbyroutes",
+              "atom:capability:ts-travel-service-travelcontroller:updatetrip",
+              "atom:capability:ts-travel-service-travelcontroller:welcome",
+              "atom:capability:ts-travel-service-triprepository:findall",
+              "atom:capability:ts-travel-service-triprepository:findbyrouteid",
+              "atom:capability:ts-travel-service-triprepository:findbytripid",
+              "atom:component:travel-travelapplication",
+              "atom:component:ts-travel-service-admintrip"
+            ],
+            "contextRef": "ctx:travel-surface",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:ts-travel2-service-securityconfig:allows-cross-origin-global",
+              "atom:authority:ts-travel2-service-securityconfig:permits-unauthenticated-docs",
+              "atom:authority:ts-travel2-service-securityconfig:permits-unauthenticated-trip-root",
+              "atom:authority:ts-travel2-service-securityconfig:requires-role-admin-trip-mutation",
+              "atom:authority:ts-travel2-service-travel2controller:allows-cross-origin-write-and-detail-endpoints",
+              "atom:capability:ts-travel2-service-travel2controller:admin-query-all-trips",
+              "atom:capability:ts-travel2-service-travel2controller:create-trip",
+              "atom:capability:ts-travel2-service-travel2controller:delete-trip",
+              "atom:capability:ts-travel2-service-travel2controller:query-all-trips",
+              "atom:capability:ts-travel2-service-travel2controller:query-left-tickets",
+              "atom:capability:ts-travel2-service-travel2controller:retrieve-trip",
+              "atom:capability:ts-travel2-service-travel2controller:route-by-trip",
+              "atom:capability:ts-travel2-service-travel2controller:train-type-by-trip",
+              "atom:capability:ts-travel2-service-travel2controller:trip-detail",
+              "atom:capability:ts-travel2-service-travel2controller:trips-by-route",
+              "atom:capability:ts-travel2-service-travel2controller:update-trip",
+              "atom:capability:ts-travel2-service-travel2controller:welcome",
+              "atom:capability:ts-travel2-service-triprepository:handles-command-delete-by-trip-id",
+              "atom:capability:ts-travel2-service-triprepository:serves-query-find-all",
+              "atom:capability:ts-travel2-service-triprepository:serves-query-find-by-route-id",
+              "atom:capability:ts-travel2-service-triprepository:serves-query-find-by-trip-id",
+              "atom:component:travel2-travel2application",
+              "atom:component:ts-travel2-service-admintrip",
+              "atom:component:ts-travel2-service-application-yml"
+            ],
+            "contextRef": "ctx:travel2-surface",
+            "objectKind": "nerveVertex"
+          },
+          {
+            "atomRefs": [
+              "atom:authority:waitorder-config-securityconfig:allows-cross-origin-all-origins",
+              "atom:authority:waitorder-config-securityconfig:permits-unauthenticated-order-wildcard",
+              "atom:authority:waitorder-config-securityconfig:permits-unauthenticated-swagger-paths",
+              "atom:authority:waitorder-config-securityconfig:requires-role-delete-order-admin-or-user",
+              "atom:authority:waitorder-config-securityconfig:requires-role-post-order-admin-only",
+              "atom:authority:waitorder-config-securityconfig:requires-role-post-order-admin-or-user",
+              "atom:authority:waitorder-config-securityconfig:requires-role-put-order-admin-only",
+              "atom:authority:waitorder-config-securityconfig:requires-role-put-order-admin-or-user",
+              "atom:capability:waitorder-controller-waitlistordercontroller:exposes-endpoint-get-orders",
+              "atom:capability:waitorder-controller-waitlistordercontroller:exposes-endpoint-get-waitlistorders",
+              "atom:capability:waitorder-controller-waitlistordercontroller:exposes-endpoint-get-welcome",
+              "atom:capability:waitorder-controller-waitlistordercontroller:exposes-endpoint-post-order",
+              "atom:capability:waitorder-service-waitlistorderservice:handles-modifywaitlistorderstatus",
+              "atom:capability:waitorder-service-waitlistorderservice:handles-updateorder",
+              "atom:capability:waitorder-service-waitlistorderservice:serves-findorderbyid",
+              "atom:component:waitorder-config-securityconfig",
+              "atom:component:waitorder-controller-waitlistordercontroller",
+              "atom:component:waitorder-entity-waitlistorder",
+              "atom:component:waitorder-entity-waitlistorderstatus",
+              "atom:component:waitorder-entity-waitlistordervo",
+              "atom:component:waitorder-repository-waitlistorderrepository",
+              "atom:component:waitorder-service-impl-waitlistorderserviceimpl",
+              "atom:component:waitorder-service-waitlistorderservice",
+              "atom:component:waitorder-utils-pollthread"
+            ],
+            "contextRef": "ctx:wait-order-surface",
+            "objectKind": "nerveVertex"
+          }
+        ]
+      },
+      "dimensions": {
+        "H0": 18,
+        "H1": 0
+      },
+      "evaluator": "ag.cech-obstruction",
+      "invariantId": "cech-cohomology:profile:train-ticket-money-convention@1",
+      "kind": "cech-h1-rank",
+      "method": "finite-f2-incidence-graph-cochain@1",
+      "methodStatus": "finite_f2_cech_computed",
+      "nerveShape": {
+        "b1": 0,
+        "capacityLowerBound": 0,
+        "eulerCharacteristic": 18,
+        "isForest": true,
+        "oneSkeletonB1": 0
+      },
+      "observedCocycle": {
+        "classNonzero": false,
+        "mismatchSupportRefs": [
+          "atom:semantic:basic-surface:cech-section-money-amount",
+          "atom:semantic:cancel-surface:cech-section-money-amount",
+          "atom:semantic:inside-payment-surface:cech-section-money-amount",
+          "atom:semantic:order-surface:cech-section-money-amount",
+          "atom:semantic:payment-surface:cech-section-money-amount",
+          "atom:semantic:preserve-surface:cech-section-money-amount",
+          "atom:semantic:travel-surface:cech-section-money-amount"
+        ],
+        "representative": [
+          {
+            "edge": "ctx:cancel-surface->ctx:inside-payment-surface",
+            "sourceContext": "ctx:cancel-surface",
+            "supportAtomRefs": [
+              "atom:semantic:cancel-surface:cech-section-money-amount",
+              "atom:semantic:inside-payment-surface:cech-section-money-amount"
+            ],
+            "targetContext": "ctx:inside-payment-surface",
+            "value": 1
+          },
+          {
+            "edge": "ctx:cancel-surface->ctx:order-surface",
+            "sourceContext": "ctx:cancel-surface",
+            "supportAtomRefs": [
+              "atom:semantic:cancel-surface:cech-section-money-amount",
+              "atom:semantic:order-surface:cech-section-money-amount"
+            ],
+            "targetContext": "ctx:order-surface",
+            "value": 1
+          },
+          {
+            "edge": "ctx:inside-payment-surface->ctx:payment-surface",
+            "sourceContext": "ctx:inside-payment-surface",
+            "supportAtomRefs": [
+              "atom:semantic:inside-payment-surface:cech-section-money-amount",
+              "atom:semantic:payment-surface:cech-section-money-amount"
+            ],
+            "targetContext": "ctx:payment-surface",
+            "value": 1
+          },
+          {
+            "edge": "ctx:preserve-surface->ctx:basic-surface",
+            "sourceContext": "ctx:preserve-surface",
+            "supportAtomRefs": [
+              "atom:semantic:basic-surface:cech-section-money-amount",
+              "atom:semantic:preserve-surface:cech-section-money-amount"
+            ],
+            "targetContext": "ctx:basic-surface",
+            "value": 1
+          },
+          {
+            "edge": "ctx:travel-surface->ctx:basic-surface",
+            "sourceContext": "ctx:travel-surface",
+            "supportAtomRefs": [
+              "atom:semantic:basic-surface:cech-section-money-amount",
+              "atom:semantic:travel-surface:cech-section-money-amount"
+            ],
+            "targetContext": "ctx:basic-surface",
+            "value": 1
+          }
+        ]
+      },
+      "observedEdgeCount": 6,
+      "rankD0": 6,
+      "reason": "selected cover has a non-empty Cech 1-skeleton for ag.cech-obstruction",
+      "representation": {
+        "boundaryNote": "COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION is relative to the selected abelian coefficient sheaf; non-abelian torsor, stacky descent, and gerbe obstructions are not excluded.",
+        "claimScope": "selected-cover 1-skeleton Cech cochain calculation",
+        "classSupport": {
+          "edgeRefs": [
+            "ctx:cancel-surface->ctx:inside-payment-surface",
+            "ctx:cancel-surface->ctx:order-surface",
+            "ctx:inside-payment-surface->ctx:payment-surface",
+            "ctx:preserve-surface->ctx:basic-surface",
+            "ctx:travel-surface->ctx:basic-surface"
+          ],
+          "kind": "selected-cover-edge-support",
+          "supportAtomRefs": [
+            "atom:semantic:basic-surface:cech-section-money-amount",
+            "atom:semantic:cancel-surface:cech-section-money-amount",
+            "atom:semantic:inside-payment-surface:cech-section-money-amount",
+            "atom:semantic:order-surface:cech-section-money-amount",
+            "atom:semantic:payment-surface:cech-section-money-amount",
+            "atom:semantic:preserve-surface:cech-section-money-amount",
+            "atom:semantic:travel-surface:cech-section-money-amount"
+          ]
+        },
+        "coefficient": "F2",
+        "contextCount": 24,
+        "coverNerveProjection": {
+          "coverRef": "cover:money-amount-convention-surface",
+          "edges": [
+            {
+              "edgeId": "ctx:cancel-surface->ctx:inside-payment-surface",
+              "objectKind": "nerveEdge",
+              "sectionObservation": "observed",
+              "source": "selected cover restriction edge",
+              "sourceContextRef": "ctx:cancel-surface",
+              "supportAtomRefs": [
+                "atom:semantic:cancel-surface:cech-section-money-amount",
+                "atom:semantic:inside-payment-surface:cech-section-money-amount"
+              ],
+              "targetContextRef": "ctx:inside-payment-surface",
+              "value": 1
+            },
+            {
+              "edgeId": "ctx:cancel-surface->ctx:order-surface",
+              "objectKind": "nerveEdge",
+              "sectionObservation": "observed",
+              "source": "selected cover restriction edge",
+              "sourceContextRef": "ctx:cancel-surface",
+              "supportAtomRefs": [
+                "atom:semantic:cancel-surface:cech-section-money-amount",
+                "atom:semantic:order-surface:cech-section-money-amount"
+              ],
+              "targetContextRef": "ctx:order-surface",
+              "value": 1
+            },
+            {
+              "edgeId": "ctx:consign-surface->ctx:consign-price-surface",
+              "objectKind": "nerveEdge",
+              "sectionObservation": "observed",
+              "source": "selected cover restriction edge",
+              "sourceContextRef": "ctx:consign-surface",
+              "supportAtomRefs": [],
+              "targetContextRef": "ctx:consign-price-surface",
+              "value": 0
+            },
+            {
+              "edgeId": "ctx:inside-payment-surface->ctx:payment-surface",
+              "objectKind": "nerveEdge",
+              "sectionObservation": "observed",
+              "source": "selected cover restriction edge",
+              "sourceContextRef": "ctx:inside-payment-surface",
+              "supportAtomRefs": [
+                "atom:semantic:inside-payment-surface:cech-section-money-amount",
+                "atom:semantic:payment-surface:cech-section-money-amount"
+              ],
+              "targetContextRef": "ctx:payment-surface",
+              "value": 1
+            },
+            {
+              "edgeId": "ctx:preserve-surface->ctx:basic-surface",
+              "objectKind": "nerveEdge",
+              "sectionObservation": "observed",
+              "source": "selected cover restriction edge",
+              "sourceContextRef": "ctx:preserve-surface",
+              "supportAtomRefs": [
+                "atom:semantic:basic-surface:cech-section-money-amount",
+                "atom:semantic:preserve-surface:cech-section-money-amount"
+              ],
+              "targetContextRef": "ctx:basic-surface",
+              "value": 1
+            },
+            {
+              "edgeId": "ctx:travel-surface->ctx:basic-surface",
+              "objectKind": "nerveEdge",
+              "sectionObservation": "observed",
+              "source": "selected cover restriction edge",
+              "sourceContextRef": "ctx:travel-surface",
+              "supportAtomRefs": [
+                "atom:semantic:basic-surface:cech-section-money-amount",
+                "atom:semantic:travel-surface:cech-section-money-amount"
+              ],
+              "targetContextRef": "ctx:basic-surface",
+              "value": 1
+            }
+          ],
+          "faceSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v0.5.3; not inferred by the viewer",
+          "faces": [],
+          "h2CoherenceVisualized": false,
+          "vertices": [
+            {
+              "atomRefs": [
+                "atom:authority:ts-admin-basic-info-service-adminbasicinfocontroller:allows-cross-origin-per-endpoint",
+                "atom:authority:ts-admin-basic-info-service-securityconfig:allows-cross-origin",
+                "atom:authority:ts-admin-basic-info-service-securityconfig:checks-jwt-filter",
+                "atom:authority:ts-admin-basic-info-service-securityconfig:permits-unauthenticated-get-resources",
+                "atom:authority:ts-admin-basic-info-service-securityconfig:permits-unauthenticated-swagger",
+                "atom:authority:ts-admin-basic-info-service-securityconfig:requires-role-admin",
+                "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addconfig",
+                "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addcontacts",
+                "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addprice",
+                "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addstation",
+                "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addtrain",
+                "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deleteconfig",
+                "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deletecontacts",
+                "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deleteprice",
+                "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deletestation",
+                "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deletetrain",
+                "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallconfigs",
+                "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallcontacts",
+                "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallprices",
+                "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallstations",
+                "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getalltrains",
+                "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:home",
+                "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifyconfig",
+                "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifycontacts"
+              ],
+              "contextRef": "ctx:admin-basic-info-surface",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:assurance-assurancecontroller:allows-cross-origin-all-endpoints",
+                "atom:authority:assurance-securityconfig:allows-cross-origin",
+                "atom:authority:assurance-securityconfig:permits-unauthenticated",
+                "atom:authority:assurance-securityconfig:requires-role",
+                "atom:capability:assurance-assurancecontroller:create-new-assurance",
+                "atom:capability:assurance-assurancecontroller:delete-assurance",
+                "atom:capability:assurance-assurancecontroller:delete-assurance-by-order-id",
+                "atom:capability:assurance-assurancecontroller:find-assurance-by-order-id",
+                "atom:capability:assurance-assurancecontroller:get-all-assurance-types",
+                "atom:capability:assurance-assurancecontroller:get-all-assurances",
+                "atom:capability:assurance-assurancecontroller:get-assurance-by-id",
+                "atom:capability:assurance-assurancecontroller:modify-assurance",
+                "atom:capability:assurance-assurancecontroller:welcome",
+                "atom:capability:ts-assurance-service-assurancerepository:handles-command-remove-assurance-by-order-id",
+                "atom:capability:ts-assurance-service-assurancerepository:serves-query-find-by-order-id",
+                "atom:capability:ts-assurance-service-assuranceserviceimpl:handles-command-create",
+                "atom:capability:ts-assurance-service-assuranceserviceimpl:handles-command-delete-by-id",
+                "atom:capability:ts-assurance-service-assuranceserviceimpl:handles-command-delete-by-order-id",
+                "atom:capability:ts-assurance-service-assuranceserviceimpl:handles-command-modify",
+                "atom:capability:ts-assurance-service-assuranceserviceimpl:serves-query-find-assurance-by-id",
+                "atom:capability:ts-assurance-service-assuranceserviceimpl:serves-query-find-assurance-by-order-id",
+                "atom:capability:ts-assurance-service-assuranceserviceimpl:serves-query-get-all-assurance-types",
+                "atom:capability:ts-assurance-service-assuranceserviceimpl:serves-query-get-all-assurances",
+                "atom:component:assurance-assurance"
+              ],
+              "contextRef": "ctx:assurance-surface",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:basic-securityconfig:allowscrossorigin",
+                "atom:authority:basic-securityconfig:permitsunauthenticated-api",
+                "atom:authority:basic-securityconfig:permitsunauthenticated-swagger",
+                "atom:capability:basic-basiccontroller:exposesendpoint-basic-stationname",
+                "atom:capability:basic-basiccontroller:exposesendpoint-basic-travel",
+                "atom:capability:basic-basiccontroller:exposesendpoint-basic-travels",
+                "atom:capability:basic-basiccontroller:exposesendpoint-welcome",
+                "atom:capability:basic-basicserviceimpl:servesquery-queryforstationid",
+                "atom:capability:basic-basicserviceimpl:servesquery-queryfortravel",
+                "atom:capability:basic-basicserviceimpl:servesquery-queryfortravels",
+                "atom:component:basic-basicapplication",
+                "atom:component:basic-basiccontroller",
+                "atom:component:basic-basicservice",
+                "atom:component:basic-basicserviceimpl",
+                "atom:component:basic-securityconfig",
+                "atom:relation:basic-basicserviceimpl:calls-priceservice",
+                "atom:relation:basic-basicserviceimpl:calls-routeservice",
+                "atom:relation:basic-basicserviceimpl:calls-stationservice",
+                "atom:relation:basic-basicserviceimpl:calls-trainservice",
+                "atom:semantic:basic-basicserviceimpl:identifiedby-stationlookup",
+                "atom:semantic:basic-basicserviceimpl:statusgates-responseenvelope"
+              ],
+              "contextRef": "ctx:basic-surface",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:cancel-cancelcontroller:allowscrossorigin",
+                "atom:authority:cancel-securityconfig:allowscrossorigin",
+                "atom:authority:cancel-securityconfig:permitsunauthenticated-swagger",
+                "atom:authority:cancel-securityconfig:requiresrole-api",
+                "atom:capability:cancel-cancelcontroller:exposesendpoint-cancel-orderid-loginid",
+                "atom:capability:cancel-cancelcontroller:exposesendpoint-cancel-refound",
+                "atom:capability:cancel-cancelcontroller:exposesendpoint-welcome",
+                "atom:capability:cancel-cancelserviceimpl:handlescommand-cancelorder",
+                "atom:capability:cancel-cancelserviceimpl:servesquery-calculaterefund",
+                "atom:component:cancel-cancelapplication",
+                "atom:component:cancel-cancelcontroller",
+                "atom:component:cancel-cancelservice",
+                "atom:component:cancel-cancelserviceimpl",
+                "atom:component:cancel-getaccountbyidinfo",
+                "atom:component:cancel-getaccountbyidresult",
+                "atom:component:cancel-getorderbyidinfo",
+                "atom:component:cancel-securityconfig",
+                "atom:contract:cancel-cancelserviceimpl:ensures-cancel-and-refund",
+                "atom:contract:cancel-cancelserviceimpl:ensures-refundamountrule",
+                "atom:contract:cancel-cancelserviceimpl:requires-forwardedauthorizationheader",
+                "atom:contract:cancel-cancelserviceimpl:requires-orderstatuseligibleforcancel",
+                "atom:contract:cancel-getaccountbyidinfo:shapedas",
+                "atom:contract:cancel-getaccountbyidresult:shapedas",
+                "atom:contract:cancel-getorderbyidinfo:shapedas"
+              ],
+              "contextRef": "ctx:cancel-surface",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:ts-consign-price-service-security-config:allows-cross-origin",
+                "atom:authority:ts-consign-price-service-security-config:permits-unauthenticated",
+                "atom:authority:ts-consign-price-service-security-config:requires-role",
+                "atom:capability:ts-consign-price-service-consign-price-controller:exposes-modify-price-config",
+                "atom:capability:ts-consign-price-service-consign-price-controller:exposes-price-by-weight-and-region",
+                "atom:capability:ts-consign-price-service-consign-price-controller:exposes-price-config",
+                "atom:capability:ts-consign-price-service-consign-price-controller:exposes-price-info",
+                "atom:capability:ts-consign-price-service-consign-price-controller:exposes-welcome",
+                "atom:component:consignprice-consign-price-application",
+                "atom:component:consignprice-consign-price-config-repository",
+                "atom:component:consignprice-consign-price-controller",
+                "atom:component:consignprice-consign-price-entity",
+                "atom:component:consignprice-consign-price-service",
+                "atom:component:consignprice-consign-price-service-impl",
+                "atom:component:consignprice-init-data",
+                "atom:component:consignprice-security-config",
+                "atom:component:ts-consign-price-service-application-yml",
+                "atom:contract:ts-consign-price-service-consign-price-service-impl:ensures-price-equals-initial-price-plus-extra-weight-times-region-rate",
+                "atom:effect:ts-consign-price-service-init-data:calls-provider-seeds-initial-price-config",
+                "atom:relation:consignprice-consign-price-controller:depends-on-consign-price-service-impl",
+                "atom:relation:ts-consign-price-service-consign-price-application:depends-on-nacos-discovery",
+                "atom:relation:ts-consign-price-service-consign-price-config-repository:reads-from-consign-price-by-index",
+                "atom:relation:ts-consign-price-service-consign-price-service-impl:depends-on-consign-price-config-repository",
+                "atom:relation:ts-consign-price-service-consign-price-service-impl:implements-consign-price-service"
+              ],
+              "contextRef": "ctx:consign-price-surface",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:ts-consign-service-security-config:allows-cross-origin",
+                "atom:authority:ts-consign-service-security-config:permits-unauthenticated",
+                "atom:authority:ts-consign-service-security-config:requires-role",
+                "atom:capability:ts-consign-service-consign-controller:exposes-find-by-account-id",
+                "atom:capability:ts-consign-service-consign-controller:exposes-find-by-consignee",
+                "atom:capability:ts-consign-service-consign-controller:exposes-find-by-order-id",
+                "atom:capability:ts-consign-service-consign-controller:exposes-insert-consign",
+                "atom:capability:ts-consign-service-consign-controller:exposes-update-consign",
+                "atom:capability:ts-consign-service-consign-controller:exposes-welcome",
+                "atom:component:consign-consign-application",
+                "atom:component:consign-consign-controller",
+                "atom:component:consign-consign-entity",
+                "atom:component:consign-consign-record-entity",
+                "atom:component:consign-consign-repository",
+                "atom:component:consign-consign-service",
+                "atom:component:consign-consign-service-impl",
+                "atom:component:consign-get-price-domain",
+                "atom:component:consign-init-data",
+                "atom:component:consign-insert-consign-record-result",
+                "atom:component:consign-security-config",
+                "atom:component:ts-consign-service",
+                "atom:contract:ts-consign-service-consign-service-impl:ensures-fallback-to-insert-on-missing-id",
+                "atom:contract:ts-consign-service-consign-service-impl:ensures-price-recomputed-only-when-weight-differs-on-update",
+                "atom:contract:ts-consign-service-consign-service-impl:requires-forwarded-headers-on-price-lookup"
+              ],
+              "contextRef": "ctx:consign-surface",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:ts-food-delivery-service-securityconfig:allowscrossorigin-all",
+                "atom:authority:ts-food-delivery-service-securityconfig:permitsunauthenticated-fooddeliveryservice-root",
+                "atom:authority:ts-food-delivery-service-securityconfig:permitsunauthenticated-swagger",
+                "atom:capability:ts-food-delivery-service-fooddeliverycontroller:createfooddeliveryorder",
+                "atom:capability:ts-food-delivery-service-fooddeliverycontroller:deletefooddeliveryorder",
+                "atom:capability:ts-food-delivery-service-fooddeliverycontroller:exposesendpoint-get-welcome",
+                "atom:capability:ts-food-delivery-service-fooddeliverycontroller:getallfooddeliveryorders",
+                "atom:capability:ts-food-delivery-service-fooddeliverycontroller:getfooddeliveryorderbyid",
+                "atom:capability:ts-food-delivery-service-fooddeliverycontroller:getfooddeliveryorderbystoreid",
+                "atom:capability:ts-food-delivery-service-fooddeliverycontroller:updatedeliverytime",
+                "atom:capability:ts-food-delivery-service-fooddeliverycontroller:updateseatno",
+                "atom:capability:ts-food-delivery-service-fooddeliverycontroller:updatetripid",
+                "atom:capability:ts-food-delivery-service-fooddeliveryorderrepository:servesquery-by-stationfoodstoreid",
+                "atom:component:food-delivery-fooddeliveryapplication",
+                "atom:component:ts-food-delivery-service",
+                "atom:component:ts-food-delivery-service-deliveryinfo",
+                "atom:component:ts-food-delivery-service-fooddeliverycontroller",
+                "atom:component:ts-food-delivery-service-fooddeliveryorder",
+                "atom:component:ts-food-delivery-service-fooddeliveryorderrepository",
+                "atom:component:ts-food-delivery-service-fooddeliveryservice",
+                "atom:component:ts-food-delivery-service-fooddeliveryserviceimpl",
+                "atom:component:ts-food-delivery-service-initdata",
+                "atom:component:ts-food-delivery-service-seatinfo",
+                "atom:component:ts-food-delivery-service-securityconfig"
+              ],
+              "contextRef": "ctx:food-delivery-surface",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:ts-food-service-securityconfig:allowscrossorigin-all",
+                "atom:authority:ts-food-service-securityconfig:permitsunauthenticated-foodservice-root",
+                "atom:authority:ts-food-service-securityconfig:permitsunauthenticated-swagger",
+                "atom:authority:ts-food-service-securityconfig:requiresrole-admin-delete-orders",
+                "atom:authority:ts-food-service-securityconfig:requiresrole-admin-post-orders",
+                "atom:authority:ts-food-service-securityconfig:requiresrole-admin-put-orders",
+                "atom:capability:ts-food-service-foodcontroller:createfoodorder",
+                "atom:capability:ts-food-service-foodcontroller:createfoodordersinbatch",
+                "atom:capability:ts-food-service-foodcontroller:deletefoodorder",
+                "atom:capability:ts-food-service-foodcontroller:exposesendpoint-get-welcome",
+                "atom:capability:ts-food-service-foodcontroller:findallfoodorder",
+                "atom:capability:ts-food-service-foodcontroller:findfoodorderbyorderid",
+                "atom:capability:ts-food-service-foodcontroller:getallfood",
+                "atom:capability:ts-food-service-foodcontroller:testsenddelivery",
+                "atom:capability:ts-food-service-foodcontroller:updatefoodorder",
+                "atom:capability:ts-food-service-foodorderrepository-handlescommand-deletebyid",
+                "atom:capability:ts-food-service-foodorderrepository-handlescommand-deletefoodorderbyorderid",
+                "atom:capability:ts-food-service-foodorderrepository-servesquery-findall",
+                "atom:capability:ts-food-service-foodorderrepository-servesquery-findbyid",
+                "atom:capability:ts-food-service-foodorderrepository-servesquery-findbyorderid",
+                "atom:capability:ts-food-service-foodservice-handlescommand-createfoodorder",
+                "atom:capability:ts-food-service-foodservice-handlescommand-createfoodordersinbatch",
+                "atom:capability:ts-food-service-foodservice-handlescommand-deletefoodorder",
+                "atom:capability:ts-food-service-foodservice-handlescommand-updatefoodorder"
+              ],
+              "contextRef": "ctx:food-surface",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:ts-inside-payment-service-securityconfig-allowscrossorigin",
+                "atom:authority:ts-inside-payment-service-securityconfig-permitsunauthenticated",
+                "atom:authority:ts-inside-payment-service-securityconfig-requiresrole",
+                "atom:capability:ts-inside-payment-service-addmoneyrepository:serves-query-findbyuserid",
+                "atom:capability:ts-inside-payment-service-insidepaymentcontroller-exposesendpoint-addmoney",
+                "atom:capability:ts-inside-payment-service-insidepaymentcontroller-exposesendpoint-createaccount",
+                "atom:capability:ts-inside-payment-service-insidepaymentcontroller-exposesendpoint-drawback",
+                "atom:capability:ts-inside-payment-service-insidepaymentcontroller-exposesendpoint-pay",
+                "atom:capability:ts-inside-payment-service-insidepaymentcontroller-exposesendpoint-paydifference",
+                "atom:capability:ts-inside-payment-service-insidepaymentcontroller-exposesendpoint-queryaccount",
+                "atom:capability:ts-inside-payment-service-insidepaymentcontroller-exposesendpoint-queryaddmoney",
+                "atom:capability:ts-inside-payment-service-insidepaymentcontroller-exposesendpoint-querypayment",
+                "atom:capability:ts-inside-payment-service-insidepaymentcontroller-exposesendpoint-welcome",
+                "atom:capability:ts-inside-payment-service-insidepaymentcontroller-handlescommand-addmoney",
+                "atom:capability:ts-inside-payment-service-insidepaymentcontroller-handlescommand-createaccount",
+                "atom:capability:ts-inside-payment-service-insidepaymentcontroller-handlescommand-drawback",
+                "atom:capability:ts-inside-payment-service-insidepaymentcontroller-handlescommand-pay",
+                "atom:capability:ts-inside-payment-service-insidepaymentcontroller-handlescommand-paydifference",
+                "atom:capability:ts-inside-payment-service-insidepaymentcontroller-servesquery-queryaccount",
+                "atom:capability:ts-inside-payment-service-insidepaymentcontroller-servesquery-queryaddmoney",
+                "atom:capability:ts-inside-payment-service-insidepaymentcontroller-servesquery-querypayment",
+                "atom:capability:ts-inside-payment-service-insidepaymentcontroller-servesquery-welcome",
+                "atom:capability:ts-inside-payment-service-insidepaymentservice:handles-command-back",
+                "atom:capability:ts-inside-payment-service-insidepaymentservice:handles-command-createaccount"
+              ],
+              "contextRef": "ctx:inside-payment-surface",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:ts-notification-service-securityconfig:allows-cross-origin-all-origins",
+                "atom:authority:ts-notification-service-securityconfig:checks-permission-authenticated-required",
+                "atom:authority:ts-notification-service-securityconfig:permits-unauthenticated-notifyservice-paths",
+                "atom:authority:ts-notification-service-securityconfig:permits-unauthenticated-swagger-paths",
+                "atom:capability:ts-notification-service-notificationcontroller:exposes-endpoint-order-cancel-success",
+                "atom:capability:ts-notification-service-notificationcontroller:exposes-endpoint-order-changed-success",
+                "atom:capability:ts-notification-service-notificationcontroller:exposes-endpoint-order-create-success",
+                "atom:capability:ts-notification-service-notificationcontroller:exposes-endpoint-preserve-success",
+                "atom:capability:ts-notification-service-notificationcontroller:exposes-endpoint-test-send-mail",
+                "atom:capability:ts-notification-service-notificationcontroller:exposes-endpoint-test-send-mq",
+                "atom:capability:ts-notification-service-notificationcontroller:exposes-endpoint-welcome",
+                "atom:capability:ts-notification-service-rabbitreceive:handles-command-consume-email-queue",
+                "atom:capability:ts-notification-service.notificationserviceimpl:handlescommand-ordercancelsuccess",
+                "atom:capability:ts-notification-service.notificationserviceimpl:handlescommand-orderchangedsuccess",
+                "atom:capability:ts-notification-service.notificationserviceimpl:handlescommand-ordercreatesuccess",
+                "atom:capability:ts-notification-service.notificationserviceimpl:handlescommand-preservesuccess",
+                "atom:component:notification-notificationapplication",
+                "atom:component:notification.mq.RabbitSend",
+                "atom:component:notification.repository.NotifyRepository",
+                "atom:component:notification.service.MailService",
+                "atom:component:notification.service.NotificationService",
+                "atom:component:notification.service.NotificationServiceImpl",
+                "atom:component:ts-notification-service",
+                "atom:component:ts-notification-service-emailconfig"
+              ],
+              "contextRef": "ctx:notification-surface",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:other.config.SecurityConfig:permitsUnauthenticated:orderOther-base",
+                "atom:authority:ts-order-other-service.securityconfig:allowscrossorigin-corsconfigurer",
+                "atom:authority:ts-order-other-service.securityconfig:permitsunauthenticated-swagger",
+                "atom:authority:ts-order-other-service.securityconfig:requiresrole-admin-orderother-admin",
+                "atom:authority:ts-order-other-service.securityconfig:requiresrole-post-put-delete-orderother",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-admin-create",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-admin-update",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-calculatesold",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-create",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-delete",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-findall",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-getbyid",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-modify",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-pay",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-price",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-query",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-refresh",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-save",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-security",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-tickets",
+                "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-welcome",
+                "atom:component:other.OrderOtherApplication",
+                "atom:component:other.config.SecurityConfig",
+                "atom:component:other.controller.OrderOtherController"
+              ],
+              "contextRef": "ctx:order-other-surface",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:order.config.SecurityConfig:permitsUnauthenticated:order-base",
+                "atom:authority:ts-order-service.ordercontroller:allowscrossorigin-endpoint-annotations",
+                "atom:authority:ts-order-service.securityconfig:allowscrossorigin-corsconfigurer",
+                "atom:authority:ts-order-service.securityconfig:permitsunauthenticated-swagger",
+                "atom:authority:ts-order-service.securityconfig:requiresrole-admin-order-admin",
+                "atom:authority:ts-order-service.securityconfig:requiresrole-post-put-delete-order",
+                "atom:capability:order.repository.orderrepository:serves-query-by-account-id",
+                "atom:capability:order.repository.orderrepository:serves-query-by-travel-date-and-train-number",
+                "atom:capability:order.service.orderservice:handles-command-add-new-order",
+                "atom:capability:order.service.orderservice:handles-command-cancel-order-declared",
+                "atom:capability:order.service.orderservice:handles-command-delete-order",
+                "atom:capability:order.service.orderservice:handles-command-modify-order",
+                "atom:capability:order.service.orderservice:handles-command-pay-order-declared",
+                "atom:capability:order.service.orderservice:handles-command-update-order",
+                "atom:capability:order.service.orderservice:serves-query-find-order-by-id",
+                "atom:capability:order.service.orderserviceimpl:handles-command-alter-order",
+                "atom:capability:order.service.orderserviceimpl:handles-command-cancel-order",
+                "atom:capability:order.service.orderserviceimpl:handles-command-create",
+                "atom:capability:order.service.orderserviceimpl:handles-command-pay-order",
+                "atom:capability:order.service.orderserviceimpl:serves-query-order-price",
+                "atom:capability:order.service.orderserviceimpl:serves-query-orders-with-filter-flags",
+                "atom:capability:order.service.orderserviceimpl:serves-query-sold-tickets",
+                "atom:capability:ts-order-service.ordercontroller:exposesendpoint-admin-create",
+                "atom:capability:ts-order-service.ordercontroller:exposesendpoint-admin-update"
+              ],
+              "contextRef": "ctx:order-surface",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:com.trainticket.config.securityconfig:allows-cross-origin",
+                "atom:authority:com.trainticket.config.securityconfig:checks-permission-via-jwt-filter",
+                "atom:authority:com.trainticket.config.securityconfig:permits-unauthenticated-swagger-paths",
+                "atom:authority:com.trainticket.config.securityconfig:requires-role-on-paymentservice-path",
+                "atom:capability:com.trainticket.controller.paymentcontroller:exposes-endpoint-add-money",
+                "atom:capability:com.trainticket.controller.paymentcontroller:exposes-endpoint-pay",
+                "atom:capability:com.trainticket.controller.paymentcontroller:exposes-endpoint-query",
+                "atom:capability:com.trainticket.controller.paymentcontroller:exposes-endpoint-welcome",
+                "atom:capability:com.trainticket.repository.addmoneyrepository:persists-money-entities",
+                "atom:capability:com.trainticket.repository.paymentrepository:serves-query-by-order-id",
+                "atom:capability:com.trainticket.repository.paymentrepository:serves-query-by-user-id",
+                "atom:capability:com.trainticket.service.paymentserviceimpl:handles-command-add-money",
+                "atom:capability:com.trainticket.service.paymentserviceimpl:handles-command-pay",
+                "atom:capability:com.trainticket.service.paymentserviceimpl:serves-query-list-payments",
+                "atom:component:com.trainticket.config.securityconfig",
+                "atom:component:com.trainticket.controller.paymentcontroller",
+                "atom:component:com.trainticket.entity.money",
+                "atom:component:com.trainticket.entity.payment",
+                "atom:component:com.trainticket.init.initdata",
+                "atom:component:com.trainticket.paymentapplication",
+                "atom:component:com.trainticket.repository.addmoneyrepository",
+                "atom:component:com.trainticket.repository.paymentrepository",
+                "atom:component:com.trainticket.service.paymentservice",
+                "atom:component:com.trainticket.service.paymentserviceimpl"
+              ],
+              "contextRef": "ctx:payment-surface",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:preserveother-controller:allowscrossorigin-method-level",
+                "atom:authority:preserveother-securityconfig:allowscrossorigin-global",
+                "atom:authority:preserveother-securityconfig:permitsunauthenticated-swagger",
+                "atom:authority:preserveother-securityconfig:requiresrole-admin-user",
+                "atom:capability:preserveother-controller:exposesendpoint-preserveother",
+                "atom:capability:preserveother-controller:exposesendpoint-welcome",
+                "atom:capability:preserveother-serviceimpl:preserve-orchestration",
+                "atom:component:preserveother-application-yml",
+                "atom:component:preserveother-controller",
+                "atom:component:preserveother-queues",
+                "atom:component:preserveother-rabbitsend",
+                "atom:component:preserveother-securityconfig",
+                "atom:component:preserveother-service-iface",
+                "atom:component:preserveother-serviceimpl",
+                "atom:component:preserveother.preserveotherapplication",
+                "atom:contract:preserveother-serviceimpl:order-dto-shape",
+                "atom:effect:preserveother-rabbitsend-publishes-email-queue",
+                "atom:relation:preserveother-controller:dependson-preserveother-service",
+                "atom:relation:preserveother-rabbitsend:dependson-preserveother-queues",
+                "atom:relation:preserveother-serviceimpl:calls-assurance-service",
+                "atom:relation:preserveother-serviceimpl:calls-basic-service",
+                "atom:relation:preserveother-serviceimpl:calls-consign-service",
+                "atom:relation:preserveother-serviceimpl:calls-contacts-service",
+                "atom:relation:preserveother-serviceimpl:calls-food-service"
+              ],
+              "contextRef": "ctx:preserve-other-surface",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:preserve-controller:allowscrossorigin-method-level",
+                "atom:authority:preserve-securityconfig:allowscrossorigin-global",
+                "atom:authority:preserve-securityconfig:permitsunauthenticated-swagger",
+                "atom:authority:preserve-securityconfig:requiresrole-admin-user",
+                "atom:capability:preserve-controller:exposesendpoint-preserve",
+                "atom:capability:preserve-controller:exposesendpoint-welcome",
+                "atom:capability:preserve-serviceimpl:preserve-orchestration",
+                "atom:component:preserve-application",
+                "atom:component:preserve-application-yml",
+                "atom:component:preserve-controller",
+                "atom:component:preserve-queues",
+                "atom:component:preserve-rabbitsend",
+                "atom:component:preserve-securityconfig",
+                "atom:component:preserve-service-iface",
+                "atom:component:preserve-serviceimpl",
+                "atom:contract:preserve-serviceimpl:order-dto-shape",
+                "atom:effect:preserve-rabbitsend-publishes-email-queue",
+                "atom:relation:preserve-controller:dependson-preserve-service",
+                "atom:relation:preserve-rabbitsend:dependson-preserve-queues",
+                "atom:relation:preserve-serviceimpl:calls-assurance-service",
+                "atom:relation:preserve-serviceimpl:calls-basic-service",
+                "atom:relation:preserve-serviceimpl:calls-consign-service",
+                "atom:relation:preserve-serviceimpl:calls-contacts-service",
+                "atom:relation:preserve-serviceimpl:calls-food-service"
+              ],
+              "contextRef": "ctx:preserve-surface",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:price-securityconfig:allowscrossorigin-global",
+                "atom:authority:price-securityconfig:permitsunauthenticated-broad-matcher",
+                "atom:authority:price-securityconfig:permitsunauthenticated-swagger",
+                "atom:authority:price-securityconfig:requiresrole-write-methods-admin",
+                "atom:capability:price-controller:exposesendpoint-prices-by-route-ids-traintypes",
+                "atom:capability:price-controller:exposesendpoint-prices-by-route-traintype",
+                "atom:capability:price-controller:exposesendpoint-prices-create",
+                "atom:capability:price-controller:exposesendpoint-prices-delete",
+                "atom:capability:price-controller:exposesendpoint-prices-query-all",
+                "atom:capability:price-controller:exposesendpoint-prices-update",
+                "atom:capability:price-controller:exposesendpoint-prices-welcome",
+                "atom:capability:price.PriceConfigRepository:findByRouteIdAndTrainType",
+                "atom:capability:price.PriceServiceImpl:deletePriceConfig",
+                "atom:capability:price.PriceServiceImpl:updatePriceConfig",
+                "atom:capability:price.priceconfigrepository:serves-query-findbyrouteidsandtraintypes",
+                "atom:capability:price.priceserviceimpl:handles-command-createnewpriceconfig",
+                "atom:capability:price.priceserviceimpl:serves-query-findallpriceconfig",
+                "atom:capability:price.priceserviceimpl:serves-query-findbyid",
+                "atom:capability:price.priceserviceimpl:serves-query-findbyrouteidandtraintype",
+                "atom:capability:price.priceserviceimpl:serves-query-findbyrouteidsandtraintypes",
+                "atom:capability:ts-price-service.applicationyml:exposes-endpoint-16579",
+                "atom:component:price-application",
+                "atom:component:price-config-entity",
+                "atom:component:price-controller"
+              ],
+              "contextRef": "ctx:price-surface",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:rebook.securityconfig:allows-cross-origin",
+                "atom:authority:rebook.securityconfig:permits-unauthenticated-swagger",
+                "atom:authority:rebook.securityconfig:requires-role-rebookservice",
+                "atom:capability:rebook.rebookcontroller:exposes-endpoint-get-welcome",
+                "atom:capability:rebook.rebookcontroller:exposes-endpoint-rebook",
+                "atom:capability:rebook.rebookcontroller:exposes-endpoint-rebook-difference",
+                "atom:capability:rebook.rebookserviceimpl:handles-command-paydifference",
+                "atom:capability:rebook.rebookserviceimpl:handles-command-rebook",
+                "atom:component:rebook.RebookApplication",
+                "atom:component:ts-rebook-service.applicationyml",
+                "atom:component:ts-rebook-service.rebookcontroller",
+                "atom:component:ts-rebook-service.rebookinfo",
+                "atom:component:ts-rebook-service.rebookserviceimpl",
+                "atom:component:ts-rebook-service.securityconfig",
+                "atom:contract:rebook.rebookinfo:shapedas",
+                "atom:contract:rebook.rebookserviceimpl:ticketprice-shapedas",
+                "atom:effect:rebook.rebookserviceimpl:callsprovider-inside-payment-difference",
+                "atom:effect:rebook.rebookserviceimpl:callsprovider-inside-payment-drawback",
+                "atom:relation:rebook.rebookcontroller:dependson-rebookinfo",
+                "atom:relation:rebook.rebookcontroller:dependson-rebookservice",
+                "atom:relation:rebook.rebookserviceimpl:calls-ts-order-other-service",
+                "atom:relation:rebook.rebookserviceimpl:calls-ts-order-service",
+                "atom:relation:rebook.rebookserviceimpl:calls-ts-route-service",
+                "atom:relation:rebook.rebookserviceimpl:calls-ts-seat-service"
+              ],
+              "contextRef": "ctx:rebook-surface",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:plan.securityconfig:allows-cross-origin",
+                "atom:authority:plan.securityconfig:permits-unauthenticated-routeplanservice",
+                "atom:authority:plan.securityconfig:permits-unauthenticated-swagger",
+                "atom:capability:plan.routeplancontroller:exposes-endpoint-cheapestroute",
+                "atom:capability:plan.routeplancontroller:exposes-endpoint-minstopstations",
+                "atom:capability:plan.routeplancontroller:exposes-endpoint-quickestroute",
+                "atom:component:plan.RoutePlanApplication",
+                "atom:component:ts-route-plan-service.applicationyml",
+                "atom:component:ts-route-plan-service.routeplancontroller",
+                "atom:component:ts-route-plan-service.routeplanserviceimpl",
+                "atom:component:ts-route-plan-service.securityconfig",
+                "atom:contract:plan.routeplanserviceimpl:priceforeconomyclass-shapedas",
+                "atom:relation:plan.routeplancontroller:dependson-routeplanservice",
+                "atom:relation:plan.routeplanserviceimpl:calls-ts-route-service",
+                "atom:relation:plan.routeplanserviceimpl:calls-ts-travel-service",
+                "atom:relation:plan.routeplanserviceimpl:calls-ts-travel2-service",
+                "atom:relation:ts-route-plan-service.applicationyml:dependson-nacos",
+                "atom:semantic:ctx-route-plan-search-flow:cech-section-money-amount",
+                "atom:semantic:plan.routeplanserviceimpl:minstopstations-route-lookup-statusgates",
+                "atom:semantic:plan.routeplanserviceimpl:searchcheapestresult-selection",
+                "atom:semantic:plan.routeplanserviceimpl:searchquickestresult-selection",
+                "atom:semantic:plan.routeplanserviceimpl:tripid-prefix-selects-service"
+              ],
+              "contextRef": "ctx:route-plan-surface",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:food-config-securityconfig:allows-cross-origin-global",
+                "atom:authority:food-config-securityconfig:permits-unauthenticated-stationfoodservice-paths",
+                "atom:authority:food-config-securityconfig:permits-unauthenticated-swagger-paths",
+                "atom:authority:food-config-securityconfig:requires-authentication-fallback",
+                "atom:authority:food-controller-stationfoodcontroller:allows-cross-origin-per-endpoint",
+                "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-get-all-food-stores",
+                "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-get-food-list-by-store-id",
+                "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-get-food-stores-by-station-names",
+                "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-get-food-stores-of-station",
+                "atom:capability:food-controller-stationfoodcontroller:exposes-endpoint-welcome",
+                "atom:capability:food-repository-stationfoodrepository:serves-query-find-by-station-name",
+                "atom:capability:food-repository-stationfoodrepository:serves-query-find-by-station-name-in",
+                "atom:capability:food-service-stationfoodserviceimpl:handles-command-create-food-store",
+                "atom:capability:food-service-stationfoodserviceimpl:serves-query-get-food-stores-by-station-names",
+                "atom:capability:food-service-stationfoodserviceimpl:serves-query-get-station-food-store-by-id",
+                "atom:capability:food-service-stationfoodserviceimpl:serves-query-list-food-stores",
+                "atom:capability:food-service-stationfoodserviceimpl:serves-query-list-food-stores-by-station-name",
+                "atom:component:food-entity-stationfoodstore",
+                "atom:component:food-repository-stationfoodrepository",
+                "atom:component:food-service-stationfoodservice",
+                "atom:component:food-service-stationfoodserviceimpl",
+                "atom:component:food-stationfoodapplication",
+                "atom:component:food.config.SecurityConfig",
+                "atom:component:food.controller.StationFoodController"
+              ],
+              "contextRef": "ctx:station-food-surface",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:trainfood-config-securityconfig:permits-unauthenticated-trainfoodservice-api",
+                "atom:authority:ts-train-food-service-securityconfig:allows-cross-origin",
+                "atom:authority:ts-train-food-service-securityconfig:checks-permission-jwt-filter",
+                "atom:authority:ts-train-food-service-securityconfig:permits-unauthenticated-swagger-paths",
+                "atom:authority:ts-train-food-service-trainfoodcontroller:allows-cross-origin-endpoint-level",
+                "atom:capability:trainfood-controller-trainfoodcontroller:exposes-endpoint-get-trainfoods-welcome",
+                "atom:capability:trainfood-repository-trainfoodrepository:serves-query-find-by-trip-id",
+                "atom:capability:ts-train-food-service-trainfoodcontroller:exposes-endpoint-get-trainfoods",
+                "atom:capability:ts-train-food-service-trainfoodcontroller:exposes-endpoint-get-trainfoods-by-tripid",
+                "atom:capability:ts-train-food-service-trainfoodrepository:serves-query-find-by-id-uuid-param",
+                "atom:component:trainfood-config-securityconfig",
+                "atom:component:trainfood-controller-trainfoodcontroller",
+                "atom:component:trainfood-entity-trainfood",
+                "atom:component:trainfood-init-initdata",
+                "atom:component:trainfood-repository-trainfoodrepository",
+                "atom:component:trainfood-service-trainfoodservice",
+                "atom:component:trainfood-service-trainfoodserviceimpl",
+                "atom:component:trainfood-trainfoodapplication",
+                "atom:component:ts-train-food-service-application-yml",
+                "atom:contract:ts-train-food-service-trainfood:ensures-tripid-unique",
+                "atom:contract:ts-train-food-service-trainfoodservice:shaped-as-crud",
+                "atom:effect:ts-train-food-service-trainfoodserviceimpl:writes-to-trainfoodrepository",
+                "atom:relation:trainfood-controller-trainfoodcontroller:depends-on-trainfoodservice",
+                "atom:relation:trainfood-init-initdata:depends-on-trainfoodservice"
+              ],
+              "contextRef": "ctx:train-food-surface",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:travelplan-config-securityconfig:permits-unauthenticated-travelplanservice-api",
+                "atom:authority:ts-travel-plan-service-securityconfig:allows-cross-origin",
+                "atom:authority:ts-travel-plan-service-securityconfig:checks-permission-jwt-filter",
+                "atom:authority:ts-travel-plan-service-securityconfig:permits-unauthenticated-swagger-paths",
+                "atom:capability:ts-travel-plan-service-travelplancontroller:cheapest",
+                "atom:capability:ts-travel-plan-service-travelplancontroller:minstation",
+                "atom:capability:ts-travel-plan-service-travelplancontroller:quickest",
+                "atom:capability:ts-travel-plan-service-travelplancontroller:transferresult",
+                "atom:capability:ts-travel-plan-service-travelplancontroller:welcome",
+                "atom:component:travelplan-config-securityconfig",
+                "atom:component:travelplan-travelplanapplication",
+                "atom:component:ts-travel-plan-service-transfertravelinfo",
+                "atom:component:ts-travel-plan-service-transfertravelresult",
+                "atom:component:ts-travel-plan-service-traveladvanceresultunit",
+                "atom:component:ts-travel-plan-service-travelplancontroller",
+                "atom:component:ts-travel-plan-service-travelplanservice",
+                "atom:component:ts-travel-plan-service-travelplanserviceimpl",
+                "atom:contract:ts-travel-plan-service-transfertravelinfo:shapedas-request-body",
+                "atom:effect:ts-travel-plan-service-travelplanserviceimpl:callsprovider-routeplan-cheapest",
+                "atom:effect:ts-travel-plan-service-travelplanserviceimpl:callsprovider-routeplan-minstation",
+                "atom:effect:ts-travel-plan-service-travelplanserviceimpl:callsprovider-routeplan-quickest",
+                "atom:effect:ts-travel-plan-service-travelplanserviceimpl:callsprovider-seat-lefttickets",
+                "atom:effect:ts-travel-plan-service-travelplanserviceimpl:callsprovider-train-byname",
+                "atom:effect:ts-travel-plan-service-travelplanserviceimpl:callsprovider-travel-tripsleft"
+              ],
+              "contextRef": "ctx:travel-plan-surface",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:ts-travel-service-securityconfig:allowscrossorigin-global-wildcard",
+                "atom:authority:ts-travel-service-securityconfig:permitsunauthenticated-swagger-paths",
+                "atom:authority:ts-travel-service-securityconfig:permitsunauthenticated-travelservice-api",
+                "atom:authority:ts-travel-service-securityconfig:requiresrole-admin-delete-trips",
+                "atom:authority:ts-travel-service-securityconfig:requiresrole-admin-put-trips",
+                "atom:authority:ts-travel-service-travelcontroller:allowscrossorigin-mutating-endpoints",
+                "atom:capability:ts-travel-service-travelcontroller:adminqueryall",
+                "atom:capability:ts-travel-service-travelcontroller:createtrip",
+                "atom:capability:ts-travel-service-travelcontroller:deletetrip",
+                "atom:capability:ts-travel-service-travelcontroller:queryall",
+                "atom:capability:ts-travel-service-travelcontroller:queryleft",
+                "atom:capability:ts-travel-service-travelcontroller:queryleftparallel",
+                "atom:capability:ts-travel-service-travelcontroller:retrievetrip",
+                "atom:capability:ts-travel-service-travelcontroller:routesbytripid",
+                "atom:capability:ts-travel-service-travelcontroller:traintypesbytripid",
+                "atom:capability:ts-travel-service-travelcontroller:tripdetail",
+                "atom:capability:ts-travel-service-travelcontroller:tripsbyroutes",
+                "atom:capability:ts-travel-service-travelcontroller:updatetrip",
+                "atom:capability:ts-travel-service-travelcontroller:welcome",
+                "atom:capability:ts-travel-service-triprepository:findall",
+                "atom:capability:ts-travel-service-triprepository:findbyrouteid",
+                "atom:capability:ts-travel-service-triprepository:findbytripid",
+                "atom:component:travel-travelapplication",
+                "atom:component:ts-travel-service-admintrip"
+              ],
+              "contextRef": "ctx:travel-surface",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:ts-travel2-service-securityconfig:allows-cross-origin-global",
+                "atom:authority:ts-travel2-service-securityconfig:permits-unauthenticated-docs",
+                "atom:authority:ts-travel2-service-securityconfig:permits-unauthenticated-trip-root",
+                "atom:authority:ts-travel2-service-securityconfig:requires-role-admin-trip-mutation",
+                "atom:authority:ts-travel2-service-travel2controller:allows-cross-origin-write-and-detail-endpoints",
+                "atom:capability:ts-travel2-service-travel2controller:admin-query-all-trips",
+                "atom:capability:ts-travel2-service-travel2controller:create-trip",
+                "atom:capability:ts-travel2-service-travel2controller:delete-trip",
+                "atom:capability:ts-travel2-service-travel2controller:query-all-trips",
+                "atom:capability:ts-travel2-service-travel2controller:query-left-tickets",
+                "atom:capability:ts-travel2-service-travel2controller:retrieve-trip",
+                "atom:capability:ts-travel2-service-travel2controller:route-by-trip",
+                "atom:capability:ts-travel2-service-travel2controller:train-type-by-trip",
+                "atom:capability:ts-travel2-service-travel2controller:trip-detail",
+                "atom:capability:ts-travel2-service-travel2controller:trips-by-route",
+                "atom:capability:ts-travel2-service-travel2controller:update-trip",
+                "atom:capability:ts-travel2-service-travel2controller:welcome",
+                "atom:capability:ts-travel2-service-triprepository:handles-command-delete-by-trip-id",
+                "atom:capability:ts-travel2-service-triprepository:serves-query-find-all",
+                "atom:capability:ts-travel2-service-triprepository:serves-query-find-by-route-id",
+                "atom:capability:ts-travel2-service-triprepository:serves-query-find-by-trip-id",
+                "atom:component:travel2-travel2application",
+                "atom:component:ts-travel2-service-admintrip",
+                "atom:component:ts-travel2-service-application-yml"
+              ],
+              "contextRef": "ctx:travel2-surface",
+              "objectKind": "nerveVertex"
+            },
+            {
+              "atomRefs": [
+                "atom:authority:waitorder-config-securityconfig:allows-cross-origin-all-origins",
+                "atom:authority:waitorder-config-securityconfig:permits-unauthenticated-order-wildcard",
+                "atom:authority:waitorder-config-securityconfig:permits-unauthenticated-swagger-paths",
+                "atom:authority:waitorder-config-securityconfig:requires-role-delete-order-admin-or-user",
+                "atom:authority:waitorder-config-securityconfig:requires-role-post-order-admin-only",
+                "atom:authority:waitorder-config-securityconfig:requires-role-post-order-admin-or-user",
+                "atom:authority:waitorder-config-securityconfig:requires-role-put-order-admin-only",
+                "atom:authority:waitorder-config-securityconfig:requires-role-put-order-admin-or-user",
+                "atom:capability:waitorder-controller-waitlistordercontroller:exposes-endpoint-get-orders",
+                "atom:capability:waitorder-controller-waitlistordercontroller:exposes-endpoint-get-waitlistorders",
+                "atom:capability:waitorder-controller-waitlistordercontroller:exposes-endpoint-get-welcome",
+                "atom:capability:waitorder-controller-waitlistordercontroller:exposes-endpoint-post-order",
+                "atom:capability:waitorder-service-waitlistorderservice:handles-modifywaitlistorderstatus",
+                "atom:capability:waitorder-service-waitlistorderservice:handles-updateorder",
+                "atom:capability:waitorder-service-waitlistorderservice:serves-findorderbyid",
+                "atom:component:waitorder-config-securityconfig",
+                "atom:component:waitorder-controller-waitlistordercontroller",
+                "atom:component:waitorder-entity-waitlistorder",
+                "atom:component:waitorder-entity-waitlistorderstatus",
+                "atom:component:waitorder-entity-waitlistordervo",
+                "atom:component:waitorder-repository-waitlistorderrepository",
+                "atom:component:waitorder-service-impl-waitlistorderserviceimpl",
+                "atom:component:waitorder-service-waitlistorderservice",
+                "atom:component:waitorder-utils-pollthread"
+              ],
+              "contextRef": "ctx:wait-order-surface",
+              "objectKind": "nerveVertex"
+            }
+          ]
+        },
+        "dimensions": {
+          "H0": 18,
+          "H1": 0
+        },
+        "evaluator": "ag.cech-obstruction",
+        "invariantId": "cech-cohomology:profile:train-ticket-money-convention@1",
+        "method": "finite-f2-incidence-graph-cochain@1",
+        "methodStatus": "finite_f2_cech_computed",
+        "nerveShape": {
+          "b1": 0,
+          "capacityLowerBound": 0,
+          "eulerCharacteristic": 18,
+          "isForest": true,
+          "oneSkeletonB1": 0
+        },
+        "observedCocycle": {
+          "classNonzero": false,
+          "mismatchSupportRefs": [
+            "atom:semantic:basic-surface:cech-section-money-amount",
+            "atom:semantic:cancel-surface:cech-section-money-amount",
+            "atom:semantic:inside-payment-surface:cech-section-money-amount",
+            "atom:semantic:order-surface:cech-section-money-amount",
+            "atom:semantic:payment-surface:cech-section-money-amount",
+            "atom:semantic:preserve-surface:cech-section-money-amount",
+            "atom:semantic:travel-surface:cech-section-money-amount"
+          ],
+          "representative": [
+            {
+              "edge": "ctx:cancel-surface->ctx:inside-payment-surface",
+              "sourceContext": "ctx:cancel-surface",
+              "supportAtomRefs": [
+                "atom:semantic:cancel-surface:cech-section-money-amount",
+                "atom:semantic:inside-payment-surface:cech-section-money-amount"
+              ],
+              "targetContext": "ctx:inside-payment-surface",
+              "value": 1
+            },
+            {
+              "edge": "ctx:cancel-surface->ctx:order-surface",
+              "sourceContext": "ctx:cancel-surface",
+              "supportAtomRefs": [
+                "atom:semantic:cancel-surface:cech-section-money-amount",
+                "atom:semantic:order-surface:cech-section-money-amount"
+              ],
+              "targetContext": "ctx:order-surface",
+              "value": 1
+            },
+            {
+              "edge": "ctx:inside-payment-surface->ctx:payment-surface",
+              "sourceContext": "ctx:inside-payment-surface",
+              "supportAtomRefs": [
+                "atom:semantic:inside-payment-surface:cech-section-money-amount",
+                "atom:semantic:payment-surface:cech-section-money-amount"
+              ],
+              "targetContext": "ctx:payment-surface",
+              "value": 1
+            },
+            {
+              "edge": "ctx:preserve-surface->ctx:basic-surface",
+              "sourceContext": "ctx:preserve-surface",
+              "supportAtomRefs": [
+                "atom:semantic:basic-surface:cech-section-money-amount",
+                "atom:semantic:preserve-surface:cech-section-money-amount"
+              ],
+              "targetContext": "ctx:basic-surface",
+              "value": 1
+            },
+            {
+              "edge": "ctx:travel-surface->ctx:basic-surface",
+              "sourceContext": "ctx:travel-surface",
+              "supportAtomRefs": [
+                "atom:semantic:basic-surface:cech-section-money-amount",
+                "atom:semantic:travel-surface:cech-section-money-amount"
+              ],
+              "targetContext": "ctx:basic-surface",
+              "value": 1
+            }
+          ]
+        },
+        "observedEdgeCount": 6,
+        "rankD0": 6,
+        "reason": "selected cover has a non-empty Cech 1-skeleton for ag.cech-obstruction",
+        "restrictionEdgeCount": 6,
+        "selectedCoverRef": "cover:money-amount-convention-surface",
+        "selectedH2": {
+          "dimension": 0,
+          "reason": "no selected 2-simplices are present in the finite incidence graph complex",
+          "status": "computed_for_selected_1_skeleton"
+        },
+        "status": "computed",
+        "theorem12_4Discharge": {
+          "conclusionCode": null,
+          "coverShapeExcludesGluingObstruction": false,
+          "isForest": {
+            "checkedBy": "selected-cover graph cycle rank is zero",
+            "holds": true,
+            "status": "discharged_by_check"
+          },
+          "restrictionMapsSurjective": {
+            "checkedBy": null,
+            "holds": false,
+            "status": "not_discharged"
+          },
+          "restrictionSurjectivityWitnesses": [],
+          "theoremRef": "part4/12.4",
+          "tripleOverlapsEmpty": {
+            "checkedBy": "selected cover has no projected triple-overlap faces",
+            "holds": true,
+            "status": "discharged_by_check"
+          }
+        },
+        "unobservedEdgeRefs": []
+      },
+      "restrictionEdgeCount": 6,
+      "selectedCoverRef": "cover:money-amount-convention-surface",
+      "selectedH2": {
+        "dimension": 0,
+        "reason": "no selected 2-simplices are present in the finite incidence graph complex",
+        "status": "computed_for_selected_1_skeleton"
+      },
+      "status": "computed",
+      "theorem12_4Discharge": {
+        "conclusionCode": null,
+        "coverShapeExcludesGluingObstruction": false,
+        "isForest": {
+          "checkedBy": "selected-cover graph cycle rank is zero",
+          "holds": true,
+          "status": "discharged_by_check"
+        },
+        "restrictionMapsSurjective": {
+          "checkedBy": null,
+          "holds": false,
+          "status": "not_discharged"
+        },
+        "restrictionSurjectivityWitnesses": [],
+        "theoremRef": "part4/12.4",
+        "tripleOverlapsEmpty": {
+          "checkedBy": "selected cover has no projected triple-overlap faces",
+          "holds": true,
+          "status": "discharged_by_check"
+        }
+      },
+      "unobservedEdgeRefs": [],
+      "value": {
+        "b1": 0,
+        "capacityLowerBound": 0,
+        "eulerCharacteristic": 18,
+        "isForest": true,
+        "oneSkeletonB1": 0
+      }
+    },
+    {
+      "b1NerveReading": {
+        "distinction": "oneSkeletonB1 counts graph cycles before selected triple-overlap faces are quotiented; nerveComplexB1 includes those faces and may be smaller.",
+        "nerveComplexB1": 0,
+        "nerveComplexMethod": "finite-f2-simplicial-homology-with-selected-2-faces@1",
+        "nonClaim": "capacityLowerBound and b1NerveReading are capacity/accounting readings, not new structural verdicts and not concrete H1 class existence claims.",
+        "oneSkeletonB1": 0,
+        "oneSkeletonMethod": "graph-cycle-rank@1"
+      },
+      "boundaryNote": "Part IV principle 11.3 is referenced only as the Cohomological Non-Claim boundary; this row does not import any Part VII numbering or create a viewer verdict.",
+      "capacityFormula": "max(0, dimC1 - dimC0 - dimC2)",
+      "capacityLowerBound": 0,
+      "coefficient": "F2",
+      "dimensions": {
+        "dimC0": 24,
+        "dimC1": 6,
+        "dimC2": 0
+      },
+      "eulerCharacteristic": 18,
+      "eulerFormula": "dimC0 - dimC1 + dimC2",
+      "evaluator": "ag.cech-obstruction",
+      "invariantId": "topological-debt-capacity:profile:train-ticket-money-convention@1",
+      "kind": "cech-h1-rank",
+      "measuredCechVerdictEcho": {
+        "certRef": "computedInvariants/cech-cohomology:profile:train-ticket-money-convention@1",
+        "evaluator": "ag.cech-obstruction",
+        "h1ClassNonzero": false,
+        "note": "This is an echo of the separate Cech structural verdict, not a capacity-derived class claim."
+      },
+      "method": "finite-f2-rank-nullity-nerve-capacity@1",
+      "methodStatus": "finite_f2_nerve_capacity_computed",
+      "representation": {
+        "b1NerveReading": {
+          "distinction": "oneSkeletonB1 counts graph cycles before selected triple-overlap faces are quotiented; nerveComplexB1 includes those faces and may be smaller.",
+          "nerveComplexB1": 0,
+          "nerveComplexMethod": "finite-f2-simplicial-homology-with-selected-2-faces@1",
+          "nonClaim": "capacityLowerBound and b1NerveReading are capacity/accounting readings, not new structural verdicts and not concrete H1 class existence claims.",
+          "oneSkeletonB1": 0,
+          "oneSkeletonMethod": "graph-cycle-rank@1"
+        },
+        "boundaryNote": "Part IV principle 11.3 is referenced only as the Cohomological Non-Claim boundary; this row does not import any Part VII numbering or create a viewer verdict.",
+        "capacityFormula": "max(0, dimC1 - dimC0 - dimC2)",
+        "capacityLowerBound": 0,
+        "coefficient": "F2",
+        "dimensions": {
+          "dimC0": 24,
+          "dimC1": 6,
+          "dimC2": 0
+        },
+        "eulerCharacteristic": 18,
+        "eulerFormula": "dimC0 - dimC1 + dimC2",
+        "evaluator": "ag.cech-obstruction",
+        "invariantId": "topological-debt-capacity:profile:train-ticket-money-convention@1",
+        "measuredCechVerdictEcho": {
+          "certRef": "computedInvariants/cech-cohomology:profile:train-ticket-money-convention@1",
+          "evaluator": "ag.cech-obstruction",
+          "h1ClassNonzero": false,
+          "note": "This is an echo of the separate Cech structural verdict, not a capacity-derived class claim."
+        },
+        "method": "finite-f2-rank-nullity-nerve-capacity@1",
+        "methodStatus": "finite_f2_nerve_capacity_computed",
+        "selectedCoverRef": "cover:money-amount-convention-surface",
+        "status": "computed",
+        "structuralVerdictRef": null
+      },
+      "selectedCoverRef": "cover:money-amount-convention-surface",
+      "status": "computed",
+      "structuralVerdictRef": null,
+      "value": {}
+    }
+  ],
+  "inputDigests": {
+    "archmap": {
+      "path": "input:archmap-money-variant.json",
+      "sha256": "fc59dd11611b6bd511531810a6a307feef1fa71d56cd472db7d7fb7dc2e2483c"
+    },
+    "lawPolicy": {
+      "path": "input:law-policy-money.json",
+      "sha256": "07af43360e9f10e99dd4ff3e7d6352bd13e9722254a032b69617f49a3abe013a"
+    },
+    "lawSurface": {
+      "path": "input:law-surface-money.json",
+      "sha256": "5c18b79b154e6759ecfae7c5e1b3d048e1bd3c8f5a7d5bff8c2c43f865d606e6"
+    },
+    "measurementProfile": {
+      "path": "input:measurement-profile-money.json",
+      "sha256": "d27209344f3e88d1a0985f08b3aa5d56c3a9c1be41fa48d2df53254ad4be76e0"
+    },
+    "measurementProfiles": [
+      {
+        "path": "input:measurement-profile-money.json",
+        "sha256": "d27209344f3e88d1a0985f08b3aa5d56c3a9c1be41fa48d2df53254ad4be76e0"
+      }
+    ],
+    "profileFingerprint": {
+      "basis": "archmap shape + LawPolicy measurementProfileRef + external MeasurementProfile artifact",
+      "sha256": "d4c2beb634b2eaa33a8d18c07ae444ffd469846b1071e39e9506c8715d47964a"
+    },
+    "siteCoverDigest": {
+      "basis": "normalized contexts + covers + derived finite cover nerve",
+      "sha256": "4546e2c0edc04fd62bdbfd92ecb1e171670709a86146e70c582e72f2bf9e8342",
+      "status": "computed"
+    }
+  },
+  "nonConclusions": [
+    "ArchSig v0.5.3 foundation packet is computed from input:archmap-money-variant.json and input:law-policy-money.json; it is not a Lean proof object.",
+    "Unmeasured AG evaluator rows are schema handoff rows, not measured zero.",
+    "Theorem-candidate readings are analytic-only and cannot generate structural verdicts."
+  ],
+  "packetId": "measurement:archmap:train-ticket-fullbuild@1",
+  "profile": {
+    "certSelector": "finite-certificate@1",
+    "coefficient": "F2",
+    "coverRef": "cover:money-amount-convention-surface",
+    "domain": "finite-poset-site",
+    "effCoeff": "finite-linear-algebra@1",
+    "finiteBounds": {
+      "maxBoundaryResidueVariables": 16,
+      "maxCoherenceContexts": 12,
+      "maxLaplacianCells": 16,
+      "maxPeriodCycles": 16,
+      "maxSquareFreeWitnessVariables": 12,
+      "maxTorWitnessVariables": 12,
+      "maxTransferTargets": 16
+    },
+    "nonZeroPredicate": "rank-positive@1",
+    "profileId": "profile:train-ticket-money-convention@1",
+    "resolutionSelector": "taylor@1",
+    "schema": "measurement-profile/v0.5.3",
+    "siteRef": "archmap:/contexts",
+    "verdictDiscipline": "five-valued-structural-verdict@1",
+    "zeroPredicate": "rank-zero@1"
+  },
+  "runId": "run:856b95734cf7",
+  "schema": "archsig-measurement-packet/v0.5.3",
+  "structuralVerdict": [
+    {
+      "dependsOnAssumptions": [
+        "assumption:part4-11-1:coefficient-object-satisfies-descent",
+        "assumption:part4-11-1:local-adjustment-action-is-fixed-and-effective",
+        "assumption:part4-11-1:local-lawful-sections-form-an-effective-Ob-U-torsor",
+        "assumption:part4-12-3:constant-coefficient-nerve-b1-comparison",
+        "assumption:part4-12-4:restriction-maps-are-surjective",
+        "assumption:part4-12-4:selected-Cech-nerve-is-a-forest-with-no-triple-overlap-faces",
+        "assumption:part8-B-8-2:F2-finite-coefficient-field",
+        "assumption:part8-B-8-2:Leray---acyclicity-comparison-to-sheaf-cohomology",
+        "assumption:part8-B-8-2:cover-relative-Cech-reading"
+      ],
+      "evaluator": "ag.cech-obstruction",
+      "evidence": {
+        "computedInvariantRefs": [
+          "cech-cohomology:profile:train-ticket-money-convention@1"
+        ],
+        "sourceRefs": []
+      },
+      "law": "surface:cech-surface-v052",
+      "reason": "finite F2 Cech 1-cocycle is zero or a coboundary on the selected cover",
+      "target": {
+        "classRef": "computedInvariants/cech-cohomology:profile:train-ticket-money-convention@1",
+        "coefficient": "F2",
+        "coverRef": "cover:money-amount-convention-surface",
+        "kind": "cover-relative-cech-h1-class",
+        "scopeSize": {
+          "contexts": 1,
+          "edges": 1,
+          "triangles": 0
+        }
+      },
+      "verdict": "measured_zero",
+      "verdictData": {
+        "certRef": "computedInvariants/cech-cohomology:profile:train-ticket-money-convention@1",
+        "inScope": true,
+        "methodStatus": "finite_f2_cech_computed",
+        "nonZero": false,
+        "zero": true
+      },
+      "verdictRef": "structuralVerdict/ag-cech-obstruction/surface-cech-surface-v052/finite-f2-cech-computed"
+    }
+  ],
+  "suppliedData": [
+    {
+      "conformance": {
+        "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim",
+        "checkRef": "archmap/v0.5.3-validation",
+        "status": "validated"
+      },
+      "kind": "archmap",
+      "sourceArtifactRef": "input:archmap-money-variant.json",
+      "suppliedId": "supplied:archmap"
+    },
+    {
+      "conformance": {
+        "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim",
+        "checkRef": "law-policy/v0.5.3-validation",
+        "status": "validated"
+      },
+      "kind": "law-policy",
+      "sourceArtifactRef": "input:law-policy-money.json",
+      "suppliedId": "supplied:law-policy"
+    },
+    {
+      "conformance": {
+        "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim",
+        "checkRef": "measurement-profile/v0.5.3-validation",
+        "status": "validated"
+      },
+      "kind": "measurement-profile",
+      "sourceArtifactRef": "input:measurement-profile-money.json",
+      "suppliedId": "supplied:measurement-profile"
+    },
+    {
+      "conformance": {
+        "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim",
+        "checkRef": "law-equation-surface/v0.5.3-validation",
+        "status": "validated"
+      },
+      "kind": "law-equation-surface",
+      "sourceArtifactRef": "input:law-surface-money.json",
+      "suppliedId": "supplied:law-surface"
+    }
+  ],
+  "toolVersion": "0.5.3"
+}

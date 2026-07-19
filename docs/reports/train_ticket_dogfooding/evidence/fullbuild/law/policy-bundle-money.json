@@ -1,0 +1,12 @@
+{
+  "schema": "archsig-policy-bundle/v0.5.3",
+  "id": "policy-bundle:train-ticket-money@1",
+  "lawPolicyRef": "law-policy-money.json",
+  "lawSurfaceRef": "law-surface-money.json",
+  "measurementProfileRef": "measurement-profile-money.json",
+  "componentFingerprints": {
+    "lawPolicy": "sha256:07af43360e9f10e99dd4ff3e7d6352bd13e9722254a032b69617f49a3abe013a",
+    "lawSurface": "sha256:5c18b79b154e6759ecfae7c5e1b3d048e1bd3c8f5a7d5bff8c2c43f865d606e6",
+    "measurementProfile": "sha256:d27209344f3e88d1a0985f08b3aa5d56c3a9c1be41fa48d2df53254ad4be76e0"
+  }
+}

@@ -1,0 +1,1310 @@
+{
+  "chunkId": "chunk-05",
+  "adjudications": [
+    {
+      "key": "contract|common.Assurance|specification|requires|orderId-field-annotated-notnull",
+      "candidateAtomId": "atom:contract:common.Assurance:requires:orderId",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread Assurance.java:21-22 -- orderId field carries @NotNull directly above its declaration. Both passes recorded the same precondition under different key phrasing. Merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:contract:ts-common-assurance:requires-order-id",
+        "kind": "contract",
+        "subject": "ts-common.Assurance",
+        "axis": "specification",
+        "predicate": "requires",
+        "object": "orderId-field-annotated-notnull",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Assurance.java:21",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Assurance.java:22"
+        ]
+      }
+    },
+    {
+      "key": "contract|common.Assurance|specification|requires|orderid-field-annotated-notnull-precondition-on-assurance-dto",
+      "candidateAtomId": "atom:contract:common-assurance:order-id-requires-non-null",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread Assurance.java:21-22 -- orderId field carries @NotNull directly above its declaration. Both passes recorded the same precondition under different key phrasing. Merged into one canonical atom.",
+      "canonicalAtom": {
+        "id": "atom:contract:ts-common-assurance:requires-order-id",
+        "kind": "contract",
+        "subject": "ts-common.Assurance",
+        "axis": "specification",
+        "predicate": "requires",
+        "object": "orderId-field-annotated-notnull",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Assurance.java:21",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Assurance.java:22"
+        ]
+      }
+    },
+    {
+      "key": "contract|common.Contacts|specification|shapedAs|hashcode-derived-solely-from-id-field-with-null-safe-fallback-to-0-independent-of-fields-used-in-equals",
+      "candidateAtomId": "atom:contract:common.Contacts:shapedAs:hashCode",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread Contacts.java:50-55 -- hashCode() uses id only, with null-safe fallback to 0, independent of the fields compared in equals(). Both passes captured this fact under different match keys. Merged.",
+      "canonicalAtom": {
+        "id": "atom:contract:ts-common-contacts:shaped-as-hash-code",
+        "kind": "contract",
+        "subject": "ts-common.Contacts",
+        "axis": "specification",
+        "predicate": "shapedAs",
+        "object": "hashcode-derived-solely-from-id-field-with-null-safe-fallback-to-0-independent-of-fields-used-in-equals",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Contacts.java:51",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Contacts.java:52",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Contacts.java:53",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Contacts.java:54"
+        ]
+      }
+    },
+    {
+      "key": "contract|common.Contacts|specification|shapedAs|hashcode-computed-from-id-field-only-while-equals-compares-additional-fields",
+      "candidateAtomId": "atom:contract:common-contacts:hash-code-basis-id-only",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread Contacts.java:50-55 -- hashCode() uses id only, with null-safe fallback to 0, independent of the fields compared in equals(). Both passes captured this fact under different match keys. Merged.",
+      "canonicalAtom": {
+        "id": "atom:contract:ts-common-contacts:shaped-as-hash-code",
+        "kind": "contract",
+        "subject": "ts-common.Contacts",
+        "axis": "specification",
+        "predicate": "shapedAs",
+        "object": "hashcode-derived-solely-from-id-field-with-null-safe-fallback-to-0-independent-of-fields-used-in-equals",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Contacts.java:51",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Contacts.java:52",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Contacts.java:53",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Contacts.java:54"
+        ]
+      }
+    },
+    {
+      "key": "contract|common.LeftTicketInfo|specification|requires|soldTickets-field-annotated-valid-and-notnull",
+      "candidateAtomId": "atom:contract:common.LeftTicketInfo:requires:soldTickets",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread LeftTicketInfo.java:14-16 -- soldTickets field carries @Valid @NotNull. Both passes recorded the same precondition. Merged.",
+      "canonicalAtom": {
+        "id": "atom:contract:ts-common-left-ticket-info:requires-sold-tickets",
+        "kind": "contract",
+        "subject": "ts-common.LeftTicketInfo",
+        "axis": "specification",
+        "predicate": "requires",
+        "object": "soldTickets-field-annotated-valid-and-notnull",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/LeftTicketInfo.java:14",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/LeftTicketInfo.java:15",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/LeftTicketInfo.java:16"
+        ]
+      }
+    },
+    {
+      "key": "contract|common.LeftTicketInfo|specification|requires|soldtickets-field-annotated-valid-and-notnull-precondition-on-leftticketinfo-dto",
+      "candidateAtomId": "atom:contract:common-left-ticket-info:sold-tickets-requires-non-null-valid",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread LeftTicketInfo.java:14-16 -- soldTickets field carries @Valid @NotNull. Both passes recorded the same precondition. Merged.",
+      "canonicalAtom": {
+        "id": "atom:contract:ts-common-left-ticket-info:requires-sold-tickets",
+        "kind": "contract",
+        "subject": "ts-common.LeftTicketInfo",
+        "axis": "specification",
+        "predicate": "requires",
+        "object": "soldTickets-field-annotated-valid-and-notnull",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/LeftTicketInfo.java:14",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/LeftTicketInfo.java:15",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/LeftTicketInfo.java:16"
+        ]
+      }
+    },
+    {
+      "key": "contract|common.Order|specification|shapedAs|hashcode-derived-solely-from-id-field-with-null-safe-fallback-to-0-independent-of-fields-used-in-equals",
+      "candidateAtomId": "atom:contract:common.Order:shapedAs:hashCode",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread Order.java:103-108 -- hashCode() uses id only, with null-safe fallback to 0, independent of the equals() field list. Both passes captured this fact. Merged.",
+      "canonicalAtom": {
+        "id": "atom:contract:ts-common-order:shaped-as-hash-code",
+        "kind": "contract",
+        "subject": "ts-common.Order",
+        "axis": "specification",
+        "predicate": "shapedAs",
+        "object": "hashcode-derived-solely-from-id-field-with-null-safe-fallback-to-0-independent-of-fields-used-in-equals",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:104",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:105",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:106",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:107"
+        ]
+      }
+    },
+    {
+      "key": "contract|common.Order|specification|shapedAs|hashcode-computed-from-id-field-only-while-equals-compares-additional-fields",
+      "candidateAtomId": "atom:contract:common-order:hash-code-basis-id-only",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread Order.java:103-108 -- hashCode() uses id only, with null-safe fallback to 0, independent of the equals() field list. Both passes captured this fact. Merged.",
+      "canonicalAtom": {
+        "id": "atom:contract:ts-common-order:shaped-as-hash-code",
+        "kind": "contract",
+        "subject": "ts-common.Order",
+        "axis": "specification",
+        "predicate": "shapedAs",
+        "object": "hashcode-derived-solely-from-id-field-with-null-safe-fallback-to-0-independent-of-fields-used-in-equals",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:104",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:105",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:106",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:107"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.DocumentType|semantic|identifiedBy|enum-codes-0-none-1-id-card-2-passport-3-other-with-display-names",
+      "candidateAtomId": "atom:semantic:common.DocumentType:identifiedBy:code-vocabulary",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread DocumentType.java:11-23 -- enum constants NONE(0)/ID_CARD(1)/PASSPORT(2)/OTHER(3) each pair a code with a display name. Pass A framed this as an identity vocabulary; pass B framed the same table as branch-selecting codes. Same source table, merged under identifiedBy.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-document-type:identified-by-code-vocabulary",
+        "kind": "semantic",
+        "subject": "ts-common.DocumentType",
+        "axis": "semantic",
+        "predicate": "identifiedBy",
+        "object": "enum-defines-codes-0-none-1-id-card-2-passport-3-other-with-display-names",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/DocumentType.java:11",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/DocumentType.java:15",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/DocumentType.java:19",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/DocumentType.java:23"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.DocumentType|semantic|statusGates|code-0-selects-none-branch-1-selects-idcard-branch-2-selects-passport-branch-3-selects-other-branch",
+      "candidateAtomId": "atom:semantic:common-document-type:code-vocabulary",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread DocumentType.java:11-23 -- enum constants NONE(0)/ID_CARD(1)/PASSPORT(2)/OTHER(3) each pair a code with a display name. Pass A framed this as an identity vocabulary; pass B framed the same table as branch-selecting codes. Same source table, merged under identifiedBy.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-document-type:identified-by-code-vocabulary",
+        "kind": "semantic",
+        "subject": "ts-common.DocumentType",
+        "axis": "semantic",
+        "predicate": "identifiedBy",
+        "object": "enum-defines-codes-0-none-1-id-card-2-passport-3-other-with-display-names",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/DocumentType.java:11",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/DocumentType.java:15",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/DocumentType.java:19",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/DocumentType.java:23"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.FoodOrder|semantic|identifiedBy|int-foodtype-field-selects-1-train-food-branch-or-2-food-store-branch-per-inline-comment",
+      "candidateAtomId": "atom:semantic:common.FoodOrder:identifiedBy:foodType-code-vocabulary",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread FoodOrder.java:17-20 -- inline comment '1:train food;2:food store' documents the foodType int field's code meaning directly above its declaration. Both passes captured this; merged (pass A as identifiedBy, pass B as statusGates, same evidence).",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-food-order:identified-by-food-type-code-vocabulary",
+        "kind": "semantic",
+        "subject": "ts-common.FoodOrder",
+        "axis": "semantic",
+        "predicate": "identifiedBy",
+        "object": "int-foodtype-field-selects-1-train-food-branch-or-2-food-store-branch-per-inline-comment",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/FoodOrder.java:18",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/FoodOrder.java:20"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.FoodOrder|semantic|statusGates|code-1-selects-train-food-branch-2-selects-food-store-branch-per-source-comment",
+      "candidateAtomId": "atom:semantic:common-food-order:food-type-code",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread FoodOrder.java:17-20 -- inline comment '1:train food;2:food store' documents the foodType int field's code meaning directly above its declaration. Both passes captured this; merged (pass A as identifiedBy, pass B as statusGates, same evidence).",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-food-order:identified-by-food-type-code-vocabulary",
+        "kind": "semantic",
+        "subject": "ts-common.FoodOrder",
+        "axis": "semantic",
+        "predicate": "identifiedBy",
+        "object": "int-foodtype-field-selects-1-train-food-branch-or-2-food-store-branch-per-inline-comment",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/FoodOrder.java:18",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/FoodOrder.java:20"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.Gender|semantic|identifiedBy|enum-codes-0-none-1-male-2-female-3-other-with-display-names",
+      "candidateAtomId": "atom:semantic:common.Gender:identifiedBy:code-vocabulary",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread Gender.java:11-23 -- enum constants NONE(0)/MALE(1)/FEMALE(2)/OTHER(3) each pair a code with a display name. Same code table recorded by both passes under different predicate phrasing (identifiedBy vs statusGates). Merged.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-gender:identified-by-code-vocabulary",
+        "kind": "semantic",
+        "subject": "ts-common.Gender",
+        "axis": "semantic",
+        "predicate": "identifiedBy",
+        "object": "enum-defines-codes-0-none-1-male-2-female-3-other-with-display-names",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Gender.java:11",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Gender.java:15",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Gender.java:19",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Gender.java:23"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.Gender|semantic|statusGates|code-0-selects-none-branch-1-selects-male-branch-2-selects-female-branch-3-selects-other-branch",
+      "candidateAtomId": "atom:semantic:common-gender:code-vocabulary",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread Gender.java:11-23 -- enum constants NONE(0)/MALE(1)/FEMALE(2)/OTHER(3) each pair a code with a display name. Same code table recorded by both passes under different predicate phrasing (identifiedBy vs statusGates). Merged.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-gender:identified-by-code-vocabulary",
+        "kind": "semantic",
+        "subject": "ts-common.Gender",
+        "axis": "semantic",
+        "predicate": "identifiedBy",
+        "object": "enum-defines-codes-0-none-1-male-2-female-3-other-with-display-names",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Gender.java:11",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Gender.java:15",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Gender.java:19",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Gender.java:23"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.OrderTicketsInfo|semantic|meansInUse|getfrom-and-getto-accessors-lowercase-the-stored-from-to-station-name-fields-via-stringutils-string2lower-at-read-time",
+      "candidateAtomId": "atom:semantic:common.OrderTicketsInfo:meansInUse:from-to-lowercase-normalization",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread OrderTicketsInfo.java:56-61 -- getFrom()/getTo() wrap the stored from/to fields with StringUtils.String2Lower at read time. Both passes captured this fact; merged with union refs.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-order-tickets-info:means-in-use-from-to-lowercase-normalization",
+        "kind": "semantic",
+        "subject": "ts-common.OrderTicketsInfo",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "getFrom-and-getTo-accessors-lowercase-the-stored-from-to-station-name-fields-via-stringutils-string2lower-at-read-time",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderTicketsInfo.java:56",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderTicketsInfo.java:57",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderTicketsInfo.java:60",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderTicketsInfo.java:61"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.OrderTicketsInfo|semantic|meansInUse|getfrom-and-getto-accessors-normalize-from-to-fields-to-lowercase-via-stringutils-string2lower",
+      "candidateAtomId": "atom:semantic:common-order-tickets-info:from-to-lowercase-normalization",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread OrderTicketsInfo.java:56-61 -- getFrom()/getTo() wrap the stored from/to fields with StringUtils.String2Lower at read time. Both passes captured this fact; merged with union refs.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-order-tickets-info:means-in-use-from-to-lowercase-normalization",
+        "kind": "semantic",
+        "subject": "ts-common.OrderTicketsInfo",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "getFrom-and-getTo-accessors-lowercase-the-stored-from-to-station-name-fields-via-stringutils-string2lower-at-read-time",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderTicketsInfo.java:56",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderTicketsInfo.java:57",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderTicketsInfo.java:60",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderTicketsInfo.java:61"
+        ]
+      }
+    },
+    {
+      "key": "semantic|ctx:ts-common-id-key-representation|semantic|identifiedBy|assurance-entity-orderid-foreign-key-field-typed-as-uuid-linking-to-order",
+      "candidateAtomId": "atom:semantic:ts-common-id-key-representation:identifiedBy:assurance-orderId-uuid",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread Assurance.java:22 -- private UUID orderId references the Order entity. Pass A grouped this under an id-key-representation context; pass B recorded it directly on the Assurance component. Same fact, merged onto the component subject.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-assurance:identified-by-order-id-uuid",
+        "kind": "semantic",
+        "subject": "ts-common.Assurance",
+        "axis": "semantic",
+        "predicate": "identifiedBy",
+        "object": "orderId-foreign-key-field-typed-as-uuid-linking-to-order",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Assurance.java:22"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.Assurance|semantic|identifiedBy|uuid-typed-orderid-field-referencing-order-identifier",
+      "candidateAtomId": "atom:semantic:common-assurance:order-id-representation",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread Assurance.java:22 -- private UUID orderId references the Order entity. Pass A grouped this under an id-key-representation context; pass B recorded it directly on the Assurance component. Same fact, merged onto the component subject.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-assurance:identified-by-order-id-uuid",
+        "kind": "semantic",
+        "subject": "ts-common.Assurance",
+        "axis": "semantic",
+        "predicate": "identifiedBy",
+        "object": "orderId-foreign-key-field-typed-as-uuid-linking-to-order",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Assurance.java:22"
+        ]
+      }
+    },
+    {
+      "key": "semantic|ctx:ts-common-id-key-representation|semantic|identifiedBy|order-entity-primary-key-id-field-typed-as-string-not-uuid",
+      "candidateAtomId": "atom:semantic:ts-common-id-key-representation:identifiedBy:order-primary-key-string",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread Order.java:21 -- private String id is used as Order's primary key, unlike UUID-typed ids on other entities. Pass A grouped this under the id-key-representation context; pass B recorded it directly on Order. Merged onto the component subject.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-order:identified-by-id-representation",
+        "kind": "semantic",
+        "subject": "ts-common.Order",
+        "axis": "semantic",
+        "predicate": "identifiedBy",
+        "object": "string-typed-id-field-used-as-order-primary-identifier-not-uuid",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:21"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.Order|semantic|identifiedBy|string-typed-id-field-used-as-order-primary-identifier",
+      "candidateAtomId": "atom:semantic:common-order:id-representation",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread Order.java:21 -- private String id is used as Order's primary key, unlike UUID-typed ids on other entities. Pass A grouped this under the id-key-representation context; pass B recorded it directly on Order. Merged onto the component subject.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-order:identified-by-id-representation",
+        "kind": "semantic",
+        "subject": "ts-common.Order",
+        "axis": "semantic",
+        "predicate": "identifiedBy",
+        "object": "string-typed-id-field-used-as-order-primary-identifier-not-uuid",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:21"
+        ]
+      }
+    },
+    {
+      "key": "semantic|ctx:ts-common-order-status-vocabulary|cech|sectionValue|section=order-status-code:enum-codes-0-notpaid-1-paid-2-collected-3-change-4-cancel-5-refunds-6-used-with-display-names",
+      "candidateAtomId": "atom:semantic:ts-common-order-status-vocabulary:cech-section-order-status-code-enum-definition",
+      "pass": "pass-a",
+      "decision": "merged",
+      "basis": "Reread OrderStatus.java:11-35 -- seven enum constants NOTPAID(0)..USED(6) each pair a code with a display name. Pass A and pass B each recorded this canonical definition as a cech section under differently-named context ids; merged into one canonical section, keeping pass A's context id.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-order-status-vocabulary:cech-section-order-status-code-enum-definition",
+        "kind": "semantic",
+        "subject": "ctx:ts-common-order-status-vocabulary",
+        "axis": "cech",
+        "predicate": "sectionValue",
+        "object": "section=order-status-code:enum-codes-0-notpaid-1-paid-2-collected-3-change-4-cancel-5-refunds-6-used-with-display-names",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:11",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:15",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:19",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:23",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:27",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:31",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:35"
+        ]
+      }
+    },
+    {
+      "key": "semantic|ctx:ts-common-orderstatus-definition|cech|sectionValue|section=order-status-code:code-0-notpaid-1-paid-2-collected-3-change-4-cancel-5-refunds-6-used-canonical-enum-definition",
+      "candidateAtomId": "atom:semantic:ts-common-orderstatus-definition:cech-section-order-status-code",
+      "pass": "pass-b",
+      "decision": "merged",
+      "basis": "Reread OrderStatus.java:11-35 -- seven enum constants NOTPAID(0)..USED(6) each pair a code with a display name. Pass A and pass B each recorded this canonical definition as a cech section under differently-named context ids; merged into one canonical section, keeping pass A's context id.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-order-status-vocabulary:cech-section-order-status-code-enum-definition",
+        "kind": "semantic",
+        "subject": "ctx:ts-common-order-status-vocabulary",
+        "axis": "cech",
+        "predicate": "sectionValue",
+        "object": "section=order-status-code:enum-codes-0-notpaid-1-paid-2-collected-3-change-4-cancel-5-refunds-6-used-with-display-names",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:11",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:15",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:19",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:23",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:27",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:31",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:35"
+        ]
+      }
+    },
+    {
+      "key": "contract|common.Contacts|specification|shapedAs|equals-compares-name-accountid-documentnumber-phonenumber-documenttype-excluding-id",
+      "candidateAtomId": "atom:contract:common.Contacts:shapedAs:equals",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread Contacts.java:32-47 -- equals() compares name, accountId, documentNumber, phoneNumber, documentType and excludes id. Pass B only recorded the hashCode side of Contacts (id-only basis) without a standalone equals-field-list atom; this observation stands alone, confirmed accurate.",
+      "canonicalAtom": {
+        "id": "atom:contract:ts-common-contacts:shaped-as-equals",
+        "kind": "contract",
+        "subject": "ts-common.Contacts",
+        "axis": "specification",
+        "predicate": "shapedAs",
+        "object": "equals-compares-name-accountid-documentnumber-phonenumber-documenttype-excluding-id",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Contacts.java:32",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Contacts.java:43"
+        ]
+      }
+    },
+    {
+      "key": "contract|common.Order|specification|shapedAs|equals-compares-boughtdate-travaltime-identity-and-itinerary-fields-boughtdate-travelDate-traveltime-accountid-contactsname-contactsdocumentnumber-documenttype-trainnumber-coachnumber-seatclass-seatnumber-from-to-status-price-excluding-id-and-differencemoney",
+      "candidateAtomId": "atom:contract:common.Order:shapedAs:equals",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread Order.java:75-101 -- equals() reads boughtDate, travelDate, travelTime, accountId, contactsName, contactsDocumentNumber, documentType, trainNumber, coachNumber, seatClass, seatNumber, from, to, status and price off `other`, excluding id and differenceMoney. Distinct field-coverage observation from pass B's narrower boughtDate/travelDate-pairing quirk atom; kept separate per alias preservation.",
+      "canonicalAtom": {
+        "id": "atom:contract:ts-common-order:shaped-as-equals-field-list",
+        "kind": "contract",
+        "subject": "ts-common.Order",
+        "axis": "specification",
+        "predicate": "shapedAs",
+        "object": "equals-compares-boughtDate-travelDate-travelTime-accountId-contactsName-contactsDocumentNumber-documentType-trainNumber-coachNumber-seatClass-seatNumber-from-to-status-price-excluding-id-and-differenceMoney",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:75",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:87"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.Account|semantic|identifiedBy|account-entity-carries-both-a-uuid-id-field-and-a-separate-string-accountid-field-as-distinct-identifiers",
+      "candidateAtomId": "atom:semantic:common.Account:identifiedBy:dual-identifier-scheme",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread Account.java:14,16 -- id is UUID-typed while accountId is a separate String field, both present as distinct identifier-shaped fields. Pass B's matching identifiedBy atom only covers the id field's UUID type, not the dual-identifier pattern; kept separate per alias preservation.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-account:identified-by-dual-identifier-scheme",
+        "kind": "semantic",
+        "subject": "ts-common.Account",
+        "axis": "semantic",
+        "predicate": "identifiedBy",
+        "object": "account-carries-both-a-uuid-id-field-and-a-separate-string-accountid-field-as-distinct-identifiers",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Account.java:14",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Account.java:16"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.Account|semantic|meansInUse|gender-and-documenttype-int-fields-defaulted-via-named-enum-getcode-gender-other-documenttype-none-in-account-noarg-constructor",
+      "candidateAtomId": "atom:semantic:common.Account:meansInUse:default-gender-document-type",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread Account.java:22,26,33,36 -- no-arg constructor sets gender via Gender.OTHER.getCode() and documentType via DocumentType.NONE.getCode() in the same constructor block. Pass B split this into two separate statusGates atoms (gender-only, documentType-only); kept the compound observation as its own atom per alias preservation.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-account:means-in-use-default-gender-document-type",
+        "kind": "semantic",
+        "subject": "ts-common.Account",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "gender-and-documenttype-int-fields-defaulted-via-named-enum-getcode-gender-other-documenttype-none-in-account-noarg-constructor",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Account.java:22",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Account.java:26",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Account.java:33",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Account.java:36"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.Account|semantic|meansInUse|password-field-defaulted-to-literal-string-defaultpassword-in-noarg-constructor-marked-nosonar",
+      "candidateAtomId": "atom:semantic:common.Account:meansInUse:default-password-placeholder",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread Account.java:20,34 -- no-arg constructor sets password to literal \"defaultPassword\" //NOSONAR. No pass-B counterpart exists for this field in the chunk; unique to pass A, confirmed.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-account:means-in-use-default-password-placeholder",
+        "kind": "semantic",
+        "subject": "ts-common.Account",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "password-field-defaulted-to-literal-string-defaultpassword-in-noarg-constructor-marked-nosonar",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Account.java:20",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Account.java:34"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.Assurance|semantic|meansInUse|orderid-field-defaulted-to-a-freshly-generated-random-uuid-when-assurance-is-constructed-without-an-explicit-order-link",
+      "candidateAtomId": "atom:semantic:common.Assurance:meansInUse:orderId-default-random",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread Assurance.java:29-30 -- no-arg constructor assigns orderId = UUID.randomUUID() despite the field's @NotNull precondition on the DTO. No pass-B counterpart captures this default-generation behavior; unique to pass A.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-assurance:means-in-use-order-id-default-random",
+        "kind": "semantic",
+        "subject": "ts-common.Assurance",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "orderId-field-defaulted-to-a-freshly-generated-random-uuid-when-assurance-is-constructed-without-an-explicit-order-link",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Assurance.java:29",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Assurance.java:30"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.Consign|semantic|meansInUse|boolean-iswithin-field-selects-within-region-true-vs-cross-region-false-consignment-handling-branch",
+      "candidateAtomId": "atom:semantic:common.Consign:meansInUse:isWithin-flag",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread Consign.java:24 -- private boolean isWithin selects within-region vs cross-region consignment handling. No pass-B counterpart in this chunk; unique to pass A.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-consign:means-in-use-is-within-flag",
+        "kind": "semantic",
+        "subject": "ts-common.Consign",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "boolean-isWithin-field-selects-within-region-true-vs-cross-region-false-consignment-handling-branch",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Consign.java:24"
+        ]
+      }
+    },
+    {
+      "key": "semantic|ctx:ts-common-id-key-representation|semantic|identifiedBy|consign-entity-id-orderid-accountid-fields-all-typed-as-string-not-uuid",
+      "candidateAtomId": "atom:semantic:ts-common-id-key-representation:identifiedBy:consign-keys-string",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread Consign.java:13-15 -- id, orderId and accountId are all declared String (not UUID), unlike sibling entities in this context group. No pass-B component-level counterpart exists for Consign's key typing; unique to pass A.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-id-key-representation:identified-by-consign-keys-string",
+        "kind": "semantic",
+        "subject": "ctx:ts-common-id-key-representation",
+        "axis": "semantic",
+        "predicate": "identifiedBy",
+        "object": "consign-entity-id-orderId-accountId-fields-all-typed-as-string-not-uuid",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Consign.java:13",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Consign.java:14",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Consign.java:15"
+        ]
+      }
+    },
+    {
+      "key": "semantic|ctx:ts-common-id-key-representation|semantic|identifiedBy|contacts-id-and-accountid-fields-and-priceconfig-id-field-typed-as-uuid",
+      "candidateAtomId": "atom:semantic:ts-common-id-key-representation:identifiedBy:contacts-priceConfig-keys-uuid",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread Contacts.java:19,21 and PriceConfig.java:16 -- Contacts.id/accountId and PriceConfig.id are all UUID-typed. No pass-B counterpart groups these two entities' key types; unique to pass A.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-id-key-representation:identified-by-contacts-price-config-keys-uuid",
+        "kind": "semantic",
+        "subject": "ctx:ts-common-id-key-representation",
+        "axis": "semantic",
+        "predicate": "identifiedBy",
+        "object": "contacts-id-and-accountid-fields-and-priceconfig-id-field-typed-as-uuid",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Contacts.java:19",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Contacts.java:21",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/PriceConfig.java:16"
+        ]
+      }
+    },
+    {
+      "key": "semantic|ctx:ts-common-id-key-representation|semantic|identifiedBy|foodorder-entity-id-and-orderid-fields-typed-as-string-not-uuid",
+      "candidateAtomId": "atom:semantic:ts-common-id-key-representation:identifiedBy:foodOrder-keys-string",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread FoodOrder.java:13,15 -- id and orderId are String-typed (not UUID). Unique to pass A in this context grouping.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-id-key-representation:identified-by-food-order-keys-string",
+        "kind": "semantic",
+        "subject": "ctx:ts-common-id-key-representation",
+        "axis": "semantic",
+        "predicate": "identifiedBy",
+        "object": "foodorder-entity-id-and-orderId-fields-typed-as-string-not-uuid",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/FoodOrder.java:13",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/FoodOrder.java:15"
+        ]
+      }
+    },
+    {
+      "key": "semantic|ctx:ts-common-id-key-representation|semantic|identifiedBy|paymentdifferenceinfo-entity-orderid-field-typed-as-string-not-uuid",
+      "candidateAtomId": "atom:semantic:ts-common-id-key-representation:identifiedBy:paymentDifferenceInfo-orderId-string",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread PaymentDifferenceInfo.java:11 -- private String orderId, String-typed, not UUID. Unique to pass A in this context grouping.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-id-key-representation:identified-by-payment-difference-info-order-id-string",
+        "kind": "semantic",
+        "subject": "ctx:ts-common-id-key-representation",
+        "axis": "semantic",
+        "predicate": "identifiedBy",
+        "object": "paymentdifferenceinfo-entity-orderId-field-typed-as-string-not-uuid",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/PaymentDifferenceInfo.java:11"
+        ]
+      }
+    },
+    {
+      "key": "semantic|ctx:ts-common-money-amount-representation|cech|sectionValue|section=money-amount:double-price-hardcoded-as-a-compile-time-enum-constant-literal-3.0-in-assurancetype",
+      "candidateAtomId": "atom:semantic:ts-common-money-amount-representation:cech-section-money-amount-double-hardcoded-literal",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread AssuranceType.java:13,26 -- TRAFFIC_ACCIDENT constant hardcodes price as literal 3.0 at enum-constant construction, a compile-time value distinct from the mutable runtime double fields on other entities. Pass B's matching cech section merges this constant case together with the runtime-field case into one coarser 'double convention' section; kept as its own finer section since the two partitions are not the same fact.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-money-amount-representation:cech-section-money-amount-double-hardcoded-literal",
+        "kind": "semantic",
+        "subject": "ctx:ts-common-money-amount-representation",
+        "axis": "cech",
+        "predicate": "sectionValue",
+        "object": "section=money-amount:double-price-hardcoded-as-a-compile-time-enum-constant-literal-3.0-in-assurancetype",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/AssuranceType.java:13",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/AssuranceType.java:26"
+        ]
+      }
+    },
+    {
+      "key": "semantic|ctx:ts-common-money-amount-representation|cech|sectionValue|section=money-amount:double-price-or-rate-runtime-field-no-hardcoded-default-in-food-foodorder-priceconfig-orderticketsinfo-entities",
+      "candidateAtomId": "atom:semantic:ts-common-money-amount-representation:cech-section-money-amount-double-runtime-field",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread Food.java:14, FoodOrder.java:28, PriceConfig.java:22,24, OrderTicketsInfo.java:43 -- all plain double fields with no hardcoded default in a no-arg constructor, unlike AssuranceType's compile-time literal. Kept as its own finer cech section distinct from pass B's coarser combined double-convention section.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-money-amount-representation:cech-section-money-amount-double-runtime-field",
+        "kind": "semantic",
+        "subject": "ctx:ts-common-money-amount-representation",
+        "axis": "cech",
+        "predicate": "sectionValue",
+        "object": "section=money-amount:double-price-or-rate-runtime-field-no-hardcoded-default-in-food-foodorder-priceconfig-orderticketsinfo-entities",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Food.java:14",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/FoodOrder.java:28",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/PriceConfig.java:22",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/PriceConfig.java:24",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderTicketsInfo.java:43"
+        ]
+      }
+    },
+    {
+      "key": "semantic|ctx:ts-common-money-amount-representation|cech|sectionValue|section=money-amount:string-price-and-differencemoney-fields-default-string-0.0-literal-in-order-noarg-constructor",
+      "candidateAtomId": "atom:semantic:ts-common-money-amount-representation:cech-section-money-amount-string-order-price",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread Order.java:57,59,71,72 -- price and differenceMoney are String-typed and both default to literal \"0.0\" in the no-arg constructor. Kept as its own finer cech section (has-default) distinct from pass B's coarser combined string-convention section and from the no-default sibling section.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-money-amount-representation:cech-section-money-amount-string-order-price",
+        "kind": "semantic",
+        "subject": "ctx:ts-common-money-amount-representation",
+        "axis": "cech",
+        "predicate": "sectionValue",
+        "object": "section=money-amount:string-price-and-differencemoney-fields-default-string-0.0-literal-in-order-noarg-constructor",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:57",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:59",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:71",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:72"
+        ]
+      }
+    },
+    {
+      "key": "semantic|ctx:ts-common-money-amount-representation|cech|sectionValue|section=money-amount:string-price-field-no-default-literal-in-notifyinfo-and-paymentdifferenceinfo-entities",
+      "candidateAtomId": "atom:semantic:ts-common-money-amount-representation:cech-section-money-amount-string-no-default",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread NotifyInfo.java:24 and PaymentDifferenceInfo.java:17 -- both declare a String price field with no default-literal assignment in a no-arg constructor, unlike Order's defaulted string price. Kept as its own finer cech section distinct from pass B's coarser string-convention section.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-money-amount-representation:cech-section-money-amount-string-no-default",
+        "kind": "semantic",
+        "subject": "ctx:ts-common-money-amount-representation",
+        "axis": "cech",
+        "predicate": "sectionValue",
+        "object": "section=money-amount:string-price-field-no-default-literal-in-notifyinfo-and-paymentdifferenceinfo-entities",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/NotifyInfo.java:24",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/PaymentDifferenceInfo.java:17"
+        ]
+      }
+    },
+    {
+      "key": "semantic|ctx:ts-common-order-status-vocabulary|cech|sectionValue|section=order-status-code:int-status-field-defaulted-via-named-enum-orderstatus-paid-getcode-not-a-raw-literal-in-order-noarg-constructor",
+      "candidateAtomId": "atom:semantic:ts-common-order-status-vocabulary:cech-section-order-status-code-default-assignment",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread Order.java:55,70 -- status field is declared int and defaulted via OrderStatus.PAID.getCode() (not a raw literal) in the no-arg constructor. Pass B captured the same underlying fact as a component-level statusGates atom on Order rather than as a cech section; kept separate since the two atoms differ in axis/subject granularity, not just phrasing.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-order-status-vocabulary:cech-section-order-status-code-default-assignment",
+        "kind": "semantic",
+        "subject": "ctx:ts-common-order-status-vocabulary",
+        "axis": "cech",
+        "predicate": "sectionValue",
+        "object": "section=order-status-code:int-status-field-defaulted-via-named-enum-orderstatus-paid-getcode-not-a-raw-literal-in-order-noarg-constructor",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:55",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:70"
+        ]
+      }
+    },
+    {
+      "key": "state|common.Food|state|persistsIn|jpa-embeddable-value-type-annotated-with-javax-persistence-embeddable-embedded-in-owning-entity",
+      "candidateAtomId": "atom:state:common.Food:persistsIn:jpa-embeddable",
+      "pass": "pass-a",
+      "decision": "adopted",
+      "basis": "Reread Food.java:6,10 -- class is annotated @Embeddable (javax.persistence), a JPA value type embedded in an owning entity rather than persisted independently. No pass-B state-axis counterpart in this chunk; unique to pass A.",
+      "canonicalAtom": {
+        "id": "atom:state:ts-common-food:persists-in-jpa-embeddable",
+        "kind": "state",
+        "subject": "ts-common.Food",
+        "axis": "state",
+        "predicate": "persistsIn",
+        "object": "jpa-embeddable-value-type-annotated-with-javax-persistence-embeddable-embedded-in-owning-entity",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Food.java:6",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Food.java:10"
+        ]
+      }
+    },
+    {
+      "key": "contract|common.Assurance|specification|shapedAs|dto-tolerates-unknown-json-properties-on-deserialization-via-jsonignoreproperties-ignoreunknown-true",
+      "candidateAtomId": "atom:contract:common-assurance:shaped-as-json-ignore-unknown",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread Assurance.java:13 -- class carries @JsonIgnoreProperties(ignoreUnknown = true). Only pass B captured this annotation for Assurance; confirmed present, unique to pass B.",
+      "canonicalAtom": {
+        "id": "atom:contract:ts-common-assurance:shaped-as-json-ignore-unknown",
+        "kind": "contract",
+        "subject": "ts-common.Assurance",
+        "axis": "specification",
+        "predicate": "shapedAs",
+        "object": "dto-tolerates-unknown-json-properties-on-deserialization-via-jsonignoreproperties-ignoreunknown-true",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Assurance.java:13"
+        ]
+      }
+    },
+    {
+      "key": "contract|common.Contacts|specification|shapedAs|dto-tolerates-unknown-json-properties-on-deserialization-via-jsonignoreproperties-ignoreunknown-true",
+      "candidateAtomId": "atom:contract:common-contacts:shaped-as-json-ignore-unknown",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread Contacts.java:14 -- class carries @JsonIgnoreProperties(ignoreUnknown = true). Only pass B captured this annotation for Contacts; confirmed present, unique to pass B.",
+      "canonicalAtom": {
+        "id": "atom:contract:ts-common-contacts:shaped-as-json-ignore-unknown",
+        "kind": "contract",
+        "subject": "ts-common.Contacts",
+        "axis": "specification",
+        "predicate": "shapedAs",
+        "object": "dto-tolerates-unknown-json-properties-on-deserialization-via-jsonignoreproperties-ignoreunknown-true",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Contacts.java:14"
+        ]
+      }
+    },
+    {
+      "key": "contract|common.Order|specification|shapedAs|dto-tolerates-unknown-json-properties-on-deserialization-via-jsonignoreproperties-ignoreunknown-true",
+      "candidateAtomId": "atom:contract:common-order:shaped-as-json-ignore-unknown",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread Order.java:17 -- class carries @JsonIgnoreProperties(ignoreUnknown = true). Only pass B captured this annotation for Order; confirmed present, unique to pass B.",
+      "canonicalAtom": {
+        "id": "atom:contract:ts-common-order:shaped-as-json-ignore-unknown",
+        "kind": "contract",
+        "subject": "ts-common.Order",
+        "axis": "specification",
+        "predicate": "shapedAs",
+        "object": "dto-tolerates-unknown-json-properties-on-deserialization-via-jsonignoreproperties-ignoreunknown-true",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:17"
+        ]
+      }
+    },
+    {
+      "key": "contract|common.Order|specification|shapedAs|equals-implementation-compares-this-boughtdate-field-to-others-boughtdate-field-and-to-others-traveldate-field-does-not-compare-own-traveldate-field",
+      "candidateAtomId": "atom:contract:common-order:equals-compares-boughtdate-to-traveldate",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread Order.java:86-87 -- line 86 compares getBoughtDate() to other.getBoughtDate(); line 87 compares getBoughtDate() again, this time to other.getTravelDate(), so this.travelDate is never read in equals(). Narrow pairing quirk distinct from pass A's broader field-coverage atom; kept separate.",
+      "canonicalAtom": {
+        "id": "atom:contract:ts-common-order:shaped-as-equals-boughtdate-traveldate-pairing",
+        "kind": "contract",
+        "subject": "ts-common.Order",
+        "axis": "specification",
+        "predicate": "shapedAs",
+        "object": "equals-compares-this-boughtDate-to-other-boughtDate-and-again-to-other-travelDate-while-never-reading-this-travelDate",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:86",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:87"
+        ]
+      }
+    },
+    {
+      "key": "relation|common.Account|relation|dependsOn|common.DocumentType",
+      "candidateAtomId": "atom:relation:common-account:depends-on-common-document-type",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread Account.java:36 -- documentType = DocumentType.NONE.getCode() references DocumentType. Pass A's relation list for this chunk did not include any Account dependency edges; unique to pass B, confirmed.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-common-account:depends-on-ts-common-document-type",
+        "kind": "relation",
+        "subject": "ts-common.Account",
+        "axis": "relation",
+        "predicate": "dependsOn",
+        "object": "ts-common.DocumentType",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Account.java:36"
+        ]
+      }
+    },
+    {
+      "key": "relation|common.Account|relation|dependsOn|common.Gender",
+      "candidateAtomId": "atom:relation:common-account:depends-on-common-gender",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread Account.java:33 -- gender = Gender.OTHER.getCode() references Gender. Unique to pass B, confirmed.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-common-account:depends-on-ts-common-gender",
+        "kind": "relation",
+        "subject": "ts-common.Account",
+        "axis": "relation",
+        "predicate": "dependsOn",
+        "object": "ts-common.Gender",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Account.java:33"
+        ]
+      }
+    },
+    {
+      "key": "relation|common.OrderTicketsInfo|relation|dependsOn|common.util.StringUtils",
+      "candidateAtomId": "atom:relation:common-order-tickets-info:depends-on-common-util-string-utils",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread OrderTicketsInfo.java:56-61 -- getFrom()/getTo() call StringUtils.String2Lower. Pass A recorded only the semantic normalization fact, not a relation edge; unique to pass B.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-common-order-tickets-info:depends-on-common-util-string-utils",
+        "kind": "relation",
+        "subject": "ts-common.OrderTicketsInfo",
+        "axis": "relation",
+        "predicate": "dependsOn",
+        "object": "common.util.StringUtils",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderTicketsInfo.java:57",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderTicketsInfo.java:61"
+        ]
+      }
+    },
+    {
+      "key": "relation|common.Order|relation|dependsOn|common.OrderStatus",
+      "candidateAtomId": "atom:relation:common-order:depends-on-common-order-status",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread Order.java:70 -- status = OrderStatus.PAID.getCode() references OrderStatus. Unique to pass B as a relation edge.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-common-order:depends-on-ts-common-order-status",
+        "kind": "relation",
+        "subject": "ts-common.Order",
+        "axis": "relation",
+        "predicate": "dependsOn",
+        "object": "ts-common.OrderStatus",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:70"
+        ]
+      }
+    },
+    {
+      "key": "relation|common.Order|relation|dependsOn|common.SeatClass",
+      "candidateAtomId": "atom:relation:common-order:depends-on-common-seat-class",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread Order.java:66 -- seatClass = SeatClass.FIRSTCLASS.getCode() references SeatClass. Unique to pass B as a relation edge.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-common-order:depends-on-ts-common-seat-class",
+        "kind": "relation",
+        "subject": "ts-common.Order",
+        "axis": "relation",
+        "predicate": "dependsOn",
+        "object": "common.SeatClass",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:66"
+        ]
+      }
+    },
+    {
+      "key": "relation|common.Order|relation|dependsOn|common.util.StringUtils",
+      "candidateAtomId": "atom:relation:common-order:depends-on-common-util-string-utils",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread Order.java:62-63 -- boughtDate/travelDate are initialized via StringUtils.Date2String(...). Unique to pass B as a relation edge.",
+      "canonicalAtom": {
+        "id": "atom:relation:ts-common-order:depends-on-common-util-string-utils",
+        "kind": "relation",
+        "subject": "ts-common.Order",
+        "axis": "relation",
+        "predicate": "dependsOn",
+        "object": "common.util.StringUtils",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:62",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:63"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.Account|semantic|identifiedBy|uuid-typed-id-field-used-as-account-primary-identifier",
+      "candidateAtomId": "atom:semantic:common-account:id-representation",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread Account.java:14 -- id field is UUID-typed, used as Account's primary identifier. Narrower than pass A's dual-identifier-scheme atom, which also covers the separate accountId field; kept as its own fact.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-account:identified-by-uuid-id-field",
+        "kind": "semantic",
+        "subject": "ts-common.Account",
+        "axis": "semantic",
+        "predicate": "identifiedBy",
+        "object": "uuid-typed-id-field-used-as-account-primary-identifier",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Account.java:14"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.Account|semantic|statusGates|documenttype-field-default-initialized-to-documenttypenone-code-0-selecting-none-branch",
+      "candidateAtomId": "atom:semantic:common-account:document-type-default-code",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread Account.java:26,36 -- documentType field defaults to DocumentType.NONE.getCode() (0) in the no-arg constructor. Pass A recorded this together with the gender default as one compound atom; kept as its own per-field fact per pass B's split.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-account:status-gates-document-type-default-code",
+        "kind": "semantic",
+        "subject": "ts-common.Account",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "documentType-field-default-initialized-to-documenttypenone-code-0-selecting-none-branch",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Account.java:26",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Account.java:36"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.Account|semantic|statusGates|gender-field-default-initialized-to-genderother-code-3-selecting-other-branch",
+      "candidateAtomId": "atom:semantic:common-account:gender-default-code",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread Account.java:22,33 -- gender field defaults to Gender.OTHER.getCode() (3) in the no-arg constructor. Kept as its own per-field fact per pass B's split of pass A's compound atom.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-account:status-gates-gender-default-code",
+        "kind": "semantic",
+        "subject": "ts-common.Account",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "gender-field-default-initialized-to-genderother-code-3-selecting-other-branch",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Account.java:22",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Account.java:33"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.AssuranceType|semantic|meansInUse|double-typed-price-field-literal-3.0-per-assurance-type-instance",
+      "candidateAtomId": "atom:semantic:common-assurance-type:price-representation",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread AssuranceType.java:13,26 -- TRAFFIC_ACCIDENT constant sets price=3.0, a double field. Recorded here as a standalone component-level fact distinct from pass A's cech-section framing of the same evidence; kept separate per the cech-vs-component distinction used throughout this chunk.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-assurance-type:means-in-use-price-representation",
+        "kind": "semantic",
+        "subject": "ts-common.AssuranceType",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "double-typed-price-field-literal-3.0-per-assurance-type-instance",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/AssuranceType.java:13",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/AssuranceType.java:26"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.Consign|semantic|meansInUse|double-typed-weight-field-in-consign-dto",
+      "candidateAtomId": "atom:semantic:common-consign:weight-representation",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread Consign.java:23 -- private double weight, a runtime double field distinct from the isWithin boolean flag pass A recorded for this class. Unique to pass B.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-consign:means-in-use-weight-representation",
+        "kind": "semantic",
+        "subject": "ts-common.Consign",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "double-typed-weight-field-in-consign-dto",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Consign.java:23"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.FoodOrder|semantic|meansInUse|double-typed-price-field-in-food-order-dto",
+      "candidateAtomId": "atom:semantic:common-food-order:price-representation",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread FoodOrder.java:28 -- private double price, a fact distinct from the foodType code vocabulary. Unique to pass B.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-food-order:means-in-use-price-representation",
+        "kind": "semantic",
+        "subject": "ts-common.FoodOrder",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "double-typed-price-field-in-food-order-dto",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/FoodOrder.java:28"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.Food|semantic|meansInUse|double-typed-price-field-in-food-embeddable-entity",
+      "candidateAtomId": "atom:semantic:common-food:price-representation",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread Food.java:14 -- private double price. Component-level fact distinct from pass A's state-axis jpa-embeddable atom for the same class and from the ctx-level cech section grouping. Unique to pass B at this granularity.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-food:means-in-use-price-representation",
+        "kind": "semantic",
+        "subject": "ts-common.Food",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "double-typed-price-field-in-food-embeddable-entity",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Food.java:14"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.NotifyInfo|semantic|meansInUse|string-typed-price-field-in-order-notification-payload",
+      "candidateAtomId": "atom:semantic:common-notify-info:price-representation",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread NotifyInfo.java:24 -- private String price, recorded as a standalone component-level fact distinct from pass A's ctx-level cech section grouping NotifyInfo with PaymentDifferenceInfo. Unique to pass B at this granularity.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-notify-info:means-in-use-price-representation",
+        "kind": "semantic",
+        "subject": "ts-common.NotifyInfo",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "string-typed-price-field-in-order-notification-payload",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/NotifyInfo.java:24"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.OrderStatus|semantic|statusGates|code-0-selects-notpaid-branch-1-selects-paid-branch-2-selects-collected-branch-3-selects-change-branch-4-selects-cancel-branch-5-selects-refunds-branch-6-selects-used-branch",
+      "candidateAtomId": "atom:semantic:common-order-status:code-vocabulary",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread OrderStatus.java:11-35 -- same seven-code enum table as the cech section atom, but recorded here as a standalone component-level fact. No matching pass-A component-level atom exists for OrderStatus in this chunk (pass A only used the ctx-level cech framing); unique to pass B at this granularity.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-order-status:status-gates-code-vocabulary",
+        "kind": "semantic",
+        "subject": "ts-common.OrderStatus",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "code-0-selects-notpaid-branch-1-selects-paid-branch-2-selects-collected-branch-3-selects-change-branch-4-selects-cancel-branch-5-selects-refunds-branch-6-selects-used-branch",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:11",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:15",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:19",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:23",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:27",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:31",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderStatus.java:35"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.OrderTicketsInfo|semantic|meansInUse|double-typed-consigneeweight-field-in-order-tickets-request-dto",
+      "candidateAtomId": "atom:semantic:common-order-tickets-info:consignee-weight-representation",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread OrderTicketsInfo.java:52 -- private double consigneeWeight, a field-level fact not covered by any pass-A atom in this chunk. Unique to pass B.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-order-tickets-info:means-in-use-consignee-weight-representation",
+        "kind": "semantic",
+        "subject": "ts-common.OrderTicketsInfo",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "double-typed-consigneeWeight-field-in-order-tickets-request-dto",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderTicketsInfo.java:52"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.OrderTicketsInfo|semantic|meansInUse|double-typed-foodprice-field-in-order-tickets-request-dto",
+      "candidateAtomId": "atom:semantic:common-order-tickets-info:food-price-representation",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread OrderTicketsInfo.java:43 -- private double foodPrice. Component-level fact distinct from pass A's ctx-level cech section grouping this field with other double-typed price fields. Unique to pass B at this granularity.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-order-tickets-info:means-in-use-food-price-representation",
+        "kind": "semantic",
+        "subject": "ts-common.OrderTicketsInfo",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "double-typed-foodPrice-field-in-order-tickets-request-dto",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderTicketsInfo.java:43"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.Order|semantic|meansInUse|string-typed-difference-money-field-default-literal-0.0",
+      "candidateAtomId": "atom:semantic:common-order:difference-money-representation",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread Order.java:59,72 -- private String differenceMoney defaults to literal \"0.0\" in the no-arg constructor. Recorded as its own component-level fact, split out from pass A's combined price+differenceMoney cech section; unique to pass B at this granularity.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-order:means-in-use-difference-money-representation",
+        "kind": "semantic",
+        "subject": "ts-common.Order",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "string-typed-differenceMoney-field-default-literal-0.0",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:59",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:72"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.Order|semantic|meansInUse|string-typed-price-field-default-literal-0.0-compared-via-string-equals-in-equals-method",
+      "candidateAtomId": "atom:semantic:common-order:price-representation",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread Order.java:57,71,100 -- private String price defaults to literal \"0.0\" and is compared via price.equals(other.price) inside equals(). Captures the equals()-comparison detail that pass A's cech-section atom for Order's price field does not; unique to pass B at this granularity.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-order:means-in-use-price-representation",
+        "kind": "semantic",
+        "subject": "ts-common.Order",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "string-typed-price-field-default-literal-0.0-compared-via-string-equals-in-equals-method",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:57",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:71",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:100"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.Order|semantic|statusGates|status-field-default-initialized-to-orderstatus-paid-code-1-selecting-paid-not-collected-branch",
+      "candidateAtomId": "atom:semantic:common-order:status-code-usage",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread Order.java:55,70 -- status field defaults to OrderStatus.PAID.getCode() (code 1), selecting the 'Paid & Not Collected' state. Same underlying fact as pass A's cech-section atom but recorded at component-level statusGates granularity rather than ctx-level cech; kept separate.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-order:status-gates-status-code-usage",
+        "kind": "semantic",
+        "subject": "ts-common.Order",
+        "axis": "semantic",
+        "predicate": "statusGates",
+        "object": "status-field-default-initialized-to-orderstatus-paid-code-1-selecting-paid-not-collected-branch",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:55",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:70"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.PaymentDifferenceInfo|semantic|meansInUse|string-typed-price-field-in-payment-difference-dto",
+      "candidateAtomId": "atom:semantic:common-payment-difference-info:price-representation",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread PaymentDifferenceInfo.java:17 -- private String price. Component-level fact distinct from pass A's ctx-level cech grouping with NotifyInfo. Unique to pass B at this granularity.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-payment-difference-info:means-in-use-price-representation",
+        "kind": "semantic",
+        "subject": "ts-common.PaymentDifferenceInfo",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "string-typed-price-field-in-payment-difference-dto",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/PaymentDifferenceInfo.java:17"
+        ]
+      }
+    },
+    {
+      "key": "semantic|common.PriceConfig|semantic|meansInUse|double-typed-basicpricerate-and-firstclasspricerate-fields",
+      "candidateAtomId": "atom:semantic:common-price-config:price-rate-representation",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread PriceConfig.java:22,24 -- basicPriceRate and firstClassPriceRate are both double-typed. Component-level fact distinct from pass A's ctx-level cech grouping. Unique to pass B at this granularity.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-price-config:means-in-use-price-rate-representation",
+        "kind": "semantic",
+        "subject": "ts-common.PriceConfig",
+        "axis": "semantic",
+        "predicate": "meansInUse",
+        "object": "double-typed-basicPriceRate-and-firstClassPriceRate-fields",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/PriceConfig.java:22",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/PriceConfig.java:24"
+        ]
+      }
+    },
+    {
+      "key": "semantic|ctx:ts-common-entity-price-double-convention|cech|sectionValue|section=money-amount:double-typed-price-and-rate-fields-in-assurancetype-food-foodorder-orderticketsinfo-priceconfig-dtos",
+      "candidateAtomId": "atom:semantic:ts-common-entity-price-double-convention:cech-section-money-amount",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread AssuranceType.java:26, Food.java:14, FoodOrder.java:28, OrderTicketsInfo.java:43, PriceConfig.java:22,24 -- all double-typed price/rate fields. Coarser cech partition than pass A's split between hardcoded-literal (AssuranceType alone) and runtime-field (the rest); the two partitions are not the same fact, so both are kept as separate sections.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-entity-price-double-convention:cech-section-money-amount",
+        "kind": "semantic",
+        "subject": "ctx:ts-common-entity-price-double-convention",
+        "axis": "cech",
+        "predicate": "sectionValue",
+        "object": "section=money-amount:double-typed-price-and-rate-fields-in-assurancetype-food-foodorder-orderticketsinfo-priceconfig-dtos",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/AssuranceType.java:26",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Food.java:14",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/FoodOrder.java:28",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/OrderTicketsInfo.java:43",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/PriceConfig.java:22",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/PriceConfig.java:24"
+        ]
+      }
+    },
+    {
+      "key": "semantic|ctx:ts-common-entity-price-string-convention|cech|sectionValue|section=money-amount:string-typed-price-and-difference-money-fields-in-order-notifyinfo-paymentdifferenceinfo-dtos",
+      "candidateAtomId": "atom:semantic:ts-common-entity-price-string-convention:cech-section-money-amount",
+      "pass": "pass-b",
+      "decision": "adopted",
+      "basis": "Reread Order.java:57,59, NotifyInfo.java:24, PaymentDifferenceInfo.java:17 -- all String-typed price/differenceMoney fields. Coarser cech partition than pass A's split between Order's defaulted string fields and NotifyInfo/PaymentDifferenceInfo's non-defaulted fields; kept as its own section since the partitions differ.",
+      "canonicalAtom": {
+        "id": "atom:semantic:ts-common-entity-price-string-convention:cech-section-money-amount",
+        "kind": "semantic",
+        "subject": "ctx:ts-common-entity-price-string-convention",
+        "axis": "cech",
+        "predicate": "sectionValue",
+        "object": "section=money-amount:string-typed-price-and-difference-money-fields-in-order-notifyinfo-paymentdifferenceinfo-dtos",
+        "refs": [
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:57",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/Order.java:59",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/NotifyInfo.java:24",
+          "src:ts-common/src/main/java/edu/fudan/common/entity/PaymentDifferenceInfo.java:17"
+        ]
+      }
+    }
+  ]
+}

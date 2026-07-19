@@ -1,0 +1,700 @@
+{
+ "onlyInPassA": [
+  {
+   "key": "authority|config.SecurityConfig|authority|allowsCrossOrigin|origin-all-methods-all-headers-all-credentials-false-max-age-3600-on-/**",
+   "candidateAtomId": "atom:authority:config-securityconfig:allows-cross-origin-all",
+   "refs": [
+    "src:ts-config-service/src/main/java/config/SecurityConfig.java:54",
+    "src:ts-config-service/src/main/java/config/SecurityConfig.java:58",
+    "src:ts-config-service/src/main/java/config/SecurityConfig.java:59"
+   ]
+  },
+  {
+   "key": "authority|config.SecurityConfig|authority|requiresRole|all-other-requests-require-authentication-not-a-specific-role",
+   "candidateAtomId": "atom:authority:config-securityconfig:requires-authentication-any-request",
+   "refs": [
+    "src:ts-config-service/src/main/java/config/SecurityConfig.java:80"
+   ]
+  },
+  {
+   "key": "authority|config.SecurityConfig|authority|requiresRole|role-admin-required-for-delete-/api/v1/configservice/configs/*",
+   "candidateAtomId": "atom:authority:config-securityconfig:requires-role-admin-delete-configs",
+   "refs": [
+    "src:ts-config-service/src/main/java/config/SecurityConfig.java:77"
+   ]
+  },
+  {
+   "key": "authority|config.SecurityConfig|authority|requiresRole|role-admin-required-for-post-/api/v1/configservice/configs",
+   "candidateAtomId": "atom:authority:config-securityconfig:requires-role-admin-post-configs",
+   "refs": [
+    "src:ts-config-service/src/main/java/config/SecurityConfig.java:75"
+   ]
+  },
+  {
+   "key": "authority|config.SecurityConfig|authority|requiresRole|role-admin-required-for-put-/api/v1/configservice/configs",
+   "candidateAtomId": "atom:authority:config-securityconfig:requires-role-admin-put-configs",
+   "refs": [
+    "src:ts-config-service/src/main/java/config/SecurityConfig.java:76"
+   ]
+  },
+  {
+   "key": "authority|config.controller.ConfigController|authority|allowsCrossOrigin|origin-all-controller-level-crossorigin-annotation-on-configs-endpoints",
+   "candidateAtomId": "atom:authority:config-controller-configcontroller:allows-cross-origin-annotation",
+   "refs": [
+    "src:ts-config-service/src/main/java/config/controller/ConfigController.java:35",
+    "src:ts-config-service/src/main/java/config/controller/ConfigController.java:42",
+    "src:ts-config-service/src/main/java/config/controller/ConfigController.java:49",
+    "src:ts-config-service/src/main/java/config/controller/ConfigController.java:57",
+    "src:ts-config-service/src/main/java/config/controller/ConfigController.java:64"
+   ]
+  },
+  {
+   "key": "component|edu.fudan.common.entity.TripResponse|static||",
+   "candidateAtomId": "atom:component:edu-fudan-common-entity-tripresponse",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripResponse.java:14"
+   ]
+  },
+  {
+   "key": "component|edu.fudan.common.entity.Type|static||",
+   "candidateAtomId": "atom:component:edu-fudan-common-entity-type",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Type.java:8"
+   ]
+  },
+  {
+   "key": "component|edu.fudan.common.entity.User|static||",
+   "candidateAtomId": "atom:component:edu-fudan-common-entity-user",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/User.java:18"
+   ]
+  },
+  {
+   "key": "component|edu.fudan.common.exception.BaseException|static||",
+   "candidateAtomId": "atom:component:edu-fudan-common-exception-baseexception",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/exception/BaseException.java:6"
+   ]
+  },
+  {
+   "key": "component|edu.fudan.common.exception.TokenException|static||",
+   "candidateAtomId": "atom:component:edu-fudan-common-exception-tokenexception",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/exception/TokenException.java:6"
+   ]
+  },
+  {
+   "key": "component|edu.fudan.common.security.jwt.JWTFilter|static||",
+   "candidateAtomId": "atom:component:edu-fudan-common-security-jwt-jwtfilter",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java:17"
+   ]
+  },
+  {
+   "key": "component|edu.fudan.common.security.jwt.JWTUtil|static||",
+   "candidateAtomId": "atom:component:edu-fudan-common-security-jwt-jwtutil",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:24"
+   ]
+  },
+  {
+   "key": "component|edu.fudan.common.util.JsonUtils|static||",
+   "candidateAtomId": "atom:component:edu-fudan-common-util-jsonutils",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/util/JsonUtils.java:13"
+   ]
+  },
+  {
+   "key": "component|edu.fudan.common.util.Response|static||",
+   "candidateAtomId": "atom:component:edu-fudan-common-util-response",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/util/Response.java:15"
+   ]
+  },
+  {
+   "key": "component|edu.fudan.common.util.StringUtils|static||",
+   "candidateAtomId": "atom:component:edu-fudan-common-util-stringutils",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:7"
+   ]
+  },
+  {
+   "key": "component|ts-config-service.application.yml|static||",
+   "candidateAtomId": "atom:component:ts-config-service-applicationyml",
+   "refs": [
+    "src:ts-config-service/src/main/resources/application.yml:1"
+   ]
+  },
+  {
+   "key": "effect|config.ConfigApplication|effect|callsProvider|load-balanced-resttemplate-bean-for-calling-other-discovered-services",
+   "candidateAtomId": "atom:effect:config-configapplication:load-balanced-resttemplate",
+   "refs": [
+    "src:ts-config-service/src/main/java/config/ConfigApplication.java:30",
+    "src:ts-config-service/src/main/java/config/ConfigApplication.java:33"
+   ]
+  },
+  {
+   "key": "relation|config.SecurityConfig|relation|dependsOn|edu.fudan.common.security.jwt.JWTFilter",
+   "candidateAtomId": "atom:relation:config-securityconfig:depends-on-jwtfilter",
+   "refs": [
+    "src:ts-config-service/src/main/java/config/SecurityConfig.java:82"
+   ]
+  },
+  {
+   "key": "relation|config.init.InitData|relation|dependsOn|config.service.ConfigService",
+   "candidateAtomId": "atom:relation:config-init-initdata:depends-on-configservice",
+   "refs": [
+    "src:ts-config-service/src/main/java/config/init/InitData.java:25"
+   ]
+  },
+  {
+   "key": "relation|config.repository.ConfigRepository|relation|dependsOn|org.springframework.data.repository.CrudRepository",
+   "candidateAtomId": "atom:relation:config-repository-configrepository:depends-on-crudrepository",
+   "refs": [
+    "src:ts-config-service/src/main/java/config/repository/ConfigRepository.java:11"
+   ]
+  },
+  {
+   "key": "relation|edu.fudan.common.exception.TokenException|relation|dependsOn|edu.fudan.common.exception.BaseException",
+   "candidateAtomId": "atom:relation:edu-fudan-common-exception-tokenexception:depends-on-baseexception",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/exception/TokenException.java:6"
+   ]
+  },
+  {
+   "key": "relation|edu.fudan.common.security.jwt.JWTFilter|relation|calls|edu.fudan.common.security.jwt.JWTUtil",
+   "candidateAtomId": "atom:relation:edu-fudan-common-security-jwt-jwtfilter:calls-jwtutil",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java:23",
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java:25"
+   ]
+  },
+  {
+   "key": "relation|edu.fudan.common.security.jwt.JWTUtil|relation|dependsOn|edu.fudan.common.exception.TokenException",
+   "candidateAtomId": "atom:relation:edu-fudan-common-security-jwt-jwtutil:depends-on-tokenexception",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:103",
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:106",
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:109"
+   ]
+  },
+  {
+   "key": "semantic|config.repository.ConfigRepository|semantic|identifiedBy|config-looked-up-by-name-field-which-is-also-the-jpa-id-not-a-separate-numeric-id",
+   "candidateAtomId": "atom:semantic:config-repository-configrepository:lookup-by-name",
+   "refs": [
+    "src:ts-config-service/src/main/java/config/repository/ConfigRepository.java:19",
+    "src:ts-config-service/src/main/java/config/repository/ConfigRepository.java:35"
+   ]
+  },
+  {
+   "key": "semantic|config.service.ConfigServiceImpl|semantic|statusGates|status-0-on-empty-or-null-list-branch-status-1-on-nonempty-list-branch-for-queryall-operation",
+   "candidateAtomId": "atom:semantic:config-service-configserviceimpl:queryall-branch",
+   "refs": [
+    "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:89",
+    "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:91",
+    "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:94"
+   ]
+  },
+  {
+   "key": "semantic|config.service.ConfigServiceImpl|semantic|statusGates|status-0-on-name-already-exists-branch-status-1-on-created-branch-for-create-operation",
+   "candidateAtomId": "atom:semantic:config-service-configserviceimpl:create-branch",
+   "refs": [
+    "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:31",
+    "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:34",
+    "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:39"
+   ]
+  },
+  {
+   "key": "semantic|config.service.ConfigServiceImpl|semantic|statusGates|status-0-on-name-not-found-branch-status-1-on-deleted-branch-for-delete-operation",
+   "candidateAtomId": "atom:semantic:config-service-configserviceimpl:delete-branch",
+   "refs": [
+    "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:73",
+    "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:77",
+    "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:81"
+   ]
+  },
+  {
+   "key": "semantic|config.service.ConfigServiceImpl|semantic|statusGates|status-0-on-name-not-found-branch-status-1-on-found-branch-for-query-operation",
+   "candidateAtomId": "atom:semantic:config-service-configserviceimpl:query-branch",
+   "refs": [
+    "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:61",
+    "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:63",
+    "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:66"
+   ]
+  },
+  {
+   "key": "semantic|config.service.ConfigServiceImpl|semantic|statusGates|status-0-on-name-not-found-branch-status-1-on-updated-branch-for-update-operation",
+   "candidateAtomId": "atom:semantic:config-service-configserviceimpl:update-branch",
+   "refs": [
+    "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:45",
+    "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:48",
+    "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:53"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-common-shared-entities|cech|sectionValue|section=money-amount:string-price-field-not-parsed-at-declaration-site",
+   "candidateAtomId": "atom:semantic:ctx-ts-common-shared-entities:cech-section-money-amount",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripResponse.java:54",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripResponse.java:58"
+   ]
+  },
+  {
+   "key": "semantic|edu.fudan.common.entity.TripResponse|semantic|identifiedBy|price-for-economy-and-comfort-class-represented-as-string-fields-no-parsing-at-declaration-site",
+   "candidateAtomId": "atom:semantic:edu-fudan-common-entity-tripresponse:price-string-fields",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripResponse.java:54",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripResponse.java:58"
+   ]
+  },
+  {
+   "key": "semantic|edu.fudan.common.entity.Type|semantic|identifiedBy|train-type-code-g-d-z-t-k-mapped-to-index-one-through-five",
+   "candidateAtomId": "atom:semantic:edu-fudan-common-entity-type:train-type-code",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Type.java:12",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Type.java:16",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Type.java:20",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Type.java:24",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Type.java:28"
+   ]
+  },
+  {
+   "key": "semantic|edu.fudan.common.security.jwt.JWTFilter|semantic|statusGates|http-401-selects-jwt-exception-branch-else-continues-filter-chain-with-authentication-set-in-security-context",
+   "candidateAtomId": "atom:semantic:edu-fudan-common-security-jwt-jwtfilter:status-401-branch",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java:26",
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java:28",
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java:29"
+   ]
+  },
+  {
+   "key": "semantic|edu.fudan.common.security.jwt.JWTUtil|semantic|identifiedBy|authorization-header-value-prefixed-bearer-space-selects-token-substring-from-index-seven",
+   "candidateAtomId": "atom:semantic:edu-fudan-common-security-jwt-jwtutil:bearer-token-header",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:90",
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:91",
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:92"
+   ]
+  },
+  {
+   "key": "semantic|edu.fudan.common.security.jwt.JWTUtil|semantic|identifiedBy|jwt-signing-key-derived-from-base64-encoded-literal-string-secret",
+   "candidateAtomId": "atom:semantic:edu-fudan-common-security-jwt-jwtutil:hardcoded-signing-key",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:31"
+   ]
+  },
+  {
+   "key": "semantic|edu.fudan.common.security.jwt.JWTUtil|semantic|identifiedBy|roles-claim-in-jwt-token-body-mapped-to-granted-authorities-for-spring-security",
+   "candidateAtomId": "atom:semantic:edu-fudan-common-security-jwt-jwtutil:roles-claim",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:41",
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:84",
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:86"
+   ]
+  },
+  {
+   "key": "semantic|edu.fudan.common.security.jwt.JWTUtil|semantic|meansInUse|validatetoken-selects-branch-among-expired-format-error-malformed-signature-failure-illegal-argument-each-raising-tokenexception-with-branch-specific-message",
+   "candidateAtomId": "atom:semantic:edu-fudan-common-security-jwt-jwtutil:validate-token-branches",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:100",
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:103",
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:106",
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:109",
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:112",
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:115"
+   ]
+  },
+  {
+   "key": "semantic|edu.fudan.common.util.JsonUtils|semantic|statusGates|returns-null-on-io-exception-or-null-pointer-exception-branch-else-returns-serialized-or-deserialized-value",
+   "candidateAtomId": "atom:semantic:edu-fudan-common-util-jsonutils:null-on-exception-branch",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/util/JsonUtils.java:31",
+    "src:ts-common/src/main/java/edu/fudan/common/util/JsonUtils.java:63",
+    "src:ts-common/src/main/java/edu/fudan/common/util/JsonUtils.java:65"
+   ]
+  },
+  {
+   "key": "semantic|edu.fudan.common.util.Response|semantic|statusGates|status-field-documented-as-1-true-0-false-generic-response-envelope-flag",
+   "candidateAtomId": "atom:semantic:edu-fudan-common-util-response:documented-envelope-flag",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/util/Response.java:17",
+    "src:ts-common/src/main/java/edu/fudan/common/util/Response.java:20"
+   ]
+  },
+  {
+   "key": "semantic|edu.fudan.common.util.StringUtils|semantic|identifiedBy|date-string-parsed-with-pattern-yyyy-mm-dd-hh-mm-ss-when-length-over-ten-chars-else-pattern-yyyy-mm-dd",
+   "candidateAtomId": "atom:semantic:edu-fudan-common-util-stringutils:date-format-convention",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:16",
+    "src:ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:18",
+    "src:ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:20"
+   ]
+  },
+  {
+   "key": "semantic|edu.fudan.common.util.StringUtils|semantic|statusGates|returns-epoch-date-new-date-zero-on-unparsable-input-branch-else-returns-parsed-date",
+   "candidateAtomId": "atom:semantic:edu-fudan-common-util-stringutils:epoch-fallback-branch",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:23",
+    "src:ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:26",
+    "src:ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:27"
+   ]
+  },
+  {
+   "key": "semantic|rebook.entity.VerifyResult|semantic|identifiedBy|declared-package-rebook-entity-differs-from-file-directory-location-under-ts-common-edu-fudan-common-entity",
+   "candidateAtomId": "atom:semantic:rebook-entity-verifyresult:package-location",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/VerifyResult.java:1"
+   ]
+  },
+  {
+   "key": "semantic|ts-config-service.application.yml|semantic|identifiedBy|service-registered-to-nacos-discovery-with-configurable-server-addr-env-nacos-addrs",
+   "candidateAtomId": "atom:semantic:ts-config-service-applicationyml:nacos-discovery",
+   "refs": [
+    "src:ts-config-service/src/main/resources/application.yml:3",
+    "src:ts-config-service/src/main/resources/application.yml:5"
+   ]
+  },
+  {
+   "key": "state|config.entity.Config|state|persistsIn|jpa-entity-with-name-field-as-id-persisted-to-relational-datasource",
+   "candidateAtomId": "atom:state:config-entity-config:persists-in-jpa-name-id",
+   "refs": [
+    "src:ts-config-service/src/main/java/config/entity/Config.java:14",
+    "src:ts-config-service/src/main/java/config/entity/Config.java:17"
+   ]
+  },
+  {
+   "key": "state|config.entity.Config|state|persistsIn|seeded-at-startup-by-initdata-commandlinerunner-with-name-directticketallocationproportion-value-0.5",
+   "candidateAtomId": "atom:state:config-entity-config:seeded-at-startup",
+   "refs": [
+    "src:ts-config-service/src/main/java/config/init/InitData.java:20",
+    "src:ts-config-service/src/main/java/config/init/InitData.java:22",
+    "src:ts-config-service/src/main/java/config/init/InitData.java:23"
+   ]
+  },
+  {
+   "key": "state|ts-config-service.application.yml|state|persistsIn|mysql-datasource-host-configurable-via-env-config-mysql-host-port-3306-database-ts-config-mysql-driver-com-mysql-cj-jdbc-driver-hibernate-ddl-auto-update",
+   "candidateAtomId": "atom:state:ts-config-service-applicationyml:mysql-datasource",
+   "refs": [
+    "src:ts-config-service/src/main/resources/application.yml:9",
+    "src:ts-config-service/src/main/resources/application.yml:12",
+    "src:ts-config-service/src/main/resources/application.yml:15"
+   ]
+  }
+ ],
+ "onlyInPassB": [
+  {
+   "key": "authority|config.SecurityConfig|authority|allowsCrossOrigin|wildcard-origin-allow-credentials-false-max-age-3600-on-/**",
+   "candidateAtomId": "atom:authority:config.SecurityConfig:allowsCrossOrigin:global-cors-config",
+   "refs": [
+    "src:ts-config-service/src/main/java/config/SecurityConfig.java:54",
+    "src:ts-config-service/src/main/java/config/SecurityConfig.java:58",
+    "src:ts-config-service/src/main/java/config/SecurityConfig.java:59"
+   ]
+  },
+  {
+   "key": "authority|config.SecurityConfig|authority|requiresRole|ADMIN-role-on-delete-/api/v1/configservice/configs/*",
+   "candidateAtomId": "atom:authority:config.SecurityConfig:requiresRole:delete-configs-admin",
+   "refs": [
+    "src:ts-config-service/src/main/java/config/SecurityConfig.java:77"
+   ]
+  },
+  {
+   "key": "authority|config.SecurityConfig|authority|requiresRole|ADMIN-role-on-post-/api/v1/configservice/configs",
+   "candidateAtomId": "atom:authority:config.SecurityConfig:requiresRole:post-configs-admin",
+   "refs": [
+    "src:ts-config-service/src/main/java/config/SecurityConfig.java:75"
+   ]
+  },
+  {
+   "key": "authority|config.SecurityConfig|authority|requiresRole|ADMIN-role-on-put-/api/v1/configservice/configs",
+   "candidateAtomId": "atom:authority:config.SecurityConfig:requiresRole:put-configs-admin",
+   "refs": [
+    "src:ts-config-service/src/main/java/config/SecurityConfig.java:76"
+   ]
+  },
+  {
+   "key": "authority|config.controller.ConfigController|authority|allowsCrossOrigin|wildcard-origin-cross-origin-annotation-on-configs-endpoints",
+   "candidateAtomId": "atom:authority:config.controller.ConfigController:allowsCrossOrigin:annotation-configs-endpoints",
+   "refs": [
+    "src:ts-config-service/src/main/java/config/controller/ConfigController.java:35",
+    "src:ts-config-service/src/main/java/config/controller/ConfigController.java:42",
+    "src:ts-config-service/src/main/java/config/controller/ConfigController.java:49",
+    "src:ts-config-service/src/main/java/config/controller/ConfigController.java:57",
+    "src:ts-config-service/src/main/java/config/controller/ConfigController.java:64"
+   ]
+  },
+  {
+   "key": "component|common.entity.TripResponse|static||",
+   "candidateAtomId": "atom:component:common.entity.TripResponse",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripResponse.java"
+   ]
+  },
+  {
+   "key": "component|common.entity.Type|static||",
+   "candidateAtomId": "atom:component:common.entity.Type",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Type.java"
+   ]
+  },
+  {
+   "key": "component|common.entity.User|static||",
+   "candidateAtomId": "atom:component:common.entity.User",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/User.java"
+   ]
+  },
+  {
+   "key": "component|common.exception.BaseException|static||",
+   "candidateAtomId": "atom:component:common.exception.BaseException",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/exception/BaseException.java"
+   ]
+  },
+  {
+   "key": "component|common.exception.TokenException|static||",
+   "candidateAtomId": "atom:component:common.exception.TokenException",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/exception/TokenException.java"
+   ]
+  },
+  {
+   "key": "component|common.security.jwt.JWTFilter|static||",
+   "candidateAtomId": "atom:component:common.security.jwt.JWTFilter",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java"
+   ]
+  },
+  {
+   "key": "component|common.security.jwt.JWTUtil|static||",
+   "candidateAtomId": "atom:component:common.security.jwt.JWTUtil",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java"
+   ]
+  },
+  {
+   "key": "component|common.util.JsonUtils|static||",
+   "candidateAtomId": "atom:component:common.util.JsonUtils",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/util/JsonUtils.java"
+   ]
+  },
+  {
+   "key": "component|common.util.Response|static||",
+   "candidateAtomId": "atom:component:common.util.Response",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/util/Response.java"
+   ]
+  },
+  {
+   "key": "component|common.util.StringUtils|static||",
+   "candidateAtomId": "atom:component:common.util.StringUtils",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/util/StringUtils.java"
+   ]
+  },
+  {
+   "key": "component|config.applicationYmlConfig|static||",
+   "candidateAtomId": "atom:component:config.applicationYmlConfig",
+   "refs": [
+    "src:ts-config-service/src/main/resources/application.yml"
+   ]
+  },
+  {
+   "key": "contract|common.security.jwt.JWTUtil|specification|ensures|token-exception-raised-on-expired-or-unsupported-or-malformed-or-signature-or-illegal-argument-branch",
+   "candidateAtomId": "atom:contract:common.security.jwt.JWTUtil:ensures:token-exception-on-invalid-branch",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:101",
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:104",
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:107",
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:110",
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:113"
+   ]
+  },
+  {
+   "key": "relation|common.exception.TokenException|relation|implements|common.exception.BaseException",
+   "candidateAtomId": "atom:relation:common.exception.TokenException:implements:common.exception.BaseException",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/exception/TokenException.java:6"
+   ]
+  },
+  {
+   "key": "relation|common.security.jwt.JWTFilter|relation|calls|common.security.jwt.JWTUtil",
+   "candidateAtomId": "atom:relation:common.security.jwt.JWTFilter:calls:common.security.jwt.JWTUtil",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java:23"
+   ]
+  },
+  {
+   "key": "relation|config.SecurityConfig|relation|dependsOn|common.security.jwt.JWTFilter",
+   "candidateAtomId": "atom:relation:config.SecurityConfig:dependsOn:common.security.jwt.JWTFilter",
+   "refs": [
+    "src:ts-config-service/src/main/java/config/SecurityConfig.java:82"
+   ]
+  },
+  {
+   "key": "relation|config.init.InitData|relation|calls|config.service.ConfigService",
+   "candidateAtomId": "atom:relation:config.init.InitData:calls:config.service.ConfigService",
+   "refs": [
+    "src:ts-config-service/src/main/java/config/init/InitData.java:25"
+   ]
+  },
+  {
+   "key": "relation|config.repository.ConfigRepository|relation|readsFrom|config.entity.Config",
+   "candidateAtomId": "atom:relation:config.repository.ConfigRepository:readsFrom:config.entity.Config",
+   "refs": [
+    "src:ts-config-service/src/main/java/config/repository/ConfigRepository.java:19",
+    "src:ts-config-service/src/main/java/config/repository/ConfigRepository.java:27"
+   ]
+  },
+  {
+   "key": "semantic|common.entity.TripResponse|semantic|meansInUse|price-fields-represented-as-string-not-parsed-at-declaration-site",
+   "candidateAtomId": "atom:semantic:common.entity.TripResponse:meansInUse:price-string-fields",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripResponse.java:54",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripResponse.java:58"
+   ]
+  },
+  {
+   "key": "semantic|common.entity.Type|semantic|identifiedBy|train-type-code-name-pairs-G-D-Z-T-K-index-1-to-5",
+   "candidateAtomId": "atom:semantic:common.entity.Type:identifiedBy:train-type-code-vocabulary",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Type.java:12",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Type.java:16",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Type.java:20",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Type.java:24",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/Type.java:28"
+   ]
+  },
+  {
+   "key": "semantic|common.entity.User|semantic|meansInUse|gender-and-document-type-represented-as-int-codes-not-named-enum",
+   "candidateAtomId": "atom:semantic:common.entity.User:meansInUse:gender-and-document-type-int-codes",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/User.java:23",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/User.java:25"
+   ]
+  },
+  {
+   "key": "semantic|common.security.jwt.JWTFilter|semantic|meansInUse|catches-io-jsonwebtoken-jwtexception-type-distinct-from-edu-fudan-common-exception-tokenexception-raised-by-validatetoken",
+   "candidateAtomId": "atom:semantic:common.security.jwt.JWTFilter:meansInUse:distinct-exception-type-from-token-exception",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTFilter.java:28",
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:103"
+   ]
+  },
+  {
+   "key": "semantic|common.security.jwt.JWTUtil|semantic|meansInUse|bearer-prefix-stripped-via-substring-7-from-authorization-header",
+   "candidateAtomId": "atom:semantic:common.security.jwt.JWTUtil:meansInUse:bearer-prefix-strip",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:90",
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:92"
+   ]
+  },
+  {
+   "key": "semantic|common.security.jwt.JWTUtil|semantic|meansInUse|hardcoded-literal-secret-base64-encoded-used-as-jwt-signing-key",
+   "candidateAtomId": "atom:semantic:common.security.jwt.JWTUtil:meansInUse:hardcoded-signing-secret",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:31"
+   ]
+  },
+  {
+   "key": "semantic|common.security.jwt.JWTUtil|semantic|meansInUse|roles-claim-list-extracted-from-jwt-body-as-granted-authorities",
+   "candidateAtomId": "atom:semantic:common.security.jwt.JWTUtil:meansInUse:roles-claim-authorities",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:41",
+    "src:ts-common/src/main/java/edu/fudan/common/security/jwt/JWTUtil.java:86"
+   ]
+  },
+  {
+   "key": "semantic|common.util.JsonUtils|semantic|meansInUse|returns-null-on-parse-exception-branch-instead-of-propagating",
+   "candidateAtomId": "atom:semantic:common.util.JsonUtils:meansInUse:returns-null-on-parse-exception",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/util/JsonUtils.java:63",
+    "src:ts-common/src/main/java/edu/fudan/common/util/JsonUtils.java:65"
+   ]
+  },
+  {
+   "key": "semantic|common.util.Response|semantic|statusGates|status-1-on-success-branch-status-0-on-not-found-or-rejected-branch",
+   "candidateAtomId": "atom:semantic:common.util.Response:statusGates:success-vs-rejected-branch",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/util/Response.java:18",
+    "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:34",
+    "src:ts-config-service/src/main/java/config/service/ConfigServiceImpl.java:39"
+   ]
+  },
+  {
+   "key": "semantic|common.util.StringUtils|semantic|meansInUse|date-format-yyyy-MM-dd-HH-mm-ss-when-length-over-10-else-yyyy-MM-dd",
+   "candidateAtomId": "atom:semantic:common.util.StringUtils:meansInUse:date-format-boundary",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:17",
+    "src:ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:20"
+   ]
+  },
+  {
+   "key": "semantic|common.util.StringUtils|semantic|meansInUse|returns-epoch-date-zero-on-parse-exception-branch",
+   "candidateAtomId": "atom:semantic:common.util.StringUtils:meansInUse:epoch-fallback-on-parse-exception",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:26",
+    "src:ts-common/src/main/java/edu/fudan/common/util/StringUtils.java:27"
+   ]
+  },
+  {
+   "key": "semantic|config.SecurityConfig|semantic|meansInUse|permit-all-matcher-registered-before-role-gated-matchers-for-same-path-prefix",
+   "candidateAtomId": "atom:semantic:config.SecurityConfig:meansInUse:permit-all-matcher-order",
+   "refs": [
+    "src:ts-config-service/src/main/java/config/SecurityConfig.java:74",
+    "src:ts-config-service/src/main/java/config/SecurityConfig.java:75",
+    "src:ts-config-service/src/main/java/config/SecurityConfig.java:76",
+    "src:ts-config-service/src/main/java/config/SecurityConfig.java:77"
+   ]
+  },
+  {
+   "key": "semantic|config.entity.Config|semantic|identifiedBy|config-looked-up-by-name-string-primary-key-not-surrogate-id",
+   "candidateAtomId": "atom:semantic:config.entity.Config:identifiedBy:name-string-key",
+   "refs": [
+    "src:ts-config-service/src/main/java/config/entity/Config.java:17",
+    "src:ts-config-service/src/main/java/config/repository/ConfigRepository.java:19"
+   ]
+  },
+  {
+   "key": "semantic|config.init.InitData|semantic|meansInUse|seeds-direct-ticket-allocation-proportion-config-value-0.5-at-application-startup",
+   "candidateAtomId": "atom:semantic:config.init.InitData:meansInUse:seeds-startup-config-value",
+   "refs": [
+    "src:ts-config-service/src/main/java/config/init/InitData.java:22",
+    "src:ts-config-service/src/main/java/config/init/InitData.java:23",
+    "src:ts-config-service/src/main/java/config/init/InitData.java:25"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-common-shared-entities-and-utils|cech|sectionValue|section=money-amount:string-price-field-unparsed-at-declaration-site",
+   "candidateAtomId": "atom:semantic:ts-common-shared-entities-and-utils:cech-section-money-amount",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripResponse.java:54",
+    "src:ts-common/src/main/java/edu/fudan/common/entity/TripResponse.java:58"
+   ]
+  },
+  {
+   "key": "semantic|rebook.entity.VerifyResult|semantic|meansInUse|declared-package-rebook.entity-differs-from-file-directory-edu-fudan-common-entity",
+   "candidateAtomId": "atom:semantic:rebook.entity.VerifyResult:meansInUse:package-declaration-differs-from-directory",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/entity/VerifyResult.java:1"
+   ]
+  },
+  {
+   "key": "state|config.entity.Config|state|persistsIn|jpa-entity-primary-key-name-string",
+   "candidateAtomId": "atom:state:config.entity.Config:persistsIn:primary-key-name",
+   "refs": [
+    "src:ts-config-service/src/main/java/config/entity/Config.java:14",
+    "src:ts-config-service/src/main/java/config/entity/Config.java:17"
+   ]
+  },
+  {
+   "key": "state|config.entity.Config|state|persistsIn|ts-config-mysql-database-via-hibernate-ddl-auto-update",
+   "candidateAtomId": "atom:state:config.entity.Config:persistsIn:ts-config-mysql",
+   "refs": [
+    "src:ts-config-service/src/main/resources/application.yml:9",
+    "src:ts-config-service/src/main/resources/application.yml:15"
+   ]
+  }
+ ]
+}

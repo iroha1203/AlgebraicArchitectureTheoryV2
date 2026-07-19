@@ -1,0 +1,78 @@
+{
+  "schema": "law-equation-surface/v0.5.3",
+  "id": "law-surface:train-ticket-cancel-refund-v053",
+  "laws": [
+    {
+      "lawId": "surface:cech-surface-v052",
+      "conditionType": "closed-equational",
+      "witnessVariables": [
+        {
+          "variable": "e_cancel_orderstatus",
+          "binding": {
+            "edge": [
+              "ctx:cancel-order-command-flow",
+              "ctx:order-status-boundary"
+            ],
+            "axis": "cech",
+            "predicate": "sectionValue"
+          }
+        },
+        {
+          "variable": "e_insidepay_orderstatus",
+          "binding": {
+            "edge": [
+              "ctx:inside-payment-pay-flow",
+              "ctx:order-status-boundary"
+            ],
+            "axis": "cech",
+            "predicate": "sectionValue"
+          }
+        },
+        {
+          "variable": "e_insidepay_orderlookup",
+          "binding": {
+            "edge": [
+              "ctx:inside-payment-pay-flow",
+              "ctx:order-lookup-boundary"
+            ],
+            "axis": "cech",
+            "predicate": "sectionValue"
+          }
+        },
+        {
+          "variable": "e_cancel_orderlookup",
+          "binding": {
+            "edge": [
+              "ctx:cancel-order-command-flow",
+              "ctx:order-lookup-boundary"
+            ],
+            "axis": "cech",
+            "predicate": "sectionValue"
+          }
+        }
+      ],
+      "forbiddenSupportGenerators": [
+        {
+          "support": [
+            "e_cancel_orderstatus"
+          ]
+        },
+        {
+          "support": [
+            "e_insidepay_orderstatus"
+          ]
+        },
+        {
+          "support": [
+            "e_insidepay_orderlookup"
+          ]
+        },
+        {
+          "support": [
+            "e_cancel_orderlookup"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1629 @@
+{
+ "chunkId": "chunk-08",
+ "adjudications": [
+  {
+   "key": "authority|consign.config.SecurityConfig|authority|allowsCrossOrigin|cors-all-origins-all-methods-all-headers-credentials-false-maxage-3600",
+   "candidateAtomId": "atom:authority:consign-security-config:allows-cross-origin",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-consign-service/src/main/java/consign/config/SecurityConfig.java:51-56 -- corsConfigurer registers /** with allowedOrigins/Methods/Headers=ALL, allowCredentials(false), maxAge(3600). Pass A and pass B describe the identical CORS rule with only naming/object-phrasing drift; merged into one canonical atom.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-consign-service-security-config:allows-cross-origin",
+    "kind": "authority",
+    "subject": "ts-consign-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "cors-all-origins-all-methods-all-headers-scope-/**-credentials-false-maxage-3600s",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/config/SecurityConfig.java:51",
+     "src:ts-consign-service/src/main/java/consign/config/SecurityConfig.java:56"
+    ]
+   }
+  },
+  {
+   "key": "authority|consign.config.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-scope-/**-credentials-not-sent",
+   "candidateAtomId": "atom:authority:consign-config-securityconfig:allowscrossorigin-all-origins-credentials-false",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-consign-service/src/main/java/consign/config/SecurityConfig.java:51-56 -- corsConfigurer registers /** with allowedOrigins/Methods/Headers=ALL, allowCredentials(false), maxAge(3600). Pass A and pass B describe the identical CORS rule with only naming/object-phrasing drift; merged into one canonical atom.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-consign-service-security-config:allows-cross-origin",
+    "kind": "authority",
+    "subject": "ts-consign-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "cors-all-origins-all-methods-all-headers-scope-/**-credentials-false-maxage-3600s",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/config/SecurityConfig.java:51",
+     "src:ts-consign-service/src/main/java/consign/config/SecurityConfig.java:56"
+    ]
+   }
+  },
+  {
+   "key": "authority|consign.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+   "candidateAtomId": "atom:authority:consign-security-config:permits-unauthenticated",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-consign-service/src/main/java/consign/config/SecurityConfig.java:72-73 -- antMatchers on swagger-ui/webjars/images/configuration/swagger-resources/v2 paths call .permitAll(). Same fact in both passes, only phrasing/object-listing drift; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-consign-service-security-config:permits-unauthenticated",
+    "kind": "authority",
+    "subject": "ts-consign-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "permitsUnauthenticated",
+    "object": "permit-all-on-/swagger-ui.html-/webjars/**-/images/**-/configuration/**-/swagger-resources/**-/v2/**",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/config/SecurityConfig.java:72",
+     "src:ts-consign-service/src/main/java/consign/config/SecurityConfig.java:73"
+    ]
+   }
+  },
+  {
+   "key": "authority|consign.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/swagger-ui.html-/webjars/**-/images/**-/configuration/**-/swagger-resources/**-/v2/**",
+   "candidateAtomId": "atom:authority:consign-config-securityconfig:permitsunauthenticated-swagger-and-static-doc-paths",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-consign-service/src/main/java/consign/config/SecurityConfig.java:72-73 -- antMatchers on swagger-ui/webjars/images/configuration/swagger-resources/v2 paths call .permitAll(). Same fact in both passes, only phrasing/object-listing drift; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-consign-service-security-config:permits-unauthenticated",
+    "kind": "authority",
+    "subject": "ts-consign-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "permitsUnauthenticated",
+    "object": "permit-all-on-/swagger-ui.html-/webjars/**-/images/**-/configuration/**-/swagger-resources/**-/v2/**",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/config/SecurityConfig.java:72",
+     "src:ts-consign-service/src/main/java/consign/config/SecurityConfig.java:73"
+    ]
+   }
+  },
+  {
+   "key": "authority|consign.config.SecurityConfig|authority|requiresRole|role-admin-or-user-on-/api/v1/consignservice/**",
+   "candidateAtomId": "atom:authority:consign-security-config:requires-role",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-consign-service/src/main/java/consign/config/SecurityConfig.java:71 -- antMatchers(\"/api/v1/consignservice/**\").hasAnyRole(\"ADMIN\",\"USER\"). Identical fact in both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-consign-service-security-config:requires-role",
+    "kind": "authority",
+    "subject": "ts-consign-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "ADMIN-or-USER-role-required-on-/api/v1/consignservice/**",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/config/SecurityConfig.java:71"
+    ]
+   }
+  },
+  {
+   "key": "authority|consign.config.SecurityConfig|authority|requiresRole|ADMIN-or-USER-role-required-on-/api/v1/consignservice/**",
+   "candidateAtomId": "atom:authority:consign-config-securityconfig:requiresrole-admin-user-on-consignservice-api-path",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-consign-service/src/main/java/consign/config/SecurityConfig.java:71 -- antMatchers(\"/api/v1/consignservice/**\").hasAnyRole(\"ADMIN\",\"USER\"). Identical fact in both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-consign-service-security-config:requires-role",
+    "kind": "authority",
+    "subject": "ts-consign-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "ADMIN-or-USER-role-required-on-/api/v1/consignservice/**",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/config/SecurityConfig.java:71"
+    ]
+   }
+  },
+  {
+   "key": "authority|consignprice.config.SecurityConfig|authority|allowsCrossOrigin|cors-all-origins-all-methods-all-headers-credentials-false-maxage-3600",
+   "candidateAtomId": "atom:authority:consignprice-security-config:allows-cross-origin",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/config/SecurityConfig.java:51-56 -- identical corsConfigurer structure to ts-consign-service (all-origins/methods/headers, credentials false, maxAge 3600). Same fact in both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-consign-price-service-security-config:allows-cross-origin",
+    "kind": "authority",
+    "subject": "ts-consign-price-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "cors-all-origins-all-methods-all-headers-scope-/**-credentials-false-maxage-3600s",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/config/SecurityConfig.java:51",
+     "src:ts-consign-price-service/src/main/java/consignprice/config/SecurityConfig.java:56"
+    ]
+   }
+  },
+  {
+   "key": "authority|consignprice.config.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-scope-/**-credentials-not-sent",
+   "candidateAtomId": "atom:authority:consignprice-config-securityconfig:allowscrossorigin-all-origins-credentials-false",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/config/SecurityConfig.java:51-56 -- identical corsConfigurer structure to ts-consign-service (all-origins/methods/headers, credentials false, maxAge 3600). Same fact in both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-consign-price-service-security-config:allows-cross-origin",
+    "kind": "authority",
+    "subject": "ts-consign-price-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "allowsCrossOrigin",
+    "object": "cors-all-origins-all-methods-all-headers-scope-/**-credentials-false-maxage-3600s",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/config/SecurityConfig.java:51",
+     "src:ts-consign-price-service/src/main/java/consignprice/config/SecurityConfig.java:56"
+    ]
+   }
+  },
+  {
+   "key": "authority|consignprice.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+   "candidateAtomId": "atom:authority:consignprice-security-config:permits-unauthenticated",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/config/SecurityConfig.java:72-73 -- same swagger/webjars/images/configuration/swagger-resources/v2 permitAll pattern as ts-consign-service. Same fact; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-consign-price-service-security-config:permits-unauthenticated",
+    "kind": "authority",
+    "subject": "ts-consign-price-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "permitsUnauthenticated",
+    "object": "permit-all-on-/swagger-ui.html-/webjars/**-/images/**-/configuration/**-/swagger-resources/**-/v2/**",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/config/SecurityConfig.java:72",
+     "src:ts-consign-price-service/src/main/java/consignprice/config/SecurityConfig.java:73"
+    ]
+   }
+  },
+  {
+   "key": "authority|consignprice.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/swagger-ui.html-/webjars/**-/images/**-/configuration/**-/swagger-resources/**-/v2/**",
+   "candidateAtomId": "atom:authority:consignprice-config-securityconfig:permitsunauthenticated-swagger-and-static-doc-paths",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/config/SecurityConfig.java:72-73 -- same swagger/webjars/images/configuration/swagger-resources/v2 permitAll pattern as ts-consign-service. Same fact; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-consign-price-service-security-config:permits-unauthenticated",
+    "kind": "authority",
+    "subject": "ts-consign-price-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "permitsUnauthenticated",
+    "object": "permit-all-on-/swagger-ui.html-/webjars/**-/images/**-/configuration/**-/swagger-resources/**-/v2/**",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/config/SecurityConfig.java:72",
+     "src:ts-consign-price-service/src/main/java/consignprice/config/SecurityConfig.java:73"
+    ]
+   }
+  },
+  {
+   "key": "authority|consignprice.config.SecurityConfig|authority|requiresRole|role-admin-or-user-on-/api/v1/consignpriceservice/**",
+   "candidateAtomId": "atom:authority:consignprice-security-config:requires-role",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/config/SecurityConfig.java:71 -- antMatchers(\"/api/v1/consignpriceservice/**\").hasAnyRole(\"ADMIN\",\"USER\"). Same fact; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-consign-price-service-security-config:requires-role",
+    "kind": "authority",
+    "subject": "ts-consign-price-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "ADMIN-or-USER-role-required-on-/api/v1/consignpriceservice/**",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/config/SecurityConfig.java:71"
+    ]
+   }
+  },
+  {
+   "key": "authority|consignprice.config.SecurityConfig|authority|requiresRole|ADMIN-or-USER-role-required-on-/api/v1/consignpriceservice/**",
+   "candidateAtomId": "atom:authority:consignprice-config-securityconfig:requiresrole-admin-user-on-consignpriceservice-api-path",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/config/SecurityConfig.java:71 -- antMatchers(\"/api/v1/consignpriceservice/**\").hasAnyRole(\"ADMIN\",\"USER\"). Same fact; merged.",
+   "canonicalAtom": {
+    "id": "atom:authority:ts-consign-price-service-security-config:requires-role",
+    "kind": "authority",
+    "subject": "ts-consign-price-service.SecurityConfig",
+    "axis": "authority",
+    "predicate": "requiresRole",
+    "object": "ADMIN-or-USER-role-required-on-/api/v1/consignpriceservice/**",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/config/SecurityConfig.java:71"
+    ]
+   }
+  },
+  {
+   "key": "capability|consign.controller.ConsignController|capability|exposesEndpoint|GET /api/v1/consignservice/welcome",
+   "candidateAtomId": "atom:capability:consign-consign-controller:exposes-welcome",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-consign-service/src/main/java/consign/controller/ConsignController.java:28-30 -- @GetMapping(\"/welcome\") returns a fixed welcome string. Same endpoint fact in both passes under different predicate naming (exposesEndpoint vs exposesEndpoint); merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-consign-service-consign-controller:exposes-welcome",
+    "kind": "capability",
+    "subject": "ts-consign-service.ConsignController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/consignservice/welcome",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:28",
+     "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:30"
+    ]
+   }
+  },
+  {
+   "key": "capability|consign.controller.ConsignController|capability|exposesEndpoint|GET-/api/v1/consignservice/welcome",
+   "candidateAtomId": "atom:capability:consign-controller-consigncontroller:exposesendpoint-get-welcome",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-consign-service/src/main/java/consign/controller/ConsignController.java:28-30 -- @GetMapping(\"/welcome\") returns a fixed welcome string. Same endpoint fact in both passes under different predicate naming (exposesEndpoint vs exposesEndpoint); merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-consign-service-consign-controller:exposes-welcome",
+    "kind": "capability",
+    "subject": "ts-consign-service.ConsignController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/consignservice/welcome",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:28",
+     "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:30"
+    ]
+   }
+  },
+  {
+   "key": "capability|consign.controller.ConsignController|capability|handlesCommand|POST /api/v1/consignservice/consigns",
+   "candidateAtomId": "atom:capability:consign-consign-controller:handles-insert-consign",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-consign-service/src/main/java/consign/controller/ConsignController.java:33-38 -- @PostMapping(\"/consigns\") calls service.insertConsignRecord. Pass A labelled predicate handlesCommand, pass B exposesEndpoint; same endpoint fact, predicate-naming drift; merged (canonical predicate exposesEndpoint per capability default).",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-consign-service-consign-controller:exposes-insert-consign",
+    "kind": "capability",
+    "subject": "ts-consign-service.ConsignController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/consignservice/consigns",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:33",
+     "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:37"
+    ]
+   }
+  },
+  {
+   "key": "capability|consign.controller.ConsignController|capability|exposesEndpoint|POST-/api/v1/consignservice/consigns",
+   "candidateAtomId": "atom:capability:consign-controller-consigncontroller:exposesendpoint-post-consigns",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-consign-service/src/main/java/consign/controller/ConsignController.java:33-38 -- @PostMapping(\"/consigns\") calls service.insertConsignRecord. Pass A labelled predicate handlesCommand, pass B exposesEndpoint; same endpoint fact, predicate-naming drift; merged (canonical predicate exposesEndpoint per capability default).",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-consign-service-consign-controller:exposes-insert-consign",
+    "kind": "capability",
+    "subject": "ts-consign-service.ConsignController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/consignservice/consigns",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:33",
+     "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:37"
+    ]
+   }
+  },
+  {
+   "key": "capability|consign.controller.ConsignController|capability|handlesCommand|PUT /api/v1/consignservice/consigns",
+   "candidateAtomId": "atom:capability:consign-consign-controller:handles-update-consign",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-consign-service/src/main/java/consign/controller/ConsignController.java:40-44 -- @PutMapping(\"/consigns\") calls service.updateConsignRecord. Same endpoint fact; predicate-naming drift (handlesCommand vs exposesEndpoint); merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-consign-service-consign-controller:exposes-update-consign",
+    "kind": "capability",
+    "subject": "ts-consign-service.ConsignController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "PUT /api/v1/consignservice/consigns",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:40",
+     "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:43"
+    ]
+   }
+  },
+  {
+   "key": "capability|consign.controller.ConsignController|capability|exposesEndpoint|PUT-/api/v1/consignservice/consigns",
+   "candidateAtomId": "atom:capability:consign-controller-consigncontroller:exposesendpoint-put-consigns",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-consign-service/src/main/java/consign/controller/ConsignController.java:40-44 -- @PutMapping(\"/consigns\") calls service.updateConsignRecord. Same endpoint fact; predicate-naming drift (handlesCommand vs exposesEndpoint); merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-consign-service-consign-controller:exposes-update-consign",
+    "kind": "capability",
+    "subject": "ts-consign-service.ConsignController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "PUT /api/v1/consignservice/consigns",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:40",
+     "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:43"
+    ]
+   }
+  },
+  {
+   "key": "capability|consign.controller.ConsignController|capability|servesQuery|GET /api/v1/consignservice/consigns/account/{id}",
+   "candidateAtomId": "atom:capability:consign-consign-controller:serves-find-by-account-id",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-consign-service/src/main/java/consign/controller/ConsignController.java:46-51 -- @GetMapping(\"/consigns/account/{id}\") calls service.queryByAccountId. Same endpoint fact; predicate-naming drift (servesQuery vs exposesEndpoint); merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-consign-service-consign-controller:exposes-find-by-account-id",
+    "kind": "capability",
+    "subject": "ts-consign-service.ConsignController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/consignservice/consigns/account/{id}",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:46",
+     "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:50"
+    ]
+   }
+  },
+  {
+   "key": "capability|consign.controller.ConsignController|capability|exposesEndpoint|GET-/api/v1/consignservice/consigns/account/{id}",
+   "candidateAtomId": "atom:capability:consign-controller-consigncontroller:exposesendpoint-get-consigns-account-id",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-consign-service/src/main/java/consign/controller/ConsignController.java:46-51 -- @GetMapping(\"/consigns/account/{id}\") calls service.queryByAccountId. Same endpoint fact; predicate-naming drift (servesQuery vs exposesEndpoint); merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-consign-service-consign-controller:exposes-find-by-account-id",
+    "kind": "capability",
+    "subject": "ts-consign-service.ConsignController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/consignservice/consigns/account/{id}",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:46",
+     "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:50"
+    ]
+   }
+  },
+  {
+   "key": "capability|consign.controller.ConsignController|capability|servesQuery|GET /api/v1/consignservice/consigns/order/{id}",
+   "candidateAtomId": "atom:capability:consign-consign-controller:serves-find-by-order-id",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-consign-service/src/main/java/consign/controller/ConsignController.java:53-58 -- @GetMapping(\"/consigns/order/{id}\") calls service.queryByOrderId. Same endpoint fact; predicate-naming drift; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-consign-service-consign-controller:exposes-find-by-order-id",
+    "kind": "capability",
+    "subject": "ts-consign-service.ConsignController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/consignservice/consigns/order/{id}",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:53",
+     "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:57"
+    ]
+   }
+  },
+  {
+   "key": "capability|consign.controller.ConsignController|capability|exposesEndpoint|GET-/api/v1/consignservice/consigns/order/{id}",
+   "candidateAtomId": "atom:capability:consign-controller-consigncontroller:exposesendpoint-get-consigns-order-id",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-consign-service/src/main/java/consign/controller/ConsignController.java:53-58 -- @GetMapping(\"/consigns/order/{id}\") calls service.queryByOrderId. Same endpoint fact; predicate-naming drift; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-consign-service-consign-controller:exposes-find-by-order-id",
+    "kind": "capability",
+    "subject": "ts-consign-service.ConsignController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/consignservice/consigns/order/{id}",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:53",
+     "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:57"
+    ]
+   }
+  },
+  {
+   "key": "capability|consign.controller.ConsignController|capability|servesQuery|GET /api/v1/consignservice/consigns/{consignee}",
+   "candidateAtomId": "atom:capability:consign-consign-controller:serves-find-by-consignee",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-consign-service/src/main/java/consign/controller/ConsignController.java:60-64 -- @GetMapping(\"/consigns/{consignee}\") calls service.queryByConsignee. Same endpoint fact; predicate-naming drift; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-consign-service-consign-controller:exposes-find-by-consignee",
+    "kind": "capability",
+    "subject": "ts-consign-service.ConsignController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/consignservice/consigns/{consignee}",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:60",
+     "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:63"
+    ]
+   }
+  },
+  {
+   "key": "capability|consign.controller.ConsignController|capability|exposesEndpoint|GET-/api/v1/consignservice/consigns/{consignee}",
+   "candidateAtomId": "atom:capability:consign-controller-consigncontroller:exposesendpoint-get-consigns-consignee",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-consign-service/src/main/java/consign/controller/ConsignController.java:60-64 -- @GetMapping(\"/consigns/{consignee}\") calls service.queryByConsignee. Same endpoint fact; predicate-naming drift; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-consign-service-consign-controller:exposes-find-by-consignee",
+    "kind": "capability",
+    "subject": "ts-consign-service.ConsignController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/consignservice/consigns/{consignee}",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:60",
+     "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:63"
+    ]
+   }
+  },
+  {
+   "key": "capability|consignprice.controller.ConsignPriceController|capability|exposesEndpoint|GET /api/v1/consignpriceservice/welcome",
+   "candidateAtomId": "atom:capability:consignprice-consign-price-controller:exposes-welcome",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:26-29 -- @GetMapping(\"/welcome\") returns fixed welcome string. Same endpoint fact; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-consign-price-service-consign-price-controller:exposes-welcome",
+    "kind": "capability",
+    "subject": "ts-consign-price-service.ConsignPriceController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/consignpriceservice/welcome",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:26",
+     "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:28"
+    ]
+   }
+  },
+  {
+   "key": "capability|consignprice.controller.ConsignPriceController|capability|exposesEndpoint|GET-/api/v1/consignpriceservice/welcome",
+   "candidateAtomId": "atom:capability:consignprice-controller-consignpricecontroller:exposesendpoint-get-welcome",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:26-29 -- @GetMapping(\"/welcome\") returns fixed welcome string. Same endpoint fact; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-consign-price-service-consign-price-controller:exposes-welcome",
+    "kind": "capability",
+    "subject": "ts-consign-price-service.ConsignPriceController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/consignpriceservice/welcome",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:26",
+     "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:28"
+    ]
+   }
+  },
+  {
+   "key": "capability|consignprice.controller.ConsignPriceController|capability|handlesCommand|POST /api/v1/consignpriceservice/consignprice",
+   "candidateAtomId": "atom:capability:consignprice-consign-price-controller:handles-modify-price-config",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:51-56 -- @PostMapping(\"/consignprice\") calls service.createAndModifyPrice. Same endpoint fact; predicate-naming drift (handlesCommand vs exposesEndpoint); merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-consign-price-service-consign-price-controller:exposes-modify-price-config",
+    "kind": "capability",
+    "subject": "ts-consign-price-service.ConsignPriceController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/consignpriceservice/consignprice",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:51",
+     "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:55"
+    ]
+   }
+  },
+  {
+   "key": "capability|consignprice.controller.ConsignPriceController|capability|exposesEndpoint|POST-/api/v1/consignpriceservice/consignprice",
+   "candidateAtomId": "atom:capability:consignprice-controller-consignpricecontroller:exposesendpoint-post-consignprice",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:51-56 -- @PostMapping(\"/consignprice\") calls service.createAndModifyPrice. Same endpoint fact; predicate-naming drift (handlesCommand vs exposesEndpoint); merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-consign-price-service-consign-price-controller:exposes-modify-price-config",
+    "kind": "capability",
+    "subject": "ts-consign-price-service.ConsignPriceController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "POST /api/v1/consignpriceservice/consignprice",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:51",
+     "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:55"
+    ]
+   }
+  },
+  {
+   "key": "capability|consignprice.controller.ConsignPriceController|capability|servesQuery|GET /api/v1/consignpriceservice/consignprice/config",
+   "candidateAtomId": "atom:capability:consignprice-consign-price-controller:serves-price-config",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:45-49 -- @GetMapping(\"/consignprice/config\") calls service.getPriceConfig. Same endpoint fact; predicate-naming drift; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-consign-price-service-consign-price-controller:exposes-price-config",
+    "kind": "capability",
+    "subject": "ts-consign-price-service.ConsignPriceController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/consignpriceservice/consignprice/config",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:45",
+     "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:48"
+    ]
+   }
+  },
+  {
+   "key": "capability|consignprice.controller.ConsignPriceController|capability|exposesEndpoint|GET-/api/v1/consignpriceservice/consignprice/config",
+   "candidateAtomId": "atom:capability:consignprice-controller-consignpricecontroller:exposesendpoint-get-consignprice-config",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:45-49 -- @GetMapping(\"/consignprice/config\") calls service.getPriceConfig. Same endpoint fact; predicate-naming drift; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-consign-price-service-consign-price-controller:exposes-price-config",
+    "kind": "capability",
+    "subject": "ts-consign-price-service.ConsignPriceController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/consignpriceservice/consignprice/config",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:45",
+     "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:48"
+    ]
+   }
+  },
+  {
+   "key": "capability|consignprice.controller.ConsignPriceController|capability|servesQuery|GET /api/v1/consignpriceservice/consignprice/price",
+   "candidateAtomId": "atom:capability:consignprice-consign-price-controller:serves-price-info",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:39-43 -- @GetMapping(\"/consignprice/price\") calls service.queryPriceInformation. Same endpoint fact; predicate-naming drift; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-consign-price-service-consign-price-controller:exposes-price-info",
+    "kind": "capability",
+    "subject": "ts-consign-price-service.ConsignPriceController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/consignpriceservice/consignprice/price",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:39",
+     "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:42"
+    ]
+   }
+  },
+  {
+   "key": "capability|consignprice.controller.ConsignPriceController|capability|exposesEndpoint|GET-/api/v1/consignpriceservice/consignprice/price",
+   "candidateAtomId": "atom:capability:consignprice-controller-consignpricecontroller:exposesendpoint-get-consignprice-price",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:39-43 -- @GetMapping(\"/consignprice/price\") calls service.queryPriceInformation. Same endpoint fact; predicate-naming drift; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-consign-price-service-consign-price-controller:exposes-price-info",
+    "kind": "capability",
+    "subject": "ts-consign-price-service.ConsignPriceController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/consignpriceservice/consignprice/price",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:39",
+     "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:42"
+    ]
+   }
+  },
+  {
+   "key": "capability|consignprice.controller.ConsignPriceController|capability|servesQuery|GET /api/v1/consignpriceservice/consignprice/{weight}/{isWithinRegion}",
+   "candidateAtomId": "atom:capability:consignprice-consign-price-controller:serves-price-by-weight-and-region",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:31-37 -- @GetMapping(\"/consignprice/{weight}/{isWithinRegion}\") calls service.getPriceByWeightAndRegion. Same endpoint fact; predicate-naming drift; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-consign-price-service-consign-price-controller:exposes-price-by-weight-and-region",
+    "kind": "capability",
+    "subject": "ts-consign-price-service.ConsignPriceController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/consignpriceservice/consignprice/{weight}/{isWithinRegion}",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:31",
+     "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:35"
+    ]
+   }
+  },
+  {
+   "key": "capability|consignprice.controller.ConsignPriceController|capability|exposesEndpoint|GET-/api/v1/consignpriceservice/consignprice/{weight}/{isWithinRegion}",
+   "candidateAtomId": "atom:capability:consignprice-controller-consignpricecontroller:exposesendpoint-get-consignprice-weight-iswithinregion",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:31-37 -- @GetMapping(\"/consignprice/{weight}/{isWithinRegion}\") calls service.getPriceByWeightAndRegion. Same endpoint fact; predicate-naming drift; merged.",
+   "canonicalAtom": {
+    "id": "atom:capability:ts-consign-price-service-consign-price-controller:exposes-price-by-weight-and-region",
+    "kind": "capability",
+    "subject": "ts-consign-price-service.ConsignPriceController",
+    "axis": "capability",
+    "predicate": "exposesEndpoint",
+    "object": "GET /api/v1/consignpriceservice/consignprice/{weight}/{isWithinRegion}",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:31",
+     "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:35"
+    ]
+   }
+  },
+  {
+   "key": "component|consignprice.application.yml|static||",
+   "candidateAtomId": "atom:component:consignprice-application-config",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-price-service/src/main/resources/application.yml -- Spring Boot config file for ts-consign-price-service (nacos discovery, mysql datasource, jpa, server port). Pass B produced no distinct component atom for this file (only a state atom); genuine pass-A-only observation, kept as its own component atom with normalized yml subject convention.",
+   "canonicalAtom": {
+    "id": "atom:component:ts-consign-price-service-application-yml",
+    "kind": "component",
+    "subject": "ts-consign-price-service.application-yml",
+    "axis": "static",
+    "refs": [
+     "src:ts-consign-price-service/src/main/resources/application.yml"
+    ]
+   }
+  },
+  {
+   "key": "contract|consign.service.ConsignServiceImpl|specification|ensures|update-falls-back-to-insert-when-consign-record-id-not-found-in-repository",
+   "candidateAtomId": "atom:contract:consign-consign-service-impl:ensures-fallback-to-insert-on-missing-id",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:85-87 -- updateConsignRecord calls repository.findById(consignRequest.getId()); if not present it returns insertConsignRecord(consignRequest, headers) directly. Pass A framed this as a contract 'ensures' guarantee (axis=specification), pass B framed the identical control-flow fact as a semantic 'meansInUse' observation (axis=semantic). Same source-grounded fact, axis-naming drift; merged as a contract.",
+   "canonicalAtom": {
+    "id": "atom:contract:ts-consign-service-consign-service-impl:ensures-fallback-to-insert-on-missing-id",
+    "kind": "contract",
+    "subject": "ts-consign-service.ConsignServiceImpl",
+    "axis": "specification",
+    "predicate": "ensures",
+    "object": "update-falls-back-to-insert-when-consign-record-id-not-found-in-repository",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:85",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:87"
+    ]
+   }
+  },
+  {
+   "key": "semantic|consign.service.ConsignServiceImpl|semantic|meansInUse|update-request-whose-id-is-not-found-in-repository-is-treated-as-a-new-insert-rather-than-rejected",
+   "candidateAtomId": "atom:semantic:consign-service-consignserviceimpl:meansinuse-update-without-existing-id-delegates-to-insert-path",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:85-87 -- updateConsignRecord calls repository.findById(consignRequest.getId()); if not present it returns insertConsignRecord(consignRequest, headers) directly. Pass A framed this as a contract 'ensures' guarantee (axis=specification), pass B framed the identical control-flow fact as a semantic 'meansInUse' observation (axis=semantic). Same source-grounded fact, axis-naming drift; merged as a contract.",
+   "canonicalAtom": {
+    "id": "atom:contract:ts-consign-service-consign-service-impl:ensures-fallback-to-insert-on-missing-id",
+    "kind": "contract",
+    "subject": "ts-consign-service.ConsignServiceImpl",
+    "axis": "specification",
+    "predicate": "ensures",
+    "object": "update-falls-back-to-insert-when-consign-record-id-not-found-in-repository",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:85",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:87"
+    ]
+   }
+  },
+  {
+   "key": "contract|consign.service.ConsignServiceImpl|specification|requires|downstream-price-lookup-call-forwards-original-request-headers-via-httpentity",
+   "candidateAtomId": "atom:contract:consign-consign-service-impl:requires-forwarded-headers-on-price-lookup",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:65 and :98 -- both the insert and update paths build 'new HttpEntity(null, headers)' from the inbound request headers before calling ts-consign-price-service. No pass-B atom covers this header-forwarding fact; genuine pass-A-only observation.",
+   "canonicalAtom": {
+    "id": "atom:contract:ts-consign-service-consign-service-impl:requires-forwarded-headers-on-price-lookup",
+    "kind": "contract",
+    "subject": "ts-consign-service.ConsignServiceImpl",
+    "axis": "specification",
+    "predicate": "requires",
+    "object": "downstream-price-lookup-call-forwards-original-request-headers-via-httpentity",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:65",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:98"
+    ]
+   }
+  },
+  {
+   "key": "effect|consign.service.ConsignServiceImpl|effect|callsProvider|http-get-to-ts-consign-price-service-consignprice-weight-iswithin-endpoint-for-price-lookup-on-insert",
+   "candidateAtomId": "atom:effect:consign-consign-service-impl:calls-provider-price-lookup-on-insert",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:65-73 -- insertConsignRecord always calls GET ts-consign-price-service/api/v1/consignpriceservice/consignprice/{weight}/{isWithin} to price the new record. This is a distinct call site (unconditional, insert path) from the update-path call; kept separate from the update-path effect per alias preservation.",
+   "canonicalAtom": {
+    "id": "atom:effect:ts-consign-service-consign-service-impl:calls-provider-price-lookup-on-insert",
+    "kind": "effect",
+    "subject": "ts-consign-service.ConsignServiceImpl",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "http-get-to-ts-consign-price-service-consignprice-weight-iswithin-endpoint-for-price-lookup-on-insert",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:65",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:72"
+    ]
+   }
+  },
+  {
+   "key": "effect|consign.service.ConsignServiceImpl|effect|callsProvider|http-get-to-ts-consign-price-service-consignprice-weight-iswithin-endpoint-for-price-lookup-on-weight-change-during-update",
+   "candidateAtomId": "atom:effect:consign-consign-service-impl:calls-provider-price-lookup-on-update",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:97-107 -- updateConsignRecord only calls the same price-lookup GET when originalRecord.getWeight() != consignRequest.getWeight() (line 97); otherwise price is retained unchanged (line 109). This is a conditional, update-only call site distinct from the unconditional insert-path call; kept separate per alias preservation (two different observed uses).",
+   "canonicalAtom": {
+    "id": "atom:effect:ts-consign-service-consign-service-impl:calls-provider-price-lookup-on-update",
+    "kind": "effect",
+    "subject": "ts-consign-service.ConsignServiceImpl",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "http-get-to-ts-consign-price-service-consignprice-weight-iswithin-endpoint-for-price-lookup-on-weight-change-during-update",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:98",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:105"
+    ]
+   }
+  },
+  {
+   "key": "effect|consign.service.ConsignServiceImpl|effect|callsProvider|GET-ts-consign-price-service-api-v1-consignpriceservice-consignprice-weight-iswithin-via-load-balanced-resttemplate",
+   "candidateAtomId": "atom:effect:consign-service-consignserviceimpl:callsprovider-ts-consign-price-service",
+   "pass": "pass-b",
+   "decision": "not-adopted",
+   "basis": "Reread ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:65-73 and :97-107 -- these are two distinct call sites (unconditional call on insert; conditional call only when weight changes on update). Pass B's single combined atom collapses this real branch distinction into one coarse fact already captured with correct granularity by pass A's two adopted effect atoms (calls-provider-price-lookup-on-insert, calls-provider-price-lookup-on-update); dropped as a coarser duplicate of richer evidence already adopted."
+  },
+  {
+   "key": "effect|consignprice.init.InitData|effect|callsProvider|seeds-initial-consign-price-config-index-0-via-createandmodifyprice-on-startup",
+   "candidateAtomId": "atom:effect:consignprice-init-data:calls-provider-seeds-initial-price-config",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/init/InitData.java:24-34 -- run() builds a ConsignPrice with index 0, initialPrice 8, initialWeight 1, withinPrice 2, beyondPrice 4 and calls service.createAndModifyPrice(config, null) at startup. No pass-B atom covers this startup seeding effect; genuine pass-A-only observation.",
+   "canonicalAtom": {
+    "id": "atom:effect:ts-consign-price-service-init-data:calls-provider-seeds-initial-price-config",
+    "kind": "effect",
+    "subject": "ts-consign-price-service.InitData",
+    "axis": "effect",
+    "predicate": "callsProvider",
+    "object": "seeds-initial-consign-price-config-index-0-via-createandmodifyprice-on-startup",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/init/InitData.java:24",
+     "src:ts-consign-price-service/src/main/java/consignprice/init/InitData.java:34"
+    ]
+   }
+  },
+  {
+   "key": "relation|consign.repository.ConsignRepository|relation|readsFrom|consign_record table by consign_record_id primary key",
+   "candidateAtomId": "atom:relation:consign-consign-repository:reads-from-consign-record-by-id",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-service/src/main/java/consign/repository/ConsignRepository.java -- Optional<ConsignRecord> findById(String id) at line 46, keyed on the @Id/consign_record_id column. No pass-B atom models per-column repository read relations (pass B only captured a coarser key-type semantic fact); genuine pass-A-only observation.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-consign-service-consign-repository:reads-from-consign-record-by-id",
+    "kind": "relation",
+    "subject": "ts-consign-service.ConsignRepository",
+    "axis": "relation",
+    "predicate": "readsFrom",
+    "object": "consign_record table by consign_record_id primary key",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/repository/ConsignRepository.java:46"
+    ]
+   }
+  },
+  {
+   "key": "relation|consign.repository.ConsignRepository|relation|readsFrom|consign_record table by consignee column",
+   "candidateAtomId": "atom:relation:consign-consign-repository:reads-from-consign-record-by-consignee",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-service/src/main/java/consign/repository/ConsignRepository.java -- ArrayList<ConsignRecord> findByConsignee(String consignee) at line 38. No pass-B atom models per-column repository read relations (pass B only captured a coarser key-type semantic fact); genuine pass-A-only observation.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-consign-service-consign-repository:reads-from-consign-record-by-consignee",
+    "kind": "relation",
+    "subject": "ts-consign-service.ConsignRepository",
+    "axis": "relation",
+    "predicate": "readsFrom",
+    "object": "consign_record table by consignee column",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/repository/ConsignRepository.java:38"
+    ]
+   }
+  },
+  {
+   "key": "relation|consign.repository.ConsignRepository|relation|readsFrom|consign_record table by orderId column",
+   "candidateAtomId": "atom:relation:consign-consign-repository:reads-from-consign-record-by-order-id",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-service/src/main/java/consign/repository/ConsignRepository.java -- ConsignRecord findByOrderId(String accountId) at line 30, reading by the orderId field. No pass-B atom models per-column repository read relations (pass B only captured a coarser key-type semantic fact); genuine pass-A-only observation.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-consign-service-consign-repository:reads-from-consign-record-by-order-id",
+    "kind": "relation",
+    "subject": "ts-consign-service.ConsignRepository",
+    "axis": "relation",
+    "predicate": "readsFrom",
+    "object": "consign_record table by orderId column",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/repository/ConsignRepository.java:30"
+    ]
+   }
+  },
+  {
+   "key": "relation|consign.repository.ConsignRepository|relation|readsFrom|consign_record table by user_id column",
+   "candidateAtomId": "atom:relation:consign-consign-repository:reads-from-consign-record-by-account-id",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-service/src/main/java/consign/repository/ConsignRepository.java -- ArrayList<ConsignRecord> findByAccountId(String accountId) at line 22; ConsignRecord.accountId maps to @Column(name=\"user_id\"). No pass-B atom models per-column repository read relations (pass B only captured a coarser key-type semantic fact); genuine pass-A-only observation.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-consign-service-consign-repository:reads-from-consign-record-by-account-id",
+    "kind": "relation",
+    "subject": "ts-consign-service.ConsignRepository",
+    "axis": "relation",
+    "predicate": "readsFrom",
+    "object": "consign_record table by user_id column",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/repository/ConsignRepository.java:22"
+    ]
+   }
+  },
+  {
+   "key": "relation|consign.service.ConsignServiceImpl|relation|calls|ts-consign-price-service via service-name-resolved-url-and-resttemplate-exchange",
+   "candidateAtomId": "atom:relation:consign-consign-service-impl:calls-consign-price-service",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:41,66,99 -- getServiceUrl builds \"http://\"+serviceName and both insertConsignRecord/updateConsignRecord resolve \"ts-consign-price-service\" through it before restTemplate.exchange. Pass A itself models both this static dependency relation and the separate runtime callsProvider effect for the same call site (as distinct axes); pass B only produced the effect-axis atom, no relation-axis counterpart, so this is a genuine pass-A-only relation observation.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-consign-service-consign-service-impl:calls-consign-price-service",
+    "kind": "relation",
+    "subject": "ts-consign-service.ConsignServiceImpl",
+    "axis": "relation",
+    "predicate": "calls",
+    "object": "ts-consign-price-service via service-name-resolved-url-and-resttemplate-exchange",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:41",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:66",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:99"
+    ]
+   }
+  },
+  {
+   "key": "relation|consign.service.ConsignServiceImpl|relation|writesTo|consign_record table via repository.save",
+   "candidateAtomId": "atom:relation:consign-consign-service-impl:writes-to-consign-record-table",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:76,114 -- both insertConsignRecord and updateConsignRecord call repository.save(...) to persist a ConsignRecord. No pass-B relation atom covers this write path; genuine pass-A-only observation.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-consign-service-consign-service-impl:writes-to-consign-record-table",
+    "kind": "relation",
+    "subject": "ts-consign-service.ConsignServiceImpl",
+    "axis": "relation",
+    "predicate": "writesTo",
+    "object": "consign_record table via repository.save",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:76",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:114"
+    ]
+   }
+  },
+  {
+   "key": "relation|consignprice.ConsignPriceApplication|relation|dependsOn|nacos-service-discovery-cluster-for-service-registration",
+   "candidateAtomId": "atom:relation:consignprice-consign-price-application:depends-on-nacos-discovery",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-price-service/src/main/resources/application.yml:3-5 -- spring.cloud.nacos.discovery.server-addr lists the nacos cluster hosts used for service registration/discovery. No pass-B atom covers this nacos dependency; genuine pass-A-only observation.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-consign-price-service-consign-price-application:depends-on-nacos-discovery",
+    "kind": "relation",
+    "subject": "ts-consign-price-service.ConsignPriceApplication",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "nacos-service-discovery-cluster-for-service-registration",
+    "refs": [
+     "src:ts-consign-price-service/src/main/resources/application.yml:3",
+     "src:ts-consign-price-service/src/main/resources/application.yml:5"
+    ]
+   }
+  },
+  {
+   "key": "relation|consignprice.repository.ConsignPriceConfigRepository|relation|readsFrom|consignprice.entity.ConsignPrice by idx column",
+   "candidateAtomId": "atom:relation:consignprice-consign-price-config-repository:reads-from-consign-price-by-index",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/repository/ConsignPriceConfigRepository.java:20 -- ConsignPrice findByIndex(int index) reads ConsignPrice rows by the entity's idx-mapped index property. No pass-B relation atom covers this read path (pass B only captured a dependsOn relation for the repository); genuine pass-A-only observation.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-consign-price-service-consign-price-config-repository:reads-from-consign-price-by-index",
+    "kind": "relation",
+    "subject": "ts-consign-price-service.ConsignPriceConfigRepository",
+    "axis": "relation",
+    "predicate": "readsFrom",
+    "object": "consignprice.entity.ConsignPrice by idx column",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/repository/ConsignPriceConfigRepository.java:20"
+    ]
+   }
+  },
+  {
+   "key": "relation|consignprice.service.ConsignPriceServiceImpl|relation|writesTo|consign_price table via repository.save",
+   "candidateAtomId": "atom:relation:consignprice-consign-price-service-impl:writes-to-consign-price-table",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:75 -- createAndModifyPrice calls repository.save(originalConfig). No pass-B relation atom covers this write path; genuine pass-A-only observation.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-consign-price-service-consign-price-service-impl:writes-to-consign-price-table",
+    "kind": "relation",
+    "subject": "ts-consign-price-service.ConsignPriceServiceImpl",
+    "axis": "relation",
+    "predicate": "writesTo",
+    "object": "consign_price table via repository.save",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:75"
+    ]
+   }
+  },
+  {
+   "key": "semantic|consign.controller.ConsignController|semantic|identifiedBy|account-and-order-ids-looked-up-by-parsing-path-variable-string-into-uuid-then-tostring-for-repository-query",
+   "candidateAtomId": "atom:semantic:consign-consign-controller:id-lookup-parsed-as-uuid-string",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-service/src/main/java/consign/controller/ConsignController.java:49,56 -- findByAccountId/findByOrderId parse the @PathVariable String id via UUID.fromString(id) before calling the UUID-typed service methods, which in turn call accountId.toString()/orderId.toString() for the String-keyed repository query (ConsignServiceImpl.java:120,131). No pass-B atom covers this id-lookup type round-trip; genuine pass-A-only observation.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-consign-service-consign-controller:id-lookup-parsed-as-uuid-string",
+    "kind": "semantic",
+    "subject": "ts-consign-service.ConsignController",
+    "axis": "semantic",
+    "predicate": "identifiedBy",
+    "object": "account-and-order-ids-looked-up-by-parsing-path-variable-string-into-uuid-then-tostring-for-repository-query",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:49",
+     "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:56",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:120",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:131"
+    ]
+   }
+  },
+  {
+   "key": "semantic|consign.entity.ConsignRecord|semantic|meansInUse|double-price-field-persisted-as-consign-record-price-column",
+   "candidateAtomId": "atom:semantic:consign-consign-record-entity:money-amount-persisted-double-column",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:37-38 -- @Column(name=\"consign_record_price\") private double price. No pass-B atom models this entity-level money field separately (pass B only folded it into the coarser cech section atom); genuine pass-A-only observation.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-consign-service-consign-record:money-amount-persisted-double-column",
+    "kind": "semantic",
+    "subject": "ts-consign-service.ConsignRecord",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "double-price-field-persisted-as-consign-record-price-column",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:37",
+     "src:ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:38"
+    ]
+   }
+  },
+  {
+   "key": "semantic|consign.entity.ConsignRecord|semantic|meansInUse|handle-date-and-target-date-represented-as-unparsed-string-fields-crossing-service-boundary",
+   "candidateAtomId": "atom:semantic:consign-consign-record-entity:date-fields-as-unparsed-strings",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:27-28 and consign/entity/Consign.java:26-27 -- handleDate and targetDate are plain `private String` fields with no date/time type or parsing anywhere in Consign, ConsignRecord, or ConsignServiceImpl (values are copied straight through at ConsignServiceImpl.java:56-57,90-91). Same fact in both passes, only refs/phrasing differ; merged.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-consign-service-consign-record:date-fields-as-unparsed-strings",
+    "kind": "semantic",
+    "subject": "ts-consign-service.ConsignRecord",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "handle-date-and-target-date-represented-as-unparsed-string-fields-crossing-service-boundary",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/entity/Consign.java:26",
+     "src:ts-consign-service/src/main/java/consign/entity/Consign.java:27",
+     "src:ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:27",
+     "src:ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:28",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:55",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:90"
+    ]
+   }
+  },
+  {
+   "key": "semantic|consign.entity.ConsignRecord|semantic|meansInUse|handleDate-and-targetDate-are-plain-string-columns-with-no-date-time-type-or-parsing-observed-at-this-boundary",
+   "candidateAtomId": "atom:semantic:consign-entity-consignrecord:meansinuse-handle-and-target-date-stored-as-unparsed-string-fields",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:27-28 and consign/entity/Consign.java:26-27 -- handleDate and targetDate are plain `private String` fields with no date/time type or parsing anywhere in Consign, ConsignRecord, or ConsignServiceImpl (values are copied straight through at ConsignServiceImpl.java:56-57,90-91). Same fact in both passes, only refs/phrasing differ; merged.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-consign-service-consign-record:date-fields-as-unparsed-strings",
+    "kind": "semantic",
+    "subject": "ts-consign-service.ConsignRecord",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "handle-date-and-target-date-represented-as-unparsed-string-fields-crossing-service-boundary",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/entity/Consign.java:26",
+     "src:ts-consign-service/src/main/java/consign/entity/Consign.java:27",
+     "src:ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:27",
+     "src:ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:28",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:55",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:90"
+    ]
+   }
+  },
+  {
+   "key": "semantic|consign.entity.ConsignRecord|semantic|meansInUse|id-and-account-id-and-order-id-columns-stored-as-string-length-36-uuid-text-not-native-uuid-type",
+   "candidateAtomId": "atom:semantic:consign-consign-record-entity:id-stored-as-string-not-native-uuid",
+   "pass": "pass-a",
+   "decision": "not-adopted",
+   "basis": "Reread ts-consign-service/src/main/java/consign/entity/Consign.java:19-24, consign/entity/ConsignRecord.java:21-26, ts-consign-price-service/src/main/java/consignprice/entity/ConsignPrice.java:20-23 -- only the `id` primary-key field on Consign (@Column(length=36)) and ConsignPrice (@Column(length=36)) declares an explicit length; ConsignRecord.id has @Column(name=\"consign_record_id\") with NO length attribute, and accountId/orderId on both Consign and ConsignRecord carry no @Column length annotation at all. The composite claim 'id-and-account-id-and-order-id columns stored as string length-36' is not supported for 4 of the 6 cited refs (accountId/orderId fields have no length=36 anywhere); invented specificity, dropped."
+  },
+  {
+   "key": "semantic|consign.service.ConsignServiceImpl|semantic|meansInUse|double-price-value-received-over-http-as-response-double-payload-and-copied-to-consignrecord-price",
+   "candidateAtomId": "atom:semantic:consign-consign-service-impl:money-amount-received-over-http-double",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:67,73,107 -- restTemplate.exchange is typed Response<Double> and re.getBody().getData() (a Double) is copied straight into consignRecord.setPrice(...)/originalRecord.setPrice(...) with no rounding or scaling. No pass-B atom models this service-level money round-trip separately (pass B folded the price flow only into the cech section atom); genuine pass-A-only observation.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-consign-service-consign-service-impl:money-amount-received-over-http-double",
+    "kind": "semantic",
+    "subject": "ts-consign-service.ConsignServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "double-price-value-received-over-http-as-response-double-payload-and-copied-to-consignrecord-price",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:67",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:73",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:107"
+    ]
+   }
+  },
+  {
+   "key": "semantic|consign.service.ConsignServiceImpl|semantic|statusGates|status-1-on-record-found-or-created-branch-carrying-data-status-0-on-not-found-branch-with-null-data",
+   "candidateAtomId": "atom:semantic:consign-consign-service-impl:response-status-code-found-or-not-found",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:118-127,129-138,140-149 -- queryByAccountId/queryByOrderId/queryByConsignee each return new Response<>(1, ..., data) on the record-carrying branch and new Response<>(0, ..., null) on the not-found/empty branch. Same fact in both passes, only refs/phrasing differ; merged.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-consign-service-consign-service-impl:response-status-code-found-or-not-found",
+    "kind": "semantic",
+    "subject": "ts-consign-service.ConsignServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-record-found-or-created-branch-carrying-data-status-0-on-not-found-branch-with-null-data",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:121",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:125",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:132",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:136",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:143",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:147"
+    ]
+   }
+  },
+  {
+   "key": "semantic|consign.service.ConsignServiceImpl|semantic|statusGates|status-1-on-record-carrying-branch-status-0-on-empty-or-not-found-branch",
+   "candidateAtomId": "atom:semantic:consign-service-consignserviceimpl:statusgates-response-status-1-on-record-found-branch-0-on-not-found-branch",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:118-127,129-138,140-149 -- queryByAccountId/queryByOrderId/queryByConsignee each return new Response<>(1, ..., data) on the record-carrying branch and new Response<>(0, ..., null) on the not-found/empty branch. Same fact in both passes, only refs/phrasing differ; merged.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-consign-service-consign-service-impl:response-status-code-found-or-not-found",
+    "kind": "semantic",
+    "subject": "ts-consign-service.ConsignServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-record-found-or-created-branch-carrying-data-status-0-on-not-found-branch-with-null-data",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:121",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:125",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:132",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:136",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:143",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:147"
+    ]
+   }
+  },
+  {
+   "key": "semantic|consignprice.entity.ConsignPrice|semantic|meansInUse|double-fields-for-tiered-shipping-price-persisted-in-consign-price-table",
+   "candidateAtomId": "atom:semantic:consignprice-consign-price-entity:money-amount-persisted-double-fields",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/entity/ConsignPrice.java:26-33 -- initialWeight/initialPrice/withinPrice/beyondPrice are all `private double` fields with explicit @Column remaps (initial_weight, initial_price, within_price, beyond_price). No pass-B atom models this entity-level money-field-set separately (folded into the coarser cech atom); genuine pass-A-only observation.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-consign-price-service-consign-price:money-amount-persisted-double-fields",
+    "kind": "semantic",
+    "subject": "ts-consign-price-service.ConsignPrice",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "double-fields-for-tiered-shipping-price-persisted-in-consign-price-table",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/entity/ConsignPrice.java:27",
+     "src:ts-consign-price-service/src/main/java/consignprice/entity/ConsignPrice.java:33"
+    ]
+   }
+  },
+  {
+   "key": "semantic|consignprice.service.ConsignPriceServiceImpl|semantic|meansInUse|double-arithmetic-computing-consign-price-from-weight-tiers-at-service-layer",
+   "candidateAtomId": "atom:semantic:consignprice-consign-price-service-impl:money-amount-computed-double-arithmetic",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:28-39 -- getPriceByWeightAndRegion computes `price` as double arithmetic over initialPrice/extraWeight*withinPrice-or-beyondPrice, all primitive double. This is a type/precision observation distinct from pass B's contract atom (B19, which states the formula's business-logic guarantee, not the double-typing concern); no pass-B atom duplicates this semantic framing, kept as genuine pass-A-only observation.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-consign-price-service-consign-price-service-impl:money-amount-computed-double-arithmetic",
+    "kind": "semantic",
+    "subject": "ts-consign-price-service.ConsignPriceServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "double-arithmetic-computing-consign-price-from-weight-tiers-at-service-layer",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:28",
+     "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:39"
+    ]
+   }
+  },
+  {
+   "key": "semantic|consignprice.service.ConsignPriceServiceImpl|semantic|statusGates|status-1-on-every-returned-branch-no-alternate-code-observed-at-this-site",
+   "candidateAtomId": "atom:semantic:consignprice-consign-price-service-impl:response-status-code-single-branch",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:40,56,76,81 -- every returned Response in this class uses status code 1 (getPriceByWeightAndRegion, queryPriceInformation, createAndModifyPrice, getPriceConfig); no status-0/alternate branch exists anywhere in the file. Same fact in both passes, only phrasing differs; merged.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-consign-price-service-consign-price-service-impl:response-status-code-single-branch",
+    "kind": "semantic",
+    "subject": "ts-consign-price-service.ConsignPriceServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-every-returned-branch-no-alternate-code-observed-at-this-site",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:40",
+     "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:56",
+     "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:76",
+     "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:81"
+    ]
+   }
+  },
+  {
+   "key": "semantic|consignprice.service.ConsignPriceServiceImpl|semantic|statusGates|status-1-used-on-every-response-branch-in-this-service-no-status-0-branch-observed",
+   "candidateAtomId": "atom:semantic:consignprice-service-consignpriceserviceimpl:statusgates-response-status-1-on-every-observed-branch-no-alternate-code-path",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:40,56,76,81 -- every returned Response in this class uses status code 1 (getPriceByWeightAndRegion, queryPriceInformation, createAndModifyPrice, getPriceConfig); no status-0/alternate branch exists anywhere in the file. Same fact in both passes, only phrasing differs; merged.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-consign-price-service-consign-price-service-impl:response-status-code-single-branch",
+    "kind": "semantic",
+    "subject": "ts-consign-price-service.ConsignPriceServiceImpl",
+    "axis": "semantic",
+    "predicate": "statusGates",
+    "object": "status-1-on-every-returned-branch-no-alternate-code-observed-at-this-site",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:40",
+     "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:56",
+     "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:76",
+     "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:81"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ctx:consign-price-config-crud|cech|sectionValue|section=money-amount:double-price-fields-persisted-and-computed-with-double-arithmetic-at-service-layer",
+   "candidateAtomId": "atom:semantic:consign-price-config-crud:cech-section-money-amount",
+   "pass": "pass-a",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/entity/ConsignPrice.java:27,33 and consignprice/service/ConsignPriceServiceImpl.java:28,39 -- price fields are double, computed with double arithmetic at the service layer, as observed across the whole consignprice CRUD surface (pass A's broader 'ctx:consign-price-config-crud' context grouping). Pass B's cech atom for this quantity is scoped to a narrower context id (ctx:consignprice-price-quote-computation, one endpoint flow only); per the sectionValue rule the context id is part of the subject, so a different context id is a different observation, adjudicated on its own merits here (kept, not merged).",
+   "canonicalAtom": {
+    "id": "atom:semantic:consign-price-config-crud:cech-section-money-amount",
+    "kind": "semantic",
+    "subject": "ctx:consign-price-config-crud",
+    "axis": "cech",
+    "predicate": "sectionValue",
+    "object": "section=money-amount:double-price-fields-persisted-and-computed-with-double-arithmetic-at-service-layer",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/entity/ConsignPrice.java:27",
+     "src:ts-consign-price-service/src/main/java/consignprice/entity/ConsignPrice.java:33",
+     "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:28",
+     "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:39"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ctx:consign-record-lifecycle|cech|sectionValue|section=money-amount:double-price-received-over-http-as-response-double-payload-and-persisted-as-consign-record-price-column",
+   "candidateAtomId": "atom:semantic:consign-record-lifecycle:cech-section-money-amount",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:67-73,100-107 and consign/entity/ConsignRecord.java:37-38 -- the money-amount quantity in this context is a double received directly from the upstream ts-consign-price-service response body and persisted as consign_record_price with no local parsing/rounding. Same context id (ctx:consign-record-lifecycle) and same underlying fact in both passes, only object phrasing differs; merged.",
+   "canonicalAtom": {
+    "id": "atom:semantic:consign-record-lifecycle:cech-section-money-amount",
+    "kind": "semantic",
+    "subject": "ctx:consign-record-lifecycle",
+    "axis": "cech",
+    "predicate": "sectionValue",
+    "object": "section=money-amount:double-price-received-over-http-as-response-double-payload-and-persisted-directly-as-consign-record-price-column-with-no-local-parsing-or-rounding",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:67",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:73",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:100",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:107",
+     "src:ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:37",
+     "src:ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:38"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ctx:consign-record-lifecycle|cech|sectionValue|section=money-amount:double-typed-price-field-persisted-directly-from-upstream-response-body-with-no-local-parsing-or-rounding",
+   "candidateAtomId": "atom:semantic:ctx-consign-record-lifecycle:cech-section-money-amount",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:67-73,100-107 and consign/entity/ConsignRecord.java:37-38 -- the money-amount quantity in this context is a double received directly from the upstream ts-consign-price-service response body and persisted as consign_record_price with no local parsing/rounding. Same context id (ctx:consign-record-lifecycle) and same underlying fact in both passes, only object phrasing differs; merged.",
+   "canonicalAtom": {
+    "id": "atom:semantic:consign-record-lifecycle:cech-section-money-amount",
+    "kind": "semantic",
+    "subject": "ctx:consign-record-lifecycle",
+    "axis": "cech",
+    "predicate": "sectionValue",
+    "object": "section=money-amount:double-price-received-over-http-as-response-double-payload-and-persisted-directly-as-consign-record-price-column-with-no-local-parsing-or-rounding",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:67",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:73",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:100",
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:107",
+     "src:ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:37",
+     "src:ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:38"
+    ]
+   }
+  },
+  {
+   "key": "state|consign.entity.ConsignRecord|state|persistsIn|table=consign_record,schema=ts-consign-mysql,id-column=consign_record_id",
+   "candidateAtomId": "atom:state:consign-consign-record-entity:persists-in-consign-record-table",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:16-39 -- @Table(schema=\"ts-consign-mysql\") with no explicit name (default-named table, which Spring Boot's physical naming strategy resolves to consign_record), @Id @Column(name=\"consign_record_id\"), plus explicit column remaps (user_id, from_place, to_place, consign_record_phone, consign_record_price). Same fact in both passes -- pass A asserted the resolved default table name explicitly, pass B stated it more conservatively as 'default-named'; merged, keeping the concrete resolved name since Spring Boot's naming strategy is deterministic here.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-consign-service-consign-record:persists-in-consign-record-table",
+    "kind": "state",
+    "subject": "ts-consign-service.ConsignRecord",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "table=consign_record(default-named-via-hibernate-naming-strategy),schema=ts-consign-mysql,id-column=consign_record_id,with-explicit-column-remaps",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:16",
+     "src:ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:38"
+    ]
+   }
+  },
+  {
+   "key": "state|consign.entity.ConsignRecord|state|persistsIn|default-named-table-under-ts-consign-mysql-schema-with-column-remaps",
+   "candidateAtomId": "atom:state:consign-entity-consignrecord:persistsin-consign-record-table-in-ts-consign-mysql-schema",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:16-39 -- @Table(schema=\"ts-consign-mysql\") with no explicit name (default-named table, which Spring Boot's physical naming strategy resolves to consign_record), @Id @Column(name=\"consign_record_id\"), plus explicit column remaps (user_id, from_place, to_place, consign_record_phone, consign_record_price). Same fact in both passes -- pass A asserted the resolved default table name explicitly, pass B stated it more conservatively as 'default-named'; merged, keeping the concrete resolved name since Spring Boot's naming strategy is deterministic here.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-consign-service-consign-record:persists-in-consign-record-table",
+    "kind": "state",
+    "subject": "ts-consign-service.ConsignRecord",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "table=consign_record(default-named-via-hibernate-naming-strategy),schema=ts-consign-mysql,id-column=consign_record_id,with-explicit-column-remaps",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:16",
+     "src:ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:38"
+    ]
+   }
+  },
+  {
+   "key": "state|consignprice.ConsignPriceApplication|state|persistsIn|mysql-datasource-ts-consign-price-mysql-database-via-jpa-hibernate-ddl-auto-update",
+   "candidateAtomId": "atom:state:consignprice-consign-price-application:persists-in-mysql-datasource",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-consign-price-service/src/main/resources/application.yml:8-15 -- spring.datasource.url points at jdbc:mysql://${CONSIGN_PRICE_MYSQL_HOST:ts-consign-price-mysql}:${CONSIGN_PRICE_MYSQL_PORT:3306}/${CONSIGN_PRICE_MYSQL_DATABASE:ts-consign-price-mysql} with jpa.hibernate.ddl-auto: update at line 15. Same fact in both passes (JDBC connection to a configurable ts-consign-price-mysql database, managed via JPA/Hibernate); merged.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-consign-price-service-consign-price-application:persists-in-mysql-datasource",
+    "kind": "state",
+    "subject": "ts-consign-price-service.ConsignPriceApplication",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "mysql-datasource-ts-consign-price-mysql-database-over-jdbc-on-configurable-host-and-port-via-jpa-hibernate-ddl-auto-update",
+    "refs": [
+     "src:ts-consign-price-service/src/main/resources/application.yml:8",
+     "src:ts-consign-price-service/src/main/resources/application.yml:15"
+    ]
+   }
+  },
+  {
+   "key": "state|consignprice.ConsignPriceApplication|state|persistsIn|ts-consign-price-mysql-database-over-jdbc-on-configurable-host-and-port",
+   "candidateAtomId": "atom:state:consignprice-consignpriceapplication:persistsin-ts-consign-price-mysql-datasource-via-jdbc",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-consign-price-service/src/main/resources/application.yml:8-15 -- spring.datasource.url points at jdbc:mysql://${CONSIGN_PRICE_MYSQL_HOST:ts-consign-price-mysql}:${CONSIGN_PRICE_MYSQL_PORT:3306}/${CONSIGN_PRICE_MYSQL_DATABASE:ts-consign-price-mysql} with jpa.hibernate.ddl-auto: update at line 15. Same fact in both passes (JDBC connection to a configurable ts-consign-price-mysql database, managed via JPA/Hibernate); merged.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-consign-price-service-consign-price-application:persists-in-mysql-datasource",
+    "kind": "state",
+    "subject": "ts-consign-price-service.ConsignPriceApplication",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "mysql-datasource-ts-consign-price-mysql-database-over-jdbc-on-configurable-host-and-port-via-jpa-hibernate-ddl-auto-update",
+    "refs": [
+     "src:ts-consign-price-service/src/main/resources/application.yml:8",
+     "src:ts-consign-price-service/src/main/resources/application.yml:15"
+    ]
+   }
+  },
+  {
+   "key": "state|consignprice.entity.ConsignPrice|state|persistsIn|table=consign_price,unique-idx-column",
+   "candidateAtomId": "atom:state:consignprice-consign-price-entity:persists-in-consign-price-table",
+   "pass": "pass-a",
+   "decision": "merged",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/entity/ConsignPrice.java:18-24 and consignprice/service/ConsignPriceServiceImpl.java:27,46,64-70,81 -- @Table(name=\"consign_price\") with @Column(name=\"idx\",unique=true), and every service method reads/writes via repository.findByIndex(0), i.e. a single active row at idx=0. Same fact in both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-consign-price-service-consign-price:persists-in-consign-price-table",
+    "kind": "state",
+    "subject": "ts-consign-price-service.ConsignPrice",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "table=consign_price,unique-idx-column,single-active-row-selected-by-idx-value-0",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/entity/ConsignPrice.java:18",
+     "src:ts-consign-price-service/src/main/java/consignprice/entity/ConsignPrice.java:24",
+     "src:ts-consign-price-service/src/main/java/consignprice/repository/ConsignPriceConfigRepository.java:20",
+     "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:27"
+    ]
+   }
+  },
+  {
+   "key": "state|consignprice.entity.ConsignPrice|state|persistsIn|consign_price-table-single-row-selected-by-idx-column-value-0",
+   "candidateAtomId": "atom:state:consignprice-entity-consignprice:persistsin-consign-price-table-singleton-row-at-index-0",
+   "pass": "pass-b",
+   "decision": "merged",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/entity/ConsignPrice.java:18-24 and consignprice/service/ConsignPriceServiceImpl.java:27,46,64-70,81 -- @Table(name=\"consign_price\") with @Column(name=\"idx\",unique=true), and every service method reads/writes via repository.findByIndex(0), i.e. a single active row at idx=0. Same fact in both passes; merged.",
+   "canonicalAtom": {
+    "id": "atom:state:ts-consign-price-service-consign-price:persists-in-consign-price-table",
+    "kind": "state",
+    "subject": "ts-consign-price-service.ConsignPrice",
+    "axis": "state",
+    "predicate": "persistsIn",
+    "object": "table=consign_price,unique-idx-column,single-active-row-selected-by-idx-value-0",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/entity/ConsignPrice.java:18",
+     "src:ts-consign-price-service/src/main/java/consignprice/entity/ConsignPrice.java:24",
+     "src:ts-consign-price-service/src/main/java/consignprice/repository/ConsignPriceConfigRepository.java:20",
+     "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:27"
+    ]
+   }
+  },
+  {
+   "key": "contract|consign.service.ConsignServiceImpl|specification|ensures|price-recomputed-via-price-service-call-only-when-updated-weight-differs-from-stored-weight-otherwise-original-price-retained",
+   "candidateAtomId": "atom:contract:consign-service-consignserviceimpl:ensures-price-recomputed-only-when-weight-differs-on-update-otherwise-kept",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:97-110 -- updateConsignRecord recomputes price via the price-service call only when originalRecord.getWeight() != consignRequest.getWeight() (line 97), otherwise originalRecord.setPrice(originalRecord.getPrice()) retains the existing price (line 109). This full if/else guarantee is broader than pass A's insert/update effect atoms (which only document the call, not the else-branch retention); genuine pass-B-only observation.",
+   "canonicalAtom": {
+    "id": "atom:contract:ts-consign-service-consign-service-impl:ensures-price-recomputed-only-when-weight-differs-on-update",
+    "kind": "contract",
+    "subject": "ts-consign-service.ConsignServiceImpl",
+    "axis": "specification",
+    "predicate": "ensures",
+    "object": "price-recomputed-via-price-service-call-only-when-updated-weight-differs-from-stored-weight-otherwise-original-price-retained",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:97-110"
+    ]
+   }
+  },
+  {
+   "key": "contract|consignprice.service.ConsignPriceServiceImpl|specification|ensures|price-equals-initial-price-when-weight-at-or-below-initial-weight-otherwise-initial-price-plus-extra-weight-times-within-or-beyond-rate",
+   "candidateAtomId": "atom:contract:consignprice-service-consignpriceserviceimpl:ensures-price-equals-initial-price-plus-extra-weight-times-region-rate",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:28-39 -- if weight<=initialWeight, price=initialPrice; else price=initialPrice+extraWeight*(isWithinRegion?withinPrice:beyondPrice). No pass-A atom states this formula-level business guarantee (pass A's related semantic atom documents only the double-typing concern, not the formula); genuine pass-B-only observation.",
+   "canonicalAtom": {
+    "id": "atom:contract:ts-consign-price-service-consign-price-service-impl:ensures-price-equals-initial-price-plus-extra-weight-times-region-rate",
+    "kind": "contract",
+    "subject": "ts-consign-price-service.ConsignPriceServiceImpl",
+    "axis": "specification",
+    "predicate": "ensures",
+    "object": "price-equals-initial-price-when-weight-at-or-below-initial-weight-otherwise-initial-price-plus-extra-weight-times-within-or-beyond-rate",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:28-39"
+    ]
+   }
+  },
+  {
+   "key": "relation|consign.controller.ConsignController|relation|dependsOn|consign.service.ConsignService",
+   "candidateAtomId": "atom:relation:consign-controller-consigncontroller:dependson-consign-service-consignservice",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-service/src/main/java/consign/controller/ConsignController.java:23-24 -- @Autowired ConsignService service field. No pass-A relation atom covers this controller->service dependency; genuine pass-B-only observation.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-consign-service-consign-controller:depends-on-consign-service",
+    "kind": "relation",
+    "subject": "ts-consign-service.ConsignController",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "consign.service.ConsignService",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:23-24"
+    ]
+   }
+  },
+  {
+   "key": "relation|consign.service.ConsignServiceImpl|relation|dependsOn|consign.repository.ConsignRepository",
+   "candidateAtomId": "atom:relation:consign-service-consignserviceimpl:dependson-consign-repository-consignrepository",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:30-31 -- @Autowired ConsignRepository repository field. No pass-A relation atom covers this dependency (pass A only modeled the read/write relations to the table, not the structural repository dependency); genuine pass-B-only observation.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-consign-service-consign-service-impl:depends-on-consign-repository",
+    "kind": "relation",
+    "subject": "ts-consign-service.ConsignServiceImpl",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "consign.repository.ConsignRepository",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:30-31"
+    ]
+   }
+  },
+  {
+   "key": "relation|consign.service.ConsignServiceImpl|relation|implements|consign.service.ConsignService",
+   "candidateAtomId": "atom:relation:consign-service-consignserviceimpl:implements-consign-service-consignservice",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:29 -- `public class ConsignServiceImpl implements ConsignService`. No pass-A relation atom covers this interface implementation; genuine pass-B-only observation.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-consign-service-consign-service-impl:implements-consign-service",
+    "kind": "relation",
+    "subject": "ts-consign-service.ConsignServiceImpl",
+    "axis": "relation",
+    "predicate": "implements",
+    "object": "consign.service.ConsignService",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:29"
+    ]
+   }
+  },
+  {
+   "key": "relation|consignprice.service.ConsignPriceServiceImpl|relation|dependsOn|consignprice.repository.ConsignPriceConfigRepository",
+   "candidateAtomId": "atom:relation:consignprice-service-consignpriceserviceimpl:dependson-consignprice-repository-consignpriceconfigrepository",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:18-19 -- @Autowired private ConsignPriceConfigRepository repository field. No pass-A relation atom covers this serviceImpl->repository dependency (pass A only modeled the write relation to the table); genuine pass-B-only observation.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-consign-price-service-consign-price-service-impl:depends-on-consign-price-config-repository",
+    "kind": "relation",
+    "subject": "ts-consign-price-service.ConsignPriceServiceImpl",
+    "axis": "relation",
+    "predicate": "dependsOn",
+    "object": "consignprice.repository.ConsignPriceConfigRepository",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:18-19"
+    ]
+   }
+  },
+  {
+   "key": "relation|consignprice.service.ConsignPriceServiceImpl|relation|implements|consignprice.service.ConsignPriceService",
+   "candidateAtomId": "atom:relation:consignprice-service-consignpriceserviceimpl:implements-consignprice-service-consignpriceservice",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:16 -- `public class ConsignPriceServiceImpl implements ConsignPriceService`. No pass-A relation atom covers this interface implementation; genuine pass-B-only observation.",
+   "canonicalAtom": {
+    "id": "atom:relation:ts-consign-price-service-consign-price-service-impl:implements-consign-price-service",
+    "kind": "relation",
+    "subject": "ts-consign-price-service.ConsignPriceServiceImpl",
+    "axis": "relation",
+    "predicate": "implements",
+    "object": "consignprice.service.ConsignPriceService",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:16"
+    ]
+   }
+  },
+  {
+   "key": "semantic|consign.entity.Consign|semantic|meansInUse|region-flag-named-isWithin-boolean-field-on-consign-request-entity-versus-isWithinRegion-token-on-price-service-endpoint-for-the-same-concept",
+   "candidateAtomId": "atom:semantic:consign-entity-consign:meansinuse-iswithin-boolean-field-distinct-name-from-price-service-iswithinregion-parameter",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-service/src/main/java/consign/entity/Consign.java:33 (private boolean isWithin;) and ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:32 (@PathVariable String isWithinRegion) -- the same within-region concept is named `isWithin` (typed boolean) on the consign request entity and `isWithinRegion` (string path token) on the price-service endpoint. No pass-A atom covers this cross-service naming distinction; genuine pass-B-only observation.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-consign-service-consign:means-in-use-iswithin-boolean-field-distinct-name-from-price-service-iswithinregion-parameter",
+    "kind": "semantic",
+    "subject": "ts-consign-service.Consign",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "region-flag-named-isWithin-boolean-field-on-consign-request-entity-versus-isWithinRegion-token-on-price-service-endpoint-for-the-same-concept",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/entity/Consign.java:33",
+     "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:32"
+    ]
+   }
+  },
+  {
+   "key": "semantic|consign.init.InitData|semantic|meansInUse|seed-consign-record-block-is-fully-commented-out-so-the-commandlinerunner-run-method-performs-no-action-at-startup",
+   "candidateAtomId": "atom:semantic:consign-init-initdata:meansinuse-consign-record-seed-data-defined-but-commented-out-so-run-performs-no-action",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-service/src/main/java/consign/init/InitData.java:21-69 -- the entire seed-record block (two ConsignRecord builds, repository.save calls, and lookup verification prints) is commented out; run() contains only the comment '//do nothing' and executes no active statement at startup. No pass-A atom covers this (pass A's survey noted it but emitted only a bare component atom); genuine pass-B-only observation.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-consign-service-init-data:means-in-use-consign-record-seed-data-defined-but-commented-out-so-run-performs-no-action",
+    "kind": "semantic",
+    "subject": "ts-consign-service.InitData",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "seed-consign-record-block-is-fully-commented-out-so-the-commandlinerunner-run-method-performs-no-action-at-startup",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/init/InitData.java:21-69"
+    ]
+   }
+  },
+  {
+   "key": "semantic|consign.repository.ConsignRepository|semantic|identifiedBy|consign-record-lookup-keys-are-all-string-typed-account-id-order-id-consignee-name-or-primary-key-no-numeric-or-composite-key-observed",
+   "candidateAtomId": "atom:semantic:consign-repository-consignrepository:identifiedby-lookup-by-account-id-order-id-consignee-or-primary-key-all-string-typed",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-service/src/main/java/consign/repository/ConsignRepository.java:22,30,38,46 -- findByAccountId(String), findByOrderId(String), findByConsignee(String), and findById(String) via CrudRepository<ConsignRecord,String> are all String-parameterized; no numeric or composite key method exists on this repository. This is a distinct fact from pass A's four per-column readsFrom relations (which describe which column each query targets, not that all keys share the String type); genuine pass-B-only observation.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-consign-service-consign-repository:identified-by-lookup-by-account-id-order-id-consignee-or-primary-key-all-string-typed",
+    "kind": "semantic",
+    "subject": "ts-consign-service.ConsignRepository",
+    "axis": "semantic",
+    "predicate": "identifiedBy",
+    "object": "consign-record-lookup-keys-are-all-string-typed-account-id-order-id-consignee-name-or-primary-key-no-numeric-or-composite-key-observed",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/repository/ConsignRepository.java:22,30,38,46"
+    ]
+   }
+  },
+  {
+   "key": "semantic|consign.service.ConsignServiceImpl|semantic|meansInUse|consign-record-primary-key-assigned-in-service-code-with-uuid-randomUUID-toString-rather-than-a-jpa-id-generator",
+   "candidateAtomId": "atom:semantic:consign-service-consignserviceimpl:meansinuse-consign-record-id-generated-in-service-layer-via-uuid-randomuuid-not-database-generator",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:52 -- consignRecord.setId(UUID.randomUUID().toString()) assigns the primary key in service code; ConsignRecord itself carries no @GeneratedValue/@GenericGenerator (unlike Consign.java's jpa-uuid generator), confirming no JPA id generator is in play for this entity. No pass-A atom covers this; genuine pass-B-only observation.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-consign-service-consign-service-impl:means-in-use-consign-record-id-generated-in-service-layer-via-uuid-randomuuid-not-database-generator",
+    "kind": "semantic",
+    "subject": "ts-consign-service.ConsignServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "consign-record-primary-key-assigned-in-service-code-with-uuid-randomUUID-toString-rather-than-a-jpa-id-generator",
+    "refs": [
+     "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:52"
+    ]
+   }
+  },
+  {
+   "key": "semantic|consignprice.controller.ConsignPriceController|semantic|meansInUse|isWithinRegion-path-segment-is-a-string-token-parsed-with-Boolean-parseBoolean-not-a-typed-boolean-route-parameter",
+   "candidateAtomId": "atom:semantic:consignprice-controller-consignpricecontroller:meansinuse-iswithinregion-parsed-from-path-string-parameter-via-boolean-parseboolean",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:31-36 -- getPriceByWeightAndRegion takes @PathVariable String isWithinRegion and calls Boolean.parseBoolean(isWithinRegion) rather than a typed boolean route parameter. No pass-A atom covers this parsing detail; genuine pass-B-only observation.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-consign-price-service-consign-price-controller:means-in-use-iswithinregion-parsed-from-path-string-parameter-via-boolean-parseboolean",
+    "kind": "semantic",
+    "subject": "ts-consign-price-service.ConsignPriceController",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "isWithinRegion-path-segment-is-a-string-token-parsed-with-Boolean-parseBoolean-not-a-typed-boolean-route-parameter",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:31-36"
+    ]
+   }
+  },
+  {
+   "key": "semantic|consignprice.service.ConsignPriceServiceImpl|semantic|meansInUse|idx-column-value-0-identifies-the-single-active-price-config-row-read-and-overwritten-on-every-operation",
+   "candidateAtomId": "atom:semantic:consignprice-service-consignpriceserviceimpl:meansinuse-index-0-identifies-singleton-active-price-config",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:27,46,64-70,81 and consignprice/init/InitData.java:28 -- every service method calls repository.findByIndex(0), and InitData seeds config.setIndex(0); idx=0 is the single active price-config row read and overwritten on every operation. This is a distinct fact from pass A's InitData seeding effect (which documents the startup call, not the repeated idx=0 access pattern across every service method); genuine pass-B-only observation.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ts-consign-price-service-consign-price-service-impl:means-in-use-index-0-identifies-singleton-active-price-config",
+    "kind": "semantic",
+    "subject": "ts-consign-price-service.ConsignPriceServiceImpl",
+    "axis": "semantic",
+    "predicate": "meansInUse",
+    "object": "idx-column-value-0-identifies-the-single-active-price-config-row-read-and-overwritten-on-every-operation",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:27,46,64-70,81",
+     "src:ts-consign-price-service/src/main/java/consignprice/init/InitData.java:28"
+    ]
+   }
+  },
+  {
+   "key": "semantic|ctx:consignprice-price-quote-computation|cech|sectionValue|section=money-amount:double-typed-price-fields-with-arithmetic-performed-at-service-computation-site-no-rounding-or-scaling-observed",
+   "candidateAtomId": "atom:semantic:ctx-consignprice-price-quote-computation:cech-section-money-amount",
+   "pass": "pass-b",
+   "decision": "adopted",
+   "basis": "Reread ts-consign-price-service/src/main/java/consignprice/entity/ConsignPrice.java:26-33 and consignprice/service/ConsignPriceServiceImpl.java:28-38 -- double-typed price fields with arithmetic performed at the getPriceByWeightAndRegion computation site, no rounding/scaling observed. Pass B scoped this cech atom to the narrower 'ctx:consignprice-price-quote-computation' context (one endpoint flow) rather than pass A's broader 'ctx:consign-price-config-crud' context; per the sectionValue rule the context id is part of the subject, so this is a distinct context-scoped observation, kept on its own merits.",
+   "canonicalAtom": {
+    "id": "atom:semantic:ctx-consignprice-price-quote-computation:cech-section-money-amount",
+    "kind": "semantic",
+    "subject": "ctx:consignprice-price-quote-computation",
+    "axis": "cech",
+    "predicate": "sectionValue",
+    "object": "section=money-amount:double-typed-price-fields-with-arithmetic-performed-at-service-computation-site-no-rounding-or-scaling-observed",
+    "refs": [
+     "src:ts-consign-price-service/src/main/java/consignprice/entity/ConsignPrice.java:26-33",
+     "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:28-38"
+    ]
+   }
+  }
+ ]
+}

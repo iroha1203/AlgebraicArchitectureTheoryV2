@@ -1,0 +1,679 @@
+{
+ "onlyInPassA": [
+  {
+   "key": "authority|consign.config.SecurityConfig|authority|allowsCrossOrigin|cors-all-origins-all-methods-all-headers-credentials-false-maxage-3600",
+   "candidateAtomId": "atom:authority:consign-security-config:allows-cross-origin",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/config/SecurityConfig.java:51",
+    "src:ts-consign-service/src/main/java/consign/config/SecurityConfig.java:56"
+   ]
+  },
+  {
+   "key": "authority|consign.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+   "candidateAtomId": "atom:authority:consign-security-config:permits-unauthenticated",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/config/SecurityConfig.java:72",
+    "src:ts-consign-service/src/main/java/consign/config/SecurityConfig.java:73"
+   ]
+  },
+  {
+   "key": "authority|consign.config.SecurityConfig|authority|requiresRole|role-admin-or-user-on-/api/v1/consignservice/**",
+   "candidateAtomId": "atom:authority:consign-security-config:requires-role",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "authority|consignprice.config.SecurityConfig|authority|allowsCrossOrigin|cors-all-origins-all-methods-all-headers-credentials-false-maxage-3600",
+   "candidateAtomId": "atom:authority:consignprice-security-config:allows-cross-origin",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/config/SecurityConfig.java:51",
+    "src:ts-consign-price-service/src/main/java/consignprice/config/SecurityConfig.java:56"
+   ]
+  },
+  {
+   "key": "authority|consignprice.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+   "candidateAtomId": "atom:authority:consignprice-security-config:permits-unauthenticated",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/config/SecurityConfig.java:72",
+    "src:ts-consign-price-service/src/main/java/consignprice/config/SecurityConfig.java:73"
+   ]
+  },
+  {
+   "key": "authority|consignprice.config.SecurityConfig|authority|requiresRole|role-admin-or-user-on-/api/v1/consignpriceservice/**",
+   "candidateAtomId": "atom:authority:consignprice-security-config:requires-role",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "capability|consign.controller.ConsignController|capability|exposesEndpoint|GET /api/v1/consignservice/welcome",
+   "candidateAtomId": "atom:capability:consign-consign-controller:exposes-welcome",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:28",
+    "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:30"
+   ]
+  },
+  {
+   "key": "capability|consign.controller.ConsignController|capability|handlesCommand|POST /api/v1/consignservice/consigns",
+   "candidateAtomId": "atom:capability:consign-consign-controller:handles-insert-consign",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:33",
+    "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:37"
+   ]
+  },
+  {
+   "key": "capability|consign.controller.ConsignController|capability|handlesCommand|PUT /api/v1/consignservice/consigns",
+   "candidateAtomId": "atom:capability:consign-consign-controller:handles-update-consign",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:40",
+    "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:43"
+   ]
+  },
+  {
+   "key": "capability|consign.controller.ConsignController|capability|servesQuery|GET /api/v1/consignservice/consigns/account/{id}",
+   "candidateAtomId": "atom:capability:consign-consign-controller:serves-find-by-account-id",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:46",
+    "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:50"
+   ]
+  },
+  {
+   "key": "capability|consign.controller.ConsignController|capability|servesQuery|GET /api/v1/consignservice/consigns/order/{id}",
+   "candidateAtomId": "atom:capability:consign-consign-controller:serves-find-by-order-id",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:53",
+    "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:57"
+   ]
+  },
+  {
+   "key": "capability|consign.controller.ConsignController|capability|servesQuery|GET /api/v1/consignservice/consigns/{consignee}",
+   "candidateAtomId": "atom:capability:consign-consign-controller:serves-find-by-consignee",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:60",
+    "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:63"
+   ]
+  },
+  {
+   "key": "capability|consignprice.controller.ConsignPriceController|capability|exposesEndpoint|GET /api/v1/consignpriceservice/welcome",
+   "candidateAtomId": "atom:capability:consignprice-consign-price-controller:exposes-welcome",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:26",
+    "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:28"
+   ]
+  },
+  {
+   "key": "capability|consignprice.controller.ConsignPriceController|capability|handlesCommand|POST /api/v1/consignpriceservice/consignprice",
+   "candidateAtomId": "atom:capability:consignprice-consign-price-controller:handles-modify-price-config",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:51",
+    "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:55"
+   ]
+  },
+  {
+   "key": "capability|consignprice.controller.ConsignPriceController|capability|servesQuery|GET /api/v1/consignpriceservice/consignprice/config",
+   "candidateAtomId": "atom:capability:consignprice-consign-price-controller:serves-price-config",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:45",
+    "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:48"
+   ]
+  },
+  {
+   "key": "capability|consignprice.controller.ConsignPriceController|capability|servesQuery|GET /api/v1/consignpriceservice/consignprice/price",
+   "candidateAtomId": "atom:capability:consignprice-consign-price-controller:serves-price-info",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:39",
+    "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:42"
+   ]
+  },
+  {
+   "key": "capability|consignprice.controller.ConsignPriceController|capability|servesQuery|GET /api/v1/consignpriceservice/consignprice/{weight}/{isWithinRegion}",
+   "candidateAtomId": "atom:capability:consignprice-consign-price-controller:serves-price-by-weight-and-region",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:31",
+    "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:35"
+   ]
+  },
+  {
+   "key": "component|consignprice.application.yml|static||",
+   "candidateAtomId": "atom:component:consignprice-application-config",
+   "refs": [
+    "src:ts-consign-price-service/src/main/resources/application.yml"
+   ]
+  },
+  {
+   "key": "contract|consign.service.ConsignServiceImpl|specification|ensures|update-falls-back-to-insert-when-consign-record-id-not-found-in-repository",
+   "candidateAtomId": "atom:contract:consign-consign-service-impl:ensures-fallback-to-insert-on-missing-id",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:85",
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:87"
+   ]
+  },
+  {
+   "key": "contract|consign.service.ConsignServiceImpl|specification|requires|downstream-price-lookup-call-forwards-original-request-headers-via-httpentity",
+   "candidateAtomId": "atom:contract:consign-consign-service-impl:requires-forwarded-headers-on-price-lookup",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:65",
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:98"
+   ]
+  },
+  {
+   "key": "effect|consign.service.ConsignServiceImpl|effect|callsProvider|http-get-to-ts-consign-price-service-consignprice-weight-iswithin-endpoint-for-price-lookup-on-insert",
+   "candidateAtomId": "atom:effect:consign-consign-service-impl:calls-provider-price-lookup-on-insert",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:65",
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:72"
+   ]
+  },
+  {
+   "key": "effect|consign.service.ConsignServiceImpl|effect|callsProvider|http-get-to-ts-consign-price-service-consignprice-weight-iswithin-endpoint-for-price-lookup-on-weight-change-during-update",
+   "candidateAtomId": "atom:effect:consign-consign-service-impl:calls-provider-price-lookup-on-update",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:98",
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:105"
+   ]
+  },
+  {
+   "key": "effect|consignprice.init.InitData|effect|callsProvider|seeds-initial-consign-price-config-index-0-via-createandmodifyprice-on-startup",
+   "candidateAtomId": "atom:effect:consignprice-init-data:calls-provider-seeds-initial-price-config",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/init/InitData.java:24",
+    "src:ts-consign-price-service/src/main/java/consignprice/init/InitData.java:35"
+   ]
+  },
+  {
+   "key": "relation|consign.repository.ConsignRepository|relation|readsFrom|consign_record table by consign_record_id primary key",
+   "candidateAtomId": "atom:relation:consign-consign-repository:reads-from-consign-record-by-id",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/repository/ConsignRepository.java:46"
+   ]
+  },
+  {
+   "key": "relation|consign.repository.ConsignRepository|relation|readsFrom|consign_record table by consignee column",
+   "candidateAtomId": "atom:relation:consign-consign-repository:reads-from-consign-record-by-consignee",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/repository/ConsignRepository.java:38"
+   ]
+  },
+  {
+   "key": "relation|consign.repository.ConsignRepository|relation|readsFrom|consign_record table by orderId column",
+   "candidateAtomId": "atom:relation:consign-consign-repository:reads-from-consign-record-by-order-id",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/repository/ConsignRepository.java:30"
+   ]
+  },
+  {
+   "key": "relation|consign.repository.ConsignRepository|relation|readsFrom|consign_record table by user_id column",
+   "candidateAtomId": "atom:relation:consign-consign-repository:reads-from-consign-record-by-account-id",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/repository/ConsignRepository.java:22"
+   ]
+  },
+  {
+   "key": "relation|consign.service.ConsignServiceImpl|relation|calls|ts-consign-price-service via service-name-resolved-url-and-resttemplate-exchange",
+   "candidateAtomId": "atom:relation:consign-consign-service-impl:calls-consign-price-service",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:41",
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:66",
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:99"
+   ]
+  },
+  {
+   "key": "relation|consign.service.ConsignServiceImpl|relation|writesTo|consign_record table via repository.save",
+   "candidateAtomId": "atom:relation:consign-consign-service-impl:writes-to-consign-record-table",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:76",
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:114"
+   ]
+  },
+  {
+   "key": "relation|consignprice.ConsignPriceApplication|relation|dependsOn|nacos-service-discovery-cluster-for-service-registration",
+   "candidateAtomId": "atom:relation:consignprice-consign-price-application:depends-on-nacos-discovery",
+   "refs": [
+    "src:ts-consign-price-service/src/main/resources/application.yml:3",
+    "src:ts-consign-price-service/src/main/resources/application.yml:5"
+   ]
+  },
+  {
+   "key": "relation|consignprice.repository.ConsignPriceConfigRepository|relation|readsFrom|consignprice.entity.ConsignPrice by idx column",
+   "candidateAtomId": "atom:relation:consignprice-consign-price-config-repository:reads-from-consign-price-by-index",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/repository/ConsignPriceConfigRepository.java:20"
+   ]
+  },
+  {
+   "key": "relation|consignprice.service.ConsignPriceServiceImpl|relation|writesTo|consign_price table via repository.save",
+   "candidateAtomId": "atom:relation:consignprice-consign-price-service-impl:writes-to-consign-price-table",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:75"
+   ]
+  },
+  {
+   "key": "semantic|consign.controller.ConsignController|semantic|identifiedBy|account-and-order-ids-looked-up-by-parsing-path-variable-string-into-uuid-then-tostring-for-repository-query",
+   "candidateAtomId": "atom:semantic:consign-consign-controller:id-lookup-parsed-as-uuid-string",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:49",
+    "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:56",
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:119",
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:130"
+   ]
+  },
+  {
+   "key": "semantic|consign.entity.ConsignRecord|semantic|meansInUse|double-price-field-persisted-as-consign-record-price-column",
+   "candidateAtomId": "atom:semantic:consign-consign-record-entity:money-amount-persisted-double-column",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:37",
+    "src:ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:38"
+   ]
+  },
+  {
+   "key": "semantic|consign.entity.ConsignRecord|semantic|meansInUse|handle-date-and-target-date-represented-as-unparsed-string-fields-crossing-service-boundary",
+   "candidateAtomId": "atom:semantic:consign-consign-record-entity:date-fields-as-unparsed-strings",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/entity/Consign.java:26",
+    "src:ts-consign-service/src/main/java/consign/entity/Consign.java:27",
+    "src:ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:27",
+    "src:ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:28"
+   ]
+  },
+  {
+   "key": "semantic|consign.entity.ConsignRecord|semantic|meansInUse|id-and-account-id-and-order-id-columns-stored-as-string-length-36-uuid-text-not-native-uuid-type",
+   "candidateAtomId": "atom:semantic:consign-consign-record-entity:id-stored-as-string-not-native-uuid",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/entity/Consign.java:19",
+    "src:ts-consign-service/src/main/java/consign/entity/Consign.java:22",
+    "src:ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:21",
+    "src:ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:26",
+    "src:ts-consign-price-service/src/main/java/consignprice/entity/ConsignPrice.java:20",
+    "src:ts-consign-price-service/src/main/java/consignprice/entity/ConsignPrice.java:23"
+   ]
+  },
+  {
+   "key": "semantic|consign.service.ConsignServiceImpl|semantic|meansInUse|double-price-value-received-over-http-as-response-double-payload-and-copied-to-consignrecord-price",
+   "candidateAtomId": "atom:semantic:consign-consign-service-impl:money-amount-received-over-http-double",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:67",
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:73",
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:107"
+   ]
+  },
+  {
+   "key": "semantic|consign.service.ConsignServiceImpl|semantic|statusGates|status-1-on-record-found-or-created-branch-carrying-data-status-0-on-not-found-branch-with-null-data",
+   "candidateAtomId": "atom:semantic:consign-consign-service-impl:response-status-code-found-or-not-found",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:78",
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:115",
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:122",
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:125",
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:133",
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:136",
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:144",
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:147"
+   ]
+  },
+  {
+   "key": "semantic|consignprice.entity.ConsignPrice|semantic|meansInUse|double-fields-for-tiered-shipping-price-persisted-in-consign-price-table",
+   "candidateAtomId": "atom:semantic:consignprice-consign-price-entity:money-amount-persisted-double-fields",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/entity/ConsignPrice.java:27",
+    "src:ts-consign-price-service/src/main/java/consignprice/entity/ConsignPrice.java:33"
+   ]
+  },
+  {
+   "key": "semantic|consignprice.service.ConsignPriceServiceImpl|semantic|meansInUse|double-arithmetic-computing-consign-price-from-weight-tiers-at-service-layer",
+   "candidateAtomId": "atom:semantic:consignprice-consign-price-service-impl:money-amount-computed-double-arithmetic",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:28",
+    "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:39"
+   ]
+  },
+  {
+   "key": "semantic|consignprice.service.ConsignPriceServiceImpl|semantic|statusGates|status-1-on-every-returned-branch-no-alternate-code-observed-at-this-site",
+   "candidateAtomId": "atom:semantic:consignprice-consign-price-service-impl:response-status-code-single-branch",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:40",
+    "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:56",
+    "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:76",
+    "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:81"
+   ]
+  },
+  {
+   "key": "semantic|ctx:consign-price-config-crud|cech|sectionValue|section=money-amount:double-price-fields-persisted-and-computed-with-double-arithmetic-at-service-layer",
+   "candidateAtomId": "atom:semantic:consign-price-config-crud:cech-section-money-amount",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/entity/ConsignPrice.java:27",
+    "src:ts-consign-price-service/src/main/java/consignprice/entity/ConsignPrice.java:33",
+    "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:28",
+    "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:39"
+   ]
+  },
+  {
+   "key": "semantic|ctx:consign-record-lifecycle|cech|sectionValue|section=money-amount:double-price-received-over-http-as-response-double-payload-and-persisted-as-consign-record-price-column",
+   "candidateAtomId": "atom:semantic:consign-record-lifecycle:cech-section-money-amount",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:67",
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:73",
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:107",
+    "src:ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:37",
+    "src:ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:38"
+   ]
+  },
+  {
+   "key": "state|consign.entity.ConsignRecord|state|persistsIn|table=consign_record,schema=ts-consign-mysql,id-column=consign_record_id",
+   "candidateAtomId": "atom:state:consign-consign-record-entity:persists-in-consign-record-table",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:16",
+    "src:ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:38"
+   ]
+  },
+  {
+   "key": "state|consignprice.ConsignPriceApplication|state|persistsIn|mysql-datasource-ts-consign-price-mysql-database-via-jpa-hibernate-ddl-auto-update",
+   "candidateAtomId": "atom:state:consignprice-consign-price-application:persists-in-mysql-datasource",
+   "refs": [
+    "src:ts-consign-price-service/src/main/resources/application.yml:8",
+    "src:ts-consign-price-service/src/main/resources/application.yml:18"
+   ]
+  },
+  {
+   "key": "state|consignprice.entity.ConsignPrice|state|persistsIn|table=consign_price,unique-idx-column",
+   "candidateAtomId": "atom:state:consignprice-consign-price-entity:persists-in-consign-price-table",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/entity/ConsignPrice.java:18",
+    "src:ts-consign-price-service/src/main/java/consignprice/entity/ConsignPrice.java:24"
+   ]
+  }
+ ],
+ "onlyInPassB": [
+  {
+   "key": "authority|consign.config.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-scope-/**-credentials-not-sent",
+   "candidateAtomId": "atom:authority:consign-config-securityconfig:allowscrossorigin-all-origins-credentials-false",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/config/SecurityConfig.java:51-56"
+   ]
+  },
+  {
+   "key": "authority|consign.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/swagger-ui.html-/webjars/**-/images/**-/configuration/**-/swagger-resources/**-/v2/**",
+   "candidateAtomId": "atom:authority:consign-config-securityconfig:permitsunauthenticated-swagger-and-static-doc-paths",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/config/SecurityConfig.java:72-73"
+   ]
+  },
+  {
+   "key": "authority|consign.config.SecurityConfig|authority|requiresRole|ADMIN-or-USER-role-required-on-/api/v1/consignservice/**",
+   "candidateAtomId": "atom:authority:consign-config-securityconfig:requiresrole-admin-user-on-consignservice-api-path",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "authority|consignprice.config.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-scope-/**-credentials-not-sent",
+   "candidateAtomId": "atom:authority:consignprice-config-securityconfig:allowscrossorigin-all-origins-credentials-false",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/config/SecurityConfig.java:51-56"
+   ]
+  },
+  {
+   "key": "authority|consignprice.config.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/swagger-ui.html-/webjars/**-/images/**-/configuration/**-/swagger-resources/**-/v2/**",
+   "candidateAtomId": "atom:authority:consignprice-config-securityconfig:permitsunauthenticated-swagger-and-static-doc-paths",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/config/SecurityConfig.java:72-73"
+   ]
+  },
+  {
+   "key": "authority|consignprice.config.SecurityConfig|authority|requiresRole|ADMIN-or-USER-role-required-on-/api/v1/consignpriceservice/**",
+   "candidateAtomId": "atom:authority:consignprice-config-securityconfig:requiresrole-admin-user-on-consignpriceservice-api-path",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "capability|consign.controller.ConsignController|capability|exposesEndpoint|GET-/api/v1/consignservice/consigns/account/{id}",
+   "candidateAtomId": "atom:capability:consign-controller-consigncontroller:exposesendpoint-get-consigns-account-id",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:46-51"
+   ]
+  },
+  {
+   "key": "capability|consign.controller.ConsignController|capability|exposesEndpoint|GET-/api/v1/consignservice/consigns/order/{id}",
+   "candidateAtomId": "atom:capability:consign-controller-consigncontroller:exposesendpoint-get-consigns-order-id",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:53-58"
+   ]
+  },
+  {
+   "key": "capability|consign.controller.ConsignController|capability|exposesEndpoint|GET-/api/v1/consignservice/consigns/{consignee}",
+   "candidateAtomId": "atom:capability:consign-controller-consigncontroller:exposesendpoint-get-consigns-consignee",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:60-64"
+   ]
+  },
+  {
+   "key": "capability|consign.controller.ConsignController|capability|exposesEndpoint|GET-/api/v1/consignservice/welcome",
+   "candidateAtomId": "atom:capability:consign-controller-consigncontroller:exposesendpoint-get-welcome",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:28-31"
+   ]
+  },
+  {
+   "key": "capability|consign.controller.ConsignController|capability|exposesEndpoint|POST-/api/v1/consignservice/consigns",
+   "candidateAtomId": "atom:capability:consign-controller-consigncontroller:exposesendpoint-post-consigns",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:33-38"
+   ]
+  },
+  {
+   "key": "capability|consign.controller.ConsignController|capability|exposesEndpoint|PUT-/api/v1/consignservice/consigns",
+   "candidateAtomId": "atom:capability:consign-controller-consigncontroller:exposesendpoint-put-consigns",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:40-44"
+   ]
+  },
+  {
+   "key": "capability|consignprice.controller.ConsignPriceController|capability|exposesEndpoint|GET-/api/v1/consignpriceservice/consignprice/config",
+   "candidateAtomId": "atom:capability:consignprice-controller-consignpricecontroller:exposesendpoint-get-consignprice-config",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:45-49"
+   ]
+  },
+  {
+   "key": "capability|consignprice.controller.ConsignPriceController|capability|exposesEndpoint|GET-/api/v1/consignpriceservice/consignprice/price",
+   "candidateAtomId": "atom:capability:consignprice-controller-consignpricecontroller:exposesendpoint-get-consignprice-price",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:39-43"
+   ]
+  },
+  {
+   "key": "capability|consignprice.controller.ConsignPriceController|capability|exposesEndpoint|GET-/api/v1/consignpriceservice/consignprice/{weight}/{isWithinRegion}",
+   "candidateAtomId": "atom:capability:consignprice-controller-consignpricecontroller:exposesendpoint-get-consignprice-weight-iswithinregion",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:31-37"
+   ]
+  },
+  {
+   "key": "capability|consignprice.controller.ConsignPriceController|capability|exposesEndpoint|GET-/api/v1/consignpriceservice/welcome",
+   "candidateAtomId": "atom:capability:consignprice-controller-consignpricecontroller:exposesendpoint-get-welcome",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:26-29"
+   ]
+  },
+  {
+   "key": "capability|consignprice.controller.ConsignPriceController|capability|exposesEndpoint|POST-/api/v1/consignpriceservice/consignprice",
+   "candidateAtomId": "atom:capability:consignprice-controller-consignpricecontroller:exposesendpoint-post-consignprice",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:51-56"
+   ]
+  },
+  {
+   "key": "contract|consign.service.ConsignServiceImpl|specification|ensures|price-recomputed-via-price-service-call-only-when-updated-weight-differs-from-stored-weight-otherwise-original-price-retained",
+   "candidateAtomId": "atom:contract:consign-service-consignserviceimpl:ensures-price-recomputed-only-when-weight-differs-on-update-otherwise-kept",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:97-110"
+   ]
+  },
+  {
+   "key": "contract|consignprice.service.ConsignPriceServiceImpl|specification|ensures|price-equals-initial-price-when-weight-at-or-below-initial-weight-otherwise-initial-price-plus-extra-weight-times-within-or-beyond-rate",
+   "candidateAtomId": "atom:contract:consignprice-service-consignpriceserviceimpl:ensures-price-equals-initial-price-plus-extra-weight-times-region-rate",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:28-39"
+   ]
+  },
+  {
+   "key": "effect|consign.service.ConsignServiceImpl|effect|callsProvider|GET-ts-consign-price-service-api-v1-consignpriceservice-consignprice-weight-iswithin-via-load-balanced-resttemplate",
+   "candidateAtomId": "atom:effect:consign-service-consignserviceimpl:callsprovider-ts-consign-price-service",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:65-73",
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:99-107"
+   ]
+  },
+  {
+   "key": "relation|consign.controller.ConsignController|relation|dependsOn|consign.service.ConsignService",
+   "candidateAtomId": "atom:relation:consign-controller-consigncontroller:dependson-consign-service-consignservice",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/controller/ConsignController.java:23-24"
+   ]
+  },
+  {
+   "key": "relation|consign.service.ConsignServiceImpl|relation|dependsOn|consign.repository.ConsignRepository",
+   "candidateAtomId": "atom:relation:consign-service-consignserviceimpl:dependson-consign-repository-consignrepository",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:30-31"
+   ]
+  },
+  {
+   "key": "relation|consign.service.ConsignServiceImpl|relation|implements|consign.service.ConsignService",
+   "candidateAtomId": "atom:relation:consign-service-consignserviceimpl:implements-consign-service-consignservice",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:29"
+   ]
+  },
+  {
+   "key": "relation|consignprice.service.ConsignPriceServiceImpl|relation|dependsOn|consignprice.repository.ConsignPriceConfigRepository",
+   "candidateAtomId": "atom:relation:consignprice-service-consignpriceserviceimpl:dependson-consignprice-repository-consignpriceconfigrepository",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:18-19"
+   ]
+  },
+  {
+   "key": "relation|consignprice.service.ConsignPriceServiceImpl|relation|implements|consignprice.service.ConsignPriceService",
+   "candidateAtomId": "atom:relation:consignprice-service-consignpriceserviceimpl:implements-consignprice-service-consignpriceservice",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:16"
+   ]
+  },
+  {
+   "key": "semantic|consign.entity.ConsignRecord|semantic|meansInUse|handleDate-and-targetDate-are-plain-string-columns-with-no-date-time-type-or-parsing-observed-at-this-boundary",
+   "candidateAtomId": "atom:semantic:consign-entity-consignrecord:meansinuse-handle-and-target-date-stored-as-unparsed-string-fields",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:27-28",
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:55-57"
+   ]
+  },
+  {
+   "key": "semantic|consign.entity.Consign|semantic|meansInUse|region-flag-named-isWithin-boolean-field-on-consign-request-entity-versus-isWithinRegion-token-on-price-service-endpoint-for-the-same-concept",
+   "candidateAtomId": "atom:semantic:consign-entity-consign:meansinuse-iswithin-boolean-field-distinct-name-from-price-service-iswithinregion-parameter",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/entity/Consign.java:33",
+    "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:32"
+   ]
+  },
+  {
+   "key": "semantic|consign.init.InitData|semantic|meansInUse|seed-consign-record-block-is-fully-commented-out-so-the-commandlinerunner-run-method-performs-no-action-at-startup",
+   "candidateAtomId": "atom:semantic:consign-init-initdata:meansinuse-consign-record-seed-data-defined-but-commented-out-so-run-performs-no-action",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/init/InitData.java:21-69"
+   ]
+  },
+  {
+   "key": "semantic|consign.repository.ConsignRepository|semantic|identifiedBy|consign-record-lookup-keys-are-all-string-typed-account-id-order-id-consignee-name-or-primary-key-no-numeric-or-composite-key-observed",
+   "candidateAtomId": "atom:semantic:consign-repository-consignrepository:identifiedby-lookup-by-account-id-order-id-consignee-or-primary-key-all-string-typed",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/repository/ConsignRepository.java:22,30,38,46"
+   ]
+  },
+  {
+   "key": "semantic|consign.service.ConsignServiceImpl|semantic|meansInUse|consign-record-primary-key-assigned-in-service-code-with-uuid-randomUUID-toString-rather-than-a-jpa-id-generator",
+   "candidateAtomId": "atom:semantic:consign-service-consignserviceimpl:meansinuse-consign-record-id-generated-in-service-layer-via-uuid-randomuuid-not-database-generator",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:52"
+   ]
+  },
+  {
+   "key": "semantic|consign.service.ConsignServiceImpl|semantic|meansInUse|update-request-whose-id-is-not-found-in-repository-is-treated-as-a-new-insert-rather-than-rejected",
+   "candidateAtomId": "atom:semantic:consign-service-consignserviceimpl:meansinuse-update-without-existing-id-delegates-to-insert-path",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:85-87"
+   ]
+  },
+  {
+   "key": "semantic|consign.service.ConsignServiceImpl|semantic|statusGates|status-1-on-record-carrying-branch-status-0-on-empty-or-not-found-branch",
+   "candidateAtomId": "atom:semantic:consign-service-consignserviceimpl:statusgates-response-status-1-on-record-found-branch-0-on-not-found-branch",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:121-126",
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:132-137",
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:143-148"
+   ]
+  },
+  {
+   "key": "semantic|consignprice.controller.ConsignPriceController|semantic|meansInUse|isWithinRegion-path-segment-is-a-string-token-parsed-with-Boolean-parseBoolean-not-a-typed-boolean-route-parameter",
+   "candidateAtomId": "atom:semantic:consignprice-controller-consignpricecontroller:meansinuse-iswithinregion-parsed-from-path-string-parameter-via-boolean-parseboolean",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java:31-36"
+   ]
+  },
+  {
+   "key": "semantic|consignprice.service.ConsignPriceServiceImpl|semantic|meansInUse|idx-column-value-0-identifies-the-single-active-price-config-row-read-and-overwritten-on-every-operation",
+   "candidateAtomId": "atom:semantic:consignprice-service-consignpriceserviceimpl:meansinuse-index-0-identifies-singleton-active-price-config",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:27,46,64-70,81",
+    "src:ts-consign-price-service/src/main/java/consignprice/init/InitData.java:28"
+   ]
+  },
+  {
+   "key": "semantic|consignprice.service.ConsignPriceServiceImpl|semantic|statusGates|status-1-used-on-every-response-branch-in-this-service-no-status-0-branch-observed",
+   "candidateAtomId": "atom:semantic:consignprice-service-consignpriceserviceimpl:statusgates-response-status-1-on-every-observed-branch-no-alternate-code-path",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:40,56,76,81"
+   ]
+  },
+  {
+   "key": "semantic|ctx:consign-record-lifecycle|cech|sectionValue|section=money-amount:double-typed-price-field-persisted-directly-from-upstream-response-body-with-no-local-parsing-or-rounding",
+   "candidateAtomId": "atom:semantic:ctx-consign-record-lifecycle:cech-section-money-amount",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:37-38",
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:67-73",
+    "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java:100-107"
+   ]
+  },
+  {
+   "key": "semantic|ctx:consignprice-price-quote-computation|cech|sectionValue|section=money-amount:double-typed-price-fields-with-arithmetic-performed-at-service-computation-site-no-rounding-or-scaling-observed",
+   "candidateAtomId": "atom:semantic:ctx-consignprice-price-quote-computation:cech-section-money-amount",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/entity/ConsignPrice.java:26-33",
+    "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:28-38"
+   ]
+  },
+  {
+   "key": "state|consign.entity.ConsignRecord|state|persistsIn|default-named-table-under-ts-consign-mysql-schema-with-column-remaps",
+   "candidateAtomId": "atom:state:consign-entity-consignrecord:persistsin-consign-record-table-in-ts-consign-mysql-schema",
+   "refs": [
+    "src:ts-consign-service/src/main/java/consign/entity/ConsignRecord.java:16-39"
+   ]
+  },
+  {
+   "key": "state|consignprice.ConsignPriceApplication|state|persistsIn|ts-consign-price-mysql-database-over-jdbc-on-configurable-host-and-port",
+   "candidateAtomId": "atom:state:consignprice-consignpriceapplication:persistsin-ts-consign-price-mysql-datasource-via-jdbc",
+   "refs": [
+    "src:ts-consign-price-service/src/main/resources/application.yml:8-12"
+   ]
+  },
+  {
+   "key": "state|consignprice.entity.ConsignPrice|state|persistsIn|consign_price-table-single-row-selected-by-idx-column-value-0",
+   "candidateAtomId": "atom:state:consignprice-entity-consignprice:persistsin-consign-price-table-singleton-row-at-index-0",
+   "refs": [
+    "src:ts-consign-price-service/src/main/java/consignprice/entity/ConsignPrice.java:18-24",
+    "src:ts-consign-price-service/src/main/java/consignprice/repository/ConsignPriceConfigRepository.java:20",
+    "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java:64-70"
+   ]
+  }
+ ]
+}

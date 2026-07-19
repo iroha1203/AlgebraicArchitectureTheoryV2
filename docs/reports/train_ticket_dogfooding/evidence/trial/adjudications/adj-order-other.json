@@ -1,0 +1,1298 @@
+{
+  "service": "ts-order-other-service",
+  "adjudications": [
+    {
+      "key": "authority|ts-order-other-service.SecurityConfig|authority|checksPermission|jwt-filter-before-username-password-filter",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/config/SecurityConfig.java:85 adds JWTFilter before UsernamePasswordAuthenticationFilter; kept atom:authority:ts-order-other-service.SecurityConfig:checksPermission:jwt-filter."
+    },
+    {
+      "key": "authority|ts-order-other-service.SecurityConfig|authority|checksPermission|jwt-filter-before-username-password-authentication",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/config/SecurityConfig.java:85 adds JWTFilter before UsernamePasswordAuthenticationFilter; kept atom:authority:ts-order-other-service.SecurityConfig:checksPermission:jwt-filter."
+    },
+    {
+      "key": "authority|ts-order-other-service.SecurityConfig|authority|checksPermission|permit-all:/api/v1/orderOtherService/orderOther/**",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/config/SecurityConfig.java:74 permits all on /api/v1/orderOtherService/orderOther/**; kept atom:authority:ts-order-other-service.SecurityConfig:checksPermission:permit-all-orderother-subtree."
+    },
+    {
+      "key": "authority|ts-order-other-service.SecurityConfig|authority|checksPermission|permit-all:/api/v1/orderOtherService/orderOther/** declared before role matchers",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/config/SecurityConfig.java:74 permits all on /api/v1/orderOtherService/orderOther/**; kept atom:authority:ts-order-other-service.SecurityConfig:checksPermission:permit-all-orderother-subtree."
+    },
+    {
+      "key": "authority|ts-order-other-service.SecurityConfig|authority|requiresRole|ADMIN-or-USER:POST-PUT-DELETE:/api/v1/orderOtherService/orderOther",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/config/SecurityConfig.java:75-77 require ADMIN or USER on POST/PUT/DELETE orderOther; kept atom:authority:ts-order-other-service.SecurityConfig:requiresRole:admin-or-user-orderother-write."
+    },
+    {
+      "key": "authority|ts-order-other-service.SecurityConfig|authority|requiresRole|ADMIN-or-USER on POST/PUT/DELETE /api/v1/orderOtherService/orderOther",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/config/SecurityConfig.java:75-77 require ADMIN or USER on POST/PUT/DELETE orderOther; kept atom:authority:ts-order-other-service.SecurityConfig:requiresRole:admin-or-user-orderother-write."
+    },
+    {
+      "key": "authority|ts-order-other-service.SecurityConfig|authority|requiresRole|ADMIN:POST-PUT:/api/v1/orderOtherService/orderOther/admin",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/config/SecurityConfig.java:78-79 require ADMIN on POST/PUT orderOther/admin; kept atom:authority:ts-order-other-service.SecurityConfig:requiresRole:admin-orderother-admin."
+    },
+    {
+      "key": "authority|ts-order-other-service.SecurityConfig|authority|requiresRole|ADMIN on POST/PUT /api/v1/orderOtherService/orderOther/admin",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/config/SecurityConfig.java:78-79 require ADMIN on POST/PUT orderOther/admin; kept atom:authority:ts-order-other-service.SecurityConfig:requiresRole:admin-orderother-admin."
+    },
+    {
+      "key": "contract|ts-order-other-service.OrderAlterInfo|specification|shapedAs|accountId-previousOrderId-loginToken-newOrderInfo",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/entity/OrderAlterInfo.java:21-29 fields accountId, previousOrderId, loginToken, newOrderInfo; kept atom:contract:ts-order-other-service.OrderAlterInfo:shapedAs:account-previousorder-logintoken-neworder with unioned refs."
+    },
+    {
+      "key": "contract|ts-order-other-service.OrderAlterInfo|specification|shapedAs|account-id-previous-order-id-login-token-new-order-payload",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/entity/OrderAlterInfo.java:21-29 fields accountId, previousOrderId, loginToken, newOrderInfo; kept atom:contract:ts-order-other-service.OrderAlterInfo:shapedAs:account-previousorder-logintoken-neworder with unioned refs."
+    },
+    {
+      "key": "contract|ts-order-other-service.OrderOtherServiceImpl.deleteOrder|specification|requires|uuid-parseable-order-id",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:417 parses orderId with UUID.fromString; kept atom:contract:ts-order-other-service.OrderOtherServiceImpl.deleteOrder:requires:uuid-parseable-order-id."
+    },
+    {
+      "key": "contract|ts-order-other-service.OrderOtherServiceImpl.deleteOrder|specification|requires|order-id-parsable-as-uuid",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:417 parses orderId with UUID.fromString; kept atom:contract:ts-order-other-service.OrderOtherServiceImpl.deleteOrder:requires:uuid-parseable-order-id."
+    },
+    {
+      "key": "contract|ts-order-other-service.OrderOtherServiceImpl.getOrderPrice|specification|ensures|returns-price-minus-one-string-when-order-not-found",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:352 returns \"-1.0\" price when the order is absent, one fact keyed as contract in pass A and semantic in pass B; kept atom:contract:ts-order-other-service.OrderOtherServiceImpl.getOrderPrice:ensures:minus-one-price-on-order-not-found."
+    },
+    {
+      "key": "semantic|ts-order-other-service.Order.price|semantic|meansInUse|string-minus-one-point-zero-returned-when-order-absent",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:352 returns \"-1.0\" price when the order is absent, one fact keyed as contract in pass A and semantic in pass B; kept atom:contract:ts-order-other-service.OrderOtherServiceImpl.getOrderPrice:ensures:minus-one-price-on-order-not-found."
+    },
+    {
+      "key": "contract|ts-order-other-service.OrderOtherServiceImpl|specification|requires|order-not-already-present-in-account-orders-on-create",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:94 rejects a create when an equal order exists for the account; kept the method-qualified atom:contract:ts-order-other-service.OrderOtherServiceImpl.create:requires:no-duplicate-order-for-account (the parallel check at ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:434 is the addNewOrder path)."
+    },
+    {
+      "key": "contract|ts-order-other-service.OrderOtherServiceImpl.create|specification|requires|no-equal-order-already-present-for-account",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:94 rejects a create when an equal order exists for the account; kept the method-qualified atom:contract:ts-order-other-service.OrderOtherServiceImpl.create:requires:no-duplicate-order-for-account (the parallel check at ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:434 is the addNewOrder path)."
+    },
+    {
+      "key": "contract|ts-order-other-service.Order|specification|ensures|default-constructor-sets-status-paid",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/entity/Order.java:79 constructor sets status to OrderStatus.PAID, one fact keyed as contract in pass A and semantic in pass B; kept atom:contract:ts-order-other-service.Order:ensures:default-constructor-status-paid."
+    },
+    {
+      "key": "semantic|ts-order-other-service.Order.status|semantic|meansInUse|constructor-default-status-paid",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/entity/Order.java:79 constructor sets status to OrderStatus.PAID, one fact keyed as contract in pass A and semantic in pass B; kept atom:contract:ts-order-other-service.Order:ensures:default-constructor-status-paid."
+    },
+    {
+      "key": "contract|ts-order-other-service.QueryInfo|specification|shapedAs|loginId-dateRanges-state-enableFlags",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/entity/QueryInfo.java:12-33 declares loginId, travel/bought date ranges, state and enable flags; kept the fuller atom:contract:ts-order-other-service.QueryInfo:shapedAs:date-range-and-state-filter-toggles with unioned refs."
+    },
+    {
+      "key": "contract|ts-order-other-service.QueryInfo|specification|shapedAs|login-id-with-travel-bought-date-ranges-state-and-enable-flags",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/entity/QueryInfo.java:12-33 declares loginId, travel/bought date ranges, state and enable flags; kept the fuller atom:contract:ts-order-other-service.QueryInfo:shapedAs:date-range-and-state-filter-toggles with unioned refs."
+    },
+    {
+      "key": "contract|ts-order-other-service.SecurityConfig|specification|requires|stateless-session-policy",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/config/SecurityConfig.java:69-71 disables csrf and sets SessionCreationPolicy.STATELESS; kept atom:contract:ts-order-other-service.SecurityConfig:ensures:stateless-session."
+    },
+    {
+      "key": "contract|ts-order-other-service.SecurityConfig|specification|ensures|stateless-session-policy-with-csrf-disabled",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/config/SecurityConfig.java:69-71 disables csrf and sets SessionCreationPolicy.STATELESS; kept atom:contract:ts-order-other-service.SecurityConfig:ensures:stateless-session."
+    },
+    {
+      "key": "relation|ts-order-other-service.InitData|relation|calls|ts-order-other-service.OrderOtherService.create:startup-seed-order",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/init/InitData.java:22-44 InitData invokes OrderOtherService.create to seed one order; kept the method-specific atom:relation:ts-order-other-service.InitData:calls:OrderOtherService-create-startup-seed with unioned refs."
+    },
+    {
+      "key": "relation|ts-order-other-service.InitData|restriction|calls|ts-order-other-service.OrderOtherService",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/init/InitData.java:22-44 InitData invokes OrderOtherService.create to seed one order; kept the method-specific atom:relation:ts-order-other-service.InitData:calls:OrderOtherService-create-startup-seed with unioned refs."
+    },
+    {
+      "key": "relation|ts-order-other-service.OrderOtherApplication|relation|dependsOn|service-discovery-client",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/OrderOtherApplication.java:23 @EnableDiscoveryClient; kept atom:relation:ts-order-other-service.OrderOtherApplication:dependsOn:service-discovery."
+    },
+    {
+      "key": "relation|ts-order-other-service.OrderOtherApplication|restriction|dependsOn|spring-cloud-discovery-client",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/OrderOtherApplication.java:23 @EnableDiscoveryClient; kept atom:relation:ts-order-other-service.OrderOtherApplication:dependsOn:service-discovery."
+    },
+    {
+      "key": "relation|ts-order-other-service.OrderOtherController|relation|calls|ts-order-other-service.OrderOtherService",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:29 autowires OrderOtherService used by every handler; kept atom:relation:ts-order-other-service.OrderOtherController:calls:OrderOtherService."
+    },
+    {
+      "key": "relation|ts-order-other-service.OrderOtherController|restriction|calls|ts-order-other-service.OrderOtherService",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:29 autowires OrderOtherService used by every handler; kept atom:relation:ts-order-other-service.OrderOtherController:calls:OrderOtherService."
+    },
+    {
+      "key": "relation|ts-order-other-service.OrderOtherServiceImpl|relation|calls|ts-order-other-service.OrderOtherRepository",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:31 autowires OrderOtherRepository and ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:99 saves through it; kept atom:relation:ts-order-other-service.OrderOtherServiceImpl:calls:OrderOtherRepository."
+    },
+    {
+      "key": "relation|ts-order-other-service.OrderOtherServiceImpl|restriction|dependsOn|ts-order-other-service.OrderOtherRepository",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:31 autowires OrderOtherRepository and ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:99 saves through it; kept atom:relation:ts-order-other-service.OrderOtherServiceImpl:calls:OrderOtherRepository."
+    },
+    {
+      "key": "relation|ts-order-other-service.OrderOtherServiceImpl|relation|calls|ts-station-service:POST /api/v1/stationservice/stations/namelist",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:226-228 restTemplate.exchange POST to ts-station-service /api/v1/stationservice/stations/namelist; kept atom:relation:ts-order-other-service.OrderOtherServiceImpl:calls:ts-station-service-stations-namelist."
+    },
+    {
+      "key": "relation|ts-order-other-service.OrderOtherServiceImpl|restriction|calls|ts-station-service POST /api/v1/stationservice/stations/namelist",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:226-228 restTemplate.exchange POST to ts-station-service /api/v1/stationservice/stations/namelist; kept atom:relation:ts-order-other-service.OrderOtherServiceImpl:calls:ts-station-service-stations-namelist."
+    },
+    {
+      "key": "relation|ts-order-other-service|relation|dependsOn|nacos-service-discovery",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/resources/application.yml:9 configures nacos discovery server-addr; kept atom:relation:ts-order-other-service:dependsOn:nacos-discovery."
+    },
+    {
+      "key": "relation|ts-order-other-service|restriction|dependsOn|nacos-service-discovery",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/resources/application.yml:9 configures nacos discovery server-addr; kept atom:relation:ts-order-other-service:dependsOn:nacos-discovery."
+    },
+    {
+      "key": "semantic|ts-order-other-service.Order.equals|semantic|identifiedBy|field-wise-equality-excluding-id",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/entity/Order.java:84-109 equals compares business fields without id while ts-order-other-service/src/main/java/other/entity/Order.java:113-116 hashCode uses only id; kept atom:semantic:ts-order-other-service.Order:identifiedBy:business-field-equality with unioned refs."
+    },
+    {
+      "key": "semantic|ts-order-other-service.Order|semantic|identifiedBy|equals-on-business-fields-with-id-only-hashcode",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/entity/Order.java:84-109 equals compares business fields without id while ts-order-other-service/src/main/java/other/entity/Order.java:113-116 hashCode uses only id; kept atom:semantic:ts-order-other-service.Order:identifiedBy:business-field-equality with unioned refs."
+    },
+    {
+      "key": "semantic|ts-order-other-service.Order.id|semantic|identifiedBy|jpa-uuid-generated-36-char-string",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/entity/Order.java:24-27 @Id @Column(length=36) @GeneratedValue jpa-uuid, one fact keyed as semantic in pass A and contract in pass B; kept atom:contract:ts-order-other-service.Order.id:shapedAs:jpa-uuid-string-36 with unioned refs."
+    },
+    {
+      "key": "contract|ts-order-other-service.Order.id|specification|shapedAs|jpa-uuid-generated-string-length-36",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/entity/Order.java:24-27 @Id @Column(length=36) @GeneratedValue jpa-uuid, one fact keyed as semantic in pass A and contract in pass B; kept atom:contract:ts-order-other-service.Order.id:shapedAs:jpa-uuid-string-36 with unioned refs."
+    },
+    {
+      "key": "semantic|ts-order-other-service.OrderStatus|semantic|meansInUse|status-at-or-above-change-excluded-from-sold-ticket-count",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:292 skips orders with status >= OrderStatus.CHANGE in the sold-ticket count; kept atom:semantic:ts-order-other-service.Order.status:statusGates:sold-ticket-count-exclusion."
+    },
+    {
+      "key": "semantic|ts-order-other-service.Order.status|semantic|statusGates|sold-ticket-count-skips-status-at-or-above-change",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:292 skips orders with status >= OrderStatus.CHANGE in the sold-ticket count; kept atom:semantic:ts-order-other-service.Order.status:statusGates:sold-ticket-count-exclusion."
+    },
+    {
+      "key": "semantic|ts-order-other-service.OrderStatus|semantic|meansInUse|valid-order-count-includes-notpaid-paid-collected",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:400-403 counts NOTPAID, PAID and COLLECTED orders as valid in checkSecurityAboutOrder; kept atom:semantic:ts-order-other-service.Order.status:statusGates:valid-order-count with unioned refs."
+    },
+    {
+      "key": "semantic|ts-order-other-service.Order.status|semantic|statusGates|security-check-counts-notpaid-paid-collected-as-valid",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:400-403 counts NOTPAID, PAID and COLLECTED orders as valid in checkSecurityAboutOrder; kept atom:semantic:ts-order-other-service.Order.status:statusGates:valid-order-count with unioned refs."
+    },
+    {
+      "key": "state|ts-order-other-service.Order.status|static|transitionsTo|CANCEL-on-cancelOrder",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:277 cancelOrder sets status to OrderStatus.CANCEL; kept the trigger-qualified atom:state:ts-order-other-service.Order.status:transitionsTo:cancel-on-cancelOrder (pass B's extra ref ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:128 is the alterOrder transition kept separately)."
+    },
+    {
+      "key": "state|ts-order-other-service.Order.status|static|transitionsTo|CANCEL",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:277 cancelOrder sets status to OrderStatus.CANCEL; kept the trigger-qualified atom:state:ts-order-other-service.Order.status:transitionsTo:cancel-on-cancelOrder (pass B's extra ref ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:128 is the alterOrder transition kept separately)."
+    },
+    {
+      "key": "state|ts-order-other-service.Order.status|static|transitionsTo|PAID-on-payOrder",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:368 payOrder sets status to OrderStatus.PAID; kept atom:state:ts-order-other-service.Order.status:transitionsTo:paid-on-payOrder."
+    },
+    {
+      "key": "state|ts-order-other-service.Order.status|static|transitionsTo|PAID",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:368 payOrder sets status to OrderStatus.PAID; kept atom:state:ts-order-other-service.Order.status:transitionsTo:paid-on-payOrder."
+    },
+    {
+      "key": "state|ts-order-other-service.Order.status|static|transitionsTo|caller-supplied-status-on-modifyOrder",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:340 modifyOrder writes the caller-supplied status code; kept atom:state:ts-order-other-service.Order.status:transitionsTo:request-status-on-modifyOrder."
+    },
+    {
+      "key": "state|ts-order-other-service.Order.status|static|transitionsTo|caller-supplied-int-code-via-modifyOrder",
+      "decision": "merged",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:340 modifyOrder writes the caller-supplied status code; kept atom:state:ts-order-other-service.Order.status:transitionsTo:request-status-on-modifyOrder."
+    },
+    {
+      "key": "component|ts-order-other-service.OrderOtherApplication.restTemplate|static||",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/OrderOtherApplication.java:31-33 declares the @LoadBalanced RestTemplate bean."
+    },
+    {
+      "key": "relation|ts-order-other-service.OrderOtherRepository|relation|readsFrom|table:orders_other",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/repository/OrderOtherRepository.java:26 findById and ts-order-other-service/src/main/java/other/repository/OrderOtherRepository.java:34 findAll read orders_other rows via CrudRepository<Order,String>."
+    },
+    {
+      "key": "relation|ts-order-other-service.OrderOtherRepository|relation|writesTo|table:orders_other",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/repository/OrderOtherRepository.java:16 CrudRepository save and ts-order-other-service/src/main/java/other/repository/OrderOtherRepository.java:62 deleteById write the orders_other table."
+    },
+    {
+      "key": "semantic|ts-order-other-service.Order.status|semantic|meansInUse|order-lifecycle-status-code-from-orderstatus-enum",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/entity/Order.java:66 int status field is set from OrderStatus enum codes as at ts-order-other-service/src/main/java/other/entity/Order.java:79."
+    },
+    {
+      "key": "semantic|ts-order-other-service.OrderOtherController.modifyOrder|semantic|meansInUse|status-path-variable-carries-target-order-status-code",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:109-111 passes the {status} path variable straight into modifyOrder as the target status code."
+    },
+    {
+      "key": "semantic|ts-order-other-service.QueryInfo|semantic|meansInUse|enable-flags-select-which-order-filters-apply",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:148 gates all filtering on the QueryInfo enable flags declared in ts-order-other-service/src/main/java/other/entity/QueryInfo.java."
+    },
+    {
+      "key": "state|ts-order-other-service.Order.status|static|transitionsTo|previous-order-CANCEL-then-new-order-created-on-alterOrder",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:128 sets the previous order to CANCEL and ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:131-132 creates the replacement order in alterOrder."
+    },
+    {
+      "key": "relation|ts-order-other-service.OrderOtherApplication|restriction|dependsOn|load-balanced-rest-template-bean",
+      "decision": "not-adopted",
+      "basis": "ts-order-other-service/src/main/java/other/OrderOtherApplication.java:31-33 declares and provides the @LoadBalanced RestTemplate bean rather than depending on it; the bean is kept as atom:component:ts-order-other-service.OrderOtherApplication.restTemplate."
+    },
+    {
+      "key": "capability|ts-order-other-service.OrderOtherRepository|capability|handlesCommand|deleteById",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/repository/OrderOtherRepository.java:62 declares deleteById."
+    },
+    {
+      "key": "capability|ts-order-other-service.OrderOtherRepository|capability|servesQuery|findAll",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/repository/OrderOtherRepository.java:34 declares findAll."
+    },
+    {
+      "key": "capability|ts-order-other-service.OrderOtherRepository|capability|servesQuery|findById",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/repository/OrderOtherRepository.java:26 declares findById."
+    },
+    {
+      "key": "capability|ts-order-other-service.OrderOtherService|capability|handlesCommand|addNewOrder",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherService.java:28 declares addNewOrder."
+    },
+    {
+      "key": "capability|ts-order-other-service.OrderOtherService|capability|handlesCommand|create",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherService.java:20 declares create."
+    },
+    {
+      "key": "capability|ts-order-other-service.OrderOtherService|capability|handlesCommand|deleteOrder",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherService.java:30 declares deleteOrder."
+    },
+    {
+      "key": "capability|ts-order-other-service.OrderOtherService|capability|handlesCommand|modifyOrder",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherService.java:38 declares modifyOrder."
+    },
+    {
+      "key": "capability|ts-order-other-service.OrderOtherService|capability|handlesCommand|payOrder",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherService.java:34 declares payOrder."
+    },
+    {
+      "key": "capability|ts-order-other-service.OrderOtherService|capability|handlesCommand|saveChanges",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherService.java:24 declares saveChanges."
+    },
+    {
+      "key": "capability|ts-order-other-service.OrderOtherService|capability|handlesCommand|updateOrder",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherService.java:22 declares updateOrder."
+    },
+    {
+      "key": "capability|ts-order-other-service.OrderOtherService|capability|servesQuery|checkSecurityAboutOrder",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherService.java:52 declares checkSecurityAboutOrder."
+    },
+    {
+      "key": "capability|ts-order-other-service.OrderOtherService|capability|servesQuery|findOrderById",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherService.java:18 declares findOrderById."
+    },
+    {
+      "key": "capability|ts-order-other-service.OrderOtherService|capability|servesQuery|getAllOrders",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherService.java:40 declares getAllOrders."
+    },
+    {
+      "key": "capability|ts-order-other-service.OrderOtherService|capability|servesQuery|getOrderById",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherService.java:32 declares getOrderById."
+    },
+    {
+      "key": "capability|ts-order-other-service.OrderOtherService|capability|servesQuery|getOrderPrice",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherService.java:36 declares getOrderPrice."
+    },
+    {
+      "key": "capability|ts-order-other-service.OrderOtherService|capability|servesQuery|getSoldTickets",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherService.java:42 declares getSoldTickets."
+    },
+    {
+      "key": "capability|ts-order-other-service.OrderOtherService|capability|servesQuery|queryAlreadySoldOrders",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherService.java:50 declares queryAlreadySoldOrders."
+    },
+    {
+      "key": "capability|ts-order-other-service.OrderOtherService|capability|servesQuery|queryOrders",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherService.java:44 declares queryOrders."
+    },
+    {
+      "key": "capability|ts-order-other-service.OrderOtherService|capability|servesQuery|queryOrdersForRefresh",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherService.java:46 declares queryOrdersForRefresh."
+    },
+    {
+      "key": "capability|ts-order-other-service|capability|exposesEndpoint|http:12032",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/resources/application.yml:3 sets server.port 12032."
+    },
+    {
+      "key": "contract|ts-order-other-service.OrderOtherServiceImpl.alterOrder|specification|requires|previous-order-id-resolves-to-stored-order",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:123 alterOrder returns early unless the previous order id resolves to a stored order."
+    },
+    {
+      "key": "contract|ts-order-other-service.OrderOtherServiceImpl.saveChanges|specification|requires|target-order-id-resolves-to-stored-order",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:240 saveChanges returns early unless the target order id resolves to a stored order."
+    },
+    {
+      "key": "effect|ts-order-other-service.InitData|effect|writesTo|seed-order-via-service-create-on-command-line-runner",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/init/InitData.java:44 CommandLineRunner.run seeds one order through service.create."
+    },
+    {
+      "key": "effect|ts-order-other-service.OrderOtherServiceImpl|effect|writesTo|orders_other-delete-by-uuid-on-deleteOrder",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:424 deleteOrder deletes by the parsed uuid."
+    },
+    {
+      "key": "effect|ts-order-other-service.OrderOtherServiceImpl|effect|writesTo|orders_other-full-field-overwrite-on-saveChanges",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:244-262 saveChanges copies every field onto the stored order and saves it."
+    },
+    {
+      "key": "effect|ts-order-other-service.OrderOtherServiceImpl|effect|writesTo|orders_other-full-field-overwrite-on-updateOrder",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:454-471 updateOrder copies every field onto the stored order and saves it."
+    },
+    {
+      "key": "effect|ts-order-other-service.OrderOtherServiceImpl|effect|writesTo|orders_other-insert-on-addNewOrder-with-new-uuid",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:438-439 addNewOrder assigns a new uuid and saves."
+    },
+    {
+      "key": "effect|ts-order-other-service.OrderOtherServiceImpl|effect|writesTo|orders_other-insert-on-create-with-new-uuid",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:98-99 create assigns a new uuid and saves."
+    },
+    {
+      "key": "effect|ts-order-other-service.OrderOtherServiceImpl|effect|writesTo|orders_other-insert-on-initOrder-when-absent",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:107-109 initOrder saves only when the id is absent."
+    },
+    {
+      "key": "effect|ts-order-other-service.OrderOtherServiceImpl|effect|writesTo|orders_other-save-with-caller-supplied-status-on-modifyOrder",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:340-341 modifyOrder saves with the caller-supplied status."
+    },
+    {
+      "key": "effect|ts-order-other-service.OrderOtherServiceImpl|effect|writesTo|orders_other-save-with-status-cancel-on-cancelOrder",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:277-278 cancelOrder saves with status CANCEL."
+    },
+    {
+      "key": "effect|ts-order-other-service.OrderOtherServiceImpl|effect|writesTo|orders_other-save-with-status-paid-on-payOrder",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:368-369 payOrder saves with status PAID."
+    },
+    {
+      "key": "relation|ts-order-other-service.OrderOtherServiceImpl|restriction|implements|ts-order-other-service.OrderOtherService",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:28 class declaration implements OrderOtherService."
+    },
+    {
+      "key": "semantic|ts-order-other-service.Order.price|semantic|meansInUse|string-encoded-fare-returned-by-getOrderPrice",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/entity/Order.java:68 price is a String and ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:356 returns it from getOrderPrice."
+    },
+    {
+      "key": "semantic|ts-order-other-service.QueryInfo.enableBoughtDateQuery|semantic|meansInUse|bought-date-window-filter-activation-in-queryOrders",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/entity/QueryInfo.java:51-55 enableBoughtDateQuery sets the flag gating the bought-date window at ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:183."
+    },
+    {
+      "key": "semantic|ts-order-other-service.QueryInfo.enableStateQuery|semantic|statusGates|order-state-filter-activation-in-queryOrders",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/entity/QueryInfo.java:63-66 enableStateQuery sets the flag gating the state filter at ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:155."
+    },
+    {
+      "key": "semantic|ts-order-other-service.QueryInfo.enableTravelDateQuery|semantic|meansInUse|travel-date-window-filter-activation-in-queryOrders",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/entity/QueryInfo.java:39-43 enableTravelDateQuery sets the flag gating the travel-date window at ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:171."
+    },
+    {
+      "key": "semantic|ts-order-other-service.Response.status|semantic|meansInUse|status-one-on-result-carrying-branch-status-zero-on-not-found-or-duplicate-branch-with-message-only",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:69 returns status 1 with data and ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:73 returns status 0 with message only."
+    },
+    {
+      "key": "state|ts-order-other-service.Order.from|static|persistsIn|column:from_station",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/entity/Order.java:60 maps from to column from_station."
+    },
+    {
+      "key": "state|ts-order-other-service.Order.to|static|persistsIn|column:to_station",
+      "decision": "adopted",
+      "basis": "ts-order-other-service/src/main/java/other/entity/Order.java:63 maps to to column to_station."
+    }
+  ],
+  "canonicalAtoms": [
+    {
+      "id": "atom:authority:ts-order-other-service.SecurityConfig:checksPermission:jwt-filter",
+      "kind": "authority",
+      "subject": "ts-order-other-service.SecurityConfig",
+      "axis": "authority",
+      "predicate": "checksPermission",
+      "object": "jwt-filter-before-username-password-authentication",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:85"
+      ]
+    },
+    {
+      "id": "atom:authority:ts-order-other-service.SecurityConfig:checksPermission:permit-all-orderother-subtree",
+      "kind": "authority",
+      "subject": "ts-order-other-service.SecurityConfig",
+      "axis": "authority",
+      "predicate": "checksPermission",
+      "object": "permit-all:/api/v1/orderOtherService/orderOther/**",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:74"
+      ]
+    },
+    {
+      "id": "atom:authority:ts-order-other-service.SecurityConfig:requiresRole:admin-or-user-orderother-write",
+      "kind": "authority",
+      "subject": "ts-order-other-service.SecurityConfig",
+      "axis": "authority",
+      "predicate": "requiresRole",
+      "object": "ADMIN-or-USER:POST-PUT-DELETE:/api/v1/orderOtherService/orderOther",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:75",
+        "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:77"
+      ]
+    },
+    {
+      "id": "atom:authority:ts-order-other-service.SecurityConfig:requiresRole:admin-orderother-admin",
+      "kind": "authority",
+      "subject": "ts-order-other-service.SecurityConfig",
+      "axis": "authority",
+      "predicate": "requiresRole",
+      "object": "ADMIN:POST-PUT:/api/v1/orderOtherService/orderOther/admin",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:78",
+        "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:79"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-order-other-service.OrderAlterInfo:shapedAs:account-previousorder-logintoken-neworder",
+      "kind": "contract",
+      "subject": "ts-order-other-service.OrderAlterInfo",
+      "axis": "specification",
+      "predicate": "shapedAs",
+      "object": "accountId-previousOrderId-loginToken-newOrderInfo",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/entity/OrderAlterInfo.java:21",
+        "src:ts-order-other-service/src/main/java/other/entity/OrderAlterInfo.java:25",
+        "src:ts-order-other-service/src/main/java/other/entity/OrderAlterInfo.java:29"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-order-other-service.OrderOtherServiceImpl.deleteOrder:requires:uuid-parseable-order-id",
+      "kind": "contract",
+      "subject": "ts-order-other-service.OrderOtherServiceImpl.deleteOrder",
+      "axis": "specification",
+      "predicate": "requires",
+      "object": "uuid-parseable-order-id",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:417"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-order-other-service.OrderOtherServiceImpl.getOrderPrice:ensures:minus-one-price-on-order-not-found",
+      "kind": "contract",
+      "subject": "ts-order-other-service.OrderOtherServiceImpl.getOrderPrice",
+      "axis": "specification",
+      "predicate": "ensures",
+      "object": "returns-price-minus-one-string-when-order-not-found",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:352"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-order-other-service.OrderOtherServiceImpl.create:requires:no-duplicate-order-for-account",
+      "kind": "contract",
+      "subject": "ts-order-other-service.OrderOtherServiceImpl.create",
+      "axis": "specification",
+      "predicate": "requires",
+      "object": "no-equal-order-already-present-for-account",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:94"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-order-other-service.Order:ensures:default-constructor-status-paid",
+      "kind": "contract",
+      "subject": "ts-order-other-service.Order",
+      "axis": "specification",
+      "predicate": "ensures",
+      "object": "default-constructor-sets-status-paid",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/entity/Order.java:79"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-order-other-service.QueryInfo:shapedAs:date-range-and-state-filter-toggles",
+      "kind": "contract",
+      "subject": "ts-order-other-service.QueryInfo",
+      "axis": "specification",
+      "predicate": "shapedAs",
+      "object": "login-id-with-travel-bought-date-ranges-state-and-enable-flags",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/entity/QueryInfo.java:12",
+        "src:ts-order-other-service/src/main/java/other/entity/QueryInfo.java:17",
+        "src:ts-order-other-service/src/main/java/other/entity/QueryInfo.java:33"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-order-other-service.SecurityConfig:ensures:stateless-session",
+      "kind": "contract",
+      "subject": "ts-order-other-service.SecurityConfig",
+      "axis": "specification",
+      "predicate": "ensures",
+      "object": "stateless-session-policy-with-csrf-disabled",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:71"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-order-other-service.InitData:calls:OrderOtherService-create-startup-seed",
+      "kind": "relation",
+      "subject": "ts-order-other-service.InitData",
+      "axis": "relation",
+      "predicate": "calls",
+      "object": "ts-order-other-service.OrderOtherService.create:startup-seed-order",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/init/InitData.java:22",
+        "src:ts-order-other-service/src/main/java/other/init/InitData.java:25",
+        "src:ts-order-other-service/src/main/java/other/init/InitData.java:44"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-order-other-service.OrderOtherApplication:dependsOn:service-discovery",
+      "kind": "relation",
+      "subject": "ts-order-other-service.OrderOtherApplication",
+      "axis": "restriction",
+      "predicate": "dependsOn",
+      "object": "spring-cloud-discovery-client",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/OrderOtherApplication.java:23"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-order-other-service.OrderOtherController:calls:OrderOtherService",
+      "kind": "relation",
+      "subject": "ts-order-other-service.OrderOtherController",
+      "axis": "restriction",
+      "predicate": "calls",
+      "object": "ts-order-other-service.OrderOtherService",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:29"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-order-other-service.OrderOtherServiceImpl:calls:OrderOtherRepository",
+      "kind": "relation",
+      "subject": "ts-order-other-service.OrderOtherServiceImpl",
+      "axis": "relation",
+      "predicate": "calls",
+      "object": "ts-order-other-service.OrderOtherRepository",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:31",
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:99"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-order-other-service.OrderOtherServiceImpl:calls:ts-station-service-stations-namelist",
+      "kind": "relation",
+      "subject": "ts-order-other-service.OrderOtherServiceImpl",
+      "axis": "relation",
+      "predicate": "calls",
+      "object": "ts-station-service:POST /api/v1/stationservice/stations/namelist",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:226",
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:228"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-order-other-service:dependsOn:nacos-discovery",
+      "kind": "relation",
+      "subject": "ts-order-other-service",
+      "axis": "restriction",
+      "predicate": "dependsOn",
+      "object": "nacos-service-discovery",
+      "refs": [
+        "src:ts-order-other-service/src/main/resources/application.yml:9"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-order-other-service.Order:identifiedBy:business-field-equality",
+      "kind": "semantic",
+      "subject": "ts-order-other-service.Order",
+      "axis": "semantic",
+      "predicate": "identifiedBy",
+      "object": "equals-on-business-fields-with-id-only-hashcode",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/entity/Order.java:84",
+        "src:ts-order-other-service/src/main/java/other/entity/Order.java:109",
+        "src:ts-order-other-service/src/main/java/other/entity/Order.java:113"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-order-other-service.Order.id:shapedAs:jpa-uuid-string-36",
+      "kind": "contract",
+      "subject": "ts-order-other-service.Order.id",
+      "axis": "specification",
+      "predicate": "shapedAs",
+      "object": "jpa-uuid-generated-string-length-36",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/entity/Order.java:24",
+        "src:ts-order-other-service/src/main/java/other/entity/Order.java:26"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-order-other-service.Order.status:statusGates:sold-ticket-count-exclusion",
+      "kind": "semantic",
+      "subject": "ts-order-other-service.Order.status",
+      "axis": "semantic",
+      "predicate": "statusGates",
+      "object": "sold-ticket-count-skips-status-at-or-above-change",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:292"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-order-other-service.Order.status:statusGates:valid-order-count",
+      "kind": "semantic",
+      "subject": "ts-order-other-service.Order.status",
+      "axis": "semantic",
+      "predicate": "statusGates",
+      "object": "security-check-counts-notpaid-paid-collected-as-valid",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:400",
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:403"
+      ]
+    },
+    {
+      "id": "atom:state:ts-order-other-service.Order.status:transitionsTo:cancel-on-cancelOrder",
+      "kind": "state",
+      "subject": "ts-order-other-service.Order.status",
+      "axis": "static",
+      "predicate": "transitionsTo",
+      "object": "CANCEL-on-cancelOrder",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:277"
+      ]
+    },
+    {
+      "id": "atom:state:ts-order-other-service.Order.status:transitionsTo:paid-on-payOrder",
+      "kind": "state",
+      "subject": "ts-order-other-service.Order.status",
+      "axis": "static",
+      "predicate": "transitionsTo",
+      "object": "PAID-on-payOrder",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:368"
+      ]
+    },
+    {
+      "id": "atom:state:ts-order-other-service.Order.status:transitionsTo:request-status-on-modifyOrder",
+      "kind": "state",
+      "subject": "ts-order-other-service.Order.status",
+      "axis": "static",
+      "predicate": "transitionsTo",
+      "object": "caller-supplied-status-on-modifyOrder",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:340"
+      ]
+    },
+    {
+      "id": "atom:component:ts-order-other-service.OrderOtherApplication.restTemplate",
+      "kind": "component",
+      "subject": "ts-order-other-service.OrderOtherApplication.restTemplate",
+      "axis": "static",
+      "predicate": null,
+      "object": null,
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/OrderOtherApplication.java:31",
+        "src:ts-order-other-service/src/main/java/other/OrderOtherApplication.java:33"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-order-other-service.OrderOtherRepository:readsFrom:table-orders-other",
+      "kind": "relation",
+      "subject": "ts-order-other-service.OrderOtherRepository",
+      "axis": "relation",
+      "predicate": "readsFrom",
+      "object": "table:orders_other",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/repository/OrderOtherRepository.java:26",
+        "src:ts-order-other-service/src/main/java/other/repository/OrderOtherRepository.java:34"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-order-other-service.OrderOtherRepository:writesTo:table-orders-other",
+      "kind": "relation",
+      "subject": "ts-order-other-service.OrderOtherRepository",
+      "axis": "relation",
+      "predicate": "writesTo",
+      "object": "table:orders_other",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/repository/OrderOtherRepository.java:16",
+        "src:ts-order-other-service/src/main/java/other/repository/OrderOtherRepository.java:62"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-order-other-service.Order.status:meansInUse:order-status-code-from-orderstatus-enum",
+      "kind": "semantic",
+      "subject": "ts-order-other-service.Order.status",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "order-lifecycle-status-code-from-orderstatus-enum",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/entity/Order.java:66",
+        "src:ts-order-other-service/src/main/java/other/entity/Order.java:79"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-order-other-service.OrderOtherController.modifyOrder:meansInUse:status-path-variable-sets-order-status-code",
+      "kind": "semantic",
+      "subject": "ts-order-other-service.OrderOtherController.modifyOrder",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "status-path-variable-carries-target-order-status-code",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:109",
+        "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:111"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-order-other-service.QueryInfo:meansInUse:enable-flags-select-active-order-filters",
+      "kind": "semantic",
+      "subject": "ts-order-other-service.QueryInfo",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "enable-flags-select-which-order-filters-apply",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/entity/QueryInfo.java:39",
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:148"
+      ]
+    },
+    {
+      "id": "atom:state:ts-order-other-service.Order.status:transitionsTo:cancel-then-new-order-on-alterOrder",
+      "kind": "state",
+      "subject": "ts-order-other-service.Order.status",
+      "axis": "static",
+      "predicate": "transitionsTo",
+      "object": "previous-order-CANCEL-then-new-order-created-on-alterOrder",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:128",
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:132"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-order-other-service.OrderOtherRepository:handlesCommand:deleteById",
+      "kind": "capability",
+      "subject": "ts-order-other-service.OrderOtherRepository",
+      "axis": "capability",
+      "predicate": "handlesCommand",
+      "object": "deleteById",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/repository/OrderOtherRepository.java:62"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-order-other-service.OrderOtherRepository:servesQuery:findAll",
+      "kind": "capability",
+      "subject": "ts-order-other-service.OrderOtherRepository",
+      "axis": "capability",
+      "predicate": "servesQuery",
+      "object": "findAll",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/repository/OrderOtherRepository.java:34"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-order-other-service.OrderOtherRepository:servesQuery:findById",
+      "kind": "capability",
+      "subject": "ts-order-other-service.OrderOtherRepository",
+      "axis": "capability",
+      "predicate": "servesQuery",
+      "object": "findById",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/repository/OrderOtherRepository.java:26"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-order-other-service.OrderOtherService:handlesCommand:addNewOrder",
+      "kind": "capability",
+      "subject": "ts-order-other-service.OrderOtherService",
+      "axis": "capability",
+      "predicate": "handlesCommand",
+      "object": "addNewOrder",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherService.java:28"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-order-other-service.OrderOtherService:handlesCommand:create",
+      "kind": "capability",
+      "subject": "ts-order-other-service.OrderOtherService",
+      "axis": "capability",
+      "predicate": "handlesCommand",
+      "object": "create",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherService.java:20"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-order-other-service.OrderOtherService:handlesCommand:deleteOrder",
+      "kind": "capability",
+      "subject": "ts-order-other-service.OrderOtherService",
+      "axis": "capability",
+      "predicate": "handlesCommand",
+      "object": "deleteOrder",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherService.java:30"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-order-other-service.OrderOtherService:handlesCommand:modifyOrder",
+      "kind": "capability",
+      "subject": "ts-order-other-service.OrderOtherService",
+      "axis": "capability",
+      "predicate": "handlesCommand",
+      "object": "modifyOrder",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherService.java:38"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-order-other-service.OrderOtherService:handlesCommand:payOrder",
+      "kind": "capability",
+      "subject": "ts-order-other-service.OrderOtherService",
+      "axis": "capability",
+      "predicate": "handlesCommand",
+      "object": "payOrder",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherService.java:34"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-order-other-service.OrderOtherService:handlesCommand:saveChanges",
+      "kind": "capability",
+      "subject": "ts-order-other-service.OrderOtherService",
+      "axis": "capability",
+      "predicate": "handlesCommand",
+      "object": "saveChanges",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherService.java:24"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-order-other-service.OrderOtherService:handlesCommand:updateOrder",
+      "kind": "capability",
+      "subject": "ts-order-other-service.OrderOtherService",
+      "axis": "capability",
+      "predicate": "handlesCommand",
+      "object": "updateOrder",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherService.java:22"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-order-other-service.OrderOtherService:servesQuery:checkSecurityAboutOrder",
+      "kind": "capability",
+      "subject": "ts-order-other-service.OrderOtherService",
+      "axis": "capability",
+      "predicate": "servesQuery",
+      "object": "checkSecurityAboutOrder",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherService.java:52"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-order-other-service.OrderOtherService:servesQuery:findOrderById",
+      "kind": "capability",
+      "subject": "ts-order-other-service.OrderOtherService",
+      "axis": "capability",
+      "predicate": "servesQuery",
+      "object": "findOrderById",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherService.java:18"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-order-other-service.OrderOtherService:servesQuery:getAllOrders",
+      "kind": "capability",
+      "subject": "ts-order-other-service.OrderOtherService",
+      "axis": "capability",
+      "predicate": "servesQuery",
+      "object": "getAllOrders",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherService.java:40"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-order-other-service.OrderOtherService:servesQuery:getOrderById",
+      "kind": "capability",
+      "subject": "ts-order-other-service.OrderOtherService",
+      "axis": "capability",
+      "predicate": "servesQuery",
+      "object": "getOrderById",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherService.java:32"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-order-other-service.OrderOtherService:servesQuery:getOrderPrice",
+      "kind": "capability",
+      "subject": "ts-order-other-service.OrderOtherService",
+      "axis": "capability",
+      "predicate": "servesQuery",
+      "object": "getOrderPrice",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherService.java:36"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-order-other-service.OrderOtherService:servesQuery:getSoldTickets",
+      "kind": "capability",
+      "subject": "ts-order-other-service.OrderOtherService",
+      "axis": "capability",
+      "predicate": "servesQuery",
+      "object": "getSoldTickets",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherService.java:42"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-order-other-service.OrderOtherService:servesQuery:queryAlreadySoldOrders",
+      "kind": "capability",
+      "subject": "ts-order-other-service.OrderOtherService",
+      "axis": "capability",
+      "predicate": "servesQuery",
+      "object": "queryAlreadySoldOrders",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherService.java:50"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-order-other-service.OrderOtherService:servesQuery:queryOrders",
+      "kind": "capability",
+      "subject": "ts-order-other-service.OrderOtherService",
+      "axis": "capability",
+      "predicate": "servesQuery",
+      "object": "queryOrders",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherService.java:44"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-order-other-service.OrderOtherService:servesQuery:queryOrdersForRefresh",
+      "kind": "capability",
+      "subject": "ts-order-other-service.OrderOtherService",
+      "axis": "capability",
+      "predicate": "servesQuery",
+      "object": "queryOrdersForRefresh",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherService.java:46"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-order-other-service:exposesEndpoint:http-12032",
+      "kind": "capability",
+      "subject": "ts-order-other-service",
+      "axis": "capability",
+      "predicate": "exposesEndpoint",
+      "object": "http:12032",
+      "refs": [
+        "src:ts-order-other-service/src/main/resources/application.yml:3"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-order-other-service.OrderOtherServiceImpl.alterOrder:requires:previous-order-exists",
+      "kind": "contract",
+      "subject": "ts-order-other-service.OrderOtherServiceImpl.alterOrder",
+      "axis": "specification",
+      "predicate": "requires",
+      "object": "previous-order-id-resolves-to-stored-order",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:123"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-order-other-service.OrderOtherServiceImpl.saveChanges:requires:existing-order",
+      "kind": "contract",
+      "subject": "ts-order-other-service.OrderOtherServiceImpl.saveChanges",
+      "axis": "specification",
+      "predicate": "requires",
+      "object": "target-order-id-resolves-to-stored-order",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:240"
+      ]
+    },
+    {
+      "id": "atom:effect:ts-order-other-service.InitData:writesTo:seed-order-on-startup",
+      "kind": "effect",
+      "subject": "ts-order-other-service.InitData",
+      "axis": "effect",
+      "predicate": "writesTo",
+      "object": "seed-order-via-service-create-on-command-line-runner",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/init/InitData.java:44"
+      ]
+    },
+    {
+      "id": "atom:effect:ts-order-other-service.OrderOtherServiceImpl:writesTo:order-delete-by-id",
+      "kind": "effect",
+      "subject": "ts-order-other-service.OrderOtherServiceImpl",
+      "axis": "effect",
+      "predicate": "writesTo",
+      "object": "orders_other-delete-by-uuid-on-deleteOrder",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:424"
+      ]
+    },
+    {
+      "id": "atom:effect:ts-order-other-service.OrderOtherServiceImpl:writesTo:order-full-field-save-changes",
+      "kind": "effect",
+      "subject": "ts-order-other-service.OrderOtherServiceImpl",
+      "axis": "effect",
+      "predicate": "writesTo",
+      "object": "orders_other-full-field-overwrite-on-saveChanges",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:262"
+      ]
+    },
+    {
+      "id": "atom:effect:ts-order-other-service.OrderOtherServiceImpl:writesTo:order-full-field-admin-update",
+      "kind": "effect",
+      "subject": "ts-order-other-service.OrderOtherServiceImpl",
+      "axis": "effect",
+      "predicate": "writesTo",
+      "object": "orders_other-full-field-overwrite-on-updateOrder",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:471"
+      ]
+    },
+    {
+      "id": "atom:effect:ts-order-other-service.OrderOtherServiceImpl:writesTo:order-insert-admin-add",
+      "kind": "effect",
+      "subject": "ts-order-other-service.OrderOtherServiceImpl",
+      "axis": "effect",
+      "predicate": "writesTo",
+      "object": "orders_other-insert-on-addNewOrder-with-new-uuid",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:439"
+      ]
+    },
+    {
+      "id": "atom:effect:ts-order-other-service.OrderOtherServiceImpl:writesTo:order-insert-create",
+      "kind": "effect",
+      "subject": "ts-order-other-service.OrderOtherServiceImpl",
+      "axis": "effect",
+      "predicate": "writesTo",
+      "object": "orders_other-insert-on-create-with-new-uuid",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:99"
+      ]
+    },
+    {
+      "id": "atom:effect:ts-order-other-service.OrderOtherServiceImpl:writesTo:order-insert-init",
+      "kind": "effect",
+      "subject": "ts-order-other-service.OrderOtherServiceImpl",
+      "axis": "effect",
+      "predicate": "writesTo",
+      "object": "orders_other-insert-on-initOrder-when-absent",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:109"
+      ]
+    },
+    {
+      "id": "atom:effect:ts-order-other-service.OrderOtherServiceImpl:writesTo:order-status-modify-save",
+      "kind": "effect",
+      "subject": "ts-order-other-service.OrderOtherServiceImpl",
+      "axis": "effect",
+      "predicate": "writesTo",
+      "object": "orders_other-save-with-caller-supplied-status-on-modifyOrder",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:341"
+      ]
+    },
+    {
+      "id": "atom:effect:ts-order-other-service.OrderOtherServiceImpl:writesTo:order-status-cancel-save",
+      "kind": "effect",
+      "subject": "ts-order-other-service.OrderOtherServiceImpl",
+      "axis": "effect",
+      "predicate": "writesTo",
+      "object": "orders_other-save-with-status-cancel-on-cancelOrder",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:278"
+      ]
+    },
+    {
+      "id": "atom:effect:ts-order-other-service.OrderOtherServiceImpl:writesTo:order-status-paid-save",
+      "kind": "effect",
+      "subject": "ts-order-other-service.OrderOtherServiceImpl",
+      "axis": "effect",
+      "predicate": "writesTo",
+      "object": "orders_other-save-with-status-paid-on-payOrder",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:369"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-order-other-service.OrderOtherServiceImpl:implements:OrderOtherService",
+      "kind": "relation",
+      "subject": "ts-order-other-service.OrderOtherServiceImpl",
+      "axis": "restriction",
+      "predicate": "implements",
+      "object": "ts-order-other-service.OrderOtherService",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:28"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-order-other-service.Order.price:meansInUse:order-fare-string",
+      "kind": "semantic",
+      "subject": "ts-order-other-service.Order.price",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "string-encoded-fare-returned-by-getOrderPrice",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:356",
+        "src:ts-order-other-service/src/main/java/other/entity/Order.java:68"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-order-other-service.QueryInfo.enableBoughtDateQuery:meansInUse:bought-date-filter-activation",
+      "kind": "semantic",
+      "subject": "ts-order-other-service.QueryInfo.enableBoughtDateQuery",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "bought-date-window-filter-activation-in-queryOrders",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/entity/QueryInfo.java:51",
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:183"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-order-other-service.QueryInfo.enableStateQuery:statusGates:state-filter-activation",
+      "kind": "semantic",
+      "subject": "ts-order-other-service.QueryInfo.enableStateQuery",
+      "axis": "semantic",
+      "predicate": "statusGates",
+      "object": "order-state-filter-activation-in-queryOrders",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/entity/QueryInfo.java:63",
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:155"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-order-other-service.QueryInfo.enableTravelDateQuery:meansInUse:travel-date-filter-activation",
+      "kind": "semantic",
+      "subject": "ts-order-other-service.QueryInfo.enableTravelDateQuery",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "travel-date-window-filter-activation-in-queryOrders",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/entity/QueryInfo.java:39",
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:171"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-order-other-service.Response.status:meansInUse:one-data-branch-zero-message-branch",
+      "kind": "semantic",
+      "subject": "ts-order-other-service.Response.status",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "status-one-on-result-carrying-branch-status-zero-on-not-found-or-duplicate-branch-with-message-only",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:69",
+        "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:73"
+      ]
+    },
+    {
+      "id": "atom:state:ts-order-other-service.Order.from:persistsIn:from-station-column",
+      "kind": "state",
+      "subject": "ts-order-other-service.Order.from",
+      "axis": "static",
+      "predicate": "persistsIn",
+      "object": "column:from_station",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/entity/Order.java:60"
+      ]
+    },
+    {
+      "id": "atom:state:ts-order-other-service.Order.to:persistsIn:to-station-column",
+      "kind": "state",
+      "subject": "ts-order-other-service.Order.to",
+      "axis": "static",
+      "predicate": "persistsIn",
+      "object": "column:to_station",
+      "refs": [
+        "src:ts-order-other-service/src/main/java/other/entity/Order.java:63"
+      ]
+    }
+  ],
+  "coverage": {
+    "assignedEntryCount": 96,
+    "adjudicatedEntryCount": 96
+  }
+}

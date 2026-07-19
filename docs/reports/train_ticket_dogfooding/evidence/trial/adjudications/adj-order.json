@@ -1,0 +1,873 @@
+{
+  "service": "ts-order-service",
+  "adjudications": [
+    {
+      "key": "authority|ts-order-service.SecurityConfig|authority|checksPermission|jwt-filter-before-username-password-filter",
+      "decision": "merged",
+      "basis": "Reread order/config/SecurityConfig.java:85: addFilterBefore(new JWTFilter(), UsernamePasswordAuthenticationFilter.class); same fact both passes; kept atom:authority:ts-order-service.SecurityConfig:checksPermission:jwt-filter (pass B)."
+    },
+    {
+      "key": "authority|ts-order-service.SecurityConfig|authority|checksPermission|jwt-filter-before-username-password-authentication",
+      "decision": "merged",
+      "basis": "Reread order/config/SecurityConfig.java:85: addFilterBefore(new JWTFilter(), UsernamePasswordAuthenticationFilter.class); same fact both passes; kept atom:authority:ts-order-service.SecurityConfig:checksPermission:jwt-filter (pass B)."
+    },
+    {
+      "key": "authority|ts-order-service.SecurityConfig|authority|checksPermission|permit-all:/api/v1/orderservice/order/**",
+      "decision": "merged",
+      "basis": "Reread order/config/SecurityConfig.java:80: antMatchers(\"/api/v1/orderservice/order/**\").permitAll() declared after the role matchers at lines 75-79; kept atom:authority:ts-order-service.SecurityConfig:checksPermission:permit-all-order-subtree (pass B, records the declaration order)."
+    },
+    {
+      "key": "authority|ts-order-service.SecurityConfig|authority|checksPermission|permit-all:/api/v1/orderservice/order/** declared after role matchers",
+      "decision": "merged",
+      "basis": "Reread order/config/SecurityConfig.java:80: antMatchers(\"/api/v1/orderservice/order/**\").permitAll() declared after the role matchers at lines 75-79; kept atom:authority:ts-order-service.SecurityConfig:checksPermission:permit-all-order-subtree (pass B, records the declaration order)."
+    },
+    {
+      "key": "authority|ts-order-service.SecurityConfig|authority|requiresRole|ADMIN-or-USER:POST-PUT-DELETE:/api/v1/orderservice/order",
+      "decision": "merged",
+      "basis": "Reread order/config/SecurityConfig.java:75-77: POST/PUT/DELETE on /api/v1/orderservice/order require hasAnyRole(ADMIN, USER); kept atom:authority:ts-order-service.SecurityConfig:requiresRole:order-write-admin-or-user (pass B), refs unioned with pass A."
+    },
+    {
+      "key": "authority|ts-order-service.SecurityConfig|authority|requiresRole|ADMIN-or-USER on POST/PUT/DELETE /api/v1/orderservice/order",
+      "decision": "merged",
+      "basis": "Reread order/config/SecurityConfig.java:75-77: POST/PUT/DELETE on /api/v1/orderservice/order require hasAnyRole(ADMIN, USER); kept atom:authority:ts-order-service.SecurityConfig:requiresRole:order-write-admin-or-user (pass B), refs unioned with pass A."
+    },
+    {
+      "key": "authority|ts-order-service.SecurityConfig|authority|requiresRole|ADMIN:POST-PUT:/api/v1/orderservice/order/admin",
+      "decision": "merged",
+      "basis": "Reread order/config/SecurityConfig.java:78-79: POST/PUT on /api/v1/orderservice/order/admin require hasAnyRole(ADMIN); kept atom:authority:ts-order-service.SecurityConfig:requiresRole:order-admin-routes-admin (pass B), refs unioned with pass A."
+    },
+    {
+      "key": "authority|ts-order-service.SecurityConfig|authority|requiresRole|ADMIN on POST/PUT /api/v1/orderservice/order/admin",
+      "decision": "merged",
+      "basis": "Reread order/config/SecurityConfig.java:78-79: POST/PUT on /api/v1/orderservice/order/admin require hasAnyRole(ADMIN); kept atom:authority:ts-order-service.SecurityConfig:requiresRole:order-admin-routes-admin (pass B), refs unioned with pass A."
+    },
+    {
+      "key": "component|ts-order-service.OrderApplication.restTemplate|static||",
+      "decision": "merged",
+      "basis": "Reread order/OrderApplication.java:29-31: single @LoadBalanced @Bean RestTemplate declaration observed by both passes (component vs dependsOn rendering); kept atom:component:ts-order-service.OrderApplication.restTemplate (pass A component)."
+    },
+    {
+      "key": "relation|ts-order-service.OrderApplication|restriction|dependsOn|load-balanced-rest-template-bean",
+      "decision": "merged",
+      "basis": "Reread order/OrderApplication.java:29-31: single @LoadBalanced @Bean RestTemplate declaration observed by both passes (component vs dependsOn rendering); kept atom:component:ts-order-service.OrderApplication.restTemplate (pass A component)."
+    },
+    {
+      "key": "contract|ts-order-service.OrderAlterInfo|specification|shapedAs|accountId-previousOrderId-loginToken-newOrderInfo",
+      "decision": "merged",
+      "basis": "Reread order/entity/OrderAlterInfo.java:21-29: fields accountId, previousOrderId, loginToken, newOrderInfo; kept atom:contract:ts-order-service.OrderAlterInfo:shapedAs:account-previousorder-logintoken-neworder (pass A, field-exact object), refs unioned."
+    },
+    {
+      "key": "contract|ts-order-service.OrderAlterInfo|specification|shapedAs|account-id-previous-order-id-login-token-new-order-payload",
+      "decision": "merged",
+      "basis": "Reread order/entity/OrderAlterInfo.java:21-29: fields accountId, previousOrderId, loginToken, newOrderInfo; kept atom:contract:ts-order-service.OrderAlterInfo:shapedAs:account-previousorder-logintoken-neworder (pass A, field-exact object), refs unioned."
+    },
+    {
+      "key": "contract|ts-order-service.OrderController.queryOrders|specification|shapedAs|OrderInfo-request-body",
+      "decision": "merged",
+      "basis": "Reread order/controller/OrderController.java:58: queryOrders takes @RequestBody OrderInfo; kept atom:contract:ts-order-service.OrderController.queryOrders:shapedAs:orderinfo-request-body (pass A, subject-exact; the refresh use at line 66 is a different method)."
+    },
+    {
+      "key": "contract|ts-order-service.OrderController.queryOrders|specification|shapedAs|order-info-request-body-for-query-and-refresh",
+      "decision": "merged",
+      "basis": "Reread order/controller/OrderController.java:58: queryOrders takes @RequestBody OrderInfo; kept atom:contract:ts-order-service.OrderController.queryOrders:shapedAs:orderinfo-request-body (pass A, subject-exact; the refresh use at line 66 is a different method)."
+    },
+    {
+      "key": "contract|ts-order-service.OrderInfo|specification|shapedAs|order-query-filter-flags",
+      "decision": "merged",
+      "basis": "Reread order/entity/OrderInfo.java:12-51: DTO carries date/state filters with enable* flags; kept atom:contract:ts-order-service.OrderInfo:shapedAs:order-query-filter-dto (pass B, clearer object), refs unioned."
+    },
+    {
+      "key": "contract|ts-order-service.OrderInfo|specification|shapedAs|order-query-filter-dto-with-enable-flags",
+      "decision": "merged",
+      "basis": "Reread order/entity/OrderInfo.java:12-51: DTO carries date/state filters with enable* flags; kept atom:contract:ts-order-service.OrderInfo:shapedAs:order-query-filter-dto (pass B, clearer object), refs unioned."
+    },
+    {
+      "key": "contract|ts-order-service.OrderServiceImpl.create|specification|requires|no-duplicate-order-for-account",
+      "decision": "merged",
+      "basis": "Reread order/service/OrderServiceImpl.java:89-92: create rejects when findByAccountId(...).contains(order); kept atom:contract:ts-order-service.OrderServiceImpl.create:requires:order-not-duplicated-for-account (pass B, subject-exact ref; pass A's extra ref 427 is addNewOrder, a matched capability)."
+    },
+    {
+      "key": "contract|ts-order-service.OrderServiceImpl.create|specification|requires|order-not-already-in-account-orders",
+      "decision": "merged",
+      "basis": "Reread order/service/OrderServiceImpl.java:89-92: create rejects when findByAccountId(...).contains(order); kept atom:contract:ts-order-service.OrderServiceImpl.create:requires:order-not-duplicated-for-account (pass B, subject-exact ref; pass A's extra ref 427 is addNewOrder, a matched capability)."
+    },
+    {
+      "key": "contract|ts-order-service.OrderServiceImpl.deleteOrder|specification|requires|uuid-formatted-order-id",
+      "decision": "merged",
+      "basis": "Reread order/service/OrderServiceImpl.java:410: UUID.fromString(orderId) precedes lookup, so orderId must parse as UUID; kept atom:contract:ts-order-service.OrderServiceImpl.deleteOrder:requires:uuid-formatted-order-id (pass A)."
+    },
+    {
+      "key": "contract|ts-order-service.OrderServiceImpl.deleteOrder|specification|requires|orderId-parses-as-uuid",
+      "decision": "merged",
+      "basis": "Reread order/service/OrderServiceImpl.java:410: UUID.fromString(orderId) precedes lookup, so orderId must parse as UUID; kept atom:contract:ts-order-service.OrderServiceImpl.deleteOrder:requires:uuid-formatted-order-id (pass A)."
+    },
+    {
+      "key": "contract|ts-order-service.Order|specification|ensures|default-constructor-sets-status-paid",
+      "decision": "merged",
+      "basis": "Reread order/entity/Order.java:84: default constructor sets status = OrderStatus.PAID.getCode(); same single fact both passes (contract vs semantic rendering); kept atom:contract:ts-order-service.Order:ensures:default-constructor-status-paid (pass A contract)."
+    },
+    {
+      "key": "semantic|ts-order-service.Order.status|semantic|meansInUse|constructor-default-status-paid",
+      "decision": "merged",
+      "basis": "Reread order/entity/Order.java:84: default constructor sets status = OrderStatus.PAID.getCode(); same single fact both passes (contract vs semantic rendering); kept atom:contract:ts-order-service.Order:ensures:default-constructor-status-paid (pass A contract)."
+    },
+    {
+      "key": "contract|ts-order-service.SecurityConfig|specification|requires|stateless-session-policy",
+      "decision": "merged",
+      "basis": "Reread order/config/SecurityConfig.java:70-72: csrf().disable() then sessionCreationPolicy(STATELESS); a configured guarantee, so ensures fits; kept atom:contract:ts-order-service.SecurityConfig:ensures:stateless-session (pass B)."
+    },
+    {
+      "key": "contract|ts-order-service.SecurityConfig|specification|ensures|stateless-session-policy-with-csrf-disabled",
+      "decision": "merged",
+      "basis": "Reread order/config/SecurityConfig.java:70-72: csrf().disable() then sessionCreationPolicy(STATELESS); a configured guarantee, so ensures fits; kept atom:contract:ts-order-service.SecurityConfig:ensures:stateless-session (pass B)."
+    },
+    {
+      "key": "contract|ts-order-service.OrderServiceImpl.getOrderPrice|specification|ensures|price-minus-1.0-string-when-order-missing",
+      "decision": "adopted",
+      "basis": "Reread order/service/OrderServiceImpl.java:334: missing order returns Response(0, orderNotFound, \"-1.0\"); only pass B saw it; adopted verbatim."
+    },
+    {
+      "key": "contract|ts-order-service.OrderServiceImpl.initOrder|specification|requires|order-id-not-already-present",
+      "decision": "adopted",
+      "basis": "Reread order/service/OrderServiceImpl.java:372-379: initOrder saves only when findById(order.getId()) is absent; only pass B saw it; adopted verbatim."
+    },
+    {
+      "key": "contract|ts-order-service.OrderServiceImpl|specification|ensures|response-code-1-success-0-not-found-or-no-content",
+      "decision": "adopted",
+      "basis": "Reread order/service/OrderServiceImpl.java:66,69,256,262: service methods return Response code 1 on success and 0 on not-found/no-content; only pass A saw the service-level contract; adopted verbatim."
+    },
+    {
+      "key": "effect|ts-order-service.OrderServiceImpl.queryForStationId|effect|callsProvider|ts-station-service:/api/v1/stationservice/stations/namelist",
+      "decision": "adopted",
+      "basis": "Reread order/service/OrderServiceImpl.java:208-217: queryForStationId posts to ts-station-service /api/v1/stationservice/stations/namelist via restTemplate; adopted verbatim."
+    },
+    {
+      "key": "relation|ts-order-service.InitData|relation|calls|ts-order-service.OrderService",
+      "decision": "merged",
+      "basis": "Reread order/init/InitData.java:45,82: service.initOrder(...) invoked on seed orders; kept atom:relation:ts-order-service.InitData:calls:OrderService-initOrder (pass B, method-precise object)."
+    },
+    {
+      "key": "relation|ts-order-service.InitData|relation|calls|ts-order-service.OrderService.initOrder",
+      "decision": "merged",
+      "basis": "Reread order/init/InitData.java:45,82: service.initOrder(...) invoked on seed orders; kept atom:relation:ts-order-service.InitData:calls:OrderService-initOrder (pass B, method-precise object)."
+    },
+    {
+      "key": "relation|ts-order-service.OrderApplication|relation|dependsOn|service-discovery-client",
+      "decision": "merged",
+      "basis": "Reread order/OrderApplication.java:23: @EnableDiscoveryClient on the application class; kept atom:relation:ts-order-service.OrderApplication:dependsOn:service-discovery (pass A, catalog relation axis)."
+    },
+    {
+      "key": "relation|ts-order-service.OrderApplication|restriction|dependsOn|spring-cloud-discovery-client",
+      "decision": "merged",
+      "basis": "Reread order/OrderApplication.java:23: @EnableDiscoveryClient on the application class; kept atom:relation:ts-order-service.OrderApplication:dependsOn:service-discovery (pass A, catalog relation axis)."
+    },
+    {
+      "key": "relation|ts-order-service.OrderController|relation|calls|ts-order-service.OrderService",
+      "decision": "merged",
+      "basis": "Reread order/controller/OrderController.java:26,47: @Autowired OrderService and delegation from handlers; kept atom:relation:ts-order-service.OrderController:calls:OrderService (pass A, catalog relation axis)."
+    },
+    {
+      "key": "relation|ts-order-service.OrderController|restriction|calls|ts-order-service.OrderService",
+      "decision": "merged",
+      "basis": "Reread order/controller/OrderController.java:26,47: @Autowired OrderService and delegation from handlers; kept atom:relation:ts-order-service.OrderController:calls:OrderService (pass A, catalog relation axis)."
+    },
+    {
+      "key": "relation|ts-order-service.OrderServiceImpl|relation|calls|ts-station-service",
+      "decision": "merged",
+      "basis": "Reread order/service/OrderServiceImpl.java:208-213: restTemplate.exchange against ts-station-service; kept atom:relation:ts-order-service.OrderServiceImpl:calls:ts-station-service (pass A); the endpoint detail stays in the adopted atom:effect:ts-order-service.OrderServiceImpl.queryForStationId:callsProvider:ts-station-service-stations-namelist."
+    },
+    {
+      "key": "relation|ts-order-service.OrderServiceImpl|relation|calls|ts-station-service:/api/v1/stationservice/stations/namelist",
+      "decision": "merged",
+      "basis": "Reread order/service/OrderServiceImpl.java:208-213: restTemplate.exchange against ts-station-service; kept atom:relation:ts-order-service.OrderServiceImpl:calls:ts-station-service (pass A); the endpoint detail stays in the adopted atom:effect:ts-order-service.OrderServiceImpl.queryForStationId:callsProvider:ts-station-service-stations-namelist."
+    },
+    {
+      "key": "relation|ts-order-service.OrderServiceImpl|relation|writesTo|order-jpa-repository",
+      "decision": "merged",
+      "basis": "Reread order/service/OrderServiceImpl.java:95,260,351,464: orderRepository.save calls; same write fact both passes; kept atom:effect:ts-order-service.OrderServiceImpl:writesTo:order-store (pass B effect kind); pass A's delete ref 418 is covered by adopted atom:effect:ts-order-service.OrderServiceImpl:writesTo:order-store-delete."
+    },
+    {
+      "key": "effect|ts-order-service.OrderServiceImpl|effect|writesTo|order-store",
+      "decision": "merged",
+      "basis": "Reread order/service/OrderServiceImpl.java:95,260,351,464: orderRepository.save calls; same write fact both passes; kept atom:effect:ts-order-service.OrderServiceImpl:writesTo:order-store (pass B effect kind); pass A's delete ref 418 is covered by adopted atom:effect:ts-order-service.OrderServiceImpl:writesTo:order-store-delete."
+    },
+    {
+      "key": "effect|ts-order-service.OrderServiceImpl|effect|writesTo|order-store-delete",
+      "decision": "adopted",
+      "basis": "Reread order/service/OrderServiceImpl.java:418: orderRepository.deleteById(orderUuid) in deleteOrder; only pass B split the delete write out; adopted verbatim."
+    },
+    {
+      "key": "effect|ts-order-service.InitData|effect|writesTo|startup-seed-orders",
+      "decision": "adopted",
+      "basis": "Reread order/init/InitData.java:28-45: CommandLineRunner run() seeds three orders through service.initOrder; only pass B saw the startup write effect; adopted verbatim."
+    },
+    {
+      "key": "semantic|ts-order-service.Order.boughtDate|semantic|meansInUse|recent-purchase-rate-window",
+      "decision": "adopted",
+      "basis": "Reread order/service/OrderServiceImpl.java:398-401: boughtDate parsed and compared to the one-hour window to count recent purchases; adopted verbatim."
+    },
+    {
+      "key": "semantic|ts-order-service.Order.equals|semantic|identifiedBy|field-wise-equality-excluding-id",
+      "decision": "merged",
+      "basis": "Reread order/entity/Order.java:89-122: equals compares business fields without id while hashCode uses id only; kept atom:semantic:ts-order-service.Order:identifiedBy:business-field-equality (pass B captures both sides), refs unioned."
+    },
+    {
+      "key": "semantic|ts-order-service.Order|semantic|identifiedBy|equals-on-business-fields-with-id-only-hashcode",
+      "decision": "merged",
+      "basis": "Reread order/entity/Order.java:89-122: equals compares business fields without id while hashCode uses id only; kept atom:semantic:ts-order-service.Order:identifiedBy:business-field-equality (pass B captures both sides), refs unioned."
+    },
+    {
+      "key": "semantic|ts-order-service.Order.id|semantic|identifiedBy|jpa-uuid-generated-36-char-string",
+      "decision": "adopted",
+      "basis": "Reread order/entity/Order.java:27-29: @Id @Column(length = 36) @GeneratedValue(generator = \"jpa-uuid\"); adopted verbatim."
+    },
+    {
+      "key": "semantic|ts-order-service.Order.status|semantic|meansInUse|initial-seed-status-zero",
+      "decision": "merged",
+      "basis": "Reread order/init/InitData.java:43,62,80: all three seed orders call setStatus(0); kept atom:semantic:ts-order-service.Order.status:meansInUse:seed-initial-status-zero (pass B, names the startup-seed context), refs unioned."
+    },
+    {
+      "key": "semantic|ts-order-service.Order.status|semantic|meansInUse|startup-seed-orders-created-with-status-0",
+      "decision": "merged",
+      "basis": "Reread order/init/InitData.java:43,62,80: all three seed orders call setStatus(0); kept atom:semantic:ts-order-service.Order.status:meansInUse:seed-initial-status-zero (pass B, names the startup-seed context), refs unioned."
+    },
+    {
+      "key": "semantic|ts-order-service.Order.status|semantic|meansInUse|order-lifecycle-status-code-from-orderstatus-enum",
+      "decision": "adopted",
+      "basis": "Reread order/entity/Order.java:69,84: int status holds OrderStatus enum codes (e.g. PAID.getCode()); distinct general-meaning alias, adopted verbatim."
+    },
+    {
+      "key": "semantic|ts-order-service.OrderController.modifyOrder|semantic|meansInUse|status-path-variable-carries-target-order-status-code",
+      "decision": "adopted",
+      "basis": "Reread order/controller/OrderController.java:106-110: @PathVariable int status is passed to modifyOrder as the target status code; adopted verbatim."
+    },
+    {
+      "key": "semantic|ts-order-service.OrderInfo.state|semantic|meansInUse|order-status-filter-target",
+      "decision": "merged",
+      "basis": "Reread order/entity/OrderInfo.java:75-78 and order/service/OrderServiceImpl.java:139: state carries the target status compared against order.getStatus() in queryOrders; kept atom:semantic:ts-order-service.OrderInfo.state:meansInUse:target-status-filter (pass B)."
+    },
+    {
+      "key": "semantic|ts-order-service.OrderInfo.state|semantic|meansInUse|target-order-status-filter-for-queryOrders",
+      "decision": "merged",
+      "basis": "Reread order/entity/OrderInfo.java:75-78 and order/service/OrderServiceImpl.java:139: state carries the target status compared against order.getStatus() in queryOrders; kept atom:semantic:ts-order-service.OrderInfo.state:meansInUse:target-status-filter (pass B)."
+    },
+    {
+      "key": "semantic|ts-order-service.OrderStatus|semantic|statusGates|sold-ticket-exclusion-at-or-above-change",
+      "decision": "merged",
+      "basis": "Reread order/service/OrderServiceImpl.java:274: orders with status >= OrderStatus.CHANGE.getCode() are skipped in the sold-ticket count; kept atom:semantic:ts-order-service.OrderStatus.CHANGE:statusGates:sold-ticket-count-exclusion (pass B, constant-precise subject)."
+    },
+    {
+      "key": "semantic|ts-order-service.OrderStatus.CHANGE|semantic|statusGates|orders-at-or-above-change-code-excluded-from-sold-ticket-count",
+      "decision": "merged",
+      "basis": "Reread order/service/OrderServiceImpl.java:274: orders with status >= OrderStatus.CHANGE.getCode() are skipped in the sold-ticket count; kept atom:semantic:ts-order-service.OrderStatus.CHANGE:statusGates:sold-ticket-count-exclusion (pass B, constant-precise subject)."
+    },
+    {
+      "key": "semantic|ts-order-service.OrderStatus|semantic|statusGates|valid-order-count-notpaid-paid-collected",
+      "decision": "merged",
+      "basis": "Reread order/service/OrderServiceImpl.java:393-396: NOTPAID/PAID/COLLECTED statuses count as valid orders in checkSecurityAboutOrder; kept atom:semantic:ts-order-service.OrderStatus:statusGates:valid-order-count (pass B, names the applying check)."
+    },
+    {
+      "key": "semantic|ts-order-service.OrderStatus|semantic|statusGates|valid-order-count-notpaid-paid-collected-in-security-check",
+      "decision": "merged",
+      "basis": "Reread order/service/OrderServiceImpl.java:393-396: NOTPAID/PAID/COLLECTED statuses count as valid orders in checkSecurityAboutOrder; kept atom:semantic:ts-order-service.OrderStatus:statusGates:valid-order-count (pass B, names the applying check)."
+    },
+    {
+      "key": "semantic|edu.fudan.common.Response.status|semantic|meansInUse|envelope-code-1-on-success-branch-0-on-rejected-or-empty-branch",
+      "decision": "adopted",
+      "basis": "Reread order/service/OrderServiceImpl.java:66,69 and ts-payment-service PaymentServiceImpl.java:41,44: Response first argument is 1 on the success branch and 0 on the rejected/empty branch; adopted verbatim."
+    },
+    {
+      "key": "semantic|ts-order-service.Order.price|semantic|meansInUse|string-encoded-fare-amount-returned-by-getOrderPrice",
+      "decision": "adopted",
+      "basis": "Reread order/service/OrderServiceImpl.java:338 and order/init/InitData.java:25: price is a String fare amount (e.g. \"100.0\") returned by getOrderPrice; adopted verbatim."
+    },
+    {
+      "key": "semantic|ts-order-service.OrderStatus.CANCEL|semantic|meansInUse|cancelled-order-state-target-of-cancelOrder-and-alterOrder",
+      "decision": "adopted",
+      "basis": "Reread order/service/OrderServiceImpl.java:111,259: OrderStatus.CANCEL.getCode() is the target state of both cancelOrder and alterOrder; constant-meaning aspect distinct from the transition atoms; adopted verbatim."
+    },
+    {
+      "key": "semantic|ts-order-service.OrderStatus.PAID|semantic|meansInUse|paid-order-state-target-of-payOrder",
+      "decision": "adopted",
+      "basis": "Reread order/service/OrderServiceImpl.java:350: OrderStatus.PAID.getCode() is the target state of payOrder; constant-meaning aspect distinct from the transition atom; adopted verbatim."
+    },
+    {
+      "key": "state|ts-order-service.Order.status|static|transitionsTo|caller-specified-on-modifyOrder",
+      "decision": "merged",
+      "basis": "Reread order/service/OrderServiceImpl.java:322: modifyOrder sets order.setStatus(status) from the caller; kept atom:state:ts-order-service.Order.status:transitionsTo:caller-specified-on-modifyOrder (pass A, operation-qualified object)."
+    },
+    {
+      "key": "state|ts-order-service.Order.status|static|transitionsTo|caller-specified-status",
+      "decision": "merged",
+      "basis": "Reread order/service/OrderServiceImpl.java:322: modifyOrder sets order.setStatus(status) from the caller; kept atom:state:ts-order-service.Order.status:transitionsTo:caller-specified-on-modifyOrder (pass A, operation-qualified object)."
+    },
+    {
+      "key": "state|ts-order-service.Order.status|static|transitionsTo|cancel-on-alterOrder",
+      "decision": "merged",
+      "basis": "Reread order/service/OrderServiceImpl.java:111: alterOrder sets OrderStatus.CANCEL.getCode(); pass B recorded the same transition without the operation split; kept atom:state:ts-order-service.Order.status:transitionsTo:cancel-on-alterOrder."
+    },
+    {
+      "key": "state|ts-order-service.Order.status|static|transitionsTo|cancel-on-cancelOrder",
+      "decision": "merged",
+      "basis": "Reread order/service/OrderServiceImpl.java:259: cancelOrder sets OrderStatus.CANCEL.getCode(); pass B recorded the same transition without the operation split; kept atom:state:ts-order-service.Order.status:transitionsTo:cancel-on-cancelOrder."
+    },
+    {
+      "key": "state|ts-order-service.Order.status|static|transitionsTo|OrderStatus.CANCEL",
+      "decision": "merged",
+      "basis": "Reread order/service/OrderServiceImpl.java:111,259: single pass B atom covers two operations; kept the operation-split pass A atoms atom:state:ts-order-service.Order.status:transitionsTo:cancel-on-alterOrder and atom:state:ts-order-service.Order.status:transitionsTo:cancel-on-cancelOrder."
+    },
+    {
+      "key": "state|ts-order-service.Order.status|static|transitionsTo|paid-on-payOrder",
+      "decision": "merged",
+      "basis": "Reread order/service/OrderServiceImpl.java:350: payOrder sets OrderStatus.PAID.getCode(); kept atom:state:ts-order-service.Order.status:transitionsTo:paid-on-payOrder (pass A, operation-qualified object)."
+    },
+    {
+      "key": "state|ts-order-service.Order.status|static|transitionsTo|OrderStatus.PAID",
+      "decision": "merged",
+      "basis": "Reread order/service/OrderServiceImpl.java:350: payOrder sets OrderStatus.PAID.getCode(); kept atom:state:ts-order-service.Order.status:transitionsTo:paid-on-payOrder (pass A, operation-qualified object)."
+    },
+    {
+      "key": "state|ts-order-service.Order|static|persistsIn|order-jpa-repository",
+      "decision": "adopted",
+      "basis": "Reread order/repository/OrderRepository.java:16: OrderRepository extends JpaRepository<Order, String>; adopted verbatim (table mapping is already the matched table:orders atom)."
+    },
+    {
+      "key": "state|ts-order-service|static|persistsIn|mysql-order-datasource",
+      "decision": "merged",
+      "basis": "Reread src/main/resources/application.yml:12-13: jdbc:mysql datasource with default database ts; same datasource fact both passes; kept atom:state:ts-order-service:persistsIn:mysql-order-datasource (pass A, service-level subject); the entity-level side is covered by matched table:orders and adopted atom:state:ts-order-service.Order:persistsIn:order-jpa-repository."
+    },
+    {
+      "key": "state|ts-order-service.Order|static|persistsIn|mysql-ts-database",
+      "decision": "merged",
+      "basis": "Reread src/main/resources/application.yml:12-13: jdbc:mysql datasource with default database ts; same datasource fact both passes; kept atom:state:ts-order-service:persistsIn:mysql-order-datasource (pass A, service-level subject); the entity-level side is covered by matched table:orders and adopted atom:state:ts-order-service.Order:persistsIn:order-jpa-repository."
+    },
+    {
+      "key": "state|ts-order-service.Order.from|static|persistsIn|column:from_station",
+      "decision": "adopted",
+      "basis": "Reread order/entity/Order.java:63: @Column(name = \"from_station\") on field from; adopted verbatim."
+    },
+    {
+      "key": "state|ts-order-service.Order.to|static|persistsIn|column:to_station",
+      "decision": "adopted",
+      "basis": "Reread order/entity/Order.java:66: @Column(name = \"to_station\") on field to; adopted verbatim."
+    }
+  ],
+  "canonicalAtoms": [
+    {
+      "id": "atom:authority:ts-order-service.SecurityConfig:checksPermission:jwt-filter",
+      "kind": "authority",
+      "subject": "ts-order-service.SecurityConfig",
+      "axis": "authority",
+      "predicate": "checksPermission",
+      "object": "jwt-filter-before-username-password-authentication",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:85"
+      ]
+    },
+    {
+      "id": "atom:authority:ts-order-service.SecurityConfig:checksPermission:permit-all-order-subtree",
+      "kind": "authority",
+      "subject": "ts-order-service.SecurityConfig",
+      "axis": "authority",
+      "predicate": "checksPermission",
+      "object": "permit-all:/api/v1/orderservice/order/** declared after role matchers",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:80"
+      ]
+    },
+    {
+      "id": "atom:authority:ts-order-service.SecurityConfig:requiresRole:order-write-admin-or-user",
+      "kind": "authority",
+      "subject": "ts-order-service.SecurityConfig",
+      "axis": "authority",
+      "predicate": "requiresRole",
+      "object": "ADMIN-or-USER on POST/PUT/DELETE /api/v1/orderservice/order",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:75",
+        "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:77"
+      ]
+    },
+    {
+      "id": "atom:authority:ts-order-service.SecurityConfig:requiresRole:order-admin-routes-admin",
+      "kind": "authority",
+      "subject": "ts-order-service.SecurityConfig",
+      "axis": "authority",
+      "predicate": "requiresRole",
+      "object": "ADMIN on POST/PUT /api/v1/orderservice/order/admin",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:78",
+        "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:79"
+      ]
+    },
+    {
+      "id": "atom:component:ts-order-service.OrderApplication.restTemplate",
+      "kind": "component",
+      "subject": "ts-order-service.OrderApplication.restTemplate",
+      "axis": "static",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/OrderApplication.java:29",
+        "src:ts-order-service/src/main/java/order/OrderApplication.java:31"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-order-service.OrderAlterInfo:shapedAs:account-previousorder-logintoken-neworder",
+      "kind": "contract",
+      "subject": "ts-order-service.OrderAlterInfo",
+      "axis": "specification",
+      "predicate": "shapedAs",
+      "object": "accountId-previousOrderId-loginToken-newOrderInfo",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/entity/OrderAlterInfo.java:21",
+        "src:ts-order-service/src/main/java/order/entity/OrderAlterInfo.java:29",
+        "src:ts-order-service/src/main/java/order/entity/OrderAlterInfo.java:25"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-order-service.OrderController.queryOrders:shapedAs:orderinfo-request-body",
+      "kind": "contract",
+      "subject": "ts-order-service.OrderController.queryOrders",
+      "axis": "specification",
+      "predicate": "shapedAs",
+      "object": "OrderInfo-request-body",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/controller/OrderController.java:58"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-order-service.OrderInfo:shapedAs:order-query-filter-dto",
+      "kind": "contract",
+      "subject": "ts-order-service.OrderInfo",
+      "axis": "specification",
+      "predicate": "shapedAs",
+      "object": "order-query-filter-dto-with-enable-flags",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/entity/OrderInfo.java:12",
+        "src:ts-order-service/src/main/java/order/entity/OrderInfo.java:51"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-order-service.OrderServiceImpl.create:requires:order-not-duplicated-for-account",
+      "kind": "contract",
+      "subject": "ts-order-service.OrderServiceImpl.create",
+      "axis": "specification",
+      "predicate": "requires",
+      "object": "order-not-already-in-account-orders",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:89"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-order-service.OrderServiceImpl.deleteOrder:requires:uuid-formatted-order-id",
+      "kind": "contract",
+      "subject": "ts-order-service.OrderServiceImpl.deleteOrder",
+      "axis": "specification",
+      "predicate": "requires",
+      "object": "uuid-formatted-order-id",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:410"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-order-service.Order:ensures:default-constructor-status-paid",
+      "kind": "contract",
+      "subject": "ts-order-service.Order",
+      "axis": "specification",
+      "predicate": "ensures",
+      "object": "default-constructor-sets-status-paid",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/entity/Order.java:84"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-order-service.SecurityConfig:ensures:stateless-session",
+      "kind": "contract",
+      "subject": "ts-order-service.SecurityConfig",
+      "axis": "specification",
+      "predicate": "ensures",
+      "object": "stateless-session-policy-with-csrf-disabled",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:72"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-order-service.OrderServiceImpl.getOrderPrice:ensures:minus-one-sentinel-on-missing-order",
+      "kind": "contract",
+      "subject": "ts-order-service.OrderServiceImpl.getOrderPrice",
+      "axis": "specification",
+      "predicate": "ensures",
+      "object": "price-minus-1.0-string-when-order-missing",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:334"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-order-service.OrderServiceImpl.initOrder:requires:order-id-not-already-present",
+      "kind": "contract",
+      "subject": "ts-order-service.OrderServiceImpl.initOrder",
+      "axis": "specification",
+      "predicate": "requires",
+      "object": "order-id-not-already-present",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:372"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-order-service.OrderServiceImpl:ensures:response-code-1-success-0-not-found-or-no-content",
+      "kind": "contract",
+      "subject": "ts-order-service.OrderServiceImpl",
+      "axis": "specification",
+      "predicate": "ensures",
+      "object": "response-code-1-success-0-not-found-or-no-content",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:66",
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:69",
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:256",
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:262"
+      ]
+    },
+    {
+      "id": "atom:effect:ts-order-service.OrderServiceImpl.queryForStationId:callsProvider:ts-station-service-stations-namelist",
+      "kind": "effect",
+      "subject": "ts-order-service.OrderServiceImpl.queryForStationId",
+      "axis": "effect",
+      "predicate": "callsProvider",
+      "object": "ts-station-service:/api/v1/stationservice/stations/namelist",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:212"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-order-service.InitData:calls:OrderService-initOrder",
+      "kind": "relation",
+      "subject": "ts-order-service.InitData",
+      "axis": "relation",
+      "predicate": "calls",
+      "object": "ts-order-service.OrderService.initOrder",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/init/InitData.java:45",
+        "src:ts-order-service/src/main/java/order/init/InitData.java:82"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-order-service.OrderApplication:dependsOn:service-discovery",
+      "kind": "relation",
+      "subject": "ts-order-service.OrderApplication",
+      "axis": "relation",
+      "predicate": "dependsOn",
+      "object": "service-discovery-client",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/OrderApplication.java:23"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-order-service.OrderController:calls:OrderService",
+      "kind": "relation",
+      "subject": "ts-order-service.OrderController",
+      "axis": "relation",
+      "predicate": "calls",
+      "object": "ts-order-service.OrderService",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/controller/OrderController.java:26",
+        "src:ts-order-service/src/main/java/order/controller/OrderController.java:47"
+      ]
+    },
+    {
+      "id": "atom:relation:ts-order-service.OrderServiceImpl:calls:ts-station-service",
+      "kind": "relation",
+      "subject": "ts-order-service.OrderServiceImpl",
+      "axis": "relation",
+      "predicate": "calls",
+      "object": "ts-station-service",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:208",
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:212"
+      ]
+    },
+    {
+      "id": "atom:effect:ts-order-service.OrderServiceImpl:writesTo:order-store",
+      "kind": "effect",
+      "subject": "ts-order-service.OrderServiceImpl",
+      "axis": "effect",
+      "predicate": "writesTo",
+      "object": "order-store",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:95",
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:260",
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:351",
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:464"
+      ]
+    },
+    {
+      "id": "atom:effect:ts-order-service.OrderServiceImpl:writesTo:order-store-delete",
+      "kind": "effect",
+      "subject": "ts-order-service.OrderServiceImpl",
+      "axis": "effect",
+      "predicate": "writesTo",
+      "object": "order-store-delete",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:418"
+      ]
+    },
+    {
+      "id": "atom:effect:ts-order-service.InitData:writesTo:startup-seed-orders",
+      "kind": "effect",
+      "subject": "ts-order-service.InitData",
+      "axis": "effect",
+      "predicate": "writesTo",
+      "object": "startup-seed-orders",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/init/InitData.java:28",
+        "src:ts-order-service/src/main/java/order/init/InitData.java:45"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-order-service.Order.boughtDate:meansInUse:recent-purchase-rate-window",
+      "kind": "semantic",
+      "subject": "ts-order-service.Order.boughtDate",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "recent-purchase-rate-window",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:398",
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:399"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-order-service.Order:identifiedBy:business-field-equality",
+      "kind": "semantic",
+      "subject": "ts-order-service.Order",
+      "axis": "semantic",
+      "predicate": "identifiedBy",
+      "object": "equals-on-business-fields-with-id-only-hashcode",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/entity/Order.java:89",
+        "src:ts-order-service/src/main/java/order/entity/Order.java:118",
+        "src:ts-order-service/src/main/java/order/entity/Order.java:114"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-order-service.Order.id:identifiedBy:jpa-uuid-36-char-string",
+      "kind": "semantic",
+      "subject": "ts-order-service.Order.id",
+      "axis": "semantic",
+      "predicate": "identifiedBy",
+      "object": "jpa-uuid-generated-36-char-string",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/entity/Order.java:27",
+        "src:ts-order-service/src/main/java/order/entity/Order.java:29"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-order-service.Order.status:meansInUse:seed-initial-status-zero",
+      "kind": "semantic",
+      "subject": "ts-order-service.Order.status",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "startup-seed-orders-created-with-status-0",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/init/InitData.java:43",
+        "src:ts-order-service/src/main/java/order/init/InitData.java:80",
+        "src:ts-order-service/src/main/java/order/init/InitData.java:62"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-order-service.Order.status:meansInUse:order-status-code-from-orderstatus-enum",
+      "kind": "semantic",
+      "subject": "ts-order-service.Order.status",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "order-lifecycle-status-code-from-orderstatus-enum",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/entity/Order.java:69",
+        "src:ts-order-service/src/main/java/order/entity/Order.java:84"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-order-service.OrderController.modifyOrder:meansInUse:status-path-variable-sets-order-status-code",
+      "kind": "semantic",
+      "subject": "ts-order-service.OrderController.modifyOrder",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "status-path-variable-carries-target-order-status-code",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/controller/OrderController.java:107",
+        "src:ts-order-service/src/main/java/order/controller/OrderController.java:110"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-order-service.OrderInfo.state:meansInUse:target-status-filter",
+      "kind": "semantic",
+      "subject": "ts-order-service.OrderInfo.state",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "target-order-status-filter-for-queryOrders",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/entity/OrderInfo.java:75",
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:139"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-order-service.OrderStatus.CHANGE:statusGates:sold-ticket-count-exclusion",
+      "kind": "semantic",
+      "subject": "ts-order-service.OrderStatus.CHANGE",
+      "axis": "semantic",
+      "predicate": "statusGates",
+      "object": "orders-at-or-above-change-code-excluded-from-sold-ticket-count",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:274"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-order-service.OrderStatus:statusGates:valid-order-count",
+      "kind": "semantic",
+      "subject": "ts-order-service.OrderStatus",
+      "axis": "semantic",
+      "predicate": "statusGates",
+      "object": "valid-order-count-notpaid-paid-collected-in-security-check",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:393"
+      ]
+    },
+    {
+      "id": "atom:semantic:edu.fudan.common.Response.status:meansInUse:envelope-code-1-success-0-rejected-or-empty",
+      "kind": "semantic",
+      "subject": "edu.fudan.common.Response.status",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "envelope-code-1-on-success-branch-0-on-rejected-or-empty-branch",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:66",
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:69",
+        "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:41",
+        "src:ts-payment-service/src/main/java/com/trainticket/service/PaymentServiceImpl.java:44"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-order-service.Order.price:meansInUse:string-encoded-fare-amount",
+      "kind": "semantic",
+      "subject": "ts-order-service.Order.price",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "string-encoded-fare-amount-returned-by-getOrderPrice",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:338",
+        "src:ts-order-service/src/main/java/order/init/InitData.java:25"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-order-service.OrderStatus.CANCEL:meansInUse:cancelled-order-state-target",
+      "kind": "semantic",
+      "subject": "ts-order-service.OrderStatus.CANCEL",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "cancelled-order-state-target-of-cancelOrder-and-alterOrder",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:259",
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:111"
+      ]
+    },
+    {
+      "id": "atom:semantic:ts-order-service.OrderStatus.PAID:meansInUse:paid-order-state-target",
+      "kind": "semantic",
+      "subject": "ts-order-service.OrderStatus.PAID",
+      "axis": "semantic",
+      "predicate": "meansInUse",
+      "object": "paid-order-state-target-of-payOrder",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:350"
+      ]
+    },
+    {
+      "id": "atom:state:ts-order-service.Order.status:transitionsTo:caller-specified-on-modifyOrder",
+      "kind": "state",
+      "subject": "ts-order-service.Order.status",
+      "axis": "static",
+      "predicate": "transitionsTo",
+      "object": "caller-specified-on-modifyOrder",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:322"
+      ]
+    },
+    {
+      "id": "atom:state:ts-order-service.Order.status:transitionsTo:cancel-on-alterOrder",
+      "kind": "state",
+      "subject": "ts-order-service.Order.status",
+      "axis": "static",
+      "predicate": "transitionsTo",
+      "object": "cancel-on-alterOrder",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:111"
+      ]
+    },
+    {
+      "id": "atom:state:ts-order-service.Order.status:transitionsTo:cancel-on-cancelOrder",
+      "kind": "state",
+      "subject": "ts-order-service.Order.status",
+      "axis": "static",
+      "predicate": "transitionsTo",
+      "object": "cancel-on-cancelOrder",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:259"
+      ]
+    },
+    {
+      "id": "atom:state:ts-order-service.Order.status:transitionsTo:paid-on-payOrder",
+      "kind": "state",
+      "subject": "ts-order-service.Order.status",
+      "axis": "static",
+      "predicate": "transitionsTo",
+      "object": "paid-on-payOrder",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java:350"
+      ]
+    },
+    {
+      "id": "atom:state:ts-order-service.Order:persistsIn:order-jpa-repository",
+      "kind": "state",
+      "subject": "ts-order-service.Order",
+      "axis": "static",
+      "predicate": "persistsIn",
+      "object": "order-jpa-repository",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/repository/OrderRepository.java:16"
+      ]
+    },
+    {
+      "id": "atom:state:ts-order-service:persistsIn:mysql-order-datasource",
+      "kind": "state",
+      "subject": "ts-order-service",
+      "axis": "static",
+      "predicate": "persistsIn",
+      "object": "mysql-order-datasource",
+      "refs": [
+        "src:ts-order-service/src/main/resources/application.yml:13"
+      ]
+    },
+    {
+      "id": "atom:state:ts-order-service.Order.from:persistsIn:from-station-column",
+      "kind": "state",
+      "subject": "ts-order-service.Order.from",
+      "axis": "static",
+      "predicate": "persistsIn",
+      "object": "column:from_station",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/entity/Order.java:63"
+      ]
+    },
+    {
+      "id": "atom:state:ts-order-service.Order.to:persistsIn:to-station-column",
+      "kind": "state",
+      "subject": "ts-order-service.Order.to",
+      "axis": "static",
+      "predicate": "persistsIn",
+      "object": "column:to_station",
+      "refs": [
+        "src:ts-order-service/src/main/java/order/entity/Order.java:66"
+      ]
+    }
+  ],
+  "coverage": {
+    "assignedEntryCount": 70,
+    "adjudicatedEntryCount": 70
+  }
+}
