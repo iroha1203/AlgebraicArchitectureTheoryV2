@@ -6766,10 +6766,10 @@ identifies its concrete forgetful functor with `Under.forget` followed by the
 commutative-ring forgetful functor, allowing the standard left-exact
 sheafification construction to apply.
 
-The fixed direct-import list is preserved.  The filtered-colimit preservation
-of `Under.forget` and the finite-category structure on a walking multicospan
-are constructed locally from the categorical definitions already available
-through the fixed imports; neither requires a new module dependency.
+The human-approved module-DAG extension imports Mathlib's canonical
+filtered-colimit preservation for `Under.forget` and canonical finite-category
+structure for a walking multicospan.  The R9f implementation reuses those
+instances directly instead of reproducing their generic constructions.
 
 For coefficient extension, the same finite classification is strengthened to
 an actual finite matching argument.  The site is transported to the thin
