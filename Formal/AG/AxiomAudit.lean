@@ -6226,6 +6226,87 @@ def standardGeometry_left_restriction_not_isIso :=
 def standardGeometry_right_restriction_not_isIso :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.right_restriction_not_isIso
 
+def standardGeometry_ambientScheme_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.ambientScheme_eq
+
+def standardGeometry_baseChartDomainIso_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.baseChartDomainIso_eq
+
+def standardGeometry_leftChartDomainIso_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.leftChartDomainIso_eq
+
+def standardGeometry_rightChartDomainIso_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.rightChartDomainIso_eq
+
+def standardGeometry_overlapChartDomainIso_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.overlapChartDomainIso_eq
+
+def standardGeometry_ambientDecoration_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.ambientDecoration_eq
+
+def standardGeometry_referenceAtlas_valid :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceAtlas_valid
+
+def standardGeometry_referenceOverlapPresentation_valid :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceOverlapPresentation_valid
+
+def standardGeometry_referenceScheme_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceScheme_eq
+
+def standardGeometry_leftIndex_ne_rightIndex :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.leftIndex_ne_rightIndex
+
+def standardGeometry_index_cases :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.index_cases
+
+def standardGeometry_referenceScheme_underlying :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceScheme_underlying
+
+def standardGeometry_left_chart_context :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.left_chart_context
+
+def standardGeometry_right_chart_context :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.right_chart_context
+
+def standardGeometry_chart_contexts_ne :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.chart_contexts_ne
+
+def standardGeometry_left_chart_map :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.left_chart_map
+
+def standardGeometry_right_chart_map :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.right_chart_map
+
+def standardGeometry_left_chart_isOpenImmersion :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.left_chart_isOpenImmersion
+
+def standardGeometry_right_chart_isOpenImmersion :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.right_chart_isOpenImmersion
+
+def standardGeometry_twoChart_jointlyCovers :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.twoChart_jointlyCovers
+
+def standardGeometry_left_chart_not_isIso :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.left_chart_not_isIso
+
+def standardGeometry_right_chart_not_isIso :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.right_chart_not_isIso
+
+def standardGeometry_pair_context :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.pair_context
+
+def standardGeometry_actualOverlapIso_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.actualOverlapIso_eq
+
+def standardGeometry_actualOverlap_nonempty :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.actualOverlap_nonempty
+
+def standardGeometry_decoration_overlap :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.decoration_overlap
+
+def standardGeometry_actual_triple_cocycle :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.actual_triple_cocycle
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit

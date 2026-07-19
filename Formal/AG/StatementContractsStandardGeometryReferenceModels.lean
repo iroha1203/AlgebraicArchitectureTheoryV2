@@ -1,7 +1,7 @@
 import Formal.AG.Examples.StandardGeometryReferenceModels
 
 /-!
-Executable statement contract for the SD0 public surface of the standard
+Executable statement contract for the SD0–SD1 public surface of the standard
 geometry reference models.
 
 Each example fixes one approved declaration type and refers directly to its
@@ -548,6 +548,78 @@ example : baseSectionRingIso.inv ≫
 
 example : ¬ IsIso (sheafifiedRestriction referenceRaw rightToBase) :=
   right_restriction_not_isIso
+
+example : AlgebraicGeometry.Scheme := ambientScheme
+example : ambientScheme = AlgebraicGeometry.Spec (CommRingCat.of AmbientRing) := ambientScheme_eq
+example : architectureChartSpec referenceRaw baseContext ≅ ambientScheme := baseChartDomainIso
+example : baseChartDomainIso = AlgebraicGeometry.Scheme.Spec.mapIso baseSectionRingIso.symm.op := baseChartDomainIso_eq
+example : architectureChartSpec referenceRaw leftContext ≅
+    AlgebraicGeometry.Spec (CommRingCat.of (Localization.Away leftGenerator)) := leftChartDomainIso
+example : leftChartDomainIso = AlgebraicGeometry.Scheme.Spec.mapIso leftSectionRingIso.symm.op := leftChartDomainIso_eq
+example : architectureChartSpec referenceRaw rightContext ≅
+    AlgebraicGeometry.Spec (CommRingCat.of (Localization.Away rightGenerator)) := rightChartDomainIso
+example : rightChartDomainIso = AlgebraicGeometry.Scheme.Spec.mapIso rightSectionRingIso.symm.op := rightChartDomainIso_eq
+example : architectureChartSpec referenceRaw overlapContext ≅
+    AlgebraicGeometry.Spec (CommRingCat.of (Localization.Away overlapGenerator)) := overlapChartDomainIso
+example : overlapChartDomainIso = AlgebraicGeometry.Scheme.Spec.mapIso overlapSectionRingIso.symm.op := overlapChartDomainIso_eq
+example : AATReadingDecoration referenceRaw ambientScheme := ambientDecoration
+example : ambientDecoration = AATReadingDecoration.pullback referenceRaw baseChartDomainIso.inv
+    (AATReadingDecoration.ofContext referenceRaw baseContext) := ambientDecoration_eq
+example : ArchitectureAffineChart referenceRaw ambientScheme ambientDecoration := leftChart
+example : ArchitectureAffineChart referenceRaw ambientScheme ambientDecoration := rightChart
+example : ArchitectureAffineAtlas referenceRaw ambientScheme ambientDecoration := referenceAtlas
+example : IsArchitectureAffineAtlas referenceRaw referenceAtlas := referenceAtlas_valid
+example : ArchitectureOverlapPresentation referenceRaw referenceAtlas := referenceOverlapPresentation
+example : IsArchitectureOverlapPresentation referenceRaw referenceOverlapPresentation := referenceOverlapPresentation_valid
+example : StandardArchitectureScheme referenceRaw := referenceScheme
+example : referenceScheme = StandardArchitectureScheme.ofPresentation
+    referenceRaw ambientScheme ambientDecoration referenceAtlas referenceAtlas_valid
+    referenceOverlapPresentation referenceOverlapPresentation_valid := referenceScheme_eq
+example : referenceScheme.atlas.Index := leftIndex
+example : referenceScheme.atlas.Index := rightIndex
+example : leftIndex ≠ rightIndex := leftIndex_ne_rightIndex
+example : ∀ i : referenceScheme.atlas.Index, i = leftIndex ∨ i = rightIndex := index_cases
+example : referenceScheme.underlying = ambientScheme := referenceScheme_underlying
+example : (referenceScheme.atlas.chart leftIndex).context = leftContext := left_chart_context
+example : (referenceScheme.atlas.chart rightIndex).context = rightContext := right_chart_context
+example : (referenceScheme.atlas.chart leftIndex).context ≠
+    (referenceScheme.atlas.chart rightIndex).context := chart_contexts_ne
+example : (referenceScheme.atlas.chart leftIndex).map = leftChartDomainIso.hom ≫
+    AlgebraicGeometry.Scheme.Spec.map (CommRingCat.ofHom
+      (algebraMap AmbientRing (Localization.Away leftGenerator))).op := left_chart_map
+example : (referenceScheme.atlas.chart rightIndex).map = rightChartDomainIso.hom ≫
+    AlgebraicGeometry.Scheme.Spec.map (CommRingCat.ofHom
+      (algebraMap AmbientRing (Localization.Away rightGenerator))).op := right_chart_map
+example : AlgebraicGeometry.IsOpenImmersion
+    (referenceScheme.atlas.chart leftIndex).map := left_chart_isOpenImmersion
+example : AlgebraicGeometry.IsOpenImmersion
+    (referenceScheme.atlas.chart rightIndex).map := right_chart_isOpenImmersion
+example : ⨆ i, ((referenceScheme.affineOpenCover referenceRaw).f i).opensRange = ⊤ := twoChart_jointlyCovers
+example : ¬ IsIso (referenceScheme.atlas.chart leftIndex).map := left_chart_not_isIso
+example : ¬ IsIso (referenceScheme.atlas.chart rightIndex).map := right_chart_not_isIso
+example : referenceScheme.atlas.pairContext referenceRaw leftIndex rightIndex = overlapContext := pair_context
+example : referenceScheme.atlas.actualOverlap referenceRaw leftIndex rightIndex ≅
+    AlgebraicGeometry.Spec (CommRingCat.of (Localization.Away overlapGenerator)) := actualOverlapIso
+example : actualOverlapIso =
+    (referenceScheme.overlap_is_actual_pullback referenceRaw leftIndex rightIndex).symm ≪≫
+      eqToIso (by rw [pair_context]) ≪≫ overlapChartDomainIso := actualOverlapIso_eq
+example : Nonempty (referenceScheme.atlas.actualOverlap
+    referenceRaw leftIndex rightIndex) := actualOverlap_nonempty
+example : sheafifiedRestriction referenceRaw
+      (referenceScheme.atlas.pairToLeft referenceRaw leftIndex rightIndex ≫
+        (referenceScheme.atlas.chart leftIndex).contextHom) =
+    sheafifiedRestriction referenceRaw
+      (referenceScheme.atlas.pairToRight referenceRaw leftIndex rightIndex ≫
+        (referenceScheme.atlas.chart rightIndex).contextHom) := decoration_overlap
+example : ∀ i j l : referenceScheme.atlas.Index,
+    referenceScheme.atlas.actualTripleToLeft referenceRaw i j l ≫
+        (referenceScheme.atlas.chart i).map =
+      referenceScheme.atlas.actualTripleToMiddle referenceRaw i j l ≫
+        (referenceScheme.atlas.chart j).map ∧
+    referenceScheme.atlas.actualTripleToMiddle referenceRaw i j l ≫
+        (referenceScheme.atlas.chart j).map =
+      referenceScheme.atlas.actualTripleToRight referenceRaw i j l ≫
+        (referenceScheme.atlas.chart l).map := actual_triple_cocycle
 
 end
 
