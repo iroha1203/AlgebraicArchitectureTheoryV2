@@ -6749,6 +6749,60 @@ def standardGeometry_coefficient_law_comparison_square :=
 def standardGeometry_coefficientChange_schemeMap_not_isIso :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.coefficientChange_schemeMap_not_isIso
 
+def standardGeometry_duplicateLeftAtlas_chart :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.duplicateLeftAtlas_chart
+
+def standardGeometry_zeroPoint_not_factors_through_leftChart :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.zeroPoint_not_factors_through_leftChart
+
+def standardGeometry_duplicateLeftAtlas_not_valid :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.duplicateLeftAtlas_not_valid
+
+def standardGeometry_coordinateReflection_coordinate :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.coordinateReflection_coordinate
+
+def standardGeometry_coordinateReflection_rightGenerator :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.coordinateReflection_rightGenerator
+
+def standardGeometry_reflectedRightRingHom_coordinate :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.reflectedRightRingHom_coordinate
+
+def standardGeometry_brokenRightChart_context :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.brokenRightChart_context
+
+def standardGeometry_brokenRightChart_map :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.brokenRightChart_map
+
+def standardGeometry_brokenRightChart_isOpenImmersion :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.brokenRightChart_isOpenImmersion
+
+def standardGeometry_brokenRightChart_interpretation_ne :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.brokenRightChart_interpretation_ne
+
+def standardGeometry_brokenRightChart_not_valid :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.brokenRightChart_not_valid
+
+def standardGeometry_collapsedStrongReading_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.collapsedStrongReading_eq
+
+def standardGeometry_collapsedIdeal_not_strict :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.collapsedIdeal_not_strict
+
+def standardGeometry_unitIdealFixture_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.unitIdealFixture_eq
+
+def standardGeometry_unitIdealFixture_subscheme_empty :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.unitIdealFixture_subscheme_empty
+
+def standardGeometry_nonFlatCoefficientMap_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.nonFlatCoefficientMap_eq
+
+def standardGeometry_nonFlatCoefficientMap_not_flat :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.nonFlatCoefficientMap_not_flat
+
+def standardGeometry_standardGeometryReference_fires :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.standardGeometryReference_fires
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit
