@@ -1,0 +1,429 @@
+{
+ "schema": "archmap-reference-slice/v1",
+ "id": "reference:train-ticket-chunk-04",
+ "version": "1",
+ "ruleSetVersion": "prompt-pack@git-blob:5e28afae2ac499b58c59337a45c5242d5b6bb0f0",
+ "atomMatchKeySpec": "kind | NFC(trim(subject) normalized to <source-dir>.<Class> from refs) | axis | predicate? | object? (atom-match-key@2)",
+ "atoms": [
+  {
+   "atomId": "atom:authority:basic-securityconfig:allowscrossorigin",
+   "matchKey": "authority|ts-basic-service.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-maxage-3600-on-/**",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:authority:basic-securityconfig:permitsunauthenticated-api",
+   "matchKey": "authority|ts-basic-service.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/basicservice/**",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:authority:basic-securityconfig:permitsunauthenticated-swagger",
+   "matchKey": "authority|ts-basic-service.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:authority:cancel-cancelcontroller:allowscrossorigin",
+   "matchKey": "authority|ts-cancel-service.CancelController|authority|allowsCrossOrigin|wildcard-origin-method-level-crossorigin-annotation-on-cancel-refound-and-cancel-orderid-loginid-endpoints",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:authority:cancel-securityconfig:allowscrossorigin",
+   "matchKey": "authority|ts-cancel-service.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-maxage-3600-on-/**",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:authority:cancel-securityconfig:permitsunauthenticated-swagger",
+   "matchKey": "authority|ts-cancel-service.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-webjars-images-configuration-swagger-resources-v2-paths",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:authority:cancel-securityconfig:requiresrole-api",
+   "matchKey": "authority|ts-cancel-service.SecurityConfig|authority|requiresRole|ADMIN-or-USER-role-required-on-/api/v1/cancelservice/**",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:auth-tokenserviceimpl:handlescommand-issuetoken",
+   "matchKey": "capability|ts-auth-service.TokenServiceImpl|capability|handlesCommand|IssueToken",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:auth-userserviceimpl:handlescommand-createdefaultauthuser",
+   "matchKey": "capability|ts-auth-service.UserServiceImpl|capability|handlesCommand|CreateDefaultAuthUser",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:auth-userserviceimpl:handlescommand-deletebyuserid",
+   "matchKey": "capability|ts-auth-service.UserServiceImpl|capability|handlesCommand|DeleteByUserId",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:auth-userserviceimpl:servesquery-getalluser",
+   "matchKey": "capability|ts-auth-service.UserServiceImpl|capability|servesQuery|GetAllUser",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:basic-basiccontroller:exposesendpoint-basic-stationname",
+   "matchKey": "capability|ts-basic-service.BasicController|capability|exposesEndpoint|GET /api/v1/basicservice/basic/{stationName}",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:basic-basiccontroller:exposesendpoint-basic-travel",
+   "matchKey": "capability|ts-basic-service.BasicController|capability|exposesEndpoint|POST /api/v1/basicservice/basic/travel",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:basic-basiccontroller:exposesendpoint-basic-travels",
+   "matchKey": "capability|ts-basic-service.BasicController|capability|exposesEndpoint|POST /api/v1/basicservice/basic/travels",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:basic-basiccontroller:exposesendpoint-welcome",
+   "matchKey": "capability|ts-basic-service.BasicController|capability|exposesEndpoint|GET /api/v1/basicservice/welcome",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:basic-basicserviceimpl:servesquery-queryforstationid",
+   "matchKey": "capability|ts-basic-service.BasicServiceImpl|capability|servesQuery|QueryForStationId",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:basic-basicserviceimpl:servesquery-queryfortravel",
+   "matchKey": "capability|ts-basic-service.BasicServiceImpl|capability|servesQuery|QueryForTravel",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:basic-basicserviceimpl:servesquery-queryfortravels",
+   "matchKey": "capability|ts-basic-service.BasicServiceImpl|capability|servesQuery|QueryForTravels",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:cancel-cancelcontroller:exposesendpoint-cancel-orderid-loginid",
+   "matchKey": "capability|ts-cancel-service.CancelController|capability|exposesEndpoint|GET /api/v1/cancelservice/cancel/{orderId}/{loginId}",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:cancel-cancelcontroller:exposesendpoint-cancel-refound",
+   "matchKey": "capability|ts-cancel-service.CancelController|capability|exposesEndpoint|GET /api/v1/cancelservice/cancel/refound/{orderId}",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:cancel-cancelcontroller:exposesendpoint-welcome",
+   "matchKey": "capability|ts-cancel-service.CancelController|capability|exposesEndpoint|GET /api/v1/cancelservice/welcome",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:cancel-cancelserviceimpl:handlescommand-cancelorder",
+   "matchKey": "capability|ts-cancel-service.CancelServiceImpl|capability|handlesCommand|CancelOrder",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:cancel-cancelserviceimpl:servesquery-calculaterefund",
+   "matchKey": "capability|ts-cancel-service.CancelServiceImpl|capability|servesQuery|CalculateRefund",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:auth-tokenservice",
+   "matchKey": "component|ts-auth-service.TokenService|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:auth-tokenserviceimpl",
+   "matchKey": "component|ts-auth-service.TokenServiceImpl|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:auth-userservice",
+   "matchKey": "component|ts-auth-service.UserService|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:auth-userserviceimpl",
+   "matchKey": "component|ts-auth-service.UserServiceImpl|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:basic-basicapplication",
+   "matchKey": "component|ts-basic-service.BasicApplication|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:basic-basiccontroller",
+   "matchKey": "component|ts-basic-service.BasicController|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:basic-basicservice",
+   "matchKey": "component|ts-basic-service.BasicService|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:basic-basicserviceimpl",
+   "matchKey": "component|ts-basic-service.BasicServiceImpl|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:basic-securityconfig",
+   "matchKey": "component|ts-basic-service.SecurityConfig|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:cancel-cancelapplication",
+   "matchKey": "component|ts-cancel-service.CancelApplication|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:cancel-cancelcontroller",
+   "matchKey": "component|ts-cancel-service.CancelController|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:cancel-cancelservice",
+   "matchKey": "component|ts-cancel-service.CancelService|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:cancel-cancelserviceimpl",
+   "matchKey": "component|ts-cancel-service.CancelServiceImpl|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:cancel-getaccountbyidinfo",
+   "matchKey": "component|ts-cancel-service.GetAccountByIdInfo|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:cancel-getaccountbyidresult",
+   "matchKey": "component|ts-cancel-service.GetAccountByIdResult|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:cancel-getorderbyidinfo",
+   "matchKey": "component|ts-cancel-service.GetOrderByIdInfo|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:cancel-securityconfig",
+   "matchKey": "component|ts-cancel-service.SecurityConfig|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:common-swaggerconfig",
+   "matchKey": "component|ts-common.SwaggerConfig|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:contract:auth-tokenserviceimpl:ensures-tokendto",
+   "matchKey": "contract|ts-auth-service.TokenServiceImpl|specification|ensures|returns-tokendto-with-userid-username-and-jwt-on-success-branch",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:contract:auth-tokenserviceimpl:requires-verificationcode",
+   "matchKey": "contract|ts-auth-service.TokenServiceImpl|specification|requires|when-verifyCode-is-supplied-it-must-verify-true-against-verification-code-service-before-username-password-authentication-proceeds",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:contract:cancel-cancelserviceimpl:ensures-cancel-and-refund",
+   "matchKey": "contract|ts-cancel-service.CancelServiceImpl|specification|ensures|order-status-set-to-cancel-and-refund-amount-computed-and-drawn-back-to-account-on-success-branch",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:contract:cancel-cancelserviceimpl:ensures-refundamountrule",
+   "matchKey": "contract|ts-cancel-service.CancelServiceImpl|specification|ensures|refund-amount-is-zero-when-order-status-is-notpaid-or-when-current-time-is-after-travel-start-time-otherwise-price-times-0.8-formatted-to-two-decimals",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:contract:cancel-cancelserviceimpl:requires-forwardedauthorizationheader",
+   "matchKey": "contract|ts-cancel-service.CancelServiceImpl|specification|requires|authorization-header-copied-from-incoming-request-into-downstream-order-user-payment-notification-calls-when-present",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:contract:cancel-cancelserviceimpl:requires-orderstatuseligibleforcancel",
+   "matchKey": "contract|ts-cancel-service.CancelServiceImpl|specification|requires|order-status-must-be-notpaid-paid-or-change-for-cancellation-to-proceed-otherwise-cancel-not-permitted-branch-returned",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:contract:cancel-getaccountbyidinfo:shapedas",
+   "matchKey": "contract|ts-cancel-service.GetAccountByIdInfo|specification|shapedAs|accountId:String",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:contract:cancel-getaccountbyidresult:shapedas",
+   "matchKey": "contract|ts-cancel-service.GetAccountByIdResult|specification|shapedAs|status:boolean,message:String,account:Account",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:contract:cancel-getorderbyidinfo:shapedas",
+   "matchKey": "contract|ts-cancel-service.GetOrderByIdInfo|specification|shapedAs|orderId:String",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:contract:common-swaggerconfig:requires-controllerpackage",
+   "matchKey": "contract|ts-basic-service.SwaggerConfig|specification|requires|swagger.controllerPackage-property-supplied-per-service-fdse.microservice.controller-for-basic-cancel.controller-for-cancel",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:effect:cancel-cancelserviceimpl:callsprovider-cancelfromorder",
+   "matchKey": "effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|PUT ts-order-service to persist order status change",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:effect:cancel-cancelserviceimpl:callsprovider-cancelfromotherorder",
+   "matchKey": "effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|PUT ts-order-other-service to persist order status change",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:effect:cancel-cancelserviceimpl:callsprovider-drawbackmoney",
+   "matchKey": "effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|GET ts-inside-payment-service drawback endpoint to credit refund amount to the paying account",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:effect:cancel-cancelserviceimpl:callsprovider-sendemail",
+   "matchKey": "effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|POST ts-notification-service order_cancel_success notification, method present but its call site in cancelOrder is a source comment rather than an active statement",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:relation:auth-tokenserviceimpl:calls-authenticationmanager-authenticate",
+   "matchKey": "relation|ts-auth-service.TokenServiceImpl|relation|calls|AuthenticationManager.authenticate",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:relation:auth-tokenserviceimpl:calls-jwtprovider-createtoken",
+   "matchKey": "relation|ts-auth-service.TokenServiceImpl|relation|calls|JWTProvider.createToken",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:relation:auth-tokenserviceimpl:calls-userrepository-findbyusername",
+   "matchKey": "relation|ts-auth-service.TokenServiceImpl|relation|calls|UserRepository.findByUsername",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:relation:auth-tokenserviceimpl:calls-verificationcodeservice",
+   "matchKey": "relation|ts-auth-service.TokenServiceImpl|relation|calls|ts-verification-code-service:/api/v1/verifycode/verify/{verifyCode}",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:relation:auth-tokenserviceimpl:dependson-jwtprovider",
+   "matchKey": "relation|ts-auth-service.TokenServiceImpl|relation|dependsOn|auth.security.jwt.JWTProvider",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:relation:auth-userserviceimpl:dependson-passwordencoder",
+   "matchKey": "relation|ts-auth-service.UserServiceImpl|relation|dependsOn|org.springframework.security.crypto.password.PasswordEncoder",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:relation:basic-basicserviceimpl:calls-priceservice",
+   "matchKey": "relation|ts-basic-service.BasicServiceImpl|relation|calls|ts-price-service:/api/v1/priceservice/prices/{routeId}/{trainType} and /byRouteIdsAndTrainTypes",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:relation:basic-basicserviceimpl:calls-routeservice",
+   "matchKey": "relation|ts-basic-service.BasicServiceImpl|relation|calls|ts-route-service:/api/v1/routeservice/routes/{routeId} and /byIds/",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:relation:basic-basicserviceimpl:calls-stationservice",
+   "matchKey": "relation|ts-basic-service.BasicServiceImpl|relation|calls|ts-station-service:/api/v1/stationservice/stations/id/{stationName} and /stations/idlist",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:relation:basic-basicserviceimpl:calls-trainservice",
+   "matchKey": "relation|ts-basic-service.BasicServiceImpl|relation|calls|ts-train-service:/api/v1/trainservice/trains/byName/{name} and /byNames",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:relation:cancel-cancelserviceimpl:calls-insidepaymentservice",
+   "matchKey": "relation|ts-cancel-service.CancelServiceImpl|relation|calls|ts-inside-payment-service:GET /api/v1/inside_pay_service/inside_payment/drawback/{userId}/{money}",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:relation:cancel-cancelserviceimpl:calls-notificationservice",
+   "matchKey": "relation|ts-cancel-service.CancelServiceImpl|relation|calls|ts-notification-service:POST /api/v1/notifyservice/notification/order_cancel_success, method defined and called only from a source line kept as a comment in cancelOrder",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:relation:cancel-cancelserviceimpl:calls-orderotherservice",
+   "matchKey": "relation|ts-cancel-service.CancelServiceImpl|relation|calls|ts-order-other-service:GET/PUT /api/v1/orderOtherService/orderOther(/{orderId})",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:relation:cancel-cancelserviceimpl:calls-orderservice",
+   "matchKey": "relation|ts-cancel-service.CancelServiceImpl|relation|calls|ts-order-service:GET/PUT /api/v1/orderservice/order(/{orderId})",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:relation:cancel-cancelserviceimpl:calls-userservice",
+   "matchKey": "relation|ts-cancel-service.CancelServiceImpl|relation|calls|ts-user-service:GET /api/v1/userservice/users/id/{accountId}",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:auth-tokenserviceimpl:meansinuse-credentialvalueinlog",
+   "matchKey": "semantic|ts-auth-service.TokenServiceImpl|semantic|meansInUse|password-value-included-in-warn-level-log-message-on-authentication-rejected-branch",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:auth-tokenserviceimpl:statusgates-responseenvelope",
+   "matchKey": "semantic|ts-auth-service.TokenServiceImpl|semantic|statusGates|status-1-on-login-success-branch-status-0-on-verification-code-or-credential-rejection-branch",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:auth-userserviceimpl:meansinuse-saveusernoop",
+   "matchKey": "semantic|ts-auth-service.UserServiceImpl|semantic|meansInUse|saveuser-method-body-returns-null-without-calling-the-repository",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:basic-basicserviceimpl:identifiedby-stationlookup",
+   "matchKey": "semantic|ts-basic-service.BasicServiceImpl|semantic|identifiedBy|station-existence-checked-via-endpoint-path-segment-named-id-while-the-value-passed-is-a-station-name-string",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:basic-basicserviceimpl:statusgates-responseenvelope",
+   "matchKey": "semantic|ts-basic-service.BasicServiceImpl|semantic|statusGates|status-1-on-result-carrying-branch-status-0-on-station-traintype-route-or-not-found-rejected-branch-covering-queryfortravel-queryfortravels-and-queryforstationid",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:basic-surface:cech-section-money-amount",
+   "matchKey": "semantic|ctx:basic-surface|cech|sectionValue|section=money-amount:double-arithmetic-then-string-concatenation",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:cancel-cancelcontroller:statusgates-divergingbranch",
+   "matchKey": "semantic|ts-cancel-service.CancelController|semantic|statusGates|status-1-on-controller-catch-block-branch-for-a-caught-exception-status-0-on-service-rejected-branch-for-the-same-cancel-flow",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:cancel-cancelserviceimpl:identifiedby-orderlookupfallback",
+   "matchKey": "semantic|ts-cancel-service.CancelServiceImpl|semantic|identifiedBy|order-id-looked-up-first-against-ts-order-service-then-against-ts-order-other-service-on-the-not-found-branch",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:cancel-cancelserviceimpl:meansinuse-notifyinfobuiltbutsendnotinvoked",
+   "matchKey": "semantic|ts-cancel-service.CancelServiceImpl|semantic|meansInUse|notifyinfo-object-populated-with-email-price-seat-and-trip-fields-on-the-successful-drawback-branch-while-the-sendemail-call-at-this-site-is-left-commented-out",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:cancel-cancelserviceimpl:meansinuse-orderidparamcarriesaccountid",
+   "matchKey": "semantic|ts-cancel-service.CancelServiceImpl|semantic|meansInUse|getAccount-http-call-parameter-declared-as-orderId-carries-the-order-owner-account-id-value-passed-by-the-caller",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:cancel-cancelserviceimpl:statusgates-responseenvelope",
+   "matchKey": "semantic|ts-cancel-service.CancelServiceImpl|semantic|statusGates|status-1-on-cancel-or-refund-success-or-result-carrying-branch-status-0-on-order-not-found-cancel-not-permitted-or-rejected-branch-covering-cancelorder-and-calculaterefund",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:cancel-surface:cech-section-money-amount",
+   "matchKey": "semantic|ctx:cancel-surface|cech|sectionValue|section=money-amount:string-parsed-to-double-arithmetic-decimalformat",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:cancel-surface:cech-section-order-status-code",
+   "matchKey": "semantic|ctx:cancel-surface|cech|sectionValue|section=order-status-code:enum-orderstatus-getcode-accessor",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:state:cancel-order:transitionsto-cancel",
+   "matchKey": "state|ts-cancel-service.Order|state|transitionsTo|status-set-to-OrderStatus-CANCEL-code-before-persisting-through-either-ts-order-service-or-ts-order-other-service",
+   "chunkClass": "tuned"
+  }
+ ]
+}

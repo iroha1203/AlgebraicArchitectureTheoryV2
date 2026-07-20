@@ -1,0 +1,684 @@
+{
+ "schema": "archmap-reference-slice/v1",
+ "id": "reference:train-ticket-chunk-01",
+ "version": "1",
+ "ruleSetVersion": "prompt-pack@git-blob:5e28afae2ac499b58c59337a45c5242d5b6bb0f0",
+ "atomMatchKeySpec": "kind | NFC(trim(subject) normalized to <source-dir>.<Class> from refs) | axis | predicate? | object? (atom-match-key@2)",
+ "atoms": [
+  {
+   "atomId": "atom:authority:ts-admin-basic-info-service-adminbasicinfocontroller:allows-cross-origin-per-endpoint",
+   "matchKey": "authority|ts-admin-basic-info-service.AdminBasicInfoController|authority|allowsCrossOrigin|origin-scope-star-declared-per-method-via-crossorigin-annotation-on-every-crud-endpoint",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:authority:ts-admin-basic-info-service-securityconfig:allows-cross-origin",
+   "matchKey": "authority|ts-admin-basic-info-service.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-maxage-3600-on-/**",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:authority:ts-admin-basic-info-service-securityconfig:checks-jwt-filter",
+   "matchKey": "authority|ts-admin-basic-info-service.SecurityConfig|authority|checksPermission|jwt-filter-inserted-before-username-password-authentication-filter-on-security-filter-chain",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:authority:ts-admin-basic-info-service-securityconfig:permits-unauthenticated-get-resources",
+   "matchKey": "authority|ts-admin-basic-info-service.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-GET-/adminbasic/stations,/adminbasic/trains,/adminbasic/prices,/adminbasic/configs,/adminbasic/contacts",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:authority:ts-admin-basic-info-service-securityconfig:permits-unauthenticated-swagger",
+   "matchKey": "authority|ts-admin-basic-info-service.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-html-webjars-images-configuration-swagger-resources-v2-paths",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:authority:ts-admin-basic-info-service-securityconfig:requires-role-admin",
+   "matchKey": "authority|ts-admin-basic-info-service.SecurityConfig|authority|requiresRole|role-ADMIN-required-on-/api/v1/adminbasicservice/**-catch-all-after-get-carve-outs",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:authority:ts-admin-order-service-adminordercontroller:allows-cross-origin-getallorders-only",
+   "matchKey": "authority|ts-admin-order-service.AdminOrderController|authority|allowsCrossOrigin|origin-scope-star-declared-only-on-get-adminorder-endpoint-not-on-post-put-delete-endpoints",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:authority:ts-admin-order-service-securityconfig:allows-cross-origin",
+   "matchKey": "authority|ts-admin-order-service.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-maxage-3600-on-/**",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:authority:ts-admin-order-service-securityconfig:checks-jwt-filter",
+   "matchKey": "authority|ts-admin-order-service.SecurityConfig|authority|checksPermission|jwt-filter-inserted-before-username-password-authentication-filter-on-security-filter-chain",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:authority:ts-admin-order-service-securityconfig:permits-unauthenticated-swagger",
+   "matchKey": "authority|ts-admin-order-service.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-html-webjars-images-configuration-swagger-resources-v2-paths",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:authority:ts-admin-order-service-securityconfig:requires-role-admin-whole-path",
+   "matchKey": "authority|ts-admin-order-service.SecurityConfig|authority|requiresRole|role-ADMIN-required-on-/api/v1/adminorderservice/**-with-no-unauthenticated-get-carve-out",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:authority:ts-admin-route-service-securityconfig:allows-cross-origin",
+   "matchKey": "authority|ts-admin-route-service.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-maxage-3600-on-/**",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:authority:ts-admin-route-service-securityconfig:checks-jwt-filter",
+   "matchKey": "authority|ts-admin-route-service.SecurityConfig|authority|checksPermission|jwt-filter-inserted-before-username-password-authentication-filter-on-security-filter-chain",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:authority:ts-admin-route-service-securityconfig:permits-unauthenticated-swagger",
+   "matchKey": "authority|ts-admin-route-service.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-html-webjars-images-configuration-swagger-resources-v2-paths",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:authority:ts-admin-route-service-securityconfig:requires-role-admin-whole-path",
+   "matchKey": "authority|ts-admin-route-service.SecurityConfig|authority|requiresRole|role-ADMIN-required-on-/api/v1/adminrouteservice/**-with-no-unauthenticated-get-carve-out",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addconfig",
+   "matchKey": "capability|ts-admin-basic-info-service.AdminBasicInfoController|capability|exposesEndpoint|POST /api/v1/adminbasicservice/adminbasic/configs",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addcontacts",
+   "matchKey": "capability|ts-admin-basic-info-service.AdminBasicInfoController|capability|exposesEndpoint|POST /api/v1/adminbasicservice/adminbasic/contacts",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addprice",
+   "matchKey": "capability|ts-admin-basic-info-service.AdminBasicInfoController|capability|exposesEndpoint|POST /api/v1/adminbasicservice/adminbasic/prices",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addstation",
+   "matchKey": "capability|ts-admin-basic-info-service.AdminBasicInfoController|capability|exposesEndpoint|POST /api/v1/adminbasicservice/adminbasic/stations",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addtrain",
+   "matchKey": "capability|ts-admin-basic-info-service.AdminBasicInfoController|capability|exposesEndpoint|POST /api/v1/adminbasicservice/adminbasic/trains",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deleteconfig",
+   "matchKey": "capability|ts-admin-basic-info-service.AdminBasicInfoController|capability|exposesEndpoint|DELETE /api/v1/adminbasicservice/adminbasic/configs/{name}",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deletecontacts",
+   "matchKey": "capability|ts-admin-basic-info-service.AdminBasicInfoController|capability|exposesEndpoint|DELETE /api/v1/adminbasicservice/adminbasic/contacts/{contactsId}",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deleteprice",
+   "matchKey": "capability|ts-admin-basic-info-service.AdminBasicInfoController|capability|exposesEndpoint|DELETE /api/v1/adminbasicservice/adminbasic/prices/{pricesId}",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deletestation",
+   "matchKey": "capability|ts-admin-basic-info-service.AdminBasicInfoController|capability|exposesEndpoint|DELETE /api/v1/adminbasicservice/adminbasic/stations/{id}",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deletetrain",
+   "matchKey": "capability|ts-admin-basic-info-service.AdminBasicInfoController|capability|exposesEndpoint|DELETE /api/v1/adminbasicservice/adminbasic/trains/{id}",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallconfigs",
+   "matchKey": "capability|ts-admin-basic-info-service.AdminBasicInfoController|capability|exposesEndpoint|GET /api/v1/adminbasicservice/adminbasic/configs",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallcontacts",
+   "matchKey": "capability|ts-admin-basic-info-service.AdminBasicInfoController|capability|exposesEndpoint|GET /api/v1/adminbasicservice/adminbasic/contacts",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallprices",
+   "matchKey": "capability|ts-admin-basic-info-service.AdminBasicInfoController|capability|exposesEndpoint|GET /api/v1/adminbasicservice/adminbasic/prices",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallstations",
+   "matchKey": "capability|ts-admin-basic-info-service.AdminBasicInfoController|capability|exposesEndpoint|GET /api/v1/adminbasicservice/adminbasic/stations",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getalltrains",
+   "matchKey": "capability|ts-admin-basic-info-service.AdminBasicInfoController|capability|exposesEndpoint|GET /api/v1/adminbasicservice/adminbasic/trains",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:home",
+   "matchKey": "capability|ts-admin-basic-info-service.AdminBasicInfoController|capability|exposesEndpoint|GET /api/v1/adminbasicservice/welcome",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifyconfig",
+   "matchKey": "capability|ts-admin-basic-info-service.AdminBasicInfoController|capability|exposesEndpoint|PUT /api/v1/adminbasicservice/adminbasic/configs",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifycontacts",
+   "matchKey": "capability|ts-admin-basic-info-service.AdminBasicInfoController|capability|exposesEndpoint|PUT /api/v1/adminbasicservice/adminbasic/contacts",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifyprice",
+   "matchKey": "capability|ts-admin-basic-info-service.AdminBasicInfoController|capability|exposesEndpoint|PUT /api/v1/adminbasicservice/adminbasic/prices",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifystation",
+   "matchKey": "capability|ts-admin-basic-info-service.AdminBasicInfoController|capability|exposesEndpoint|PUT /api/v1/adminbasicservice/adminbasic/stations",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifytrain",
+   "matchKey": "capability|ts-admin-basic-info-service.AdminBasicInfoController|capability|exposesEndpoint|PUT /api/v1/adminbasicservice/adminbasic/trains",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:capability:ts-admin-order-service-adminordercontroller:addorder",
+   "matchKey": "capability|ts-admin-order-service.AdminOrderController|capability|exposesEndpoint|POST /api/v1/adminorderservice/adminorder",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:capability:ts-admin-order-service-adminordercontroller:deleteorder",
+   "matchKey": "capability|ts-admin-order-service.AdminOrderController|capability|exposesEndpoint|DELETE /api/v1/adminorderservice/adminorder/{orderId}/{trainNumber}",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:capability:ts-admin-order-service-adminordercontroller:getallorders",
+   "matchKey": "capability|ts-admin-order-service.AdminOrderController|capability|exposesEndpoint|GET /api/v1/adminorderservice/adminorder",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:capability:ts-admin-order-service-adminordercontroller:home",
+   "matchKey": "capability|ts-admin-order-service.AdminOrderController|capability|exposesEndpoint|GET /api/v1/adminorderservice/welcome",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:capability:ts-admin-order-service-adminordercontroller:updateorder",
+   "matchKey": "capability|ts-admin-order-service.AdminOrderController|capability|exposesEndpoint|PUT /api/v1/adminorderservice/adminorder",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:capability:ts-admin-route-service-adminroutecontroller:addroute",
+   "matchKey": "capability|ts-admin-route-service.AdminRouteController|capability|exposesEndpoint|POST /api/v1/adminrouteservice/adminroute",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:capability:ts-admin-route-service-adminroutecontroller:deleteroute",
+   "matchKey": "capability|ts-admin-route-service.AdminRouteController|capability|exposesEndpoint|DELETE /api/v1/adminrouteservice/adminroute/{routeId}",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:capability:ts-admin-route-service-adminroutecontroller:getallroutes",
+   "matchKey": "capability|ts-admin-route-service.AdminRouteController|capability|exposesEndpoint|GET /api/v1/adminrouteservice/adminroute",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:capability:ts-admin-route-service-adminroutecontroller:home",
+   "matchKey": "capability|ts-admin-route-service.AdminRouteController|capability|exposesEndpoint|GET /api/v1/adminrouteservice/welcome",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:component:adminbasic-application",
+   "matchKey": "component|ts-admin-basic-info-service.AdminBasicInfoApplication|static||",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:component:adminbasic-controller",
+   "matchKey": "component|ts-admin-basic-info-service.AdminBasicInfoController|static||",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:component:adminbasic-priceinfo",
+   "matchKey": "component|ts-admin-basic-info-service.PriceInfo|static||",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:component:adminbasic-securityconfig",
+   "matchKey": "component|ts-admin-basic-info-service.SecurityConfig|static||",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:component:adminbasic-service-iface",
+   "matchKey": "component|ts-admin-basic-info-service.AdminBasicInfoService|static||",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:component:adminbasic-service-impl",
+   "matchKey": "component|ts-admin-basic-info-service.AdminBasicInfoServiceImpl|static||",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:component:adminorder-application",
+   "matchKey": "component|ts-admin-order-service.AdminOrderApplication|static||",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:component:adminorder-controller",
+   "matchKey": "component|ts-admin-order-service.AdminOrderController|static||",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:component:adminorder-securityconfig",
+   "matchKey": "component|ts-admin-order-service.SecurityConfig|static||",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:component:adminorder-service-iface",
+   "matchKey": "component|ts-admin-order-service.AdminOrderService|static||",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:component:adminorder-service-impl",
+   "matchKey": "component|ts-admin-order-service.AdminOrderServiceImpl|static||",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:component:adminroute-application",
+   "matchKey": "component|ts-admin-route-service.AdminRouteApplication|static||",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:component:adminroute-controller",
+   "matchKey": "component|ts-admin-route-service.AdminRouteController|static||",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:component:adminroute-securityconfig",
+   "matchKey": "component|ts-admin-route-service.SecurityConfig|static||",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:component:adminroute-service-iface",
+   "matchKey": "component|ts-admin-route-service.AdminRouteService|static||",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:component:adminroute-service-impl",
+   "matchKey": "component|ts-admin-route-service.AdminRouteServiceImpl|static||",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:component:admintravel-application",
+   "matchKey": "component|ts-admin-travel-service.AdminTravelApplication|static||",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:component:ts-admin-basic-info-service",
+   "matchKey": "component|ts-admin-basic-info-service.ts-admin-basic-info-service|static||",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:component:ts-admin-order-service",
+   "matchKey": "component|ts-admin-order-service.ts-admin-order-service|static||",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:component:ts-admin-route-service",
+   "matchKey": "component|ts-admin-route-service.ts-admin-route-service|static||",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:contract:ts-admin-basic-info-service-securityconfig:security-filter-chain-shape",
+   "matchKey": "contract|ts-admin-basic-info-service.SecurityConfig|specification|shapedAs|stateless-session-policy-with-csrf-and-http-basic-disabled-jwt-filter-inserted-before-username-password-authentication-filter",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:contract:ts-admin-order-service-securityconfig:security-filter-chain-shape",
+   "matchKey": "contract|ts-admin-order-service.SecurityConfig|specification|shapedAs|stateless-session-policy-with-csrf-and-http-basic-disabled-jwt-filter-inserted-before-username-password-authentication-filter",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:contract:ts-admin-route-service-securityconfig:security-filter-chain-shape",
+   "matchKey": "contract|ts-admin-route-service.SecurityConfig|specification|shapedAs|stateless-session-policy-with-csrf-and-http-basic-disabled-jwt-filter-inserted-before-username-password-authentication-filter",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoapplication:registers-with-discovery-provider",
+   "matchKey": "effect|ts-admin-basic-info-service.AdminBasicInfoApplication|effect|callsProvider|nacos-discovery-registration-on-startup",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addconfig",
+   "matchKey": "effect|ts-admin-basic-info-service.AdminBasicInfoServiceImpl|effect|callsProvider|post-ts-config-service-/api/v1/configservice/configs",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addcontact",
+   "matchKey": "effect|ts-admin-basic-info-service.AdminBasicInfoServiceImpl|effect|callsProvider|post-ts-contacts-service-/api/v1/contactservice/contacts/admin",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addprice",
+   "matchKey": "effect|ts-admin-basic-info-service.AdminBasicInfoServiceImpl|effect|callsProvider|post-ts-price-service-/api/v1/priceservice/prices",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addstation",
+   "matchKey": "effect|ts-admin-basic-info-service.AdminBasicInfoServiceImpl|effect|callsProvider|post-ts-station-service-/api/v1/stationservice/stations",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addtrain",
+   "matchKey": "effect|ts-admin-basic-info-service.AdminBasicInfoServiceImpl|effect|callsProvider|post-ts-train-service-/api/v1/trainservice/trains",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:callsprovider-configs",
+   "matchKey": "effect|ts-admin-basic-info-service.AdminBasicInfoServiceImpl|effect|callsProvider|ts-config-service",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:callsprovider-contacts",
+   "matchKey": "effect|ts-admin-basic-info-service.AdminBasicInfoServiceImpl|effect|callsProvider|ts-contacts-service",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:callsprovider-prices",
+   "matchKey": "effect|ts-admin-basic-info-service.AdminBasicInfoServiceImpl|effect|callsProvider|ts-price-service",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:callsprovider-stations",
+   "matchKey": "effect|ts-admin-basic-info-service.AdminBasicInfoServiceImpl|effect|callsProvider|ts-station-service",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:callsprovider-trains",
+   "matchKey": "effect|ts-admin-basic-info-service.AdminBasicInfoServiceImpl|effect|callsProvider|ts-train-service",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deleteconfig",
+   "matchKey": "effect|ts-admin-basic-info-service.AdminBasicInfoServiceImpl|effect|callsProvider|delete-ts-config-service-/api/v1/configservice/configs/{name}",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deletecontact",
+   "matchKey": "effect|ts-admin-basic-info-service.AdminBasicInfoServiceImpl|effect|callsProvider|delete-ts-contacts-service-/api/v1/contactservice/contacts/{id}",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deleteprice",
+   "matchKey": "effect|ts-admin-basic-info-service.AdminBasicInfoServiceImpl|effect|callsProvider|delete-ts-price-service-/api/v1/priceservice/prices/{id}",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deletestation",
+   "matchKey": "effect|ts-admin-basic-info-service.AdminBasicInfoServiceImpl|effect|callsProvider|delete-ts-station-service-/api/v1/stationservice/stations/{id}",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deletetrain",
+   "matchKey": "effect|ts-admin-basic-info-service.AdminBasicInfoServiceImpl|effect|callsProvider|delete-ts-train-service-/api/v1/trainservice/trains/{id}",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallconfigs",
+   "matchKey": "effect|ts-admin-basic-info-service.AdminBasicInfoServiceImpl|effect|callsProvider|get-ts-config-service-/api/v1/configservice/configs",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallcontacts",
+   "matchKey": "effect|ts-admin-basic-info-service.AdminBasicInfoServiceImpl|effect|callsProvider|get-ts-contacts-service-/api/v1/contactservice/contacts",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallprices",
+   "matchKey": "effect|ts-admin-basic-info-service.AdminBasicInfoServiceImpl|effect|callsProvider|get-ts-price-service-/api/v1/priceservice/prices",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallstations",
+   "matchKey": "effect|ts-admin-basic-info-service.AdminBasicInfoServiceImpl|effect|callsProvider|get-ts-station-service-/api/v1/stationservice/stations",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getalltrains",
+   "matchKey": "effect|ts-admin-basic-info-service.AdminBasicInfoServiceImpl|effect|callsProvider|get-ts-train-service-/api/v1/trainservice/trains",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifyconfig",
+   "matchKey": "effect|ts-admin-basic-info-service.AdminBasicInfoServiceImpl|effect|callsProvider|put-ts-config-service-/api/v1/configservice/configs",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifycontact",
+   "matchKey": "effect|ts-admin-basic-info-service.AdminBasicInfoServiceImpl|effect|callsProvider|put-ts-contacts-service-/api/v1/contactservice/contacts",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifyprice",
+   "matchKey": "effect|ts-admin-basic-info-service.AdminBasicInfoServiceImpl|effect|callsProvider|put-ts-price-service-/api/v1/priceservice/prices",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifystation",
+   "matchKey": "effect|ts-admin-basic-info-service.AdminBasicInfoServiceImpl|effect|callsProvider|put-ts-station-service-/api/v1/stationservice/stations",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifytrain",
+   "matchKey": "effect|ts-admin-basic-info-service.AdminBasicInfoServiceImpl|effect|callsProvider|put-ts-train-service-/api/v1/trainservice/trains",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-order-service-adminorderapplication:registers-with-discovery-provider",
+   "matchKey": "effect|ts-admin-order-service.AdminOrderApplication|effect|callsProvider|nacos-discovery-registration-on-startup",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-order-service-adminorderserviceimpl:addorder-order-other-service-branch",
+   "matchKey": "effect|ts-admin-order-service.AdminOrderServiceImpl|effect|callsProvider|post-ts-order-other-service-/api/v1/orderOtherService/orderOther/admin-on-trainnumber-not-g-or-d-branch",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-order-service-adminorderserviceimpl:addorder-order-service-branch",
+   "matchKey": "effect|ts-admin-order-service.AdminOrderServiceImpl|effect|callsProvider|post-ts-order-service-/api/v1/orderservice/order/admin-on-trainnumber-g-or-d-prefix-branch",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-order-service-adminorderserviceimpl:callsprovider-order",
+   "matchKey": "effect|ts-admin-order-service.AdminOrderServiceImpl|effect|callsProvider|ts-order-service",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-order-service-adminorderserviceimpl:callsprovider-orderother",
+   "matchKey": "effect|ts-admin-order-service.AdminOrderServiceImpl|effect|callsProvider|ts-order-other-service",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-order-service-adminorderserviceimpl:deleteorder-order-other-service-branch",
+   "matchKey": "effect|ts-admin-order-service.AdminOrderServiceImpl|effect|callsProvider|delete-ts-order-other-service-/api/v1/orderOtherService/orderOther/{id}-on-trainnumber-not-g-or-d-branch",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-order-service-adminorderserviceimpl:deleteorder-order-service-branch",
+   "matchKey": "effect|ts-admin-order-service.AdminOrderServiceImpl|effect|callsProvider|delete-ts-order-service-/api/v1/orderservice/order/{id}-on-trainnumber-g-or-d-prefix-branch",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-order-service-adminorderserviceimpl:getallorders-order-other-service",
+   "matchKey": "effect|ts-admin-order-service.AdminOrderServiceImpl|effect|callsProvider|get-ts-order-other-service-/api/v1/orderOtherService/orderOther",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-order-service-adminorderserviceimpl:getallorders-order-service",
+   "matchKey": "effect|ts-admin-order-service.AdminOrderServiceImpl|effect|callsProvider|get-ts-order-service-/api/v1/orderservice/order",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-order-service-adminorderserviceimpl:updateorder-order-other-service-branch",
+   "matchKey": "effect|ts-admin-order-service.AdminOrderServiceImpl|effect|callsProvider|put-ts-order-other-service-/api/v1/orderOtherService/orderOther/admin-on-trainnumber-not-g-or-d-branch",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-order-service-adminorderserviceimpl:updateorder-order-service-branch",
+   "matchKey": "effect|ts-admin-order-service.AdminOrderServiceImpl|effect|callsProvider|put-ts-order-service-/api/v1/orderservice/order/admin-on-trainnumber-g-or-d-prefix-branch",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-route-service-adminrouteapplication:registers-with-discovery-provider",
+   "matchKey": "effect|ts-admin-route-service.AdminRouteApplication|effect|callsProvider|nacos-discovery-registration-on-startup",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-route-service-adminrouteserviceimpl:callsprovider-route",
+   "matchKey": "effect|ts-admin-route-service.AdminRouteServiceImpl|effect|callsProvider|ts-route-service",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-route-service-adminrouteserviceimpl:callsprovider-station",
+   "matchKey": "effect|ts-admin-route-service.AdminRouteServiceImpl|effect|callsProvider|ts-station-service",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-route-service-adminrouteserviceimpl:checkstationsexists",
+   "matchKey": "effect|ts-admin-route-service.AdminRouteServiceImpl|effect|callsProvider|post-ts-station-service-/api/v1/stationservice/stations/idlist",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-route-service-adminrouteserviceimpl:createandmodifyroute",
+   "matchKey": "effect|ts-admin-route-service.AdminRouteServiceImpl|effect|callsProvider|post-ts-route-service-/api/v1/routeservice/routes",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-route-service-adminrouteserviceimpl:deleteroute",
+   "matchKey": "effect|ts-admin-route-service.AdminRouteServiceImpl|effect|callsProvider|delete-ts-route-service-/api/v1/routeservice/routes/{id}",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-route-service-adminrouteserviceimpl:getallroutes",
+   "matchKey": "effect|ts-admin-route-service.AdminRouteServiceImpl|effect|callsProvider|get-ts-route-service-/api/v1/routeservice/routes",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-travel-service-admintravelapplication:registers-with-discovery-provider",
+   "matchKey": "effect|ts-admin-travel-service.AdminTravelApplication|effect|callsProvider|discovery-client-registration-on-startup-via-enablediscoveryclient",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:relation:ts-admin-basic-info-service-adminbasicinfocontroller:dependson",
+   "matchKey": "relation|ts-admin-basic-info-service.AdminBasicInfoController|relation|dependsOn|AdminBasicInfoService",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:relation:ts-admin-basic-info-service-adminbasicinfoserviceimpl:implements",
+   "matchKey": "relation|ts-admin-basic-info-service.AdminBasicInfoServiceImpl|relation|implements|AdminBasicInfoService",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:relation:ts-admin-basic-info-service:depends-on-nacos-discovery",
+   "matchKey": "relation|ts-admin-basic-info-service.ts-admin-basic-info-service|relation|dependsOn|nacos-discovery-server-addr-configurable-via-env",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:relation:ts-admin-order-service-adminordercontroller:dependson",
+   "matchKey": "relation|ts-admin-order-service.AdminOrderController|relation|dependsOn|AdminOrderService",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:relation:ts-admin-order-service-adminorderserviceimpl:implements",
+   "matchKey": "relation|ts-admin-order-service.AdminOrderServiceImpl|relation|implements|AdminOrderService",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:relation:ts-admin-order-service:depends-on-nacos-discovery",
+   "matchKey": "relation|ts-admin-order-service.ts-admin-order-service|relation|dependsOn|nacos-discovery-server-addr-configurable-via-env",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:relation:ts-admin-route-service-adminroutecontroller:dependson",
+   "matchKey": "relation|ts-admin-route-service.AdminRouteController|relation|dependsOn|AdminRouteService",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:relation:ts-admin-route-service-adminrouteserviceimpl:implements",
+   "matchKey": "relation|ts-admin-route-service.AdminRouteServiceImpl|relation|implements|AdminRouteService",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:relation:ts-admin-route-service:depends-on-nacos-discovery",
+   "matchKey": "relation|ts-admin-route-service.ts-admin-route-service|relation|dependsOn|nacos-discovery-server-addr-configurable-via-env",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:semantic:admin-basic-info-surface:cech-section-money-amount",
+   "matchKey": "semantic|ctx:admin-basic-info-surface|cech|sectionValue|section=money-amount:double-primitive-fields",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:semantic:ts-admin-basic-info-service-adminbasicinfoserviceimpl:discoveryclient-not-used-for-url",
+   "matchKey": "semantic|ts-admin-basic-info-service.AdminBasicInfoServiceImpl|semantic|meansInUse|service-url-built-as-http-prefix-plus-literal-service-name-discoveryclient-field-injected-but-not-called-in-method-bodies",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:semantic:ts-admin-basic-info-service-priceinfo:money-amount-representation",
+   "matchKey": "semantic|ts-admin-basic-info-service.PriceInfo|semantic|meansInUse|price-rate-represented-as-java-double-basicPriceRate-and-firstClassPriceRate-fields-no-parsing-at-declaration-site",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:semantic:ts-admin-order-service-adminordercontroller:order-lookup-key",
+   "matchKey": "semantic|ts-admin-order-service.AdminOrderController|semantic|identifiedBy|order-identified-by-compound-key-orderId-and-trainNumber-on-delete-branch",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:semantic:ts-admin-order-service-adminorderserviceimpl:discoveryclient-not-used-for-url",
+   "matchKey": "semantic|ts-admin-order-service.AdminOrderServiceImpl|semantic|meansInUse|service-url-built-as-http-prefix-plus-literal-service-name-discoveryclient-field-injected-but-not-called-in-method-bodies",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:semantic:ts-admin-order-service-adminorderserviceimpl:response-status-branch",
+   "matchKey": "semantic|ts-admin-order-service.AdminOrderServiceImpl|semantic|statusGates|response-status-1-selects-successfully-logged-append-branch-other-values-select-error-logged-branch-in-getAllOrders-aggregation",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:semantic:ts-admin-order-service-adminorderserviceimpl:train-number-prefix-routing",
+   "matchKey": "semantic|ts-admin-order-service.AdminOrderServiceImpl|semantic|meansInUse|trainNumber-starting-with-G-or-D-selects-ts-order-service-branch-other-prefixes-select-ts-order-other-service-branch",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:semantic:ts-admin-route-service-adminroutecontroller:cross-origin-annotation-coverage",
+   "matchKey": "semantic|ts-admin-route-service.AdminRouteController|semantic|meansInUse|cross-origin-star-annotation-present-only-on-get-all-routes-branch-absent-on-post-delete-branches",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:semantic:ts-admin-route-service-adminrouteserviceimpl:discoveryclient-not-used-for-url",
+   "matchKey": "semantic|ts-admin-route-service.AdminRouteServiceImpl|semantic|meansInUse|service-url-built-as-http-prefix-plus-literal-service-name-discoveryclient-field-injected-but-not-called-in-method-bodies",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:semantic:ts-admin-route-service-adminrouteserviceimpl:downstream-http-status-branch",
+   "matchKey": "semantic|ts-admin-route-service.AdminRouteServiceImpl|semantic|meansInUse|downstream-http-status-not-equal-to-ACCEPTED-selects-error-logged-branch-response-body-still-returned-on-either-branch",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:semantic:ts-admin-route-service-adminrouteserviceimpl:response-status-branch",
+   "matchKey": "semantic|ts-admin-route-service.AdminRouteServiceImpl|semantic|statusGates|response-status-0-selects-early-return-of-validation-response-branch-status-1-selects-check-succeeded-continue-branch-in-createAndModifyRoute-and-checkStationsExists",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:semantic:ts-admin-route-service-adminrouteserviceimpl:route-endpoint-membership-check",
+   "matchKey": "semantic|ts-admin-route-service.AdminRouteServiceImpl|semantic|meansInUse|start-and-end-station-must-both-be-members-of-request-stations-list-else-selects-early-rejected-branch-before-any-downstream-call",
+   "chunkClass": "prompt-literal-disjoint"
+  },
+  {
+   "atomId": "atom:semantic:ts-admin-route-service-adminrouteserviceimpl:station-lookup-contract",
+   "matchKey": "semantic|ts-admin-route-service.AdminRouteServiceImpl|semantic|meansInUse|station-existence-checked-by-posting-station-name-list-to-stations-idlist-endpoint-null-map-value-for-a-name-selects-not-exists-branch",
+   "chunkClass": "prompt-literal-disjoint"
+  }
+ ]
+}

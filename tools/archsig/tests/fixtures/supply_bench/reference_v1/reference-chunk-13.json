@@ -1,0 +1,549 @@
+{
+ "schema": "archmap-reference-slice/v1",
+ "id": "reference:train-ticket-chunk-13",
+ "version": "1",
+ "ruleSetVersion": "prompt-pack@git-blob:5e28afae2ac499b58c59337a45c5242d5b6bb0f0",
+ "atomMatchKeySpec": "kind | NFC(trim(subject) normalized to <source-dir>.<Class> from refs) | axis | predicate? | object? (atom-match-key@2)",
+ "atoms": [
+  {
+   "atomId": "atom:authority:order.config.SecurityConfig:permitsUnauthenticated:order-base",
+   "matchKey": "authority|ts-order-service.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/orderservice/order/**",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:authority:other.config.SecurityConfig:permitsUnauthenticated:orderOther-base",
+   "matchKey": "authority|ts-order-other-service.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/orderOtherService/orderOther/**",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:authority:ts-order-other-service.securityconfig:allowscrossorigin-corsconfigurer",
+   "matchKey": "authority|ts-order-other-service.SecurityConfig|authority|allowsCrossOrigin|corsConfigurer WebMvcConfigurer bean registers /** with allowedOrigins/Methods/Headers=ALL, allowCredentials=false, maxAge=3600",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:authority:ts-order-other-service.securityconfig:permitsunauthenticated-swagger",
+   "matchKey": "authority|ts-order-other-service.SecurityConfig|authority|permitsUnauthenticated|permit-all on /swagger-ui.html, /webjars/**, /images/**, /configuration/**, /swagger-resources/**, /v2/**",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:authority:ts-order-other-service.securityconfig:requiresrole-admin-orderother-admin",
+   "matchKey": "authority|ts-order-other-service.SecurityConfig|authority|requiresRole|POST/PUT on /api/v1/orderOtherService/orderOther/admin require ADMIN role only",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:authority:ts-order-other-service.securityconfig:requiresrole-post-put-delete-orderother",
+   "matchKey": "authority|ts-order-other-service.SecurityConfig|authority|requiresRole|POST/PUT/DELETE on /api/v1/orderOtherService/orderOther require ADMIN or USER role",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:authority:ts-order-service.ordercontroller:allowscrossorigin-endpoint-annotations",
+   "matchKey": "authority|ts-order-service.OrderController|authority|allowsCrossOrigin|14 of 16 mapped methods carry @CrossOrigin(origins=\"*\"); home and getTicketListByDateAndTripId do not",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:authority:ts-order-service.securityconfig:allowscrossorigin-corsconfigurer",
+   "matchKey": "authority|ts-order-service.SecurityConfig|authority|allowsCrossOrigin|corsConfigurer WebMvcConfigurer bean registers /** with allowedOrigins/Methods/Headers=ALL, allowCredentials=false, maxAge=3600",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:authority:ts-order-service.securityconfig:permitsunauthenticated-swagger",
+   "matchKey": "authority|ts-order-service.SecurityConfig|authority|permitsUnauthenticated|permit-all on /swagger-ui.html, /webjars/**, /images/**, /configuration/**, /swagger-resources/**, /v2/**",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:authority:ts-order-service.securityconfig:requiresrole-admin-order-admin",
+   "matchKey": "authority|ts-order-service.SecurityConfig|authority|requiresRole|POST/PUT on /api/v1/orderservice/order/admin require ADMIN role only",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:authority:ts-order-service.securityconfig:requiresrole-post-put-delete-order",
+   "matchKey": "authority|ts-order-service.SecurityConfig|authority|requiresRole|POST/PUT/DELETE on /api/v1/orderservice/order require ADMIN or USER role",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-notification-service.notificationserviceimpl:handlescommand-ordercancelsuccess",
+   "matchKey": "capability|ts-notification-service.NotificationServiceImpl|capability|handlesCommand|OrderCancelSuccess",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-notification-service.notificationserviceimpl:handlescommand-orderchangedsuccess",
+   "matchKey": "capability|ts-notification-service.NotificationServiceImpl|capability|handlesCommand|OrderChangedSuccess",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-notification-service.notificationserviceimpl:handlescommand-ordercreatesuccess",
+   "matchKey": "capability|ts-notification-service.NotificationServiceImpl|capability|handlesCommand|OrderCreateSuccess",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-notification-service.notificationserviceimpl:handlescommand-preservesuccess",
+   "matchKey": "capability|ts-notification-service.NotificationServiceImpl|capability|handlesCommand|PreserveSuccess",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-admin-create",
+   "matchKey": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|POST /api/v1/orderOtherService/orderOther/admin",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-admin-update",
+   "matchKey": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|PUT /api/v1/orderOtherService/orderOther/admin",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-calculatesold",
+   "matchKey": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/orderOther/{travelDate}/{trainNumber}",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-create",
+   "matchKey": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|POST /api/v1/orderOtherService/orderOther",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-delete",
+   "matchKey": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|DELETE /api/v1/orderOtherService/orderOther/{orderId}",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-findall",
+   "matchKey": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/orderOther",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-getbyid",
+   "matchKey": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/orderOther/{orderId}",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-modify",
+   "matchKey": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/orderOther/status/{orderId}/{status}",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-pay",
+   "matchKey": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/orderOther/orderPay/{orderId}",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-price",
+   "matchKey": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/orderOther/price/{orderId}",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-query",
+   "matchKey": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|POST /api/v1/orderOtherService/orderOther/query",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-refresh",
+   "matchKey": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|POST /api/v1/orderOtherService/orderOther/refresh",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-save",
+   "matchKey": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|PUT /api/v1/orderOtherService/orderOther",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-security",
+   "matchKey": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/orderOther/security/{checkDate}/{accountId}",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-tickets",
+   "matchKey": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|POST /api/v1/orderOtherService/orderOther/tickets",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-welcome",
+   "matchKey": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/welcome",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-admin-create",
+   "matchKey": "capability|ts-order-service.OrderController|capability|exposesEndpoint|POST /api/v1/orderservice/order/admin",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-admin-update",
+   "matchKey": "capability|ts-order-service.OrderController|capability|exposesEndpoint|PUT /api/v1/orderservice/order/admin",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-calculatesold",
+   "matchKey": "capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order/{travelDate}/{trainNumber}",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-create",
+   "matchKey": "capability|ts-order-service.OrderController|capability|exposesEndpoint|POST /api/v1/orderservice/order",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-delete",
+   "matchKey": "capability|ts-order-service.OrderController|capability|exposesEndpoint|DELETE /api/v1/orderservice/order/{orderId}",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-findall",
+   "matchKey": "capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-getbyid",
+   "matchKey": "capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order/{orderId}",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-modify",
+   "matchKey": "capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order/status/{orderId}/{status}",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-pay",
+   "matchKey": "capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order/orderPay/{orderId}",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-price",
+   "matchKey": "capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order/price/{orderId}",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-query",
+   "matchKey": "capability|ts-order-service.OrderController|capability|exposesEndpoint|POST /api/v1/orderservice/order/query",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-refresh",
+   "matchKey": "capability|ts-order-service.OrderController|capability|exposesEndpoint|POST /api/v1/orderservice/order/refresh",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-save",
+   "matchKey": "capability|ts-order-service.OrderController|capability|exposesEndpoint|PUT /api/v1/orderservice/order",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-security",
+   "matchKey": "capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order/security/{checkDate}/{accountId}",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-tickets",
+   "matchKey": "capability|ts-order-service.OrderController|capability|exposesEndpoint|POST /api/v1/orderservice/order/tickets",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-welcome",
+   "matchKey": "capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/welcome",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:notification.mq.RabbitSend",
+   "matchKey": "component|ts-notification-service.RabbitSend|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:notification.repository.NotifyRepository",
+   "matchKey": "component|ts-notification-service.NotifyRepository|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:notification.service.MailService",
+   "matchKey": "component|ts-notification-service.MailService|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:notification.service.NotificationService",
+   "matchKey": "component|ts-notification-service.NotificationService|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:notification.service.NotificationServiceImpl",
+   "matchKey": "component|ts-notification-service.NotificationServiceImpl|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:order.OrderApplication",
+   "matchKey": "component|ts-order-service.OrderApplication|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:order.config.SecurityConfig",
+   "matchKey": "component|ts-order-service.SecurityConfig|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:order.controller.OrderController",
+   "matchKey": "component|ts-order-service.OrderController|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:other.OrderOtherApplication",
+   "matchKey": "component|ts-order-other-service.OrderOtherApplication|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:other.config.SecurityConfig",
+   "matchKey": "component|ts-order-other-service.SecurityConfig|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:other.controller.OrderOtherController",
+   "matchKey": "component|ts-order-other-service.OrderOtherController|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:other.entity.Order",
+   "matchKey": "component|ts-order-other-service.Order|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:other.entity.OrderAlterInfo",
+   "matchKey": "component|ts-order-other-service.OrderAlterInfo|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:other.entity.QueryInfo",
+   "matchKey": "component|ts-order-other-service.QueryInfo|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:other.init.InitData",
+   "matchKey": "component|ts-order-other-service.InitData|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:other.repository.OrderOtherRepository",
+   "matchKey": "component|ts-order-other-service.OrderOtherRepository|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:other.service.OrderOtherService",
+   "matchKey": "component|ts-order-other-service.OrderOtherService|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:other.service.OrderOtherServiceImpl",
+   "matchKey": "component|ts-order-other-service.OrderOtherServiceImpl|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:ts-notification-service",
+   "matchKey": "component|ts-notification-service.ts-notification-service|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:component:ts-order-other-service",
+   "matchKey": "component|ts-order-other-service.ts-order-other-service|static||",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:contract:ts-order-other-service.order:equals-field-comparison-set",
+   "matchKey": "contract|ts-order-other-service.Order|specification|shapedAs|equals() compares own getBoughtDate() against both other.getBoughtDate() and other.getTravelDate() (own getTravelDate() is never invoked in equals()), plus getTravelTime() vs other.getTravelTime(), accountId, contactsName, contactsDocumentNumber, documentType, trainNumber, coachNumber, seatClass, seatNumber, from, to, status, price",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:contract:ts-order-other-service.orderalterinfo:shapedas",
+   "matchKey": "contract|ts-order-other-service.OrderAlterInfo|specification|shapedAs|accountId, previousOrderId, loginToken, newOrderInfo composite alter-order request",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:contract:ts-order-other-service.orderotherserviceimpl:create-duplicate-check",
+   "matchKey": "contract|ts-order-other-service.OrderOtherServiceImpl|specification|requires|create() and addNewOrder() reject (Response status 0) when accountOrders.contains(order) is true via Order.equals, else assign a new random UUID id before saving",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:contract:ts-order-other-service.queryinfo:date-range-and-state-query-flags",
+   "matchKey": "contract|ts-order-other-service.QueryInfo|specification|ensures|enableTravelDateQuery/enableBoughtDateQuery/enableStateQuery booleans and their paired date-range/state fields are set together by the enable*/disable* methods, and OrderOtherServiceImpl.queryOrders reads the three enable flags to decide which comparisons to run",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:effect:ts-notification-service.mailservice:callsprovider-smtp",
+   "matchKey": "effect|ts-notification-service.MailService|effect|callsProvider|JavaMailSender.send() delivers to the configured SMTP provider (smtp.163.com per application.yml), body rendered from a freemarker template loaded from classpath /templates",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:effect:ts-notification-service.rabbitsend:publishes",
+   "matchKey": "effect|ts-notification-service.RabbitSend|effect|publishes|AMQP queue notification.config.Queues.queueName via AmqpTemplate.convertAndSend, val logged before send",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:effect:ts-order-other-service.initdata:writesto",
+   "matchKey": "effect|ts-order-other-service.InitData|effect|writesTo|seeds orders_other via OrderOtherService.create with a fixed order1 (price=\"100\", status=OrderStatus.PAID.getCode()) on application startup (CommandLineRunner.run)",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:effect:ts-order-other-service.orderotherserviceimpl:callsprovider-ts-station-service",
+   "matchKey": "effect|ts-order-other-service.OrderOtherServiceImpl|effect|callsProvider|POST http://ts-station-service/api/v1/stationservice/stations/namelist via RestTemplate.exchange, host built by string concatenation with the Nacos-registered service name",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:relation:ts-notification-service.notificationserviceimpl:dependson-mailservice",
+   "matchKey": "relation|ts-notification-service.NotificationServiceImpl|relation|dependsOn|ts-notification-service.MailService",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:relation:ts-notification-service:dependson-nacos-discovery",
+   "matchKey": "relation|ts-notification-service.ts-notification-service|relation|dependsOn|Nacos discovery server-addr list, default headless nacos-0..2 cluster hosts",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:relation:ts-order-other-service.initdata:calls-orderotherservice-create",
+   "matchKey": "relation|ts-order-other-service.InitData|relation|calls|ts-order-other-service.OrderOtherService:create",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:relation:ts-order-other-service.orderalterinfo:dependson-order",
+   "matchKey": "relation|ts-order-other-service.OrderAlterInfo|relation|dependsOn|ts-order-other-service.Order",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:relation:ts-order-other-service.orderothercontroller:calls-orderotherservice",
+   "matchKey": "relation|ts-order-other-service.OrderOtherController|relation|calls|ts-order-other-service.OrderOtherService",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:relation:ts-order-other-service.orderotherserviceimpl:dependson-orderotherrepository",
+   "matchKey": "relation|ts-order-other-service.OrderOtherServiceImpl|relation|dependsOn|ts-order-other-service.OrderOtherRepository",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:relation:ts-order-service.ordercontroller:dependson-orderservice",
+   "matchKey": "relation|ts-order-service.OrderController|relation|dependsOn|ts-order-service.OrderService",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:order-other-surface:cech-section-money-amount",
+   "matchKey": "semantic|ctx:order-other-surface|cech|sectionValue|section=money-amount:string-passthrough-unparsed",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:order-other-surface:cech-section-order-status-code",
+   "matchKey": "semantic|ctx:order-other-surface|cech|sectionValue|section=order-status-code:enum-orderstatus-getcode-accessor",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:ts-notification-service.application-yml:identifiedby-mail-password-fallback",
+   "matchKey": "semantic|ts-notification-service.application-yml|semantic|identifiedBy|spring.mail.password falls back to the literal default GZKSCXHBOLKMCLDQ when the email_password env var is unset",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:ts-notification-service.notificationserviceimpl:meansinuse-boolean-return-branch",
+   "matchKey": "semantic|ts-notification-service.NotificationServiceImpl|semantic|meansInUse|boolean true selects the mail-dispatch-attempted branch (sendEmail did not throw), false selects the caught-exception branch with an error log, symmetric across all four notify methods",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:ts-notification-service.notificationserviceimpl:meansinuse-order-cancel-success-template",
+   "matchKey": "semantic|ts-notification-service.NotificationServiceImpl|semantic|meansInUse|template=order_cancel_success.ftl selected for orderCancelSuccess; model reduced to username and price only (no startPlace/endPlace/startTime/date/seatClass/seatNumber)",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:ts-notification-service.notificationserviceimpl:meansinuse-order-changed-success-template",
+   "matchKey": "semantic|ts-notification-service.NotificationServiceImpl|semantic|meansInUse|template=order_changed_success.ftl selected for orderChangedSuccess; model shape (username/startPlace/endPlace/startTime/date/seatClass/seatNumber/orderNumber) identical to orderCreateSuccess",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:ts-notification-service.notificationserviceimpl:meansinuse-order-create-success-template",
+   "matchKey": "semantic|ts-notification-service.NotificationServiceImpl|semantic|meansInUse|template=order_create_success.ftl selected for orderCreateSuccess; model adds orderNumber in place of preserveSuccess's price field",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:ts-notification-service.notificationserviceimpl:meansinuse-preserve-success-template",
+   "matchKey": "semantic|ts-notification-service.NotificationServiceImpl|semantic|meansInUse|template=preserve_success.ftl selected for preserveSuccess; model carries username/startPlace/endPlace/startTime/date/seatClass/seatNumber/price",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:ts-order-other-service.application-yml:identifiedby-datasource-password-fallback",
+   "matchKey": "semantic|ts-order-other-service.application-yml|semantic|identifiedBy|spring.datasource.password falls back to the literal default root when the ORDER_OTHER_MYSQL_PASSWORD env var is unset",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:ts-order-other-service.application-yml:meansinuse-active-datasource-no-active-rabbit-binding",
+   "matchKey": "semantic|ts-order-other-service.application-yml|semantic|meansInUse|the MySQL datasource block is active (uncommented) while the rabbitmq host/listener and cloud.stream binding block is fully commented out",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:ts-order-other-service.order:meansinuse-price-string-default",
+   "matchKey": "semantic|ts-order-other-service.Order|semantic|meansInUse|String price field defaults to the literal \"0.0\" in the no-arg constructor",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:ts-order-other-service.order:meansinuse-status-default-paid",
+   "matchKey": "semantic|ts-order-other-service.Order|semantic|meansInUse|int status field defaults to OrderStatus.PAID.getCode() in the no-arg constructor",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:ts-order-other-service.orderotherrepository:identifiedby",
+   "matchKey": "semantic|ts-order-other-service.OrderOtherRepository|semantic|identifiedBy|Order rows are looked up by primary key id, by accountId, or by the travelDate+trainNumber composite",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:ts-order-other-service.orderotherserviceimpl:meansinuse-envelope-status-branches",
+   "matchKey": "semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|Response envelope status=1 selects the result-carrying success branch, status=0 selects the not-found-or-rejected branch (data null on getSoldTickets/findOrderById/alterOrder/saveChanges; create returns the colliding order object as data on its status=0 branch)",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:ts-order-other-service.orderotherserviceimpl:meansinuse-price-string-passthrough",
+   "matchKey": "semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|order.getPrice() String value is returned as-is in Response data with no parsing or arithmetic; getOrderPrice's not-found branch returns the literal string \"-1.0\"",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:ts-order-other-service.orderotherserviceimpl:meansinuse-queryorders-status-filter",
+   "matchKey": "semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|when qi.isEnableStateQuery() is true, tempOrder.getStatus() is compared for exact equality against qi.getState() to select the statePassFlag-passing branch in queryOrders",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:ts-order-other-service.orderotherserviceimpl:statusgates-excluded-from-sold-tally",
+   "matchKey": "semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|statusGates|orders with getStatus() >= OrderStatus.CHANGE.getCode() are excluded (continue) from the sold-ticket seat-class tally in queryAlreadySoldOrders",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:ts-order-other-service.orderotherserviceimpl:statusgates-valid-order-for-security-check",
+   "matchKey": "semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|statusGates|in checkSecurityAboutOrder, an order is counted as valid (countTotalValidOrder incremented) when its status equals OrderStatus.NOTPAID, PAID, or COLLECTED code",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:ts-order-other-service.queryinfo:meansinuse-disablestatequery-clears-traveldateflag",
+   "matchKey": "semantic|ts-order-other-service.QueryInfo|semantic|meansInUse|disableStateQuery() sets enableTravelDateQuery=false and state=-1, but never sets enableStateQuery=false",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:ts-order-other-service.queryinfo:meansinuse-enablestatequery-target-status",
+   "matchKey": "semantic|ts-order-other-service.QueryInfo|semantic|meansInUse|enableStateQuery(int targetStatus) stores the argument in the state field, later read by OrderOtherServiceImpl.queryOrders as the order-status filter target",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:ts-order-other-service.securityconfig:meansinuse-matcher-declaration-order",
+   "matchKey": "semantic|ts-order-other-service.SecurityConfig|semantic|meansInUse|the broad permit-all matcher for /api/v1/orderOtherService/orderOther/** (line 74) is declared before the method-restricted matchers for the same base path (lines 75-79) -- opposite declaration order from ts-order-service.SecurityConfig",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:semantic:ts-order-service.securityconfig:meansinuse-matcher-declaration-order",
+   "matchKey": "semantic|ts-order-service.SecurityConfig|semantic|meansInUse|method-restricted matchers for POST/PUT/DELETE on /api/v1/orderservice/order and /admin (lines 75-79) are declared before the broad permit-all matcher for /api/v1/orderservice/order/** (line 80)",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:state:ts-notification-service.notifyrepository:persistsin",
+   "matchKey": "state|ts-notification-service.NotifyRepository|state|persistsIn|NotifyInfo rows keyed by String id via CrudRepository, exposing findById, findAll, deleteById",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:state:ts-order-other-service.order:persistsin",
+   "matchKey": "state|ts-order-other-service.Order|state|persistsIn|orders_other table row identified by a uuid id generated via the jpa-uuid GenericGenerator",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:state:ts-order-other-service.orderotherrepository:persistsin-crud-surface",
+   "matchKey": "state|ts-order-other-service.OrderOtherRepository|state|persistsIn|CrudRepository<Order,String> exposing findById, findAll, findByAccountId, findByTravelDateAndTrainNumber, deleteById",
+   "chunkClass": "tuned"
+  },
+  {
+   "atomId": "atom:state:ts-order-other-service.orderotherrepository:persistsin-orders-other-table",
+   "matchKey": "state|ts-order-other-service.OrderOtherRepository|state|persistsIn|backs the orders_other table via the ts-order-other-service.Order @Table(name=\"orders_other\") entity",
+   "chunkClass": "tuned"
+  }
+ ]
+}

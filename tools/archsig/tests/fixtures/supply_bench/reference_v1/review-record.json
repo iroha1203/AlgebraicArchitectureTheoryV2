@@ -1,0 +1,169 @@
+{
+ "schema": "archmap-reference-review-record/v1",
+ "id": "review:reference-train-ticket-v1",
+ "referenceVersions": {
+  "reference:train-ticket-chunk-04": "1",
+  "reference:train-ticket-chunk-13": "1",
+  "reference:train-ticket-chunk-01": "1"
+ },
+ "derivation": "Sliced from the fullbuild adjudicated ArchMap (Issue #3545 evidence bundle, 2,819 adjudications with full source rereads) by the first-ref rule: an atom belongs to a chunk when its first ref path is in the chunk's row set. Match keys are the atom-match-key@2 values computed by archsig extraction-diff self-diff over the slice packets.",
+ "independentReread": {
+  "date": "2026-07-21",
+  "reviewerModel": "sonnet (three independent subagents, one per chunk)",
+  "sourceCheckout": "FudanSELab/train-ticket@313886e99befb94be6cd45f085c98e0019f59829, all 60 corpus files sha256-verified against corpus_v1.json",
+  "verdicts": {
+   "chunk-04": {
+    "atoms": 84,
+    "confirmed": 83,
+    "questioned": 1,
+    "unverifiable": 0
+   },
+   "chunk-13": {
+    "atoms": 108,
+    "confirmed": 106,
+    "questioned": 2,
+    "unverifiable": 0
+   },
+   "chunk-01": {
+    "atoms": 135,
+    "confirmed": 128,
+    "questioned": 7,
+    "unverifiable": 0
+   }
+  }
+ },
+ "humanAcceptance": {
+  "date": "2026-07-21",
+  "decision": "accepted with the ten corrections below applied"
+ },
+ "corrections": [
+  {
+   "atomId": "atom:semantic:basic-basicserviceimpl:statusgates-responseenvelope",
+   "chunk": "chunk-04",
+   "previousObject": "status-1-on-result-carrying-branch-status-0-on-station-traintype-route-price-or-not-found-rejected-branch-covering-queryfortravel-queryfortravels-and-queryforstationid",
+   "correctedObject": "status-1-on-result-carrying-branch-status-0-on-station-traintype-route-or-not-found-rejected-branch-covering-queryfortravel-queryfortravels-and-queryforstationid",
+   "basis": "review: no status=0 branch is selected by price computation; the price try/catch installs fallback values without touching status (BasicServiceImpl.java L100-113, L293-306)"
+  },
+  {
+   "atomId": "atom:contract:ts-order-other-service.order:equals-field-comparison-set",
+   "chunk": "chunk-13",
+   "previousObject": "equals() compares own getBoughtDate() against both other.getBoughtDate() and other.getTravelDate() (own getTravelDate() is compared only to other.getTravelTime(), never to other.getTravelDate()), plus getTravelTime() vs other.getTravelTime(), accountId, contactsName, contactsDocumentNumber, documentType, trainNumber, coachNumber, seatClass, seatNumber, from, to, status, price",
+   "correctedObject": "equals() compares own getBoughtDate() against both other.getBoughtDate() and other.getTravelDate() (own getTravelDate() is never invoked in equals()), plus getTravelTime() vs other.getTravelTime(), accountId, contactsName, contactsDocumentNumber, documentType, trainNumber, coachNumber, seatClass, seatNumber, from, to, status, price",
+   "basis": "review: the parenthetical described a comparison that does not exist; own getTravelDate() is never called in equals() (Order.java L95-97)"
+  },
+  {
+   "atomId": "atom:semantic:ts-order-other-service.orderotherserviceimpl:meansinuse-envelope-status-branches",
+   "chunk": "chunk-13",
+   "previousObject": "Response envelope status=1 selects the result-carrying success branch, status=0 selects the not-found-or-rejected branch (data typically null or a sentinel), consistently across getSoldTickets/findOrderById/create/alterOrder/saveChanges",
+   "correctedObject": "Response envelope status=1 selects the result-carrying success branch, status=0 selects the not-found-or-rejected branch (data null on getSoldTickets/findOrderById/alterOrder/saveChanges; create returns the colliding order object as data on its status=0 branch)",
+   "basis": "review: create() is a counterexample to \"data typically null or a sentinel\" - its status=0 branch returns the colliding order object (OrderOtherServiceImpl.java L90-103)"
+  },
+  {
+   "atomId": "atom:effect:ts-admin-travel-service-admintravelapplication:registers-with-discovery-provider",
+   "chunk": "chunk-01",
+   "previousObject": "nacos-discovery-registration-on-startup",
+   "correctedObject": "discovery-client-registration-on-startup-via-enablediscoveryclient",
+   "basis": "review: in-chunk refs only show @EnableDiscoveryClient; the nacos-specific reading needs application.yml which is outside this chunk (AdminTravelApplication.java L18-23)"
+  },
+  {
+   "atomId": "atom:relation:ts-admin-basic-info-service-adminbasicinfocontroller:dependson",
+   "chunk": "chunk-01",
+   "previousObject": null,
+   "correctedObject": "AdminBasicInfoService",
+   "basis": "review: object was absent; the injected dependency is @Autowired AdminBasicInfoService (AdminBasicInfoController.java L25-26)"
+  },
+  {
+   "atomId": "atom:relation:ts-admin-basic-info-service-adminbasicinfoserviceimpl:implements",
+   "chunk": "chunk-01",
+   "previousObject": null,
+   "correctedObject": "AdminBasicInfoService",
+   "basis": "review: object was absent; the class declares implements AdminBasicInfoService (AdminBasicInfoServiceImpl.java L24-25)"
+  },
+  {
+   "atomId": "atom:relation:ts-admin-order-service-adminordercontroller:dependson",
+   "chunk": "chunk-01",
+   "previousObject": null,
+   "correctedObject": "AdminOrderService",
+   "basis": "review: object was absent; the injected dependency is the AdminOrderService interface"
+  },
+  {
+   "atomId": "atom:relation:ts-admin-order-service-adminorderserviceimpl:implements",
+   "chunk": "chunk-01",
+   "previousObject": null,
+   "correctedObject": "AdminOrderService",
+   "basis": "review: object was absent; the class declares implements AdminOrderService"
+  },
+  {
+   "atomId": "atom:relation:ts-admin-route-service-adminroutecontroller:dependson",
+   "chunk": "chunk-01",
+   "previousObject": null,
+   "correctedObject": "AdminRouteService",
+   "basis": "review: object was absent; the injected dependency is the AdminRouteService interface"
+  },
+  {
+   "atomId": "atom:relation:ts-admin-route-service-adminrouteserviceimpl:implements",
+   "chunk": "chunk-01",
+   "previousObject": null,
+   "correctedObject": "AdminRouteService",
+   "basis": "review: object was absent; the class declares implements AdminRouteService"
+  }
+ ],
+ "revisionCandidates": [
+  {
+   "chunk": "chunk-04",
+   "source": "ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java",
+   "observation": "createDefaultAuthUser catches the UserOperationException from checkUserCreateInfo, logs it, and still saves the user; rejected input is persisted (L60-66)"
+  },
+  {
+   "chunk": "chunk-04",
+   "source": "ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java",
+   "observation": "commented-out INFO log would print username, password, and verifyCode in full (L63); distinct from the recorded WARN-level credential log"
+  },
+  {
+   "chunk": "chunk-04",
+   "source": "ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java",
+   "observation": "saveUser has a semantic atom (noop body) but no handlesCommand capability atom, unlike the other three interface methods"
+  },
+  {
+   "chunk": "chunk-04",
+   "source": "ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java",
+   "observation": "the two success branches return asymmetric payloads: data 'test not null' on the ts-order-service branch (L92) vs null on the ts-order-other-service branch (L127)"
+  },
+  {
+   "chunk": "chunk-13",
+   "source": "ts-notification-service/src/main/resources/application.yml",
+   "observation": "spring.datasource.password falls back to default 'root' when the env var is unset (L29); the same pattern was recorded for order-other-service but not here"
+  },
+  {
+   "chunk": "chunk-13",
+   "source": "ts-order-other-service/src/main/java/other/controller/OrderOtherController.java",
+   "observation": "14 of 16 methods carry @CrossOrigin(origins=\"*\") with two exceptions, same pattern as the recorded OrderController authority atom, but unrecorded for this controller"
+  },
+  {
+   "chunk": "chunk-13",
+   "source": "ts-order-other-service/src/main/java/other/entity/Order.java",
+   "observation": "hashCode() uses only id while equals() never reads id, so equal objects can carry different hash codes (L94-117)"
+  },
+  {
+   "chunk": "chunk-13",
+   "source": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java",
+   "observation": "@Autowired DiscoveryClient field is never used (L38-39)"
+  },
+  {
+   "chunk": "chunk-13",
+   "source": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java",
+   "observation": "deleteOrder calls UUID.fromString(orderId) unguarded and throws IllegalArgumentException on non-UUID input, unlike the not-found handling of sibling methods (L417)"
+  },
+  {
+   "chunk": "chunk-01",
+   "source": "ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java",
+   "observation": "all four methods accept HttpHeaders but build downstream HttpEntity with null, never forwarding headers; AdminBasicInfoServiceImpl forwards them consistently"
+  },
+  {
+   "chunk": "chunk-01",
+   "source": "ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java",
+   "observation": "headers forwarding splits by method: getAllOrders and deleteOrder discard headers (HttpEntity(null)) while addOrder and updateOrder forward them"
+  }
+ ],
+ "claimBoundary": "The reference records the adjudicated candidate union of the fullbuild dual-pass supply plus the corrections above. It does not claim source-level completeness; facts missed by both passes are outside its vocabulary. Revision candidates are recorded for a future version and are not part of v1."
+}
