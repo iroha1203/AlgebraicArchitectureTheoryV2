@@ -73,9 +73,15 @@ function validateArtifactRows(packet, summary, insight, issues) {
     const path = `${FILES.packet}.structuralVerdict[${position}]`;
     if (!isRecord(row)) return;
     if (!new Set(["measured_zero", "measured_nonzero", "unmeasured", "unknown", "not_computed"]).has(row.verdict)) issues.push(issue(`${path}.verdict`, `${path}.verdict is not an ArchSig structural verdict.`, null, row.verdict));
-    requireRecord(row.target, `${path}.target`, issues);
-    requireRecord(row.verdictData, `${path}.verdictData`, issues);
-    requireRecord(row.evidence, `${path}.evidence`, issues);
+    if (requireRecord(row.target, `${path}.target`, issues)) {
+      for (const field of ["kind", "coverRef", "coefficient", "classRef"]) requireString(row.target[field], `${path}.target.${field}`, issues);
+      requireRecord(row.target.scopeSize, `${path}.target.scopeSize`, issues);
+    }
+    if (requireRecord(row.verdictData, `${path}.verdictData`, issues)) {
+      for (const field of ["inScope", "zero", "nonZero"]) if (typeof row.verdictData[field] !== "boolean") issues.push(issue(`${path}.verdictData.${field}`, `${path}.verdictData.${field} must be boolean.`));
+      requireString(row.verdictData.methodStatus, `${path}.verdictData.methodStatus`, issues);
+    }
+    if (requireRecord(row.evidence, `${path}.evidence`, issues)) for (const field of ["computedInvariantRefs", "sourceRefs"]) requireStringArray(row.evidence[field], `${path}.evidence.${field}`, issues);
   });
   requireObjectArray(packet.computedInvariants, `${FILES.packet}.computedInvariants`, ["invariantId", "kind"], issues);
   requireObjectArray(packet.analyticReadings, `${FILES.packet}.analyticReadings`, ["readingId", "evaluator", "claimStatus", "fidelity"], issues);
@@ -83,7 +89,10 @@ function validateArtifactRows(packet, summary, insight, issues) {
   requireObjectArray(packet.suppliedData, `${FILES.packet}.suppliedData`, ["suppliedId", "kind", "sourceArtifactRef"], issues);
   requireObjectArray(packet.boundaryStatements, `${FILES.packet}.boundaryStatements`, ["id", "kind", "reason", "text"], issues);
   requireObjectArray(insight.insightCards, `${FILES.insight}.insightCards`, ["id", "kind", "title", "oneLine"], issues);
-  (insight.insightCards || []).forEach((row, position) => { if (isRecord(row)) requireRecord(row.evidence, `${FILES.insight}.insightCards[${position}].evidence`, issues); });
+  (insight.insightCards || []).forEach((row, position) => {
+    if (!isRecord(row) || !requireRecord(row.evidence, `${FILES.insight}.insightCards[${position}].evidence`, issues)) return;
+    for (const field of ["structuralVerdictRefs", "computedInvariantRefs", "analyticReadingRefs", "assumptionRefs", "sourceRefs", "atomRefs", "contextRefs", "coverRefs", "evaluatorRefs"]) requireStringArray(row.evidence[field], `${FILES.insight}.insightCards[${position}].evidence.${field}`, issues);
+  });
   requireObjectArray(insight.actionQueue, `${FILES.insight}.actionQueue`, ["id", "kind", "title", "reason"], issues);
   const verdicts = packet.structuralVerdict || [];
   const expectedCounts = {
@@ -93,6 +102,29 @@ function validateArtifactRows(packet, summary, insight, issues) {
     nonTerminalCount: verdicts.filter((row) => ["unmeasured", "unknown", "not_computed"].includes(row?.verdict)).length,
   };
   for (const [field, expected] of Object.entries(expectedCounts)) if (summary.structuralVerdictSummary?.[field] !== expected) issues.push(issue(`${FILES.summary}.structuralVerdictSummary.${field}`, `Summary ${field} does not match the measurement packet.`, expected, summary.structuralVerdictSummary?.[field]));
+  const assumptionCounts = {
+    checkedCount: packet.assumptions.filter((row) => row?.status === "checked").length,
+    assumedCount: packet.assumptions.filter((row) => row?.status === "assumed").length,
+    violatedCount: packet.assumptions.filter((row) => row?.status === "violated").length,
+  };
+  for (const [field, expected] of Object.entries(assumptionCounts)) if (summary.assumptionSummary?.[field] !== expected) issues.push(issue(`${FILES.summary}.assumptionSummary.${field}`, `Summary ${field} does not match the assumption ledger.`, expected, summary.assumptionSummary?.[field]));
+}
+
+function validateReferenceShapes(value, path, issues) {
+  if (Array.isArray(value)) return value.forEach((entry, position) => validateReferenceShapes(entry, `${path}[${position}]`, issues));
+  if (!isRecord(value)) return;
+  for (const [key, child] of Object.entries(value)) {
+    const childPath = `${path}.${key}`;
+    if (REF_FIELDS[key] || key === "targetRefs" || key === "edgeRefs" || key === "unobservedEdgeRefs") {
+      requireStringArray(child, childPath, issues);
+      continue;
+    }
+    if (SINGLE_REF_FIELDS[key] && child !== null && child !== undefined && typeof child !== "string") {
+      issues.push(issue(childPath, `${childPath} must be a string when present.`));
+      continue;
+    }
+    validateReferenceShapes(child, childPath, issues);
+  }
 }
 
 function deriveConclusion(packet) {
@@ -154,6 +186,16 @@ function deepFreeze(value) {
   if (!isRecord(value) && !Array.isArray(value)) return value;
   Object.values(value).forEach(deepFreeze);
   return Object.freeze(value);
+}
+
+function readonlyMap(map) {
+  return Object.freeze(new Proxy(map, {
+    get(target, property) {
+      if (["set", "delete", "clear"].includes(property)) return () => { throw new TypeError("Accepted analysis identity bridges are read-only."); };
+      const value = Reflect.get(target, property, target);
+      return typeof value === "function" ? value.bind(target) : value;
+    },
+  }));
 }
 
 function cloneDocuments(documents) {
@@ -234,6 +276,8 @@ function validateCoreShape(documents, issues) {
   for (const field of ["boundaryDigest", "claimValidation", "componentFingerprints", "copyBlocks", "gluingGeometry", "headline", "omittedDetailCounts", "outputArtifacts", "readThisFirst"]) requireRecord(insight[field], `${FILES.insight}.${field}`, issues);
   for (const field of ["guidedTours", "rankingBasis", "viewerVisualScenes"]) requireArray(insight[field], `${FILES.insight}.${field}`, issues);
   validateArtifactRows(packet, summary, insight, issues);
+  validateReferenceShapes(packet, FILES.packet, issues);
+  validateReferenceShapes(insight, FILES.insight, issues);
   const expectedConclusion = deriveConclusion(packet);
   for (const [path, received] of [
     [`${FILES.summary}.conclusion`, summary.conclusion],
@@ -255,6 +299,7 @@ function validateRunIdentity(documents, issues) {
   if (documents.summary.profileRef !== documents.packet.profile?.profileId) {
     issues.push(issue(`${FILES.summary}.profileRef`, "Summary profileRef does not match the measurement packet profile.", documents.packet.profile?.profileId, documents.summary.profileRef));
   }
+  if (documents.normalized.sourceArchmapRef !== documents.manifest.archmapInputPath) issues.push(issue(`${FILES.normalized}.sourceArchmapRef`, "Normalized ArchMap source reference does not match the run manifest.", documents.manifest.archmapInputPath, documents.normalized.sourceArchmapRef));
 }
 
 function bridgeRows(rows, sourceKey, normalizedKey, rawMap, filename, issues) {
@@ -330,6 +375,12 @@ function validateNormalizedBridge(normalized, index, issues) {
     if (canonicalJson(normalized[field]) !== canonicalJson(expected)) issues.push(issue(`${FILES.normalized}.${field}`, `Normalized ${field} do not match the deterministic ArchSig projection of the loaded ArchMap.`));
   }
   const raw = JSON.parse(index.canonicalJson);
+  const expectedDoctrine = raw.extractionDoctrineRef || {
+    doctrineId: "doctrine:aat-canonical@1",
+    fingerprint: "sha256:aat-canonical-doctrine-schema052",
+    components: ["V", "Gamma", "R", "rho", "E", "N"],
+  };
+  if (canonicalJson(normalized.extractionDoctrineRef) !== canonicalJson(expectedDoctrine)) issues.push(issue(`${FILES.normalized}.extractionDoctrineRef`, "Normalized extraction doctrine does not match the loaded ArchMap."));
   const expectedSummary = {
     atomCount: expectedAtoms.length,
     normalizedAtomCount: expectedAtoms.length,
@@ -364,14 +415,16 @@ function collectUnresolved(value, path, index, bridges, unresolved) {
   if (!isRecord(value)) return;
   for (const [key, child] of Object.entries(value)) {
     const childPath = `${path}.${key}`;
-    if (key === "edgeRefs" && Array.isArray(child)) {
+    if ((key === "edgeRefs" || key === "unobservedEdgeRefs") && Array.isArray(child)) {
       child.forEach((ref, position) => {
         const match = typeof ref === "string" && ref.match(/^(ctx:[^>]+)->(ctx:.+)$/);
         if (!match) { unresolved.push(issue(`${childPath}[${position}]`, `${ref} is not an explicit Context relation.`)); return; }
         const source = bridges.contexts.get(match[1]) || match[1];
         const target = bridges.contexts.get(match[2]) || match[2];
         const context = index.contextsById.get(source);
-        if (!context || !index.contextsById.has(target) || !(context.restrictsTo || []).includes(target)) unresolved.push(issue(`${childPath}[${position}]`, `${ref} does not resolve to an explicit ArchMap Context relation.`, null, ref));
+        const endpointsResolve = context && index.contextsById.has(target);
+        const relationResolves = key === "unobservedEdgeRefs" || (context?.restrictsTo || []).includes(target);
+        if (!endpointsResolve || !relationResolves) unresolved.push(issue(`${childPath}[${position}]`, `${ref} does not resolve to ${key === "edgeRefs" ? "an explicit ArchMap Context relation" : "loaded ArchMap Contexts"}.`, null, ref));
       });
       continue;
     }
@@ -533,13 +586,14 @@ export async function validateAnalysisBundle(documents, architectureIndex) {
   } else if (isRecord(gateComparisonDigest)) {
     throw new AnalysisValidationError("mismatch", [issue(`${FILES.gate}.inputDigests.comparisonReport`, "Gate report references a comparison report that was not loaded.")]);
   }
+  const acceptedBridges = Object.freeze(Object.fromEntries(Object.entries(bridges).map(([kind, map]) => [kind, readonlyMap(map)])));
   return deepFreeze({
     runId: documents.manifest.runId,
     toolVersion: documents.manifest.toolVersion,
     profileRef: documents.summary.profileRef,
     archmapDigest: currentArchmapDigest,
     packetDigest,
-    bridges,
+    bridges: acceptedBridges,
     artifacts: Object.fromEntries(Object.entries(documents).filter(([, value]) => value !== undefined)),
   });
 }
@@ -602,7 +656,22 @@ function parseDocument(text, filename) {
       const primitive = text.slice(position).match(/^(?:-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?|true|false|null)/)?.[0];
       if (!primitive) throw new SyntaxError(`Invalid value at ${position}`);
       position += primitive.length;
-      return primitive;
+      if (!/^-?[0-9]/.test(primitive)) return primitive;
+      if (!/[.eE]/.test(primitive)) {
+        const integer = BigInt(primitive);
+        if (integer > BigInt(Number.MAX_SAFE_INTEGER) || integer < BigInt(Number.MIN_SAFE_INTEGER)) throw new SyntaxError(`Integer outside the browser's exact range at ${position - primitive.length}`);
+        return integer.toString();
+      }
+      const number = Number(primitive);
+      if (!Number.isFinite(number)) throw new SyntaxError(`Non-finite number at ${position - primitive.length}`);
+      if (Object.is(number, -0)) return "-0.0";
+      if (number === 0) return "0.0";
+      const exponent = Math.floor(Math.log10(Math.abs(number)));
+      if (exponent >= -5 && exponent <= 15) {
+        const fixed = number.toString();
+        return Number.isInteger(number) ? `${fixed}.0` : fixed;
+      }
+      return number.toExponential().replace(/e([+-])0+([0-9])/, "e$1$2");
     };
     const canonical = scan();
     whitespace();
