@@ -1,0 +1,8 @@
+{
+  "schema": "archmap/v0.5.3",
+  "id": "malformed-architecture",
+  "sources": [],
+  "atoms": "not-an-array",
+  "contexts": [],
+  "covers": []
+}
