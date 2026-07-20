@@ -391,6 +391,32 @@ fn corpus_disjoint_chunk_stays_disjoint_from_prompt_pack_code_literals() {
     }
 }
 
+// Frozen reference slices (reference_v1) must stay parseable, atom-unique,
+// and sized as accepted (84 / 108 / 135 atoms, human acceptance 2026-07-21).
+#[test]
+fn frozen_reference_slices_parse_and_lock_accepted_shape() {
+    for (name, expected_atoms) in [
+        ("reference-chunk-04.json", 84usize),
+        ("reference-chunk-13.json", 108),
+        ("reference-chunk-01.json", 135),
+    ] {
+        let path = fixture("reference_v1").join(name);
+        let slice: archsig::ArchmapReferenceSliceV1 = serde_json::from_reader(
+            std::fs::File::open(&path).expect("frozen reference slice"),
+        )
+        .unwrap_or_else(|error| panic!("{name} must parse as a reference slice: {error}"));
+        assert_eq!(slice.schema, "archmap-reference-slice/v1");
+        assert_eq!(slice.version, "1");
+        assert_eq!(slice.atoms.len(), expected_atoms, "{name} atom count is frozen");
+        let ids: std::collections::BTreeSet<&str> =
+            slice.atoms.iter().map(|atom| atom.atom_id.as_str()).collect();
+        assert_eq!(ids.len(), slice.atoms.len(), "{name} atom ids must be unique");
+        let keys: std::collections::BTreeSet<&str> =
+            slice.atoms.iter().map(|atom| atom.match_key.as_str()).collect();
+        assert_eq!(keys.len(), slice.atoms.len(), "{name} match keys must be unique");
+    }
+}
+
 // A supplied reference with a pair lacking an alignment must not silently
 // skip adjudicated reference metrics.
 #[test]
