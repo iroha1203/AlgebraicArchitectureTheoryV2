@@ -29,6 +29,21 @@ structure CoefficientAutomorphism (C : MonodromyCoefficientObject.{z}) where
 
 namespace CoefficientAutomorphism
 
+/-- VI.定義10.1: coefficient automorphisms are equal componentwise. -/
+@[ext]
+theorem ext {C : MonodromyCoefficientObject.{z}}
+    {f g : CoefficientAutomorphism C}
+    (hOb : f.obAut = g.obAut)
+    (hSem : f.semAut = g.semAut)
+    (hEff : f.effAut = g.effAut) :
+    f = g := by
+  cases f
+  cases g
+  cases hOb
+  cases hSem
+  cases hEff
+  rfl
+
 /-- VI.定義10.1: identity coefficient automorphism. -/
 def id (C : MonodromyCoefficientObject.{z}) : CoefficientAutomorphism C where
   obAut := Equiv.refl C.Ob
@@ -38,19 +53,73 @@ def id (C : MonodromyCoefficientObject.{z}) : CoefficientAutomorphism C where
 /-- VI.定義10.1: composition of selected coefficient automorphisms. -/
 def comp {C : MonodromyCoefficientObject.{z}}
     (f g : CoefficientAutomorphism C) : CoefficientAutomorphism C where
-  obAut := f.obAut.trans g.obAut
-  semAut := f.semAut.trans g.semAut
-  effAut := f.effAut.trans g.effAut
+  obAut := g.obAut.trans f.obAut
+  semAut := g.semAut.trans f.semAut
+  effAut := g.effAut.trans f.effAut
+
+/-- VI.定義10.1: inverse selected coefficient automorphism. -/
+def inv {C : MonodromyCoefficientObject.{z}}
+    (f : CoefficientAutomorphism C) : CoefficientAutomorphism C where
+  obAut := f.obAut.symm
+  semAut := f.semAut.symm
+  effAut := f.effAut.symm
+
+/-- VI.定義10.1: multiplication uses the standard automorphism composition order. -/
+instance {C : MonodromyCoefficientObject.{z}} : Mul (CoefficientAutomorphism C) :=
+  ⟨comp⟩
+
+/-- VI.定義10.1: the identity element is the componentwise identity automorphism. -/
+instance {C : MonodromyCoefficientObject.{z}} : One (CoefficientAutomorphism C) :=
+  ⟨id C⟩
+
+/-- VI.定義10.1: inversion is the componentwise inverse automorphism. -/
+instance {C : MonodromyCoefficientObject.{z}} : Inv (CoefficientAutomorphism C) :=
+  ⟨inv⟩
+
+/-- VI.定義10.1: componentwise composition makes coefficient automorphisms a group. -/
+instance {C : MonodromyCoefficientObject.{z}} : Group (CoefficientAutomorphism C) where
+  mul_assoc := by
+    intro a b c
+    apply ext <;> apply Equiv.ext <;> intro x <;> rfl
+  one_mul := by
+    intro a
+    apply ext <;> apply Equiv.ext <;> intro x <;> rfl
+  mul_one := by
+    intro a
+    apply ext <;> apply Equiv.ext <;> intro x <;> rfl
+  inv_mul_cancel := by
+    intro a
+    apply ext
+    · apply Equiv.ext
+      intro x
+      change a.obAut.symm (a.obAut x) = x
+      exact a.obAut.symm_apply_apply x
+    · apply Equiv.ext
+      intro x
+      change a.semAut.symm (a.semAut x) = x
+      exact a.semAut.symm_apply_apply x
+    · apply Equiv.ext
+      intro x
+      change a.effAut.symm (a.effAut x) = x
+      exact a.effAut.symm_apply_apply x
+
+/-- VI.定義10.1: comparison with the standard Mathlib product of permutation groups. -/
+def standardProductMulEquiv (C : MonodromyCoefficientObject.{z}) :
+    CoefficientAutomorphism C ≃*
+      Equiv.Perm C.Ob × Equiv.Perm C.Sem × Equiv.Perm C.Eff where
+  toFun f := ⟨f.obAut, f.semAut, f.effAut⟩
+  invFun f := ⟨f.1, f.2.1, f.2.2⟩
+  left_inv _ := rfl
+  right_inv _ := rfl
+  map_mul' _ _ := rfl
 
 end CoefficientAutomorphism
 
 /--
 VI.定義10.1: selected monodromy action.
 
-`rho` is supplied representation data from the presented architecture
-fundamental group into the selected coefficient automorphisms. The identity and
-multiplication laws are explicit fields; no monodromy is inferred for
-unselected loops or unselected coefficient readings.
+`rho` is a representation of the Mathlib presented architecture fundamental
+group on the selected coefficient automorphisms.
 -/
 structure MonodromyAction {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {P : StratumReadingParameter S}
@@ -62,11 +131,7 @@ structure MonodromyAction {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {base : G.State}
     (Pi : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base) where
   coefficient : MonodromyCoefficientObject.{z}
-  rho : Pi.Pi1 -> CoefficientAutomorphism coefficient
-  rho_one : rho 1 = CoefficientAutomorphism.id coefficient
-  rho_mul :
-    ∀ gamma delta : Pi.Pi1,
-      rho (gamma * delta) = CoefficientAutomorphism.comp (rho gamma) (rho delta)
+  rho : Pi.pi1AAT →* CoefficientAutomorphism coefficient
 
 namespace MonodromyAction
 
@@ -80,45 +145,86 @@ variable {H : HomotopyGeneratorFamily.{u, v, w, x, y, z} R}
 variable {base : G.State}
 variable {Pi : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base}
 
+/--
+VI.定義10.1: construct the monodromy representation from selected generator
+actions that kill every selected relator.
+
+Implementation note: this uses `PresentedGroup.toGroup` directly, so the
+representation is defined on `Pi.pi1AAT` itself. No separately supplied
+comparison from the legacy `Pi.Pi1` carrier is used.
+-/
+def ofPresentedGenerators
+    (Pi : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base)
+    (coefficient : MonodromyCoefficientObject.{z})
+    (generatorAction :
+      Pi.presentation.Edge -> CoefficientAutomorphism coefficient)
+    (relators_map_to_one :
+      ∀ r ∈ Pi.presentedRelators, FreeGroup.lift generatorAction r = 1) :
+    MonodromyAction.{u, v, w, x, y, z} Pi where
+  coefficient := coefficient
+  rho := Pi.presentedGroupLift generatorAction relators_map_to_one
+
 /-- VI.定義10.1: evaluate `Mon_gamma` as the supplied representation. -/
-def Mon_gamma (M : MonodromyAction.{u, v, w, x, y, z} Pi) (gamma : Pi.Pi1) :
+def Mon_gamma (M : MonodromyAction.{u, v, w, x, y, z} Pi) (gamma : Pi.pi1AAT) :
     CoefficientAutomorphism M.coefficient :=
   M.rho gamma
 
 /-- VI.定義10.1: `Mon_gamma` is definitionally `rho gamma`. -/
 theorem mon_gamma_eq_rho
-    (M : MonodromyAction.{u, v, w, x, y, z} Pi) (gamma : Pi.Pi1) :
+    (M : MonodromyAction.{u, v, w, x, y, z} Pi) (gamma : Pi.pi1AAT) :
     M.Mon_gamma gamma = M.rho gamma :=
   rfl
+
+/-- VI.定義10.1: the presented representation evaluates a typed based loop word. -/
+theorem mon_gamma_presented_loop
+    (Pi : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base)
+    (coefficient : MonodromyCoefficientObject.{z})
+    (generatorAction :
+      Pi.presentation.Edge -> CoefficientAutomorphism coefficient)
+    (relators_map_to_one :
+      ∀ r ∈ Pi.presentedRelators, FreeGroup.lift generatorAction r = 1)
+    (word : Pi.FreeWord) :
+    (ofPresentedGenerators Pi coefficient generatorAction relators_map_to_one).Mon_gamma
+        (Pi.presentedQuotientMap word) =
+      FreeGroup.lift generatorAction (Pi.selectedFreeGroupWord word) :=
+  Pi.presentedGroupLift_word generatorAction relators_map_to_one word
+
+/-- VI.定義10.1: every selected relator has identity monodromy. -/
+theorem mon_gamma_presented_relator
+    (M : MonodromyAction.{u, v, w, x, y, z} Pi)
+    {word : Pi.FreeWord} (hword : Pi.Relator word) :
+    M.Mon_gamma (Pi.presentedQuotientMap word) = 1 := by
+  rw [Pi.presentedRelator_maps_to_identity hword]
+  exact M.rho.map_one
 
 /-- VI.定義10.1: monodromy sends the identity loop to identity coefficients. -/
 theorem rho_one_holds
     (M : MonodromyAction.{u, v, w, x, y, z} Pi) :
     M.rho 1 = CoefficientAutomorphism.id M.coefficient :=
-  M.rho_one
+  M.rho.map_one
 
 /-- VI.定義10.1: monodromy respects multiplication in the presented group. -/
 theorem rho_mul_holds
     (M : MonodromyAction.{u, v, w, x, y, z} Pi)
-    (gamma delta : Pi.Pi1) :
+    (gamma delta : Pi.pi1AAT) :
     M.rho (gamma * delta) =
       CoefficientAutomorphism.comp (M.rho gamma) (M.rho delta) :=
-  M.rho_mul gamma delta
+  M.rho.map_mul gamma delta
 
 /-- VI.定義10.3: obstruction-sheaf component of a selected monodromy action. -/
 def obstructionMonodromy
-    (M : MonodromyAction.{u, v, w, x, y, z} Pi) (gamma : Pi.Pi1) :
+    (M : MonodromyAction.{u, v, w, x, y, z} Pi) (gamma : Pi.pi1AAT) :
     M.coefficient.Ob ≃ M.coefficient.Ob :=
   (M.Mon_gamma gamma).obAut
 
 /-- VI.定義10.3: selected monodromy debt predicate. -/
 def MonodromyDebt
-    (M : MonodromyAction.{u, v, w, x, y, z} Pi) (gamma : Pi.Pi1) : Prop :=
+    (M : MonodromyAction.{u, v, w, x, y, z} Pi) (gamma : Pi.pi1AAT) : Prop :=
   M.obstructionMonodromy gamma ≠ (CoefficientAutomorphism.id M.coefficient).obAut
 
 /-- VI.定義10.3: monodromy debt is exactly nonidentity obstruction monodromy. -/
 theorem monodromyDebt_iff
-    (M : MonodromyAction.{u, v, w, x, y, z} Pi) (gamma : Pi.Pi1) :
+    (M : MonodromyAction.{u, v, w, x, y, z} Pi) (gamma : Pi.pi1AAT) :
     M.MonodromyDebt gamma ↔
       M.obstructionMonodromy gamma ≠
         (CoefficientAutomorphism.id M.coefficient).obAut :=
@@ -226,7 +332,7 @@ structure MeasuredSquareMonodromy {U : AtomCarrier.{u}} {A : ArchitectureObject 
     (K : PresentationTwoComplex.{u, v, w, x, y, z} H) where
   Axis : Type z
   square : K.TwoCell
-  boundaryElement : Pi.Pi1
+  boundaryElement : Pi.pi1AAT
   boundaryTransport : CoefficientAutomorphism M.coefficient
   boundaryTransport_eq_monodromy : boundaryTransport = M.Mon_gamma boundaryElement
   equalityDefect : Axis -> Nat

@@ -359,90 +359,241 @@ def toySelectedOperation : SelectedOperation toyOperationCategory false true whe
   op := true
   respectsLawUniverse := rfl
 
+/-- Selected loop operation used by the presented monodromy fixture. -/
+def toySelectedLoopOperation : SelectedOperation toyOperationCategory false false where
+  op := true
+  respectsLawUniverse := rfl
+
+/-- Selected loop operation at the second fixture state. -/
+def toySelectedTrueLoopOperation : SelectedOperation toyOperationCategory true true where
+  op := true
+  respectsLawUniverse := rfl
+
+/-- Selected operation whose formal inverse reaches the second fixture state from the base. -/
+def toySelectedReverseOperation : SelectedOperation toyOperationCategory true false where
+  op := true
+  respectsLawUniverse := rfl
+
+/-- Two composable selected loop operations at the fixture base state. -/
+def toySelectedLoopPath : OperationPath toyOperationCategory false false :=
+  OperationPath.cons toySelectedLoopOperation
+    (OperationPath.cons toySelectedLoopOperation
+      (OperationPath.nil (G := toyOperationCategory) false))
+
+/-- One selected loop operation at the fixture base state. -/
+def toySelectedLoopOncePath : OperationPath toyOperationCategory false false :=
+  OperationPath.cons toySelectedLoopOperation
+    (OperationPath.nil (G := toyOperationCategory) false)
+
+/-- Two-step loop at the second state, used by the reverse-reachable path cell. -/
+def toySelectedTrueLoopPath : OperationPath toyOperationCategory true true :=
+  OperationPath.cons toySelectedTrueLoopOperation
+    (OperationPath.cons toySelectedTrueLoopOperation
+      (OperationPath.nil (G := toyOperationCategory) true))
+
 theorem toyOperationCategory_operation_nontrivial :
     Nontrivial (toyOperationCategory.Operation false true) := by
   change Nontrivial Bool
   infer_instance
 
+/-- Selected path-cell and concrete two-step loop-relator family. -/
 def toyHomotopyGenerators :
     HomotopyGeneratorFamily.{0, 0, 0, 0, 0, 0} toyEndpointReading where
   PathCell := Bool
-  cellSource _ := false
+  cellSource h := h
   cellTarget _ := true
-  leftPath _ :=
-    OperationPath.cons toySelectedOperation (OperationPath.nil (G := toyOperationCategory) true)
-  rightPath _ :=
-    OperationPath.cons toySelectedOperation (OperationPath.nil (G := toyOperationCategory) true)
+  leftPath h := by
+    cases h
+    · exact OperationPath.cons toySelectedOperation
+        (OperationPath.nil (G := toyOperationCategory) true)
+    · exact toySelectedTrueLoopPath
+  rightPath h := by
+    cases h
+    · exact OperationPath.cons toySelectedOperation
+        (OperationPath.nil (G := toyOperationCategory) true)
+    · exact OperationPath.nil (G := toyOperationCategory) true
   LoopRelator := Bool
   relatorBase _ := false
-  relatorLoop _ := OperationLoop.identity false
+  relatorLoop _ :=
+    { base := false
+      endpoint := false
+      gamma := toySelectedLoopPath
+      endpoint_equivalent := rfl }
   relator_based _ := rfl
 
 def toyPresentationTwoComplex :
     PresentationTwoComplex.{0, 0, 0, 0, 0, 0} toyHomotopyGenerators where
   Vertex := Bool
   vertexEquivState := Equiv.refl Bool
-  Edge := Bool
-  edgeBoundary _ := ⟨false, true, toySelectedOperation⟩
-  TwoCell := Bool
-  twoCellEquivGenerator := by
-    change Bool ≃ Bool
-    exact Equiv.refl Bool
+  Edge := Σ a : Bool, Σ b : Bool, SelectedOperation toyOperationCategory a b
+  edgeBoundary := Equiv.refl _
+  TwoCell := Bool ⊕ Bool
+  twoCellEquivGenerator := Equiv.refl _
 
 abbrev ToyFreeWord :=
-  FreeEdgeWord toyOperationCategory false
+  FreeEdgeWord toyPresentationTwoComplex false
 
-def toyEmptyFreeWord : ToyFreeWord where
-  steps := []
-  startsAtBase := (0 : Nat) = 0
+/-- Empty composable loop word at the fixture base. -/
+def toyEmptyFreeWord : ToyFreeWord :=
+  FormalEdgePath.nil (K := toyPresentationTwoComplex) false
 
-def toyNonemptyFreeWord : ToyFreeWord where
-  steps := [FormalEdgeStep.forward toySelectedOperation]
-  startsAtBase := (1 : Nat) = 1
+/-- Presentation edge corresponding to the selected loop operation. -/
+def toyPresentedGenerator : toyPresentationTwoComplex.Edge :=
+  ⟨false, false, toySelectedLoopOperation⟩
+
+/-- One-step selected loop word at the fixture base. -/
+def toyNonemptyFreeWord : ToyFreeWord :=
+  toySelectedLoopOncePath.toFormalEdgePath toyPresentationTwoComplex
+
+/-- A formal connector that reaches `true` by reversing the selected `true -> false` edge. -/
+def toyBackwardConnector : FormalEdgePath toyPresentationTwoComplex false true :=
+  FormalEdgePath.cons
+    (FormalEdgeStep.backward
+      (K := toyPresentationTwoComplex)
+      (⟨true, false, toySelectedReverseOperation⟩ : toyPresentationTwoComplex.Edge))
+    (FormalEdgePath.nil (K := toyPresentationTwoComplex) true)
+
+/-- The selected based path-cell index with its identity connector. -/
+def toyBasedPathCell :
+    BasedPathCell toyHomotopyGenerators toyPresentationTwoComplex false :=
+  ⟨false, FormalEdgePath.nil (K := toyPresentationTwoComplex) false⟩
+
+/-- A path-cell included through a connector that uses a formal inverse edge. -/
+def toyBackwardBasedPathCell :
+    BasedPathCell toyHomotopyGenerators toyPresentationTwoComplex false :=
+  ⟨true, toyBackwardConnector⟩
+
+/-- The reverse-reachable path-cell is represented by its actual conjugated attaching loop. -/
+theorem toyBackwardBasedPathCell_has_actual_attaching_loop :
+    pathCellRelatorPath toyPresentationTwoComplex
+      toyBackwardBasedPathCell.1 toyBackwardBasedPathCell.2 =
+      toyBackwardConnector.concat
+        ((toyHomotopyGenerators.leftPath true).toFormalEdgePath toyPresentationTwoComplex |>.concat
+          (((toyHomotopyGenerators.rightPath true).toFormalEdgePath toyPresentationTwoComplex).reverse.concat
+            toyBackwardConnector.reverse)) :=
+  rfl
+
+/-- The selected based loop-relator index with its identity connector. -/
+def toyBasedLoopRelator :
+    BasedLoopRelator toyHomotopyGenerators toyPresentationTwoComplex false :=
+  ⟨false, FormalEdgePath.nil (K := toyPresentationTwoComplex) false⟩
+
+/-- The identical path-cell pair read as a path followed by its formal inverse. -/
+def toyPathCellFreeWord : ToyFreeWord :=
+  pathCellRelatorPath toyPresentationTwoComplex toyBasedPathCell.1 toyBasedPathCell.2
+
+/-- Two-step selected loop word used as the finite loop relator. -/
+def toySquaredFreeWord : ToyFreeWord :=
+  loopRelatorPath toyPresentationTwoComplex toyBasedLoopRelator.1 toyBasedLoopRelator.2
+
+/-- The selected path-cell relator is computed from its two actual operation paths. -/
+theorem toyPathCellFreeWord_has_selected_path_steps :
+    toyPathCellFreeWord =
+      pathCellRelatorPath toyPresentationTwoComplex
+        toyBasedPathCell.1 toyBasedPathCell.2 :=
+  rfl
+
+/-- The selected loop relator word is computed from its actual composable loop path. -/
+theorem toySquaredFreeWord_has_selected_loop_steps :
+    toySquaredFreeWord =
+      loopRelatorPath toyPresentationTwoComplex
+        toyBasedLoopRelator.1 toyBasedLoopRelator.2 :=
+  rfl
 
 abbrev ToyLoopGroup :=
   Multiplicative (ZMod 2)
 
-theorem toyPresentedPi_pi1_nontrivial :
+/-- The legacy supplied transport group remains nontrivial. -/
+theorem toySuppliedPi1_nontrivial :
     Nontrivial ToyLoopGroup := by
   infer_instance
 
+/-- The distinguished element of the legacy supplied transport group. -/
 def toyLoopGenerator : ToyLoopGroup :=
   Multiplicative.ofAdd (1 : ZMod 2)
 
+/-- The distinguished legacy transport element is not the identity. -/
 theorem toyLoopGenerator_ne_one : toyLoopGenerator ≠ (1 : ToyLoopGroup) := by
   intro h
   have hAdd := congrArg Multiplicative.toAdd h
   norm_num [toyLoopGenerator] at hAdd
 
+/-- The distinguished legacy transport element has order two. -/
+theorem toyLoopGenerator_mul_self : toyLoopGenerator * toyLoopGenerator = 1 := by
+  change Multiplicative.ofAdd ((1 : ZMod 2) + 1) = Multiplicative.ofAdd 0
+  congr 1
+
+/-- The legacy action evaluates the selected one-step based loop. -/
+theorem toySelectedLoopOnce_legacy_evaluation :
+    FreeGroup.lift (fun _ : toyPresentationTwoComplex.Edge => toyLoopGenerator)
+        (toySelectedLoopOncePath.toFormalEdgePath toyPresentationTwoComplex).toFreeGroup =
+      toyLoopGenerator := by
+  simp [toySelectedLoopOncePath, OperationPath.toFormalEdgePath,
+    FormalEdgePath.toFreeGroup, FormalEdgeStep.toFreeGroup,
+    FormalEdgeStep.ofSelectedOperation, toyPresentationTwoComplex]
+
+/-- The legacy action evaluates the selected two-step loop as a square. -/
+theorem toySelectedLoopPath_legacy_evaluation :
+    FreeGroup.lift (fun _ : toyPresentationTwoComplex.Edge => toyLoopGenerator)
+        (toySelectedLoopPath.toFormalEdgePath toyPresentationTwoComplex).toFreeGroup =
+      toyLoopGenerator * toyLoopGenerator := by
+  simp [toySelectedLoopPath, OperationPath.toFormalEdgePath,
+    FormalEdgePath.toFreeGroup, FormalEdgeStep.toFreeGroup,
+    FormalEdgeStep.ofSelectedOperation, toyPresentationTwoComplex]
+
+/-- Legacy finite transport quotient reading used by the descent fixture. -/
 def toyQuotientMap (w : ToyFreeWord) : ToyLoopGroup :=
-  if w.steps = [] then 1 else toyLoopGenerator
+  FreeGroup.lift (fun _ : toyPresentationTwoComplex.Edge => toyLoopGenerator) w.toFreeGroup
 
+/-- The empty word maps to the identity transport element. -/
 theorem toyQuotientMap_empty : toyQuotientMap toyEmptyFreeWord = 1 := by
-  simp [toyQuotientMap, toyEmptyFreeWord]
+  simp [toyQuotientMap, toyEmptyFreeWord, FormalEdgePath.toFreeGroup]
 
+/-- The one-step loop maps to the distinguished transport element. -/
 theorem toyQuotientMap_nonempty : toyQuotientMap toyNonemptyFreeWord = toyLoopGenerator := by
-  simp [toyQuotientMap, toyNonemptyFreeWord]
+  simpa [toyQuotientMap, toyNonemptyFreeWord] using
+    toySelectedLoopOnce_legacy_evaluation
 
-def toyPresentedPi :
+/-- The selected squared relator maps to the identity transport element. -/
+theorem toyQuotientMap_squared : toyQuotientMap toySquaredFreeWord = 1 := by
+  simp [toyQuotientMap, toySquaredFreeWord, loopRelatorPath,
+    toyHomotopyGenerators, toyBasedLoopRelator,
+    toySelectedLoopPath_legacy_evaluation, toyLoopGenerator_mul_self]
+
+/-- Presented finite fixture with a path/inverse pair and a squared loop relator. -/
+abbrev toyPresentedPi :
     PresentedArchitectureFundamentalGroup.{0, 0, 0, 0, 0, 0}
       toyHomotopyGenerators false where
+  presentation := toyPresentationTwoComplex
   FreeWord := ToyFreeWord
   freeWordEquivSelected := Equiv.refl ToyFreeWord
-  Relator w := w = toyEmptyFreeWord
-  presentation := toyPresentationTwoComplex
-  pathCellRelatorWord _ := toyEmptyFreeWord
-  pathCellRelator_selected _ := rfl
-  loopRelatorWord _ := toyEmptyFreeWord
-  loopRelator_selected _ := rfl
-  relator_generated_by_selected_generator := by
-    intro w h
-    exact Or.inl ⟨(show toyHomotopyGenerators.PathCell from false), h.symm⟩
+  Relator w :=
+    (∃ h : BasedPathCell toyHomotopyGenerators toyPresentationTwoComplex false,
+      pathCellRelatorPath toyPresentationTwoComplex h.1 h.2 = w) ∨
+    (∃ r : BasedLoopRelator toyHomotopyGenerators toyPresentationTwoComplex false,
+      loopRelatorPath toyPresentationTwoComplex r.1 r.2 = w)
+  pathCellRelatorWord h := pathCellRelatorPath toyPresentationTwoComplex h.1 h.2
+  pathCellRelator_path _ := rfl
+  pathCellRelator_selected h := Or.inl ⟨h, rfl⟩
+  loopRelatorWord r := loopRelatorPath toyPresentationTwoComplex r.1 r.2
+  loopRelator_path _ := rfl
+  loopRelator_selected r := Or.inr ⟨r, rfl⟩
+  relator_generated_by_selected_generator h := h
   Pi1 := ToyLoopGroup
   quotientMap := toyQuotientMap
   relator_maps_to_identity := by
     intro w h
-    simpa [h] using toyQuotientMap_empty
+    rcases h with ⟨h, rfl⟩ | ⟨r, rfl⟩
+    · rcases h with ⟨h, connector⟩
+      cases h
+      · simp [toyQuotientMap, pathCellRelatorPath, toyHomotopyGenerators]
+      · simp [toyQuotientMap, pathCellRelatorPath, toyHomotopyGenerators,
+          toySelectedTrueLoopPath, OperationPath.toFormalEdgePath,
+          FormalEdgePath.toFreeGroup, FormalEdgeStep.toFreeGroup,
+          FormalEdgeStep.ofSelectedOperation, toyPresentationTwoComplex,
+          toyLoopGenerator_mul_self]
+    · simp [toyQuotientMap, loopRelatorPath, toyHomotopyGenerators,
+        toySelectedLoopPath_legacy_evaluation, toyLoopGenerator_mul_self]
   FreeTransport := Bool
   QuotientTransport := Bool
   SendsRelatorsToIdentity T :=
@@ -458,6 +609,13 @@ def toyPresentedPi :
       rcases h with ⟨_Q, _hQT, hT⟩
       exact hT
 
+/-- The cell reached through a formal inverse edge is included and killed by the quotient. -/
+theorem toyBackwardBasedPathCell_maps_to_identity :
+    toyPresentedPi.quotientMap
+        (toyPresentedPi.pathCellRelatorWord toyBackwardBasedPathCell) = 1 :=
+  toyPresentedPi.relator_maps_to_identity _
+    (toyPresentedPi.pathCellRelator_selected toyBackwardBasedPathCell)
+
 def toyBoolFlipEquiv : Bool ≃ Bool where
   toFun b := !b
   invFun b := !b
@@ -470,65 +628,148 @@ def toyFlipCoefficientAutomorphism :
   semAut := Equiv.refl Bool
   effAut := Equiv.refl Bool
 
-theorem toyCoefficientAutomorphism_ext
-    {C : MonodromyCoefficientObject}
-    {f g : CoefficientAutomorphism C}
-    (hob : f.obAut = g.obAut)
-    (hsem : f.semAut = g.semAut)
-    (heff : f.effAut = g.effAut) :
-    f = g := by
-  cases f
-  cases g
-  cases hob
-  cases hsem
-  cases heff
+/-- Every selected presentation edge acts by the Bool flip automorphism. -/
+def toyPresentedGeneratorAction : toyPresentationTwoComplex.Edge ->
+    CoefficientAutomorphism { Ob := Bool, Sem := Bool, Eff := Bool } :=
+  fun ⟨_, _, _⟩ => toyFlipCoefficientAutomorphism
+
+/-- The Bool flip automorphism has order two. -/
+theorem toyFlipCoefficientAutomorphism_mul_self :
+    toyFlipCoefficientAutomorphism * toyFlipCoefficientAutomorphism = 1 := by
+  apply CoefficientAutomorphism.ext <;>
+    apply Equiv.ext <;>
+    intro b <;>
+    cases b <;>
+    rfl
+
+/-- The coefficient action evaluates the selected two-step loop as a square. -/
+theorem toySelectedLoopPath_coefficient_evaluation :
+    FreeGroup.lift toyPresentedGeneratorAction
+        (toySelectedLoopPath.toFormalEdgePath toyPresentationTwoComplex).toFreeGroup =
+      toyFlipCoefficientAutomorphism * toyFlipCoefficientAutomorphism := by
+  simp [toySelectedLoopPath, OperationPath.toFormalEdgePath,
+    FormalEdgePath.toFreeGroup, FormalEdgeStep.toFreeGroup,
+    FormalEdgeStep.ofSelectedOperation, toyPresentedGeneratorAction,
+    toyPresentationTwoComplex]
+
+/-- The coefficient action evaluates the reverse-reachable cell loop as a square. -/
+theorem toySelectedTrueLoopPath_coefficient_evaluation :
+    FreeGroup.lift toyPresentedGeneratorAction
+        (toySelectedTrueLoopPath.toFormalEdgePath toyPresentationTwoComplex).toFreeGroup =
+      toyFlipCoefficientAutomorphism * toyFlipCoefficientAutomorphism := by
+  simp [toySelectedTrueLoopPath, OperationPath.toFormalEdgePath,
+    FormalEdgePath.toFreeGroup, FormalEdgeStep.toFreeGroup,
+    FormalEdgeStep.ofSelectedOperation, toyPresentedGeneratorAction,
+    toyPresentationTwoComplex]
+
+/-- The selected path-cell and loop relators are killed by the fixture action. -/
+theorem toySelectedRelator_lift_eq_one
+    {r : FreeGroup toyPresentationTwoComplex.Edge}
+    (hr : r ∈ toyPresentedPi.selectedRelators) :
+    FreeGroup.lift toyPresentedGeneratorAction r = 1 := by
+  rcases hr with ⟨word, hword, rfl⟩
+  rcases hword with ⟨h, rfl⟩ | ⟨r, rfl⟩
+  · rcases h with ⟨h, connector⟩
+    cases h
+    · simp [PresentedArchitectureFundamentalGroup.selectedFreeGroupWord,
+        pathCellRelatorPath, toyHomotopyGenerators, toyPresentedPi]
+    · simp [PresentedArchitectureFundamentalGroup.selectedFreeGroupWord,
+        pathCellRelatorPath, toyHomotopyGenerators, toyPresentedPi,
+        OperationPath.toFormalEdgePath, FormalEdgePath.toFreeGroup,
+        toySelectedTrueLoopPath_coefficient_evaluation,
+        toyFlipCoefficientAutomorphism_mul_self]
+  · simp [PresentedArchitectureFundamentalGroup.selectedFreeGroupWord,
+      loopRelatorPath, toyHomotopyGenerators, toyPresentedPi,
+      toySelectedLoopPath_coefficient_evaluation,
+      toyFlipCoefficientAutomorphism_mul_self]
+
+/-- All actual attaching-loop relators are killed by the fixture action. -/
+theorem toyPresentedGeneratorAction_kills_relators :
+    ∀ r ∈ toyPresentedPi.presentedRelators,
+      FreeGroup.lift toyPresentedGeneratorAction r = 1 := by
+  intro r hr
+  exact toySelectedRelator_lift_eq_one hr
+
+/-- Monodromy representation constructed from the presented generator action. -/
+def toyMonodromyAction :
+    MonodromyAction.{0, 0, 0, 0, 0, 0} toyPresentedPi :=
+  MonodromyAction.ofPresentedGenerators
+    toyPresentedPi
+    { Ob := Bool, Sem := Bool, Eff := Bool }
+    toyPresentedGeneratorAction
+    toyPresentedGeneratorAction_kills_relators
+
+/-- Distinguished element of the actual Mathlib presented group. -/
+def toyPresentedLoopGenerator : toyPresentedPi.pi1AAT :=
+  toyPresentedPi.presentedQuotientMap toyNonemptyFreeWord
+
+/-- Presented monodromy evaluates to the selected generator action. -/
+theorem toyMonodromyAction_generator_evaluation :
+    toyMonodromyAction.Mon_gamma toyPresentedLoopGenerator =
+      toyPresentedGeneratorAction toyPresentedGenerator := by
+  unfold toyMonodromyAction
+  simpa [PresentedArchitectureFundamentalGroup.selectedFreeGroupWord,
+      FormalEdgePath.toFreeGroup, FormalEdgeStep.toFreeGroup,
+      toyPresentedPi, toyNonemptyFreeWord] using
+    (MonodromyAction.mon_gamma_presented_loop
+      toyPresentedPi
+      { Ob := Bool, Sem := Bool, Eff := Bool }
+      toyPresentedGeneratorAction
+      toyPresentedGeneratorAction_kills_relators
+      toyNonemptyFreeWord)
+
+/-- The selected squared loop relator has identity monodromy. -/
+theorem toyMonodromyAction_relator_evaluation :
+  toyMonodromyAction.Mon_gamma
+      (toyPresentedPi.presentedQuotientMap toySquaredFreeWord) = 1 :=
+  toyMonodromyAction.mon_gamma_presented_relator
+    (Or.inr ⟨toyBasedLoopRelator, rfl⟩)
+
+/-- The selected presented generator moves the obstruction coefficient. -/
+theorem toyMonodromyAction_moves_false :
+    (toyMonodromyAction.rho toyPresentedLoopGenerator).obAut false = true := by
+  rw [show toyMonodromyAction.rho toyPresentedLoopGenerator =
+      toyPresentedGeneratorAction toyPresentedGenerator from
+    toyMonodromyAction_generator_evaluation]
   rfl
 
-def toyLoopRepresentation (gamma : ToyLoopGroup) :
-    CoefficientAutomorphism { Ob := Bool, Sem := Bool, Eff := Bool } :=
-  if (Multiplicative.toAdd gamma : ZMod 2) = 0 then
-    CoefficientAutomorphism.id _
-  else
-    toyFlipCoefficientAutomorphism
+/-- The selected presented generator has nonidentity monodromy. -/
+theorem toyMonodromyAction_nonidentity :
+    toyMonodromyAction.rho toyPresentedLoopGenerator ≠ CoefficientAutomorphism.id _ := by
+  intro h
+  have hmoved := toyMonodromyAction_moves_false
+  rw [h] at hmoved
+  cases hmoved
 
+/-- The selected generator is not the identity in the actual presented group. -/
+theorem toyPresentedLoopGenerator_ne_one :
+    toyPresentedLoopGenerator ≠ (1 : toyPresentedPi.pi1AAT) := by
+  intro h
+  apply toyMonodromyAction_nonidentity
+  rw [h]
+  exact toyMonodromyAction.rho.map_one
+
+/-- The actual Mathlib presented group of the fixture is nontrivial. -/
+theorem toyPresentedPi_pi1_nontrivial :
+    Nontrivial toyPresentedPi.pi1AAT :=
+  ⟨⟨toyPresentedLoopGenerator, 1, toyPresentedLoopGenerator_ne_one⟩⟩
+
+/-- Read whether an automorphism moves the selected obstruction coefficient. -/
 def toyObstructionCoefficientMoved
     (phi : CoefficientAutomorphism { Ob := Bool, Sem := Bool, Eff := Bool }) : Bool :=
   phi.obAut false
 
+/-- Equality-defect value computed from the actual presented monodromy action. -/
 def toyMonodromyDefectFromAction : Nat :=
-  if toyObstructionCoefficientMoved (toyLoopRepresentation toyLoopGenerator) then 1 else 0
+  if toyObstructionCoefficientMoved
+      (toyMonodromyAction.rho toyPresentedLoopGenerator) then 1 else 0
 
-def toyMonodromyAction :
-    MonodromyAction.{0, 0, 0, 0, 0, 0} toyPresentedPi where
-  coefficient := { Ob := Bool, Sem := Bool, Eff := Bool }
-  rho := toyLoopRepresentation
-  rho_one := by simp [toyLoopRepresentation]
-  rho_mul := by
-    intro gamma delta
-    rcases gamma with ⟨gamma⟩
-    rcases delta with ⟨delta⟩
-    interval_cases gamma <;> interval_cases delta <;>
-      apply toyCoefficientAutomorphism_ext <;>
-      apply Equiv.ext <;>
-      intro b <;>
-      cases b <;>
-      rfl
-
-theorem toyMonodromyAction_moves_false :
-    (toyMonodromyAction.rho toyLoopGenerator).obAut false = true := by
-  rfl
-
-theorem toyMonodromyAction_nonidentity :
-    toyMonodromyAction.rho toyLoopGenerator ≠ CoefficientAutomorphism.id _ := by
-  intro h
-  have hmoved := congrArg (fun e => e.obAut false) h
-  cases hmoved
-
+/-- Measured square whose selected boundary element is the identity. -/
 def toyMeasuredSquareZero :
     MeasuredSquareMonodromy.{0, 0, 0, 0, 0, 0} toyMonodromyAction
       toyPresentationTwoComplex where
   Axis := Bool
-  square := false
+  square := .inl false
   boundaryElement := 1
   boundaryTransport := CoefficientAutomorphism.id _
   boundaryTransport_eq_monodromy := rfl
@@ -538,18 +779,19 @@ def toyMeasuredSquareZero :
   mu _ := 0
   mu_eq_defect _ := rfl
 
+/-- Measured square detected by the nonidentity presented loop generator. -/
 def toyMeasuredSquareNonzero :
     MeasuredSquareMonodromy.{0, 0, 0, 0, 0, 0} toyMonodromyAction
       toyPresentationTwoComplex where
   Axis := Bool
-  square := true
-  boundaryElement := toyLoopGenerator
-  boundaryTransport := toyMonodromyAction.rho toyLoopGenerator
+  square := .inl true
+  boundaryElement := toyPresentedLoopGenerator
+  boundaryTransport := toyMonodromyAction.rho toyPresentedLoopGenerator
   boundaryTransport_eq_monodromy := rfl
   equalityDefect axis :=
     if axis then 0 else toyMonodromyDefectFromAction
   axisDetectsIdentity axis :=
-    toyLoopRepresentation (if axis then 1 else toyLoopGenerator) =
+    toyMonodromyAction.rho (if axis then 1 else toyPresentedLoopGenerator) =
       CoefficientAutomorphism.id _
   zero_defect_detects := by
     intro axis hzero
@@ -559,7 +801,7 @@ def toyMeasuredSquareNonzero :
         rfl
       rw [hdefect] at hzero
       cases hzero
-    · simp [toyLoopRepresentation]
+    · exact toyMonodromyAction.rho.map_one
   mu axis := if axis then 0 else 1
   mu_eq_defect := by
     intro axis
@@ -568,11 +810,12 @@ def toyMeasuredSquareNonzero :
       rfl
     · rfl
 
+/-- The nonzero square defect is computed from the moved coefficient. -/
 theorem toyMeasuredSquareNonzero_defect_from_moved_coefficient :
     toyMeasuredSquareNonzero.equalityDefect false =
       toyMonodromyDefectFromAction ∧
     toyMonodromyDefectFromAction = 1 ∧
-      (toyMonodromyAction.rho toyLoopGenerator).obAut false = true := by
+      (toyMonodromyAction.rho toyPresentedLoopGenerator).obAut false = true := by
   exact ⟨rfl, rfl, toyMonodromyAction_moves_false⟩
 
 def toySquareFillingProblem :
@@ -609,7 +852,7 @@ def toySquareFillingPositiveProblem :
 
 theorem toySquareFilling_positive :
     toySquareFillingPositiveProblem.SelectedAxisFilling := by
-  simp [toySquareFillingPositiveProblem, toyMeasuredSquareNonzero, toyLoopRepresentation]
+  exact toyMonodromyAction.rho.map_one
 
 theorem toySquareFilling_negative :
     ¬ toySquareFillingProblem.SelectedAxisFilling :=

@@ -146,7 +146,7 @@ structure HiddenArchitectureDebtReading {U : AtomCarrier.{u}} {A : ArchitectureO
     {base : G.State}
     {Pi : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base}
     (M : MonodromyAction.{u, v, w, x, y, z} Pi)
-    (gamma : Pi.Pi1) where
+    (gamma : Pi.pi1AAT) where
   EndpointEquivalentLoop : Prop
   HiddenArchitectureDebt : Prop
   debt_of_endpoint_nonidentity :
@@ -164,7 +164,7 @@ variable {H : HomotopyGeneratorFamily.{u, v, w, x, y, z} R}
 variable {base : G.State}
 variable {Pi : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base}
 variable {M : MonodromyAction.{u, v, w, x, y, z} Pi}
-variable {gamma : Pi.Pi1}
+variable {gamma : Pi.pi1AAT}
 
 /--
 VI.定理11.1: endpoint-equivalent loop plus nonidentity obstruction monodromy

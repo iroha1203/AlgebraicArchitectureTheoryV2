@@ -573,21 +573,103 @@ theorem partVIOperationSquareFillingNegative :
 
 theorem partVIOperationMonodromyNonidentity :
     AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMonodromyAction.rho
-        AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyLoopGenerator ≠
+        AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyPresentedLoopGenerator ≠
       SingularityMonodromyStack.CoefficientAutomorphism.id
         AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMonodromyAction.coefficient :=
   AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMonodromyAction_nonidentity
+
+theorem partVIOperationMonodromyGeneratorEvaluation :
+    AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMonodromyAction.Mon_gamma
+        AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyPresentedLoopGenerator =
+      AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyPresentedGeneratorAction
+        AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyPresentedGenerator :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMonodromyAction_generator_evaluation
+
+theorem partVIOperationMonodromyRelatorEvaluation :
+    AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMonodromyAction.Mon_gamma
+        (AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyPresentedPi.presentedQuotientMap
+          AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toySquaredFreeWord) = 1 :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMonodromyAction_relator_evaluation
+
+/-- Directly audit componentwise coefficient-automorphism extensionality. -/
+theorem partVICoefficientAutomorphismExtAudit :
+    ∃ h, h = @SingularityMonodromyStack.CoefficientAutomorphism.ext :=
+  ⟨_, rfl⟩
+
+/-- Directly audit comparison with the standard product of permutation groups. -/
+theorem partVICoefficientAutomorphismStandardProductAudit :
+    ∃ h, h =
+      @SingularityMonodromyStack.CoefficientAutomorphism.standardProductMulEquiv :=
+  ⟨_, rfl⟩
+
+/-- Directly audit reversal of typed formal paths in the free group. -/
+theorem partVIFormalEdgePathReverseAudit :
+    ∃ h, h = @SingularityMonodromyStack.FormalEdgePath.toFreeGroup_reverse :=
+  ⟨_, rfl⟩
+
+/-- Directly audit evaluation of a typed based-loop word under monodromy. -/
+theorem partVIMonGammaPresentedLoopAudit :
+    ∃ h, h = @SingularityMonodromyStack.MonodromyAction.mon_gamma_presented_loop :=
+  ⟨_, rfl⟩
+
+/-- Directly audit the legacy supplied transport group's nontriviality. -/
+theorem partVISuppliedPi1NontrivialAudit :
+    ∃ h, h =
+      @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toySuppliedPi1_nontrivial :=
+  ⟨_, rfl⟩
+
+/-- Directly audit the selected squared transport relator. -/
+theorem partVIQuotientMapSquaredAudit :
+    ∃ h, h =
+      @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyQuotientMap_squared :=
+  ⟨_, rfl⟩
+
+/-- Directly audit path-cell relator provenance. -/
+theorem partVIPathCellRelatorProvenanceAudit :
+    ∃ h, h =
+      @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyPathCellFreeWord_has_selected_path_steps :=
+  ⟨_, rfl⟩
+
+/-- Directly audit loop-relator provenance. -/
+theorem partVILoopRelatorProvenanceAudit :
+    ∃ h, h =
+      @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toySquaredFreeWord_has_selected_loop_steps :=
+  ⟨_, rfl⟩
+
+/-- Directly audit involutivity of the selected coefficient action. -/
+theorem partVICoefficientFlipInvolutiveAudit :
+    ∃ h, h =
+      @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyFlipCoefficientAutomorphism_mul_self :=
+  ⟨_, rfl⟩
+
+/-- Directly audit the selected-relator factorization witness. -/
+theorem partVISelectedRelatorLiftAudit :
+    ∃ h, h =
+      @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toySelectedRelator_lift_eq_one :=
+  ⟨_, rfl⟩
+
+/-- Directly audit the combined generator-action factorization theorem. -/
+theorem partVIGeneratorActionKillsRelatorsAudit :
+    ∃ h, h =
+      @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyPresentedGeneratorAction_kills_relators :=
+  ⟨_, rfl⟩
+
+/-- Directly audit nonidentity of the actual presented generator. -/
+theorem partVIPresentedLoopGeneratorNeOneAudit :
+    ∃ h, h =
+      @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyPresentedLoopGenerator_ne_one :=
+  ⟨_, rfl⟩
 
 theorem partVIOperationDefectFromMovedCoefficient :
     AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMeasuredSquareNonzero.equalityDefect false =
       AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMonodromyDefectFromAction ∧
     AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMonodromyDefectFromAction = 1 ∧
       (AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMonodromyAction.rho
-          AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyLoopGenerator).obAut false = true :=
+          AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyPresentedLoopGenerator).obAut false = true :=
   AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMeasuredSquareNonzero_defect_from_moved_coefficient
 
 theorem partVIPresentedPiNontrivial :
-    Nontrivial AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyPresentedPi.Pi1 :=
+    Nontrivial AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyPresentedPi.pi1AAT :=
   AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyPresentedPi_pi1_nontrivial
 
 theorem partVITransportSquareNontrivial :
@@ -826,7 +908,7 @@ theorem presentedArchitectureFundamentalGroupRelatorMapsToIdentity
   SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.presentedRelator_maps_to_identity
     Pi h
 
-theorem presentedArchitectureFundamentalGroupLiftOf
+theorem presentationPathCellTwoCellProvenance
     {U : AtomCarrier} {A : ArchitectureObject U}
     {S : Site.AATSite A} {P : SingularityMonodromyStack.StratumReadingParameter S}
     {k : Type} [CommRing k]
@@ -834,20 +916,31 @@ theorem presentedArchitectureFundamentalGroupLiftOf
     {G : SingularityMonodromyStack.OperationCategoryData X}
     {R : SingularityMonodromyStack.RefactorEndpointReading G}
     {H : SingularityMonodromyStack.HomotopyGeneratorFamily R}
-    {base : G.State}
-    (Pi : SingularityMonodromyStack.PresentedArchitectureFundamentalGroup H base)
-    {Y : Type*} [Group Y]
-    (f : SingularityMonodromyStack.FormalEdgeStep G -> Y)
-    (hrels : ∀ r ∈
-      SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.presentedRelators Pi,
-        FreeGroup.lift f r = 1)
-    (step : SingularityMonodromyStack.FormalEdgeStep G) :
-    SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.presentedGroupLift
-      Pi f hrels (PresentedGroup.of step) = f step :=
-  SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.presentedGroupLift_of
-    Pi f hrels step
+    (K : SingularityMonodromyStack.PresentationTwoComplex H)
+    (h : H.PathCell) :
+    K.twoCellEquivGenerator (K.pathCellTwoCell h) = Sum.inl h :=
+  K.pathCellTwoCell_read h
 
-theorem presentedArchitectureFundamentalGroupLiftUnique
+theorem presentationLoopRelatorTwoCellProvenance
+    {U : AtomCarrier} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {P : SingularityMonodromyStack.StratumReadingParameter S}
+    {k : Type} [CommRing k]
+    {X : SingularityMonodromyStack.ArchitectureStratum P k}
+    {G : SingularityMonodromyStack.OperationCategoryData X}
+    {R : SingularityMonodromyStack.RefactorEndpointReading G}
+    {H : SingularityMonodromyStack.HomotopyGeneratorFamily R}
+    (K : SingularityMonodromyStack.PresentationTwoComplex H)
+    (r : H.LoopRelator) :
+    K.twoCellEquivGenerator (K.loopRelatorTwoCell r) = Sum.inr r :=
+  K.loopRelatorTwoCell_read r
+
+theorem partVIBackwardReachablePathCellMapsToIdentity :
+    AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyPresentedPi.quotientMap
+        (AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyPresentedPi.pathCellRelatorWord
+          AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyBackwardBasedPathCell) = 1 :=
+  AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyBackwardBasedPathCell_maps_to_identity
+
+theorem presentedArchitectureFundamentalGroupLiftWord
     {U : AtomCarrier} {A : ArchitectureObject U}
     {S : Site.AATSite A} {P : SingularityMonodromyStack.StratumReadingParameter S}
     {k : Type} [CommRing k]
@@ -858,20 +951,68 @@ theorem presentedArchitectureFundamentalGroupLiftUnique
     {base : G.State}
     (Pi : SingularityMonodromyStack.PresentedArchitectureFundamentalGroup H base)
     {Y : Type*} [Group Y]
-    (f : SingularityMonodromyStack.FormalEdgeStep G -> Y)
+    (f : Pi.presentation.Edge -> Y)
     (hrels : ∀ r ∈
       SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.presentedRelators Pi,
         FreeGroup.lift f r = 1)
-    (g :
-      (SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.pi1AAT Pi) →* Y)
-    (hg : ∀ step : SingularityMonodromyStack.FormalEdgeStep G,
-      g (PresentedGroup.of step) = f step)
-    (x : SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.pi1AAT Pi) :
-    g x =
-      SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.presentedGroupLift
-        Pi f hrels x :=
-  SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.presentedGroupLift_unique
-    Pi f hrels g hg x
+    (word : Pi.FreeWord) :
+    SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.presentedGroupLift
+      Pi f hrels (Pi.presentedQuotientMap word) =
+        FreeGroup.lift f (Pi.selectedFreeGroupWord word) :=
+  SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.presentedGroupLift_word
+    Pi f hrels word
+
+theorem presentedArchitecturePathCellRelatorProvenance
+    {U : AtomCarrier} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {P : SingularityMonodromyStack.StratumReadingParameter S}
+    {k : Type} [CommRing k]
+    {X : SingularityMonodromyStack.ArchitectureStratum P k}
+    {G : SingularityMonodromyStack.OperationCategoryData X}
+    {R : SingularityMonodromyStack.RefactorEndpointReading G}
+    {H : SingularityMonodromyStack.HomotopyGeneratorFamily R}
+    {base : G.State}
+    (Pi : SingularityMonodromyStack.PresentedArchitectureFundamentalGroup H base)
+    (h : SingularityMonodromyStack.BasedPathCell H Pi.presentation base) :
+    Pi.freeWordEquivSelected (Pi.pathCellRelatorWord h) =
+      SingularityMonodromyStack.pathCellRelatorPath
+        Pi.presentation h.1 h.2 :=
+  Pi.pathCellRelator_path_holds h
+
+theorem presentedArchitectureLoopRelatorProvenance
+    {U : AtomCarrier} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {P : SingularityMonodromyStack.StratumReadingParameter S}
+    {k : Type} [CommRing k]
+    {X : SingularityMonodromyStack.ArchitectureStratum P k}
+    {G : SingularityMonodromyStack.OperationCategoryData X}
+    {R : SingularityMonodromyStack.RefactorEndpointReading G}
+    {H : SingularityMonodromyStack.HomotopyGeneratorFamily R}
+    {base : G.State}
+    (Pi : SingularityMonodromyStack.PresentedArchitectureFundamentalGroup H base)
+    (r : SingularityMonodromyStack.BasedLoopRelator H Pi.presentation base) :
+    Pi.freeWordEquivSelected (Pi.loopRelatorWord r) =
+      SingularityMonodromyStack.loopRelatorPath
+        Pi.presentation r.1 r.2 :=
+  Pi.loopRelator_path_holds r
+
+theorem presentedArchitecturePi1BasedLoopClosure
+    {U : AtomCarrier} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {P : SingularityMonodromyStack.StratumReadingParameter S}
+    {k : Type} [CommRing k]
+    {X : SingularityMonodromyStack.ArchitectureStratum P k}
+    {G : SingularityMonodromyStack.OperationCategoryData X}
+    {R : SingularityMonodromyStack.RefactorEndpointReading G}
+    {H : SingularityMonodromyStack.HomotopyGeneratorFamily R}
+    {base : G.State}
+    (Pi : SingularityMonodromyStack.PresentedArchitectureFundamentalGroup H base)
+    (gamma : Pi.pi1AAT) :
+    (gamma : Pi.rawPresentedGroup) ∈
+      Subgroup.closure (Set.range Pi.rawPresentedQuotientMap) :=
+  Pi.pi1AAT_mem_basedLoopClosure gamma
+
+theorem presentedArchitectureRelatorIffActualAttachingLoop :
+    ∃ h, h =
+      @SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.relator_iff_actual_attaching_loop :=
+  ⟨_, rfl⟩
 
 theorem concreteThreeReadingAgreementRequiredLaw {U : AtomCarrier}
     (A : ArchitectureObject U) (LU : LawUniverse U) :
@@ -7390,7 +7531,6 @@ def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_t
 def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyBoolComp_eq_1 := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyBoolComp.eq_1
 def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyBoolFlipEquiv__proof_1 := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyBoolFlipEquiv._proof_1
 def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyBoundaryObstruction_nonzero := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyBoundaryObstruction_nonzero
-def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyCoefficientAutomorphism_ext := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyCoefficientAutomorphism_ext
 def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyCotangentData__proof_1 := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyCotangentData._proof_1
 def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyDecompositionGroupoid__proof_1 := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyDecompositionGroupoid._proof_1
 def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyDecompositionGroupoid_hom_kind_refactor := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyDecompositionGroupoid_hom_kind_refactor
@@ -7422,7 +7562,6 @@ def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_t
 def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyLocalDecompositionsExist_positive := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyLocalDecompositionsExist_positive
 def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyLoopGenerator_eq_1 := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyLoopGenerator.eq_1
 def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyLoopGenerator_ne_one := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyLoopGenerator_ne_one
-def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyLoopRepresentation_eq_1 := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyLoopRepresentation.eq_1
 def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyMeasuredSquareNonzero__proof_1 := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMeasuredSquareNonzero._proof_1
 def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyMeasuredSquareNonzero__proof_2 := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMeasuredSquareNonzero._proof_2
 def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyMeasuredSquareNonzero__proof_3 := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMeasuredSquareNonzero._proof_3
@@ -7431,8 +7570,8 @@ def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_t
 def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyMeasuredSquareZero__proof_1 := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMeasuredSquareZero._proof_1
 def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyMeasuredSquareZero__proof_2 := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMeasuredSquareZero._proof_2
 def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyMeasuredSquareZero__proof_3 := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMeasuredSquareZero._proof_3
-def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyMonodromyAction__proof_1 := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMonodromyAction._proof_1
-def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyMonodromyAction__proof_2 := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMonodromyAction._proof_2
+def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyMonodromyAction_generator_evaluation := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMonodromyAction_generator_evaluation
+def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyMonodromyAction_relator_evaluation := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMonodromyAction_relator_evaluation
 def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyMonodromyAction_moves_false := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMonodromyAction_moves_false
 def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyMonodromyAction_nonidentity := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMonodromyAction_nonidentity
 def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyNoCanonicalDecomposition_soundness_from_local_data := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyNoCanonicalDecomposition_soundness_from_local_data
@@ -8247,15 +8386,8 @@ def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_FirstOrderObstruct
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_FirstOrderObstructionWitness_mk_injEq := @AAT.AG.SingularityMonodromyStack.FirstOrderObstructionWitness.mk.injEq
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_FirstOrderObstructionWitness_mk_sizeOf_spec := @AAT.AG.SingularityMonodromyStack.FirstOrderObstructionWitness.mk.sizeOf_spec
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_FirstOrderObstructionWitness_nonzero_obstruction := @AAT.AG.SingularityMonodromyStack.FirstOrderObstructionWitness.nonzero_obstruction
-def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_FormalEdgeStep_backward_inj := @AAT.AG.SingularityMonodromyStack.FormalEdgeStep.backward.inj
-def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_FormalEdgeStep_backward_injEq := @AAT.AG.SingularityMonodromyStack.FormalEdgeStep.backward.injEq
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_FormalEdgeStep_backward_sizeOf_spec := @AAT.AG.SingularityMonodromyStack.FormalEdgeStep.backward.sizeOf_spec
-def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_FormalEdgeStep_forward_inj := @AAT.AG.SingularityMonodromyStack.FormalEdgeStep.forward.inj
-def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_FormalEdgeStep_forward_injEq := @AAT.AG.SingularityMonodromyStack.FormalEdgeStep.forward.injEq
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_FormalEdgeStep_forward_sizeOf_spec := @AAT.AG.SingularityMonodromyStack.FormalEdgeStep.forward.sizeOf_spec
-def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_FreeEdgeWord_mk_inj := @AAT.AG.SingularityMonodromyStack.FreeEdgeWord.mk.inj
-def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_FreeEdgeWord_mk_injEq := @AAT.AG.SingularityMonodromyStack.FreeEdgeWord.mk.injEq
-def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_FreeEdgeWord_mk_sizeOf_spec := @AAT.AG.SingularityMonodromyStack.FreeEdgeWord.mk.sizeOf_spec
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_GodObject_multipleLawLociNonTransverse := @AAT.AG.SingularityMonodromyStack.GodObject.multipleLawLociNonTransverse
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_GodObject_multipleLawLociNonTransverse_holds := @AAT.AG.SingularityMonodromyStack.GodObject.multipleLawLociNonTransverse_holds
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_GodObject_singular := @AAT.AG.SingularityMonodromyStack.GodObject.singular
@@ -8294,9 +8426,8 @@ def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_MonodromyAction_mk
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_MonodromyAction_mk_sizeOf_spec := @AAT.AG.SingularityMonodromyStack.MonodromyAction.mk.sizeOf_spec
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_MonodromyAction_mon_gamma_eq_rho := @AAT.AG.SingularityMonodromyStack.MonodromyAction.mon_gamma_eq_rho
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_MonodromyAction_monodromyDebt_iff := @AAT.AG.SingularityMonodromyStack.MonodromyAction.monodromyDebt_iff
-def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_MonodromyAction_rho_mul := @AAT.AG.SingularityMonodromyStack.MonodromyAction.rho_mul
+def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_MonodromyAction_mon_gamma_presented_relator := @AAT.AG.SingularityMonodromyStack.MonodromyAction.mon_gamma_presented_relator
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_MonodromyAction_rho_mul_holds := @AAT.AG.SingularityMonodromyStack.MonodromyAction.rho_mul_holds
-def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_MonodromyAction_rho_one := @AAT.AG.SingularityMonodromyStack.MonodromyAction.rho_one
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_MonodromyAction_rho_one_holds := @AAT.AG.SingularityMonodromyStack.MonodromyAction.rho_one_holds
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_NormalConeReading_lawfulLocus_eq_flatU := @AAT.AG.SingularityMonodromyStack.NormalConeReading.lawfulLocus_eq_flatU
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_NormalConeReading_lawfulLocus_eq_flatU_holds := @AAT.AG.SingularityMonodromyStack.NormalConeReading.lawfulLocus_eq_flatU_holds
@@ -8352,8 +8483,6 @@ def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_PresentedArchitect
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_PresentedArchitectureFundamentalGroup_mk_sizeOf_spec := @AAT.AG.SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.mk.sizeOf_spec
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_PresentedArchitectureFundamentalGroup_pathCellRelator_selected := @AAT.AG.SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.pathCellRelator_selected
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_PresentedArchitectureFundamentalGroup_pathCellRelator_selected_holds := @AAT.AG.SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.pathCellRelator_selected_holds
-def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_PresentedArchitectureFundamentalGroup_presentedGroupLift_of := @AAT.AG.SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.presentedGroupLift_of
-def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_PresentedArchitectureFundamentalGroup_presentedGroupLift_unique := @AAT.AG.SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.presentedGroupLift_unique
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_PresentedArchitectureFundamentalGroup_presentedRelator_maps_to_identity := @AAT.AG.SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.presentedRelator_maps_to_identity
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_PresentedArchitectureFundamentalGroup_quotientUniversalProperty := @AAT.AG.SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.quotientUniversalProperty
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_PresentedArchitectureFundamentalGroup_quotient_universal_property := @AAT.AG.SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.quotient_universal_property
