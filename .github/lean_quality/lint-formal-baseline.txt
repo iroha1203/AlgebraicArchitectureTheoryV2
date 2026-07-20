@@ -1047,7 +1047,6 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily.selected /- definition missing documentation string -/
 #check @AAT.AG.LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily.witnessIdeal /- definition missing documentation string -/
 
--- Formal.AG.LawAlgebra.Scheme
 -- Formal.AG.LawAlgebra.StanleyReisner
 #check @AAT.AG.LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.Forb /- definition missing documentation string -/
 #check @AAT.AG.LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.AbstractSimplicialComplex.faces /- definition missing documentation string -/
