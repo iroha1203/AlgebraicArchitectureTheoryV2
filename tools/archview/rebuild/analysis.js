@@ -645,6 +645,7 @@ function validateOptionalArtifacts(documents, issues) {
         if (!new Set(["absolute", "introduced-by-change"]).has(row?.scope)) issues.push(issue(`${path}.scope`, "Gate rule scope is not in the producer vocabulary.", null, row?.scope));
         if (!new Set(["evaluated", "not_applicable"]).has(row?.status)) issues.push(issue(`${path}.status`, "Gate rule status is not in the producer vocabulary.", null, row?.status));
         if (row?.status === "evaluated") requireObjectArray(row.appliedMapping, `${path}.appliedMapping`, ["action"], issues);
+        if (row?.scope === "introduced-by-change" && row?.status === "evaluated" && !documents.comparison) issues.push(issue(`${path}.status`, "An introduced-by-change rule can be evaluated only when a comparison report is supplied.", "not_applicable", row.status));
         if (row?.status === "not_applicable") {
           if (row.scope !== "introduced-by-change") issues.push(issue(`${path}.scope`, "Only introduced-by-change rules can be not_applicable.", "introduced-by-change", row.scope));
           requireString(row.reason, `${path}.reason`, issues);

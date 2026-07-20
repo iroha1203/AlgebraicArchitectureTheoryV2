@@ -640,6 +640,7 @@ async function main() {
         const sharedSourceContext = index.contexts.find((context) => context.atoms.includes(sharedSourceAtom.id));
         const sharedSourceCard = { ...insight.insightCards[0], id: 'insight:browser:shared-source-sibling', evidence: { ...insight.insightCards[0].evidence, atomRefs: [normalizedAtomId(sharedSourceAtom.id)], contextRefs: [normalizedContextId(sharedSourceContext.id)], sourceRefs: [sharedSource] } };
         const sharedSourceState = await window.__archview.loadAnalysisObject({ ...bundle, insight: { ...insight, insightCards: [sharedSourceCard], actionQueue: [] } }, 'shared source sibling Atom bundle');
+        const sharedSourceIssues = [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent);
         const acceptedPathEvidence = {
           candidateStatus: acceptedCandidateState.status,
           candidateClassifications: acceptedCandidateClassifications,
@@ -673,6 +674,7 @@ async function main() {
           arbitraryAtomStatus: arbitraryAtomState.status,
           arbitraryEvidenceStatus: arbitraryEvidenceState.status,
           sharedSourceStatus: sharedSourceState.status,
+          sharedSourceIssues,
         };
         const malformedJsonState = await window.__archview.loadAnalysisFiles([new File(['{'], 'archsig-run-manifest.json', { type: 'application/json' })], 'malformed JSON directory');
         const malformedJson = { status: malformedJsonState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
@@ -741,6 +743,13 @@ async function main() {
         const forgedGate = { ...gate, ruleOutcomes: [{ ruleId: 'browser-forged', scope: 'forged', status: 'skipped' }] };
         const forgedGateState = await window.__archview.loadAnalysisObject({ ...bundle, gate: forgedGate }, 'forged gate vocabulary bundle');
         const forgedGateVocabulary = { status: forgedGateState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
+        const { comparisonReport: _comparisonReport, ...gateInputsWithoutComparison } = gate.inputDigests;
+        const evaluatedWithoutComparisonGate = { ...gate, inputDigests: gateInputsWithoutComparison, ruleOutcomes: [{ ruleId: 'browser-introduced', scope: 'introduced-by-change', status: 'evaluated', appliedMapping: [] }] };
+        const evaluatedWithoutComparisonState = await window.__archview.loadAnalysisObject({ ...bundle, comparison: undefined, gate: evaluatedWithoutComparisonGate }, 'evaluated gate without comparison bundle');
+        const evaluatedWithoutComparison = { status: evaluatedWithoutComparisonState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
+        const mappedNotApplicableGate = { ...gate, inputDigests: gateInputsWithoutComparison, ruleOutcomes: [{ ruleId: 'browser-introduced', scope: 'introduced-by-change', status: 'not_applicable', reason: 'comparison report was not supplied', appliedMapping: [] }] };
+        const mappedNotApplicableState = await window.__archview.loadAnalysisObject({ ...bundle, comparison: undefined, gate: mappedNotApplicableGate }, 'mapped not applicable gate bundle');
+        const mappedNotApplicable = { status: mappedNotApplicableState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
         const forgedHeadRun = { ...comparison.inputDigests.headRun, runId: 'run:forged-head', archmap: { ...comparison.inputDigests.headRun.archmap, sha256: '9'.repeat(64) } };
         const forgedHeadComparison = { ...comparison, comparability: { level: 'verdict-row' }, inputDigests: { ...comparison.inputDigests, headRun: forgedHeadRun } };
         const forgedHeadDigest = await sha256Hex(forgedHeadComparison);
@@ -797,7 +806,7 @@ async function main() {
         await window.__archview.loadUrl('./fixtures/vertical-slice.archmap.json');
         const absent = { status: window.__archviewState.analysis.status, label: document.querySelector('#analysis-input-status').textContent };
         return {
-          accepted, analysisTask, acceptedPathEvidence, malformedJson, duplicateKey, schemaMismatch, invalidProfile, incompleteDigests, componentMismatch, runIdMismatch, mismatch, unresolved, normalizedInternal, swappedNormalized, invalidRow, invalidCard, forgedConclusion, staleVerdictRef, staleAssumptionRef, unresolvedEdge, unresolvedUnobservedEdge, observedAsUnobserved, invalidRef, unresolvedWitness, malformedGate, malformedComparison, gateMismatch, comparisonMismatch, duplicateGateMapping, forgedGateVocabulary, forgedComparisonHead, missingTransition, transitionMismatch, mutationIsolation, numericCanonical, mixedDirectory, malformedUrl, staleRace, redirected, crossOrigin, absent,
+          accepted, analysisTask, acceptedPathEvidence, malformedJson, duplicateKey, schemaMismatch, invalidProfile, incompleteDigests, componentMismatch, runIdMismatch, mismatch, unresolved, normalizedInternal, swappedNormalized, invalidRow, invalidCard, forgedConclusion, staleVerdictRef, staleAssumptionRef, unresolvedEdge, unresolvedUnobservedEdge, observedAsUnobserved, invalidRef, unresolvedWitness, malformedGate, malformedComparison, gateMismatch, comparisonMismatch, duplicateGateMapping, forgedGateVocabulary, evaluatedWithoutComparison, mappedNotApplicable, forgedComparisonHead, missingTransition, transitionMismatch, mutationIsolation, numericCanonical, mixedDirectory, malformedUrl, staleRace, redirected, crossOrigin, absent,
         };
       })()`,
     });
@@ -846,7 +855,7 @@ async function main() {
     if (!acceptedEvidence.mixedEdgeVisuals.some((row) => row.supported && row.color === 0xb87932) || !acceptedEvidence.mixedEdgeVisuals.some((row) => row.supported && row.color === 0x54799a) || !acceptedEvidence.unmeasuredEdgeVisuals.some((row) => row.supported && row.color === 0x7c7b76)) {
       throw new Error(`Relation support colors were not applied to rendered Three.js materials: ${JSON.stringify(acceptedEvidence)}`);
     }
-    if (acceptedEvidence.blockedGateStatus !== "accepted" || acceptedEvidence.blockedGateColor !== "rgb(161, 58, 50)" || acceptedEvidence.contradictoryVerdictStatus !== "malformed" || acceptedEvidence.unknownGateStatus !== "malformed" || acceptedEvidence.inconsistentGateStatus !== "malformed" || acceptedEvidence.invalidObservationStatus !== "malformed" || acceptedEvidence.mixedProvenanceStatus !== "unresolved" || acceptedEvidence.sameEvaluatorStatus !== "unresolved" || acceptedEvidence.arbitraryAtomStatus !== "unresolved" || acceptedEvidence.arbitraryEvidenceStatus !== "unresolved" || acceptedEvidence.sharedSourceStatus !== "unresolved") {
+    if (acceptedEvidence.blockedGateStatus !== "accepted" || acceptedEvidence.blockedGateColor !== "rgb(161, 58, 50)" || acceptedEvidence.contradictoryVerdictStatus !== "malformed" || acceptedEvidence.unknownGateStatus !== "malformed" || acceptedEvidence.inconsistentGateStatus !== "malformed" || acceptedEvidence.invalidObservationStatus !== "malformed" || acceptedEvidence.mixedProvenanceStatus !== "unresolved" || acceptedEvidence.sameEvaluatorStatus !== "unresolved" || acceptedEvidence.arbitraryAtomStatus !== "unresolved" || acceptedEvidence.arbitraryEvidenceStatus !== "unresolved" || acceptedEvidence.sharedSourceStatus !== "unresolved" || !acceptedEvidence.sharedSourceIssues.some((entry) => entry.includes("Finding Atom is not supported"))) {
       throw new Error(`Contradictory verdict, gate decision, or relation observation was accepted: ${JSON.stringify(acceptedEvidence)}`);
     }
     if (analysisValue.malformedJson.status !== "malformed" || !analysisValue.malformedJson.issues.some((entry) => entry.includes("not valid JSON")) || analysisValue.schemaMismatch.status !== "malformed" || !analysisValue.schemaMismatch.issues.some((entry) => entry.includes("must use archsig-analysis-summary/v0.5.4"))) {
@@ -855,7 +864,7 @@ async function main() {
     if (analysisValue.duplicateKey.status !== "malformed" || !analysisValue.duplicateKey.issues.some((entry) => entry.includes("Duplicate object key")) || analysisValue.invalidRow.status !== "malformed" || analysisValue.invalidCard.status !== "malformed" || analysisValue.forgedConclusion.status !== "malformed") {
       throw new Error(`Duplicate keys, invalid rows, or forged conclusions were accepted: ${JSON.stringify(analysisValue)}`);
     }
-    if (analysisValue.duplicateGateMapping.status !== "mismatch" || analysisValue.forgedGateVocabulary.status !== "malformed" || analysisValue.forgedComparisonHead.status !== "mismatch" || !analysisValue.forgedComparisonHead.issues.some((entry) => entry.includes("complete head run")) || analysisValue.missingTransition.status !== "mismatch") {
+    if (analysisValue.duplicateGateMapping.status !== "mismatch" || analysisValue.forgedGateVocabulary.status !== "malformed" || !analysisValue.forgedGateVocabulary.issues.some((entry) => entry.includes("producer vocabulary")) || analysisValue.evaluatedWithoutComparison.status !== "malformed" || !analysisValue.evaluatedWithoutComparison.issues.some((entry) => entry.includes("only when a comparison report is supplied")) || analysisValue.mappedNotApplicable.status !== "malformed" || !analysisValue.mappedNotApplicable.issues.some((entry) => entry.includes("cannot contain applied mappings")) || analysisValue.forgedComparisonHead.status !== "mismatch" || !analysisValue.forgedComparisonHead.issues.some((entry) => entry.includes("complete head run")) || analysisValue.missingTransition.status !== "mismatch") {
       throw new Error(`Incomplete comparison or duplicate gate mappings were accepted: ${JSON.stringify(analysisValue)}`);
     }
     if (analysisValue.staleVerdictRef.status !== "malformed" || !analysisValue.staleVerdictRef.issues.some((entry) => entry.includes("does not identify a structural verdict"))) {
