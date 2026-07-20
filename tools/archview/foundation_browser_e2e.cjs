@@ -493,6 +493,9 @@ async function main() {
         const unobservedPacket = { ...packet, computedInvariants: [{ invariantId: 'unobserved-edge-probe', kind: 'measurement-invariant', unobservedEdgeRefs: ['ctx:missing->ctx:checkout'] }] };
         const unobservedState = await window.__archview.loadAnalysisObject({ ...bundle, packet: unobservedPacket }, 'unresolved unobserved edge');
         const unresolvedUnobservedEdge = { status: unobservedState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
+        const observedAsUnobservedPacket = { ...packet, computedInvariants: [{ invariantId: 'observed-as-unobserved-probe', kind: 'measurement-invariant', unobservedEdgeRefs: [index.contexts[0].id + '->' + index.contexts[0].restrictsTo[0]] }] };
+        const observedAsUnobservedState = await window.__archview.loadAnalysisObject({ ...bundle, packet: observedAsUnobservedPacket }, 'observed edge marked unobserved');
+        const observedAsUnobserved = { status: observedAsUnobservedState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
         const invalidRefState = await window.__archview.loadAnalysisObject({ ...bundle, insight: { ...insight, insightCards: [{ ...insight.insightCards[0], evidence: { ...insight.insightCards[0].evidence, atomRefs: [42] } }] } }, 'non-string ref');
         const invalidRef = { status: invalidRefState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
         const witnessPacket = { ...packet, computedInvariants: [{ invariantId: 'witness-probe', kind: 'measurement-invariant', witnessAtomRef: 'atom:missing-witness' }] };
@@ -551,7 +554,7 @@ async function main() {
         await window.__archview.loadUrl('./fixtures/vertical-slice.archmap.json');
         const absent = { status: window.__archviewState.analysis.status, label: document.querySelector('#analysis-input-status').textContent };
         return {
-          accepted, malformedJson, duplicateKey, schemaMismatch, invalidProfile, incompleteDigests, componentMismatch, runIdMismatch, mismatch, unresolved, normalizedInternal, swappedNormalized, invalidRow, invalidCard, forgedConclusion, unresolvedEdge, unresolvedUnobservedEdge, invalidRef, unresolvedWitness, malformedGate, malformedComparison, gateMismatch, comparisonMismatch, mutationIsolation, numericCanonical, mixedDirectory, malformedUrl, staleRace, redirected, crossOrigin, absent,
+          accepted, malformedJson, duplicateKey, schemaMismatch, invalidProfile, incompleteDigests, componentMismatch, runIdMismatch, mismatch, unresolved, normalizedInternal, swappedNormalized, invalidRow, invalidCard, forgedConclusion, unresolvedEdge, unresolvedUnobservedEdge, observedAsUnobserved, invalidRef, unresolvedWitness, malformedGate, malformedComparison, gateMismatch, comparisonMismatch, mutationIsolation, numericCanonical, mixedDirectory, malformedUrl, staleRace, redirected, crossOrigin, absent,
         };
       })()`,
     });
@@ -577,7 +580,7 @@ async function main() {
     if (analysisValue.unresolved.status !== "unresolved" || !analysisValue.unresolved.issues.some((entry) => entry.includes("atom:missing-from-archmap")) || analysisValue.normalizedInternal.status !== "unresolved" || !analysisValue.normalizedInternal.issues.some((entry) => entry.includes("atom:missing-from-archmap"))) {
       throw new Error(`Unresolved normalized ID was not rejected fail-closed: ${JSON.stringify(analysisValue)}`);
     }
-    if (analysisValue.swappedNormalized.status !== "unresolved" || !analysisValue.swappedNormalized.issues.some((entry) => entry.includes("deterministic ArchSig projection")) || analysisValue.unresolvedEdge.status !== "unresolved" || !analysisValue.unresolvedEdge.issues.some((entry) => entry.includes("explicit ArchMap Context relation")) || analysisValue.unresolvedUnobservedEdge.status !== "unresolved" || analysisValue.invalidRef.status !== "malformed" || analysisValue.unresolvedWitness.status !== "unresolved") {
+    if (analysisValue.swappedNormalized.status !== "unresolved" || !analysisValue.swappedNormalized.issues.some((entry) => entry.includes("deterministic ArchSig projection")) || analysisValue.unresolvedEdge.status !== "unresolved" || !analysisValue.unresolvedEdge.issues.some((entry) => entry.includes("explicit ArchMap Context relation")) || analysisValue.unresolvedUnobservedEdge.status !== "unresolved" || analysisValue.observedAsUnobserved.status !== "unresolved" || analysisValue.invalidRef.status !== "malformed" || analysisValue.unresolvedWitness.status !== "unresolved") {
       throw new Error(`Swapped normalized identity or unresolved edge was accepted: ${JSON.stringify(analysisValue)}`);
     }
     if (analysisValue.malformedGate.status !== "malformed" || !analysisValue.malformedGate.issues.some((entry) => entry.includes("archsig-gate-report.json")) || analysisValue.malformedComparison.status !== "malformed" || !analysisValue.malformedComparison.issues.some((entry) => entry.includes("archsig-comparison-report.json"))) {

@@ -397,9 +397,9 @@ function validateNormalizedBridge(normalized, index, issues) {
 }
 
 const REF_FIELDS = Object.freeze({
-  atomRefs: "atoms", supportAtomRefs: "atoms", mismatchSupportRefs: "atoms", sharedAtomRefs: "atoms", pairingAtomRefs: "atoms",
-  atomObservationRefs: "atoms", concreteSupportRefs: "atoms", fromAtomRefs: "atoms", repairPathAtomRefs: "atoms", rawAtomRefs: "atoms", witnessSupportRefs: "atoms",
-  contextRefs: "contexts", sourceRefs: "sources", omittedSourceRefs: "sources", coverRefs: "covers",
+  atomRefs: "atoms", supportAtomRefs: "atoms", mismatchSupportRefs: "atoms", sharedAtomRefs: "atoms",
+  atomObservationRefs: "atoms", concreteSupportRefs: "atoms", fromAtomRefs: "atoms", rawAtomRefs: "atoms", witnessSupportRefs: "atoms",
+  contextRefs: "contexts", sourceRefs: "sources", coverRefs: "covers",
 });
 const SINGLE_REF_FIELDS = Object.freeze({
   atomRef: "atoms", supportAtomRef: "atoms", boundaryAtomRef: "atoms", cochainAtomRef: "atoms", dOmegaAtomRef: "atoms", witnessAtomRef: "atoms",
@@ -414,6 +414,14 @@ function resolves(ref, kind, index, bridges) {
 
 function collectUnresolved(value, path, index, bridges, unresolved) {
   if (typeof value === "string") {
+    const edge = value.match(/^(ctx:[^>]+)->(ctx:.+)$/);
+    if (edge) {
+      const source = bridges.contexts.get(edge[1]) || edge[1];
+      const target = bridges.contexts.get(edge[2]) || edge[2];
+      const context = index.contextsById.get(source);
+      if (!context || !index.contextsById.has(target) || !(context.restrictsTo || []).includes(target)) unresolved.push(issue(path, `${value} does not resolve to an explicit ArchMap Context relation.`, null, value));
+      return;
+    }
     const kind = value.startsWith("atom:") ? "atoms" : value.startsWith("ctx:") ? "contexts" : value.startsWith("cover:") ? "covers" : value.startsWith("src:") ? "sources" : null;
     if (kind && !resolves(value, kind, index, bridges)) unresolved.push(issue(path, `${value} does not resolve through the loaded ArchMap or normalized identity bridge.`, null, value));
     return;
@@ -430,7 +438,8 @@ function collectUnresolved(value, path, index, bridges, unresolved) {
         const target = bridges.contexts.get(match[2]) || match[2];
         const context = index.contextsById.get(source);
         const endpointsResolve = context && index.contextsById.has(target);
-        const relationResolves = key === "unobservedEdgeRefs" || (context?.restrictsTo || []).includes(target);
+        const observed = (context?.restrictsTo || []).includes(target);
+        const relationResolves = key === "unobservedEdgeRefs" ? !observed : observed;
         if (!endpointsResolve || !relationResolves) unresolved.push(issue(`${childPath}[${position}]`, `${ref} does not resolve to ${key === "edgeRefs" ? "an explicit ArchMap Context relation" : "loaded ArchMap Contexts"}.`, null, ref));
       });
       continue;
