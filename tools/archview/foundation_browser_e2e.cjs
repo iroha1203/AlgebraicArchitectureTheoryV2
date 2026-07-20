@@ -227,7 +227,7 @@ async function main() {
           inputStatus: root.dataset.inputStatus,
           analysisInputStatus: root.dataset.analysisStatus,
           counts: window.__archviewState.architecture.index.counts,
-          atomButtons: document.querySelectorAll('[data-atom-id]').length,
+          atomButtons: document.querySelectorAll('#subject-list [data-atom-id]').length,
           renderStats: window.__archviewRenderStats,
           selection: checkoutSelection,
           source: checkoutSource,
@@ -292,6 +292,111 @@ async function main() {
       throw new Error(`Architecture understanding task score was below 80%: ${JSON.stringify(value)}`);
     }
 
+    const focusAndActivate = async (selector) => {
+      const focused = await page.send("Runtime.evaluate", {
+        returnByValue: true,
+        expression: `(() => { const target = document.querySelector(${JSON.stringify(selector)}); if (!target) return false; target.focus(); return document.activeElement === target; })()`,
+      });
+      if (!focused.result.value) throw new Error(`Keyboard target was unavailable: ${selector}`);
+      await page.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Enter", code: "Enter", text: "\r", unmodifiedText: "\r", windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13 });
+      await page.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Enter", code: "Enter", windowsVirtualKeyCode: 13 });
+    };
+
+    await page.send("Runtime.evaluate", { expression: `document.querySelector('[data-surface="outline"]').click()` });
+    await focusAndActivate('#outline-table [data-outline-level="Context"][data-context-id="ctx:checkout"]');
+    const contextStep = await page.send("Runtime.evaluate", { returnByValue: true, expression: `window.__archviewState.selection?.kind + ':' + window.__archviewState.selection?.id` });
+    await focusAndActivate('#outline-table [data-outline-level="Subject"][data-context-id="ctx:checkout"][data-subject="CheckoutService"]');
+    const subjectStep = await page.send("Runtime.evaluate", { returnByValue: true, expression: `window.__archviewState.selection?.kind + ':' + window.__archviewState.selection?.id` });
+    await focusAndActivate('#outline-table [data-outline-level="Atom"][data-context-id="ctx:checkout"][data-atom-id="atom:settlement-contract"]');
+    const atomStep = await page.send("Runtime.evaluate", { returnByValue: true, expression: `window.__archviewState.selection?.kind + ':' + window.__archviewState.selection?.id` });
+    await focusAndActivate('#outline-table [data-outline-level="Source"][data-context-id="ctx:checkout"][data-atom-id="atom:settlement-contract"][data-source-id="src:contract"]');
+    const sourceStep = await page.send("Runtime.evaluate", { returnByValue: true, expression: `window.__archviewState.selection?.kind + ':' + window.__archviewState.selection?.id` });
+    const interaction = await page.send("Runtime.evaluate", {
+      returnByValue: true,
+      expression: `(() => {
+        const beforeMode = structuredClone(window.__archviewState.selection);
+        const beforeCamera = window.__archview.cameraState();
+        document.querySelector('[data-mode-button="analysis"]').click();
+        const analysisSelection = structuredClone(window.__archviewState.selection);
+        document.querySelector('[data-mode-button="improve"]').click();
+        const improveSelection = structuredClone(window.__archviewState.selection);
+        const rotated = window.__archview.nudgeCamera('rotate-left');
+        const panned = window.__archview.nudgeCamera('pan-right');
+        const zoomed = window.__archview.nudgeCamera('zoom-in');
+        document.querySelector('#focus-selection-button').click();
+        const focused = window.__archview.cameraState();
+        const inspector = document.querySelector('.inspector').textContent;
+        const sourcePath = document.querySelector('#source-path').textContent;
+        const selectionVisual = window.__archviewSelectionVisual;
+        document.querySelector('#overview-button').click();
+        const reset = window.__archview.cameraState();
+        return {
+          surfaceCount: window.__archviewFoundationState.surfaceCount,
+          surface: window.__archviewState.surface,
+          atlasHidden: document.querySelector('#atlas-canvas-host').hidden,
+          outlineVisible: !document.querySelector('#atlas-outline').hidden,
+          levels: [...new Set([...document.querySelectorAll('#outline-table [data-outline-level]')].map((row) => row.dataset.outlineLevel))],
+          contextStep: ${JSON.stringify(contextStep.result.value)}, subjectStep: ${JSON.stringify(subjectStep.result.value)}, atomStep: ${JSON.stringify(atomStep.result.value)}, sourceStep: ${JSON.stringify(sourceStep.result.value)},
+          beforeMode, analysisSelection, improveSelection,
+          inspector, sourcePath, selectionVisual,
+          camera: {
+            capabilities: { rotate: beforeCamera.rotate, pan: beforeCamera.pan, zoom: beforeCamera.zoom },
+            rotated: JSON.stringify(rotated.position) !== JSON.stringify(beforeCamera.position),
+            panned: JSON.stringify(panned.target) !== JSON.stringify(rotated.target),
+            zoomed: zoomed.distance < panned.distance,
+            focused: JSON.stringify(focused.target) !== JSON.stringify(zoomed.target),
+            resetPosition: reset.position,
+            resetTarget: reset.target,
+          },
+          legend: document.querySelector('.state-legend').textContent,
+          miniMapContexts: document.querySelectorAll('#atlas-mini-map [data-mini-map-context]').length,
+          resetSelection: window.__archviewState.selection,
+        };
+      })()`,
+    });
+    if (interaction.exceptionDetails) throw new Error(`Interaction browser probe raised: ${JSON.stringify(interaction.exceptionDetails)}`);
+    const interactionValue = interaction.result.value;
+    if (interactionValue.surfaceCount !== 2 || interactionValue.surface !== "outline" || !interactionValue.atlasHidden || !interactionValue.outlineVisible || !["Context", "Subject", "Atom", "Source"].every((level) => interactionValue.levels.includes(level))) {
+      throw new Error(`Outline surface did not expose the complete alternate path: ${JSON.stringify(interactionValue)}`);
+    }
+    if (interactionValue.contextStep !== "context:ctx:checkout" || interactionValue.subjectStep !== "subject:CheckoutService" || interactionValue.atomStep !== "atom:atom:settlement-contract" || interactionValue.sourceStep !== "source:src:contract" || !interactionValue.inspector.includes("contracts/payment-lifecycle.md")) {
+      throw new Error(`Keyboard-only Context to Source task failed: ${JSON.stringify(interactionValue)}`);
+    }
+    if (JSON.stringify(interactionValue.beforeMode) !== JSON.stringify(interactionValue.analysisSelection) || JSON.stringify(interactionValue.beforeMode) !== JSON.stringify(interactionValue.improveSelection) || !interactionValue.inspector.includes("Source") || interactionValue.selectionVisual?.kind !== "source" || interactionValue.selectionVisual?.outlines < 1) {
+      throw new Error(`Selection was not shared across surfaces, modes, Inspector, and 3D: ${JSON.stringify(interactionValue)}`);
+    }
+    const nearVector = (actual, expected) => actual.length === expected.length && actual.every((value, index) => Math.abs(value - expected[index]) < 1e-9);
+    if (!Object.values(interactionValue.camera.capabilities).every(Boolean) || !interactionValue.camera.rotated || !interactionValue.camera.panned || !interactionValue.camera.zoomed || !interactionValue.camera.focused || !nearVector(interactionValue.camera.resetPosition, [14, 13, 18]) || !nearVector(interactionValue.camera.resetTarget, [0, 0, 0])) {
+      throw new Error(`Camera rotate, pan, zoom, focus, or reset failed: ${JSON.stringify(interactionValue)}`);
+    }
+    if (!interactionValue.legend.includes("◆") || !interactionValue.legend.includes("○") || !interactionValue.legend.includes("⋯") || interactionValue.miniMapContexts !== 3 || interactionValue.resetSelection?.kind !== "cover") {
+      throw new Error(`Non-color state cues, mini-map, or overview reset were incomplete: ${JSON.stringify(interactionValue)}`);
+    }
+    await page.send("Runtime.evaluate", { expression: `document.querySelector('[data-mode-button="architecture"]').click(); document.querySelector('[data-surface="atlas"]').click();` });
+    const pointerStart = await page.send("Runtime.evaluate", {
+      returnByValue: true,
+      expression: `(() => { const canvas = document.querySelector('#atlas-canvas-host canvas'); const rect = canvas.getBoundingClientRect(); canvas.focus(); return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, camera: window.__archview.cameraState(), compass: document.querySelector('#atlas-compass-needle').style.transform }; })()`,
+    });
+    const pointer = pointerStart.result.value;
+    await page.send("Input.dispatchMouseEvent", { type: "mousePressed", x: pointer.x, y: pointer.y, button: "left", buttons: 1, clickCount: 1 });
+    await page.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: pointer.x + 90, y: pointer.y + 24, button: "left", buttons: 1 });
+    await page.send("Input.dispatchMouseEvent", { type: "mouseReleased", x: pointer.x + 90, y: pointer.y + 24, button: "left", buttons: 0, clickCount: 1 });
+    const compassAfterOrbit = await waitFor(page, `document.querySelector('#atlas-compass-needle').style.transform !== ${JSON.stringify(pointer.compass)} && document.querySelector('#atlas-compass-needle').style.transform`);
+    const afterOrbit = await page.send("Runtime.evaluate", { returnByValue: true, expression: `window.__archview.cameraState()` });
+    await page.send("Input.dispatchMouseEvent", { type: "mousePressed", x: pointer.x, y: pointer.y, button: "right", buttons: 2, clickCount: 1 });
+    await page.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: pointer.x + 70, y: pointer.y + 20, button: "right", buttons: 2 });
+    await page.send("Input.dispatchMouseEvent", { type: "mouseReleased", x: pointer.x + 70, y: pointer.y + 20, button: "right", buttons: 0, clickCount: 1 });
+    const afterPan = await page.send("Runtime.evaluate", { returnByValue: true, expression: `window.__archview.cameraState()` });
+    await page.send("Input.dispatchMouseEvent", { type: "mouseWheel", x: pointer.x, y: pointer.y, deltaX: 0, deltaY: -320 });
+    const afterZoom = await page.send("Runtime.evaluate", { returnByValue: true, expression: `window.__archview.cameraState()` });
+    await page.send("Runtime.evaluate", { expression: `document.querySelector('#atlas-canvas-host canvas').focus()` });
+    await page.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Home", code: "Home", windowsVirtualKeyCode: 36 });
+    await page.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Home", code: "Home", windowsVirtualKeyCode: 36 });
+    const afterKeyboardReset = await page.send("Runtime.evaluate", { returnByValue: true, expression: `window.__archview.cameraState()` });
+    if (!compassAfterOrbit || JSON.stringify(afterOrbit.result.value.position) === JSON.stringify(pointer.camera.position) || JSON.stringify(afterPan.result.value.target) === JSON.stringify(afterOrbit.result.value.target) || !(afterZoom.result.value.distance < afterPan.result.value.distance) || !nearVector(afterKeyboardReset.result.value.position, [14, 13, 18])) {
+      throw new Error(`Pointer camera controls or keyboard reset failed: ${JSON.stringify({ start: pointer.camera, orbit: afterOrbit.result.value, pan: afterPan.result.value, zoom: afterZoom.result.value, reset: afterKeyboardReset.result.value })}`);
+    }
+
     const repeated = await page.send("Runtime.evaluate", {
       awaitPromise: true,
       returnByValue: true,
@@ -338,7 +443,7 @@ async function main() {
           atoms: window.__archviewLayout.atoms.filter((entry) => entry.contextId === 'c').length,
           sharedSupports: window.__archviewLayout.sharedSupports.length,
           restrictions: window.__archviewLayout.restrictions.length,
-          atomButtons: document.querySelectorAll('[data-atom-id="a"][data-context-id="c"]').length,
+          atomButtons: document.querySelectorAll('#subject-list [data-atom-id="a"][data-context-id="c"]').length,
           subjectCount: document.querySelector('[data-subject="A"][data-context-id="c"] .item-count')?.textContent,
           singleArea: singleContext.width * singleContext.height,
           duplicateArea: duplicateContext.width * duplicateContext.height,
@@ -968,6 +1073,31 @@ async function main() {
       throw new Error(`Input cases emitted runtime or console errors: ${JSON.stringify({ runtimeErrors, consoleErrors })}`);
     }
 
+    await page.send("Emulation.setEmulatedMedia", {
+      media: "screen",
+      features: [
+        { name: "prefers-reduced-motion", value: "reduce" },
+        { name: "prefers-contrast", value: "more" },
+      ],
+    });
+    await page.send("Page.navigate", { url: `http://127.0.0.1:${port}/index.html` });
+    await waitFor(page, "window.__archviewState?.architecture?.status === 'loaded'");
+    const accessibilityMedia = await page.send("Runtime.evaluate", {
+      returnByValue: true,
+      expression: `(() => ({
+        reducedMedia: matchMedia('(prefers-reduced-motion: reduce)').matches,
+        contrastMedia: matchMedia('(prefers-contrast: more)').matches,
+        rendererReducedMotion: window.__archview.cameraState().reducedMotion,
+        highContrastInk: getComputedStyle(document.documentElement).getPropertyValue('--ink').trim(),
+        focusOutlineWidth: getComputedStyle(document.querySelector('[data-surface="outline"]'), ':focus-visible').outlineWidth,
+      }))()`,
+    });
+    const mediaValue = accessibilityMedia.result.value;
+    if (!mediaValue.reducedMedia || !mediaValue.contrastMedia || !mediaValue.rendererReducedMotion || mediaValue.highContrastInk !== "#000") {
+      throw new Error(`Reduced-motion or high-contrast preferences were not honored: ${JSON.stringify(mediaValue)}`);
+    }
+    await page.send("Emulation.setEmulatedMedia", { media: "screen", features: [] });
+
     await page.send("Page.addScriptToEvaluateOnNewDocument", {
       source: `(() => {
         const original = HTMLCanvasElement.prototype.getContext;
@@ -983,12 +1113,15 @@ async function main() {
       returnByValue: true,
       expression: `(() => ({
         phase: document.querySelector('#archview-app').dataset.phase,
+        surface: window.__archviewState.surface,
+        atlasHidden: document.querySelector('#atlas-canvas-host').hidden,
+        outlineVisible: !document.querySelector('#atlas-outline').hidden,
         errorVisible: !document.querySelector('#webgl-error').hidden,
         message: document.querySelector('#webgl-error-message').textContent,
         shellVisible: document.querySelector('.scope-explorer').getBoundingClientRect().width > 0,
       }))()`,
     });
-    if (failure.result.value.phase !== "error" || !failure.result.value.errorVisible || !failure.result.value.shellVisible) {
+    if (failure.result.value.phase !== "error" || failure.result.value.surface !== "outline" || !failure.result.value.atlasHidden || !failure.result.value.outlineVisible || !failure.result.value.errorVisible || !failure.result.value.shellVisible) {
       throw new Error(`WebGL failure was not shown in the shell: ${JSON.stringify(failure.result.value)}`);
     }
 
@@ -1007,7 +1140,7 @@ async function main() {
       throw new Error(`Bootstrap failure was not shown in the shell: ${JSON.stringify(bootstrapFailure.result.value)}`);
     }
 
-    console.log(JSON.stringify({ normal: value, analysis: analysisValue, empty: empty.result.value, malformed: malformed.result.value, unresolved: unresolved.result.value, webglFailure: failure.result.value, bootstrapFailure: bootstrapFailure.result.value }));
+    console.log(JSON.stringify({ normal: value, interaction: interactionValue, accessibilityMedia: mediaValue, analysis: analysisValue, empty: empty.result.value, malformed: malformed.result.value, unresolved: unresolved.result.value, webglFailure: failure.result.value, bootstrapFailure: bootstrapFailure.result.value }));
   } finally {
     await cdp.send("Target.closeTarget", { targetId: target.targetId }).catch(() => {});
     cdp.close();

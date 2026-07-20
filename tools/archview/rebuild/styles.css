@@ -323,10 +323,12 @@ summary:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .breadcrumb,
-.view-controls {
+.view-controls,
+.surface-controls {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -341,10 +343,36 @@ summary:focus-visible {
 .breadcrumb button { max-width: 150px; padding: 3px 4px; overflow: hidden; color: var(--ink-soft); text-overflow: ellipsis; white-space: nowrap; }
 .breadcrumb button[aria-current="true"] { color: var(--indigo); font-weight: 600; }
 .view-controls button { padding: 6px 9px; border-radius: 4px; color: var(--ink-soft); font-size: 12px; }
-.view-controls button[aria-pressed="true"] { color: var(--paper-raised); background: var(--indigo); }
+.surface-controls button { padding: 6px 9px; border-radius: 4px; color: var(--ink-soft); font-size: 11px; }
+.view-controls button[aria-pressed="true"],
+.surface-controls button[aria-pressed="true"] { color: var(--paper-raised); background: var(--indigo); }
 
 .atlas-canvas-host,
 .atlas-canvas-host canvas { width: 100%; height: 100%; display: block; }
+.atlas-canvas-host canvas:focus-visible { outline: 4px solid var(--indigo); outline-offset: -5px; }
+
+.atlas-outline {
+  position: absolute;
+  z-index: 3;
+  inset: 76px 18px 18px;
+  overflow: auto;
+  padding: 22px;
+  border: 1px solid var(--rule);
+  border-radius: 7px;
+  background: rgba(250, 247, 239, 0.96);
+  box-shadow: 0 12px 30px var(--shadow);
+}
+.atlas-outline[hidden] { display: none; }
+.outline-heading-row { display: flex; align-items: end; justify-content: space-between; gap: 18px; margin-bottom: 16px; }
+.outline-heading-row h2 { margin: 5px 0 0; font-family: Georgia, "Times New Roman", serif; font-size: 22px; font-weight: 400; }
+.outline-heading-row p { color: var(--ink-soft); font-size: 11px; }
+.outline-table { width: 100%; border-collapse: collapse; color: var(--ink-soft); font-size: 11px; }
+.outline-table th,
+.outline-table td { padding: 8px 9px; border-bottom: 1px solid var(--rule); text-align: left; vertical-align: top; }
+.outline-table thead th { position: sticky; z-index: 1; top: 0; color: var(--ink); background: var(--paper-raised); }
+.outline-table tbody th { color: var(--ink); font-weight: 600; }
+.outline-table button { padding: 4px 6px; border: 1px solid var(--rule); border-radius: 4px; color: var(--indigo); text-align: left; }
+.outline-table button[aria-current="true"] { border-color: var(--indigo); background: var(--indigo-soft); font-weight: 700; }
 
 .atlas-hover-label {
   position: absolute;
@@ -402,7 +430,26 @@ summary:focus-visible {
 }
 
 .compass svg { width: 44px; height: 44px; fill: rgba(49, 77, 125, 0.08); stroke: currentColor; stroke-width: 1; }
+.mini-map {
+  position: absolute;
+  z-index: 4;
+  left: 18px;
+  bottom: 42px;
+  width: 150px;
+  height: 96px;
+  padding: 5px;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: rgba(250, 247, 239, 0.9);
+  box-shadow: 0 4px 14px var(--shadow);
+}
+.mini-map-field { position: relative; width: 100%; height: 100%; }
+.mini-map button { position: absolute; max-width: 72px; padding: 2px 4px; transform: translate(-50%, -50%); overflow: hidden; border: 1px solid var(--graphite); border-radius: 3px; color: var(--ink-soft); background: var(--paper-raised); font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.mini-map button[aria-current="true"] { border-color: var(--indigo); color: var(--indigo); font-weight: 700; }
+.state-legend { position: absolute; z-index: 4; left: 50%; bottom: 18px; display: flex; gap: 10px; transform: translateX(-50%); color: var(--ink-soft); font-size: 9px; }
+.state-legend b { color: var(--ink); }
 .visual-channel-note { position: absolute; z-index: 4; left: 18px; bottom: 15px; margin: 0; color: var(--graphite); font-size: 10px; letter-spacing: 0.04em; }
+.app-shell[data-surface="outline"] .render-error { top: auto; right: 18px; bottom: 18px; left: auto; width: min(330px, calc(100% - 36px)); transform: none; }
 
 .inspector details { margin-top: 24px; padding-top: 15px; border-top: 1px solid var(--rule); }
 .inspector summary { cursor: pointer; color: var(--ink-soft); font-size: 12px; }
@@ -460,4 +507,23 @@ summary:focus-visible {
   *,
   *::before,
   *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+
+@media (prefers-contrast: more) {
+  :root { --ink: #000; --ink-soft: #222; --graphite: #444; --rule: rgba(0, 0, 0, 0.62); --indigo: #102f68; }
+  button:focus-visible,
+  input:focus-visible,
+  summary:focus-visible { outline-color: #000; outline-width: 4px; }
+  .outline-table button,
+  .mini-map button { border-width: 2px; }
+}
+
+@media (forced-colors: active) {
+  button,
+  input,
+  summary,
+  .atlas-outline,
+  .mini-map { forced-color-adjust: auto; }
+  .state-legend b { color: CanvasText; }
+  .atlas-panel::after { display: none; }
 }

@@ -1,7 +1,9 @@
 export const MODES = Object.freeze(["architecture", "analysis", "improve"]);
+export const SURFACES = Object.freeze(["atlas", "outline"]);
 
 const initialState = Object.freeze({
   mode: "architecture",
+  surface: "atlas",
   view: "isometric",
   phase: "booting",
   renderer: "starting",
@@ -38,6 +40,11 @@ export function createArchViewState() {
     selectMode(mode) {
       if (!MODES.includes(mode)) throw new Error(`Unknown ArchView mode: ${mode}`);
       state = { ...state, mode };
+      return publish();
+    },
+    selectSurface(surface) {
+      if (!SURFACES.includes(surface)) throw new Error(`Unknown ArchView surface: ${surface}`);
+      state = { ...state, surface };
       return publish();
     },
     selectView(view) {

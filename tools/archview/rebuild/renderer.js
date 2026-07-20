@@ -74,6 +74,8 @@ export function createAtlasRenderer(host) {
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.domElement.setAttribute("aria-label", "Paper Atlas three-dimensional canvas");
+  renderer.domElement.setAttribute("aria-describedby", "camera-help");
+  renderer.domElement.tabIndex = 0;
   host.replaceChildren(renderer.domElement);
 
   const scene = new THREE.Scene();
@@ -81,9 +83,13 @@ export function createAtlasRenderer(host) {
 
   const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 300);
   const controls = new OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  controls.enableDamping = !reducedMotion;
   controls.dampingFactor = 0.07;
   controls.autoRotate = false;
+  controls.enableRotate = true;
+  controls.enablePan = true;
+  controls.enableZoom = true;
   controls.minDistance = 8;
   controls.maxDistance = 80;
   controls.maxPolarAngle = Math.PI * 0.49;
@@ -115,6 +121,8 @@ export function createAtlasRenderer(host) {
   let atomMeshes = [];
   let selectableMeshes = [];
   let analysisSupport = null;
+  let currentLayout = null;
+  let currentSelection = null;
   let onSelection = null;
   let onSceneHover = null;
 
@@ -131,6 +139,8 @@ export function createAtlasRenderer(host) {
 
   let frame = 0;
   let disposed = false;
+  const compass = document.querySelector("#atlas-compass");
+  const compassNeedle = document.querySelector("#atlas-compass-needle");
 
   const resize = () => {
     const width = Math.max(1, host.clientWidth);
@@ -143,6 +153,13 @@ export function createAtlasRenderer(host) {
   const render = () => {
     if (disposed) return;
     controls.update();
+    if (compassNeedle) {
+      const direction = camera.position.clone().sub(controls.target);
+      const bearing = THREE.MathUtils.radToDeg(Math.atan2(direction.x, direction.z));
+      compassNeedle.style.transform = `rotate(${-bearing}deg)`;
+      compassNeedle.style.transformOrigin = "21px 21px";
+      compass?.setAttribute("aria-label", `Atlas camera bearing ${Math.round((bearing + 360) % 360)} degrees`);
+    }
     renderer.render(scene, camera);
     frame = window.requestAnimationFrame(render);
   };
@@ -150,9 +167,13 @@ export function createAtlasRenderer(host) {
   const setView = (name) => {
     const view = CAMERA_VIEWS[name];
     if (!view) throw new Error(`Unknown camera view: ${name}`);
+    const damping = controls.enableDamping;
+    controls.enableDamping = false;
+    controls.update();
     camera.position.fromArray(view.position);
     controls.target.fromArray(view.target);
     controls.update();
+    controls.enableDamping = damping;
   };
 
   const reset = () => setView("isometric");
@@ -163,18 +184,87 @@ export function createAtlasRenderer(host) {
   resizeObserver.observe(host);
   frame = window.requestAnimationFrame(render);
 
-  const selectAtom = (atomId) => {
+  const selectionMatches = (data, selection) => {
+    if (!selection) return false;
+    if (selection.kind === "source") return data.kind === "atom" && data.atomId === selection.atomId;
+    if (selection.kind === "atom") return data.kind === "atom" && data.atomId === selection.id && (!selection.contextId || data.contextId === selection.contextId);
+    if (selection.kind === "context") return data.kind === "context" && data.contextId === selection.id;
+    if (selection.kind === "subject") return data.kind === "subject" && data.subject === selection.id && data.contextId === selection.contextId;
+    if (selection.kind === "restriction") return data.kind === "restriction" && data.sourceId === selection.sourceId && data.targetId === selection.targetId;
+    if (selection.kind === "shared-support") return data.kind === "shared-support" && data.atomId === selection.atomId;
+    return false;
+  };
+
+  const setSelection = (selection) => {
+    currentSelection = selection;
     disposeTree(selectionSurface);
-    for (const mesh of atomMeshes.filter((candidate) => candidate.userData.atomId === atomId)) {
-      const ring = new THREE.Mesh(
-        new THREE.RingGeometry(0.52, 0.62, 32),
-        new THREE.MeshBasicMaterial({ color: 0x314d7d, side: THREE.DoubleSide, transparent: true, opacity: 0.92 })
-      );
-      ring.rotation.x = -Math.PI / 2;
-      ring.position.copy(mesh.position);
-      ring.position.y = 0.2;
-      selectionSurface.add(ring);
+    const matches = selectableMeshes.filter((candidate) => selectionMatches(candidate.userData || {}, selection));
+    for (const object of matches) {
+      const bounds = new THREE.Box3().setFromObject(object);
+      if (bounds.isEmpty()) continue;
+      const helper = new THREE.Box3Helper(bounds, 0x314d7d);
+      helper.userData = { kind: "selection-outline", visualChannel: "decoration" };
+      selectionSurface.add(helper);
     }
+    return Object.freeze({ kind: selection?.kind || null, id: selection?.id || selection?.atomId || null, outlines: matches.length });
+  };
+
+  const selectAtom = (atomId) => setSelection({ kind: "atom", id: atomId });
+
+  const focusSelection = (selection = currentSelection) => {
+    if (!selection || !currentLayout) return false;
+    let point = null;
+    if (selection.kind === "context") point = currentLayout.contexts.find((row) => row.id === selection.id)?.position;
+    if (selection.kind === "subject") point = currentLayout.subjects.find((row) => row.subject === selection.id && row.contextId === selection.contextId)?.position;
+    if (["atom", "source"].includes(selection.kind)) {
+      const atomId = selection.kind === "source" ? selection.atomId : selection.id;
+      point = currentLayout.atoms.find((row) => row.atomId === atomId && (!selection.contextId || row.contextId === selection.contextId))?.position;
+    }
+    if (selection.kind === "restriction") {
+      const row = currentLayout.restrictions.find((candidate) => candidate.sourceId === selection.sourceId && candidate.targetId === selection.targetId);
+      if (row) point = { x: (row.source.x + row.target.x) / 2, y: 0.3, z: (row.source.z + row.target.z) / 2 };
+    }
+    if (selection.kind === "shared-support") point = currentLayout.sharedSupports.find((row) => row.atomId === selection.atomId)?.position;
+    if (selection.kind === "cover") return reset(), true;
+    if (!point) return false;
+    const target = new THREE.Vector3(point.x, point.y || 0, point.z);
+    const offset = camera.position.clone().sub(controls.target);
+    const distance = THREE.MathUtils.clamp(offset.length(), controls.minDistance, 34);
+    if (!offset.length()) offset.set(14, 13, 18);
+    offset.setLength(distance);
+    const damping = controls.enableDamping;
+    controls.enableDamping = false;
+    controls.update();
+    controls.target.copy(target);
+    camera.position.copy(target).add(offset);
+    controls.update();
+    controls.enableDamping = damping;
+    return true;
+  };
+
+  const cameraState = () => Object.freeze({
+    position: Object.freeze(camera.position.toArray()),
+    target: Object.freeze(controls.target.toArray()),
+    distance: camera.position.distanceTo(controls.target),
+    rotate: controls.enableRotate,
+    pan: controls.enablePan,
+    zoom: controls.enableZoom,
+    reducedMotion,
+  });
+
+  const nudgeCamera = (command) => {
+    const offset = camera.position.clone().sub(controls.target);
+    if (command === "rotate-left" || command === "rotate-right") offset.applyAxisAngle(new THREE.Vector3(0, 1, 0), command === "rotate-left" ? 0.14 : -0.14);
+    if (command === "zoom-in" || command === "zoom-out") offset.multiplyScalar(command === "zoom-in" ? 0.86 : 1.16).clampLength(controls.minDistance, controls.maxDistance);
+    if (command.startsWith("pan-")) {
+      const forward = controls.target.clone().sub(camera.position).setY(0).normalize();
+      const right = new THREE.Vector3().crossVectors(forward, camera.up).normalize();
+      const delta = command === "pan-left" ? right.multiplyScalar(-1) : command === "pan-right" ? right : command === "pan-up" ? forward : forward.multiplyScalar(-1);
+      camera.position.add(delta);
+      controls.target.add(delta);
+    } else camera.position.copy(controls.target).add(offset);
+    controls.update();
+    return cameraState();
   };
 
   const rememberMaterial = (material) => {
@@ -233,6 +323,8 @@ export function createAtlasRenderer(host) {
     onSelection = selectHandler;
     onSceneHover = hoverHandler;
     analysisSupport = null;
+    currentLayout = layout;
+    currentSelection = null;
     if (!index || index.empty || !layout) return Object.freeze({ contextPlates: 0, subjectGroups: 0, atomGlyphs: 0, restrictions: 0, sharedSupports: 0 });
 
     layout.contexts.forEach((contextLayout, contextIndex) => {
@@ -355,16 +447,33 @@ export function createAtlasRenderer(host) {
     else if (data.kind === "atom") onSceneHover?.(`Atom · ${data.atomId} · ${data.contextId}`);
   };
   const handlePointerLeave = () => onSceneHover?.(null);
+  const handleKeyboard = (event) => {
+    const command = event.key === "ArrowLeft" ? (event.shiftKey ? "pan-left" : "rotate-left")
+      : event.key === "ArrowRight" ? (event.shiftKey ? "pan-right" : "rotate-right")
+      : event.key === "ArrowUp" && event.shiftKey ? "pan-up"
+      : event.key === "ArrowDown" && event.shiftKey ? "pan-down"
+      : ["+", "="].includes(event.key) ? "zoom-in"
+      : event.key === "-" ? "zoom-out" : null;
+    if (event.key === "0" || event.key === "Home") { event.preventDefault(); reset(); return; }
+    if (!command) return;
+    event.preventDefault();
+    nudgeCamera(command);
+  };
   renderer.domElement.addEventListener("pointerdown", handlePointer);
   renderer.domElement.addEventListener("pointermove", handleHover);
   renderer.domElement.addEventListener("pointerleave", handlePointerLeave);
+  renderer.domElement.addEventListener("keydown", handleKeyboard);
 
   return Object.freeze({
     setView,
     reset,
     setArchitecture,
     setAnalysisSupport,
+    setSelection,
     selectAtom,
+    focusSelection,
+    cameraState,
+    nudgeCamera,
     dispose() {
       if (disposed) return;
       disposed = true;
@@ -374,6 +483,7 @@ export function createAtlasRenderer(host) {
       renderer.domElement.removeEventListener("pointerdown", handlePointer);
       renderer.domElement.removeEventListener("pointermove", handleHover);
       renderer.domElement.removeEventListener("pointerleave", handlePointerLeave);
+      renderer.domElement.removeEventListener("keydown", handleKeyboard);
       disposeTree(architectureSurface);
       disposeTree(selectionSurface);
       paper.geometry.dispose();

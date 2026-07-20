@@ -2,7 +2,7 @@ import { buildArchMapIndex, loadArchMapFromUrl, parseArchMap } from "./archmap.j
 import { documentsFromFiles, documentsFromUrl, validateAnalysisBundle } from "./analysis.js";
 import { buildAnalysisView } from "./analysis-view.js";
 import { buildArchitectureLayout } from "./layout.js";
-import { createArchViewState, MODES } from "./state.js";
+import { createArchViewState, MODES, SURFACES } from "./state.js";
 
 const DEFAULT_ARCHMAP_URL = "./fixtures/vertical-slice.archmap.json";
 const MODE_COPY = Object.freeze({
@@ -138,6 +138,75 @@ function renderGeometryIndex(container, snapshot, layout, actions) {
     list.append(item);
   }
   container.replaceChildren(list);
+}
+
+function renderOutline(container, status, snapshot, actions) {
+  const index = snapshot.architecture.index;
+  const contexts = index ? visibleContexts(index, snapshot.cover) : [];
+  if (!index || !contexts.length) {
+    status.textContent = "No architecture rows available";
+    return replaceWithEmpty(container, "Load an ArchMap with a selected Cover to inspect the outline.");
+  }
+  const table = document.createElement("table");
+  table.className = "outline-table";
+  const head = document.createElement("thead");
+  head.innerHTML = "<tr><th>Level</th><th>Architectural fact</th><th>Context</th><th>Kind / source</th><th>Selection</th></tr>";
+  const body = document.createElement("tbody");
+  let rowCount = 0;
+  const appendRow = (level, label, contextLabel, detail, selected, action, data) => {
+    const row = document.createElement("tr");
+    row.dataset.outlineLevel = level;
+    const levelCell = document.createElement("th");
+    levelCell.scope = "row";
+    levelCell.textContent = level;
+    const labelCell = document.createElement("td");
+    labelCell.textContent = label;
+    const contextCell = document.createElement("td");
+    contextCell.textContent = contextLabel || "—";
+    const detailCell = document.createElement("td");
+    detailCell.textContent = detail || "—";
+    const actionCell = document.createElement("td");
+    const button = selectionButton(`Select ${level} ${label}`, { outlineLevel: level, ...data }, selected, action);
+    actionCell.append(button);
+    row.append(levelCell, labelCell, contextCell, detailCell, actionCell);
+    body.append(row);
+    rowCount += 1;
+  };
+  for (const context of contexts) {
+    appendRow("Context", displayName(context), context.id, `${new Set(context.atoms || []).size} Atoms`, snapshot.selection?.kind === "context" && snapshot.selection.id === context.id, () => actions.context(context.id), { contextId: context.id });
+    for (const group of subjectsFor(index, [context])) {
+      appendRow("Subject", group.subject, context.id, `${group.atoms.length} Atoms`, snapshot.selection?.kind === "subject" && snapshot.selection.id === group.subject && snapshot.selection.contextId === context.id, () => actions.subject(context.id, group.subject), { contextId: context.id, subject: group.subject });
+      for (const atom of group.atoms) {
+        appendRow("Atom", displayName(atom), context.id, atom.kind, snapshot.selection?.kind === "atom" && snapshot.selection.id === atom.id && snapshot.selection.contextId === context.id, () => actions.atom(atom.id, context.id), { contextId: context.id, atomId: atom.id });
+        for (const sourceRef of atom.refs || []) {
+          const source = resolveSource(index, sourceRef);
+          const label = source?.path || sourceRef;
+          appendRow("Source", label, context.id, source?.symbol || source?.section || sourceRef, snapshot.selection?.kind === "source" && snapshot.selection.id === sourceRef && snapshot.selection.atomId === atom.id, () => actions.source(sourceRef, atom.id, context.id), { contextId: context.id, atomId: atom.id, sourceId: sourceRef });
+        }
+      }
+    }
+  }
+  table.append(head, body);
+  container.replaceChildren(table);
+  status.textContent = `${rowCount} keyboard-selectable rows`;
+}
+
+function renderMiniMap(container, snapshot, layout, actions) {
+  if (!layout.contexts.length) return replaceWithEmpty(container, "No contexts");
+  const xs = layout.contexts.map((row) => row.position.x);
+  const zs = layout.contexts.map((row) => row.position.z);
+  const minX = Math.min(...xs), maxX = Math.max(...xs), minZ = Math.min(...zs), maxZ = Math.max(...zs);
+  const rangeX = Math.max(1, maxX - minX), rangeZ = Math.max(1, maxZ - minZ);
+  const map = document.createElement("div");
+  map.className = "mini-map-field";
+  layout.contexts.forEach((row) => {
+    const context = snapshot.architecture.index.contextsById.get(row.id);
+    const button = selectionButton(displayName(context), { miniMapContext: row.id }, snapshot.selection?.kind === "context" && snapshot.selection.id === row.id, () => actions.context(row.id));
+    button.style.left = `${8 + ((row.position.x - minX) / rangeX) * 78}%`;
+    button.style.top = `${8 + ((row.position.z - minZ) / rangeZ) * 76}%`;
+    map.append(button);
+  });
+  container.replaceChildren(map);
 }
 
 function factRow(term, value) {
@@ -560,6 +629,7 @@ export async function startArchView() {
   const errorMessage = requireElement("#webgl-error-message");
   const rendererStatus = requireElement("#renderer-status");
   const modeButtons = [...document.querySelectorAll("[data-mode-button]")];
+  const surfaceButtons = [...document.querySelectorAll("[data-surface]")];
   const viewButtons = [...document.querySelectorAll("[data-view]")];
   const state = createArchViewState();
   let atlasRenderer = null;
@@ -570,7 +640,7 @@ export async function startArchView() {
     cover(id) { state.selectCover(id); },
     context(id) { state.selectContext(id); },
     subject(contextId, subject) { state.selectSubject(contextId, subject); },
-    atom(id, contextId = null) { state.selectAtom(id, contextId); atlasRenderer?.selectAtom(id); },
+    atom(id, contextId = null) { state.selectAtom(id, contextId); },
     source(id, atomId = null, contextId = null, sourceTargetKey = null) { state.selectSource(id, atomId, contextId, sourceTargetKey); },
     restriction(sourceId, targetId) { state.selectRestriction(sourceId, targetId); },
     sharedSupport(atomId, contextIds) { state.selectSharedSupport(atomId, contextIds); },
@@ -590,7 +660,7 @@ export async function startArchView() {
   };
   const handleSceneHover = actions.hover;
   const publishTestState = (snapshot) => {
-    const publicState = { ...snapshot, modeCount: MODES.length, canvasCount: host.querySelectorAll("canvas").length };
+    const publicState = { ...snapshot, modeCount: MODES.length, surfaceCount: SURFACES.length, canvasCount: host.querySelectorAll("canvas").length, camera: atlasRenderer?.cameraState() || null };
     window.__archviewFoundationState = publicState;
     window.__archviewState = publicState;
   };
@@ -606,6 +676,7 @@ export async function startArchView() {
       window.__archviewRenderStats = atlasRenderer.setArchitecture(snapshot.architecture.index, layout, handleSceneSelection, handleSceneHover);
       renderedSignature = layout.signature;
     }
+    if (atlasRenderer) window.__archviewSelectionVisual = atlasRenderer.setSelection(snapshot.selection);
     if (atlasRenderer) {
       const support = snapshot.mode === "architecture" || !selectedFinding ? null : {
         atomIds: selectedFinding.supportAtomIds,
@@ -620,9 +691,11 @@ export async function startArchView() {
       window.__archviewAnalysisSupport = atlasRenderer.setAnalysisSupport(support);
     }
     root.dataset.mode = snapshot.mode;
+    root.dataset.surface = snapshot.surface;
     root.dataset.phase = snapshot.phase;
     root.dataset.inputStatus = snapshot.architecture.status;
     root.dataset.analysisStatus = snapshot.analysis.status;
+    requireElement(".atlas-panel").setAttribute("aria-label", snapshot.surface === "atlas" ? "3D Atom Atlas" : "Architecture Outline / Table");
     root.dataset.zoom = snapshot.zoom;
     requireElement("#repository-name").textContent = snapshot.repository || "No repository loaded";
     requireElement("#revision-name").textContent = snapshot.revision || "—";
@@ -634,18 +707,25 @@ export async function startArchView() {
     requireElement("#layout-signature").textContent = layout.signature === "empty" ? "empty" : `${layout.signature.length} deterministic bytes`;
     rendererStatus.textContent = snapshot.renderer;
     modeButtons.forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.modeButton === snapshot.mode)));
+    surfaceButtons.forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.surface === snapshot.surface)));
     viewButtons.forEach((button) => { if (button.dataset.view !== "reset") button.setAttribute("aria-pressed", String(button.dataset.view === snapshot.view)); });
+    host.hidden = snapshot.surface !== "atlas";
+    requireElement("#atlas-outline").hidden = snapshot.surface !== "outline";
     emptyPanel.hidden = snapshot.architecture.status === "loaded" || snapshot.architecture.status === "unresolved";
     requireElement("#empty-state-title").textContent = snapshot.architecture.status === "empty" ? "Empty ArchMap" : snapshot.architecture.status === "error" ? "ArchMap rejected" : copy.title;
     requireElement("#empty-state-copy").textContent = snapshot.architecture.status === "empty" ? "The supplied ArchMap contains no sources, Atoms, Contexts, or Covers." : snapshot.architecture.status === "error" ? "Review the visible validation findings in Scope Explorer." : copy.copy;
     renderArchitecture(snapshot, layout, actions);
     renderAnalysisStatus(snapshot, analysisModel, actions);
+    renderOutline(requireElement("#outline-table"), requireElement("#outline-status"), snapshot, actions);
+    renderMiniMap(requireElement("#atlas-mini-map"), snapshot, layout, actions);
     publishTestState(snapshot);
   });
 
   modeButtons.forEach((button) => button.addEventListener("click", () => state.selectMode(button.dataset.modeButton)));
+  surfaceButtons.forEach((button) => button.addEventListener("click", () => state.selectSurface(button.dataset.surface)));
   requireElement("#architecture-search").addEventListener("input", () => renderSearch(state.read(), actions));
   requireElement("#overview-button").addEventListener("click", () => { state.overview(); atlasRenderer?.reset(); state.selectView("isometric"); });
+  requireElement("#focus-selection-button").addEventListener("click", () => atlasRenderer?.focusSelection(state.read().selection));
 
   try {
     const { createAtlasRenderer } = await import("./renderer.js");
@@ -656,6 +736,7 @@ export async function startArchView() {
     errorMessage.textContent = error instanceof Error ? error.message : String(error);
     errorPanel.hidden = false;
     state.rendererFailed(error);
+    state.selectSurface("outline");
   }
 
   viewButtons.forEach((button) => button.addEventListener("click", () => {
@@ -729,6 +810,6 @@ export async function startArchView() {
   if (requestedAnalysis) await loadAnalysisUrl(requestedAnalysis);
   const dispose = () => atlasRenderer?.dispose();
   window.addEventListener("pagehide", dispose, { once: true });
-  window.__archview = Object.freeze({ state, loadUrl, loadText, loadObject, loadAnalysisFiles, loadAnalysisUrl, loadAnalysisObject: acceptAnalysis, dispose });
+  window.__archview = Object.freeze({ state, loadUrl, loadText, loadObject, loadAnalysisFiles, loadAnalysisUrl, loadAnalysisObject: acceptAnalysis, cameraState: () => atlasRenderer?.cameraState() || null, nudgeCamera: (command) => atlasRenderer?.nudgeCamera(command) || null, focusSelection: () => atlasRenderer?.focusSelection(state.read().selection) || false, dispose });
   return state.read();
 }
