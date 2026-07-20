@@ -15,6 +15,11 @@
   その他のartifactのいずれでもよい。実装開始前に正本を1つ指定し、target theoremの名前と完全な
   signature、statementが参照する新規defのsignatureを固定し、実装者と査読者が作業中に参照できる
   状態を保つ。同じcontractを複数箇所へ正本として複製しない。
+- 実装前に、完成実装の写し、全補題の証明列、生成物一式、またはそれらを説明する
+  大規模または恒久的なevidence packetを作ることを要求してはならない。必要な事前固定は、実装する対象、
+  acceptance criteria、必要なら target theorem と新規def の最小 signature に限る。
+  実装・証明の一次証拠は実装PRの固定headに置き、検証結果はそのheadに紐付く
+  PR・CIの記録に置く。一次証拠への短いlink索引は作ってよい。
 - 作業中に恒久ルールが必要になった場合も、先に現行source of truthへ反映してから
   PRDのacceptance criteriaへ組み込む。
 
