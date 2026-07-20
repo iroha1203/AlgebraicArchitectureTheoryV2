@@ -163,6 +163,49 @@ async function main() {
         const frontView = window.__archviewFoundationState.view;
         document.querySelector('[data-view="reset"]').click();
         document.querySelector('[data-atom-id="atom:checkout"]').click();
+        const checkoutSelection = window.__archviewState.selection;
+        const checkoutSource = {
+          path: document.querySelector('#source-path').textContent,
+          symbol: document.querySelector('#source-symbol').textContent,
+          line: document.querySelector('#source-line').textContent,
+          resolution: document.querySelector('#source-resolution').textContent,
+        };
+        const index = window.__archviewState.architecture.index;
+        const architectureLayout = window.__archviewLayout;
+        const fidelity = {
+          contexts: architectureLayout.contexts.every((entry) => index.contextsById.has(entry.id)),
+          atoms: architectureLayout.atoms.every((entry) => index.atomsById.has(entry.atomId) && index.contextsById.get(entry.contextId)?.atoms.includes(entry.atomId)),
+          restrictions: architectureLayout.restrictions.every((entry) => index.contextsById.get(entry.sourceId)?.restrictsTo.includes(entry.targetId)),
+          sharedSupports: architectureLayout.sharedSupports.every((entry) => new Set(entry.contextIds).size > 1 && entry.contextIds.every((contextId) => index.contextsById.get(contextId)?.atoms.includes(entry.atomId))),
+          contextArea: architectureLayout.contexts.every((entry) => Math.abs(entry.width * entry.height - (34 + entry.atomCount * 8)) < 1e-9),
+        };
+        const coverQuestion = document.querySelector('[data-cover-id="cover:payment-lifecycle"]');
+        coverQuestion.click();
+        const q1 = ['ctx:checkout', 'ctx:ledger', 'ctx:refund'].every((id) => document.querySelector('#architecture-facts').textContent.includes(id));
+        document.querySelector('[data-subject="CheckoutService"][data-context-id="ctx:checkout"]').click();
+        const checkoutFacts = document.querySelector('#architecture-facts').textContent;
+        const q2 = checkoutFacts.includes('capability') && checkoutFacts.includes('accepts Payment');
+        const q4 = checkoutFacts.includes('effect') && checkoutFacts.includes('captures Payment');
+        document.querySelector('[data-subject="RefundService"][data-context-id="ctx:refund"]').click();
+        const refundFacts = document.querySelector('#architecture-facts').textContent;
+        const q3 = refundFacts.includes('state') && refundFacts.includes('transitionsTo Refunded');
+        document.querySelector('[data-atom-id="atom:settlement-contract"][data-context-id="ctx:checkout"]').click();
+        const q5 = document.querySelector('#source-targets').textContent.includes('contracts/payment-lifecycle.md');
+        document.querySelector('[data-source-id="src:contract"]').click();
+        const sourceBreadcrumb = [...document.querySelectorAll('[data-zoom-level]')].map((button) => button.dataset.zoomLevel);
+        const sourceSelection = window.__archviewState.selection;
+        const restrictionButton = document.querySelector('[data-restriction-id="ctx:checkout->ctx:ledger"]');
+        restrictionButton.dispatchEvent(new MouseEvent('mouseenter'));
+        const restrictionHover = document.querySelector('#atlas-hover-label').textContent;
+        restrictionButton.click();
+        const restrictionFacts = document.querySelector('#architecture-facts').textContent;
+        document.querySelector('[data-shared-support-id="shared::atom:settlement-contract"]').click();
+        const sharedSupportFacts = document.querySelector('#architecture-facts').textContent;
+        const search = document.querySelector('#architecture-search');
+        search.value = 'RefundService';
+        search.dispatchEvent(new Event('input', { bubbles: true }));
+        const searchKinds = [...document.querySelectorAll('[data-search-kind]')].map((button) => button.dataset.searchKind);
+        document.querySelector('#overview-button').click();
         return {
           phase: root.dataset.phase,
           canvasCount: document.querySelectorAll('#atlas-canvas-host canvas').length,
@@ -182,13 +225,20 @@ async function main() {
           counts: window.__archviewState.architecture.index.counts,
           atomButtons: document.querySelectorAll('[data-atom-id]').length,
           renderStats: window.__archviewRenderStats,
-          selection: window.__archviewState.selection,
-          source: {
-            path: document.querySelector('#source-path').textContent,
-            symbol: document.querySelector('#source-symbol').textContent,
-            line: document.querySelector('#source-line').textContent,
-            resolution: document.querySelector('#source-resolution').textContent,
+          selection: checkoutSelection,
+          source: checkoutSource,
+          fidelity,
+          derivedGeometry: {
+            restriction: restrictionFacts.includes('ctx:checkout') && restrictionFacts.includes('ctx:ledger') && restrictionFacts.includes('contexts.ctx:checkout.restrictsTo'),
+            restrictionHover: restrictionHover.includes('ctx:checkout') && restrictionHover.includes('ctx:ledger') && restrictionHover.includes('Rendered from'),
+            sharedSupport: sharedSupportFacts.includes('atom:settlement-contract') && ['ctx:checkout', 'ctx:ledger', 'ctx:refund'].every((id) => sharedSupportFacts.includes(id)),
           },
+          sourceBreadcrumb,
+          sourceSelection,
+          layoutSignature: architectureLayout.signature,
+          semanticZoom: window.__archviewState.zoom,
+          searchKinds,
+          taskTest: { answers: [q1, q2, q3, q4, q5], correct: [q1, q2, q3, q4, q5].filter(Boolean).length, total: 5 },
         };
       })()`,
     });
@@ -209,15 +259,104 @@ async function main() {
     if (!value.errorHidden || value.renderer !== "ready" || runtimeErrors.length || consoleErrors.length) {
       throw new Error(`Unexpected renderer error: ${JSON.stringify({ value, runtimeErrors, consoleErrors })}`);
     }
-    if (value.inputStatus !== "loaded" || JSON.stringify(value.counts) !== JSON.stringify({ sources: 4, atoms: 6, contexts: 3, covers: 1 })) {
+    if (value.inputStatus !== "loaded" || JSON.stringify(value.counts) !== JSON.stringify({ sources: 5, atoms: 10, contexts: 3, covers: 1 })) {
       throw new Error(`Valid ArchMap did not load exact fixture facts: ${JSON.stringify(value)}`);
     }
-    if (value.renderStats?.contextPlates !== 3 || value.renderStats?.atomGlyphs !== 8) {
+    if (value.renderStats?.contextPlates !== 3 || value.renderStats?.atomGlyphs !== 12) {
       throw new Error(`Three.js geometry did not match explicit Context memberships: ${JSON.stringify(value)}`);
+    }
+    const geometryTypes = Object.values(value.renderStats.atomGeometryTypes || {});
+    if (geometryTypes.length !== 9 || new Set(geometryTypes).size !== 9 || value.renderStats.restrictionRecords?.length !== 2 || value.renderStats.sharedSupportRecords?.length !== 1) {
+      throw new Error(`Atom shapes or derived geometry provenance were incomplete: ${JSON.stringify(value)}`);
     }
     if (value.selection?.id !== "atom:checkout" || value.source.path !== "services/checkout/CheckoutService.ts" || value.source.symbol !== "CheckoutService.capture" || value.source.line !== "48" || value.source.resolution !== "DIRECT EVIDENCE") {
       throw new Error(`Atom source landing did not preserve source metadata: ${JSON.stringify(value)}`);
     }
+    if (!Object.values(value.fidelity).every(Boolean)) {
+      throw new Error(`Rendered Architecture contains facts not supplied by ArchMap: ${JSON.stringify(value)}`);
+    }
+    if (!Object.values(value.derivedGeometry).every(Boolean) || JSON.stringify(value.sourceBreadcrumb) !== JSON.stringify(["cover", "context", "subject", "atom", "source"]) || value.sourceSelection?.contextId !== "ctx:checkout") {
+      throw new Error(`Derived geometry provenance or Source semantic zoom failed: ${JSON.stringify(value)}`);
+    }
+    if (value.semanticZoom !== "cover" || !value.searchKinds.includes("subject") || !value.searchKinds.includes("atom")) {
+      throw new Error(`Semantic zoom or structured search failed: ${JSON.stringify(value)}`);
+    }
+    if (value.taskTest.correct / value.taskTest.total < 0.8) {
+      throw new Error(`Architecture understanding task score was below 80%: ${JSON.stringify(value)}`);
+    }
+
+    const repeated = await page.send("Runtime.evaluate", {
+      awaitPromise: true,
+      returnByValue: true,
+      expression: `(async () => {
+        const read = async () => {
+          await window.__archview.loadUrl('./fixtures/vertical-slice.archmap.json');
+          document.querySelector('[data-atom-id="atom:settlement-contract"][data-context-id="ctx:checkout"]').click();
+          return {
+            signature: window.__archviewLayout.signature,
+            sources: [...document.querySelectorAll('#source-targets li')].map((item) => item.textContent),
+          };
+        };
+        return [await read(), await read()];
+      })()`,
+    });
+    const [firstLayout, secondLayout] = repeated.result.value;
+    if (firstLayout.signature !== value.layoutSignature || firstLayout.signature !== secondLayout.signature || JSON.stringify(firstLayout.sources) !== JSON.stringify(secondLayout.sources)) {
+      throw new Error(`Architecture layout or source order was not deterministic: ${JSON.stringify({ firstLayout, secondLayout })}`);
+    }
+
+    const adversarial = await page.send("Runtime.evaluate", {
+      awaitPromise: true,
+      returnByValue: true,
+      expression: `(async () => {
+        const base = {
+          schema: 'archmap/v0.5.4', id: 'adversarial', sources: { s: { kind: 'test', path: 'src/a.ts' } },
+          atoms: [
+            { id: 'a', kind: 'component', subject: 'A', axis: 'static', refs: ['s'] },
+            { id: 'b', kind: 'state', subject: 'B', axis: 'state', refs: ['s'] },
+          ],
+          contexts: [
+            { id: 'c', atoms: ['a', 'a'], restrictsTo: ['c2', 'c2'] },
+            { id: 'c2', atoms: ['b'] },
+          ], covers: [],
+        };
+        window.__archview.loadObject(base, 'no-cover probe');
+        const noCover = { contexts: window.__archviewLayout.contexts.length, atoms: window.__archviewLayout.atoms.length };
+        const singleDocument = { ...base, contexts: [{ id: 'c', atoms: ['a'], restrictsTo: ['c2'] }, { id: 'c2', atoms: ['b'] }], covers: [{ id: 'cover:c', contexts: ['c', 'c2'] }] };
+        window.__archview.loadObject(singleDocument, 'single membership probe');
+        const singleContext = window.__archviewLayout.contexts.find((entry) => entry.id === 'c');
+        window.__archview.loadObject({ ...base, covers: [{ id: 'cover:c', contexts: ['c', 'c2'] }] }, 'duplicate membership probe');
+        const duplicateContext = window.__archviewLayout.contexts.find((entry) => entry.id === 'c');
+        const duplicate = {
+          atoms: window.__archviewLayout.atoms.filter((entry) => entry.contextId === 'c').length,
+          sharedSupports: window.__archviewLayout.sharedSupports.length,
+          restrictions: window.__archviewLayout.restrictions.length,
+          atomButtons: document.querySelectorAll('[data-atom-id="a"][data-context-id="c"]').length,
+          subjectCount: document.querySelector('[data-subject="A"][data-context-id="c"] .item-count')?.textContent,
+          singleArea: singleContext.width * singleContext.height,
+          duplicateArea: duplicateContext.width * duplicateContext.height,
+        };
+        window.__archview.loadObject({
+          schema: 'archmap/v0.5.4', id: 'source-cycle',
+          sources: { s: { kind: 'test', source: 't' }, t: { kind: 'test', source: 's' } },
+          atoms: [{ id: 'a', kind: 'component', subject: 'A', axis: 'static', refs: ['s'] }],
+          contexts: [{ id: 'c', atoms: ['a'] }], covers: [{ id: 'cover:c', contexts: ['c'] }],
+        }, 'source cycle probe');
+        const sourceCycle = { status: window.__archviewState.architecture.status, issues: [...document.querySelectorAll('#archmap-issues li')].map((item) => item.textContent) };
+        await window.__archview.loadUrl('https://example.invalid/archmap.json');
+        const crossOrigin = { status: window.__archviewState.architecture.status, issues: [...document.querySelectorAll('#archmap-issues li')].map((item) => item.textContent) };
+        return { noCover, duplicate, sourceCycle, crossOrigin };
+      })()`,
+    });
+    const probes = adversarial.result.value;
+    if (probes.noCover.contexts !== 0 || probes.noCover.atoms !== 0 || probes.duplicate.atoms !== 1 || probes.duplicate.sharedSupports !== 0 || probes.duplicate.restrictions !== 1 || probes.duplicate.atomButtons !== 1 || probes.duplicate.subjectCount !== "1" || Math.abs(probes.duplicate.singleArea - probes.duplicate.duplicateArea) > 1e-9) {
+      throw new Error(`Implicit Cover scope or duplicate membership generated geometry: ${JSON.stringify(adversarial.result.value)}`);
+    }
+    if (probes.sourceCycle.status !== "unresolved" || !probes.sourceCycle.issues.some((entry) => entry.includes("cycle")) || probes.crossOrigin.status !== "error" || !probes.crossOrigin.issues.some((entry) => entry.includes("current origin"))) {
+      throw new Error(`Source cycle or cross-origin ArchMap URL was not visibly rejected: ${JSON.stringify(probes)}`);
+    }
+    await page.send("Runtime.evaluate", { awaitPromise: true, expression: `window.__archview.loadUrl('./fixtures/vertical-slice.archmap.json')` });
+    await page.send("Runtime.evaluate", { expression: `document.querySelector('[data-atom-id="atom:settlement-contract"][data-context-id="ctx:checkout"]').click()` });
 
     if (screenshotPath) {
       const screenshot = await page.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });

@@ -46,8 +46,9 @@
         <label class="search-field">
           <span class="sr-only">Search architecture facts</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
-          <input type="search" placeholder="Search after loading" disabled>
+          <input id="architecture-search" type="search" placeholder="Search supplied facts" autocomplete="off">
         </label>
+        <div id="search-results" class="search-results-panel"><p class="empty-list">Search explicit ids, facts, kinds, and source metadata</p></div>
 
         <section aria-labelledby="covers-heading">
           <h2 id="covers-heading">Covers</h2>
@@ -60,6 +61,10 @@
         <section aria-labelledby="subjects-heading">
           <h2 id="subjects-heading">Subjects</h2>
           <div id="subject-list"><p class="empty-list">No subjects loaded</p></div>
+        </section>
+        <section aria-labelledby="geometry-heading">
+          <h2 id="geometry-heading">Derived geometry</h2>
+          <div id="geometry-list"><p class="empty-list">No derived geometry loaded</p></div>
         </section>
         <section aria-labelledby="findings-heading">
           <h2 id="findings-heading">Findings</h2>
@@ -74,13 +79,11 @@
 
       <main class="atlas-panel" aria-label="3D Atom Atlas">
         <div class="atlas-toolbar">
-          <nav class="breadcrumb" aria-label="Semantic zoom">
-            <span>Cover</span><span aria-hidden="true">›</span>
-            <span>Context</span><span aria-hidden="true">›</span>
-            <span>Subject</span><span aria-hidden="true">›</span>
-            <span>Atom</span>
+          <nav id="semantic-breadcrumb" class="breadcrumb" aria-label="Semantic zoom">
+            <span>Cover → Context → Subject → Atom → Source</span>
           </nav>
           <div class="view-controls" aria-label="Camera views">
+            <button id="overview-button" type="button">Overview</button>
             <button type="button" data-view="isometric" aria-pressed="true">3D</button>
             <button type="button" data-view="top" aria-pressed="false">Top</button>
             <button type="button" data-view="front" aria-pressed="false">Front</button>
@@ -89,6 +92,7 @@
         </div>
 
         <div id="atlas-canvas-host" class="atlas-canvas-host" aria-label="Empty Paper Atlas canvas"></div>
+        <p id="atlas-hover-label" class="atlas-hover-label" aria-live="polite" hidden></p>
 
         <div id="atlas-empty-state" class="atlas-empty-state" aria-live="polite">
           <p class="atlas-kicker">Architecture Atlas</p>
@@ -136,8 +140,10 @@
           <summary>Technical details</summary>
           <dl class="technical-record">
             <div><dt>Mode</dt><dd id="technical-mode">architecture</dd></div>
+            <div><dt>Semantic zoom</dt><dd id="technical-zoom">cover</dd></div>
             <div><dt>Renderer</dt><dd id="renderer-status">Starting</dd></div>
-            <div><dt>Visual channel</dt><dd>decoration</dd></div>
+            <div><dt>Layout</dt><dd id="layout-signature">empty</dd></div>
+            <div><dt>Visual channel</dt><dd id="technical-channel">decoration</dd></div>
           </dl>
         </details>
       </aside>

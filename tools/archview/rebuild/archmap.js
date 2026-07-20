@@ -207,6 +207,16 @@ export function buildArchMapIndex(document) {
 
   for (const [sourceId, source] of sourcesById) {
     if (source.source && !sourcesById.has(source.source)) recordMissing(`sources.${sourceId}.source`, source.source, "sources");
+    const seen = new Set([sourceId]);
+    let current = source;
+    while (current.source && sourcesById.has(current.source)) {
+      if (seen.has(current.source)) {
+        unresolved.push(issue(`sources.${sourceId}.source`, `Source parent chain contains a cycle at ${current.source}.`, current.source));
+        break;
+      }
+      seen.add(current.source);
+      current = sourcesById.get(current.source);
+    }
   }
   for (const atom of atoms) {
     for (const ref of atom.refs || []) if (!sourcesById.has(ref)) recordMissing(`atoms.${atom.id}.refs`, ref, "sources");
@@ -226,7 +236,7 @@ export function buildArchMapIndex(document) {
     for (const atomId of context.atoms || []) {
       if (!atomsById.has(atomId)) continue;
       const memberships = contextIdsByAtom.get(atomId) || [];
-      memberships.push(context.id);
+      if (!memberships.includes(context.id)) memberships.push(context.id);
       contextIdsByAtom.set(atomId, memberships);
     }
   }

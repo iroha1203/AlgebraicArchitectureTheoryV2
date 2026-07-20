@@ -2,23 +2,28 @@
   "schema": "archmap/v0.5.4",
   "id": "paper-atlas-payment-slice",
   "sources": {
-    "src:checkout": { "kind": "typescript", "path": "services/checkout/CheckoutService.ts", "symbol": "CheckoutService.capture", "line": 48 },
+    "src:checkout-file": { "kind": "typescript", "path": "services/checkout/CheckoutService.ts" },
+    "src:checkout": { "kind": "typescript-symbol", "source": "src:checkout-file", "symbol": "CheckoutService.capture", "line": 48 },
     "src:ledger": { "kind": "typescript", "path": "services/ledger/LedgerPort.ts", "symbol": "LedgerPort.record", "line": 19 },
     "src:refund": { "kind": "typescript", "path": "services/refund/RefundService.ts", "symbol": "RefundService.refund", "line": 72 },
     "src:contract": { "kind": "documentation", "path": "contracts/payment-lifecycle.md", "section": "Settlement" }
   },
   "atoms": [
     { "id": "atom:checkout", "kind": "component", "subject": "CheckoutService", "axis": "static", "predicate": "component", "refs": ["src:checkout"], "label": "Checkout" },
+    { "id": "atom:checkout-capability", "kind": "capability", "subject": "CheckoutService", "axis": "capability", "predicate": "accepts", "object": "Payment", "refs": ["src:checkout"], "label": "Accept payment" },
     { "id": "atom:capture", "kind": "effect", "subject": "CheckoutService", "axis": "runtime", "predicate": "captures", "object": "Payment", "refs": ["src:checkout"], "label": "Capture payment" },
     { "id": "atom:ledger", "kind": "authority", "subject": "LedgerPort", "axis": "authority", "predicate": "records", "object": "Settlement", "refs": ["src:ledger"], "label": "Ledger authority" },
+    { "id": "atom:payment-relation", "kind": "relation", "subject": "Payment", "axis": "static", "predicate": "relates", "object": "Settlement", "refs": ["src:contract"], "label": "Payment relation" },
+    { "id": "atom:payment-meaning", "kind": "semantic", "subject": "Payment", "axis": "semantic", "predicate": "interprets", "object": "Money", "refs": ["src:contract"], "label": "Payment meaning" },
     { "id": "atom:refund", "kind": "component", "subject": "RefundService", "axis": "static", "predicate": "component", "refs": ["src:refund"], "label": "Refund" },
     { "id": "atom:refund-state", "kind": "state", "subject": "RefundService", "axis": "state", "predicate": "transitionsTo", "object": "Refunded", "refs": ["src:refund"], "label": "Refunded state" },
+    { "id": "atom:gateway-runtime", "kind": "runtime", "subject": "Gateway", "axis": "runtime", "predicate": "authorizes", "object": "Payment", "refs": ["src:checkout"], "label": "Gateway authorization" },
     { "id": "atom:settlement-contract", "kind": "contract", "subject": "Payment", "axis": "contract", "predicate": "settlesThrough", "object": "LedgerPort", "refs": ["src:contract", "src:ledger"], "label": "Settlement contract" }
   ],
   "contexts": [
-    { "id": "ctx:checkout", "atoms": ["atom:checkout", "atom:capture", "atom:settlement-contract"], "restrictsTo": ["ctx:ledger"], "refs": ["src:checkout"], "label": "Checkout" },
-    { "id": "ctx:ledger", "atoms": ["atom:ledger", "atom:settlement-contract"], "refs": ["src:ledger", "src:contract"], "label": "Ledger" },
-    { "id": "ctx:refund", "atoms": ["atom:refund", "atom:refund-state", "atom:settlement-contract"], "restrictsTo": ["ctx:ledger"], "refs": ["src:refund"], "label": "Refund" }
+    { "id": "ctx:checkout", "atoms": ["atom:checkout", "atom:checkout-capability", "atom:capture", "atom:payment-meaning", "atom:settlement-contract"], "restrictsTo": ["ctx:ledger"], "refs": ["src:checkout"], "label": "Checkout" },
+    { "id": "ctx:ledger", "atoms": ["atom:ledger", "atom:payment-relation", "atom:settlement-contract"], "refs": ["src:ledger", "src:contract"], "label": "Ledger" },
+    { "id": "ctx:refund", "atoms": ["atom:gateway-runtime", "atom:refund", "atom:refund-state", "atom:settlement-contract"], "restrictsTo": ["ctx:ledger"], "refs": ["src:refund"], "label": "Refund" }
   ],
   "covers": [
     { "id": "cover:payment-lifecycle", "contexts": ["ctx:checkout", "ctx:ledger", "ctx:refund"], "refs": ["src:contract"], "label": "Payment lifecycle" }
