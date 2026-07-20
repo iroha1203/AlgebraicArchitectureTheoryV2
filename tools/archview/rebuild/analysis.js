@@ -398,10 +398,12 @@ function validateNormalizedBridge(normalized, index, issues) {
 
 const REF_FIELDS = Object.freeze({
   atomRefs: "atoms", supportAtomRefs: "atoms", mismatchSupportRefs: "atoms", sharedAtomRefs: "atoms", pairingAtomRefs: "atoms",
-  contextRefs: "contexts", sourceRefs: "sources", coverRefs: "covers",
+  atomObservationRefs: "atoms", concreteSupportRefs: "atoms", fromAtomRefs: "atoms", repairPathAtomRefs: "atoms", rawAtomRefs: "atoms", witnessSupportRefs: "atoms",
+  contextRefs: "contexts", sourceRefs: "sources", omittedSourceRefs: "sources", coverRefs: "covers",
 });
 const SINGLE_REF_FIELDS = Object.freeze({
-  atomRef: "atoms", supportAtomRef: "atoms", contextRef: "contexts",
+  atomRef: "atoms", supportAtomRef: "atoms", boundaryAtomRef: "atoms", cochainAtomRef: "atoms", dOmegaAtomRef: "atoms", witnessAtomRef: "atoms",
+  contextRef: "contexts",
   sourceContextRef: "contexts", targetContextRef: "contexts", coverRef: "covers", selectedCoverRef: "covers",
 });
 
@@ -411,6 +413,11 @@ function resolves(ref, kind, index, bridges) {
 }
 
 function collectUnresolved(value, path, index, bridges, unresolved) {
+  if (typeof value === "string") {
+    const kind = value.startsWith("atom:") ? "atoms" : value.startsWith("ctx:") ? "contexts" : value.startsWith("cover:") ? "covers" : value.startsWith("src:") ? "sources" : null;
+    if (kind && !resolves(value, kind, index, bridges)) unresolved.push(issue(path, `${value} does not resolve through the loaded ArchMap or normalized identity bridge.`, null, value));
+    return;
+  }
   if (Array.isArray(value)) return value.forEach((entry, position) => collectUnresolved(entry, `${path}[${position}]`, index, bridges, unresolved));
   if (!isRecord(value)) return;
   for (const [key, child] of Object.entries(value)) {
