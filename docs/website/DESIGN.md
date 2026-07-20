@@ -162,7 +162,7 @@ Definition
 | `/archsig/analyses/` | `tools/archsig/src/ag_measurement.rs`(evaluator registry+theoremRef), 正典第II〜V・VII・VIII・X部 | evaluator カタログ+理論 anchor。 |
 | `/archsig/manual/` | `tools/archsig/docs/artifacts-and-boundaries.md`, 実 run 出力(readThisFirst / ruleOutcomes 抜粋) | artifact reading manual+レシピ。 |
 | `/archsig/reference/` | `tools/archsig/docs/commands.md`, `archsig --help`(全 subcommand), `main.rs`(exit codes) | command / schema / exit code reference。 |
-| `/archsig/archview/` | `tools/archview/README.md`, `docs/tool/archview_gluing_geometry_contract.md` | ArchView 解説+live demo。 |
+| `/archsig/archview/` | `tools/archview/README.md` | ArchView 解説+live demo。 |
 
 ArchSig reference pages では次の境界を可視に保つ:
 archsig は Lean 証明器ではない / tool output は Lean theorem ではない /

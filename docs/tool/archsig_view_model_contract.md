@@ -1,9 +1,9 @@
 # archsig-measurement-view-model 契約(v0.5.4)
 
 `archsig analyze` が出力する表示非依存の typed measurement view model
-(`archsig-measurement-view-model.json`)の契約。正本 PRD は
-[ArchView v0.5.4 PRD](archview_v0_5_4_prd_weather_renewal.md)(R1)、設計思想は
-[気象図リニューアル設計ノート](../note/archview_semantic_weather_map_design.md)(§8)。
+(`archsig-measurement-view-model.json`)の現行artifact契約。この文書自身をartifact契約の
+source of truthとする。このartifactはArchViewの任意Analysis overlayに利用できるが、
+ArchViewのArchitecture modeやproduct identityを定義しない。
 
 ## 原則
 
