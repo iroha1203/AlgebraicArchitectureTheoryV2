@@ -11,7 +11,7 @@ ArchMap 供給の再現性を工学ゲートとして固定する。実装は Co
 - Issue #3545 コメント(フルビルド実測と所見7件の一次記録)
 - `tools/archsig/skills/archmap-creater/SKILL.md` と references(prompt-pack /
   vocabulary-catalog / extraction-protocol / coverage-and-consistency)
-- [責務憲章](archmap_lawpolicy_archsig_responsibility_charter.md) — 機械層の許可4操作
+- [責務憲章](../tool/archmap_lawpolicy_archsig_responsibility_charter.md) — 機械層の許可4操作
   (列挙 / hash / リテラル正規化鍵比較 / 参照解決)。本 PRD はこの線を動かさない
 - 前例: #3505(prompt-pack への軸既定表 = 収束規約の第1波。本 PRD は同型の第2波)
 

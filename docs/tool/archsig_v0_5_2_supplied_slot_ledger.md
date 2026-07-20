@@ -1,6 +1,6 @@
 # ArchSig v0.5.2 supplied slot 台帳
 
-この台帳は `docs/tool/archsig_v0_5_2_prd_saga_full.md` R1 の受け入れ表である。supplied はこの表の artifact を入力として読み、対応する validator が pass した場合に限り、右端の語彙を解禁する。global な列挙完全性や sheaf 条件のように有限検査で放電できないものは、assumption ledger に記録する。
+この台帳は ArchSig v0.5.2 R1 の受け入れ表である。supplied はこの表の artifact を入力として読み、対応する validator が pass した場合に限り、右端の語彙を解禁する。global な列挙完全性や sheaf 条件のように有限検査で放電できないものは、assumption ledger に記録する。
 
 ## R13 witness 帰属
 

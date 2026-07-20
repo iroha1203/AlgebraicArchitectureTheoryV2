@@ -19,7 +19,7 @@ measurement-profile 独立 artifact + finiteBounds / basisLedger)。
 - AAT 本文: 第III部(定義11.3 law equation realization / 定理11.4 / 系11.5 / 原則11.6 /
   原則5.8 law condition 6 型 / 定理5.6C)、第VIII部(定義2.1 / 定義4.1 / 定理5.2 / 原則5.3 /
   原則2.2 Measurement Is Internal)
-- [責務憲章](archmap_lawpolicy_archsig_responsibility_charter.md) — 三層分離と
+- [責務憲章](../tool/archmap_lawpolicy_archsig_responsibility_charter.md) — 三層分離と
   「LawPolicy は witness predicate を手書きしない」の線引き(本 PRD で law universe 宣言の行を追加)
 - G-06(law は方程式である。第III部 §11 の Lean proved 接続)
 
