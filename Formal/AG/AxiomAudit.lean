@@ -1781,6 +1781,18 @@ def nonzeroBoundaryRealComplexDPrevNonzero :=
 def nonzeroBoundaryRealHodgeDecompositionFires :=
   Measurement.nonzeroBoundaryRealHodgeDecomposition_fires
 
+/-- Kernel-audit entry for the derived `ker laplacian ≃ cohomology` equivalence. -/
+noncomputable def nonzeroBoundaryRealLaplacianKernelEquivCohomology :=
+  Measurement.nonzeroBoundaryRealComplex.laplacianKernelEquivCohomology
+
+/-- Kernel-audit entry for harmonic residual minimality on the nonzero differential fixture. -/
+def nonzeroBoundaryRealHarmonicNormLeCorrected :=
+  Measurement.nonzeroBoundaryReal_harmonic_norm_le_corrected
+
+/-- Kernel-audit entry for the selected harmonic representative equation. -/
+def nonzeroBoundaryRealSelectedResidualEqHarmonic :=
+  Measurement.nonzeroBoundaryReal_selected_residual_eq_harmonic
+
 def squareFreeRepairSupportNotMemAlexanderDualIffHitsForbidden :=
   Measurement.squareFree_repairSupport_notMemAlexanderDual_iff_hitsForbidden
 

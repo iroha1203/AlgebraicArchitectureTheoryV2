@@ -715,42 +715,17 @@ theorem nonzeroBoundaryRealComplex_dPrev_nonzero :
 R11(e) / AC15: Hodge decomposition fired on the nonzero-boundary fixture.
 
 The exact part is the whole cochain, while the harmonic and coexact parts are
-zero. This is a nonzero differential example, not a singleton or `PUnit`
-carrier.
+zero.  The package is derived from the finite inner-product complex rather than
+filled with caller-supplied decomposition and orthogonality proofs.
 -/
-def nonzeroBoundaryRealHodgeDecomposition :
-    RealFiniteHodgeDecomposition nonzeroBoundaryRealComplex where
-  exactPart := fun x => x
-  harmonicPart := fun _ => 0
-  coexactPart := fun _ => 0
-  exactPart_mem_range := by
-    intro x
-    exact ⟨x, rfl⟩
-  harmonicPart_mem_kernel := by
-    intro x
-    simp [RealFiniteInnerProductComplex.laplacian, nonzeroBoundaryRealComplex,
-      RealFiniteInnerProductComplex.dPrevAdjoint,
-      RealFiniteInnerProductComplex.dNextAdjoint]
-  coexactPart_mem_adjoint_range := by
-    intro x
-    exact ⟨0, by
-      simp [nonzeroBoundaryRealComplex, RealFiniteInnerProductComplex.dNextAdjoint]⟩
-  decomposition := by
-    intro x
-    simp
-  exact_harmonic_orthogonal := by
-    intro x y
-    simp
-  harmonic_coexact_orthogonal := by
-    intro x y
-    simp
-  exact_coexact_orthogonal := by
-    intro x y
-    simp
-  cohomologyClassOf := fun _ => 0
-  cohomologyClass_eq_harmonic := by
-    intro x
-    rfl
+noncomputable def nonzeroBoundaryRealHodgeDecomposition :
+    RealFiniteHodgeDecomposition nonzeroBoundaryRealComplex :=
+  nonzeroBoundaryRealComplex.derivedHodgeDecomposition
+
+/-- R11(e) / AC15: theorem 8.6 is also derived on the same nonzero-boundary complex. -/
+noncomputable def nonzeroBoundaryRealHarmonicDebtMinimality :
+    RealHarmonicDebtMinimality nonzeroBoundaryRealHodgeDecomposition :=
+  nonzeroBoundaryRealComplex.derivedHarmonicDebtMinimality
 
 /-- R11(e) / AC15: theorem 8.5 decomposition equality on a nonzero differential. -/
 theorem nonzeroBoundaryRealHodgeDecomposition_fires (x : ℝ) :
@@ -759,6 +734,25 @@ theorem nonzeroBoundaryRealHodgeDecomposition_fires (x : ℝ) :
         nonzeroBoundaryRealHodgeDecomposition.coexactPart x =
       x :=
   nonzeroBoundaryRealHodgeDecomposition.decomposition x
+
+/-- R11(e) / AC15: the Laplacian kernel is the actual cohomology quotient. -/
+noncomputable example :
+    nonzeroBoundaryRealComplex.laplacian.ker ≃ₗ[ℝ]
+      nonzeroBoundaryRealComplex.cohomology :=
+  nonzeroBoundaryRealComplex.laplacianKernelEquivCohomology
+
+/-- R11(e) / AC15: the derived correction minimizes the residual on the same complex. -/
+theorem nonzeroBoundaryReal_harmonic_norm_le_corrected (g c : ℝ) :
+    ‖nonzeroBoundaryRealComplex.harmonicPart g‖ ≤
+      ‖g - nonzeroBoundaryRealComplex.dPrev c‖ :=
+  nonzeroBoundaryRealComplex.harmonic_norm_le_corrected (by rfl) c
+
+/-- R11(e) / AC15: the selected residual is the harmonic representative. -/
+theorem nonzeroBoundaryReal_selected_residual_eq_harmonic (g : ℝ) :
+    g - nonzeroBoundaryRealComplex.dPrev
+        (nonzeroBoundaryRealComplex.selectedCorrection g) =
+      nonzeroBoundaryRealComplex.harmonicPart g :=
+  nonzeroBoundaryRealComplex.selected_residual_eq_harmonic (by rfl)
 
 /-- R11(e): low-degree cellular measurement model for the Hodge fixture. -/
 def lowDegreeCellularModel :
