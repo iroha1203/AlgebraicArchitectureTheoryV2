@@ -1,7 +1,7 @@
 import Formal.AG.Examples.StandardGeometryReferenceModels
 
 /-!
-Executable statement contract for the SD0–SD5 public surface of the standard
+Executable statement contract for the SD0–SD7 public surface of the standard
 geometry reference models.
 
 Each example fixes one approved declaration type and refers directly to its
@@ -1647,6 +1647,267 @@ example : coefficientChangedLawComparison ≫
 example : ¬ IsIso
     (referenceScheme.baseChangeMap referenceRaw coefficientChange) :=
   coefficientChange_schemeMap_not_isIso
+
+/-! ## SD6 negative fixtures -/
+
+example : ArchitectureAffineAtlas referenceRaw
+    referenceScheme.underlying referenceScheme.decoration :=
+  duplicateLeftAtlas
+
+example (i : Bool) : duplicateLeftAtlas.chart i = leftChart :=
+  duplicateLeftAtlas_chart i
+
+example : ¬ ∃ lift : AlgebraicGeometry.Spec (CommRingCat.of Int) ⟶
+    leftChart.domain, lift ≫ leftChart.map = zeroPoint :=
+  zeroPoint_not_factors_through_leftChart
+
+example : ¬ IsArchitectureAffineAtlas referenceRaw duplicateLeftAtlas :=
+  duplicateLeftAtlas_not_valid
+
+example : AmbientRing ≃+* AmbientRing :=
+  coordinateReflection
+
+example : coordinateReflection coordinate = rightGenerator :=
+  coordinateReflection_coordinate
+
+example : coordinateReflection rightGenerator = coordinate :=
+  coordinateReflection_rightGenerator
+
+example : AmbientRing →+* Localization.Away rightGenerator :=
+  reflectedRightRingHom
+
+example : reflectedRightRingHom coordinate =
+    algebraMap AmbientRing (Localization.Away rightGenerator) rightGenerator :=
+  reflectedRightRingHom_coordinate
+
+example : ArchitectureAffineChart referenceRaw
+    referenceScheme.underlying referenceScheme.decoration :=
+  brokenRightChart
+
+example : brokenRightChart.context = rightContext :=
+  brokenRightChart_context
+
+example : brokenRightChart.map =
+    rightChartDomainIso.hom ≫
+      AlgebraicGeometry.Scheme.Spec.map
+        (CommRingCat.ofHom reflectedRightRingHom).op :=
+  brokenRightChart_map
+
+example : AlgebraicGeometry.IsOpenImmersion brokenRightChart.map :=
+  brokenRightChart_isOpenImmersion
+
+example : sheafifiedRestriction referenceRaw brokenRightChart.contextHom ≠
+    referenceScheme.decoration.interpretation ≫
+      brokenRightChart.map.appTop ≫
+      (AlgebraicGeometry.Scheme.ΓSpecIso
+        (SheafifiedSectionRing referenceRaw brokenRightChart.context)).hom :=
+  brokenRightChart_interpretation_ne
+
+example : ¬ IsArchitectureAffineChart referenceRaw brokenRightChart :=
+  brokenRightChart_not_valid
+
+example : ClosedEquationalLawReading referenceRaw referenceScheme :=
+  collapsedStrongReading
+
+example : collapsedStrongReading = weakReading :=
+  collapsedStrongReading_eq
+
+example : ¬ lawGeneratedIdealSheaf
+      referenceRaw referenceScheme
+      weakReading weakReading_valid weakReading_requiredClosed <
+    lawGeneratedIdealSheaf
+      referenceRaw referenceScheme
+      collapsedStrongReading weakReading_valid weakReading_requiredClosed :=
+  collapsedIdeal_not_strict
+
+example : referenceScheme.underlying.IdealSheafData :=
+  unitIdealFixture
+
+example : unitIdealFixture = ⊤ :=
+  unitIdealFixture_eq
+
+example : IsEmpty unitIdealFixture.subscheme :=
+  unitIdealFixture_subscheme_empty
+
+example : Int →+* ZMod 2 :=
+  nonFlatCoefficientMap
+
+example : nonFlatCoefficientMap = Int.castRingHom (ZMod 2) :=
+  nonFlatCoefficientMap_eq
+
+example : ¬ nonFlatCoefficientMap.Flat :=
+  nonFlatCoefficientMap_not_flat
+
+/-! ## SD7 integrated firing theorem -/
+
+example :
+    Presheaf.IsSheaf referenceSite.topology referenceRaw.toPresheaf ∧
+    (∀ W : referenceSite.category,
+      IsIso (referenceRaw.toRingedSite.canonical.app (op W))) ∧
+    (⨆ i, ((referenceScheme.affineOpenCover referenceRaw).f i).opensRange = ⊤) ∧
+    AlgebraicGeometry.IsOpenImmersion
+      (referenceScheme.atlas.chart leftIndex).map ∧
+    AlgebraicGeometry.IsOpenImmersion
+      (referenceScheme.atlas.chart rightIndex).map ∧
+    ¬ IsIso (referenceScheme.atlas.chart leftIndex).map ∧
+    ¬ IsIso (referenceScheme.atlas.chart rightIndex).map ∧
+    Nonempty (referenceScheme.atlas.actualOverlap
+      referenceRaw leftIndex rightIndex) ∧
+    ¬ IsIso (sheafifiedRestriction referenceRaw leftToBase) ∧
+    Ideal.map ambientGlobalSectionsIso.hom.hom
+        (weakIdealSheaf.ideal ambientTopAffineOpen) = weakAmbientIdeal ∧
+    Ideal.map ambientGlobalSectionsIso.hom.hom
+        (strongIdealSheaf.ideal ambientTopAffineOpen) = strongAmbientIdeal ∧
+    Ideal.map ambientGlobalSectionsIso.hom.hom
+        (rigidIdealSheaf.ideal ambientTopAffineOpen) = rigidAmbientIdeal ∧
+    Ideal.map leftChartGlobalSectionsIso.hom.hom
+        ((weakIdealSheaf.comap leftChart.map).ideal
+          ⟨⊤, @isAffineOpen_top leftChart.domain leftChart.domain_isAffine⟩) =
+      weakLeftIdeal ∧
+    Ideal.map rightChartGlobalSectionsIso.hom.hom
+        ((weakIdealSheaf.comap rightChart.map).ideal
+          ⟨⊤, @isAffineOpen_top rightChart.domain rightChart.domain_isAffine⟩) =
+      weakRightIdeal ∧
+    Ideal.map actualOverlapGlobalSectionsIso.hom.hom
+        ((weakIdealSheaf.comap
+          (referenceScheme.atlas.actualOverlapToUnderlying
+            referenceRaw leftIndex rightIndex)).ideal
+          ⟨⊤, @isAffineOpen_top
+            (referenceScheme.atlas.actualOverlap referenceRaw leftIndex rightIndex)
+            (IsAffine.of_isIso actualOverlapIso.hom)⟩) =
+      weakOverlapIdeal ∧
+    (weakIdealSheaf.comap leftChart.map).comap
+        (pullback.fst leftChart.map rightChart.map) =
+      (weakIdealSheaf.comap rightChart.map).comap
+        (pullback.snd leftChart.map rightChart.map) ∧
+    Ideal.map leftChartGlobalSectionsIso.hom.hom
+        ((strongIdealSheaf.comap leftChart.map).ideal
+          ⟨⊤, @isAffineOpen_top leftChart.domain leftChart.domain_isAffine⟩) =
+      strongLeftIdeal ∧
+    Ideal.map rightChartGlobalSectionsIso.hom.hom
+        ((strongIdealSheaf.comap rightChart.map).ideal
+          ⟨⊤, @isAffineOpen_top rightChart.domain rightChart.domain_isAffine⟩) =
+      strongRightIdeal ∧
+    Ideal.map actualOverlapGlobalSectionsIso.hom.hom
+        ((strongIdealSheaf.comap
+          (referenceScheme.atlas.actualOverlapToUnderlying
+            referenceRaw leftIndex rightIndex)).ideal
+          ⟨⊤, @isAffineOpen_top
+            (referenceScheme.atlas.actualOverlap referenceRaw leftIndex rightIndex)
+            (IsAffine.of_isIso actualOverlapIso.hom)⟩) =
+      strongOverlapIdeal ∧
+    (strongIdealSheaf.comap leftChart.map).comap
+        (pullback.fst leftChart.map rightChart.map) =
+      (strongIdealSheaf.comap rightChart.map).comap
+        (pullback.snd leftChart.map rightChart.map) ∧
+    weakAmbientIdeal ≠ ⊥ ∧ weakAmbientIdeal ≠ ⊤ ∧
+    strongAmbientIdeal ≠ ⊥ ∧ strongAmbientIdeal ≠ ⊤ ∧
+    weakIdealSheaf < strongIdealSheaf ∧
+    rigidAmbientIdeal ≠ ⊥ ∧ rigidAmbientIdeal ≠ ⊤ ∧
+    strongIdealSheaf < rigidIdealSheaf ∧
+    weakImmersion.ker = weakIdealSheaf ∧
+    strongImmersion.ker = strongIdealSheaf ∧
+    Set.range weakImmersion = weakIdealSheaf.support ∧
+    Set.range strongImmersion = strongIdealSheaf.support ∧
+    IsIso weakAffineQuotientChart ∧ IsIso strongAffineQuotientChart ∧
+    Nonempty weakLocus ∧ Nonempty strongLocus ∧ Nonempty rigidLocus ∧
+    ¬ IsIso weakImmersion ∧ ¬ IsIso strongImmersion ∧ ¬ IsIso rigidImmersion ∧
+    SemanticLawfulAlong referenceRaw referenceScheme weakReading zeroPoint ∧
+    WitnessVanishes referenceRaw referenceScheme
+      weakReading weakReading_valid weakReading_requiredClosed zeroPoint ∧
+    IdealLawfulAlong referenceRaw referenceScheme
+      weakReading weakReading_valid weakReading_requiredClosed zeroPoint ∧
+    Nonempty (FactorsThroughLawfulClosedSubscheme referenceRaw referenceScheme
+      weakReading weakReading_valid weakReading_requiredClosed zeroPoint) ∧
+    SemanticLawfulAlong referenceRaw referenceScheme strongReading zeroPoint ∧
+    WitnessVanishes referenceRaw referenceScheme
+      strongReading strongReading_valid strongReading_requiredClosed zeroPoint ∧
+    IdealLawfulAlong referenceRaw referenceScheme
+      strongReading strongReading_valid strongReading_requiredClosed zeroPoint ∧
+    Nonempty (FactorsThroughLawfulClosedSubscheme referenceRaw referenceScheme
+      strongReading strongReading_valid strongReading_requiredClosed zeroPoint) ∧
+    SemanticLawfulAlong referenceRaw referenceScheme weakReading onePoint ∧
+    WitnessVanishes referenceRaw referenceScheme
+      weakReading weakReading_valid weakReading_requiredClosed onePoint ∧
+    IdealLawfulAlong referenceRaw referenceScheme
+      weakReading weakReading_valid weakReading_requiredClosed onePoint ∧
+    Nonempty (FactorsThroughLawfulClosedSubscheme referenceRaw referenceScheme
+      weakReading weakReading_valid weakReading_requiredClosed onePoint) ∧
+    ¬ SemanticLawfulAlong referenceRaw referenceScheme strongReading onePoint ∧
+    ¬ WitnessVanishes referenceRaw referenceScheme
+      strongReading strongReading_valid strongReading_requiredClosed onePoint ∧
+    ¬ IdealLawfulAlong referenceRaw referenceScheme
+      strongReading strongReading_valid strongReading_requiredClosed onePoint ∧
+    ¬ Nonempty (FactorsThroughLawfulClosedSubscheme referenceRaw referenceScheme
+      strongReading strongReading_valid strongReading_requiredClosed onePoint) ∧
+    ¬ SemanticLawfulAlong referenceRaw referenceScheme weakReading twoPoint ∧
+    ¬ WitnessVanishes referenceRaw referenceScheme
+      weakReading weakReading_valid weakReading_requiredClosed twoPoint ∧
+    ¬ IdealLawfulAlong referenceRaw referenceScheme
+      weakReading weakReading_valid weakReading_requiredClosed twoPoint ∧
+    ¬ Nonempty (FactorsThroughLawfulClosedSubscheme referenceRaw referenceScheme
+      weakReading weakReading_valid weakReading_requiredClosed twoPoint) ∧
+    ¬ SemanticLawfulAlong referenceRaw referenceScheme strongReading twoPoint ∧
+    ¬ WitnessVanishes referenceRaw referenceScheme
+      strongReading strongReading_valid strongReading_requiredClosed twoPoint ∧
+    ¬ IdealLawfulAlong referenceRaw referenceScheme
+      strongReading strongReading_valid strongReading_requiredClosed twoPoint ∧
+    ¬ Nonempty (FactorsThroughLawfulClosedSubscheme referenceRaw referenceScheme
+      strongReading strongReading_valid strongReading_requiredClosed twoPoint) ∧
+    AlgebraicGeometry.IsClosedImmersion lawComparison ∧
+    lawComparison ≫ weakImmersion = strongImmersion ∧
+    ¬ IsIso lawComparison ∧
+    AlgebraicGeometry.IsClosedImmersion strongToRigidComparison ∧
+    strongToRigidComparison ≫ strongImmersion = rigidImmersion ∧
+    ¬ IsIso strongToRigidComparison ∧
+    strongToRigidComparison ≫ lawComparison = weakToRigidComparison ∧
+    ¬ Function.Surjective coefficientChange.hom ∧
+    IsPullback
+      ((referenceScheme.baseChangedAtlas referenceRaw coefficientChange).chart
+        (cast (referenceScheme.baseChangedAtlas_Index
+          referenceRaw coefficientChange).symm leftIndex)).map
+      (referenceScheme.baseChangedChartMap referenceRaw coefficientChange leftIndex)
+      (referenceScheme.baseChangeMap referenceRaw coefficientChange)
+      (referenceScheme.atlas.chart leftIndex).map ∧
+    IsPullback
+      ((referenceScheme.baseChangedAtlas referenceRaw coefficientChange).chart
+        (cast (referenceScheme.baseChangedAtlas_Index
+          referenceRaw coefficientChange).symm rightIndex)).map
+      (referenceScheme.baseChangedChartMap referenceRaw coefficientChange rightIndex)
+      (referenceScheme.baseChangeMap referenceRaw coefficientChange)
+      (referenceScheme.atlas.chart rightIndex).map ∧
+    Scheme.IdealSheafData.comap weakIdealSheaf
+        (referenceScheme.baseChangeMap referenceRaw coefficientChange) =
+      lawGeneratedIdealSheaf
+        (referenceRaw.baseChange coefficientChange.hom) coefficientChangedScheme
+        coefficientChangedWeakReading coefficientChangedWeakReading_valid
+        coefficientChangedWeakReading_requiredClosed ∧
+    Scheme.IdealSheafData.comap strongIdealSheaf
+        (referenceScheme.baseChangeMap referenceRaw coefficientChange) =
+      lawGeneratedIdealSheaf
+        (referenceRaw.baseChange coefficientChange.hom) coefficientChangedScheme
+        coefficientChangedStrongReading coefficientChangedStrongReading_valid
+        coefficientChangedStrongReading_requiredClosed ∧
+    lawGeneratedIdealSheaf
+        (referenceRaw.baseChange coefficientChange.hom) coefficientChangedScheme
+        coefficientChangedWeakReading coefficientChangedWeakReading_valid
+        coefficientChangedWeakReading_requiredClosed <
+      lawGeneratedIdealSheaf
+        (referenceRaw.baseChange coefficientChange.hom) coefficientChangedScheme
+        coefficientChangedStrongReading coefficientChangedStrongReading_valid
+        coefficientChangedStrongReading_requiredClosed ∧
+    AlgebraicGeometry.IsClosedImmersion coefficientChangedLawComparison ∧
+    coefficientChangedWeakToStrong.lawMap = weakToStrong.lawMap ∧
+    coefficientChangedWeakToStrong.atomMap = weakToStrong.atomMap ∧
+    ¬ IsIso coefficientChangedLawComparison ∧
+    coefficientChangedLawComparison ≫
+        lawfulClosedSubschemeBaseChangeMap referenceRaw referenceScheme
+          weakLawEquationCore weakSchemeBridge coefficientChange =
+      lawfulClosedSubschemeBaseChangeMap referenceRaw referenceScheme
+          strongLawEquationCore strongSchemeBridge coefficientChange ≫
+        lawComparison ∧
+    ¬ IsIso (referenceScheme.baseChangeMap referenceRaw coefficientChange) :=
+  standardGeometryReference_fires
 
 end
 
