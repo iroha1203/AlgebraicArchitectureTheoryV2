@@ -19,13 +19,13 @@ import Mathlib.CategoryTheory.Limits.Shapes.FiniteMultiequalizer
 /-!
 # Standard geometry reference models
 
-This module implements the SD0 concrete raw-localization fixture over
-`ℤ[x]`.  It selects four contexts, the two-patch cover by `D(x)` and
-`D(1-x)`, a three-variable/two-relation raw presentation, its restriction
-maps, the raw sheaf calculation, and the four canonical localization
-presentations.
+This module implements the fixed SD0--SD7 reference model over `ℤ[x]`.
+It connects the selected four-context site and raw sheaf calculation to an
+actual two-principal-open atlas, three law-generated closed geometries,
+their 0/1/2 firing points and contravariant comparison maps, flat
+coefficient change, negative fixtures, and the integrated firing theorem.
 
-## Implementation notes
+## Implementation notes — R1 / SD0
 
 * The context preorder is constructed from the approved selected-index order.
   The broader existing finite-model preorder was rejected because it admits
@@ -43,6 +43,87 @@ presentations.
   of ring and under-category morphisms.  The localization presentations and
   their restriction equations are then derived from quotient and
   `IsLocalization.Away` universal properties.
+
+## Implementation notes — R2 / SD1
+
+These notes cover every nontrivial SD1 definition, including the chart-domain
+isomorphisms, `leftChart`, `rightChart`, `referenceAtlas`,
+`referenceOverlapPresentation`, `referenceScheme`, and `actualOverlapIso`.
+
+* The scheme is the actual `Spec ℤ[x]`; its charts are the canonical
+  localization-away morphisms for `x` and `1 - x`.  The overlap is obtained
+  from the localization pushout, and `referenceScheme` is assembled with
+  `StandardArchitectureScheme.ofPresentation`.  Reusing an existing
+  two-chart fixture was rejected because it would not prove that these fixed
+  proper principal opens and their nonempty mixed overlap are the selected
+  atlas.
+* Self-overlaps use identity pullback squares and mixed overlaps use the
+  proved localization pullback.  Accepting an arbitrary atlas, overlap
+  isomorphism, or pullback certificate as fixture data was rejected because
+  the construction and its provenance must be internal to this model.
+
+## Implementation notes — R3--R4 / SD2--SD3
+
+These notes cover every nontrivial SD2--SD3 definition, including the weak,
+strong, and rigid semantic cores and scheme bridges; their readings,
+generated ideal sheaves, lawful closed subschemes, evaluation morphisms, and
+0/1/2 firing packages.
+
+* The three semantic cores share the fixed raw coordinate and differ by their
+  concrete atom-indexed equations.  Their scheme bridges are built from the
+  actual raw presentation, and the readings, ideals, and closed subschemes
+  are obtained through the generic closed-equational APIs.  Supplying
+  arbitrary ideals, exactness certificates, or closed subschemes was rejected
+  because that would bypass generation by the selected laws.
+* Evaluation points are actual `Scheme.Spec.map` morphisms induced by
+  evaluation at `0`, `1`, and `2`.  Semantic vanishing, ideal vanishing, and
+  factorization are proved through the generic correspondence theorems.
+  Encoding firing as a standalone predicate alias or as a conclusion-bearing
+  certificate was rejected because it would not connect the same morphism to
+  all three readings.
+
+## Implementation notes — R5 / SD4
+
+These notes cover every nontrivial SD4 definition, including
+`weakToStrong`, `strongToRigid`, their validities, `lawComparison`,
+`strongToRigidComparison`, `weakToRigidComparison`, and the composition
+package.
+
+* The inclusions use concrete total law and atom maps, and the scheme maps are
+  built by `lawfulClosedSubschemeMap`; identity and composition laws come from
+  the generic inclusion API.  Comparing only the order of the resulting
+  ideals was rejected because the required output is the actual
+  contravariant morphism between closed subschemes.
+* Strict kernel and ideal inclusions prove that the comparison maps are not
+  isomorphisms.  Replacing a comparison by an identity or taking a morphism as
+  external fixture data was rejected because it would erase the strict
+  weak/strong/rigid law hierarchy.
+
+## Implementation notes — R6 / SD5
+
+The nontrivial coefficient-change definitions carry declaration-local
+`Implementation notes` below.  They adopt the free flat extension
+`Int → Polynomial Int`, the generic scheme/reading base-change APIs, and the
+induced mixed square; arbitrary flatness data, reconstructed atlases, and
+external comparison morphisms are rejected there.
+
+## Implementation notes — R7 / SD6--SD7
+
+These notes cover every nontrivial SD6--SD7 definition, including
+`duplicateLeftAtlas`, `unitIdealFixture`, `nonFlatCoefficientMap`,
+`coordinateReflection`, `reflectedRightRingHom`, `brokenRightChart`, and
+`standardGeometryReferenceModels_fires`.
+
+* Each negative fixture preserves the surrounding concrete model while
+  changing exactly the datum needed to expose one failure reason: duplicate
+  coverage, collapsed strictness, empty unit-ideal geometry, non-flat
+  coefficients, or reflected interpretation.  Taking an arbitrary invalid
+  atlas, chart, ideal, or coefficient map was rejected because it would not
+  identify the failed clause inside the fixed model.
+* The integrated theorem is the direct conjunction of the previously proved
+  component theorems.  A wrapper structure or certificate carrying those
+  conclusions as fields was rejected because it would repackage rather than
+  prove the complete firing matrix.
 -/
 
 set_option maxHeartbeats 4000000
