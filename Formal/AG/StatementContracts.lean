@@ -9,7 +9,6 @@ import Formal.AG.StatementContractsStandardArchitectureScheme
 import Formal.AG.StatementContractsClosedEquationalGeometry
 import Formal.AG.StatementContractsReadingFunctoriality
 import Formal.AG.StatementContractsStandardGeometryReferenceModels
-import Formal.AG.StatementContractsLegacyConsolidation
 
 noncomputable section
 

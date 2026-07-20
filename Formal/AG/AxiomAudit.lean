@@ -18,7 +18,6 @@ import Formal.AG.StatementContractsReadingFunctoriality
 import Formal.AG.Examples.StandardGeometryReferenceModels
 import Formal.AG.StatementContractsStandardGeometryReferenceModels
 import Formal.Util.AssertStandardAxioms
-import Formal.AG.StatementContractsLegacyConsolidation
 import Formal.AG.Examples.LegacyConsolidation
 
 /-!
