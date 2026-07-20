@@ -60,9 +60,10 @@ function sourceLanding(index, sourceId) {
     path = current.path || null;
   }
   const symbol = origin.symbol || current.symbol || origin.section || current.section || null;
+  const method = origin.method || current.method || null;
   const line = origin.line ?? current.line ?? null;
-  const resolution = path && symbol && line !== null ? "METHOD / SYMBOL LEVEL" : path && symbol ? "CLASS / SYMBOL LEVEL" : path && line !== null ? "LINE LEVEL" : path ? "FILE LEVEL" : "UNRESOLVED";
-  return { sourceId, path, symbol, line, resolution };
+  const resolution = path && method ? "METHOD LEVEL" : path && symbol && line !== null ? "SYMBOL + LINE LEVEL — METHOD GRANULARITY UNAVAILABLE" : path && symbol ? "SYMBOL LEVEL — METHOD GRANULARITY UNAVAILABLE" : path && line !== null ? "LINE LEVEL — METHOD GRANULARITY UNAVAILABLE" : path ? "FILE LEVEL — METHOD GRANULARITY UNAVAILABLE" : "UNRESOLVED";
+  return { sourceId, path, symbol: method || symbol, line, resolution };
 }
 
 function explicitRepairAtomRefs(card, actionQueue, index, bridges) {
@@ -111,7 +112,7 @@ function buildFinding(card, position, bundle, index) {
   const evidence = isRecord(card.evidence) ? card.evidence : {};
   const verdictByRef = new Map(packet.structuralVerdict.map((row) => [row.verdictRef, row]));
   const verdictRows = (evidence.structuralVerdictRefs || []).map((ref) => verdictByRef.get(ref)).filter(Boolean);
-  const effectiveRows = verdictRows.length ? verdictRows : packet.structuralVerdict.filter((row) => (evidence.evaluatorRefs || []).includes(row.evaluator));
+  const effectiveRows = (evidence.structuralVerdictRefs || []).length ? verdictRows : packet.structuralVerdict.filter((row) => (evidence.evaluatorRefs || []).includes(row.evaluator));
   const state = verdictState(effectiveRows);
   const bridges = bundle.bridges;
   const supportAtomIds = resolveRefs(evidence.atomRefs || [], "atoms", index, bridges);
@@ -125,10 +126,14 @@ function buildFinding(card, position, bundle, index) {
   const invariants = packet.computedInvariants.filter((row) => invariantRefs.has(row.invariantId));
   const edgeRefs = normalizedEdges(collectNamedArrays(invariants, new Set(["edgeRefs"])), index, bridges);
   const unobservedEdgeRefs = normalizedEdges(collectNamedArrays(invariants, new Set(["unobservedEdgeRefs"])), index, bridges);
-  const boundaryContextIds = unique([...supportContextIds, ...boundaryContextRefs(edgeRefs, index, bridges)]);
+  const relationRefs = unique([...edgeRefs, ...unobservedEdgeRefs]);
+  const boundaryContextIds = boundaryContextRefs(relationRefs, index, bridges);
   const repairAtomIds = explicitRepairAtomRefs(card, insight.actionQueue || [], index, bridges);
   const verdictRefs = new Set(evidence.structuralVerdictRefs || []);
-  const validated = repairAtomIds.length > 0 && (bundle.artifacts.comparison?.verdictTransitions || []).some((row) => row.transition === "measured_obstruction_no_longer_recorded" && row.baseVerdict === "measured_nonzero" && row.headVerdict === "measured_zero" && (verdictRefs.has(row.baseRowRef) || verdictRefs.has(row.headRowRef)));
+  const validated = repairAtomIds.length > 0 && (bundle.artifacts.comparison?.verdictTransitions || []).some((row) => {
+    const explicitValidatedTargets = resolveRefs((row.deltaRefs || []).filter((delta) => delta?.kind === "atoms" && ["added", "modified"].includes(delta.op)).map((delta) => delta.id), "atoms", index, bridges);
+    return row.transition === "measured_obstruction_no_longer_recorded" && row.baseVerdict === "measured_nonzero" && row.headVerdict === "measured_zero" && (verdictRefs.has(row.baseRowRef) || verdictRefs.has(row.headRowRef)) && repairAtomIds.some((atomId) => explicitValidatedTargets.includes(atomId));
+  });
   const sourceTargets = classifiedTargets({ directSourceRefs, supportAtomIds, boundaryContextIds, repairAtomIds, validated }, index);
   const unmeasuredRows = effectiveRows.filter((row) => ["unmeasured", "unknown", "not_computed"].includes(row.verdict));
   return Object.freeze({
@@ -144,6 +149,7 @@ function buildFinding(card, position, bundle, index) {
     supportCoverIds: Object.freeze(supportCoverIds),
     edgeRefs: Object.freeze(edgeRefs),
     unobservedEdgeRefs: Object.freeze(unobservedEdgeRefs),
+    relationRefs: Object.freeze(relationRefs),
     boundaryContextIds: Object.freeze(boundaryContextIds),
     directSourceRefs: Object.freeze(directSourceRefs),
     repairAtomIds: Object.freeze(repairAtomIds),

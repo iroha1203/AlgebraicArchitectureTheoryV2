@@ -94,6 +94,38 @@ function validateArtifactRows(packet, summary, insight, issues) {
     for (const field of ["structuralVerdictRefs", "computedInvariantRefs", "analyticReadingRefs", "assumptionRefs", "sourceRefs", "atomRefs", "contextRefs", "coverRefs", "evaluatorRefs"]) requireStringArray(row.evidence[field], `${FILES.insight}.insightCards[${position}].evidence.${field}`, issues);
   });
   requireObjectArray(insight.actionQueue, `${FILES.insight}.actionQueue`, ["id", "kind", "title", "reason"], issues);
+  const uniqueField = (rows, field, path) => {
+    const seen = new Set();
+    (rows || []).forEach((row, position) => {
+      const value = row?.[field];
+      if (typeof value !== "string") return;
+      if (seen.has(value)) issues.push(issue(`${path}[${position}].${field}`, `${path}.${field} values must be unique.`, null, value));
+      seen.add(value);
+    });
+    return seen;
+  };
+  const verdictRefs = uniqueField(packet.structuralVerdict, "verdictRef", `${FILES.packet}.structuralVerdict`);
+  const invariantRefs = uniqueField(packet.computedInvariants, "invariantId", `${FILES.packet}.computedInvariants`);
+  const readingRefs = uniqueField(packet.analyticReadings, "readingId", `${FILES.packet}.analyticReadings`);
+  uniqueField(packet.assumptions, "assumptionId", `${FILES.packet}.assumptions`);
+  uniqueField(packet.suppliedData, "suppliedId", `${FILES.packet}.suppliedData`);
+  uniqueField(packet.boundaryStatements, "id", `${FILES.packet}.boundaryStatements`);
+  uniqueField(insight.insightCards, "id", `${FILES.insight}.insightCards`);
+  uniqueField(insight.actionQueue, "id", `${FILES.insight}.actionQueue`);
+  const evaluatorRefs = new Set([...(packet.structuralVerdict || []), ...(packet.computedInvariants || []), ...(packet.analyticReadings || [])].map((row) => row?.evaluator).filter((value) => typeof value === "string"));
+  const requireExistingRefs = (refs, known, path, label) => (refs || []).forEach((ref, position) => {
+    if (!known.has(ref)) issues.push(issue(`${path}[${position}]`, `${ref} does not identify a ${label} in the loaded measurement packet.`, null, ref));
+  });
+  (packet.structuralVerdict || []).forEach((row, position) => requireExistingRefs(row?.evidence?.computedInvariantRefs, invariantRefs, `${FILES.packet}.structuralVerdict[${position}].evidence.computedInvariantRefs`, "computed invariant"));
+  (insight.insightCards || []).forEach((row, position) => {
+    const evidence = row?.evidence;
+    if (!isRecord(evidence)) return;
+    const path = `${FILES.insight}.insightCards[${position}].evidence`;
+    requireExistingRefs(evidence.structuralVerdictRefs, verdictRefs, `${path}.structuralVerdictRefs`, "structural verdict");
+    requireExistingRefs(evidence.computedInvariantRefs, invariantRefs, `${path}.computedInvariantRefs`, "computed invariant");
+    requireExistingRefs(evidence.analyticReadingRefs, readingRefs, `${path}.analyticReadingRefs`, "analytic reading");
+    requireExistingRefs(evidence.evaluatorRefs, evaluatorRefs, `${path}.evaluatorRefs`, "measurement evaluator");
+  });
   const verdicts = packet.structuralVerdict || [];
   const expectedCounts = {
     rowCount: verdicts.length,
@@ -511,6 +543,21 @@ function validateOptionalArtifacts(documents, issues) {
     requireArray(documents.comparison.nonConclusions, `${FILES.comparison}.nonConclusions`, issues);
     requireObjectArray(documents.comparison.verdictTransitions, `${FILES.comparison}.verdictTransitions`, [], issues);
     requireObjectArray(documents.comparison.boundaryStatements, `${FILES.comparison}.boundaryStatements`, [], issues);
+    const transitionKeys = new Set();
+    (documents.comparison.verdictTransitions || []).forEach((row, position) => {
+      if (!isRecord(row)) return;
+      const path = `${FILES.comparison}.verdictTransitions[${position}]`;
+      for (const field of ["rowKey", "baseVerdict", "headVerdict", "transition", "introducedByChangeCategory", "discipline"]) requireString(row[field], `${path}.${field}`, issues);
+      for (const field of ["baseRowRef", "headRowRef"]) if (row[field] !== null && row[field] !== undefined) requireString(row[field], `${path}.${field}`, issues);
+      requireObjectArray(row.deltaRefs, `${path}.deltaRefs`, ["diffRef", "op", "kind", "id"], issues);
+      (row.deltaRefs || []).forEach((delta, deltaPosition) => {
+        if (!isRecord(delta)) return;
+        if (!["added", "removed", "modified"].includes(delta.op)) issues.push(issue(`${path}.deltaRefs[${deltaPosition}].op`, "Comparison delta op is not supported.", null, delta.op));
+        if (!["sources", "atoms", "contexts", "covers"].includes(delta.kind)) issues.push(issue(`${path}.deltaRefs[${deltaPosition}].kind`, "Comparison delta kind is not supported.", null, delta.kind));
+      });
+      if (typeof row.rowKey === "string" && transitionKeys.has(row.rowKey)) issues.push(issue(`${path}.rowKey`, "Comparison verdict transition rowKey values must be unique.", null, row.rowKey));
+      transitionKeys.add(row.rowKey);
+    });
   }
 }
 
@@ -591,8 +638,23 @@ export async function validateAnalysisBundle(documents, architectureIndex) {
     const comparisonShapeIssues = [];
     runs.forEach((run, position) => validateComparisonRun(run, `${FILES.comparison}.inputDigests.${position ? "headRun" : "baseRun"}`, comparisonShapeIssues));
     if (comparisonShapeIssues.length) throw new AnalysisValidationError("malformed", comparisonShapeIssues);
-    const compatible = runs.some((run) => run.runId === documents.manifest.runId && run.archmap?.sha256 === currentArchmapDigest && run.measurementPacket?.sha256 === packetDigest);
-    if (!compatible) throw new AnalysisValidationError("mismatch", [issue(`${FILES.comparison}.inputDigests`, "Comparison report does not bind either run to the loaded measurement run.")]);
+    const compatibleSides = runs.map((run, position) => ({ run, side: position ? "head" : "base" })).filter(({ run }) => run.runId === documents.manifest.runId && run.archmap?.sha256 === currentArchmapDigest && run.measurementPacket?.sha256 === packetDigest);
+    if (!compatibleSides.length) throw new AnalysisValidationError("mismatch", [issue(`${FILES.comparison}.inputDigests`, "Comparison report does not bind either run to the loaded measurement run.")]);
+    const verdictByRef = new Map(documents.packet.structuralVerdict.map((row) => [row.verdictRef, row]));
+    const transitionIssues = [];
+    documents.comparison.verdictTransitions.forEach((transition, position) => compatibleSides.forEach(({ side }) => {
+      const rowRef = transition[`${side}RowRef`];
+      const declaredVerdict = transition[`${side}Verdict`];
+      const path = `${FILES.comparison}.verdictTransitions[${position}]`;
+      if (rowRef === null || rowRef === undefined) {
+        if (declaredVerdict !== "absent") transitionIssues.push(issue(`${path}.${side}Verdict`, `Comparison ${side} verdict must be absent when its row ref is absent.`, "absent", declaredVerdict));
+        return;
+      }
+      const packetRow = verdictByRef.get(rowRef);
+      if (!packetRow) transitionIssues.push(issue(`${path}.${side}RowRef`, `Comparison ${side} row does not identify a structural verdict in the loaded packet.`, null, rowRef));
+      else if (packetRow.verdict !== declaredVerdict) transitionIssues.push(issue(`${path}.${side}Verdict`, `Comparison ${side} verdict does not match the loaded packet row.`, packetRow.verdict, declaredVerdict));
+    }));
+    if (transitionIssues.length) throw new AnalysisValidationError("mismatch", transitionIssues);
   }
   const comparisonDigest = documents.comparison ? await sha256Hex(documents.comparison) : null;
   const gateComparisonDigest = documents.gate?.inputDigests?.comparisonReport;

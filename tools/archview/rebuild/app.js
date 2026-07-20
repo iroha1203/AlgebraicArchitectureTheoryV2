@@ -418,9 +418,10 @@ function analysisSection(title, content, state = null) {
 function renderFindingExplanation(container, finding, model, mode) {
   if (!finding) return replaceWithEmpty(container, "Select a finding to inspect local facts, shared relations, global result, and source evidence.");
   const local = finding.localFacts.length ? finding.localFacts.map((fact) => `${fact.atomId} · ${fact.fact} · ${fact.contexts.join(", ")}`) : ["No local Atom support was supplied."];
+  const relationLabel = finding.state === "measured_zero" ? "Agreement" : finding.state === "measured_nonzero" ? "Mismatch" : ["unmeasured", "unknown", "not_computed"].includes(finding.state) ? "Unmeasured relation" : "Observed relation";
   const shared = [
-    ...(finding.edgeRefs.length ? finding.edgeRefs.map((edge) => `Observed relation · ${edge}`) : ["No measured relation support was supplied."]),
-    ...finding.unobservedEdgeRefs.map((edge) => `Unmeasured relation · ${edge}`),
+    ...(finding.edgeRefs.length ? finding.edgeRefs.map((edge) => `${relationLabel} · ${edge}`) : ["No measured relation support was supplied."]),
+    ...(finding.unobservedEdgeRefs.length ? finding.unobservedEdgeRefs.map((edge) => `Unmeasured relation · ${edge}`) : ["Unmeasured relations · none supplied for this finding."]),
   ];
   const global = `${finding.stateLabel}. ${finding.summary}`;
   const source = finding.sourceTargets.length ? finding.sourceTargets.map((target) => `${target.classification} · ${target.path || target.sourceId} · ${target.symbol || "symbol unavailable"}`) : ["No source target resolved from the supplied evidence."];
@@ -530,9 +531,16 @@ function renderAnalysisStatus(snapshot, model, actions) {
     requireElement("#source-classification").textContent = selectedTarget.classification;
     requireElement("#source-supporting-atom").textContent = `Supporting Atom ${selectedTarget.atomId || "not directly supplied"}`;
     requireElement("#source-resolution").textContent = selectedTarget.resolution;
+  } else if (snapshot.mode === "architecture") {
+    requireElement("#source-classification").textContent = snapshot.selection?.kind === "source" ? "ARCHMAP SOURCE" : "NO SOURCE CLASSIFICATION";
+    requireElement("#source-supporting-atom").textContent = `Supporting Atom ${snapshot.selection?.atomId || "—"}`;
   } else {
     requireElement("#source-classification").textContent = snapshot.mode === "improve" && selected && !selected.repairAtomIds.length ? "NO EXPLICIT REPAIR TARGET" : "NO SOURCE CLASSIFICATION";
     requireElement("#source-supporting-atom").textContent = "Supporting Atom —";
+    requireElement("#source-path").textContent = "—";
+    requireElement("#source-symbol").textContent = "—";
+    requireElement("#source-line").textContent = "—";
+    requireElement("#source-resolution").textContent = "UNRESOLVED";
   }
 }
 
@@ -593,7 +601,7 @@ export async function startArchView() {
     if (atlasRenderer) {
       const support = snapshot.mode === "architecture" || !selectedFinding ? null : {
         atomIds: selectedFinding.supportAtomIds,
-        contextIds: selectedFinding.supportContextIds,
+        contextIds: [...new Set([...selectedFinding.supportContextIds, ...selectedFinding.boundaryContextIds])],
         edgeIds: selectedFinding.edgeRefs,
         sharedAtomIds: selectedFinding.supportAtomIds.filter((atomId) => (snapshot.architecture.index?.contextIdsByAtom.get(atomId) || []).length > 1),
         state: selectedFinding.state,

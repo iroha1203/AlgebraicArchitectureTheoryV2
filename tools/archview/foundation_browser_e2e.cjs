@@ -405,18 +405,20 @@ async function main() {
           profile: { schema: 'measurement-profile/v0.5.4', profileId: 'profile:browser@1', siteRef: 'archmap:/contexts', coverRef: index.covers[0].id, coefficient: 'F2', effCoeff: 'finite-linear-algebra@1', resolutionSelector: 'taylor@1', domain: 'finite-poset-site', zeroPredicate: 'rank-zero@1', nonZeroPredicate: 'rank-positive@1', certSelector: 'finite-certificate@1', verdictDiscipline: 'five-valued-structural-verdict@1', finiteBounds: { maxSquareFreeWitnessVariables: 12, maxCoherenceContexts: 12, maxTorWitnessVariables: 12, maxBoundaryResidueVariables: 16, maxLaplacianCells: 16, maxPeriodCycles: 16, maxTransferTargets: 16 } }, profiles: [],
           structuralVerdict: [
             { verdictRef: 'structuralVerdict/browser/measured', evaluator: 'ag.browser-probe', law: 'surface:browser', target: { kind: 'profile-relative-structural-verdict', coverRef: index.covers[0].id, coefficient: 'F2', classRef: 'computedInvariants/browser-support', scopeSize: { contexts: 2, edges: 1, triangles: 0 } }, verdict: 'measured_nonzero', verdictData: { inScope: true, zero: false, nonZero: true, methodStatus: 'browser_probe', certRef: 'computedInvariants/browser-support' }, evidence: { computedInvariantRefs: ['browser-support'], sourceRefs: [index.sources[0][0]] } },
+            { verdictRef: 'structuralVerdict/browser/zero', evaluator: 'ag.browser-agreement', law: 'surface:browser-agreement', target: { kind: 'profile-relative-structural-verdict', coverRef: index.covers[0].id, coefficient: 'F2', classRef: 'computedInvariants/browser-support', scopeSize: { contexts: 2, edges: 1, triangles: 0 } }, verdict: 'measured_zero', verdictData: { inScope: true, zero: true, nonZero: false, methodStatus: 'browser_probe', certRef: 'computedInvariants/browser-support' }, evidence: { computedInvariantRefs: ['browser-support'], sourceRefs: [index.sources[0][0]] } },
             { verdictRef: 'structuralVerdict/browser/unmeasured', evaluator: 'ag.browser-unmeasured', law: 'surface:browser-unmeasured', target: { kind: 'profile-relative-structural-verdict', coverRef: index.covers[0].id, coefficient: 'F2', classRef: 'structuralVerdict/browser/unmeasured', scopeSize: { contexts: 0, edges: 0, triangles: 0 } }, verdict: 'unmeasured', verdictData: { inScope: true, zero: false, nonZero: false, methodStatus: 'input_not_supplied' }, evidence: { computedInvariantRefs: [], sourceRefs: [] } },
           ], computedInvariants: [{ invariantId: 'browser-support', kind: 'measurement-invariant', edgeRefs: [index.contexts[0].id + '->' + index.contexts[0].restrictsTo[0]] }], analyticReadings: [], assumptions: [], suppliedData: [], boundaryStatements: [], nonConclusions: [],
         };
         const summary = {
           schema: 'archsig-analysis-summary/v0.5.4', ...contract, measurementPacketSchema: packet.schema,
-          profileRef: packet.profile.profileId, structuralVerdictSummary: { rowCount: 2, measuredNonzeroCount: 1, unmeasuredCount: 1, nonTerminalCount: 1 },
+          profileRef: packet.profile.profileId, structuralVerdictSummary: { rowCount: 3, measuredNonzeroCount: 1, unmeasuredCount: 1, nonTerminalCount: 1 },
           conclusion: 'MEASURED_AG_OBSTRUCTION_UNDER_PROFILE', assumptionSummary: { checkedCount: 0, assumedCount: 0, violatedCount: 0 }, insightArtifacts: {}, readThisFirst: { conclusion: 'MEASURED_AG_OBSTRUCTION_UNDER_PROFILE' }, translationRule: {}, translationRuleTable: [], nonConclusions: [],
         };
         const insight = {
           schema: 'archsig-insight-report/v0.5.4', ...contract, reportId: 'insight:browser', sourcePacketRef: 'archsig-measurement-packet.json',
           insightCards: [
             { id: 'insight:browser:001', kind: 'measured_probe', title: 'Declared contexts do not agree', oneLine: 'A measured relation is nonzero.', evidence: { structuralVerdictRefs: ['structuralVerdict/browser/measured'], computedInvariantRefs: ['browser-support'], analyticReadingRefs: [], assumptionRefs: [], atomRefs: [normalizedAtomId(index.atoms[0].id)], contextRefs: [normalizedContextId(index.contexts[0].id), normalizedContextId(index.contexts[0].restrictsTo[0])], coverRefs: [normalizedCoverId(index.covers[0].id)], evaluatorRefs: ['ag.browser-probe'], sourceRefs: [index.sources[0][0]] }, nextAction: { kind: 'next_inspection', targetRefs: [normalizedAtomId(index.atoms[0].id)] }, unsupportedScalar: 42 },
+            { id: 'insight:browser:003', kind: 'measured_zero_probe', title: 'Declared contexts agree', oneLine: 'The measured relation is zero.', evidence: { structuralVerdictRefs: ['structuralVerdict/browser/zero'], computedInvariantRefs: ['browser-support'], analyticReadingRefs: [], assumptionRefs: [], atomRefs: [normalizedAtomId(index.atoms[0].id)], contextRefs: [normalizedContextId(index.contexts[0].id), normalizedContextId(index.contexts[0].restrictsTo[0])], coverRefs: [normalizedCoverId(index.covers[0].id)], evaluatorRefs: ['ag.browser-agreement'], sourceRefs: [index.sources[0][0]] }, nextAction: { kind: 'next_inspection', targetRefs: [normalizedAtomId(index.atoms[0].id)] } },
             { id: 'insight:browser:002', kind: 'unmeasured_probe', title: 'Additional support is unmeasured', oneLine: 'No observation was supplied.', evidence: { structuralVerdictRefs: ['structuralVerdict/browser/unmeasured'], computedInvariantRefs: [], analyticReadingRefs: [], assumptionRefs: [], atomRefs: [], contextRefs: [], coverRefs: [normalizedCoverId(index.covers[0].id)], evaluatorRefs: ['ag.browser-unmeasured'], sourceRefs: [] }, nextAction: { kind: 'next_inspection', targetRefs: [] } },
           ],
           actionQueue: [{ id: 'action:browser:001', kind: 'next_inspection', title: 'Inspect support', reason: 'Declared support is available.', targetRefs: [normalizedAtomId(index.atoms[0].id)] }], generatedAt: '2026-01-01T00:00:00Z', boundaryDigest: {}, claimValidation: {}, copyBlocks: {}, gluingGeometry: {}, guidedTours: [], headline: { conclusionCode: 'MEASURED_AG_OBSTRUCTION_UNDER_PROFILE' }, omittedDetailCounts: {}, outputArtifacts: {}, rankingBasis: [], readThisFirst: { conclusion: 'MEASURED_AG_OBSTRUCTION_UNDER_PROFILE' }, viewerVisualScenes: [], nonConclusions: [],
@@ -481,15 +483,21 @@ async function main() {
         limitedSourceTarget?.click();
         const limitedSourceResolution = document.querySelector('#source-resolution').textContent;
         document.querySelector('[data-finding-id="insight:browser:002"]').click();
-        const unmeasuredFinding = { state: document.querySelector('[data-finding-id="insight:browser:002"]').dataset.findingState, explanation: document.querySelector('#analysis-explanation').textContent };
+        const unmeasuredFinding = { state: document.querySelector('[data-finding-id="insight:browser:002"]').dataset.findingState, explanation: document.querySelector('#analysis-explanation').textContent, clearedSourcePath: document.querySelector('#source-path').textContent, clearedSourceResolution: document.querySelector('#source-resolution').textContent };
+        document.querySelector('[data-finding-id="insight:browser:003"]').click();
+        const measuredZeroFinding = { state: document.querySelector('[data-finding-id="insight:browser:003"]').dataset.findingState, explanation: document.querySelector('#analysis-explanation').textContent };
         document.querySelector('[data-finding-id="insight:browser:001"]').click();
         document.querySelector('[data-mode-button="improve"]').click();
         const improveExplanation = document.querySelector('#analysis-explanation').textContent;
+        const findingOrderBeforeReload = [...document.querySelectorAll('[data-finding-id]')].map((item) => item.dataset.findingId).join('|');
+        const sourceOrderBeforeReload = document.querySelector('#source-targets').textContent;
         const acceptedBundle = window.__archviewState.analysis.bundle;
         const repairCard = { ...insight.insightCards[0], id: 'insight:browser:repair', nextAction: { kind: 'repair_candidate', targetRefs: [normalizedAtomId(index.atoms[0].id)] } };
         const repairArtifacts = { ...acceptedBundle.artifacts, insight: { ...acceptedBundle.artifacts.insight, insightCards: [repairCard], actionQueue: [] } };
         const candidateView = buildAnalysisView({ ...acceptedBundle, artifacts: repairArtifacts }, index);
-        const validatedView = buildAnalysisView({ ...acceptedBundle, artifacts: { ...repairArtifacts, comparison: { ...comparison, verdictTransitions: [{ baseRowRef: 'structuralVerdict/browser/measured', headRowRef: 'structuralVerdict/browser/measured', baseVerdict: 'measured_nonzero', headVerdict: 'measured_zero', transition: 'measured_obstruction_no_longer_recorded' }] } } }, index);
+        const validatedView = buildAnalysisView({ ...acceptedBundle, artifacts: { ...repairArtifacts, comparison: { ...comparison, verdictTransitions: [{ baseRowRef: 'structuralVerdict/browser/measured', headRowRef: 'structuralVerdict/browser/measured', baseVerdict: 'measured_nonzero', headVerdict: 'measured_zero', transition: 'measured_obstruction_no_longer_recorded', deltaRefs: [{ diffRef: 'archmap-diff/atoms/modified/' + index.atoms[0].id, op: 'modified', kind: 'atoms', id: index.atoms[0].id }] }] } } }, index);
+        const contextOnlyCard = { ...insight.insightCards[0], id: 'insight:browser:context-only', evidence: { ...insight.insightCards[0].evidence, computedInvariantRefs: [], atomRefs: [], sourceRefs: [], contextRefs: [normalizedContextId(index.contexts[0].id)] } };
+        const contextOnlyView = buildAnalysisView({ ...acceptedBundle, artifacts: { ...acceptedBundle.artifacts, insight: { ...acceptedBundle.artifacts.insight, insightCards: [contextOnlyCard] } } }, index);
         const candidateClassification = candidateView.findings[0].sourceTargets.map((target) => target.classification);
         const validatedClassification = validatedView.findings[0].sourceTargets.map((target) => target.classification);
         const analysisUnderstandingAnswers = [
@@ -505,7 +513,10 @@ async function main() {
           validatedClassification.includes('VALIDATED IN HYPOTHETICAL TARGET'),
           improveExplanation.includes('No actual repository change is asserted'),
         ];
-        const analysisTask = { analysisExplanation, findingCounts, supportHighlight, sourceLanding, limitedSourceResolution, unmeasuredFinding, improveExplanation, candidateClassification, validatedClassification, findingCount: document.querySelectorAll('[data-finding-id]').length, analysisUnderstandingTaskTest: { answers: analysisUnderstandingAnswers, correct: analysisUnderstandingAnswers.filter(Boolean).length, total: analysisUnderstandingAnswers.length }, evidenceRepairTaskTest: { answers: evidenceRepairAnswers, correct: evidenceRepairAnswers.filter(Boolean).length, total: evidenceRepairAnswers.length, misrecognitionRate: 1 - evidenceRepairAnswers.filter(Boolean).length / evidenceRepairAnswers.length } };
+        await window.__archview.loadAnalysisObject(bundle, 'deterministic analysis reload');
+        document.querySelector('[data-finding-id="insight:browser:001"]').click();
+        const deterministicReload = findingOrderBeforeReload === [...document.querySelectorAll('[data-finding-id]')].map((item) => item.dataset.findingId).join('|') && sourceOrderBeforeReload === document.querySelector('#source-targets').textContent;
+        const analysisTask = { analysisExplanation, findingCounts, supportHighlight, sourceLanding, limitedSourceResolution, unmeasuredFinding, measuredZeroFinding, improveExplanation, candidateClassification, validatedClassification, contextOnlyClassification: contextOnlyView.findings[0].sourceTargets.map((target) => target.classification), findingCount: document.querySelectorAll('[data-finding-id]').length, deterministicReload, browserUnderstandingProbe: { answers: analysisUnderstandingAnswers, correct: analysisUnderstandingAnswers.filter(Boolean).length, total: analysisUnderstandingAnswers.length }, browserEvidenceRepairProbe: { answers: evidenceRepairAnswers, correct: evidenceRepairAnswers.filter(Boolean).length, total: evidenceRepairAnswers.length } };
         const malformedJsonState = await window.__archview.loadAnalysisFiles([new File(['{'], 'archsig-run-manifest.json', { type: 'application/json' })], 'malformed JSON directory');
         const malformedJson = { status: malformedJsonState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
         const duplicateKeyState = await window.__archview.loadAnalysisFiles([new File(['{"schema":"invalid","schema":"archsig-run-manifest/v0.5.4"}'], 'archsig-run-manifest.json', { type: 'application/json' })], 'duplicate key directory');
@@ -539,18 +550,21 @@ async function main() {
         const invalidCard = { status: invalidCardState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
         const forgedConclusionState = await window.__archview.loadAnalysisObject({ ...bundle, summary: { ...summary, conclusion: 'FORGED_CONCLUSION' } }, 'forged conclusion');
         const forgedConclusion = { status: forgedConclusionState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
-        const edgePacket = { ...packet, computedInvariants: [{ invariantId: 'edge-probe', kind: 'measurement-invariant', edgeRefs: ['ctx:missing->ctx:checkout'] }] };
+        const staleVerdictInsight = { ...insight, insightCards: [{ ...insight.insightCards[0], evidence: { ...insight.insightCards[0].evidence, structuralVerdictRefs: ['structuralVerdict/browser/missing'] } }] };
+        const staleVerdictState = await window.__archview.loadAnalysisObject({ ...bundle, insight: staleVerdictInsight }, 'stale insight verdict ref');
+        const staleVerdictRef = { status: staleVerdictState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
+        const edgePacket = { ...packet, computedInvariants: [...packet.computedInvariants, { invariantId: 'edge-probe', kind: 'measurement-invariant', edgeRefs: ['ctx:missing->ctx:checkout'] }] };
         const edgeState = await window.__archview.loadAnalysisObject({ ...bundle, packet: edgePacket }, 'unresolved edge');
         const unresolvedEdge = { status: edgeState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
-        const unobservedPacket = { ...packet, computedInvariants: [{ invariantId: 'unobserved-edge-probe', kind: 'measurement-invariant', unobservedEdgeRefs: ['ctx:missing->ctx:checkout'] }] };
+        const unobservedPacket = { ...packet, computedInvariants: [...packet.computedInvariants, { invariantId: 'unobserved-edge-probe', kind: 'measurement-invariant', unobservedEdgeRefs: ['ctx:missing->ctx:checkout'] }] };
         const unobservedState = await window.__archview.loadAnalysisObject({ ...bundle, packet: unobservedPacket }, 'unresolved unobserved edge');
         const unresolvedUnobservedEdge = { status: unobservedState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
-        const observedAsUnobservedPacket = { ...packet, computedInvariants: [{ invariantId: 'observed-as-unobserved-probe', kind: 'measurement-invariant', unobservedEdgeRefs: [index.contexts[0].id + '->' + index.contexts[0].restrictsTo[0]] }] };
+        const observedAsUnobservedPacket = { ...packet, computedInvariants: [...packet.computedInvariants, { invariantId: 'observed-as-unobserved-probe', kind: 'measurement-invariant', unobservedEdgeRefs: [index.contexts[0].id + '->' + index.contexts[0].restrictsTo[0]] }] };
         const observedAsUnobservedState = await window.__archview.loadAnalysisObject({ manifest, normalized, packet: observedAsUnobservedPacket, summary, insight }, 'explicit edge without observation value');
         const observedAsUnobserved = { status: observedAsUnobservedState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
         const invalidRefState = await window.__archview.loadAnalysisObject({ ...bundle, insight: { ...insight, insightCards: [{ ...insight.insightCards[0], evidence: { ...insight.insightCards[0].evidence, atomRefs: [42] } }] } }, 'non-string ref');
         const invalidRef = { status: invalidRefState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
-        const witnessPacket = { ...packet, computedInvariants: [{ invariantId: 'witness-probe', kind: 'measurement-invariant', witnessAtomRef: 'atom:missing-witness' }] };
+        const witnessPacket = { ...packet, computedInvariants: [...packet.computedInvariants, { invariantId: 'witness-probe', kind: 'measurement-invariant', witnessAtomRef: 'atom:missing-witness' }] };
         const witnessState = await window.__archview.loadAnalysisObject({ ...bundle, packet: witnessPacket }, 'unresolved witness atom');
         const unresolvedWitness = { status: witnessState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
         const malformedGateState = await window.__archview.loadAnalysisObject({ ...bundle, gate: { schema: gate.schema } }, 'malformed gate bundle');
@@ -561,13 +575,16 @@ async function main() {
         const gateMismatch = { status: gateMismatchState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
         const comparisonMismatchState = await window.__archview.loadAnalysisObject({ ...bundle, gate: { ...gate, inputDigests: { ...gate.inputDigests, comparisonReport: { path: 'input:archsig-comparison-report.json', sha256: 'e'.repeat(64) } } } }, 'comparison digest mismatch bundle');
         const comparisonMismatch = { status: comparisonMismatchState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
+        const invalidTransition = { rowKey: 'browser|invalid', baseRowRef: 'structuralVerdict/browser/missing', headRowRef: 'structuralVerdict/browser/measured', baseVerdict: 'measured_nonzero', headVerdict: 'measured_nonzero', transition: 'preexisting_recorded_row', introducedByChangeCategory: 'preexisting', deltaRefs: [], discipline: 'record-level comparison' };
+        const transitionMismatchState = await window.__archview.loadAnalysisObject({ ...bundle, gate: undefined, comparison: { ...comparison, verdictTransitions: [invalidTransition] } }, 'comparison transition mismatch');
+        const transitionMismatch = { status: transitionMismatchState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
         const mutable = structuredClone(bundle);
         await window.__archview.loadAnalysisObject(mutable, 'mutation isolation');
         mutable.packet.structuralVerdict.push(42);
         let bridgeMutationRejected = false;
         try { window.__archviewState.analysis.bundle.bridges.atoms.set('atom:forged', index.atoms[0].id); } catch { bridgeMutationRejected = true; }
         const mutationIsolation = { status: window.__archviewState.analysis.status, rows: window.__archviewState.analysis.bundle.artifacts.packet.structuralVerdict.length, bridgeMutationRejected };
-        const numericPacket = { ...packet, computedInvariants: [{ invariantId: 'numeric-probe', kind: 'measurement-invariant', value: { epsilon: 0.000001, large: 100000000000000000000 } }] };
+        const numericPacket = { ...packet, computedInvariants: [...packet.computedInvariants, { invariantId: 'numeric-probe', kind: 'measurement-invariant', value: { epsilon: 0.000001, large: 100000000000000000000 } }] };
         const rustPacketCanonical = canonicalJson(numericPacket).replace('0.000001', '1e-6').replace('100000000000000000000', '1e+20');
         const numericPacketDigest = await sha256Hex(rustPacketCanonical);
         const numericComparison = { ...comparison, inputDigests: { ...comparison.inputDigests, headRun: { ...comparison.inputDigests.headRun, measurementPacket: { ...comparison.inputDigests.headRun.measurementPacket, sha256: numericPacketDigest } } } };
@@ -606,7 +623,7 @@ async function main() {
         await window.__archview.loadUrl('./fixtures/vertical-slice.archmap.json');
         const absent = { status: window.__archviewState.analysis.status, label: document.querySelector('#analysis-input-status').textContent };
         return {
-          accepted, analysisTask, malformedJson, duplicateKey, schemaMismatch, invalidProfile, incompleteDigests, componentMismatch, runIdMismatch, mismatch, unresolved, normalizedInternal, swappedNormalized, invalidRow, invalidCard, forgedConclusion, unresolvedEdge, unresolvedUnobservedEdge, observedAsUnobserved, invalidRef, unresolvedWitness, malformedGate, malformedComparison, gateMismatch, comparisonMismatch, mutationIsolation, numericCanonical, mixedDirectory, malformedUrl, staleRace, redirected, crossOrigin, absent,
+          accepted, analysisTask, malformedJson, duplicateKey, schemaMismatch, invalidProfile, incompleteDigests, componentMismatch, runIdMismatch, mismatch, unresolved, normalizedInternal, swappedNormalized, invalidRow, invalidCard, forgedConclusion, staleVerdictRef, unresolvedEdge, unresolvedUnobservedEdge, observedAsUnobserved, invalidRef, unresolvedWitness, malformedGate, malformedComparison, gateMismatch, comparisonMismatch, transitionMismatch, mutationIsolation, numericCanonical, mixedDirectory, malformedUrl, staleRace, redirected, crossOrigin, absent,
         };
       })()`,
     });
@@ -614,29 +631,32 @@ async function main() {
     if (analysisValue.accepted.status !== "accepted" || analysisValue.accepted.shellStatus !== "accepted" || analysisValue.accepted.label !== "Analysis accepted" || !/^run:[0-9a-f]{12}$/.test(analysisValue.accepted.runId) || analysisValue.accepted.profile !== "profile:browser@1" || !/^[0-9a-f]{64}$/.test(analysisValue.accepted.packetDigest)) {
       throw new Error(`Compatible ArchSig run was not accepted with visible identity: ${JSON.stringify(analysisValue)}`);
     }
-    if (analysisValue.analysisTask.findingCount !== 2 || !["1. Local facts", "2. Shared relations", "3. Global result", "4. Source evidence", "Measured nonzero"].every((text) => analysisValue.analysisTask.analysisExplanation.includes(text)) || !analysisValue.analysisTask.findingCounts.includes("2 contexts · 1 boundaries · 1 supporting atoms") || !analysisValue.analysisTask.supportHighlight.active || analysisValue.analysisTask.supportHighlight.atoms !== 1 || analysisValue.analysisTask.supportHighlight.contexts !== 2 || analysisValue.analysisTask.supportHighlight.edges !== 1) {
+    if (analysisValue.analysisTask.findingCount !== 3 || !["1. Local facts", "2. Shared relations", "3. Global result", "4. Source evidence", "Measured nonzero", "Mismatch"].every((text) => analysisValue.analysisTask.analysisExplanation.includes(text)) || !analysisValue.analysisTask.findingCounts.includes("2 contexts · 1 boundaries · 1 supporting atoms") || !analysisValue.analysisTask.supportHighlight.active || analysisValue.analysisTask.supportHighlight.atoms !== 1 || analysisValue.analysisTask.supportHighlight.contexts !== 2 || analysisValue.analysisTask.supportHighlight.edges !== 1) {
       throw new Error(`Analysis finding selection did not explain or highlight supplied support: ${JSON.stringify(analysisValue.analysisTask)}`);
     }
-    if (analysisValue.analysisTask.sourceLanding.classification !== "DIRECT EVIDENCE" || analysisValue.analysisTask.sourceLanding.resolution === "UNRESOLVED" || analysisValue.analysisTask.sourceLanding.path === "—" || analysisValue.analysisTask.sourceLanding.symbol === "—" || analysisValue.analysisTask.sourceLanding.line === "—" || !analysisValue.analysisTask.sourceLanding.supportingAtom.includes("atom:") || analysisValue.analysisTask.sourceLanding.operationsAfterFindingSelection > 3 || analysisValue.analysisTask.limitedSourceResolution === "METHOD / SYMBOL LEVEL" || analysisValue.analysisTask.limitedSourceResolution === "UNRESOLVED") {
+    if (analysisValue.analysisTask.sourceLanding.classification !== "DIRECT EVIDENCE" || !analysisValue.analysisTask.sourceLanding.resolution.includes("METHOD GRANULARITY UNAVAILABLE") || analysisValue.analysisTask.sourceLanding.path === "—" || analysisValue.analysisTask.sourceLanding.symbol === "—" || analysisValue.analysisTask.sourceLanding.line === "—" || !analysisValue.analysisTask.sourceLanding.supportingAtom.includes("atom:") || analysisValue.analysisTask.sourceLanding.operationsAfterFindingSelection > 3 || !analysisValue.analysisTask.limitedSourceResolution.includes("METHOD GRANULARITY UNAVAILABLE")) {
       throw new Error(`Finding source landing did not reach supplied path/symbol/line/supporting Atom: ${JSON.stringify(analysisValue.analysisTask.sourceLanding)}`);
     }
-    if (analysisValue.analysisTask.unmeasuredFinding.state !== "unmeasured" || !analysisValue.analysisTask.unmeasuredFinding.explanation.includes("Unmeasured") || !analysisValue.analysisTask.improveExplanation.includes("No explicit repair target was supplied") || !analysisValue.analysisTask.improveExplanation.includes("No actual repository change is asserted")) {
+    if (analysisValue.analysisTask.unmeasuredFinding.state !== "unmeasured" || !analysisValue.analysisTask.unmeasuredFinding.explanation.includes("Unmeasured") || analysisValue.analysisTask.unmeasuredFinding.clearedSourcePath !== "—" || analysisValue.analysisTask.unmeasuredFinding.clearedSourceResolution !== "UNRESOLVED" || analysisValue.analysisTask.measuredZeroFinding.state !== "measured_zero" || !analysisValue.analysisTask.measuredZeroFinding.explanation.includes("Agreement") || !analysisValue.analysisTask.improveExplanation.includes("No explicit repair target was supplied") || !analysisValue.analysisTask.improveExplanation.includes("No actual repository change is asserted")) {
       throw new Error(`Measured, unmeasured, evidence, and repair states were not kept distinct: ${JSON.stringify(analysisValue.analysisTask)}`);
     }
-    if (!analysisValue.analysisTask.candidateClassification.includes("CANDIDATE CHANGE POINT") || analysisValue.analysisTask.candidateClassification.includes("VALIDATED IN HYPOTHETICAL TARGET") || !analysisValue.analysisTask.validatedClassification.includes("VALIDATED IN HYPOTHETICAL TARGET")) {
+    if (!analysisValue.analysisTask.candidateClassification.includes("CANDIDATE CHANGE POINT") || analysisValue.analysisTask.candidateClassification.includes("VALIDATED IN HYPOTHETICAL TARGET") || !analysisValue.analysisTask.validatedClassification.includes("VALIDATED IN HYPOTHETICAL TARGET") || analysisValue.analysisTask.contextOnlyClassification.includes("BOUNDARY PARTICIPANT")) {
       throw new Error(`Candidate and validated hypothetical classifications were not separated: ${JSON.stringify(analysisValue.analysisTask)}`);
     }
-    if (analysisValue.analysisTask.analysisUnderstandingTaskTest.correct / analysisValue.analysisTask.analysisUnderstandingTaskTest.total < 0.8) {
-      throw new Error(`Analysis understanding task score was below 80%: ${JSON.stringify(analysisValue.analysisTask.analysisUnderstandingTaskTest)}`);
+    if (analysisValue.analysisTask.browserUnderstandingProbe.correct / analysisValue.analysisTask.browserUnderstandingProbe.total < 0.8) {
+      throw new Error(`Analysis browser understanding probe was below 80%: ${JSON.stringify(analysisValue.analysisTask.browserUnderstandingProbe)}`);
     }
-    if (analysisValue.analysisTask.evidenceRepairTaskTest.misrecognitionRate >= 0.1) {
-      throw new Error(`Evidence and repair task misrecognition rate was not below 10%: ${JSON.stringify(analysisValue.analysisTask.evidenceRepairTaskTest)}`);
+    if (analysisValue.analysisTask.browserEvidenceRepairProbe.correct !== analysisValue.analysisTask.browserEvidenceRepairProbe.total || !analysisValue.analysisTask.deterministicReload) {
+      throw new Error(`Evidence and repair browser probe or deterministic reload failed: ${JSON.stringify(analysisValue.analysisTask)}`);
     }
     if (analysisValue.malformedJson.status !== "malformed" || !analysisValue.malformedJson.issues.some((entry) => entry.includes("not valid JSON")) || analysisValue.schemaMismatch.status !== "malformed" || !analysisValue.schemaMismatch.issues.some((entry) => entry.includes("must use archsig-analysis-summary/v0.5.4"))) {
       throw new Error(`Malformed JSON or ArchSig schema was not rejected fail-closed: ${JSON.stringify(analysisValue)}`);
     }
     if (analysisValue.duplicateKey.status !== "malformed" || !analysisValue.duplicateKey.issues.some((entry) => entry.includes("Duplicate object key")) || analysisValue.invalidRow.status !== "malformed" || analysisValue.invalidCard.status !== "malformed" || analysisValue.forgedConclusion.status !== "malformed") {
       throw new Error(`Duplicate keys, invalid rows, or forged conclusions were accepted: ${JSON.stringify(analysisValue)}`);
+    }
+    if (analysisValue.staleVerdictRef.status !== "malformed" || !analysisValue.staleVerdictRef.issues.some((entry) => entry.includes("does not identify a structural verdict"))) {
+      throw new Error(`Stale insight-to-packet references were accepted: ${JSON.stringify(analysisValue.staleVerdictRef)}`);
     }
     if (analysisValue.invalidProfile.status !== "malformed" || !analysisValue.invalidProfile.issues.some((entry) => entry.includes("profile.siteRef")) || analysisValue.incompleteDigests.status !== "malformed" || !analysisValue.incompleteDigests.issues.some((entry) => entry.includes("lawPolicy"))) {
       throw new Error(`Partial ArchSig profile or input digest contract was accepted: ${JSON.stringify(analysisValue)}`);
@@ -662,7 +682,10 @@ async function main() {
     if (analysisValue.comparisonMismatch.status !== "mismatch" || !analysisValue.comparisonMismatch.issues.some((entry) => entry.includes("comparison digest"))) {
       throw new Error(`Gate comparison digest mismatch was not rejected fail-closed: ${JSON.stringify(analysisValue)}`);
     }
-    if (analysisValue.mutationIsolation.status !== "accepted" || analysisValue.mutationIsolation.rows !== 2 || !analysisValue.mutationIsolation.bridgeMutationRejected || analysisValue.numericCanonical.status !== "accepted" || analysisValue.mixedDirectory.status !== "malformed" || !analysisValue.mixedDirectory.issues.some((entry) => entry.includes("one run directory")) || analysisValue.malformedUrl.status === "accepted") {
+    if (analysisValue.transitionMismatch.status !== "mismatch" || !analysisValue.transitionMismatch.issues.some((entry) => entry.includes("does not identify a structural verdict"))) {
+      throw new Error(`Comparison transition was not bound to the loaded packet row: ${JSON.stringify(analysisValue.transitionMismatch)}`);
+    }
+    if (analysisValue.mutationIsolation.status !== "accepted" || analysisValue.mutationIsolation.rows !== 3 || !analysisValue.mutationIsolation.bridgeMutationRejected || analysisValue.numericCanonical.status !== "accepted" || analysisValue.mixedDirectory.status !== "malformed" || !analysisValue.mixedDirectory.issues.some((entry) => entry.includes("one run directory")) || analysisValue.malformedUrl.status === "accepted") {
       throw new Error(`Accepted artifacts remained mutable, mixed directories passed, or malformed URL kept accepted state: ${JSON.stringify(analysisValue)}`);
     }
     if (analysisValue.staleRace.status !== "absent" || analysisValue.staleRace.repository !== "race-replacement" || analysisValue.redirected.status !== "mismatch" || !analysisValue.redirected.issues.some((entry) => entry.includes("must not redirect")) || analysisValue.crossOrigin.status !== "mismatch" || !analysisValue.crossOrigin.issues.some((entry) => entry.includes("current origin")) || analysisValue.absent.status !== "absent" || analysisValue.absent.label !== "No analysis loaded") {
