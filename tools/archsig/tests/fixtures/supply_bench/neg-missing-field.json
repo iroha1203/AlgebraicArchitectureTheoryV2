@@ -1,0 +1,72 @@
+{
+ "schema": "archmap-extraction-consistency/v0.5.4",
+ "id": "consistency:neg-missing-field",
+ "scopeManifestRef": "scope:supply-bench-fixture@1",
+ "passARefs": [
+  "candidates:run-1:chunk-90"
+ ],
+ "passBRefs": [
+  "candidates:run-2:chunk-90"
+ ],
+ "atomMatchKeySpec": "kind | NFC(trim(subject) normalized to <source-dir>.<Class> from refs) | axis | predicate? | object? (atom-match-key@2)",
+ "onlyInPassA": [
+  {
+   "key": "relation|svc-a.Alpha|relation|calls|svc-b",
+   "candidateAtomId": "atom:a3",
+   "refs": [
+    "src:svc-a/Alpha.java"
+   ]
+  },
+  {
+   "key": "effect|svc-a.Alpha|effect|callsProvider|GET svc-b /api/x",
+   "candidateAtomId": "atom:a4",
+   "refs": [
+    "src:svc-a/Alpha.java"
+   ]
+  }
+ ],
+ "onlyInPassB": [
+  {
+   "key": "relation|svc-a.Alpha|relation|dependsOn|svc-b",
+   "candidateAtomId": "atom:b3",
+   "refs": [
+    "src:svc-a/Alpha.java"
+   ]
+  }
+ ],
+ "matchRate": 0.4,
+ "atomMatchKey1Comparison": {
+  "atomMatchKeySpec": "kind | NFC(trim(subject)) | axis | predicate? | object? (atom-match-key@1)",
+  "matchedCount": 2,
+  "matchRate": 0.4
+ },
+ "contextDiff": {
+  "matched": 1,
+  "onlyInPassA": [],
+  "onlyInPassB": []
+ },
+ "adjudications": [
+  {
+   "key": "relation|svc-a.Alpha|relation|calls|svc-b",
+   "decision": "merged",
+   "basis": "reread: same invocation fact under a relation-lens drift",
+   "candidateAtomId": "atom:a3",
+   "mergeGroup": "group-1",
+   "canonicalAtomId": "atom:canonical-3"
+  },
+  {
+   "key": "relation|svc-a.Alpha|relation|dependsOn|svc-b",
+   "decision": "merged",
+   "basis": "reread: same invocation fact under a relation-lens drift",
+   "candidateAtomId": "atom:b3",
+   "mergeGroup": "group-1",
+   "canonicalAtomId": "atom:canonical-3"
+  },
+  {
+   "key": "effect|svc-a.Alpha|effect|callsProvider|GET svc-b /api/x",
+   "decision": "adopted",
+   "basis": "reread: complementary observation missed by pass B",
+   "candidateAtomId": "atom:a4"
+  }
+ ]
+}

@@ -141,6 +141,37 @@ enum Command {
         out: Option<PathBuf>,
     },
 
+    /// Compute deterministic supply-bench metrics over run-pair consistency artifacts.
+    SupplyBench {
+        /// Run pair as <pair-id>=<extraction-consistency.json>. Repeat per pair.
+        #[arg(long = "pair", required = true)]
+        pair: Vec<String>,
+
+        /// Chunk class label as <pair-id>=<class> (e.g. tuned, prompt-literal-disjoint).
+        #[arg(long = "chunk-class")]
+        chunk_class: Vec<String>,
+
+        /// Reference alignment as <pair-id>=<reference-alignment.json>.
+        #[arg(long = "alignment")]
+        alignment: Vec<String>,
+
+        /// Reference slice JSON path (archmap-reference-slice/v1).
+        #[arg(long = "reference")]
+        reference: Option<PathBuf>,
+
+        /// Comparison-series key JSON recorded verbatim in the report.
+        #[arg(long = "series-key")]
+        series_key: Option<PathBuf>,
+
+        /// Report artifact id.
+        #[arg(long, default_value = "supply-bench:archmap-authoring")]
+        id: String,
+
+        /// Output report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
     /// Validate a LawPolicy v0.5.4 selector artifact for ArchSig AAT analysis.
     LawPolicy {
         /// Input LawPolicy v0.5.4 JSON path.
@@ -334,6 +365,22 @@ fn main() -> ExitCode {
             }
         }
     }
+}
+
+fn parse_pair_assignments(
+    entries: &[String],
+    flag: &str,
+) -> Result<BTreeMap<String, String>, Box<dyn Error>> {
+    let mut map = BTreeMap::new();
+    for entry in entries {
+        let (pair_id, value) = entry
+            .split_once('=')
+            .ok_or_else(|| format!("{flag} must be <pair-id>=<value>, got {entry}"))?;
+        if map.insert(pair_id.to_string(), value.to_string()).is_some() {
+            return Err(format!("{flag} repeats pair id {pair_id}").into());
+        }
+    }
+    Ok(map)
 }
 
 fn is_internal_runtime_error(message: &str) -> bool {
@@ -720,6 +767,48 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 pass_b,
                 id,
                 scope_manifest_ref,
+            })?;
+            write_json(out, &report)?;
+            Ok(ExitCode::SUCCESS)
+        }
+        Some(Command::SupplyBench {
+            pair,
+            chunk_class,
+            alignment,
+            reference,
+            series_key,
+            id,
+            out,
+        }) => {
+            let chunk_classes = parse_pair_assignments(&chunk_class, "--chunk-class")?;
+            let alignments = parse_pair_assignments(&alignment, "--alignment")?;
+            let mut pairs = Vec::new();
+            let mut pair_ids = std::collections::BTreeSet::new();
+            for entry in &pair {
+                let (pair_id, path) = entry.split_once('=').ok_or_else(|| {
+                    format!("--pair must be <pair-id>=<path>, got {entry}")
+                })?;
+                pair_ids.insert(pair_id.to_string());
+                pairs.push(archsig::SupplyBenchPairInput {
+                    pair_id: pair_id.to_string(),
+                    chunk_class: chunk_classes.get(pair_id).cloned(),
+                    consistency: PathBuf::from(path),
+                    alignment: alignments.get(pair_id).map(PathBuf::from),
+                });
+            }
+            for key in chunk_classes.keys().chain(alignments.keys()) {
+                if !pair_ids.contains(key) {
+                    return Err(format!(
+                        "--chunk-class / --alignment references unknown pair id {key}"
+                    )
+                    .into());
+                }
+            }
+            let report = archsig::build_supply_bench_report_v1(&archsig::SupplyBenchOptions {
+                id,
+                pairs,
+                reference,
+                series_key,
             })?;
             write_json(out, &report)?;
             Ok(ExitCode::SUCCESS)

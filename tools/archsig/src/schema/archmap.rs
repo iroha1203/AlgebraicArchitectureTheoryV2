@@ -295,12 +295,22 @@ pub struct ArchmapExtractionContextDiffV1 {
     pub only_in_pass_b: Vec<String>,
 }
 
+/// Adjudication row. Legacy records carry only `key` / `decision` / `basis`.
+/// Group-structured records (required for key-convergence computation) also
+/// carry `candidateAtomId` on every row, plus `mergeGroup` and
+/// `canonicalAtomId` on every `merged` row.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ArchmapExtractionAdjudicationV1 {
     pub key: String,
     pub decision: String,
     pub basis: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub candidate_atom_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub merge_group: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub canonical_atom_id: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

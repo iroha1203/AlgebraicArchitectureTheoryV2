@@ -59,6 +59,14 @@ Allowed decisions are:
 - `merged`
 - `not-adopted`
 
+Group-structured records (required when the record feeds
+`archsig supply-bench` key-convergence computation; see
+`docs/tool/archmap_supply_bench.md`) additionally carry `candidateAtomId` on
+every row, plus `mergeGroup` and `canonicalAtomId` on every `merged` row so
+that same-fact groups are machine-readable. Legacy rows without these fields
+stay valid for the authoring audit; the bench then reports key convergence as
+not computable.
+
 Do not add a generated adoption decision during `extraction-diff`.
 
 ## Match Rate

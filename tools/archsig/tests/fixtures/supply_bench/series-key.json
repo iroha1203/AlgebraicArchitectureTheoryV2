@@ -1,0 +1,10 @@
+{
+ "corpusVersion": "supply-bench-fixture@1",
+ "referenceVersion": "reference:supply-bench-fixture@1",
+ "readerModel": "fixture-reader-model@snapshot",
+ "inferenceConfig": "fixture-defaults",
+ "promptBundleHash": "sha256:fixture",
+ "harnessCommit": "fixture",
+ "adjudicationProtocol": "supply-bench-fixture@1",
+ "adjudicator": "fixture-human"
+}

@@ -53,6 +53,7 @@ PRDや設計ノートを恒久仕様として参照しない。実装済みcontr
 - [ArchSig gate policy](archsig_gate_policy.md)
 - [ArchSig compare report](archsig_compare.md)
 - [ArchMapStore](archmap_store.md)
+- [ArchMap supply bench](archmap_supply_bench.md)
 - [Golden corpus](golden_corpus.md)
 - [AG measurement evidence](ag_measurement_evidence_contract.md)
 - [ArchSig skills](../../tools/archsig/skills/)

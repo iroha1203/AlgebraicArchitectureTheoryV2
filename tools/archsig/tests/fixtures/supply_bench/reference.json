@@ -1,0 +1,25 @@
+{
+ "schema": "archmap-reference-slice/v1",
+ "id": "reference:supply-bench-fixture",
+ "version": "1",
+ "ruleSetVersion": "prompt-pack-v2",
+ "atomMatchKeySpec": "kind | NFC(trim(subject) normalized to <source-dir>.<Class> from refs) | axis | predicate? | object? (atom-match-key@2)",
+ "atoms": [
+  {
+   "atomId": "ref:r1",
+   "matchKey": "capability|svc-a.Alpha|capability|handlesCommand|create/1"
+  },
+  {
+   "atomId": "ref:r2",
+   "matchKey": "state|svc-a.OrderRepo|state|persistsIn|Order"
+  },
+  {
+   "atomId": "ref:r3",
+   "matchKey": "relation|svc-a.Alpha|relation|calls|svc-b"
+  },
+  {
+   "atomId": "ref:r4",
+   "matchKey": "authority|svc-a.Sec|authority|permitsAll|ALL /health"
+  }
+ ]
+}
