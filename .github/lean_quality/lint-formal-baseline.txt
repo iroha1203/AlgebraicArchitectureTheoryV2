@@ -2404,11 +2404,9 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.SingularityMonodromyStack.PresentationTwoComplex.edgeBoundary /- definition missing documentation string -/
 #check @AAT.AG.SingularityMonodromyStack.PresentationTwoComplex.TwoCell /- definition missing documentation string -/
 #check @AAT.AG.SingularityMonodromyStack.PresentationTwoComplex.twoCellEquivGenerator /- definition missing documentation string -/
-#check @AAT.AG.SingularityMonodromyStack.FreeEdgeWord.steps /- definition missing documentation string -/
 #check @AAT.AG.SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.FreeWord /- definition missing documentation string -/
 #check @AAT.AG.SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.freeWordEquivSelected /- definition missing documentation string -/
 #check @AAT.AG.SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.Relator /- definition missing documentation string -/
-#check @AAT.AG.SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.presentation /- definition missing documentation string -/
 #check @AAT.AG.SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.pathCellRelatorWord /- definition missing documentation string -/
 #check @AAT.AG.SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.loopRelatorWord /- definition missing documentation string -/
 #check @AAT.AG.SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.Pi1 /- definition missing documentation string -/

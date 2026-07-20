@@ -103,6 +103,16 @@ instance {C : MonodromyCoefficientObject.{z}} : Group (CoefficientAutomorphism C
       change a.effAut.symm (a.effAut x) = x
       exact a.effAut.symm_apply_apply x
 
+/-- VI.定義10.1: comparison with the standard Mathlib product of permutation groups. -/
+def standardProductMulEquiv (C : MonodromyCoefficientObject.{z}) :
+    CoefficientAutomorphism C ≃*
+      Equiv.Perm C.Ob × Equiv.Perm C.Sem × Equiv.Perm C.Eff where
+  toFun f := ⟨f.obAut, f.semAut, f.effAut⟩
+  invFun f := ⟨f.1, f.2.1, f.2.2⟩
+  left_inv _ := rfl
+  right_inv _ := rfl
+  map_mul' _ _ := rfl
+
 end CoefficientAutomorphism
 
 /--
@@ -147,7 +157,7 @@ def ofPresentedGenerators
     (Pi : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base)
     (coefficient : MonodromyCoefficientObject.{z})
     (generatorAction :
-      FormalEdgeStep.{u, v, w, x, y, z} G -> CoefficientAutomorphism coefficient)
+      Pi.presentation.Edge -> CoefficientAutomorphism coefficient)
     (relators_map_to_one :
       ∀ r ∈ Pi.presentedRelators, FreeGroup.lift generatorAction r = 1) :
     MonodromyAction.{u, v, w, x, y, z} Pi where
@@ -165,18 +175,19 @@ theorem mon_gamma_eq_rho
     M.Mon_gamma gamma = M.rho gamma :=
   rfl
 
-/-- VI.定義10.1: the presented representation evaluates to its selected generator action. -/
-theorem mon_gamma_presented_generator
+/-- VI.定義10.1: the presented representation evaluates a typed based loop word. -/
+theorem mon_gamma_presented_loop
     (Pi : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base)
     (coefficient : MonodromyCoefficientObject.{z})
     (generatorAction :
-      FormalEdgeStep.{u, v, w, x, y, z} G -> CoefficientAutomorphism coefficient)
+      Pi.presentation.Edge -> CoefficientAutomorphism coefficient)
     (relators_map_to_one :
       ∀ r ∈ Pi.presentedRelators, FreeGroup.lift generatorAction r = 1)
-    (step : FormalEdgeStep.{u, v, w, x, y, z} G) :
+    (word : Pi.FreeWord) :
     (ofPresentedGenerators Pi coefficient generatorAction relators_map_to_one).Mon_gamma
-        (PresentedGroup.of step) = generatorAction step :=
-  Pi.presentedGroupLift_of generatorAction relators_map_to_one step
+        (Pi.presentedQuotientMap word) =
+      FreeGroup.lift generatorAction (Pi.selectedFreeGroupWord word) :=
+  Pi.presentedGroupLift_word generatorAction relators_map_to_one word
 
 /-- VI.定義10.1: every selected relator has identity monodromy. -/
 theorem mon_gamma_presented_relator
