@@ -438,7 +438,8 @@ async function main() {
         const comparisonDiscipline = 'Comparison is a record-level juxtaposition of two ArchSig runs. It does not claim causal repair, semantic equivalence, or preserved obstruction identity; a class-zero reading is available only under a checked coarse-to-fine refinement contract.';
         const comparison = { schema: 'archsig-comparison-report/v0.5.4', toolVersion: '0.5.4', conclusionCode: 'NO_NEW_MEASURED_OBSTRUCTION_RECORDED', comparability: { level: 'identical' }, discipline: comparisonDiscipline, inputDigests: { baseRun: { ...comparisonRun, path: 'base-run/archsig-run-manifest.json' }, headRun: comparisonRun }, artifactRefs: {}, independentConclusions: {}, verdictTransitions: [], boundaryStatements: [], classTransport: {}, nonConclusions: [] };
         const comparisonDigest = await sha256Hex(comparison);
-        const gate = { schema: 'archsig-gate-report/v0.5.4', decision: 'PASS_WITHIN_GATE_POLICY', toolVersion: '0.5.4', inputDigests: { measurementPacket: { path: 'input:archsig-measurement-packet.json', sha256: packetDigest }, gatePolicy: { path: 'input:gate-policy.json', sha256: '6'.repeat(64) }, comparisonReport: { path: 'input:archsig-comparison-report.json', sha256: comparisonDigest } }, policyValidation: [{ id: 'gate-policy-validation-summary', result: 'pass' }], ruleOutcomes: [], nonConclusions: [] };
+        const gateMappings = packet.structuralVerdict.map((row) => ({ rowRef: row.verdictRef, verdict: row.verdict, mappingKey: row.verdict, action: 'pass', boundaryOverrideApplied: false }));
+        const gate = { schema: 'archsig-gate-report/v0.5.4', decision: 'PASS_WITHIN_GATE_POLICY', toolVersion: '0.5.4', inputDigests: { measurementPacket: { path: 'input:archsig-measurement-packet.json', sha256: packetDigest }, gatePolicy: { path: 'input:gate-policy.json', sha256: '6'.repeat(64) }, comparisonReport: { path: 'input:archsig-comparison-report.json', sha256: comparisonDigest } }, policyValidation: [{ id: 'gate-policy-validation-summary', result: 'pass' }], ruleOutcomes: [{ ruleId: 'browser-absolute', scope: 'absolute', status: 'evaluated', appliedMapping: gateMappings }], nonConclusions: [] };
         const bundle = { manifest, normalized, packet, summary, insight, gate, comparison };
         const renderBefore = JSON.stringify(window.__archviewRenderStats);
         const layoutBefore = window.__archviewLayout.signature;
@@ -592,10 +593,12 @@ async function main() {
         const relationPacket = { ...packet, computedInvariants: [...packet.computedInvariants,
           { invariantId: 'browser-mixed-accepted', kind: 'measurement-invariant', coverNerveProjection: { edges: [{ edgeId: allEdges[0], sectionObservation: 'observed', value: 1 }, { edgeId: allEdges[1], sectionObservation: 'observed', value: 0 }] } },
           { invariantId: 'browser-unmeasured-accepted', kind: 'measurement-invariant', coverNerveProjection: { edges: [{ edgeId: allEdges[0], sectionObservation: 'not_observed' }] } },
+          { invariantId: 'browser-lookalike-accepted', kind: 'measurement-invariant', mismatchLookalike: { edgeRefs: [allEdges[0]] } },
         ] };
         const mixedAcceptedCard = { ...insight.insightCards[0], id: 'insight:browser:mixed-accepted', evidence: { ...insight.insightCards[0].evidence, structuralVerdictRefs: [], computedInvariantRefs: ['browser-mixed-accepted'], evaluatorRefs: [] } };
         const unmeasuredAcceptedCard = { ...insight.insightCards[0], id: 'insight:browser:unmeasured-accepted', evidence: { ...insight.insightCards[0].evidence, structuralVerdictRefs: [], computedInvariantRefs: ['browser-unmeasured-accepted'], evaluatorRefs: [] } };
-        const relationBundle = await withGateDigests({ ...bundle, packet: relationPacket, insight: { ...insight, insightCards: [mixedAcceptedCard, unmeasuredAcceptedCard], actionQueue: [] } });
+        const lookalikeAcceptedCard = { ...insight.insightCards[0], id: 'insight:browser:lookalike-accepted', evidence: { ...insight.insightCards[0].evidence, structuralVerdictRefs: [], computedInvariantRefs: ['browser-lookalike-accepted'], evaluatorRefs: [] } };
+        const relationBundle = await withGateDigests({ ...bundle, packet: relationPacket, insight: { ...insight, insightCards: [mixedAcceptedCard, unmeasuredAcceptedCard, lookalikeAcceptedCard], actionQueue: [] } });
         const relationState = await window.__archview.loadAnalysisObject(relationBundle, 'accepted relation geometry bundle');
         document.querySelector('[data-finding-id="insight:browser:mixed-accepted"]')?.click();
         const mixedEdgeStates = { ...window.__archviewAnalysisSupport.edgeStates };
@@ -603,8 +606,10 @@ async function main() {
         document.querySelector('[data-finding-id="insight:browser:unmeasured-accepted"]')?.click();
         const unmeasuredEdgeStates = { ...window.__archviewAnalysisSupport.edgeStates };
         const unmeasuredEdgeVisuals = window.__archviewAnalysisSupport.edgeVisuals.map((row) => ({ ...row }));
+        document.querySelector('[data-finding-id="insight:browser:lookalike-accepted"]')?.click();
+        const lookalikeSupport = { ...window.__archviewAnalysisSupport };
 
-        const blockedGate = { ...gate, decision: 'BLOCKED_BY_GATE_POLICY', ruleOutcomes: [{ ruleId: 'browser-block', scope: 'absolute', status: 'evaluated', appliedMapping: [{ rowRef: 'structuralVerdict/browser/measured', action: 'block' }] }] };
+        const blockedGate = { ...gate, decision: 'BLOCKED_BY_GATE_POLICY', ruleOutcomes: [{ ruleId: 'browser-block', scope: 'absolute', status: 'evaluated', appliedMapping: gateMappings.map((row, position) => ({ ...row, action: position ? 'pass' : 'block' })) }] };
         const blockedGateState = await window.__archview.loadAnalysisObject({ ...bundle, gate: blockedGate }, 'blocked gate bundle');
         document.querySelector('[data-finding-id="insight:browser:001"]')?.click();
         const gateStep = [...document.querySelectorAll('#analysis-explanation .analysis-step')].find((section) => section.querySelector('h4')?.textContent === 'Gate decision');
@@ -616,8 +621,9 @@ async function main() {
         const invalidObservationState = await window.__archview.loadAnalysisObject({ ...bundle, packet: { ...packet, computedInvariants: [...packet.computedInvariants, { invariantId: 'invalid-observation', kind: 'measurement-invariant', edge: { edgeId: allEdges[0], sectionObservation: 'observed', value: 'arbitrary' } }] } }, 'invalid observation bundle');
         const mixedProvenanceCard = { ...insight.insightCards[0], id: 'insight:browser:mixed-provenance', evidence: { ...insight.insightCards[0].evidence, computedInvariantRefs: ['browser-support-zero'] } };
         const mixedProvenanceState = await window.__archview.loadAnalysisObject({ ...bundle, insight: { ...insight, insightCards: [mixedProvenanceCard], actionQueue: [] } }, 'mixed provenance bundle');
-        const arbitraryAtomCard = { ...insight.insightCards[0], id: 'insight:browser:arbitrary-atom', evidence: { ...insight.insightCards[0].evidence, atomRefs: [normalizedAtomId(index.atoms[1].id)] } };
-        const arbitraryAtomState = await window.__archview.loadAnalysisObject({ ...bundle, insight: { ...insight, insightCards: [arbitraryAtomCard], actionQueue: [] } }, 'arbitrary Atom provenance bundle');
+        const unrelatedSource = index.sources.map(([id]) => id).find((id) => !index.atoms[0].refs.includes(id));
+        const arbitraryAtomCard = { ...insight.insightCards[0], id: 'insight:browser:arbitrary-source', evidence: { ...insight.insightCards[0].evidence, sourceRefs: [unrelatedSource] } };
+        const arbitraryAtomState = await window.__archview.loadAnalysisObject({ ...bundle, insight: { ...insight, insightCards: [arbitraryAtomCard], actionQueue: [] } }, 'arbitrary source provenance bundle');
         const acceptedPathEvidence = {
           candidateStatus: acceptedCandidateState.status,
           candidateClassifications: acceptedCandidateClassifications,
@@ -639,6 +645,7 @@ async function main() {
           mixedEdgeVisuals,
           unmeasuredEdgeStates,
           unmeasuredEdgeVisuals,
+          lookalikeSupport,
           blockedGateStatus: blockedGateState.status,
           blockedGateColor,
           contradictoryVerdictStatus: contradictoryVerdictState.status,
@@ -796,6 +803,9 @@ async function main() {
     }
     if (acceptedEvidence.relationStatus !== "accepted" || acceptedEvidence.mixedEdgeStates.mismatch !== 1 || acceptedEvidence.mixedEdgeStates.agreement !== 1 || acceptedEvidence.mixedEdgeStates.unmeasured !== 0 || acceptedEvidence.unmeasuredEdgeStates.unmeasured !== 1 || acceptedEvidence.unmeasuredEdgeStates.mismatch !== 0) {
       throw new Error(`Accepted relation evidence did not preserve per-edge geometry states: ${JSON.stringify(acceptedEvidence)}`);
+    }
+    if (acceptedEvidence.lookalikeSupport.edges !== 0 || acceptedEvidence.lookalikeSupport.edgeStates.mismatch !== 0) {
+      throw new Error(`Unknown relation-like invariant fields changed the rendered relation state: ${JSON.stringify(acceptedEvidence)}`);
     }
     if (!acceptedEvidence.mixedEdgeVisuals.some((row) => row.supported && row.color === 0xb87932) || !acceptedEvidence.mixedEdgeVisuals.some((row) => row.supported && row.color === 0x54799a) || !acceptedEvidence.unmeasuredEdgeVisuals.some((row) => row.supported && row.color === 0x7c7b76)) {
       throw new Error(`Relation support colors were not applied to rendered Three.js materials: ${JSON.stringify(acceptedEvidence)}`);

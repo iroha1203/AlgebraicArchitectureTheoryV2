@@ -77,30 +77,31 @@ function normalizedEdges(edgeRefs, index, bridges) {
   }));
 }
 
-function collectRelationEvidence(value, index, bridges, path = [], output = { relation: [], agreement: [], mismatch: [], unmeasured: [] }) {
-  if (Array.isArray(value)) {
-    value.forEach((entry) => collectRelationEvidence(entry, index, bridges, path, output));
-    return output;
-  }
-  if (!isRecord(value)) return output;
-  if (typeof value.edgeId === "string") {
-    const [edge] = normalizedEdges([value.edgeId], index, bridges);
-    if (edge) {
-      output.relation.push(edge);
-      if (value.sectionObservation === "not_observed") output.unmeasured.push(edge);
-      else if (value.sectionObservation === "observed" && (value.value === 0 || value.value === "0")) output.agreement.push(edge);
-      else if (value.sectionObservation === "observed" && (value.value === 1 || value.value === "1")) output.mismatch.push(edge);
+function collectRelationEvidence(invariants, index, bridges) {
+  const output = { relation: [], agreement: [], mismatch: [], unmeasured: [] };
+  const projections = (invariant) => [invariant.coverNerveProjection, invariant.representation?.coverNerveProjection].filter(isRecord);
+  for (const invariant of invariants) {
+    for (const projection of projections(invariant)) {
+      for (const row of projection.edges || []) {
+        const [edge] = normalizedEdges([row?.edgeId], index, bridges);
+        if (!edge) continue;
+        output.relation.push(edge);
+        if (row.sectionObservation === "not_observed") output.unmeasured.push(edge);
+        else if (row.sectionObservation === "observed" && (row.value === 0 || row.value === "0")) output.agreement.push(edge);
+        else if (row.sectionObservation === "observed" && (row.value === 1 || row.value === "1")) output.mismatch.push(edge);
+      }
+      for (const face of projection.faces || []) output.relation.push(...normalizedEdges(face?.edgeRefs || [], index, bridges));
     }
-  }
-  for (const [key, child] of Object.entries(value)) {
-    const childPath = [...path, key];
-    if ((key === "edgeRefs" || key === "unobservedEdgeRefs") && Array.isArray(child)) {
-      const edges = normalizedEdges(child, index, bridges);
+    for (const classSupport of [invariant.classSupport, invariant.representation?.classSupport].filter(isRecord)) {
+      const edges = normalizedEdges(classSupport.edgeRefs || [], index, bridges);
       output.relation.push(...edges);
-      if (key === "unobservedEdgeRefs") output.unmeasured.push(...edges);
-      else if (path.some((part) => /mismatch|classSupport/i.test(part))) output.mismatch.push(...edges);
+      output.mismatch.push(...edges);
     }
-    collectRelationEvidence(child, index, bridges, childPath, output);
+    for (const refs of [invariant.unobservedEdgeRefs, invariant.representation?.unobservedEdgeRefs]) {
+      const edges = normalizedEdges(refs || [], index, bridges);
+      output.relation.push(...edges);
+      output.unmeasured.push(...edges);
+    }
   }
   return output;
 }
