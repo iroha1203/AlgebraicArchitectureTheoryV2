@@ -1,0 +1,14 @@
+{
+  "schema": "archmap/v0.5.4",
+  "id": "unresolved-source-architecture",
+  "sources": {},
+  "atoms": [
+    { "id": "atom:unresolved", "kind": "effect", "subject": "PaymentService", "axis": "runtime", "predicate": "emits", "object": "PaymentCaptured", "refs": ["src:missing"], "label": "Captured event" }
+  ],
+  "contexts": [
+    { "id": "ctx:payment", "atoms": ["atom:unresolved"], "refs": [], "label": "Payment" }
+  ],
+  "covers": [
+    { "id": "cover:payment", "contexts": ["ctx:payment"], "refs": [], "label": "Payment" }
+  ]
+}

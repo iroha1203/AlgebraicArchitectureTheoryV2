@@ -7,6 +7,60 @@ const CAMERA_VIEWS = Object.freeze({
   front: { position: [0, 8, 24], target: [0, 0, 0] },
 });
 
+const ATOM_COLORS = Object.freeze({
+  component: 0x6d7890,
+  relation: 0x8c6f62,
+  capability: 0x687b67,
+  state: 0x9a765b,
+  effect: 0xa35f38,
+  authority: 0x596a78,
+  contract: 0x756686,
+  semantic: 0x7d745e,
+  runtime: 0x4f7773,
+});
+
+function disposeTree(root) {
+  root.traverse((object) => {
+    object.geometry?.dispose();
+    if (Array.isArray(object.material)) object.material.forEach((material) => material.dispose());
+    else object.material?.dispose();
+    object.material?.map?.dispose();
+  });
+  root.clear();
+}
+
+function atomGeometry(kind) {
+  if (kind === "relation") return new THREE.OctahedronGeometry(0.38, 0);
+  if (kind === "state") return new THREE.CylinderGeometry(0.38, 0.38, 0.34, 16);
+  if (kind === "effect" || kind === "runtime") return new THREE.ConeGeometry(0.4, 0.72, 5);
+  if (kind === "contract") return new THREE.TorusGeometry(0.3, 0.11, 8, 20);
+  if (kind === "authority") return new THREE.DodecahedronGeometry(0.38, 0);
+  if (kind === "semantic") return new THREE.SphereGeometry(0.38, 16, 12);
+  return new THREE.BoxGeometry(0.62, 0.48, 0.62);
+}
+
+function labelSprite(text) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 512;
+  canvas.height = 96;
+  const context = canvas.getContext("2d");
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.fillStyle = "rgba(250, 247, 239, 0.92)";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.strokeStyle = "rgba(73, 68, 60, 0.24)";
+  context.strokeRect(1, 1, canvas.width - 2, canvas.height - 2);
+  context.fillStyle = "#292d2d";
+  context.font = "30px Georgia, serif";
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillText(text, canvas.width / 2, canvas.height / 2, canvas.width - 28);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false }));
+  sprite.scale.set(4.8, 0.9, 1);
+  return sprite;
+}
+
 export function createAtlasRenderer(host) {
   if (!(host instanceof HTMLElement)) throw new Error("Atlas canvas host was not found.");
 
@@ -50,6 +104,14 @@ export function createAtlasRenderer(host) {
   constructionLines.material.opacity = 0.16;
   constructionLines.position.y = 0;
   decorativeSurface.add(constructionLines);
+
+  const architectureSurface = new THREE.Group();
+  architectureSurface.userData.visualChannel = "architecture";
+  scene.add(architectureSurface);
+  const selectionSurface = new THREE.Group();
+  scene.add(selectionSurface);
+  let atomMeshes = [];
+  let onAtomSelected = null;
 
   scene.add(new THREE.HemisphereLight(0xfffbf2, 0xb7aa91, 1.7));
   const daylight = new THREE.DirectionalLight(0xfff6e7, 2.1);
@@ -96,15 +158,92 @@ export function createAtlasRenderer(host) {
   resizeObserver.observe(host);
   frame = window.requestAnimationFrame(render);
 
+  const selectAtom = (atomId) => {
+    disposeTree(selectionSurface);
+    for (const mesh of atomMeshes.filter((candidate) => candidate.userData.atomId === atomId)) {
+      const ring = new THREE.Mesh(
+        new THREE.RingGeometry(0.52, 0.62, 32),
+        new THREE.MeshBasicMaterial({ color: 0x314d7d, side: THREE.DoubleSide, transparent: true, opacity: 0.92 })
+      );
+      ring.rotation.x = -Math.PI / 2;
+      ring.position.copy(mesh.position);
+      ring.position.y = 0.2;
+      selectionSurface.add(ring);
+    }
+  };
+
+  const setArchitecture = (index, selectHandler) => {
+    disposeTree(architectureSurface);
+    disposeTree(selectionSurface);
+    atomMeshes = [];
+    onAtomSelected = selectHandler;
+    if (!index || index.empty) return Object.freeze({ contextPlates: 0, atomGlyphs: 0 });
+
+    const contexts = index.contexts;
+    const gap = 8.2;
+    contexts.forEach((context, contextIndex) => {
+      const x = (contextIndex - (contexts.length - 1) / 2) * gap;
+      const memberAtoms = (context.atoms || []).map((atomId) => index.atomsById.get(atomId)).filter(Boolean);
+      const plate = new THREE.Mesh(
+        new THREE.BoxGeometry(6.9, 0.16, 7.2),
+        new THREE.MeshStandardMaterial({ color: contextIndex % 2 === 0 ? 0xd9d0bf : 0xe1d8c8, roughness: 0.96, metalness: 0, transparent: true, opacity: 0.92 })
+      );
+      plate.position.set(x, 0.08, 0);
+      plate.receiveShadow = true;
+      plate.userData = { contextId: context.id, kind: "context" };
+      architectureSurface.add(plate);
+
+      const label = labelSprite(context.label || context.id);
+      label.position.set(x, 0.32, -2.65);
+      label.userData = { contextId: context.id, kind: "context-label" };
+      architectureSurface.add(label);
+
+      memberAtoms.forEach((atom, atomIndex) => {
+        const column = atomIndex % 3;
+        const row = Math.floor(atomIndex / 3);
+        const mesh = new THREE.Mesh(
+          atomGeometry(atom.kind),
+          new THREE.MeshStandardMaterial({ color: ATOM_COLORS[atom.kind] || 0x6d7890, roughness: 0.78, metalness: 0 })
+        );
+        mesh.position.set(x + (column - 1) * 1.55, 0.62, -0.6 + row * 1.45);
+        mesh.castShadow = true;
+        mesh.userData = { atomId: atom.id, contextId: context.id, kind: "atom" };
+        architectureSurface.add(mesh);
+        atomMeshes.push(mesh);
+      });
+    });
+    return Object.freeze({ contextPlates: contexts.length, atomGlyphs: atomMeshes.length });
+  };
+
+  const raycaster = new THREE.Raycaster();
+  const pointer = new THREE.Vector2();
+  const handlePointer = (event) => {
+    if (!atomMeshes.length) return;
+    const bounds = renderer.domElement.getBoundingClientRect();
+    pointer.x = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
+    pointer.y = -((event.clientY - bounds.top) / bounds.height) * 2 + 1;
+    raycaster.setFromCamera(pointer, camera);
+    const hit = raycaster.intersectObjects(atomMeshes, false)[0];
+    if (!hit) return;
+    selectAtom(hit.object.userData.atomId);
+    onAtomSelected?.(hit.object.userData.atomId);
+  };
+  renderer.domElement.addEventListener("pointerdown", handlePointer);
+
   return Object.freeze({
     setView,
     reset,
+    setArchitecture,
+    selectAtom,
     dispose() {
       if (disposed) return;
       disposed = true;
       window.cancelAnimationFrame(frame);
       resizeObserver.disconnect();
       controls.dispose();
+      renderer.domElement.removeEventListener("pointerdown", handlePointer);
+      disposeTree(architectureSurface);
+      disposeTree(selectionSurface);
       paper.geometry.dispose();
       paper.material.dispose();
       constructionLines.geometry.dispose();

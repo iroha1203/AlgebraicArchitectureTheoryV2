@@ -129,7 +129,7 @@ async function main() {
     await page.send("Log.enable");
     await page.send("Emulation.setDeviceMetricsOverride", { width: 1366, height: 768, deviceScaleFactor: 1, mobile: false });
     await page.send("Page.navigate", { url: `http://127.0.0.1:${port}/index.html` });
-    await waitFor(page, "window.__archviewFoundationState?.phase === 'ready' || document.querySelector('#archview-app')?.dataset.phase === 'error'");
+    await waitFor(page, "window.__archviewState?.architecture?.status === 'loaded' || document.querySelector('#archview-app')?.dataset.phase === 'error'");
 
     const bootPhase = await page.send("Runtime.evaluate", {
       returnByValue: true,
@@ -162,6 +162,7 @@ async function main() {
         document.querySelector('[data-view="front"]').click();
         const frontView = window.__archviewFoundationState.view;
         document.querySelector('[data-view="reset"]').click();
+        document.querySelector('[data-atom-id="atom:checkout"]').click();
         return {
           phase: root.dataset.phase,
           canvasCount: document.querySelectorAll('#atlas-canvas-host canvas').length,
@@ -177,6 +178,17 @@ async function main() {
           emptyTitle: document.querySelector('#empty-state-title').textContent,
           renderer: document.querySelector('#renderer-status').textContent,
           errorHidden: document.querySelector('#webgl-error').hidden,
+          inputStatus: root.dataset.inputStatus,
+          counts: window.__archviewState.architecture.index.counts,
+          atomButtons: document.querySelectorAll('[data-atom-id]').length,
+          renderStats: window.__archviewRenderStats,
+          selection: window.__archviewState.selection,
+          source: {
+            path: document.querySelector('#source-path').textContent,
+            symbol: document.querySelector('#source-symbol').textContent,
+            line: document.querySelector('#source-line').textContent,
+            resolution: document.querySelector('#source-resolution').textContent,
+          },
         };
       })()`,
     });
@@ -197,11 +209,72 @@ async function main() {
     if (!value.errorHidden || value.renderer !== "ready" || runtimeErrors.length || consoleErrors.length) {
       throw new Error(`Unexpected renderer error: ${JSON.stringify({ value, runtimeErrors, consoleErrors })}`);
     }
+    if (value.inputStatus !== "loaded" || JSON.stringify(value.counts) !== JSON.stringify({ sources: 4, atoms: 6, contexts: 3, covers: 1 })) {
+      throw new Error(`Valid ArchMap did not load exact fixture facts: ${JSON.stringify(value)}`);
+    }
+    if (value.renderStats?.contextPlates !== 3 || value.renderStats?.atomGlyphs !== 8) {
+      throw new Error(`Three.js geometry did not match explicit Context memberships: ${JSON.stringify(value)}`);
+    }
+    if (value.selection?.id !== "atom:checkout" || value.source.path !== "services/checkout/CheckoutService.ts" || value.source.symbol !== "CheckoutService.capture" || value.source.line !== "48" || value.source.resolution !== "DIRECT EVIDENCE") {
+      throw new Error(`Atom source landing did not preserve source metadata: ${JSON.stringify(value)}`);
+    }
 
     if (screenshotPath) {
       const screenshot = await page.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
       fs.mkdirSync(path.dirname(screenshotPath), { recursive: true });
       fs.writeFileSync(screenshotPath, Buffer.from(screenshot.data, "base64"));
+    }
+
+    await page.send("Page.navigate", { url: `http://127.0.0.1:${port}/index.html?archmap=./fixtures/empty.archmap.json` });
+    await waitFor(page, "window.__archviewState?.architecture?.status === 'empty'");
+    const empty = await page.send("Runtime.evaluate", {
+      returnByValue: true,
+      expression: `(() => ({
+        status: document.querySelector('#archview-app').dataset.inputStatus,
+        title: document.querySelector('#empty-state-title').textContent,
+        visible: !document.querySelector('#atlas-empty-state').hidden,
+        counts: window.__archviewState.architecture.index.counts,
+      }))()`,
+    });
+    if (empty.result.value.status !== "empty" || empty.result.value.title !== "Empty ArchMap" || !empty.result.value.visible) {
+      throw new Error(`Empty ArchMap state is not explicit: ${JSON.stringify(empty.result.value)}`);
+    }
+
+    await page.send("Page.navigate", { url: `http://127.0.0.1:${port}/index.html?archmap=./fixtures/malformed.archmap.json` });
+    await waitFor(page, "window.__archviewState?.architecture?.status === 'error'");
+    const malformed = await page.send("Runtime.evaluate", {
+      returnByValue: true,
+      expression: `(() => ({
+        status: document.querySelector('#archview-app').dataset.inputStatus,
+        title: document.querySelector('#empty-state-title').textContent,
+        issues: [...document.querySelectorAll('#archmap-issues li')].map((item) => item.textContent),
+        shellVisible: document.querySelector('.scope-explorer').getBoundingClientRect().width > 0,
+      }))()`,
+    });
+    if (malformed.result.value.status !== "error" || malformed.result.value.title !== "ArchMap rejected" || !malformed.result.value.issues.length || !malformed.result.value.shellVisible) {
+      throw new Error(`Malformed ArchMap was not visibly rejected: ${JSON.stringify(malformed.result.value)}`);
+    }
+
+    await page.send("Page.navigate", { url: `http://127.0.0.1:${port}/index.html?archmap=./fixtures/unresolved.archmap.json` });
+    await waitFor(page, "window.__archviewState?.architecture?.status === 'unresolved'");
+    const unresolved = await page.send("Runtime.evaluate", {
+      returnByValue: true,
+      expression: `(() => {
+        document.querySelector('[data-atom-id="atom:unresolved"]').click();
+        return {
+          status: document.querySelector('#archview-app').dataset.inputStatus,
+          issues: [...document.querySelectorAll('#archmap-issues li')].map((item) => item.textContent),
+          selection: window.__archviewState.selection,
+          resolution: document.querySelector('#source-resolution').textContent,
+          sourceTarget: document.querySelector('#source-targets').textContent,
+        };
+      })()`,
+    });
+    if (unresolved.result.value.status !== "unresolved" || !unresolved.result.value.issues.some((entry) => entry.includes("src:missing")) || unresolved.result.value.selection?.id !== "atom:unresolved" || unresolved.result.value.resolution !== "UNRESOLVED" || !unresolved.result.value.sourceTarget.includes("unresolved source ref")) {
+      throw new Error(`Unresolved source ref was silently discarded: ${JSON.stringify(unresolved.result.value)}`);
+    }
+    if (runtimeErrors.length || consoleErrors.length) {
+      throw new Error(`Input cases emitted runtime or console errors: ${JSON.stringify({ runtimeErrors, consoleErrors })}`);
     }
 
     await page.send("Page.addScriptToEvaluateOnNewDocument", {
@@ -213,7 +286,7 @@ async function main() {
         };
       })();`,
     });
-    await page.send("Page.navigate", { url: `http://127.0.0.1:${port}/index.html?webgl-unavailable=1` });
+    await page.send("Page.navigate", { url: `http://127.0.0.1:${port}/index.html?webgl-unavailable=1&archmap=none` });
     await waitFor(page, "window.__archviewFoundationState?.phase === 'error'");
     const failure = await page.send("Runtime.evaluate", {
       returnByValue: true,
@@ -228,7 +301,7 @@ async function main() {
       throw new Error(`WebGL failure was not shown in the shell: ${JSON.stringify(failure.result.value)}`);
     }
 
-    await page.send("Page.navigate", { url: `http://127.0.0.1:${port}/index.html?bootstrap-unavailable=1` });
+    await page.send("Page.navigate", { url: `http://127.0.0.1:${port}/index.html?bootstrap-unavailable=1&archmap=none` });
     await waitFor(page, "document.querySelector('#archview-app')?.dataset.phase === 'error'");
     const bootstrapFailure = await page.send("Runtime.evaluate", {
       returnByValue: true,
@@ -243,7 +316,7 @@ async function main() {
       throw new Error(`Bootstrap failure was not shown in the shell: ${JSON.stringify(bootstrapFailure.result.value)}`);
     }
 
-    console.log(JSON.stringify({ normal: value, webglFailure: failure.result.value, bootstrapFailure: bootstrapFailure.result.value }));
+    console.log(JSON.stringify({ normal: value, empty: empty.result.value, malformed: malformed.result.value, unresolved: unresolved.result.value, webglFailure: failure.result.value, bootstrapFailure: bootstrapFailure.result.value }));
   } finally {
     await cdp.send("Target.closeTarget", { targetId: target.targetId }).catch(() => {});
     cdp.close();

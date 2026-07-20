@@ -9,6 +9,7 @@ const initialState = Object.freeze({
   revision: null,
   cover: null,
   selection: null,
+  architecture: Object.freeze({ status: "idle", index: null, issues: Object.freeze([]), source: null }),
   error: null,
 });
 
@@ -52,6 +53,40 @@ export function createArchViewState() {
         renderer: "unavailable",
         error: error instanceof Error ? error.message : String(error),
       };
+      return publish();
+    },
+    architectureLoading(source) {
+      state = { ...state, architecture: Object.freeze({ status: "loading", index: null, issues: Object.freeze([]), source }) };
+      return publish();
+    },
+    architectureLoaded(index, source) {
+      const status = index.empty ? "empty" : index.unresolved.length ? "unresolved" : "loaded";
+      state = {
+        ...state,
+        repository: index.id,
+        revision: index.schema,
+        cover: index.covers[0]?.id || null,
+        selection: null,
+        architecture: Object.freeze({ status, index, issues: index.unresolved, source }),
+      };
+      return publish();
+    },
+    architectureFailed(error, source) {
+      const issues = Array.isArray(error?.issues) ? error.issues : [{ path: "$", message: error instanceof Error ? error.message : String(error) }];
+      state = {
+        ...state,
+        repository: null,
+        revision: null,
+        cover: null,
+        selection: null,
+        architecture: Object.freeze({ status: "error", index: null, issues: Object.freeze(issues), source }),
+      };
+      return publish();
+    },
+    selectAtom(atomId) {
+      const index = state.architecture.index;
+      if (!index?.atomsById.has(atomId)) throw new Error(`Unknown Atom selection: ${atomId}`);
+      state = { ...state, selection: Object.freeze({ kind: "atom", id: atomId }) };
       return publish();
     },
   });

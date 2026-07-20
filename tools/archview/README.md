@@ -140,16 +140,20 @@ visual channelは次に区分する。
 `archsig-atom-viewer-data.json`、summary、manifest、gate report、
 `archview-sequence/v0.5.4`を読み、ArchSigが供給したanalysis geometryを表示する。
 
-ゼロベース再構築のapplication foundationは`rebuild/`にある。Paper AtlasのTop Bar、
+ゼロベース再構築中のapplicationは`rebuild/`にある。Paper AtlasのTop Bar、
 Scope Explorer、3D Atlas、Inspector、source drawer、Three.js camera、
-Architecture / Analysis / Improveの共通mode stateを持つ。ArchMapとArchSig artifactの
-読み込みは後続実装で接続する。
+Architecture / Analysis / Improveの共通mode stateを持つ。`archmap/v0.5.4`を直接検証し、
+Cover、Context plate、Atom kind別glyph、選択Atomの`path / symbol / line`を表示する。
+未解決source refはAtomを消さず、入力警告と`UNRESOLVED` source targetとして表示する。
+source本文・snippetは読み込まない。
 
 ```bash
 python3 -m http.server 8000 --directory tools/archview/rebuild
 ```
 
-`http://localhost:8000/`を開く。foundationのbrowser smokeは次で実行する。
+`http://localhost:8000/`を開く。既定では小規模なpayment vertical-slice fixtureを読む。
+`?archmap=<同一originのJSON path>`で別のArchMapを指定でき、Top Barの`Load ArchMap`から
+ローカルJSONも読み込める。browser smokeは次で実行する。
 
 ```bash
 node tools/archview/foundation_browser_e2e.cjs tools/archview/rebuild
@@ -157,10 +161,9 @@ node tools/archview/foundation_browser_e2e.cjs tools/archview/rebuild
 
 未実装:
 
-- ArchMap direct loading
-- Cover → Context → Subject → Atom → Sourceのsemantic zoom
+- Context選択と全5段階のsemantic zoom
 - Architecture / Analysis / Improveの共通selection model
-- ArchMap全Atomからのsource landing
+- ArchSig analysis overlay
 
 現行viewer-data handoffは移行中のruntime contractであり、ArchViewのproduct identityではない。
 
