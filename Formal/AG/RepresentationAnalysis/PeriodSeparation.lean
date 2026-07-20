@@ -90,7 +90,9 @@ existing `RepresentationFamily`.
 def RepresentationFamily.toPeriodSeparationReadingFamily
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
-    {p : AATSchReadingParameter.{u, v, w, x, y} S k}
+    {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    {p : AATSchReadingParameter.{u, v, w, x} raw}
     (F : RepresentationFamily p)
     (graphIndex semanticIndex effectIndex : F.Index) :
     PeriodSeparationReadingFamily where
@@ -109,7 +111,9 @@ VII.定理6.1: selected period-separation witness inside an existing
 structure RepresentationFamilyPeriodSeparationWitness
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
-    {p : AATSchReadingParameter.{u, v, w, x, y} S k}
+    {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    {p : AATSchReadingParameter.{u, v, w, x} raw}
     (F : RepresentationFamily p) where
   graphIndex : F.Index
   semanticIndex : F.Index
@@ -125,7 +129,9 @@ namespace RepresentationFamilyPeriodSeparationWitness
 
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {k : Type v} [CommRing k]
-variable {p : AATSchReadingParameter.{u, v, w, x, y} S k}
+variable {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+variable [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+variable {p : AATSchReadingParameter.{u, v, w, x} raw}
 variable {F : RepresentationFamily p}
 
 /-- VII.定理6.1: convert a representation-family witness to the reading surface. -/

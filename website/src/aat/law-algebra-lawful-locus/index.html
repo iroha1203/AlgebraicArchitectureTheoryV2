@@ -103,7 +103,7 @@
   -&gt; I_Ob^U subset O_X^U
   -&gt; Flat_U(X) = V(I_Ob^U)
   -&gt; affine AAT charts
-  -&gt; ArchitectureScheme</code></pre>
+  -&gt; StandardArchitectureScheme</code></pre>
               <p>
                 Under this structure, a law is not a design slogan. It is an
                 equation, or a family of equations, on the architecture
@@ -742,11 +742,14 @@ of selected witnesses.</code></pre>
                   <code>SelectedLawWitnessIdealFamily.localObstructionIdeal</code>
                   with minimality lemma
                   <code>localObstructionIdeal_le_iff</code>, restriction surface
-                  <code>map_localObstructionIdeal_le</code>, and
-                  <code>SheafImageConstruction.imageIdeal_eq_localObstructionIdeal</code>
-                  in <code>Formal/AG/LawAlgebra/ObstructionIdeal.lean</code> —
-                  defined, and proved under explicit restriction-compatibility
-                  and sheaf-image agreement assumptions.
+                  <code>map_localObstructionIdeal_le</code> in
+                  <code>Formal/AG/LawAlgebra/ObstructionIdeal.lean</code>, and
+                  the actual <code>Scheme.IdealSheafData</code>
+                  <code>lawGeneratedIdealSheaf</code> with
+                  <code>lawGeneratedIdealSheaf_ideal</code> and
+                  <code>lawGeneratedIdealSheaf_le_all</code> in
+                  <code>Formal/AG/LawAlgebra/ClosedEquationalGeometry.lean</code>
+                  — defined, with the local-sum and ideal-sheaf properties proved.
                 </span>
               </p>
             </section>
@@ -785,11 +788,15 @@ of selected witnesses.</code></pre>
                   <code>LawfulLocus.lawfulLocus</code> as
                   <code>PrimeSpectrum.zeroLocus</code>,
                   <code>LawfulSectionData.lawful_iff_pulledObstructionIdeal_eq_bot</code>,
-                  <code>lawful_iff_factorsThroughLawfulLocus</code>, and the
+                  and the
                   one-directional prime-map theorems
                   <code>sectionPrimeMap_mem_lawfulLocus_of_lawful</code> in
                   <code>Formal/AG/LawAlgebra/LawfulLocus.lean</code> — defined,
-                  with a proved bridge. The converse from set-theoretic image
+                  with a proved affine bridge. Actual scheme factorization is
+                  provided by <code>FactorsThroughLawfulClosedSubscheme</code>
+                  and <code>lawfulnessIdealFactorizationCorrespondence</code> in
+                  <code>Formal/AG/LawAlgebra/ClosedEquationalGeometry.lean</code>.
+                  The converse from set-theoretic image
                   containment to ideal vanishing is not claimed, because of the
                   radical gap.
                 </span>
@@ -1128,7 +1135,7 @@ of selected witnesses.</code></pre>
                 underlying space \(|X|\) is not the space of the source
                 itself; it is the underlying space of the architecture
                 geometry relativized to the Atom vocabulary, law universe, and
-                coverage topology. <em>ArchitectureScheme</em> is the strong
+                coverage topology. <em>StandardArchitectureScheme</em> is the strong
                 object: decorated \(\mathrm{Spec}_{\mathrm{AAT}}\) charts glued
                 by open immersions and the cocycle condition on the scheme
                 side, preserving Atom labels, law readings, obstruction
@@ -1137,14 +1144,16 @@ of selected witnesses.</code></pre>
               <p class="statement-status">
                 <span class="statement-status-label">Lean status</span>
                 <span>
-                  <code>Scheme.RingedAATTopos</code>,
-                  <code>RingedAATTopos.forgetfulLocallyRingedSpace</code>,
-                  <code>Scheme.ChartCompatibility</code>,
-                  <code>Scheme.ArchitectureScheme</code> with
-                  <code>ArchitectureScheme.singleAffineSpec</code> and its
-                  compatibility theorems in
-                  <code>Formal/AG/LawAlgebra/Scheme.lean</code> — defined, with
-                  the forgetful bridge and single-affine compatibility proved.
+                  <code>raw.toRingedSite : RingedAATSite</code>,
+                  <code>ArchitectureAffineAtlas</code>,
+                  <code>IsArchitectureAffineAtlas</code>,
+                  <code>ArchitectureOverlapPresentation</code>,
+                  <code>IsArchitectureOverlapPresentation</code>, and
+                  <code>StandardArchitectureScheme</code> with
+                  <code>StandardArchitectureScheme.singleAffine</code> in
+                  <code>Formal/AG/LawAlgebra/StandardScheme.lean</code> — defined
+                  over an actual Mathlib scheme, affine cover, and pullback
+                  overlap data, with the single-affine instance constructed.
                 </span>
               </p>
               <p id="principle-9-4" class="statement">
@@ -1203,7 +1212,7 @@ the canonical comparison X_glue -&gt; Spec Gamma(X_glue, O_X) is an isomorphism.
 O_X^U(W) identifies with Gamma(X_glue, O_X).
 the glued decoration D_glue identifies with D_W^U.</code></pre>
               <p>
-                Calling the result an <em>ArchitectureScheme</em> gluing
+                Calling the result a <em>StandardArchitectureScheme</em> gluing
                 requires not just section compatibility but the full chart
                 compatibility of Definition III.9.2: open immersions, joint
                 coverage, cocycle, and decoration compatibility. The sheaf
@@ -1274,21 +1283,22 @@ with s|W_i = s_i</code></pre>
                     <div>
                       <dt>Lean names</dt>
                       <dd>
-                        <code>Correspondence.LawfulnessIdealCorrespondencePackage</code>,
-                        <code>lawful_iff_pulledObstructionIdeal_eq_bot</code>,
-                        <code>pulledObstructionIdeal_eq_bot_iff_factorsThroughLawfulLocus</code>,
-                        <code>factorsThroughLawfulLocus_iff_omegaU_zero</code>,
-                        <code>omegaU_zero_iff_requiredSignatureAxesZero</code>,
-                        <code>Correspondence.lawfulnessIdealCorrespondence</code>
+                        <code>lawfulnessIdealFactorizationCorrespondence</code>,
+                        <code>factorsThroughLawfulClosedSubscheme_iff_omegaU_zero</code>,
+                        <code>factorsThroughLawfulClosedSubscheme_iff_requiredSignatureAxesZero</code>
+                        in <code>Formal/AG/LawAlgebra/ClosedEquationalGeometry.lean</code>,
+                        together with
+                        <code>Correspondence.lawful_iff_pulledObstructionIdeal_eq_bot</code>
                         in <code>Formal/AG/LawAlgebra/Correspondence.lean</code>.
                       </dd>
                     </div>
                     <div>
                       <dt>Assumptions / boundary</dt>
                       <dd>
-                        The correspondence assumptions are explicit structure
-                        fields, not background axioms. The package also carries
-                        the one-directional bridges
+                        <code>RequiredLawIdealExact</code>, point comparison,
+                        obstruction soundness and completeness, and axis
+                        exactness are explicit theorem arguments. The low-level
+                        correspondence module also provides the one-directional bridges
                         <code>lawful_of_selectedWitnessIdeals_le_ker</code> and
                         <code>lawful_of_generatedLawWitnessIdeals_le_ker</code>.
                         This is a certified bounded inference, not an
@@ -1635,7 +1645,7 @@ Formal/AG/LawAlgebra/FiniteExamples.lean      III.5.6E, 7.2D, cycle example</cod
               <pre><code>ArchitectureGeometry
   -&gt; Ringed AAT Topos
   -&gt; Affine AAT Charts
-  -&gt; ArchitectureScheme
+  -&gt; StandardArchitectureScheme
   -&gt; LawfulLocus</code></pre>
               <p>and its core reads:</p>
               <pre><code>law is equation.

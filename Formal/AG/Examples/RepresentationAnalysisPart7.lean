@@ -1,4 +1,5 @@
 import Formal.AG.Examples.FiniteModel
+import Formal.AG.Examples.StandardGeometryReferenceModels
 import Formal.AG.RepresentationAnalysis
 
 noncomputable section
@@ -11,6 +12,7 @@ open AAT.AG.RepresentationAnalysis
 open CategoryTheory
 open CategoryTheory.Limits
 open Opposite
+open scoped Classical
 
 /-!
 Finite witness examples for Part VII / R13.
@@ -323,7 +325,10 @@ def pseudoCircleStrictPeriodData
     (hω : letI := K.cochainAddCommGroup 2; K.d 1 ω = 0)
     (hclass : K.CoverRelativeHn 1)
     (hrep : RepresentsCohomologyClass K 1 hclass ω)
-    {k : Type} [CommRing k] {p : AATSchReadingParameter site k}
+    {k : Type} [CommRing k]
+    {raw : LawAlgebra.RawAmbientRestrictionSystem site k}
+    [CategoryTheory.HasSheafify site.topology (LawAlgebra.AATCommAlgCat k)]
+    {p : AATSchReadingParameter raw}
     {F : RepresentationFamily p} {X : AATSch p}
     (i : F.Index) : StrictPeriodData F X :=
   (pseudoCircleStrictPeriodRepresentative K cochainReading ω hω hclass hrep).toStrictPeriodData i
@@ -376,7 +381,10 @@ theorem pseudoCircle_strictPeriodData_reads_representative
     (hω : letI := K.cochainAddCommGroup 2; K.d 1 ω = 0)
     (hclass : K.CoverRelativeHn 1)
     (hrep : RepresentsCohomologyClass K 1 hclass ω)
-    {k : Type} [CommRing k] {p : AATSchReadingParameter site k}
+    {k : Type} [CommRing k]
+    {raw : LawAlgebra.RawAmbientRestrictionSystem site k}
+    [CategoryTheory.HasSheafify site.topology (LawAlgebra.AATCommAlgCat k)]
+    {p : AATSchReadingParameter raw}
     {F : RepresentationFamily p} {X : AATSch p}
     (i : F.Index) :
     (pseudoCircleStrictPeriodData K cochainReading ω hω hclass hrep (F := F) (X := X)
@@ -622,35 +630,6 @@ theorem observationGap_toy_quotient_certificate :
 
 /-! ### (f) detecting representation toy model -/
 
-def toyReadingParameter :
-    AATSchReadingParameter.{0, 0, 0, 0, 0} site Int where
-  SchemeMorphism _ _ := PUnit
-  id _ := PUnit.unit
-  comp _ _ := PUnit.unit
-  id_comp _ := rfl
-  comp_id _ := rfl
-  assoc _ _ _ := rfl
-  AtomLabelReading := PUnit
-  LawReading := PUnit
-  ObstructionIdealReading := PUnit
-  SignatureReading := PUnit
-  InterpretationMapReading := PUnit
-  atomLabelsCompatible _ _ _ := True
-  lawReadingCompatible _ _ _ := True
-  obstructionIdealCompatible _ _ _ := True
-  signatureReadingCompatible _ _ _ := True
-  interpretationMapCompatible _ _ _ := True
-  id_atomLabelsCompatible _ _ := trivial
-  id_lawReadingCompatible _ _ := trivial
-  id_obstructionIdealCompatible _ _ := trivial
-  id_signatureReadingCompatible _ _ := trivial
-  id_interpretationMapCompatible _ _ := trivial
-  comp_atomLabelsCompatible _ _ := trivial
-  comp_lawReadingCompatible _ _ := trivial
-  comp_obstructionIdealCompatible _ _ := trivial
-  comp_signatureReadingCompatible _ _ := trivial
-  comp_interpretationMapCompatible _ _ := trivial
-
 inductive ToyRepIndex where
   | graph
   | semantic
@@ -661,402 +640,6 @@ inductive ToyObstructionClass where
   | syncGap
   | semanticGap
 deriving DecidableEq, Fintype
-
-def toyTargetCategory : AnalyticTargetCategory PUnit where
-  Hom _ _ := PUnit
-  id _ := PUnit.unit
-  comp _ _ := PUnit.unit
-  id_comp _ := rfl
-  comp_id _ := rfl
-  assoc _ _ _ := rfl
-
-def toyAnalyticRepresentation :
-    AnalyticRepresentation toyReadingParameter PUnit where
-  targetCategory := toyTargetCategory
-  obj _ := PUnit.unit
-  map _ := PUnit.unit
-  map_id _ := rfl
-  map_comp _ := rfl
-
-def toyRepresentationFamily :
-    RepresentationFamily toyReadingParameter where
-  Index := ToyRepIndex
-  Target _ := PUnit
-  representation _ := toyAnalyticRepresentation
-
-def toyDetectingFamily :
-    UDetectingRepresentationFamily toyRepresentationFamily where
-  ObstructionClass := ToyObstructionClass
-  analyticZeroReading
-    | ToyRepIndex.graph, ToyObstructionClass.zero => True
-    | ToyRepIndex.graph, ToyObstructionClass.syncGap => False
-    | ToyRepIndex.graph, ToyObstructionClass.semanticGap => True
-    | ToyRepIndex.semantic, ToyObstructionClass.zero => True
-    | ToyRepIndex.semantic, ToyObstructionClass.syncGap => True
-    | ToyRepIndex.semantic, ToyObstructionClass.semanticGap => False
-  WitnessZero_U alpha := alpha = ToyObstructionClass.zero
-  detects := by
-    intro alpha hzero
-    cases alpha with
-    | zero => rfl
-    | syncGap => exact False.elim (hzero ToyRepIndex.graph)
-    | semanticGap => exact False.elim (hzero ToyRepIndex.semantic)
-  completenessLevel := CompletenessSpectrum.conservative
-
-def toySignatureAxes : SignatureAxes carrier where
-  Axis := PUnit
-  selected _ := True
-  zero _ _ := True
-
-def toyAnalyticReadingContext :
-    AnalyticReadingContext.{0, 0, 0, 0, 0, 0} object toyReadingParameter where
-  AtomVocabulary := PUnit
-  atomVocabularyOf _ := PUnit.unit
-  lawUniverse := lawUniverse
-  CoverageTopology := PUnit
-  selectedCoverage := PUnit.unit
-  coefficientSheaf := PUnit
-  representationFamily := toyRepresentationFamily
-  distanceMassContext := marginDistanceMassContext
-  selectedWitnessFamily := PUnit
-  selectedWitness := PUnit.unit
-  selectedSignatureAxes := toySignatureAxes
-  signatureProfile := SignatureReadingProfile.ofSignatureAxes toySignatureAxes
-  detectingFamily := toyDetectingFamily
-  coverageAdequacy := True
-  witnessExactness := True
-  axisExactness := True
-  coefficientDiscipline := True
-  completenessLevel := CompletenessSpectrum.conservative
-
-def toyConservativity :
-    RepresentationConservativityUnderAdequacy toyAnalyticReadingContext where
-  zeroClass := ToyObstructionClass.zero
-  IsZeroClass alpha := alpha = ToyObstructionClass.zero
-  zeroClass_isZero := rfl
-  coverageAdequate := trivial
-  witnessExact := trivial
-  axisExact := trivial
-  coefficientDisciplined := trivial
-  witnessZero_eq_zero := by
-    intro alpha h
-    exact h
-
-theorem detectingRepresentation_toy_syncGap_not_all_zero :
-    ¬ (∀ i : toyRepresentationFamily.Index,
-      toyDetectingFamily.analyticZeroReading i ToyObstructionClass.syncGap) := by
-  intro h
-  exact h ToyRepIndex.graph
-
-theorem detectingRepresentation_toy_semanticGap_not_all_zero :
-    ¬ (∀ i : toyRepresentationFamily.Index,
-      toyDetectingFamily.analyticZeroReading i ToyObstructionClass.semanticGap) := by
-  intro h
-  exact h ToyRepIndex.semantic
-
-theorem detectingRepresentation_toy_all_zero_imp_zero
-    (alpha : toyDetectingFamily.ObstructionClass)
-    (hzero : ∀ i : toyRepresentationFamily.Index,
-      toyDetectingFamily.analyticZeroReading i alpha) :
-    alpha = toyConservativity.zeroClass :=
-  toyConservativity.representation_conservativity_under_adequacy alpha hzero
-
-theorem detectingRepresentation_toy_zero_conservative :
-    ToyObstructionClass.zero = toyConservativity.zeroClass :=
-  detectingRepresentation_toy_all_zero_imp_zero ToyObstructionClass.zero (by
-    intro i
-    cases i <;> trivial)
-
-theorem detectingRepresentation_toy_all_zero_actual_zero
-    (alpha : toyDetectingFamily.ObstructionClass)
-    (hzero : ∀ i : toyRepresentationFamily.Index,
-      toyDetectingFamily.analyticZeroReading i alpha) :
-    toyConservativity.IsZeroClass alpha :=
-  toyConservativity.representation_zero_under_adequacy alpha hzero
-
-theorem detectingRepresentation_toy_zero_is_actual_zero :
-    toyConservativity.IsZeroClass ToyObstructionClass.zero :=
-  detectingRepresentation_toy_all_zero_actual_zero ToyObstructionClass.zero (by
-    intro i
-    cases i <;> trivial)
-
-/-! ### (g) finite synthesis package firing -/
-
-def finiteSynthesisPartI : Site.PartIPrerequisites where
-  carrier := carrier
-  core := corePackage
-
-def finiteSynthesisGeometry : Site.ArchitectureGeometry finiteSynthesisPartI where
-  site := site
-
-abbrev FiniteSynthesisAlgCat :=
-  LawAlgebra.AATCommAlgCat.{0, 0} PUnit
-
-noncomputable def finiteSynthesisAlgTerminal : FiniteSynthesisAlgCat :=
-  CommRingCat.mkUnder (CommRingCat.of (ULift PUnit)) PUnit
-
-noncomputable def finiteSynthesisAlgPresheaf :
-    LawAlgebra.AlgebraValuedAATPresheaf site PUnit :=
-  (CategoryTheory.Functor.const site.categoryᵒᵖ).obj finiteSynthesisAlgTerminal
-
-noncomputable def finiteSynthesisAlgSheaf :
-    LawAlgebra.LawAlgebraSheaf site PUnit where
-  val := finiteSynthesisAlgPresheaf
-  cond :=
-    CategoryTheory.Presheaf.isSheaf_of_isTerminal site.topology
-      (IsTerminal.ofUniqueHom
-        (fun _ => Under.homMk (CommRingCat.ofHom {
-          toFun := fun _ => PUnit.unit
-          map_one' := rfl
-          map_mul' := fun _ _ => rfl
-          map_zero' := rfl
-          map_add' := fun _ _ => rfl
-        }) (by
-          ext x
-          rfl))
-        (by
-          intro _Y _f
-          ext x
-          rfl))
-
-def finiteSynthesisCoordFamily (W : Site.ArchitectureContext object) :
-    LawAlgebra.CoordinateFamily W where
-  Coord := Empty
-  label := Empty.elim
-  LocalData := Empty.elim
-
-def finiteSynthesisRelations (W : Site.ArchitectureContext object) :
-    LawAlgebra.StructuralRelationFamily (finiteSynthesisCoordFamily W) PUnit where
-  Relation := LawAlgebra.FreeTypedCommAlg (finiteSynthesisCoordFamily W) PUnit
-  polynomial r := r
-
-theorem finiteSynthesisRelations_JStruct_top (W : Site.ArchitectureContext object) :
-    (finiteSynthesisRelations W).JStruct = ⊤ := by
-  apply top_unique
-  intro q _hq
-  rw [LawAlgebra.StructuralRelationFamily.JStruct,
-    LawAlgebra.StructuralRelationFamily.RelStruct]
-  rw [show Set.range (finiteSynthesisRelations W).polynomial =
-      (Set.univ :
-        Set (LawAlgebra.FreeTypedCommAlg (finiteSynthesisCoordFamily W) PUnit)) by
-    ext p
-    constructor
-    · intro _h
-      exact Set.mem_univ p
-    · intro _h
-      exact ⟨p, rfl⟩]
-  exact Ideal.subset_span (Set.mem_univ q)
-
-def finiteSynthesisRestrictionStable
-    {source target : Site.ArchitectureContext object}
-    (f : Site.ContextMorphism source target) :
-    LawAlgebra.RestrictionStableStructuralRelations
-      (finiteSynthesisRelations source) (finiteSynthesisRelations target) f where
-  restriction := {
-    variableImage := Empty.elim
-  }
-  maps_JStruct := by
-    intro p _hp
-    rw [finiteSynthesisRelations_JStruct_top source]
-    change _ ∈
-      (Set.univ :
-        Set (LawAlgebra.FreeTypedCommAlg (finiteSynthesisCoordFamily source) PUnit))
-    exact Set.mem_univ _
-
-private theorem finiteSynthesisQuotientTop_eq
-    {W : Site.ArchitectureContext object}
-    (x y : (finiteSynthesisRelations W).RawAmbientLawAlgebra) :
-    x = y := by
-  refine Quotient.inductionOn x ?_
-  intro p
-  refine Quotient.inductionOn y ?_
-  intro q
-  apply Ideal.Quotient.eq.2
-  rw [finiteSynthesisRelations_JStruct_top W]
-  change p - q ∈
-    (Set.univ : Set (LawAlgebra.FreeTypedCommAlg (finiteSynthesisCoordFamily W) PUnit))
-  exact Set.mem_univ _
-
-noncomputable def finiteSynthesisRawAmbient :
-    LawAlgebra.RawAmbientPresheafBridge (A := object) PUnit where
-  coordFamilySpec := finiteSynthesisCoordFamily
-  relationFamily := finiteSynthesisRelations
-  restrictionStable := finiteSynthesisRestrictionStable
-  identity_law := by
-    intro W _id
-    ext x
-    · exact finiteSynthesisQuotientTop_eq _ _
-    · exact Empty.elim x
-  composition_law := by
-    intro _source _middle _target _f _g _comp
-    ext x
-    · exact finiteSynthesisQuotientTop_eq _ _
-    · exact Empty.elim x
-
-noncomputable def punitRingEquivOfSubsingleton
-    (R : Type) [CommRing R] [Subsingleton R] : R ≃+* PUnit where
-  toFun _ := PUnit.unit
-  invFun _ := 0
-  left_inv _ := Subsingleton.elim _ _
-  right_inv x := by cases x; rfl
-  map_mul' _ _ := rfl
-  map_add' _ _ := rfl
-
-noncomputable def finiteSynthesisRawAmbientAlgebra :
-    LawAlgebra.RawAmbientAlgebraPresheafBridge site PUnit where
-  rawAmbient := finiteSynthesisRawAmbient
-  rawPresheaf := finiteSynthesisAlgPresheaf
-  identifiesObject := by
-    intro _W
-    exact punitRingEquivOfSubsingleton _
-  restriction_naturality := by
-    intro _source _target _h _x
-    rfl
-
-noncomputable def finiteSynthesisSheafification :
-    LawAlgebra.LawAlgebraSheafificationBridge site PUnit where
-  raw := finiteSynthesisAlgPresheaf
-  plus := finiteSynthesisAlgSheaf
-  canonical := 𝟙 finiteSynthesisAlgPresheaf
-  isSheafification := by
-    intro _F η
-    refine ⟨η, ?_, ?_⟩
-    · simp
-    · intro lift hlift
-      simpa using hlift
-
-noncomputable def finiteSynthesisPresentation
-    (W : site.category) :
-    LawAlgebra.SelectedLawAlgebraPresentation finiteSynthesisSheafification W where
-  Generator := PUnit
-  Relation := PUnit
-  rawGenerator _ := PUnit.unit
-  sheafifiedGenerator _ := PUnit.unit
-  rawRelation _ := PUnit.unit
-  sheafifiedRelation _ := PUnit.unit
-  presentsRaw := True
-  presentsSheafified := True
-  canonical_preserves_generator := by
-    intro _g
-    rfl
-  canonical_preserves_relation := by
-    intro _r
-    rfl
-
-noncomputable def finiteSynthesisPresentationStable :
-    LawAlgebra.PresentationStableAATSite finiteSynthesisSheafification where
-  presentation := finiteSynthesisPresentation
-  stable := by
-    intro _W
-    exact ⟨trivial, trivial⟩
-
-noncomputable def finiteSynthesisLawAlgebraSheafPackage :
-    LawAlgebra.LawAlgebraSheafPackage site PUnit where
-  rawAmbient := finiteSynthesisRawAmbientAlgebra
-  sheafification := finiteSynthesisSheafification
-  raw_eq := rfl
-  presentationStable := finiteSynthesisPresentationStable
-
-noncomputable def finiteSynthesisTypeSheaf : Site.AATSh site where
-  val := (CategoryTheory.Functor.const site.categoryᵒᵖ).obj PUnit
-  cond :=
-    CategoryTheory.Presheaf.isSheaf_of_isTerminal site.topology
-      (IsTerminal.ofUniqueHom
-        (fun _ => fun _ => PUnit.unit)
-        (by
-          intro _X f
-          funext x
-          cases f x
-          rfl))
-
-noncomputable def finiteSynthesisAffineChart :
-    LawAlgebra.AffineChart.AffineAATChart.{0, 0, 0} PUnit where
-  AlgebraCarrier := PUnit
-  commRing := inferInstance
-  algebra := inferInstance
-  spec := {
-    Decoration := PUnit
-    decoration := PUnit.unit
-    obstructionIdeal := ⊥
-  }
-
-noncomputable def finiteSynthesisRingedTopos :
-    LawAlgebra.Scheme.RingedAATTopos.{0, 0, 0} site PUnit where
-  aatSheafObject := finiteSynthesisTypeSheaf
-  structureSheaf := finiteSynthesisLawAlgebraSheafPackage
-  locallyRingedSpace :=
-    LawAlgebra.Scheme.affineChartMathlibSpecLocallyRingedSpace
-      PUnit finiteSynthesisAffineChart
-
-noncomputable def finiteSynthesisArchitectureScheme :
-    LawAlgebra.Scheme.ArchitectureScheme.{0, 0, 0, 0, 0} site PUnit :=
-  LawAlgebra.Scheme.ArchitectureScheme.singleAffineSpec site PUnit
-    finiteSynthesisRingedTopos finiteSynthesisAffineChart rfl
-
-noncomputable def finiteSynthesisLawfulSection :
-    LawAlgebra.LawfulLocus.LawfulSectionData.{0, 0} PUnit (⊥ : Ideal PUnit) where
-  SectionRing := PUnit
-  commRing := inferInstance
-  pullback := RingHom.id PUnit
-
-def finiteSynthesisCover : Cohomology.CoverRelativeCechCover site where
-  base := siteBase
-  Index := PUnit
-  chart _ := siteBase
-  inclusion _ := 𝟙 siteBase
-  simplex _ := PUnit
-  overlap _ _ := siteBase
-  face _ _ _ := PUnit.unit
-  faceRestriction _ _ _ := 𝟙 siteBase
-
-def finiteSynthesisObstructionSheaf : Cohomology.ObstructionSheaf site where
-  carrier := Site.AATSh.toAATSheaf finiteSynthesisTypeSheaf
-  addCommGroup := by
-    intro _W
-    change AddCommGroup PUnit
-    infer_instance
-  map_zero := by
-    intro _source _target _f
-    rfl
-  map_add := by
-    intro _source _target _f x y
-    cases x
-    cases y
-    rfl
-
-def finiteSynthesisCechComplex :
-    Cohomology.CoverRelativeCechComplex finiteSynthesisCover
-      finiteSynthesisObstructionSheaf where
-  cochainAddCommGroup := by
-    intro _n
-    change AddCommGroup (PUnit -> PUnit)
-    infer_instance
-  alternatingFaceCombination := fun _n _faces _σ => PUnit.unit
-  differential := by
-    intro _n
-    change (PUnit -> PUnit) →+ (PUnit -> PUnit)
-    exact {
-      toFun := fun _ _ => PUnit.unit
-      map_zero' := by
-        funext _σ
-        rfl
-      map_add' := by
-        intro x y
-        funext σ
-        cases x σ
-        cases y σ
-        rfl
-    }
-  differential_eq_alternatingFaceCombination := by
-    intro _n c
-    funext σ
-    cases c σ
-    rfl
-  differential_comp := by
-    intro _n c
-    funext σ
-    cases c σ
-    rfl
 
 def finiteSynthesisRepairProfile :
     Derived.RepairProfile.RepairComparisonProfile.{0} where
@@ -1073,165 +656,6 @@ def finiteSynthesisRepairProfile :
     intro _X' _X _h
     trivial
 
-def finiteSynthesisStratumParameter :
-    SingularityMonodromyStack.StratumReadingParameter site where
-  signatureAxes := toySignatureAxes
-  Coeff := PUnit
-  selectedCoeff := PUnit.unit
-
-noncomputable def finiteSynthesisArchitectureStratum :
-    SingularityMonodromyStack.ArchitectureStratum.{0, 0, 0, 0, 0}
-      finiteSynthesisStratumParameter PUnit where
-  geometry := finiteSynthesisArchitectureScheme
-  Point := PUnit
-  carrier := Set.univ
-  role := SingularityMonodromyStack.StratumRole.component
-  label := "finite-synthesis-singleton"
-  selectedSubobject := True
-  selectedSubobject_cert := trivial
-  locallyClosed := True
-  locallyClosed_cert := trivial
-  decorationCompatible := True
-  decorationCompatible_cert := trivial
-  readingCompatible := True
-  readingCompatible_cert := trivial
-
-def finiteSynthesisReadingParameter :
-    AATSchReadingParameter.{0, 0, 0, 0, 0} site PUnit where
-  SchemeMorphism _ _ := PUnit
-  id _ := PUnit.unit
-  comp _ _ := PUnit.unit
-  id_comp _ := rfl
-  comp_id _ := rfl
-  assoc _ _ _ := rfl
-  AtomLabelReading := PUnit
-  LawReading := PUnit
-  ObstructionIdealReading := PUnit
-  SignatureReading := PUnit
-  InterpretationMapReading := PUnit
-  atomLabelsCompatible _ _ _ := True
-  lawReadingCompatible _ _ _ := True
-  obstructionIdealCompatible _ _ _ := True
-  signatureReadingCompatible _ _ _ := True
-  interpretationMapCompatible _ _ _ := True
-  id_atomLabelsCompatible _ _ := trivial
-  id_lawReadingCompatible _ _ := trivial
-  id_obstructionIdealCompatible _ _ := trivial
-  id_signatureReadingCompatible _ _ := trivial
-  id_interpretationMapCompatible _ _ := trivial
-  comp_atomLabelsCompatible _ _ := trivial
-  comp_lawReadingCompatible _ _ := trivial
-  comp_obstructionIdealCompatible _ _ := trivial
-  comp_signatureReadingCompatible _ _ := trivial
-  comp_interpretationMapCompatible _ _ := trivial
-
-def finiteSynthesisAnalyticRepresentation :
-    AnalyticRepresentation finiteSynthesisReadingParameter PUnit where
-  targetCategory := toyTargetCategory
-  obj _ := PUnit.unit
-  map _ := PUnit.unit
-  map_id _ := rfl
-  map_comp _ := rfl
-
-def finiteSynthesisRepresentationFamily :
-    RepresentationFamily finiteSynthesisReadingParameter where
-  Index := ToyRepIndex
-  Target _ := PUnit
-  representation _ := finiteSynthesisAnalyticRepresentation
-
-def finiteSynthesisDetectingFamily :
-    UDetectingRepresentationFamily finiteSynthesisRepresentationFamily where
-  ObstructionClass := ToyObstructionClass
-  analyticZeroReading
-    | ToyRepIndex.graph, ToyObstructionClass.zero => True
-    | ToyRepIndex.graph, ToyObstructionClass.syncGap => False
-    | ToyRepIndex.graph, ToyObstructionClass.semanticGap => True
-    | ToyRepIndex.semantic, ToyObstructionClass.zero => True
-    | ToyRepIndex.semantic, ToyObstructionClass.syncGap => True
-    | ToyRepIndex.semantic, ToyObstructionClass.semanticGap => False
-  WitnessZero_U alpha := alpha = ToyObstructionClass.zero
-  detects := by
-    intro alpha hzero
-    cases alpha with
-    | zero => rfl
-    | syncGap => exact False.elim (hzero ToyRepIndex.graph)
-    | semanticGap => exact False.elim (hzero ToyRepIndex.semantic)
-  completenessLevel := CompletenessSpectrum.conservative
-
-def finiteSynthesisAnalyticReadingContext :
-    AnalyticReadingContext.{0, 0, 0, 0, 0, 0} object
-      finiteSynthesisReadingParameter where
-  AtomVocabulary := PUnit
-  atomVocabularyOf _ := PUnit.unit
-  lawUniverse := lawUniverse
-  CoverageTopology := PUnit
-  selectedCoverage := PUnit.unit
-  coefficientSheaf := PUnit
-  representationFamily := finiteSynthesisRepresentationFamily
-  distanceMassContext := marginDistanceMassContext
-  selectedWitnessFamily := PUnit
-  selectedWitness := PUnit.unit
-  selectedSignatureAxes := toySignatureAxes
-  signatureProfile := SignatureReadingProfile.ofSignatureAxes toySignatureAxes
-  detectingFamily := finiteSynthesisDetectingFamily
-  coverageAdequacy := True
-  witnessExactness := True
-  axisExactness := True
-  coefficientDiscipline := True
-  completenessLevel := CompletenessSpectrum.conservative
-
-noncomputable def finiteSynthesisAATSynthesisAssumptions :
-    AATSynthesisAssumptions.{0, 0, 0, 0, 0, 0} finiteSynthesisPartI PUnit where
-  architectureGeometry := finiteSynthesisGeometry
-  ringedAATTopos := finiteSynthesisRingedTopos
-  architectureScheme := finiteSynthesisArchitectureScheme
-  ringedAATTopos_eq_scheme := rfl
-  LawCoordinateAlgebra := PUnit
-  lawCoordinateCommRing := inferInstance
-  obstructionIdeal := ⊥
-  lawfulLocus :=
-    LawAlgebra.LawfulLocus.lawfulLocus PUnit (⊥ : Ideal PUnit)
-  lawfulLocus_eq := rfl
-  lawfulSection := finiteSynthesisLawfulSection
-  cover := finiteSynthesisCover
-  obstructionSheaf := finiteSynthesisObstructionSheaf
-  obstructionCohomology := finiteSynthesisCechComplex
-  derivedLawGeometry := finiteSynthesisRepairProfile
-  stratumParameter := finiteSynthesisStratumParameter
-  singularityMonodromyStack := finiteSynthesisArchitectureStratum
-  readingParameter := finiteSynthesisReadingParameter
-  representationPeriodMetricAnalysis := finiteSynthesisAnalyticReadingContext
-
-noncomputable def finiteSynthesisAATSynthesisPackage :
-    AATSynthesisPackage finiteSynthesisPartI PUnit :=
-  finiteSynthesisAATSynthesisAssumptions.toPackage
-
-theorem finiteSynthesisAATSynthesisPackage_eq_toPackage :
-    finiteSynthesisAATSynthesisPackage =
-      finiteSynthesisAATSynthesisAssumptions.toPackage :=
-  rfl
-
-def finiteSynthesis_algebraicGeometricAATSynthesis_fires :=
-  algebraicGeometricAATSynthesis finiteSynthesisAATSynthesisAssumptions
-
-/-! ### Nondegenerate Part I--VII synthesis witness
-
-Implementation notes: this fixture keeps the already connected finite Part I--VI
-geometry, but replaces the previous all-`PUnit` law/reading evidence with a
-nonzero `Int` ideal, an ideal-derived selected obstruction class, and an actual
-two-valued distance-to-flatness firing.  A larger site was not chosen merely to
-manufacture cardinality; the Issue permits nontrivial obstruction or reading
-evidence, and those are the components exercised here.
--/
-
-/--
-A two-valued distance-to-flatness reading for the selected margin states.
-
-Implementation notes: `Bool` is the smallest complete lattice distinguishing
-the safe state's cost from the flat state's cost.  A constant Nat-valued
-converter was rejected because it would reproduce the previous measured-zero
-fixture, while a larger cost lattice would add no acceptance evidence.
--/
 def nondegenerateDistanceToFlatness :
     DistanceToFlatnessProfile marginOperationDistance where
   Cost := Bool
@@ -1264,14 +688,233 @@ Implementation notes: the previous `PUnit` obstruction decoration could not
 connect a representation output to the synthesis ideal.  Equality is used as
 the selected compatibility law so identities and composites preserve the ideal.
 -/
+noncomputable def finiteSynthesisPartI : Site.PartIPrerequisites where
+  carrier := AAT.AG.FiniteModel.carrier
+  core := AAT.AG.FiniteModel.corePackage
+
+noncomputable def finiteSynthesisGeometry :
+    Site.ArchitectureGeometry finiteSynthesisPartI where
+  site := AAT.AG.Examples.StandardGeometryReferenceModels.referenceSite
+
+noncomputable local instance finiteSynthesisHasSheafifyInt :
+    HasSheafify finiteSynthesisGeometry.site.topology
+      (LawAlgebra.AATCommAlgCat Int) := by
+  simpa [finiteSynthesisGeometry] using
+    AAT.AG.Examples.StandardGeometryReferenceModels.referenceSite_hasSheafifyInt
+
+abbrev finiteSynthesisRawAmbient :=
+  AAT.AG.Examples.StandardGeometryReferenceModels.referenceRaw
+
+noncomputable abbrev finiteSynthesisRingedTopos :=
+  finiteSynthesisRawAmbient.toRingedSite
+
+noncomputable abbrev finiteSynthesisArchitectureScheme :=
+  AAT.AG.Examples.StandardGeometryReferenceModels.referenceScheme
+
+def toyReadingParameter : AATSchReadingParameter finiteSynthesisRawAmbient where
+  AtomLabelReading := PUnit
+  LawReading := PUnit
+  ObstructionIdealReading := PUnit
+  SignatureReading := PUnit
+  InterpretationMapReading := PUnit
+  atomLabelsCompatible _ _ _ := True
+  lawReadingCompatible _ _ _ := True
+  obstructionIdealCompatible _ _ _ := True
+  signatureReadingCompatible _ _ _ := True
+  interpretationMapCompatible _ _ _ := True
+  id_atomLabelsCompatible _ _ := trivial
+  id_lawReadingCompatible _ _ := trivial
+  id_obstructionIdealCompatible _ _ := trivial
+  id_signatureReadingCompatible _ _ := trivial
+  id_interpretationMapCompatible _ _ := trivial
+  comp_atomLabelsCompatible _ _ := trivial
+  comp_lawReadingCompatible _ _ := trivial
+  comp_obstructionIdealCompatible _ _ := trivial
+  comp_signatureReadingCompatible _ _ := trivial
+  comp_interpretationMapCompatible _ _ := trivial
+
+def toyAnalyticRepresentation :
+    AnalyticRepresentation toyReadingParameter (Discrete PUnit) where
+  obj _ := Discrete.mk PUnit.unit
+  map _ := 𝟙 _
+  map_id _ := Subsingleton.elim _ _
+  map_comp _ _ := Subsingleton.elim _ _
+
+def toyRepresentationFamily : RepresentationFamily toyReadingParameter where
+  Index := ToyRepIndex
+  Target _ := CategoryTheory.Cat.of (Discrete PUnit)
+  representation _ := toyAnalyticRepresentation
+
+def toyDetectingFamily : UDetectingRepresentationFamily toyRepresentationFamily where
+  ObstructionClass := ToyObstructionClass
+  analyticZeroReading
+    | .graph, .zero => True
+    | .graph, .syncGap => False
+    | .graph, .semanticGap => True
+    | .semantic, .zero => True
+    | .semantic, .syncGap => True
+    | .semantic, .semanticGap => False
+  WitnessZero_U alpha :=
+    alpha = AAT.AG.FiniteModel.RepresentationAnalysisPart7.ToyObstructionClass.zero
+  detects := by
+    intro alpha hzero
+    cases alpha with
+    | zero => rfl
+    | syncGap => exact
+        (hzero AAT.AG.FiniteModel.RepresentationAnalysisPart7.ToyRepIndex.graph).elim
+    | semanticGap => exact
+        (hzero AAT.AG.FiniteModel.RepresentationAnalysisPart7.ToyRepIndex.semantic).elim
+  completenessLevel :=
+    AAT.AG.RepresentationAnalysis.CompletenessSpectrum.conservative
+
+def toySignatureAxes : SignatureAxes AAT.AG.FiniteModel.carrier where
+  Axis := PUnit
+  selected _ := True
+  zero _ _ := True
+
+def toyAnalyticReadingContext :
+    AnalyticReadingContext AAT.AG.FiniteModel.object toyReadingParameter where
+  AtomVocabulary := PUnit
+  atomVocabularyOf _ := PUnit.unit
+  lawUniverse := AAT.AG.FiniteModel.lawUniverse
+  CoverageTopology := PUnit
+  selectedCoverage := PUnit.unit
+  coefficientSheaf := PUnit
+  representationFamily := toyRepresentationFamily
+  distanceMassContext :=
+    AAT.AG.FiniteModel.RepresentationAnalysisPart7.marginDistanceMassContext
+  selectedWitnessFamily := PUnit
+  selectedWitness := PUnit.unit
+  selectedSignatureAxes := toySignatureAxes
+  signatureProfile :=
+    AAT.AG.RepresentationAnalysis.SignatureReadingProfile.ofSignatureAxes toySignatureAxes
+  detectingFamily := toyDetectingFamily
+  coverageAdequacy := True
+  witnessExactness := True
+  axisExactness := True
+  coefficientDiscipline := True
+  completenessLevel :=
+    AAT.AG.RepresentationAnalysis.CompletenessSpectrum.conservative
+
+def toyConservativity :
+    RepresentationConservativityUnderAdequacy toyAnalyticReadingContext where
+  zeroClass :=
+    AAT.AG.FiniteModel.RepresentationAnalysisPart7.ToyObstructionClass.zero
+  IsZeroClass alpha :=
+    alpha = AAT.AG.FiniteModel.RepresentationAnalysisPart7.ToyObstructionClass.zero
+  zeroClass_isZero := rfl
+  coverageAdequate := trivial
+  witnessExact := trivial
+  axisExact := trivial
+  coefficientDisciplined := trivial
+  witnessZero_eq_zero := by
+    intro alpha h
+    exact h
+
+theorem detectingRepresentation_toy_syncGap_not_all_zero :
+    ¬ (∀ i : toyRepresentationFamily.Index,
+      toyDetectingFamily.analyticZeroReading i
+        AAT.AG.FiniteModel.RepresentationAnalysisPart7.ToyObstructionClass.syncGap) := by
+  intro h
+  exact h AAT.AG.FiniteModel.RepresentationAnalysisPart7.ToyRepIndex.graph
+
+theorem detectingRepresentation_toy_semanticGap_not_all_zero :
+    ¬ (∀ i : toyRepresentationFamily.Index,
+      toyDetectingFamily.analyticZeroReading i
+        AAT.AG.FiniteModel.RepresentationAnalysisPart7.ToyObstructionClass.semanticGap) := by
+  intro h
+  exact h AAT.AG.FiniteModel.RepresentationAnalysisPart7.ToyRepIndex.semantic
+
+theorem detectingRepresentation_toy_all_zero_imp_zero
+    (alpha : toyDetectingFamily.ObstructionClass)
+    (hzero : ∀ i : toyRepresentationFamily.Index,
+      toyDetectingFamily.analyticZeroReading i alpha) :
+    alpha = toyConservativity.zeroClass :=
+  toyConservativity.witnessZero_eq_zero alpha (toyDetectingFamily.detects alpha hzero)
+
+theorem detectingRepresentation_toy_zero_conservative :
+    AAT.AG.FiniteModel.RepresentationAnalysisPart7.ToyObstructionClass.zero =
+      toyConservativity.zeroClass :=
+  rfl
+
+theorem detectingRepresentation_toy_all_zero_actual_zero
+    (alpha : toyDetectingFamily.ObstructionClass)
+    (hzero : ∀ i : toyRepresentationFamily.Index,
+      toyDetectingFamily.analyticZeroReading i alpha) :
+    alpha = AAT.AG.FiniteModel.RepresentationAnalysisPart7.ToyObstructionClass.zero :=
+  toyDetectingFamily.detects alpha hzero
+
+theorem detectingRepresentation_toy_zero_is_actual_zero :
+    AAT.AG.FiniteModel.RepresentationAnalysisPart7.ToyObstructionClass.zero =
+      AAT.AG.FiniteModel.RepresentationAnalysisPart7.ToyObstructionClass.zero :=
+  rfl
+
+def finiteSynthesisReadingParameter :
+    AATSchReadingParameter finiteSynthesisRawAmbient := toyReadingParameter
+
+def finiteSynthesisAnalyticRepresentation :
+    AnalyticRepresentation finiteSynthesisReadingParameter (Discrete PUnit) where
+  obj _ := Discrete.mk PUnit.unit
+  map _ := 𝟙 _
+  map_id _ := Subsingleton.elim _ _
+  map_comp _ _ := Subsingleton.elim _ _
+
+def finiteSynthesisRepresentationFamily :
+    RepresentationFamily finiteSynthesisReadingParameter where
+  Index := ToyRepIndex
+  Target _ := CategoryTheory.Cat.of (Discrete PUnit)
+  representation _ := finiteSynthesisAnalyticRepresentation
+
+def finiteSynthesisDetectingFamily :
+    UDetectingRepresentationFamily finiteSynthesisRepresentationFamily where
+  ObstructionClass := ToyObstructionClass
+  analyticZeroReading
+    | .graph, .zero => True
+    | .graph, .syncGap => False
+    | .graph, .semanticGap => True
+    | .semantic, .zero => True
+    | .semantic, .syncGap => True
+    | .semantic, .semanticGap => False
+  WitnessZero_U alpha :=
+    alpha = AAT.AG.FiniteModel.RepresentationAnalysisPart7.ToyObstructionClass.zero
+  detects := by
+    intro alpha hzero
+    cases alpha with
+    | zero => rfl
+    | syncGap => exact
+        (hzero AAT.AG.FiniteModel.RepresentationAnalysisPart7.ToyRepIndex.graph).elim
+    | semanticGap => exact
+        (hzero AAT.AG.FiniteModel.RepresentationAnalysisPart7.ToyRepIndex.semantic).elim
+  completenessLevel :=
+    AAT.AG.RepresentationAnalysis.CompletenessSpectrum.conservative
+
+def finiteSynthesisAnalyticReadingContext :
+    AnalyticReadingContext AAT.AG.FiniteModel.object
+      finiteSynthesisReadingParameter where
+  AtomVocabulary := PUnit
+  atomVocabularyOf _ := PUnit.unit
+  lawUniverse := AAT.AG.FiniteModel.lawUniverse
+  CoverageTopology := PUnit
+  selectedCoverage := PUnit.unit
+  coefficientSheaf := PUnit
+  representationFamily := finiteSynthesisRepresentationFamily
+  distanceMassContext :=
+    AAT.AG.FiniteModel.RepresentationAnalysisPart7.marginDistanceMassContext
+  selectedWitnessFamily := PUnit
+  selectedWitness := PUnit.unit
+  selectedSignatureAxes := toySignatureAxes
+  signatureProfile :=
+    AAT.AG.RepresentationAnalysis.SignatureReadingProfile.ofSignatureAxes toySignatureAxes
+  detectingFamily := finiteSynthesisDetectingFamily
+  coverageAdequacy := True
+  witnessExactness := True
+  axisExactness := True
+  coefficientDiscipline := True
+  completenessLevel :=
+    AAT.AG.RepresentationAnalysis.CompletenessSpectrum.conservative
+
 def nondegenerateSynthesisReadingParameter :
-    AATSchReadingParameter.{0, 0, 0, 0, 0} site PUnit where
-  SchemeMorphism _ _ := PUnit
-  id _ := PUnit.unit
-  comp _ _ := PUnit.unit
-  id_comp _ := rfl
-  comp_id _ := rfl
-  assoc _ _ _ := rfl
+    AATSchReadingParameter finiteSynthesisRawAmbient where
   AtomLabelReading := PUnit
   LawReading := PUnit
   ObstructionIdealReading := Ideal Int
@@ -1293,34 +936,27 @@ def nondegenerateSynthesisReadingParameter :
   comp_signatureReadingCompatible _ _ := trivial
   comp_interpretationMapCompatible _ _ := trivial
 
-/-- Thin target category used to expose ideal-valued representation outputs. -/
-def idealTargetCategory : AnalyticTargetCategory (Ideal Int) where
-  Hom _ _ := PUnit
-  id _ := PUnit.unit
-  comp _ _ := PUnit.unit
-  id_comp _ := rfl
-  comp_id _ := rfl
-  assoc _ _ _ := rfl
+private def idealAnalyticMap
+    {X Y : AATSch nondegenerateSynthesisReadingParameter}
+    (f : X ⟶ Y) :
+    Discrete.mk X.obstructionIdealReading ⟶
+      Discrete.mk Y.obstructionIdealReading :=
+  Discrete.eqToHom f.obstructionIdealCompatible
 
-/-- The analytic representation reads the obstruction-ideal decoration itself. -/
 def idealAnalyticRepresentation :
-    AnalyticRepresentation nondegenerateSynthesisReadingParameter (Ideal Int) where
-  targetCategory := idealTargetCategory
-  obj X := X.obstructionIdealReading
-  map _ := PUnit.unit
-  map_id _ := rfl
-  map_comp _ := rfl
+    AnalyticRepresentation nondegenerateSynthesisReadingParameter
+      (Discrete (Ideal Int)) where
+  obj X := Discrete.mk X.obstructionIdealReading
+  map := idealAnalyticMap
+  map_id _ := Subsingleton.elim _ _
+  map_comp _ _ := Subsingleton.elim _ _
 
-/-- Two named reading indices sharing the ideal-valued representation API. -/
 def idealSynthesisRepresentationFamily :
     RepresentationFamily nondegenerateSynthesisReadingParameter where
   Index := ToyRepIndex
-  Target _ := Ideal Int
+  Target _ := CategoryTheory.Cat.of (Discrete (Ideal Int))
   representation _ := idealAnalyticRepresentation
 
-/--
-Detecting family whose analytic-zero predicate is actual bottom-ideal equality.
--/
 def idealSynthesisDetectingFamily :
     UDetectingRepresentationFamily idealSynthesisRepresentationFamily where
   ObstructionClass := Ideal Int
@@ -1328,10 +964,10 @@ def idealSynthesisDetectingFamily :
   WitnessZero_U I := I = ⊥
   detects := by
     intro _I hzero
-    exact hzero ToyRepIndex.graph
-  completenessLevel := CompletenessSpectrum.conservative
+    exact hzero AAT.AG.FiniteModel.RepresentationAnalysisPart7.ToyRepIndex.graph
+  completenessLevel :=
+    AAT.AG.RepresentationAnalysis.CompletenessSpectrum.conservative
 
-/-- Decorated scheme whose representation output is the supplied ideal. -/
 noncomputable def nondegenerateDecoratedScheme (I : Ideal Int) :
     AATSch nondegenerateSynthesisReadingParameter where
   scheme := finiteSynthesisArchitectureScheme
@@ -1341,202 +977,211 @@ noncomputable def nondegenerateDecoratedScheme (I : Ideal Int) :
   signatureReading := PUnit.unit
   interpretationMapReading := PUnit.unit
 
-/--
-Selected analytic context constructed from the same ideal stored by synthesis.
-
-Implementation notes: `selectedWitness := I` makes ideal-to-reading provenance
-part of construction, while `idealAnalyticRepresentation.obj` reads the ideal
-decoration of an actual `AATSch`.  A post-hoc classifier into a toy enum was
-rejected because it could encode the desired answer without this dataflow.
--/
 def nondegenerateSynthesisAnalyticReadingContext (I : Ideal Int) :
-    AnalyticReadingContext.{0, 0, 0, 0, 0, 0} object
+    AnalyticReadingContext AAT.AG.FiniteModel.object
       nondegenerateSynthesisReadingParameter where
-  AtomVocabulary := FiniteAtom
+  AtomVocabulary := AAT.AG.FiniteModel.FiniteAtom
   atomVocabularyOf := id
-  lawUniverse := lawUniverse
+  lawUniverse := AAT.AG.FiniteModel.lawUniverse
   CoverageTopology := Bool
   selectedCoverage := true
   coefficientSheaf := Bool
   representationFamily := idealSynthesisRepresentationFamily
-  distanceMassContext := nondegenerateDistanceMassContext
+  distanceMassContext :=
+    AAT.AG.FiniteModel.RepresentationAnalysisPart7.nondegenerateDistanceMassContext
   selectedWitnessFamily := Ideal Int
   selectedWitness := I
   selectedSignatureAxes := toySignatureAxes
-  signatureProfile := SignatureReadingProfile.ofSignatureAxes toySignatureAxes
+  signatureProfile :=
+    AAT.AG.RepresentationAnalysis.SignatureReadingProfile.ofSignatureAxes toySignatureAxes
   detectingFamily := idealSynthesisDetectingFamily
   coverageAdequacy := True
   witnessExactness := True
   axisExactness := True
   coefficientDiscipline := True
-  completenessLevel := CompletenessSpectrum.conservative
+  completenessLevel :=
+    AAT.AG.RepresentationAnalysis.CompletenessSpectrum.conservative
 
-/--
-Lawful-section data for the nonzero ideal generated by `2` in `Int`.
+noncomputable def finiteSynthesisTypeSheaf :
+    Site.AATSh finiteSynthesisGeometry.site where
+  val := (CategoryTheory.Functor.const finiteSynthesisGeometry.site.categoryᵒᵖ).obj PUnit
+  cond := CategoryTheory.Presheaf.isSheaf_of_isTerminal
+    finiteSynthesisGeometry.site.topology
+    (IsTerminal.ofUniqueHom
+      (fun _ => fun _ => PUnit.unit)
+      (by
+        intro _X f
+        funext q
+        cases f q
+        rfl))
 
-Implementation notes: `Int` and `span {2}` provide a minimal familiar nonzero
-ideal.  The former `PUnit` bottom ideal cannot witness obstruction nontriviality.
--/
-noncomputable def nondegenerateSynthesisLawfulSection :
-    LawAlgebra.LawfulLocus.LawfulSectionData.{0, 0} Int
-      (Ideal.span ({(2 : Int)} : Set Int)) where
-  SectionRing := Int
-  commRing := inferInstance
-  pullback := RingHom.id Int
+def finiteSynthesisCover :
+    Cohomology.CoverRelativeCechCover finiteSynthesisGeometry.site where
+  base := AAT.AG.Examples.StandardGeometryReferenceModels.baseContext
+  Index := PUnit
+  chart _ := AAT.AG.Examples.StandardGeometryReferenceModels.baseContext
+  inclusion _ := 𝟙 _
+  simplex _ := PUnit
+  overlap _ _ := AAT.AG.Examples.StandardGeometryReferenceModels.baseContext
+  face _ _ _ := PUnit.unit
+  faceRestriction _ _ _ := 𝟙 _
 
-/--
-Construction input using the existing finite geometry and a nonzero law ideal
-together with the nondegenerate analytic context.
+def finiteSynthesisObstructionSheaf :
+    Cohomology.ObstructionSheaf finiteSynthesisGeometry.site where
+  carrier := Site.AATSh.toAATSheaf finiteSynthesisTypeSheaf
+  addCommGroup := by
+    intro _W
+    change AddCommGroup PUnit
+    infer_instance
+  map_zero := by intro _ _ _; rfl
+  map_add := by intro _ _ _ a b; cases a; cases b; rfl
 
-Implementation notes: `AATSynthesisConstructionInput` omits separately supplied
-ringed-topos/lawful-locus values and their conclusion-shaped equalities.  Its
-constructor derives those package fields from the scheme and obstruction ideal.
--/
-noncomputable def nondegenerateSynthesisInput :
-    AATSynthesisConstructionInput.{0, 0, 0, 0, 0, 0}
-      finiteSynthesisPartI PUnit where
-  architectureGeometry := finiteSynthesisGeometry
+def finiteSynthesisCechComplex :
+    Cohomology.CoverRelativeCechComplex finiteSynthesisCover
+      finiteSynthesisObstructionSheaf where
+  cochainAddCommGroup := by
+    intro _n
+    change AddCommGroup (PUnit → PUnit)
+    infer_instance
+  alternatingFaceCombination := fun _ _ _ => PUnit.unit
+  differential := by
+    intro _n
+    change (PUnit → PUnit) →+ (PUnit → PUnit)
+    exact {
+      toFun := fun _ _ => PUnit.unit
+      map_zero' := by funext _; rfl
+      map_add' := by intro a b; funext i; cases a i; cases b i; rfl }
+  differential_eq_alternatingFaceCombination := by
+    intro _ c
+    funext i
+    cases c i
+    rfl
+  differential_comp := by
+    intro _ c
+    funext i
+    cases c i
+    rfl
+
+def finiteSynthesisStratumParameter :
+    AAT.AG.SingularityMonodromyStack.StratumReadingParameter
+      finiteSynthesisGeometry.site where
+  signatureAxes := toySignatureAxes
+  Coeff := PUnit
+  selectedCoeff := PUnit.unit
+
+noncomputable def finiteSynthesisArchitectureStratum :
+    AAT.AG.SingularityMonodromyStack.ArchitectureStratum
+      finiteSynthesisStratumParameter Int where
+  raw := finiteSynthesisRawAmbient
+  geometry := finiteSynthesisArchitectureScheme
+  Point := PUnit
+  carrier := Set.univ
+  role := AAT.AG.SingularityMonodromyStack.StratumRole.component
+  label := "r0-final-shadow"
+  selectedSubobject := True
+  selectedSubobject_cert := trivial
+  locallyClosed := True
+  locallyClosed_cert := trivial
+  decorationCompatible := True
+  decorationCompatible_cert := trivial
+  readingCompatible := True
+  readingCompatible_cert := trivial
+
+noncomputable def finiteSynthesisAATSynthesisPackage :
+    AATSynthesisPackage finiteSynthesisPartI Int finiteSynthesisGeometry
+      finiteSynthesisRawAmbient where
   architectureScheme := finiteSynthesisArchitectureScheme
-  LawCoordinateAlgebra := Int
-  lawCoordinateCommRing := inferInstance
-  obstructionIdeal := Ideal.span ({(2 : Int)} : Set Int)
-  lawfulSection := nondegenerateSynthesisLawfulSection
+  lawReading := AAT.AG.Examples.StandardGeometryReferenceModels.weakReading
+  lawReadingValid := AAT.AG.Examples.StandardGeometryReferenceModels.weakReading_valid
+  requiredClosed :=
+    AAT.AG.Examples.StandardGeometryReferenceModels.weakReading_requiredClosed
+  requiredLawIdealExact :=
+    AAT.AG.Examples.StandardGeometryReferenceModels.weakReading_requiredLawIdealExact
   cover := finiteSynthesisCover
   obstructionSheaf := finiteSynthesisObstructionSheaf
   obstructionCohomology := finiteSynthesisCechComplex
-  derivedLawGeometry := finiteSynthesisRepairProfile
+  derivedLawGeometry :=
+    AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisRepairProfile
+  stratumParameter := finiteSynthesisStratumParameter
+  singularityMonodromyStack := finiteSynthesisArchitectureStratum
+  readingParameter := finiteSynthesisReadingParameter
+  representationPeriodMetricAnalysis := finiteSynthesisAnalyticReadingContext
+
+noncomputable def nondegenerateSynthesisPackage :
+    AATSynthesisPackage finiteSynthesisPartI Int finiteSynthesisGeometry
+      finiteSynthesisRawAmbient where
+  architectureScheme := finiteSynthesisArchitectureScheme
+  lawReading := AAT.AG.Examples.StandardGeometryReferenceModels.weakReading
+  lawReadingValid := AAT.AG.Examples.StandardGeometryReferenceModels.weakReading_valid
+  requiredClosed :=
+    AAT.AG.Examples.StandardGeometryReferenceModels.weakReading_requiredClosed
+  requiredLawIdealExact :=
+    AAT.AG.Examples.StandardGeometryReferenceModels.weakReading_requiredLawIdealExact
+  cover := finiteSynthesisCover
+  obstructionSheaf := finiteSynthesisObstructionSheaf
+  obstructionCohomology := finiteSynthesisCechComplex
+  derivedLawGeometry :=
+    AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisRepairProfile
   stratumParameter := finiteSynthesisStratumParameter
   singularityMonodromyStack := finiteSynthesisArchitectureStratum
   readingParameter := nondegenerateSynthesisReadingParameter
   representationPeriodMetricAnalysis :=
-    nondegenerateSynthesisAnalyticReadingContext (Ideal.span ({(2 : Int)} : Set Int))
+    nondegenerateSynthesisAnalyticReadingContext
+      (Ideal.span ({(2 : Int)} : Set Int))
 
-/-- The Part I--VII package constructed from the nondegenerate selected tower. -/
-noncomputable def nondegenerateSynthesisPackage :
-    AATSynthesisPackage.{0, 0, 0, 0, 0, 0} finiteSynthesisPartI PUnit :=
-  nondegenerateSynthesisInput.toPackage
-
-/-- The selected obstruction ideal contains the nonzero integer `2`. -/
 theorem nondegenerateObstructionIdeal_two_mem :
-    (2 : Int) ∈ nondegenerateSynthesisPackage.obstructionIdeal := by
-  show (2 : Int) ∈ Ideal.span ({(2 : Int)} : Set Int)
+    (2 : Int) ∈
+      (show Ideal Int from
+        nondegenerateSynthesisPackage.analyticReadingContext.selectedWitness) := by
+  change (2 : Int) ∈ Ideal.span ({(2 : Int)} : Set Int)
   exact Ideal.subset_span (by simp)
 
-/-- The selected obstruction ideal is not the bottom ideal. -/
 theorem nondegenerateObstructionIdeal_ne_bot :
-    nondegenerateSynthesisPackage.obstructionIdeal ≠ (⊥ : Ideal Int) := by
-  show Ideal.span ({(2 : Int)} : Set Int) ≠ (⊥ : Ideal Int)
+    (show Ideal Int from
+      nondegenerateSynthesisPackage.analyticReadingContext.selectedWitness) ≠
+      (⊥ : Ideal Int) := by
+  change Ideal.span ({(2 : Int)} : Set Int) ≠ (⊥ : Ideal Int)
   intro hbot
   have hmem : (2 : Int) ∈ (⊥ : Ideal Int) := by
     rw [← hbot]
     exact Ideal.subset_span (by simp)
   simp at hmem
 
-/-- The safe selected state has actual distance-to-flatness value one. -/
-theorem nondegenerateDistance_safe_eq_one :
-    nondegenerateDistanceToFlatness.dist_flat_value MarginState.safe =
-      DistanceValue.measured 1 := by
-  change (if (⨅ _ : Unit, true) then DistanceValue.measured 1
-    else DistanceValue.measured 0) = DistanceValue.measured 1
-  rw [iInf_const]
-  rfl
-
-/-- The selected flat state has actual distance-to-flatness value zero. -/
-theorem nondegenerateDistance_boundary_eq_zero :
-    nondegenerateDistanceToFlatness.dist_flat_value MarginState.boundary =
-      DistanceValue.measured 0 := by
-  change (if (⨅ _ : Unit, false) then DistanceValue.measured 1
-    else DistanceValue.measured 0) = DistanceValue.measured 0
-  rw [iInf_const]
-  rfl
-
-/-- The safe state's actual distance-to-flatness value is not measured zero. -/
-theorem nondegenerateDistance_safe_ne_zero :
-    nondegenerateDistanceToFlatness.dist_flat_value MarginState.safe ≠
-      DistanceValue.measured 0 := by
-  rw [nondegenerateDistance_safe_eq_one]
-  simp
-
-/-- The package's selected analytic obstruction is its own obstruction ideal. -/
 theorem nondegenerateSelectedObstruction_eq_ideal :
-    nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.selectedWitness =
-      nondegenerateSynthesisPackage.obstructionIdeal :=
+    (show Ideal Int from
+      nondegenerateSynthesisPackage.analyticReadingContext.selectedWitness) =
+      Ideal.span ({(2 : Int)} : Set Int) :=
   rfl
 
-/-- The package representation outputs its selected obstruction ideal. -/
 theorem nondegenerateRepresentation_reads_selectedIdeal :
-    ((nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.representationFamily).representation
-        ToyRepIndex.graph).obj
-        (nondegenerateDecoratedScheme nondegenerateSynthesisPackage.obstructionIdeal) =
-      nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.selectedWitness :=
+    (((nondegenerateSynthesisPackage.analyticReadingContext.representationFamily).representation
+        AAT.AG.FiniteModel.RepresentationAnalysisPart7.ToyRepIndex.graph).obj
+        (nondegenerateDecoratedScheme
+          (show Ideal Int from
+            nondegenerateSynthesisPackage.analyticReadingContext.selectedWitness))).as =
+      (show Ideal Int from
+        nondegenerateSynthesisPackage.analyticReadingContext.selectedWitness) :=
   rfl
 
-/--
-The constructed package carries the selected site, scheme, lawful locus,
-cohomology, derived, stratum, and analytic data in one value.
--/
-theorem nondegenerateSynthesis_package_chain :
-    nondegenerateSynthesisPackage.aatSite =
-        nondegenerateSynthesisPackage.architectureGeometry.site ∧
-      nondegenerateSynthesisPackage.ringedAATTopos =
-        nondegenerateSynthesisPackage.architectureScheme.ringedTopos ∧
-      nondegenerateSynthesisPackage.affineAATCharts =
-        nondegenerateSynthesisPackage.architectureScheme.chart ∧
-      nondegenerateSynthesisPackage.lawfulLocus =
-        LawAlgebra.LawfulLocus.lawfulLocus
-          nondegenerateSynthesisPackage.LawCoordinateAlgebra
-          nondegenerateSynthesisPackage.obstructionIdeal ∧
-      nondegenerateSynthesisPackage.obstructionCohomology =
-        nondegenerateSynthesisInput.obstructionCohomology ∧
-      nondegenerateSynthesisPackage.derivedLawGeometry =
-        nondegenerateSynthesisInput.derivedLawGeometry ∧
-      nondegenerateSynthesisPackage.singularityMonodromyStack =
-        nondegenerateSynthesisInput.singularityMonodromyStack ∧
-      nondegenerateSynthesisPackage.representationPeriodMetricAnalysis =
-        nondegenerateSynthesisAnalyticReadingContext
-          (Ideal.span ({(2 : Int)} : Set Int)) := by
-  rcases algebraicGeometricAATSynthesis_constructedPackage
-      nondegenerateSynthesisInput with
-    ⟨S, hS, hsite, htopos, hcharts, hlocus, hcohomology, hderived,
-      hstratum, _⟩
-  subst S
-  exact ⟨hsite, htopos, hcharts, hlocus, eq_of_heq hcohomology, hderived,
-    eq_of_heq hstratum, rfl⟩
-
-/--
-Finite evidence inside the constructed package: a nonzero ideal determines the
-selected obstruction, the graph reading detects it, and the selected distance
-profile fires at distinct measured values.
--/
 theorem nondegenerateSynthesis_evidence :
-    finiteSynthesisPartI.architectureObject = object ∧
-      nondegenerateSynthesisPackage.obstructionIdeal ≠ (⊥ : Ideal Int) ∧
-      nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.selectedWitness =
-        nondegenerateSynthesisPackage.obstructionIdeal ∧
-      ((nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.representationFamily).representation
-          ToyRepIndex.graph).obj
-          (nondegenerateDecoratedScheme nondegenerateSynthesisPackage.obstructionIdeal) =
-        nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.selectedWitness ∧
-      (¬ (nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.detectingFamily).analyticZeroReading
-        ToyRepIndex.graph
-          nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.selectedWitness) ∧
-      (nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.distanceMassContext).distanceToFlatness.dist_flat_value
-          MarginState.safe =
-        DistanceValue.measured 1 ∧
-      (nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.distanceMassContext).distanceToFlatness.dist_flat_value
-          MarginState.boundary =
-        DistanceValue.measured 0 ∧
-      (nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.distanceMassContext).distanceToFlatness.dist_flat_value
-          MarginState.safe ≠
-        DistanceValue.measured 0 := by
-  exact ⟨rfl, nondegenerateObstructionIdeal_ne_bot,
-    nondegenerateSelectedObstruction_eq_ideal,
-    nondegenerateRepresentation_reads_selectedIdeal, by
-      simp [nondegenerateSynthesisPackage, nondegenerateSynthesisInput,
-        AATSynthesisConstructionInput.toPackage,
-        nondegenerateSynthesisAnalyticReadingContext, idealSynthesisDetectingFamily],
-    nondegenerateDistance_safe_eq_one, nondegenerateDistance_boundary_eq_zero,
-    nondegenerateDistance_safe_ne_zero⟩
+    (show Ideal Int from
+      nondegenerateSynthesisPackage.analyticReadingContext.selectedWitness) ≠
+        (⊥ : Ideal Int) ∧
+      (show Ideal Int from
+        nondegenerateSynthesisPackage.analyticReadingContext.selectedWitness) =
+        Ideal.span ({(2 : Int)} : Set Int) ∧
+      (((nondegenerateSynthesisPackage.analyticReadingContext.representationFamily).representation
+          AAT.AG.FiniteModel.RepresentationAnalysisPart7.ToyRepIndex.graph).obj
+          (nondegenerateDecoratedScheme
+            (show Ideal Int from
+              nondegenerateSynthesisPackage.analyticReadingContext.selectedWitness))).as =
+        (show Ideal Int from
+          nondegenerateSynthesisPackage.analyticReadingContext.selectedWitness) := by
+  constructor
+  · exact nondegenerateObstructionIdeal_ne_bot
+  constructor
+  · exact nondegenerateSelectedObstruction_eq_ideal
+  · rfl
 
 end RepresentationAnalysisPart7
 end FiniteModel

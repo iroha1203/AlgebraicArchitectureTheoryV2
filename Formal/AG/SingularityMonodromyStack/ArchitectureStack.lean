@@ -1,4 +1,5 @@
 import Formal.AG.SingularityMonodromyStack.RefactorGalois
+import Formal.AG.LawAlgebra.StandardScheme
 
 noncomputable section
 
@@ -226,7 +227,9 @@ structure AlgebraicArchitectureStackData {U : AtomCarrier.{u}} {A : Architecture
   architectureStack : ArchitectureStack P
   representableDiagonal : Prop
   representableDiagonal_cert : representableDiagonal
-  atlasScheme : LawAlgebra.Scheme.ArchitectureScheme.{u, v, w, x, y} S k
+  raw : LawAlgebra.RawAmbientRestrictionSystem S k
+  [sheafify : CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+  atlasScheme : LawAlgebra.StandardArchitectureScheme raw
   atlasAdmissible : Prop
   atlasAdmissible_cert : atlasAdmissible
   obstructionIdealsDescend : Prop
@@ -249,7 +252,7 @@ def AlgebraicArchitectureStack {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
     {B : ArchitectureStackBase.{z}}
     (P : ArchitecturePresheaf.{z} B) : Prop :=
-  ∃ _ : AlgebraicArchitectureStackData.{u, v, w, x, y, z, z} (S := S) (k := k) P, True
+  ∃ _ : AlgebraicArchitectureStackData.{u, v, z} (S := S) (k := k) P, True
 
 namespace AlgebraicArchitectureStackData
 
@@ -260,37 +263,37 @@ variable {P : ArchitecturePresheaf.{z} B}
 
 /-- VI.定義13.3: the diagonal is selected representable. -/
 theorem representableDiagonal_holds
-    (X : AlgebraicArchitectureStackData.{u, v, w, x, y, z} (S := S) (k := k) P) :
+    (X : AlgebraicArchitectureStackData.{u, v, z} (S := S) (k := k) P) :
     X.representableDiagonal :=
   X.representableDiagonal_cert
 
 /-- VI.定義13.3: the selected architecture-scheme atlas is admissible. -/
 theorem atlasAdmissible_holds
-    (X : AlgebraicArchitectureStackData.{u, v, w, x, y, z} (S := S) (k := k) P) :
+    (X : AlgebraicArchitectureStackData.{u, v, z} (S := S) (k := k) P) :
     X.atlasAdmissible :=
   X.atlasAdmissible_cert
 
 /-- VI.定義13.3: obstruction ideals descend along the selected atlas. -/
 theorem obstructionIdealsDescend_holds
-    (X : AlgebraicArchitectureStackData.{u, v, w, x, y, z} (S := S) (k := k) P) :
+    (X : AlgebraicArchitectureStackData.{u, v, z} (S := S) (k := k) P) :
     X.obstructionIdealsDescend :=
   X.obstructionIdealsDescend_cert
 
 /-- VI.定義13.3: law sheaves descend along the selected atlas. -/
 theorem lawSheavesDescend_holds
-    (X : AlgebraicArchitectureStackData.{u, v, w, x, y, z} (S := S) (k := k) P) :
+    (X : AlgebraicArchitectureStackData.{u, v, z} (S := S) (k := k) P) :
     X.lawSheavesDescend :=
   X.lawSheavesDescend_cert
 
 /-- VI.定義13.3: signature sheaves descend along the selected atlas. -/
 theorem signatureSheavesDescend_holds
-    (X : AlgebraicArchitectureStackData.{u, v, w, x, y, z} (S := S) (k := k) P) :
+    (X : AlgebraicArchitectureStackData.{u, v, z} (S := S) (k := k) P) :
     X.signatureSheavesDescend :=
   X.signatureSheavesDescend_cert
 
 /-- VI.定義13.3: structure sheaves descend along the selected atlas. -/
 theorem structureSheavesDescend_holds
-    (X : AlgebraicArchitectureStackData.{u, v, w, x, y, z} (S := S) (k := k) P) :
+    (X : AlgebraicArchitectureStackData.{u, v, z} (S := S) (k := k) P) :
     X.structureSheavesDescend :=
   X.structureSheavesDescend_cert
 

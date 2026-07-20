@@ -125,7 +125,9 @@ compatibility package is supplied.
 -/
 def toStrictPeriodData
     {k : Type v} [CommRing k]
-    {p : AATSchReadingParameter.{u, v, w, x, y} S k}
+    {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    {p : AATSchReadingParameter.{u, v, w, x} raw}
     {F : RepresentationFamily p} {X : AATSch p}
     (ρ : FiniteCechStrictPeriodRepresentative K C P)
     (i : F.Index) : StrictPeriodData F X where
@@ -150,7 +152,9 @@ representative is the selected cochain-chain pairing value.
 -/
 theorem toStrictPeriodData_strictObstructionPeriod
     {k : Type v} [CommRing k]
-    {p : AATSchReadingParameter.{u, v, w, x, y} S k}
+    {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    {p : AATSchReadingParameter.{u, v, w, x} raw}
     {F : RepresentationFamily p} {X : AATSch p}
     (ρ : FiniteCechStrictPeriodRepresentative K C P)
     (i : F.Index) :
@@ -232,7 +236,9 @@ periods under the same finite Cech compatibility package.
 -/
 theorem strictObstructionPeriod_wellDefined
     {k : Type v} [CommRing k]
-    {p : AATSchReadingParameter.{u, v, w, x, y} S k}
+    {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    {p : AATSchReadingParameter.{u, v, w, x} raw}
     {F : RepresentationFamily p} {X : AATSch p}
     (i : F.Index)
     (H : FiniteCechStrictPeriodRepresentativeCompatibility ρ ρ') :
@@ -250,7 +256,9 @@ structure FiniteCechStrictPeriodContext {U : AtomCarrier.{u}}
     {𝒰 : Cohomology.CoverRelativeCechCover S}
     {Ob : Cohomology.ObstructionSheaf S}
     {k : Type v} [CommRing k]
-    {p : AATSchReadingParameter.{u, v, w, x, y} S k}
+    {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    {p : AATSchReadingParameter.{u, v, w, x} raw}
     (F : RepresentationFamily p) (X : AATSch p)
     (K : Cohomology.CoverRelativeCechComplex 𝒰 Ob) where
   chainComplex : Cohomology.FiniteCechChainComplex.{u}
@@ -266,7 +274,9 @@ variable {S : Site.AATSite A}
 variable {𝒰 : Cohomology.CoverRelativeCechCover S}
 variable {Ob : Cohomology.ObstructionSheaf S}
 variable {k : Type v} [CommRing k]
-variable {p : AATSchReadingParameter.{u, v, w, x, y} S k}
+variable {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+variable [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+variable {p : AATSchReadingParameter.{u, v, w, x} raw}
 variable {F : RepresentationFamily p} {X : AATSch p}
 variable {K : Cohomology.CoverRelativeCechComplex 𝒰 Ob}
 
@@ -366,7 +376,9 @@ structure FinitePosetCechStrictPeriodContext {U : AtomCarrier.{u}}
     {Cpos : Site.FinitePosetCechComplex Kreg}
     {Ob : Cohomology.ObstructionSheaf S}
     {k : Type v} [CommRing k]
-    {p : AATSchReadingParameter.{u, v, w, x, y} S k}
+    {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    {p : AATSchReadingParameter.{u, v, w, x} raw}
     (F : RepresentationFamily p) (X : AATSch p)
     (D : Cohomology.FinitePosetCechComparisonData Cpos Ob) where
   finiteCechContext :
@@ -384,7 +396,9 @@ variable {Kreg : Site.FinitePosetAATSiteRegime S}
 variable {Cpos : Site.FinitePosetCechComplex Kreg}
 variable {Ob : Cohomology.ObstructionSheaf S}
 variable {k : Type v} [CommRing k]
-variable {p : AATSchReadingParameter.{u, v, w, x, y} S k}
+variable {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+variable [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+variable {p : AATSchReadingParameter.{u, v, w, x} raw}
 variable {F : RepresentationFamily p} {X : AATSch p}
 variable {D : Cohomology.FinitePosetCechComparisonData Cpos Ob}
 

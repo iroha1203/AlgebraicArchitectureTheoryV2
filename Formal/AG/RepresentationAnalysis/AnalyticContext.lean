@@ -33,8 +33,10 @@ assumptions.
 -/
 structure UDetectingRepresentationFamily {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
     {S : Site.AATSite Obj} {k : Type v} [CommRing k]
-    {p : AATSchReadingParameter.{u, v, w, x, y} S k}
-    (F : RepresentationFamily.{u, v, w, x, y, z} p) where
+    {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    {p : AATSchReadingParameter raw}
+    (F : RepresentationFamily p) where
   ObstructionClass : Type z
   analyticZeroReading : F.Index -> ObstructionClass -> Prop
   WitnessZero_U : ObstructionClass -> Prop
@@ -47,12 +49,14 @@ namespace UDetectingRepresentationFamily
 
 variable {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
 variable {S : Site.AATSite Obj} {k : Type v} [CommRing k]
-variable {p : AATSchReadingParameter.{u, v, w, x, y} S k}
-variable {F : RepresentationFamily.{u, v, w, x, y, z} p}
+variable {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+variable [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+variable {p : AATSchReadingParameter raw}
+variable {F : RepresentationFamily p}
 
 /-- VII.定義15.3: apply the selected `U`-detecting certificate. -/
 theorem witnessZero_of_all_readings_zero
-    (D : UDetectingRepresentationFamily.{u, v, w, x, y, z} F)
+    (D : UDetectingRepresentationFamily F)
     (alpha : D.ObstructionClass)
     (hzero : ∀ i : F.Index, D.analyticZeroReading i alpha) :
     D.WitnessZero_U alpha :=
@@ -60,7 +64,7 @@ theorem witnessZero_of_all_readings_zero
 
 /-- VII.定義15.3: expose the selected completeness-spectrum label. -/
 def selectedCompletenessLevel
-    (D : UDetectingRepresentationFamily.{u, v, w, x, y, z} F) :
+    (D : UDetectingRepresentationFamily F) :
     CompletenessSpectrum :=
   D.completenessLevel
 
@@ -77,14 +81,16 @@ explicit assumptions in later results.
 -/
 structure AnalyticReadingContext {U : AtomCarrier.{u}} (Obj : ArchitectureObject U)
     {S : Site.AATSite Obj} {k : Type v} [CommRing k]
-    (p : AATSchReadingParameter.{u, v, w, x, y} S k) where
+    {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    (p : AATSchReadingParameter raw) where
   AtomVocabulary : Type u
   atomVocabularyOf : U.Atom -> AtomVocabulary
   lawUniverse : LawUniverse U
   CoverageTopology : Type w
   selectedCoverage : CoverageTopology
   coefficientSheaf : Type z
-  representationFamily : RepresentationFamily.{u, v, w, x, y, z} p
+  representationFamily : RepresentationFamily p
   distanceMassContext : DistanceFlatnessMassContext Obj
   selectedWitnessFamily : Type z
   selectedWitness : selectedWitnessFamily
@@ -101,56 +107,58 @@ namespace AnalyticReadingContext
 
 variable {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
 variable {S : Site.AATSite Obj} {k : Type v} [CommRing k]
-variable {p : AATSchReadingParameter.{u, v, w, x, y} S k}
+variable {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+variable [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+variable {p : AATSchReadingParameter raw}
 
 /-- VII.定義14.1: expose the selected representation family. -/
-def Rep (C : AnalyticReadingContext.{u, v, w, x, y, z} Obj p) :
-    RepresentationFamily.{u, v, w, x, y, z} p :=
+def Rep (C : AnalyticReadingContext Obj p) :
+    RepresentationFamily p :=
   C.representationFamily
 
 /-- VII.定義14.1: expose the selected distance / obstruction-mass profile. -/
-def distanceProfile (C : AnalyticReadingContext.{u, v, w, x, y, z} Obj p) :
+def distanceProfile (C : AnalyticReadingContext Obj p) :
     DistanceFlatnessMassContext Obj :=
   C.distanceMassContext
 
 /-- VII.定義14.1: expose the selected signature axes. -/
-def signatureAxes (C : AnalyticReadingContext.{u, v, w, x, y, z} Obj p) :
+def signatureAxes (C : AnalyticReadingContext Obj p) :
     SignatureAxes U :=
   C.selectedSignatureAxes
 
 /-- VII.定義14.1: expose the selected `U`-detecting package. -/
-def UDetecting (C : AnalyticReadingContext.{u, v, w, x, y, z} Obj p) :
+def UDetecting (C : AnalyticReadingContext Obj p) :
     UDetectingRepresentationFamily C.representationFamily :=
   C.detectingFamily
 
 /-- VII.定義14.1: package the four later adequacy/exactness assumptions. -/
-def AdequacyDiscipline (C : AnalyticReadingContext.{u, v, w, x, y, z} Obj p) : Prop :=
+def AdequacyDiscipline (C : AnalyticReadingContext Obj p) : Prop :=
   C.coverageAdequacy ∧ C.witnessExactness ∧ C.axisExactness ∧ C.coefficientDiscipline
 
 /-- VII.定義14.1: expose coverage adequacy from the combined discipline. -/
 theorem coverageAdequacy_holds
-    (C : AnalyticReadingContext.{u, v, w, x, y, z} Obj p)
+    (C : AnalyticReadingContext Obj p)
     (h : C.AdequacyDiscipline) :
     C.coverageAdequacy :=
   h.1
 
 /-- VII.定義14.1: expose witness exactness from the combined discipline. -/
 theorem witnessExactness_holds
-    (C : AnalyticReadingContext.{u, v, w, x, y, z} Obj p)
+    (C : AnalyticReadingContext Obj p)
     (h : C.AdequacyDiscipline) :
     C.witnessExactness :=
   h.2.1
 
 /-- VII.定義14.1: expose axis exactness from the combined discipline. -/
 theorem axisExactness_holds
-    (C : AnalyticReadingContext.{u, v, w, x, y, z} Obj p)
+    (C : AnalyticReadingContext Obj p)
     (h : C.AdequacyDiscipline) :
     C.axisExactness :=
   h.2.2.1
 
 /-- VII.定義14.1: expose coefficient discipline from the combined discipline. -/
 theorem coefficientDiscipline_holds
-    (C : AnalyticReadingContext.{u, v, w, x, y, z} Obj p)
+    (C : AnalyticReadingContext Obj p)
     (h : C.AdequacyDiscipline) :
     C.coefficientDiscipline :=
   h.2.2.2
@@ -159,7 +167,7 @@ theorem coefficientDiscipline_holds
 VII.定義15.3: use the context's selected `U`-detecting representation family.
 -/
 theorem witnessZero_of_all_readings_zero
-    (C : AnalyticReadingContext.{u, v, w, x, y, z} Obj p)
+    (C : AnalyticReadingContext Obj p)
     (alpha : C.detectingFamily.ObstructionClass)
     (hzero : ∀ i : C.representationFamily.Index,
       C.detectingFamily.analyticZeroReading i alpha) :
@@ -179,8 +187,11 @@ zeroClass` is an explicit exactness assumption.
 structure RepresentationConservativityUnderAdequacy {U : AtomCarrier.{u}}
     {Obj : ArchitectureObject U}
     {S : Site.AATSite Obj} {k : Type v} [CommRing k]
-    {p : AATSchReadingParameter.{u, v, w, x, y} S k}
-    (C : AnalyticReadingContext.{u, v, w, x, y, z} Obj p) where
+    {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    {p : AATSchReadingParameter raw}
+    (C : AnalyticReadingContext
+      (S := S) (k := k) (raw := raw) Obj p) where
   zeroClass : C.detectingFamily.ObstructionClass
   IsZeroClass : C.detectingFamily.ObstructionClass -> Prop
   zeroClass_isZero : IsZeroClass zeroClass
@@ -196,12 +207,15 @@ namespace RepresentationConservativityUnderAdequacy
 
 variable {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
 variable {S : Site.AATSite Obj} {k : Type v} [CommRing k]
-variable {p : AATSchReadingParameter.{u, v, w, x, y} S k}
-variable {C : AnalyticReadingContext.{u, v, w, x, y, z} Obj p}
+variable {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+variable [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+variable {p : AATSchReadingParameter raw}
+variable {C : AnalyticReadingContext
+  (S := S) (k := k) (raw := raw) Obj p}
 
 /-- VII.定理15.4: expose the combined adequacy / exactness discipline. -/
 theorem adequacyDiscipline
-    (T : RepresentationConservativityUnderAdequacy.{u, v, w, x, y, z} C) :
+    (T : RepresentationConservativityUnderAdequacy C) :
     C.AdequacyDiscipline :=
   ⟨T.coverageAdequate, T.witnessExact, T.axisExact, T.coefficientDisciplined⟩
 
@@ -210,7 +224,7 @@ VII.定理15.4: if all selected representation readings of `alpha` are zero,
 then the selected obstruction class is the chosen zero class.
 -/
 theorem representation_conservativity_under_adequacy
-    (T : RepresentationConservativityUnderAdequacy.{u, v, w, x, y, z} C)
+    (T : RepresentationConservativityUnderAdequacy C)
     (alpha : C.detectingFamily.ObstructionClass)
     (hzero : ∀ i : C.representationFamily.Index,
       C.detectingFamily.analyticZeroReading i alpha) :
@@ -219,7 +233,7 @@ theorem representation_conservativity_under_adequacy
 
 /-- VII.定理15.4: expose that the selected `zeroClass` is an actual zero class. -/
 theorem zeroClass_isZero_holds
-    (T : RepresentationConservativityUnderAdequacy.{u, v, w, x, y, z} C) :
+    (T : RepresentationConservativityUnderAdequacy C) :
     T.IsZeroClass T.zeroClass :=
   T.zeroClass_isZero
 
@@ -228,7 +242,7 @@ VII.定理15.4: if all selected representation readings of `alpha` are zero,
 then `alpha` is an actual zero obstruction class.
 -/
 theorem representation_zero_under_adequacy
-    (T : RepresentationConservativityUnderAdequacy.{u, v, w, x, y, z} C)
+    (T : RepresentationConservativityUnderAdequacy C)
     (alpha : C.detectingFamily.ObstructionClass)
     (hzero : ∀ i : C.representationFamily.Index,
       C.detectingFamily.analyticZeroReading i alpha) :

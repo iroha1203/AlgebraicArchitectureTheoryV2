@@ -7,7 +7,9 @@ noncomputable section
 namespace AAT.AG
 namespace RepresentationAnalysis
 
-universe u v w x y z
+open CategoryTheory
+
+universe u v w x z
 
 /--
 VII.定義3.3: finite directed graph target for selected relation readings.
@@ -319,9 +321,10 @@ theorem assoc {Vertex Edge RelationLabel : Type z}
 
 end FiniteDirectedGraphHom
 
-/-- VII.定義3.3: target-category interface for finite graph readings. -/
-def finiteDirectedGraphTargetCategory (Vertex Edge RelationLabel : Type z) :
-    AnalyticTargetCategory (FiniteDirectedGraphTarget Vertex Edge RelationLabel) where
+/-- VII.定義3.3: finite graph readings form a Mathlib category. -/
+instance FiniteDirectedGraphTarget.category
+    (Vertex Edge RelationLabel : Type z) :
+    Category (FiniteDirectedGraphTarget Vertex Edge RelationLabel) where
   Hom := FiniteDirectedGraphHom
   id := FiniteDirectedGraphHom.id
   comp := FiniteDirectedGraphHom.comp
@@ -338,41 +341,27 @@ to AC5.
 -/
 structure GraphRepresentationProfile {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
-    (p : AATSchReadingParameter.{u, v, w, x, y} S k) where
+    {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+    [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    (p : AATSchReadingParameter raw) where
   Vertex : Type z
   Edge : Type z
   RelationLabel : Type z
+  representation : AnalyticRepresentation p
+    (FiniteDirectedGraphTarget Vertex Edge RelationLabel)
   SelectedRelation : AATSch p -> Type z
-  graphOf : AATSch p -> FiniteDirectedGraphTarget Vertex Edge RelationLabel
   relationEdge : ∀ X : AATSch p, SelectedRelation X -> Edge
   selectedEdge : AATSch p -> Edge -> Prop
   relationEdge_selected :
     ∀ (X : AATSch p) (r : SelectedRelation X), selectedEdge X (relationEdge X r)
-  mapGraph :
-    ∀ {X Y : AATSch p}, AATSchMorphism X Y ->
-      FiniteDirectedGraphHom (graphOf X) (graphOf Y)
-  map_id :
-    ∀ {X : AATSch p} (I : AATSchIdentityData X),
-      mapGraph I.morphism = FiniteDirectedGraphHom.id (graphOf X)
-  map_comp :
-    ∀ {X Y Z : AATSch p} {f : AATSchMorphism X Y} {g : AATSchMorphism Y Z}
-      (C : AATSchCompositionData f g),
-      mapGraph C.morphism = FiniteDirectedGraphHom.comp (mapGraph f) (mapGraph g)
 
 namespace GraphRepresentationProfile
 
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {k : Type v} [CommRing k]
-variable {p : AATSchReadingParameter.{u, v, w, x, y} S k}
-
-/-- VII.定義3.3: graph profile as an analytic representation. -/
-def toAnalyticRepresentation (P : GraphRepresentationProfile p) :
-    AnalyticRepresentation p (FiniteDirectedGraphTarget P.Vertex P.Edge P.RelationLabel) where
-  targetCategory := finiteDirectedGraphTargetCategory P.Vertex P.Edge P.RelationLabel
-  obj := P.graphOf
-  map := P.mapGraph
-  map_id := P.map_id
-  map_comp := P.map_comp
+variable {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+variable [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+variable {p : AATSchReadingParameter raw}
 
 /-- VII.定義3.3: relation data maps to selected graph edges. -/
 theorem relationEdge_selected_holds (P : GraphRepresentationProfile p)
@@ -392,33 +381,37 @@ such witnesses.
 -/
 structure DependencyAcyclicityProfile {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
-    {p : AATSchReadingParameter.{u, v, w, x, y} S k}
+    {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+    [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    {p : AATSchReadingParameter raw}
     (P : GraphRepresentationProfile p) where
   dependencyAxisSelected : AATSch p -> Prop
   structuralDependencyObstructionZero : AATSch p -> Prop
   selectedCycleObstructionWitness :
-    ∀ X : AATSch p, FiniteDirectedGraphTarget.DirectedCycle (P.graphOf X) -> Prop
+    ∀ X : AATSch p, FiniteDirectedGraphTarget.DirectedCycle (P.representation.obj X) -> Prop
   graphCycle_yields_obstructionWitness :
     ∀ X : AATSch p, dependencyAxisSelected X ->
-      ∀ c : FiniteDirectedGraphTarget.DirectedCycle (P.graphOf X),
+      ∀ c : FiniteDirectedGraphTarget.DirectedCycle (P.representation.obj X),
         selectedCycleObstructionWitness X c
   obstructionZero_excludes_cycleWitness :
     ∀ X : AATSch p, structuralDependencyObstructionZero X ->
-      ∀ c : FiniteDirectedGraphTarget.DirectedCycle (P.graphOf X),
+      ∀ c : FiniteDirectedGraphTarget.DirectedCycle (P.representation.obj X),
         ¬ selectedCycleObstructionWitness X c
 
 namespace DependencyAcyclicityProfile
 
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {k : Type v} [CommRing k]
-variable {p : AATSchReadingParameter.{u, v, w, x, y} S k}
+variable {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+variable [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+variable {p : AATSchReadingParameter raw}
 variable {P : GraphRepresentationProfile p}
 
 /-- VII.命題3.4: graph cycles yield selected obstruction witnesses. -/
 theorem selectedCycleObstructionWitness_of_graphCycle
     (D : DependencyAcyclicityProfile P) {X : AATSch p}
     (haxis : D.dependencyAxisSelected X)
-    (c : FiniteDirectedGraphTarget.DirectedCycle (P.graphOf X)) :
+    (c : FiniteDirectedGraphTarget.DirectedCycle (P.representation.obj X)) :
     D.selectedCycleObstructionWitness X c :=
   D.graphCycle_yields_obstructionWitness X haxis c
 
@@ -426,7 +419,7 @@ theorem selectedCycleObstructionWitness_of_graphCycle
 theorem no_selectedCycleObstructionWitness_of_obstructionZero
     (D : DependencyAcyclicityProfile P) {X : AATSch p}
     (hzero : D.structuralDependencyObstructionZero X)
-    (c : FiniteDirectedGraphTarget.DirectedCycle (P.graphOf X)) :
+    (c : FiniteDirectedGraphTarget.DirectedCycle (P.representation.obj X)) :
     ¬ D.selectedCycleObstructionWitness X c :=
   D.obstructionZero_excludes_cycleWitness X hzero c
 
@@ -441,7 +434,7 @@ theorem acyclicityPreservation
     (D : DependencyAcyclicityProfile P) {X : AATSch p}
     (haxis : D.dependencyAxisSelected X)
     (hzero : D.structuralDependencyObstructionZero X) :
-    FiniteDirectedGraphTarget.Acyclic (P.graphOf X) := by
+    FiniteDirectedGraphTarget.Acyclic (P.representation.obj X) := by
   refine ⟨?_⟩
   intro c
   exact D.no_selectedCycleObstructionWitness_of_obstructionZero hzero c
@@ -1091,9 +1084,10 @@ theorem assoc {Vertex Edge RelationLabel : Type z}
 
 end MatrixRepresentationHom
 
-/-- VII.定義3.5: target-category interface for matrix readings. -/
-def matrixRepresentationTargetCategory (Vertex Edge RelationLabel : Type z) :
-    AnalyticTargetCategory (MatrixRepresentationTarget Vertex Edge RelationLabel) where
+/-- VII.定義3.5: matrix readings form a Mathlib category. -/
+instance MatrixRepresentationTarget.category
+    (Vertex Edge RelationLabel : Type z) :
+    Category (MatrixRepresentationTarget Vertex Edge RelationLabel) where
   Hom := MatrixRepresentationHom
   id := MatrixRepresentationHom.id
   comp := MatrixRepresentationHom.comp
@@ -1109,37 +1103,22 @@ to AC6, where the required exactness assumptions can be stated explicitly.
 -/
 structure MatrixRepresentationProfile {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
-    (p : AATSchReadingParameter.{u, v, w, x, y} S k) where
+    {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+    [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    (p : AATSchReadingParameter raw) where
   Vertex : Type z
   Edge : Type z
   RelationLabel : Type z
-  matrixOf : AATSch p -> MatrixRepresentationTarget Vertex Edge RelationLabel
-  mapMatrix :
-    ∀ {X Y : AATSch p}, AATSchMorphism X Y ->
-      MatrixRepresentationHom (matrixOf X) (matrixOf Y)
-  map_id :
-    ∀ {X : AATSch p} (I : AATSchIdentityData X),
-      mapMatrix I.morphism = MatrixRepresentationHom.id (matrixOf X)
-  map_comp :
-    ∀ {X Y Z : AATSch p} {f : AATSchMorphism X Y} {g : AATSchMorphism Y Z}
-      (C : AATSchCompositionData f g),
-      mapMatrix C.morphism = MatrixRepresentationHom.comp (mapMatrix f) (mapMatrix g)
+  representation : AnalyticRepresentation p
+    (MatrixRepresentationTarget Vertex Edge RelationLabel)
 
 namespace MatrixRepresentationProfile
 
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {k : Type v} [CommRing k]
-variable {p : AATSchReadingParameter.{u, v, w, x, y} S k}
-
-/-- VII.定義3.5: matrix profile as an analytic representation. -/
-def toAnalyticRepresentation (P : MatrixRepresentationProfile p) :
-    AnalyticRepresentation p
-      (MatrixRepresentationTarget P.Vertex P.Edge P.RelationLabel) where
-  targetCategory := matrixRepresentationTargetCategory P.Vertex P.Edge P.RelationLabel
-  obj := P.matrixOf
-  map := P.mapMatrix
-  map_id := P.map_id
-  map_comp := P.map_comp
+variable {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+variable [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+variable {p : AATSchReadingParameter raw}
 
 end MatrixRepresentationProfile
 

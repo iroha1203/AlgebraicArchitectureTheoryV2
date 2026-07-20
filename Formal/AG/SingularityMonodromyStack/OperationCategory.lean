@@ -5,7 +5,7 @@ noncomputable section
 namespace AAT.AG
 namespace SingularityMonodromyStack
 
-universe u v w x y z
+universe u v y z
 
 /--
 VI.定義8.1: selected operation graph for a law universe.
@@ -17,7 +17,7 @@ formal inverses are executable reverse operations.
 structure OperationCategoryData {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {P : StratumReadingParameter S}
     {k : Type v} [CommRing k]
-    (X : ArchitectureStratum.{u, v, w, x, y} P k) where
+    (X : ArchitectureStratum.{u, v, y} P k) where
   State : Type z
   Operation : State -> State -> Type z
   selectedState : X.Point -> State
@@ -27,8 +27,8 @@ structure OperationCategoryData {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 structure SelectedOperation {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {P : StratumReadingParameter S}
     {k : Type v} [CommRing k]
-    {X : ArchitectureStratum.{u, v, w, x, y} P k}
-    (G : OperationCategoryData.{u, v, w, x, y, z} X)
+    {X : ArchitectureStratum.{u, v, y} P k}
+    (G : OperationCategoryData.{u, v, y, z} X)
     (a b : G.State) where
   op : G.Operation a b
   respectsLawUniverse : G.operationRespectsLawUniverse op
@@ -38,11 +38,11 @@ namespace OperationCategoryData
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {P : StratumReadingParameter S}
 variable {k : Type v} [CommRing k]
-variable {X : ArchitectureStratum.{u, v, w, x, y} P k}
+variable {X : ArchitectureStratum.{u, v, y} P k}
 
 /-- VI.定義8.1: expose the selected state reading of a stratum point. -/
 theorem selectedState_eq
-    (G : OperationCategoryData.{u, v, w, x, y, z} X) :
+    (G : OperationCategoryData.{u, v, y, z} X) :
     G.selectedState = G.selectedState :=
   rfl
 
@@ -52,8 +52,8 @@ end OperationCategoryData
 inductive OperationPath {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {P : StratumReadingParameter S}
     {k : Type v} [CommRing k]
-    {X : ArchitectureStratum.{u, v, w, x, y} P k}
-    (G : OperationCategoryData.{u, v, w, x, y, z} X) :
+    {X : ArchitectureStratum.{u, v, y} P k}
+    (G : OperationCategoryData.{u, v, y, z} X) :
     G.State -> G.State -> Type z where
   | nil (a : G.State) : OperationPath G a a
   | cons {a b c : G.State} :
@@ -64,8 +64,8 @@ namespace OperationPath
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {P : StratumReadingParameter S}
 variable {k : Type v} [CommRing k]
-variable {X : ArchitectureStratum.{u, v, w, x, y} P k}
-variable {G : OperationCategoryData.{u, v, w, x, y, z} X}
+variable {X : ArchitectureStratum.{u, v, y} P k}
+variable {G : OperationCategoryData.{u, v, y, z} X}
 
 /-- VI.定義8.2: identity operation path at a selected state. -/
 def id (a : G.State) : OperationPath G a a :=
@@ -108,8 +108,8 @@ global semantic equivalence relation or a quotient groupoid.
 structure RefactorEndpointReading {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {P : StratumReadingParameter S}
     {k : Type v} [CommRing k]
-    {X : ArchitectureStratum.{u, v, w, x, y} P k}
-    (G : OperationCategoryData.{u, v, w, x, y, z} X) where
+    {X : ArchitectureStratum.{u, v, y} P k}
+    (G : OperationCategoryData.{u, v, y, z} X) where
   RefactorEquivalent : G.State -> G.State -> Prop
   refl : ∀ a : G.State, RefactorEquivalent a a
   symm : ∀ {a b : G.State}, RefactorEquivalent a b -> RefactorEquivalent b a
@@ -127,26 +127,26 @@ namespace RefactorEndpointReading
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {P : StratumReadingParameter S}
 variable {k : Type v} [CommRing k]
-variable {X : ArchitectureStratum.{u, v, w, x, y} P k}
-variable {G : OperationCategoryData.{u, v, w, x, y, z} X}
+variable {X : ArchitectureStratum.{u, v, y} P k}
+variable {G : OperationCategoryData.{u, v, y, z} X}
 
 /-- VI.定義9.1: endpoint equivalence is reflexive on selected states. -/
 theorem refactorEquivalent_refl
-    (R : RefactorEndpointReading.{u, v, w, x, y, z} G)
+    (R : RefactorEndpointReading.{u, v, y, z} G)
     (a : G.State) :
     R.RefactorEquivalent a a :=
   R.refl a
 
 /-- VI.定義9.1: endpoint equivalence is symmetric by selected data. -/
 theorem refactorEquivalent_symm
-    (R : RefactorEndpointReading.{u, v, w, x, y, z} G)
+    (R : RefactorEndpointReading.{u, v, y, z} G)
     {a b : G.State} (h : R.RefactorEquivalent a b) :
     R.RefactorEquivalent b a :=
   R.symm h
 
 /-- VI.定義9.1: endpoint equivalence is transitive by selected data. -/
 theorem refactorEquivalent_trans
-    (R : RefactorEndpointReading.{u, v, w, x, y, z} G)
+    (R : RefactorEndpointReading.{u, v, y, z} G)
     {a b c : G.State}
     (hab : R.RefactorEquivalent a b) (hbc : R.RefactorEquivalent b c) :
     R.RefactorEquivalent a c :=
@@ -154,14 +154,14 @@ theorem refactorEquivalent_trans
 
 /-- VI.定義9.1: selected endpoint equivalence preserves selected invariants. -/
 theorem preservesSelectedInvariants_holds
-    (R : RefactorEndpointReading.{u, v, w, x, y, z} G)
+    (R : RefactorEndpointReading.{u, v, y, z} G)
     {a b : G.State} (h : R.RefactorEquivalent a b) :
     R.preservesSelectedInvariants h :=
   R.invariantCertificate h
 
 /-- VI.定義9.1: selected endpoint equivalence preserves selected essence. -/
 theorem preservesSelectedEssence_holds
-    (R : RefactorEndpointReading.{u, v, w, x, y, z} G)
+    (R : RefactorEndpointReading.{u, v, y, z} G)
     {a b : G.State} (h : R.RefactorEquivalent a b) :
     R.preservesSelectedEssence h :=
   R.essenceCertificate h
@@ -172,9 +172,9 @@ end RefactorEndpointReading
 def EndpointEquivalentPath {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {P : StratumReadingParameter S}
     {k : Type v} [CommRing k]
-    {X : ArchitectureStratum.{u, v, w, x, y} P k}
-    {G : OperationCategoryData.{u, v, w, x, y, z} X}
-    (R : RefactorEndpointReading.{u, v, w, x, y, z} G)
+    {X : ArchitectureStratum.{u, v, y} P k}
+    {G : OperationCategoryData.{u, v, y, z} X}
+    (R : RefactorEndpointReading.{u, v, y, z} G)
     {a b target : G.State} (_gamma : OperationPath G a b) : Prop :=
   R.RefactorEquivalent b target
 
@@ -182,9 +182,9 @@ def EndpointEquivalentPath {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 structure OperationLoop {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {P : StratumReadingParameter S}
     {k : Type v} [CommRing k]
-    {X : ArchitectureStratum.{u, v, w, x, y} P k}
-    {G : OperationCategoryData.{u, v, w, x, y, z} X}
-    (R : RefactorEndpointReading.{u, v, w, x, y, z} G) where
+    {X : ArchitectureStratum.{u, v, y} P k}
+    {G : OperationCategoryData.{u, v, y, z} X}
+    (R : RefactorEndpointReading.{u, v, y, z} G) where
   base : G.State
   endpoint : G.State
   gamma : OperationPath G base endpoint
@@ -195,9 +195,9 @@ namespace OperationLoop
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {P : StratumReadingParameter S}
 variable {k : Type v} [CommRing k]
-variable {X : ArchitectureStratum.{u, v, w, x, y} P k}
-variable {G : OperationCategoryData.{u, v, w, x, y, z} X}
-variable {R : RefactorEndpointReading.{u, v, w, x, y, z} G}
+variable {X : ArchitectureStratum.{u, v, y} P k}
+variable {G : OperationCategoryData.{u, v, y, z} X}
+variable {R : RefactorEndpointReading.{u, v, y, z} G}
 
 /-- VI.定義9.2: the identity path is an operation loop. -/
 def identity (a : G.State) : OperationLoop R where

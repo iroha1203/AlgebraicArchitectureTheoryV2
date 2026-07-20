@@ -1,5 +1,5 @@
 import Formal.AG.Derived
-import Formal.AG.LawAlgebra.Scheme
+import Formal.AG.LawAlgebra.StandardScheme
 import Formal.AG.Site.Topology
 
 noncomputable section
@@ -79,7 +79,9 @@ theory in this implementation step.
 -/
 structure ArchitectureStratum {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} (P : StratumReadingParameter S) (k : Type v) [CommRing k] where
-  geometry : LawAlgebra.Scheme.ArchitectureScheme.{u, v, w, x, y} S k
+  raw : LawAlgebra.RawAmbientRestrictionSystem S k
+  [sheafify : HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+  geometry : LawAlgebra.StandardArchitectureScheme raw
   Point : Type y
   carrier : Set Point
   role : StratumRole
@@ -101,33 +103,33 @@ variable {P : StratumReadingParameter S}
 variable {k : Type v} [CommRing k]
 
 /-- VI.定義2.1: membership in the selected stratum carrier. -/
-def Mem (X : ArchitectureStratum.{u, v, w, x, y} P k) (p : X.Point) : Prop :=
+def Mem (X : ArchitectureStratum.{u, v, y} P k) (p : X.Point) : Prop :=
   p ∈ X.carrier
 
 /-- VI.定義2.1: the carrier is the selected subset recorded by the stratum. -/
-theorem mem_iff {X : ArchitectureStratum.{u, v, w, x, y} P k} {p : X.Point} :
+theorem mem_iff {X : ArchitectureStratum.{u, v, y} P k} {p : X.Point} :
     X.Mem p ↔ p ∈ X.carrier :=
   Iff.rfl
 
 /-- VI.定義2.1: the stratum records selected-subobject compatibility. -/
-theorem selectedSubobject_holds (X : ArchitectureStratum.{u, v, w, x, y} P k) :
+theorem selectedSubobject_holds (X : ArchitectureStratum.{u, v, y} P k) :
     X.selectedSubobject :=
   X.selectedSubobject_cert
 
 /-- VI.定義2.1: the stratum records locally closed reading data. -/
-theorem locallyClosed_holds (X : ArchitectureStratum.{u, v, w, x, y} P k) :
+theorem locallyClosed_holds (X : ArchitectureStratum.{u, v, y} P k) :
     X.locallyClosed :=
   X.locallyClosed_cert
 
 /-- VI.定義2.1: the stratum records decoration compatibility. -/
 theorem decorationCompatible_holds
-    (X : ArchitectureStratum.{u, v, w, x, y} P k) :
+    (X : ArchitectureStratum.{u, v, y} P k) :
     X.decorationCompatible :=
   X.decorationCompatible_cert
 
 /-- VI.定義2.1: the stratum records compatibility with the selected reading. -/
 theorem readingCompatible_holds
-    (X : ArchitectureStratum.{u, v, w, x, y} P k) :
+    (X : ArchitectureStratum.{u, v, y} P k) :
     X.readingCompatible :=
   X.readingCompatible_cert
 

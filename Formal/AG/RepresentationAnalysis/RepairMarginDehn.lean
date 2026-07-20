@@ -1,22 +1,25 @@
 import Formal.AG.RepresentationAnalysis.DistanceFlatnessMass
 import Formal.AG.SingularityMonodromyStack
+import Formal.AG.LawAlgebra.ClosedEquationalGeometry
 
 noncomputable section
 
 namespace AAT.AG
 namespace RepresentationAnalysis
 
-universe u v w x y z
+universe u v y z
 
-/--
-VII.定義12.1: selected repair route from a state to a flat candidate.
-
-The route is relative to the AC12 operation-distance / distance-to-flatness
-context.  The Part III lawful-locus factorization is carried as explicit selected
-section data; no global repair existence theorem is asserted here.
--/
-structure RepairRoute {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
-    (C : DistanceFlatnessMassContext Obj) where
+/-! SD3: actual-factorization repair route. -/
+structure RepairRoute
+    {Obj : ArchitectureObject U}
+    (C : DistanceFlatnessMassContext Obj)
+    {S : Site.AATSite Obj} {k : Type v} [CommRing k]
+    (raw : LawAlgebra.RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    (X : LawAlgebra.StandardArchitectureScheme raw)
+    (R : LawAlgebra.ClosedEquationalLawReading raw X)
+    (hR : LawAlgebra.IsClosedEquationalLawReading raw X R)
+    (hclosed : LawAlgebra.RequiredClosed raw X R) where
   source : C.operationDistance.GeometryState
   target : C.operationDistance.GeometryState
   flatCandidate : C.distanceToFlatness.FlatCandidate source
@@ -25,41 +28,41 @@ structure RepairRoute {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
   routeCost : DistanceValue Nat
   routeCost_eq_d_op : routeCost = C.d_op source target
   routeCost_eq_pathCost : routeCost = C.operationDistance.pathCost operationPath
-  LawCoordinateAlgebra : Type v
-  lawCoordinateCommRing : CommRing LawCoordinateAlgebra
-  obstructionIdeal : Ideal LawCoordinateAlgebra
-  lawfulSection :
-    LawAlgebra.LawfulLocus.LawfulSectionData.{v, w} LawCoordinateAlgebra obstructionIdeal
-  factorsThroughLawfulLocus :
-    lawfulSection.FactorsThroughLawfulLocus
-
-attribute [instance] RepairRoute.lawCoordinateCommRing
+  sectionSource : AlgebraicGeometry.Scheme
+  «section» : sectionSource ⟶ X.underlying
+  factorization :
+    LawAlgebra.FactorsThroughLawfulClosedSubscheme raw X R hR hclosed «section»
 
 namespace RepairRoute
 
 variable {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
 variable {C : DistanceFlatnessMassContext Obj}
+variable {S : Site.AATSite Obj} {k : Type v} [CommRing k]
+variable {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+variable [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+variable {X : LawAlgebra.StandardArchitectureScheme raw}
+variable {R : LawAlgebra.ClosedEquationalLawReading raw X}
+variable {hR : LawAlgebra.IsClosedEquationalLawReading raw X R}
+variable {hclosed : LawAlgebra.RequiredClosed raw X R}
 
 /-- VII.定義12.1: the selected target is the selected flat-candidate state. -/
-theorem target_eq_flatState_holds (R : RepairRoute.{u, v, w} C) :
-    R.target = C.distanceToFlatness.flatState R.source R.flatCandidate :=
-  R.target_eq_flatState
+theorem target_eq_flatState_holds (Q : RepairRoute C raw X R hR hclosed) :
+    Q.target = C.distanceToFlatness.flatState Q.source Q.flatCandidate :=
+  Q.target_eq_flatState
 
 /-- VII.定義12.1: the route cost reads the selected operation distance. -/
-theorem routeCost_eq_d_op_holds (R : RepairRoute.{u, v, w} C) :
-    R.routeCost = C.d_op R.source R.target :=
-  R.routeCost_eq_d_op
+theorem routeCost_eq_d_op_holds (Q : RepairRoute C raw X R hR hclosed) :
+    Q.routeCost = C.d_op Q.source Q.target := Q.routeCost_eq_d_op
 
 /-- VII.定義12.1: the route cost is witnessed by the selected operation path. -/
-theorem routeCost_eq_pathCost_holds (R : RepairRoute.{u, v, w} C) :
-    R.routeCost = C.operationDistance.pathCost R.operationPath :=
-  R.routeCost_eq_pathCost
+theorem routeCost_eq_pathCost_holds (Q : RepairRoute C raw X R hR hclosed) :
+    Q.routeCost = C.operationDistance.pathCost Q.operationPath :=
+  Q.routeCost_eq_pathCost
 
-/-- VII.定義12.1: expose the Part III lawful-locus factorization certificate. -/
-theorem factorsThroughLawfulLocus_certificate
-    (R : RepairRoute.{u, v, w} C) :
-    R.lawfulSection.FactorsThroughLawfulLocus :=
-  R.factorsThroughLawfulLocus
+def factorization_certificate (Q : RepairRoute C raw X R hR hclosed) :
+    LawAlgebra.FactorsThroughLawfulClosedSubscheme
+      raw X R hR hclosed Q.«section» :=
+  Q.factorization
 
 end RepairRoute
 
@@ -79,7 +82,15 @@ Structural and stable profiles carry explicit selected Part VI / Part IV--6
 readings as data rather than deriving global correctness.
 -/
 structure RepairProfileReading {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
-    {C : DistanceFlatnessMassContext Obj} (route : RepairRoute.{u, v, w} C) where
+    {S : Site.AATSite Obj} {k : Type v} [CommRing k]
+    {rawR0 : LawAlgebra.RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    {schemeR0 : LawAlgebra.StandardArchitectureScheme rawR0}
+    {readingR0 : LawAlgebra.ClosedEquationalLawReading rawR0 schemeR0}
+    {readingClosedR0 : LawAlgebra.IsClosedEquationalLawReading rawR0 schemeR0 readingR0}
+    {requiredClosedR0 : LawAlgebra.RequiredClosed rawR0 schemeR0 readingR0}
+    {C : DistanceFlatnessMassContext Obj}
+    (route : RepairRoute C rawR0 schemeR0 readingR0 readingClosedR0 requiredClosedR0) where
   mode : RepairOptimizationMode
   shortest : Prop
   shortest_holds : mode = .shortest -> shortest
@@ -100,30 +111,37 @@ structure RepairProfileReading {U : AtomCarrier.{u}} {Obj : ArchitectureObject U
 namespace RepairProfileReading
 
 variable {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
+variable {S : Site.AATSite Obj} {k : Type v} [CommRing k]
+    {rawR0 : LawAlgebra.RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    {schemeR0 : LawAlgebra.StandardArchitectureScheme rawR0}
+    {readingR0 : LawAlgebra.ClosedEquationalLawReading rawR0 schemeR0}
+    {readingClosedR0 : LawAlgebra.IsClosedEquationalLawReading rawR0 schemeR0 readingR0}
+    {requiredClosedR0 : LawAlgebra.RequiredClosed rawR0 schemeR0 readingR0}
 variable {C : DistanceFlatnessMassContext Obj}
-variable {route : RepairRoute.{u, v, w} C}
+variable {route : RepairRoute C rawR0 schemeR0 readingR0 readingClosedR0 requiredClosedR0}
 
 /-- VII.定義12.2: shortest repair certificate, when the selected mode is shortest. -/
 theorem shortest_certificate
-    (P : RepairProfileReading.{u, v, w, z} route) (h : P.mode = .shortest) :
+    (P : RepairProfileReading route) (h : P.mode = .shortest) :
     P.shortest :=
   P.shortest_holds h
 
 /-- VII.定義12.2: safest repair certificate, when the selected mode is safest. -/
 theorem safest_certificate
-    (P : RepairProfileReading.{u, v, w, z} route) (h : P.mode = .safest) :
+    (P : RepairProfileReading route) (h : P.mode = .safest) :
     P.safest :=
   P.safest_holds h
 
 /-- VII.定義12.2: structural repair certificate, when the selected mode is structural. -/
 theorem structural_certificate
-    (P : RepairProfileReading.{u, v, w, z} route) (h : P.mode = .structural) :
+    (P : RepairProfileReading route) (h : P.mode = .structural) :
     P.structural :=
   P.structural_holds h
 
 /-- VII.定義12.2: stable repair certificate, when the selected mode is stable. -/
 theorem stable_certificate
-    (P : RepairProfileReading.{u, v, w, z} route) (h : P.mode = .stable) :
+    (P : RepairProfileReading route) (h : P.mode = .stable) :
     P.stable :=
   P.stable_holds h
 
@@ -433,11 +451,11 @@ structure SingularityProfile {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
     {S : Site.AATSite Obj}
     {P : SingularityMonodromyStack.StratumReadingParameter S}
     {k : Type v} [CommRing k]
-    (X : SingularityMonodromyStack.ArchitectureStratum.{u, v, w, x, y} P k)
-    (L : SingularityMonodromyStack.CotangentData.{u, v, w, x, y, z} X)
-    (T : SingularityMonodromyStack.TangentData.{u, v, w, x, y, z} X L)
-    (D : SingularityMonodromyStack.DeformationObstructionTheory.{u, v, w, x, y, z} T)
-    (N : SingularityMonodromyStack.NormalConeReading.{u, v, w, x, y, z} X) where
+    (X : SingularityMonodromyStack.ArchitectureStratum.{u, v, y} P k)
+    (L : SingularityMonodromyStack.CotangentData.{u, v, y, z} X)
+    (T : SingularityMonodromyStack.TangentData.{u, v, y, z} X L)
+    (D : SingularityMonodromyStack.DeformationObstructionTheory.{u, v, y, z} T)
+    (N : SingularityMonodromyStack.NormalConeReading.{u, v, y, z} X) where
   selectedPoint : X.Point
   selectedPoint_mem : X.Mem selectedPoint
   selectedTest : D.DeformationTest
@@ -463,34 +481,34 @@ variable {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
 variable {S : Site.AATSite Obj}
 variable {P : SingularityMonodromyStack.StratumReadingParameter S}
 variable {k : Type v} [CommRing k]
-variable {X : SingularityMonodromyStack.ArchitectureStratum.{u, v, w, x, y} P k}
-variable {L : SingularityMonodromyStack.CotangentData.{u, v, w, x, y, z} X}
-variable {T : SingularityMonodromyStack.TangentData.{u, v, w, x, y, z} X L}
-variable {D : SingularityMonodromyStack.DeformationObstructionTheory.{u, v, w, x, y, z} T}
-variable {N : SingularityMonodromyStack.NormalConeReading.{u, v, w, x, y, z} X}
+variable {X : SingularityMonodromyStack.ArchitectureStratum.{u, v, y} P k}
+variable {L : SingularityMonodromyStack.CotangentData.{u, v, y, z} X}
+variable {T : SingularityMonodromyStack.TangentData.{u, v, y, z} X L}
+variable {D : SingularityMonodromyStack.DeformationObstructionTheory.{u, v, y, z} T}
+variable {N : SingularityMonodromyStack.NormalConeReading.{u, v, y, z} X}
 
 /-- VII.定義13.1: expose the selected stratum membership certificate. -/
 theorem selectedPoint_mem_holds
-    (P : SingularityProfile.{u, v, w, x, y, z} X L T D N) :
+    (P : SingularityProfile.{u, v, y, z} X L T D N) :
     X.Mem P.selectedPoint :=
   P.selectedPoint_mem
 
 /-- VII.定義13.1: nonzero selected obstruction refutes the selected lift/fill. -/
 theorem liftingFailure
-    (P : SingularityProfile.{u, v, w, x, y, z} X L T D N) :
+    (P : SingularityProfile.{u, v, y, z} X L T D N) :
     ¬ D.LiftFill P.selectedTest :=
   SingularityMonodromyStack.DeformationObstructionTheory.not_liftFill_of_ob_ne_zero D
     P.selectedObstruction_nonzero
 
 /-- VII.定義13.1: expose selected support of the derived conflict on the normal cone. -/
 theorem selectedDerivedConflict_supported_holds
-    (P : SingularityProfile.{u, v, w, x, y, z} X L T D N) :
+    (P : SingularityProfile.{u, v, y, z} X L T D N) :
     P.derivedConflictSupportedOnNormalCone P.selectedDerivedConflict P.selectedNormalCone :=
   P.selectedDerivedConflict_supported
 
 /-- VII.定義13.1: expose the selected repair-difficulty reading. -/
 theorem selectedRepairDifficulty_certificate
-    (P : SingularityProfile.{u, v, w, x, y, z} X L T D N) :
+    (P : SingularityProfile.{u, v, y, z} X L T D N) :
     P.repairDifficultyReadsSingularity P.selectedRepairDifficulty :=
   P.selectedRepairDifficulty_holds
 
@@ -510,14 +528,14 @@ structure MonodromyIndex {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
     {S : Site.AATSite Obj}
     {P : SingularityMonodromyStack.StratumReadingParameter S}
     {k : Type v} [CommRing k]
-    {X : SingularityMonodromyStack.ArchitectureStratum.{u, v, w, x, y} P k}
-    {G : SingularityMonodromyStack.OperationCategoryData.{u, v, w, x, y, z} X}
-    {R : SingularityMonodromyStack.RefactorEndpointReading.{u, v, w, x, y, z} G}
-    {H : SingularityMonodromyStack.HomotopyGeneratorFamily.{u, v, w, x, y, z} R}
+    {X : SingularityMonodromyStack.ArchitectureStratum.{u, v, y} P k}
+    {G : SingularityMonodromyStack.OperationCategoryData.{u, v, y, z} X}
+    {R : SingularityMonodromyStack.RefactorEndpointReading.{u, v, y, z} G}
+    {H : SingularityMonodromyStack.HomotopyGeneratorFamily.{u, v, y, z} R}
     {base : G.State}
-    {Pi : SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z}
+    {Pi : SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.{u, v, y, z}
       H base}
-    (M : SingularityMonodromyStack.MonodromyAction.{u, v, w, x, y, z} Pi)
+    (M : SingularityMonodromyStack.MonodromyAction.{u, v, y, z} Pi)
     (gamma : Pi.Pi1) where
   monodromyAction : SingularityMonodromyStack.CoefficientAutomorphism M.coefficient
   monodromyAction_eq_Mon_gamma : monodromyAction = M.Mon_gamma gamma
@@ -551,55 +569,55 @@ variable {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
 variable {S : Site.AATSite Obj}
 variable {P : SingularityMonodromyStack.StratumReadingParameter S}
 variable {k : Type v} [CommRing k]
-variable {X : SingularityMonodromyStack.ArchitectureStratum.{u, v, w, x, y} P k}
-variable {G : SingularityMonodromyStack.OperationCategoryData.{u, v, w, x, y, z} X}
-variable {R : SingularityMonodromyStack.RefactorEndpointReading.{u, v, w, x, y, z} G}
-variable {H : SingularityMonodromyStack.HomotopyGeneratorFamily.{u, v, w, x, y, z} R}
+variable {X : SingularityMonodromyStack.ArchitectureStratum.{u, v, y} P k}
+variable {G : SingularityMonodromyStack.OperationCategoryData.{u, v, y, z} X}
+variable {R : SingularityMonodromyStack.RefactorEndpointReading.{u, v, y, z} G}
+variable {H : SingularityMonodromyStack.HomotopyGeneratorFamily.{u, v, y, z} R}
 variable {base : G.State}
-variable {Pi : SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z}
+variable {Pi : SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.{u, v, y, z}
   H base}
-variable {M : SingularityMonodromyStack.MonodromyAction.{u, v, w, x, y, z} Pi}
+variable {M : SingularityMonodromyStack.MonodromyAction.{u, v, y, z} Pi}
 variable {gamma : Pi.Pi1}
 
 /-- VII.定義13.2: expose the selected Part VI monodromy action. -/
 theorem monodromyAction_eq_Mon_gamma_holds
-    (I : MonodromyIndex.{u, v, w, x, y, z} M gamma) :
+    (I : MonodromyIndex.{u, v, y, z} M gamma) :
     I.monodromyAction = M.Mon_gamma gamma :=
   I.monodromyAction_eq_Mon_gamma
 
 /-- VII.定義13.2: expose the obstruction action reading. -/
 theorem obstructionAction_eq_holds
-    (I : MonodromyIndex.{u, v, w, x, y, z} M gamma) :
+    (I : MonodromyIndex.{u, v, y, z} M gamma) :
     I.obstructionAction = M.obstructionMonodromy gamma :=
   I.obstructionAction_eq
 
 /-- VII.定義13.2: expose the semantic action reading. -/
 theorem semanticAction_eq_holds
-    (I : MonodromyIndex.{u, v, w, x, y, z} M gamma) :
+    (I : MonodromyIndex.{u, v, y, z} M gamma) :
     I.semanticAction = (M.Mon_gamma gamma).semAut :=
   I.semanticAction_eq
 
 /-- VII.定義13.2: expose the effect action reading. -/
 theorem effectAction_eq_holds
-    (I : MonodromyIndex.{u, v, w, x, y, z} M gamma) :
+    (I : MonodromyIndex.{u, v, y, z} M gamma) :
     I.effectAction = (M.Mon_gamma gamma).effAut :=
   I.effectAction_eq
 
 /-- VII.定義13.2: expose the selected loop-residue bound. -/
 theorem loopResidueBound_le_holds
-    (I : MonodromyIndex.{u, v, w, x, y, z} M gamma) :
+    (I : MonodromyIndex.{u, v, y, z} M gamma) :
     I.loopResidueBound I.selectedLoopResidue ≤ I.residueBound :=
   I.loopResidueBound_le
 
 /-- VII.定義13.2: expose the selected bounded-reading certificate. -/
 theorem boundedReading_certificate
-    (I : MonodromyIndex.{u, v, w, x, y, z} M gamma) :
+    (I : MonodromyIndex.{u, v, y, z} M gamma) :
     I.boundedReading :=
   I.boundedReading_holds
 
 /-- VII.定義13.2: expose the underlying Part VI finite AMI weighted-sum reading. -/
 theorem architecturalMonodromyIndex_value_eq_weighted_sum
-    (I : MonodromyIndex.{u, v, w, x, y, z} M gamma) :
+    (I : MonodromyIndex.{u, v, y, z} M gamma) :
     I.architecturalMonodromyIndex.value =
       ∑ square : I.architecturalMonodromyIndex.Square,
         I.architecturalMonodromyIndex.weight square *
@@ -612,9 +630,16 @@ end MonodromyIndex
 
 /-- VII.R9 / AC13: combined repair, margin, Dehn, and bi-Lipschitz surface. -/
 structure RepairMarginDehnContext {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
+    {S : Site.AATSite Obj} {k : Type v} [CommRing k]
+    {rawR0 : LawAlgebra.RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    {schemeR0 : LawAlgebra.StandardArchitectureScheme rawR0}
+    {readingR0 : LawAlgebra.ClosedEquationalLawReading rawR0 schemeR0}
+    {readingClosedR0 : LawAlgebra.IsClosedEquationalLawReading rawR0 schemeR0 readingR0}
+    {requiredClosedR0 : LawAlgebra.RequiredClosed rawR0 schemeR0 readingR0}
     (C : DistanceFlatnessMassContext Obj) where
-  route : RepairRoute.{u, v, w} C
-  repairProfile : RepairProfileReading.{u, v, w, z} route
+  route : RepairRoute C rawR0 schemeR0 readingR0 readingClosedR0 requiredClosedR0
+  repairProfile : RepairProfileReading route
   marginProfile : MarginProfile C
   dehnProfile : ArchitecturalDehnProfile.{u}
   biLipschitzProfile : BiLipschitzRepresentationProfile.{u}
@@ -622,20 +647,34 @@ structure RepairMarginDehnContext {U : AtomCarrier.{u}} {Obj : ArchitectureObjec
 namespace RepairMarginDehnContext
 
 variable {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
+variable {S : Site.AATSite Obj} {k : Type v} [CommRing k]
+    {rawR0 : LawAlgebra.RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    {schemeR0 : LawAlgebra.StandardArchitectureScheme rawR0}
+    {readingR0 : LawAlgebra.ClosedEquationalLawReading rawR0 schemeR0}
+    {readingClosedR0 : LawAlgebra.IsClosedEquationalLawReading rawR0 schemeR0 readingR0}
+    {requiredClosedR0 : LawAlgebra.RequiredClosed rawR0 schemeR0 readingR0}
 variable {C : DistanceFlatnessMassContext Obj}
 
 /-- VII.R9 / AC13: expose the selected repair route. -/
-def selectedRoute (R : RepairMarginDehnContext.{u, v, w, z} C) :
-    RepairRoute.{u, v, w} C :=
+def selectedRoute (R : RepairMarginDehnContext
+    (rawR0 := rawR0) (schemeR0 := schemeR0) (readingR0 := readingR0)
+    (readingClosedR0 := readingClosedR0) (requiredClosedR0 := requiredClosedR0) C) :
+    RepairRoute C rawR0 schemeR0 readingR0 readingClosedR0 requiredClosedR0 :=
   R.route
 
 /-- VII.R9 / AC13: expose the selected margin value. -/
-def margin (R : RepairMarginDehnContext.{u, v, w, z} C)
+def margin (R : RepairMarginDehnContext
+    (rawR0 := rawR0) (schemeR0 := schemeR0) (readingR0 := readingR0)
+    (readingClosedR0 := readingClosedR0) (requiredClosedR0 := requiredClosedR0) C)
     (A : C.operationDistance.GeometryState) : DistanceValue Nat :=
   R.marginProfile.Margin A
 
 /-- VII.R9 / AC13: expose the selected architectural Dehn value. -/
-def dehnValue (R : RepairMarginDehnContext.{u, v, w, z} C) (n : Nat) : Nat :=
+def dehnValue (R : RepairMarginDehnContext
+    (rawR0 := rawR0) (schemeR0 := schemeR0) (readingR0 := readingR0)
+    (readingClosedR0 := readingClosedR0) (requiredClosedR0 := requiredClosedR0) C)
+    (n : Nat) : Nat :=
   R.dehnProfile.δ_AAT n
 
 end RepairMarginDehnContext

@@ -25,10 +25,12 @@ used by the implementation loop before introducing the selected trace category l
 abbrev UsesAATSite {U : AtomCarrier.{u}} {A : ArchitectureObject U} :=
   Site.AATSite A
 
-/-- IX.R0: Part IX can use Part III architecture schemes. -/
+/-- IX.R0: Part IX can use the canonical raw-indexed architecture scheme. -/
 abbrev UsesArchitectureScheme {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    (S : Site.AATSite A) (k : Type v) [CommRing k] :=
-  LawAlgebra.Scheme.ArchitectureScheme.{u, v, w, x, y} S k
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : LawAlgebra.RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)] :=
+  LawAlgebra.StandardArchitectureScheme raw
 
 /-- IX.R0: Part IX can use Part IV cover-relative Cech complexes. -/
 abbrev UsesCoverRelativeCechComplex {U : AtomCarrier.{u}} {A : ArchitectureObject U}
@@ -44,13 +46,15 @@ abbrev UsesRepairComparisonProfile : Type (u + 1) :=
 abbrev UsesArchitectureStratum {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} (parameter : SingularityMonodromyStack.StratumReadingParameter S)
     (k : Type v) [CommRing k] :=
-  SingularityMonodromyStack.ArchitectureStratum.{u, v, w, x, y} parameter k
+  SingularityMonodromyStack.ArchitectureStratum.{u, v, y} parameter k
 
 /-- IX.R0: Part IX can use Part VII analytic reading contexts. -/
 abbrev UsesAnalyticReadingContext {U : AtomCarrier.{u}} (Obj : ArchitectureObject U)
     {S : Site.AATSite Obj} {k : Type v} [CommRing k]
-    (p : RepresentationAnalysis.AATSchReadingParameter.{u, v, w, x, y} S k) :=
-  RepresentationAnalysis.AnalyticReadingContext.{u, v, w, x, y, z} Obj p
+    (raw : LawAlgebra.RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    (p : RepresentationAnalysis.AATSchReadingParameter.{u, v, w, x} raw) :=
+  RepresentationAnalysis.AnalyticReadingContext Obj p
 
 /-- IX.R0: Part IX can use Part VIII measurement profiles. -/
 abbrev UsesMeasurementProfile :=

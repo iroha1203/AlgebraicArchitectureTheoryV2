@@ -5,7 +5,7 @@ noncomputable section
 namespace AAT.AG
 namespace SingularityMonodromyStack
 
-universe u v w x y z
+universe u v y z
 
 /--
 VI.定理6.1 input package: a selected first-order deformation whose
@@ -14,10 +14,10 @@ obstruction class is nonzero in the chosen `H1` obstruction target.
 structure FirstOrderObstructionWitness {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {P : StratumReadingParameter S}
     {k : Type v} [CommRing k]
-    {X : ArchitectureStratum.{u, v, w, x, y} P k}
-    {L : CotangentData.{u, v, w, x, y, z} X}
-    {T : TangentData.{u, v, w, x, y, z} X L}
-    (D : DeformationObstructionTheory.{u, v, w, x, y, z} T) where
+    {X : ArchitectureStratum.{u, v, y} P k}
+    {L : CotangentData.{u, v, y, z} X}
+    {T : TangentData.{u, v, y, z} X L}
+    (D : DeformationObstructionTheory.{u, v, y, z} T) where
   eta : D.DeformationTest
   h1ComputesObstructionTarget : T.h1ComputesObstructionTarget_certificate
   nonzero_obstruction : D.ob eta ≠ T.zeroObstruction
@@ -27,9 +27,9 @@ namespace DeformationObstructionTheory
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {P : StratumReadingParameter S}
 variable {k : Type v} [CommRing k]
-variable {X : ArchitectureStratum.{u, v, w, x, y} P k}
-variable {L : CotangentData.{u, v, w, x, y, z} X}
-variable {T : TangentData.{u, v, w, x, y, z} X L}
+variable {X : ArchitectureStratum.{u, v, y} P k}
+variable {L : CotangentData.{u, v, y, z} X}
+variable {T : TangentData.{u, v, y, z} X L}
 
 /--
 VI.定理6.1 Architecture Singularity Criterion.
@@ -38,8 +38,8 @@ Within the selected deformation-obstruction interface, a selected nonzero
 first-order obstruction class is exactly the witness required by `USingular`.
 -/
 theorem architectureSingularityCriterion
-    (D : DeformationObstructionTheory.{u, v, w, x, y, z} T)
-    (W : FirstOrderObstructionWitness.{u, v, w, x, y, z} D) :
+    (D : DeformationObstructionTheory.{u, v, y, z} T)
+    (W : FirstOrderObstructionWitness.{u, v, y, z} D) :
     USingular D :=
   ⟨W.eta, W.nonzero_obstruction⟩
 
@@ -52,10 +52,10 @@ already selected deformation-obstruction interface.
 structure SquareZeroExtensionData {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {P : StratumReadingParameter S}
     {k : Type v} [CommRing k]
-    {X : ArchitectureStratum.{u, v, w, x, y} P k}
-    {L : CotangentData.{u, v, w, x, y, z} X}
-    {T : TangentData.{u, v, w, x, y, z} X L}
-    (D : DeformationObstructionTheory.{u, v, w, x, y, z} T) where
+    {X : ArchitectureStratum.{u, v, y} P k}
+    {L : CotangentData.{u, v, y, z} X}
+    {T : TangentData.{u, v, y, z} X L}
+    (D : DeformationObstructionTheory.{u, v, y, z} T) where
   TestObject : Type z
   DeformationModule : Type z
   SquareZeroExtension : Type z
@@ -73,10 +73,10 @@ namespace SquareZeroExtensionData
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {P : StratumReadingParameter S}
 variable {k : Type v} [CommRing k]
-variable {X : ArchitectureStratum.{u, v, w, x, y} P k}
-variable {L : CotangentData.{u, v, w, x, y, z} X}
-variable {T : TangentData.{u, v, w, x, y, z} X L}
-variable {D : DeformationObstructionTheory.{u, v, w, x, y, z} T}
+variable {X : ArchitectureStratum.{u, v, y} P k}
+variable {L : CotangentData.{u, v, y, z} X}
+variable {T : TangentData.{u, v, y, z} X L}
+variable {D : DeformationObstructionTheory.{u, v, y, z} T}
 
 /--
 VI.定理6.2 Square-Zero Lifting Obstruction.
@@ -85,7 +85,7 @@ If the selected obstruction class of the square-zero lifting problem is
 nonzero, the selected lift predicate fails.
 -/
 theorem squareZeroLiftingObstruction
-    (E : SquareZeroExtensionData.{u, v, w, x, y, z} D)
+    (E : SquareZeroExtensionData.{u, v, y, z} D)
     (hne : E.obstructionClass ≠ T.zeroObstruction) :
     ¬ E.Lift := by
   have hD : D.ob E.xi ≠ T.zeroObstruction := by
@@ -99,7 +99,7 @@ VI.定理6.2 zero-obstruction side: under the explicit effectiveness field of
 the selected obstruction theory, obstruction zero supplies a selected lift.
 -/
 theorem lift_of_obstruction_zero
-    (E : SquareZeroExtensionData.{u, v, w, x, y, z} D)
+    (E : SquareZeroExtensionData.{u, v, y, z} D)
     (hzero : E.obstructionClass = T.zeroObstruction) :
     E.Lift := by
   have hD : D.ob E.xi = T.zeroObstruction := by
@@ -109,13 +109,13 @@ theorem lift_of_obstruction_zero
 
 /-- VI.定理6.2: expose the selected lift torsor reading when obstruction vanishes. -/
 def liftTorsor_of_obstruction_zero
-    (E : SquareZeroExtensionData.{u, v, w, x, y, z} D)
+    (E : SquareZeroExtensionData.{u, v, y, z} D)
     (hzero : E.obstructionClass = T.zeroObstruction) : Type z :=
   E.LiftTorsor hzero
 
 /-- VI.定理6.2: expose the selected automorphism reading when obstruction vanishes. -/
 def automorphisms_of_obstruction_zero
-    (E : SquareZeroExtensionData.{u, v, w, x, y, z} D)
+    (E : SquareZeroExtensionData.{u, v, y, z} D)
     (hzero : E.obstructionClass = T.zeroObstruction) : Type z :=
   E.AutomorphismSpace hzero
 
@@ -128,10 +128,10 @@ the chosen `H1(T_{B/U})` obstruction reading.
 structure BoundaryObstructionFamily {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {P : StratumReadingParameter S}
     {k : Type v} [CommRing k]
-    {X : ArchitectureStratum.{u, v, w, x, y} P k}
-    {L : CotangentData.{u, v, w, x, y, z} X}
-    {T : TangentData.{u, v, w, x, y, z} X L}
-    (D : DeformationObstructionTheory.{u, v, w, x, y, z} T) where
+    {X : ArchitectureStratum.{u, v, y} P k}
+    {L : CotangentData.{u, v, y, z} X}
+    {T : TangentData.{u, v, y, z} X L}
+    (D : DeformationObstructionTheory.{u, v, y, z} T) where
   boundaryTest : D.DeformationTest
   h1NonzeroClass : Prop
   realizes_nonzero_obstruction :
@@ -141,11 +141,11 @@ structure BoundaryObstructionFamily {U : AtomCarrier.{u}} {A : ArchitectureObjec
 def USingularBoundary {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {P : StratumReadingParameter S}
     {k : Type v} [CommRing k]
-    {X : ArchitectureStratum.{u, v, w, x, y} P k}
-    {L : CotangentData.{u, v, w, x, y, z} X}
-    {T : TangentData.{u, v, w, x, y, z} X L}
-    (D : DeformationObstructionTheory.{u, v, w, x, y, z} T) : Prop :=
-  ∃ W : BoundaryObstructionFamily.{u, v, w, x, y, z} D,
+    {X : ArchitectureStratum.{u, v, y} P k}
+    {L : CotangentData.{u, v, y, z} X}
+    {T : TangentData.{u, v, y, z} X L}
+    (D : DeformationObstructionTheory.{u, v, y, z} T) : Prop :=
+  ∃ W : BoundaryObstructionFamily.{u, v, y, z} D,
     W.h1NonzeroClass ∧ USingular D
 
 namespace BoundaryObstructionFamily
@@ -153,10 +153,10 @@ namespace BoundaryObstructionFamily
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {P : StratumReadingParameter S}
 variable {k : Type v} [CommRing k]
-variable {X : ArchitectureStratum.{u, v, w, x, y} P k}
-variable {L : CotangentData.{u, v, w, x, y, z} X}
-variable {T : TangentData.{u, v, w, x, y, z} X L}
-variable {D : DeformationObstructionTheory.{u, v, w, x, y, z} T}
+variable {X : ArchitectureStratum.{u, v, y} P k}
+variable {L : CotangentData.{u, v, y, z} X}
+variable {T : TangentData.{u, v, y, z} X L}
+variable {D : DeformationObstructionTheory.{u, v, y, z} T}
 
 /--
 VI.系6.5 Singular Boundary.
@@ -165,7 +165,7 @@ A selected nonzero `H1(T_{B/U})` class that realizes a boundary obstruction
 turns the boundary into a selected `U`-singular boundary.
 -/
 theorem singularBoundary
-    (W : BoundaryObstructionFamily.{u, v, w, x, y, z} D)
+    (W : BoundaryObstructionFamily.{u, v, y, z} D)
     (h : W.h1NonzeroClass) :
     USingularBoundary D :=
   ⟨W, h, ⟨W.boundaryTest, W.realizes_nonzero_obstruction h⟩⟩

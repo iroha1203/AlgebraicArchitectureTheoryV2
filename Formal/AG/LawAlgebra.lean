@@ -10,7 +10,6 @@ import Formal.AG.LawAlgebra.LawEquation
 import Formal.AG.LawAlgebra.LawfulLocus
 import Formal.AG.LawAlgebra.Nullstellensatz
 import Formal.AG.LawAlgebra.AffineChart
-import Formal.AG.LawAlgebra.Scheme
 import Formal.AG.LawAlgebra.StandardScheme
 import Formal.AG.LawAlgebra.Correspondence
 import Formal.AG.LawAlgebra.FiniteExamples

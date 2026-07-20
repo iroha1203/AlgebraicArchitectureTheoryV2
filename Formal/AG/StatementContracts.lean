@@ -9,6 +9,7 @@ import Formal.AG.StatementContractsStandardArchitectureScheme
 import Formal.AG.StatementContractsClosedEquationalGeometry
 import Formal.AG.StatementContractsReadingFunctoriality
 import Formal.AG.StatementContractsStandardGeometryReferenceModels
+import Formal.AG.StatementContractsLegacyConsolidation
 
 noncomputable section
 
@@ -212,118 +213,5 @@ example {Vertex Edge RelationLabel : Type u}
           G start finish n) :=
   RepresentationAnalysis.adjacencyMatrixPower_apply_eq_countedDirectedWalk_card
     G n start finish
-
-/-- Fixed constructed-package statement for Part VII theorem 16.1 synthesis. -/
-example {P : Site.PartIPrerequisites.{u}} {k : Type v} [CommRing k]
-    (I : RepresentationAnalysis.AATSynthesisConstructionInput.{u, v, w, x, y, z} P k) :
-    ∃ S : RepresentationAnalysis.AATSynthesisPackage.{u, v, w, x, y, z} P k,
-      S = I.toPackage ∧
-        S.aatSite = S.architectureGeometry.site ∧
-        S.ringedAATTopos = S.architectureScheme.ringedTopos ∧
-        S.affineAATCharts = S.architectureScheme.chart ∧
-        S.lawfulLocus =
-          LawAlgebra.LawfulLocus.lawfulLocus
-            S.LawCoordinateAlgebra S.obstructionIdeal ∧
-        HEq S.obstructionCohomology I.obstructionCohomology ∧
-        S.derivedLawGeometry = I.derivedLawGeometry ∧
-        HEq S.singularityMonodromyStack I.singularityMonodromyStack ∧
-        HEq S.representationPeriodMetricAnalysis
-          I.representationPeriodMetricAnalysis :=
-  RepresentationAnalysis.algebraicGeometricAATSynthesis_constructedPackage I
-
-namespace FiniteModel.RepresentationAnalysisPart7
-
-/-- Fixed concrete construction-input type for Issue #3197. -/
-example : RepresentationAnalysis.AATSynthesisConstructionInput.{0, 0, 0, 0, 0, 0}
-    finiteSynthesisPartI PUnit :=
-  nondegenerateSynthesisInput
-
-/-- Fixed concrete package type for Issue #3197. -/
-example : RepresentationAnalysis.AATSynthesisPackage.{0, 0, 0, 0, 0, 0}
-    finiteSynthesisPartI PUnit :=
-  nondegenerateSynthesisPackage
-
-/-- Fixed actual distance-one firing for the safe state. -/
-example :
-    nondegenerateDistanceToFlatness.dist_flat_value MarginState.safe =
-      RepresentationAnalysis.DistanceValue.measured 1 :=
-  nondegenerateDistance_safe_eq_one
-
-/-- Fixed actual distance-zero firing for the selected flat state. -/
-example :
-    nondegenerateDistanceToFlatness.dist_flat_value MarginState.boundary =
-      RepresentationAnalysis.DistanceValue.measured 0 :=
-  nondegenerateDistance_boundary_eq_zero
-
-/-- Fixed nonconstant-distance statement. -/
-example :
-    nondegenerateDistanceToFlatness.dist_flat_value MarginState.safe ≠
-      RepresentationAnalysis.DistanceValue.measured 0 :=
-  nondegenerateDistance_safe_ne_zero
-
-/-- Fixed ideal-to-selected-obstruction identity statement. -/
-example :
-    nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.selectedWitness =
-      nondegenerateSynthesisPackage.obstructionIdeal :=
-  nondegenerateSelectedObstruction_eq_ideal
-
-/-- Fixed representation-output provenance statement. -/
-example :
-    ((nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.representationFamily).representation
-        ToyRepIndex.graph).obj
-        (nondegenerateDecoratedScheme nondegenerateSynthesisPackage.obstructionIdeal) =
-      nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.selectedWitness :=
-  nondegenerateRepresentation_reads_selectedIdeal
-
-/-- Fixed concrete Part I--VII package-chain statement. -/
-example :
-    nondegenerateSynthesisPackage.aatSite =
-        nondegenerateSynthesisPackage.architectureGeometry.site ∧
-      nondegenerateSynthesisPackage.ringedAATTopos =
-        nondegenerateSynthesisPackage.architectureScheme.ringedTopos ∧
-      nondegenerateSynthesisPackage.affineAATCharts =
-        nondegenerateSynthesisPackage.architectureScheme.chart ∧
-      nondegenerateSynthesisPackage.lawfulLocus =
-        LawAlgebra.LawfulLocus.lawfulLocus
-          nondegenerateSynthesisPackage.LawCoordinateAlgebra
-          nondegenerateSynthesisPackage.obstructionIdeal ∧
-      nondegenerateSynthesisPackage.obstructionCohomology =
-        nondegenerateSynthesisInput.obstructionCohomology ∧
-      nondegenerateSynthesisPackage.derivedLawGeometry =
-        nondegenerateSynthesisInput.derivedLawGeometry ∧
-      nondegenerateSynthesisPackage.singularityMonodromyStack =
-        nondegenerateSynthesisInput.singularityMonodromyStack ∧
-      @Eq.{2} (RepresentationAnalysis.AnalyticReadingContext.{0, 0, 0, 0, 0, 0}
-          object nondegenerateSynthesisReadingParameter)
-        nondegenerateSynthesisPackage.representationPeriodMetricAnalysis
-        (nondegenerateSynthesisAnalyticReadingContext
-          (Ideal.span ({(2 : Int)} : Set Int))) :=
-  nondegenerateSynthesis_package_chain.{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-
-/-- Fixed connected nondegenerate evidence statement. -/
-example :
-    finiteSynthesisPartI.architectureObject = object ∧
-      nondegenerateSynthesisPackage.obstructionIdeal ≠ (⊥ : Ideal Int) ∧
-      nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.selectedWitness =
-        nondegenerateSynthesisPackage.obstructionIdeal ∧
-      ((nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.representationFamily).representation
-          ToyRepIndex.graph).obj
-          (nondegenerateDecoratedScheme nondegenerateSynthesisPackage.obstructionIdeal) =
-        nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.selectedWitness ∧
-      (¬ (nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.detectingFamily).analyticZeroReading
-        ToyRepIndex.graph
-          nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.selectedWitness) ∧
-      (nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.distanceMassContext).distanceToFlatness.dist_flat_value
-          MarginState.safe =
-        RepresentationAnalysis.DistanceValue.measured 1 ∧
-      (nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.distanceMassContext).distanceToFlatness.dist_flat_value
-          MarginState.boundary =
-        RepresentationAnalysis.DistanceValue.measured 0 ∧
-      (nondegenerateSynthesisPackage.representationPeriodMetricAnalysis.distanceMassContext).distanceToFlatness.dist_flat_value
-          MarginState.safe ≠
-        RepresentationAnalysis.DistanceValue.measured 0 :=
-  nondegenerateSynthesis_evidence.{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-
-end FiniteModel.RepresentationAnalysisPart7
 
 end AAT.AG
