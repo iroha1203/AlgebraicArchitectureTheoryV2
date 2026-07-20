@@ -23,8 +23,7 @@
 - 理論上の新規 claim は先に `docs/aat/algebraic_geometric_theory/`、`docs/sft/software_field_theory.md`、`docs/sft/aat_interface.md`、または `docs/tool/` に反映する。
 - ArchSig website では Core / Review の AAT structural surface と FieldSig 側の SFT / Operational / governance surface を分けて書く。
 - 公開ページから `docs/website/` の内部設計メモへ誘導しない。
-- 文書階層・参照方向は [docs 読み方](../README.md) に従う。PRD lifecycle は
-  [PRD guideline](../prd/guideline.md) に従う。Website の恒久情報は
+- Website の恒久情報は
   本 guideline、`DESIGN.md`、`SITEMAP.md`、現行 website source に置く。
 
 ## stack / path

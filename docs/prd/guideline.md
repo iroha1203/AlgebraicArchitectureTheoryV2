@@ -36,12 +36,10 @@ task固有のstatement contractがPRDにある場合、その履歴はarchiveさ
 ## PRD参照の禁止
 
 現行のdocs、README、台帳、guideline、website、source code、test、fixture、schema、workflowから
-PRDへの参照を持つことを禁止する。作業中の別PRDからの参照も禁止し、PRD間の依存は
+個別PRD本文、個別PRDのpath、title、contractへの参照を禁止する。作業中の別PRDからの参照も禁止し、PRD間の依存は
 GitHub Issueのdependencyで管理する。`docs/archive/`へ移したPRD本文は履歴であるため、当時の
 参照を保存し、現行規律に合わせた遡及改稿を行わない。Git commit historyとGitHub Issue / PR / reviewの
 作業履歴もrepositoryの現行文書・コードではないため、この参照禁止の対象外とする。
-ただし `docs/README.md` から `docs/prd/` を入口として案内するリンクは許可する。
-個別PRDのpath、title、contractへの参照は引き続き禁止する。
 
 完了scanでは、対象PRDについて少なくとも次を検索する。
 

@@ -26,8 +26,7 @@
   それぞれ専用の theorem / fixture / dataset / issue として定義してから扱う。
 - PRD や完了レビューでは、PRD 自身の acceptance criteria と実装済み test / fixture を照合する。
   PRD が要求していない巨大な一般 claim を、未完了タスクとして追加しない。
-- 文書階層・参照方向は [docs 読み方](../README.md) に従う。PRD lifecycle は
-  [PRD guideline](../prd/guideline.md) に従う。Tooling の恒久情報は
+- Tooling の恒久情報は
   現行仕様、schema docs、source、test、fixture に置く。
 
 ## CLI / schema 方針

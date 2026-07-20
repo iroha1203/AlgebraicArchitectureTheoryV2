@@ -109,9 +109,7 @@
   主役化しない。必要な boundary は、定理や artifact の有効範囲を示すために最小限だけ置く。
 - theorem や定義を追加した場合は、数学本文、Lean source、対応するGOALまたはIssueを突合する。
 - `docs/archive` は歴史的参照として扱い、現行文書の更新時に同じ変更を反映しない。
-- 文書階層・参照方向は [docs 読み方](../README.md) に従う。PRD lifecycle は
-  [PRD guideline](../prd/guideline.md) に従う。AATの恒久情報は
-  現行数学本文に置き、Lean・作業状態はLean source、GOAL、Issue、PRDで管理する。
+- AATの恒久情報は現行数学本文に置き、Lean・作業状態はLean source、GOAL、Issue、PRDで管理する。
 - Architecture Signature は単一スコアではなく、多軸診断として扱う。
 - SOLID や Layered / Clean Architecture などの外部設計語彙は AAT の primitive ではない。
   必要な場合だけ、law presentation、cover、restriction compatibility、obstruction ideal、
