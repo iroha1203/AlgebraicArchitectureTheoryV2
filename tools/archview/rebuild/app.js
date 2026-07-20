@@ -1,12 +1,13 @@
 import { buildArchMapIndex, loadArchMapFromUrl, parseArchMap } from "./archmap.js";
+import { documentsFromFiles, documentsFromUrl, validateAnalysisBundle } from "./analysis.js";
 import { buildArchitectureLayout } from "./layout.js";
 import { createArchViewState, MODES } from "./state.js";
 
 const DEFAULT_ARCHMAP_URL = "./fixtures/vertical-slice.archmap.json";
 const MODE_COPY = Object.freeze({
-  architecture: { heading: "Architecture inspector", title: "No architecture loaded", copy: "Load an ArchMap to compose Contexts and Atoms.", summary: "Select a Cover, Context, Subject, Atom, or Source.", analysis: "No analysis loaded" },
-  analysis: { heading: "Analysis inspector", title: "No analysis loaded", copy: "Architecture remains available when compatible ArchSig artifacts are loaded in a later stage.", summary: "Select a finding after loading compatible analysis artifacts.", analysis: "No analysis loaded" },
-  improve: { heading: "Improve inspector", title: "No improvement target selected", copy: "Explicit evidence and repair targets will appear here after analysis is loaded.", summary: "Select an explicit repair target after loading compatible analysis artifacts.", analysis: "No analysis loaded" },
+  architecture: { heading: "Architecture inspector", title: "No architecture loaded", copy: "Load an ArchMap to compose Contexts and Atoms.", summary: "Select a Cover, Context, Subject, Atom, or Source." },
+  analysis: { heading: "Analysis inspector", title: "No analysis loaded", copy: "Load compatible ArchSig artifacts to inspect the current Architecture.", summary: "Select a finding after loading compatible analysis artifacts." },
+  improve: { heading: "Improve inspector", title: "No improvement target selected", copy: "Explicit evidence and repair targets will appear here after analysis is loaded.", summary: "Select an explicit repair target after loading compatible analysis artifacts." },
 });
 
 function requireElement(selector) {
@@ -369,6 +370,33 @@ function renderArchitecture(snapshot, layout, actions) {
   renderSearch(snapshot, actions);
 }
 
+function renderAnalysisStatus(snapshot) {
+  const analysis = snapshot.analysis;
+  const labels = {
+    absent: "No analysis loaded",
+    loading: "Validating ArchSig run…",
+    accepted: "Analysis accepted",
+    malformed: "Analysis rejected · malformed artifacts",
+    mismatch: "Analysis rejected · identity mismatch",
+    unresolved: "Analysis rejected · unresolved references",
+  };
+  const section = requireElement(".analysis-input-status");
+  section.dataset.status = analysis.status;
+  requireElement("#analysis-input-status").textContent = labels[analysis.status] || analysis.status;
+  requireElement("#analysis-status").textContent = labels[analysis.status] || analysis.status;
+  requireElement("#analysis-run-id").textContent = analysis.bundle?.runId || "—";
+  requireElement("#analysis-profile-ref").textContent = analysis.bundle?.profileRef || "—";
+  requireElement("#analysis-packet-digest").textContent = analysis.bundle?.packetDigest || "—";
+  requireElement("#analysis-issues").replaceChildren(...analysis.issues.slice(0, 12).map((entry) => {
+    const item = document.createElement("li");
+    const values = entry.expected && entry.received ? ` Expected ${entry.expected}; received ${entry.received}.` : "";
+    item.textContent = `${entry.path}: ${entry.message}${values}`;
+    return item;
+  }));
+  const findings = requireElement("#findings-list");
+  replaceWithEmpty(findings, analysis.status === "accepted" ? "Compatible analysis loaded · finding display follows in the next Issue" : "No analysis loaded");
+}
+
 export async function startArchView() {
   const root = requireElement("#archview-app");
   const host = requireElement("#atlas-canvas-host");
@@ -421,12 +449,12 @@ export async function startArchView() {
     root.dataset.mode = snapshot.mode;
     root.dataset.phase = snapshot.phase;
     root.dataset.inputStatus = snapshot.architecture.status;
+    root.dataset.analysisStatus = snapshot.analysis.status;
     root.dataset.zoom = snapshot.zoom;
     requireElement("#repository-name").textContent = snapshot.repository || "No repository loaded";
     requireElement("#revision-name").textContent = snapshot.revision || "—";
     requireElement("#cover-name").textContent = snapshot.cover || "No cover selected";
     requireElement("#inspector-heading").textContent = copy.heading;
-    requireElement("#analysis-status").textContent = copy.analysis;
     requireElement("#technical-mode").textContent = snapshot.mode;
     requireElement("#technical-zoom").textContent = snapshot.zoom;
     requireElement("#layout-signature").textContent = layout.signature === "empty" ? "empty" : `${layout.signature.length} deterministic bytes`;
@@ -437,6 +465,7 @@ export async function startArchView() {
     requireElement("#empty-state-title").textContent = snapshot.architecture.status === "empty" ? "Empty ArchMap" : snapshot.architecture.status === "error" ? "ArchMap rejected" : copy.title;
     requireElement("#empty-state-copy").textContent = snapshot.architecture.status === "empty" ? "The supplied ArchMap contains no sources, Atoms, Contexts, or Covers." : snapshot.architecture.status === "error" ? "Review the visible validation findings in Scope Explorer." : copy.copy;
     renderArchitecture(snapshot, layout, actions);
+    renderAnalysisStatus(snapshot);
     publishTestState(snapshot);
   });
 
@@ -484,11 +513,41 @@ export async function startArchView() {
     event.target.value = "";
   });
 
+  const rejectAnalysis = (error, source) => state.analysisRejected(error, source);
+  const acceptAnalysis = async (documents, source) => {
+    state.analysisLoading(source);
+    try { state.analysisAccepted(await validateAnalysisBundle(documents, state.read().architecture.index), source); }
+    catch (error) { rejectAnalysis(error, source); }
+    return state.read().analysis;
+  };
+  const loadAnalysisFiles = async (files, source = "local run directory") => {
+    state.analysisLoading(source);
+    try { return await acceptAnalysis(await documentsFromFiles(files), source); }
+    catch (error) { rejectAnalysis(error, source); return state.read().analysis; }
+  };
+  const loadAnalysisUrl = async (directory) => {
+    const resolved = new URL(directory.endsWith("/") ? directory : `${directory}/`, location.href);
+    if (resolved.origin !== location.origin) {
+      rejectAnalysis(Object.assign(new Error("ArchSig run URL must use the current origin."), { status: "mismatch" }), directory);
+      return state.read().analysis;
+    }
+    state.analysisLoading(resolved.href);
+    try { return await acceptAnalysis(await documentsFromUrl(resolved.href), resolved.href); }
+    catch (error) { rejectAnalysis(error, resolved.href); return state.read().analysis; }
+  };
+  requireElement("#analysis-directory").addEventListener("change", async (event) => {
+    const files = event.target.files;
+    if (files?.length) await loadAnalysisFiles(files, files[0].webkitRelativePath?.split("/")[0] || "local run directory");
+    event.target.value = "";
+  });
+
   const parameters = new URLSearchParams(location.search);
   const requestedArchMap = parameters.get("archmap");
   if (requestedArchMap !== "none") await loadUrl(requestedArchMap || DEFAULT_ARCHMAP_URL);
+  const requestedAnalysis = parameters.get("analysis");
+  if (requestedAnalysis) await loadAnalysisUrl(requestedAnalysis);
   const dispose = () => atlasRenderer?.dispose();
   window.addEventListener("pagehide", dispose, { once: true });
-  window.__archview = Object.freeze({ state, loadUrl, loadText, loadObject, dispose });
+  window.__archview = Object.freeze({ state, loadUrl, loadText, loadObject, loadAnalysisFiles, loadAnalysisUrl, loadAnalysisObject: acceptAnalysis, dispose });
   return state.read();
 }

@@ -245,6 +245,7 @@ export function buildArchMapIndex(document) {
   return Object.freeze({
     schema: document.schema,
     id: document.id,
+    canonicalJson: canonicalDocument(document),
     counts,
     empty: counts.sources === 0 && counts.atoms === 0 && counts.contexts === 0 && counts.covers === 0,
     sources: Object.freeze(sorted([...sourcesById], ([id]) => id)),
@@ -258,6 +259,12 @@ export function buildArchMapIndex(document) {
     contextIdsByAtom,
     unresolved: Object.freeze(unresolved.map((entry) => Object.freeze(entry))),
   });
+}
+
+function canonicalDocument(value) {
+  if (Array.isArray(value)) return `[${value.map(canonicalDocument).join(",")}]`;
+  if (isRecord(value)) return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonicalDocument(value[key])}`).join(",")}}`;
+  return JSON.stringify(value);
 }
 
 export function parseArchMap(text) {
