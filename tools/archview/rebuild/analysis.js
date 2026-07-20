@@ -438,8 +438,7 @@ function collectUnresolved(value, path, index, bridges, unresolved) {
         const target = bridges.contexts.get(match[2]) || match[2];
         const context = index.contextsById.get(source);
         const endpointsResolve = context && index.contextsById.has(target);
-        const observed = (context?.restrictsTo || []).includes(target);
-        const relationResolves = key === "unobservedEdgeRefs" ? !observed : observed;
+        const relationResolves = (context?.restrictsTo || []).includes(target);
         if (!endpointsResolve || !relationResolves) unresolved.push(issue(`${childPath}[${position}]`, `${ref} does not resolve to ${key === "edgeRefs" ? "an explicit ArchMap Context relation" : "loaded ArchMap Contexts"}.`, null, ref));
       });
       continue;
