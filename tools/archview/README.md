@@ -39,7 +39,7 @@ findingからAtomとsource refsを経由して、確認対象を次の4種類に
 | Direct evidence | findingの直接根拠となったsource |
 | Boundary participant | mismatchやrestrictionの一方を構成するsource |
 | Candidate change point | ArchSigまたはRepairPlanが明示した変更候補 |
-| Validated in hypothetical target | hypothetical targetの再計測で選択されたobstructionの解消が記録されたsource |
+| Validated hypothetical repair | targetと選択obstructionを結ぶchecked contractが明示したrepair。現行comparisonのrun-local resultとは分けて扱う |
 
 source解決精度はmethod / symbol / line / file / unresolvedとして表示する。
 method metadataが明示されないsourceはsymbol名からmethodを推測せず、
@@ -178,7 +178,8 @@ Analysis / Improveではfindingを選択すると、local facts、shared relatio
 source evidenceの4段階説明を表示し、同じgeometry上のsupportを強調する。
 source targetはpath → symbol → line → supporting Atomの順に辿れる。
 comparisonとgateは対応artifactが入力された場合だけ表示し、明示されたrepair targetと
-evidence locationを別の状態として扱う。
+evidence locationを別の状態として扱う。comparisonのrecord transitionはrun-local resultとして表示し、
+targetと選択obstructionを結ぶchecked contractなしにvalidated repairへ昇格しない。
 
 現行viewer-data handoffは移行中のruntime contractであり、ArchViewのproduct identityではない。
 

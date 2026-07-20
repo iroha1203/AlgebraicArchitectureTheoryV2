@@ -195,6 +195,7 @@ export function createAtlasRenderer(host) {
 
   const setAnalysisSupport = (support) => {
     analysisSupport = support;
+    const edgeVisuals = [];
     const active = support && (support.atomIds.length || support.contextIds.length || support.edgeIds.length || support.sharedAtomIds.length);
     const highlight = ({ measured_nonzero: 0xb87932, measured_zero: 0x54799a, unmeasured: 0x7c7b76, unknown: 0x7c7b76, not_computed: 0x7c7b76 })[support?.state] || 0x3e7780;
     for (const object of architectureSurface.children) {
@@ -211,8 +212,17 @@ export function createAtlasRenderer(host) {
         : support?.agreementEdgeIds?.includes(edgeId) ? 0x54799a
         : 0x3e7780;
       styleObject(object, !active ? "base" : supported ? "support" : "dim", edgeHighlight);
+      if (data.kind === "restriction") {
+        let materialColor = null;
+        object.traverse((child) => {
+          if (materialColor !== null) return;
+          const material = Array.isArray(child.material) ? child.material[0] : child.material;
+          if (material?.color) materialColor = material.color.getHex();
+        });
+        edgeVisuals.push(Object.freeze({ edgeId, supported: Boolean(supported), color: materialColor }));
+      }
     }
-    return Object.freeze({ active: Boolean(active), atoms: support?.atomIds.length || 0, contexts: support?.contextIds.length || 0, edges: support?.edgeIds.length || 0, sharedSupports: support?.sharedAtomIds.length || 0, state: support?.state || null, edgeStates: Object.freeze({ agreement: support?.agreementEdgeIds?.length || 0, mismatch: support?.mismatchEdgeIds?.length || 0, unmeasured: support?.unmeasuredEdgeIds?.length || 0, participant: (support?.edgeIds || []).filter((edge) => !support?.agreementEdgeIds?.includes(edge) && !support?.mismatchEdgeIds?.includes(edge) && !support?.unmeasuredEdgeIds?.includes(edge)).length }) });
+    return Object.freeze({ active: Boolean(active), atoms: support?.atomIds.length || 0, contexts: support?.contextIds.length || 0, edges: support?.edgeIds.length || 0, sharedSupports: support?.sharedAtomIds.length || 0, state: support?.state || null, edgeStates: Object.freeze({ agreement: support?.agreementEdgeIds?.length || 0, mismatch: support?.mismatchEdgeIds?.length || 0, unmeasured: support?.unmeasuredEdgeIds?.length || 0, participant: (support?.edgeIds || []).filter((edge) => !support?.agreementEdgeIds?.includes(edge) && !support?.mismatchEdgeIds?.includes(edge) && !support?.unmeasuredEdgeIds?.includes(edge)).length }), edgeVisuals: Object.freeze(edgeVisuals) });
   };
 
   const setArchitecture = (index, layout, selectHandler, hoverHandler = null) => {

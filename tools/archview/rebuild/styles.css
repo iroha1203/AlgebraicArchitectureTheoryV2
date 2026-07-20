@@ -288,8 +288,8 @@ summary:focus-visible {
 .source-path-group > strong { color: var(--ink); font-size: 10px; }
 .source-symbol-group,
 .source-line-group { display: block; margin-bottom: 3px; color: var(--graphite); }
-.classified-source-list li:has([data-source-classification="CANDIDATE CHANGE POINT"]) .source-classification-badge { color: #3f6fa8; }
-.classified-source-list li:has([data-source-classification="VALIDATED IN HYPOTHETICAL TARGET"]) .source-classification-badge { color: var(--botanical); }
+.source-classification-badge:has(+ [data-source-classification="CANDIDATE CHANGE POINT"]) { color: #3f6fa8; }
+.source-classification-badge:has(+ [data-source-classification="VALIDATED IN HYPOTHETICAL TARGET"]) { color: var(--botanical); }
 
 .atlas-panel {
   position: relative;

@@ -293,7 +293,7 @@ function renderBreadcrumb(snapshot, actions) {
   if (subject && contextId) items.push({ level: "subject", label: subject, action: () => actions.subject(contextId, subject) });
   const atomId = ownedAtomId;
   if (atomId) items.push({ level: "atom", label: displayName(index?.atomsById.get(atomId)), action: () => actions.atom(atomId, contextId) });
-  if (selection?.kind === "source") items.push({ level: "source", label: selection.id, action: () => actions.source(selection.id, selection.atomId, selection.contextId) });
+  if (selection?.kind === "source") items.push({ level: "source", label: selection.id, action: () => actions.source(selection.id, selection.atomId, selection.contextId, selection.sourceTargetKey) });
   const breadcrumb = requireElement("#semantic-breadcrumb");
   if (!items.length) return replaceWithEmpty(breadcrumb, "Cover → Context → Subject → Atom → Source");
   const nodes = [];
@@ -440,7 +440,8 @@ function renderFindingExplanation(container, finding, model, mode) {
   if (mode === "improve") steps.push(analysisSection("Evidence and change status", [
     "Direct evidence identifies an observed inspection location.",
     finding.repairAtomIds.length ? "Candidate change points are supplied explicitly by ArchSig repair_candidate data." : "No explicit repair target was supplied; evidence is not promoted to a change recommendation.",
-    finding.validated ? "Validated hypothetical target means the comparison remeasurement cleared the selected recorded obstruction." : "No validated hypothetical target is supplied for this finding.",
+    "A validated hypothetical repair requires an explicit checked target-to-obstruction contract; none is supplied by the current artifact contract.",
+    model.comparison ? "The comparison is shown as a run-local recorded result and is not promoted to repair validation." : "No run comparison artifact is supplied for this finding.",
     "No actual repository change is asserted by this analysis view.",
   ]));
   container.replaceChildren(...steps);

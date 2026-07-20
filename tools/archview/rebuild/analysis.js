@@ -19,6 +19,9 @@ const SCHEMAS = Object.freeze({
 });
 
 const REQUIRED = Object.freeze(["manifest", "normalized", "packet", "summary", "insight"]);
+const COMPARISON_DISCIPLINE = "Comparison is a record-level juxtaposition of two ArchSig runs. It does not claim causal repair, semantic equivalence, or preserved obstruction identity; a class-zero reading is available only under a checked coarse-to-fine refinement contract.";
+const COMPARISON_CONCLUSIONS = new Set(["NO_NEW_MEASURED_OBSTRUCTION_RECORDED", "MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE", "MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE", "RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA"]);
+const COMPARISON_TRANSITIONS = new Set(["new_recorded_row", "removed_recorded_row", "measured_obstruction_no_longer_recorded", "measured_obstruction_recorded_after_change", "preexisting_recorded_row", "other_transition"]);
 const RAW_CANONICAL = new WeakMap();
 
 export class AnalysisValidationError extends Error {
@@ -544,12 +547,16 @@ function validateOptionalArtifacts(documents, issues) {
   }
   if (isRecord(documents.comparison)) {
     requireString(documents.comparison.toolVersion, `${FILES.comparison}.toolVersion`, issues);
+    requireString(documents.comparison.conclusionCode, `${FILES.comparison}.conclusionCode`, issues);
+    if (!COMPARISON_CONCLUSIONS.has(documents.comparison.conclusionCode)) issues.push(issue(`${FILES.comparison}.conclusionCode`, "Comparison conclusionCode is not an ArchSig comparison conclusion.", null, documents.comparison.conclusionCode));
     if (requireRecord(documents.comparison.inputDigests, `${FILES.comparison}.inputDigests`, issues)) {
       requireRecord(documents.comparison.inputDigests.baseRun, `${FILES.comparison}.inputDigests.baseRun`, issues);
       requireRecord(documents.comparison.inputDigests.headRun, `${FILES.comparison}.inputDigests.headRun`, issues);
     }
     requireRecord(documents.comparison.comparability, `${FILES.comparison}.comparability`, issues);
     requireString(documents.comparison.discipline, `${FILES.comparison}.discipline`, issues);
+    if (documents.comparison.discipline !== COMPARISON_DISCIPLINE) issues.push(issue(`${FILES.comparison}.discipline`, "Comparison discipline does not match the ArchSig record discipline.", COMPARISON_DISCIPLINE, documents.comparison.discipline));
+    if (!new Set(["identical", "verdict-row", "not-comparable"]).has(documents.comparison.comparability?.level)) issues.push(issue(`${FILES.comparison}.comparability.level`, "Comparison comparability level is not supported.", null, documents.comparison.comparability?.level));
     requireRecord(documents.comparison.artifactRefs, `${FILES.comparison}.artifactRefs`, issues);
     requireRecord(documents.comparison.independentConclusions, `${FILES.comparison}.independentConclusions`, issues);
     requireArray(documents.comparison.verdictTransitions, `${FILES.comparison}.verdictTransitions`, issues);
@@ -563,6 +570,9 @@ function validateOptionalArtifacts(documents, issues) {
       if (!isRecord(row)) return;
       const path = `${FILES.comparison}.verdictTransitions[${position}]`;
       for (const field of ["rowKey", "baseVerdict", "headVerdict", "transition", "introducedByChangeCategory", "discipline"]) requireString(row[field], `${path}.${field}`, issues);
+      if (!COMPARISON_TRANSITIONS.has(row.transition)) issues.push(issue(`${path}.transition`, "Comparison transition is not an ArchSig record transition.", null, row.transition));
+      for (const field of ["baseVerdict", "headVerdict"]) if (!new Set(["measured_zero", "measured_nonzero", "unmeasured", "unknown", "not_computed", "absent"]).has(row[field])) issues.push(issue(`${path}.${field}`, `Comparison ${field} is not a structural verdict or absent.`, null, row[field]));
+      if (row.discipline !== COMPARISON_DISCIPLINE) issues.push(issue(`${path}.discipline`, "Comparison transition discipline does not match the ArchSig record discipline.", COMPARISON_DISCIPLINE, row.discipline));
       for (const field of ["baseRowRef", "headRowRef"]) if (row[field] !== null && row[field] !== undefined) requireString(row[field], `${path}.${field}`, issues);
       requireObjectArray(row.deltaRefs, `${path}.deltaRefs`, ["diffRef", "op", "kind", "id"], issues);
       (row.deltaRefs || []).forEach((delta, deltaPosition) => {
@@ -573,6 +583,24 @@ function validateOptionalArtifacts(documents, issues) {
       if (typeof row.rowKey === "string" && transitionKeys.has(row.rowKey)) issues.push(issue(`${path}.rowKey`, "Comparison verdict transition rowKey values must be unique.", null, row.rowKey));
       transitionKeys.add(row.rowKey);
     });
+    const coverChanged = (documents.comparison.boundaryStatements || []).some((row) => row?.kind === "cover_changed_between_runs");
+    const notComparable = documents.comparison.comparability?.level === "not-comparable";
+    (documents.comparison.verdictTransitions || []).forEach((row, position) => {
+      if (!isRecord(row)) return;
+      const expectedTransition = notComparable || coverChanged ? "other_transition"
+        : row.baseVerdict === "absent" ? "new_recorded_row"
+        : row.headVerdict === "absent" ? "removed_recorded_row"
+        : row.baseVerdict === "measured_nonzero" && row.headVerdict === "measured_zero" ? "measured_obstruction_no_longer_recorded"
+        : row.baseVerdict === "measured_zero" && row.headVerdict === "measured_nonzero" ? "measured_obstruction_recorded_after_change"
+        : row.baseVerdict === row.headVerdict ? "preexisting_recorded_row" : "other_transition";
+      if (row.transition !== expectedTransition) issues.push(issue(`${FILES.comparison}.verdictTransitions[${position}].transition`, "Comparison transition does not match its declared verdict pair and comparability.", expectedTransition, row.transition));
+    });
+    const transitions = documents.comparison.verdictTransitions || [];
+    const expectedConclusion = notComparable ? "RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA"
+      : transitions.some((row) => row?.transition === "measured_obstruction_recorded_after_change") ? "MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE"
+      : transitions.some((row) => row?.transition === "measured_obstruction_no_longer_recorded") ? "MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE"
+      : "NO_NEW_MEASURED_OBSTRUCTION_RECORDED";
+    if (documents.comparison.conclusionCode !== expectedConclusion) issues.push(issue(`${FILES.comparison}.conclusionCode`, "Comparison conclusionCode does not match its record transitions.", expectedConclusion, documents.comparison.conclusionCode));
   }
 }
 
@@ -659,18 +687,24 @@ export async function validateAnalysisBundle(documents, architectureIndex) {
     comparisonSides = compatibleSides.map(({ side }) => side);
     const verdictByRef = new Map(documents.packet.structuralVerdict.map((row) => [row.verdictRef, row]));
     const transitionIssues = [];
-    documents.comparison.verdictTransitions.forEach((transition, position) => compatibleSides.forEach(({ side }) => {
-      const rowRef = transition[`${side}RowRef`];
-      const declaredVerdict = transition[`${side}Verdict`];
+    documents.comparison.verdictTransitions.forEach((transition, position) => {
       const path = `${FILES.comparison}.verdictTransitions[${position}]`;
-      if (rowRef === null || rowRef === undefined) {
-        if (declaredVerdict !== "absent") transitionIssues.push(issue(`${path}.${side}Verdict`, `Comparison ${side} verdict must be absent when its row ref is absent.`, "absent", declaredVerdict));
-        return;
-      }
-      const packetRow = verdictByRef.get(rowRef);
-      if (!packetRow) transitionIssues.push(issue(`${path}.${side}RowRef`, `Comparison ${side} row does not identify a structural verdict in the loaded packet.`, null, rowRef));
-      else if (packetRow.verdict !== declaredVerdict) transitionIssues.push(issue(`${path}.${side}Verdict`, `Comparison ${side} verdict does not match the loaded packet row.`, packetRow.verdict, declaredVerdict));
-    }));
+      compatibleSides.forEach(({ side }) => {
+        const rowRef = transition[`${side}RowRef`];
+        const declaredVerdict = transition[`${side}Verdict`];
+        if (rowRef === null || rowRef === undefined) {
+          if (declaredVerdict !== "absent") transitionIssues.push(issue(`${path}.${side}Verdict`, `Comparison ${side} verdict must be absent when its row ref is absent.`, "absent", declaredVerdict));
+          return;
+        }
+        const packetRow = verdictByRef.get(rowRef);
+        if (!packetRow) transitionIssues.push(issue(`${path}.${side}RowRef`, `Comparison ${side} row does not identify a structural verdict in the loaded packet.`, null, rowRef));
+        else if (packetRow.verdict !== declaredVerdict) transitionIssues.push(issue(`${path}.${side}Verdict`, `Comparison ${side} verdict does not match the loaded packet row.`, packetRow.verdict, declaredVerdict));
+      });
+      (transition.deltaRefs || []).forEach((delta, deltaPosition) => {
+        const belongsToLoadedSide = compatibleSides.some(({ side }) => delta.op === "modified" || (side === "base" && delta.op === "removed") || (side === "head" && delta.op === "added"));
+        if (belongsToLoadedSide && !resolves(delta.id, delta.kind, architectureIndex, bridges)) transitionIssues.push(issue(`${path}.deltaRefs[${deltaPosition}].id`, `Comparison delta does not resolve on the loaded run side.`, null, delta.id));
+      });
+    });
     if (transitionIssues.length) throw new AnalysisValidationError("mismatch", transitionIssues);
   }
   const comparisonDigest = documents.comparison ? await sha256Hex(documents.comparison) : null;

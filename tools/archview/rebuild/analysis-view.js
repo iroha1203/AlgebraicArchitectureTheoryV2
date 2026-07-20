@@ -54,7 +54,7 @@ function sourceLanding(index, sourceId) {
 }
 
 function explicitRepairAtomRefs(card, index, bridges) {
-  const rows = [card.nextAction].filter(isRecord).filter((row) => /repair|candidate|change[_ -]?point/i.test(`${row.kind || ""} ${row.id || ""}`));
+  const rows = [card.nextAction].filter(isRecord).filter((row) => row.kind === "repair_candidate");
   return resolveRefs(rows.flatMap((row) => row.targetRefs || row.atomRefs || []), "atoms", index, bridges);
 }
 
@@ -146,15 +146,8 @@ function buildFinding(card, position, bundle, index) {
   const edgeRefs = relationRefs.filter((edge) => !unobservedEdgeRefs.includes(edge));
   const boundaryContextIds = boundaryContextRefs(relationRefs, index, bridges);
   const repairAtomIds = explicitRepairAtomRefs(card, index, bridges);
-  const verdictRefs = new Set(evidence.structuralVerdictRefs || []);
-  const compatibleSides = new Set(bundle.comparisonSides || []);
-  const validatedAtomIds = unique((bundle.artifacts.comparison?.verdictTransitions || []).flatMap((row) => {
-    const explicitValidatedTargets = resolveRefs((row.deltaRefs || []).filter((delta) => delta?.kind === "atoms" && ["added", "modified"].includes(delta.op)).map((delta) => delta.id), "atoms", index, bridges);
-    const bindsLoadedSide = (compatibleSides.has("base") && verdictRefs.has(row.baseRowRef)) || (compatibleSides.has("head") && verdictRefs.has(row.headRowRef));
-    if (row.transition !== "measured_obstruction_no_longer_recorded" || row.baseVerdict !== "measured_nonzero" || row.headVerdict !== "measured_zero" || !bindsLoadedSide) return [];
-    return repairAtomIds.filter((atomId) => explicitValidatedTargets.includes(atomId));
-  }));
-  const validated = validatedAtomIds.length > 0;
+  const validatedAtomIds = [];
+  const validated = false;
   const sourceTargets = classifiedTargets({ directSourceRefs, supportAtomIds, boundaryContextIds, repairAtomIds, validatedAtomIds }, index);
   const unmeasuredRows = effectiveRows.filter((row) => ["unmeasured", "unknown", "not_computed"].includes(row.verdict));
   return Object.freeze({
