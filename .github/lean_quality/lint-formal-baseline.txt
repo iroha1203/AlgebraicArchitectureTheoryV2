@@ -1048,38 +1048,6 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily.witnessIdeal /- definition missing documentation string -/
 
 -- Formal.AG.LawAlgebra.Scheme
-#check @AAT.AG.LawAlgebra.Scheme.RingedAATTopos.aatSheafObject /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Scheme.RingedAATTopos.structureSheaf /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Scheme.RingedAATTopos.locallyRingedSpace /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Scheme.ChartCompatibility.openImmersion /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Scheme.ChartCompatibility.overlapRepresentability /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Scheme.ChartCompatibility.restrictionCompatible /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Scheme.ChartCompatibility.obstructionIdealCompatible /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Scheme.ChartCompatibility.decorationCompatible /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Scheme.ChartCompatibility.cocycle /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Scheme.ChartCompatibility.locallyRingedCompatible /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Scheme.ArchitectureScheme.ChartIndex /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Scheme.ArchitectureScheme.chart /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Scheme.ArchitectureScheme.compatibility /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Scheme.ArchitectureScheme.ringedTopos /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Scheme.ArchitectureScheme.underlying /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Scheme.SchemeGluingData.ChartIndex /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Scheme.SchemeGluingData.chart /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Scheme.SchemeGluingData.overlap /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Scheme.SchemeGluingData.compatibility /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Scheme.SchemeGluingData.cocycleOnTripleOverlaps /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Scheme.SchemeGluingData.underlyingMathlibGluingBridge /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Scheme.AffineReturnConditions.context /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Scheme.AffineReturnConditions.lawAlgebra /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Scheme.AffineReturnConditions.gluedLocallyRingedSpace /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Scheme.AffineReturnConditions.gluedGlobalSections /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Scheme.AffineReturnConditions.affineChart /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Scheme.AffineReturnConditions.canonicalComparison /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Scheme.AffineReturnConditions.sectionComparison /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Scheme.AffineReturnConditions.gluedAffine /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Scheme.AffineReturnConditions.sectionIdentification /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Scheme.AffineReturnConditions.decorationIdentification /- definition missing documentation string -/
-
 -- Formal.AG.LawAlgebra.StanleyReisner
 #check @AAT.AG.LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.Forb /- definition missing documentation string -/
 #check @AAT.AG.LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.AbstractSimplicialComplex.faces /- definition missing documentation string -/
@@ -1830,8 +1798,6 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.RepresentationAnalysis.AATSch.signatureReading /- definition missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.AATSch.interpretationMapReading /- definition missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.AATSchMorphism.toSchemeHom /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSchMorphism.id /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSchMorphism.comp /- definition missing documentation string -/
 
 -- Formal.AG.RepresentationAnalysis.AnalyticContext
 #check @AAT.AG.RepresentationAnalysis.UDetectingRepresentationFamily.ObstructionClass /- definition missing documentation string -/
@@ -2147,11 +2113,7 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.RepresentationAnalysis.GluingObstructionCurvatureReading.curvatureReadsObstructionClass /- definition missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.LawConflictCurvatureReading.selectedDegree /- definition missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.LawConflictCurvatureReading.curvatureReadsLawConflict /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.CurvatureReadingContext /- inductive missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.CurvatureReadingContext.curvatureProfile /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.CurvatureAxisComparisonContext /- inductive missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.CurvatureLawfulFactorizationContext /- inductive missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.SignatureLawfulFactorizationContext /- inductive missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.SignatureLawfulFactorizationContext.signatureProfile /- definition missing documentation string -/
 
 -- Formal.AG.RepresentationAnalysis.Synthesis
