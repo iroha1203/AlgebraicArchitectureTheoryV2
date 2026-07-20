@@ -42,10 +42,10 @@ structure AATSynthesisPackage
   stratumParameter :
     SingularityMonodromyStack.StratumReadingParameter geometry.site
   singularityMonodromyStack :
-    SingularityMonodromyStack.ArchitectureStratum stratumParameter k
+    SingularityMonodromyStack.ArchitectureStratum.{u, v, w, x, y} stratumParameter k
   readingParameter : AATSchReadingParameter raw
   representationPeriodMetricAnalysis :
-    AnalyticReadingContext P.architectureObject readingParameter
+    AnalyticReadingContext.{u, v, w, x, y, z} P.architectureObject readingParameter
 
 namespace AATSynthesisPackage
 
@@ -55,7 +55,7 @@ abbrev architectureObject
     {geometry : Site.ArchitectureGeometry P}
     {raw : LawAlgebra.RawAmbientRestrictionSystem geometry.site k}
     [HasSheafify geometry.site.topology (LawAlgebra.AATCommAlgCat k)]
-    (_Q : AATSynthesisPackage P k geometry raw) := P.architectureObject
+    (_Q : AATSynthesisPackage.{u, v, w, x, y, z} P k geometry raw) := P.architectureObject
 
 /-- The site supplied by the selected architecture geometry. -/
 abbrev site
@@ -63,7 +63,7 @@ abbrev site
     {geometry : Site.ArchitectureGeometry P}
     {raw : LawAlgebra.RawAmbientRestrictionSystem geometry.site k}
     [HasSheafify geometry.site.topology (LawAlgebra.AATCommAlgCat k)]
-    (_Q : AATSynthesisPackage P k geometry raw) := geometry.site
+    (_Q : AATSynthesisPackage.{u, v, w, x, y, z} P k geometry raw) := geometry.site
 
 /-- The ringed AAT site canonically produced by the raw ambient system. -/
 noncomputable abbrev ringedAATSite
@@ -71,7 +71,7 @@ noncomputable abbrev ringedAATSite
     {geometry : Site.ArchitectureGeometry P}
     {raw : LawAlgebra.RawAmbientRestrictionSystem geometry.site k}
     [HasSheafify geometry.site.topology (LawAlgebra.AATCommAlgCat k)]
-    (_Q : AATSynthesisPackage P k geometry raw) := raw.toRingedSite
+    (_Q : AATSynthesisPackage.{u, v, w, x, y, z} P k geometry raw) := raw.toRingedSite
 
 /-- The affine atlas owned by the selected standard architecture scheme. -/
 abbrev affineAtlas
@@ -79,7 +79,7 @@ abbrev affineAtlas
     {geometry : Site.ArchitectureGeometry P}
     {raw : LawAlgebra.RawAmbientRestrictionSystem geometry.site k}
     [HasSheafify geometry.site.topology (LawAlgebra.AATCommAlgCat k)]
-    (Q : AATSynthesisPackage P k geometry raw) := Q.architectureScheme.atlas
+    (Q : AATSynthesisPackage.{u, v, w, x, y, z} P k geometry raw) := Q.architectureScheme.atlas
 
 /--
 The law-generated ideal sheaf of the package reading.
@@ -92,7 +92,7 @@ noncomputable def obstructionIdealSheaf
     {geometry : Site.ArchitectureGeometry P}
     {raw : LawAlgebra.RawAmbientRestrictionSystem geometry.site k}
     [HasSheafify geometry.site.topology (LawAlgebra.AATCommAlgCat k)]
-    (Q : AATSynthesisPackage P k geometry raw) :
+    (Q : AATSynthesisPackage.{u, v, w, x, y, z} P k geometry raw) :
     Q.architectureScheme.underlying.IdealSheafData :=
   LawAlgebra.lawGeneratedIdealSheaf raw Q.architectureScheme Q.lawReading
     Q.lawReadingValid Q.requiredClosed
@@ -108,7 +108,7 @@ noncomputable def lawfulClosedSubscheme
     {geometry : Site.ArchitectureGeometry P}
     {raw : LawAlgebra.RawAmbientRestrictionSystem geometry.site k}
     [HasSheafify geometry.site.topology (LawAlgebra.AATCommAlgCat k)]
-    (Q : AATSynthesisPackage P k geometry raw) : AlgebraicGeometry.Scheme :=
+    (Q : AATSynthesisPackage.{u, v, w, x, y, z} P k geometry raw) : AlgebraicGeometry.Scheme :=
   LawAlgebra.lawfulClosedSubscheme raw Q.architectureScheme Q.lawReading
     Q.lawReadingValid Q.requiredClosed
 
@@ -123,7 +123,7 @@ noncomputable def lawfulClosedImmersion
     {geometry : Site.ArchitectureGeometry P}
     {raw : LawAlgebra.RawAmbientRestrictionSystem geometry.site k}
     [HasSheafify geometry.site.topology (LawAlgebra.AATCommAlgCat k)]
-    (Q : AATSynthesisPackage P k geometry raw) :
+    (Q : AATSynthesisPackage.{u, v, w, x, y, z} P k geometry raw) :
     Q.lawfulClosedSubscheme ⟶ Q.architectureScheme.underlying :=
   LawAlgebra.lawfulClosedImmersion raw Q.architectureScheme Q.lawReading
     Q.lawReadingValid Q.requiredClosed
@@ -134,8 +134,8 @@ def analyticReadingContext
     {geometry : Site.ArchitectureGeometry P}
     {raw : LawAlgebra.RawAmbientRestrictionSystem geometry.site k}
     [HasSheafify geometry.site.topology (LawAlgebra.AATCommAlgCat k)]
-    (Q : AATSynthesisPackage P k geometry raw) :
-    AnalyticReadingContext P.architectureObject Q.readingParameter :=
+    (Q : AATSynthesisPackage.{u, v, w, x, y, z} P k geometry raw) :
+    AnalyticReadingContext.{u, v, w, x, y, z} P.architectureObject Q.readingParameter :=
   Q.representationPeriodMetricAnalysis
 
 end AATSynthesisPackage
