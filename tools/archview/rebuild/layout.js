@@ -71,7 +71,7 @@ export function buildArchitectureLayout(index, coverId = null) {
       const height = area / width;
       const position = freezePoint((depth - (sortedDepths.length - 1) / 2) * -10.5, 0.08, (rowIndex - (row.length - 1) / 2) * 10.2);
       contextPosition.set(context.id, position);
-      contextLayouts.push(Object.freeze({ id: context.id, label: context.label || context.id, depth, atomCount, sourceCount: new Set((context.refs || []).filter((ref) => index.sourcesById.has(ref))).size, width, height, position }));
+      contextLayouts.push(Object.freeze({ id: context.id, label: context.label || context.id, depth, atomCount, sourceCount: (context.refs || []).filter((ref) => index.sourcesById.has(ref)).length, width, height, position }));
 
       groups.forEach((group, groupIndex) => {
         const groupX = position.x + (groupIndex - (groups.length - 1) / 2) * 2.25;
