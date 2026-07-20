@@ -153,9 +153,9 @@ source本文・snippetは読み込まない。
 
 Top Barの`Load ArchSig run`は既存analyze run directoryを任意入力として受け取り、manifest、
 normalized ArchMap、measurement packet、summary、insight reportを一括検証する。全artifactの
-`schema / runId / toolVersion / inputDigests / profileRef`、現在のArchMap digest、normalized ID対応を
-検査し、compatibleなrunだけを受理する。comparison reportとgate reportが同じdirectoryにある場合も
-既存schemaとして読み、gate reportのmeasurement packet digestを照合する。不正JSON、schema不一致、
+中核artifactの`schema / runId / toolVersion / inputDigests / profileRef`、現在のArchMap digest、
+normalized ID対応を検査し、compatibleなrunだけを受理する。comparison reportとgate reportが同じdirectoryに
+ある場合は既存shapeを検査し、現在のrunおよびmeasurement packetへのdigest bindingを照合する。不正JSON、schema不一致、
 identity不一致、未解決IDはそれぞれ表示し、analysisを部分的に描画しない。ArchMapを読み直すとanalysisは
 通常の未読込状態へ戻る。
 

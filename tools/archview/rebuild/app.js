@@ -409,6 +409,7 @@ export async function startArchView() {
   const state = createArchViewState();
   let atlasRenderer = null;
   let renderedSignature = null;
+  let analysisRequest = 0;
 
   const actions = Object.freeze({
     cover(id) { state.selectCover(id); },
@@ -498,6 +499,7 @@ export async function startArchView() {
     state.architectureFailed(error, source);
   };
   const loadUrl = async (url) => {
+    analysisRequest += 1;
     state.architectureLoading(url);
     try {
       const resolved = new URL(url, location.href);
@@ -505,35 +507,43 @@ export async function startArchView() {
       applyIndex(await loadArchMapFromUrl(resolved.href), resolved.href);
     } catch (error) { rejectInput(error, url); }
   };
-  const loadText = (text, source = "local file") => { state.architectureLoading(source); try { applyIndex(parseArchMap(text), source); } catch (error) { rejectInput(error, source); } };
-  const loadObject = (document, source = "runtime object") => { state.architectureLoading(source); try { applyIndex(buildArchMapIndex(document), source); } catch (error) { rejectInput(error, source); } };
+  const loadText = (text, source = "local file") => { analysisRequest += 1; state.architectureLoading(source); try { applyIndex(parseArchMap(text), source); } catch (error) { rejectInput(error, source); } };
+  const loadObject = (document, source = "runtime object") => { analysisRequest += 1; state.architectureLoading(source); try { applyIndex(buildArchMapIndex(document), source); } catch (error) { rejectInput(error, source); } };
   requireElement("#archmap-file").addEventListener("change", async (event) => {
     const file = event.target.files?.[0];
-    if (file) loadText(await file.text(), file.name);
+    if (file) { analysisRequest += 1; loadText(await file.text(), file.name); }
     event.target.value = "";
   });
 
-  const rejectAnalysis = (error, source) => state.analysisRejected(error, source);
-  const acceptAnalysis = async (documents, source) => {
+  const rejectAnalysis = (error, source, requestId = analysisRequest) => {
+    if (requestId === analysisRequest) state.analysisRejected(error, source);
+  };
+  const acceptAnalysis = async (documents, source, requestId = ++analysisRequest) => {
+    if (requestId !== analysisRequest) return state.read().analysis;
+    const architectureIndex = state.read().architecture.index;
     state.analysisLoading(source);
-    try { state.analysisAccepted(await validateAnalysisBundle(documents, state.read().architecture.index), source); }
-    catch (error) { rejectAnalysis(error, source); }
+    try {
+      const bundle = await validateAnalysisBundle(documents, architectureIndex);
+      if (requestId === analysisRequest && state.read().architecture.index === architectureIndex) state.analysisAccepted(bundle, source);
+    } catch (error) { rejectAnalysis(error, source, requestId); }
     return state.read().analysis;
   };
   const loadAnalysisFiles = async (files, source = "local run directory") => {
+    const requestId = ++analysisRequest;
     state.analysisLoading(source);
-    try { return await acceptAnalysis(await documentsFromFiles(files), source); }
-    catch (error) { rejectAnalysis(error, source); return state.read().analysis; }
+    try { return await acceptAnalysis(await documentsFromFiles(files), source, requestId); }
+    catch (error) { rejectAnalysis(error, source, requestId); return state.read().analysis; }
   };
   const loadAnalysisUrl = async (directory) => {
+    const requestId = ++analysisRequest;
     const resolved = new URL(directory.endsWith("/") ? directory : `${directory}/`, location.href);
     if (resolved.origin !== location.origin) {
-      rejectAnalysis(Object.assign(new Error("ArchSig run URL must use the current origin."), { status: "mismatch" }), directory);
+      rejectAnalysis(Object.assign(new Error("ArchSig run URL must use the current origin."), { status: "mismatch" }), directory, requestId);
       return state.read().analysis;
     }
     state.analysisLoading(resolved.href);
-    try { return await acceptAnalysis(await documentsFromUrl(resolved.href), resolved.href); }
-    catch (error) { rejectAnalysis(error, resolved.href); return state.read().analysis; }
+    try { return await acceptAnalysis(await documentsFromUrl(resolved.href), resolved.href, requestId); }
+    catch (error) { rejectAnalysis(error, resolved.href, requestId); return state.read().analysis; }
   };
   requireElement("#analysis-directory").addEventListener("change", async (event) => {
     const files = event.target.files;
