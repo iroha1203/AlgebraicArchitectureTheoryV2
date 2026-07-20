@@ -14,7 +14,7 @@ G4 へ進む前に、候補カードには最低限、次を反映する。
 - `planned_lean_statement` と実装 declaration の突合結果(一致 / 乖離と
   その処置。乖離したまま同期しない — G3 の合格条件4)。
 - `material_premises` の実績化(予定ではなく実装後の三分類。未放電が
-  残る場合は列挙し、`research_evidence_index.md` の未放電仮定欄と一致させる)。
+  残る場合は列挙し、tracking Issue または受理レポートの未放電仮定記録と一致させる)。
 - `#print axioms` と Lean 形式化品質監査の要約。
 - resolved revise と残った unchecked。
 - `genius` 候補の場合は、四審判の `genius_eligibility` と G4 で監査する根拠。通常スコアに戻した場合はその理由。

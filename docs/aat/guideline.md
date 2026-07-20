@@ -78,8 +78,7 @@
   **残タスクであり、境界ではない。** Research に同主題の受理 theorem が存在する限り、
   本体側の欠落を `packaged (assumption-relative)` +境界注記で close してはならない
   (Research 下限原則)。`unported` は完了 status ではなく、close は蒸留完了
-  (下限到達)または「下限到達不能の停止報告」のみで行う。移植状況は
-  `docs/aat/research_evidence_index.md` で追跡する。
+  (下限到達)または「下限到達不能の停止報告」のみで行う。
 - **移植 ≠ import(Research 境界の不変条件)**: 本体(`Formal/AG` 本線、
   `Formal.lean` / `Formal/AG.lean` の配線を含む)から `ResearchLean.AG` を
   import してはならない。import 方向は Research → 本体のみ可
@@ -110,8 +109,7 @@
   主役化しない。必要な boundary は、定理や artifact の有効範囲を示すために最小限だけ置く。
 - theorem や定義を追加した場合は、数学本文、Lean source、対応するGOALまたはIssueを突合する。
 - `docs/archive` は歴史的参照として扱い、現行文書の更新時に同じ変更を反映しない。
-- 文書 lifecycle は [repository documentation guideline](../guideline.md) に従う。AATの恒久情報は
-  現行数学本文に置き、Lean・作業状態はLean source、GOAL、Issue、PRDで管理する。
+- AATの恒久情報は現行数学本文に置き、Lean・作業状態はLean source、GOAL、Issue、PRDで管理する。
 - Architecture Signature は単一スコアではなく、多軸診断として扱う。
 - SOLID や Layered / Clean Architecture などの外部設計語彙は AAT の primitive ではない。
   必要な場合だけ、law presentation、cover、restriction compatibility、obstruction ideal、

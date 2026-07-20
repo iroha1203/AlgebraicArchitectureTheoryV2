@@ -16,6 +16,6 @@
 - selected object / cover / coefficient / certificate choices are not accepted as completion without input-boundary construction, canonical/free characterization, universal property, or nonvacuity/adequacy evidence
 - Formal/AG is not directly edited
 - protected math docs and docs/note are not edited
-- accepted Research evidence is registered in docs/aat/research_evidence_index.md
+- accepted Research evidence is recorded in the tracking Issue or acceptance report
 - PR body uses Refs for the tracking Issue unless the human explicitly requested closure
 Return the review-pr verdict and target-theorem-loop-specific findings.

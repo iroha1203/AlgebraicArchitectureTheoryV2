@@ -14,13 +14,13 @@ complete-support regime + gate boundaryKindOverrides + 層 B の class 語 lint)
 
 関連(設計の正本):
 
-- [design_ag-measurement](../archive/2026-07-archsig-v0.5.0-completed/design/design_ag-measurement.md)
+- [design_ag-measurement](../2026-07-archsig-v0.5.0-completed/design/design_ag-measurement.md)
   — §3.1(repair-plan フィールド表)、§3.3.1-3.3.3(saga evaluator 3 種)、§3.4(10 結論 packet)、
   §3.5(実行機構 3 条件・profileRef blocking 依存)、§3.6 S2/S3/A3/A4、§3.7(定理8.4/8.5/6.4 の
   guardrail 三層)、§3.8(翻訳規律 7 項)、§3.9(数値ロックと witness 帰属)、§5.1 Stage 2-3
-- [design_lawpolicy](../archive/2026-07-archsig-v0.5.0-completed/design/design_lawpolicy.md)
+- [design_lawpolicy](../2026-07-archsig-v0.5.0-completed/design/design_lawpolicy.md)
   — §3.4(b)(Stage 3 予約欄)、§7 未決事項 1 / 3(本 PRD が閉じる slot)
-- [再設計ノート](../archive/2026-07-archsig-v0.5.0-completed/archsig_v0_5_0_redesign_note.md)
+- [再設計ノート](../2026-07-archsig-v0.5.0-completed/archsig_v0_5_0_redesign_note.md)
   — §8 裁定3(SAGA 層 E データ = law-equation-surface)・裁定7(単一契約版数)・裁定10(互換ゼロ)、
   compare の class-transport 水準
 - [v0.5.1 PRD](archsig_v0_5_1_prd_lawpolicy_stage2.md) — law surface の schema・予約欄・fingerprint

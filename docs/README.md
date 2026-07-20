@@ -6,6 +6,42 @@ Lean 形式化 status、tooling / empirical protocol を分けて管理する。
 website 側の説明は、ここに置いた研究上の claim discipline を参照してよいが、docs を website copy の
 source of truth として扱わない。
 
+## 文書階層と拘束力
+
+このリポジトリの文書は、次のTier順に権威と拘束力を持つ。
+
+1. **Tier 1: 根本資料**
+   - [研究の全体目標](research_goal.md)
+   - [代数幾何的 AAT 数学本文](aat/algebraic_geometric_theory/README.md)
+   - リポジトリが扱う根本の目標と数学的主張を定める。
+2. **Tier 2: 領域基準**
+   - [PRD guideline](prd/guideline.md)（PRD lifecycleの領域基準）
+   - [AAT / Lean guideline](aat/guideline.md)
+   - [SFT guideline](sft/guideline.md)
+   - [Tooling guideline](tool/guideline.md)
+   - [Website guideline](website/guideline.md)
+   - Tier 1に従って、領域ごとの編集規律・運用規律・現行基準を定める。
+3. **Tier 3: 作業用文書**
+   - `docs/prd/` のPRD本文など（`docs/prd/guideline.md` はTier 2）
+   - 実装・検証のための一時的な作業契約であり、恒久仕様のsource of truthではない。完了後は `docs/archive/` に移す。
+   - 例外として、現在作業中の `docs/aat/aat_lean_06_legacy_consolidation_prd.md` は作業完了まで現行パスに留め、移動・内容変更を行わない。
+4. **Tier 4: メモ**
+   - `docs/note/` など
+   - 拘束力を持たないメモ書きであり、恒久仕様の根拠にはしない。
+5. **Tier 5: archive**
+   - `docs/archive/` など
+   - 過去資料の保管場所であり、現行source of truthとして扱わない。将来的に完全削除する。
+
+下位Tierの文書は上位Tierの内容に従う。Tier間の恒久的な参照は、下位Tierから上位Tierへの方向だけを許可する。
+上位Tierの文書が下位Tierの文書を参照してはならず、Tier 1の数学本文からTier 3のPRDを参照することも禁止する。
+特にTier 3以下の文書を、Tier 1またはTier 2の規律・仕様の代替として扱ってはならない。
+
+## 更新ルール
+
+- **Tier 1** の文書を更新するには、人間の明示的な編集指示、実装者とは別のLLMモデルによる敵対レビュー、人間の判断によるマージを必要とする。
+- **Tier 2** の文書を更新するには、人間の明示的な編集指示を必要とする。
+- **Tier 3以下** の文書には、共通の更新ルールを定めない。ただし、実装中のPRDなど、個別の作業規律が定められている文書はその規律に従う。
+
 第一級本文は次の 3 文書である。
 
 1. [代数幾何的 AAT 数学本文](aat/algebraic_geometric_theory/README.md)
@@ -29,6 +65,7 @@ source of truth として扱わない。
 - [AAT / SFT Interface](sft/aat_interface.md): SFT が AAT から借りる概念と、片方向依存の interface を整理する。
 - [ソフトウェアの場の理論](sft/software_field_theory.md): PRD / Spec / Issue / PR / Review / CI / organization / AI / lifecycle を force, field, trajectory, control として整理する。
 - [Lean 形式化](../Formal/): 現在Leanに存在する定義・定理のsource。
+- [PRD](prd/): 実装・検証中の一時的なPRDを格納する。PRDの責務、参照禁止、完了後archiveの規律は [PRD guideline](prd/guideline.md) を正本とする。
 - [AAT directory guide](aat/README.md): AAT 配下の補助文書の読み方。
 - [SFT directory guide](sft/README.md): SFT 配下の補助文書の読み方。
 - [Website operations](website/README.md): 公開されない website 運用メモ、route 索引、設計文書。
@@ -77,17 +114,8 @@ Lean で証明済みの構造的事実、定義のみの概念、将来の証明
 
 ## 編集ガイドライン
 
-- [Repository documentation guideline](guideline.md): PRD lifecycle、恒久source of truth、参照禁止、完了後archiveの共通規律。
+- [PRD guideline](prd/guideline.md): PRDの責務、参照禁止、完了後archiveの規律。
 - [AAT / Lean guideline](aat/guideline.md): `Formal/AG` / `Formal/Arch`、AAT 数学本文、Lean status、proof obligation の編集方針。
 - [SFT guideline](sft/guideline.md): SFT 本文、AAT / SFT interface、forecast / governance claim boundary の編集方針。
 - [Tooling guideline](tool/guideline.md): ArchMap、LawPolicy、ArchSig、FieldSig、schema、CLI、fixture の編集方針。
 - [Website guideline](website/guideline.md): Cloudflare Pages 公開面、route、tone、asset path、sitemap の編集方針。
-
-## Archive
-
-- [2026-05-09 AAT/SFT reorg archive](archive/2026-05-09-aat-sft-reorg/): AAT/SFT 階層へ再編する前の旧 AAT Part 文書、旧数学設計書、旧 proof obligations、旧 theorem index、旧 Architecture Signature Dynamics 設計。
-- [2026-06-16 AAT pre-AG designs](archive/2026-06-16-aat-pre-ag-designs/): 代数幾何版へ完全移行する前の Atomic Theory / Atom-generated reconstruction / distance extension 設計。
-- [2026-07 website renewal superseded plans](archive/2026-07-website-renewal-superseded/): 現行 website とリニューアル設計ノートへ吸収済みの旧計画・方針。
-- [AAT v2 research requirements revised split](archive/aat_v2_research_requirements_revised_split.md): 数学設計書とツール設計書へ分割する前の原本。
-- [Flatness-Obstruction Conjecture](archive/Flatness%E2%80%93Obstruction%20Conjecture.md): 現行本文へ整理する前の数学草案。
-- [証明義務と実証仮説 full ledger](archive/proof_obligations_full_ledger.md): 旧来の詳細資料。

@@ -7,6 +7,7 @@
 - [SFT guideline](docs/sft/guideline.md)
 - [Tooling guideline](docs/tool/guideline.md)
 - [Website guideline](docs/website/guideline.md)
+- [PRD guideline](docs/prd/guideline.md)
 
 ## 基礎概念
 
@@ -93,7 +94,7 @@
   3. 人間が差分を確認して merge する。LLM はこれらのファイルを含む PR を merge しない。
 - 完了レビューや残タスク整理では、対象 Issue / PRD / 計画書 / acceptance test が要求する
   concrete condition だけを判定する。
-- PRDの責務、参照禁止、完了後archiveの正本は [Repository documentation guideline](docs/guideline.md)
+- PRDの責務、参照禁止、完了後archiveの正本は [PRD guideline](docs/prd/guideline.md)
   とする。PRD作業では同guidelineをhard ruleとして適用し、既存違反も例外扱いしない。
 - 作業は原則として GitHub Issue 起点で進める。次タスクは `priority:blocking`、`status:ready`、
   milestone の依存順を優先する。
@@ -119,8 +120,7 @@
   正式レビュー再実行の条件は、`.codex/skills/_shared/review-protocol.md`を正本とする。
 - Research 側で受理済みの成果が本体に無い状態は、scope 制限ではなく
   `unported (Research-proved)`(未移植)と呼ぶ。詳細は
-  `docs/aat/guideline.md` の Lean status discipline と
-  `docs/aat/research_evidence_index.md` を参照する。
+  `docs/aat/guideline.md` の Lean status discipline を参照する。
 
 ## 「境界」という言葉の使用を禁止する
 

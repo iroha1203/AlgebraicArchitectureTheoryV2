@@ -87,7 +87,7 @@ title prefix `[doc]`をタスク型宣言として扱う。
 - **移植(Research→本体)**: `research/lean/ResearchLean/` の受理成果を本体へ
   蒸留するタスク。必須fieldとResearch下限原則は
   [Issue補助field](references/issue-templates.md#移植issue)をそのまま使う。
-  移植元はまず `docs/aat/research_evidence_index.md`、次にResearch実装を検索する。
+  移植元はまず Issue の source-of-truth pointer、次に `research/lean/ResearchLean/` を検索する。
 - タスク型を判断する材料が Issue 起票時点で不足している場合は、
   推定と明記した上で最も規律の強い型に倒す(移植の疑いがあれば移植)。
 

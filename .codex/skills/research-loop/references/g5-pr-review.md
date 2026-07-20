@@ -11,7 +11,7 @@
 - Lean formalization quality audit is represented faithfully
 - Formal/AG is not directly edited
 - protected math docs and docs/note are not edited
-- accepted Research evidence is registered in docs/aat/research_evidence_index.md
+- accepted Research evidence is recorded in the tracking Issue or acceptance report
 - git diff --check, git diff --cached --check, and untracked-file hygiene were checked
 - PR body uses Refs for the tracking Issue unless the human explicitly requested closure
 - GitHub merge state is verified after merge attempts

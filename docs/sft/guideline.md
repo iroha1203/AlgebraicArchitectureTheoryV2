@@ -5,7 +5,6 @@
 > 注記(2026-07-04): SFT v2 全面改訂が進行中である。`software_field_theory.md` は v2
 > (P3: 序・第I〜IV部・第VI部・第IX〜X部・付録が完全。第V/VII/VIII部は予告)であり、
 > `aat_interface.md`・本ガイドライン・README は P5 で v2 化する。
-> 設計の正典は [SFT v2 理論骨格ノート](../note/sft_development_spacetime_dynamics_skeleton.md)。
 > 以下の記述のうち ForecastCone / ConsequenceEnvelope 等の旧語彙に関する規律は、
 > v1 資産(archive、凍結された `Formal/Arch/Evolution/`、FieldSig)にのみ適用する。
 
@@ -20,7 +19,7 @@
 - `docs/sft/software_field_theory.md` と `docs/sft/aat_interface.md` は SFT / interface の根幹文書である。
   更新は、人間の明示的な編集指示、実装者以外の LLM によるレビュー、人間による差分確認と merge の
   3条件がすべて揃う場合に限る(正本は AGENTS.md「作業規律」)。
-- 文書 lifecycle は [repository documentation guideline](../guideline.md) に従う。SFT の恒久情報は
+- SFT の恒久情報は
   現行本文、interface、台帳、artifact contract に置く。
 
 ## claim discipline
