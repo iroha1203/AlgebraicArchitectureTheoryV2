@@ -76,11 +76,12 @@ generated ideal sheaves, lawful closed subschemes, evaluation morphisms, and
   arbitrary ideals, exactness certificates, or closed subschemes was rejected
   because that would bypass generation by the selected laws.
 * Evaluation points are actual `Scheme.Spec.map` morphisms induced by
-  evaluation at `0`, `1`, and `2`.  Semantic vanishing, ideal vanishing, and
-  factorization are proved through the generic correspondence theorems.
-  Encoding firing as a standalone predicate alias or as a conclusion-bearing
-  certificate was rejected because it would not connect the same morphism to
-  all three readings.
+  evaluation at `0`, `1`, and `2`.  For the selected weak and strong readings,
+  semantic lawfulness, witness vanishing, ideal lawfulness, and factorization
+  are connected for the same evaluation morphism through the generic
+  correspondence theorems.  Encoding firing as a standalone predicate alias
+  or as a conclusion-bearing certificate was rejected because it would not
+  establish those four layers for the same morphism.
 
 ## Implementation notes — R5 / SD4
 
@@ -112,7 +113,7 @@ external comparison morphisms are rejected there.
 These notes cover every nontrivial SD6--SD7 definition, including
 `duplicateLeftAtlas`, `unitIdealFixture`, `nonFlatCoefficientMap`,
 `coordinateReflection`, `reflectedRightRingHom`, `brokenRightChart`, and
-`standardGeometryReferenceModels_fires`.
+`standardGeometryReference_fires`.
 
 * Each negative fixture preserves the surrounding concrete model while
   changing exactly the datum needed to expose one failure reason: duplicate
