@@ -1173,10 +1173,6 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check AAT.AG.Measurement.tinyFiniteStanleyReisnerComplex /- definition missing documentation string -/
 #check AAT.AG.Measurement.tinyFiniteMonomialTorComplex /- definition missing documentation string -/
 #check AAT.AG.Measurement.tinyFiniteConflictSupport /- definition missing documentation string -/
-#check AAT.AG.Measurement.RefactorInvarianceFiniteExample.selectedFiniteSiteEquivalence /- definition missing documentation string -/
-#check AAT.AG.Measurement.RefactorInvarianceFiniteExample.coefficientIso /- definition missing documentation string -/
-#check AAT.AG.Measurement.RefactorInvarianceFiniteExample.theoremPackage /- definition missing documentation string -/
-#check AAT.AG.Measurement.RefactorInvarianceFiniteExample.selectedObstructionClassZeroVerdictPreserved /- definition missing documentation string -/
 #check AAT.AG.Measurement.CellularHodgeFiniteExample.cochainCarrier /- definition missing documentation string -/
 #check AAT.AG.Measurement.CellularHodgeFiniteExample.realHodgeDecomposition /- definition missing documentation string -/
 #check AAT.AG.Measurement.CellularHodgeFiniteExample.realHarmonicDebtMinimality /- definition missing documentation string -/
@@ -1575,16 +1571,10 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.Measurement.PullbackObstructionClass.pullback /- definition missing documentation string -/
 #check @AAT.AG.Measurement.PullbackObstructionClass.sourceDomain /- definition missing documentation string -/
 #check @AAT.AG.Measurement.PullbackObstructionClass.targetDomain /- definition missing documentation string -/
-#check @AAT.AG.Measurement.PullbackObstructionClass.coefficientComparisonFixed /- definition missing documentation string -/
-#check @AAT.AG.Measurement.PullbackObstructionClass.cechPullbackReading /- definition missing documentation string -/
-#check @AAT.AG.Measurement.PullbackObstructionClass.coverRelativePullbackReading /- definition missing documentation string -/
-#check @AAT.AG.Measurement.PullbackObstructionClass.pushforwardRequiresExtraStructure /- definition missing documentation string -/
 #check @AAT.AG.Measurement.RefactorEquivalenceAssumptions.selectedFiniteSiteEquivalence /- definition missing documentation string -/
 #check @AAT.AG.Measurement.RefactorEquivalenceAssumptions.ringedAmbientIso /- definition missing documentation string -/
 #check @AAT.AG.Measurement.RefactorEquivalenceAssumptions.coefficientIso /- definition missing documentation string -/
 #check @AAT.AG.Measurement.RefactorEquivalenceAssumptions.lawIdealPullbackIso /- definition missing documentation string -/
-#check @AAT.AG.Measurement.RefactorEquivalenceAssumptions.witnessReadingPreserved /- definition missing documentation string -/
-#check @AAT.AG.Measurement.RefactorEquivalenceAssumptions.axisReadingPreserved /- definition missing documentation string -/
 #check @AAT.AG.Measurement.RefactorInvarianceUnderEquivalence.targetClass /- definition missing documentation string -/
 
 -- Formal.AG.Measurement.SquareFreeRepair

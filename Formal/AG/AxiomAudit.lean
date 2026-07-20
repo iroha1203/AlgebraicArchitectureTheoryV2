@@ -892,6 +892,41 @@ theorem forceCandidateConcreteNonzero :
     Examples.EvolutionPart9.forceCandidateFixture.concreteObstructionValue ≠ 0 :=
   Examples.EvolutionPart9.forceCandidateFixture.concreteObstruction_nonzero
 
+theorem refactorPullbackEqZeroIff
+    {M_X M_Y : Measurement.MeasurementProfile}
+    {ρ : Measurement.RefactorMorphism M_X M_Y}
+    {P : Measurement.PullbackObstructionClass ρ}
+    (E : Measurement.RefactorEquivalenceAssumptions ρ P)
+    (targetClass : P.TargetClass) :
+    P.pullback targetClass = 0 ↔ targetClass = 0 :=
+  E.pullback_eq_zero_iff targetClass
+
+theorem refactorZeroIffPullbackZero
+    {M_X M_Y : Measurement.MeasurementProfile}
+    {ρ : Measurement.RefactorMorphism M_X M_Y}
+    {P : Measurement.PullbackObstructionClass ρ}
+    (E : Measurement.RefactorEquivalenceAssumptions ρ P)
+    (targetClass : P.TargetClass) :
+    M_Y.Zero (P.targetDomain targetClass) ↔
+      M_X.Zero (P.sourceDomain (P.pullback targetClass)) :=
+  Measurement.refactorZero_iff_pullbackZero E targetClass
+
+theorem refactorFiniteCohomologyZeroTransport :
+    Measurement.threeAxisCohomologyMeasurementProfile.Zero
+        (0 : Measurement.threeAxisRealComplex.cohomology) ↔
+      Measurement.threeAxisCohomologyMeasurementProfile.Zero
+        (Measurement.threeAxisCohomologyPullbackClass.pullback
+          (0 : Measurement.threeAxisRealComplex.cohomology)) :=
+  Measurement.refactorInvarianceExample_zero_iff_pullback_zero
+
+theorem refactorFiniteCohomologyNonzeroTransport :
+    let alpha := Measurement.threeAxisRealComplex.laplacianKernelEquivCohomology
+      Measurement.threeAxisHarmonicKernel
+    (¬ Measurement.threeAxisCohomologyMeasurementProfile.Zero alpha) ∧
+      (¬ Measurement.threeAxisCohomologyMeasurementProfile.Zero
+        (Measurement.threeAxisCohomologyPullbackClass.pullback alpha)) :=
+  Measurement.refactorInvarianceExample_nonzero_preserved
+
 theorem presentedArchitectureFundamentalGroupRelatorMapsToIdentity
     {U : AtomCarrier} {A : ArchitectureObject U}
     {S : Site.AATSite A} {P : SingularityMonodromyStack.StratumReadingParameter S}

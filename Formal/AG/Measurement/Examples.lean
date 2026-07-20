@@ -489,113 +489,6 @@ theorem squareFree_pairPR_minimalRepairHittingSet :
       SquareFreeRepairTarget.pairPR := by
   exact squareFree_pairPR_minimalHitting
 
-/-- R11(d): identity refactor of the pseudo-circle measurement profile. -/
-def pseudoCircleIdentityRefactor :
-    RefactorMorphism pseudoCircleMeasurementProfile pseudoCircleMeasurementProfile where
-  SiteMap := Unit
-  rho := fun _ _ => True
-  RingedAmbientComparison := Unit
-  ringedAmbientComparison_cert := fun _ => True
-  LawIdealPullback := Unit
-  lawIdealPullback_cert := fun _ => True
-  CoefficientComparison := Unit
-  coefficientComparison_cert := fun _ => True
-  WitnessComparison := Unit
-  witnessComparison_cert := fun _ => True
-  AxisComparison := Unit
-  axisComparison_cert := fun _ => True
-  selectedSiteMap := ()
-  selectedRingedAmbientComparison := ()
-  selectedLawIdealPullback := ()
-  selectedCoefficientComparison := ()
-  selectedWitnessComparison := ()
-  selectedAxisComparison := ()
-  selectedRingedAmbientComparison_cert := trivial
-  selectedLawIdealPullback_cert := trivial
-  selectedCoefficientComparison_cert := trivial
-  selectedWitnessComparison_cert := trivial
-  selectedAxisComparison_cert := trivial
-  siteMapFinite := True
-  siteMapFinite_cert := trivial
-  lawCompatible := True
-  lawCompatible_cert := trivial
-  coefficientCompatible := True
-  coefficientCompatible_cert := trivial
-  witnessReadingCompatible := True
-  witnessReadingCompatible_cert := trivial
-  axisReadingCompatible := True
-  axisReadingCompatible_cert := trivial
-
-/-- R11(d): pullback class for the selected identity refactor. -/
-def pseudoCircleIdentityPullbackClass :
-    PullbackObstructionClass pseudoCircleIdentityRefactor where
-  SourceClass := Unit
-  TargetClass := Unit
-  pullback := fun _ => ()
-  sourceDomain := fun _ => PseudoCircleMeasurementDomain.boundaryCocycle
-  targetDomain := fun _ => PseudoCircleMeasurementDomain.boundaryCocycle
-  coefficientComparisonFixed := True
-  coefficientComparisonFixed_cert := trivial
-  cechPullbackReading := True
-  cechPullbackReading_cert := trivial
-  coverRelativePullbackReading := True
-  coverRelativePullbackReading_cert := trivial
-  pushforwardRequiresExtraStructure := True
-  pushforwardRequiresExtraStructure_cert := trivial
-
-/-- R11(d): selected equivalence assumptions for the identity refactor. -/
-def pseudoCircleIdentityRefactorEquivalence :
-    RefactorEquivalenceAssumptions pseudoCircleIdentityRefactor where
-  selectedFiniteSiteEquivalence := True
-  selectedFiniteSiteEquivalence_cert := trivial
-  ringedAmbientIso := fun _ => True
-  ringedAmbientIso_cert := trivial
-  coefficientIso := fun _ => True
-  coefficientIso_cert := trivial
-  lawIdealPullbackIso := fun _ => True
-  lawIdealPullbackIso_cert := trivial
-  witnessReadingPreserved := fun _ => True
-  witnessReadingPreserved_cert := trivial
-  axisReadingPreserved := fun _ => True
-  axisReadingPreserved_cert := trivial
-  zeroPreserved := fun _ _ h => False.elim h
-  zeroReflected := fun _ _ h => False.elim h
-
-/-- R11(d): existing theorem 7.3 package instantiated on the identity fixture. -/
-def refactorInvarianceExamplePackage :
-    RefactorInvarianceUnderEquivalence pseudoCircleIdentityPullbackClass
-      pseudoCircleIdentityRefactorEquivalence :=
-  refactorInvarianceUnderEquivalencePackage
-    (P := pseudoCircleIdentityPullbackClass)
-    pseudoCircleIdentityRefactorEquivalence () rfl rfl
-
-/-- R11(d): selected finite refactor invariance fixture. -/
-structure RefactorInvarianceFiniteExample where
-  selectedFiniteSiteEquivalence : Prop
-  selectedFiniteSiteEquivalence_cert : selectedFiniteSiteEquivalence
-  coefficientIso : Prop
-  coefficientIso_cert : coefficientIso
-  theoremPackage :
-    RefactorInvarianceUnderEquivalence pseudoCircleIdentityPullbackClass
-      pseudoCircleIdentityRefactorEquivalence
-  selectedObstructionClassZeroVerdictPreserved : Prop
-  selectedObstructionClassZeroVerdictPreserved_cert :
-    selectedObstructionClassZeroVerdictPreserved
-
-/-- R11(d): finite site equivalence and coefficient iso preserve zero verdict. -/
-def refactorInvarianceFiniteExample : RefactorInvarianceFiniteExample where
-  selectedFiniteSiteEquivalence := True
-  selectedFiniteSiteEquivalence_cert := trivial
-  coefficientIso := True
-  coefficientIso_cert := trivial
-  theoremPackage := refactorInvarianceExamplePackage
-  selectedObstructionClassZeroVerdictPreserved := True
-  selectedObstructionClassZeroVerdictPreserved_cert := trivial
-
-theorem refactorInvarianceExample_zeroVerdictPreserved :
-    refactorInvarianceFiniteExample.selectedObstructionClassZeroVerdictPreserved :=
-  refactorInvarianceFiniteExample.selectedObstructionClassZeroVerdictPreserved_cert
-
 /-- R11(e): the concrete finite real inner-product complex used by the Hodge fixture. -/
 def lowDegreeRealComplex :
     RealFiniteInnerProductComplex
@@ -885,6 +778,136 @@ theorem threeAxisCohomologyClass_nonzero :
   apply threeAxisHarmonicKernel_nonzero
   apply threeAxisRealComplex.laplacianKernelEquivCohomology.injective
   simpa using h
+
+/-!
+## Refactor equivalence on an actual cohomology quotient
+
+The source and target class carriers below are the cohomology quotient of the
+nondegenerate three-axis complex.  Negation supplies a nonidentity additive
+equivalence, so both zero and nonzero transport are exercised.
+-/
+
+/-- R11(d): profile whose domain and zero reading are the actual cohomology quotient. -/
+noncomputable def threeAxisCohomologyMeasurementProfile : MeasurementProfile where
+  SiteObj := Fin 2
+  Cover := Fin 2
+  Coeff := ℝ
+  EffCoeff := Unit
+  ObstructionObject := ℝ
+  LawUniverse := Unit
+  WitnessVariables := Fin 2
+  ObstructionIdeal := Unit
+  RepresentationFamily := Fin 2
+  Domain := threeAxisRealComplex.cohomology
+  CertRef := fun _ => Unit
+  SelectedMethod := fun _ => Unit
+  InScope := fun _ => True
+  OutOfScope := fun _ => False
+  Zero := fun alpha => alpha = 0
+  NonZero := fun alpha => alpha ≠ 0
+  Undecided := fun _ => False
+  NotRunOrUnavailable := fun _ => False
+
+/-- R11(d): negation is an additive equivalence of the selected cohomology quotient. -/
+noncomputable def threeAxisCohomologyNegEquiv :
+    threeAxisRealComplex.cohomology ≃+ threeAxisRealComplex.cohomology where
+  toFun := fun alpha => -alpha
+  invFun := fun alpha => -alpha
+  left_inv := by intro alpha; simp
+  right_inv := by intro alpha; simp
+  map_add' := by intro alpha beta; simp [add_comm]
+
+/-- R11(d): selected refactor data with actual equivalences on every finite reading. -/
+noncomputable def threeAxisCohomologyRefactor :
+    RefactorMorphism threeAxisCohomologyMeasurementProfile
+      threeAxisCohomologyMeasurementProfile where
+  SiteMap := Fin 2 ≃ Fin 2
+  rho := fun x y => y = x
+  RingedAmbientComparison := ℝ ≃ ℝ
+  ringedAmbientComparison_cert := fun e => Function.Bijective e
+  LawIdealPullback := Unit ≃ Unit
+  lawIdealPullback_cert := fun e => Function.Bijective e
+  CoefficientComparison := ℝ ≃ ℝ
+  coefficientComparison_cert := fun e => Function.Bijective e
+  WitnessComparison := Fin 2 ≃ Fin 2
+  witnessComparison_cert := fun e => Function.Bijective e
+  AxisComparison := Fin 2 ≃ Fin 2
+  axisComparison_cert := fun e => Function.Bijective e
+  selectedSiteMap := Equiv.refl _
+  selectedRingedAmbientComparison := Equiv.refl _
+  selectedLawIdealPullback := Equiv.refl _
+  selectedCoefficientComparison := Equiv.refl _
+  selectedWitnessComparison := Equiv.refl _
+  selectedAxisComparison := Equiv.refl _
+  selectedRingedAmbientComparison_cert := (Equiv.refl _).bijective
+  selectedLawIdealPullback_cert := (Equiv.refl _).bijective
+  selectedCoefficientComparison_cert := (Equiv.refl _).bijective
+  selectedWitnessComparison_cert := (Equiv.refl _).bijective
+  selectedAxisComparison_cert := (Equiv.refl _).bijective
+  siteMapFinite := Finite (Fin 2)
+  siteMapFinite_cert := inferInstance
+  lawCompatible := Function.Bijective (Equiv.refl Unit)
+  lawCompatible_cert := (Equiv.refl Unit).bijective
+  coefficientCompatible := Function.Bijective (Equiv.refl ℝ)
+  coefficientCompatible_cert := (Equiv.refl ℝ).bijective
+  witnessReadingCompatible := Function.Bijective (Equiv.refl (Fin 2))
+  witnessReadingCompatible_cert := (Equiv.refl (Fin 2)).bijective
+  axisReadingCompatible := Function.Bijective (Equiv.refl (Fin 2))
+  axisReadingCompatible_cert := (Equiv.refl (Fin 2)).bijective
+
+/-- R11(d): pullback on the actual cohomology quotient, with exact profile-zero readings. -/
+noncomputable def threeAxisCohomologyPullbackClass :
+    PullbackObstructionClass threeAxisCohomologyRefactor where
+  SourceClass := threeAxisRealComplex.cohomology
+  TargetClass := threeAxisRealComplex.cohomology
+  pullback := threeAxisCohomologyNegEquiv.toAddMonoidHom
+  sourceDomain := id
+  targetDomain := id
+  sourceZero_iff_class_eq_zero := fun _ => Iff.rfl
+  targetZero_iff_class_eq_zero := fun _ => Iff.rfl
+
+/-- R11(d): all selected comparison data induce the negation cohomology isomorphism. -/
+noncomputable def threeAxisCohomologyRefactorEquivalence :
+    RefactorEquivalenceAssumptions threeAxisCohomologyRefactor
+      threeAxisCohomologyPullbackClass where
+  selectedFiniteSiteEquivalence := Equiv.refl _
+  ringedAmbientIso := Equiv.refl _
+  coefficientIso := Equiv.refl _
+  lawIdealPullbackIso := Equiv.refl _
+  witnessReadingIso := Equiv.refl _
+  axisReadingIso := Equiv.refl _
+  cohomologyPullbackIso := threeAxisCohomologyNegEquiv
+  cohomologyPullbackIso_apply := fun _ => rfl
+
+/-- R11(d): theorem 7.3 package on the zero class of the actual quotient. -/
+noncomputable def refactorInvarianceExamplePackage :
+    RefactorInvarianceUnderEquivalence threeAxisCohomologyPullbackClass
+      threeAxisCohomologyRefactorEquivalence :=
+  refactorInvarianceUnderEquivalencePackage
+    threeAxisCohomologyRefactorEquivalence
+      (0 : threeAxisRealComplex.cohomology) trivial trivial
+
+/-- R11(d): zero is preserved and reflected by the induced cohomology isomorphism. -/
+theorem refactorInvarianceExample_zero_iff_pullback_zero :
+    threeAxisCohomologyMeasurementProfile.Zero
+        (0 : threeAxisRealComplex.cohomology) ↔
+      threeAxisCohomologyMeasurementProfile.Zero
+        (threeAxisCohomologyPullbackClass.pullback
+          (0 : threeAxisRealComplex.cohomology)) :=
+  refactorZero_iff_pullbackZero threeAxisCohomologyRefactorEquivalence
+    (0 : threeAxisRealComplex.cohomology)
+
+/-- R11(d): the selected nonzero quotient class remains nonzero after pullback. -/
+theorem refactorInvarianceExample_nonzero_preserved :
+    let alpha := threeAxisRealComplex.laplacianKernelEquivCohomology
+      threeAxisHarmonicKernel
+    (¬ threeAxisCohomologyMeasurementProfile.Zero alpha) ∧
+      (¬ threeAxisCohomologyMeasurementProfile.Zero
+        (threeAxisCohomologyPullbackClass.pullback alpha)) := by
+  dsimp [threeAxisCohomologyMeasurementProfile, threeAxisCohomologyPullbackClass,
+    threeAxisCohomologyNegEquiv]
+  exact ⟨threeAxisCohomologyClass_nonzero,
+    neg_ne_zero.mpr threeAxisCohomologyClass_nonzero⟩
 
 /-- The middle-coordinate harmonic norm is exactly one, hence positive. -/
 theorem threeAxis_harmonic_norm_eq_one :
@@ -1686,7 +1709,15 @@ structure PartVIIIFiniteExampleSuite where
       SquareFreeRepairTarget.pairPR
   finiteComputability :
     Nonempty (FiniteAATComputability pseudoCircleMeasurementProfile)
-  refactorInvariance : RefactorInvarianceFiniteExample
+  refactorInvariance :
+    RefactorInvarianceUnderEquivalence threeAxisCohomologyPullbackClass
+      threeAxisCohomologyRefactorEquivalence
+  refactorNonzeroTransport :
+    let alpha := threeAxisRealComplex.laplacianKernelEquivCohomology
+      threeAxisHarmonicKernel
+    (¬ threeAxisCohomologyMeasurementProfile.Zero alpha) ∧
+      (¬ threeAxisCohomologyMeasurementProfile.Zero
+        (threeAxisCohomologyPullbackClass.pullback alpha))
   cellularHodge : CellularHodgeFiniteExample
   supportTransfer : SupportLocalizedTransferFiniteExample
   packetGAGA : MeasurementPacketGAGAFiniteExample
@@ -1703,7 +1734,8 @@ def partVIIIFiniteExampleSuite : PartVIIIFiniteExampleSuite where
   singletonQMinimalRepair := squareFree_singletonQ_minimalRepairHittingSet
   pairPRMinimalRepair := squareFree_pairPR_minimalRepairHittingSet
   finiteComputability := finiteComputabilityExample_verified
-  refactorInvariance := refactorInvarianceFiniteExample
+  refactorInvariance := refactorInvarianceExamplePackage
+  refactorNonzeroTransport := refactorInvarianceExample_nonzero_preserved
   cellularHodge := cellularHodgeFiniteExample
   supportTransfer := supportLocalizedTransferFiniteExample
   packetGAGA := measurementPacketGAGAFiniteExample
@@ -1727,9 +1759,24 @@ def PartVIIIFiniteExampleSuite.CoversR11 (S : PartVIIIFiniteExampleSuite) : Prop
             squareFreeMinimalRepairHittingSets.minimalRepairHittingSet
               SquareFreeRepairTarget.pairPR ∧
               Nonempty (FiniteAATComputability pseudoCircleMeasurementProfile) ∧
-                S.refactorInvariance.selectedFiniteSiteEquivalence ∧
-                  S.refactorInvariance.coefficientIso ∧
-                    S.refactorInvariance.selectedObstructionClassZeroVerdictPreserved ∧
+                Function.Bijective
+                    threeAxisCohomologyRefactorEquivalence.selectedFiniteSiteEquivalence ∧
+                  Function.Bijective
+                      threeAxisCohomologyRefactorEquivalence.coefficientIso ∧
+                    (threeAxisCohomologyMeasurementProfile.Zero
+                          (threeAxisCohomologyPullbackClass.targetDomain
+                            S.refactorInvariance.targetClass) ↔
+                      threeAxisCohomologyMeasurementProfile.Zero
+                        (threeAxisCohomologyPullbackClass.sourceDomain
+                          (threeAxisCohomologyPullbackClass.pullback
+                            S.refactorInvariance.targetClass))) ∧
+                      ((¬ threeAxisCohomologyMeasurementProfile.Zero
+                          (threeAxisRealComplex.laplacianKernelEquivCohomology
+                            threeAxisHarmonicKernel)) ∧
+                        (¬ threeAxisCohomologyMeasurementProfile.Zero
+                          (threeAxisCohomologyPullbackClass.pullback
+                            (threeAxisRealComplex.laplacianKernelEquivCohomology
+                              threeAxisHarmonicKernel)))) ∧
                       S.cellularHodge.kerL1_equiv_H1 ∧
                         S.cellularHodge.harmonicDebtMinimal ∧
                           S.supportTransfer.nontrivialPairingResidue ∧
@@ -1751,9 +1798,10 @@ theorem partVIIIFiniteExampleSuite_complete :
     partVIIIFiniteExampleSuite.singletonQMinimalRepair,
     partVIIIFiniteExampleSuite.pairPRMinimalRepair,
     partVIIIFiniteExampleSuite.finiteComputability,
-    partVIIIFiniteExampleSuite.refactorInvariance.selectedFiniteSiteEquivalence_cert,
-    partVIIIFiniteExampleSuite.refactorInvariance.coefficientIso_cert,
-    partVIIIFiniteExampleSuite.refactorInvariance.selectedObstructionClassZeroVerdictPreserved_cert,
+    threeAxisCohomologyRefactorEquivalence.selectedFiniteSiteEquivalence.bijective,
+    threeAxisCohomologyRefactorEquivalence.coefficientIso.bijective,
+    partVIIIFiniteExampleSuite.refactorInvariance.zero_iff_pullback_zero,
+    partVIIIFiniteExampleSuite.refactorNonzeroTransport,
     partVIIIFiniteExampleSuite.cellularHodge.kerL1_equiv_H1_cert,
     partVIIIFiniteExampleSuite.cellularHodge.harmonicDebtMinimal_cert,
     partVIIIFiniteExampleSuite.supportTransfer.nontrivialPairingResidue_cert,
