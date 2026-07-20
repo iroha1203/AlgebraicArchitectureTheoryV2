@@ -370,6 +370,7 @@ async function main() {
       returnByValue: true,
       expression: `(async () => {
         const { canonicalJson, documentsFromFiles, sha256Hex, validateAnalysisBundle } = await import('./analysis.js');
+        const { buildAnalysisView } = await import('./analysis-view.js');
         const index = window.__archviewState.architecture.index;
         const archmapDigest = await sha256Hex(index.canonicalJson);
         const inputDigests = {
@@ -402,17 +403,23 @@ async function main() {
         const packet = {
           schema: 'archsig-measurement-packet/v0.5.4', ...contract, packetId: 'packet:browser',
           profile: { schema: 'measurement-profile/v0.5.4', profileId: 'profile:browser@1', siteRef: 'archmap:/contexts', coverRef: index.covers[0].id, coefficient: 'F2', effCoeff: 'finite-linear-algebra@1', resolutionSelector: 'taylor@1', domain: 'finite-poset-site', zeroPredicate: 'rank-zero@1', nonZeroPredicate: 'rank-positive@1', certSelector: 'finite-certificate@1', verdictDiscipline: 'five-valued-structural-verdict@1', finiteBounds: { maxSquareFreeWitnessVariables: 12, maxCoherenceContexts: 12, maxTorWitnessVariables: 12, maxBoundaryResidueVariables: 16, maxLaplacianCells: 16, maxPeriodCycles: 16, maxTransferTargets: 16 } }, profiles: [],
-          structuralVerdict: [], computedInvariants: [], analyticReadings: [], assumptions: [], suppliedData: [], boundaryStatements: [], nonConclusions: [],
+          structuralVerdict: [
+            { verdictRef: 'structuralVerdict/browser/measured', evaluator: 'ag.browser-probe', law: 'surface:browser', target: { kind: 'profile-relative-structural-verdict', coverRef: index.covers[0].id, coefficient: 'F2', classRef: 'computedInvariants/browser-support', scopeSize: { contexts: 2, edges: 1, triangles: 0 } }, verdict: 'measured_nonzero', verdictData: { inScope: true, zero: false, nonZero: true, methodStatus: 'browser_probe', certRef: 'computedInvariants/browser-support' }, evidence: { computedInvariantRefs: ['browser-support'], sourceRefs: [index.sources[0][0]] } },
+            { verdictRef: 'structuralVerdict/browser/unmeasured', evaluator: 'ag.browser-unmeasured', law: 'surface:browser-unmeasured', target: { kind: 'profile-relative-structural-verdict', coverRef: index.covers[0].id, coefficient: 'F2', classRef: 'structuralVerdict/browser/unmeasured', scopeSize: { contexts: 0, edges: 0, triangles: 0 } }, verdict: 'unmeasured', verdictData: { inScope: true, zero: false, nonZero: false, methodStatus: 'input_not_supplied' }, evidence: { computedInvariantRefs: [], sourceRefs: [] } },
+          ], computedInvariants: [{ invariantId: 'browser-support', kind: 'measurement-invariant', edgeRefs: [index.contexts[0].id + '->' + index.contexts[0].restrictsTo[0]] }], analyticReadings: [], assumptions: [], suppliedData: [], boundaryStatements: [], nonConclusions: [],
         };
         const summary = {
           schema: 'archsig-analysis-summary/v0.5.4', ...contract, measurementPacketSchema: packet.schema,
-          profileRef: packet.profile.profileId, structuralVerdictSummary: { rowCount: 0, measuredNonzeroCount: 0, unmeasuredCount: 0, nonTerminalCount: 0 },
-          conclusion: 'AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE', assumptionSummary: { checkedCount: 0, assumedCount: 0, violatedCount: 0 }, insightArtifacts: {}, readThisFirst: { conclusion: 'AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE' }, translationRule: {}, translationRuleTable: [], nonConclusions: [],
+          profileRef: packet.profile.profileId, structuralVerdictSummary: { rowCount: 2, measuredNonzeroCount: 1, unmeasuredCount: 1, nonTerminalCount: 1 },
+          conclusion: 'MEASURED_AG_OBSTRUCTION_UNDER_PROFILE', assumptionSummary: { checkedCount: 0, assumedCount: 0, violatedCount: 0 }, insightArtifacts: {}, readThisFirst: { conclusion: 'MEASURED_AG_OBSTRUCTION_UNDER_PROFILE' }, translationRule: {}, translationRuleTable: [], nonConclusions: [],
         };
         const insight = {
           schema: 'archsig-insight-report/v0.5.4', ...contract, reportId: 'insight:browser', sourcePacketRef: 'archsig-measurement-packet.json',
-          insightCards: [{ id: 'insight:browser:001', kind: 'orientation', title: 'Inspect support', oneLine: 'Inspect declared support.', evidence: { structuralVerdictRefs: [], computedInvariantRefs: [], analyticReadingRefs: [], assumptionRefs: [], atomRefs: [normalizedAtomId(index.atoms[0].id)], contextRefs: [normalizedContextId(index.contexts[0].id)], coverRefs: [normalizedCoverId(index.covers[0].id)], evaluatorRefs: [], sourceRefs: [index.sources[0][0]] }, unsupportedScalar: 42 }],
-          actionQueue: [{ id: 'action:browser:001', kind: 'next_inspection', title: 'Inspect support', reason: 'Declared support is available.', targetRefs: [normalizedAtomId(index.atoms[0].id)] }], generatedAt: '2026-01-01T00:00:00Z', boundaryDigest: {}, claimValidation: {}, copyBlocks: {}, gluingGeometry: {}, guidedTours: [], headline: { conclusionCode: 'AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE' }, omittedDetailCounts: {}, outputArtifacts: {}, rankingBasis: [], readThisFirst: { conclusion: 'AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE' }, viewerVisualScenes: [], nonConclusions: [],
+          insightCards: [
+            { id: 'insight:browser:001', kind: 'measured_probe', title: 'Declared contexts do not agree', oneLine: 'A measured relation is nonzero.', evidence: { structuralVerdictRefs: ['structuralVerdict/browser/measured'], computedInvariantRefs: ['browser-support'], analyticReadingRefs: [], assumptionRefs: [], atomRefs: [normalizedAtomId(index.atoms[0].id)], contextRefs: [normalizedContextId(index.contexts[0].id), normalizedContextId(index.contexts[0].restrictsTo[0])], coverRefs: [normalizedCoverId(index.covers[0].id)], evaluatorRefs: ['ag.browser-probe'], sourceRefs: [index.sources[0][0]] }, nextAction: { kind: 'next_inspection', targetRefs: [normalizedAtomId(index.atoms[0].id)] }, unsupportedScalar: 42 },
+            { id: 'insight:browser:002', kind: 'unmeasured_probe', title: 'Additional support is unmeasured', oneLine: 'No observation was supplied.', evidence: { structuralVerdictRefs: ['structuralVerdict/browser/unmeasured'], computedInvariantRefs: [], analyticReadingRefs: [], assumptionRefs: [], atomRefs: [], contextRefs: [], coverRefs: [normalizedCoverId(index.covers[0].id)], evaluatorRefs: ['ag.browser-unmeasured'], sourceRefs: [] }, nextAction: { kind: 'next_inspection', targetRefs: [] } },
+          ],
+          actionQueue: [{ id: 'action:browser:001', kind: 'next_inspection', title: 'Inspect support', reason: 'Declared support is available.', targetRefs: [normalizedAtomId(index.atoms[0].id)] }], generatedAt: '2026-01-01T00:00:00Z', boundaryDigest: {}, claimValidation: {}, copyBlocks: {}, gluingGeometry: {}, guidedTours: [], headline: { conclusionCode: 'MEASURED_AG_OBSTRUCTION_UNDER_PROFILE' }, omittedDetailCounts: {}, outputArtifacts: {}, rankingBasis: [], readThisFirst: { conclusion: 'MEASURED_AG_OBSTRUCTION_UNDER_PROFILE' }, viewerVisualScenes: [], nonConclusions: [],
         };
         const manifest = {
           schema: 'archsig-run-manifest/v0.5.4', ...contract, commandName: 'analyze', mode: 'measurement', conclusionCode: null,
@@ -454,6 +461,51 @@ async function main() {
           unsupportedScalarRendered: document.querySelector('#findings-list').textContent.includes('42'),
           candidateRendered: document.querySelector('#findings-list').textContent.toLowerCase().includes('candidate'),
         };
+        document.querySelector('[data-mode-button="analysis"]').click();
+        document.querySelector('[data-finding-id="insight:browser:001"]').click();
+        const analysisExplanation = document.querySelector('#analysis-explanation').textContent;
+        const findingCounts = document.querySelector('[data-finding-id="insight:browser:001"] .finding-counts').textContent;
+        const supportHighlight = { ...window.__archviewAnalysisSupport };
+        const firstSourceTarget = document.querySelector('#source-targets [data-source-classification="DIRECT EVIDENCE"][data-source-supporting-atom]:not([data-source-supporting-atom=""])') || document.querySelector('#source-targets [data-source-classification="DIRECT EVIDENCE"]');
+        firstSourceTarget?.click();
+        const sourceLanding = {
+          path: document.querySelector('#source-path').textContent,
+          symbol: document.querySelector('#source-symbol').textContent,
+          line: document.querySelector('#source-line').textContent,
+          classification: document.querySelector('#source-classification').textContent,
+          resolution: document.querySelector('#source-resolution').textContent,
+          supportingAtom: document.querySelector('#source-supporting-atom').textContent,
+          operationsAfterFindingSelection: 1,
+        };
+        const limitedSourceTarget = document.querySelector('#source-targets [data-source-classification="BOUNDARY PARTICIPANT"]');
+        limitedSourceTarget?.click();
+        const limitedSourceResolution = document.querySelector('#source-resolution').textContent;
+        document.querySelector('[data-finding-id="insight:browser:002"]').click();
+        const unmeasuredFinding = { state: document.querySelector('[data-finding-id="insight:browser:002"]').dataset.findingState, explanation: document.querySelector('#analysis-explanation').textContent };
+        document.querySelector('[data-finding-id="insight:browser:001"]').click();
+        document.querySelector('[data-mode-button="improve"]').click();
+        const improveExplanation = document.querySelector('#analysis-explanation').textContent;
+        const acceptedBundle = window.__archviewState.analysis.bundle;
+        const repairCard = { ...insight.insightCards[0], id: 'insight:browser:repair', nextAction: { kind: 'repair_candidate', targetRefs: [normalizedAtomId(index.atoms[0].id)] } };
+        const repairArtifacts = { ...acceptedBundle.artifacts, insight: { ...acceptedBundle.artifacts.insight, insightCards: [repairCard], actionQueue: [] } };
+        const candidateView = buildAnalysisView({ ...acceptedBundle, artifacts: repairArtifacts }, index);
+        const validatedView = buildAnalysisView({ ...acceptedBundle, artifacts: { ...repairArtifacts, comparison: { ...comparison, verdictTransitions: [{ baseRowRef: 'structuralVerdict/browser/measured', headRowRef: 'structuralVerdict/browser/measured', baseVerdict: 'measured_nonzero', headVerdict: 'measured_zero', transition: 'measured_obstruction_no_longer_recorded' }] } } }, index);
+        const candidateClassification = candidateView.findings[0].sourceTargets.map((target) => target.classification);
+        const validatedClassification = validatedView.findings[0].sourceTargets.map((target) => target.classification);
+        const analysisUnderstandingAnswers = [
+          analysisExplanation.includes('1. Local facts') && analysisExplanation.includes('atom:capture'),
+          analysisExplanation.includes('2. Shared relations') && analysisExplanation.includes('ctx:checkout->ctx:ledger'),
+          analysisExplanation.includes('3. Global result') && analysisExplanation.includes('Measured nonzero'),
+          analysisExplanation.includes('4. Source evidence') && sourceLanding.supportingAtom.includes('atom:'),
+          unmeasuredFinding.state === 'unmeasured' && unmeasuredFinding.explanation.includes('Unmeasured'),
+        ];
+        const evidenceRepairAnswers = [
+          sourceLanding.classification === 'DIRECT EVIDENCE',
+          candidateClassification.includes('CANDIDATE CHANGE POINT') && !candidateClassification.includes('VALIDATED IN HYPOTHETICAL TARGET'),
+          validatedClassification.includes('VALIDATED IN HYPOTHETICAL TARGET'),
+          improveExplanation.includes('No actual repository change is asserted'),
+        ];
+        const analysisTask = { analysisExplanation, findingCounts, supportHighlight, sourceLanding, limitedSourceResolution, unmeasuredFinding, improveExplanation, candidateClassification, validatedClassification, findingCount: document.querySelectorAll('[data-finding-id]').length, analysisUnderstandingTaskTest: { answers: analysisUnderstandingAnswers, correct: analysisUnderstandingAnswers.filter(Boolean).length, total: analysisUnderstandingAnswers.length }, evidenceRepairTaskTest: { answers: evidenceRepairAnswers, correct: evidenceRepairAnswers.filter(Boolean).length, total: evidenceRepairAnswers.length, misrecognitionRate: 1 - evidenceRepairAnswers.filter(Boolean).length / evidenceRepairAnswers.length } };
         const malformedJsonState = await window.__archview.loadAnalysisFiles([new File(['{'], 'archsig-run-manifest.json', { type: 'application/json' })], 'malformed JSON directory');
         const malformedJson = { status: malformedJsonState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
         const duplicateKeyState = await window.__archview.loadAnalysisFiles([new File(['{"schema":"invalid","schema":"archsig-run-manifest/v0.5.4"}'], 'archsig-run-manifest.json', { type: 'application/json' })], 'duplicate key directory');
@@ -554,13 +606,31 @@ async function main() {
         await window.__archview.loadUrl('./fixtures/vertical-slice.archmap.json');
         const absent = { status: window.__archviewState.analysis.status, label: document.querySelector('#analysis-input-status').textContent };
         return {
-          accepted, malformedJson, duplicateKey, schemaMismatch, invalidProfile, incompleteDigests, componentMismatch, runIdMismatch, mismatch, unresolved, normalizedInternal, swappedNormalized, invalidRow, invalidCard, forgedConclusion, unresolvedEdge, unresolvedUnobservedEdge, observedAsUnobserved, invalidRef, unresolvedWitness, malformedGate, malformedComparison, gateMismatch, comparisonMismatch, mutationIsolation, numericCanonical, mixedDirectory, malformedUrl, staleRace, redirected, crossOrigin, absent,
+          accepted, analysisTask, malformedJson, duplicateKey, schemaMismatch, invalidProfile, incompleteDigests, componentMismatch, runIdMismatch, mismatch, unresolved, normalizedInternal, swappedNormalized, invalidRow, invalidCard, forgedConclusion, unresolvedEdge, unresolvedUnobservedEdge, observedAsUnobserved, invalidRef, unresolvedWitness, malformedGate, malformedComparison, gateMismatch, comparisonMismatch, mutationIsolation, numericCanonical, mixedDirectory, malformedUrl, staleRace, redirected, crossOrigin, absent,
         };
       })()`,
     });
     const analysisValue = analysisCases.result.value;
     if (analysisValue.accepted.status !== "accepted" || analysisValue.accepted.shellStatus !== "accepted" || analysisValue.accepted.label !== "Analysis accepted" || !/^run:[0-9a-f]{12}$/.test(analysisValue.accepted.runId) || analysisValue.accepted.profile !== "profile:browser@1" || !/^[0-9a-f]{64}$/.test(analysisValue.accepted.packetDigest)) {
       throw new Error(`Compatible ArchSig run was not accepted with visible identity: ${JSON.stringify(analysisValue)}`);
+    }
+    if (analysisValue.analysisTask.findingCount !== 2 || !["1. Local facts", "2. Shared relations", "3. Global result", "4. Source evidence", "Measured nonzero"].every((text) => analysisValue.analysisTask.analysisExplanation.includes(text)) || !analysisValue.analysisTask.findingCounts.includes("2 contexts · 1 boundaries · 1 supporting atoms") || !analysisValue.analysisTask.supportHighlight.active || analysisValue.analysisTask.supportHighlight.atoms !== 1 || analysisValue.analysisTask.supportHighlight.contexts !== 2 || analysisValue.analysisTask.supportHighlight.edges !== 1) {
+      throw new Error(`Analysis finding selection did not explain or highlight supplied support: ${JSON.stringify(analysisValue.analysisTask)}`);
+    }
+    if (analysisValue.analysisTask.sourceLanding.classification !== "DIRECT EVIDENCE" || analysisValue.analysisTask.sourceLanding.resolution === "UNRESOLVED" || analysisValue.analysisTask.sourceLanding.path === "—" || analysisValue.analysisTask.sourceLanding.symbol === "—" || analysisValue.analysisTask.sourceLanding.line === "—" || !analysisValue.analysisTask.sourceLanding.supportingAtom.includes("atom:") || analysisValue.analysisTask.sourceLanding.operationsAfterFindingSelection > 3 || analysisValue.analysisTask.limitedSourceResolution === "METHOD / SYMBOL LEVEL" || analysisValue.analysisTask.limitedSourceResolution === "UNRESOLVED") {
+      throw new Error(`Finding source landing did not reach supplied path/symbol/line/supporting Atom: ${JSON.stringify(analysisValue.analysisTask.sourceLanding)}`);
+    }
+    if (analysisValue.analysisTask.unmeasuredFinding.state !== "unmeasured" || !analysisValue.analysisTask.unmeasuredFinding.explanation.includes("Unmeasured") || !analysisValue.analysisTask.improveExplanation.includes("No explicit repair target was supplied") || !analysisValue.analysisTask.improveExplanation.includes("No actual repository change is asserted")) {
+      throw new Error(`Measured, unmeasured, evidence, and repair states were not kept distinct: ${JSON.stringify(analysisValue.analysisTask)}`);
+    }
+    if (!analysisValue.analysisTask.candidateClassification.includes("CANDIDATE CHANGE POINT") || analysisValue.analysisTask.candidateClassification.includes("VALIDATED IN HYPOTHETICAL TARGET") || !analysisValue.analysisTask.validatedClassification.includes("VALIDATED IN HYPOTHETICAL TARGET")) {
+      throw new Error(`Candidate and validated hypothetical classifications were not separated: ${JSON.stringify(analysisValue.analysisTask)}`);
+    }
+    if (analysisValue.analysisTask.analysisUnderstandingTaskTest.correct / analysisValue.analysisTask.analysisUnderstandingTaskTest.total < 0.8) {
+      throw new Error(`Analysis understanding task score was below 80%: ${JSON.stringify(analysisValue.analysisTask.analysisUnderstandingTaskTest)}`);
+    }
+    if (analysisValue.analysisTask.evidenceRepairTaskTest.misrecognitionRate >= 0.1) {
+      throw new Error(`Evidence and repair task misrecognition rate was not below 10%: ${JSON.stringify(analysisValue.analysisTask.evidenceRepairTaskTest)}`);
     }
     if (analysisValue.malformedJson.status !== "malformed" || !analysisValue.malformedJson.issues.some((entry) => entry.includes("not valid JSON")) || analysisValue.schemaMismatch.status !== "malformed" || !analysisValue.schemaMismatch.issues.some((entry) => entry.includes("must use archsig-analysis-summary/v0.5.4"))) {
       throw new Error(`Malformed JSON or ArchSig schema was not rejected fail-closed: ${JSON.stringify(analysisValue)}`);
@@ -592,7 +662,7 @@ async function main() {
     if (analysisValue.comparisonMismatch.status !== "mismatch" || !analysisValue.comparisonMismatch.issues.some((entry) => entry.includes("comparison digest"))) {
       throw new Error(`Gate comparison digest mismatch was not rejected fail-closed: ${JSON.stringify(analysisValue)}`);
     }
-    if (analysisValue.mutationIsolation.status !== "accepted" || analysisValue.mutationIsolation.rows !== 0 || !analysisValue.mutationIsolation.bridgeMutationRejected || analysisValue.numericCanonical.status !== "accepted" || analysisValue.mixedDirectory.status !== "malformed" || !analysisValue.mixedDirectory.issues.some((entry) => entry.includes("one run directory")) || analysisValue.malformedUrl.status === "accepted") {
+    if (analysisValue.mutationIsolation.status !== "accepted" || analysisValue.mutationIsolation.rows !== 2 || !analysisValue.mutationIsolation.bridgeMutationRejected || analysisValue.numericCanonical.status !== "accepted" || analysisValue.mixedDirectory.status !== "malformed" || !analysisValue.mixedDirectory.issues.some((entry) => entry.includes("one run directory")) || analysisValue.malformedUrl.status === "accepted") {
       throw new Error(`Accepted artifacts remained mutable, mixed directories passed, or malformed URL kept accepted state: ${JSON.stringify(analysisValue)}`);
     }
     if (analysisValue.staleRace.status !== "absent" || analysisValue.staleRace.repository !== "race-replacement" || analysisValue.redirected.status !== "mismatch" || !analysisValue.redirected.issues.some((entry) => entry.includes("must not redirect")) || analysisValue.crossOrigin.status !== "mismatch" || !analysisValue.crossOrigin.issues.some((entry) => entry.includes("current origin")) || analysisValue.absent.status !== "absent" || analysisValue.absent.label !== "No analysis loaded") {

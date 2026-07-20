@@ -10,6 +10,7 @@ const initialState = Object.freeze({
   cover: null,
   zoom: "cover",
   selection: null,
+  finding: null,
   architecture: Object.freeze({ status: "idle", index: null, issues: Object.freeze([]), source: null }),
   analysis: Object.freeze({ status: "absent", bundle: null, issues: Object.freeze([]), source: null }),
   error: null,
@@ -58,7 +59,7 @@ export function createArchViewState() {
       return publish();
     },
     architectureLoading(source) {
-      state = { ...state, architecture: Object.freeze({ status: "loading", index: null, issues: Object.freeze([]), source }), analysis: Object.freeze({ status: "absent", bundle: null, issues: Object.freeze([]), source: null }) };
+      state = { ...state, finding: null, architecture: Object.freeze({ status: "loading", index: null, issues: Object.freeze([]), source }), analysis: Object.freeze({ status: "absent", bundle: null, issues: Object.freeze([]), source: null }) };
       return publish();
     },
     architectureLoaded(index, source) {
@@ -70,6 +71,7 @@ export function createArchViewState() {
         cover: index.covers[0]?.id || null,
         zoom: index.covers.length ? "cover" : "context",
         selection: null,
+        finding: null,
         architecture: Object.freeze({ status, index, issues: index.unresolved, source }),
         analysis: Object.freeze({ status: "absent", bundle: null, issues: Object.freeze([]), source: null }),
       };
@@ -84,23 +86,29 @@ export function createArchViewState() {
         cover: null,
         zoom: "cover",
         selection: null,
+        finding: null,
         architecture: Object.freeze({ status: "error", index: null, issues: Object.freeze(issues), source }),
         analysis: Object.freeze({ status: "absent", bundle: null, issues: Object.freeze([]), source: null }),
       };
       return publish();
     },
     analysisLoading(source) {
-      state = { ...state, analysis: Object.freeze({ status: "loading", bundle: null, issues: Object.freeze([]), source }) };
+      state = { ...state, finding: null, analysis: Object.freeze({ status: "loading", bundle: null, issues: Object.freeze([]), source }) };
       return publish();
     },
     analysisAccepted(bundle, source) {
-      state = { ...state, analysis: Object.freeze({ status: "accepted", bundle, issues: Object.freeze([]), source }) };
+      state = { ...state, finding: null, analysis: Object.freeze({ status: "accepted", bundle, issues: Object.freeze([]), source }) };
       return publish();
     },
     analysisRejected(error, source) {
       const status = ["malformed", "mismatch", "unresolved"].includes(error?.status) ? error.status : "malformed";
       const issues = Array.isArray(error?.issues) ? error.issues : [{ path: "$", message: error instanceof Error ? error.message : String(error) }];
-      state = { ...state, analysis: Object.freeze({ status, bundle: null, issues: Object.freeze(issues), source }) };
+      state = { ...state, finding: null, analysis: Object.freeze({ status, bundle: null, issues: Object.freeze(issues), source }) };
+      return publish();
+    },
+    selectFinding(findingId) {
+      if (state.analysis.status !== "accepted" || typeof findingId !== "string" || !findingId) throw new Error(`Unknown finding selection: ${findingId}`);
+      state = { ...state, finding: findingId };
       return publish();
     },
     selectCover(coverId) {
