@@ -15,14 +15,14 @@ source of truth として扱わない。
    - [代数幾何的 AAT 数学本文](aat/algebraic_geometric_theory/README.md)
    - リポジトリが扱う根本の目標と数学的主張を定める。
 2. **Tier 2: 領域基準**
-   - [PRD guideline](prd/guideline.md)
+   - [PRD guideline](prd/guideline.md)（PRD lifecycleの領域基準）
    - [AAT / Lean guideline](aat/guideline.md)
    - [SFT guideline](sft/guideline.md)
    - [Tooling guideline](tool/guideline.md)
    - [Website guideline](website/guideline.md)
    - Tier 1に従って、領域ごとの編集規律・運用規律・現行基準を定める。
 3. **Tier 3: 作業用文書**
-   - `docs/prd/` に格納するPRDなど
+   - `docs/prd/` のPRD本文など（`docs/prd/guideline.md` はTier 2）
    - 実装・検証のための一時的な作業契約であり、恒久仕様のsource of truthではない。完了後は `docs/archive/` に移す。
    - 例外として、現在作業中の `docs/aat/aat_lean_06_legacy_consolidation_prd.md` は作業完了まで現行パスに留め、移動・内容変更を行わない。
 4. **Tier 4: メモ**

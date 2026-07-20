@@ -10,16 +10,16 @@ measurement-profile 独立 artifact + finiteBounds / basisLedger)。
 
 関連(設計の正本):
 
-- [ArchSig v0.5.0 再設計ノート](../archive/2026-07-archsig-v0.5.0-completed/archsig_v0_5_0_redesign_note.md)
+- [ArchSig v0.5.0 再設計ノート](../2026-07-archsig-v0.5.0-completed/archsig_v0_5_0_redesign_note.md)
   — §4(LawPolicy 案4 + 発展追随の拡張規律)、§8 裁定3(law-equation は law surface へ)・
   裁定7(単一契約版数)・裁定10(互換ゼロ)・裁定12(migrate は SKILL が担う)
-- [design_lawpolicy](../archive/2026-07-archsig-v0.5.0-completed/design/design_lawpolicy.md)
+- [design_lawpolicy](../2026-07-archsig-v0.5.0-completed/design/design_lawpolicy.md)
   — §2 P1/P4/P6、§3.2(binding と NormalizedAtomV2 の対応規則)、§3.4 案4、§5(境界規律)、
   §6 Stage 2、§7 未決事項(本 PRD が閉じるもの・残すものを Non-Goals に明記)
 - AAT 本文: 第III部(定義11.3 law equation realization / 定理11.4 / 系11.5 / 原則11.6 /
   原則5.8 law condition 6 型 / 定理5.6C)、第VIII部(定義2.1 / 定義4.1 / 定理5.2 / 原則5.3 /
   原則2.2 Measurement Is Internal)
-- [責務憲章](../tool/archmap_lawpolicy_archsig_responsibility_charter.md) — 三層分離と
+- [責務憲章](../../tool/archmap_lawpolicy_archsig_responsibility_charter.md) — 三層分離と
   「LawPolicy は witness predicate を手書きしない」の線引き(本 PRD で law universe 宣言の行を追加)
 - G-06(law は方程式である。第III部 §11 の Lean proved 接続)
 
