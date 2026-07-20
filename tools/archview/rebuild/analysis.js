@@ -107,7 +107,8 @@ function validateArtifactRows(packet, summary, insight, issues) {
   const verdictRefs = uniqueField(packet.structuralVerdict, "verdictRef", `${FILES.packet}.structuralVerdict`);
   const invariantRefs = uniqueField(packet.computedInvariants, "invariantId", `${FILES.packet}.computedInvariants`);
   const readingRefs = uniqueField(packet.analyticReadings, "readingId", `${FILES.packet}.analyticReadings`);
-  uniqueField(packet.assumptions, "assumptionId", `${FILES.packet}.assumptions`);
+  const assumptionRefs = uniqueField(packet.assumptions, "assumptionId", `${FILES.packet}.assumptions`);
+  (packet.assumptions || []).forEach((row) => { if (typeof row?.theoremRef === "string") assumptionRefs.add(row.theoremRef); });
   uniqueField(packet.suppliedData, "suppliedId", `${FILES.packet}.suppliedData`);
   uniqueField(packet.boundaryStatements, "id", `${FILES.packet}.boundaryStatements`);
   uniqueField(insight.insightCards, "id", `${FILES.insight}.insightCards`);
@@ -124,6 +125,7 @@ function validateArtifactRows(packet, summary, insight, issues) {
     requireExistingRefs(evidence.structuralVerdictRefs, verdictRefs, `${path}.structuralVerdictRefs`, "structural verdict");
     requireExistingRefs(evidence.computedInvariantRefs, invariantRefs, `${path}.computedInvariantRefs`, "computed invariant");
     requireExistingRefs(evidence.analyticReadingRefs, readingRefs, `${path}.analyticReadingRefs`, "analytic reading");
+    requireExistingRefs(evidence.assumptionRefs, assumptionRefs, `${path}.assumptionRefs`, "valid assumption or theorem reference");
     requireExistingRefs(evidence.evaluatorRefs, evaluatorRefs, `${path}.evaluatorRefs`, "measurement evaluator");
   });
   const verdicts = packet.structuralVerdict || [];

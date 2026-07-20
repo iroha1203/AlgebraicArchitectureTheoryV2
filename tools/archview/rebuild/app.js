@@ -391,7 +391,7 @@ function renderFindingList(container, snapshot, model, actions) {
     state.textContent = finding.stateLabel;
     const counts = document.createElement("span");
     counts.className = "finding-counts";
-    counts.textContent = `${finding.supportContextIds.length} contexts · ${finding.edgeRefs.length} boundaries · ${finding.supportAtomIds.length} supporting atoms`;
+    counts.textContent = `${finding.supportContextIds.length} contexts · ${finding.relationRefs.length} boundaries · ${finding.supportAtomIds.length} supporting atoms`;
     button.append(state, counts);
     item.append(button);
     list.append(item);
@@ -418,9 +418,12 @@ function analysisSection(title, content, state = null) {
 function renderFindingExplanation(container, finding, model, mode) {
   if (!finding) return replaceWithEmpty(container, "Select a finding to inspect local facts, shared relations, global result, and source evidence.");
   const local = finding.localFacts.length ? finding.localFacts.map((fact) => `${fact.atomId} · ${fact.fact} · ${fact.contexts.join(", ")}`) : ["No local Atom support was supplied."];
-  const relationLabel = finding.state === "measured_zero" ? "Agreement" : finding.state === "measured_nonzero" ? "Mismatch" : ["unmeasured", "unknown", "not_computed"].includes(finding.state) ? "Unmeasured relation" : "Observed relation";
+  const classifiedRelations = new Set([...finding.agreementEdgeRefs, ...finding.mismatchEdgeRefs, ...finding.unobservedEdgeRefs]);
   const shared = [
-    ...(finding.edgeRefs.length ? finding.edgeRefs.map((edge) => `${relationLabel} · ${edge}`) : ["No measured relation support was supplied."]),
+    ...finding.agreementEdgeRefs.map((edge) => `Agreement · ${edge}`),
+    ...finding.mismatchEdgeRefs.map((edge) => `Mismatch · ${edge}`),
+    ...finding.edgeRefs.filter((edge) => !classifiedRelations.has(edge)).map((edge) => `Relation participant · ${edge} · status not supplied`),
+    ...(!finding.edgeRefs.length ? ["No measured relation support was supplied."] : []),
     ...(finding.unobservedEdgeRefs.length ? finding.unobservedEdgeRefs.map((edge) => `Unmeasured relation · ${edge}`) : ["Unmeasured relations · none supplied for this finding."]),
   ];
   const global = `${finding.stateLabel}. ${finding.summary}`;

@@ -6,19 +6,6 @@ function unique(values) {
   return [...new Set(values.filter((value) => typeof value === "string" && value.length))].sort();
 }
 
-function collectNamedArrays(value, names, output = []) {
-  if (Array.isArray(value)) {
-    value.forEach((entry) => collectNamedArrays(entry, names, output));
-    return output;
-  }
-  if (!isRecord(value)) return output;
-  for (const [key, child] of Object.entries(value)) {
-    if (names.has(key) && Array.isArray(child)) output.push(...child.filter((entry) => typeof entry === "string"));
-    collectNamedArrays(child, names, output);
-  }
-  return output;
-}
-
 function rawRef(ref, kind, bridges) {
   return bridges?.[kind]?.get(ref) || ref;
 }
@@ -91,6 +78,34 @@ function normalizedEdges(edgeRefs, index, bridges) {
   }));
 }
 
+function collectRelationEvidence(value, index, bridges, path = [], output = { relation: [], agreement: [], mismatch: [], unmeasured: [] }) {
+  if (Array.isArray(value)) {
+    value.forEach((entry) => collectRelationEvidence(entry, index, bridges, path, output));
+    return output;
+  }
+  if (!isRecord(value)) return output;
+  if (typeof value.edgeId === "string") {
+    const [edge] = normalizedEdges([value.edgeId], index, bridges);
+    if (edge) {
+      output.relation.push(edge);
+      if (["unobserved", "not_supplied"].includes(value.sectionObservation)) output.unmeasured.push(edge);
+      else if (value.sectionObservation === "observed" && (value.value === 0 || value.value === "0")) output.agreement.push(edge);
+      else if (value.sectionObservation === "observed" && ((typeof value.value === "number" && value.value !== 0) || (typeof value.value === "string" && value.value !== "0"))) output.mismatch.push(edge);
+    }
+  }
+  for (const [key, child] of Object.entries(value)) {
+    const childPath = [...path, key];
+    if ((key === "edgeRefs" || key === "unobservedEdgeRefs") && Array.isArray(child)) {
+      const edges = normalizedEdges(child, index, bridges);
+      output.relation.push(...edges);
+      if (key === "unobservedEdgeRefs") output.unmeasured.push(...edges);
+      else if (path.some((part) => /mismatch|classSupport/i.test(part))) output.mismatch.push(...edges);
+    }
+    collectRelationEvidence(child, index, bridges, childPath, output);
+  }
+  return output;
+}
+
 function classifiedTargets({ directSourceRefs, supportAtomIds, boundaryContextIds, repairAtomIds, validated }, index) {
   const records = [];
   const add = (classification, sourceId, atomId = null, contextId = null) => {
@@ -124,9 +139,12 @@ function buildFinding(card, position, bundle, index) {
   const directSourceRefs = resolveRefs(evidence.sourceRefs || [], "sources", index, bridges);
   const invariantRefs = new Set(evidence.computedInvariantRefs || []);
   const invariants = packet.computedInvariants.filter((row) => invariantRefs.has(row.invariantId));
-  const edgeRefs = normalizedEdges(collectNamedArrays(invariants, new Set(["edgeRefs"])), index, bridges);
-  const unobservedEdgeRefs = normalizedEdges(collectNamedArrays(invariants, new Set(["unobservedEdgeRefs"])), index, bridges);
-  const relationRefs = unique([...edgeRefs, ...unobservedEdgeRefs]);
+  const relationEvidence = collectRelationEvidence(invariants, index, bridges);
+  const relationRefs = unique(relationEvidence.relation);
+  const unobservedEdgeRefs = unique(relationEvidence.unmeasured);
+  const mismatchEdgeRefs = unique(relationEvidence.mismatch).filter((edge) => !unobservedEdgeRefs.includes(edge));
+  const agreementEdgeRefs = unique(relationEvidence.agreement).filter((edge) => !unobservedEdgeRefs.includes(edge) && !mismatchEdgeRefs.includes(edge));
+  const edgeRefs = relationRefs.filter((edge) => !unobservedEdgeRefs.includes(edge));
   const boundaryContextIds = boundaryContextRefs(relationRefs, index, bridges);
   const repairAtomIds = explicitRepairAtomRefs(card, insight.actionQueue || [], index, bridges);
   const verdictRefs = new Set(evidence.structuralVerdictRefs || []);
@@ -148,6 +166,8 @@ function buildFinding(card, position, bundle, index) {
     supportContextIds: Object.freeze(supportContextIds),
     supportCoverIds: Object.freeze(supportCoverIds),
     edgeRefs: Object.freeze(edgeRefs),
+    agreementEdgeRefs: Object.freeze(agreementEdgeRefs),
+    mismatchEdgeRefs: Object.freeze(mismatchEdgeRefs),
     unobservedEdgeRefs: Object.freeze(unobservedEdgeRefs),
     relationRefs: Object.freeze(relationRefs),
     boundaryContextIds: Object.freeze(boundaryContextIds),
