@@ -6005,7 +6005,7 @@ def readingFunctoriality_infiniteProductCech_degreeZero_not_isIso :=
 def readingFunctoriality_infiniteProductCech_not_compatible :=
   @AAT.AG.ReadingFunctorialityFinite.infiniteProductCech_not_compatible
 
-/-! Part 5 R1 concrete raw-localization reference model. -/
+/-! Audit aliases for `AAT.AG.Examples.StandardGeometryReferenceModels`. -/
 
 def standardGeometry_ambientRing_eq :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.ambientRing_eq

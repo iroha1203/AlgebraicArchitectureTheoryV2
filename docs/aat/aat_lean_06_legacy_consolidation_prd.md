@@ -1071,7 +1071,7 @@ task固有の追加検査は次である。
 - `schemeRepresentation.map leftChartMorphism = leftChartMorphism.toSchemeHom`、underlying chart map equality、
   `IsOpenImmersion`、`¬ IsIso`、同Functorの`map_id` / `map_comp`。constant graph fixtureを
   AC37 / AC39の主証拠に数えていないこと
-- underlying map、open immersion、non-isomorphismがPart 5の
+- underlying map、open immersion、non-isomorphismが
   `StandardGeometryReferenceModels.left_chart_map`、
   `StandardGeometryReferenceModels.left_chart_isOpenImmersion`、
   `StandardGeometryReferenceModels.left_chart_not_isIso`を直接proof-useすること
