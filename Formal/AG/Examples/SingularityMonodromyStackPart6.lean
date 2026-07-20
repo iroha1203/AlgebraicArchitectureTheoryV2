@@ -400,10 +400,15 @@ def toyNonemptyFreeWord : ToyFreeWord where
   steps := [FormalEdgeStep.forward toySelectedOperation]
   startsAtBase := (1 : Nat) = 1
 
+def toySquaredFreeWord : ToyFreeWord where
+  steps := [FormalEdgeStep.forward toySelectedOperation,
+    FormalEdgeStep.forward toySelectedOperation]
+  startsAtBase := (2 : Nat) = 2
+
 abbrev ToyLoopGroup :=
   Multiplicative (ZMod 2)
 
-theorem toyPresentedPi_pi1_nontrivial :
+theorem toySuppliedPi1_nontrivial :
     Nontrivial ToyLoopGroup := by
   infer_instance
 
@@ -416,7 +421,9 @@ theorem toyLoopGenerator_ne_one : toyLoopGenerator ≠ (1 : ToyLoopGroup) := by
   norm_num [toyLoopGenerator] at hAdd
 
 def toyQuotientMap (w : ToyFreeWord) : ToyLoopGroup :=
-  if w.steps = [] then 1 else toyLoopGenerator
+  if w.steps = [] then 1
+  else if w.steps.length = 2 then 1
+  else toyLoopGenerator
 
 theorem toyQuotientMap_empty : toyQuotientMap toyEmptyFreeWord = 1 := by
   simp [toyQuotientMap, toyEmptyFreeWord]
@@ -424,16 +431,19 @@ theorem toyQuotientMap_empty : toyQuotientMap toyEmptyFreeWord = 1 := by
 theorem toyQuotientMap_nonempty : toyQuotientMap toyNonemptyFreeWord = toyLoopGenerator := by
   simp [toyQuotientMap, toyNonemptyFreeWord]
 
+theorem toyQuotientMap_squared : toyQuotientMap toySquaredFreeWord = 1 := by
+  simp [toyQuotientMap, toySquaredFreeWord]
+
 def toyPresentedPi :
     PresentedArchitectureFundamentalGroup.{0, 0, 0, 0, 0, 0}
       toyHomotopyGenerators false where
   FreeWord := ToyFreeWord
   freeWordEquivSelected := Equiv.refl ToyFreeWord
-  Relator w := w = toyEmptyFreeWord
+  Relator w := w = toySquaredFreeWord
   presentation := toyPresentationTwoComplex
-  pathCellRelatorWord _ := toyEmptyFreeWord
+  pathCellRelatorWord _ := toySquaredFreeWord
   pathCellRelator_selected _ := rfl
-  loopRelatorWord _ := toyEmptyFreeWord
+  loopRelatorWord _ := toySquaredFreeWord
   loopRelator_selected _ := rfl
   relator_generated_by_selected_generator := by
     intro w h
@@ -442,7 +452,7 @@ def toyPresentedPi :
   quotientMap := toyQuotientMap
   relator_maps_to_identity := by
     intro w h
-    simpa [h] using toyQuotientMap_empty
+    simpa [h] using toyQuotientMap_squared
   FreeTransport := Bool
   QuotientTransport := Bool
   SendsRelatorsToIdentity T :=
@@ -470,59 +480,97 @@ def toyFlipCoefficientAutomorphism :
   semAut := Equiv.refl Bool
   effAut := Equiv.refl Bool
 
-theorem toyCoefficientAutomorphism_ext
-    {C : MonodromyCoefficientObject}
-    {f g : CoefficientAutomorphism C}
-    (hob : f.obAut = g.obAut)
-    (hsem : f.semAut = g.semAut)
-    (heff : f.effAut = g.effAut) :
-    f = g := by
-  cases f
-  cases g
-  cases hob
-  cases hsem
-  cases heff
+def toyPresentedGenerator :
+    FormalEdgeStep toyOperationCategory :=
+  FormalEdgeStep.forward toySelectedOperation
+
+def toyPresentedGeneratorAction (_step : FormalEdgeStep toyOperationCategory) :
+    CoefficientAutomorphism { Ob := Bool, Sem := Bool, Eff := Bool } :=
+  toyFlipCoefficientAutomorphism
+
+theorem toyPresentedRelator_eq_square
+    {r : FreeGroup (FormalEdgeStep toyOperationCategory)}
+    (hr : r ∈ toyPresentedPi.presentedRelators) :
+    r = FreeGroup.of toyPresentedGenerator * FreeGroup.of toyPresentedGenerator := by
+  rcases hr with ⟨word, hword, rfl⟩
+  change word = toySquaredFreeWord at hword
+  subst word
   rfl
 
-def toyLoopRepresentation (gamma : ToyLoopGroup) :
-    CoefficientAutomorphism { Ob := Bool, Sem := Bool, Eff := Bool } :=
-  if (Multiplicative.toAdd gamma : ZMod 2) = 0 then
-    CoefficientAutomorphism.id _
-  else
-    toyFlipCoefficientAutomorphism
+theorem toyFlipCoefficientAutomorphism_mul_self :
+    toyFlipCoefficientAutomorphism * toyFlipCoefficientAutomorphism = 1 := by
+  apply CoefficientAutomorphism.ext <;>
+    apply Equiv.ext <;>
+    intro b <;>
+    cases b <;>
+    rfl
+
+theorem toyPresentedGeneratorAction_kills_relators :
+    ∀ r ∈ toyPresentedPi.presentedRelators,
+      FreeGroup.lift toyPresentedGeneratorAction r = 1 := by
+  intro r hr
+  rw [toyPresentedRelator_eq_square hr]
+  simpa [toyPresentedGeneratorAction] using toyFlipCoefficientAutomorphism_mul_self
+
+def toyMonodromyAction :
+    MonodromyAction.{0, 0, 0, 0, 0, 0} toyPresentedPi :=
+  MonodromyAction.ofPresentedGenerators
+    toyPresentedPi
+    { Ob := Bool, Sem := Bool, Eff := Bool }
+    toyPresentedGeneratorAction
+    toyPresentedGeneratorAction_kills_relators
+
+def toyPresentedLoopGenerator : toyPresentedPi.pi1AAT :=
+  PresentedGroup.of toyPresentedGenerator
+
+theorem toyMonodromyAction_generator_evaluation :
+    toyMonodromyAction.Mon_gamma toyPresentedLoopGenerator =
+      toyPresentedGeneratorAction toyPresentedGenerator := by
+  unfold toyMonodromyAction
+  exact MonodromyAction.mon_gamma_presented_generator
+    toyPresentedPi
+    { Ob := Bool, Sem := Bool, Eff := Bool }
+    toyPresentedGeneratorAction
+    toyPresentedGeneratorAction_kills_relators
+    toyPresentedGenerator
+
+theorem toyMonodromyAction_relator_evaluation :
+    toyMonodromyAction.Mon_gamma
+      (toyPresentedPi.presentedQuotientMap toySquaredFreeWord) = 1 :=
+  toyMonodromyAction.mon_gamma_presented_relator rfl
+
+theorem toyMonodromyAction_moves_false :
+    (toyMonodromyAction.rho toyPresentedLoopGenerator).obAut false = true := by
+  rw [show toyMonodromyAction.rho toyPresentedLoopGenerator =
+      toyPresentedGeneratorAction toyPresentedGenerator from
+    toyMonodromyAction_generator_evaluation]
+  rfl
+
+theorem toyMonodromyAction_nonidentity :
+    toyMonodromyAction.rho toyPresentedLoopGenerator ≠ CoefficientAutomorphism.id _ := by
+  intro h
+  have hmoved := toyMonodromyAction_moves_false
+  rw [h] at hmoved
+  cases hmoved
+
+theorem toyPresentedLoopGenerator_ne_one :
+    toyPresentedLoopGenerator ≠ (1 : toyPresentedPi.pi1AAT) := by
+  intro h
+  apply toyMonodromyAction_nonidentity
+  rw [h]
+  exact toyMonodromyAction.rho.map_one
+
+theorem toyPresentedPi_pi1_nontrivial :
+    Nontrivial toyPresentedPi.pi1AAT :=
+  ⟨⟨toyPresentedLoopGenerator, 1, toyPresentedLoopGenerator_ne_one⟩⟩
 
 def toyObstructionCoefficientMoved
     (phi : CoefficientAutomorphism { Ob := Bool, Sem := Bool, Eff := Bool }) : Bool :=
   phi.obAut false
 
 def toyMonodromyDefectFromAction : Nat :=
-  if toyObstructionCoefficientMoved (toyLoopRepresentation toyLoopGenerator) then 1 else 0
-
-def toyMonodromyAction :
-    MonodromyAction.{0, 0, 0, 0, 0, 0} toyPresentedPi where
-  coefficient := { Ob := Bool, Sem := Bool, Eff := Bool }
-  rho := toyLoopRepresentation
-  rho_one := by simp [toyLoopRepresentation]
-  rho_mul := by
-    intro gamma delta
-    rcases gamma with ⟨gamma⟩
-    rcases delta with ⟨delta⟩
-    interval_cases gamma <;> interval_cases delta <;>
-      apply toyCoefficientAutomorphism_ext <;>
-      apply Equiv.ext <;>
-      intro b <;>
-      cases b <;>
-      rfl
-
-theorem toyMonodromyAction_moves_false :
-    (toyMonodromyAction.rho toyLoopGenerator).obAut false = true := by
-  rfl
-
-theorem toyMonodromyAction_nonidentity :
-    toyMonodromyAction.rho toyLoopGenerator ≠ CoefficientAutomorphism.id _ := by
-  intro h
-  have hmoved := congrArg (fun e => e.obAut false) h
-  cases hmoved
+  if toyObstructionCoefficientMoved
+      (toyMonodromyAction.rho toyPresentedLoopGenerator) then 1 else 0
 
 def toyMeasuredSquareZero :
     MeasuredSquareMonodromy.{0, 0, 0, 0, 0, 0} toyMonodromyAction
@@ -543,13 +591,13 @@ def toyMeasuredSquareNonzero :
       toyPresentationTwoComplex where
   Axis := Bool
   square := true
-  boundaryElement := toyLoopGenerator
-  boundaryTransport := toyMonodromyAction.rho toyLoopGenerator
+  boundaryElement := toyPresentedLoopGenerator
+  boundaryTransport := toyMonodromyAction.rho toyPresentedLoopGenerator
   boundaryTransport_eq_monodromy := rfl
   equalityDefect axis :=
     if axis then 0 else toyMonodromyDefectFromAction
   axisDetectsIdentity axis :=
-    toyLoopRepresentation (if axis then 1 else toyLoopGenerator) =
+    toyMonodromyAction.rho (if axis then 1 else toyPresentedLoopGenerator) =
       CoefficientAutomorphism.id _
   zero_defect_detects := by
     intro axis hzero
@@ -559,7 +607,7 @@ def toyMeasuredSquareNonzero :
         rfl
       rw [hdefect] at hzero
       cases hzero
-    · simp [toyLoopRepresentation]
+    · exact toyMonodromyAction.rho.map_one
   mu axis := if axis then 0 else 1
   mu_eq_defect := by
     intro axis
@@ -572,7 +620,7 @@ theorem toyMeasuredSquareNonzero_defect_from_moved_coefficient :
     toyMeasuredSquareNonzero.equalityDefect false =
       toyMonodromyDefectFromAction ∧
     toyMonodromyDefectFromAction = 1 ∧
-      (toyMonodromyAction.rho toyLoopGenerator).obAut false = true := by
+      (toyMonodromyAction.rho toyPresentedLoopGenerator).obAut false = true := by
   exact ⟨rfl, rfl, toyMonodromyAction_moves_false⟩
 
 def toySquareFillingProblem :
@@ -609,7 +657,7 @@ def toySquareFillingPositiveProblem :
 
 theorem toySquareFilling_positive :
     toySquareFillingPositiveProblem.SelectedAxisFilling := by
-  simp [toySquareFillingPositiveProblem, toyMeasuredSquareNonzero, toyLoopRepresentation]
+  exact toyMonodromyAction.rho.map_one
 
 theorem toySquareFilling_negative :
     ¬ toySquareFillingProblem.SelectedAxisFilling :=

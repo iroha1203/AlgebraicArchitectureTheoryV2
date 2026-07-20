@@ -546,7 +546,7 @@ structure MonodromyIndex {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
     {Pi : SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z}
       H base}
     (M : SingularityMonodromyStack.MonodromyAction.{u, v, w, x, y, z} Pi)
-    (gamma : Pi.Pi1) where
+    (gamma : Pi.pi1AAT) where
   monodromyAction : SingularityMonodromyStack.CoefficientAutomorphism M.coefficient
   monodromyAction_eq_Mon_gamma : monodromyAction = M.Mon_gamma gamma
   obstructionAction : M.coefficient.Ob ≃ M.coefficient.Ob
@@ -587,7 +587,7 @@ variable {base : G.State}
 variable {Pi : SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z}
   H base}
 variable {M : SingularityMonodromyStack.MonodromyAction.{u, v, w, x, y, z} Pi}
-variable {gamma : Pi.Pi1}
+variable {gamma : Pi.pi1AAT}
 
 /-- VII.定義13.2: expose the selected Part VI monodromy action. -/
 theorem monodromyAction_eq_Mon_gamma_holds
