@@ -1,6 +1,8 @@
 import Formal.AG.Measurement.CellularLaplacian
 import Mathlib.Analysis.InnerProductSpace.Adjoint
 import Mathlib.Analysis.InnerProductSpace.PiL2
+import Mathlib.Analysis.InnerProductSpace.Projection.FiniteDimensional
+import Mathlib.LinearAlgebra.Projection
 
 noncomputable section
 
@@ -316,6 +318,124 @@ def laplacian (K : RealFiniteInnerProductComplex Cminus C Cplus) :
     C →ₗ[ℝ] C :=
   K.dPrev.comp K.dPrevAdjoint + K.dNextAdjoint.comp K.dNext
 
+/-- VIII.Theorem 8.5: cocycles in the selected degree. -/
+def cycles (K : RealFiniteInnerProductComplex Cminus C Cplus) : Submodule ℝ C :=
+  K.dNext.ker
+
+/-- VIII.Theorem 8.5: boundaries, regarded as a subspace of cocycles. -/
+def boundariesInCycles (K : RealFiniteInnerProductComplex Cminus C Cplus) :
+    Submodule ℝ K.cycles :=
+  K.dPrev.range.comap K.cycles.subtype
+
+/-- VIII.Theorem 8.5: cohomology is the quotient of cocycles by boundaries. -/
+def cohomology (K : RealFiniteInnerProductComplex Cminus C Cplus) :=
+  K.cycles ⧸ K.boundariesInCycles
+
+/-- The additive quotient structure on the derived cohomology space. -/
+noncomputable instance cohomologyAddCommGroup
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) : AddCommGroup K.cohomology := by
+  dsimp only [cohomology]
+  infer_instance
+
+/-- The real module structure on the derived cohomology space. -/
+noncomputable instance cohomologyModule
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) : Module ℝ K.cohomology := by
+  dsimp only [cohomology]
+  infer_instance
+
+/-- VIII.Theorem 8.5: harmonic cocycles are the orthogonal complement of boundaries in cycles. -/
+def harmonicCycles (K : RealFiniteInnerProductComplex Cminus C Cplus) :
+    Submodule ℝ K.cycles :=
+  K.boundariesInCyclesᗮ
+
+/-- VIII.Theorem 8.5: the exact component is orthogonal projection onto `im dPrev`. -/
+noncomputable def exactPart (K : RealFiniteInnerProductComplex Cminus C Cplus) :
+    C →ₗ[ℝ] C :=
+  K.dPrev.range.starProjection.toLinearMap
+
+/-- VIII.Theorem 8.5: the coexact component is orthogonal projection onto `im dNextAdjoint`. -/
+noncomputable def coexactPart (K : RealFiniteInnerProductComplex Cminus C Cplus) :
+    C →ₗ[ℝ] C :=
+  K.dNextAdjoint.range.starProjection.toLinearMap
+
+/-- VIII.Theorem 8.5: the harmonic component left after exact and coexact projection. -/
+noncomputable def harmonicPart (K : RealFiniteInnerProductComplex Cminus C Cplus) :
+    C →ₗ[ℝ] C :=
+  LinearMap.id - K.exactPart - K.coexactPart
+
+/-- The complex equation evaluated on one cochain. -/
+theorem dNext_dPrev (K : RealFiniteInnerProductComplex Cminus C Cplus) (x : Cminus) :
+    K.dNext (K.dPrev x) = 0 := by
+  have h := LinearMap.congr_fun K.d_comp_d x
+  simpa using h
+
+/-- The exact and coexact ranges are orthogonal, derived from `dNext ∘ dPrev = 0`. -/
+theorem exactRange_isOrtho_coexactRange
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) :
+    K.dPrev.range ⟂ K.dNextAdjoint.range := by
+  rw [Submodule.isOrtho_iff_inner_eq]
+  rintro _ ⟨a, rfl⟩ _ ⟨b, rfl⟩
+  rw [dNextAdjoint, LinearMap.adjoint_inner_right K.dNext]
+  simp [K.dNext_dPrev]
+
+/-- VIII.Theorem 8.5: the exact projection lands in `im dPrev`. -/
+theorem exactPart_mem_range
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) (x : C) :
+    K.exactPart x ∈ K.dPrev.range := by
+  exact Submodule.starProjection_apply_mem _ _
+
+/-- VIII.Theorem 8.5: the coexact projection lands in `im dNextAdjoint`. -/
+theorem coexactPart_mem_adjoint_range
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) (x : C) :
+    K.coexactPart x ∈ K.dNextAdjoint.range := by
+  exact Submodule.starProjection_apply_mem _ _
+
+/-- VIII.Theorem 8.5: exact and coexact components are orthogonal. -/
+theorem exact_coexact_orthogonal
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) (x y : C) :
+    inner ℝ (K.exactPart x) (K.coexactPart y) = 0 :=
+  K.exactRange_isOrtho_coexactRange.inner_eq
+    (K.exactPart_mem_range x) (K.coexactPart_mem_adjoint_range y)
+
+/-- VIII.Theorem 8.5: the three derived components sum to the original cochain. -/
+theorem hodge_decomposition
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) (x : C) :
+    K.exactPart x + K.harmonicPart x + K.coexactPart x = x := by
+  simp only [harmonicPart, LinearMap.sub_apply, LinearMap.id_apply]
+  abel
+
+/-- A vector and its exact-projection residual are orthogonal. -/
+theorem exactPart_inner_residual
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) (x y : C) :
+    inner ℝ (K.exactPart x) (y - K.exactPart y) = 0 := by
+  rw [real_inner_comm]
+  exact K.dPrev.range.starProjection_inner_eq_zero y _ (K.exactPart_mem_range x)
+
+/-- VIII.Theorem 8.5: exact and harmonic components are orthogonal. -/
+theorem exact_harmonic_orthogonal
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) (x y : C) :
+    inner ℝ (K.exactPart x) (K.harmonicPart y) = 0 := by
+  rw [show K.harmonicPart y = y - K.exactPart y - K.coexactPart y by
+    simp [harmonicPart]]
+  rw [inner_sub_right, K.exactPart_inner_residual x y,
+    K.exact_coexact_orthogonal x y, sub_zero]
+
+/-- A vector and its coexact-projection residual are orthogonal. -/
+theorem residual_inner_coexactPart
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) (x y : C) :
+    inner ℝ (x - K.coexactPart x) (K.coexactPart y) = 0 :=
+  K.dNextAdjoint.range.starProjection_inner_eq_zero x _
+    (K.coexactPart_mem_adjoint_range y)
+
+/-- VIII.Theorem 8.5: harmonic and coexact components are orthogonal. -/
+theorem harmonic_coexact_orthogonal
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) (x y : C) :
+    inner ℝ (K.harmonicPart x) (K.coexactPart y) = 0 := by
+  rw [show K.harmonicPart x = x - K.coexactPart x - K.exactPart x by
+    simp [harmonicPart, sub_eq_add_neg, add_comm, add_left_comm, add_assoc]]
+  rw [inner_sub_left, K.residual_inner_coexactPart x y,
+    K.exact_coexact_orthogonal x y, zero_sub, neg_zero]
+
 /-- VIII.Theorem 8.5 hardening: `dPrevAdjoint` is the Mathlib adjoint. -/
 theorem dPrev_adjoint_inner_right
     (K : RealFiniteInnerProductComplex Cminus C Cplus) (x : Cminus) (y : C) :
@@ -327,6 +447,160 @@ theorem dNext_adjoint_inner_right
     (K : RealFiniteInnerProductComplex Cminus C Cplus) (x : C) (y : Cplus) :
     inner ℝ x (K.dNextAdjoint y) = inner ℝ (K.dNext x) y :=
   LinearMap.adjoint_inner_right K.dNext x y
+
+/-- The harmonic component lies in the orthogonal complement of `im dPrev`. -/
+theorem harmonicPart_mem_exactRange_orthogonal
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) (x : C) :
+    K.harmonicPart x ∈ K.dPrev.rangeᗮ := by
+  rw [show K.harmonicPart x = (x - K.exactPart x) - K.coexactPart x by
+    simp [harmonicPart]]
+  apply Submodule.sub_mem
+  · exact K.dPrev.range.sub_starProjection_mem_orthogonal x
+  · exact K.exactRange_isOrtho_coexactRange.ge (K.coexactPart_mem_adjoint_range x)
+
+/-- The harmonic component lies in the orthogonal complement of `im dNextAdjoint`. -/
+theorem harmonicPart_mem_coexactRange_orthogonal
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) (x : C) :
+    K.harmonicPart x ∈ K.dNextAdjoint.rangeᗮ := by
+  rw [show K.harmonicPart x = (x - K.coexactPart x) - K.exactPart x by
+    simp [harmonicPart, sub_eq_add_neg, add_comm, add_left_comm, add_assoc]]
+  apply Submodule.sub_mem
+  · exact K.dNextAdjoint.range.sub_starProjection_mem_orthogonal x
+  · exact K.exactRange_isOrtho_coexactRange.le (K.exactPart_mem_range x)
+
+/-- The harmonic component is killed by the previous adjoint. -/
+theorem dPrevAdjoint_harmonicPart_eq_zero
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) (x : C) :
+    K.dPrevAdjoint (K.harmonicPart x) = 0 := by
+  have hinner :
+      inner ℝ (K.dPrevAdjoint (K.harmonicPart x))
+        (K.dPrevAdjoint (K.harmonicPart x)) = 0 := by
+    rw [K.dPrev_adjoint_inner_right]
+    exact K.harmonicPart_mem_exactRange_orthogonal x _ ⟨_, rfl⟩
+  have hnormSq : ‖K.dPrevAdjoint (K.harmonicPart x)‖ ^ 2 = 0 := by
+    simpa [real_inner_self_eq_norm_sq] using hinner
+  exact norm_eq_zero.mp (sq_eq_zero_iff.mp hnormSq)
+
+/-- The harmonic component is a cocycle. -/
+theorem dNext_harmonicPart_eq_zero
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) (x : C) :
+    K.dNext (K.harmonicPart x) = 0 := by
+  have hinner :
+      inner ℝ (K.dNext (K.harmonicPart x)) (K.dNext (K.harmonicPart x)) = 0 := by
+    rw [← K.dNext_adjoint_inner_right, real_inner_comm]
+    exact K.harmonicPart_mem_coexactRange_orthogonal x _ ⟨_, rfl⟩
+  have hnormSq : ‖K.dNext (K.harmonicPart x)‖ ^ 2 = 0 := by
+    simpa [real_inner_self_eq_norm_sq] using hinner
+  exact norm_eq_zero.mp (sq_eq_zero_iff.mp hnormSq)
+
+/-- The Laplacian quadratic form is the sum of the two differential norm squares. -/
+theorem inner_laplacian_self
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) (x : C) :
+    inner ℝ x (K.laplacian x) =
+      inner ℝ (K.dPrevAdjoint x) (K.dPrevAdjoint x) +
+        inner ℝ (K.dNext x) (K.dNext x) := by
+  calc
+    inner ℝ x (K.laplacian x) =
+        inner ℝ x (K.dPrev (K.dPrevAdjoint x)) +
+          inner ℝ x (K.dNextAdjoint (K.dNext x)) := by
+      simp [laplacian, inner_add_right]
+    _ = inner ℝ (K.dPrevAdjoint x) (K.dPrevAdjoint x) +
+          inner ℝ (K.dNext x) (K.dNext x) := by
+      congr 1
+      · calc
+          inner ℝ x (K.dPrev (K.dPrevAdjoint x)) =
+              inner ℝ (K.dPrev (K.dPrevAdjoint x)) x :=
+            real_inner_comm _ _
+          _ = inner ℝ (K.dPrevAdjoint x) (K.dPrevAdjoint x) :=
+            (K.dPrev_adjoint_inner_right _ _).symm
+      · exact K.dNext_adjoint_inner_right _ _
+
+/-- VIII.Theorem 8.5: Laplacian zero is exactly the harmonic system. -/
+theorem laplacian_eq_zero_iff
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) (x : C) :
+    K.laplacian x = 0 ↔ K.dPrevAdjoint x = 0 ∧ K.dNext x = 0 := by
+  constructor
+  · intro hx
+    have hinner : inner ℝ x (K.laplacian x) = 0 := by rw [hx, inner_zero_right]
+    rw [K.inner_laplacian_self,
+      real_inner_self_eq_norm_sq, real_inner_self_eq_norm_sq] at hinner
+    have hPrevSq : 0 ≤ ‖K.dPrevAdjoint x‖ ^ 2 := sq_nonneg _
+    have hNextSq : 0 ≤ ‖K.dNext x‖ ^ 2 := sq_nonneg _
+    have hPrevNorm : ‖K.dPrevAdjoint x‖ = 0 := by nlinarith
+    have hNextNorm : ‖K.dNext x‖ = 0 := by nlinarith
+    exact ⟨norm_eq_zero.mp hPrevNorm, norm_eq_zero.mp hNextNorm⟩
+  · rintro ⟨hPrev, hNext⟩
+    simp [laplacian, hPrev, hNext]
+
+/-- VIII.Theorem 8.5: the derived harmonic component lies in `ker laplacian`. -/
+theorem harmonicPart_mem_laplacian_kernel
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) (x : C) :
+    K.harmonicPart x ∈ K.laplacian.ker := by
+  rw [LinearMap.mem_ker, K.laplacian_eq_zero_iff]
+  exact ⟨K.dPrevAdjoint_harmonicPart_eq_zero x, K.dNext_harmonicPart_eq_zero x⟩
+
+/-- A Laplacian-kernel vector, regarded as a harmonic cocycle. -/
+noncomputable def laplacianKernelToHarmonicCycles
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) :
+    K.laplacian.ker →ₗ[ℝ] K.harmonicCycles where
+  toFun x := by
+    have hx := (K.laplacian_eq_zero_iff x).mp x.property
+    refine ⟨⟨x, hx.2⟩, ?_⟩
+    intro b hb
+    rcases hb with ⟨a, ha⟩
+    change inner ℝ (b : C) (x : C) = 0
+    rw [show (b : C) = K.dPrev a from ha.symm,
+      ← K.dPrev_adjoint_inner_right, hx.1, inner_zero_right]
+  map_add' x y := by
+    ext
+    rfl
+  map_smul' r x := by
+    ext
+    rfl
+
+/-- A harmonic cocycle is killed by the previous adjoint. -/
+theorem dPrevAdjoint_harmonicCycle_eq_zero
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) (x : K.harmonicCycles) :
+    K.dPrevAdjoint (x : C) = 0 := by
+  have hinner : inner ℝ (K.dPrevAdjoint (x : C)) (K.dPrevAdjoint (x : C)) = 0 := by
+    rw [K.dPrev_adjoint_inner_right]
+    let b : K.cycles :=
+      ⟨K.dPrev (K.dPrevAdjoint (x : C)), K.dNext_dPrev _⟩
+    have hb : b ∈ K.boundariesInCycles := ⟨K.dPrevAdjoint (x : C), rfl⟩
+    exact x.property b hb
+  have hnormSq : ‖K.dPrevAdjoint (x : C)‖ ^ 2 = 0 := by
+    simpa [real_inner_self_eq_norm_sq] using hinner
+  exact norm_eq_zero.mp (sq_eq_zero_iff.mp hnormSq)
+
+/-- VIII.Theorem 8.5: `ker laplacian` is linearly equivalent to harmonic cocycles. -/
+noncomputable def laplacianKernelEquivHarmonicCycles
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) :
+    K.laplacian.ker ≃ₗ[ℝ] K.harmonicCycles :=
+  LinearEquiv.ofBijective K.laplacianKernelToHarmonicCycles ⟨by
+    intro x y hxy
+    apply Subtype.ext
+    have hcoe := congrArg (fun z : K.harmonicCycles => (z : C)) hxy
+    simpa [laplacianKernelToHarmonicCycles] using hcoe
+  , by
+    intro x
+    have hxLap : K.laplacian (x : C) = 0 :=
+      (K.laplacian_eq_zero_iff (x : C)).mpr
+        ⟨K.dPrevAdjoint_harmonicCycle_eq_zero x, x.1.property⟩
+    refine ⟨⟨(x : C), hxLap⟩, ?_⟩
+    apply Subtype.ext
+    simp [laplacianKernelToHarmonicCycles]⟩
+
+/--
+VIII.Theorem 8.5: concrete linear equivalence `ker laplacian ≃ H`, where `H` is
+the quotient of cocycles by boundaries.
+-/
+noncomputable def laplacianKernelEquivCohomology
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) :
+    K.laplacian.ker ≃ₗ[ℝ] K.cohomology :=
+  K.laplacianKernelEquivHarmonicCycles.trans <| by
+    simpa only [cohomology, harmonicCycles] using
+      (Submodule.quotientEquivOfIsCompl K.boundariesInCycles K.harmonicCycles
+        K.boundariesInCycles.isCompl_orthogonal_of_hasOrthogonalProjection).symm
 
 end RealFiniteInnerProductComplex
 
@@ -345,6 +619,14 @@ structure RealFiniteHodgeDecomposition {Cminus C Cplus : Type v}
     [NormedAddCommGroup Cplus] [InnerProductSpace ℝ Cplus]
     [FiniteDimensional ℝ Cplus]
     (K : RealFiniteInnerProductComplex Cminus C Cplus) where
+  /-- The actual cohomology carrier preserved by the compatibility package. -/
+  CohomologyClass : Type v
+  /-- Additive structure of the preserved cohomology carrier. -/
+  [cohomologyAddCommGroup : AddCommGroup CohomologyClass]
+  /-- Real module structure of the preserved cohomology carrier. -/
+  [cohomologyModule : Module ℝ CohomologyClass]
+  /-- The derived equivalence from harmonic kernel to actual cohomology. -/
+  harmonicKernelEquivCohomology : K.laplacian.ker ≃ₗ[ℝ] CohomologyClass
   exactPart : C -> C
   harmonicPart : C -> C
   coexactPart : C -> C
@@ -365,6 +647,109 @@ structure RealFiniteHodgeDecomposition {Cminus C Cplus : Type v}
   cohomologyClassOf : C -> C
   cohomologyClass_eq_harmonic :
     ∀ x : C, cohomologyClassOf x = harmonicPart x
+
+namespace RealFiniteInnerProductComplex
+
+variable {Cminus C Cplus : Type v}
+variable [NormedAddCommGroup Cminus] [InnerProductSpace ℝ Cminus]
+variable [FiniteDimensional ℝ Cminus]
+variable [NormedAddCommGroup C] [InnerProductSpace ℝ C] [FiniteDimensional ℝ C]
+variable [NormedAddCommGroup Cplus] [InnerProductSpace ℝ Cplus]
+variable [FiniteDimensional ℝ Cplus]
+
+/--
+VIII.Theorem 8.5 compatibility bridge: build the existing package from the
+derived orthogonal projections.  No decomposition or orthogonality conclusion
+is supplied by the caller.
+-/
+noncomputable def derivedHodgeDecomposition
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) :
+    RealFiniteHodgeDecomposition K where
+  CohomologyClass := K.cohomology
+  harmonicKernelEquivCohomology := K.laplacianKernelEquivCohomology
+  exactPart := K.exactPart
+  harmonicPart := K.harmonicPart
+  coexactPart := K.coexactPart
+  exactPart_mem_range x := by
+    rcases K.exactPart_mem_range x with ⟨y, hy⟩
+    exact ⟨y, hy⟩
+  harmonicPart_mem_kernel x :=
+    LinearMap.mem_ker.mp (K.harmonicPart_mem_laplacian_kernel x)
+  coexactPart_mem_adjoint_range x := by
+    rcases K.coexactPart_mem_adjoint_range x with ⟨y, hy⟩
+    exact ⟨y, hy⟩
+  decomposition := K.hodge_decomposition
+  exact_harmonic_orthogonal := K.exact_harmonic_orthogonal
+  harmonic_coexact_orthogonal := K.harmonic_coexact_orthogonal
+  exact_coexact_orthogonal := K.exact_coexact_orthogonal
+  cohomologyClassOf := K.harmonicPart
+  cohomologyClass_eq_harmonic := fun _ => rfl
+
+/-- A selected preimage of the derived exact projection. -/
+noncomputable def selectedCorrection
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) (x : C) : Cminus :=
+  Classical.choose (K.exactPart_mem_range x)
+
+/-- The selected correction maps to the derived exact component. -/
+theorem selectedCorrection_maps_to_exactPart
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) (x : C) :
+    K.dPrev (K.selectedCorrection x) = K.exactPart x :=
+  Classical.choose_spec (K.exactPart_mem_range x)
+
+/-- Orthogonal projection onto boundaries minimizes the correction residual. -/
+theorem selectedResidual_norm_le
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) (x : C) (c : Cminus) :
+    ‖x - K.dPrev (K.selectedCorrection x)‖ ≤ ‖x - K.dPrev c‖ := by
+  rw [K.selectedCorrection_maps_to_exactPart]
+  have hboundary : K.exactPart x - K.dPrev c ∈ K.dPrev.range :=
+    Submodule.sub_mem _ (K.exactPart_mem_range x) ⟨c, rfl⟩
+  have horth :
+      inner ℝ (x - K.exactPart x) (K.exactPart x - K.dPrev c) = 0 :=
+    K.dPrev.range.starProjection_inner_eq_zero x _ hboundary
+  have hsum :
+      (x - K.exactPart x) + (K.exactPart x - K.dPrev c) = x - K.dPrev c := by
+    abel
+  have hpyth :=
+    norm_add_sq_eq_norm_sq_add_norm_sq_of_inner_eq_zero
+      (x - K.exactPart x) (K.exactPart x - K.dPrev c) horth
+  rw [hsum] at hpyth
+  nlinarith [sq_nonneg ‖x - K.exactPart x‖,
+    sq_nonneg ‖K.exactPart x - K.dPrev c‖,
+    norm_nonneg (x - K.exactPart x), norm_nonneg (x - K.dPrev c)]
+
+/-- A cocycle has zero coexact projection. -/
+theorem coexactPart_eq_zero_of_cocycle
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) {g : C}
+    (hg : K.dNext g = 0) :
+    K.coexactPart g = 0 := by
+  change K.dNextAdjoint.range.starProjection g = 0
+  rw [Submodule.starProjection_apply_eq_zero_iff]
+  intro y hy
+  rcases hy with ⟨z, rfl⟩
+  rw [real_inner_comm, K.dNext_adjoint_inner_right, hg, inner_zero_left]
+
+/-- VIII.Theorem 8.6: the selected residual of a cocycle is its harmonic component. -/
+theorem selected_residual_eq_harmonic
+    (K : RealFiniteInnerProductComplex Cminus C Cplus)
+    {g : C} (hg : K.dNext g = 0) :
+    g - K.dPrev (K.selectedCorrection g) = K.harmonicPart g := by
+  rw [K.selectedCorrection_maps_to_exactPart]
+  have hdecomp := K.hodge_decomposition g
+  rw [K.coexactPart_eq_zero_of_cocycle hg, add_zero] at hdecomp
+  calc
+    g - K.exactPart g =
+        (K.exactPart g + K.harmonicPart g) - K.exactPart g := by rw [hdecomp]
+    _ = K.harmonicPart g := by abel
+
+/-- VIII.Theorem 8.6: every local correction has at least the harmonic residual norm. -/
+theorem harmonic_norm_le_corrected
+    (K : RealFiniteInnerProductComplex Cminus C Cplus)
+    {g : C} (hg : K.dNext g = 0) (c : Cminus) :
+    ‖K.harmonicPart g‖ ≤ ‖g - K.dPrev c‖ := by
+  rw [← K.selected_residual_eq_harmonic hg]
+  exact K.selectedResidual_norm_le g c
+
+end RealFiniteInnerProductComplex
 
 namespace RealFiniteHodgeDecomposition
 
@@ -417,6 +802,290 @@ structure RealHarmonicDebtMinimality {Cminus C Cplus : Type v}
   selected_minimizes :
     ∀ (x : C) (g : GaugeCorrection),
       correctionResidual (selectedCorrection x) x ≤ correctionResidual g x
+  cocycle_selected_residual_eq_harmonic_norm :
+    ∀ (x : C), K.dNext x = 0 →
+      correctionResidual (selectedCorrection x) x = ‖D.harmonicPart x‖
+  cocycle_harmonic_lower_bound :
+    ∀ (x : C), K.dNext x = 0 → ∀ g : GaugeCorrection,
+      ‖D.harmonicPart x‖ ≤ correctionResidual g x
+
+namespace RealFiniteInnerProductComplex
+
+variable {Cminus C Cplus : Type v}
+variable [NormedAddCommGroup Cminus] [InnerProductSpace ℝ Cminus]
+variable [FiniteDimensional ℝ Cminus]
+variable [NormedAddCommGroup C] [InnerProductSpace ℝ C] [FiniteDimensional ℝ C]
+variable [NormedAddCommGroup Cplus] [InnerProductSpace ℝ Cplus]
+variable [FiniteDimensional ℝ Cplus]
+
+/--
+VIII.Theorem 8.6 compatibility bridge: derive the existing minimum package from
+orthogonal projection onto `im dPrev`.
+-/
+noncomputable def derivedHarmonicDebtMinimality
+    (K : RealFiniteInnerProductComplex Cminus C Cplus) :
+    RealHarmonicDebtMinimality K.derivedHodgeDecomposition where
+  GaugeCorrection := Cminus
+  correctionResidual := fun c x => ‖x - K.dPrev c‖
+  selectedCorrection := K.selectedCorrection
+  harmonicDebt := fun x => ‖K.harmonicPart x‖
+  harmonicDebt_eq_norm := fun _ => rfl
+  selected_minimizes := K.selectedResidual_norm_le
+  cocycle_selected_residual_eq_harmonic_norm := by
+    intro x hx
+    exact congrArg norm (K.selected_residual_eq_harmonic hx)
+  cocycle_harmonic_lower_bound := by
+    intro x hx g
+    change ‖K.harmonicPart x‖ ≤ ‖x - K.dPrev g‖
+    exact K.harmonic_norm_le_corrected hx g
+
+/-!
+## Implementation notes
+
+Exact and coexact components use the two global orthogonal projections.  The
+complex equation proves their ranges orthogonal, so nested projections would
+add coercions without changing the decomposition.  Harmonic cycles are the
+orthogonal complement of boundaries inside cocycles, which lets
+`Submodule.quotientEquivOfIsCompl` produce the actual cohomology equivalence.
+`Classical.choose` selects one preimage of the exact projection; the residual
+minimum uses only its image equation and is independent of that choice.
+
+The generic cellular packages below are populated from the concrete real
+inner-product complex.  Their proposition fields state the actual
+decomposition, orthogonality, quotient equivalence, and norm minimum; they are
+not independent certificate inputs.  Since `CellularMeasurementModel.NormValue`
+is abstract, the harmonic-debt bridge takes an explicit real-valued reading of
+that norm and a compatibility equation.
+-/
+
+/--
+Operator-level comparison showing that a real finite complex is the selected
+complex of a cellular Laplacian reading.  These are model-compatibility
+premises, not Hodge conclusions.
+-/
+structure CellularRealFiniteComplexComparison
+    {M : MeasurementProfile.{u, v}} {CM : CellularMeasurementModel M}
+    (L : SheafLaplacianReading CM)
+    [NormedAddCommGroup (CM.Cochain L.previousDegree)]
+    [InnerProductSpace ℝ (CM.Cochain L.previousDegree)]
+    [FiniteDimensional ℝ (CM.Cochain L.previousDegree)]
+    [NormedAddCommGroup (CM.Cochain L.degree)]
+    [InnerProductSpace ℝ (CM.Cochain L.degree)]
+    [FiniteDimensional ℝ (CM.Cochain L.degree)]
+    [NormedAddCommGroup (CM.Cochain L.nextDegree)]
+    [InnerProductSpace ℝ (CM.Cochain L.nextDegree)]
+    [FiniteDimensional ℝ (CM.Cochain L.nextDegree)]
+    (K : RealFiniteInnerProductComplex
+      (CM.Cochain L.previousDegree) (CM.Cochain L.degree)
+        (CM.Cochain L.nextDegree)) where
+  /-- The preceding differential is the selected cellular differential. -/
+  dPrev_eq : K.dPrev.toFun = L.d_prev_operator
+  /-- The following differential is the selected cellular differential. -/
+  dNext_eq : K.dNext.toFun = L.d_next_operator
+  /-- The preceding adjoint is the selected cellular adjoint. -/
+  dPrevAdjoint_eq : K.dPrevAdjoint.toFun = L.d_prev_adjoint_operator
+  /-- The following adjoint is the selected cellular adjoint. -/
+  dNextAdjoint_eq : K.dNextAdjoint.toFun = L.d_next_adjoint_operator
+  /-- The reading's Laplacian carrier is the selected linear-operator type. -/
+  laplacianOperator_eq :
+    L.LaplacianOperator = (CM.Cochain L.degree →ₗ[ℝ] CM.Cochain L.degree)
+  /-- The transported selected Laplacian is the complex Laplacian. -/
+  laplacian_eq : cast laplacianOperator_eq L.laplacian = K.laplacian
+  /-- Interpretation of the model's inner-product value as a real scalar. -/
+  innerProductReading : CM.InnerProductValue → ℝ
+  /-- The selected model inner product is the real inner product used by `K`. -/
+  innerProduct_eq : ∀ x y, innerProductReading (CM.innerProduct L.degree x y) =
+    inner ℝ x y
+
+/--
+VIII.Theorem 8.5 bridge to the generic cellular theorem data, derived from the
+real finite inner-product complex at the selected degree.
+-/
+noncomputable def derivedFiniteHodgeDecompositionData
+    {M : MeasurementProfile.{u, v}} {CM : CellularMeasurementModel M}
+    (L : SheafLaplacianReading CM)
+    [NormedAddCommGroup (CM.Cochain L.previousDegree)]
+    [InnerProductSpace ℝ (CM.Cochain L.previousDegree)]
+    [FiniteDimensional ℝ (CM.Cochain L.previousDegree)]
+    [NormedAddCommGroup (CM.Cochain L.degree)]
+    [InnerProductSpace ℝ (CM.Cochain L.degree)]
+    [FiniteDimensional ℝ (CM.Cochain L.degree)]
+    [NormedAddCommGroup (CM.Cochain L.nextDegree)]
+    [InnerProductSpace ℝ (CM.Cochain L.nextDegree)]
+    [FiniteDimensional ℝ (CM.Cochain L.nextDegree)]
+    (K : RealFiniteInnerProductComplex
+      (CM.Cochain L.previousDegree) (CM.Cochain L.degree)
+        (CM.Cochain L.nextDegree))
+    (B : CellularRealFiniteComplexComparison L K) :
+    FiniteHodgeDecompositionData L where
+  HarmonicRepresentative := K.laplacian.ker
+  CohomologyClass := K.cohomology
+  ExactComponent := K.dPrev.range
+  CoexactComponent := K.dNextAdjoint.range
+  KernelPredicate := fun x => K.laplacian x = 0
+  harmonicProjection := fun x =>
+    ⟨K.harmonicPart x, K.harmonicPart_mem_laplacian_kernel x⟩
+  cohomologyClassOf := fun x =>
+    K.laplacianKernelEquivCohomology
+      ⟨K.harmonicPart x, K.harmonicPart_mem_laplacian_kernel x⟩
+  exactComponentOf := fun x => ⟨K.exactPart x, K.exactPart_mem_range x⟩
+  coexactComponentOf := fun x =>
+    ⟨K.coexactPart x, K.coexactPart_mem_adjoint_range x⟩
+  harmonicComponentOf := fun x =>
+    ⟨K.harmonicPart x, K.harmonicPart_mem_laplacian_kernel x⟩
+  harmonicRepresentativeAsCochain := fun h => (h : CM.Cochain L.degree)
+  harmonicInKernel := fun h => LinearMap.mem_ker.mp h.property
+  cohomologyOfHarmonic := K.laplacianKernelEquivCohomology
+  kernelReadsLaplacian :=
+    K.dPrev.toFun = L.d_prev_operator ∧
+      K.dNext.toFun = L.d_next_operator ∧
+        cast B.laplacianOperator_eq L.laplacian = K.laplacian ∧
+          ∀ x, K.laplacian x = 0 ↔
+            K.dPrevAdjoint x = 0 ∧ K.dNext x = 0
+  kernelReadsLaplacian_cert :=
+    ⟨B.dPrev_eq, B.dNext_eq, B.laplacian_eq, K.laplacian_eq_zero_iff⟩
+  decompositionMapsReadCochain :=
+    K.dPrevAdjoint.toFun = L.d_prev_adjoint_operator ∧
+      K.dNextAdjoint.toFun = L.d_next_adjoint_operator ∧
+        ∀ x, K.exactPart x + K.harmonicPart x + K.coexactPart x = x
+  decompositionMapsReadCochain_cert :=
+    ⟨B.dPrevAdjoint_eq, B.dNextAdjoint_eq, K.hodge_decomposition⟩
+  cohomologyEquivHarmonic :=
+    (∀ x y, B.innerProductReading (CM.innerProduct L.degree x y) = inner ℝ x y) ∧
+      Function.Bijective K.laplacianKernelEquivCohomology
+  cohomologyEquivHarmonic_cert :=
+    ⟨B.innerProduct_eq, K.laplacianKernelEquivCohomology.bijective⟩
+  finiteHodgeDecomposition :=
+    ∀ x, K.exactPart x + K.harmonicPart x + K.coexactPart x = x
+  finiteHodgeDecomposition_cert := K.hodge_decomposition
+  harmonicKernelIdentifiesCohomology :=
+    Nonempty (K.laplacian.ker ≃ₗ[ℝ] K.cohomology)
+  harmonicKernelIdentifiesCohomology_cert :=
+    ⟨K.laplacianKernelEquivCohomology⟩
+  exactCoexactHarmonicOrthogonal :=
+    ∀ x y,
+      inner ℝ (K.exactPart x) (K.harmonicPart y) = 0 ∧
+      inner ℝ (K.harmonicPart x) (K.coexactPart y) = 0 ∧
+      inner ℝ (K.exactPart x) (K.coexactPart y) = 0
+  exactCoexactHarmonicOrthogonal_cert := by
+    intro x y
+    exact ⟨K.exact_harmonic_orthogonal x y,
+      K.harmonic_coexact_orthogonal x y,
+      K.exact_coexact_orthogonal x y⟩
+
+/-- VIII.Theorem 8.5 generic cellular package obtained from the derived data. -/
+theorem derivedFiniteHodgeDecompositionPackage
+    {M : MeasurementProfile.{u, v}} {CM : CellularMeasurementModel M}
+    (L : SheafLaplacianReading CM)
+    [NormedAddCommGroup (CM.Cochain L.previousDegree)]
+    [InnerProductSpace ℝ (CM.Cochain L.previousDegree)]
+    [FiniteDimensional ℝ (CM.Cochain L.previousDegree)]
+    [NormedAddCommGroup (CM.Cochain L.degree)]
+    [InnerProductSpace ℝ (CM.Cochain L.degree)]
+    [FiniteDimensional ℝ (CM.Cochain L.degree)]
+    [NormedAddCommGroup (CM.Cochain L.nextDegree)]
+    [InnerProductSpace ℝ (CM.Cochain L.nextDegree)]
+    [FiniteDimensional ℝ (CM.Cochain L.nextDegree)]
+    (K : RealFiniteInnerProductComplex
+      (CM.Cochain L.previousDegree) (CM.Cochain L.degree)
+        (CM.Cochain L.nextDegree))
+    (B : CellularRealFiniteComplexComparison L K) :
+    FiniteHodgeDecomposition (derivedFiniteHodgeDecompositionData L K B) :=
+  finiteHodgeDecompositionPackage (derivedFiniteHodgeDecompositionData L K B)
+
+/--
+VIII.Theorem 8.6 bridge to generic cellular harmonic-debt data for a selected
+cocycle.  The real norm reading is the compatibility input needed to compare
+the model's abstract norm values.
+-/
+noncomputable def derivedHarmonicDebtMinimalityData
+    {M : MeasurementProfile.{u, v}} {CM : CellularMeasurementModel M}
+    (L : SheafLaplacianReading CM)
+    [NormedAddCommGroup (CM.Cochain L.previousDegree)]
+    [InnerProductSpace ℝ (CM.Cochain L.previousDegree)]
+    [FiniteDimensional ℝ (CM.Cochain L.previousDegree)]
+    [NormedAddCommGroup (CM.Cochain L.degree)]
+    [InnerProductSpace ℝ (CM.Cochain L.degree)]
+    [FiniteDimensional ℝ (CM.Cochain L.degree)]
+    [NormedAddCommGroup (CM.Cochain L.nextDegree)]
+    [InnerProductSpace ℝ (CM.Cochain L.nextDegree)]
+    [FiniteDimensional ℝ (CM.Cochain L.nextDegree)]
+    (K : RealFiniteInnerProductComplex
+      (CM.Cochain L.previousDegree) (CM.Cochain L.degree)
+        (CM.Cochain L.nextDegree))
+    (B : CellularRealFiniteComplexComparison L K)
+    (readNorm : CM.NormValue → ℝ)
+    (readNorm_eq : ∀ x, readNorm (CM.norm L.degree x) = ‖x‖)
+    (g : CM.Cochain L.degree) (hg : K.dNext g = 0) :
+    HarmonicDebtMinimalityData (derivedFiniteHodgeDecompositionData L K B) where
+  GaugeCorrection := CM.Cochain L.previousDegree
+  correctionAction := K.dPrev
+  correctedMismatch := fun c => g - K.dPrev c
+  correctionResidual := fun c => CM.norm L.degree (g - K.dPrev c)
+  selectedMinimumCorrection := K.selectedCorrection g
+  debtNorm := CM.norm L.degree
+  harmonicDebt := fun x => CM.norm L.degree (K.harmonicPart x)
+  harmonicNorm := fun h =>
+    CM.norm L.degree ((show K.laplacian.ker from h) : CM.Cochain L.degree)
+  selectedMismatch := g
+  harmonicRepresentative :=
+    ⟨K.harmonicPart g, K.harmonicPart_mem_laplacian_kernel g⟩
+  harmonicDebtValue := CM.norm L.degree (K.harmonicPart g)
+  projectionReadsHarmonicRepresentative :=
+    (derivedFiniteHodgeDecompositionData L K B).harmonicProjection g =
+      ⟨K.harmonicPart g, K.harmonicPart_mem_laplacian_kernel g⟩
+  projectionReadsHarmonicRepresentative_cert := rfl
+  minimumReadsCorrectionResidual :=
+    ∀ c, readNorm (CM.norm L.degree
+      (g - K.dPrev (K.selectedCorrection g))) ≤
+        readNorm (CM.norm L.degree (g - K.dPrev c))
+  minimumReadsCorrectionResidual_cert := by
+    intro c
+    rw [readNorm_eq, readNorm_eq]
+    exact K.selectedResidual_norm_le g c
+  harmonicDebt_eq_harmonicNorm :=
+    CM.norm L.degree (K.harmonicPart g) =
+      CM.norm L.degree (K.harmonicPart g)
+  harmonicDebt_eq_harmonicNorm_cert := rfl
+  minimizationStatement :=
+    readNorm (CM.norm L.degree
+      (g - K.dPrev (K.selectedCorrection g))) = ‖K.harmonicPart g‖ ∧
+      ∀ c, ‖K.harmonicPart g‖ ≤
+        readNorm (CM.norm L.degree (g - K.dPrev c))
+  minimizationStatement_cert := by
+    constructor
+    · rw [readNorm_eq]
+      exact congrArg norm (K.selected_residual_eq_harmonic hg)
+    · intro c
+      rw [readNorm_eq]
+      exact K.harmonic_norm_le_corrected hg c
+
+/-- VIII.Theorem 8.6 generic cellular package obtained from the derived data. -/
+theorem derivedHarmonicDebtMinimalityPackage
+    {M : MeasurementProfile.{u, v}} {CM : CellularMeasurementModel M}
+    (L : SheafLaplacianReading CM)
+    [NormedAddCommGroup (CM.Cochain L.previousDegree)]
+    [InnerProductSpace ℝ (CM.Cochain L.previousDegree)]
+    [FiniteDimensional ℝ (CM.Cochain L.previousDegree)]
+    [NormedAddCommGroup (CM.Cochain L.degree)]
+    [InnerProductSpace ℝ (CM.Cochain L.degree)]
+    [FiniteDimensional ℝ (CM.Cochain L.degree)]
+    [NormedAddCommGroup (CM.Cochain L.nextDegree)]
+    [InnerProductSpace ℝ (CM.Cochain L.nextDegree)]
+    [FiniteDimensional ℝ (CM.Cochain L.nextDegree)]
+    (K : RealFiniteInnerProductComplex
+      (CM.Cochain L.previousDegree) (CM.Cochain L.degree)
+        (CM.Cochain L.nextDegree))
+    (B : CellularRealFiniteComplexComparison L K)
+    (readNorm : CM.NormValue → ℝ)
+    (readNorm_eq : ∀ x, readNorm (CM.norm L.degree x) = ‖x‖)
+    (g : CM.Cochain L.degree) (hg : K.dNext g = 0) :
+    HarmonicDebtMinimality
+      (derivedHarmonicDebtMinimalityData L K B readNorm readNorm_eq g hg) :=
+  harmonicDebtMinimalityPackage
+    (derivedHarmonicDebtMinimalityData L K B readNorm readNorm_eq g hg)
+
+end RealFiniteInnerProductComplex
 
 namespace RealHarmonicDebtMinimality
 
@@ -439,6 +1108,19 @@ theorem selected_minimizes_holds
     (H : RealHarmonicDebtMinimality D) (x : C) (g : H.GaugeCorrection) :
     H.correctionResidual (H.selectedCorrection x) x ≤ H.correctionResidual g x :=
   H.selected_minimizes x g
+
+/-- VIII.Theorem 8.6: expose equality at the selected correction for cocycles. -/
+theorem cocycle_selected_residual_eq_harmonic_norm_holds
+    (H : RealHarmonicDebtMinimality D) (x : C) (hx : K.dNext x = 0) :
+    H.correctionResidual (H.selectedCorrection x) x = ‖D.harmonicPart x‖ :=
+  H.cocycle_selected_residual_eq_harmonic_norm x hx
+
+/-- VIII.Theorem 8.6: expose the harmonic lower bound for every correction. -/
+theorem cocycle_harmonic_lower_bound_holds
+    (H : RealHarmonicDebtMinimality D) (x : C) (hx : K.dNext x = 0)
+    (g : H.GaugeCorrection) :
+    ‖D.harmonicPart x‖ ≤ H.correctionResidual g x :=
+  H.cocycle_harmonic_lower_bound x hx g
 
 end RealHarmonicDebtMinimality
 

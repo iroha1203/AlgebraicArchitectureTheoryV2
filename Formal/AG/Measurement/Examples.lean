@@ -621,6 +621,9 @@ theorem lowDegreeRealComplex_all_harmonic (x : LowDegreeRealCochain) :
 /-- R11(e): concrete finite Hodge decomposition on the low-degree real complex. -/
 def lowDegreeRealHodgeDecomposition :
     RealFiniteHodgeDecomposition lowDegreeRealComplex where
+  CohomologyClass := lowDegreeRealComplex.cohomology
+  harmonicKernelEquivCohomology :=
+    lowDegreeRealComplex.laplacianKernelEquivCohomology
   exactPart := fun _ => 0
   harmonicPart := fun x => x
   coexactPart := fun _ => 0
@@ -675,6 +678,13 @@ def lowDegreeRealHarmonicDebtMinimality :
     intro x g
     cases g
     exact le_rfl
+  cocycle_selected_residual_eq_harmonic_norm := by
+    intro x _
+    rfl
+  cocycle_harmonic_lower_bound := by
+    intro x _ g
+    cases g
+    exact le_rfl
 
 /-- R11(e): corollary 8.7 fired over the concrete real Hodge fixture. -/
 def lowDegreeRealEssentialRepairLowerBound :
@@ -715,42 +725,17 @@ theorem nonzeroBoundaryRealComplex_dPrev_nonzero :
 R11(e) / AC15: Hodge decomposition fired on the nonzero-boundary fixture.
 
 The exact part is the whole cochain, while the harmonic and coexact parts are
-zero. This is a nonzero differential example, not a singleton or `PUnit`
-carrier.
+zero.  The package is derived from the finite inner-product complex rather than
+filled with caller-supplied decomposition and orthogonality proofs.
 -/
-def nonzeroBoundaryRealHodgeDecomposition :
-    RealFiniteHodgeDecomposition nonzeroBoundaryRealComplex where
-  exactPart := fun x => x
-  harmonicPart := fun _ => 0
-  coexactPart := fun _ => 0
-  exactPart_mem_range := by
-    intro x
-    exact ⟨x, rfl⟩
-  harmonicPart_mem_kernel := by
-    intro x
-    simp [RealFiniteInnerProductComplex.laplacian, nonzeroBoundaryRealComplex,
-      RealFiniteInnerProductComplex.dPrevAdjoint,
-      RealFiniteInnerProductComplex.dNextAdjoint]
-  coexactPart_mem_adjoint_range := by
-    intro x
-    exact ⟨0, by
-      simp [nonzeroBoundaryRealComplex, RealFiniteInnerProductComplex.dNextAdjoint]⟩
-  decomposition := by
-    intro x
-    simp
-  exact_harmonic_orthogonal := by
-    intro x y
-    simp
-  harmonic_coexact_orthogonal := by
-    intro x y
-    simp
-  exact_coexact_orthogonal := by
-    intro x y
-    simp
-  cohomologyClassOf := fun _ => 0
-  cohomologyClass_eq_harmonic := by
-    intro x
-    rfl
+noncomputable def nonzeroBoundaryRealHodgeDecomposition :
+    RealFiniteHodgeDecomposition nonzeroBoundaryRealComplex :=
+  nonzeroBoundaryRealComplex.derivedHodgeDecomposition
+
+/-- R11(e) / AC15: theorem 8.6 is also derived on the same nonzero-boundary complex. -/
+noncomputable def nonzeroBoundaryRealHarmonicDebtMinimality :
+    RealHarmonicDebtMinimality nonzeroBoundaryRealHodgeDecomposition :=
+  nonzeroBoundaryRealComplex.derivedHarmonicDebtMinimality
 
 /-- R11(e) / AC15: theorem 8.5 decomposition equality on a nonzero differential. -/
 theorem nonzeroBoundaryRealHodgeDecomposition_fires (x : ℝ) :
@@ -760,181 +745,425 @@ theorem nonzeroBoundaryRealHodgeDecomposition_fires (x : ℝ) :
       x :=
   nonzeroBoundaryRealHodgeDecomposition.decomposition x
 
-/-- R11(e): low-degree cellular measurement model for the Hodge fixture. -/
-def lowDegreeCellularModel :
+/-- R11(e) / AC15: the Laplacian kernel is the actual cohomology quotient. -/
+noncomputable example :
+    nonzeroBoundaryRealComplex.laplacian.ker ≃ₗ[ℝ]
+      nonzeroBoundaryRealComplex.cohomology :=
+  nonzeroBoundaryRealComplex.laplacianKernelEquivCohomology
+
+/-- R11(e) / AC15: the derived correction minimizes the residual on the same complex. -/
+theorem nonzeroBoundaryReal_harmonic_norm_le_corrected (g c : ℝ) :
+    ‖nonzeroBoundaryRealComplex.harmonicPart g‖ ≤
+      ‖g - nonzeroBoundaryRealComplex.dPrev c‖ :=
+  nonzeroBoundaryRealComplex.harmonic_norm_le_corrected (by rfl) c
+
+/-- R11(e) / AC15: the selected residual is the harmonic representative. -/
+theorem nonzeroBoundaryReal_selected_residual_eq_harmonic (g : ℝ) :
+    g - nonzeroBoundaryRealComplex.dPrev
+        (nonzeroBoundaryRealComplex.selectedCorrection g) =
+      nonzeroBoundaryRealComplex.harmonicPart g :=
+  nonzeroBoundaryRealComplex.selected_residual_eq_harmonic (by rfl)
+
+/-!
+## Nondegenerate finite Hodge fixture
+
+The three coordinate axes give nonzero exact, harmonic, and coexact
+components in one complex.  This fixture exercises the quotient equivalence
+and harmonic minimum without replacing any derived conclusion by package data.
+-/
+
+/-- The `j`-th standard vector of the three-dimensional real cochain space. -/
+def threeAxisVector (j : Fin 3) : LowDegreeRealCochain :=
+  EuclideanSpace.single j 1
+
+/-- Differential from the preceding degree into the exact coordinate. -/
+def threeAxisDPrev : ℝ →ₗ[ℝ] LowDegreeRealCochain where
+  toFun := fun a => a • threeAxisVector 0
+  map_add' := by intro a b; simp [add_smul]
+  map_smul' := by intro a b; simp [mul_smul]
+
+/-- Differential to the following degree, read from the coexact coordinate. -/
+def threeAxisDNext : LowDegreeRealCochain →ₗ[ℝ] ℝ where
+  toFun := fun x => x 2
+  map_add' := by intro x y; rfl
+  map_smul' := by intro a x; rfl
+
+/--
+The nondegenerate three-axis complex: exact, harmonic, and coexact axes are
+the zeroth, first, and second coordinates respectively.
+-/
+def threeAxisRealComplex :
+    RealFiniteInnerProductComplex ℝ LowDegreeRealCochain ℝ where
+  dPrev := threeAxisDPrev
+  dNext := threeAxisDNext
+  d_comp_d := by
+    apply LinearMap.ext
+    intro a
+    change (a • threeAxisVector 0) 2 = 0
+    simp [threeAxisVector]
+
+/-- Every standard coordinate vector in the fixture is nonzero. -/
+theorem threeAxisVector_ne_zero (j : Fin 3) : threeAxisVector j ≠ 0 := by
+  intro h
+  have hj := congrArg (fun x : LowDegreeRealCochain => x j) h
+  norm_num [threeAxisVector] at hj
+
+/-- The exact projection is nonzero on the exact coordinate. -/
+theorem threeAxis_exactPart_nonzero :
+    threeAxisRealComplex.exactPart (threeAxisVector 0) ≠ 0 := by
+  rw [show threeAxisRealComplex.exactPart (threeAxisVector 0) =
+      threeAxisVector 0 by
+    change threeAxisRealComplex.dPrev.range.starProjection
+      (threeAxisVector 0) = threeAxisVector 0
+    rw [Submodule.starProjection_eq_self_iff]
+    exact ⟨1, by ext i; simp [threeAxisRealComplex, threeAxisDPrev,
+      threeAxisVector]⟩]
+  exact threeAxisVector_ne_zero 0
+
+/-- The adjoint image, hence the coexact projection, is nonzero. -/
+theorem threeAxis_coexactPart_nonzero :
+    threeAxisRealComplex.coexactPart
+        (threeAxisRealComplex.dNextAdjoint 1) ≠ 0 := by
+  rw [show threeAxisRealComplex.coexactPart
+        (threeAxisRealComplex.dNextAdjoint 1) =
+      threeAxisRealComplex.dNextAdjoint 1 by
+    change threeAxisRealComplex.dNextAdjoint.range.starProjection
+      (threeAxisRealComplex.dNextAdjoint 1) =
+        threeAxisRealComplex.dNextAdjoint 1
+    rw [Submodule.starProjection_eq_self_iff]
+    exact ⟨1, rfl⟩]
+  intro h
+  have hinner :
+      inner ℝ (threeAxisVector 2) (threeAxisRealComplex.dNextAdjoint 1) = 0 := by
+    rw [h]
+    simp
+  rw [threeAxisRealComplex.dNext_adjoint_inner_right] at hinner
+  norm_num [threeAxisRealComplex, threeAxisDNext, threeAxisVector] at hinner
+
+/-- The middle coordinate is exactly its derived harmonic component. -/
+theorem threeAxis_harmonicPart_eq :
+    threeAxisRealComplex.harmonicPart (threeAxisVector 1) =
+      threeAxisVector 1 := by
+  have he : threeAxisRealComplex.exactPart (threeAxisVector 1) = 0 := by
+    change threeAxisRealComplex.dPrev.range.starProjection
+      (threeAxisVector 1) = 0
+    rw [Submodule.starProjection_apply_eq_zero_iff]
+    intro y hy
+    rcases hy with ⟨a, rfl⟩
+    simp [threeAxisRealComplex, threeAxisDPrev, threeAxisVector,
+      PiLp.inner_apply]
+  have hc : threeAxisRealComplex.coexactPart (threeAxisVector 1) = 0 :=
+    threeAxisRealComplex.coexactPart_eq_zero_of_cocycle
+      (by simp [threeAxisRealComplex, threeAxisDNext, threeAxisVector])
+  simp only [RealFiniteInnerProductComplex.harmonicPart, LinearMap.sub_apply,
+    LinearMap.id_apply, he, hc, sub_zero]
+
+/-- The derived harmonic component is nonzero in the same complex. -/
+theorem threeAxis_harmonicPart_nonzero :
+    threeAxisRealComplex.harmonicPart (threeAxisVector 1) ≠ 0 := by
+  rw [threeAxis_harmonicPart_eq]
+  exact threeAxisVector_ne_zero 1
+
+/-- Nonzero harmonic-kernel witness supplied by the middle coordinate. -/
+noncomputable def threeAxisHarmonicKernel : threeAxisRealComplex.laplacian.ker :=
+  ⟨threeAxisRealComplex.harmonicPart (threeAxisVector 1),
+    threeAxisRealComplex.harmonicPart_mem_laplacian_kernel (threeAxisVector 1)⟩
+
+/-- The harmonic-kernel witness is nonzero. -/
+theorem threeAxisHarmonicKernel_nonzero : threeAxisHarmonicKernel ≠ 0 := by
+  intro h
+  have hcoe := congrArg
+    (fun x : threeAxisRealComplex.laplacian.ker => (x : LowDegreeRealCochain)) h
+  exact threeAxis_harmonicPart_nonzero
+    (by simpa [threeAxisHarmonicKernel] using hcoe)
+
+/-- The actual cohomology quotient has a nonzero class in the same fixture. -/
+theorem threeAxisCohomologyClass_nonzero :
+    threeAxisRealComplex.laplacianKernelEquivCohomology
+        threeAxisHarmonicKernel ≠ 0 := by
+  intro h
+  apply threeAxisHarmonicKernel_nonzero
+  apply threeAxisRealComplex.laplacianKernelEquivCohomology.injective
+  simpa using h
+
+/-- The middle-coordinate harmonic norm is exactly one, hence positive. -/
+theorem threeAxis_harmonic_norm_eq_one :
+    ‖threeAxisRealComplex.harmonicPart (threeAxisVector 1)‖ = 1 := by
+  rw [threeAxis_harmonicPart_eq]
+  simp [threeAxisVector]
+
+/-- The selected residual realizes the positive harmonic minimum. -/
+theorem threeAxis_selected_residual_norm_eq_one :
+    ‖threeAxisVector 1 - threeAxisRealComplex.dPrev
+        (threeAxisRealComplex.selectedCorrection (threeAxisVector 1))‖ = 1 := by
+  rw [congrArg norm (threeAxisRealComplex.selected_residual_eq_harmonic
+    (by simp [threeAxisRealComplex, threeAxisDNext, threeAxisVector]))]
+  exact threeAxis_harmonic_norm_eq_one
+
+/-- Every correction residual is at least the positive harmonic minimum. -/
+theorem threeAxis_harmonic_minimum (c : ℝ) :
+    1 ≤ ‖threeAxisVector 1 - threeAxisRealComplex.dPrev c‖ := by
+  rw [← threeAxis_harmonic_norm_eq_one]
+  exact threeAxisRealComplex.harmonic_norm_le_corrected
+    (by simp [threeAxisRealComplex, threeAxisDNext, threeAxisVector]) c
+
+/-- The compatibility Hodge package is derived on the nondegenerate fixture. -/
+noncomputable def threeAxisRealHodgeDecomposition :
+    RealFiniteHodgeDecomposition threeAxisRealComplex :=
+  threeAxisRealComplex.derivedHodgeDecomposition
+
+/-- The compatibility minimum package is derived on the same fixture. -/
+noncomputable def threeAxisRealHarmonicDebtMinimality :
+    RealHarmonicDebtMinimality threeAxisRealHodgeDecomposition :=
+  threeAxisRealComplex.derivedHarmonicDebtMinimality
+
+/-- The positive harmonic debt supplies the selected repair lower bound. -/
+noncomputable def threeAxisRealEssentialRepairLowerBound :
+    RealEssentialRepairLowerBound threeAxisRealHarmonicDebtMinimality where
+  RepairRoute := fun _ => Unit
+  repairCost := fun x _ => threeAxisRealHarmonicDebtMinimality.harmonicDebt x
+  lowerBound := threeAxisRealHarmonicDebtMinimality.harmonicDebt
+  lowerBound_reads_harmonicDebt := by intro x; rfl
+  lowerBound_le_repairCost := by intro x r; cases r; exact le_rfl
+
+/-- The three degrees used by the nondegenerate cellular Hodge fixture. -/
+inductive ThreeAxisDegree where
+  | previous
+  | selected
+  | next
+  deriving DecidableEq, Fintype
+
+/-- Cellular cochains realizing the three spaces of `threeAxisRealComplex`. -/
+abbrev ThreeAxisCochain : ThreeAxisDegree → Type
+  | .previous => ℝ
+  | .selected => LowDegreeRealCochain
+  | .next => ℝ
+
+/-- Cellular differential whose selected arrows are the three-axis differentials. -/
+def threeAxisCellularD :
+    (n m : ThreeAxisDegree) → Unit → ThreeAxisCochain n → ThreeAxisCochain m
+  | .previous, .previous, _, _ => 0
+  | .previous, .selected, _, x => threeAxisDPrev x
+  | .previous, .next, _, _ => 0
+  | .selected, .previous, _, _ => 0
+  | .selected, .selected, _, _ => 0
+  | .selected, .next, _, x => threeAxisDNext x
+  | .next, .previous, _, _ => 0
+  | .next, .selected, _, _ => 0
+  | .next, .next, _, _ => 0
+
+/-- Cellular adjoint whose selected arrows are the Mathlib adjoints of the complex. -/
+noncomputable def threeAxisCellularAdjoint :
+    (n m : ThreeAxisDegree) → Unit → ThreeAxisCochain m → ThreeAxisCochain n
+  | .previous, .previous, _, _ => 0
+  | .previous, .selected, _, x => threeAxisRealComplex.dPrevAdjoint x
+  | .previous, .next, _, _ => 0
+  | .selected, .previous, _, _ => 0
+  | .selected, .selected, _, _ => 0
+  | .selected, .next, _, x => threeAxisRealComplex.dNextAdjoint x
+  | .next, .previous, _, _ => 0
+  | .next, .selected, _, _ => 0
+  | .next, .next, _, _ => 0
+
+/-- Real inner product on each cochain degree of the three-axis model. -/
+def threeAxisCellularInnerProduct :
+    (n : ThreeAxisDegree) → ThreeAxisCochain n → ThreeAxisCochain n → ℝ
+  | .previous, x, y => inner ℝ x y
+  | .selected, x, y => inner ℝ x y
+  | .next, x, y => inner ℝ x y
+
+/-- Real norm on each cochain degree of the three-axis model. -/
+def threeAxisCellularNorm :
+    (n : ThreeAxisDegree) → ThreeAxisCochain n → ℝ
+  | .previous, x => ‖x‖
+  | .selected, x => ‖x‖
+  | .next, x => ‖x‖
+
+/-- Cellular measurement model generated by the nondegenerate three-axis complex. -/
+noncomputable def threeAxisCellularModel :
     CellularMeasurementModel pseudoCircleMeasurementProfile where
   Cell := Unit
-  Degree := Unit
-  Cochain := fun _ => LowDegreeRealCochain
+  Degree := ThreeAxisDegree
+  Cochain := ThreeAxisCochain
   Differential := fun _ _ => Unit
-  d := fun _ _ _ _ => 0
+  d := threeAxisCellularD
   Adjoint := fun _ _ => Unit
-  dAdjoint := fun _ _ _ _ => 0
+  dAdjoint := threeAxisCellularAdjoint
   InnerProductValue := ℝ
-  innerProduct := fun _ x y => inner ℝ x y
+  innerProduct := threeAxisCellularInnerProduct
   NormValue := ℝ
-  norm := fun _ x => ‖x‖
-  finiteCells := True
-  finiteCells_cert := trivial
-  finiteDimensionalCochains := True
-  finiteDimensionalCochains_cert := trivial
-  finiteIncidenceCategory := True
-  finiteIncidenceCategory_cert := trivial
-  linearRestrictionMaps := True
-  linearRestrictionMaps_cert := trivial
-  differentialSquaresZero := True
-  differentialSquaresZero_cert := trivial
-  adjointsAvailable := True
-  adjointsAvailable_cert := trivial
-  finiteInnerProductRegime := True
-  finiteInnerProductRegime_cert := trivial
+  norm := threeAxisCellularNorm
+  finiteCells := Nonempty (Fintype Unit)
+  finiteCells_cert := ⟨inferInstance⟩
+  finiteDimensionalCochains :=
+    FiniteDimensional ℝ ℝ ∧
+      FiniteDimensional ℝ LowDegreeRealCochain ∧ FiniteDimensional ℝ ℝ
+  finiteDimensionalCochains_cert := ⟨inferInstance, inferInstance, inferInstance⟩
+  finiteIncidenceCategory := Nonempty (Fintype ThreeAxisDegree)
+  finiteIncidenceCategory_cert := ⟨inferInstance⟩
+  linearRestrictionMaps :=
+    (∀ x y, threeAxisDPrev (x + y) = threeAxisDPrev x + threeAxisDPrev y) ∧
+      ∀ x y, threeAxisDNext (x + y) = threeAxisDNext x + threeAxisDNext y
+  linearRestrictionMaps_cert :=
+    ⟨threeAxisDPrev.map_add, threeAxisDNext.map_add⟩
+  differentialSquaresZero := threeAxisDNext.comp threeAxisDPrev = 0
+  differentialSquaresZero_cert := threeAxisRealComplex.d_comp_d
+  adjointsAvailable :=
+    LinearMap.adjoint threeAxisDPrev = threeAxisRealComplex.dPrevAdjoint ∧
+      LinearMap.adjoint threeAxisDNext = threeAxisRealComplex.dNextAdjoint
+  adjointsAvailable_cert := ⟨rfl, rfl⟩
+  finiteInnerProductRegime :=
+    ∀ n x, 0 ≤ threeAxisCellularNorm n x
+  finiteInnerProductRegime_cert := by
+    intro n x
+    cases n <;> exact norm_nonneg _
 
-/-- R11(e): selected Laplacian reading for the low-degree model. -/
-def lowDegreeLaplacianReading :
-    SheafLaplacianReading lowDegreeCellularModel where
-  degree := ()
-  previousDegree := ()
-  nextDegree := ()
-  LaplacianOperator := Unit
-  laplacian := ()
+/-- Laplacian reading carrying the actual three-axis Laplacian operator. -/
+noncomputable def threeAxisLaplacianReading :
+    SheafLaplacianReading threeAxisCellularModel where
+  degree := .selected
+  previousDegree := .previous
+  nextDegree := .next
+  LaplacianOperator := LowDegreeRealCochain →ₗ[ℝ] LowDegreeRealCochain
+  laplacian := threeAxisRealComplex.laplacian
   d_prev := ()
   d_next := ()
   d_prev_adjoint := ()
   d_next_adjoint := ()
-  laplacian_eq_formula := True
-  laplacian_eq_formula_cert := trivial
-  finiteSelfAdjointReading := True
-  finiteSelfAdjointReading_cert := trivial
+  laplacian_eq_formula :=
+    threeAxisRealComplex.laplacian =
+      threeAxisRealComplex.dPrev.comp threeAxisRealComplex.dPrevAdjoint +
+        threeAxisRealComplex.dNextAdjoint.comp threeAxisRealComplex.dNext
+  laplacian_eq_formula_cert := rfl
+  finiteSelfAdjointReading :=
+    ∀ x, inner ℝ (threeAxisRealComplex.laplacian x) x =
+      ‖threeAxisRealComplex.dPrevAdjoint x‖ ^ 2 +
+        ‖threeAxisRealComplex.dNext x‖ ^ 2
+  finiteSelfAdjointReading_cert := by
+    intro x
+    rw [real_inner_comm]
+    simpa [real_inner_self_eq_norm_sq] using
+      threeAxisRealComplex.inner_laplacian_self x
 
-/-- R11(e): explicit finite Hodge decomposition data. -/
-def lowDegreeHodgeData :
-    FiniteHodgeDecompositionData lowDegreeLaplacianReading where
-  HarmonicRepresentative := LowDegreeRealCochain
-  CohomologyClass := LowDegreeRealCochain
-  ExactComponent := LowDegreeRealCochain
-  CoexactComponent := LowDegreeRealCochain
-  KernelPredicate := fun x => lowDegreeRealComplex.laplacian x = 0
-  harmonicProjection := lowDegreeRealHodgeDecomposition.harmonicPart
-  cohomologyClassOf := lowDegreeRealHodgeDecomposition.cohomologyClassOf
-  exactComponentOf := lowDegreeRealHodgeDecomposition.exactPart
-  coexactComponentOf := lowDegreeRealHodgeDecomposition.coexactPart
-  harmonicComponentOf := lowDegreeRealHodgeDecomposition.harmonicPart
-  harmonicRepresentativeAsCochain := fun h => h
-  harmonicInKernel := lowDegreeRealComplex_all_harmonic
-  cohomologyOfHarmonic := fun h => h
-  kernelReadsLaplacian :=
-    ∀ x : LowDegreeRealCochain,
-      lowDegreeRealComplex.laplacian x = 0 ↔
-        lowDegreeRealHodgeDecomposition.cohomologyClassOf x =
-          lowDegreeRealHodgeDecomposition.harmonicPart x
-  kernelReadsLaplacian_cert :=
-    lowDegreeRealComplex_kernel_equiv_harmonicCohomology
-  decompositionMapsReadCochain :=
-    ∀ x : LowDegreeRealCochain,
-      lowDegreeRealHodgeDecomposition.exactPart x +
-          lowDegreeRealHodgeDecomposition.harmonicPart x +
-          lowDegreeRealHodgeDecomposition.coexactPart x =
-        x
-  decompositionMapsReadCochain_cert :=
-    lowDegreeRealHodgeDecomposition.decomposition
-  cohomologyEquivHarmonic :=
-    ∀ h : LowDegreeRealCochain,
-      lowDegreeRealHodgeDecomposition.cohomologyClassOf h =
-        lowDegreeRealHodgeDecomposition.harmonicPart h
-  cohomologyEquivHarmonic_cert :=
-    lowDegreeRealHodgeDecomposition.cohomologyClass_eq_harmonic
-  finiteHodgeDecomposition :=
-    ∀ x : LowDegreeRealCochain,
-      lowDegreeRealHodgeDecomposition.exactPart x +
-          lowDegreeRealHodgeDecomposition.harmonicPart x +
-          lowDegreeRealHodgeDecomposition.coexactPart x =
-        x
-  finiteHodgeDecomposition_cert :=
-    lowDegreeRealHodgeDecomposition.decomposition
-  harmonicKernelIdentifiesCohomology :=
-    ∀ h : LowDegreeRealCochain,
-      lowDegreeRealComplex.laplacian h = 0 ↔
-        lowDegreeRealHodgeDecomposition.cohomologyClassOf h =
-          lowDegreeRealHodgeDecomposition.harmonicPart h
-  harmonicKernelIdentifiesCohomology_cert :=
-    lowDegreeRealComplex_kernel_equiv_harmonicCohomology
-  exactCoexactHarmonicOrthogonal :=
-    ∀ x y : LowDegreeRealCochain,
-      inner ℝ (lowDegreeRealHodgeDecomposition.exactPart x)
-          (lowDegreeRealHodgeDecomposition.harmonicPart y) = 0 ∧
-        inner ℝ (lowDegreeRealHodgeDecomposition.harmonicPart x)
-          (lowDegreeRealHodgeDecomposition.coexactPart y) = 0 ∧
-        inner ℝ (lowDegreeRealHodgeDecomposition.exactPart x)
-          (lowDegreeRealHodgeDecomposition.coexactPart y) = 0
-  exactCoexactHarmonicOrthogonal_cert := by
-    intro x y
-    exact
-      ⟨lowDegreeRealHodgeDecomposition.exact_harmonic_orthogonal x y,
-        lowDegreeRealHodgeDecomposition.harmonic_coexact_orthogonal x y,
-        lowDegreeRealHodgeDecomposition.exact_coexact_orthogonal x y⟩
+/-- Normed additive structure at the preceding three-axis degree. -/
+local instance threeAxisPreviousNormedAddCommGroup :
+    NormedAddCommGroup
+      (threeAxisCellularModel.Cochain threeAxisLaplacianReading.previousDegree) := by
+  change NormedAddCommGroup ℝ
+  infer_instance
 
-/-- R11(e): theorem 8.5 instantiated on the low-degree model. -/
-def lowDegreeHodgePackage :
-    FiniteHodgeDecomposition lowDegreeHodgeData :=
-  finiteHodgeDecompositionPackage lowDegreeHodgeData
+/-- Real inner-product structure at the preceding three-axis degree. -/
+local instance threeAxisPreviousInnerProductSpace :
+    InnerProductSpace ℝ
+      (threeAxisCellularModel.Cochain threeAxisLaplacianReading.previousDegree) := by
+  change InnerProductSpace ℝ ℝ
+  infer_instance
 
-/-- R11(e): harmonic debt data for the low-degree model. -/
-def lowDegreeHarmonicDebtData :
-    HarmonicDebtMinimalityData lowDegreeHodgeData where
-  GaugeCorrection := Unit
-  correctionAction := fun _ => (0 : LowDegreeRealCochain)
-  correctedMismatch := fun _ => (0 : LowDegreeRealCochain)
-  correctionResidual := fun _ =>
-    lowDegreeCellularModel.norm lowDegreeLaplacianReading.degree
-      (0 : LowDegreeRealCochain)
-  selectedMinimumCorrection := ()
-  debtNorm := fun x =>
-    lowDegreeCellularModel.norm lowDegreeLaplacianReading.degree x
-  harmonicDebt := fun x =>
-    lowDegreeCellularModel.norm lowDegreeLaplacianReading.degree
-      (lowDegreeHodgeData.harmonicRepresentativeAsCochain
-        (lowDegreeHodgeData.harmonicProjection x))
-  harmonicNorm := fun h =>
-    lowDegreeCellularModel.norm lowDegreeLaplacianReading.degree
-      (lowDegreeHodgeData.harmonicRepresentativeAsCochain h)
-  selectedMismatch := (0 : LowDegreeRealCochain)
-  harmonicRepresentative := (0 : LowDegreeRealCochain)
-  harmonicDebtValue :=
-    lowDegreeCellularModel.norm lowDegreeLaplacianReading.degree
-      (0 : LowDegreeRealCochain)
-  projectionReadsHarmonicRepresentative :=
-    lowDegreeHodgeData.harmonicProjection (0 : LowDegreeRealCochain) =
-      (0 : LowDegreeRealCochain)
-  projectionReadsHarmonicRepresentative_cert := rfl
-  minimumReadsCorrectionResidual :=
-    ∀ g : Unit,
-      (0 : ℝ) ≤ 0
-  minimumReadsCorrectionResidual_cert := by
-    intro g
-    cases g
-    exact le_rfl
-  harmonicDebt_eq_harmonicNorm :=
-    ‖(0 : LowDegreeRealCochain)‖ = ‖(0 : LowDegreeRealCochain)‖
-  harmonicDebt_eq_harmonicNorm_cert := rfl
-  minimizationStatement :=
-    ∀ g : Unit,
-      (0 : ℝ) ≤ 0
-  minimizationStatement_cert := by
-    intro g
-    cases g
-    exact le_rfl
+/-- Finite dimensionality at the preceding three-axis degree. -/
+local instance threeAxisPreviousFiniteDimensional :
+    FiniteDimensional ℝ
+      (threeAxisCellularModel.Cochain threeAxisLaplacianReading.previousDegree) := by
+  change FiniteDimensional ℝ ℝ
+  infer_instance
 
-/-- R11(e): theorem 8.6 instantiated on the low-degree model. -/
-def lowDegreeHarmonicDebtPackage :
-    HarmonicDebtMinimality lowDegreeHarmonicDebtData :=
-  harmonicDebtMinimalityPackage lowDegreeHarmonicDebtData
+/-- Normed additive structure at the selected three-axis degree. -/
+local instance threeAxisSelectedNormedAddCommGroup :
+    NormedAddCommGroup
+      (threeAxisCellularModel.Cochain threeAxisLaplacianReading.degree) := by
+  change NormedAddCommGroup LowDegreeRealCochain
+  infer_instance
+
+/-- Real inner-product structure at the selected three-axis degree. -/
+local instance threeAxisSelectedInnerProductSpace :
+    InnerProductSpace ℝ
+      (threeAxisCellularModel.Cochain threeAxisLaplacianReading.degree) := by
+  change InnerProductSpace ℝ LowDegreeRealCochain
+  infer_instance
+
+/-- Finite dimensionality at the selected three-axis degree. -/
+local instance threeAxisSelectedFiniteDimensional :
+    FiniteDimensional ℝ
+      (threeAxisCellularModel.Cochain threeAxisLaplacianReading.degree) := by
+  change FiniteDimensional ℝ LowDegreeRealCochain
+  infer_instance
+
+/-- Normed additive structure at the following three-axis degree. -/
+local instance threeAxisNextNormedAddCommGroup :
+    NormedAddCommGroup
+      (threeAxisCellularModel.Cochain threeAxisLaplacianReading.nextDegree) := by
+  change NormedAddCommGroup ℝ
+  infer_instance
+
+/-- Real inner-product structure at the following three-axis degree. -/
+local instance threeAxisNextInnerProductSpace :
+    InnerProductSpace ℝ
+      (threeAxisCellularModel.Cochain threeAxisLaplacianReading.nextDegree) := by
+  change InnerProductSpace ℝ ℝ
+  infer_instance
+
+/-- Finite dimensionality at the following three-axis degree. -/
+local instance threeAxisNextFiniteDimensional :
+    FiniteDimensional ℝ
+      (threeAxisCellularModel.Cochain threeAxisLaplacianReading.nextDegree) := by
+  change FiniteDimensional ℝ ℝ
+  infer_instance
+
+/-- Operator-level proof that the cellular reading and real complex coincide. -/
+noncomputable def threeAxisCellularComparison :
+    RealFiniteInnerProductComplex.CellularRealFiniteComplexComparison
+      threeAxisLaplacianReading threeAxisRealComplex where
+  dPrev_eq := rfl
+  dNext_eq := rfl
+  dPrevAdjoint_eq := rfl
+  dNextAdjoint_eq := rfl
+  laplacianOperator_eq := rfl
+  laplacian_eq := rfl
+  innerProductReading := id
+  innerProduct_eq := by intro x y; rfl
+
+/--
+The generic cellular Hodge data is derived from the same nondegenerate
+three-axis complex; no decomposition certificate is supplied by this fixture.
+-/
+noncomputable def threeAxisGenericHodgeData :
+    FiniteHodgeDecompositionData threeAxisLaplacianReading :=
+  RealFiniteInnerProductComplex.derivedFiniteHodgeDecompositionData
+    threeAxisLaplacianReading threeAxisRealComplex threeAxisCellularComparison
+
+/-- The generic theorem 8.5 package fires on the nondegenerate fixture. -/
+theorem threeAxisGenericHodgePackage :
+    FiniteHodgeDecomposition threeAxisGenericHodgeData :=
+  RealFiniteInnerProductComplex.derivedFiniteHodgeDecompositionPackage
+    threeAxisLaplacianReading threeAxisRealComplex threeAxisCellularComparison
+
+/-- Generic harmonic-debt data for the positive middle-coordinate cocycle. -/
+noncomputable def threeAxisGenericHarmonicDebtData :
+    HarmonicDebtMinimalityData threeAxisGenericHodgeData :=
+  RealFiniteInnerProductComplex.derivedHarmonicDebtMinimalityData
+    threeAxisLaplacianReading threeAxisRealComplex threeAxisCellularComparison
+      id (by intro x; rfl)
+      (threeAxisVector 1)
+      (by
+        change (threeAxisVector 1) 2 = 0
+        simp [threeAxisVector, show (2 : Fin 3) ≠ 1 by decide])
+
+/-- The generic theorem 8.6 package fires on the same positive cocycle. -/
+theorem threeAxisGenericHarmonicDebtPackage :
+    HarmonicDebtMinimality threeAxisGenericHarmonicDebtData :=
+  RealFiniteInnerProductComplex.derivedHarmonicDebtMinimalityPackage
+    threeAxisLaplacianReading threeAxisRealComplex threeAxisCellularComparison
+      id (by intro x; rfl)
+      (threeAxisVector 1)
+      (by
+        change (threeAxisVector 1) 2 = 0
+        simp [threeAxisVector, show (2 : Fin 3) ≠ 1 by decide])
 
 /-- R11(e): finite cellular Hodge fixture. -/
 structure CellularHodgeFiniteExample where
   cochainCarrier : Type
-  hodgePackage : FiniteHodgeDecomposition lowDegreeHodgeData
-  harmonicDebtPackage : HarmonicDebtMinimality lowDegreeHarmonicDebtData
-  realHodgeDecomposition : RealFiniteHodgeDecomposition lowDegreeRealComplex
+  hodgePackage : FiniteHodgeDecomposition threeAxisGenericHodgeData
+  harmonicDebtPackage : HarmonicDebtMinimality threeAxisGenericHarmonicDebtData
+  realHodgeDecomposition : RealFiniteHodgeDecomposition threeAxisRealComplex
   realHarmonicDebtMinimality : RealHarmonicDebtMinimality realHodgeDecomposition
   realEssentialRepairLowerBound :
     RealEssentialRepairLowerBound realHarmonicDebtMinimality
@@ -948,34 +1177,28 @@ structure CellularHodgeFiniteExample where
 /-- R11(e): low-degree finite cochain complex reading. -/
 def cellularHodgeFiniteExample : CellularHodgeFiniteExample where
   cochainCarrier := LowDegreeRealCochain
-  hodgePackage := lowDegreeHodgePackage
-  harmonicDebtPackage := lowDegreeHarmonicDebtPackage
-  realHodgeDecomposition := lowDegreeRealHodgeDecomposition
-  realHarmonicDebtMinimality := lowDegreeRealHarmonicDebtMinimality
-  realEssentialRepairLowerBound := lowDegreeRealEssentialRepairLowerBound
+  hodgePackage := threeAxisGenericHodgePackage
+  harmonicDebtPackage := threeAxisGenericHarmonicDebtPackage
+  realHodgeDecomposition := threeAxisRealHodgeDecomposition
+  realHarmonicDebtMinimality := threeAxisRealHarmonicDebtMinimality
+  realEssentialRepairLowerBound := threeAxisRealEssentialRepairLowerBound
   kerL1_equiv_H1 :=
-    ∀ x : LowDegreeRealCochain,
-      lowDegreeRealComplex.laplacian x = 0 ↔
-        lowDegreeRealHodgeDecomposition.cohomologyClassOf x =
-          lowDegreeRealHodgeDecomposition.harmonicPart x
+    Nonempty (threeAxisRealComplex.laplacian.ker ≃ₗ[ℝ]
+      threeAxisRealComplex.cohomology)
   kerL1_equiv_H1_cert :=
-    lowDegreeRealComplex_kernel_equiv_harmonicCohomology
+    ⟨threeAxisRealComplex.laplacianKernelEquivCohomology⟩
   harmonicDebtMinimal :=
-    ∀ (x : LowDegreeRealCochain)
-      (g : lowDegreeRealHarmonicDebtMinimality.GaugeCorrection),
-      lowDegreeRealHarmonicDebtMinimality.correctionResidual
-          (lowDegreeRealHarmonicDebtMinimality.selectedCorrection x) x ≤
-        lowDegreeRealHarmonicDebtMinimality.correctionResidual g x
+    ∀ c : ℝ, 1 ≤ ‖threeAxisVector 1 - threeAxisRealComplex.dPrev c‖
   harmonicDebtMinimal_cert :=
-    lowDegreeRealHarmonicDebtMinimality.selected_minimizes
+    threeAxis_harmonic_minimum
   exactHarmonicCoexactSplit :=
     ∀ x : LowDegreeRealCochain,
-      lowDegreeRealHodgeDecomposition.exactPart x +
-          lowDegreeRealHodgeDecomposition.harmonicPart x +
-          lowDegreeRealHodgeDecomposition.coexactPart x =
+      threeAxisRealHodgeDecomposition.exactPart x +
+          threeAxisRealHodgeDecomposition.harmonicPart x +
+          threeAxisRealHodgeDecomposition.coexactPart x =
         x
   exactHarmonicCoexactSplit_cert :=
-    lowDegreeRealHodgeDecomposition.decomposition
+    threeAxisRealHodgeDecomposition.decomposition
 
 theorem cellularHodgeExample_kerL1_equiv_H1 :
     cellularHodgeFiniteExample.kerL1_equiv_H1 :=
@@ -1228,12 +1451,12 @@ def measurementPacketExampleSynthesis :
   finiteMeasurementSynthesisPackage measurementPacketExampleData
 
 /-- R11(g): GAGA certified fields carry the concrete finite Hodge theorem package. -/
-def lowDegreeSelectedHodgeTheoremPackage :
+def threeAxisSelectedHodgeTheoremPackage :
     SelectedFiniteHodgeTheoremPackage pseudoCircleMeasurementProfile where
-  cellularModel := lowDegreeCellularModel
-  laplacianReading := lowDegreeLaplacianReading
-  hodgeData := lowDegreeHodgeData
-  hodgePackage := lowDegreeHodgePackage
+  cellularModel := threeAxisCellularModel
+  laplacianReading := threeAxisLaplacianReading
+  hodgeData := threeAxisGenericHodgeData
+  hodgePackage := threeAxisGenericHodgePackage
 
 /-- R11(g) / VIII-5: concrete extension accounting used by the GAGA Period/Stokes route. -/
 def lowDegreePeriodStokesAccounting :
@@ -1330,7 +1553,7 @@ def gagaCertifiedFields :
   selectedPeriodStokesAccounting := ()
   selectedTopologicalDebtCapacity := ()
   selectedDerivedConflictAccounting := ()
-  finiteHodgeTheoremPackage := lowDegreeSelectedHodgeTheoremPackage
+  finiteHodgeTheoremPackage := threeAxisSelectedHodgeTheoremPackage
   periodStokesTheoremPackage := lowDegreePeriodStokesTheoremPackage
   topologicalDebtTheoremPackage := lowDegreeTopologicalDebtTheoremPackage
   derivedConflictTheoremPackage := lowDegreeDerivedConflictTheoremPackage
