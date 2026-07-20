@@ -369,7 +369,7 @@ async function main() {
       awaitPromise: true,
       returnByValue: true,
       expression: `(async () => {
-        const { sha256Hex } = await import('./analysis.js');
+        const { canonicalJson, documentsFromFiles, sha256Hex, validateAnalysisBundle } = await import('./analysis.js');
         const index = window.__archviewState.architecture.index;
         const archmapDigest = await sha256Hex(index.canonicalJson);
         const inputDigests = {
@@ -385,16 +385,18 @@ async function main() {
         const runId = 'run:' + (await sha256Hex(runSeed)).slice(0, 12);
         const componentFingerprints = { lawPolicy: 'sha256:' + inputDigests.lawPolicy.sha256, lawSurface: 'sha256:' + inputDigests.lawSurface.sha256, measurementProfile: 'sha256:' + inputDigests.measurementProfile.sha256 };
         const contract = { toolVersion: '0.5.4', runId, inputDigests, componentFingerprints };
-        const normalizedAtomId = (id) => 'atom:normalized:' + id;
-        const normalizedContextId = (id) => 'ctx:normalized:' + id;
-        const normalizedCoverId = (id) => 'cover:normalized:' + id;
+        const prefixed = (prefix, id) => id.startsWith(prefix + ':') ? id : prefix + ':' + id;
+        const normalizedAtomId = (id) => prefixed('atom', id);
+        const normalizedContextId = (id) => prefixed('ctx', id);
+        const normalizedCoverId = (id) => prefixed('cover', id);
+        const sortedUnique = (values) => [...new Set(values || [])].sort();
         const normalized = {
           schema: 'normalized-archmap/v0.5.4', ...contract,
           normalizerId: 'archmap-schema052-finite-poset-site@1', sourceArchmapRef: 'input:vertical-slice.archmap.json', sourceArchmapId: index.id,
           extractionDoctrineRef: {},
-          atoms: index.atoms.map((atom) => ({ sourceAtomId: atom.id, normalizedAtomId: normalizedAtomId(atom.id), atomKind: atom.kind, subject: atom.subject, axis: atom.axis, predicate: atom.predicate || atom.kind, sourceRefs: atom.refs || [], contextMemberships: (index.contextIdsByAtom.get(atom.id) || []).map(normalizedContextId), normalizationStatus: 'normalized' })),
-          contexts: index.contexts.map((context) => ({ sourceContextId: context.id, normalizedContextId: normalizedContextId(context.id), atomIds: [...new Set(context.atoms || [])].map(normalizedAtomId), restrictsTo: [...new Set(context.restrictsTo || [])].map(normalizedContextId), sourceRefs: context.refs || [], posetStatus: 'finiteObserved' })),
-          covers: index.covers.map((cover) => ({ sourceCoverId: cover.id, normalizedCoverId: normalizedCoverId(cover.id), contextIds: [...new Set(cover.contexts || [])].map(normalizedContextId), sourceRefs: cover.refs || [], coverageStatus: 'selectedCandidate' })),
+          atoms: index.atoms.map((atom) => ({ sourceAtomId: atom.id, normalizedAtomId: normalizedAtomId(atom.id), atomKind: atom.kind, subject: atom.subject, axis: atom.axis, predicate: atom.predicate || atom.kind, ...(atom.object === undefined ? {} : { object: atom.object }), sourceRefs: sortedUnique(atom.refs), contextMemberships: sortedUnique((index.contextIdsByAtom.get(atom.id) || []).map(normalizedContextId)), normalizationStatus: 'normalized' })).sort((a, b) => a.normalizedAtomId.localeCompare(b.normalizedAtomId)),
+          contexts: index.contexts.map((context) => ({ sourceContextId: context.id, normalizedContextId: normalizedContextId(context.id), atomIds: sortedUnique((context.atoms || []).map(normalizedAtomId)), restrictsTo: sortedUnique((context.restrictsTo || []).map(normalizedContextId)), sourceRefs: sortedUnique(context.refs), posetStatus: 'finiteObserved' })).sort((a, b) => a.normalizedContextId.localeCompare(b.normalizedContextId)),
+          covers: index.covers.map((cover) => ({ sourceCoverId: cover.id, normalizedCoverId: normalizedCoverId(cover.id), contextIds: sortedUnique((cover.contexts || []).map(normalizedContextId)), sourceRefs: sortedUnique(cover.refs), coverageStatus: 'selectedCandidate' })).sort((a, b) => a.normalizedCoverId.localeCompare(b.normalizedCoverId)),
           summary: { atomCount: index.atoms.length, normalizedAtomCount: index.atoms.length, contextCount: index.contexts.length, coverCount: index.covers.length, doctrineFingerprint: 'sha256:aat-canonical-doctrine-schema052' }, nonConclusions: [],
         };
         const packet = {
@@ -405,12 +407,12 @@ async function main() {
         const summary = {
           schema: 'archsig-analysis-summary/v0.5.4', ...contract, measurementPacketSchema: packet.schema,
           profileRef: packet.profile.profileId, structuralVerdictSummary: { rowCount: 0, measuredNonzeroCount: 0, unmeasuredCount: 0, nonTerminalCount: 0 },
-          conclusion: 'UNMEASURED', assumptionSummary: {}, insightArtifacts: {}, readThisFirst: {}, translationRule: {}, translationRuleTable: [], nonConclusions: [],
+          conclusion: 'AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE', assumptionSummary: {}, insightArtifacts: {}, readThisFirst: { conclusion: 'AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE' }, translationRule: {}, translationRuleTable: [], nonConclusions: [],
         };
         const insight = {
           schema: 'archsig-insight-report/v0.5.4', ...contract, reportId: 'insight:browser', sourcePacketRef: 'archsig-measurement-packet.json',
-          insightCards: [{ id: 'insight:browser:001', evidence: { atomRefs: [normalizedAtomId(index.atoms[0].id)], contextRefs: [normalizedContextId(index.contexts[0].id)], coverRefs: [normalizedCoverId(index.covers[0].id)], sourceRefs: [index.sources[0][0]] }, unsupportedScalar: 42 }],
-          actionQueue: [{ kind: 'next_inspection', label: 'No repair target supplied', targetRefs: [normalizedAtomId(index.atoms[0].id)] }], generatedAt: '2026-01-01T00:00:00Z', boundaryDigest: {}, claimValidation: {}, copyBlocks: {}, gluingGeometry: {}, guidedTours: [], headline: {}, omittedDetailCounts: {}, outputArtifacts: {}, rankingBasis: [], readThisFirst: {}, viewerVisualScenes: [], nonConclusions: [],
+          insightCards: [{ id: 'insight:browser:001', kind: 'orientation', title: 'Inspect support', oneLine: 'Inspect declared support.', evidence: { atomRefs: [normalizedAtomId(index.atoms[0].id)], contextRefs: [normalizedContextId(index.contexts[0].id)], coverRefs: [normalizedCoverId(index.covers[0].id)], sourceRefs: [index.sources[0][0]] }, unsupportedScalar: 42 }],
+          actionQueue: [{ id: 'action:browser:001', kind: 'next_inspection', title: 'Inspect support', reason: 'Declared support is available.', targetRefs: [normalizedAtomId(index.atoms[0].id)] }], generatedAt: '2026-01-01T00:00:00Z', boundaryDigest: {}, claimValidation: {}, copyBlocks: {}, gluingGeometry: {}, guidedTours: [], headline: { conclusionCode: 'AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE' }, omittedDetailCounts: {}, outputArtifacts: {}, rankingBasis: [], readThisFirst: { conclusion: 'AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE' }, viewerVisualScenes: [], nonConclusions: [],
         };
         const manifest = {
           schema: 'archsig-run-manifest/v0.5.4', ...contract, commandName: 'analyze', mode: 'measurement', conclusionCode: null,
@@ -454,6 +456,8 @@ async function main() {
         };
         const malformedJsonState = await window.__archview.loadAnalysisFiles([new File(['{'], 'archsig-run-manifest.json', { type: 'application/json' })], 'malformed JSON directory');
         const malformedJson = { status: malformedJsonState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
+        const duplicateKeyState = await window.__archview.loadAnalysisFiles([new File(['{"schema":"invalid","schema":"archsig-run-manifest/v0.5.4"}'], 'archsig-run-manifest.json', { type: 'application/json' })], 'duplicate key directory');
+        const duplicateKey = { status: duplicateKeyState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
         const schemaMismatchState = await window.__archview.loadAnalysisObject({ ...bundle, summary: { ...summary, schema: 'unsupported-summary/v9' } }, 'schema mismatch browser bundle');
         const schemaMismatch = { status: schemaMismatchState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
         const invalidProfileState = await window.__archview.loadAnalysisObject({ ...bundle, packet: { ...packet, profile: { schema: packet.profile.schema, profileId: packet.profile.profileId } } }, 'invalid profile bundle');
@@ -473,6 +477,19 @@ async function main() {
         const invalidNormalized = { ...normalized, contexts: normalized.contexts.map((row, position) => position ? row : { ...row, atomIds: ['atom:missing-from-archmap'] }) };
         const normalizedState = await window.__archview.loadAnalysisObject({ ...bundle, normalized: invalidNormalized }, 'invalid normalized bridge bundle');
         const normalizedInternal = { status: normalizedState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
+        const swappedAtoms = normalized.atoms.map((row) => ({ ...row }));
+        [swappedAtoms[0].normalizedAtomId, swappedAtoms[1].normalizedAtomId] = [swappedAtoms[1].normalizedAtomId, swappedAtoms[0].normalizedAtomId];
+        const swappedState = await window.__archview.loadAnalysisObject({ ...bundle, normalized: { ...normalized, atoms: swappedAtoms } }, 'swapped normalized ids');
+        const swappedNormalized = { status: swappedState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
+        const invalidRowState = await window.__archview.loadAnalysisObject({ ...bundle, packet: { ...packet, structuralVerdict: [42] } }, 'invalid packet row');
+        const invalidRow = { status: invalidRowState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
+        const invalidCardState = await window.__archview.loadAnalysisObject({ ...bundle, insight: { ...insight, insightCards: [42] } }, 'invalid insight card');
+        const invalidCard = { status: invalidCardState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
+        const forgedConclusionState = await window.__archview.loadAnalysisObject({ ...bundle, summary: { ...summary, conclusion: 'FORGED_CONCLUSION' } }, 'forged conclusion');
+        const forgedConclusion = { status: forgedConclusionState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
+        const edgePacket = { ...packet, computedInvariants: [{ invariantId: 'edge-probe', kind: 'measurement-invariant', edgeRefs: ['ctx:missing->ctx:checkout'] }] };
+        const edgeState = await window.__archview.loadAnalysisObject({ ...bundle, packet: edgePacket }, 'unresolved edge');
+        const unresolvedEdge = { status: edgeState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
         const malformedGateState = await window.__archview.loadAnalysisObject({ ...bundle, gate: { schema: gate.schema } }, 'malformed gate bundle');
         const malformedGate = { status: malformedGateState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
         const malformedComparisonState = await window.__archview.loadAnalysisObject({ ...bundle, comparison: { schema: comparison.schema, toolVersion: comparison.toolVersion, inputDigests: { baseRun: {}, headRun: {} }, nonConclusions: [] } }, 'malformed comparison bundle');
@@ -481,6 +498,37 @@ async function main() {
         const gateMismatch = { status: gateMismatchState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
         const comparisonMismatchState = await window.__archview.loadAnalysisObject({ ...bundle, gate: { ...gate, inputDigests: { ...gate.inputDigests, comparisonReport: { path: 'input:archsig-comparison-report.json', sha256: 'e'.repeat(64) } } } }, 'comparison digest mismatch bundle');
         const comparisonMismatch = { status: comparisonMismatchState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
+        const mutable = structuredClone(bundle);
+        await window.__archview.loadAnalysisObject(mutable, 'mutation isolation');
+        mutable.packet.structuralVerdict.push(42);
+        const mutationIsolation = { status: window.__archviewState.analysis.status, rows: window.__archviewState.analysis.bundle.artifacts.packet.structuralVerdict.length };
+        const numericPacket = { ...packet, computedInvariants: [{ invariantId: 'numeric-probe', kind: 'measurement-invariant', value: { epsilon: 0.000001, large: 100000000000000000000 } }] };
+        const rustPacketCanonical = canonicalJson(numericPacket).replace('0.000001', '1e-6').replace('100000000000000000000', '1e+20');
+        const numericPacketDigest = await sha256Hex(rustPacketCanonical);
+        const numericComparison = { ...comparison, inputDigests: { ...comparison.inputDigests, headRun: { ...comparison.inputDigests.headRun, measurementPacket: { ...comparison.inputDigests.headRun.measurementPacket, sha256: numericPacketDigest } } } };
+        const numericComparisonDigest = await sha256Hex(numericComparison);
+        const numericGate = { ...gate, inputDigests: { ...gate.inputDigests, measurementPacket: { ...gate.inputDigests.measurementPacket, sha256: numericPacketDigest }, comparisonReport: { ...gate.inputDigests.comparisonReport, sha256: numericComparisonDigest } } };
+        const numericFiles = Object.entries({ ...runFiles, 'archsig-measurement-packet.json': numericPacket, 'archsig-comparison-report.json': numericComparison, 'archsig-gate-report.json': numericGate }).map(([name, value]) => {
+          let contents = JSON.stringify(value);
+          if (name === 'archsig-measurement-packet.json') contents = contents.replace('0.000001', '1e-6').replace('100000000000000000000', '1e+20');
+          return new File([contents], name, { type: 'application/json' });
+        });
+        let numericCanonical;
+        try {
+          const numericDocuments = await documentsFromFiles(numericFiles);
+          const numericResult = await validateAnalysisBundle(numericDocuments, index);
+          numericCanonical = { status: 'accepted', packetDigest: numericResult.packetDigest };
+        } catch (error) { numericCanonical = { status: error.status, issues: error.issues?.map((entry) => entry.message) || [error.message] }; }
+        const mixedFiles = Object.entries(runFiles).map(([name, value], position) => {
+          const file = new File([JSON.stringify(value)], name, { type: 'application/json' });
+          Object.defineProperty(file, 'webkitRelativePath', { value: (position ? 'run-b/' : 'run-a/') + name });
+          return file;
+        });
+        const mixedState = await window.__archview.loadAnalysisFiles(mixedFiles, 'mixed directories');
+        const mixedDirectory = { status: mixedState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
+        await window.__archview.loadAnalysisObject(bundle, 'accepted before malformed url');
+        const malformedUrlState = await window.__archview.loadAnalysisUrl('http://[');
+        const malformedUrl = { status: malformedUrlState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
         const stalePromise = window.__archview.loadAnalysisObject(bundle, 'stale analysis probe');
         window.__archview.loadObject({ schema: 'archmap/v0.5.4', id: 'race-replacement', sources: {}, atoms: [], contexts: [], covers: [] }, 'race replacement ArchMap');
         await stalePromise;
@@ -493,7 +541,7 @@ async function main() {
         await window.__archview.loadUrl('./fixtures/vertical-slice.archmap.json');
         const absent = { status: window.__archviewState.analysis.status, label: document.querySelector('#analysis-input-status').textContent };
         return {
-          accepted, malformedJson, schemaMismatch, invalidProfile, incompleteDigests, componentMismatch, runIdMismatch, mismatch, unresolved, normalizedInternal, malformedGate, malformedComparison, gateMismatch, comparisonMismatch, staleRace, redirected, crossOrigin, absent,
+          accepted, malformedJson, duplicateKey, schemaMismatch, invalidProfile, incompleteDigests, componentMismatch, runIdMismatch, mismatch, unresolved, normalizedInternal, swappedNormalized, invalidRow, invalidCard, forgedConclusion, unresolvedEdge, malformedGate, malformedComparison, gateMismatch, comparisonMismatch, mutationIsolation, numericCanonical, mixedDirectory, malformedUrl, staleRace, redirected, crossOrigin, absent,
         };
       })()`,
     });
@@ -503,6 +551,9 @@ async function main() {
     }
     if (analysisValue.malformedJson.status !== "malformed" || !analysisValue.malformedJson.issues.some((entry) => entry.includes("not valid JSON")) || analysisValue.schemaMismatch.status !== "malformed" || !analysisValue.schemaMismatch.issues.some((entry) => entry.includes("must use archsig-analysis-summary/v0.5.4"))) {
       throw new Error(`Malformed JSON or ArchSig schema was not rejected fail-closed: ${JSON.stringify(analysisValue)}`);
+    }
+    if (analysisValue.duplicateKey.status !== "malformed" || !analysisValue.duplicateKey.issues.some((entry) => entry.includes("Duplicate object key")) || analysisValue.invalidRow.status !== "malformed" || analysisValue.invalidCard.status !== "malformed" || analysisValue.forgedConclusion.status !== "malformed") {
+      throw new Error(`Duplicate keys, invalid rows, or forged conclusions were accepted: ${JSON.stringify(analysisValue)}`);
     }
     if (analysisValue.invalidProfile.status !== "malformed" || !analysisValue.invalidProfile.issues.some((entry) => entry.includes("profile.siteRef")) || analysisValue.incompleteDigests.status !== "malformed" || !analysisValue.incompleteDigests.issues.some((entry) => entry.includes("lawPolicy"))) {
       throw new Error(`Partial ArchSig profile or input digest contract was accepted: ${JSON.stringify(analysisValue)}`);
@@ -516,6 +567,9 @@ async function main() {
     if (analysisValue.unresolved.status !== "unresolved" || !analysisValue.unresolved.issues.some((entry) => entry.includes("atom:missing-from-archmap")) || analysisValue.normalizedInternal.status !== "unresolved" || !analysisValue.normalizedInternal.issues.some((entry) => entry.includes("atom:missing-from-archmap"))) {
       throw new Error(`Unresolved normalized ID was not rejected fail-closed: ${JSON.stringify(analysisValue)}`);
     }
+    if (analysisValue.swappedNormalized.status !== "unresolved" || !analysisValue.swappedNormalized.issues.some((entry) => entry.includes("deterministic ArchSig projection")) || analysisValue.unresolvedEdge.status !== "unresolved" || !analysisValue.unresolvedEdge.issues.some((entry) => entry.includes("explicit ArchMap Context relation"))) {
+      throw new Error(`Swapped normalized identity or unresolved edge was accepted: ${JSON.stringify(analysisValue)}`);
+    }
     if (analysisValue.malformedGate.status !== "malformed" || !analysisValue.malformedGate.issues.some((entry) => entry.includes("archsig-gate-report.json")) || analysisValue.malformedComparison.status !== "malformed" || !analysisValue.malformedComparison.issues.some((entry) => entry.includes("archsig-comparison-report.json"))) {
       throw new Error(`Malformed optional gate artifact was not rejected fail-closed: ${JSON.stringify(analysisValue)}`);
     }
@@ -524,6 +578,9 @@ async function main() {
     }
     if (analysisValue.comparisonMismatch.status !== "mismatch" || !analysisValue.comparisonMismatch.issues.some((entry) => entry.includes("comparison digest"))) {
       throw new Error(`Gate comparison digest mismatch was not rejected fail-closed: ${JSON.stringify(analysisValue)}`);
+    }
+    if (analysisValue.mutationIsolation.status !== "accepted" || analysisValue.mutationIsolation.rows !== 0 || analysisValue.numericCanonical.status !== "accepted" || analysisValue.mixedDirectory.status !== "malformed" || !analysisValue.mixedDirectory.issues.some((entry) => entry.includes("one run directory")) || analysisValue.malformedUrl.status === "accepted") {
+      throw new Error(`Accepted artifacts remained mutable, mixed directories passed, or malformed URL kept accepted state: ${JSON.stringify(analysisValue)}`);
     }
     if (analysisValue.staleRace.status !== "absent" || analysisValue.staleRace.repository !== "race-replacement" || analysisValue.redirected.status !== "mismatch" || !analysisValue.redirected.issues.some((entry) => entry.includes("must not redirect")) || analysisValue.crossOrigin.status !== "mismatch" || !analysisValue.crossOrigin.issues.some((entry) => entry.includes("current origin")) || analysisValue.absent.status !== "absent" || analysisValue.absent.label !== "No analysis loaded") {
       throw new Error(`Cross-origin or absent analysis state was not explicit: ${JSON.stringify(analysisValue)}`);

@@ -536,14 +536,12 @@ export async function startArchView() {
   };
   const loadAnalysisUrl = async (directory) => {
     const requestId = ++analysisRequest;
-    const resolved = new URL(directory.endsWith("/") ? directory : `${directory}/`, location.href);
-    if (resolved.origin !== location.origin) {
-      rejectAnalysis(Object.assign(new Error("ArchSig run URL must use the current origin."), { status: "mismatch" }), directory, requestId);
-      return state.read().analysis;
-    }
-    state.analysisLoading(resolved.href);
-    try { return await acceptAnalysis(await documentsFromUrl(resolved.href), resolved.href, requestId); }
-    catch (error) { rejectAnalysis(error, resolved.href, requestId); return state.read().analysis; }
+    state.analysisLoading(directory);
+    try {
+      const resolved = new URL(directory.endsWith("/") ? directory : `${directory}/`, location.href);
+      if (resolved.origin !== location.origin) throw Object.assign(new Error("ArchSig run URL must use the current origin."), { status: "mismatch" });
+      return await acceptAnalysis(await documentsFromUrl(resolved.href), resolved.href, requestId);
+    } catch (error) { rejectAnalysis(error, directory, requestId); return state.read().analysis; }
   };
   requireElement("#analysis-directory").addEventListener("change", async (event) => {
     const files = event.target.files;
