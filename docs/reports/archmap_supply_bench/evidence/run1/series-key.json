@@ -1,0 +1,41 @@
+{
+ "schema": "archmap-supply-bench-series-key/v1",
+ "registeredAt": "2026-07-21",
+ "registeredBeforeAnyRun": true,
+ "corpusVersion": "corpus:train-ticket-supply-bench@1",
+ "referenceVersions": {
+  "chunk-04": "reference:train-ticket-chunk-04@1",
+  "chunk-13": "reference:train-ticket-chunk-13@1",
+  "chunk-01": "reference:train-ticket-chunk-01@1"
+ },
+ "readerModel": "claude-sonnet-5 (Claude Code Agent tool, model alias 'sonnet')",
+ "inferenceConfig": "Claude Code Agent tool defaults (no overrides)",
+ "promptSkillBundle": "archmap-creater@git-tree:8b8d7a43ad9ce4607a4f8221d7953945e2b3ba94",
+ "harnessCommit": "a91bed819a654a92689457c5f314f54ad9bf87fd",
+ "adjudicationProtocol": "docs/tool/archmap_supply_bench.md@git-blob:01cc8222aa80f60a3bcd3d739f3d8ac6442712ee",
+ "adjudicator": "sonnet reread subagents + fable integrator (final decisions)",
+ "runOrdinals": [
+  1,
+  2,
+  3,
+  4,
+  5,
+  6
+ ],
+ "pairing": [
+  [
+   "run-1",
+   "run-2"
+  ],
+  [
+   "run-3",
+   "run-4"
+  ],
+  [
+   "run-5",
+   "run-6"
+  ]
+ ],
+ "pairingRule": "runOrdinal ascending non-overlapping pairs, registered before any extraction run started",
+ "independenceRule": "each run is a fresh subagent session per chunk; no run reads another run's packets, adjudications, or outputs; the reference slice is never shown to readers"
+}

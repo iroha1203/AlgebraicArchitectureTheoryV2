@@ -1,0 +1,13 @@
+[
+ {
+  "artifact": "alignment:pair-2-chunk-01",
+  "fix": "deduplicated within-row candidateAtomIds",
+  "rows": 17,
+  "cause": "prefill generator listed an atom id twice when both passes emitted the identical id for the same matched key (deterministic id naming collision)"
+ },
+ {
+  "artifact": "consistency/adjudication:pair-3-chunk-04",
+  "fix": "disambiguated 6 candidate atom ids colliding across passes with #pass-a/#pass-b suffixes (12 adjudication rows synced by key-side mapping)",
+  "cause": "both passes independently emitted the identical atom id string with different keys (deterministic id naming collision); atom identity in onlyIn lists must be unique"
+ }
+]

@@ -1,0 +1,200 @@
+{
+  "schema": "archmap-supply-bench-report/v1",
+  "id": "supply-bench:train-ticket-chunk-01-v1",
+  "seriesKey": {
+    "adjudicationProtocol": "docs/tool/archmap_supply_bench.md@git-blob:01cc8222aa80f60a3bcd3d739f3d8ac6442712ee",
+    "adjudicator": "sonnet reread subagents + fable integrator (final decisions)",
+    "corpusVersion": "corpus:train-ticket-supply-bench@1",
+    "harnessCommit": "a91bed819a654a92689457c5f314f54ad9bf87fd",
+    "independenceRule": "each run is a fresh subagent session per chunk; no run reads another run's packets, adjudications, or outputs; the reference slice is never shown to readers",
+    "inferenceConfig": "Claude Code Agent tool defaults (no overrides)",
+    "pairing": [
+      [
+        "run-1",
+        "run-2"
+      ],
+      [
+        "run-3",
+        "run-4"
+      ],
+      [
+        "run-5",
+        "run-6"
+      ]
+    ],
+    "pairingRule": "runOrdinal ascending non-overlapping pairs, registered before any extraction run started",
+    "promptSkillBundle": "archmap-creater@git-tree:8b8d7a43ad9ce4607a4f8221d7953945e2b3ba94",
+    "readerModel": "claude-sonnet-5 (Claude Code Agent tool, model alias 'sonnet')",
+    "referenceVersions": {
+      "chunk-01": "reference:train-ticket-chunk-01@1",
+      "chunk-04": "reference:train-ticket-chunk-04@1",
+      "chunk-13": "reference:train-ticket-chunk-13@1"
+    },
+    "registeredAt": "2026-07-21",
+    "registeredBeforeAnyRun": true,
+    "runOrdinals": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "schema": "archmap-supply-bench-series-key/v1"
+  },
+  "referenceRef": "reference:train-ticket-chunk-01",
+  "referenceVersion": "1",
+  "pairs": [
+    {
+      "pairId": "pair-1-chunk-01",
+      "chunkClass": "prompt-literal-disjoint",
+      "consistencyRef": "consistency:pair-1-chunk-01",
+      "machineMatchRate": 0.5521472392638037,
+      "machineMatchRateKey1": 0.5521472392638037,
+      "keyConvergence": {
+        "status": "computed",
+        "matched": 90,
+        "mergeGroups": 18,
+        "adopted": 37,
+        "notAdopted": 0,
+        "rate": 0.8333333333333334
+      },
+      "referenceRecall": {
+        "referenceAtoms": 135,
+        "mechanicallyRecovered": 47,
+        "mechanicalLowerBound": 0.34814814814814815,
+        "adjudicatedRecovered": 102,
+        "adjudicated": 0.7555555555555555
+      },
+      "overGeneration": {
+        "candidateAtoms": 250,
+        "notAdoptedAtoms": 0,
+        "novelCorrectAtoms": 43,
+        "rate": 0.0
+      }
+    },
+    {
+      "pairId": "pair-2-chunk-01",
+      "chunkClass": "prompt-literal-disjoint",
+      "consistencyRef": "consistency:pair-2-chunk-01",
+      "machineMatchRate": 0.7294117647058823,
+      "machineMatchRateKey1": 0.7294117647058823,
+      "keyConvergence": {
+        "status": "computed",
+        "matched": 124,
+        "mergeGroups": 16,
+        "adopted": 13,
+        "notAdopted": 1,
+        "rate": 0.8857142857142857
+      },
+      "referenceRecall": {
+        "referenceAtoms": 135,
+        "mechanicallyRecovered": 47,
+        "mechanicalLowerBound": 0.34814814814814815,
+        "adjudicatedRecovered": 109,
+        "adjudicated": 0.8074074074074075
+      },
+      "overGeneration": {
+        "candidateAtoms": 274,
+        "notAdoptedAtoms": 0,
+        "novelCorrectAtoms": 73,
+        "rate": 0.0
+      }
+    },
+    {
+      "pairId": "pair-3-chunk-01",
+      "chunkClass": "prompt-literal-disjoint",
+      "consistencyRef": "consistency:pair-3-chunk-01",
+      "machineMatchRate": 0.64,
+      "machineMatchRateKey1": 0.64,
+      "keyConvergence": {
+        "status": "computed",
+        "matched": 112,
+        "mergeGroups": 25,
+        "adopted": 13,
+        "notAdopted": 0,
+        "rate": 0.8175182481751825
+      },
+      "referenceRecall": {
+        "referenceAtoms": 135,
+        "mechanicallyRecovered": 47,
+        "mechanicalLowerBound": 0.34814814814814815,
+        "adjudicatedRecovered": 109,
+        "adjudicated": 0.8074074074074075
+      },
+      "overGeneration": {
+        "candidateAtoms": 287,
+        "notAdoptedAtoms": 0,
+        "novelCorrectAtoms": 71,
+        "rate": 0.0
+      }
+    }
+  ],
+  "aggregate": {
+    "keyConvergenceRate": {
+      "pairs": 3,
+      "min": 0.8175182481751825,
+      "max": 0.8857142857142857,
+      "mean": 0.8455219557409338
+    },
+    "machineMatchRate": {
+      "pairs": 3,
+      "min": 0.5521472392638037,
+      "max": 0.7294117647058823,
+      "mean": 0.6405196679898953
+    },
+    "overGenerationRate": {
+      "pairs": 3,
+      "min": 0.0,
+      "max": 0.0,
+      "mean": 0.0
+    },
+    "referenceRecallAdjudicated": {
+      "pairs": 3,
+      "min": 0.7555555555555555,
+      "max": 0.8074074074074075,
+      "mean": 0.7901234567901234
+    },
+    "referenceRecallMechanicalLowerBound": {
+      "pairs": 3,
+      "min": 0.34814814814814815,
+      "max": 0.34814814814814815,
+      "mean": 0.34814814814814815
+    }
+  },
+  "chunkClassAggregate": {
+    "prompt-literal-disjoint": {
+      "keyConvergenceRate": {
+        "pairs": 3,
+        "min": 0.8175182481751825,
+        "max": 0.8857142857142857,
+        "mean": 0.8455219557409338
+      },
+      "machineMatchRate": {
+        "pairs": 3,
+        "min": 0.5521472392638037,
+        "max": 0.7294117647058823,
+        "mean": 0.6405196679898953
+      },
+      "overGenerationRate": {
+        "pairs": 3,
+        "min": 0.0,
+        "max": 0.0,
+        "mean": 0.0
+      },
+      "referenceRecallAdjudicated": {
+        "pairs": 3,
+        "min": 0.7555555555555555,
+        "max": 0.8074074074074075,
+        "mean": 0.7901234567901234
+      },
+      "referenceRecallMechanicalLowerBound": {
+        "pairs": 3,
+        "min": 0.34814814814814815,
+        "max": 0.34814814814814815,
+        "mean": 0.34814814814814815
+      }
+    }
+  },
+  "claimBoundary": "Values are records relative to the recorded comparison-series key (corpus, reference slice, reader model, rule-set version, adjudicator, harness). matchRate is a record, not a verdict. No claim is made beyond the measured corpus, models, and rule-set versions."
+}

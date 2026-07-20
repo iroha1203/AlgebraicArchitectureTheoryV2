@@ -1,0 +1,677 @@
+{
+ "pairRef": "pair-1",
+ "chunk": "chunk-01",
+ "prefilledRows": [
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addconfig",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:addConfig",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:configs-post"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addcontacts",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:addContacts",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:contacts-post"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addprice",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:addPrice",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:prices-post"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addstation",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:addStation",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:stations-post"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addtrain",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:addTrain",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:trains-post"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deleteconfig",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:deleteConfig",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:configs-delete"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deletecontacts",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:deleteContacts",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:contacts-delete"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deleteprice",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:deletePrice",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:prices-delete"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deletestation",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:deleteStation",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:stations-delete"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deletetrain",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:deleteTrain",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:trains-delete"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallconfigs",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:getConfigs",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:configs-get"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallcontacts",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:getContacts",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:contacts-get"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallprices",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:getPrices",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:prices-get"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallstations",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:getStations",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:stations-get"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getalltrains",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:getTrains",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:trains-get"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:home",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:welcome",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:welcome"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifyconfig",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:modifyConfig",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:configs-put"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifycontacts",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:modifyContacts",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:contacts-put"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifyprice",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:modifyPrice",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:prices-put"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifystation",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:modifyStation",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:stations-put"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifytrain",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:modifyTrain",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:trains-put"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-order-service-adminordercontroller:addorder",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-order-service.AdminOrderController:exposesEndpoint:addOrder",
+    "atom:capability:ts-admin-order-service.adminordercontroller:addorder"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-order-service-adminordercontroller:deleteorder",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-order-service.AdminOrderController:exposesEndpoint:deleteOrder",
+    "atom:capability:ts-admin-order-service.adminordercontroller:deleteorder"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-order-service-adminordercontroller:getallorders",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-order-service.AdminOrderController:exposesEndpoint:getAllOrders",
+    "atom:capability:ts-admin-order-service.adminordercontroller:getallorders"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-order-service-adminordercontroller:home",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-order-service.AdminOrderController:exposesEndpoint:welcome",
+    "atom:capability:ts-admin-order-service.adminordercontroller:welcome"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-order-service-adminordercontroller:updateorder",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-order-service.AdminOrderController:exposesEndpoint:updateOrder",
+    "atom:capability:ts-admin-order-service.adminordercontroller:updateorder"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-route-service-adminroutecontroller:addroute",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-route-service.AdminRouteController:exposesEndpoint:addRoute",
+    "atom:capability:ts-admin-route-service.adminroutecontroller:addroute"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-route-service-adminroutecontroller:deleteroute",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-route-service.AdminRouteController:exposesEndpoint:deleteRoute",
+    "atom:capability:ts-admin-route-service.adminroutecontroller:deleteroute"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-route-service-adminroutecontroller:getallroutes",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-route-service.AdminRouteController:exposesEndpoint:getAllRoutes",
+    "atom:capability:ts-admin-route-service.adminroutecontroller:getallroutes"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-route-service-adminroutecontroller:home",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-route-service.AdminRouteController:exposesEndpoint:welcome",
+    "atom:capability:ts-admin-route-service.adminroutecontroller:welcome"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminbasic-application",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-basic-info-service.AdminBasicInfoApplication",
+    "atom:component:ts-admin-basic-info-service.adminbasicinfoapplication"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminbasic-controller",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-basic-info-service.AdminBasicInfoController",
+    "atom:component:ts-admin-basic-info-service.adminbasicinfocontroller"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminbasic-priceinfo",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-basic-info-service.PriceInfo",
+    "atom:component:ts-admin-basic-info-service.priceinfo"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminbasic-securityconfig",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-basic-info-service.SecurityConfig",
+    "atom:component:ts-admin-basic-info-service.securityconfig"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminbasic-service-iface",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-basic-info-service.AdminBasicInfoService",
+    "atom:component:ts-admin-basic-info-service.adminbasicinfoservice"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminbasic-service-impl",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+    "atom:component:ts-admin-basic-info-service.adminbasicinfoserviceimpl"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminorder-application",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-order-service.AdminOrderApplication",
+    "atom:component:ts-admin-order-service.adminorderapplication"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminorder-controller",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-order-service.AdminOrderController",
+    "atom:component:ts-admin-order-service.adminordercontroller"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminorder-securityconfig",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-order-service.SecurityConfig",
+    "atom:component:ts-admin-order-service.securityconfig"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminorder-service-iface",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-order-service.AdminOrderService",
+    "atom:component:ts-admin-order-service.adminorderservice"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminorder-service-impl",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-order-service.AdminOrderServiceImpl",
+    "atom:component:ts-admin-order-service.adminorderserviceimpl"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminroute-application",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-route-service.AdminRouteApplication",
+    "atom:component:ts-admin-route-service.adminrouteapplication"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminroute-controller",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-route-service.AdminRouteController",
+    "atom:component:ts-admin-route-service.adminroutecontroller"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminroute-securityconfig",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-route-service.SecurityConfig",
+    "atom:component:ts-admin-route-service.securityconfig"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminroute-service-iface",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-route-service.AdminRouteService",
+    "atom:component:ts-admin-route-service.adminrouteservice"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminroute-service-impl",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-route-service.AdminRouteServiceImpl",
+    "atom:component:ts-admin-route-service.adminrouteserviceimpl"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:admintravel-application",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-travel-service.AdminTravelApplication",
+    "atom:component:ts-admin-travel-service.admintravelapplication"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  }
+ ],
+ "remainingReferenceAtomIds": [
+  "atom:authority:ts-admin-basic-info-service-adminbasicinfocontroller:allows-cross-origin-per-endpoint",
+  "atom:authority:ts-admin-basic-info-service-securityconfig:allows-cross-origin",
+  "atom:authority:ts-admin-basic-info-service-securityconfig:checks-jwt-filter",
+  "atom:authority:ts-admin-basic-info-service-securityconfig:permits-unauthenticated-get-resources",
+  "atom:authority:ts-admin-basic-info-service-securityconfig:permits-unauthenticated-swagger",
+  "atom:authority:ts-admin-basic-info-service-securityconfig:requires-role-admin",
+  "atom:authority:ts-admin-order-service-adminordercontroller:allows-cross-origin-getallorders-only",
+  "atom:authority:ts-admin-order-service-securityconfig:allows-cross-origin",
+  "atom:authority:ts-admin-order-service-securityconfig:checks-jwt-filter",
+  "atom:authority:ts-admin-order-service-securityconfig:permits-unauthenticated-swagger",
+  "atom:authority:ts-admin-order-service-securityconfig:requires-role-admin-whole-path",
+  "atom:authority:ts-admin-route-service-securityconfig:allows-cross-origin",
+  "atom:authority:ts-admin-route-service-securityconfig:checks-jwt-filter",
+  "atom:authority:ts-admin-route-service-securityconfig:permits-unauthenticated-swagger",
+  "atom:authority:ts-admin-route-service-securityconfig:requires-role-admin-whole-path",
+  "atom:component:ts-admin-basic-info-service",
+  "atom:component:ts-admin-order-service",
+  "atom:component:ts-admin-route-service",
+  "atom:contract:ts-admin-basic-info-service-securityconfig:security-filter-chain-shape",
+  "atom:contract:ts-admin-order-service-securityconfig:security-filter-chain-shape",
+  "atom:contract:ts-admin-route-service-securityconfig:security-filter-chain-shape",
+  "atom:effect:ts-admin-basic-info-service-adminbasicinfoapplication:registers-with-discovery-provider",
+  "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addconfig",
+  "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addcontact",
+  "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addprice",
+  "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addstation",
+  "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addtrain",
+  "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:callsprovider-configs",
+  "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:callsprovider-contacts",
+  "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:callsprovider-prices",
+  "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:callsprovider-stations",
+  "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:callsprovider-trains",
+  "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deleteconfig",
+  "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deletecontact",
+  "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deleteprice",
+  "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deletestation",
+  "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deletetrain",
+  "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallconfigs",
+  "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallcontacts",
+  "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallprices",
+  "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallstations",
+  "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getalltrains",
+  "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifyconfig",
+  "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifycontact",
+  "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifyprice",
+  "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifystation",
+  "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifytrain",
+  "atom:effect:ts-admin-order-service-adminorderapplication:registers-with-discovery-provider",
+  "atom:effect:ts-admin-order-service-adminorderserviceimpl:addorder-order-other-service-branch",
+  "atom:effect:ts-admin-order-service-adminorderserviceimpl:addorder-order-service-branch",
+  "atom:effect:ts-admin-order-service-adminorderserviceimpl:callsprovider-order",
+  "atom:effect:ts-admin-order-service-adminorderserviceimpl:callsprovider-orderother",
+  "atom:effect:ts-admin-order-service-adminorderserviceimpl:deleteorder-order-other-service-branch",
+  "atom:effect:ts-admin-order-service-adminorderserviceimpl:deleteorder-order-service-branch",
+  "atom:effect:ts-admin-order-service-adminorderserviceimpl:getallorders-order-other-service",
+  "atom:effect:ts-admin-order-service-adminorderserviceimpl:getallorders-order-service",
+  "atom:effect:ts-admin-order-service-adminorderserviceimpl:updateorder-order-other-service-branch",
+  "atom:effect:ts-admin-order-service-adminorderserviceimpl:updateorder-order-service-branch",
+  "atom:effect:ts-admin-route-service-adminrouteapplication:registers-with-discovery-provider",
+  "atom:effect:ts-admin-route-service-adminrouteserviceimpl:callsprovider-route",
+  "atom:effect:ts-admin-route-service-adminrouteserviceimpl:callsprovider-station",
+  "atom:effect:ts-admin-route-service-adminrouteserviceimpl:checkstationsexists",
+  "atom:effect:ts-admin-route-service-adminrouteserviceimpl:createandmodifyroute",
+  "atom:effect:ts-admin-route-service-adminrouteserviceimpl:deleteroute",
+  "atom:effect:ts-admin-route-service-adminrouteserviceimpl:getallroutes",
+  "atom:effect:ts-admin-travel-service-admintravelapplication:registers-with-discovery-provider",
+  "atom:relation:ts-admin-basic-info-service-adminbasicinfocontroller:dependson",
+  "atom:relation:ts-admin-basic-info-service-adminbasicinfoserviceimpl:implements",
+  "atom:relation:ts-admin-basic-info-service:depends-on-nacos-discovery",
+  "atom:relation:ts-admin-order-service-adminordercontroller:dependson",
+  "atom:relation:ts-admin-order-service-adminorderserviceimpl:implements",
+  "atom:relation:ts-admin-order-service:depends-on-nacos-discovery",
+  "atom:relation:ts-admin-route-service-adminroutecontroller:dependson",
+  "atom:relation:ts-admin-route-service-adminrouteserviceimpl:implements",
+  "atom:relation:ts-admin-route-service:depends-on-nacos-discovery",
+  "atom:semantic:admin-basic-info-surface:cech-section-money-amount",
+  "atom:semantic:ts-admin-basic-info-service-adminbasicinfoserviceimpl:discoveryclient-not-used-for-url",
+  "atom:semantic:ts-admin-basic-info-service-priceinfo:money-amount-representation",
+  "atom:semantic:ts-admin-order-service-adminordercontroller:order-lookup-key",
+  "atom:semantic:ts-admin-order-service-adminorderserviceimpl:discoveryclient-not-used-for-url",
+  "atom:semantic:ts-admin-order-service-adminorderserviceimpl:response-status-branch",
+  "atom:semantic:ts-admin-order-service-adminorderserviceimpl:train-number-prefix-routing",
+  "atom:semantic:ts-admin-route-service-adminroutecontroller:cross-origin-annotation-coverage",
+  "atom:semantic:ts-admin-route-service-adminrouteserviceimpl:discoveryclient-not-used-for-url",
+  "atom:semantic:ts-admin-route-service-adminrouteserviceimpl:downstream-http-status-branch",
+  "atom:semantic:ts-admin-route-service-adminrouteserviceimpl:response-status-branch",
+  "atom:semantic:ts-admin-route-service-adminrouteserviceimpl:route-endpoint-membership-check",
+  "atom:semantic:ts-admin-route-service-adminrouteserviceimpl:station-lookup-contract"
+ ],
+ "remainingCandidateAtomIds": [
+  "atom:authority:ts-admin-basic-info-service.AdminBasicInfoController:allowsCrossOrigin",
+  "atom:authority:ts-admin-basic-info-service.SecurityConfig:allowsCrossOrigin:corsConfigurer",
+  "atom:authority:ts-admin-basic-info-service.SecurityConfig:permitsUnauthenticated:configs",
+  "atom:authority:ts-admin-basic-info-service.SecurityConfig:permitsUnauthenticated:contacts",
+  "atom:authority:ts-admin-basic-info-service.SecurityConfig:permitsUnauthenticated:prices",
+  "atom:authority:ts-admin-basic-info-service.SecurityConfig:permitsUnauthenticated:stations",
+  "atom:authority:ts-admin-basic-info-service.SecurityConfig:permitsUnauthenticated:swagger",
+  "atom:authority:ts-admin-basic-info-service.SecurityConfig:permitsUnauthenticated:trains",
+  "atom:authority:ts-admin-basic-info-service.SecurityConfig:requiresRole:adminbasicservice",
+  "atom:authority:ts-admin-basic-info-service.securityconfig:allows-cross-origin-all",
+  "atom:authority:ts-admin-basic-info-service.securityconfig:permits-unauthenticated-configs-get",
+  "atom:authority:ts-admin-basic-info-service.securityconfig:permits-unauthenticated-contacts-get",
+  "atom:authority:ts-admin-basic-info-service.securityconfig:permits-unauthenticated-prices-get",
+  "atom:authority:ts-admin-basic-info-service.securityconfig:permits-unauthenticated-stations-get",
+  "atom:authority:ts-admin-basic-info-service.securityconfig:permits-unauthenticated-swagger",
+  "atom:authority:ts-admin-basic-info-service.securityconfig:permits-unauthenticated-trains-get",
+  "atom:authority:ts-admin-basic-info-service.securityconfig:requires-role-admin",
+  "atom:authority:ts-admin-order-service.AdminOrderController:allowsCrossOrigin:getAllOrders",
+  "atom:authority:ts-admin-order-service.SecurityConfig:allowsCrossOrigin:corsConfigurer",
+  "atom:authority:ts-admin-order-service.SecurityConfig:permitsUnauthenticated:swagger",
+  "atom:authority:ts-admin-order-service.SecurityConfig:requiresRole:adminorderservice",
+  "atom:authority:ts-admin-order-service.adminordercontroller:allows-cross-origin-getallorders",
+  "atom:authority:ts-admin-order-service.securityconfig:allows-cross-origin-all",
+  "atom:authority:ts-admin-order-service.securityconfig:permits-unauthenticated-swagger",
+  "atom:authority:ts-admin-order-service.securityconfig:requires-role-admin",
+  "atom:authority:ts-admin-route-service.AdminRouteController:allowsCrossOrigin:getAllRoutes",
+  "atom:authority:ts-admin-route-service.SecurityConfig:allowsCrossOrigin:corsConfigurer",
+  "atom:authority:ts-admin-route-service.SecurityConfig:permitsUnauthenticated:swagger",
+  "atom:authority:ts-admin-route-service.SecurityConfig:requiresRole:adminrouteservice",
+  "atom:authority:ts-admin-route-service.securityconfig:allows-cross-origin-all",
+  "atom:authority:ts-admin-route-service.securityconfig:permits-unauthenticated-swagger",
+  "atom:authority:ts-admin-route-service.securityconfig:requires-role-admin",
+  "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:handlesCommand:addConfig",
+  "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:handlesCommand:addContact",
+  "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:handlesCommand:addPrice",
+  "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:handlesCommand:addStation",
+  "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:handlesCommand:addTrain",
+  "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:handlesCommand:deleteConfig",
+  "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:handlesCommand:deleteContact",
+  "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:handlesCommand:deletePrice",
+  "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:handlesCommand:deleteStation",
+  "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:handlesCommand:deleteTrain",
+  "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:handlesCommand:modifyConfig",
+  "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:handlesCommand:modifyContact",
+  "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:handlesCommand:modifyPrice",
+  "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:handlesCommand:modifyStation",
+  "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:handlesCommand:modifyTrain",
+  "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:servesQuery:getAllConfigs",
+  "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:servesQuery:getAllContacts",
+  "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:servesQuery:getAllPrices",
+  "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:servesQuery:getAllStations",
+  "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:servesQuery:getAllTrains",
+  "atom:capability:ts-admin-order-service.AdminOrderServiceImpl:handlesCommand:addOrder",
+  "atom:capability:ts-admin-order-service.AdminOrderServiceImpl:handlesCommand:deleteOrder",
+  "atom:capability:ts-admin-order-service.AdminOrderServiceImpl:handlesCommand:updateOrder",
+  "atom:capability:ts-admin-order-service.AdminOrderServiceImpl:servesQuery:getAllOrders",
+  "atom:capability:ts-admin-route-service.AdminRouteServiceImpl:handlesCommand:createAndModifyRoute",
+  "atom:capability:ts-admin-route-service.AdminRouteServiceImpl:handlesCommand:deleteRoute",
+  "atom:capability:ts-admin-route-service.AdminRouteServiceImpl:servesQuery:checkStationsExists",
+  "atom:capability:ts-admin-route-service.AdminRouteServiceImpl:servesQuery:getAllRoutes",
+  "atom:component:ts-admin-basic-info-service.application-yml",
+  "atom:component:ts-admin-order-service.application-yml",
+  "atom:component:ts-admin-route-service.application-yml",
+  "atom:contract:ts-admin-basic-info-service.AdminBasicInfoService:shapedAs",
+  "atom:contract:ts-admin-basic-info-service.PriceInfo:shapedAs",
+  "atom:contract:ts-admin-basic-info-service.adminbasicinfoservice:shaped-as",
+  "atom:contract:ts-admin-basic-info-service.priceinfo:shaped-as",
+  "atom:contract:ts-admin-order-service.AdminOrderService:shapedAs",
+  "atom:contract:ts-admin-order-service.adminorderservice:shaped-as",
+  "atom:contract:ts-admin-route-service.AdminRouteService:shapedAs",
+  "atom:contract:ts-admin-route-service.adminrouteservice:shaped-as",
+  "atom:contract:ts-admin-route-service.adminrouteserviceimpl:requires-start-end-in-stations",
+  "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:addConfig",
+  "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:addContact",
+  "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:addPrice",
+  "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:addStation",
+  "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:addTrain",
+  "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:deleteConfig",
+  "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:deleteContact",
+  "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:deletePrice",
+  "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:deleteStation",
+  "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:deleteTrain",
+  "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:getAllConfigs",
+  "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:getAllContacts",
+  "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:getAllPrices",
+  "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:getAllStations",
+  "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:getAllTrains",
+  "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:modifyConfig",
+  "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:modifyContact",
+  "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:modifyPrice",
+  "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:modifyStation",
+  "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:modifyTrain",
+  "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-configs-delete",
+  "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-configs-get",
+  "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-configs-post",
+  "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-configs-put",
+  "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-contacts-delete",
+  "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-contacts-get",
+  "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-contacts-post",
+  "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-contacts-put",
+  "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-prices-delete",
+  "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-prices-get",
+  "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-prices-post",
+  "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-prices-put",
+  "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-stations-delete",
+  "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-stations-get",
+  "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-stations-post",
+  "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-stations-put",
+  "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-trains-delete",
+  "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-trains-get",
+  "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-trains-post",
+  "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-trains-put",
+  "atom:effect:ts-admin-order-service.AdminOrderServiceImpl:callsProvider:addOrder-order",
+  "atom:effect:ts-admin-order-service.AdminOrderServiceImpl:callsProvider:addOrder-orderOther",
+  "atom:effect:ts-admin-order-service.AdminOrderServiceImpl:callsProvider:deleteOrder-order",
+  "atom:effect:ts-admin-order-service.AdminOrderServiceImpl:callsProvider:deleteOrder-orderOther",
+  "atom:effect:ts-admin-order-service.AdminOrderServiceImpl:callsProvider:getAllOrders-order",
+  "atom:effect:ts-admin-order-service.AdminOrderServiceImpl:callsProvider:getAllOrders-orderOther",
+  "atom:effect:ts-admin-order-service.AdminOrderServiceImpl:callsProvider:updateOrder-order",
+  "atom:effect:ts-admin-order-service.AdminOrderServiceImpl:callsProvider:updateOrder-orderOther",
+  "atom:effect:ts-admin-order-service.adminorderserviceimpl:calls-addorder-order-other-service",
+  "atom:effect:ts-admin-order-service.adminorderserviceimpl:calls-addorder-order-service",
+  "atom:effect:ts-admin-order-service.adminorderserviceimpl:calls-deleteorder-order-other-service",
+  "atom:effect:ts-admin-order-service.adminorderserviceimpl:calls-deleteorder-order-service",
+  "atom:effect:ts-admin-order-service.adminorderserviceimpl:calls-getallorders-order-other-service",
+  "atom:effect:ts-admin-order-service.adminorderserviceimpl:calls-getallorders-order-service",
+  "atom:effect:ts-admin-order-service.adminorderserviceimpl:calls-updateorder-order-other-service",
+  "atom:effect:ts-admin-order-service.adminorderserviceimpl:calls-updateorder-order-service",
+  "atom:effect:ts-admin-route-service.AdminRouteServiceImpl:callsProvider:checkStationsExists",
+  "atom:effect:ts-admin-route-service.AdminRouteServiceImpl:callsProvider:createAndModifyRoute",
+  "atom:effect:ts-admin-route-service.AdminRouteServiceImpl:callsProvider:deleteRoute",
+  "atom:effect:ts-admin-route-service.AdminRouteServiceImpl:callsProvider:getAllRoutes",
+  "atom:effect:ts-admin-route-service.adminrouteserviceimpl:calls-checkstationsexists",
+  "atom:effect:ts-admin-route-service.adminrouteserviceimpl:calls-createandmodifyroute",
+  "atom:effect:ts-admin-route-service.adminrouteserviceimpl:calls-deleteroute",
+  "atom:effect:ts-admin-route-service.adminrouteserviceimpl:calls-getallroutes",
+  "atom:relation:ts-admin-basic-info-service.application-yml:dependsOn:nacos-discovery",
+  "atom:relation:ts-admin-order-service.application-yml:dependsOn:nacos-discovery",
+  "atom:relation:ts-admin-route-service.application-yml:dependsOn:nacos-discovery",
+  "atom:semantic:ctx-ts-admin-basic-info-service-price-crud:cech-section-money-amount",
+  "atom:semantic:ts-admin-basic-info-service-price-admin-surface:cech-section-money-amount",
+  "atom:semantic:ts-admin-basic-info-service.PriceInfo:money-amount-representation",
+  "atom:semantic:ts-admin-basic-info-service.application-yml:identified-by-service-registration",
+  "atom:semantic:ts-admin-basic-info-service.priceinfo:identified-by-double-rate-fields",
+  "atom:semantic:ts-admin-order-service.AdminOrderServiceImpl:response-status-envelope",
+  "atom:semantic:ts-admin-order-service.AdminOrderServiceImpl:trainNumber-prefix-selects-provider",
+  "atom:semantic:ts-admin-order-service.adminorderserviceimpl:means-in-use-response-status-envelope",
+  "atom:semantic:ts-admin-order-service.adminorderserviceimpl:means-in-use-trainnumber-routing",
+  "atom:semantic:ts-admin-order-service.application-yml:identified-by-service-registration",
+  "atom:semantic:ts-admin-route-service.AdminRouteServiceImpl:downstream-http-status-meaning",
+  "atom:semantic:ts-admin-route-service.AdminRouteServiceImpl:response-status-envelope",
+  "atom:semantic:ts-admin-route-service.AdminRouteServiceImpl:station-lookup-null-meaning",
+  "atom:semantic:ts-admin-route-service.adminrouteserviceimpl:means-in-use-http-status-log-branch",
+  "atom:semantic:ts-admin-route-service.adminrouteserviceimpl:means-in-use-station-check-envelope",
+  "atom:semantic:ts-admin-route-service.adminrouteserviceimpl:means-in-use-station-lookup-null",
+  "atom:semantic:ts-admin-route-service.application-yml:identified-by-service-registration"
+ ]
+}

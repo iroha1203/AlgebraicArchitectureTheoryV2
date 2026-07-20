@@ -1,0 +1,2621 @@
+{
+ "schema": "archmap-extraction-consistency/v0.5.4",
+ "id": "consistency:pair-1-chunk-13",
+ "scopeManifestRef": "scope:train-ticket-supply-bench@1",
+ "passARefs": [
+  "candidates:run-1:chunk-13"
+ ],
+ "passBRefs": [
+  "candidates:run-2:chunk-13"
+ ],
+ "atomMatchKeySpec": "kind | NFC(trim(subject) normalized to <source-dir>.<Class> from refs) | axis | predicate? | object? (atom-match-key@2)",
+ "matched": {
+  "count": 83,
+  "rows": [
+   {
+    "key": "authority|ts-order-other-service.SecurityConfig|authority|requiresRole|POST /api/v1/orderOtherService/orderOther/admin requiresRole-ADMIN",
+    "passAAtomIds": [
+     "atom:authority:ts-order-other-service-securityconfig:requiresrole-post-orderother-admin"
+    ],
+    "passBAtomIds": [
+     "atom:authority:ts-order-other-service.securityconfig:requires-role-post-orderother-admin"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:78"
+    ]
+   },
+   {
+    "key": "authority|ts-order-other-service.SecurityConfig|authority|requiresRole|PUT /api/v1/orderOtherService/orderOther/admin requiresRole-ADMIN",
+    "passAAtomIds": [
+     "atom:authority:ts-order-other-service-securityconfig:requiresrole-put-orderother-admin"
+    ],
+    "passBAtomIds": [
+     "atom:authority:ts-order-other-service.securityconfig:requires-role-put-orderother-admin"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:79"
+    ]
+   },
+   {
+    "key": "authority|ts-order-service.SecurityConfig|authority|requiresRole|POST /api/v1/orderservice/order/admin requiresRole-ADMIN",
+    "passAAtomIds": [
+     "atom:authority:ts-order-service-securityconfig:requiresrole-post-order-admin"
+    ],
+    "passBAtomIds": [
+     "atom:authority:ts-order-service.securityconfig:requires-role-post-order-admin"
+    ],
+    "refs": [
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:78"
+    ]
+   },
+   {
+    "key": "authority|ts-order-service.SecurityConfig|authority|requiresRole|PUT /api/v1/orderservice/order/admin requiresRole-ADMIN",
+    "passAAtomIds": [
+     "atom:authority:ts-order-service-securityconfig:requiresrole-put-order-admin"
+    ],
+    "passBAtomIds": [
+     "atom:authority:ts-order-service.securityconfig:requires-role-put-order-admin"
+    ],
+    "refs": [
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:79"
+    ]
+   },
+   {
+    "key": "capability|ts-notification-service.NotificationServiceImpl|capability|handlesCommand|orderCancelSuccess/2",
+    "passAAtomIds": [
+     "atom:capability:ts-notification-service-notificationserviceimpl:ordercancelsuccess-2"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-notification-service.notificationserviceimpl:handles-command-ordercancelsuccess-2"
+    ],
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:118"
+    ]
+   },
+   {
+    "key": "capability|ts-notification-service.NotificationServiceImpl|capability|handlesCommand|orderChangedSuccess/2",
+    "passAAtomIds": [
+     "atom:capability:ts-notification-service-notificationserviceimpl:orderchangedsuccess-2"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-notification-service.notificationserviceimpl:handles-command-orderchangedsuccess-2"
+    ],
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:91"
+    ]
+   },
+   {
+    "key": "capability|ts-notification-service.NotificationServiceImpl|capability|handlesCommand|orderCreateSuccess/2",
+    "passAAtomIds": [
+     "atom:capability:ts-notification-service-notificationserviceimpl:ordercreatesuccess-2"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-notification-service.notificationserviceimpl:handles-command-ordercreatesuccess-2"
+    ],
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:64"
+    ]
+   },
+   {
+    "key": "capability|ts-notification-service.NotificationServiceImpl|capability|handlesCommand|preserveSuccess/2",
+    "passAAtomIds": [
+     "atom:capability:ts-notification-service-notificationserviceimpl:preservesuccess-2"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-notification-service.notificationserviceimpl:handles-command-preservesuccess-2"
+    ],
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:37"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|DELETE /api/v1/orderOtherService/orderOther/{orderId}",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderothercontroller:delete-orderother-orderid"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-delete"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:139"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/orderOther",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderothercontroller:get-orderother-all"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-find-all"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:148"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/orderOther/orderPay/{orderId}",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderothercontroller:get-orderother-orderpay-orderid"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-pay"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:94"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/orderOther/price/{orderId}",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderothercontroller:get-orderother-price-orderid"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-price"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:87"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/orderOther/security/{checkDate}/{accountId}",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderothercontroller:get-orderother-security-checkdate-accountid"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-security-check"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:115"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/orderOther/status/{orderId}/{status}",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderothercontroller:get-orderother-status-orderid-status"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-modify-status"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:108"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/orderOther/{orderId}",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderothercontroller:get-orderother-orderid"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-by-id"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:101"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/orderOther/{travelDate}/{trainNumber}",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderothercontroller:get-orderother-traveldate-trainnumber"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-calc-sold"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:79"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/welcome",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderothercontroller:get-welcome"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-welcome"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:33"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|POST /api/v1/orderOtherService/orderOther",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderothercontroller:post-orderother"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-create"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:47"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|POST /api/v1/orderOtherService/orderOther/admin",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderothercontroller:post-orderother-admin"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-admin-create"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:54"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|POST /api/v1/orderOtherService/orderOther/query",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderothercontroller:post-orderother-query"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-query"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:61"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|POST /api/v1/orderOtherService/orderOther/refresh",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderothercontroller:post-orderother-refresh"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-refresh"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:70"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|POST /api/v1/orderOtherService/orderOther/tickets",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderothercontroller:post-orderother-tickets"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-tickets"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:40"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|PUT /api/v1/orderOtherService/orderOther",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderothercontroller:put-orderother"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-save"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:123"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|PUT /api/v1/orderOtherService/orderOther/admin",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderothercontroller:put-orderother-admin"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-admin-update"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:132"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|addNewOrder/2",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderotherserviceimpl:addneworder-2"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderotherserviceimpl:handles-command-addneworder-2"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:431"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|alterOrder/2",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderotherserviceimpl:alterorder-2"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderotherserviceimpl:handles-command-alterorder-2"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:119"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|cancelOrder/3",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderotherserviceimpl:cancelorder-3"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderotherserviceimpl:handles-command-cancelorder-3"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:269"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|create/2",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderotherserviceimpl:create-2"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderotherserviceimpl:handles-command-create-2"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:91"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|deleteOrder/2",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderotherserviceimpl:deleteorder-2"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderotherserviceimpl:handles-command-deleteorder-2"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:416"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|initOrder/2",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderotherserviceimpl:initorder-2"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderotherserviceimpl:handles-command-initorder-2"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:106"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|modifyOrder/3",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderotherserviceimpl:modifyorder-3"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderotherserviceimpl:handles-command-modifyorder-3"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:333"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|payOrder/2",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderotherserviceimpl:payorder-2"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderotherserviceimpl:handles-command-payorder-2"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:361"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|saveChanges/2",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderotherserviceimpl:savechanges-2"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderotherserviceimpl:handles-command-savechanges-2"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:238"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|updateOrder/2",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderotherserviceimpl:updateorder-2"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderotherserviceimpl:handles-command-updateorder-2"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:446"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherServiceImpl|capability|servesQuery|checkSecurityAboutOrder/3",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderotherserviceimpl:checksecurityaboutorder-3"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderotherserviceimpl:serves-query-checksecurityaboutorder-3"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:390"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherServiceImpl|capability|servesQuery|findOrderById/2",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderotherserviceimpl:findorderbyid-2"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderotherserviceimpl:serves-query-findorderbyid-2"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:78"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherServiceImpl|capability|servesQuery|getAllOrders/1",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderotherserviceimpl:getallorders-1"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderotherserviceimpl:serves-query-getallorders-1"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:321"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherServiceImpl|capability|servesQuery|getOrderById/2",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderotherserviceimpl:getorderbyid-2"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderotherserviceimpl:serves-query-getorderbyid-2"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:376"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherServiceImpl|capability|servesQuery|getOrderPrice/2",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderotherserviceimpl:getorderprice-2"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderotherserviceimpl:serves-query-getorderprice-2"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:348"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherServiceImpl|capability|servesQuery|getSoldTickets/2",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderotherserviceimpl:getsoldtickets-2"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderotherserviceimpl:serves-query-getsoldtickets-2"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:52"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherServiceImpl|capability|servesQuery|queryAlreadySoldOrders/3",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderotherserviceimpl:queryalreadysoldorders-3"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderotherserviceimpl:serves-query-queryalreadysoldorders-3"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:285"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherServiceImpl|capability|servesQuery|queryForStationId/2",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderotherserviceimpl:queryforstationid-2"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderotherserviceimpl:serves-query-queryforstationid-2"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:223"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherServiceImpl|capability|servesQuery|queryOrders/3",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderotherserviceimpl:queryorders-3"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderotherserviceimpl:serves-query-queryorders-3"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:143"
+    ]
+   },
+   {
+    "key": "capability|ts-order-other-service.OrderOtherServiceImpl|capability|servesQuery|queryOrdersForRefresh/3",
+    "passAAtomIds": [
+     "atom:capability:ts-order-other-service-orderotherserviceimpl:queryordersforrefresh-3"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-other-service.orderotherserviceimpl:serves-query-queryordersforrefresh-3"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:209"
+    ]
+   },
+   {
+    "key": "capability|ts-order-service.OrderController|capability|exposesEndpoint|DELETE /api/v1/orderservice/order/{orderId}",
+    "passAAtomIds": [
+     "atom:capability:ts-order-service-ordercontroller:delete-order-orderid"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-delete"
+    ],
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:142"
+    ]
+   },
+   {
+    "key": "capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order",
+    "passAAtomIds": [
+     "atom:capability:ts-order-service-ordercontroller:get-order-all"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-find-all"
+    ],
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:152"
+    ]
+   },
+   {
+    "key": "capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order/orderPay/{orderId}",
+    "passAAtomIds": [
+     "atom:capability:ts-order-service-ordercontroller:get-order-orderpay-orderid"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-pay"
+    ],
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:90"
+    ]
+   },
+   {
+    "key": "capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order/price/{orderId}",
+    "passAAtomIds": [
+     "atom:capability:ts-order-service-ordercontroller:get-order-price-orderid"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-price"
+    ],
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:81"
+    ]
+   },
+   {
+    "key": "capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order/security/{checkDate}/{accountId}",
+    "passAAtomIds": [
+     "atom:capability:ts-order-service-ordercontroller:get-order-security-checkdate-accountid"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-security-check"
+    ],
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:115"
+    ]
+   },
+   {
+    "key": "capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order/status/{orderId}/{status}",
+    "passAAtomIds": [
+     "atom:capability:ts-order-service-ordercontroller:get-order-status-orderid-status"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-modify-status"
+    ],
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:106"
+    ]
+   },
+   {
+    "key": "capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order/{orderId}",
+    "passAAtomIds": [
+     "atom:capability:ts-order-service-ordercontroller:get-order-orderid"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-by-id"
+    ],
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:98"
+    ]
+   },
+   {
+    "key": "capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order/{travelDate}/{trainNumber}",
+    "passAAtomIds": [
+     "atom:capability:ts-order-service-ordercontroller:get-order-traveldate-trainnumber"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-calc-sold"
+    ],
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:73"
+    ]
+   },
+   {
+    "key": "capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/welcome",
+    "passAAtomIds": [
+     "atom:capability:ts-order-service-ordercontroller:get-welcome"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-welcome"
+    ],
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:30"
+    ]
+   },
+   {
+    "key": "capability|ts-order-service.OrderController|capability|exposesEndpoint|POST /api/v1/orderservice/order",
+    "passAAtomIds": [
+     "atom:capability:ts-order-service-ordercontroller:post-order"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-create"
+    ],
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:44"
+    ]
+   },
+   {
+    "key": "capability|ts-order-service.OrderController|capability|exposesEndpoint|POST /api/v1/orderservice/order/admin",
+    "passAAtomIds": [
+     "atom:capability:ts-order-service-ordercontroller:post-order-admin"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-admin-create"
+    ],
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:51"
+    ]
+   },
+   {
+    "key": "capability|ts-order-service.OrderController|capability|exposesEndpoint|POST /api/v1/orderservice/order/query",
+    "passAAtomIds": [
+     "atom:capability:ts-order-service-ordercontroller:post-order-query"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-query"
+    ],
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:57"
+    ]
+   },
+   {
+    "key": "capability|ts-order-service.OrderController|capability|exposesEndpoint|POST /api/v1/orderservice/order/refresh",
+    "passAAtomIds": [
+     "atom:capability:ts-order-service-ordercontroller:post-order-refresh"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-refresh"
+    ],
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:65"
+    ]
+   },
+   {
+    "key": "capability|ts-order-service.OrderController|capability|exposesEndpoint|POST /api/v1/orderservice/order/tickets",
+    "passAAtomIds": [
+     "atom:capability:ts-order-service-ordercontroller:post-order-tickets"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-tickets"
+    ],
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:37"
+    ]
+   },
+   {
+    "key": "capability|ts-order-service.OrderController|capability|exposesEndpoint|PUT /api/v1/orderservice/order",
+    "passAAtomIds": [
+     "atom:capability:ts-order-service-ordercontroller:put-order"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-save"
+    ],
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:124"
+    ]
+   },
+   {
+    "key": "capability|ts-order-service.OrderController|capability|exposesEndpoint|PUT /api/v1/orderservice/order/admin",
+    "passAAtomIds": [
+     "atom:capability:ts-order-service-ordercontroller:put-order-admin"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-admin-update"
+    ],
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java:133"
+    ]
+   },
+   {
+    "key": "component|ts-notification-service.MailService|static||",
+    "passAAtomIds": [
+     "atom:component:ts-notification-service-mailservice"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-notification-service.mailservice"
+    ],
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/service/MailService.java"
+    ]
+   },
+   {
+    "key": "component|ts-notification-service.NotificationServiceImpl|static||",
+    "passAAtomIds": [
+     "atom:component:ts-notification-service-notificationserviceimpl"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-notification-service.notificationserviceimpl"
+    ],
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java"
+    ]
+   },
+   {
+    "key": "component|ts-notification-service.NotificationService|static||",
+    "passAAtomIds": [
+     "atom:component:ts-notification-service-notificationservice"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-notification-service.notificationservice"
+    ],
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/service/NotificationService.java"
+    ]
+   },
+   {
+    "key": "component|ts-notification-service.NotifyRepository|static||",
+    "passAAtomIds": [
+     "atom:component:ts-notification-service-notifyrepository"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-notification-service.notifyrepository"
+    ],
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/repository/NotifyRepository.java"
+    ]
+   },
+   {
+    "key": "component|ts-notification-service.RabbitSend|static||",
+    "passAAtomIds": [
+     "atom:component:ts-notification-service-rabbitsend"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-notification-service.rabbitsend"
+    ],
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/mq/RabbitSend.java"
+    ]
+   },
+   {
+    "key": "component|ts-notification-service.application-yml|static||",
+    "passAAtomIds": [
+     "atom:component:ts-notification-service-application-yml"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-notification-service.application-yml"
+    ],
+    "refs": [
+     "src:ts-notification-service/src/main/resources/application.yml"
+    ]
+   },
+   {
+    "key": "component|ts-order-other-service.InitData|static||",
+    "passAAtomIds": [
+     "atom:component:ts-order-other-service-initdata"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-order-other-service.initdata"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/init/InitData.java"
+    ]
+   },
+   {
+    "key": "component|ts-order-other-service.OrderAlterInfo|static||",
+    "passAAtomIds": [
+     "atom:component:ts-order-other-service-orderalterinfo"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-order-other-service.orderalterinfo"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/entity/OrderAlterInfo.java"
+    ]
+   },
+   {
+    "key": "component|ts-order-other-service.OrderOtherApplication|static||",
+    "passAAtomIds": [
+     "atom:component:ts-order-other-service-orderotherapplication"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-order-other-service.orderotherapplication"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/OrderOtherApplication.java:18",
+     "src:ts-order-other-service/src/main/java/other/OrderOtherApplication.java:24"
+    ]
+   },
+   {
+    "key": "component|ts-order-other-service.OrderOtherController|static||",
+    "passAAtomIds": [
+     "atom:component:ts-order-other-service-orderothercontroller"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-order-other-service.orderothercontroller"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java"
+    ]
+   },
+   {
+    "key": "component|ts-order-other-service.OrderOtherRepository|static||",
+    "passAAtomIds": [
+     "atom:component:ts-order-other-service-orderotherrepository"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-order-other-service.orderotherrepository"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/repository/OrderOtherRepository.java"
+    ]
+   },
+   {
+    "key": "component|ts-order-other-service.OrderOtherServiceImpl|static||",
+    "passAAtomIds": [
+     "atom:component:ts-order-other-service-orderotherserviceimpl"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-order-other-service.orderotherserviceimpl"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java"
+    ]
+   },
+   {
+    "key": "component|ts-order-other-service.OrderOtherService|static||",
+    "passAAtomIds": [
+     "atom:component:ts-order-other-service-orderotherservice"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-order-other-service.orderotherservice"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherService.java"
+    ]
+   },
+   {
+    "key": "component|ts-order-other-service.Order|static||",
+    "passAAtomIds": [
+     "atom:component:ts-order-other-service-order"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-order-other-service.order"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/entity/Order.java"
+    ]
+   },
+   {
+    "key": "component|ts-order-other-service.QueryInfo|static||",
+    "passAAtomIds": [
+     "atom:component:ts-order-other-service-queryinfo"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-order-other-service.queryinfo"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/entity/QueryInfo.java"
+    ]
+   },
+   {
+    "key": "component|ts-order-other-service.SecurityConfig|static||",
+    "passAAtomIds": [
+     "atom:component:ts-order-other-service-securityconfig"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-order-other-service.securityconfig"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java"
+    ]
+   },
+   {
+    "key": "component|ts-order-other-service.application-yml|static||",
+    "passAAtomIds": [
+     "atom:component:ts-order-other-service-application-yml"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-order-other-service.application-yml"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/resources/application.yml"
+    ]
+   },
+   {
+    "key": "component|ts-order-service.OrderApplication|static||",
+    "passAAtomIds": [
+     "atom:component:ts-order-service-orderapplication"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-order-service.orderapplication"
+    ],
+    "refs": [
+     "src:ts-order-service/src/main/java/order/OrderApplication.java:18",
+     "src:ts-order-service/src/main/java/order/OrderApplication.java:24"
+    ]
+   },
+   {
+    "key": "component|ts-order-service.OrderController|static||",
+    "passAAtomIds": [
+     "atom:component:ts-order-service-ordercontroller"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-order-service.ordercontroller"
+    ],
+    "refs": [
+     "src:ts-order-service/src/main/java/order/controller/OrderController.java"
+    ]
+   },
+   {
+    "key": "component|ts-order-service.SecurityConfig|static||",
+    "passAAtomIds": [
+     "atom:component:ts-order-service-securityconfig"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-order-service.securityconfig"
+    ],
+    "refs": [
+     "src:ts-order-service/src/main/java/order/config/SecurityConfig.java"
+    ]
+   },
+   {
+    "key": "effect|ts-order-other-service.OrderOtherServiceImpl|effect|callsProvider|POST ts-station-service /api/v1/stationservice/stations/namelist",
+    "passAAtomIds": [
+     "atom:effect:ts-order-other-service-orderotherserviceimpl:callsprovider-stationservice"
+    ],
+    "passBAtomIds": [
+     "atom:effect:ts-order-other-service.orderotherserviceimpl:calls-provider-station-service"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:227"
+    ]
+   },
+   {
+    "key": "state|ts-notification-service.NotifyRepository|state|persistsIn|NotifyInfo",
+    "passAAtomIds": [
+     "atom:state:ts-notification-service-notifyrepository:persistsin"
+    ],
+    "passBAtomIds": [
+     "atom:state:ts-notification-service.notifyrepository:persists-in-notifyinfo"
+    ],
+    "refs": [
+     "src:ts-notification-service/src/main/java/notification/repository/NotifyRepository.java:12"
+    ]
+   },
+   {
+    "key": "state|ts-order-other-service.OrderOtherRepository|state|persistsIn|Order",
+    "passAAtomIds": [
+     "atom:state:ts-order-other-service-orderotherrepository:persistsin"
+    ],
+    "passBAtomIds": [
+     "atom:state:ts-order-other-service.orderotherrepository:persists-in-order"
+    ],
+    "refs": [
+     "src:ts-order-other-service/src/main/java/other/repository/OrderOtherRepository.java:16"
+    ]
+   }
+  ]
+ },
+ "onlyInPassA": [
+  {
+   "key": "authority|ts-order-other-service.OrderOtherController|authority|allowsCrossOrigin|annotation-level-CrossOrigin-origins-star-on-most-orderOther-mutating-and-query-endpoints",
+   "candidateAtomId": "atom:authority:ts-order-other-service-orderothercontroller:allowscrossorigin-annotation",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:46",
+    "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:53",
+    "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:147"
+   ]
+  },
+  {
+   "key": "authority|ts-order-other-service.SecurityConfig|authority|allowsCrossOrigin|ALL /** allowedOrigins-star-allowedMethods-star-allowedHeaders-star-allowCredentials-false-maxAge-3600",
+   "candidateAtomId": "atom:authority:ts-order-other-service-securityconfig:allowscrossorigin",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:54"
+   ]
+  },
+  {
+   "key": "authority|ts-order-other-service.SecurityConfig|authority|checksPermission|jwt-filter-added-before-usernamepasswordauthenticationfilter-in-filter-chain",
+   "candidateAtomId": "atom:authority:ts-order-other-service-securityconfig:checkspermission-jwtfilter",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:85"
+   ]
+  },
+  {
+   "key": "authority|ts-order-other-service.SecurityConfig|authority|permitsUnauthenticated|ALL /api/v1/orderOtherService/orderOther/** permitAll",
+   "candidateAtomId": "atom:authority:ts-order-other-service-securityconfig:permitsunauthenticated-orderother",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:74"
+   ]
+  },
+  {
+   "key": "authority|ts-order-other-service.SecurityConfig|authority|permitsUnauthenticated|ALL /swagger-ui.html /webjars/** /images/** /configuration/** /swagger-resources/** /v2/** permitAll",
+   "candidateAtomId": "atom:authority:ts-order-other-service-securityconfig:permitsunauthenticated-swagger",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:81"
+   ]
+  },
+  {
+   "key": "authority|ts-order-other-service.SecurityConfig|authority|requiresRole|DELETE /api/v1/orderOtherService/orderOther requiresRole-ADMIN-USER",
+   "candidateAtomId": "atom:authority:ts-order-other-service-securityconfig:requiresrole-delete-orderother",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:77"
+   ]
+  },
+  {
+   "key": "authority|ts-order-other-service.SecurityConfig|authority|requiresRole|POST /api/v1/orderOtherService/orderOther requiresRole-ADMIN-USER",
+   "candidateAtomId": "atom:authority:ts-order-other-service-securityconfig:requiresrole-post-orderother",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:75"
+   ]
+  },
+  {
+   "key": "authority|ts-order-other-service.SecurityConfig|authority|requiresRole|PUT /api/v1/orderOtherService/orderOther requiresRole-ADMIN-USER",
+   "candidateAtomId": "atom:authority:ts-order-other-service-securityconfig:requiresrole-put-orderother",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:76"
+   ]
+  },
+  {
+   "key": "authority|ts-order-service.OrderController|authority|allowsCrossOrigin|annotation-level-CrossOrigin-origins-star-on-most-order-mutating-and-query-endpoints",
+   "candidateAtomId": "atom:authority:ts-order-service-ordercontroller:allowscrossorigin-annotation",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/controller/OrderController.java:43",
+    "src:ts-order-service/src/main/java/order/controller/OrderController.java:50",
+    "src:ts-order-service/src/main/java/order/controller/OrderController.java:151"
+   ]
+  },
+  {
+   "key": "authority|ts-order-service.SecurityConfig|authority|allowsCrossOrigin|ALL /** allowedOrigins-star-allowedMethods-star-allowedHeaders-star-allowCredentials-false-maxAge-3600",
+   "candidateAtomId": "atom:authority:ts-order-service-securityconfig:allowscrossorigin",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:55"
+   ]
+  },
+  {
+   "key": "authority|ts-order-service.SecurityConfig|authority|checksPermission|jwt-filter-added-before-usernamepasswordauthenticationfilter-in-filter-chain",
+   "candidateAtomId": "atom:authority:ts-order-service-securityconfig:checkspermission-jwtfilter",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:85"
+   ]
+  },
+  {
+   "key": "authority|ts-order-service.SecurityConfig|authority|permitsUnauthenticated|ALL /api/v1/orderservice/order/** permitAll",
+   "candidateAtomId": "atom:authority:ts-order-service-securityconfig:permitsunauthenticated-order",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:80"
+   ]
+  },
+  {
+   "key": "authority|ts-order-service.SecurityConfig|authority|permitsUnauthenticated|ALL /swagger-ui.html /webjars/** /images/** /configuration/** /swagger-resources/** /v2/** permitAll",
+   "candidateAtomId": "atom:authority:ts-order-service-securityconfig:permitsunauthenticated-swagger",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:81"
+   ]
+  },
+  {
+   "key": "authority|ts-order-service.SecurityConfig|authority|requiresRole|DELETE /api/v1/orderservice/order requiresRole-ADMIN-USER",
+   "candidateAtomId": "atom:authority:ts-order-service-securityconfig:requiresrole-delete-order",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:77"
+   ]
+  },
+  {
+   "key": "authority|ts-order-service.SecurityConfig|authority|requiresRole|POST /api/v1/orderservice/order requiresRole-ADMIN-USER",
+   "candidateAtomId": "atom:authority:ts-order-service-securityconfig:requiresrole-post-order",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:75"
+   ]
+  },
+  {
+   "key": "authority|ts-order-service.SecurityConfig|authority|requiresRole|PUT /api/v1/orderservice/order requiresRole-ADMIN-USER",
+   "candidateAtomId": "atom:authority:ts-order-service-securityconfig:requiresrole-put-order",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:76"
+   ]
+  },
+  {
+   "key": "contract|ts-notification-service.NotificationService|specification|shapedAs|boolean-return-preserveSuccess-orderCreateSuccess-orderChangedSuccess-orderCancelSuccess-take-NotifyInfo-and-HttpHeaders-params",
+   "candidateAtomId": "atom:contract:ts-notification-service-notificationservice:shapedas",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/service/NotificationService.java:19",
+    "src:ts-notification-service/src/main/java/notification/service/NotificationService.java:28",
+    "src:ts-notification-service/src/main/java/notification/service/NotificationService.java:37",
+    "src:ts-notification-service/src/main/java/notification/service/NotificationService.java:46"
+   ]
+  },
+  {
+   "key": "contract|ts-order-other-service.OrderAlterInfo|specification|shapedAs|accountId-previousOrderId-loginToken-newOrderInfo-Order-fields-with-generatedvalue-annotations-on-a-non-entity-dto",
+   "candidateAtomId": "atom:contract:ts-order-other-service-orderalterinfo:shapedas",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/entity/OrderAlterInfo.java:17"
+   ]
+  },
+  {
+   "key": "contract|ts-order-other-service.OrderOtherServiceImpl|specification|requires|orderId-primary-key-lookup-via-findById-or-accountId-field-lookup-via-findByAccountId-or-travelDate-plus-trainNumber-composite-lookup-via-findByTravelDateAndTrainNumber",
+   "candidateAtomId": "atom:contract:ts-order-other-service-orderotherserviceimpl:requires-lookup",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:79",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:93",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:53"
+   ]
+  },
+  {
+   "key": "contract|ts-order-other-service.OrderOtherService|specification|shapedAs|mutating-and-query-methods-return-edu.fudan.common.util.Response-envelope-except-initOrder-void-return",
+   "candidateAtomId": "atom:contract:ts-order-other-service-orderotherservice:shapedas",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherService.java:18",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherService.java:54"
+   ]
+  },
+  {
+   "key": "contract|ts-order-other-service.Order|specification|shapedAs|equals-compares-boughtDate-travelTime-accountId-contactsName-documentType-trainNumber-coachNumber-seatClass-seatNumber-from-to-status-price-fields",
+   "candidateAtomId": "atom:contract:ts-order-other-service-order:shapedas-equals",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/entity/Order.java:84"
+   ]
+  },
+  {
+   "key": "effect|ts-notification-service.MailService|effect|callsProvider|smtp-mail-provider-via-javamailsender-send",
+   "candidateAtomId": "atom:effect:ts-notification-service-mailservice:callsprovider",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/service/MailService.java:46"
+   ]
+  },
+  {
+   "key": "effect|ts-notification-service.RabbitSend|effect|publishes|queue-message-via-amqptemplate-convertandsend-queues.queuename",
+   "candidateAtomId": "atom:effect:ts-notification-service-rabbitsend:publishes",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitSend.java:20"
+   ]
+  },
+  {
+   "key": "effect|ts-notification-service.application-yml|effect|callsProvider|smtp.163.com-mail-provider-configured-endpoint-port-465-ssl-enabled",
+   "candidateAtomId": "atom:effect:ts-notification-service-application-yml:callsprovider",
+   "refs": [
+    "src:ts-notification-service/src/main/resources/application.yml:12",
+    "src:ts-notification-service/src/main/resources/application.yml:13",
+    "src:ts-notification-service/src/main/resources/application.yml:20"
+   ]
+  },
+  {
+   "key": "relation|ts-notification-service.NotificationServiceImpl|relation|calls|ts-notification-service.MailService.sendEmail",
+   "candidateAtomId": "atom:relation:ts-notification-service-notificationserviceimpl:calls-mailservice",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:55",
+    "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:82",
+    "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:109",
+    "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:130"
+   ]
+  },
+  {
+   "key": "relation|ts-notification-service.application-yml|relation|dependsOn|rabbitmq-broker-host-localhost-port-5672",
+   "candidateAtomId": "atom:relation:ts-notification-service-application-yml:dependson-rabbitmq",
+   "refs": [
+    "src:ts-notification-service/src/main/resources/application.yml:38",
+    "src:ts-notification-service/src/main/resources/application.yml:40"
+   ]
+  },
+  {
+   "key": "relation|ts-order-other-service.InitData|relation|calls|ts-order-other-service.OrderOtherService.create/2",
+   "candidateAtomId": "atom:relation:ts-order-other-service-initdata:calls-orderotherservice-create",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/init/InitData.java:44"
+   ]
+  },
+  {
+   "key": "relation|ts-order-other-service.OrderOtherApplication|relation|dependsOn|RestTemplate-bean-load-balanced",
+   "candidateAtomId": "atom:relation:ts-order-other-service-orderotherapplication:dependson-resttemplate",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/OrderOtherApplication.java:31"
+   ]
+  },
+  {
+   "key": "relation|ts-order-other-service.OrderOtherController|relation|dependsOn|ts-order-other-service.OrderOtherService",
+   "candidateAtomId": "atom:relation:ts-order-other-service-orderothercontroller:dependson-orderotherservice",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:29"
+   ]
+  },
+  {
+   "key": "relation|ts-order-other-service.OrderOtherServiceImpl|relation|dependsOn|ts-order-other-service.OrderOtherRepository",
+   "candidateAtomId": "atom:relation:ts-order-other-service-orderotherserviceimpl:dependson-orderotherrepository",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:31"
+   ]
+  },
+  {
+   "key": "relation|ts-order-service.OrderApplication|relation|dependsOn|RestTemplate-bean-load-balanced",
+   "candidateAtomId": "atom:relation:ts-order-service-orderapplication:dependson-resttemplate",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/OrderApplication.java:29"
+   ]
+  },
+  {
+   "key": "relation|ts-order-service.OrderController|relation|dependsOn|ts-order-service.OrderService",
+   "candidateAtomId": "atom:relation:ts-order-service-ordercontroller:dependson-orderservice",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/controller/OrderController.java:26"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-order-other-service-order-lifecycle|cech|sectionValue|section=money-amount:string-passthrough-unparsed",
+   "candidateAtomId": "atom:semantic:ctx-ts-order-other-service-order-lifecycle:cech-section-money-amount",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/entity/Order.java:68",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:356",
+    "src:ts-order-other-service/src/main/java/other/init/InitData.java:36"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-order-other-service-order-lifecycle|cech|sectionValue|section=order-status-code:enum-codes-notpaid-paid-collected-change-cancel-referenced-via-getCode-no-raw-int-literals",
+   "candidateAtomId": "atom:semantic:ctx-ts-order-other-service-order-lifecycle:cech-section-order-status-code",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/entity/Order.java:79",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:128",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:400"
+   ]
+  },
+  {
+   "key": "semantic|ts-notification-service.NotificationServiceImpl|semantic|meansInUse|return-true-on-mail-send-success-branch-return-false-on-caught-exception-branch",
+   "candidateAtomId": "atom:semantic:ts-notification-service-notificationserviceimpl:meansinuse-boolean-branch",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:56",
+    "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:83"
+   ]
+  },
+  {
+   "key": "semantic|ts-order-other-service.InitData|semantic|meansInUse|seed-order-price-set-as-string-literal-100-unparsed",
+   "candidateAtomId": "atom:semantic:ts-order-other-service-initdata:meansinuse-seed-price",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/init/InitData.java:36"
+   ]
+  },
+  {
+   "key": "semantic|ts-order-other-service.InitData|semantic|meansInUse|seed-order-status-set-via-OrderStatus.PAID.getCode",
+   "candidateAtomId": "atom:semantic:ts-order-other-service-initdata:meansinuse-seed-status",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/init/InitData.java:39"
+   ]
+  },
+  {
+   "key": "semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|boughtDate-and-travelDate-stored-as-string-converted-via-StringUtils.String2Date-Date2String-at-use-site",
+   "candidateAtomId": "atom:semantic:ts-order-other-service-orderotherserviceimpl:meansinuse-date-string-format",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:166",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:405"
+   ]
+  },
+  {
+   "key": "semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|enum-codes-notpaid-paid-collected-change-cancel-referenced-via-getCode-no-raw-int-literals-at-comparison-and-assignment-sites",
+   "candidateAtomId": "atom:semantic:ts-order-other-service-orderotherserviceimpl:meansinuse-order-status-codes",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:128",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:277",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:292",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:368",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:400"
+   ]
+  },
+  {
+   "key": "semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|price-returned-as-string-passthrough-unparsed-in-getOrderPrice",
+   "candidateAtomId": "atom:semantic:ts-order-other-service-orderotherserviceimpl:meansinuse-price-passthrough",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:356"
+   ]
+  },
+  {
+   "key": "semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|status-1-on-result-carrying-branch-status-0-on-not-found-or-already-exists-or-rejected-branch",
+   "candidateAtomId": "atom:semantic:ts-order-other-service-orderotherserviceimpl:meansinuse-response-envelope",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:69",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:73",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:96",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:201",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:220"
+   ]
+  },
+  {
+   "key": "semantic|ts-order-other-service.Order|semantic|meansInUse|price-field-declared-as-string-default-value-0.0-string-literal-passthrough-unparsed",
+   "candidateAtomId": "atom:semantic:ts-order-other-service-order:meansinuse-price-string",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/entity/Order.java:68",
+    "src:ts-order-other-service/src/main/java/other/entity/Order.java:80"
+   ]
+  },
+  {
+   "key": "semantic|ts-order-other-service.Order|semantic|meansInUse|status-field-int-default-set-via-OrderStatus.PAID.getCode-enum-derived-code",
+   "candidateAtomId": "atom:semantic:ts-order-other-service-order:meansinuse-status-enum",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/entity/Order.java:66",
+    "src:ts-order-other-service/src/main/java/other/entity/Order.java:79"
+   ]
+  },
+  {
+   "key": "semantic|ts-order-other-service.QueryInfo|semantic|meansInUse|state-field-holds-order-status-code-as-optional-query-filter-guarded-by-enableStateQuery-flag-default-disabled-sentinel-negative-one",
+   "candidateAtomId": "atom:semantic:ts-order-other-service-queryinfo:meansinuse-state-filter",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/entity/QueryInfo.java:27",
+    "src:ts-order-other-service/src/main/java/other/entity/QueryInfo.java:63",
+    "src:ts-order-other-service/src/main/java/other/entity/QueryInfo.java:69"
+   ]
+  },
+  {
+   "key": "state|ts-notification-service.application-yml|state|persistsIn|ts-notification-mysql-datasource",
+   "candidateAtomId": "atom:state:ts-notification-service-application-yml:persistsin",
+   "refs": [
+    "src:ts-notification-service/src/main/resources/application.yml:27"
+   ]
+  },
+  {
+   "key": "state|ts-order-other-service.Order|state|persistsIn|orders_other-table",
+   "candidateAtomId": "atom:state:ts-order-other-service-order:persistsin",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/entity/Order.java:18"
+   ]
+  },
+  {
+   "key": "state|ts-order-other-service.application-yml|state|persistsIn|ts-order-other-mysql-datasource",
+   "candidateAtomId": "atom:state:ts-order-other-service-application-yml:persistsin",
+   "refs": [
+    "src:ts-order-other-service/src/main/resources/application.yml:14"
+   ]
+  }
+ ],
+ "onlyInPassB": [
+  {
+   "key": "authority|ts-order-other-service.OrderOtherController|authority|allowsCrossOrigin|cross-origin-all-origins-annotation-present-on-every-orderOther-endpoint-except-welcome",
+   "candidateAtomId": "atom:authority:ts-order-other-service.orderothercontroller:allows-cross-origin-endpoints",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:46",
+    "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:53",
+    "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:69",
+    "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:93",
+    "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:114",
+    "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:138"
+   ]
+  },
+  {
+   "key": "authority|ts-order-other-service.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-maxage-3600-global-cors-mapping-on-/**",
+   "candidateAtomId": "atom:authority:ts-order-other-service.securityconfig:allows-cross-origin-global",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:54",
+    "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:61"
+   ]
+  },
+  {
+   "key": "authority|ts-order-other-service.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/orderOtherService/orderOther/**",
+   "candidateAtomId": "atom:authority:ts-order-other-service.securityconfig:permits-unauthenticated-orderother-wildcard",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:74"
+   ]
+  },
+  {
+   "key": "authority|ts-order-other-service.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-html-webjars-images-configuration-swagger-resources-v2-paths",
+   "candidateAtomId": "atom:authority:ts-order-other-service.securityconfig:permits-unauthenticated-swagger",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:81",
+    "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:82"
+   ]
+  },
+  {
+   "key": "authority|ts-order-other-service.SecurityConfig|authority|requiresRole|DELETE /api/v1/orderOtherService/orderOther requiresRole-ADMIN-or-USER",
+   "candidateAtomId": "atom:authority:ts-order-other-service.securityconfig:requires-role-delete-orderother",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:77"
+   ]
+  },
+  {
+   "key": "authority|ts-order-other-service.SecurityConfig|authority|requiresRole|POST /api/v1/orderOtherService/orderOther requiresRole-ADMIN-or-USER",
+   "candidateAtomId": "atom:authority:ts-order-other-service.securityconfig:requires-role-post-orderother",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:75"
+   ]
+  },
+  {
+   "key": "authority|ts-order-other-service.SecurityConfig|authority|requiresRole|PUT /api/v1/orderOtherService/orderOther requiresRole-ADMIN-or-USER",
+   "candidateAtomId": "atom:authority:ts-order-other-service.securityconfig:requires-role-put-orderother",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:76"
+   ]
+  },
+  {
+   "key": "authority|ts-order-service.OrderController|authority|allowsCrossOrigin|cross-origin-all-origins-annotation-present-on-every-order-endpoint-except-welcome",
+   "candidateAtomId": "atom:authority:ts-order-service.ordercontroller:allows-cross-origin-endpoints",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/controller/OrderController.java:43",
+    "src:ts-order-service/src/main/java/order/controller/OrderController.java:56",
+    "src:ts-order-service/src/main/java/order/controller/OrderController.java:72",
+    "src:ts-order-service/src/main/java/order/controller/OrderController.java:97",
+    "src:ts-order-service/src/main/java/order/controller/OrderController.java:123",
+    "src:ts-order-service/src/main/java/order/controller/OrderController.java:151"
+   ]
+  },
+  {
+   "key": "authority|ts-order-service.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-maxage-3600-global-cors-mapping-on-/**",
+   "candidateAtomId": "atom:authority:ts-order-service.securityconfig:allows-cross-origin-global",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:55",
+    "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:62"
+   ]
+  },
+  {
+   "key": "authority|ts-order-service.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/orderservice/order/**",
+   "candidateAtomId": "atom:authority:ts-order-service.securityconfig:permits-unauthenticated-order-wildcard",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:80"
+   ]
+  },
+  {
+   "key": "authority|ts-order-service.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-html-webjars-images-configuration-swagger-resources-v2-paths",
+   "candidateAtomId": "atom:authority:ts-order-service.securityconfig:permits-unauthenticated-swagger",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:81",
+    "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:82"
+   ]
+  },
+  {
+   "key": "authority|ts-order-service.SecurityConfig|authority|requiresRole|DELETE /api/v1/orderservice/order requiresRole-ADMIN-or-USER",
+   "candidateAtomId": "atom:authority:ts-order-service.securityconfig:requires-role-delete-order",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:77"
+   ]
+  },
+  {
+   "key": "authority|ts-order-service.SecurityConfig|authority|requiresRole|POST /api/v1/orderservice/order requiresRole-ADMIN-or-USER",
+   "candidateAtomId": "atom:authority:ts-order-service.securityconfig:requires-role-post-order",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:75"
+   ]
+  },
+  {
+   "key": "authority|ts-order-service.SecurityConfig|authority|requiresRole|PUT /api/v1/orderservice/order requiresRole-ADMIN-or-USER",
+   "candidateAtomId": "atom:authority:ts-order-service.securityconfig:requires-role-put-order",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:76"
+   ]
+  },
+  {
+   "key": "capability|ts-notification-service.MailService|capability|handlesCommand|sendEmail/2",
+   "candidateAtomId": "atom:capability:ts-notification-service.mailservice:handles-command-sendemail-2",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/service/MailService.java:30"
+   ]
+  },
+  {
+   "key": "capability|ts-notification-service.RabbitSend|capability|handlesCommand|send/1",
+   "candidateAtomId": "atom:capability:ts-notification-service.rabbitsend:handles-command-send-1",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitSend.java:18"
+   ]
+  },
+  {
+   "key": "contract|ts-notification-service.NotificationService|specification|shapedAs|four notify-outcome methods (preserveSuccess, orderCreateSuccess, orderChangedSuccess, orderCancelSuccess) each take NotifyInfo plus HttpHeaders and return a boolean success flag",
+   "candidateAtomId": "atom:contract:ts-notification-service.notificationservice:shaped-as-four-notify-methods",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/service/NotificationService.java:19",
+    "src:ts-notification-service/src/main/java/notification/service/NotificationService.java:28",
+    "src:ts-notification-service/src/main/java/notification/service/NotificationService.java:37",
+    "src:ts-notification-service/src/main/java/notification/service/NotificationService.java:46"
+   ]
+  },
+  {
+   "key": "contract|ts-order-other-service.OrderAlterInfo|specification|shapedAs|carries previousOrderId, newOrderInfo and loginToken to model altering an existing order into a replacement order",
+   "candidateAtomId": "atom:contract:ts-order-other-service.orderalterinfo:shaped-as-alter-request",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/entity/OrderAlterInfo.java:17",
+    "src:ts-order-other-service/src/main/java/other/entity/OrderAlterInfo.java:33"
+   ]
+  },
+  {
+   "key": "contract|ts-order-other-service.OrderOtherService|specification|shapedAs|methods return a Response wrapping data or a not-found/rejected message, except initOrder which returns void; every method accepts an HttpHeaders headers parameter even where some implementations do not read it",
+   "candidateAtomId": "atom:contract:ts-order-other-service.orderotherservice:shaped-as-response-envelope",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherService.java:18",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherService.java:54"
+   ]
+  },
+  {
+   "key": "contract|ts-order-other-service.Order|specification|shapedAs|equals compares business fields boughtDate, travelDate, travelTime, accountId, contactsName, contactsDocumentNumber, documentType, trainNumber, coachNumber, seatClass, seatNumber, from, to, status, price and excludes id; this equals is used by OrderOtherServiceImpl.create and addNewOrder as the accountOrders.contains duplicate-order check",
+   "candidateAtomId": "atom:contract:ts-order-other-service.order:shaped-as-equals-invariant",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/entity/Order.java:83",
+    "src:ts-order-other-service/src/main/java/other/entity/Order.java:109",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:94",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:434"
+   ]
+  },
+  {
+   "key": "effect|ts-notification-service.MailService|effect|callsProvider|JavaMailSender.send-smtp-mail-message",
+   "candidateAtomId": "atom:effect:ts-notification-service.mailservice:calls-provider-smtp",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/service/MailService.java:46"
+   ]
+  },
+  {
+   "key": "effect|ts-notification-service.RabbitSend|effect|enqueues|amqp-queue-named-by-Queues.queueName-constant-via-rabbitTemplate.convertAndSend",
+   "candidateAtomId": "atom:effect:ts-notification-service.rabbitsend:enqueues-queue",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/mq/RabbitSend.java:20"
+   ]
+  },
+  {
+   "key": "effect|ts-notification-service.application-yml|effect|callsProvider|smtp.163.com-port-465-mail-provider-configured-with-ssl-and-starttls-enabled",
+   "candidateAtomId": "atom:effect:ts-notification-service.application-yml:calls-provider-smtp-config",
+   "refs": [
+    "src:ts-notification-service/src/main/resources/application.yml:13",
+    "src:ts-notification-service/src/main/resources/application.yml:25"
+   ]
+  },
+  {
+   "key": "relation|ts-notification-service.NotificationServiceImpl|relation|calls|ts-notification-service.MailService",
+   "candidateAtomId": "atom:relation:ts-notification-service.notificationserviceimpl:calls-mailservice",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:55",
+    "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:82",
+    "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:109",
+    "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:130"
+   ]
+  },
+  {
+   "key": "relation|ts-order-other-service.InitData|relation|calls|ts-order-other-service.OrderOtherService",
+   "candidateAtomId": "atom:relation:ts-order-other-service.initdata:calls-orderotherservice",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/init/InitData.java:44"
+   ]
+  },
+  {
+   "key": "relation|ts-order-other-service.OrderAlterInfo|relation|dependsOn|ts-order-other-service.Order (composed as the newOrderInfo field)",
+   "candidateAtomId": "atom:relation:ts-order-other-service.orderalterinfo:depends-on-order",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/entity/OrderAlterInfo.java:29"
+   ]
+  },
+  {
+   "key": "relation|ts-order-other-service.OrderOtherController|relation|calls|ts-order-other-service.OrderOtherService",
+   "candidateAtomId": "atom:relation:ts-order-other-service.orderothercontroller:calls-orderotherservice",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:43",
+    "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:50",
+    "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:57",
+    "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:90",
+    "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:111",
+    "src:ts-order-other-service/src/main/java/other/controller/OrderOtherController.java:151"
+   ]
+  },
+  {
+   "key": "relation|ts-order-other-service.OrderOtherServiceImpl|relation|calls|ts-order-other-service.OrderOtherRepository",
+   "candidateAtomId": "atom:relation:ts-order-other-service.orderotherserviceimpl:calls-orderotherrepository",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:53",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:79",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:93",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:99",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:239",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:271",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:334",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:377"
+   ]
+  },
+  {
+   "key": "relation|ts-order-other-service.SecurityConfig|relation|dependsOn|edu.fudan.common.security.jwt.JWTFilter added as a pre-authentication filter before UsernamePasswordAuthenticationFilter",
+   "candidateAtomId": "atom:relation:ts-order-other-service.securityconfig:depends-on-jwtfilter",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:85"
+   ]
+  },
+  {
+   "key": "relation|ts-order-service.OrderController|relation|calls|ts-order-service.OrderService",
+   "candidateAtomId": "atom:relation:ts-order-service.ordercontroller:calls-orderservice",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/controller/OrderController.java:40",
+    "src:ts-order-service/src/main/java/order/controller/OrderController.java:47",
+    "src:ts-order-service/src/main/java/order/controller/OrderController.java:61",
+    "src:ts-order-service/src/main/java/order/controller/OrderController.java:94",
+    "src:ts-order-service/src/main/java/order/controller/OrderController.java:129",
+    "src:ts-order-service/src/main/java/order/controller/OrderController.java:156"
+   ]
+  },
+  {
+   "key": "relation|ts-order-service.SecurityConfig|relation|dependsOn|edu.fudan.common.security.jwt.JWTFilter added as a pre-authentication filter before UsernamePasswordAuthenticationFilter",
+   "candidateAtomId": "atom:relation:ts-order-service.securityconfig:depends-on-jwtfilter",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:85"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-order-other-service-order-crud|cech|sectionValue|section=money-amount:string-passthrough-unparsed",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.orderotherserviceimpl:cech-section-money-amount",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/entity/Order.java:68",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:352",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:356"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-order-other-service-order-crud|cech|sectionValue|section=order-status-code:enum-name-based-via-OrderStatus.NAME.getCode()-no-raw-int-literals-observed-at-these-use-sites",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.orderotherserviceimpl:cech-section-order-status-code",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/entity/Order.java:79",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:128",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:277",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:368",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:400"
+   ]
+  },
+  {
+   "key": "semantic|ts-notification-service.MailService|semantic|meansInUse|template-string-parameter-selects-which-freemarker-ftl-file-under-classpath-templates-is-loaded-to-render-the-mail-body",
+   "candidateAtomId": "atom:semantic:ts-notification-service.mailservice:means-in-use-template-param",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/service/MailService.java:36",
+    "src:ts-notification-service/src/main/java/notification/service/MailService.java:38"
+   ]
+  },
+  {
+   "key": "semantic|ts-notification-service.NotificationServiceImpl|semantic|meansInUse|orderCancelSuccess-selects-order_cancel_success.ftl-mail-template",
+   "candidateAtomId": "atom:semantic:ts-notification-service.notificationserviceimpl:means-in-use-cancel-template",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:130"
+   ]
+  },
+  {
+   "key": "semantic|ts-notification-service.NotificationServiceImpl|semantic|meansInUse|orderChangedSuccess-selects-order_changed_success.ftl-mail-template",
+   "candidateAtomId": "atom:semantic:ts-notification-service.notificationserviceimpl:means-in-use-changed-template",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:109"
+   ]
+  },
+  {
+   "key": "semantic|ts-notification-service.NotificationServiceImpl|semantic|meansInUse|orderCreateSuccess-selects-order_create_success.ftl-mail-template",
+   "candidateAtomId": "atom:semantic:ts-notification-service.notificationserviceimpl:means-in-use-create-template",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:82"
+   ]
+  },
+  {
+   "key": "semantic|ts-notification-service.NotificationServiceImpl|semantic|meansInUse|preserveSuccess-selects-preserve_success.ftl-mail-template",
+   "candidateAtomId": "atom:semantic:ts-notification-service.notificationserviceimpl:means-in-use-preserve-template",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:55"
+   ]
+  },
+  {
+   "key": "semantic|ts-notification-service.NotificationServiceImpl|semantic|meansInUse|return-value-true-on-successful-mailService.sendEmail-call-branch-false-on-caught-exception-during-send-branch-across-all-four-notify-methods",
+   "candidateAtomId": "atom:semantic:ts-notification-service.notificationserviceimpl:means-in-use-return-branches",
+   "refs": [
+    "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:56",
+    "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:83",
+    "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:110",
+    "src:ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java:131"
+   ]
+  },
+  {
+   "key": "semantic|ts-order-other-service.InitData|semantic|meansInUse|headers-argument-passed-as-null-at-the-startup-seed-call-to-create-and-accepted-without-error",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.initdata:means-in-use-null-headers",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/init/InitData.java:44"
+   ]
+  },
+  {
+   "key": "semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|alterOrder-sets-the-old-order-status-to-OrderStatus.CANCEL-then-creates-a-new-order-with-a-fresh-id-modeling-a-ticket-change-as-cancel-plus-rebook",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.orderotherserviceimpl:means-in-use-alter-as-cancel-plus-rebook",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:128",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:131",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:132"
+   ]
+  },
+  {
+   "key": "semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|headers-parameter-is-declared-but-unused-in-the-body-of-create-and-accepts-a-null-argument",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.orderotherserviceimpl:means-in-use-unused-headers",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:91",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:103"
+   ]
+  },
+  {
+   "key": "semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|orders-bought-within-one-hour-before-the-supplied-checkDate-are-counted-toward-the-recent-order-tally-in-checkSecurityAboutOrder",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.orderotherserviceimpl:means-in-use-recent-order-window",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:396",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:406",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:407"
+   ]
+  },
+  {
+   "key": "semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|orders-with-status-at-or-above-the-OrderStatus.CHANGE-code-are-excluded-from-the-sold-seat-class-tally-in-queryAlreadySoldOrders",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.orderotherserviceimpl:means-in-use-sold-tally-excludes-change",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:292"
+   ]
+  },
+  {
+   "key": "semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|status-1-on-the-success-or-data-carrying-branch-status-0-on-the-not-found-already-exists-or-rejected-branch-of-the-returned-Response",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.orderotherserviceimpl:means-in-use-response-branches",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:69",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:73",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:86",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:96",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:101"
+   ]
+  },
+  {
+   "key": "semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|the-valid-order-count-in-checkSecurityAboutOrder-includes-only-orders-with-NOTPAID-PAID-or-COLLECTED-status",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.orderotherserviceimpl:means-in-use-valid-order-statuses",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:400",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:401",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:402"
+   ]
+  },
+  {
+   "key": "semantic|ts-order-other-service.Order|semantic|meansInUse|default-no-arg-constructor-sets-status-to-OrderStatus.PAID-code-rather-than-a-notpaid-initial-state",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.order:means-in-use-default-status",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/entity/Order.java:79"
+   ]
+  },
+  {
+   "key": "semantic|ts-order-other-service.Order|semantic|meansInUse|price-field-is-string-typed-and-defaulted-to-the-literal-string-0.0-not-a-numeric-zero",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.order:means-in-use-price-string",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/entity/Order.java:68",
+    "src:ts-order-other-service/src/main/java/other/entity/Order.java:80"
+   ]
+  },
+  {
+   "key": "semantic|ts-order-other-service.QueryInfo|semantic|meansInUse|enableBoughtDateQuery-flag-gates-the-boughtDate-range-filter-in-queryOrders",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.queryinfo:means-in-use-bought-date-flag",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/entity/QueryInfo.java:51",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:183"
+   ]
+  },
+  {
+   "key": "semantic|ts-order-other-service.QueryInfo|semantic|meansInUse|enableStateQuery-flag-gates-the-order-status-equality-filter-in-queryOrders-disableStateQuery-resets-state-to-a-negative-one-sentinel",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.queryinfo:means-in-use-state-flag",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/entity/QueryInfo.java:63",
+    "src:ts-order-other-service/src/main/java/other/entity/QueryInfo.java:71",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:155"
+   ]
+  },
+  {
+   "key": "semantic|ts-order-other-service.QueryInfo|semantic|meansInUse|enableTravelDateQuery-flag-gates-the-travelDate-range-filter-in-queryOrders",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.queryinfo:means-in-use-travel-date-flag",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/entity/QueryInfo.java:39",
+    "src:ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java:171"
+   ]
+  },
+  {
+   "key": "semantic|ts-order-other-service.SecurityConfig|semantic|meansInUse|broad-permitall-antmatcher-for-the-orderOther-wildcard-path-is-declared-before-the-narrower-role-specific-post-put-delete-antmatchers-in-the-same-configure-method",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.securityconfig:means-in-use-matcher-order",
+   "refs": [
+    "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:74",
+    "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:75",
+    "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:76",
+    "src:ts-order-other-service/src/main/java/other/config/SecurityConfig.java:77"
+   ]
+  },
+  {
+   "key": "semantic|ts-order-other-service.application-yml|semantic|meansInUse|a-rabbitmq-stream-binding-configuration-block-is-present-in-the-file-but-is-fully-commented-out",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.application-yml:means-in-use-commented-rabbitmq",
+   "refs": [
+    "src:ts-order-other-service/src/main/resources/application.yml:27",
+    "src:ts-order-other-service/src/main/resources/application.yml:49"
+   ]
+  },
+  {
+   "key": "semantic|ts-order-service.SecurityConfig|semantic|meansInUse|narrower-role-specific-post-put-delete-antmatchers-for-the-order-path-are-declared-before-the-broad-permitall-wildcard-antmatcher-in-the-same-configure-method",
+   "candidateAtomId": "atom:semantic:ts-order-service.securityconfig:means-in-use-matcher-order",
+   "refs": [
+    "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:75",
+    "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:76",
+    "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:77",
+    "src:ts-order-service/src/main/java/order/config/SecurityConfig.java:80"
+   ]
+  },
+  {
+   "key": "state|ts-notification-service.application-yml|state|persistsIn|ts-notification-mysql-database-reached-via-jdbc-mysql-driver-datasource-url",
+   "candidateAtomId": "atom:state:ts-notification-service.application-yml:persists-in-mysql",
+   "refs": [
+    "src:ts-notification-service/src/main/resources/application.yml:27"
+   ]
+  },
+  {
+   "key": "state|ts-order-other-service.application-yml|state|persistsIn|ts-order-other-mysql-database-reached-via-jdbc-mysql-driver-datasource-url",
+   "candidateAtomId": "atom:state:ts-order-other-service.application-yml:persists-in-mysql",
+   "refs": [
+    "src:ts-order-other-service/src/main/resources/application.yml:14"
+   ]
+  }
+ ],
+ "matchRate": 0.44623655913978494,
+ "atomMatchKey1Comparison": {
+  "atomMatchKeySpec": "kind | NFC(trim(subject)) | axis | predicate? | object? (atom-match-key@1)",
+  "matchedCount": 83,
+  "matchRate": 0.44623655913978494
+ },
+ "contextDiff": {
+  "matched": 0,
+  "onlyInPassA": [
+   "members=[authority|ts-order-other-service.OrderOtherController|authority|allowsCrossOrigin|annotation-level-CrossOrigin-origins-star-on-most-orderOther-mutating-and-query-endpoints,authority|ts-order-other-service.SecurityConfig|authority|allowsCrossOrigin|ALL /** allowedOrigins-star-allowedMethods-star-allowedHeaders-star-allowCredentials-false-maxAge-3600,authority|ts-order-other-service.SecurityConfig|authority|checksPermission|jwt-filter-added-before-usernamepasswordauthenticationfilter-in-filter-chain,authority|ts-order-other-service.SecurityConfig|authority|permitsUnauthenticated|ALL /api/v1/orderOtherService/orderOther/** permitAll,authority|ts-order-other-service.SecurityConfig|authority|permitsUnauthenticated|ALL /swagger-ui.html /webjars/** /images/** /configuration/** /swagger-resources/** /v2/** permitAll,authority|ts-order-other-service.SecurityConfig|authority|requiresRole|DELETE /api/v1/orderOtherService/orderOther requiresRole-ADMIN-USER,authority|ts-order-other-service.SecurityConfig|authority|requiresRole|POST /api/v1/orderOtherService/orderOther requiresRole-ADMIN-USER,authority|ts-order-other-service.SecurityConfig|authority|requiresRole|POST /api/v1/orderOtherService/orderOther/admin requiresRole-ADMIN,authority|ts-order-other-service.SecurityConfig|authority|requiresRole|PUT /api/v1/orderOtherService/orderOther requiresRole-ADMIN-USER,authority|ts-order-other-service.SecurityConfig|authority|requiresRole|PUT /api/v1/orderOtherService/orderOther/admin requiresRole-ADMIN,component|ts-order-other-service.SecurityConfig|static||]|restrictsTo=[members=[capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|addNewOrder/2,capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|cancelOrder/3,capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|create/2,capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|deleteOrder/2,capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|modifyOrder/3,capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|payOrder/2,capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|saveChanges/2,capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|updateOrder/2,component|ts-order-other-service.InitData|static||,component|ts-order-other-service.OrderOtherController|static||,component|ts-order-other-service.OrderOtherRepository|static||,component|ts-order-other-service.OrderOtherServiceImpl|static||,component|ts-order-other-service.Order|static||,relation|ts-order-other-service.InitData|relation|calls|ts-order-other-service.OrderOtherService.create/2,relation|ts-order-other-service.OrderOtherController|relation|dependsOn|ts-order-other-service.OrderOtherService,relation|ts-order-other-service.OrderOtherServiceImpl|relation|dependsOn|ts-order-other-service.OrderOtherRepository,semantic|ts-order-other-service.InitData|semantic|meansInUse|seed-order-price-set-as-string-literal-100-unparsed,semantic|ts-order-other-service.InitData|semantic|meansInUse|seed-order-status-set-via-OrderStatus.PAID.getCode,semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|enum-codes-notpaid-paid-collected-change-cancel-referenced-via-getCode-no-raw-int-literals-at-comparison-and-assignment-sites,semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|price-returned-as-string-passthrough-unparsed-in-getOrderPrice,semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|status-1-on-result-carrying-branch-status-0-on-not-found-or-already-exists-or-rejected-branch,semantic|ts-order-other-service.Order|semantic|meansInUse|price-field-declared-as-string-default-value-0.0-string-literal-passthrough-unparsed,semantic|ts-order-other-service.Order|semantic|meansInUse|status-field-int-default-set-via-OrderStatus.PAID.getCode-enum-derived-code,state|ts-order-other-service.OrderOtherRepository|state|persistsIn|Order,state|ts-order-other-service.Order|state|persistsIn|orders_other-table]|restrictsTo=[]]",
+   "members=[authority|ts-order-service.OrderController|authority|allowsCrossOrigin|annotation-level-CrossOrigin-origins-star-on-most-order-mutating-and-query-endpoints,authority|ts-order-service.SecurityConfig|authority|allowsCrossOrigin|ALL /** allowedOrigins-star-allowedMethods-star-allowedHeaders-star-allowCredentials-false-maxAge-3600,authority|ts-order-service.SecurityConfig|authority|checksPermission|jwt-filter-added-before-usernamepasswordauthenticationfilter-in-filter-chain,authority|ts-order-service.SecurityConfig|authority|permitsUnauthenticated|ALL /api/v1/orderservice/order/** permitAll,authority|ts-order-service.SecurityConfig|authority|permitsUnauthenticated|ALL /swagger-ui.html /webjars/** /images/** /configuration/** /swagger-resources/** /v2/** permitAll,authority|ts-order-service.SecurityConfig|authority|requiresRole|DELETE /api/v1/orderservice/order requiresRole-ADMIN-USER,authority|ts-order-service.SecurityConfig|authority|requiresRole|POST /api/v1/orderservice/order requiresRole-ADMIN-USER,authority|ts-order-service.SecurityConfig|authority|requiresRole|POST /api/v1/orderservice/order/admin requiresRole-ADMIN,authority|ts-order-service.SecurityConfig|authority|requiresRole|PUT /api/v1/orderservice/order requiresRole-ADMIN-USER,authority|ts-order-service.SecurityConfig|authority|requiresRole|PUT /api/v1/orderservice/order/admin requiresRole-ADMIN,component|ts-order-service.SecurityConfig|static||]|restrictsTo=[]",
+   "members=[capability|ts-notification-service.NotificationServiceImpl|capability|handlesCommand|orderCancelSuccess/2,capability|ts-notification-service.NotificationServiceImpl|capability|handlesCommand|orderChangedSuccess/2,capability|ts-notification-service.NotificationServiceImpl|capability|handlesCommand|orderCreateSuccess/2,capability|ts-notification-service.NotificationServiceImpl|capability|handlesCommand|preserveSuccess/2,component|ts-notification-service.MailService|static||,component|ts-notification-service.NotificationServiceImpl|static||,component|ts-notification-service.NotificationService|static||,component|ts-notification-service.NotifyRepository|static||,component|ts-notification-service.RabbitSend|static||,component|ts-notification-service.application-yml|static||,contract|ts-notification-service.NotificationService|specification|shapedAs|boolean-return-preserveSuccess-orderCreateSuccess-orderChangedSuccess-orderCancelSuccess-take-NotifyInfo-and-HttpHeaders-params,effect|ts-notification-service.MailService|effect|callsProvider|smtp-mail-provider-via-javamailsender-send,effect|ts-notification-service.RabbitSend|effect|publishes|queue-message-via-amqptemplate-convertandsend-queues.queuename,effect|ts-notification-service.application-yml|effect|callsProvider|smtp.163.com-mail-provider-configured-endpoint-port-465-ssl-enabled,relation|ts-notification-service.NotificationServiceImpl|relation|calls|ts-notification-service.MailService.sendEmail,relation|ts-notification-service.application-yml|relation|dependsOn|rabbitmq-broker-host-localhost-port-5672,semantic|ts-notification-service.NotificationServiceImpl|semantic|meansInUse|return-true-on-mail-send-success-branch-return-false-on-caught-exception-branch,state|ts-notification-service.NotifyRepository|state|persistsIn|NotifyInfo,state|ts-notification-service.application-yml|state|persistsIn|ts-notification-mysql-datasource]|restrictsTo=[]",
+   "members=[capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|addNewOrder/2,capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|cancelOrder/3,capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|create/2,capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|deleteOrder/2,capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|modifyOrder/3,capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|payOrder/2,capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|saveChanges/2,capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|updateOrder/2,component|ts-order-other-service.InitData|static||,component|ts-order-other-service.OrderOtherController|static||,component|ts-order-other-service.OrderOtherRepository|static||,component|ts-order-other-service.OrderOtherServiceImpl|static||,component|ts-order-other-service.Order|static||,relation|ts-order-other-service.InitData|relation|calls|ts-order-other-service.OrderOtherService.create/2,relation|ts-order-other-service.OrderOtherController|relation|dependsOn|ts-order-other-service.OrderOtherService,relation|ts-order-other-service.OrderOtherServiceImpl|relation|dependsOn|ts-order-other-service.OrderOtherRepository,semantic|ts-order-other-service.InitData|semantic|meansInUse|seed-order-price-set-as-string-literal-100-unparsed,semantic|ts-order-other-service.InitData|semantic|meansInUse|seed-order-status-set-via-OrderStatus.PAID.getCode,semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|enum-codes-notpaid-paid-collected-change-cancel-referenced-via-getCode-no-raw-int-literals-at-comparison-and-assignment-sites,semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|price-returned-as-string-passthrough-unparsed-in-getOrderPrice,semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|status-1-on-result-carrying-branch-status-0-on-not-found-or-already-exists-or-rejected-branch,semantic|ts-order-other-service.Order|semantic|meansInUse|price-field-declared-as-string-default-value-0.0-string-literal-passthrough-unparsed,semantic|ts-order-other-service.Order|semantic|meansInUse|status-field-int-default-set-via-OrderStatus.PAID.getCode-enum-derived-code,state|ts-order-other-service.OrderOtherRepository|state|persistsIn|Order,state|ts-order-other-service.Order|state|persistsIn|orders_other-table]|restrictsTo=[]",
+   "members=[capability|ts-order-service.OrderController|capability|exposesEndpoint|DELETE /api/v1/orderservice/order/{orderId},capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order,capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order/orderPay/{orderId},capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order/price/{orderId},capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order/security/{checkDate}/{accountId},capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order/status/{orderId}/{status},capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order/{orderId},capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order/{travelDate}/{trainNumber},capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/welcome,capability|ts-order-service.OrderController|capability|exposesEndpoint|POST /api/v1/orderservice/order,capability|ts-order-service.OrderController|capability|exposesEndpoint|POST /api/v1/orderservice/order/admin,capability|ts-order-service.OrderController|capability|exposesEndpoint|POST /api/v1/orderservice/order/query,capability|ts-order-service.OrderController|capability|exposesEndpoint|POST /api/v1/orderservice/order/refresh,capability|ts-order-service.OrderController|capability|exposesEndpoint|POST /api/v1/orderservice/order/tickets,capability|ts-order-service.OrderController|capability|exposesEndpoint|PUT /api/v1/orderservice/order,capability|ts-order-service.OrderController|capability|exposesEndpoint|PUT /api/v1/orderservice/order/admin,component|ts-order-service.OrderApplication|static||,component|ts-order-service.OrderController|static||,relation|ts-order-service.OrderApplication|relation|dependsOn|RestTemplate-bean-load-balanced,relation|ts-order-service.OrderController|relation|dependsOn|ts-order-service.OrderService]|restrictsTo=[members=[authority|ts-order-service.OrderController|authority|allowsCrossOrigin|annotation-level-CrossOrigin-origins-star-on-most-order-mutating-and-query-endpoints,authority|ts-order-service.SecurityConfig|authority|allowsCrossOrigin|ALL /** allowedOrigins-star-allowedMethods-star-allowedHeaders-star-allowCredentials-false-maxAge-3600,authority|ts-order-service.SecurityConfig|authority|checksPermission|jwt-filter-added-before-usernamepasswordauthenticationfilter-in-filter-chain,authority|ts-order-service.SecurityConfig|authority|permitsUnauthenticated|ALL /api/v1/orderservice/order/** permitAll,authority|ts-order-service.SecurityConfig|authority|permitsUnauthenticated|ALL /swagger-ui.html /webjars/** /images/** /configuration/** /swagger-resources/** /v2/** permitAll,authority|ts-order-service.SecurityConfig|authority|requiresRole|DELETE /api/v1/orderservice/order requiresRole-ADMIN-USER,authority|ts-order-service.SecurityConfig|authority|requiresRole|POST /api/v1/orderservice/order requiresRole-ADMIN-USER,authority|ts-order-service.SecurityConfig|authority|requiresRole|POST /api/v1/orderservice/order/admin requiresRole-ADMIN,authority|ts-order-service.SecurityConfig|authority|requiresRole|PUT /api/v1/orderservice/order requiresRole-ADMIN-USER,authority|ts-order-service.SecurityConfig|authority|requiresRole|PUT /api/v1/orderservice/order/admin requiresRole-ADMIN,component|ts-order-service.SecurityConfig|static||]|restrictsTo=[]]"
+  ],
+  "onlyInPassB": [
+   "members=[authority|ts-order-other-service.OrderOtherController|authority|allowsCrossOrigin|cross-origin-all-origins-annotation-present-on-every-orderOther-endpoint-except-welcome,capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|DELETE /api/v1/orderOtherService/orderOther/{orderId},capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/orderOther,capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/orderOther/orderPay/{orderId},capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/orderOther/price/{orderId},capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/orderOther/security/{checkDate}/{accountId},capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/orderOther/status/{orderId}/{status},capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/orderOther/{orderId},capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/orderOther/{travelDate}/{trainNumber},capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|GET /api/v1/orderOtherService/welcome,capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|POST /api/v1/orderOtherService/orderOther,capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|POST /api/v1/orderOtherService/orderOther/admin,capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|POST /api/v1/orderOtherService/orderOther/query,capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|POST /api/v1/orderOtherService/orderOther/refresh,capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|POST /api/v1/orderOtherService/orderOther/tickets,capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|PUT /api/v1/orderOtherService/orderOther,capability|ts-order-other-service.OrderOtherController|capability|exposesEndpoint|PUT /api/v1/orderOtherService/orderOther/admin,capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|addNewOrder/2,capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|alterOrder/2,capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|cancelOrder/3,capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|create/2,capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|deleteOrder/2,capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|initOrder/2,capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|modifyOrder/3,capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|payOrder/2,capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|saveChanges/2,capability|ts-order-other-service.OrderOtherServiceImpl|capability|handlesCommand|updateOrder/2,capability|ts-order-other-service.OrderOtherServiceImpl|capability|servesQuery|checkSecurityAboutOrder/3,capability|ts-order-other-service.OrderOtherServiceImpl|capability|servesQuery|findOrderById/2,capability|ts-order-other-service.OrderOtherServiceImpl|capability|servesQuery|getAllOrders/1,capability|ts-order-other-service.OrderOtherServiceImpl|capability|servesQuery|getOrderById/2,capability|ts-order-other-service.OrderOtherServiceImpl|capability|servesQuery|getOrderPrice/2,capability|ts-order-other-service.OrderOtherServiceImpl|capability|servesQuery|getSoldTickets/2,capability|ts-order-other-service.OrderOtherServiceImpl|capability|servesQuery|queryAlreadySoldOrders/3,capability|ts-order-other-service.OrderOtherServiceImpl|capability|servesQuery|queryForStationId/2,capability|ts-order-other-service.OrderOtherServiceImpl|capability|servesQuery|queryOrders/3,capability|ts-order-other-service.OrderOtherServiceImpl|capability|servesQuery|queryOrdersForRefresh/3,component|ts-order-other-service.InitData|static||,component|ts-order-other-service.OrderAlterInfo|static||,component|ts-order-other-service.OrderOtherController|static||,component|ts-order-other-service.OrderOtherRepository|static||,component|ts-order-other-service.OrderOtherServiceImpl|static||,component|ts-order-other-service.OrderOtherService|static||,component|ts-order-other-service.Order|static||,component|ts-order-other-service.QueryInfo|static||,contract|ts-order-other-service.OrderAlterInfo|specification|shapedAs|carries previousOrderId, newOrderInfo and loginToken to model altering an existing order into a replacement order,contract|ts-order-other-service.OrderOtherService|specification|shapedAs|methods return a Response wrapping data or a not-found/rejected message, except initOrder which returns void; every method accepts an HttpHeaders headers parameter even where some implementations do not read it,contract|ts-order-other-service.Order|specification|shapedAs|equals compares business fields boughtDate, travelDate, travelTime, accountId, contactsName, contactsDocumentNumber, documentType, trainNumber, coachNumber, seatClass, seatNumber, from, to, status, price and excludes id; this equals is used by OrderOtherServiceImpl.create and addNewOrder as the accountOrders.contains duplicate-order check,effect|ts-order-other-service.OrderOtherServiceImpl|effect|callsProvider|POST ts-station-service /api/v1/stationservice/stations/namelist,relation|ts-order-other-service.InitData|relation|calls|ts-order-other-service.OrderOtherService,relation|ts-order-other-service.OrderAlterInfo|relation|dependsOn|ts-order-other-service.Order (composed as the newOrderInfo field),relation|ts-order-other-service.OrderOtherController|relation|calls|ts-order-other-service.OrderOtherService,relation|ts-order-other-service.OrderOtherServiceImpl|relation|calls|ts-order-other-service.OrderOtherRepository,semantic|ctx:ts-order-other-service-order-crud|cech|sectionValue|section=money-amount:string-passthrough-unparsed,semantic|ctx:ts-order-other-service-order-crud|cech|sectionValue|section=order-status-code:enum-name-based-via-OrderStatus.NAME.getCode()-no-raw-int-literals-observed-at-these-use-sites,semantic|ts-order-other-service.InitData|semantic|meansInUse|headers-argument-passed-as-null-at-the-startup-seed-call-to-create-and-accepted-without-error,semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|alterOrder-sets-the-old-order-status-to-OrderStatus.CANCEL-then-creates-a-new-order-with-a-fresh-id-modeling-a-ticket-change-as-cancel-plus-rebook,semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|headers-parameter-is-declared-but-unused-in-the-body-of-create-and-accepts-a-null-argument,semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|orders-bought-within-one-hour-before-the-supplied-checkDate-are-counted-toward-the-recent-order-tally-in-checkSecurityAboutOrder,semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|orders-with-status-at-or-above-the-OrderStatus.CHANGE-code-are-excluded-from-the-sold-seat-class-tally-in-queryAlreadySoldOrders,semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|status-1-on-the-success-or-data-carrying-branch-status-0-on-the-not-found-already-exists-or-rejected-branch-of-the-returned-Response,semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|the-valid-order-count-in-checkSecurityAboutOrder-includes-only-orders-with-NOTPAID-PAID-or-COLLECTED-status,semantic|ts-order-other-service.Order|semantic|meansInUse|default-no-arg-constructor-sets-status-to-OrderStatus.PAID-code-rather-than-a-notpaid-initial-state,semantic|ts-order-other-service.Order|semantic|meansInUse|price-field-is-string-typed-and-defaulted-to-the-literal-string-0.0-not-a-numeric-zero,semantic|ts-order-other-service.QueryInfo|semantic|meansInUse|enableBoughtDateQuery-flag-gates-the-boughtDate-range-filter-in-queryOrders,semantic|ts-order-other-service.QueryInfo|semantic|meansInUse|enableStateQuery-flag-gates-the-order-status-equality-filter-in-queryOrders-disableStateQuery-resets-state-to-a-negative-one-sentinel,semantic|ts-order-other-service.QueryInfo|semantic|meansInUse|enableTravelDateQuery-flag-gates-the-travelDate-range-filter-in-queryOrders,state|ts-order-other-service.OrderOtherRepository|state|persistsIn|Order]|restrictsTo=[members=[authority|ts-order-other-service.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-maxage-3600-global-cors-mapping-on-/**,authority|ts-order-other-service.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/orderOtherService/orderOther/**,authority|ts-order-other-service.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-html-webjars-images-configuration-swagger-resources-v2-paths,authority|ts-order-other-service.SecurityConfig|authority|requiresRole|DELETE /api/v1/orderOtherService/orderOther requiresRole-ADMIN-or-USER,authority|ts-order-other-service.SecurityConfig|authority|requiresRole|POST /api/v1/orderOtherService/orderOther requiresRole-ADMIN-or-USER,authority|ts-order-other-service.SecurityConfig|authority|requiresRole|POST /api/v1/orderOtherService/orderOther/admin requiresRole-ADMIN,authority|ts-order-other-service.SecurityConfig|authority|requiresRole|PUT /api/v1/orderOtherService/orderOther requiresRole-ADMIN-or-USER,authority|ts-order-other-service.SecurityConfig|authority|requiresRole|PUT /api/v1/orderOtherService/orderOther/admin requiresRole-ADMIN,component|ts-order-other-service.SecurityConfig|static||,relation|ts-order-other-service.SecurityConfig|relation|dependsOn|edu.fudan.common.security.jwt.JWTFilter added as a pre-authentication filter before UsernamePasswordAuthenticationFilter,semantic|ts-order-other-service.SecurityConfig|semantic|meansInUse|broad-permitall-antmatcher-for-the-orderOther-wildcard-path-is-declared-before-the-narrower-role-specific-post-put-delete-antmatchers-in-the-same-configure-method]|restrictsTo=[]]",
+   "members=[authority|ts-order-other-service.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-maxage-3600-global-cors-mapping-on-/**,authority|ts-order-other-service.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/orderOtherService/orderOther/**,authority|ts-order-other-service.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-html-webjars-images-configuration-swagger-resources-v2-paths,authority|ts-order-other-service.SecurityConfig|authority|requiresRole|DELETE /api/v1/orderOtherService/orderOther requiresRole-ADMIN-or-USER,authority|ts-order-other-service.SecurityConfig|authority|requiresRole|POST /api/v1/orderOtherService/orderOther requiresRole-ADMIN-or-USER,authority|ts-order-other-service.SecurityConfig|authority|requiresRole|POST /api/v1/orderOtherService/orderOther/admin requiresRole-ADMIN,authority|ts-order-other-service.SecurityConfig|authority|requiresRole|PUT /api/v1/orderOtherService/orderOther requiresRole-ADMIN-or-USER,authority|ts-order-other-service.SecurityConfig|authority|requiresRole|PUT /api/v1/orderOtherService/orderOther/admin requiresRole-ADMIN,component|ts-order-other-service.SecurityConfig|static||,relation|ts-order-other-service.SecurityConfig|relation|dependsOn|edu.fudan.common.security.jwt.JWTFilter added as a pre-authentication filter before UsernamePasswordAuthenticationFilter,semantic|ts-order-other-service.SecurityConfig|semantic|meansInUse|broad-permitall-antmatcher-for-the-orderOther-wildcard-path-is-declared-before-the-narrower-role-specific-post-put-delete-antmatchers-in-the-same-configure-method]|restrictsTo=[]",
+   "members=[authority|ts-order-service.OrderController|authority|allowsCrossOrigin|cross-origin-all-origins-annotation-present-on-every-order-endpoint-except-welcome,capability|ts-order-service.OrderController|capability|exposesEndpoint|DELETE /api/v1/orderservice/order/{orderId},capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order,capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order/orderPay/{orderId},capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order/price/{orderId},capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order/security/{checkDate}/{accountId},capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order/status/{orderId}/{status},capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order/{orderId},capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/order/{travelDate}/{trainNumber},capability|ts-order-service.OrderController|capability|exposesEndpoint|GET /api/v1/orderservice/welcome,capability|ts-order-service.OrderController|capability|exposesEndpoint|POST /api/v1/orderservice/order,capability|ts-order-service.OrderController|capability|exposesEndpoint|POST /api/v1/orderservice/order/admin,capability|ts-order-service.OrderController|capability|exposesEndpoint|POST /api/v1/orderservice/order/query,capability|ts-order-service.OrderController|capability|exposesEndpoint|POST /api/v1/orderservice/order/refresh,capability|ts-order-service.OrderController|capability|exposesEndpoint|POST /api/v1/orderservice/order/tickets,capability|ts-order-service.OrderController|capability|exposesEndpoint|PUT /api/v1/orderservice/order,capability|ts-order-service.OrderController|capability|exposesEndpoint|PUT /api/v1/orderservice/order/admin,component|ts-order-service.OrderController|static||,relation|ts-order-service.OrderController|relation|calls|ts-order-service.OrderService]|restrictsTo=[members=[authority|ts-order-service.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-maxage-3600-global-cors-mapping-on-/**,authority|ts-order-service.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/orderservice/order/**,authority|ts-order-service.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-html-webjars-images-configuration-swagger-resources-v2-paths,authority|ts-order-service.SecurityConfig|authority|requiresRole|DELETE /api/v1/orderservice/order requiresRole-ADMIN-or-USER,authority|ts-order-service.SecurityConfig|authority|requiresRole|POST /api/v1/orderservice/order requiresRole-ADMIN-or-USER,authority|ts-order-service.SecurityConfig|authority|requiresRole|POST /api/v1/orderservice/order/admin requiresRole-ADMIN,authority|ts-order-service.SecurityConfig|authority|requiresRole|PUT /api/v1/orderservice/order requiresRole-ADMIN-or-USER,authority|ts-order-service.SecurityConfig|authority|requiresRole|PUT /api/v1/orderservice/order/admin requiresRole-ADMIN,component|ts-order-service.SecurityConfig|static||,relation|ts-order-service.SecurityConfig|relation|dependsOn|edu.fudan.common.security.jwt.JWTFilter added as a pre-authentication filter before UsernamePasswordAuthenticationFilter,semantic|ts-order-service.SecurityConfig|semantic|meansInUse|narrower-role-specific-post-put-delete-antmatchers-for-the-order-path-are-declared-before-the-broad-permitall-wildcard-antmatcher-in-the-same-configure-method]|restrictsTo=[]]",
+   "members=[authority|ts-order-service.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-maxage-3600-global-cors-mapping-on-/**,authority|ts-order-service.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/orderservice/order/**,authority|ts-order-service.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-html-webjars-images-configuration-swagger-resources-v2-paths,authority|ts-order-service.SecurityConfig|authority|requiresRole|DELETE /api/v1/orderservice/order requiresRole-ADMIN-or-USER,authority|ts-order-service.SecurityConfig|authority|requiresRole|POST /api/v1/orderservice/order requiresRole-ADMIN-or-USER,authority|ts-order-service.SecurityConfig|authority|requiresRole|POST /api/v1/orderservice/order/admin requiresRole-ADMIN,authority|ts-order-service.SecurityConfig|authority|requiresRole|PUT /api/v1/orderservice/order requiresRole-ADMIN-or-USER,authority|ts-order-service.SecurityConfig|authority|requiresRole|PUT /api/v1/orderservice/order/admin requiresRole-ADMIN,component|ts-order-service.SecurityConfig|static||,relation|ts-order-service.SecurityConfig|relation|dependsOn|edu.fudan.common.security.jwt.JWTFilter added as a pre-authentication filter before UsernamePasswordAuthenticationFilter,semantic|ts-order-service.SecurityConfig|semantic|meansInUse|narrower-role-specific-post-put-delete-antmatchers-for-the-order-path-are-declared-before-the-broad-permitall-wildcard-antmatcher-in-the-same-configure-method]|restrictsTo=[]",
+   "members=[capability|ts-notification-service.MailService|capability|handlesCommand|sendEmail/2,capability|ts-notification-service.NotificationServiceImpl|capability|handlesCommand|orderCancelSuccess/2,capability|ts-notification-service.NotificationServiceImpl|capability|handlesCommand|orderChangedSuccess/2,capability|ts-notification-service.NotificationServiceImpl|capability|handlesCommand|orderCreateSuccess/2,capability|ts-notification-service.NotificationServiceImpl|capability|handlesCommand|preserveSuccess/2,capability|ts-notification-service.RabbitSend|capability|handlesCommand|send/1,component|ts-notification-service.MailService|static||,component|ts-notification-service.NotificationServiceImpl|static||,effect|ts-notification-service.MailService|effect|callsProvider|JavaMailSender.send-smtp-mail-message,effect|ts-notification-service.RabbitSend|effect|enqueues|amqp-queue-named-by-Queues.queueName-constant-via-rabbitTemplate.convertAndSend,relation|ts-notification-service.NotificationServiceImpl|relation|calls|ts-notification-service.MailService,semantic|ts-notification-service.MailService|semantic|meansInUse|template-string-parameter-selects-which-freemarker-ftl-file-under-classpath-templates-is-loaded-to-render-the-mail-body,semantic|ts-notification-service.NotificationServiceImpl|semantic|meansInUse|orderCancelSuccess-selects-order_cancel_success.ftl-mail-template,semantic|ts-notification-service.NotificationServiceImpl|semantic|meansInUse|orderChangedSuccess-selects-order_changed_success.ftl-mail-template,semantic|ts-notification-service.NotificationServiceImpl|semantic|meansInUse|orderCreateSuccess-selects-order_create_success.ftl-mail-template,semantic|ts-notification-service.NotificationServiceImpl|semantic|meansInUse|preserveSuccess-selects-preserve_success.ftl-mail-template,semantic|ts-notification-service.NotificationServiceImpl|semantic|meansInUse|return-value-true-on-successful-mailService.sendEmail-call-branch-false-on-caught-exception-during-send-branch-across-all-four-notify-methods]|restrictsTo=[]"
+  ]
+ },
+ "adjudications": [
+  {
+   "key": "authority|ts-order-other-service.SecurityConfig|authority|allowsCrossOrigin|ALL /** allowedOrigins-star-allowedMethods-star-allowedHeaders-star-allowCredentials-false-maxAge-3600",
+   "decision": "merged",
+   "basis": "reread: SecurityConfig.java:54 registers the global CORS mapping (/** , allowedOrigins/Methods/Headers=*, allowCredentials=false, maxAge=3600); both rows describe this same mapping under different predicate wording.",
+   "candidateAtomId": "atom:authority:ts-order-other-service-securityconfig:allowscrossorigin",
+   "mergeGroup": "group-1",
+   "canonicalAtomId": "atom:authority:ts-order-other-service-securityconfig:allowscrossorigin"
+  },
+  {
+   "key": "authority|ts-order-other-service.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-maxage-3600-global-cors-mapping-on-/**",
+   "decision": "merged",
+   "basis": "reread: SecurityConfig.java:54 registers the global CORS mapping (/** , allowedOrigins/Methods/Headers=*, allowCredentials=false, maxAge=3600); both rows describe this same mapping under different predicate wording.",
+   "candidateAtomId": "atom:authority:ts-order-other-service.securityconfig:allows-cross-origin-global",
+   "mergeGroup": "group-1",
+   "canonicalAtomId": "atom:authority:ts-order-other-service-securityconfig:allowscrossorigin"
+  },
+  {
+   "key": "authority|ts-order-other-service.SecurityConfig|authority|checksPermission|jwt-filter-added-before-usernamepasswordauthenticationfilter-in-filter-chain",
+   "decision": "merged",
+   "basis": "reread: SecurityConfig.java:85 adds JWTFilter before UsernamePasswordAuthenticationFilter in the filter chain; both rows cite this same line under different axis (authority/checksPermission vs relation/dependsOn).",
+   "candidateAtomId": "atom:authority:ts-order-other-service-securityconfig:checkspermission-jwtfilter",
+   "mergeGroup": "group-2",
+   "canonicalAtomId": "atom:authority:ts-order-other-service-securityconfig:checkspermission-jwtfilter"
+  },
+  {
+   "key": "relation|ts-order-other-service.SecurityConfig|relation|dependsOn|edu.fudan.common.security.jwt.JWTFilter added as a pre-authentication filter before UsernamePasswordAuthenticationFilter",
+   "decision": "merged",
+   "basis": "reread: SecurityConfig.java:85 adds JWTFilter before UsernamePasswordAuthenticationFilter in the filter chain; both rows cite this same line under different axis (authority/checksPermission vs relation/dependsOn).",
+   "candidateAtomId": "atom:relation:ts-order-other-service.securityconfig:depends-on-jwtfilter",
+   "mergeGroup": "group-2",
+   "canonicalAtomId": "atom:authority:ts-order-other-service-securityconfig:checkspermission-jwtfilter"
+  },
+  {
+   "key": "authority|ts-order-other-service.SecurityConfig|authority|permitsUnauthenticated|ALL /api/v1/orderOtherService/orderOther/** permitAll",
+   "decision": "merged",
+   "basis": "reread: SecurityConfig.java:74 antMatchers(orderOther/**).permitAll(); same permitAll declaration described under different predicate wording.",
+   "candidateAtomId": "atom:authority:ts-order-other-service-securityconfig:permitsunauthenticated-orderother",
+   "mergeGroup": "group-3",
+   "canonicalAtomId": "atom:authority:ts-order-other-service-securityconfig:permitsunauthenticated-orderother"
+  },
+  {
+   "key": "authority|ts-order-other-service.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/orderOtherService/orderOther/**",
+   "decision": "merged",
+   "basis": "reread: SecurityConfig.java:74 antMatchers(orderOther/**).permitAll(); same permitAll declaration described under different predicate wording.",
+   "candidateAtomId": "atom:authority:ts-order-other-service.securityconfig:permits-unauthenticated-orderother-wildcard",
+   "mergeGroup": "group-3",
+   "canonicalAtomId": "atom:authority:ts-order-other-service-securityconfig:permitsunauthenticated-orderother"
+  },
+  {
+   "key": "authority|ts-order-other-service.SecurityConfig|authority|permitsUnauthenticated|ALL /swagger-ui.html /webjars/** /images/** /configuration/** /swagger-resources/** /v2/** permitAll",
+   "decision": "merged",
+   "basis": "reread: SecurityConfig.java:81-82 antMatchers(swagger-ui.html, webjars/**, images/**, configuration/**, swagger-resources/**, v2/**).permitAll(); same permitAll declaration, pass-b cites both lines of the multi-line matcher.",
+   "candidateAtomId": "atom:authority:ts-order-other-service-securityconfig:permitsunauthenticated-swagger",
+   "mergeGroup": "group-4",
+   "canonicalAtomId": "atom:authority:ts-order-other-service-securityconfig:permitsunauthenticated-swagger"
+  },
+  {
+   "key": "authority|ts-order-other-service.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-html-webjars-images-configuration-swagger-resources-v2-paths",
+   "decision": "merged",
+   "basis": "reread: SecurityConfig.java:81-82 antMatchers(swagger-ui.html, webjars/**, images/**, configuration/**, swagger-resources/**, v2/**).permitAll(); same permitAll declaration, pass-b cites both lines of the multi-line matcher.",
+   "candidateAtomId": "atom:authority:ts-order-other-service.securityconfig:permits-unauthenticated-swagger",
+   "mergeGroup": "group-4",
+   "canonicalAtomId": "atom:authority:ts-order-other-service-securityconfig:permitsunauthenticated-swagger"
+  },
+  {
+   "key": "authority|ts-order-other-service.SecurityConfig|authority|requiresRole|DELETE /api/v1/orderOtherService/orderOther requiresRole-ADMIN-USER",
+   "decision": "merged",
+   "basis": "reread: SecurityConfig.java:77 antMatchers(DELETE, orderOther).hasAnyRole(ADMIN, USER); same rule, different predicate wording (requiresRole vs requires-role).",
+   "candidateAtomId": "atom:authority:ts-order-other-service-securityconfig:requiresrole-delete-orderother",
+   "mergeGroup": "group-5",
+   "canonicalAtomId": "atom:authority:ts-order-other-service-securityconfig:requiresrole-delete-orderother"
+  },
+  {
+   "key": "authority|ts-order-other-service.SecurityConfig|authority|requiresRole|DELETE /api/v1/orderOtherService/orderOther requiresRole-ADMIN-or-USER",
+   "decision": "merged",
+   "basis": "reread: SecurityConfig.java:77 antMatchers(DELETE, orderOther).hasAnyRole(ADMIN, USER); same rule, different predicate wording (requiresRole vs requires-role).",
+   "candidateAtomId": "atom:authority:ts-order-other-service.securityconfig:requires-role-delete-orderother",
+   "mergeGroup": "group-5",
+   "canonicalAtomId": "atom:authority:ts-order-other-service-securityconfig:requiresrole-delete-orderother"
+  },
+  {
+   "key": "authority|ts-order-other-service.SecurityConfig|authority|requiresRole|POST /api/v1/orderOtherService/orderOther requiresRole-ADMIN-USER",
+   "decision": "merged",
+   "basis": "reread: SecurityConfig.java:75 antMatchers(POST, orderOther).hasAnyRole(ADMIN, USER); same rule under different predicate wording.",
+   "candidateAtomId": "atom:authority:ts-order-other-service-securityconfig:requiresrole-post-orderother",
+   "mergeGroup": "group-6",
+   "canonicalAtomId": "atom:authority:ts-order-other-service-securityconfig:requiresrole-post-orderother"
+  },
+  {
+   "key": "authority|ts-order-other-service.SecurityConfig|authority|requiresRole|POST /api/v1/orderOtherService/orderOther requiresRole-ADMIN-or-USER",
+   "decision": "merged",
+   "basis": "reread: SecurityConfig.java:75 antMatchers(POST, orderOther).hasAnyRole(ADMIN, USER); same rule under different predicate wording.",
+   "candidateAtomId": "atom:authority:ts-order-other-service.securityconfig:requires-role-post-orderother",
+   "mergeGroup": "group-6",
+   "canonicalAtomId": "atom:authority:ts-order-other-service-securityconfig:requiresrole-post-orderother"
+  },
+  {
+   "key": "authority|ts-order-other-service.SecurityConfig|authority|requiresRole|PUT /api/v1/orderOtherService/orderOther requiresRole-ADMIN-USER",
+   "decision": "merged",
+   "basis": "reread: SecurityConfig.java:76 antMatchers(PUT, orderOther).hasAnyRole(ADMIN, USER); same rule under different predicate wording.",
+   "candidateAtomId": "atom:authority:ts-order-other-service-securityconfig:requiresrole-put-orderother",
+   "mergeGroup": "group-7",
+   "canonicalAtomId": "atom:authority:ts-order-other-service-securityconfig:requiresrole-put-orderother"
+  },
+  {
+   "key": "authority|ts-order-other-service.SecurityConfig|authority|requiresRole|PUT /api/v1/orderOtherService/orderOther requiresRole-ADMIN-or-USER",
+   "decision": "merged",
+   "basis": "reread: SecurityConfig.java:76 antMatchers(PUT, orderOther).hasAnyRole(ADMIN, USER); same rule under different predicate wording.",
+   "candidateAtomId": "atom:authority:ts-order-other-service.securityconfig:requires-role-put-orderother",
+   "mergeGroup": "group-7",
+   "canonicalAtomId": "atom:authority:ts-order-other-service-securityconfig:requiresrole-put-orderother"
+  },
+  {
+   "key": "authority|ts-order-service.SecurityConfig|authority|allowsCrossOrigin|ALL /** allowedOrigins-star-allowedMethods-star-allowedHeaders-star-allowCredentials-false-maxAge-3600",
+   "decision": "merged",
+   "basis": "reread: order-service SecurityConfig.java:55 registers the same global CORS mapping as order-other-service; same fact, different predicate wording.",
+   "candidateAtomId": "atom:authority:ts-order-service-securityconfig:allowscrossorigin",
+   "mergeGroup": "group-8",
+   "canonicalAtomId": "atom:authority:ts-order-service-securityconfig:allowscrossorigin"
+  },
+  {
+   "key": "authority|ts-order-service.SecurityConfig|authority|allowsCrossOrigin|all-origins-all-methods-all-headers-credentials-false-maxage-3600-global-cors-mapping-on-/**",
+   "decision": "merged",
+   "basis": "reread: order-service SecurityConfig.java:55 registers the same global CORS mapping as order-other-service; same fact, different predicate wording.",
+   "candidateAtomId": "atom:authority:ts-order-service.securityconfig:allows-cross-origin-global",
+   "mergeGroup": "group-8",
+   "canonicalAtomId": "atom:authority:ts-order-service-securityconfig:allowscrossorigin"
+  },
+  {
+   "key": "authority|ts-order-service.SecurityConfig|authority|checksPermission|jwt-filter-added-before-usernamepasswordauthenticationfilter-in-filter-chain",
+   "decision": "merged",
+   "basis": "reread: order-service SecurityConfig.java:85 adds JWTFilter before UsernamePasswordAuthenticationFilter; same line, different axis (authority/checksPermission vs relation/dependsOn).",
+   "candidateAtomId": "atom:authority:ts-order-service-securityconfig:checkspermission-jwtfilter",
+   "mergeGroup": "group-9",
+   "canonicalAtomId": "atom:authority:ts-order-service-securityconfig:checkspermission-jwtfilter"
+  },
+  {
+   "key": "relation|ts-order-service.SecurityConfig|relation|dependsOn|edu.fudan.common.security.jwt.JWTFilter added as a pre-authentication filter before UsernamePasswordAuthenticationFilter",
+   "decision": "merged",
+   "basis": "reread: order-service SecurityConfig.java:85 adds JWTFilter before UsernamePasswordAuthenticationFilter; same line, different axis (authority/checksPermission vs relation/dependsOn).",
+   "candidateAtomId": "atom:relation:ts-order-service.securityconfig:depends-on-jwtfilter",
+   "mergeGroup": "group-9",
+   "canonicalAtomId": "atom:authority:ts-order-service-securityconfig:checkspermission-jwtfilter"
+  },
+  {
+   "key": "authority|ts-order-service.SecurityConfig|authority|permitsUnauthenticated|ALL /api/v1/orderservice/order/** permitAll",
+   "decision": "merged",
+   "basis": "reread: order-service SecurityConfig.java:80 antMatchers(order/**).permitAll(); same permitAll declaration, different predicate wording.",
+   "candidateAtomId": "atom:authority:ts-order-service-securityconfig:permitsunauthenticated-order",
+   "mergeGroup": "group-10",
+   "canonicalAtomId": "atom:authority:ts-order-service-securityconfig:permitsunauthenticated-order"
+  },
+  {
+   "key": "authority|ts-order-service.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-/api/v1/orderservice/order/**",
+   "decision": "merged",
+   "basis": "reread: order-service SecurityConfig.java:80 antMatchers(order/**).permitAll(); same permitAll declaration, different predicate wording.",
+   "candidateAtomId": "atom:authority:ts-order-service.securityconfig:permits-unauthenticated-order-wildcard",
+   "mergeGroup": "group-10",
+   "canonicalAtomId": "atom:authority:ts-order-service-securityconfig:permitsunauthenticated-order"
+  },
+  {
+   "key": "authority|ts-order-service.SecurityConfig|authority|permitsUnauthenticated|ALL /swagger-ui.html /webjars/** /images/** /configuration/** /swagger-resources/** /v2/** permitAll",
+   "decision": "merged",
+   "basis": "reread: order-service SecurityConfig.java:81-82 swagger permitAll matcher; same declaration, pass-b cites both lines.",
+   "candidateAtomId": "atom:authority:ts-order-service-securityconfig:permitsunauthenticated-swagger",
+   "mergeGroup": "group-11",
+   "canonicalAtomId": "atom:authority:ts-order-service-securityconfig:permitsunauthenticated-swagger"
+  },
+  {
+   "key": "authority|ts-order-service.SecurityConfig|authority|permitsUnauthenticated|permit-all-on-swagger-ui-html-webjars-images-configuration-swagger-resources-v2-paths",
+   "decision": "merged",
+   "basis": "reread: order-service SecurityConfig.java:81-82 swagger permitAll matcher; same declaration, pass-b cites both lines.",
+   "candidateAtomId": "atom:authority:ts-order-service.securityconfig:permits-unauthenticated-swagger",
+   "mergeGroup": "group-11",
+   "canonicalAtomId": "atom:authority:ts-order-service-securityconfig:permitsunauthenticated-swagger"
+  },
+  {
+   "key": "authority|ts-order-service.SecurityConfig|authority|requiresRole|DELETE /api/v1/orderservice/order requiresRole-ADMIN-USER",
+   "decision": "merged",
+   "basis": "reread: order-service SecurityConfig.java:77 antMatchers(DELETE, order).hasAnyRole(ADMIN, USER); same rule, different predicate wording.",
+   "candidateAtomId": "atom:authority:ts-order-service-securityconfig:requiresrole-delete-order",
+   "mergeGroup": "group-12",
+   "canonicalAtomId": "atom:authority:ts-order-service-securityconfig:requiresrole-delete-order"
+  },
+  {
+   "key": "authority|ts-order-service.SecurityConfig|authority|requiresRole|DELETE /api/v1/orderservice/order requiresRole-ADMIN-or-USER",
+   "decision": "merged",
+   "basis": "reread: order-service SecurityConfig.java:77 antMatchers(DELETE, order).hasAnyRole(ADMIN, USER); same rule, different predicate wording.",
+   "candidateAtomId": "atom:authority:ts-order-service.securityconfig:requires-role-delete-order",
+   "mergeGroup": "group-12",
+   "canonicalAtomId": "atom:authority:ts-order-service-securityconfig:requiresrole-delete-order"
+  },
+  {
+   "key": "authority|ts-order-service.SecurityConfig|authority|requiresRole|POST /api/v1/orderservice/order requiresRole-ADMIN-USER",
+   "decision": "merged",
+   "basis": "reread: order-service SecurityConfig.java:75 antMatchers(POST, order).hasAnyRole(ADMIN, USER); same rule, different predicate wording.",
+   "candidateAtomId": "atom:authority:ts-order-service-securityconfig:requiresrole-post-order",
+   "mergeGroup": "group-13",
+   "canonicalAtomId": "atom:authority:ts-order-service-securityconfig:requiresrole-post-order"
+  },
+  {
+   "key": "authority|ts-order-service.SecurityConfig|authority|requiresRole|POST /api/v1/orderservice/order requiresRole-ADMIN-or-USER",
+   "decision": "merged",
+   "basis": "reread: order-service SecurityConfig.java:75 antMatchers(POST, order).hasAnyRole(ADMIN, USER); same rule, different predicate wording.",
+   "candidateAtomId": "atom:authority:ts-order-service.securityconfig:requires-role-post-order",
+   "mergeGroup": "group-13",
+   "canonicalAtomId": "atom:authority:ts-order-service-securityconfig:requiresrole-post-order"
+  },
+  {
+   "key": "authority|ts-order-service.SecurityConfig|authority|requiresRole|PUT /api/v1/orderservice/order requiresRole-ADMIN-USER",
+   "decision": "merged",
+   "basis": "reread: order-service SecurityConfig.java:76 antMatchers(PUT, order).hasAnyRole(ADMIN, USER); same rule, different predicate wording.",
+   "candidateAtomId": "atom:authority:ts-order-service-securityconfig:requiresrole-put-order",
+   "mergeGroup": "group-14",
+   "canonicalAtomId": "atom:authority:ts-order-service-securityconfig:requiresrole-put-order"
+  },
+  {
+   "key": "authority|ts-order-service.SecurityConfig|authority|requiresRole|PUT /api/v1/orderservice/order requiresRole-ADMIN-or-USER",
+   "decision": "merged",
+   "basis": "reread: order-service SecurityConfig.java:76 antMatchers(PUT, order).hasAnyRole(ADMIN, USER); same rule, different predicate wording.",
+   "candidateAtomId": "atom:authority:ts-order-service.securityconfig:requires-role-put-order",
+   "mergeGroup": "group-14",
+   "canonicalAtomId": "atom:authority:ts-order-service-securityconfig:requiresrole-put-order"
+  },
+  {
+   "key": "contract|ts-notification-service.NotificationService|specification|shapedAs|boolean-return-preserveSuccess-orderCreateSuccess-orderChangedSuccess-orderCancelSuccess-take-NotifyInfo-and-HttpHeaders-params",
+   "decision": "merged",
+   "basis": "reread: NotificationService.java:19,28,37,46 declare the four notify methods (preserveSuccess, orderCreateSuccess, orderChangedSuccess, orderCancelSuccess) each taking NotifyInfo+HttpHeaders and returning boolean; both rows describe this identical shape.",
+   "candidateAtomId": "atom:contract:ts-notification-service-notificationservice:shapedas",
+   "mergeGroup": "group-15",
+   "canonicalAtomId": "atom:contract:ts-notification-service-notificationservice:shapedas"
+  },
+  {
+   "key": "contract|ts-notification-service.NotificationService|specification|shapedAs|four notify-outcome methods (preserveSuccess, orderCreateSuccess, orderChangedSuccess, orderCancelSuccess) each take NotifyInfo plus HttpHeaders and return a boolean success flag",
+   "decision": "merged",
+   "basis": "reread: NotificationService.java:19,28,37,46 declare the four notify methods (preserveSuccess, orderCreateSuccess, orderChangedSuccess, orderCancelSuccess) each taking NotifyInfo+HttpHeaders and returning boolean; both rows describe this identical shape.",
+   "candidateAtomId": "atom:contract:ts-notification-service.notificationservice:shaped-as-four-notify-methods",
+   "mergeGroup": "group-15",
+   "canonicalAtomId": "atom:contract:ts-notification-service-notificationservice:shapedas"
+  },
+  {
+   "key": "contract|ts-order-other-service.OrderAlterInfo|specification|shapedAs|accountId-previousOrderId-loginToken-newOrderInfo-Order-fields-with-generatedvalue-annotations-on-a-non-entity-dto",
+   "decision": "merged",
+   "basis": "reread: OrderAlterInfo.java:17 declares the accountId/previousOrderId/loginToken/newOrderInfo fields with GeneratedValue annotations on a plain DTO; line33 (constructor default newOrderInfo=new Order()) is the added ref in pass-b for the same class shape.",
+   "candidateAtomId": "atom:contract:ts-order-other-service-orderalterinfo:shapedas",
+   "mergeGroup": "group-16",
+   "canonicalAtomId": "atom:contract:ts-order-other-service-orderalterinfo:shapedas"
+  },
+  {
+   "key": "contract|ts-order-other-service.OrderAlterInfo|specification|shapedAs|carries previousOrderId, newOrderInfo and loginToken to model altering an existing order into a replacement order",
+   "decision": "merged",
+   "basis": "reread: OrderAlterInfo.java:17 declares the accountId/previousOrderId/loginToken/newOrderInfo fields with GeneratedValue annotations on a plain DTO; line33 (constructor default newOrderInfo=new Order()) is the added ref in pass-b for the same class shape.",
+   "candidateAtomId": "atom:contract:ts-order-other-service.orderalterinfo:shaped-as-alter-request",
+   "mergeGroup": "group-16",
+   "canonicalAtomId": "atom:contract:ts-order-other-service-orderalterinfo:shapedas"
+  },
+  {
+   "key": "contract|ts-order-other-service.OrderOtherService|specification|shapedAs|mutating-and-query-methods-return-edu.fudan.common.util.Response-envelope-except-initOrder-void-return",
+   "decision": "merged",
+   "basis": "reread: OrderOtherService.java:18 (first method returns Response) and :54 (initOrder returns void) confirm the same return-shape convention described by both rows.",
+   "candidateAtomId": "atom:contract:ts-order-other-service-orderotherservice:shapedas",
+   "mergeGroup": "group-17",
+   "canonicalAtomId": "atom:contract:ts-order-other-service-orderotherservice:shapedas"
+  },
+  {
+   "key": "contract|ts-order-other-service.OrderOtherService|specification|shapedAs|methods return a Response wrapping data or a not-found/rejected message, except initOrder which returns void; every method accepts an HttpHeaders headers parameter even where some implementations do not read it",
+   "decision": "merged",
+   "basis": "reread: OrderOtherService.java:18 (first method returns Response) and :54 (initOrder returns void) confirm the same return-shape convention described by both rows.",
+   "candidateAtomId": "atom:contract:ts-order-other-service.orderotherservice:shaped-as-response-envelope",
+   "mergeGroup": "group-17",
+   "canonicalAtomId": "atom:contract:ts-order-other-service-orderotherservice:shapedas"
+  },
+  {
+   "key": "contract|ts-order-other-service.Order|specification|shapedAs|equals-compares-boughtDate-travelTime-accountId-contactsName-documentType-trainNumber-coachNumber-seatClass-seatNumber-from-to-status-price-fields",
+   "decision": "merged",
+   "basis": "reread: Order.java:83-84 (equals override) is the same method both rows describe; pass-b additionally cites the accountOrders.contains use sites at OrderOtherServiceImpl.java:94,434, which reread confirms call this same equals().",
+   "candidateAtomId": "atom:contract:ts-order-other-service-order:shapedas-equals",
+   "mergeGroup": "group-18",
+   "canonicalAtomId": "atom:contract:ts-order-other-service-order:shapedas-equals"
+  },
+  {
+   "key": "contract|ts-order-other-service.Order|specification|shapedAs|equals compares business fields boughtDate, travelDate, travelTime, accountId, contactsName, contactsDocumentNumber, documentType, trainNumber, coachNumber, seatClass, seatNumber, from, to, status, price and excludes id; this equals is used by OrderOtherServiceImpl.create and addNewOrder as the accountOrders.contains duplicate-order check",
+   "decision": "merged",
+   "basis": "reread: Order.java:83-84 (equals override) is the same method both rows describe; pass-b additionally cites the accountOrders.contains use sites at OrderOtherServiceImpl.java:94,434, which reread confirms call this same equals().",
+   "candidateAtomId": "atom:contract:ts-order-other-service.order:shaped-as-equals-invariant",
+   "mergeGroup": "group-18",
+   "canonicalAtomId": "atom:contract:ts-order-other-service-order:shapedas-equals"
+  },
+  {
+   "key": "effect|ts-notification-service.MailService|effect|callsProvider|smtp-mail-provider-via-javamailsender-send",
+   "decision": "merged",
+   "basis": "reread: MailService.java:46 sender.send(message) is the same JavaMailSender call both rows describe.",
+   "candidateAtomId": "atom:effect:ts-notification-service-mailservice:callsprovider",
+   "mergeGroup": "group-19",
+   "canonicalAtomId": "atom:effect:ts-notification-service-mailservice:callsprovider"
+  },
+  {
+   "key": "effect|ts-notification-service.MailService|effect|callsProvider|JavaMailSender.send-smtp-mail-message",
+   "decision": "merged",
+   "basis": "reread: MailService.java:46 sender.send(message) is the same JavaMailSender call both rows describe.",
+   "candidateAtomId": "atom:effect:ts-notification-service.mailservice:calls-provider-smtp",
+   "mergeGroup": "group-19",
+   "canonicalAtomId": "atom:effect:ts-notification-service-mailservice:callsprovider"
+  },
+  {
+   "key": "effect|ts-notification-service.RabbitSend|effect|publishes|queue-message-via-amqptemplate-convertandsend-queues.queuename",
+   "decision": "merged",
+   "basis": "reread: RabbitSend.java:20 rabbitTemplate.convertAndSend(Queues.queueName, val) is the same AMQP publish call both rows describe under different predicate wording (publishes vs enqueues).",
+   "candidateAtomId": "atom:effect:ts-notification-service-rabbitsend:publishes",
+   "mergeGroup": "group-20",
+   "canonicalAtomId": "atom:effect:ts-notification-service-rabbitsend:publishes"
+  },
+  {
+   "key": "effect|ts-notification-service.RabbitSend|effect|enqueues|amqp-queue-named-by-Queues.queueName-constant-via-rabbitTemplate.convertAndSend",
+   "decision": "merged",
+   "basis": "reread: RabbitSend.java:20 rabbitTemplate.convertAndSend(Queues.queueName, val) is the same AMQP publish call both rows describe under different predicate wording (publishes vs enqueues).",
+   "candidateAtomId": "atom:effect:ts-notification-service.rabbitsend:enqueues-queue",
+   "mergeGroup": "group-20",
+   "canonicalAtomId": "atom:effect:ts-notification-service-rabbitsend:publishes"
+  },
+  {
+   "key": "effect|ts-notification-service.application-yml|effect|callsProvider|smtp.163.com-mail-provider-configured-endpoint-port-465-ssl-enabled",
+   "decision": "merged",
+   "basis": "reread: application.yml:13-25 configures the smtp.163.com mail provider at port 465 with ssl/starttls enabled; both rows describe this same SMTP configuration, sampling different lines of the same block.",
+   "candidateAtomId": "atom:effect:ts-notification-service-application-yml:callsprovider",
+   "mergeGroup": "group-21",
+   "canonicalAtomId": "atom:effect:ts-notification-service-application-yml:callsprovider"
+  },
+  {
+   "key": "effect|ts-notification-service.application-yml|effect|callsProvider|smtp.163.com-port-465-mail-provider-configured-with-ssl-and-starttls-enabled",
+   "decision": "merged",
+   "basis": "reread: application.yml:13-25 configures the smtp.163.com mail provider at port 465 with ssl/starttls enabled; both rows describe this same SMTP configuration, sampling different lines of the same block.",
+   "candidateAtomId": "atom:effect:ts-notification-service.application-yml:calls-provider-smtp-config",
+   "mergeGroup": "group-21",
+   "canonicalAtomId": "atom:effect:ts-notification-service-application-yml:callsprovider"
+  },
+  {
+   "key": "relation|ts-notification-service.NotificationServiceImpl|relation|calls|ts-notification-service.MailService.sendEmail",
+   "decision": "merged",
+   "basis": "reread: NotificationServiceImpl.java:55,82,109,130 all call mailService.sendEmail; identical call sites cited by both rows.",
+   "candidateAtomId": "atom:relation:ts-notification-service-notificationserviceimpl:calls-mailservice",
+   "mergeGroup": "group-22",
+   "canonicalAtomId": "atom:relation:ts-notification-service-notificationserviceimpl:calls-mailservice"
+  },
+  {
+   "key": "relation|ts-notification-service.NotificationServiceImpl|relation|calls|ts-notification-service.MailService",
+   "decision": "merged",
+   "basis": "reread: NotificationServiceImpl.java:55,82,109,130 all call mailService.sendEmail; identical call sites cited by both rows.",
+   "candidateAtomId": "atom:relation:ts-notification-service.notificationserviceimpl:calls-mailservice",
+   "mergeGroup": "group-22",
+   "canonicalAtomId": "atom:relation:ts-notification-service-notificationserviceimpl:calls-mailservice"
+  },
+  {
+   "key": "relation|ts-order-other-service.InitData|relation|calls|ts-order-other-service.OrderOtherService.create/2",
+   "decision": "merged",
+   "basis": "reread: InitData.java:44 service.create(order1,null) is the same call both rows describe, pass-a naming the specific method.",
+   "candidateAtomId": "atom:relation:ts-order-other-service-initdata:calls-orderotherservice-create",
+   "mergeGroup": "group-23",
+   "canonicalAtomId": "atom:relation:ts-order-other-service-initdata:calls-orderotherservice-create"
+  },
+  {
+   "key": "relation|ts-order-other-service.InitData|relation|calls|ts-order-other-service.OrderOtherService",
+   "decision": "merged",
+   "basis": "reread: InitData.java:44 service.create(order1,null) is the same call both rows describe, pass-a naming the specific method.",
+   "candidateAtomId": "atom:relation:ts-order-other-service.initdata:calls-orderotherservice",
+   "mergeGroup": "group-23",
+   "canonicalAtomId": "atom:relation:ts-order-other-service-initdata:calls-orderotherservice-create"
+  },
+  {
+   "key": "semantic|ctx:ts-order-other-service-order-lifecycle|cech|sectionValue|section=money-amount:string-passthrough-unparsed",
+   "decision": "merged",
+   "basis": "reread: Order.java:68 (price:String) and OrderOtherServiceImpl.java:356 (getOrderPrice returns order.getPrice() unparsed) support both rows' claim that the money-amount value is passed through as an unparsed string; sampled evidence lines differ slightly (InitData.java:36 vs OrderOtherServiceImpl.java:352) but the observed fact is the same.",
+   "candidateAtomId": "atom:semantic:ctx-ts-order-other-service-order-lifecycle:cech-section-money-amount",
+   "mergeGroup": "group-24",
+   "canonicalAtomId": "atom:semantic:ctx-ts-order-other-service-order-lifecycle:cech-section-money-amount"
+  },
+  {
+   "key": "semantic|ctx:ts-order-other-service-order-crud|cech|sectionValue|section=money-amount:string-passthrough-unparsed",
+   "decision": "merged",
+   "basis": "reread: Order.java:68 (price:String) and OrderOtherServiceImpl.java:356 (getOrderPrice returns order.getPrice() unparsed) support both rows' claim that the money-amount value is passed through as an unparsed string; sampled evidence lines differ slightly (InitData.java:36 vs OrderOtherServiceImpl.java:352) but the observed fact is the same.",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.orderotherserviceimpl:cech-section-money-amount",
+   "mergeGroup": "group-24",
+   "canonicalAtomId": "atom:semantic:ctx-ts-order-other-service-order-lifecycle:cech-section-money-amount"
+  },
+  {
+   "key": "semantic|ctx:ts-order-other-service-order-lifecycle|cech|sectionValue|section=order-status-code:enum-codes-notpaid-paid-collected-change-cancel-referenced-via-getCode-no-raw-int-literals",
+   "decision": "merged",
+   "basis": "reread: Order.java:79, OrderOtherServiceImpl.java:128,368,400 show order-status values are always read/set via OrderStatus.NAME.getCode(), never a raw int literal, at the sites both rows cite (pass-b additionally cites line277, cancelOrder).",
+   "candidateAtomId": "atom:semantic:ctx-ts-order-other-service-order-lifecycle:cech-section-order-status-code",
+   "mergeGroup": "group-25",
+   "canonicalAtomId": "atom:semantic:ctx-ts-order-other-service-order-lifecycle:cech-section-order-status-code"
+  },
+  {
+   "key": "semantic|ctx:ts-order-other-service-order-crud|cech|sectionValue|section=order-status-code:enum-name-based-via-OrderStatus.NAME.getCode()-no-raw-int-literals-observed-at-these-use-sites",
+   "decision": "merged",
+   "basis": "reread: Order.java:79, OrderOtherServiceImpl.java:128,368,400 show order-status values are always read/set via OrderStatus.NAME.getCode(), never a raw int literal, at the sites both rows cite (pass-b additionally cites line277, cancelOrder).",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.orderotherserviceimpl:cech-section-order-status-code",
+   "mergeGroup": "group-25",
+   "canonicalAtomId": "atom:semantic:ctx-ts-order-other-service-order-lifecycle:cech-section-order-status-code"
+  },
+  {
+   "key": "semantic|ts-notification-service.NotificationServiceImpl|semantic|meansInUse|return-true-on-mail-send-success-branch-return-false-on-caught-exception-branch",
+   "decision": "merged",
+   "basis": "reread: NotificationServiceImpl.java:56,83 (and pass-b additionally 110,131) are the return-true branches inside the try blocks of the four notify methods, with return-false in each catch block; both rows describe this same true/false convention.",
+   "candidateAtomId": "atom:semantic:ts-notification-service-notificationserviceimpl:meansinuse-boolean-branch",
+   "mergeGroup": "group-26",
+   "canonicalAtomId": "atom:semantic:ts-notification-service-notificationserviceimpl:meansinuse-boolean-branch"
+  },
+  {
+   "key": "semantic|ts-notification-service.NotificationServiceImpl|semantic|meansInUse|return-value-true-on-successful-mailService.sendEmail-call-branch-false-on-caught-exception-during-send-branch-across-all-four-notify-methods",
+   "decision": "merged",
+   "basis": "reread: NotificationServiceImpl.java:56,83 (and pass-b additionally 110,131) are the return-true branches inside the try blocks of the four notify methods, with return-false in each catch block; both rows describe this same true/false convention.",
+   "candidateAtomId": "atom:semantic:ts-notification-service.notificationserviceimpl:means-in-use-return-branches",
+   "mergeGroup": "group-26",
+   "canonicalAtomId": "atom:semantic:ts-notification-service-notificationserviceimpl:meansinuse-boolean-branch"
+  },
+  {
+   "key": "semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|status-1-on-result-carrying-branch-status-0-on-not-found-or-already-exists-or-rejected-branch",
+   "decision": "merged",
+   "basis": "reread: OrderOtherServiceImpl.java:69,73,96 (both rows) plus 101,201,220 (pass-a) / 86 (pass-b) show the class-wide convention of Response status=1 on the data-carrying branch and status=0 on the not-found/rejected branch; both rows describe this same convention.",
+   "candidateAtomId": "atom:semantic:ts-order-other-service-orderotherserviceimpl:meansinuse-response-envelope",
+   "mergeGroup": "group-27",
+   "canonicalAtomId": "atom:semantic:ts-order-other-service-orderotherserviceimpl:meansinuse-response-envelope"
+  },
+  {
+   "key": "semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|status-1-on-the-success-or-data-carrying-branch-status-0-on-the-not-found-already-exists-or-rejected-branch-of-the-returned-Response",
+   "decision": "merged",
+   "basis": "reread: OrderOtherServiceImpl.java:69,73,96 (both rows) plus 101,201,220 (pass-a) / 86 (pass-b) show the class-wide convention of Response status=1 on the data-carrying branch and status=0 on the not-found/rejected branch; both rows describe this same convention.",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.orderotherserviceimpl:means-in-use-response-branches",
+   "mergeGroup": "group-27",
+   "canonicalAtomId": "atom:semantic:ts-order-other-service-orderotherserviceimpl:meansinuse-response-envelope"
+  },
+  {
+   "key": "semantic|ts-order-other-service.Order|semantic|meansInUse|price-field-declared-as-string-default-value-0.0-string-literal-passthrough-unparsed",
+   "decision": "merged",
+   "basis": "reread: Order.java:68 (private String price) and :80 (price=\"0.0\" default) are the identical two lines both rows cite for the string-typed, string-literal-defaulted price field.",
+   "candidateAtomId": "atom:semantic:ts-order-other-service-order:meansinuse-price-string",
+   "mergeGroup": "group-28",
+   "canonicalAtomId": "atom:semantic:ts-order-other-service-order:meansinuse-price-string"
+  },
+  {
+   "key": "semantic|ts-order-other-service.Order|semantic|meansInUse|price-field-is-string-typed-and-defaulted-to-the-literal-string-0.0-not-a-numeric-zero",
+   "decision": "merged",
+   "basis": "reread: Order.java:68 (private String price) and :80 (price=\"0.0\" default) are the identical two lines both rows cite for the string-typed, string-literal-defaulted price field.",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.order:means-in-use-price-string",
+   "mergeGroup": "group-28",
+   "canonicalAtomId": "atom:semantic:ts-order-other-service-order:meansinuse-price-string"
+  },
+  {
+   "key": "semantic|ts-order-other-service.Order|semantic|meansInUse|status-field-int-default-set-via-OrderStatus.PAID.getCode-enum-derived-code",
+   "decision": "merged",
+   "basis": "reread: Order.java:79 (status=OrderStatus.PAID.getCode() in the no-arg constructor) is the shared cited line; pass-a additionally cites the int status field at :66, pass-b adds the interpretive framing that this default is PAID rather than an unpaid initial state.",
+   "candidateAtomId": "atom:semantic:ts-order-other-service-order:meansinuse-status-enum",
+   "mergeGroup": "group-29",
+   "canonicalAtomId": "atom:semantic:ts-order-other-service-order:meansinuse-status-enum"
+  },
+  {
+   "key": "semantic|ts-order-other-service.Order|semantic|meansInUse|default-no-arg-constructor-sets-status-to-OrderStatus.PAID-code-rather-than-a-notpaid-initial-state",
+   "decision": "merged",
+   "basis": "reread: Order.java:79 (status=OrderStatus.PAID.getCode() in the no-arg constructor) is the shared cited line; pass-a additionally cites the int status field at :66, pass-b adds the interpretive framing that this default is PAID rather than an unpaid initial state.",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.order:means-in-use-default-status",
+   "mergeGroup": "group-29",
+   "canonicalAtomId": "atom:semantic:ts-order-other-service-order:meansinuse-status-enum"
+  },
+  {
+   "key": "semantic|ts-order-other-service.QueryInfo|semantic|meansInUse|state-field-holds-order-status-code-as-optional-query-filter-guarded-by-enableStateQuery-flag-default-disabled-sentinel-negative-one",
+   "decision": "merged",
+   "basis": "reread: QueryInfo.java:63 (enableStateQuery sets the flag) and :69/71 (disableStateQuery resets state to -1) plus OrderOtherServiceImpl.java:155 (isEnableStateQuery() gate) support both rows' description of the same enableStateQuery-gated filter with a -1 sentinel.",
+   "candidateAtomId": "atom:semantic:ts-order-other-service-queryinfo:meansinuse-state-filter",
+   "mergeGroup": "group-30",
+   "canonicalAtomId": "atom:semantic:ts-order-other-service-queryinfo:meansinuse-state-filter"
+  },
+  {
+   "key": "semantic|ts-order-other-service.QueryInfo|semantic|meansInUse|enableStateQuery-flag-gates-the-order-status-equality-filter-in-queryOrders-disableStateQuery-resets-state-to-a-negative-one-sentinel",
+   "decision": "merged",
+   "basis": "reread: QueryInfo.java:63 (enableStateQuery sets the flag) and :69/71 (disableStateQuery resets state to -1) plus OrderOtherServiceImpl.java:155 (isEnableStateQuery() gate) support both rows' description of the same enableStateQuery-gated filter with a -1 sentinel.",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.queryinfo:means-in-use-state-flag",
+   "mergeGroup": "group-30",
+   "canonicalAtomId": "atom:semantic:ts-order-other-service-queryinfo:meansinuse-state-filter"
+  },
+  {
+   "key": "state|ts-notification-service.application-yml|state|persistsIn|ts-notification-mysql-datasource",
+   "decision": "merged",
+   "basis": "reread: application.yml:27 datasource url points at the ts-notification-mysql database; identical line cited by both rows.",
+   "candidateAtomId": "atom:state:ts-notification-service-application-yml:persistsin",
+   "mergeGroup": "group-31",
+   "canonicalAtomId": "atom:state:ts-notification-service-application-yml:persistsin"
+  },
+  {
+   "key": "state|ts-notification-service.application-yml|state|persistsIn|ts-notification-mysql-database-reached-via-jdbc-mysql-driver-datasource-url",
+   "decision": "merged",
+   "basis": "reread: application.yml:27 datasource url points at the ts-notification-mysql database; identical line cited by both rows.",
+   "candidateAtomId": "atom:state:ts-notification-service.application-yml:persists-in-mysql",
+   "mergeGroup": "group-31",
+   "canonicalAtomId": "atom:state:ts-notification-service-application-yml:persistsin"
+  },
+  {
+   "key": "state|ts-order-other-service.application-yml|state|persistsIn|ts-order-other-mysql-datasource",
+   "decision": "merged",
+   "basis": "reread: application.yml:14 datasource url points at the ts-order-other-mysql database; identical line cited by both rows.",
+   "candidateAtomId": "atom:state:ts-order-other-service-application-yml:persistsin",
+   "mergeGroup": "group-32",
+   "canonicalAtomId": "atom:state:ts-order-other-service-application-yml:persistsin"
+  },
+  {
+   "key": "state|ts-order-other-service.application-yml|state|persistsIn|ts-order-other-mysql-database-reached-via-jdbc-mysql-driver-datasource-url",
+   "decision": "merged",
+   "basis": "reread: application.yml:14 datasource url points at the ts-order-other-mysql database; identical line cited by both rows.",
+   "candidateAtomId": "atom:state:ts-order-other-service.application-yml:persists-in-mysql",
+   "mergeGroup": "group-32",
+   "canonicalAtomId": "atom:state:ts-order-other-service-application-yml:persistsin"
+  },
+  {
+   "key": "authority|ts-order-other-service.OrderOtherController|authority|allowsCrossOrigin|annotation-level-CrossOrigin-origins-star-on-most-orderOther-mutating-and-query-endpoints",
+   "decision": "adopted",
+   "basis": "reread: OrderOtherController.java confirms @CrossOrigin(origins=\"*\") is present on most but not all mutating/query endpoints (e.g. lines46,53,147); the hedged \"most\" claim holds.",
+   "candidateAtomId": "atom:authority:ts-order-other-service-orderothercontroller:allowscrossorigin-annotation"
+  },
+  {
+   "key": "authority|ts-order-service.OrderController|authority|allowsCrossOrigin|annotation-level-CrossOrigin-origins-star-on-most-order-mutating-and-query-endpoints",
+   "decision": "adopted",
+   "basis": "reread: OrderController.java confirms @CrossOrigin(origins=\"*\") is present on most but not all mutating/query endpoints (e.g. lines43,50,151); the hedged \"most\" claim holds.",
+   "candidateAtomId": "atom:authority:ts-order-service-ordercontroller:allowscrossorigin-annotation"
+  },
+  {
+   "key": "contract|ts-order-other-service.OrderOtherServiceImpl|specification|requires|orderId-primary-key-lookup-via-findById-or-accountId-field-lookup-via-findByAccountId-or-travelDate-plus-trainNumber-composite-lookup-via-findByTravelDateAndTrainNumber",
+   "decision": "adopted",
+   "basis": "reread: OrderOtherServiceImpl.java:53 (findByTravelDateAndTrainNumber), :79 (findById), :93 (findByAccountId) confirm the three lookup patterns; no pass-b row covers this OrderOtherServiceImpl-level lookup requirement.",
+   "candidateAtomId": "atom:contract:ts-order-other-service-orderotherserviceimpl:requires-lookup"
+  },
+  {
+   "key": "relation|ts-notification-service.application-yml|relation|dependsOn|rabbitmq-broker-host-localhost-port-5672",
+   "decision": "adopted",
+   "basis": "reread: application.yml:38 host=localhost, :40 port=5672 confirm the rabbitmq broker dependency for ts-notification-service; no corresponding pass-b row exists for this service.",
+   "candidateAtomId": "atom:relation:ts-notification-service-application-yml:dependson-rabbitmq"
+  },
+  {
+   "key": "relation|ts-order-other-service.OrderOtherApplication|relation|dependsOn|RestTemplate-bean-load-balanced",
+   "decision": "adopted",
+   "basis": "reread: OrderOtherApplication.java:31 @LoadBalanced @Bean RestTemplate confirms the load-balanced RestTemplate bean; no pass-b row covers OrderOtherApplication.",
+   "candidateAtomId": "atom:relation:ts-order-other-service-orderotherapplication:dependson-resttemplate"
+  },
+  {
+   "key": "relation|ts-order-other-service.OrderOtherController|relation|dependsOn|ts-order-other-service.OrderOtherService",
+   "decision": "adopted",
+   "basis": "reread: OrderOtherController.java:29 private OrderOtherService orderService (the @Autowired field declaration) is a distinct static-dependency fact from the call-site evidence pass-b cites under the calls predicate; both are separately supported.",
+   "candidateAtomId": "atom:relation:ts-order-other-service-orderothercontroller:dependson-orderotherservice"
+  },
+  {
+   "key": "relation|ts-order-other-service.OrderOtherServiceImpl|relation|dependsOn|ts-order-other-service.OrderOtherRepository",
+   "decision": "adopted",
+   "basis": "reread: OrderOtherServiceImpl.java:31 private OrderOtherRepository orderOtherRepository (the @Autowired field declaration) is a distinct static-dependency fact from the call-site evidence pass-b cites under the calls predicate; both are separately supported.",
+   "candidateAtomId": "atom:relation:ts-order-other-service-orderotherserviceimpl:dependson-orderotherrepository"
+  },
+  {
+   "key": "relation|ts-order-service.OrderApplication|relation|dependsOn|RestTemplate-bean-load-balanced",
+   "decision": "adopted",
+   "basis": "reread: OrderApplication.java:29 @LoadBalanced @Bean RestTemplate confirms the load-balanced RestTemplate bean; no pass-b row covers OrderApplication.",
+   "candidateAtomId": "atom:relation:ts-order-service-orderapplication:dependson-resttemplate"
+  },
+  {
+   "key": "relation|ts-order-service.OrderController|relation|dependsOn|ts-order-service.OrderService",
+   "decision": "adopted",
+   "basis": "reread: OrderController.java:26 private OrderService orderService (the @Autowired field declaration) is a distinct static-dependency fact from the call-site evidence pass-b cites under the calls predicate; both are separately supported.",
+   "candidateAtomId": "atom:relation:ts-order-service-ordercontroller:dependson-orderservice"
+  },
+  {
+   "key": "semantic|ts-order-other-service.InitData|semantic|meansInUse|seed-order-price-set-as-string-literal-100-unparsed",
+   "decision": "adopted",
+   "basis": "reread: InitData.java:36 order1.setPrice(\"100\") confirms the seed price is set as an unparsed string literal; no pass-b row covers this specific InitData seed value.",
+   "candidateAtomId": "atom:semantic:ts-order-other-service-initdata:meansinuse-seed-price"
+  },
+  {
+   "key": "semantic|ts-order-other-service.InitData|semantic|meansInUse|seed-order-status-set-via-OrderStatus.PAID.getCode",
+   "decision": "adopted",
+   "basis": "reread: InitData.java:39 order1.setStatus(OrderStatus.PAID.getCode()) confirms the seed status value; no pass-b row covers this specific InitData seed value.",
+   "candidateAtomId": "atom:semantic:ts-order-other-service-initdata:meansinuse-seed-status"
+  },
+  {
+   "key": "semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|boughtDate-and-travelDate-stored-as-string-converted-via-StringUtils.String2Date-Date2String-at-use-site",
+   "decision": "adopted",
+   "basis": "reread: OrderOtherServiceImpl.java:166 and :405 both call StringUtils.String2Date on stored date strings; no pass-b row makes this specific date-format claim.",
+   "candidateAtomId": "atom:semantic:ts-order-other-service-orderotherserviceimpl:meansinuse-date-string-format"
+  },
+  {
+   "key": "semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|enum-codes-notpaid-paid-collected-change-cancel-referenced-via-getCode-no-raw-int-literals-at-comparison-and-assignment-sites",
+   "decision": "adopted",
+   "basis": "reread: OrderOtherServiceImpl.java:128,277,292,368,400 all reference OrderStatus via getCode(), no raw int literals; this class-level coding-convention claim is distinct from pass-b's narrower business-meaning rows (sold-tally-excludes-change, valid-order-statuses) that happen to cite some of the same lines for a different specific claim.",
+   "candidateAtomId": "atom:semantic:ts-order-other-service-orderotherserviceimpl:meansinuse-order-status-codes"
+  },
+  {
+   "key": "semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|price-returned-as-string-passthrough-unparsed-in-getOrderPrice",
+   "decision": "adopted",
+   "basis": "reread: OrderOtherServiceImpl.java:356 return new Response<>(1, success, order.getPrice()) confirms price is returned unparsed; no pass-b row makes this specific getOrderPrice claim.",
+   "candidateAtomId": "atom:semantic:ts-order-other-service-orderotherserviceimpl:meansinuse-price-passthrough"
+  },
+  {
+   "key": "state|ts-order-other-service.Order|state|persistsIn|orders_other-table",
+   "decision": "adopted",
+   "basis": "reread: Order.java:18 @Table(name = \"orders_other\") confirms the persistence table name; no pass-b row covers this Order-entity persistence fact.",
+   "candidateAtomId": "atom:state:ts-order-other-service-order:persistsin"
+  },
+  {
+   "key": "authority|ts-order-other-service.OrderOtherController|authority|allowsCrossOrigin|cross-origin-all-origins-annotation-present-on-every-orderOther-endpoint-except-welcome",
+   "decision": "not-adopted",
+   "basis": "reread: OrderOtherController.java:40 (@PostMapping(\"/orderOther/tickets\"), getTicketListByDateAndTripId) has no @CrossOrigin annotation, so CrossOrigin is not present on every endpoint except welcome; only a majority-of-endpoints claim is supported, which pass-a's row already states.",
+   "candidateAtomId": "atom:authority:ts-order-other-service.orderothercontroller:allows-cross-origin-endpoints"
+  },
+  {
+   "key": "authority|ts-order-service.OrderController|authority|allowsCrossOrigin|cross-origin-all-origins-annotation-present-on-every-order-endpoint-except-welcome",
+   "decision": "not-adopted",
+   "basis": "reread: OrderController.java:37 (@PostMapping(\"/order/tickets\"), getTicketListByDateAndTripId) has no @CrossOrigin annotation, so CrossOrigin is not present on every endpoint except welcome; only a majority-of-endpoints claim is supported, which pass-a's row already states.",
+   "candidateAtomId": "atom:authority:ts-order-service.ordercontroller:allows-cross-origin-endpoints"
+  },
+  {
+   "key": "capability|ts-notification-service.MailService|capability|handlesCommand|sendEmail/2",
+   "decision": "adopted",
+   "basis": "reread: MailService.java:30 public void sendEmail(Mail mail, String template) confirms this capability; pass-a extracted no capability atom for MailService.",
+   "candidateAtomId": "atom:capability:ts-notification-service.mailservice:handles-command-sendemail-2"
+  },
+  {
+   "key": "capability|ts-notification-service.RabbitSend|capability|handlesCommand|send/1",
+   "decision": "adopted",
+   "basis": "reread: RabbitSend.java:18 public void send(String val) confirms this capability; pass-a extracted no capability atom for RabbitSend.",
+   "candidateAtomId": "atom:capability:ts-notification-service.rabbitsend:handles-command-send-1"
+  },
+  {
+   "key": "relation|ts-order-other-service.OrderAlterInfo|relation|dependsOn|ts-order-other-service.Order (composed as the newOrderInfo field)",
+   "decision": "adopted",
+   "basis": "reread: OrderAlterInfo.java:29 private Order newOrderInfo confirms the composition dependency on Order; no pass-a row covers this relation.",
+   "candidateAtomId": "atom:relation:ts-order-other-service.orderalterinfo:depends-on-order"
+  },
+  {
+   "key": "relation|ts-order-other-service.OrderOtherController|relation|calls|ts-order-other-service.OrderOtherService",
+   "decision": "adopted",
+   "basis": "reread: OrderOtherController.java:43,50,57,90,111,151 are call sites of orderService methods, distinct evidence from the field-declaration fact pass-a cites under dependsOn (line29); both are separately supported.",
+   "candidateAtomId": "atom:relation:ts-order-other-service.orderothercontroller:calls-orderotherservice"
+  },
+  {
+   "key": "relation|ts-order-other-service.OrderOtherServiceImpl|relation|calls|ts-order-other-service.OrderOtherRepository",
+   "decision": "adopted",
+   "basis": "reread: OrderOtherServiceImpl.java:53,79,93,99,239,271,334,377 are call sites of orderOtherRepository methods, distinct evidence from the field-declaration fact pass-a cites under dependsOn (line31); both are separately supported.",
+   "candidateAtomId": "atom:relation:ts-order-other-service.orderotherserviceimpl:calls-orderotherrepository"
+  },
+  {
+   "key": "relation|ts-order-service.OrderController|relation|calls|ts-order-service.OrderService",
+   "decision": "adopted",
+   "basis": "reread: OrderController.java:40,47,61,94,129,156 are call sites of orderService methods, distinct evidence from the field-declaration fact pass-a cites under dependsOn (line26); both are separately supported.",
+   "candidateAtomId": "atom:relation:ts-order-service.ordercontroller:calls-orderservice"
+  },
+  {
+   "key": "semantic|ts-notification-service.MailService|semantic|meansInUse|template-string-parameter-selects-which-freemarker-ftl-file-under-classpath-templates-is-loaded-to-render-the-mail-body",
+   "decision": "adopted",
+   "basis": "reread: MailService.java:36 setClassForTemplateLoading and :38 getTemplate(template) confirm the template-parameter selection mechanism; no pass-a row covers this.",
+   "candidateAtomId": "atom:semantic:ts-notification-service.mailservice:means-in-use-template-param"
+  },
+  {
+   "key": "semantic|ts-notification-service.NotificationServiceImpl|semantic|meansInUse|orderCancelSuccess-selects-order_cancel_success.ftl-mail-template",
+   "decision": "adopted",
+   "basis": "reread: NotificationServiceImpl.java:130 mailService.sendEmail(mail,\"order_cancel_success.ftl\") confirms the template selection; no pass-a row covers per-method template selection.",
+   "candidateAtomId": "atom:semantic:ts-notification-service.notificationserviceimpl:means-in-use-cancel-template"
+  },
+  {
+   "key": "semantic|ts-notification-service.NotificationServiceImpl|semantic|meansInUse|orderChangedSuccess-selects-order_changed_success.ftl-mail-template",
+   "decision": "adopted",
+   "basis": "reread: NotificationServiceImpl.java:109 mailService.sendEmail(mail,\"order_changed_success.ftl\") confirms the template selection; no pass-a row covers per-method template selection.",
+   "candidateAtomId": "atom:semantic:ts-notification-service.notificationserviceimpl:means-in-use-changed-template"
+  },
+  {
+   "key": "semantic|ts-notification-service.NotificationServiceImpl|semantic|meansInUse|orderCreateSuccess-selects-order_create_success.ftl-mail-template",
+   "decision": "adopted",
+   "basis": "reread: NotificationServiceImpl.java:82 mailService.sendEmail(mail,\"order_create_success.ftl\") confirms the template selection; no pass-a row covers per-method template selection.",
+   "candidateAtomId": "atom:semantic:ts-notification-service.notificationserviceimpl:means-in-use-create-template"
+  },
+  {
+   "key": "semantic|ts-notification-service.NotificationServiceImpl|semantic|meansInUse|preserveSuccess-selects-preserve_success.ftl-mail-template",
+   "decision": "adopted",
+   "basis": "reread: NotificationServiceImpl.java:55 mailService.sendEmail(mail,\"preserve_success.ftl\") confirms the template selection; no pass-a row covers per-method template selection.",
+   "candidateAtomId": "atom:semantic:ts-notification-service.notificationserviceimpl:means-in-use-preserve-template"
+  },
+  {
+   "key": "semantic|ts-order-other-service.InitData|semantic|meansInUse|headers-argument-passed-as-null-at-the-startup-seed-call-to-create-and-accepted-without-error",
+   "decision": "adopted",
+   "basis": "reread: InitData.java:44 service.create(order1,null) confirms the null headers argument is accepted without error; no pass-a row covers this.",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.initdata:means-in-use-null-headers"
+  },
+  {
+   "key": "semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|alterOrder-sets-the-old-order-status-to-OrderStatus.CANCEL-then-creates-a-new-order-with-a-fresh-id-modeling-a-ticket-change-as-cancel-plus-rebook",
+   "decision": "adopted",
+   "basis": "reread: OrderOtherServiceImpl.java:128 (old order set to CANCEL), :131-132 (new order created with a fresh id) confirm the cancel-plus-rebook pattern; no pass-a row covers this.",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.orderotherserviceimpl:means-in-use-alter-as-cancel-plus-rebook"
+  },
+  {
+   "key": "semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|headers-parameter-is-declared-but-unused-in-the-body-of-create-and-accepts-a-null-argument",
+   "decision": "adopted",
+   "basis": "reread: OrderOtherServiceImpl.java:91 declares the headers parameter in create(), which is never referenced in the method body ending at :103; no pass-a row covers this.",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.orderotherserviceimpl:means-in-use-unused-headers"
+  },
+  {
+   "key": "semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|orders-bought-within-one-hour-before-the-supplied-checkDate-are-counted-toward-the-recent-order-tally-in-checkSecurityAboutOrder",
+   "decision": "adopted",
+   "basis": "reread: OrderOtherServiceImpl.java:396-397 subtract one hour from checkDate, :406-407 count orders bought after that adjusted time; no pass-a row covers this specific window logic.",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.orderotherserviceimpl:means-in-use-recent-order-window"
+  },
+  {
+   "key": "semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|orders-with-status-at-or-above-the-OrderStatus.CHANGE-code-are-excluded-from-the-sold-seat-class-tally-in-queryAlreadySoldOrders",
+   "decision": "adopted",
+   "basis": "reread: OrderOtherServiceImpl.java:292 skips orders with status >= OrderStatus.CHANGE.getCode() in the sold-ticket tally; no pass-a row makes this specific business-meaning claim (pass-a's order-status-codes row is a broader coding-convention claim sharing this line as one of five).",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.orderotherserviceimpl:means-in-use-sold-tally-excludes-change"
+  },
+  {
+   "key": "semantic|ts-order-other-service.OrderOtherServiceImpl|semantic|meansInUse|the-valid-order-count-in-checkSecurityAboutOrder-includes-only-orders-with-NOTPAID-PAID-or-COLLECTED-status",
+   "decision": "adopted",
+   "basis": "reread: OrderOtherServiceImpl.java:400-402 count only NOTPAID/PAID/COLLECTED orders as valid; no pass-a row makes this specific business-meaning claim (pass-a's order-status-codes row is a broader coding-convention claim sharing line400 as one of five).",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.orderotherserviceimpl:means-in-use-valid-order-statuses"
+  },
+  {
+   "key": "semantic|ts-order-other-service.QueryInfo|semantic|meansInUse|enableBoughtDateQuery-flag-gates-the-boughtDate-range-filter-in-queryOrders",
+   "decision": "adopted",
+   "basis": "reread: QueryInfo.java:51 enableBoughtDateQuery(...) and OrderOtherServiceImpl.java:183 isEnableBoughtDateQuery() gate confirm this filter flag; no pass-a row covers this specific flag.",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.queryinfo:means-in-use-bought-date-flag"
+  },
+  {
+   "key": "semantic|ts-order-other-service.QueryInfo|semantic|meansInUse|enableTravelDateQuery-flag-gates-the-travelDate-range-filter-in-queryOrders",
+   "decision": "adopted",
+   "basis": "reread: QueryInfo.java:39 enableTravelDateQuery(...) and OrderOtherServiceImpl.java:171 isEnableTravelDateQuery() gate confirm this filter flag; no pass-a row covers this specific flag.",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.queryinfo:means-in-use-travel-date-flag"
+  },
+  {
+   "key": "semantic|ts-order-other-service.SecurityConfig|semantic|meansInUse|broad-permitall-antmatcher-for-the-orderOther-wildcard-path-is-declared-before-the-narrower-role-specific-post-put-delete-antmatchers-in-the-same-configure-method",
+   "decision": "adopted",
+   "basis": "reread: SecurityConfig.java:74-77 shows the broad permitAll antMatcher (line74) declared before the narrower role-specific POST/PUT/DELETE antMatchers (lines75-77); no pass-a row covers matcher ordering.",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.securityconfig:means-in-use-matcher-order"
+  },
+  {
+   "key": "semantic|ts-order-other-service.application-yml|semantic|meansInUse|a-rabbitmq-stream-binding-configuration-block-is-present-in-the-file-but-is-fully-commented-out",
+   "decision": "adopted",
+   "basis": "reread: application.yml:27-49 shows the entire rabbitmq/cloud-stream binding block is commented out (# prefix on every line); no pass-a row covers this.",
+   "candidateAtomId": "atom:semantic:ts-order-other-service.application-yml:means-in-use-commented-rabbitmq"
+  },
+  {
+   "key": "semantic|ts-order-service.SecurityConfig|semantic|meansInUse|narrower-role-specific-post-put-delete-antmatchers-for-the-order-path-are-declared-before-the-broad-permitall-wildcard-antmatcher-in-the-same-configure-method",
+   "decision": "adopted",
+   "basis": "reread: order-service SecurityConfig.java:75-77 shows the narrower role-specific POST/PUT/DELETE antMatchers declared before the broad permitAll antMatcher at line80, the reverse order from order-other-service's SecurityConfig; no pass-a row covers matcher ordering.",
+   "candidateAtomId": "atom:semantic:ts-order-service.securityconfig:means-in-use-matcher-order"
+  }
+ ]
+}
