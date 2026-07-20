@@ -205,9 +205,14 @@ export function createAtlasRenderer(host) {
         : data.kind === "restriction" ? support?.edgeIds.includes(edgeId)
         : data.kind === "shared-support" ? support?.sharedAtomIds.includes(data.atomId)
         : false;
-      styleObject(object, !active ? "base" : supported ? "support" : "dim", highlight);
+      const edgeHighlight = data.kind !== "restriction" ? highlight
+        : support?.unmeasuredEdgeIds?.includes(edgeId) ? 0x7c7b76
+        : support?.mismatchEdgeIds?.includes(edgeId) ? 0xb87932
+        : support?.agreementEdgeIds?.includes(edgeId) ? 0x54799a
+        : 0x3e7780;
+      styleObject(object, !active ? "base" : supported ? "support" : "dim", edgeHighlight);
     }
-    return Object.freeze({ active: Boolean(active), atoms: support?.atomIds.length || 0, contexts: support?.contextIds.length || 0, edges: support?.edgeIds.length || 0, sharedSupports: support?.sharedAtomIds.length || 0, state: support?.state || null });
+    return Object.freeze({ active: Boolean(active), atoms: support?.atomIds.length || 0, contexts: support?.contextIds.length || 0, edges: support?.edgeIds.length || 0, sharedSupports: support?.sharedAtomIds.length || 0, state: support?.state || null, edgeStates: Object.freeze({ agreement: support?.agreementEdgeIds?.length || 0, mismatch: support?.mismatchEdgeIds?.length || 0, unmeasured: support?.unmeasuredEdgeIds?.length || 0, participant: (support?.edgeIds || []).filter((edge) => !support?.agreementEdgeIds?.includes(edge) && !support?.mismatchEdgeIds?.includes(edge) && !support?.unmeasuredEdgeIds?.includes(edge)).length }) });
   };
 
   const setArchitecture = (index, layout, selectHandler, hoverHandler = null) => {

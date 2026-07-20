@@ -436,7 +436,7 @@ function renderFindingExplanation(container, finding, model, mode) {
   ];
   if (finding.unmeasuredRows.length) steps.push(analysisSection("Unmeasured", finding.unmeasuredRows.map((row) => `${row.evaluator} · ${row.law} · ${row.verdict}`), "unmeasured"));
   if (model.comparison) steps.push(analysisSection("Run comparison", model.comparison.conclusionCode || "Comparison artifact supplied"));
-  if (model.gate) steps.push(analysisSection("Gate decision", model.gate.decision, model.gate.blocked ? "blocked" : "informational"));
+  if (model.gate) steps.push(analysisSection("Gate decision", model.gate.decision, model.gate.blocked ? "blocked" : model.gate.evaluable ? "informational" : "unmeasured"));
   if (mode === "improve") steps.push(analysisSection("Evidence and change status", [
     "Direct evidence identifies an observed inspection location.",
     finding.repairAtomIds.length ? "Candidate change points are supplied explicitly by ArchSig repair_candidate data." : "No explicit repair target was supplied; evidence is not promoted to a change recommendation.",
@@ -484,7 +484,7 @@ function renderFindingSources(container, snapshot, finding, actions) {
           const badge = document.createElement("span");
           badge.className = "source-classification-badge";
           badge.textContent = target.classification;
-          const button = selectionButton(`${target.sourceId} · ${target.resolution} · Supporting Atom ${target.atomId || "not directly supplied"}`, { sourceId: target.sourceId, sourceClassification: target.classification, sourceSupportingAtom: target.atomId || "" }, snapshot.selection?.kind === "source" && snapshot.selection.id === target.sourceId, () => actions.source(target.sourceId, target.atomId, target.contextId));
+          const button = selectionButton(`${target.sourceId} · ${target.resolution} · Supporting Atom ${target.atomId || "not directly supplied"}`, { sourceId: target.sourceId, sourceClassification: target.classification, sourceSupportingAtom: target.atomId || "" }, snapshot.selection?.kind === "source" && snapshot.selection.sourceTargetKey === target.key, () => actions.source(target.sourceId, target.atomId, target.contextId, target.key));
           button.dataset.classification = target.classification;
           lineItem.append(badge, button);
         });
@@ -529,7 +529,7 @@ function renderAnalysisStatus(snapshot, model, actions) {
   requireElement("#technical-conclusion").textContent = selected?.conclusionCode || "—";
   requireElement("#technical-gate").textContent = model.gate?.decision || "—";
   if (snapshot.mode === "analysis" || snapshot.mode === "improve") renderFindingSources(requireElement("#source-targets"), snapshot, selected, actions);
-  const selectedTarget = snapshot.mode === "architecture" ? null : selected?.sourceTargets.find((target) => target.sourceId === snapshot.selection?.id && (!snapshot.selection?.atomId || target.atomId === snapshot.selection.atomId));
+  const selectedTarget = snapshot.mode === "architecture" ? null : selected?.sourceTargets.find((target) => snapshot.selection?.sourceTargetKey ? target.key === snapshot.selection.sourceTargetKey : target.sourceId === snapshot.selection?.id && (!snapshot.selection?.atomId || target.atomId === snapshot.selection.atomId));
   if (selectedTarget) {
     requireElement("#source-classification").textContent = selectedTarget.classification;
     requireElement("#source-supporting-atom").textContent = `Supporting Atom ${selectedTarget.atomId || "not directly supplied"}`;
@@ -566,7 +566,7 @@ export async function startArchView() {
     context(id) { state.selectContext(id); },
     subject(contextId, subject) { state.selectSubject(contextId, subject); },
     atom(id, contextId = null) { state.selectAtom(id, contextId); atlasRenderer?.selectAtom(id); },
-    source(id, atomId = null, contextId = null) { state.selectSource(id, atomId, contextId); },
+    source(id, atomId = null, contextId = null, sourceTargetKey = null) { state.selectSource(id, atomId, contextId, sourceTargetKey); },
     restriction(sourceId, targetId) { state.selectRestriction(sourceId, targetId); },
     sharedSupport(atomId, contextIds) { state.selectSharedSupport(atomId, contextIds); },
     finding(id) { state.selectFinding(id); },
@@ -605,7 +605,10 @@ export async function startArchView() {
       const support = snapshot.mode === "architecture" || !selectedFinding ? null : {
         atomIds: selectedFinding.supportAtomIds,
         contextIds: [...new Set([...selectedFinding.supportContextIds, ...selectedFinding.boundaryContextIds])],
-        edgeIds: selectedFinding.edgeRefs,
+        edgeIds: selectedFinding.relationRefs,
+        agreementEdgeIds: selectedFinding.agreementEdgeRefs,
+        mismatchEdgeIds: selectedFinding.mismatchEdgeRefs,
+        unmeasuredEdgeIds: selectedFinding.unobservedEdgeRefs,
         sharedAtomIds: selectedFinding.supportAtomIds.filter((atomId) => (snapshot.architecture.index?.contextIdsByAtom.get(atomId) || []).length > 1),
         state: selectedFinding.state,
       };

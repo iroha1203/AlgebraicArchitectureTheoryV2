@@ -138,11 +138,11 @@ export function createArchViewState() {
       state = { ...state, zoom: "atom", selection: Object.freeze({ kind: "atom", id: atomId, contextId }) };
       return publish();
     },
-    selectSource(sourceId, atomId = null, contextId = null) {
+    selectSource(sourceId, atomId = null, contextId = null, sourceTargetKey = null) {
       const index = state.architecture.index;
       if (!index?.sourcesById.has(sourceId)) throw new Error(`Unknown Source selection: ${sourceId}`);
       if (atomId && !index.atomsById.has(atomId)) throw new Error(`Unknown Atom source owner: ${atomId}`);
-      state = { ...state, zoom: "source", selection: Object.freeze({ kind: "source", id: sourceId, atomId, contextId }) };
+      state = { ...state, zoom: "source", selection: Object.freeze({ kind: "source", id: sourceId, atomId, contextId, sourceTargetKey }) };
       return publish();
     },
     selectRestriction(sourceId, targetId) {

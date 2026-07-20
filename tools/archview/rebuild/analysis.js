@@ -80,6 +80,14 @@ function validateArtifactRows(packet, summary, insight, issues) {
     if (requireRecord(row.verdictData, `${path}.verdictData`, issues)) {
       for (const field of ["inScope", "zero", "nonZero"]) if (typeof row.verdictData[field] !== "boolean") issues.push(issue(`${path}.verdictData.${field}`, `${path}.verdictData.${field} must be boolean.`));
       requireString(row.verdictData.methodStatus, `${path}.verdictData.methodStatus`, issues);
+      const expectedFlags = {
+        measured_zero: { inScope: true, zero: true, nonZero: false },
+        measured_nonzero: { inScope: true, zero: false, nonZero: true },
+        unmeasured: { zero: false, nonZero: false },
+        unknown: { zero: false, nonZero: false },
+        not_computed: { zero: false, nonZero: false },
+      }[row.verdict];
+      for (const [field, expected] of Object.entries(expectedFlags || {})) if (row.verdictData[field] !== expected) issues.push(issue(`${path}.verdictData.${field}`, `${path}.verdictData.${field} contradicts verdict ${row.verdict}.`, expected, row.verdictData[field]));
     }
     if (requireRecord(row.evidence, `${path}.evidence`, issues)) for (const field of ["computedInvariantRefs", "sourceRefs"]) requireStringArray(row.evidence[field], `${path}.evidence.${field}`, issues);
   });
@@ -147,6 +155,10 @@ function validateArtifactRows(packet, summary, insight, issues) {
 function validateReferenceShapes(value, path, issues) {
   if (Array.isArray(value)) return value.forEach((entry, position) => validateReferenceShapes(entry, `${path}[${position}]`, issues));
   if (!isRecord(value)) return;
+  if (typeof value.edgeId === "string" && Object.hasOwn(value, "sectionObservation")) {
+    if (!["observed", "not_observed"].includes(value.sectionObservation)) issues.push(issue(`${path}.sectionObservation`, `${path}.sectionObservation is not an ArchSig observation state.`, null, value.sectionObservation));
+    if (value.sectionObservation === "observed" && ![0, 1, "0", "1"].includes(value.value)) issues.push(issue(`${path}.value`, `${path}.value must be 0 or 1 for an observed F2 relation.`, "0 or 1", value.value));
+  }
   for (const [key, child] of Object.entries(value)) {
     const childPath = `${path}.${key}`;
     if (REF_FIELDS[key] || key === "targetRefs" || key === "edgeRefs" || key === "unobservedEdgeRefs") {
@@ -523,6 +535,7 @@ function validateOptionalArtifacts(documents, issues) {
   if (isRecord(documents.gate)) {
     requireString(documents.gate.toolVersion, `${FILES.gate}.toolVersion`, issues);
     requireString(documents.gate.decision, `${FILES.gate}.decision`, issues);
+    if (!new Set(["PASS_WITHIN_GATE_POLICY", "BLOCKED_BY_GATE_POLICY", "NOT_EVALUABLE"]).has(documents.gate.decision)) issues.push(issue(`${FILES.gate}.decision`, "Gate decision is not an ArchSig gate decision.", null, documents.gate.decision));
     requireRecord(documents.gate.inputDigests, `${FILES.gate}.inputDigests`, issues);
     requireDigestEntry(documents.gate.inputDigests?.measurementPacket, `${FILES.gate}.inputDigests.measurementPacket`, issues);
     requireDigestEntry(documents.gate.inputDigests?.gatePolicy, `${FILES.gate}.inputDigests.gatePolicy`, issues);
@@ -635,6 +648,7 @@ export async function validateAnalysisBundle(documents, architectureIndex) {
   if (documents.gate?.inputDigests?.measurementPacket?.sha256 && documents.gate.inputDigests.measurementPacket.sha256 !== packetDigest) {
     throw new AnalysisValidationError("mismatch", [issue(`${FILES.gate}.inputDigests.measurementPacket.sha256`, "Gate report packet digest does not match the loaded measurement packet.", packetDigest, documents.gate.inputDigests.measurementPacket.sha256)]);
   }
+  let comparisonSides = [];
   if (documents.comparison) {
     const runs = [documents.comparison.inputDigests?.baseRun, documents.comparison.inputDigests?.headRun].filter(isRecord);
     const comparisonShapeIssues = [];
@@ -642,6 +656,7 @@ export async function validateAnalysisBundle(documents, architectureIndex) {
     if (comparisonShapeIssues.length) throw new AnalysisValidationError("malformed", comparisonShapeIssues);
     const compatibleSides = runs.map((run, position) => ({ run, side: position ? "head" : "base" })).filter(({ run }) => run.runId === documents.manifest.runId && run.archmap?.sha256 === currentArchmapDigest && run.measurementPacket?.sha256 === packetDigest);
     if (!compatibleSides.length) throw new AnalysisValidationError("mismatch", [issue(`${FILES.comparison}.inputDigests`, "Comparison report does not bind either run to the loaded measurement run.")]);
+    comparisonSides = compatibleSides.map(({ side }) => side);
     const verdictByRef = new Map(documents.packet.structuralVerdict.map((row) => [row.verdictRef, row]));
     const transitionIssues = [];
     documents.comparison.verdictTransitions.forEach((transition, position) => compatibleSides.forEach(({ side }) => {
@@ -672,6 +687,7 @@ export async function validateAnalysisBundle(documents, architectureIndex) {
     profileRef: documents.summary.profileRef,
     archmapDigest: currentArchmapDigest,
     packetDigest,
+    comparisonSides,
     bridges: acceptedBridges,
     artifacts: Object.fromEntries(Object.entries(documents).filter(([, value]) => value !== undefined)),
   });

@@ -53,9 +53,8 @@ function sourceLanding(index, sourceId) {
   return { sourceId, path, symbol: method || symbol, line, resolution };
 }
 
-function explicitRepairAtomRefs(card, actionQueue, index, bridges) {
-  const matchingActions = actionQueue.filter((row) => row.reason === card.oneLine || row.title === card.nextAction?.label);
-  const rows = [card.nextAction, ...matchingActions].filter(isRecord).filter((row) => /repair|candidate|change[_ -]?point/i.test(`${row.kind || ""} ${row.id || ""}`));
+function explicitRepairAtomRefs(card, index, bridges) {
+  const rows = [card.nextAction].filter(isRecord).filter((row) => /repair|candidate|change[_ -]?point/i.test(`${row.kind || ""} ${row.id || ""}`));
   return resolveRefs(rows.flatMap((row) => row.targetRefs || row.atomRefs || []), "atoms", index, bridges);
 }
 
@@ -88,9 +87,9 @@ function collectRelationEvidence(value, index, bridges, path = [], output = { re
     const [edge] = normalizedEdges([value.edgeId], index, bridges);
     if (edge) {
       output.relation.push(edge);
-      if (["unobserved", "not_supplied"].includes(value.sectionObservation)) output.unmeasured.push(edge);
+      if (value.sectionObservation === "not_observed") output.unmeasured.push(edge);
       else if (value.sectionObservation === "observed" && (value.value === 0 || value.value === "0")) output.agreement.push(edge);
-      else if (value.sectionObservation === "observed" && ((typeof value.value === "number" && value.value !== 0) || (typeof value.value === "string" && value.value !== "0"))) output.mismatch.push(edge);
+      else if (value.sectionObservation === "observed" && (value.value === 1 || value.value === "1")) output.mismatch.push(edge);
     }
   }
   for (const [key, child] of Object.entries(value)) {
@@ -106,7 +105,7 @@ function collectRelationEvidence(value, index, bridges, path = [], output = { re
   return output;
 }
 
-function classifiedTargets({ directSourceRefs, supportAtomIds, boundaryContextIds, repairAtomIds, validated }, index) {
+function classifiedTargets({ directSourceRefs, supportAtomIds, boundaryContextIds, repairAtomIds, validatedAtomIds }, index) {
   const records = [];
   const add = (classification, sourceId, atomId = null, contextId = null) => {
     if (!index.sourcesById.has(sourceId)) return;
@@ -117,7 +116,7 @@ function classifiedTargets({ directSourceRefs, supportAtomIds, boundaryContextId
   directSourceRefs.forEach((sourceId) => add("DIRECT EVIDENCE", sourceId));
   supportAtomIds.forEach((atomId) => (index.atomsById.get(atomId)?.refs || []).forEach((sourceId) => add("DIRECT EVIDENCE", sourceId, atomId)));
   boundaryContextIds.forEach((contextId) => (index.contextsById.get(contextId)?.refs || []).forEach((sourceId) => add("BOUNDARY PARTICIPANT", sourceId, null, contextId)));
-  repairAtomIds.forEach((atomId) => (index.atomsById.get(atomId)?.refs || []).forEach((sourceId) => add(validated ? "VALIDATED IN HYPOTHETICAL TARGET" : "CANDIDATE CHANGE POINT", sourceId, atomId)));
+  repairAtomIds.forEach((atomId) => (index.atomsById.get(atomId)?.refs || []).forEach((sourceId) => add(validatedAtomIds.includes(atomId) ? "VALIDATED IN HYPOTHETICAL TARGET" : "CANDIDATE CHANGE POINT", sourceId, atomId)));
   return records.sort((left, right) => `${left.classification}|${left.path || ""}|${left.symbol || ""}|${left.line ?? ""}|${left.sourceId}`.localeCompare(`${right.classification}|${right.path || ""}|${right.symbol || ""}|${right.line ?? ""}|${right.sourceId}`));
 }
 
@@ -127,7 +126,7 @@ function buildFinding(card, position, bundle, index) {
   const evidence = isRecord(card.evidence) ? card.evidence : {};
   const verdictByRef = new Map(packet.structuralVerdict.map((row) => [row.verdictRef, row]));
   const verdictRows = (evidence.structuralVerdictRefs || []).map((ref) => verdictByRef.get(ref)).filter(Boolean);
-  const effectiveRows = (evidence.structuralVerdictRefs || []).length ? verdictRows : packet.structuralVerdict.filter((row) => (evidence.evaluatorRefs || []).includes(row.evaluator));
+  const effectiveRows = verdictRows;
   const state = verdictState(effectiveRows);
   const bridges = bundle.bridges;
   const supportAtomIds = resolveRefs(evidence.atomRefs || [], "atoms", index, bridges);
@@ -146,13 +145,17 @@ function buildFinding(card, position, bundle, index) {
   const agreementEdgeRefs = unique(relationEvidence.agreement).filter((edge) => !unobservedEdgeRefs.includes(edge) && !mismatchEdgeRefs.includes(edge));
   const edgeRefs = relationRefs.filter((edge) => !unobservedEdgeRefs.includes(edge));
   const boundaryContextIds = boundaryContextRefs(relationRefs, index, bridges);
-  const repairAtomIds = explicitRepairAtomRefs(card, insight.actionQueue || [], index, bridges);
+  const repairAtomIds = explicitRepairAtomRefs(card, index, bridges);
   const verdictRefs = new Set(evidence.structuralVerdictRefs || []);
-  const validated = repairAtomIds.length > 0 && (bundle.artifacts.comparison?.verdictTransitions || []).some((row) => {
+  const compatibleSides = new Set(bundle.comparisonSides || []);
+  const validatedAtomIds = unique((bundle.artifacts.comparison?.verdictTransitions || []).flatMap((row) => {
     const explicitValidatedTargets = resolveRefs((row.deltaRefs || []).filter((delta) => delta?.kind === "atoms" && ["added", "modified"].includes(delta.op)).map((delta) => delta.id), "atoms", index, bridges);
-    return row.transition === "measured_obstruction_no_longer_recorded" && row.baseVerdict === "measured_nonzero" && row.headVerdict === "measured_zero" && (verdictRefs.has(row.baseRowRef) || verdictRefs.has(row.headRowRef)) && repairAtomIds.some((atomId) => explicitValidatedTargets.includes(atomId));
-  });
-  const sourceTargets = classifiedTargets({ directSourceRefs, supportAtomIds, boundaryContextIds, repairAtomIds, validated }, index);
+    const bindsLoadedSide = (compatibleSides.has("base") && verdictRefs.has(row.baseRowRef)) || (compatibleSides.has("head") && verdictRefs.has(row.headRowRef));
+    if (row.transition !== "measured_obstruction_no_longer_recorded" || row.baseVerdict !== "measured_nonzero" || row.headVerdict !== "measured_zero" || !bindsLoadedSide) return [];
+    return repairAtomIds.filter((atomId) => explicitValidatedTargets.includes(atomId));
+  }));
+  const validated = validatedAtomIds.length > 0;
+  const sourceTargets = classifiedTargets({ directSourceRefs, supportAtomIds, boundaryContextIds, repairAtomIds, validatedAtomIds }, index);
   const unmeasuredRows = effectiveRows.filter((row) => ["unmeasured", "unknown", "not_computed"].includes(row.verdict));
   return Object.freeze({
     id: card.id || `finding:${position + 1}`,
@@ -173,6 +176,7 @@ function buildFinding(card, position, bundle, index) {
     boundaryContextIds: Object.freeze(boundaryContextIds),
     directSourceRefs: Object.freeze(directSourceRefs),
     repairAtomIds: Object.freeze(repairAtomIds),
+    validatedAtomIds: Object.freeze(validatedAtomIds),
     validated,
     unmeasuredRows: Object.freeze(unmeasuredRows),
     sourceTargets: Object.freeze(sourceTargets.map(Object.freeze)),
@@ -187,7 +191,7 @@ export function buildAnalysisView(bundle, index) {
   const findings = cards.map((card, position) => buildFinding(card, position, bundle, index));
   return Object.freeze({
     findings: Object.freeze(findings),
-    gate: bundle.artifacts.gate ? Object.freeze({ decision: bundle.artifacts.gate.decision, blocked: bundle.artifacts.gate.decision === "BLOCKED_BY_GATE_POLICY" }) : null,
+    gate: bundle.artifacts.gate ? Object.freeze({ decision: bundle.artifacts.gate.decision, blocked: bundle.artifacts.gate.decision === "BLOCKED_BY_GATE_POLICY", evaluable: bundle.artifacts.gate.decision !== "NOT_EVALUABLE" }) : null,
     comparison: bundle.artifacts.comparison ? Object.freeze({ conclusionCode: bundle.artifacts.comparison.conclusionCode || null, transitions: Object.freeze(bundle.artifacts.comparison.verdictTransitions || []) }) : null,
   });
 }
