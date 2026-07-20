@@ -28,6 +28,10 @@
         <span>Load ArchMap</span>
         <input id="archmap-file" type="file" accept="application/json,.json">
       </label>
+      <label class="load-button">
+        <span>Load ArchSig run</span>
+        <input id="analysis-directory" type="file" accept="application/json,.json" webkitdirectory multiple>
+      </label>
 
       <nav class="mode-switcher" aria-label="Workspace mode">
         <button type="button" data-mode-button="architecture" aria-pressed="true">Architecture</button>
@@ -68,12 +72,22 @@
         </section>
         <section aria-labelledby="findings-heading">
           <h2 id="findings-heading">Findings</h2>
-          <p class="empty-list">No analysis loaded</p>
+          <div id="findings-list"><p class="empty-list">No analysis loaded</p></div>
         </section>
         <section class="input-status" aria-labelledby="input-status-heading">
           <h2 id="input-status-heading">ArchMap input</h2>
           <p id="archmap-status" class="empty-list">Loading fixture…</p>
           <ul id="archmap-issues" class="issue-list" aria-live="polite"></ul>
+        </section>
+        <section class="analysis-input-status" aria-labelledby="analysis-input-heading">
+          <h2 id="analysis-input-heading">ArchSig input</h2>
+          <p id="analysis-input-status" class="empty-list">No analysis loaded</p>
+          <dl class="analysis-identity">
+            <div><dt>Run</dt><dd id="analysis-run-id">—</dd></div>
+            <div><dt>Profile</dt><dd id="analysis-profile-ref">—</dd></div>
+            <div><dt>Packet digest</dt><dd id="analysis-packet-digest">—</dd></div>
+          </dl>
+          <ul id="analysis-issues" class="issue-list" aria-live="polite"></ul>
         </section>
       </aside>
 

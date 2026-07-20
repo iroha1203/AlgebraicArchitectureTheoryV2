@@ -74,7 +74,7 @@ summary:focus-visible {
 
 .topbar {
   display: grid;
-  grid-template-columns: 170px minmax(340px, 1fr) auto auto;
+  grid-template-columns: 170px minmax(300px, 1fr) auto auto auto;
   align-items: center;
   gap: 20px;
   padding: 0 20px;
@@ -248,6 +248,14 @@ summary:focus-visible {
 .input-status[data-status="loaded"] #archmap-status { color: var(--botanical); }
 .input-status[data-status="unresolved"],
 .input-status[data-status="error"] { padding: 9px; border: 1px solid rgba(163, 95, 56, 0.34); background: rgba(163, 95, 56, 0.06); }
+.analysis-input-status[data-status="accepted"] #analysis-input-status { color: var(--botanical); }
+.analysis-input-status[data-status="malformed"],
+.analysis-input-status[data-status="mismatch"],
+.analysis-input-status[data-status="unresolved"] { padding: 9px; border: 1px solid rgba(163, 95, 56, 0.34); background: rgba(163, 95, 56, 0.06); }
+.analysis-identity { margin: 7px 0 0; font-size: 10px; }
+.analysis-identity > div { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 5px; margin-top: 3px; }
+.analysis-identity dt { color: var(--ink-soft); }
+.analysis-identity dd { margin: 0; overflow-wrap: anywhere; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 
 .fact-list div { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 7px; }
 .fact-list dt { color: var(--graphite); font-size: 10px; text-transform: uppercase; }

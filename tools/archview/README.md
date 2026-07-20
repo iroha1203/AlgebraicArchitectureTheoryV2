@@ -151,13 +151,22 @@ restrictionとshared supportはScope Explorerまたは3D上で選択でき、導
 未解決source refはAtomを消さず、入力警告と`UNRESOLVED` source targetとして表示する。
 source本文・snippetは読み込まない。
 
+Top Barの`Load ArchSig run`は既存analyze run directoryを任意入力として受け取り、manifest、
+normalized ArchMap、measurement packet、summary、insight reportを一括検証する。全artifactの
+中核artifactの`schema / runId / toolVersion / inputDigests / profileRef`、現在のArchMap digest、
+normalized ID対応を検査し、compatibleなrunだけを受理する。comparison reportとgate reportが同じdirectoryに
+ある場合は既存shapeを検査し、現在のrunおよびmeasurement packetへのdigest bindingを照合する。不正JSON、schema不一致、
+identity不一致、未解決IDはそれぞれ表示し、analysisを部分的に描画しない。ArchMapを読み直すとanalysisは
+通常の未読込状態へ戻る。
+
 ```bash
 python3 -m http.server 8000 --directory tools/archview/rebuild
 ```
 
 `http://localhost:8000/`を開く。既定では小規模なpayment vertical-slice fixtureを読む。
 `?archmap=<同一originのJSON path>`で別のArchMapを指定でき、Top Barの`Load ArchMap`から
-ローカルJSONも読み込める。browser testは次で実行する。
+ローカルJSONも読み込める。`?analysis=<同一originのrun directory path>`またはTop Barの
+`Load ArchSig run`からanalysisを追加できる。browser testは次で実行する。
 
 ```bash
 node tools/archview/foundation_browser_e2e.cjs tools/archview/rebuild
@@ -165,8 +174,7 @@ node tools/archview/foundation_browser_e2e.cjs tools/archview/rebuild
 
 未実装:
 
-- ArchSig analysis overlay
-- Analysis / Improveのfinding selection
+- Analysis / Improveのfinding selectionとgeometry overlay
 
 現行viewer-data handoffは移行中のruntime contractであり、ArchViewのproduct identityではない。
 
