@@ -24,7 +24,6 @@ source of truth として扱わない。
 3. **Tier 3: 作業用文書**
    - `docs/prd/` のPRD本文など（`docs/prd/guideline.md` はTier 2）
    - 実装・検証のための一時的な作業契約であり、恒久仕様のsource of truthではない。完了後は `docs/archive/` に移す。
-   - 例外として、現在作業中の `docs/aat/aat_lean_06_legacy_consolidation_prd.md` は作業完了まで現行パスに留め、移動・内容変更を行わない。
 4. **Tier 4: メモ**
    - `docs/note/` など
    - 拘束力を持たないメモ書きであり、恒久仕様の根拠にはしない。
