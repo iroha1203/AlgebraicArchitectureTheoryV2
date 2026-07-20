@@ -162,7 +162,7 @@
       panel.hidden = false;
       message.textContent = `Initialization failed: ${error?.message || "Unknown error"}`;
     };
-    import("./app.js").then(({ startArchView }) => startArchView()).catch(showBootstrapError);
+    import(`./app.js${location.search}`).then(({ startArchView }) => startArchView()).catch(showBootstrapError);
   </script>
 </body>
 </html>

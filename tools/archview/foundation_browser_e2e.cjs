@@ -20,7 +20,11 @@ if (!chrome) throw new Error("Chrome/Chromium executable not found; set CHROME_B
 function serve(directory) {
   const base = path.resolve(directory);
   const server = http.createServer((request, response) => {
-    const relative = decodeURIComponent(new URL(request.url, "http://localhost").pathname);
+    const requestUrl = new URL(request.url, "http://localhost");
+    const relative = decodeURIComponent(requestUrl.pathname);
+    if (relative === "/app.js" && requestUrl.searchParams.has("bootstrap-unavailable")) {
+      response.writeHead(503); response.end(); return;
+    }
     const file = path.resolve(base, `.${relative === "/" ? "/index.html" : relative}`);
     if (file !== base && !file.startsWith(`${base}${path.sep}`)) {
       response.writeHead(403); response.end(); return;
@@ -224,7 +228,22 @@ async function main() {
       throw new Error(`WebGL failure was not shown in the shell: ${JSON.stringify(failure.result.value)}`);
     }
 
-    console.log(JSON.stringify({ normal: value, webglFailure: failure.result.value }));
+    await page.send("Page.navigate", { url: `http://127.0.0.1:${port}/index.html?bootstrap-unavailable=1` });
+    await waitFor(page, "document.querySelector('#archview-app')?.dataset.phase === 'error'");
+    const bootstrapFailure = await page.send("Runtime.evaluate", {
+      returnByValue: true,
+      expression: `(() => ({
+        phase: document.querySelector('#archview-app').dataset.phase,
+        errorVisible: !document.querySelector('#webgl-error').hidden,
+        message: document.querySelector('#webgl-error-message').textContent,
+        shellVisible: document.querySelector('.scope-explorer').getBoundingClientRect().width > 0,
+      }))()`,
+    });
+    if (bootstrapFailure.result.value.phase !== "error" || !bootstrapFailure.result.value.errorVisible || !bootstrapFailure.result.value.shellVisible) {
+      throw new Error(`Bootstrap failure was not shown in the shell: ${JSON.stringify(bootstrapFailure.result.value)}`);
+    }
+
+    console.log(JSON.stringify({ normal: value, webglFailure: failure.result.value, bootstrapFailure: bootstrapFailure.result.value }));
   } finally {
     await cdp.send("Target.closeTarget", { targetId: target.targetId }).catch(() => {});
     cdp.close();
