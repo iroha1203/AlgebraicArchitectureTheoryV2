@@ -619,9 +619,13 @@ structure RealFiniteHodgeDecomposition {Cminus C Cplus : Type v}
     [NormedAddCommGroup Cplus] [InnerProductSpace ℝ Cplus]
     [FiniteDimensional ℝ Cplus]
     (K : RealFiniteInnerProductComplex Cminus C Cplus) where
+  /-- The actual cohomology carrier preserved by the compatibility package. -/
   CohomologyClass : Type v
+  /-- Additive structure of the preserved cohomology carrier. -/
   [cohomologyAddCommGroup : AddCommGroup CohomologyClass]
+  /-- Real module structure of the preserved cohomology carrier. -/
   [cohomologyModule : Module ℝ CohomologyClass]
+  /-- The derived equivalence from harmonic kernel to actual cohomology. -/
   harmonicKernelEquivCohomology : K.laplacian.ker ≃ₗ[ℝ] CohomologyClass
   exactPart : C -> C
   harmonicPart : C -> C
@@ -855,16 +859,64 @@ that norm and a compatibility equation.
 -/
 
 /--
+Operator-level comparison showing that a real finite complex is the selected
+complex of a cellular Laplacian reading.  These are model-compatibility
+premises, not Hodge conclusions.
+-/
+structure CellularRealFiniteComplexComparison
+    {M : MeasurementProfile.{u, v}} {CM : CellularMeasurementModel M}
+    (L : SheafLaplacianReading CM)
+    [NormedAddCommGroup (CM.Cochain L.previousDegree)]
+    [InnerProductSpace ℝ (CM.Cochain L.previousDegree)]
+    [FiniteDimensional ℝ (CM.Cochain L.previousDegree)]
+    [NormedAddCommGroup (CM.Cochain L.degree)]
+    [InnerProductSpace ℝ (CM.Cochain L.degree)]
+    [FiniteDimensional ℝ (CM.Cochain L.degree)]
+    [NormedAddCommGroup (CM.Cochain L.nextDegree)]
+    [InnerProductSpace ℝ (CM.Cochain L.nextDegree)]
+    [FiniteDimensional ℝ (CM.Cochain L.nextDegree)]
+    (K : RealFiniteInnerProductComplex
+      (CM.Cochain L.previousDegree) (CM.Cochain L.degree)
+        (CM.Cochain L.nextDegree)) where
+  /-- The preceding differential is the selected cellular differential. -/
+  dPrev_eq : K.dPrev.toFun = L.d_prev_operator
+  /-- The following differential is the selected cellular differential. -/
+  dNext_eq : K.dNext.toFun = L.d_next_operator
+  /-- The preceding adjoint is the selected cellular adjoint. -/
+  dPrevAdjoint_eq : K.dPrevAdjoint.toFun = L.d_prev_adjoint_operator
+  /-- The following adjoint is the selected cellular adjoint. -/
+  dNextAdjoint_eq : K.dNextAdjoint.toFun = L.d_next_adjoint_operator
+  /-- The reading's Laplacian carrier is the selected linear-operator type. -/
+  laplacianOperator_eq :
+    L.LaplacianOperator = (CM.Cochain L.degree →ₗ[ℝ] CM.Cochain L.degree)
+  /-- The transported selected Laplacian is the complex Laplacian. -/
+  laplacian_eq : cast laplacianOperator_eq L.laplacian = K.laplacian
+  /-- Interpretation of the model's inner-product value as a real scalar. -/
+  innerProductReading : CM.InnerProductValue → ℝ
+  /-- The selected model inner product is the real inner product used by `K`. -/
+  innerProduct_eq : ∀ x y, innerProductReading (CM.innerProduct L.degree x y) =
+    inner ℝ x y
+
+/--
 VIII.Theorem 8.5 bridge to the generic cellular theorem data, derived from the
 real finite inner-product complex at the selected degree.
 -/
 noncomputable def derivedFiniteHodgeDecompositionData
     {M : MeasurementProfile.{u, v}} {CM : CellularMeasurementModel M}
     (L : SheafLaplacianReading CM)
+    [NormedAddCommGroup (CM.Cochain L.previousDegree)]
+    [InnerProductSpace ℝ (CM.Cochain L.previousDegree)]
+    [FiniteDimensional ℝ (CM.Cochain L.previousDegree)]
     [NormedAddCommGroup (CM.Cochain L.degree)]
     [InnerProductSpace ℝ (CM.Cochain L.degree)]
     [FiniteDimensional ℝ (CM.Cochain L.degree)]
-    (K : RealFiniteInnerProductComplex Cminus (CM.Cochain L.degree) Cplus) :
+    [NormedAddCommGroup (CM.Cochain L.nextDegree)]
+    [InnerProductSpace ℝ (CM.Cochain L.nextDegree)]
+    [FiniteDimensional ℝ (CM.Cochain L.nextDegree)]
+    (K : RealFiniteInnerProductComplex
+      (CM.Cochain L.previousDegree) (CM.Cochain L.degree)
+        (CM.Cochain L.nextDegree))
+    (B : CellularRealFiniteComplexComparison L K) :
     FiniteHodgeDecompositionData L where
   HarmonicRepresentative := K.laplacian.ker
   CohomologyClass := K.cohomology
@@ -885,14 +937,24 @@ noncomputable def derivedFiniteHodgeDecompositionData
   harmonicInKernel := fun h => LinearMap.mem_ker.mp h.property
   cohomologyOfHarmonic := K.laplacianKernelEquivCohomology
   kernelReadsLaplacian :=
-    ∀ x, K.laplacian x = 0 ↔ K.dPrevAdjoint x = 0 ∧ K.dNext x = 0
-  kernelReadsLaplacian_cert := K.laplacian_eq_zero_iff
+    K.dPrev.toFun = L.d_prev_operator ∧
+      K.dNext.toFun = L.d_next_operator ∧
+        cast B.laplacianOperator_eq L.laplacian = K.laplacian ∧
+          ∀ x, K.laplacian x = 0 ↔
+            K.dPrevAdjoint x = 0 ∧ K.dNext x = 0
+  kernelReadsLaplacian_cert :=
+    ⟨B.dPrev_eq, B.dNext_eq, B.laplacian_eq, K.laplacian_eq_zero_iff⟩
   decompositionMapsReadCochain :=
-    ∀ x, K.exactPart x + K.harmonicPart x + K.coexactPart x = x
-  decompositionMapsReadCochain_cert := K.hodge_decomposition
+    K.dPrevAdjoint.toFun = L.d_prev_adjoint_operator ∧
+      K.dNextAdjoint.toFun = L.d_next_adjoint_operator ∧
+        ∀ x, K.exactPart x + K.harmonicPart x + K.coexactPart x = x
+  decompositionMapsReadCochain_cert :=
+    ⟨B.dPrevAdjoint_eq, B.dNextAdjoint_eq, K.hodge_decomposition⟩
   cohomologyEquivHarmonic :=
-    Function.Bijective K.laplacianKernelEquivCohomology
-  cohomologyEquivHarmonic_cert := K.laplacianKernelEquivCohomology.bijective
+    (∀ x y, B.innerProductReading (CM.innerProduct L.degree x y) = inner ℝ x y) ∧
+      Function.Bijective K.laplacianKernelEquivCohomology
+  cohomologyEquivHarmonic_cert :=
+    ⟨B.innerProduct_eq, K.laplacianKernelEquivCohomology.bijective⟩
   finiteHodgeDecomposition :=
     ∀ x, K.exactPart x + K.harmonicPart x + K.coexactPart x = x
   finiteHodgeDecomposition_cert := K.hodge_decomposition
@@ -912,15 +974,24 @@ noncomputable def derivedFiniteHodgeDecompositionData
       K.exact_coexact_orthogonal x y⟩
 
 /-- VIII.Theorem 8.5 generic cellular package obtained from the derived data. -/
-noncomputable def derivedFiniteHodgeDecompositionPackage
+theorem derivedFiniteHodgeDecompositionPackage
     {M : MeasurementProfile.{u, v}} {CM : CellularMeasurementModel M}
     (L : SheafLaplacianReading CM)
+    [NormedAddCommGroup (CM.Cochain L.previousDegree)]
+    [InnerProductSpace ℝ (CM.Cochain L.previousDegree)]
+    [FiniteDimensional ℝ (CM.Cochain L.previousDegree)]
     [NormedAddCommGroup (CM.Cochain L.degree)]
     [InnerProductSpace ℝ (CM.Cochain L.degree)]
     [FiniteDimensional ℝ (CM.Cochain L.degree)]
-    (K : RealFiniteInnerProductComplex Cminus (CM.Cochain L.degree) Cplus) :
-    FiniteHodgeDecomposition (derivedFiniteHodgeDecompositionData L K) :=
-  finiteHodgeDecompositionPackage (derivedFiniteHodgeDecompositionData L K)
+    [NormedAddCommGroup (CM.Cochain L.nextDegree)]
+    [InnerProductSpace ℝ (CM.Cochain L.nextDegree)]
+    [FiniteDimensional ℝ (CM.Cochain L.nextDegree)]
+    (K : RealFiniteInnerProductComplex
+      (CM.Cochain L.previousDegree) (CM.Cochain L.degree)
+        (CM.Cochain L.nextDegree))
+    (B : CellularRealFiniteComplexComparison L K) :
+    FiniteHodgeDecomposition (derivedFiniteHodgeDecompositionData L K B) :=
+  finiteHodgeDecompositionPackage (derivedFiniteHodgeDecompositionData L K B)
 
 /--
 VIII.Theorem 8.6 bridge to generic cellular harmonic-debt data for a selected
@@ -930,15 +1001,24 @@ the model's abstract norm values.
 noncomputable def derivedHarmonicDebtMinimalityData
     {M : MeasurementProfile.{u, v}} {CM : CellularMeasurementModel M}
     (L : SheafLaplacianReading CM)
+    [NormedAddCommGroup (CM.Cochain L.previousDegree)]
+    [InnerProductSpace ℝ (CM.Cochain L.previousDegree)]
+    [FiniteDimensional ℝ (CM.Cochain L.previousDegree)]
     [NormedAddCommGroup (CM.Cochain L.degree)]
     [InnerProductSpace ℝ (CM.Cochain L.degree)]
     [FiniteDimensional ℝ (CM.Cochain L.degree)]
-    (K : RealFiniteInnerProductComplex Cminus (CM.Cochain L.degree) Cplus)
+    [NormedAddCommGroup (CM.Cochain L.nextDegree)]
+    [InnerProductSpace ℝ (CM.Cochain L.nextDegree)]
+    [FiniteDimensional ℝ (CM.Cochain L.nextDegree)]
+    (K : RealFiniteInnerProductComplex
+      (CM.Cochain L.previousDegree) (CM.Cochain L.degree)
+        (CM.Cochain L.nextDegree))
+    (B : CellularRealFiniteComplexComparison L K)
     (readNorm : CM.NormValue → ℝ)
     (readNorm_eq : ∀ x, readNorm (CM.norm L.degree x) = ‖x‖)
     (g : CM.Cochain L.degree) (hg : K.dNext g = 0) :
-    HarmonicDebtMinimalityData (derivedFiniteHodgeDecompositionData L K) where
-  GaugeCorrection := Cminus
+    HarmonicDebtMinimalityData (derivedFiniteHodgeDecompositionData L K B) where
+  GaugeCorrection := CM.Cochain L.previousDegree
   correctionAction := K.dPrev
   correctedMismatch := fun c => g - K.dPrev c
   correctionResidual := fun c => CM.norm L.degree (g - K.dPrev c)
@@ -952,7 +1032,7 @@ noncomputable def derivedHarmonicDebtMinimalityData
     ⟨K.harmonicPart g, K.harmonicPart_mem_laplacian_kernel g⟩
   harmonicDebtValue := CM.norm L.degree (K.harmonicPart g)
   projectionReadsHarmonicRepresentative :=
-    (derivedFiniteHodgeDecompositionData L K).harmonicProjection g =
+    (derivedFiniteHodgeDecompositionData L K B).harmonicProjection g =
       ⟨K.harmonicPart g, K.harmonicPart_mem_laplacian_kernel g⟩
   projectionReadsHarmonicRepresentative_cert := rfl
   minimumReadsCorrectionResidual :=
@@ -981,20 +1061,29 @@ noncomputable def derivedHarmonicDebtMinimalityData
       exact K.harmonic_norm_le_corrected hg c
 
 /-- VIII.Theorem 8.6 generic cellular package obtained from the derived data. -/
-noncomputable def derivedHarmonicDebtMinimalityPackage
+theorem derivedHarmonicDebtMinimalityPackage
     {M : MeasurementProfile.{u, v}} {CM : CellularMeasurementModel M}
     (L : SheafLaplacianReading CM)
+    [NormedAddCommGroup (CM.Cochain L.previousDegree)]
+    [InnerProductSpace ℝ (CM.Cochain L.previousDegree)]
+    [FiniteDimensional ℝ (CM.Cochain L.previousDegree)]
     [NormedAddCommGroup (CM.Cochain L.degree)]
     [InnerProductSpace ℝ (CM.Cochain L.degree)]
     [FiniteDimensional ℝ (CM.Cochain L.degree)]
-    (K : RealFiniteInnerProductComplex Cminus (CM.Cochain L.degree) Cplus)
+    [NormedAddCommGroup (CM.Cochain L.nextDegree)]
+    [InnerProductSpace ℝ (CM.Cochain L.nextDegree)]
+    [FiniteDimensional ℝ (CM.Cochain L.nextDegree)]
+    (K : RealFiniteInnerProductComplex
+      (CM.Cochain L.previousDegree) (CM.Cochain L.degree)
+        (CM.Cochain L.nextDegree))
+    (B : CellularRealFiniteComplexComparison L K)
     (readNorm : CM.NormValue → ℝ)
     (readNorm_eq : ∀ x, readNorm (CM.norm L.degree x) = ‖x‖)
     (g : CM.Cochain L.degree) (hg : K.dNext g = 0) :
     HarmonicDebtMinimality
-      (derivedHarmonicDebtMinimalityData L K readNorm readNorm_eq g hg) :=
+      (derivedHarmonicDebtMinimalityData L K B readNorm readNorm_eq g hg) :=
   harmonicDebtMinimalityPackage
-    (derivedHarmonicDebtMinimalityData L K readNorm readNorm_eq g hg)
+    (derivedHarmonicDebtMinimalityData L K B readNorm readNorm_eq g hg)
 
 end RealFiniteInnerProductComplex
 

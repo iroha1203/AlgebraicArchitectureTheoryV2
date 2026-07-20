@@ -1,4 +1,4 @@
-import Formal.AG.Measurement.Hodge
+import Formal.AG.Measurement.Examples
 
 noncomputable section
 
@@ -96,40 +96,121 @@ section GenericCellularBridge
 
 variable {M : MeasurementProfile.{u, v}} {CM : CellularMeasurementModel M}
 variable (L : SheafLaplacianReading CM)
-variable {Cminus Cplus : Type v}
-variable [NormedAddCommGroup Cminus] [InnerProductSpace ℝ Cminus]
-variable [FiniteDimensional ℝ Cminus]
+variable [NormedAddCommGroup (CM.Cochain L.previousDegree)]
+variable [InnerProductSpace ℝ (CM.Cochain L.previousDegree)]
+variable [FiniteDimensional ℝ (CM.Cochain L.previousDegree)]
 variable [NormedAddCommGroup (CM.Cochain L.degree)]
 variable [InnerProductSpace ℝ (CM.Cochain L.degree)]
 variable [FiniteDimensional ℝ (CM.Cochain L.degree)]
-variable [NormedAddCommGroup Cplus] [InnerProductSpace ℝ Cplus]
-variable [FiniteDimensional ℝ Cplus]
+variable [NormedAddCommGroup (CM.Cochain L.nextDegree)]
+variable [InnerProductSpace ℝ (CM.Cochain L.nextDegree)]
+variable [FiniteDimensional ℝ (CM.Cochain L.nextDegree)]
 
 open RealFiniteInnerProductComplex
 
-example (K : RealFiniteInnerProductComplex Cminus (CM.Cochain L.degree) Cplus) :
+example (K : RealFiniteInnerProductComplex
+      (CM.Cochain L.previousDegree) (CM.Cochain L.degree)
+        (CM.Cochain L.nextDegree))
+    (B : CellularRealFiniteComplexComparison L K) :
+    K.dPrev.toFun = L.d_prev_operator := B.dPrev_eq
+example (K : RealFiniteInnerProductComplex
+      (CM.Cochain L.previousDegree) (CM.Cochain L.degree)
+        (CM.Cochain L.nextDegree))
+    (B : CellularRealFiniteComplexComparison L K) :
+    K.dNext.toFun = L.d_next_operator := B.dNext_eq
+example (K : RealFiniteInnerProductComplex
+      (CM.Cochain L.previousDegree) (CM.Cochain L.degree)
+        (CM.Cochain L.nextDegree))
+    (B : CellularRealFiniteComplexComparison L K) :
+    K.dPrevAdjoint.toFun = L.d_prev_adjoint_operator := B.dPrevAdjoint_eq
+example (K : RealFiniteInnerProductComplex
+      (CM.Cochain L.previousDegree) (CM.Cochain L.degree)
+        (CM.Cochain L.nextDegree))
+    (B : CellularRealFiniteComplexComparison L K) :
+    K.dNextAdjoint.toFun = L.d_next_adjoint_operator := B.dNextAdjoint_eq
+example (K : RealFiniteInnerProductComplex
+      (CM.Cochain L.previousDegree) (CM.Cochain L.degree)
+        (CM.Cochain L.nextDegree))
+    (B : CellularRealFiniteComplexComparison L K) :
+    L.LaplacianOperator = (CM.Cochain L.degree →ₗ[ℝ] CM.Cochain L.degree) :=
+  B.laplacianOperator_eq
+example (K : RealFiniteInnerProductComplex
+      (CM.Cochain L.previousDegree) (CM.Cochain L.degree)
+        (CM.Cochain L.nextDegree))
+    (B : CellularRealFiniteComplexComparison L K) :
+    cast B.laplacianOperator_eq L.laplacian = K.laplacian := B.laplacian_eq
+example (K : RealFiniteInnerProductComplex
+      (CM.Cochain L.previousDegree) (CM.Cochain L.degree)
+        (CM.Cochain L.nextDegree))
+    (B : CellularRealFiniteComplexComparison L K) :
+    ∀ x y, B.innerProductReading (CM.innerProduct L.degree x y) = inner ℝ x y :=
+  B.innerProduct_eq
+
+example (K : RealFiniteInnerProductComplex
+      (CM.Cochain L.previousDegree) (CM.Cochain L.degree)
+        (CM.Cochain L.nextDegree))
+    (B : CellularRealFiniteComplexComparison L K) :
     FiniteHodgeDecompositionData L :=
-  derivedFiniteHodgeDecompositionData L K
+  derivedFiniteHodgeDecompositionData L K B
 
-example (K : RealFiniteInnerProductComplex Cminus (CM.Cochain L.degree) Cplus) :
-    FiniteHodgeDecomposition (derivedFiniteHodgeDecompositionData L K) :=
-  derivedFiniteHodgeDecompositionPackage L K
+example (K : RealFiniteInnerProductComplex
+      (CM.Cochain L.previousDegree) (CM.Cochain L.degree)
+        (CM.Cochain L.nextDegree))
+    (B : CellularRealFiniteComplexComparison L K) :
+    FiniteHodgeDecomposition (derivedFiniteHodgeDecompositionData L K B) :=
+  derivedFiniteHodgeDecompositionPackage L K B
 
-example (K : RealFiniteInnerProductComplex Cminus (CM.Cochain L.degree) Cplus)
+example (K : RealFiniteInnerProductComplex
+      (CM.Cochain L.previousDegree) (CM.Cochain L.degree)
+        (CM.Cochain L.nextDegree))
+    (B : CellularRealFiniteComplexComparison L K)
     (readNorm : CM.NormValue → ℝ)
     (readNorm_eq : ∀ x, readNorm (CM.norm L.degree x) = ‖x‖)
     (g : CM.Cochain L.degree) (hg : K.dNext g = 0) :
-    HarmonicDebtMinimalityData (derivedFiniteHodgeDecompositionData L K) :=
-  derivedHarmonicDebtMinimalityData L K readNorm readNorm_eq g hg
+    HarmonicDebtMinimalityData (derivedFiniteHodgeDecompositionData L K B) :=
+  derivedHarmonicDebtMinimalityData L K B readNorm readNorm_eq g hg
 
-example (K : RealFiniteInnerProductComplex Cminus (CM.Cochain L.degree) Cplus)
+example (K : RealFiniteInnerProductComplex
+      (CM.Cochain L.previousDegree) (CM.Cochain L.degree)
+        (CM.Cochain L.nextDegree))
+    (B : CellularRealFiniteComplexComparison L K)
     (readNorm : CM.NormValue → ℝ)
     (readNorm_eq : ∀ x, readNorm (CM.norm L.degree x) = ‖x‖)
     (g : CM.Cochain L.degree) (hg : K.dNext g = 0) :
     HarmonicDebtMinimality
-      (derivedHarmonicDebtMinimalityData L K readNorm readNorm_eq g hg) :=
-  derivedHarmonicDebtMinimalityPackage L K readNorm readNorm_eq g hg
+      (derivedHarmonicDebtMinimalityData L K B readNorm readNorm_eq g hg) :=
+  derivedHarmonicDebtMinimalityPackage L K B readNorm readNorm_eq g hg
 
 end GenericCellularBridge
+
+section ThreeAxisFixture
+
+example : Fin 3 → LowDegreeRealCochain := threeAxisVector
+example : threeAxisRealComplex.laplacian.ker := threeAxisHarmonicKernel
+example :
+    RealFiniteInnerProductComplex ℝ (EuclideanSpace ℝ (Fin 3)) ℝ :=
+  threeAxisRealComplex
+example : threeAxisRealComplex.exactPart (threeAxisVector 0) ≠ 0 :=
+  threeAxis_exactPart_nonzero
+example :
+    threeAxisRealComplex.coexactPart (threeAxisRealComplex.dNextAdjoint 1) ≠ 0 :=
+  threeAxis_coexactPart_nonzero
+example : threeAxisRealComplex.harmonicPart (threeAxisVector 1) ≠ 0 :=
+  threeAxis_harmonicPart_nonzero
+example :
+    threeAxisRealComplex.laplacianKernelEquivCohomology
+      threeAxisHarmonicKernel ≠ 0 :=
+  threeAxisCohomologyClass_nonzero
+example : ‖threeAxisRealComplex.harmonicPart (threeAxisVector 1)‖ = 1 :=
+  threeAxis_harmonic_norm_eq_one
+example :
+    ‖threeAxisVector 1 - threeAxisRealComplex.dPrev
+      (threeAxisRealComplex.selectedCorrection (threeAxisVector 1))‖ = 1 :=
+  threeAxis_selected_residual_norm_eq_one
+example (c : ℝ) :
+    1 ≤ ‖threeAxisVector 1 - threeAxisRealComplex.dPrev c‖ :=
+  threeAxis_harmonic_minimum c
+
+end ThreeAxisFixture
 
 end AAT.AG.Measurement

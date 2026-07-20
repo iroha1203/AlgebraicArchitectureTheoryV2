@@ -30,8 +30,6 @@ INCORRECT DEF/LEMMA: -/
 #check AAT.AG.LawAlgebra.FiniteExamples.StandardArchitectureScheme.baseSheafifiedPresentation /- is a def, should be lemma/theorem -/
 
 -- Formal.AG.Measurement.Examples
-#check AAT.AG.Measurement.lowDegreeHodgePackage /- is a def, should be lemma/theorem -/
-#check AAT.AG.Measurement.lowDegreeHarmonicDebtPackage /- is a def, should be lemma/theorem -/
 #check AAT.AG.Measurement.supportTransferExamplePackage /- is a def, should be lemma/theorem -/
 
 -- Formal.AG.Measurement.GAGA
