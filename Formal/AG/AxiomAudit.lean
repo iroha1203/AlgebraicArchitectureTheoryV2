@@ -1793,6 +1793,122 @@ def nonzeroBoundaryRealHarmonicNormLeCorrected :=
 def nonzeroBoundaryRealSelectedResidualEqHarmonic :=
   Measurement.nonzeroBoundaryReal_selected_residual_eq_harmonic
 
+/-! Kernel-audit inventory for the derived finite-dimensional Hodge chain. -/
+
+def realFiniteDNextDPrev :=
+  @Measurement.RealFiniteInnerProductComplex.dNext_dPrev
+
+def realFiniteExactRangeIsOrthoCoexactRange :=
+  @Measurement.RealFiniteInnerProductComplex.exactRange_isOrtho_coexactRange
+
+def realFiniteExactCoexactOrthogonal :=
+  @Measurement.RealFiniteInnerProductComplex.exact_coexact_orthogonal
+
+def realFiniteHodgeDecomposition :=
+  @Measurement.RealFiniteInnerProductComplex.hodge_decomposition
+
+def realFiniteExactPartMemRange :=
+  @Measurement.RealFiniteInnerProductComplex.exactPart_mem_range
+
+def realFiniteCoexactPartMemAdjointRange :=
+  @Measurement.RealFiniteInnerProductComplex.coexactPart_mem_adjoint_range
+
+def realFiniteExactPartInnerResidual :=
+  @Measurement.RealFiniteInnerProductComplex.exactPart_inner_residual
+
+def realFiniteExactHarmonicOrthogonal :=
+  @Measurement.RealFiniteInnerProductComplex.exact_harmonic_orthogonal
+
+def realFiniteResidualInnerCoexactPart :=
+  @Measurement.RealFiniteInnerProductComplex.residual_inner_coexactPart
+
+def realFiniteHarmonicCoexactOrthogonal :=
+  @Measurement.RealFiniteInnerProductComplex.harmonic_coexact_orthogonal
+
+def realFiniteDPrevAdjointInnerRight :=
+  @Measurement.RealFiniteInnerProductComplex.dPrev_adjoint_inner_right
+
+def realFiniteDNextAdjointInnerRight :=
+  @Measurement.RealFiniteInnerProductComplex.dNext_adjoint_inner_right
+
+def realFiniteHarmonicPartMemExactRangeOrthogonal :=
+  @Measurement.RealFiniteInnerProductComplex.harmonicPart_mem_exactRange_orthogonal
+
+def realFiniteHarmonicPartMemCoexactRangeOrthogonal :=
+  @Measurement.RealFiniteInnerProductComplex.harmonicPart_mem_coexactRange_orthogonal
+
+def realFiniteDPrevAdjointHarmonicPartEqZero :=
+  @Measurement.RealFiniteInnerProductComplex.dPrevAdjoint_harmonicPart_eq_zero
+
+def realFiniteDNextHarmonicPartEqZero :=
+  @Measurement.RealFiniteInnerProductComplex.dNext_harmonicPart_eq_zero
+
+def realFiniteInnerLaplacianSelf :=
+  @Measurement.RealFiniteInnerProductComplex.inner_laplacian_self
+
+def realFiniteLaplacianEqZeroIff :=
+  @Measurement.RealFiniteInnerProductComplex.laplacian_eq_zero_iff
+
+def realFiniteHarmonicPartMemLaplacianKernel :=
+  @Measurement.RealFiniteInnerProductComplex.harmonicPart_mem_laplacian_kernel
+
+def realFiniteDPrevAdjointHarmonicCycleEqZero :=
+  @Measurement.RealFiniteInnerProductComplex.dPrevAdjoint_harmonicCycle_eq_zero
+
+def realFiniteSelectedCorrectionMapsToExactPart :=
+  @Measurement.RealFiniteInnerProductComplex.selectedCorrection_maps_to_exactPart
+
+def realFiniteSelectedResidualNormLe :=
+  @Measurement.RealFiniteInnerProductComplex.selectedResidual_norm_le
+
+def realFiniteCoexactPartEqZeroOfCocycle :=
+  @Measurement.RealFiniteInnerProductComplex.coexactPart_eq_zero_of_cocycle
+
+def realFiniteSelectedResidualEqHarmonic :=
+  @Measurement.RealFiniteInnerProductComplex.selected_residual_eq_harmonic
+
+def realFiniteHarmonicNormLeCorrected :=
+  @Measurement.RealFiniteInnerProductComplex.harmonic_norm_le_corrected
+
+def realFiniteCompatibilityDecompositionHolds :=
+  @Measurement.RealFiniteHodgeDecomposition.decomposition_holds
+
+def realFiniteCompatibilityHarmonicMemKernel :=
+  @Measurement.RealFiniteHodgeDecomposition.harmonic_mem_kernel
+
+def realFiniteCompatibilityExactHarmonicOrthogonal :=
+  @Measurement.RealFiniteHodgeDecomposition.exact_harmonic_orthogonal_holds
+
+def realFiniteCompatibilityHarmonicDebtEqNorm :=
+  @Measurement.RealHarmonicDebtMinimality.harmonicDebt_eq_norm_holds
+
+def realFiniteCompatibilitySelectedMinimizes :=
+  @Measurement.RealHarmonicDebtMinimality.selected_minimizes_holds
+
+def realFiniteCompatibilitySelectedResidualEqHarmonicNorm :=
+  @Measurement.RealHarmonicDebtMinimality.cocycle_selected_residual_eq_harmonic_norm_holds
+
+def realFiniteCompatibilityHarmonicLowerBound :=
+  @Measurement.RealHarmonicDebtMinimality.cocycle_harmonic_lower_bound_holds
+
+def threeAxisVectorNonzero := Measurement.threeAxisVector_ne_zero
+def threeAxisExactPartNonzero := Measurement.threeAxis_exactPart_nonzero
+def threeAxisCoexactPartNonzero := Measurement.threeAxis_coexactPart_nonzero
+def threeAxisHarmonicPartEq := Measurement.threeAxis_harmonicPart_eq
+def threeAxisHarmonicPartNonzero := Measurement.threeAxis_harmonicPart_nonzero
+def threeAxisHarmonicKernelNonzero := Measurement.threeAxisHarmonicKernel_nonzero
+def threeAxisCohomologyClassNonzero := Measurement.threeAxisCohomologyClass_nonzero
+def threeAxisHarmonicNormEqOne := Measurement.threeAxis_harmonic_norm_eq_one
+def threeAxisSelectedResidualNormEqOne :=
+  Measurement.threeAxis_selected_residual_norm_eq_one
+def threeAxisHarmonicMinimum := Measurement.threeAxis_harmonic_minimum
+
+noncomputable def threeAxisGenericHodgePackage :=
+  Measurement.threeAxisGenericHodgePackage
+
+noncomputable def threeAxisGenericHarmonicDebtPackage :=
+  Measurement.threeAxisGenericHarmonicDebtPackage
+
 def squareFreeRepairSupportNotMemAlexanderDualIffHitsForbidden :=
   Measurement.squareFree_repairSupport_notMemAlexanderDual_iff_hitsForbidden
 

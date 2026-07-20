@@ -621,6 +621,9 @@ theorem lowDegreeRealComplex_all_harmonic (x : LowDegreeRealCochain) :
 /-- R11(e): concrete finite Hodge decomposition on the low-degree real complex. -/
 def lowDegreeRealHodgeDecomposition :
     RealFiniteHodgeDecomposition lowDegreeRealComplex where
+  CohomologyClass := lowDegreeRealComplex.cohomology
+  harmonicKernelEquivCohomology :=
+    lowDegreeRealComplex.laplacianKernelEquivCohomology
   exactPart := fun _ => 0
   harmonicPart := fun x => x
   coexactPart := fun _ => 0
@@ -673,6 +676,13 @@ def lowDegreeRealHarmonicDebtMinimality :
     rfl
   selected_minimizes := by
     intro x g
+    cases g
+    exact le_rfl
+  cocycle_selected_residual_eq_harmonic_norm := by
+    intro x _
+    rfl
+  cocycle_harmonic_lower_bound := by
+    intro x _ g
     cases g
     exact le_rfl
 
@@ -754,6 +764,159 @@ theorem nonzeroBoundaryReal_selected_residual_eq_harmonic (g : ℝ) :
       nonzeroBoundaryRealComplex.harmonicPart g :=
   nonzeroBoundaryRealComplex.selected_residual_eq_harmonic (by rfl)
 
+/-!
+## Nondegenerate finite Hodge fixture
+
+The three coordinate axes give nonzero exact, harmonic, and coexact
+components in one complex.  This fixture exercises the quotient equivalence
+and harmonic minimum without replacing any derived conclusion by package data.
+-/
+
+/-- The `j`-th standard vector of the three-dimensional real cochain space. -/
+def threeAxisVector (j : Fin 3) : LowDegreeRealCochain :=
+  EuclideanSpace.single j 1
+
+/-- Differential from the preceding degree into the exact coordinate. -/
+def threeAxisDPrev : ℝ →ₗ[ℝ] LowDegreeRealCochain where
+  toFun := fun a => a • threeAxisVector 0
+  map_add' := by intro a b; simp [add_smul]
+  map_smul' := by intro a b; simp [mul_smul]
+
+/-- Differential to the following degree, read from the coexact coordinate. -/
+def threeAxisDNext : LowDegreeRealCochain →ₗ[ℝ] ℝ where
+  toFun := fun x => x 2
+  map_add' := by intro x y; rfl
+  map_smul' := by intro a x; rfl
+
+/--
+The nondegenerate three-axis complex: exact, harmonic, and coexact axes are
+the zeroth, first, and second coordinates respectively.
+-/
+def threeAxisRealComplex :
+    RealFiniteInnerProductComplex ℝ LowDegreeRealCochain ℝ where
+  dPrev := threeAxisDPrev
+  dNext := threeAxisDNext
+  d_comp_d := by
+    apply LinearMap.ext
+    intro a
+    change (a • threeAxisVector 0) 2 = 0
+    simp [threeAxisVector]
+
+/-- Every standard coordinate vector in the fixture is nonzero. -/
+theorem threeAxisVector_ne_zero (j : Fin 3) : threeAxisVector j ≠ 0 := by
+  intro h
+  have hj := congrArg (fun x : LowDegreeRealCochain => x j) h
+  norm_num [threeAxisVector] at hj
+
+/-- The exact projection is nonzero on the exact coordinate. -/
+theorem threeAxis_exactPart_nonzero :
+    threeAxisRealComplex.exactPart (threeAxisVector 0) ≠ 0 := by
+  rw [show threeAxisRealComplex.exactPart (threeAxisVector 0) =
+      threeAxisVector 0 by
+    change threeAxisRealComplex.dPrev.range.starProjection
+      (threeAxisVector 0) = threeAxisVector 0
+    rw [Submodule.starProjection_eq_self_iff]
+    exact ⟨1, by ext i; simp [threeAxisRealComplex, threeAxisDPrev,
+      threeAxisVector]⟩]
+  exact threeAxisVector_ne_zero 0
+
+/-- The adjoint image, hence the coexact projection, is nonzero. -/
+theorem threeAxis_coexactPart_nonzero :
+    threeAxisRealComplex.coexactPart
+        (threeAxisRealComplex.dNextAdjoint 1) ≠ 0 := by
+  rw [show threeAxisRealComplex.coexactPart
+        (threeAxisRealComplex.dNextAdjoint 1) =
+      threeAxisRealComplex.dNextAdjoint 1 by
+    change threeAxisRealComplex.dNextAdjoint.range.starProjection
+      (threeAxisRealComplex.dNextAdjoint 1) =
+        threeAxisRealComplex.dNextAdjoint 1
+    rw [Submodule.starProjection_eq_self_iff]
+    exact ⟨1, rfl⟩]
+  intro h
+  have hinner :
+      inner ℝ (threeAxisVector 2) (threeAxisRealComplex.dNextAdjoint 1) = 0 := by
+    rw [h]
+    simp
+  rw [threeAxisRealComplex.dNext_adjoint_inner_right] at hinner
+  norm_num [threeAxisRealComplex, threeAxisDNext, threeAxisVector] at hinner
+
+/-- The middle coordinate is exactly its derived harmonic component. -/
+theorem threeAxis_harmonicPart_eq :
+    threeAxisRealComplex.harmonicPart (threeAxisVector 1) =
+      threeAxisVector 1 := by
+  have he : threeAxisRealComplex.exactPart (threeAxisVector 1) = 0 := by
+    change threeAxisRealComplex.dPrev.range.starProjection
+      (threeAxisVector 1) = 0
+    rw [Submodule.starProjection_apply_eq_zero_iff]
+    intro y hy
+    rcases hy with ⟨a, rfl⟩
+    simp [threeAxisRealComplex, threeAxisDPrev, threeAxisVector,
+      PiLp.inner_apply]
+  have hc : threeAxisRealComplex.coexactPart (threeAxisVector 1) = 0 :=
+    threeAxisRealComplex.coexactPart_eq_zero_of_cocycle
+      (by simp [threeAxisRealComplex, threeAxisDNext, threeAxisVector])
+  simp only [RealFiniteInnerProductComplex.harmonicPart, LinearMap.sub_apply,
+    LinearMap.id_apply, he, hc, sub_zero]
+
+/-- The derived harmonic component is nonzero in the same complex. -/
+theorem threeAxis_harmonicPart_nonzero :
+    threeAxisRealComplex.harmonicPart (threeAxisVector 1) ≠ 0 := by
+  rw [threeAxis_harmonicPart_eq]
+  exact threeAxisVector_ne_zero 1
+
+/-- Nonzero harmonic-kernel witness supplied by the middle coordinate. -/
+noncomputable def threeAxisHarmonicKernel : threeAxisRealComplex.laplacian.ker :=
+  ⟨threeAxisRealComplex.harmonicPart (threeAxisVector 1),
+    threeAxisRealComplex.harmonicPart_mem_laplacian_kernel (threeAxisVector 1)⟩
+
+/-- The harmonic-kernel witness is nonzero. -/
+theorem threeAxisHarmonicKernel_nonzero : threeAxisHarmonicKernel ≠ 0 := by
+  intro h
+  have hcoe := congrArg
+    (fun x : threeAxisRealComplex.laplacian.ker => (x : LowDegreeRealCochain)) h
+  exact threeAxis_harmonicPart_nonzero
+    (by simpa [threeAxisHarmonicKernel] using hcoe)
+
+/-- The actual cohomology quotient has a nonzero class in the same fixture. -/
+theorem threeAxisCohomologyClass_nonzero :
+    threeAxisRealComplex.laplacianKernelEquivCohomology
+        threeAxisHarmonicKernel ≠ 0 := by
+  intro h
+  apply threeAxisHarmonicKernel_nonzero
+  apply threeAxisRealComplex.laplacianKernelEquivCohomology.injective
+  simpa using h
+
+/-- The middle-coordinate harmonic norm is exactly one, hence positive. -/
+theorem threeAxis_harmonic_norm_eq_one :
+    ‖threeAxisRealComplex.harmonicPart (threeAxisVector 1)‖ = 1 := by
+  rw [threeAxis_harmonicPart_eq]
+  simp [threeAxisVector]
+
+/-- The selected residual realizes the positive harmonic minimum. -/
+theorem threeAxis_selected_residual_norm_eq_one :
+    ‖threeAxisVector 1 - threeAxisRealComplex.dPrev
+        (threeAxisRealComplex.selectedCorrection (threeAxisVector 1))‖ = 1 := by
+  rw [congrArg norm (threeAxisRealComplex.selected_residual_eq_harmonic
+    (by simp [threeAxisRealComplex, threeAxisDNext, threeAxisVector]))]
+  exact threeAxis_harmonic_norm_eq_one
+
+/-- Every correction residual is at least the positive harmonic minimum. -/
+theorem threeAxis_harmonic_minimum (c : ℝ) :
+    1 ≤ ‖threeAxisVector 1 - threeAxisRealComplex.dPrev c‖ := by
+  rw [← threeAxis_harmonic_norm_eq_one]
+  exact threeAxisRealComplex.harmonic_norm_le_corrected
+    (by simp [threeAxisRealComplex, threeAxisDNext, threeAxisVector]) c
+
+/-- The compatibility Hodge package is derived on the nondegenerate fixture. -/
+noncomputable def threeAxisRealHodgeDecomposition :
+    RealFiniteHodgeDecomposition threeAxisRealComplex :=
+  threeAxisRealComplex.derivedHodgeDecomposition
+
+/-- The compatibility minimum package is derived on the same fixture. -/
+noncomputable def threeAxisRealHarmonicDebtMinimality :
+    RealHarmonicDebtMinimality threeAxisRealHodgeDecomposition :=
+  threeAxisRealComplex.derivedHarmonicDebtMinimality
+
 /-- R11(e): low-degree cellular measurement model for the Hodge fixture. -/
 def lowDegreeCellularModel :
     CellularMeasurementModel pseudoCircleMeasurementProfile where
@@ -799,6 +962,55 @@ def lowDegreeLaplacianReading :
   laplacian_eq_formula_cert := trivial
   finiteSelfAdjointReading := True
   finiteSelfAdjointReading_cert := trivial
+
+local instance lowDegreeCochainNormedAddCommGroup :
+    NormedAddCommGroup
+      (lowDegreeCellularModel.Cochain lowDegreeLaplacianReading.degree) := by
+  change NormedAddCommGroup LowDegreeRealCochain
+  infer_instance
+
+local instance lowDegreeCochainInnerProductSpace :
+    InnerProductSpace ℝ
+      (lowDegreeCellularModel.Cochain lowDegreeLaplacianReading.degree) := by
+  change InnerProductSpace ℝ LowDegreeRealCochain
+  infer_instance
+
+local instance lowDegreeCochainFiniteDimensional :
+    FiniteDimensional ℝ
+      (lowDegreeCellularModel.Cochain lowDegreeLaplacianReading.degree) := by
+  change FiniteDimensional ℝ LowDegreeRealCochain
+  infer_instance
+
+/--
+The generic cellular Hodge data is derived from the same nondegenerate
+three-axis complex; no decomposition certificate is supplied by this fixture.
+-/
+noncomputable def threeAxisGenericHodgeData :
+    FiniteHodgeDecompositionData lowDegreeLaplacianReading :=
+  RealFiniteInnerProductComplex.derivedFiniteHodgeDecompositionData
+    lowDegreeLaplacianReading threeAxisRealComplex
+
+/-- The generic theorem 8.5 package fires on the nondegenerate fixture. -/
+noncomputable def threeAxisGenericHodgePackage :
+    FiniteHodgeDecomposition threeAxisGenericHodgeData :=
+  RealFiniteInnerProductComplex.derivedFiniteHodgeDecompositionPackage
+    lowDegreeLaplacianReading threeAxisRealComplex
+
+/-- Generic harmonic-debt data for the positive middle-coordinate cocycle. -/
+noncomputable def threeAxisGenericHarmonicDebtData :
+    HarmonicDebtMinimalityData threeAxisGenericHodgeData :=
+  RealFiniteInnerProductComplex.derivedHarmonicDebtMinimalityData
+    lowDegreeLaplacianReading threeAxisRealComplex id (by intro x; rfl)
+      (threeAxisVector 1)
+      (by simp [threeAxisRealComplex, threeAxisDNext, threeAxisVector])
+
+/-- The generic theorem 8.6 package fires on the same positive cocycle. -/
+noncomputable def threeAxisGenericHarmonicDebtPackage :
+    HarmonicDebtMinimality threeAxisGenericHarmonicDebtData :=
+  RealFiniteInnerProductComplex.derivedHarmonicDebtMinimalityPackage
+    lowDegreeLaplacianReading threeAxisRealComplex id (by intro x; rfl)
+      (threeAxisVector 1)
+      (by simp [threeAxisRealComplex, threeAxisDNext, threeAxisVector])
 
 /-- R11(e): explicit finite Hodge decomposition data. -/
 def lowDegreeHodgeData :
