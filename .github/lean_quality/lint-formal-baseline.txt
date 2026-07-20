@@ -32,9 +32,6 @@ INCORRECT DEF/LEMMA: -/
 -- Formal.AG.Measurement.Examples
 #check AAT.AG.Measurement.supportTransferExamplePackage /- is a def, should be lemma/theorem -/
 
--- Formal.AG.Measurement.GAGA
-#check @AAT.AG.Measurement.aatGAGAComparisonStatement_cert /- is a def, should be lemma/theorem -/
-
 -- Formal.AG.Measurement.Hodge
 #check @AAT.AG.Measurement.finiteHodgeDecompositionPackage /- is a def, should be lemma/theorem -/
 #check @AAT.AG.Measurement.harmonicDebtMinimalityPackage /- is a def, should be lemma/theorem -/
@@ -1144,10 +1141,6 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check AAT.AG.Measurement.SupportLocalizedTransferFiniteExample.sufficientConditionApplied /- definition missing documentation string -/
 #check AAT.AG.Measurement.MeasurementPacketGAGAFiniteExample.synthesisPackage /- definition missing documentation string -/
 #check AAT.AG.Measurement.MeasurementPacketGAGAFiniteExample.gagaPackage /- definition missing documentation string -/
-#check AAT.AG.Measurement.MeasurementPacketGAGAFiniteExample.certifiedReadingsSeparated /- definition missing documentation string -/
-#check AAT.AG.Measurement.MeasurementPacketGAGAFiniteExample.candidateInterfacesSeparated /- definition missing documentation string -/
-#check AAT.AG.Measurement.MeasurementPacketGAGAFiniteExample.boundedPacketConstructed /- definition missing documentation string -/
-#check AAT.AG.Measurement.MeasurementPacketGAGAFiniteExample.finiteGAGAComparisonConstructed /- definition missing documentation string -/
 #check AAT.AG.Measurement.PartVIIIFiniteExampleSuite.pseudoCircleMeasuredNonzero /- definition missing documentation string -/
 #check AAT.AG.Measurement.PartVIIIFiniteExampleSuite.squareFreeRepairPackage /- definition missing documentation string -/
 #check AAT.AG.Measurement.PartVIIIFiniteExampleSuite.refactorInvariance /- definition missing documentation string -/
@@ -1160,34 +1153,13 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.Measurement.SelectedFiniteHodgeTheoremPackage.cellularModel /- definition missing documentation string -/
 #check @AAT.AG.Measurement.SelectedFiniteHodgeTheoremPackage.laplacianReading /- definition missing documentation string -/
 #check @AAT.AG.Measurement.SelectedFiniteHodgeTheoremPackage.hodgeData /- definition missing documentation string -/
-#check @AAT.AG.Measurement.SelectedPeriodStokesTheoremPackage.selectedAccounting /- definition missing documentation string -/
-#check @AAT.AG.Measurement.SelectedPeriodStokesTheoremPackage.measuredAccounting /- definition missing documentation string -/
 #check @AAT.AG.Measurement.SelectedPeriodStokesTheoremPackage.extensionAccounting /- definition missing documentation string -/
-#check @AAT.AG.Measurement.SelectedTopologicalDebtTheoremPackage.selectedDebtData /- definition missing documentation string -/
-#check @AAT.AG.Measurement.SelectedTopologicalDebtTheoremPackage.measuredDebtData /- definition missing documentation string -/
 #check @AAT.AG.Measurement.SelectedTopologicalDebtTheoremPackage.nerve /- definition missing documentation string -/
 #check @AAT.AG.Measurement.SelectedTopologicalDebtTheoremPackage.nerveComplex /- definition missing documentation string -/
-#check @AAT.AG.Measurement.SelectedDerivedConflictTheoremPackage.commonAmbient /- definition missing documentation string -/
-#check @AAT.AG.Measurement.SelectedDerivedConflictTheoremPackage.lawConflictMeasurement /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGACertifiedFields.HodgeComparison /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGACertifiedFields.HarmonicDecomposition /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGACertifiedFields.PeriodStokesAccounting /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGACertifiedFields.TopologicalDebtCapacity /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGACertifiedFields.DerivedConflictAccounting /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGACertifiedFields.selectedHodgeComparison /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGACertifiedFields.selectedHarmonicDecomposition /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGACertifiedFields.selectedPeriodStokesAccounting /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGACertifiedFields.selectedTopologicalDebtCapacity /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGACertifiedFields.selectedDerivedConflictAccounting /- definition missing documentation string -/
 #check @AAT.AG.Measurement.AATGAGACertifiedFields.finiteHodgeTheoremPackage /- definition missing documentation string -/
 #check @AAT.AG.Measurement.AATGAGACertifiedFields.periodStokesTheoremPackage /- definition missing documentation string -/
 #check @AAT.AG.Measurement.AATGAGACertifiedFields.topologicalDebtTheoremPackage /- definition missing documentation string -/
 #check @AAT.AG.Measurement.AATGAGACertifiedFields.derivedConflictTheoremPackage /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGACertifiedFields.hodgeComparisonCertified /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGACertifiedFields.harmonicDecompositionCertified /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGACertifiedFields.periodStokesAccountingCertified /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGACertifiedFields.topologicalDebtCapacityCertified /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGACertifiedFields.derivedConflictAccountingCertified /- definition missing documentation string -/
 #check @AAT.AG.Measurement.AATGAGACandidateInterfaces.MonotoneWitnessStabilityInterface /- definition missing documentation string -/
 #check @AAT.AG.Measurement.AATGAGACandidateInterfaces.FiniteCechStabilityInterface /- definition missing documentation string -/
 #check @AAT.AG.Measurement.AATGAGACandidateInterfaces.FlatBaseChangeInterface /- definition missing documentation string -/
@@ -1198,14 +1170,6 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.Measurement.AATGAGACandidateInterfaces.flatBaseChange /- definition missing documentation string -/
 #check @AAT.AG.Measurement.AATGAGACandidateInterfaces.spectralHotspot /- definition missing documentation string -/
 #check @AAT.AG.Measurement.AATGAGACandidateInterfaces.transferLowerBound /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGACandidateInterfaces.candidateInterfacesSeparatedFromCertified /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGAComparisonAssumptions.finiteMeasurementRegime /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGAComparisonAssumptions.finiteCover /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGAComparisonAssumptions.innerProductCoefficientSheaf /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGAComparisonAssumptions.cellularCochainModel /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGAComparisonAssumptions.squareFreeRegime /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGAComparisonAssumptions.commonAmbient /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGAComparisonAssumptions.stabilityDistanceAndComparisonMaps /- definition missing documentation string -/
 #check @AAT.AG.Measurement.AATGAGABoundary.noExternalDataSourceFidelity /- definition missing documentation string -/
 #check @AAT.AG.Measurement.AATGAGABoundary.noExternalProcedureCorrectness /- definition missing documentation string -/
 #check @AAT.AG.Measurement.AATGAGABoundary.noArbitraryLawUniverseComparison /- definition missing documentation string -/
@@ -1213,10 +1177,7 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.Measurement.AATGAGAComparisonData.measurementPacketData /- definition missing documentation string -/
 #check @AAT.AG.Measurement.AATGAGAComparisonData.certifiedFields /- definition missing documentation string -/
 #check @AAT.AG.Measurement.AATGAGAComparisonData.candidateInterfaces /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGAComparisonData.assumptions /- definition missing documentation string -/
 #check @AAT.AG.Measurement.AATGAGAComparisonData.boundary /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGAComparisonData.certifiedCandidateSeparation /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGAComparisonPacket.finiteProfileComparison /- definition missing documentation string -/
 #check @AAT.AG.Measurement.AATGAGAFiniteMeasurementComparison.packet /- definition missing documentation string -/
 
 -- Formal.AG.Measurement.Hodge

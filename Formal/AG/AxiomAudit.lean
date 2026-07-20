@@ -2174,6 +2174,81 @@ theorem gagaLowDegreeTopologicalDebtCapacityFromComplex :
             Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.C2 :=
   Measurement.lowDegreeTopologicalDebtTheoremPackage.topological_debt_capacity_from_complex
 
+/-! Kernel-audit inventory for theorem 12.3 derived GAGA comparison. -/
+
+/-- Direct audit entry for the indexed Hodge decomposition theorem. -/
+theorem gagaSelectedHodgeDecomposition :
+    ∃ h, h = @Measurement.SelectedFiniteHodgeTheoremPackage.decomposition_holds :=
+  ⟨@Measurement.SelectedFiniteHodgeTheoremPackage.decomposition_holds, rfl⟩
+
+/-- Direct audit entry for the indexed harmonic/cohomology theorem. -/
+theorem gagaSelectedHodgeCohomology :
+    ∃ h, h = @Measurement.SelectedFiniteHodgeTheoremPackage.harmonic_cohomology_holds :=
+  ⟨@Measurement.SelectedFiniteHodgeTheoremPackage.harmonic_cohomology_holds, rfl⟩
+
+/-- Direct audit entry for additive selected period accounting. -/
+theorem gagaSelectedPeriodAccountingAdditive :
+    ∃ h, h = @Measurement.SelectedPeriodStokesTheoremPackage.period_stokes_accounting_additive :=
+  ⟨@Measurement.SelectedPeriodStokesTheoremPackage.period_stokes_accounting_additive, rfl⟩
+
+/-- Direct audit entry for the selected finite-nerve capacity theorem. -/
+theorem gagaSelectedTopologicalCapacity :
+    ∃ h, h = @Measurement.SelectedTopologicalDebtTheoremPackage.topological_debt_capacity_from_complex :=
+  ⟨@Measurement.SelectedTopologicalDebtTheoremPackage.topological_debt_capacity_from_complex,
+    rfl⟩
+
+/-- Direct audit entry for the selected LawConflict/Tor theorem. -/
+theorem gagaSelectedLawConflictTor :
+    ∃ h, h = @Measurement.SelectedDerivedConflictTheoremPackage.lawConflictTorReading_holds :=
+  ⟨@Measurement.SelectedDerivedConflictTheoremPackage.lawConflictTorReading_holds, rfl⟩
+
+/-- Direct audit entry for all certified theorem-12.3 conjuncts. -/
+theorem gagaCertifiedComparisonStatement :
+    ∃ h, h = @Measurement.aatGAGACertifiedComparisonStatement_holds :=
+  ⟨@Measurement.aatGAGACertifiedComparisonStatement_holds, rfl⟩
+
+/-- Direct audit entry for the certified Hodge comparison accessor. -/
+theorem gagaCertifiedHodgeComparison :
+    ∃ h, h = @Measurement.AATGAGACertifiedFields.hodge_comparison_holds :=
+  ⟨@Measurement.AATGAGACertifiedFields.hodge_comparison_holds, rfl⟩
+
+/-- Direct audit entry for the certified decomposition accessor. -/
+theorem gagaCertifiedHarmonicDecomposition :
+    ∃ h, h = @Measurement.AATGAGACertifiedFields.harmonic_decomposition_holds :=
+  ⟨@Measurement.AATGAGACertifiedFields.harmonic_decomposition_holds, rfl⟩
+
+/-- Direct audit entry for the full certified comparison accessor. -/
+theorem gagaCertifiedComparison :
+    ∃ h, h = @Measurement.AATGAGACertifiedFields.certified_comparison_holds :=
+  ⟨@Measurement.AATGAGACertifiedFields.certified_comparison_holds, rfl⟩
+
+/-- Direct audit entry for raw-data comparison derivation. -/
+theorem gagaComparisonStatement :
+    ∃ h, h = @Measurement.aatGAGAComparisonStatement_holds :=
+  ⟨@Measurement.aatGAGAComparisonStatement_holds, rfl⟩
+
+/-- Direct audit entry for the finite comparison packet theorem. -/
+theorem gagaFiniteProfileComparison :
+    ∃ h, h = @Measurement.AATGAGAComparisonPacket.finiteProfileComparison_holds :=
+  ⟨@Measurement.AATGAGAComparisonPacket.finiteProfileComparison_holds, rfl⟩
+
+/-- Direct audit entry for the final comparison package accessor. -/
+theorem gagaFiniteMeasurementCertifiedStatement :
+    ∃ h, h =
+      @Measurement.AATGAGAFiniteMeasurementComparison.certified_statement_holds_of_package :=
+  ⟨@Measurement.AATGAGAFiniteMeasurementComparison.certified_statement_holds_of_package,
+    rfl⟩
+
+/-- Direct audit entry for existence of the derived GAGA comparison. -/
+theorem gagaFiniteMeasurementComparison :
+    ∃ h, h = @Measurement.aatGAGAFiniteMeasurementComparison :=
+  ⟨@Measurement.aatGAGAFiniteMeasurementComparison, rfl⟩
+
+/-- Direct audit entry for the integrated finite GAGA fixture. -/
+theorem gagaIntegratedFiniteFixture :
+    ∃ h, h = @Measurement.measurementPacketGAGAExample_certifiedComparison :=
+  ⟨@Measurement.measurementPacketGAGAExample_certifiedComparison, rfl⟩
+
 theorem finiteForestEdgeAbsorptionVanishing
     {N : Cohomology.CoverNerve}
     (F : Cohomology.FiniteForestEdgeAbsorptionData N) :

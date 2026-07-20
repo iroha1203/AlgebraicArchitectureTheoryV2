@@ -11,13 +11,30 @@ universe u v
 /-!
 Part VIII R10 / AC23-AC24 AAT-GAGA finite measurement comparison.
 
-`GAGA` here is a finite-profile comparison packet. It does not assert external
-data-source fidelity, external procedure correctness, or truth across arbitrary
-law universes.
+The certified comparison is indexed by one selected finite site, cover,
+coefficient, measurement, and common ambient.  Its conclusions are the actual
+Hodge, Stokes, finite-nerve, and Tor statements carried by theorem packages.
+Candidate-dependent interfaces remain separate data.
 -/
 
-/-- VIII.Theorem 12.3: selected finite Hodge theorem package used by GAGA. -/
-structure SelectedFiniteHodgeTheoremPackage (M : MeasurementProfile.{u, v}) where
+/-- VIII.Theorem 12.3: common finite data shared by every certified comparison. -/
+structure AATGAGACommonFiniteData (M : MeasurementProfile.{u, v}) where
+  /-- The site selected for this comparison. -/
+  selectedSite : M.SiteObj
+  /-- The finite cover selected for this comparison. -/
+  selectedCover : M.Cover
+  /-- The coefficient object selected for this comparison. -/
+  selectedCoefficient : M.Coeff
+  /-- The measurement-domain element selected for this comparison. -/
+  selectedMeasurement : M.Domain
+  /-- Evidence that the selected measurement belongs to the measured profile. -/
+  measuredSelection : M.Measured_M selectedMeasurement
+  /-- The common ambient whose two law ideals are read by the Tor package. -/
+  commonAmbient : CommonAmbientPair M
+
+/-- VIII.Theorem 12.3: selected finite Hodge package over the common finite data. -/
+structure SelectedFiniteHodgeTheoremPackage {M : MeasurementProfile.{u, v}}
+    (C : AATGAGACommonFiniteData M) where
   cellularModel : CellularMeasurementModel M
   laplacianReading : SheafLaplacianReading cellularModel
   hodgeData : FiniteHodgeDecompositionData laplacianReading
@@ -27,41 +44,31 @@ namespace SelectedFiniteHodgeTheoremPackage
 
 /-- VIII.Theorem 12.3: expose the carried finite Hodge decomposition theorem. -/
 theorem decomposition_holds {M : MeasurementProfile.{u, v}}
-    (P : SelectedFiniteHodgeTheoremPackage M) :
+    {C : AATGAGACommonFiniteData M}
+    (P : SelectedFiniteHodgeTheoremPackage C) :
     P.hodgeData.finiteHodgeDecomposition :=
   P.hodgePackage.decomposition_holds
 
 /-- VIII.Theorem 12.3: expose the carried harmonic-cohomology theorem. -/
 theorem harmonic_cohomology_holds {M : MeasurementProfile.{u, v}}
-    (P : SelectedFiniteHodgeTheoremPackage M) :
+    {C : AATGAGACommonFiniteData M}
+    (P : SelectedFiniteHodgeTheoremPackage C) :
     P.hodgeData.harmonicKernelIdentifiesCohomology :=
   P.hodgePackage.harmonic_cohomology_holds
 
 end SelectedFiniteHodgeTheoremPackage
 
-/-- VIII.Theorem 12.3: selected Period/Stokes theorem package used by GAGA. -/
-structure SelectedPeriodStokesTheoremPackage (M : MeasurementProfile.{u, v}) where
-  selectedAccounting : M.Domain
-  measuredAccounting : M.Measured_M selectedAccounting
+/-- VIII.Theorem 12.3: selected Period/Stokes package over the common finite data. -/
+structure SelectedPeriodStokesTheoremPackage {M : MeasurementProfile.{u, v}}
+    (C : AATGAGACommonFiniteData M) where
   extensionAccounting : Cohomology.ExtensionHolonomyAccounting.{v}
 
 namespace SelectedPeriodStokesTheoremPackage
 
-/-- VIII.Theorem 12.3: expose the selected Period/Stokes artifact as in-scope measured data. -/
-theorem period_stokes_holds {M : MeasurementProfile.{u, v}}
-    (P : SelectedPeriodStokesTheoremPackage M) :
-    M.InScope P.selectedAccounting :=
-  P.measuredAccounting.inScope
-
-/-- VIII.Theorem 12.3: expose the selected Period/Stokes measurement certificate. -/
-def period_stokes_measurement {M : MeasurementProfile.{u, v}}
-    (P : SelectedPeriodStokesTheoremPackage M) :
-    M.Measured_M P.selectedAccounting :=
-  P.measuredAccounting
-
-/-- VIII.Theorem 12.3: the selected Period/Stokes accounting uses the actual additive theorem. -/
+/-- VIII.Theorem 12.3: expose the additive extension-accounting theorem. -/
 theorem period_stokes_accounting_additive {M : MeasurementProfile.{u, v}}
-    (P : SelectedPeriodStokesTheoremPackage M)
+    {C : AATGAGACommonFiniteData M}
+    (P : SelectedPeriodStokesTheoremPackage C)
     (x y : P.extensionAccounting.ExtensionEvent) :
     P.extensionAccounting.kappa_U (x + y) =
       P.extensionAccounting.kappa_U x + P.extensionAccounting.kappa_U y :=
@@ -69,30 +76,18 @@ theorem period_stokes_accounting_additive {M : MeasurementProfile.{u, v}}
 
 end SelectedPeriodStokesTheoremPackage
 
-/-- VIII.Theorem 12.3: selected topological-debt theorem package used by GAGA. -/
-structure SelectedTopologicalDebtTheoremPackage (M : MeasurementProfile.{u, v}) where
-  selectedDebtData : M.Domain
-  measuredDebtData : M.Measured_M selectedDebtData
+/-- VIII.Theorem 12.3: selected topological-capacity package over the common data. -/
+structure SelectedTopologicalDebtTheoremPackage {M : MeasurementProfile.{u, v}}
+    (C : AATGAGACommonFiniteData M) where
   nerve : Cohomology.CoverNerve.{v}
   nerveComplex : Cohomology.FiniteNerveCochainComplex nerve
 
 namespace SelectedTopologicalDebtTheoremPackage
 
-/-- VIII.Theorem 12.3: expose the selected topological-debt artifact as in-scope measured data. -/
-theorem topological_debt_holds {M : MeasurementProfile.{u, v}}
-    (P : SelectedTopologicalDebtTheoremPackage M) :
-    M.InScope P.selectedDebtData :=
-  P.measuredDebtData.inScope
-
-/-- VIII.Theorem 12.3: expose the selected topological-debt measurement certificate. -/
-def topological_debt_measurement {M : MeasurementProfile.{u, v}}
-    (P : SelectedTopologicalDebtTheoremPackage M) :
-    M.Measured_M P.selectedDebtData :=
-  P.measuredDebtData
-
-/-- VIII.Theorem 12.3: the selected topological-debt package uses the finite nerve theorem. -/
+/-- VIII.Theorem 12.3: expose the finite-nerve capacity theorem. -/
 theorem topological_debt_capacity_from_complex {M : MeasurementProfile.{u, v}}
-    (P : SelectedTopologicalDebtTheoremPackage M) :
+    {C : AATGAGACommonFiniteData M}
+    (P : SelectedTopologicalDebtTheoremPackage C) :
     Module.finrank P.nerveComplex.k P.nerveComplex.C1 <=
       Module.finrank P.nerveComplex.k P.nerveComplex.H1 +
         Module.finrank P.nerveComplex.k P.nerveComplex.C0 +
@@ -101,117 +96,132 @@ theorem topological_debt_capacity_from_complex {M : MeasurementProfile.{u, v}}
 
 end SelectedTopologicalDebtTheoremPackage
 
-/-- VIII.Theorem 12.3: selected derived-conflict theorem package used by GAGA. -/
-structure SelectedDerivedConflictTheoremPackage (M : MeasurementProfile.{u, v}) where
-  commonAmbient : CommonAmbientPair M
-  lawConflictMeasurement : LawConflictMeasurement commonAmbient
+/-- VIII.Theorem 12.3: selected LawConflict/Tor package over the common data. -/
+structure SelectedDerivedConflictTheoremPackage {M : MeasurementProfile.{u, v}}
+    (C : AATGAGACommonFiniteData M) where
+  /-- The coefficient ring used by the selected Tor computation. -/
+  R : Type v
+  [commRingR : CommRing R]
+  /-- The left ideal read from the common ambient. -/
+  leftIdeal : Ideal R
+  /-- The right ideal read from the common ambient. -/
+  rightIdeal : Ideal R
+  /-- Interpretation of common-ambient law ideals in the selected ring. -/
+  readLawIdeal : C.commonAmbient.LawIdeal → Ideal R
+  leftIdeal_eq : readLawIdeal C.commonAmbient.leftLawIdeal = leftIdeal
+  rightIdeal_eq : readLawIdeal C.commonAmbient.rightLawIdeal = rightIdeal
+  /-- The selected bridge from LawConflict to mathlib Tor. -/
+  torBridge : Derived.Intersection.SelectedTorBridge.{v} R leftIdeal rightIdeal
+  /-- The homological degree used by the comparison. -/
+  degree : Nat
+
+attribute [instance] SelectedDerivedConflictTheoremPackage.commRingR
 
 namespace SelectedDerivedConflictTheoremPackage
 
-/-- VIII.Theorem 12.3: expose the carried LawConflict Tor reading theorem. -/
-theorem lawConflictTorReading_holds {M : MeasurementProfile.{u, v}}
-    (P : SelectedDerivedConflictTheoremPackage M) :
-    P.lawConflictMeasurement.lawConflictTorReading :=
-  P.lawConflictMeasurement.lawConflictTorReading_holds
+/-- VIII.Theorem 12.3: selected LawConflict object. -/
+abbrev lawConflict {M : MeasurementProfile.{u, v}}
+    {C : AATGAGACommonFiniteData M}
+    (P : SelectedDerivedConflictTheoremPackage C) : Type v :=
+  P.torBridge.LawConflict P.degree
 
-/-- VIII.Theorem 12.3: expose the carried common-ambient requirement theorem. -/
-theorem commonAmbientRequired_holds {M : MeasurementProfile.{u, v}}
-    (P : SelectedDerivedConflictTheoremPackage M) :
-    P.lawConflictMeasurement.commonAmbientRequired :=
-  P.lawConflictMeasurement.commonAmbientRequired_holds
+/-- VIII.Theorem 12.3: expose the actual LawConflict/Mathlib Tor equivalence. -/
+def lawConflictLinearEquivMathlibTor {M : MeasurementProfile.{u, v}}
+    {C : AATGAGACommonFiniteData M}
+    (P : SelectedDerivedConflictTheoremPackage C) :
+    P.lawConflict ≃ₗ[P.R]
+      Derived.Intersection.mathlibTor P.R P.leftIdeal P.rightIdeal P.degree :=
+  P.torBridge.lawConflictLinearEquivMathlibTor P.degree
+
+/-- VIII.Theorem 12.3: the selected LawConflict has an actual Tor reading. -/
+theorem lawConflictTorReading_holds {M : MeasurementProfile.{u, v}}
+    {C : AATGAGACommonFiniteData M}
+    (P : SelectedDerivedConflictTheoremPackage C) :
+    Nonempty
+      (P.lawConflict ≃ₗ[P.R]
+        Derived.Intersection.mathlibTor P.R P.leftIdeal P.rightIdeal P.degree) :=
+  ⟨P.lawConflictLinearEquivMathlibTor⟩
 
 end SelectedDerivedConflictTheoremPackage
 
-/-- VIII.Theorem 12.3: certified comparison fields. -/
-structure AATGAGACertifiedFields (M : MeasurementProfile.{u, v}) where
-  HodgeComparison : Type v
-  HarmonicDecomposition : Type v
-  PeriodStokesAccounting : Type v
-  TopologicalDebtCapacity : Type v
-  DerivedConflictAccounting : Type v
-  selectedHodgeComparison : HodgeComparison
-  selectedHarmonicDecomposition : HarmonicDecomposition
-  selectedPeriodStokesAccounting : PeriodStokesAccounting
-  selectedTopologicalDebtCapacity : TopologicalDebtCapacity
-  selectedDerivedConflictAccounting : DerivedConflictAccounting
-  finiteHodgeTheoremPackage : SelectedFiniteHodgeTheoremPackage M
-  periodStokesTheoremPackage : SelectedPeriodStokesTheoremPackage M
-  topologicalDebtTheoremPackage : SelectedTopologicalDebtTheoremPackage M
-  derivedConflictTheoremPackage : SelectedDerivedConflictTheoremPackage M
-  hodgeComparisonCertified : Prop
-  hodgeComparisonCertified_cert : hodgeComparisonCertified
-  harmonicDecompositionCertified : Prop
-  harmonicDecompositionCertified_cert : harmonicDecompositionCertified
-  periodStokesAccountingCertified : Prop
-  periodStokesAccountingCertified_cert : periodStokesAccountingCertified
-  topologicalDebtCapacityCertified : Prop
-  topologicalDebtCapacityCertified_cert : topologicalDebtCapacityCertified
-  derivedConflictAccountingCertified : Prop
-  derivedConflictAccountingCertified_cert : derivedConflictAccountingCertified
+/-- VIII.Theorem 12.3: theorem packages indexed by one common finite datum. -/
+structure AATGAGACertifiedFields {M : MeasurementProfile.{u, v}}
+    (C : AATGAGACommonFiniteData M) where
+  finiteHodgeTheoremPackage : SelectedFiniteHodgeTheoremPackage C
+  periodStokesTheoremPackage : SelectedPeriodStokesTheoremPackage C
+  topologicalDebtTheoremPackage : SelectedTopologicalDebtTheoremPackage C
+  derivedConflictTheoremPackage : SelectedDerivedConflictTheoremPackage C
+
+/--
+VIII.Theorem 12.3: the certified finite comparison statement.
+
+Every conjunct is the statement of an actual theorem package.  There is no
+caller-selected `Prop` or GAGA-local certificate in this definition.
+-/
+def aatGAGACertifiedComparisonStatement {M : MeasurementProfile.{u, v}}
+    {C : AATGAGACommonFiniteData M}
+    (F : AATGAGACertifiedFields C) : Prop :=
+  F.finiteHodgeTheoremPackage.hodgeData.harmonicKernelIdentifiesCohomology ∧
+    F.finiteHodgeTheoremPackage.hodgeData.finiteHodgeDecomposition ∧
+      (∀ (ω : Cohomology.IntervalBasisStokes.Cochain 0)
+          (γ : Cohomology.IntervalBasisStokes.Chain 1),
+        Cohomology.IntervalBasisStokes.pair1
+            (Cohomology.IntervalBasisStokes.d0 ω) γ =
+          Cohomology.IntervalBasisStokes.pair0 ω
+            (Cohomology.IntervalBasisStokes.boundary0 γ)) ∧
+        (∀ x y : F.periodStokesTheoremPackage.extensionAccounting.ExtensionEvent,
+          F.periodStokesTheoremPackage.extensionAccounting.kappa_U (x + y) =
+            F.periodStokesTheoremPackage.extensionAccounting.kappa_U x +
+              F.periodStokesTheoremPackage.extensionAccounting.kappa_U y) ∧
+          (Module.finrank F.topologicalDebtTheoremPackage.nerveComplex.k
+                F.topologicalDebtTheoremPackage.nerveComplex.C1 <=
+            Module.finrank F.topologicalDebtTheoremPackage.nerveComplex.k
+                F.topologicalDebtTheoremPackage.nerveComplex.H1 +
+              Module.finrank F.topologicalDebtTheoremPackage.nerveComplex.k
+                F.topologicalDebtTheoremPackage.nerveComplex.C0 +
+                Module.finrank F.topologicalDebtTheoremPackage.nerveComplex.k
+                  F.topologicalDebtTheoremPackage.nerveComplex.C2) ∧
+            Nonempty
+              (F.derivedConflictTheoremPackage.lawConflict ≃ₗ[
+                  F.derivedConflictTheoremPackage.R]
+                Derived.Intersection.mathlibTor
+                  F.derivedConflictTheoremPackage.R
+                  F.derivedConflictTheoremPackage.leftIdeal
+                  F.derivedConflictTheoremPackage.rightIdeal
+                  F.derivedConflictTheoremPackage.degree)
+
+/-- VIII.Theorem 12.3: derive every certified comparison conjunct. -/
+theorem aatGAGACertifiedComparisonStatement_holds
+    {M : MeasurementProfile.{u, v}} {C : AATGAGACommonFiniteData M}
+    (F : AATGAGACertifiedFields C) :
+    aatGAGACertifiedComparisonStatement F := by
+  refine ⟨F.finiteHodgeTheoremPackage.harmonic_cohomology_holds,
+    F.finiteHodgeTheoremPackage.decomposition_holds, ?_, ?_,
+    F.topologicalDebtTheoremPackage.topological_debt_capacity_from_complex,
+    F.derivedConflictTheoremPackage.lawConflictTorReading_holds⟩
+  · exact Cohomology.IntervalBasisStokes.finiteIntervalStokes_basis
+  · exact fun x y =>
+      F.periodStokesTheoremPackage.period_stokes_accounting_additive x y
 
 namespace AATGAGACertifiedFields
 
-/-- VIII.Theorem 12.3: expose certified Hodge comparison. -/
-theorem hodgeComparisonCertified_holds {M : MeasurementProfile.{u, v}}
-    (C : AATGAGACertifiedFields M) : C.hodgeComparisonCertified :=
-  C.hodgeComparisonCertified_cert
+/-- VIII.Theorem 12.3: expose Hodge/cohomology comparison. -/
+theorem hodge_comparison_holds {M : MeasurementProfile.{u, v}}
+    {C : AATGAGACommonFiniteData M} (F : AATGAGACertifiedFields C) :
+    F.finiteHodgeTheoremPackage.hodgeData.harmonicKernelIdentifiesCohomology :=
+  F.finiteHodgeTheoremPackage.harmonic_cohomology_holds
 
-/-- VIII.Theorem 12.3: expose certified derived conflict accounting. -/
-theorem derivedConflictAccountingCertified_holds {M : MeasurementProfile.{u, v}}
-    (C : AATGAGACertifiedFields M) : C.derivedConflictAccountingCertified :=
-  C.derivedConflictAccountingCertified_cert
+/-- VIII.Theorem 12.3: expose harmonic decomposition. -/
+theorem harmonic_decomposition_holds {M : MeasurementProfile.{u, v}}
+    {C : AATGAGACommonFiniteData M} (F : AATGAGACertifiedFields C) :
+    F.finiteHodgeTheoremPackage.hodgeData.finiteHodgeDecomposition :=
+  F.finiteHodgeTheoremPackage.decomposition_holds
 
-/-- VIII.Theorem 12.3: certified harmonic decomposition is backed by a theorem package. -/
-theorem finiteHodgeDecomposition_holds {M : MeasurementProfile.{u, v}}
-    (C : AATGAGACertifiedFields M) :
-    C.finiteHodgeTheoremPackage.hodgeData.finiteHodgeDecomposition :=
-  C.finiteHodgeTheoremPackage.decomposition_holds
-
-/-- VIII.Theorem 12.3: harmonic representatives identify cohomology in the package. -/
-theorem finiteHodgeHarmonicCohomology_holds {M : MeasurementProfile.{u, v}}
-    (C : AATGAGACertifiedFields M) :
-    C.finiteHodgeTheoremPackage.hodgeData.harmonicKernelIdentifiesCohomology :=
-  C.finiteHodgeTheoremPackage.harmonic_cohomology_holds
-
-/-- VIII.Theorem 12.3: Period/Stokes certified field is backed by a theorem package. -/
-theorem periodStokesTheorem_holds {M : MeasurementProfile.{u, v}}
-    (C : AATGAGACertifiedFields M) :
-    M.InScope C.periodStokesTheoremPackage.selectedAccounting :=
-  C.periodStokesTheoremPackage.period_stokes_holds
-
-/-- VIII.Theorem 12.3: Period/Stokes certified field exposes additive accounting theorem. -/
-theorem periodStokesAccountingAdditive_holds {M : MeasurementProfile.{u, v}}
-    (C : AATGAGACertifiedFields M)
-    (x y : C.periodStokesTheoremPackage.extensionAccounting.ExtensionEvent) :
-    C.periodStokesTheoremPackage.extensionAccounting.kappa_U (x + y) =
-      C.periodStokesTheoremPackage.extensionAccounting.kappa_U x +
-        C.periodStokesTheoremPackage.extensionAccounting.kappa_U y :=
-  C.periodStokesTheoremPackage.period_stokes_accounting_additive x y
-
-/-- VIII.Theorem 12.3: topological-debt certified field is backed by a theorem package. -/
-theorem topologicalDebtTheorem_holds {M : MeasurementProfile.{u, v}}
-    (C : AATGAGACertifiedFields M) :
-    M.InScope C.topologicalDebtTheoremPackage.selectedDebtData :=
-  C.topologicalDebtTheoremPackage.topological_debt_holds
-
-/-- VIII.Theorem 12.3: topological-debt certified field exposes the finite nerve theorem. -/
-theorem topologicalDebtCapacityFromComplex_holds {M : MeasurementProfile.{u, v}}
-    (C : AATGAGACertifiedFields M) :
-    Module.finrank C.topologicalDebtTheoremPackage.nerveComplex.k
-        C.topologicalDebtTheoremPackage.nerveComplex.C1 <=
-      Module.finrank C.topologicalDebtTheoremPackage.nerveComplex.k
-          C.topologicalDebtTheoremPackage.nerveComplex.H1 +
-        Module.finrank C.topologicalDebtTheoremPackage.nerveComplex.k
-          C.topologicalDebtTheoremPackage.nerveComplex.C0 +
-          Module.finrank C.topologicalDebtTheoremPackage.nerveComplex.k
-            C.topologicalDebtTheoremPackage.nerveComplex.C2 :=
-  C.topologicalDebtTheoremPackage.topological_debt_capacity_from_complex
-
-/-- VIII.Theorem 12.3: derived-conflict certified field is backed by LawConflict data. -/
-theorem derivedConflictLawConflictTorReading_holds {M : MeasurementProfile.{u, v}}
-    (C : AATGAGACertifiedFields M) :
-    C.derivedConflictTheoremPackage.lawConflictMeasurement.lawConflictTorReading :=
-  C.derivedConflictTheoremPackage.lawConflictTorReading_holds
+/-- VIII.Theorem 12.3: expose the whole derived certified statement. -/
+theorem certified_comparison_holds {M : MeasurementProfile.{u, v}}
+    {C : AATGAGACommonFiniteData M} (F : AATGAGACertifiedFields C) :
+    aatGAGACertifiedComparisonStatement F :=
+  aatGAGACertifiedComparisonStatement_holds F
 
 end AATGAGACertifiedFields
 
@@ -227,37 +237,6 @@ structure AATGAGACandidateInterfaces (M : MeasurementProfile.{u, v}) where
   flatBaseChange : Option FlatBaseChangeInterface
   spectralHotspot : Option SpectralHotspotInterface
   transferLowerBound : Option TransferLowerBoundInterface
-  candidateInterfacesSeparatedFromCertified : Prop
-  candidateInterfacesSeparatedFromCertified_cert :
-    candidateInterfacesSeparatedFromCertified
-
-namespace AATGAGACandidateInterfaces
-
-/-- VIII.Theorem 12.3: candidate interfaces are not certified conclusions. -/
-theorem candidateInterfacesSeparatedFromCertified_holds
-    {M : MeasurementProfile.{u, v}}
-    (C : AATGAGACandidateInterfaces M) :
-    C.candidateInterfacesSeparatedFromCertified :=
-  C.candidateInterfacesSeparatedFromCertified_cert
-
-end AATGAGACandidateInterfaces
-
-/-- VIII.Theorem 12.3: explicit assumptions for finite-profile comparison. -/
-structure AATGAGAComparisonAssumptions (M : MeasurementProfile.{u, v}) where
-  finiteMeasurementRegime : Prop
-  finiteMeasurementRegime_cert : finiteMeasurementRegime
-  finiteCover : Prop
-  finiteCover_cert : finiteCover
-  innerProductCoefficientSheaf : Prop
-  innerProductCoefficientSheaf_cert : innerProductCoefficientSheaf
-  cellularCochainModel : Prop
-  cellularCochainModel_cert : cellularCochainModel
-  squareFreeRegime : Prop
-  squareFreeRegime_cert : squareFreeRegime
-  commonAmbient : Prop
-  commonAmbient_cert : commonAmbient
-  stabilityDistanceAndComparisonMaps : Prop
-  stabilityDistanceAndComparisonMaps_cert : stabilityDistanceAndComparisonMaps
 
 /-- VIII.Principle 12.4: non-conclusions for the finite GAGA comparison. -/
 structure AATGAGABoundary (M : MeasurementProfile.{u, v}) where
@@ -272,12 +251,12 @@ structure AATGAGABoundary (M : MeasurementProfile.{u, v}) where
 
 namespace AATGAGABoundary
 
-/-- VIII.Principle 12.4: `GAGA` does not assert external fidelity. -/
+/-- VIII.Principle 12.4: expose the external-fidelity non-conclusion. -/
 theorem noExternalDataSourceFidelity_holds {M : MeasurementProfile.{u, v}}
     (B : AATGAGABoundary M) : B.noExternalDataSourceFidelity :=
   B.noExternalDataSourceFidelity_cert
 
-/-- VIII.Principle 12.4: candidate-dependent fields are not certified conclusions. -/
+/-- VIII.Principle 12.4: candidate-dependent fields remain non-conclusions. -/
 theorem candidateDependentFieldsNotCertified_holds
     {M : MeasurementProfile.{u, v}} (B : AATGAGABoundary M) :
     B.candidateDependentFieldsNotCertified :=
@@ -285,136 +264,96 @@ theorem candidateDependentFieldsNotCertified_holds
 
 end AATGAGABoundary
 
-/-- VIII.Theorem 12.3: raw data for a finite AAT-GAGA comparison packet. -/
+/-- VIII.Theorem 12.3: data for one common finite AAT-GAGA comparison. -/
 structure AATGAGAComparisonData (M : MeasurementProfile.{u, v}) where
   measurementPacketData : MeasurementPacketData M
-  certifiedFields : AATGAGACertifiedFields M
+  /-- Common finite data indexing every certified theorem package. -/
+  commonData : AATGAGACommonFiniteData M
+  certifiedFields : AATGAGACertifiedFields commonData
   candidateInterfaces : AATGAGACandidateInterfaces M
-  assumptions : AATGAGAComparisonAssumptions M
   boundary : AATGAGABoundary M
-  certifiedCandidateSeparation : Prop
-  certifiedCandidateSeparation_cert : certifiedCandidateSeparation
 
-/--
-VIII.Theorem 12.3: selected finite-profile comparison statement.
-
-The statement is built from finite assumptions, certified comparison fields,
-candidate/certified separation, and external-fidelity boundaries.
--/
+/-- VIII.Theorem 12.3: selected finite-profile comparison statement. -/
 def aatGAGAComparisonStatement {M : MeasurementProfile.{u, v}}
     (D : AATGAGAComparisonData M) : Prop :=
-  D.assumptions.finiteMeasurementRegime ∧
-    D.assumptions.finiteCover ∧
-      D.assumptions.innerProductCoefficientSheaf ∧
-        D.assumptions.cellularCochainModel ∧
-          D.assumptions.squareFreeRegime ∧
-            D.assumptions.commonAmbient ∧
-              D.assumptions.stabilityDistanceAndComparisonMaps ∧
-                D.certifiedFields.hodgeComparisonCertified ∧
-                  D.certifiedFields.harmonicDecompositionCertified ∧
-                    D.certifiedFields.periodStokesAccountingCertified ∧
-                      D.certifiedFields.topologicalDebtCapacityCertified ∧
-                        D.certifiedFields.derivedConflictAccountingCertified ∧
-                          D.candidateInterfaces.candidateInterfacesSeparatedFromCertified ∧
-                            D.certifiedCandidateSeparation ∧
-                              D.boundary.noExternalDataSourceFidelity ∧
-                                D.boundary.noExternalProcedureCorrectness ∧
-                                  D.boundary.noArbitraryLawUniverseComparison ∧
-                                    D.boundary.candidateDependentFieldsNotCertified
+  aatGAGACertifiedComparisonStatement D.certifiedFields
 
-/-- VIII.Theorem 12.3: prove the comparison statement from raw comparison data. -/
-def aatGAGAComparisonStatement_cert {M : MeasurementProfile.{u, v}}
-    (D : AATGAGAComparisonData M) : aatGAGAComparisonStatement D := by
-  unfold aatGAGAComparisonStatement
-  exact ⟨D.assumptions.finiteMeasurementRegime_cert,
-    D.assumptions.finiteCover_cert,
-    D.assumptions.innerProductCoefficientSheaf_cert,
-    D.assumptions.cellularCochainModel_cert,
-    D.assumptions.squareFreeRegime_cert,
-    D.assumptions.commonAmbient_cert,
-    D.assumptions.stabilityDistanceAndComparisonMaps_cert,
-    D.certifiedFields.hodgeComparisonCertified_cert,
-    D.certifiedFields.harmonicDecompositionCertified_cert,
-    D.certifiedFields.periodStokesAccountingCertified_cert,
-    D.certifiedFields.topologicalDebtCapacityCertified_cert,
-    D.certifiedFields.derivedConflictAccountingCertified_cert,
-    D.candidateInterfaces.candidateInterfacesSeparatedFromCertified_cert,
-    D.certifiedCandidateSeparation_cert,
-    D.boundary.noExternalDataSourceFidelity_cert,
-    D.boundary.noExternalProcedureCorrectness_cert,
-    D.boundary.noArbitraryLawUniverseComparison_cert,
-    D.boundary.candidateDependentFieldsNotCertified_cert⟩
+/-- VIII.Theorem 12.3: derive the comparison statement from theorem packages. -/
+theorem aatGAGAComparisonStatement_holds {M : MeasurementProfile.{u, v}}
+    (D : AATGAGAComparisonData M) : aatGAGAComparisonStatement D :=
+  aatGAGACertifiedComparisonStatement_holds D.certifiedFields
 
-/-- VIII.Theorem 12.3: finite AAT-GAGA comparison packet. -/
-structure AATGAGAComparisonPacket (M : MeasurementProfile.{u, v})
-    extends AATGAGAComparisonData M where
-  finiteProfileComparison : Prop
-  finiteProfileComparison_cert : finiteProfileComparison
+/-- VIII.Theorem 12.3: finite comparison packet derived from common data. -/
+structure AATGAGAComparisonPacket (M : MeasurementProfile.{u, v}) where
+  /-- The exact comparison data certified by this packet. -/
+  toAATGAGAComparisonData : AATGAGAComparisonData M
+  certifiedComparison : aatGAGAComparisonStatement toAATGAGAComparisonData
 
 namespace AATGAGAComparisonPacket
 
-/-- VIII.Theorem 12.3: expose finite-profile comparison status. -/
+/-- VIII.Theorem 12.3: expose the derived finite-profile comparison. -/
 theorem finiteProfileComparison_holds {M : MeasurementProfile.{u, v}}
-    (P : AATGAGAComparisonPacket M) : P.finiteProfileComparison :=
-  P.finiteProfileComparison_cert
-
-/-- VIII.Theorem 12.3: certified and candidate fields are separated. -/
-theorem certifiedCandidateSeparation_holds {M : MeasurementProfile.{u, v}}
-    (P : AATGAGAComparisonPacket M) : P.certifiedCandidateSeparation :=
-  P.certifiedCandidateSeparation_cert
+    (P : AATGAGAComparisonPacket M) :
+    aatGAGAComparisonStatement P.toAATGAGAComparisonData :=
+  P.certifiedComparison
 
 end AATGAGAComparisonPacket
 
-/-- VIII.Theorem 12.3: construct a finite comparison packet from raw data. -/
+/-- VIII.Theorem 12.3: construct a packet from common finite data. -/
 def aatGAGAComparisonPacketOfData {M : MeasurementProfile.{u, v}}
     (D : AATGAGAComparisonData M) : AATGAGAComparisonPacket M where
   toAATGAGAComparisonData := D
-  finiteProfileComparison := aatGAGAComparisonStatement D
-  finiteProfileComparison_cert := aatGAGAComparisonStatement_cert D
+  certifiedComparison := aatGAGAComparisonStatement_holds D
 
 /-- VIII.Theorem 12.3: finite measurement comparison theorem package. -/
 structure AATGAGAFiniteMeasurementComparison {M : MeasurementProfile.{u, v}}
     (D : AATGAGAComparisonData M) where
   packet : AATGAGAComparisonPacket M
   packet_extends_data : packet.toAATGAGAComparisonData = D
-  finite_measurement_regime_holds : D.assumptions.finiteMeasurementRegime
-  finite_cover_holds : D.assumptions.finiteCover
-  inner_product_coefficient_sheaf_holds :
-    D.assumptions.innerProductCoefficientSheaf
-  cellular_cochain_model_holds : D.assumptions.cellularCochainModel
-  square_free_regime_holds : D.assumptions.squareFreeRegime
-  common_ambient_holds : D.assumptions.commonAmbient
-  stability_distance_and_maps_holds :
-    D.assumptions.stabilityDistanceAndComparisonMaps
-  certified_fields_hodge_holds : D.certifiedFields.hodgeComparisonCertified
-  certified_fields_harmonic_holds :
-    D.certifiedFields.harmonicDecompositionCertified
-  certified_fields_period_stokes_holds :
-    D.certifiedFields.periodStokesAccountingCertified
-  certified_fields_debt_capacity_holds :
-    D.certifiedFields.topologicalDebtCapacityCertified
-  certified_fields_derived_conflict_holds :
-    D.certifiedFields.derivedConflictAccountingCertified
-  candidate_interfaces_separated_holds :
-    D.candidateInterfaces.candidateInterfacesSeparatedFromCertified
-  finite_profile_comparison_holds : packet.finiteProfileComparison
-  no_external_fidelity_holds : D.boundary.noExternalDataSourceFidelity
+  hodge_comparison_holds :
+    D.certifiedFields.finiteHodgeTheoremPackage.hodgeData.harmonicKernelIdentifiesCohomology
+  harmonic_decomposition_holds :
+    D.certifiedFields.finiteHodgeTheoremPackage.hodgeData.finiteHodgeDecomposition
+  period_stokes_holds :
+    ∀ (ω : Cohomology.IntervalBasisStokes.Cochain 0)
+        (γ : Cohomology.IntervalBasisStokes.Chain 1),
+      Cohomology.IntervalBasisStokes.pair1
+          (Cohomology.IntervalBasisStokes.d0 ω) γ =
+        Cohomology.IntervalBasisStokes.pair0 ω
+          (Cohomology.IntervalBasisStokes.boundary0 γ)
+  period_accounting_additive_holds :
+    ∀ x y : D.certifiedFields.periodStokesTheoremPackage.extensionAccounting.ExtensionEvent,
+      D.certifiedFields.periodStokesTheoremPackage.extensionAccounting.kappa_U (x + y) =
+        D.certifiedFields.periodStokesTheoremPackage.extensionAccounting.kappa_U x +
+          D.certifiedFields.periodStokesTheoremPackage.extensionAccounting.kappa_U y
+  topological_capacity_holds :
+    Module.finrank D.certifiedFields.topologicalDebtTheoremPackage.nerveComplex.k
+          D.certifiedFields.topologicalDebtTheoremPackage.nerveComplex.C1 <=
+      Module.finrank D.certifiedFields.topologicalDebtTheoremPackage.nerveComplex.k
+          D.certifiedFields.topologicalDebtTheoremPackage.nerveComplex.H1 +
+        Module.finrank D.certifiedFields.topologicalDebtTheoremPackage.nerveComplex.k
+          D.certifiedFields.topologicalDebtTheoremPackage.nerveComplex.C0 +
+          Module.finrank D.certifiedFields.topologicalDebtTheoremPackage.nerveComplex.k
+            D.certifiedFields.topologicalDebtTheoremPackage.nerveComplex.C2
+  derived_conflict_tor_holds :
+    Nonempty
+      (D.certifiedFields.derivedConflictTheoremPackage.lawConflict ≃ₗ[
+          D.certifiedFields.derivedConflictTheoremPackage.R]
+        Derived.Intersection.mathlibTor
+          D.certifiedFields.derivedConflictTheoremPackage.R
+          D.certifiedFields.derivedConflictTheoremPackage.leftIdeal
+          D.certifiedFields.derivedConflictTheoremPackage.rightIdeal
+          D.certifiedFields.derivedConflictTheoremPackage.degree)
+  certified_statement_holds : aatGAGAComparisonStatement D
 
 namespace AATGAGAFiniteMeasurementComparison
 
-/-- VIII.Theorem 12.3: expose finite-profile comparison. -/
-theorem finite_profile_comparison_holds_of_package
+/-- VIII.Theorem 12.3: expose the complete certified statement. -/
+theorem certified_statement_holds_of_package
     {M : MeasurementProfile.{u, v}} {D : AATGAGAComparisonData M}
     (T : AATGAGAFiniteMeasurementComparison D) :
-    T.packet.finiteProfileComparison :=
-  T.finite_profile_comparison_holds
-
-/-- VIII.Theorem 12.3: expose candidate/certified separation. -/
-theorem candidate_interfaces_separated_holds_of_package
-    {M : MeasurementProfile.{u, v}} {D : AATGAGAComparisonData M}
-    (T : AATGAGAFiniteMeasurementComparison D) :
-    D.candidateInterfaces.candidateInterfacesSeparatedFromCertified :=
-  T.candidate_interfaces_separated_holds
+    aatGAGAComparisonStatement D :=
+  T.certified_statement_holds
 
 end AATGAGAFiniteMeasurementComparison
 
@@ -424,31 +363,21 @@ def aatGAGAFiniteMeasurementComparisonPackage
     AATGAGAFiniteMeasurementComparison D where
   packet := aatGAGAComparisonPacketOfData D
   packet_extends_data := rfl
-  finite_measurement_regime_holds := D.assumptions.finiteMeasurementRegime_cert
-  finite_cover_holds := D.assumptions.finiteCover_cert
-  inner_product_coefficient_sheaf_holds :=
-    D.assumptions.innerProductCoefficientSheaf_cert
-  cellular_cochain_model_holds := D.assumptions.cellularCochainModel_cert
-  square_free_regime_holds := D.assumptions.squareFreeRegime_cert
-  common_ambient_holds := D.assumptions.commonAmbient_cert
-  stability_distance_and_maps_holds :=
-    D.assumptions.stabilityDistanceAndComparisonMaps_cert
-  certified_fields_hodge_holds := D.certifiedFields.hodgeComparisonCertified_cert
-  certified_fields_harmonic_holds :=
-    D.certifiedFields.harmonicDecompositionCertified_cert
-  certified_fields_period_stokes_holds :=
-    D.certifiedFields.periodStokesAccountingCertified_cert
-  certified_fields_debt_capacity_holds :=
-    D.certifiedFields.topologicalDebtCapacityCertified_cert
-  certified_fields_derived_conflict_holds :=
-    D.certifiedFields.derivedConflictAccountingCertified_cert
-  candidate_interfaces_separated_holds :=
-    D.candidateInterfaces.candidateInterfacesSeparatedFromCertified_cert
-  finite_profile_comparison_holds :=
-    (aatGAGAComparisonPacketOfData D).finiteProfileComparison_cert
-  no_external_fidelity_holds := D.boundary.noExternalDataSourceFidelity_cert
+  hodge_comparison_holds :=
+    D.certifiedFields.finiteHodgeTheoremPackage.harmonic_cohomology_holds
+  harmonic_decomposition_holds :=
+    D.certifiedFields.finiteHodgeTheoremPackage.decomposition_holds
+  period_stokes_holds := fun ω γ =>
+    Cohomology.IntervalBasisStokes.finiteIntervalStokes_basis ω γ
+  period_accounting_additive_holds := fun x y =>
+    D.certifiedFields.periodStokesTheoremPackage.period_stokes_accounting_additive x y
+  topological_capacity_holds :=
+    D.certifiedFields.topologicalDebtTheoremPackage.topological_debt_capacity_from_complex
+  derived_conflict_tor_holds :=
+    D.certifiedFields.derivedConflictTheoremPackage.lawConflictTorReading_holds
+  certified_statement_holds := aatGAGAComparisonStatement_holds D
 
-/-- VIII.Theorem 12.3: selected finite AAT-GAGA comparison exists under explicit data. -/
+/-- VIII.Theorem 12.3: the derived finite AAT-GAGA comparison exists. -/
 theorem aatGAGAFiniteMeasurementComparison {M : MeasurementProfile.{u, v}}
     (D : AATGAGAComparisonData M) :
     Nonempty (AATGAGAFiniteMeasurementComparison D) :=

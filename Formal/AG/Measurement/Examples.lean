@@ -3557,9 +3557,23 @@ def measurementPacketExampleSynthesis :
     FiniteMeasurementSynthesis measurementPacketExampleData :=
   finiteMeasurementSynthesisPackage measurementPacketExampleData
 
-/-- R11(g): GAGA certified fields carry the concrete finite Hodge theorem package. -/
+/-- R11(g): common site, cover, coefficient, measurement, and ambient for GAGA. -/
+def gagaCommonFiniteData :
+    AATGAGACommonFiniteData pseudoCircleMeasurementProfile where
+  selectedSite := TinyMeasurementSite.u
+  selectedCover := ()
+  selectedCoefficient := ()
+  selectedMeasurement := PseudoCircleMeasurementDomain.boundaryCocycle
+  measuredSelection := {
+    inScope := rfl
+    method := ()
+    certificate := ()
+  }
+  commonAmbient := transferCommonAmbient
+
+/-- R11(g): GAGA carries the derived finite Hodge theorem package. -/
 def threeAxisSelectedHodgeTheoremPackage :
-    SelectedFiniteHodgeTheoremPackage pseudoCircleMeasurementProfile where
+    SelectedFiniteHodgeTheoremPackage gagaCommonFiniteData where
   cellularModel := threeAxisCellularModel
   laplacianReading := threeAxisLaplacianReading
   hodgeData := threeAxisGenericHodgeData
@@ -3576,13 +3590,7 @@ def lowDegreePeriodStokesAccounting :
 
 /-- R11(g) / VIII-5: selected Period/Stokes theorem package for GAGA. -/
 def lowDegreePeriodStokesTheoremPackage :
-    SelectedPeriodStokesTheoremPackage pseudoCircleMeasurementProfile where
-  selectedAccounting := PseudoCircleMeasurementDomain.boundaryCocycle
-  measuredAccounting := {
-    inScope := rfl
-    method := ()
-    certificate := ()
-  }
+    SelectedPeriodStokesTheoremPackage gagaCommonFiniteData where
   extensionAccounting := lowDegreePeriodStokesAccounting
 
 /-- R11(g) / VIII-5: one-chart finite nerve used by the GAGA topological-debt route. -/
@@ -3631,49 +3639,30 @@ def lowDegreeTopologicalDebtComplex :
 
 /-- R11(g) / VIII-5: selected topological-debt theorem package for GAGA. -/
 def lowDegreeTopologicalDebtTheoremPackage :
-    SelectedTopologicalDebtTheoremPackage pseudoCircleMeasurementProfile where
-  selectedDebtData := PseudoCircleMeasurementDomain.boundaryCocycle
-  measuredDebtData := {
-    inScope := rfl
-    method := ()
-    certificate := ()
-  }
+    SelectedTopologicalDebtTheoremPackage gagaCommonFiniteData where
   nerve := lowDegreeTopologicalDebtNerve
   nerveComplex := lowDegreeTopologicalDebtComplex
 
-/-- R11(g) / VIII-5: selected derived-conflict theorem package for GAGA. -/
+/-- R11(g) / VIII-5: canonical selected LawConflict/Tor bridge for GAGA. -/
 def lowDegreeDerivedConflictTheoremPackage :
-    SelectedDerivedConflictTheoremPackage pseudoCircleMeasurementProfile where
-  commonAmbient := transferCommonAmbient
-  lawConflictMeasurement := transferLawConflict
+    SelectedDerivedConflictTheoremPackage gagaCommonFiniteData where
+  R := ℤ
+  commRingR := inferInstance
+  leftIdeal := ⊥
+  rightIdeal := ⊥
+  readLawIdeal := fun _ => ⊥
+  leftIdeal_eq := rfl
+  rightIdeal_eq := rfl
+  torBridge := Derived.Intersection.canonicalSelectedTorBridge ℤ ⊥ ⊥
+  degree := 0
 
-/-- R11(g): certified finite AAT-GAGA readings. -/
+/-- R11(g): theorem packages indexed by the same common finite data. -/
 def gagaCertifiedFields :
-    AATGAGACertifiedFields pseudoCircleMeasurementProfile where
-  HodgeComparison := Unit
-  HarmonicDecomposition := Unit
-  PeriodStokesAccounting := Unit
-  TopologicalDebtCapacity := Unit
-  DerivedConflictAccounting := Unit
-  selectedHodgeComparison := ()
-  selectedHarmonicDecomposition := ()
-  selectedPeriodStokesAccounting := ()
-  selectedTopologicalDebtCapacity := ()
-  selectedDerivedConflictAccounting := ()
+    AATGAGACertifiedFields gagaCommonFiniteData where
   finiteHodgeTheoremPackage := threeAxisSelectedHodgeTheoremPackage
   periodStokesTheoremPackage := lowDegreePeriodStokesTheoremPackage
   topologicalDebtTheoremPackage := lowDegreeTopologicalDebtTheoremPackage
   derivedConflictTheoremPackage := lowDegreeDerivedConflictTheoremPackage
-  hodgeComparisonCertified := True
-  hodgeComparisonCertified_cert := trivial
-  harmonicDecompositionCertified := True
-  harmonicDecompositionCertified_cert := trivial
-  periodStokesAccountingCertified := True
-  periodStokesAccountingCertified_cert := trivial
-  topologicalDebtCapacityCertified := True
-  topologicalDebtCapacityCertified_cert := trivial
-  derivedConflictAccountingCertified := True
-  derivedConflictAccountingCertified_cert := trivial
 
 /-- R11(g): candidate interfaces remain separated from certified readings. -/
 def gagaCandidateInterfaces :
@@ -3688,26 +3677,6 @@ def gagaCandidateInterfaces :
   flatBaseChange := some ()
   spectralHotspot := some ()
   transferLowerBound := some ()
-  candidateInterfacesSeparatedFromCertified := True
-  candidateInterfacesSeparatedFromCertified_cert := trivial
-
-/-- R11(g): finite-profile comparison assumptions for the GAGA fixture. -/
-def gagaComparisonAssumptions :
-    AATGAGAComparisonAssumptions pseudoCircleMeasurementProfile where
-  finiteMeasurementRegime := True
-  finiteMeasurementRegime_cert := trivial
-  finiteCover := True
-  finiteCover_cert := trivial
-  innerProductCoefficientSheaf := True
-  innerProductCoefficientSheaf_cert := trivial
-  cellularCochainModel := True
-  cellularCochainModel_cert := trivial
-  squareFreeRegime := True
-  squareFreeRegime_cert := trivial
-  commonAmbient := True
-  commonAmbient_cert := trivial
-  stabilityDistanceAndComparisonMaps := True
-  stabilityDistanceAndComparisonMaps_cert := trivial
 
 /-- R11(g): external-fidelity boundary for the GAGA fixture. -/
 def gagaBoundary :
@@ -3725,12 +3694,10 @@ def gagaBoundary :
 def gagaComparisonExampleData :
     AATGAGAComparisonData pseudoCircleMeasurementProfile where
   measurementPacketData := measurementPacketExampleData
+  commonData := gagaCommonFiniteData
   certifiedFields := gagaCertifiedFields
   candidateInterfaces := gagaCandidateInterfaces
-  assumptions := gagaComparisonAssumptions
   boundary := gagaBoundary
-  certifiedCandidateSeparation := True
-  certifiedCandidateSeparation_cert := trivial
 
 /-- R11(g): theorem 12.3 instantiated on the finite comparison fixture. -/
 def gagaComparisonExamplePackage :
@@ -3741,34 +3708,19 @@ def gagaComparisonExamplePackage :
 structure MeasurementPacketGAGAFiniteExample where
   synthesisPackage : FiniteMeasurementSynthesis measurementPacketExampleData
   gagaPackage : AATGAGAFiniteMeasurementComparison gagaComparisonExampleData
-  certifiedReadingsSeparated : Prop
-  certifiedReadingsSeparated_cert : certifiedReadingsSeparated
-  candidateInterfacesSeparated : Prop
-  candidateInterfacesSeparated_cert : candidateInterfacesSeparated
-  boundedPacketConstructed : Prop
-  boundedPacketConstructed_cert : boundedPacketConstructed
-  finiteGAGAComparisonConstructed : Prop
-  finiteGAGAComparisonConstructed_cert : finiteGAGAComparisonConstructed
+  certifiedComparison : aatGAGAComparisonStatement gagaComparisonExampleData
 
 /-- R11(g): certified readings and candidate interfaces stay separated. -/
 def measurementPacketGAGAFiniteExample :
     MeasurementPacketGAGAFiniteExample where
   synthesisPackage := measurementPacketExampleSynthesis
   gagaPackage := gagaComparisonExamplePackage
-  certifiedReadingsSeparated := True
-  certifiedReadingsSeparated_cert := trivial
-  candidateInterfacesSeparated := True
-  candidateInterfacesSeparated_cert := trivial
-  boundedPacketConstructed := True
-  boundedPacketConstructed_cert := trivial
-  finiteGAGAComparisonConstructed := True
-  finiteGAGAComparisonConstructed_cert := trivial
+  certifiedComparison := aatGAGAComparisonStatement_holds gagaComparisonExampleData
 
-theorem measurementPacketGAGAExample_certifiedCandidateSeparated :
-    measurementPacketGAGAFiniteExample.certifiedReadingsSeparated ∧
-      measurementPacketGAGAFiniteExample.candidateInterfacesSeparated :=
-  ⟨measurementPacketGAGAFiniteExample.certifiedReadingsSeparated_cert,
-    measurementPacketGAGAFiniteExample.candidateInterfacesSeparated_cert⟩
+/-- R11(g): every theorem-12.3 certified conjunct fires in one finite fixture. -/
+theorem measurementPacketGAGAExample_certifiedComparison :
+    aatGAGAComparisonStatement gagaComparisonExampleData :=
+  measurementPacketGAGAFiniteExample.certifiedComparison
 
 /-- R11: aggregate suite reused by Part IX as static measurement fixtures. -/
 structure PartVIIIFiniteExampleSuite where
@@ -3875,11 +3827,8 @@ def PartVIIIFiniteExampleSuite.CoversR11 (S : PartVIIIFiniteExampleSuite) : Prop
                         S.cellularHodge.harmonicDebtMinimal ∧
                           S.supportTransfer.nontrivialPairingResidue ∧
                             S.supportTransfer.nontrivialTransferredResidue ∧
-                              S.packetGAGA.certifiedReadingsSeparated ∧
-                                S.packetGAGA.candidateInterfacesSeparated ∧
-                                  S.packetGAGA.boundedPacketConstructed ∧
-                                    S.packetGAGA.finiteGAGAComparisonConstructed ∧
-                                      S.staticFixturesReusableForPartIX
+                              aatGAGAComparisonStatement gagaComparisonExampleData ∧
+                                S.staticFixturesReusableForPartIX
 
 /-- R11 / AC25: all requested finite example families are fully certified. -/
 theorem partVIIIFiniteExampleSuite_complete :
@@ -3901,10 +3850,7 @@ theorem partVIIIFiniteExampleSuite_complete :
     partVIIIFiniteExampleSuite.cellularHodge.harmonicDebtMinimal_cert,
     partVIIIFiniteExampleSuite.supportTransfer.nontrivialPairingResidue_cert,
     partVIIIFiniteExampleSuite.supportTransfer.nontrivialTransferredResidue_cert,
-    partVIIIFiniteExampleSuite.packetGAGA.certifiedReadingsSeparated_cert,
-    partVIIIFiniteExampleSuite.packetGAGA.candidateInterfacesSeparated_cert,
-    partVIIIFiniteExampleSuite.packetGAGA.boundedPacketConstructed_cert,
-    partVIIIFiniteExampleSuite.packetGAGA.finiteGAGAComparisonConstructed_cert,
+    partVIIIFiniteExampleSuite.packetGAGA.certifiedComparison,
     partVIIIFiniteExampleSuite.staticFixturesReusableForPartIX_cert⟩
 
 end Measurement
