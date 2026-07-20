@@ -12,7 +12,7 @@ function restrictionDepths(contexts, contextIds) {
     if (memo.has(contextId)) return memo.get(contextId);
     if (trail.has(contextId)) return 0;
     const context = contexts.get(contextId);
-    const targets = (context?.restrictsTo || []).filter((target) => contextIds.has(target)).sort();
+    const targets = [...new Set(context?.restrictsTo || [])].filter((target) => contextIds.has(target)).sort();
     const depth = targets.length ? 1 + Math.max(...targets.map((target) => depthOf(target, new Set(trail).add(contextId)))) : 0;
     memo.set(contextId, depth);
     return depth;
@@ -65,11 +65,13 @@ export function buildArchitectureLayout(index, coverId = null) {
     const row = rowsByDepth.get(depth);
     row.forEach((context, rowIndex) => {
       const groups = subjectGroups(index, context);
-      const width = Math.max(6.8, Math.min(11.6, 4.8 + groups.length * 1.7));
-      const height = Math.max(6.4, Math.min(11.4, 4.8 + Math.ceil((context.atoms || []).length / Math.max(1, groups.length)) * 1.25));
+      const atomCount = groups.reduce((sum, group) => sum + group.atoms.length, 0);
+      const area = 34 + atomCount * 8;
+      const width = Math.sqrt(area * 1.35);
+      const height = area / width;
       const position = freezePoint((depth - (sortedDepths.length - 1) / 2) * -10.5, 0.08, (rowIndex - (row.length - 1) / 2) * 10.2);
       contextPosition.set(context.id, position);
-      contextLayouts.push(Object.freeze({ id: context.id, label: context.label || context.id, depth, atomCount: groups.reduce((sum, group) => sum + group.atoms.length, 0), sourceCount: (context.refs || []).filter((ref) => index.sourcesById.has(ref)).length, width, height, position }));
+      contextLayouts.push(Object.freeze({ id: context.id, label: context.label || context.id, depth, atomCount, sourceCount: new Set((context.refs || []).filter((ref) => index.sourcesById.has(ref))).size, width, height, position }));
 
       groups.forEach((group, groupIndex) => {
         const groupX = position.x + (groupIndex - (groups.length - 1) / 2) * 2.25;
@@ -89,7 +91,7 @@ export function buildArchitectureLayout(index, coverId = null) {
     });
   }
 
-  const restrictions = contexts.flatMap((context) => (context.restrictsTo || [])
+  const restrictions = contexts.flatMap((context) => [...new Set(context.restrictsTo || [])]
     .filter((targetId) => contextIds.has(targetId))
     .sort()
     .map((targetId) => Object.freeze({ id: `${context.id}->${targetId}`, sourceId: context.id, targetId, source: contextPosition.get(context.id), target: contextPosition.get(targetId) })));

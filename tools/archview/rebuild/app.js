@@ -80,7 +80,7 @@ function subjectsFor(index, contexts) {
   const values = [];
   for (const context of contexts) {
     const groups = new Map();
-    for (const atomId of context.atoms || []) {
+    for (const atomId of new Set(context.atoms || [])) {
       const atom = index.atomsById.get(atomId);
       if (!atom) continue;
       const atoms = groups.get(atom.subject) || [];
@@ -151,9 +151,9 @@ function factRow(term, value) {
 function refsForSelection(index, selection) {
   if (!selection) return [];
   if (selection.kind === "source") return [selection.id];
-  if (selection.kind === "atom") return index.atomsById.get(selection.id)?.refs || [];
-  if (selection.kind === "context") return index.contextsById.get(selection.id)?.refs || [];
-  if (selection.kind === "cover") return index.coversById.get(selection.id)?.refs || [];
+  if (selection.kind === "atom") return [...new Set(index.atomsById.get(selection.id)?.refs || [])];
+  if (selection.kind === "context") return [...new Set(index.contextsById.get(selection.id)?.refs || [])];
+  if (selection.kind === "cover") return [...new Set(index.coversById.get(selection.id)?.refs || [])];
   if (selection.kind === "subject") {
     const context = index.contextsById.get(selection.contextId);
     return [...new Set((context?.atoms || []).map((id) => index.atomsById.get(id)).filter((atom) => atom?.subject === selection.id).flatMap((atom) => atom.refs || []))].sort();
@@ -163,7 +163,7 @@ function refsForSelection(index, selection) {
     const target = index.contextsById.get(selection.targetId);
     return [...new Set([...(source?.refs || []), ...(target?.refs || [])])].sort();
   }
-  if (selection.kind === "shared-support") return index.atomsById.get(selection.atomId)?.refs || [];
+  if (selection.kind === "shared-support") return [...new Set(index.atomsById.get(selection.atomId)?.refs || [])];
   return [];
 }
 
@@ -222,7 +222,7 @@ function selectedFacts(snapshot, layout) {
     const context = index.contextsById.get(selection.id);
     const contextLayout = layout.contexts.find((value) => value.id === selection.id);
     if (!context) return null;
-    return { summary: `Context · ${displayName(context)}`, rows: [["Context", context.id], ["Atoms", new Set((context.atoms || []).filter((id) => index.atomsById.has(id))).size], ["Restricts to", (context.restrictsTo || []).join(", ")], ["Source refs", (context.refs || []).length], ["Restriction depth", contextLayout?.depth ?? 0]] };
+    return { summary: `Context · ${displayName(context)}`, rows: [["Context", context.id], ["Atoms", new Set((context.atoms || []).filter((id) => index.atomsById.has(id))).size], ["Restricts to", [...new Set(context.restrictsTo || [])].join(", ")], ["Source refs", new Set(context.refs || []).size], ["Restriction depth", contextLayout?.depth ?? 0]] };
   }
   if (selection.kind === "subject") {
     const context = index.contextsById.get(selection.contextId);
@@ -468,7 +468,14 @@ export async function startArchView() {
     renderedSignature = null;
     state.architectureFailed(error, source);
   };
-  const loadUrl = async (url) => { state.architectureLoading(url); try { applyIndex(await loadArchMapFromUrl(url), url); } catch (error) { rejectInput(error, url); } };
+  const loadUrl = async (url) => {
+    state.architectureLoading(url);
+    try {
+      const resolved = new URL(url, location.href);
+      if (resolved.origin !== location.origin) throw new Error("ArchMap URL must use the current origin.");
+      applyIndex(await loadArchMapFromUrl(resolved.href), resolved.href);
+    } catch (error) { rejectInput(error, url); }
+  };
   const loadText = (text, source = "local file") => { state.architectureLoading(source); try { applyIndex(parseArchMap(text), source); } catch (error) { rejectInput(error, source); } };
   const loadObject = (document, source = "runtime object") => { state.architectureLoading(source); try { applyIndex(buildArchMapIndex(document), source); } catch (error) { rejectInput(error, source); } };
   requireElement("#archmap-file").addEventListener("change", async (event) => {

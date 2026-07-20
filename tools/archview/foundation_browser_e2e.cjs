@@ -177,6 +177,7 @@ async function main() {
           atoms: architectureLayout.atoms.every((entry) => index.atomsById.has(entry.atomId) && index.contextsById.get(entry.contextId)?.atoms.includes(entry.atomId)),
           restrictions: architectureLayout.restrictions.every((entry) => index.contextsById.get(entry.sourceId)?.restrictsTo.includes(entry.targetId)),
           sharedSupports: architectureLayout.sharedSupports.every((entry) => new Set(entry.contextIds).size > 1 && entry.contextIds.every((contextId) => index.contextsById.get(contextId)?.atoms.includes(entry.atomId))),
+          contextArea: architectureLayout.contexts.every((entry) => Math.abs(entry.width * entry.height - (34 + entry.atomCount * 8)) < 1e-9),
         };
         const coverQuestion = document.querySelector('[data-cover-id="cover:payment-lifecycle"]');
         coverQuestion.click();
@@ -305,22 +306,54 @@ async function main() {
     }
 
     const adversarial = await page.send("Runtime.evaluate", {
+      awaitPromise: true,
       returnByValue: true,
-      expression: `(() => {
+      expression: `(async () => {
         const base = {
           schema: 'archmap/v0.5.4', id: 'adversarial', sources: { s: { kind: 'test', path: 'src/a.ts' } },
-          atoms: [{ id: 'a', kind: 'component', subject: 'A', axis: 'static', refs: ['s'] }],
-          contexts: [{ id: 'c', atoms: ['a', 'a'] }], covers: [],
+          atoms: [
+            { id: 'a', kind: 'component', subject: 'A', axis: 'static', refs: ['s'] },
+            { id: 'b', kind: 'state', subject: 'B', axis: 'state', refs: ['s'] },
+          ],
+          contexts: [
+            { id: 'c', atoms: ['a', 'a'], restrictsTo: ['c2', 'c2'] },
+            { id: 'c2', atoms: ['b'] },
+          ], covers: [],
         };
         window.__archview.loadObject(base, 'no-cover probe');
         const noCover = { contexts: window.__archviewLayout.contexts.length, atoms: window.__archviewLayout.atoms.length };
-        window.__archview.loadObject({ ...base, covers: [{ id: 'cover:c', contexts: ['c'] }] }, 'duplicate membership probe');
-        const duplicate = { atoms: window.__archviewLayout.atoms.length, sharedSupports: window.__archviewLayout.sharedSupports.length };
-        return { noCover, duplicate };
+        const singleDocument = { ...base, contexts: [{ id: 'c', atoms: ['a'], restrictsTo: ['c2'] }, { id: 'c2', atoms: ['b'] }], covers: [{ id: 'cover:c', contexts: ['c', 'c2'] }] };
+        window.__archview.loadObject(singleDocument, 'single membership probe');
+        const singleContext = window.__archviewLayout.contexts.find((entry) => entry.id === 'c');
+        window.__archview.loadObject({ ...base, covers: [{ id: 'cover:c', contexts: ['c', 'c2'] }] }, 'duplicate membership probe');
+        const duplicateContext = window.__archviewLayout.contexts.find((entry) => entry.id === 'c');
+        const duplicate = {
+          atoms: window.__archviewLayout.atoms.filter((entry) => entry.contextId === 'c').length,
+          sharedSupports: window.__archviewLayout.sharedSupports.length,
+          restrictions: window.__archviewLayout.restrictions.length,
+          atomButtons: document.querySelectorAll('[data-atom-id="a"][data-context-id="c"]').length,
+          subjectCount: document.querySelector('[data-subject="A"][data-context-id="c"] .item-count')?.textContent,
+          singleArea: singleContext.width * singleContext.height,
+          duplicateArea: duplicateContext.width * duplicateContext.height,
+        };
+        window.__archview.loadObject({
+          schema: 'archmap/v0.5.4', id: 'source-cycle',
+          sources: { s: { kind: 'test', source: 't' }, t: { kind: 'test', source: 's' } },
+          atoms: [{ id: 'a', kind: 'component', subject: 'A', axis: 'static', refs: ['s'] }],
+          contexts: [{ id: 'c', atoms: ['a'] }], covers: [{ id: 'cover:c', contexts: ['c'] }],
+        }, 'source cycle probe');
+        const sourceCycle = { status: window.__archviewState.architecture.status, issues: [...document.querySelectorAll('#archmap-issues li')].map((item) => item.textContent) };
+        await window.__archview.loadUrl('https://example.invalid/archmap.json');
+        const crossOrigin = { status: window.__archviewState.architecture.status, issues: [...document.querySelectorAll('#archmap-issues li')].map((item) => item.textContent) };
+        return { noCover, duplicate, sourceCycle, crossOrigin };
       })()`,
     });
-    if (adversarial.result.value.noCover.contexts !== 0 || adversarial.result.value.noCover.atoms !== 0 || adversarial.result.value.duplicate.atoms !== 1 || adversarial.result.value.duplicate.sharedSupports !== 0) {
+    const probes = adversarial.result.value;
+    if (probes.noCover.contexts !== 0 || probes.noCover.atoms !== 0 || probes.duplicate.atoms !== 1 || probes.duplicate.sharedSupports !== 0 || probes.duplicate.restrictions !== 1 || probes.duplicate.atomButtons !== 1 || probes.duplicate.subjectCount !== "1" || Math.abs(probes.duplicate.singleArea - probes.duplicate.duplicateArea) > 1e-9) {
       throw new Error(`Implicit Cover scope or duplicate membership generated geometry: ${JSON.stringify(adversarial.result.value)}`);
+    }
+    if (probes.sourceCycle.status !== "unresolved" || !probes.sourceCycle.issues.some((entry) => entry.includes("cycle")) || probes.crossOrigin.status !== "error" || !probes.crossOrigin.issues.some((entry) => entry.includes("current origin"))) {
+      throw new Error(`Source cycle or cross-origin ArchMap URL was not visibly rejected: ${JSON.stringify(probes)}`);
     }
     await page.send("Runtime.evaluate", { awaitPromise: true, expression: `window.__archview.loadUrl('./fixtures/vertical-slice.archmap.json')` });
     await page.send("Runtime.evaluate", { expression: `document.querySelector('[data-atom-id="atom:settlement-contract"][data-context-id="ctx:checkout"]').click()` });
