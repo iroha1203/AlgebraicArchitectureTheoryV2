@@ -108,7 +108,7 @@ export function createArchViewState() {
     },
     selectFinding(findingId) {
       if (state.analysis.status !== "accepted" || typeof findingId !== "string" || !findingId) throw new Error(`Unknown finding selection: ${findingId}`);
-      state = { ...state, finding: findingId, selection: null };
+      state = { ...state, mode: state.mode === "architecture" ? "analysis" : state.mode, finding: findingId, selection: null };
       return publish();
     },
     selectCover(coverId) {
