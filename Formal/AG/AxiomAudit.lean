@@ -1772,142 +1772,256 @@ theorem lengthTwoMatrixWalkReadingFires :
         FiniteModel.RepresentationAnalysisPart7.LengthTwoWalkVertex.c = 1 :=
   FiniteModel.RepresentationAnalysisPart7.lengthTwoWalk_matrixPower_eq_one
 
-def lowDegreeRealKernelEquivHarmonic :=
+/-- Kernel-audit entry for the low-degree kernel/harmonic equivalence. -/
+noncomputable def lowDegreeRealKernelEquivHarmonic :=
   Measurement.lowDegreeRealComplex_kernel_equiv_harmonicCohomology
 
-def nonzeroBoundaryRealComplexDPrevNonzero :=
-  Measurement.nonzeroBoundaryRealComplex_dPrev_nonzero
+/-- Kernel-audit entry for the nonzero incoming differential fixture. -/
+theorem nonzeroBoundaryRealComplexDPrevNonzero :
+    ∃ h, h = Measurement.nonzeroBoundaryRealComplex_dPrev_nonzero :=
+  ⟨Measurement.nonzeroBoundaryRealComplex_dPrev_nonzero, rfl⟩
 
-def nonzeroBoundaryRealHodgeDecompositionFires :=
-  Measurement.nonzeroBoundaryRealHodgeDecomposition_fires
+/-- Kernel-audit entry for Hodge decomposition on the nonzero differential fixture. -/
+theorem nonzeroBoundaryRealHodgeDecompositionFires :
+    ∃ h, h = Measurement.nonzeroBoundaryRealHodgeDecomposition_fires :=
+  ⟨Measurement.nonzeroBoundaryRealHodgeDecomposition_fires, rfl⟩
 
 /-- Kernel-audit entry for the derived `ker laplacian ≃ cohomology` equivalence. -/
 noncomputable def nonzeroBoundaryRealLaplacianKernelEquivCohomology :=
   Measurement.nonzeroBoundaryRealComplex.laplacianKernelEquivCohomology
 
 /-- Kernel-audit entry for harmonic residual minimality on the nonzero differential fixture. -/
-def nonzeroBoundaryRealHarmonicNormLeCorrected :=
-  Measurement.nonzeroBoundaryReal_harmonic_norm_le_corrected
+theorem nonzeroBoundaryRealHarmonicNormLeCorrected :
+    ∃ h, h = Measurement.nonzeroBoundaryReal_harmonic_norm_le_corrected :=
+  ⟨Measurement.nonzeroBoundaryReal_harmonic_norm_le_corrected, rfl⟩
 
 /-- Kernel-audit entry for the selected harmonic representative equation. -/
-def nonzeroBoundaryRealSelectedResidualEqHarmonic :=
-  Measurement.nonzeroBoundaryReal_selected_residual_eq_harmonic
+theorem nonzeroBoundaryRealSelectedResidualEqHarmonic :
+    ∃ h, h = Measurement.nonzeroBoundaryReal_selected_residual_eq_harmonic :=
+  ⟨Measurement.nonzeroBoundaryReal_selected_residual_eq_harmonic, rfl⟩
 
 /-! Kernel-audit inventory for the derived finite-dimensional Hodge chain. -/
 
-def realFiniteDNextDPrev :=
-  @Measurement.RealFiniteInnerProductComplex.dNext_dPrev
+/-- Kernel-audit entry for the consecutive-differential equation. -/
+theorem realFiniteDNextDPrev :
+    ∃ h, h = @Measurement.RealFiniteInnerProductComplex.dNext_dPrev :=
+  ⟨@Measurement.RealFiniteInnerProductComplex.dNext_dPrev, rfl⟩
 
-def realFiniteExactRangeIsOrthoCoexactRange :=
-  @Measurement.RealFiniteInnerProductComplex.exactRange_isOrtho_coexactRange
+/-- Kernel-audit entry for exact/coexact range orthogonality. -/
+theorem realFiniteExactRangeIsOrthoCoexactRange :
+    ∃ h, h = @Measurement.RealFiniteInnerProductComplex.exactRange_isOrtho_coexactRange :=
+  ⟨@Measurement.RealFiniteInnerProductComplex.exactRange_isOrtho_coexactRange, rfl⟩
 
-def realFiniteExactCoexactOrthogonal :=
-  @Measurement.RealFiniteInnerProductComplex.exact_coexact_orthogonal
+/-- Kernel-audit entry for exact/coexact component orthogonality. -/
+theorem realFiniteExactCoexactOrthogonal :
+    ∃ h, h = @Measurement.RealFiniteInnerProductComplex.exact_coexact_orthogonal :=
+  ⟨@Measurement.RealFiniteInnerProductComplex.exact_coexact_orthogonal, rfl⟩
 
-def realFiniteHodgeDecomposition :=
-  @Measurement.RealFiniteInnerProductComplex.hodge_decomposition
+/-- Kernel-audit entry for the three-term Hodge decomposition. -/
+theorem realFiniteHodgeDecomposition :
+    ∃ h, h = @Measurement.RealFiniteInnerProductComplex.hodge_decomposition :=
+  ⟨@Measurement.RealFiniteInnerProductComplex.hodge_decomposition, rfl⟩
 
-def realFiniteExactPartMemRange :=
-  @Measurement.RealFiniteInnerProductComplex.exactPart_mem_range
+/-- Kernel-audit entry for exact projection range membership. -/
+theorem realFiniteExactPartMemRange :
+    ∃ h, h = @Measurement.RealFiniteInnerProductComplex.exactPart_mem_range :=
+  ⟨@Measurement.RealFiniteInnerProductComplex.exactPart_mem_range, rfl⟩
 
-def realFiniteCoexactPartMemAdjointRange :=
-  @Measurement.RealFiniteInnerProductComplex.coexactPart_mem_adjoint_range
+/-- Kernel-audit entry for coexact projection range membership. -/
+theorem realFiniteCoexactPartMemAdjointRange :
+    ∃ h, h = @Measurement.RealFiniteInnerProductComplex.coexactPart_mem_adjoint_range :=
+  ⟨@Measurement.RealFiniteInnerProductComplex.coexactPart_mem_adjoint_range, rfl⟩
 
-def realFiniteExactPartInnerResidual :=
-  @Measurement.RealFiniteInnerProductComplex.exactPart_inner_residual
+/-- Kernel-audit entry for exact projection residual orthogonality. -/
+theorem realFiniteExactPartInnerResidual :
+    ∃ h, h = @Measurement.RealFiniteInnerProductComplex.exactPart_inner_residual :=
+  ⟨@Measurement.RealFiniteInnerProductComplex.exactPart_inner_residual, rfl⟩
 
-def realFiniteExactHarmonicOrthogonal :=
-  @Measurement.RealFiniteInnerProductComplex.exact_harmonic_orthogonal
+/-- Kernel-audit entry for exact/harmonic orthogonality. -/
+theorem realFiniteExactHarmonicOrthogonal :
+    ∃ h, h = @Measurement.RealFiniteInnerProductComplex.exact_harmonic_orthogonal :=
+  ⟨@Measurement.RealFiniteInnerProductComplex.exact_harmonic_orthogonal, rfl⟩
 
-def realFiniteResidualInnerCoexactPart :=
-  @Measurement.RealFiniteInnerProductComplex.residual_inner_coexactPart
+/-- Kernel-audit entry for coexact projection residual orthogonality. -/
+theorem realFiniteResidualInnerCoexactPart :
+    ∃ h, h = @Measurement.RealFiniteInnerProductComplex.residual_inner_coexactPart :=
+  ⟨@Measurement.RealFiniteInnerProductComplex.residual_inner_coexactPart, rfl⟩
 
-def realFiniteHarmonicCoexactOrthogonal :=
-  @Measurement.RealFiniteInnerProductComplex.harmonic_coexact_orthogonal
+/-- Kernel-audit entry for harmonic/coexact orthogonality. -/
+theorem realFiniteHarmonicCoexactOrthogonal :
+    ∃ h, h = @Measurement.RealFiniteInnerProductComplex.harmonic_coexact_orthogonal :=
+  ⟨@Measurement.RealFiniteInnerProductComplex.harmonic_coexact_orthogonal, rfl⟩
 
-def realFiniteDPrevAdjointInnerRight :=
-  @Measurement.RealFiniteInnerProductComplex.dPrev_adjoint_inner_right
+/-- Kernel-audit entry for the incoming adjoint identity. -/
+theorem realFiniteDPrevAdjointInnerRight :
+    ∃ h, h = @Measurement.RealFiniteInnerProductComplex.dPrev_adjoint_inner_right :=
+  ⟨@Measurement.RealFiniteInnerProductComplex.dPrev_adjoint_inner_right, rfl⟩
 
-def realFiniteDNextAdjointInnerRight :=
-  @Measurement.RealFiniteInnerProductComplex.dNext_adjoint_inner_right
+/-- Kernel-audit entry for the outgoing adjoint identity. -/
+theorem realFiniteDNextAdjointInnerRight :
+    ∃ h, h = @Measurement.RealFiniteInnerProductComplex.dNext_adjoint_inner_right :=
+  ⟨@Measurement.RealFiniteInnerProductComplex.dNext_adjoint_inner_right, rfl⟩
 
-def realFiniteHarmonicPartMemExactRangeOrthogonal :=
-  @Measurement.RealFiniteInnerProductComplex.harmonicPart_mem_exactRange_orthogonal
+/-- Kernel-audit entry for harmonic membership in the exact orthogonal. -/
+theorem realFiniteHarmonicPartMemExactRangeOrthogonal :
+    ∃ h, h = @Measurement.RealFiniteInnerProductComplex.harmonicPart_mem_exactRange_orthogonal :=
+  ⟨@Measurement.RealFiniteInnerProductComplex.harmonicPart_mem_exactRange_orthogonal, rfl⟩
 
-def realFiniteHarmonicPartMemCoexactRangeOrthogonal :=
-  @Measurement.RealFiniteInnerProductComplex.harmonicPart_mem_coexactRange_orthogonal
+/-- Kernel-audit entry for harmonic membership in the coexact orthogonal. -/
+theorem realFiniteHarmonicPartMemCoexactRangeOrthogonal :
+    ∃ h, h = @Measurement.RealFiniteInnerProductComplex.harmonicPart_mem_coexactRange_orthogonal :=
+  ⟨@Measurement.RealFiniteInnerProductComplex.harmonicPart_mem_coexactRange_orthogonal, rfl⟩
 
-def realFiniteDPrevAdjointHarmonicPartEqZero :=
-  @Measurement.RealFiniteInnerProductComplex.dPrevAdjoint_harmonicPart_eq_zero
+/-- Kernel-audit entry for incoming adjoint vanishing on the harmonic part. -/
+theorem realFiniteDPrevAdjointHarmonicPartEqZero :
+    ∃ h, h = @Measurement.RealFiniteInnerProductComplex.dPrevAdjoint_harmonicPart_eq_zero :=
+  ⟨@Measurement.RealFiniteInnerProductComplex.dPrevAdjoint_harmonicPart_eq_zero, rfl⟩
 
-def realFiniteDNextHarmonicPartEqZero :=
-  @Measurement.RealFiniteInnerProductComplex.dNext_harmonicPart_eq_zero
+/-- Kernel-audit entry for outgoing differential vanishing on the harmonic part. -/
+theorem realFiniteDNextHarmonicPartEqZero :
+    ∃ h, h = @Measurement.RealFiniteInnerProductComplex.dNext_harmonicPart_eq_zero :=
+  ⟨@Measurement.RealFiniteInnerProductComplex.dNext_harmonicPart_eq_zero, rfl⟩
 
-def realFiniteInnerLaplacianSelf :=
-  @Measurement.RealFiniteInnerProductComplex.inner_laplacian_self
+/-- Kernel-audit entry for the Laplacian quadratic identity. -/
+theorem realFiniteInnerLaplacianSelf :
+    ∃ h, h = @Measurement.RealFiniteInnerProductComplex.inner_laplacian_self :=
+  ⟨@Measurement.RealFiniteInnerProductComplex.inner_laplacian_self, rfl⟩
 
-def realFiniteLaplacianEqZeroIff :=
-  @Measurement.RealFiniteInnerProductComplex.laplacian_eq_zero_iff
+/-- Kernel-audit entry for the Laplacian-kernel characterization. -/
+theorem realFiniteLaplacianEqZeroIff :
+    ∃ h, h = @Measurement.RealFiniteInnerProductComplex.laplacian_eq_zero_iff :=
+  ⟨@Measurement.RealFiniteInnerProductComplex.laplacian_eq_zero_iff, rfl⟩
 
-def realFiniteHarmonicPartMemLaplacianKernel :=
-  @Measurement.RealFiniteInnerProductComplex.harmonicPart_mem_laplacian_kernel
+/-- Kernel-audit entry for harmonic projection membership in the Laplacian kernel. -/
+theorem realFiniteHarmonicPartMemLaplacianKernel :
+    ∃ h, h = @Measurement.RealFiniteInnerProductComplex.harmonicPart_mem_laplacian_kernel :=
+  ⟨@Measurement.RealFiniteInnerProductComplex.harmonicPart_mem_laplacian_kernel, rfl⟩
 
-def realFiniteDPrevAdjointHarmonicCycleEqZero :=
-  @Measurement.RealFiniteInnerProductComplex.dPrevAdjoint_harmonicCycle_eq_zero
+/-- Kernel-audit entry for incoming adjoint vanishing on harmonic cycles. -/
+theorem realFiniteDPrevAdjointHarmonicCycleEqZero :
+    ∃ h, h = @Measurement.RealFiniteInnerProductComplex.dPrevAdjoint_harmonicCycle_eq_zero :=
+  ⟨@Measurement.RealFiniteInnerProductComplex.dPrevAdjoint_harmonicCycle_eq_zero, rfl⟩
 
-def realFiniteSelectedCorrectionMapsToExactPart :=
-  @Measurement.RealFiniteInnerProductComplex.selectedCorrection_maps_to_exactPart
+/-- Kernel-audit entry for the selected correction image equation. -/
+theorem realFiniteSelectedCorrectionMapsToExactPart :
+    ∃ h, h = @Measurement.RealFiniteInnerProductComplex.selectedCorrection_maps_to_exactPart :=
+  ⟨@Measurement.RealFiniteInnerProductComplex.selectedCorrection_maps_to_exactPart, rfl⟩
 
-def realFiniteSelectedResidualNormLe :=
-  @Measurement.RealFiniteInnerProductComplex.selectedResidual_norm_le
+/-- Kernel-audit entry for selected residual minimality. -/
+theorem realFiniteSelectedResidualNormLe :
+    ∃ h, h = @Measurement.RealFiniteInnerProductComplex.selectedResidual_norm_le :=
+  ⟨@Measurement.RealFiniteInnerProductComplex.selectedResidual_norm_le, rfl⟩
 
-def realFiniteCoexactPartEqZeroOfCocycle :=
-  @Measurement.RealFiniteInnerProductComplex.coexactPart_eq_zero_of_cocycle
+/-- Kernel-audit entry for coexact vanishing on cocycles. -/
+theorem realFiniteCoexactPartEqZeroOfCocycle :
+    ∃ h, h = @Measurement.RealFiniteInnerProductComplex.coexactPart_eq_zero_of_cocycle :=
+  ⟨@Measurement.RealFiniteInnerProductComplex.coexactPart_eq_zero_of_cocycle, rfl⟩
 
-def realFiniteSelectedResidualEqHarmonic :=
-  @Measurement.RealFiniteInnerProductComplex.selected_residual_eq_harmonic
+/-- Kernel-audit entry for selected residual equality with the harmonic part. -/
+theorem realFiniteSelectedResidualEqHarmonic :
+    ∃ h, h = @Measurement.RealFiniteInnerProductComplex.selected_residual_eq_harmonic :=
+  ⟨@Measurement.RealFiniteInnerProductComplex.selected_residual_eq_harmonic, rfl⟩
 
-def realFiniteHarmonicNormLeCorrected :=
-  @Measurement.RealFiniteInnerProductComplex.harmonic_norm_le_corrected
+/-- Kernel-audit entry for the harmonic residual lower bound. -/
+theorem realFiniteHarmonicNormLeCorrected :
+    ∃ h, h = @Measurement.RealFiniteInnerProductComplex.harmonic_norm_le_corrected :=
+  ⟨@Measurement.RealFiniteInnerProductComplex.harmonic_norm_le_corrected, rfl⟩
 
-def realFiniteCompatibilityDecompositionHolds :=
-  @Measurement.RealFiniteHodgeDecomposition.decomposition_holds
+/-- Kernel-audit entry for compatibility-package decomposition. -/
+theorem realFiniteCompatibilityDecompositionHolds :
+    ∃ h, h = @Measurement.RealFiniteHodgeDecomposition.decomposition_holds :=
+  ⟨@Measurement.RealFiniteHodgeDecomposition.decomposition_holds, rfl⟩
 
-def realFiniteCompatibilityHarmonicMemKernel :=
-  @Measurement.RealFiniteHodgeDecomposition.harmonic_mem_kernel
+/-- Kernel-audit entry for compatibility-package harmonic kernel membership. -/
+theorem realFiniteCompatibilityHarmonicMemKernel :
+    ∃ h, h = @Measurement.RealFiniteHodgeDecomposition.harmonic_mem_kernel :=
+  ⟨@Measurement.RealFiniteHodgeDecomposition.harmonic_mem_kernel, rfl⟩
 
-def realFiniteCompatibilityExactHarmonicOrthogonal :=
-  @Measurement.RealFiniteHodgeDecomposition.exact_harmonic_orthogonal_holds
+/-- Kernel-audit entry for compatibility-package exact/harmonic orthogonality. -/
+theorem realFiniteCompatibilityExactHarmonicOrthogonal :
+    ∃ h, h = @Measurement.RealFiniteHodgeDecomposition.exact_harmonic_orthogonal_holds :=
+  ⟨@Measurement.RealFiniteHodgeDecomposition.exact_harmonic_orthogonal_holds, rfl⟩
 
-def realFiniteCompatibilityHarmonicDebtEqNorm :=
-  @Measurement.RealHarmonicDebtMinimality.harmonicDebt_eq_norm_holds
+/-- Kernel-audit entry for compatibility-package harmonic debt reading. -/
+theorem realFiniteCompatibilityHarmonicDebtEqNorm :
+    ∃ h, h = @Measurement.RealHarmonicDebtMinimality.harmonicDebt_eq_norm_holds :=
+  ⟨@Measurement.RealHarmonicDebtMinimality.harmonicDebt_eq_norm_holds, rfl⟩
 
-def realFiniteCompatibilitySelectedMinimizes :=
-  @Measurement.RealHarmonicDebtMinimality.selected_minimizes_holds
+/-- Kernel-audit entry for compatibility-package selected minimality. -/
+theorem realFiniteCompatibilitySelectedMinimizes :
+    ∃ h, h = @Measurement.RealHarmonicDebtMinimality.selected_minimizes_holds :=
+  ⟨@Measurement.RealHarmonicDebtMinimality.selected_minimizes_holds, rfl⟩
 
-def realFiniteCompatibilitySelectedResidualEqHarmonicNorm :=
-  @Measurement.RealHarmonicDebtMinimality.cocycle_selected_residual_eq_harmonic_norm_holds
+/-- Kernel-audit entry for the compatibility cocycle minimum equality. -/
+theorem realFiniteCompatibilitySelectedResidualEqHarmonicNorm :
+    ∃ h, h = @Measurement.RealHarmonicDebtMinimality.cocycle_selected_residual_eq_harmonic_norm_holds :=
+  ⟨@Measurement.RealHarmonicDebtMinimality.cocycle_selected_residual_eq_harmonic_norm_holds, rfl⟩
 
-def realFiniteCompatibilityHarmonicLowerBound :=
-  @Measurement.RealHarmonicDebtMinimality.cocycle_harmonic_lower_bound_holds
+/-- Kernel-audit entry for the compatibility cocycle lower bound. -/
+theorem realFiniteCompatibilityHarmonicLowerBound :
+    ∃ h, h = @Measurement.RealHarmonicDebtMinimality.cocycle_harmonic_lower_bound_holds :=
+  ⟨@Measurement.RealHarmonicDebtMinimality.cocycle_harmonic_lower_bound_holds, rfl⟩
 
-def threeAxisVectorNonzero := Measurement.threeAxisVector_ne_zero
-def threeAxisExactPartNonzero := Measurement.threeAxis_exactPart_nonzero
-def threeAxisCoexactPartNonzero := Measurement.threeAxis_coexactPart_nonzero
-def threeAxisHarmonicPartEq := Measurement.threeAxis_harmonicPart_eq
-def threeAxisHarmonicPartNonzero := Measurement.threeAxis_harmonicPart_nonzero
-def threeAxisHarmonicKernelNonzero := Measurement.threeAxisHarmonicKernel_nonzero
-def threeAxisCohomologyClassNonzero := Measurement.threeAxisCohomologyClass_nonzero
-def threeAxisHarmonicNormEqOne := Measurement.threeAxis_harmonic_norm_eq_one
-def threeAxisSelectedResidualNormEqOne :=
-  Measurement.threeAxis_selected_residual_norm_eq_one
-def threeAxisHarmonicMinimum := Measurement.threeAxis_harmonic_minimum
+/-- Kernel-audit entry for the three-axis witness being nonzero. -/
+theorem threeAxisVectorNonzero :
+    ∃ h, h = Measurement.threeAxisVector_ne_zero :=
+  ⟨Measurement.threeAxisVector_ne_zero, rfl⟩
+/-- Kernel-audit entry for the nonzero exact component. -/
+theorem threeAxisExactPartNonzero :
+    ∃ h, h = Measurement.threeAxis_exactPart_nonzero :=
+  ⟨Measurement.threeAxis_exactPart_nonzero, rfl⟩
+/-- Kernel-audit entry for the nonzero coexact component. -/
+theorem threeAxisCoexactPartNonzero :
+    ∃ h, h = Measurement.threeAxis_coexactPart_nonzero :=
+  ⟨Measurement.threeAxis_coexactPart_nonzero, rfl⟩
+/-- Kernel-audit entry for the explicit harmonic component equation. -/
+theorem threeAxisHarmonicPartEq :
+    ∃ h, h = Measurement.threeAxis_harmonicPart_eq :=
+  ⟨Measurement.threeAxis_harmonicPart_eq, rfl⟩
+/-- Kernel-audit entry for the nonzero harmonic component. -/
+theorem threeAxisHarmonicPartNonzero :
+    ∃ h, h = Measurement.threeAxis_harmonicPart_nonzero :=
+  ⟨Measurement.threeAxis_harmonicPart_nonzero, rfl⟩
+/-- Kernel-audit entry for the nonzero harmonic-kernel witness. -/
+theorem threeAxisHarmonicKernelNonzero :
+    ∃ h, h = Measurement.threeAxisHarmonicKernel_nonzero :=
+  ⟨Measurement.threeAxisHarmonicKernel_nonzero, rfl⟩
+/-- Kernel-audit entry for the nonzero actual cohomology class. -/
+theorem threeAxisCohomologyClassNonzero :
+    ∃ h, h = Measurement.threeAxisCohomologyClass_nonzero :=
+  ⟨Measurement.threeAxisCohomologyClass_nonzero, rfl⟩
+/-- Kernel-audit entry for the positive harmonic norm. -/
+theorem threeAxisHarmonicNormEqOne :
+    ∃ h, h = Measurement.threeAxis_harmonic_norm_eq_one :=
+  ⟨Measurement.threeAxis_harmonic_norm_eq_one, rfl⟩
+/-- Kernel-audit entry for the selected residual norm equation. -/
+theorem threeAxisSelectedResidualNormEqOne :
+    ∃ h, h = Measurement.threeAxis_selected_residual_norm_eq_one :=
+  ⟨Measurement.threeAxis_selected_residual_norm_eq_one, rfl⟩
+/-- Kernel-audit entry for the three-axis harmonic minimum. -/
+theorem threeAxisHarmonicMinimum :
+    ∃ h, h = Measurement.threeAxis_harmonic_minimum :=
+  ⟨Measurement.threeAxis_harmonic_minimum, rfl⟩
 
-noncomputable def threeAxisGenericHodgePackage :=
-  Measurement.threeAxisGenericHodgePackage
+/-- Direct kernel-audit entry for the generic derived Hodge package theorem. -/
+theorem realFiniteDerivedGenericHodgePackage :
+    ∃ h, h = @Measurement.RealFiniteInnerProductComplex.derivedFiniteHodgeDecompositionPackage :=
+  ⟨@Measurement.RealFiniteInnerProductComplex.derivedFiniteHodgeDecompositionPackage, rfl⟩
 
-noncomputable def threeAxisGenericHarmonicDebtPackage :=
-  Measurement.threeAxisGenericHarmonicDebtPackage
+/-- Direct kernel-audit entry for the generic derived harmonic-debt package theorem. -/
+theorem realFiniteDerivedGenericHarmonicDebtPackage :
+    ∃ h, h = @Measurement.RealFiniteInnerProductComplex.derivedHarmonicDebtMinimalityPackage :=
+  ⟨@Measurement.RealFiniteInnerProductComplex.derivedHarmonicDebtMinimalityPackage, rfl⟩
+
+/-- Kernel-audit entry for the three-axis generic Hodge package. -/
+theorem threeAxisGenericHodgePackage :
+    ∃ h, h = Measurement.threeAxisGenericHodgePackage :=
+  ⟨Measurement.threeAxisGenericHodgePackage, rfl⟩
+
+/-- Kernel-audit entry for the three-axis generic harmonic-debt package. -/
+theorem threeAxisGenericHarmonicDebtPackage :
+    ∃ h, h = Measurement.threeAxisGenericHarmonicDebtPackage :=
+  ⟨Measurement.threeAxisGenericHarmonicDebtPackage, rfl⟩
 
 def squareFreeRepairSupportNotMemAlexanderDualIffHitsForbidden :=
   Measurement.squareFree_repairSupport_notMemAlexanderDual_iff_hitsForbidden
