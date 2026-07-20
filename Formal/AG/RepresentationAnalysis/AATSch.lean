@@ -14,7 +14,14 @@ universe u v w x z
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {k : Type v} [CommRing k]
 
-/-- VII.定義2.1: selected decoration readings and their compatibility laws. -/
+/--
+VII.定義2.1: selected decoration readings and their compatibility laws.
+
+Implementation notes: compatibility is indexed by canonical
+`StandardArchitectureScheme` morphisms. Identity and composition closure are
+stored here so the decorated objects inherit a Mathlib category without a
+second morphism calculus.
+-/
 structure AATSchReadingParameter
     (raw : LawAlgebra.RawAmbientRestrictionSystem S k)
     [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)] where
@@ -62,7 +69,12 @@ structure AATSchReadingParameter
       interpretationMapCompatible f aX aY → interpretationMapCompatible g aY aZ →
         interpretationMapCompatible (f ≫ g) aX aZ
 
-/-- VII.定義2.1: standard architecture scheme with selected readings. -/
+/--
+VII.定義2.1: standard architecture scheme with selected readings.
+
+Implementation notes: the scheme is stored once as the canonical standard
+scheme; the remaining fields are decorations read over that object.
+-/
 structure AATSch
     {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
     [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
@@ -74,7 +86,12 @@ structure AATSch
   signatureReading : p.SignatureReading
   interpretationMapReading : p.InterpretationMapReading
 
-/-- VII.定義2.1: morphism of decorated standard architecture schemes. -/
+/--
+VII.定義2.1: morphism of decorated standard architecture schemes.
+
+Implementation notes: the underlying arrow is the canonical scheme hom, and
+the remaining fields certify preservation of each selected reading.
+-/
 structure AATSchMorphism
     {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
     [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
@@ -99,6 +116,7 @@ def toSchemeMap
     (f : AATSchMorphism X Y) : X.scheme.underlying ⟶ Y.scheme.underlying :=
   f.toSchemeHom.base
 
+/-- Decorated morphisms are determined by their canonical scheme hom. -/
 @[ext] theorem ext
     {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
     [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
@@ -109,6 +127,7 @@ def toSchemeMap
   cases h
   rfl
 
+/-- Identity decorated morphism induced by the canonical scheme identity. -/
 def id
     {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
     [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
@@ -121,6 +140,7 @@ def id
   interpretationMapCompatible :=
     p.id_interpretationMapCompatible X.scheme X.interpretationMapReading
 
+/-- Composition of decorated morphisms induced by canonical scheme composition. -/
 def comp
     {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
     [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
@@ -138,12 +158,14 @@ def comp
   interpretationMapCompatible := p.comp_interpretationMapCompatible
     f.interpretationMapCompatible g.interpretationMapCompatible
 
+/-- The canonical scheme hom of a decorated identity is the identity. -/
 @[simp] theorem id_toSchemeHom
     {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
     [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
     {p : AATSchReadingParameter raw} (X : AATSch p) :
     (id X).toSchemeHom = 𝟙 X.scheme := rfl
 
+/-- The canonical scheme hom of a composite is the composite of scheme homs. -/
 @[simp] theorem comp_toSchemeHom
     {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
     [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
@@ -151,12 +173,14 @@ def comp
     (f : AATSchMorphism X Y) (g : AATSchMorphism Y Z) :
     (comp f g).toSchemeHom = f.toSchemeHom ≫ g.toSchemeHom := rfl
 
+/-- The underlying Scheme map of a decorated identity is the identity. -/
 @[simp] theorem id_toSchemeMap
     {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
     [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
     {p : AATSchReadingParameter raw} (X : AATSch p) :
     (id X).toSchemeMap = 𝟙 X.scheme.underlying := rfl
 
+/-- The underlying Scheme map of a composite is the composite Scheme map. -/
 @[simp] theorem comp_toSchemeMap
     {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
     [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
@@ -168,6 +192,7 @@ end AATSchMorphism
 
 namespace AATSch
 
+/-- The Mathlib category of standard architecture schemes with selected readings. -/
 instance category
     {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
     [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
@@ -190,18 +215,21 @@ def forget
   map_id _ := rfl
   map_comp _ _ := rfl
 
+/-- Forgetting selected readings is faithful. -/
 instance forget_faithful
     {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
     [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
     (p : AATSchReadingParameter raw) : (forget p).Faithful where
   map_injective h := AATSchMorphism.ext h
 
+/-- The forgetful functor sends a decorated object to its canonical scheme. -/
 @[simp] theorem forget_obj
     {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
     [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
     (p : AATSchReadingParameter raw) (X : AATSch p) :
     (forget p).obj X = X.scheme := rfl
 
+/-- The forgetful functor sends a decorated morphism to its scheme hom. -/
 @[simp] theorem forget_map
     {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
     [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
@@ -210,7 +238,12 @@ instance forget_faithful
 
 end AATSch
 
-/-- VII.定義2.1: analytic representations are Mathlib functors. -/
+/--
+VII.定義2.1: analytic representations are Mathlib functors.
+
+Implementation notes: this is an abbreviation rather than a custom wrapper so
+Functor composition and laws remain the Mathlib ones definitionally.
+-/
 abbrev AnalyticRepresentation
     {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
     [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]

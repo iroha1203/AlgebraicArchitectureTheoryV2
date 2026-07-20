@@ -321,7 +321,12 @@ theorem assoc {Vertex Edge RelationLabel : Type z}
 
 end FiniteDirectedGraphHom
 
-/-- VII.定義3.3: finite graph readings form a Mathlib category. -/
+/--
+VII.定義3.3: finite graph readings form a Mathlib category.
+
+Implementation notes: the instance uses the existing graph-hom identity and
+composition API, avoiding a category-law field in each representation.
+-/
 instance FiniteDirectedGraphTarget.category
     (Vertex Edge RelationLabel : Type z) :
     Category (FiniteDirectedGraphTarget Vertex Edge RelationLabel) where
@@ -338,6 +343,9 @@ VII.定義3.3: selected relation profile used to build a graph reading.
 The profile records how selected relation data for each decorated architecture
 scheme is sent into the graph edges.  Exact cycle witness properties are left
 to AC5.
+
+Implementation notes: the object and arrow maps are owned by the single
+`representation` functor; this profile adds only the selected-relation reading.
 -/
 structure GraphRepresentationProfile {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
@@ -1084,7 +1092,12 @@ theorem assoc {Vertex Edge RelationLabel : Type z}
 
 end MatrixRepresentationHom
 
-/-- VII.定義3.5: matrix readings form a Mathlib category. -/
+/--
+VII.定義3.5: matrix readings form a Mathlib category.
+
+Implementation notes: the instance reuses the matrix-hom identity and
+composition API instead of carrying category laws in representation data.
+-/
 instance MatrixRepresentationTarget.category
     (Vertex Edge RelationLabel : Type z) :
     Category (MatrixRepresentationTarget Vertex Edge RelationLabel) where
@@ -1100,6 +1113,9 @@ VII.定義3.5: matrix representation profile over decorated architecture schemes
 
 This is definition-only AC4 surface.  Walk-count and nilpotence claims are left
 to AC6, where the required exactness assumptions can be stated explicitly.
+
+Implementation notes: all object maps, arrow maps, and laws are supplied by the
+single `representation` functor.
 -/
 structure MatrixRepresentationProfile {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]

@@ -219,6 +219,10 @@ VI.定義13.3: extra algebraicity data for an architecture stack.
 
 The diagonal, atlas, and descent of selected structure are explicit predicates.
 No general algebraic-stack representability theorem is claimed.
+
+Implementation notes: atlas geometry is indexed by one raw ambient system and
+stored as its canonical `StandardArchitectureScheme`; no independent legacy
+scheme or ringed-object field is retained.
 -/
 structure AlgebraicArchitectureStackData {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]

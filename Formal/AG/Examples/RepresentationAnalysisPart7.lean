@@ -1147,6 +1147,31 @@ theorem nondegenerateObstructionIdeal_ne_bot :
     exact Ideal.subset_span (by simp)
   simp at hmem
 
+/-- The safe selected state has actual distance-to-flatness value one. -/
+theorem nondegenerateDistance_safe_eq_one :
+    nondegenerateDistanceToFlatness.dist_flat_value MarginState.safe =
+      DistanceValue.measured 1 := by
+  change (if (⨅ _ : Unit, true) then DistanceValue.measured 1
+    else DistanceValue.measured 0) = DistanceValue.measured 1
+  rw [iInf_const]
+  rfl
+
+/-- The selected flat state has actual distance-to-flatness value zero. -/
+theorem nondegenerateDistance_boundary_eq_zero :
+    nondegenerateDistanceToFlatness.dist_flat_value MarginState.boundary =
+      DistanceValue.measured 0 := by
+  change (if (⨅ _ : Unit, false) then DistanceValue.measured 1
+    else DistanceValue.measured 0) = DistanceValue.measured 0
+  rw [iInf_const]
+  rfl
+
+/-- The safe state's actual distance-to-flatness value is not measured zero. -/
+theorem nondegenerateDistance_safe_ne_zero :
+    nondegenerateDistanceToFlatness.dist_flat_value MarginState.safe ≠
+      DistanceValue.measured 0 := by
+  rw [nondegenerateDistance_safe_eq_one]
+  simp
+
 theorem nondegenerateSelectedObstruction_eq_ideal :
     (show Ideal Int from
       nondegenerateSynthesisPackage.analyticReadingContext.selectedWitness) =
@@ -1164,9 +1189,10 @@ theorem nondegenerateRepresentation_reads_selectedIdeal :
   rfl
 
 theorem nondegenerateSynthesis_evidence :
-    (show Ideal Int from
-      nondegenerateSynthesisPackage.analyticReadingContext.selectedWitness) ≠
-        (⊥ : Ideal Int) ∧
+    finiteSynthesisPartI.architectureObject = object ∧
+      (show Ideal Int from
+        nondegenerateSynthesisPackage.analyticReadingContext.selectedWitness) ≠
+          (⊥ : Ideal Int) ∧
       (show Ideal Int from
         nondegenerateSynthesisPackage.analyticReadingContext.selectedWitness) =
         Ideal.span ({(2 : Int)} : Set Int) ∧
@@ -1176,12 +1202,53 @@ theorem nondegenerateSynthesis_evidence :
             (show Ideal Int from
               nondegenerateSynthesisPackage.analyticReadingContext.selectedWitness))).as =
         (show Ideal Int from
-          nondegenerateSynthesisPackage.analyticReadingContext.selectedWitness) := by
+          nondegenerateSynthesisPackage.analyticReadingContext.selectedWitness) ∧
+      (¬ (nondegenerateSynthesisPackage.analyticReadingContext.detectingFamily).analyticZeroReading
+        ToyRepIndex.graph
+          nondegenerateSynthesisPackage.analyticReadingContext.selectedWitness) ∧
+      (nondegenerateSynthesisPackage.analyticReadingContext.distanceMassContext).distanceToFlatness.dist_flat_value
+          MarginState.safe =
+        DistanceValue.measured 1 ∧
+      (nondegenerateSynthesisPackage.analyticReadingContext.distanceMassContext).distanceToFlatness.dist_flat_value
+          MarginState.boundary =
+        DistanceValue.measured 0 ∧
+      (nondegenerateSynthesisPackage.analyticReadingContext.distanceMassContext).distanceToFlatness.dist_flat_value
+          MarginState.safe ≠
+        DistanceValue.measured 0 := by
   constructor
-  · exact nondegenerateObstructionIdeal_ne_bot
-  constructor
-  · exact nondegenerateSelectedObstruction_eq_ideal
   · rfl
+  constructor
+  · change Ideal.span ({(2 : Int)} : Set Int) ≠ (⊥ : Ideal Int)
+    intro hbot
+    have hmem : (2 : Int) ∈ (⊥ : Ideal Int) := by
+      rw [← hbot]
+      exact Ideal.subset_span (by simp)
+    simp at hmem
+  constructor
+  · rfl
+  constructor
+  · rfl
+  constructor
+  · change ¬ ((Ideal.span ({(2 : Int)} : Set Int)) = ⊥)
+    intro hbot
+    have hmem : (2 : Int) ∈ (⊥ : Ideal Int) := by
+      rw [← hbot]
+      exact Ideal.subset_span (by simp)
+    simp at hmem
+  constructor
+  · change (if (⨅ _ : Unit, true) then DistanceValue.measured 1
+      else DistanceValue.measured 0) = DistanceValue.measured 1
+    rw [iInf_const]
+    rfl
+  constructor
+  · change (if (⨅ _ : Unit, false) then DistanceValue.measured 1
+      else DistanceValue.measured 0) = DistanceValue.measured 0
+    rw [iInf_const]
+    rfl
+  · change (if (⨅ _ : Unit, true) then DistanceValue.measured 1
+      else DistanceValue.measured 0) ≠ DistanceValue.measured 0
+    rw [iInf_const]
+    simp
 
 end RepresentationAnalysisPart7
 end FiniteModel

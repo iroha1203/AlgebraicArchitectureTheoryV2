@@ -7,7 +7,7 @@ open BigOperators
 namespace AAT.AG
 namespace SingularityMonodromyStack
 
-universe u v y z
+universe u v w x y z
 
 /--
 VI.定義10.1: selected coefficient object for monodromy.
@@ -55,12 +55,12 @@ unselected loops or unselected coefficient readings.
 structure MonodromyAction {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {P : StratumReadingParameter S}
     {k : Type v} [CommRing k]
-    {X : ArchitectureStratum.{u, v, y} P k}
-    {G : OperationCategoryData.{u, v, y, z} X}
-    {R : RefactorEndpointReading.{u, v, y, z} G}
-    {H : HomotopyGeneratorFamily.{u, v, y, z} R}
+    {X : ArchitectureStratum.{u, v, w, x, y} P k}
+    {G : OperationCategoryData.{u, v, w, x, y, z} X}
+    {R : RefactorEndpointReading.{u, v, w, x, y, z} G}
+    {H : HomotopyGeneratorFamily.{u, v, w, x, y, z} R}
     {base : G.State}
-    (Pi : PresentedArchitectureFundamentalGroup.{u, v, y, z} H base) where
+    (Pi : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base) where
   coefficient : MonodromyCoefficientObject.{z}
   rho : Pi.Pi1 -> CoefficientAutomorphism coefficient
   rho_one : rho 1 = CoefficientAutomorphism.id coefficient
@@ -73,33 +73,33 @@ namespace MonodromyAction
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {P : StratumReadingParameter S}
 variable {k : Type v} [CommRing k]
-variable {X : ArchitectureStratum.{u, v, y} P k}
-variable {G : OperationCategoryData.{u, v, y, z} X}
-variable {R : RefactorEndpointReading.{u, v, y, z} G}
-variable {H : HomotopyGeneratorFamily.{u, v, y, z} R}
+variable {X : ArchitectureStratum.{u, v, w, x, y} P k}
+variable {G : OperationCategoryData.{u, v, w, x, y, z} X}
+variable {R : RefactorEndpointReading.{u, v, w, x, y, z} G}
+variable {H : HomotopyGeneratorFamily.{u, v, w, x, y, z} R}
 variable {base : G.State}
-variable {Pi : PresentedArchitectureFundamentalGroup.{u, v, y, z} H base}
+variable {Pi : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base}
 
 /-- VI.定義10.1: evaluate `Mon_gamma` as the supplied representation. -/
-def Mon_gamma (M : MonodromyAction.{u, v, y, z} Pi) (gamma : Pi.Pi1) :
+def Mon_gamma (M : MonodromyAction.{u, v, w, x, y, z} Pi) (gamma : Pi.Pi1) :
     CoefficientAutomorphism M.coefficient :=
   M.rho gamma
 
 /-- VI.定義10.1: `Mon_gamma` is definitionally `rho gamma`. -/
 theorem mon_gamma_eq_rho
-    (M : MonodromyAction.{u, v, y, z} Pi) (gamma : Pi.Pi1) :
+    (M : MonodromyAction.{u, v, w, x, y, z} Pi) (gamma : Pi.Pi1) :
     M.Mon_gamma gamma = M.rho gamma :=
   rfl
 
 /-- VI.定義10.1: monodromy sends the identity loop to identity coefficients. -/
 theorem rho_one_holds
-    (M : MonodromyAction.{u, v, y, z} Pi) :
+    (M : MonodromyAction.{u, v, w, x, y, z} Pi) :
     M.rho 1 = CoefficientAutomorphism.id M.coefficient :=
   M.rho_one
 
 /-- VI.定義10.1: monodromy respects multiplication in the presented group. -/
 theorem rho_mul_holds
-    (M : MonodromyAction.{u, v, y, z} Pi)
+    (M : MonodromyAction.{u, v, w, x, y, z} Pi)
     (gamma delta : Pi.Pi1) :
     M.rho (gamma * delta) =
       CoefficientAutomorphism.comp (M.rho gamma) (M.rho delta) :=
@@ -107,18 +107,18 @@ theorem rho_mul_holds
 
 /-- VI.定義10.3: obstruction-sheaf component of a selected monodromy action. -/
 def obstructionMonodromy
-    (M : MonodromyAction.{u, v, y, z} Pi) (gamma : Pi.Pi1) :
+    (M : MonodromyAction.{u, v, w, x, y, z} Pi) (gamma : Pi.Pi1) :
     M.coefficient.Ob ≃ M.coefficient.Ob :=
   (M.Mon_gamma gamma).obAut
 
 /-- VI.定義10.3: selected monodromy debt predicate. -/
 def MonodromyDebt
-    (M : MonodromyAction.{u, v, y, z} Pi) (gamma : Pi.Pi1) : Prop :=
+    (M : MonodromyAction.{u, v, w, x, y, z} Pi) (gamma : Pi.Pi1) : Prop :=
   M.obstructionMonodromy gamma ≠ (CoefficientAutomorphism.id M.coefficient).obAut
 
 /-- VI.定義10.3: monodromy debt is exactly nonidentity obstruction monodromy. -/
 theorem monodromyDebt_iff
-    (M : MonodromyAction.{u, v, y, z} Pi) (gamma : Pi.Pi1) :
+    (M : MonodromyAction.{u, v, w, x, y, z} Pi) (gamma : Pi.Pi1) :
     M.MonodromyDebt gamma ↔
       M.obstructionMonodromy gamma ≠
         (CoefficientAutomorphism.id M.coefficient).obAut :=
@@ -136,8 +136,8 @@ functorial by explicit identity and composition laws.
 structure FiniteGaussManinSystem {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {P : StratumReadingParameter S}
     {k : Type v} [Field k]
-    {X : ArchitectureStratum.{u, v, y} P k}
-    (G : OperationCategoryData.{u, v, y, z} X) where
+    {X : ArchitectureStratum.{u, v, w, x, y} P k}
+    (G : OperationCategoryData.{u, v, w, x, y, z} X) where
   Object : Type z
   [objectFintype : Fintype Object]
   objectState : Object -> G.State
@@ -167,19 +167,19 @@ namespace FiniteGaussManinSystem
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {P : StratumReadingParameter S}
 variable {k : Type v} [Field k]
-variable {X : ArchitectureStratum.{u, v, y} P k}
-variable {G : OperationCategoryData.{u, v, y, z} X}
+variable {X : ArchitectureStratum.{u, v, w, x, y} P k}
+variable {G : OperationCategoryData.{u, v, w, x, y, z} X}
 
 /-- VI.定義10.2: selected Gauss-Manin identity transport. -/
 theorem transport_id_holds
-    (GM : FiniteGaussManinSystem.{u, v, y, z} G)
+    (GM : FiniteGaussManinSystem.{u, v, w, x, y, z} G)
     (a : GM.Object) :
     GM.transport (OperationPath.id (G := G) (GM.objectState a)) = LinearMap.id :=
   GM.transport_id a
 
 /-- VI.定義10.2: selected Gauss-Manin transport is functorial for path composition. -/
 theorem transport_comp_holds
-    (GM : FiniteGaussManinSystem.{u, v, y, z} G)
+    (GM : FiniteGaussManinSystem.{u, v, w, x, y, z} G)
     {a b c : GM.Object}
     (alpha : OperationPath G (GM.objectState a) (GM.objectState b))
     (beta : OperationPath G (GM.objectState b) (GM.objectState c)) :
@@ -189,7 +189,7 @@ theorem transport_comp_holds
 
 /-- VI.定義10.2: selected loop transport as an automorphism package. -/
 structure LoopMonodromy
-    (GM : FiniteGaussManinSystem.{u, v, y, z} G)
+    (GM : FiniteGaussManinSystem.{u, v, w, x, y, z} G)
     (a : GM.Object)
     (gamma : OperationPath G (GM.objectState a) (GM.objectState a)) where
   toLinearEquiv : GM.Fiber a ≃ₗ[k] GM.Fiber a
@@ -197,7 +197,7 @@ structure LoopMonodromy
 
 /-- VI.定義10.2: expose the selected Gauss-Manin loop transport map. -/
 theorem loopMonodromy_eq_transport
-    {GM : FiniteGaussManinSystem.{u, v, y, z} G}
+    {GM : FiniteGaussManinSystem.{u, v, w, x, y, z} G}
     {a : GM.Object}
     {gamma : OperationPath G (GM.objectState a) (GM.objectState a)}
     (rho : LoopMonodromy GM a gamma) :
@@ -216,14 +216,14 @@ detection semantics are supplied by the selected axis data.
 structure MeasuredSquareMonodromy {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {P : StratumReadingParameter S}
     {k : Type v} [CommRing k]
-    {X : ArchitectureStratum.{u, v, y} P k}
-    {G : OperationCategoryData.{u, v, y, z} X}
-    {R : RefactorEndpointReading.{u, v, y, z} G}
-    {H : HomotopyGeneratorFamily.{u, v, y, z} R}
+    {X : ArchitectureStratum.{u, v, w, x, y} P k}
+    {G : OperationCategoryData.{u, v, w, x, y, z} X}
+    {R : RefactorEndpointReading.{u, v, w, x, y, z} G}
+    {H : HomotopyGeneratorFamily.{u, v, w, x, y, z} R}
     {base : G.State}
-    {Pi : PresentedArchitectureFundamentalGroup.{u, v, y, z} H base}
-    (M : MonodromyAction.{u, v, y, z} Pi)
-    (K : PresentationTwoComplex.{u, v, y, z} H) where
+    {Pi : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base}
+    (M : MonodromyAction.{u, v, w, x, y, z} Pi)
+    (K : PresentationTwoComplex.{u, v, w, x, y, z} H) where
   Axis : Type z
   square : K.TwoCell
   boundaryElement : Pi.Pi1
@@ -241,31 +241,31 @@ namespace MeasuredSquareMonodromy
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {P : StratumReadingParameter S}
 variable {k : Type v} [CommRing k]
-variable {X : ArchitectureStratum.{u, v, y} P k}
-variable {G : OperationCategoryData.{u, v, y, z} X}
-variable {R : RefactorEndpointReading.{u, v, y, z} G}
-variable {H : HomotopyGeneratorFamily.{u, v, y, z} R}
+variable {X : ArchitectureStratum.{u, v, w, x, y} P k}
+variable {G : OperationCategoryData.{u, v, w, x, y, z} X}
+variable {R : RefactorEndpointReading.{u, v, w, x, y, z} G}
+variable {H : HomotopyGeneratorFamily.{u, v, w, x, y, z} R}
 variable {base : G.State}
-variable {Pi : PresentedArchitectureFundamentalGroup.{u, v, y, z} H base}
-variable {M : MonodromyAction.{u, v, y, z} Pi}
-variable {K : PresentationTwoComplex.{u, v, y, z} H}
+variable {Pi : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base}
+variable {M : MonodromyAction.{u, v, w, x, y, z} Pi}
+variable {K : PresentationTwoComplex.{u, v, w, x, y, z} H}
 
 /-- VI.定義10.4: `mu_x(sigma)` is the selected equality-defect reading. -/
 theorem mu_eq_defect_holds
-    (Q : MeasuredSquareMonodromy.{u, v, y, z} M K)
+    (Q : MeasuredSquareMonodromy.{u, v, w, x, y, z} M K)
     (axis : Q.Axis) :
     Q.mu axis = Q.equalityDefect axis :=
   Q.mu_eq_defect axis
 
 /-- VI.定義10.4: boundary-loop transport is the selected monodromy action. -/
 theorem boundaryTransport_eq_monodromy_holds
-    (Q : MeasuredSquareMonodromy.{u, v, y, z} M K) :
+    (Q : MeasuredSquareMonodromy.{u, v, w, x, y, z} M K) :
     Q.boundaryTransport = M.Mon_gamma Q.boundaryElement :=
   Q.boundaryTransport_eq_monodromy
 
 /-- VI.定義10.4: zero defect is read by the selected axis detector. -/
 theorem axis_detects_of_mu_zero
-    (Q : MeasuredSquareMonodromy.{u, v, y, z} M K)
+    (Q : MeasuredSquareMonodromy.{u, v, w, x, y, z} M K)
     {axis : Q.Axis} (hzero : Q.mu axis = 0) :
     Q.axisDetectsIdentity axis :=
   Q.zero_defect_detects axis ((Q.mu_eq_defect axis).symm.trans hzero)

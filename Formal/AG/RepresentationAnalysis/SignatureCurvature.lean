@@ -199,6 +199,13 @@ theorem curvatureReadsLawConflict_certificate
 
 end LawConflictCurvatureReading
 
+/--
+VII.定義7.2: the selected curvature profile for one law universe and valuation.
+
+Implementation notes: this minimal context stores only the existing
+`CurvatureReadingProfile`; Scheme, factorization, and signature premises are
+kept in the comparison contexts that actually use them.
+-/
 structure CurvatureReadingContext
     (LU : LawUniverse U) {Value : Type u}
     (valuation : ObstructionValuation U Value)
@@ -207,6 +214,7 @@ structure CurvatureReadingContext
 
 namespace CurvatureReadingContext
 
+/-- Curvature zero in the selected profile is exactly aggregate obstruction zero. -/
 theorem curvature_zero_iff_omegaU_zero
     {LU : LawUniverse U} {Value : Type u}
     {valuation : ObstructionValuation U Value}
@@ -216,6 +224,7 @@ theorem curvature_zero_iff_omegaU_zero
       omegaU valuation LU aggregation Obj = valuation.domain.zero :=
   C.curvatureProfile.curvatureZero_iff_omegaU_zero Obj
 
+/-- Curvature zero is equivalent to vanishing of every required obstruction value. -/
 theorem curvature_zero_iff_requiredObstructionValuesZero
     {LU : LawUniverse U} {Value : Type u}
     {valuation : ObstructionValuation U Value}
@@ -228,6 +237,13 @@ theorem curvature_zero_iff_requiredObstructionValuesZero
 
 end CurvatureReadingContext
 
+/--
+VII.定義7.2: comparison data from curvature to the selected signature axes.
+
+Implementation notes: the context extends only the curvature profile and adds
+the soundness, completeness, and axis-exactness premises used by its two
+comparison theorems.
+-/
 structure CurvatureAxisComparisonContext
     (Obj : ArchitectureObject U) (LU : LawUniverse U) (Sig : SignatureAxes U)
     {Value : Type u} (valuation : ObstructionValuation U Value)
@@ -240,6 +256,7 @@ structure CurvatureAxisComparisonContext
 
 namespace CurvatureAxisComparisonContext
 
+/-- Curvature zero is equivalent to vanishing of all required signature axes. -/
 theorem curvature_zero_iff_requiredSignatureAxesZero
     {Obj : ArchitectureObject U} {LU : LawUniverse U} {Sig : SignatureAxes U}
     {Value : Type u} {valuation : ObstructionValuation U Value}
@@ -250,6 +267,7 @@ theorem curvature_zero_iff_requiredSignatureAxesZero
     ((lawfulness_iff_omegaU_zero valuation LU aggregation
       C.obstructionSoundness C.obstructionCompleteness Obj).symm.trans C.axisExactness)
 
+/-- Curvature zero is equivalent to the selected signature reading being zero. -/
 theorem curvature_zero_iff_requiredSignatureReadingZero
     {Obj : ArchitectureObject U} {LU : LawUniverse U} {Sig : SignatureAxes U}
     {Value : Type u} {valuation : ObstructionValuation U Value}
@@ -266,6 +284,13 @@ end CurvatureAxisComparisonContext
 variable {Obj : ArchitectureObject U}
 variable {S : Site.AATSite Obj} {k : Type v} [CommRing k]
 
+/--
+VII.定義7.2: comparison data between curvature and actual lawful factorization.
+
+Implementation notes: the context reuses canonical closed-equational geometry
+and stores only the object-point comparison and valuation hypotheses consumed
+by `factorsThroughLawfulClosedSubscheme_iff_omegaU_zero`.
+-/
 structure CurvatureLawfulFactorizationContext
     (raw : LawAlgebra.RawAmbientRestrictionSystem S k)
     [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
@@ -285,6 +310,14 @@ structure CurvatureLawfulFactorizationContext
   obstructionCompleteness :
     ∀ i : S.lawUniverse.RequiredIndex, ObstructionComplete valuation (S.lawUniverse.law i.1)
 
+/--
+VII.定義7.2: comparison data between signature readings and actual lawful
+factorization.
+
+Implementation notes: the factorization target and closed geometry are
+canonical parameters; the structure stores only the signature profile,
+object-point comparison, and selected-axis exactness used by the theorem below.
+-/
 structure SignatureLawfulFactorizationContext
     (raw : LawAlgebra.RawAmbientRestrictionSystem S k)
     [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
@@ -315,6 +348,7 @@ variable {Value : Type u} {valuation : ObstructionValuation U Value}
 variable {aggregation :
   ZeroReflectingAggregation Value valuation.domain S.lawUniverse.RequiredIndex}
 
+/-- Zero curvature produces an actual factorization through the lawful closed subscheme. -/
 theorem factorsThroughLawfulClosedSubscheme_of_curvature_zero
     (C : CurvatureLawfulFactorizationContext raw X R hR hclosed hexact
       s Obj valuation aggregation)
@@ -326,6 +360,7 @@ theorem factorsThroughLawfulClosedSubscheme_of_curvature_zero
       C.obstructionSoundness C.obstructionCompleteness).mpr
     ((C.curvatureProfile.curvatureZero_iff_omegaU_zero Obj).mp hcurvature)
 
+/-- An actual lawful factorization forces zero curvature for the selected profile. -/
 theorem curvature_zero_of_factorsThroughLawfulClosedSubscheme
     (C : CurvatureLawfulFactorizationContext raw X R hR hclosed hexact
       s Obj valuation aggregation)
@@ -337,6 +372,7 @@ theorem curvature_zero_of_factorsThroughLawfulClosedSubscheme
       raw X R hR hclosed hexact s Obj valuation aggregation C.pointComparison
         C.obstructionSoundness C.obstructionCompleteness).mp hfactor)
 
+/-- Zero curvature is equivalent to actual factorization through lawful geometry. -/
 theorem curvature_zero_iff_factorsThroughLawfulClosedSubscheme
     (C : CurvatureLawfulFactorizationContext raw X R hR hclosed hexact
       s Obj valuation aggregation) :
@@ -364,6 +400,7 @@ variable {hexact : LawAlgebra.RequiredLawIdealExact raw X R hR hclosed}
 variable {T : AlgebraicGeometry.Scheme} {s : T ⟶ X.underlying}
 variable {Sig : SignatureAxes U}
 
+/-- A zero required-signature reading produces an actual lawful factorization. -/
 theorem factorsThroughLawfulClosedSubscheme_of_requiredSignatureReadingZero
     (C : SignatureLawfulFactorizationContext raw X R hR hclosed hexact s Obj Sig)
     (hsig : C.signatureProfile.RequiredSignatureReadingZero Obj) :

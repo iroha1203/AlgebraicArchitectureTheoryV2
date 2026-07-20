@@ -6,7 +6,7 @@ noncomputable section
 namespace AAT.AG
 namespace SingularityMonodromyStack
 
-universe u z
+universe u v w x y z
 
 /-- VI.定義15.1: selected kinds of decomposition equivalence. -/
 inductive DecompositionEquivalenceKind where

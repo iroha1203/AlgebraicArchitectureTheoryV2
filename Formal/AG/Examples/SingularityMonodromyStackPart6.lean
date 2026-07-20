@@ -6,7 +6,7 @@ noncomputable section
 
 namespace AAT.AG
 
-universe u v y z
+universe u v w x y z
 
 namespace FiniteModel
 namespace SingularityMonodromyStackPart6
@@ -29,14 +29,14 @@ abbrev ToyParameter :=
 abbrev ToyStratum :=
   RepresentationAnalysisPart7.finiteSynthesisArchitectureStratum
 
-def toyCotangentData : CotangentData.{0, 0, 0, 0} ToyStratum where
+def toyCotangentData : CotangentData.{0, 0, 0, 0, 0, 0} ToyStratum where
   Base := Bool
   CotangentComplex := Fin 2
   baseMap _ := false
   PullbackBase := Bool
   pullbackComplex b := if b then 1 else 0
 
-def toyTangentData : TangentData.{0, 0, 0, 0} ToyStratum toyCotangentData where
+def toyTangentData : TangentData.{0, 0, 0, 0, 0, 0} ToyStratum toyCotangentData where
   TangentComplex := Fin 2
   H0 := Bool
   H1 := Bool
@@ -47,7 +47,7 @@ def toyTangentData : TangentData.{0, 0, 0, 0} ToyStratum toyCotangentData where
   h1ComputesObstructionTarget_certificate := True
 
 def toyDeformationTheory :
-    DeformationObstructionTheory.{0, 0, 0, 0} toyTangentData where
+    DeformationObstructionTheory.{0, 0, 0, 0, 0, 0} toyTangentData where
   DeformationTest := Bool
   LiftFill eta := eta = false
   ob eta := eta
@@ -59,7 +59,7 @@ def toyDeformationTheory :
     simp [toyTangentData, hfill]
 
 def toyBoundaryObstruction :
-    BoundaryObstructionFamily.{0, 0, 0, 0} toyDeformationTheory where
+    BoundaryObstructionFamily.{0, 0, 0, 0, 0, 0} toyDeformationTheory where
   boundaryTest := true
   h1NonzeroClass :=
     toyDeformationTheory.ob true ≠ toyTangentData.zeroObstruction
@@ -76,12 +76,12 @@ boundary obstruction family, and a selected nonzero boundary class.
 structure SingularBoundaryToyModel {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {P : StratumReadingParameter S}
     {k : Type v} [CommRing k]
-    {X : ArchitectureStratum.{u, v, y} P k}
-    {L : CotangentData.{u, v, y, z} X}
-    {T : TangentData.{u, v, y, z} X L}
-    (D : DeformationObstructionTheory.{u, v, y, z} T) where
+    {X : ArchitectureStratum.{u, v, w, x, y} P k}
+    {L : CotangentData.{u, v, w, x, y, z} X}
+    {T : TangentData.{u, v, w, x, y, z} X L}
+    (D : DeformationObstructionTheory.{u, v, w, x, y, z} T) where
   finiteTests : Fintype D.DeformationTest
-  boundary : BoundaryObstructionFamily.{u, v, y, z} D
+  boundary : BoundaryObstructionFamily.{u, v, w, x, y, z} D
   nonzeroBoundaryClass : boundary.h1NonzeroClass
 
 namespace SingularBoundaryToyModel
@@ -89,14 +89,14 @@ namespace SingularBoundaryToyModel
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {P : StratumReadingParameter S}
 variable {k : Type v} [CommRing k]
-variable {X : ArchitectureStratum.{u, v, y} P k}
-variable {L : CotangentData.{u, v, y, z} X}
-variable {T : TangentData.{u, v, y, z} X L}
-variable {D : DeformationObstructionTheory.{u, v, y, z} T}
+variable {X : ArchitectureStratum.{u, v, w, x, y} P k}
+variable {L : CotangentData.{u, v, w, x, y, z} X}
+variable {T : TangentData.{u, v, w, x, y, z} X L}
+variable {D : DeformationObstructionTheory.{u, v, w, x, y, z} T}
 
 /-- VI.R12(a): the finite singular-boundary toy model verifies 系6.5. -/
 theorem verifies_singular_boundary
-    (E : SingularBoundaryToyModel.{u, v, y, z} D) :
+    (E : SingularBoundaryToyModel.{u, v, w, x, y, z} D) :
     USingularBoundary D :=
   E.boundary.singularBoundary E.nonzeroBoundaryClass
 
@@ -111,17 +111,17 @@ It selects a finite axis family, a measured square, and one nonzero
 structure OperationSquareToyModel {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {P : StratumReadingParameter S}
     {k : Type v} [CommRing k]
-    {X : ArchitectureStratum.{u, v, y} P k}
-    {G : OperationCategoryData.{u, v, y, z} X}
-    {R : RefactorEndpointReading.{u, v, y, z} G}
-    {H : HomotopyGeneratorFamily.{u, v, y, z} R}
+    {X : ArchitectureStratum.{u, v, w, x, y} P k}
+    {G : OperationCategoryData.{u, v, w, x, y, z} X}
+    {R : RefactorEndpointReading.{u, v, w, x, y, z} G}
+    {H : HomotopyGeneratorFamily.{u, v, w, x, y, z} R}
     {base : G.State}
-    {Pi : PresentedArchitectureFundamentalGroup.{u, v, y, z} H base}
-    {M : MonodromyAction.{u, v, y, z} Pi}
-    {K : PresentationTwoComplex.{u, v, y, z} H}
-    (Q : MeasuredSquareMonodromy.{u, v, y, z} M K) where
+    {Pi : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base}
+    {M : MonodromyAction.{u, v, w, x, y, z} Pi}
+    {K : PresentationTwoComplex.{u, v, w, x, y, z} H}
+    (Q : MeasuredSquareMonodromy.{u, v, w, x, y, z} M K) where
   finiteAxis : Fintype Q.Axis
-  filling : SquareMonodromyFillingProblem.{u, v, y, z} Q
+  filling : SquareMonodromyFillingProblem.{u, v, w, x, y, z} Q
   nonzeroMu : Q.mu filling.axis ≠ 0
 
 namespace OperationSquareToyModel
@@ -129,19 +129,19 @@ namespace OperationSquareToyModel
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {P : StratumReadingParameter S}
 variable {k : Type v} [CommRing k]
-variable {X : ArchitectureStratum.{u, v, y} P k}
-variable {G : OperationCategoryData.{u, v, y, z} X}
-variable {R : RefactorEndpointReading.{u, v, y, z} G}
-variable {H : HomotopyGeneratorFamily.{u, v, y, z} R}
+variable {X : ArchitectureStratum.{u, v, w, x, y} P k}
+variable {G : OperationCategoryData.{u, v, w, x, y, z} X}
+variable {R : RefactorEndpointReading.{u, v, w, x, y, z} G}
+variable {H : HomotopyGeneratorFamily.{u, v, w, x, y, z} R}
 variable {base : G.State}
-variable {Pi : PresentedArchitectureFundamentalGroup.{u, v, y, z} H base}
-variable {M : MonodromyAction.{u, v, y, z} Pi}
-variable {K : PresentationTwoComplex.{u, v, y, z} H}
-variable {Q : MeasuredSquareMonodromy.{u, v, y, z} M K}
+variable {Pi : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base}
+variable {M : MonodromyAction.{u, v, w, x, y, z} Pi}
+variable {K : PresentationTwoComplex.{u, v, w, x, y, z} H}
+variable {Q : MeasuredSquareMonodromy.{u, v, w, x, y, z} M K}
 
 /-- VI.R12(b): nonzero selected square monodromy refutes filling. -/
 theorem verifies_square_nonfillability
-    (E : OperationSquareToyModel.{u, v, y, z} Q) :
+    (E : OperationSquareToyModel.{u, v, w, x, y, z} Q) :
     ¬ E.filling.SelectedAxisFilling :=
   E.filling.squareMonodromy_nonfillability E.nonzeroMu
 
@@ -156,16 +156,16 @@ nonzero case so the example package is not an empty `P ∧ ¬P` surface.
 structure TransportDescentZeroToyModel {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {P : StratumReadingParameter S}
     {k : Type v} [CommRing k]
-    {X : ArchitectureStratum.{u, v, y} P k}
-    {G : OperationCategoryData.{u, v, y, z} X}
-    {R : RefactorEndpointReading.{u, v, y, z} G}
-    {H : HomotopyGeneratorFamily.{u, v, y, z} R}
+    {X : ArchitectureStratum.{u, v, w, x, y} P k}
+    {G : OperationCategoryData.{u, v, w, x, y, z} X}
+    {R : RefactorEndpointReading.{u, v, w, x, y, z} G}
+    {H : HomotopyGeneratorFamily.{u, v, w, x, y, z} R}
     {base : G.State}
-    {Pi : PresentedArchitectureFundamentalGroup.{u, v, y, z} H base}
-    {M : MonodromyAction.{u, v, y, z} Pi}
-    {K : PresentationTwoComplex.{u, v, y, z} H}
+    {Pi : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base}
+    {M : MonodromyAction.{u, v, w, x, y, z} Pi}
+    {K : PresentationTwoComplex.{u, v, w, x, y, z} H}
     {Tfree : Pi.FreeTransport}
-    (D : TransportDescentProblem.{u, v, y, z} (Pi := Pi) (M := M) (K := K) Tfree) where
+    (D : TransportDescentProblem.{u, v, w, x, y, z} (Pi := Pi) (M := M) (K := K) Tfree) where
   finiteSquares : Fintype D.Square
   zeroBoundaryCase : D.relationBoundaryZero
 
@@ -178,16 +178,16 @@ the descent criterion refutes quotient factorization.
 structure TransportDescentNonzeroToyModel {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {P : StratumReadingParameter S}
     {k : Type v} [CommRing k]
-    {X : ArchitectureStratum.{u, v, y} P k}
-    {G : OperationCategoryData.{u, v, y, z} X}
-    {R : RefactorEndpointReading.{u, v, y, z} G}
-    {H : HomotopyGeneratorFamily.{u, v, y, z} R}
+    {X : ArchitectureStratum.{u, v, w, x, y} P k}
+    {G : OperationCategoryData.{u, v, w, x, y, z} X}
+    {R : RefactorEndpointReading.{u, v, w, x, y, z} G}
+    {H : HomotopyGeneratorFamily.{u, v, w, x, y, z} R}
     {base : G.State}
-    {Pi : PresentedArchitectureFundamentalGroup.{u, v, y, z} H base}
-    {M : MonodromyAction.{u, v, y, z} Pi}
-    {K : PresentationTwoComplex.{u, v, y, z} H}
+    {Pi : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base}
+    {M : MonodromyAction.{u, v, w, x, y, z} Pi}
+    {K : PresentationTwoComplex.{u, v, w, x, y, z} H}
     {Tfree : Pi.FreeTransport}
-    (D : TransportDescentProblem.{u, v, y, z} (Pi := Pi) (M := M) (K := K) Tfree) where
+    (D : TransportDescentProblem.{u, v, w, x, y, z} (Pi := Pi) (M := M) (K := K) Tfree) where
   finiteSquares : Fintype D.Square
   nonzeroBoundaryCase : ¬ D.relationBoundaryZero
 
@@ -196,26 +196,26 @@ namespace TransportDescentZeroToyModel
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {P : StratumReadingParameter S}
 variable {k : Type v} [CommRing k]
-variable {X : ArchitectureStratum.{u, v, y} P k}
-variable {G : OperationCategoryData.{u, v, y, z} X}
-variable {R : RefactorEndpointReading.{u, v, y, z} G}
-variable {H : HomotopyGeneratorFamily.{u, v, y, z} R}
+variable {X : ArchitectureStratum.{u, v, w, x, y} P k}
+variable {G : OperationCategoryData.{u, v, w, x, y, z} X}
+variable {R : RefactorEndpointReading.{u, v, w, x, y, z} G}
+variable {H : HomotopyGeneratorFamily.{u, v, w, x, y, z} R}
 variable {base : G.State}
-variable {Pi : PresentedArchitectureFundamentalGroup.{u, v, y, z} H base}
-variable {M : MonodromyAction.{u, v, y, z} Pi}
-variable {K : PresentationTwoComplex.{u, v, y, z} H}
+variable {Pi : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base}
+variable {M : MonodromyAction.{u, v, w, x, y, z} Pi}
+variable {K : PresentationTwoComplex.{u, v, w, x, y, z} H}
 variable {Tfree : Pi.FreeTransport}
-variable {D : TransportDescentProblem.{u, v, y, z} (Pi := Pi) (M := M) (K := K) Tfree}
+variable {D : TransportDescentProblem.{u, v, w, x, y, z} (Pi := Pi) (M := M) (K := K) Tfree}
 
 /-- VI.R12(c0): selected finite zero-boundary data inhabits the zero toy-model package. -/
 theorem nonempty_of_relationBoundaryZero
     [Fintype D.Square] (hzero : D.relationBoundaryZero) :
-    Nonempty (TransportDescentZeroToyModel.{u, v, y, z} D) :=
+    Nonempty (TransportDescentZeroToyModel.{u, v, w, x, y, z} D) :=
   ⟨{ finiteSquares := inferInstance, zeroBoundaryCase := hzero }⟩
 
 /-- VI.R12(c): zero selected boundary transport descends to the quotient. -/
 theorem zero_case_descends
-    (E : TransportDescentZeroToyModel.{u, v, y, z} D) :
+    (E : TransportDescentZeroToyModel.{u, v, w, x, y, z} D) :
     ∃ Q : Pi.QuotientTransport, Pi.FactorsThroughQuotient Tfree Q :=
   D.factorsThroughQuotient_of_relationBoundaryZero E.zeroBoundaryCase
 
@@ -226,26 +226,26 @@ namespace TransportDescentNonzeroToyModel
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {P : StratumReadingParameter S}
 variable {k : Type v} [CommRing k]
-variable {X : ArchitectureStratum.{u, v, y} P k}
-variable {G : OperationCategoryData.{u, v, y, z} X}
-variable {R : RefactorEndpointReading.{u, v, y, z} G}
-variable {H : HomotopyGeneratorFamily.{u, v, y, z} R}
+variable {X : ArchitectureStratum.{u, v, w, x, y} P k}
+variable {G : OperationCategoryData.{u, v, w, x, y, z} X}
+variable {R : RefactorEndpointReading.{u, v, w, x, y, z} G}
+variable {H : HomotopyGeneratorFamily.{u, v, w, x, y, z} R}
 variable {base : G.State}
-variable {Pi : PresentedArchitectureFundamentalGroup.{u, v, y, z} H base}
-variable {M : MonodromyAction.{u, v, y, z} Pi}
-variable {K : PresentationTwoComplex.{u, v, y, z} H}
+variable {Pi : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base}
+variable {M : MonodromyAction.{u, v, w, x, y, z} Pi}
+variable {K : PresentationTwoComplex.{u, v, w, x, y, z} H}
 variable {Tfree : Pi.FreeTransport}
-variable {D : TransportDescentProblem.{u, v, y, z} (Pi := Pi) (M := M) (K := K) Tfree}
+variable {D : TransportDescentProblem.{u, v, w, x, y, z} (Pi := Pi) (M := M) (K := K) Tfree}
 
 /-- VI.R12(c1): selected finite nonzero-boundary data inhabits the nonzero toy-model package. -/
 theorem nonempty_of_not_relationBoundaryZero
     [Fintype D.Square] (hnonzero : ¬ D.relationBoundaryZero) :
-    Nonempty (TransportDescentNonzeroToyModel.{u, v, y, z} D) :=
+    Nonempty (TransportDescentNonzeroToyModel.{u, v, w, x, y, z} D) :=
   ⟨{ finiteSquares := inferInstance, nonzeroBoundaryCase := hnonzero }⟩
 
 /-- VI.R12(c): selected nonzero boundary transport prevents quotient descent. -/
 theorem nonzero_case_not_descend
-    (E : TransportDescentNonzeroToyModel.{u, v, y, z} D) :
+    (E : TransportDescentNonzeroToyModel.{u, v, w, x, y, z} D) :
     ¬ ∃ Q : Pi.QuotientTransport, Pi.FactorsThroughQuotient Tfree Q := by
   intro hdescends
   exact E.nonzeroBoundaryCase (D.relationBoundaryZero_of_factorsThroughQuotient hdescends)
@@ -261,11 +261,11 @@ the already proved `Ops/Inv` Galois correspondence.
 structure RefactorGaloisToyModel {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {P : StratumReadingParameter S}
     {k : Type v} [CommRing k]
-    {X : ArchitectureStratum.{u, v, y} P k}
-    {G : OperationCategoryData.{u, v, y, z} X}
-    {R : RefactorEndpointReading.{u, v, y, z} G}
-    {RG : RefactorGroupoid.{u, v, y, z} R}
-    (D : OperationInvariantGaloisData.{u, v, y, z} RG) where
+    {X : ArchitectureStratum.{u, v, w, x, y} P k}
+    {G : OperationCategoryData.{u, v, w, x, y, z} X}
+    {R : RefactorEndpointReading.{u, v, w, x, y, z} G}
+    {RG : RefactorGroupoid.{u, v, w, x, y, z} R}
+    (D : OperationInvariantGaloisData.{u, v, w, x, y, z} RG) where
   finiteInvariant : Fintype D.Invariant
   selectedOperations : RefactorMorphismFamily RG
   selectedInvariants : D.InvFam
@@ -275,15 +275,15 @@ namespace RefactorGaloisToyModel
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {P : StratumReadingParameter S}
 variable {k : Type v} [CommRing k]
-variable {X : ArchitectureStratum.{u, v, y} P k}
-variable {G : OperationCategoryData.{u, v, y, z} X}
-variable {R : RefactorEndpointReading.{u, v, y, z} G}
-variable {RG : RefactorGroupoid.{u, v, y, z} R}
-variable {D : OperationInvariantGaloisData.{u, v, y, z} RG}
+variable {X : ArchitectureStratum.{u, v, w, x, y} P k}
+variable {G : OperationCategoryData.{u, v, w, x, y, z} X}
+variable {R : RefactorEndpointReading.{u, v, w, x, y, z} G}
+variable {RG : RefactorGroupoid.{u, v, w, x, y, z} R}
+variable {D : OperationInvariantGaloisData.{u, v, w, x, y, z} RG}
 
 /-- VI.R12(d): finite refactor-Galois toy model computes the Galois correspondence. -/
 theorem verifies_galois_connection
-    (E : RefactorGaloisToyModel.{u, v, y, z} D) :
+    (E : RefactorGaloisToyModel.{u, v, w, x, y, z} D) :
     RefactorMorphismFamilySubset E.selectedOperations (D.Ops E.selectedInvariants) ↔
       D.InvFamSubset E.selectedInvariants (D.Inv E.selectedOperations) :=
   D.operationInvariantGaloisCorrespondence E.selectedOperations E.selectedInvariants
@@ -320,7 +320,7 @@ end DecompositionGerbeToyModel
 /-! ### Concrete finite toy-model firings -/
 
 def concreteSingularBoundaryToyModel :
-    SingularBoundaryToyModel.{0, 0, 0, 0} toyDeformationTheory where
+    SingularBoundaryToyModel.{0, 0, 0, 0, 0, 0} toyDeformationTheory where
   finiteTests := by
     change Fintype Bool
     infer_instance
@@ -338,14 +338,14 @@ theorem toyBoundaryObstruction_nonzero :
   concreteSingularBoundaryToyModel.nonzeroBoundaryClass
 
 def toyOperationCategory :
-    OperationCategoryData.{0, 0, 0, 0} ToyStratum where
+    OperationCategoryData.{0, 0, 0, 0, 0, 0} ToyStratum where
   State := Bool
   Operation _ _ := Bool
   selectedState _ := false
   operationRespectsLawUniverse op := op = true
 
 def toyEndpointReading :
-    RefactorEndpointReading.{0, 0, 0, 0} toyOperationCategory where
+    RefactorEndpointReading.{0, 0, 0, 0, 0, 0} toyOperationCategory where
   RefactorEquivalent a b := a = b
   refl _ := rfl
   symm h := h.symm
@@ -365,7 +365,7 @@ theorem toyOperationCategory_operation_nontrivial :
   infer_instance
 
 def toyHomotopyGenerators :
-    HomotopyGeneratorFamily.{0, 0, 0, 0} toyEndpointReading where
+    HomotopyGeneratorFamily.{0, 0, 0, 0, 0, 0} toyEndpointReading where
   PathCell := Bool
   cellSource _ := false
   cellTarget _ := true
@@ -379,7 +379,7 @@ def toyHomotopyGenerators :
   relator_based _ := rfl
 
 def toyPresentationTwoComplex :
-    PresentationTwoComplex.{0, 0, 0, 0} toyHomotopyGenerators where
+    PresentationTwoComplex.{0, 0, 0, 0, 0, 0} toyHomotopyGenerators where
   Vertex := Bool
   vertexEquivState := Equiv.refl Bool
   Edge := Bool
@@ -425,7 +425,7 @@ theorem toyQuotientMap_nonempty : toyQuotientMap toyNonemptyFreeWord = toyLoopGe
   simp [toyQuotientMap, toyNonemptyFreeWord]
 
 def toyPresentedPi :
-    PresentedArchitectureFundamentalGroup.{0, 0, 0, 0}
+    PresentedArchitectureFundamentalGroup.{0, 0, 0, 0, 0, 0}
       toyHomotopyGenerators false where
   FreeWord := ToyFreeWord
   freeWordEquivSelected := Equiv.refl ToyFreeWord
@@ -499,7 +499,7 @@ def toyMonodromyDefectFromAction : Nat :=
   if toyObstructionCoefficientMoved (toyLoopRepresentation toyLoopGenerator) then 1 else 0
 
 def toyMonodromyAction :
-    MonodromyAction.{0, 0, 0, 0} toyPresentedPi where
+    MonodromyAction.{0, 0, 0, 0, 0, 0} toyPresentedPi where
   coefficient := { Ob := Bool, Sem := Bool, Eff := Bool }
   rho := toyLoopRepresentation
   rho_one := by simp [toyLoopRepresentation]
@@ -525,7 +525,7 @@ theorem toyMonodromyAction_nonidentity :
   cases hmoved
 
 def toyMeasuredSquareZero :
-    MeasuredSquareMonodromy.{0, 0, 0, 0} toyMonodromyAction
+    MeasuredSquareMonodromy.{0, 0, 0, 0, 0, 0} toyMonodromyAction
       toyPresentationTwoComplex where
   Axis := Bool
   square := false
@@ -539,7 +539,7 @@ def toyMeasuredSquareZero :
   mu_eq_defect _ := rfl
 
 def toyMeasuredSquareNonzero :
-    MeasuredSquareMonodromy.{0, 0, 0, 0} toyMonodromyAction
+    MeasuredSquareMonodromy.{0, 0, 0, 0, 0, 0} toyMonodromyAction
       toyPresentationTwoComplex where
   Axis := Bool
   square := true
@@ -576,7 +576,7 @@ theorem toyMeasuredSquareNonzero_defect_from_moved_coefficient :
   exact ⟨rfl, rfl, toyMonodromyAction_moves_false⟩
 
 def toySquareFillingProblem :
-    SquareMonodromyFillingProblem.{0, 0, 0, 0} toyMeasuredSquareNonzero where
+    SquareMonodromyFillingProblem.{0, 0, 0, 0, 0, 0} toyMeasuredSquareNonzero where
   axis := false
   SelectedAxisFilling :=
     toyMeasuredSquareNonzero.axisDetectsIdentity false
@@ -585,7 +585,7 @@ def toySquareFillingProblem :
     exact False.elim (toyMonodromyAction_nonidentity h)
 
 def concreteOperationSquareToyModel :
-    OperationSquareToyModel.{0, 0, 0, 0} toyMeasuredSquareNonzero where
+    OperationSquareToyModel.{0, 0, 0, 0, 0, 0} toyMeasuredSquareNonzero where
   finiteAxis := by
     change Fintype Bool
     infer_instance
@@ -599,7 +599,7 @@ theorem concreteOperationSquareToyModel_fires :
   OperationSquareToyModel.verifies_square_nonfillability concreteOperationSquareToyModel
 
 def toySquareFillingPositiveProblem :
-    SquareMonodromyFillingProblem.{0, 0, 0, 0} toyMeasuredSquareNonzero where
+    SquareMonodromyFillingProblem.{0, 0, 0, 0, 0, 0} toyMeasuredSquareNonzero where
   axis := true
   SelectedAxisFilling :=
     toyMeasuredSquareNonzero.axisDetectsIdentity true
@@ -630,7 +630,7 @@ theorem toyTransportNonzero_uses_second_pi1_element :
     by simpa using toyLoopGenerator_ne_one⟩
 
 def toyTransportDescentZero :
-    TransportDescentProblem.{0, 0, 0, 0}
+    TransportDescentProblem.{0, 0, 0, 0, 0, 0}
       (Pi := toyPresentedPi) (M := toyMonodromyAction) (K := toyPresentationTwoComplex) true where
   Square := Bool
   measured _ := toyMeasuredSquareZero
@@ -642,7 +642,7 @@ def toyTransportDescentZero :
       cases axis <;> rfl
 
 def toyTransportDescentNonzero :
-    TransportDescentProblem.{0, 0, 0, 0}
+    TransportDescentProblem.{0, 0, 0, 0, 0, 0}
       (Pi := toyPresentedPi) (M := toyMonodromyAction) (K := toyPresentationTwoComplex) false where
   Square := Bool
   measured _ := toyMeasuredSquareNonzero
@@ -660,14 +660,14 @@ theorem toyTransportDescent_square_nontrivial :
   infer_instance
 
 def concreteTransportDescentZeroToyModel :
-    TransportDescentZeroToyModel.{0, 0, 0, 0} toyTransportDescentZero where
+    TransportDescentZeroToyModel.{0, 0, 0, 0, 0, 0} toyTransportDescentZero where
   finiteSquares := inferInstance
   zeroBoundaryCase := by
     intro square axis
     cases axis <;> rfl
 
 def concreteTransportDescentNonzeroToyModel :
-    TransportDescentNonzeroToyModel.{0, 0, 0, 0} toyTransportDescentNonzero where
+    TransportDescentNonzeroToyModel.{0, 0, 0, 0, 0, 0} toyTransportDescentNonzero where
   finiteSquares := inferInstance
   nonzeroBoundaryCase := by
     intro h
@@ -703,7 +703,7 @@ structure ToyRefactorHom (a b : Bool) where
   tag : Bool
 
 def toyRefactorGroupoid :
-    RefactorGroupoid.{0, 0, 0, 0} toyEndpointReading where
+    RefactorGroupoid.{0, 0, 0, 0, 0, 0} toyEndpointReading where
   Object := Bool
   state := id
   Hom := ToyRefactorHom
@@ -773,7 +773,7 @@ theorem toyPreservesRelation_negative :
   rcases h with h | h <;> cases h
 
 def toyGaloisData :
-    OperationInvariantGaloisData.{0, 0, 0, 0} toyRefactorGroupoid where
+    OperationInvariantGaloisData.{0, 0, 0, 0, 0, 0} toyRefactorGroupoid where
   Invariant := Bool
   Preserves g i := toyPreservesRelation g i
   id_preserves := by
@@ -793,7 +793,7 @@ def toyGaloisData :
     · exact Or.inr hi
 
 def concreteRefactorGaloisToyModel :
-    RefactorGaloisToyModel.{0, 0, 0, 0} toyGaloisData where
+    RefactorGaloisToyModel.{0, 0, 0, 0, 0, 0} toyGaloisData where
   finiteInvariant := by
     change Fintype Bool
     infer_instance

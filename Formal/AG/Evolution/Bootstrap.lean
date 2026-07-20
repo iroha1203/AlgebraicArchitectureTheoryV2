@@ -46,7 +46,7 @@ abbrev UsesRepairComparisonProfile : Type (u + 1) :=
 abbrev UsesArchitectureStratum {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} (parameter : SingularityMonodromyStack.StratumReadingParameter S)
     (k : Type v) [CommRing k] :=
-  SingularityMonodromyStack.ArchitectureStratum.{u, v, y} parameter k
+  SingularityMonodromyStack.ArchitectureStratum.{u, v, w, x, y} parameter k
 
 /-- IX.R0: Part IX can use Part VII analytic reading contexts. -/
 abbrev UsesAnalyticReadingContext {U : AtomCarrier.{u}} (Obj : ArchitectureObject U)

@@ -39,7 +39,7 @@ abbrev UsesRepairComparisonProfile : Type (u + 1) :=
 abbrev UsesArchitectureStratum {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} (parameter : SingularityMonodromyStack.StratumReadingParameter S)
     (k : Type v) [CommRing k] :=
-  SingularityMonodromyStack.ArchitectureStratum.{u, v, y} parameter k
+  SingularityMonodromyStack.ArchitectureStratum.{u, v, w, x, y} parameter k
 
 /-- VII.R0: coarse availability status for the prerequisite tower. -/
 inductive PrerequisiteStatus where

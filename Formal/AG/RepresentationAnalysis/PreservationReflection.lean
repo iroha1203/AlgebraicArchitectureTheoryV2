@@ -10,7 +10,13 @@ open CategoryTheory
 
 universe u v w x z
 
-/-- VII.定義3.1: indexed family of analytic representations. -/
+/--
+VII.定義3.1: indexed family of analytic representations.
+
+Implementation notes: each target is bundled as `CategoryTheory.Cat` and each
+family member is one Mathlib functor; object maps, arrow maps, and functor laws
+are not duplicated as fields.
+-/
 structure RepresentationFamily {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
     {raw : LawAlgebra.RawAmbientRestrictionSystem S k}

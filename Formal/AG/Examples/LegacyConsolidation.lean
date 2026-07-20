@@ -1,13 +1,14 @@
 import Formal.AG.Examples.StandardGeometryReferenceModels
 import Formal.AG.RepresentationAnalysis.GraphMatrix
 import Formal.AG.RepresentationAnalysis.Synthesis
-import Formal.AG.RepresentationAnalysis.SignatureCurvature
-import Formal.AG.RepresentationAnalysis.RepairMarginDehn
-import Formal.AG.Cohomology.GluingMismatch
-import Formal.AG.Cohomology.LocalFlatnessGap
-import Formal.AG.Measurement.Bootstrap
-import Formal.AG.Evolution.Bootstrap
-import Formal.AG.SemanticRepair.Bootstrap
+
+/-!
+Nondegenerate firing examples for the legacy consolidation migration.
+
+The fixtures reuse the standard geometry reference model and connect its
+two-chart Scheme, lawful closed geometry, decorated Scheme category, Mathlib
+functors, and normalized synthesis package.
+-/
 
 noncomputable section
 
@@ -20,10 +21,22 @@ open scoped AlgebraicGeometry Classical
 
 open Examples
 
+/--
+Part I prerequisites reused by the standard geometry firing.
+
+Implementation notes: the carrier and core are taken directly from the finite
+reference model so this file introduces no second Part I fixture.
+-/
 noncomputable def standardPartIPrerequisites : Site.PartIPrerequisites where
   carrier := AAT.AG.FiniteModel.carrier
   core := AAT.AG.FiniteModel.corePackage
 
+/--
+Architecture geometry whose site is the standard two-chart reference site.
+
+Implementation notes: only the existing reference site is selected; its
+topology and overlap data remain owned by the reference model.
+-/
 noncomputable def standardGeometry : Site.ArchitectureGeometry standardPartIPrerequisites where
   site := StandardGeometryReferenceModels.referenceSite
 
@@ -32,11 +45,19 @@ private noncomputable instance standardGeometry_hasSheafifyInt :
       (LawAlgebra.AATCommAlgCat Int) :=
   StandardGeometryReferenceModels.referenceSite_hasSheafifyInt
 
+/-- The weak and strong obstruction readings used to fire compatibility. -/
 inductive ReferenceObstructionReading where
   | weak
   | strong
 deriving DecidableEq
 
+/--
+Reading parameter with a nonconstant obstruction-ideal compatibility relation.
+
+Implementation notes: equality on `ReferenceObstructionReading` supplies the
+nontrivial predicate; the remaining singleton readings isolate that test from
+unrelated decoration choices.
+-/
 noncomputable def readingParameter :
     AATSchReadingParameter StandardGeometryReferenceModels.referenceRaw where
   AtomLabelReading := PUnit
@@ -60,6 +81,12 @@ noncomputable def readingParameter :
   comp_signatureReadingCompatible _ _ := trivial
   comp_interpretationMapCompatible _ _ := trivial
 
+/--
+Decorated standard scheme for the actual overlap chart.
+
+Implementation notes: the underlying scheme is the canonical single-affine
+scheme built from the reference atlas pair context.
+-/
 noncomputable def overlapAATSch : AATSch readingParameter where
   scheme := LawAlgebra.StandardArchitectureScheme.singleAffine
     StandardGeometryReferenceModels.referenceRaw
@@ -73,6 +100,12 @@ noncomputable def overlapAATSch : AATSch readingParameter where
   signatureReading := PUnit.unit
   interpretationMapReading := PUnit.unit
 
+/--
+Decorated standard scheme for the left chart.
+
+Implementation notes: the underlying scheme reuses the left chart context of
+the standard reference atlas.
+-/
 noncomputable def leftAATSch : AATSch readingParameter where
   scheme := LawAlgebra.StandardArchitectureScheme.singleAffine
     StandardGeometryReferenceModels.referenceRaw
@@ -84,6 +117,12 @@ noncomputable def leftAATSch : AATSch readingParameter where
   signatureReading := PUnit.unit
   interpretationMapReading := PUnit.unit
 
+/--
+The ambient standard reference scheme with the weak obstruction reading.
+
+Implementation notes: the underlying scheme is the merged two-chart reference
+scheme, not a locally defined replacement.
+-/
 noncomputable def referenceAATSch : AATSch readingParameter where
   scheme := StandardGeometryReferenceModels.referenceScheme
   atomLabels := PUnit.unit
@@ -92,6 +131,12 @@ noncomputable def referenceAATSch : AATSch readingParameter where
   signatureReading := PUnit.unit
   interpretationMapReading := PUnit.unit
 
+/--
+The ambient standard reference scheme with the strong obstruction reading.
+
+Implementation notes: it shares the same canonical scheme as `referenceAATSch`
+so incompatibility is caused solely by the selected obstruction reading.
+-/
 noncomputable def strongReferenceAATSch : AATSch readingParameter where
   scheme := StandardGeometryReferenceModels.referenceScheme
   atomLabels := PUnit.unit
@@ -113,6 +158,12 @@ private noncomputable def overlapSchemeHom : overlapAATSch.scheme ⟶ leftAATSch
     StandardGeometryReferenceModels.leftIndex
     StandardGeometryReferenceModels.rightIndex
 
+/--
+Decorated morphism from the overlap chart to the left chart.
+
+Implementation notes: its underlying arrow is the reference atlas's canonical
+overlap restriction and the reading certificates are supplied separately.
+-/
 noncomputable def overlapToLeftMorphism : overlapAATSch ⟶ leftAATSch where
   toSchemeHom := overlapSchemeHom
   atomLabelsCompatible := trivial
@@ -130,6 +181,13 @@ private noncomputable def leftChartSchemeHom : leftAATSch.scheme ⟶ referenceAA
     (StandardGeometryReferenceModels.referenceScheme.atlasValid.chart_valid
       StandardGeometryReferenceModels.leftIndex)
 
+/--
+Decorated left-chart inclusion into the ambient reference scheme.
+
+Implementation notes: the underlying arrow and decoration preservation come
+from the canonical reference atlas, retaining the proper non-isomorphic chart
+inclusion used by the firing theorem.
+-/
 noncomputable def leftChartMorphism : leftAATSch ⟶ referenceAATSch where
   toSchemeHom := leftChartSchemeHom
   atomLabelsCompatible := trivial
@@ -138,30 +196,52 @@ noncomputable def leftChartMorphism : leftAATSch ⟶ referenceAATSch where
   signatureReadingCompatible := trivial
   interpretationMapCompatible := trivial
 
+/--
+The analytic representation obtained by forgetting selected decorations.
+
+Implementation notes: this is the actual Mathlib functor `AATSch.forget`, so
+its object and morphism maps are the canonical standard-scheme projections.
+-/
 noncomputable def schemeRepresentation :
     AnalyticRepresentation readingParameter
       (LawAlgebra.StandardArchitectureScheme StandardGeometryReferenceModels.referenceRaw) :=
   AATSch.forget readingParameter
 
+/--
+Underlying identity scheme hom between objects with different obstruction readings.
+
+Implementation notes: fixing the Scheme arrow to the identity isolates the
+negative result to the nonconstant reading compatibility predicate.
+-/
 noncomputable def nonPreservingCandidate :
     referenceAATSch.scheme ⟶ strongReferenceAATSch.scheme :=
   𝟙 StandardGeometryReferenceModels.referenceScheme
 
+/-- The identity Scheme hom does not preserve the weak-to-strong reading change. -/
 theorem nonPreservingCandidate_not_compatible :
     ¬ readingParameter.obstructionIdealCompatible nonPreservingCandidate
       referenceAATSch.obstructionIdealReading strongReferenceAATSch.obstructionIdealReading := by
   intro h
   cases h
 
+/-- Vertices of the auxiliary migration graph fixture. -/
 inductive MigrationVertex | overlap | leftChart | ambient
 deriving DecidableEq, Fintype
 
+/-- Edges of the auxiliary migration graph fixture. -/
 inductive MigrationEdge | overlapToLeft | leftToAmbient
 deriving DecidableEq, Fintype
 
+/-- Relation label of the auxiliary migration graph fixture. -/
 inductive MigrationLabel | restricts
 deriving DecidableEq, Fintype
 
+/--
+Finite graph recording overlap, chart, and ambient stages.
+
+Implementation notes: this graph is an auxiliary Functor target; the proper
+Scheme chart inclusion remains the primary analytic firing.
+-/
 def migrationGraph : RepresentationAnalysis.FiniteDirectedGraphTarget
     MigrationVertex MigrationEdge MigrationLabel where
   vertexFintype := inferInstance
@@ -172,6 +252,13 @@ def migrationGraph : RepresentationAnalysis.FiniteDirectedGraphTarget
   target | .overlapToLeft => .leftChart | .leftToAmbient => .ambient
   relationLabel | .overlapToLeft => .restricts | .leftToAmbient => .restricts
 
+/--
+Constant graph-valued analytic representation used to exercise Functor laws.
+
+Implementation notes: the representation is deliberately auxiliary and maps
+every arrow to the graph identity; nondegeneracy is supplied by
+`schemeRepresentation`.
+-/
 noncomputable def graphRepresentation : AnalyticRepresentation readingParameter
     (RepresentationAnalysis.FiniteDirectedGraphTarget
       MigrationVertex MigrationEdge MigrationLabel) where
@@ -180,6 +267,7 @@ noncomputable def graphRepresentation : AnalyticRepresentation readingParameter
   map_id _ := by simp
   map_comp _ _ := by simp
 
+/-- The overlap morphism exposes the canonical overlap-to-left Scheme map. -/
 @[simp] theorem overlapToLeftMorphism_toSchemeMap :
     overlapToLeftMorphism.toSchemeMap =
       LawAlgebra.architectureChartRestriction
@@ -189,6 +277,7 @@ noncomputable def graphRepresentation : AnalyticRepresentation readingParameter
           StandardGeometryReferenceModels.leftIndex
           StandardGeometryReferenceModels.rightIndex) := rfl
 
+/-- The decorated left-chart morphism exposes the reference chart inclusion. -/
 @[simp] theorem leftChartMorphism_toSchemeMap :
     leftChartMorphism.toSchemeMap =
       (StandardGeometryReferenceModels.referenceScheme.atlas.chart
@@ -206,44 +295,54 @@ noncomputable def graphRepresentation : AnalyticRepresentation readingParameter
           StandardGeometryReferenceModels.leftIndex).map :=
       StandardGeometryReferenceModels.left_chart_map.symm
 
+/-- The underlying left-chart inclusion is not an isomorphism. -/
 theorem leftChartMorphism_not_isIso : ¬ IsIso leftChartMorphism.toSchemeMap := by
   simpa [leftChartMorphism_toSchemeMap] using
     StandardGeometryReferenceModels.left_chart_not_isIso
 
+/-- The forgetful representation maps the chart morphism to its scheme hom. -/
 @[simp] theorem schemeRepresentation_map_leftChartMorphism :
     schemeRepresentation.map leftChartMorphism = leftChartMorphism.toSchemeHom := rfl
 
+/-- The scheme representation fires the Mathlib identity law. -/
 theorem schemeRepresentation_map_id :
     schemeRepresentation.map (𝟙 referenceAATSch) =
       𝟙 (schemeRepresentation.obj referenceAATSch) := by simp
 
+/-- The scheme representation fires the Mathlib composition law. -/
 theorem schemeRepresentation_map_comp :
     schemeRepresentation.map (overlapToLeftMorphism ≫ leftChartMorphism) =
       schemeRepresentation.map overlapToLeftMorphism ≫
         schemeRepresentation.map leftChartMorphism := by
   simpa using schemeRepresentation.map_comp overlapToLeftMorphism leftChartMorphism
 
+/-- The represented chart morphism has the canonical underlying Scheme map. -/
 @[simp] theorem schemeRepresentation_map_leftChartMorphism_toSchemeMap :
     (schemeRepresentation.map leftChartMorphism).base =
       (StandardGeometryReferenceModels.referenceScheme.atlas.chart
         StandardGeometryReferenceModels.leftIndex).map := rfl
 
+/-- The represented left-chart morphism is an open immersion. -/
 theorem schemeRepresentation_map_leftChartMorphism_isOpenImmersion :
     AlgebraicGeometry.IsOpenImmersion
       (schemeRepresentation.map leftChartMorphism).base := by
   simpa using StandardGeometryReferenceModels.left_chart_isOpenImmersion
 
+/-- The represented left-chart morphism remains non-isomorphic. -/
 theorem schemeRepresentation_map_leftChartMorphism_not_isIso :
     ¬ IsIso (schemeRepresentation.map leftChartMorphism).base := by
   simpa using StandardGeometryReferenceModels.left_chart_not_isIso
 
+/-- The graph representation sends the reference object to `migrationGraph`. -/
 @[simp] theorem graphRepresentation_obj_reference :
     graphRepresentation.obj referenceAATSch = migrationGraph := rfl
 
+/-- The auxiliary graph representation fires the identity law. -/
 theorem graphRepresentation_map_id :
     graphRepresentation.map (𝟙 referenceAATSch) =
       𝟙 (graphRepresentation.obj referenceAATSch) := by simp
 
+/-- The auxiliary graph representation fires the composition law. -/
 theorem graphRepresentation_map_comp :
     graphRepresentation.map (overlapToLeftMorphism ≫ leftChartMorphism) =
       graphRepresentation.map overlapToLeftMorphism ≫
@@ -441,6 +540,13 @@ private noncomputable def synthesisAnalyticReadingContext :
   coefficientDiscipline := True
   completenessLevel := .conservative
 
+/--
+Normalized synthesis package built over the standard reference geometry.
+
+Implementation notes: canonical scheme, reading, ideal geometry, and analytic
+data are reused directly; derived values are obtained through
+`AATSynthesisPackage` projections rather than duplicate fields.
+-/
 noncomputable def synthesisPackage :
     AATSynthesisPackage standardPartIPrerequisites Int standardGeometry
       StandardGeometryReferenceModels.referenceRaw where
@@ -458,6 +564,7 @@ noncomputable def synthesisPackage :
   readingParameter := readingParameter
   representationPeriodMetricAnalysis := synthesisAnalyticReadingContext
 
+/-- The normalized package fires the canonical site, Scheme, ideal, and factorization chain. -/
 theorem synthesisPackage_fires :
     synthesisPackage.site = StandardGeometryReferenceModels.referenceSite ∧
     synthesisPackage.ringedAATSite =

@@ -6,7 +6,7 @@ noncomputable section
 namespace AAT.AG
 namespace SingularityMonodromyStack
 
-universe u v y z
+universe u v w x y z
 
 /--
 VI.定義3.1: selected cotangent complex data for a stratum over its reading
@@ -18,7 +18,7 @@ pullback operation. It does not construct a general Illusie cotangent complex.
 structure CotangentData {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {P : StratumReadingParameter S}
     {k : Type v} [CommRing k]
-    (X : ArchitectureStratum.{u, v, y} P k) where
+    (X : ArchitectureStratum.{u, v, w, x, y} P k) where
   Base : Type z
   CotangentComplex : Type z
   baseMap : X.Point -> Base
@@ -30,10 +30,10 @@ namespace CotangentData
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {P : StratumReadingParameter S}
 variable {k : Type v} [CommRing k]
-variable {X : ArchitectureStratum.{u, v, y} P k}
+variable {X : ArchitectureStratum.{u, v, w, x, y} P k}
 
 /-- VI.定義3.1: expose the selected base map of the stratum. -/
-theorem baseMap_eq (L : CotangentData.{u, v, y, z} X) :
+theorem baseMap_eq (L : CotangentData.{u, v, w, x, y, z} X) :
     L.baseMap = L.baseMap :=
   rfl
 
@@ -47,7 +47,7 @@ as its selected cotangent carrier.
 -/
 def ofConDef
     (F : LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily.{u, v} k) :
-    CotangentData.{u, v, y, v} X where
+    CotangentData.{u, v, w, x, y, v} X where
   Base := Cohomology.StandardObstruction.LawfulLocusAlgebra k F
   CotangentComplex := Cohomology.StandardObstruction.ConDef_U k F
   baseMap := fun _ => 0
@@ -80,8 +80,8 @@ step.
 structure TangentData {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {P : StratumReadingParameter S}
     {k : Type v} [CommRing k]
-    (X : ArchitectureStratum.{u, v, y} P k)
-    (L : CotangentData.{u, v, y, z} X) where
+    (X : ArchitectureStratum.{u, v, w, x, y} P k)
+    (L : CotangentData.{u, v, w, x, y, z} X) where
   TangentComplex : Type z
   H0 : Type z
   H1 : Type z
@@ -96,11 +96,11 @@ namespace TangentData
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {P : StratumReadingParameter S}
 variable {k : Type v} [CommRing k]
-variable {X : ArchitectureStratum.{u, v, y} P k}
-variable {L : CotangentData.{u, v, y, z} X}
+variable {X : ArchitectureStratum.{u, v, w, x, y} P k}
+variable {L : CotangentData.{u, v, w, x, y, z} X}
 
 /-- VI.定義3.2: expose the selected obstruction-zero element. -/
-theorem zeroObstruction_eq (T : TangentData.{u, v, y, z} X L) :
+theorem zeroObstruction_eq (T : TangentData.{u, v, w, x, y, z} X L) :
     T.zeroObstruction = T.zeroObstruction :=
   rfl
 
@@ -115,7 +115,7 @@ construction.
 -/
 def ofDerOb
     (F : LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily.{u, v} k) :
-    TangentData.{u, v, y, v} X (CotangentData.ofConDef (X := X) F) where
+    TangentData.{u, v, w, x, y, v} X (CotangentData.ofConDef (X := X) F) where
   TangentComplex := k
   H0 := k
   H1 := Cohomology.StandardObstruction.DerOb_U k F k

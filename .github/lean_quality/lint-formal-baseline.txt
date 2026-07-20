@@ -6,13 +6,6 @@ INCORRECT DEF/LEMMA: -/
 #check @AAT.AG.Cohomology.StandardFinitePosetCech.doubleFaceCancellationLawOfSimplicialFaceAction /- is a def, should be lemma/theorem -/
 #check @AAT.AG.Cohomology.StandardFinitePosetCech.canonicalTupleStandardDifferentialCompLaw /- is a def, should be lemma/theorem -/
 
--- Formal.AG.Cohomology.GluingMismatch
-#check @AAT.AG.Cohomology.LocalFlatnessData.factorsThroughFlat_U /- is a def, should be lemma/theorem -/
-#check @AAT.AG.Cohomology.RestrictedLocalLawfulSection.factorsThroughFlat_U /- is a def, should be lemma/theorem -/
-
--- Formal.AG.Cohomology.LocalFlatnessGap
-#check @AAT.AG.Cohomology.CompatibleGlobalLawfulSection.globalFactorsThroughFlat_U /- is a def, should be lemma/theorem -/
-
 -- Formal.AG.Evolution.ReplayDescent
 #check @AAT.AG.Evolution.ReplayMismatchCocycle.toTemporalCocycle /- is a def, should be lemma/theorem -/
 
@@ -24,21 +17,11 @@ INCORRECT DEF/LEMMA: -/
 #check AAT.AG.Examples.EvolutionPart9.toyForceTemporalCocycle /- is a def, should be lemma/theorem -/
 #check AAT.AG.Examples.EvolutionPart9.toyForceTemporalClass /- is a def, should be lemma/theorem -/
 
--- Formal.AG.Examples.RepresentationAnalysisPart7
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesis_algebraicGeometricAATSynthesis_fires /- is a def, should be lemma/theorem -/
-
 -- Formal.AG.Examples.SemanticRepairPart10
 #check AAT.AG.Examples.SemanticRepairPart10.trueSheafCertificate /- is a def, should be lemma/theorem -/
 #check AAT.AG.Examples.SemanticRepairPart10.generatedF2TrueSheafCertificate /- is a def, should be lemma/theorem -/
 #check AAT.AG.Examples.SemanticRepairPart10.generatedLawTrueSheafCertificate /- is a def, should be lemma/theorem -/
 #check AAT.AG.Examples.SemanticRepairPart10.generatedLawCircleTrueSheafCertificate /- is a def, should be lemma/theorem -/
-
--- Formal.AG.LawAlgebra.Correspondence
-#check @AAT.AG.LawAlgebra.Correspondence.lawfulnessIdealCorrespondence /- is a def, should be lemma/theorem -/
-
--- Formal.AG.LawAlgebra.FiniteExamples
-#check AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicCorrespondencePackage /- is a def, should be lemma/theorem -/
-#check AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.cyclicCorrespondencePackage /- is a def, should be lemma/theorem -/
 
 -- Formal.AG.LawAlgebra.LawEquation
 #check @AAT.AG.LawAlgebra.SemanticLawEquationWitnessIdealCore.restrictionCompatible /- is a def, should be lemma/theorem -/
@@ -930,51 +913,40 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check AAT.AG.FiniteModel.RepresentationAnalysisPart7.marginStabilityToyProfile /- definition missing documentation string -/
 #check AAT.AG.FiniteModel.RepresentationAnalysisPart7.ObservationPath /- inductive missing documentation string -/
 #check AAT.AG.FiniteModel.RepresentationAnalysisPart7.observationGapToyProfile /- definition missing documentation string -/
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.toyReadingParameter /- definition missing documentation string -/
 #check AAT.AG.FiniteModel.RepresentationAnalysisPart7.ToyRepIndex /- inductive missing documentation string -/
 #check AAT.AG.FiniteModel.RepresentationAnalysisPart7.ToyObstructionClass /- inductive missing documentation string -/
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.toyTargetCategory /- definition missing documentation string -/
+#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisRepairProfile /- definition missing documentation string -/
+#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.nondegenerateDistanceToFlatness /- definition missing documentation string -/
+#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisGeometry /- definition missing documentation string -/
+#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisRawAmbient /- definition missing documentation string -/
+#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisRingedTopos /- definition missing documentation string -/
+#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisArchitectureScheme /- definition missing documentation string -/
+#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.toyReadingParameter /- definition missing documentation string -/
 #check AAT.AG.FiniteModel.RepresentationAnalysisPart7.toyAnalyticRepresentation /- definition missing documentation string -/
 #check AAT.AG.FiniteModel.RepresentationAnalysisPart7.toyRepresentationFamily /- definition missing documentation string -/
 #check AAT.AG.FiniteModel.RepresentationAnalysisPart7.toyDetectingFamily /- definition missing documentation string -/
 #check AAT.AG.FiniteModel.RepresentationAnalysisPart7.toySignatureAxes /- definition missing documentation string -/
 #check AAT.AG.FiniteModel.RepresentationAnalysisPart7.toyAnalyticReadingContext /- definition missing documentation string -/
 #check AAT.AG.FiniteModel.RepresentationAnalysisPart7.toyConservativity /- definition missing documentation string -/
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisPartI /- definition missing documentation string -/
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisGeometry /- definition missing documentation string -/
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.FiniteSynthesisAlgCat /- definition missing documentation string -/
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisAlgTerminal /- definition missing documentation string -/
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisAlgPresheaf /- definition missing documentation string -/
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisAlgSheaf /- definition missing documentation string -/
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisCoordFamily /- definition missing documentation string -/
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisRelations /- definition missing documentation string -/
-#check @AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisRestrictionStable /- definition missing documentation string -/
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisRawAmbient /- definition missing documentation string -/
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.punitRingEquivOfSubsingleton /- definition missing documentation string -/
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisRawAmbientAlgebra /- definition missing documentation string -/
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisSheafification /- definition missing documentation string -/
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisPresentation /- definition missing documentation string -/
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisPresentationStable /- definition missing documentation string -/
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisLawAlgebraSheafPackage /- definition missing documentation string -/
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisTypeSheaf /- definition missing documentation string -/
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisAffineChart /- definition missing documentation string -/
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisRingedTopos /- definition missing documentation string -/
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisArchitectureScheme /- definition missing documentation string -/
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisLawfulSection /- definition missing documentation string -/
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisCover /- definition missing documentation string -/
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisObstructionSheaf /- definition missing documentation string -/
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisCechComplex /- definition missing documentation string -/
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisRepairProfile /- definition missing documentation string -/
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisStratumParameter /- definition missing documentation string -/
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisArchitectureStratum /- definition missing documentation string -/
 #check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisReadingParameter /- definition missing documentation string -/
 #check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisAnalyticRepresentation /- definition missing documentation string -/
 #check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisRepresentationFamily /- definition missing documentation string -/
 #check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisDetectingFamily /- definition missing documentation string -/
 #check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisAnalyticReadingContext /- definition missing documentation string -/
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisAATSynthesisAssumptions /- definition missing documentation string -/
+#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.nondegenerateSynthesisReadingParameter /- definition missing documentation string -/
+#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.idealAnalyticRepresentation /- definition missing documentation string -/
+#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.idealSynthesisRepresentationFamily /- definition missing documentation string -/
+#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.idealSynthesisDetectingFamily /- definition missing documentation string -/
+#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.nondegenerateDecoratedScheme /- definition missing documentation string -/
+#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.nondegenerateSynthesisAnalyticReadingContext /- definition missing documentation string -/
+#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisTypeSheaf /- definition missing documentation string -/
+#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisCover /- definition missing documentation string -/
+#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisObstructionSheaf /- definition missing documentation string -/
+#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisCechComplex /- definition missing documentation string -/
+#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisStratumParameter /- definition missing documentation string -/
+#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisArchitectureStratum /- definition missing documentation string -/
 #check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesisAATSynthesisPackage /- definition missing documentation string -/
-#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.finiteSynthesis_algebraicGeometricAATSynthesis_fires /- definition missing documentation string -/
+#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.nondegenerateSynthesisPackage /- definition missing documentation string -/
 
 -- Formal.AG.Examples.SemanticRepairPart10
 #check AAT.AG.Examples.SemanticRepairPart10.CircleNerveNonzeroTransferPacket.comparisonEquiv /- definition missing documentation string -/
@@ -1068,11 +1040,6 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.LawAlgebra.CoordinateFamily.LocalData /- definition missing documentation string -/
 #check @AAT.AG.LawAlgebra.CoordinateReading.read /- definition missing documentation string -/
 
--- Formal.AG.LawAlgebra.Correspondence
-#check @AAT.AG.LawAlgebra.Correspondence.LawfulnessIdealCorrespondenceAssumptions.uAdequateCover /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Correspondence.LawfulnessIdealCorrespondenceAssumptions.obstructionSheafDescent /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.Correspondence.LawfulnessIdealCorrespondenceAssumptions.ringRestrictionCompatibility /- definition missing documentation string -/
-
 -- Formal.AG.LawAlgebra.FiniteExamples
 #check AAT.AG.LawAlgebra.FiniteExamples.NSdepthExample.UnitCertificate.label /- definition missing documentation string -/
 
@@ -1113,7 +1080,6 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily.LawIndex /- definition missing documentation string -/
 #check @AAT.AG.LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily.selected /- definition missing documentation string -/
 #check @AAT.AG.LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily.witnessIdeal /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily.SheafImageConstruction.imageIdeal /- definition missing documentation string -/
 
 -- Formal.AG.LawAlgebra.Scheme
 #check @AAT.AG.LawAlgebra.Scheme.RingedAATTopos.aatSheafObject /- definition missing documentation string -/
@@ -1881,9 +1847,6 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.Measurement.AnalyticReading.readingCertificate /- definition missing documentation string -/
 
 -- Formal.AG.RepresentationAnalysis.AATSch
-#check @AAT.AG.RepresentationAnalysis.AATSchReadingParameter.SchemeMorphism /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSchReadingParameter.id /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSchReadingParameter.comp /- definition missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.AATSchReadingParameter.AtomLabelReading /- definition missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.AATSchReadingParameter.LawReading /- definition missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.AATSchReadingParameter.ObstructionIdealReading /- definition missing documentation string -/
@@ -1900,20 +1863,9 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.RepresentationAnalysis.AATSch.obstructionIdealReading /- definition missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.AATSch.signatureReading /- definition missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.AATSch.interpretationMapReading /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSchMorphism.underlying /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSchIdentityData.morphism /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSchCompositionData.morphism /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSchFiberProductData.object /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSchFiberProductData.fst /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSchFiberProductData.snd /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSchFiberProductData.underlyingPullback /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSchFiberProductData.decorationPullbackCompatible /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AnalyticTargetCategory.Hom /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AnalyticTargetCategory.id /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AnalyticTargetCategory.comp /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AnalyticRepresentation.targetCategory /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AnalyticRepresentation.obj /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AnalyticRepresentation.map /- definition missing documentation string -/
+#check @AAT.AG.RepresentationAnalysis.AATSchMorphism.toSchemeHom /- definition missing documentation string -/
+#check @AAT.AG.RepresentationAnalysis.AATSchMorphism.id /- definition missing documentation string -/
+#check @AAT.AG.RepresentationAnalysis.AATSchMorphism.comp /- definition missing documentation string -/
 
 -- Formal.AG.RepresentationAnalysis.AnalyticContext
 #check @AAT.AG.RepresentationAnalysis.UDetectingRepresentationFamily.ObstructionClass /- definition missing documentation string -/
@@ -2017,11 +1969,10 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.RepresentationAnalysis.GraphRepresentationProfile.Vertex /- definition missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.GraphRepresentationProfile.Edge /- definition missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.GraphRepresentationProfile.RelationLabel /- definition missing documentation string -/
+#check @AAT.AG.RepresentationAnalysis.GraphRepresentationProfile.representation /- definition missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.GraphRepresentationProfile.SelectedRelation /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.GraphRepresentationProfile.graphOf /- definition missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.GraphRepresentationProfile.relationEdge /- definition missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.GraphRepresentationProfile.selectedEdge /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.GraphRepresentationProfile.mapGraph /- definition missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.DependencyAcyclicityProfile.dependencyAxisSelected /- definition missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.DependencyAcyclicityProfile.structuralDependencyObstructionZero /- definition missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.DependencyAcyclicityProfile.selectedCycleObstructionWitness /- definition missing documentation string -/
@@ -2037,8 +1988,7 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.RepresentationAnalysis.MatrixRepresentationProfile.Vertex /- definition missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.MatrixRepresentationProfile.Edge /- definition missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.MatrixRepresentationProfile.RelationLabel /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.MatrixRepresentationProfile.matrixOf /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.MatrixRepresentationProfile.mapMatrix /- definition missing documentation string -/
+#check @AAT.AG.RepresentationAnalysis.MatrixRepresentationProfile.representation /- definition missing documentation string -/
 
 -- Formal.AG.RepresentationAnalysis.Metric
 #check @AAT.AG.RepresentationAnalysis.DistanceValuePartialOrder.le /- definition missing documentation string -/
@@ -2141,9 +2091,9 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.RepresentationAnalysis.RepairRoute.flatCandidate /- definition missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.RepairRoute.operationPath /- definition missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.RepairRoute.routeCost /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.RepairRoute.LawCoordinateAlgebra /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.RepairRoute.obstructionIdeal /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.RepairRoute.lawfulSection /- definition missing documentation string -/
+#check @AAT.AG.RepresentationAnalysis.RepairRoute.sectionSource /- definition missing documentation string -/
+#check @AAT.AG.RepresentationAnalysis.RepairRoute.section /- definition missing documentation string -/
+#check @AAT.AG.RepresentationAnalysis.RepairRoute.factorization /- definition missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.RepairProfileReading.mode /- definition missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.RepairProfileReading.shortest /- definition missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.RepairProfileReading.safest /- definition missing documentation string -/
@@ -2231,41 +2181,16 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.RepresentationAnalysis.GluingObstructionCurvatureReading.curvatureReadsObstructionClass /- definition missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.LawConflictCurvatureReading.selectedDegree /- definition missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.LawConflictCurvatureReading.curvatureReadsLawConflict /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.SignatureCurvatureLawfulFactorizationContext.signatureProfile /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.SignatureCurvatureLawfulFactorizationContext.curvatureProfile /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.SignatureCurvatureLawfulFactorizationContext.correspondence /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.SignatureCurvatureLawfulFactorizationContext.obstructionClassReading /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.SignatureCurvatureLawfulFactorizationContext.lawConflictReading /- definition missing documentation string -/
+#check @AAT.AG.RepresentationAnalysis.CurvatureReadingContext /- inductive missing documentation string -/
+#check @AAT.AG.RepresentationAnalysis.CurvatureReadingContext.curvatureProfile /- definition missing documentation string -/
+#check @AAT.AG.RepresentationAnalysis.CurvatureAxisComparisonContext /- inductive missing documentation string -/
+#check @AAT.AG.RepresentationAnalysis.CurvatureLawfulFactorizationContext /- inductive missing documentation string -/
+#check @AAT.AG.RepresentationAnalysis.SignatureLawfulFactorizationContext /- inductive missing documentation string -/
+#check @AAT.AG.RepresentationAnalysis.SignatureLawfulFactorizationContext.signatureProfile /- definition missing documentation string -/
 
 -- Formal.AG.RepresentationAnalysis.Synthesis
-#check @AAT.AG.RepresentationAnalysis.AATSynthesisAssumptions.architectureGeometry /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSynthesisAssumptions.ringedAATTopos /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSynthesisAssumptions.architectureScheme /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSynthesisAssumptions.LawCoordinateAlgebra /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSynthesisAssumptions.obstructionIdeal /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSynthesisAssumptions.lawfulLocus /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSynthesisAssumptions.lawfulSection /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSynthesisAssumptions.cover /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSynthesisAssumptions.obstructionSheaf /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSynthesisAssumptions.obstructionCohomology /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSynthesisAssumptions.derivedLawGeometry /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSynthesisAssumptions.stratumParameter /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSynthesisAssumptions.singularityMonodromyStack /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSynthesisAssumptions.readingParameter /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSynthesisAssumptions.representationPeriodMetricAnalysis /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSynthesisPackage.Atom /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSynthesisPackage.atomFamily /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSynthesisPackage.architectureObject /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSynthesisPackage.architectureGeometry /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSynthesisPackage.aatSite /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSynthesisPackage.ringedAATTopos /- definition missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.AATSynthesisPackage.architectureScheme /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSynthesisPackage.affineChartIndex /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSynthesisPackage.affineAATCharts /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSynthesisPackage.LawCoordinateAlgebra /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSynthesisPackage.obstructionIdeal /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSynthesisPackage.lawfulLocus /- definition missing documentation string -/
-#check @AAT.AG.RepresentationAnalysis.AATSynthesisPackage.lawfulSection /- definition missing documentation string -/
+#check @AAT.AG.RepresentationAnalysis.AATSynthesisPackage.lawReading /- definition missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.AATSynthesisPackage.cover /- definition missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.AATSynthesisPackage.obstructionSheaf /- definition missing documentation string -/
 #check @AAT.AG.RepresentationAnalysis.AATSynthesisPackage.obstructionCohomology /- definition missing documentation string -/
@@ -2415,6 +2340,7 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.SingularityMonodromyStack.ArchitectureStack.effectiveDescent /- definition missing documentation string -/
 #check @AAT.AG.SingularityMonodromyStack.AlgebraicArchitectureStackData.architectureStack /- definition missing documentation string -/
 #check @AAT.AG.SingularityMonodromyStack.AlgebraicArchitectureStackData.representableDiagonal /- definition missing documentation string -/
+#check @AAT.AG.SingularityMonodromyStack.AlgebraicArchitectureStackData.raw /- definition missing documentation string -/
 #check @AAT.AG.SingularityMonodromyStack.AlgebraicArchitectureStackData.atlasScheme /- definition missing documentation string -/
 #check @AAT.AG.SingularityMonodromyStack.AlgebraicArchitectureStackData.atlasAdmissible /- definition missing documentation string -/
 #check @AAT.AG.SingularityMonodromyStack.AlgebraicArchitectureStackData.obstructionIdealsDescend /- definition missing documentation string -/
@@ -2628,6 +2554,7 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.SingularityMonodromyStack.StratumReadingParameter.signatureAxes /- definition missing documentation string -/
 #check @AAT.AG.SingularityMonodromyStack.StratumReadingParameter.Coeff /- definition missing documentation string -/
 #check @AAT.AG.SingularityMonodromyStack.StratumReadingParameter.selectedCoeff /- definition missing documentation string -/
+#check @AAT.AG.SingularityMonodromyStack.ArchitectureStratum.raw /- definition missing documentation string -/
 #check @AAT.AG.SingularityMonodromyStack.ArchitectureStratum.geometry /- definition missing documentation string -/
 #check @AAT.AG.SingularityMonodromyStack.ArchitectureStratum.Point /- definition missing documentation string -/
 #check @AAT.AG.SingularityMonodromyStack.ArchitectureStratum.carrier /- definition missing documentation string -/
@@ -2781,6 +2708,9 @@ another instance-implicit argument or the return type. -/
 
 /- The `synTaut` linter reports:
 THE FOLLOWING DECLARATIONS ARE SYNTACTIC TAUTOLOGIES. This usually means that they are of the form `∀ a b ... z, e₁ = e₂` where `e₁` and `e₂` are identical expressions. We call declarations of this form syntactic tautologies. Such lemmas are (mostly) useless and sometimes introduced unintentionally when proving basic facts using `rfl`, when elaboration results in a different term than the user intended. You should check that the declaration really says what you think it does. -/
+-- Formal.AG.Examples.RepresentationAnalysisPart7
+#check AAT.AG.FiniteModel.RepresentationAnalysisPart7.detectingRepresentation_toy_zero_is_actual_zero /- LHS equals RHS syntactically -/
+
 -- Formal.AG.SingularityMonodromyStack.ArchitectureStack
 #check @AAT.AG.SingularityMonodromyStack.ArchitecturePresheaf.pullbackObj_eq /- LHS equals RHS syntactically -/
 
@@ -3006,22 +2936,26 @@ UNUSED ARGUMENTS. -/
 -- Formal.AG.ReadingFunctoriality.Coverage
 #check @AAT.AG.CoverageTopologyRefinement.fineSheafification /- argument 5 r : AAT.AG.CoverageTopologyRefinement J J' -/
 
--- Formal.AG.RepresentationAnalysis.AATSch
-#check @AAT.AG.RepresentationAnalysis.AnalyticTargetCategory.AsCategory /- argument 2 _C : AAT.AG.RepresentationAnalysis.AnalyticTargetCategory
-  Target -/
-
 -- Formal.AG.RepresentationAnalysis.FiniteHomology
-#check @AAT.AG.RepresentationAnalysis.FinitePosetCechStrictPeriodContext.comparison_d_comp_d_eq_zero /- argument 13 _H : AAT.AG.RepresentationAnalysis.FinitePosetCechStrictPeriodContext
+#check @AAT.AG.RepresentationAnalysis.FinitePosetCechStrictPeriodContext.comparison_d_comp_d_eq_zero /- argument 15 _H : AAT.AG.RepresentationAnalysis.FinitePosetCechStrictPeriodContext
   F X D -/
 
 -- Formal.AG.RepresentationAnalysis.Period
-#check @AAT.AG.RepresentationAnalysis.BroadPeriodConvention.BroadPeriod /- argument 8 _C : AAT.AG.RepresentationAnalysis.BroadPeriodConvention
+#check @AAT.AG.RepresentationAnalysis.BroadPeriodConvention.BroadPeriod /- argument 10 _C : AAT.AG.RepresentationAnalysis.BroadPeriodConvention
   F -/
-#check @AAT.AG.RepresentationAnalysis.PeriodFamily.PeriodMember /- argument 9 _X : AAT.AG.RepresentationAnalysis.AATSch
+#check @AAT.AG.RepresentationAnalysis.PeriodFamily.PeriodMember /- argument 11 _X : AAT.AG.RepresentationAnalysis.AATSch
   p -/
 
 -- Formal.AG.RepresentationAnalysis.PeriodSeparation
 #check AAT.AG.RepresentationAnalysis.PeriodSeparationExample62.graphReading /- argument 1 _X : AAT.AG.RepresentationAnalysis.PeriodSeparationExample62.Geometry -/
+
+-- Formal.AG.RepresentationAnalysis.Synthesis
+#check @AAT.AG.RepresentationAnalysis.AATSynthesisPackage.architectureObject /- argument 7 _Q : AAT.AG.RepresentationAnalysis.AATSynthesisPackage
+  P k geometry raw -/
+#check @AAT.AG.RepresentationAnalysis.AATSynthesisPackage.site /- argument 7 _Q : AAT.AG.RepresentationAnalysis.AATSynthesisPackage
+  P k geometry raw -/
+#check @AAT.AG.RepresentationAnalysis.AATSynthesisPackage.ringedAATSite /- argument 7 _Q : AAT.AG.RepresentationAnalysis.AATSynthesisPackage
+  P k geometry raw -/
 
 -- Formal.AG.SemanticRepair.AdditiveH1
 #check @AAT.AG.SemanticRepair.SemanticRepairAdditiveCechH1Data.Cocycle /- argument 4 _data : AAT.AG.SemanticRepair.SemanticRepairAdditiveCechH1Data

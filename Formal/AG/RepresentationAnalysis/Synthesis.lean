@@ -17,6 +17,11 @@ VII.定理16.1: algebraic-geometric AAT synthesis package.
 The package stores the independently constructed Parts II--VII data once.
 The Part I architecture object, site, ringed site, atlas, ideal sheaf, and
 lawful closed geometry are read from their canonical owners below.
+
+Implementation notes: only independently constructed predecessor data are
+fields. Values determined by `P`, `geometry`, `raw`, the standard scheme, or
+the closed-equational reading are exposed by the projections below instead of
+being stored with coherence equalities.
 -/
 structure AATSynthesisPackage
     (P : Site.PartIPrerequisites.{u}) (k : Type v) [CommRing k]
@@ -76,7 +81,12 @@ abbrev affineAtlas
     [HasSheafify geometry.site.topology (LawAlgebra.AATCommAlgCat k)]
     (Q : AATSynthesisPackage P k geometry raw) := Q.architectureScheme.atlas
 
-/-- The law-generated ideal sheaf of the package reading. -/
+/--
+The law-generated ideal sheaf of the package reading.
+
+Implementation notes: this definition delegates to the canonical closed-
+equational geometry constructor and stores no second ideal-sheaf field.
+-/
 noncomputable def obstructionIdealSheaf
     {P : Site.PartIPrerequisites.{u}} {k : Type v} [CommRing k]
     {geometry : Site.ArchitectureGeometry P}
@@ -87,7 +97,12 @@ noncomputable def obstructionIdealSheaf
   LawAlgebra.lawGeneratedIdealSheaf raw Q.architectureScheme Q.lawReading
     Q.lawReadingValid Q.requiredClosed
 
-/-- The lawful closed subscheme selected by the package reading. -/
+/--
+The lawful closed subscheme selected by the package reading.
+
+Implementation notes: the subscheme is derived from the package's canonical
+scheme and validated reading rather than retained as duplicate package data.
+-/
 noncomputable def lawfulClosedSubscheme
     {P : Site.PartIPrerequisites.{u}} {k : Type v} [CommRing k]
     {geometry : Site.ArchitectureGeometry P}
@@ -97,7 +112,12 @@ noncomputable def lawfulClosedSubscheme
   LawAlgebra.lawfulClosedSubscheme raw Q.architectureScheme Q.lawReading
     Q.lawReadingValid Q.requiredClosed
 
-/-- The canonical closed immersion of the lawful closed subscheme. -/
+/--
+The canonical closed immersion of the lawful closed subscheme.
+
+Implementation notes: the arrow is the canonical immersion belonging to the
+derived lawful closed subscheme.
+-/
 noncomputable def lawfulClosedImmersion
     {P : Site.PartIPrerequisites.{u}} {k : Type v} [CommRing k]
     {geometry : Site.ArchitectureGeometry P}
