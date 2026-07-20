@@ -531,15 +531,19 @@ function renderAnalysisStatus(snapshot, model, actions) {
   requireElement("#technical-gate").textContent = model.gate?.decision || "—";
   if (snapshot.mode === "analysis" || snapshot.mode === "improve") renderFindingSources(requireElement("#source-targets"), snapshot, selected, actions);
   const selectedTarget = snapshot.mode === "architecture" ? null : selected?.sourceTargets.find((target) => snapshot.selection?.sourceTargetKey ? target.key === snapshot.selection.sourceTargetKey : target.sourceId === snapshot.selection?.id && (!snapshot.selection?.atomId || target.atomId === snapshot.selection.atomId));
+  const sourceClassification = requireElement("#source-classification");
   if (selectedTarget) {
-    requireElement("#source-classification").textContent = selectedTarget.classification;
+    sourceClassification.textContent = selectedTarget.classification;
+    sourceClassification.dataset.classification = selectedTarget.classification;
     requireElement("#source-supporting-atom").textContent = `Supporting Atom ${selectedTarget.atomId || "not directly supplied"}`;
     requireElement("#source-resolution").textContent = selectedTarget.resolution;
   } else if (snapshot.mode === "architecture") {
-    requireElement("#source-classification").textContent = snapshot.selection?.kind === "source" ? "ARCHMAP SOURCE" : "NO SOURCE CLASSIFICATION";
+    sourceClassification.textContent = snapshot.selection?.kind === "source" ? "ARCHMAP SOURCE" : "NO SOURCE CLASSIFICATION";
+    delete sourceClassification.dataset.classification;
     requireElement("#source-supporting-atom").textContent = `Supporting Atom ${snapshot.selection?.atomId || "—"}`;
   } else {
-    requireElement("#source-classification").textContent = snapshot.mode === "improve" && selected && !selected.repairAtomIds.length ? "NO EXPLICIT REPAIR TARGET" : "NO SOURCE CLASSIFICATION";
+    sourceClassification.textContent = snapshot.mode === "improve" && selected && !selected.repairAtomIds.length ? "NO EXPLICIT REPAIR TARGET" : "NO SOURCE CLASSIFICATION";
+    delete sourceClassification.dataset.classification;
     requireElement("#source-supporting-atom").textContent = "Supporting Atom —";
     requireElement("#source-path").textContent = "—";
     requireElement("#source-symbol").textContent = "—";

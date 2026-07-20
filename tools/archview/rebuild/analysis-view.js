@@ -136,7 +136,8 @@ function buildFinding(card, position, bundle, index) {
   ]);
   const supportCoverIds = resolveRefs(evidence.coverRefs || [], "covers", index, bridges);
   const directSourceRefs = resolveRefs(evidence.sourceRefs || [], "sources", index, bridges);
-  const invariantRefs = new Set(evidence.computedInvariantRefs || []);
+  const rowInvariantRefs = new Set(verdictRows.flatMap((row) => row.evidence?.computedInvariantRefs || []));
+  const invariantRefs = new Set((evidence.computedInvariantRefs || []).filter((ref) => !verdictRows.length || rowInvariantRefs.has(ref)));
   const invariants = packet.computedInvariants.filter((row) => invariantRefs.has(row.invariantId));
   const relationEvidence = collectRelationEvidence(invariants, index, bridges);
   const relationRefs = unique(relationEvidence.relation);
@@ -144,7 +145,7 @@ function buildFinding(card, position, bundle, index) {
   const mismatchEdgeRefs = unique(relationEvidence.mismatch).filter((edge) => !unobservedEdgeRefs.includes(edge));
   const agreementEdgeRefs = unique(relationEvidence.agreement).filter((edge) => !unobservedEdgeRefs.includes(edge) && !mismatchEdgeRefs.includes(edge));
   const edgeRefs = relationRefs.filter((edge) => !unobservedEdgeRefs.includes(edge));
-  const boundaryContextIds = boundaryContextRefs(relationRefs, index, bridges);
+  const boundaryContextIds = boundaryContextRefs(mismatchEdgeRefs, index, bridges);
   const repairAtomIds = explicitRepairAtomRefs(card, index, bridges);
   const validatedAtomIds = [];
   const validated = false;

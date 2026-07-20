@@ -283,12 +283,14 @@ summary:focus-visible {
 .analysis-step[data-analysis-state="unmeasured"],
 .analysis-step[data-analysis-state="unknown"],
 .analysis-step[data-analysis-state="not_computed"] { border-left-style: dashed; }
+.analysis-step[data-analysis-state="blocked"] { border-left-color: #a13a32; }
 .source-classification-badge { display: block; margin-bottom: 4px; color: var(--indigo); font: 700 9px Inter, sans-serif; letter-spacing: 0.06em; }
 .source-tree ul { display: grid; gap: 5px; padding: 5px 0 0 10px; margin: 0; list-style: none; }
 .source-path-group > strong { color: var(--ink); font-size: 10px; }
 .source-symbol-group,
 .source-line-group { display: block; margin-bottom: 3px; color: var(--graphite); }
 .source-classification-badge:has(+ [data-source-classification="CANDIDATE CHANGE POINT"]) { color: #3f6fa8; }
+.source-classification-badge:has(+ [data-source-classification="DIRECT EVIDENCE"]) { color: #b87932; }
 .source-classification-badge:has(+ [data-source-classification="VALIDATED IN HYPOTHETICAL TARGET"]) { color: var(--botanical); }
 
 .atlas-panel {
@@ -428,6 +430,9 @@ summary:focus-visible {
 .resolution-level { margin: 0; color: var(--graphite); font-size: 10px; letter-spacing: 0.07em; }
 .source-classification,
 .source-supporting-atom { margin: 0; color: var(--ink-soft); font-size: 9px; letter-spacing: 0.04em; }
+.source-classification[data-classification="DIRECT EVIDENCE"] { color: #b87932; }
+.source-classification[data-classification="CANDIDATE CHANGE POINT"] { color: #3f6fa8; }
+.source-classification[data-classification="VALIDATED IN HYPOTHETICAL TARGET"] { color: var(--botanical); }
 
 @media (max-width: 1080px) {
   .topbar { grid-template-columns: 140px minmax(250px, 1fr) auto auto; gap: 8px; padding: 0 12px; }
