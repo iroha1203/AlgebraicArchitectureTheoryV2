@@ -43,24 +43,24 @@ example (Pi : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base) :
 
 /-- Fixed contract: path-cell words have actual attaching-path provenance. -/
 example (Pi : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base)
-    (h : H.PathCell) :
+    (h : BasedPathCell H base) :
     Pi.freeWordEquivSelected (Pi.pathCellRelatorWord h) =
-      pathCellRelatorPath Pi.presentation h (Pi.pathCellConnector h) :=
+      pathCellRelatorPath Pi.presentation h.1 h.2 :=
   Pi.pathCellRelator_path_holds h
 
 /-- Fixed contract: loop-relator words have actual operation-loop provenance. -/
 example (Pi : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base)
-    (r : H.LoopRelator) :
+    (r : BasedLoopRelator H base) :
     Pi.freeWordEquivSelected (Pi.loopRelatorWord r) =
-      loopRelatorPath Pi.presentation r (Pi.loopRelatorConnector r) :=
+      loopRelatorPath Pi.presentation r.1 r.2 :=
   Pi.loopRelator_path_holds r
 
 /-- Fixed contract: no relators occur outside the two actual attaching-loop families. -/
 example (Pi : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base)
     {word : Pi.FreeWord} :
     Pi.Relator word ↔
-      (∃ h : H.PathCell, Pi.pathCellRelatorWord h = word) ∨
-      (∃ r : H.LoopRelator, Pi.loopRelatorWord r = word) :=
+      (∃ h : BasedPathCell H base, Pi.pathCellRelatorWord h = word) ∨
+      (∃ r : BasedLoopRelator H base, Pi.loopRelatorWord r = word) :=
   Pi.relator_iff_actual_attaching_loop
 
 /-- Fixed contract: coefficient automorphisms form the target automorphism group. -/

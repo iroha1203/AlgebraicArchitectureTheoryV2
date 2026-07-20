@@ -154,6 +154,11 @@ def toFreeGroup {a b : G.State}
   | .backward edge => (FreeGroup.of edge)⁻¹
   | .refactor _ => 1
 
+@[simp] theorem toFreeGroup_refactor {a b : G.State}
+    (h : R.RefactorEquivalent a b) :
+    (FormalEdgeStep.refactor (K := K) h).toFreeGroup = 1 :=
+  rfl
+
 @[simp] theorem toFreeGroup_reverse {a b : G.State}
     (step : FormalEdgeStep.{u, v, w, x, y, z} K a b) :
     step.reverse.toFreeGroup = step.toFreeGroup⁻¹ := by
@@ -214,6 +219,12 @@ def reverse {a b : G.State} : FormalEdgePath K a b -> FormalEdgePath K b a
 def toFreeGroup {a b : G.State} : FormalEdgePath K a b -> FreeGroup K.Edge
   | .nil _ => 1
   | .cons step rest => step.toFreeGroup * toFreeGroup rest
+
+@[simp] theorem toFreeGroup_single_refactor {a b : G.State}
+    (h : R.RefactorEquivalent a b) :
+    (FormalEdgePath.cons (FormalEdgeStep.refactor (K := K) h)
+      (FormalEdgePath.nil b)).toFreeGroup = 1 := by
+  simp [toFreeGroup]
 
 @[simp] theorem toFreeGroup_concat {a b c : G.State}
     (p : FormalEdgePath K a b) (q : FormalEdgePath K b c) :
@@ -302,6 +313,28 @@ def loopRelatorPath {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     .cons (.refactor (H.relatorLoop r).endpoint_equivalent) (.nil _)
   c.concat (gamma.concat (close.concat c.reverse))
 
+/-- VI.定義9.5: a path-cell together with a selected path from the global base. -/
+abbrev BasedPathCell {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {P : StratumReadingParameter S}
+    {k : Type v} [CommRing k]
+    {X : ArchitectureStratum.{u, v, w, x, y} P k}
+    {G : OperationCategoryData.{u, v, w, x, y, z} X}
+    {R : RefactorEndpointReading.{u, v, w, x, y, z} G}
+    (H : HomotopyGeneratorFamily.{u, v, w, x, y, z} R)
+    (base : G.State) :=
+  Σ h : H.PathCell, OperationPath G base (H.cellSource h)
+
+/-- VI.定義9.5: an operation-loop relator together with a path from the global base. -/
+abbrev BasedLoopRelator {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {P : StratumReadingParameter S}
+    {k : Type v} [CommRing k]
+    {X : ArchitectureStratum.{u, v, w, x, y} P k}
+    {G : OperationCategoryData.{u, v, w, x, y, z} X}
+    {R : RefactorEndpointReading.{u, v, w, x, y, z} G}
+    (H : HomotopyGeneratorFamily.{u, v, w, x, y, z} R)
+    (base : G.State) :=
+  Σ r : H.LoopRelator, OperationPath G base (H.relatorLoop r).base
+
 /--
 VI.定義9.5: presented architecture fundamental group package.
 
@@ -323,27 +356,22 @@ structure PresentedArchitectureFundamentalGroup {U : AtomCarrier.{u}}
   FreeWord : Type z
   freeWordEquivSelected : FreeWord ≃ FreeEdgeWord presentation base
   Relator : FreeWord -> Prop
-  /-- Selected path from the global base to the source of a path-cell attaching loop. -/
-  pathCellConnector : (h : H.PathCell) -> OperationPath G base (H.cellSource h)
-  pathCellRelatorWord : H.PathCell -> FreeWord
+  pathCellRelatorWord : BasedPathCell H base -> FreeWord
   /-- The path-cell word is the actual connector-conjugated attaching path. -/
-  pathCellRelator_path : ∀ h : H.PathCell,
+  pathCellRelator_path : ∀ h : BasedPathCell H base,
     freeWordEquivSelected (pathCellRelatorWord h) =
-      pathCellRelatorPath presentation h (pathCellConnector h)
-  pathCellRelator_selected : ∀ h : H.PathCell, Relator (pathCellRelatorWord h)
-  /-- Selected path from the global base to the base of an operation-loop relator. -/
-  loopRelatorConnector :
-    (r : H.LoopRelator) -> OperationPath G base (H.relatorLoop r).base
-  loopRelatorWord : H.LoopRelator -> FreeWord
+      pathCellRelatorPath presentation h.1 h.2
+  pathCellRelator_selected : ∀ h : BasedPathCell H base, Relator (pathCellRelatorWord h)
+  loopRelatorWord : BasedLoopRelator H base -> FreeWord
   /-- The loop-relator word is the actual connector-conjugated operation loop. -/
-  loopRelator_path : ∀ r : H.LoopRelator,
+  loopRelator_path : ∀ r : BasedLoopRelator H base,
     freeWordEquivSelected (loopRelatorWord r) =
-      loopRelatorPath presentation r (loopRelatorConnector r)
-  loopRelator_selected : ∀ r : H.LoopRelator, Relator (loopRelatorWord r)
+      loopRelatorPath presentation r.1 r.2
+  loopRelator_selected : ∀ r : BasedLoopRelator H base, Relator (loopRelatorWord r)
   relator_generated_by_selected_generator :
     ∀ {w : FreeWord}, Relator w ->
-      (∃ h : H.PathCell, pathCellRelatorWord h = w) ∨
-      (∃ r : H.LoopRelator, loopRelatorWord r = w)
+      (∃ h : BasedPathCell H base, pathCellRelatorWord h = w) ∨
+      (∃ r : BasedLoopRelator H base, loopRelatorWord r = w)
   Pi1 : Type z
   [pi1Group : Group Pi1]
   quotientMap : FreeWord -> Pi1
@@ -469,17 +497,17 @@ theorem presentedGroupLift_word
 /-- VI.定義9.5: path-cell relator words are computed from their actual attaching paths. -/
 theorem pathCellRelator_path_holds
     (P : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base)
-    (h : H.PathCell) :
+    (h : BasedPathCell H base) :
     P.freeWordEquivSelected (P.pathCellRelatorWord h) =
-      pathCellRelatorPath P.presentation h (P.pathCellConnector h) :=
+      pathCellRelatorPath P.presentation h.1 h.2 :=
   P.pathCellRelator_path h
 
 /-- VI.定義9.5: loop-relator words are computed from their actual operation loops. -/
 theorem loopRelator_path_holds
     (P : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base)
-    (r : H.LoopRelator) :
+    (r : BasedLoopRelator H base) :
     P.freeWordEquivSelected (P.loopRelatorWord r) =
-      loopRelatorPath P.presentation r (P.loopRelatorConnector r) :=
+      loopRelatorPath P.presentation r.1 r.2 :=
   P.loopRelator_path r
 
 /-- VI.定義9.5: relators map to the identity in the selected quotient. -/
@@ -492,14 +520,14 @@ theorem relator_maps_to_identity_holds
 /-- VI.定義9.5: selected path-cell relators are relators of the quotient package. -/
 theorem pathCellRelator_selected_holds
     (P : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base)
-    (h : H.PathCell) :
+    (h : BasedPathCell H base) :
     P.Relator (P.pathCellRelatorWord h) :=
   P.pathCellRelator_selected h
 
 /-- VI.定義9.5: selected loop relators are relators of the quotient package. -/
 theorem loopRelator_selected_holds
     (P : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base)
-    (r : H.LoopRelator) :
+    (r : BasedLoopRelator H base) :
     P.Relator (P.loopRelatorWord r) :=
   P.loopRelator_selected r
 
@@ -510,8 +538,8 @@ path-cell or loop-relator family.
 theorem relator_generated_by_selected_generator_holds
     (P : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base)
     {w : P.FreeWord} (h : P.Relator w) :
-    (∃ c : H.PathCell, P.pathCellRelatorWord c = w) ∨
-      (∃ r : H.LoopRelator, P.loopRelatorWord r = w) :=
+    (∃ c : BasedPathCell H base, P.pathCellRelatorWord c = w) ∨
+      (∃ r : BasedLoopRelator H base, P.loopRelatorWord r = w) :=
   P.relator_generated_by_selected_generator h
 
 /-- VI.定義9.5: the relator predicate is exactly the actual path-cell and loop-relator family. -/
@@ -519,8 +547,8 @@ theorem relator_iff_actual_attaching_loop
     (P : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base)
     {w : P.FreeWord} :
     P.Relator w ↔
-      (∃ c : H.PathCell, P.pathCellRelatorWord c = w) ∨
-      (∃ r : H.LoopRelator, P.loopRelatorWord r = w) := by
+      (∃ c : BasedPathCell H base, P.pathCellRelatorWord c = w) ∨
+      (∃ r : BasedLoopRelator H base, P.loopRelatorWord r = w) := by
   constructor
   · exact P.relator_generated_by_selected_generator
   · rintro (⟨c, rfl⟩ | ⟨r, rfl⟩)

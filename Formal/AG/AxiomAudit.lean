@@ -940,10 +940,10 @@ theorem presentedArchitecturePathCellRelatorProvenance
     {H : SingularityMonodromyStack.HomotopyGeneratorFamily R}
     {base : G.State}
     (Pi : SingularityMonodromyStack.PresentedArchitectureFundamentalGroup H base)
-    (h : H.PathCell) :
+    (h : SingularityMonodromyStack.BasedPathCell H base) :
     Pi.freeWordEquivSelected (Pi.pathCellRelatorWord h) =
       SingularityMonodromyStack.pathCellRelatorPath
-        Pi.presentation h (Pi.pathCellConnector h) :=
+        Pi.presentation h.1 h.2 :=
   Pi.pathCellRelator_path_holds h
 
 theorem presentedArchitectureLoopRelatorProvenance
@@ -956,10 +956,10 @@ theorem presentedArchitectureLoopRelatorProvenance
     {H : SingularityMonodromyStack.HomotopyGeneratorFamily R}
     {base : G.State}
     (Pi : SingularityMonodromyStack.PresentedArchitectureFundamentalGroup H base)
-    (r : H.LoopRelator) :
+    (r : SingularityMonodromyStack.BasedLoopRelator H base) :
     Pi.freeWordEquivSelected (Pi.loopRelatorWord r) =
       SingularityMonodromyStack.loopRelatorPath
-        Pi.presentation r (Pi.loopRelatorConnector r) :=
+        Pi.presentation r.1 r.2 :=
   Pi.loopRelator_path_holds r
 
 theorem presentedArchitecturePi1BasedLoopClosure
