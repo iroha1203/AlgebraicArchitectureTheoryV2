@@ -111,7 +111,8 @@ export function createAtlasRenderer(host) {
   const selectionSurface = new THREE.Group();
   scene.add(selectionSurface);
   let atomMeshes = [];
-  let onAtomSelected = null;
+  let selectableMeshes = [];
+  let onSelection = null;
 
   scene.add(new THREE.HemisphereLight(0xfffbf2, 0xb7aa91, 1.7));
   const daylight = new THREE.DirectionalLight(0xfff6e7, 2.1);
@@ -172,61 +173,93 @@ export function createAtlasRenderer(host) {
     }
   };
 
-  const setArchitecture = (index, selectHandler) => {
+  const setArchitecture = (index, layout, selectHandler) => {
     disposeTree(architectureSurface);
     disposeTree(selectionSurface);
     atomMeshes = [];
-    onAtomSelected = selectHandler;
-    if (!index || index.empty) return Object.freeze({ contextPlates: 0, atomGlyphs: 0 });
+    selectableMeshes = [];
+    onSelection = selectHandler;
+    if (!index || index.empty || !layout) return Object.freeze({ contextPlates: 0, subjectGroups: 0, atomGlyphs: 0, restrictions: 0, sharedSupports: 0 });
 
-    const contexts = index.contexts;
-    const gap = 8.2;
-    contexts.forEach((context, contextIndex) => {
-      const x = (contextIndex - (contexts.length - 1) / 2) * gap;
-      const memberAtoms = (context.atoms || []).map((atomId) => index.atomsById.get(atomId)).filter(Boolean);
+    layout.contexts.forEach((contextLayout, contextIndex) => {
+      const context = index.contextsById.get(contextLayout.id);
+      const { x, y, z } = contextLayout.position;
       const plate = new THREE.Mesh(
-        new THREE.BoxGeometry(6.9, 0.16, 7.2),
+        new THREE.BoxGeometry(contextLayout.width, 0.16, contextLayout.height),
         new THREE.MeshStandardMaterial({ color: contextIndex % 2 === 0 ? 0xd9d0bf : 0xe1d8c8, roughness: 0.96, metalness: 0, transparent: true, opacity: 0.92 })
       );
-      plate.position.set(x, 0.08, 0);
+      plate.position.set(x, y, z);
       plate.receiveShadow = true;
       plate.userData = { contextId: context.id, kind: "context" };
       architectureSurface.add(plate);
+      selectableMeshes.push(plate);
 
       const label = labelSprite(context.label || context.id);
-      label.position.set(x, 0.32, -2.65);
+      label.position.set(x, 0.32, z - contextLayout.height / 2 + 0.65);
       label.userData = { contextId: context.id, kind: "context-label" };
       architectureSurface.add(label);
-
-      memberAtoms.forEach((atom, atomIndex) => {
-        const column = atomIndex % 3;
-        const row = Math.floor(atomIndex / 3);
-        const mesh = new THREE.Mesh(
-          atomGeometry(atom.kind),
-          new THREE.MeshStandardMaterial({ color: ATOM_COLORS[atom.kind] || 0x6d7890, roughness: 0.78, metalness: 0 })
-        );
-        mesh.position.set(x + (column - 1) * 1.55, 0.62, -0.6 + row * 1.45);
-        mesh.castShadow = true;
-        mesh.userData = { atomId: atom.id, contextId: context.id, kind: "atom" };
-        architectureSurface.add(mesh);
-        atomMeshes.push(mesh);
-      });
     });
-    return Object.freeze({ contextPlates: contexts.length, atomGlyphs: atomMeshes.length });
+
+    for (const subject of layout.subjects) {
+      const marker = labelSprite(subject.subject);
+      marker.scale.set(2.7, 0.52, 1);
+      marker.position.set(subject.position.x, subject.position.y, subject.position.z - 1.15);
+      marker.userData = { kind: "subject", subject: subject.subject, contextId: subject.contextId };
+      architectureSurface.add(marker);
+      selectableMeshes.push(marker);
+    }
+
+    for (const atomLayout of layout.atoms) {
+      const atom = index.atomsById.get(atomLayout.atomId);
+      const mesh = new THREE.Mesh(
+        atomGeometry(atom.kind),
+        new THREE.MeshStandardMaterial({ color: ATOM_COLORS[atom.kind] || 0x6d7890, roughness: 0.78, metalness: 0 })
+      );
+      mesh.position.set(atomLayout.position.x, atomLayout.position.y, atomLayout.position.z);
+      mesh.castShadow = true;
+      mesh.userData = { atomId: atom.id, contextId: atomLayout.contextId, kind: "atom" };
+      architectureSurface.add(mesh);
+      atomMeshes.push(mesh);
+      selectableMeshes.push(mesh);
+    }
+
+    for (const restriction of layout.restrictions) {
+      const start = new THREE.Vector3(restriction.source.x, 0.27, restriction.source.z);
+      const end = new THREE.Vector3(restriction.target.x, 0.27, restriction.target.z);
+      const direction = end.clone().sub(start);
+      const length = direction.length();
+      if (length > 0) architectureSurface.add(new THREE.ArrowHelper(direction.normalize(), start, length, 0x77736a, 0.55, 0.25));
+    }
+
+    for (const support of layout.sharedSupports) {
+      const sheet = new THREE.Mesh(
+        new THREE.CircleGeometry(1.15, 32),
+        new THREE.MeshStandardMaterial({ color: 0xc9d2d0, transparent: true, opacity: 0.44, roughness: 1, side: THREE.DoubleSide })
+      );
+      sheet.rotation.x = -Math.PI / 2;
+      sheet.position.set(support.position.x, support.position.y, support.position.z);
+      sheet.userData = { kind: "shared-support", atomId: support.atomId };
+      architectureSurface.add(sheet);
+    }
+    return Object.freeze({ contextPlates: layout.contexts.length, subjectGroups: layout.subjects.length, atomGlyphs: atomMeshes.length, restrictions: layout.restrictions.length, sharedSupports: layout.sharedSupports.length });
   };
 
   const raycaster = new THREE.Raycaster();
   const pointer = new THREE.Vector2();
   const handlePointer = (event) => {
-    if (!atomMeshes.length) return;
+    if (!selectableMeshes.length) return;
     const bounds = renderer.domElement.getBoundingClientRect();
     pointer.x = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
     pointer.y = -((event.clientY - bounds.top) / bounds.height) * 2 + 1;
     raycaster.setFromCamera(pointer, camera);
-    const hit = raycaster.intersectObjects(atomMeshes, false)[0];
+    const hit = raycaster.intersectObjects(selectableMeshes, false)[0];
     if (!hit) return;
-    selectAtom(hit.object.userData.atomId);
-    onAtomSelected?.(hit.object.userData.atomId);
+    const data = hit.object.userData;
+    if (data.kind === "atom") {
+      selectAtom(data.atomId);
+      onSelection?.("atom", data.atomId, data.contextId);
+    } else if (data.kind === "context") onSelection?.("context", data.contextId);
+    else if (data.kind === "subject") onSelection?.("subject", data.subject, data.contextId);
   };
   renderer.domElement.addEventListener("pointerdown", handlePointer);
 

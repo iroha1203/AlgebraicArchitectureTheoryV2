@@ -163,6 +163,38 @@ async function main() {
         const frontView = window.__archviewFoundationState.view;
         document.querySelector('[data-view="reset"]').click();
         document.querySelector('[data-atom-id="atom:checkout"]').click();
+        const checkoutSelection = window.__archviewState.selection;
+        const checkoutSource = {
+          path: document.querySelector('#source-path').textContent,
+          symbol: document.querySelector('#source-symbol').textContent,
+          line: document.querySelector('#source-line').textContent,
+          resolution: document.querySelector('#source-resolution').textContent,
+        };
+        const index = window.__archviewState.architecture.index;
+        const architectureLayout = window.__archviewLayout;
+        const fidelity = {
+          contexts: architectureLayout.contexts.every((entry) => index.contextsById.has(entry.id)),
+          atoms: architectureLayout.atoms.every((entry) => index.atomsById.has(entry.atomId) && index.contextsById.get(entry.contextId)?.atoms.includes(entry.atomId)),
+          restrictions: architectureLayout.restrictions.every((entry) => index.contextsById.get(entry.sourceId)?.restrictsTo.includes(entry.targetId)),
+          sharedSupports: architectureLayout.sharedSupports.every((entry) => entry.contextIds.length > 1 && entry.contextIds.every((contextId) => index.contextsById.get(contextId)?.atoms.includes(entry.atomId))),
+        };
+        const coverQuestion = document.querySelector('[data-cover-id="cover:payment-lifecycle"]');
+        coverQuestion.click();
+        const q1 = ['ctx:checkout', 'ctx:ledger', 'ctx:refund'].every((id) => document.querySelector('#architecture-facts').textContent.includes(id));
+        document.querySelector('[data-subject="CheckoutService"][data-context-id="ctx:checkout"]').click();
+        const checkoutFacts = document.querySelector('#architecture-facts').textContent;
+        const q2 = checkoutFacts.includes('capability') && checkoutFacts.includes('accepts Payment');
+        const q4 = checkoutFacts.includes('effect') && checkoutFacts.includes('captures Payment');
+        document.querySelector('[data-subject="RefundService"][data-context-id="ctx:refund"]').click();
+        const refundFacts = document.querySelector('#architecture-facts').textContent;
+        const q3 = refundFacts.includes('state') && refundFacts.includes('transitionsTo Refunded');
+        document.querySelector('[data-atom-id="atom:settlement-contract"][data-context-id="ctx:checkout"]').click();
+        const q5 = document.querySelector('#source-targets').textContent.includes('contracts/payment-lifecycle.md');
+        const search = document.querySelector('#architecture-search');
+        search.value = 'RefundService';
+        search.dispatchEvent(new Event('input', { bubbles: true }));
+        const searchKinds = [...document.querySelectorAll('[data-search-kind]')].map((button) => button.dataset.searchKind);
+        document.querySelector('#overview-button').click();
         return {
           phase: root.dataset.phase,
           canvasCount: document.querySelectorAll('#atlas-canvas-host canvas').length,
@@ -182,13 +214,13 @@ async function main() {
           counts: window.__archviewState.architecture.index.counts,
           atomButtons: document.querySelectorAll('[data-atom-id]').length,
           renderStats: window.__archviewRenderStats,
-          selection: window.__archviewState.selection,
-          source: {
-            path: document.querySelector('#source-path').textContent,
-            symbol: document.querySelector('#source-symbol').textContent,
-            line: document.querySelector('#source-line').textContent,
-            resolution: document.querySelector('#source-resolution').textContent,
-          },
+          selection: checkoutSelection,
+          source: checkoutSource,
+          fidelity,
+          layoutSignature: architectureLayout.signature,
+          semanticZoom: window.__archviewState.zoom,
+          searchKinds,
+          taskTest: { answers: [q1, q2, q3, q4, q5], correct: [q1, q2, q3, q4, q5].filter(Boolean).length, total: 5 },
         };
       })()`,
     });
@@ -209,14 +241,43 @@ async function main() {
     if (!value.errorHidden || value.renderer !== "ready" || runtimeErrors.length || consoleErrors.length) {
       throw new Error(`Unexpected renderer error: ${JSON.stringify({ value, runtimeErrors, consoleErrors })}`);
     }
-    if (value.inputStatus !== "loaded" || JSON.stringify(value.counts) !== JSON.stringify({ sources: 4, atoms: 6, contexts: 3, covers: 1 })) {
+    if (value.inputStatus !== "loaded" || JSON.stringify(value.counts) !== JSON.stringify({ sources: 4, atoms: 7, contexts: 3, covers: 1 })) {
       throw new Error(`Valid ArchMap did not load exact fixture facts: ${JSON.stringify(value)}`);
     }
-    if (value.renderStats?.contextPlates !== 3 || value.renderStats?.atomGlyphs !== 8) {
+    if (value.renderStats?.contextPlates !== 3 || value.renderStats?.atomGlyphs !== 9) {
       throw new Error(`Three.js geometry did not match explicit Context memberships: ${JSON.stringify(value)}`);
     }
     if (value.selection?.id !== "atom:checkout" || value.source.path !== "services/checkout/CheckoutService.ts" || value.source.symbol !== "CheckoutService.capture" || value.source.line !== "48" || value.source.resolution !== "DIRECT EVIDENCE") {
       throw new Error(`Atom source landing did not preserve source metadata: ${JSON.stringify(value)}`);
+    }
+    if (!Object.values(value.fidelity).every(Boolean)) {
+      throw new Error(`Rendered Architecture contains facts not supplied by ArchMap: ${JSON.stringify(value)}`);
+    }
+    if (value.semanticZoom !== "cover" || !value.searchKinds.includes("subject") || !value.searchKinds.includes("atom")) {
+      throw new Error(`Semantic zoom or structured search failed: ${JSON.stringify(value)}`);
+    }
+    if (value.taskTest.correct / value.taskTest.total < 0.8) {
+      throw new Error(`Architecture understanding task score was below 80%: ${JSON.stringify(value)}`);
+    }
+
+    const repeated = await page.send("Runtime.evaluate", {
+      awaitPromise: true,
+      returnByValue: true,
+      expression: `(async () => {
+        const read = async () => {
+          await window.__archview.loadUrl('./fixtures/vertical-slice.archmap.json');
+          document.querySelector('[data-atom-id="atom:settlement-contract"][data-context-id="ctx:checkout"]').click();
+          return {
+            signature: window.__archviewLayout.signature,
+            sources: [...document.querySelectorAll('#source-targets li')].map((item) => item.textContent),
+          };
+        };
+        return [await read(), await read()];
+      })()`,
+    });
+    const [firstLayout, secondLayout] = repeated.result.value;
+    if (firstLayout.signature !== value.layoutSignature || firstLayout.signature !== secondLayout.signature || JSON.stringify(firstLayout.sources) !== JSON.stringify(secondLayout.sources)) {
+      throw new Error(`Architecture layout or source order was not deterministic: ${JSON.stringify({ firstLayout, secondLayout })}`);
     }
 
     if (screenshotPath) {

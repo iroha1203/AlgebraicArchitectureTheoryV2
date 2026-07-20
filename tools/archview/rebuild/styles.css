@@ -201,6 +201,8 @@ summary:focus-visible {
 
 .search-field svg { width: 15px; height: 15px; fill: none; stroke: var(--graphite); stroke-width: 1.7; }
 .search-field input { width: 100%; min-width: 0; border: 0; outline: 0; color: var(--ink-soft); background: transparent; }
+.search-results-panel { max-height: 150px; margin-top: 7px; overflow: auto; }
+.search-results button { font-size: 10px; }
 
 .scope-explorer section,
 .inspector section { margin-top: 24px; }
@@ -251,6 +253,8 @@ summary:focus-visible {
 .fact-list dt { color: var(--graphite); font-size: 10px; text-transform: uppercase; }
 .fact-list dd { margin: 0; color: var(--ink-soft); font: 11px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow-wrap: anywhere; }
 .source-list li { padding: 7px; border: 1px solid var(--rule); color: var(--ink-soft); font: 10px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow-wrap: anywhere; }
+.source-list button { width: 100%; padding: 0; color: inherit; text-align: left; font: inherit; overflow-wrap: anywhere; }
+.source-list button[aria-current="true"] { color: var(--indigo); text-decoration: underline; text-underline-offset: 2px; }
 .source-list li[data-resolution="unresolved"] { border-color: rgba(163, 95, 56, 0.45); color: var(--rust); }
 
 .atlas-panel {
@@ -297,7 +301,9 @@ summary:focus-visible {
   box-shadow: 0 4px 14px var(--shadow);
 }
 
-.breadcrumb { padding: 8px 12px; color: var(--ink-soft); font-size: 12px; }
+.breadcrumb { padding: 5px 8px; color: var(--ink-soft); font-size: 12px; }
+.breadcrumb button { max-width: 150px; padding: 3px 4px; overflow: hidden; color: var(--ink-soft); text-overflow: ellipsis; white-space: nowrap; }
+.breadcrumb button[aria-current="true"] { color: var(--indigo); font-weight: 600; }
 .view-controls button { padding: 6px 9px; border-radius: 4px; color: var(--ink-soft); font-size: 12px; }
 .view-controls button[aria-pressed="true"] { color: var(--paper-raised); background: var(--indigo); }
 
