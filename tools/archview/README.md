@@ -146,7 +146,8 @@ Architecture / Analysis / Improveの共通mode stateを持つ。`archmap/v0.5.4`
 選択Coverに含まれるContext plate、`restrictsTo` connector、shared support、
 exact subject group、Atom kind別glyphを決定論的に配置する。
 Cover → Context → Subject → Atom → Sourceのselectionとbreadcrumb、structured search、
-各levelのInspectorから、明示された`path / symbol / line`へ到達できる。
+各levelのInspectorから、明示されたsource親参照を辿って`path / symbol / line`へ到達できる。
+restrictionとshared supportはScope Explorerまたは3D上で選択でき、導出元とvisual channelをInspectorへ表示する。
 未解決source refはAtomを消さず、入力警告と`UNRESOLVED` source targetとして表示する。
 source本文・snippetは読み込まない。
 

@@ -44,7 +44,8 @@ function selectionButton(label, data, current, onClick, count = null) {
 
 function visibleContexts(index, coverId) {
   const cover = index.coversById.get(coverId);
-  const ids = new Set((cover?.contexts || index.contexts.map((context) => context.id)).filter((id) => index.contextsById.has(id)));
+  if (!cover) return [];
+  const ids = new Set((cover.contexts || []).filter((id) => index.contextsById.has(id)));
   return index.contexts.filter((context) => ids.has(context.id));
 }
 
@@ -69,7 +70,7 @@ function renderContextIndex(container, snapshot, actions) {
   list.className = "index-list context-index";
   for (const context of contexts) {
     const item = document.createElement("li");
-    item.append(selectionButton(displayName(context), { contextId: context.id }, snapshot.selection?.kind === "context" && snapshot.selection.id === context.id, () => actions.context(context.id), (context.atoms || []).filter((id) => index.atomsById.has(id)).length));
+    item.append(selectionButton(displayName(context), { contextId: context.id }, snapshot.selection?.kind === "context" && snapshot.selection.id === context.id, () => actions.context(context.id), new Set((context.atoms || []).filter((id) => index.atomsById.has(id))).size));
     list.append(item);
   }
   container.replaceChildren(list);
@@ -112,6 +113,31 @@ function renderSubjects(container, snapshot, actions) {
   container.replaceChildren(list);
 }
 
+function renderGeometryIndex(container, snapshot, layout, actions) {
+  if (!layout.restrictions.length && !layout.sharedSupports.length) return replaceWithEmpty(container, "No derived geometry in selected Cover");
+  const list = document.createElement("ul");
+  list.className = "index-list geometry-index";
+  for (const restriction of layout.restrictions) {
+    const item = document.createElement("li");
+    const label = `Restriction · ${restriction.sourceId} → ${restriction.targetId}`;
+    const button = selectionButton(label, { restrictionId: restriction.id }, snapshot.selection?.kind === "restriction" && snapshot.selection.id === restriction.id, () => actions.restriction(restriction.sourceId, restriction.targetId));
+    button.addEventListener("mouseenter", () => actions.hover(`${label} · Rendered from contexts.${restriction.sourceId}.restrictsTo`));
+    button.addEventListener("mouseleave", () => actions.hover(null));
+    item.append(button);
+    list.append(item);
+  }
+  for (const support of layout.sharedSupports) {
+    const item = document.createElement("li");
+    const label = `Shared support · ${displayName(snapshot.architecture.index.atomsById.get(support.atomId))}`;
+    const button = selectionButton(label, { sharedSupportId: support.id }, snapshot.selection?.kind === "shared-support" && snapshot.selection.atomId === support.atomId, () => actions.sharedSupport(support.atomId, support.contextIds), support.contextIds.length);
+    button.addEventListener("mouseenter", () => actions.hover(`${label} · ${support.contextIds.join(", ")}`));
+    button.addEventListener("mouseleave", () => actions.hover(null));
+    item.append(button);
+    list.append(item);
+  }
+  container.replaceChildren(list);
+}
+
 function factRow(term, value) {
   const row = document.createElement("div");
   const name = document.createElement("dt");
@@ -132,7 +158,36 @@ function refsForSelection(index, selection) {
     const context = index.contextsById.get(selection.contextId);
     return [...new Set((context?.atoms || []).map((id) => index.atomsById.get(id)).filter((atom) => atom?.subject === selection.id).flatMap((atom) => atom.refs || []))].sort();
   }
+  if (selection.kind === "restriction") {
+    const source = index.contextsById.get(selection.sourceId);
+    const target = index.contextsById.get(selection.targetId);
+    return [...new Set([...(source?.refs || []), ...(target?.refs || [])])].sort();
+  }
+  if (selection.kind === "shared-support") return index.atomsById.get(selection.atomId)?.refs || [];
   return [];
+}
+
+function resolveSource(index, sourceId) {
+  const origin = index.sourcesById.get(sourceId);
+  if (!origin) return Object.freeze({ id: sourceId, source: null, path: null, symbol: null, section: null, line: null, resolved: false });
+  let current = origin;
+  let path = current.path || null;
+  const seen = new Set([sourceId]);
+  while (!path && current.source && index.sourcesById.has(current.source) && !seen.has(current.source)) {
+    seen.add(current.source);
+    current = index.sourcesById.get(current.source);
+    path = current.path || null;
+  }
+  return Object.freeze({
+    id: sourceId,
+    source: origin,
+    path,
+    symbol: origin.symbol || current.symbol || null,
+    section: origin.section || current.section || null,
+    line: origin.line ?? current.line ?? null,
+    resolved: Boolean(path),
+    chain: Object.freeze([...seen]),
+  });
 }
 
 function renderSourceTargets(container, index, refs, selection, actions) {
@@ -140,12 +195,13 @@ function renderSourceTargets(container, index, refs, selection, actions) {
   const list = document.createElement("ul");
   list.className = "source-list";
   for (const ref of refs) {
-    const source = index.sourcesById.get(ref) || null;
+    const landing = resolveSource(index, ref);
     const item = document.createElement("li");
-    item.dataset.resolution = source ? "direct" : "unresolved";
-    if (source) {
+    item.dataset.resolution = landing.resolved ? "direct" : "unresolved";
+    if (landing.source) {
       const atomId = selection?.kind === "atom" ? selection.id : selection?.atomId || null;
-      const button = selectionButton(`${ref} · ${source.path || "path unavailable"} · ${source.symbol || source.section || "symbol unavailable"} · ${source.line ?? "line unavailable"}`, { sourceId: ref }, selection?.kind === "source" && selection.id === ref, () => actions.source(ref, atomId));
+      const contextId = selection?.contextId || null;
+      const button = selectionButton(`${ref} · ${landing.path || "path unavailable"} · ${landing.symbol || landing.section || "symbol unavailable"} · ${landing.line ?? "line unavailable"}`, { sourceId: ref }, selection?.kind === "source" && selection.id === ref, () => actions.source(ref, atomId, contextId));
       item.append(button);
     } else item.textContent = `${ref} · unresolved source ref`;
     list.append(item);
@@ -166,7 +222,7 @@ function selectedFacts(snapshot, layout) {
     const context = index.contextsById.get(selection.id);
     const contextLayout = layout.contexts.find((value) => value.id === selection.id);
     if (!context) return null;
-    return { summary: `Context · ${displayName(context)}`, rows: [["Context", context.id], ["Atoms", (context.atoms || []).filter((id) => index.atomsById.has(id)).length], ["Restricts to", (context.restrictsTo || []).join(", ")], ["Source refs", (context.refs || []).length], ["Restriction depth", contextLayout?.depth ?? 0]] };
+    return { summary: `Context · ${displayName(context)}`, rows: [["Context", context.id], ["Atoms", new Set((context.atoms || []).filter((id) => index.atomsById.has(id))).size], ["Restricts to", (context.restrictsTo || []).join(", ")], ["Source refs", (context.refs || []).length], ["Restriction depth", contextLayout?.depth ?? 0]] };
   }
   if (selection.kind === "subject") {
     const context = index.contextsById.get(selection.contextId);
@@ -179,9 +235,20 @@ function selectedFacts(snapshot, layout) {
     return { summary: `Atom · ${displayName(atom)}`, rows: [["Atom", atom.id], ["Fact", [atom.subject, atom.predicate, atom.object].filter(Boolean).join(" ")], ["Kind", atom.kind], ["Axis", atom.axis], ["Contexts", (index.contextIdsByAtom.get(atom.id) || []).join(", ")]] };
   }
   if (selection.kind === "source") {
-    const source = index.sourcesById.get(selection.id);
-    if (!source) return null;
-    return { summary: `Source · ${selection.id}`, rows: [["Source", selection.id], ["Kind", source.kind], ["Path", source.path || source.source], ["Symbol", source.symbol || source.section], ["Line", source.line]] };
+    const landing = resolveSource(index, selection.id);
+    if (!landing.source) return null;
+    return { summary: `Source · ${selection.id}`, rows: [["Source", selection.id], ["Kind", landing.source.kind], ["Path", landing.path], ["Symbol", landing.symbol || landing.section], ["Line", landing.line], ["Source chain", landing.chain.join(" → ")]] };
+  }
+  if (selection.kind === "restriction") {
+    const source = index.contextsById.get(selection.sourceId);
+    const target = index.contextsById.get(selection.targetId);
+    if (!source || !target || !(source.restrictsTo || []).includes(target.id)) return null;
+    return { summary: `Restriction · ${displayName(source)} → ${displayName(target)}`, channel: "derived", rows: [["Source Context", source.id], ["Target Context", target.id], ["Rendered from", `contexts.${source.id}.restrictsTo`], ["Visual channel", "derived"]] };
+  }
+  if (selection.kind === "shared-support") {
+    const atom = index.atomsById.get(selection.atomId);
+    if (!atom) return null;
+    return { summary: `Shared support · ${displayName(atom)}`, channel: "derived", rows: [["Atom", atom.id], ["Contexts", selection.contextIds.join(", ")], ["Rendered from", "explicit Context Atom memberships"], ["Visual channel", "derived"]] };
   }
   return null;
 }
@@ -192,6 +259,7 @@ function renderSelection(snapshot, layout, actions) {
   const index = snapshot.architecture.index;
   const record = selectedFacts(snapshot, layout);
   requireElement("#inspector-summary").textContent = record?.summary || MODE_COPY[snapshot.mode].summary;
+  requireElement("#technical-channel").textContent = record?.channel || (snapshot.selection ? "supplied / derived" : "decoration");
   if (!record || !index) {
     replaceWithEmpty(facts, "No selection");
     replaceWithEmpty(targets, "No source selected");
@@ -204,11 +272,11 @@ function renderSelection(snapshot, layout, actions) {
   }
 
   const refs = index ? refsForSelection(index, snapshot.selection) : [];
-  const selectedSource = snapshot.selection?.kind === "source" ? index?.sourcesById.get(snapshot.selection.id) : refs.map((ref) => index?.sourcesById.get(ref)).find(Boolean);
-  requireElement("#source-path").textContent = selectedSource?.path || selectedSource?.source || "—";
+  const selectedSource = index ? resolveSource(index, snapshot.selection?.kind === "source" ? snapshot.selection.id : refs[0]) : null;
+  requireElement("#source-path").textContent = selectedSource?.path || "—";
   requireElement("#source-symbol").textContent = selectedSource?.symbol || selectedSource?.section || "—";
-  requireElement("#source-line").textContent = selectedSource?.line === undefined ? "—" : String(selectedSource.line);
-  requireElement("#source-resolution").textContent = selectedSource ? "DIRECT EVIDENCE" : "UNRESOLVED";
+  requireElement("#source-line").textContent = selectedSource?.line === null || selectedSource?.line === undefined ? "—" : String(selectedSource.line);
+  requireElement("#source-resolution").textContent = selectedSource?.resolved ? "DIRECT EVIDENCE" : "UNRESOLVED";
 }
 
 function renderBreadcrumb(snapshot, actions) {
@@ -216,13 +284,14 @@ function renderBreadcrumb(snapshot, actions) {
   const selection = snapshot.selection;
   const items = [];
   if (snapshot.cover) items.push({ level: "cover", label: displayName(index?.coversById.get(snapshot.cover)), action: () => actions.cover(snapshot.cover) });
-  const contextId = selection?.contextId || (selection?.kind === "context" ? selection.id : selection?.kind === "atom" ? index?.contextIdsByAtom.get(selection.id)?.[0] : null);
+  const ownedAtomId = selection?.kind === "atom" ? selection.id : selection?.atomId;
+  const contextId = selection?.contextId || (selection?.kind === "context" ? selection.id : ownedAtomId ? index?.contextIdsByAtom.get(ownedAtomId)?.[0] : null);
   if (contextId) items.push({ level: "context", label: displayName(index?.contextsById.get(contextId)), action: () => actions.context(contextId) });
-  const subject = selection?.kind === "subject" ? selection.id : selection?.kind === "atom" ? index?.atomsById.get(selection.id)?.subject : null;
+  const subject = selection?.kind === "subject" ? selection.id : ownedAtomId ? index?.atomsById.get(ownedAtomId)?.subject : null;
   if (subject && contextId) items.push({ level: "subject", label: subject, action: () => actions.subject(contextId, subject) });
-  const atomId = selection?.kind === "atom" ? selection.id : selection?.atomId;
+  const atomId = ownedAtomId;
   if (atomId) items.push({ level: "atom", label: displayName(index?.atomsById.get(atomId)), action: () => actions.atom(atomId, contextId) });
-  if (selection?.kind === "source") items.push({ level: "source", label: selection.id, action: () => actions.source(selection.id, selection.atomId) });
+  if (selection?.kind === "source") items.push({ level: "source", label: selection.id, action: () => actions.source(selection.id, selection.atomId, selection.contextId) });
   const breadcrumb = requireElement("#semantic-breadcrumb");
   if (!items.length) return replaceWithEmpty(breadcrumb, "Cover → Context → Subject → Atom → Source");
   const nodes = [];
@@ -294,6 +363,7 @@ function renderArchitecture(snapshot, layout, actions) {
   renderCoverIndex(requireElement("#cover-list"), snapshot, actions);
   renderContextIndex(requireElement("#context-list"), snapshot, actions);
   renderSubjects(requireElement("#subject-list"), snapshot, actions);
+  renderGeometryIndex(requireElement("#geometry-list"), snapshot, layout, actions);
   renderSelection(snapshot, layout, actions);
   renderBreadcrumb(snapshot, actions);
   renderSearch(snapshot, actions);
@@ -317,13 +387,23 @@ export async function startArchView() {
     context(id) { state.selectContext(id); },
     subject(contextId, subject) { state.selectSubject(contextId, subject); },
     atom(id, contextId = null) { state.selectAtom(id, contextId); atlasRenderer?.selectAtom(id); },
-    source(id, atomId = null) { state.selectSource(id, atomId); },
+    source(id, atomId = null, contextId = null) { state.selectSource(id, atomId, contextId); },
+    restriction(sourceId, targetId) { state.selectRestriction(sourceId, targetId); },
+    sharedSupport(atomId, contextIds) { state.selectSharedSupport(atomId, contextIds); },
+    hover(label) {
+      const hover = requireElement("#atlas-hover-label");
+      hover.hidden = !label;
+      hover.textContent = label || "";
+    },
   });
   const handleSceneSelection = (kind, id, contextId) => {
     if (kind === "context") actions.context(id);
     if (kind === "subject") actions.subject(contextId, id);
     if (kind === "atom") actions.atom(id, contextId);
+    if (kind === "restriction") actions.restriction(id, contextId);
+    if (kind === "shared-support") actions.sharedSupport(id, contextId);
   };
+  const handleSceneHover = actions.hover;
   const publishTestState = (snapshot) => {
     const publicState = { ...snapshot, modeCount: MODES.length, canvasCount: host.querySelectorAll("canvas").length };
     window.__archviewFoundationState = publicState;
@@ -335,7 +415,7 @@ export async function startArchView() {
     const layout = buildArchitectureLayout(snapshot.architecture.index, snapshot.cover);
     window.__archviewLayout = layout;
     if (atlasRenderer && renderedSignature !== layout.signature) {
-      window.__archviewRenderStats = atlasRenderer.setArchitecture(snapshot.architecture.index, layout, handleSceneSelection);
+      window.__archviewRenderStats = atlasRenderer.setArchitecture(snapshot.architecture.index, layout, handleSceneSelection, handleSceneHover);
       renderedSignature = layout.signature;
     }
     root.dataset.mode = snapshot.mode;
@@ -384,7 +464,7 @@ export async function startArchView() {
 
   const applyIndex = (index, source) => state.architectureLoaded(index, source);
   const rejectInput = (error, source) => {
-    window.__archviewRenderStats = atlasRenderer?.setArchitecture(null, null, handleSceneSelection) || { contextPlates: 0, subjectGroups: 0, atomGlyphs: 0, restrictions: 0, sharedSupports: 0 };
+    window.__archviewRenderStats = atlasRenderer?.setArchitecture(null, null, handleSceneSelection, handleSceneHover) || { contextPlates: 0, subjectGroups: 0, atomGlyphs: 0, restrictions: 0, sharedSupports: 0 };
     renderedSignature = null;
     state.architectureFailed(error, source);
   };

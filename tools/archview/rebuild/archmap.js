@@ -226,7 +226,7 @@ export function buildArchMapIndex(document) {
     for (const atomId of context.atoms || []) {
       if (!atomsById.has(atomId)) continue;
       const memberships = contextIdsByAtom.get(atomId) || [];
-      memberships.push(context.id);
+      if (!memberships.includes(context.id)) memberships.push(context.id);
       contextIdsByAtom.set(atomId, memberships);
     }
   }

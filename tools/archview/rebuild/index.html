@@ -62,6 +62,10 @@
           <h2 id="subjects-heading">Subjects</h2>
           <div id="subject-list"><p class="empty-list">No subjects loaded</p></div>
         </section>
+        <section aria-labelledby="geometry-heading">
+          <h2 id="geometry-heading">Derived geometry</h2>
+          <div id="geometry-list"><p class="empty-list">No derived geometry loaded</p></div>
+        </section>
         <section aria-labelledby="findings-heading">
           <h2 id="findings-heading">Findings</h2>
           <p class="empty-list">No analysis loaded</p>
@@ -88,6 +92,7 @@
         </div>
 
         <div id="atlas-canvas-host" class="atlas-canvas-host" aria-label="Empty Paper Atlas canvas"></div>
+        <p id="atlas-hover-label" class="atlas-hover-label" aria-live="polite" hidden></p>
 
         <div id="atlas-empty-state" class="atlas-empty-state" aria-live="polite">
           <p class="atlas-kicker">Architecture Atlas</p>
@@ -138,7 +143,7 @@
             <div><dt>Semantic zoom</dt><dd id="technical-zoom">cover</dd></div>
             <div><dt>Renderer</dt><dd id="renderer-status">Starting</dd></div>
             <div><dt>Layout</dt><dd id="layout-signature">empty</dd></div>
-            <div><dt>Visual channel</dt><dd>derived / layout / decoration</dd></div>
+            <div><dt>Visual channel</dt><dd id="technical-channel">decoration</dd></div>
           </dl>
         </details>
       </aside>

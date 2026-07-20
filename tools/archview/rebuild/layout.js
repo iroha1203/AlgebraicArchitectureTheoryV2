@@ -23,7 +23,7 @@ function restrictionDepths(contexts, contextIds) {
 
 function subjectGroups(index, context) {
   const groups = new Map();
-  for (const atomId of context.atoms || []) {
+  for (const atomId of new Set(context.atoms || [])) {
     const atom = index.atomsById.get(atomId);
     if (!atom) continue;
     const atoms = groups.get(atom.subject) || [];
@@ -41,7 +41,10 @@ export function buildArchitectureLayout(index, coverId = null) {
   }
 
   const cover = index.coversById.get(coverId) || index.covers[0] || null;
-  const contextIds = new Set((cover?.contexts || index.contexts.map((context) => context.id)).filter((id) => index.contextsById.has(id)));
+  if (!cover) {
+    return Object.freeze({ coverId: null, contexts: Object.freeze([]), subjects: Object.freeze([]), atoms: Object.freeze([]), restrictions: Object.freeze([]), sharedSupports: Object.freeze([]), signature: "no-cover" });
+  }
+  const contextIds = new Set((cover.contexts || []).filter((id) => index.contextsById.has(id)));
   const contexts = index.contexts.filter((context) => contextIds.has(context.id));
   const depths = restrictionDepths(index.contextsById, contextIds);
   const rowsByDepth = new Map();
@@ -93,7 +96,7 @@ export function buildArchitectureLayout(index, coverId = null) {
 
   const memberships = new Map();
   for (const context of contexts) {
-    for (const atomId of context.atoms || []) {
+    for (const atomId of new Set(context.atoms || [])) {
       if (!index.atomsById.has(atomId)) continue;
       const values = memberships.get(atomId) || [];
       values.push(context.id);

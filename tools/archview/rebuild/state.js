@@ -113,10 +113,26 @@ export function createArchViewState() {
       state = { ...state, zoom: "atom", selection: Object.freeze({ kind: "atom", id: atomId, contextId }) };
       return publish();
     },
-    selectSource(sourceId, atomId = null) {
+    selectSource(sourceId, atomId = null, contextId = null) {
       const index = state.architecture.index;
       if (!index?.sourcesById.has(sourceId)) throw new Error(`Unknown Source selection: ${sourceId}`);
-      state = { ...state, zoom: "source", selection: Object.freeze({ kind: "source", id: sourceId, atomId }) };
+      if (atomId && !index.atomsById.has(atomId)) throw new Error(`Unknown Atom source owner: ${atomId}`);
+      state = { ...state, zoom: "source", selection: Object.freeze({ kind: "source", id: sourceId, atomId, contextId }) };
+      return publish();
+    },
+    selectRestriction(sourceId, targetId) {
+      const index = state.architecture.index;
+      if (!index?.contextsById.get(sourceId)?.restrictsTo?.includes(targetId)) throw new Error(`Unknown restriction: ${sourceId}->${targetId}`);
+      state = { ...state, zoom: "context", selection: Object.freeze({ kind: "restriction", id: `${sourceId}->${targetId}`, sourceId, targetId }) };
+      return publish();
+    },
+    selectSharedSupport(atomId, contextIds) {
+      const index = state.architecture.index;
+      const uniqueContextIds = [...new Set(contextIds || [])].sort();
+      if (!index?.atomsById.has(atomId) || uniqueContextIds.length < 2 || !uniqueContextIds.every((contextId) => index.contextsById.get(contextId)?.atoms?.includes(atomId))) {
+        throw new Error(`Unknown shared support: ${atomId}`);
+      }
+      state = { ...state, zoom: "atom", selection: Object.freeze({ kind: "shared-support", id: `shared::${atomId}`, atomId, contextIds: Object.freeze(uniqueContextIds) }) };
       return publish();
     },
     overview() {
