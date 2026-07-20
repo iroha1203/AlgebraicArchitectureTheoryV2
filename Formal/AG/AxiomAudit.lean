@@ -591,6 +591,65 @@ theorem partVIOperationMonodromyRelatorEvaluation :
           AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toySquaredFreeWord) = 1 :=
   AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMonodromyAction_relator_evaluation
 
+/-- Directly audit componentwise coefficient-automorphism extensionality. -/
+theorem partVICoefficientAutomorphismExtAudit :
+    ∃ h, h = @SingularityMonodromyStack.CoefficientAutomorphism.ext :=
+  ⟨_, rfl⟩
+
+/-- Directly audit the legacy supplied transport group's nontriviality. -/
+theorem partVISuppliedPi1NontrivialAudit :
+    ∃ h, h =
+      @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toySuppliedPi1_nontrivial :=
+  ⟨_, rfl⟩
+
+/-- Directly audit the selected squared transport relator. -/
+theorem partVIQuotientMapSquaredAudit :
+    ∃ h, h =
+      @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyQuotientMap_squared :=
+  ⟨_, rfl⟩
+
+/-- Directly audit path-cell relator provenance. -/
+theorem partVIPathCellRelatorProvenanceAudit :
+    ∃ h, h =
+      @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyPathCellFreeWord_has_selected_path_steps :=
+  ⟨_, rfl⟩
+
+/-- Directly audit loop-relator provenance. -/
+theorem partVILoopRelatorProvenanceAudit :
+    ∃ h, h =
+      @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toySquaredFreeWord_has_selected_loop_steps :=
+  ⟨_, rfl⟩
+
+/-- Directly audit involutivity of the selected coefficient action. -/
+theorem partVICoefficientFlipInvolutiveAudit :
+    ∃ h, h =
+      @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyFlipCoefficientAutomorphism_mul_self :=
+  ⟨_, rfl⟩
+
+/-- Directly audit the selected-relator factorization witness. -/
+theorem partVISelectedRelatorLiftAudit :
+    ∃ h, h =
+      @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toySelectedRelator_lift_eq_one :=
+  ⟨_, rfl⟩
+
+/-- Directly audit the formal-inverse factorization witness. -/
+theorem partVIFormalInverseRelatorLiftAudit :
+    ∃ h, h =
+      @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyFormalInverseRelator_lift_eq_one :=
+  ⟨_, rfl⟩
+
+/-- Directly audit the combined generator-action factorization theorem. -/
+theorem partVIGeneratorActionKillsRelatorsAudit :
+    ∃ h, h =
+      @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyPresentedGeneratorAction_kills_relators :=
+  ⟨_, rfl⟩
+
+/-- Directly audit nonidentity of the actual presented generator. -/
+theorem partVIPresentedLoopGeneratorNeOneAudit :
+    ∃ h, h =
+      @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyPresentedLoopGenerator_ne_one :=
+  ⟨_, rfl⟩
+
 theorem partVIOperationDefectFromMovedCoefficient :
     AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMeasuredSquareNonzero.equalityDefect false =
       AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMonodromyDefectFromAction ∧
@@ -7434,7 +7493,6 @@ def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_t
 def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyLocalDecompositionsExist_positive := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyLocalDecompositionsExist_positive
 def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyLoopGenerator_eq_1 := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyLoopGenerator.eq_1
 def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyLoopGenerator_ne_one := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyLoopGenerator_ne_one
-def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyLoopRepresentation_eq_1 := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyLoopRepresentation.eq_1
 def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyMeasuredSquareNonzero__proof_1 := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMeasuredSquareNonzero._proof_1
 def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyMeasuredSquareNonzero__proof_2 := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMeasuredSquareNonzero._proof_2
 def legacyConsolidationAudit_AAT_AG_FiniteModel_SingularityMonodromyStackPart6_toyMeasuredSquareNonzero__proof_3 := @AAT.AG.FiniteModel.SingularityMonodromyStackPart6.toyMeasuredSquareNonzero._proof_3

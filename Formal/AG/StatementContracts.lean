@@ -10,6 +10,7 @@ import Formal.AG.StatementContractsClosedEquationalGeometry
 import Formal.AG.StatementContractsReadingFunctoriality
 import Formal.AG.StatementContractsStandardGeometryReferenceModels
 import Formal.AG.StatementContractsHodge
+import Formal.AG.StatementContractsMonodromy
 
 noncomputable section
 

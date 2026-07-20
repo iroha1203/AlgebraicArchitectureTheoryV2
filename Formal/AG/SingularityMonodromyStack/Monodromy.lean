@@ -53,9 +53,9 @@ def id (C : MonodromyCoefficientObject.{z}) : CoefficientAutomorphism C where
 /-- VI.定義10.1: composition of selected coefficient automorphisms. -/
 def comp {C : MonodromyCoefficientObject.{z}}
     (f g : CoefficientAutomorphism C) : CoefficientAutomorphism C where
-  obAut := f.obAut.trans g.obAut
-  semAut := f.semAut.trans g.semAut
-  effAut := f.effAut.trans g.effAut
+  obAut := g.obAut.trans f.obAut
+  semAut := g.semAut.trans f.semAut
+  effAut := g.effAut.trans f.effAut
 
 /-- VI.定義10.1: inverse selected coefficient automorphism. -/
 def inv {C : MonodromyCoefficientObject.{z}}
@@ -64,12 +64,15 @@ def inv {C : MonodromyCoefficientObject.{z}}
   semAut := f.semAut.symm
   effAut := f.effAut.symm
 
+/-- VI.定義10.1: multiplication uses the standard automorphism composition order. -/
 instance {C : MonodromyCoefficientObject.{z}} : Mul (CoefficientAutomorphism C) :=
   ⟨comp⟩
 
+/-- VI.定義10.1: the identity element is the componentwise identity automorphism. -/
 instance {C : MonodromyCoefficientObject.{z}} : One (CoefficientAutomorphism C) :=
   ⟨id C⟩
 
+/-- VI.定義10.1: inversion is the componentwise inverse automorphism. -/
 instance {C : MonodromyCoefficientObject.{z}} : Inv (CoefficientAutomorphism C) :=
   ⟨inv⟩
 
@@ -89,16 +92,16 @@ instance {C : MonodromyCoefficientObject.{z}} : Group (CoefficientAutomorphism C
     apply ext
     · apply Equiv.ext
       intro x
-      change a.obAut (a.obAut.symm x) = x
-      exact a.obAut.apply_symm_apply x
+      change a.obAut.symm (a.obAut x) = x
+      exact a.obAut.symm_apply_apply x
     · apply Equiv.ext
       intro x
-      change a.semAut (a.semAut.symm x) = x
-      exact a.semAut.apply_symm_apply x
+      change a.semAut.symm (a.semAut x) = x
+      exact a.semAut.symm_apply_apply x
     · apply Equiv.ext
       intro x
-      change a.effAut (a.effAut.symm x) = x
-      exact a.effAut.apply_symm_apply x
+      change a.effAut.symm (a.effAut x) = x
+      exact a.effAut.symm_apply_apply x
 
 end CoefficientAutomorphism
 
@@ -135,6 +138,10 @@ variable {Pi : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base}
 /--
 VI.定義10.1: construct the monodromy representation from selected generator
 actions that kill every selected relator.
+
+Implementation note: this uses `PresentedGroup.toGroup` directly, so the
+representation is defined on `Pi.pi1AAT` itself. No separately supplied
+comparison from the legacy `Pi.Pi1` carrier is used.
 -/
 def ofPresentedGenerators
     (Pi : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base)

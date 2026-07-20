@@ -125,6 +125,80 @@ inductive FormalEdgeStep {U : AtomCarrier.{u}} {A : ArchitectureObject U}
   | forward {a b : G.State} : SelectedOperation G a b -> FormalEdgeStep G
   | backward {a b : G.State} : SelectedOperation G a b -> FormalEdgeStep G
 
+namespace FormalEdgeStep
+
+variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+variable {S : Site.AATSite A} {P : StratumReadingParameter S}
+variable {k : Type v} [CommRing k]
+variable {X : ArchitectureStratum.{u, v, w, x, y} P k}
+variable {G : OperationCategoryData.{u, v, w, x, y, z} X}
+
+/-- VI.定義9.5: source state of an oriented formal edge step. -/
+def source : FormalEdgeStep.{u, v, w, x, y, z} G -> G.State
+  | .forward (a := a) _ => a
+  | .backward (b := b) _ => b
+
+/-- VI.定義9.5: target state of an oriented formal edge step. -/
+def target : FormalEdgeStep.{u, v, w, x, y, z} G -> G.State
+  | .forward (b := b) _ => b
+  | .backward (a := a) _ => a
+
+/-- VI.定義9.5: reverse the orientation of one formal edge step. -/
+def reverse : FormalEdgeStep.{u, v, w, x, y, z} G -> FormalEdgeStep G
+  | .forward op => .backward op
+  | .backward op => .forward op
+
+end FormalEdgeStep
+
+namespace OperationPath
+
+variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+variable {S : Site.AATSite A} {P : StratumReadingParameter S}
+variable {k : Type v} [CommRing k]
+variable {X : ArchitectureStratum.{u, v, w, x, y} P k}
+variable {G : OperationCategoryData.{u, v, w, x, y, z} X}
+
+/-- VI.定義9.5: read a composable operation path as forward formal edge steps. -/
+def toFormalEdgeSteps {a b : G.State} :
+    OperationPath G a b -> List (FormalEdgeStep G)
+  | .nil _ => []
+  | .cons op rest => .forward op :: toFormalEdgeSteps rest
+
+end OperationPath
+
+/-- VI.定義9.5: the first oriented edge starts at the selected base state. -/
+def FormalEdgeStepsStartAt {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {P : StratumReadingParameter S}
+    {k : Type v} [CommRing k]
+    {X : ArchitectureStratum.{u, v, w, x, y} P k}
+    {G : OperationCategoryData.{u, v, w, x, y, z} X}
+    (base : G.State) : List (FormalEdgeStep G) -> Prop
+  | [] => True
+  | step :: _ => step.source = base
+
+/-- VI.定義9.5: consecutive oriented edges have matching endpoint states. -/
+def FormalEdgeStepsComposable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {P : StratumReadingParameter S}
+    {k : Type v} [CommRing k]
+    {X : ArchitectureStratum.{u, v, w, x, y} P k}
+    {G : OperationCategoryData.{u, v, w, x, y, z} X} :
+    List (FormalEdgeStep G) -> Prop
+  | [] => True
+  | [_] => True
+  | first :: second :: rest =>
+      first.target = second.source ∧ FormalEdgeStepsComposable (second :: rest)
+
+/-- VI.定義9.5: the last oriented edge returns to the selected base state. -/
+def FormalEdgeStepsEndAt {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {P : StratumReadingParameter S}
+    {k : Type v} [CommRing k]
+    {X : ArchitectureStratum.{u, v, w, x, y} P k}
+    {G : OperationCategoryData.{u, v, w, x, y, z} X}
+    (base : G.State) : List (FormalEdgeStep G) -> Prop
+  | [] => True
+  | [step] => step.target = base
+  | _ :: second :: rest => FormalEdgeStepsEndAt base (second :: rest)
+
 /-- VI.定義9.5: selected free edge-word carrier at a base state. -/
 structure FreeEdgeWord {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {P : StratumReadingParameter S}
@@ -133,7 +207,9 @@ structure FreeEdgeWord {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     (G : OperationCategoryData.{u, v, w, x, y, z} X)
     (base : G.State) where
   steps : List (FormalEdgeStep G)
-  startsAtBase : Prop
+  startsAtBase : FormalEdgeStepsStartAt base steps
+  composable : FormalEdgeStepsComposable steps
+  endsAtBase : FormalEdgeStepsEndAt base steps
 
 namespace FreeEdgeWord
 
@@ -211,11 +287,28 @@ def selectedFreeGroupWord
     FreeGroup (FormalEdgeStep.{u, v, w, x, y, z} G) :=
   (P.freeWordEquivSelected w).toFreeGroup
 
-/-- VI.R8/VI-2: selected relators as a Mathlib `PresentedGroup` relation set. -/
-def presentedRelators
+/-- VI.R8/VI-2: selected homotopy-generator relators. -/
+def selectedRelators
     (P : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base) :
     Set (FreeGroup (FormalEdgeStep.{u, v, w, x, y, z} G)) :=
   { r | ∃ w : P.FreeWord, P.Relator w ∧ P.selectedFreeGroupWord w = r }
+
+/--
+VI.定義9.5: formal backward steps are inverses of their corresponding forward
+operation edges in the presented group.
+-/
+def formalInverseRelators
+    (G : OperationCategoryData.{u, v, w, x, y, z} X) :
+    Set (FreeGroup (FormalEdgeStep.{u, v, w, x, y, z} G)) :=
+  { r | ∃ (a b : G.State) (op : SelectedOperation G a b),
+      FreeGroup.of (FormalEdgeStep.backward op) *
+        FreeGroup.of (FormalEdgeStep.forward op) = r }
+
+/-- VI.R8/VI-2: homotopy relators together with formal inverse relators. -/
+def presentedRelators
+    (P : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base) :
+    Set (FreeGroup (FormalEdgeStep.{u, v, w, x, y, z} G)) :=
+  P.selectedRelators ∪ formalInverseRelators G
 
 /--
 VI.R8/VI-2: the Mathlib presented group generated by selected operation edge
@@ -237,7 +330,7 @@ theorem presentedRelator_maps_to_identity
     (P : PresentedArchitectureFundamentalGroup.{u, v, w, x, y, z} H base)
     {w : P.FreeWord} (h : P.Relator w) :
     P.presentedQuotientMap w = 1 :=
-  PresentedGroup.one_of_mem ⟨w, h, rfl⟩
+  PresentedGroup.one_of_mem (Or.inl ⟨w, h, rfl⟩)
 
 /--
 VI.R8/VI-2: `PresentedGroup.toGroup` gives the universal map out of the
