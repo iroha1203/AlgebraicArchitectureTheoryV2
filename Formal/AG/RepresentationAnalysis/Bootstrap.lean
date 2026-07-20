@@ -18,10 +18,12 @@ checks that the Part III--6 entrypoints can be used as dependencies, and records
 that measurement verdicts remain outside Part VII.
 -/
 
-/-- VII.R0: Part VII can read Part III architecture schemes. -/
+/-- VII.R0: Part VII can read the canonical raw-indexed architecture scheme. -/
 abbrev UsesArchitectureScheme {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    (S : Site.AATSite A) (k : Type v) [CommRing k] :=
-  LawAlgebra.Scheme.ArchitectureScheme.{u, v, w, x, y} S k
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : LawAlgebra.RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)] :=
+  LawAlgebra.StandardArchitectureScheme raw
 
 /-- VII.R0: Part VII can read Part IV cover-relative Cech complexes. -/
 abbrev UsesCoverRelativeCechComplex {U : AtomCarrier.{u}} {A : ArchitectureObject U}

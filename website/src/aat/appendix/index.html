@@ -305,17 +305,17 @@ Spec_AAT(Gamma(X,O_X), D_X)</code></pre>
                 <div class="theorem-card-header">
                   <div>
                     <span class="theorem-card-label">Lean status</span>
-                    <h3>Spec_AAT and ArchitectureScheme in Lean</h3>
+                    <h3>Spec_AAT and StandardArchitectureScheme in Lean</h3>
                   </div>
                   <span class="status-badge status-badge-defined">defined / proved accessors</span>
                 </div>
                 <dl>
                   <dt>Lean names</dt>
-                  <dd><code>AAT.AG.LawAlgebra.AffineChart.SpecAAT</code> (with <code>pointSpace</code>, <code>localLawfulChart</code>) and <code>AAT.AG.LawAlgebra.Scheme.ArchitectureScheme</code> (with <code>RingedAATTopos</code>, <code>ChartCompatibility</code>, <code>forgetfulLocallyRingedSpace</code>, <code>singleAffineSpec</code>, <code>SchemeGluingData</code>, <code>AffineReturnConditions</code>), per the Part III rows of the AG Lean index.</dd>
+                  <dd><code>AAT.AG.LawAlgebra.AffineChart.SpecAAT</code> (with <code>pointSpace</code>, <code>localLawfulChart</code>) and <code>AAT.AG.LawAlgebra.StandardArchitectureScheme</code> (with <code>underlying</code>, <code>decoration</code>, <code>atlas</code>, <code>overlaps</code>, <code>singleAffine</code>), per the Part III rows of the AG Lean index.</dd>
                   <dt>Meaning</dt>
-                  <dd><code>Spec_AAT(A, D)</code> is packaged over the ordinary Mathlib <code>PrimeSpectrum A</code> with decoration and obstruction ideal; the ArchitectureScheme carries a forgetful reading back to the underlying locally ringed space, and the affine-return conditions are explicit assumption fields, matching Section A.5.</dd>
-                  <dt>Boundary</dt>
-                  <dd>Chart compatibility and affine return are relativized to explicitly supplied gluing and comparison data; no unconditional gluing claim is made.</dd>
+                  <dd><code>Spec_AAT(A, D)</code> is packaged over the ordinary Mathlib <code>PrimeSpectrum A</code> with decoration and obstruction ideal. <code>StandardArchitectureScheme</code> carries the Mathlib scheme, the selected decoration, and the affine atlas with its overlap presentation.</dd>
+                  <dt>Scope</dt>
+                  <dd>The selected raw ambient restriction system supplies the ringed AAT site used by the standard scheme construction.</dd>
                 </dl>
               </article>
             </section>

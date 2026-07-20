@@ -96,12 +96,6 @@ variable {M : GluingMismatchData Ob D}
 variable {K : CoverRelativeCechComplex 𝒰 Ob}
 variable {H : HiddenCouplingData M K}
 
-/-- IV.定理7.1 hypothesis: the global section factors through `Flat_U`. -/
-def globalFactorsThroughFlat_U (G : CompatibleGlobalLawfulSection H) :
-    G.globalSection.FactorsThroughLawfulLocus :=
-  LawAlgebra.LawfulLocus.LawfulSectionData.factorsThroughLawfulLocus_of_lawful R
-    G.globalLawful
-
 end CompatibleGlobalLawfulSection
 
 /--

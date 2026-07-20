@@ -81,7 +81,7 @@
   -> AATSite
   -> Ringed AAT Topos
   -> Affine AAT Charts
-  -> ArchitectureScheme
+  -> StandardArchitectureScheme
   -> LawfulLocus
   -> ObstructionCohomology
   -> DerivedLawGeometry
@@ -196,9 +196,9 @@ R_eff    : AATSch -> EffectSpace</code></pre>
                 </div>
                 <dl>
                   <dt>Lean names</dt>
-                  <dd><code>AAT.AG.RepresentationAnalysis.AATSchReadingParameter</code>, <code>AATSch</code>, <code>AATSchMorphism</code> (with the five compatibility accessors), <code>AATSchIdentityData</code>, <code>AATSchCompositionData</code>, <code>AATSchFiberProductData</code>, <code>AnalyticTargetCategory</code>, <code>AnalyticRepresentation</code>, <code>AnalyticRepresentation.map_identity</code>, <code>map_composition</code>.</dd>
+                  <dd><code>AAT.AG.RepresentationAnalysis.AATSchReadingParameter</code>, <code>AATSch</code>, <code>AATSchMorphism</code> with <code>toSchemeHom</code> and <code>toSchemeMap</code>, <code>AATSch.category</code>, the faithful functor <code>AATSch.forget</code>, the Mathlib <code>Functor</code> abbreviation <code>AnalyticRepresentation</code>, and <code>RepresentationFamily.Target</code> valued in <code>CategoryTheory.Cat</code>.</dd>
                   <dt>Boundary</dt>
-                  <dd>The decorated scheme, selected morphism interface, optional fiber product data, and functor-like representation are relativized to a fixed reading parameter <code>p</code>. Identity and composition are carried as representation law fields; a Mathlib functor bridge is not yet claimed.</dd>
+                  <dd>The decorated standard architecture scheme and its selected morphism compatibility data are relativized to a fixed reading parameter <code>p</code>. Identity and composition come from the category instance, and analytic representations are Mathlib functors.</dd>
                 </dl>
               </article>
             </section>
@@ -695,7 +695,7 @@ X factors through Flat_U</code></pre>
                 </div>
                 <dl>
                   <dt>Lean names</dt>
-                  <dd><code>AAT.AG.RepresentationAnalysis.SignatureReadingProfile</code> (built from the Part I <code>SignatureAxes</code>, with <code>requiredSignatureReadingZero_iff_requiredSignatureAxesZero</code>), <code>CurvatureReadingProfile.ofOmegaU</code> with <code>curvatureZero_iff_omegaU_zero</code>, <code>curvatureZero_iff_requiredObstructionValuesZero</code>, <code>GluingObstructionCurvatureReading</code>, <code>LawConflictCurvatureReading</code>, and <code>SignatureCurvatureLawfulFactorizationContext</code> with <code>curvature_zero_iff_factorsThroughLawfulLocus</code>, <code>factorsThroughLawfulLocus_of_requiredSignatureReadingZero</code>.</dd>
+                  <dd><code>AAT.AG.RepresentationAnalysis.SignatureReadingProfile</code> (built from the Part I <code>SignatureAxes</code>, with <code>requiredSignatureReadingZero_iff_requiredSignatureAxesZero</code>), <code>CurvatureReadingProfile.ofOmegaU</code> with <code>curvatureZero_iff_omegaU_zero</code>, <code>curvatureZero_iff_requiredObstructionValuesZero</code>, <code>GluingObstructionCurvatureReading</code>, <code>LawConflictCurvatureReading</code>, <code>CurvatureReadingContext</code>, <code>CurvatureAxisComparisonContext</code>, <code>CurvatureLawfulFactorizationContext.curvature_zero_iff_factorsThroughLawfulClosedSubscheme</code>, and <code>SignatureLawfulFactorizationContext.factorsThroughLawfulClosedSubscheme_of_requiredSignatureReadingZero</code>. The canonical Part III edge is <code>LawAlgebra.factorsThroughLawfulClosedSubscheme_iff_requiredSignatureAxesZero</code>.</dd>
                   <dt>Status</dt>
                   <dd><em>Defined handles / proved</em> under the explicit zero-reflecting aggregation and the Part III lawfulness-ideal correspondence assumptions.</dd>
                   <dt>Boundary</dt>
@@ -1273,7 +1273,7 @@ selected obstruction vanishes</code></pre>
                     <span class="theorem-card-label">Theorem VII.16.1</span>
                     <h3>Algebraic-geometric AAT synthesis</h3>
                   </div>
-                  <span class="status-badge status-badge-proved">Lean: proved (theorem package)</span>
+                  <span class="status-badge status-badge-defined">Lean: defined (normalized package)</span>
                 </div>
                 <p>
                   AAT is the theory that starts from the Atom, constructs the
@@ -1285,10 +1285,10 @@ selected obstruction vanishes</code></pre>
   -> ArchitectureObject
   -> ArchitectureGeometry
   -> AATSite
-  -> RingedAATTopos
-  -> AffineAATCharts
-  -> ArchitectureScheme
-  -> LawfulLocus
+  -> RingedAATSite
+  -> ArchitectureAffineAtlas
+  -> StandardArchitectureScheme
+  -> lawfulClosedSubscheme
   -> ObstructionCohomology
   -> DerivedLawGeometry
   -> Singularity / Monodromy / Stack
@@ -1302,16 +1302,16 @@ selected obstruction vanishes</code></pre>
                 </p>
                 <dl>
                   <dt>Lean anchors</dt>
-                  <dd><code>AAT.AG.RepresentationAnalysis.AATSynthesisAssumptions</code>, <code>AATSynthesisPackage</code> (with <code>aatSite_is_geometry_site</code>, <code>ringedAATTopos_is_scheme_ringedTopos</code>, <code>affineAATCharts_are_scheme_charts</code>, <code>lawfulLocus_is_zeroLocus</code>, <code>analyticReadingContext</code>), <code>AATSynthesisAssumptions.toPackage</code>, <code>algebraicGeometricAATSynthesis</code> — <em>proved</em> as a theorem package bundling the selected Parts I–VII tower.</dd>
+                  <dd><code>AAT.AG.RepresentationAnalysis.AATSynthesisPackage</code> with the canonical projections <code>architectureObject</code>, <code>site</code>, <code>ringedAATSite</code>, <code>affineAtlas</code>, <code>obstructionIdealSheaf</code>, <code>lawfulClosedSubscheme</code>, <code>lawfulClosedImmersion</code>, and <code>analyticReadingContext</code> — <em>defined</em> as the normalized package for the selected Parts I–VII data.</dd>
                   <dt>Claim boundary</dt>
                   <dd>
-                    The package proves coherence of the selected tower — site,
-                    scheme ringed topos and atlas, lawful locus, cover-relative
-                    Čech obstruction cohomology, derived geometry, singularity
-                    stratum, and analytic reading context — for the selected
-                    construction; it is a synthesis of the constructed
-                    objects, not an unconditional claim about arbitrary
-                    codebases.
+                    The package stores the independently constructed scheme
+                    reading, cover-relative Čech obstruction cohomology,
+                    derived geometry, singularity stratum, and analytic
+                    reading context. The architecture object, site, ringed
+                    site, atlas, ideal sheaf, and lawful closed geometry are
+                    read from their canonical owners through the projections
+                    listed above.
                   </dd>
                 </dl>
               </div>

@@ -1,5 +1,5 @@
 import Formal.AG.RepresentationAnalysis.PeriodSeparation
-import Formal.AG.LawAlgebra.Correspondence
+import Formal.AG.LawAlgebra.ClosedEquationalGeometry
 import Formal.AG.Cohomology.FlatnessCriterion
 import Formal.AG.Derived.Intersection
 
@@ -200,143 +200,218 @@ theorem curvatureReadsLawConflict_certificate
 end LawConflictCurvatureReading
 
 /--
-VII.定義7.2: signature / curvature context for the zero-curvature to lawful
-factorization theorems.
+VII.定義7.2: the selected curvature profile for one law universe and valuation.
 
-The correspondence assumptions are exactly the Part III theorem arguments:
-soundness, completeness, coverage, axis exactness, witness exactness, descent,
-and ring-restriction compatibility.  The Part IV and Part V reading connections
-are explicit selected certificates, not inferred global claims.
+Implementation notes: this minimal context stores only the existing
+`CurvatureReadingProfile`; Scheme, factorization, and signature premises are
+kept in the comparison contexts that actually use them.
 -/
-structure SignatureCurvatureLawfulFactorizationContext
-    {U : AtomCarrier.{u}} {R : Type v} [CommRing R] {IOb : Ideal R}
-    (s : LawAlgebra.LawfulLocus.LawfulSectionData.{v, w} R IOb)
-    (Obj : ArchitectureObject U) (LU : LawUniverse U) (Sig : SignatureAxes U)
-    {Value : Type u} (valuation : ObstructionValuation U Value)
-    (aggregation :
-      ZeroReflectingAggregation Value valuation.domain LU.RequiredIndex) where
-  signatureProfile : SignatureReadingProfile Sig
+structure CurvatureReadingContext
+    (LU : LawUniverse U) {Value : Type u}
+    (valuation : ObstructionValuation U Value)
+    (aggregation : ZeroReflectingAggregation Value valuation.domain LU.RequiredIndex) where
   curvatureProfile : CurvatureReadingProfile LU valuation aggregation
-  correspondence :
-    LawAlgebra.Correspondence.LawfulnessIdealCorrespondenceAssumptions
-      s Obj LU Sig valuation
-  obstructionClassReading : Prop
-  obstructionClassReading_holds : obstructionClassReading
-  lawConflictReading : Prop
-  lawConflictReading_holds : lawConflictReading
 
-namespace SignatureCurvatureLawfulFactorizationContext
+namespace CurvatureReadingContext
 
-variable {U : AtomCarrier.{u}} {R : Type v} [CommRing R] {IOb : Ideal R}
-variable {s : LawAlgebra.LawfulLocus.LawfulSectionData.{v, w} R IOb}
-variable {Obj : ArchitectureObject U} {LU : LawUniverse U}
-variable {Sig : SignatureAxes U}
-variable {Value : Type u} {valuation : ObstructionValuation U Value}
-variable {aggregation :
-  ZeroReflectingAggregation Value valuation.domain LU.RequiredIndex}
-
-/-- VII.定義7.2: expose the selected Part IV obstruction-class bridge. -/
-theorem obstructionClassReading_certificate
-    (C : SignatureCurvatureLawfulFactorizationContext
-      s Obj LU Sig valuation aggregation) :
-    C.obstructionClassReading :=
-  C.obstructionClassReading_holds
-
-/-- VII.定義7.2: expose the selected Part V law-conflict bridge. -/
-theorem lawConflictReading_certificate
-    (C : SignatureCurvatureLawfulFactorizationContext
-      s Obj LU Sig valuation aggregation) :
-    C.lawConflictReading :=
-  C.lawConflictReading_holds
-
-/-- VII.定義7.2: zero curvature is selected aggregate obstruction zero. -/
+/-- Curvature zero in the selected profile is exactly aggregate obstruction zero. -/
 theorem curvature_zero_iff_omegaU_zero
-    (C : SignatureCurvatureLawfulFactorizationContext
-      s Obj LU Sig valuation aggregation) :
+    {LU : LawUniverse U} {Value : Type u}
+    {valuation : ObstructionValuation U Value}
+    {aggregation : ZeroReflectingAggregation Value valuation.domain LU.RequiredIndex}
+    (C : CurvatureReadingContext LU valuation aggregation) (Obj : ArchitectureObject U) :
     C.curvatureProfile.CurvatureZero Obj ↔
       omegaU valuation LU aggregation Obj = valuation.domain.zero :=
   C.curvatureProfile.curvatureZero_iff_omegaU_zero Obj
 
-/--
-VII.定義7.2: zero curvature is zero on every selected required obstruction
-valuation.
--/
+/-- Curvature zero is equivalent to vanishing of every required obstruction value. -/
 theorem curvature_zero_iff_requiredObstructionValuesZero
-    (C : SignatureCurvatureLawfulFactorizationContext
-      s Obj LU Sig valuation aggregation) :
+    {LU : LawUniverse U} {Value : Type u}
+    {valuation : ObstructionValuation U Value}
+    {aggregation : ZeroReflectingAggregation Value valuation.domain LU.RequiredIndex}
+    (C : CurvatureReadingContext LU valuation aggregation) (Obj : ArchitectureObject U) :
     C.curvatureProfile.CurvatureZero Obj ↔
-      ∀ index : LU.RequiredIndex,
-        valuation.omega (LU.law index.1) Obj = valuation.domain.zero :=
+      ∀ i : LU.RequiredIndex,
+        valuation.omega (LU.law i.1) Obj = valuation.domain.zero :=
   C.curvatureProfile.curvatureZero_iff_requiredObstructionValuesZero Obj
 
-/-- VII.定義7.2: zero curvature is Part I required signature axes zero. -/
+end CurvatureReadingContext
+
+/--
+VII.定義7.2: comparison data from curvature to the selected signature axes.
+
+Implementation notes: the context extends only the curvature profile and adds
+the soundness, completeness, and axis-exactness premises used by its two
+comparison theorems.
+-/
+structure CurvatureAxisComparisonContext
+    (Obj : ArchitectureObject U) (LU : LawUniverse U) (Sig : SignatureAxes U)
+    {Value : Type u} (valuation : ObstructionValuation U Value)
+    (aggregation : ZeroReflectingAggregation Value valuation.domain LU.RequiredIndex)
+    extends CurvatureReadingContext LU valuation aggregation where
+  obstructionSoundness : ∀ i : LU.RequiredIndex, ObstructionSound valuation (LU.law i.1)
+  obstructionCompleteness :
+    ∀ i : LU.RequiredIndex, ObstructionComplete valuation (LU.law i.1)
+  axisExactness : Lawfulness Obj LU ↔ RequiredSignatureAxesZero Obj Sig
+
+namespace CurvatureAxisComparisonContext
+
+/-- Curvature zero is equivalent to vanishing of all required signature axes. -/
 theorem curvature_zero_iff_requiredSignatureAxesZero
-    (C : SignatureCurvatureLawfulFactorizationContext
-      s Obj LU Sig valuation aggregation) :
+    {Obj : ArchitectureObject U} {LU : LawUniverse U} {Sig : SignatureAxes U}
+    {Value : Type u} {valuation : ObstructionValuation U Value}
+    {aggregation : ZeroReflectingAggregation Value valuation.domain LU.RequiredIndex}
+    (C : CurvatureAxisComparisonContext Obj LU Sig valuation aggregation) :
     C.curvatureProfile.CurvatureZero Obj ↔ RequiredSignatureAxesZero Obj Sig :=
-  (C.curvature_zero_iff_omegaU_zero).trans
-    (LawAlgebra.Correspondence.omegaU_zero_iff_requiredSignatureAxesZero
-      s Obj LU Sig valuation aggregation C.correspondence)
+  (C.curvatureProfile.curvatureZero_iff_omegaU_zero Obj).trans
+    ((lawfulness_iff_omegaU_zero valuation LU aggregation
+      C.obstructionSoundness C.obstructionCompleteness Obj).symm.trans C.axisExactness)
 
-/-- VII.定義7.1 / 7.2: zero curvature is selected signature reading zero. -/
+/-- Curvature zero is equivalent to the selected signature reading being zero. -/
 theorem curvature_zero_iff_requiredSignatureReadingZero
-    (C : SignatureCurvatureLawfulFactorizationContext
-      s Obj LU Sig valuation aggregation) :
+    {Obj : ArchitectureObject U} {LU : LawUniverse U} {Sig : SignatureAxes U}
+    {Value : Type u} {valuation : ObstructionValuation U Value}
+    {aggregation : ZeroReflectingAggregation Value valuation.domain LU.RequiredIndex}
+    (C : CurvatureAxisComparisonContext Obj LU Sig valuation aggregation)
+    (signatureProfile : SignatureReadingProfile Sig) :
     C.curvatureProfile.CurvatureZero Obj ↔
-      C.signatureProfile.RequiredSignatureReadingZero Obj :=
-  (C.curvature_zero_iff_requiredSignatureAxesZero).trans
-    (C.signatureProfile.requiredSignatureReadingZero_iff_requiredSignatureAxesZero Obj).symm
+      signatureProfile.RequiredSignatureReadingZero Obj :=
+  C.curvature_zero_iff_requiredSignatureAxesZero.trans
+    (signatureProfile.requiredSignatureReadingZero_iff_requiredSignatureAxesZero Obj).symm
+
+end CurvatureAxisComparisonContext
+
+variable {Obj : ArchitectureObject U}
+variable {S : Site.AATSite Obj} {k : Type v} [CommRing k]
 
 /--
-VII.定義7.2: zero curvature gives factorization through the selected lawful
-locus `Flat_U`.
+VII.定義7.2: comparison data between curvature and actual lawful factorization.
+
+Implementation notes: the context reuses canonical closed-equational geometry
+and stores only the object-point comparison and valuation hypotheses consumed
+by `factorsThroughLawfulClosedSubscheme_iff_omegaU_zero`.
 -/
-theorem factorsThroughLawfulLocus_of_curvature_zero
-    (C : SignatureCurvatureLawfulFactorizationContext
-      s Obj LU Sig valuation aggregation)
+structure CurvatureLawfulFactorizationContext
+    (raw : LawAlgebra.RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    (X : LawAlgebra.StandardArchitectureScheme raw)
+    (R : LawAlgebra.ClosedEquationalLawReading raw X)
+    (hR : LawAlgebra.IsClosedEquationalLawReading raw X R)
+    (hclosed : LawAlgebra.RequiredClosed raw X R)
+    (hexact : LawAlgebra.RequiredLawIdealExact raw X R hR hclosed)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
+    (Obj : ArchitectureObject U) {Value : Type u}
+    (valuation : ObstructionValuation U Value)
+    (aggregation : ZeroReflectingAggregation Value valuation.domain S.lawUniverse.RequiredIndex)
+    extends CurvatureReadingContext S.lawUniverse valuation aggregation where
+  pointComparison : LawAlgebra.RequiredObjectPointComparison raw X R s Obj
+  obstructionSoundness :
+    ∀ i : S.lawUniverse.RequiredIndex, ObstructionSound valuation (S.lawUniverse.law i.1)
+  obstructionCompleteness :
+    ∀ i : S.lawUniverse.RequiredIndex, ObstructionComplete valuation (S.lawUniverse.law i.1)
+
+/--
+VII.定義7.2: comparison data between signature readings and actual lawful
+factorization.
+
+Implementation notes: the factorization target and closed geometry are
+canonical parameters; the structure stores only the signature profile,
+object-point comparison, and selected-axis exactness used by the theorem below.
+-/
+structure SignatureLawfulFactorizationContext
+    (raw : LawAlgebra.RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    (X : LawAlgebra.StandardArchitectureScheme raw)
+    (R : LawAlgebra.ClosedEquationalLawReading raw X)
+    (hR : LawAlgebra.IsClosedEquationalLawReading raw X R)
+    (hclosed : LawAlgebra.RequiredClosed raw X R)
+    (hexact : LawAlgebra.RequiredLawIdealExact raw X R hR hclosed)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
+    (Obj : ArchitectureObject U) (Sig : SignatureAxes U) where
+  signatureProfile : SignatureReadingProfile Sig
+  pointComparison : LawAlgebra.RequiredObjectPointComparison raw X R s Obj
+  axisExactness : Lawfulness Obj S.lawUniverse ↔ RequiredSignatureAxesZero Obj Sig
+
+namespace CurvatureLawfulFactorizationContext
+
+variable {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
+variable {S : Site.AATSite Obj} {k : Type v} [CommRing k]
+variable {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+variable [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+variable {X : LawAlgebra.StandardArchitectureScheme raw}
+variable {R : LawAlgebra.ClosedEquationalLawReading raw X}
+variable {hR : LawAlgebra.IsClosedEquationalLawReading raw X R}
+variable {hclosed : LawAlgebra.RequiredClosed raw X R}
+variable {hexact : LawAlgebra.RequiredLawIdealExact raw X R hR hclosed}
+variable {T : AlgebraicGeometry.Scheme} {s : T ⟶ X.underlying}
+variable {Value : Type u} {valuation : ObstructionValuation U Value}
+variable {aggregation :
+  ZeroReflectingAggregation Value valuation.domain S.lawUniverse.RequiredIndex}
+
+/-- Zero curvature produces an actual factorization through the lawful closed subscheme. -/
+theorem factorsThroughLawfulClosedSubscheme_of_curvature_zero
+    (C : CurvatureLawfulFactorizationContext raw X R hR hclosed hexact
+      s Obj valuation aggregation)
     (hcurvature : C.curvatureProfile.CurvatureZero Obj) :
-    s.FactorsThroughLawfulLocus :=
-  (LawAlgebra.Correspondence.factorsThroughLawfulLocus_iff_omegaU_zero
-    s Obj LU Sig valuation aggregation C.correspondence).mpr
-      ((C.curvature_zero_iff_omegaU_zero).mp hcurvature)
+    Nonempty (LawAlgebra.FactorsThroughLawfulClosedSubscheme
+      raw X R hR hclosed s) :=
+  (LawAlgebra.factorsThroughLawfulClosedSubscheme_iff_omegaU_zero
+    raw X R hR hclosed hexact s Obj valuation aggregation C.pointComparison
+      C.obstructionSoundness C.obstructionCompleteness).mpr
+    ((C.curvatureProfile.curvatureZero_iff_omegaU_zero Obj).mp hcurvature)
 
-/--
-VII.定義7.2: under the same correspondence package, lawful factorization
-preserves zero curvature.
--/
-theorem curvature_zero_of_factorsThroughLawfulLocus
-    (C : SignatureCurvatureLawfulFactorizationContext
-      s Obj LU Sig valuation aggregation)
-    (hfactor : s.FactorsThroughLawfulLocus) :
+/-- An actual lawful factorization forces zero curvature for the selected profile. -/
+theorem curvature_zero_of_factorsThroughLawfulClosedSubscheme
+    (C : CurvatureLawfulFactorizationContext raw X R hR hclosed hexact
+      s Obj valuation aggregation)
+    (hfactor : Nonempty (LawAlgebra.FactorsThroughLawfulClosedSubscheme
+      raw X R hR hclosed s)) :
     C.curvatureProfile.CurvatureZero Obj :=
-  (C.curvature_zero_iff_omegaU_zero).mpr
-    ((LawAlgebra.Correspondence.factorsThroughLawfulLocus_iff_omegaU_zero
-      s Obj LU Sig valuation aggregation C.correspondence).mp hfactor)
+  (C.curvatureProfile.curvatureZero_iff_omegaU_zero Obj).mpr
+    ((LawAlgebra.factorsThroughLawfulClosedSubscheme_iff_omegaU_zero
+      raw X R hR hclosed hexact s Obj valuation aggregation C.pointComparison
+        C.obstructionSoundness C.obstructionCompleteness).mp hfactor)
 
-/--
-VII.定義7.2: zero curvature and lawful factorization are equivalent under the
-explicit Part III correspondence assumptions.
--/
-theorem curvature_zero_iff_factorsThroughLawfulLocus
-    (C : SignatureCurvatureLawfulFactorizationContext
-      s Obj LU Sig valuation aggregation) :
-    C.curvatureProfile.CurvatureZero Obj ↔ s.FactorsThroughLawfulLocus :=
-  ⟨C.factorsThroughLawfulLocus_of_curvature_zero,
-    C.curvature_zero_of_factorsThroughLawfulLocus⟩
+/-- Zero curvature is equivalent to actual factorization through lawful geometry. -/
+theorem curvature_zero_iff_factorsThroughLawfulClosedSubscheme
+    (C : CurvatureLawfulFactorizationContext raw X R hR hclosed hexact
+      s Obj valuation aggregation) :
+    C.curvatureProfile.CurvatureZero Obj ↔
+      Nonempty (LawAlgebra.FactorsThroughLawfulClosedSubscheme
+        raw X R hR hclosed s) :=
+  (C.curvatureProfile.curvatureZero_iff_omegaU_zero Obj).trans
+    (LawAlgebra.factorsThroughLawfulClosedSubscheme_iff_omegaU_zero
+      raw X R hR hclosed hexact s Obj valuation aggregation C.pointComparison
+        C.obstructionSoundness C.obstructionCompleteness).symm
 
-/--
-VII.定義7.2: zero selected signature reading gives lawful factorization under
-axis exactness and the correspondence package.
--/
-theorem factorsThroughLawfulLocus_of_requiredSignatureReadingZero
-    (C : SignatureCurvatureLawfulFactorizationContext
-      s Obj LU Sig valuation aggregation)
+end CurvatureLawfulFactorizationContext
+
+namespace SignatureLawfulFactorizationContext
+
+variable {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
+variable {S : Site.AATSite Obj} {k : Type v} [CommRing k]
+variable {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+variable [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+variable {X : LawAlgebra.StandardArchitectureScheme raw}
+variable {R : LawAlgebra.ClosedEquationalLawReading raw X}
+variable {hR : LawAlgebra.IsClosedEquationalLawReading raw X R}
+variable {hclosed : LawAlgebra.RequiredClosed raw X R}
+variable {hexact : LawAlgebra.RequiredLawIdealExact raw X R hR hclosed}
+variable {T : AlgebraicGeometry.Scheme} {s : T ⟶ X.underlying}
+variable {Sig : SignatureAxes U}
+
+/-- A zero required-signature reading produces an actual lawful factorization. -/
+theorem factorsThroughLawfulClosedSubscheme_of_requiredSignatureReadingZero
+    (C : SignatureLawfulFactorizationContext raw X R hR hclosed hexact s Obj Sig)
     (hsig : C.signatureProfile.RequiredSignatureReadingZero Obj) :
-    s.FactorsThroughLawfulLocus :=
-  C.factorsThroughLawfulLocus_of_curvature_zero
-    ((C.curvature_zero_iff_requiredSignatureReadingZero).mpr hsig)
+    Nonempty (LawAlgebra.FactorsThroughLawfulClosedSubscheme
+      raw X R hR hclosed s) :=
+  (LawAlgebra.factorsThroughLawfulClosedSubscheme_iff_requiredSignatureAxesZero
+    raw X R hR hclosed hexact s Obj Sig C.pointComparison C.axisExactness).mpr
+      ((C.signatureProfile.requiredSignatureReadingZero_iff_requiredSignatureAxesZero
+        Obj).mp hsig)
 
-end SignatureCurvatureLawfulFactorizationContext
+end SignatureLawfulFactorizationContext
 
 end RepresentationAnalysis
 end AAT.AG

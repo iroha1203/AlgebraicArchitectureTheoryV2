@@ -1,5 +1,5 @@
 import Formal.AG.Derived
-import Formal.AG.LawAlgebra.Scheme
+import Formal.AG.LawAlgebra.StandardScheme
 import Formal.AG.Site.Topology
 
 noncomputable section
@@ -76,10 +76,19 @@ The carrier is a selected subset of an explicit point type. The predicates keep
 the intended subobject, local-closedness, decoration compatibility, and reading
 compatibility assumptions visible without constructing general stratification
 theory in this implementation step.
+
+Implementation notes: the stratum stores the raw ambient system and its
+canonical `StandardArchitectureScheme`; ringed and atlas data are recovered
+from those owners rather than from a legacy Scheme package.
 -/
 structure ArchitectureStratum {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} (P : StratumReadingParameter S) (k : Type v) [CommRing k] where
-  geometry : LawAlgebra.Scheme.ArchitectureScheme.{u, v, w, x, y} S k
+  raw : LawAlgebra.RawAmbientRestrictionSystem S k
+  [sheafify : HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+  geometry :
+    let _universeW : Type w := ULift.{w} Unit
+    let _universeX : Type x := ULift.{x} Unit
+    LawAlgebra.StandardArchitectureScheme raw
   Point : Type y
   carrier : Set Point
   role : StratumRole

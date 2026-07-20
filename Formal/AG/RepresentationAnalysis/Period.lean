@@ -11,7 +11,9 @@ namespace RepresentationFamily
 
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {k : Type v} [CommRing k]
-variable {p : AATSchReadingParameter.{u, v, w, x, y} S k}
+variable {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+variable [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+variable {p : AATSchReadingParameter.{u, v, w, x} raw}
 
 /-- VII.定義5.1: representation reading `Read_R(X)`. -/
 def RepresentationReading (F : RepresentationFamily p) (i : F.Index)
@@ -34,7 +36,9 @@ surface does not globally identify every reading with a period by default.
 -/
 structure BroadPeriodConvention {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
-    {p : AATSchReadingParameter.{u, v, w, x, y} S k}
+    {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    {p : AATSchReadingParameter.{u, v, w, x} raw}
     (F : RepresentationFamily p) where
   aliasAvailable : Prop
   aliasAvailable_cert : aliasAvailable
@@ -43,7 +47,9 @@ namespace BroadPeriodConvention
 
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {k : Type v} [CommRing k]
-variable {p : AATSchReadingParameter.{u, v, w, x, y} S k}
+variable {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+variable [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+variable {p : AATSchReadingParameter.{u, v, w, x} raw}
 variable {F : RepresentationFamily p}
 
 /-- VII.定義5.1: expose that the broad-period alias convention is selected. -/
@@ -73,7 +79,9 @@ boundary-square-zero / representative-invariance lemmas.
 -/
 structure StrictPeriodData {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
-    {p : AATSchReadingParameter.{u, v, w, x, y} S k}
+    {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    {p : AATSchReadingParameter.{u, v, w, x} raw}
     (F : RepresentationFamily p) (X : AATSch p) where
   representationIndex : F.Index
   CoefficientObject : Type z
@@ -96,7 +104,9 @@ namespace StrictPeriodData
 
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {k : Type v} [CommRing k]
-variable {p : AATSchReadingParameter.{u, v, w, x, y} S k}
+variable {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+variable [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+variable {p : AATSchReadingParameter.{u, v, w, x} raw}
 variable {F : RepresentationFamily p} {X : AATSch p}
 
 /-- VII.定義5.2: the selected reading attached to strict period data. -/
@@ -127,7 +137,9 @@ end StrictPeriodData
 /-- VII.定義5.3: period family selected from a representation family. -/
 structure PeriodFamily {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
-    {p : AATSchReadingParameter.{u, v, w, x, y} S k}
+    {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    {p : AATSchReadingParameter.{u, v, w, x} raw}
     (F : RepresentationFamily p) where
   PeriodIndex : Type z
   representationIndex : PeriodIndex -> F.Index
@@ -137,7 +149,9 @@ namespace PeriodFamily
 
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {k : Type v} [CommRing k]
-variable {p : AATSchReadingParameter.{u, v, w, x, y} S k}
+variable {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+variable [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+variable {p : AATSchReadingParameter.{u, v, w, x} raw}
 variable {F : RepresentationFamily p}
 
 /-- VII.定義5.3: read one selected period-family member. -/

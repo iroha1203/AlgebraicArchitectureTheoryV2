@@ -31,12 +31,6 @@ variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {𝒰 : CoverRelativeCechCover S}
 variable {R : Type v} [CommRing R] {IOb : Ideal R}
 
-/-- IV.定義5.1: each local section factors through the lawful locus `Flat_U`. -/
-def factorsThroughFlat_U (D : LocalFlatnessData 𝒰 R IOb) (i : 𝒰.Index) :
-    (D.localSection i).FactorsThroughLawfulLocus :=
-  LawAlgebra.LawfulLocus.LawfulSectionData.factorsThroughLawfulLocus_of_lawful R
-    (D.lawful i)
-
 /-- IV.定義5.1: local lawfulness is exactly pulled obstruction-ideal vanishing. -/
 theorem pulledObstructionIdeal_eq_bot
     (D : LocalFlatnessData 𝒰 R IOb) (i : 𝒰.Index) :
@@ -68,13 +62,6 @@ variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {𝒰 : CoverRelativeCechCover S}
 variable {R : Type v} [CommRing R] {IOb : Ideal R}
 variable {D : LocalFlatnessData 𝒰 R IOb}
-
-/-- IV.定義5.2: restricted sections still factor through the lawful locus. -/
-def factorsThroughFlat_U {σ : 𝒰.simplex 1} {i : 𝒰.Index}
-    (s : RestrictedLocalLawfulSection D σ i) :
-    s.restrictedSection.FactorsThroughLawfulLocus :=
-  LawAlgebra.LawfulLocus.LawfulSectionData.factorsThroughLawfulLocus_of_lawful R
-    s.restrictedLawful
 
 end RestrictedLocalLawfulSection
 

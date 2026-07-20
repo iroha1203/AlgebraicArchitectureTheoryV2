@@ -1,5 +1,6 @@
 import Formal.AG.RepresentationAnalysis.DistanceFlatnessMass
 import Formal.AG.SingularityMonodromyStack
+import Formal.AG.LawAlgebra.ClosedEquationalGeometry
 
 noncomputable section
 
@@ -9,14 +10,22 @@ namespace RepresentationAnalysis
 universe u v w x y z
 
 /--
-VII.定義12.1: selected repair route from a state to a flat candidate.
+VII.定義12.1: a selected repair route ending in actual lawful geometry.
 
-The route is relative to the AC12 operation-distance / distance-to-flatness
-context.  The Part III lawful-locus factorization is carried as explicit selected
-section data; no global repair existence theorem is asserted here.
+Implementation notes: operation-distance data remain unchanged, while the
+lawful target is represented by one canonical Scheme morphism factorization
+rather than separate ring-ideal fields and coherence equations.
 -/
-structure RepairRoute {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
-    (C : DistanceFlatnessMassContext Obj) where
+structure RepairRoute
+    {Obj : ArchitectureObject U}
+    (C : DistanceFlatnessMassContext Obj)
+    {S : Site.AATSite Obj} {k : Type v} [CommRing k]
+    (raw : LawAlgebra.RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    (X : LawAlgebra.StandardArchitectureScheme raw)
+    (R : LawAlgebra.ClosedEquationalLawReading raw X)
+    (hR : LawAlgebra.IsClosedEquationalLawReading raw X R)
+    (hclosed : LawAlgebra.RequiredClosed raw X R) where
   source : C.operationDistance.GeometryState
   target : C.operationDistance.GeometryState
   flatCandidate : C.distanceToFlatness.FlatCandidate source
@@ -25,41 +34,42 @@ structure RepairRoute {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
   routeCost : DistanceValue Nat
   routeCost_eq_d_op : routeCost = C.d_op source target
   routeCost_eq_pathCost : routeCost = C.operationDistance.pathCost operationPath
-  LawCoordinateAlgebra : Type v
-  lawCoordinateCommRing : CommRing LawCoordinateAlgebra
-  obstructionIdeal : Ideal LawCoordinateAlgebra
-  lawfulSection :
-    LawAlgebra.LawfulLocus.LawfulSectionData.{v, w} LawCoordinateAlgebra obstructionIdeal
-  factorsThroughLawfulLocus :
-    lawfulSection.FactorsThroughLawfulLocus
-
-attribute [instance] RepairRoute.lawCoordinateCommRing
+  sectionSource : AlgebraicGeometry.Scheme
+  «section» : sectionSource ⟶ X.underlying
+  factorization :
+    LawAlgebra.FactorsThroughLawfulClosedSubscheme raw X R hR hclosed «section»
 
 namespace RepairRoute
 
 variable {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
 variable {C : DistanceFlatnessMassContext Obj}
+variable {S : Site.AATSite Obj} {k : Type v} [CommRing k]
+variable {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+variable [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+variable {X : LawAlgebra.StandardArchitectureScheme raw}
+variable {R : LawAlgebra.ClosedEquationalLawReading raw X}
+variable {hR : LawAlgebra.IsClosedEquationalLawReading raw X R}
+variable {hclosed : LawAlgebra.RequiredClosed raw X R}
 
 /-- VII.定義12.1: the selected target is the selected flat-candidate state. -/
-theorem target_eq_flatState_holds (R : RepairRoute.{u, v, w} C) :
-    R.target = C.distanceToFlatness.flatState R.source R.flatCandidate :=
-  R.target_eq_flatState
+theorem target_eq_flatState_holds (Q : RepairRoute C raw X R hR hclosed) :
+    Q.target = C.distanceToFlatness.flatState Q.source Q.flatCandidate :=
+  Q.target_eq_flatState
 
 /-- VII.定義12.1: the route cost reads the selected operation distance. -/
-theorem routeCost_eq_d_op_holds (R : RepairRoute.{u, v, w} C) :
-    R.routeCost = C.d_op R.source R.target :=
-  R.routeCost_eq_d_op
+theorem routeCost_eq_d_op_holds (Q : RepairRoute C raw X R hR hclosed) :
+    Q.routeCost = C.d_op Q.source Q.target := Q.routeCost_eq_d_op
 
 /-- VII.定義12.1: the route cost is witnessed by the selected operation path. -/
-theorem routeCost_eq_pathCost_holds (R : RepairRoute.{u, v, w} C) :
-    R.routeCost = C.operationDistance.pathCost R.operationPath :=
-  R.routeCost_eq_pathCost
+theorem routeCost_eq_pathCost_holds (Q : RepairRoute C raw X R hR hclosed) :
+    Q.routeCost = C.operationDistance.pathCost Q.operationPath :=
+  Q.routeCost_eq_pathCost
 
-/-- VII.定義12.1: expose the Part III lawful-locus factorization certificate. -/
-theorem factorsThroughLawfulLocus_certificate
-    (R : RepairRoute.{u, v, w} C) :
-    R.lawfulSection.FactorsThroughLawfulLocus :=
-  R.factorsThroughLawfulLocus
+/-- Expose the route's canonical lawful closed-subscheme factorization. -/
+def factorization_certificate (Q : RepairRoute C raw X R hR hclosed) :
+    LawAlgebra.FactorsThroughLawfulClosedSubscheme
+      raw X R hR hclosed Q.«section» :=
+  Q.factorization
 
 end RepairRoute
 
@@ -77,9 +87,20 @@ VII.定義12.2: selected repair profiles.
 Shortest and safest are profile predicates over AC12 route / margin data.
 Structural and stable profiles carry explicit selected Part VI / Part IV--6
 readings as data rather than deriving global correctness.
+
+Implementation notes: the profile is indexed by an already constructed
+`RepairRoute`; it does not duplicate the route's Scheme or factorization data.
 -/
 structure RepairProfileReading {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
-    {C : DistanceFlatnessMassContext Obj} (route : RepairRoute.{u, v, w} C) where
+    {S : Site.AATSite Obj} {k : Type v} [CommRing k]
+    {rawR0 : LawAlgebra.RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    {schemeR0 : LawAlgebra.StandardArchitectureScheme rawR0}
+    {readingR0 : LawAlgebra.ClosedEquationalLawReading rawR0 schemeR0}
+    {readingClosedR0 : LawAlgebra.IsClosedEquationalLawReading rawR0 schemeR0 readingR0}
+    {requiredClosedR0 : LawAlgebra.RequiredClosed rawR0 schemeR0 readingR0}
+    {C : DistanceFlatnessMassContext Obj}
+    (route : RepairRoute C rawR0 schemeR0 readingR0 readingClosedR0 requiredClosedR0) where
   mode : RepairOptimizationMode
   shortest : Prop
   shortest_holds : mode = .shortest -> shortest
@@ -100,30 +121,37 @@ structure RepairProfileReading {U : AtomCarrier.{u}} {Obj : ArchitectureObject U
 namespace RepairProfileReading
 
 variable {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
+variable {S : Site.AATSite Obj} {k : Type v} [CommRing k]
+    {rawR0 : LawAlgebra.RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    {schemeR0 : LawAlgebra.StandardArchitectureScheme rawR0}
+    {readingR0 : LawAlgebra.ClosedEquationalLawReading rawR0 schemeR0}
+    {readingClosedR0 : LawAlgebra.IsClosedEquationalLawReading rawR0 schemeR0 readingR0}
+    {requiredClosedR0 : LawAlgebra.RequiredClosed rawR0 schemeR0 readingR0}
 variable {C : DistanceFlatnessMassContext Obj}
-variable {route : RepairRoute.{u, v, w} C}
+variable {route : RepairRoute C rawR0 schemeR0 readingR0 readingClosedR0 requiredClosedR0}
 
 /-- VII.定義12.2: shortest repair certificate, when the selected mode is shortest. -/
 theorem shortest_certificate
-    (P : RepairProfileReading.{u, v, w, z} route) (h : P.mode = .shortest) :
+    (P : RepairProfileReading route) (h : P.mode = .shortest) :
     P.shortest :=
   P.shortest_holds h
 
 /-- VII.定義12.2: safest repair certificate, when the selected mode is safest. -/
 theorem safest_certificate
-    (P : RepairProfileReading.{u, v, w, z} route) (h : P.mode = .safest) :
+    (P : RepairProfileReading route) (h : P.mode = .safest) :
     P.safest :=
   P.safest_holds h
 
 /-- VII.定義12.2: structural repair certificate, when the selected mode is structural. -/
 theorem structural_certificate
-    (P : RepairProfileReading.{u, v, w, z} route) (h : P.mode = .structural) :
+    (P : RepairProfileReading route) (h : P.mode = .structural) :
     P.structural :=
   P.structural_holds h
 
 /-- VII.定義12.2: stable repair certificate, when the selected mode is stable. -/
 theorem stable_certificate
-    (P : RepairProfileReading.{u, v, w, z} route) (h : P.mode = .stable) :
+    (P : RepairProfileReading route) (h : P.mode = .stable) :
     P.stable :=
   P.stable_holds h
 
@@ -610,11 +638,23 @@ theorem architecturalMonodromyIndex_value_eq_weighted_sum
 
 end MonodromyIndex
 
-/-- VII.R9 / AC13: combined repair, margin, Dehn, and bi-Lipschitz surface. -/
+/--
+VII.R9 / AC13: combined repair, margin, Dehn, and bi-Lipschitz surface.
+
+Implementation notes: the context aggregates independently constructed
+profiles and indexes the repair profile by the same canonical repair route.
+-/
 structure RepairMarginDehnContext {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
+    {S : Site.AATSite Obj} {k : Type v} [CommRing k]
+    {rawR0 : LawAlgebra.RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    {schemeR0 : LawAlgebra.StandardArchitectureScheme rawR0}
+    {readingR0 : LawAlgebra.ClosedEquationalLawReading rawR0 schemeR0}
+    {readingClosedR0 : LawAlgebra.IsClosedEquationalLawReading rawR0 schemeR0 readingR0}
+    {requiredClosedR0 : LawAlgebra.RequiredClosed rawR0 schemeR0 readingR0}
     (C : DistanceFlatnessMassContext Obj) where
-  route : RepairRoute.{u, v, w} C
-  repairProfile : RepairProfileReading.{u, v, w, z} route
+  route : RepairRoute C rawR0 schemeR0 readingR0 readingClosedR0 requiredClosedR0
+  repairProfile : RepairProfileReading route
   marginProfile : MarginProfile C
   dehnProfile : ArchitecturalDehnProfile.{u}
   biLipschitzProfile : BiLipschitzRepresentationProfile.{u}
@@ -622,20 +662,34 @@ structure RepairMarginDehnContext {U : AtomCarrier.{u}} {Obj : ArchitectureObjec
 namespace RepairMarginDehnContext
 
 variable {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
+variable {S : Site.AATSite Obj} {k : Type v} [CommRing k]
+    {rawR0 : LawAlgebra.RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    {schemeR0 : LawAlgebra.StandardArchitectureScheme rawR0}
+    {readingR0 : LawAlgebra.ClosedEquationalLawReading rawR0 schemeR0}
+    {readingClosedR0 : LawAlgebra.IsClosedEquationalLawReading rawR0 schemeR0 readingR0}
+    {requiredClosedR0 : LawAlgebra.RequiredClosed rawR0 schemeR0 readingR0}
 variable {C : DistanceFlatnessMassContext Obj}
 
 /-- VII.R9 / AC13: expose the selected repair route. -/
-def selectedRoute (R : RepairMarginDehnContext.{u, v, w, z} C) :
-    RepairRoute.{u, v, w} C :=
+def selectedRoute (R : RepairMarginDehnContext
+    (rawR0 := rawR0) (schemeR0 := schemeR0) (readingR0 := readingR0)
+    (readingClosedR0 := readingClosedR0) (requiredClosedR0 := requiredClosedR0) C) :
+    RepairRoute C rawR0 schemeR0 readingR0 readingClosedR0 requiredClosedR0 :=
   R.route
 
 /-- VII.R9 / AC13: expose the selected margin value. -/
-def margin (R : RepairMarginDehnContext.{u, v, w, z} C)
+def margin (R : RepairMarginDehnContext
+    (rawR0 := rawR0) (schemeR0 := schemeR0) (readingR0 := readingR0)
+    (readingClosedR0 := readingClosedR0) (requiredClosedR0 := requiredClosedR0) C)
     (A : C.operationDistance.GeometryState) : DistanceValue Nat :=
   R.marginProfile.Margin A
 
 /-- VII.R9 / AC13: expose the selected architectural Dehn value. -/
-def dehnValue (R : RepairMarginDehnContext.{u, v, w, z} C) (n : Nat) : Nat :=
+def dehnValue (R : RepairMarginDehnContext
+    (rawR0 := rawR0) (schemeR0 := schemeR0) (readingR0 := readingR0)
+    (readingClosedR0 := readingClosedR0) (requiredClosedR0 := requiredClosedR0) C)
+    (n : Nat) : Nat :=
   R.dehnProfile.δ_AAT n
 
 end RepairMarginDehnContext

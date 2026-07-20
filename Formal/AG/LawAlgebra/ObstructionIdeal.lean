@@ -83,33 +83,6 @@ theorem map_localObstructionIdeal_le {B : Type v} [CommRing B]
   rcases H.maps_selected L hL with ⟨M, hM, hmap⟩
   exact witnessIdeal_le_localObstructionIdeal B target hM (hmap (Ideal.mem_map_of_mem res hx))
 
-/--
-III.定義6.2: sheaf-image construction surface for the obstruction ideal.
-
-The `imageIdeal` represents the image of the selected direct-sum-of-witness
-ideals map into the law algebra sheaf. The equality field records the range in
-which this sheaf-image presentation agrees with the local sum formula.
--/
-structure SheafImageConstruction (F : SelectedLawWitnessIdealFamily A) where
-  imageIdeal : Ideal A
-  agreesWithLocalSum : imageIdeal = F.localObstructionIdeal
-
-namespace SheafImageConstruction
-
-/-- III.定義6.2: the sheaf-image presentation recovers the local obstruction ideal. -/
-theorem imageIdeal_eq_localObstructionIdeal {F : SelectedLawWitnessIdealFamily A}
-    (S : SheafImageConstruction F) :
-    S.imageIdeal = F.localObstructionIdeal :=
-  S.agreesWithLocalSum
-
-/-- III.定義6.2: local sum formula recovers the selected sheaf image. -/
-theorem localObstructionIdeal_eq_imageIdeal {F : SelectedLawWitnessIdealFamily A}
-    (S : SheafImageConstruction F) :
-    F.localObstructionIdeal = S.imageIdeal :=
-  S.agreesWithLocalSum.symm
-
-end SheafImageConstruction
-
 end SelectedLawWitnessIdealFamily
 
 end ObstructionIdeal

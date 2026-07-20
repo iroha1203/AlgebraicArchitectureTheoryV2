@@ -1,25 +1,38 @@
 import Formal.AG.RepresentationAnalysis.AATSch
+import Mathlib.CategoryTheory.Category.Cat
 
 noncomputable section
 
 namespace AAT.AG
 namespace RepresentationAnalysis
 
-universe u v w x y z
+open CategoryTheory
 
-/-- VII.定義3.1: indexed family of analytic representations. -/
+universe u v w x z
+
+/--
+VII.定義3.1: indexed family of analytic representations.
+
+Implementation notes: each target is bundled as `CategoryTheory.Cat` and each
+family member is one Mathlib functor; object maps, arrow maps, and functor laws
+are not duplicated as fields.
+-/
 structure RepresentationFamily {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
-    (p : AATSchReadingParameter.{u, v, w, x, y} S k) where
+    {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+    [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    (p : AATSchReadingParameter raw) where
   Index : Type z
-  Target : Index -> Type z
+  Target : Index → CategoryTheory.Cat.{z, z}
   representation : ∀ i : Index, AnalyticRepresentation p (Target i)
 
 namespace RepresentationFamily
 
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {k : Type v} [CommRing k]
-variable {p : AATSchReadingParameter.{u, v, w, x, y} S k}
+variable {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+variable [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+variable {p : AATSchReadingParameter raw}
 
 /-- VII.定義5.1 precursor: read an object through the selected representation. -/
 def Read (F : RepresentationFamily p) (i : F.Index) (X : AATSch p) : F.Target i :=
@@ -46,21 +59,23 @@ assert that every structural notion is detected by every representation.
 -/
 structure RepresentationNotions {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
-    {p : AATSchReadingParameter.{u, v, w, x, y} S k}
+    {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+    [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+    {p : AATSchReadingParameter raw}
     (F : RepresentationFamily p) where
   structuralZero : AATSch p -> Prop
   structuralObstruction : AATSch p -> Prop
   selectedIso : AATSch p -> AATSch p -> Prop
   selectedMorphismEq :
-    ∀ {X Y : AATSch p}, AATSchMorphism X Y -> AATSchMorphism X Y -> Prop
+    ∀ {X Y : AATSch p}, (X ⟶ Y) -> (X ⟶ Y) -> Prop
   analyticZero : ∀ i : F.Index, F.Target i -> Prop
   analyticObstruction : ∀ i : F.Index, F.Target i -> Prop
   analyticIso : ∀ i : F.Index, F.Target i -> F.Target i -> Prop
   analyticMorphismEq :
     ∀ i : F.Index, {X Y : AATSch p} ->
-      (f g : AATSchMorphism X Y) ->
-        (F.Rep i).targetCategory.Hom ((F.Rep i).obj X) ((F.Rep i).obj Y) ->
-        (F.Rep i).targetCategory.Hom ((F.Rep i).obj X) ((F.Rep i).obj Y) -> Prop
+      (f g : X ⟶ Y) ->
+        ((F.Rep i).obj X ⟶ (F.Rep i).obj Y) ->
+        ((F.Rep i).obj X ⟶ (F.Rep i).obj Y) -> Prop
 
 /--
 VII.定義4.2: assumption package required for reflection claims.
@@ -106,7 +121,9 @@ namespace RepresentationNotions
 
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A} {k : Type v} [CommRing k]
-variable {p : AATSchReadingParameter.{u, v, w, x, y} S k}
+variable {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
+variable [HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
+variable {p : AATSchReadingParameter raw}
 variable {F : RepresentationFamily p}
 
 /-- VII.定義4.1: structural zero is preserved by every selected reading. -/
@@ -145,14 +162,14 @@ def IsoReflecting (N : RepresentationNotions F) (A : ReflectionAssumptions) : Pr
 
 /-- VII.定義4.1: selected morphism equality is preserved by every reading. -/
 def MorphismEqPreserving (N : RepresentationNotions F) : Prop :=
-  ∀ (i : F.Index) {X Y : AATSch p} (f g : AATSchMorphism X Y),
+  ∀ (i : F.Index) {X Y : AATSch p} (f g : X ⟶ Y),
     N.selectedMorphismEq f g -> N.analyticMorphismEq i f g ((F.Rep i).map f) ((F.Rep i).map g)
 
 /-- VII.定義4.2: analytic morphism equality reflects selected morphism equality. -/
 def MorphismEqReflecting (N : RepresentationNotions F) (A : ReflectionAssumptions) :
-    Prop :=
+  Prop :=
   A.Holds ->
-    ∀ {X Y : AATSch p} (f g : AATSchMorphism X Y),
+    ∀ {X Y : AATSch p} (f g : X ⟶ Y),
       (∀ i : F.Index, N.analyticMorphismEq i f g ((F.Rep i).map f) ((F.Rep i).map g)) ->
         N.selectedMorphismEq f g
 
@@ -208,14 +225,14 @@ theorem selectedIso_of_analyticIso (h : N.IsoReflecting A)
 
 /-- VII.定義4.1: apply selected morphism equality preservation. -/
 theorem analyticMorphismEq_of_selectedMorphismEq (h : N.MorphismEqPreserving)
-    (i : F.Index) {X Y : AATSch p} {f g : AATSchMorphism X Y}
+    (i : F.Index) {X Y : AATSch p} {f g : X ⟶ Y}
     (heq : N.selectedMorphismEq f g) :
     N.analyticMorphismEq i f g ((F.Rep i).map f) ((F.Rep i).map g) :=
   h i f g heq
 
 /-- VII.定義4.2: apply selected morphism equality reflection. -/
 theorem selectedMorphismEq_of_analyticMorphismEq (h : N.MorphismEqReflecting A)
-    (hA : A.Holds) {X Y : AATSch p} {f g : AATSchMorphism X Y}
+    (hA : A.Holds) {X Y : AATSch p} {f g : X ⟶ Y}
     (heq : ∀ i : F.Index,
       N.analyticMorphismEq i f g ((F.Rep i).map f) ((F.Rep i).map g)) :
     N.selectedMorphismEq f g :=
@@ -230,7 +247,7 @@ theorem structuralZero_of_conservative (h : N.Conservative A)
 
 /-- VII.定義4.3: faithful families reflect selected morphism equality. -/
 theorem selectedMorphismEq_of_faithful (h : N.Faithful A)
-    (hA : A.Holds) {X Y : AATSch p} {f g : AATSchMorphism X Y}
+    (hA : A.Holds) {X Y : AATSch p} {f g : X ⟶ Y}
     (heq : ∀ i : F.Index,
       N.analyticMorphismEq i f g ((F.Rep i).map f) ((F.Rep i).map g)) :
     N.selectedMorphismEq f g :=
