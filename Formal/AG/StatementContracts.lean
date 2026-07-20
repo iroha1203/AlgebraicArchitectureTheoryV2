@@ -11,6 +11,7 @@ import Formal.AG.StatementContractsReadingFunctoriality
 import Formal.AG.StatementContractsStandardGeometryReferenceModels
 import Formal.AG.StatementContractsHodge
 import Formal.AG.StatementContractsMonodromy
+import Formal.AG.StatementContractsRefactorTransport
 
 noncomputable section
 

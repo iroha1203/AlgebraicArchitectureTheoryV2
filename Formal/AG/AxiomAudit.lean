@@ -892,6 +892,60 @@ theorem forceCandidateConcreteNonzero :
     Examples.EvolutionPart9.forceCandidateFixture.concreteObstructionValue ≠ 0 :=
   Examples.EvolutionPart9.forceCandidateFixture.concreteObstruction_nonzero
 
+theorem refactorPullbackH1ZeroIff
+    {M_X M_Y : Measurement.MeasurementProfile}
+    {ρ : Measurement.RefactorMorphism M_X M_Y}
+    {P : Measurement.PullbackObstructionClass ρ}
+    (E : Measurement.RefactorEquivalenceAssumptions ρ P)
+    (targetClass : P.targetComplex.H1) :
+    P.sourceComplex.H1IsZero (P.pullback E targetClass) ↔
+      P.targetComplex.H1IsZero targetClass :=
+  P.pullback_h1Zero_iff E targetClass
+
+theorem refactorZeroIffPullbackZero
+    {M_X M_Y : Measurement.MeasurementProfile}
+    {ρ : Measurement.RefactorMorphism M_X M_Y}
+    {P : Measurement.PullbackObstructionClass ρ}
+    (E : Measurement.RefactorEquivalenceAssumptions ρ P)
+    (targetClass : P.targetComplex.H1) :
+    M_Y.Zero (P.targetDomain targetClass) ↔
+      M_X.Zero (P.sourceDomain (P.pullback E targetClass)) :=
+  Measurement.refactorZero_iff_pullbackZero E targetClass
+
+theorem refactorFiniteCohomologyZeroTransport :
+    Measurement.integerCohomologyMeasurementProfile.Zero
+        Measurement.integerZeroComplex.H1ZeroClass ↔
+      Measurement.integerCohomologyMeasurementProfile.Zero
+        (Measurement.integerCohomologyPullbackClass.pullback
+          Measurement.integerCohomologyRefactorEquivalence
+          Measurement.integerZeroComplex.H1ZeroClass) :=
+  Measurement.refactorInvarianceExample_zero_iff_pullback_zero
+
+theorem refactorFiniteCohomologyNonzeroTransport :
+    (¬ Measurement.integerCohomologyMeasurementProfile.Zero
+        Measurement.integerOneClass) ∧
+      (¬ Measurement.integerCohomologyMeasurementProfile.Zero
+        (Measurement.integerCohomologyPullbackClass.pullback
+          Measurement.integerCohomologyRefactorEquivalence
+          Measurement.integerOneClass)) :=
+  Measurement.refactorInvarianceExample_nonzero_preserved
+
+theorem refactorFiniteCohomologyNonzeroIffTransport :
+    (¬ Measurement.integerCohomologyMeasurementProfile.Zero
+        Measurement.integerOneClass) ↔
+      (¬ Measurement.integerCohomologyMeasurementProfile.Zero
+        (Measurement.integerCohomologyPullbackClass.pullback
+          Measurement.integerCohomologyRefactorEquivalence
+          Measurement.integerOneClass)) :=
+  Measurement.refactorInvarianceExample_nonzero_iff_pullback_nonzero
+
+theorem refactorFiniteCohomologyPullbackNonidentity :
+    Measurement.integerCohomologyPullbackClass.pullback
+        Measurement.integerCohomologyRefactorEquivalence
+        Measurement.integerOneClass ≠
+      Measurement.integerOneClass :=
+  Measurement.integerCohomologyPullback_one_ne_one
+
 theorem presentedArchitectureFundamentalGroupRelatorMapsToIdentity
     {U : AtomCarrier} {A : ArchitectureObject U}
     {S : Site.AATSite A} {P : SingularityMonodromyStack.StratumReadingParameter S}
