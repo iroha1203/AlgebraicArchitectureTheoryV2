@@ -293,8 +293,41 @@ function validateOptionalArtifacts(documents, issues) {
       requireRecord(documents.comparison.inputDigests.baseRun, `${FILES.comparison}.inputDigests.baseRun`, issues);
       requireRecord(documents.comparison.inputDigests.headRun, `${FILES.comparison}.inputDigests.headRun`, issues);
     }
+    requireRecord(documents.comparison.comparability, `${FILES.comparison}.comparability`, issues);
+    requireString(documents.comparison.discipline, `${FILES.comparison}.discipline`, issues);
+    requireRecord(documents.comparison.artifactRefs, `${FILES.comparison}.artifactRefs`, issues);
+    requireRecord(documents.comparison.independentConclusions, `${FILES.comparison}.independentConclusions`, issues);
+    requireArray(documents.comparison.verdictTransitions, `${FILES.comparison}.verdictTransitions`, issues);
+    requireArray(documents.comparison.boundaryStatements, `${FILES.comparison}.boundaryStatements`, issues);
+    requireRecord(documents.comparison.classTransport, `${FILES.comparison}.classTransport`, issues);
     requireArray(documents.comparison.nonConclusions, `${FILES.comparison}.nonConclusions`, issues);
   }
+}
+
+function validateComponentFingerprints(documents, issues) {
+  const digests = documents.manifest.inputDigests;
+  const expected = {
+    lawPolicy: `sha256:${digests.lawPolicy.sha256}`,
+    lawSurface: `sha256:${digests.lawSurface.sha256}`,
+    measurementProfile: `sha256:${digests.measurementProfile.sha256}`,
+  };
+  const expectedJson = canonicalJson(expected);
+  for (const name of ["manifest", "normalized", "packet", "summary", "insight"]) {
+    if (canonicalJson(documents[name].componentFingerprints) !== expectedJson) issues.push(issue(`${FILES[name]}.componentFingerprints`, `${FILES[name]} component fingerprints do not match the input artifacts.`, expectedJson, canonicalJson(documents[name].componentFingerprints)));
+  }
+}
+
+function validateComparisonRun(run, path, issues) {
+  requireString(run.path, `${path}.path`, issues);
+  requireString(run.runId, `${path}.runId`, issues);
+  requireString(run.toolVersion, `${path}.toolVersion`, issues);
+  requireDigestEntry(run.archmap, `${path}.archmap`, issues);
+  requireDigestEntry(run.lawPolicy, `${path}.lawPolicy`, issues);
+  requireRecord(run.componentFingerprints, `${path}.componentFingerprints`, issues);
+  for (const field of ["profileFingerprint", "siteCoverDigest"]) {
+    if (!requireRecord(run[field], `${path}.${field}`, issues) || typeof run[field].sha256 !== "string" || !/^[0-9a-f]{64}$/.test(run[field].sha256)) issues.push(issue(`${path}.${field}.sha256`, `${path}.${field}.sha256 must be a lowercase SHA-256 digest.`));
+  }
+  requireDigestEntry(run.measurementPacket, `${path}.measurementPacket`, issues);
 }
 
 export async function validateAnalysisBundle(documents, architectureIndex) {
@@ -309,10 +342,21 @@ export async function validateAnalysisBundle(documents, architectureIndex) {
 
   const mismatch = [];
   validateRunIdentity(documents, mismatch);
+  validateComponentFingerprints(documents, mismatch);
   const artifactArchmapDigest = documents.manifest.inputDigests?.archmap?.sha256;
   const currentArchmapDigest = await sha256Hex(architectureIndex.canonicalJson);
   if (!/^[0-9a-f]{64}$/.test(artifactArchmapDigest || "")) mismatch.push(issue(`${FILES.manifest}.inputDigests.archmap.sha256`, "Manifest ArchMap digest must be a lowercase SHA-256 digest.", null, artifactArchmapDigest));
   else if (artifactArchmapDigest !== currentArchmapDigest) mismatch.push(issue(`${FILES.manifest}.inputDigests.archmap.sha256`, "The measurement run was not produced from the loaded ArchMap.", currentArchmapDigest, artifactArchmapDigest));
+  const runSeed = [
+    documents.manifest.inputDigests.archmap.sha256,
+    documents.manifest.inputDigests.lawPolicy.sha256,
+    documents.manifest.inputDigests.lawSurface.sha256,
+    ...documents.manifest.inputDigests.measurementProfiles.map((entry) => entry.sha256),
+    ...(documents.manifest.inputDigests.residualPacket?.sha256 ? [documents.manifest.inputDigests.residualPacket.sha256] : []),
+    documents.manifest.toolVersion,
+  ].join("|");
+  const expectedRunId = `run:${(await sha256Hex(runSeed)).slice(0, 12)}`;
+  if (documents.manifest.runId !== expectedRunId && !documents.manifest.runId.match(new RegExp(`^${expectedRunId}-stamp:[0-9]+$`))) mismatch.push(issue(`${FILES.manifest}.runId`, "Run id is not derived from the declared analyze inputs and tool version.", expectedRunId, documents.manifest.runId));
   if (mismatch.length) throw new AnalysisValidationError("mismatch", mismatch);
 
   const unresolved = [];
@@ -333,8 +377,18 @@ export async function validateAnalysisBundle(documents, architectureIndex) {
   }
   if (documents.comparison) {
     const runs = [documents.comparison.inputDigests?.baseRun, documents.comparison.inputDigests?.headRun].filter(isRecord);
+    const comparisonShapeIssues = [];
+    runs.forEach((run, position) => validateComparisonRun(run, `${FILES.comparison}.inputDigests.${position ? "headRun" : "baseRun"}`, comparisonShapeIssues));
+    if (comparisonShapeIssues.length) throw new AnalysisValidationError("malformed", comparisonShapeIssues);
     const compatible = runs.some((run) => run.runId === documents.manifest.runId && run.archmap?.sha256 === currentArchmapDigest && run.measurementPacket?.sha256 === packetDigest);
     if (!compatible) throw new AnalysisValidationError("mismatch", [issue(`${FILES.comparison}.inputDigests`, "Comparison report does not bind either run to the loaded measurement run.")]);
+  }
+  const comparisonDigest = documents.comparison ? await sha256Hex(documents.comparison) : null;
+  const gateComparisonDigest = documents.gate?.inputDigests?.comparisonReport;
+  if (documents.gate && documents.comparison) {
+    if (!isRecord(gateComparisonDigest) || gateComparisonDigest.sha256 !== comparisonDigest) throw new AnalysisValidationError("mismatch", [issue(`${FILES.gate}.inputDigests.comparisonReport`, "Gate report comparison digest does not match the loaded comparison report.", comparisonDigest, gateComparisonDigest?.sha256)]);
+  } else if (isRecord(gateComparisonDigest)) {
+    throw new AnalysisValidationError("mismatch", [issue(`${FILES.gate}.inputDigests.comparisonReport`, "Gate report references a comparison report that was not loaded.")]);
   }
   return Object.freeze({
     runId: documents.manifest.runId,
