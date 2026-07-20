@@ -140,6 +140,21 @@ visual channelは次に区分する。
 `archsig-atom-viewer-data.json`、summary、manifest、gate report、
 `archview-sequence/v0.5.4`を読み、ArchSigが供給したanalysis geometryを表示する。
 
+ゼロベース再構築のapplication foundationは`rebuild/`にある。Paper AtlasのTop Bar、
+Scope Explorer、3D Atlas、Inspector、source drawer、Three.js camera、
+Architecture / Analysis / Improveの共通mode stateを持つ。ArchMapとArchSig artifactの
+読み込みは後続実装で接続する。
+
+```bash
+python3 -m http.server 8000 --directory tools/archview/rebuild
+```
+
+`http://localhost:8000/`を開く。foundationのbrowser smokeは次で実行する。
+
+```bash
+node tools/archview/foundation_browser_e2e.cjs tools/archview/rebuild
+```
+
 未実装:
 
 - ArchMap direct loading
