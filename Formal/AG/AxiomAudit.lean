@@ -1773,8 +1773,9 @@ theorem lengthTwoMatrixWalkReadingFires :
   FiniteModel.RepresentationAnalysisPart7.lengthTwoWalk_matrixPower_eq_one
 
 /-- Kernel-audit entry for the low-degree kernel/harmonic equivalence. -/
-noncomputable def lowDegreeRealKernelEquivHarmonic :=
-  Measurement.lowDegreeRealComplex_kernel_equiv_harmonicCohomology
+theorem lowDegreeRealKernelEquivHarmonic :
+    ∃ h, h = @Measurement.lowDegreeRealComplex_kernel_equiv_harmonicCohomology :=
+  ⟨@Measurement.lowDegreeRealComplex_kernel_equiv_harmonicCohomology, rfl⟩
 
 /-- Kernel-audit entry for the nonzero incoming differential fixture. -/
 theorem nonzeroBoundaryRealComplexDPrevNonzero :
