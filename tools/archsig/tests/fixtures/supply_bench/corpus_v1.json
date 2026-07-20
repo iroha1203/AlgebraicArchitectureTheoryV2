@@ -1,0 +1,274 @@
+{
+ "schema": "archmap-supply-bench-corpus/v1",
+ "id": "corpus:train-ticket-supply-bench",
+ "version": "1",
+ "repository": {
+  "upstream": "https://github.com/FudanSELab/train-ticket",
+  "revision": "git:313886e99befb94be6cd45f085c98e0019f59829"
+ },
+ "chunkClassification": {
+  "tuned": "chunks used to tune the v2 convergence rules (PR #3558 re-extraction experiment)",
+  "prompt-literal-disjoint": "services and class names absent from every prompt-pack code literal; separation from prompt literals only, no independence from rule development is claimed"
+ },
+ "disjointSelectionRule": "Registered before any bench score was observed: candidate chunks are the fullbuild chunk partition (evidence chunks.json); a chunk qualifies when no code literal of prompt-pack.md (backtick spans and fenced code blocks) contains any of its service directory names, route words (service name with ts-/hyphens stripped), or Java class names from its file paths; the qualifying chunk with the lowest chunkId is selected.",
+ "chunks": [
+  {
+   "chunkId": "chunk-04",
+   "chunkClass": "tuned",
+   "rows": [
+    {
+     "path": "ts-auth-service/src/main/java/auth/service/TokenService.java",
+     "contentHash": "sha256:e89eeb6c455fdf6b1af8bb4592ee9da605876f0b5a82a30be4489d1f7b8b7dbf"
+    },
+    {
+     "path": "ts-auth-service/src/main/java/auth/service/UserService.java",
+     "contentHash": "sha256:5a87152d7f36c08f2a8ad063c201243b6e97ced2f4890de901c813c583fc4e53"
+    },
+    {
+     "path": "ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java",
+     "contentHash": "sha256:48be08f66335afde072eff6f51f0e316414f0042bcc7f02ad5814d39b9666d4f"
+    },
+    {
+     "path": "ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java",
+     "contentHash": "sha256:6efdf0d3c9c2d3b871ff9e66c47aa173d745d3dae8e64d926d0d47e713f313df"
+    },
+    {
+     "path": "ts-basic-service/src/main/java/fdse/microservice/BasicApplication.java",
+     "contentHash": "sha256:bdf98b175c22d89871e906e26c91da5a4ed754651f750fd905993179fa920e4d"
+    },
+    {
+     "path": "ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java",
+     "contentHash": "sha256:c263b1a5ae8e424dd2e4947b1e830c0a84211a33f03883933dcc09e782682760"
+    },
+    {
+     "path": "ts-basic-service/src/main/java/fdse/microservice/controller/BasicController.java",
+     "contentHash": "sha256:f2473b563d01502690d4dc25dd6bf8731483eca54e1715fd3e48707305370055"
+    },
+    {
+     "path": "ts-basic-service/src/main/java/fdse/microservice/service/BasicService.java",
+     "contentHash": "sha256:a219d73ebd65d4fb122d0be7e5c59ecfd3a636a188f33267d48893d940ebd191"
+    },
+    {
+     "path": "ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java",
+     "contentHash": "sha256:a060f107c0d6e2c354f737016ae05cc69802a3d4dcf146b99038b46e46dc8c93"
+    },
+    {
+     "path": "ts-basic-service/src/main/resources/application.yml",
+     "contentHash": "sha256:0988400a340f16e945397b97837edbb25b007994c542fddf50979bf5a536f6e5"
+    },
+    {
+     "path": "ts-cancel-service/src/main/java/cancel/CancelApplication.java",
+     "contentHash": "sha256:9f2541692028e2781f985c3b0f56304c43707c8e41819220eda6e5e429d52547"
+    },
+    {
+     "path": "ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java",
+     "contentHash": "sha256:f77c3f7be5cd3c793e3099bf462fa419a3091ace067cb71fd97955b1c394f69b"
+    },
+    {
+     "path": "ts-cancel-service/src/main/java/cancel/controller/CancelController.java",
+     "contentHash": "sha256:a7a807cd5dfd3f38f1202352b9df9d653bcce7489527bff5ffdf6b7a9d68ae50"
+    },
+    {
+     "path": "ts-cancel-service/src/main/java/cancel/entity/GetAccountByIdInfo.java",
+     "contentHash": "sha256:e51345cb77850078c63d63cf52f45747ce7db91c6dc0c88022ff43c0c7753983"
+    },
+    {
+     "path": "ts-cancel-service/src/main/java/cancel/entity/GetAccountByIdResult.java",
+     "contentHash": "sha256:b77b267114a2297f4e80e1e8c2e65bb9f37e2f33eb3193dd81895fbf5dceda58"
+    },
+    {
+     "path": "ts-cancel-service/src/main/java/cancel/entity/GetOrderByIdInfo.java",
+     "contentHash": "sha256:7a6c4bc210ca1147ab0c6c7ad7bf7a89e03350a208246815260cfa97d8218a2b"
+    },
+    {
+     "path": "ts-cancel-service/src/main/java/cancel/service/CancelService.java",
+     "contentHash": "sha256:c83624d4a70fd8d72f57eb457792994fb0a12c228ae3e1ef6bcf388427a5f33a"
+    },
+    {
+     "path": "ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java",
+     "contentHash": "sha256:f1efc7167619f731f55c6ec829a2e69763994c9abf93a4963854ded02fc76208"
+    },
+    {
+     "path": "ts-cancel-service/src/main/resources/application.yml",
+     "contentHash": "sha256:a0c9b3d4090d4b02eb55c6b69d8e1f1e9d37343304dbb07c457ec68b6048784d"
+    },
+    {
+     "path": "ts-common/src/main/java/edu/fudan/common/config/SwaggerConfig.java",
+     "contentHash": "sha256:eeb101cde241b107931aeefb6a10fd393cd259a74d2530d574585c64024083c9"
+    }
+   ]
+  },
+  {
+   "chunkId": "chunk-13",
+   "chunkClass": "tuned",
+   "rows": [
+    {
+     "path": "ts-notification-service/src/main/java/notification/mq/RabbitSend.java",
+     "contentHash": "sha256:deccaa833af0b04e941cc4c74ddf19a98617141353d0cb91c860897b444f4c43"
+    },
+    {
+     "path": "ts-notification-service/src/main/java/notification/repository/NotifyRepository.java",
+     "contentHash": "sha256:9bdfe4fb1085e34d829dbe34f06aec6a424b76f30c28d9a691183d97ec79f873"
+    },
+    {
+     "path": "ts-notification-service/src/main/java/notification/service/MailService.java",
+     "contentHash": "sha256:8e34cb9d7d806e18d1fef5e33d38083b9587fac3bf53f5533962d6aa6b4316bf"
+    },
+    {
+     "path": "ts-notification-service/src/main/java/notification/service/NotificationService.java",
+     "contentHash": "sha256:a33a064d5e2a74091eecd4ef71e882aeed93d24387122d6989661e8d917d1ad7"
+    },
+    {
+     "path": "ts-notification-service/src/main/java/notification/service/NotificationServiceImpl.java",
+     "contentHash": "sha256:b3123f5b561df7e353d64e6687eed8326d4ee7d268b9b8eb7595a07820404034"
+    },
+    {
+     "path": "ts-notification-service/src/main/resources/application.yml",
+     "contentHash": "sha256:922d56069a27dd00b8f4f4ec7f26ef1f90d37f7b8c5f012fba0a081365c27f8f"
+    },
+    {
+     "path": "ts-order-other-service/src/main/java/other/OrderOtherApplication.java",
+     "contentHash": "sha256:6c723412070ad84d177829809e7803f6519155be97efb00713bc9c5e245b96f5"
+    },
+    {
+     "path": "ts-order-other-service/src/main/java/other/config/SecurityConfig.java",
+     "contentHash": "sha256:ae3491e1a8ddd463a7b6f0961816bb6a81b9ab7cadfed770889cac29c800aee1"
+    },
+    {
+     "path": "ts-order-other-service/src/main/java/other/controller/OrderOtherController.java",
+     "contentHash": "sha256:7589c95d0401f151fea31002ae1c036edbc1c29de29d6f9230317025fc4db42a"
+    },
+    {
+     "path": "ts-order-other-service/src/main/java/other/entity/Order.java",
+     "contentHash": "sha256:b61397d083b509da1e8ae1754b1e330320dbadb4b1b320ff018f9fd39412931d"
+    },
+    {
+     "path": "ts-order-other-service/src/main/java/other/entity/OrderAlterInfo.java",
+     "contentHash": "sha256:b641a430f12e7e073d1bd66fb23cf4b24e5911d791e393d357170ac4416eec22"
+    },
+    {
+     "path": "ts-order-other-service/src/main/java/other/entity/QueryInfo.java",
+     "contentHash": "sha256:0944daf71e6d9ea220acec7ed05df7a305fa7ed113a59fd8c2f38fb5c8608b15"
+    },
+    {
+     "path": "ts-order-other-service/src/main/java/other/init/InitData.java",
+     "contentHash": "sha256:a36fcd9e79bec4135cc221e8d534fc0df8297cd74127dc19c5c9cf13dcbba079"
+    },
+    {
+     "path": "ts-order-other-service/src/main/java/other/repository/OrderOtherRepository.java",
+     "contentHash": "sha256:8de35e5efd7a495dc0c4f03321e90680a5b53d6faee4f485c32a417cd38775a6"
+    },
+    {
+     "path": "ts-order-other-service/src/main/java/other/service/OrderOtherService.java",
+     "contentHash": "sha256:4e57aaca3d78c0841e5ef457983b491c3d2dd9d0ad3dde6b90660bb84d6135b5"
+    },
+    {
+     "path": "ts-order-other-service/src/main/java/other/service/OrderOtherServiceImpl.java",
+     "contentHash": "sha256:403c1c86279236e20b762fe704b16c636e0f3e6a56138febf7619200c2c316e7"
+    },
+    {
+     "path": "ts-order-other-service/src/main/resources/application.yml",
+     "contentHash": "sha256:fec0ede4fb20eded46a5849871310ba7bdfd7806226c120cbc1d49ca6a384a0f"
+    },
+    {
+     "path": "ts-order-service/src/main/java/order/OrderApplication.java",
+     "contentHash": "sha256:a6513c3a653df54ec20340996d5cd27c29ce8ec713b6a98d9e04c2a755b30e01"
+    },
+    {
+     "path": "ts-order-service/src/main/java/order/config/SecurityConfig.java",
+     "contentHash": "sha256:17225ae97c06ee2f08c388f571a5e55af8c7583fa75aa93b9782f6df46cdcd31"
+    },
+    {
+     "path": "ts-order-service/src/main/java/order/controller/OrderController.java",
+     "contentHash": "sha256:a35704c0a0d996b619ce47b70130509742e0fb29a7076f5837da5a87d072170f"
+    }
+   ]
+  },
+  {
+   "chunkId": "chunk-01",
+   "chunkClass": "prompt-literal-disjoint",
+   "rows": [
+    {
+     "path": "ts-admin-basic-info-service/src/main/java/adminbasic/AdminBasicInfoApplication.java",
+     "contentHash": "sha256:faa62c28f00e2221831c7f46278db7e7a8c0c3a000903652c49776c869e78279"
+    },
+    {
+     "path": "ts-admin-basic-info-service/src/main/java/adminbasic/config/SecurityConfig.java",
+     "contentHash": "sha256:aba49d7b0d0ee4e2d0b09c57e3287faf6021d7d62e73da0222eeee0b400986b1"
+    },
+    {
+     "path": "ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java",
+     "contentHash": "sha256:496b024f133c7e7cb452a2ddd758fdbe99fb3992b995c9998a8161b78f42e96f"
+    },
+    {
+     "path": "ts-admin-basic-info-service/src/main/java/adminbasic/entity/PriceInfo.java",
+     "contentHash": "sha256:8c4090a9bd2425b005125fec38f62f46a63e72d800d096d436369f911b00c9d5"
+    },
+    {
+     "path": "ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoService.java",
+     "contentHash": "sha256:a8b69ab216d62681208a05456f28f906a36942a1b8a1f319ea7dd6734a13b360"
+    },
+    {
+     "path": "ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java",
+     "contentHash": "sha256:c843eed3c39fd8d0e31af6b057f6c40eb5c5ee35271a70525c6015c7066e8c6f"
+    },
+    {
+     "path": "ts-admin-basic-info-service/src/main/resources/application.yml",
+     "contentHash": "sha256:df3df84e1c2999b32a31668b1844899c62068bda8082a3c6858f2f4f82cbd157"
+    },
+    {
+     "path": "ts-admin-order-service/src/main/java/adminorder/AdminOrderApplication.java",
+     "contentHash": "sha256:fcdf8925a5f6ac0fa9910f0a834c13e2d21dc044e6b3273d8ad2c9e0f8fcc2f9"
+    },
+    {
+     "path": "ts-admin-order-service/src/main/java/adminorder/config/SecurityConfig.java",
+     "contentHash": "sha256:2ba2fb9fd4bf8ffc51d8ee955495aae0829138671770b0353e36f80f3cd9b73f"
+    },
+    {
+     "path": "ts-admin-order-service/src/main/java/adminorder/controller/AdminOrderController.java",
+     "contentHash": "sha256:4ed0556a123e5951efcad374fd2a79e35aeb4da4e84ddd7dac6f8ff656cd640c"
+    },
+    {
+     "path": "ts-admin-order-service/src/main/java/adminorder/service/AdminOrderService.java",
+     "contentHash": "sha256:b726e6d2eb12cc2fb5d80161405323231092309c466334da426e729bf13c7dd2"
+    },
+    {
+     "path": "ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java",
+     "contentHash": "sha256:6b87c82183642de14b2bbffc7aa803054da4a3264dc4729a9f72514bff8fe401"
+    },
+    {
+     "path": "ts-admin-order-service/src/main/resources/application.yml",
+     "contentHash": "sha256:cceafeb974c98225675534fc5ff1b916623529d83d7751cae1a9a9b42801a616"
+    },
+    {
+     "path": "ts-admin-route-service/src/main/java/adminroute/AdminRouteApplication.java",
+     "contentHash": "sha256:480988d685a1f0e35aa73c23e4575f0c5711f490b2958b5ef89a25b56cdb6e42"
+    },
+    {
+     "path": "ts-admin-route-service/src/main/java/adminroute/config/SecurityConfig.java",
+     "contentHash": "sha256:322cd4dea3f656fafaf516b7d6c24a02b341ba4a2667893f6d5bf6f7cdb0e9af"
+    },
+    {
+     "path": "ts-admin-route-service/src/main/java/adminroute/controller/AdminRouteController.java",
+     "contentHash": "sha256:3e4f63bc80c4dda5991f4ebb665ea7c4193c56c50a769eb2fe55486a5b4d4fb3"
+    },
+    {
+     "path": "ts-admin-route-service/src/main/java/adminroute/service/AdminRouteService.java",
+     "contentHash": "sha256:6b9ddb254a221f22618e1350361254b649fbecf829091c3db8d9f3e19054ed01"
+    },
+    {
+     "path": "ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java",
+     "contentHash": "sha256:2c1eaf066e559636a8c1fc0d651f31fe83c9dedac13031e1fce4afc9d36fb39a"
+    },
+    {
+     "path": "ts-admin-route-service/src/main/resources/application.yml",
+     "contentHash": "sha256:1de554260a439d281a879277f085e6dc625fca55c133410ac8dc712302a99940"
+    },
+    {
+     "path": "ts-admin-travel-service/src/main/java/admintravel/AdminTravelApplication.java",
+     "contentHash": "sha256:36875e0d428106926944469c1309fb151a94772ee4513a49c8aaf5fff2da3293"
+    }
+   ]
+  }
+ ]
+}

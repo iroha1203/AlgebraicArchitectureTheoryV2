@@ -1877,6 +1877,9 @@ mod tests {
                 key: "k".to_string(),
                 decision: "yes".to_string(),
                 basis: "basis".to_string(),
+                candidate_atom_id: None,
+                merge_group: None,
+                canonical_atom_id: None,
             }],
         };
 

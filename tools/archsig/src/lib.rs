@@ -17,6 +17,16 @@ mod view_model;
 
 pub use refactor::{validate_refactor_morphism_v1, validate_refinement_comparison_v1};
 mod schema;
+mod supply_bench;
+pub use supply_bench::{
+    ALIGNMENT_DECISION_NOT_ADOPTED, ALIGNMENT_DECISION_NOVEL_CORRECT,
+    ALIGNMENT_DECISION_REFERENCE_MATCHED, ALIGNMENT_DECISION_UNRECOVERED,
+    ARCHMAP_REFERENCE_ALIGNMENT_V1_SCHEMA, ARCHMAP_REFERENCE_SLICE_V1_SCHEMA,
+    ARCHMAP_SUPPLY_BENCH_REPORT_V1_SCHEMA, ArchmapReferenceAlignmentRowV1,
+    ArchmapReferenceAlignmentV1, ArchmapReferenceSliceAtomV1, ArchmapReferenceSliceV1,
+    ArchmapSupplyBenchReportV1, SupplyBenchOptions, SupplyBenchPairInput,
+    build_supply_bench_report_v1,
+};
 mod schema_catalog;
 mod validation;
 

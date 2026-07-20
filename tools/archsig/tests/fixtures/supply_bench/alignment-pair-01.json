@@ -1,0 +1,50 @@
+{
+ "schema": "archmap-reference-alignment/v1",
+ "id": "alignment:pair-01",
+ "referenceRef": "reference:supply-bench-fixture",
+ "referenceVersion": "1",
+ "pairRef": "pair-01",
+ "adjudicator": "fixture-human",
+ "rows": [
+  {
+   "referenceAtomId": "ref:r1",
+   "candidateAtomIds": [
+    "atom:a1",
+    "atom:b1"
+   ],
+   "decision": "reference-matched",
+   "basis": "identical capability observation"
+  },
+  {
+   "referenceAtomId": "ref:r2",
+   "candidateAtomIds": [
+    "atom:a2",
+    "atom:b2"
+   ],
+   "decision": "reference-matched",
+   "basis": "identical persistence observation"
+  },
+  {
+   "referenceAtomId": "ref:r3",
+   "candidateAtomIds": [
+    "atom:a3",
+    "atom:b3"
+   ],
+   "decision": "reference-matched",
+   "basis": "same invocation fact across lens drift"
+  },
+  {
+   "referenceAtomId": "ref:r4",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "no supply atom observed this authority rule"
+  },
+  {
+   "candidateAtomIds": [
+    "atom:a4"
+   ],
+   "decision": "novel-correct",
+   "basis": "provider call verified in source; reference revision candidate"
+  }
+ ]
+}

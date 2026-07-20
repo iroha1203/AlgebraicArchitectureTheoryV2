@@ -1,0 +1,95 @@
+{
+ "schema": "archmap-extraction-consistency/v0.5.4",
+ "id": "consistency:pair-02",
+ "scopeManifestRef": "scope:supply-bench-fixture@1",
+ "passARefs": [
+  "candidates:run-3:chunk-90"
+ ],
+ "passBRefs": [
+  "candidates:run-4:chunk-90"
+ ],
+ "atomMatchKeySpec": "kind | NFC(trim(subject) normalized to <source-dir>.<Class> from refs) | axis | predicate? | object? (atom-match-key@2)",
+ "matched": {
+  "count": 3,
+  "rows": [
+   {
+    "key": "capability|svc-a.Alpha|capability|handlesCommand|create/1",
+    "passAAtomIds": [
+     "atom:c1"
+    ],
+    "passBAtomIds": [
+     "atom:d1"
+    ],
+    "refs": [
+     "src:svc-a/Alpha.java"
+    ]
+   },
+   {
+    "key": "state|svc-a.OrderRepo|state|persistsIn|Order",
+    "passAAtomIds": [
+     "atom:c2"
+    ],
+    "passBAtomIds": [
+     "atom:d2"
+    ],
+    "refs": [
+     "src:svc-a/OrderRepo.java"
+    ]
+   },
+   {
+    "key": "relation|svc-a.Alpha|relation|calls|svc-b",
+    "passAAtomIds": [
+     "atom:c3"
+    ],
+    "passBAtomIds": [
+     "atom:d3"
+    ],
+    "refs": [
+     "src:svc-a/Alpha.java"
+    ]
+   }
+  ]
+ },
+ "onlyInPassA": [
+  {
+   "key": "semantic|svc-a.Alpha|semantic|meansInUse|status-1-on-data-branch",
+   "candidateAtomId": "atom:c4",
+   "refs": [
+    "src:svc-a/Alpha.java"
+   ]
+  }
+ ],
+ "onlyInPassB": [
+  {
+   "key": "semantic|svc-a.Alpha|semantic|meansInUse|status-one-selects-data",
+   "candidateAtomId": "atom:d4",
+   "refs": [
+    "src:svc-a/Alpha.java"
+   ]
+  }
+ ],
+ "matchRate": 0.6,
+ "contextDiff": {
+  "matched": 1,
+  "onlyInPassA": [],
+  "onlyInPassB": []
+ },
+ "adjudications": [
+  {
+   "key": "semantic|svc-a.Alpha|semantic|meansInUse|status-1-on-data-branch",
+   "decision": "merged",
+   "basis": "reread: same envelope semantics, object phrasing drift",
+   "candidateAtomId": "atom:c4",
+   "mergeGroup": "group-a",
+   "canonicalAtomId": "atom:canonical-c4"
+  },
+  {
+   "key": "semantic|svc-a.Alpha|semantic|meansInUse|status-one-selects-data",
+   "decision": "merged",
+   "basis": "reread: same envelope semantics, object phrasing drift",
+   "candidateAtomId": "atom:d4",
+   "mergeGroup": "group-a",
+   "canonicalAtomId": "atom:canonical-c4"
+  }
+ ]
+}

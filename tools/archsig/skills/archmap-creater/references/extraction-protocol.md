@@ -12,6 +12,10 @@ The mechanical layer may perform only four operations:
 - compare normalized literal keys
 - check that references resolve
 
+Arithmetic aggregation of key-comparison results (counting matched and
+unmatched keys, computing ratios such as matchRate or bench metrics) is a
+consequence of these four operations and stays inside the mechanical layer.
+
 It must not interpret source meaning, choose atoms, adopt candidates, merge by
 similarity, vote between passes, or assign verdicts from match numbers.
 
