@@ -1911,22 +1911,6 @@ fn cli_analyze_saga_descent_without_repair_plan_is_silence_by_design() {
             }),
         "missing repair-plan must be modeled as silence_by_design, not validation failure"
     );
-    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
-    assert_saga_viewer_contract(&viewer, &packet);
-    assert!(
-        viewer["sagaDescent"]["silenceRows"]
-            .as_array()
-            .is_some_and(|rows| rows.iter().any(|row| {
-                row["id"]
-                    .as_str()
-                    .is_some_and(|id| id.contains("saga-descent"))
-            })),
-        "canonical structural SAGA silence must be retained in the viewer"
-    );
-    assert_eq!(
-        viewer["sagaDescent"]["stages"][3]["status"],
-        "silence_by_design"
-    );
     let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
     assert_saga_summary_has_no_class_vocabulary(&summary);
 }
@@ -2228,12 +2212,6 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
     let plan = supplied_triple_saga_plan(&root, true);
     let out_dir = run_saga_fixture_lock("ag-saga-descent-supplied-class", plan);
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
-    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
-    assert_saga_viewer_golden_fixture(&viewer, &packet, "circle-nerve-residual-class");
-    assert_eq!(
-        viewer["sagaDescent"]["stages"][1]["status"],
-        "measured_nonzero"
-    );
     let class = saga_row(&packet, "saga.residual-class");
     assert_eq!(class["verdict"], "measured_nonzero");
     assert_eq!(
@@ -2327,12 +2305,11 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
 }
 
 #[test]
-fn cli_analyze_saga_descent_supplied_zero_class_locks_viewer_golden() {
+fn cli_analyze_saga_descent_supplied_zero_class_measures_no_residual_class() {
     let root = ag_measurement_root();
     let plan = supplied_triple_saga_plan(&root, false);
     let out_dir = run_saga_fixture_lock("ag-saga-descent-supplied-zero-class", plan);
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
-    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
     let class = saga_row(&packet, "saga.residual-class");
     assert_eq!(class["verdict"], "measured_zero");
     let closure = packet["computedInvariants"]
@@ -2342,7 +2319,6 @@ fn cli_analyze_saga_descent_supplied_zero_class_locks_viewer_golden() {
         .find(|row| row["invariantId"] == "saga-descent:closure-diagnostics")
         .expect("closure diagnostics invariant");
     assert_eq!(closure["faithfulnessBasis"]["basis"], "supplied-data");
-    assert_saga_viewer_golden_fixture(&viewer, &packet, "faithfulness-supplied");
 }
 
 #[test]
@@ -2435,8 +2411,6 @@ fn cli_analyze_saga_descent_uncovered_residual_blocks_global_coherence() {
     ]);
 
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
-    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
-    assert_saga_viewer_contract(&viewer, &packet);
     assert_eq!(
         saga_row(&packet, "saga.residual-boundary-membership")["verdict"],
         "measured_zero"
@@ -2630,17 +2604,6 @@ fn cli_analyze_saga_descent_mode_none_keeps_global_coherence_silent() {
                     && statement["reason"] == "complete_support_not_declared"
             })
     );
-    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
-    assert_saga_viewer_golden_fixture(&viewer, &packet, "faithfulness-none");
-    assert_eq!(
-        viewer["sagaDescent"]["stages"][2]["status"],
-        "silence_by_design"
-    );
-    assert!(
-        viewer["sagaDescent"]["stages"][3]["rows"]
-            .as_array()
-            .is_some_and(|rows| rows.iter().any(|row| row["whatNext"].as_str().is_some()))
-    );
     let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
     assert_saga_summary_has_no_class_vocabulary(&summary);
     assert_ne!(
@@ -2662,12 +2625,6 @@ fn cli_analyze_saga_descent_mode_none_with_nonboundary_residual_stays_silent() {
     }
     let out_dir = run_saga_fixture_lock("ag-saga-descent-mode-none-nonboundary", repair_plan);
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
-    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
-    assert_saga_viewer_contract(&viewer, &packet);
-    assert_eq!(
-        viewer["sagaDescent"]["stages"][2]["status"],
-        "silence_by_design"
-    );
     assert_eq!(
         saga_row(&packet, "saga.residual-boundary-membership")["verdict"],
         "measured_nonzero"
@@ -3636,7 +3593,7 @@ fn cli_analyze_v2_writes_measurement_packet_foundation() {
 }
 
 #[test]
-fn cli_representative_output_surfaces_omit_absolute_sheaf_cohomology_notation() {
+fn cli_representative_json_artifacts_omit_absolute_sheaf_cohomology_notation() {
     let base_run = run_analyze_fixture_lock(
         "full-sheaf-output-lint-base",
         "archmap_v2.json",
@@ -3692,15 +3649,6 @@ fn cli_representative_output_surfaces_omit_absolute_sheaf_cohomology_notation() 
         (
             "analysis summary",
             head_run.join("archsig-analysis-summary.json"),
-        ),
-        (
-            "insight report",
-            head_run.join("archsig-insight-report.json"),
-        ),
-        ("insight brief", head_run.join("archsig-insight-brief.md")),
-        (
-            "viewer data",
-            head_run.join("archsig-atom-viewer-data.json"),
         ),
         (
             "comparison report",
@@ -4540,15 +4488,6 @@ fn cli_analyze_v2_cech_all_sections_unobserved_is_silence_not_measured_zero() {
         summary["conclusion"], "AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE",
         "no NO_MEASURED_H1 conclusion may be drawn from unobserved sections"
     );
-    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
-    assert!(
-        viewer["aatGeometryOverlays"]["nerve"]["edges"]
-            .as_array()
-            .is_some_and(|edges| !edges.is_empty()
-                && edges
-                    .iter()
-                    .all(|edge| edge["sectionObservation"] == "not_observed"))
-    );
 }
 
 #[test]
@@ -4593,12 +4532,6 @@ fn cli_analyze_v2_cech_partially_observed_edges_measure_observed_and_stay_silent
             .is_some_and(|refs| refs.iter().any(|scope| scope == &row["verdictRef"])),
         "measured_zero row must be qualified by the unobserved-edges silence"
     );
-    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
-    let edges = viewer["aatGeometryOverlays"]["nerve"]["edges"]
-        .as_array()
-        .expect("nerve edges");
-    assert!(edges.iter().any(|edge| edge["sectionObservation"] == "observed"));
-    assert!(edges.iter().any(|edge| edge["sectionObservation"] == "not_observed"));
 }
 
 #[test]
@@ -5112,20 +5045,6 @@ fn cli_analyze_v2_cover_nerve_faces_require_packet_triple_overlap_support() {
         "surjective restriction must remain assumed even when triple-overlap faces are present"
     );
 
-    let report = read_json(&out_dir.join("archsig-insight-report.json"));
-    assert_eq!(
-        report["gluingGeometry"]["nerve"]["triangles"], cech["coverNerveProjection"]["faces"],
-        "viewer gluing projection must consume packet-projected faces"
-    );
-    assert_eq!(
-        report["gluingGeometry"]["nerve"]["h2CoherenceVisualized"],
-        false
-    );
-    assert!(
-        report["gluingGeometry"]["nerve"]["triangleSource"]
-            .as_str()
-            .is_some_and(|text| text.contains("not inferred by the viewer"))
-    );
 }
 
 #[test]
@@ -6537,714 +6456,6 @@ fn cli_analyze_v2_coherence_obstruction_distinguishes_zero_silence_and_banding_b
 }
 
 #[test]
-fn cli_analyze_v2_emits_insight_report_brief_and_viewer_scene_contract() {
-    let out_dir = temp_dir("ag-measurement-insight-viewer");
-    let root = ag_measurement_root();
-
-    run_sig0(&[
-        "analyze",
-        "--archmap",
-        root.join("archmap_v2_cech_h1_visible.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy_cech_h1.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--measurement-profile",
-        root.join("measurement_profile_ag.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--law-surface",
-        root.join("law_surface_cech_h1_v052.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out-dir",
-        out_dir.to_str().expect("path is utf-8"),
-    ]);
-
-    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
-    let report = read_json(&out_dir.join("archsig-insight-report.json"));
-    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
-    let manifest = read_json(&out_dir.join("archsig-run-manifest.json"));
-    let brief = fs::read_to_string(out_dir.join("archsig-insight-brief.md"))
-        .expect("insight brief is generated");
-
-    assert_eq!(report["schema"], "archsig-insight-report/v0.5.4");
-    assert_eq!(
-        report["headline"]["conclusionCode"],
-        "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
-    );
-    assert_eq!(report["insightCards"][0]["kind"], "global_glue_mismatch");
-    assert!(
-        report["insightCards"][0]["whyItMatters"]
-            .as_str()
-            .is_some_and(|text| text.contains("architecture drift")),
-        "Top insight must explain why it matters"
-    );
-    assert!(
-        report["insightCards"][0]["evidence"]["structuralVerdictRefs"]
-            .as_array()
-            .is_some_and(|refs| !refs.is_empty())
-            && report["insightCards"][0]["evidence"]["sourceRefs"]
-                .as_array()
-                .is_some_and(|refs| !refs.is_empty()),
-        "Top insight must carry verdict and where refs"
-    );
-    assert_eq!(
-        report["insightCards"][0]["evidence"]["evidenceResolutionStatus"],
-        "resolved_from_packet_support"
-    );
-    assert!(
-        report["insightCards"][0]["sampleRefs"]["note"]
-            .as_str()
-            .is_some_and(|note| note.contains("orientation only")),
-        "sample refs must be separated from measured evidence refs"
-    );
-    assert!(
-        report["rankingBasis"]
-            .as_array()
-            .expect("ranking basis is array")
-            .iter()
-            .any(|entry| entry == "measured_nonzero structural verdict"),
-        "deterministic ranking basis must be recorded"
-    );
-    let ranking_basis = report["rankingBasis"]
-        .as_array()
-        .expect("ranking basis is array");
-    let boundary_rank = ranking_basis
-        .iter()
-        .position(|entry| entry == "measurement boundary")
-        .expect("measurement boundary ranking basis is recorded");
-    let zero_rank = ranking_basis
-        .iter()
-        .position(|entry| entry == "measured_zero confirmation")
-        .expect("measured_zero ranking basis is recorded");
-    assert!(
-        boundary_rank < zero_rank,
-        "ranking basis must place measurement boundary before measured_zero confirmation"
-    );
-    assert_eq!(
-        report["insightCards"][0]["tourRefs"][0], report["guidedTours"][0]["tourId"],
-        "Insight Card tourRefs and Tour insightRefs must be mutually linked"
-    );
-    assert!(
-        report["guidedTours"][0]["insightRefs"]
-            .as_array()
-            .expect("tour insightRefs are array")
-            .contains(&report["insightCards"][0]["id"])
-    );
-    let tour_ids = report["guidedTours"]
-        .as_array()
-        .expect("guided tours are array")
-        .iter()
-        .map(|tour| tour["tourId"].as_str().expect("tour id is present"))
-        .collect::<BTreeSet<_>>();
-    for card in report["insightCards"]
-        .as_array()
-        .expect("insight cards are array")
-    {
-        for tour_ref in card["tourRefs"].as_array().expect("tour refs are array") {
-            let tour_ref = tour_ref.as_str().expect("tour ref is string");
-            assert!(
-                tour_ids.contains(tour_ref),
-                "every insight card tourRef must resolve to a guided tour"
-            );
-            let tour = report["guidedTours"]
-                .as_array()
-                .expect("guided tours are array")
-                .iter()
-                .find(|tour| tour["tourId"] == tour_ref)
-                .expect("tour ref resolves");
-            assert!(
-                tour["insightRefs"]
-                    .as_array()
-                    .expect("tour insight refs are array")
-                    .contains(&card["id"]),
-                "guided tour must link back to its insight card"
-            );
-        }
-    }
-    for scene in report["viewerVisualScenes"]
-        .as_array()
-        .expect("viewer visual scenes are array")
-    {
-        assert!(
-            scene["userQuestion"]
-                .as_str()
-                .is_some_and(|text| !text.is_empty())
-        );
-        assert!(scene["axisMapping"]["x"].as_str().is_some());
-        assert!(
-            scene["layers"][0]["refs"].is_object()
-                && scene["layers"][0]["clickTargetKind"].as_str().is_some()
-                && scene["visualEncodings"][0]["shapeRole"].as_str().is_some()
-                && scene["visualEncodings"][0]["lineRole"].as_str().is_some()
-                && scene["visualEncodings"][0]["textRole"].as_str().is_some()
-        );
-        if scene["sceneStatus"] == "active" {
-            assert_eq!(
-                scene["layers"][0]["omissionPolicy"],
-                "preserve_for_top_insight"
-            );
-        } else {
-            assert_eq!(scene["layers"][0]["omissionPolicy"], "omittable_background");
-            assert_eq!(scene["visualEncodings"][0]["colorRole"], "not_applicable");
-        }
-    }
-    assert!(
-        report["viewerVisualScenes"]
-            .as_array()
-            .expect("scenes are array")
-            .iter()
-            .any(|scene| scene["sceneId"] == "overview"
-                && scene["layers"][0]["kind"] == "top_insight_beacon"),
-        "overview scene must carry top insight beacons"
-    );
-    assert!(
-        report["viewerVisualScenes"]
-            .as_array()
-            .expect("scenes are array")
-            .iter()
-            .any(|scene| scene["sceneId"] == "cech-gluing"
-                && scene["layers"][0]["kind"] == "overlap_seam"),
-        "gluing scene must expose overlap seams"
-    );
-    assert!(
-        report["viewerVisualScenes"]
-            .as_array()
-            .expect("scenes are array")
-            .iter()
-            .any(|scene| scene["sceneId"] == "cech-h1-mismatch"
-                && scene["layers"][0]["geometryRole"] == "ribbon"),
-        "H1 scene must expose cocycle representative ribbon/seam"
-    );
-    let boundary_scene = report["viewerVisualScenes"]
-        .as_array()
-        .expect("scenes are array")
-        .iter()
-        .find(|scene| scene["sceneId"] == "boundary-assumption")
-        .expect("boundary scene is present");
-    let boundary_layers = boundary_scene["layers"]
-        .as_array()
-        .expect("boundary scene layers are array");
-    let boundary_encodings = boundary_scene["visualEncodings"]
-        .as_array()
-        .expect("boundary scene visual encodings are array");
-    assert_eq!(
-        boundary_layers.len(),
-        6,
-        "boundary scene must expose one layer per checked/assumed/unknown/unmeasured/not_computed/violated state"
-    );
-    for state in [
-        "checked",
-        "assumed",
-        "unknown",
-        "unmeasured",
-        "not_computed",
-        "violated",
-    ] {
-        assert!(
-            boundary_layers
-                .iter()
-                .any(|layer| layer["boundaryState"] == state
-                    && layer["encodingRef"] == format!("encoding:boundary-assumption:{state}")),
-            "boundary scene must include a layer for {state}"
-        );
-        assert!(
-            boundary_encodings
-                .iter()
-                .any(|encoding| encoding["boundaryState"] == state
-                    && encoding["colorRole"] == state
-                    && encoding["shapeRole"].as_str().is_some()
-                    && encoding["lineRole"].as_str().is_some()
-                    && encoding["textRole"].as_str().is_some()),
-            "boundary scene must include visual encoding for {state}"
-        );
-    }
-    let repair_scene = report["viewerVisualScenes"]
-        .as_array()
-        .expect("scenes are array")
-        .iter()
-        .find(|scene| scene["sceneId"] == "repair-dual")
-        .expect("repair scene is present");
-    assert!(
-        repair_scene["nonClaims"]
-            .as_array()
-            .expect("repair scene nonClaims are array")
-            .iter()
-            .any(|claim| claim
-                .as_str()
-                .is_some_and(|text| text.contains("not a semantic refactor guarantee"))),
-        "repair scene must carry the not-auto-repair non-claim"
-    );
-    assert!(
-        repair_scene["visualEncodings"][0]["textRole"]
-            .as_str()
-            .is_some_and(|text| text.contains("not automatic repair")),
-        "repair scene text role must keep the non-automatic repair boundary visible"
-    );
-    assert_eq!(
-        viewer["decisionBar"]["conclusion"],
-        "MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
-    );
-    assert!(
-        viewer["atomNodes"]
-            .as_array()
-            .is_some_and(|items| !items.is_empty())
-            && viewer["moleculeGroups"]
-                .as_array()
-                .is_some_and(|items| !items.is_empty())
-            && viewer["atomEdges"].as_array().is_some(),
-        "AG viewer data must project finitePosetSite into renderer-compatible atomNodes, moleculeGroups, and atomEdges"
-    );
-    assert!(
-        viewer["reportPane"]["evidenceDetailShape"]
-            .as_array()
-            .expect("detail shape is array")
-            .iter()
-            .any(|section| section == "Boundary")
-            && viewer["copyBlocks"]["sourceRefs"]
-                .as_array()
-                .is_some_and(|refs| !refs.is_empty()),
-        "viewer must expose Evidence Detail shape and copyable source refs"
-    );
-    assert!(
-        viewer["actionQueue"]
-            .as_array()
-            .is_some_and(|items| !items.is_empty())
-            && viewer["reportPane"]["actionQueue"]
-                .as_array()
-                .is_some_and(|items| !items.is_empty()),
-        "viewer must expose suggested next inspections at top-level and in the report pane"
-    );
-    assert!(
-        viewer["largeGraphStrategy"]["topInsightEvidencePinning"]["preservedRefs"]
-            .as_array()
-            .is_some_and(|refs| !refs.is_empty()),
-        "large graph strategy must pin concrete top-insight evidence refs"
-    );
-    assert_eq!(
-        viewer["omittedDetailCounts"]["omittedSceneLayerObjects"].as_u64(),
-        Some(0)
-    );
-    assert_eq!(
-        viewer["reportPane"]["omittedDetailCounts"], viewer["omittedDetailCounts"],
-        "report pane and viewer payload must agree on omitted detail counts"
-    );
-    assert_eq!(summary["readThisFirst"]["heading"], "Read this first");
-    assert_eq!(
-        manifest["artifactLinks"]["insightBrief"],
-        "archsig-insight-brief.md"
-    );
-    assert!(
-        manifest["generatedArtifacts"]
-            .as_array()
-            .expect("generated artifacts are array")
-            .iter()
-            .any(|artifact| artifact == "archsig-insight-report.json")
-    );
-    assert!(brief.starts_with("# ArchSig Insight Brief\n\n## Read this first"));
-    assert!(brief.contains("## LLM handoff"));
-}
-
-#[test]
-fn cli_analyze_v2_insight_surface_preserves_false_clean_and_not_computed_boundaries() {
-    let out_dir = temp_dir("ag-measurement-insight-boundaries");
-    let root = ag_measurement_root();
-
-    run_sig0(&[
-        "analyze",
-        "--archmap",
-        root.join("archmap_v2.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy_ag.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--measurement-profile",
-        root.join("measurement_profile_ag.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--law-surface",
-        root.join("law_surface_ag_v052.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out-dir",
-        out_dir.to_str().expect("path is utf-8"),
-    ]);
-
-    let report = read_json(&out_dir.join("archsig-insight-report.json"));
-    let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
-    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
-    let brief = fs::read_to_string(out_dir.join("archsig-insight-brief.md"))
-        .expect("insight brief is generated");
-    assert_eq!(
-        summary["conclusion"].as_str(),
-        Some("NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"),
-        "measured_zero H1 must stay conclusion-first even when boundary digest is present"
-    );
-    assert_eq!(
-        report["headline"]["conclusionCode"].as_str(),
-        Some("NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"),
-        "insight headline must keep the profile-relative zero conclusion as the product-facing verdict"
-    );
-    assert_eq!(
-        viewer["decisionBar"]["conclusion"].as_str(),
-        Some("NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"),
-        "viewer Decision Bar must lead with the useful H1 zero conclusion, not the boundary"
-    );
-    assert!(
-        report["insightCards"]
-            .as_array()
-            .expect("insight cards are array")
-            .iter()
-            .any(|card| card["kind"] == "no_measured_glue_mismatch"),
-        "measured_zero must be represented as a profile-relative zero insight"
-    );
-    let card_kinds = report["insightCards"]
-        .as_array()
-        .expect("insight cards are array")
-        .iter()
-        .map(|card| card["kind"].as_str().unwrap_or_default())
-        .collect::<Vec<_>>();
-    let boundary_index = card_kinds
-        .iter()
-        .position(|kind| *kind == "measurement_boundary")
-        .expect("fixture must surface a measurement boundary card");
-    let zero_index = card_kinds
-        .iter()
-        .position(|kind| *kind == "no_measured_glue_mismatch")
-        .expect("fixture must surface a measured_zero card");
-    assert!(
-        zero_index < boundary_index,
-        "measured_zero confirmation must rank before measurement boundary when both are present"
-    );
-    assert!(
-        viewer["viewerVisualScenes"]
-            .as_array()
-            .expect("viewer visual scenes are array")
-            .iter()
-            .filter(|scene| {
-                scene["sceneId"] == "cech-gluing"
-                    || scene["sceneId"] == "cech-h1-mismatch"
-                    || scene["sceneId"] == "obstruction"
-            })
-            .all(|scene| scene["visualEncodings"][0]["colorRole"] != "measured_nonzero"),
-        "zero or inactive scenes must not use measured_nonzero coloring"
-    );
-    assert!(
-        viewer["viewerVisualScenes"]
-            .as_array()
-            .expect("viewer visual scenes are array")
-            .iter()
-            .any(|scene| scene["sceneId"] == "overview"
-                && scene["visualEncodings"][0]["colorRole"] == "measured_zero"),
-        "measured_zero top insight must render overview as the selected-support zero conclusion"
-    );
-    assert!(
-        viewer["viewerVisualScenes"]
-            .as_array()
-            .expect("viewer visual scenes are array")
-            .iter()
-            .any(|scene| scene["sceneId"] == "cech-gluing"
-                && scene["sceneStatus"] == "active"
-                && scene["visualEncodings"][0]["colorRole"] == "measured_zero"),
-        "measured_zero Cech scene must stay active and explicitly measured_zero"
-    );
-    let gluing_geometry = report["gluingGeometry"]
-        .as_object()
-        .expect("insight report must expose gluing geometry projection");
-    assert_eq!(
-        gluing_geometry["schema"].as_str(),
-        Some("archsig-viewer-gluing-geometry/v0.5.4"),
-        "gluing geometry projection must be typed"
-    );
-    assert!(
-        gluing_geometry["nerve"]["vertices"]
-            .as_array()
-            .is_some_and(|items| !items.is_empty())
-            && gluing_geometry["nerve"]["edges"]
-                .as_array()
-                .is_some_and(|items| !items.is_empty()),
-        "cover nerve must expose packet-derived vertices and restriction edges"
-    );
-    assert!(
-        gluing_geometry["nerve"]["triangleSource"]
-            .as_str()
-            .is_some_and(|text| text.contains("not inferred by the viewer")),
-        "cover nerve triangles must be sourced from packet cover projection, not viewer inference"
-    );
-    assert_eq!(
-        gluing_geometry["nerve"]["h2CoherenceVisualized"].as_bool(),
-        Some(false),
-        "gluing viewer contract must preserve the H2 silence boundary"
-    );
-    assert!(
-        gluing_geometry["cocycleRibbon"]["closureGapEncoding"]["nonClaim"]
-            .as_str()
-            .is_some_and(|text| text.contains("monodromy verdict is not generated")),
-        "H1 cocycle ribbon must keep the monodromy non-claim explicit"
-    );
-    assert!(
-        gluing_geometry["atomGlyphs"]
-            .as_array()
-            .is_some_and(|items| items
-                .iter()
-                .any(|item| item["shapeRole"] == "structured_atom_glyph")),
-        "atom internal glyph projection must expose fiber/carrier/valence/semantic-anchor roles"
-    );
-    assert!(
-        gluing_geometry["repairMorphs"]
-            .as_array()
-            .is_some_and(Vec::is_empty),
-        "repair morphs must not be inferred without packet alexanderDualRepair minimal hitting sets"
-    );
-    assert!(
-        gluing_geometry["omittedGeometryCounts"]
-            .as_object()
-            .is_some_and(|counts| counts.contains_key("measuredZeroRegions")
-                && counts.contains_key("cocycleSupportEdges")
-                && counts.contains_key("blockedRegions")
-                && counts.contains_key("atomGlyphs")),
-        "gluing projection must report omitted counts for each independently capped geometry family"
-    );
-    assert_eq!(
-        viewer["aatGeometryOverlays"]["gluingGeometry"], report["gluingGeometry"],
-        "viewer data must consume the same gluing geometry projection as the insight report"
-    );
-    for scene_id in [
-        "site-cover",
-        "cech-gluing",
-        "cech-h1-mismatch",
-        "hodge-debt-field",
-    ] {
-        let scene = viewer["viewerVisualScenes"]
-            .as_array()
-            .expect("viewer visual scenes are array")
-            .iter()
-            .find(|scene| scene["sceneId"] == scene_id)
-            .unwrap_or_else(|| panic!("scene {scene_id} exists"));
-        assert_eq!(
-            scene["axisMappingImplemented"].as_bool(),
-            Some(true),
-            "{scene_id} must mark axisMapping as geometry-driving"
-        );
-        assert!(
-            scene["visualEncodingLegend"]
-                .as_array()
-                .is_some_and(|items| items.len() >= 4),
-            "{scene_id} must carry fixed color/shape/line/opacity legend"
-        );
-        assert!(
-            scene["projectionBoundary"]
-                .as_str()
-                .is_some_and(|text| text.contains("does not create a new structural verdict")),
-            "{scene_id} must keep visual richness below verdict level"
-        );
-    }
-    for forbidden in [
-        "Architecture is clean",
-        "No architecture issue exists",
-        "Codebase is lawful",
-    ] {
-        assert!(
-            !brief.contains(forbidden),
-            "false clean claim must not appear in brief: {forbidden}"
-        );
-    }
-
-    let no_ambient_out_dir = temp_dir("ag-measurement-insight-no-common-ambient");
-    let mut archmap = read_json(&root.join("archmap_v2_law_conflict_tor.json"));
-    archmap["atoms"] = Value::Array(
-        archmap["atoms"]
-            .as_array()
-            .expect("atoms is array")
-            .iter()
-            .filter(|atom| atom["predicate"] != "commonAmbient")
-            .cloned()
-            .collect(),
-    );
-    archmap["contexts"][0]["atoms"] = Value::Array(
-        archmap["contexts"][0]["atoms"]
-            .as_array()
-            .expect("context atoms is array")
-            .iter()
-            .filter(|atom| atom.as_str() != Some("atom:tor-common-ambient"))
-            .cloned()
-            .collect(),
-    );
-    let archmap_path = no_ambient_out_dir.join("archmap_v2_law_conflict_tor_no_ambient.json");
-    fs::write(
-        &archmap_path,
-        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
-    )
-    .expect("archmap fixture can be written");
-
-    run_sig0(&[
-        "analyze",
-        "--archmap",
-        archmap_path.to_str().expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy_tor.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--measurement-profile",
-        test_measurement_profile_path(Path::new(
-            root.join("law_policy_tor.json")
-                .to_str()
-                .expect("path is utf-8"),
-        ))
-        .to_str()
-        .expect("path is utf-8"),
-        "--law-surface",
-        root.join("law_surface_ag_v052.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out-dir",
-        no_ambient_out_dir.to_str().expect("path is utf-8"),
-    ]);
-    let report = read_json(&no_ambient_out_dir.join("archsig-insight-report.json"));
-    let viewer = read_json(&no_ambient_out_dir.join("archsig-atom-viewer-data.json"));
-    assert!(
-        report["insightCards"]
-            .as_array()
-            .expect("insight cards are array")
-            .iter()
-            .any(|card| card["kind"] == "not_computed_blocker"
-                && card["rankingBasis"]
-                    .as_array()
-                    .expect("ranking basis is array")
-                    .iter()
-                    .any(|basis| basis == "no_common_ambient")),
-        "not_computed reason code must be promoted to a blocker insight"
-    );
-    assert!(
-        viewer["viewerVisualScenes"]
-            .as_array()
-            .expect("scenes are array")
-            .iter()
-            .any(|scene| scene["sceneId"] == "law-conflict-tor"
-                && scene["visualEncodings"][0]["textRole"]
-                    .as_str()
-                    .is_some_and(|text| text.contains("no_common_ambient"))),
-        "LawConflict scene must show blocking reason instead of an empty conflict view"
-    );
-    assert!(
-        viewer["viewerVisualScenes"]
-            .as_array()
-            .expect("viewer visual scenes are array")
-            .iter()
-            .any(|scene| scene["sceneId"] == "law-conflict-tor"
-                && scene["visualEncodings"][0]["colorRole"] == "not_computed"),
-        "LawConflict not_computed blocker must remain visually distinct"
-    );
-}
-
-#[test]
-fn cli_analyze_v2_insight_viewer_truncates_large_background_projection() {
-    let out_dir = temp_dir("ag-measurement-insight-large-viewer");
-    let root = ag_measurement_root();
-    let mut archmap = read_json(&root.join("archmap_v2_cech_h1_visible.json"));
-    let template_atom = archmap["atoms"]
-        .as_array()
-        .and_then(|atoms| atoms.first())
-        .cloned()
-        .expect("fixture has an atom template");
-    let original_atoms = archmap["atoms"]
-        .as_array()
-        .cloned()
-        .expect("fixture atoms are array");
-    let mut atoms = Vec::new();
-    for index in 0..10_050 {
-        let mut atom = template_atom.clone();
-        atom["id"] = Value::String(format!("atom:background:{index}"));
-        atom["predicate"] = Value::String("backgroundSample".to_string());
-        atoms.push(atom);
-    }
-    atoms.extend(original_atoms);
-    archmap["atoms"] = Value::Array(atoms);
-    let archmap_path = out_dir.join("archmap_v2_large_background.json");
-    fs::write(
-        &archmap_path,
-        serde_json::to_vec_pretty(&archmap).expect("large archmap serializes"),
-    )
-    .expect("large archmap can be written");
-
-    run_sig0(&[
-        "analyze",
-        "--archmap",
-        archmap_path.to_str().expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy_cech_h1.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--measurement-profile",
-        root.join("measurement_profile_ag.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--law-surface",
-        root.join("law_surface_cech_h1_v052.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out-dir",
-        out_dir.to_str().expect("path is utf-8"),
-    ]);
-
-    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
-    let brief = fs::read_to_string(out_dir.join("archsig-insight-brief.md"))
-        .expect("insight brief is generated");
-    assert!(
-        viewer["finitePosetSite"]["atoms"]
-            .as_array()
-            .is_some_and(|atoms| atoms.len() <= 10_000),
-        "viewer payload must truncate background atom projection"
-    );
-    assert_eq!(
-        viewer["largeGraphStrategy"]["mode"], "cluster_aggregation",
-        "large graph strategy must switch when the source ArchMap crosses the atom threshold"
-    );
-    assert!(
-        viewer["omittedDetailCounts"]["omittedAtoms"]
-            .as_u64()
-            .is_some_and(|count| count > 0),
-        "viewer payload must report omitted background atoms"
-    );
-    for key in [
-        "omittedAtoms",
-        "omittedEdges",
-        "omittedContextMemberships",
-        "omittedCoverOverlaps",
-        "omittedSceneLayerObjects",
-        "omittedLabels",
-        "omittedSourceRefs",
-    ] {
-        assert!(
-            brief.contains(key),
-            "insight brief must include omitted detail count for {key}"
-        );
-    }
-    assert!(
-        viewer["largeGraphStrategy"]["topInsightEvidencePinning"]["preservedRefs"]
-            .as_array()
-            .is_some_and(|refs| !refs.is_empty()),
-        "top insight evidence must remain pinned while background atoms are truncated"
-    );
-    assert!(
-        viewer["finitePosetSite"]["atoms"]
-            .as_array()
-            .expect("viewer atoms are array")
-            .iter()
-            .any(
-                |atom| atom["normalizedAtomId"] == "atom:left-cech-section-value"
-                    || atom["sourceAtomId"] == "atom:left-cech-section-value"
-            ),
-        "top insight support atom must remain in the truncated viewer projection even when it appears after background atoms"
-    );
-}
-
-#[test]
 fn cli_analyze_v2_insight_artifacts_redact_local_source_refs() {
     let out_dir = temp_dir("ag-measurement-insight-source-redaction");
     let root = ag_measurement_root();
@@ -7353,16 +6564,8 @@ fn cli_analyze_v2_validation_failure_emits_blocking_insight_projection() {
         "validation failure must not emit a measurement packet"
     );
     let report = read_json(&out_dir.join("archsig-insight-report.json"));
-    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
     let manifest = read_json(&out_dir.join("archsig-run-manifest.json"));
-    let brief = fs::read_to_string(out_dir.join("archsig-insight-brief.md"))
-        .expect("validation brief is generated");
     assert_eq!(report["insightCards"][0]["kind"], "validation_failure");
-    assert_eq!(
-        viewer["decisionBar"]["conclusion"],
-        "VALIDATION_FAILED_BEFORE_MEASUREMENT"
-    );
-    assert_eq!(viewer["largeGraphStrategy"]["mode"], "validation_blocked");
     assert_eq!(manifest["mode"], "validation-failure");
     assert_eq!(
         manifest["conclusionCode"],
@@ -7376,11 +6579,6 @@ fn cli_analyze_v2_validation_failure_emits_blocking_insight_projection() {
     );
     assert!(manifest["inputDigests"]["archmap"]["sha256"].is_string());
     assert!(manifest["inputDigests"]["lawPolicy"]["sha256"].is_string());
-    assert!(
-        brief.contains("Validation failed before measurement")
-            && brief.contains("Do not infer beyond the listed claims and boundaries."),
-        "validation brief must be usable without measurement claims"
-    );
 }
 
 #[test]
@@ -7841,7 +7039,6 @@ fn cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth() {
             })
     );
     let report = read_json(&out_dir.join("archsig-insight-report.json"));
-    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
     assert!(
         report["gluingGeometry"]["forbiddenCages"]
             .as_array()
@@ -7865,209 +7062,8 @@ fn cli_analyze_v2_square_free_repair_outputs_hitting_sets_and_nsdepth() {
             }),
         "square-free repair fixture must project lower-bound repair candidate from related forbidden supports"
     );
-    assert_eq!(
-        viewer["aatGeometryOverlays"]["forbiddenCages"], report["gluingGeometry"]["forbiddenCages"],
-        "viewer overlay must carry forbidden cage geometry"
-    );
-    assert_eq!(
-        viewer["aatGeometryOverlays"]["repairMorphs"], report["gluingGeometry"]["repairMorphs"],
-        "viewer overlay must carry repair morph geometry"
-    );
 }
 
-#[test]
-fn cli_analyze_v2_projects_analytic_overlay_bundle_to_viewer_lane() {
-    let period_out = run_ag_measurement_fixture(
-        "m14-period-overlay",
-        "archmap_v2_period_stokes.json",
-        "law_policy_period.json",
-        "law_surface_ag_v052.json",
-    );
-    let period_packet = read_json(&period_out.join("archsig-measurement-packet.json"));
-    let period_report = read_json(&period_out.join("archsig-insight-report.json"));
-    let period_viewer = read_json(&period_out.join("archsig-atom-viewer-data.json"));
-    assert_eq!(
-        period_viewer["aatGeometryOverlays"]["analyticOverlayBundle"],
-        period_report["gluingGeometry"]["analyticOverlayBundle"],
-        "viewer data must carry the same allowlisted analytic overlay bundle as gluing geometry"
-    );
-    for expected in [
-        "strict-period-pairing@1",
-        "support-localized-transfer@1",
-        "graph-laplacian-hodge-proxy@1",
-        "curvature-transfer-perron-hotspot@1",
-        "ag.law-conflict-tor/lawConflicts",
-    ] {
-        assert!(
-            period_viewer["aatGeometryOverlays"]["analyticOverlayBundle"]["allowlist"]
-                .as_array()
-                .expect("allowlist is array")
-                .iter()
-                .any(|entry| entry.as_str() == Some(expected)),
-            "analytic overlay allowlist must contain {expected}"
-        );
-    }
-    assert_eq!(
-        period_packet["structuralVerdict"]
-            .as_array()
-            .expect("structuralVerdict is array")
-            .len(),
-        0,
-        "period overlay projection must not create structural verdict rows"
-    );
-    let period_overlay = overlay_by_kind(&period_viewer, "period_pairing_matrix");
-    assert_eq!(period_overlay["colorRole"], "analytic_reading");
-    assert_eq!(
-        period_overlay["periodPairingMatrix"],
-        serde_json::json!([[2.0, -1.0]])
-    );
-    assert_eq!(period_overlay["sourceRegime"], "analytic-measurement");
-    assert!(
-        period_overlay["nonClaim"]
-            .as_str()
-            .is_some_and(|text| text.contains("model-relative")),
-        "period overlay must carry model-relative non-claim"
-    );
-    assert_analytic_overlay_scene_active(&period_viewer);
-
-    let transfer_out = run_ag_measurement_fixture(
-        "m14-transfer-overlay",
-        "archmap_v2_support_transfer.json",
-        "law_policy_transfer.json",
-        "law_surface_ag_v052.json",
-    );
-    let transfer_packet = read_json(&transfer_out.join("archsig-measurement-packet.json"));
-    let transfer_viewer = read_json(&transfer_out.join("archsig-atom-viewer-data.json"));
-    assert_eq!(
-        transfer_packet["structuralVerdict"]
-            .as_array()
-            .expect("structuralVerdict is array")
-            .len(),
-        0,
-        "transfer overlay projection must not create structural verdict rows"
-    );
-    let transfer_overlay = overlay_by_kind(&transfer_viewer, "wasserstein_transfer_cost");
-    assert_eq!(transfer_overlay["colorRole"], "analytic_reading");
-    assert_eq!(transfer_overlay["transferResidue"], Value::from(0.790569));
-    assert_eq!(
-        transfer_overlay["wassersteinTransferCost"],
-        Value::from(3.5)
-    );
-    assert!(
-        transfer_overlay["nonClaim"]
-            .as_str()
-            .is_some_and(|text| text.contains("not W1 itself")),
-        "transfer overlay must not claim W1/global repair safety"
-    );
-
-    let laplacian_out = run_ag_measurement_fixture(
-        "m14-laplacian-overlay",
-        "archmap_v2_sheaf_laplacian.json",
-        "law_policy_laplacian.json",
-        "law_surface_ag_v052.json",
-    );
-    let laplacian_packet = read_json(&laplacian_out.join("archsig-measurement-packet.json"));
-    let laplacian_viewer = read_json(&laplacian_out.join("archsig-atom-viewer-data.json"));
-    assert_eq!(
-        laplacian_packet["structuralVerdict"]
-            .as_array()
-            .expect("structuralVerdict is array")
-            .len(),
-        1,
-        "spectral overlays must not add to the sheaf-laplacian structural verdict row"
-    );
-    let spectral_overlay = overlay_by_kind(&laplacian_viewer, "spectral_gap_proxy");
-    assert_eq!(spectral_overlay["colorRole"], "analytic_reading");
-    assert_eq!(spectral_overlay["spectralGap"], Value::from(2.0));
-    assert!(
-        spectral_overlay["nonClaim"]
-            .as_str()
-            .is_some_and(|text| text.contains("not measured_zero lawfulness")),
-        "spectral gap overlay must not be promoted to measured_zero"
-    );
-    let hotspot_overlay = overlay_by_kind(&laplacian_viewer, "curvature_spectrum_hotspot");
-    assert_eq!(hotspot_overlay["colorRole"], "analytic_reading");
-    assert_eq!(hotspot_overlay["sourceRegime"], "theorem-candidate");
-    assert!(
-        hotspot_overlay["hotspots"]
-            .as_array()
-            .is_some_and(|items| !items.is_empty()),
-        "hotspot overlay must be gated by an existing landed hotspot reading"
-    );
-    let spectrum_landscape = &laplacian_viewer["aatGeometryOverlays"]["spectrumLandscape"];
-    assert_eq!(
-        spectrum_landscape["schema"],
-        "archsig-spectrum-landscape/v0.5.4"
-    );
-    assert_eq!(spectrum_landscape["measurementStatus"], "proxy");
-    assert_eq!(spectrum_landscape["colorRole"], "analytic_reading");
-    assert_eq!(spectrum_landscape["axisPlacement"], "axisRef-deterministic");
-    assert_eq!(
-        spectrum_landscape["spectralRadiusNumeric"],
-        Value::from(2.0)
-    );
-    assert!(
-        spectrum_landscape["cells"]
-            .as_array()
-            .expect("spectrum cells is array")
-            .iter()
-            .any(|cell| cell["plainRole"] == "lawful_plain_measured_zero"
-                && cell["notLegacyStatusField"] == Value::Bool(true)),
-        "spectrum projection must draw cv=0 lawful plain cells without the legacy curvature status field"
-    );
-    assert!(
-        spectrum_landscape["hotspots"]
-            .as_array()
-            .expect("spectrum hotspots is array")
-            .iter()
-            .all(
-                |hotspot| hotspot["localDeviationSecondary"] == Value::Bool(true)
-                    && hotspot["measurementStatus"] == "proxy"
-            ),
-        "spectrum hotspots must remain secondary proxy deviations"
-    );
-
-    let tor_out = run_ag_measurement_fixture(
-        "m14-singularity-overlay",
-        "archmap_v2_law_conflict_tor.json",
-        "law_policy_tor.json",
-        "law_surface_ag_v052.json",
-    );
-    let tor_packet = read_json(&tor_out.join("archsig-measurement-packet.json"));
-    let tor_viewer = read_json(&tor_out.join("archsig-atom-viewer-data.json"));
-    assert_eq!(
-        tor_packet["structuralVerdict"]
-            .as_array()
-            .expect("structuralVerdict is array")
-            .len(),
-        1,
-        "singularity concentration overlay must not add to the Tor structural verdict row"
-    );
-    let concentration_overlay = overlay_by_kind(&tor_viewer, "singularity_concentration");
-    assert_eq!(concentration_overlay["colorRole"], "analytic_reading");
-    assert_eq!(concentration_overlay["deformationRegime"], "not_provided");
-    assert_eq!(concentration_overlay["concentrationCount"], Value::from(1));
-
-    let square_free_out = run_ag_measurement_fixture(
-        "m14-empty-overlay",
-        "archmap_v2_square_free_repair.json",
-        "law_policy_square_free.json",
-        "law_surface_ag_v052.json",
-    );
-    let square_free_viewer = read_json(&square_free_out.join("archsig-atom-viewer-data.json"));
-    assert!(
-        square_free_viewer["aatGeometryOverlays"]["analyticOverlayBundle"]["overlays"]
-            .as_array()
-            .is_some_and(Vec::is_empty),
-        "packets without M14 allowlisted readings must keep analytic overlays silent"
-    );
-    let inactive_scene = viewer_scene_by_id(&square_free_viewer, "analytic-overlay");
-    assert_eq!(inactive_scene["sceneStatus"], "not_active_for_packet");
-    assert_eq!(
-        inactive_scene["visualEncodings"][0]["colorRole"], "not_applicable",
-        "empty analytic overlay packet must not be rendered as a red error or structural color"
-    );
-}
 
 #[test]
 fn cli_analyze_v2_square_free_uses_law_surface_witnesses() {
@@ -9866,19 +8862,6 @@ fn cli_analyze_v2_harmonic_debt_requires_cost_model_for_lower_bound() {
             .all(|row| row["evaluator"] != "ag.harmonic-debt"),
         "harmonic debt must stay out of structural verdicts"
     );
-    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
-    assert!(
-        viewer["sagaDescent"]["stages"][1]["harmonicDebt"]
-            .as_array()
-            .is_some_and(|rows| rows.iter().any(|row| {
-                row["readingId"]
-                    .as_str()
-                    .is_some_and(|id| id.starts_with("analytic:harmonic-debt:"))
-                    && row["value"].is_object()
-            })),
-        "harmonic-debt analytic reading must reach the SAGA viewer with its object value"
-    );
-    assert_saga_viewer_contract(&viewer, &packet);
     let invariant = invariant_by_id(&packet, "harmonic-debt:profile:ag-harmonic-debt@1");
     assert_eq!(invariant["harmonicDebtNorm"], json!(0.707107));
     assert_eq!(invariant["essentialRepairLowerBound"], json!(0.353553));
@@ -10554,7 +9537,6 @@ fn cli_analyze_v2_period_stokes_audit_outputs_structural_verdicts() {
         ]);
 
         let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
-        let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
         let structural = packet["structuralVerdict"]
             .as_array()
             .expect("structural verdict is array");
@@ -10582,50 +9564,6 @@ fn cli_analyze_v2_period_stokes_audit_outputs_structural_verdicts() {
                     && reading["value"]["readingKind"] == "strict-period-pairing@1"),
             "strict-period-pairing must remain an analytic reading separate from the structural verdict"
         );
-        let period_stokes = &viewer["aatGeometryOverlays"]["periodStokes"];
-        assert_eq!(
-            period_stokes["schema"],
-            "archsig-period-stokes-meter/v0.5.4"
-        );
-        assert_eq!(period_stokes["sourceEvaluator"], "ag.period-stokes-audit");
-        assert_eq!(period_stokes["modelRelative"], Value::Bool(true));
-        let meters = period_stokes["meters"]
-            .as_array()
-            .expect("periodStokes meters is array");
-        assert_eq!(
-            meters.len(),
-            1,
-            "period audit fixture must project one meter"
-        );
-        let meter = &meters[0];
-        assert_eq!(meter["sourceEvaluator"], "ag.period-stokes-audit");
-        assert_eq!(meter["modelRelative"], Value::Bool(true));
-        assert_eq!(
-            meter["periodPairingMatrix"],
-            serde_json::json!([[2.0, -1.0]])
-        );
-        assert!(
-            meter["nonClaim"]
-                .as_str()
-                .is_some_and(|text| text.contains("creates no new structural verdict")),
-            "period meter must carry no-new-verdict non-claim"
-        );
-        if expected_verdict == "unknown" {
-            assert_eq!(meter["meterStatus"], "analytic_only");
-            assert_eq!(period_stokes["activeMeterCount"], Value::from(0));
-            assert_eq!(
-                viewer_scene_by_id(&viewer, "period-stokes")["sceneStatus"],
-                "not_active_for_packet",
-                "unknown strict coefficient audit must not render green structural closure"
-            );
-        } else {
-            assert_eq!(meter["meterStatus"], "structural_audit_projected");
-            assert_eq!(period_stokes["activeMeterCount"], Value::from(1));
-            assert_eq!(
-                viewer_scene_by_id(&viewer, "period-stokes")["sceneStatus"],
-                "active"
-            );
-        }
     }
 }
 
@@ -12073,71 +11011,6 @@ fn cli_analyze_v2_saga_grounded_emits_split_packet_and_detector() {
         grounded_row["reason"],
         "DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS"
     );
-    let grounded_viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
-    assert_saga_viewer_golden_fixture(&grounded_viewer, &packet, "lawful-firing");
-    let saga_descent = grounded_viewer["sagaDescent"]
-        .as_object()
-        .expect("viewer must expose sagaDescent projection");
-    let saga_descent_value = &grounded_viewer["sagaDescent"];
-    assert_eq!(
-        saga_descent["stages"].as_array().map(Vec::len),
-        Some(4),
-        "viewer projection must expose the four diagnostic stages"
-    );
-    assert!(
-        saga_descent["stages"][0]["rows"]
-            .as_array()
-            .is_some_and(|rows| rows
-                .iter()
-                .any(|row| row["evaluator"] == "ag.saga-grounded")),
-        "grounding stage must project the packet verdict row"
-    );
-    assert!(
-        saga_descent["leafFieldMap"]
-            .as_array()
-            .is_some_and(|items| items.iter().all(|item| {
-                item["viewerPath"].as_str().is_some()
-                    && item["packetPath"]
-                        .as_str()
-                        .is_some_and(|path| path.starts_with('/'))
-            })),
-        "every saga viewer leaf must carry a packet field mapping"
-    );
-    let mappings = saga_descent["leafFieldMap"]
-        .as_array()
-        .expect("leafFieldMap is an array");
-    for mapping in mappings {
-        let viewer_path = mapping["viewerPath"].as_str().expect("viewer path");
-        let packet_path = mapping["packetPath"].as_str().expect("packet path");
-        let viewer_value = value_at_viewer_path(saga_descent_value, viewer_path)
-            .unwrap_or_else(|| panic!("viewer mapping must resolve: {viewer_path}"));
-        let packet_value = value_at_json_pointer(&packet, packet_path)
-            .unwrap_or_else(|| panic!("packet mapping must resolve: {packet_path}"));
-        assert_eq!(
-            viewer_value, packet_value,
-            "viewer mapping must preserve the packet value: {viewer_path} <- {packet_path}"
-        );
-    }
-    for stage in saga_descent["stages"].as_array().expect("stages") {
-        for field in ["rows", "measurements", "harmonicDebt"] {
-            if let Some(values) = stage[field].as_array() {
-                let mut leaves = Vec::new();
-                for (index, value) in values.iter().enumerate() {
-                    collect_leaf_paths(
-                        value,
-                        &format!("stages[{}].{field}[{index}]", stage["order"]),
-                        &mut leaves,
-                    );
-                }
-                for leaf in leaves {
-                    assert!(
-                        mappings.iter().any(|mapping| mapping["viewerPath"] == leaf),
-                        "displayed SAGA leaf lacks packet mapping: {leaf}"
-                    );
-                }
-            }
-        }
-    }
 
     let mut bad_archmap = read_json(&root.join("archmap_v2.json"));
     bad_archmap["contexts"][0]["atoms"]
@@ -12231,63 +11104,6 @@ fn cli_analyze_v2_saga_grounded_emits_split_packet_and_detector() {
     );
 }
 
-#[test]
-fn cli_analyze_v2_viewer_saga_projection_preserves_descent_and_silence_rows() {
-    let root = ag_measurement_root();
-    let out_dir = run_saga_fixture_lock(
-        "ag-saga-viewer-descent-and-silence",
-        zero_plan_for_refinement_test(&root),
-    );
-    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
-    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
-    let saga = viewer["sagaDescent"].as_object().expect("saga projection");
-    assert!(
-        saga["stages"][1]["measurements"]
-            .as_array()
-            .is_some_and(|items| items.iter().any(|item| {
-                item["invariantId"] == "saga-descent:boundary-membership"
-                    && item["boundaryMembership"]["inB1"].is_boolean()
-            })),
-        "descent stage must project boundary membership from the packet"
-    );
-    assert!(
-        saga["stages"][1]["measurements"]
-            .as_array()
-            .is_some_and(|items| items.iter().any(|item| {
-                item["invariantId"] == "saga-descent:closure-diagnostics"
-                    && item["closureDiagnostics"].is_object()
-            })),
-        "descent stage must project closure diagnostics from the packet"
-    );
-    assert!(
-        saga["stages"][2]["rows"]
-            .as_array()
-            .is_some_and(|items| items
-                .iter()
-                .any(|item| item["status"] == "silence_by_design")),
-        "comparison stage must preserve silence_by_design when comparison data is absent"
-    );
-    let boundary_silence_count = packet["boundaryStatements"]
-        .as_array()
-        .map(|items| {
-            items
-                .iter()
-                .filter(|item| {
-                    item["kind"] == "silence_by_design"
-                        && item["id"].as_str().is_some_and(|id| {
-                            id.contains(":saga-") || id.contains(":harmonic-debt")
-                        })
-                })
-                .count()
-        })
-        .unwrap_or(0);
-    assert!(
-        saga["silenceRows"]
-            .as_array()
-            .is_some_and(|items| items.len() >= boundary_silence_count),
-        "viewer silence rows must preserve every packet boundary statement"
-    );
-}
 
 #[test]
 fn cli_rejects_archmap_v2_context_restriction_cycle() {
@@ -12498,7 +11314,6 @@ fn practical_rust_service_example_runs_current_analyze() {
     );
 
     let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
-    let viewer = read_json(&out_dir.join("archsig-atom-viewer-data.json"));
     let manifest = read_json(&out_dir.join("archsig-run-manifest.json"));
     assert_eq!(summary["schema"], "archsig-analysis-summary/v0.5.4");
     assert_eq!(
@@ -12507,32 +11322,6 @@ fn practical_rust_service_example_runs_current_analyze() {
     );
     assert_eq!(summary["structuralVerdictSummary"]["rowCount"], 3);
     assert_eq!(summary["structuralVerdictSummary"]["nonTerminalCount"], 2);
-
-    assert_eq!(viewer["schema"], "archsig-atom-viewer-data/v0.5.4");
-    assert_eq!(viewer["atomNodes"].as_array().map(Vec::len), Some(70));
-    assert_eq!(viewer["moleculeGroups"].as_array().map(Vec::len), Some(7));
-    assert_eq!(viewer["atomEdges"].as_array().map(Vec::len), Some(88));
-    assert_eq!(
-        viewer["viewerVisualScenes"].as_array().map(Vec::len),
-        Some(12)
-    );
-    assert_eq!(
-        viewer_scene_by_id(&viewer, "analytic-overlay")["sceneStatus"],
-        "not_active_for_packet"
-    );
-    assert_eq!(
-        viewer_scene_by_id(&viewer, "period-stokes")["sceneStatus"],
-        "not_active_for_packet"
-    );
-    assert_eq!(viewer["guidedTours"].as_array().map(Vec::len), Some(4));
-    assert_eq!(
-        viewer["sagaDescent"]["stages"][3]["status"],
-        "silence_by_design"
-    );
-    assert_eq!(
-        viewer["decisionBar"]["conclusion"],
-        "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
-    );
 
     assert_eq!(manifest["schema"], "archsig-run-manifest/v0.5.4");
     assert_eq!(manifest["mode"], "measurement");
@@ -13628,12 +12417,6 @@ fn cli_analyze_v2_cech_execution_plan_follows_declared_edge_binding() {
             .as_str()
             .is_some_and(|reference| reference.starts_with("law-surface:"))
     );
-    let section_report = read_json(&section_out.join("archsig-insight-report.json"));
-    let section_viewer = read_json(&section_out.join("archsig-atom-viewer-data.json"));
-    assert_eq!(
-        section_viewer["aatGeometryOverlays"]["gluingGeometry"],
-        section_report["gluingGeometry"]
-    );
 
     let mut invalid_surface = changed_surface.clone();
     invalid_surface["laws"][0]["witnessVariables"][0]["binding"]["edge"] =
@@ -13964,7 +12747,7 @@ fn cli_analyze_v2_cech_empty_selected_scope_rejects_unresolved_edge() {
             .unwrap()
             .iter()
             .any(|entry| entry["reasonCode"] == "empty_selected_scope"),
-        "viewer/report boundary digest must expose empty scope as a blocker"
+        "report boundary digest must expose empty scope as a blocker"
     );
 }
 
@@ -14849,39 +13632,6 @@ fn cli_compare_asserts_identical_and_verdict_row_transitions() {
         .unwrap()
         .iter()
         .any(|transition| transition["transition"] == "measured_obstruction_no_longer_recorded"));
-}
-
-#[test]
-fn cli_archsig_reader_default_law_policy_validates_against_current_registry() {
-    let out_dir = temp_dir("archsig-reader-default-law-policy");
-    let root = ag_measurement_root();
-    let report_path = out_dir.join("law-policy-validation.json");
-    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .and_then(Path::parent)
-        .expect("repository root");
-    run_sig0(&[
-        "law-policy",
-        "--law-policy",
-        repo_root
-            .join("tools/archsig/skills/archsig-reader/references/default_law_policy.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--measurement-profile",
-        ag_measurement_root()
-            .join("measurement_profile_ag.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--law-surface",
-        root.join("law_surface_ag_v052.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out",
-        report_path.to_str().expect("path is utf-8"),
-    ]);
-    let report = read_json(&report_path);
-    assert_eq!(report["summary"]["result"], "pass");
-    assert_eq!(report["summary"]["failedCheckCount"], 0);
 }
 
 #[test]
@@ -15818,70 +14568,6 @@ fn read_json(path: &Path) -> Value {
         .expect("json fixture parses")
 }
 
-fn value_at_viewer_path<'a>(root: &'a Value, path: &str) -> Option<&'a Value> {
-    let bytes = path.as_bytes();
-    let mut cursor = root;
-    let mut index = 0;
-    while index < bytes.len() {
-        if bytes[index] == b'.' {
-            index += 1;
-        }
-        let start = index;
-        while index < bytes.len() && bytes[index] != b'.' && bytes[index] != b'[' {
-            index += 1;
-        }
-        if start != index {
-            cursor = cursor.get(&path[start..index])?;
-        }
-        while index < bytes.len() && bytes[index] == b'[' {
-            index += 1;
-            let start = index;
-            while index < bytes.len() && bytes[index].is_ascii_digit() {
-                index += 1;
-            }
-            if start == index || index >= bytes.len() || bytes[index] != b']' {
-                return None;
-            }
-            let array_index = path[start..index].parse::<usize>().ok()?;
-            cursor = cursor.get(array_index)?;
-            index += 1;
-        }
-    }
-    Some(cursor)
-}
-
-fn value_at_json_pointer<'a>(root: &'a Value, pointer: &str) -> Option<&'a Value> {
-    let mut cursor = root;
-    if pointer.is_empty() {
-        return Some(cursor);
-    }
-    for segment in pointer.strip_prefix('/')?.split('/') {
-        let segment = segment.replace("~1", "/").replace("~0", "~");
-        cursor = match cursor {
-            Value::Array(values) => values.get(segment.parse::<usize>().ok()?)?,
-            Value::Object(values) => values.get(&segment)?,
-            _ => return None,
-        };
-    }
-    Some(cursor)
-}
-
-fn collect_leaf_paths(value: &Value, path: &str, leaves: &mut Vec<String>) {
-    match value {
-        Value::Object(object) => {
-            for (key, child) in object {
-                collect_leaf_paths(child, &format!("{path}.{key}"), leaves);
-            }
-        }
-        Value::Array(array) => {
-            for (index, child) in array.iter().enumerate() {
-                collect_leaf_paths(child, &format!("{path}[{index}]"), leaves);
-            }
-        }
-        _ => leaves.push(path.to_string()),
-    }
-}
-
 fn sidecar_measurement_profile_path(policy_path: &Path) -> PathBuf {
     if policy_path.file_name().and_then(|name| name.to_str()) == Some("law_policy.json") {
         policy_path.with_file_name("measurement_profile.json")
@@ -16053,110 +14739,6 @@ fn saga_row<'a>(packet: &'a Value, law: &str) -> &'a Value {
         .iter()
         .find(|row| row["evaluator"] == "ag.saga-descent" && row["law"] == law)
         .unwrap_or_else(|| panic!("missing saga row {law}"))
-}
-
-fn assert_saga_viewer_contract(viewer: &Value, packet: &Value) {
-    assert_eq!(viewer["schema"], "archsig-atom-viewer-data/v0.5.4");
-    let saga = viewer["sagaDescent"]
-        .as_object()
-        .expect("sagaDescent viewer section");
-    assert_eq!(saga["sourcePacketRef"], "archsig-measurement-packet.json");
-    let stages = saga["stages"].as_array().expect("four SAGA stages");
-    assert_eq!(stages.len(), 4);
-    for (order, (expected_id, expected_role)) in [
-        ("grounding", "grounding"),
-        ("descent", "descent-measurement"),
-        ("comparison", "transfer-comparison"),
-        ("silence", "silence"),
-    ]
-    .iter()
-    .enumerate()
-    {
-        assert_eq!(stages[order]["order"], order);
-        assert_eq!(stages[order]["stageId"], *expected_id);
-        assert_eq!(stages[order]["visualRole"], *expected_role);
-    }
-    let mappings = saga["leafFieldMap"].as_array().expect("SAGA leafFieldMap");
-    assert!(
-        !mappings.is_empty(),
-        "SAGA golden fixture must expose mappings"
-    );
-    let saga_value = Value::Object(saga.clone());
-    let mut viewer_leaves = Vec::new();
-    for (index, stage) in stages.iter().enumerate() {
-        for field in ["rows", "measurements", "harmonicDebt"] {
-            if let Some(value) = stage.get(field) {
-                collect_leaf_paths(
-                    value,
-                    &format!("stages[{index}].{field}"),
-                    &mut viewer_leaves,
-                );
-            }
-        }
-    }
-    collect_leaf_paths(&saga["silenceRows"], "silenceRows", &mut viewer_leaves);
-    let mapped_viewer_paths = mappings
-        .iter()
-        .map(|mapping| mapping["viewerPath"].as_str().expect("viewer mapping path"))
-        .collect::<BTreeSet<_>>();
-    for mapping in mappings {
-        let viewer_path = mapping["viewerPath"].as_str().expect("viewer mapping path");
-        let packet_path = mapping["packetPath"].as_str().expect("packet JSON pointer");
-        assert!(viewer_path.starts_with("stages") || viewer_path.starts_with("silenceRows"));
-        let viewer_value = value_at_viewer_path(&saga_value, viewer_path)
-            .unwrap_or_else(|| panic!("viewer path must resolve: {viewer_path}"));
-        let packet_value = value_at_json_pointer(packet, packet_path)
-            .unwrap_or_else(|| panic!("packet pointer must resolve: {packet_path}"));
-        assert_eq!(
-            viewer_value, packet_value,
-            "viewer mapping changed packet evidence"
-        );
-    }
-    for viewer_path in viewer_leaves {
-        assert!(
-            mapped_viewer_paths.contains(viewer_path.as_str()),
-            "every displayed SAGA leaf must have a packet mapping: {viewer_path}"
-        );
-    }
-    assert!(saga["nonClaims"].as_array().is_some());
-}
-
-fn assert_saga_viewer_golden_fixture(viewer: &Value, packet: &Value, fixture_id: &str) {
-    assert_saga_viewer_contract(viewer, packet);
-    let manifest = read_json(&ag_measurement_root().join("saga_viewer_golden_contract_v053.json"));
-    assert_eq!(
-        manifest["schema"],
-        "archsig-saga-viewer-golden-contract/v0.5.4"
-    );
-    let expected_stages = manifest["stages"].as_array().expect("golden stages");
-    let stages = viewer["sagaDescent"]["stages"]
-        .as_array()
-        .expect("viewer stages");
-    assert_eq!(expected_stages.len(), stages.len());
-    for (expected, actual) in expected_stages.iter().zip(stages) {
-        assert_eq!(actual["order"], expected["order"]);
-        assert_eq!(actual["stageId"], expected["stageId"]);
-        assert_eq!(actual["visualRole"], expected["visualRole"]);
-    }
-    let fixture = manifest["fixtures"]
-        .get(fixture_id)
-        .unwrap_or_else(|| panic!("missing SAGA golden fixture {fixture_id}"));
-    if let Some(chart_count) = fixture.get("chartCount").and_then(Value::as_u64) {
-        assert_eq!(chart_count, 3, "circle-nerve fixture must use three charts");
-    }
-    for (stage_id, expected_status) in fixture["stageStatus"]
-        .as_object()
-        .expect("golden stage statuses")
-    {
-        let stage = stages
-            .iter()
-            .find(|stage| stage["stageId"] == *stage_id)
-            .unwrap_or_else(|| panic!("golden stage is missing {stage_id}"));
-        assert_eq!(
-            stage["status"], *expected_status,
-            "golden status for {stage_id}"
-        );
-    }
 }
 
 fn assert_saga_summary_has_no_class_vocabulary(summary: &Value) {
@@ -16462,62 +15044,6 @@ fn assert_byte_identical_analysis_artifacts(first_out: &Path, second_out: &Path)
             "{artifact} must be byte-identical across repeated SAGA fixture runs"
         );
     }
-}
-
-fn run_ag_measurement_fixture(
-    case_id: &str,
-    archmap: &str,
-    law_policy: &str,
-    law_surface: &str,
-) -> PathBuf {
-    let root = ag_measurement_root();
-    let out_dir = temp_dir(case_id);
-    run_sig0(&[
-        "analyze",
-        "--archmap",
-        root.join(archmap).to_str().expect("path is utf-8"),
-        "--law-policy",
-        root.join(law_policy).to_str().expect("path is utf-8"),
-        "--measurement-profile",
-        test_measurement_profile_path(Path::new(
-            root.join(law_policy).to_str().expect("path is utf-8"),
-        ))
-        .to_str()
-        .expect("path is utf-8"),
-        "--law-surface",
-        root.join(law_surface).to_str().expect("path is utf-8"),
-        "--out-dir",
-        out_dir.to_str().expect("path is utf-8"),
-    ]);
-    out_dir
-}
-
-fn overlay_by_kind<'a>(viewer: &'a Value, overlay_kind: &str) -> &'a Value {
-    viewer["aatGeometryOverlays"]["analyticOverlayBundle"]["overlays"]
-        .as_array()
-        .expect("analytic overlay bundle overlays is array")
-        .iter()
-        .find(|overlay| overlay["overlayKind"] == overlay_kind)
-        .unwrap_or_else(|| panic!("missing analytic overlay kind {overlay_kind}"))
-}
-
-fn viewer_scene_by_id<'a>(viewer: &'a Value, scene_id: &str) -> &'a Value {
-    viewer["viewerVisualScenes"]
-        .as_array()
-        .expect("viewerVisualScenes is array")
-        .iter()
-        .find(|scene| scene["sceneId"] == scene_id)
-        .unwrap_or_else(|| panic!("missing viewer scene {scene_id}"))
-}
-
-fn assert_analytic_overlay_scene_active(viewer: &Value) {
-    let scene = viewer_scene_by_id(viewer, "analytic-overlay");
-    assert_eq!(scene["sceneStatus"], "active");
-    assert_eq!(scene["visualEncodings"][0]["colorRole"], "analytic_reading");
-    assert_eq!(
-        scene["gluingGeometryRefs"]["analyticOverlayBundleRef"],
-        "gluingGeometry.analyticOverlayBundle"
-    );
 }
 
 fn invariant_by_id<'a>(packet: &'a Value, invariant_id: &str) -> &'a Value {
