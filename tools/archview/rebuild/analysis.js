@@ -588,7 +588,6 @@ function validateFindingProvenance(documents, index, bridges, issues) {
     const selectedInvariants = (evidence.computedInvariantRefs || []).map((ref) => invariantByRef.get(ref)).filter(Boolean);
     const explicitRowSources = new Set(rows.flatMap((row) => row.evidence?.sourceRefs || []));
     const allowedAtoms = new Set(collectNamedRefs(selectedInvariants, new Set(["supportAtomRefs", "mismatchSupportRefs", "witnessSupportRefs", "atomRefs", "atomRef"])).map((ref) => rawRef(ref, "atoms")));
-    index.atoms.forEach((atom) => { if ((atom.refs || []).some((ref) => explicitRowSources.has(ref))) allowedAtoms.add(atom.id); });
     (evidence.atomRefs || []).forEach((ref, refPosition) => { if (!allowedAtoms.has(rawRef(ref, "atoms"))) issues.push(issue(`${path}.atomRefs[${refPosition}]`, `Finding Atom is not supported by an explicit selected verdict or invariant reference.`, null, ref)); });
     const allowedContexts = new Set(collectNamedRefs(selectedInvariants, new Set(["contextRefs", "contextRef", "selectedContexts", "sourceContext", "targetContext"])).map((ref) => rawRef(ref, "contexts")));
     collectNamedRefs(selectedInvariants, new Set(["edgeId", "edgeRefs", "unobservedEdgeRefs"])).forEach((edge) => {
@@ -642,7 +641,16 @@ function validateOptionalArtifacts(documents, issues) {
       requireObjectArray(documents.gate.ruleOutcomes, `${FILES.gate}.ruleOutcomes`, ["ruleId", "scope", "status"], issues);
       if (!(documents.gate.ruleOutcomes || []).length) issues.push(issue(`${FILES.gate}.ruleOutcomes`, "An evaluated gate report must contain rule outcomes."));
       (documents.gate.ruleOutcomes || []).forEach((row, position) => {
-        if (row?.status === "evaluated") requireObjectArray(row.appliedMapping, `${FILES.gate}.ruleOutcomes[${position}].appliedMapping`, ["action"], issues);
+        const path = `${FILES.gate}.ruleOutcomes[${position}]`;
+        if (!new Set(["absolute", "introduced-by-change"]).has(row?.scope)) issues.push(issue(`${path}.scope`, "Gate rule scope is not in the producer vocabulary.", null, row?.scope));
+        if (!new Set(["evaluated", "not_applicable"]).has(row?.status)) issues.push(issue(`${path}.status`, "Gate rule status is not in the producer vocabulary.", null, row?.status));
+        if (row?.status === "evaluated") requireObjectArray(row.appliedMapping, `${path}.appliedMapping`, ["action"], issues);
+        if (row?.status === "not_applicable") {
+          if (row.scope !== "introduced-by-change") issues.push(issue(`${path}.scope`, "Only introduced-by-change rules can be not_applicable.", "introduced-by-change", row.scope));
+          requireString(row.reason, `${path}.reason`, issues);
+          if (row.appliedMapping !== undefined) issues.push(issue(`${path}.appliedMapping`, "A not_applicable gate outcome cannot contain applied mappings."));
+          if (documents.comparison) issues.push(issue(`${path}.status`, "An introduced-by-change rule must be evaluated when a comparison report is supplied.", "evaluated", row.status));
+        }
       });
       (documents.gate.policyValidation || []).forEach((check, position) => { if (check?.result !== "pass") issues.push(issue(`${FILES.gate}.policyValidation[${position}].result`, "An evaluated gate report requires passing policy validation checks.", "pass", check?.result)); });
       const actions = (documents.gate.ruleOutcomes || []).flatMap((row) => row?.appliedMapping || []).map((row) => row?.action);
@@ -818,6 +826,7 @@ export async function validateAnalysisBundle(documents, architectureIndex) {
       && canonicalJson(run.componentFingerprints) === canonicalJson(documents.manifest.componentFingerprints)
       && run.measurementPacket?.sha256 === packetDigest);
     if (!compatibleSides.length) throw new AnalysisValidationError("mismatch", [issue(`${FILES.comparison}.inputDigests`, "Comparison report does not bind either run to the loaded measurement run.")]);
+    if (documents.gate && !compatibleSides.some(({ side }) => side === "head")) throw new AnalysisValidationError("mismatch", [issue(`${FILES.comparison}.inputDigests.headRun`, "A gate-bound comparison must bind its complete head run to the loaded measurement run.")]);
     comparisonSides = compatibleSides.map(({ side }) => side);
     const verdictByRef = new Map(documents.packet.structuralVerdict.map((row) => [row.verdictRef, row]));
     const verdictByKey = new Map(documents.packet.structuralVerdict.map((row) => [comparisonRowKey(row), row]));

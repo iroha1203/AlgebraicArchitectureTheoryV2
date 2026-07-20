@@ -635,6 +635,11 @@ async function main() {
         const unrelatedContext = index.contexts.find((context) => context.atoms.includes(unrelatedAtom.id));
         const arbitraryEvidenceCard = { ...insight.insightCards[0], id: 'insight:browser:arbitrary-evidence', evidence: { ...insight.insightCards[0].evidence, atomRefs: [normalizedAtomId(unrelatedAtom.id)], contextRefs: [normalizedContextId(unrelatedContext.id)], sourceRefs: [unrelatedSource] } };
         const arbitraryEvidenceState = await window.__archview.loadAnalysisObject({ ...bundle, insight: { ...insight, insightCards: [arbitraryEvidenceCard], actionQueue: [] } }, 'arbitrary evidence cluster bundle');
+        const sharedSourceAtom = index.atoms.find((atom) => atom.id !== index.atoms[0].id && atom.refs.some((ref) => index.atoms[0].refs.includes(ref)));
+        const sharedSource = sharedSourceAtom.refs.find((ref) => index.atoms[0].refs.includes(ref));
+        const sharedSourceContext = index.contexts.find((context) => context.atoms.includes(sharedSourceAtom.id));
+        const sharedSourceCard = { ...insight.insightCards[0], id: 'insight:browser:shared-source-sibling', evidence: { ...insight.insightCards[0].evidence, atomRefs: [normalizedAtomId(sharedSourceAtom.id)], contextRefs: [normalizedContextId(sharedSourceContext.id)], sourceRefs: [sharedSource] } };
+        const sharedSourceState = await window.__archview.loadAnalysisObject({ ...bundle, insight: { ...insight, insightCards: [sharedSourceCard], actionQueue: [] } }, 'shared source sibling Atom bundle');
         const acceptedPathEvidence = {
           candidateStatus: acceptedCandidateState.status,
           candidateClassifications: acceptedCandidateClassifications,
@@ -667,6 +672,7 @@ async function main() {
           sameEvaluatorStatus: sameEvaluatorState.status,
           arbitraryAtomStatus: arbitraryAtomState.status,
           arbitraryEvidenceStatus: arbitraryEvidenceState.status,
+          sharedSourceStatus: sharedSourceState.status,
         };
         const malformedJsonState = await window.__archview.loadAnalysisFiles([new File(['{'], 'archsig-run-manifest.json', { type: 'application/json' })], 'malformed JSON directory');
         const malformedJson = { status: malformedJsonState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
@@ -732,6 +738,15 @@ async function main() {
         const duplicateGate = { ...gate, ruleOutcomes: [{ ...gate.ruleOutcomes[0], appliedMapping: gateMappings.map(() => gateMappings[0]) }] };
         const duplicateGateState = await window.__archview.loadAnalysisObject({ ...bundle, gate: duplicateGate }, 'duplicate gate mapping bundle');
         const duplicateGateMapping = { status: duplicateGateState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
+        const forgedGate = { ...gate, ruleOutcomes: [{ ruleId: 'browser-forged', scope: 'forged', status: 'skipped' }] };
+        const forgedGateState = await window.__archview.loadAnalysisObject({ ...bundle, gate: forgedGate }, 'forged gate vocabulary bundle');
+        const forgedGateVocabulary = { status: forgedGateState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
+        const forgedHeadRun = { ...comparison.inputDigests.headRun, runId: 'run:forged-head', archmap: { ...comparison.inputDigests.headRun.archmap, sha256: '9'.repeat(64) } };
+        const forgedHeadComparison = { ...comparison, comparability: { level: 'verdict-row' }, inputDigests: { ...comparison.inputDigests, headRun: forgedHeadRun } };
+        const forgedHeadDigest = await sha256Hex(forgedHeadComparison);
+        const forgedHeadGate = { ...gate, inputDigests: { ...gate.inputDigests, comparisonReport: { ...gate.inputDigests.comparisonReport, sha256: forgedHeadDigest } } };
+        const forgedHeadState = await window.__archview.loadAnalysisObject({ ...bundle, comparison: forgedHeadComparison, gate: forgedHeadGate }, 'forged comparison head bundle');
+        const forgedComparisonHead = { status: forgedHeadState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
         const missingTransitionState = await window.__archview.loadAnalysisObject({ ...bundle, gate: undefined, comparison: { ...comparison, verdictTransitions: comparisonTransitions.slice(0, 1) } }, 'missing comparison transition bundle');
         const missingTransition = { status: missingTransitionState.status, issues: [...document.querySelectorAll('#analysis-issues li')].map((item) => item.textContent) };
         const invalidTransition = { rowKey: 'browser|invalid', baseRowRef: 'structuralVerdict/browser/missing', headRowRef: 'structuralVerdict/browser/measured', baseVerdict: 'measured_nonzero', headVerdict: 'measured_nonzero', transition: 'preexisting_recorded_row', introducedByChangeCategory: 'preexisting', deltaRefs: [], discipline: comparisonDiscipline };
@@ -782,7 +797,7 @@ async function main() {
         await window.__archview.loadUrl('./fixtures/vertical-slice.archmap.json');
         const absent = { status: window.__archviewState.analysis.status, label: document.querySelector('#analysis-input-status').textContent };
         return {
-          accepted, analysisTask, acceptedPathEvidence, malformedJson, duplicateKey, schemaMismatch, invalidProfile, incompleteDigests, componentMismatch, runIdMismatch, mismatch, unresolved, normalizedInternal, swappedNormalized, invalidRow, invalidCard, forgedConclusion, staleVerdictRef, staleAssumptionRef, unresolvedEdge, unresolvedUnobservedEdge, observedAsUnobserved, invalidRef, unresolvedWitness, malformedGate, malformedComparison, gateMismatch, comparisonMismatch, duplicateGateMapping, missingTransition, transitionMismatch, mutationIsolation, numericCanonical, mixedDirectory, malformedUrl, staleRace, redirected, crossOrigin, absent,
+          accepted, analysisTask, acceptedPathEvidence, malformedJson, duplicateKey, schemaMismatch, invalidProfile, incompleteDigests, componentMismatch, runIdMismatch, mismatch, unresolved, normalizedInternal, swappedNormalized, invalidRow, invalidCard, forgedConclusion, staleVerdictRef, staleAssumptionRef, unresolvedEdge, unresolvedUnobservedEdge, observedAsUnobserved, invalidRef, unresolvedWitness, malformedGate, malformedComparison, gateMismatch, comparisonMismatch, duplicateGateMapping, forgedGateVocabulary, forgedComparisonHead, missingTransition, transitionMismatch, mutationIsolation, numericCanonical, mixedDirectory, malformedUrl, staleRace, redirected, crossOrigin, absent,
         };
       })()`,
     });
@@ -831,7 +846,7 @@ async function main() {
     if (!acceptedEvidence.mixedEdgeVisuals.some((row) => row.supported && row.color === 0xb87932) || !acceptedEvidence.mixedEdgeVisuals.some((row) => row.supported && row.color === 0x54799a) || !acceptedEvidence.unmeasuredEdgeVisuals.some((row) => row.supported && row.color === 0x7c7b76)) {
       throw new Error(`Relation support colors were not applied to rendered Three.js materials: ${JSON.stringify(acceptedEvidence)}`);
     }
-    if (acceptedEvidence.blockedGateStatus !== "accepted" || acceptedEvidence.blockedGateColor !== "rgb(161, 58, 50)" || acceptedEvidence.contradictoryVerdictStatus !== "malformed" || acceptedEvidence.unknownGateStatus !== "malformed" || acceptedEvidence.inconsistentGateStatus !== "malformed" || acceptedEvidence.invalidObservationStatus !== "malformed" || acceptedEvidence.mixedProvenanceStatus !== "unresolved" || acceptedEvidence.sameEvaluatorStatus !== "unresolved" || acceptedEvidence.arbitraryAtomStatus !== "unresolved" || acceptedEvidence.arbitraryEvidenceStatus !== "unresolved") {
+    if (acceptedEvidence.blockedGateStatus !== "accepted" || acceptedEvidence.blockedGateColor !== "rgb(161, 58, 50)" || acceptedEvidence.contradictoryVerdictStatus !== "malformed" || acceptedEvidence.unknownGateStatus !== "malformed" || acceptedEvidence.inconsistentGateStatus !== "malformed" || acceptedEvidence.invalidObservationStatus !== "malformed" || acceptedEvidence.mixedProvenanceStatus !== "unresolved" || acceptedEvidence.sameEvaluatorStatus !== "unresolved" || acceptedEvidence.arbitraryAtomStatus !== "unresolved" || acceptedEvidence.arbitraryEvidenceStatus !== "unresolved" || acceptedEvidence.sharedSourceStatus !== "unresolved") {
       throw new Error(`Contradictory verdict, gate decision, or relation observation was accepted: ${JSON.stringify(acceptedEvidence)}`);
     }
     if (analysisValue.malformedJson.status !== "malformed" || !analysisValue.malformedJson.issues.some((entry) => entry.includes("not valid JSON")) || analysisValue.schemaMismatch.status !== "malformed" || !analysisValue.schemaMismatch.issues.some((entry) => entry.includes("must use archsig-analysis-summary/v0.5.4"))) {
@@ -840,7 +855,7 @@ async function main() {
     if (analysisValue.duplicateKey.status !== "malformed" || !analysisValue.duplicateKey.issues.some((entry) => entry.includes("Duplicate object key")) || analysisValue.invalidRow.status !== "malformed" || analysisValue.invalidCard.status !== "malformed" || analysisValue.forgedConclusion.status !== "malformed") {
       throw new Error(`Duplicate keys, invalid rows, or forged conclusions were accepted: ${JSON.stringify(analysisValue)}`);
     }
-    if (analysisValue.duplicateGateMapping.status !== "mismatch" || analysisValue.missingTransition.status !== "mismatch") {
+    if (analysisValue.duplicateGateMapping.status !== "mismatch" || analysisValue.forgedGateVocabulary.status !== "malformed" || analysisValue.forgedComparisonHead.status !== "mismatch" || !analysisValue.forgedComparisonHead.issues.some((entry) => entry.includes("complete head run")) || analysisValue.missingTransition.status !== "mismatch") {
       throw new Error(`Incomplete comparison or duplicate gate mappings were accepted: ${JSON.stringify(analysisValue)}`);
     }
     if (analysisValue.staleVerdictRef.status !== "malformed" || !analysisValue.staleVerdictRef.issues.some((entry) => entry.includes("does not identify a structural verdict"))) {
