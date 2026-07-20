@@ -82,7 +82,8 @@ canonical `StandardArchitectureScheme`; ringed and atlas data are recovered
 from those owners rather than from a legacy Scheme package.
 -/
 structure ArchitectureStratum {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {S : Site.AATSite A} (P : StratumReadingParameter S) (k : Type v) [CommRing k] where
+    {S : Site.AATSite A} (P : StratumReadingParameter S) (k : Type v) [CommRing k] :
+    Type (max (max (max (max (u + 1) (v + 1)) w) x) (y + 1)) where
   raw : LawAlgebra.RawAmbientRestrictionSystem S k
   [sheafify : HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
   geometry :
