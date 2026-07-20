@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>ArchView — Paper Atlas</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div id="archview-app" class="app-shell" data-mode="architecture" data-phase="booting">
+    <header class="topbar">
+      <div class="brand" aria-label="ArchView">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+          <path d="M4 23 12 7l7 10 4-8 5 14M7 18h19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>ArchView</span>
+      </div>
+
+      <dl class="repository-meta" aria-label="Current scope">
+        <div><dt>Repository</dt><dd id="repository-name">No repository loaded</dd></div>
+        <div><dt>Revision</dt><dd id="revision-name">—</dd></div>
+        <div><dt>Cover</dt><dd id="cover-name">No cover selected</dd></div>
+      </dl>
+
+      <nav class="mode-switcher" aria-label="Workspace mode">
+        <button type="button" data-mode-button="architecture" aria-pressed="true">Architecture</button>
+        <button type="button" data-mode-button="analysis" aria-pressed="false">Analysis</button>
+        <button type="button" data-mode-button="improve" aria-pressed="false">Improve</button>
+      </nav>
+    </header>
+
+    <div class="workspace">
+      <aside class="scope-explorer" aria-labelledby="scope-heading">
+        <div class="panel-heading">
+          <p class="eyebrow">Scope Explorer</p>
+          <h1 id="scope-heading">Architecture index</h1>
+        </div>
+
+        <label class="search-field">
+          <span class="sr-only">Search architecture facts</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+          <input type="search" placeholder="Search after loading" disabled>
+        </label>
+
+        <section aria-labelledby="covers-heading">
+          <h2 id="covers-heading">Covers</h2>
+          <p class="empty-list">No covers loaded</p>
+        </section>
+        <section aria-labelledby="contexts-heading">
+          <h2 id="contexts-heading">Contexts</h2>
+          <p class="empty-list">No contexts loaded</p>
+        </section>
+        <section aria-labelledby="subjects-heading">
+          <h2 id="subjects-heading">Subjects</h2>
+          <p class="empty-list">No subjects loaded</p>
+        </section>
+        <section aria-labelledby="findings-heading">
+          <h2 id="findings-heading">Findings</h2>
+          <p class="empty-list">No analysis loaded</p>
+        </section>
+      </aside>
+
+      <main class="atlas-panel" aria-label="3D Atom Atlas">
+        <div class="atlas-toolbar">
+          <nav class="breadcrumb" aria-label="Semantic zoom">
+            <span>Cover</span><span aria-hidden="true">›</span>
+            <span>Context</span><span aria-hidden="true">›</span>
+            <span>Subject</span><span aria-hidden="true">›</span>
+            <span>Atom</span>
+          </nav>
+          <div class="view-controls" aria-label="Camera views">
+            <button type="button" data-view="isometric" aria-pressed="true">3D</button>
+            <button type="button" data-view="top" aria-pressed="false">Top</button>
+            <button type="button" data-view="front" aria-pressed="false">Front</button>
+            <button type="button" data-view="reset">Reset</button>
+          </div>
+        </div>
+
+        <div id="atlas-canvas-host" class="atlas-canvas-host" aria-label="Empty Paper Atlas canvas"></div>
+
+        <div id="atlas-empty-state" class="atlas-empty-state" aria-live="polite">
+          <p class="atlas-kicker">Architecture Atlas</p>
+          <h2 id="empty-state-title">No architecture loaded</h2>
+          <p id="empty-state-copy">Load an ArchMap in the next implementation stage to compose Contexts and Atoms.</p>
+        </div>
+
+        <div id="webgl-error" class="render-error" role="alert" hidden>
+          <p class="atlas-kicker">Renderer unavailable</p>
+          <h2>Paper Atlas could not start</h2>
+          <p id="webgl-error-message">WebGL is unavailable in this browser.</p>
+          <p>The architecture outline remains available when data is loaded.</p>
+        </div>
+
+        <div class="compass" aria-label="Atlas orientation: north is up">
+          <span>N</span>
+          <svg viewBox="0 0 42 42" aria-hidden="true"><circle cx="21" cy="21" r="17"/><path d="m21 5 4 16-4 16-4-16Z"/></svg>
+        </div>
+        <p class="visual-channel-note">Paper surface · decoration only</p>
+      </main>
+
+      <aside class="inspector" aria-labelledby="inspector-heading">
+        <div class="panel-heading">
+          <p class="eyebrow">Inspector</p>
+          <h2 id="inspector-heading">Architecture inspector</h2>
+        </div>
+
+        <section>
+          <h3>What is this?</h3>
+          <p id="inspector-summary">Select a Context or Atom after loading an ArchMap.</p>
+        </section>
+        <section>
+          <h3>Architecture facts</h3>
+          <p class="empty-list">No selection</p>
+        </section>
+        <section>
+          <h3>Analysis evidence</h3>
+          <p id="analysis-status" class="empty-list">No analysis loaded</p>
+        </section>
+        <section>
+          <h3>Source targets</h3>
+          <p id="source-status" class="empty-list">No source selected</p>
+        </section>
+        <details>
+          <summary>Technical details</summary>
+          <dl class="technical-record">
+            <div><dt>Mode</dt><dd id="technical-mode">architecture</dd></div>
+            <div><dt>Renderer</dt><dd id="renderer-status">Starting</dd></div>
+            <div><dt>Visual channel</dt><dd>decoration</dd></div>
+          </dl>
+        </details>
+      </aside>
+    </div>
+
+    <footer class="source-drawer" aria-label="Source target drawer">
+      <p class="eyebrow">Selected source</p>
+      <dl>
+        <div><dt>Path</dt><dd>—</dd></div>
+        <div><dt>Symbol</dt><dd>—</dd></div>
+        <div><dt>Line</dt><dd>—</dd></div>
+      </dl>
+      <p class="resolution-level">UNRESOLVED</p>
+    </footer>
+  </div>
+
+  <noscript>ArchView requires JavaScript to initialize the Paper Atlas.</noscript>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.185.1/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.185.1/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module">
+    const showBootstrapError = (error) => {
+      const root = document.getElementById("archview-app");
+      const panel = document.getElementById("webgl-error");
+      const message = document.getElementById("webgl-error-message");
+      root.dataset.phase = "error";
+      panel.hidden = false;
+      message.textContent = `Initialization failed: ${error?.message || "Unknown error"}`;
+    };
+    import(`./app.js${location.search}`).then(({ startArchView }) => startArchView()).catch(showBootstrapError);
+  </script>
+</body>
+</html>

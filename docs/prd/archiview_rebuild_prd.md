@@ -139,6 +139,8 @@ Method / line
 - 将来予測
 - runtime profiler
 - IDEの代替
+- source本文・snippetの読み込みまたは表示
+- IDE / editorへのnavigation
 - 「このファイルを直せ」という根拠のない自動判断
 - arbitrary risk score
 - 重要度や健全性の推測
@@ -371,6 +373,44 @@ Inspectorの情報順序は、どの要素を選んでも固定します。
 
 一般ユーザーは上から読み、AATやartifactを確認したいユーザーは下まで開けます。
 
+## 8.4 Paper Atlas Visual Direction
+
+新ArchViewのvisual designは、**Paper Atlas**を採用します。
+
+![ArchView Paper Atlas design comp](assets/archview-paper-atlas-design-comp.png)
+
+中心となる比喩は、サイバー空間や監視画面ではなく、**研究者の机に広げた立体地図帳**です。
+難解な対象を威圧的に見せず、観察、探索、比較、根拠確認を落ち着いて行える画面にします。
+
+| 対象 | Visual direction |
+|---|---|
+| Canvas | 温かいivoryを基調とした紙面。紙の質感はごく薄く、可読性を妨げない |
+| Context | matteな紙、vellum、淡い石膏模型のような薄いplate |
+| Shared support | tracing paperが重なったような半透明領域 |
+| Restriction | 細く正確なgraphiteの製図線とdirection marker |
+| Atom | Atom kindごとに形が異なる、小さなmatteの地図記号・標本marker |
+| Selection | 発光ではなく、落ち着いたindigoのringとfocus-plus-context |
+| Analysis state | mineral blue、oxidized rust、subdued botanical greenを、明示された測定状態にだけ使用 |
+| Inspector | 博物館の展示labelやatlasの索引に近い、短く階層的な情報表示 |
+| Technical data | catalog recordとして読めるmonospace表示 |
+
+Context plateの位置、広さ、外形は、明示されたContext membership、Atom配置、restrictionから
+決定論的に構成します。紙の繊維、表面roughness、薄い厚み、自然な影は視認性を補助するmaterial表現であり、
+Law違反、重要度、測定値を表しません。
+
+次の表現は採用しません。
+
+- dark canvasを既定とするcyber / hacker aesthetic
+- neon、常時発光するedge、hologram
+- particle、常時回転、脈動するwarning
+- sci-fi HUD風の過密な数値表示
+- decorativeなnetwork edgeや、入力から説明できない地形
+- 過度なglassmorphism、鏡面material、強いbloom
+
+このdesign compはvisual directionの正本です。ただし、画像内の個別label、件数、座標、装飾形状は
+実データcontractではありません。実装時にdesign compとHonesty and Fidelity Requirementsが衝突する場合は、
+入力artifactへの追跡可能性と段階的縮退を優先します。
+
 ---
 
 # 9. 3D Interaction Model
@@ -507,7 +547,7 @@ Scope › Context › Subject › Atom › Source
 - source kind
 - 同じsourceに根ざす他Atom
 
-Source codeそのものは3D空間へ大量表示せず、右側の固定パネルへ表示します。
+Source本文は読み込まず、ArchMapまたは既存ArchSig artifactに明示された`path`、`symbol`、`line`を右側の固定パネルへ表示します。
 
 ---
 
@@ -845,7 +885,7 @@ UNRESOLVED
 | path only | File level |
 | semantic ref only | Unresolved |
 
-クラス名やメソッド名をsource textから推測しません。
+クラス名やメソッド名は、ArchMapまたは既存ArchSig artifactに明示された値だけを表示します。
 
 ---
 
@@ -1058,7 +1098,6 @@ Context選択時に表示:
 - path / symbol / line表示
 - evidence / boundary / candidate / validatedを区別
 - resolution levelを表示
-- editor URIまたはcopy pathを提供
 - opaque score禁止
 
 ## R8 — Structured Search
@@ -1104,14 +1143,13 @@ Context選択時に表示:
 - color-independent shapes
 - Outline view
 - DOM上の選択要素説明
-- source textコピー
 
 ## Locality
 
 - ArchMap単独でArchitecture Modeが動作
 - analysisは任意
-- source snippet表示はrepository rootが供給された場合のみ
-- repository rootがない場合もpath / symbol / lineは表示
+- source本文は読み込まない
+- ArchMapまたは既存ArchSig artifactに明示されたpath / symbol / lineだけを表示
 
 ---
 
@@ -1217,9 +1255,19 @@ train-ticket fixtureの、
 - ArchMap
 - normalized ArchMap
 - existing ArchSig artifacts
-- optional repository root
 
 新規schemaを受け入れ条件にしないこと。
+
+## AC10 — Paper Atlas Visual Fidelity
+
+- 既定canvasがwarm light surfaceである
+- Contextがmatteな薄いplateとして読み分けられる
+- Atom kindが色だけでなく形でも識別できる
+- selectionがindigoのringとfocus-plus-contextで表現される
+- analysis色が明示された測定状態にだけ使われる
+- neon、常時発光、particle、過度なbloomを使用しない
+- 1366×768以上のdesktop viewportで、Scope Explorer、3D Atlas、Inspector、source drawerが同時に判読できる
+- design compとの差分が、data fidelity、accessibility、performanceのいずれかで説明できる
 
 ---
 
@@ -1242,6 +1290,8 @@ train-ticket fixtureの、
 13. unresolved refを無言で捨てた
 14. 新しいauthoritative world modelを必須にした
 15. ArchSig analysisがなければArchitecture Modeが使えなかった
+16. 既定画面をdark cyber aesthetic、neon、常時発光、particleで構成した
+17. decorativeな紙面形状や影に、入力artifactにない意味を持たせた
 
 ---
 
@@ -1287,7 +1337,7 @@ Phase 1終了時点で、ArchSigなしのコードベース理解ツールとし
 - evidence / boundary / candidate / validated分類
 - path / symbol / line grouping
 - resolution level
-- editor landing
+- source reference表示
 - side-by-side boundary comparison
 
 ## Phase 4 — Hardening
@@ -1298,6 +1348,7 @@ Phase 1終了時点で、ArchSigなしのコードベース理解ツールとし
 - performance
 - accessibility
 - deterministic screenshots
+- Paper Atlas design fidelity
 - fidelity tests
 - AAT未経験者によるtask test
 - error / empty / unresolved states
