@@ -1,0 +1,2515 @@
+{
+ "schema": "archmap-extraction-consistency/v0.5.4",
+ "id": "consistency:pair-3-chunk-04",
+ "scopeManifestRef": "scope:train-ticket-supply-bench@1",
+ "passARefs": [
+  "candidates:run-5:chunk-04"
+ ],
+ "passBRefs": [
+  "candidates:run-6:chunk-04"
+ ],
+ "atomMatchKeySpec": "kind | NFC(trim(subject) normalized to <source-dir>.<Class> from refs) | axis | predicate? | object? (atom-match-key@2)",
+ "matched": {
+  "count": 53,
+  "rows": [
+   {
+    "key": "capability|ts-auth-service.TokenServiceImpl|capability|servesQuery|getToken/2",
+    "passAAtomIds": [
+     "atom:capability:ts-auth-service.tokenserviceimpl:servesquery-gettoken"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-auth-service.tokenserviceimpl:servesquery-gettoken"
+    ],
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:59",
+     "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:97"
+    ]
+   },
+   {
+    "key": "capability|ts-auth-service.UserServiceImpl|capability|handlesCommand|createDefaultAuthUser/1",
+    "passAAtomIds": [
+     "atom:capability:ts-auth-service.userserviceimpl:handlescommand-createdefaultauthuser"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-auth-service.userserviceimpl:handlescommand-createdefaultauthuser"
+    ],
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:52"
+    ]
+   },
+   {
+    "key": "capability|ts-auth-service.UserServiceImpl|capability|handlesCommand|deleteByUserId/2",
+    "passAAtomIds": [
+     "atom:capability:ts-auth-service.userserviceimpl:handlescommand-deletebyuserid"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-auth-service.userserviceimpl:handlescommand-deletebyuserid"
+    ],
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:70"
+    ]
+   },
+   {
+    "key": "capability|ts-auth-service.UserServiceImpl|capability|servesQuery|getAllUser/1",
+    "passAAtomIds": [
+     "atom:capability:ts-auth-service.userserviceimpl:servesquery-getalluser"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-auth-service.userserviceimpl:servesquery-getalluser"
+    ],
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:41"
+    ]
+   },
+   {
+    "key": "capability|ts-auth-service.UserServiceImpl|capability|servesQuery|saveUser/1",
+    "passAAtomIds": [
+     "atom:capability:ts-auth-service.userserviceimpl:servesquery-saveuser"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-auth-service.userserviceimpl:servesquery-saveuser"
+    ],
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:36"
+    ]
+   },
+   {
+    "key": "capability|ts-basic-service.BasicServiceImpl|capability|servesQuery|queryForStationId/2",
+    "passAAtomIds": [
+     "atom:capability:ts-basic-service.basicserviceimpl:servesquery-queryforstationid"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-basic-service.basicserviceimpl:servesquery-queryforstationid"
+    ],
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:324"
+    ]
+   },
+   {
+    "key": "capability|ts-basic-service.BasicServiceImpl|capability|servesQuery|queryForTravel/2",
+    "passAAtomIds": [
+     "atom:capability:ts-basic-service.basicserviceimpl:servesquery-queryfortravel"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-basic-service.basicserviceimpl:servesquery-queryfortravel"
+    ],
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:40"
+    ]
+   },
+   {
+    "key": "capability|ts-basic-service.BasicServiceImpl|capability|servesQuery|queryForTravels/2",
+    "passAAtomIds": [
+     "atom:capability:ts-basic-service.basicserviceimpl:servesquery-queryfortravels"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-basic-service.basicserviceimpl:servesquery-queryfortravels"
+    ],
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:124"
+    ]
+   },
+   {
+    "key": "capability|ts-cancel-service.CancelController|capability|handlesCommand|GET /api/v1/cancelservice/cancel/{orderId}/{loginId}",
+    "passAAtomIds": [
+     "atom:capability:ts-cancel-service.cancelcontroller:handlescommand-cancel-orderid-loginid"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-cancel-service.cancelcontroller:handlescommand-cancel-ticket"
+    ],
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:40",
+     "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:47",
+     "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:52"
+    ]
+   },
+   {
+    "key": "capability|ts-cancel-service.CancelServiceImpl|capability|handlesCommand|cancelOrder/3",
+    "passAAtomIds": [
+     "atom:capability:ts-cancel-service.cancelserviceimpl:handlescommand-cancelorder"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-cancel-service.cancelserviceimpl:handlescommand-cancelorder"
+    ],
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:46"
+    ]
+   },
+   {
+    "key": "capability|ts-cancel-service.CancelServiceImpl|capability|servesQuery|calculateRefund/2",
+    "passAAtomIds": [
+     "atom:capability:ts-cancel-service.cancelserviceimpl:servesquery-calculaterefund"
+    ],
+    "passBAtomIds": [
+     "atom:capability:ts-cancel-service.cancelserviceimpl:servesquery-calculaterefund"
+    ],
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:157"
+    ]
+   },
+   {
+    "key": "component|ts-auth-service.TokenServiceImpl|static||",
+    "passAAtomIds": [
+     "atom:component:ts-auth-service.tokenserviceimpl"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-auth-service.tokenserviceimpl"
+    ],
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:36"
+    ]
+   },
+   {
+    "key": "component|ts-auth-service.TokenService|static||",
+    "passAAtomIds": [
+     "atom:component:ts-auth-service.tokenservice"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-auth-service.tokenservice"
+    ],
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/TokenService.java:10"
+    ]
+   },
+   {
+    "key": "component|ts-auth-service.UserServiceImpl|static||",
+    "passAAtomIds": [
+     "atom:component:ts-auth-service.userserviceimpl"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-auth-service.userserviceimpl"
+    ],
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:26"
+    ]
+   },
+   {
+    "key": "component|ts-auth-service.UserService|static||",
+    "passAAtomIds": [
+     "atom:component:ts-auth-service.userservice"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-auth-service.userservice"
+    ],
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/UserService.java:14"
+    ]
+   },
+   {
+    "key": "component|ts-basic-service.BasicApplication|static||",
+    "passAAtomIds": [
+     "atom:component:ts-basic-service.basicapplication"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-basic-service.basicapplication"
+    ],
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/BasicApplication.java:24"
+    ]
+   },
+   {
+    "key": "component|ts-basic-service.BasicController|static||",
+    "passAAtomIds": [
+     "atom:component:ts-basic-service.basiccontroller"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-basic-service.basiccontroller"
+    ],
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/controller/BasicController.java:23"
+    ]
+   },
+   {
+    "key": "component|ts-basic-service.BasicServiceImpl|static||",
+    "passAAtomIds": [
+     "atom:component:ts-basic-service.basicserviceimpl"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-basic-service.basicserviceimpl"
+    ],
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:25"
+    ]
+   },
+   {
+    "key": "component|ts-basic-service.BasicService|static||",
+    "passAAtomIds": [
+     "atom:component:ts-basic-service.basicservice"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-basic-service.basicservice"
+    ],
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicService.java:14"
+    ]
+   },
+   {
+    "key": "component|ts-basic-service.SecurityConfig|static||",
+    "passAAtomIds": [
+     "atom:component:ts-basic-service.securityconfig"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-basic-service.securityconfig"
+    ],
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:26"
+    ]
+   },
+   {
+    "key": "component|ts-basic-service.application-yml|static||",
+    "passAAtomIds": [
+     "atom:component:ts-basic-service.application-yml"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-basic-service.application-yml"
+    ],
+    "refs": [
+     "src:ts-basic-service/src/main/resources/application.yml:1"
+    ]
+   },
+   {
+    "key": "component|ts-cancel-service.CancelApplication|static||",
+    "passAAtomIds": [
+     "atom:component:ts-cancel-service.cancelapplication"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-cancel-service.cancelapplication"
+    ],
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/CancelApplication.java:24"
+    ]
+   },
+   {
+    "key": "component|ts-cancel-service.CancelController|static||",
+    "passAAtomIds": [
+     "atom:component:ts-cancel-service.cancelcontroller"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-cancel-service.cancelcontroller"
+    ],
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:20"
+    ]
+   },
+   {
+    "key": "component|ts-cancel-service.CancelServiceImpl|static||",
+    "passAAtomIds": [
+     "atom:component:ts-cancel-service.cancelserviceimpl"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-cancel-service.cancelserviceimpl"
+    ],
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:30"
+    ]
+   },
+   {
+    "key": "component|ts-cancel-service.CancelService|static||",
+    "passAAtomIds": [
+     "atom:component:ts-cancel-service.cancelservice"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-cancel-service.cancelservice"
+    ],
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelService.java:9"
+    ]
+   },
+   {
+    "key": "component|ts-cancel-service.GetAccountByIdInfo|static||",
+    "passAAtomIds": [
+     "atom:component:ts-cancel-service.getaccountbyidinfo"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-cancel-service.getaccountbyidinfo"
+    ],
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/entity/GetAccountByIdInfo.java:9"
+    ]
+   },
+   {
+    "key": "component|ts-cancel-service.GetAccountByIdResult|static||",
+    "passAAtomIds": [
+     "atom:component:ts-cancel-service.getaccountbyidresult"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-cancel-service.getaccountbyidresult"
+    ],
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/entity/GetAccountByIdResult.java:11"
+    ]
+   },
+   {
+    "key": "component|ts-cancel-service.GetOrderByIdInfo|static||",
+    "passAAtomIds": [
+     "atom:component:ts-cancel-service.getorderbyidinfo"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-cancel-service.getorderbyidinfo"
+    ],
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/entity/GetOrderByIdInfo.java:9"
+    ]
+   },
+   {
+    "key": "component|ts-cancel-service.SecurityConfig|static||",
+    "passAAtomIds": [
+     "atom:component:ts-cancel-service.securityconfig"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-cancel-service.securityconfig"
+    ],
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:26"
+    ]
+   },
+   {
+    "key": "component|ts-cancel-service.application-yml|static||",
+    "passAAtomIds": [
+     "atom:component:ts-cancel-service.application-yml"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-cancel-service.application-yml"
+    ],
+    "refs": [
+     "src:ts-cancel-service/src/main/resources/application.yml:1"
+    ]
+   },
+   {
+    "key": "component|ts-common.SwaggerConfig|static||",
+    "passAAtomIds": [
+     "atom:component:ts-common.swaggerconfig"
+    ],
+    "passBAtomIds": [
+     "atom:component:ts-common.swaggerconfig"
+    ],
+    "refs": [
+     "src:ts-common/src/main/java/edu/fudan/common/config/SwaggerConfig.java:19"
+    ]
+   },
+   {
+    "key": "effect|ts-auth-service.TokenServiceImpl|effect|callsProvider|GET ts-verification-code-service /api/v1/verifycode/verify/{verifyCode}",
+    "passAAtomIds": [
+     "atom:effect:ts-auth-service.tokenserviceimpl:callsprovider-verification-code-verify"
+    ],
+    "passBAtomIds": [
+     "atom:effect:ts-auth-service.tokenserviceimpl:callsprovider-verifycode"
+    ],
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:64",
+     "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:67",
+     "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:71"
+    ]
+   },
+   {
+    "key": "effect|ts-basic-service.BasicServiceImpl|effect|callsProvider|GET ts-price-service /api/v1/priceservice/prices/{routeId}/{trainType}",
+    "passAAtomIds": [
+     "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-price-byrouteandtype"
+    ],
+    "passBAtomIds": [
+     "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-price-byrouteandtraintype"
+    ],
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:446"
+    ]
+   },
+   {
+    "key": "effect|ts-basic-service.BasicServiceImpl|effect|callsProvider|GET ts-route-service /api/v1/routeservice/routes/{routeId}",
+    "passAAtomIds": [
+     "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-route-byid"
+    ],
+    "passBAtomIds": [
+     "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-route-byid"
+    ],
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:427"
+    ]
+   },
+   {
+    "key": "effect|ts-basic-service.BasicServiceImpl|effect|callsProvider|GET ts-station-service /api/v1/stationservice/stations/id/{stationName}",
+    "passAAtomIds": [
+     "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-station-byid"
+    ],
+    "passBAtomIds": [
+     "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-station-byid"
+    ],
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:328",
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:362"
+    ]
+   },
+   {
+    "key": "effect|ts-basic-service.BasicServiceImpl|effect|callsProvider|GET ts-train-service /api/v1/trainservice/trains/byName/{trainTypeName}",
+    "passAAtomIds": [
+     "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-train-byname"
+    ],
+    "passBAtomIds": [
+     "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-train-byname"
+    ],
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:393"
+    ]
+   },
+   {
+    "key": "effect|ts-basic-service.BasicServiceImpl|effect|callsProvider|POST ts-price-service /api/v1/priceservice/prices/byRouteIdsAndTrainTypes",
+    "passAAtomIds": [
+     "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-price-byrouteidsandtypes"
+    ],
+    "passBAtomIds": [
+     "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-price-byrouteidsandtraintypes"
+    ],
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:461"
+    ]
+   },
+   {
+    "key": "effect|ts-basic-service.BasicServiceImpl|effect|callsProvider|POST ts-route-service /api/v1/routeservice/routes/byIds/",
+    "passAAtomIds": [
+     "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-route-byids"
+    ],
+    "passBAtomIds": [
+     "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-route-byids"
+    ],
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:407"
+    ]
+   },
+   {
+    "key": "effect|ts-basic-service.BasicServiceImpl|effect|callsProvider|POST ts-station-service /api/v1/stationservice/stations/idlist",
+    "passAAtomIds": [
+     "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-station-idlist"
+    ],
+    "passBAtomIds": [
+     "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-station-idlist"
+    ],
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:345"
+    ]
+   },
+   {
+    "key": "effect|ts-basic-service.BasicServiceImpl|effect|callsProvider|POST ts-train-service /api/v1/trainservice/trains/byNames",
+    "passAAtomIds": [
+     "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-train-bynames"
+    ],
+    "passBAtomIds": [
+     "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-train-bynames"
+    ],
+    "refs": [
+     "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:376"
+    ]
+   },
+   {
+    "key": "effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|GET ts-inside-payment-service /api/v1/inside_pay_service/inside_payment/drawback/{userId}/{money}",
+    "passAAtomIds": [
+     "atom:effect:ts-cancel-service.cancelserviceimpl:callsprovider-insidepayment-drawback"
+    ],
+    "passBAtomIds": [
+     "atom:effect:ts-cancel-service.cancelserviceimpl:callsprovider-insidepayment-drawback"
+    ],
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:285"
+    ]
+   },
+   {
+    "key": "effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|GET ts-order-other-service /api/v1/orderOtherService/orderOther/{orderId}",
+    "passAAtomIds": [
+     "atom:effect:ts-cancel-service.cancelserviceimpl:callsprovider-orderother-getbyid"
+    ],
+    "passBAtomIds": [
+     "atom:effect:ts-cancel-service.cancelserviceimpl:callsprovider-orderother-getbyid"
+    ],
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:327",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:328"
+    ]
+   },
+   {
+    "key": "effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|GET ts-order-service /api/v1/orderservice/order/{orderId}",
+    "passAAtomIds": [
+     "atom:effect:ts-cancel-service.cancelserviceimpl:callsprovider-order-getbyid"
+    ],
+    "passBAtomIds": [
+     "atom:effect:ts-cancel-service.cancelserviceimpl:callsprovider-order-getbyid"
+    ],
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:313",
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:314"
+    ]
+   },
+   {
+    "key": "effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|GET ts-user-service /api/v1/userservice/users/id/{orderId}",
+    "passAAtomIds": [
+     "atom:effect:ts-cancel-service.cancelserviceimpl:callsprovider-user-getbyid"
+    ],
+    "passBAtomIds": [
+     "atom:effect:ts-cancel-service.cancelserviceimpl:callsprovider-user-getbyid"
+    ],
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:300"
+    ]
+   },
+   {
+    "key": "effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|POST ts-notification-service /api/v1/notifyservice/notification/order_cancel_success",
+    "passAAtomIds": [
+     "atom:effect:ts-cancel-service.cancelserviceimpl:callsprovider-notification-cancelsuccess"
+    ],
+    "passBAtomIds": [
+     "atom:effect:ts-cancel-service.cancelserviceimpl:callsprovider-notify-cancelsuccess"
+    ],
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:149"
+    ]
+   },
+   {
+    "key": "effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|PUT ts-order-other-service /api/v1/orderOtherService/orderOther",
+    "passAAtomIds": [
+     "atom:effect:ts-cancel-service.cancelserviceimpl:callsprovider-orderother-put"
+    ],
+    "passBAtomIds": [
+     "atom:effect:ts-cancel-service.cancelserviceimpl:callsprovider-orderother-put"
+    ],
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:270"
+    ]
+   },
+   {
+    "key": "effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|PUT ts-order-service /api/v1/orderservice/order",
+    "passAAtomIds": [
+     "atom:effect:ts-cancel-service.cancelserviceimpl:callsprovider-order-put"
+    ],
+    "passBAtomIds": [
+     "atom:effect:ts-cancel-service.cancelserviceimpl:callsprovider-order-put"
+    ],
+    "refs": [
+     "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:246"
+    ]
+   },
+   {
+    "key": "relation|ts-auth-service.TokenServiceImpl|relation|calls|JWTProvider.createToken",
+    "passAAtomIds": [
+     "atom:relation:ts-auth-service.tokenserviceimpl:calls-jwtprovider"
+    ],
+    "passBAtomIds": [
+     "atom:relation:ts-auth-service.tokenserviceimpl:calls-jwtprovider-createtoken"
+    ],
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:94"
+    ]
+   },
+   {
+    "key": "relation|ts-auth-service.TokenServiceImpl|relation|calls|UserRepository.findByUsername",
+    "passAAtomIds": [
+     "atom:relation:ts-auth-service.tokenserviceimpl:calls-userrepository"
+    ],
+    "passBAtomIds": [
+     "atom:relation:ts-auth-service.tokenserviceimpl:calls-userrepository-findbyusername"
+    ],
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:90"
+    ]
+   },
+   {
+    "key": "relation|ts-auth-service.UserServiceImpl|relation|calls|UserRepository.deleteByUserId",
+    "passAAtomIds": [
+     "atom:relation:ts-auth-service.userserviceimpl:calls-userrepository-deletebyuserid"
+    ],
+    "passBAtomIds": [
+     "atom:relation:ts-auth-service.userserviceimpl:calls-userrepository-deletebyuserid"
+    ],
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:72"
+    ]
+   },
+   {
+    "key": "relation|ts-auth-service.UserServiceImpl|relation|calls|UserRepository.findAll",
+    "passAAtomIds": [
+     "atom:relation:ts-auth-service.userserviceimpl:calls-userrepository-findall"
+    ],
+    "passBAtomIds": [
+     "atom:relation:ts-auth-service.userserviceimpl:calls-userrepository-findall"
+    ],
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:42"
+    ]
+   },
+   {
+    "key": "relation|ts-auth-service.UserServiceImpl|relation|calls|UserRepository.save",
+    "passAAtomIds": [
+     "atom:relation:ts-auth-service.userserviceimpl:calls-userrepository-save"
+    ],
+    "passBAtomIds": [
+     "atom:relation:ts-auth-service.userserviceimpl:calls-userrepository-save"
+    ],
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:65"
+    ]
+   },
+   {
+    "key": "state|ts-auth-service.UserServiceImpl|state|persistsIn|User",
+    "passAAtomIds": [
+     "atom:state:ts-auth-service.userserviceimpl:persistsin-user"
+    ],
+    "passBAtomIds": [
+     "atom:state:ts-auth-service.userserviceimpl:persistsin-user"
+    ],
+    "refs": [
+     "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:42",
+     "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:65",
+     "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:72"
+    ]
+   }
+  ]
+ },
+ "onlyInPassA": [
+  {
+   "key": "authority|ts-basic-service.SecurityConfig|authority|allowsCrossOrigin|origin=* methods=* headers=* credentials=false maxage=3600 path=/**",
+   "candidateAtomId": "atom:authority:ts-basic-service.securityconfig:allowscrossorigin-all",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:51",
+    "src:ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:56"
+   ]
+  },
+  {
+   "key": "authority|ts-basic-service.SecurityConfig|authority|permitsUnauthenticated|ALL /api/v1/basicservice/**",
+   "candidateAtomId": "atom:authority:ts-basic-service.securityconfig:permitsunauthenticated-basicservice#pass-a",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "authority|ts-basic-service.SecurityConfig|authority|permitsUnauthenticated|ALL /swagger-ui.html,/webjars/**,/images/**,/configuration/**,/swagger-resources/**,/v2/**",
+   "candidateAtomId": "atom:authority:ts-basic-service.securityconfig:permitsunauthenticated-swagger-docs",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:72",
+    "src:ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:73"
+   ]
+  },
+  {
+   "key": "authority|ts-cancel-service.CancelController|authority|allowsCrossOrigin|origin=* on GET /api/v1/cancelservice/cancel/refound/{orderId}",
+   "candidateAtomId": "atom:authority:ts-cancel-service.cancelcontroller:allowscrossorigin-cancel-refound",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:32"
+   ]
+  },
+  {
+   "key": "authority|ts-cancel-service.CancelController|authority|allowsCrossOrigin|origin=* on GET /api/v1/cancelservice/cancel/{orderId}/{loginId}",
+   "candidateAtomId": "atom:authority:ts-cancel-service.cancelcontroller:allowscrossorigin-cancel-orderid-loginid",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:39"
+   ]
+  },
+  {
+   "key": "authority|ts-cancel-service.SecurityConfig|authority|allowsCrossOrigin|origin=* methods=* headers=* credentials=false maxage=3600 path=/**",
+   "candidateAtomId": "atom:authority:ts-cancel-service.securityconfig:allowscrossorigin-all",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:51",
+    "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:56"
+   ]
+  },
+  {
+   "key": "authority|ts-cancel-service.SecurityConfig|authority|permitsUnauthenticated|ALL /swagger-ui.html,/webjars/**,/images/**,/configuration/**,/swagger-resources/**,/v2/**",
+   "candidateAtomId": "atom:authority:ts-cancel-service.securityconfig:permitsunauthenticated-swagger-docs",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:72",
+    "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:73"
+   ]
+  },
+  {
+   "key": "authority|ts-cancel-service.SecurityConfig|authority|requiresRole|ALL /api/v1/cancelservice/** requiresRole-ADMIN-or-USER",
+   "candidateAtomId": "atom:authority:ts-cancel-service.securityconfig:requiresrole-cancelservice-admin-or-user",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "capability|ts-basic-service.BasicController|capability|servesQuery|GET /api/v1/basicservice/basic/{stationName}",
+   "candidateAtomId": "atom:capability:ts-basic-service.basiccontroller:servesquery-basic-stationname",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/controller/BasicController.java:49",
+    "src:ts-basic-service/src/main/java/fdse/microservice/controller/BasicController.java:54"
+   ]
+  },
+  {
+   "key": "capability|ts-basic-service.BasicController|capability|servesQuery|GET /api/v1/basicservice/welcome",
+   "candidateAtomId": "atom:capability:ts-basic-service.basiccontroller:servesquery-welcome",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/controller/BasicController.java:30",
+    "src:ts-basic-service/src/main/java/fdse/microservice/controller/BasicController.java:33"
+   ]
+  },
+  {
+   "key": "capability|ts-basic-service.BasicController|capability|servesQuery|POST /api/v1/basicservice/basic/travel",
+   "candidateAtomId": "atom:capability:ts-basic-service.basiccontroller:servesquery-basic-travel",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/controller/BasicController.java:35",
+    "src:ts-basic-service/src/main/java/fdse/microservice/controller/BasicController.java:40"
+   ]
+  },
+  {
+   "key": "capability|ts-basic-service.BasicController|capability|servesQuery|POST /api/v1/basicservice/basic/travels",
+   "candidateAtomId": "atom:capability:ts-basic-service.basiccontroller:servesquery-basic-travels",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/controller/BasicController.java:42",
+    "src:ts-basic-service/src/main/java/fdse/microservice/controller/BasicController.java:47"
+   ]
+  },
+  {
+   "key": "capability|ts-cancel-service.CancelController|capability|servesQuery|GET /api/v1/cancelservice/cancel/refound/{orderId}",
+   "candidateAtomId": "atom:capability:ts-cancel-service.cancelcontroller:servesquery-cancel-refound",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:33",
+    "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:37"
+   ]
+  },
+  {
+   "key": "capability|ts-cancel-service.CancelController|capability|servesQuery|GET /api/v1/cancelservice/welcome",
+   "candidateAtomId": "atom:capability:ts-cancel-service.cancelcontroller:servesquery-welcome",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:27",
+    "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:30"
+   ]
+  },
+  {
+   "key": "contract|ts-auth-service.TokenService|specification|shapedAs|getToken/2",
+   "candidateAtomId": "atom:contract:ts-auth-service.tokenservice:shapedas-gettoken#pass-a",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/TokenService.java:19"
+   ]
+  },
+  {
+   "key": "contract|ts-auth-service.UserServiceImpl|specification|requires|username-non-empty-and-password-non-null-min-length-6-and-roles-non-empty-else-throws-useroperationexception",
+   "candidateAtomId": "atom:contract:ts-auth-service.userserviceimpl:requires-user-create-info",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:85",
+    "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:96",
+    "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:102"
+   ]
+  },
+  {
+   "key": "contract|ts-auth-service.UserService|specification|shapedAs|saveUser/1,getAllUser/1,createDefaultAuthUser/1,deleteByUserId/2",
+   "candidateAtomId": "atom:contract:ts-auth-service.userservice:shapedas-methods#pass-a",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/UserService.java:22",
+    "src:ts-auth-service/src/main/java/auth/service/UserService.java:30",
+    "src:ts-auth-service/src/main/java/auth/service/UserService.java:38",
+    "src:ts-auth-service/src/main/java/auth/service/UserService.java:47"
+   ]
+  },
+  {
+   "key": "contract|ts-basic-service.BasicService|specification|shapedAs|queryForTravel/2,queryForTravels/2,queryForStationId/2",
+   "candidateAtomId": "atom:contract:ts-basic-service.basicservice:shapedas-methods#pass-a",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicService.java:23",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicService.java:25",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicService.java:34"
+   ]
+  },
+  {
+   "key": "contract|ts-cancel-service.CancelService|specification|shapedAs|cancelOrder/3,calculateRefund/2",
+   "candidateAtomId": "atom:contract:ts-cancel-service.cancelservice:shapedas-methods#pass-a",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelService.java:20",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelService.java:29"
+   ]
+  },
+  {
+   "key": "contract|ts-cancel-service.GetAccountByIdInfo|specification|shapedAs|accountId:String",
+   "candidateAtomId": "atom:contract:ts-cancel-service.getaccountbyidinfo:shapedas-fields",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/entity/GetAccountByIdInfo.java:11"
+   ]
+  },
+  {
+   "key": "contract|ts-cancel-service.GetAccountByIdResult|specification|shapedAs|status:boolean,message:String,account:Account",
+   "candidateAtomId": "atom:contract:ts-cancel-service.getaccountbyidresult:shapedas-fields#pass-a",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/entity/GetAccountByIdResult.java:13",
+    "src:ts-cancel-service/src/main/java/cancel/entity/GetAccountByIdResult.java:15",
+    "src:ts-cancel-service/src/main/java/cancel/entity/GetAccountByIdResult.java:17"
+   ]
+  },
+  {
+   "key": "contract|ts-cancel-service.GetOrderByIdInfo|specification|shapedAs|orderId:String",
+   "candidateAtomId": "atom:contract:ts-cancel-service.getorderbyidinfo:shapedas-fields",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/entity/GetOrderByIdInfo.java:11"
+   ]
+  },
+  {
+   "key": "contract|ts-common.SwaggerConfig|specification|requires|controllerpackagepath-injected-via-the-swagger.controllerpackage-property-a-value-supplied-per-service-in-each-services-application-yml",
+   "candidateAtomId": "atom:contract:ts-common.swaggerconfig:requires-controllerpackage-property",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/config/SwaggerConfig.java:21",
+    "src:ts-common/src/main/java/edu/fudan/common/config/SwaggerConfig.java:22",
+    "src:ts-common/src/main/java/edu/fudan/common/config/SwaggerConfig.java:31"
+   ]
+  },
+  {
+   "key": "relation|ts-auth-service.TokenServiceImpl|relation|calls|AuthenticationManager.authenticate",
+   "candidateAtomId": "atom:relation:ts-auth-service.tokenserviceimpl:calls-authenticationmanager",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:84"
+   ]
+  },
+  {
+   "key": "relation|ts-auth-service.TokenServiceImpl|relation|dependsOn|DiscoveryClient",
+   "candidateAtomId": "atom:relation:ts-auth-service.tokenserviceimpl:dependson-discoveryclient",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:52"
+   ]
+  },
+  {
+   "key": "relation|ts-auth-service.UserServiceImpl|relation|calls|PasswordEncoder.encode",
+   "candidateAtomId": "atom:relation:ts-auth-service.userserviceimpl:calls-passwordencoder-encode",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:57"
+   ]
+  },
+  {
+   "key": "relation|ts-basic-service.BasicController|relation|calls|BasicService.queryForStationId",
+   "candidateAtomId": "atom:relation:ts-basic-service.basiccontroller:calls-basicservice-queryforstationid",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/controller/BasicController.java:53"
+   ]
+  },
+  {
+   "key": "relation|ts-basic-service.BasicController|relation|calls|BasicService.queryForTravel",
+   "candidateAtomId": "atom:relation:ts-basic-service.basiccontroller:calls-basicservice-queryfortravel",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/controller/BasicController.java:39"
+   ]
+  },
+  {
+   "key": "relation|ts-basic-service.BasicController|relation|calls|BasicService.queryForTravels",
+   "candidateAtomId": "atom:relation:ts-basic-service.basiccontroller:calls-basicservice-queryfortravels",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/controller/BasicController.java:46"
+   ]
+  },
+  {
+   "key": "relation|ts-basic-service.BasicServiceImpl|relation|dependsOn|DiscoveryClient",
+   "candidateAtomId": "atom:relation:ts-basic-service.basicserviceimpl:dependson-discoveryclient",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:31"
+   ]
+  },
+  {
+   "key": "relation|ts-basic-service.SecurityConfig|relation|dependsOn|JWTFilter",
+   "candidateAtomId": "atom:relation:ts-basic-service.securityconfig:dependson-jwtfilter",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:76"
+   ]
+  },
+  {
+   "key": "relation|ts-cancel-service.CancelController|relation|calls|CancelService.calculateRefund",
+   "candidateAtomId": "atom:relation:ts-cancel-service.cancelcontroller:calls-cancelservice-calculaterefund",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:36"
+   ]
+  },
+  {
+   "key": "relation|ts-cancel-service.CancelController|relation|calls|CancelService.cancelOrder",
+   "candidateAtomId": "atom:relation:ts-cancel-service.cancelcontroller:calls-cancelservice-cancelorder",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:47"
+   ]
+  },
+  {
+   "key": "relation|ts-cancel-service.SecurityConfig|relation|dependsOn|JWTFilter",
+   "candidateAtomId": "atom:relation:ts-cancel-service.securityconfig:dependson-jwtfilter",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:76"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-basic-service-travel-query-flow|cech|sectionValue|section=money-amount:double-arithmetic-then-string-concatenation",
+   "candidateAtomId": "atom:semantic:ts-basic-service-travel-query-flow:cech-section-money-amount-computed",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:106",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:299"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-basic-service-travel-query-flow|cech|sectionValue|section=money-amount:string-literal-fallback-default-price-on-exception-branch",
+   "candidateAtomId": "atom:semantic:ts-basic-service-travel-query-flow:cech-section-money-amount-fallback",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:111",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:304"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-cancel-service-cancel-and-refund-flow|cech|sectionValue|section=money-amount:string-literal-zero-selected-on-notpaid-or-ticket-expired-travel-time-branch",
+   "candidateAtomId": "atom:semantic:ts-cancel-service-cancel-and-refund-flow:cech-section-money-amount-zero-fallback",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:202",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:226"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-cancel-service-cancel-and-refund-flow|cech|sectionValue|section=money-amount:string-parsed-to-double-arithmetic-decimalformat",
+   "candidateAtomId": "atom:semantic:ts-cancel-service-cancel-and-refund-flow:cech-section-money-amount-computed",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:228",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:230",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:231"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-cancel-service-cancel-and-refund-flow|cech|sectionValue|section=order-status-code:enum-notpaid-or-paid-or-change-select-the-cancel-permitted-branch-other-enum-values-select-the-cancel-not-permitted-branch-cancel-enum-set-on-the-success-branch",
+   "candidateAtomId": "atom:semantic:ts-cancel-service-cancel-and-refund-flow:cech-section-order-status-code",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:52",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:109",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:162",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:240",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:265"
+   ]
+  },
+  {
+   "key": "semantic|ts-auth-service.TokenServiceImpl|semantic|meansInUse|status-1-on-login-success-token-issued-branch-status-0-on-verification-code-or-credential-rejected-branch",
+   "candidateAtomId": "atom:semantic:ts-auth-service.tokenserviceimpl:meansinuse-gettoken-envelope",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:75",
+    "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:87",
+    "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:96"
+   ]
+  },
+  {
+   "key": "semantic|ts-auth-service.UserServiceImpl|semantic|meansInUse|createdefaultauthuser-assigns-the-fixed-role-user-constant-to-every-new-account-at-this-site",
+   "candidateAtomId": "atom:semantic:ts-auth-service.userserviceimpl:meansinuse-createdefaultauthuser-default-role",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:58"
+   ]
+  },
+  {
+   "key": "semantic|ts-auth-service.UserServiceImpl|semantic|meansInUse|saveuser-returns-null-without-invoking-repository-save-or-passwordencoder-at-this-site",
+   "candidateAtomId": "atom:semantic:ts-auth-service.userserviceimpl:meansinuse-saveuser-stub",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:36",
+    "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:38"
+   ]
+  },
+  {
+   "key": "semantic|ts-basic-service.BasicApplication|semantic|meansInUse|resttemplate-bean-marked-loadbalanced-resolves-target-host-as-a-service-name-via-discoveryclient-rather-than-a-direct-ip",
+   "candidateAtomId": "atom:semantic:ts-basic-service.basicapplication:meansinuse-loadbalanced-resttemplate",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/BasicApplication.java:30",
+    "src:ts-basic-service/src/main/java/fdse/microservice/BasicApplication.java:33"
+   ]
+  },
+  {
+   "key": "semantic|ts-basic-service.BasicServiceImpl|semantic|meansInUse|querystationid-forwards-the-upstream-station-service-status-and-message-unchanged-on-the-not-found-branch",
+   "candidateAtomId": "atom:semantic:ts-basic-service.basicserviceimpl:meansinuse-stationid-envelope-forwarding",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:333",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:336"
+   ]
+  },
+  {
+   "key": "semantic|ts-basic-service.BasicServiceImpl|semantic|meansInUse|status-1-on-successful-travel-query-branch-status-0-on-missing-start-or-end-station-or-traintype-or-route-or-station-order-in-route-branch",
+   "candidateAtomId": "atom:semantic:ts-basic-service.basicserviceimpl:meansinuse-travel-response-envelope",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:51",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:65",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:76",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:94"
+   ]
+  },
+  {
+   "key": "semantic|ts-basic-service.SecurityConfig|semantic|meansInUse|csrf-protection-disabled-branch-selected-for-basicservice-httpsecurity-chain",
+   "candidateAtomId": "atom:semantic:ts-basic-service.securityconfig:meansinuse-csrf-disabled",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:66"
+   ]
+  },
+  {
+   "key": "semantic|ts-basic-service.SecurityConfig|semantic|meansInUse|sessioncreationpolicy-stateless-selected-no-httpsession-created-for-basicservice-requests",
+   "candidateAtomId": "atom:semantic:ts-basic-service.securityconfig:meansinuse-session-stateless",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:68"
+   ]
+  },
+  {
+   "key": "semantic|ts-basic-service.application-yml|semantic|meansInUse|spring-application-name-set-to-ts-basic-service-used-as-the-nacos-service-registration-and-discovery-lookup-key",
+   "candidateAtomId": "atom:semantic:ts-basic-service.application-yml:meansinuse-service-name",
+   "refs": [
+    "src:ts-basic-service/src/main/resources/application.yml:9",
+    "src:ts-basic-service/src/main/resources/application.yml:10"
+   ]
+  },
+  {
+   "key": "semantic|ts-cancel-service.CancelApplication|semantic|meansInUse|resttemplate-bean-marked-loadbalanced-resolves-target-host-as-a-service-name-via-discoveryclient-rather-than-a-direct-ip",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.cancelapplication:meansinuse-loadbalanced-resttemplate",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/CancelApplication.java:30",
+    "src:ts-cancel-service/src/main/java/cancel/CancelApplication.java:33"
+   ]
+  },
+  {
+   "key": "semantic|ts-cancel-service.CancelController|semantic|meansInUse|status-1-selected-on-both-the-successful-cancelorder-return-branch-and-the-caught-exception-branch-message-field-carries-literal-error-text-on-the-exception-branch",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.cancelcontroller:meansinuse-cancelticket-envelope",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:44",
+    "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:47",
+    "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:50"
+   ]
+  },
+  {
+   "key": "semantic|ts-cancel-service.CancelServiceImpl|semantic|meansInUse|authorization-header-is-copied-unchanged-into-a-new-headers-object-and-forwarded-to-the-order-order-other-inside-payment-and-user-service-calls-when-present-on-the-incoming-request-omitted-otherwise",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-authorization-header-forwarding",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:254",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:259"
+   ]
+  },
+  {
+   "key": "semantic|ts-cancel-service.CancelServiceImpl|semantic|meansInUse|getaccount-method-parameter-named-orderid-is-passed-order-getaccountid-at-the-call-site-the-parameter-identifies-an-account-not-an-order",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-getaccount-parameter-naming",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:70",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:294"
+   ]
+  },
+  {
+   "key": "semantic|ts-cancel-service.CancelServiceImpl|semantic|meansInUse|notifyinfo-is-constructed-in-cancelorder-but-the-sendemail-call-site-is-a-commented-out-line-on-the-draw-back-money-success-branch",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-sendemail-invocation-commented-out",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:74",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:87"
+   ]
+  },
+  {
+   "key": "semantic|ts-cancel-service.CancelServiceImpl|semantic|meansInUse|status-1-returned-on-the-cancelorder-success-branch-even-when-drawbackmoney-returns-false-status-0-returned-only-on-the-order-not-found-order-status-not-permitted-or-changeorder-non-1-branches",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-cancelorder-envelope",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:89",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:92",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:100",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:138"
+   ]
+  },
+  {
+   "key": "semantic|ts-cancel-service.SecurityConfig|semantic|meansInUse|csrf-protection-disabled-branch-selected-for-cancelservice-httpsecurity-chain",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.securityconfig:meansinuse-csrf-disabled",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:66"
+   ]
+  },
+  {
+   "key": "semantic|ts-cancel-service.SecurityConfig|semantic|meansInUse|sessioncreationpolicy-stateless-selected-no-httpsession-created-for-cancelservice-requests",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.securityconfig:meansinuse-session-stateless",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:68"
+   ]
+  },
+  {
+   "key": "semantic|ts-cancel-service.application-yml|semantic|meansInUse|spring-application-name-set-to-ts-cancel-service-used-as-the-nacos-service-registration-and-discovery-lookup-key",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.application-yml:meansinuse-service-name",
+   "refs": [
+    "src:ts-cancel-service/src/main/resources/application.yml:9",
+    "src:ts-cancel-service/src/main/resources/application.yml:10"
+   ]
+  }
+ ],
+ "onlyInPassB": [
+  {
+   "key": "authority|ts-basic-service.SecurityConfig|authority|allowsCrossOrigin|wildcard-origin-methods-and-headers-allowed-on-/**-allowcredentials-false-maxage-3600",
+   "candidateAtomId": "atom:authority:ts-basic-service.securityconfig:allowscrossorigin-wildcard",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:51",
+    "src:ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:56"
+   ]
+  },
+  {
+   "key": "authority|ts-basic-service.SecurityConfig|authority|checksPermission|any-request-not-matched-by-an-earlier-antmatcher-requires-an-authenticated-principal",
+   "candidateAtomId": "atom:authority:ts-basic-service.securityconfig:checkspermission-anyrequest",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:74"
+   ]
+  },
+  {
+   "key": "authority|ts-basic-service.SecurityConfig|authority|permitsUnauthenticated|ALL /api/v1/basicservice/** permitsUnauthenticated",
+   "candidateAtomId": "atom:authority:ts-basic-service.securityconfig:permitsunauthenticated-basicservice#pass-b",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "authority|ts-basic-service.SecurityConfig|authority|permitsUnauthenticated|ALL /swagger-ui.html,/webjars/**,/images/**,/configuration/**,/swagger-resources/**,/v2/** permitsUnauthenticated",
+   "candidateAtomId": "atom:authority:ts-basic-service.securityconfig:permitsunauthenticated-swagger",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:72",
+    "src:ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:73"
+   ]
+  },
+  {
+   "key": "authority|ts-cancel-service.CancelController|authority|allowsCrossOrigin|GET /api/v1/cancelservice/cancel/refound/{orderId} method-level-crossorigin-wildcard",
+   "candidateAtomId": "atom:authority:ts-cancel-service.cancelcontroller:allowscrossorigin-refund-calc-endpoint",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:32"
+   ]
+  },
+  {
+   "key": "authority|ts-cancel-service.CancelController|authority|allowsCrossOrigin|GET /api/v1/cancelservice/cancel/{orderId}/{loginId} method-level-crossorigin-wildcard",
+   "candidateAtomId": "atom:authority:ts-cancel-service.cancelcontroller:allowscrossorigin-cancel-ticket-endpoint",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:39"
+   ]
+  },
+  {
+   "key": "authority|ts-cancel-service.SecurityConfig|authority|allowsCrossOrigin|wildcard-origin-methods-and-headers-allowed-on-/**-allowcredentials-false-maxage-3600",
+   "candidateAtomId": "atom:authority:ts-cancel-service.securityconfig:allowscrossorigin-wildcard",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:51",
+    "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:56"
+   ]
+  },
+  {
+   "key": "authority|ts-cancel-service.SecurityConfig|authority|checksPermission|any-request-not-matched-by-an-earlier-antmatcher-requires-an-authenticated-principal",
+   "candidateAtomId": "atom:authority:ts-cancel-service.securityconfig:checkspermission-anyrequest",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:74"
+   ]
+  },
+  {
+   "key": "authority|ts-cancel-service.SecurityConfig|authority|permitsUnauthenticated|ALL /swagger-ui.html,/webjars/**,/images/**,/configuration/**,/swagger-resources/**,/v2/** permitsUnauthenticated",
+   "candidateAtomId": "atom:authority:ts-cancel-service.securityconfig:permitsunauthenticated-swagger",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:72",
+    "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:73"
+   ]
+  },
+  {
+   "key": "authority|ts-cancel-service.SecurityConfig|authority|requiresRole|ALL /api/v1/cancelservice/** hasAnyRole-ADMIN-USER",
+   "candidateAtomId": "atom:authority:ts-cancel-service.securityconfig:requiresrole-cancelservice",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:71"
+   ]
+  },
+  {
+   "key": "capability|ts-basic-service.BasicController|capability|exposesEndpoint|GET /api/v1/basicservice/basic/{stationName}",
+   "candidateAtomId": "atom:capability:ts-basic-service.basiccontroller:exposesendpoint-basic-stationname",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/controller/BasicController.java:49",
+    "src:ts-basic-service/src/main/java/fdse/microservice/controller/BasicController.java:53"
+   ]
+  },
+  {
+   "key": "capability|ts-basic-service.BasicController|capability|exposesEndpoint|GET /api/v1/basicservice/welcome",
+   "candidateAtomId": "atom:capability:ts-basic-service.basiccontroller:exposesendpoint-welcome",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/controller/BasicController.java:30",
+    "src:ts-basic-service/src/main/java/fdse/microservice/controller/BasicController.java:32"
+   ]
+  },
+  {
+   "key": "capability|ts-basic-service.BasicController|capability|exposesEndpoint|POST /api/v1/basicservice/basic/travel",
+   "candidateAtomId": "atom:capability:ts-basic-service.basiccontroller:exposesendpoint-basic-travel",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/controller/BasicController.java:35",
+    "src:ts-basic-service/src/main/java/fdse/microservice/controller/BasicController.java:39"
+   ]
+  },
+  {
+   "key": "capability|ts-basic-service.BasicController|capability|exposesEndpoint|POST /api/v1/basicservice/basic/travels",
+   "candidateAtomId": "atom:capability:ts-basic-service.basiccontroller:exposesendpoint-basic-travels",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/controller/BasicController.java:42",
+    "src:ts-basic-service/src/main/java/fdse/microservice/controller/BasicController.java:46"
+   ]
+  },
+  {
+   "key": "capability|ts-basic-service.BasicServiceImpl|capability|servesQuery|checkStationExists/2",
+   "candidateAtomId": "atom:capability:ts-basic-service.basicserviceimpl:servesquery-checkstationexists",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:358"
+   ]
+  },
+  {
+   "key": "capability|ts-basic-service.BasicServiceImpl|capability|servesQuery|checkStationsExists/2",
+   "candidateAtomId": "atom:capability:ts-basic-service.basicserviceimpl:servesquery-checkstationsexists",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:341"
+   ]
+  },
+  {
+   "key": "capability|ts-basic-service.BasicServiceImpl|capability|servesQuery|queryTrainTypeByName/2",
+   "candidateAtomId": "atom:capability:ts-basic-service.basicserviceimpl:servesquery-querytraintypebyname",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:389"
+   ]
+  },
+  {
+   "key": "capability|ts-basic-service.BasicServiceImpl|capability|servesQuery|queryTrainTypeByNames/2",
+   "candidateAtomId": "atom:capability:ts-basic-service.basicserviceimpl:servesquery-querytraintypebynames",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:372"
+   ]
+  },
+  {
+   "key": "capability|ts-cancel-service.CancelController|capability|exposesEndpoint|GET /api/v1/cancelservice/cancel/refound/{orderId}",
+   "candidateAtomId": "atom:capability:ts-cancel-service.cancelcontroller:exposesendpoint-refund-calc",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:33",
+    "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:36"
+   ]
+  },
+  {
+   "key": "capability|ts-cancel-service.CancelController|capability|exposesEndpoint|GET /api/v1/cancelservice/welcome",
+   "candidateAtomId": "atom:capability:ts-cancel-service.cancelcontroller:exposesendpoint-welcome",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:27",
+    "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:29"
+   ]
+  },
+  {
+   "key": "capability|ts-cancel-service.CancelServiceImpl|capability|handlesCommand|drawbackMoney/3",
+   "candidateAtomId": "atom:capability:ts-cancel-service.cancelserviceimpl:handlescommand-drawbackmoney",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:278"
+   ]
+  },
+  {
+   "key": "capability|ts-cancel-service.CancelServiceImpl|capability|handlesCommand|sendEmail/2",
+   "candidateAtomId": "atom:capability:ts-cancel-service.cancelserviceimpl:handlescommand-sendemail",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:143"
+   ]
+  },
+  {
+   "key": "capability|ts-cancel-service.CancelServiceImpl|capability|servesQuery|getAccount/2",
+   "candidateAtomId": "atom:capability:ts-cancel-service.cancelserviceimpl:servesquery-getaccount",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:294"
+   ]
+  },
+  {
+   "key": "contract|ts-auth-service.TokenService|specification|shapedAs|getToken(BasicAuthDto,HttpHeaders)-returns-Response-declared-throws-not-in-signature",
+   "candidateAtomId": "atom:contract:ts-auth-service.tokenservice:shapedas-gettoken#pass-b",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/TokenService.java:19"
+   ]
+  },
+  {
+   "key": "contract|ts-auth-service.UserServiceImpl|specification|ensures|deletebyuserid-method-is-annotated-transactional-so-the-repository-delete-runs-inside-a-single-transaction-boundary",
+   "candidateAtomId": "atom:contract:ts-auth-service.userserviceimpl:ensures-deletebyuserid-transactional",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:69"
+   ]
+  },
+  {
+   "key": "contract|ts-auth-service.UserServiceImpl|specification|requires|checkusercreateinfo-requires-non-empty-username-non-null-password-of-length-at-least-6-and-non-empty-roles-else-throws-useroperationexception-with-collected-messages",
+   "candidateAtomId": "atom:contract:ts-auth-service.userserviceimpl:requires-user-create-checks",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:81",
+    "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:85",
+    "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:90",
+    "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:96",
+    "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:102"
+   ]
+  },
+  {
+   "key": "contract|ts-auth-service.UserService|specification|shapedAs|saveUser-getAllUser-createDefaultAuthUser-deleteByUserId-interface-method-shapes",
+   "candidateAtomId": "atom:contract:ts-auth-service.userservice:shapedas-methods#pass-b",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/UserService.java:22",
+    "src:ts-auth-service/src/main/java/auth/service/UserService.java:30",
+    "src:ts-auth-service/src/main/java/auth/service/UserService.java:38",
+    "src:ts-auth-service/src/main/java/auth/service/UserService.java:47"
+   ]
+  },
+  {
+   "key": "contract|ts-basic-service.BasicService|specification|shapedAs|queryForTravel-queryForTravels-queryForStationId-interface-method-shapes-each-returning-Response",
+   "candidateAtomId": "atom:contract:ts-basic-service.basicservice:shapedas-methods#pass-b",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicService.java:23",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicService.java:25",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicService.java:34"
+   ]
+  },
+  {
+   "key": "contract|ts-basic-service.SecurityConfig|specification|requires|http-security-is-configured-with-http-basic-and-csrf-disabled-and-stateless-session-creation-policy",
+   "candidateAtomId": "atom:contract:ts-basic-service.securityconfig:requires-stateless-session",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:64",
+    "src:ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:68"
+   ]
+  },
+  {
+   "key": "contract|ts-cancel-service.CancelServiceImpl|specification|ensures|the-private-calculaterefund-helper-returns-0.00-when-order-status-is-notpaid-returns-0-when-the-current-time-is-after-the-computed-travel-start-time-and-otherwise-returns-80-percent-of-the-parsed-order-price-formatted-with-two-decimals",
+   "candidateAtomId": "atom:contract:ts-cancel-service.cancelserviceimpl:ensures-refund-formula",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:200",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:224",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:228",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:231"
+   ]
+  },
+  {
+   "key": "contract|ts-cancel-service.CancelService|specification|shapedAs|cancelOrder(orderId,loginId,headers)-returns-Response-and-calculateRefund(orderId,headers)-returns-Response-interface-method-shapes",
+   "candidateAtomId": "atom:contract:ts-cancel-service.cancelservice:shapedas-methods#pass-b",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelService.java:20",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelService.java:29"
+   ]
+  },
+  {
+   "key": "contract|ts-cancel-service.GetAccountByIdInfo|specification|shapedAs|single-string-field-accountId",
+   "candidateAtomId": "atom:contract:ts-cancel-service.getaccountbyidinfo:shapedas-accountid",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/entity/GetAccountByIdInfo.java:11"
+   ]
+  },
+  {
+   "key": "contract|ts-cancel-service.GetAccountByIdResult|specification|shapedAs|boolean-status-field-plus-string-message-field-plus-embedded-Account-object-field",
+   "candidateAtomId": "atom:contract:ts-cancel-service.getaccountbyidresult:shapedas-fields#pass-b",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/entity/GetAccountByIdResult.java:13",
+    "src:ts-cancel-service/src/main/java/cancel/entity/GetAccountByIdResult.java:15",
+    "src:ts-cancel-service/src/main/java/cancel/entity/GetAccountByIdResult.java:17"
+   ]
+  },
+  {
+   "key": "contract|ts-cancel-service.GetOrderByIdInfo|specification|shapedAs|single-string-field-orderId",
+   "candidateAtomId": "atom:contract:ts-cancel-service.getorderbyidinfo:shapedas-orderid",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/entity/GetOrderByIdInfo.java:11"
+   ]
+  },
+  {
+   "key": "contract|ts-cancel-service.SecurityConfig|specification|requires|http-security-is-configured-with-http-basic-and-csrf-disabled-and-stateless-session-creation-policy",
+   "candidateAtomId": "atom:contract:ts-cancel-service.securityconfig:requires-stateless-session",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:64",
+    "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:68"
+   ]
+  },
+  {
+   "key": "contract|ts-common.SwaggerConfig|specification|requires|createrestapi-requires-the-swagger.controllerpackage-property-injected-via-value-to-select-the-scanned-base-package-for-api-docs",
+   "candidateAtomId": "atom:contract:ts-common.swaggerconfig:requires-controllerpackage-config",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/config/SwaggerConfig.java:21",
+    "src:ts-common/src/main/java/edu/fudan/common/config/SwaggerConfig.java:31"
+   ]
+  },
+  {
+   "key": "relation|ts-basic-service.BasicApplication|relation|dependsOn|RestTemplateBuilder-produces-a-loadbalanced-RestTemplate-bean",
+   "candidateAtomId": "atom:relation:ts-basic-service.basicapplication:dependson-resttemplatebuilder",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/BasicApplication.java:30",
+    "src:ts-basic-service/src/main/java/fdse/microservice/BasicApplication.java:34"
+   ]
+  },
+  {
+   "key": "relation|ts-basic-service.BasicController|relation|calls|BasicService.queryForTravel-queryForTravels-queryForStationId",
+   "candidateAtomId": "atom:relation:ts-basic-service.basiccontroller:calls-basicservice",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/controller/BasicController.java:39",
+    "src:ts-basic-service/src/main/java/fdse/microservice/controller/BasicController.java:46",
+    "src:ts-basic-service/src/main/java/fdse/microservice/controller/BasicController.java:53"
+   ]
+  },
+  {
+   "key": "relation|ts-basic-service.SecurityConfig|relation|calls|JWTFilter-inserted-before-UsernamePasswordAuthenticationFilter-in-the-filter-chain",
+   "candidateAtomId": "atom:relation:ts-basic-service.securityconfig:calls-jwtfilter",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/config/SecurityConfig.java:76"
+   ]
+  },
+  {
+   "key": "relation|ts-cancel-service.CancelApplication|relation|dependsOn|RestTemplateBuilder-produces-a-loadbalanced-RestTemplate-bean",
+   "candidateAtomId": "atom:relation:ts-cancel-service.cancelapplication:dependson-resttemplatebuilder",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/CancelApplication.java:30",
+    "src:ts-cancel-service/src/main/java/cancel/CancelApplication.java:34"
+   ]
+  },
+  {
+   "key": "relation|ts-cancel-service.CancelController|relation|calls|CancelService.calculateRefund-cancelOrder",
+   "candidateAtomId": "atom:relation:ts-cancel-service.cancelcontroller:calls-cancelservice",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:36",
+    "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:47"
+   ]
+  },
+  {
+   "key": "relation|ts-cancel-service.SecurityConfig|relation|calls|JWTFilter-inserted-before-UsernamePasswordAuthenticationFilter-in-the-filter-chain",
+   "candidateAtomId": "atom:relation:ts-cancel-service.securityconfig:calls-jwtfilter",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/config/SecurityConfig.java:76"
+   ]
+  },
+  {
+   "key": "relation|ts-common.SwaggerConfig|relation|dependsOn|springfox-Docket-bean-built-from-the-configured-controllerPackagePath",
+   "candidateAtomId": "atom:relation:ts-common.swaggerconfig:dependson-docket",
+   "refs": [
+    "src:ts-common/src/main/java/edu/fudan/common/config/SwaggerConfig.java:26",
+    "src:ts-common/src/main/java/edu/fudan/common/config/SwaggerConfig.java:33"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-basic-service-price-quoting|cech|sectionValue|section=money-amount:double-arithmetic-then-string-concatenation",
+   "candidateAtomId": "atom:semantic:ts-basic-service.basicserviceimpl:cech-section-money-amount",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:106",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:109",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:299",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:302"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-cancel-service-cancel-order-flow|cech|sectionValue|section=order-status-code:enum-names-notpaid-paid-change-select-the-cancel-permitted-branch-cancel-is-the-target-status-written-back-any-other-status-selects-the-cancel-not-permitted-branch",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.cancelserviceimpl:cech-section-order-status-code",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:52",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:109",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:162",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:240"
+   ]
+  },
+  {
+   "key": "semantic|ctx:ts-cancel-service-refund-calculation-flow|cech|sectionValue|section=money-amount:string-parsed-to-double-arithmetic-decimalformat",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.cancelserviceimpl:cech-section-money-amount",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:228",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:230",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:231"
+   ]
+  },
+  {
+   "key": "semantic|ts-auth-service.TokenServiceImpl|semantic|meansInUse|empty-verifycode-value-skips-verification-code-service-call-non-empty-value-triggers-a-verify-request-before-credential-check",
+   "candidateAtomId": "atom:semantic:ts-auth-service.tokenserviceimpl:meansinuse-verifycode-optional-gate",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:65"
+   ]
+  },
+  {
+   "key": "semantic|ts-auth-service.TokenServiceImpl|semantic|meansInUse|status-1-on-successful-authentication-branch-carrying-tokendto-data-status-0-on-verification-code-not-confirmed-or-credential-check-not-passed-branch-with-null-data",
+   "candidateAtomId": "atom:semantic:ts-auth-service.tokenserviceimpl:meansinuse-response-status",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:77",
+    "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:87",
+    "src:ts-auth-service/src/main/java/auth/service/impl/TokenServiceImpl.java:96"
+   ]
+  },
+  {
+   "key": "semantic|ts-auth-service.UserServiceImpl|semantic|meansInUse|createdefaultauthuser-assigns-authconstant.role_user-as-the-only-default-role-in-the-built-user-regardless-of-dto-content",
+   "candidateAtomId": "atom:semantic:ts-auth-service.userserviceimpl:meansinuse-default-role-assignment",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:58"
+   ]
+  },
+  {
+   "key": "semantic|ts-auth-service.UserServiceImpl|semantic|meansInUse|local-variable-named-passwordmaxlength-holding-6-is-used-as-a-minimum-length-guard-password.length-less-than-passwordmaxlength-not-as-an-upper-bound",
+   "candidateAtomId": "atom:semantic:ts-auth-service.userserviceimpl:meansinuse-passwordmaxlength-variable",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:89",
+    "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:92"
+   ]
+  },
+  {
+   "key": "semantic|ts-auth-service.UserServiceImpl|semantic|meansInUse|saveuser-method-body-returns-null-unconditionally-and-does-not-call-the-repository-regardless-of-the-input-argument",
+   "candidateAtomId": "atom:semantic:ts-auth-service.userserviceimpl:meansinuse-saveuser-body",
+   "refs": [
+    "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:36",
+    "src:ts-auth-service/src/main/java/auth/service/impl/UserServiceImpl.java:37"
+   ]
+  },
+  {
+   "key": "semantic|ts-basic-service.BasicServiceImpl|semantic|meansInUse|status-1-on-a-successful-query-branch-carrying-result-data-status-0-on-a-place-not-found-or-traintype-not-found-or-route-not-found-or-station-not-on-the-route-in-order-branch",
+   "candidateAtomId": "atom:semantic:ts-basic-service.basicserviceimpl:meansinuse-response-status",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:45",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:66",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:76",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:94"
+   ]
+  },
+  {
+   "key": "semantic|ts-basic-service.BasicServiceImpl|semantic|meansInUse|the-distance-times-rate-price-computation-exception-branch-in-queryfortravel-selects-fixed-fallback-values-95.0-for-economyclass-and-120.0-for-confortclass",
+   "candidateAtomId": "atom:semantic:ts-basic-service.basicserviceimpl:meansinuse-price-fallback-queryfortravel",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:100",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:111",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:112"
+   ]
+  },
+  {
+   "key": "semantic|ts-basic-service.BasicServiceImpl|semantic|meansInUse|the-distance-times-rate-price-computation-exception-branch-in-queryfortravels-selects-fixed-fallback-values-95.0-for-economyclass-and-120.0-for-confortclass",
+   "candidateAtomId": "atom:semantic:ts-basic-service.basicserviceimpl:meansinuse-price-fallback-queryfortravels",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:293",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:304",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:305"
+   ]
+  },
+  {
+   "key": "semantic|ts-basic-service.BasicServiceImpl|semantic|meansInUse|when-the-downstream-station-service-response-status-is-not-1-queryforstationid-returns-a-new-response-with-status-0-and-the-forwarded-message-instead-of-passing-the-original-response-through",
+   "candidateAtomId": "atom:semantic:ts-basic-service.basicserviceimpl:meansinuse-queryforstationid-forwarding",
+   "refs": [
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:333",
+    "src:ts-basic-service/src/main/java/fdse/microservice/service/BasicServiceImpl.java:336"
+   ]
+  },
+  {
+   "key": "semantic|ts-basic-service.application-yml|semantic|meansInUse|service-registers-under-the-name-ts-basic-service-and-listens-on-port-15680-discovered-through-a-nacos-cluster-address-list",
+   "candidateAtomId": "atom:semantic:ts-basic-service.application-yml:meansinuse-service-registration",
+   "refs": [
+    "src:ts-basic-service/src/main/resources/application.yml:2",
+    "src:ts-basic-service/src/main/resources/application.yml:8",
+    "src:ts-basic-service/src/main/resources/application.yml:10"
+   ]
+  },
+  {
+   "key": "semantic|ts-cancel-service.CancelController|semantic|meansInUse|status-1-is-selected-on-the-branch-where-cancelticket-catches-an-exception-from-cancelservice-carrying-the-literal-message-error-and-null-data-the-same-status-value-1-otherwise-selects-the-normal-success-branch-returned-directly-from-the-service-layer",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.cancelcontroller:meansinuse-exception-branch-status",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:48",
+    "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:49",
+    "src:ts-cancel-service/src/main/java/cancel/controller/CancelController.java:50"
+   ]
+  },
+  {
+   "key": "semantic|ts-cancel-service.CancelServiceImpl|semantic|meansInUse|drawbackmoney-uses-the-http-get-verb-to-call-the-inside-payment-service-drawback-endpoint-that-changes-the-account-balance-state-rather-than-a-put-or-post-verb",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-drawback-get-verb",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:284",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:285"
+   ]
+  },
+  {
+   "key": "semantic|ts-cancel-service.CancelServiceImpl|semantic|meansInUse|status-1-on-a-cancel-or-refund-success-branch-carrying-data-status-0-on-an-order-not-found-branch-or-an-order-status-cancel-not-permitted-branch-or-a-downstream-cancel-not-confirmed-branch",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-response-status",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:59",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:71",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:95",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:100",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:127",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:138"
+   ]
+  },
+  {
+   "key": "semantic|ts-cancel-service.CancelServiceImpl|semantic|meansInUse|the-getaccount-method-parameter-is-named-orderid-but-at-the-cancelorder-call-site-it-is-populated-from-order.getaccountid-not-from-an-order-identifier",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-getaccount-parameter-binding",
+   "refs": [
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:70",
+    "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java:294"
+   ]
+  },
+  {
+   "key": "semantic|ts-cancel-service.application-yml|semantic|meansInUse|service-registers-under-the-name-ts-cancel-service-and-listens-on-port-18885-discovered-through-a-nacos-cluster-address-list",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.application-yml:meansinuse-service-registration",
+   "refs": [
+    "src:ts-cancel-service/src/main/resources/application.yml:2",
+    "src:ts-cancel-service/src/main/resources/application.yml:8",
+    "src:ts-cancel-service/src/main/resources/application.yml:10"
+   ]
+  }
+ ],
+ "matchRate": 0.30994152046783624,
+ "atomMatchKey1Comparison": {
+  "atomMatchKeySpec": "kind | NFC(trim(subject)) | axis | predicate? | object? (atom-match-key@1)",
+  "matchedCount": 53,
+  "matchRate": 0.30994152046783624
+ },
+ "contextDiff": {
+  "matched": 0,
+  "onlyInPassA": [
+   "members=[authority|ts-basic-service.SecurityConfig|authority|allowsCrossOrigin|origin=* methods=* headers=* credentials=false maxage=3600 path=/**,authority|ts-basic-service.SecurityConfig|authority|permitsUnauthenticated|ALL /api/v1/basicservice/**,authority|ts-basic-service.SecurityConfig|authority|permitsUnauthenticated|ALL /swagger-ui.html,/webjars/**,/images/**,/configuration/**,/swagger-resources/**,/v2/**,component|ts-basic-service.SecurityConfig|static||,relation|ts-basic-service.SecurityConfig|relation|dependsOn|JWTFilter,semantic|ts-basic-service.SecurityConfig|semantic|meansInUse|csrf-protection-disabled-branch-selected-for-basicservice-httpsecurity-chain,semantic|ts-basic-service.SecurityConfig|semantic|meansInUse|sessioncreationpolicy-stateless-selected-no-httpsession-created-for-basicservice-requests]|restrictsTo=[]",
+   "members=[authority|ts-cancel-service.CancelController|authority|allowsCrossOrigin|origin=* on GET /api/v1/cancelservice/cancel/refound/{orderId},authority|ts-cancel-service.CancelController|authority|allowsCrossOrigin|origin=* on GET /api/v1/cancelservice/cancel/{orderId}/{loginId},capability|ts-cancel-service.CancelController|capability|handlesCommand|GET /api/v1/cancelservice/cancel/{orderId}/{loginId},capability|ts-cancel-service.CancelController|capability|servesQuery|GET /api/v1/cancelservice/cancel/refound/{orderId},capability|ts-cancel-service.CancelController|capability|servesQuery|GET /api/v1/cancelservice/welcome,capability|ts-cancel-service.CancelServiceImpl|capability|handlesCommand|cancelOrder/3,capability|ts-cancel-service.CancelServiceImpl|capability|servesQuery|calculateRefund/2,component|ts-cancel-service.CancelController|static||,component|ts-cancel-service.CancelServiceImpl|static||,component|ts-cancel-service.CancelService|static||,contract|ts-cancel-service.CancelService|specification|shapedAs|cancelOrder/3,calculateRefund/2,effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|GET ts-inside-payment-service /api/v1/inside_pay_service/inside_payment/drawback/{userId}/{money},effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|GET ts-order-other-service /api/v1/orderOtherService/orderOther/{orderId},effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|GET ts-order-service /api/v1/orderservice/order/{orderId},effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|GET ts-user-service /api/v1/userservice/users/id/{orderId},effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|POST ts-notification-service /api/v1/notifyservice/notification/order_cancel_success,effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|PUT ts-order-other-service /api/v1/orderOtherService/orderOther,effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|PUT ts-order-service /api/v1/orderservice/order,relation|ts-cancel-service.CancelController|relation|calls|CancelService.calculateRefund,relation|ts-cancel-service.CancelController|relation|calls|CancelService.cancelOrder,semantic|ctx:ts-cancel-service-cancel-and-refund-flow|cech|sectionValue|section=money-amount:string-literal-zero-selected-on-notpaid-or-ticket-expired-travel-time-branch,semantic|ctx:ts-cancel-service-cancel-and-refund-flow|cech|sectionValue|section=money-amount:string-parsed-to-double-arithmetic-decimalformat,semantic|ctx:ts-cancel-service-cancel-and-refund-flow|cech|sectionValue|section=order-status-code:enum-notpaid-or-paid-or-change-select-the-cancel-permitted-branch-other-enum-values-select-the-cancel-not-permitted-branch-cancel-enum-set-on-the-success-branch,semantic|ts-cancel-service.CancelController|semantic|meansInUse|status-1-selected-on-both-the-successful-cancelorder-return-branch-and-the-caught-exception-branch-message-field-carries-literal-error-text-on-the-exception-branch,semantic|ts-cancel-service.CancelServiceImpl|semantic|meansInUse|authorization-header-is-copied-unchanged-into-a-new-headers-object-and-forwarded-to-the-order-order-other-inside-payment-and-user-service-calls-when-present-on-the-incoming-request-omitted-otherwise,semantic|ts-cancel-service.CancelServiceImpl|semantic|meansInUse|getaccount-method-parameter-named-orderid-is-passed-order-getaccountid-at-the-call-site-the-parameter-identifies-an-account-not-an-order,semantic|ts-cancel-service.CancelServiceImpl|semantic|meansInUse|notifyinfo-is-constructed-in-cancelorder-but-the-sendemail-call-site-is-a-commented-out-line-on-the-draw-back-money-success-branch,semantic|ts-cancel-service.CancelServiceImpl|semantic|meansInUse|status-1-returned-on-the-cancelorder-success-branch-even-when-drawbackmoney-returns-false-status-0-returned-only-on-the-order-not-found-order-status-not-permitted-or-changeorder-non-1-branches]|restrictsTo=[members=[authority|ts-cancel-service.SecurityConfig|authority|allowsCrossOrigin|origin=* methods=* headers=* credentials=false maxage=3600 path=/**,authority|ts-cancel-service.SecurityConfig|authority|permitsUnauthenticated|ALL /swagger-ui.html,/webjars/**,/images/**,/configuration/**,/swagger-resources/**,/v2/**,authority|ts-cancel-service.SecurityConfig|authority|requiresRole|ALL /api/v1/cancelservice/** requiresRole-ADMIN-or-USER,component|ts-cancel-service.SecurityConfig|static||,relation|ts-cancel-service.SecurityConfig|relation|dependsOn|JWTFilter,semantic|ts-cancel-service.SecurityConfig|semantic|meansInUse|csrf-protection-disabled-branch-selected-for-cancelservice-httpsecurity-chain,semantic|ts-cancel-service.SecurityConfig|semantic|meansInUse|sessioncreationpolicy-stateless-selected-no-httpsession-created-for-cancelservice-requests]|restrictsTo=[]]",
+   "members=[authority|ts-cancel-service.SecurityConfig|authority|allowsCrossOrigin|origin=* methods=* headers=* credentials=false maxage=3600 path=/**,authority|ts-cancel-service.SecurityConfig|authority|permitsUnauthenticated|ALL /swagger-ui.html,/webjars/**,/images/**,/configuration/**,/swagger-resources/**,/v2/**,authority|ts-cancel-service.SecurityConfig|authority|requiresRole|ALL /api/v1/cancelservice/** requiresRole-ADMIN-or-USER,component|ts-cancel-service.SecurityConfig|static||,relation|ts-cancel-service.SecurityConfig|relation|dependsOn|JWTFilter,semantic|ts-cancel-service.SecurityConfig|semantic|meansInUse|csrf-protection-disabled-branch-selected-for-cancelservice-httpsecurity-chain,semantic|ts-cancel-service.SecurityConfig|semantic|meansInUse|sessioncreationpolicy-stateless-selected-no-httpsession-created-for-cancelservice-requests]|restrictsTo=[]",
+   "members=[capability|ts-auth-service.TokenServiceImpl|capability|servesQuery|getToken/2,component|ts-auth-service.TokenServiceImpl|static||,effect|ts-auth-service.TokenServiceImpl|effect|callsProvider|GET ts-verification-code-service /api/v1/verifycode/verify/{verifyCode},relation|ts-auth-service.TokenServiceImpl|relation|calls|AuthenticationManager.authenticate,relation|ts-auth-service.TokenServiceImpl|relation|calls|JWTProvider.createToken,relation|ts-auth-service.TokenServiceImpl|relation|calls|UserRepository.findByUsername,relation|ts-auth-service.TokenServiceImpl|relation|dependsOn|DiscoveryClient,semantic|ts-auth-service.TokenServiceImpl|semantic|meansInUse|status-1-on-login-success-token-issued-branch-status-0-on-verification-code-or-credential-rejected-branch]|restrictsTo=[]",
+   "members=[capability|ts-auth-service.UserServiceImpl|capability|handlesCommand|createDefaultAuthUser/1,capability|ts-auth-service.UserServiceImpl|capability|handlesCommand|deleteByUserId/2,capability|ts-auth-service.UserServiceImpl|capability|servesQuery|getAllUser/1,capability|ts-auth-service.UserServiceImpl|capability|servesQuery|saveUser/1,component|ts-auth-service.UserServiceImpl|static||,contract|ts-auth-service.UserServiceImpl|specification|requires|username-non-empty-and-password-non-null-min-length-6-and-roles-non-empty-else-throws-useroperationexception,relation|ts-auth-service.UserServiceImpl|relation|calls|PasswordEncoder.encode,relation|ts-auth-service.UserServiceImpl|relation|calls|UserRepository.deleteByUserId,relation|ts-auth-service.UserServiceImpl|relation|calls|UserRepository.findAll,relation|ts-auth-service.UserServiceImpl|relation|calls|UserRepository.save,semantic|ts-auth-service.UserServiceImpl|semantic|meansInUse|createdefaultauthuser-assigns-the-fixed-role-user-constant-to-every-new-account-at-this-site,semantic|ts-auth-service.UserServiceImpl|semantic|meansInUse|saveuser-returns-null-without-invoking-repository-save-or-passwordencoder-at-this-site,state|ts-auth-service.UserServiceImpl|state|persistsIn|User]|restrictsTo=[]",
+   "members=[capability|ts-basic-service.BasicController|capability|servesQuery|GET /api/v1/basicservice/basic/{stationName},capability|ts-basic-service.BasicController|capability|servesQuery|GET /api/v1/basicservice/welcome,capability|ts-basic-service.BasicController|capability|servesQuery|POST /api/v1/basicservice/basic/travel,capability|ts-basic-service.BasicController|capability|servesQuery|POST /api/v1/basicservice/basic/travels,capability|ts-basic-service.BasicServiceImpl|capability|servesQuery|queryForStationId/2,capability|ts-basic-service.BasicServiceImpl|capability|servesQuery|queryForTravel/2,capability|ts-basic-service.BasicServiceImpl|capability|servesQuery|queryForTravels/2,component|ts-basic-service.BasicController|static||,component|ts-basic-service.BasicServiceImpl|static||,component|ts-basic-service.BasicService|static||,contract|ts-basic-service.BasicService|specification|shapedAs|queryForTravel/2,queryForTravels/2,queryForStationId/2,effect|ts-basic-service.BasicServiceImpl|effect|callsProvider|GET ts-price-service /api/v1/priceservice/prices/{routeId}/{trainType},effect|ts-basic-service.BasicServiceImpl|effect|callsProvider|GET ts-route-service /api/v1/routeservice/routes/{routeId},effect|ts-basic-service.BasicServiceImpl|effect|callsProvider|GET ts-station-service /api/v1/stationservice/stations/id/{stationName},effect|ts-basic-service.BasicServiceImpl|effect|callsProvider|GET ts-train-service /api/v1/trainservice/trains/byName/{trainTypeName},effect|ts-basic-service.BasicServiceImpl|effect|callsProvider|POST ts-price-service /api/v1/priceservice/prices/byRouteIdsAndTrainTypes,effect|ts-basic-service.BasicServiceImpl|effect|callsProvider|POST ts-route-service /api/v1/routeservice/routes/byIds/,effect|ts-basic-service.BasicServiceImpl|effect|callsProvider|POST ts-station-service /api/v1/stationservice/stations/idlist,effect|ts-basic-service.BasicServiceImpl|effect|callsProvider|POST ts-train-service /api/v1/trainservice/trains/byNames,relation|ts-basic-service.BasicController|relation|calls|BasicService.queryForStationId,relation|ts-basic-service.BasicController|relation|calls|BasicService.queryForTravel,relation|ts-basic-service.BasicController|relation|calls|BasicService.queryForTravels,relation|ts-basic-service.BasicServiceImpl|relation|dependsOn|DiscoveryClient,semantic|ctx:ts-basic-service-travel-query-flow|cech|sectionValue|section=money-amount:double-arithmetic-then-string-concatenation,semantic|ctx:ts-basic-service-travel-query-flow|cech|sectionValue|section=money-amount:string-literal-fallback-default-price-on-exception-branch,semantic|ts-basic-service.BasicServiceImpl|semantic|meansInUse|querystationid-forwards-the-upstream-station-service-status-and-message-unchanged-on-the-not-found-branch,semantic|ts-basic-service.BasicServiceImpl|semantic|meansInUse|status-1-on-successful-travel-query-branch-status-0-on-missing-start-or-end-station-or-traintype-or-route-or-station-order-in-route-branch]|restrictsTo=[members=[authority|ts-basic-service.SecurityConfig|authority|allowsCrossOrigin|origin=* methods=* headers=* credentials=false maxage=3600 path=/**,authority|ts-basic-service.SecurityConfig|authority|permitsUnauthenticated|ALL /api/v1/basicservice/**,authority|ts-basic-service.SecurityConfig|authority|permitsUnauthenticated|ALL /swagger-ui.html,/webjars/**,/images/**,/configuration/**,/swagger-resources/**,/v2/**,component|ts-basic-service.SecurityConfig|static||,relation|ts-basic-service.SecurityConfig|relation|dependsOn|JWTFilter,semantic|ts-basic-service.SecurityConfig|semantic|meansInUse|csrf-protection-disabled-branch-selected-for-basicservice-httpsecurity-chain,semantic|ts-basic-service.SecurityConfig|semantic|meansInUse|sessioncreationpolicy-stateless-selected-no-httpsession-created-for-basicservice-requests]|restrictsTo=[]]",
+   "members=[component|ts-cancel-service.GetAccountByIdInfo|static||,component|ts-cancel-service.GetAccountByIdResult|static||,component|ts-cancel-service.GetOrderByIdInfo|static||,contract|ts-cancel-service.GetAccountByIdInfo|specification|shapedAs|accountId:String,contract|ts-cancel-service.GetAccountByIdResult|specification|shapedAs|status:boolean,message:String,account:Account,contract|ts-cancel-service.GetOrderByIdInfo|specification|shapedAs|orderId:String]|restrictsTo=[]",
+   "members=[component|ts-common.SwaggerConfig|static||,contract|ts-common.SwaggerConfig|specification|requires|controllerpackagepath-injected-via-the-swagger.controllerpackage-property-a-value-supplied-per-service-in-each-services-application-yml]|restrictsTo=[]"
+  ],
+  "onlyInPassB": [
+   "members=[authority|ts-basic-service.SecurityConfig|authority|allowsCrossOrigin|wildcard-origin-methods-and-headers-allowed-on-/**-allowcredentials-false-maxage-3600,authority|ts-basic-service.SecurityConfig|authority|checksPermission|any-request-not-matched-by-an-earlier-antmatcher-requires-an-authenticated-principal,authority|ts-basic-service.SecurityConfig|authority|permitsUnauthenticated|ALL /api/v1/basicservice/** permitsUnauthenticated,authority|ts-basic-service.SecurityConfig|authority|permitsUnauthenticated|ALL /swagger-ui.html,/webjars/**,/images/**,/configuration/**,/swagger-resources/**,/v2/** permitsUnauthenticated,component|ts-basic-service.SecurityConfig|static||,contract|ts-basic-service.SecurityConfig|specification|requires|http-security-is-configured-with-http-basic-and-csrf-disabled-and-stateless-session-creation-policy,relation|ts-basic-service.SecurityConfig|relation|calls|JWTFilter-inserted-before-UsernamePasswordAuthenticationFilter-in-the-filter-chain]|restrictsTo=[members=[capability|ts-basic-service.BasicController|capability|exposesEndpoint|GET /api/v1/basicservice/basic/{stationName},capability|ts-basic-service.BasicController|capability|exposesEndpoint|GET /api/v1/basicservice/welcome,capability|ts-basic-service.BasicController|capability|exposesEndpoint|POST /api/v1/basicservice/basic/travel,capability|ts-basic-service.BasicController|capability|exposesEndpoint|POST /api/v1/basicservice/basic/travels,component|ts-basic-service.BasicController|static||,component|ts-basic-service.BasicService|static||,contract|ts-basic-service.BasicService|specification|shapedAs|queryForTravel-queryForTravels-queryForStationId-interface-method-shapes-each-returning-Response,relation|ts-basic-service.BasicController|relation|calls|BasicService.queryForTravel-queryForTravels-queryForStationId]|restrictsTo=[]]",
+   "members=[authority|ts-cancel-service.CancelController|authority|allowsCrossOrigin|GET /api/v1/cancelservice/cancel/refound/{orderId} method-level-crossorigin-wildcard,capability|ts-cancel-service.CancelController|capability|exposesEndpoint|GET /api/v1/cancelservice/cancel/refound/{orderId},capability|ts-cancel-service.CancelServiceImpl|capability|servesQuery|calculateRefund/2,contract|ts-cancel-service.CancelServiceImpl|specification|ensures|the-private-calculaterefund-helper-returns-0.00-when-order-status-is-notpaid-returns-0-when-the-current-time-is-after-the-computed-travel-start-time-and-otherwise-returns-80-percent-of-the-parsed-order-price-formatted-with-two-decimals,effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|GET ts-order-other-service /api/v1/orderOtherService/orderOther/{orderId},effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|GET ts-order-service /api/v1/orderservice/order/{orderId},semantic|ctx:ts-cancel-service-refund-calculation-flow|cech|sectionValue|section=money-amount:string-parsed-to-double-arithmetic-decimalformat]|restrictsTo=[]",
+   "members=[authority|ts-cancel-service.CancelController|authority|allowsCrossOrigin|GET /api/v1/cancelservice/cancel/{orderId}/{loginId} method-level-crossorigin-wildcard,capability|ts-cancel-service.CancelController|capability|handlesCommand|GET /api/v1/cancelservice/cancel/{orderId}/{loginId},capability|ts-cancel-service.CancelServiceImpl|capability|handlesCommand|cancelOrder/3,capability|ts-cancel-service.CancelServiceImpl|capability|handlesCommand|drawbackMoney/3,capability|ts-cancel-service.CancelServiceImpl|capability|handlesCommand|sendEmail/2,capability|ts-cancel-service.CancelServiceImpl|capability|servesQuery|getAccount/2,component|ts-cancel-service.CancelController|static||,component|ts-cancel-service.CancelServiceImpl|static||,effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|GET ts-inside-payment-service /api/v1/inside_pay_service/inside_payment/drawback/{userId}/{money},effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|GET ts-order-other-service /api/v1/orderOtherService/orderOther/{orderId},effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|GET ts-order-service /api/v1/orderservice/order/{orderId},effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|GET ts-user-service /api/v1/userservice/users/id/{orderId},effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|POST ts-notification-service /api/v1/notifyservice/notification/order_cancel_success,effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|PUT ts-order-other-service /api/v1/orderOtherService/orderOther,effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|PUT ts-order-service /api/v1/orderservice/order,relation|ts-cancel-service.CancelController|relation|calls|CancelService.calculateRefund-cancelOrder,semantic|ctx:ts-cancel-service-cancel-order-flow|cech|sectionValue|section=order-status-code:enum-names-notpaid-paid-change-select-the-cancel-permitted-branch-cancel-is-the-target-status-written-back-any-other-status-selects-the-cancel-not-permitted-branch,semantic|ts-cancel-service.CancelController|semantic|meansInUse|status-1-is-selected-on-the-branch-where-cancelticket-catches-an-exception-from-cancelservice-carrying-the-literal-message-error-and-null-data-the-same-status-value-1-otherwise-selects-the-normal-success-branch-returned-directly-from-the-service-layer,semantic|ts-cancel-service.CancelServiceImpl|semantic|meansInUse|drawbackmoney-uses-the-http-get-verb-to-call-the-inside-payment-service-drawback-endpoint-that-changes-the-account-balance-state-rather-than-a-put-or-post-verb,semantic|ts-cancel-service.CancelServiceImpl|semantic|meansInUse|status-1-on-a-cancel-or-refund-success-branch-carrying-data-status-0-on-an-order-not-found-branch-or-an-order-status-cancel-not-permitted-branch-or-a-downstream-cancel-not-confirmed-branch,semantic|ts-cancel-service.CancelServiceImpl|semantic|meansInUse|the-getaccount-method-parameter-is-named-orderid-but-at-the-cancelorder-call-site-it-is-populated-from-order.getaccountid-not-from-an-order-identifier]|restrictsTo=[members=[authority|ts-cancel-service.CancelController|authority|allowsCrossOrigin|GET /api/v1/cancelservice/cancel/refound/{orderId} method-level-crossorigin-wildcard,capability|ts-cancel-service.CancelController|capability|exposesEndpoint|GET /api/v1/cancelservice/cancel/refound/{orderId},capability|ts-cancel-service.CancelServiceImpl|capability|servesQuery|calculateRefund/2,contract|ts-cancel-service.CancelServiceImpl|specification|ensures|the-private-calculaterefund-helper-returns-0.00-when-order-status-is-notpaid-returns-0-when-the-current-time-is-after-the-computed-travel-start-time-and-otherwise-returns-80-percent-of-the-parsed-order-price-formatted-with-two-decimals,effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|GET ts-order-other-service /api/v1/orderOtherService/orderOther/{orderId},effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|GET ts-order-service /api/v1/orderservice/order/{orderId},semantic|ctx:ts-cancel-service-refund-calculation-flow|cech|sectionValue|section=money-amount:string-parsed-to-double-arithmetic-decimalformat]|restrictsTo=[]]",
+   "members=[authority|ts-cancel-service.SecurityConfig|authority|allowsCrossOrigin|wildcard-origin-methods-and-headers-allowed-on-/**-allowcredentials-false-maxage-3600,authority|ts-cancel-service.SecurityConfig|authority|checksPermission|any-request-not-matched-by-an-earlier-antmatcher-requires-an-authenticated-principal,authority|ts-cancel-service.SecurityConfig|authority|permitsUnauthenticated|ALL /swagger-ui.html,/webjars/**,/images/**,/configuration/**,/swagger-resources/**,/v2/** permitsUnauthenticated,authority|ts-cancel-service.SecurityConfig|authority|requiresRole|ALL /api/v1/cancelservice/** hasAnyRole-ADMIN-USER,component|ts-cancel-service.SecurityConfig|static||,contract|ts-cancel-service.SecurityConfig|specification|requires|http-security-is-configured-with-http-basic-and-csrf-disabled-and-stateless-session-creation-policy,relation|ts-cancel-service.SecurityConfig|relation|calls|JWTFilter-inserted-before-UsernamePasswordAuthenticationFilter-in-the-filter-chain]|restrictsTo=[members=[authority|ts-cancel-service.CancelController|authority|allowsCrossOrigin|GET /api/v1/cancelservice/cancel/{orderId}/{loginId} method-level-crossorigin-wildcard,capability|ts-cancel-service.CancelController|capability|handlesCommand|GET /api/v1/cancelservice/cancel/{orderId}/{loginId},capability|ts-cancel-service.CancelServiceImpl|capability|handlesCommand|cancelOrder/3,capability|ts-cancel-service.CancelServiceImpl|capability|handlesCommand|drawbackMoney/3,capability|ts-cancel-service.CancelServiceImpl|capability|handlesCommand|sendEmail/2,capability|ts-cancel-service.CancelServiceImpl|capability|servesQuery|getAccount/2,component|ts-cancel-service.CancelController|static||,component|ts-cancel-service.CancelServiceImpl|static||,effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|GET ts-inside-payment-service /api/v1/inside_pay_service/inside_payment/drawback/{userId}/{money},effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|GET ts-order-other-service /api/v1/orderOtherService/orderOther/{orderId},effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|GET ts-order-service /api/v1/orderservice/order/{orderId},effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|GET ts-user-service /api/v1/userservice/users/id/{orderId},effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|POST ts-notification-service /api/v1/notifyservice/notification/order_cancel_success,effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|PUT ts-order-other-service /api/v1/orderOtherService/orderOther,effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|PUT ts-order-service /api/v1/orderservice/order,relation|ts-cancel-service.CancelController|relation|calls|CancelService.calculateRefund-cancelOrder,semantic|ctx:ts-cancel-service-cancel-order-flow|cech|sectionValue|section=order-status-code:enum-names-notpaid-paid-change-select-the-cancel-permitted-branch-cancel-is-the-target-status-written-back-any-other-status-selects-the-cancel-not-permitted-branch,semantic|ts-cancel-service.CancelController|semantic|meansInUse|status-1-is-selected-on-the-branch-where-cancelticket-catches-an-exception-from-cancelservice-carrying-the-literal-message-error-and-null-data-the-same-status-value-1-otherwise-selects-the-normal-success-branch-returned-directly-from-the-service-layer,semantic|ts-cancel-service.CancelServiceImpl|semantic|meansInUse|drawbackmoney-uses-the-http-get-verb-to-call-the-inside-payment-service-drawback-endpoint-that-changes-the-account-balance-state-rather-than-a-put-or-post-verb,semantic|ts-cancel-service.CancelServiceImpl|semantic|meansInUse|status-1-on-a-cancel-or-refund-success-branch-carrying-data-status-0-on-an-order-not-found-branch-or-an-order-status-cancel-not-permitted-branch-or-a-downstream-cancel-not-confirmed-branch,semantic|ts-cancel-service.CancelServiceImpl|semantic|meansInUse|the-getaccount-method-parameter-is-named-orderid-but-at-the-cancelorder-call-site-it-is-populated-from-order.getaccountid-not-from-an-order-identifier]|restrictsTo=[members=[authority|ts-cancel-service.CancelController|authority|allowsCrossOrigin|GET /api/v1/cancelservice/cancel/refound/{orderId} method-level-crossorigin-wildcard,capability|ts-cancel-service.CancelController|capability|exposesEndpoint|GET /api/v1/cancelservice/cancel/refound/{orderId},capability|ts-cancel-service.CancelServiceImpl|capability|servesQuery|calculateRefund/2,contract|ts-cancel-service.CancelServiceImpl|specification|ensures|the-private-calculaterefund-helper-returns-0.00-when-order-status-is-notpaid-returns-0-when-the-current-time-is-after-the-computed-travel-start-time-and-otherwise-returns-80-percent-of-the-parsed-order-price-formatted-with-two-decimals,effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|GET ts-order-other-service /api/v1/orderOtherService/orderOther/{orderId},effect|ts-cancel-service.CancelServiceImpl|effect|callsProvider|GET ts-order-service /api/v1/orderservice/order/{orderId},semantic|ctx:ts-cancel-service-refund-calculation-flow|cech|sectionValue|section=money-amount:string-parsed-to-double-arithmetic-decimalformat]|restrictsTo=[]]]",
+   "members=[capability|ts-auth-service.TokenServiceImpl|capability|servesQuery|getToken/2,component|ts-auth-service.TokenServiceImpl|static||,component|ts-auth-service.TokenService|static||,contract|ts-auth-service.TokenService|specification|shapedAs|getToken(BasicAuthDto,HttpHeaders)-returns-Response-declared-throws-not-in-signature,effect|ts-auth-service.TokenServiceImpl|effect|callsProvider|GET ts-verification-code-service /api/v1/verifycode/verify/{verifyCode},relation|ts-auth-service.TokenServiceImpl|relation|calls|JWTProvider.createToken,relation|ts-auth-service.TokenServiceImpl|relation|calls|UserRepository.findByUsername,semantic|ts-auth-service.TokenServiceImpl|semantic|meansInUse|empty-verifycode-value-skips-verification-code-service-call-non-empty-value-triggers-a-verify-request-before-credential-check,semantic|ts-auth-service.TokenServiceImpl|semantic|meansInUse|status-1-on-successful-authentication-branch-carrying-tokendto-data-status-0-on-verification-code-not-confirmed-or-credential-check-not-passed-branch-with-null-data]|restrictsTo=[]",
+   "members=[capability|ts-auth-service.UserServiceImpl|capability|handlesCommand|createDefaultAuthUser/1,capability|ts-auth-service.UserServiceImpl|capability|handlesCommand|deleteByUserId/2,capability|ts-auth-service.UserServiceImpl|capability|servesQuery|getAllUser/1,capability|ts-auth-service.UserServiceImpl|capability|servesQuery|saveUser/1,component|ts-auth-service.UserServiceImpl|static||,component|ts-auth-service.UserService|static||,contract|ts-auth-service.UserServiceImpl|specification|ensures|deletebyuserid-method-is-annotated-transactional-so-the-repository-delete-runs-inside-a-single-transaction-boundary,contract|ts-auth-service.UserServiceImpl|specification|requires|checkusercreateinfo-requires-non-empty-username-non-null-password-of-length-at-least-6-and-non-empty-roles-else-throws-useroperationexception-with-collected-messages,contract|ts-auth-service.UserService|specification|shapedAs|saveUser-getAllUser-createDefaultAuthUser-deleteByUserId-interface-method-shapes,relation|ts-auth-service.UserServiceImpl|relation|calls|UserRepository.deleteByUserId,relation|ts-auth-service.UserServiceImpl|relation|calls|UserRepository.findAll,relation|ts-auth-service.UserServiceImpl|relation|calls|UserRepository.save,semantic|ts-auth-service.UserServiceImpl|semantic|meansInUse|createdefaultauthuser-assigns-authconstant.role_user-as-the-only-default-role-in-the-built-user-regardless-of-dto-content,semantic|ts-auth-service.UserServiceImpl|semantic|meansInUse|local-variable-named-passwordmaxlength-holding-6-is-used-as-a-minimum-length-guard-password.length-less-than-passwordmaxlength-not-as-an-upper-bound,semantic|ts-auth-service.UserServiceImpl|semantic|meansInUse|saveuser-method-body-returns-null-unconditionally-and-does-not-call-the-repository-regardless-of-the-input-argument,state|ts-auth-service.UserServiceImpl|state|persistsIn|User]|restrictsTo=[]",
+   "members=[capability|ts-basic-service.BasicController|capability|exposesEndpoint|GET /api/v1/basicservice/basic/{stationName},capability|ts-basic-service.BasicController|capability|exposesEndpoint|GET /api/v1/basicservice/welcome,capability|ts-basic-service.BasicController|capability|exposesEndpoint|POST /api/v1/basicservice/basic/travel,capability|ts-basic-service.BasicController|capability|exposesEndpoint|POST /api/v1/basicservice/basic/travels,component|ts-basic-service.BasicController|static||,component|ts-basic-service.BasicService|static||,contract|ts-basic-service.BasicService|specification|shapedAs|queryForTravel-queryForTravels-queryForStationId-interface-method-shapes-each-returning-Response,relation|ts-basic-service.BasicController|relation|calls|BasicService.queryForTravel-queryForTravels-queryForStationId]|restrictsTo=[]",
+   "members=[capability|ts-basic-service.BasicServiceImpl|capability|servesQuery|queryForTravel/2,capability|ts-basic-service.BasicServiceImpl|capability|servesQuery|queryForTravels/2,effect|ts-basic-service.BasicServiceImpl|effect|callsProvider|GET ts-price-service /api/v1/priceservice/prices/{routeId}/{trainType},effect|ts-basic-service.BasicServiceImpl|effect|callsProvider|GET ts-route-service /api/v1/routeservice/routes/{routeId},effect|ts-basic-service.BasicServiceImpl|effect|callsProvider|POST ts-price-service /api/v1/priceservice/prices/byRouteIdsAndTrainTypes,effect|ts-basic-service.BasicServiceImpl|effect|callsProvider|POST ts-route-service /api/v1/routeservice/routes/byIds/,semantic|ctx:ts-basic-service-price-quoting|cech|sectionValue|section=money-amount:double-arithmetic-then-string-concatenation,semantic|ts-basic-service.BasicServiceImpl|semantic|meansInUse|status-1-on-a-successful-query-branch-carrying-result-data-status-0-on-a-place-not-found-or-traintype-not-found-or-route-not-found-or-station-not-on-the-route-in-order-branch,semantic|ts-basic-service.BasicServiceImpl|semantic|meansInUse|the-distance-times-rate-price-computation-exception-branch-in-queryfortravel-selects-fixed-fallback-values-95.0-for-economyclass-and-120.0-for-confortclass,semantic|ts-basic-service.BasicServiceImpl|semantic|meansInUse|the-distance-times-rate-price-computation-exception-branch-in-queryfortravels-selects-fixed-fallback-values-95.0-for-economyclass-and-120.0-for-confortclass]|restrictsTo=[]"
+  ]
+ },
+ "adjudications": [
+  {
+   "key": "authority|ts-basic-service.SecurityConfig|authority|allowsCrossOrigin|origin=* methods=* headers=* credentials=false maxage=3600 path=/**",
+   "decision": "merged",
+   "basis": "reread: SecurityConfig.java:47-59 corsConfigurer bean registers addMapping(\"/**\").allowedOrigins(ALL).allowedMethods(ALL).allowedHeaders(ALL).allowCredentials(false).maxAge(3600); both rows cite lines 51 and 56 of the same bean",
+   "candidateAtomId": "atom:authority:ts-basic-service.securityconfig:allowscrossorigin-all",
+   "mergeGroup": "group-1",
+   "canonicalAtomId": "atom:authority:ts-basic-service.securityconfig:allowscrossorigin-all"
+  },
+  {
+   "key": "authority|ts-basic-service.SecurityConfig|authority|allowsCrossOrigin|wildcard-origin-methods-and-headers-allowed-on-/**-allowcredentials-false-maxage-3600",
+   "decision": "merged",
+   "basis": "reread: SecurityConfig.java:47-59 corsConfigurer bean registers addMapping(\"/**\").allowedOrigins(ALL).allowedMethods(ALL).allowedHeaders(ALL).allowCredentials(false).maxAge(3600); both rows cite lines 51 and 56 of the same bean",
+   "candidateAtomId": "atom:authority:ts-basic-service.securityconfig:allowscrossorigin-wildcard",
+   "mergeGroup": "group-1",
+   "canonicalAtomId": "atom:authority:ts-basic-service.securityconfig:allowscrossorigin-all"
+  },
+  {
+   "key": "authority|ts-basic-service.SecurityConfig|authority|permitsUnauthenticated|ALL /api/v1/basicservice/**",
+   "decision": "merged",
+   "basis": "reread: SecurityConfig.java:71 antMatchers(\"/api/v1/basicservice/**\").permitAll(); both rows cite the same line",
+   "candidateAtomId": "atom:authority:ts-basic-service.securityconfig:permitsunauthenticated-basicservice#pass-a",
+   "mergeGroup": "group-2",
+   "canonicalAtomId": "atom:authority:ts-basic-service.securityconfig:permitsunauthenticated-basicservice"
+  },
+  {
+   "key": "authority|ts-basic-service.SecurityConfig|authority|permitsUnauthenticated|ALL /api/v1/basicservice/** permitsUnauthenticated",
+   "decision": "merged",
+   "basis": "reread: SecurityConfig.java:71 antMatchers(\"/api/v1/basicservice/**\").permitAll(); both rows cite the same line",
+   "candidateAtomId": "atom:authority:ts-basic-service.securityconfig:permitsunauthenticated-basicservice#pass-b",
+   "mergeGroup": "group-2",
+   "canonicalAtomId": "atom:authority:ts-basic-service.securityconfig:permitsunauthenticated-basicservice"
+  },
+  {
+   "key": "authority|ts-basic-service.SecurityConfig|authority|permitsUnauthenticated|ALL /swagger-ui.html,/webjars/**,/images/**,/configuration/**,/swagger-resources/**,/v2/**",
+   "decision": "merged",
+   "basis": "reread: SecurityConfig.java:72-73 antMatchers(swagger paths).permitAll(); both rows cite lines 72-73",
+   "candidateAtomId": "atom:authority:ts-basic-service.securityconfig:permitsunauthenticated-swagger-docs",
+   "mergeGroup": "group-3",
+   "canonicalAtomId": "atom:authority:ts-basic-service.securityconfig:permitsunauthenticated-swagger-docs"
+  },
+  {
+   "key": "authority|ts-basic-service.SecurityConfig|authority|permitsUnauthenticated|ALL /swagger-ui.html,/webjars/**,/images/**,/configuration/**,/swagger-resources/**,/v2/** permitsUnauthenticated",
+   "decision": "merged",
+   "basis": "reread: SecurityConfig.java:72-73 antMatchers(swagger paths).permitAll(); both rows cite lines 72-73",
+   "candidateAtomId": "atom:authority:ts-basic-service.securityconfig:permitsunauthenticated-swagger",
+   "mergeGroup": "group-3",
+   "canonicalAtomId": "atom:authority:ts-basic-service.securityconfig:permitsunauthenticated-swagger-docs"
+  },
+  {
+   "key": "authority|ts-basic-service.SecurityConfig|authority|checksPermission|any-request-not-matched-by-an-earlier-antmatcher-requires-an-authenticated-principal",
+   "decision": "adopted",
+   "basis": "reread: SecurityConfig.java:74 .anyRequest().authenticated() is a distinct catch-all rule after the two antMatcher rules; no atom for this specific rule appears in pass A's candidate set for this file",
+   "candidateAtomId": "atom:authority:ts-basic-service.securityconfig:checkspermission-anyrequest"
+  },
+  {
+   "key": "authority|ts-cancel-service.SecurityConfig|authority|allowsCrossOrigin|origin=* methods=* headers=* credentials=false maxage=3600 path=/**",
+   "decision": "merged",
+   "basis": "reread: cancel/config/SecurityConfig.java:47-59 corsConfigurer bean registers addMapping(\"/**\").allowedOrigins(ALL).allowedMethods(ALL).allowedHeaders(ALL).allowCredentials(false).maxAge(3600); both rows cite lines 51 and 56",
+   "candidateAtomId": "atom:authority:ts-cancel-service.securityconfig:allowscrossorigin-all",
+   "mergeGroup": "group-4",
+   "canonicalAtomId": "atom:authority:ts-cancel-service.securityconfig:allowscrossorigin-all"
+  },
+  {
+   "key": "authority|ts-cancel-service.SecurityConfig|authority|allowsCrossOrigin|wildcard-origin-methods-and-headers-allowed-on-/**-allowcredentials-false-maxage-3600",
+   "decision": "merged",
+   "basis": "reread: cancel/config/SecurityConfig.java:47-59 corsConfigurer bean registers addMapping(\"/**\").allowedOrigins(ALL).allowedMethods(ALL).allowedHeaders(ALL).allowCredentials(false).maxAge(3600); both rows cite lines 51 and 56",
+   "candidateAtomId": "atom:authority:ts-cancel-service.securityconfig:allowscrossorigin-wildcard",
+   "mergeGroup": "group-4",
+   "canonicalAtomId": "atom:authority:ts-cancel-service.securityconfig:allowscrossorigin-all"
+  },
+  {
+   "key": "authority|ts-cancel-service.SecurityConfig|authority|permitsUnauthenticated|ALL /swagger-ui.html,/webjars/**,/images/**,/configuration/**,/swagger-resources/**,/v2/**",
+   "decision": "merged",
+   "basis": "reread: cancel/config/SecurityConfig.java:72-73 antMatchers(swagger paths).permitAll(); both rows cite lines 72-73",
+   "candidateAtomId": "atom:authority:ts-cancel-service.securityconfig:permitsunauthenticated-swagger-docs",
+   "mergeGroup": "group-5",
+   "canonicalAtomId": "atom:authority:ts-cancel-service.securityconfig:permitsunauthenticated-swagger-docs"
+  },
+  {
+   "key": "authority|ts-cancel-service.SecurityConfig|authority|permitsUnauthenticated|ALL /swagger-ui.html,/webjars/**,/images/**,/configuration/**,/swagger-resources/**,/v2/** permitsUnauthenticated",
+   "decision": "merged",
+   "basis": "reread: cancel/config/SecurityConfig.java:72-73 antMatchers(swagger paths).permitAll(); both rows cite lines 72-73",
+   "candidateAtomId": "atom:authority:ts-cancel-service.securityconfig:permitsunauthenticated-swagger",
+   "mergeGroup": "group-5",
+   "canonicalAtomId": "atom:authority:ts-cancel-service.securityconfig:permitsunauthenticated-swagger-docs"
+  },
+  {
+   "key": "authority|ts-cancel-service.SecurityConfig|authority|requiresRole|ALL /api/v1/cancelservice/** requiresRole-ADMIN-or-USER",
+   "decision": "merged",
+   "basis": "reread: cancel/config/SecurityConfig.java:71 antMatchers(\"/api/v1/cancelservice/**\").hasAnyRole(\"ADMIN\",\"USER\"); both rows cite the same line",
+   "candidateAtomId": "atom:authority:ts-cancel-service.securityconfig:requiresrole-cancelservice-admin-or-user",
+   "mergeGroup": "group-6",
+   "canonicalAtomId": "atom:authority:ts-cancel-service.securityconfig:requiresrole-cancelservice-admin-or-user"
+  },
+  {
+   "key": "authority|ts-cancel-service.SecurityConfig|authority|requiresRole|ALL /api/v1/cancelservice/** hasAnyRole-ADMIN-USER",
+   "decision": "merged",
+   "basis": "reread: cancel/config/SecurityConfig.java:71 antMatchers(\"/api/v1/cancelservice/**\").hasAnyRole(\"ADMIN\",\"USER\"); both rows cite the same line",
+   "candidateAtomId": "atom:authority:ts-cancel-service.securityconfig:requiresrole-cancelservice",
+   "mergeGroup": "group-6",
+   "canonicalAtomId": "atom:authority:ts-cancel-service.securityconfig:requiresrole-cancelservice-admin-or-user"
+  },
+  {
+   "key": "authority|ts-cancel-service.SecurityConfig|authority|checksPermission|any-request-not-matched-by-an-earlier-antmatcher-requires-an-authenticated-principal",
+   "decision": "adopted",
+   "basis": "reread: cancel/config/SecurityConfig.java:74 .anyRequest().authenticated() is a distinct catch-all rule after the antMatcher rules; no atom for this specific rule appears in pass A's candidate set for this file",
+   "candidateAtomId": "atom:authority:ts-cancel-service.securityconfig:checkspermission-anyrequest"
+  },
+  {
+   "key": "authority|ts-cancel-service.CancelController|authority|allowsCrossOrigin|origin=* on GET /api/v1/cancelservice/cancel/refound/{orderId}",
+   "decision": "merged",
+   "basis": "reread: CancelController.java:32 @CrossOrigin(origins=\"*\") annotates the GET /cancel/refound/{orderId} handler at line 33; both rows cite line 32",
+   "candidateAtomId": "atom:authority:ts-cancel-service.cancelcontroller:allowscrossorigin-cancel-refound",
+   "mergeGroup": "group-7",
+   "canonicalAtomId": "atom:authority:ts-cancel-service.cancelcontroller:allowscrossorigin-cancel-refound"
+  },
+  {
+   "key": "authority|ts-cancel-service.CancelController|authority|allowsCrossOrigin|GET /api/v1/cancelservice/cancel/refound/{orderId} method-level-crossorigin-wildcard",
+   "decision": "merged",
+   "basis": "reread: CancelController.java:32 @CrossOrigin(origins=\"*\") annotates the GET /cancel/refound/{orderId} handler at line 33; both rows cite line 32",
+   "candidateAtomId": "atom:authority:ts-cancel-service.cancelcontroller:allowscrossorigin-refund-calc-endpoint",
+   "mergeGroup": "group-7",
+   "canonicalAtomId": "atom:authority:ts-cancel-service.cancelcontroller:allowscrossorigin-cancel-refound"
+  },
+  {
+   "key": "authority|ts-cancel-service.CancelController|authority|allowsCrossOrigin|origin=* on GET /api/v1/cancelservice/cancel/{orderId}/{loginId}",
+   "decision": "merged",
+   "basis": "reread: CancelController.java:39 @CrossOrigin(origins=\"*\") annotates the GET /cancel/{orderId}/{loginId} handler at line 40-41; both rows cite line 39",
+   "candidateAtomId": "atom:authority:ts-cancel-service.cancelcontroller:allowscrossorigin-cancel-orderid-loginid",
+   "mergeGroup": "group-8",
+   "canonicalAtomId": "atom:authority:ts-cancel-service.cancelcontroller:allowscrossorigin-cancel-orderid-loginid"
+  },
+  {
+   "key": "authority|ts-cancel-service.CancelController|authority|allowsCrossOrigin|GET /api/v1/cancelservice/cancel/{orderId}/{loginId} method-level-crossorigin-wildcard",
+   "decision": "merged",
+   "basis": "reread: CancelController.java:39 @CrossOrigin(origins=\"*\") annotates the GET /cancel/{orderId}/{loginId} handler at line 40-41; both rows cite line 39",
+   "candidateAtomId": "atom:authority:ts-cancel-service.cancelcontroller:allowscrossorigin-cancel-ticket-endpoint",
+   "mergeGroup": "group-8",
+   "canonicalAtomId": "atom:authority:ts-cancel-service.cancelcontroller:allowscrossorigin-cancel-orderid-loginid"
+  },
+  {
+   "key": "capability|ts-basic-service.BasicController|capability|servesQuery|GET /api/v1/basicservice/basic/{stationName}",
+   "decision": "merged",
+   "basis": "reread: BasicController.java:49,53 @GetMapping(value=\"/basic/{stationName}\") queryForStationId handler; both rows describe the same endpoint",
+   "candidateAtomId": "atom:capability:ts-basic-service.basiccontroller:servesquery-basic-stationname",
+   "mergeGroup": "group-9",
+   "canonicalAtomId": "atom:capability:ts-basic-service.basiccontroller:servesquery-basic-stationname"
+  },
+  {
+   "key": "capability|ts-basic-service.BasicController|capability|exposesEndpoint|GET /api/v1/basicservice/basic/{stationName}",
+   "decision": "merged",
+   "basis": "reread: BasicController.java:49,53 @GetMapping(value=\"/basic/{stationName}\") queryForStationId handler; both rows describe the same endpoint",
+   "candidateAtomId": "atom:capability:ts-basic-service.basiccontroller:exposesendpoint-basic-stationname",
+   "mergeGroup": "group-9",
+   "canonicalAtomId": "atom:capability:ts-basic-service.basiccontroller:servesquery-basic-stationname"
+  },
+  {
+   "key": "capability|ts-basic-service.BasicController|capability|servesQuery|GET /api/v1/basicservice/welcome",
+   "decision": "merged",
+   "basis": "reread: BasicController.java:30,32 @GetMapping(path=\"/welcome\") home handler; both rows describe the same endpoint",
+   "candidateAtomId": "atom:capability:ts-basic-service.basiccontroller:servesquery-welcome",
+   "mergeGroup": "group-10",
+   "canonicalAtomId": "atom:capability:ts-basic-service.basiccontroller:servesquery-welcome"
+  },
+  {
+   "key": "capability|ts-basic-service.BasicController|capability|exposesEndpoint|GET /api/v1/basicservice/welcome",
+   "decision": "merged",
+   "basis": "reread: BasicController.java:30,32 @GetMapping(path=\"/welcome\") home handler; both rows describe the same endpoint",
+   "candidateAtomId": "atom:capability:ts-basic-service.basiccontroller:exposesendpoint-welcome",
+   "mergeGroup": "group-10",
+   "canonicalAtomId": "atom:capability:ts-basic-service.basiccontroller:servesquery-welcome"
+  },
+  {
+   "key": "capability|ts-basic-service.BasicController|capability|servesQuery|POST /api/v1/basicservice/basic/travel",
+   "decision": "merged",
+   "basis": "reread: BasicController.java:35,39 @PostMapping(value=\"/basic/travel\") queryForTravel handler; both rows describe the same endpoint",
+   "candidateAtomId": "atom:capability:ts-basic-service.basiccontroller:servesquery-basic-travel",
+   "mergeGroup": "group-11",
+   "canonicalAtomId": "atom:capability:ts-basic-service.basiccontroller:servesquery-basic-travel"
+  },
+  {
+   "key": "capability|ts-basic-service.BasicController|capability|exposesEndpoint|POST /api/v1/basicservice/basic/travel",
+   "decision": "merged",
+   "basis": "reread: BasicController.java:35,39 @PostMapping(value=\"/basic/travel\") queryForTravel handler; both rows describe the same endpoint",
+   "candidateAtomId": "atom:capability:ts-basic-service.basiccontroller:exposesendpoint-basic-travel",
+   "mergeGroup": "group-11",
+   "canonicalAtomId": "atom:capability:ts-basic-service.basiccontroller:servesquery-basic-travel"
+  },
+  {
+   "key": "capability|ts-basic-service.BasicController|capability|servesQuery|POST /api/v1/basicservice/basic/travels",
+   "decision": "merged",
+   "basis": "reread: BasicController.java:42,46 @PostMapping(value=\"/basic/travels\") queryForTravels handler; both rows describe the same endpoint",
+   "candidateAtomId": "atom:capability:ts-basic-service.basiccontroller:servesquery-basic-travels",
+   "mergeGroup": "group-12",
+   "canonicalAtomId": "atom:capability:ts-basic-service.basiccontroller:servesquery-basic-travels"
+  },
+  {
+   "key": "capability|ts-basic-service.BasicController|capability|exposesEndpoint|POST /api/v1/basicservice/basic/travels",
+   "decision": "merged",
+   "basis": "reread: BasicController.java:42,46 @PostMapping(value=\"/basic/travels\") queryForTravels handler; both rows describe the same endpoint",
+   "candidateAtomId": "atom:capability:ts-basic-service.basiccontroller:exposesendpoint-basic-travels",
+   "mergeGroup": "group-12",
+   "canonicalAtomId": "atom:capability:ts-basic-service.basiccontroller:servesquery-basic-travels"
+  },
+  {
+   "key": "capability|ts-basic-service.BasicServiceImpl|capability|servesQuery|checkStationExists/2",
+   "decision": "adopted",
+   "basis": "reread: BasicServiceImpl.java:358 public boolean checkStationExists(String stationName, HttpHeaders headers) is a real 2-arg method; no atom for it appears in pass A's candidate set",
+   "candidateAtomId": "atom:capability:ts-basic-service.basicserviceimpl:servesquery-checkstationexists"
+  },
+  {
+   "key": "capability|ts-basic-service.BasicServiceImpl|capability|servesQuery|checkStationsExists/2",
+   "decision": "adopted",
+   "basis": "reread: BasicServiceImpl.java:341 public Map<String,String> checkStationsExists(List<String> stationNames, HttpHeaders headers) is a real 2-arg method; no atom for it appears in pass A's candidate set",
+   "candidateAtomId": "atom:capability:ts-basic-service.basicserviceimpl:servesquery-checkstationsexists"
+  },
+  {
+   "key": "capability|ts-basic-service.BasicServiceImpl|capability|servesQuery|queryTrainTypeByName/2",
+   "decision": "adopted",
+   "basis": "reread: BasicServiceImpl.java:389 public TrainType queryTrainTypeByName(String trainTypeName, HttpHeaders headers) is a real 2-arg method; no atom for it appears in pass A's candidate set",
+   "candidateAtomId": "atom:capability:ts-basic-service.basicserviceimpl:servesquery-querytraintypebyname"
+  },
+  {
+   "key": "capability|ts-basic-service.BasicServiceImpl|capability|servesQuery|queryTrainTypeByNames/2",
+   "decision": "adopted",
+   "basis": "reread: BasicServiceImpl.java:372 public List<TrainType> queryTrainTypeByNames(List<String> trainTypeNames, HttpHeaders headers) is a real 2-arg method; no atom for it appears in pass A's candidate set",
+   "candidateAtomId": "atom:capability:ts-basic-service.basicserviceimpl:servesquery-querytraintypebynames"
+  },
+  {
+   "key": "capability|ts-cancel-service.CancelController|capability|servesQuery|GET /api/v1/cancelservice/cancel/refound/{orderId}",
+   "decision": "merged",
+   "basis": "reread: CancelController.java:33,36 @GetMapping(path=\"/cancel/refound/{orderId}\") calculate handler; both rows describe the same endpoint",
+   "candidateAtomId": "atom:capability:ts-cancel-service.cancelcontroller:servesquery-cancel-refound",
+   "mergeGroup": "group-13",
+   "canonicalAtomId": "atom:capability:ts-cancel-service.cancelcontroller:servesquery-cancel-refound"
+  },
+  {
+   "key": "capability|ts-cancel-service.CancelController|capability|exposesEndpoint|GET /api/v1/cancelservice/cancel/refound/{orderId}",
+   "decision": "merged",
+   "basis": "reread: CancelController.java:33,36 @GetMapping(path=\"/cancel/refound/{orderId}\") calculate handler; both rows describe the same endpoint",
+   "candidateAtomId": "atom:capability:ts-cancel-service.cancelcontroller:exposesendpoint-refund-calc",
+   "mergeGroup": "group-13",
+   "canonicalAtomId": "atom:capability:ts-cancel-service.cancelcontroller:servesquery-cancel-refound"
+  },
+  {
+   "key": "capability|ts-cancel-service.CancelController|capability|servesQuery|GET /api/v1/cancelservice/welcome",
+   "decision": "merged",
+   "basis": "reread: CancelController.java:27,29 @GetMapping(path=\"/welcome\") home handler; both rows describe the same endpoint",
+   "candidateAtomId": "atom:capability:ts-cancel-service.cancelcontroller:servesquery-welcome",
+   "mergeGroup": "group-14",
+   "canonicalAtomId": "atom:capability:ts-cancel-service.cancelcontroller:servesquery-welcome"
+  },
+  {
+   "key": "capability|ts-cancel-service.CancelController|capability|exposesEndpoint|GET /api/v1/cancelservice/welcome",
+   "decision": "merged",
+   "basis": "reread: CancelController.java:27,29 @GetMapping(path=\"/welcome\") home handler; both rows describe the same endpoint",
+   "candidateAtomId": "atom:capability:ts-cancel-service.cancelcontroller:exposesendpoint-welcome",
+   "mergeGroup": "group-14",
+   "canonicalAtomId": "atom:capability:ts-cancel-service.cancelcontroller:servesquery-welcome"
+  },
+  {
+   "key": "capability|ts-cancel-service.CancelServiceImpl|capability|handlesCommand|drawbackMoney/3",
+   "decision": "adopted",
+   "basis": "reread: CancelServiceImpl.java:278 public boolean drawbackMoney(String money, String userId, HttpHeaders headers) is a real 3-arg method that changes account balance state; no atom for it appears in pass A's candidate set",
+   "candidateAtomId": "atom:capability:ts-cancel-service.cancelserviceimpl:handlescommand-drawbackmoney"
+  },
+  {
+   "key": "capability|ts-cancel-service.CancelServiceImpl|capability|handlesCommand|sendEmail/2",
+   "decision": "adopted",
+   "basis": "reread: CancelServiceImpl.java:143 public boolean sendEmail(NotifyInfo notifyInfo, HttpHeaders headers) is a real 2-arg method; no atom for it appears in pass A's candidate set",
+   "candidateAtomId": "atom:capability:ts-cancel-service.cancelserviceimpl:handlescommand-sendemail"
+  },
+  {
+   "key": "capability|ts-cancel-service.CancelServiceImpl|capability|servesQuery|getAccount/2",
+   "decision": "adopted",
+   "basis": "reread: CancelServiceImpl.java:294 public Response<User> getAccount(String orderId, HttpHeaders headers) is a real 2-arg method; no atom for it appears in pass A's candidate set",
+   "candidateAtomId": "atom:capability:ts-cancel-service.cancelserviceimpl:servesquery-getaccount"
+  },
+  {
+   "key": "contract|ts-auth-service.TokenService|specification|shapedAs|getToken/2",
+   "decision": "merged",
+   "basis": "reread: TokenService.java:19 Response getToken(BasicAuthDto dto, HttpHeaders headers) throws UserOperationException; both rows describe the same interface method shape",
+   "candidateAtomId": "atom:contract:ts-auth-service.tokenservice:shapedas-gettoken#pass-a",
+   "mergeGroup": "group-15",
+   "canonicalAtomId": "atom:contract:ts-auth-service.tokenservice:shapedas-gettoken"
+  },
+  {
+   "key": "contract|ts-auth-service.TokenService|specification|shapedAs|getToken(BasicAuthDto,HttpHeaders)-returns-Response-declared-throws-not-in-signature",
+   "decision": "merged",
+   "basis": "reread: TokenService.java:19 Response getToken(BasicAuthDto dto, HttpHeaders headers) throws UserOperationException; both rows describe the same interface method shape",
+   "candidateAtomId": "atom:contract:ts-auth-service.tokenservice:shapedas-gettoken#pass-b",
+   "mergeGroup": "group-15",
+   "canonicalAtomId": "atom:contract:ts-auth-service.tokenservice:shapedas-gettoken"
+  },
+  {
+   "key": "contract|ts-auth-service.UserService|specification|shapedAs|saveUser/1,getAllUser/1,createDefaultAuthUser/1,deleteByUserId/2",
+   "decision": "merged",
+   "basis": "reread: UserService.java:22,30,38,47 list the same four interface method signatures; both rows cite the identical line set",
+   "candidateAtomId": "atom:contract:ts-auth-service.userservice:shapedas-methods#pass-a",
+   "mergeGroup": "group-16",
+   "canonicalAtomId": "atom:contract:ts-auth-service.userservice:shapedas-methods"
+  },
+  {
+   "key": "contract|ts-auth-service.UserService|specification|shapedAs|saveUser-getAllUser-createDefaultAuthUser-deleteByUserId-interface-method-shapes",
+   "decision": "merged",
+   "basis": "reread: UserService.java:22,30,38,47 list the same four interface method signatures; both rows cite the identical line set",
+   "candidateAtomId": "atom:contract:ts-auth-service.userservice:shapedas-methods#pass-b",
+   "mergeGroup": "group-16",
+   "canonicalAtomId": "atom:contract:ts-auth-service.userservice:shapedas-methods"
+  },
+  {
+   "key": "contract|ts-auth-service.UserServiceImpl|specification|requires|username-non-empty-and-password-non-null-min-length-6-and-roles-non-empty-else-throws-useroperationexception",
+   "decision": "merged",
+   "basis": "reread: UserServiceImpl.java:81-102 checkUserCreateInfo validates non-empty username (85-87), password non-null and length>=6 (89-94), non-empty roles (96-98), throwing UserOperationException with collected messages (100-103); both rows describe this same validation, B's ref set is a superset including the method-entry line 81",
+   "candidateAtomId": "atom:contract:ts-auth-service.userserviceimpl:requires-user-create-info",
+   "mergeGroup": "group-17",
+   "canonicalAtomId": "atom:contract:ts-auth-service.userserviceimpl:requires-user-create-info"
+  },
+  {
+   "key": "contract|ts-auth-service.UserServiceImpl|specification|requires|checkusercreateinfo-requires-non-empty-username-non-null-password-of-length-at-least-6-and-non-empty-roles-else-throws-useroperationexception-with-collected-messages",
+   "decision": "merged",
+   "basis": "reread: UserServiceImpl.java:81-102 checkUserCreateInfo validates non-empty username (85-87), password non-null and length>=6 (89-94), non-empty roles (96-98), throwing UserOperationException with collected messages (100-103); both rows describe this same validation, B's ref set is a superset including the method-entry line 81",
+   "candidateAtomId": "atom:contract:ts-auth-service.userserviceimpl:requires-user-create-checks",
+   "mergeGroup": "group-17",
+   "canonicalAtomId": "atom:contract:ts-auth-service.userserviceimpl:requires-user-create-info"
+  },
+  {
+   "key": "contract|ts-auth-service.UserServiceImpl|specification|ensures|deletebyuserid-method-is-annotated-transactional-so-the-repository-delete-runs-inside-a-single-transaction-boundary",
+   "decision": "adopted",
+   "basis": "reread: UserServiceImpl.java:69 the deleteByUserId method carries a @Transactional annotation immediately above it; no atom for this fact appears in pass A's candidate set",
+   "candidateAtomId": "atom:contract:ts-auth-service.userserviceimpl:ensures-deletebyuserid-transactional"
+  },
+  {
+   "key": "contract|ts-basic-service.BasicService|specification|shapedAs|queryForTravel/2,queryForTravels/2,queryForStationId/2",
+   "decision": "merged",
+   "basis": "reread: BasicService.java:23,25,34 list the same three interface method signatures; both rows cite the identical line set",
+   "candidateAtomId": "atom:contract:ts-basic-service.basicservice:shapedas-methods#pass-a",
+   "mergeGroup": "group-18",
+   "canonicalAtomId": "atom:contract:ts-basic-service.basicservice:shapedas-methods"
+  },
+  {
+   "key": "contract|ts-basic-service.BasicService|specification|shapedAs|queryForTravel-queryForTravels-queryForStationId-interface-method-shapes-each-returning-Response",
+   "decision": "merged",
+   "basis": "reread: BasicService.java:23,25,34 list the same three interface method signatures; both rows cite the identical line set",
+   "candidateAtomId": "atom:contract:ts-basic-service.basicservice:shapedas-methods#pass-b",
+   "mergeGroup": "group-18",
+   "canonicalAtomId": "atom:contract:ts-basic-service.basicservice:shapedas-methods"
+  },
+  {
+   "key": "contract|ts-basic-service.SecurityConfig|specification|requires|http-security-is-configured-with-http-basic-and-csrf-disabled-and-stateless-session-creation-policy",
+   "decision": "adopted",
+   "basis": "reread: SecurityConfig.java:64 httpBasic().disable(), :66 csrf().disable(), :68 sessionCreationPolicy(STATELESS); no atom for this combined configure() shape appears in pass A's candidate set",
+   "candidateAtomId": "atom:contract:ts-basic-service.securityconfig:requires-stateless-session"
+  },
+  {
+   "key": "contract|ts-cancel-service.CancelService|specification|shapedAs|cancelOrder/3,calculateRefund/2",
+   "decision": "merged",
+   "basis": "reread: CancelService.java:20,29 list the same two interface method signatures; both rows cite the identical line set",
+   "candidateAtomId": "atom:contract:ts-cancel-service.cancelservice:shapedas-methods#pass-a",
+   "mergeGroup": "group-19",
+   "canonicalAtomId": "atom:contract:ts-cancel-service.cancelservice:shapedas-methods"
+  },
+  {
+   "key": "contract|ts-cancel-service.CancelService|specification|shapedAs|cancelOrder(orderId,loginId,headers)-returns-Response-and-calculateRefund(orderId,headers)-returns-Response-interface-method-shapes",
+   "decision": "merged",
+   "basis": "reread: CancelService.java:20,29 list the same two interface method signatures; both rows cite the identical line set",
+   "candidateAtomId": "atom:contract:ts-cancel-service.cancelservice:shapedas-methods#pass-b",
+   "mergeGroup": "group-19",
+   "canonicalAtomId": "atom:contract:ts-cancel-service.cancelservice:shapedas-methods"
+  },
+  {
+   "key": "contract|ts-cancel-service.CancelServiceImpl|specification|ensures|the-private-calculaterefund-helper-returns-0.00-when-order-status-is-notpaid-returns-0-when-the-current-time-is-after-the-computed-travel-start-time-and-otherwise-returns-80-percent-of-the-parsed-order-price-formatted-with-two-decimals",
+   "decision": "adopted",
+   "basis": "reread: CancelServiceImpl.java:200 return \"0.00\" on NOTPAID, :224 nowDate.after(startTime) returns \"0\", :228-231 else branch computes totalPrice*0.8 formatted with DecimalFormat(\"0.00\"); no atom for this ensures-clause appears in pass A's candidate set",
+   "candidateAtomId": "atom:contract:ts-cancel-service.cancelserviceimpl:ensures-refund-formula"
+  },
+  {
+   "key": "contract|ts-cancel-service.GetAccountByIdInfo|specification|shapedAs|accountId:String",
+   "decision": "merged",
+   "basis": "reread: GetAccountByIdInfo.java:11 a single String accountId field; both rows describe the same field shape",
+   "candidateAtomId": "atom:contract:ts-cancel-service.getaccountbyidinfo:shapedas-fields",
+   "mergeGroup": "group-20",
+   "canonicalAtomId": "atom:contract:ts-cancel-service.getaccountbyidinfo:shapedas-fields"
+  },
+  {
+   "key": "contract|ts-cancel-service.GetAccountByIdInfo|specification|shapedAs|single-string-field-accountId",
+   "decision": "merged",
+   "basis": "reread: GetAccountByIdInfo.java:11 a single String accountId field; both rows describe the same field shape",
+   "candidateAtomId": "atom:contract:ts-cancel-service.getaccountbyidinfo:shapedas-accountid",
+   "mergeGroup": "group-20",
+   "canonicalAtomId": "atom:contract:ts-cancel-service.getaccountbyidinfo:shapedas-fields"
+  },
+  {
+   "key": "contract|ts-cancel-service.GetAccountByIdResult|specification|shapedAs|status:boolean,message:String,account:Account",
+   "decision": "merged",
+   "basis": "reread: GetAccountByIdResult.java:13,15,17 declare boolean status, String message, Account account fields; both rows describe the same field shape",
+   "candidateAtomId": "atom:contract:ts-cancel-service.getaccountbyidresult:shapedas-fields#pass-a",
+   "mergeGroup": "group-21",
+   "canonicalAtomId": "atom:contract:ts-cancel-service.getaccountbyidresult:shapedas-fields"
+  },
+  {
+   "key": "contract|ts-cancel-service.GetAccountByIdResult|specification|shapedAs|boolean-status-field-plus-string-message-field-plus-embedded-Account-object-field",
+   "decision": "merged",
+   "basis": "reread: GetAccountByIdResult.java:13,15,17 declare boolean status, String message, Account account fields; both rows describe the same field shape",
+   "candidateAtomId": "atom:contract:ts-cancel-service.getaccountbyidresult:shapedas-fields#pass-b",
+   "mergeGroup": "group-21",
+   "canonicalAtomId": "atom:contract:ts-cancel-service.getaccountbyidresult:shapedas-fields"
+  },
+  {
+   "key": "contract|ts-cancel-service.GetOrderByIdInfo|specification|shapedAs|orderId:String",
+   "decision": "merged",
+   "basis": "reread: GetOrderByIdInfo.java:11 a single String orderId field; both rows describe the same field shape",
+   "candidateAtomId": "atom:contract:ts-cancel-service.getorderbyidinfo:shapedas-fields",
+   "mergeGroup": "group-22",
+   "canonicalAtomId": "atom:contract:ts-cancel-service.getorderbyidinfo:shapedas-fields"
+  },
+  {
+   "key": "contract|ts-cancel-service.GetOrderByIdInfo|specification|shapedAs|single-string-field-orderId",
+   "decision": "merged",
+   "basis": "reread: GetOrderByIdInfo.java:11 a single String orderId field; both rows describe the same field shape",
+   "candidateAtomId": "atom:contract:ts-cancel-service.getorderbyidinfo:shapedas-orderid",
+   "mergeGroup": "group-22",
+   "canonicalAtomId": "atom:contract:ts-cancel-service.getorderbyidinfo:shapedas-fields"
+  },
+  {
+   "key": "contract|ts-cancel-service.SecurityConfig|specification|requires|http-security-is-configured-with-http-basic-and-csrf-disabled-and-stateless-session-creation-policy",
+   "decision": "adopted",
+   "basis": "reread: cancel/config/SecurityConfig.java:64 httpBasic().disable(), :66 csrf().disable(), :68 sessionCreationPolicy(STATELESS); no atom for this combined configure() shape appears in pass A's candidate set",
+   "candidateAtomId": "atom:contract:ts-cancel-service.securityconfig:requires-stateless-session"
+  },
+  {
+   "key": "contract|ts-common.SwaggerConfig|specification|requires|controllerpackagepath-injected-via-the-swagger.controllerpackage-property-a-value-supplied-per-service-in-each-services-application-yml",
+   "decision": "merged",
+   "basis": "reread: SwaggerConfig.java:21 @Value(\"${swagger.controllerPackage}\") private String controllerPackagePath, used at :31 RequestHandlerSelectors.basePackage(controllerPackagePath); both rows describe the same required property",
+   "candidateAtomId": "atom:contract:ts-common.swaggerconfig:requires-controllerpackage-property",
+   "mergeGroup": "group-23",
+   "canonicalAtomId": "atom:contract:ts-common.swaggerconfig:requires-controllerpackage-property"
+  },
+  {
+   "key": "contract|ts-common.SwaggerConfig|specification|requires|createrestapi-requires-the-swagger.controllerpackage-property-injected-via-value-to-select-the-scanned-base-package-for-api-docs",
+   "decision": "merged",
+   "basis": "reread: SwaggerConfig.java:21 @Value(\"${swagger.controllerPackage}\") private String controllerPackagePath, used at :31 RequestHandlerSelectors.basePackage(controllerPackagePath); both rows describe the same required property",
+   "candidateAtomId": "atom:contract:ts-common.swaggerconfig:requires-controllerpackage-config",
+   "mergeGroup": "group-23",
+   "canonicalAtomId": "atom:contract:ts-common.swaggerconfig:requires-controllerpackage-property"
+  },
+  {
+   "key": "relation|ts-auth-service.TokenServiceImpl|relation|calls|AuthenticationManager.authenticate",
+   "decision": "adopted",
+   "basis": "reread: TokenServiceImpl.java:84 authenticationManager.authenticate(upat) inside a try/catch; no atom for this call appears in pass B's candidate set",
+   "candidateAtomId": "atom:relation:ts-auth-service.tokenserviceimpl:calls-authenticationmanager"
+  },
+  {
+   "key": "relation|ts-auth-service.TokenServiceImpl|relation|dependsOn|DiscoveryClient",
+   "decision": "adopted",
+   "basis": "reread: TokenServiceImpl.java:52 private DiscoveryClient discoveryClient; field; no atom for this dependency appears in pass B's candidate set",
+   "candidateAtomId": "atom:relation:ts-auth-service.tokenserviceimpl:dependson-discoveryclient"
+  },
+  {
+   "key": "relation|ts-auth-service.UserServiceImpl|relation|calls|PasswordEncoder.encode",
+   "decision": "adopted",
+   "basis": "reread: UserServiceImpl.java:57 .password(passwordEncoder.encode(dto.getPassword())); no atom for this call appears in pass B's candidate set",
+   "candidateAtomId": "atom:relation:ts-auth-service.userserviceimpl:calls-passwordencoder-encode"
+  },
+  {
+   "key": "relation|ts-basic-service.BasicApplication|relation|dependsOn|RestTemplateBuilder-produces-a-loadbalanced-RestTemplate-bean",
+   "decision": "adopted",
+   "basis": "reread: BasicApplication.java:30-33 @LoadBalanced @Bean public RestTemplate restTemplate(RestTemplateBuilder builder){return builder.build();}; no atom for this dependency appears in pass A's candidate set",
+   "candidateAtomId": "atom:relation:ts-basic-service.basicapplication:dependson-resttemplatebuilder"
+  },
+  {
+   "key": "relation|ts-basic-service.BasicController|relation|calls|BasicService.queryForStationId",
+   "decision": "merged",
+   "basis": "reread: BasicController.java:39,46,53 call service.queryForTravel/queryForTravels/queryForStationId respectively; pass A recorded three separate call-edges at these lines, pass B recorded one bundled atom citing the same three lines for the same delegation fact",
+   "candidateAtomId": "atom:relation:ts-basic-service.basiccontroller:calls-basicservice-queryforstationid",
+   "mergeGroup": "group-24",
+   "canonicalAtomId": "atom:relation:ts-basic-service.basiccontroller:calls-basicservice-queryforstationid"
+  },
+  {
+   "key": "relation|ts-basic-service.BasicController|relation|calls|BasicService.queryForTravel",
+   "decision": "merged",
+   "basis": "reread: BasicController.java:39,46,53 call service.queryForTravel/queryForTravels/queryForStationId respectively; pass A recorded three separate call-edges at these lines, pass B recorded one bundled atom citing the same three lines for the same delegation fact",
+   "candidateAtomId": "atom:relation:ts-basic-service.basiccontroller:calls-basicservice-queryfortravel",
+   "mergeGroup": "group-24",
+   "canonicalAtomId": "atom:relation:ts-basic-service.basiccontroller:calls-basicservice-queryforstationid"
+  },
+  {
+   "key": "relation|ts-basic-service.BasicController|relation|calls|BasicService.queryForTravels",
+   "decision": "merged",
+   "basis": "reread: BasicController.java:39,46,53 call service.queryForTravel/queryForTravels/queryForStationId respectively; pass A recorded three separate call-edges at these lines, pass B recorded one bundled atom citing the same three lines for the same delegation fact",
+   "candidateAtomId": "atom:relation:ts-basic-service.basiccontroller:calls-basicservice-queryfortravels",
+   "mergeGroup": "group-24",
+   "canonicalAtomId": "atom:relation:ts-basic-service.basiccontroller:calls-basicservice-queryforstationid"
+  },
+  {
+   "key": "relation|ts-basic-service.BasicController|relation|calls|BasicService.queryForTravel-queryForTravels-queryForStationId",
+   "decision": "merged",
+   "basis": "reread: BasicController.java:39,46,53 call service.queryForTravel/queryForTravels/queryForStationId respectively; pass A recorded three separate call-edges at these lines, pass B recorded one bundled atom citing the same three lines for the same delegation fact",
+   "candidateAtomId": "atom:relation:ts-basic-service.basiccontroller:calls-basicservice",
+   "mergeGroup": "group-24",
+   "canonicalAtomId": "atom:relation:ts-basic-service.basiccontroller:calls-basicservice-queryforstationid"
+  },
+  {
+   "key": "relation|ts-basic-service.BasicServiceImpl|relation|dependsOn|DiscoveryClient",
+   "decision": "adopted",
+   "basis": "reread: BasicServiceImpl.java:31 private DiscoveryClient discoveryClient; field; no atom for this dependency appears in pass B's candidate set",
+   "candidateAtomId": "atom:relation:ts-basic-service.basicserviceimpl:dependson-discoveryclient"
+  },
+  {
+   "key": "relation|ts-basic-service.SecurityConfig|relation|dependsOn|JWTFilter",
+   "decision": "merged",
+   "basis": "reread: SecurityConfig.java:76 addFilterBefore(new JWTFilter(), UsernamePasswordAuthenticationFilter.class); both rows cite the same line for the same filter-chain relation",
+   "candidateAtomId": "atom:relation:ts-basic-service.securityconfig:dependson-jwtfilter",
+   "mergeGroup": "group-25",
+   "canonicalAtomId": "atom:relation:ts-basic-service.securityconfig:dependson-jwtfilter"
+  },
+  {
+   "key": "relation|ts-basic-service.SecurityConfig|relation|calls|JWTFilter-inserted-before-UsernamePasswordAuthenticationFilter-in-the-filter-chain",
+   "decision": "merged",
+   "basis": "reread: SecurityConfig.java:76 addFilterBefore(new JWTFilter(), UsernamePasswordAuthenticationFilter.class); both rows cite the same line for the same filter-chain relation",
+   "candidateAtomId": "atom:relation:ts-basic-service.securityconfig:calls-jwtfilter",
+   "mergeGroup": "group-25",
+   "canonicalAtomId": "atom:relation:ts-basic-service.securityconfig:dependson-jwtfilter"
+  },
+  {
+   "key": "relation|ts-cancel-service.CancelApplication|relation|dependsOn|RestTemplateBuilder-produces-a-loadbalanced-RestTemplate-bean",
+   "decision": "adopted",
+   "basis": "reread: CancelApplication.java:30-33 @LoadBalanced @Bean public RestTemplate restTemplate(RestTemplateBuilder builder){return builder.build();}; no atom for this dependency appears in pass A's candidate set",
+   "candidateAtomId": "atom:relation:ts-cancel-service.cancelapplication:dependson-resttemplatebuilder"
+  },
+  {
+   "key": "relation|ts-cancel-service.CancelController|relation|calls|CancelService.calculateRefund",
+   "decision": "merged",
+   "basis": "reread: CancelController.java:36,47 call cancelService.calculateRefund and cancelService.cancelOrder respectively; pass A recorded two separate call-edges at these lines, pass B recorded one bundled atom citing the same two lines for the same delegation fact",
+   "candidateAtomId": "atom:relation:ts-cancel-service.cancelcontroller:calls-cancelservice-calculaterefund",
+   "mergeGroup": "group-26",
+   "canonicalAtomId": "atom:relation:ts-cancel-service.cancelcontroller:calls-cancelservice-calculaterefund"
+  },
+  {
+   "key": "relation|ts-cancel-service.CancelController|relation|calls|CancelService.cancelOrder",
+   "decision": "merged",
+   "basis": "reread: CancelController.java:36,47 call cancelService.calculateRefund and cancelService.cancelOrder respectively; pass A recorded two separate call-edges at these lines, pass B recorded one bundled atom citing the same two lines for the same delegation fact",
+   "candidateAtomId": "atom:relation:ts-cancel-service.cancelcontroller:calls-cancelservice-cancelorder",
+   "mergeGroup": "group-26",
+   "canonicalAtomId": "atom:relation:ts-cancel-service.cancelcontroller:calls-cancelservice-calculaterefund"
+  },
+  {
+   "key": "relation|ts-cancel-service.CancelController|relation|calls|CancelService.calculateRefund-cancelOrder",
+   "decision": "merged",
+   "basis": "reread: CancelController.java:36,47 call cancelService.calculateRefund and cancelService.cancelOrder respectively; pass A recorded two separate call-edges at these lines, pass B recorded one bundled atom citing the same two lines for the same delegation fact",
+   "candidateAtomId": "atom:relation:ts-cancel-service.cancelcontroller:calls-cancelservice",
+   "mergeGroup": "group-26",
+   "canonicalAtomId": "atom:relation:ts-cancel-service.cancelcontroller:calls-cancelservice-calculaterefund"
+  },
+  {
+   "key": "relation|ts-cancel-service.SecurityConfig|relation|dependsOn|JWTFilter",
+   "decision": "merged",
+   "basis": "reread: cancel/config/SecurityConfig.java:76 addFilterBefore(new JWTFilter(), UsernamePasswordAuthenticationFilter.class); both rows cite the same line for the same filter-chain relation",
+   "candidateAtomId": "atom:relation:ts-cancel-service.securityconfig:dependson-jwtfilter",
+   "mergeGroup": "group-27",
+   "canonicalAtomId": "atom:relation:ts-cancel-service.securityconfig:dependson-jwtfilter"
+  },
+  {
+   "key": "relation|ts-cancel-service.SecurityConfig|relation|calls|JWTFilter-inserted-before-UsernamePasswordAuthenticationFilter-in-the-filter-chain",
+   "decision": "merged",
+   "basis": "reread: cancel/config/SecurityConfig.java:76 addFilterBefore(new JWTFilter(), UsernamePasswordAuthenticationFilter.class); both rows cite the same line for the same filter-chain relation",
+   "candidateAtomId": "atom:relation:ts-cancel-service.securityconfig:calls-jwtfilter",
+   "mergeGroup": "group-27",
+   "canonicalAtomId": "atom:relation:ts-cancel-service.securityconfig:dependson-jwtfilter"
+  },
+  {
+   "key": "relation|ts-common.SwaggerConfig|relation|dependsOn|springfox-Docket-bean-built-from-the-configured-controllerPackagePath",
+   "decision": "adopted",
+   "basis": "reread: SwaggerConfig.java:26 @Bean public Docket createRestApi(), :33 .build() constructing the Docket from controllerPackagePath via basePackage(); no atom for this dependency appears in pass A's candidate set",
+   "candidateAtomId": "atom:relation:ts-common.swaggerconfig:dependson-docket"
+  },
+  {
+   "key": "semantic|ctx:ts-basic-service-travel-query-flow|cech|sectionValue|section=money-amount:double-arithmetic-then-string-concatenation",
+   "decision": "merged",
+   "basis": "reread: BasicServiceImpl.java:106,109,299,302 compute priceForEconomyClass/priceForConfortClass as double then concatenate to String via \"\"+value; both rows describe this same computed-price section under different context names",
+   "candidateAtomId": "atom:semantic:ts-basic-service-travel-query-flow:cech-section-money-amount-computed",
+   "mergeGroup": "group-28",
+   "canonicalAtomId": "atom:semantic:ts-basic-service-travel-query-flow:cech-section-money-amount-computed"
+  },
+  {
+   "key": "semantic|ctx:ts-basic-service-price-quoting|cech|sectionValue|section=money-amount:double-arithmetic-then-string-concatenation",
+   "decision": "merged",
+   "basis": "reread: BasicServiceImpl.java:106,109,299,302 compute priceForEconomyClass/priceForConfortClass as double then concatenate to String via \"\"+value; both rows describe this same computed-price section under different context names",
+   "candidateAtomId": "atom:semantic:ts-basic-service.basicserviceimpl:cech-section-money-amount",
+   "mergeGroup": "group-28",
+   "canonicalAtomId": "atom:semantic:ts-basic-service-travel-query-flow:cech-section-money-amount-computed"
+  },
+  {
+   "key": "semantic|ctx:ts-basic-service-travel-query-flow|cech|sectionValue|section=money-amount:string-literal-fallback-default-price-on-exception-branch",
+   "decision": "adopted",
+   "basis": "reread: BasicServiceImpl.java:111-112,304-305 catch(Exception) branches set literal fallback prices \"95.0\"/\"120.0\"; no cech-axis atom for this fallback section appears in pass B's candidate set",
+   "candidateAtomId": "atom:semantic:ts-basic-service-travel-query-flow:cech-section-money-amount-fallback"
+  },
+  {
+   "key": "semantic|ctx:ts-cancel-service-cancel-and-refund-flow|cech|sectionValue|section=order-status-code:enum-notpaid-or-paid-or-change-select-the-cancel-permitted-branch-other-enum-values-select-the-cancel-not-permitted-branch-cancel-enum-set-on-the-success-branch",
+   "decision": "merged",
+   "basis": "reread: CancelServiceImpl.java:52,109 check order.getStatus() against NOTPAID/PAID/CHANGE to select the cancel-permitted branch, :162,240 set/reference OrderStatus.CANCEL; both rows describe this same order-status-code section, A's ref set additionally includes line 265 (second CANCEL set site)",
+   "candidateAtomId": "atom:semantic:ts-cancel-service-cancel-and-refund-flow:cech-section-order-status-code",
+   "mergeGroup": "group-29",
+   "canonicalAtomId": "atom:semantic:ts-cancel-service-cancel-and-refund-flow:cech-section-order-status-code"
+  },
+  {
+   "key": "semantic|ctx:ts-cancel-service-cancel-order-flow|cech|sectionValue|section=order-status-code:enum-names-notpaid-paid-change-select-the-cancel-permitted-branch-cancel-is-the-target-status-written-back-any-other-status-selects-the-cancel-not-permitted-branch",
+   "decision": "merged",
+   "basis": "reread: CancelServiceImpl.java:52,109 check order.getStatus() against NOTPAID/PAID/CHANGE to select the cancel-permitted branch, :162,240 set/reference OrderStatus.CANCEL; both rows describe this same order-status-code section, A's ref set additionally includes line 265 (second CANCEL set site)",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.cancelserviceimpl:cech-section-order-status-code",
+   "mergeGroup": "group-29",
+   "canonicalAtomId": "atom:semantic:ts-cancel-service-cancel-and-refund-flow:cech-section-order-status-code"
+  },
+  {
+   "key": "semantic|ctx:ts-cancel-service-cancel-and-refund-flow|cech|sectionValue|section=money-amount:string-literal-zero-selected-on-notpaid-or-ticket-expired-travel-time-branch",
+   "decision": "adopted",
+   "basis": "reread: CancelServiceImpl.java:202 return \"0.00\" on NOTPAID, :226 return \"0\" when nowDate.after(startTime); no cech-axis atom for this zero-fallback section appears in pass B's candidate set",
+   "candidateAtomId": "atom:semantic:ts-cancel-service-cancel-and-refund-flow:cech-section-money-amount-zero-fallback"
+  },
+  {
+   "key": "semantic|ctx:ts-cancel-service-cancel-and-refund-flow|cech|sectionValue|section=money-amount:string-parsed-to-double-arithmetic-decimalformat",
+   "decision": "merged",
+   "basis": "reread: CancelServiceImpl.java:228 Double.parseDouble(order.getPrice()), :230 price=totalPrice*0.8, :231 DecimalFormat(\"0.00\").format(price); both rows cite the identical three lines for the same computed-refund section",
+   "candidateAtomId": "atom:semantic:ts-cancel-service-cancel-and-refund-flow:cech-section-money-amount-computed",
+   "mergeGroup": "group-30",
+   "canonicalAtomId": "atom:semantic:ts-cancel-service-cancel-and-refund-flow:cech-section-money-amount-computed"
+  },
+  {
+   "key": "semantic|ctx:ts-cancel-service-refund-calculation-flow|cech|sectionValue|section=money-amount:string-parsed-to-double-arithmetic-decimalformat",
+   "decision": "merged",
+   "basis": "reread: CancelServiceImpl.java:228 Double.parseDouble(order.getPrice()), :230 price=totalPrice*0.8, :231 DecimalFormat(\"0.00\").format(price); both rows cite the identical three lines for the same computed-refund section",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.cancelserviceimpl:cech-section-money-amount",
+   "mergeGroup": "group-30",
+   "canonicalAtomId": "atom:semantic:ts-cancel-service-cancel-and-refund-flow:cech-section-money-amount-computed"
+  },
+  {
+   "key": "semantic|ts-auth-service.TokenServiceImpl|semantic|meansInUse|status-1-on-login-success-token-issued-branch-status-0-on-verification-code-or-credential-rejected-branch",
+   "decision": "merged",
+   "basis": "reread: TokenServiceImpl.java:77 return new Response<>(0,\"Verification failed.\",null) (A cites the guarding condition at :75, B cites the return itself at :77), :87 return new Response<>(0,\"Incorrect username or password.\",null), :96 return new Response<>(1,\"login success\",new TokenDto(...)); both rows describe the same status envelope for getToken",
+   "candidateAtomId": "atom:semantic:ts-auth-service.tokenserviceimpl:meansinuse-gettoken-envelope",
+   "mergeGroup": "group-31",
+   "canonicalAtomId": "atom:semantic:ts-auth-service.tokenserviceimpl:meansinuse-gettoken-envelope"
+  },
+  {
+   "key": "semantic|ts-auth-service.TokenServiceImpl|semantic|meansInUse|status-1-on-successful-authentication-branch-carrying-tokendto-data-status-0-on-verification-code-not-confirmed-or-credential-check-not-passed-branch-with-null-data",
+   "decision": "merged",
+   "basis": "reread: TokenServiceImpl.java:77 return new Response<>(0,\"Verification failed.\",null) (A cites the guarding condition at :75, B cites the return itself at :77), :87 return new Response<>(0,\"Incorrect username or password.\",null), :96 return new Response<>(1,\"login success\",new TokenDto(...)); both rows describe the same status envelope for getToken",
+   "candidateAtomId": "atom:semantic:ts-auth-service.tokenserviceimpl:meansinuse-response-status",
+   "mergeGroup": "group-31",
+   "canonicalAtomId": "atom:semantic:ts-auth-service.tokenserviceimpl:meansinuse-gettoken-envelope"
+  },
+  {
+   "key": "semantic|ts-auth-service.TokenServiceImpl|semantic|meansInUse|empty-verifycode-value-skips-verification-code-service-call-non-empty-value-triggers-a-verify-request-before-credential-check",
+   "decision": "adopted",
+   "basis": "reread: TokenServiceImpl.java:65 if (!StringUtils.isEmpty(verifyCode)) gates the verification-code service call; no atom for this gate appears in pass A's candidate set",
+   "candidateAtomId": "atom:semantic:ts-auth-service.tokenserviceimpl:meansinuse-verifycode-optional-gate"
+  },
+  {
+   "key": "semantic|ts-auth-service.UserServiceImpl|semantic|meansInUse|createdefaultauthuser-assigns-the-fixed-role-user-constant-to-every-new-account-at-this-site",
+   "decision": "merged",
+   "basis": "reread: UserServiceImpl.java:58 .roles(new HashSet<>(Arrays.asList(AuthConstant.ROLE_USER))); both rows describe the same fixed-role assignment at the same line",
+   "candidateAtomId": "atom:semantic:ts-auth-service.userserviceimpl:meansinuse-createdefaultauthuser-default-role",
+   "mergeGroup": "group-32",
+   "canonicalAtomId": "atom:semantic:ts-auth-service.userserviceimpl:meansinuse-createdefaultauthuser-default-role"
+  },
+  {
+   "key": "semantic|ts-auth-service.UserServiceImpl|semantic|meansInUse|createdefaultauthuser-assigns-authconstant.role_user-as-the-only-default-role-in-the-built-user-regardless-of-dto-content",
+   "decision": "merged",
+   "basis": "reread: UserServiceImpl.java:58 .roles(new HashSet<>(Arrays.asList(AuthConstant.ROLE_USER))); both rows describe the same fixed-role assignment at the same line",
+   "candidateAtomId": "atom:semantic:ts-auth-service.userserviceimpl:meansinuse-default-role-assignment",
+   "mergeGroup": "group-32",
+   "canonicalAtomId": "atom:semantic:ts-auth-service.userserviceimpl:meansinuse-createdefaultauthuser-default-role"
+  },
+  {
+   "key": "semantic|ts-auth-service.UserServiceImpl|semantic|meansInUse|saveuser-returns-null-without-invoking-repository-save-or-passwordencoder-at-this-site",
+   "decision": "merged",
+   "basis": "reread: UserServiceImpl.java:36-38 public User saveUser(User user) { return null; } with no repository or encoder call; both rows describe this same stub body",
+   "candidateAtomId": "atom:semantic:ts-auth-service.userserviceimpl:meansinuse-saveuser-stub",
+   "mergeGroup": "group-33",
+   "canonicalAtomId": "atom:semantic:ts-auth-service.userserviceimpl:meansinuse-saveuser-stub"
+  },
+  {
+   "key": "semantic|ts-auth-service.UserServiceImpl|semantic|meansInUse|saveuser-method-body-returns-null-unconditionally-and-does-not-call-the-repository-regardless-of-the-input-argument",
+   "decision": "merged",
+   "basis": "reread: UserServiceImpl.java:36-38 public User saveUser(User user) { return null; } with no repository or encoder call; both rows describe this same stub body",
+   "candidateAtomId": "atom:semantic:ts-auth-service.userserviceimpl:meansinuse-saveuser-body",
+   "mergeGroup": "group-33",
+   "canonicalAtomId": "atom:semantic:ts-auth-service.userserviceimpl:meansinuse-saveuser-stub"
+  },
+  {
+   "key": "semantic|ts-auth-service.UserServiceImpl|semantic|meansInUse|local-variable-named-passwordmaxlength-holding-6-is-used-as-a-minimum-length-guard-password.length-less-than-passwordmaxlength-not-as-an-upper-bound",
+   "decision": "adopted",
+   "basis": "reread: UserServiceImpl.java:89 int passwordMaxLength = 6, :92 else if (user.getPassword().length() < passwordMaxLength) is a minimum-length guard despite the variable's name; no atom for this naming observation appears in pass A's candidate set",
+   "candidateAtomId": "atom:semantic:ts-auth-service.userserviceimpl:meansinuse-passwordmaxlength-variable"
+  },
+  {
+   "key": "semantic|ts-basic-service.BasicApplication|semantic|meansInUse|resttemplate-bean-marked-loadbalanced-resolves-target-host-as-a-service-name-via-discoveryclient-rather-than-a-direct-ip",
+   "decision": "adopted",
+   "basis": "reread: BasicApplication.java:30 @LoadBalanced, :33 return builder.build(); no semantic-axis atom for this meaning appears in pass B's candidate set (pass B recorded only a relation-axis dependsOn atom for the same lines)",
+   "candidateAtomId": "atom:semantic:ts-basic-service.basicapplication:meansinuse-loadbalanced-resttemplate"
+  },
+  {
+   "key": "semantic|ts-basic-service.BasicServiceImpl|semantic|meansInUse|querystationid-forwards-the-upstream-station-service-status-and-message-unchanged-on-the-not-found-branch",
+   "decision": "merged",
+   "basis": "reread: BasicServiceImpl.java:333 if (re.getBody().getStatus() != 1), :336 return new Response<>(0, msg, null) reconstructs the response with the upstream message forwarded and status set to 0; both rows describe this same branch at the same two lines",
+   "candidateAtomId": "atom:semantic:ts-basic-service.basicserviceimpl:meansinuse-stationid-envelope-forwarding",
+   "mergeGroup": "group-34",
+   "canonicalAtomId": "atom:semantic:ts-basic-service.basicserviceimpl:meansinuse-stationid-envelope-forwarding"
+  },
+  {
+   "key": "semantic|ts-basic-service.BasicServiceImpl|semantic|meansInUse|when-the-downstream-station-service-response-status-is-not-1-queryforstationid-returns-a-new-response-with-status-0-and-the-forwarded-message-instead-of-passing-the-original-response-through",
+   "decision": "merged",
+   "basis": "reread: BasicServiceImpl.java:333 if (re.getBody().getStatus() != 1), :336 return new Response<>(0, msg, null) reconstructs the response with the upstream message forwarded and status set to 0; both rows describe this same branch at the same two lines",
+   "candidateAtomId": "atom:semantic:ts-basic-service.basicserviceimpl:meansinuse-queryforstationid-forwarding",
+   "mergeGroup": "group-34",
+   "canonicalAtomId": "atom:semantic:ts-basic-service.basicserviceimpl:meansinuse-stationid-envelope-forwarding"
+  },
+  {
+   "key": "semantic|ts-basic-service.BasicServiceImpl|semantic|meansInUse|status-1-on-successful-travel-query-branch-status-0-on-missing-start-or-end-station-or-traintype-or-route-or-station-order-in-route-branch",
+   "decision": "merged",
+   "basis": "reread: BasicServiceImpl.java:45 response.setStatus(1) default, :53/65/76/94 response.setStatus(0) on the four not-found branches (place/traintype/route/station-order); both rows describe this same queryForTravel envelope, citing overlapping lines (76,94 shared, A additionally cites the place-check condition at :51, B additionally cites the initial :45 assignment)",
+   "candidateAtomId": "atom:semantic:ts-basic-service.basicserviceimpl:meansinuse-travel-response-envelope",
+   "mergeGroup": "group-35",
+   "canonicalAtomId": "atom:semantic:ts-basic-service.basicserviceimpl:meansinuse-travel-response-envelope"
+  },
+  {
+   "key": "semantic|ts-basic-service.BasicServiceImpl|semantic|meansInUse|status-1-on-a-successful-query-branch-carrying-result-data-status-0-on-a-place-not-found-or-traintype-not-found-or-route-not-found-or-station-not-on-the-route-in-order-branch",
+   "decision": "merged",
+   "basis": "reread: BasicServiceImpl.java:45 response.setStatus(1) default, :53/65/76/94 response.setStatus(0) on the four not-found branches (place/traintype/route/station-order); both rows describe this same queryForTravel envelope, citing overlapping lines (76,94 shared, A additionally cites the place-check condition at :51, B additionally cites the initial :45 assignment)",
+   "candidateAtomId": "atom:semantic:ts-basic-service.basicserviceimpl:meansinuse-response-status",
+   "mergeGroup": "group-35",
+   "canonicalAtomId": "atom:semantic:ts-basic-service.basicserviceimpl:meansinuse-travel-response-envelope"
+  },
+  {
+   "key": "semantic|ts-basic-service.BasicServiceImpl|semantic|meansInUse|the-distance-times-rate-price-computation-exception-branch-in-queryfortravel-selects-fixed-fallback-values-95.0-for-economyclass-and-120.0-for-confortclass",
+   "decision": "adopted",
+   "basis": "reread: BasicServiceImpl.java:100-112 catch(Exception) branch inside queryForTravel sets prices.put(\"economyClass\",\"95.0\") and prices.put(\"confortClass\",\"120.0\"); no meansInUse-axis atom for this queryForTravel-specific fallback appears in pass A's candidate set",
+   "candidateAtomId": "atom:semantic:ts-basic-service.basicserviceimpl:meansinuse-price-fallback-queryfortravel"
+  },
+  {
+   "key": "semantic|ts-basic-service.BasicServiceImpl|semantic|meansInUse|the-distance-times-rate-price-computation-exception-branch-in-queryfortravels-selects-fixed-fallback-values-95.0-for-economyclass-and-120.0-for-confortclass",
+   "decision": "adopted",
+   "basis": "reread: BasicServiceImpl.java:293-305 catch(Exception) branch inside queryForTravels sets prices.put(\"economyClass\",\"95.0\") and prices.put(\"confortClass\",\"120.0\"); no meansInUse-axis atom for this queryForTravels-specific fallback appears in pass A's candidate set",
+   "candidateAtomId": "atom:semantic:ts-basic-service.basicserviceimpl:meansinuse-price-fallback-queryfortravels"
+  },
+  {
+   "key": "semantic|ts-basic-service.SecurityConfig|semantic|meansInUse|csrf-protection-disabled-branch-selected-for-basicservice-httpsecurity-chain",
+   "decision": "adopted",
+   "basis": "reread: SecurityConfig.java:66 .csrf().disable(); no semantic-axis atom for this specific fact appears in pass B's candidate set for this file",
+   "candidateAtomId": "atom:semantic:ts-basic-service.securityconfig:meansinuse-csrf-disabled"
+  },
+  {
+   "key": "semantic|ts-basic-service.SecurityConfig|semantic|meansInUse|sessioncreationpolicy-stateless-selected-no-httpsession-created-for-basicservice-requests",
+   "decision": "adopted",
+   "basis": "reread: SecurityConfig.java:68 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS); no semantic-axis atom for this specific fact appears in pass B's candidate set for this file",
+   "candidateAtomId": "atom:semantic:ts-basic-service.securityconfig:meansinuse-session-stateless"
+  },
+  {
+   "key": "semantic|ts-basic-service.application-yml|semantic|meansInUse|spring-application-name-set-to-ts-basic-service-used-as-the-nacos-service-registration-and-discovery-lookup-key",
+   "decision": "merged",
+   "basis": "reread: application.yml:9-10 spring.application.name: ts-basic-service is the nacos registration/discovery key; B's row cites the same name line 10 plus the neighboring port (:2) and nacos server-addr (:8) lines as part of the same service-identity fact",
+   "candidateAtomId": "atom:semantic:ts-basic-service.application-yml:meansinuse-service-name",
+   "mergeGroup": "group-36",
+   "canonicalAtomId": "atom:semantic:ts-basic-service.application-yml:meansinuse-service-name"
+  },
+  {
+   "key": "semantic|ts-basic-service.application-yml|semantic|meansInUse|service-registers-under-the-name-ts-basic-service-and-listens-on-port-15680-discovered-through-a-nacos-cluster-address-list",
+   "decision": "merged",
+   "basis": "reread: application.yml:9-10 spring.application.name: ts-basic-service is the nacos registration/discovery key; B's row cites the same name line 10 plus the neighboring port (:2) and nacos server-addr (:8) lines as part of the same service-identity fact",
+   "candidateAtomId": "atom:semantic:ts-basic-service.application-yml:meansinuse-service-registration",
+   "mergeGroup": "group-36",
+   "canonicalAtomId": "atom:semantic:ts-basic-service.application-yml:meansinuse-service-name"
+  },
+  {
+   "key": "semantic|ts-cancel-service.CancelApplication|semantic|meansInUse|resttemplate-bean-marked-loadbalanced-resolves-target-host-as-a-service-name-via-discoveryclient-rather-than-a-direct-ip",
+   "decision": "adopted",
+   "basis": "reread: CancelApplication.java:30 @LoadBalanced, :33 return builder.build(); no semantic-axis atom for this meaning appears in pass B's candidate set (pass B recorded only a relation-axis dependsOn atom for the same lines)",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.cancelapplication:meansinuse-loadbalanced-resttemplate"
+  },
+  {
+   "key": "semantic|ts-cancel-service.CancelController|semantic|meansInUse|status-1-selected-on-both-the-successful-cancelorder-return-branch-and-the-caught-exception-branch-message-field-carries-literal-error-text-on-the-exception-branch",
+   "decision": "merged",
+   "basis": "reread: CancelController.java:48-50 catch(Exception e){...; return ok(new Response<>(1,\"error\",null));} reuses status 1 on the exception branch, same as the success branch at :47; both rows describe this same coincidence of status values",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.cancelcontroller:meansinuse-cancelticket-envelope",
+   "mergeGroup": "group-37",
+   "canonicalAtomId": "atom:semantic:ts-cancel-service.cancelcontroller:meansinuse-cancelticket-envelope"
+  },
+  {
+   "key": "semantic|ts-cancel-service.CancelController|semantic|meansInUse|status-1-is-selected-on-the-branch-where-cancelticket-catches-an-exception-from-cancelservice-carrying-the-literal-message-error-and-null-data-the-same-status-value-1-otherwise-selects-the-normal-success-branch-returned-directly-from-the-service-layer",
+   "decision": "merged",
+   "basis": "reread: CancelController.java:48-50 catch(Exception e){...; return ok(new Response<>(1,\"error\",null));} reuses status 1 on the exception branch, same as the success branch at :47; both rows describe this same coincidence of status values",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.cancelcontroller:meansinuse-exception-branch-status",
+   "mergeGroup": "group-37",
+   "canonicalAtomId": "atom:semantic:ts-cancel-service.cancelcontroller:meansinuse-cancelticket-envelope"
+  },
+  {
+   "key": "semantic|ts-cancel-service.CancelServiceImpl|semantic|meansInUse|authorization-header-is-copied-unchanged-into-a-new-headers-object-and-forwarded-to-the-order-order-other-inside-payment-and-user-service-calls-when-present-on-the-incoming-request-omitted-otherwise",
+   "decision": "adopted",
+   "basis": "reread: CancelServiceImpl.java:254-259 static HttpHeaders getAuthorizationHeadersFrom(HttpHeaders oldHeaders) copies AUTHORIZATION only if present; no atom for this helper's semantics appears in pass B's candidate set",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-authorization-header-forwarding"
+  },
+  {
+   "key": "semantic|ts-cancel-service.CancelServiceImpl|semantic|meansInUse|getaccount-method-parameter-named-orderid-is-passed-order-getaccountid-at-the-call-site-the-parameter-identifies-an-account-not-an-order",
+   "decision": "merged",
+   "basis": "reread: CancelServiceImpl.java:70 getAccount(order.getAccountId().toString(), headers), :294 public Response<User> getAccount(String orderId, HttpHeaders headers); both rows describe the same orderId-parameter-name-versus-accountId-argument naming difference at the identical two lines",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-getaccount-parameter-naming",
+   "mergeGroup": "group-38",
+   "canonicalAtomId": "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-getaccount-parameter-naming"
+  },
+  {
+   "key": "semantic|ts-cancel-service.CancelServiceImpl|semantic|meansInUse|the-getaccount-method-parameter-is-named-orderid-but-at-the-cancelorder-call-site-it-is-populated-from-order.getaccountid-not-from-an-order-identifier",
+   "decision": "merged",
+   "basis": "reread: CancelServiceImpl.java:70 getAccount(order.getAccountId().toString(), headers), :294 public Response<User> getAccount(String orderId, HttpHeaders headers); both rows describe the same orderId-parameter-name-versus-accountId-argument naming difference at the identical two lines",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-getaccount-parameter-binding",
+   "mergeGroup": "group-38",
+   "canonicalAtomId": "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-getaccount-parameter-naming"
+  },
+  {
+   "key": "semantic|ts-cancel-service.CancelServiceImpl|semantic|meansInUse|notifyinfo-is-constructed-in-cancelorder-but-the-sendemail-call-site-is-a-commented-out-line-on-the-draw-back-money-success-branch",
+   "decision": "adopted",
+   "basis": "reread: CancelServiceImpl.java:74-84 constructs NotifyInfo, :87 // sendEmail(notifyInfo, headers); is commented out; no atom for this dead-call observation appears in pass B's candidate set",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-sendemail-invocation-commented-out"
+  },
+  {
+   "key": "semantic|ts-cancel-service.CancelServiceImpl|semantic|meansInUse|status-1-returned-on-the-cancelorder-success-branch-even-when-drawbackmoney-returns-false-status-0-returned-only-on-the-order-not-found-order-status-not-permitted-or-changeorder-non-1-branches",
+   "decision": "merged",
+   "basis": "reread: CancelServiceImpl.java:89-92 the drawbackMoney-not-successful else-branch at :89 still falls through to the unconditional return new Response<>(1,\"Success.\",...) at :92, :100/:138 return status-0 on order-status-not-permitted/order-not-found branches; both rows describe this same cancelOrder response-status envelope, overlapping at lines 100 and 138 while each also covers additional branches of the same method (A: the drawback-not-successful nuance at :89; B: the parallel OrderOther-path success/not-successful branches at :59,71,95,127)",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-cancelorder-envelope",
+   "mergeGroup": "group-39",
+   "canonicalAtomId": "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-cancelorder-envelope"
+  },
+  {
+   "key": "semantic|ts-cancel-service.CancelServiceImpl|semantic|meansInUse|status-1-on-a-cancel-or-refund-success-branch-carrying-data-status-0-on-an-order-not-found-branch-or-an-order-status-cancel-not-permitted-branch-or-a-downstream-cancel-not-confirmed-branch",
+   "decision": "merged",
+   "basis": "reread: CancelServiceImpl.java:89-92 the drawbackMoney-not-successful else-branch at :89 still falls through to the unconditional return new Response<>(1,\"Success.\",...) at :92, :100/:138 return status-0 on order-status-not-permitted/order-not-found branches; both rows describe this same cancelOrder response-status envelope, overlapping at lines 100 and 138 while each also covers additional branches of the same method (A: the drawback-not-successful nuance at :89; B: the parallel OrderOther-path success/not-successful branches at :59,71,95,127)",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-response-status",
+   "mergeGroup": "group-39",
+   "canonicalAtomId": "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-cancelorder-envelope"
+  },
+  {
+   "key": "semantic|ts-cancel-service.CancelServiceImpl|semantic|meansInUse|drawbackmoney-uses-the-http-get-verb-to-call-the-inside-payment-service-drawback-endpoint-that-changes-the-account-balance-state-rather-than-a-put-or-post-verb",
+   "decision": "adopted",
+   "basis": "reread: CancelServiceImpl.java:284-286 restTemplate.exchange(...drawback/userId/money, HttpMethod.GET,...) uses GET for a balance-mutating call; no atom for this verb observation appears in pass A's candidate set",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-drawback-get-verb"
+  },
+  {
+   "key": "semantic|ts-cancel-service.SecurityConfig|semantic|meansInUse|csrf-protection-disabled-branch-selected-for-cancelservice-httpsecurity-chain",
+   "decision": "adopted",
+   "basis": "reread: cancel/config/SecurityConfig.java:66 .csrf().disable(); no semantic-axis atom for this specific fact appears in pass B's candidate set for this file",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.securityconfig:meansinuse-csrf-disabled"
+  },
+  {
+   "key": "semantic|ts-cancel-service.SecurityConfig|semantic|meansInUse|sessioncreationpolicy-stateless-selected-no-httpsession-created-for-cancelservice-requests",
+   "decision": "adopted",
+   "basis": "reread: cancel/config/SecurityConfig.java:68 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS); no semantic-axis atom for this specific fact appears in pass B's candidate set for this file",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.securityconfig:meansinuse-session-stateless"
+  },
+  {
+   "key": "semantic|ts-cancel-service.application-yml|semantic|meansInUse|spring-application-name-set-to-ts-cancel-service-used-as-the-nacos-service-registration-and-discovery-lookup-key",
+   "decision": "merged",
+   "basis": "reread: application.yml:9-10 spring.application.name: ts-cancel-service is the nacos registration/discovery key; B's row cites the same name line 10 plus the neighboring port (:2) and nacos server-addr (:8) lines as part of the same service-identity fact",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.application-yml:meansinuse-service-name",
+   "mergeGroup": "group-40",
+   "canonicalAtomId": "atom:semantic:ts-cancel-service.application-yml:meansinuse-service-name"
+  },
+  {
+   "key": "semantic|ts-cancel-service.application-yml|semantic|meansInUse|service-registers-under-the-name-ts-cancel-service-and-listens-on-port-18885-discovered-through-a-nacos-cluster-address-list",
+   "decision": "merged",
+   "basis": "reread: application.yml:9-10 spring.application.name: ts-cancel-service is the nacos registration/discovery key; B's row cites the same name line 10 plus the neighboring port (:2) and nacos server-addr (:8) lines as part of the same service-identity fact",
+   "candidateAtomId": "atom:semantic:ts-cancel-service.application-yml:meansinuse-service-registration",
+   "mergeGroup": "group-40",
+   "canonicalAtomId": "atom:semantic:ts-cancel-service.application-yml:meansinuse-service-name"
+  }
+ ]
+}

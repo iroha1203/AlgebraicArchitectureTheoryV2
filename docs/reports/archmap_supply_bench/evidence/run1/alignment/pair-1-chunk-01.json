@@ -1,0 +1,1406 @@
+{
+ "schema": "archmap-reference-alignment/v1",
+ "id": "alignment:pair-1-chunk-01",
+ "referenceRef": "reference:train-ticket-chunk-01",
+ "referenceVersion": "1",
+ "pairRef": "pair-1-chunk-01",
+ "adjudicator": "sonnet-reread",
+ "rows": [
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addconfig",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:addConfig",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:configs-post"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addcontacts",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:addContacts",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:contacts-post"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addprice",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:addPrice",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:prices-post"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addstation",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:addStation",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:stations-post"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addtrain",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:addTrain",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:trains-post"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deleteconfig",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:deleteConfig",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:configs-delete"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deletecontacts",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:deleteContacts",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:contacts-delete"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deleteprice",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:deletePrice",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:prices-delete"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deletestation",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:deleteStation",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:stations-delete"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deletetrain",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:deleteTrain",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:trains-delete"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallconfigs",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:getConfigs",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:configs-get"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallcontacts",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:getContacts",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:contacts-get"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallprices",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:getPrices",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:prices-get"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallstations",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:getStations",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:stations-get"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getalltrains",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:getTrains",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:trains-get"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:home",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:welcome",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:welcome"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifyconfig",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:modifyConfig",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:configs-put"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifycontacts",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:modifyContacts",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:contacts-put"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifyprice",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:modifyPrice",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:prices-put"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifystation",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:modifyStation",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:stations-put"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifytrain",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoController:exposesEndpoint:modifyTrain",
+    "atom:capability:ts-admin-basic-info-service.adminbasicinfocontroller:trains-put"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-order-service-adminordercontroller:addorder",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-order-service.AdminOrderController:exposesEndpoint:addOrder",
+    "atom:capability:ts-admin-order-service.adminordercontroller:addorder"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-order-service-adminordercontroller:deleteorder",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-order-service.AdminOrderController:exposesEndpoint:deleteOrder",
+    "atom:capability:ts-admin-order-service.adminordercontroller:deleteorder"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-order-service-adminordercontroller:getallorders",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-order-service.AdminOrderController:exposesEndpoint:getAllOrders",
+    "atom:capability:ts-admin-order-service.adminordercontroller:getallorders"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-order-service-adminordercontroller:home",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-order-service.AdminOrderController:exposesEndpoint:welcome",
+    "atom:capability:ts-admin-order-service.adminordercontroller:welcome"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-order-service-adminordercontroller:updateorder",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-order-service.AdminOrderController:exposesEndpoint:updateOrder",
+    "atom:capability:ts-admin-order-service.adminordercontroller:updateorder"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-route-service-adminroutecontroller:addroute",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-route-service.AdminRouteController:exposesEndpoint:addRoute",
+    "atom:capability:ts-admin-route-service.adminroutecontroller:addroute"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-route-service-adminroutecontroller:deleteroute",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-route-service.AdminRouteController:exposesEndpoint:deleteRoute",
+    "atom:capability:ts-admin-route-service.adminroutecontroller:deleteroute"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-route-service-adminroutecontroller:getallroutes",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-route-service.AdminRouteController:exposesEndpoint:getAllRoutes",
+    "atom:capability:ts-admin-route-service.adminroutecontroller:getallroutes"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-admin-route-service-adminroutecontroller:home",
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-route-service.AdminRouteController:exposesEndpoint:welcome",
+    "atom:capability:ts-admin-route-service.adminroutecontroller:welcome"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminbasic-application",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-basic-info-service.AdminBasicInfoApplication",
+    "atom:component:ts-admin-basic-info-service.adminbasicinfoapplication"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminbasic-controller",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-basic-info-service.AdminBasicInfoController",
+    "atom:component:ts-admin-basic-info-service.adminbasicinfocontroller"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminbasic-priceinfo",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-basic-info-service.PriceInfo",
+    "atom:component:ts-admin-basic-info-service.priceinfo"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminbasic-securityconfig",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-basic-info-service.SecurityConfig",
+    "atom:component:ts-admin-basic-info-service.securityconfig"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminbasic-service-iface",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-basic-info-service.AdminBasicInfoService",
+    "atom:component:ts-admin-basic-info-service.adminbasicinfoservice"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminbasic-service-impl",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+    "atom:component:ts-admin-basic-info-service.adminbasicinfoserviceimpl"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminorder-application",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-order-service.AdminOrderApplication",
+    "atom:component:ts-admin-order-service.adminorderapplication"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminorder-controller",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-order-service.AdminOrderController",
+    "atom:component:ts-admin-order-service.adminordercontroller"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminorder-securityconfig",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-order-service.SecurityConfig",
+    "atom:component:ts-admin-order-service.securityconfig"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminorder-service-iface",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-order-service.AdminOrderService",
+    "atom:component:ts-admin-order-service.adminorderservice"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminorder-service-impl",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-order-service.AdminOrderServiceImpl",
+    "atom:component:ts-admin-order-service.adminorderserviceimpl"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminroute-application",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-route-service.AdminRouteApplication",
+    "atom:component:ts-admin-route-service.adminrouteapplication"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminroute-controller",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-route-service.AdminRouteController",
+    "atom:component:ts-admin-route-service.adminroutecontroller"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminroute-securityconfig",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-route-service.SecurityConfig",
+    "atom:component:ts-admin-route-service.securityconfig"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminroute-service-iface",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-route-service.AdminRouteService",
+    "atom:component:ts-admin-route-service.adminrouteservice"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:adminroute-service-impl",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-route-service.AdminRouteServiceImpl",
+    "atom:component:ts-admin-route-service.adminrouteserviceimpl"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:admintravel-application",
+   "candidateAtomIds": [
+    "atom:component:ts-admin-travel-service.AdminTravelApplication",
+    "atom:component:ts-admin-travel-service.admintravelapplication"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:authority:ts-admin-basic-info-service-adminbasicinfocontroller:allows-cross-origin-per-endpoint",
+   "candidateAtomIds": [
+    "atom:authority:ts-admin-basic-info-service.AdminBasicInfoController:allowsCrossOrigin"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminBasicInfoController.java shows @CrossOrigin(origins=\"*\") repeated on every CRUD endpoint method; candidate records this as one aggregated per-controller authority fact instead of per-endpoint entries."
+  },
+  {
+   "referenceAtomId": "atom:authority:ts-admin-basic-info-service-securityconfig:allows-cross-origin",
+   "candidateAtomIds": [
+    "atom:authority:ts-admin-basic-info-service.securityconfig:allows-cross-origin-all",
+    "atom:authority:ts-admin-basic-info-service.SecurityConfig:allowsCrossOrigin:corsConfigurer"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: SecurityConfig.java CorsConfigurationSource bean allows all origins/methods/headers with credentials disabled and maxAge 3600 on /**, matching both candidate objects."
+  },
+  {
+   "referenceAtomId": "atom:authority:ts-admin-basic-info-service-securityconfig:checks-jwt-filter",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "Reference records that SecurityConfig inserts a JWT filter before UsernamePasswordAuthenticationFilter on the security filter chain; no remaining candidate atom in this pair states a JWT-filter check on the authority axis."
+  },
+  {
+   "referenceAtomId": "atom:authority:ts-admin-basic-info-service-securityconfig:permits-unauthenticated-get-resources",
+   "candidateAtomIds": [
+    "atom:authority:ts-admin-basic-info-service.securityconfig:permits-unauthenticated-stations-get",
+    "atom:authority:ts-admin-basic-info-service.securityconfig:permits-unauthenticated-trains-get",
+    "atom:authority:ts-admin-basic-info-service.securityconfig:permits-unauthenticated-prices-get",
+    "atom:authority:ts-admin-basic-info-service.securityconfig:permits-unauthenticated-configs-get",
+    "atom:authority:ts-admin-basic-info-service.securityconfig:permits-unauthenticated-contacts-get",
+    "atom:authority:ts-admin-basic-info-service.SecurityConfig:permitsUnauthenticated:stations",
+    "atom:authority:ts-admin-basic-info-service.SecurityConfig:permitsUnauthenticated:trains",
+    "atom:authority:ts-admin-basic-info-service.SecurityConfig:permitsUnauthenticated:prices",
+    "atom:authority:ts-admin-basic-info-service.SecurityConfig:permitsUnauthenticated:configs",
+    "atom:authority:ts-admin-basic-info-service.SecurityConfig:permitsUnauthenticated:contacts"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: SecurityConfig.java permits GET on adminbasic/stations, trains, prices, configs, contacts without authentication; reference records this as one aggregate object, both passes split it into five per-resource atoms covering the same set."
+  },
+  {
+   "referenceAtomId": "atom:authority:ts-admin-basic-info-service-securityconfig:permits-unauthenticated-swagger",
+   "candidateAtomIds": [
+    "atom:authority:ts-admin-basic-info-service.securityconfig:permits-unauthenticated-swagger",
+    "atom:authority:ts-admin-basic-info-service.SecurityConfig:permitsUnauthenticated:swagger"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: SecurityConfig.java permits swagger-ui.html, webjars, images, configuration, swagger-resources, v2 paths without authentication."
+  },
+  {
+   "referenceAtomId": "atom:authority:ts-admin-basic-info-service-securityconfig:requires-role-admin",
+   "candidateAtomIds": [
+    "atom:authority:ts-admin-basic-info-service.securityconfig:requires-role-admin",
+    "atom:authority:ts-admin-basic-info-service.SecurityConfig:requiresRole:adminbasicservice"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: SecurityConfig.java requires ADMIN role on /api/v1/adminbasicservice/** as the catch-all after the GET carve-outs."
+  },
+  {
+   "referenceAtomId": "atom:authority:ts-admin-order-service-adminordercontroller:allows-cross-origin-getallorders-only",
+   "candidateAtomIds": [
+    "atom:authority:ts-admin-order-service.adminordercontroller:allows-cross-origin-getallorders",
+    "atom:authority:ts-admin-order-service.AdminOrderController:allowsCrossOrigin:getAllOrders"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminOrderController.java carries @CrossOrigin only on the GET /adminorder method; add/update/delete methods carry no such annotation."
+  },
+  {
+   "referenceAtomId": "atom:authority:ts-admin-order-service-securityconfig:allows-cross-origin",
+   "candidateAtomIds": [
+    "atom:authority:ts-admin-order-service.securityconfig:allows-cross-origin-all",
+    "atom:authority:ts-admin-order-service.SecurityConfig:allowsCrossOrigin:corsConfigurer"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: admin-order SecurityConfig.java CORS bean allows all origins/methods/headers, credentials false, maxAge 3600 on /**."
+  },
+  {
+   "referenceAtomId": "atom:authority:ts-admin-order-service-securityconfig:checks-jwt-filter",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "Reference records a JWT-filter check on admin-order's SecurityConfig filter chain; no remaining candidate atom in this pair states it on the authority axis."
+  },
+  {
+   "referenceAtomId": "atom:authority:ts-admin-order-service-securityconfig:permits-unauthenticated-swagger",
+   "candidateAtomIds": [
+    "atom:authority:ts-admin-order-service.securityconfig:permits-unauthenticated-swagger",
+    "atom:authority:ts-admin-order-service.SecurityConfig:permitsUnauthenticated:swagger"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: admin-order SecurityConfig.java permits swagger paths without authentication."
+  },
+  {
+   "referenceAtomId": "atom:authority:ts-admin-order-service-securityconfig:requires-role-admin-whole-path",
+   "candidateAtomIds": [
+    "atom:authority:ts-admin-order-service.securityconfig:requires-role-admin",
+    "atom:authority:ts-admin-order-service.SecurityConfig:requiresRole:adminorderservice"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: admin-order SecurityConfig.java requires ADMIN role on the whole /api/v1/adminorderservice/** path with no unauthenticated GET carve-out."
+  },
+  {
+   "referenceAtomId": "atom:authority:ts-admin-route-service-securityconfig:allows-cross-origin",
+   "candidateAtomIds": [
+    "atom:authority:ts-admin-route-service.securityconfig:allows-cross-origin-all",
+    "atom:authority:ts-admin-route-service.SecurityConfig:allowsCrossOrigin:corsConfigurer"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: admin-route SecurityConfig.java CORS bean allows all origins/methods/headers, credentials false, maxAge 3600 on /**."
+  },
+  {
+   "referenceAtomId": "atom:authority:ts-admin-route-service-securityconfig:checks-jwt-filter",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "Reference records a JWT-filter check on admin-route's SecurityConfig filter chain; no remaining candidate atom in this pair states it on the authority axis."
+  },
+  {
+   "referenceAtomId": "atom:authority:ts-admin-route-service-securityconfig:permits-unauthenticated-swagger",
+   "candidateAtomIds": [
+    "atom:authority:ts-admin-route-service.securityconfig:permits-unauthenticated-swagger",
+    "atom:authority:ts-admin-route-service.SecurityConfig:permitsUnauthenticated:swagger"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: admin-route SecurityConfig.java permits swagger paths without authentication."
+  },
+  {
+   "referenceAtomId": "atom:authority:ts-admin-route-service-securityconfig:requires-role-admin-whole-path",
+   "candidateAtomIds": [
+    "atom:authority:ts-admin-route-service.securityconfig:requires-role-admin",
+    "atom:authority:ts-admin-route-service.SecurityConfig:requiresRole:adminrouteservice"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: admin-route SecurityConfig.java requires ADMIN role on the whole /api/v1/adminrouteservice/** path with no unauthenticated GET carve-out."
+  },
+  {
+   "referenceAtomId": "atom:component:ts-admin-basic-info-service",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "Reference records the admin-basic-info service itself as a top-level component; remaining candidates model only the Application bootstrap class (already reference-matched) and the application.yml file, not the service as a bare subject."
+  },
+  {
+   "referenceAtomId": "atom:component:ts-admin-order-service",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "Reference records the admin-order service itself as a top-level component; remaining candidates model only the Application bootstrap class and application.yml, not the service as a bare subject."
+  },
+  {
+   "referenceAtomId": "atom:component:ts-admin-route-service",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "Reference records the admin-route service itself as a top-level component; remaining candidates model only the Application bootstrap class and application.yml, not the service as a bare subject."
+  },
+  {
+   "referenceAtomId": "atom:contract:ts-admin-basic-info-service-securityconfig:security-filter-chain-shape",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "Reference records the stateless/CSRF-disabled/HTTP-basic-disabled filter-chain shape with the JWT filter insertion point; no remaining candidate contract atom describes SecurityConfig's overall filter-chain shape."
+  },
+  {
+   "referenceAtomId": "atom:contract:ts-admin-order-service-securityconfig:security-filter-chain-shape",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "Reference records the same filter-chain shape fact for admin-order's SecurityConfig; no remaining candidate contract atom describes it."
+  },
+  {
+   "referenceAtomId": "atom:contract:ts-admin-route-service-securityconfig:security-filter-chain-shape",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "Reference records the same filter-chain shape fact for admin-route's SecurityConfig; no remaining candidate contract atom describes it."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoapplication:registers-with-discovery-provider",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "AdminBasicInfoApplication.java carries @EnableDiscoveryClient, but no remaining candidate effect atom attributes a discovery-registration call to the Application class itself; the closest candidates describe application.yml's config dependency on nacos discovery, a different subject."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-order-service-adminorderapplication:registers-with-discovery-provider",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "Same fact for admin-order's Application class; no remaining candidate effect atom attributes discovery registration to it."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-route-service-adminrouteapplication:registers-with-discovery-provider",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "Same fact for admin-route's Application class; no remaining candidate effect atom attributes discovery registration to it."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-travel-service-admintravelapplication:registers-with-discovery-provider",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "Same fact for admin-travel's Application class; no remaining candidate effect atom attributes discovery registration to it (only the bootstrap component atom was mechanically matched)."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addconfig",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-configs-post",
+    "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:addConfig"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminBasicInfoServiceImpl.java's addConfig method POSTs to the ts-config-service configs endpoint; both candidates record this call, keyed by verb rather than by the reference's operation name."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deleteconfig",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-configs-delete",
+    "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:deleteConfig"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminBasicInfoServiceImpl.java's deleteConfig method DELETEs against the same downstream configs endpoint."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallconfigs",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-configs-get",
+    "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:getAllConfigs"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminBasicInfoServiceImpl.java's getAllConfigs method GETs the same downstream configs endpoint."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifyconfig",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-configs-put",
+    "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:modifyConfig"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminBasicInfoServiceImpl.java's modifyConfig method PUTs to the same downstream configs endpoint."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:callsprovider-configs",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "Reference records a coarse provider-only fact (calls the configs downstream service) in addition to the four verb-specific effect atoms; both passes only atomized the four verb-specific calls, already assigned above, and produced no separate provider-only atom for configs."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addcontact",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-contacts-post",
+    "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:addContact"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminBasicInfoServiceImpl.java's addContact method POSTs to the ts-contact-service contacts endpoint; both candidates record this call, keyed by verb rather than by the reference's operation name."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deletecontact",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-contacts-delete",
+    "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:deleteContact"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminBasicInfoServiceImpl.java's deleteContact method DELETEs against the same downstream contacts endpoint."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallcontacts",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-contacts-get",
+    "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:getAllContacts"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminBasicInfoServiceImpl.java's getAllContacts method GETs the same downstream contacts endpoint."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifycontact",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-contacts-put",
+    "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:modifyContact"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminBasicInfoServiceImpl.java's modifyContact method PUTs to the same downstream contacts endpoint."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:callsprovider-contacts",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "Reference records a coarse provider-only fact (calls the contacts downstream service) in addition to the four verb-specific effect atoms; both passes only atomized the four verb-specific calls, already assigned above, and produced no separate provider-only atom for contacts."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addprice",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-prices-post",
+    "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:addPrice"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminBasicInfoServiceImpl.java's addPrice method POSTs to the ts-price-service prices endpoint; both candidates record this call, keyed by verb rather than by the reference's operation name."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deleteprice",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-prices-delete",
+    "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:deletePrice"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminBasicInfoServiceImpl.java's deletePrice method DELETEs against the same downstream prices endpoint."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallprices",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-prices-get",
+    "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:getAllPrices"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminBasicInfoServiceImpl.java's getAllPrices method GETs the same downstream prices endpoint."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifyprice",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-prices-put",
+    "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:modifyPrice"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminBasicInfoServiceImpl.java's modifyPrice method PUTs to the same downstream prices endpoint."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:callsprovider-prices",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "Reference records a coarse provider-only fact (calls the prices downstream service) in addition to the four verb-specific effect atoms; both passes only atomized the four verb-specific calls, already assigned above, and produced no separate provider-only atom for prices."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addstation",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-stations-post",
+    "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:addStation"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminBasicInfoServiceImpl.java's addStation method POSTs to the ts-station-service stations endpoint; both candidates record this call, keyed by verb rather than by the reference's operation name."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deletestation",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-stations-delete",
+    "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:deleteStation"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminBasicInfoServiceImpl.java's deleteStation method DELETEs against the same downstream stations endpoint."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallstations",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-stations-get",
+    "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:getAllStations"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminBasicInfoServiceImpl.java's getAllStations method GETs the same downstream stations endpoint."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifystation",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-stations-put",
+    "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:modifyStation"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminBasicInfoServiceImpl.java's modifyStation method PUTs to the same downstream stations endpoint."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:callsprovider-stations",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "Reference records a coarse provider-only fact (calls the stations downstream service) in addition to the four verb-specific effect atoms; both passes only atomized the four verb-specific calls, already assigned above, and produced no separate provider-only atom for stations."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addtrain",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-trains-post",
+    "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:addTrain"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminBasicInfoServiceImpl.java's addTrain method POSTs to the ts-train-service trains endpoint; both candidates record this call, keyed by verb rather than by the reference's operation name."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deletetrain",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-trains-delete",
+    "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:deleteTrain"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminBasicInfoServiceImpl.java's deleteTrain method DELETEs against the same downstream trains endpoint."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getalltrains",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-trains-get",
+    "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:getAllTrains"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminBasicInfoServiceImpl.java's getAllTrains method GETs the same downstream trains endpoint."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifytrain",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-basic-info-service.adminbasicinfoserviceimpl:calls-trains-put",
+    "atom:effect:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:callsProvider:modifyTrain"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminBasicInfoServiceImpl.java's modifyTrain method PUTs to the same downstream trains endpoint."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:callsprovider-trains",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "Reference records a coarse provider-only fact (calls the trains downstream service) in addition to the four verb-specific effect atoms; both passes only atomized the four verb-specific calls, already assigned above, and produced no separate provider-only atom for trains."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-order-service-adminorderserviceimpl:addorder-order-other-service-branch",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-order-service.adminorderserviceimpl:calls-addorder-order-other-service",
+    "atom:effect:ts-admin-order-service.AdminOrderServiceImpl:callsProvider:addOrder-orderOther"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminOrderServiceImpl.java's addOrder branches on trainNumber not starting with G or D and POSTs to ts-order-other-service /orderOther/admin."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-order-service-adminorderserviceimpl:addorder-order-service-branch",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-order-service.adminorderserviceimpl:calls-addorder-order-service",
+    "atom:effect:ts-admin-order-service.AdminOrderServiceImpl:callsProvider:addOrder-order"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminOrderServiceImpl.java's addOrder branches on trainNumber starting with G or D and POSTs to ts-order-service /order/admin."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-order-service-adminorderserviceimpl:callsprovider-order",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "Reference records a coarse provider-only fact (calls ts-order-service); the four verb/branch-specific effect atoms already cover these calls and neither pass produced a separate provider-only atom."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-order-service-adminorderserviceimpl:callsprovider-orderother",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "Reference records a coarse provider-only fact (calls ts-order-other-service); the four verb/branch-specific effect atoms already cover these calls and neither pass produced a separate provider-only atom."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-order-service-adminorderserviceimpl:deleteorder-order-other-service-branch",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-order-service.adminorderserviceimpl:calls-deleteorder-order-other-service",
+    "atom:effect:ts-admin-order-service.AdminOrderServiceImpl:callsProvider:deleteOrder-orderOther"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminOrderServiceImpl.java's deleteOrder non-G/D branch DELETEs against ts-order-other-service /orderOther/{id}."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-order-service-adminorderserviceimpl:deleteorder-order-service-branch",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-order-service.adminorderserviceimpl:calls-deleteorder-order-service",
+    "atom:effect:ts-admin-order-service.AdminOrderServiceImpl:callsProvider:deleteOrder-order"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminOrderServiceImpl.java's deleteOrder G/D branch DELETEs against ts-order-service /order/{id}."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-order-service-adminorderserviceimpl:getallorders-order-other-service",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-order-service.adminorderserviceimpl:calls-getallorders-order-other-service",
+    "atom:effect:ts-admin-order-service.AdminOrderServiceImpl:callsProvider:getAllOrders-orderOther"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminOrderServiceImpl.java's getAllOrders unconditionally GETs ts-order-other-service /orderOther."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-order-service-adminorderserviceimpl:getallorders-order-service",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-order-service.adminorderserviceimpl:calls-getallorders-order-service",
+    "atom:effect:ts-admin-order-service.AdminOrderServiceImpl:callsProvider:getAllOrders-order"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminOrderServiceImpl.java's getAllOrders unconditionally GETs ts-order-service /order."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-order-service-adminorderserviceimpl:updateorder-order-other-service-branch",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-order-service.adminorderserviceimpl:calls-updateorder-order-other-service",
+    "atom:effect:ts-admin-order-service.AdminOrderServiceImpl:callsProvider:updateOrder-orderOther"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminOrderServiceImpl.java's updateOrder non-G/D branch PUTs against ts-order-other-service /orderOther/admin."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-order-service-adminorderserviceimpl:updateorder-order-service-branch",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-order-service.adminorderserviceimpl:calls-updateorder-order-service",
+    "atom:effect:ts-admin-order-service.AdminOrderServiceImpl:callsProvider:updateOrder-order"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminOrderServiceImpl.java's updateOrder G/D branch PUTs against ts-order-service /order/admin."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-route-service-adminrouteserviceimpl:callsprovider-route",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "Reference records a coarse provider-only fact (calls ts-route-service); the three route-specific effect atoms (getAllRoutes/createAndModifyRoute/deleteRoute) already cover these calls and neither pass produced a separate provider-only atom."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-route-service-adminrouteserviceimpl:callsprovider-station",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "Reference records a coarse provider-only fact (calls ts-station-service); the checkStationsExists effect atom already covers this call and neither pass produced a separate provider-only atom."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-route-service-adminrouteserviceimpl:checkstationsexists",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-route-service.adminrouteserviceimpl:calls-checkstationsexists",
+    "atom:effect:ts-admin-route-service.AdminRouteServiceImpl:callsProvider:checkStationsExists"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminRouteServiceImpl.java's checkStationsExists POSTs the station-name list to ts-station-service /stations/idlist."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-route-service-adminrouteserviceimpl:createandmodifyroute",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-route-service.adminrouteserviceimpl:calls-createandmodifyroute",
+    "atom:effect:ts-admin-route-service.AdminRouteServiceImpl:callsProvider:createAndModifyRoute"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminRouteServiceImpl.java's createAndModifyRoute POSTs to ts-route-service /routeservice/routes after the station checks pass."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-route-service-adminrouteserviceimpl:deleteroute",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-route-service.adminrouteserviceimpl:calls-deleteroute",
+    "atom:effect:ts-admin-route-service.AdminRouteServiceImpl:callsProvider:deleteRoute"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminRouteServiceImpl.java's deleteRoute DELETEs ts-route-service /routeservice/routes/{routeId}."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-admin-route-service-adminrouteserviceimpl:getallroutes",
+   "candidateAtomIds": [
+    "atom:effect:ts-admin-route-service.adminrouteserviceimpl:calls-getallroutes",
+    "atom:effect:ts-admin-route-service.AdminRouteServiceImpl:callsProvider:getAllRoutes"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminRouteServiceImpl.java's getAllRoutes GETs ts-route-service /routeservice/routes."
+  },
+  {
+   "referenceAtomId": "atom:relation:ts-admin-basic-info-service-adminbasicinfocontroller:dependson",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "Reference records that AdminBasicInfoController depends on AdminBasicInfoService; no remaining candidate relation atom states this dependency (the field-injection wiring was not atomized separately by either pass in this remainder)."
+  },
+  {
+   "referenceAtomId": "atom:relation:ts-admin-basic-info-service-adminbasicinfoserviceimpl:implements",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "Reference records that AdminBasicInfoServiceImpl implements AdminBasicInfoService; no remaining candidate relation atom states this."
+  },
+  {
+   "referenceAtomId": "atom:relation:ts-admin-basic-info-service:depends-on-nacos-discovery",
+   "candidateAtomIds": [
+    "atom:relation:ts-admin-basic-info-service.application-yml:dependsOn:nacos-discovery"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: application.yml declares spring.cloud.nacos.discovery.server-addr as ${NACOS_ADDRS:...}, i.e. env-configurable; candidate attributes this to the application-yml subject rather than the bare service subject but records the same dependency."
+  },
+  {
+   "referenceAtomId": "atom:relation:ts-admin-order-service-adminordercontroller:dependson",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "Reference records that AdminOrderController depends on AdminOrderService; no remaining candidate relation atom states this."
+  },
+  {
+   "referenceAtomId": "atom:relation:ts-admin-order-service-adminorderserviceimpl:implements",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "Reference records that AdminOrderServiceImpl implements AdminOrderService; no remaining candidate relation atom states this."
+  },
+  {
+   "referenceAtomId": "atom:relation:ts-admin-order-service:depends-on-nacos-discovery",
+   "candidateAtomIds": [
+    "atom:relation:ts-admin-order-service.application-yml:dependsOn:nacos-discovery"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: admin-order's application.yml declares the same env-configurable nacos discovery server-addr; candidate attributes it to application-yml rather than the bare service subject."
+  },
+  {
+   "referenceAtomId": "atom:relation:ts-admin-route-service-adminroutecontroller:dependson",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "Reference records that AdminRouteController depends on AdminRouteService; no remaining candidate relation atom states this."
+  },
+  {
+   "referenceAtomId": "atom:relation:ts-admin-route-service-adminrouteserviceimpl:implements",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "Reference records that AdminRouteServiceImpl implements AdminRouteService; no remaining candidate relation atom states this."
+  },
+  {
+   "referenceAtomId": "atom:relation:ts-admin-route-service:depends-on-nacos-discovery",
+   "candidateAtomIds": [
+    "atom:relation:ts-admin-route-service.application-yml:dependsOn:nacos-discovery"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: admin-route's application.yml declares the same env-configurable nacos discovery server-addr; candidate attributes it to application-yml rather than the bare service subject."
+  },
+  {
+   "referenceAtomId": "atom:semantic:admin-basic-info-surface:cech-section-money-amount",
+   "candidateAtomIds": [
+    "atom:semantic:ctx-ts-admin-basic-info-service-price-crud:cech-section-money-amount",
+    "atom:semantic:ts-admin-basic-info-service-price-admin-surface:cech-section-money-amount"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: PriceInfo.java represents basicPriceRate and firstClassPriceRate as double primitive fields; both passes recorded the same Cech section value under differently-named local contexts."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-admin-basic-info-service-adminbasicinfoserviceimpl:discoveryclient-not-used-for-url",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "AdminBasicInfoServiceImpl.java injects a DiscoveryClient field but getServiceUrl builds URLs as a literal http:// prefix plus service name without calling it; no remaining candidate atom in this pair states this non-use."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-admin-basic-info-service-priceinfo:money-amount-representation",
+   "candidateAtomIds": [
+    "atom:semantic:ts-admin-basic-info-service.priceinfo:identified-by-double-rate-fields",
+    "atom:semantic:ts-admin-basic-info-service.PriceInfo:money-amount-representation"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: PriceInfo.java declares basicPriceRate and firstClassPriceRate as double fields with no parsing at the declaration site; both candidates record this under different predicate names."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-admin-order-service-adminordercontroller:order-lookup-key",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "Reference records that deleteOrder identifies an order by the compound key (orderId, trainNumber); no remaining candidate atom states this identification fact."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-admin-order-service-adminorderserviceimpl:discoveryclient-not-used-for-url",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "AdminOrderServiceImpl.java's getServiceUrl builds URLs the same way (literal prefix plus service name); no remaining candidate atom in this pair states discoveryClient non-use for admin-order."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-admin-order-service-adminorderserviceimpl:response-status-branch",
+   "candidateAtomIds": [
+    "atom:semantic:ts-admin-order-service.adminorderserviceimpl:means-in-use-response-status-envelope",
+    "atom:semantic:ts-admin-order-service.AdminOrderServiceImpl:response-status-envelope"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminOrderServiceImpl.java's getAllOrders aggregation treats response status 1 as the append-to-result branch and any other status as the log-only branch; both candidates record this under meansInUse rather than the reference's statusGates predicate."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-admin-order-service-adminorderserviceimpl:train-number-prefix-routing",
+   "candidateAtomIds": [
+    "atom:semantic:ts-admin-order-service.adminorderserviceimpl:means-in-use-trainnumber-routing",
+    "atom:semantic:ts-admin-order-service.AdminOrderServiceImpl:trainNumber-prefix-selects-provider"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminOrderServiceImpl.java's add/update/delete methods check trainNumber.startsWith(\"G\")||startsWith(\"D\") to select ts-order-service, otherwise ts-order-other-service."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-admin-route-service-adminroutecontroller:cross-origin-annotation-coverage",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "Reference records the coverage claim that @CrossOrigin is present only on the getAllRoutes method and absent on addRoute/deleteRoute; the one remaining candidate authority atom for this controller states only the single positive fact for getAllRoutes, not the coverage comparison, and is treated separately as a candidate-side leftover."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-admin-route-service-adminrouteserviceimpl:discoveryclient-not-used-for-url",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "AdminRouteServiceImpl.java's getServiceUrl builds URLs the same literal-prefix way; no remaining candidate atom in this pair states discoveryClient non-use for admin-route."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-admin-route-service-adminrouteserviceimpl:downstream-http-status-branch",
+   "candidateAtomIds": [
+    "atom:semantic:ts-admin-route-service.adminrouteserviceimpl:means-in-use-http-status-log-branch",
+    "atom:semantic:ts-admin-route-service.AdminRouteServiceImpl:downstream-http-status-meaning"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminRouteServiceImpl.java's getAllRoutes/createAndModifyRoute/deleteRoute all log an error when the downstream HTTP status is not ACCEPTED but return the response body on either branch."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-admin-route-service-adminrouteserviceimpl:response-status-branch",
+   "candidateAtomIds": [
+    "atom:semantic:ts-admin-route-service.adminrouteserviceimpl:means-in-use-station-check-envelope",
+    "atom:semantic:ts-admin-route-service.AdminRouteServiceImpl:response-status-envelope"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminRouteServiceImpl.java's createAndModifyRoute/checkStationsExists treat response status 0 as the early-return validation branch and status 1 as the check-succeeded continue branch."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-admin-route-service-adminrouteserviceimpl:route-endpoint-membership-check",
+   "candidateAtomIds": [
+    "atom:contract:ts-admin-route-service.adminrouteserviceimpl:requires-start-end-in-stations"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminRouteServiceImpl.java's createAndModifyRoute rejects the request before any downstream call when start or end station is not a member of request.getStations(); the sole remaining candidate records this as a contract 'requires' atom rather than a semantic 'meansInUse' atom for the same fact."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-admin-route-service-adminrouteserviceimpl:station-lookup-contract",
+   "candidateAtomIds": [
+    "atom:semantic:ts-admin-route-service.adminrouteserviceimpl:means-in-use-station-lookup-null",
+    "atom:semantic:ts-admin-route-service.AdminRouteServiceImpl:station-lookup-null-meaning"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: AdminRouteServiceImpl.java's checkStationsExists posts the station-name list to /stations/idlist and treats a null map value for a name as the not-exists branch."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:authority:ts-admin-route-service.AdminRouteController:allowsCrossOrigin:getAllRoutes"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminRouteController.java carries @CrossOrigin(origins=\"*\") only on getAllRoutes, absent on addRoute/deleteRoute; the reference slice has no authority atom for this controller at all (unlike its admin-order counterpart, which the reference does carry)."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:servesQuery:getAllContacts"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminBasicInfoServiceImpl.java implements getAllContacts; this records an implementation-layer capability distinct from the controller-level exposesEndpoint atom already matched to the reference, a granularity the reference slice does not carry in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:handlesCommand:deleteContact"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminBasicInfoServiceImpl.java implements deleteContact; this records an implementation-layer capability distinct from the controller-level exposesEndpoint atom already matched to the reference, a granularity the reference slice does not carry in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:handlesCommand:modifyContact"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminBasicInfoServiceImpl.java implements modifyContact; this records an implementation-layer capability distinct from the controller-level exposesEndpoint atom already matched to the reference, a granularity the reference slice does not carry in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:handlesCommand:addContact"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminBasicInfoServiceImpl.java implements addContact; this records an implementation-layer capability distinct from the controller-level exposesEndpoint atom already matched to the reference, a granularity the reference slice does not carry in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:servesQuery:getAllStations"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminBasicInfoServiceImpl.java implements getAllStations; this records an implementation-layer capability distinct from the controller-level exposesEndpoint atom already matched to the reference, a granularity the reference slice does not carry in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:handlesCommand:addStation"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminBasicInfoServiceImpl.java implements addStation; this records an implementation-layer capability distinct from the controller-level exposesEndpoint atom already matched to the reference, a granularity the reference slice does not carry in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:handlesCommand:deleteStation"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminBasicInfoServiceImpl.java implements deleteStation; this records an implementation-layer capability distinct from the controller-level exposesEndpoint atom already matched to the reference, a granularity the reference slice does not carry in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:handlesCommand:modifyStation"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminBasicInfoServiceImpl.java implements modifyStation; this records an implementation-layer capability distinct from the controller-level exposesEndpoint atom already matched to the reference, a granularity the reference slice does not carry in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:servesQuery:getAllTrains"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminBasicInfoServiceImpl.java implements getAllTrains; this records an implementation-layer capability distinct from the controller-level exposesEndpoint atom already matched to the reference, a granularity the reference slice does not carry in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:handlesCommand:addTrain"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminBasicInfoServiceImpl.java implements addTrain; this records an implementation-layer capability distinct from the controller-level exposesEndpoint atom already matched to the reference, a granularity the reference slice does not carry in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:handlesCommand:deleteTrain"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminBasicInfoServiceImpl.java implements deleteTrain; this records an implementation-layer capability distinct from the controller-level exposesEndpoint atom already matched to the reference, a granularity the reference slice does not carry in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:handlesCommand:modifyTrain"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminBasicInfoServiceImpl.java implements modifyTrain; this records an implementation-layer capability distinct from the controller-level exposesEndpoint atom already matched to the reference, a granularity the reference slice does not carry in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:servesQuery:getAllConfigs"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminBasicInfoServiceImpl.java implements getAllConfigs; this records an implementation-layer capability distinct from the controller-level exposesEndpoint atom already matched to the reference, a granularity the reference slice does not carry in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:handlesCommand:addConfig"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminBasicInfoServiceImpl.java implements addConfig; this records an implementation-layer capability distinct from the controller-level exposesEndpoint atom already matched to the reference, a granularity the reference slice does not carry in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:handlesCommand:deleteConfig"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminBasicInfoServiceImpl.java implements deleteConfig; this records an implementation-layer capability distinct from the controller-level exposesEndpoint atom already matched to the reference, a granularity the reference slice does not carry in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:handlesCommand:modifyConfig"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminBasicInfoServiceImpl.java implements modifyConfig; this records an implementation-layer capability distinct from the controller-level exposesEndpoint atom already matched to the reference, a granularity the reference slice does not carry in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:servesQuery:getAllPrices"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminBasicInfoServiceImpl.java implements getAllPrices; this records an implementation-layer capability distinct from the controller-level exposesEndpoint atom already matched to the reference, a granularity the reference slice does not carry in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:handlesCommand:addPrice"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminBasicInfoServiceImpl.java implements addPrice; this records an implementation-layer capability distinct from the controller-level exposesEndpoint atom already matched to the reference, a granularity the reference slice does not carry in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:handlesCommand:deletePrice"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminBasicInfoServiceImpl.java implements deletePrice; this records an implementation-layer capability distinct from the controller-level exposesEndpoint atom already matched to the reference, a granularity the reference slice does not carry in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-basic-info-service.AdminBasicInfoServiceImpl:handlesCommand:modifyPrice"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminBasicInfoServiceImpl.java implements modifyPrice; this records an implementation-layer capability distinct from the controller-level exposesEndpoint atom already matched to the reference, a granularity the reference slice does not carry in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-order-service.AdminOrderServiceImpl:servesQuery:getAllOrders"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminOrderServiceImpl.java implements getAllOrders; implementation-layer capability distinct from the controller-level exposesEndpoint atom already matched, not carried by the reference slice in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-order-service.AdminOrderServiceImpl:handlesCommand:deleteOrder"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminOrderServiceImpl.java implements deleteOrder; implementation-layer capability distinct from the controller-level exposesEndpoint atom already matched, not carried by the reference slice in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-order-service.AdminOrderServiceImpl:handlesCommand:updateOrder"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminOrderServiceImpl.java implements updateOrder; implementation-layer capability distinct from the controller-level exposesEndpoint atom already matched, not carried by the reference slice in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-order-service.AdminOrderServiceImpl:handlesCommand:addOrder"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminOrderServiceImpl.java implements addOrder; implementation-layer capability distinct from the controller-level exposesEndpoint atom already matched, not carried by the reference slice in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-route-service.AdminRouteServiceImpl:servesQuery:getAllRoutes"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminRouteServiceImpl.java implements getAllRoutes; implementation-layer capability distinct from the controller-level exposesEndpoint atom already matched, not carried by the reference slice in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-route-service.AdminRouteServiceImpl:handlesCommand:createAndModifyRoute"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminRouteServiceImpl.java implements createAndModifyRoute; implementation-layer capability distinct from the controller-level exposesEndpoint atom already matched, not carried by the reference slice in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-route-service.AdminRouteServiceImpl:handlesCommand:deleteRoute"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminRouteServiceImpl.java implements deleteRoute; implementation-layer capability distinct from the controller-level exposesEndpoint atom already matched, not carried by the reference slice in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-admin-route-service.AdminRouteServiceImpl:servesQuery:checkStationsExists"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminRouteServiceImpl.java implements checkStationsExists; implementation-layer capability distinct from the controller-level exposesEndpoint atom already matched, not carried by the reference slice in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:component:ts-admin-basic-info-service.application-yml"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: ts-admin-basic-info-service/src/main/resources/application.yml exists as a distinct configuration source file component; the reference slice does not carry a component atom for it in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:component:ts-admin-order-service.application-yml"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: ts-admin-order-service/src/main/resources/application.yml exists as a distinct configuration source file component; the reference slice does not carry a component atom for it in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:component:ts-admin-route-service.application-yml"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: ts-admin-route-service/src/main/resources/application.yml exists as a distinct configuration source file component; the reference slice does not carry a component atom for it in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:contract:ts-admin-basic-info-service.adminbasicinfoservice:shaped-as",
+    "atom:contract:ts-admin-basic-info-service.AdminBasicInfoService:shapedAs"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminBasicInfoService.java is a pure interface declaring Response-returning CRUD methods for contacts/stations/trains/configs/prices; the reference slice carries no shapedAs contract atom for this interface in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:contract:ts-admin-basic-info-service.priceinfo:shaped-as",
+    "atom:contract:ts-admin-basic-info-service.PriceInfo:shapedAs"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: PriceInfo.java declares fields id, trainType, routeId, basicPriceRate, firstClassPriceRate; the reference slice carries no shapedAs contract atom for this entity in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:contract:ts-admin-order-service.adminorderservice:shaped-as",
+    "atom:contract:ts-admin-order-service.AdminOrderService:shapedAs"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminOrderService.java declares getAllOrders/deleteOrder/updateOrder/addOrder, all Response-returning; the reference slice carries no shapedAs contract atom for this interface in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:contract:ts-admin-route-service.adminrouteservice:shaped-as",
+    "atom:contract:ts-admin-route-service.AdminRouteService:shapedAs"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: AdminRouteService.java declares getAllRoutes/createAndModifyRoute/deleteRoute, all Response-returning; the reference slice carries no shapedAs contract atom for this interface in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:semantic:ts-admin-basic-info-service.application-yml:identified-by-service-registration"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: application.yml declares spring.application.name ts-admin-basic-info-service and server.port 18767; the reference slice carries no semantic atom for this registration identity in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:semantic:ts-admin-order-service.application-yml:identified-by-service-registration"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: application.yml declares spring.application.name ts-admin-order-service and server.port 16112; the reference slice carries no semantic atom for this registration identity in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:semantic:ts-admin-route-service.application-yml:identified-by-service-registration"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: application.yml declares spring.application.name ts-admin-route-service and server.port 16113; the reference slice carries no semantic atom for this registration identity in this chunk."
+  }
+ ]
+}

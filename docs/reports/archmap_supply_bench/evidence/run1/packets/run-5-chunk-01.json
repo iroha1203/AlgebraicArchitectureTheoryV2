@@ -1,0 +1,2252 @@
+{
+  "schema": "archmap-candidate-packet/v0.5.4",
+  "id": "candidates:run-5:chunk-01",
+  "scopeManifestRef": "scope:train-ticket-supply-bench@1",
+  "passId": "run-5",
+  "chunk": {
+    "worklistOrderFrom": 1,
+    "worklistOrderTo": 20
+  },
+  "reviewedSources": [
+    "src:ts-admin-basic-info-service/src/main/java/adminbasic/AdminBasicInfoApplication.java",
+    "src:ts-admin-basic-info-service/src/main/java/adminbasic/config/SecurityConfig.java",
+    "src:ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java",
+    "src:ts-admin-basic-info-service/src/main/java/adminbasic/entity/PriceInfo.java",
+    "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoService.java",
+    "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java",
+    "src:ts-admin-basic-info-service/src/main/resources/application.yml",
+    "src:ts-admin-order-service/src/main/java/adminorder/AdminOrderApplication.java",
+    "src:ts-admin-order-service/src/main/java/adminorder/config/SecurityConfig.java",
+    "src:ts-admin-order-service/src/main/java/adminorder/controller/AdminOrderController.java",
+    "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderService.java",
+    "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java",
+    "src:ts-admin-order-service/src/main/resources/application.yml",
+    "src:ts-admin-route-service/src/main/java/adminroute/AdminRouteApplication.java",
+    "src:ts-admin-route-service/src/main/java/adminroute/config/SecurityConfig.java",
+    "src:ts-admin-route-service/src/main/java/adminroute/controller/AdminRouteController.java",
+    "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteService.java",
+    "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java",
+    "src:ts-admin-route-service/src/main/resources/application.yml",
+    "src:ts-admin-travel-service/src/main/java/admintravel/AdminTravelApplication.java"
+  ],
+  "candidateSources": {
+    "src:ts-admin-basic-info-service/src/main/java/adminbasic/AdminBasicInfoApplication.java": {
+      "kind": "file",
+      "path": "ts-admin-basic-info-service/src/main/java/adminbasic/AdminBasicInfoApplication.java"
+    },
+    "src:ts-admin-basic-info-service/src/main/java/adminbasic/config/SecurityConfig.java": {
+      "kind": "file",
+      "path": "ts-admin-basic-info-service/src/main/java/adminbasic/config/SecurityConfig.java"
+    },
+    "src:ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java": {
+      "kind": "file",
+      "path": "ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java"
+    },
+    "src:ts-admin-basic-info-service/src/main/java/adminbasic/entity/PriceInfo.java": {
+      "kind": "file",
+      "path": "ts-admin-basic-info-service/src/main/java/adminbasic/entity/PriceInfo.java"
+    },
+    "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoService.java": {
+      "kind": "file",
+      "path": "ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoService.java"
+    },
+    "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java": {
+      "kind": "file",
+      "path": "ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java"
+    },
+    "src:ts-admin-basic-info-service/src/main/resources/application.yml": {
+      "kind": "file",
+      "path": "ts-admin-basic-info-service/src/main/resources/application.yml"
+    },
+    "src:ts-admin-order-service/src/main/java/adminorder/AdminOrderApplication.java": {
+      "kind": "file",
+      "path": "ts-admin-order-service/src/main/java/adminorder/AdminOrderApplication.java"
+    },
+    "src:ts-admin-order-service/src/main/java/adminorder/config/SecurityConfig.java": {
+      "kind": "file",
+      "path": "ts-admin-order-service/src/main/java/adminorder/config/SecurityConfig.java"
+    },
+    "src:ts-admin-order-service/src/main/java/adminorder/controller/AdminOrderController.java": {
+      "kind": "file",
+      "path": "ts-admin-order-service/src/main/java/adminorder/controller/AdminOrderController.java"
+    },
+    "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderService.java": {
+      "kind": "file",
+      "path": "ts-admin-order-service/src/main/java/adminorder/service/AdminOrderService.java"
+    },
+    "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java": {
+      "kind": "file",
+      "path": "ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java"
+    },
+    "src:ts-admin-order-service/src/main/resources/application.yml": {
+      "kind": "file",
+      "path": "ts-admin-order-service/src/main/resources/application.yml"
+    },
+    "src:ts-admin-route-service/src/main/java/adminroute/AdminRouteApplication.java": {
+      "kind": "file",
+      "path": "ts-admin-route-service/src/main/java/adminroute/AdminRouteApplication.java"
+    },
+    "src:ts-admin-route-service/src/main/java/adminroute/config/SecurityConfig.java": {
+      "kind": "file",
+      "path": "ts-admin-route-service/src/main/java/adminroute/config/SecurityConfig.java"
+    },
+    "src:ts-admin-route-service/src/main/java/adminroute/controller/AdminRouteController.java": {
+      "kind": "file",
+      "path": "ts-admin-route-service/src/main/java/adminroute/controller/AdminRouteController.java"
+    },
+    "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteService.java": {
+      "kind": "file",
+      "path": "ts-admin-route-service/src/main/java/adminroute/service/AdminRouteService.java"
+    },
+    "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java": {
+      "kind": "file",
+      "path": "ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java"
+    },
+    "src:ts-admin-route-service/src/main/resources/application.yml": {
+      "kind": "file",
+      "path": "ts-admin-route-service/src/main/resources/application.yml"
+    },
+    "src:ts-admin-travel-service/src/main/java/admintravel/AdminTravelApplication.java": {
+      "kind": "file",
+      "path": "ts-admin-travel-service/src/main/java/admintravel/AdminTravelApplication.java"
+    }
+  },
+  "candidateAtoms": [
+    {
+      "id": "atom:component:ts-admin-basic-info-service-adminbasicinfoapplication:spring-boot-entrypoint",
+      "kind": "component",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoApplication",
+      "axis": "static",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/AdminBasicInfoApplication.java:24"
+      ]
+    },
+    {
+      "id": "atom:component:ts-admin-basic-info-service-securityconfig:config-component",
+      "kind": "component",
+      "subject": "ts-admin-basic-info-service.SecurityConfig",
+      "axis": "static",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/config/SecurityConfig.java:27"
+      ]
+    },
+    {
+      "id": "atom:authority:ts-admin-basic-info-service-securityconfig:get-stations-permitall",
+      "kind": "authority",
+      "subject": "ts-admin-basic-info-service.SecurityConfig",
+      "axis": "authority",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/config/SecurityConfig.java:72"
+      ],
+      "predicate": "permitsUnauthenticated",
+      "object": "GET /api/v1/adminbasicservice/adminbasic/stations permitsUnauthenticated"
+    },
+    {
+      "id": "atom:authority:ts-admin-basic-info-service-securityconfig:get-trains-permitall",
+      "kind": "authority",
+      "subject": "ts-admin-basic-info-service.SecurityConfig",
+      "axis": "authority",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/config/SecurityConfig.java:73"
+      ],
+      "predicate": "permitsUnauthenticated",
+      "object": "GET /api/v1/adminbasicservice/adminbasic/trains permitsUnauthenticated"
+    },
+    {
+      "id": "atom:authority:ts-admin-basic-info-service-securityconfig:get-prices-permitall",
+      "kind": "authority",
+      "subject": "ts-admin-basic-info-service.SecurityConfig",
+      "axis": "authority",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/config/SecurityConfig.java:74"
+      ],
+      "predicate": "permitsUnauthenticated",
+      "object": "GET /api/v1/adminbasicservice/adminbasic/prices permitsUnauthenticated"
+    },
+    {
+      "id": "atom:authority:ts-admin-basic-info-service-securityconfig:get-configs-permitall",
+      "kind": "authority",
+      "subject": "ts-admin-basic-info-service.SecurityConfig",
+      "axis": "authority",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/config/SecurityConfig.java:75"
+      ],
+      "predicate": "permitsUnauthenticated",
+      "object": "GET /api/v1/adminbasicservice/adminbasic/configs permitsUnauthenticated"
+    },
+    {
+      "id": "atom:authority:ts-admin-basic-info-service-securityconfig:get-contacts-permitall",
+      "kind": "authority",
+      "subject": "ts-admin-basic-info-service.SecurityConfig",
+      "axis": "authority",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/config/SecurityConfig.java:76"
+      ],
+      "predicate": "permitsUnauthenticated",
+      "object": "GET /api/v1/adminbasicservice/adminbasic/contacts permitsUnauthenticated"
+    },
+    {
+      "id": "atom:authority:ts-admin-basic-info-service-securityconfig:requiresrole-adminbasicservice",
+      "kind": "authority",
+      "subject": "ts-admin-basic-info-service.SecurityConfig",
+      "axis": "authority",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/config/SecurityConfig.java:77"
+      ],
+      "predicate": "requiresRole",
+      "object": "ALL /api/v1/adminbasicservice/** requiresRole-ADMIN"
+    },
+    {
+      "id": "atom:authority:ts-admin-basic-info-service-securityconfig:swagger-doc-paths-permitall",
+      "kind": "authority",
+      "subject": "ts-admin-basic-info-service.SecurityConfig",
+      "axis": "authority",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/config/SecurityConfig.java:78",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/config/SecurityConfig.java:79"
+      ],
+      "predicate": "permitsUnauthenticated",
+      "object": "ALL swagger-ui.html,webjars/**,images/**,configuration/**,swagger-resources/**,v2/** permitsUnauthenticated"
+    },
+    {
+      "id": "atom:authority:ts-admin-basic-info-service-securityconfig:cors-registry-all-star",
+      "kind": "authority",
+      "subject": "ts-admin-basic-info-service.SecurityConfig",
+      "axis": "authority",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/config/SecurityConfig.java:52",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/config/SecurityConfig.java:53",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/config/SecurityConfig.java:56"
+      ],
+      "predicate": "allowsCrossOrigin",
+      "object": "ALL /** allowsCrossOrigin-origin-star-credentials-false"
+    },
+    {
+      "id": "atom:component:ts-admin-basic-info-service-adminbasicinfocontroller:controller-component",
+      "kind": "component",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoController",
+      "axis": "static",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java:23"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:welcome-get",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoController",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java:29"
+      ],
+      "predicate": "exposesEndpoint",
+      "object": "GET /api/v1/adminbasicservice/welcome"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallcontacts-get",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoController",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java:35"
+      ],
+      "predicate": "exposesEndpoint",
+      "object": "GET /api/v1/adminbasicservice/adminbasic/contacts"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deletecontacts-delete",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoController",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java:42"
+      ],
+      "predicate": "exposesEndpoint",
+      "object": "DELETE /api/v1/adminbasicservice/adminbasic/contacts/{contactsId}"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifycontacts-put",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoController",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java:49"
+      ],
+      "predicate": "exposesEndpoint",
+      "object": "PUT /api/v1/adminbasicservice/adminbasic/contacts"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addcontacts-post",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoController",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java:56"
+      ],
+      "predicate": "exposesEndpoint",
+      "object": "POST /api/v1/adminbasicservice/adminbasic/contacts"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallstations-get",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoController",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java:63"
+      ],
+      "predicate": "exposesEndpoint",
+      "object": "GET /api/v1/adminbasicservice/adminbasic/stations"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deletestation-delete",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoController",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java:70"
+      ],
+      "predicate": "exposesEndpoint",
+      "object": "DELETE /api/v1/adminbasicservice/adminbasic/stations/{id}"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifystation-put",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoController",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java:77"
+      ],
+      "predicate": "exposesEndpoint",
+      "object": "PUT /api/v1/adminbasicservice/adminbasic/stations"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addstation-post",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoController",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java:84"
+      ],
+      "predicate": "exposesEndpoint",
+      "object": "POST /api/v1/adminbasicservice/adminbasic/stations"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getalltrains-get",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoController",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java:91"
+      ],
+      "predicate": "exposesEndpoint",
+      "object": "GET /api/v1/adminbasicservice/adminbasic/trains"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deletetrain-delete",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoController",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java:98"
+      ],
+      "predicate": "exposesEndpoint",
+      "object": "DELETE /api/v1/adminbasicservice/adminbasic/trains/{id}"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifytrain-put",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoController",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java:105"
+      ],
+      "predicate": "exposesEndpoint",
+      "object": "PUT /api/v1/adminbasicservice/adminbasic/trains"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addtrain-post",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoController",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java:112"
+      ],
+      "predicate": "exposesEndpoint",
+      "object": "POST /api/v1/adminbasicservice/adminbasic/trains"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallconfigs-get",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoController",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java:119"
+      ],
+      "predicate": "exposesEndpoint",
+      "object": "GET /api/v1/adminbasicservice/adminbasic/configs"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deleteconfig-delete",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoController",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java:126"
+      ],
+      "predicate": "exposesEndpoint",
+      "object": "DELETE /api/v1/adminbasicservice/adminbasic/configs/{name}"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifyconfig-put",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoController",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java:133"
+      ],
+      "predicate": "exposesEndpoint",
+      "object": "PUT /api/v1/adminbasicservice/adminbasic/configs"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addconfig-post",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoController",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java:140"
+      ],
+      "predicate": "exposesEndpoint",
+      "object": "POST /api/v1/adminbasicservice/adminbasic/configs"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallprices-get",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoController",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java:147"
+      ],
+      "predicate": "exposesEndpoint",
+      "object": "GET /api/v1/adminbasicservice/adminbasic/prices"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deleteprice-delete",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoController",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java:154"
+      ],
+      "predicate": "exposesEndpoint",
+      "object": "DELETE /api/v1/adminbasicservice/adminbasic/prices/{pricesId}"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifyprice-put",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoController",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java:161"
+      ],
+      "predicate": "exposesEndpoint",
+      "object": "PUT /api/v1/adminbasicservice/adminbasic/prices"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addprice-post",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoController",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java:168"
+      ],
+      "predicate": "exposesEndpoint",
+      "object": "POST /api/v1/adminbasicservice/adminbasic/prices"
+    },
+    {
+      "id": "atom:authority:ts-admin-basic-info-service-adminbasicinfocontroller:crud-endpoints-crossorigin-star",
+      "kind": "authority",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoController",
+      "axis": "authority",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java:34",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java:160"
+      ],
+      "predicate": "allowsCrossOrigin",
+      "object": "ALL /api/v1/adminbasicservice/adminbasic/** allowsCrossOrigin-origin-star-per-endpoint-annotation"
+    },
+    {
+      "id": "atom:component:ts-admin-basic-info-service-priceinfo:entity-component",
+      "kind": "component",
+      "subject": "ts-admin-basic-info-service.PriceInfo",
+      "axis": "static",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/entity/PriceInfo.java:11"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-admin-basic-info-service-priceinfo:dto-field-shape",
+      "kind": "contract",
+      "subject": "ts-admin-basic-info-service.PriceInfo",
+      "axis": "specification",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/entity/PriceInfo.java:13",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/entity/PriceInfo.java:15",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/entity/PriceInfo.java:17",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/entity/PriceInfo.java:19",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/entity/PriceInfo.java:21"
+      ],
+      "predicate": "shapedAs",
+      "object": "fields-id-string-trainType-string-routeId-string-basicPriceRate-double-firstClassPriceRate-double"
+    },
+    {
+      "id": "atom:semantic:ts-admin-basic-info-service-priceinfo:price-rate-double-fields",
+      "kind": "semantic",
+      "subject": "ts-admin-basic-info-service.PriceInfo",
+      "axis": "semantic",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/entity/PriceInfo.java:19",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/entity/PriceInfo.java:21"
+      ],
+      "predicate": "meansInUse",
+      "object": "basicPriceRate-and-firstClassPriceRate-represented-as-double-primitive-fields-not-string-or-bigdecimal"
+    },
+    {
+      "id": "atom:component:ts-admin-basic-info-service-adminbasicinfoservice:interface-component",
+      "kind": "component",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoService",
+      "axis": "static",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoService.java:15"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-admin-basic-info-service-adminbasicinfoservice:crud-interface-shape",
+      "kind": "contract",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoService",
+      "axis": "specification",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoService.java:23",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoService.java:60",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoService.java:97",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoService.java:134",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoService.java:171"
+      ],
+      "predicate": "shapedAs",
+      "object": "interface-declares-20-response-returning-crud-methods-for-contacts-stations-trains-configs-prices"
+    },
+    {
+      "id": "atom:component:ts-admin-basic-info-service-adminbasicinfoserviceimpl:serviceimpl-component",
+      "kind": "component",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "static",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:25"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallcontacts-1",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:40"
+      ],
+      "predicate": "servesQuery",
+      "object": "getAllContacts/1"
+    },
+    {
+      "id": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallcontacts-callsprovider",
+      "kind": "effect",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:44",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:48"
+      ],
+      "predicate": "callsProvider",
+      "object": "GET ts-contacts-service /api/v1/contactservice/contacts"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deletecontact-2",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:55"
+      ],
+      "predicate": "handlesCommand",
+      "object": "deleteContact/2"
+    },
+    {
+      "id": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deletecontact-callsprovider",
+      "kind": "effect",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:59",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:63"
+      ],
+      "predicate": "callsProvider",
+      "object": "DELETE ts-contacts-service /api/v1/contactservice/contacts/{contactsId}"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifycontact-2",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:70"
+      ],
+      "predicate": "handlesCommand",
+      "object": "modifyContact/2"
+    },
+    {
+      "id": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifycontact-callsprovider",
+      "kind": "effect",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:74",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:78"
+      ],
+      "predicate": "callsProvider",
+      "object": "PUT ts-contacts-service /api/v1/contactservice/contacts"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addcontact-2",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:86"
+      ],
+      "predicate": "handlesCommand",
+      "object": "addContact/2"
+    },
+    {
+      "id": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addcontact-callsprovider",
+      "kind": "effect",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:90",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:94"
+      ],
+      "predicate": "callsProvider",
+      "object": "POST ts-contacts-service /api/v1/contactservice/contacts/admin"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallstations-1",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:101"
+      ],
+      "predicate": "servesQuery",
+      "object": "getAllStations/1"
+    },
+    {
+      "id": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallstations-callsprovider",
+      "kind": "effect",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:105",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:109"
+      ],
+      "predicate": "callsProvider",
+      "object": "GET ts-station-service /api/v1/stationservice/stations"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addstation-2",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:117"
+      ],
+      "predicate": "handlesCommand",
+      "object": "addStation/2"
+    },
+    {
+      "id": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addstation-callsprovider",
+      "kind": "effect",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:122",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:126"
+      ],
+      "predicate": "callsProvider",
+      "object": "POST ts-station-service /api/v1/stationservice/stations"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deletestation-2",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:132"
+      ],
+      "predicate": "handlesCommand",
+      "object": "deleteStation/2"
+    },
+    {
+      "id": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deletestation-callsprovider",
+      "kind": "effect",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:137",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:141"
+      ],
+      "predicate": "callsProvider",
+      "object": "DELETE ts-station-service /api/v1/stationservice/stations/{id}"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifystation-2",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:147"
+      ],
+      "predicate": "handlesCommand",
+      "object": "modifyStation/2"
+    },
+    {
+      "id": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifystation-callsprovider",
+      "kind": "effect",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:152",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:156"
+      ],
+      "predicate": "callsProvider",
+      "object": "PUT ts-station-service /api/v1/stationservice/stations"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getalltrains-1",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:164"
+      ],
+      "predicate": "servesQuery",
+      "object": "getAllTrains/1"
+    },
+    {
+      "id": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getalltrains-callsprovider",
+      "kind": "effect",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:168",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:172"
+      ],
+      "predicate": "callsProvider",
+      "object": "GET ts-train-service /api/v1/trainservice/trains"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addtrain-2",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:179"
+      ],
+      "predicate": "handlesCommand",
+      "object": "addTrain/2"
+    },
+    {
+      "id": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addtrain-callsprovider",
+      "kind": "effect",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:184",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:188"
+      ],
+      "predicate": "callsProvider",
+      "object": "POST ts-train-service /api/v1/trainservice/trains"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deletetrain-2",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:195"
+      ],
+      "predicate": "handlesCommand",
+      "object": "deleteTrain/2"
+    },
+    {
+      "id": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deletetrain-callsprovider",
+      "kind": "effect",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:199",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:203"
+      ],
+      "predicate": "callsProvider",
+      "object": "DELETE ts-train-service /api/v1/trainservice/trains/{id}"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifytrain-2",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:209"
+      ],
+      "predicate": "handlesCommand",
+      "object": "modifyTrain/2"
+    },
+    {
+      "id": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifytrain-callsprovider",
+      "kind": "effect",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:214",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:218"
+      ],
+      "predicate": "callsProvider",
+      "object": "PUT ts-train-service /api/v1/trainservice/trains"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallconfigs-1",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:224"
+      ],
+      "predicate": "servesQuery",
+      "object": "getAllConfigs/1"
+    },
+    {
+      "id": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallconfigs-callsprovider",
+      "kind": "effect",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:228",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:232"
+      ],
+      "predicate": "callsProvider",
+      "object": "GET ts-config-service /api/v1/configservice/configs"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addconfig-2",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:238"
+      ],
+      "predicate": "handlesCommand",
+      "object": "addConfig/2"
+    },
+    {
+      "id": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addconfig-callsprovider",
+      "kind": "effect",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:242",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:246"
+      ],
+      "predicate": "callsProvider",
+      "object": "POST ts-config-service /api/v1/configservice/configs"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deleteconfig-2",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:251"
+      ],
+      "predicate": "handlesCommand",
+      "object": "deleteConfig/2"
+    },
+    {
+      "id": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deleteconfig-callsprovider",
+      "kind": "effect",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:254",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:258"
+      ],
+      "predicate": "callsProvider",
+      "object": "DELETE ts-config-service /api/v1/configservice/configs/{name}"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifyconfig-2",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:263"
+      ],
+      "predicate": "handlesCommand",
+      "object": "modifyConfig/2"
+    },
+    {
+      "id": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifyconfig-callsprovider",
+      "kind": "effect",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:267",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:271"
+      ],
+      "predicate": "callsProvider",
+      "object": "PUT ts-config-service /api/v1/configservice/configs"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallprices-1",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:276"
+      ],
+      "predicate": "servesQuery",
+      "object": "getAllPrices/1"
+    },
+    {
+      "id": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallprices-callsprovider",
+      "kind": "effect",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:280",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:284"
+      ],
+      "predicate": "callsProvider",
+      "object": "GET ts-price-service /api/v1/priceservice/prices"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addprice-2",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:289"
+      ],
+      "predicate": "handlesCommand",
+      "object": "addPrice/2"
+    },
+    {
+      "id": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addprice-callsprovider",
+      "kind": "effect",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:293",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:297"
+      ],
+      "predicate": "callsProvider",
+      "object": "POST ts-price-service /api/v1/priceservice/prices"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deleteprice-2",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:303"
+      ],
+      "predicate": "handlesCommand",
+      "object": "deletePrice/2"
+    },
+    {
+      "id": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deleteprice-callsprovider",
+      "kind": "effect",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:307",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:311"
+      ],
+      "predicate": "callsProvider",
+      "object": "DELETE ts-price-service /api/v1/priceservice/prices/{pricesId}"
+    },
+    {
+      "id": "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifyprice-2",
+      "kind": "capability",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:317"
+      ],
+      "predicate": "handlesCommand",
+      "object": "modifyPrice/2"
+    },
+    {
+      "id": "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifyprice-callsprovider",
+      "kind": "effect",
+      "subject": "ts-admin-basic-info-service.AdminBasicInfoServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:321",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java:325"
+      ],
+      "predicate": "callsProvider",
+      "object": "PUT ts-price-service /api/v1/priceservice/prices"
+    },
+    {
+      "id": "atom:component:ts-admin-basic-info-service-application-yml:config-component-port-18767-nacos-discovery",
+      "kind": "component",
+      "subject": "ts-admin-basic-info-service.application-yml",
+      "axis": "static",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/resources/application.yml:2",
+        "src:ts-admin-basic-info-service/src/main/resources/application.yml:8",
+        "src:ts-admin-basic-info-service/src/main/resources/application.yml:10"
+      ]
+    },
+    {
+      "id": "atom:component:ts-admin-order-service-adminorderapplication:spring-boot-entrypoint",
+      "kind": "component",
+      "subject": "ts-admin-order-service.AdminOrderApplication",
+      "axis": "static",
+      "refs": [
+        "src:ts-admin-order-service/src/main/java/adminorder/AdminOrderApplication.java:24"
+      ]
+    },
+    {
+      "id": "atom:component:ts-admin-order-service-securityconfig:config-component",
+      "kind": "component",
+      "subject": "ts-admin-order-service.SecurityConfig",
+      "axis": "static",
+      "refs": [
+        "src:ts-admin-order-service/src/main/java/adminorder/config/SecurityConfig.java:26"
+      ]
+    },
+    {
+      "id": "atom:authority:ts-admin-order-service-securityconfig:requiresrole-adminorderservice",
+      "kind": "authority",
+      "subject": "ts-admin-order-service.SecurityConfig",
+      "axis": "authority",
+      "refs": [
+        "src:ts-admin-order-service/src/main/java/adminorder/config/SecurityConfig.java:71"
+      ],
+      "predicate": "requiresRole",
+      "object": "ALL /api/v1/adminorderservice/** requiresRole-ADMIN"
+    },
+    {
+      "id": "atom:authority:ts-admin-order-service-securityconfig:swagger-doc-paths-permitall",
+      "kind": "authority",
+      "subject": "ts-admin-order-service.SecurityConfig",
+      "axis": "authority",
+      "refs": [
+        "src:ts-admin-order-service/src/main/java/adminorder/config/SecurityConfig.java:72",
+        "src:ts-admin-order-service/src/main/java/adminorder/config/SecurityConfig.java:73"
+      ],
+      "predicate": "permitsUnauthenticated",
+      "object": "ALL swagger-ui.html,webjars/**,images/**,configuration/**,swagger-resources/**,v2/** permitsUnauthenticated"
+    },
+    {
+      "id": "atom:authority:ts-admin-order-service-securityconfig:cors-registry-all-star",
+      "kind": "authority",
+      "subject": "ts-admin-order-service.SecurityConfig",
+      "axis": "authority",
+      "refs": [
+        "src:ts-admin-order-service/src/main/java/adminorder/config/SecurityConfig.java:51",
+        "src:ts-admin-order-service/src/main/java/adminorder/config/SecurityConfig.java:52",
+        "src:ts-admin-order-service/src/main/java/adminorder/config/SecurityConfig.java:55"
+      ],
+      "predicate": "allowsCrossOrigin",
+      "object": "ALL /** allowsCrossOrigin-origin-star-credentials-false"
+    },
+    {
+      "id": "atom:component:ts-admin-order-service-adminordercontroller:controller-component",
+      "kind": "component",
+      "subject": "ts-admin-order-service.AdminOrderController",
+      "axis": "static",
+      "refs": [
+        "src:ts-admin-order-service/src/main/java/adminorder/controller/AdminOrderController.java:19"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-admin-order-service-adminordercontroller:welcome-get",
+      "kind": "capability",
+      "subject": "ts-admin-order-service.AdminOrderController",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-order-service/src/main/java/adminorder/controller/AdminOrderController.java:26"
+      ],
+      "predicate": "exposesEndpoint",
+      "object": "GET /api/v1/adminorderservice/welcome"
+    },
+    {
+      "id": "atom:capability:ts-admin-order-service-adminordercontroller:getallorders-get",
+      "kind": "capability",
+      "subject": "ts-admin-order-service.AdminOrderController",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-order-service/src/main/java/adminorder/controller/AdminOrderController.java:32"
+      ],
+      "predicate": "exposesEndpoint",
+      "object": "GET /api/v1/adminorderservice/adminorder"
+    },
+    {
+      "id": "atom:capability:ts-admin-order-service-adminordercontroller:addorder-post",
+      "kind": "capability",
+      "subject": "ts-admin-order-service.AdminOrderController",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-order-service/src/main/java/adminorder/controller/AdminOrderController.java:38"
+      ],
+      "predicate": "exposesEndpoint",
+      "object": "POST /api/v1/adminorderservice/adminorder"
+    },
+    {
+      "id": "atom:capability:ts-admin-order-service-adminordercontroller:updateorder-put",
+      "kind": "capability",
+      "subject": "ts-admin-order-service.AdminOrderController",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-order-service/src/main/java/adminorder/controller/AdminOrderController.java:44"
+      ],
+      "predicate": "exposesEndpoint",
+      "object": "PUT /api/v1/adminorderservice/adminorder"
+    },
+    {
+      "id": "atom:capability:ts-admin-order-service-adminordercontroller:deleteorder-delete",
+      "kind": "capability",
+      "subject": "ts-admin-order-service.AdminOrderController",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-order-service/src/main/java/adminorder/controller/AdminOrderController.java:50"
+      ],
+      "predicate": "exposesEndpoint",
+      "object": "DELETE /api/v1/adminorderservice/adminorder/{orderId}/{trainNumber}"
+    },
+    {
+      "id": "atom:authority:ts-admin-order-service-adminordercontroller:getallorders-endpoint-crossorigin-star",
+      "kind": "authority",
+      "subject": "ts-admin-order-service.AdminOrderController",
+      "axis": "authority",
+      "refs": [
+        "src:ts-admin-order-service/src/main/java/adminorder/controller/AdminOrderController.java:31"
+      ],
+      "predicate": "allowsCrossOrigin",
+      "object": "GET /api/v1/adminorderservice/adminorder allowsCrossOrigin-origin-star-getAllOrders-endpoint-only"
+    },
+    {
+      "id": "atom:component:ts-admin-order-service-adminorderservice:interface-component",
+      "kind": "component",
+      "subject": "ts-admin-order-service.AdminOrderService",
+      "axis": "static",
+      "refs": [
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderService.java:11"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-admin-order-service-adminorderservice:crud-interface-shape",
+      "kind": "contract",
+      "subject": "ts-admin-order-service.AdminOrderService",
+      "axis": "specification",
+      "refs": [
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderService.java:19",
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderService.java:29",
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderService.java:38",
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderService.java:47"
+      ],
+      "predicate": "shapedAs",
+      "object": "interface-declares-4-response-returning-methods-getAllOrders-deleteOrder-updateOrder-addOrder"
+    },
+    {
+      "id": "atom:component:ts-admin-order-service-adminorderserviceimpl:serviceimpl-component",
+      "kind": "component",
+      "subject": "ts-admin-order-service.AdminOrderServiceImpl",
+      "axis": "static",
+      "refs": [
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java:26"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-admin-order-service-adminorderserviceimpl:getallorders-1",
+      "kind": "capability",
+      "subject": "ts-admin-order-service.AdminOrderServiceImpl",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java:39"
+      ],
+      "predicate": "servesQuery",
+      "object": "getAllOrders/1"
+    },
+    {
+      "id": "atom:effect:ts-admin-order-service-adminorderserviceimpl:getallorders-order-service",
+      "kind": "effect",
+      "subject": "ts-admin-order-service.AdminOrderServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java:48",
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java:53"
+      ],
+      "predicate": "callsProvider",
+      "object": "GET ts-order-service /api/v1/orderservice/order"
+    },
+    {
+      "id": "atom:effect:ts-admin-order-service-adminorderserviceimpl:getallorders-order-other-service",
+      "kind": "effect",
+      "subject": "ts-admin-order-service.AdminOrderServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java:66",
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java:71"
+      ],
+      "predicate": "callsProvider",
+      "object": "GET ts-order-other-service /api/v1/orderOtherService/orderOther"
+    },
+    {
+      "id": "atom:semantic:ts-admin-order-service-adminorderserviceimpl:getallorders-response-status-branch",
+      "kind": "semantic",
+      "subject": "ts-admin-order-service.AdminOrderServiceImpl",
+      "axis": "semantic",
+      "refs": [
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java:56",
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java:60",
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java:74",
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java:78"
+      ],
+      "predicate": "meansInUse",
+      "object": "status-1-on-result-carrying-branch-that-appends-to-aggregated-orders-list-other-values-select-logged-not-appended-branch"
+    },
+    {
+      "id": "atom:capability:ts-admin-order-service-adminorderserviceimpl:deleteorder-3",
+      "kind": "capability",
+      "subject": "ts-admin-order-service.AdminOrderServiceImpl",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java:87"
+      ],
+      "predicate": "handlesCommand",
+      "object": "deleteOrder/3"
+    },
+    {
+      "id": "atom:effect:ts-admin-order-service-adminorderserviceimpl:deleteorder-order-service-branch",
+      "kind": "effect",
+      "subject": "ts-admin-order-service.AdminOrderServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java:93",
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java:97"
+      ],
+      "predicate": "callsProvider",
+      "object": "DELETE ts-order-service /api/v1/orderservice/order/{orderId}"
+    },
+    {
+      "id": "atom:effect:ts-admin-order-service-adminorderserviceimpl:deleteorder-order-other-service-branch",
+      "kind": "effect",
+      "subject": "ts-admin-order-service.AdminOrderServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java:104",
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java:108"
+      ],
+      "predicate": "callsProvider",
+      "object": "DELETE ts-order-other-service /api/v1/orderOtherService/orderOther/{orderId}"
+    },
+    {
+      "id": "atom:capability:ts-admin-order-service-adminorderserviceimpl:updateorder-2",
+      "kind": "capability",
+      "subject": "ts-admin-order-service.AdminOrderServiceImpl",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java:117"
+      ],
+      "predicate": "handlesCommand",
+      "object": "updateOrder/2"
+    },
+    {
+      "id": "atom:effect:ts-admin-order-service-adminorderserviceimpl:updateorder-order-service-branch",
+      "kind": "effect",
+      "subject": "ts-admin-order-service.AdminOrderServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java:126",
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java:130"
+      ],
+      "predicate": "callsProvider",
+      "object": "PUT ts-order-service /api/v1/orderservice/order/admin"
+    },
+    {
+      "id": "atom:effect:ts-admin-order-service-adminorderserviceimpl:updateorder-order-other-service-branch",
+      "kind": "effect",
+      "subject": "ts-admin-order-service.AdminOrderServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java:137",
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java:141"
+      ],
+      "predicate": "callsProvider",
+      "object": "PUT ts-order-other-service /api/v1/orderOtherService/orderOther/admin"
+    },
+    {
+      "id": "atom:capability:ts-admin-order-service-adminorderserviceimpl:addorder-2",
+      "kind": "capability",
+      "subject": "ts-admin-order-service.AdminOrderServiceImpl",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java:149"
+      ],
+      "predicate": "handlesCommand",
+      "object": "addOrder/2"
+    },
+    {
+      "id": "atom:effect:ts-admin-order-service-adminorderserviceimpl:addorder-order-service-branch",
+      "kind": "effect",
+      "subject": "ts-admin-order-service.AdminOrderServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java:157",
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java:161"
+      ],
+      "predicate": "callsProvider",
+      "object": "POST ts-order-service /api/v1/orderservice/order/admin"
+    },
+    {
+      "id": "atom:effect:ts-admin-order-service-adminorderserviceimpl:addorder-order-other-service-branch",
+      "kind": "effect",
+      "subject": "ts-admin-order-service.AdminOrderServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java:168",
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java:172"
+      ],
+      "predicate": "callsProvider",
+      "object": "POST ts-order-other-service /api/v1/orderOtherService/orderOther/admin"
+    },
+    {
+      "id": "atom:semantic:ts-admin-order-service-adminorderserviceimpl:trainnumber-prefix-routing",
+      "kind": "semantic",
+      "subject": "ts-admin-order-service.AdminOrderServiceImpl",
+      "axis": "semantic",
+      "refs": [
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java:89",
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java:121",
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java:153"
+      ],
+      "predicate": "meansInUse",
+      "object": "trainnumber-prefix-g-or-d-selects-ts-order-service-branch-any-other-prefix-selects-ts-order-other-service-branch"
+    },
+    {
+      "id": "atom:component:ts-admin-order-service-application-yml:config-component-port-16112-nacos-discovery",
+      "kind": "component",
+      "subject": "ts-admin-order-service.application-yml",
+      "axis": "static",
+      "refs": [
+        "src:ts-admin-order-service/src/main/resources/application.yml:2",
+        "src:ts-admin-order-service/src/main/resources/application.yml:8",
+        "src:ts-admin-order-service/src/main/resources/application.yml:10"
+      ]
+    },
+    {
+      "id": "atom:component:ts-admin-route-service-adminrouteapplication:spring-boot-entrypoint",
+      "kind": "component",
+      "subject": "ts-admin-route-service.AdminRouteApplication",
+      "axis": "static",
+      "refs": [
+        "src:ts-admin-route-service/src/main/java/adminroute/AdminRouteApplication.java:24"
+      ]
+    },
+    {
+      "id": "atom:component:ts-admin-route-service-securityconfig:config-component",
+      "kind": "component",
+      "subject": "ts-admin-route-service.SecurityConfig",
+      "axis": "static",
+      "refs": [
+        "src:ts-admin-route-service/src/main/java/adminroute/config/SecurityConfig.java:26"
+      ]
+    },
+    {
+      "id": "atom:authority:ts-admin-route-service-securityconfig:requiresrole-adminrouteservice",
+      "kind": "authority",
+      "subject": "ts-admin-route-service.SecurityConfig",
+      "axis": "authority",
+      "refs": [
+        "src:ts-admin-route-service/src/main/java/adminroute/config/SecurityConfig.java:71"
+      ],
+      "predicate": "requiresRole",
+      "object": "ALL /api/v1/adminrouteservice/** requiresRole-ADMIN"
+    },
+    {
+      "id": "atom:authority:ts-admin-route-service-securityconfig:swagger-doc-paths-permitall",
+      "kind": "authority",
+      "subject": "ts-admin-route-service.SecurityConfig",
+      "axis": "authority",
+      "refs": [
+        "src:ts-admin-route-service/src/main/java/adminroute/config/SecurityConfig.java:72",
+        "src:ts-admin-route-service/src/main/java/adminroute/config/SecurityConfig.java:73"
+      ],
+      "predicate": "permitsUnauthenticated",
+      "object": "ALL swagger-ui.html,webjars/**,images/**,configuration/**,swagger-resources/**,v2/** permitsUnauthenticated"
+    },
+    {
+      "id": "atom:authority:ts-admin-route-service-securityconfig:cors-registry-all-star",
+      "kind": "authority",
+      "subject": "ts-admin-route-service.SecurityConfig",
+      "axis": "authority",
+      "refs": [
+        "src:ts-admin-route-service/src/main/java/adminroute/config/SecurityConfig.java:51",
+        "src:ts-admin-route-service/src/main/java/adminroute/config/SecurityConfig.java:52",
+        "src:ts-admin-route-service/src/main/java/adminroute/config/SecurityConfig.java:55"
+      ],
+      "predicate": "allowsCrossOrigin",
+      "object": "ALL /** allowsCrossOrigin-origin-star-credentials-false"
+    },
+    {
+      "id": "atom:component:ts-admin-route-service-adminroutecontroller:controller-component",
+      "kind": "component",
+      "subject": "ts-admin-route-service.AdminRouteController",
+      "axis": "static",
+      "refs": [
+        "src:ts-admin-route-service/src/main/java/adminroute/controller/AdminRouteController.java:19"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-admin-route-service-adminroutecontroller:welcome-get",
+      "kind": "capability",
+      "subject": "ts-admin-route-service.AdminRouteController",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-route-service/src/main/java/adminroute/controller/AdminRouteController.java:26"
+      ],
+      "predicate": "exposesEndpoint",
+      "object": "GET /api/v1/adminrouteservice/welcome"
+    },
+    {
+      "id": "atom:capability:ts-admin-route-service-adminroutecontroller:getallroutes-get",
+      "kind": "capability",
+      "subject": "ts-admin-route-service.AdminRouteController",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-route-service/src/main/java/adminroute/controller/AdminRouteController.java:33"
+      ],
+      "predicate": "exposesEndpoint",
+      "object": "GET /api/v1/adminrouteservice/adminroute"
+    },
+    {
+      "id": "atom:capability:ts-admin-route-service-adminroutecontroller:addroute-post",
+      "kind": "capability",
+      "subject": "ts-admin-route-service.AdminRouteController",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-route-service/src/main/java/adminroute/controller/AdminRouteController.java:39"
+      ],
+      "predicate": "exposesEndpoint",
+      "object": "POST /api/v1/adminrouteservice/adminroute"
+    },
+    {
+      "id": "atom:capability:ts-admin-route-service-adminroutecontroller:deleteroute-delete",
+      "kind": "capability",
+      "subject": "ts-admin-route-service.AdminRouteController",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-route-service/src/main/java/adminroute/controller/AdminRouteController.java:46"
+      ],
+      "predicate": "exposesEndpoint",
+      "object": "DELETE /api/v1/adminrouteservice/adminroute/{routeId}"
+    },
+    {
+      "id": "atom:component:ts-admin-route-service-adminrouteservice:interface-component",
+      "kind": "component",
+      "subject": "ts-admin-route-service.AdminRouteService",
+      "axis": "static",
+      "refs": [
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteService.java:10"
+      ]
+    },
+    {
+      "id": "atom:contract:ts-admin-route-service-adminrouteservice:crud-interface-shape",
+      "kind": "contract",
+      "subject": "ts-admin-route-service.AdminRouteService",
+      "axis": "specification",
+      "refs": [
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteService.java:18",
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteService.java:27",
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteService.java:36"
+      ],
+      "predicate": "shapedAs",
+      "object": "interface-declares-3-response-returning-methods-getAllRoutes-createAndModifyRoute-deleteRoute"
+    },
+    {
+      "id": "atom:component:ts-admin-route-service-adminrouteserviceimpl:serviceimpl-component",
+      "kind": "component",
+      "subject": "ts-admin-route-service.AdminRouteServiceImpl",
+      "axis": "static",
+      "refs": [
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:23"
+      ]
+    },
+    {
+      "id": "atom:capability:ts-admin-route-service-adminrouteserviceimpl:getallroutes-1",
+      "kind": "capability",
+      "subject": "ts-admin-route-service.AdminRouteServiceImpl",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:36"
+      ],
+      "predicate": "servesQuery",
+      "object": "getAllRoutes/1"
+    },
+    {
+      "id": "atom:effect:ts-admin-route-service-adminrouteserviceimpl:getallroutes-callsprovider",
+      "kind": "effect",
+      "subject": "ts-admin-route-service.AdminRouteServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:40",
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:44"
+      ],
+      "predicate": "callsProvider",
+      "object": "GET ts-route-service /api/v1/routeservice/routes"
+    },
+    {
+      "id": "atom:capability:ts-admin-route-service-adminrouteserviceimpl:createandmodifyroute-2",
+      "kind": "capability",
+      "subject": "ts-admin-route-service.AdminRouteServiceImpl",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:53"
+      ],
+      "predicate": "handlesCommand",
+      "object": "createAndModifyRoute/2"
+    },
+    {
+      "id": "atom:relation:ts-admin-route-service-adminrouteserviceimpl:createandmodifyroute-calls-checkstationsexists",
+      "kind": "relation",
+      "subject": "ts-admin-route-service.AdminRouteServiceImpl",
+      "axis": "relation",
+      "refs": [
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:63"
+      ],
+      "predicate": "calls",
+      "object": "checkStationsExists/2"
+    },
+    {
+      "id": "atom:effect:ts-admin-route-service-adminrouteserviceimpl:createandmodifyroute-callsprovider",
+      "kind": "effect",
+      "subject": "ts-admin-route-service.AdminRouteServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:70",
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:75"
+      ],
+      "predicate": "callsProvider",
+      "object": "POST ts-route-service /api/v1/routeservice/routes"
+    },
+    {
+      "id": "atom:semantic:ts-admin-route-service-adminrouteserviceimpl:start-end-not-in-stationlist-early-return",
+      "kind": "semantic",
+      "subject": "ts-admin-route-service.AdminRouteServiceImpl",
+      "axis": "semantic",
+      "refs": [
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:58",
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:60"
+      ],
+      "predicate": "meansInUse",
+      "object": "start-or-end-station-absent-from-request-stationList-selects-immediate-status-0-rejection-branch-before-any-downstream-call"
+    },
+    {
+      "id": "atom:capability:ts-admin-route-service-adminrouteserviceimpl:deleteroute-2",
+      "kind": "capability",
+      "subject": "ts-admin-route-service.AdminRouteServiceImpl",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:83"
+      ],
+      "predicate": "handlesCommand",
+      "object": "deleteRoute/2"
+    },
+    {
+      "id": "atom:effect:ts-admin-route-service-adminrouteserviceimpl:deleteroute-callsprovider",
+      "kind": "effect",
+      "subject": "ts-admin-route-service.AdminRouteServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:87",
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:91"
+      ],
+      "predicate": "callsProvider",
+      "object": "DELETE ts-route-service /api/v1/routeservice/routes/{routeId}"
+    },
+    {
+      "id": "atom:capability:ts-admin-route-service-adminrouteserviceimpl:checkstationsexists-2",
+      "kind": "capability",
+      "subject": "ts-admin-route-service.AdminRouteServiceImpl",
+      "axis": "capability",
+      "refs": [
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:99"
+      ],
+      "predicate": "servesQuery",
+      "object": "checkStationsExists/2"
+    },
+    {
+      "id": "atom:effect:ts-admin-route-service-adminrouteserviceimpl:checkstationsexists-callsprovider",
+      "kind": "effect",
+      "subject": "ts-admin-route-service.AdminRouteServiceImpl",
+      "axis": "effect",
+      "refs": [
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:103",
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:107"
+      ],
+      "predicate": "callsProvider",
+      "object": "POST ts-station-service /api/v1/stationservice/stations/idlist"
+    },
+    {
+      "id": "atom:semantic:ts-admin-route-service-adminrouteserviceimpl:route-service-http-status-not-accepted-logged-only",
+      "kind": "semantic",
+      "subject": "ts-admin-route-service.AdminRouteServiceImpl",
+      "axis": "semantic",
+      "refs": [
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:45",
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:47",
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:76",
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:78",
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:92",
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:94"
+      ],
+      "predicate": "meansInUse",
+      "object": "http-status-not-equal-accepted-on-route-service-or-station-service-response-selects-logged-error-branch-response-body-still-returned-unchanged"
+    },
+    {
+      "id": "atom:semantic:ts-admin-route-service-adminrouteserviceimpl:body-response-status-0-early-return",
+      "kind": "semantic",
+      "subject": "ts-admin-route-service.AdminRouteServiceImpl",
+      "axis": "semantic",
+      "refs": [
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:64",
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:66",
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:109",
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:111"
+      ],
+      "predicate": "meansInUse",
+      "object": "response-body-status-0-selects-immediate-early-return-of-the-error-response-nonzero-status-selects-continue-branch"
+    },
+    {
+      "id": "atom:semantic:ts-admin-route-service-adminrouteserviceimpl:station-map-null-value-not-found",
+      "kind": "semantic",
+      "subject": "ts-admin-route-service.AdminRouteServiceImpl",
+      "axis": "semantic",
+      "refs": [
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:112",
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:113",
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:114",
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:115",
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:116",
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:117",
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java:118"
+      ],
+      "predicate": "meansInUse",
+      "object": "null-value-for-a-station-name-key-in-the-station-id-map-selects-the-station-not-found-branch-added-to-notExists-list"
+    },
+    {
+      "id": "atom:component:ts-admin-route-service-application-yml:config-component-port-16113-nacos-discovery",
+      "kind": "component",
+      "subject": "ts-admin-route-service.application-yml",
+      "axis": "static",
+      "refs": [
+        "src:ts-admin-route-service/src/main/resources/application.yml:2",
+        "src:ts-admin-route-service/src/main/resources/application.yml:8",
+        "src:ts-admin-route-service/src/main/resources/application.yml:10"
+      ]
+    },
+    {
+      "id": "atom:component:ts-admin-travel-service-admintravelapplication:spring-boot-entrypoint",
+      "kind": "component",
+      "subject": "ts-admin-travel-service.AdminTravelApplication",
+      "axis": "static",
+      "refs": [
+        "src:ts-admin-travel-service/src/main/java/admintravel/AdminTravelApplication.java:24"
+      ]
+    },
+    {
+      "id": "atom:semantic:ctx:ts-admin-basic-info-service-crud-facade:cech-section-money-amount",
+      "kind": "semantic",
+      "subject": "ctx:ts-admin-basic-info-service-crud-facade",
+      "axis": "cech",
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/entity/PriceInfo.java:19",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/entity/PriceInfo.java:21"
+      ],
+      "predicate": "sectionValue",
+      "object": "section=money-amount:double-primitive-price-rate-fields"
+    }
+  ],
+  "candidateContexts": [
+    {
+      "id": "ctx:ts-admin-basic-info-service-crud-facade",
+      "label": "ts-admin-basic-info-service admin CRUD facade (contacts/stations/trains/configs/prices)",
+      "atoms": [
+        "atom:component:ts-admin-basic-info-service-adminbasicinfocontroller:controller-component",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:welcome-get",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallcontacts-get",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deletecontacts-delete",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifycontacts-put",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addcontacts-post",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallstations-get",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deletestation-delete",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifystation-put",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addstation-post",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getalltrains-get",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deletetrain-delete",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifytrain-put",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addtrain-post",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallconfigs-get",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deleteconfig-delete",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifyconfig-put",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addconfig-post",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallprices-get",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deleteprice-delete",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifyprice-put",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addprice-post",
+        "atom:authority:ts-admin-basic-info-service-adminbasicinfocontroller:crud-endpoints-crossorigin-star",
+        "atom:component:ts-admin-basic-info-service-adminbasicinfoservice:interface-component",
+        "atom:contract:ts-admin-basic-info-service-adminbasicinfoservice:crud-interface-shape",
+        "atom:component:ts-admin-basic-info-service-adminbasicinfoserviceimpl:serviceimpl-component",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallcontacts-1",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallcontacts-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deletecontact-2",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deletecontact-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifycontact-2",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifycontact-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addcontact-2",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addcontact-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallstations-1",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallstations-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addstation-2",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addstation-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deletestation-2",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deletestation-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifystation-2",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifystation-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getalltrains-1",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getalltrains-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addtrain-2",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addtrain-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deletetrain-2",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deletetrain-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifytrain-2",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifytrain-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallconfigs-1",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallconfigs-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addconfig-2",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addconfig-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deleteconfig-2",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deleteconfig-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifyconfig-2",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifyconfig-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallprices-1",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallprices-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addprice-2",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addprice-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deleteprice-2",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deleteprice-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifyprice-2",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifyprice-callsprovider",
+        "atom:component:ts-admin-basic-info-service-priceinfo:entity-component",
+        "atom:contract:ts-admin-basic-info-service-priceinfo:dto-field-shape",
+        "atom:semantic:ts-admin-basic-info-service-priceinfo:price-rate-double-fields",
+        "atom:component:ts-admin-basic-info-service-securityconfig:config-component",
+        "atom:authority:ts-admin-basic-info-service-securityconfig:get-stations-permitall",
+        "atom:authority:ts-admin-basic-info-service-securityconfig:get-trains-permitall",
+        "atom:authority:ts-admin-basic-info-service-securityconfig:get-prices-permitall",
+        "atom:authority:ts-admin-basic-info-service-securityconfig:get-configs-permitall",
+        "atom:authority:ts-admin-basic-info-service-securityconfig:get-contacts-permitall",
+        "atom:authority:ts-admin-basic-info-service-securityconfig:requiresrole-adminbasicservice",
+        "atom:authority:ts-admin-basic-info-service-securityconfig:swagger-doc-paths-permitall",
+        "atom:authority:ts-admin-basic-info-service-securityconfig:cors-registry-all-star"
+      ],
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/entity/PriceInfo.java",
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/config/SecurityConfig.java"
+      ]
+    },
+    {
+      "id": "ctx:ts-admin-order-service-crud-facade",
+      "label": "ts-admin-order-service admin order facade with trainnumber-prefix routing to ts-order-service or ts-order-other-service",
+      "atoms": [
+        "atom:component:ts-admin-order-service-adminordercontroller:controller-component",
+        "atom:capability:ts-admin-order-service-adminordercontroller:welcome-get",
+        "atom:capability:ts-admin-order-service-adminordercontroller:getallorders-get",
+        "atom:capability:ts-admin-order-service-adminordercontroller:addorder-post",
+        "atom:capability:ts-admin-order-service-adminordercontroller:updateorder-put",
+        "atom:capability:ts-admin-order-service-adminordercontroller:deleteorder-delete",
+        "atom:authority:ts-admin-order-service-adminordercontroller:getallorders-endpoint-crossorigin-star",
+        "atom:component:ts-admin-order-service-adminorderservice:interface-component",
+        "atom:contract:ts-admin-order-service-adminorderservice:crud-interface-shape",
+        "atom:component:ts-admin-order-service-adminorderserviceimpl:serviceimpl-component",
+        "atom:capability:ts-admin-order-service-adminorderserviceimpl:getallorders-1",
+        "atom:effect:ts-admin-order-service-adminorderserviceimpl:getallorders-order-service",
+        "atom:effect:ts-admin-order-service-adminorderserviceimpl:getallorders-order-other-service",
+        "atom:semantic:ts-admin-order-service-adminorderserviceimpl:getallorders-response-status-branch",
+        "atom:capability:ts-admin-order-service-adminorderserviceimpl:deleteorder-3",
+        "atom:effect:ts-admin-order-service-adminorderserviceimpl:deleteorder-order-service-branch",
+        "atom:effect:ts-admin-order-service-adminorderserviceimpl:deleteorder-order-other-service-branch",
+        "atom:capability:ts-admin-order-service-adminorderserviceimpl:updateorder-2",
+        "atom:effect:ts-admin-order-service-adminorderserviceimpl:updateorder-order-service-branch",
+        "atom:effect:ts-admin-order-service-adminorderserviceimpl:updateorder-order-other-service-branch",
+        "atom:capability:ts-admin-order-service-adminorderserviceimpl:addorder-2",
+        "atom:effect:ts-admin-order-service-adminorderserviceimpl:addorder-order-service-branch",
+        "atom:effect:ts-admin-order-service-adminorderserviceimpl:addorder-order-other-service-branch",
+        "atom:semantic:ts-admin-order-service-adminorderserviceimpl:trainnumber-prefix-routing",
+        "atom:component:ts-admin-order-service-securityconfig:config-component",
+        "atom:authority:ts-admin-order-service-securityconfig:requiresrole-adminorderservice",
+        "atom:authority:ts-admin-order-service-securityconfig:swagger-doc-paths-permitall",
+        "atom:authority:ts-admin-order-service-securityconfig:cors-registry-all-star"
+      ],
+      "refs": [
+        "src:ts-admin-order-service/src/main/java/adminorder/controller/AdminOrderController.java",
+        "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java",
+        "src:ts-admin-order-service/src/main/java/adminorder/config/SecurityConfig.java"
+      ]
+    },
+    {
+      "id": "ctx:ts-admin-route-service-crud-facade",
+      "label": "ts-admin-route-service admin route facade with station-existence precheck against ts-station-service",
+      "atoms": [
+        "atom:component:ts-admin-route-service-adminroutecontroller:controller-component",
+        "atom:capability:ts-admin-route-service-adminroutecontroller:welcome-get",
+        "atom:capability:ts-admin-route-service-adminroutecontroller:getallroutes-get",
+        "atom:capability:ts-admin-route-service-adminroutecontroller:addroute-post",
+        "atom:capability:ts-admin-route-service-adminroutecontroller:deleteroute-delete",
+        "atom:component:ts-admin-route-service-adminrouteservice:interface-component",
+        "atom:contract:ts-admin-route-service-adminrouteservice:crud-interface-shape",
+        "atom:component:ts-admin-route-service-adminrouteserviceimpl:serviceimpl-component",
+        "atom:capability:ts-admin-route-service-adminrouteserviceimpl:getallroutes-1",
+        "atom:effect:ts-admin-route-service-adminrouteserviceimpl:getallroutes-callsprovider",
+        "atom:capability:ts-admin-route-service-adminrouteserviceimpl:createandmodifyroute-2",
+        "atom:relation:ts-admin-route-service-adminrouteserviceimpl:createandmodifyroute-calls-checkstationsexists",
+        "atom:effect:ts-admin-route-service-adminrouteserviceimpl:createandmodifyroute-callsprovider",
+        "atom:semantic:ts-admin-route-service-adminrouteserviceimpl:start-end-not-in-stationlist-early-return",
+        "atom:capability:ts-admin-route-service-adminrouteserviceimpl:deleteroute-2",
+        "atom:effect:ts-admin-route-service-adminrouteserviceimpl:deleteroute-callsprovider",
+        "atom:capability:ts-admin-route-service-adminrouteserviceimpl:checkstationsexists-2",
+        "atom:effect:ts-admin-route-service-adminrouteserviceimpl:checkstationsexists-callsprovider",
+        "atom:semantic:ts-admin-route-service-adminrouteserviceimpl:route-service-http-status-not-accepted-logged-only",
+        "atom:semantic:ts-admin-route-service-adminrouteserviceimpl:body-response-status-0-early-return",
+        "atom:semantic:ts-admin-route-service-adminrouteserviceimpl:station-map-null-value-not-found",
+        "atom:component:ts-admin-route-service-securityconfig:config-component",
+        "atom:authority:ts-admin-route-service-securityconfig:requiresrole-adminrouteservice",
+        "atom:authority:ts-admin-route-service-securityconfig:swagger-doc-paths-permitall",
+        "atom:authority:ts-admin-route-service-securityconfig:cors-registry-all-star"
+      ],
+      "refs": [
+        "src:ts-admin-route-service/src/main/java/adminroute/controller/AdminRouteController.java",
+        "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java",
+        "src:ts-admin-route-service/src/main/java/adminroute/config/SecurityConfig.java"
+      ]
+    }
+  ],
+  "candidateCovers": [
+    {
+      "id": "cover:admin-facade-services-role-gated-crud",
+      "label": "role-gated admin CRUD facade services sharing hasRole-ADMIN authority pattern and downstream Response-status branching",
+      "contexts": [
+        "ctx:ts-admin-basic-info-service-crud-facade",
+        "ctx:ts-admin-order-service-crud-facade",
+        "ctx:ts-admin-route-service-crud-facade"
+      ],
+      "refs": [
+        "src:ts-admin-basic-info-service/src/main/java/adminbasic/config/SecurityConfig.java:77",
+        "src:ts-admin-order-service/src/main/java/adminorder/config/SecurityConfig.java:71",
+        "src:ts-admin-route-service/src/main/java/adminroute/config/SecurityConfig.java:71"
+      ]
+    }
+  ],
+  "surveyRows": [
+    {
+      "sourceId": "src:ts-admin-basic-info-service/src/main/java/adminbasic/AdminBasicInfoApplication.java",
+      "status": "read",
+      "surveyedKinds": [
+        "component"
+      ],
+      "candidateAtomIds": [
+        "atom:component:ts-admin-basic-info-service-adminbasicinfoapplication:spring-boot-entrypoint"
+      ],
+      "notes": []
+    },
+    {
+      "sourceId": "src:ts-admin-basic-info-service/src/main/java/adminbasic/config/SecurityConfig.java",
+      "status": "read",
+      "surveyedKinds": [
+        "component",
+        "authority"
+      ],
+      "candidateAtomIds": [
+        "atom:component:ts-admin-basic-info-service-securityconfig:config-component",
+        "atom:authority:ts-admin-basic-info-service-securityconfig:get-stations-permitall",
+        "atom:authority:ts-admin-basic-info-service-securityconfig:get-trains-permitall",
+        "atom:authority:ts-admin-basic-info-service-securityconfig:get-prices-permitall",
+        "atom:authority:ts-admin-basic-info-service-securityconfig:get-configs-permitall",
+        "atom:authority:ts-admin-basic-info-service-securityconfig:get-contacts-permitall",
+        "atom:authority:ts-admin-basic-info-service-securityconfig:requiresrole-adminbasicservice",
+        "atom:authority:ts-admin-basic-info-service-securityconfig:swagger-doc-paths-permitall",
+        "atom:authority:ts-admin-basic-info-service-securityconfig:cors-registry-all-star"
+      ],
+      "notes": []
+    },
+    {
+      "sourceId": "src:ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java",
+      "status": "read",
+      "surveyedKinds": [
+        "component",
+        "capability",
+        "authority"
+      ],
+      "candidateAtomIds": [
+        "atom:component:ts-admin-basic-info-service-adminbasicinfocontroller:controller-component",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:welcome-get",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallcontacts-get",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deletecontacts-delete",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifycontacts-put",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addcontacts-post",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallstations-get",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deletestation-delete",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifystation-put",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addstation-post",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getalltrains-get",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deletetrain-delete",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifytrain-put",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addtrain-post",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallconfigs-get",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deleteconfig-delete",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifyconfig-put",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addconfig-post",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:getallprices-get",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:deleteprice-delete",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:modifyprice-put",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfocontroller:addprice-post",
+        "atom:authority:ts-admin-basic-info-service-adminbasicinfocontroller:crud-endpoints-crossorigin-star"
+      ],
+      "notes": []
+    },
+    {
+      "sourceId": "src:ts-admin-basic-info-service/src/main/java/adminbasic/entity/PriceInfo.java",
+      "status": "read",
+      "surveyedKinds": [
+        "component",
+        "contract",
+        "semantic"
+      ],
+      "candidateAtomIds": [
+        "atom:component:ts-admin-basic-info-service-priceinfo:entity-component",
+        "atom:contract:ts-admin-basic-info-service-priceinfo:dto-field-shape",
+        "atom:semantic:ts-admin-basic-info-service-priceinfo:price-rate-double-fields",
+        "atom:semantic:ctx:ts-admin-basic-info-service-crud-facade:cech-section-money-amount"
+      ],
+      "notes": []
+    },
+    {
+      "sourceId": "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoService.java",
+      "status": "read",
+      "surveyedKinds": [
+        "component",
+        "contract"
+      ],
+      "candidateAtomIds": [
+        "atom:component:ts-admin-basic-info-service-adminbasicinfoservice:interface-component",
+        "atom:contract:ts-admin-basic-info-service-adminbasicinfoservice:crud-interface-shape"
+      ],
+      "notes": []
+    },
+    {
+      "sourceId": "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java",
+      "status": "read",
+      "surveyedKinds": [
+        "component",
+        "capability",
+        "effect"
+      ],
+      "candidateAtomIds": [
+        "atom:component:ts-admin-basic-info-service-adminbasicinfoserviceimpl:serviceimpl-component",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallcontacts-1",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallcontacts-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deletecontact-2",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deletecontact-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifycontact-2",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifycontact-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addcontact-2",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addcontact-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallstations-1",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallstations-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addstation-2",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addstation-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deletestation-2",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deletestation-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifystation-2",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifystation-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getalltrains-1",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getalltrains-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addtrain-2",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addtrain-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deletetrain-2",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deletetrain-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifytrain-2",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifytrain-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallconfigs-1",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallconfigs-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addconfig-2",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addconfig-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deleteconfig-2",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deleteconfig-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifyconfig-2",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifyconfig-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallprices-1",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:getallprices-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addprice-2",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:addprice-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deleteprice-2",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:deleteprice-callsprovider",
+        "atom:capability:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifyprice-2",
+        "atom:effect:ts-admin-basic-info-service-adminbasicinfoserviceimpl:modifyprice-callsprovider"
+      ],
+      "notes": []
+    },
+    {
+      "sourceId": "src:ts-admin-basic-info-service/src/main/resources/application.yml",
+      "status": "read",
+      "surveyedKinds": [
+        "component"
+      ],
+      "candidateAtomIds": [
+        "atom:component:ts-admin-basic-info-service-application-yml:config-component-port-18767-nacos-discovery"
+      ],
+      "notes": []
+    },
+    {
+      "sourceId": "src:ts-admin-order-service/src/main/java/adminorder/AdminOrderApplication.java",
+      "status": "read",
+      "surveyedKinds": [
+        "component"
+      ],
+      "candidateAtomIds": [
+        "atom:component:ts-admin-order-service-adminorderapplication:spring-boot-entrypoint"
+      ],
+      "notes": []
+    },
+    {
+      "sourceId": "src:ts-admin-order-service/src/main/java/adminorder/config/SecurityConfig.java",
+      "status": "read",
+      "surveyedKinds": [
+        "component",
+        "authority"
+      ],
+      "candidateAtomIds": [
+        "atom:component:ts-admin-order-service-securityconfig:config-component",
+        "atom:authority:ts-admin-order-service-securityconfig:requiresrole-adminorderservice",
+        "atom:authority:ts-admin-order-service-securityconfig:swagger-doc-paths-permitall",
+        "atom:authority:ts-admin-order-service-securityconfig:cors-registry-all-star"
+      ],
+      "notes": []
+    },
+    {
+      "sourceId": "src:ts-admin-order-service/src/main/java/adminorder/controller/AdminOrderController.java",
+      "status": "read",
+      "surveyedKinds": [
+        "component",
+        "capability",
+        "authority"
+      ],
+      "candidateAtomIds": [
+        "atom:component:ts-admin-order-service-adminordercontroller:controller-component",
+        "atom:capability:ts-admin-order-service-adminordercontroller:welcome-get",
+        "atom:capability:ts-admin-order-service-adminordercontroller:getallorders-get",
+        "atom:capability:ts-admin-order-service-adminordercontroller:addorder-post",
+        "atom:capability:ts-admin-order-service-adminordercontroller:updateorder-put",
+        "atom:capability:ts-admin-order-service-adminordercontroller:deleteorder-delete",
+        "atom:authority:ts-admin-order-service-adminordercontroller:getallorders-endpoint-crossorigin-star"
+      ],
+      "notes": []
+    },
+    {
+      "sourceId": "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderService.java",
+      "status": "read",
+      "surveyedKinds": [
+        "component",
+        "contract"
+      ],
+      "candidateAtomIds": [
+        "atom:component:ts-admin-order-service-adminorderservice:interface-component",
+        "atom:contract:ts-admin-order-service-adminorderservice:crud-interface-shape"
+      ],
+      "notes": []
+    },
+    {
+      "sourceId": "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java",
+      "status": "read",
+      "surveyedKinds": [
+        "component",
+        "capability",
+        "effect",
+        "semantic"
+      ],
+      "candidateAtomIds": [
+        "atom:component:ts-admin-order-service-adminorderserviceimpl:serviceimpl-component",
+        "atom:capability:ts-admin-order-service-adminorderserviceimpl:getallorders-1",
+        "atom:effect:ts-admin-order-service-adminorderserviceimpl:getallorders-order-service",
+        "atom:effect:ts-admin-order-service-adminorderserviceimpl:getallorders-order-other-service",
+        "atom:semantic:ts-admin-order-service-adminorderserviceimpl:getallorders-response-status-branch",
+        "atom:capability:ts-admin-order-service-adminorderserviceimpl:deleteorder-3",
+        "atom:effect:ts-admin-order-service-adminorderserviceimpl:deleteorder-order-service-branch",
+        "atom:effect:ts-admin-order-service-adminorderserviceimpl:deleteorder-order-other-service-branch",
+        "atom:capability:ts-admin-order-service-adminorderserviceimpl:updateorder-2",
+        "atom:effect:ts-admin-order-service-adminorderserviceimpl:updateorder-order-service-branch",
+        "atom:effect:ts-admin-order-service-adminorderserviceimpl:updateorder-order-other-service-branch",
+        "atom:capability:ts-admin-order-service-adminorderserviceimpl:addorder-2",
+        "atom:effect:ts-admin-order-service-adminorderserviceimpl:addorder-order-service-branch",
+        "atom:effect:ts-admin-order-service-adminorderserviceimpl:addorder-order-other-service-branch",
+        "atom:semantic:ts-admin-order-service-adminorderserviceimpl:trainnumber-prefix-routing"
+      ],
+      "notes": [
+        "the trainnumber prefix G or D selects the ts-order-service branch across delete/update/add order"
+      ]
+    },
+    {
+      "sourceId": "src:ts-admin-order-service/src/main/resources/application.yml",
+      "status": "read",
+      "surveyedKinds": [
+        "component"
+      ],
+      "candidateAtomIds": [
+        "atom:component:ts-admin-order-service-application-yml:config-component-port-16112-nacos-discovery"
+      ],
+      "notes": []
+    },
+    {
+      "sourceId": "src:ts-admin-route-service/src/main/java/adminroute/AdminRouteApplication.java",
+      "status": "read",
+      "surveyedKinds": [
+        "component"
+      ],
+      "candidateAtomIds": [
+        "atom:component:ts-admin-route-service-adminrouteapplication:spring-boot-entrypoint"
+      ],
+      "notes": []
+    },
+    {
+      "sourceId": "src:ts-admin-route-service/src/main/java/adminroute/config/SecurityConfig.java",
+      "status": "read",
+      "surveyedKinds": [
+        "component",
+        "authority"
+      ],
+      "candidateAtomIds": [
+        "atom:component:ts-admin-route-service-securityconfig:config-component",
+        "atom:authority:ts-admin-route-service-securityconfig:requiresrole-adminrouteservice",
+        "atom:authority:ts-admin-route-service-securityconfig:swagger-doc-paths-permitall",
+        "atom:authority:ts-admin-route-service-securityconfig:cors-registry-all-star"
+      ],
+      "notes": []
+    },
+    {
+      "sourceId": "src:ts-admin-route-service/src/main/java/adminroute/controller/AdminRouteController.java",
+      "status": "read",
+      "surveyedKinds": [
+        "component",
+        "capability"
+      ],
+      "candidateAtomIds": [
+        "atom:component:ts-admin-route-service-adminroutecontroller:controller-component",
+        "atom:capability:ts-admin-route-service-adminroutecontroller:welcome-get",
+        "atom:capability:ts-admin-route-service-adminroutecontroller:getallroutes-get",
+        "atom:capability:ts-admin-route-service-adminroutecontroller:addroute-post",
+        "atom:capability:ts-admin-route-service-adminroutecontroller:deleteroute-delete"
+      ],
+      "notes": []
+    },
+    {
+      "sourceId": "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteService.java",
+      "status": "read",
+      "surveyedKinds": [
+        "component",
+        "contract"
+      ],
+      "candidateAtomIds": [
+        "atom:component:ts-admin-route-service-adminrouteservice:interface-component",
+        "atom:contract:ts-admin-route-service-adminrouteservice:crud-interface-shape"
+      ],
+      "notes": []
+    },
+    {
+      "sourceId": "src:ts-admin-route-service/src/main/java/adminroute/service/AdminRouteServiceImpl.java",
+      "status": "read",
+      "surveyedKinds": [
+        "component",
+        "capability",
+        "effect",
+        "relation",
+        "semantic"
+      ],
+      "candidateAtomIds": [
+        "atom:component:ts-admin-route-service-adminrouteserviceimpl:serviceimpl-component",
+        "atom:capability:ts-admin-route-service-adminrouteserviceimpl:getallroutes-1",
+        "atom:effect:ts-admin-route-service-adminrouteserviceimpl:getallroutes-callsprovider",
+        "atom:capability:ts-admin-route-service-adminrouteserviceimpl:createandmodifyroute-2",
+        "atom:relation:ts-admin-route-service-adminrouteserviceimpl:createandmodifyroute-calls-checkstationsexists",
+        "atom:effect:ts-admin-route-service-adminrouteserviceimpl:createandmodifyroute-callsprovider",
+        "atom:semantic:ts-admin-route-service-adminrouteserviceimpl:start-end-not-in-stationlist-early-return",
+        "atom:capability:ts-admin-route-service-adminrouteserviceimpl:deleteroute-2",
+        "atom:effect:ts-admin-route-service-adminrouteserviceimpl:deleteroute-callsprovider",
+        "atom:capability:ts-admin-route-service-adminrouteserviceimpl:checkstationsexists-2",
+        "atom:effect:ts-admin-route-service-adminrouteserviceimpl:checkstationsexists-callsprovider",
+        "atom:semantic:ts-admin-route-service-adminrouteserviceimpl:route-service-http-status-not-accepted-logged-only",
+        "atom:semantic:ts-admin-route-service-adminrouteserviceimpl:body-response-status-0-early-return",
+        "atom:semantic:ts-admin-route-service-adminrouteserviceimpl:station-map-null-value-not-found"
+      ],
+      "notes": [
+        "the branch taken when start or end station is absent from the request stationList returns immediately without any downstream call",
+        "the branch taken when a station id map entry is null selects the station-not-found accumulation path"
+      ]
+    },
+    {
+      "sourceId": "src:ts-admin-route-service/src/main/resources/application.yml",
+      "status": "read",
+      "surveyedKinds": [
+        "component"
+      ],
+      "candidateAtomIds": [
+        "atom:component:ts-admin-route-service-application-yml:config-component-port-16113-nacos-discovery"
+      ],
+      "notes": []
+    },
+    {
+      "sourceId": "src:ts-admin-travel-service/src/main/java/admintravel/AdminTravelApplication.java",
+      "status": "read",
+      "surveyedKinds": [
+        "component"
+      ],
+      "candidateAtomIds": [
+        "atom:component:ts-admin-travel-service-admintravelapplication:spring-boot-entrypoint"
+      ],
+      "notes": [
+        "only the bootstrap application class was in scope; no controller/service files for this service were in this chunk"
+      ]
+    }
+  ],
+  "privateUnavailableNotes": [
+    "ts-admin-travel-service chunk row only included the bootstrap application class; its controller/service/config files were not part of this chunk so the service's capability and authority surface could not be surveyed from this chunk alone"
+  ],
+  "selfReview": {
+    "notScriptGenerated": true,
+    "notCoarseWhenEvidenceWasRicher": true,
+    "semanticAtomsHaveUseEvidence": true,
+    "noDiagnosticShortcutAtoms": true,
+    "worklistChunkFullyRead": true,
+    "aliasPreservingSemantics": true
+  }
+}

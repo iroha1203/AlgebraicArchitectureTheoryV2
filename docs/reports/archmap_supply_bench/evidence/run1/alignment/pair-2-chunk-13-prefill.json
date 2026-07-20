@@ -1,0 +1,704 @@
+{
+ "pairRef": "pair-2-chunk-13",
+ "chunk": "chunk-13",
+ "prefilledRows": [
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-admin-create",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:post-orderOther-admin"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-admin-update",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:put-orderOther-admin"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-calculatesold",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:get-traveldate-trainnumber"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-create",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:post-orderOther"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-delete",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:delete-orderid"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-findall",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:get-orderOther-all"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-getbyid",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:get-orderid"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-modify",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:get-status"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-pay",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:get-orderpay"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-price",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:get-price"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-query",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:post-query"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-refresh",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:post-refresh"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-save",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:put-orderOther"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-security",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:get-security"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-tickets",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:post-tickets"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-welcome",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service.OrderOtherController:exposesEndpoint:get-welcome"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-admin-create",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service.OrderController:exposesEndpoint:post-order-admin"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-admin-update",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service.OrderController:exposesEndpoint:put-order-admin"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-calculatesold",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service.OrderController:exposesEndpoint:get-traveldate-trainnumber"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-create",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service.OrderController:exposesEndpoint:post-order"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-delete",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service.OrderController:exposesEndpoint:delete-orderid"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-findall",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service.OrderController:exposesEndpoint:get-order-all"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-getbyid",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service.OrderController:exposesEndpoint:get-orderid"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-modify",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service.OrderController:exposesEndpoint:get-status"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-pay",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service.OrderController:exposesEndpoint:get-orderpay"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-price",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service.OrderController:exposesEndpoint:get-price"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-query",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service.OrderController:exposesEndpoint:post-query"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-refresh",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service.OrderController:exposesEndpoint:post-refresh"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-save",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service.OrderController:exposesEndpoint:put-order"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-security",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service.OrderController:exposesEndpoint:get-security"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-tickets",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service.OrderController:exposesEndpoint:post-tickets"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-welcome",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service.OrderController:exposesEndpoint:get-welcome"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:notification.mq.RabbitSend",
+   "candidateAtomIds": [
+    "atom:component:ts-notification-service-rabbit-send",
+    "atom:component:ts-notification-service.RabbitSend"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:notification.repository.NotifyRepository",
+   "candidateAtomIds": [
+    "atom:component:ts-notification-service-notify-repository",
+    "atom:component:ts-notification-service.NotifyRepository"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:notification.service.MailService",
+   "candidateAtomIds": [
+    "atom:component:ts-notification-service-mail-service",
+    "atom:component:ts-notification-service.MailService"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:notification.service.NotificationService",
+   "candidateAtomIds": [
+    "atom:component:ts-notification-service-notification-service",
+    "atom:component:ts-notification-service.NotificationService"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:notification.service.NotificationServiceImpl",
+   "candidateAtomIds": [
+    "atom:component:ts-notification-service-notification-service-impl",
+    "atom:component:ts-notification-service.NotificationServiceImpl"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:order.OrderApplication",
+   "candidateAtomIds": [
+    "atom:component:ts-order-service-order-application",
+    "atom:component:ts-order-service.OrderApplication"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:order.config.SecurityConfig",
+   "candidateAtomIds": [
+    "atom:component:ts-order-service-security-config",
+    "atom:component:ts-order-service.SecurityConfig"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:order.controller.OrderController",
+   "candidateAtomIds": [
+    "atom:component:ts-order-service-order-controller",
+    "atom:component:ts-order-service.OrderController"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:other.OrderOtherApplication",
+   "candidateAtomIds": [
+    "atom:component:ts-order-other-service-order-other-application",
+    "atom:component:ts-order-other-service.OrderOtherApplication"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:other.config.SecurityConfig",
+   "candidateAtomIds": [
+    "atom:component:ts-order-other-service-security-config",
+    "atom:component:ts-order-other-service.SecurityConfig"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:other.controller.OrderOtherController",
+   "candidateAtomIds": [
+    "atom:component:ts-order-other-service-order-other-controller",
+    "atom:component:ts-order-other-service.OrderOtherController"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:other.entity.Order",
+   "candidateAtomIds": [
+    "atom:component:ts-order-other-service-order",
+    "atom:component:ts-order-other-service.Order"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:other.entity.OrderAlterInfo",
+   "candidateAtomIds": [
+    "atom:component:ts-order-other-service-order-alter-info",
+    "atom:component:ts-order-other-service.OrderAlterInfo"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:other.entity.QueryInfo",
+   "candidateAtomIds": [
+    "atom:component:ts-order-other-service-query-info",
+    "atom:component:ts-order-other-service.QueryInfo"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:other.init.InitData",
+   "candidateAtomIds": [
+    "atom:component:ts-order-other-service-init-data",
+    "atom:component:ts-order-other-service.InitData"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:other.repository.OrderOtherRepository",
+   "candidateAtomIds": [
+    "atom:component:ts-order-other-service-order-other-repository",
+    "atom:component:ts-order-other-service.OrderOtherRepository"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:other.service.OrderOtherService",
+   "candidateAtomIds": [
+    "atom:component:ts-order-other-service-order-other-service",
+    "atom:component:ts-order-other-service.OrderOtherService"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:other.service.OrderOtherServiceImpl",
+   "candidateAtomIds": [
+    "atom:component:ts-order-other-service-order-other-service-impl",
+    "atom:component:ts-order-other-service.OrderOtherServiceImpl"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:relation:ts-order-other-service.orderalterinfo:dependson-order",
+   "candidateAtomIds": [
+    "atom:relation:ts-order-other-service-order-alter-info:depends-on-order"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:relation:ts-order-other-service.orderothercontroller:calls-orderotherservice",
+   "candidateAtomIds": [
+    "atom:relation:ts-order-other-service-order-other-controller:calls-order-other-service"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  }
+ ],
+ "remainingReferenceAtomIds": [
+  "atom:authority:order.config.SecurityConfig:permitsUnauthenticated:order-base",
+  "atom:authority:other.config.SecurityConfig:permitsUnauthenticated:orderOther-base",
+  "atom:authority:ts-order-other-service.securityconfig:allowscrossorigin-corsconfigurer",
+  "atom:authority:ts-order-other-service.securityconfig:permitsunauthenticated-swagger",
+  "atom:authority:ts-order-other-service.securityconfig:requiresrole-admin-orderother-admin",
+  "atom:authority:ts-order-other-service.securityconfig:requiresrole-post-put-delete-orderother",
+  "atom:authority:ts-order-service.ordercontroller:allowscrossorigin-endpoint-annotations",
+  "atom:authority:ts-order-service.securityconfig:allowscrossorigin-corsconfigurer",
+  "atom:authority:ts-order-service.securityconfig:permitsunauthenticated-swagger",
+  "atom:authority:ts-order-service.securityconfig:requiresrole-admin-order-admin",
+  "atom:authority:ts-order-service.securityconfig:requiresrole-post-put-delete-order",
+  "atom:capability:ts-notification-service.notificationserviceimpl:handlescommand-ordercancelsuccess",
+  "atom:capability:ts-notification-service.notificationserviceimpl:handlescommand-orderchangedsuccess",
+  "atom:capability:ts-notification-service.notificationserviceimpl:handlescommand-ordercreatesuccess",
+  "atom:capability:ts-notification-service.notificationserviceimpl:handlescommand-preservesuccess",
+  "atom:component:ts-notification-service",
+  "atom:component:ts-order-other-service",
+  "atom:contract:ts-order-other-service.order:equals-field-comparison-set",
+  "atom:contract:ts-order-other-service.orderalterinfo:shapedas",
+  "atom:contract:ts-order-other-service.orderotherserviceimpl:create-duplicate-check",
+  "atom:contract:ts-order-other-service.queryinfo:date-range-and-state-query-flags",
+  "atom:effect:ts-notification-service.mailservice:callsprovider-smtp",
+  "atom:effect:ts-notification-service.rabbitsend:publishes",
+  "atom:effect:ts-order-other-service.initdata:writesto",
+  "atom:effect:ts-order-other-service.orderotherserviceimpl:callsprovider-ts-station-service",
+  "atom:relation:ts-notification-service.notificationserviceimpl:dependson-mailservice",
+  "atom:relation:ts-notification-service:dependson-nacos-discovery",
+  "atom:relation:ts-order-other-service.initdata:calls-orderotherservice-create",
+  "atom:relation:ts-order-other-service.orderotherserviceimpl:dependson-orderotherrepository",
+  "atom:relation:ts-order-service.ordercontroller:dependson-orderservice",
+  "atom:semantic:order-other-surface:cech-section-money-amount",
+  "atom:semantic:order-other-surface:cech-section-order-status-code",
+  "atom:semantic:ts-notification-service.application-yml:identifiedby-mail-password-fallback",
+  "atom:semantic:ts-notification-service.notificationserviceimpl:meansinuse-boolean-return-branch",
+  "atom:semantic:ts-notification-service.notificationserviceimpl:meansinuse-order-cancel-success-template",
+  "atom:semantic:ts-notification-service.notificationserviceimpl:meansinuse-order-changed-success-template",
+  "atom:semantic:ts-notification-service.notificationserviceimpl:meansinuse-order-create-success-template",
+  "atom:semantic:ts-notification-service.notificationserviceimpl:meansinuse-preserve-success-template",
+  "atom:semantic:ts-order-other-service.application-yml:identifiedby-datasource-password-fallback",
+  "atom:semantic:ts-order-other-service.application-yml:meansinuse-active-datasource-no-active-rabbit-binding",
+  "atom:semantic:ts-order-other-service.order:meansinuse-price-string-default",
+  "atom:semantic:ts-order-other-service.order:meansinuse-status-default-paid",
+  "atom:semantic:ts-order-other-service.orderotherrepository:identifiedby",
+  "atom:semantic:ts-order-other-service.orderotherserviceimpl:meansinuse-envelope-status-branches",
+  "atom:semantic:ts-order-other-service.orderotherserviceimpl:meansinuse-price-string-passthrough",
+  "atom:semantic:ts-order-other-service.orderotherserviceimpl:meansinuse-queryorders-status-filter",
+  "atom:semantic:ts-order-other-service.orderotherserviceimpl:statusgates-excluded-from-sold-tally",
+  "atom:semantic:ts-order-other-service.orderotherserviceimpl:statusgates-valid-order-for-security-check",
+  "atom:semantic:ts-order-other-service.queryinfo:meansinuse-disablestatequery-clears-traveldateflag",
+  "atom:semantic:ts-order-other-service.queryinfo:meansinuse-enablestatequery-target-status",
+  "atom:semantic:ts-order-other-service.securityconfig:meansinuse-matcher-declaration-order",
+  "atom:semantic:ts-order-service.securityconfig:meansinuse-matcher-declaration-order",
+  "atom:state:ts-notification-service.notifyrepository:persistsin",
+  "atom:state:ts-order-other-service.order:persistsin",
+  "atom:state:ts-order-other-service.orderotherrepository:persistsin-crud-surface",
+  "atom:state:ts-order-other-service.orderotherrepository:persistsin-orders-other-table"
+ ],
+ "remainingCandidateAtomIds": [
+  "atom:authority:ts-order-other-service-security-config:allows-cross-origin",
+  "atom:authority:ts-order-other-service-security-config:checks-permission-anyrequest",
+  "atom:authority:ts-order-other-service-security-config:permits-unauthenticated-orderother",
+  "atom:authority:ts-order-other-service-security-config:permits-unauthenticated-swagger",
+  "atom:authority:ts-order-other-service-security-config:requires-role-delete-orderother",
+  "atom:authority:ts-order-other-service-security-config:requires-role-post-orderother",
+  "atom:authority:ts-order-other-service-security-config:requires-role-post-orderother-admin",
+  "atom:authority:ts-order-other-service-security-config:requires-role-put-orderother",
+  "atom:authority:ts-order-other-service-security-config:requires-role-put-orderother-admin",
+  "atom:authority:ts-order-other-service.OrderOtherController:allowsCrossOrigin:per-endpoint",
+  "atom:authority:ts-order-other-service.SecurityConfig:allowsCrossOrigin:global-cors",
+  "atom:authority:ts-order-other-service.SecurityConfig:checksPermission:any-request-authenticated",
+  "atom:authority:ts-order-other-service.SecurityConfig:checksPermission:jwt-filter-position",
+  "atom:authority:ts-order-other-service.SecurityConfig:permitsUnauthenticated:orderOther-wildcard",
+  "atom:authority:ts-order-other-service.SecurityConfig:permitsUnauthenticated:swagger-paths",
+  "atom:authority:ts-order-other-service.SecurityConfig:requiresRole:delete-orderOther",
+  "atom:authority:ts-order-other-service.SecurityConfig:requiresRole:post-orderOther",
+  "atom:authority:ts-order-other-service.SecurityConfig:requiresRole:post-orderOther-admin",
+  "atom:authority:ts-order-other-service.SecurityConfig:requiresRole:put-orderOther",
+  "atom:authority:ts-order-other-service.SecurityConfig:requiresRole:put-orderOther-admin",
+  "atom:authority:ts-order-service-security-config:allows-cross-origin",
+  "atom:authority:ts-order-service-security-config:checks-permission-anyrequest",
+  "atom:authority:ts-order-service-security-config:permits-unauthenticated-order",
+  "atom:authority:ts-order-service-security-config:permits-unauthenticated-swagger",
+  "atom:authority:ts-order-service-security-config:requires-role-delete-order",
+  "atom:authority:ts-order-service-security-config:requires-role-post-order",
+  "atom:authority:ts-order-service-security-config:requires-role-post-order-admin",
+  "atom:authority:ts-order-service-security-config:requires-role-put-order",
+  "atom:authority:ts-order-service-security-config:requires-role-put-order-admin",
+  "atom:authority:ts-order-service.OrderController:allowsCrossOrigin:per-endpoint",
+  "atom:authority:ts-order-service.SecurityConfig:allowsCrossOrigin:global-cors",
+  "atom:authority:ts-order-service.SecurityConfig:checksPermission:jwt-filter-position",
+  "atom:authority:ts-order-service.SecurityConfig:permitsUnauthenticated:order-wildcard",
+  "atom:authority:ts-order-service.SecurityConfig:permitsUnauthenticated:swagger-paths",
+  "atom:authority:ts-order-service.SecurityConfig:requiresRole:delete-order",
+  "atom:authority:ts-order-service.SecurityConfig:requiresRole:post-order",
+  "atom:authority:ts-order-service.SecurityConfig:requiresRole:post-order-admin",
+  "atom:authority:ts-order-service.SecurityConfig:requiresRole:put-order",
+  "atom:authority:ts-order-service.SecurityConfig:requiresRole:put-order-admin",
+  "atom:capability:ts-notification-service-mail-service:handles-command-send-email",
+  "atom:capability:ts-notification-service-notification-service-impl:handles-command-order-cancel-success",
+  "atom:capability:ts-notification-service-notification-service-impl:handles-command-order-changed-success",
+  "atom:capability:ts-notification-service-notification-service-impl:handles-command-order-create-success",
+  "atom:capability:ts-notification-service-notification-service-impl:handles-command-preserve-success",
+  "atom:capability:ts-notification-service-rabbit-send:handles-command-send",
+  "atom:capability:ts-notification-service.MailService:handlesCommand:sendEmail-2",
+  "atom:capability:ts-notification-service.NotificationServiceImpl:handlesCommand:orderCancelSuccess-2",
+  "atom:capability:ts-notification-service.NotificationServiceImpl:handlesCommand:orderChangedSuccess-2",
+  "atom:capability:ts-notification-service.NotificationServiceImpl:handlesCommand:orderCreateSuccess-2",
+  "atom:capability:ts-notification-service.NotificationServiceImpl:handlesCommand:preserveSuccess-2",
+  "atom:capability:ts-order-other-service-order-other-controller:delete-orderid",
+  "atom:capability:ts-order-other-service-order-other-controller:get-all",
+  "atom:capability:ts-order-other-service-order-other-controller:get-orderid",
+  "atom:capability:ts-order-other-service-order-other-controller:get-orderpay",
+  "atom:capability:ts-order-other-service-order-other-controller:get-price",
+  "atom:capability:ts-order-other-service-order-other-controller:get-security",
+  "atom:capability:ts-order-other-service-order-other-controller:get-status",
+  "atom:capability:ts-order-other-service-order-other-controller:get-traveldate-trainnumber",
+  "atom:capability:ts-order-other-service-order-other-controller:get-welcome",
+  "atom:capability:ts-order-other-service-order-other-controller:post-orderother",
+  "atom:capability:ts-order-other-service-order-other-controller:post-orderother-admin",
+  "atom:capability:ts-order-other-service-order-other-controller:post-query",
+  "atom:capability:ts-order-other-service-order-other-controller:post-refresh",
+  "atom:capability:ts-order-other-service-order-other-controller:post-tickets",
+  "atom:capability:ts-order-other-service-order-other-controller:put-orderother",
+  "atom:capability:ts-order-other-service-order-other-controller:put-orderother-admin",
+  "atom:capability:ts-order-other-service-order-other-service-impl:handles-command-add-new-order",
+  "atom:capability:ts-order-other-service-order-other-service-impl:handles-command-alter-order",
+  "atom:capability:ts-order-other-service-order-other-service-impl:handles-command-cancel-order",
+  "atom:capability:ts-order-other-service-order-other-service-impl:handles-command-create",
+  "atom:capability:ts-order-other-service-order-other-service-impl:handles-command-delete-order",
+  "atom:capability:ts-order-other-service-order-other-service-impl:handles-command-init-order",
+  "atom:capability:ts-order-other-service-order-other-service-impl:handles-command-modify-order",
+  "atom:capability:ts-order-other-service-order-other-service-impl:handles-command-pay-order",
+  "atom:capability:ts-order-other-service-order-other-service-impl:handles-command-save-changes",
+  "atom:capability:ts-order-other-service-order-other-service-impl:handles-command-update-order",
+  "atom:capability:ts-order-other-service-order-other-service-impl:serves-query-check-security-about-order",
+  "atom:capability:ts-order-other-service-order-other-service-impl:serves-query-find-order-by-id",
+  "atom:capability:ts-order-other-service-order-other-service-impl:serves-query-get-all-orders",
+  "atom:capability:ts-order-other-service-order-other-service-impl:serves-query-get-order-by-id",
+  "atom:capability:ts-order-other-service-order-other-service-impl:serves-query-get-order-price",
+  "atom:capability:ts-order-other-service-order-other-service-impl:serves-query-get-sold-tickets",
+  "atom:capability:ts-order-other-service-order-other-service-impl:serves-query-query-already-sold-orders",
+  "atom:capability:ts-order-other-service-order-other-service-impl:serves-query-query-for-station-id",
+  "atom:capability:ts-order-other-service-order-other-service-impl:serves-query-query-orders",
+  "atom:capability:ts-order-other-service-order-other-service-impl:serves-query-query-orders-for-refresh",
+  "atom:capability:ts-order-other-service-query-info:handles-command-disable-bought-date",
+  "atom:capability:ts-order-other-service-query-info:handles-command-disable-state",
+  "atom:capability:ts-order-other-service-query-info:handles-command-disable-travel-date",
+  "atom:capability:ts-order-other-service-query-info:handles-command-enable-bought-date",
+  "atom:capability:ts-order-other-service-query-info:handles-command-enable-state",
+  "atom:capability:ts-order-other-service-query-info:handles-command-enable-travel-date",
+  "atom:capability:ts-order-other-service.OrderOtherRepository:servesQuery:findByAccountId-1",
+  "atom:capability:ts-order-other-service.OrderOtherRepository:servesQuery:findByTravelDateAndTrainNumber-2",
+  "atom:capability:ts-order-other-service.OrderOtherServiceImpl:handlesCommand:addNewOrder-2",
+  "atom:capability:ts-order-other-service.OrderOtherServiceImpl:handlesCommand:alterOrder-2",
+  "atom:capability:ts-order-other-service.OrderOtherServiceImpl:handlesCommand:cancelOrder-3",
+  "atom:capability:ts-order-other-service.OrderOtherServiceImpl:handlesCommand:create-2",
+  "atom:capability:ts-order-other-service.OrderOtherServiceImpl:handlesCommand:deleteOrder-2",
+  "atom:capability:ts-order-other-service.OrderOtherServiceImpl:handlesCommand:initOrder-2",
+  "atom:capability:ts-order-other-service.OrderOtherServiceImpl:handlesCommand:modifyOrder-3",
+  "atom:capability:ts-order-other-service.OrderOtherServiceImpl:handlesCommand:payOrder-2",
+  "atom:capability:ts-order-other-service.OrderOtherServiceImpl:handlesCommand:saveChanges-2",
+  "atom:capability:ts-order-other-service.OrderOtherServiceImpl:handlesCommand:updateOrder-2",
+  "atom:capability:ts-order-other-service.OrderOtherServiceImpl:servesQuery:checkSecurityAboutOrder-3",
+  "atom:capability:ts-order-other-service.OrderOtherServiceImpl:servesQuery:findOrderById-2",
+  "atom:capability:ts-order-other-service.OrderOtherServiceImpl:servesQuery:getAllOrders-1",
+  "atom:capability:ts-order-other-service.OrderOtherServiceImpl:servesQuery:getOrderById-2",
+  "atom:capability:ts-order-other-service.OrderOtherServiceImpl:servesQuery:getOrderPrice-2",
+  "atom:capability:ts-order-other-service.OrderOtherServiceImpl:servesQuery:getSoldTickets-2",
+  "atom:capability:ts-order-other-service.OrderOtherServiceImpl:servesQuery:queryAlreadySoldOrders-3",
+  "atom:capability:ts-order-other-service.OrderOtherServiceImpl:servesQuery:queryForStationId-2",
+  "atom:capability:ts-order-other-service.OrderOtherServiceImpl:servesQuery:queryOrders-3",
+  "atom:capability:ts-order-other-service.OrderOtherServiceImpl:servesQuery:queryOrdersForRefresh-3",
+  "atom:capability:ts-order-service-order-controller:delete-orderid",
+  "atom:capability:ts-order-service-order-controller:get-all",
+  "atom:capability:ts-order-service-order-controller:get-orderid",
+  "atom:capability:ts-order-service-order-controller:get-orderpay",
+  "atom:capability:ts-order-service-order-controller:get-price",
+  "atom:capability:ts-order-service-order-controller:get-security",
+  "atom:capability:ts-order-service-order-controller:get-status",
+  "atom:capability:ts-order-service-order-controller:get-traveldate-trainnumber",
+  "atom:capability:ts-order-service-order-controller:get-welcome",
+  "atom:capability:ts-order-service-order-controller:post-order",
+  "atom:capability:ts-order-service-order-controller:post-order-admin",
+  "atom:capability:ts-order-service-order-controller:post-query",
+  "atom:capability:ts-order-service-order-controller:post-refresh",
+  "atom:capability:ts-order-service-order-controller:post-tickets",
+  "atom:capability:ts-order-service-order-controller:put-order",
+  "atom:capability:ts-order-service-order-controller:put-order-admin",
+  "atom:component:ts-notification-service-application-yml",
+  "atom:component:ts-notification-service.application-yml",
+  "atom:component:ts-order-other-service-application-yml",
+  "atom:component:ts-order-other-service.application-yml",
+  "atom:contract:ts-notification-service-notification-service:shaped-as",
+  "atom:contract:ts-notification-service.NotificationService:shapedAs",
+  "atom:contract:ts-order-other-service.Order:ensures:equals-second-conjunct",
+  "atom:contract:ts-order-other-service.OrderAlterInfo:shapedAs",
+  "atom:contract:ts-order-other-service.OrderOtherService:shapedAs",
+  "atom:contract:ts-order-other-service.QueryInfo:shapedAs",
+  "atom:effect:ts-notification-service-mail-service:calls-provider",
+  "atom:effect:ts-notification-service-rabbit-send:publishes",
+  "atom:effect:ts-notification-service.MailService:callsProvider",
+  "atom:effect:ts-notification-service.RabbitSend:publishes",
+  "atom:effect:ts-order-other-service-order-other-service-impl:calls-provider-station",
+  "atom:effect:ts-order-other-service.OrderOtherServiceImpl:callsProvider:station-namelist",
+  "atom:relation:ts-notification-service-application-yml:depends-on-mysql",
+  "atom:relation:ts-notification-service-application-yml:depends-on-rabbitmq",
+  "atom:relation:ts-notification-service-notification-service-impl:calls-mail-service",
+  "atom:relation:ts-notification-service.NotificationServiceImpl:calls:MailService",
+  "atom:relation:ts-order-other-service-application-yml:depends-on-mysql",
+  "atom:relation:ts-order-other-service-init-data:calls-order-other-service",
+  "atom:relation:ts-order-other-service-order-other-service-impl:calls-repository",
+  "atom:relation:ts-order-other-service.InitData:calls:OrderOtherService",
+  "atom:relation:ts-order-other-service.OrderOtherController:calls:OrderOtherService",
+  "atom:relation:ts-order-other-service.OrderOtherServiceImpl:calls:OrderOtherRepository",
+  "atom:relation:ts-order-service-order-controller:calls-order-service",
+  "atom:relation:ts-order-service.OrderController:calls:OrderService",
+  "atom:semantic:ctx:ts-order-other-service-order-lifecycle:cech-section-money-amount",
+  "atom:semantic:ctx:ts-order-other-service-order-lifecycle:cech-section-order-status-code",
+  "atom:semantic:ts-notification-service-application-yml:means-in-use-smtp-password",
+  "atom:semantic:ts-notification-service-mail-service:means-in-use-template",
+  "atom:semantic:ts-notification-service-notification-service-impl:identified-by-sender-email",
+  "atom:semantic:ts-notification-service-notification-service-impl:means-in-use-return-branch",
+  "atom:semantic:ts-notification-service.NotificationServiceImpl:identifiedBy:sender-address",
+  "atom:semantic:ts-notification-service.NotificationServiceImpl:meansInUse:mail-dispatch-result",
+  "atom:semantic:ts-notification-service.application-yml:meansInUse:mail-credential-fallback",
+  "atom:semantic:ts-order-other-service-application-yml:means-in-use-commented-rabbitmq",
+  "atom:semantic:ts-order-other-service-init-data:means-in-use-date-format",
+  "atom:semantic:ts-order-other-service-init-data:means-in-use-seed-price",
+  "atom:semantic:ts-order-other-service-order-lifecycle:cech-section-money-amount",
+  "atom:semantic:ts-order-other-service-order-lifecycle:cech-section-order-status-code",
+  "atom:semantic:ts-order-other-service-order-other-controller:means-in-use-get-verb-mutation",
+  "atom:semantic:ts-order-other-service-order-other-repository:means-in-use-lookup",
+  "atom:semantic:ts-order-other-service-order-other-service-impl:means-in-use-money",
+  "atom:semantic:ts-order-other-service-order-other-service-impl:means-in-use-order-status",
+  "atom:semantic:ts-order-other-service-order-other-service-impl:means-in-use-orderid-lookup",
+  "atom:semantic:ts-order-other-service-order-other-service-impl:means-in-use-response-envelope",
+  "atom:semantic:ts-order-other-service-order:means-in-use-price",
+  "atom:semantic:ts-order-other-service-order:means-in-use-status",
+  "atom:semantic:ts-order-other-service-query-info:means-in-use-state-sentinel",
+  "atom:semantic:ts-order-other-service-security-config:means-in-use-matcher-order",
+  "atom:semantic:ts-order-other-service.InitData:meansInUse:seed-date-format",
+  "atom:semantic:ts-order-other-service.Order:meansInUse:price-representation",
+  "atom:semantic:ts-order-other-service.Order:meansInUse:status-seed",
+  "atom:semantic:ts-order-other-service.OrderOtherRepository:identifiedBy:lookup-contract",
+  "atom:semantic:ts-order-other-service.OrderOtherServiceImpl:meansInUse:change-threshold-skip",
+  "atom:semantic:ts-order-other-service.OrderOtherServiceImpl:meansInUse:getOrderPrice-branches",
+  "atom:semantic:ts-order-other-service.OrderOtherServiceImpl:meansInUse:modifyOrder-raw-status",
+  "atom:semantic:ts-order-other-service.OrderOtherServiceImpl:meansInUse:response-envelope",
+  "atom:semantic:ts-order-other-service.OrderOtherServiceImpl:meansInUse:valid-order-statuses",
+  "atom:semantic:ts-order-other-service.QueryInfo:meansInUse:state-sentinel",
+  "atom:semantic:ts-order-other-service.SecurityConfig:meansInUse:matcher-declaration-order",
+  "atom:semantic:ts-order-service-order-controller:means-in-use-get-verb-mutation",
+  "atom:semantic:ts-order-service-security-config:means-in-use-matcher-order",
+  "atom:semantic:ts-order-service.SecurityConfig:meansInUse:matcher-declaration-order",
+  "atom:state:ts-notification-service-notify-repository:persists-in",
+  "atom:state:ts-notification-service.NotifyRepository:persistsIn",
+  "atom:state:ts-notification-service.application-yml:persistsIn",
+  "atom:state:ts-order-other-service-order-other-repository:persists-in",
+  "atom:state:ts-order-other-service-order:persists-in",
+  "atom:state:ts-order-other-service.Order:persistsIn:table",
+  "atom:state:ts-order-other-service.OrderOtherRepository:persistsIn",
+  "atom:state:ts-order-other-service.application-yml:persistsIn"
+ ]
+}

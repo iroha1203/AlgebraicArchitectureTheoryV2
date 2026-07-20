@@ -1,0 +1,1314 @@
+{
+ "schema": "archmap-reference-alignment/v1",
+ "id": "alignment:pair-1-chunk-13",
+ "referenceRef": "reference:train-ticket-chunk-13",
+ "referenceVersion": "1",
+ "pairRef": "pair-1-chunk-13",
+ "adjudicator": "sonnet-reread",
+ "rows": [
+  {
+   "referenceAtomId": "atom:authority:order.config.SecurityConfig:permitsUnauthenticated:order-base",
+   "candidateAtomIds": [
+    "atom:authority:ts-order-service.securityconfig:permits-unauthenticated-order-wildcard"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:authority:other.config.SecurityConfig:permitsUnauthenticated:orderOther-base",
+   "candidateAtomIds": [
+    "atom:authority:ts-order-other-service.securityconfig:permits-unauthenticated-orderother-wildcard"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-admin-create",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderothercontroller:post-orderother-admin",
+    "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-admin-create"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-admin-update",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderothercontroller:put-orderother-admin",
+    "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-admin-update"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-calculatesold",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderothercontroller:get-orderother-traveldate-trainnumber",
+    "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-calc-sold"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-create",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderothercontroller:post-orderother",
+    "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-create"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-delete",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderothercontroller:delete-orderother-orderid",
+    "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-delete"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-findall",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderothercontroller:get-orderother-all",
+    "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-find-all"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-getbyid",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderothercontroller:get-orderother-orderid",
+    "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-by-id"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-modify",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderothercontroller:get-orderother-status-orderid-status",
+    "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-modify-status"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-pay",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderothercontroller:get-orderother-orderpay-orderid",
+    "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-pay"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-price",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderothercontroller:get-orderother-price-orderid",
+    "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-price"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-query",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderothercontroller:post-orderother-query",
+    "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-query"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-refresh",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderothercontroller:post-orderother-refresh",
+    "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-refresh"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-save",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderothercontroller:put-orderother",
+    "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-save"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-security",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderothercontroller:get-orderother-security-checkdate-accountid",
+    "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-security-check"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-tickets",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderothercontroller:post-orderother-tickets",
+    "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-tickets"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-other-service.orderothercontroller:exposesendpoint-welcome",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderothercontroller:get-welcome",
+    "atom:capability:ts-order-other-service.orderothercontroller:exposes-endpoint-welcome"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-admin-create",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service-ordercontroller:post-order-admin",
+    "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-admin-create"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-admin-update",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service-ordercontroller:put-order-admin",
+    "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-admin-update"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-calculatesold",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service-ordercontroller:get-order-traveldate-trainnumber",
+    "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-calc-sold"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-create",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service-ordercontroller:post-order",
+    "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-create"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-delete",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service-ordercontroller:delete-order-orderid",
+    "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-delete"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-findall",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service-ordercontroller:get-order-all",
+    "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-find-all"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-getbyid",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service-ordercontroller:get-order-orderid",
+    "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-by-id"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-modify",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service-ordercontroller:get-order-status-orderid-status",
+    "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-modify-status"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-pay",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service-ordercontroller:get-order-orderpay-orderid",
+    "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-pay"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-price",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service-ordercontroller:get-order-price-orderid",
+    "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-price"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-query",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service-ordercontroller:post-order-query",
+    "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-query"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-refresh",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service-ordercontroller:post-order-refresh",
+    "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-refresh"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-save",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service-ordercontroller:put-order",
+    "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-save"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-security",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service-ordercontroller:get-order-security-checkdate-accountid",
+    "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-security-check"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-tickets",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service-ordercontroller:post-order-tickets",
+    "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-tickets"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-order-service.ordercontroller:exposesendpoint-welcome",
+   "candidateAtomIds": [
+    "atom:capability:ts-order-service-ordercontroller:get-welcome",
+    "atom:capability:ts-order-service.ordercontroller:exposes-endpoint-welcome"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:notification.mq.RabbitSend",
+   "candidateAtomIds": [
+    "atom:component:ts-notification-service-rabbitsend",
+    "atom:component:ts-notification-service.rabbitsend"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:notification.repository.NotifyRepository",
+   "candidateAtomIds": [
+    "atom:component:ts-notification-service-notifyrepository",
+    "atom:component:ts-notification-service.notifyrepository"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:notification.service.MailService",
+   "candidateAtomIds": [
+    "atom:component:ts-notification-service-mailservice",
+    "atom:component:ts-notification-service.mailservice"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:notification.service.NotificationService",
+   "candidateAtomIds": [
+    "atom:component:ts-notification-service-notificationservice",
+    "atom:component:ts-notification-service.notificationservice"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:notification.service.NotificationServiceImpl",
+   "candidateAtomIds": [
+    "atom:component:ts-notification-service-notificationserviceimpl",
+    "atom:component:ts-notification-service.notificationserviceimpl"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:order.OrderApplication",
+   "candidateAtomIds": [
+    "atom:component:ts-order-service-orderapplication",
+    "atom:component:ts-order-service.orderapplication"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:order.config.SecurityConfig",
+   "candidateAtomIds": [
+    "atom:component:ts-order-service-securityconfig",
+    "atom:component:ts-order-service.securityconfig"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:order.controller.OrderController",
+   "candidateAtomIds": [
+    "atom:component:ts-order-service-ordercontroller",
+    "atom:component:ts-order-service.ordercontroller"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:other.OrderOtherApplication",
+   "candidateAtomIds": [
+    "atom:component:ts-order-other-service-orderotherapplication",
+    "atom:component:ts-order-other-service.orderotherapplication"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:other.config.SecurityConfig",
+   "candidateAtomIds": [
+    "atom:component:ts-order-other-service-securityconfig",
+    "atom:component:ts-order-other-service.securityconfig"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:other.controller.OrderOtherController",
+   "candidateAtomIds": [
+    "atom:component:ts-order-other-service-orderothercontroller",
+    "atom:component:ts-order-other-service.orderothercontroller"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:other.entity.Order",
+   "candidateAtomIds": [
+    "atom:component:ts-order-other-service-order",
+    "atom:component:ts-order-other-service.order"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:other.entity.OrderAlterInfo",
+   "candidateAtomIds": [
+    "atom:component:ts-order-other-service-orderalterinfo",
+    "atom:component:ts-order-other-service.orderalterinfo"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:other.entity.QueryInfo",
+   "candidateAtomIds": [
+    "atom:component:ts-order-other-service-queryinfo",
+    "atom:component:ts-order-other-service.queryinfo"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:other.init.InitData",
+   "candidateAtomIds": [
+    "atom:component:ts-order-other-service-initdata",
+    "atom:component:ts-order-other-service.initdata"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:other.repository.OrderOtherRepository",
+   "candidateAtomIds": [
+    "atom:component:ts-order-other-service-orderotherrepository",
+    "atom:component:ts-order-other-service.orderotherrepository"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:other.service.OrderOtherService",
+   "candidateAtomIds": [
+    "atom:component:ts-order-other-service-orderotherservice",
+    "atom:component:ts-order-other-service.orderotherservice"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:other.service.OrderOtherServiceImpl",
+   "candidateAtomIds": [
+    "atom:component:ts-order-other-service-orderotherserviceimpl",
+    "atom:component:ts-order-other-service.orderotherserviceimpl"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:relation:ts-order-other-service.orderothercontroller:calls-orderotherservice",
+   "candidateAtomIds": [
+    "atom:relation:ts-order-other-service.orderothercontroller:calls-orderotherservice"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:relation:ts-order-other-service.orderotherserviceimpl:dependson-orderotherrepository",
+   "candidateAtomIds": [
+    "atom:relation:ts-order-other-service-orderotherserviceimpl:dependson-orderotherrepository"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:relation:ts-order-service.ordercontroller:dependson-orderservice",
+   "candidateAtomIds": [
+    "atom:relation:ts-order-service-ordercontroller:dependson-orderservice"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:authority:ts-order-other-service.securityconfig:allowscrossorigin-corsconfigurer",
+   "candidateAtomIds": [
+    "atom:authority:ts-order-other-service-securityconfig:allowscrossorigin",
+    "atom:authority:ts-order-other-service.securityconfig:allows-cross-origin-global"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: other/config/SecurityConfig.java corsConfigurer() WebMvcConfigurer bean registers /** with all-origins/methods/headers, allowCredentials=false, maxAge=3600; both candidates describe this same global CORS bean under different match keys."
+  },
+  {
+   "referenceAtomId": "atom:authority:ts-order-other-service.securityconfig:permitsunauthenticated-swagger",
+   "candidateAtomIds": [
+    "atom:authority:ts-order-other-service-securityconfig:permitsunauthenticated-swagger",
+    "atom:authority:ts-order-other-service.securityconfig:permits-unauthenticated-swagger"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: SecurityConfig.java permits swagger-ui.html/webjars/images/configuration/swagger-resources/v2 paths; both candidates record the same permit-all rule."
+  },
+  {
+   "referenceAtomId": "atom:authority:ts-order-other-service.securityconfig:requiresrole-admin-orderother-admin",
+   "candidateAtomIds": [
+    "atom:authority:ts-order-other-service-securityconfig:requiresrole-post-orderother-admin",
+    "atom:authority:ts-order-other-service-securityconfig:requiresrole-put-orderother-admin",
+    "atom:authority:ts-order-other-service.securityconfig:requires-role-post-orderother-admin",
+    "atom:authority:ts-order-other-service.securityconfig:requires-role-put-orderother-admin"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: SecurityConfig.java lines 78-79 require ADMIN role on POST/PUT /orderOther/admin; the reference bundles both methods into one atom while both candidate packets split POST and PUT into separate atoms describing the same rule."
+  },
+  {
+   "referenceAtomId": "atom:authority:ts-order-other-service.securityconfig:requiresrole-post-put-delete-orderother",
+   "candidateAtomIds": [
+    "atom:authority:ts-order-other-service-securityconfig:requiresrole-post-orderother",
+    "atom:authority:ts-order-other-service-securityconfig:requiresrole-put-orderother",
+    "atom:authority:ts-order-other-service-securityconfig:requiresrole-delete-orderother",
+    "atom:authority:ts-order-other-service.securityconfig:requires-role-post-orderother",
+    "atom:authority:ts-order-other-service.securityconfig:requires-role-put-orderother",
+    "atom:authority:ts-order-other-service.securityconfig:requires-role-delete-orderother"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: SecurityConfig.java lines 75-77 require ADMIN-or-USER role on POST/PUT/DELETE /orderOther; reference bundles the three methods into one atom, both candidate packets split them into per-method atoms describing the same rule set."
+  },
+  {
+   "referenceAtomId": "atom:authority:ts-order-service.ordercontroller:allowscrossorigin-endpoint-annotations",
+   "candidateAtomIds": [
+    "atom:authority:ts-order-service-ordercontroller:allowscrossorigin-annotation",
+    "atom:authority:ts-order-service.ordercontroller:allows-cross-origin-endpoints"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: OrderController.java: @CrossOrigin(origins=\"*\") is present on 14 of 16 mapped methods and absent on home (welcome, line 30-33) and getTicketListByDateAndTripId (tickets, line 37-38); both candidates record the same endpoint-level CrossOrigin annotation pattern at coarser precision (one says 'most' endpoints, the other names only 'welcome' as excluded and omits the tickets endpoint), but describe the same authority fact."
+  },
+  {
+   "referenceAtomId": "atom:authority:ts-order-service.securityconfig:allowscrossorigin-corsconfigurer",
+   "candidateAtomIds": [
+    "atom:authority:ts-order-service-securityconfig:allowscrossorigin",
+    "atom:authority:ts-order-service.securityconfig:allows-cross-origin-global"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: SecurityConfig.java corsConfigurer() bean registers /** with all-origins/methods/headers, allowCredentials=false, maxAge=3600; both candidates describe the same bean."
+  },
+  {
+   "referenceAtomId": "atom:authority:ts-order-service.securityconfig:permitsunauthenticated-swagger",
+   "candidateAtomIds": [
+    "atom:authority:ts-order-service-securityconfig:permitsunauthenticated-swagger",
+    "atom:authority:ts-order-service.securityconfig:permits-unauthenticated-swagger"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: SecurityConfig.java permits the same swagger/webjars/images/configuration/swagger-resources/v2 path set; both candidates record the same rule."
+  },
+  {
+   "referenceAtomId": "atom:authority:ts-order-service.securityconfig:requiresrole-admin-order-admin",
+   "candidateAtomIds": [
+    "atom:authority:ts-order-service-securityconfig:requiresrole-post-order-admin",
+    "atom:authority:ts-order-service-securityconfig:requiresrole-put-order-admin",
+    "atom:authority:ts-order-service.securityconfig:requires-role-post-order-admin",
+    "atom:authority:ts-order-service.securityconfig:requires-role-put-order-admin"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: SecurityConfig.java lines 78-79 require ADMIN role on POST/PUT /order/admin; reference bundles both methods, both candidate packets split them into per-method atoms describing the same rule."
+  },
+  {
+   "referenceAtomId": "atom:authority:ts-order-service.securityconfig:requiresrole-post-put-delete-order",
+   "candidateAtomIds": [
+    "atom:authority:ts-order-service-securityconfig:requiresrole-post-order",
+    "atom:authority:ts-order-service-securityconfig:requiresrole-put-order",
+    "atom:authority:ts-order-service-securityconfig:requiresrole-delete-order",
+    "atom:authority:ts-order-service.securityconfig:requires-role-post-order",
+    "atom:authority:ts-order-service.securityconfig:requires-role-put-order",
+    "atom:authority:ts-order-service.securityconfig:requires-role-delete-order"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: SecurityConfig.java lines 75-77 require ADMIN-or-USER role on POST/PUT/DELETE /order; reference bundles the three methods, both candidate packets split into per-method atoms describing the same rule set."
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-notification-service.notificationserviceimpl:handlescommand-ordercancelsuccess",
+   "candidateAtomIds": [
+    "atom:capability:ts-notification-service-notificationserviceimpl:ordercancelsuccess-2",
+    "atom:capability:ts-notification-service.notificationserviceimpl:handles-command-ordercancelsuccess-2"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: NotificationServiceImpl.java line 118 orderCancelSuccess(NotifyInfo,HttpHeaders); both candidates record the same method under different id styles."
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-notification-service.notificationserviceimpl:handlescommand-orderchangedsuccess",
+   "candidateAtomIds": [
+    "atom:capability:ts-notification-service-notificationserviceimpl:orderchangedsuccess-2",
+    "atom:capability:ts-notification-service.notificationserviceimpl:handles-command-orderchangedsuccess-2"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: NotificationServiceImpl.java line 91 orderChangedSuccess(NotifyInfo,HttpHeaders); both candidates record the same method."
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-notification-service.notificationserviceimpl:handlescommand-ordercreatesuccess",
+   "candidateAtomIds": [
+    "atom:capability:ts-notification-service-notificationserviceimpl:ordercreatesuccess-2",
+    "atom:capability:ts-notification-service.notificationserviceimpl:handles-command-ordercreatesuccess-2"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: NotificationServiceImpl.java line 64 orderCreateSuccess(NotifyInfo,HttpHeaders); both candidates record the same method."
+  },
+  {
+   "referenceAtomId": "atom:capability:ts-notification-service.notificationserviceimpl:handlescommand-preservesuccess",
+   "candidateAtomIds": [
+    "atom:capability:ts-notification-service-notificationserviceimpl:preservesuccess-2",
+    "atom:capability:ts-notification-service.notificationserviceimpl:handles-command-preservesuccess-2"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: NotificationServiceImpl.java line 37 preserveSuccess(NotifyInfo,HttpHeaders); both candidates record the same method."
+  },
+  {
+   "referenceAtomId": "atom:contract:ts-order-other-service.order:equals-field-comparison-set",
+   "candidateAtomIds": [
+    "atom:contract:ts-order-other-service-order:shapedas-equals",
+    "atom:contract:ts-order-other-service.order:shaped-as-equals-invariant"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: Order.java equals() (lines 83-110) is the same method both candidates describe as a field-comparison contract; source shows the specific detail that own getBoughtDate() is compared against both other.getBoughtDate() and other.getTravelDate() while own getTravelDate() is never invoked -- neither candidate states this precise double-comparison detail, but both target the same equals() specification atom (subject/axis/predicate match)."
+  },
+  {
+   "referenceAtomId": "atom:contract:ts-order-other-service.orderalterinfo:shapedas",
+   "candidateAtomIds": [
+    "atom:contract:ts-order-other-service-orderalterinfo:shapedas",
+    "atom:contract:ts-order-other-service.orderalterinfo:shaped-as-alter-request"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: OrderAlterInfo.java fields accountId, previousOrderId, loginToken, newOrderInfo (lines 17-29) match both candidates' field lists for this composite alter-order request DTO."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-notification-service.mailservice:callsprovider-smtp",
+   "candidateAtomIds": [
+    "atom:effect:ts-notification-service-mailservice:callsprovider",
+    "atom:effect:ts-notification-service.mailservice:calls-provider-smtp"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: MailService.java sendEmail (lines 30-47) calls sender.send(message) via JavaMailSender against the configured SMTP provider; both candidates record this same effect at coarser detail (neither names the freemarker/classpath template loading explicitly)."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-notification-service.rabbitsend:publishes",
+   "candidateAtomIds": [
+    "atom:effect:ts-notification-service-rabbitsend:publishes",
+    "atom:effect:ts-notification-service.rabbitsend:enqueues-queue"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: RabbitSend.java line 20 rabbitTemplate.convertAndSend(Queues.queueName, val); both candidates record the same AMQP publish effect under different predicate names (publishes vs enqueues)."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-order-other-service.initdata:writesto",
+   "candidateAtomIds": [
+    "atom:semantic:ts-order-other-service-initdata:meansinuse-seed-price",
+    "atom:semantic:ts-order-other-service-initdata:meansinuse-seed-status"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: InitData.java run() (lines 25-45) builds order1 with price=\"100\" (line 36) and status=OrderStatus.PAID.getCode() (line 39) then calls service.create(order1,null); these two semantic candidates jointly record the literal seed values that constitute the write, while the create() call target and orders_other-table destination are covered by the paired relation and repository-state atoms."
+  },
+  {
+   "referenceAtomId": "atom:effect:ts-order-other-service.orderotherserviceimpl:callsprovider-ts-station-service",
+   "candidateAtomIds": [
+    "atom:effect:ts-order-other-service-orderotherserviceimpl:callsprovider-stationservice",
+    "atom:effect:ts-order-other-service.orderotherserviceimpl:calls-provider-station-service"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: OrderOtherServiceImpl.java line 227 POSTs to ts-station-service /api/v1/stationservice/stations/namelist; both candidates record the same call."
+  },
+  {
+   "referenceAtomId": "atom:relation:ts-notification-service.notificationserviceimpl:dependson-mailservice",
+   "candidateAtomIds": [
+    "atom:relation:ts-notification-service-notificationserviceimpl:calls-mailservice",
+    "atom:relation:ts-notification-service.notificationserviceimpl:calls-mailservice"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: NotificationServiceImpl.java calls mailService.sendEmail at lines 55/82/109/130; both candidates record this same inter-component relationship under predicate calls rather than dependsOn."
+  },
+  {
+   "referenceAtomId": "atom:relation:ts-order-other-service.initdata:calls-orderotherservice-create",
+   "candidateAtomIds": [
+    "atom:relation:ts-order-other-service-initdata:calls-orderotherservice-create",
+    "atom:relation:ts-order-other-service.initdata:calls-orderotherservice"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: InitData.java line 44 service.create(order1,null); both candidates record this call, one naming the specific create target and one naming the service generally."
+  },
+  {
+   "referenceAtomId": "atom:relation:ts-order-other-service.orderalterinfo:dependson-order",
+   "candidateAtomIds": [
+    "atom:relation:ts-order-other-service.orderalterinfo:depends-on-order"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: OrderAlterInfo.java line 29 declares 'private Order newOrderInfo'; only the run-2 packet produced this composition relation, matching the reference."
+  },
+  {
+   "referenceAtomId": "atom:semantic:order-other-surface:cech-section-money-amount",
+   "candidateAtomIds": [
+    "atom:semantic:ctx-ts-order-other-service-order-lifecycle:cech-section-money-amount",
+    "atom:semantic:ts-order-other-service.orderotherserviceimpl:cech-section-money-amount"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: Order.java price field is String-typed with literal default \"0.0\" (line 68/80) and OrderOtherServiceImpl returns it unparsed (getOrderPrice, line 356); both candidates record this same money-amount section value under differently-named contexts."
+  },
+  {
+   "referenceAtomId": "atom:semantic:order-other-surface:cech-section-order-status-code",
+   "candidateAtomIds": [
+    "atom:semantic:ctx-ts-order-other-service-order-lifecycle:cech-section-order-status-code",
+    "atom:semantic:ts-order-other-service.orderotherserviceimpl:cech-section-order-status-code"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: Order status is read/written via OrderStatus.NAME.getCode() accessors with no raw int literals at the cited sites (Order.java:79, OrderOtherServiceImpl.java:128/277/368/400); both candidates record this same section value under differently-named contexts."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-notification-service.notificationserviceimpl:meansinuse-boolean-return-branch",
+   "candidateAtomIds": [
+    "atom:semantic:ts-notification-service-notificationserviceimpl:meansinuse-boolean-branch",
+    "atom:semantic:ts-notification-service.notificationserviceimpl:means-in-use-return-branches"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: NotificationServiceImpl.java: all four notify methods return true after mailService.sendEmail succeeds and false in the catch block (lines 56/83/110/131); both candidates record the same true/false branch meaning."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-notification-service.notificationserviceimpl:meansinuse-order-cancel-success-template",
+   "candidateAtomIds": [
+    "atom:semantic:ts-notification-service.notificationserviceimpl:means-in-use-cancel-template"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: orderCancelSuccess (line 130) selects order_cancel_success.ftl and its model map (lines 124-127) carries only username and price, unlike the other three methods; the run-2 candidate names the template selection (coarser than the reference's model-shape detail) and is the only candidate covering this fact."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-notification-service.notificationserviceimpl:meansinuse-order-changed-success-template",
+   "candidateAtomIds": [
+    "atom:semantic:ts-notification-service.notificationserviceimpl:means-in-use-changed-template"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: orderChangedSuccess (line 109) selects order_changed_success.ftl with a model shape (lines 97-105) identical to orderCreateSuccess; run-2 candidate names the template selection."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-notification-service.notificationserviceimpl:meansinuse-order-create-success-template",
+   "candidateAtomIds": [
+    "atom:semantic:ts-notification-service.notificationserviceimpl:means-in-use-create-template"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: orderCreateSuccess (line 82) selects order_create_success.ftl and adds orderNumber to the model (line 78) in place of preserveSuccess's price field; run-2 candidate names the template selection."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-notification-service.notificationserviceimpl:meansinuse-preserve-success-template",
+   "candidateAtomIds": [
+    "atom:semantic:ts-notification-service.notificationserviceimpl:means-in-use-preserve-template"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: preserveSuccess (line 55) selects preserve_success.ftl with model fields username/startPlace/endPlace/startTime/date/seatClass/seatNumber/price (lines 43-51); run-2 candidate names the template selection."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-order-other-service.application-yml:meansinuse-active-datasource-no-active-rabbit-binding",
+   "candidateAtomIds": [
+    "atom:semantic:ts-order-other-service.application-yml:means-in-use-commented-rabbitmq"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: ts-order-other-service application.yml: the datasource block is active while the rabbitmq/cloud.stream block (lines 27-49) is entirely commented out; run-2 candidate records the commented-out rabbitmq block matching this fact."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-order-other-service.order:meansinuse-price-string-default",
+   "candidateAtomIds": [
+    "atom:semantic:ts-order-other-service-order:meansinuse-price-string",
+    "atom:semantic:ts-order-other-service.order:means-in-use-price-string"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: Order.java no-arg constructor sets price = \"0.0\" (line 80); both candidates record this same string-typed default."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-order-other-service.order:meansinuse-status-default-paid",
+   "candidateAtomIds": [
+    "atom:semantic:ts-order-other-service-order:meansinuse-status-enum",
+    "atom:semantic:ts-order-other-service.order:means-in-use-default-status"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: Order.java no-arg constructor sets status = OrderStatus.PAID.getCode() (line 79); both candidates record this same default."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-order-other-service.orderotherrepository:identifiedby",
+   "candidateAtomIds": [
+    "atom:contract:ts-order-other-service-orderotherserviceimpl:requires-lookup"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: OrderOtherRepository.java declares findById (line 26), findByAccountId (line 43), findByTravelDateAndTrainNumber (line 53); the run-1 candidate documents the same three lookup keys from the caller (OrderOtherServiceImpl) side rather than the repository's own identifiedBy framing, but the underlying lookup-key fact is the same."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-order-other-service.orderotherserviceimpl:meansinuse-envelope-status-branches",
+   "candidateAtomIds": [
+    "atom:semantic:ts-order-other-service-orderotherserviceimpl:meansinuse-response-envelope",
+    "atom:semantic:ts-order-other-service.orderotherserviceimpl:means-in-use-response-branches"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: OrderOtherServiceImpl.java: Response status=1 marks the data-carrying success branch and status=0 marks the not-found/rejected branch (lines 69/73/96/101/201/220); both candidates record this same envelope convention at coarser detail (neither itemizes the per-method null-vs-colliding-order-object variation)."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-order-other-service.orderotherserviceimpl:meansinuse-price-string-passthrough",
+   "candidateAtomIds": [
+    "atom:semantic:ts-order-other-service-orderotherserviceimpl:meansinuse-price-passthrough"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: getOrderPrice (line 356) returns order.getPrice() unparsed; run-1 candidate records this same passthrough (without the not-found branch's literal \"-1.0\" detail)."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-order-other-service.orderotherserviceimpl:meansinuse-queryorders-status-filter",
+   "candidateAtomIds": [
+    "atom:semantic:ts-order-other-service.queryinfo:means-in-use-state-flag"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: OrderOtherServiceImpl.queryOrders line 155-160 compares tempOrder.getStatus() against qi.getState() for exact equality when qi.isEnableStateQuery() is true; the run-2 candidate (refs including OrderOtherServiceImpl.java:155) records this same gated comparison."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-order-other-service.orderotherserviceimpl:statusgates-excluded-from-sold-tally",
+   "candidateAtomIds": [
+    "atom:semantic:ts-order-other-service.orderotherserviceimpl:means-in-use-sold-tally-excludes-change"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: queryAlreadySoldOrders excludes orders with status >= OrderStatus.CHANGE.getCode() (line 292) from the seat-class tally; run-2 candidate records this same gate."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-order-other-service.orderotherserviceimpl:statusgates-valid-order-for-security-check",
+   "candidateAtomIds": [
+    "atom:semantic:ts-order-other-service.orderotherserviceimpl:means-in-use-valid-order-statuses"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: checkSecurityAboutOrder counts an order as valid when status equals NOTPAID, PAID, or COLLECTED (lines 400-402); run-2 candidate records this same gate."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-order-other-service.queryinfo:meansinuse-enablestatequery-target-status",
+   "candidateAtomIds": [
+    "atom:semantic:ts-order-other-service-queryinfo:meansinuse-state-filter"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: QueryInfo.enableStateQuery(int) stores its argument in the state field (lines 63-66), later read by OrderOtherServiceImpl.queryOrders as the filter target; run-1 candidate records this same store-then-read fact, guarded by the enableStateQuery flag with sentinel default -1."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-order-other-service.securityconfig:meansinuse-matcher-declaration-order",
+   "candidateAtomIds": [
+    "atom:semantic:ts-order-other-service.securityconfig:means-in-use-matcher-order"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: other/config/SecurityConfig.java: the broad permitAll matcher for /orderOther/** (line 74) precedes the narrower role-restricted matchers (lines 75-79); run-2 candidate records this same declaration order."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-order-service.securityconfig:meansinuse-matcher-declaration-order",
+   "candidateAtomIds": [
+    "atom:semantic:ts-order-service.securityconfig:means-in-use-matcher-order"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: order/config/SecurityConfig.java: the narrower role-restricted matchers for /order (lines 75-79) precede the broad permitAll matcher (line 80); run-2 candidate records this same declaration order, the opposite order from the sibling order-other config."
+  },
+  {
+   "referenceAtomId": "atom:state:ts-notification-service.notifyrepository:persistsin",
+   "candidateAtomIds": [
+    "atom:state:ts-notification-service-notifyrepository:persistsin",
+    "atom:state:ts-notification-service.notifyrepository:persists-in-notifyinfo"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: NotifyRepository.java (line 12) is a CrudRepository over NotifyInfo; both candidates record NotifyInfo as the persisted type, at coarser detail than the reference's CRUD-method listing."
+  },
+  {
+   "referenceAtomId": "atom:state:ts-order-other-service.order:persistsin",
+   "candidateAtomIds": [
+    "atom:state:ts-order-other-service-order:persistsin"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: Order.java entity backs the orders_other table (implied by @Table and the repository binding); run-1 candidate records the orders_other-table destination. No run-2 candidate exists for this entity-level state fact (run-2 instead produced a repository-level state atom)."
+  },
+  {
+   "referenceAtomId": "atom:state:ts-order-other-service.orderotherrepository:persistsin-orders-other-table",
+   "candidateAtomIds": [
+    "atom:state:ts-order-other-service-orderotherrepository:persistsin",
+    "atom:state:ts-order-other-service.orderotherrepository:persists-in-order"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: OrderOtherRepository.java (line 16) is a CrudRepository<Order,String> backing the orders_other table via the Order @Table(name=\"orders_other\") entity; both candidates record 'persistsIn Order', consistent with the table-backing relationship though neither names the CRUD method surface (that is covered separately by the unrecovered crud-surface atom)."
+  },
+  {
+   "referenceAtomId": "atom:component:ts-notification-service",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "reread: reference records a service-level component atom for ts-notification-service itself (matchKey subject ts-notification-service.ts-notification-service); neither candidate packet produced a component atom at this service-as-a-whole granularity (both packets only produced component atoms for individual classes/files within the service)."
+  },
+  {
+   "referenceAtomId": "atom:component:ts-order-other-service",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "reread: reference records a service-level component atom for ts-order-other-service itself; neither candidate packet produced a component atom at this service-as-a-whole granularity."
+  },
+  {
+   "referenceAtomId": "atom:contract:ts-order-other-service.orderotherserviceimpl:create-duplicate-check",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "reread: OrderOtherServiceImpl.java create() and addNewOrder() (lines 91-103, 431-443) return Response status 0 when accountOrders.contains(order) is true via Order.equals, otherwise assign a new random UUID id before saving; no candidate atom in either packet records this duplicate-check-before-save contract."
+  },
+  {
+   "referenceAtomId": "atom:contract:ts-order-other-service.queryinfo:date-range-and-state-query-flags",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "reread: QueryInfo.java enableTravelDateQuery/enableBoughtDateQuery/enableStateQuery and their paired date-range/state fields are set together by the enable*/disable* methods (lines 39-71), and queryOrders reads all three flags together (lines 148, 155, 171, 183); no candidate atom bundles this three-flag ensures-contract as a single fact -- the candidate packets instead split it into separate per-flag meansInUse observations."
+  },
+  {
+   "referenceAtomId": "atom:relation:ts-notification-service:dependson-nacos-discovery",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "reread: ts-notification-service application.yml declares spring.cloud.nacos.discovery.server-addr with the headless nacos-0..2 cluster hosts (line 9); no candidate atom in either packet records this service-level Nacos discovery dependency."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-notification-service.application-yml:identifiedby-mail-password-fallback",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "reread: ts-notification-service application.yml line 16: spring.mail.password falls back to the literal GZKSCXHBOLKMCLDQ when email_password is unset; no candidate atom in either packet records this fallback value."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-order-other-service.application-yml:identifiedby-datasource-password-fallback",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "reread: ts-order-other-service application.yml line 16: spring.datasource.password falls back to the literal root when ORDER_OTHER_MYSQL_PASSWORD is unset; no candidate atom in either packet records this fallback value."
+  },
+  {
+   "referenceAtomId": "atom:semantic:ts-order-other-service.queryinfo:meansinuse-disablestatequery-clears-traveldateflag",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "reread: QueryInfo.java disableStateQuery() (lines 68-71) sets enableTravelDateQuery=false and state=-1 but never sets enableStateQuery=false; both candidate packets' state-flag atoms note the -1 sentinel reset but neither states that the flag actually toggled is enableTravelDateQuery rather than enableStateQuery."
+  },
+  {
+   "referenceAtomId": "atom:state:ts-order-other-service.orderotherrepository:persistsin-crud-surface",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "reread: OrderOtherRepository.java exposes findById, findAll, findByAccountId, findByTravelDateAndTrainNumber, deleteById (lines 16-62) as its CrudRepository<Order,String> surface; both remaining candidates state only 'persistsIn Order' without itemizing this method surface, so the surface-level fact is not distinctly recorded (the table-backing aspect of the same repository is recovered separately)."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:authority:ts-order-other-service-orderothercontroller:allowscrossorigin-annotation",
+    "atom:authority:ts-order-other-service.orderothercontroller:allows-cross-origin-endpoints"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: OrderOtherController.java: @CrossOrigin(origins=\"*\") is present on 14 of 16 mapped methods, absent on home (welcome, line 33-34) and getTicketListByDateAndTripId (tickets, line 40-41), mirroring the sibling OrderController pattern the reference already records; no reference atom exists for this fact at the OrderOtherController level."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:authority:ts-order-other-service-securityconfig:checkspermission-jwtfilter",
+    "atom:relation:ts-order-other-service.securityconfig:depends-on-jwtfilter"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: other/config/SecurityConfig.java line 85 addFilterBefore(new JWTFilter(), UsernamePasswordAuthenticationFilter.class); no reference atom records this JWT filter ordering for ts-order-other-service."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:authority:ts-order-service-securityconfig:checkspermission-jwtfilter",
+    "atom:relation:ts-order-service.securityconfig:depends-on-jwtfilter"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: order/config/SecurityConfig.java line 85 addFilterBefore(new JWTFilter(), UsernamePasswordAuthenticationFilter.class); no reference atom records this JWT filter ordering for ts-order-service."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-notification-service.mailservice:handles-command-sendemail-2"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: MailService.java line 30 public void sendEmail(Mail mail, String template); no reference capability atom exists for MailService's own method surface."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-notification-service.rabbitsend:handles-command-send-1"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: RabbitSend.java line 18 public void send(String val); no reference capability atom exists for RabbitSend's own method surface."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderotherserviceimpl:addneworder-2",
+    "atom:capability:ts-order-other-service.orderotherserviceimpl:handles-command-addneworder-2"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: OrderOtherServiceImpl.java addNewOrder(Order,HttpHeaders) line 431, confirmed present with matching signature at the cited line; no reference capability atom exists at the OrderOtherServiceImpl (service-implementation) method-granularity level -- the reference only records capability atoms at the OrderOtherController endpoint level for this service."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderotherserviceimpl:alterorder-2",
+    "atom:capability:ts-order-other-service.orderotherserviceimpl:handles-command-alterorder-2"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: OrderOtherServiceImpl.java alterOrder(OrderAlterInfo,HttpHeaders) line 119, confirmed present with matching signature at the cited line; no reference capability atom exists at the OrderOtherServiceImpl (service-implementation) method-granularity level -- the reference only records capability atoms at the OrderOtherController endpoint level for this service."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderotherserviceimpl:cancelorder-3",
+    "atom:capability:ts-order-other-service.orderotherserviceimpl:handles-command-cancelorder-3"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: OrderOtherServiceImpl.java cancelOrder(String,String,HttpHeaders) line 269, confirmed present with matching signature at the cited line; no reference capability atom exists at the OrderOtherServiceImpl (service-implementation) method-granularity level -- the reference only records capability atoms at the OrderOtherController endpoint level for this service."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderotherserviceimpl:checksecurityaboutorder-3",
+    "atom:capability:ts-order-other-service.orderotherserviceimpl:serves-query-checksecurityaboutorder-3"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: OrderOtherServiceImpl.java checkSecurityAboutOrder(Date,String,HttpHeaders) line 390, confirmed present with matching signature at the cited line; no reference capability atom exists at the OrderOtherServiceImpl (service-implementation) method-granularity level -- the reference only records capability atoms at the OrderOtherController endpoint level for this service."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderotherserviceimpl:create-2",
+    "atom:capability:ts-order-other-service.orderotherserviceimpl:handles-command-create-2"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: OrderOtherServiceImpl.java create(Order,HttpHeaders) line 91, confirmed present with matching signature at the cited line; no reference capability atom exists at the OrderOtherServiceImpl (service-implementation) method-granularity level -- the reference only records capability atoms at the OrderOtherController endpoint level for this service."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderotherserviceimpl:deleteorder-2",
+    "atom:capability:ts-order-other-service.orderotherserviceimpl:handles-command-deleteorder-2"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: OrderOtherServiceImpl.java deleteOrder(String,HttpHeaders) line 416, confirmed present with matching signature at the cited line; no reference capability atom exists at the OrderOtherServiceImpl (service-implementation) method-granularity level -- the reference only records capability atoms at the OrderOtherController endpoint level for this service."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderotherserviceimpl:findorderbyid-2",
+    "atom:capability:ts-order-other-service.orderotherserviceimpl:serves-query-findorderbyid-2"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: OrderOtherServiceImpl.java findOrderById(String,HttpHeaders) line 78, confirmed present with matching signature at the cited line; no reference capability atom exists at the OrderOtherServiceImpl (service-implementation) method-granularity level -- the reference only records capability atoms at the OrderOtherController endpoint level for this service."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderotherserviceimpl:getallorders-1",
+    "atom:capability:ts-order-other-service.orderotherserviceimpl:serves-query-getallorders-1"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: OrderOtherServiceImpl.java getAllOrders(HttpHeaders) line 321, confirmed present with matching signature at the cited line; no reference capability atom exists at the OrderOtherServiceImpl (service-implementation) method-granularity level -- the reference only records capability atoms at the OrderOtherController endpoint level for this service."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderotherserviceimpl:getorderbyid-2",
+    "atom:capability:ts-order-other-service.orderotherserviceimpl:serves-query-getorderbyid-2"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: OrderOtherServiceImpl.java getOrderById(String,HttpHeaders) line 376, confirmed present with matching signature at the cited line; no reference capability atom exists at the OrderOtherServiceImpl (service-implementation) method-granularity level -- the reference only records capability atoms at the OrderOtherController endpoint level for this service."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderotherserviceimpl:getorderprice-2",
+    "atom:capability:ts-order-other-service.orderotherserviceimpl:serves-query-getorderprice-2"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: OrderOtherServiceImpl.java getOrderPrice(String,HttpHeaders) line 348, confirmed present with matching signature at the cited line; no reference capability atom exists at the OrderOtherServiceImpl (service-implementation) method-granularity level -- the reference only records capability atoms at the OrderOtherController endpoint level for this service."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderotherserviceimpl:getsoldtickets-2",
+    "atom:capability:ts-order-other-service.orderotherserviceimpl:serves-query-getsoldtickets-2"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: OrderOtherServiceImpl.java getSoldTickets(Seat,HttpHeaders) line 52, confirmed present with matching signature at the cited line; no reference capability atom exists at the OrderOtherServiceImpl (service-implementation) method-granularity level -- the reference only records capability atoms at the OrderOtherController endpoint level for this service."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderotherserviceimpl:initorder-2",
+    "atom:capability:ts-order-other-service.orderotherserviceimpl:handles-command-initorder-2"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: OrderOtherServiceImpl.java initOrder(Order,HttpHeaders) line 106, confirmed present with matching signature at the cited line; no reference capability atom exists at the OrderOtherServiceImpl (service-implementation) method-granularity level -- the reference only records capability atoms at the OrderOtherController endpoint level for this service."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderotherserviceimpl:modifyorder-3",
+    "atom:capability:ts-order-other-service.orderotherserviceimpl:handles-command-modifyorder-3"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: OrderOtherServiceImpl.java modifyOrder(String,int,HttpHeaders) line 333, confirmed present with matching signature at the cited line; no reference capability atom exists at the OrderOtherServiceImpl (service-implementation) method-granularity level -- the reference only records capability atoms at the OrderOtherController endpoint level for this service."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderotherserviceimpl:payorder-2",
+    "atom:capability:ts-order-other-service.orderotherserviceimpl:handles-command-payorder-2"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: OrderOtherServiceImpl.java payOrder(String,HttpHeaders) line 361, confirmed present with matching signature at the cited line; no reference capability atom exists at the OrderOtherServiceImpl (service-implementation) method-granularity level -- the reference only records capability atoms at the OrderOtherController endpoint level for this service."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderotherserviceimpl:queryalreadysoldorders-3",
+    "atom:capability:ts-order-other-service.orderotherserviceimpl:serves-query-queryalreadysoldorders-3"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: OrderOtherServiceImpl.java queryAlreadySoldOrders(Date,String,HttpHeaders) line 285, confirmed present with matching signature at the cited line; no reference capability atom exists at the OrderOtherServiceImpl (service-implementation) method-granularity level -- the reference only records capability atoms at the OrderOtherController endpoint level for this service."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderotherserviceimpl:queryforstationid-2",
+    "atom:capability:ts-order-other-service.orderotherserviceimpl:serves-query-queryforstationid-2"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: OrderOtherServiceImpl.java queryForStationId(...) line 223, confirmed present with matching signature at the cited line; no reference capability atom exists at the OrderOtherServiceImpl (service-implementation) method-granularity level -- the reference only records capability atoms at the OrderOtherController endpoint level for this service."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderotherserviceimpl:queryorders-3",
+    "atom:capability:ts-order-other-service.orderotherserviceimpl:serves-query-queryorders-3"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: OrderOtherServiceImpl.java queryOrders(QueryInfo,String,HttpHeaders) line 143, confirmed present with matching signature at the cited line; no reference capability atom exists at the OrderOtherServiceImpl (service-implementation) method-granularity level -- the reference only records capability atoms at the OrderOtherController endpoint level for this service."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderotherserviceimpl:queryordersforrefresh-3",
+    "atom:capability:ts-order-other-service.orderotherserviceimpl:serves-query-queryordersforrefresh-3"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: OrderOtherServiceImpl.java queryOrdersForRefresh(QueryInfo,String,HttpHeaders) line 209, confirmed present with matching signature at the cited line; no reference capability atom exists at the OrderOtherServiceImpl (service-implementation) method-granularity level -- the reference only records capability atoms at the OrderOtherController endpoint level for this service."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderotherserviceimpl:savechanges-2",
+    "atom:capability:ts-order-other-service.orderotherserviceimpl:handles-command-savechanges-2"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: OrderOtherServiceImpl.java saveChanges(Order,HttpHeaders) line 238, confirmed present with matching signature at the cited line; no reference capability atom exists at the OrderOtherServiceImpl (service-implementation) method-granularity level -- the reference only records capability atoms at the OrderOtherController endpoint level for this service."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-order-other-service-orderotherserviceimpl:updateorder-2",
+    "atom:capability:ts-order-other-service.orderotherserviceimpl:handles-command-updateorder-2"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: OrderOtherServiceImpl.java updateOrder(Order,HttpHeaders) line 446, confirmed present with matching signature at the cited line; no reference capability atom exists at the OrderOtherServiceImpl (service-implementation) method-granularity level -- the reference only records capability atoms at the OrderOtherController endpoint level for this service."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:component:ts-notification-service-application-yml",
+    "atom:component:ts-notification-service.application-yml"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: ts-notification-service/src/main/resources/application.yml exists as a reviewed source file; no reference component atom exists for the application.yml file itself (reference only attaches semantic/state facts to this subject, not a standalone component atom)."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:component:ts-order-other-service-application-yml",
+    "atom:component:ts-order-other-service.application-yml"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: ts-order-other-service/src/main/resources/application.yml exists as a reviewed source file; no reference component atom exists for the application.yml file itself."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:contract:ts-notification-service-notificationservice:shapedas",
+    "atom:contract:ts-notification-service.notificationservice:shaped-as-four-notify-methods"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: NotificationService.java interface declares four boolean methods (preserveSuccess, orderCreateSuccess, orderChangedSuccess, orderCancelSuccess) each taking NotifyInfo and HttpHeaders (lines 19-46); no reference contract atom exists for this interface-level shape."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:contract:ts-order-other-service-orderotherservice:shapedas",
+    "atom:contract:ts-order-other-service.orderotherservice:shaped-as-response-envelope"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: OrderOtherService.java interface declares 17 Response-returning methods plus a void initOrder (lines 16-54); no reference contract atom exists for this interface-level shape."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:effect:ts-notification-service-application-yml:callsprovider",
+    "atom:effect:ts-notification-service.application-yml:calls-provider-smtp-config"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: ts-notification-service application.yml configures host smtp.163.com, port 465, ssl/starttls enabled (lines 13-24); no reference effect atom exists at the application-yml subject (the reference's SMTP callsProvider effect atom is attached to MailService instead, already matched)."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:relation:ts-notification-service-application-yml:dependson-rabbitmq"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: ts-notification-service application.yml lines 38-40 configure rabbitmq.host=localhost, port=5672; no reference relation atom records this rabbitmq broker dependency (the reference's only messaging-adjacent relation for this service is the unrecovered Nacos-discovery one)."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:relation:ts-order-other-service-orderotherapplication:dependson-resttemplate"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: OrderOtherApplication.java lines 31-35 declare a @LoadBalanced RestTemplate bean; no reference relation atom records this dependency."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:relation:ts-order-service-orderapplication:dependson-resttemplate"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: OrderApplication.java lines 29-33 declare a @LoadBalanced RestTemplate bean; no reference relation atom records this dependency."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:semantic:ts-notification-service.mailservice:means-in-use-template-param"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: MailService.java lines 36-38: the template string parameter selects which freemarker .ftl file under classpath /templates is loaded; no reference semantic atom records this mechanism on MailService itself (the reference's per-template semantic atoms are attached to NotificationServiceImpl instead)."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:semantic:ts-order-other-service-orderotherserviceimpl:meansinuse-date-string-format"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: OrderOtherServiceImpl.java lines 166-167 and 405-406 convert boughtDate/travelDate between String and Date via StringUtils.String2Date/Date2String at each use site; no reference semantic atom records this conversion pattern."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:semantic:ts-order-other-service.initdata:means-in-use-null-headers"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: InitData.java line 44 service.create(order1,null) passes a null HttpHeaders argument, accepted without error; no reference semantic atom records this null-headers detail (the reference's InitData effect atom covers the seeded values, not the null headers argument)."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:semantic:ts-order-other-service.orderotherserviceimpl:means-in-use-alter-as-cancel-plus-rebook"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: OrderOtherServiceImpl.alterOrder (lines 119-140) sets the old order's status to OrderStatus.CANCEL then creates a new order with a fresh UUID id, modeling a ticket change as cancel-plus-rebook; no reference semantic atom records this business-rule interpretation."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:semantic:ts-order-other-service.orderotherserviceimpl:means-in-use-recent-order-window"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: OrderOtherServiceImpl.checkSecurityAboutOrder (lines 396-409) subtracts one hour from the supplied checkDate and counts orders with boughtDate after that adjusted time toward the recent-order tally; no reference semantic atom records this one-hour window rule (the reference's statusGates atom for this method covers only the valid-status count, not the time window)."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:semantic:ts-order-other-service.orderotherserviceimpl:means-in-use-unused-headers"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: OrderOtherServiceImpl.create (lines 91-103) declares an HttpHeaders headers parameter that is never read in the method body and is called with a null argument from InitData; no reference semantic atom records this unused-parameter detail."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:semantic:ts-order-other-service.queryinfo:means-in-use-bought-date-flag",
+    "atom:semantic:ts-order-other-service.queryinfo:means-in-use-travel-date-flag"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: QueryInfo.enableBoughtDateQuery (line 51) gates the boughtDate range filter in queryOrders (line 183) and enableTravelDateQuery (line 39) gates the travelDate range filter (line 171); no reference atom records these two flags individually (the reference's only QueryInfo contract atom bundling all three flags is unrecovered, and its two semantic atoms cover only the state flag)."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:state:ts-notification-service-application-yml:persistsin",
+    "atom:state:ts-notification-service.application-yml:persists-in-mysql"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: ts-notification-service application.yml line 27 datasource.url points at a MySQL database; no reference state atom exists at the application-yml subject (the reference's NotifyRepository state atom is a different, repository-level subject)."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:state:ts-order-other-service-application-yml:persistsin",
+    "atom:state:ts-order-other-service.application-yml:persists-in-mysql"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: ts-order-other-service application.yml line 14 datasource.url points at a MySQL database; no reference state atom exists at the application-yml subject."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:authority:ts-order-other-service-securityconfig:permitsunauthenticated-orderother"
+   ],
+   "decision": "not-adopted",
+   "basis": "reread: This is the same permit-all rule for /api/v1/orderOtherService/orderOther/** (SecurityConfig.java line 74) as reference atom other.config.SecurityConfig:permitsUnauthenticated:orderOther-base, already recorded via the matched candidate atom:authority:ts-order-other-service.securityconfig:permits-unauthenticated-orderother-wildcard; this hyphen-style twin from the other pass does not add a distinct fact."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:authority:ts-order-service-securityconfig:permitsunauthenticated-order"
+   ],
+   "decision": "not-adopted",
+   "basis": "reread: This is the same permit-all rule for /api/v1/orderservice/order/** (SecurityConfig.java line 80) as reference atom order.config.SecurityConfig:permitsUnauthenticated:order-base, already recorded via the matched candidate atom:authority:ts-order-service.securityconfig:permits-unauthenticated-order-wildcard; this hyphen-style twin does not add a distinct fact."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:relation:ts-order-other-service-orderothercontroller:dependson-orderotherservice"
+   ],
+   "decision": "not-adopted",
+   "basis": "reread: This is the same OrderOtherController-to-OrderOtherService dependency (controller.java line 29) as reference atom ts-order-other-service.orderothercontroller:calls-orderotherservice, already recorded via the matched candidate of the same id text under predicate calls; this dependsOn-predicate twin from run-1 does not add a distinct fact."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:relation:ts-order-other-service.orderotherserviceimpl:calls-orderotherrepository"
+   ],
+   "decision": "not-adopted",
+   "basis": "reread: This is the same OrderOtherServiceImpl-to-OrderOtherRepository dependency as reference atom ts-order-other-service.orderotherserviceimpl:dependson-orderotherrepository, already recorded via the matched run-1 candidate; this run-2 calls-predicate twin, though citing a fuller set of call sites (lines 53/79/93/99/239/271/334/377), still records the same single dependency relation rather than a distinct fact."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:relation:ts-order-service.ordercontroller:calls-orderservice"
+   ],
+   "decision": "not-adopted",
+   "basis": "reread: This is the same OrderController-to-OrderService dependency as reference atom ts-order-service.ordercontroller:dependson-orderservice, already recorded via the matched run-1 candidate; this run-2 calls-predicate twin does not add a distinct fact."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:semantic:ts-order-other-service-orderotherserviceimpl:meansinuse-order-status-codes"
+   ],
+   "decision": "not-adopted",
+   "basis": "reread: This restates, at class-wide scope and with the same cited lines (128/277/368/400), the identical enum-getCode()/no-raw-int-literal observation already recorded as the matched reference atom order-other-surface:cech-section-order-status-code (via the ctx-cech candidates); it is a third framing of the same evidence rather than a distinct fact."
+  }
+ ]
+}

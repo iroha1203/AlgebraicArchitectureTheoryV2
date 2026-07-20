@@ -30,3 +30,6 @@
 - [train-ticket ドッグフーディング系列](train_ticket_dogfooding/README.md) —
   外部 OSS(FudanSELab/train-ticket)に対する ArchMap 供給〜ArchSig 診断の end-to-end 実験。
   試運転 / フルビルド / SAGA フル診断階段の3報告と証拠束。
+- [archmap supply bench 系列](archmap_supply_bench/README.md) —
+  ArchMap 供給の再現性・精度ベンチ(`docs/tool/archmap_supply_bench.md` が正本)。
+  独立 run 対の分散付き実測と証拠束。

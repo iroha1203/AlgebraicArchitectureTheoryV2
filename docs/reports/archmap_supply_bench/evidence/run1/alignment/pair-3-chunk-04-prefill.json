@@ -1,0 +1,452 @@
+{
+ "pairRef": "pair-3-chunk-04",
+ "chunk": "chunk-04",
+ "prefilledRows": [
+  {
+   "referenceAtomId": "atom:capability:basic-basiccontroller:exposesendpoint-basic-stationname",
+   "candidateAtomIds": [
+    "atom:capability:ts-basic-service.basiccontroller:exposesendpoint-basic-stationname"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:basic-basiccontroller:exposesendpoint-basic-travel",
+   "candidateAtomIds": [
+    "atom:capability:ts-basic-service.basiccontroller:exposesendpoint-basic-travel"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:basic-basiccontroller:exposesendpoint-basic-travels",
+   "candidateAtomIds": [
+    "atom:capability:ts-basic-service.basiccontroller:exposesendpoint-basic-travels"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:basic-basiccontroller:exposesendpoint-welcome",
+   "candidateAtomIds": [
+    "atom:capability:ts-basic-service.basiccontroller:exposesendpoint-welcome"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:cancel-cancelcontroller:exposesendpoint-cancel-refound",
+   "candidateAtomIds": [
+    "atom:capability:ts-cancel-service.cancelcontroller:exposesendpoint-refund-calc"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:cancel-cancelcontroller:exposesendpoint-welcome",
+   "candidateAtomIds": [
+    "atom:capability:ts-cancel-service.cancelcontroller:exposesendpoint-welcome"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:auth-tokenservice",
+   "candidateAtomIds": [
+    "atom:component:ts-auth-service.tokenservice"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:auth-tokenserviceimpl",
+   "candidateAtomIds": [
+    "atom:component:ts-auth-service.tokenserviceimpl"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:auth-userservice",
+   "candidateAtomIds": [
+    "atom:component:ts-auth-service.userservice"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:auth-userserviceimpl",
+   "candidateAtomIds": [
+    "atom:component:ts-auth-service.userserviceimpl"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:basic-basicapplication",
+   "candidateAtomIds": [
+    "atom:component:ts-basic-service.basicapplication"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:basic-basiccontroller",
+   "candidateAtomIds": [
+    "atom:component:ts-basic-service.basiccontroller"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:basic-basicservice",
+   "candidateAtomIds": [
+    "atom:component:ts-basic-service.basicservice"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:basic-basicserviceimpl",
+   "candidateAtomIds": [
+    "atom:component:ts-basic-service.basicserviceimpl"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:basic-securityconfig",
+   "candidateAtomIds": [
+    "atom:component:ts-basic-service.securityconfig"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:cancel-cancelapplication",
+   "candidateAtomIds": [
+    "atom:component:ts-cancel-service.cancelapplication"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:cancel-cancelcontroller",
+   "candidateAtomIds": [
+    "atom:component:ts-cancel-service.cancelcontroller"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:cancel-cancelservice",
+   "candidateAtomIds": [
+    "atom:component:ts-cancel-service.cancelservice"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:cancel-cancelserviceimpl",
+   "candidateAtomIds": [
+    "atom:component:ts-cancel-service.cancelserviceimpl"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:cancel-getaccountbyidinfo",
+   "candidateAtomIds": [
+    "atom:component:ts-cancel-service.getaccountbyidinfo"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:cancel-getaccountbyidresult",
+   "candidateAtomIds": [
+    "atom:component:ts-cancel-service.getaccountbyidresult"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:cancel-getorderbyidinfo",
+   "candidateAtomIds": [
+    "atom:component:ts-cancel-service.getorderbyidinfo"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:cancel-securityconfig",
+   "candidateAtomIds": [
+    "atom:component:ts-cancel-service.securityconfig"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:common-swaggerconfig",
+   "candidateAtomIds": [
+    "atom:component:ts-common.swaggerconfig"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:contract:cancel-getaccountbyidinfo:shapedas",
+   "candidateAtomIds": [
+    "atom:contract:ts-cancel-service.getaccountbyidinfo:shapedas-fields"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:contract:cancel-getaccountbyidresult:shapedas",
+   "candidateAtomIds": [
+    "atom:contract:ts-cancel-service.getaccountbyidresult:shapedas-fields#pass-a"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:contract:cancel-getorderbyidinfo:shapedas",
+   "candidateAtomIds": [
+    "atom:contract:ts-cancel-service.getorderbyidinfo:shapedas-fields"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:relation:auth-tokenserviceimpl:calls-authenticationmanager-authenticate",
+   "candidateAtomIds": [
+    "atom:relation:ts-auth-service.tokenserviceimpl:calls-authenticationmanager"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:relation:auth-tokenserviceimpl:calls-jwtprovider-createtoken",
+   "candidateAtomIds": [
+    "atom:relation:ts-auth-service.tokenserviceimpl:calls-jwtprovider",
+    "atom:relation:ts-auth-service.tokenserviceimpl:calls-jwtprovider-createtoken"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:relation:auth-tokenserviceimpl:calls-userrepository-findbyusername",
+   "candidateAtomIds": [
+    "atom:relation:ts-auth-service.tokenserviceimpl:calls-userrepository",
+    "atom:relation:ts-auth-service.tokenserviceimpl:calls-userrepository-findbyusername"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  }
+ ],
+ "remainingReferenceAtomIds": [
+  "atom:authority:basic-securityconfig:allowscrossorigin",
+  "atom:authority:basic-securityconfig:permitsunauthenticated-api",
+  "atom:authority:basic-securityconfig:permitsunauthenticated-swagger",
+  "atom:authority:cancel-cancelcontroller:allowscrossorigin",
+  "atom:authority:cancel-securityconfig:allowscrossorigin",
+  "atom:authority:cancel-securityconfig:permitsunauthenticated-swagger",
+  "atom:authority:cancel-securityconfig:requiresrole-api",
+  "atom:capability:auth-tokenserviceimpl:handlescommand-issuetoken",
+  "atom:capability:auth-userserviceimpl:handlescommand-createdefaultauthuser",
+  "atom:capability:auth-userserviceimpl:handlescommand-deletebyuserid",
+  "atom:capability:auth-userserviceimpl:servesquery-getalluser",
+  "atom:capability:basic-basicserviceimpl:servesquery-queryforstationid",
+  "atom:capability:basic-basicserviceimpl:servesquery-queryfortravel",
+  "atom:capability:basic-basicserviceimpl:servesquery-queryfortravels",
+  "atom:capability:cancel-cancelcontroller:exposesendpoint-cancel-orderid-loginid",
+  "atom:capability:cancel-cancelserviceimpl:handlescommand-cancelorder",
+  "atom:capability:cancel-cancelserviceimpl:servesquery-calculaterefund",
+  "atom:contract:auth-tokenserviceimpl:ensures-tokendto",
+  "atom:contract:auth-tokenserviceimpl:requires-verificationcode",
+  "atom:contract:cancel-cancelserviceimpl:ensures-cancel-and-refund",
+  "atom:contract:cancel-cancelserviceimpl:ensures-refundamountrule",
+  "atom:contract:cancel-cancelserviceimpl:requires-forwardedauthorizationheader",
+  "atom:contract:cancel-cancelserviceimpl:requires-orderstatuseligibleforcancel",
+  "atom:contract:common-swaggerconfig:requires-controllerpackage",
+  "atom:effect:cancel-cancelserviceimpl:callsprovider-cancelfromorder",
+  "atom:effect:cancel-cancelserviceimpl:callsprovider-cancelfromotherorder",
+  "atom:effect:cancel-cancelserviceimpl:callsprovider-drawbackmoney",
+  "atom:effect:cancel-cancelserviceimpl:callsprovider-sendemail",
+  "atom:relation:auth-tokenserviceimpl:calls-verificationcodeservice",
+  "atom:relation:auth-tokenserviceimpl:dependson-jwtprovider",
+  "atom:relation:auth-userserviceimpl:dependson-passwordencoder",
+  "atom:relation:basic-basicserviceimpl:calls-priceservice",
+  "atom:relation:basic-basicserviceimpl:calls-routeservice",
+  "atom:relation:basic-basicserviceimpl:calls-stationservice",
+  "atom:relation:basic-basicserviceimpl:calls-trainservice",
+  "atom:relation:cancel-cancelserviceimpl:calls-insidepaymentservice",
+  "atom:relation:cancel-cancelserviceimpl:calls-notificationservice",
+  "atom:relation:cancel-cancelserviceimpl:calls-orderotherservice",
+  "atom:relation:cancel-cancelserviceimpl:calls-orderservice",
+  "atom:relation:cancel-cancelserviceimpl:calls-userservice",
+  "atom:semantic:auth-tokenserviceimpl:meansinuse-credentialvalueinlog",
+  "atom:semantic:auth-tokenserviceimpl:statusgates-responseenvelope",
+  "atom:semantic:auth-userserviceimpl:meansinuse-saveusernoop",
+  "atom:semantic:basic-basicserviceimpl:identifiedby-stationlookup",
+  "atom:semantic:basic-basicserviceimpl:statusgates-responseenvelope",
+  "atom:semantic:basic-surface:cech-section-money-amount",
+  "atom:semantic:cancel-cancelcontroller:statusgates-divergingbranch",
+  "atom:semantic:cancel-cancelserviceimpl:identifiedby-orderlookupfallback",
+  "atom:semantic:cancel-cancelserviceimpl:meansinuse-notifyinfobuiltbutsendnotinvoked",
+  "atom:semantic:cancel-cancelserviceimpl:meansinuse-orderidparamcarriesaccountid",
+  "atom:semantic:cancel-cancelserviceimpl:statusgates-responseenvelope",
+  "atom:semantic:cancel-surface:cech-section-money-amount",
+  "atom:semantic:cancel-surface:cech-section-order-status-code",
+  "atom:state:cancel-order:transitionsto-cancel"
+ ],
+ "remainingCandidateAtomIds": [
+  "atom:authority:ts-basic-service.securityconfig:allowscrossorigin-all",
+  "atom:authority:ts-basic-service.securityconfig:allowscrossorigin-wildcard",
+  "atom:authority:ts-basic-service.securityconfig:checkspermission-anyrequest",
+  "atom:authority:ts-basic-service.securityconfig:permitsunauthenticated-basicservice#pass-a",
+  "atom:authority:ts-basic-service.securityconfig:permitsunauthenticated-basicservice#pass-b",
+  "atom:authority:ts-basic-service.securityconfig:permitsunauthenticated-swagger",
+  "atom:authority:ts-basic-service.securityconfig:permitsunauthenticated-swagger-docs",
+  "atom:authority:ts-cancel-service.cancelcontroller:allowscrossorigin-cancel-orderid-loginid",
+  "atom:authority:ts-cancel-service.cancelcontroller:allowscrossorigin-cancel-refound",
+  "atom:authority:ts-cancel-service.cancelcontroller:allowscrossorigin-cancel-ticket-endpoint",
+  "atom:authority:ts-cancel-service.cancelcontroller:allowscrossorigin-refund-calc-endpoint",
+  "atom:authority:ts-cancel-service.securityconfig:allowscrossorigin-all",
+  "atom:authority:ts-cancel-service.securityconfig:allowscrossorigin-wildcard",
+  "atom:authority:ts-cancel-service.securityconfig:checkspermission-anyrequest",
+  "atom:authority:ts-cancel-service.securityconfig:permitsunauthenticated-swagger",
+  "atom:authority:ts-cancel-service.securityconfig:permitsunauthenticated-swagger-docs",
+  "atom:authority:ts-cancel-service.securityconfig:requiresrole-cancelservice",
+  "atom:authority:ts-cancel-service.securityconfig:requiresrole-cancelservice-admin-or-user",
+  "atom:capability:ts-auth-service.tokenserviceimpl:servesquery-gettoken",
+  "atom:capability:ts-auth-service.userserviceimpl:handlescommand-createdefaultauthuser",
+  "atom:capability:ts-auth-service.userserviceimpl:handlescommand-deletebyuserid",
+  "atom:capability:ts-auth-service.userserviceimpl:servesquery-getalluser",
+  "atom:capability:ts-auth-service.userserviceimpl:servesquery-saveuser",
+  "atom:capability:ts-basic-service.basiccontroller:servesquery-basic-stationname",
+  "atom:capability:ts-basic-service.basiccontroller:servesquery-basic-travel",
+  "atom:capability:ts-basic-service.basiccontroller:servesquery-basic-travels",
+  "atom:capability:ts-basic-service.basiccontroller:servesquery-welcome",
+  "atom:capability:ts-basic-service.basicserviceimpl:servesquery-checkstationexists",
+  "atom:capability:ts-basic-service.basicserviceimpl:servesquery-checkstationsexists",
+  "atom:capability:ts-basic-service.basicserviceimpl:servesquery-queryforstationid",
+  "atom:capability:ts-basic-service.basicserviceimpl:servesquery-queryfortravel",
+  "atom:capability:ts-basic-service.basicserviceimpl:servesquery-queryfortravels",
+  "atom:capability:ts-basic-service.basicserviceimpl:servesquery-querytraintypebyname",
+  "atom:capability:ts-basic-service.basicserviceimpl:servesquery-querytraintypebynames",
+  "atom:capability:ts-cancel-service.cancelcontroller:handlescommand-cancel-orderid-loginid",
+  "atom:capability:ts-cancel-service.cancelcontroller:handlescommand-cancel-ticket",
+  "atom:capability:ts-cancel-service.cancelcontroller:servesquery-cancel-refound",
+  "atom:capability:ts-cancel-service.cancelcontroller:servesquery-welcome",
+  "atom:capability:ts-cancel-service.cancelserviceimpl:handlescommand-cancelorder",
+  "atom:capability:ts-cancel-service.cancelserviceimpl:handlescommand-drawbackmoney",
+  "atom:capability:ts-cancel-service.cancelserviceimpl:handlescommand-sendemail",
+  "atom:capability:ts-cancel-service.cancelserviceimpl:servesquery-calculaterefund",
+  "atom:capability:ts-cancel-service.cancelserviceimpl:servesquery-getaccount",
+  "atom:component:ts-basic-service.application-yml",
+  "atom:component:ts-cancel-service.application-yml",
+  "atom:contract:ts-auth-service.tokenservice:shapedas-gettoken#pass-a",
+  "atom:contract:ts-auth-service.tokenservice:shapedas-gettoken#pass-b",
+  "atom:contract:ts-auth-service.userservice:shapedas-methods#pass-a",
+  "atom:contract:ts-auth-service.userservice:shapedas-methods#pass-b",
+  "atom:contract:ts-auth-service.userserviceimpl:ensures-deletebyuserid-transactional",
+  "atom:contract:ts-auth-service.userserviceimpl:requires-user-create-checks",
+  "atom:contract:ts-auth-service.userserviceimpl:requires-user-create-info",
+  "atom:contract:ts-basic-service.basicservice:shapedas-methods#pass-a",
+  "atom:contract:ts-basic-service.basicservice:shapedas-methods#pass-b",
+  "atom:contract:ts-basic-service.securityconfig:requires-stateless-session",
+  "atom:contract:ts-cancel-service.cancelservice:shapedas-methods#pass-a",
+  "atom:contract:ts-cancel-service.cancelservice:shapedas-methods#pass-b",
+  "atom:contract:ts-cancel-service.cancelserviceimpl:ensures-refund-formula",
+  "atom:contract:ts-cancel-service.getaccountbyidinfo:shapedas-accountid",
+  "atom:contract:ts-cancel-service.getaccountbyidresult:shapedas-fields#pass-b",
+  "atom:contract:ts-cancel-service.getorderbyidinfo:shapedas-orderid",
+  "atom:contract:ts-cancel-service.securityconfig:requires-stateless-session",
+  "atom:contract:ts-common.swaggerconfig:requires-controllerpackage-config",
+  "atom:contract:ts-common.swaggerconfig:requires-controllerpackage-property",
+  "atom:effect:ts-auth-service.tokenserviceimpl:callsprovider-verification-code-verify",
+  "atom:effect:ts-auth-service.tokenserviceimpl:callsprovider-verifycode",
+  "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-price-byrouteandtraintype",
+  "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-price-byrouteandtype",
+  "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-price-byrouteidsandtraintypes",
+  "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-price-byrouteidsandtypes",
+  "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-route-byid",
+  "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-route-byids",
+  "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-station-byid",
+  "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-station-idlist",
+  "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-train-byname",
+  "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-train-bynames",
+  "atom:effect:ts-cancel-service.cancelserviceimpl:callsprovider-insidepayment-drawback",
+  "atom:effect:ts-cancel-service.cancelserviceimpl:callsprovider-notification-cancelsuccess",
+  "atom:effect:ts-cancel-service.cancelserviceimpl:callsprovider-notify-cancelsuccess",
+  "atom:effect:ts-cancel-service.cancelserviceimpl:callsprovider-order-getbyid",
+  "atom:effect:ts-cancel-service.cancelserviceimpl:callsprovider-order-put",
+  "atom:effect:ts-cancel-service.cancelserviceimpl:callsprovider-orderother-getbyid",
+  "atom:effect:ts-cancel-service.cancelserviceimpl:callsprovider-orderother-put",
+  "atom:effect:ts-cancel-service.cancelserviceimpl:callsprovider-user-getbyid",
+  "atom:relation:ts-auth-service.tokenserviceimpl:dependson-discoveryclient",
+  "atom:relation:ts-auth-service.userserviceimpl:calls-passwordencoder-encode",
+  "atom:relation:ts-auth-service.userserviceimpl:calls-userrepository-deletebyuserid",
+  "atom:relation:ts-auth-service.userserviceimpl:calls-userrepository-findall",
+  "atom:relation:ts-auth-service.userserviceimpl:calls-userrepository-save",
+  "atom:relation:ts-basic-service.basicapplication:dependson-resttemplatebuilder",
+  "atom:relation:ts-basic-service.basiccontroller:calls-basicservice",
+  "atom:relation:ts-basic-service.basiccontroller:calls-basicservice-queryforstationid",
+  "atom:relation:ts-basic-service.basiccontroller:calls-basicservice-queryfortravel",
+  "atom:relation:ts-basic-service.basiccontroller:calls-basicservice-queryfortravels",
+  "atom:relation:ts-basic-service.basicserviceimpl:dependson-discoveryclient",
+  "atom:relation:ts-basic-service.securityconfig:calls-jwtfilter",
+  "atom:relation:ts-basic-service.securityconfig:dependson-jwtfilter",
+  "atom:relation:ts-cancel-service.cancelapplication:dependson-resttemplatebuilder",
+  "atom:relation:ts-cancel-service.cancelcontroller:calls-cancelservice",
+  "atom:relation:ts-cancel-service.cancelcontroller:calls-cancelservice-calculaterefund",
+  "atom:relation:ts-cancel-service.cancelcontroller:calls-cancelservice-cancelorder",
+  "atom:relation:ts-cancel-service.securityconfig:calls-jwtfilter",
+  "atom:relation:ts-cancel-service.securityconfig:dependson-jwtfilter",
+  "atom:relation:ts-common.swaggerconfig:dependson-docket",
+  "atom:semantic:ts-auth-service.tokenserviceimpl:meansinuse-gettoken-envelope",
+  "atom:semantic:ts-auth-service.tokenserviceimpl:meansinuse-response-status",
+  "atom:semantic:ts-auth-service.tokenserviceimpl:meansinuse-verifycode-optional-gate",
+  "atom:semantic:ts-auth-service.userserviceimpl:meansinuse-createdefaultauthuser-default-role",
+  "atom:semantic:ts-auth-service.userserviceimpl:meansinuse-default-role-assignment",
+  "atom:semantic:ts-auth-service.userserviceimpl:meansinuse-passwordmaxlength-variable",
+  "atom:semantic:ts-auth-service.userserviceimpl:meansinuse-saveuser-body",
+  "atom:semantic:ts-auth-service.userserviceimpl:meansinuse-saveuser-stub",
+  "atom:semantic:ts-basic-service-travel-query-flow:cech-section-money-amount-computed",
+  "atom:semantic:ts-basic-service-travel-query-flow:cech-section-money-amount-fallback",
+  "atom:semantic:ts-basic-service.application-yml:meansinuse-service-name",
+  "atom:semantic:ts-basic-service.application-yml:meansinuse-service-registration",
+  "atom:semantic:ts-basic-service.basicapplication:meansinuse-loadbalanced-resttemplate",
+  "atom:semantic:ts-basic-service.basicserviceimpl:cech-section-money-amount",
+  "atom:semantic:ts-basic-service.basicserviceimpl:meansinuse-price-fallback-queryfortravel",
+  "atom:semantic:ts-basic-service.basicserviceimpl:meansinuse-price-fallback-queryfortravels",
+  "atom:semantic:ts-basic-service.basicserviceimpl:meansinuse-queryforstationid-forwarding",
+  "atom:semantic:ts-basic-service.basicserviceimpl:meansinuse-response-status",
+  "atom:semantic:ts-basic-service.basicserviceimpl:meansinuse-stationid-envelope-forwarding",
+  "atom:semantic:ts-basic-service.basicserviceimpl:meansinuse-travel-response-envelope",
+  "atom:semantic:ts-basic-service.securityconfig:meansinuse-csrf-disabled",
+  "atom:semantic:ts-basic-service.securityconfig:meansinuse-session-stateless",
+  "atom:semantic:ts-cancel-service-cancel-and-refund-flow:cech-section-money-amount-computed",
+  "atom:semantic:ts-cancel-service-cancel-and-refund-flow:cech-section-money-amount-zero-fallback",
+  "atom:semantic:ts-cancel-service-cancel-and-refund-flow:cech-section-order-status-code",
+  "atom:semantic:ts-cancel-service.application-yml:meansinuse-service-name",
+  "atom:semantic:ts-cancel-service.application-yml:meansinuse-service-registration",
+  "atom:semantic:ts-cancel-service.cancelapplication:meansinuse-loadbalanced-resttemplate",
+  "atom:semantic:ts-cancel-service.cancelcontroller:meansinuse-cancelticket-envelope",
+  "atom:semantic:ts-cancel-service.cancelcontroller:meansinuse-exception-branch-status",
+  "atom:semantic:ts-cancel-service.cancelserviceimpl:cech-section-money-amount",
+  "atom:semantic:ts-cancel-service.cancelserviceimpl:cech-section-order-status-code",
+  "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-authorization-header-forwarding",
+  "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-cancelorder-envelope",
+  "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-drawback-get-verb",
+  "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-getaccount-parameter-binding",
+  "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-getaccount-parameter-naming",
+  "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-response-status",
+  "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-sendemail-invocation-commented-out",
+  "atom:semantic:ts-cancel-service.securityconfig:meansinuse-csrf-disabled",
+  "atom:semantic:ts-cancel-service.securityconfig:meansinuse-session-stateless",
+  "atom:state:ts-auth-service.userserviceimpl:persistsin-user"
+ ]
+}

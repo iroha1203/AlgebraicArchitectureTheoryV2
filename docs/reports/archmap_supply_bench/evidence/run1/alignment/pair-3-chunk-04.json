@@ -1,0 +1,989 @@
+{
+ "schema": "archmap-reference-alignment/v1",
+ "id": "alignment:pair-3-chunk-04",
+ "referenceRef": "reference:train-ticket-chunk-04",
+ "referenceVersion": "1",
+ "pairRef": "pair-3-chunk-04",
+ "adjudicator": "sonnet-reread",
+ "rows": [
+  {
+   "referenceAtomId": "atom:capability:basic-basiccontroller:exposesendpoint-basic-stationname",
+   "candidateAtomIds": [
+    "atom:capability:ts-basic-service.basiccontroller:exposesendpoint-basic-stationname"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:basic-basiccontroller:exposesendpoint-basic-travel",
+   "candidateAtomIds": [
+    "atom:capability:ts-basic-service.basiccontroller:exposesendpoint-basic-travel"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:basic-basiccontroller:exposesendpoint-basic-travels",
+   "candidateAtomIds": [
+    "atom:capability:ts-basic-service.basiccontroller:exposesendpoint-basic-travels"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:basic-basiccontroller:exposesendpoint-welcome",
+   "candidateAtomIds": [
+    "atom:capability:ts-basic-service.basiccontroller:exposesendpoint-welcome"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:cancel-cancelcontroller:exposesendpoint-cancel-refound",
+   "candidateAtomIds": [
+    "atom:capability:ts-cancel-service.cancelcontroller:exposesendpoint-refund-calc"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:capability:cancel-cancelcontroller:exposesendpoint-welcome",
+   "candidateAtomIds": [
+    "atom:capability:ts-cancel-service.cancelcontroller:exposesendpoint-welcome"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:auth-tokenservice",
+   "candidateAtomIds": [
+    "atom:component:ts-auth-service.tokenservice"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:auth-tokenserviceimpl",
+   "candidateAtomIds": [
+    "atom:component:ts-auth-service.tokenserviceimpl"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:auth-userservice",
+   "candidateAtomIds": [
+    "atom:component:ts-auth-service.userservice"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:auth-userserviceimpl",
+   "candidateAtomIds": [
+    "atom:component:ts-auth-service.userserviceimpl"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:basic-basicapplication",
+   "candidateAtomIds": [
+    "atom:component:ts-basic-service.basicapplication"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:basic-basiccontroller",
+   "candidateAtomIds": [
+    "atom:component:ts-basic-service.basiccontroller"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:basic-basicservice",
+   "candidateAtomIds": [
+    "atom:component:ts-basic-service.basicservice"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:basic-basicserviceimpl",
+   "candidateAtomIds": [
+    "atom:component:ts-basic-service.basicserviceimpl"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:basic-securityconfig",
+   "candidateAtomIds": [
+    "atom:component:ts-basic-service.securityconfig"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:cancel-cancelapplication",
+   "candidateAtomIds": [
+    "atom:component:ts-cancel-service.cancelapplication"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:cancel-cancelcontroller",
+   "candidateAtomIds": [
+    "atom:component:ts-cancel-service.cancelcontroller"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:cancel-cancelservice",
+   "candidateAtomIds": [
+    "atom:component:ts-cancel-service.cancelservice"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:cancel-cancelserviceimpl",
+   "candidateAtomIds": [
+    "atom:component:ts-cancel-service.cancelserviceimpl"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:cancel-getaccountbyidinfo",
+   "candidateAtomIds": [
+    "atom:component:ts-cancel-service.getaccountbyidinfo"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:cancel-getaccountbyidresult",
+   "candidateAtomIds": [
+    "atom:component:ts-cancel-service.getaccountbyidresult"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:cancel-getorderbyidinfo",
+   "candidateAtomIds": [
+    "atom:component:ts-cancel-service.getorderbyidinfo"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:cancel-securityconfig",
+   "candidateAtomIds": [
+    "atom:component:ts-cancel-service.securityconfig"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:component:common-swaggerconfig",
+   "candidateAtomIds": [
+    "atom:component:ts-common.swaggerconfig"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:contract:cancel-getaccountbyidinfo:shapedas",
+   "candidateAtomIds": [
+    "atom:contract:ts-cancel-service.getaccountbyidinfo:shapedas-fields"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:contract:cancel-getaccountbyidresult:shapedas",
+   "candidateAtomIds": [
+    "atom:contract:ts-cancel-service.getaccountbyidresult:shapedas-fields#pass-a"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:contract:cancel-getorderbyidinfo:shapedas",
+   "candidateAtomIds": [
+    "atom:contract:ts-cancel-service.getorderbyidinfo:shapedas-fields"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:relation:auth-tokenserviceimpl:calls-authenticationmanager-authenticate",
+   "candidateAtomIds": [
+    "atom:relation:ts-auth-service.tokenserviceimpl:calls-authenticationmanager"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:relation:auth-tokenserviceimpl:calls-jwtprovider-createtoken",
+   "candidateAtomIds": [
+    "atom:relation:ts-auth-service.tokenserviceimpl:calls-jwtprovider",
+    "atom:relation:ts-auth-service.tokenserviceimpl:calls-jwtprovider-createtoken"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:relation:auth-tokenserviceimpl:calls-userrepository-findbyusername",
+   "candidateAtomIds": [
+    "atom:relation:ts-auth-service.tokenserviceimpl:calls-userrepository",
+    "atom:relation:ts-auth-service.tokenserviceimpl:calls-userrepository-findbyusername"
+   ],
+   "decision": "reference-matched",
+   "basis": "mechanical atom-match-key@2 equality"
+  },
+  {
+   "referenceAtomId": "atom:authority:basic-securityconfig:allowscrossorigin",
+   "candidateAtomIds": [
+    "atom:authority:ts-basic-service.securityconfig:allowscrossorigin-all",
+    "atom:authority:ts-basic-service.securityconfig:allowscrossorigin-wildcard"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: ts-basic-service SecurityConfig.java corsConfigurer bean (lines 51-56) registers /** with allowedOrigins/Methods/Headers=ALL, allowCredentials(false), maxAge(3600); both candidates describe this same bean under different phrasing."
+  },
+  {
+   "referenceAtomId": "atom:authority:basic-securityconfig:permitsunauthenticated-api",
+   "candidateAtomIds": [
+    "atom:authority:ts-basic-service.securityconfig:permitsunauthenticated-basicservice#pass-a",
+    "atom:authority:ts-basic-service.securityconfig:permitsunauthenticated-basicservice#pass-b"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: ts-basic-service SecurityConfig.java line 71, antMatchers(\"/api/v1/basicservice/**\").permitAll(); both pass candidates cite this same antMatcher."
+  },
+  {
+   "referenceAtomId": "atom:authority:basic-securityconfig:permitsunauthenticated-swagger",
+   "candidateAtomIds": [
+    "atom:authority:ts-basic-service.securityconfig:permitsunauthenticated-swagger",
+    "atom:authority:ts-basic-service.securityconfig:permitsunauthenticated-swagger-docs"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: ts-basic-service SecurityConfig.java lines 72-73, antMatchers for swagger-ui.html/webjars/images/configuration/swagger-resources/v2 permitAll(); both candidates cite this same antMatcher block."
+  },
+  {
+   "referenceAtomId": "atom:authority:cancel-cancelcontroller:allowscrossorigin",
+   "candidateAtomIds": [
+    "atom:authority:ts-cancel-service.cancelcontroller:allowscrossorigin-cancel-orderid-loginid",
+    "atom:authority:ts-cancel-service.cancelcontroller:allowscrossorigin-cancel-refound",
+    "atom:authority:ts-cancel-service.cancelcontroller:allowscrossorigin-cancel-ticket-endpoint",
+    "atom:authority:ts-cancel-service.cancelcontroller:allowscrossorigin-refund-calc-endpoint"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: ts-cancel-service CancelController.java has two separate method-level @CrossOrigin(origins = \"*\") annotations: one on calculate() at line 32 (cancel/refound/{orderId}) and one on cancelTicket() at line 39 (cancel/{orderId}/{loginId}); the reference records both endpoints as one combined authority atom while the four candidates (two per pass) record them as separate per-endpoint atoms describing the same two annotations."
+  },
+  {
+   "referenceAtomId": "atom:authority:cancel-securityconfig:allowscrossorigin",
+   "candidateAtomIds": [
+    "atom:authority:ts-cancel-service.securityconfig:allowscrossorigin-all",
+    "atom:authority:ts-cancel-service.securityconfig:allowscrossorigin-wildcard"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: ts-cancel-service SecurityConfig.java corsConfigurer bean (lines 51-56), identical shape to the basic-service one."
+  },
+  {
+   "referenceAtomId": "atom:authority:cancel-securityconfig:permitsunauthenticated-swagger",
+   "candidateAtomIds": [
+    "atom:authority:ts-cancel-service.securityconfig:permitsunauthenticated-swagger",
+    "atom:authority:ts-cancel-service.securityconfig:permitsunauthenticated-swagger-docs"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: ts-cancel-service SecurityConfig.java lines 72-73, same swagger antMatcher block as basic-service."
+  },
+  {
+   "referenceAtomId": "atom:authority:cancel-securityconfig:requiresrole-api",
+   "candidateAtomIds": [
+    "atom:authority:ts-cancel-service.securityconfig:requiresrole-cancelservice",
+    "atom:authority:ts-cancel-service.securityconfig:requiresrole-cancelservice-admin-or-user"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: ts-cancel-service SecurityConfig.java line 71, antMatchers(\"/api/v1/cancelservice/**\").hasAnyRole(\"ADMIN\",\"USER\")."
+  },
+  {
+   "referenceAtomId": "atom:capability:auth-tokenserviceimpl:handlescommand-issuetoken",
+   "candidateAtomIds": [
+    "atom:capability:ts-auth-service.tokenserviceimpl:servesquery-gettoken"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: TokenServiceImpl.java getToken() (lines 59-97) issues a fresh JWT via jwtProvider.createToken(user) at line 94 on the success branch; the reference's handlesCommand classification and the candidate's servesQuery classification describe this same getToken() method."
+  },
+  {
+   "referenceAtomId": "atom:capability:auth-userserviceimpl:handlescommand-createdefaultauthuser",
+   "candidateAtomIds": [
+    "atom:capability:ts-auth-service.userserviceimpl:handlescommand-createdefaultauthuser"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: UserServiceImpl.java createDefaultAuthUser() lines 51-66; candidate object differs only in arity/case notation from the reference's CreateDefaultAuthUser label."
+  },
+  {
+   "referenceAtomId": "atom:capability:auth-userserviceimpl:handlescommand-deletebyuserid",
+   "candidateAtomIds": [
+    "atom:capability:ts-auth-service.userserviceimpl:handlescommand-deletebyuserid"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: UserServiceImpl.java deleteByUserId() lines 68-74."
+  },
+  {
+   "referenceAtomId": "atom:capability:auth-userserviceimpl:servesquery-getalluser",
+   "candidateAtomIds": [
+    "atom:capability:ts-auth-service.userserviceimpl:servesquery-getalluser"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: UserServiceImpl.java getAllUser() lines 40-43."
+  },
+  {
+   "referenceAtomId": "atom:capability:basic-basicserviceimpl:servesquery-queryforstationid",
+   "candidateAtomIds": [
+    "atom:capability:ts-basic-service.basicserviceimpl:servesquery-queryforstationid"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: BasicServiceImpl.java queryForStationId() lines 323-339; candidate object differs only in arity notation."
+  },
+  {
+   "referenceAtomId": "atom:capability:basic-basicserviceimpl:servesquery-queryfortravel",
+   "candidateAtomIds": [
+    "atom:capability:ts-basic-service.basicserviceimpl:servesquery-queryfortravel"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: BasicServiceImpl.java queryForTravel() lines 39-121; candidate object differs only in arity notation."
+  },
+  {
+   "referenceAtomId": "atom:capability:basic-basicserviceimpl:servesquery-queryfortravels",
+   "candidateAtomIds": [
+    "atom:capability:ts-basic-service.basicserviceimpl:servesquery-queryfortravels"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: BasicServiceImpl.java queryForTravels() lines 123-321; candidate object differs only in arity notation."
+  },
+  {
+   "referenceAtomId": "atom:capability:cancel-cancelcontroller:exposesendpoint-cancel-orderid-loginid",
+   "candidateAtomIds": [
+    "atom:capability:ts-cancel-service.cancelcontroller:handlescommand-cancel-orderid-loginid",
+    "atom:capability:ts-cancel-service.cancelcontroller:handlescommand-cancel-ticket"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: CancelController.java cancelTicket() GET /cancel/{orderId}/{loginId} lines 40-52; both candidates (one per pass) classify this endpoint under handlesCommand rather than the reference's exposesEndpoint predicate but describe the same route."
+  },
+  {
+   "referenceAtomId": "atom:capability:cancel-cancelserviceimpl:handlescommand-cancelorder",
+   "candidateAtomIds": [
+    "atom:capability:ts-cancel-service.cancelserviceimpl:handlescommand-cancelorder"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: CancelServiceImpl.java cancelOrder() lines 45-141."
+  },
+  {
+   "referenceAtomId": "atom:capability:cancel-cancelserviceimpl:servesquery-calculaterefund",
+   "candidateAtomIds": [
+    "atom:capability:ts-cancel-service.cancelserviceimpl:servesquery-calculaterefund"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: CancelServiceImpl.java calculateRefund(String,HttpHeaders) lines 156-198."
+  },
+  {
+   "referenceAtomId": "atom:contract:auth-tokenserviceimpl:ensures-tokendto",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "reference records that getToken's success branch returns TokenDto(user.getUserId(), username, token) (TokenServiceImpl.java line 96); neither pass wrote a contract atom for TokenServiceImpl itself (only the TokenService interface's shapedAs atom was captured, matched separately), so no candidate remains to cite for this Impl-level ensures-clause."
+  },
+  {
+   "referenceAtomId": "atom:contract:auth-tokenserviceimpl:requires-verificationcode",
+   "candidateAtomIds": [
+    "atom:semantic:ts-auth-service.tokenserviceimpl:meansinuse-verifycode-optional-gate"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: TokenServiceImpl.java lines 62-79: when verifyCode is non-empty, a GET to ts-verification-code-service must return true before the flow proceeds to authenticationManager.authenticate(); when empty, the verify call is skipped. Candidate records the same gating condition under a semantic/meansInUse key rather than the reference's contract/requires key."
+  },
+  {
+   "referenceAtomId": "atom:contract:cancel-cancelserviceimpl:ensures-cancel-and-refund",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "reference records a compound ensures-clause for cancelOrder's success branch (order status set to CANCEL, refund amount computed, and drawn back to the account); the sub-facts are individually covered elsewhere (state transition, drawback effect, response-status semantics) but neither pass wrote a single contract atom synthesizing this combined outcome for cancelOrder, so no distinct candidate remains to cite here."
+  },
+  {
+   "referenceAtomId": "atom:contract:cancel-cancelserviceimpl:ensures-refundamountrule",
+   "candidateAtomIds": [
+    "atom:contract:ts-cancel-service.cancelserviceimpl:ensures-refund-formula"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: CancelServiceImpl.java private calculateRefund(Order) lines 200-235: returns \"0.00\" on NOTPAID, \"0\" when now is after the computed travel start time, else price*0.8 formatted with DecimalFormat(\"0.00\")."
+  },
+  {
+   "referenceAtomId": "atom:contract:cancel-cancelserviceimpl:requires-forwardedauthorizationheader",
+   "candidateAtomIds": [
+    "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-authorization-header-forwarding"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: CancelServiceImpl.java getAuthorizationHeadersFrom() lines 254-260, used at the order/order-other/insidepayment/user call sites; copies the incoming Authorization header when present, omits it otherwise."
+  },
+  {
+   "referenceAtomId": "atom:contract:cancel-cancelserviceimpl:requires-orderstatuseligibleforcancel",
+   "candidateAtomIds": [
+    "atom:semantic:ts-cancel-service-cancel-and-refund-flow:cech-section-order-status-code",
+    "atom:semantic:ts-cancel-service.cancelserviceimpl:cech-section-order-status-code"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: CancelServiceImpl.java lines 52-53 and 109-110: order.getStatus() must equal NOTPAID, PAID, or CHANGE for the cancel branch to proceed, otherwise the cancel-not-permitted response is returned. Both candidates record this same branching condition under a cech/sectionValue key rather than the reference's contract/requires key."
+  },
+  {
+   "referenceAtomId": "atom:contract:common-swaggerconfig:requires-controllerpackage",
+   "candidateAtomIds": [
+    "atom:contract:ts-common.swaggerconfig:requires-controllerpackage-config",
+    "atom:contract:ts-common.swaggerconfig:requires-controllerpackage-property"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: ts-common SwaggerConfig.java line 21, @Value(\"${swagger.controllerPackage}\") plus per-service application.yml values (ts-basic-service: fdse.microservice.controller; ts-cancel-service: cancel.controller) confirm the property is supplied per service; candidates describe the injection mechanism without naming the concrete per-service values."
+  },
+  {
+   "referenceAtomId": "atom:effect:cancel-cancelserviceimpl:callsprovider-cancelfromorder",
+   "candidateAtomIds": [
+    "atom:effect:ts-cancel-service.cancelserviceimpl:callsprovider-order-put"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: CancelServiceImpl.java cancelFromOrder() lines 238-252, PUT to ts-order-service /api/v1/orderservice/order after setting order status to CANCEL."
+  },
+  {
+   "referenceAtomId": "atom:effect:cancel-cancelserviceimpl:callsprovider-cancelfromotherorder",
+   "candidateAtomIds": [
+    "atom:effect:ts-cancel-service.cancelserviceimpl:callsprovider-orderother-put"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: CancelServiceImpl.java cancelFromOtherOrder() lines 263-276."
+  },
+  {
+   "referenceAtomId": "atom:effect:cancel-cancelserviceimpl:callsprovider-drawbackmoney",
+   "candidateAtomIds": [
+    "atom:effect:ts-cancel-service.cancelserviceimpl:callsprovider-insidepayment-drawback"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: CancelServiceImpl.java drawbackMoney() lines 278-292, GET to ts-inside-payment-service drawback/{userId}/{money}."
+  },
+  {
+   "referenceAtomId": "atom:effect:cancel-cancelserviceimpl:callsprovider-sendemail",
+   "candidateAtomIds": [
+    "atom:effect:ts-cancel-service.cancelserviceimpl:callsprovider-notification-cancelsuccess"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: CancelServiceImpl.java sendEmail() lines 143-154 defines the POST to ts-notification-service order_cancel_success; its only call site inside cancelOrder (line 87) is a source comment."
+  },
+  {
+   "referenceAtomId": "atom:relation:auth-tokenserviceimpl:calls-verificationcodeservice",
+   "candidateAtomIds": [
+    "atom:effect:ts-auth-service.tokenserviceimpl:callsprovider-verification-code-verify",
+    "atom:effect:ts-auth-service.tokenserviceimpl:callsprovider-verifycode"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: TokenServiceImpl.java lines 64-71, GET ts-verification-code-service /api/v1/verifycode/verify/{verifyCode}; both candidates (effect axis) describe the same call the reference records under relation axis."
+  },
+  {
+   "referenceAtomId": "atom:relation:auth-tokenserviceimpl:dependson-jwtprovider",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "reference records the field-level dependency on auth.security.jwt.JWTProvider; both passes only captured the JWTProvider relationship as a calls-relation on createToken() (already matched to atom:relation:auth-tokenserviceimpl:calls-jwtprovider-createtoken), leaving no separate dependsOn-axis candidate to cite."
+  },
+  {
+   "referenceAtomId": "atom:relation:auth-userserviceimpl:dependson-passwordencoder",
+   "candidateAtomIds": [
+    "atom:relation:ts-auth-service.userserviceimpl:calls-passwordencoder-encode"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: UserServiceImpl.java line 33, @Autowired protected PasswordEncoder passwordEncoder, invoked at line 57 passwordEncoder.encode(dto.getPassword()); candidate records the encode() call site, reference records the field-level dependency, same underlying relationship."
+  },
+  {
+   "referenceAtomId": "atom:relation:basic-basicserviceimpl:calls-priceservice",
+   "candidateAtomIds": [
+    "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-price-byrouteandtraintype",
+    "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-price-byrouteandtype",
+    "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-price-byrouteidsandtraintypes",
+    "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-price-byrouteidsandtypes"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: BasicServiceImpl.java queryPriceConfigByRouteIdAndTrainType() lines 442-455 (GET /api/v1/priceservice/prices/{routeId}/{trainType}) and queryPriceConfigByRouteIdsAndTrainTypes() lines 457-483 (POST /api/v1/priceservice/prices/byRouteIdsAndTrainTypes); reference combines both endpoints into one relation atom, the four candidates (two per pass) record them as separate per-endpoint atoms."
+  },
+  {
+   "referenceAtomId": "atom:relation:basic-basicserviceimpl:calls-routeservice",
+   "candidateAtomIds": [
+    "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-route-byid",
+    "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-route-byids"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: BasicServiceImpl.java getRouteByRouteId() lines 423-440 and getRoutesByRouteIds() lines 403-421."
+  },
+  {
+   "referenceAtomId": "atom:relation:basic-basicserviceimpl:calls-stationservice",
+   "candidateAtomIds": [
+    "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-station-byid",
+    "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-station-idlist"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: BasicServiceImpl.java checkStationExists()/queryForStationId() GET .../stations/id/{stationName} and checkStationsExists() POST .../stations/idlist."
+  },
+  {
+   "referenceAtomId": "atom:relation:basic-basicserviceimpl:calls-trainservice",
+   "candidateAtomIds": [
+    "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-train-byname",
+    "atom:effect:ts-basic-service.basicserviceimpl:callsprovider-train-bynames"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: BasicServiceImpl.java queryTrainTypeByName() lines 389-401 and queryTrainTypeByNames() lines 372-387."
+  },
+  {
+   "referenceAtomId": "atom:relation:cancel-cancelserviceimpl:calls-insidepaymentservice",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "reference records this GET drawback call under both a relation atom and a separate effect atom; the sole available candidate (callsprovider-insidepayment-drawback) is already credited to atom:effect:cancel-cancelserviceimpl:callsprovider-drawbackmoney, leaving no distinct candidate id to cite here without reuse."
+  },
+  {
+   "referenceAtomId": "atom:relation:cancel-cancelserviceimpl:calls-notificationservice",
+   "candidateAtomIds": [
+    "atom:effect:ts-cancel-service.cancelserviceimpl:callsprovider-notify-cancelsuccess"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: CancelServiceImpl.java sendEmail() lines 143-154; same notification endpoint as the sibling effect atom (already credited to atom:effect:cancel-cancelserviceimpl:callsprovider-sendemail); this pass's separately-named candidate is used here to avoid reusing an id across rows."
+  },
+  {
+   "referenceAtomId": "atom:relation:cancel-cancelserviceimpl:calls-orderotherservice",
+   "candidateAtomIds": [
+    "atom:effect:ts-cancel-service.cancelserviceimpl:callsprovider-orderother-getbyid"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: CancelServiceImpl.java getOrderByIdFromOrderOther() lines 322-334 (GET) and cancelFromOtherOrder() lines 263-276 (PUT, credited separately to atom:effect:cancel-cancelserviceimpl:callsprovider-cancelfromotherorder); this GET candidate evidences the combined GET/PUT relation the reference records for ts-order-other-service."
+  },
+  {
+   "referenceAtomId": "atom:relation:cancel-cancelserviceimpl:calls-orderservice",
+   "candidateAtomIds": [
+    "atom:effect:ts-cancel-service.cancelserviceimpl:callsprovider-order-getbyid"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: CancelServiceImpl.java getOrderByIdFromOrder() lines 308-320 (GET) and cancelFromOrder() lines 238-252 (PUT, credited separately to atom:effect:cancel-cancelserviceimpl:callsprovider-cancelfromorder); this GET candidate evidences the combined GET/PUT relation."
+  },
+  {
+   "referenceAtomId": "atom:relation:cancel-cancelserviceimpl:calls-userservice",
+   "candidateAtomIds": [
+    "atom:effect:ts-cancel-service.cancelserviceimpl:callsprovider-user-getbyid"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: CancelServiceImpl.java getAccount() lines 294-306, GET ts-user-service /api/v1/userservice/users/id/{orderId}."
+  },
+  {
+   "referenceAtomId": "atom:semantic:auth-tokenserviceimpl:meansinuse-credentialvalueinlog",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "reference records that TokenServiceImpl.java line 86 logs the raw password value in a WARN-level message (LOGGER.warn(...,username,password)); neither pass captured this log-content observation as a candidate atom."
+  },
+  {
+   "referenceAtomId": "atom:semantic:auth-tokenserviceimpl:statusgates-responseenvelope",
+   "candidateAtomIds": [
+    "atom:semantic:ts-auth-service.tokenserviceimpl:meansinuse-gettoken-envelope",
+    "atom:semantic:ts-auth-service.tokenserviceimpl:meansinuse-response-status"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: TokenServiceImpl.java lines 75-96: status 0 returned on verification-code-rejected (line 77) and credential-rejected (line 87) branches, status 1 with TokenDto returned on the success branch (line 96)."
+  },
+  {
+   "referenceAtomId": "atom:semantic:auth-userserviceimpl:meansinuse-saveusernoop",
+   "candidateAtomIds": [
+    "atom:semantic:ts-auth-service.userserviceimpl:meansinuse-saveuser-stub",
+    "atom:semantic:ts-auth-service.userserviceimpl:meansinuse-saveuser-body"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: UserServiceImpl.java lines 36-38, saveUser(User user) { return null; } returns null unconditionally without invoking userRepository or passwordEncoder."
+  },
+  {
+   "referenceAtomId": "atom:semantic:basic-basicserviceimpl:identifiedby-stationlookup",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "reference records that station existence is checked via an endpoint path segment named id while the value passed is a station-name string (BasicServiceImpl.java checkStationExists/queryForStationId call .../stations/id/{stationName} with a name argument); neither pass wrote an identifiedBy-predicate atom capturing this naming observation."
+  },
+  {
+   "referenceAtomId": "atom:semantic:basic-basicserviceimpl:statusgates-responseenvelope",
+   "candidateAtomIds": [
+    "atom:semantic:ts-basic-service.basicserviceimpl:meansinuse-travel-response-envelope",
+    "atom:semantic:ts-basic-service.basicserviceimpl:meansinuse-response-status",
+    "atom:semantic:ts-basic-service.basicserviceimpl:meansinuse-stationid-envelope-forwarding",
+    "atom:semantic:ts-basic-service.basicserviceimpl:meansinuse-queryforstationid-forwarding"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: BasicServiceImpl.java queryForTravel() lines 44-120 and queryForTravels() lines 123-321 set status 1 on the result-carrying branch and status 0 on station/traintype/route/order-mismatch rejection branches; queryForStationId() lines 323-339 returns status 0 with the forwarded upstream message on the not-found branch. The four candidates jointly cover the three methods the reference combines into one statusGates atom."
+  },
+  {
+   "referenceAtomId": "atom:semantic:basic-surface:cech-section-money-amount",
+   "candidateAtomIds": [
+    "atom:semantic:ts-basic-service-travel-query-flow:cech-section-money-amount-computed",
+    "atom:semantic:ts-basic-service.basicserviceimpl:cech-section-money-amount"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: BasicServiceImpl.java lines 106-109 and 299-302: double priceForEconomyClass/priceForConfortClass computed then string-concatenated (\"\" + value) into the prices map."
+  },
+  {
+   "referenceAtomId": "atom:semantic:cancel-cancelcontroller:statusgates-divergingbranch",
+   "candidateAtomIds": [
+    "atom:semantic:ts-cancel-service.cancelcontroller:meansinuse-cancelticket-envelope",
+    "atom:semantic:ts-cancel-service.cancelcontroller:meansinuse-exception-branch-status"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: CancelController.java cancelTicket() lines 41-51: the caught-exception branch at line 50 returns new Response<>(1, \"error\", null) - the same status value 1 used on the normal success branch returned directly from the service layer."
+  },
+  {
+   "referenceAtomId": "atom:semantic:cancel-cancelserviceimpl:identifiedby-orderlookupfallback",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "reference records that order lookup tries ts-order-service first, then ts-order-other-service on the not-found branch (CancelServiceImpl.java lines 48/104 in cancelOrder, 159/177 in calculateRefund); neither pass wrote an identifiedBy-predicate atom for this fallback lookup pattern, though the underlying getOrderByIdFromOrder/getOrderByIdFromOrderOther calls are separately captured as relation/effect atoms elsewhere."
+  },
+  {
+   "referenceAtomId": "atom:semantic:cancel-cancelserviceimpl:meansinuse-notifyinfobuiltbutsendnotinvoked",
+   "candidateAtomIds": [
+    "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-sendemail-invocation-commented-out"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: CancelServiceImpl.java lines 74-87: NotifyInfo is populated with email/price/seat/trip fields on the successful drawback branch, while the sendEmail(notifyInfo, headers) call at line 87 is a source comment."
+  },
+  {
+   "referenceAtomId": "atom:semantic:cancel-cancelserviceimpl:meansinuse-orderidparamcarriesaccountid",
+   "candidateAtomIds": [
+    "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-getaccount-parameter-naming",
+    "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-getaccount-parameter-binding"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: CancelServiceImpl.java getAccount(String orderId, ...) at line 294, called at line 70 with order.getAccountId().toString() - the parameter named orderId carries an account id value."
+  },
+  {
+   "referenceAtomId": "atom:semantic:cancel-cancelserviceimpl:statusgates-responseenvelope",
+   "candidateAtomIds": [
+    "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-cancelorder-envelope",
+    "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-response-status"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: CancelServiceImpl.java cancelOrder() lines 46-141 and calculateRefund() lines 156-198: status 1 on the cancel/refund success branches (including line 92 where cancelOrder returns 1 even though drawbackMoney's boolean result at line 64 was only logged, not used to gate the response), status 0 on order-not-found / cancel-not-permitted branches."
+  },
+  {
+   "referenceAtomId": "atom:semantic:cancel-surface:cech-section-money-amount",
+   "candidateAtomIds": [
+    "atom:semantic:ts-cancel-service-cancel-and-refund-flow:cech-section-money-amount-computed",
+    "atom:semantic:ts-cancel-service.cancelserviceimpl:cech-section-money-amount"
+   ],
+   "decision": "reference-matched",
+   "basis": "reread: CancelServiceImpl.java private calculateRefund(Order) lines 228-231: Double.parseDouble(order.getPrice()) then arithmetic then DecimalFormat(\"0.00\")."
+  },
+  {
+   "referenceAtomId": "atom:semantic:cancel-surface:cech-section-order-status-code",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "reference records this cech atom narrowly as the enum OrderStatus.getCode() accessor convention; the two available cech-axis candidates describing the order-status-code section instead capture the fuller NOTPAID/PAID/CHANGE branching semantics and are credited to atom:contract:cancel-cancelserviceimpl:requires-orderstatuseligibleforcancel, leaving no distinct candidate for this narrower accessor-convention observation."
+  },
+  {
+   "referenceAtomId": "atom:state:cancel-order:transitionsto-cancel",
+   "candidateAtomIds": [],
+   "decision": "unrecovered",
+   "basis": "reference records that order.setStatus(OrderStatus.CANCEL.getCode()) is set (CancelServiceImpl.java cancelFromOrder() line 240, cancelFromOtherOrder() line 265) before the PUT persists it through ts-order-service or ts-order-other-service; neither pass wrote a state-axis atom for this transition, though the PUT calls themselves are captured as effect atoms elsewhere."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:authority:ts-basic-service.securityconfig:checkspermission-anyrequest"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: ts-basic-service SecurityConfig.java line 74, .anyRequest().authenticated() requires an authenticated principal for any request not matched by the earlier antMatchers; reference's authority atoms for this SecurityConfig cover only the two permitAll matchers and the CORS bean, not this catch-all rule."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:authority:ts-cancel-service.securityconfig:checkspermission-anyrequest"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: ts-cancel-service SecurityConfig.java line 74, same catch-all authenticated-principal rule as basic-service; not covered by the reference's cancel-securityconfig authority atoms."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-auth-service.userserviceimpl:servesquery-saveuser"
+   ],
+   "decision": "not-adopted",
+   "basis": "reread: UserServiceImpl.java lines 36-38, saveUser(User user) { return null; } unconditionally, never invoking userRepository or passwordEncoder; the method does not functionally serve the saveUser query, so classifying it as a capability overstates its behavior. The true nature (a no-op stub) is already captured by the row matched to atom:semantic:auth-userserviceimpl:meansinuse-saveusernoop."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-basic-service.basiccontroller:servesquery-basic-stationname",
+    "atom:capability:ts-basic-service.basiccontroller:servesquery-basic-travel",
+    "atom:capability:ts-basic-service.basiccontroller:servesquery-basic-travels",
+    "atom:capability:ts-basic-service.basiccontroller:servesquery-welcome"
+   ],
+   "decision": "not-adopted",
+   "basis": "reread: BasicController.java lines 30-54; these four endpoints are already reference-matched via the prefilled exposesEndpoint-predicate atoms from the sibling pass (same subject, same routes). This pass's servesQuery-predicate variants describe the identical HTTP routes without adding distinguishing content, so no additional row is warranted beyond the already-matched ones."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-cancel-service.cancelcontroller:servesquery-cancel-refound",
+    "atom:capability:ts-cancel-service.cancelcontroller:servesquery-welcome"
+   ],
+   "decision": "not-adopted",
+   "basis": "reread: CancelController.java lines 27-37; both endpoints are already reference-matched via prefilled exposesEndpoint-predicate atoms (welcome, cancel-refound) from the sibling pass. These servesQuery-predicate variants describe the same routes without new content."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:contract:ts-cancel-service.getaccountbyidinfo:shapedas-accountid",
+    "atom:contract:ts-cancel-service.getaccountbyidresult:shapedas-fields#pass-b",
+    "atom:contract:ts-cancel-service.getorderbyidinfo:shapedas-orderid"
+   ],
+   "decision": "not-adopted",
+   "basis": "reread: GetAccountByIdInfo.java, GetAccountByIdResult.java, GetOrderByIdInfo.java; all three DTO shapes are already reference-matched via the prefilled rows (using the sibling pass's shapedas-fields candidate, or the #pass-a variant for GetAccountByIdResult). These are alternate-phrasing duplicates of the same field shapes, adding no distinguishing content."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-basic-service.basicserviceimpl:servesquery-checkstationexists",
+    "atom:capability:ts-basic-service.basicserviceimpl:servesquery-checkstationsexists"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: BasicServiceImpl.java checkStationExists() lines 358-370 and checkStationsExists() lines 341-356, both public methods calling ts-station-service; reference's capability atoms for BasicServiceImpl cover only queryForTravel/Travels/StationId, not these two station-existence-check methods."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-basic-service.basicserviceimpl:servesquery-querytraintypebyname",
+    "atom:capability:ts-basic-service.basicserviceimpl:servesquery-querytraintypebynames"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: BasicServiceImpl.java queryTrainTypeByName() lines 389-401 and queryTrainTypeByNames() lines 372-387, both public methods; not covered by reference's BasicServiceImpl capability atoms."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-cancel-service.cancelserviceimpl:handlescommand-drawbackmoney"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: CancelServiceImpl.java drawbackMoney() lines 278-292, a public method; reference's capability atoms for CancelServiceImpl cover only cancelOrder and calculateRefund."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-cancel-service.cancelserviceimpl:handlescommand-sendemail"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: CancelServiceImpl.java sendEmail() lines 143-154, a public method."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:capability:ts-cancel-service.cancelserviceimpl:servesquery-getaccount"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: CancelServiceImpl.java getAccount() lines 294-306, a public method."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:component:ts-basic-service.application-yml",
+    "atom:semantic:ts-basic-service.application-yml:meansinuse-service-name",
+    "atom:semantic:ts-basic-service.application-yml:meansinuse-service-registration"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: ts-basic-service/src/main/resources/application.yml: spring.application.name=ts-basic-service (lines 9-10), server.port=15680 (line 2), nacos server-addr list (line 8); reference does not include any atom about the application.yml source in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:component:ts-cancel-service.application-yml",
+    "atom:semantic:ts-cancel-service.application-yml:meansinuse-service-name",
+    "atom:semantic:ts-cancel-service.application-yml:meansinuse-service-registration"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: ts-cancel-service/src/main/resources/application.yml: spring.application.name=ts-cancel-service (lines 9-10), server.port=18885 (line 2); same absence from reference as the basic-service application.yml."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:contract:ts-auth-service.tokenservice:shapedas-gettoken#pass-a",
+    "atom:contract:ts-auth-service.tokenservice:shapedas-gettoken#pass-b"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: TokenService.java line 19, getToken(BasicAuthDto, HttpHeaders) throws UserOperationException, returns Response; reference's atoms for auth-tokenservice cover only the component, not this interface's method shape."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:contract:ts-auth-service.userservice:shapedas-methods#pass-a",
+    "atom:contract:ts-auth-service.userservice:shapedas-methods#pass-b"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: UserService.java lines 22-47, four interface methods (saveUser, getAllUser, createDefaultAuthUser, deleteByUserId); reference's atoms for auth-userservice cover only the component."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:contract:ts-auth-service.userserviceimpl:ensures-deletebyuserid-transactional"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: UserServiceImpl.java line 69, @Transactional on deleteByUserId(); reference has no contract atom for UserServiceImpl at all in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:contract:ts-auth-service.userserviceimpl:requires-user-create-checks",
+    "atom:contract:ts-auth-service.userserviceimpl:requires-user-create-info"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: UserServiceImpl.java checkUserCreateInfo() lines 81-104: requires non-empty username, non-null password of length >= 6, and non-empty roles, else throws UserOperationException; reference has no contract atom for UserServiceImpl in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:contract:ts-basic-service.basicservice:shapedas-methods#pass-a",
+    "atom:contract:ts-basic-service.basicservice:shapedas-methods#pass-b"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: BasicService.java lines 23-34, three interface methods; reference's atoms for basic-basicservice cover only the component."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:contract:ts-cancel-service.cancelservice:shapedas-methods#pass-a",
+    "atom:contract:ts-cancel-service.cancelservice:shapedas-methods#pass-b"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: CancelService.java lines 20-29, cancelOrder and calculateRefund method shapes; reference's atoms for cancel-cancelservice cover only the component."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:contract:ts-basic-service.securityconfig:requires-stateless-session",
+    "atom:semantic:ts-basic-service.securityconfig:meansinuse-csrf-disabled",
+    "atom:semantic:ts-basic-service.securityconfig:meansinuse-session-stateless"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: ts-basic-service SecurityConfig.java lines 64,66,68: httpBasic().disable(), csrf().disable(), sessionCreationPolicy(STATELESS); reference's atoms for basic-securityconfig cover only the authority axis (permitAll/crossOrigin), not these HttpSecurity configuration facts."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:contract:ts-cancel-service.securityconfig:requires-stateless-session",
+    "atom:semantic:ts-cancel-service.securityconfig:meansinuse-csrf-disabled",
+    "atom:semantic:ts-cancel-service.securityconfig:meansinuse-session-stateless"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: ts-cancel-service SecurityConfig.java lines 64,66,68, same HttpSecurity configuration as basic-service; not covered by reference's cancel-securityconfig atoms."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:relation:ts-auth-service.tokenserviceimpl:dependson-discoveryclient"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: TokenServiceImpl.java line 52, @Autowired private DiscoveryClient discoveryClient; field is present though not observably invoked within getToken()'s body in this chunk. Reference's relation atoms for auth-tokenserviceimpl do not include this dependency."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:relation:ts-auth-service.userserviceimpl:calls-userrepository-deletebyuserid",
+    "atom:relation:ts-auth-service.userserviceimpl:calls-userrepository-findall",
+    "atom:relation:ts-auth-service.userserviceimpl:calls-userrepository-save"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: UserServiceImpl.java lines 42 (findAll, backing getAllUser), 65 (save, backing createDefaultAuthUser), 72 (deleteByUserId, backing deleteByUserId); reference has no relation atom describing UserServiceImpl's calls to UserRepository in this chunk (only the passwordEncoder dependency)."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:relation:ts-basic-service.basicapplication:dependson-resttemplatebuilder",
+    "atom:semantic:ts-basic-service.basicapplication:meansinuse-loadbalanced-resttemplate"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: BasicApplication.java lines 30-34, @LoadBalanced @Bean public RestTemplate restTemplate(RestTemplateBuilder builder); reference has no atom beyond the component for basic-basicapplication in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:relation:ts-cancel-service.cancelapplication:dependson-resttemplatebuilder",
+    "atom:semantic:ts-cancel-service.cancelapplication:meansinuse-loadbalanced-resttemplate"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: CancelApplication.java, same @LoadBalanced RestTemplateBuilder bean pattern as BasicApplication; reference has no atom beyond the component for cancel-cancelapplication."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:relation:ts-basic-service.basiccontroller:calls-basicservice",
+    "atom:relation:ts-basic-service.basiccontroller:calls-basicservice-queryforstationid",
+    "atom:relation:ts-basic-service.basiccontroller:calls-basicservice-queryfortravel",
+    "atom:relation:ts-basic-service.basiccontroller:calls-basicservice-queryfortravels"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: BasicController.java lines 36,39 (queryForTravel), 43,46 (queryForTravels), 50,53 (queryForStationId): each endpoint handler delegates directly to the injected BasicService; reference has no relation atom for basic-basiccontroller in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:relation:ts-basic-service.basicserviceimpl:dependson-discoveryclient"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: BasicServiceImpl.java line 31, @Autowired private DiscoveryClient discoveryClient; reference has no relation atom for this dependency in basic-basicserviceimpl."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:relation:ts-basic-service.securityconfig:calls-jwtfilter",
+    "atom:relation:ts-basic-service.securityconfig:dependson-jwtfilter"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: ts-basic-service SecurityConfig.java line 76, addFilterBefore(new JWTFilter(), UsernamePasswordAuthenticationFilter.class); reference has no relation atom for basic-securityconfig's JWTFilter wiring."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:relation:ts-cancel-service.securityconfig:calls-jwtfilter",
+    "atom:relation:ts-cancel-service.securityconfig:dependson-jwtfilter"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: ts-cancel-service SecurityConfig.java line 76, same JWTFilter wiring as basic-service; not covered by reference's cancel-securityconfig atoms."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:relation:ts-cancel-service.cancelcontroller:calls-cancelservice",
+    "atom:relation:ts-cancel-service.cancelcontroller:calls-cancelservice-calculaterefund",
+    "atom:relation:ts-cancel-service.cancelcontroller:calls-cancelservice-cancelorder"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: CancelController.java lines 36 (calculateRefund) and 47 (cancelOrder), both delegating to the injected CancelService; reference has no relation atom for cancel-cancelcontroller in this chunk."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:relation:ts-common.swaggerconfig:dependson-docket"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: ts-common SwaggerConfig.java lines 26-33, createRestApi() builds a springfox Docket from controllerPackagePath; reference has no relation atom for common-swaggerconfig."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:semantic:ts-auth-service.userserviceimpl:meansinuse-createdefaultauthuser-default-role",
+    "atom:semantic:ts-auth-service.userserviceimpl:meansinuse-default-role-assignment"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: UserServiceImpl.java line 58, .roles(new HashSet<>(Arrays.asList(AuthConstant.ROLE_USER))) - createDefaultAuthUser always assigns the fixed ROLE_USER role regardless of dto content; reference has no semantic atom about this default-role assignment."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:semantic:ts-auth-service.userserviceimpl:meansinuse-passwordmaxlength-variable"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: UserServiceImpl.java lines 89-93, local variable passwordMaxLength=6 is used as a minimum-length guard (password.length() < passwordMaxLength), not an upper bound despite its name; reference has no semantic atom for this."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:semantic:ts-basic-service-travel-query-flow:cech-section-money-amount-fallback",
+    "atom:semantic:ts-basic-service.basicserviceimpl:meansinuse-price-fallback-queryfortravel",
+    "atom:semantic:ts-basic-service.basicserviceimpl:meansinuse-price-fallback-queryfortravels"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: BasicServiceImpl.java lines 110-112 (queryForTravel) and 303-305 (queryForTravels): the catch block sets fixed fallback prices \"95.0\"/\"120.0\" instead of the computed values; reference's basic-surface money-amount cech atom covers only the double-arithmetic-then-string-concatenation convention (the computed path), not this exception fallback."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:semantic:ts-cancel-service-cancel-and-refund-flow:cech-section-money-amount-zero-fallback"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: CancelServiceImpl.java private calculateRefund(Order) lines 201-202 (\"0.00\" on NOTPAID) and 224-226 (\"0\" when the ticket's travel time has passed); reference's cancel-surface money-amount cech atom covers only the string-parsed-to-double-DecimalFormat convention, not this zero-fallback branch."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:semantic:ts-cancel-service.cancelserviceimpl:meansinuse-drawback-get-verb"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: CancelServiceImpl.java drawbackMoney() lines 284-285, HttpMethod.GET used to call the inside-payment-service drawback endpoint that changes the paying account's balance; reference has no semantic atom about this verb choice."
+  },
+  {
+   "candidateAtomIds": [
+    "atom:state:ts-auth-service.userserviceimpl:persistsin-user"
+   ],
+   "decision": "novel-correct",
+   "basis": "reread: UserServiceImpl.java lines 42, 65, 72 (findAll/save/deleteByUserId against UserRepository, backing the User entity); reference has no state atom for auth-userserviceimpl in this chunk."
+  }
+ ]
+}
