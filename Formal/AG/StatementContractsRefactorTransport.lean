@@ -9,55 +9,92 @@ Fixed statement contracts for Part VIII Definition 7.2 and Theorem 7.3.
 namespace AAT.AG
 namespace Measurement
 
-universe u v
+universe u v w
 
 variable {M_X M_Y : MeasurementProfile.{u, v}}
 variable {ρ : RefactorMorphism M_X M_Y}
-variable {P : PullbackObstructionClass ρ}
-
-/-- Fixed contract: obstruction-class pullback is an additive homomorphism. -/
-example : P.TargetClass →+ P.SourceClass :=
-  P.pullback
-
-/-- Fixed contract: profile zero is the actual zero source class. -/
-example (sourceClass : P.SourceClass) :
-    M_X.Zero (P.sourceDomain sourceClass) ↔ sourceClass = 0 :=
-  P.sourceZero_iff_class_eq_zero sourceClass
-
-/-- Fixed contract: profile zero is the actual zero target class. -/
-example (targetClass : P.TargetClass) :
-    M_Y.Zero (P.targetDomain targetClass) ↔ targetClass = 0 :=
-  P.targetZero_iff_class_eq_zero targetClass
+variable {P : PullbackObstructionClass.{u, v, w} ρ}
 
 /-- Fixed contract: selected finite sites are compared by an actual equivalence. -/
 example (E : RefactorEquivalenceAssumptions ρ P) :
     M_X.SiteObj ≃ M_Y.SiteObj :=
   E.selectedFiniteSiteEquivalence
 
-/-- Fixed contract: coefficient objects are compared by an actual equivalence. -/
+/-- Fixed contract: the site equivalence realizes the selected refactor map. -/
+example (E : RefactorEquivalenceAssumptions ρ P) (x : M_X.SiteObj) :
+    E.selectedFiniteSiteEquivalence x = ρ.selectedSiteMap x :=
+  E.selectedFiniteSiteEquivalence_apply x
+
+/-- Fixed contract: the ringed ambient isomorphism is the selected pullback. -/
+example (E : RefactorEquivalenceAssumptions ρ P)
+    (x : M_Y.ObstructionObject) :
+    E.ringedAmbientIso x = ρ.selectedRingedAmbientComparison x :=
+  E.ringedAmbientIso_apply x
+
+/-- Fixed contract: the coefficient isomorphism is the selected comparison. -/
+example (E : RefactorEquivalenceAssumptions ρ P) (x : M_Y.Coeff) :
+    E.coefficientIso x = ρ.selectedCoefficientComparison x :=
+  E.coefficientIso_apply x
+
+/-- Fixed contract: the law-ideal isomorphism is the selected pullback. -/
+example (E : RefactorEquivalenceAssumptions ρ P)
+    (x : M_Y.ObstructionIdeal) :
+    E.lawIdealPullbackIso x = ρ.selectedLawIdealPullback x :=
+  E.lawIdealPullbackIso_apply x
+
+/-- Fixed contract: witness readings realize the selected transformation. -/
+example (E : RefactorEquivalenceAssumptions ρ P)
+    (x : M_Y.WitnessVariables) :
+    E.witnessReadingIso x = ρ.selectedWitnessComparison x :=
+  E.witnessReadingIso_apply x
+
+/-- Fixed contract: axis readings realize the selected transformation. -/
+example (E : RefactorEquivalenceAssumptions ρ P)
+    (x : M_Y.RepresentationFamily) :
+    E.axisReadingIso x = ρ.selectedAxisComparison x :=
+  E.axisReadingIso_apply x
+
+/-- Fixed contract: the ringed ambient isomorphism is realized in degree zero. -/
+example (E : RefactorEquivalenceAssumptions ρ P) (c : P.TargetC0) :
+    P.sourceAmbientRealization (E.ambientCochainIso c) =
+      E.ringedAmbientIso (P.targetAmbientRealization c) :=
+  E.ambientCochainIso_realizes c
+
+/-- Fixed contract: the coefficient isomorphism is realized in degree one. -/
+example (E : RefactorEquivalenceAssumptions ρ P) (c : P.TargetC1) :
+    P.sourceCoefficientRealization (E.coefficientCochainIso c) =
+      E.coefficientIso (P.targetCoefficientRealization c) :=
+  E.coefficientCochainIso_realizes c
+
+/-- Fixed contract: the law-ideal isomorphism is realized in degree two. -/
+example (E : RefactorEquivalenceAssumptions ρ P) (c : P.TargetC2) :
+    P.sourceLawIdealRealization (E.lawIdealCochainIso c) =
+      E.lawIdealPullbackIso (P.targetLawIdealRealization c) :=
+  E.lawIdealCochainIso_realizes c
+
+/-- Fixed contract: the selected degreewise maps construct a cochain equivalence. -/
 example (E : RefactorEquivalenceAssumptions ρ P) :
-    M_Y.Coeff ≃ M_X.Coeff :=
-  E.coefficientIso
+    Cohomology.AdditiveThreeTermComplex.Equivalence
+      P.sourceComplex P.targetComplex :=
+  E.cochainEquivalence
 
-/-- Fixed contract: the induced cohomology pullback is an additive equivalence. -/
+/-- Fixed contract: pullback is the quotient map generated from cochains. -/
 example (E : RefactorEquivalenceAssumptions ρ P) :
-    P.TargetClass ≃+ P.SourceClass :=
-  E.cohomologyPullbackIso
+    P.targetComplex.H1 → P.sourceComplex.H1 :=
+  P.pullback E
 
-/-- Fixed contract: the induced equivalence is Definition 7.2's pullback map. -/
-example (E : RefactorEquivalenceAssumptions ρ P) (targetClass : P.TargetClass) :
-    E.cohomologyPullbackIso targetClass = P.pullback targetClass :=
-  E.cohomologyPullbackIso_apply targetClass
-
-/-- Fixed contract: no nonzero target class can pull back to zero. -/
-example (E : RefactorEquivalenceAssumptions ρ P) (targetClass : P.TargetClass) :
-    P.pullback targetClass = 0 ↔ targetClass = 0 :=
-  E.pullback_eq_zero_iff targetClass
+/-- Fixed contract: the generated quotient pullback preserves and reflects zero. -/
+example (E : RefactorEquivalenceAssumptions ρ P)
+    (targetClass : P.targetComplex.H1) :
+    P.sourceComplex.H1IsZero (P.pullback E targetClass) ↔
+      P.targetComplex.H1IsZero targetClass :=
+  P.pullback_h1Zero_iff E targetClass
 
 /-- Fixed contract: theorem 7.3 derives profile-zero preservation and reflection. -/
-example (E : RefactorEquivalenceAssumptions ρ P) (targetClass : P.TargetClass) :
+example (E : RefactorEquivalenceAssumptions ρ P)
+    (targetClass : P.targetComplex.H1) :
     M_Y.Zero (P.targetDomain targetClass) ↔
-      M_X.Zero (P.sourceDomain (P.pullback targetClass)) :=
+      M_X.Zero (P.sourceDomain (P.pullback E targetClass)) :=
   refactorZero_iff_pullbackZero E targetClass
 
 end Measurement

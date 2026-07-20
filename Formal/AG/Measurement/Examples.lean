@@ -780,134 +780,198 @@ theorem threeAxisCohomologyClass_nonzero :
   simpa using h
 
 /-!
-## Refactor equivalence on an actual cohomology quotient
+## Refactor equivalence generated on an actual cohomology quotient
 
-The source and target class carriers below are the cohomology quotient of the
-nondegenerate three-axis complex.  Negation supplies a nonidentity additive
-equivalence, so both zero and nonzero transport are exercised.
+The finite fixture uses the complex `ℤ --0--> ℤ --0--> ℤ`.  Negation is used
+for all three degreewise profile comparisons and therefore generates, through
+cocycle and coboundary descent, the nonidentity pullback on `H^1`.
 -/
 
-/-- R11(d): profile whose domain and zero reading are the actual cohomology quotient. -/
-noncomputable def threeAxisCohomologyMeasurementProfile : MeasurementProfile where
+/-- R11(d): a nontrivial quotient fixture with zero differentials. -/
+def integerZeroComplex :
+    Cohomology.AdditiveThreeTermComplex ℤ ℤ ℤ where
+  d0 := 0
+  d1 := 0
+  d_comp := by intro c; simp
+
+/-- R11(d): the class represented by the cocycle `1`. -/
+def integerOneCocycle : integerZeroComplex.H1Cocycle :=
+  ⟨1, by simp [integerZeroComplex]⟩
+
+/-- R11(d): the actual quotient class represented by `1`. -/
+def integerOneClass : integerZeroComplex.H1 :=
+  Quotient.mk integerZeroComplex.H1CoboundarySetoid integerOneCocycle
+
+/-- R11(d): the actual quotient class represented by `-1`. -/
+def integerNegOneClass : integerZeroComplex.H1 :=
+  Quotient.mk integerZeroComplex.H1CoboundarySetoid
+    ⟨-1, by simp [integerZeroComplex]⟩
+
+/-- R11(d): the class of `1` is nonzero in the actual quotient. -/
+theorem integerOneClass_not_h1Zero :
+    ¬ integerZeroComplex.H1IsZero integerOneClass := by
+  intro h
+  rcases Quotient.exact h with ⟨b, hb⟩
+  norm_num [integerOneClass, integerOneCocycle, integerZeroComplex,
+    Cohomology.AdditiveThreeTermComplex.H1ZeroClass] at hb
+
+/-- R11(d): profile whose zero reading is the actual quotient zero class. -/
+def integerCohomologyMeasurementProfile : MeasurementProfile where
   SiteObj := Fin 2
   Cover := Fin 2
-  Coeff := ℝ
+  Coeff := ℤ
   EffCoeff := Unit
-  ObstructionObject := ℝ
+  ObstructionObject := ℤ
   LawUniverse := Unit
   WitnessVariables := Fin 2
-  ObstructionIdeal := Unit
+  ObstructionIdeal := ℤ
   RepresentationFamily := Fin 2
-  Domain := threeAxisRealComplex.cohomology
+  Domain := integerZeroComplex.H1
   CertRef := fun _ => Unit
   SelectedMethod := fun _ => Unit
   InScope := fun _ => True
   OutOfScope := fun _ => False
-  Zero := fun alpha => alpha = 0
-  NonZero := fun alpha => alpha ≠ 0
+  Zero := integerZeroComplex.H1IsZero
+  NonZero := fun alpha => ¬ integerZeroComplex.H1IsZero alpha
   Undecided := fun _ => False
   NotRunOrUnavailable := fun _ => False
 
-/-- R11(d): negation is an additive equivalence of the selected cohomology quotient. -/
-noncomputable def threeAxisCohomologyNegEquiv :
-    threeAxisRealComplex.cohomology ≃+ threeAxisRealComplex.cohomology where
-  toFun := fun alpha => -alpha
-  invFun := fun alpha => -alpha
-  left_inv := by intro alpha; simp
-  right_inv := by intro alpha; simp
-  map_add' := by intro alpha beta; simp [add_comm]
+/-- R11(d): negation on the selected additive cochain readings. -/
+def integerNegAddEquiv : ℤ ≃+ ℤ where
+  toFun := fun x => -x
+  invFun := fun x => -x
+  left_inv := by intro x; simp
+  right_inv := by intro x; simp
+  map_add' := by intro x y; simp [add_comm]
 
-/-- R11(d): selected refactor data with actual equivalences on every finite reading. -/
-noncomputable def threeAxisCohomologyRefactor :
-    RefactorMorphism threeAxisCohomologyMeasurementProfile
-      threeAxisCohomologyMeasurementProfile where
-  SiteMap := Fin 2 ≃ Fin 2
-  rho := fun x y => y = x
-  RingedAmbientComparison := ℝ ≃ ℝ
-  ringedAmbientComparison_cert := fun e => Function.Bijective e
-  LawIdealPullback := Unit ≃ Unit
-  lawIdealPullback_cert := fun e => Function.Bijective e
-  CoefficientComparison := ℝ ≃ ℝ
-  coefficientComparison_cert := fun e => Function.Bijective e
-  WitnessComparison := Fin 2 ≃ Fin 2
-  witnessComparison_cert := fun e => Function.Bijective e
-  AxisComparison := Fin 2 ≃ Fin 2
-  axisComparison_cert := fun e => Function.Bijective e
-  selectedSiteMap := Equiv.refl _
-  selectedRingedAmbientComparison := Equiv.refl _
-  selectedLawIdealPullback := Equiv.refl _
-  selectedCoefficientComparison := Equiv.refl _
-  selectedWitnessComparison := Equiv.refl _
-  selectedAxisComparison := Equiv.refl _
-  selectedRingedAmbientComparison_cert := (Equiv.refl _).bijective
-  selectedLawIdealPullback_cert := (Equiv.refl _).bijective
-  selectedCoefficientComparison_cert := (Equiv.refl _).bijective
-  selectedWitnessComparison_cert := (Equiv.refl _).bijective
-  selectedAxisComparison_cert := (Equiv.refl _).bijective
-  siteMapFinite := Finite (Fin 2)
-  siteMapFinite_cert := inferInstance
-  lawCompatible := Function.Bijective (Equiv.refl Unit)
-  lawCompatible_cert := (Equiv.refl Unit).bijective
-  coefficientCompatible := Function.Bijective (Equiv.refl ℝ)
-  coefficientCompatible_cert := (Equiv.refl ℝ).bijective
-  witnessReadingCompatible := Function.Bijective (Equiv.refl (Fin 2))
-  witnessReadingCompatible_cert := (Equiv.refl (Fin 2)).bijective
-  axisReadingCompatible := Function.Bijective (Equiv.refl (Fin 2))
-  axisReadingCompatible_cert := (Equiv.refl (Fin 2)).bijective
+/-- R11(d): the nonidentity permutation of the finite selected readings. -/
+def finTwoSwap : Fin 2 ≃ Fin 2 :=
+  Equiv.swap 0 1
 
-/-- R11(d): pullback on the actual cohomology quotient, with exact profile-zero readings. -/
-noncomputable def threeAxisCohomologyPullbackClass :
-    PullbackObstructionClass threeAxisCohomologyRefactor where
-  SourceClass := threeAxisRealComplex.cohomology
-  TargetClass := threeAxisRealComplex.cohomology
-  pullback := threeAxisCohomologyNegEquiv.toAddMonoidHom
+/-- R11(d): selected refactor maps on every profile reading. -/
+def integerCohomologyRefactor :
+    RefactorMorphism integerCohomologyMeasurementProfile
+      integerCohomologyMeasurementProfile where
+  sourceSiteFintype := inferInstanceAs (Fintype (Fin 2))
+  targetSiteFintype := inferInstanceAs (Fintype (Fin 2))
+  selectedSiteMap := finTwoSwap
+  selectedRingedAmbientComparison := integerNegAddEquiv
+  selectedCoefficientComparison := integerNegAddEquiv
+  selectedLawIdealPullback := integerNegAddEquiv
+  selectedWitnessComparison := finTwoSwap
+  selectedAxisComparison := finTwoSwap
+
+/-- R11(d): actual source and target quotient complexes and profile readings. -/
+def integerCohomologyPullbackClass :
+    PullbackObstructionClass integerCohomologyRefactor where
+  SourceC0 := ℤ
+  SourceC1 := ℤ
+  SourceC2 := ℤ
+  TargetC0 := ℤ
+  TargetC1 := ℤ
+  TargetC2 := ℤ
+  sourceComplex := integerZeroComplex
+  targetComplex := integerZeroComplex
+  sourceAmbientRealization := Equiv.refl _
+  targetAmbientRealization := Equiv.refl _
+  sourceCoefficientRealization := Equiv.refl _
+  targetCoefficientRealization := Equiv.refl _
+  sourceLawIdealRealization := Equiv.refl _
+  targetLawIdealRealization := Equiv.refl _
   sourceDomain := id
   targetDomain := id
-  sourceZero_iff_class_eq_zero := fun _ => Iff.rfl
-  targetZero_iff_class_eq_zero := fun _ => Iff.rfl
+  sourceZero_iff_h1Zero := fun _ => Iff.rfl
+  targetZero_iff_h1Zero := fun _ => Iff.rfl
 
-/-- R11(d): all selected comparison data induce the negation cohomology isomorphism. -/
-noncomputable def threeAxisCohomologyRefactorEquivalence :
-    RefactorEquivalenceAssumptions threeAxisCohomologyRefactor
-      threeAxisCohomologyPullbackClass where
-  selectedFiniteSiteEquivalence := Equiv.refl _
-  ringedAmbientIso := Equiv.refl _
-  coefficientIso := Equiv.refl _
-  lawIdealPullbackIso := Equiv.refl _
-  witnessReadingIso := Equiv.refl _
-  axisReadingIso := Equiv.refl _
-  cohomologyPullbackIso := threeAxisCohomologyNegEquiv
-  cohomologyPullbackIso_apply := fun _ => rfl
+/--
+R11(d): profile isomorphisms are realized by the degreewise negation cochain
+maps, which commute with both zero differentials.
+-/
+def integerCohomologyRefactorEquivalence :
+    RefactorEquivalenceAssumptions integerCohomologyRefactor
+      integerCohomologyPullbackClass where
+  selectedFiniteSiteEquivalence := finTwoSwap
+  selectedFiniteSiteEquivalence_apply := fun _ => rfl
+  ringedAmbientIso := integerNegAddEquiv.toEquiv
+  ringedAmbientIso_apply := fun _ => rfl
+  coefficientIso := integerNegAddEquiv.toEquiv
+  coefficientIso_apply := fun _ => rfl
+  lawIdealPullbackIso := integerNegAddEquiv.toEquiv
+  lawIdealPullbackIso_apply := fun x => by
+    change integerNegAddEquiv x = integerNegAddEquiv x
+    rfl
+  witnessReadingIso := finTwoSwap
+  witnessReadingIso_apply := fun _ => rfl
+  axisReadingIso := finTwoSwap
+  axisReadingIso_apply := fun _ => rfl
+  ambientCochainIso := integerNegAddEquiv
+  coefficientCochainIso := integerNegAddEquiv
+  lawIdealCochainIso := integerNegAddEquiv
+  ambientCochainIso_realizes := fun _ => rfl
+  coefficientCochainIso_realizes := fun _ => rfl
+  lawIdealCochainIso_realizes := fun _ => rfl
+  from_d0 := by
+    intro c
+    change -0 = 0
+    simp
+  from_d1 := by
+    intro c
+    change -0 = 0
+    simp
 
-/-- R11(d): theorem 7.3 package on the zero class of the actual quotient. -/
-noncomputable def refactorInvarianceExamplePackage :
-    RefactorInvarianceUnderEquivalence threeAxisCohomologyPullbackClass
-      threeAxisCohomologyRefactorEquivalence :=
+/-- R11(d): quotient descent computes the pullback of `[1]` as `[-1]`. -/
+theorem integerCohomologyPullback_one_eq_negOne :
+    integerCohomologyPullbackClass.pullback
+        integerCohomologyRefactorEquivalence integerOneClass =
+      integerNegOneClass := by
+  rfl
+
+/-- R11(d): the generated quotient pullback is nonidentity on `[1]`. -/
+theorem integerCohomologyPullback_one_ne_one :
+    integerCohomologyPullbackClass.pullback
+        integerCohomologyRefactorEquivalence integerOneClass ≠
+      integerOneClass := by
+  rw [integerCohomologyPullback_one_eq_negOne]
+  intro h
+  rcases Quotient.exact h with ⟨b, hb⟩
+  norm_num [integerNegOneClass, integerOneClass, integerOneCocycle,
+    integerZeroComplex] at hb
+
+/-- R11(d): theorem 7.3 package on the actual quotient zero class. -/
+def refactorInvarianceExamplePackage :
+    RefactorInvarianceUnderEquivalence integerCohomologyPullbackClass
+      integerCohomologyRefactorEquivalence :=
   refactorInvarianceUnderEquivalencePackage
-    threeAxisCohomologyRefactorEquivalence
-      (0 : threeAxisRealComplex.cohomology) trivial trivial
+    integerCohomologyRefactorEquivalence
+    integerZeroComplex.H1ZeroClass trivial trivial
 
-/-- R11(d): zero is preserved and reflected by the induced cohomology isomorphism. -/
+/-- R11(d): zero is preserved and reflected by the generated quotient map. -/
 theorem refactorInvarianceExample_zero_iff_pullback_zero :
-    threeAxisCohomologyMeasurementProfile.Zero
-        (0 : threeAxisRealComplex.cohomology) ↔
-      threeAxisCohomologyMeasurementProfile.Zero
-        (threeAxisCohomologyPullbackClass.pullback
-          (0 : threeAxisRealComplex.cohomology)) :=
-  refactorZero_iff_pullbackZero threeAxisCohomologyRefactorEquivalence
-    (0 : threeAxisRealComplex.cohomology)
+    integerCohomologyMeasurementProfile.Zero integerZeroComplex.H1ZeroClass ↔
+      integerCohomologyMeasurementProfile.Zero
+        (integerCohomologyPullbackClass.pullback
+          integerCohomologyRefactorEquivalence integerZeroComplex.H1ZeroClass) :=
+  refactorZero_iff_pullbackZero integerCohomologyRefactorEquivalence
+    integerZeroComplex.H1ZeroClass
+
+/-- R11(d): nonzero is likewise preserved and reflected on the actual quotient. -/
+theorem refactorInvarianceExample_nonzero_iff_pullback_nonzero :
+    (¬ integerCohomologyMeasurementProfile.Zero integerOneClass) ↔
+      (¬ integerCohomologyMeasurementProfile.Zero
+        (integerCohomologyPullbackClass.pullback
+          integerCohomologyRefactorEquivalence integerOneClass)) :=
+  not_congr (refactorZero_iff_pullbackZero
+    integerCohomologyRefactorEquivalence integerOneClass)
 
 /-- R11(d): the selected nonzero quotient class remains nonzero after pullback. -/
 theorem refactorInvarianceExample_nonzero_preserved :
-    let alpha := threeAxisRealComplex.laplacianKernelEquivCohomology
-      threeAxisHarmonicKernel
-    (¬ threeAxisCohomologyMeasurementProfile.Zero alpha) ∧
-      (¬ threeAxisCohomologyMeasurementProfile.Zero
-        (threeAxisCohomologyPullbackClass.pullback alpha)) := by
-  dsimp [threeAxisCohomologyMeasurementProfile, threeAxisCohomologyPullbackClass,
-    threeAxisCohomologyNegEquiv]
-  exact ⟨threeAxisCohomologyClass_nonzero,
-    neg_ne_zero.mpr threeAxisCohomologyClass_nonzero⟩
+    (¬ integerCohomologyMeasurementProfile.Zero integerOneClass) ∧
+      (¬ integerCohomologyMeasurementProfile.Zero
+        (integerCohomologyPullbackClass.pullback
+          integerCohomologyRefactorEquivalence integerOneClass)) := by
+  exact ⟨integerOneClass_not_h1Zero,
+    refactorInvarianceExample_nonzero_iff_pullback_nonzero.mp
+      integerOneClass_not_h1Zero⟩
 
 /-- The middle-coordinate harmonic norm is exactly one, hence positive. -/
 theorem threeAxis_harmonic_norm_eq_one :
@@ -1710,14 +1774,17 @@ structure PartVIIIFiniteExampleSuite where
   finiteComputability :
     Nonempty (FiniteAATComputability pseudoCircleMeasurementProfile)
   refactorInvariance :
-    RefactorInvarianceUnderEquivalence threeAxisCohomologyPullbackClass
-      threeAxisCohomologyRefactorEquivalence
+    RefactorInvarianceUnderEquivalence integerCohomologyPullbackClass
+      integerCohomologyRefactorEquivalence
   refactorNonzeroTransport :
-    let alpha := threeAxisRealComplex.laplacianKernelEquivCohomology
-      threeAxisHarmonicKernel
-    (¬ threeAxisCohomologyMeasurementProfile.Zero alpha) ∧
-      (¬ threeAxisCohomologyMeasurementProfile.Zero
-        (threeAxisCohomologyPullbackClass.pullback alpha))
+    (¬ integerCohomologyMeasurementProfile.Zero integerOneClass) ∧
+      (¬ integerCohomologyMeasurementProfile.Zero
+        (integerCohomologyPullbackClass.pullback
+          integerCohomologyRefactorEquivalence integerOneClass))
+  refactorPullbackNonidentity :
+    integerCohomologyPullbackClass.pullback
+        integerCohomologyRefactorEquivalence integerOneClass ≠
+      integerOneClass
   cellularHodge : CellularHodgeFiniteExample
   supportTransfer : SupportLocalizedTransferFiniteExample
   packetGAGA : MeasurementPacketGAGAFiniteExample
@@ -1736,6 +1803,7 @@ def partVIIIFiniteExampleSuite : PartVIIIFiniteExampleSuite where
   finiteComputability := finiteComputabilityExample_verified
   refactorInvariance := refactorInvarianceExamplePackage
   refactorNonzeroTransport := refactorInvarianceExample_nonzero_preserved
+  refactorPullbackNonidentity := integerCohomologyPullback_one_ne_one
   cellularHodge := cellularHodgeFiniteExample
   supportTransfer := supportLocalizedTransferFiniteExample
   packetGAGA := measurementPacketGAGAFiniteExample
@@ -1760,23 +1828,25 @@ def PartVIIIFiniteExampleSuite.CoversR11 (S : PartVIIIFiniteExampleSuite) : Prop
               SquareFreeRepairTarget.pairPR ∧
               Nonempty (FiniteAATComputability pseudoCircleMeasurementProfile) ∧
                 Function.Bijective
-                    threeAxisCohomologyRefactorEquivalence.selectedFiniteSiteEquivalence ∧
+                    integerCohomologyRefactorEquivalence.selectedFiniteSiteEquivalence ∧
                   Function.Bijective
-                      threeAxisCohomologyRefactorEquivalence.coefficientIso ∧
-                    (threeAxisCohomologyMeasurementProfile.Zero
-                          (threeAxisCohomologyPullbackClass.targetDomain
+                      integerCohomologyRefactorEquivalence.coefficientIso ∧
+                    (integerCohomologyMeasurementProfile.Zero
+                          (integerCohomologyPullbackClass.targetDomain
                             S.refactorInvariance.targetClass) ↔
-                      threeAxisCohomologyMeasurementProfile.Zero
-                        (threeAxisCohomologyPullbackClass.sourceDomain
-                          (threeAxisCohomologyPullbackClass.pullback
+                      integerCohomologyMeasurementProfile.Zero
+                        (integerCohomologyPullbackClass.sourceDomain
+                          (integerCohomologyPullbackClass.pullback
+                            integerCohomologyRefactorEquivalence
                             S.refactorInvariance.targetClass))) ∧
-                      ((¬ threeAxisCohomologyMeasurementProfile.Zero
-                          (threeAxisRealComplex.laplacianKernelEquivCohomology
-                            threeAxisHarmonicKernel)) ∧
-                        (¬ threeAxisCohomologyMeasurementProfile.Zero
-                          (threeAxisCohomologyPullbackClass.pullback
-                            (threeAxisRealComplex.laplacianKernelEquivCohomology
-                              threeAxisHarmonicKernel)))) ∧
+                      ((¬ integerCohomologyMeasurementProfile.Zero integerOneClass) ∧
+                        (¬ integerCohomologyMeasurementProfile.Zero
+                          (integerCohomologyPullbackClass.pullback
+                            integerCohomologyRefactorEquivalence
+                            integerOneClass))) ∧
+                      (integerCohomologyPullbackClass.pullback
+                          integerCohomologyRefactorEquivalence integerOneClass ≠
+                        integerOneClass) ∧
                       S.cellularHodge.kerL1_equiv_H1 ∧
                         S.cellularHodge.harmonicDebtMinimal ∧
                           S.supportTransfer.nontrivialPairingResidue ∧
@@ -1798,10 +1868,11 @@ theorem partVIIIFiniteExampleSuite_complete :
     partVIIIFiniteExampleSuite.singletonQMinimalRepair,
     partVIIIFiniteExampleSuite.pairPRMinimalRepair,
     partVIIIFiniteExampleSuite.finiteComputability,
-    threeAxisCohomologyRefactorEquivalence.selectedFiniteSiteEquivalence.bijective,
-    threeAxisCohomologyRefactorEquivalence.coefficientIso.bijective,
+    integerCohomologyRefactorEquivalence.selectedFiniteSiteEquivalence.bijective,
+    integerCohomologyRefactorEquivalence.coefficientIso.bijective,
     partVIIIFiniteExampleSuite.refactorInvariance.zero_iff_pullback_zero,
     partVIIIFiniteExampleSuite.refactorNonzeroTransport,
+    partVIIIFiniteExampleSuite.refactorPullbackNonidentity,
     partVIIIFiniteExampleSuite.cellularHodge.kerL1_equiv_H1_cert,
     partVIIIFiniteExampleSuite.cellularHodge.harmonicDebtMinimal_cert,
     partVIIIFiniteExampleSuite.supportTransfer.nontrivialPairingResidue_cert,
