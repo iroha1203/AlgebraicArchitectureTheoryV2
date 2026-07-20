@@ -12,7 +12,7 @@
 - LawPolicy selector は明示した law / lawPair / evaluator / basis / scope / severity と `lawSurfaceRef` を選ぶ `law-policy/v0.5.4` artifact である。退役した policy pack selector は受理しない。AG evaluator を選ぶ場合は `measurementProfileRef` で `measurement-profile/v0.5.4` を選ぶ。cover、coefficient、resolution、witness variables、exactness assumption、distance rule は supplied law-equation-surface、evaluator registry、または MeasurementProfile の責務である。AAT そのものではない。
 - ArchSig v0.5.4 は、ArchMap + LawPolicy + supplied law-equation-surface + MeasurementProfile の入力検証が通った `analyze` run で `archsig-measurement-packet/v0.5.4` を作る AG measurement layer である。Rust と Lean の対応を tooling contract として要求しない。
   再現可能な run では `policy-bundle` が三つの選択済み policy component と canonical fingerprint を固定し、個別 flag は同じ入力を直接渡す形である。
-- ArchView は ArchSig が emitted した measurement / viewer artifact を AAT 代数幾何の幾何として投影する可視化レイヤーである。ArchView は新しい structural verdict を作らず、`archsig-atom-viewer-data.json`、同一ディレクトリの summary / manifest、または `archview-sequence/v0.5.4` の実測フレーム列だけを表示する。
+- ArchView は supplied ArchMap の Atom / Context / Cover を直接読む Atom-native な可視化レイヤーである。ArchMap 単独で architecture understanding を成立させ、その同じ geometry 上へ既存 ArchSig run artifact の measurement、finding、comparison、gate、明示された repair target を optional overlay として重ねる。ArchView は新しい structural verdict、source relation、repair recommendation を作らず、すべての描画と source landing を supplied artifact へ追跡可能にする。再構築前の `tools/archview/archview.html` が `archsig-atom-viewer-data.json` / `archview-sequence/v0.5.4` を読むことは現行実装上の制約であり、ArchView の恒久的な product identity ではない。
 - ArchSig の `analyze` は選ばれた LawPolicy、law-equation-surface、MeasurementProfile、evidence contract の中で
   structural verdict と analytic reading を出す。`compare` は二つの analyze run を記録レベルで比較し、
   `gate` は gate policy に従って measurement packet と比較記録をCI判断へ写像する。
@@ -44,18 +44,32 @@
 
 ## テスト責務と実行経路
 
+### ArchSig test ownership（hard rule）
+
+ArchSig の Rust test は ArchSig だけを検査する。対象は ArchSig runtime、CLI、schema、validator、
+evaluator、ArchSig が生成する serialized artifact の値・参照・決定性に限定する。
+
+`tools/archsig` の unit / integration / golden test とfixtureから、次を検査することを禁止する。
+
+- ArchView の HTML、DOM、UI、scene、内部関数、browser behavior、表示文言
+- `tools/archview/` のファイル存在、内容、bundle配置
+- website の source、文言、route、link、asset、layout、build結果
+
+ArchSig artifactがArchViewに消費される場合も、ArchSig testが検査するのはserialized artifactの
+ArchSig側contractまでとする。consumer実装との結合testへ拡張しない。ArchViewは`tools/archview/`が
+所有するbrowser / UI test、websiteはwebsiteのbuild / browser testで検査する。
+
 ArchSig の `cli` integration test target は runtime 契約だけを所有する。`cargo test
 --manifest-path tools/archsig/Cargo.toml --test cli` は `analyze` / `gate` / `compare`、
 schema catalog、measurement packet、evaluator の入力・出力、CLI error、決定性を検証する。
-ArchView HTML、release workflow、docs、SKILL、website の文字列をこのtargetから直接検査しない。
+ArchView、release workflow、docs、SKILL、websiteをこのtargetから検査しない。
 全体の `cargo test --manifest-path tools/archsig/Cargo.toml` は、下表の専用targetも合わせて実行する。
 
 | 対象 | source of truth | 実行経路 |
 | --- | --- | --- |
 | ArchSig runtime | `tools/archsig/src/` と `tools/archsig/tests/cli.rs` | `cargo test --manifest-path tools/archsig/Cargo.toml --test cli` |
 | ArchMap authoring | `tools/archsig/src/authoring.rs`、`archmap` CLI、`archmap-creater` | `cargo test --manifest-path tools/archsig/Cargo.toml --lib authoring::tests` と `cargo test --manifest-path tools/archsig/Cargo.toml --test authoring` |
-| ArchView artifact | `tools/archview/` と emitted viewer artifact | `cargo test --manifest-path tools/archsig/Cargo.toml --test archview_e2e`。HTML文字列検査は行わず、analyze生成物を検証する |
-| ArchView UI / sequence | `tools/archview/archview.html` | `analyze`を`.tmp/archview-preview`へ出力し、`cp tools/archview/archview.html .tmp/archview-preview/`後に`python3 -m http.server 8000 --directory .tmp/archview-preview`を起動して、同一ディレクトリのviewer dataとsequenceを確認 |
+| ArchView | `tools/archview/` | ArchView自身が所有するbrowser / UI testで検証する。ArchMap単独読込、optional overlay、source landing、unsupported geometryの非描画、empty / malformed入力を同じsurfaceで確認する。ArchSigのRust testからArchViewのUI、scene、内部関数を検査しない |
 | release | `.github/workflows/archsig-release.yml` | `gh workflow run archsig-release.yml -f tag=<tag>` |
 | docs / skill / website | 各source fileとreview workflow | docs / skill は `git diff --check -- docs/tool tools/archsig/skills`、website は `cd website && npx @11ty/eleventy`。ArchSig runtime testには含めない |
 

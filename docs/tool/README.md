@@ -1,58 +1,61 @@
 # Tool Docs
 
-`docs/tool/` describes current ArchMap / LawPolicy / law-equation-surface /
-MeasurementProfile / policy-bundle / ArchSig / FieldSig artifact contracts. It is not the source of truth for AAT
-mathematics.
+`docs/tool/` は ArchMap / LawPolicy / law-equation-surface /
+MeasurementProfile / ArchSig / ArchView / FieldSig の現行 tooling contract を扱う。
+AAT の数学的主張は定義せず、各toolが supplied artifact から何を読み、何を生成するかを固定する。
 
-Historical tool documents are archived under:
+## Product map
 
-- `docs/archive/2026-05-26-tool-docs-pre-archmap-primary/`
-- `docs/archive/2026-07-05-archsig-v1-retirement/`
+| Product | Responsibility | Primary input / output |
+| --- | --- | --- |
+| ArchMap | source-groundedなAtom evidence、Context、Cover、source refsを記録する | `archmap/v0.5.4` |
+| LawPolicy | evaluator、law、basis、scope、severityを選択する | `law-policy/v0.5.4` |
+| law-equation-surface | 選択可能なlaw universeとwitness variablesを宣言する | `law-equation-surface/v0.5.4` |
+| MeasurementProfile | finite measurement regimeを選択する | `measurement-profile/v0.5.4` |
+| ArchSig | 選択済みcontract内でmeasurement、comparison、gate decisionを計算する | measurement packet / summary / insight / compare / gate / viewer data |
+| ArchView | ArchMapのAtom geometryを可視化し、ArchSig analysisを同じgeometry上へ重ね、sourceへ接続する | ArchMap + optional ArchSig run artifacts |
+| FieldSig | ArchSig measurement packetとworkflow evidenceをSFTのevolution measurement inputとして読む | serialized ArchSig handoff |
 
-Current source-of-truth boundaries:
+## ArchView
 
-- ArchMap records source-grounded Atom evidence with finite-poset contexts and
-  selected covers.
-- LawPolicy selects explicit law / lawPair entries, evaluators, basis refs, scope, and severity.
-- law-equation-surface declares the selected law universe and witness variables.
-- policy-bundle fixes LawPolicy, law-equation-surface, and MeasurementProfile
-  with canonical component fingerprints for one run.
-- MeasurementProfile selects the concrete finite measurement regime.
-- RepairPlan (`archsig-repair-plan/v0.5.4`) is the SAGA Stage 1 input side:
-  `repair-plan` validates it, and `analyze --repair-plan` consumes it when
-  `ag.saga-descent` is selected. Without it the row stays `not_computed` with
-  `silence_by_design`.
-- ArchSig `analyze` emits the current measurement packet, validation reports,
-  summary, insight report, viewer data, and run manifest.
-- ArchSig compare + gate are the current PR / CI decision surfaces.
-- The bundled skills under `tools/archsig/skills` (`archmap-creater`,
-  `law-policy-creater`, `archsig-reader`, `archsig-pr-reviewer`,
-  `repair-plan-creater`) are the primary product interface for LLM agents; the
-  CLI is the stable runtime they call.
-- FieldSig reads ArchSig measurement packets as bounded current SFT handoff
-  state. Raw ArchMap files and retired raw packets are not current handoff
-  inputs.
-- ArchView visualizes emitted viewer data and same-directory summary / manifest /
-  optional gate report files. It projects measured geometry and gate decisions
-  supplied by ArchSig without creating a new verdict.
+ArchViewはArchSig reportの付属viewerではない。ArchMapだけでコードベース理解を成立させる
+Atom-native Architecture Atlasであり、次の3責務を持つ。
 
-Current entry points:
+1. ArchMapのAtom / Context / Coverからarchitecture structureを理解できる形にする。
+2. ArchSigが供給したanalysisを同じgeometry上のoverlayとして表示する。
+3. findingのsupport Atomからsupplied source refを解決し、file / symbol / lineへ到達させる。
 
-- [Tooling Editing Guideline](guideline.md)
-- [One-cent drift demo](../../tools/archsig/examples/practical-rust-service/README.md): 実行可能なend-to-endデモ(SAGA診断階段: grounding→residual class実測→h1-transfer→harmonic debt→gate BLOCK→修復→PASS)。
-- [Atom Handoff Checklist](atom_handoff.md)
-- [LawPolicy](law_policy.md)
+ArchViewはstructural verdict、relation、source symbol、repair recommendationを生成しない。
+direct evidence、boundary participant、candidate change point、validated repairを区別し、
+描画要素と視覚チャネルの由来をsupplied artifactへ追跡可能にする。
+
+現在checked inされている`tools/archview/archview.html`は再構築前のviewer-data readerである。
+現行実装と再構築後の契約の差は[ArchView README](../../tools/archview/README.md)に記録する。
+
+## Sources of truth
+
+| Concern | Source of truth |
+| --- | --- |
+| Tooling編集規律と検証経路 | [guideline.md](guideline.md) |
+| ArchMap authoring | [Atom handoff](atom_handoff.md)とschema / validator / fixture |
+| LawPolicy authoring | [law_policy.md](law_policy.md) |
+| ArchSig runtime | `tools/archsig/src/`、schema catalog、CLI docs、runtime tests |
+| ArchSig artifact reading | [Artifacts and boundaries](../../tools/archsig/docs/artifacts-and-boundaries.md) |
+| ArchView product・runtime・fidelity | [tools/archview/README.md](../../tools/archview/README.md)とUI / E2E tests |
+| FieldSig runtime | `tools/fieldsig/README.md`、serialized schema、tests |
+
+PRDや設計ノートを恒久仕様として参照しない。実装済みcontractは現行仕様、schema、source、test、fixtureへ置く。
+
+## Entry points
+
 - [ArchSig Analyze E2E Workflow](llm_native_e2e_workflow.md)
-- [ArchSig skills](../../tools/archsig/skills/): 5本のバンドルSKILL(一次product interface)。
-- [ArchSig gate-policy authoring guide](archsig_gate_policy.md)
-- [ArchSig compare report guide](archsig_compare.md)
-- [ArchSig measurement view model contract](archsig_view_model_contract.md)
-- [ArchMapStore Notes](archmap_store.md)
-- [LLM-Native Golden Corpus](golden_corpus.md)
-- [AG measurement evidence contract](ag_measurement_evidence_contract.md): fixtureのsource sectionと入力責務。
-- [ArchView gluing geometry contract](archview_gluing_geometry_contract.md): golden projection caseとfidelity規律。
+- [ArchSig measurement view model](archsig_view_model_contract.md)
+- [ArchSig gate policy](archsig_gate_policy.md)
+- [ArchSig compare report](archsig_compare.md)
+- [ArchMapStore](archmap_store.md)
+- [Golden corpus](golden_corpus.md)
+- [AG measurement evidence](ag_measurement_evidence_contract.md)
+- [ArchSig skills](../../tools/archsig/skills/)
 - [ArchView](../../tools/archview/README.md)
 
-New implementation-facing specification documents should be added here only
-when they match implementation and keep AAT, ArchSig, FieldSig, and website
-boundaries explicit.
+過去の設計・退役contractは`docs/archive/`の履歴であり、現行source of truthとして扱わない。
