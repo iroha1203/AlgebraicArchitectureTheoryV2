@@ -237,10 +237,10 @@ structure SelectedPeriodStokesTheoremPackage {M : MeasurementProfile.{u, v}}
   oneCochainToInterval :
     C.cellularModel.Cochain periodOneDegree ≃ₗ[ℝ]
       Cohomology.RealIntervalBasisStokes.Cochain 1
-  /-- Comparison from selected cellular two-cochains to the real interval model. -/
-  twoCochainToInterval :
+  /-- Comparison from selected cellular two-cochains to selected nerve faces. -/
+  twoCochainToSelectedFaces :
     C.cellularModel.Cochain periodTwoDegree ≃ₗ[ℝ]
-      Cohomology.RealIntervalBasisStokes.Cochain 2
+      (Empty → ℝ)
   /-- Comparison from selected cellular zero-chains to the real interval model. -/
   zeroChainToInterval :
     C.cellularModel.Cochain periodZeroDegree ≃ₗ[ℝ]
@@ -253,9 +253,9 @@ structure SelectedPeriodStokesTheoremPackage {M : MeasurementProfile.{u, v}}
   periodCoboundary_to_interval : ∀ ω,
     oneCochainToInterval (periodCoboundary ω) =
       Cohomology.RealIntervalBasisStokes.d0 (zeroCochainToInterval ω)
-  /-- The selected degree-one cellular coboundary transports to the face-free interval model. -/
-  nerveCoboundary_to_interval : ∀ η,
-    twoCochainToInterval (nerveCoboundary η) = 0
+  /-- The selected degree-one cellular coboundary has no selected face component. -/
+  nerveCoboundary_to_selectedFaces : ∀ η,
+    twoCochainToSelectedFaces (nerveCoboundary η) = 0
 
 attribute [local instance] SelectedPeriodStokesTheoremPackage.periodZeroAddCommGroup
 attribute [local instance] SelectedPeriodStokesTheoremPackage.periodOneAddCommGroup
@@ -300,48 +300,59 @@ def selectedNerve {M : MeasurementProfile.{u, v}}
       (P.siteRealization_eq_cellToSite Cohomology.IntervalBasisStokes.Vertex.right).symm⟩
   faceTripleOverlapComponent_holds := fun face => Empty.elim face
 
-/-- The selected nerve complex is the interval presentation transported from cellular Čech degrees. -/
+/--
+The selected nerve complex is the selected cellular Cech complex itself, with
+coordinates on the realized charts, overlap component, and selected faces.
+-/
 noncomputable def selectedNerveComplex {M : MeasurementProfile.{u, v}}
     {C : AATGAGACommonFiniteData M} (P : SelectedPeriodStokesTheoremPackage C) :
     Cohomology.FiniteNerveCochainComplex P.selectedNerve where
     k := ℝ
-    C0 := Cohomology.RealIntervalBasisStokes.Cochain 0
-    C1 := Cohomology.RealIntervalBasisStokes.Cochain 1
-    C2 := Cohomology.RealIntervalBasisStokes.Cochain 2
-    add_C0 := inferInstance
-    add_C1 := inferInstance
-    add_C2 := inferInstance
-    module_C0 := inferInstance
-    module_C1 := inferInstance
-    module_C2 := inferInstance
-    finiteDimensional_C0 := inferInstance
-    finiteDimensional_C1 := inferInstance
-    finiteDimensional_C2 := inferInstance
-    d0 := Cohomology.RealIntervalBasisStokes.d0
-    d1 := 0
-    d1_comp_d0 := by
-      intro cochain
-      rfl
+    C0 := C.cellularModel.Cochain P.periodZeroDegree
+    C1 := C.cellularModel.Cochain P.periodOneDegree
+    C2 := C.cellularModel.Cochain P.periodTwoDegree
+    add_C0 := P.periodZeroAddCommGroup
+    add_C1 := P.periodOneAddCommGroup
+    add_C2 := P.periodTwoAddCommGroup
+    module_C0 := P.periodZeroModule
+    module_C1 := P.periodOneModule
+    module_C2 := P.periodTwoModule
+    finiteDimensional_C0 := P.periodZeroFinite
+    finiteDimensional_C1 := P.periodOneFinite
+    finiteDimensional_C2 := P.periodTwoFinite
+    d0 := P.periodCoboundary
+    d1 := P.nerveCoboundary
+    d1_comp_d0 := P.nerveCoboundary_comp_periodCoboundary
+    zeroCochainCoordinates := P.zeroCochainToInterval
+    oneCochainCoordinates := P.oneCochainToInterval
+    twoCochainCoordinates := P.twoCochainToSelectedFaces
+    d0_eq_edgeIncidence := by
+      intro cochain edge
+      cases edge
+      change P.oneCochainToInterval (P.periodCoboundary cochain) .interval =
+        P.zeroCochainToInterval cochain .right -
+          P.zeroCochainToInterval cochain .left
+      simpa [Cohomology.RealIntervalBasisStokes.d0] using
+        congrFun (P.periodCoboundary_to_interval cochain) .interval
+    d1_eq_faceIncidence := by
+      intro _ face
+      exact Empty.elim face
 
 /-- The selected nerve's degree-zero map is the transported cellular differential. -/
 theorem selectedNerveComplex_d0_matches_cellular {M : MeasurementProfile.{u, v}}
     {C : AATGAGACommonFiniteData M} (P : SelectedPeriodStokesTheoremPackage C) :
-    ∀ ω, P.selectedNerveComplex.d0 (P.zeroCochainToInterval ω) =
-      P.oneCochainToInterval
-        (C.cellularModel.d P.periodZeroDegree P.periodOneDegree P.periodDifferential ω) := by
+    ∀ ω, P.selectedNerveComplex.d0 ω =
+      C.cellularModel.d P.periodZeroDegree P.periodOneDegree P.periodDifferential ω := by
   intro ω
-  rw [← P.periodCoboundary_eq_cellular, P.periodCoboundary_to_interval]
-  rfl
+  exact P.periodCoboundary_eq_cellular ω
 
 /-- The selected nerve's degree-one map is the transported cellular differential. -/
 theorem selectedNerveComplex_d1_matches_cellular {M : MeasurementProfile.{u, v}}
     {C : AATGAGACommonFiniteData M} (P : SelectedPeriodStokesTheoremPackage C) :
-    ∀ η, P.selectedNerveComplex.d1 (P.oneCochainToInterval η) =
-      P.twoCochainToInterval
-        (C.cellularModel.d P.periodOneDegree P.periodTwoDegree P.nerveDifferential η) := by
+    ∀ η, P.selectedNerveComplex.d1 η =
+      C.cellularModel.d P.periodOneDegree P.periodTwoDegree P.nerveDifferential η := by
   intro η
-  rw [← P.nerveCoboundary_eq_cellular, P.nerveCoboundary_to_interval]
-  rfl
+  exact P.nerveCoboundary_eq_cellular η
 
 /-- The selected cellular zero-chain pairing, transported from the interval basis. -/
 def cellularPair0 {M : MeasurementProfile.{u, v}}
@@ -406,18 +417,25 @@ def topologicalCapacityStatement {M : MeasurementProfile.{u, v}}
             (∀ η, P.nerveCoboundary η =
               C.cellularModel.d P.periodOneDegree P.periodTwoDegree
                 P.nerveDifferential η) ∧
-              (∀ ω, P.selectedNerveComplex.d0 (P.zeroCochainToInterval ω) =
-                P.oneCochainToInterval
-                  (C.cellularModel.d P.periodZeroDegree P.periodOneDegree
-                    P.periodDifferential ω)) ∧
-                (∀ η, P.selectedNerveComplex.d1 (P.oneCochainToInterval η) =
-                  P.twoCochainToInterval
-                    (C.cellularModel.d P.periodOneDegree P.periodTwoDegree
-                      P.nerveDifferential η)) ∧
-                  Module.finrank P.selectedNerveComplex.k P.selectedNerveComplex.C1 <=
-                    Module.finrank P.selectedNerveComplex.k P.selectedNerveComplex.H1 +
-                      Module.finrank P.selectedNerveComplex.k P.selectedNerveComplex.C0 +
-                        Module.finrank P.selectedNerveComplex.k P.selectedNerveComplex.C2
+              (∀ ω, P.selectedNerveComplex.d0 ω =
+                C.cellularModel.d P.periodZeroDegree P.periodOneDegree
+                  P.periodDifferential ω) ∧
+                (∀ η, P.selectedNerveComplex.d1 η =
+                  C.cellularModel.d P.periodOneDegree P.periodTwoDegree
+                    P.nerveDifferential η) ∧
+                  (∀ ω edge,
+                    P.oneCochainToInterval (P.selectedNerveComplex.d0 ω) edge =
+                      P.zeroCochainToInterval ω (P.selectedNerve.edgeRight edge) -
+                        P.zeroCochainToInterval ω (P.selectedNerve.edgeLeft edge)) ∧
+                    (∀ η face,
+                      P.twoCochainToSelectedFaces (P.selectedNerveComplex.d1 η) face =
+                        P.oneCochainToInterval η (P.selectedNerve.faceEdge0 face) -
+                          P.oneCochainToInterval η (P.selectedNerve.faceEdge1 face) +
+                            P.oneCochainToInterval η (P.selectedNerve.faceEdge2 face)) ∧
+                      Module.finrank P.selectedNerveComplex.k P.selectedNerveComplex.C1 <=
+                        Module.finrank P.selectedNerveComplex.k P.selectedNerveComplex.H1 +
+                          Module.finrank P.selectedNerveComplex.k P.selectedNerveComplex.C0 +
+                            Module.finrank P.selectedNerveComplex.k P.selectedNerveComplex.C2
 
 /-- Derive selected nerve capacity from its actual incidence cochain complex. -/
 theorem topologicalCapacityStatement_holds {M : MeasurementProfile.{u, v}}
@@ -426,7 +444,9 @@ theorem topologicalCapacityStatement_holds {M : MeasurementProfile.{u, v}}
   refine ⟨P.siteRealization_eq_cellToSite, P.rightChart_eq_selectedSite,
     P.intervalEdge_eq_selectedCover, P.siteRealization_injective, P.periodCoboundary_eq_cellular,
     P.nerveCoboundary_eq_cellular, P.selectedNerveComplex_d0_matches_cellular,
-    P.selectedNerveComplex_d1_matches_cellular, ?_⟩
+    P.selectedNerveComplex_d1_matches_cellular,
+    P.selectedNerveComplex.d0_eq_edgeIncidence,
+    P.selectedNerveComplex.d1_eq_faceIncidence, ?_⟩
   exact P.selectedNerveComplex.topologicalDebtCapacity_fromComplex
 
 end SelectedPeriodStokesTheoremPackage

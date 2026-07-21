@@ -3574,7 +3574,7 @@ abbrev GAGAThreeAxisCochain : GAGAThreeAxisDegree → Type
   | .hodgeNext => ℝ
   | .cechZero => Cohomology.RealIntervalBasisStokes.Cochain 0
   | .cechOne => Cohomology.RealIntervalBasisStokes.Cochain 1
-  | .cechTwo => Cohomology.RealIntervalBasisStokes.Cochain 2
+  | .cechTwo => Empty → ℝ
 
 /-- The zero cochain in every selected GAGA cellular degree. -/
 def gagaThreeAxisZero : (n : GAGAThreeAxisDegree) → GAGAThreeAxisCochain n
@@ -3617,7 +3617,7 @@ def gagaThreeAxisCellularInnerProduct :
   | .cechOne, x, y =>
       x Cohomology.IntervalBasisStokes.Edge.interval *
         y Cohomology.IntervalBasisStokes.Edge.interval
-  | .cechTwo, x, y => inner ℝ x y
+  | .cechTwo, _, _ => 0
 
 /-- Real norms on the selected Hodge and Čech cochains. -/
 def gagaThreeAxisCellularNorm :
@@ -3657,7 +3657,7 @@ noncomputable def gagaThreeAxisCellularModel :
       FiniteDimensional ℝ LowDegreeRealCochain ∧ FiniteDimensional ℝ ℝ ∧
         FiniteDimensional ℝ (Cohomology.RealIntervalBasisStokes.Cochain 0) ∧
           FiniteDimensional ℝ (Cohomology.RealIntervalBasisStokes.Cochain 1) ∧
-            FiniteDimensional ℝ (Cohomology.RealIntervalBasisStokes.Cochain 2)
+            FiniteDimensional ℝ (Empty → ℝ)
   finiteDimensionalCochains_cert :=
     ⟨inferInstance, inferInstance, inferInstance, inferInstance, inferInstance, inferInstance⟩
   finiteIncidenceCategory := Nonempty (Fintype GAGAThreeAxisDegree)
@@ -3917,7 +3917,7 @@ def lowDegreePeriodStokesTheoremPackage :
     change AddCommGroup (Cohomology.RealIntervalBasisStokes.Cochain 1)
     infer_instance
   periodTwoAddCommGroup := by
-    change AddCommGroup (Cohomology.RealIntervalBasisStokes.Cochain 2)
+    change AddCommGroup (Empty → ℝ)
     infer_instance
   periodZeroModule := by
     change Module ℝ (Cohomology.RealIntervalBasisStokes.Cochain 0)
@@ -3926,7 +3926,7 @@ def lowDegreePeriodStokesTheoremPackage :
     change Module ℝ (Cohomology.RealIntervalBasisStokes.Cochain 1)
     infer_instance
   periodTwoModule := by
-    change Module ℝ (Cohomology.RealIntervalBasisStokes.Cochain 2)
+    change Module ℝ (Empty → ℝ)
     infer_instance
   periodZeroFinite := by
     change FiniteDimensional ℝ (Cohomology.RealIntervalBasisStokes.Cochain 0)
@@ -3935,7 +3935,7 @@ def lowDegreePeriodStokesTheoremPackage :
     change FiniteDimensional ℝ (Cohomology.RealIntervalBasisStokes.Cochain 1)
     infer_instance
   periodTwoFinite := by
-    change FiniteDimensional ℝ (Cohomology.RealIntervalBasisStokes.Cochain 2)
+    change FiniteDimensional ℝ (Empty → ℝ)
     infer_instance
   periodDifferential := ()
   nerveDifferential := ()
@@ -3946,8 +3946,7 @@ def lowDegreePeriodStokesTheoremPackage :
     rfl
   nerveCoboundary_eq_cellular := by
     intro η
-    change (0 : Cohomology.RealIntervalBasisStokes.Cochain 2) =
-      gagaThreeAxisCellularD .cechOne .cechTwo () η
+    change (0 : Empty → ℝ) = gagaThreeAxisCellularD .cechOne .cechTwo () η
     rfl
   nerveCoboundary_comp_periodCoboundary := by
     intro ω
@@ -3960,9 +3959,8 @@ def lowDegreePeriodStokesTheoremPackage :
     change Cohomology.RealIntervalBasisStokes.Cochain 1 ≃ₗ[ℝ]
       Cohomology.RealIntervalBasisStokes.Cochain 1
     exact LinearEquiv.refl ℝ _
-  twoCochainToInterval := by
-    change Cohomology.RealIntervalBasisStokes.Cochain 2 ≃ₗ[ℝ]
-      Cohomology.RealIntervalBasisStokes.Cochain 2
+  twoCochainToSelectedFaces := by
+    change (Empty → ℝ) ≃ₗ[ℝ] (Empty → ℝ)
     exact LinearEquiv.refl ℝ _
   zeroChainToInterval := by
     change Cohomology.RealIntervalBasisStokes.Cochain 0 ≃ₗ[ℝ]
@@ -3975,7 +3973,7 @@ def lowDegreePeriodStokesTheoremPackage :
   periodCoboundary_to_interval := by
     intro ω
     rfl
-  nerveCoboundary_to_interval := by
+  nerveCoboundary_to_selectedFaces := by
     intro η
     rfl
 
