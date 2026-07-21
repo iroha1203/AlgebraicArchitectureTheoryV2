@@ -327,7 +327,7 @@ has a genuinely nonzero incidence differential on the selected temporal step.
 -/
 def zmod2TemporalCoefficient : TemporalCoefficient temporalSite where
   coefficientProfile := ()
-  obstructionSheaf := unitObstructionSheaf
+  obstructionSheaf := SemanticRepairPart10.generatedF2QuotientObstructionSheaf
   fiber := fun _ => ZMod 2
   fiberAddCommGroup := by
     intro _p
@@ -343,13 +343,7 @@ def zmod2TemporalCoefficient : TemporalCoefficient temporalSite where
     rfl
   toObstructionSection := by
     intro _p
-    exact {
-      toFun := fun _ => PUnit.unit
-      map_zero' := rfl
-      map_add' := by
-        intro _x _y
-        rfl
-    }
+    exact AddMonoidHom.id (ZMod 2)
 
 /-- IX-3 / #3100: nondegenerate product-incidence complex with `ZMod 2` fibers. -/
 def zmod2TemporalProductIncidenceComplex :
@@ -832,6 +826,27 @@ def temporalBridge :
   coverComparison := replayCoverComparison
   siteComplex := unitCechComplex
 
+/-- R10(b): representation of the two replay charts in the generated `F₂` Čech cover. -/
+def zmod2ReplayCoverComparison :
+    TemporalCoverToSiteCover replayTemporalCover
+      zmod2TemporalProductCoverRelativeCover where
+  siteIndexOf := fun chart =>
+    if chart then (TinyTime.t1, context0) else (TinyTime.t0, context0)
+  chart_eq := by
+    intro _chart
+    rfl
+  base_eq := rfl
+  preservesTraceLeg := fun _ => trivial
+  preservesContextLeg := fun _ => rfl
+
+/-- R10(b): nontrivial temporal Čech bridge used by the two-chart replay fixture. -/
+def zmod2ReplayTemporalBridge :
+    TemporalCechBridge temporalSite zmod2TemporalCoefficient.obstructionSheaf where
+  temporalCover := replayTemporalCover
+  siteCover := zmod2TemporalProductCoverRelativeCover
+  coverComparison := zmod2ReplayCoverComparison
+  siteComplex := zmod2TemporalProductCoverRelativeComplex
+
 /--
 IX-3 / #3100: concrete finite-poset comparison data for the two-point trace
 singleton coefficient instance.
@@ -1234,7 +1249,7 @@ def zeroReplayDescentData :
     exact match s with
       | .high => .mid
       | other => other
-  mismatchCochain := unitTemporalCochain 1
+  restrictionDifference := fun _localReplay => unitTemporalCochain 1
   mismatchSupportedByLaw := True
   mismatchSupportedByLaw_cert := trivial
 
@@ -1245,16 +1260,18 @@ def zeroReplayMismatchCocycle :
     funext _σ
     rfl
 
-/-- R10(b): effective zero-cochain adjustment for the zero replay fixture. -/
-def zeroReplayAdjustment :
+/-- R10(b): apply a selected degree-zero correction to the finite replay data. -/
+def zeroReplayAdjustmentOf
+    (correction : temporalBridge.siteComplex.Cn 0) :
     EffectiveTemporalAdjustment zeroReplayDescentData where
-  correction := unitTemporalCochain 0
+  correction := correction
   adjustedReplay := zeroReplayDescentData.replay
-  adjustedMismatchCochain := unitTemporalCochain 1
   adjustedMismatchSupportedByLaw := True
   adjustedMismatchSupportedByLaw_cert := trivial
   adjustment_equation := by
-    funext _σ
+    funext σ
+    change PUnit.unit = PUnit.unit - correction σ
+    cases correction σ
     rfl
 
 /-- R10(b): temporal class package selected by the zero replay mismatch. -/
@@ -1262,100 +1279,366 @@ def zeroReplayTemporalClass :
     TemporalClass zeroReplayDescentData.mismatch where
   cocycle := zeroReplayMismatchCocycle.toTemporalCocycle
 
-/--
-R10(b): adjusted replay compatibility for the nontrivial two-chart fixture.
-Both selected charts read the corrected replay as `high -> mid`.
--/
-def zeroReplayAdjustedCompatible
-    (data : ReplayDescentData statePresheaf temporalCoefficient temporalLaw) : Prop :=
-  data = zeroReplayAdjustment.adjustedData ∧
-    ReplayDescentData.localReplay zeroReplayAdjustment.adjustedData false TinyState.high =
-      TinyState.mid ∧
-      ReplayDescentData.localReplay zeroReplayAdjustment.adjustedData true TinyState.high =
-        TinyState.mid
-
-/-- R10(b): the zero adjustment satisfies the concrete adjusted replay compatibility. -/
-theorem zeroReplayAdjustedCompatible_cert :
-    zeroReplayAdjustedCompatible zeroReplayAdjustment.adjustedData := by
-  refine ⟨?_, ?_, ?_⟩ <;> rfl
+/-- R10(b): the selected singleton site cover used by the replay transition sheaf. -/
+abbrev zeroReplaySheafCover : Sieve FiniteModel.siteBase :=
+  Sieve.generate FiniteModel.siteSingletonCover.presieve
 
 /--
-R10(b): selected realization of theorem 4.2.  The global replay map is built
-from the vanishing-class and adjusted-compatibility inputs of the criterion.
+R10(b): finite replay-transition sheaf presentation.
+
+The selected sheaf is genuinely used through `AATSheaf.descent`; its unique
+section evaluates to the finite replay map.  The local restriction equation is
+checked for both temporal charts, rather than being stored as a global replay
+field.
 -/
-def zeroReplayTemporalDescentRealization :
-    TemporalDescentRealization zeroReplayDescentData zeroReplayTemporalClass
-      zeroReplayAdjustment zeroReplayAdjustedCompatible where
-  globalReplay := fun
+def zeroReplayTransitionSheaf : ReplayTransitionSheaf zeroReplayDescentData where
+  sectionSheaf := unitSheaf
+  base := FiniteModel.siteBase
+  base_eq := rfl
+  cover := zeroReplaySheafCover
+  cover_topological := FiniteModel.siteSingletonCover_topologyCover
+  adjustment := zeroReplayAdjustmentOf
+  adjustment_correction := by
+    intro correction
+    rfl
+  adjustedLocalSections := fun _correction _Y _f _hf => PUnit.unit
+  adjustedLocalSections_matching_of_zero := by
+    intro _correction _hzero
+    dsimp [Site.AATOverlapAgreement]
+    intro _Y _f _hf _Z _g _hg _W _h _hh
+    rfl
+  evaluateGlobal := fun _section state =>
+    match state with
     | .high => .mid
     | other => other
-  globalReplay_from_vanishing_and_compatibility := by
-    intro _hclass hcompat
-    have _hleft :
-        ReplayDescentData.localReplay zeroReplayAdjustment.adjustedData false
-          TinyState.high = TinyState.mid := hcompat.2.1
-    have _hright :
-        ReplayDescentData.localReplay zeroReplayAdjustment.adjustedData true
-          TinyState.high = TinyState.mid := hcompat.2.2
-    exact fun
-      | .high => .mid
-      | other => other
+  globalSection_realizes_adjusted := by
+    intro _correction _hzero _section _hglobal i state
+    cases i <;> cases state <;> rfl
 
 /-- R10(b): concrete theorem-4.2 assumptions for the zero replay fixture. -/
 def zeroReplayTemporalDescentCriterion :
-    TemporalDescentCriterion zeroReplayDescentData :=
-  TemporalDescentCriterion.ofRealization zeroReplayMismatchCocycle
-    zeroReplayTemporalClass rfl (by rfl) zeroReplayAdjustment
-    zeroReplayAdjustedCompatible zeroReplayAdjustedCompatible_cert
-    zeroReplayTemporalDescentRealization
+    TemporalDescentCriterion zeroReplayDescentData where
+  mismatchCocycle := zeroReplayMismatchCocycle
+  temporalClass := zeroReplayTemporalClass
+  temporalClass_matches_mismatch := rfl
+  classVanishes_cert := by rfl
+  replayTransitionSheaf := zeroReplayTransitionSheaf
 
 /-- R10(b): theorem 4.2 yields a global replay transition for the zero fixture. -/
 theorem replay_zero_theorem42_global_transition_exists :
     Nonempty zeroReplayDescentData.GlobalReplayTransition :=
   zeroReplayTemporalDescentCriterion.temporal_descent_criterion
 
-/-- R10(b): replay descent zero fixture. -/
-structure ReplayDescentZeroExample where
-  localCharts : Type
-  localCharts_finite : Finite localCharts
-  mismatch : ReplayMismatchValue
-  mismatch_zero : mismatch = .zero
-  replayData : ReplayDescentData statePresheaf temporalCoefficient temporalLaw
-  adjustedCompatibility : ReplayDescentData statePresheaf temporalCoefficient temporalLaw -> Prop
-  theorem42Criterion : TemporalDescentCriterion replayData
-  theorem42GlobalTransition : Nonempty replayData.GlobalReplayTransition
-  adjustedCompatibilityWitness : Prop
-  adjustedCompatibilityWitness_cert : adjustedCompatibilityWitness
-  globalReplayTransition : TinyState -> TinyState
-  globalReplayTransition_cert :
-    globalReplayTransition TinyState.high = TinyState.mid
+/-- R10(b): the finite theorem-4.2 construction returns an adjusted realization. -/
+theorem replay_zero_theorem42_realizes_adjusted :
+    ∃ (correction : temporalBridge.siteComplex.Cn 0)
+      (globalReplay : zeroReplayDescentData.GlobalReplayTransition),
+      ∀ (i : replayTemporalCover.Index)
+        (state : statePresheaf.State (TinyTime.t0, replayTemporalCover.baseContext)),
+        statePresheaf.contextRestriction TinyTime.t1 (replayTemporalCover.contextToBase i)
+            (globalReplay state) =
+          (zeroReplayTransitionSheaf.adjustment correction).adjustedReplay i
+            (statePresheaf.contextRestriction TinyTime.t0
+              (replayTemporalCover.contextToBase i) state) :=
+  zeroReplayTemporalDescentCriterion.temporal_descent_criterion_realizes_adjusted
 
-/-- R10(b): concrete two-chart zero replay fixture. -/
-def replayDescentZeroExample : ReplayDescentZeroExample where
-  localCharts := Bool
-  localCharts_finite := by infer_instance
-  mismatch := .zero
-  mismatch_zero := rfl
-  replayData := zeroReplayDescentData
-  adjustedCompatibility := zeroReplayAdjustedCompatible
-  theorem42Criterion := zeroReplayTemporalDescentCriterion
-  theorem42GlobalTransition := replay_zero_theorem42_global_transition_exists
-  adjustedCompatibilityWitness := zeroReplayAdjustedCompatible zeroReplayAdjustment.adjustedData
-  adjustedCompatibilityWitness_cert := zeroReplayAdjustedCompatible_cert
-  globalReplayTransition := fun
-    | .high => .mid
-    | s => s
-  globalReplayTransition_cert := rfl
-
-/-- R10(b): the zero replay fixture records actual theorem-4.2 descent data. -/
+/-- R10(b): the zero fixture uses the theorem-4.2 construction itself. -/
 theorem replay_zero_theorem42_applied :
-    Nonempty replayDescentZeroExample.replayData.GlobalReplayTransition :=
-  replayDescentZeroExample.theorem42GlobalTransition
+    Nonempty zeroReplayDescentData.GlobalReplayTransition :=
+  replay_zero_theorem42_global_transition_exists
 
 /-- R10(b): zero mismatch fixture yields a selected global replay transition. -/
 theorem replay_zero_has_global_transition :
-    replayDescentZeroExample.globalReplayTransition TinyState.high = TinyState.mid :=
-  replayDescentZeroExample.globalReplayTransition_cert
+    ∃ globalReplay : zeroReplayDescentData.GlobalReplayTransition,
+      globalReplay TinyState.high = TinyState.mid := by
+  rcases replay_zero_theorem42_realizes_adjusted with ⟨_correction, globalReplay, hglobal⟩
+  refine ⟨globalReplay, ?_⟩
+  simpa [zeroReplayTransitionSheaf, zeroReplayAdjustmentOf] using
+    hglobal false TinyState.high
+
+/-- R10(b/g): global replay transition extracted from the theorem-4.2 construction. -/
+noncomputable def zeroReplayGlobalTransition : zeroReplayDescentData.GlobalReplayTransition :=
+  Classical.choose replay_zero_has_global_transition
+
+/-- R10(b/g): the extracted transition sends the selected high state to mid. -/
+theorem zeroReplayGlobalTransition_hits_high :
+    zeroReplayGlobalTransition TinyState.high = TinyState.mid :=
+  Classical.choose_spec replay_zero_has_global_transition
+
+/-- R10(b): two finite temporal charts carrying `ZMod 2`-valued replay corrections. -/
+abbrev TwoChartTemporalCoefficient := ZMod 2
+
+/-- R10(b): the unadjusted right replay differs from the left replay by one coefficient unit. -/
+def twoChartLocalReplay (chart : Bool) (state : TwoChartTemporalCoefficient) :
+    TwoChartTemporalCoefficient :=
+  match chart with
+  | false => state
+  | true => state + 1
+
+/-- R10(b): `ZMod 2` state presheaf for the nondegenerate replay-descent fixture. -/
+def zmod2ReplayStatePresheaf : StateTransitionPresheaf temporalSite where
+  State := fun _ => ZMod 2
+  Transition := fun _ _ _ => Unit
+  transitionId := fun _ _ => ()
+  transitionComp := by
+    intro _p _x _y _z' _f _g
+    exact ()
+  restrictContext := by
+    intro _t _i _j _h x
+    exact x
+  restrictContext_id := fun _ _ _ => rfl
+  restrictContext_comp := by
+    intro _t _i _j _k _hij _hjk _x
+    rfl
+  transportTrace := by
+    intro _t₀ _t₁ _e _he _i x
+    exact x
+  transportTrace_id := fun _ _ _ => rfl
+  transportTrace_comp := by
+    intro _t₀ _t₁ _t₂ _e₀ _e₁ _he₀ _he₁ _i _x
+    rfl
+  restrict_transport_commute := by
+    intro _t₀ _t₁ _e _he _i _j _hij _x
+    rfl
+
+/-- R10(b): selected temporal law for the generated `F₂` replay fixture. -/
+def zmod2ReplayTemporalLaw : TemporalLaw zmod2ReplayStatePresheaf :=
+  TemporalLaw.descentTemporalLaw Unit (fun _ => p0) (fun _ => p1)
+    (fun _ => stepLeg) (fun _ _ _ => True)
+
+/-- R10(b): turn the two local replay shifts into a temporal degree-zero cochain. -/
+def twoChartReplayShift
+    (localReplay : (chart : Bool) -> ZMod 2 -> ZMod 2) :
+    zmod2ReplayTemporalBridge.siteComplex.Cn 0 :=
+  fun
+  | (TinyTime.t0, _) => localReplay false 0
+  | (TinyTime.t1, _) => localReplay true 0
+
+/-- R10(b): actual restriction difference of the two local replay maps. -/
+def twoChartReplayRestrictionDifference
+    (localReplay : (chart : Bool) -> ZMod 2 -> ZMod 2) :
+    zmod2ReplayTemporalBridge.siteComplex.Cn 1 :=
+  zmod2ReplayTemporalBridge.siteComplex.d 0 (twoChartReplayShift localReplay)
+
+/-- R10(b): nondegenerate replay datum whose mismatch is computed from local replay shifts. -/
+def twoChartReplayDescentData :
+    ReplayDescentData zmod2ReplayStatePresheaf zmod2TemporalCoefficient
+      zmod2ReplayTemporalLaw where
+  bridge := zmod2ReplayTemporalBridge
+  cover := replayTemporalCover
+  sourceTrace := TinyTime.t0
+  targetTrace := TinyTime.t1
+  traceArrow := tinyStep
+  traceArrow_selected := trivial
+  replay := twoChartLocalReplay
+  restrictionDifference := twoChartReplayRestrictionDifference
+  mismatchSupportedByLaw := True
+  mismatchSupportedByLaw_cert := trivial
+
+/-- R10(b): the two chart shifts are the concrete nonzero temporal correction. -/
+theorem twoChartReplayShift_eq_separated :
+    twoChartReplayShift twoChartLocalReplay = zmod2TemporalSeparatedCochain := by
+  funext point
+  rcases point with ⟨time, context⟩
+  cases time <;> cases context <;> rfl
+
+/-- R10(b): the computed mismatch is the `d⁰` coboundary of the two-chart shift. -/
+theorem twoChartReplayMismatch_is_coboundary :
+    twoChartReplayDescentData.mismatchCochain =
+      zmod2ReplayTemporalBridge.siteComplex.d 0 zmod2TemporalSeparatedCochain := by
+  rw [ReplayDescentData.mismatchCochain]
+  exact congrArg (zmod2ReplayTemporalBridge.siteComplex.d 0)
+    twoChartReplayShift_eq_separated
+
+/-- R10(b): the computed nondegenerate mismatch is a temporal Čech cocycle. -/
+def twoChartReplayMismatchCocycle :
+    ReplayMismatchCocycle twoChartReplayDescentData where
+  differential_zero := by
+    rw [twoChartReplayMismatch_is_coboundary]
+    exact zmod2ReplayTemporalBridge.siteComplex.d_comp_d_eq_zero 0
+      zmod2TemporalSeparatedCochain
+
+/-- R10(b): temporal class of the computed nondegenerate replay mismatch. -/
+def twoChartReplayTemporalClass :
+    TemporalClass twoChartReplayDescentData.mismatch where
+  cocycle := twoChartReplayMismatchCocycle.toTemporalCocycle
+
+/-- R10(b): the computed mismatch class is zero because it is an actual coboundary. -/
+theorem twoChartReplayTemporalClass_vanishes :
+    twoChartReplayTemporalClass.cohomologyClass =
+      twoChartReplayDescentData.zeroMismatchClass := by
+  apply Quotient.sound
+  refine ⟨zmod2TemporalSeparatedCochain, ?_⟩
+  rw [twoChartReplayMismatch_is_coboundary]
+  simp
+
+/-- R10(b): temporal point represented by each of the two local replay charts. -/
+def twoChartReplayPoint (chart : Bool) : temporalSite.Point :=
+  if chart then p1 else p0
+
+/-- R10(b): apply a degree-zero temporal correction directly to the local replay shifts. -/
+def twoChartReplayAdjustedOf
+    (correction : zmod2ReplayTemporalBridge.siteComplex.Cn 0)
+    (chart : Bool) (state : ZMod 2) : ZMod 2 :=
+  twoChartLocalReplay chart state - correction (twoChartReplayPoint chart)
+
+/-- R10(b): the adjusted local replays encode the original shifts minus the correction. -/
+theorem twoChartReplayShift_adjusted
+    (correction : zmod2ReplayTemporalBridge.siteComplex.Cn 0) :
+    twoChartReplayShift (twoChartReplayAdjustedOf correction) =
+      zmod2TemporalSeparatedCochain - correction := by
+  funext point
+  rcases point with ⟨time, context⟩
+  cases time <;> cases context <;> rfl
+
+/-- R10(b): effective degree-zero adjustment for the nondegenerate replay datum. -/
+def twoChartReplayAdjustmentOf
+    (correction : zmod2ReplayTemporalBridge.siteComplex.Cn 0) :
+    EffectiveTemporalAdjustment twoChartReplayDescentData where
+  correction := correction
+  adjustedReplay := twoChartReplayAdjustedOf correction
+  adjustedMismatchSupportedByLaw := True
+  adjustedMismatchSupportedByLaw_cert := trivial
+  adjustment_equation := by
+    change zmod2ReplayTemporalBridge.siteComplex.d 0
+        (twoChartReplayShift (twoChartReplayAdjustedOf correction)) =
+      twoChartReplayDescentData.mismatchCochain -
+        zmod2ReplayTemporalBridge.siteComplex.d 0 correction
+    rw [twoChartReplayShift_adjusted, map_sub,
+      twoChartReplayMismatch_is_coboundary]
+
+/-- R10(b): zero adjusted mismatch forces the two corrected replay shifts to agree. -/
+theorem twoChartReplayAdjusted_shifts_agree
+    (correction : zmod2ReplayTemporalBridge.siteComplex.Cn 0)
+    (hzero : (twoChartReplayAdjustmentOf correction).adjustedMismatchCochain = 0) :
+    twoChartReplayAdjustedOf correction false 0 =
+      twoChartReplayAdjustedOf correction true 0 := by
+  have hstep := congrFun hzero ⟨p0, p1, stepLeg⟩
+  change twoChartReplayAdjustedOf correction true 0 -
+      twoChartReplayAdjustedOf correction false 0 = 0 at hstep
+  exact (sub_eq_zero.mp hstep).symm
+
+/-- R10(b): each adjusted local replay is translation by its corrected chart shift. -/
+theorem twoChartReplayAdjusted_translate
+    (correction : zmod2ReplayTemporalBridge.siteComplex.Cn 0)
+    (chart : Bool) (state : ZMod 2) :
+    twoChartReplayAdjustedOf correction chart state =
+      state + twoChartReplayAdjustedOf correction chart 0 := by
+  cases chart <;>
+    simp [twoChartReplayAdjustedOf, twoChartLocalReplay] <;> abel
+
+/-- R10(b): local sections determined by the corrected left chart replay. -/
+def twoChartReplayLocalSections
+    (correction : zmod2ReplayTemporalBridge.siteComplex.Cn 0) :
+    Site.AATLocalSectionFamily FiniteModel.site
+      zmod2TemporalCoefficient.obstructionSheaf.carrier.toPresheaf
+      (⊤ : Sieve FiniteModel.siteBase) :=
+  fun _Y _f _hf => twoChartReplayAdjustedOf correction false 0
+
+/-- R10(b): zero adjusted mismatch makes the corrected local sections match. -/
+theorem twoChartReplayLocalSections_matching_of_zero
+    (correction : zmod2ReplayTemporalBridge.siteComplex.Cn 0)
+    (_hzero : (twoChartReplayAdjustmentOf correction).adjustedMismatchCochain = 0) :
+    Site.AATOverlapAgreement (twoChartReplayLocalSections correction) := by
+  intro _Y _f _hf _Z _g _hg _W _h _hh
+  rfl
+
+/-- R10(b): sheaf presentation for the nondegenerate two-chart replay datum. -/
+def twoChartReplayTransitionSheaf :
+    ReplayTransitionSheaf twoChartReplayDescentData where
+  sectionSheaf := zmod2TemporalCoefficient.obstructionSheaf.carrier
+  base := FiniteModel.siteBase
+  base_eq := rfl
+  cover := ⊤
+  cover_topological := FiniteModel.site.top_mem FiniteModel.siteBase
+  adjustment := twoChartReplayAdjustmentOf
+  adjustment_correction := by
+    intro correction
+    rfl
+  adjustedLocalSections := twoChartReplayLocalSections
+  adjustedLocalSections_matching_of_zero := twoChartReplayLocalSections_matching_of_zero
+  evaluateGlobal := fun section state => state + section
+  globalSection_realizes_adjusted := by
+    intro correction hzero globalSection hglobal chart state
+    have hsection := hglobal (𝟙 FiniteModel.siteBase) trivial
+    change globalSection = twoChartReplayAdjustedOf correction false 0 at hsection
+    have hshifts := twoChartReplayAdjusted_shifts_agree correction hzero
+    cases chart
+    · rw [hsection, twoChartReplayAdjusted_translate]
+    · rw [hsection, twoChartReplayAdjusted_translate,
+        twoChartReplayAdjusted_translate, hshifts]
+
+/-- R10(b): all theorem-4.2 data for the nondegenerate two-chart replay fixture. -/
+def twoChartReplayTemporalDescentCriterion :
+    TemporalDescentCriterion twoChartReplayDescentData where
+  mismatchCocycle := twoChartReplayMismatchCocycle
+  temporalClass := twoChartReplayTemporalClass
+  temporalClass_matches_mismatch := rfl
+  classVanishes_cert := twoChartReplayTemporalClass_vanishes
+  replayTransitionSheaf := twoChartReplayTransitionSheaf
+
+/-- R10(b): the displayed temporal correction has a genuinely nonzero right-chart value. -/
+theorem zmod2TemporalSeparatedCochain_right_nonzero :
+    zmod2TemporalSeparatedCochain p1 ≠ 0 := by
+  decide
+
+/-- R10(b): the displayed coboundary correction kills the computed replay mismatch. -/
+theorem twoChartReplayInitialCorrection_kills_mismatch :
+    (twoChartReplayAdjustmentOf zmod2TemporalSeparatedCochain).adjustedMismatchCochain = 0 := by
+  rw [EffectiveTemporalAdjustment.mismatch_adjust_eq,
+    twoChartReplayMismatch_is_coboundary]
+  simp
+
+/-- R10(b): the nonzero displayed correction has an actual sheaf-glued replay realization. -/
+theorem twoChartReplay_nonzero_correction_descends :
+    ∃ globalReplay : twoChartReplayDescentData.GlobalReplayTransition,
+      ∀ (chart : replayTemporalCover.Index)
+        (state : zmod2ReplayStatePresheaf.State
+          (TinyTime.t0, replayTemporalCover.baseContext)),
+        zmod2ReplayStatePresheaf.contextRestriction TinyTime.t1
+            (replayTemporalCover.contextToBase chart) (globalReplay state) =
+          (twoChartReplayAdjustmentOf zmod2TemporalSeparatedCochain).adjustedReplay chart
+            (zmod2ReplayStatePresheaf.contextRestriction TinyTime.t0
+              (replayTemporalCover.contextToBase chart) state) := by
+  have hzero := twoChartReplayInitialCorrection_kills_mismatch
+  let data := twoChartReplayTransitionSheaf.adjusted_replay_matching_of_zero
+    zmod2TemporalSeparatedCochain hzero
+  obtain ⟨globalSection, hglobal⟩ :=
+    (twoChartReplayTransitionSheaf.sectionSheaf.descent
+      twoChartReplayTransitionSheaf.cover
+      twoChartReplayTransitionSheaf.cover_topological).exists_global data
+  refine ⟨twoChartReplayTransitionSheaf.evaluateGlobal globalSection, ?_⟩
+  intro chart state
+  exact twoChartReplayTransitionSheaf.globalSection_realizes_adjusted
+    zmod2TemporalSeparatedCochain hzero globalSection
+      (by simpa [data] using hglobal) chart state
+
+/-- R10(b): audit bundle for the computed nonzero two-chart replay correction. -/
+theorem nondegenerate_twoChart_temporal_replay_correction :
+    zmod2TemporalSeparatedCochain p1 ≠ 0 ∧
+      twoChartReplayDescentData.mismatchCochain =
+        zmod2ReplayTemporalBridge.siteComplex.d 0 zmod2TemporalSeparatedCochain ∧
+        twoChartReplayTemporalClass.cohomologyClass =
+          twoChartReplayDescentData.zeroMismatchClass ∧
+          Nonempty twoChartReplayDescentData.GlobalReplayTransition :=
+  ⟨zmod2TemporalSeparatedCochain_right_nonzero,
+    twoChartReplayMismatch_is_coboundary,
+    twoChartReplayTemporalClass_vanishes,
+    twoChartReplayTemporalDescentCriterion.temporal_descent_criterion⟩
+
+/-- R10(b): the nonzero two-chart correction still produces a global replay by sheaf descent. -/
+theorem twoChartReplay_descent_realizes_adjusted :
+    ∃ (correction : zmod2ReplayTemporalBridge.siteComplex.Cn 0)
+      (globalReplay : twoChartReplayDescentData.GlobalReplayTransition),
+      ∀ (chart : replayTemporalCover.Index)
+        (state : zmod2ReplayStatePresheaf.State
+          (TinyTime.t0, replayTemporalCover.baseContext)),
+        zmod2ReplayStatePresheaf.contextRestriction TinyTime.t1
+            (replayTemporalCover.contextToBase chart) (globalReplay state) =
+          (twoChartReplayTransitionSheaf.adjustment correction).adjustedReplay chart
+            (zmod2ReplayStatePresheaf.contextRestriction TinyTime.t0
+              (replayTemporalCover.contextToBase chart) state) :=
+  twoChartReplayTemporalDescentCriterion.temporal_descent_criterion_realizes_adjusted
 
 /-- R10(c): pseudo-circle temporal cover edges. -/
 inductive PseudoCircleEdge where
@@ -1445,12 +1728,13 @@ def toyForceIntegrationData : ForceIntegrationData toyForce where
   coefficient := temporalCoefficient
   replayData := zeroReplayDescentData
   descentCriterion := zeroReplayTemporalDescentCriterion
-  globalReplayTransition := zeroReplayTemporalDescentRealization.globalReplay
+  globalReplayTransition := zeroReplayGlobalTransition
   replaySource_eq := rfl
   replayTarget_eq := rfl
-  globalReplay_hits_force := rfl
-  localLawData := zeroReplayAdjustedCompatible zeroReplayAdjustment.adjustedData
-  localLawData_cert := zeroReplayAdjustedCompatible_cert
+  globalReplay_hits_force := zeroReplayGlobalTransition_hits_high
+  localLawData := ∃ globalReplay : zeroReplayDescentData.GlobalReplayTransition,
+    globalReplay TinyState.high = TinyState.mid
+  localLawData_cert := replay_zero_has_global_transition
   descendsToGlobalTemporalLaw := Nonempty zeroReplayDescentData.GlobalReplayTransition
   descendsToGlobalTemporalLaw_cert := replay_zero_theorem42_global_transition_exists
   lawWitness := ()
@@ -1624,37 +1908,38 @@ a general temporal semantics theorem.
 theorem finite_temporal_examples_verified :
     @TraceCategory.FiniteRegime.selectedArrow twoStepTrace twoStepTraceFiniteRegime
       TinyTime.t0 TinyTime.t1 tinyStep ∧
-      Nonempty replayDescentZeroExample.replayData.GlobalReplayTransition ∧
-          replayDescentZeroExample.adjustedCompatibilityWitness ∧
-          replayDescentZeroExample.globalReplayTransition TinyState.high = TinyState.mid ∧
-            pseudoCircleMismatch replayDescentNonzeroExample.edge ≠ 0 ∧
-              (¬ ∃ path : InfiniteSelectedEvolutionPath dissipativePolicy,
-                path.StaysOutsideTerminal terminalState) ∧
-                finiteDissipationPath.ReachesTerminal terminalState ∧
-                terminalState.terminal p1 nonlawfulTerminal1 ∧
-                  (¬ terminalState.lawful p1 nonlawfulTerminal1) ∧
-                    oneStepPath.PathwiseNonIncrease ∧
-                      IntegrableForce toyForce ∧
-                        forceCandidateFixture.integrationData.globalReplayTransition
-                            (forceCandidateFixture.integrationData.replaySource_eq ▸
-                              toyForce.sourceState) =
-                          (forceCandidateFixture.integrationData.replayTarget_eq ▸
-                            toyForce.targetState) ∧
-                          forceCandidateFixture.concreteObstructionValue ≠ 0 ∧
-                            forceCandidateFixture.candidateData.selectedNonzero
-                              forceCandidateFixture.mismatchClass.obstructionClass ∧
-                              (forceCandidateFixture.candidateData.selectedNonzero
-                                  forceCandidateFixture.mismatchClass.obstructionClass ↔
-                                forceCandidateFixture.concreteObstructionValue ≠ 0) ∧
-                              forceCandidateFixture.candidateData.coefficientExactness ∧
-                                forceCandidateFixture.candidateData.witnessCoverage ∧
-                                  forceCandidateFixture.candidateData.temporalDescentDetecting ∧
-                                    forceCandidateFixture.candidateData.localToGlobalControlledByDescent ∧
-                                      forceCandidateFixture.candidateOnly := by
+      Nonempty zeroReplayDescentData.GlobalReplayTransition ∧
+          (∃ globalReplay : zeroReplayDescentData.GlobalReplayTransition,
+            globalReplay TinyState.high = TinyState.mid) ∧
+            nondegenerate_twoChart_temporal_replay_correction ∧
+              pseudoCircleMismatch replayDescentNonzeroExample.edge ≠ 0 ∧
+                (¬ ∃ path : InfiniteSelectedEvolutionPath dissipativePolicy,
+                  path.StaysOutsideTerminal terminalState) ∧
+                  finiteDissipationPath.ReachesTerminal terminalState ∧
+                  terminalState.terminal p1 nonlawfulTerminal1 ∧
+                    (¬ terminalState.lawful p1 nonlawfulTerminal1) ∧
+                      oneStepPath.PathwiseNonIncrease ∧
+                        IntegrableForce toyForce ∧
+                          forceCandidateFixture.integrationData.globalReplayTransition
+                              (forceCandidateFixture.integrationData.replaySource_eq ▸
+                                toyForce.sourceState) =
+                            (forceCandidateFixture.integrationData.replayTarget_eq ▸
+                              toyForce.targetState) ∧
+                            forceCandidateFixture.concreteObstructionValue ≠ 0 ∧
+                              forceCandidateFixture.candidateData.selectedNonzero
+                                forceCandidateFixture.mismatchClass.obstructionClass ∧
+                                (forceCandidateFixture.candidateData.selectedNonzero
+                                    forceCandidateFixture.mismatchClass.obstructionClass ↔
+                                  forceCandidateFixture.concreteObstructionValue ≠ 0) ∧
+                                forceCandidateFixture.candidateData.coefficientExactness ∧
+                                  forceCandidateFixture.candidateData.witnessCoverage ∧
+                                    forceCandidateFixture.candidateData.temporalDescentDetecting ∧
+                                      forceCandidateFixture.candidateData.localToGlobalControlledByDescent ∧
+                                        forceCandidateFixture.candidateOnly := by
   exact ⟨twoStep_step_selected,
     replay_zero_theorem42_applied,
-    replayDescentZeroExample.adjustedCompatibilityWitness_cert,
     replay_zero_has_global_transition,
+    nondegenerate_twoChart_temporal_replay_correction,
     replay_selectedConcreteClassNonzero,
     finite_dissipation_no_infinite_nonterminal_path,
     twoStep_dissipation_reaches_terminal_by_theorem53,

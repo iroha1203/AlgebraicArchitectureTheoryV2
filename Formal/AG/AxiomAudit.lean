@@ -2424,6 +2424,21 @@ def squareFreeSingletonQMinimalRepairHittingSet :=
 def replayZeroTheorem42GlobalTransitionExists :=
   Examples.EvolutionPart9.replay_zero_theorem42_global_transition_exists
 
+def replayZeroTheorem42RealizesAdjusted :=
+  Examples.EvolutionPart9.replay_zero_theorem42_realizes_adjusted
+
+def replayTwoChartCorrectionRightNonzero :=
+  Examples.EvolutionPart9.zmod2TemporalSeparatedCochain_right_nonzero
+
+def replayTwoChartMismatchIsCoboundary :=
+  Examples.EvolutionPart9.twoChartReplayMismatch_is_coboundary
+
+def replayTwoChartClassVanishes :=
+  Examples.EvolutionPart9.twoChartReplayTemporalClass_vanishes
+
+def replayTwoChartNonzeroCorrectionDescends :=
+  Examples.EvolutionPart9.twoChartReplay_nonzero_correction_descends
+
 def toyForceIntegrable :=
   Examples.EvolutionPart9.toy_force_integrable
 

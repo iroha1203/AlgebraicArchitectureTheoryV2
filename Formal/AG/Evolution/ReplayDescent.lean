@@ -1,4 +1,5 @@
 import Formal.AG.Evolution.TemporalObstruction
+import Formal.AG.Site.Descent
 
 noncomputable section
 
@@ -20,8 +21,9 @@ Theorem 4.2.  The reverse direction is intentionally not part of this surface.
 IX.§4 / AC11: local replay descent data over a temporal cover and trace arrow.
 
 The replay maps are local chart maps
-`St_A(W_i,t) -> St_A(W_i,t')`.  Their mismatch is recorded as a selected
-degree-one cochain in the temporal Čech bridge attached to `TempCoeff_A`.
+`St_A(W_i,t) -> St_A(W_i,t')`.  Their mismatch is the restriction difference
+of those local maps, read as a degree-one cochain in the temporal Čech bridge
+attached to `TempCoeff_A`.
 -/
 structure ReplayDescentData {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {E : EvolutionProfile.{u, v, w, x, y, z}}
@@ -37,7 +39,11 @@ structure ReplayDescentData {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     (i : cover.Index) ->
       St.State (sourceTrace, cover.chartContext i) ->
         St.State (targetTrace, cover.chartContext i)
-  mismatchCochain : bridge.siteComplex.Cn 1
+  restrictionDifference :
+    ((i : cover.Index) ->
+      St.State (sourceTrace, cover.chartContext i) ->
+        St.State (targetTrace, cover.chartContext i)) ->
+      bridge.siteComplex.Cn 1
   mismatchSupportedByLaw : Prop
   mismatchSupportedByLaw_cert : mismatchSupportedByLaw
 
@@ -50,6 +56,11 @@ variable {T : TemporalSite S E}
 variable {St : StateTransitionPresheaf T}
 variable {Coeff : TemporalCoefficient T}
 variable {Law : TemporalLaw St}
+
+/-- IX.§4 / AC11: the degree-one mismatch computed from the local replay maps. -/
+def mismatchCochain (r : ReplayDescentData St Coeff Law) :
+    r.bridge.siteComplex.Cn 1 :=
+  r.restrictionDifference r.replay
 
 /-- IX.§4 / AC11: read the replay mismatch as a selected temporal mismatch. -/
 def mismatch (r : ReplayDescentData St Coeff Law) :
@@ -143,12 +154,11 @@ structure EffectiveTemporalAdjustment {U : AtomCarrier.{u}} {A : ArchitectureObj
     (i : r.cover.Index) ->
       St.State (r.sourceTrace, r.cover.chartContext i) ->
         St.State (r.targetTrace, r.cover.chartContext i)
-  adjustedMismatchCochain : r.bridge.siteComplex.Cn 1
   adjustedMismatchSupportedByLaw : Prop
   adjustedMismatchSupportedByLaw_cert : adjustedMismatchSupportedByLaw
   adjustment_equation :
     letI := r.bridge.siteComplex.cochainAddCommGroup 1
-    adjustedMismatchCochain =
+    r.restrictionDifference adjustedReplay =
       r.mismatchCochain - r.bridge.siteComplex.d 0 correction
 
 namespace EffectiveTemporalAdjustment
@@ -168,6 +178,11 @@ def localReplay (A : EffectiveTemporalAdjustment r) (i : r.cover.Index) :
       St.State (r.targetTrace, r.cover.chartContext i) :=
   A.adjustedReplay i
 
+/-- IX.§4 / AC12: recompute the adjusted mismatch from the adjusted local replay. -/
+def adjustedMismatchCochain (A : EffectiveTemporalAdjustment r) :
+    r.bridge.siteComplex.Cn 1 :=
+  r.restrictionDifference A.adjustedReplay
+
 /-- IX.§4 / AC12: adjusted replay data with the adjusted mismatch cochain. -/
 def adjustedData (A : EffectiveTemporalAdjustment r) :
     ReplayDescentData St Coeff Law where
@@ -178,41 +193,72 @@ def adjustedData (A : EffectiveTemporalAdjustment r) :
   traceArrow := r.traceArrow
   traceArrow_selected := r.traceArrow_selected
   replay := A.adjustedReplay
-  mismatchCochain := A.adjustedMismatchCochain
+  restrictionDifference := r.restrictionDifference
   mismatchSupportedByLaw := A.adjustedMismatchSupportedByLaw
   mismatchSupportedByLaw_cert := A.adjustedMismatchSupportedByLaw_cert
 
 /-- IX.§4 / AC12: `m(adjust(c,r)) = m(r) - d c`. -/
 theorem mismatch_adjust_eq (A : EffectiveTemporalAdjustment r) :
     letI := r.bridge.siteComplex.cochainAddCommGroup 1
-    A.adjustedMismatchCochain =
+  A.adjustedMismatchCochain =
       r.mismatchCochain - r.bridge.siteComplex.d 0 A.correction :=
   A.adjustment_equation
 
 end EffectiveTemporalAdjustment
 
 /--
-IX.§4 / AC13 / Theorem 4.2 hardening: realization data that constructs a
-global replay transition from class vanishing and adjusted replay compatibility.
+IX.§4 / AC13: sheaf presentation of replay transitions for one selected replay
+descent datum.
 
-This keeps theorem 4.2 one-way and selected-data-relative, but separates the
-actual global transition construction from the outer theorem package.
+Implementation notes: `StateTransitionPresheaf` records state restrictions,
+but arbitrary local replay maps do not themselves form a contravariant
+presheaf.  This structure supplies the missing presentation explicitly: local
+replay sections live in an actual `AATSheaf`, and zero adjusted mismatch yields
+`AATGluingData`.  The sheaf condition, rather than a transition-valued field,
+then constructs the global section used below.
 -/
-structure TemporalDescentRealization {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+structure ReplayTransitionSheaf {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {E : EvolutionProfile.{u, v, w, x, y, z}}
     {T : TemporalSite S E} {St : StateTransitionPresheaf T}
     {Coeff : TemporalCoefficient T} {Law : TemporalLaw St}
-    (r : ReplayDescentData St Coeff Law)
-    (temporalClass : TemporalClass r.mismatch)
-    (adjustment : EffectiveTemporalAdjustment r)
-    (adjustedCompatible : ReplayDescentData St Coeff Law -> Prop) where
-  globalReplay : r.GlobalReplayTransition
-  globalReplay_from_vanishing_and_compatibility :
-    temporalClass.cohomologyClass = r.zeroMismatchClass ->
-      adjustedCompatible adjustment.adjustedData ->
-        r.GlobalReplayTransition
+    (r : ReplayDescentData St Coeff Law) where
+  sectionSheaf : Site.AATSheaf S
+  base : S.category
+  base_eq :
+    base = Site.ContextCategoryObject.of S.contextPreorder
+      (T.siteRegime.context r.cover.baseContext)
+  cover : Sieve base
+  cover_topological : cover ∈ S.topology base
+  adjustment : r.bridge.siteComplex.Cn 0 -> EffectiveTemporalAdjustment r
+  adjustment_correction :
+    ∀ correction : r.bridge.siteComplex.Cn 0,
+      (adjustment correction).correction = correction
+  adjustedLocalSections :
+    (correction : r.bridge.siteComplex.Cn 0) ->
+      Site.AATLocalSectionFamily S sectionSheaf.toPresheaf cover
+  adjustedLocalSections_matching_of_zero :
+    ∀ (correction : r.bridge.siteComplex.Cn 0)
+      (hzero : (adjustment correction).adjustedMismatchCochain = 0),
+      Site.AATOverlapAgreement (adjustedLocalSections correction)
+  evaluateGlobal :
+    sectionSheaf.toPresheaf.obj (Opposite.op base) -> r.GlobalReplayTransition
+  globalSection_realizes_adjusted :
+    ∀ (correction : r.bridge.siteComplex.Cn 0)
+      (hzero : (adjustment correction).adjustedMismatchCochain = 0)
+      (globalSection : sectionSheaf.toPresheaf.obj (Opposite.op base))
+      (hglobal : Site.AATGlobalSectionRealizes
+        {
+          localSections := adjustedLocalSections correction
+          overlapAgreement := adjustedLocalSections_matching_of_zero correction hzero
+        } globalSection)
+      (i : r.cover.Index)
+      (x : St.State (r.sourceTrace, r.cover.baseContext)),
+      St.contextRestriction r.targetTrace (r.cover.contextToBase i)
+          (evaluateGlobal globalSection x) =
+        (adjustment correction).adjustedReplay i
+          (St.contextRestriction r.sourceTrace (r.cover.contextToBase i) x)
 
-namespace TemporalDescentRealization
+namespace ReplayTransitionSheaf
 
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A}
@@ -222,36 +268,26 @@ variable {St : StateTransitionPresheaf T}
 variable {Coeff : TemporalCoefficient T}
 variable {Law : TemporalLaw St}
 variable {r : ReplayDescentData St Coeff Law}
-variable {temporalClass : TemporalClass r.mismatch}
-variable {adjustment : EffectiveTemporalAdjustment r}
-variable {adjustedCompatible : ReplayDescentData St Coeff Law -> Prop}
 
-/-- IX.§4 / AC13: expose the selected global replay transition. -/
-def globalReplay_holds
-    (R : TemporalDescentRealization r temporalClass adjustment adjustedCompatible) :
-    r.GlobalReplayTransition :=
-  R.globalReplay
+/-- IX.§4 / AC13: zero adjusted mismatch supplies an actual matching family. -/
+def adjusted_replay_matching_of_zero (R : ReplayTransitionSheaf r)
+    (correction : r.bridge.siteComplex.Cn 0)
+    (hzero : (R.adjustment correction).adjustedMismatchCochain = 0) :
+    Site.AATGluingData S R.sectionSheaf.toPresheaf R.cover :=
+  {
+    localSections := R.adjustedLocalSections correction
+    overlapAgreement := R.adjustedLocalSections_matching_of_zero correction hzero
+  }
 
-/--
-IX.§4 / AC13: class vanishing plus adjusted compatibility produce a global
-replay transition through the selected realization.
--/
-def globalReplay_from_vanishing
-    (R : TemporalDescentRealization r temporalClass adjustment adjustedCompatible)
-    (hclass : temporalClass.cohomologyClass = r.zeroMismatchClass)
-    (hcompat : adjustedCompatible adjustment.adjustedData) :
-    r.GlobalReplayTransition :=
-  R.globalReplay_from_vanishing_and_compatibility hclass hcompat
-
-end TemporalDescentRealization
+end ReplayTransitionSheaf
 
 /--
 IX.§4 / AC13: assumptions of the one-way Temporal Descent Criterion.
 
 This is the bounded theorem 4.2 surface: a selected finite temporal setup,
 abelian coefficient complex, replay mismatch cocycle, vanishing temporal class,
-effective adjustment, and adjusted compatibility jointly imply existence of a
-global replay transition for `St_A`.
+and replay-transition sheaf presentation jointly imply existence of a global
+replay transition for `St_A`.
 -/
 structure TemporalDescentCriterion {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {E : EvolutionProfile.{u, v, w, x, y, z}}
@@ -264,13 +300,7 @@ structure TemporalDescentCriterion {U : AtomCarrier.{u}} {A : ArchitectureObject
     temporalClass.cocycle = mismatchCocycle.toTemporalCocycle
   classVanishes_cert :
     temporalClass.cohomologyClass = r.zeroMismatchClass
-  adjustment : EffectiveTemporalAdjustment r
-  adjustedCompatible : ReplayDescentData St Coeff Law -> Prop
-  adjustedCompatible_cert : adjustedCompatible adjustment.adjustedData
-  descends_from_adjusted :
-    temporalClass.cohomologyClass = r.zeroMismatchClass ->
-      adjustedCompatible adjustment.adjustedData ->
-        Nonempty r.GlobalReplayTransition
+  replayTransitionSheaf : ReplayTransitionSheaf r
 
 namespace TemporalDescentCriterion
 
@@ -293,47 +323,68 @@ theorem class_vanishes (D : TemporalDescentCriterion r) :
     D.temporalClass.cohomologyClass = r.zeroMismatchClass :=
   D.classVanishes_cert
 
-/-- IX.§4 / AC13: the adjusted replay data satisfies the selected compatibility predicate. -/
-theorem adjusted_data_compatible (D : TemporalDescentCriterion r) :
-    D.adjustedCompatible D.adjustment.adjustedData :=
-  D.adjustedCompatible_cert
+/--
+IX.§4 / AC13: a zero temporal class yields a concrete degree-zero correction
+whose Čech differential is the selected replay mismatch.
+-/
+theorem exists_correction_of_class_vanishes (D : TemporalDescentCriterion r) :
+    ∃ correction : r.bridge.siteComplex.Cn 0,
+      r.mismatchCochain = r.bridge.siteComplex.d 0 correction := by
+  have hclass := D.class_vanishes
+  change r.bridge.siteComplex.cohomologyClassSucc 0
+      D.temporalClass.cocycle.asCechCocycle = r.zeroMismatchClass at hclass
+  rw [D.class_matches_mismatch] at hclass
+  change r.bridge.siteComplex.cohomologyClassSucc 0
+      D.mismatchCocycle.toTemporalCocycle.asCechCocycle =
+        r.bridge.siteComplex.cohomologyClassSucc 0 r.zeroMismatchCocycle at hclass
+  rcases Quotient.exact hclass with ⟨correction, hcorrection⟩
+  refine ⟨correction, ?_⟩
+  simpa [ReplayMismatchCocycle.toTemporalCocycle, TemporalCocycle.asCechCocycle,
+    ReplayDescentData.zeroMismatchCocycle] using hcorrection
+
+/-- IX.§4 / AC13: the class-zero correction kills the adjusted replay mismatch. -/
+theorem adjusted_mismatch_zero (D : TemporalDescentCriterion r)
+    (correction : r.bridge.siteComplex.Cn 0)
+    (hcorrection : r.mismatchCochain = r.bridge.siteComplex.d 0 correction) :
+    (D.replayTransitionSheaf.adjustment correction).adjustedMismatchCochain = 0 := by
+  rw [EffectiveTemporalAdjustment.mismatch_adjust_eq,
+    D.replayTransitionSheaf.adjustment_correction, hcorrection]
+  exact sub_self _
 
 /--
-IX.§4 / AC13 / Theorem 4.2 hardening: build the theorem package from an
-explicit realization of adjusted descent.
+IX.§4 / AC13: class-zero replay data has a global transition whose restrictions
+realize the adjusted local replay sections.
 -/
-def ofRealization
-    (mismatchCocycle : ReplayMismatchCocycle r)
-    (temporalClass : TemporalClass r.mismatch)
-    (temporalClass_matches_mismatch :
-      temporalClass.cocycle = mismatchCocycle.toTemporalCocycle)
-    (classVanishes_cert : temporalClass.cohomologyClass = r.zeroMismatchClass)
-    (adjustment : EffectiveTemporalAdjustment r)
-    (adjustedCompatible : ReplayDescentData St Coeff Law -> Prop)
-    (adjustedCompatible_cert : adjustedCompatible adjustment.adjustedData)
-    (realization :
-      TemporalDescentRealization r temporalClass adjustment adjustedCompatible) :
-    TemporalDescentCriterion r where
-  mismatchCocycle := mismatchCocycle
-  temporalClass := temporalClass
-  temporalClass_matches_mismatch := temporalClass_matches_mismatch
-  classVanishes_cert := classVanishes_cert
-  adjustment := adjustment
-  adjustedCompatible := adjustedCompatible
-  adjustedCompatible_cert := adjustedCompatible_cert
-  descends_from_adjusted := by
-    intro hclass hcompat
-    exact ⟨realization.globalReplay_from_vanishing hclass hcompat⟩
+theorem temporal_descent_criterion_realizes_adjusted
+    (D : TemporalDescentCriterion r) :
+    ∃ (correction : r.bridge.siteComplex.Cn 0) (globalReplay : r.GlobalReplayTransition),
+      ∀ (i : r.cover.Index) (x : St.State (r.sourceTrace, r.cover.baseContext)),
+        St.contextRestriction r.targetTrace (r.cover.contextToBase i)
+            (globalReplay x) =
+          (D.replayTransitionSheaf.adjustment correction).adjustedReplay i
+            (St.contextRestriction r.sourceTrace (r.cover.contextToBase i) x) := by
+  rcases D.exists_correction_of_class_vanishes with ⟨correction, hcorrection⟩
+  have hzero := D.adjusted_mismatch_zero correction hcorrection
+  let data := D.replayTransitionSheaf.adjusted_replay_matching_of_zero correction hzero
+  obtain ⟨globalSection, hglobal⟩ :=
+    (D.replayTransitionSheaf.sectionSheaf.descent D.replayTransitionSheaf.cover
+      D.replayTransitionSheaf.cover_topological).exists_global data
+  refine ⟨correction, D.replayTransitionSheaf.evaluateGlobal globalSection, ?_⟩
+  intro i x
+  exact D.replayTransitionSheaf.globalSection_realizes_adjusted correction hzero
+    globalSection (by simpa [data] using hglobal) i x
 
 /--
 IX.§4 / AC13 / Theorem 4.2: temporal descent criterion.
 
-If the replay mismatch class vanishes and the effective adjustment is
-compatible, then a global replay transition exists.
+If the replay mismatch class vanishes, the induced degree-zero correction
+produces matching replay sections, and sheaf descent yields a global replay
+transition.
 -/
 theorem temporal_descent_criterion (D : TemporalDescentCriterion r) :
-    Nonempty r.GlobalReplayTransition :=
-  D.descends_from_adjusted D.class_vanishes D.adjusted_data_compatible
+    Nonempty r.GlobalReplayTransition := by
+  rcases D.temporal_descent_criterion_realizes_adjusted with ⟨_, globalReplay, _⟩
+  exact ⟨globalReplay⟩
 
 end TemporalDescentCriterion
 
