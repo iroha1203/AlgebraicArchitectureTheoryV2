@@ -46,6 +46,23 @@ open CategoryTheory
 
 universe u
 
+/-! Part VIII theorem 4.2 constructive finite-computability audit aliases. -/
+
+def finiteAATComputabilityConstructive :=
+  @Measurement.finiteAATComputability
+
+def finiteAATComputabilityLinearFixture :=
+  @Measurement.finiteComputabilityExample_linearAlgebraRoute
+
+def finiteAATComputabilityEffectiveProcedureFixture :=
+  @Measurement.finiteComputabilityExample_effectiveProcedureRoute
+
+def finiteAATComputabilityCombinatoricsFixture :=
+  @Measurement.finiteComputabilityExample_combinatoricsRoute
+
+def finiteAATComputabilityTorFixture :=
+  @Measurement.finiteComputabilityExample_torRoute
+
 /-
 Part X / peer-review hardening R1: Part X [CBI] theorem constants audited by direct alias.
 The aliases keep the original dependent theorem types intact while making the

@@ -1,4 +1,7 @@
 import Formal.AG.Measurement.FiniteRegime
+import Formal.AG.Cohomology.CochainComparison
+import Formal.AG.Derived.FreeResolution
+import Formal.AG.LawAlgebra.StanleyReisner
 
 noncomputable section
 
@@ -7,257 +10,311 @@ namespace Measurement
 
 universe u v
 
-/-!
-Part VIII R2 / AC6 theorem 4.2 finite AAT computability package.
+open CategoryTheory
 
-The theorem is a bounded package construction: under a finite measurement
-regime and explicit selected objects, the requested invariants are represented
-by finite computation objects. It does not claim a global algorithm for all
-sites, sheaves, rings, or modules.
+/-!
+Part VIII, theorem 4.2: finite AAT computability from selected primitive data.
+
+The input below contains a finite three-term Čech complex, two finite families
+of square-free forbidden supports, and a selected finite-free Mathlib
+resolution.  The theorem constructs the finite cohomology carrier, the verdict
+returned by `EffCoeff`, both Stanley--Reisner identifications, the Mathlib Tor
+comparison, and finite conflict support.  None of those conclusions is supplied
+as a `Prop` field.
 -/
 
-/-- VIII.Theorem 4.2 object: a finite Cech complex representation. -/
-structure FiniteCechComplexRepresentation (M : MeasurementProfile.{u, v}) where
-  carrier : Type v
-  carrierFintype : Fintype carrier
-  finiteRepresentation : Prop
-  finiteRepresentation_cert : finiteRepresentation
+/-- VIII.Theorem 4.2 input: an explicit finite three-term Čech complex. -/
+structure FiniteCechComputationData (M : MeasurementProfile.{u, v}) where
+  C0 : Type v
+  C1 : Type v
+  C2 : Type v
+  [c0AddCommGroup : AddCommGroup C0]
+  [c1AddCommGroup : AddCommGroup C1]
+  [c2AddCommGroup : AddCommGroup C2]
+  [c0Fintype : Fintype C0]
+  [c1Fintype : Fintype C1]
+  [c2Fintype : Fintype C2]
+  complex : Cohomology.AdditiveThreeTermComplex C0 C1 C2
+  selectedCocycle : complex.H1Cocycle
+  classToDomain : complex.H1 -> M.Domain
 
-/-- VIII.Theorem 4.2 object: a finite cocycle representative. -/
-structure FiniteCocycleRepresentative (M : MeasurementProfile.{u, v}) where
-  carrier : Type v
-  carrierFintype : Fintype carrier
-  finiteRepresentative : Prop
-  finiteRepresentative_cert : finiteRepresentative
+attribute [instance] FiniteCechComputationData.c0AddCommGroup
+attribute [instance] FiniteCechComputationData.c1AddCommGroup
+attribute [instance] FiniteCechComputationData.c2AddCommGroup
+attribute [instance] FiniteCechComputationData.c0Fintype
+attribute [instance] FiniteCechComputationData.c1Fintype
+attribute [instance] FiniteCechComputationData.c2Fintype
 
-/-- VIII.Theorem 4.2 object: a finite verdict computation object. -/
-structure FiniteVerdictComputationObject (M : MeasurementProfile.{u, v}) where
-  carrier : Type v
-  carrierFintype : Fintype carrier
-  computesSelectedVerdict : Prop
-  computesSelectedVerdict_cert : computesSelectedVerdict
+namespace FiniteCechComputationData
 
-/-- VIII.Theorem 4.2 object: a finite square-free obstruction ideal. -/
-structure FiniteSquareFreeObstructionIdeal (M : MeasurementProfile.{u, v}) where
-  carrier : Type v
-  carrierFintype : Fintype carrier
-  finiteSquareFree : Prop
-  finiteSquareFree_cert : finiteSquareFree
+/-- The selected obstruction cocycle as an actual `H¹` class. -/
+def selectedH1Class {M : MeasurementProfile.{u, v}}
+    (D : FiniteCechComputationData M) : D.complex.H1 :=
+  Quotient.mk D.complex.H1CoboundarySetoid D.selectedCocycle
 
-/-- VIII.Theorem 4.2 object: a finite Stanley-Reisner complex. -/
-structure FiniteStanleyReisnerComplex (M : MeasurementProfile.{u, v}) where
-  carrier : Type v
-  carrierFintype : Fintype carrier
-  finiteComplex : Prop
-  finiteComplex_cert : finiteComplex
+/-- The profile-domain class read from the selected Čech representative. -/
+def selectedDomain {M : MeasurementProfile.{u, v}}
+    (D : FiniteCechComputationData M) : M.Domain :=
+  D.classToDomain D.selectedH1Class
 
-/-- VIII.Theorem 4.2 object: a finite monomial Tor complex. -/
-structure FiniteMonomialTorComplex (M : MeasurementProfile.{u, v}) where
-  carrier : Type v
-  carrierFintype : Fintype carrier
-  finiteTorComplex : Prop
-  finiteTorComplex_cert : finiteTorComplex
+/-- The image of the selected degree-zero Čech differential. -/
+def DifferentialImage {M : MeasurementProfile.{u, v}}
+    (D : FiniteCechComputationData M) : Type v :=
+  { cochain : D.C1 // ∃ source : D.C0, cochain = D.complex.d0 source }
 
-/-- VIII.Theorem 4.2 object: finite support for a selected conflict class. -/
-structure FiniteConflictSupport (M : MeasurementProfile.{u, v}) where
-  carrier : Type v
-  carrierFintype : Fintype carrier
-  finiteSupport : Prop
-  finiteSupport_cert : finiteSupport
+/-- Finite degree-one cochains give an actual finite `H¹` quotient. -/
+def h1Fintype {M : MeasurementProfile.{u, v}}
+    (D : FiniteCechComputationData M) : Fintype D.complex.H1 := by
+  classical
+  letI : Finite D.complex.H1Cocycle :=
+    Finite.of_injective (fun c : D.complex.H1Cocycle => c.1) Subtype.val_injective
+  exact Fintype.ofFinite D.complex.H1
 
-/-- VIII.Theorem 4.2: selected invariants reduced to finite computation objects. -/
-structure FiniteAATComputability (M : MeasurementProfile.{u, v}) where
-  regime : FiniteMeasurementRegime M
-  cechComplex : FiniteCechComplexRepresentation M
-  cocycleRepresentative : FiniteCocycleRepresentative M
-  verdictComputation : FiniteVerdictComputationObject M
-  squareFreeObstructionIdeal : FiniteSquareFreeObstructionIdeal M
-  stanleyReisnerComplex : FiniteStanleyReisnerComplex M
-  monomialTorComplex : FiniteMonomialTorComplex M
-  conflictSupport : FiniteConflictSupport M
-  finiteLinearAlgebraReduction : Prop
-  finiteLinearAlgebraReduction_cert : finiteLinearAlgebraReduction
-  finitePresentedModuleReduction : Prop
-  finitePresentedModuleReduction_cert : finitePresentedModuleReduction
-  finiteCombinatoricsReduction : Prop
-  finiteCombinatoricsReduction_cert : finiteCombinatoricsReduction
-  finiteResolutionReduction : Prop
-  finiteResolutionReduction_cert : finiteResolutionReduction
-
-namespace FiniteAATComputability
-
-/-- VIII.Theorem 4.2: expose the finite Cech complex representation. -/
-theorem cechComplex_finite {M : MeasurementProfile.{u, v}} (P : FiniteAATComputability M) :
-    P.cechComplex.finiteRepresentation :=
-  P.cechComplex.finiteRepresentation_cert
-
-/-- VIII.Theorem 4.2: expose the finite verdict computation certificate. -/
-theorem verdictComputation_holds {M : MeasurementProfile.{u, v}}
-    (P : FiniteAATComputability M) :
-    P.verdictComputation.computesSelectedVerdict :=
-  P.verdictComputation.computesSelectedVerdict_cert
-
-/-- VIII.Theorem 4.2: expose the finite monomial Tor complex certificate. -/
-theorem monomialTorComplex_finite {M : MeasurementProfile.{u, v}}
-    (P : FiniteAATComputability M) :
-    P.monomialTorComplex.finiteTorComplex :=
-  P.monomialTorComplex.finiteTorComplex_cert
-
-/-- VIII.Theorem 4.2: expose the finite conflict support certificate. -/
-theorem conflictSupport_finite {M : MeasurementProfile.{u, v}}
-    (P : FiniteAATComputability M) :
-    P.conflictSupport.finiteSupport :=
-  P.conflictSupport.finiteSupport_cert
-
-/-- VIII.Theorem 4.2: the selected Cech-complex carrier is an actual finite type. -/
-def cechComplexCarrierFintype {M : MeasurementProfile.{u, v}} (P : FiniteAATComputability M) :
-    Fintype P.cechComplex.carrier :=
-  P.cechComplex.carrierFintype
-
-/-- VIII.Theorem 4.2: the selected cocycle-representative carrier is finite. -/
-def cocycleRepresentativeCarrierFintype {M : MeasurementProfile.{u, v}}
-    (P : FiniteAATComputability M) :
-    Fintype P.cocycleRepresentative.carrier :=
-  P.cocycleRepresentative.carrierFintype
-
-/-- VIII.Theorem 4.2: the selected verdict-computation carrier is finite. -/
-def verdictComputationCarrierFintype {M : MeasurementProfile.{u, v}}
-    (P : FiniteAATComputability M) :
-    Fintype P.verdictComputation.carrier :=
-  P.verdictComputation.carrierFintype
-
-/-- VIII.Theorem 4.2: the selected square-free ideal carrier is finite. -/
-def squareFreeObstructionIdealCarrierFintype {M : MeasurementProfile.{u, v}}
-    (P : FiniteAATComputability M) :
-    Fintype P.squareFreeObstructionIdeal.carrier :=
-  P.squareFreeObstructionIdeal.carrierFintype
-
-/-- VIII.Theorem 4.2: the selected Stanley-Reisner carrier is finite. -/
-def stanleyReisnerComplexCarrierFintype {M : MeasurementProfile.{u, v}}
-    (P : FiniteAATComputability M) :
-    Fintype P.stanleyReisnerComplex.carrier :=
-  P.stanleyReisnerComplex.carrierFintype
-
-/-- VIII.Theorem 4.2: the selected monomial Tor carrier is finite. -/
-def monomialTorComplexCarrierFintype {M : MeasurementProfile.{u, v}}
-    (P : FiniteAATComputability M) :
-    Fintype P.monomialTorComplex.carrier :=
-  P.monomialTorComplex.carrierFintype
-
-/-- VIII.Theorem 4.2: the selected conflict-support carrier is finite. -/
-def conflictSupportCarrierFintype {M : MeasurementProfile.{u, v}}
-    (P : FiniteAATComputability M) :
-    Fintype P.conflictSupport.carrier :=
-  P.conflictSupport.carrierFintype
-
-/-- VIII.Theorem 4.2: the selected Cech cochain carrier is finite. -/
-theorem cechComplexCarrier_finite {M : MeasurementProfile.{u, v}}
-    (P : FiniteAATComputability M) :
-    Finite P.cechComplex.carrier := by
-  letI := P.cechComplex.carrierFintype
-  infer_instance
-
-/-- VIII.Theorem 4.2: the selected cocycle-representative carrier is finite. -/
-theorem cocycleRepresentativeCarrier_finite {M : MeasurementProfile.{u, v}}
-    (P : FiniteAATComputability M) :
-    Finite P.cocycleRepresentative.carrier := by
-  letI := P.cocycleRepresentative.carrierFintype
-  infer_instance
-
-/-- VIII.Theorem 4.2: the selected finite computation carriers are finite. -/
-theorem computationCarriers_finite {M : MeasurementProfile.{u, v}}
-    (P : FiniteAATComputability M) :
-    Finite P.cechComplex.carrier ∧
-      Finite P.cocycleRepresentative.carrier ∧
-      Finite P.verdictComputation.carrier ∧
-      Finite P.squareFreeObstructionIdeal.carrier ∧
-      Finite P.stanleyReisnerComplex.carrier ∧
-      Finite P.monomialTorComplex.carrier ∧
-      Finite P.conflictSupport.carrier := by
-  letI := P.cechComplex.carrierFintype
-  letI := P.cocycleRepresentative.carrierFintype
-  letI := P.verdictComputation.carrierFintype
-  letI := P.squareFreeObstructionIdeal.carrierFintype
-  letI := P.stanleyReisnerComplex.carrierFintype
-  letI := P.monomialTorComplex.carrierFintype
-  letI := P.conflictSupport.carrierFintype
-  exact ⟨inferInstance, inferInstance, inferInstance, inferInstance,
-    inferInstance, inferInstance, inferInstance⟩
-
-end FiniteAATComputability
+end FiniteCechComputationData
 
 /--
-VIII.Theorem 4.2: construct the bounded finite computability package.
+VIII.Theorem 4.2 input: correctness bridges for the selected effective
+kernel, image, and quotient procedures.
+-/
+structure EffectiveCechProcedureCorrectness {M : MeasurementProfile.{u, v}}
+    (R : FiniteMeasurementRegime M) (D : FiniteCechComputationData M) where
+  kernelEquiv : R.effCoeff.KernelObject ≃ D.complex.H1Cocycle
+  imageEquiv : R.effCoeff.ImageObject ≃ D.DifferentialImage
+  quotientEquiv : R.effCoeff.QuotientObject ≃ D.complex.H1
+  selectedKernel_eq :
+    kernelEquiv (R.effCoeff.kernel D.selectedDomain) = D.selectedCocycle
 
-Every computational conclusion is supplied by a selected finite object and a
-certificate. This definition builds the package used by the theorem below.
+/-- VIII.Theorem 4.2 input: an enumerated family of square-free forbidden supports. -/
+structure FiniteSquareFreeComputationData {M : MeasurementProfile.{u, v}}
+    (R : FiniteMeasurementRegime M) where
+  forbiddenSupports : Finset (Finset M.WitnessVariables)
+
+namespace FiniteSquareFreeComputationData
+
+variable {M : MeasurementProfile.{u, v}} {R : FiniteMeasurementRegime M}
+
+/-- The Part III square-free witness regime generated by the finite list. -/
+def witnessRegime (D : FiniteSquareFreeComputationData R) :
+    LawAlgebra.StanleyReisner.SquareFreeWitnessRegime M.WitnessVariables := by
+  letI := R.witnessDecidableEq
+  exact { Forb := fun support => support ∈ D.forbiddenSupports }
+
+/-- The actual square-free obstruction ideal generated by the selected list. -/
+def obstructionIdeal (D : FiniteSquareFreeComputationData R)
+    (k : Type v) [CommRing k] : Ideal (MvPolynomial M.WitnessVariables k) := by
+  letI := R.witnessDecidableEq
+  exact LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.obstructionIdeal
+    M.WitnessVariables k D.witnessRegime
+
+/-- The actual Stanley--Reisner complex generated from the same list. -/
+def stanleyReisnerComplex (D : FiniteSquareFreeComputationData R) :
+    LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.AbstractSimplicialComplex
+      M.WitnessVariables := by
+  letI := R.witnessDecidableEq
+  exact LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.delta
+    M.WitnessVariables D.witnessRegime
+
+/-- The Stanley--Reisner ideal of the generated complex. -/
+def stanleyReisnerIdeal (D : FiniteSquareFreeComputationData R)
+    (k : Type v) [CommRing k] : Ideal (MvPolynomial M.WitnessVariables k) := by
+  letI := R.witnessDecidableEq
+  exact LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.stanleyReisnerIdeal
+    M.WitnessVariables k D.stanleyReisnerComplex
+
+/-- Inclusion-minimal forbidden supports, computed by filtering the finite list. -/
+def minimalForbiddenSupports (D : FiniteSquareFreeComputationData R) :
+    Finset (Finset M.WitnessVariables) := by
+  classical
+  exact D.forbiddenSupports.filter fun support =>
+    ∀ candidate ∈ D.forbiddenSupports,
+      candidate ⊆ support -> support ⊆ candidate
+
+/-- Finite support of the selected square-free conflict family. -/
+def conflictSupport (D : FiniteSquareFreeComputationData R) :
+    Finset M.WitnessVariables := by
+  letI := R.witnessDecidableEq
+  exact D.forbiddenSupports.biUnion id
+
+/-- The generated obstruction ideal is the ideal of the generated complex. -/
+theorem obstructionIdeal_eq_stanleyReisnerIdeal
+    (D : FiniteSquareFreeComputationData R)
+    (k : Type v) [CommRing k] :
+    D.obstructionIdeal k = D.stanleyReisnerIdeal k := by
+  letI := R.witnessDecidableEq
+  exact
+    LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.obstructionIdeal_eq_stanleyReisnerIdeal
+      M.WitnessVariables k D.witnessRegime
+
+end FiniteSquareFreeComputationData
+
+/--
+VIII.Theorem 4.2 input: selected finite Čech, square-free, and resolution data.
+
+The right obstruction ideal is resolved by actual Mathlib projective-resolution
+data.  Mathlib's Tor comparison is derived from that resolution below.
+-/
+structure FiniteAATComputationData (M : MeasurementProfile.{u, v})
+    (R : FiniteMeasurementRegime M) [CommRing M.Coeff] where
+  cech : FiniteCechComputationData M
+  cechProcedure : EffectiveCechProcedureCorrectness R cech
+  leftSquareFree : FiniteSquareFreeComputationData R
+  rightSquareFree : FiniteSquareFreeComputationData R
+  rightResolution :
+    Derived.FreeResolution.MathlibResolution.FiniteFreeMathlibResolution
+      (MvPolynomial M.WitnessVariables M.Coeff)
+      (rightSquareFree.obstructionIdeal M.Coeff)
+  torDegree : Nat
+
+namespace FiniteAATComputationData
+
+variable {M : MeasurementProfile.{u, v}} {R : FiniteMeasurementRegime M}
+variable [CommRing M.Coeff]
+
+/-- The selected verdict is computed by the effective coefficient procedure. -/
+def selectedVerdict (D : FiniteAATComputationData M R) :
+    MeasurementVerdict M D.cech.selectedDomain :=
+  R.effCoeff.verdict D.cech.selectedDomain
+
+/-- The selected left law ideal in the common polynomial ambient. -/
+def leftIdeal (D : FiniteAATComputationData M R) :
+    Ideal (MvPolynomial M.WitnessVariables M.Coeff) :=
+  D.leftSquareFree.obstructionIdeal M.Coeff
+
+/-- The selected right law ideal in the common polynomial ambient. -/
+def rightIdeal (D : FiniteAATComputationData M R) :
+    Ideal (MvPolynomial M.WitnessVariables M.Coeff) :=
+  D.rightSquareFree.obstructionIdeal M.Coeff
+
+/-- Finite support obtained from both selected forbidden-support families. -/
+def conflictSupport (D : FiniteAATComputationData M R) :
+    Finset M.WitnessVariables := by
+  letI := R.witnessDecidableEq
+  exact D.leftSquareFree.conflictSupport ∪ D.rightSquareFree.conflictSupport
+
+end FiniteAATComputationData
+
+/--
+VIII.Theorem 4.2 conclusion: the selected invariants are computed by finite
+linear-algebra, finite-combinatorics, and finite-resolution data.
+-/
+structure FiniteAATComputability {M : MeasurementProfile.{u, v}}
+    (R : FiniteMeasurementRegime M) [CommRing M.Coeff]
+    (D : FiniteAATComputationData M R) where
+  kernelObjectFintype : Fintype R.effCoeff.KernelObject
+  imageObjectFintype : Fintype R.effCoeff.ImageObject
+  quotientObjectFintype : Fintype R.effCoeff.QuotientObject
+  idealMembershipObjectFintype : Fintype R.effCoeff.IdealMembershipObject
+  finitePresentationObjectFintype : Fintype R.effCoeff.FinitePresentationObject
+  cechH1Fintype : Fintype D.cech.complex.H1
+  kernelComparison : R.effCoeff.KernelObject ≃ D.cech.complex.H1Cocycle
+  imageComparison : R.effCoeff.ImageObject ≃ D.cech.DifferentialImage
+  quotientComparison : R.effCoeff.QuotientObject ≃ D.cech.complex.H1
+  selectedKernel_eq :
+    kernelComparison (R.effCoeff.kernel D.cech.selectedDomain) = D.cech.selectedCocycle
+  selectedVerdict :
+    { verdict : MeasurementVerdict M D.cech.selectedDomain //
+      verdict = D.selectedVerdict }
+  leftStanleyReisner :
+    D.leftIdeal = D.leftSquareFree.stanleyReisnerIdeal M.Coeff
+  rightStanleyReisner :
+    D.rightIdeal = D.rightSquareFree.stanleyReisnerIdeal M.Coeff
+  torComparison :
+    Derived.Intersection.mathlibTor
+        (MvPolynomial M.WitnessVariables M.Coeff)
+        D.leftIdeal D.rightIdeal D.torDegree ≅
+      (D.rightResolution.tensorComplex D.leftIdeal).homology D.torDegree
+  conflictSupport :
+    { support : Finset M.WitnessVariables // support = D.conflictSupport }
+
+/--
+VIII.Theorem 4.2 constructor from regime data and selected primitive inputs.
 -/
 def finiteAATComputabilityPackage {M : MeasurementProfile.{u, v}}
-    (R : FiniteMeasurementRegime M)
-    (cechComplex : FiniteCechComplexRepresentation M)
-    (cocycleRepresentative : FiniteCocycleRepresentative M)
-    (verdictComputation : FiniteVerdictComputationObject M)
-    (squareFreeObstructionIdeal : FiniteSquareFreeObstructionIdeal M)
-    (stanleyReisnerComplex : FiniteStanleyReisnerComplex M)
-    (monomialTorComplex : FiniteMonomialTorComplex M)
-    (conflictSupport : FiniteConflictSupport M)
-    (finiteLinearAlgebraReduction : Prop)
-    (finiteLinearAlgebraReduction_cert : finiteLinearAlgebraReduction)
-    (finitePresentedModuleReduction : Prop)
-    (finitePresentedModuleReduction_cert : finitePresentedModuleReduction)
-    (finiteCombinatoricsReduction : Prop)
-    (finiteCombinatoricsReduction_cert : finiteCombinatoricsReduction)
-    (finiteResolutionReduction : Prop)
-    (finiteResolutionReduction_cert : finiteResolutionReduction) :
-    FiniteAATComputability M where
-  regime := R
-  cechComplex := cechComplex
-  cocycleRepresentative := cocycleRepresentative
-  verdictComputation := verdictComputation
-  squareFreeObstructionIdeal := squareFreeObstructionIdeal
-  stanleyReisnerComplex := stanleyReisnerComplex
-  monomialTorComplex := monomialTorComplex
-  conflictSupport := conflictSupport
-  finiteLinearAlgebraReduction := finiteLinearAlgebraReduction
-  finiteLinearAlgebraReduction_cert := finiteLinearAlgebraReduction_cert
-  finitePresentedModuleReduction := finitePresentedModuleReduction
-  finitePresentedModuleReduction_cert := finitePresentedModuleReduction_cert
-  finiteCombinatoricsReduction := finiteCombinatoricsReduction
-  finiteCombinatoricsReduction_cert := finiteCombinatoricsReduction_cert
-  finiteResolutionReduction := finiteResolutionReduction
-  finiteResolutionReduction_cert := finiteResolutionReduction_cert
+    (R : FiniteMeasurementRegime M) [CommRing M.Coeff]
+    (D : FiniteAATComputationData M R) :
+    FiniteAATComputability R D where
+  kernelObjectFintype := R.effCoeff.kernelObjectFintype
+  imageObjectFintype := R.effCoeff.imageObjectFintype
+  quotientObjectFintype := R.effCoeff.quotientObjectFintype
+  idealMembershipObjectFintype := R.effCoeff.idealMembershipObjectFintype
+  finitePresentationObjectFintype := R.effCoeff.finitePresentationObjectFintype
+  cechH1Fintype := D.cech.h1Fintype
+  kernelComparison := D.cechProcedure.kernelEquiv
+  imageComparison := D.cechProcedure.imageEquiv
+  quotientComparison := D.cechProcedure.quotientEquiv
+  selectedKernel_eq := D.cechProcedure.selectedKernel_eq
+  selectedVerdict := ⟨D.selectedVerdict, rfl⟩
+  leftStanleyReisner :=
+    D.leftSquareFree.obstructionIdeal_eq_stanleyReisnerIdeal M.Coeff
+  rightStanleyReisner :=
+    D.rightSquareFree.obstructionIdeal_eq_stanleyReisnerIdeal M.Coeff
+  torComparison := D.rightResolution.torIsoTensorHomology D.leftIdeal D.torDegree
+  conflictSupport := ⟨D.conflictSupport, rfl⟩
 
 /--
-VIII.Theorem 4.2: the selected invariants reduce to finite computation objects.
-
-The conclusion is intentionally existential over the theorem package: it records
-that the package is available under the supplied finite regime and selected
-finite objects, without asserting unbounded algorithmic completeness.
+VIII.Theorem 4.2 fixed statement: a finite measurement regime plus the
+listed selected data determines the finite computation package.
 -/
 theorem finiteAATComputability {M : MeasurementProfile.{u, v}}
-    (R : FiniteMeasurementRegime M)
-    (cechComplex : FiniteCechComplexRepresentation M)
-    (cocycleRepresentative : FiniteCocycleRepresentative M)
-    (verdictComputation : FiniteVerdictComputationObject M)
-    (squareFreeObstructionIdeal : FiniteSquareFreeObstructionIdeal M)
-    (stanleyReisnerComplex : FiniteStanleyReisnerComplex M)
-    (monomialTorComplex : FiniteMonomialTorComplex M)
-    (conflictSupport : FiniteConflictSupport M)
-    (finiteLinearAlgebraReduction : Prop)
-    (finiteLinearAlgebraReduction_cert : finiteLinearAlgebraReduction)
-    (finitePresentedModuleReduction : Prop)
-    (finitePresentedModuleReduction_cert : finitePresentedModuleReduction)
-    (finiteCombinatoricsReduction : Prop)
-    (finiteCombinatoricsReduction_cert : finiteCombinatoricsReduction)
-    (finiteResolutionReduction : Prop)
-    (finiteResolutionReduction_cert : finiteResolutionReduction) :
-    Nonempty (FiniteAATComputability M) :=
-  ⟨finiteAATComputabilityPackage R cechComplex cocycleRepresentative verdictComputation
-    squareFreeObstructionIdeal stanleyReisnerComplex monomialTorComplex conflictSupport
-    finiteLinearAlgebraReduction finiteLinearAlgebraReduction_cert
-    finitePresentedModuleReduction finitePresentedModuleReduction_cert
-    finiteCombinatoricsReduction finiteCombinatoricsReduction_cert
-    finiteResolutionReduction finiteResolutionReduction_cert⟩
+    (R : FiniteMeasurementRegime M) [CommRing M.Coeff]
+    (D : FiniteAATComputationData M R) :
+    Nonempty (FiniteAATComputability R D) :=
+  ⟨finiteAATComputabilityPackage R D⟩
+
+/-! ### A canonical finite-free resolution for the zero ideal -/
+
+/-- The degree-zero self resolution of `A / 0`. -/
+noncomputable def bottomProjectiveResolution (A : Type v) [CommRing A] :
+    ProjectiveResolution
+      (Derived.FreeResolution.MathlibResolution.quotientModule A (⊥ : Ideal A)) := by
+  let e : Derived.FreeResolution.MathlibResolution.quotientModule A (⊥ : Ideal A) ≅
+      ModuleCat.of A A :=
+    (AlgEquiv.quotientBot A A).toLinearEquiv.toModuleIso
+  letI : Projective
+      (Derived.FreeResolution.MathlibResolution.quotientModule A (⊥ : Ideal A)) :=
+    Projective.of_iso e.symm inferInstance
+  exact ProjectiveResolution.self _
+
+/-- A one-term finite-free Mathlib resolution of `A / 0`. -/
+noncomputable def bottomFiniteFreeResolution (A : Type v) [CommRing A] :
+    Derived.FreeResolution.MathlibResolution.FiniteFreeMathlibResolution
+      A (⊥ : Ideal A) where
+  projectiveResolution := bottomProjectiveResolution A
+  length := 0
+  BasisIndex n := if n = 0 then ULift.{v} Unit else ULift.{v} Empty
+  basisIndexFintype n := by
+    by_cases h : n = 0
+    · subst n
+      simp
+      infer_instance
+    · simp [h]
+      infer_instance
+  termIsoFree n := by
+    cases n with
+    | zero =>
+        simpa using
+          ((AlgEquiv.quotientBot A A).toLinearEquiv.trans
+            (LinearEquiv.funUnique (ULift.{v} Unit) A A).symm).toModuleIso
+    | succ n =>
+        let hsource := HomologicalComplex.isZero_single_obj_X
+          (ComplexShape.down Nat) 0
+          (Derived.FreeResolution.MathlibResolution.quotientModule
+            A (⊥ : Ideal A)) (n + 1) (by omega)
+        let htarget : CategoryTheory.Limits.IsZero
+            (ModuleCat.of A
+              ((if n + 1 = 0 then ULift.{v} Unit else ULift.{v} Empty) -> A)) := by
+          simp
+          letI : Subsingleton (ULift.{v} Empty -> A) :=
+            ⟨fun f g => funext fun x => nomatch x.down⟩
+          exact inferInstance
+        exact hsource.isoZero ≪≫ htarget.isoZero.symm
+  supported_le_length n hn := by
+    have hn0 : n ≠ 0 := by omega
+    let hzero := HomologicalComplex.isZero_single_obj_X
+      (ComplexShape.down Nat) 0
+      (Derived.FreeResolution.MathlibResolution.quotientModule
+        A (⊥ : Ideal A)) n hn0
+    exact ModuleCat.subsingleton_of_isZero hzero
 
 end Measurement
 end AAT.AG

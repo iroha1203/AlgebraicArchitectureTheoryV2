@@ -1,4 +1,4 @@
-import Formal.AG.Measurement.Profile
+import Formal.AG.Measurement.Verdict
 
 noncomputable section
 
@@ -10,9 +10,10 @@ universe u v
 /-!
 Part VIII R2 / AC5 finite measurement regime.
 
-The effective coefficient interface records only the selected procedures and
-certificates used by a profile. It does not assert decidability for arbitrary
-coefficient categories.
+The effective coefficient interface records the selected finite procedure
+outputs used by a profile.  Each output is an actual function of the selected
+domain element; theorem 4.2 does not receive a second copy of its result as a
+`Prop` certificate.
 -/
 
 /-- VIII.Definition 4.1: selected effective coefficient procedures. -/
@@ -30,69 +31,35 @@ structure EffCoeff (M : MeasurementProfile.{u, v}) where
   idealMembershipObjectFintype : Fintype IdealMembershipObject
   finitePresentationObjectFintype : Fintype FinitePresentationObject
   resolutionObjectFintype : Fintype ResolutionObject
-  kernelFor : M.Domain -> KernelObject -> Prop
-  imageFor : M.Domain -> ImageObject -> Prop
-  quotientFor : M.Domain -> QuotientObject -> Prop
-  idealMembershipFor : M.Domain -> IdealMembershipObject -> Prop
-  resolutionFor : M.Domain -> ResolutionObject -> Prop
-  methodUsesInterface : (alpha : M.Domain) -> M.SelectedMethod alpha -> Prop
-  zeroCertificateBacks : (alpha : M.Domain) -> M.CertRef alpha -> M.Zero alpha -> Prop
-  nonzeroCertificateBacks : (alpha : M.Domain) -> M.CertRef alpha -> M.NonZero alpha -> Prop
-  kernelCertificate : KernelObject -> Prop
-  imageCertificate : ImageObject -> Prop
-  quotientCertificate : QuotientObject -> Prop
-  idealMembershipCertificate : IdealMembershipObject -> Prop
-  finitePresentationCertificate : FinitePresentationObject -> Prop
-  resolutionCertificate : ResolutionObject -> Prop
+  kernel : M.Domain -> KernelObject
+  image : M.Domain -> ImageObject
+  quotient : M.Domain -> QuotientObject
+  idealMembership : M.Domain -> IdealMembershipObject
+  finitePresentation : M.Domain -> FinitePresentationObject
+  resolution : M.Domain -> ResolutionObject
+  verdict : (alpha : M.Domain) -> MeasurementVerdict M alpha
 
 /-- VIII.Definition 4.1: a finite measurement regime for a selected profile. -/
 structure FiniteMeasurementRegime (M : MeasurementProfile.{u, v}) where
   effCoeff : EffCoeff M
-  finiteSite : Prop
-  finiteSite_cert : finiteSite
-  finiteCover : Prop
-  finiteCover_cert : finiteCover
-  effectiveCoefficient : Prop
-  effectiveCoefficient_cert : effectiveCoefficient
-  explicitRestrictionMaps : Prop
-  explicitRestrictionMaps_cert : explicitRestrictionMaps
-  finiteWitnessVariables : Prop
-  finiteWitnessVariables_cert : finiteWitnessVariables
-  finitelyGeneratedObstructionIdeal : Prop
-  finitelyGeneratedObstructionIdeal_cert : finitelyGeneratedObstructionIdeal
-  selectedFiniteResolutions : Prop
-  selectedFiniteResolutions_cert : selectedFiniteResolutions
-  zeroPredicateCertificateBacked : Prop
-  zeroPredicateCertificateBacked_cert : zeroPredicateCertificateBacked
-  nonzeroPredicateCertificateBacked : Prop
-  nonzeroPredicateCertificateBacked_cert : nonzeroPredicateCertificateBacked
+  [siteFintype : Fintype M.SiteObj]
+  [coverFintype : Fintype M.Cover]
+  [domainFintype : Fintype M.Domain]
+  [witnessFintype : Fintype M.WitnessVariables]
+  [witnessDecidableEq : DecidableEq M.WitnessVariables]
+
+attribute [instance] FiniteMeasurementRegime.siteFintype
+attribute [instance] FiniteMeasurementRegime.coverFintype
+attribute [instance] FiniteMeasurementRegime.domainFintype
+attribute [instance] FiniteMeasurementRegime.witnessFintype
+attribute [instance] FiniteMeasurementRegime.witnessDecidableEq
 
 namespace FiniteMeasurementRegime
 
-/-- VIII.R2: the selected site is finite in the regime. -/
-theorem finiteSite_holds {M : MeasurementProfile.{u, v}} (R : FiniteMeasurementRegime M) :
-    R.finiteSite :=
-  R.finiteSite_cert
-
-/-- VIII.R2: the selected cover or hypercover fragment is finite in the regime. -/
-theorem finiteCover_holds {M : MeasurementProfile.{u, v}} (R : FiniteMeasurementRegime M) :
-    R.finiteCover :=
-  R.finiteCover_cert
-
-/-- VIII.R2: the coefficient data are effective only through the selected interface. -/
-theorem effectiveCoefficient_holds {M : MeasurementProfile.{u, v}}
-    (R : FiniteMeasurementRegime M) : R.effectiveCoefficient :=
-  R.effectiveCoefficient_cert
-
-/-- VIII.R2: the selected witness variables are finite. -/
-theorem finiteWitnessVariables_holds {M : MeasurementProfile.{u, v}}
-    (R : FiniteMeasurementRegime M) : R.finiteWitnessVariables :=
-  R.finiteWitnessVariables_cert
-
-/-- VIII.R2: selected finite resolutions are available in the regime. -/
-theorem selectedFiniteResolutions_holds {M : MeasurementProfile.{u, v}}
-    (R : FiniteMeasurementRegime M) : R.selectedFiniteResolutions :=
-  R.selectedFiniteResolutions_cert
+/-- VIII.R2: the selected effective coefficient procedure computes a verdict. -/
+def verdict {M : MeasurementProfile.{u, v}} (R : FiniteMeasurementRegime M)
+    (alpha : M.Domain) : MeasurementVerdict M alpha :=
+  R.effCoeff.verdict alpha
 
 /-- VIII.R2/R3: the selected kernel objects form an actual finite type. -/
 def kernelObjectFintype {M : MeasurementProfile.{u, v}} (R : FiniteMeasurementRegime M) :

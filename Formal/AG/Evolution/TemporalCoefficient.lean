@@ -267,18 +267,20 @@ theorem effectiveCoefficient_matches_measurement
 
 /-- IX.§3 / AC6: finiteness is inherited from the selected Part VIII measurement regime. -/
 theorem finite_temporal_site (R : FiniteTemporalCoefficientRegime C) :
-    R.measurementRegime.finiteSite :=
-  R.measurementRegime.finiteSite_holds
+    Finite E.measurementProfile.SiteObj := by
+  letI := R.measurementRegime.siteFintype
+  infer_instance
 
 /-- IX.§3 / AC6: finite-cover evidence is inherited from Part VIII. -/
 theorem finite_temporal_cover (R : FiniteTemporalCoefficientRegime C) :
-    R.measurementRegime.finiteCover :=
-  R.measurementRegime.finiteCover_holds
+    Finite E.measurementProfile.Cover := by
+  letI := R.measurementRegime.coverFintype
+  infer_instance
 
-/-- IX.§3 / AC6: effective-coefficient evidence is inherited from Part VIII. -/
-theorem effective_coefficient_holds (R : FiniteTemporalCoefficientRegime C) :
-    R.measurementRegime.effectiveCoefficient :=
-  R.measurementRegime.effectiveCoefficient_holds
+/-- IX.§3 / AC6: the selected effective-coefficient procedures are inherited. -/
+def effective_coefficient_holds (R : FiniteTemporalCoefficientRegime C) :
+    Measurement.EffCoeff E.measurementProfile :=
+  R.measurementRegime.effCoeff
 
 /-- IX.§3 / AC6: the selected temporal coefficient profile is measured by Part VIII data. -/
 theorem coefficient_backed_by_measurement

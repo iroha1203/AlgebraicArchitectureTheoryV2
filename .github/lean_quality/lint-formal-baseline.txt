@@ -1131,48 +1131,36 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.Measurement.DistanceToFlatnessReading.distanceZeroDoesNotImplyLawful /- definition missing documentation string -/
 
 -- Formal.AG.Measurement.Computability
-#check @AAT.AG.Measurement.FiniteCechComplexRepresentation.carrier /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteCechComplexRepresentation.carrierFintype /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteCechComplexRepresentation.finiteRepresentation /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteCocycleRepresentative.carrier /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteCocycleRepresentative.carrierFintype /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteCocycleRepresentative.finiteRepresentative /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteVerdictComputationObject.carrier /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteVerdictComputationObject.carrierFintype /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteVerdictComputationObject.computesSelectedVerdict /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteSquareFreeObstructionIdeal.carrier /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteSquareFreeObstructionIdeal.carrierFintype /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteSquareFreeObstructionIdeal.finiteSquareFree /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteStanleyReisnerComplex.carrier /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteStanleyReisnerComplex.carrierFintype /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteStanleyReisnerComplex.finiteComplex /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteMonomialTorComplex.carrier /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteMonomialTorComplex.carrierFintype /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteMonomialTorComplex.finiteTorComplex /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteConflictSupport.carrier /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteConflictSupport.carrierFintype /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteConflictSupport.finiteSupport /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteAATComputability.regime /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteAATComputability.cechComplex /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteAATComputability.cocycleRepresentative /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteAATComputability.verdictComputation /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteAATComputability.squareFreeObstructionIdeal /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteAATComputability.stanleyReisnerComplex /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteAATComputability.monomialTorComplex /- definition missing documentation string -/
+#check @AAT.AG.Measurement.FiniteCechComputationData.C0 /- definition missing documentation string -/
+#check @AAT.AG.Measurement.FiniteCechComputationData.C1 /- definition missing documentation string -/
+#check @AAT.AG.Measurement.FiniteCechComputationData.C2 /- definition missing documentation string -/
+#check @AAT.AG.Measurement.FiniteCechComputationData.complex /- definition missing documentation string -/
+#check @AAT.AG.Measurement.FiniteCechComputationData.selectedCocycle /- definition missing documentation string -/
+#check @AAT.AG.Measurement.FiniteCechComputationData.classToDomain /- definition missing documentation string -/
+#check @AAT.AG.Measurement.EffectiveCechProcedureCorrectness.kernelEquiv /- definition missing documentation string -/
+#check @AAT.AG.Measurement.EffectiveCechProcedureCorrectness.imageEquiv /- definition missing documentation string -/
+#check @AAT.AG.Measurement.EffectiveCechProcedureCorrectness.quotientEquiv /- definition missing documentation string -/
+#check @AAT.AG.Measurement.FiniteSquareFreeComputationData.forbiddenSupports /- definition missing documentation string -/
+#check @AAT.AG.Measurement.FiniteAATComputationData.cech /- definition missing documentation string -/
+#check @AAT.AG.Measurement.FiniteAATComputationData.cechProcedure /- definition missing documentation string -/
+#check @AAT.AG.Measurement.FiniteAATComputationData.leftSquareFree /- definition missing documentation string -/
+#check @AAT.AG.Measurement.FiniteAATComputationData.rightSquareFree /- definition missing documentation string -/
+#check @AAT.AG.Measurement.FiniteAATComputationData.rightResolution /- definition missing documentation string -/
+#check @AAT.AG.Measurement.FiniteAATComputationData.torDegree /- definition missing documentation string -/
+#check @AAT.AG.Measurement.FiniteAATComputability.kernelObjectFintype /- definition missing documentation string -/
+#check @AAT.AG.Measurement.FiniteAATComputability.imageObjectFintype /- definition missing documentation string -/
+#check @AAT.AG.Measurement.FiniteAATComputability.quotientObjectFintype /- definition missing documentation string -/
+#check @AAT.AG.Measurement.FiniteAATComputability.idealMembershipObjectFintype /- definition missing documentation string -/
+#check @AAT.AG.Measurement.FiniteAATComputability.finitePresentationObjectFintype /- definition missing documentation string -/
+#check @AAT.AG.Measurement.FiniteAATComputability.cechH1Fintype /- definition missing documentation string -/
+#check @AAT.AG.Measurement.FiniteAATComputability.kernelComparison /- definition missing documentation string -/
+#check @AAT.AG.Measurement.FiniteAATComputability.imageComparison /- definition missing documentation string -/
+#check @AAT.AG.Measurement.FiniteAATComputability.quotientComparison /- definition missing documentation string -/
+#check @AAT.AG.Measurement.FiniteAATComputability.selectedVerdict /- definition missing documentation string -/
+#check @AAT.AG.Measurement.FiniteAATComputability.torComparison /- definition missing documentation string -/
 #check @AAT.AG.Measurement.FiniteAATComputability.conflictSupport /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteAATComputability.finiteLinearAlgebraReduction /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteAATComputability.finitePresentedModuleReduction /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteAATComputability.finiteCombinatoricsReduction /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteAATComputability.finiteResolutionReduction /- definition missing documentation string -/
 
 -- Formal.AG.Measurement.Examples
-#check AAT.AG.Measurement.tinyFiniteCechComplex /- definition missing documentation string -/
-#check AAT.AG.Measurement.tinyFiniteCocycle /- definition missing documentation string -/
-#check AAT.AG.Measurement.tinyFiniteVerdictComputation /- definition missing documentation string -/
-#check AAT.AG.Measurement.tinyFiniteSquareFreeIdeal /- definition missing documentation string -/
-#check AAT.AG.Measurement.tinyFiniteStanleyReisnerComplex /- definition missing documentation string -/
-#check AAT.AG.Measurement.tinyFiniteMonomialTorComplex /- definition missing documentation string -/
-#check AAT.AG.Measurement.tinyFiniteConflictSupport /- definition missing documentation string -/
 #check AAT.AG.Measurement.CellularHodgeFiniteExample.cochainCarrier /- definition missing documentation string -/
 #check AAT.AG.Measurement.CellularHodgeFiniteExample.realHodgeDecomposition /- definition missing documentation string -/
 #check AAT.AG.Measurement.CellularHodgeFiniteExample.realHarmonicDebtMinimality /- definition missing documentation string -/
@@ -1214,30 +1202,14 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.Measurement.EffCoeff.idealMembershipObjectFintype /- definition missing documentation string -/
 #check @AAT.AG.Measurement.EffCoeff.finitePresentationObjectFintype /- definition missing documentation string -/
 #check @AAT.AG.Measurement.EffCoeff.resolutionObjectFintype /- definition missing documentation string -/
-#check @AAT.AG.Measurement.EffCoeff.kernelFor /- definition missing documentation string -/
-#check @AAT.AG.Measurement.EffCoeff.imageFor /- definition missing documentation string -/
-#check @AAT.AG.Measurement.EffCoeff.quotientFor /- definition missing documentation string -/
-#check @AAT.AG.Measurement.EffCoeff.idealMembershipFor /- definition missing documentation string -/
-#check @AAT.AG.Measurement.EffCoeff.resolutionFor /- definition missing documentation string -/
-#check @AAT.AG.Measurement.EffCoeff.methodUsesInterface /- definition missing documentation string -/
-#check @AAT.AG.Measurement.EffCoeff.zeroCertificateBacks /- definition missing documentation string -/
-#check @AAT.AG.Measurement.EffCoeff.nonzeroCertificateBacks /- definition missing documentation string -/
-#check @AAT.AG.Measurement.EffCoeff.kernelCertificate /- definition missing documentation string -/
-#check @AAT.AG.Measurement.EffCoeff.imageCertificate /- definition missing documentation string -/
-#check @AAT.AG.Measurement.EffCoeff.quotientCertificate /- definition missing documentation string -/
-#check @AAT.AG.Measurement.EffCoeff.idealMembershipCertificate /- definition missing documentation string -/
-#check @AAT.AG.Measurement.EffCoeff.finitePresentationCertificate /- definition missing documentation string -/
-#check @AAT.AG.Measurement.EffCoeff.resolutionCertificate /- definition missing documentation string -/
+#check @AAT.AG.Measurement.EffCoeff.kernel /- definition missing documentation string -/
+#check @AAT.AG.Measurement.EffCoeff.image /- definition missing documentation string -/
+#check @AAT.AG.Measurement.EffCoeff.quotient /- definition missing documentation string -/
+#check @AAT.AG.Measurement.EffCoeff.idealMembership /- definition missing documentation string -/
+#check @AAT.AG.Measurement.EffCoeff.finitePresentation /- definition missing documentation string -/
+#check @AAT.AG.Measurement.EffCoeff.resolution /- definition missing documentation string -/
+#check @AAT.AG.Measurement.EffCoeff.verdict /- definition missing documentation string -/
 #check @AAT.AG.Measurement.FiniteMeasurementRegime.effCoeff /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteMeasurementRegime.finiteSite /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteMeasurementRegime.finiteCover /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteMeasurementRegime.effectiveCoefficient /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteMeasurementRegime.explicitRestrictionMaps /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteMeasurementRegime.finiteWitnessVariables /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteMeasurementRegime.finitelyGeneratedObstructionIdeal /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteMeasurementRegime.selectedFiniteResolutions /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteMeasurementRegime.zeroPredicateCertificateBacked /- definition missing documentation string -/
-#check @AAT.AG.Measurement.FiniteMeasurementRegime.nonzeroPredicateCertificateBacked /- definition missing documentation string -/
 
 -- Formal.AG.Measurement.GAGA
 #check @AAT.AG.Measurement.SelectedFiniteHodgeTheoremPackage.cellularModel /- definition missing documentation string -/
@@ -2590,6 +2562,18 @@ another instance-implicit argument or the return type. -/
 -- Formal.AG.Cohomology.CechComplex
 #check @AAT.AG.Cohomology.CoverRelativeCechComplex.cochainAddCommGroup /- argument 6 self : AAT.AG.Cohomology.CoverRelativeCechComplex
   𝒰 Ob -/
+
+-- Formal.AG.Measurement.FiniteRegime
+#check @AAT.AG.Measurement.FiniteMeasurementRegime.siteFintype /- argument 2 self : AAT.AG.Measurement.FiniteMeasurementRegime
+  M -/
+#check @AAT.AG.Measurement.FiniteMeasurementRegime.coverFintype /- argument 2 self : AAT.AG.Measurement.FiniteMeasurementRegime
+  M -/
+#check @AAT.AG.Measurement.FiniteMeasurementRegime.domainFintype /- argument 2 self : AAT.AG.Measurement.FiniteMeasurementRegime
+  M -/
+#check @AAT.AG.Measurement.FiniteMeasurementRegime.witnessFintype /- argument 2 self : AAT.AG.Measurement.FiniteMeasurementRegime
+  M -/
+#check @AAT.AG.Measurement.FiniteMeasurementRegime.witnessDecidableEq /- argument 2 self : AAT.AG.Measurement.FiniteMeasurementRegime
+  M -/
 
 -- Formal.AG.RepresentationAnalysis.GraphMatrix
 #check @AAT.AG.RepresentationAnalysis.FiniteDirectedGraphTarget.vertexFintype /- argument 4 self : AAT.AG.RepresentationAnalysis.FiniteDirectedGraphTarget
