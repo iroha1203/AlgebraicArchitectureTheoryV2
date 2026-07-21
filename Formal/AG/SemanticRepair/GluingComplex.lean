@@ -35,6 +35,108 @@ attribute [instance] primitiveFinite cochainFinite
 end FiniteSemanticRepairGluingComplex
 
 /--
+X.定義3.1: full finite semantic repair-gluing complex.
+
+This is the data-level presentation of the finite complex from the text: the
+chart enumeration, every chart-pair overlap, both primitive restrictions, and
+the cochain evaluator are explicit.  `restriction_difference` is supplied
+finite-complex data, while the descent theorem is read through the existing
+minimal complex after `toFiniteSemanticRepairGluingComplex` forgets this
+presentation data.
+
+Implementation notes: the minimal complex remains the target of the existing
+boundary and semantic-coherence API, so this structure records the additional
+Definition 3.1 data instead of changing that API.  Encoding the restrictions
+as a separate certificate over the minimal complex would hide `resL`, `resR`,
+and `ev` from the object whose differential they describe.
+-/
+structure FullFiniteSemanticRepairGluingComplex where
+  /-- The semantic atom vocabulary and its component projection. -/
+  projection : SemanticAtomProjection.{u, v}
+  /-- The separately supplied cover datum used to read residual semantic atoms. -/
+  cover : FiniteSemanticRepairCoverDatum.{v, w, x} projection.Component
+  /-- The charts belonging to this finite gluing complex, independently of `cover.Chart`. -/
+  Chart : Type w
+  /-- Finiteness of the complex chart family. -/
+  chartFinite : Fintype Chart
+  /-- A complete finite enumeration of the complex charts. -/
+  chartEnumeration : List Chart
+  /-- Every complex chart occurs in `chartEnumeration`. -/
+  chart_enumeration_complete : forall chart, chart ∈ chartEnumeration
+  /-- The finite overlap components for each ordered pair of complex charts. -/
+  Overlap : Chart -> Chart -> Type x
+  /-- Finiteness of every chart-pair overlap family. -/
+  overlapFinite : forall left right, Fintype (Overlap left right)
+  /-- A complete finite enumeration of all chart-pair overlap components. -/
+  overlapEnumeration : List (Sigma fun left : Chart =>
+    Sigma fun right : Chart => Overlap left right)
+  /-- Every chart-pair overlap component occurs in `overlapEnumeration`. -/
+  overlap_enumeration_complete : forall overlap, overlap ∈ overlapEnumeration
+  /-- The finite type of local repair primitives. -/
+  C0 : Type y
+  /-- The finite type of residual repair-gluing cochains. -/
+  C1 : Type x
+  /-- Finiteness of local repair primitives. -/
+  primitiveFinite : Fintype C0
+  /-- Finiteness of residual repair-gluing cochains. -/
+  cochainFinite : Fintype C1
+  /-- A complete finite enumeration of local repair primitives. -/
+  c0Enumeration : List C0
+  /-- Every local repair primitive occurs in `c0Enumeration`. -/
+  c0_enumeration_complete : forall primitive, primitive ∈ c0Enumeration
+  /-- A complete finite enumeration of residual repair-gluing cochains. -/
+  c1Enumeration : List C1
+  /-- Every residual repair-gluing cochain occurs in `c1Enumeration`. -/
+  c1_enumeration_complete : forall cochain, cochain ∈ c1Enumeration
+  /-- The semantic support assigned to each local repair primitive. -/
+  supportOf : C0 -> projection.Support
+  /-- The left restriction of a primitive at a selected overlap component. -/
+  resL : C0 ->
+    (Sigma fun left : Chart => Sigma fun right : Chart => Overlap left right) ->
+      projection.Support
+  /-- The right restriction of a primitive at a selected overlap component. -/
+  resR : C0 ->
+    (Sigma fun left : Chart => Sigma fun right : Chart => Overlap left right) ->
+      projection.Support
+  /-- The predicate that a residual cochain charges an atom at an overlap component. -/
+  ev : C1 ->
+    (Sigma fun left : Chart => Sigma fun right : Chart => Overlap left right) ->
+      projection.SemanticAtom -> Prop
+  /-- The supplied restriction-difference differential from local primitives to cochains. -/
+  delta0 : C0 -> C1
+  /-- The supplied residual cochain selected for the finite complex. -/
+  residual : C1
+  /-- Evaluation of `delta0` charges exactly the exclusive difference of the two restrictions. -/
+  restriction_difference : forall primitive overlap atom,
+    ev (delta0 primitive) overlap atom <->
+      (resL primitive overlap atom /\ ¬ resR primitive overlap atom) \/
+        (resR primitive overlap atom /\ ¬ resL primitive overlap atom)
+
+namespace FullFiniteSemanticRepairGluingComplex
+
+attribute [instance] chartFinite primitiveFinite cochainFinite overlapFinite
+
+/--
+Forget the Definition 3.1 presentation data while preserving the finite
+boundary, support, and selected residual consumed by the existing theorem 3.4
+API.
+-/
+def toFiniteSemanticRepairGluingComplex
+    (K : FullFiniteSemanticRepairGluingComplex.{u, v, w, x, y}) :
+    FiniteSemanticRepairGluingComplex.{u, v, w, x, y} where
+  projection := K.projection
+  cover := K.cover
+  C0 := K.C0
+  C1 := K.C1
+  primitiveFinite := K.primitiveFinite
+  cochainFinite := K.cochainFinite
+  supportOf := K.supportOf
+  delta0 := K.delta0
+  residual := K.residual
+
+end FullFiniteSemanticRepairGluingComplex
+
+/--
 X.定義3.2: boundary membership `B¹`.
 
 `B1 K cochain` means the cochain is generated by a local primitive through the
@@ -223,6 +325,88 @@ theorem completeSupportBoundary_descent_package
       no_globalRepairCoherent_of_nonzero_obstruction L.K,
       globalRepairCoherent_of_obstructionVanishes L.K hfaithful,
       finiteSemanticRepairGluingDescent_iff_of_completeSupportBoundary L⟩
+
+namespace FullFiniteSemanticRepairGluingComplex
+
+/--
+X.定義3.1 restriction-difference API: evaluating `delta0 primitive` at an
+overlap charges exactly the atom on which the two supplied restrictions differ.
+-/
+theorem delta0_ev_iff_restriction_xor
+    (K : FullFiniteSemanticRepairGluingComplex.{u, v, w, x, y})
+    (primitive : K.C0)
+    (overlap : Sigma fun left : K.Chart =>
+      Sigma fun right : K.Chart => K.Overlap left right)
+    (atom : K.projection.SemanticAtom) :
+    K.ev (K.delta0 primitive) overlap atom <->
+      (K.resL primitive overlap atom /\ ¬ K.resR primitive overlap atom) \/
+        (K.resR primitive overlap atom /\ ¬ K.resL primitive overlap atom) :=
+  K.restriction_difference primitive overlap atom
+
+/-- X.定義3.2, read on the full Definition 3.1 presentation. -/
+def ObstructionClassVanishes
+    (K : FullFiniteSemanticRepairGluingComplex.{u, v, w, x, y}) : Prop :=
+  _root_.AAT.AG.SemanticRepair.ObstructionClassVanishes
+    K.toFiniteSemanticRepairGluingComplex
+
+/-- X.定義3.2, read on the full Definition 3.1 presentation. -/
+def ObstructionClassNonzero
+    (K : FullFiniteSemanticRepairGluingComplex.{u, v, w, x, y}) : Prop :=
+  _root_.AAT.AG.SemanticRepair.ObstructionClassNonzero
+    K.toFiniteSemanticRepairGluingComplex
+
+/-- X.定義3.2, read on the full Definition 3.1 presentation. -/
+def GlobalSemanticRepairCoherent
+    (K : FullFiniteSemanticRepairGluingComplex.{u, v, w, x, y}) : Prop :=
+  _root_.AAT.AG.SemanticRepair.GlobalSemanticRepairCoherent
+    K.toFiniteSemanticRepairGluingComplex
+
+/-- X.定理3.4(i), transported from the minimal finite complex by forgetting. -/
+theorem globalRepairCoherent_forces_obstructionVanishes
+    (K : FullFiniteSemanticRepairGluingComplex.{u, v, w, x, y}) :
+    GlobalSemanticRepairCoherent K -> ObstructionClassVanishes K :=
+  _root_.AAT.AG.SemanticRepair.globalRepairCoherent_forces_obstructionVanishes
+    K.toFiniteSemanticRepairGluingComplex
+
+/-- X.定理3.4(i), transported from the minimal finite complex by forgetting. -/
+theorem no_globalRepairCoherent_of_nonzero_obstruction
+    (K : FullFiniteSemanticRepairGluingComplex.{u, v, w, x, y}) :
+    ObstructionClassNonzero K -> Not (GlobalSemanticRepairCoherent K) :=
+  _root_.AAT.AG.SemanticRepair.no_globalRepairCoherent_of_nonzero_obstruction
+    K.toFiniteSemanticRepairGluingComplex
+
+/--
+X.定理3.4(ii): under the same semantic faithfulness hypotheses as the minimal
+complex, the full Definition 3.1 presentation has global semantic repair
+coherence whenever its selected residual is a boundary.
+-/
+theorem globalRepairCoherent_of_obstructionVanishes
+    (K : FullFiniteSemanticRepairGluingComplex.{u, v, w, x, y})
+    (hfaithful : SemanticFaithfulnessHypotheses K.toFiniteSemanticRepairGluingComplex) :
+    ObstructionClassVanishes K -> GlobalSemanticRepairCoherent K :=
+  _root_.AAT.AG.SemanticRepair.globalRepairCoherent_of_obstructionVanishes
+    K.toFiniteSemanticRepairGluingComplex hfaithful
+
+/-- X.定理3.4(iii), transported to the full Definition 3.1 presentation. -/
+theorem finiteSemanticRepairGluingDescent_iff
+    (K : FullFiniteSemanticRepairGluingComplex.{u, v, w, x, y})
+    (hfaithful : SemanticFaithfulnessHypotheses K.toFiniteSemanticRepairGluingComplex) :
+    GlobalSemanticRepairCoherent K <-> ObstructionClassVanishes K :=
+  _root_.AAT.AG.SemanticRepair.finiteSemanticRepairGluingDescent_iff
+    K.toFiniteSemanticRepairGluingComplex hfaithful
+
+/-- X.定理3.4 package, transported to the full Definition 3.1 presentation. -/
+theorem finiteSemanticRepairGluingDescent_package
+    (K : FullFiniteSemanticRepairGluingComplex.{u, v, w, x, y})
+    (hfaithful : SemanticFaithfulnessHypotheses K.toFiniteSemanticRepairGluingComplex) :
+    (GlobalSemanticRepairCoherent K -> ObstructionClassVanishes K) /\
+      (ObstructionClassNonzero K -> Not (GlobalSemanticRepairCoherent K)) /\
+      (ObstructionClassVanishes K -> GlobalSemanticRepairCoherent K) /\
+      (GlobalSemanticRepairCoherent K <-> ObstructionClassVanishes K) :=
+  _root_.AAT.AG.SemanticRepair.finiteSemanticRepairGluingDescent_package
+    K.toFiniteSemanticRepairGluingComplex hfaithful
+
+end FullFiniteSemanticRepairGluingComplex
 
 end SemanticRepair
 end AAT.AG
