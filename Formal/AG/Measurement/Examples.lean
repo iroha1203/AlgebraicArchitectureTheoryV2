@@ -1,5 +1,7 @@
 import Formal.AG.Measurement.GAGA
 import Formal.AG.Examples.FiniteModel
+import Mathlib.Algebra.Field.Rat
+import Mathlib.LinearAlgebra.StdBasis
 
 noncomputable section
 
@@ -210,6 +212,33 @@ def finiteComputabilityObstructionSheaf :
   map_zero := by intros; rfl
   map_add := by intros; rfl
 
+/-- R11(c): constant rational presheaf for the infinite-carrier matrix route. -/
+def finiteDimensionalRationalPresheaf : Site.AATPresheaf FiniteModel.site where
+  obj _ := Rat
+  map _ x := x
+  map_id _ := rfl
+  map_comp _ _ := rfl
+
+theorem finiteDimensionalRational_isSheaf :
+    Site.AATSheafCondition FiniteModel.site finiteDimensionalRationalPresheaf := by
+  intro _base cover hcover
+  rw [Site.AATSheafConditionFor,
+    finiteComputabilitySite_cover_eq_top hcover]
+  exact Presieve.isSheafFor_top finiteDimensionalRationalPresheaf
+
+/-- R11(c): rational obstruction sheaf with infinite section carriers. -/
+def finiteDimensionalRationalObstructionSheaf :
+    Cohomology.ObstructionSheaf FiniteModel.site where
+  carrier := {
+    carrier := finiteDimensionalRationalPresheaf
+    isSheaf := finiteDimensionalRational_isSheaf
+  }
+  addCommGroup _ := by
+    change AddCommGroup Rat
+    infer_instance
+  map_zero := by intros; rfl
+  map_add := by intros; rfl
+
 /-- R11(c): a two-index admissible cover on the selected finite AAT site. -/
 def finiteComputabilityCover :
     Site.AATCoverageFamily FiniteModel.siteCoverageRequirements
@@ -233,7 +262,7 @@ theorem finiteComputabilityCover_topologyCover :
   exact Site.AATGrothendieckTopology.generate_mem finiteComputabilityCover
 
 /-- R11(c): the selected two-index cover is `U`-adequate. -/
-def finiteComputabilityCover_uAdequate :
+theorem finiteComputabilityCover_uAdequate :
     Site.UAdequateCover FiniteModel.siteAdequacyRequirements
       finiteComputabilityCover where
   topologyCover := finiteComputabilityCover_topologyCover
@@ -314,10 +343,19 @@ def finiteComputabilitySeedGeometry :
     intro _ _
     change Module (ZMod 2) (ZMod 2)
     infer_instance
-  sectionFintype := by
-    intro _ _
-    change Fintype (ZMod 2)
-    infer_instance
+  faceRestrictionLinear := by
+    letI : CommRing finiteComputabilitySeedProfile.Coeff := by
+      change CommRing (ZMod 2)
+      infer_instance
+    intro _ _ _
+    change ZMod 2 →ₗ[ZMod 2] ZMod 2
+    exact LinearMap.id
+  faceRestrictionLinear_apply := by
+    letI : CommRing finiteComputabilitySeedProfile.Coeff := by
+      change CommRing (ZMod 2)
+      infer_instance
+    intros
+    rfl
   siteObjEquiv := by
     simpa [finiteComputabilitySeedProfile, finiteComputabilityCoverGeometry] using
       (Equiv.refl PUnit)
@@ -362,10 +400,19 @@ def finiteComputabilityGeometry :
     intro _ _
     change Module (ZMod 2) (ZMod 2)
     infer_instance
-  sectionFintype := by
-    intro _ _
-    change Fintype (ZMod 2)
-    infer_instance
+  faceRestrictionLinear := by
+    letI : CommRing finiteComputabilityMeasurementProfile.Coeff := by
+      change CommRing (ZMod 2)
+      infer_instance
+    intro _ _ _
+    change ZMod 2 →ₗ[ZMod 2] ZMod 2
+    exact LinearMap.id
+  faceRestrictionLinear_apply := by
+    letI : CommRing finiteComputabilityMeasurementProfile.Coeff := by
+      change CommRing (ZMod 2)
+      infer_instance
+    intros
+    rfl
   siteObjEquiv := by
     simpa [finiteComputabilityMeasurementProfile,
       finiteComputabilityCoverGeometry] using (Equiv.refl PUnit)
@@ -374,7 +421,335 @@ def finiteComputabilityGeometry :
       finiteComputabilityCoverGeometry, finiteComputabilityCover] using
       (Equiv.refl Bool)
 
-/-- R11(c): verdicts are computed from equality with the actual zero class. -/
+/-- R11(c): profile selecting the finite-dimensional branch over `Rat`. -/
+def finiteDimensionalRationalProfile : MeasurementProfile where
+  SiteObj := PUnit
+  Cover := Bool
+  Coeff := Rat
+  EffCoeff := Unit
+  ObstructionObject := Unit
+  LawUniverse := Unit
+  WitnessVariables := SquareFreeSupportVertex
+  ObstructionIdeal := Unit
+  RepresentationFamily := Unit
+  Domain := Unit
+  CertRef := fun _ => Unit
+  SelectedMethod := fun _ => Unit
+  InScope := fun _ => True
+  OutOfScope := fun _ => False
+  Zero := fun _ => True
+  NonZero := fun _ => False
+  Undecided := fun _ => False
+  NotRunOrUnavailable := fun _ => False
+
+/-- R11(c): rational geometry with explicit coefficient-linear restrictions. -/
+def finiteDimensionalRationalGeometry :
+    FiniteMeasurementGeometry finiteDimensionalRationalProfile where
+  U := FiniteModel.carrier
+  A := FiniteModel.corePackage.object
+  site := FiniteModel.site
+  coverGeometry := finiteComputabilityCoverGeometry
+  tupleGeometry := finiteComputabilityTupleGeometry
+  coeffCommRing := by
+    change CommRing Rat
+    infer_instance
+  obstructionSheaf := finiteDimensionalRationalObstructionSheaf
+  sectionModule := by
+    intro _ _
+    change Module Rat Rat
+    infer_instance
+  faceRestrictionLinear := by
+    letI : CommRing finiteDimensionalRationalProfile.Coeff := by
+      change CommRing Rat
+      infer_instance
+    intro _ _ _
+    change Rat →ₗ[Rat] Rat
+    exact LinearMap.id
+  faceRestrictionLinear_apply := by
+    letI : CommRing finiteDimensionalRationalProfile.Coeff := by
+      change CommRing Rat
+      infer_instance
+    intros
+    rfl
+  siteObjEquiv := by
+    simpa [finiteDimensionalRationalProfile,
+      finiteComputabilityCoverGeometry] using (Equiv.refl PUnit)
+  coverEquiv := by
+    simpa [finiteDimensionalRationalProfile,
+      finiteComputabilityCoverGeometry, finiteComputabilityCover] using
+      (Equiv.refl Bool)
+
+/-- R11(c): finite basis of every rational canonical Čech cochain space. -/
+noncomputable def finiteDimensionalRationalCoeffField :
+    Field finiteDimensionalRationalProfile.Coeff := by
+  change Field Rat
+  infer_instance
+
+/-- R11(c): finite basis of every rational canonical Čech cochain space. -/
+noncomputable def finiteDimensionalRationalCochainBasis (n : Nat) :
+    letI : CommRing finiteDimensionalRationalProfile.Coeff :=
+      finiteDimensionalRationalGeometry.coeffCommRing
+    letI : AddCommGroup (finiteDimensionalRationalGeometry.CechCochain n) :=
+      finiteDimensionalRationalGeometry.cochainAddCommGroup n
+    letI : Module finiteDimensionalRationalProfile.Coeff
+        (finiteDimensionalRationalGeometry.CechCochain n) :=
+      finiteDimensionalRationalGeometry.cochainModule n
+    Module.Basis
+      (Site.FinitePosetCechSimplex
+        finiteDimensionalRationalGeometry.coefficientRegime n)
+      finiteDimensionalRationalProfile.Coeff
+      (finiteDimensionalRationalGeometry.CechCochain n) := by
+  change Module.Basis
+    (Site.FinitePosetCechSimplex
+      finiteDimensionalRationalGeometry.coefficientRegime n)
+    Rat
+    (Site.FinitePosetCechSimplex
+      finiteDimensionalRationalGeometry.coefficientRegime n -> Rat)
+  letI : Finite
+      (Site.FinitePosetCechSimplex
+        finiteDimensionalRationalGeometry.coefficientRegime n) :=
+    finiteDimensionalRationalGeometry.coefficientRegime.finiteNerveSimplex n
+  exact Pi.basisFun Rat _
+
+/-- R11(c): the infinite-carrier coefficient branch reduces to finite matrices. -/
+noncomputable def finiteDimensionalRationalCechModel :
+    @FiniteDimensionalCechModel finiteDimensionalRationalProfile
+      finiteDimensionalRationalGeometry finiteDimensionalRationalCoeffField := by
+  letI : Field finiteDimensionalRationalProfile.Coeff :=
+    finiteDimensionalRationalCoeffField
+  exact {
+    CochainSpace := fun n => finiteDimensionalRationalGeometry.CechCochain n
+    CochainIndex := fun n =>
+      Site.FinitePosetCechSimplex finiteDimensionalRationalGeometry.coefficientRegime n
+    cochainIndexFintype := fun n => by
+      letI : Finite
+          (Site.FinitePosetCechSimplex
+            finiteDimensionalRationalGeometry.coefficientRegime n) :=
+        finiteDimensionalRationalGeometry.coefficientRegime.finiteNerveSimplex n
+      exact Fintype.ofFinite _
+    cochainIndexDecidableEq := fun _ => Classical.decEq _
+    cochainAddCommGroup := finiteDimensionalRationalGeometry.cochainAddCommGroup
+    cochainModule := finiteDimensionalRationalGeometry.cochainModule
+    cochainBasis := finiteDimensionalRationalCochainBasis
+    cochainEquivCanonical := fun _ => AddEquiv.refl _
+    differentialLinear := finiteDimensionalRationalGeometry.differentialLinear
+    differential_eq_canonical := by intros; rfl
+    differential_comp := by
+      intro n c
+      exact finiteDimensionalRationalGeometry.cechComplex.differential_comp_zero n c
+    differentialMatrix := fun n => by
+      letI : Fintype
+          (Site.FinitePosetCechSimplex
+            finiteDimensionalRationalGeometry.coefficientRegime n) := by
+        letI : Finite
+            (Site.FinitePosetCechSimplex
+              finiteDimensionalRationalGeometry.coefficientRegime n) :=
+          finiteDimensionalRationalGeometry.coefficientRegime.finiteNerveSimplex n
+        exact Fintype.ofFinite _
+      letI : Fintype
+          (Site.FinitePosetCechSimplex
+            finiteDimensionalRationalGeometry.coefficientRegime (n + 1)) := by
+        letI : Finite
+            (Site.FinitePosetCechSimplex
+              finiteDimensionalRationalGeometry.coefficientRegime (n + 1)) :=
+          finiteDimensionalRationalGeometry.coefficientRegime.finiteNerveSimplex (n + 1)
+        exact Fintype.ofFinite _
+      letI : DecidableEq
+          (Site.FinitePosetCechSimplex
+            finiteDimensionalRationalGeometry.coefficientRegime n) :=
+        Classical.decEq _
+      letI : DecidableEq
+          (Site.FinitePosetCechSimplex
+            finiteDimensionalRationalGeometry.coefficientRegime (n + 1)) :=
+        Classical.decEq _
+      letI : AddCommGroup (finiteDimensionalRationalGeometry.CechCochain n) :=
+        finiteDimensionalRationalGeometry.cochainAddCommGroup n
+      letI : AddCommGroup
+          (finiteDimensionalRationalGeometry.CechCochain (n + 1)) :=
+        finiteDimensionalRationalGeometry.cochainAddCommGroup (n + 1)
+      letI : Module finiteDimensionalRationalProfile.Coeff
+          (finiteDimensionalRationalGeometry.CechCochain n) :=
+        finiteDimensionalRationalGeometry.cochainModule n
+      letI : Module finiteDimensionalRationalProfile.Coeff
+          (finiteDimensionalRationalGeometry.CechCochain (n + 1)) :=
+        finiteDimensionalRationalGeometry.cochainModule (n + 1)
+      exact LinearMap.toMatrix
+        (finiteDimensionalRationalCochainBasis n)
+        (finiteDimensionalRationalCochainBasis (n + 1))
+        (finiteDimensionalRationalGeometry.differentialLinear n)
+    differentialMatrix_correct := by intros; rfl
+  }
+
+/-- R11(c): packaged finite-dimensional procedure over an infinite field carrier. -/
+noncomputable def finiteDimensionalRationalCechProcedure :
+    FiniteDimensionalCechProcedure finiteDimensionalRationalProfile
+      finiteDimensionalRationalGeometry where
+  coeffField := by
+    exact finiteDimensionalRationalCoeffField
+  model := finiteDimensionalRationalCechModel
+
+/-- R11(c): the rational fixture fires the finite-dimensional route. -/
+theorem finiteDimensionalRationalRoute_fires :
+    (CechComputationProcedure.finiteDimensional
+      finiteDimensionalRationalCechProcedure).route =
+        CoefficientComputationRoute.finiteDimensionalLinearAlgebra :=
+  rfl
+
+/-- R11(c): the selected coefficient field has an infinite carrier. -/
+theorem finiteDimensionalRationalCoeff_infinite :
+    Infinite finiteDimensionalRationalProfile.Coeff := by
+  change Infinite Rat
+  infer_instance
+
+/-- R11(c): every rational matrix-model cohomology degree is finite-dimensional. -/
+theorem finiteDimensionalRationalCohomology_moduleFinite (n : Nat) :
+    letI : Field finiteDimensionalRationalProfile.Coeff :=
+      finiteDimensionalRationalCoeffField
+    Module.Finite finiteDimensionalRationalProfile.Coeff
+      (finiteDimensionalRationalCechModel.Cohomology n) := by
+  letI : Field finiteDimensionalRationalProfile.Coeff :=
+    finiteDimensionalRationalCoeffField
+  exact finiteDimensionalRationalCechModel.cohomology_moduleFinite n
+
+/-- R11(c): generated cochains have finite carriers in the effective fixture. -/
+noncomputable def finiteComputabilityCochainFintype (n : Nat) :
+    Fintype (finiteComputabilityGeometry.CechCochain n) := by
+  classical
+  letI : Finite
+      (Site.FinitePosetCechSimplex finiteComputabilityGeometry.coefficientRegime n) :=
+    finiteComputabilityGeometry.coefficientRegime.finiteNerveSimplex n
+  letI : Fintype
+      (Site.FinitePosetCechSimplex finiteComputabilityGeometry.coefficientRegime n) :=
+    Fintype.ofFinite _
+  letI (simplex :
+      Site.FinitePosetCechSimplex finiteComputabilityGeometry.coefficientRegime n) :
+      Fintype
+        (Site.FinitePosetCechSection finiteComputabilityGeometry.coefficientRegime
+          n simplex) := by
+    change Fintype (ZMod 2)
+    infer_instance
+  infer_instance
+
+/-- R11(c): selected procedures decide the actual generated differential. -/
+noncomputable def finiteComputabilityEffectiveCechProcedure :
+    EffectiveFinitelyPresentedCechProcedure finiteComputabilityMeasurementProfile
+      finiteComputabilityGeometry where
+  kernel := fun n c => by
+    classical
+    letI := finiteComputabilityCochainFintype n
+    exact decide (finiteComputabilityGeometry.differentialHom n c = 0)
+  kernel_correct := by
+    intro n c
+    classical
+    simp
+  image := fun n c => by
+    classical
+    letI := finiteComputabilityCochainFintype n
+    letI := finiteComputabilityCochainFintype (n + 1)
+    exact decide (∃ b : finiteComputabilityGeometry.CechCochain n,
+      finiteComputabilityGeometry.differentialHom n b = c)
+  image_correct := by
+    intro n c
+    classical
+    simp
+  quotientRepresentative := fun _ h => Quotient.out h
+  quotientRepresentative_correct := by
+    intro _ h
+    exact Quotient.out_eq h
+
+/-- R11(c): effective finitely-presented branch selected by the finite fixture. -/
+noncomputable def finiteComputabilityCechProcedure :
+    CechComputationProcedure finiteComputabilityMeasurementProfile
+      finiteComputabilityGeometry :=
+  .effectiveFinitelyPresented finiteComputabilityEffectiveCechProcedure
+
+/-- R11(c): the selected classifier preserves the five-state verdict API. -/
+noncomputable def finiteComputabilityClassify
+    (h : finiteComputabilityGeometry.CechHn 1) : VerdictProcedureResult := by
+  classical
+  exact if h = finiteComputabilityGeometry.zeroClass 1 then .zero else .nonzero
+
+/-- R11(c): the selected classifier preserves the five-state verdict API. -/
+noncomputable def finiteComputabilityVerdictProcedure :
+    VerdictProcedure finiteComputabilityMeasurementProfile
+      finiteComputabilityGeometry 1
+      (by
+        simpa [finiteComputabilityGeometry, finiteComputabilitySeedGeometry,
+          finiteComputabilityMeasurementProfile, finiteComputabilitySeedProfile] using
+          (Equiv.refl (finiteComputabilitySeedGeometry.CechHn 1))) where
+  classify := finiteComputabilityClassify
+  zero_sound := by
+    intro alpha h
+    constructor
+    · trivial
+    · simpa [finiteComputabilityClassify, finiteComputabilityMeasurementProfile,
+        finiteComputabilityGeometry, finiteComputabilitySeedGeometry,
+        finiteComputabilitySeedProfile] using h
+  nonzero_sound := by
+    intro alpha h
+    constructor
+    · trivial
+    · simpa [finiteComputabilityClassify, finiteComputabilityMeasurementProfile,
+        finiteComputabilityGeometry, finiteComputabilitySeedGeometry,
+        finiteComputabilitySeedProfile] using h
+  unmeasured_sound := by
+    intro alpha h
+    classical
+    by_cases hz :
+        (Equiv.refl (finiteComputabilitySeedGeometry.CechHn 1)) alpha =
+          finiteComputabilityGeometry.zeroClass 1
+    · change (if (Equiv.refl (finiteComputabilitySeedGeometry.CechHn 1)) alpha =
+          finiteComputabilityGeometry.zeroClass 1 then
+            VerdictProcedureResult.zero else VerdictProcedureResult.nonzero) =
+        VerdictProcedureResult.unmeasured at h
+      rw [if_pos hz] at h
+      cases h
+    · change (if (Equiv.refl (finiteComputabilitySeedGeometry.CechHn 1)) alpha =
+          finiteComputabilityGeometry.zeroClass 1 then
+            VerdictProcedureResult.zero else VerdictProcedureResult.nonzero) =
+        VerdictProcedureResult.unmeasured at h
+      rw [if_neg hz] at h
+      cases h
+  unknown_sound := by
+    intro alpha h
+    classical
+    by_cases hz :
+        (Equiv.refl (finiteComputabilitySeedGeometry.CechHn 1)) alpha =
+          finiteComputabilityGeometry.zeroClass 1
+    · change (if (Equiv.refl (finiteComputabilitySeedGeometry.CechHn 1)) alpha =
+          finiteComputabilityGeometry.zeroClass 1 then
+            VerdictProcedureResult.zero else VerdictProcedureResult.nonzero) =
+        VerdictProcedureResult.unknown at h
+      rw [if_pos hz] at h
+      cases h
+    · change (if (Equiv.refl (finiteComputabilitySeedGeometry.CechHn 1)) alpha =
+          finiteComputabilityGeometry.zeroClass 1 then
+            VerdictProcedureResult.zero else VerdictProcedureResult.nonzero) =
+        VerdictProcedureResult.unknown at h
+      rw [if_neg hz] at h
+      cases h
+  notComputed_sound := by
+    intro alpha h
+    classical
+    by_cases hz :
+        (Equiv.refl (finiteComputabilitySeedGeometry.CechHn 1)) alpha =
+          finiteComputabilityGeometry.zeroClass 1
+    · change (if (Equiv.refl (finiteComputabilitySeedGeometry.CechHn 1)) alpha =
+          finiteComputabilityGeometry.zeroClass 1 then
+            VerdictProcedureResult.zero else VerdictProcedureResult.nonzero) =
+        VerdictProcedureResult.notComputed at h
+      rw [if_pos hz] at h
+      cases h
+    · change (if (Equiv.refl (finiteComputabilitySeedGeometry.CechHn 1)) alpha =
+          finiteComputabilityGeometry.zeroClass 1 then
+            VerdictProcedureResult.zero else VerdictProcedureResult.nonzero) =
+        VerdictProcedureResult.notComputed at h
+      rw [if_neg hz] at h
+      cases h
+  method := fun _ => ()
+  certificate := fun _ => ()
+
+/-- R11(c): verdicts are computed by the selected classifier. -/
 def finiteComputabilityEffCoeff :
     EffCoeff finiteComputabilityMeasurementProfile finiteComputabilityGeometry where
   profileInterface := ()
@@ -383,11 +758,8 @@ def finiteComputabilityEffCoeff :
     simpa [finiteComputabilityGeometry, finiteComputabilitySeedGeometry,
       finiteComputabilityMeasurementProfile, finiteComputabilitySeedProfile] using
       (Equiv.refl (finiteComputabilitySeedGeometry.CechHn 1))
-  zero_iff := by intro alpha; rfl
-  nonzero_iff := by intro alpha; rfl
-  inScope := fun _ => trivial
-  method := fun _ => ()
-  certificate := fun _ => ()
+  cechProcedure := finiteComputabilityCechProcedure
+  verdictProcedure := finiteComputabilityVerdictProcedure
 
 /-- R11(c): finite measurement regime generated from actual geometry. -/
 def computabilityFiniteMeasurementRegime :
@@ -425,19 +797,40 @@ theorem finiteComputabilityCochain_nondegenerate :
   change (0 : ZMod 2) = 1 at hvalue
   exact zero_ne_one hvalue
 
+/-- R11(c): selected left forbidden-support family. -/
+def tinyLeftForbiddenSupports : Finset (Finset SquareFreeSupportVertex) :=
+  {forbiddenSupportPQFinset, forbiddenSupportQRFinset}
+
+/-- R11(c): selected right forbidden-support family. -/
+def tinyRightForbiddenSupports : Finset (Finset SquareFreeSupportVertex) := ∅
+
 /-- R11(c): nontrivial finite square-free supports for the combinatorics route. -/
-def tinyLeftSquareFreeData :
+noncomputable def tinyLeftSquareFreeData :
     FiniteSquareFreeComputationData computabilityFiniteMeasurementRegime where
-  forbiddenSupports := by
-    change Finset (Finset SquareFreeSupportVertex)
-    exact {forbiddenSupportPQFinset, forbiddenSupportQRFinset}
+  forbiddenSupports := tinyLeftForbiddenSupports
+  selectedObstructionIdeal := ()
+  realizeObstructionIdeal := fun _ =>
+    LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.obstructionIdeal
+      SquareFreeSupportVertex (ZMod 2)
+      { Forb := fun support => support ∈ tinyLeftForbiddenSupports }
+  generatedIdeal_eq_selected := rfl
+  idealMembership := by
+    classical
+    exact IdealMembershipProcedure.ofDecidable _ _
 
 /-- R11(c): the zero ideal is selected on the resolved side of the Tor route. -/
-def tinyRightSquareFreeData :
+noncomputable def tinyRightSquareFreeData :
     FiniteSquareFreeComputationData computabilityFiniteMeasurementRegime where
-  forbiddenSupports := by
-    change Finset (Finset SquareFreeSupportVertex)
-    exact ∅
+  forbiddenSupports := tinyRightForbiddenSupports
+  selectedObstructionIdeal := ()
+  realizeObstructionIdeal := fun _ =>
+    LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.obstructionIdeal
+      SquareFreeSupportVertex (ZMod 2)
+      { Forb := fun support => support ∈ tinyRightForbiddenSupports }
+  generatedIdeal_eq_selected := rfl
+  idealMembership := by
+    classical
+    exact IdealMembershipProcedure.ofDecidable _ _
 
 /-- R11(c): the right zero ideal has the canonical one-term finite-free resolution. -/
 def tinyRightFiniteResolution :
@@ -449,7 +842,7 @@ def tinyRightFiniteResolution :
     LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.obstructionIdeal,
     LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.supportIdeal,
     LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.monomialSet,
-    tinyRightSquareFreeData] using
+    tinyRightSquareFreeData, tinyRightForbiddenSupports] using
       (bottomFiniteFreeResolution
         (MvPolynomial SquareFreeSupportVertex (ZMod 2)))
 
@@ -460,20 +853,14 @@ def finiteComputabilityExampleData :
   leftSquareFree := tinyLeftSquareFreeData
   rightSquareFree := tinyRightSquareFreeData
   rightResolution := tinyRightFiniteResolution
-  torDegree := 1
-  selectedConflict := by
+  torDegree := 0
+  selectedConflictClass := by
     letI := computabilityFiniteMeasurementRegime.geometry.coeffCommRing
-    change
-      { support : Finset SquareFreeSupportVertex //
-        LawAlgebra.StanleyReisner.squareFreeMonomial
-            SquareFreeSupportVertex (ZMod 2) support ∈
-              tinyLeftSquareFreeData.generatorMonomials (ZMod 2) ∨
-          LawAlgebra.StanleyReisner.squareFreeMonomial
-            SquareFreeSupportVertex (ZMod 2) support ∈
-              tinyRightSquareFreeData.generatorMonomials (ZMod 2) }
-    refine ⟨forbiddenSupportPQFinset, Or.inl ?_⟩
-    simp [FiniteSquareFreeComputationData.generatorMonomials,
-      tinyLeftSquareFreeData, finiteComputabilityMeasurementProfile]
+    exact 1
+  conflictSupportProcedure := fun _ => forbiddenSupportPQFinset
+  conflictSupportRelation := fun conflict support =>
+    conflict = 1 ∧ support = forbiddenSupportPQFinset
+  conflictSupport_correct := ⟨rfl, rfl⟩
 
 /-- R11(c): theorem 4.2 constructs the finite computability package. -/
 def finiteComputabilityExamplePackage :
@@ -482,27 +869,27 @@ def finiteComputabilityExamplePackage :
   finiteAATComputabilityPackage computabilityFiniteMeasurementRegime
     finiteComputabilityExampleData
 
-/-- R11(c): the linear-algebra route produces finite Čech cohomology in every degree. -/
-theorem finiteComputabilityExample_linearAlgebraRoute :
-    ∀ n, Finite (computabilityFiniteMeasurementRegime.geometry.CechHn n) := by
-  intro n
-  letI := finiteComputabilityExamplePackage.cohomologyFintype n
-  infer_instance
+/-- R11(c): the finite fixture selects the effective finitely-presented route. -/
+theorem finiteComputabilityExample_effectiveRouteSelected :
+    finiteComputabilityExamplePackage.coefficientComputation.route =
+      .effectiveFinitelyPresented :=
+  rfl
 
-/-- R11(c): computed kernel, image, quotient list, and verdict use generated Čech data. -/
+/-- R11(c): kernel, image, and quotient procedures use generated Čech data. -/
 theorem finiteComputabilityExample_effectiveProcedureRoute :
     (∀ n (c : computabilityFiniteMeasurementRegime.geometry.CechCochain n),
-      c ∈ finiteComputabilityExamplePackage.kernels n ↔
+      finiteComputabilityEffectiveCechProcedure.kernel n c = true ↔
         computabilityFiniteMeasurementRegime.geometry.differentialHom n c = 0) ∧
     (∀ n (c : computabilityFiniteMeasurementRegime.geometry.CechCochain (n + 1)),
-      c ∈ finiteComputabilityExamplePackage.images n ↔
+      finiteComputabilityEffectiveCechProcedure.image n c = true ↔
         ∃ b : computabilityFiniteMeasurementRegime.geometry.CechCochain n,
           computabilityFiniteMeasurementRegime.geometry.differentialHom n b = c) ∧
     (∀ n (h : computabilityFiniteMeasurementRegime.geometry.CechHn n),
-      h ∈ finiteComputabilityExamplePackage.cohomologyClasses n) :=
-  ⟨finiteComputabilityExamplePackage.kernel_mem_iff,
-    finiteComputabilityExamplePackage.image_mem_iff,
-    finiteComputabilityExamplePackage.cohomology_complete⟩
+      computabilityFiniteMeasurementRegime.geometry.classOfCocycle n
+        (finiteComputabilityEffectiveCechProcedure.quotientRepresentative n h) = h) :=
+  ⟨finiteComputabilityEffectiveCechProcedure.kernel_correct,
+    finiteComputabilityEffectiveCechProcedure.image_correct,
+    finiteComputabilityEffectiveCechProcedure.quotientRepresentative_correct⟩
 
 /-- R11(c): the combinatorics route computes support from both forbidden pairs. -/
 theorem finiteComputabilityExample_combinatoricsRoute :

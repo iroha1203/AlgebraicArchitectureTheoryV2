@@ -11,8 +11,8 @@ universe u v
 Fixed statement contracts for Part VIII, theorem 4.2.
 
 The generic contract accepts the generated finite regime plus selected
-square-free and finite-resolution data.  The Čech objects, all-degree finite
-reductions, and verdicts are conclusions of
+square-free and finite-resolution data.  The selected coefficient branch,
+Čech reduction, and verdicts are conclusions of
 `Measurement.finiteAATComputability`.
 -/
 
@@ -30,10 +30,25 @@ example :
   Measurement.finiteComputabilityExample_verified
 
 example :
-    ∀ n,
-      Finite
-        (Measurement.computabilityFiniteMeasurementRegime.geometry.CechHn n) :=
-  Measurement.finiteComputabilityExample_linearAlgebraRoute
+    Measurement.finiteComputabilityExamplePackage.coefficientComputation.route =
+      Measurement.CoefficientComputationRoute.effectiveFinitelyPresented :=
+  Measurement.finiteComputabilityExample_effectiveRouteSelected
+
+example :
+    (Measurement.CechComputationProcedure.finiteDimensional
+      Measurement.finiteDimensionalRationalCechProcedure).route =
+        Measurement.CoefficientComputationRoute.finiteDimensionalLinearAlgebra :=
+  Measurement.finiteDimensionalRationalRoute_fires
+
+example : Infinite Measurement.finiteDimensionalRationalProfile.Coeff :=
+  Measurement.finiteDimensionalRationalCoeff_infinite
+
+example (n : Nat) :
+    letI : Field Measurement.finiteDimensionalRationalProfile.Coeff :=
+      Measurement.finiteDimensionalRationalCoeffField
+    Module.Finite Measurement.finiteDimensionalRationalProfile.Coeff
+      (Measurement.finiteDimensionalRationalCechModel.Cohomology n) :=
+  Measurement.finiteDimensionalRationalCohomology_moduleFinite n
 
 example :
     Measurement.finiteComputabilityZeroCochain ≠
@@ -41,9 +56,10 @@ example :
   Measurement.finiteComputabilityCochain_nondegenerate
 
 example :
-    ∀ n
-      (h : Measurement.computabilityFiniteMeasurementRegime.geometry.CechHn n),
-      h ∈ Measurement.finiteComputabilityExamplePackage.cohomologyClasses n :=
+    ∀ n (h : Measurement.computabilityFiniteMeasurementRegime.geometry.CechHn n),
+      Measurement.computabilityFiniteMeasurementRegime.geometry.classOfCocycle n
+        (Measurement.finiteComputabilityEffectiveCechProcedure.quotientRepresentative
+          n h) = h :=
   Measurement.finiteComputabilityExample_effectiveProcedureRoute.2.2
 
 example :

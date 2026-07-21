@@ -52,7 +52,16 @@ def finiteAATComputabilityConstructive :=
   @Measurement.finiteAATComputability
 
 def finiteAATComputabilityLinearFixture :=
-  @Measurement.finiteComputabilityExample_linearAlgebraRoute
+  @Measurement.finiteDimensionalRationalRoute_fires
+
+def finiteAATComputabilityInfiniteCoeffFixture :=
+  @Measurement.finiteDimensionalRationalCoeff_infinite
+
+def finiteAATComputabilityFiniteDimensionalCohomologyFixture :=
+  @Measurement.finiteDimensionalRationalCohomology_moduleFinite
+
+def finiteAATComputabilityEffectiveRouteFixture :=
+  @Measurement.finiteComputabilityExample_effectiveRouteSelected
 
 def finiteAATComputabilityNondegenerateFixture :=
   @Measurement.finiteComputabilityCochain_nondegenerate
