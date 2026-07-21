@@ -26,11 +26,17 @@ structure ReplayRawDescentData {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {E : EvolutionProfile.{u, v, w, x, y, z}}
     {T : TemporalSite S E} (St : StateTransitionPresheaf T)
     (Coeff : TemporalCoefficient T) where
+  /-- The temporal cover, site cover, and Čech complex selected for this replay. -/
   bridge : TemporalCechBridge T Coeff.obstructionSheaf
+  /-- The source trace object of every local replay map. -/
   sourceTrace : E.trace.Obj
+  /-- The target trace object of every local replay map. -/
   targetTrace : E.trace.Obj
+  /-- The selected trace arrow from `sourceTrace` to `targetTrace`. -/
   traceArrow : E.trace.Hom sourceTrace targetTrace
+  /-- Evidence that the selected trace arrow belongs to the finite trace regime. -/
   traceArrow_selected : T.traceRegime.selectedArrow traceArrow
+  /-- The raw local replay transition on each chart of the selected temporal cover. -/
   replay :
     (i : bridge.temporalCover.Index) ->
       St.State (sourceTrace, bridge.temporalCover.chartContext i) ->
@@ -50,14 +56,20 @@ structure ReplayCoefficientRepresentation {U : AtomCarrier.{u}}
     {E : EvolutionProfile.{u, v, w, x, y, z}} {T : TemporalSite S E}
     {St : StateTransitionPresheaf T} {Coeff : TemporalCoefficient T}
     (r : ReplayRawDescentData St Coeff) where
+  /-- The actual sheaf whose sections represent replay transitions. -/
   replaySheaf : Site.AATSheaf S
+  /-- The sieve on which the represented local replay sections descend. -/
   descentCover : Sieve r.bridge.siteCover.base
+  /-- Evidence that the selected descent sieve is a topology cover. -/
   descentCover_topological : descentCover ∈ S.topology r.bridge.siteCover.base
+  /-- Membership of every selected temporal chart in the descent sieve. -/
   chartInCover : ∀ i : r.bridge.temporalCover.Index,
     descentCover (r.bridge.siteCover.inclusion
       (r.bridge.coverComparison.siteIndexOf i))
+  /-- The local replay-function sections on the selected descent sieve. -/
   localSections :
     Site.AATLocalSectionFamily S replaySheaf.toPresheaf descentCover
+  /-- Evaluation of a represented local section as a state-transition function. -/
   localReplayOfSection :
     ∀ (i : r.bridge.temporalCover.Index),
       replaySheaf.toPresheaf.obj
@@ -65,6 +77,7 @@ structure ReplayCoefficientRepresentation {U : AtomCarrier.{u}}
             (r.bridge.coverComparison.siteIndexOf i))) ->
         St.State (r.sourceTrace, r.bridge.temporalCover.chartContext i) ->
           St.State (r.targetTrace, r.bridge.temporalCover.chartContext i)
+  /-- The selected represented local section realizes the raw local replay. -/
   localReplay_from_section :
     ∀ i : r.bridge.temporalCover.Index,
       localReplayOfSection i
@@ -72,10 +85,12 @@ structure ReplayCoefficientRepresentation {U : AtomCarrier.{u}}
           (r.bridge.siteCover.chart (r.bridge.coverComparison.siteIndexOf i))
           (r.bridge.siteCover.inclusion (r.bridge.coverComparison.siteIndexOf i))
           (chartInCover i)) = r.replay i
+  /-- The coefficient section read from a replay-function section over any site object. -/
   coefficientReading :
     ∀ (X : S.category),
       replaySheaf.toPresheaf.obj (Opposite.op X) ->
         Coeff.obstructionSheaf.carrier.toPresheaf.obj (Opposite.op X)
+  /-- The degree-zero Čech cochain read from a family of local replay sections. -/
   coefficientOfLocalSections :
     Site.AATLocalSectionFamily S replaySheaf.toPresheaf descentCover ->
       r.bridge.siteComplex.Cn 0
@@ -92,30 +107,35 @@ structure ReplayCoefficientRepresentation {U : AtomCarrier.{u}}
           coefficientReading _ (replaySheaf.toPresheaf.map q.op
             (sections _ (r.bridge.siteCover.inclusion
               (r.bridge.coverComparison.siteIndexOf i)) hq))
+  /-- The correction action on a family of local replay sections. -/
   adjustLocalSections : r.bridge.siteComplex.Cn 0 ->
     Site.AATLocalSectionFamily S replaySheaf.toPresheaf descentCover
+  /-- The coefficient reading after correction is the original reading minus that correction. -/
   coefficient_adjustment : ∀ correction : r.bridge.siteComplex.Cn 0,
     coefficientOfLocalSections (adjustLocalSections correction) =
       coefficientOfLocalSections localSections - correction
+  /-- Zero coefficient difference reflects equality of represented replay sections. -/
   coefficientReading_zero_reflecting :
     ∀ (X : S.category)
       (left right : replaySheaf.toPresheaf.obj (Opposite.op X)),
       letI := Coeff.obstructionSheaf.addCommGroup X
       coefficientReading X left - coefficientReading X right = 0 ->
         left = right
+  /-- The coefficient value of a degree-one Čech cochain on a selected overlap. -/
   overlapCochainValue :
     ∀ {Y Z W : S.category}
       (f : Y ⟶ r.bridge.siteCover.base) (g : Z ⟶ r.bridge.siteCover.base)
       (leftRestriction : W ⟶ Y) (rightRestriction : W ⟶ Z),
       r.bridge.siteComplex.Cn 1 ->
         Coeff.obstructionSheaf.carrier.toPresheaf.obj (Opposite.op W)
+  /-- The zero degree-one cochain has zero value on every selected overlap. -/
   overlapCochainValue_zero :
     ∀ {Y Z W : S.category}
       (f : Y ⟶ r.bridge.siteCover.base) (g : Z ⟶ r.bridge.siteCover.base)
       (leftRestriction : W ⟶ Y) (rightRestriction : W ⟶ Z),
       letI := Coeff.obstructionSheaf.addCommGroup W
       overlapCochainValue f g leftRestriction rightRestriction 0 = 0
-  /-- The actual restricted-section coefficient difference reads the Čech mismatch. -/
+  /-- The adjusted restricted-section difference is read by the adjusted Čech mismatch. -/
   adjusted_restriction_difference :
     ∀ (correction : r.bridge.siteComplex.Cn 0)
       {Y Z W : S.category}
@@ -138,9 +158,13 @@ structure ReplayDescentData {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {E : EvolutionProfile.{u, v, w, x, y, z}}
     {T : TemporalSite S E} (St : StateTransitionPresheaf T)
     (Coeff : TemporalCoefficient T) (Law : TemporalLaw St) where
+  /-- The raw replay data on the selected temporal cover. -/
   raw : ReplayRawDescentData St Coeff
+  /-- The constructed replay-section and coefficient representation of `raw`. -/
   representation : ReplayCoefficientRepresentation raw
+  /-- The proposition that the selected mismatch is supported by the temporal law. -/
   mismatchSupportedByLaw : Prop
+  /-- Evidence for the selected temporal-law support proposition. -/
   mismatchSupportedByLaw_cert : mismatchSupportedByLaw
 
 namespace ReplayDescentData
@@ -221,6 +245,7 @@ structure ReplayMismatchCocycle {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {T : TemporalSite S E} {St : StateTransitionPresheaf T}
     {Coeff : TemporalCoefficient T} {Law : TemporalLaw St}
     (r : ReplayDescentData St Coeff Law) where
+  /-- Evidence that the selected replay mismatch is a Čech cocycle. -/
   differential_zero :
     letI := r.raw.bridge.siteComplex.cochainAddCommGroup 2
     r.raw.bridge.siteComplex.d 1 r.mismatchCochain = 0
@@ -325,9 +350,13 @@ structure TemporalDescentCriterion {U : AtomCarrier.{u}} {A : ArchitectureObject
     {T : TemporalSite S E} {St : StateTransitionPresheaf T}
     {Coeff : TemporalCoefficient T} {Law : TemporalLaw St}
     (r : ReplayDescentData St Coeff Law) where
+  /-- The cocycle witness for the selected replay mismatch. -/
   mismatchCocycle : ReplayMismatchCocycle r
+  /-- The temporal cohomology class represented by that replay mismatch. -/
   temporalClass : TemporalClass r.mismatch
+  /-- Identification of the selected temporal class cocycle with the replay mismatch cocycle. -/
   temporalClass_matches_mismatch : temporalClass.cocycle = mismatchCocycle.toTemporalCocycle
+  /-- Evidence that the selected temporal class equals the zero cohomology class. -/
   classVanishes_cert : temporalClass.cohomologyClass = r.zeroMismatchClass
 
 namespace TemporalDescentCriterion

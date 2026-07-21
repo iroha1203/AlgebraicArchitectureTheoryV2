@@ -751,39 +751,6 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.Evolution.EvolutionGeometry.obj /- definition missing documentation string -/
 #check @AAT.AG.Evolution.EvolutionGeometry.map /- definition missing documentation string -/
 
--- Formal.AG.Evolution.ReplayDescent
-#check @AAT.AG.Evolution.ReplayRawDescentData.bridge /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayRawDescentData.sourceTrace /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayRawDescentData.targetTrace /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayRawDescentData.traceArrow /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayRawDescentData.traceArrow_selected /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayRawDescentData.replay /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayCoefficientRepresentation.replaySheaf /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayCoefficientRepresentation.descentCover /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayCoefficientRepresentation.descentCover_topological /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayCoefficientRepresentation.chartInCover /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayCoefficientRepresentation.localSections /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayCoefficientRepresentation.localReplayOfSection /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayCoefficientRepresentation.localReplay_from_section /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayCoefficientRepresentation.coefficientReading /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayCoefficientRepresentation.coefficientOfLocalSections /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayCoefficientRepresentation.coefficientOfLocalSections_restriction /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayCoefficientRepresentation.adjustLocalSections /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayCoefficientRepresentation.coefficient_adjustment /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayCoefficientRepresentation.coefficientReading_zero_reflecting /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayCoefficientRepresentation.overlapCochainValue /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayCoefficientRepresentation.overlapCochainValue_zero /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayCoefficientRepresentation.adjusted_restriction_difference /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayDescentData.raw /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayDescentData.representation /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayDescentData.mismatchSupportedByLaw /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayDescentData.mismatchSupportedByLaw_cert /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayMismatchCocycle.differential_zero /- definition missing documentation string -/
-#check @AAT.AG.Evolution.TemporalDescentCriterion.mismatchCocycle /- definition missing documentation string -/
-#check @AAT.AG.Evolution.TemporalDescentCriterion.temporalClass /- definition missing documentation string -/
-#check @AAT.AG.Evolution.TemporalDescentCriterion.temporalClass_matches_mismatch /- definition missing documentation string -/
-#check @AAT.AG.Evolution.TemporalDescentCriterion.classVanishes_cert /- definition missing documentation string -/
-
 -- Formal.AG.Evolution.StateTransition
 #check @AAT.AG.Evolution.StateTransitionPresheaf.State /- definition missing documentation string -/
 #check @AAT.AG.Evolution.StateTransitionPresheaf.Transition /- definition missing documentation string -/

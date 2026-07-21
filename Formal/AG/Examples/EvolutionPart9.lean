@@ -501,6 +501,25 @@ noncomputable def twoPatchReplayTemporalCoverComparison :
         simp [FiniteModel.twoPatchCoverContextIndex,
           FiniteModel.twoPatchContextIndexLe])
 
+/-- The actual `Tr_E × X` coefficient carries its full product-incidence complex. -/
+noncomputable def twoPatchReplayTemporalProductIncidenceComplex :
+    TemporalCoefficient.ProductIncidenceComplex twoPatchReplayTemporalCoefficient where
+  zeroCochain := twoPatchReplayTemporalCoefficient.FiberZeroCochain
+  oneCochain := twoPatchReplayTemporalCoefficient.FiberIncidenceOneCochain
+  zero_eq := rfl
+  one_eq := rfl
+  d0 := twoPatchReplayTemporalCoefficient.incidenceDifferential
+  d0_eq := rfl
+
+/-- The temporal incidence whose endpoints read the left and right actual Čech charts. -/
+noncomputable def twoPatchReplayTemporalCechLeg :
+    twoPatchReplayTemporalSite.IncidenceLeg
+      twoPatchReplayTemporalSource twoPatchReplayTemporalTarget where
+  trace := tinyStep
+  trace_selected := twoStep_step_selected
+  context := by
+    simp [FiniteModel.twoPatchContextIndexLe]
+
 /-- IX-3 / #3100: nondegenerate product-incidence complex with `ZMod 2` fibers. -/
 def zmod2TemporalProductIncidenceComplex :
     TemporalCoefficient.ProductIncidenceComplex zmod2TemporalCoefficient where
@@ -1696,31 +1715,59 @@ theorem twoPatchReplay_class_zero :
   ⟨twoPatchReplayCorrectionCochain, twoPatchReplayCechMismatch_eq_correction⟩
 
 /--
-The temporal Čech surface reuses the actual two-patch `ZMod 2` complex through
-the temporal site's selected finite AAT regime.
+Read an actual degree-zero Čech cochain on every point of the actual
+`Tr_E × X` temporal site.  The selected base context reads the right chart,
+so the selected temporal leg reads the same right-minus-left coefficient as
+the two-patch overlap.
 -/
-noncomputable def twoPatchReplayTemporalCechComplex :
-    Site.FinitePosetCechComplex twoPatchReplayTemporalSite.siteRegime :=
-  FiniteModel.twoPatchZMod2CechComplex
-
-/-- Read an actual two-patch degree-zero cochain through the temporal Čech surface. -/
-def twoPatchReplayCochainToTemporal
+def twoPatchReplayCochainToTemporalProduct
     (cochain : Site.FinitePosetCechCochain
       FiniteModel.twoPatchZMod2FinitePosetRegime 0) :
-    Site.FinitePosetCechCochain twoPatchReplayTemporalSite.siteRegime 0 :=
-  cochain
+    twoPatchReplayTemporalCoefficient.FiberZeroCochain
+  | (_, .overlap) => cochain .left
+  | (_, .left) => cochain .left
+  | (_, .right) => cochain .right
+  | (_, .base) => cochain .right
+
+/-- Read a full temporal incidence one-cochain at the actual Čech overlap simplex. -/
+def twoPatchReplayTemporalProductToCechOne
+    (cochain : twoPatchReplayTemporalCoefficient.FiberIncidenceOneCochain) :
+    Site.FinitePosetCechCochain FiniteModel.twoPatchZMod2FinitePosetRegime 1 :=
+  fun _ => cochain twoPatchReplayTemporalCechLeg
 
 /--
-The temporal Čech differential is definitionally the actual two-patch
-Čech differential on the full degree-zero cochain, not on a selected leg.
+The full product-incidence differential reads to the actual two-patch Čech
+differential on the selected overlap.  This compares the temporal `C⁰/C¹`
+carriers to the actual Čech `C⁰/C¹` carriers, rather than retyping a Čech
+cochain as a temporal one.
 -/
-theorem twoPatchReplayTemporalCech_differential_compatible
+theorem twoPatchReplayTemporalProduct_d0_compatible
     (cochain : Site.FinitePosetCechCochain
       FiniteModel.twoPatchZMod2FinitePosetRegime 0) :
-    twoPatchReplayTemporalCechComplex.differential 0
-        (twoPatchReplayCochainToTemporal cochain) =
+    twoPatchReplayTemporalProductToCechOne
+        (twoPatchReplayTemporalProductIncidenceComplex.d0
+          (twoPatchReplayCochainToTemporalProduct cochain)) =
       FiniteModel.twoPatchZMod2CechComplex.differential 0 cochain := by
+  funext simplex
+  cases simplex
   rfl
+
+/-- The initial and correction cochains agree on every temporal product point. -/
+theorem twoPatchReplayCochainToTemporalProduct_zero_eq_correction :
+    twoPatchReplayCochainToTemporalProduct twoPatchReplayCechZeroCochain =
+      twoPatchReplayCochainToTemporalProduct twoPatchReplayCorrectionCochain := by
+  funext point
+  rcases point with ⟨time, context⟩
+  cases time <;> cases context <;> rfl
+
+/-- The product-incidence class-zero equality holds on every selected temporal leg. -/
+theorem twoPatchReplayTemporalProductMismatch_eq_correction :
+    twoPatchReplayTemporalProductIncidenceComplex.d0
+        (twoPatchReplayCochainToTemporalProduct twoPatchReplayCechZeroCochain) =
+      twoPatchReplayTemporalProductIncidenceComplex.d0
+        (twoPatchReplayCochainToTemporalProduct twoPatchReplayCorrectionCochain) :=
+  congrArg twoPatchReplayTemporalProductIncidenceComplex.d0
+    twoPatchReplayCochainToTemporalProduct_zero_eq_correction
 
 /-- Every temporal replay chart is the corresponding chart of the actual two-patch cover. -/
 theorem twoPatchReplayTemporalCover_reads_actual_chart
@@ -1733,13 +1780,16 @@ theorem twoPatchReplayTemporalCover_reads_actual_chart
           (twoPatchReplayTemporalCover.chartContext i)) :=
   twoPatchReplayTemporalCoverComparison.chart_eq i
 
-/-- The actual class-zero witness is read by the temporal Čech differential. -/
+/-- The actual class-zero witness is the selected reading of the product differential. -/
 theorem twoPatchReplayTemporalMismatch_eq_correction :
     twoPatchReplayCechMismatch =
-      twoPatchReplayTemporalCechComplex.differential 0
-        (twoPatchReplayCochainToTemporal twoPatchReplayCorrectionCochain) := by
-  simpa [twoPatchReplayTemporalCechComplex, twoPatchReplayCochainToTemporal] using
-    twoPatchReplayCechMismatch_eq_correction
+      twoPatchReplayTemporalProductToCechOne
+        (twoPatchReplayTemporalProductIncidenceComplex.d0
+          (twoPatchReplayCochainToTemporalProduct
+            twoPatchReplayCorrectionCochain)) := by
+  rw [twoPatchReplayCechMismatch_eq_correction]
+  exact (twoPatchReplayTemporalProduct_d0_compatible
+    twoPatchReplayCorrectionCochain).symm
 
 /--
 The replay mismatch is the difference of the two restricted translation
@@ -1991,10 +2041,11 @@ theorem twoPatch_temporal_descent_criterion_holds :
 The actual two-patch temporal descent criterion.
 
 The concrete class-zero witness is a degree-zero correction on the same
-two-patch Čech complex and is read through the temporal cover on the same
-`Tr_E × X` site.  After that correction acts on the same translation replay
-sections, sheaf descent constructs a global replay transition agreeing with
-every corrected chart on every source state.
+two-patch Čech complex and is read through the actual temporal
+product-incidence `C⁰/C¹` carriers on the same `Tr_E × X` site.  After that
+correction acts on the same translation replay sections, sheaf descent
+constructs a global replay transition agreeing with every corrected chart on
+every source state.
 -/
 theorem twoPatch_temporal_descent_criterion :
     ∃ correction : Site.FinitePosetCechCochain
@@ -2002,8 +2053,14 @@ theorem twoPatch_temporal_descent_criterion :
       twoPatchReplayCechMismatch =
         FiniteModel.twoPatchZMod2CechComplex.differential 0 correction ∧
         twoPatchReplayCechMismatch =
-          twoPatchReplayTemporalCechComplex.differential 0
-            (twoPatchReplayCochainToTemporal correction) ∧
+          twoPatchReplayTemporalProductToCechOne
+            (twoPatchReplayTemporalProductIncidenceComplex.d0
+              (twoPatchReplayCochainToTemporalProduct correction)) ∧
+          twoPatchReplayTemporalProductIncidenceComplex.d0
+              (twoPatchReplayCochainToTemporalProduct
+                twoPatchReplayCechZeroCochain) =
+            twoPatchReplayTemporalProductIncidenceComplex.d0
+              (twoPatchReplayCochainToTemporalProduct correction) ∧
           (∀ i : FiniteModel.TwoPatchCoverIndex,
             (Cohomology.finitePosetCoverRelativeCover
               FiniteModel.twoPatchZMod2CechComplex).chart
@@ -2019,7 +2076,8 @@ theorem twoPatch_temporal_descent_criterion :
                     (twoPatchReplayLocalSection i) (correction i)) state := by
   refine ⟨twoPatchReplayCorrectionCochain,
     twoPatchReplayCechMismatch_eq_correction,
-    twoPatchReplayTemporalMismatch_eq_correction, ?_, ?_⟩
+    twoPatchReplayTemporalMismatch_eq_correction,
+    twoPatchReplayTemporalProductMismatch_eq_correction, ?_, ?_⟩
   intro i
   exact twoPatchReplayTemporalCover_reads_actual_chart i
   rcases twoPatch_temporal_descent_criterion_holds with ⟨globalSection, hglobal⟩
@@ -2035,7 +2093,7 @@ theorem twoPatch_temporal_descent_criterion_global_replay
         globalReplay state =
           FiniteModel.TwoPatchZMod2TranslationReplay.apply
             (twoPatchAdjustedReplayLocalSection i) state := by
-  rcases twoPatch_temporal_descent_criterion with ⟨_, _, _, _, globalReplay, hglobal⟩
+  rcases twoPatch_temporal_descent_criterion with ⟨_, _, _, _, _, globalReplay, hglobal⟩
   refine ⟨globalReplay, ?_⟩
   intro i state
   simpa [twoPatchAdjustedReplayLocalSection, twoPatchReplayCorrectionCochain] using

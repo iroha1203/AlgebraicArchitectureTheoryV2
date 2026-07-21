@@ -2533,10 +2533,13 @@ def replayTwoPatchZMod2ClassZero :=
 def replayTwoPatchZMod2TemporalCoverComparison :=
   Examples.EvolutionPart9.twoPatchReplayTemporalCover_reads_actual_chart
 
-def replayTwoPatchZMod2TemporalCechDifferentialCompatible :=
-  Examples.EvolutionPart9.twoPatchReplayTemporalCech_differential_compatible
+def replayTwoPatchZMod2TemporalProductDifferentialCompatible :=
+  Examples.EvolutionPart9.twoPatchReplayTemporalProduct_d0_compatible
 
-def replayTwoPatchZMod2TemporalClassZero :=
+def replayTwoPatchZMod2TemporalProductClassZero :=
+  Examples.EvolutionPart9.twoPatchReplayTemporalProductMismatch_eq_correction
+
+def replayTwoPatchZMod2TemporalProductCechReading :=
   Examples.EvolutionPart9.twoPatchReplayTemporalMismatch_eq_correction
 
 def replayTwoPatchZMod2CechAdjustedMismatchZero :=
