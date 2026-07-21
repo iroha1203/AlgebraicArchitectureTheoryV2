@@ -1278,17 +1278,39 @@ def zeroReplayTransitionSheaf : ReplayTransitionSheaf zeroReplayDescentData wher
     intro correction
     rfl
   adjustedLocalSections := fun _correction _Y _f _hf => PUnit.unit
-  adjustedLocalSections_matching_of_zero := by
-    intro _correction _hzero
-    dsimp [Site.AATOverlapAgreement]
-    intro _Y _f _hf _Z _g _hg _W _h _hh _hcomp
+  coefficientComparison := fun _X _section => PUnit.unit
+  coefficientComparison_zero_reflecting := by
+    intro _X left right _hdifference
+    cases left
+    cases right
     rfl
-  evaluateGlobal := fun _section state =>
+  overlapCochainValue := fun _f _g _leftRestriction _rightRestriction _cochain =>
+    PUnit.unit
+  overlapCochainValue_zero := by
+    intro _Y _Z _W _f _g _leftRestriction _rightRestriction
+    rfl
+  adjustedLocalSections_overlap_difference := by
+    intro _correction _Y _Z _W _f _hf _g _hg _leftRestriction _rightRestriction
+    rfl
+  chartObject := fun _i => FiniteModel.siteBase
+  chartToBase := fun _i => 𝟙 FiniteModel.siteBase
+  chartToBase_mem := by
+    intro _i
+    trivial
+  localReplayOfSection := fun _i _section state =>
     match state with
     | .high => .mid
     | other => other
-  globalSection_realizes_adjusted := by
-    intro _correction _hzero _section _hglobal i state
+  baseSectionToReplay := fun _section state =>
+    match state with
+    | .high => .mid
+    | other => other
+  baseSection_restriction_comparison := by
+    intro _section i state
+    cases i <;> cases state <;> rfl
+  adjustedLocalSection_comparison := by
+    intro _correction i
+    funext state
     cases i <;> cases state <;> rfl
 
 /-- R10(b): concrete theorem-4.2 assumptions for the zero replay fixture. -/

@@ -213,10 +213,11 @@ descent datum.
 
 Implementation notes: `StateTransitionPresheaf` records state restrictions,
 but arbitrary local replay maps do not themselves form a contravariant
-presheaf.  This structure supplies the missing presentation explicitly: local
-replay sections live in an actual `AATSheaf`, and zero adjusted mismatch yields
-`AATGluingData`.  The sheaf condition, rather than a transition-valued field,
-then constructs the global section used below.
+presheaf.  This structure therefore records a replay-function sheaf together
+with its coefficient comparison.  The comparison reads the restricted local
+sections in the obstruction sheaf and reflects a zero difference back to
+section equality.  Gluing and realization are derived below; neither is stored
+as a conclusion field.
 -/
 structure ReplayTransitionSheaf {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {E : EvolutionProfile.{u, v, w, x, y, z}}
@@ -237,27 +238,65 @@ structure ReplayTransitionSheaf {U : AtomCarrier.{u}} {A : ArchitectureObject U}
   adjustedLocalSections :
     (correction : r.bridge.siteComplex.Cn 0) ->
       Site.AATLocalSectionFamily S sectionSheaf.toPresheaf cover
-  adjustedLocalSections_matching_of_zero :
+  coefficientComparison :
+    ∀ (X : S.category),
+      sectionSheaf.toPresheaf.obj (Opposite.op X) ->
+        Coeff.obstructionSheaf.carrier.toPresheaf.obj (Opposite.op X)
+  coefficientComparison_zero_reflecting :
+    ∀ (X : S.category)
+      (left right : sectionSheaf.toPresheaf.obj (Opposite.op X)),
+      letI := Coeff.obstructionSheaf.addCommGroup X
+      coefficientComparison X left - coefficientComparison X right = 0 ->
+        left = right
+  overlapCochainValue :
+    ∀ {Y Z W : S.category} (f : Y ⟶ base) (g : Z ⟶ base)
+      (leftRestriction : W ⟶ Y) (rightRestriction : W ⟶ Z),
+      r.bridge.siteComplex.Cn 1 ->
+        Coeff.obstructionSheaf.carrier.toPresheaf.obj (Opposite.op W)
+  overlapCochainValue_zero :
+    ∀ {Y Z W : S.category} (f : Y ⟶ base) (g : Z ⟶ base)
+      (leftRestriction : W ⟶ Y) (rightRestriction : W ⟶ Z),
+      letI := Coeff.obstructionSheaf.addCommGroup W
+      overlapCochainValue f g leftRestriction rightRestriction 0 = 0
+  adjustedLocalSections_overlap_difference :
     ∀ (correction : r.bridge.siteComplex.Cn 0)
-      (hzero : (adjustment correction).adjustedMismatchCochain = 0),
-      Site.AATOverlapAgreement (adjustedLocalSections correction)
-  evaluateGlobal :
+      {Y Z W : S.category} (f : Y ⟶ base) (hf : cover f)
+      (g : Z ⟶ base) (hg : cover g)
+      (leftRestriction : W ⟶ Y) (rightRestriction : W ⟶ Z),
+      letI := Coeff.obstructionSheaf.addCommGroup W
+      coefficientComparison W
+          (sectionSheaf.toPresheaf.map leftRestriction.op
+            (adjustedLocalSections correction Y f hf)) -
+        coefficientComparison W
+          (sectionSheaf.toPresheaf.map rightRestriction.op
+            (adjustedLocalSections correction Z g hg)) =
+          overlapCochainValue f g leftRestriction rightRestriction
+            ((adjustment correction).adjustedMismatchCochain)
+  chartObject : r.cover.Index -> S.category
+  chartToBase : ∀ i : r.cover.Index, chartObject i ⟶ base
+  chartToBase_mem : ∀ i : r.cover.Index, cover (chartToBase i)
+  localReplayOfSection :
+    ∀ (i : r.cover.Index),
+      sectionSheaf.toPresheaf.obj (Opposite.op (chartObject i)) ->
+        St.State (r.sourceTrace, r.cover.chartContext i) ->
+          St.State (r.targetTrace, r.cover.chartContext i)
+  baseSectionToReplay :
     sectionSheaf.toPresheaf.obj (Opposite.op base) -> r.GlobalReplayTransition
-  globalSection_realizes_adjusted :
-    ∀ (correction : r.bridge.siteComplex.Cn 0)
-      (hzero : (adjustment correction).adjustedMismatchCochain = 0)
-      (globalSection : sectionSheaf.toPresheaf.obj (Opposite.op base))
-      (hglobal : Site.AATGlobalSectionRealizes
-        {
-          localSections := adjustedLocalSections correction
-          overlapAgreement := adjustedLocalSections_matching_of_zero correction hzero
-        } globalSection)
+  baseSection_restriction_comparison :
+    ∀ (baseSection : sectionSheaf.toPresheaf.obj (Opposite.op base))
       (i : r.cover.Index)
       (x : St.State (r.sourceTrace, r.cover.baseContext)),
       St.contextRestriction r.targetTrace (r.cover.contextToBase i)
-          (evaluateGlobal globalSection x) =
-        (adjustment correction).adjustedReplay i
+          (baseSectionToReplay baseSection x) =
+        localReplayOfSection i
+          (sectionSheaf.toPresheaf.map (chartToBase i).op baseSection)
           (St.contextRestriction r.sourceTrace (r.cover.contextToBase i) x)
+  adjustedLocalSection_comparison :
+    ∀ (correction : r.bridge.siteComplex.Cn 0) (i : r.cover.Index),
+      localReplayOfSection i
+        (adjustedLocalSections correction (chartObject i) (chartToBase i)
+          (chartToBase_mem i)) =
+        (adjustment correction).adjustedReplay i
 
 namespace ReplayTransitionSheaf
 
@@ -270,14 +309,31 @@ variable {Coeff : TemporalCoefficient T}
 variable {Law : TemporalLaw St}
 variable {r : ReplayDescentData St Coeff Law}
 
-/-- IX.§4 / AC13: zero adjusted mismatch supplies an actual matching family. -/
+/-- IX.§4 / AC13: zero adjusted mismatch supplies matching through coefficient reflection. -/
 def adjusted_replay_matching_of_zero (R : ReplayTransitionSheaf r)
     (correction : r.bridge.siteComplex.Cn 0)
     (hzero : (R.adjustment correction).adjustedMismatchCochain = 0) :
     Site.AATGluingData S R.sectionSheaf.toPresheaf R.cover :=
   {
     localSections := R.adjustedLocalSections correction
-    overlapAgreement := R.adjustedLocalSections_matching_of_zero correction hzero
+    overlapAgreement := by
+      intro Y f hf Z g hg W leftRestriction rightRestriction hcomm
+      apply R.coefficientComparison_zero_reflecting W
+      calc
+        R.coefficientComparison W
+            (R.sectionSheaf.toPresheaf.map leftRestriction.op
+              (R.adjustedLocalSections correction Y f hf)) -
+          R.coefficientComparison W
+            (R.sectionSheaf.toPresheaf.map rightRestriction.op
+              (R.adjustedLocalSections correction Z g hg)) =
+            R.overlapCochainValue f g leftRestriction rightRestriction
+              ((R.adjustment correction).adjustedMismatchCochain) :=
+          R.adjustedLocalSections_overlap_difference correction f hf g hg
+            leftRestriction rightRestriction
+        _ = R.overlapCochainValue f g leftRestriction rightRestriction 0 := by
+          rw [hzero]
+        _ = 0 :=
+          R.overlapCochainValue_zero f g leftRestriction rightRestriction
   }
 
 end ReplayTransitionSheaf
@@ -370,10 +426,21 @@ theorem temporal_descent_criterion_realizes_adjusted
   obtain ⟨globalSection, hglobal⟩ :=
     (D.replayTransitionSheaf.sectionSheaf.descent D.replayTransitionSheaf.cover
       D.replayTransitionSheaf.cover_topological).exists_global data
-  refine ⟨correction, D.replayTransitionSheaf.evaluateGlobal globalSection, ?_⟩
+  refine ⟨correction, D.replayTransitionSheaf.baseSectionToReplay globalSection, ?_⟩
   intro i x
-  exact D.replayTransitionSheaf.globalSection_realizes_adjusted correction hzero
-    globalSection (by simpa [data] using hglobal) i x
+  rw [D.replayTransitionSheaf.baseSection_restriction_comparison]
+  have hsection :
+      D.replayTransitionSheaf.sectionSheaf.toPresheaf.map
+          (D.replayTransitionSheaf.chartToBase i).op globalSection =
+        D.replayTransitionSheaf.adjustedLocalSections correction
+          (D.replayTransitionSheaf.chartObject i)
+          (D.replayTransitionSheaf.chartToBase i)
+          (D.replayTransitionSheaf.chartToBase_mem i) := by
+    simpa [data] using hglobal (D.replayTransitionSheaf.chartToBase i)
+      (D.replayTransitionSheaf.chartToBase_mem i)
+  rw [hsection]
+  exact congrFun
+    (D.replayTransitionSheaf.adjustedLocalSection_comparison correction i) _
 
 /--
 IX.§4 / AC13 / Theorem 4.2: temporal descent criterion.
