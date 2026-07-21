@@ -128,7 +128,9 @@ async function main() {
 
   try {
     await page.send("Page.enable");
+    await page.send("Page.bringToFront");
     await page.send("Runtime.enable");
+    await page.send("DOM.enable");
     await page.send("Log.enable");
     await page.send("Emulation.setDeviceMetricsOverride", { width: 1366, height: 768, deviceScaleFactor: 1, mobile: false });
     await page.send("Page.navigate", { url: `http://127.0.0.1:${port}/index.html` });
@@ -292,24 +294,39 @@ async function main() {
       throw new Error(`Architecture understanding task score was below 80%: ${JSON.stringify(value)}`);
     }
 
-    const focusAndActivate = async (selector) => {
-      const focused = await page.send("Runtime.evaluate", {
-        returnByValue: true,
-        expression: `(() => { const target = document.querySelector(${JSON.stringify(selector)}); if (!target) return false; target.focus(); return document.activeElement === target; })()`,
-      });
-      if (!focused.result.value) throw new Error(`Keyboard target was unavailable: ${selector}`);
-      await page.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Enter", code: "Enter", text: "\r", unmodifiedText: "\r", windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13 });
-      await page.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Enter", code: "Enter", windowsVirtualKeyCode: 13 });
+    const pressKey = async (key, code = key, options = {}) => {
+      const keyCode = options.keyCode || (key === "Enter" ? 13 : key === "Tab" ? 9 : key === "Escape" ? 27 : key.charCodeAt(0));
+      await page.send("Input.dispatchKeyEvent", { type: options.text ? "keyDown" : "rawKeyDown", key, code, text: options.text || "", unmodifiedText: options.text || "", windowsVirtualKeyCode: keyCode, nativeVirtualKeyCode: keyCode, modifiers: options.modifiers || 0 });
+      await page.send("Input.dispatchKeyEvent", { type: "keyUp", key, code, windowsVirtualKeyCode: keyCode, nativeVirtualKeyCode: keyCode, modifiers: options.modifiers || 0 });
     };
+    const activeOutline = async () => (await page.send("Runtime.evaluate", { returnByValue: true, expression: `(() => { const active = document.activeElement; return { surface: active?.dataset?.surface || null, level: active?.dataset?.outlineLevel || null, contextId: active?.dataset?.contextId || null, subject: active?.dataset?.subject || null, atomId: active?.dataset?.atomId || null, sourceId: active?.dataset?.sourceId || null }; })()` })).result.value;
 
-    await page.send("Runtime.evaluate", { expression: `document.querySelector('[data-surface="outline"]').click()` });
-    await focusAndActivate('#outline-table [data-outline-level="Context"][data-context-id="ctx:checkout"]');
+    const atlasSurfacePoint = await page.send("Runtime.evaluate", { returnByValue: true, expression: `(() => { const rect = document.querySelector('button[data-surface="atlas"]').getBoundingClientRect(); return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }; })()` });
+    await page.send("Input.dispatchMouseEvent", { type: "mousePressed", x: atlasSurfacePoint.result.value.x, y: atlasSurfacePoint.result.value.y, button: "left", clickCount: 1 });
+    await page.send("Input.dispatchMouseEvent", { type: "mouseReleased", x: atlasSurfacePoint.result.value.x, y: atlasSurfacePoint.result.value.y, button: "left", clickCount: 1 });
+    const atlasFocus = await activeOutline();
+    if (atlasFocus.surface !== "atlas") throw new Error(`Could not establish keyboard task focus: ${JSON.stringify(atlasFocus)}`);
+    await pressKey("Tab", "Tab", { keyCode: 9 });
+    const outlineSwitchFocus = await activeOutline();
+    await pressKey("Enter", "Enter", { keyCode: 13, text: "\r" });
+    await pressKey("Tab", "Tab", { keyCode: 9 });
+    await pressKey("Tab", "Tab", { keyCode: 9 });
+    const coverFocus = await activeOutline();
+    await pressKey("Tab", "Tab", { keyCode: 9 });
+    const contextFocus = await activeOutline();
+    await pressKey("Enter", "Enter", { keyCode: 13, text: "\r" });
     const contextStep = await page.send("Runtime.evaluate", { returnByValue: true, expression: `window.__archviewState.selection?.kind + ':' + window.__archviewState.selection?.id` });
-    await focusAndActivate('#outline-table [data-outline-level="Subject"][data-context-id="ctx:checkout"][data-subject="CheckoutService"]');
+    await pressKey("Tab", "Tab", { keyCode: 9 });
+    const subjectFocus = await activeOutline();
+    await pressKey("Enter", "Enter", { keyCode: 13, text: "\r" });
     const subjectStep = await page.send("Runtime.evaluate", { returnByValue: true, expression: `window.__archviewState.selection?.kind + ':' + window.__archviewState.selection?.id` });
-    await focusAndActivate('#outline-table [data-outline-level="Atom"][data-context-id="ctx:checkout"][data-atom-id="atom:settlement-contract"]');
+    await pressKey("Tab", "Tab", { keyCode: 9 });
+    const atomFocus = await activeOutline();
+    await pressKey("Enter", "Enter", { keyCode: 13, text: "\r" });
     const atomStep = await page.send("Runtime.evaluate", { returnByValue: true, expression: `window.__archviewState.selection?.kind + ':' + window.__archviewState.selection?.id` });
-    await focusAndActivate('#outline-table [data-outline-level="Source"][data-context-id="ctx:checkout"][data-atom-id="atom:settlement-contract"][data-source-id="src:contract"]');
+    await pressKey("Tab", "Tab", { keyCode: 9 });
+    const sourceFocus = await activeOutline();
+    await pressKey("Enter", "Enter", { keyCode: 13, text: "\r" });
     const sourceStep = await page.send("Runtime.evaluate", { returnByValue: true, expression: `window.__archviewState.selection?.kind + ':' + window.__archviewState.selection?.id` });
     const interaction = await page.send("Runtime.evaluate", {
       returnByValue: true,
@@ -336,6 +353,7 @@ async function main() {
           atlasHidden: document.querySelector('#atlas-canvas-host').hidden,
           outlineVisible: !document.querySelector('#atlas-outline').hidden,
           levels: [...new Set([...document.querySelectorAll('#outline-table [data-outline-level]')].map((row) => row.dataset.outlineLevel))],
+          keyboardTrail: ${JSON.stringify({ outlineSwitchFocus, coverFocus, contextFocus, subjectFocus, atomFocus, sourceFocus })},
           contextStep: ${JSON.stringify(contextStep.result.value)}, subjectStep: ${JSON.stringify(subjectStep.result.value)}, atomStep: ${JSON.stringify(atomStep.result.value)}, sourceStep: ${JSON.stringify(sourceStep.result.value)},
           beforeMode, analysisSelection, improveSelection,
           inspector, sourcePath, selectionVisual,
@@ -356,13 +374,13 @@ async function main() {
     });
     if (interaction.exceptionDetails) throw new Error(`Interaction browser probe raised: ${JSON.stringify(interaction.exceptionDetails)}`);
     const interactionValue = interaction.result.value;
-    if (interactionValue.surfaceCount !== 2 || interactionValue.surface !== "outline" || !interactionValue.atlasHidden || !interactionValue.outlineVisible || !["Context", "Subject", "Atom", "Source"].every((level) => interactionValue.levels.includes(level))) {
+    if (interactionValue.surfaceCount !== 2 || interactionValue.surface !== "outline" || !interactionValue.atlasHidden || !interactionValue.outlineVisible || !["Cover", "Context", "Subject", "Atom", "Source", "Restriction", "Shared support"].every((level) => interactionValue.levels.includes(level))) {
       throw new Error(`Outline surface did not expose the complete alternate path: ${JSON.stringify(interactionValue)}`);
     }
-    if (interactionValue.contextStep !== "context:ctx:checkout" || interactionValue.subjectStep !== "subject:CheckoutService" || interactionValue.atomStep !== "atom:atom:settlement-contract" || interactionValue.sourceStep !== "source:src:contract" || !interactionValue.inspector.includes("contracts/payment-lifecycle.md")) {
+    if (interactionValue.keyboardTrail.outlineSwitchFocus.surface !== "outline" || interactionValue.keyboardTrail.coverFocus.level !== "Cover" || interactionValue.keyboardTrail.contextFocus.level !== "Context" || interactionValue.keyboardTrail.contextFocus.contextId !== "ctx:checkout" || interactionValue.keyboardTrail.subjectFocus.subject !== "CheckoutService" || interactionValue.keyboardTrail.atomFocus.atomId !== "atom:capture" || interactionValue.keyboardTrail.sourceFocus.sourceId !== "src:checkout" || interactionValue.contextStep !== "context:ctx:checkout" || interactionValue.subjectStep !== "subject:CheckoutService" || interactionValue.atomStep !== "atom:atom:capture" || interactionValue.sourceStep !== "source:src:checkout" || interactionValue.sourcePath !== "services/checkout/CheckoutService.ts" || !interactionValue.inspector.includes("services/checkout/CheckoutService.ts")) {
       throw new Error(`Keyboard-only Context to Source task failed: ${JSON.stringify(interactionValue)}`);
     }
-    if (JSON.stringify(interactionValue.beforeMode) !== JSON.stringify(interactionValue.analysisSelection) || JSON.stringify(interactionValue.beforeMode) !== JSON.stringify(interactionValue.improveSelection) || !interactionValue.inspector.includes("Source") || interactionValue.selectionVisual?.kind !== "source" || interactionValue.selectionVisual?.outlines < 1) {
+    if (JSON.stringify(interactionValue.beforeMode) !== JSON.stringify(interactionValue.analysisSelection) || JSON.stringify(interactionValue.beforeMode) !== JSON.stringify(interactionValue.improveSelection) || !interactionValue.inspector.includes("Source") || interactionValue.selectionVisual?.kind !== "source" || interactionValue.selectionVisual?.rings !== 1 || interactionValue.selectionVisual?.contextFrames !== 1) {
       throw new Error(`Selection was not shared across surfaces, modes, Inspector, and 3D: ${JSON.stringify(interactionValue)}`);
     }
     const nearVector = (actual, expected) => actual.length === expected.length && actual.every((value, index) => Math.abs(value - expected[index]) < 1e-9);
@@ -372,7 +390,7 @@ async function main() {
     if (!interactionValue.legend.includes("◆") || !interactionValue.legend.includes("○") || !interactionValue.legend.includes("⋯") || interactionValue.miniMapContexts !== 3 || interactionValue.resetSelection?.kind !== "cover") {
       throw new Error(`Non-color state cues, mini-map, or overview reset were incomplete: ${JSON.stringify(interactionValue)}`);
     }
-    await page.send("Runtime.evaluate", { expression: `document.querySelector('[data-mode-button="architecture"]').click(); document.querySelector('[data-surface="atlas"]').click();` });
+    await page.send("Runtime.evaluate", { expression: `document.querySelector('[data-mode-button="architecture"]').click(); document.querySelector('button[data-surface="atlas"]').click();` });
     const pointerStart = await page.send("Runtime.evaluate", {
       returnByValue: true,
       expression: `(() => { const canvas = document.querySelector('#atlas-canvas-host canvas'); const rect = canvas.getBoundingClientRect(); canvas.focus(); return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, camera: window.__archview.cameraState(), compass: document.querySelector('#atlas-compass-needle').style.transform }; })()`,
@@ -396,6 +414,47 @@ async function main() {
     if (!compassAfterOrbit || JSON.stringify(afterOrbit.result.value.position) === JSON.stringify(pointer.camera.position) || JSON.stringify(afterPan.result.value.target) === JSON.stringify(afterOrbit.result.value.target) || !(afterZoom.result.value.distance < afterPan.result.value.distance) || !nearVector(afterKeyboardReset.result.value.position, [14, 13, 18])) {
       throw new Error(`Pointer camera controls or keyboard reset failed: ${JSON.stringify({ start: pointer.camera, orbit: afterOrbit.result.value, pan: afterPan.result.value, zoom: afterZoom.result.value, reset: afterKeyboardReset.result.value })}`);
     }
+
+    const captureSelection = { kind: "atom", id: "atom:capture", contextId: "ctx:checkout" };
+    const checkoutSelection = { kind: "atom", id: "atom:checkout", contextId: "ctx:checkout" };
+    let capturePoint = (await page.send("Runtime.evaluate", { returnByValue: true, expression: `window.__archview.screenPointForSelection(${JSON.stringify(captureSelection)})` })).result.value;
+    const selectionBeforeGlyphDrag = (await page.send("Runtime.evaluate", { returnByValue: true, expression: `structuredClone(window.__archviewState.selection)` })).result.value;
+    await page.send("Input.dispatchMouseEvent", { type: "mousePressed", x: capturePoint.x, y: capturePoint.y, button: "left", buttons: 1, clickCount: 1 });
+    await page.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: capturePoint.x + 75, y: capturePoint.y + 20, button: "left", buttons: 1 });
+    await page.send("Input.dispatchMouseEvent", { type: "mouseReleased", x: capturePoint.x + 75, y: capturePoint.y + 20, button: "left", buttons: 0, clickCount: 1 });
+    const selectionAfterGlyphDrag = (await page.send("Runtime.evaluate", { returnByValue: true, expression: `structuredClone(window.__archviewState.selection)` })).result.value;
+    await pressKey("0", "Digit0", { keyCode: 48 });
+    capturePoint = (await page.send("Runtime.evaluate", { returnByValue: true, expression: `window.__archview.screenPointForSelection(${JSON.stringify(captureSelection)})` })).result.value;
+    for (const clickCount of [1, 2]) {
+      await page.send("Input.dispatchMouseEvent", { type: "mousePressed", x: capturePoint.x, y: capturePoint.y, button: "left", buttons: 1, clickCount });
+      await page.send("Input.dispatchMouseEvent", { type: "mouseReleased", x: capturePoint.x, y: capturePoint.y, button: "left", buttons: 0, clickCount });
+    }
+    const afterDoubleClick = (await page.send("Runtime.evaluate", { returnByValue: true, expression: `({ selection: structuredClone(window.__archviewState.selection), camera: window.__archview.cameraState(), visual: window.__archviewSelectionVisual })` })).result.value;
+    const checkoutPoint = (await page.send("Runtime.evaluate", { returnByValue: true, expression: `window.__archview.screenPointForSelection(${JSON.stringify(checkoutSelection)})` })).result.value;
+    await page.send("Input.dispatchMouseEvent", { type: "mousePressed", x: checkoutPoint.x, y: checkoutPoint.y, button: "left", buttons: 1, clickCount: 1, modifiers: 8 });
+    await page.send("Input.dispatchMouseEvent", { type: "mouseReleased", x: checkoutPoint.x, y: checkoutPoint.y, button: "left", buttons: 0, clickCount: 1, modifiers: 8 });
+    const afterShiftClick = (await page.send("Runtime.evaluate", { returnByValue: true, expression: `({ selection: structuredClone(window.__archviewState.selection), selections: structuredClone(window.__archviewState.selections), visual: window.__archviewSelectionVisual })` })).result.value;
+    await pressKey("Escape", "Escape", { keyCode: 27 });
+    const afterEscape = (await page.send("Runtime.evaluate", { returnByValue: true, expression: `({ selection: structuredClone(window.__archviewState.selection), selections: structuredClone(window.__archviewState.selections) })` })).result.value;
+    await pressKey("h", "KeyH", { keyCode: 72 });
+    const afterH = (await page.send("Runtime.evaluate", { returnByValue: true, expression: `structuredClone(window.__archviewState.selection)` })).result.value;
+    await pressKey("Escape", "Escape", { keyCode: 27 });
+    const afterHistoryReturn = (await page.send("Runtime.evaluate", { returnByValue: true, expression: `structuredClone(window.__archviewState.selection)` })).result.value;
+    await pressKey("1", "Digit1", { keyCode: 49 });
+    const view1 = (await page.send("Runtime.evaluate", { returnByValue: true, expression: `window.__archviewState.view` })).result.value;
+    await pressKey("2", "Digit2", { keyCode: 50 });
+    const view2 = (await page.send("Runtime.evaluate", { returnByValue: true, expression: `window.__archviewState.view` })).result.value;
+    await pressKey("3", "Digit3", { keyCode: 51 });
+    const view3 = (await page.send("Runtime.evaluate", { returnByValue: true, expression: `window.__archviewState.view` })).result.value;
+    await pressKey("0", "Digit0", { keyCode: 48 });
+    const resetByZero = (await page.send("Runtime.evaluate", { returnByValue: true, expression: `window.__archview.cameraState()` })).result.value;
+    await pressKey("f", "KeyF", { keyCode: 70 });
+    const focusedByF = (await page.send("Runtime.evaluate", { returnByValue: true, expression: `window.__archview.cameraState()` })).result.value;
+    if (JSON.stringify(selectionBeforeGlyphDrag) !== JSON.stringify(selectionAfterGlyphDrag) || afterDoubleClick.selection?.id !== "atom:capture" || afterDoubleClick.visual?.rings !== 1 || afterDoubleClick.visual?.contextFrames !== 1 || afterShiftClick.selections?.length !== 2 || afterShiftClick.visual?.rings !== 2 || afterEscape.selection?.id !== "atom:capture" || afterEscape.selections?.length !== 1 || afterH?.kind !== "cover" || afterHistoryReturn?.id !== "atom:capture" || view1 !== "top" || view2 !== "isometric" || view3 !== "front" || !nearVector(resetByZero.position, [14, 13, 18]) || nearVector(focusedByF.target, [0, 0, 0])) {
+      throw new Error(`R3 pointer, multi-selection, history, or keyboard shortcuts failed: ${JSON.stringify({ selectionBeforeGlyphDrag, selectionAfterGlyphDrag, afterDoubleClick, afterShiftClick, afterEscape, afterH, afterHistoryReturn, view1, view2, view3, resetByZero, focusedByF })}`);
+    }
+    await pressKey("h", "KeyH", { keyCode: 72 });
+    await pressKey("0", "Digit0", { keyCode: 48 });
 
     const repeated = await page.send("Runtime.evaluate", {
       awaitPromise: true,
@@ -579,6 +638,14 @@ async function main() {
           unsupportedScalarRendered: document.querySelector('#findings-list').textContent.includes('42'),
           candidateRendered: document.querySelector('#findings-list').textContent.toLowerCase().includes('candidate'),
         };
+        document.querySelector('button[data-surface="outline"]').click();
+        const outlineEvidence = {
+          levels: [...new Set([...document.querySelectorAll('#outline-table [data-outline-level]')].map((row) => row.dataset.outlineLevel))],
+          findingStates: [...document.querySelectorAll('#outline-table tr[data-outline-level="Finding"]')].map((row) => row.textContent),
+          restrictions: document.querySelectorAll('#outline-table tr[data-outline-level="Restriction"]').length,
+          sharedSupports: document.querySelectorAll('#outline-table tr[data-outline-level="Shared support"]').length,
+        };
+        document.querySelector('button[data-surface="atlas"]').click();
         document.querySelector('[data-finding-id="insight:browser:001"]').click();
         const architectureFindingTransition = { mode: window.__archviewState.mode, support: { ...window.__archviewAnalysisSupport } };
         const analysisExplanation = document.querySelector('#analysis-explanation').textContent;
@@ -639,7 +706,7 @@ async function main() {
         await window.__archview.loadAnalysisObject(bundle, 'deterministic analysis reload');
         document.querySelector('[data-finding-id="insight:browser:001"]').click();
         const deterministicReload = findingOrderBeforeReload === [...document.querySelectorAll('[data-finding-id]')].map((item) => item.dataset.findingId).join('|') && sourceOrderBeforeReload === document.querySelector('#source-targets').textContent;
-        const analysisTask = { architectureFindingTransition, analysisExplanation, findingCounts, supportHighlight, sourceLanding, limitedSourceResolution, unmeasuredFinding, measuredZeroFinding, improveExplanation, candidateClassification, validatedClassification, contextOnlyClassification: contextOnlyView.findings[0].sourceTargets.map((target) => target.classification), mixedRelationStates: { mismatch: mixedRelationView.findings[0].mismatchEdgeRefs, agreement: mixedRelationView.findings[0].agreementEdgeRefs }, findingCount: document.querySelectorAll('[data-finding-id]').length, deterministicReload, browserUnderstandingProbe: { answers: analysisUnderstandingAnswers, correct: analysisUnderstandingAnswers.filter(Boolean).length, total: analysisUnderstandingAnswers.length }, browserEvidenceRepairProbe: { answers: evidenceRepairAnswers, correct: evidenceRepairAnswers.filter(Boolean).length, total: evidenceRepairAnswers.length } };
+        const analysisTask = { architectureFindingTransition, outlineEvidence, analysisExplanation, findingCounts, supportHighlight, sourceLanding, limitedSourceResolution, unmeasuredFinding, measuredZeroFinding, improveExplanation, candidateClassification, validatedClassification, contextOnlyClassification: contextOnlyView.findings[0].sourceTargets.map((target) => target.classification), mixedRelationStates: { mismatch: mixedRelationView.findings[0].mismatchEdgeRefs, agreement: mixedRelationView.findings[0].agreementEdgeRefs }, findingCount: document.querySelectorAll('[data-finding-id]').length, deterministicReload, browserUnderstandingProbe: { answers: analysisUnderstandingAnswers, correct: analysisUnderstandingAnswers.filter(Boolean).length, total: analysisUnderstandingAnswers.length }, browserEvidenceRepairProbe: { answers: evidenceRepairAnswers, correct: evidenceRepairAnswers.filter(Boolean).length, total: evidenceRepairAnswers.length } };
 
         const withGateDigests = async (nextBundle) => {
           const nextPacketDigest = await sha256Hex(nextBundle.packet);
@@ -923,6 +990,9 @@ async function main() {
     if (analysisValue.analysisTask.findingCount !== 3 || !["1. Local facts", "2. Shared relations", "3. Global result", "4. Source evidence", "Measured nonzero", "Mismatch"].every((text) => analysisValue.analysisTask.analysisExplanation.includes(text)) || !analysisValue.analysisTask.findingCounts.includes("2 contexts · 1 boundaries · 1 supporting atoms") || !analysisValue.analysisTask.supportHighlight.active || analysisValue.analysisTask.supportHighlight.atoms !== 1 || analysisValue.analysisTask.supportHighlight.contexts !== 2 || analysisValue.analysisTask.supportHighlight.edges !== 1) {
       throw new Error(`Analysis finding selection did not explain or highlight supplied support: ${JSON.stringify(analysisValue.analysisTask)}`);
     }
+    if (!analysisValue.analysisTask.outlineEvidence.levels.includes("Finding") || analysisValue.analysisTask.outlineEvidence.findingStates.length !== 3 || !analysisValue.analysisTask.outlineEvidence.findingStates.some((text) => text.includes("Measured nonzero")) || analysisValue.analysisTask.outlineEvidence.restrictions !== 2 || analysisValue.analysisTask.outlineEvidence.sharedSupports !== 1) {
+      throw new Error(`Outline did not expose the supplied analysis structure and states: ${JSON.stringify(analysisValue.analysisTask.outlineEvidence)}`);
+    }
     if (analysisValue.analysisTask.architectureFindingTransition.mode !== "analysis" || !analysisValue.analysisTask.architectureFindingTransition.support.active) {
       throw new Error(`Architecture-mode finding selection did not enter Analysis with support enabled: ${JSON.stringify(analysisValue.analysisTask.architectureFindingTransition)}`);
     }
@@ -1069,6 +1139,18 @@ async function main() {
     if (unresolved.result.value.status !== "unresolved" || !unresolved.result.value.issues.some((entry) => entry.includes("src:missing")) || unresolved.result.value.selection?.id !== "atom:unresolved" || unresolved.result.value.resolution !== "UNRESOLVED" || !unresolved.result.value.sourceTarget.includes("unresolved source ref")) {
       throw new Error(`Unresolved source ref was silently discarded: ${JSON.stringify(unresolved.result.value)}`);
     }
+    const unresolvedOutline = await page.send("Runtime.evaluate", {
+      returnByValue: true,
+      expression: `(() => {
+        document.querySelector('button[data-surface="outline"]').click();
+        const button = document.querySelector('#outline-table [data-outline-level="Source"][data-source-id="src:missing"]');
+        button.click();
+        return { selection: structuredClone(window.__archviewState.selection), inspector: document.querySelector('.inspector').textContent, resolution: document.querySelector('#source-resolution').textContent };
+      })()`,
+    });
+    if (unresolvedOutline.exceptionDetails || unresolvedOutline.result.value.selection?.id !== "src:missing" || !unresolvedOutline.result.value.inspector.includes("UNRESOLVED") || unresolvedOutline.result.value.resolution !== "UNRESOLVED") {
+      throw new Error(`Unresolved Source could not be selected safely from Outline: ${JSON.stringify(unresolvedOutline)}`);
+    }
     if (runtimeErrors.length || consoleErrors.length) {
       throw new Error(`Input cases emitted runtime or console errors: ${JSON.stringify({ runtimeErrors, consoleErrors })}`);
     }
@@ -1089,7 +1171,7 @@ async function main() {
         contrastMedia: matchMedia('(prefers-contrast: more)').matches,
         rendererReducedMotion: window.__archview.cameraState().reducedMotion,
         highContrastInk: getComputedStyle(document.documentElement).getPropertyValue('--ink').trim(),
-        focusOutlineWidth: getComputedStyle(document.querySelector('[data-surface="outline"]'), ':focus-visible').outlineWidth,
+        focusOutlineWidth: getComputedStyle(document.querySelector('button[data-surface="outline"]'), ':focus-visible').outlineWidth,
       }))()`,
     });
     const mediaValue = accessibilityMedia.result.value;

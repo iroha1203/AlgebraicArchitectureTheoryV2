@@ -149,10 +149,12 @@ Architecture / Analysis / Improveの共通mode stateを持つ。`archmap/v0.5.4`
 exact subject group、Atom kind別glyphを決定論的に配置する。
 Cover → Context → Subject → Atom → Sourceのselectionとbreadcrumb、structured search、
 各levelのInspectorから、明示されたsource親参照を辿って`path / symbol / line`へ到達できる。
-3D AtlasとOutline / Tableは同じselectionを共有し、OutlineではContext、Subject、Atom、Sourceの
-各行を標準buttonとしてTab移動とEnter / Spaceで選択できる。3D canvasでは矢印キーで回転、
-Shift + 矢印キーでpan、`+` / `-`でzoom、Homeまたは`0`でcameraをresetする。
-Top / Isometric / Front、選択対象へのfocus、overview、compass、Context mini-mapも利用できる。
+3D AtlasとOutline / Tableは同じselectionを共有し、OutlineではCover、Context、Subject、Atom、
+Source、restriction、shared support、analysis findingを標準buttonとしてTab移動とEnter / Spaceで
+選択できる。3D canvasではclickで選択し、double-clickでfocus、Shift + clickで複数選択する。
+dragは選択を発火せず、Escapeで直前のselectionへ戻る。矢印キーで回転、Shift + 矢印キーでpan、
+`+` / `-`でzoom、`F`で選択対象へfocus、`H`でoverview、`1` / `2` / `3`で
+Top / Isometric / Front、Homeまたは`0`でcameraをresetする。compassとContext mini-mapも利用できる。
 状態は色に加えて記号と文言で区別し、`prefers-reduced-motion`、`prefers-contrast`、
 forced colorsへ追従する。WebGLを開始できない場合はOutlineへ切り替える。
 restrictionとshared supportはScope Explorerまたは3D上で選択でき、導出元とvisual channelをInspectorへ表示する。
@@ -217,7 +219,8 @@ Architecture / Analysis / Improveのacceptance testを`tools/archview/`配下へ
 
 再構築applicationのbrowser testは、ArchMapの正常・empty・malformed・unresolved入力、
 WebGL / bootstrap failureとOutline fallback、3 mode、cameraのrotate / pan / zoom / focus / reset、
-3D / Outline / Inspector間で共有する5段階selection、Outlineのkeyboard-only task、
+click / double-click / Shift + click / drag分離 / Escape history / view shortcut、
+3D / Outline / Inspector間で共有する5段階selection、Tab / EnterだけのOutline keyboard task、
 reduced motion / high contrast、structured search、
 表示factのArchMap追跡、同一入力でのlayout/source順序の決定性、Architecture理解5問、
 Analysis / Improveのbrowser probeを検査する。参加者task testの実施結果は対応Issue / PRへ記録する。

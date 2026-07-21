@@ -44,6 +44,14 @@ function selectionButton(label, data, current, onClick, count = null) {
   return button;
 }
 
+function selectedEntries(snapshot) {
+  return snapshot.selections?.length ? snapshot.selections : snapshot.selection ? [snapshot.selection] : [];
+}
+
+function isSelected(snapshot, predicate) {
+  return selectedEntries(snapshot).some(predicate);
+}
+
 function visibleContexts(index, coverId) {
   const cover = index.coversById.get(coverId);
   if (!cover) return [];
@@ -58,7 +66,7 @@ function renderCoverIndex(container, snapshot, actions) {
   list.className = "index-list";
   for (const cover of index.covers) {
     const item = document.createElement("li");
-    item.append(selectionButton(displayName(cover), { coverId: cover.id }, snapshot.cover === cover.id, () => actions.cover(cover.id), (cover.contexts || []).filter((id) => index.contextsById.has(id)).length));
+    item.append(selectionButton(displayName(cover), { coverId: cover.id }, isSelected(snapshot, (selection) => selection.kind === "cover" && selection.id === cover.id), (event) => actions.cover(cover.id, event.shiftKey), (cover.contexts || []).filter((id) => index.contextsById.has(id)).length));
     list.append(item);
   }
   container.replaceChildren(list);
@@ -72,7 +80,7 @@ function renderContextIndex(container, snapshot, actions) {
   list.className = "index-list context-index";
   for (const context of contexts) {
     const item = document.createElement("li");
-    item.append(selectionButton(displayName(context), { contextId: context.id }, snapshot.selection?.kind === "context" && snapshot.selection.id === context.id, () => actions.context(context.id), new Set((context.atoms || []).filter((id) => index.atomsById.has(id))).size));
+    item.append(selectionButton(displayName(context), { contextId: context.id }, isSelected(snapshot, (selection) => selection.kind === "context" && selection.id === context.id), (event) => actions.context(context.id, event.shiftKey), new Set((context.atoms || []).filter((id) => index.atomsById.has(id))).size));
     list.append(item);
   }
   container.replaceChildren(list);
@@ -104,11 +112,11 @@ function renderSubjects(container, snapshot, actions) {
   for (const group of subjects) {
     const item = document.createElement("li");
     const label = `${group.subject} · ${displayName(group.context)}`;
-    const selected = snapshot.selection?.kind === "subject" && snapshot.selection.id === group.subject && snapshot.selection.contextId === group.context.id;
-    item.append(selectionButton(label, { subject: group.subject, contextId: group.context.id }, selected, () => actions.subject(group.context.id, group.subject), group.atoms.length));
+    const selected = isSelected(snapshot, (selection) => selection.kind === "subject" && selection.id === group.subject && selection.contextId === group.context.id);
+    item.append(selectionButton(label, { subject: group.subject, contextId: group.context.id }, selected, (event) => actions.subject(group.context.id, group.subject, event.shiftKey), group.atoms.length));
     for (const atom of group.atoms) {
-      const atomSelected = snapshot.selection?.kind === "atom" && snapshot.selection.id === atom.id && (!snapshot.selection.contextId || snapshot.selection.contextId === group.context.id);
-      item.append(selectionButton(`${displayName(atom)} · ${atom.kind}`, { atomId: atom.id, contextId: group.context.id }, atomSelected, () => actions.atom(atom.id, group.context.id)));
+      const atomSelected = isSelected(snapshot, (selection) => selection.kind === "atom" && selection.id === atom.id && (!selection.contextId || selection.contextId === group.context.id));
+      item.append(selectionButton(`${displayName(atom)} · ${atom.kind}`, { atomId: atom.id, contextId: group.context.id }, atomSelected, (event) => actions.atom(atom.id, group.context.id, event.shiftKey)));
     }
     list.append(item);
   }
@@ -122,7 +130,7 @@ function renderGeometryIndex(container, snapshot, layout, actions) {
   for (const restriction of layout.restrictions) {
     const item = document.createElement("li");
     const label = `Restriction · ${restriction.sourceId} → ${restriction.targetId}`;
-    const button = selectionButton(label, { restrictionId: restriction.id }, snapshot.selection?.kind === "restriction" && snapshot.selection.id === restriction.id, () => actions.restriction(restriction.sourceId, restriction.targetId));
+    const button = selectionButton(label, { restrictionId: restriction.id }, isSelected(snapshot, (selection) => selection.kind === "restriction" && selection.id === restriction.id), (event) => actions.restriction(restriction.sourceId, restriction.targetId, event.shiftKey));
     button.addEventListener("mouseenter", () => actions.hover(`${label} · Rendered from contexts.${restriction.sourceId}.restrictsTo`));
     button.addEventListener("mouseleave", () => actions.hover(null));
     item.append(button);
@@ -131,7 +139,7 @@ function renderGeometryIndex(container, snapshot, layout, actions) {
   for (const support of layout.sharedSupports) {
     const item = document.createElement("li");
     const label = `Shared support · ${displayName(snapshot.architecture.index.atomsById.get(support.atomId))}`;
-    const button = selectionButton(label, { sharedSupportId: support.id }, snapshot.selection?.kind === "shared-support" && snapshot.selection.atomId === support.atomId, () => actions.sharedSupport(support.atomId, support.contextIds), support.contextIds.length);
+    const button = selectionButton(label, { sharedSupportId: support.id }, isSelected(snapshot, (selection) => selection.kind === "shared-support" && selection.atomId === support.atomId), (event) => actions.sharedSupport(support.atomId, support.contextIds, event.shiftKey), support.contextIds.length);
     button.addEventListener("mouseenter", () => actions.hover(`${label} · ${support.contextIds.join(", ")}`));
     button.addEventListener("mouseleave", () => actions.hover(null));
     item.append(button);
@@ -140,7 +148,8 @@ function renderGeometryIndex(container, snapshot, layout, actions) {
   container.replaceChildren(list);
 }
 
-function renderOutline(container, status, snapshot, actions) {
+function renderOutline(container, status, snapshot, layout, analysisModel, actions) {
+  const focusedOutlineKey = container.contains(document.activeElement) ? document.activeElement?.dataset?.outlineKey : null;
   const index = snapshot.architecture.index;
   const contexts = index ? visibleContexts(index, snapshot.cover) : [];
   if (!index || !contexts.length) {
@@ -166,28 +175,35 @@ function renderOutline(container, status, snapshot, actions) {
     const detailCell = document.createElement("td");
     detailCell.textContent = detail || "—";
     const actionCell = document.createElement("td");
-    const button = selectionButton(`Select ${level} ${label}`, { outlineLevel: level, ...data }, selected, action);
+    const outlineKey = `${level}|${Object.entries(data).sort(([left], [right]) => left.localeCompare(right)).map(([key, value]) => `${key}:${value}`).join("|")}`;
+    const button = selectionButton(`Select ${level} ${label}`, { outlineLevel: level, outlineKey, ...data }, selected, action);
     actionCell.append(button);
     row.append(levelCell, labelCell, contextCell, detailCell, actionCell);
     body.append(row);
     rowCount += 1;
   };
+  const cover = index.coversById.get(snapshot.cover);
+  if (cover) appendRow("Cover", displayName(cover), "—", `${contexts.length} Contexts`, isSelected(snapshot, (selection) => selection.kind === "cover" && selection.id === cover.id), (event) => actions.cover(cover.id, event.shiftKey), { coverId: cover.id });
   for (const context of contexts) {
-    appendRow("Context", displayName(context), context.id, `${new Set(context.atoms || []).size} Atoms`, snapshot.selection?.kind === "context" && snapshot.selection.id === context.id, () => actions.context(context.id), { contextId: context.id });
+    appendRow("Context", displayName(context), context.id, `${new Set(context.atoms || []).size} Atoms`, isSelected(snapshot, (selection) => selection.kind === "context" && selection.id === context.id), (event) => actions.context(context.id, event.shiftKey), { contextId: context.id });
     for (const group of subjectsFor(index, [context])) {
-      appendRow("Subject", group.subject, context.id, `${group.atoms.length} Atoms`, snapshot.selection?.kind === "subject" && snapshot.selection.id === group.subject && snapshot.selection.contextId === context.id, () => actions.subject(context.id, group.subject), { contextId: context.id, subject: group.subject });
+      appendRow("Subject", group.subject, context.id, `${group.atoms.length} Atoms`, isSelected(snapshot, (selection) => selection.kind === "subject" && selection.id === group.subject && selection.contextId === context.id), (event) => actions.subject(context.id, group.subject, event.shiftKey), { contextId: context.id, subject: group.subject });
       for (const atom of group.atoms) {
-        appendRow("Atom", displayName(atom), context.id, atom.kind, snapshot.selection?.kind === "atom" && snapshot.selection.id === atom.id && snapshot.selection.contextId === context.id, () => actions.atom(atom.id, context.id), { contextId: context.id, atomId: atom.id });
+        appendRow("Atom", displayName(atom), context.id, atom.kind, isSelected(snapshot, (selection) => selection.kind === "atom" && selection.id === atom.id && selection.contextId === context.id), (event) => actions.atom(atom.id, context.id, event.shiftKey), { contextId: context.id, atomId: atom.id });
         for (const sourceRef of atom.refs || []) {
           const source = resolveSource(index, sourceRef);
           const label = source?.path || sourceRef;
-          appendRow("Source", label, context.id, source?.symbol || source?.section || sourceRef, snapshot.selection?.kind === "source" && snapshot.selection.id === sourceRef && snapshot.selection.atomId === atom.id, () => actions.source(sourceRef, atom.id, context.id), { contextId: context.id, atomId: atom.id, sourceId: sourceRef });
+          appendRow("Source", label, context.id, source?.symbol || source?.section || `${sourceRef} · unresolved`, isSelected(snapshot, (selection) => selection.kind === "source" && selection.id === sourceRef && selection.atomId === atom.id), (event) => actions.source(sourceRef, atom.id, context.id, null, event.shiftKey), { contextId: context.id, atomId: atom.id, sourceId: sourceRef });
         }
       }
     }
   }
+  for (const restriction of layout.restrictions) appendRow("Restriction", `${restriction.sourceId} → ${restriction.targetId}`, restriction.sourceId, "restrictsTo · derived", isSelected(snapshot, (selection) => selection.kind === "restriction" && selection.sourceId === restriction.sourceId && selection.targetId === restriction.targetId), (event) => actions.restriction(restriction.sourceId, restriction.targetId, event.shiftKey), { restrictionId: restriction.id });
+  for (const support of layout.sharedSupports) appendRow("Shared support", displayName(index.atomsById.get(support.atomId)), support.contextIds.join(", "), `${support.contextIds.length} explicit memberships`, isSelected(snapshot, (selection) => selection.kind === "shared-support" && selection.atomId === support.atomId), (event) => actions.sharedSupport(support.atomId, support.contextIds, event.shiftKey), { sharedSupportId: support.id });
+  for (const finding of analysisModel.findings) appendRow("Finding", finding.title, finding.supportContextIds.join(", "), `${finding.stateLabel} · ${finding.relationRefs.length} relations`, snapshot.finding === finding.id, () => actions.finding(finding.id), { outlineFindingId: finding.id, outlineFindingState: finding.state });
   table.append(head, body);
   container.replaceChildren(table);
+  if (focusedOutlineKey) [...container.querySelectorAll("[data-outline-key]")].find((button) => button.dataset.outlineKey === focusedOutlineKey)?.focus();
   status.textContent = `${rowCount} keyboard-selectable rows`;
 }
 
@@ -201,7 +217,7 @@ function renderMiniMap(container, snapshot, layout, actions) {
   map.className = "mini-map-field";
   layout.contexts.forEach((row) => {
     const context = snapshot.architecture.index.contextsById.get(row.id);
-    const button = selectionButton(displayName(context), { miniMapContext: row.id }, snapshot.selection?.kind === "context" && snapshot.selection.id === row.id, () => actions.context(row.id));
+    const button = selectionButton(displayName(context), { miniMapContext: row.id }, isSelected(snapshot, (selection) => selection.kind === "context" && selection.id === row.id), (event) => actions.context(row.id, event.shiftKey));
     button.style.left = `${8 + ((row.position.x - minX) / rangeX) * 78}%`;
     button.style.top = `${8 + ((row.position.z - minZ) / rangeZ) * 76}%`;
     map.append(button);
@@ -307,7 +323,7 @@ function selectedFacts(snapshot, layout) {
   }
   if (selection.kind === "source") {
     const landing = resolveSource(index, selection.id);
-    if (!landing.source) return null;
+    if (!landing.source) return { summary: `Source · ${selection.id} · unresolved`, rows: [["Source", selection.id], ["Resolution", "UNRESOLVED"], ["Supporting Atom", selection.atomId || "—"], ["Context", selection.contextId || "—"]] };
     return { summary: `Source · ${selection.id}`, rows: [["Source", selection.id], ["Kind", landing.source.kind], ["Path", landing.path], ["Symbol", landing.symbol || landing.section], ["Line", landing.line], ["Source chain", landing.chain.join(" → ")]] };
   }
   if (selection.kind === "restriction") {
@@ -329,7 +345,8 @@ function renderSelection(snapshot, layout, actions) {
   const targets = requireElement("#source-targets");
   const index = snapshot.architecture.index;
   const record = selectedFacts(snapshot, layout);
-  requireElement("#inspector-summary").textContent = record?.summary || MODE_COPY[snapshot.mode].summary;
+  const selectionCount = selectedEntries(snapshot).length;
+  requireElement("#inspector-summary").textContent = record ? `${record.summary}${selectionCount > 1 ? ` · ${selectionCount} selected` : ""}` : MODE_COPY[snapshot.mode].summary;
   requireElement("#technical-channel").textContent = record?.channel || (snapshot.selection ? "supplied / derived" : "decoration");
   if (!record || !index) {
     replaceWithEmpty(facts, "No selection");
@@ -598,7 +615,7 @@ function renderAnalysisStatus(snapshot, model, actions) {
   renderFindingExplanation(requireElement("#analysis-explanation"), selected, model, snapshot.mode);
   requireElement("#technical-conclusion").textContent = selected?.conclusionCode || "—";
   requireElement("#technical-gate").textContent = model.gate?.decision || "—";
-  if (snapshot.mode === "analysis" || snapshot.mode === "improve") renderFindingSources(requireElement("#source-targets"), snapshot, selected, actions);
+  if ((snapshot.mode === "analysis" || snapshot.mode === "improve") && selected) renderFindingSources(requireElement("#source-targets"), snapshot, selected, actions);
   const selectedTarget = snapshot.mode === "architecture" ? null : selected?.sourceTargets.find((target) => snapshot.selection?.sourceTargetKey ? target.key === snapshot.selection.sourceTargetKey : target.sourceId === snapshot.selection?.id && (!snapshot.selection?.atomId || target.atomId === snapshot.selection.atomId));
   const sourceClassification = requireElement("#source-classification");
   if (selectedTarget) {
@@ -606,7 +623,7 @@ function renderAnalysisStatus(snapshot, model, actions) {
     sourceClassification.dataset.classification = selectedTarget.classification;
     requireElement("#source-supporting-atom").textContent = `Supporting Atom ${selectedTarget.atomId || "not directly supplied"}`;
     requireElement("#source-resolution").textContent = selectedTarget.resolution;
-  } else if (snapshot.mode === "architecture") {
+  } else if (snapshot.mode === "architecture" || snapshot.selection?.kind === "source") {
     sourceClassification.textContent = snapshot.selection?.kind === "source" ? "ARCHMAP SOURCE" : "NO SOURCE CLASSIFICATION";
     delete sourceClassification.dataset.classification;
     requireElement("#source-supporting-atom").textContent = `Supporting Atom ${snapshot.selection?.atomId || "—"}`;
@@ -629,7 +646,7 @@ export async function startArchView() {
   const errorMessage = requireElement("#webgl-error-message");
   const rendererStatus = requireElement("#renderer-status");
   const modeButtons = [...document.querySelectorAll("[data-mode-button]")];
-  const surfaceButtons = [...document.querySelectorAll("[data-surface]")];
+  const surfaceButtons = [...document.querySelectorAll("button[data-surface]")];
   const viewButtons = [...document.querySelectorAll("[data-view]")];
   const state = createArchViewState();
   let atlasRenderer = null;
@@ -637,13 +654,13 @@ export async function startArchView() {
   let analysisRequest = 0;
 
   const actions = Object.freeze({
-    cover(id) { state.selectCover(id); },
-    context(id) { state.selectContext(id); },
-    subject(contextId, subject) { state.selectSubject(contextId, subject); },
-    atom(id, contextId = null) { state.selectAtom(id, contextId); },
-    source(id, atomId = null, contextId = null, sourceTargetKey = null) { state.selectSource(id, atomId, contextId, sourceTargetKey); },
-    restriction(sourceId, targetId) { state.selectRestriction(sourceId, targetId); },
-    sharedSupport(atomId, contextIds) { state.selectSharedSupport(atomId, contextIds); },
+    cover(id, additive = false) { state.selectCover(id, additive); },
+    context(id, additive = false) { state.selectContext(id, additive); },
+    subject(contextId, subject, additive = false) { state.selectSubject(contextId, subject, additive); },
+    atom(id, contextId = null, additive = false) { state.selectAtom(id, contextId, additive); },
+    source(id, atomId = null, contextId = null, sourceTargetKey = null, additive = false) { state.selectSource(id, atomId, contextId, sourceTargetKey, additive); },
+    restriction(sourceId, targetId, additive = false) { state.selectRestriction(sourceId, targetId, additive); },
+    sharedSupport(atomId, contextIds, additive = false) { state.selectSharedSupport(atomId, contextIds, additive); },
     finding(id) { state.selectFinding(id); },
     hover(label) {
       const hover = requireElement("#atlas-hover-label");
@@ -651,12 +668,12 @@ export async function startArchView() {
       hover.textContent = label || "";
     },
   });
-  const handleSceneSelection = (kind, id, contextId) => {
-    if (kind === "context") actions.context(id);
-    if (kind === "subject") actions.subject(contextId, id);
-    if (kind === "atom") actions.atom(id, contextId);
-    if (kind === "restriction") actions.restriction(id, contextId);
-    if (kind === "shared-support") actions.sharedSupport(id, contextId);
+  const handleSceneSelection = (kind, id, contextId, additive = false) => {
+    if (kind === "context") actions.context(id, additive);
+    if (kind === "subject") actions.subject(contextId, id, additive);
+    if (kind === "atom") actions.atom(id, contextId, additive);
+    if (kind === "restriction") actions.restriction(id, contextId, additive);
+    if (kind === "shared-support") actions.sharedSupport(id, contextId, additive);
   };
   const handleSceneHover = actions.hover;
   const publishTestState = (snapshot) => {
@@ -676,7 +693,7 @@ export async function startArchView() {
       window.__archviewRenderStats = atlasRenderer.setArchitecture(snapshot.architecture.index, layout, handleSceneSelection, handleSceneHover);
       renderedSignature = layout.signature;
     }
-    if (atlasRenderer) window.__archviewSelectionVisual = atlasRenderer.setSelection(snapshot.selection);
+    if (atlasRenderer) window.__archviewSelectionVisual = atlasRenderer.setSelection(snapshot.selection, snapshot.selections);
     if (atlasRenderer) {
       const support = snapshot.mode === "architecture" || !selectedFinding ? null : {
         atomIds: selectedFinding.supportAtomIds,
@@ -716,7 +733,7 @@ export async function startArchView() {
     requireElement("#empty-state-copy").textContent = snapshot.architecture.status === "empty" ? "The supplied ArchMap contains no sources, Atoms, Contexts, or Covers." : snapshot.architecture.status === "error" ? "Review the visible validation findings in Scope Explorer." : copy.copy;
     renderArchitecture(snapshot, layout, actions);
     renderAnalysisStatus(snapshot, analysisModel, actions);
-    renderOutline(requireElement("#outline-table"), requireElement("#outline-status"), snapshot, actions);
+    renderOutline(requireElement("#outline-table"), requireElement("#outline-status"), snapshot, layout, analysisModel, actions);
     renderMiniMap(requireElement("#atlas-mini-map"), snapshot, layout, actions);
     publishTestState(snapshot);
   });
@@ -724,8 +741,15 @@ export async function startArchView() {
   modeButtons.forEach((button) => button.addEventListener("click", () => state.selectMode(button.dataset.modeButton)));
   surfaceButtons.forEach((button) => button.addEventListener("click", () => state.selectSurface(button.dataset.surface)));
   requireElement("#architecture-search").addEventListener("input", () => renderSearch(state.read(), actions));
-  requireElement("#overview-button").addEventListener("click", () => { state.overview(); atlasRenderer?.reset(); state.selectView("isometric"); });
-  requireElement("#focus-selection-button").addEventListener("click", () => atlasRenderer?.focusSelection(state.read().selection));
+  const showOverview = () => { state.overview(); atlasRenderer?.reset(); state.selectView("isometric"); };
+  const focusSelection = () => atlasRenderer?.focusSelection(state.read().selection);
+  const setCameraView = (view) => {
+    if (!atlasRenderer) return;
+    if (view === "reset") { atlasRenderer.reset(); state.selectView("isometric"); }
+    else { atlasRenderer.setView(view); state.selectView(view); }
+  };
+  requireElement("#overview-button").addEventListener("click", showOverview);
+  requireElement("#focus-selection-button").addEventListener("click", focusSelection);
 
   try {
     const { createAtlasRenderer } = await import("./renderer.js");
@@ -739,12 +763,21 @@ export async function startArchView() {
     state.selectSurface("outline");
   }
 
-  viewButtons.forEach((button) => button.addEventListener("click", () => {
-    if (!atlasRenderer) return;
-    const view = button.dataset.view;
-    if (view === "reset") { atlasRenderer.reset(); state.selectView("isometric"); }
-    else { atlasRenderer.setView(view); state.selectView(view); }
-  }));
+  viewButtons.forEach((button) => button.addEventListener("click", () => setCameraView(button.dataset.view)));
+  const handleGlobalShortcut = (event) => {
+    if (event.metaKey || event.ctrlKey || event.altKey) return;
+    const tagName = event.target?.tagName?.toLowerCase();
+    if (["input", "textarea", "select"].includes(tagName) || event.target?.isContentEditable) return;
+    const key = event.key.toLowerCase();
+    if (event.key === "Escape") { event.preventDefault(); state.backSelection(); }
+    else if (key === "f") { event.preventDefault(); focusSelection(); }
+    else if (key === "h") { event.preventDefault(); showOverview(); }
+    else if (event.key === "1") { event.preventDefault(); setCameraView("top"); }
+    else if (event.key === "2") { event.preventDefault(); setCameraView("isometric"); }
+    else if (event.key === "3") { event.preventDefault(); setCameraView("front"); }
+    else if (event.key === "0" || event.key === "Home") { event.preventDefault(); setCameraView("reset"); }
+  };
+  document.addEventListener("keydown", handleGlobalShortcut);
 
   const applyIndex = (index, source) => state.architectureLoaded(index, source);
   const rejectInput = (error, source) => {
@@ -808,8 +841,8 @@ export async function startArchView() {
   if (requestedArchMap !== "none") await loadUrl(requestedArchMap || DEFAULT_ARCHMAP_URL);
   const requestedAnalysis = parameters.get("analysis");
   if (requestedAnalysis) await loadAnalysisUrl(requestedAnalysis);
-  const dispose = () => atlasRenderer?.dispose();
+  const dispose = () => { document.removeEventListener("keydown", handleGlobalShortcut); atlasRenderer?.dispose(); };
   window.addEventListener("pagehide", dispose, { once: true });
-  window.__archview = Object.freeze({ state, loadUrl, loadText, loadObject, loadAnalysisFiles, loadAnalysisUrl, loadAnalysisObject: acceptAnalysis, cameraState: () => atlasRenderer?.cameraState() || null, nudgeCamera: (command) => atlasRenderer?.nudgeCamera(command) || null, focusSelection: () => atlasRenderer?.focusSelection(state.read().selection) || false, dispose });
+  window.__archview = Object.freeze({ state, loadUrl, loadText, loadObject, loadAnalysisFiles, loadAnalysisUrl, loadAnalysisObject: acceptAnalysis, cameraState: () => atlasRenderer?.cameraState() || null, nudgeCamera: (command) => atlasRenderer?.nudgeCamera(command) || null, focusSelection: () => atlasRenderer?.focusSelection(state.read().selection) || false, screenPointForSelection: (selection) => atlasRenderer?.screenPointForSelection(selection) || null, dispose });
   return state.read();
 }

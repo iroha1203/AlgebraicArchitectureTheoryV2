@@ -12,6 +12,8 @@ const initialState = Object.freeze({
   cover: null,
   zoom: "cover",
   selection: null,
+  selections: Object.freeze([]),
+  selectionHistory: Object.freeze([]),
   finding: null,
   architecture: Object.freeze({ status: "idle", index: null, issues: Object.freeze([]), source: null }),
   analysis: Object.freeze({ status: "absent", bundle: null, issues: Object.freeze([]), source: null }),
@@ -21,6 +23,20 @@ const initialState = Object.freeze({
 export function createArchViewState() {
   let state = { ...initialState };
   const listeners = new Set();
+
+  const selectionKey = (selection) => selection ? JSON.stringify(selection) : "none";
+  const commitSelection = (selection, zoom, additive = false, extra = {}) => {
+    const currentSelections = state.selections?.length ? state.selections : state.selection ? [state.selection] : [];
+    const nextSelections = additive
+      ? [...currentSelections.filter((entry) => selectionKey(entry) !== selectionKey(selection)), selection]
+      : [selection];
+    const changed = selectionKey(state.selection) !== selectionKey(selection) || JSON.stringify(currentSelections) !== JSON.stringify(nextSelections) || Object.entries(extra).some(([key, value]) => state[key] !== value);
+    const history = changed && state.selection
+      ? [...state.selectionHistory, Object.freeze({ selection: state.selection, selections: Object.freeze([...currentSelections]), zoom: state.zoom, cover: state.cover })].slice(-100)
+      : state.selectionHistory;
+    state = { ...state, ...extra, zoom, selection, selections: Object.freeze(nextSelections), selectionHistory: Object.freeze(history) };
+    return publish();
+  };
 
   const read = () => Object.freeze({ ...state });
 
@@ -66,7 +82,7 @@ export function createArchViewState() {
       return publish();
     },
     architectureLoading(source) {
-      state = { ...state, finding: null, architecture: Object.freeze({ status: "loading", index: null, issues: Object.freeze([]), source }), analysis: Object.freeze({ status: "absent", bundle: null, issues: Object.freeze([]), source: null }) };
+      state = { ...state, finding: null, selection: null, selections: Object.freeze([]), selectionHistory: Object.freeze([]), architecture: Object.freeze({ status: "loading", index: null, issues: Object.freeze([]), source }), analysis: Object.freeze({ status: "absent", bundle: null, issues: Object.freeze([]), source: null }) };
       return publish();
     },
     architectureLoaded(index, source) {
@@ -78,6 +94,8 @@ export function createArchViewState() {
         cover: index.covers[0]?.id || null,
         zoom: index.covers.length ? "cover" : "context",
         selection: null,
+        selections: Object.freeze([]),
+        selectionHistory: Object.freeze([]),
         finding: null,
         architecture: Object.freeze({ status, index, issues: index.unresolved, source }),
         analysis: Object.freeze({ status: "absent", bundle: null, issues: Object.freeze([]), source: null }),
@@ -93,6 +111,8 @@ export function createArchViewState() {
         cover: null,
         zoom: "cover",
         selection: null,
+        selections: Object.freeze([]),
+        selectionHistory: Object.freeze([]),
         finding: null,
         architecture: Object.freeze({ status: "error", index: null, issues: Object.freeze(issues), source }),
         analysis: Object.freeze({ status: "absent", bundle: null, issues: Object.freeze([]), source: null }),
@@ -115,60 +135,64 @@ export function createArchViewState() {
     },
     selectFinding(findingId) {
       if (state.analysis.status !== "accepted" || typeof findingId !== "string" || !findingId) throw new Error(`Unknown finding selection: ${findingId}`);
-      state = { ...state, mode: state.mode === "architecture" ? "analysis" : state.mode, finding: findingId, selection: null };
+      state = { ...state, mode: state.mode === "architecture" ? "analysis" : state.mode, finding: findingId, selection: null, selections: Object.freeze([]) };
       return publish();
     },
-    selectCover(coverId) {
+    selectCover(coverId, additive = false) {
       const index = state.architecture.index;
       if (!index?.coversById.has(coverId)) throw new Error(`Unknown Cover selection: ${coverId}`);
-      state = { ...state, cover: coverId, zoom: "cover", selection: Object.freeze({ kind: "cover", id: coverId }) };
-      return publish();
+      return commitSelection(Object.freeze({ kind: "cover", id: coverId }), "cover", additive, { cover: coverId });
     },
-    selectContext(contextId) {
+    selectContext(contextId, additive = false) {
       const index = state.architecture.index;
       if (!index?.contextsById.has(contextId)) throw new Error(`Unknown Context selection: ${contextId}`);
-      state = { ...state, zoom: "context", selection: Object.freeze({ kind: "context", id: contextId }) };
-      return publish();
+      return commitSelection(Object.freeze({ kind: "context", id: contextId }), "context", additive);
     },
-    selectSubject(contextId, subject) {
+    selectSubject(contextId, subject, additive = false) {
       const index = state.architecture.index;
       const context = index?.contextsById.get(contextId);
       const exists = (context?.atoms || []).some((atomId) => index.atomsById.get(atomId)?.subject === subject);
       if (!exists) throw new Error(`Unknown Subject selection: ${contextId}::${subject}`);
-      state = { ...state, zoom: "subject", selection: Object.freeze({ kind: "subject", id: subject, contextId }) };
-      return publish();
+      return commitSelection(Object.freeze({ kind: "subject", id: subject, contextId }), "subject", additive);
     },
-    selectAtom(atomId, contextId = null) {
+    selectAtom(atomId, contextId = null, additive = false) {
       const index = state.architecture.index;
       if (!index?.atomsById.has(atomId)) throw new Error(`Unknown Atom selection: ${atomId}`);
       if (contextId && !index.contextsById.get(contextId)?.atoms?.includes(atomId)) throw new Error(`Atom ${atomId} is not a member of Context ${contextId}.`);
-      state = { ...state, zoom: "atom", selection: Object.freeze({ kind: "atom", id: atomId, contextId }) };
-      return publish();
+      return commitSelection(Object.freeze({ kind: "atom", id: atomId, contextId }), "atom", additive);
     },
-    selectSource(sourceId, atomId = null, contextId = null, sourceTargetKey = null) {
+    selectSource(sourceId, atomId = null, contextId = null, sourceTargetKey = null, additive = false) {
       const index = state.architecture.index;
-      if (!index?.sourcesById.has(sourceId)) throw new Error(`Unknown Source selection: ${sourceId}`);
       if (atomId && !index.atomsById.has(atomId)) throw new Error(`Unknown Atom source owner: ${atomId}`);
-      state = { ...state, zoom: "source", selection: Object.freeze({ kind: "source", id: sourceId, atomId, contextId, sourceTargetKey }) };
-      return publish();
+      const explicitlyReferenced = atomId && index.atomsById.get(atomId)?.refs?.includes(sourceId);
+      if (!index?.sourcesById.has(sourceId) && !explicitlyReferenced) throw new Error(`Unknown Source selection: ${sourceId}`);
+      return commitSelection(Object.freeze({ kind: "source", id: sourceId, atomId, contextId, sourceTargetKey }), "source", additive);
     },
-    selectRestriction(sourceId, targetId) {
+    selectRestriction(sourceId, targetId, additive = false) {
       const index = state.architecture.index;
       if (!index?.contextsById.get(sourceId)?.restrictsTo?.includes(targetId)) throw new Error(`Unknown restriction: ${sourceId}->${targetId}`);
-      state = { ...state, zoom: "context", selection: Object.freeze({ kind: "restriction", id: `${sourceId}->${targetId}`, sourceId, targetId }) };
-      return publish();
+      return commitSelection(Object.freeze({ kind: "restriction", id: `${sourceId}->${targetId}`, sourceId, targetId }), "context", additive);
     },
-    selectSharedSupport(atomId, contextIds) {
+    selectSharedSupport(atomId, contextIds, additive = false) {
       const index = state.architecture.index;
       const uniqueContextIds = [...new Set(contextIds || [])].sort();
       if (!index?.atomsById.has(atomId) || uniqueContextIds.length < 2 || !uniqueContextIds.every((contextId) => index.contextsById.get(contextId)?.atoms?.includes(atomId))) {
         throw new Error(`Unknown shared support: ${atomId}`);
       }
-      state = { ...state, zoom: "atom", selection: Object.freeze({ kind: "shared-support", id: `shared::${atomId}`, atomId, contextIds: Object.freeze(uniqueContextIds) }) };
-      return publish();
+      return commitSelection(Object.freeze({ kind: "shared-support", id: `shared::${atomId}`, atomId, contextIds: Object.freeze(uniqueContextIds) }), "atom", additive);
     },
     overview() {
-      state = { ...state, zoom: "cover", selection: state.cover ? Object.freeze({ kind: "cover", id: state.cover }) : null };
+      if (!state.cover) {
+        state = { ...state, zoom: "cover", selection: null, selections: Object.freeze([]) };
+        return publish();
+      }
+      return commitSelection(Object.freeze({ kind: "cover", id: state.cover }), "cover");
+    },
+    backSelection() {
+      if (!state.selectionHistory.length) return read();
+      const history = [...state.selectionHistory];
+      const previous = history.pop();
+      state = { ...state, selection: previous.selection, selections: previous.selections, zoom: previous.zoom, cover: previous.cover, selectionHistory: Object.freeze(history) };
       return publish();
     },
   });
