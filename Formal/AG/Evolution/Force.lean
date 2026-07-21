@@ -80,8 +80,8 @@ structure ForceIntegrationData {U : AtomCarrier.{u}} {A : ArchitectureObject U}
   replayData : ReplayDescentData St coefficient globalTemporalLaw
   descentCriterion : TemporalDescentCriterion replayData
   globalReplayTransition : replayData.GlobalReplayTransition
-  replaySource_eq : F.source = (replayData.sourceTrace, replayData.cover.baseContext)
-  replayTarget_eq : F.target = (replayData.targetTrace, replayData.cover.baseContext)
+  replaySource_eq : F.source = (replayData.raw.sourceTrace, replayData.cover.baseContext)
+  replayTarget_eq : F.target = (replayData.raw.targetTrace, replayData.cover.baseContext)
   globalReplay_hits_force :
     globalReplayTransition (replaySource_eq ▸ F.sourceState) =
       (replayTarget_eq ▸ F.targetState)
