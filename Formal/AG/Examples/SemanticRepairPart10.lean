@@ -1,5 +1,6 @@
 import Formal.AG.Examples.FiniteModel
 import Formal.AG.Cohomology.FiniteExamples
+import Formal.AG.SemanticRepair.AdditiveH1
 import Formal.AG.SemanticRepair.Boundary
 import Formal.AG.SemanticRepair.LawEquationGeneratedPair
 import Mathlib.Data.Int.Basic
@@ -2542,6 +2543,60 @@ def generatedLawCircleZeroBoundaryAdditiveData :
       (lawEquationCompleteRepairSupport_componentCoverage_and_faithfulness
         generatedLawCircleSemanticProjection
         generatedLawCircleSemanticCover.baseCover).2)
+
+/--
+X.定義4.6 positive fixture: the zero-boundary circle packet constructs the
+general `P`/`Q` faithfulness data by the additive zero primitive.
+-/
+def generatedLawCircleZeroBoundaryFaithfulnessData :
+    AAT.AG.SemanticRepair.SemanticRepairCoverH1FaithfulnessData
+      generatedLawCircleSemanticProjection :=
+  AAT.AG.SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.toFaithfulnessData
+    generatedLawCircleZeroBoundaryAdditiveData
+
+/--
+X.定義4.6 positive fixture: the general faithfulness law turns the selected
+zero-boundary residual into a global coherence witness.
+-/
+theorem generatedLawCircleZeroBoundaryFaithfulness_globalRepairCoherent :
+    generatedLawCircleZeroBoundaryFaithfulnessData.GlobalRepairCoherent := by
+  apply generatedLawCircleZeroBoundaryFaithfulnessData.globalRepairCoherent_of_boundary
+  change CechB1 generatedLawCircleZeroBoundaryAdditiveData.boundaryRelation.cech
+    generatedLawCircleZeroBoundaryAdditiveData.boundaryRelation.cech.residual
+  exact ⟨(0 : generatedLawCircleC0), rfl⟩
+
+/--
+X.定義4.6 negative fixture: `P` and `Q` remain independent predicates, rather
+than aliases for the component predicates. The nonzero circle residual can
+support `Q` while the closure predicate is empty.
+-/
+def generatedLawCircleNegativeFaithfulnessData :
+    AAT.AG.SemanticRepair.SemanticRepairCoverH1FaithfulnessData
+      generatedLawCircleSemanticProjection where
+  cover := generatedLawCircleBoundaryRelationData.cover
+  cech := generatedLawCircleBoundaryRelationData.cech
+  P := fun _ => False
+  Q := fun cochain => cochain = generatedLawCircleBoundaryRelationData.cech.residual
+  zeroPrimitive := (0 : generatedLawCircleC0)
+  delta0_zeroPrimitive := by
+    change generatedLawCircleD0 0 = generatedLawCircleZero1
+    funext edge
+    simp [generatedLawCircleD0, generatedLawCircleZero1]
+  residual_in_Q := rfl
+  faithful primitive hresidual :=
+    False.elim
+      (generatedLawCircleD0_eq_residual_impossible primitive (by
+        simpa [generatedLawCircleBoundaryRelationData,
+          generatedLawCircleSemanticCechData] using hresidual))
+
+/--
+X.定義4.6 negative fixture: arbitrary `P`/`Q` data does not manufacture a
+global coherence witness when the closure predicate is empty.
+-/
+theorem generatedLawCircleNegativeFaithfulness_not_globalRepairCoherent :
+    ¬ generatedLawCircleNegativeFaithfulnessData.GlobalRepairCoherent := by
+  rintro ⟨_primitive, _hboundary, hclosure⟩
+  exact hclosure
 
 /--
 The zero primitive generates the zero-boundary packet, separately from the
