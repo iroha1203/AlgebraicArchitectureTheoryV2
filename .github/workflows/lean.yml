@@ -164,10 +164,6 @@ jobs:
         if: steps.lean-changes.outputs.run == 'true'
         run: .github/lean_quality/check_lint_formal.sh
 
-      - name: Statement contracts
-        if: steps.lean-changes.outputs.run == 'true'
-        run: lake env lean Formal/AG/StatementContracts.lean
-
       - name: Premise diff report
         if: steps.lean-changes.outputs.run == 'true'
         run: .github/lean_quality/list_premise_diff.sh

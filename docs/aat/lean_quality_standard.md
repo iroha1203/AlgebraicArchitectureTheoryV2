@@ -183,48 +183,43 @@ finding にする。
 silent rename は対応するLean source・GOAL・Issueの追跡を切り、監査を空振りさせる repackage
 経路なので finding とする。
 
-## §5 Target statement 固定手続き
+## §5 Target statement の一次仕様と直接査読
 
-### 5.1 固定条件と参照可能性
+### 5.1 一次仕様の固定と参照可能性
 
-- **Lean実装計画**: 実装開始前にstatement contractの正本を1つ指定し、各target theoremの
-  **名前+完全なsignature**、およびstatementが参照する**新規defのsignature**を
-  Leanコードブロックで固定する。
-- statement contractの置き場所は固定しない。PRD、GOAL・候補カード、GitHub Issue、
-  現行docs、その他のartifactのいずれでもよい。tracking Issueまたは作業artifactから
-  正本の正確な位置を特定でき、実装者と査読者が実装中に参照できることを必須とする。
-- 同じsignatureを複数箇所へ正本として複製しない。別artifactでは正本の位置を参照する。
-  実装ループ中は指定したstatement contractを不変入力として扱い、変更が必要なら§5.3で停止する。
+- **Lean実装計画**: 実装開始前に、作業が指定する一次仕様を一つ特定し、target claim、
+  必要な結論、明示された仮定・受け入れ条件を参照可能にする。target theoremや新規defの
+  **名前+完全なLean signature**を記録してよいが、これは開始条件ではない。
+- 一次仕様はPRD、GOAL・候補カード、GitHub Issue、現行docs、数学本文、その他の
+  task artifactのいずれでもよい。tracking Issueまたは作業artifactから正確な位置を
+  特定でき、実装者と査読者が実装中に参照できることを必須とする。
+- 同じclaimやsignatureを複数箇所へ正本として複製しない。別artifactでは一次仕様の位置を参照する。
+  実装ループ中は指定した一次仕様を不変入力として扱い、変更が必要なら§5.3で停止する。
 - **research-loop**: 候補カードの`planned_lean_statement`は、固定statement本体または
-  指定したstatement contractへの正確な参照を持つ。G2審判はその正本を審査し、G3は
-  実装との一致を合格条件とする。
-- **target-theorem-loop**: GOALカードは、固定statement本体または指定したstatement contractへの
+  指定した一次仕様への正確な参照を持つ。G2審判はその正本を審査し、G3は実装との一致を
+  合格条件とする。
+- **target-theorem-loop**: GOALカードは、固定statement本体または指定した一次仕様への
   正確な参照を持つ。ループ中はその正本を変更しない。
 
-### 5.2 一致判定(statement contract)[機械]
+### 5.2 一致判定[査読]
 
-固定 statement と実装の一致は、次が elaborate することと定義する。
+固定 statement と実装 declaration の一致は、一次仕様と実装本体を直接突合して判定する。
+一次仕様に完全Lean signatureがある場合、査読者はtarget theoremと新規defについて、名前、
+universe、明示・暗黙引数、typeclass、structure / certificate field、結論を照合する。
+完全signatureがない場合は、一次仕様のclaim、必要な結論、明示された仮定・受け入れ条件から
+査読対象を再構成して実装 declaration、premise、proof-useを検査する。premise の追加・結論の
+弱化・対象の縮小はanti-weakening finding とする。
 
-```lean
-example : <固定した signature の型> := <実装 theorem 名>
-```
+補助Leanファイル、aggregate import、CI step、commit順、fixture lockの有無や形式は
+この判定の根拠にしない。`lake build`、AxiomAudit、lint、premise diff reportはそれぞれの
+規律を確認するが、固定 statement の一致は代替しない。
 
-これが通れば、実装 theorem は固定 statement を(defeq の範囲で)
-証明している。premise の追加・結論の弱化・対象の縮小があれば通らない。
-CI への配線は執行層 PRD(§7)の対象であり、配線までの間は完了レビューが
-この形で手元確認するか、signature の逐語突合で代替する。
+一次仕様が参照するdef側の改変(§2.2 definitional escape)も、def signatureと実装本体を
+同時に読む。signatureだけの一致を完了根拠にせず、仮定放電、certificate provenance、
+proof-use、actual APIへの接続を査読する。
 
-実装との一致を機械検査するLeanファイルは`Formal/AG/StatementContracts*.lean`に置く。
-これは§5.1で指定したstatement contractの正本の置き場所を制限するものではない。
-このファイル群は本体 import surface(`Formal/AG.lean`)から import し、
-通常の `lake build` と CI の `Statement contracts`
-(`lake env lean Formal/AG/StatementContracts.lean`)で elaborate する。
-契約ファイルには `example : <固定した signature の型> := <実装 theorem 名>`
-だけを置き、新しい数学的 theorem や wrapper theorem は置かない。
-
-注意: この契約は statement の一致だけを判定する。固定 statement が
-参照する def 側の改変(§2.2 definitional escape)は契約では
-捕まらないため、def signature の固定と査読を併用する。
+一次仕様から対象 claim、必要な結論、受け入れ条件を判定できない場合だけ、実装開始または
+完了判定を止めて作業入力の明確化を求める。完全Lean signatureの不在そのものは停止理由にしない。
 
 ### 5.3 drift 規則
 
@@ -272,7 +267,6 @@ baseline を更新する場合は、`.github/lean_quality/LintFormal.lean` を
 | 構文的恒真 statement | §1(空虚化) | CI step `Lean quality lint baseline`: `synTaut` を baseline 差分で検出 |
 | 未使用 have / suffices | §1.2 | CI step `Lean quality lint baseline`: `unusedHavesSuffices` を baseline 差分で検出 |
 | namespace 重複・不能 instance | §3 | CI step `Lean quality lint baseline`: `dupNamespace`, `impossibleInstance` を baseline 差分で検出 |
-| statement contract elaboration | §5.2 | CI step `Statement contracts`: `Formal/AG/StatementContracts.lean` |
 | AxiomAudit | §4.1 | CI step `Kernel axiom audit`: `lake env lean Formal/AG/AxiomAudit.lean` と末尾 `#assert_standard_axioms_only AAT.AG.AxiomAudit` 確認 |
 | Research import 方向 | refutation-checklist §6 | CI step `Research import direction scan`: `.github/lean_quality/check_research_import_direction.sh` が `research/lean/ResearchLean` 外への新規 `import ResearchLean.AG` 追加を fail |
 | premise 一覧 | §1.1 | CI step `Premise diff report`: `.github/lean_quality/list_premise_diff.sh` が `.tmp/lean-quality/premise-diff.txt` を出力する。これはレビュー突合用で hard fail ではない |

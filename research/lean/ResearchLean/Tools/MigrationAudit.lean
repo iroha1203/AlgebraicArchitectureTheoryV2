@@ -85,7 +85,7 @@ elab "#emit_migration_audit " moduleName:ident : command => do
     ].map tabSafe
     liftIO <| IO.println (String.intercalate "\t" fields)
 
-/-- Emit only one declaration's type for relational statement contracts. -/
+/-- Emit only one declaration's type for relational type comparison. -/
 elab "#emit_migration_type_audit " declarationName:ident : command => do
   let env ← getEnv
   let declarationId := declarationName.getId

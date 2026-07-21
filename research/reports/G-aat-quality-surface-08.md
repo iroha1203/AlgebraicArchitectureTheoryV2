@@ -865,7 +865,7 @@ tracking_issue_closed: false
 - proof obligation: connect the actual restricted allowed-operation sheaf and
   labeled response to residue-field geometric fibers, then identify the
   resulting circuit locus with the response-cokernel support
-- statement contract: Issue #3595, v1 fixed before implementation
+- 一次仕様: Issue #3595, v1 fixed before implementation
 
 ### Construction
 
@@ -980,7 +980,7 @@ tracking_issue_closed: false
 - proof obligation: construct the actual lawful-space protected-response
   kernel, target-response image, and canonical short exact image sequence,
   then connect its selected-chart sections to the existing chart response maps
-- statement contract: Issue #3600, v1 fixed and elaborated before implementation
+- 一次仕様: Issue #3600, v1 fixed before implementation
 
 ### Construction
 
@@ -1100,7 +1100,7 @@ tracking_issue_closed: false
 - result type: target-proof-checkpoint
 - proof obligation: compare the actual allowed-operation image sheaf on a
   selected affine chart with the `tilde` of its actual chart-section module
-- statement contract: Issue #3575, v1.1 fixed and elaborated before implementation
+- 一次仕様: Issue #3575, v1.1 fixed before implementation
 
 ### Construction
 
@@ -1153,8 +1153,8 @@ The final public instance follows from the constructed comparison and
   the obligation.
 - independent T3 source audit: Approve / No major findings.
 - remaining C0 obligation: C0c-2 geometric-fiber response compatibility and
-  circuit-locus transport; its statement contract must be fixed in its task
-  Issue before implementation.
+  circuit-locus transport; its target statement primary specification must be
+  identified in the task before implementation.
 
 ### Verification
 
@@ -1202,7 +1202,7 @@ route_integrity_audit:
   status: pass
   concerns: []
 blocking_findings: []
-next_obligation: fix the C0c-2 statement contract in its task Issue before implementation
+next_obligation: identify the C0c-2 target statement primary specification before implementation
 completion_candidate: false
 tracking_issue_closed: false
 ```
@@ -1214,7 +1214,7 @@ tracking_issue_closed: false
 - proof obligation: prove that open restriction and affine `tilde` preserve
   the abelian image factorizations needed for the actual selected-chart
   allowed-operation sheaf comparison
-- statement contract: Issue #3577, v1 fixed and elaborated before implementation
+- 一次仕様: Issue #3577, v1 fixed before implementation
 - base merge SHA: `ad864139e4b86e9a3dcd3ad03e49d1c9d8f3ddc3`
 
 ### Construction
@@ -1301,7 +1301,7 @@ tracking_issue_closed: false
 - proof obligation: instantiate C0a on the generated allowed-operation sheaf
   section module and actual required-label chart responses, then identify the
   section-module fiber circuit locus with response-cokernel support
-- statement contract: Issue #3557, v1 fixed and elaborated before implementation
+- 一次仕様: Issue #3557, v1 fixed before implementation
 - base merge SHA: `200a395aa483d75e7fcc2dfc8c1b1cac846cf3b7`
 
 ### Construction

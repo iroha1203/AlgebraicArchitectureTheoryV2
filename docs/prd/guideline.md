@@ -7,14 +7,15 @@
 - PRDは実装作業中だけ有効な一時的実行契約である。
 - PRDに置いてよい内容は、問い、現状診断、現行source of truth・非PRD依存・Issueへの参照、
   要求、acceptance criteria、当該作業の失敗判定としてのFailure Contract、実装計画、
-  task固有のstatement contract、non-goals、停止条件に限定する。
+  task固有のtarget statement、non-goals、停止条件に限定する。
 - PRDに恒久的な規律、編集ルール、schema / artifact contract、status語彙、
   product/runtimeのFailure Contract、運用手順の正本を書いてはならない。これらはPRD着手前に
   数学本文、guideline、仕様書、台帳、schema文書などの現行source of truthへ置き、PRDは参照だけを持つ。
-- statement contractの置き場所は固定しない。PRD、GOAL・候補カード、GitHub Issue、現行docs、
-  その他のartifactのいずれでもよい。実装開始前に正本を1つ指定し、target theoremの名前と完全な
-  signature、statementが参照する新規defのsignatureを固定し、実装者と査読者が作業中に参照できる
-  状態を保つ。同じcontractを複数箇所へ正本として複製しない。
+- target statementの一次仕様は、PRD、GOAL・候補カード、GitHub Issue、現行docs、数学本文、
+  その他のtask artifactのいずれでもよい。実装開始前に一次仕様を1つ指定し、target claim、
+  必要な結論、明示された仮定・受け入れ条件を実装者と査読者が作業中に参照できる状態を保つ。
+  target theoremや新規defの完全Lean signatureは必要に応じて記録してよいが必須ではない。
+  同じclaimやsignatureを複数箇所へ正本として複製しない。
 - 実装前に、完成実装の写し、全補題の証明列、生成物一式、またはそれらを説明する
   大規模または恒久的なevidence packetを作ることを要求してはならない。必要な事前固定は、実装する対象、
   acceptance criteria、必要なら target theorem と新規def の最小 signature に限る。
@@ -35,8 +36,8 @@ PRDは次をすべて満たした後にarchiveする。
 
 完了後のPRDは `docs/archive/` へ移す。archiveは履歴であり、現行source of truthとして扱わない。
 既存PRDや既存参照も例外扱いせず、上記条件を満たすまで文書整理の完了根拠に数えない。
-task固有のstatement contractがPRDにある場合、その履歴はarchiveされたPRDに保存される。
-同じcontractを完了後の現行docsへ移すことはarchive条件にしない。
+PRDがtask固有のtarget statementの一次仕様である場合、その履歴はarchiveされたPRDに保存される。
+同じclaimやsignatureを完了後の現行docsへ移すことはarchive条件にしない。
 
 ## PRD参照の禁止
 
