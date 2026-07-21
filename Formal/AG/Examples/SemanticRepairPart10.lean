@@ -17,6 +17,7 @@ namespace SemanticRepairPart10
 open CategoryTheory
 open Opposite
 open SemanticRepair
+open SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData
 
 /-!
 Part X R9 / AC16 finite lawful firing instance.
@@ -2890,48 +2891,105 @@ theorem generatedLaw_sharedCoefficient_separateCircleNonzero_andSingletonStandar
 
 /-! ## Nontrivial additive higher-layer fixture -/
 
+/-- An actual selected overlap records the two charts it compares. -/
+inductive zmodTwoTorsorOverlap (_left _right : Fin 3) where
+  | selected
+deriving Fintype
+
+/-- An actual selected triple face records all three participating charts. -/
+inductive zmodTwoTorsorTriple (_i _j _k : Fin 3) where
+  | selected
+deriving Fintype
+
+/-- X.例9.1 / #3690: a three-chart repair cover with selected actual faces. -/
+def zmodTwoTorsorCover : SemanticRepairCover semanticProjection where
+  baseCover := semanticCover.baseCover
+  CoverChart := Fin 3
+  chart _ := PUnit.unit
+  chartFinite := inferInstance
+  Overlap := zmodTwoTorsorOverlap
+  overlapFinite := fun _ _ => inferInstance
+  TripleOverlap := zmodTwoTorsorTriple
+  tripleFinite := fun _ _ _ => inferInstance
+  tripleEdge01 := fun _ => .selected
+  tripleEdge12 := fun _ => .selected
+  tripleEdge02 := fun _ => .selected
+
+/-- The chartwise degree-zero differential for the three-chart fixture. -/
+def zmodTwoThreeChartDelta0 (primitive : Fin 3 -> ZMod 2) :
+    Fin 3 -> Fin 3 -> ZMod 2 :=
+  fun left right => primitive right - primitive left
+
+/-- The facewise degree-one differential for the three-chart fixture. -/
+def zmodTwoThreeChartDelta1 (cochain : Fin 3 -> Fin 3 -> ZMod 2) :
+    Fin 3 -> Fin 3 -> Fin 3 -> ZMod 2 :=
+  fun i j k => cochain i j + cochain j k - cochain i k
+
+/-- A nonconstant primitive on the three selected charts. -/
+def zmodTwoThreeChartPrimitive : Fin 3 -> ZMod 2 :=
+  fun chart => if chart = 1 then 1 else 0
+
+/-- The componentwise differential squares to zero in the fixture. -/
+theorem zmodTwoThreeChart_delta1_delta0
+    (primitive : Fin 3 -> ZMod 2) :
+    zmodTwoThreeChartDelta1 (zmodTwoThreeChartDelta0 primitive) = 0 := by
+  funext i j k
+  simp only [zmodTwoThreeChartDelta1, zmodTwoThreeChartDelta0, Pi.zero_apply]
+  abel
+
 /--
-X.例9.1 / #3690: a two-element degree-zero additive surface.  The regular
-torsor has two distinct primitives, while its selected origin remains zero.
+X.例9.1 / #3690: a complete cover-indexed Cech surface.  `C1` records the
+actual selected overlap value for every chart pair and `C2` the value for
+every selected triple overlap.
 -/
 def zmodTwoTorsorCechData :
-    SemanticRepairCoverCechData semanticCover where
-  C0 := ZMod 2
-  C1 := ZMod 2
-  C2 := PUnit
+    SemanticRepairCoverCechData zmodTwoTorsorCover where
+  C0 := Fin 3 -> ZMod 2
+  C1 := Fin 3 -> Fin 3 -> ZMod 2
+  C2 := Fin 3 -> Fin 3 -> Fin 3 -> ZMod 2
   c0Finite := inferInstance
   c1Finite := inferInstance
   zero1 := 0
-  zero2 := PUnit.unit
-  delta0 _ := 0
-  delta1 _ := PUnit.unit
-  residual := 0
-  zero1_cocycle := rfl
-  delta1_delta0_eq_zero := fun _ => rfl
-  residual_cocycle := rfl
+  zero2 := 0
+  delta0 := zmodTwoThreeChartDelta0
+  delta1 := zmodTwoThreeChartDelta1
+  residual := zmodTwoThreeChartDelta0 zmodTwoThreeChartPrimitive
+  zero1_cocycle := by
+    funext i j k
+    simp [zmodTwoThreeChartDelta1]
+  delta1_delta0_eq_zero := zmodTwoThreeChart_delta1_delta0
+  residual_cocycle := zmodTwoThreeChart_delta1_delta0 zmodTwoThreeChartPrimitive
 
-/-- X.例9.1 / #3690: additive laws for the two-element torsor fixture. -/
+/-- X.例9.1 / #3690: additive laws for the cover-indexed fixture. -/
 def zmodTwoTorsorAdditiveData :
     SemanticRepairAdditiveCechH1Data zmodTwoTorsorCechData where
   c0AddCommGroup := by
-    change AddCommGroup (ZMod 2)
+    change AddCommGroup (Fin 3 -> ZMod 2)
     infer_instance
   c1AddCommGroup := by
-    change AddCommGroup (ZMod 2)
+    change AddCommGroup (Fin 3 -> Fin 3 -> ZMod 2)
     infer_instance
   zero1_eq_zero := rfl
-  delta0_zero := rfl
+  delta0_zero := by
+    funext i j
+    change (0 : ZMod 2) - 0 = 0
+    norm_num
   delta0_add := by
-    intro _ _
-    simp
+    intro left right
+    funext i j
+    change (left j + right j) - (left i + right i) =
+      (left j - left i) + (right j - right i)
+    abel
   delta0_neg := by
-    intro _
-    simp
+    intro primitive
+    funext i j
+    change (-primitive j) - (-primitive i) = -(primitive j - primitive i)
+    abel
 
-/-- X.例9.1 / #3690: component presentation for the nontrivial torsor fixture. -/
+/-- X.例9.1 / #3690: component presentation for the cover-indexed fixture. -/
 def zmodTwoTorsorBoundaryRelationData :
     SemanticRepairCoverH1BoundaryRelationAbelianData semanticProjection where
-  cover := semanticCover
+  cover := zmodTwoTorsorCover
   cech := zmodTwoTorsorCechData
   supportOf _ := fun _ => True
   component_covered_of_boundary := by
@@ -2941,64 +2999,157 @@ def zmodTwoTorsorBoundaryRelationData :
     intro _primitive _hboundary _residual _candidate _hresidual _hcandidate _hprojection
     trivial
 
-/-- X.例9.1 / #3690: complete additive data for the nontrivial torsor fixture. -/
+/-- X.例9.1 / #3690: complete additive data for the cover-indexed fixture. -/
 def zmodTwoTorsorData :
     SemanticRepairCoverH1BoundaryRelationAdditiveData semanticProjection where
   boundaryRelation := zmodTwoTorsorBoundaryRelationData
   additive := zmodTwoTorsorAdditiveData
 
-/-- X.例9.1 / #3690: the zero primitive solves the selected residual. -/
-def zmodTwoTorsor_zeroSolution :
+/-- The selected primitive is a residual-solving repair solution. -/
+def zmodTwoTorsor_baseSolution :
     AdditiveRepairSolution zmodTwoTorsorData :=
-  ⟨0, rfl⟩
+  ⟨zmodTwoThreeChartPrimitive, rfl⟩
 
-/-- X.例9.1 / #3690: the nonzero primitive also solves the selected residual. -/
-def zmodTwoTorsor_oneSolution :
-    AdditiveRepairSolution zmodTwoTorsorData :=
-  ⟨1, rfl⟩
-
-/--
-X.例9.1 / #3690: the canonical translation between two distinct residual
-solutions is nonzero.  This rules out a singleton-only firing fixture.
--/
-theorem zmodTwoTorsor_nonzeroTranslation :
-    letI := zmodTwoTorsorData.additive.c0AddCommGroup
-    (zmodTwoTorsorData.additiveRepairPrimitiveTranslation
-      zmodTwoTorsor_zeroSolution zmodTwoTorsor_oneSolution).1 = (1 : ZMod 2) := by
+/-- The constant-one cochain is a nonzero gauge transformation. -/
+def zmodTwoTorsor_nonzeroGauge :
+    AdditiveRepairGauge zmodTwoTorsorData := by
   letI := zmodTwoTorsorData.additive.c0AddCommGroup
-  change (1 : ZMod 2) - 0 = 1
-  simp
+  letI := zmodTwoTorsorData.additive.c1AddCommGroup
+  refine ⟨fun _ => 1, ?_⟩
+  funext i j
+  change (1 : ZMod 2) - 1 = 0
+  norm_num
 
-/-- X.例9.1 / #3690: the regular torsor construction fires on `ZMod 2`. -/
+/-- A second repair solution obtained by the nonzero gauge action. -/
+def zmodTwoTorsor_shiftedSolution :
+    AdditiveRepairSolution zmodTwoTorsorData := by
+  letI := zmodTwoTorsorData.additive.c0AddCommGroup
+  letI := zmodTwoTorsorData.additive.c1AddCommGroup
+  exact zmodTwoTorsorData.additiveRepairGaugeAction
+    zmodTwoTorsor_nonzeroGauge zmodTwoTorsor_baseSolution
+
+/-- The gauge translation is nonzero on the first chart. -/
+theorem zmodTwoTorsor_nonzeroGaugeTranslation :
+    zmodTwoTorsor_nonzeroGauge.1 0 = (1 : ZMod 2) := rfl
+
+/-- The two displayed repair solutions differ on the first chart. -/
+theorem zmodTwoTorsor_distinctSolutions :
+    zmodTwoTorsor_shiftedSolution ≠ zmodTwoTorsor_baseSolution := by
+  intro heq
+  have hvalue := congrArg (fun solution => solution.1 0) heq
+  change (1 : ZMod 2) + (if (0 : Fin 3) = 1 then 1 else 0) =
+    (if (0 : Fin 3) = 1 then 1 else 0) at hvalue
+  norm_num at hvalue
+
+/-- The selected residual is nonzero on the actual overlap from chart 0 to chart 1. -/
+theorem zmodTwoTorsor_residual01_nonzero :
+    zmodTwoTorsorCechData.residual 0 1 ≠ 0 := by
+  change zmodTwoThreeChartDelta0 zmodTwoThreeChartPrimitive 0 1 ≠ 0
+  norm_num [zmodTwoThreeChartDelta0, zmodTwoThreeChartPrimitive]
+
+/-- All selected overlap comparisons of the finite fixture are inhabited. -/
+def zmodTwoTorsor_selectedOverlap :
+    forall left right : zmodTwoTorsorCover.CoverChart,
+      zmodTwoTorsorCover.Overlap left right :=
+  fun _ _ => .selected
+
+/-- All selected triple comparisons of the finite fixture are inhabited. -/
+def zmodTwoTorsor_selectedTriple :
+    forall i j k : zmodTwoTorsorCover.CoverChart,
+      zmodTwoTorsorCover.TripleOverlap i j k :=
+  fun _ _ _ => .selected
+
+/-- The concrete chart/overlap/face realization of the three-chart Cech surface. -/
+def zmodTwoTorsorRealization :
+    SemanticRepairCoverCechRealization zmodTwoTorsorCover zmodTwoTorsorCechData where
+  Fiber := ZMod 2
+  fiberAddCommGroup := inferInstance
+  eval0 primitive chart := primitive chart
+  eval1 cochain := fun {left right} _ => cochain left right
+  eval2 cochain := fun {i j k} _ => cochain i j k
+  eval0_injective := by
+    intro left right h
+    funext chart
+    exact congrFun h chart
+  eval1_injective := by
+    intro left right h
+    funext i j
+    exact congrArg (fun evaluated =>
+      @evaluated i j (.selected : zmodTwoTorsorCover.Overlap i j)) h
+  eval2_injective := by
+    intro left right h
+    funext i j k
+    exact congrArg (fun evaluated =>
+      @evaluated i j k (.selected : zmodTwoTorsorCover.TripleOverlap i j k)) h
+  eval_delta0 := by
+    intro primitive left right overlap
+    rfl
+  eval_delta1 := by
+    intro cochain i j k triple
+    rfl
+  eval_zero1 := by
+    intro left right overlap
+    rfl
+  eval_zero2 := by
+    intro i j k triple
+    rfl
+
+/-- The selected residual class is zero because it is the displayed differential. -/
+theorem zmodTwoTorsor_h1Zero :
+    zmodTwoTorsorData.toAdditiveCechH1Data.H1Zero :=
+  zmodTwoTorsorData.toAdditiveCechH1Data.h1Zero_iff_boundary.mpr
+    ⟨zmodTwoThreeChartPrimitive, rfl⟩
+
+/-- The actual triple overlap `(0, 1, 2)` is inhabited. -/
+def zmodTwoTorsor_chart0 : zmodTwoTorsorCover.CoverChart := by
+  exact (0 : Fin 3)
+
+def zmodTwoTorsor_chart1 : zmodTwoTorsorCover.CoverChart := by
+  exact (1 : Fin 3)
+
+def zmodTwoTorsor_chart2 : zmodTwoTorsorCover.CoverChart := by
+  exact (2 : Fin 3)
+
+def zmodTwoTorsor_triple012 :
+    zmodTwoTorsorCover.TripleOverlap zmodTwoTorsor_chart0
+      zmodTwoTorsor_chart1 zmodTwoTorsor_chart2 :=
+  zmodTwoTorsor_selectedTriple zmodTwoTorsor_chart0
+    zmodTwoTorsor_chart1 zmodTwoTorsor_chart2
+
+/-- The Part VI triple cocycle constructed on the actual selected face. -/
+def zmodTwoTorsor_tripleCocycle012 :=
+  (zmodTwoTorsorData.selectedRepairDescentDatum zmodTwoTorsorRealization
+    zmodTwoTorsor_h1Zero zmodTwoTorsor_selectedOverlap
+    zmodTwoTorsor_selectedTriple).tripleCocycle zmodTwoTorsor_chart0
+      zmodTwoTorsor_chart1 zmodTwoTorsor_chart2
+
+/-- The selected triple cocycle carries its explicit composition equality. -/
+theorem zmodTwoTorsor_tripleCocycle012_eq :
+    (zmodTwoTorsorData.additiveRepairCoverTranslationPresheaf
+      zmodTwoTorsorRealization).comp zmodTwoTorsor_tripleCocycle012.ij
+        zmodTwoTorsor_tripleCocycle012.jk = zmodTwoTorsor_tripleCocycle012.ik :=
+  zmodTwoTorsor_tripleCocycle012.cocycle_eq
+
+/-- The additive gauge torsor is obtained from the selected H1-zero proof. -/
 theorem zmodTwoTorsor_regularTorsor :
     zmodTwoTorsorData.NonabelianTorsorTrivial :=
-  zmodTwoTorsorData.nonabelianTorsorTrivial_of_additive
+  zmodTwoTorsorData.nonabelianTorsorTrivial_of_additiveH1Zero
 
-/-- X.例9.1 / #3690: the higher-coherence witness is constructed on `ZMod 2`. -/
+/-- The higher coherence theorem is facewise over every compatible realization. -/
 theorem zmodTwoTorsor_higherCoherence :
     zmodTwoTorsorData.HigherCoherenceVanishes :=
   zmodTwoTorsorData.higherCoherenceVanishes_of_additive
 
-/-- X.例9.1 / #3690: the translation stack has effective descent on `ZMod 2`. -/
+/-- The selected repair datum has effective descent from the H1-zero proof. -/
+def zmodTwoTorsor_effectiveDescent :=
+  zmodTwoTorsorData.selectedRepairEffectiveDescent_of_h1Zero
+    zmodTwoTorsorRealization zmodTwoTorsor_h1Zero zmodTwoTorsor_selectedOverlap
+    zmodTwoTorsor_selectedTriple
+
+/-- The stack-facing selected-descent conclusion is constructed. -/
 theorem zmodTwoTorsor_stackEffectiveness :
     zmodTwoTorsorData.StackEffectivelyVanishes :=
   zmodTwoTorsorData.stackEffectivelyVanishes_of_additive
-
-/--
-X.例9.1 / #3690: every selected `ZMod 2` translation descent datum receives
-the constructed effective-descent object.
--/
-def zmodTwoTorsor_effectiveDescent
-    (hzero : zmodTwoTorsorData.toAdditiveCechH1Data.H1Zero)
-    (localData : SingularityMonodromyStack.LocalArchitectureObjects
-      (zmodTwoTorsorData.additiveTranslationPresheaf))
-    (descentDatum : SingularityMonodromyStack.ArchitectureDescentDatum
-      (zmodTwoTorsorData.additiveTranslationPresheaf) localData) :
-    letI := zmodTwoTorsorData.additive.c0AddCommGroup
-    letI := zmodTwoTorsorData.additive.c1AddCommGroup
-    SingularityMonodromyStack.EffectiveArchitectureDescent
-      (zmodTwoTorsorData.additiveTranslationPresheaf) descentDatum :=
-  zmodTwoTorsorData.additiveTranslation_effectiveDescent hzero localData descentDatum
 
 end SemanticRepairPart10
 end Examples

@@ -144,9 +144,9 @@ structure SemanticRepairGroundedGlobalGluingPackage
   boundedAdditiveH1Zero_iff_coverRelativeH1Zero :
     data.toAdditiveCechH1Data.H1Zero <->
       comparison.CoverRelativeResidualH1Zero
-  nonabelianTorsorTrivial : data.NonabelianTorsorTrivial
-  higherCoherenceVanishes : data.HigherCoherenceVanishes
-  stackEffectivelyVanishes : data.StackEffectivelyVanishes
+  torsorTrivialization_of_h1Zero : data.NonabelianTorsorTrivial
+  facewiseHigherCoherence : data.HigherCoherenceVanishes
+  selectedEffectiveDescent_of_h1Zero : data.StackEffectivelyVanishes
 
 /--
 X.定理7.3: theorem 4.8 plus theorem 7.2 and supplied gluing data yield the
@@ -203,9 +203,11 @@ theorem trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_pa
       coverRelativeH1Zero_to_globalCoherent := hGlobalCover.2
       globalCoherent_to_coverRelativeH1Zero := hGlobalCover.1
       boundedAdditiveH1Zero_iff_coverRelativeH1Zero := hBoundedCover
-      nonabelianTorsorTrivial := data.nonabelianTorsorTrivial_of_additive
-      higherCoherenceVanishes := data.higherCoherenceVanishes_of_additive
-      stackEffectivelyVanishes := data.stackEffectivelyVanishes_of_additive }
+      torsorTrivialization_of_h1Zero :=
+        SemanticRepairCoverH1BoundaryRelationAdditiveData.nonabelianTorsorTrivial_of_additiveH1Zero
+          data
+      facewiseHigherCoherence := data.higherCoherenceVanishes_of_additive
+      selectedEffectiveDescent_of_h1Zero := data.stackEffectivelyVanishes_of_additive }
 
 /--
 X.定理7.5 conclusions 1--3: the law-grounded degree-zero generation layer.
@@ -271,7 +273,7 @@ structure SemanticRepairGeneratedLawIndependentConclusions
   boundedAdditiveH1Zero_iff_coverRelativeH1Zero :
     data.toAdditiveCechH1Data.H1Zero <->
       comparison.CoverRelativeResidualH1Zero
-  higherObstructionsVanish :
+  higherLayerConstructions :
     data.NonabelianTorsorTrivial /\
       data.HigherCoherenceVanishes /\
       data.StackEffectivelyVanishes
@@ -471,10 +473,10 @@ theorem lawEquation_constructs_groundedComparisonPacket
             package73.globalCoherent_iff_coverRelativeH1Zero
           boundedAdditiveH1Zero_iff_coverRelativeH1Zero :=
             package73.boundedAdditiveH1Zero_iff_coverRelativeH1Zero
-          higherObstructionsVanish :=
-            ⟨package73.nonabelianTorsorTrivial,
-              package73.higherCoherenceVanishes,
-              package73.stackEffectivelyVanishes⟩ } }
+          higherLayerConstructions :=
+            ⟨package73.torsorTrivialization_of_h1Zero,
+              package73.facewiseHigherCoherence,
+              package73.selectedEffectiveDescent_of_h1Zero⟩ } }
 
 /--
 X.定理7.5 generated-comparison form: a cochain realization generates the
