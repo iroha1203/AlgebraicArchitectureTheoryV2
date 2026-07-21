@@ -1405,7 +1405,7 @@ theorem circleResidual_not_coboundary :
   apply circleLawQuotientOne_ne_zero
   calc
     circleLawQuotientOne = primitive (1 : Fin 2) - primitive (0 : Fin 2) := h0
-    _ = 0 := by rw [heq]; rfl
+    _ = 0 := by rw [heq]; exact sub_self _
 
 /-- X.例9.2: supplied circle-nerve cover data. -/
 def circleCoverRelativeCover :
