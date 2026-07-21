@@ -444,6 +444,14 @@ structure FiniteDimensionalCechModel (M : MeasurementProfile.{u, v})
       CochainSpace n ≃+
         Site.FinitePosetCechCochain
           G.coefficientRegime n
+  /-- The cochain identification respects the selected coefficient action. -/
+  cochainEquivCanonical_smul :
+    ∀ (n : Nat) (r : M.Coeff) (c : CochainSpace n),
+      letI := G.coeffCommRing
+      letI := G.cochainAddCommGroup n
+      letI := G.cochainModule n
+      cochainEquivCanonical n (r • c) =
+        r • cochainEquivCanonical n c
   /-- Selected coefficient-linear differential. -/
   differentialLinear :
     (n : Nat) ->
@@ -533,6 +541,107 @@ theorem cohomology_moduleFinite (F : FiniteDimensionalCechModel M G) (n : Nat) :
   letI : Module.Finite M.Coeff (F.Kernel n) := F.kernel_moduleFinite n
   exact Module.Finite.quotient M.Coeff _
 
+/--
+The finite-dimensional cocycle kernel is the kernel of the actual canonical
+Čech differential, transported along the selected cochain equivalence.
+-/
+noncomputable def cocycleEquivCanonical
+    (F : FiniteDimensionalCechModel M G) (n : Nat) :
+    F.Kernel n ≃ G.CechCocycle n where
+  toFun z := ⟨F.cochainEquivCanonical n z.1, by
+    have hzero :
+        Site.FinitePosetCechZeroCochain G.cechComplex.additive (n + 1) =
+          (0 : Site.FinitePosetCechCochain G.coefficientRegime (n + 1)) := by
+      funext simplex
+      rfl
+    rw [← F.differential_eq_canonical]
+    rw [hzero]
+    exact ((map_eq_zero_iff (F.cochainEquivCanonical (n + 1))
+      (F.cochainEquivCanonical (n + 1)).injective).mpr z.2)⟩
+  invFun z := ⟨(F.cochainEquivCanonical n).symm z.1, by
+    have hzero :
+        Site.FinitePosetCechZeroCochain G.cechComplex.additive (n + 1) =
+          (0 : Site.FinitePosetCechCochain G.coefficientRegime (n + 1)) := by
+      funext simplex
+      rfl
+    apply (F.cochainEquivCanonical (n + 1)).injective
+    rw [F.differential_eq_canonical]
+    rw [map_zero, ← hzero]
+    simpa using z.2⟩
+  left_inv z := by
+    apply Subtype.ext
+    simp
+  right_inv z := by
+    apply Subtype.ext
+    simp
+
+/--
+The model quotient relation is exactly the generated finite-poset Čech
+coboundary relation.  This is derived from differential compatibility rather
+than accepted as a comparison certificate.
+-/
+theorem quotient_relation_iff_canonical
+    (F : FiniteDimensionalCechModel M G) (n : Nat)
+    (x y : F.Kernel n) :
+    (Submodule.quotientRel (F.Boundaries n)).r x y ↔
+      (Site.FinitePosetCechCoboundarySetoid (G.coboundaryRelation n)).r
+        (F.cocycleEquivCanonical n x) (F.cocycleEquivCanonical n y) := by
+  cases n with
+  | zero =>
+      rw [Submodule.quotientRel_def]
+      change x - y ∈ (⊥ : Submodule M.Coeff (F.Kernel 0)) ↔
+        F.cocycleEquivCanonical 0 x = F.cocycleEquivCanonical 0 y
+      rw [Submodule.mem_bot]
+      constructor
+      · intro h
+        apply Subtype.ext
+        simpa [cocycleEquivCanonical] using
+          congrArg Subtype.val (sub_eq_zero.mp h)
+      · intro h
+        apply sub_eq_zero.mpr
+        apply Subtype.ext
+        apply (F.cochainEquivCanonical 0).injective
+        exact congrArg Subtype.val h
+  | succ n =>
+      constructor
+      · intro h
+        rw [Submodule.quotientRel_def] at h
+        change x - y ∈ LinearMap.range (F.boundaryLinear n) at h
+        rcases h with ⟨b, hb⟩
+        refine ⟨F.cochainEquivCanonical n b, ?_⟩
+        change F.cochainEquivCanonical (n + 1) x.1 -
+            F.cochainEquivCanonical (n + 1) y.1 =
+          G.cechComplex.differential n (F.cochainEquivCanonical n b)
+        have hbval : F.differentialLinear n b = x.1 - y.1 := by
+          exact congrArg Subtype.val hb
+        rw [← map_sub, ← hbval, F.differential_eq_canonical]
+      · rintro ⟨b, hb⟩
+        rw [Submodule.quotientRel_def]
+        change x - y ∈ LinearMap.range (F.boundaryLinear n)
+        refine ⟨(F.cochainEquivCanonical n).symm b, ?_⟩
+        apply Subtype.ext
+        change F.differentialLinear n ((F.cochainEquivCanonical n).symm b) =
+          x.1 - y.1
+        apply (F.cochainEquivCanonical (n + 1)).injective
+        rw [F.differential_eq_canonical, map_sub]
+        change F.cochainEquivCanonical (n + 1) x.1 -
+            F.cochainEquivCanonical (n + 1) y.1 =
+          G.cechComplex.differential n b at hb
+        simpa using hb.symm
+
+/--
+The finite-dimensional kernel/image quotient computes the canonical generated
+Čech cohomology in every degree.
+-/
+noncomputable def cohomologyEquivCanonical
+    (F : FiniteDimensionalCechModel M G) (n : Nat) :
+    F.Cohomology n ≃ G.CechHn n :=
+  @Quotient.congr _ _
+    (Submodule.quotientRel (F.Boundaries n))
+    (Site.FinitePosetCechCoboundarySetoid (G.coboundaryRelation n))
+    (F.cocycleEquivCanonical n)
+    (F.quotient_relation_iff_canonical n)
+
 end FiniteDimensionalCechModel
 
 /--
@@ -555,14 +664,152 @@ structure EffectiveFinitelyPresentedCechProcedure (M : MeasurementProfile.{u, v}
   quotientRepresentative : ∀ n, G.CechHn n -> G.CechCocycle n
   quotientRepresentative_correct :
     ∀ n h, G.classOfCocycle n (quotientRepresentative n h) = h
+  /-- Selected zero-class decision on the generated quotient. -/
+  zeroDecision : ∀ n, G.CechHn n -> Bool
+  zeroDecision_correct :
+    ∀ n h, zeroDecision n h = true ↔ h = G.zeroClass n
+
+/--
+Explicit finite-carrier presentation used to construct, rather than assume,
+kernel, image, quotient-representative, and zero-class algorithms.  It is the
+finite module subcase of the selected effective coefficient route.
+-/
+structure FiniteCarrierCechPresentation (M : MeasurementProfile.{u, v})
+    (G : FiniteMeasurementGeometry M) where
+  cochainFintype : ∀ n, Fintype (G.CechCochain n)
+  cochainDecidableEq : ∀ n, DecidableEq (G.CechCochain n)
+  cocycleFintype : ∀ n, Fintype (G.CechCocycle n)
+  cohomologyDecidableEq : ∀ n, DecidableEq (G.CechHn n)
+
+namespace FiniteCarrierCechPresentation
+
+variable {M : MeasurementProfile.{u, v}} {G : FiniteMeasurementGeometry M}
+
+/-- Search the finite cocycle list and retain the class-equality certificate. -/
+def quotientRepresentativeCertified (P : FiniteCarrierCechPresentation M G)
+    (n : Nat) (h : G.CechHn n) :
+    { c : G.CechCocycle n // G.classOfCocycle n c = h } := by
+  letI := P.cocycleFintype n
+  letI := P.cohomologyDecidableEq n
+  let candidates := (Finset.univ : Finset (G.CechCocycle n)).toList
+  let found := candidates.find? fun c => decide (G.classOfCocycle n c = h)
+  have hfound : found.isSome = true := by
+    rw [List.find?_isSome]
+    rcases Quotient.exists_rep h with ⟨c, hc⟩
+    exact ⟨c, by simp [candidates], by
+      simpa [FiniteMeasurementGeometry.classOfCocycle] using hc⟩
+  refine ⟨found.get hfound, ?_⟩
+  have hs := List.find?_some (Option.some_get hfound).symm
+  simpa [found, candidates] using hs
+
+/-- Representative returned by the explicit finite search. -/
+def quotientRepresentative (P : FiniteCarrierCechPresentation M G)
+    (n : Nat) (h : G.CechHn n) : G.CechCocycle n :=
+  (P.quotientRepresentativeCertified n h).1
+
+/-- The searched representative maps back to the requested canonical class. -/
+theorem quotientRepresentative_correct (P : FiniteCarrierCechPresentation M G)
+    (n : Nat) (h : G.CechHn n) :
+    G.classOfCocycle n (P.quotientRepresentative n h) = h :=
+  (P.quotientRepresentativeCertified n h).2
+
+/--
+Construct all effective Čech procedures by finite enumeration and decidable
+equality.  No kernel/image/quotient correctness field is supplied by the caller.
+-/
+def toEffectiveProcedure (P : FiniteCarrierCechPresentation M G) :
+    EffectiveFinitelyPresentedCechProcedure M G where
+  kernel := fun n c => by
+    letI := P.cochainDecidableEq (n + 1)
+    exact decide (G.differentialHom n c = 0)
+  kernel_correct := by
+    intro n c
+    letI := P.cochainDecidableEq (n + 1)
+    simp
+  image := fun n c => by
+    letI := P.cochainFintype n
+    letI := P.cochainDecidableEq (n + 1)
+    exact decide (∃ b : G.CechCochain n, G.differentialHom n b = c)
+  image_correct := by
+    intro n c
+    letI := P.cochainFintype n
+    letI := P.cochainDecidableEq (n + 1)
+    simp
+  quotientRepresentative := P.quotientRepresentative
+  quotientRepresentative_correct := P.quotientRepresentative_correct
+  zeroDecision := fun n h => by
+    letI := P.cohomologyDecidableEq n
+    exact decide (h = G.zeroClass n)
+  zeroDecision_correct := by
+    intro n h
+    letI := P.cohomologyDecidableEq n
+    simp
+
+end FiniteCarrierCechPresentation
 
 /-- Finite-dimensional reduction data, including the explicitly presented field. -/
 structure FiniteDimensionalCechProcedure (M : MeasurementProfile.{u, v})
     (G : FiniteMeasurementGeometry M) where
   /-- Explicitly presented coefficient-field structure. -/
   coeffField : Field M.Coeff
+  /-- Executable equality in the explicitly presented coefficient field. -/
+  coeffDecidableEq : DecidableEq M.Coeff
   /-- Finite-dimensional matrix model connected to the canonical Čech complex. -/
   model : @FiniteDimensionalCechModel M G coeffField
+
+namespace FiniteDimensionalCechProcedure
+
+/--
+The selected finite-dimensional branch computes the canonical Čech quotient,
+not a parallel model-only cohomology carrier.
+-/
+noncomputable def cohomologyEquivCanonical
+    {M : MeasurementProfile.{u, v}} {G : FiniteMeasurementGeometry M}
+    (P : FiniteDimensionalCechProcedure M G) (n : Nat) :
+    @FiniteDimensionalCechModel.Cohomology M G P.coeffField P.model n ≃
+      G.CechHn n :=
+  @FiniteDimensionalCechModel.cohomologyEquivCanonical M G P.coeffField P.model n
+
+/--
+Equality in the finite-dimensional model quotient is decided by coordinates in
+its finite basis.  The basis is obtained from the explicit finite-dimensional
+model rather than supplied as a zero-decision oracle.
+-/
+noncomputable def modelCohomologyDecidableEq
+    {M : MeasurementProfile.{u, v}} {G : FiniteMeasurementGeometry M}
+    (P : FiniteDimensionalCechProcedure M G) (n : Nat) :
+    DecidableEq
+      (@FiniteDimensionalCechModel.Cohomology M G P.coeffField P.model n) := by
+  letI : Field M.Coeff := P.coeffField
+  letI : DecidableEq M.Coeff := P.coeffDecidableEq
+  letI : Module.Finite M.Coeff (P.model.Cohomology n) :=
+    P.model.cohomology_moduleFinite n
+  exact (Module.finBasis M.Coeff (P.model.Cohomology n)).repr.toEquiv.decidableEq
+
+/-- Equality on canonical Čech cohomology is transported from model coordinates. -/
+noncomputable def canonicalCohomologyDecidableEq
+    {M : MeasurementProfile.{u, v}} {G : FiniteMeasurementGeometry M}
+    (P : FiniteDimensionalCechProcedure M G) (n : Nat) :
+    DecidableEq (G.CechHn n) := by
+  letI := P.modelCohomologyDecidableEq n
+  exact (P.cohomologyEquivCanonical n).symm.decidableEq
+
+/-- Decide the canonical zero class through finite-dimensional coordinates. -/
+noncomputable def zeroDecision
+    {M : MeasurementProfile.{u, v}} {G : FiniteMeasurementGeometry M}
+    (P : FiniteDimensionalCechProcedure M G) (n : Nat) (h : G.CechHn n) : Bool := by
+  letI := P.canonicalCohomologyDecidableEq n
+  exact decide (h = G.zeroClass n)
+
+/-- The coordinate decision is correct for the canonical zero class. -/
+theorem zeroDecision_correct
+    {M : MeasurementProfile.{u, v}} {G : FiniteMeasurementGeometry M}
+    (P : FiniteDimensionalCechProcedure M G) (n : Nat) (h : G.CechHn n) :
+    P.zeroDecision n h = true ↔ h = G.zeroClass n := by
+  letI := P.canonicalCohomologyDecidableEq n
+  simp [zeroDecision]
+
+end FiniteDimensionalCechProcedure
 
 /-- The two coefficient-computation branches selected by definition 4.1. -/
 inductive CechComputationProcedure (M : MeasurementProfile.{u, v})
@@ -585,40 +832,60 @@ def route {M : MeasurementProfile.{u, v}} {G : FiniteMeasurementGeometry M} :
   | .finiteDimensional _ => .finiteDimensionalLinearAlgebra
   | .effectiveFinitelyPresented _ => .effectiveFinitelyPresented
 
+/-- Run the zero-class decision belonging to the selected coefficient route. -/
+def zeroDecision {M : MeasurementProfile.{u, v}}
+    {G : FiniteMeasurementGeometry M}
+    (P : CechComputationProcedure M G) (n : Nat) : G.CechHn n -> Bool :=
+  match P with
+  | .finiteDimensional procedure => procedure.zeroDecision n
+  | .effectiveFinitelyPresented procedure => procedure.zeroDecision n
+
+/-- The selected route decides equality with the canonical zero class. -/
+theorem zeroDecision_correct {M : MeasurementProfile.{u, v}}
+    {G : FiniteMeasurementGeometry M}
+    (P : CechComputationProcedure M G) (n : Nat) (h : G.CechHn n) :
+    P.zeroDecision n h = true ↔ h = G.zeroClass n := by
+  cases P with
+  | finiteDimensional procedure => exact procedure.zeroDecision_correct n h
+  | effectiveFinitelyPresented procedure => exact procedure.zeroDecision_correct n h
+
 end CechComputationProcedure
 
-/-- Result of running a selected structural-verdict procedure. -/
-inductive VerdictProcedureResult where
-  | zero
-  | nonzero
+/-- Availability state selected before running the structural zero decision. -/
+inductive VerdictAvailability where
+  | measured
   | unmeasured
   | unknown
   | notComputed
   deriving DecidableEq
 
 /--
-Selected verdict algorithm and its soundness against profile predicates.
-All five verdict states remain available; zero and nonzero are not assumed to
-be logical complements.
+Selected verdict availability algorithm and its soundness against profile
+predicates.  In the measured branch, zero/nonzero is decided by the selected
+Čech coefficient procedure, so a caller cannot replace both outcomes by a
+constant unavailable result.
 -/
 structure VerdictProcedure (M : MeasurementProfile.{u, v})
     (G : FiniteMeasurementGeometry M) (selectedDegree : Nat)
-    (domainEquiv : M.Domain ≃ G.CechHn selectedDegree) where
-  /-- Run the selected five-state classifier. -/
-  classify : G.CechHn selectedDegree -> VerdictProcedureResult
-  zero_sound :
-    ∀ alpha, classify (domainEquiv alpha) = .zero ->
+    (domainClass : M.Domain -> G.CechHn selectedDegree)
+    (cechProcedure : CechComputationProcedure M G) where
+  /-- Decide whether the selected class is measured or has another status. -/
+  availability : M.Domain -> VerdictAvailability
+  measured_zero_sound :
+    ∀ alpha, availability alpha = .measured ->
+      cechProcedure.zeroDecision selectedDegree (domainClass alpha) = true ->
       M.InScope alpha ∧ M.Zero alpha
-  nonzero_sound :
-    ∀ alpha, classify (domainEquiv alpha) = .nonzero ->
+  measured_nonzero_sound :
+    ∀ alpha, availability alpha = .measured ->
+      cechProcedure.zeroDecision selectedDegree (domainClass alpha) = false ->
       M.InScope alpha ∧ M.NonZero alpha
   unmeasured_sound :
-    ∀ alpha, classify (domainEquiv alpha) = .unmeasured -> M.OutOfScope alpha
+    ∀ alpha, availability alpha = .unmeasured -> M.OutOfScope alpha
   unknown_sound :
-    ∀ alpha, classify (domainEquiv alpha) = .unknown ->
+    ∀ alpha, availability alpha = .unknown ->
       M.InScope alpha ∧ M.Undecided alpha
   notComputed_sound :
-    ∀ alpha, classify (domainEquiv alpha) = .notComputed ->
+    ∀ alpha, availability alpha = .notComputed ->
       M.NotRunOrUnavailable alpha
   /-- Record the selected method for each profile-domain input. -/
   method : ∀ alpha, M.SelectedMethod alpha
@@ -636,12 +903,13 @@ structure EffCoeff (M : MeasurementProfile.{u, v})
   profileInterface : M.EffCoeff
   /-- Selected cohomological degree measured by the profile domain. -/
   selectedDegree : Nat
-  /-- Profile-domain classes identify with generated Čech classes. -/
-  domainEquiv : M.Domain ≃ G.CechHn selectedDegree
+  /-- Send each selected profile-domain class to its generated Čech class. -/
+  domainClass : M.Domain -> G.CechHn selectedDegree
   /-- Selected certified kernel/image/quotient procedures. -/
   cechProcedure : CechComputationProcedure M G
-  /-- Selected five-state verdict procedure on generated Čech classes. -/
-  verdictProcedure : VerdictProcedure M G selectedDegree domainEquiv
+  /-- Selected five-state verdict procedure using that coefficient route. -/
+  verdictProcedure :
+    VerdictProcedure M G selectedDegree domainClass cechProcedure
 
 namespace EffCoeff
 
@@ -649,28 +917,32 @@ namespace EffCoeff
 def verdict {M : MeasurementProfile.{u, v}}
     {G : FiniteMeasurementGeometry M} (E : EffCoeff M G) (alpha : M.Domain) :
     MeasurementVerdict M alpha := by
-  generalize hresult : E.verdictProcedure.classify (E.domainEquiv alpha) = result
-  cases result with
-  | zero =>
-      exact MeasurementVerdict.measured_zero
-        (E.verdictProcedure.zero_sound alpha hresult).1
-        (E.verdictProcedure.zero_sound alpha hresult).2
-        (E.verdictProcedure.certificate alpha)
-  | nonzero =>
-      exact MeasurementVerdict.measured_nonzero
-        (E.verdictProcedure.nonzero_sound alpha hresult).1
-        (E.verdictProcedure.nonzero_sound alpha hresult).2
-        (E.verdictProcedure.certificate alpha)
+  generalize havailability : E.verdictProcedure.availability alpha = availability
+  cases availability with
+  | measured =>
+      generalize hzero : E.cechProcedure.zeroDecision E.selectedDegree
+        (E.domainClass alpha) = zeroResult
+      cases zeroResult with
+      | false =>
+          exact MeasurementVerdict.measured_nonzero
+            (E.verdictProcedure.measured_nonzero_sound alpha havailability hzero).1
+            (E.verdictProcedure.measured_nonzero_sound alpha havailability hzero).2
+            (E.verdictProcedure.certificate alpha)
+      | true =>
+          exact MeasurementVerdict.measured_zero
+            (E.verdictProcedure.measured_zero_sound alpha havailability hzero).1
+            (E.verdictProcedure.measured_zero_sound alpha havailability hzero).2
+            (E.verdictProcedure.certificate alpha)
   | unmeasured =>
       exact MeasurementVerdict.unmeasured
-        (E.verdictProcedure.unmeasured_sound alpha hresult)
+        (E.verdictProcedure.unmeasured_sound alpha havailability)
   | unknown =>
       exact MeasurementVerdict.unknown
-        (E.verdictProcedure.unknown_sound alpha hresult).1
-        (E.verdictProcedure.unknown_sound alpha hresult).2
+        (E.verdictProcedure.unknown_sound alpha havailability).1
+        (E.verdictProcedure.unknown_sound alpha havailability).2
   | notComputed =>
       exact MeasurementVerdict.not_computed
-        (E.verdictProcedure.notComputed_sound alpha hresult)
+        (E.verdictProcedure.notComputed_sound alpha havailability)
 
 /-- Verdict data records the selected method and computed certificate channel. -/
 def verdictData {M : MeasurementProfile.{u, v}}
@@ -686,6 +958,8 @@ end EffCoeff
 structure FiniteMeasurementRegime (M : MeasurementProfile.{u, v}) where
   /-- Selected finite geometry and module-valued coefficient sheaf. -/
   geometry : FiniteMeasurementGeometry M
+  /-- Equality in the selected coefficient presentation is decidable. -/
+  coeffDecidableEq : DecidableEq M.Coeff
   /-- Effective verdict interface tied to the generated Čech cohomology. -/
   effCoeff : EffCoeff M geometry
   /-- Finite witness-variable carrier used by square-free readings. -/

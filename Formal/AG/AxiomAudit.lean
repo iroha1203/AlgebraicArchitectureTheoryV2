@@ -60,6 +60,27 @@ def finiteAATComputabilityInfiniteCoeffFixture :=
 def finiteAATComputabilityFiniteDimensionalCohomologyFixture :=
   @Measurement.finiteDimensionalRationalCohomology_moduleFinite
 
+noncomputable def finiteAATComputabilityCanonicalCohomologyEquiv :=
+  @Measurement.FiniteDimensionalCechModel.cohomologyEquivCanonical
+
+def finiteAATComputabilityCanonicalQuotientRelation :=
+  @Measurement.FiniteDimensionalCechModel.quotient_relation_iff_canonical
+
+def finiteAATComputabilityFiniteSearchRepresentative :=
+  @Measurement.FiniteCarrierCechPresentation.quotientRepresentative_correct
+
+def finiteAATComputabilitySelectedZeroDecision :=
+  @Measurement.CechComputationProcedure.zeroDecision_correct
+
+def finiteAATComputabilityIdealMembership :=
+  @Measurement.FiniteSquareFreeComputationData.decideObstructionIdealMembership_correct
+
+def finiteAATComputabilityResolutionMatrix :=
+  @Derived.FreeResolution.MathlibResolution.FiniteFreeMathlibResolution.differentialMatrix_correct
+
+def finiteAATComputabilityPrincipalResolutionDifferential :=
+  @Derived.FreeResolution.MathlibResolution.Principal.finiteFreeResolution_coordinateDifferential_zero_ne_zero
+
 def finiteAATComputabilityEffectiveRouteFixture :=
   @Measurement.finiteComputabilityExample_effectiveRouteSelected
 
@@ -74,6 +95,12 @@ def finiteAATComputabilityCombinatoricsFixture :=
 
 def finiteAATComputabilityTorFixture :=
   @Measurement.finiteComputabilityExample_torRoute
+
+def finiteAATComputabilityFullLinearFixture :=
+  @Measurement.finiteDimensionalRationalFullRoute_fires
+
+def finiteAATComputabilityNontrivialTorFixture :=
+  @Measurement.NontrivialTorFixture.nontrivialFiniteChainTorRoute_fires
 
 /-
 Part X / peer-review hardening R1: Part X [CBI] theorem constants audited by direct alias.
