@@ -1943,15 +1943,20 @@ theorem finite_temporal_examples_verified :
       Nonempty zeroReplayDescentData.GlobalReplayTransition ∧
           (∃ globalReplay : zeroReplayDescentData.GlobalReplayTransition,
             globalReplay TinyState.high = TinyState.mid) ∧
-            nondegenerate_twoChart_temporal_replay_correction ∧
-              pseudoCircleMismatch replayDescentNonzeroExample.edge ≠ 0 ∧
-                (¬ ∃ path : InfiniteSelectedEvolutionPath dissipativePolicy,
-                  path.StaysOutsideTerminal terminalState) ∧
-                  finiteDissipationPath.ReachesTerminal terminalState ∧
-                  terminalState.terminal p1 nonlawfulTerminal1 ∧
-                    (¬ terminalState.lawful p1 nonlawfulTerminal1) ∧
-                      oneStepPath.PathwiseNonIncrease ∧
-                        IntegrableForce toyForce ∧
+            twoChartCorrection true ≠ 0 ∧
+              twoChartReplayMismatch = twoChartCorrectionCoboundary ∧
+                twoChartReplayMismatch - twoChartCorrectionCoboundary = 0 ∧
+                  (∀ state : TwoChartTemporalCoefficient,
+                    twoChartAdjustedReplay false state = twoChartAdjustedReplay true state) ∧
+                    zmod2TemporalProductIncidenceComplex.d0 zmod2TemporalSeparatedCochain stepLeg ≠ 0 ∧
+                      pseudoCircleMismatch replayDescentNonzeroExample.edge ≠ 0 ∧
+                        (¬ ∃ path : InfiniteSelectedEvolutionPath dissipativePolicy,
+                          path.StaysOutsideTerminal terminalState) ∧
+                          finiteDissipationPath.ReachesTerminal terminalState ∧
+                          terminalState.terminal p1 nonlawfulTerminal1 ∧
+                            (¬ terminalState.lawful p1 nonlawfulTerminal1) ∧
+                              oneStepPath.PathwiseNonIncrease ∧
+                                IntegrableForce toyForce ∧
                           forceCandidateFixture.integrationData.globalReplayTransition
                               (forceCandidateFixture.integrationData.replaySource_eq ▸
                                 toyForce.sourceState) =
@@ -1965,13 +1970,19 @@ theorem finite_temporal_examples_verified :
                                   forceCandidateFixture.concreteObstructionValue ≠ 0) ∧
                                 forceCandidateFixture.candidateData.coefficientExactness ∧
                                   forceCandidateFixture.candidateData.witnessCoverage ∧
-                                    forceCandidateFixture.candidateData.temporalDescentDetecting ∧
+                                        forceCandidateFixture.candidateData.temporalDescentDetecting ∧
                                       forceCandidateFixture.candidateData.localToGlobalControlledByDescent ∧
                                         forceCandidateFixture.candidateOnly := by
+  rcases nondegenerate_twoChart_temporal_replay_correction with
+    ⟨hcorrection, hmismatch, hzero, hmatching, hnonzero⟩
   exact ⟨twoStep_step_selected,
     replay_zero_theorem42_applied,
     replay_zero_has_global_transition,
-    nondegenerate_twoChart_temporal_replay_correction,
+    hcorrection,
+    hmismatch,
+    hzero,
+    hmatching,
+    hnonzero,
     replay_selectedConcreteClassNonzero,
     finite_dissipation_no_infinite_nonterminal_path,
     twoStep_dissipation_reaches_terminal_by_theorem53,
