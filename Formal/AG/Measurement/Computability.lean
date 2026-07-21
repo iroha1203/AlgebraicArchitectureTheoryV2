@@ -264,6 +264,260 @@ theorem decideObstructionIdealMembership_correct
   rw [MvPolynomial.mem_ideal_span_monomial_image]
   simp [decideObstructionIdealMembership, generatorExponents]
 
+/-- An exponent is standard for the selected square-free monomial ideal when
+it is not divisible by any selected generator exponent. -/
+def IsStandardExponent (D : FiniteSquareFreeComputationData R)
+    (exponent : M.WitnessVariables →₀ ℕ) : Prop :=
+  ∀ generator ∈ D.generatorExponents, ¬ generator ≤ exponent
+
+/-- Canonical monomial normal form obtained by retaining exactly the standard
+exponents.  This is a coefficientwise construction and does not choose a lift
+from the quotient. -/
+def normalForm
+    (D : FiniteSquareFreeComputationData R)
+    (k : Type v) [CommRing k]
+    (f : MvPolynomial M.WitnessVariables k) :
+    MvPolynomial M.WitnessVariables k := by
+  letI := R.witnessDecidableEq
+  letI : DecidablePred D.IsStandardExponent := Classical.decPred _
+  exact Finsupp.filter D.IsStandardExponent f
+
+/-- A standard exponent retains its coefficient in the canonical normal form. -/
+theorem coeff_normalForm_of_standard
+    (D : FiniteSquareFreeComputationData R)
+    (k : Type v) [CommRing k]
+    (f : MvPolynomial M.WitnessVariables k)
+    (exponent : M.WitnessVariables →₀ ℕ)
+    (hstandard : D.IsStandardExponent exponent) :
+    MvPolynomial.coeff exponent (D.normalForm k f) =
+      MvPolynomial.coeff exponent f := by
+  letI := R.witnessDecidableEq
+  letI : DecidablePred D.IsStandardExponent := Classical.decPred _
+  change (Finsupp.filter D.IsStandardExponent f) exponent =
+    MvPolynomial.coeff exponent f
+  rw [Finsupp.filter_apply]
+  simp [hstandard]
+  rfl
+
+/-- A nonstandard exponent has zero coefficient in the canonical normal form. -/
+theorem coeff_normalForm_of_not_standard
+    (D : FiniteSquareFreeComputationData R)
+    (k : Type v) [CommRing k]
+    (f : MvPolynomial M.WitnessVariables k)
+    (exponent : M.WitnessVariables →₀ ℕ)
+    (hstandard : ¬ D.IsStandardExponent exponent) :
+    MvPolynomial.coeff exponent (D.normalForm k f) = 0 := by
+  letI := R.witnessDecidableEq
+  letI : DecidablePred D.IsStandardExponent := Classical.decPred _
+  change (Finsupp.filter D.IsStandardExponent f) exponent = 0
+  rw [Finsupp.filter_apply]
+  simp [hstandard]
+
+/-- Support membership in the normal form is support membership in the input
+together with standardness of the exponent. -/
+theorem mem_normalForm_support_iff
+    (D : FiniteSquareFreeComputationData R)
+    (k : Type v) [CommRing k]
+    (f : MvPolynomial M.WitnessVariables k)
+    (exponent : M.WitnessVariables →₀ ℕ) :
+    exponent ∈ (D.normalForm k f).support ↔
+      exponent ∈ f.support ∧ D.IsStandardExponent exponent := by
+  letI := R.witnessDecidableEq
+  by_cases hstandard : D.IsStandardExponent exponent
+  · rw [MvPolynomial.mem_support_iff,
+      D.coeff_normalForm_of_standard k f exponent hstandard,
+      MvPolynomial.mem_support_iff]
+    simp [hstandard]
+  · rw [MvPolynomial.mem_support_iff,
+      D.coeff_normalForm_of_not_standard k f exponent hstandard]
+    simp [hstandard]
+
+/-- The part discarded by the canonical monomial normal form. -/
+def discardedPart
+    (D : FiniteSquareFreeComputationData R)
+    (k : Type v) [CommRing k]
+    (f : MvPolynomial M.WitnessVariables k) :
+    MvPolynomial M.WitnessVariables k :=
+  f - D.normalForm k f
+
+/-- Every monomial retained by the normal form is reduced with respect to the
+selected square-free generators. -/
+theorem normalForm_reduced
+    (D : FiniteSquareFreeComputationData R)
+    (k : Type v) [CommRing k]
+    (f : MvPolynomial M.WitnessVariables k)
+    {exponent : M.WitnessVariables →₀ ℕ}
+    (hexponent : exponent ∈ (D.normalForm k f).support) :
+    ∀ support ∈ D.forbiddenSupports,
+      ¬ supportExponent support ≤ exponent := by
+  letI := R.witnessDecidableEq
+  have hstandard : D.IsStandardExponent exponent := by
+    exact (D.mem_normalForm_support_iff k f exponent).mp hexponent |>.2
+  intro support hsupport hle
+  apply hstandard (supportExponent support)
+  · exact Finset.mem_image.mpr ⟨support, hsupport, rfl⟩
+  · exact hle
+
+/-- The terms removed by the canonical normal form belong to the generated
+square-free monomial ideal. -/
+theorem discardedPart_mem_obstructionIdeal
+    (D : FiniteSquareFreeComputationData R)
+    (k : Type v) [CommRing k]
+    (f : MvPolynomial M.WitnessVariables k) :
+    D.discardedPart k f ∈ D.obstructionIdeal k := by
+  letI := R.witnessDecidableEq
+  rw [D.obstructionIdeal_eq_span_generatorExponents,
+    MvPolynomial.mem_ideal_span_monomial_image]
+  intro exponent hexponent
+  by_contra hgenerator
+  push_neg at hgenerator
+  have hstandard : D.IsStandardExponent exponent := by
+    intro generator hmem
+    exact hgenerator generator hmem
+  have hcoeff : MvPolynomial.coeff exponent (D.discardedPart k f) = 0 := by
+    rw [discardedPart, MvPolynomial.coeff_sub,
+      D.coeff_normalForm_of_standard k f exponent hstandard]
+    exact sub_self _
+  exact (MvPolynomial.mem_support_iff.mp hexponent) hcoeff
+
+/-- Two polynomial lifts of the same quotient class have the same canonical
+monomial normal form. -/
+theorem normalForm_eq_of_sub_mem
+    (D : FiniteSquareFreeComputationData R)
+    (k : Type v) [CommRing k]
+    {f g : MvPolynomial M.WitnessVariables k}
+    (hsub : f - g ∈ D.obstructionIdeal k) :
+    D.normalForm k f = D.normalForm k g := by
+  letI := R.witnessDecidableEq
+  rw [D.obstructionIdeal_eq_span_generatorExponents,
+    MvPolynomial.mem_ideal_span_monomial_image] at hsub
+  apply MvPolynomial.ext
+  intro exponent
+  by_cases hstandard : D.IsStandardExponent exponent
+  · have hcoeff : MvPolynomial.coeff exponent (f - g) = 0 := by
+      by_contra hne
+      have hsupp : exponent ∈ (f - g).support :=
+        MvPolynomial.mem_support_iff.mpr hne
+      rcases hsub exponent hsupp with ⟨generator, hgenerator, hle⟩
+      exact hstandard generator hgenerator hle
+    have hfg : MvPolynomial.coeff exponent f = MvPolynomial.coeff exponent g := by
+      simpa using sub_eq_zero.mp hcoeff
+    rw [D.coeff_normalForm_of_standard k f exponent hstandard,
+      D.coeff_normalForm_of_standard k g exponent hstandard]
+    exact hfg
+  · rw [D.coeff_normalForm_of_not_standard k f exponent hstandard,
+      D.coeff_normalForm_of_not_standard k g exponent hstandard]
+
+/-- A reduced polynomial is already in canonical monomial normal form. -/
+theorem normalForm_eq_self_of_reduced
+    (D : FiniteSquareFreeComputationData R)
+    (k : Type v) [CommRing k]
+    (f : MvPolynomial M.WitnessVariables k)
+    (hreduced : ∀ exponent ∈ f.support,
+      ∀ support ∈ D.forbiddenSupports,
+        ¬ supportExponent support ≤ exponent) :
+    D.normalForm k f = f := by
+  letI := R.witnessDecidableEq
+  apply MvPolynomial.ext
+  intro exponent
+  by_cases hexponent : exponent ∈ f.support
+  · have hstandard : D.IsStandardExponent exponent := by
+      intro generator hgenerator hle
+      rcases Finset.mem_image.mp hgenerator with ⟨support, hsupport, rfl⟩
+      exact hreduced exponent hexponent support hsupport hle
+    exact D.coeff_normalForm_of_standard k f exponent hstandard
+  · have hcoeff : MvPolynomial.coeff exponent f = 0 := by
+      simpa [MvPolynomial.mem_support_iff] using hexponent
+    by_cases hstandard : D.IsStandardExponent exponent
+    · rw [D.coeff_normalForm_of_standard k f exponent hstandard, hcoeff]
+    · rw [D.coeff_normalForm_of_not_standard k f exponent hstandard, hcoeff]
+
+/-- The normal form represents the same quotient class as the input
+polynomial. -/
+theorem normalForm_mod
+    (D : FiniteSquareFreeComputationData R)
+    (k : Type v) [CommRing k]
+    (f : MvPolynomial M.WitnessVariables k) :
+    Ideal.Quotient.mk (D.obstructionIdeal k) (D.normalForm k f) =
+      Ideal.Quotient.mk (D.obstructionIdeal k) f := by
+  rw [Ideal.Quotient.eq]
+  have hmem := D.discardedPart_mem_obstructionIdeal k f
+  have hneg := (D.obstructionIdeal k).neg_mem hmem
+  simpa [discardedPart, sub_eq_add_neg, add_comm] using hneg
+
+/-- Canonical representative of a quotient coefficient, defined by quotient
+recursion from the monomial normal form. -/
+def quotientNormalForm
+    (D : FiniteSquareFreeComputationData R)
+    (k : Type v) [CommRing k]
+    (q : MvPolynomial M.WitnessVariables k ⧸ D.obstructionIdeal k) :
+    MvPolynomial M.WitnessVariables k := by
+  classical
+  refine Quotient.liftOn q (D.normalForm k) ?_
+  intro f g hfg
+  apply D.normalForm_eq_of_sub_mem k
+  rw [← Ideal.Quotient.eq]
+  exact Quotient.sound hfg
+
+/-- Evaluating the quotient normal form on a polynomial class is the ordinary
+normal form of that polynomial. -/
+@[simp] theorem quotientNormalForm_mk
+    (D : FiniteSquareFreeComputationData R)
+    (k : Type v) [CommRing k]
+    (f : MvPolynomial M.WitnessVariables k) :
+    D.quotientNormalForm k
+        (Ideal.Quotient.mk (D.obstructionIdeal k) f) =
+      D.normalForm k f := by
+  classical
+  rfl
+
+/-- The quotient normal form maps back to the requested quotient class. -/
+theorem quotientNormalForm_correct
+    (D : FiniteSquareFreeComputationData R)
+    (k : Type v) [CommRing k]
+    (q : MvPolynomial M.WitnessVariables k ⧸ D.obstructionIdeal k) :
+    Ideal.Quotient.mk (D.obstructionIdeal k) (D.quotientNormalForm k q) = q := by
+  classical
+  induction q using Quotient.inductionOn with
+  | _ f =>
+      change Ideal.Quotient.mk (D.obstructionIdeal k) (D.normalForm k f) =
+        Ideal.Quotient.mk (D.obstructionIdeal k) f
+      exact D.normalForm_mod k f
+
+/-- Every quotient normal form is reduced with respect to the selected
+square-free generators. -/
+theorem quotientNormalForm_reduced
+    (D : FiniteSquareFreeComputationData R)
+    (k : Type v) [CommRing k]
+    (q : MvPolynomial M.WitnessVariables k ⧸ D.obstructionIdeal k) :
+    ∀ exponent ∈ (D.quotientNormalForm k q).support,
+      ∀ support ∈ D.forbiddenSupports,
+        ¬ supportExponent support ≤ exponent := by
+  classical
+  induction q using Quotient.inductionOn with
+  | _ f =>
+      change ∀ exponent ∈ (D.normalForm k f).support,
+        ∀ support ∈ D.forbiddenSupports,
+          ¬ supportExponent support ≤ exponent
+      intro exponent hexponent
+      exact D.normalForm_reduced k f hexponent
+
+/-- Reduced representatives of a quotient class coincide with its canonical
+normal form. -/
+theorem quotientNormalForm_unique
+    (D : FiniteSquareFreeComputationData R)
+    (k : Type v) [CommRing k]
+    (q : MvPolynomial M.WitnessVariables k ⧸ D.obstructionIdeal k)
+    (f : MvPolynomial M.WitnessVariables k)
+    (hclass : Ideal.Quotient.mk (D.obstructionIdeal k) f = q)
+    (hreduced : ∀ exponent ∈ f.support,
+      ∀ support ∈ D.forbiddenSupports,
+        ¬ supportExponent support ≤ exponent) :
+    D.quotientNormalForm k q = f := by
+  subst q
+  change D.normalForm k f = f
+  exact D.normalForm_eq_self_of_reduced k f hreduced
+
 /-- The generated obstruction ideal is the generated Stanley--Reisner ideal. -/
 theorem obstructionIdeal_eq_stanleyReisnerIdeal
     (D : FiniteSquareFreeComputationData R)
