@@ -3557,20 +3557,92 @@ def measurementPacketExampleSynthesis :
     FiniteMeasurementSynthesis measurementPacketExampleData :=
   finiteMeasurementSynthesisPackage measurementPacketExampleData
 
-/-- R11(g): the three-axis Hodge model indexed by the selected pseudo-circle site. -/
+/-- R11(g): degrees for one cellular model carrying both Hodge and Čech readings. -/
+inductive GAGAThreeAxisDegree where
+  | hodgePrevious
+  | hodgeSelected
+  | hodgeNext
+  | cechZero
+  | cechOne
+  | cechTwo
+  deriving DecidableEq, Fintype
+
+/-- Cochains of the selected GAGA cellular model. -/
+abbrev GAGAThreeAxisCochain : GAGAThreeAxisDegree → Type
+  | .hodgePrevious => ℝ
+  | .hodgeSelected => LowDegreeRealCochain
+  | .hodgeNext => ℝ
+  | .cechZero => Cohomology.RealIntervalBasisStokes.Cochain 0
+  | .cechOne => Cohomology.RealIntervalBasisStokes.Cochain 1
+  | .cechTwo => Cohomology.RealIntervalBasisStokes.Cochain 2
+
+/-- The zero cochain in every selected GAGA cellular degree. -/
+def gagaThreeAxisZero : (n : GAGAThreeAxisDegree) → GAGAThreeAxisCochain n
+  | .hodgePrevious => 0
+  | .hodgeSelected => 0
+  | .hodgeNext => 0
+  | .cechZero => 0
+  | .cechOne => 0
+  | .cechTwo => 0
+
+/-- Cellular differentials for the selected Hodge and Čech readings. -/
+def gagaThreeAxisCellularD :
+    (n m : GAGAThreeAxisDegree) → Unit →
+      GAGAThreeAxisCochain n → GAGAThreeAxisCochain m
+  | .hodgePrevious, .hodgeSelected, _, x => threeAxisDPrev x
+  | .hodgeSelected, .hodgeNext, _, x => threeAxisDNext x
+  | .cechZero, .cechOne, _, x => Cohomology.RealIntervalBasisStokes.d0 x
+  | _, m, _, _ => gagaThreeAxisZero m
+
+/-- Cellular adjoints for the selected Hodge reading. -/
+noncomputable def gagaThreeAxisCellularAdjoint :
+    (n m : GAGAThreeAxisDegree) → Unit →
+      GAGAThreeAxisCochain m → GAGAThreeAxisCochain n
+  | .hodgePrevious, .hodgeSelected, _, x => threeAxisRealComplex.dPrevAdjoint x
+  | .hodgeSelected, .hodgeNext, _, x => threeAxisRealComplex.dNextAdjoint x
+  | n, _, _, _ => gagaThreeAxisZero n
+
+/-- Real inner products on the selected Hodge and Čech cochains. -/
+def gagaThreeAxisCellularInnerProduct :
+    (n : GAGAThreeAxisDegree) → GAGAThreeAxisCochain n →
+      GAGAThreeAxisCochain n → ℝ
+  | .hodgePrevious, x, y => inner ℝ x y
+  | .hodgeSelected, x, y => inner ℝ x y
+  | .hodgeNext, x, y => inner ℝ x y
+  | .cechZero, x, y =>
+      x Cohomology.IntervalBasisStokes.Vertex.left *
+          y Cohomology.IntervalBasisStokes.Vertex.left +
+        x Cohomology.IntervalBasisStokes.Vertex.right *
+          y Cohomology.IntervalBasisStokes.Vertex.right
+  | .cechOne, x, y =>
+      x Cohomology.IntervalBasisStokes.Edge.interval *
+        y Cohomology.IntervalBasisStokes.Edge.interval
+  | .cechTwo, x, y => inner ℝ x y
+
+/-- Real norms on the selected Hodge and Čech cochains. -/
+def gagaThreeAxisCellularNorm :
+    (n : GAGAThreeAxisDegree) → GAGAThreeAxisCochain n → ℝ
+  | .hodgePrevious, x => ‖x‖
+  | .hodgeSelected, x => ‖x‖
+  | .hodgeNext, x => ‖x‖
+  | .cechZero, _ => 0
+  | .cechOne, _ => 0
+  | .cechTwo, _ => 0
+
+/-- R11(g): one selected cellular model carrying Hodge and selected Čech cochains. -/
 noncomputable def gagaThreeAxisCellularModel :
     CellularMeasurementModel pseudoCircleMeasurementProfile where
   Cell := Cohomology.FiniteExamples.PseudoCircleGolden.Chart
-  Degree := ThreeAxisDegree
-  Cochain := ThreeAxisCochain
+  Degree := GAGAThreeAxisDegree
+  Cochain := GAGAThreeAxisCochain
   Differential := fun _ _ => Unit
-  d := threeAxisCellularD
+  d := gagaThreeAxisCellularD
   Adjoint := fun _ _ => Unit
-  dAdjoint := threeAxisCellularAdjoint
+  dAdjoint := gagaThreeAxisCellularAdjoint
   InnerProductValue := ℝ
-  innerProduct := threeAxisCellularInnerProduct
+  innerProduct := gagaThreeAxisCellularInnerProduct
   NormValue := ℝ
-  norm := threeAxisCellularNorm
+  norm := gagaThreeAxisCellularNorm
   finiteCells := Nonempty (Fintype Cohomology.FiniteExamples.PseudoCircleGolden.Chart)
   finiteCells_cert := by
     classical
@@ -3582,15 +3654,22 @@ noncomputable def gagaThreeAxisCellularModel :
     }⟩
   finiteDimensionalCochains :=
     FiniteDimensional ℝ ℝ ∧
-      FiniteDimensional ℝ LowDegreeRealCochain ∧ FiniteDimensional ℝ ℝ
-  finiteDimensionalCochains_cert := ⟨inferInstance, inferInstance, inferInstance⟩
-  finiteIncidenceCategory := Nonempty (Fintype ThreeAxisDegree)
+      FiniteDimensional ℝ LowDegreeRealCochain ∧ FiniteDimensional ℝ ℝ ∧
+        FiniteDimensional ℝ (Cohomology.RealIntervalBasisStokes.Cochain 0) ∧
+          FiniteDimensional ℝ (Cohomology.RealIntervalBasisStokes.Cochain 1) ∧
+            FiniteDimensional ℝ (Cohomology.RealIntervalBasisStokes.Cochain 2)
+  finiteDimensionalCochains_cert :=
+    ⟨inferInstance, inferInstance, inferInstance, inferInstance, inferInstance, inferInstance⟩
+  finiteIncidenceCategory := Nonempty (Fintype GAGAThreeAxisDegree)
   finiteIncidenceCategory_cert := ⟨inferInstance⟩
   linearRestrictionMaps :=
     (∀ x y, threeAxisDPrev (x + y) = threeAxisDPrev x + threeAxisDPrev y) ∧
-      ∀ x y, threeAxisDNext (x + y) = threeAxisDNext x + threeAxisDNext y
+      (∀ x y, threeAxisDNext (x + y) = threeAxisDNext x + threeAxisDNext y) ∧
+        ∀ x y, Cohomology.RealIntervalBasisStokes.d0 (x + y) =
+          Cohomology.RealIntervalBasisStokes.d0 x + Cohomology.RealIntervalBasisStokes.d0 y
   linearRestrictionMaps_cert :=
-    ⟨threeAxisDPrev.map_add, threeAxisDNext.map_add⟩
+    ⟨threeAxisDPrev.map_add, threeAxisDNext.map_add,
+      Cohomology.RealIntervalBasisStokes.d0.map_add⟩
   differentialSquaresZero := threeAxisDNext.comp threeAxisDPrev = 0
   differentialSquaresZero_cert := threeAxisRealComplex.d_comp_d
   adjointsAvailable :=
@@ -3598,17 +3677,23 @@ noncomputable def gagaThreeAxisCellularModel :
       LinearMap.adjoint threeAxisDNext = threeAxisRealComplex.dNextAdjoint
   adjointsAvailable_cert := ⟨rfl, rfl⟩
   finiteInnerProductRegime :=
-    ∀ n x, 0 ≤ threeAxisCellularNorm n x
+    ∀ n x, 0 ≤ gagaThreeAxisCellularNorm n x
   finiteInnerProductRegime_cert := by
     intro n x
-    cases n <;> exact norm_nonneg _
+    cases n
+    · exact norm_nonneg _
+    · exact norm_nonneg _
+    · exact norm_nonneg _
+    · simp [gagaThreeAxisCellularNorm]
+    · simp [gagaThreeAxisCellularNorm]
+    · simp [gagaThreeAxisCellularNorm]
 
 /-- R11(g): the selected-site Laplacian reading of the three-axis Hodge model. -/
 noncomputable def gagaThreeAxisLaplacianReading :
     SheafLaplacianReading gagaThreeAxisCellularModel where
-  degree := .selected
-  previousDegree := .previous
-  nextDegree := .next
+  degree := .hodgeSelected
+  previousDegree := .hodgePrevious
+  nextDegree := .hodgeNext
   LaplacianOperator := LowDegreeRealCochain →ₗ[ℝ] LowDegreeRealCochain
   laplacian := threeAxisRealComplex.laplacian
   d_prev := ()
@@ -3822,6 +3907,77 @@ def lowDegreePeriodStokesTheoremPackage :
     intro x y h
     cases x <;> cases y <;> try rfl
     all_goals simp at h
+  periodZeroDegree := .cechZero
+  periodOneDegree := .cechOne
+  periodTwoDegree := .cechTwo
+  periodZeroAddCommGroup := by
+    change AddCommGroup (Cohomology.RealIntervalBasisStokes.Cochain 0)
+    infer_instance
+  periodOneAddCommGroup := by
+    change AddCommGroup (Cohomology.RealIntervalBasisStokes.Cochain 1)
+    infer_instance
+  periodTwoAddCommGroup := by
+    change AddCommGroup (Cohomology.RealIntervalBasisStokes.Cochain 2)
+    infer_instance
+  periodZeroModule := by
+    change Module ℝ (Cohomology.RealIntervalBasisStokes.Cochain 0)
+    infer_instance
+  periodOneModule := by
+    change Module ℝ (Cohomology.RealIntervalBasisStokes.Cochain 1)
+    infer_instance
+  periodTwoModule := by
+    change Module ℝ (Cohomology.RealIntervalBasisStokes.Cochain 2)
+    infer_instance
+  periodZeroFinite := by
+    change FiniteDimensional ℝ (Cohomology.RealIntervalBasisStokes.Cochain 0)
+    infer_instance
+  periodOneFinite := by
+    change FiniteDimensional ℝ (Cohomology.RealIntervalBasisStokes.Cochain 1)
+    infer_instance
+  periodTwoFinite := by
+    change FiniteDimensional ℝ (Cohomology.RealIntervalBasisStokes.Cochain 2)
+    infer_instance
+  periodDifferential := ()
+  nerveDifferential := ()
+  periodCoboundary := Cohomology.RealIntervalBasisStokes.d0
+  nerveCoboundary := 0
+  periodCoboundary_eq_cellular := by
+    intro ω
+    rfl
+  nerveCoboundary_eq_cellular := by
+    intro η
+    change (0 : Cohomology.RealIntervalBasisStokes.Cochain 2) =
+      gagaThreeAxisCellularD .cechOne .cechTwo () η
+    rfl
+  nerveCoboundary_comp_periodCoboundary := by
+    intro ω
+    rfl
+  zeroCochainToInterval := by
+    change Cohomology.RealIntervalBasisStokes.Cochain 0 ≃ₗ[ℝ]
+      Cohomology.RealIntervalBasisStokes.Cochain 0
+    exact LinearEquiv.refl ℝ _
+  oneCochainToInterval := by
+    change Cohomology.RealIntervalBasisStokes.Cochain 1 ≃ₗ[ℝ]
+      Cohomology.RealIntervalBasisStokes.Cochain 1
+    exact LinearEquiv.refl ℝ _
+  twoCochainToInterval := by
+    change Cohomology.RealIntervalBasisStokes.Cochain 2 ≃ₗ[ℝ]
+      Cohomology.RealIntervalBasisStokes.Cochain 2
+    exact LinearEquiv.refl ℝ _
+  zeroChainToInterval := by
+    change Cohomology.RealIntervalBasisStokes.Cochain 0 ≃ₗ[ℝ]
+      Cohomology.RealIntervalBasisStokes.Chain 0
+    exact LinearEquiv.refl ℝ _
+  oneChainToInterval := by
+    change Cohomology.RealIntervalBasisStokes.Cochain 1 ≃ₗ[ℝ]
+      Cohomology.RealIntervalBasisStokes.Chain 1
+    exact LinearEquiv.refl ℝ _
+  periodCoboundary_to_interval := by
+    intro ω
+    rfl
+  nerveCoboundary_to_interval := by
+    intro η
+    rfl
 
 /-- R11(g): common-ambient reading of the shared-witness degree-one conflict. -/
 noncomputable def lowDegreeDerivedConflictTheoremPackage :
