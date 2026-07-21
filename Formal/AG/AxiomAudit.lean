@@ -2175,10 +2175,25 @@ theorem gagaSelectedHodgeDecomposition :
     ∃ h, h = @Measurement.AATGAGASelectedFiniteHodgeData.finiteHodgeDecomposition_holds :=
   ⟨@Measurement.AATGAGASelectedFiniteHodgeData.finiteHodgeDecomposition_holds, rfl⟩
 
-/-- Direct audit entry for the selected additive extension accounting theorem. -/
-theorem gagaSelectedExtensionAccounting :
-    ∃ h, h = @Cohomology.ExtensionHolonomyAccounting.kappa_U_additive :=
-  ⟨@Cohomology.ExtensionHolonomyAccounting.kappa_U_additive, rfl⟩
+/-- Direct audit entry for all-degree harmonic cohomology readings. -/
+theorem gagaSelectedAllDegreeHodge :
+    ∃ h, h = @Measurement.AATGAGASelectedFiniteHodgeData.allDegreeHodge_holds :=
+  ⟨@Measurement.AATGAGASelectedFiniteHodgeData.allDegreeHodge_holds, rfl⟩
+
+/-- Direct audit entry for all-degree Hodge decompositions. -/
+theorem gagaSelectedAllDegreeHodgeDecomposition :
+    ∃ h, h = @Measurement.AATGAGASelectedFiniteHodgeData.allDegreeDecomposition_holds :=
+  ⟨@Measurement.AATGAGASelectedFiniteHodgeData.allDegreeDecomposition_holds, rfl⟩
+
+/-- Direct audit entry for the source-to-real differential transport. -/
+theorem gagaSelectedAllDegreeSourceTransport :
+    ∃ h, h = @Measurement.AATGAGASelectedFiniteHodgeData.allDegreeDifferentialFromSource_holds :=
+  ⟨@Measurement.AATGAGASelectedFiniteHodgeData.allDegreeDifferentialFromSource_holds, rfl⟩
+
+/-- Direct audit entry for source-derived Period/Stokes. -/
+theorem gagaSelectedPeriodStokes :
+    ∃ h, h = @Measurement.SelectedPeriodStokesTheoremPackage.periodStokesStatement_holds :=
+  ⟨@Measurement.SelectedPeriodStokesTheoremPackage.periodStokesStatement_holds, rfl⟩
 
 /-- Direct audit entry for the selected finite-nerve capacity theorem. -/
 theorem gagaSelectedTopologicalCapacity :
@@ -2189,6 +2204,11 @@ theorem gagaSelectedTopologicalCapacity :
 theorem gagaSelectedLawConflictTor :
     ∃ h, h = @Measurement.SelectedDerivedConflictTheoremPackage.lawConflictTorReading_holds :=
   ⟨@Measurement.SelectedDerivedConflictTheoremPackage.lawConflictTorReading_holds, rfl⟩
+
+/-- Direct audit entry for the generated-law all-degree Hilbert accounting. -/
+theorem gagaSelectedHilbertAccounting :
+    ∃ h, h = @Measurement.SelectedDerivedConflictTheoremPackage.hilbertSeriesConflictStatement_holds :=
+  ⟨@Measurement.SelectedDerivedConflictTheoremPackage.hilbertSeriesConflictStatement_holds, rfl⟩
 
 /-- Direct audit entry for all certified theorem-12.3 conjuncts. -/
 theorem gagaCertifiedComparisonStatement :

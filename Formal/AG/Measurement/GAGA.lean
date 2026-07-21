@@ -697,6 +697,106 @@ theorem periodStokesStatement_holds {M : MeasurementProfile.{u, v}} [Field M.Coe
 
 end AATGAGARealCechHodgeInput
 
+/--
+VIII.Theorem 8.5 / 12.3: an all-degree real realization of the generated
+finite Čech complex.
+
+The first three degrees are also used by `AATGAGARealCechHodgeInput` for the
+explicit source `H¹` comparison.  This separate all-degree input prevents the
+GAGA package from reading the Hodge theorem only in degree one: every real
+differential is transported from the same generated Čech differential.
+-/
+structure AATGAGAAllDegreeRealCechHodgeInput {M : MeasurementProfile.{u, v}}
+    [Field M.Coeff] (S : AATGAGAFiniteCechSource M) where
+  /-- Real cochains in every degree of the selected Čech realization. -/
+  RealCochain : Nat -> Type v
+  /-- Each real cochain carrier is a finite-dimensional inner-product space. -/
+  [cochainNormed : (n : Nat) -> NormedAddCommGroup (RealCochain n)]
+  [cochainInner : (n : Nat) -> InnerProductSpace ℝ (RealCochain n)]
+  [cochainFinite : (n : Nat) -> FiniteDimensional ℝ (RealCochain n)]
+  /-- Additive realization of every generated canonical Čech cochain carrier. -/
+  sourceToReal : (n : Nat) -> S.geometry.CechCochain n ≃+ RealCochain n
+  /-- The real differential in every selected degree. -/
+  realD : (n : Nat) -> RealCochain n →ₗ[ℝ] RealCochain (n + 1)
+  /-- Every real differential is the transported generated Čech differential. -/
+  realD_eq_source : ∀ (n : Nat) (c : S.geometry.CechCochain n),
+    realD n (sourceToReal n c) =
+      sourceToReal (n + 1) (S.geometry.differentialLinear n c)
+  /-- The transported real maps form the selected cochain complex. -/
+  real_d_comp : ∀ n, (realD (n + 1)).comp (realD n) = 0
+
+attribute [instance] AATGAGAAllDegreeRealCechHodgeInput.cochainNormed
+attribute [instance] AATGAGAAllDegreeRealCechHodgeInput.cochainInner
+attribute [instance] AATGAGAAllDegreeRealCechHodgeInput.cochainFinite
+
+namespace AATGAGAAllDegreeRealCechHodgeInput
+
+/-- The degree-zero Hodge complex has zero incoming differential. -/
+noncomputable def degreeZeroComplex {M : MeasurementProfile.{u, v}} [Field M.Coeff]
+    {S : AATGAGAFiniteCechSource M} (H : AATGAGAAllDegreeRealCechHodgeInput S) :
+    RealFiniteInnerProductComplex (H.RealCochain 0) (H.RealCochain 0)
+      (H.RealCochain 1) where
+  dPrev := 0
+  dNext := H.realD 0
+  d_comp_d := by simp
+
+/-- The degree `n + 1` Hodge complex uses two consecutive generated Čech maps. -/
+noncomputable def successorComplex {M : MeasurementProfile.{u, v}} [Field M.Coeff]
+    {S : AATGAGAFiniteCechSource M} (H : AATGAGAAllDegreeRealCechHodgeInput S)
+    (n : Nat) :
+    RealFiniteInnerProductComplex (H.RealCochain n) (H.RealCochain (n + 1))
+      (H.RealCochain (n + 2)) where
+  dPrev := H.realD n
+  dNext := H.realD (n + 1)
+  d_comp_d := H.real_d_comp n
+
+/-- The all-degree Hodge statement for the selected finite Čech realization. -/
+def allDegreeHodgeStatement {M : MeasurementProfile.{u, v}} [Field M.Coeff]
+    {S : AATGAGAFiniteCechSource M} (H : AATGAGAAllDegreeRealCechHodgeInput S) : Prop :=
+  Nonempty (H.degreeZeroComplex.laplacian.ker ≃ₗ[ℝ] H.degreeZeroComplex.cohomology) ∧
+    (∀ n, Nonempty
+      ((H.successorComplex n).laplacian.ker ≃ₗ[ℝ]
+        (H.successorComplex n).cohomology))
+
+/-- The exact-harmonic-coexact decomposition in every selected Čech degree. -/
+def allDegreeDecompositionStatement {M : MeasurementProfile.{u, v}} [Field M.Coeff]
+    {S : AATGAGAFiniteCechSource M} (H : AATGAGAAllDegreeRealCechHodgeInput S) : Prop :=
+  (∀ c : H.RealCochain 0,
+    H.degreeZeroComplex.exactPart c + H.degreeZeroComplex.harmonicPart c +
+      H.degreeZeroComplex.coexactPart c = c) ∧
+    (∀ (n : Nat) (c : H.RealCochain (n + 1)),
+      (H.successorComplex n).exactPart c +
+      (H.successorComplex n).harmonicPart c +
+        (H.successorComplex n).coexactPart c = c)
+
+/-- The standard finite-dimensional Hodge theorem yields every selected degree. -/
+theorem allDegreeHodgeStatement_holds {M : MeasurementProfile.{u, v}} [Field M.Coeff]
+    {S : AATGAGAFiniteCechSource M} (H : AATGAGAAllDegreeRealCechHodgeInput S) :
+    H.allDegreeHodgeStatement := by
+  refine ⟨⟨H.degreeZeroComplex.laplacianKernelEquivCohomology⟩, ?_⟩
+  intro n
+  exact ⟨(H.successorComplex n).laplacianKernelEquivCohomology⟩
+
+/-- The standard finite-dimensional Hodge decomposition yields every selected degree. -/
+theorem allDegreeDecompositionStatement_holds {M : MeasurementProfile.{u, v}}
+    [Field M.Coeff] {S : AATGAGAFiniteCechSource M}
+    (H : AATGAGAAllDegreeRealCechHodgeInput S) : H.allDegreeDecompositionStatement := by
+  refine ⟨?_, ?_⟩
+  · intro c
+    exact H.degreeZeroComplex.hodge_decomposition c
+  · intro n c
+    exact (H.successorComplex n).hodge_decomposition c
+
+/-- The all-degree source comparison is the supplied transported-differential law. -/
+theorem realD_eq_source_holds {M : MeasurementProfile.{u, v}} [Field M.Coeff]
+    {S : AATGAGAFiniteCechSource M} (H : AATGAGAAllDegreeRealCechHodgeInput S) :
+    ∀ (n : Nat) (c : S.geometry.CechCochain n),
+      H.realD n (H.sourceToReal n c) =
+        H.sourceToReal (n + 1) (S.geometry.differentialLinear n c) :=
+  H.realD_eq_source
+
+end AATGAGAAllDegreeRealCechHodgeInput
+
 /-- VIII.Theorem 12.3: finite data shared by every certified comparison. -/
 structure AATGAGACommonFiniteData (M : MeasurementProfile.{u, v}) [Field M.Coeff] where
   /-- The generated finite Čech source shared by all four packages. -/
@@ -715,17 +815,19 @@ structure AATGAGACommonFiniteData (M : MeasurementProfile.{u, v}) [Field M.Coeff
   commonAmbient : CommonAmbientPair M
   /-- The common ambient has the atom carrier selected by the Čech source. -/
   ambientAtomType_eq_source : commonAmbient.AmbientSpace = finiteCechSource.geometry.U.Atom
-  /-- The selected source carries the obstruction sheaf used by the Hodge axis. -/
-  selectedObstructionSheaf : Cohomology.ObstructionSheaf finiteCechSource.geometry.site
-  /-- The Hodge obstruction sheaf is the generated source sheaf. -/
-  selectedObstructionSheaf_eq_source :
-    selectedObstructionSheaf = finiteCechSource.geometry.obstructionSheaf
   /-- The profile obstruction-object handle is read in the common ambient. -/
   ambientStructureSheafFromProfile : M.ObstructionObject → commonAmbient.StructureSheaf
   /-- The selected ambient sheaf is the reading of the selected profile handle. -/
   selectedObstructionObject : M.ObstructionObject
   selectedStructureSheaf_eq_profile : commonAmbient.selectedStructureSheaf =
     ambientStructureSheafFromProfile selectedObstructionObject
+  /-- Interpret the selected ambient structure sheaf on the actual Čech site. -/
+  ambientStructureSheafToSource : commonAmbient.StructureSheaf →
+    Cohomology.ObstructionSheaf finiteCechSource.geometry.site
+  /-- The selected common-ambient sheaf is exactly the source coefficient sheaf. -/
+  selectedStructureSheaf_realizes_source :
+    ambientStructureSheafToSource commonAmbient.selectedStructureSheaf =
+      finiteCechSource.geometry.obstructionSheaf
   /-- The ambient coefficient object is the profile coefficient type. -/
   ambientCoefficientObject_eq_profile : commonAmbient.CoefficientObject = M.Coeff
   /-- The left ambient coefficient is the selected profile coefficient. -/
@@ -748,6 +850,8 @@ structure AATGAGASelectedFiniteHodgeData {M : MeasurementProfile.{u, v}} [Field 
     (C : AATGAGACommonFiniteData M) where
   /-- The real finite cochain realization of this common Čech source. -/
   realInput : AATGAGARealCechHodgeInput C.finiteCechSource
+  /-- The all-degree real realization of the same generated Čech source. -/
+  allDegreeInput : AATGAGAAllDegreeRealCechHodgeInput C.finiteCechSource
 
 namespace AATGAGASelectedFiniteHodgeData
 
@@ -832,6 +936,38 @@ theorem finiteHodgeDecomposition_holds {M : MeasurementProfile.{u, v}} [Field M.
   letI := D.realInput.twoFinite
   exact D.realInput.hodgeStatement_holds.1
 
+/-- VIII.Theorem 8.5: every selected Čech degree has a harmonic cohomology reading. -/
+def allDegreeHodge {M : MeasurementProfile.{u, v}} [Field M.Coeff]
+    {C : AATGAGACommonFiniteData M} (D : AATGAGASelectedFiniteHodgeData C) : Prop :=
+  D.allDegreeInput.allDegreeHodgeStatement
+
+/-- VIII.Theorem 8.5: every selected Čech degree has the Hodge decomposition. -/
+def allDegreeDecomposition {M : MeasurementProfile.{u, v}} [Field M.Coeff]
+    {C : AATGAGACommonFiniteData M} (D : AATGAGASelectedFiniteHodgeData C) : Prop :=
+  D.allDegreeInput.allDegreeDecompositionStatement
+
+/-- The all-degree harmonic cohomology reading is derived from the selected source maps. -/
+theorem allDegreeHodge_holds {M : MeasurementProfile.{u, v}} [Field M.Coeff]
+    {C : AATGAGACommonFiniteData M} (D : AATGAGASelectedFiniteHodgeData C) :
+    D.allDegreeHodge :=
+  D.allDegreeInput.allDegreeHodgeStatement_holds
+
+/-- The all-degree exact-harmonic-coexact decomposition is derived from the selected maps. -/
+theorem allDegreeDecomposition_holds {M : MeasurementProfile.{u, v}} [Field M.Coeff]
+    {C : AATGAGACommonFiniteData M} (D : AATGAGASelectedFiniteHodgeData C) :
+    D.allDegreeDecomposition :=
+  D.allDegreeInput.allDegreeDecompositionStatement_holds
+
+/-- Every Hodge differential is the transported generated Čech differential. -/
+theorem allDegreeDifferentialFromSource_holds {M : MeasurementProfile.{u, v}}
+    [Field M.Coeff] {C : AATGAGACommonFiniteData M}
+    (D : AATGAGASelectedFiniteHodgeData C) :
+    ∀ (n : Nat) (c : C.finiteCechSource.geometry.CechCochain n),
+      D.allDegreeInput.realD n (D.allDegreeInput.sourceToReal n c) =
+        D.allDegreeInput.sourceToReal (n + 1)
+          (C.finiteCechSource.geometry.differentialLinear n c) :=
+  D.allDegreeInput.realD_eq_source_holds
+
 end AATGAGASelectedFiniteHodgeData
 
 /-- VIII.Theorem 12.3: selected finite Hodge theorem package. -/
@@ -842,30 +978,52 @@ structure SelectedFiniteHodgeTheoremPackage {M : MeasurementProfile.{u, v}} [Fie
 
 /-- VIII.Theorem 12.3: selected Period/Stokes theorem package. -/
 structure SelectedPeriodStokesTheoremPackage {M : MeasurementProfile.{u, v}} [Field M.Coeff]
-    (C : AATGAGACommonFiniteData M) where
-  /-- The profile measurement selected by this common finite datum. -/
-  measuredSelection : M.Measured_M C.selectedMeasurement
-  /-- Extension holonomy accounting used for its additive reading. -/
-  extensionAccounting : Cohomology.ExtensionHolonomyAccounting.{v}
+    (C : AATGAGACommonFiniteData M) (H : SelectedFiniteHodgeTheoremPackage C) where
+  /-- The Period/Stokes source is identified with the Hodge source of this comparison. -/
+  sourceHodgeData : AATGAGASelectedFiniteHodgeData C
+  /-- Both analytic readings use the same selected finite Čech realization. -/
+  sourceHodgeData_eq : sourceHodgeData = H.hodgeData
+
+namespace SelectedPeriodStokesTheoremPackage
+
+/-- The selected Stokes equality is formed from the actual source `d⁰` and its adjoint. -/
+def periodStokesStatement {M : MeasurementProfile.{u, v}} [Field M.Coeff]
+    {C : AATGAGACommonFiniteData M} {H : SelectedFiniteHodgeTheoremPackage C}
+    (P : SelectedPeriodStokesTheoremPackage C H) : Prop :=
+  P.sourceHodgeData.realInput.periodStokesStatement
+
+/-- Derive Stokes from the same real Čech map used by the Hodge package. -/
+theorem periodStokesStatement_holds {M : MeasurementProfile.{u, v}} [Field M.Coeff]
+    {C : AATGAGACommonFiniteData M} {H : SelectedFiniteHodgeTheoremPackage C}
+    (P : SelectedPeriodStokesTheoremPackage C H) : P.periodStokesStatement := by
+  change P.sourceHodgeData.realInput.periodStokesStatement
+  rw [P.sourceHodgeData_eq]
+  exact H.hodgeData.realInput.periodStokesStatement_holds
+
+end SelectedPeriodStokesTheoremPackage
 
 /-- VIII.Theorem 12.3: selected finite-nerve capacity package. -/
 structure SelectedTopologicalDebtTheoremPackage {M : MeasurementProfile.{u, v}} [Field M.Coeff]
     (C : AATGAGACommonFiniteData M) where
-  /-- The profile measurement selected by this common finite datum. -/
-  measuredSelection : M.Measured_M C.selectedMeasurement
+  /-- The capacity calculation uses a source identified with the common Čech source. -/
+  source : AATGAGAFiniteCechSource M
+  /-- The capacity source is exactly the source shared by all theorem packages. -/
+  source_eq_common : source = C.finiteCechSource
 
 namespace SelectedTopologicalDebtTheoremPackage
 
 /-- The finite-nerve capacity inequality for the package's common Čech source. -/
 def topologicalCapacityStatement {M : MeasurementProfile.{u, v}} [Field M.Coeff]
-    {C : AATGAGACommonFiniteData M} (_ : SelectedTopologicalDebtTheoremPackage C) : Prop :=
-  C.finiteCechSource.topologicalCapacityStatement
+    {C : AATGAGACommonFiniteData M} (P : SelectedTopologicalDebtTheoremPackage C) : Prop :=
+  P.source.topologicalCapacityStatement
 
 /-- Derive the package capacity inequality from the common finite nerve. -/
 theorem topologicalCapacityStatement_holds {M : MeasurementProfile.{u, v}} [Field M.Coeff]
     {C : AATGAGACommonFiniteData M} (P : SelectedTopologicalDebtTheoremPackage C) :
-    P.topologicalCapacityStatement :=
-  C.finiteCechSource.topologicalCapacityStatement_holds
+    P.topologicalCapacityStatement := by
+  change P.source.topologicalCapacityStatement
+  rw [P.source_eq_common]
+  exact C.finiteCechSource.topologicalCapacityStatement_holds
 
 end SelectedTopologicalDebtTheoremPackage
 
@@ -875,6 +1033,14 @@ structure SelectedDerivedConflictTheoremPackage {M : MeasurementProfile.{u, v}} 
   /-- The selected common-ambient law ideal is evaluated as a chart ideal. -/
   generatedLawIdeal : C.commonAmbient.LawIdeal →
     Ideal (Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff)
+  /-- The selected left ambient law generates the fixed `xy` chart ideal. -/
+  leftGeneratedIdeal_eq :
+    generatedLawIdeal C.commonAmbient.leftLawIdeal =
+      Derived.Counterexample.SharedWitnessCoord.idealU M.Coeff
+  /-- The selected right ambient law generates the fixed `xz` chart ideal. -/
+  rightGeneratedIdeal_eq :
+    generatedLawIdeal C.commonAmbient.rightLawIdeal =
+      Derived.Counterexample.SharedWitnessCoord.idealV M.Coeff
 
 namespace SelectedDerivedConflictTheoremPackage
 
@@ -918,6 +1084,25 @@ theorem lawConflictTorReading_holds {M : MeasurementProfile.{u, v}} [Field M.Coe
           P.leftIdeal P.rightIdeal 1) :=
   ⟨P.lawConflictLinearEquivMathlibTor⟩
 
+/-- The selected law generators are the two ideals used by the fixed Hilbert calculation. -/
+def hilbertSeriesConflictStatement {M : MeasurementProfile.{u, v}} [Field M.Coeff]
+    {C : AATGAGACommonFiniteData M} (P : SelectedDerivedConflictTheoremPackage C) : Prop :=
+  let regime := FiniteModel.DerivedPart5.sharedWitnessHilbertRegime M.Coeff
+  P.leftIdeal = regime.I_U ∧
+    P.rightIdeal = regime.I_V ∧
+      regime.quotientUHilbertSeries * regime.quotientVHilbertSeries =
+        regime.ambientHilbertSeries *
+          (regime.lawConflictHilbertSeries 0 - regime.lawConflictHilbertSeries 1)
+
+/-- Derive the all-degree Hilbert-series accounting from the generated law ideals. -/
+theorem hilbertSeriesConflictStatement_holds {M : MeasurementProfile.{u, v}}
+    [Field M.Coeff] {C : AATGAGACommonFiniteData M}
+    (P : SelectedDerivedConflictTheoremPackage C) : P.hilbertSeriesConflictStatement := by
+  refine ⟨P.leftGeneratedIdeal_eq, P.rightGeneratedIdeal_eq, ?_⟩
+  simpa [FiniteModel.DerivedPart5.sharedWitnessHilbertRegime,
+    FiniteModel.DerivedPart5.sharedWitnessConflictAlternatingSeries] using
+    FiniteModel.DerivedPart5.sharedWitnessG5_denominatorClearedIdentity
+
 end SelectedDerivedConflictTheoremPackage
 
 /-- VIII.Theorem 12.3: theorem inputs over one common selected finite datum. -/
@@ -926,7 +1111,8 @@ structure AATGAGACertifiedFields {M : MeasurementProfile.{u, v}} [Field M.Coeff]
   /-- The finite Hodge theorem package over this common datum. -/
   finiteHodgeTheoremPackage : SelectedFiniteHodgeTheoremPackage C
   /-- The Period/Stokes theorem package over this common datum. -/
-  periodStokesTheoremPackage : SelectedPeriodStokesTheoremPackage C
+  periodStokesTheoremPackage :
+    SelectedPeriodStokesTheoremPackage C finiteHodgeTheoremPackage
   /-- The finite-nerve capacity package over this common datum. -/
   topologicalDebtTheoremPackage : SelectedTopologicalDebtTheoremPackage C
   /-- The derived LawConflict package over this common datum. -/
@@ -964,40 +1150,40 @@ structure AATGAGAComparisonData (M : MeasurementProfile.{u, v}) [Field M.Coeff] 
 /-- VIII.Theorem 12.3: certified comparison statement. -/
 def aatGAGACertifiedComparisonStatement {M : MeasurementProfile.{u, v}} [Field M.Coeff]
     {C : AATGAGACommonFiniteData M} (F : AATGAGACertifiedFields C) : Prop :=
-  F.finiteHodgeTheoremPackage.hodgeData.harmonicKernelIdentifiesCohomology ∧
-    F.finiteHodgeTheoremPackage.hodgeData.finiteHodgeDecomposition ∧
-      (∀ omega gamma,
-        Cohomology.IntervalBasisStokes.pair1
-            (Cohomology.IntervalBasisStokes.d0 omega) gamma =
-          Cohomology.IntervalBasisStokes.pair0 omega
-            (Cohomology.IntervalBasisStokes.boundary0 gamma)) ∧
-        (∀ x y,
-          F.periodStokesTheoremPackage.extensionAccounting.kappa_U (x + y) =
-            F.periodStokesTheoremPackage.extensionAccounting.kappa_U x +
-              F.periodStokesTheoremPackage.extensionAccounting.kappa_U y) ∧
-          (Module.finrank M.Coeff C.finiteCechSource.nerveComplex.C1 <=
-            Module.finrank M.Coeff C.finiteCechSource.nerveComplex.H1 +
-              Module.finrank M.Coeff C.finiteCechSource.nerveComplex.C0 +
-                Module.finrank M.Coeff C.finiteCechSource.nerveComplex.C2) ∧
-            Nonempty
-              (F.derivedConflictTheoremPackage.lawConflict ≃ₗ[
-                  Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff]
-                Derived.Intersection.mathlibTor
-                  (Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff)
-                  F.derivedConflictTheoremPackage.leftIdeal
-                  F.derivedConflictTheoremPackage.rightIdeal 1)
+  (C.ambientStructureSheafToSource C.commonAmbient.selectedStructureSheaf =
+    C.finiteCechSource.geometry.obstructionSheaf) ∧
+    F.finiteHodgeTheoremPackage.hodgeData.harmonicKernelIdentifiesCohomology ∧
+      F.finiteHodgeTheoremPackage.hodgeData.allDegreeHodge ∧
+        F.finiteHodgeTheoremPackage.hodgeData.allDegreeDecomposition ∧
+          (∀ (n : Nat) (c : C.finiteCechSource.geometry.CechCochain n),
+            F.finiteHodgeTheoremPackage.hodgeData.allDegreeInput.realD n
+              (F.finiteHodgeTheoremPackage.hodgeData.allDegreeInput.sourceToReal n c) =
+                F.finiteHodgeTheoremPackage.hodgeData.allDegreeInput.sourceToReal (n + 1)
+                  (C.finiteCechSource.geometry.differentialLinear n c)) ∧
+            F.periodStokesTheoremPackage.periodStokesStatement ∧
+              F.topologicalDebtTheoremPackage.topologicalCapacityStatement ∧
+                Nonempty
+                  (F.derivedConflictTheoremPackage.lawConflict ≃ₗ[
+                    Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff]
+                    Derived.Intersection.mathlibTor
+                      (Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff)
+                      F.derivedConflictTheoremPackage.leftIdeal
+                      F.derivedConflictTheoremPackage.rightIdeal 1) ∧
+                  F.derivedConflictTheoremPackage.hilbertSeriesConflictStatement
 
 /-- Derive every certified comparison conjunct from the selected finite data. -/
 theorem aatGAGACertifiedComparisonStatement_holds {M : MeasurementProfile.{u, v}} [Field M.Coeff]
     {C : AATGAGACommonFiniteData M} (F : AATGAGACertifiedFields C) :
     aatGAGACertifiedComparisonStatement F := by
-  refine ⟨F.finiteHodgeTheoremPackage.hodgeData.harmonicKernelIdentifiesCohomology_holds,
-    F.finiteHodgeTheoremPackage.hodgeData.finiteHodgeDecomposition_holds,
-    ?_, ?_, F.topologicalDebtTheoremPackage.topologicalCapacityStatement_holds,
-    F.derivedConflictTheoremPackage.lawConflictTorReading_holds⟩
-  · exact Cohomology.IntervalBasisStokes.finiteIntervalStokes_basis
-  · exact Cohomology.ExtensionHolonomyAccounting.kappa_U_additive
-      F.periodStokesTheoremPackage.extensionAccounting
+  refine ⟨C.selectedStructureSheaf_realizes_source,
+    F.finiteHodgeTheoremPackage.hodgeData.harmonicKernelIdentifiesCohomology_holds,
+    F.finiteHodgeTheoremPackage.hodgeData.allDegreeHodge_holds,
+    F.finiteHodgeTheoremPackage.hodgeData.allDegreeDecomposition_holds,
+    F.finiteHodgeTheoremPackage.hodgeData.allDegreeDifferentialFromSource_holds,
+    F.periodStokesTheoremPackage.periodStokesStatement_holds,
+    F.topologicalDebtTheoremPackage.topologicalCapacityStatement_holds,
+    F.derivedConflictTheoremPackage.lawConflictTorReading_holds,
+    F.derivedConflictTheoremPackage.hilbertSeriesConflictStatement_holds⟩
 
 /-- VIII.Theorem 12.3: selected finite-profile comparison statement. -/
 def aatGAGAComparisonStatement {M : MeasurementProfile.{u, v}} [Field M.Coeff]

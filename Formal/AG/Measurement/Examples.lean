@@ -3882,6 +3882,12 @@ def gagaRealCommonAmbient :
   noComparisonWithoutCommonAmbient := Site.AATSheafCondition FiniteModel.site gagaRealPresheaf
   noComparisonWithoutCommonAmbient_cert := gagaReal_isSheaf
 
+/-- Interpret each profile obstruction-object handle on the actual real Čech sheaf. -/
+def gagaAmbientStructureSheafFromProfile : FiniteObstructionObjectHandle →
+    Cohomology.ObstructionSheaf FiniteModel.site
+  | .selected => gagaRealObstructionSheaf
+  | .alternate => gagaRealObstructionSheaf
+
 /-- R11(g): source data whose site, cover, cochains, and differentials are generated
 from the selected real finite profile. -/
 noncomputable def gagaFiniteCechSource :
@@ -3919,11 +3925,11 @@ noncomputable def gagaCommonFiniteData :
   }
   commonAmbient := gagaRealCommonAmbient
   ambientAtomType_eq_source := rfl
-  selectedObstructionSheaf := gagaRealObstructionSheaf
-  selectedObstructionSheaf_eq_source := rfl
   ambientStructureSheafFromProfile := id
   selectedObstructionObject := .selected
   selectedStructureSheaf_eq_profile := rfl
+  ambientStructureSheafToSource := gagaAmbientStructureSheafFromProfile
+  selectedStructureSheaf_realizes_source := rfl
   ambientCoefficientObject_eq_profile := rfl
   leftCoefficient_eq_selected := rfl
   rightCoefficient_eq_selected := rfl
@@ -3964,6 +3970,94 @@ noncomputable def gagaRealTwoRealization :
       EuclideanSpace ℝ (GAGARealSimplex 2) :=
   gagaRealNerveComplex.twoCochainCoordinates.trans
     (gagaRealEuclideanCoordinates 2).symm
+
+/-- Realize every generated canonical Čech cochain space in Euclidean coordinates. -/
+noncomputable def gagaRealAllDegreeRealization (n : Nat) :
+    gagaFiniteCechSource.geometry.CechCochain n ≃+
+      EuclideanSpace ℝ (GAGARealSimplex n) := by
+  letI : CommRing ℝ := gagaRealGeometry.coeffCommRing
+  letI : AddCommGroup (gagaRealGeometry.CechCochain n) :=
+    gagaRealGeometry.cochainAddCommGroup n
+  letI : Module ℝ (gagaRealGeometry.CechCochain n) :=
+    gagaRealGeometry.cochainModule n
+  exact ((gagaRealCochainCoordinates n).trans
+    (gagaRealEuclideanCoordinates n).symm).toAddEquiv
+
+/-- The real differential is transported from the actual canonical Čech differential. -/
+noncomputable def gagaRealAllDegreeDifferential (n : Nat) :
+    EuclideanSpace ℝ (GAGARealSimplex n) →ₗ[ℝ]
+      EuclideanSpace ℝ (GAGARealSimplex (n + 1)) := by
+  letI : CommRing ℝ := gagaRealGeometry.coeffCommRing
+  letI : AddCommGroup (gagaRealGeometry.CechCochain n) :=
+    gagaRealGeometry.cochainAddCommGroup n
+  letI : AddCommGroup (gagaRealGeometry.CechCochain (n + 1)) :=
+    gagaRealGeometry.cochainAddCommGroup (n + 1)
+  letI : Module ℝ (gagaRealGeometry.CechCochain n) :=
+    gagaRealGeometry.cochainModule n
+  letI : Module ℝ (gagaRealGeometry.CechCochain (n + 1)) :=
+    gagaRealGeometry.cochainModule (n + 1)
+  let E0 := (gagaRealCochainCoordinates n).trans (gagaRealEuclideanCoordinates n).symm
+  let E1 := (gagaRealCochainCoordinates (n + 1)).trans
+    (gagaRealEuclideanCoordinates (n + 1)).symm
+  exact E1.toLinearMap.comp
+    ((gagaRealGeometry.differentialLinear n).comp E0.symm.toLinearMap)
+
+/-- The transported all-degree real differential is the generated Čech differential. -/
+theorem gagaRealAllDegreeDifferential_eq_source (n : Nat)
+    (c : gagaFiniteCechSource.geometry.CechCochain n) :
+    gagaRealAllDegreeDifferential n (gagaRealAllDegreeRealization n c) =
+      gagaRealAllDegreeRealization (n + 1)
+        (gagaFiniteCechSource.geometry.differentialLinear n c) := by
+  change gagaRealAllDegreeRealization (n + 1)
+      (gagaRealGeometry.differentialLinear n
+        ((gagaRealAllDegreeRealization n).symm
+          (gagaRealAllDegreeRealization n c))) = _
+  rw [(gagaRealAllDegreeRealization n).symm_apply_apply]
+  simp only [gagaFiniteCechSource]
+
+/-- Consecutive transported differentials form the actual all-degree Čech complex. -/
+theorem gagaRealAllDegreeDifferential_comp (n : Nat) :
+    (gagaRealAllDegreeDifferential (n + 1)).comp
+      (gagaRealAllDegreeDifferential n) = 0 := by
+  apply LinearMap.ext
+  intro c
+  change gagaRealAllDegreeRealization (n + 2)
+      (gagaRealGeometry.differentialLinear (n + 1)
+        ((gagaRealAllDegreeRealization (n + 1)).symm
+          (gagaRealAllDegreeRealization (n + 1)
+            (gagaRealGeometry.differentialLinear n
+              ((gagaRealAllDegreeRealization n).symm c))))) = 0
+  rw [(gagaRealAllDegreeRealization (n + 1)).symm_apply_apply]
+  have hcomp :=
+    Cohomology.StandardFinitePosetCech.canonicalTupleStandardFinitePosetCechComplex_differential_comp
+      gagaRealGeometry.tupleGeometry gagaRealGeometry.obstructionSheaf n
+      ((gagaRealAllDegreeRealization n).symm c)
+  have hzero :
+      gagaRealGeometry.cechComplex.differential (n + 1)
+        (gagaRealGeometry.cechComplex.differential n
+          ((gagaRealAllDegreeRealization n).symm c)) =
+        (0 : gagaRealGeometry.CechCochain (n + 2)) := by
+    simpa [FiniteMeasurementGeometry.cechComplex] using hcomp
+  have hzeroLinear :
+      gagaRealGeometry.differentialLinear (n + 1)
+        (gagaRealGeometry.differentialLinear n
+          ((gagaRealAllDegreeRealization n).symm c)) =
+        (0 : gagaRealGeometry.CechCochain (n + 2)) := by
+    simpa [FiniteMeasurementGeometry.differentialLinear] using hzero
+  rw [hzeroLinear]
+  exact (gagaRealAllDegreeRealization (n + 2)).map_zero
+
+/-- The all-degree Hodge input is constructed from the same generated real Čech source. -/
+noncomputable def gagaRealAllDegreeHodgeInput :
+    AATGAGAAllDegreeRealCechHodgeInput gagaFiniteCechSource where
+  RealCochain := fun n => EuclideanSpace ℝ (GAGARealSimplex n)
+  cochainNormed := by intro _; infer_instance
+  cochainInner := by intro _; infer_instance
+  cochainFinite := by intro _; infer_instance
+  sourceToReal := gagaRealAllDegreeRealization
+  realD := gagaRealAllDegreeDifferential
+  realD_eq_source := gagaRealAllDegreeDifferential_eq_source
+  real_d_comp := gagaRealAllDegreeDifferential_comp
 
 /-- R11(g): the Hodge realization uses the same selected real Čech complex. -/
 noncomputable def gagaRealHodgeInput :
@@ -4080,30 +4174,25 @@ noncomputable def gagaRealHodgeInput :
 noncomputable def gagaSelectedFiniteHodgeData :
     AATGAGASelectedFiniteHodgeData gagaCommonFiniteData where
   realInput := gagaRealHodgeInput
+  allDegreeInput := gagaRealAllDegreeHodgeInput
 
 /-- R11(g): finite Hodge theorem package for the single generated Čech source. -/
 noncomputable def gagaFiniteHodgeTheoremPackage :
     SelectedFiniteHodgeTheoremPackage gagaCommonFiniteData where
   hodgeData := gagaSelectedFiniteHodgeData
 
-/-- R11(g): additive extension accounting used by the selected Period/Stokes package. -/
-def gagaExtensionAccounting : Cohomology.ExtensionHolonomyAccounting where
-  ExtensionEvent := ℝ
-  Accounting := ℝ
-  eventAddCommGroup := by infer_instance
-  accountingAddCommGroup := by infer_instance
-  kappa_U := AddMonoidHom.id ℝ
-
 /-- R11(g): Period/Stokes theorem package over the same selected measurement. -/
 def gagaPeriodStokesTheoremPackage :
-    SelectedPeriodStokesTheoremPackage gagaCommonFiniteData where
-  measuredSelection := gagaCommonFiniteData.measuredSelection
-  extensionAccounting := gagaExtensionAccounting
+    SelectedPeriodStokesTheoremPackage gagaCommonFiniteData
+      gagaFiniteHodgeTheoremPackage where
+  sourceHodgeData := gagaSelectedFiniteHodgeData
+  sourceHodgeData_eq := rfl
 
 /-- R11(g): finite-nerve capacity package over the same selected measurement. -/
 def gagaTopologicalDebtTheoremPackage :
     SelectedTopologicalDebtTheoremPackage gagaCommonFiniteData where
-  measuredSelection := gagaCommonFiniteData.measuredSelection
+  source := gagaFiniteCechSource
+  source_eq_common := rfl
 
 /-- R11(g): common-ambient LawConflict input, constructed from ambient law generators. -/
 noncomputable def gagaDerivedConflictTheoremPackage :
@@ -4111,6 +4200,8 @@ noncomputable def gagaDerivedConflictTheoremPackage :
   generatedLawIdeal := by
     simpa [gagaCommonFiniteData, gagaRealCommonAmbient, gagaRealMeasurementProfile] using
       gagaGeneratedLawIdeal
+  leftGeneratedIdeal_eq := gagaGeneratedLawIdeal_xy
+  rightGeneratedIdeal_eq := gagaGeneratedLawIdeal_xz
 
 /-- R11(g): every certified GAGA conclusion is derived from the generated source. -/
 noncomputable def gagaCertifiedFields :
