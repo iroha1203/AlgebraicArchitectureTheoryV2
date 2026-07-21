@@ -1,6 +1,9 @@
 import Formal.AG.Measurement.GAGA
+import Formal.AG.Measurement.ComputabilityLawConflict
 import Formal.AG.Examples.FiniteModel
+import Formal.AG.ReadingFunctoriality.FiniteExamples
 import Formal.AG.Derived.Counterexample
+import Mathlib.Data.Fintype.Pi
 import Mathlib.LinearAlgebra.StdBasis
 
 noncomputable section
@@ -310,6 +313,507 @@ def finiteComputabilityTupleGeometry :
       finiteComputabilityCoverGeometry :=
   finiteComputabilityCoverGeometry.canonicalTupleCoverGeometryFromOverlap
 
+/-- Nontrivial profile handles used to verify selected obstruction-object
+provenance. -/
+inductive FiniteObstructionObjectHandle where
+  | selected
+  | alternate
+  deriving DecidableEq
+
+/-- Nontrivial profile handles used to verify selected obstruction-ideal
+provenance. -/
+inductive FiniteObstructionIdealHandle where
+  | selected
+  | alternate
+  deriving DecidableEq
+
+/-- Nontrivial profile handles distinguishing the selected left and right law
+ideals. -/
+inductive FiniteLawHandle where
+  | left
+  | right
+  | alternate
+  deriving DecidableEq
+
+/-!
+The original finite-dimensional fixture has a contractible constant
+coefficient complex.  The next fixture reuses the strict-diamond AAT site from
+the reading-functoriality reference model, with its finite-field sheaf that
+vanishes on the two patches and is nonzero on their mixed overlap.  It gives an
+actual nonzero generated `H¹` class for the representative procedure.
+-/
+
+/-- Profile for the nonzero finite-dimensional `H¹` representative fixture. -/
+def finiteDimensionalNonzeroH1Profile : MeasurementProfile where
+  SiteObj := PUnit
+  Cover := Bool
+  Coeff := ZMod 2
+  EffCoeff := Unit
+  ObstructionObject := Unit
+  LawUniverse := Unit
+  WitnessVariables := SquareFreeSupportVertex
+  ObstructionIdeal := Unit
+  RepresentationFamily := Unit
+  Domain := Unit
+  CertRef := fun _ => Unit
+  SelectedMethod := fun _ => Unit
+  InScope := fun _ => True
+  OutOfScope := fun _ => False
+  Zero := fun _ => True
+  NonZero := fun _ => False
+  Undecided := fun _ => False
+  NotRunOrUnavailable := fun _ => False
+
+/-- Witness-ideal preservation data for the strict-diamond selected cover. -/
+def finiteDimensionalNonzeroH1AdequacyRequirements :
+    Site.UAdequacyRequirements
+      ReadingFunctorialityFinite.finiteLinearSite.contextPreorder
+      ReadingFunctorialityFinite.finiteLinearSite.requirements where
+  selectedWitnessIdeal := fun _ => True
+  witnessIdealPreservedBy := fun _ _ => trivial
+
+/-- The strict-diamond cover is adequate for the local measurement fixture. -/
+theorem finiteDimensionalNonzeroH1Cover_uAdequate :
+    Site.UAdequateCover finiteDimensionalNonzeroH1AdequacyRequirements
+      ReadingFunctorialityFinite.finiteLinearCover where
+  topologyCover :=
+    Site.AATGrothendieckTopology.generate_mem
+      ReadingFunctorialityFinite.finiteLinearCover
+  requiredSupportCovered :=
+    ReadingFunctorialityFinite.finiteLinearCover.admissible.atomSupportCoverage
+  requiredWitnessesVisible :=
+    ReadingFunctorialityFinite.finiteLinearCover.admissible.lawWitnessCoverage
+  requiredAxesReadable :=
+    ReadingFunctorialityFinite.finiteLinearCover.admissible.signatureAxisCoverage
+  boundaryWitnessesVisible :=
+    ReadingFunctorialityFinite.finiteLinearCover.admissible.boundaryCoverage
+  restrictionMapsPreserveWitnessIdeals := fun _ _ => trivial
+
+/-- Coefficient-free strict-diamond cover geometry.  Its operational nerve is
+replaced below by the canonical tuple nerve generated from the selected
+cover. -/
+noncomputable def finiteDimensionalNonzeroH1CoverGeometry :
+    Site.FinitePosetCoverGeometry
+      ReadingFunctorialityFinite.finiteLinearSite where
+  ContextIndex := PUnit
+  finiteContextIndex := inferInstance
+  context := fun _ => ReadingFunctorialityFinite.finiteLinearBase.ctx
+  contextLe := fun _ _ => True
+  contextLe_refl := fun _ => trivial
+  contextLe_trans := fun _ _ => trivial
+  contextLe_antisymm := by intros; subsingleton
+  contextLe_sound := fun _ =>
+    ReadingFunctorialityFinite.finiteLinearSite.contextPreorder.refl _
+  contextMeet := fun _ _ => PUnit.unit
+  contextMeet_le_left := fun _ _ => trivial
+  contextMeet_le_right := fun _ _ => trivial
+  context_le_meet := fun _ _ => trivial
+  base := ReadingFunctorialityFinite.finiteLinearBase
+  cover := ReadingFunctorialityFinite.finiteLinearCover
+  finiteCoverIndex := inferInstance
+  nerveSimplex := fun _ => PUnit
+  finiteNerveSimplex := fun _ => inferInstance
+  simplexIndices := fun _ _ _ =>
+    ReadingFunctorialityFinite.finiteLinearCoverIndexEquiv.symm false
+  simplexOverlap := fun _ _ =>
+    ReadingFunctorialityFinite.finiteLinearCover.patch
+      (ReadingFunctorialityFinite.finiteLinearCoverIndexEquiv.symm false)
+  simplexOverlap_le_patch := fun _ _ _ =>
+    ReadingFunctorialityFinite.finiteLinearSite.contextPreorder.refl _
+  adequacyRequirements := finiteDimensionalNonzeroH1AdequacyRequirements
+  coverAdequate := finiteDimensionalNonzeroH1Cover_uAdequate
+
+/-- Canonical tuple geometry of the strict-diamond cover. -/
+noncomputable def finiteDimensionalNonzeroH1TupleGeometry :
+    Site.FinitePosetCanonicalTupleCoverGeometry
+      finiteDimensionalNonzeroH1CoverGeometry :=
+  finiteDimensionalNonzeroH1CoverGeometry
+    |>.canonicalTupleCoverGeometryFromOverlap
+
+/-- Generated finite-field measurement geometry on the strict-diamond site. -/
+noncomputable def finiteDimensionalNonzeroH1Geometry :
+    FiniteMeasurementGeometry finiteDimensionalNonzeroH1Profile where
+  U := FiniteModel.carrier
+  A := FiniteModel.corePackage.object
+  site := ReadingFunctorialityFinite.finiteLinearSite
+  coverGeometry := finiteDimensionalNonzeroH1CoverGeometry
+  tupleGeometry := finiteDimensionalNonzeroH1TupleGeometry
+  coeffCommRing := by
+    change CommRing (ZMod 2)
+    infer_instance
+  obstructionSheaf :=
+    ReadingFunctorialityFinite.finiteLinearF2ObstructionSheaf
+  sectionModule := by
+    intro n simplex
+    change Module (ZMod 2)
+      (ReadingFunctorialityFinite.finiteLinearF2CoefficientSubmodule _)
+    infer_instance
+  faceRestrictionLinear := by
+    intro n simplex i
+    let faceData :=
+      (finiteDimensionalNonzeroH1TupleGeometry.toSimplicialFaceAction
+        ReadingFunctorialityFinite.finiteLinearF2ObstructionSheaf.carrier.toPresheaf)
+        |>.toFaceData
+    exact ReadingFunctorialityFinite.finiteLinearF2RestrictionLinear
+      (CategoryTheory.homOfLE
+        (faceData.faceOverlap_le n simplex i))
+  faceRestrictionLinear_apply := by
+    intros
+    rfl
+  siteObjEquiv := Equiv.refl PUnit
+  coverEquiv :=
+    ReadingFunctorialityFinite.finiteLinearCoverIndexEquiv.symm
+
+/-- Every generated strict-diamond cochain carrier is finite over `ZMod 2`. -/
+noncomputable def finiteDimensionalNonzeroH1CochainFintype (n : Nat) :
+    Fintype (finiteDimensionalNonzeroH1Geometry.CechCochain n) := by
+  letI : Finite
+      (Site.FinitePosetCechSimplex
+        finiteDimensionalNonzeroH1Geometry.coefficientRegime n) :=
+    Site.FinitePosetCechSimplex.finite
+      finiteDimensionalNonzeroH1Geometry.coefficientRegime n
+  letI : Fintype
+      (Site.FinitePosetCechSimplex
+        finiteDimensionalNonzeroH1Geometry.coefficientRegime n) :=
+    Fintype.ofFinite _
+  letI : DecidableEq
+      (Site.FinitePosetCechSimplex
+        finiteDimensionalNonzeroH1Geometry.coefficientRegime n) :=
+    Classical.decEq _
+  letI (simplex : Site.FinitePosetCechSimplex
+      finiteDimensionalNonzeroH1Geometry.coefficientRegime n) :
+      Fintype (Site.FinitePosetCechSection
+        finiteDimensionalNonzeroH1Geometry.coefficientRegime n simplex) := by
+    change Fintype
+      (ReadingFunctorialityFinite.finiteLinearF2CoefficientSubmodule _)
+    exact Fintype.ofFinite _
+  letI (simplex : Site.FinitePosetCechSimplex
+      finiteDimensionalNonzeroH1Geometry.coefficientRegime n) :
+      DecidableEq (Site.FinitePosetCechSection
+        finiteDimensionalNonzeroH1Geometry.coefficientRegime n simplex) :=
+    Classical.decEq _
+  infer_instance
+
+/-- Explicit coefficient field for the nonzero `H¹` matrix fixture. -/
+noncomputable def finiteDimensionalNonzeroH1CoeffField :
+    Field finiteDimensionalNonzeroH1Profile.Coeff := by
+  change Field (ZMod 2)
+  infer_instance
+
+/-- A finite basis of each generated strict-diamond cochain module. -/
+noncomputable def finiteDimensionalNonzeroH1CochainBasis (n : Nat) :
+    letI : Field finiteDimensionalNonzeroH1Profile.Coeff :=
+      finiteDimensionalNonzeroH1CoeffField
+    letI : AddCommGroup
+        (finiteDimensionalNonzeroH1Geometry.CechCochain n) :=
+      finiteDimensionalNonzeroH1Geometry.cochainAddCommGroup n
+    letI : Module finiteDimensionalNonzeroH1Profile.Coeff
+        (finiteDimensionalNonzeroH1Geometry.CechCochain n) :=
+      finiteDimensionalNonzeroH1Geometry.cochainModule n
+    letI : Module.Free finiteDimensionalNonzeroH1Profile.Coeff
+        (finiteDimensionalNonzeroH1Geometry.CechCochain n) :=
+      Module.Free.of_divisionRing _ _
+    Module.Basis
+      (Module.Free.ChooseBasisIndex
+        finiteDimensionalNonzeroH1Profile.Coeff
+        (finiteDimensionalNonzeroH1Geometry.CechCochain n))
+      finiteDimensionalNonzeroH1Profile.Coeff
+      (finiteDimensionalNonzeroH1Geometry.CechCochain n) := by
+  letI : Field finiteDimensionalNonzeroH1Profile.Coeff :=
+    finiteDimensionalNonzeroH1CoeffField
+  letI : AddCommGroup
+      (finiteDimensionalNonzeroH1Geometry.CechCochain n) :=
+    finiteDimensionalNonzeroH1Geometry.cochainAddCommGroup n
+  letI : Module finiteDimensionalNonzeroH1Profile.Coeff
+      (finiteDimensionalNonzeroH1Geometry.CechCochain n) :=
+    finiteDimensionalNonzeroH1Geometry.cochainModule n
+  letI : Fintype (finiteDimensionalNonzeroH1Geometry.CechCochain n) :=
+    finiteDimensionalNonzeroH1CochainFintype n
+  letI : Module.Free finiteDimensionalNonzeroH1Profile.Coeff
+      (finiteDimensionalNonzeroH1Geometry.CechCochain n) :=
+    Module.Free.of_divisionRing _ _
+  exact Module.Free.chooseBasis _ _
+
+/-- Matrix model of the actual strict-diamond canonical Čech complex. -/
+noncomputable def finiteDimensionalNonzeroH1CechModel :
+    @FiniteDimensionalCechModel finiteDimensionalNonzeroH1Profile
+      finiteDimensionalNonzeroH1Geometry
+      finiteDimensionalNonzeroH1CoeffField := by
+  letI : Field finiteDimensionalNonzeroH1Profile.Coeff :=
+    finiteDimensionalNonzeroH1CoeffField
+  letI (n : Nat) :
+      Fintype (finiteDimensionalNonzeroH1Geometry.CechCochain n) :=
+    finiteDimensionalNonzeroH1CochainFintype n
+  letI (n : Nat) :
+      AddCommGroup (finiteDimensionalNonzeroH1Geometry.CechCochain n) :=
+    finiteDimensionalNonzeroH1Geometry.cochainAddCommGroup n
+  letI (n : Nat) : Module finiteDimensionalNonzeroH1Profile.Coeff
+      (finiteDimensionalNonzeroH1Geometry.CechCochain n) :=
+    finiteDimensionalNonzeroH1Geometry.cochainModule n
+  letI (n : Nat) : Module.Free finiteDimensionalNonzeroH1Profile.Coeff
+      (finiteDimensionalNonzeroH1Geometry.CechCochain n) :=
+    Module.Free.of_divisionRing _ _
+  letI (n : Nat) : Module.Finite finiteDimensionalNonzeroH1Profile.Coeff
+      (finiteDimensionalNonzeroH1Geometry.CechCochain n) :=
+    Module.Finite.of_finite
+  exact {
+    CochainSpace := finiteDimensionalNonzeroH1Geometry.CechCochain
+    CochainIndex := fun n =>
+      Module.Free.ChooseBasisIndex
+        finiteDimensionalNonzeroH1Profile.Coeff
+        (finiteDimensionalNonzeroH1Geometry.CechCochain n)
+    cochainIndexFintype := fun _ => inferInstance
+    cochainIndexDecidableEq := fun _ => Classical.decEq _
+    cochainAddCommGroup :=
+      finiteDimensionalNonzeroH1Geometry.cochainAddCommGroup
+    cochainModule := finiteDimensionalNonzeroH1Geometry.cochainModule
+    cochainBasis := finiteDimensionalNonzeroH1CochainBasis
+    cochainEquivCanonical := fun _ => AddEquiv.refl _
+    cochainEquivCanonical_smul := by intros; rfl
+    differentialLinear :=
+      finiteDimensionalNonzeroH1Geometry.differentialLinear
+    differential_eq_canonical := by intros; rfl
+    differential_comp := by
+      intro n c
+      exact finiteDimensionalNonzeroH1Geometry.cechComplex
+        |>.differential_comp_zero n c
+    differentialMatrix := fun n =>
+      LinearMap.toMatrix
+        (finiteDimensionalNonzeroH1CochainBasis n)
+        (finiteDimensionalNonzeroH1CochainBasis (n + 1))
+        (finiteDimensionalNonzeroH1Geometry.differentialLinear n)
+    differentialMatrix_correct := by intros; rfl
+  }
+
+/-- Uniform finite-search representative procedure for the strict-diamond
+matrix model. -/
+noncomputable def finiteDimensionalNonzeroH1CechProcedure :
+    FiniteDimensionalCechProcedure.{0, 0}
+      finiteDimensionalNonzeroH1Profile
+      finiteDimensionalNonzeroH1Geometry where
+  coeffField := finiteDimensionalNonzeroH1CoeffField
+  coeffDecidableEq := by
+    change DecidableEq (ZMod 2)
+    infer_instance
+  linearSystemSolver := FiniteLinearSystemSolver.ofFiniteField (ZMod 2)
+  cosetNormalizer := FiniteLinearCosetNormalizer.ofFiniteField (ZMod 2)
+  model := finiteDimensionalNonzeroH1CechModel
+
+/-- Common Čech computation API selecting the nonzero finite-dimensional
+fixture. -/
+noncomputable def finiteDimensionalNonzeroH1ComputationProcedure :
+    CechComputationProcedure finiteDimensionalNonzeroH1Profile
+      finiteDimensionalNonzeroH1Geometry :=
+  .finiteDimensional finiteDimensionalNonzeroH1CechProcedure
+
+/-- Potential-difference cochain on the two strict-diamond cover branches. -/
+noncomputable def finiteDimensionalNonzeroH1OneCochain :
+    finiteDimensionalNonzeroH1Geometry.CechCochain 1 := fun simplex => by
+  change ReadingFunctorialityFinite.finiteLinearF2CoefficientSubmodule
+    (ReadingFunctorialityFinite.finiteLinearSite.overlap.overlap
+      ReadingFunctorialityFinite.finiteLinearBase.ctx
+      (ReadingFunctorialityFinite.finiteLinearCover.patch (simplex 0))
+      (ReadingFunctorialityFinite.finiteLinearCover.patch (simplex 1)))
+  exact ReadingFunctorialityFinite.finiteLinearF2PairSection
+    (simplex 0) (simplex 1)
+
+private theorem finiteDimensionalNonzeroH1Face_zero_first
+    (simplex : Site.FinitePosetCechSimplex
+      finiteDimensionalNonzeroH1Geometry.coefficientRegime 2) :
+    ((finiteDimensionalNonzeroH1TupleGeometry.toSimplicialFaceAction
+        ReadingFunctorialityFinite.finiteLinearF2CoefficientPresheaf).toFaceData.face
+      1 simplex (0 : Fin 3)) 0 = simplex 1 :=
+  rfl
+
+private theorem finiteDimensionalNonzeroH1Face_zero_second
+    (simplex : Site.FinitePosetCechSimplex
+      finiteDimensionalNonzeroH1Geometry.coefficientRegime 2) :
+    ((finiteDimensionalNonzeroH1TupleGeometry.toSimplicialFaceAction
+        ReadingFunctorialityFinite.finiteLinearF2CoefficientPresheaf).toFaceData.face
+      1 simplex (0 : Fin 3)) 1 = simplex 2 :=
+  rfl
+
+private theorem finiteDimensionalNonzeroH1Face_one_first
+    (simplex : Site.FinitePosetCechSimplex
+      finiteDimensionalNonzeroH1Geometry.coefficientRegime 2) :
+    ((finiteDimensionalNonzeroH1TupleGeometry.toSimplicialFaceAction
+        ReadingFunctorialityFinite.finiteLinearF2CoefficientPresheaf).toFaceData.face
+      1 simplex (1 : Fin 3)) 0 = simplex 0 :=
+  rfl
+
+private theorem finiteDimensionalNonzeroH1Face_one_second
+    (simplex : Site.FinitePosetCechSimplex
+      finiteDimensionalNonzeroH1Geometry.coefficientRegime 2) :
+    ((finiteDimensionalNonzeroH1TupleGeometry.toSimplicialFaceAction
+        ReadingFunctorialityFinite.finiteLinearF2CoefficientPresheaf).toFaceData.face
+      1 simplex (1 : Fin 3)) 1 = simplex 2 :=
+  rfl
+
+private theorem finiteDimensionalNonzeroH1Face_two_first
+    (simplex : Site.FinitePosetCechSimplex
+      finiteDimensionalNonzeroH1Geometry.coefficientRegime 2) :
+    ((finiteDimensionalNonzeroH1TupleGeometry.toSimplicialFaceAction
+        ReadingFunctorialityFinite.finiteLinearF2CoefficientPresheaf).toFaceData.face
+      1 simplex (2 : Fin 3)) 0 = simplex 0 :=
+  rfl
+
+private theorem finiteDimensionalNonzeroH1Face_two_second
+    (simplex : Site.FinitePosetCechSimplex
+      finiteDimensionalNonzeroH1Geometry.coefficientRegime 2) :
+    ((finiteDimensionalNonzeroH1TupleGeometry.toSimplicialFaceAction
+        ReadingFunctorialityFinite.finiteLinearF2CoefficientPresheaf).toFaceData.face
+      1 simplex (2 : Fin 3)) 1 = simplex 1 :=
+  rfl
+
+/-- The potential-difference cochain satisfies the actual generated Čech
+cocycle equation. -/
+theorem finiteDimensionalNonzeroH1OneCochain_isCocycle :
+    finiteDimensionalNonzeroH1Geometry.cechComplex.differential 1
+        finiteDimensionalNonzeroH1OneCochain =
+      Site.FinitePosetCechZeroCochain
+        finiteDimensionalNonzeroH1Geometry.cechComplex.additive 2 := by
+  funext simplex
+  refine Subtype.ext ?_
+  dsimp only [FiniteMeasurementGeometry.cechComplex,
+    Cohomology.StandardFinitePosetCech.canonicalTupleStandardFinitePosetCechComplex,
+    Cohomology.StandardFinitePosetCech.standardFinitePosetCechComplex,
+    Cohomology.StandardFinitePosetCech.standardDifferential,
+    Cohomology.StandardFinitePosetCech.standardAdditiveData,
+    Cohomology.StandardFinitePosetCech.obstructionSheafStandardAlternatingCombination,
+    Site.FinitePosetCechZeroCochain]
+  rw [Fin.sum_univ_succ, Fin.sum_univ_succ, Fin.sum_univ_succ]
+  simp only [Fintype.sum_empty, add_zero]
+  norm_num
+  simp only [Site.FinitePosetCechFaceRestriction,
+    finiteDimensionalNonzeroH1Geometry,
+    Site.FinitePosetCoverGeometry.toObstructionCoefficientRegime,
+    Site.FinitePosetCoverGeometry.toRegime,
+    ReadingFunctorialityFinite.finiteLinearF2ObstructionSheaf_toPresheaf]
+  simp only [
+    finiteDimensionalNonzeroH1OneCochain,
+    finiteDimensionalNonzeroH1Face_zero_first,
+    finiteDimensionalNonzeroH1Face_zero_second,
+    finiteDimensionalNonzeroH1Face_one_first,
+    finiteDimensionalNonzeroH1Face_one_second,
+    finiteDimensionalNonzeroH1Face_two_first,
+    finiteDimensionalNonzeroH1Face_two_second]
+  dsimp only [ReadingFunctorialityFinite.finiteLinearF2CoefficientPresheaf]
+  refine Subtype.ext ?_
+  rw [ReadingFunctorialityFinite.finiteLinearF2Section_add_val,
+    ReadingFunctorialityFinite.finiteLinearF2Section_add_val,
+    ReadingFunctorialityFinite.finiteLinearF2Section_neg_val,
+    ReadingFunctorialityFinite.finiteLinearF2Section_zero_val]
+  dsimp only [id]
+  simp only [ReadingFunctorialityFinite.finiteLinearF2PairSection_val]
+  ring
+
+/-- The potential-difference cochain as an actual cycle in the generated
+finite-poset complex. -/
+noncomputable def finiteDimensionalNonzeroH1Cocycle :
+    finiteDimensionalNonzeroH1Geometry.CechCocycle 1 :=
+  ⟨finiteDimensionalNonzeroH1OneCochain,
+    finiteDimensionalNonzeroH1OneCochain_isCocycle⟩
+
+private theorem finiteDimensionalNonzeroH1DegreeZeroCoefficient_eq_bot
+    (simplex : Site.FinitePosetCechSimplex
+      finiteDimensionalNonzeroH1Geometry.coefficientRegime 0) :
+    ReadingFunctorialityFinite.finiteLinearF2CoefficientSubmodule
+        (Site.FinitePosetCechOverlapObject
+          finiteDimensionalNonzeroH1Geometry.coefficientRegime 0 simplex).ctx =
+      ⊥ := by
+  simpa [finiteDimensionalNonzeroH1Geometry,
+    finiteDimensionalNonzeroH1TupleGeometry,
+    finiteDimensionalNonzeroH1CoverGeometry,
+    Site.FinitePosetCanonicalTupleCoverGeometry.toCoverGeometry,
+    Site.FinitePosetCoverGeometry.canonicalTupleCoverGeometryFromOverlap,
+    Site.FinitePosetCoverGeometry.canonicalTupleOverlapFromOverlap] using
+      ReadingFunctorialityFinite.finiteLinearF2CoefficientSubmodule_patch_eq_bot
+        (simplex 0)
+
+private theorem finiteDimensionalNonzeroH1ZeroCochain_eq_zero
+    (b : finiteDimensionalNonzeroH1Geometry.CechCochain 0) : b = 0 := by
+  funext simplex
+  refine Subtype.ext ?_
+  have hb : (b simplex).1 ∈ (⊥ : Submodule (ZMod 2) (ZMod 2)) := by
+    rw [← finiteDimensionalNonzeroH1DegreeZeroCoefficient_eq_bot simplex]
+    exact (b simplex).2
+  exact hb
+
+private def finiteDimensionalNonzeroH1MixedOneSimplex :
+    Site.FinitePosetCechSimplex
+      finiteDimensionalNonzeroH1Geometry.coefficientRegime 1 :=
+  fun i =>
+    if i = 0 then
+      ReadingFunctorialityFinite.finiteLinearCoverIndexEquiv.symm false
+    else
+      ReadingFunctorialityFinite.finiteLinearCoverIndexEquiv.symm true
+
+private theorem finiteDimensionalNonzeroH1OneCochain_mixed_val :
+    (finiteDimensionalNonzeroH1OneCochain
+      finiteDimensionalNonzeroH1MixedOneSimplex).1 = (1 : ZMod 2) := by
+  simp [finiteDimensionalNonzeroH1OneCochain,
+    finiteDimensionalNonzeroH1MixedOneSimplex,
+    ReadingFunctorialityFinite.finiteLinearF2PairSection_val,
+    ReadingFunctorialityFinite.finiteLinearF2Potential,
+    ReadingFunctorialityFinite.finiteLinearCoverIndexEquiv]
+
+private theorem finiteDimensionalNonzeroH1OneCochain_ne_zero :
+    finiteDimensionalNonzeroH1OneCochain ≠ 0 := by
+  intro hzero
+  have hvalue := congrArg
+    (fun c => (c finiteDimensionalNonzeroH1MixedOneSimplex).1) hzero
+  change
+    (finiteDimensionalNonzeroH1OneCochain
+        finiteDimensionalNonzeroH1MixedOneSimplex).1 =
+      ((0 : finiteDimensionalNonzeroH1Geometry.CechCochain 1)
+        finiteDimensionalNonzeroH1MixedOneSimplex).1 at hvalue
+  rw [finiteDimensionalNonzeroH1OneCochain_mixed_val] at hvalue
+  change (1 : ZMod 2) = 0 at hvalue
+  exact one_ne_zero hvalue
+
+/-- Actual nonzero class selected by the finite-dimensional strict-diamond
+fixture. -/
+noncomputable def finiteDimensionalNonzeroH1Class :
+    finiteDimensionalNonzeroH1Geometry.CechHn 1 :=
+  finiteDimensionalNonzeroH1Geometry.classOfCocycle 1
+    finiteDimensionalNonzeroH1Cocycle
+
+theorem finiteDimensionalNonzeroH1Class_ne_zero :
+    finiteDimensionalNonzeroH1Class ≠
+      finiteDimensionalNonzeroH1Geometry.zeroClass 1 := by
+  intro hzero
+  have hrelated := Quotient.exact hzero
+  change ∃ b : finiteDimensionalNonzeroH1Geometry.CechCochain 0,
+    finiteDimensionalNonzeroH1Cocycle.1 -
+        (Site.FinitePosetCechZeroCocycle
+          finiteDimensionalNonzeroH1Geometry.cechComplex 1).1 =
+      finiteDimensionalNonzeroH1Geometry.differentialHom 0 b at hrelated
+  rcases hrelated with ⟨b, hb⟩
+  rw [finiteDimensionalNonzeroH1ZeroCochain_eq_zero b] at hb
+  have hzeroCocycle :
+      (Site.FinitePosetCechZeroCocycle
+        finiteDimensionalNonzeroH1Geometry.cechComplex 1).1 =
+        (0 : finiteDimensionalNonzeroH1Geometry.CechCochain 1) := by
+    funext simplex
+    rfl
+  rw [hzeroCocycle, map_zero] at hb
+  have hcochain : finiteDimensionalNonzeroH1OneCochain = 0 := by
+    simpa [finiteDimensionalNonzeroH1Cocycle] using hb
+  exact finiteDimensionalNonzeroH1OneCochain_ne_zero hcochain
+
+/-- R11(b): the common finite-dimensional quotient API returns a cycle for an
+actual nonzero generated `H¹` class and proves that it represents that class. -/
+theorem finiteDimensionalNonzeroH1Representative :
+    finiteDimensionalNonzeroH1Class ≠
+        finiteDimensionalNonzeroH1Geometry.zeroClass 1 ∧
+      finiteDimensionalNonzeroH1Geometry.classOfCocycle 1
+          (finiteDimensionalNonzeroH1ComputationProcedure.quotientRepresentative
+            1 finiteDimensionalNonzeroH1Class) =
+        finiteDimensionalNonzeroH1Class :=
+  ⟨finiteDimensionalNonzeroH1Class_ne_zero,
+    finiteDimensionalNonzeroH1ComputationProcedure.quotientRepresentative_correct
+      1 finiteDimensionalNonzeroH1Class⟩
+
 /-- R11(c): seed profile used only to name the generated `H¹` domain. -/
 def finiteComputabilitySeedProfile : MeasurementProfile where
   SiteObj := PUnit
@@ -373,11 +877,10 @@ def finiteComputabilityMeasurementProfile : MeasurementProfile where
   Cover := Bool
   Coeff := ZMod 2
   EffCoeff := Unit
-  ObstructionObject := Unit
-  LawUniverse := Unit
+  ObstructionObject := FiniteObstructionObjectHandle
+  LawUniverse := FiniteLawHandle
   WitnessVariables := SquareFreeSupportVertex
-  ObstructionIdeal :=
-    Ideal (MvPolynomial SquareFreeSupportVertex (ZMod 2))
+  ObstructionIdeal := FiniteObstructionIdealHandle
   RepresentationFamily := Unit
   Domain := finiteComputabilitySeedGeometry.CechHn 1
   CertRef := fun _ => Unit
@@ -432,11 +935,10 @@ def finiteDimensionalMatrixProfile : MeasurementProfile where
   Cover := Bool
   Coeff := ZMod 2
   EffCoeff := Unit
-  ObstructionObject := Unit
-  LawUniverse := Unit
+  ObstructionObject := FiniteObstructionObjectHandle
+  LawUniverse := FiniteLawHandle
   WitnessVariables := SquareFreeSupportVertex
-  ObstructionIdeal :=
-    Ideal (MvPolynomial SquareFreeSupportVertex (ZMod 2))
+  ObstructionIdeal := FiniteObstructionIdealHandle
   RepresentationFamily := Unit
   Domain := Unit
   CertRef := fun _ => Unit
@@ -589,7 +1091,7 @@ noncomputable def finiteDimensionalMatrixCechModel :
 
 /-- R11(c): packaged finite-dimensional procedure with an exhaustive finite-field solver. -/
 noncomputable def finiteDimensionalMatrixCechProcedure :
-    FiniteDimensionalCechProcedure.{0, 0, 0} finiteDimensionalMatrixProfile
+    FiniteDimensionalCechProcedure.{0, 0} finiteDimensionalMatrixProfile
       finiteDimensionalMatrixGeometry where
   coeffField := by
     exact finiteDimensionalMatrixCoeffField
@@ -597,6 +1099,7 @@ noncomputable def finiteDimensionalMatrixCechProcedure :
     change DecidableEq (ZMod 2)
     infer_instance
   linearSystemSolver := FiniteLinearSystemSolver.ofFiniteField (ZMod 2)
+  cosetNormalizer := FiniteLinearCosetNormalizer.ofFiniteField (ZMod 2)
   model := finiteDimensionalMatrixCechModel
 
 /-- R11(c): the finite-field fixture fires the finite-dimensional route. -/
@@ -733,6 +1236,40 @@ theorem finiteDimensionalMatrixRightIdeal_eq_squareFree :
     LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.monomialSet,
     finiteDimensionalMatrixRightSquareFree, forbiddenSupportPFinset,
     LawAlgebra.StanleyReisner.squareFreeMonomial]
+
+/-- Square-free obstruction family selected independently of the Tor law pair.
+The finite fixture reuses the nonzero all-variable family as its obstruction
+family. -/
+def finiteDimensionalMatrixObstructionSquareFree :
+    FiniteSquareFreeComputationData finiteDimensionalMatrixRegime :=
+  finiteDimensionalMatrixLeftSquareFree
+
+/-- Nontrivial selected profile handles realized by the concrete finite
+obstruction sheaf and the generated monomial ideals. -/
+noncomputable def finiteDimensionalMatrixProfileRealization :
+    FiniteAATProfileRealization finiteDimensionalMatrixProfile
+      finiteDimensionalMatrixRegime finiteDimensionalMatrixObstructionSquareFree
+      finiteDimensionalMatrixLeftSquareFree
+      finiteDimensionalMatrixRightSquareFree where
+  selectedObstructionObject := .selected
+  selectedObstructionIdeal := .selected
+  selectedLeftLaw := .left
+  selectedRightLaw := .right
+  realizeObstructionObject := fun
+    | .selected => finiteDimensionalMatrixGeometry.obstructionSheaf
+    | .alternate => finiteDimensionalMatrixGeometry.obstructionSheaf
+  realizeObstructionIdeal := fun
+    | .selected =>
+        finiteDimensionalMatrixObstructionSquareFree.obstructionIdeal (ZMod 2)
+    | .alternate => ⊥
+  realizeLawIdeal := fun
+    | .left => finiteDimensionalMatrixLeftSquareFree.obstructionIdeal (ZMod 2)
+    | .right => finiteDimensionalMatrixRightSquareFree.obstructionIdeal (ZMod 2)
+    | .alternate => ⊥
+  obstructionObject_realizes := rfl
+  obstructionIdeal_realizes := rfl
+  leftLaw_realizes := rfl
+  rightLaw_realizes := rfl
 
 /-- R11(c): selected length-one finite-free resolution on the finite-field right ideal. -/
 def finiteDimensionalMatrixRightResolution :
@@ -911,8 +1448,10 @@ theorem finiteDimensionalMatrixSelectedCoordinateClass_ne_zero :
 noncomputable def finiteDimensionalMatrixComputationData :
     FiniteAATComputationData finiteDimensionalMatrixProfile
       finiteDimensionalMatrixRegime where
+  obstructionSquareFree := finiteDimensionalMatrixObstructionSquareFree
   leftSquareFree := finiteDimensionalMatrixLeftSquareFree
   rightSquareFree := finiteDimensionalMatrixRightSquareFree
+  profileRealization := finiteDimensionalMatrixProfileRealization
   leftIdeal := finiteDimensionalMatrixLeftIdeal
   leftIdeal_eq_squareFree := finiteDimensionalMatrixLeftIdeal_eq_squareFree
   rightIdeal := finiteDimensionalMatrixRightIdeal
@@ -921,19 +1460,10 @@ noncomputable def finiteDimensionalMatrixComputationData :
   tensorMatrixAlgorithm := finiteDimensionalMatrixTensorAlgorithm
   torDegree := 1
   selectedCoordinateCycle := finiteDimensionalMatrixSelectedCycle
-  selectedCoordinateRepresentative := fun _ => 1
-  selectedCoordinateRepresentative_mod := by
-    intro i
-    rfl
-  selectedCoordinateRepresentative_reduced := by
-    intro i
-    simpa [finiteDimensionalMatrixLeftSquareFree] using
-      (FiniteSquareFreeComputationData.allSingletons_one_isReduced
-        finiteDimensionalMatrixRegime (ZMod 2))
 
 /-- R11(c): theorem 4.2 package produced through the finite-field matrix route. -/
 noncomputable def finiteDimensionalMatrixComputabilityPackage :
-    FiniteAATComputability.{0, 0, 0} finiteDimensionalMatrixRegime
+    FiniteAATComputability.{0, 0} finiteDimensionalMatrixRegime
       finiteDimensionalMatrixComputationData :=
   finiteAATComputabilityPackage finiteDimensionalMatrixRegime
     finiteDimensionalMatrixComputationData
@@ -1186,13 +1716,71 @@ theorem tinyRightIdeal_eq_squareFree :
     tinyRightSquareFreeData, forbiddenSupportPFinset,
     LawAlgebra.StanleyReisner.squareFreeMonomial]
 
+/-- Effective-route square-free obstruction family. -/
+def tinyObstructionSquareFreeData :
+    FiniteSquareFreeComputationData computabilityFiniteMeasurementRegime :=
+  tinyLeftSquareFreeData
+
+/-- Two distinct polynomial lifts of one nonzero square-free quotient class
+receive the same canonical monomial normal form. -/
+theorem tinyLeftSquareFree_normalForm_identifies_distinct_lifts :
+    (1 + MvPolynomial.X SquareFreeSupportVertex.p :
+        MvPolynomial SquareFreeSupportVertex (ZMod 2)) ≠ 1 ∧
+      tinyLeftSquareFreeData.normalForm (ZMod 2)
+          (1 + MvPolynomial.X SquareFreeSupportVertex.p) =
+        tinyLeftSquareFreeData.normalForm (ZMod 2) 1 := by
+  constructor
+  · intro h
+    have hp := congrArg
+      (MvPolynomial.coeff
+        (Finsupp.single SquareFreeSupportVertex.p 1)) h
+    simp at hp
+  · apply tinyLeftSquareFreeData.normalForm_eq_of_sub_mem (ZMod 2)
+    have hx : (MvPolynomial.X SquareFreeSupportVertex.p :
+        MvPolynomial SquareFreeSupportVertex (ZMod 2)) ∈
+          tinyLeftSquareFreeData.obstructionIdeal (ZMod 2) := by
+      change (MvPolynomial.X SquareFreeSupportVertex.p :
+          MvPolynomial SquareFreeSupportVertex (ZMod 2)) ∈
+        (FiniteSquareFreeComputationData.allSingletons
+          computabilityFiniteMeasurementRegime).obstructionIdeal (ZMod 2)
+      rw [FiniteSquareFreeComputationData.allSingletons_obstructionIdeal]
+      apply Ideal.subset_span
+      exact Set.mem_range_self SquareFreeSupportVertex.p
+    simpa using hx
+
+/-- Effective-route provenance for the selected nontrivial profile handles. -/
+noncomputable def finiteComputabilityProfileRealization :
+    FiniteAATProfileRealization finiteComputabilityMeasurementProfile
+      computabilityFiniteMeasurementRegime tinyObstructionSquareFreeData
+      tinyLeftSquareFreeData tinyRightSquareFreeData where
+  selectedObstructionObject := .selected
+  selectedObstructionIdeal := .selected
+  selectedLeftLaw := .left
+  selectedRightLaw := .right
+  realizeObstructionObject := fun
+    | .selected => finiteComputabilityGeometry.obstructionSheaf
+    | .alternate => finiteComputabilityGeometry.obstructionSheaf
+  realizeObstructionIdeal := fun
+    | .selected => tinyObstructionSquareFreeData.obstructionIdeal (ZMod 2)
+    | .alternate => ⊥
+  realizeLawIdeal := fun
+    | .left => tinyLeftSquareFreeData.obstructionIdeal (ZMod 2)
+    | .right => tinyRightSquareFreeData.obstructionIdeal (ZMod 2)
+    | .alternate => ⊥
+  obstructionObject_realizes := rfl
+  obstructionIdeal_realizes := rfl
+  leftLaw_realizes := rfl
+  rightLaw_realizes := rfl
+
 /-- R11(c): all theorem 4.2 inputs are selected from actual nonzero finite
 chain data. -/
 noncomputable def finiteComputabilityExampleData :
     FiniteAATComputationData finiteComputabilityMeasurementProfile
       computabilityFiniteMeasurementRegime where
+  obstructionSquareFree := tinyObstructionSquareFreeData
   leftSquareFree := tinyLeftSquareFreeData
   rightSquareFree := tinyRightSquareFreeData
+  profileRealization := finiteComputabilityProfileRealization
   leftIdeal := finiteDimensionalMatrixLeftIdeal
   leftIdeal_eq_squareFree := tinyLeftIdeal_eq_squareFree
   rightIdeal := finiteDimensionalMatrixRightIdeal
@@ -1201,15 +1789,6 @@ noncomputable def finiteComputabilityExampleData :
   tensorMatrixAlgorithm := finiteDimensionalMatrixTensorAlgorithm
   torDegree := 1
   selectedCoordinateCycle := finiteDimensionalMatrixSelectedCycle
-  selectedCoordinateRepresentative := fun _ => 1
-  selectedCoordinateRepresentative_mod := by
-    intro i
-    rfl
-  selectedCoordinateRepresentative_reduced := by
-    intro i
-    simpa [tinyLeftSquareFreeData] using
-      (FiniteSquareFreeComputationData.allSingletons_one_isReduced
-        computabilityFiniteMeasurementRegime (ZMod 2))
 
 /-- The degree-one basis support is derived from the actual principal
 differential entry `X p`. -/
@@ -1219,6 +1798,7 @@ theorem finiteComputabilityExampleData_resolutionBasisSupport_one
       forbiddenSupportPFinset := by
   letI := computabilityFiniteMeasurementRegime.witnessDecidableEq
   letI := computabilityFiniteMeasurementRegime.geometry.coeffCommRing
+  letI := finiteComputabilityExampleData.tensorMatrixAlgorithm.quotientDecidableEq
   letI : Nontrivial finiteComputabilityMeasurementProfile.Coeff := by
     change Nontrivial (ZMod 2)
     infer_instance
@@ -1259,7 +1839,7 @@ theorem finiteComputabilityExampleData_resolutionBasisSupport_one
 
 /-- R11(c): theorem 4.2 constructs the finite computability package. -/
 def finiteComputabilityExamplePackage :
-    FiniteAATComputability.{0, 0, 0} computabilityFiniteMeasurementRegime
+    FiniteAATComputability.{0, 0} computabilityFiniteMeasurementRegime
       finiteComputabilityExampleData :=
   finiteAATComputabilityPackage computabilityFiniteMeasurementRegime
     finiteComputabilityExampleData
@@ -1269,6 +1849,23 @@ theorem finiteComputabilityExample_effectiveRouteSelected :
     finiteComputabilityExamplePackage.coefficientComputation.route =
       .effectiveFinitelyPresented :=
   rfl
+
+/-- The effective route exposes the common representative API, rather than a
+route-specific search field. -/
+theorem finiteComputabilityExample_genericRepresentative_correct
+    (n : Nat)
+    (h : computabilityFiniteMeasurementRegime.geometry.CechHn n) :
+    computabilityFiniteMeasurementRegime.geometry.classOfCocycle n
+        (finiteComputabilityExamplePackage.cocycleRepresentative n h) = h :=
+  finiteComputabilityExamplePackage.cocycleRepresentative_correct n h
+
+/-- The finite-dimensional route exposes the same canonical representative
+API on degree-one generated Čech classes. -/
+theorem finiteDimensionalMatrixH1Representative_correct
+    (h : finiteDimensionalMatrixGeometry.CechHn 1) :
+    finiteDimensionalMatrixGeometry.classOfCocycle 1
+        (finiteDimensionalMatrixComputabilityPackage.cocycleRepresentative 1 h) = h :=
+  finiteDimensionalMatrixComputabilityPackage.cocycleRepresentative_correct 1 h
 
 theorem finiteComputabilityExampleData_selectedCoordinateClass_ne_zero :
     finiteComputabilityExampleData.selectedCoordinateHomologyClass ≠ 0 := by
@@ -1317,6 +1914,7 @@ theorem finiteComputabilityExample_combinatoricsRoute :
       forbiddenSupportPFinset := by
   letI := computabilityFiniteMeasurementRegime.witnessDecidableEq
   letI := computabilityFiniteMeasurementRegime.geometry.coeffCommRing
+  letI := finiteComputabilityExampleData.tensorMatrixAlgorithm.quotientDecidableEq
   have hclass :
       finiteComputabilityExamplePackage.selectedCoordinateHomologyClass ≠ 0 := by
     simpa [finiteComputabilityExamplePackage, finiteAATComputabilityPackage] using
@@ -1328,18 +1926,170 @@ theorem finiteComputabilityExample_combinatoricsRoute :
   rw [hsupport]
   have hone :
       (1 : MvPolynomial SquareFreeSupportVertex (ZMod 2) ⧸
-        finiteDimensionalMatrixLeftIdeal) ≠ 0 :=
+      finiteDimensionalMatrixLeftIdeal) ≠ 0 :=
     finiteDimensionalMatrixQuotient_one_ne_zero
-  simp [FiniteAATComputationData.selectedCycleSupport,
-    finiteComputabilityExampleData,
-    finiteDimensionalMatrixRightResolution,
-    Derived.FreeResolution.MathlibResolution.Principal.finiteFreeResolution,
-    finiteDimensionalMatrixSelectedCycle,
-    finiteDimensionalMatrixOneCoordinate,
-    FiniteTensorMatrixAlgorithm.cycleValue,
-    FiniteAATComputationData.polynomialVariableSupport_one,
-    forbiddenSupportPFinset, hone]
-  exact finiteComputabilityExampleData_resolutionBasisSupport_one _
+  have hrepresentative
+      (i : finiteComputabilityExampleData.rightResolution.BasisIndex 1) :
+      finiteComputabilityExampleData.coordinateRepresentative
+          finiteComputabilityExampleData.selectedCoordinateCycle i = 1 := by
+    apply tinyLeftSquareFreeData.quotientNormalFormOfIdealEq_unique
+      (ZMod 2) finiteDimensionalMatrixLeftIdeal
+      tinyLeftIdeal_eq_squareFree _ 1
+    · change (1 : MvPolynomial SquareFreeSupportVertex (ZMod 2) ⧸
+        finiteDimensionalMatrixLeftIdeal) =
+          finiteDimensionalMatrixOneCoordinate i
+      rfl
+    · simpa [tinyLeftSquareFreeData] using
+        (FiniteSquareFreeComputationData.allSingletons_one_isReduced
+          computabilityFiniteMeasurementRegime (ZMod 2))
+  have hvalue
+      (i : finiteComputabilityExampleData.rightResolution.BasisIndex 1) :
+      finiteComputabilityExampleData.tensorMatrixAlgorithm.cycleValue 1
+        finiteComputabilityExampleData.selectedCoordinateCycle i = 1 := by
+    change finiteDimensionalMatrixOneCoordinate i = 1
+    rfl
+  have hresolution
+      (i : finiteComputabilityExampleData.rightResolution.BasisIndex 1) :
+      finiteComputabilityExampleData.resolutionBasisSupport 1 i =
+        forbiddenSupportPFinset :=
+    finiteComputabilityExampleData_resolutionBasisSupport_one i
+  letI : Nonempty
+      (finiteComputabilityExampleData.rightResolution.BasisIndex 1) := by
+    change Nonempty (ULift Unit)
+    exact ⟨ULift.up ()⟩
+  have hbiUnion :
+      (Finset.univ.biUnion fun _ :
+        finiteComputabilityExampleData.rightResolution.BasisIndex 1 =>
+          forbiddenSupportPFinset) = forbiddenSupportPFinset := by
+    ext e
+    constructor
+    · intro he
+      rcases Finset.mem_biUnion.mp he with ⟨_, _, he⟩
+      exact he
+    · intro he
+      rw [Finset.mem_biUnion]
+      let i : finiteComputabilityExampleData.rightResolution.BasisIndex 1 := by
+        change ULift Unit
+        exact ULift.up ()
+      exact ⟨i, Finset.mem_univ i, he⟩
+  rw [FiniteAATComputationData.selectedCycleSupport]
+  change (Finset.univ.biUnion fun i :
+      finiteComputabilityExampleData.rightResolution.BasisIndex 1 =>
+        if finiteComputabilityExampleData.tensorMatrixAlgorithm.cycleValue 1
+            finiteComputabilityExampleData.selectedCoordinateCycle i = 0 then
+          ∅
+        else
+          finiteComputabilityExampleData.resolutionBasisSupport 1 i ∪
+            FiniteAATComputationData.polynomialVariableSupport
+              SquareFreeSupportVertex (ZMod 2)
+              (finiteComputabilityExampleData.coordinateRepresentative
+                finiteComputabilityExampleData.selectedCoordinateCycle i)) =
+    forbiddenSupportPFinset
+  calc
+    (Finset.univ.biUnion fun i :
+        finiteComputabilityExampleData.rightResolution.BasisIndex 1 =>
+          if finiteComputabilityExampleData.tensorMatrixAlgorithm.cycleValue 1
+              finiteComputabilityExampleData.selectedCoordinateCycle i = 0 then
+            ∅
+          else
+            finiteComputabilityExampleData.resolutionBasisSupport 1 i ∪
+              FiniteAATComputationData.polynomialVariableSupport
+                SquareFreeSupportVertex (ZMod 2)
+                (finiteComputabilityExampleData.coordinateRepresentative
+                  finiteComputabilityExampleData.selectedCoordinateCycle i)) =
+        (Finset.univ.biUnion fun _ :
+          finiteComputabilityExampleData.rightResolution.BasisIndex 1 =>
+            forbiddenSupportPFinset) := by
+              congr 1
+              funext i
+              rw [hvalue i, hresolution i, hrepresentative i]
+              simp [hone,
+                FiniteAATComputationData.polynomialVariableSupport_one]
+    _ = forbiddenSupportPFinset := hbiUnion
+
+/-- Common ambient used to connect the computed finite support relation to the
+existing measurement semantics. -/
+noncomputable def finiteComputabilityCommonAmbient :
+    CommonAmbientPair finiteComputabilityMeasurementProfile where
+  AmbientSpace := Unit
+  StructureSheaf := Unit
+  LawIdeal := FiniteLawHandle
+  CoefficientObject := Unit
+  WitnessPair := Unit
+  ComparisonProfile := Unit
+  SupportCarrier := Finset SquareFreeSupportVertex
+  leftDomain := finiteComputabilitySeedGeometry.zeroClass 1
+  rightDomain := finiteComputabilitySeedGeometry.zeroClass 1
+  selectedAmbient := ()
+  selectedStructureSheaf := ()
+  leftLawIdeal := .left
+  rightLawIdeal := .right
+  leftCoefficient := ()
+  rightCoefficient := ()
+  selectedWitnessPair := ()
+  selectedComparisonProfile := ()
+  commonRingedSite := True
+  commonRingedSite_cert := trivial
+  lawIdealsInCommonAmbient := True
+  lawIdealsInCommonAmbient_cert := trivial
+  coefficientsCompatible := True
+  coefficientsCompatible_cert := trivial
+  witnessesComparable := True
+  witnessesComparable_cert := trivial
+  comparisonProfileFixed := True
+  comparisonProfileFixed_cert := trivial
+  noComparisonWithoutCommonAmbient := True
+  noComparisonWithoutCommonAmbient_cert := trivial
+
+/-- Local realization of the nontrivial law handles and finite support carrier
+in the selected common ambient. -/
+noncomputable def finiteComputabilityConflictRealization :
+    FiniteAATConflictRealization finiteComputabilityExampleData where
+  commonAmbient := finiteComputabilityCommonAmbient
+  lawHandleToAmbient := id
+  leftLaw_ambient := rfl
+  rightLaw_ambient := rfl
+  supportEquiv := Equiv.refl _
+
+/-- Final theorem 4.2 fixture including the actual relation-valued
+`LawConflictMeasurement`. -/
+noncomputable def finiteComputabilityConflictPackage :
+    FiniteAATConflictComputability computabilityFiniteMeasurementRegime
+      finiteComputabilityExampleData finiteComputabilityConflictRealization :=
+  finiteAATConflictComputabilityPackage computabilityFiniteMeasurementRegime
+    finiteComputabilityExampleData finiteComputabilityConflictRealization
+
+/-- The proper degree-one nonzero conflict class and its computed support
+reading both survive in the final measurement package. -/
+theorem finiteComputabilityConflictPackage_nonzero_and_supportReading :
+    finiteComputabilityExampleData.selectedConflictClass ≠ 0 ∧
+      finiteComputabilityConflictPackage.lawConflictMeasurement.selectedClassSupportReading := by
+  constructor
+  · change finiteComputabilityExampleData.selectedConflictClass ≠ 0
+    exact finiteComputabilityExampleFullRoute_nonzero.2.2.2.2
+  · exact finiteComputabilityConflictPackage.selectedClassSupportReading
+
+/-- Zero class in the actual conflict carrier, viewed through the final
+measurement's carrier field. -/
+noncomputable def finiteComputabilityMeasuredZeroConflict :
+    finiteComputabilityConflictPackage.lawConflictMeasurement.ConflictClass := by
+  change finiteComputabilityExampleData.ActualConflictClass
+  exact 0
+
+/-- The actual transported support relation assigns the empty finite support
+to every reading of the zero conflict class. -/
+theorem finiteComputabilityConflictPackage_zero_support
+    {support : Finset SquareFreeSupportVertex}
+    (h : finiteComputabilityConflictPackage.lawConflictMeasurement.conflictSupport
+      finiteComputabilityMeasuredZeroConflict support) :
+    support = ∅ := by
+  have hrelation : finiteComputabilityConflictRealization.supportRelation
+      (0 : finiteComputabilityExampleData.ActualConflictClass) support := by
+    simpa [finiteComputabilityConflictPackage,
+      finiteAATConflictComputabilityPackage,
+      FiniteAATConflictRealization.lawConflictMeasurement] using h
+  have hzero := finiteComputabilityConflictRealization.supportRelation_zero hrelation
+  simpa [finiteComputabilityConflictRealization] using hzero
 
 /-- R11(c): the selected finite resolution computes the Mathlib Tor object. -/
 theorem finiteComputabilityExample_torRoute :
@@ -1476,7 +2226,7 @@ end NontrivialTorFixture
 /-- R11(c): finite Čech, verdict, square-free, Tor, and support routes are constructed. -/
 theorem finiteComputabilityExample_verified :
     Nonempty
-      (FiniteAATComputability.{0, 0, 0} computabilityFiniteMeasurementRegime
+      (FiniteAATComputability.{0, 0} computabilityFiniteMeasurementRegime
         finiteComputabilityExampleData) :=
   finiteAATComputability computabilityFiniteMeasurementRegime finiteComputabilityExampleData
 
@@ -3011,7 +3761,7 @@ structure PartVIIIFiniteExampleSuite where
       SquareFreeRepairTarget.pairPR
   finiteComputability :
     Nonempty
-      (FiniteAATComputability.{0, 0, 0} computabilityFiniteMeasurementRegime
+      (FiniteAATComputability.{0, 0} computabilityFiniteMeasurementRegime
         finiteComputabilityExampleData)
   refactorInvariance :
     RefactorInvarianceUnderEquivalence integerCohomologyPullbackClass
@@ -3067,7 +3817,7 @@ def PartVIIIFiniteExampleSuite.CoversR11 (S : PartVIIIFiniteExampleSuite) : Prop
             squareFreeMinimalRepairHittingSets.minimalRepairHittingSet
               SquareFreeRepairTarget.pairPR ∧
               Nonempty
-                (FiniteAATComputability.{0, 0, 0} computabilityFiniteMeasurementRegime
+                (FiniteAATComputability.{0, 0} computabilityFiniteMeasurementRegime
                   finiteComputabilityExampleData) ∧
                 Function.Bijective
                     integerCohomologyRefactorEquivalence.selectedFiniteSiteEquivalence ∧
