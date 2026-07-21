@@ -61,26 +61,35 @@ end EvolutionFunctional
 /--
 IX.§5.2 / AC14: dissipative policy over selected evolution steps.
 
-The `Step` type is the selected step universe.  No statement is made about
-transitions outside this type.
+`SelectedState` is the selected state set, while `Step` is the selected
+operation universe between those states.  Keeping them separate lets the
+finite-stopping theorem state finiteness on states rather than on a list of
+operations.
+
+Implementation notes: endpoints are represented by elements of
+`SelectedState` so that state continuity is equality in one type.  This
+avoids encoding the stopping conclusion in a path certificate, while exposing
+the API needed to construct policy-generated paths.
 -/
 structure DissipativePolicy {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {E : EvolutionProfile.{u, v, w, x, y, z}}
     {T : TemporalSite S E} {St : StateTransitionPresheaf T}
     (Phi : EvolutionFunctional St) where
+  SelectedState : Type (max u w x y z)
+  point : SelectedState -> T.Point
+  state : (selected : SelectedState) -> St.State (point selected)
   Step : Type (max u w x y z)
-  source : Step -> T.Point
-  target : Step -> T.Point
-  sourceState : (step : Step) -> St.State (source step)
-  targetState : (step : Step) -> St.State (target step)
-  incidence : (step : Step) -> T.IncidenceLeg (source step) (target step)
+  sourceState : Step -> SelectedState
+  targetState : Step -> SelectedState
+  incidence : (step : Step) ->
+    T.IncidenceLeg (point (sourceState step)) (point (targetState step))
   selectedEvolutionStep : Step -> Prop
   selectedEvolutionStep_cert : ∀ step : Step, selectedEvolutionStep step
   nonIncrease :
     ∀ step : Step,
       letI := Phi.valuePreorder
-      Phi.value (target step) (targetState step) <=
-        Phi.value (source step) (sourceState step)
+      Phi.value (point (targetState step)) (state (targetState step)) <=
+        Phi.value (point (sourceState step)) (state (sourceState step))
 
 namespace DissipativePolicy
 
@@ -91,16 +100,39 @@ variable {T : TemporalSite S E}
 variable {St : StateTransitionPresheaf T}
 variable {Phi : EvolutionFunctional St}
 
+/-- IX.§5.2 / AC14: source point of a selected policy step. -/
+def sourcePoint (P : DissipativePolicy Phi) (step : P.Step) : T.Point :=
+  P.point (P.sourceState step)
+
+/-- IX.§5.2 / AC14: target point of a selected policy step. -/
+def targetPoint (P : DissipativePolicy Phi) (step : P.Step) : T.Point :=
+  P.point (P.targetState step)
+
+/-- IX.§5.2 / AC14: source state carried by a selected policy step. -/
+def sourceStateAt (P : DissipativePolicy Phi) (step : P.Step) :
+    St.State (P.sourcePoint step) :=
+  P.state (P.sourceState step)
+
+/-- IX.§5.2 / AC14: target state carried by a selected policy step. -/
+def targetStateAt (P : DissipativePolicy Phi) (step : P.Step) :
+    St.State (P.targetPoint step) :=
+  P.state (P.targetState step)
+
+/-- IX.§5.2 / AC14: `Phi_M` value of one selected state. -/
+def selectedStateValue (P : DissipativePolicy Phi) (selected : P.SelectedState) :
+    Phi.Value :=
+  Phi.value (P.point selected) (P.state selected)
+
 /-- IX.§5.2 / AC14: selected steps are selected temporal incidence legs. -/
 def selectedIncidence (P : DissipativePolicy Phi) (step : P.Step) :
-    T.IncidenceLeg (P.source step) (P.target step) :=
+    T.IncidenceLeg (P.sourcePoint step) (P.targetPoint step) :=
   P.incidence step
 
 /-- IX.§5.2 / AC14: selected dissipative steps are non-increasing for `Phi_M`. -/
 theorem step_nonIncrease (P : DissipativePolicy Phi) (step : P.Step) :
     letI := Phi.valuePreorder
-    Phi.value (P.target step) (P.targetState step) <=
-      Phi.value (P.source step) (P.sourceState step) :=
+    Phi.value (P.targetPoint step) (P.targetStateAt step) <=
+      Phi.value (P.sourcePoint step) (P.sourceStateAt step) :=
   P.nonIncrease step
 
 /-- IX.§5.2 / AC14: every policy step is explicitly selected. -/
@@ -111,13 +143,12 @@ theorem step_selected (P : DissipativePolicy Phi) (step : P.Step) :
 /--
 IX.§5.2 / AC15: adjacent selected steps connect as a path.
 
-The target temporal point of the first step is the source temporal point of the
-next step, and the target state transports along that equality to the next
-source state.
+The endpoint states are elements of the selected state set, so a connection is
+their equality.  Their temporal points and presheaf states then agree by the
+policy accessors.
 -/
 def StepConnect (P : DissipativePolicy Phi) (first next : P.Step) : Prop :=
-  ∃ h : P.target first = P.source next,
-    h ▸ P.targetState first = P.sourceState next
+  P.targetState first = P.sourceState next
 
 end DissipativePolicy
 
@@ -166,10 +197,10 @@ structure StrictlyDissipativeOutsideTerminal {U : AtomCarrier.{u}}
     (P : DissipativePolicy Phi) (Term : TerminalState Phi) where
   strictDecrease :
     ∀ step : P.Step,
-      Term.NonTerminal (P.source step) (P.sourceState step) ->
+      Term.NonTerminal (P.sourcePoint step) (P.sourceStateAt step) ->
         letI := Phi.valuePreorder
-        Phi.value (P.target step) (P.targetState step) <
-          Phi.value (P.source step) (P.sourceState step)
+        Phi.value (P.targetPoint step) (P.targetStateAt step) <
+          Phi.value (P.sourcePoint step) (P.sourceStateAt step)
 
 namespace StrictlyDissipativeOutsideTerminal
 
@@ -185,10 +216,10 @@ variable {Term : TerminalState Phi}
 /-- IX.§5.2 / AC14: selected non-terminal steps strictly decrease `Phi_M`. -/
 theorem step_strictDecrease (Strict : StrictlyDissipativeOutsideTerminal P Term)
     (step : P.Step)
-    (hNonTerminal : Term.NonTerminal (P.source step) (P.sourceState step)) :
+    (hNonTerminal : Term.NonTerminal (P.sourcePoint step) (P.sourceStateAt step)) :
     letI := Phi.valuePreorder
-    Phi.value (P.target step) (P.targetState step) <
-      Phi.value (P.source step) (P.sourceState step) :=
+    Phi.value (P.targetPoint step) (P.targetStateAt step) <
+      Phi.value (P.sourcePoint step) (P.sourceStateAt step) :=
   Strict.strictDecrease step hNonTerminal
 
 end StrictlyDissipativeOutsideTerminal
@@ -224,17 +255,17 @@ variable {Term : TerminalState Phi}
 def PathwiseNonIncrease (path : SelectedEvolutionPath P) : Prop :=
   ∀ i : Fin path.length,
     letI := Phi.valuePreorder
-    Phi.value (P.target (path.step i)) (P.targetState (path.step i)) <=
-      Phi.value (P.source (path.step i)) (P.sourceState (path.step i))
+    Phi.value (P.targetPoint (path.step i)) (P.targetStateAt (path.step i)) <=
+      Phi.value (P.sourcePoint (path.step i)) (P.sourceStateAt (path.step i))
 
 /-- IX.§5.2 / AC15: all selected non-terminal path steps strictly decrease. -/
 def PathwiseStrictDecreaseOutsideTerminal
     (path : SelectedEvolutionPath P) : Prop :=
   ∀ i : Fin path.length,
-    Term.NonTerminal (P.source (path.step i)) (P.sourceState (path.step i)) ->
+    Term.NonTerminal (P.sourcePoint (path.step i)) (P.sourceStateAt (path.step i)) ->
       letI := Phi.valuePreorder
-      Phi.value (P.target (path.step i)) (P.targetState (path.step i)) <
-        Phi.value (P.source (path.step i)) (P.sourceState (path.step i))
+      Phi.value (P.targetPoint (path.step i)) (P.targetStateAt (path.step i)) <
+        Phi.value (P.sourcePoint (path.step i)) (P.sourceStateAt (path.step i))
 
 /-- IX.§5.2 / AC15: adjacent steps in a selected path are connected. -/
 theorem adjacent_steps_connect (path : SelectedEvolutionPath P)
