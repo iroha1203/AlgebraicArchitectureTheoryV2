@@ -758,6 +758,7 @@ right-hand side: it is coefficient infrastructure, not a zero-decision
 certificate for one selected cohomology class.
 -/
 structure FiniteLinearSystemSolver (k : Type v) [CommSemiring k] where
+  /-- Return a solution of the finite matrix equation when one exists. -/
   solve :
     {m n : Type u} ->
       [Fintype m] -> [DecidableEq m] ->
@@ -806,9 +807,6 @@ structure FiniteDimensionalCechProcedure (M : MeasurementProfile.{u, v})
     FiniteLinearSystemSolver M.Coeff
   /-- Finite-dimensional matrix model connected to the canonical Čech complex. -/
   model : @FiniteDimensionalCechModel M G coeffField
-
-attribute [instance] FiniteDimensionalCechProcedure.coeffField
-attribute [instance] FiniteDimensionalCechProcedure.coeffDecidableEq
 
 namespace FiniteDimensionalCechProcedure
 

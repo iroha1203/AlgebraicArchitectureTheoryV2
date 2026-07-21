@@ -87,6 +87,42 @@ def finiteAATComputabilityTensorKernelDecision :=
 def finiteAATComputabilityTensorImageDecision :=
   @Measurement.FiniteTensorMatrixAlgorithm.imageDecision_correct
 
+noncomputable def finiteAATComputabilityConstructedChainIso :=
+  @Measurement.FiniteTensorMatrixAlgorithm.tensorCoordinateComplexIso
+
+def finiteAATComputabilityCoordinateClassZeroIffIncomingImage :=
+  @Measurement.FiniteTensorMatrixAlgorithm.classOfCycle_eq_zero_iff_range
+
+def finiteAATComputabilityCoordinateClassZeroIffMatrixEquation :=
+  @Measurement.FiniteTensorMatrixAlgorithm.classOfCycle_eq_zero_iff_incoming
+
+def finiteAATComputabilityCoordinateClassZeroDecision :=
+  @Measurement.FiniteTensorMatrixAlgorithm.classZeroDecision_correct
+
+def finiteAATComputabilityMinimalForbiddenSupportSpec :=
+  @Measurement.FiniteSquareFreeComputationData.mem_minimalForbiddenSupports_iff
+
+noncomputable def finiteAATComputabilityResolutionBasisSupport :=
+  @Measurement.FiniteAATComputationData.resolutionBasisSupport
+
+def finiteAATComputabilityReducedRepresentativeFixture :=
+  @Measurement.FiniteSquareFreeComputationData.allSingletons_one_isReduced
+
+def finiteAATComputabilityZeroCycleHasEmptySupport :=
+  @Measurement.FiniteAATComputationData.selectedCycleSupport_eq_empty_of_cycle_eq_zero
+
+def finiteAATComputabilityZeroClassHasEmptySupport :=
+  @Measurement.FiniteAATComputationData.selectedClassSupport_eq_empty_of_class_eq_zero
+
+def finiteAATComputabilityConflictZeroIffCoordinateZero :=
+  @Measurement.FiniteAATComputationData.selectedConflictClass_eq_zero_iff_coordinate
+
+def finiteAATComputabilityZeroConflictClassHasEmptySupport :=
+  @Measurement.FiniteAATComputationData.selectedClassSupport_eq_empty_of_conflictClass_eq_zero
+
+def finiteAATComputabilityNonzeroClassUsesCycleSupport :=
+  @Measurement.FiniteAATComputationData.selectedClassSupport_eq_selectedCycleSupport_of_class_ne_zero
+
 def finiteAATComputabilityPrincipalResolutionDifferential :=
   @Derived.FreeResolution.MathlibResolution.Principal.finiteFreeResolution_coordinateDifferential_zero_ne_zero
 
@@ -107,6 +143,12 @@ def finiteAATComputabilityTorFixture :=
 
 def finiteAATComputabilityFullLinearFixture :=
   @Measurement.finiteDimensionalMatrixFullRoute_fires
+
+def finiteAATComputabilityFullLinearFixtureNonzero :=
+  @Measurement.finiteDimensionalMatrixFullRoute_nonzero
+
+def finiteAATComputabilityEffectiveFixtureNonzero :=
+  @Measurement.finiteComputabilityExampleFullRoute_nonzero
 
 def finiteAATComputabilityNontrivialTorFixture :=
   @Measurement.NontrivialTorFixture.nontrivialFiniteChainTorRoute_fires

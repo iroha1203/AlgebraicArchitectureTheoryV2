@@ -124,6 +124,10 @@ def forbiddenSupportPQFinset : Finset SquareFreeSupportVertex :=
 def forbiddenSupportQRFinset : Finset SquareFreeSupportVertex :=
   {SquareFreeSupportVertex.q, SquareFreeSupportVertex.r}
 
+/-- Singleton support used by the nondegenerate principal Tor fixtures. -/
+def forbiddenSupportPFinset : Finset SquareFreeSupportVertex :=
+  {SquareFreeSupportVertex.p}
+
 /-- R11(b): the concrete support carried by each selected repair target. -/
 def squareFreeRepairTargetSupport :
     SquareFreeRepairTarget -> Finset SquareFreeSupportVertex
@@ -685,76 +689,247 @@ noncomputable def finiteDimensionalMatrixRegime :
     change DecidableEq SquareFreeSupportVertex
     infer_instance
 
-/-- R11(c): nontrivial left square-free family for the finite-field full fixture. -/
+/-- R11(c): every singleton witness generates the proper all-variable ideal. -/
 def finiteDimensionalMatrixLeftSquareFree :
-    FiniteSquareFreeComputationData finiteDimensionalMatrixRegime where
-  forbiddenSupports := by
-    change Finset (Finset SquareFreeSupportVertex)
-    exact {∅, forbiddenSupportPQFinset, forbiddenSupportQRFinset}
+    FiniteSquareFreeComputationData finiteDimensionalMatrixRegime :=
+  FiniteSquareFreeComputationData.allSingletons finiteDimensionalMatrixRegime
 
-theorem finiteDimensionalMatrixLeftIdeal_eq_top :
-    finiteDimensionalMatrixLeftSquareFree.obstructionIdeal (ZMod 2) = ⊤ :=
-  FiniteSquareFreeComputationData.obstructionIdeal_eq_top_of_empty_mem
-    finiteDimensionalMatrixLeftSquareFree (ZMod 2) (by
-      simp [finiteDimensionalMatrixLeftSquareFree])
+theorem finiteDimensionalMatrixLeftIdeal_eq_idealOfVars :
+    finiteDimensionalMatrixLeftSquareFree.obstructionIdeal (ZMod 2) =
+      MvPolynomial.idealOfVars SquareFreeSupportVertex (ZMod 2) :=
+  FiniteSquareFreeComputationData.allSingletons_obstructionIdeal
+    finiteDimensionalMatrixRegime (ZMod 2)
+
+/-- Concrete proper left ideal used by the finite tensor computation. -/
+def finiteDimensionalMatrixLeftIdeal :
+    Ideal (MvPolynomial SquareFreeSupportVertex (ZMod 2)) :=
+  MvPolynomial.idealOfVars SquareFreeSupportVertex (ZMod 2)
+
+theorem finiteDimensionalMatrixLeftIdeal_eq_squareFree :
+    finiteDimensionalMatrixLeftIdeal =
+      finiteDimensionalMatrixLeftSquareFree.obstructionIdeal (ZMod 2) := by
+  exact finiteDimensionalMatrixLeftIdeal_eq_idealOfVars.symm
 
 /-- R11(c): nonzero principal right ideal for the finite-field finite-resolution fixture. -/
 def finiteDimensionalMatrixRightSquareFree :
     FiniteSquareFreeComputationData finiteDimensionalMatrixRegime where
-  forbiddenSupports := {forbiddenSupportQRFinset}
+  forbiddenSupports := {forbiddenSupportPFinset}
+
+/-- Concrete nonzero principal right ideal used by the selected resolution. -/
+def finiteDimensionalMatrixRightIdeal :
+    Ideal (MvPolynomial SquareFreeSupportVertex (ZMod 2)) :=
+  Ideal.span ({MvPolynomial.X SquareFreeSupportVertex.p} :
+    Set (MvPolynomial SquareFreeSupportVertex (ZMod 2)))
+
+theorem finiteDimensionalMatrixRightIdeal_eq_squareFree :
+    finiteDimensionalMatrixRightIdeal =
+      finiteDimensionalMatrixRightSquareFree.obstructionIdeal (ZMod 2) := by
+  ext f
+  simp [finiteDimensionalMatrixRightIdeal,
+    FiniteSquareFreeComputationData.obstructionIdeal,
+    FiniteSquareFreeComputationData.witnessRegime,
+    LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.obstructionIdeal,
+    LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.supportIdeal,
+    LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.monomialSet,
+    finiteDimensionalMatrixRightSquareFree, forbiddenSupportPFinset,
+    LawAlgebra.StanleyReisner.squareFreeMonomial]
 
 /-- R11(c): selected length-one finite-free resolution on the finite-field right ideal. -/
 def finiteDimensionalMatrixRightResolution :
     Derived.FreeResolution.MathlibResolution.FiniteFreeMathlibResolution
       (MvPolynomial SquareFreeSupportVertex (ZMod 2))
-      (finiteDimensionalMatrixRightSquareFree.obstructionIdeal (ZMod 2)) := by
+      finiteDimensionalMatrixRightIdeal := by
   have hnonzero :
-      LawAlgebra.StanleyReisner.squareFreeMonomial
-          SquareFreeSupportVertex (ZMod 2) forbiddenSupportQRFinset ≠ 0 := by
-    simp [LawAlgebra.StanleyReisner.squareFreeMonomial,
-      forbiddenSupportQRFinset]
-  simpa [FiniteSquareFreeComputationData.obstructionIdeal,
-    FiniteSquareFreeComputationData.witnessRegime,
-    LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.obstructionIdeal,
-    LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.supportIdeal,
-    LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.monomialSet,
-    finiteDimensionalMatrixRightSquareFree] using
-      (Derived.FreeResolution.MathlibResolution.Principal.finiteFreeResolution
-        (A := MvPolynomial SquareFreeSupportVertex (ZMod 2)) hnonzero)
+      (MvPolynomial.X SquareFreeSupportVertex.p :
+        MvPolynomial SquareFreeSupportVertex (ZMod 2)) ≠ 0 := by
+    simp
+  exact Derived.FreeResolution.MathlibResolution.Principal.finiteFreeResolution
+    (A := MvPolynomial SquareFreeSupportVertex (ZMod 2)) hnonzero
 
+/-- The first matrix of the selected principal resolution is multiplication
+by its actual singleton generator. -/
+theorem finiteDimensionalMatrixRightResolution_differentialMatrix_zero
+    (i : finiteDimensionalMatrixRightResolution.BasisIndex 0)
+    (j : finiteDimensionalMatrixRightResolution.BasisIndex 1) :
+    finiteDimensionalMatrixRightResolution.differentialMatrix 0 i j =
+      (MvPolynomial.X SquareFreeSupportVertex.p :
+        MvPolynomial SquareFreeSupportVertex (ZMod 2)) := by
+  change ULift Unit at i j
+  rcases i with ⟨⟨⟩⟩
+  rcases j with ⟨⟨⟩⟩
+  simp [finiteDimensionalMatrixRightResolution,
+    Derived.FreeResolution.MathlibResolution.Principal.finiteFreeResolution,
+    Derived.FreeResolution.MathlibResolution.FiniteFreeMathlibResolution.differentialMatrix,
+    Derived.FreeResolution.MathlibResolution.FiniteFreeMathlibResolution.coordinateDifferential,
+    Derived.FreeResolution.MathlibResolution.Principal.projectiveResolution,
+    Derived.FreeResolution.MathlibResolution.Principal.complex,
+    Derived.FreeResolution.MathlibResolution.Principal.differential]
+
+/-- The tensor coefficient ring is the finite field obtained after killing all
+witness variables. -/
+noncomputable def finiteDimensionalMatrixTensorQuotientFintype :
+    Fintype
+      (MvPolynomial SquareFreeSupportVertex (ZMod 2) ⧸
+        finiteDimensionalMatrixLeftIdeal) := by
+  unfold finiteDimensionalMatrixLeftIdeal
+  exact PolynomialQuotient.quotientIdealOfVarsFintype
+    SquareFreeSupportVertex (ZMod 2)
+
+/-- Exhaustive finite-matrix solver over the proper all-variable quotient. -/
 noncomputable def finiteDimensionalMatrixTensorAlgorithm :
     FiniteTensorMatrixAlgorithm
       (MvPolynomial SquareFreeSupportVertex (ZMod 2))
-      (finiteDimensionalMatrixLeftSquareFree.obstructionIdeal (ZMod 2))
-      (finiteDimensionalMatrixRightSquareFree.obstructionIdeal (ZMod 2))
-      finiteDimensionalMatrixRightResolution :=
-  FiniteTensorMatrixAlgorithm.ofIdealEqTop
-    finiteDimensionalMatrixLeftIdeal_eq_top
+      finiteDimensionalMatrixLeftIdeal
+      finiteDimensionalMatrixRightIdeal
+      finiteDimensionalMatrixRightResolution := by
+  letI := finiteDimensionalMatrixTensorQuotientFintype
+  letI : DecidableEq
+      (MvPolynomial SquareFreeSupportVertex (ZMod 2) ⧸
+        finiteDimensionalMatrixLeftIdeal) :=
+    Classical.decEq _
+  exact FiniteTensorMatrixAlgorithm.ofFiniteQuotient
 
-noncomputable def finiteDimensionalMatrixTensorComparison :
-    FiniteTensorMatrixComparison finiteDimensionalMatrixTensorAlgorithm :=
-  FiniteTensorMatrixComparison.ofIdealEqTop
-    finiteDimensionalMatrixTensorAlgorithm
-    finiteDimensionalMatrixLeftIdeal_eq_top
+theorem finiteDimensionalMatrixQuotient_one_ne_zero :
+    (1 : MvPolynomial SquareFreeSupportVertex (ZMod 2) ⧸
+      finiteDimensionalMatrixLeftIdeal) ≠ 0 := by
+  intro h
+  change (Ideal.Quotient.mk finiteDimensionalMatrixLeftIdeal)
+    (1 : MvPolynomial SquareFreeSupportVertex (ZMod 2)) = 0 at h
+  rw [Ideal.Quotient.eq_zero_iff_mem] at h
+  unfold finiteDimensionalMatrixLeftIdeal at h
+  rw [← PolynomialQuotient.ker_constantCoeff_eq_idealOfVars] at h
+  simp at h
+
+/-- Nonzero degree-one coordinate vector in the principal resolution. -/
+def finiteDimensionalMatrixOneCoordinate :
+    FiniteTensorMatrixAlgorithm.CoordinateTerm.{0, 0}
+      finiteDimensionalMatrixTensorAlgorithm 1 :=
+  fun _ => 1
+
+theorem finiteDimensionalMatrixOneCoordinate_ne_zero :
+    finiteDimensionalMatrixOneCoordinate ≠ 0 := by
+  intro h
+  have hvalue := congrFun h (ULift.up ())
+  exact finiteDimensionalMatrixQuotient_one_ne_zero hvalue
+
+/-- Killing all witness variables makes the principal degree-zero
+differential vanish on the selected nonzero coordinate. -/
+theorem finiteDimensionalMatrixOneCoordinate_isCycle :
+    FiniteTensorMatrixAlgorithm.differential.{0, 0}
+      finiteDimensionalMatrixTensorAlgorithm 0
+      finiteDimensionalMatrixOneCoordinate = 0 := by
+  rw [show finiteDimensionalMatrixOneCoordinate =
+      (Ideal.Quotient.mk
+        finiteDimensionalMatrixLeftIdeal) ∘
+        (fun _ : finiteDimensionalMatrixRightResolution.BasisIndex 1 =>
+          (1 : MvPolynomial SquareFreeSupportVertex (ZMod 2))) by
+    rfl]
+  unfold FiniteTensorMatrixAlgorithm.differential
+  unfold FiniteTensorMatrixAlgorithm.differentialMatrix
+  funext i
+  rw [Matrix.mulVecLin_apply]
+  rw [← RingHom.map_mulVec]
+  simp [
+    finiteDimensionalMatrixRightResolution,
+    Derived.FreeResolution.MathlibResolution.Principal.finiteFreeResolution,
+    Derived.FreeResolution.MathlibResolution.FiniteFreeMathlibResolution.differentialMatrix,
+    Derived.FreeResolution.MathlibResolution.FiniteFreeMathlibResolution.coordinateDifferential,
+    Derived.FreeResolution.MathlibResolution.Principal.projectiveResolution,
+    Derived.FreeResolution.MathlibResolution.Principal.complex,
+    Derived.FreeResolution.MathlibResolution.Principal.differential]
+  change (Ideal.Quotient.mk
+    finiteDimensionalMatrixLeftIdeal)
+      (MvPolynomial.X SquareFreeSupportVertex.p) = 0
+  rw [Ideal.Quotient.eq_zero_iff_mem]
+  unfold finiteDimensionalMatrixLeftIdeal
+  exact Ideal.subset_span ⟨SquareFreeSupportVertex.p, rfl⟩
+
+/-- Actual degree-one cycle selected by the finite matrix computation. -/
+noncomputable def finiteDimensionalMatrixSelectedCycle :
+    FiniteTensorMatrixAlgorithm.Cycle.{0, 0}
+      finiteDimensionalMatrixTensorAlgorithm 1 := by
+  refine ⟨finiteDimensionalMatrixOneCoordinate, ?_⟩
+  change ModuleCat.Hom.hom
+      ((finiteDimensionalMatrixTensorAlgorithm.coordinateComplex).d 1
+        ((ComplexShape.down ℕ).next 1))
+        finiteDimensionalMatrixOneCoordinate = 0
+  rw [ChainComplex.next_nat_succ]
+  simpa [FiniteTensorMatrixAlgorithm.coordinateComplex,
+    ChainComplex.of_d] using finiteDimensionalMatrixOneCoordinate_isCycle
+
+theorem finiteDimensionalMatrixSelectedCycle_ne_zero :
+    finiteDimensionalMatrixSelectedCycle ≠ 0 := by
+  intro h
+  apply finiteDimensionalMatrixOneCoordinate_ne_zero
+  exact congrArg Subtype.val h
+
+/-- The incoming degree-two coordinate term is the zero module. -/
+theorem finiteDimensionalMatrixIncomingSubsingleton :
+    Subsingleton
+      (((FiniteTensorMatrixAlgorithm.coordinateComplex.{0, 0}
+        finiteDimensionalMatrixTensorAlgorithm).sc 1).X₁) := by
+  change Subsingleton
+    ((FiniteTensorMatrixAlgorithm.coordinateComplex.{0, 0}
+      finiteDimensionalMatrixTensorAlgorithm).X
+        ((ComplexShape.down ℕ).prev 1))
+  rw [ChainComplex.prev]
+  change Subsingleton
+    (finiteDimensionalMatrixRightResolution.BasisIndex 2 →
+      MvPolynomial SquareFreeSupportVertex (ZMod 2) ⧸
+        finiteDimensionalMatrixLeftIdeal)
+  let hsub : Subsingleton
+      (ULift.{0, 0} Empty →
+        MvPolynomial SquareFreeSupportVertex (ZMod 2) ⧸
+          finiteDimensionalMatrixLeftIdeal) :=
+    ⟨fun f g => funext fun i => nomatch i.down⟩
+  simpa [finiteDimensionalMatrixRightResolution,
+    Derived.FreeResolution.MathlibResolution.Principal.finiteFreeResolution] using hsub
+
+/-- The selected cycle represents a nonzero class in the actual coordinate
+homology quotient. -/
+theorem finiteDimensionalMatrixSelectedCoordinateClass_ne_zero :
+    FiniteTensorMatrixAlgorithm.classOfCycle.{0, 0}
+      finiteDimensionalMatrixTensorAlgorithm 1
+        finiteDimensionalMatrixSelectedCycle ≠ 0 := by
+  intro hclass
+  have hrange :=
+    (FiniteTensorMatrixAlgorithm.classOfCycle_eq_zero_iff_range.{0, 0}
+      finiteDimensionalMatrixTensorAlgorithm 1
+        finiteDimensionalMatrixSelectedCycle).mp hclass
+  rcases hrange with ⟨b, hb⟩
+  letI : Subsingleton
+      (((FiniteTensorMatrixAlgorithm.coordinateComplex.{0, 0}
+        finiteDimensionalMatrixTensorAlgorithm).sc 1).X₁) :=
+    finiteDimensionalMatrixIncomingSubsingleton
+  have hbzero : b = 0 := by
+    apply Subsingleton.elim
+  subst b
+  simp only [map_zero] at hb
+  exact finiteDimensionalMatrixSelectedCycle_ne_zero hb.symm
 
 /-- R11(c): all theorem 4.2 inputs for the finite-field route. -/
 noncomputable def finiteDimensionalMatrixComputationData :
     FiniteAATComputationData finiteDimensionalMatrixProfile
       finiteDimensionalMatrixRegime where
-  obstructionIdealEquiv := Equiv.refl _
   leftSquareFree := finiteDimensionalMatrixLeftSquareFree
   rightSquareFree := finiteDimensionalMatrixRightSquareFree
-  selectedLeftConflictGenerator :=
-    ⟨forbiddenSupportPQFinset, by
-      simp [finiteDimensionalMatrixLeftSquareFree]⟩
-  selectedRightConflictGenerator :=
-    ⟨forbiddenSupportQRFinset, by
-      simp [finiteDimensionalMatrixRightSquareFree]⟩
+  leftIdeal := finiteDimensionalMatrixLeftIdeal
+  leftIdeal_eq_squareFree := finiteDimensionalMatrixLeftIdeal_eq_squareFree
+  rightIdeal := finiteDimensionalMatrixRightIdeal
+  rightIdeal_eq_squareFree := finiteDimensionalMatrixRightIdeal_eq_squareFree
   rightResolution := finiteDimensionalMatrixRightResolution
   tensorMatrixAlgorithm := finiteDimensionalMatrixTensorAlgorithm
-  tensorMatrixComparison := finiteDimensionalMatrixTensorComparison
-  torDegree := 0
-  conflictCycle := fun _ _ => 0
+  torDegree := 1
+  selectedCoordinateCycle := finiteDimensionalMatrixSelectedCycle
+  selectedCoordinateRepresentative := fun _ => 1
+  selectedCoordinateRepresentative_mod := by
+    intro i
+    rfl
+  selectedCoordinateRepresentative_reduced := by
+    intro i
+    simpa [finiteDimensionalMatrixLeftSquareFree] using
+      (FiniteSquareFreeComputationData.allSingletons_one_isReduced
+        finiteDimensionalMatrixRegime (ZMod 2))
 
 /-- R11(c): theorem 4.2 package produced through the finite-field matrix route. -/
 noncomputable def finiteDimensionalMatrixComputabilityPackage :
@@ -768,6 +943,31 @@ theorem finiteDimensionalMatrixFullRoute_fires :
     finiteDimensionalMatrixComputabilityPackage.coefficientComputation.route =
       .finiteDimensionalLinearAlgebra :=
   rfl
+
+theorem finiteDimensionalMatrixData_selectedCoordinateClass_ne_zero :
+    finiteDimensionalMatrixComputationData.selectedCoordinateHomologyClass ≠ 0 := by
+  simpa [FiniteAATComputationData.selectedCoordinateHomologyClass,
+    finiteDimensionalMatrixComputationData] using
+      finiteDimensionalMatrixSelectedCoordinateClass_ne_zero
+
+/-- The finite-dimensional full package carries the same nonzero class
+through coordinate homology, tensor homology, Mathlib Tor, and LawConflict. -/
+theorem finiteDimensionalMatrixFullRoute_nonzero :
+    finiteDimensionalMatrixComputabilityPackage.selectedCoordinateCycle ≠ 0 ∧
+      finiteDimensionalMatrixComputabilityPackage.selectedCoordinateHomologyClass ≠ 0 ∧
+      finiteDimensionalMatrixComputabilityPackage.selectedTensorHomologyClass ≠ 0 ∧
+      finiteDimensionalMatrixComputabilityPackage.selectedTorClass ≠ 0 ∧
+      finiteDimensionalMatrixComputabilityPackage.selectedConflictClass ≠ 0 := by
+  have hcoordinate := finiteDimensionalMatrixData_selectedCoordinateClass_ne_zero
+  have htensor :=
+    finiteDimensionalMatrixComputationData.selectedTensorHomologyClass_ne_zero
+      hcoordinate
+  have htor :=
+    finiteDimensionalMatrixComputationData.selectedTorClass_ne_zero htensor
+  have hconflict :=
+    finiteDimensionalMatrixComputationData.selectedConflictClass_ne_zero htor
+  exact ⟨finiteDimensionalMatrixSelectedCycle_ne_zero,
+    hcoordinate, htensor, htor, hconflict⟩
 
 /-- R11(c): generated cochains have explicit finite carriers. -/
 def finiteComputabilityCochainFintype (n : Nat) :
@@ -955,82 +1155,108 @@ theorem finiteComputabilityCochain_nondegenerate :
   change (0 : ZMod 2) = 1 at hvalue
   exact zero_ne_one hvalue
 
-/-- R11(c): selected left forbidden-support family. -/
-def tinyLeftForbiddenSupports : Finset (Finset SquareFreeSupportVertex) :=
-  {∅, forbiddenSupportPQFinset, forbiddenSupportQRFinset}
+/-- R11(c): every singleton support generates the concrete proper left ideal. -/
+def tinyLeftSquareFreeData :
+    FiniteSquareFreeComputationData computabilityFiniteMeasurementRegime :=
+  FiniteSquareFreeComputationData.allSingletons
+    computabilityFiniteMeasurementRegime
 
-/-- R11(c): selected right forbidden-support family. -/
-def tinyRightForbiddenSupports : Finset (Finset SquareFreeSupportVertex) :=
-  {forbiddenSupportQRFinset}
+theorem tinyLeftIdeal_eq_squareFree :
+    finiteDimensionalMatrixLeftIdeal =
+      tinyLeftSquareFreeData.obstructionIdeal (ZMod 2) := by
+  exact (FiniteSquareFreeComputationData.allSingletons_obstructionIdeal
+    computabilityFiniteMeasurementRegime (ZMod 2)).symm
 
-/-- R11(c): nontrivial finite square-free supports for the combinatorics route. -/
-noncomputable def tinyLeftSquareFreeData :
+/-- R11(c): a nonzero singleton support generates the concrete principal
+right ideal. -/
+def tinyRightSquareFreeData :
     FiniteSquareFreeComputationData computabilityFiniteMeasurementRegime where
-  forbiddenSupports := tinyLeftForbiddenSupports
+  forbiddenSupports := {forbiddenSupportPFinset}
 
-/-- The empty forbidden support inserts the unit monomial, so the selected
-left ideal is the top ideal and its quotient is a finite zero ring. -/
-theorem tinyLeftIdeal_eq_top :
-    tinyLeftSquareFreeData.obstructionIdeal (ZMod 2) = ⊤ :=
-  FiniteSquareFreeComputationData.obstructionIdeal_eq_top_of_empty_mem
-    tinyLeftSquareFreeData (ZMod 2) (by
-      simp [tinyLeftSquareFreeData, tinyLeftForbiddenSupports])
-
-/-- R11(c): a nonzero principal ideal is selected on the resolved side. -/
-noncomputable def tinyRightSquareFreeData :
-    FiniteSquareFreeComputationData computabilityFiniteMeasurementRegime where
-  forbiddenSupports := tinyRightForbiddenSupports
-
-/-- R11(c): the right principal ideal has a length-one finite-free resolution. -/
-def tinyRightFiniteResolution :
-    Derived.FreeResolution.MathlibResolution.FiniteFreeMathlibResolution
-      (MvPolynomial SquareFreeSupportVertex (ZMod 2))
-      (tinyRightSquareFreeData.obstructionIdeal (ZMod 2)) := by
-  have hnonzero :
-      LawAlgebra.StanleyReisner.squareFreeMonomial
-          SquareFreeSupportVertex (ZMod 2) forbiddenSupportQRFinset ≠ 0 := by
-    simp [LawAlgebra.StanleyReisner.squareFreeMonomial,
-      forbiddenSupportQRFinset]
-  simpa [FiniteSquareFreeComputationData.obstructionIdeal,
+theorem tinyRightIdeal_eq_squareFree :
+    finiteDimensionalMatrixRightIdeal =
+      tinyRightSquareFreeData.obstructionIdeal (ZMod 2) := by
+  ext f
+  simp [finiteDimensionalMatrixRightIdeal,
+    FiniteSquareFreeComputationData.obstructionIdeal,
     FiniteSquareFreeComputationData.witnessRegime,
     LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.obstructionIdeal,
     LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.supportIdeal,
     LawAlgebra.StanleyReisner.SquareFreeWitnessRegime.monomialSet,
-    tinyRightSquareFreeData, tinyRightForbiddenSupports] using
-      (Derived.FreeResolution.MathlibResolution.Principal.finiteFreeResolution
-        (A := MvPolynomial SquareFreeSupportVertex (ZMod 2)) hnonzero)
+    tinyRightSquareFreeData, forbiddenSupportPFinset,
+    LawAlgebra.StanleyReisner.squareFreeMonomial]
 
-noncomputable def tinyTensorMatrixAlgorithm :
-    FiniteTensorMatrixAlgorithm
-      (MvPolynomial SquareFreeSupportVertex (ZMod 2))
-      (tinyLeftSquareFreeData.obstructionIdeal (ZMod 2))
-      (tinyRightSquareFreeData.obstructionIdeal (ZMod 2))
-      tinyRightFiniteResolution :=
-  FiniteTensorMatrixAlgorithm.ofIdealEqTop tinyLeftIdeal_eq_top
-
-noncomputable def tinyTensorMatrixComparison :
-    FiniteTensorMatrixComparison tinyTensorMatrixAlgorithm :=
-  FiniteTensorMatrixComparison.ofIdealEqTop
-    tinyTensorMatrixAlgorithm tinyLeftIdeal_eq_top
-
-/-- R11(c): all theorem 4.2 inputs are selected from actual finite data. -/
-def finiteComputabilityExampleData :
+/-- R11(c): all theorem 4.2 inputs are selected from actual nonzero finite
+chain data. -/
+noncomputable def finiteComputabilityExampleData :
     FiniteAATComputationData finiteComputabilityMeasurementProfile
       computabilityFiniteMeasurementRegime where
-  obstructionIdealEquiv := Equiv.refl _
   leftSquareFree := tinyLeftSquareFreeData
   rightSquareFree := tinyRightSquareFreeData
-  selectedLeftConflictGenerator :=
-    ⟨forbiddenSupportPQFinset, by
-      simp [tinyLeftSquareFreeData, tinyLeftForbiddenSupports]⟩
-  selectedRightConflictGenerator :=
-    ⟨forbiddenSupportQRFinset, by
-      simp [tinyRightSquareFreeData, tinyRightForbiddenSupports]⟩
-  rightResolution := tinyRightFiniteResolution
-  tensorMatrixAlgorithm := tinyTensorMatrixAlgorithm
-  tensorMatrixComparison := tinyTensorMatrixComparison
-  torDegree := 0
-  conflictCycle := fun _ _ => 0
+  leftIdeal := finiteDimensionalMatrixLeftIdeal
+  leftIdeal_eq_squareFree := tinyLeftIdeal_eq_squareFree
+  rightIdeal := finiteDimensionalMatrixRightIdeal
+  rightIdeal_eq_squareFree := tinyRightIdeal_eq_squareFree
+  rightResolution := finiteDimensionalMatrixRightResolution
+  tensorMatrixAlgorithm := finiteDimensionalMatrixTensorAlgorithm
+  torDegree := 1
+  selectedCoordinateCycle := finiteDimensionalMatrixSelectedCycle
+  selectedCoordinateRepresentative := fun _ => 1
+  selectedCoordinateRepresentative_mod := by
+    intro i
+    rfl
+  selectedCoordinateRepresentative_reduced := by
+    intro i
+    simpa [tinyLeftSquareFreeData] using
+      (FiniteSquareFreeComputationData.allSingletons_one_isReduced
+        computabilityFiniteMeasurementRegime (ZMod 2))
+
+/-- The degree-one basis support is derived from the actual principal
+differential entry `X p`. -/
+theorem finiteComputabilityExampleData_resolutionBasisSupport_one
+    (j : finiteComputabilityExampleData.rightResolution.BasisIndex 1) :
+    finiteComputabilityExampleData.resolutionBasisSupport 1 j =
+      forbiddenSupportPFinset := by
+  letI := computabilityFiniteMeasurementRegime.witnessDecidableEq
+  letI := computabilityFiniteMeasurementRegime.geometry.coeffCommRing
+  letI : Nontrivial finiteComputabilityMeasurementProfile.Coeff := by
+    change Nontrivial (ZMod 2)
+    infer_instance
+  letI : DecidableEq
+      (finiteComputabilityExampleData.rightResolution.BasisIndex 0) :=
+    Classical.decEq _
+  rw [FiniteAATComputationData.resolutionBasisSupport]
+  ext e
+  constructor
+  · intro he
+    rcases Finset.mem_biUnion.mp he with ⟨i, -, hi⟩
+    rcases Finset.mem_union.mp hi with hi | hi
+    · have hmatrix :
+          finiteComputabilityExampleData.rightResolution.differentialMatrix
+              0 i j =
+            (MvPolynomial.X SquareFreeSupportVertex.p :
+              MvPolynomial SquareFreeSupportVertex (ZMod 2)) := by
+        simpa [finiteComputabilityExampleData] using
+          finiteDimensionalMatrixRightResolution_differentialMatrix_zero i j
+      rw [hmatrix,
+        FiniteAATComputationData.polynomialVariableSupport_X] at hi
+      simpa [forbiddenSupportPFinset] using hi
+    · simp [FiniteAATComputationData.resolutionBasisSupport] at hi
+  · intro he
+    let i : finiteComputabilityExampleData.rightResolution.BasisIndex 0 := by
+      change ULift Unit
+      exact ULift.up ()
+    refine Finset.mem_biUnion.mpr ⟨i, Finset.mem_univ _, ?_⟩
+    apply Finset.mem_union_left
+    have hmatrix :
+        finiteComputabilityExampleData.rightResolution.differentialMatrix
+            0 i j =
+          (MvPolynomial.X SquareFreeSupportVertex.p :
+            MvPolynomial SquareFreeSupportVertex (ZMod 2)) := by
+      simpa [finiteComputabilityExampleData] using
+        finiteDimensionalMatrixRightResolution_differentialMatrix_zero i j
+    rw [hmatrix, FiniteAATComputationData.polynomialVariableSupport_X]
+    simpa [forbiddenSupportPFinset] using he
 
 /-- R11(c): theorem 4.2 constructs the finite computability package. -/
 def finiteComputabilityExamplePackage :
@@ -1044,6 +1270,30 @@ theorem finiteComputabilityExample_effectiveRouteSelected :
     finiteComputabilityExamplePackage.coefficientComputation.route =
       .effectiveFinitelyPresented :=
   rfl
+
+theorem finiteComputabilityExampleData_selectedCoordinateClass_ne_zero :
+    finiteComputabilityExampleData.selectedCoordinateHomologyClass ≠ 0 := by
+  simpa [FiniteAATComputationData.selectedCoordinateHomologyClass,
+    finiteComputabilityExampleData] using
+      finiteDimensionalMatrixSelectedCoordinateClass_ne_zero
+
+/-- The effective full package transports its selected nonzero class through
+the same constructed Tor and LawConflict route. -/
+theorem finiteComputabilityExampleFullRoute_nonzero :
+    finiteComputabilityExamplePackage.selectedCoordinateCycle ≠ 0 ∧
+      finiteComputabilityExamplePackage.selectedCoordinateHomologyClass ≠ 0 ∧
+      finiteComputabilityExamplePackage.selectedTensorHomologyClass ≠ 0 ∧
+      finiteComputabilityExamplePackage.selectedTorClass ≠ 0 ∧
+      finiteComputabilityExamplePackage.selectedConflictClass ≠ 0 := by
+  have hcoordinate :=
+    finiteComputabilityExampleData_selectedCoordinateClass_ne_zero
+  have htensor :=
+    finiteComputabilityExampleData.selectedTensorHomologyClass_ne_zero hcoordinate
+  have htor := finiteComputabilityExampleData.selectedTorClass_ne_zero htensor
+  have hconflict :=
+    finiteComputabilityExampleData.selectedConflictClass_ne_zero htor
+  exact ⟨finiteDimensionalMatrixSelectedCycle_ne_zero,
+    hcoordinate, htensor, htor, hconflict⟩
 
 /-- R11(c): kernel, image, and quotient procedures use generated Čech data. -/
 theorem finiteComputabilityExample_effectiveProcedureRoute :
@@ -1061,16 +1311,36 @@ theorem finiteComputabilityExample_effectiveProcedureRoute :
     finiteComputabilityEffectiveCechProcedure.image_correct,
     finiteComputabilityEffectiveCechProcedure.quotientRepresentative_correct⟩
 
-/-- R11(c): the combinatorics route computes support from both forbidden pairs. -/
+/-- R11(c): the combinatorics route computes the support of the actual
+selected nonzero cycle. -/
 theorem finiteComputabilityExample_combinatoricsRoute :
-    finiteComputabilityExampleData.conflictSupport =
-      forbiddenSupportPQFinset ∪ forbiddenSupportQRFinset := by
-  simp [FiniteAATComputationData.conflictSupport,
-    FiniteAATComputationData.monomialConflictRegime,
-    FiniteSquareFreeComputationData.monomialIdealPresentation,
-    Derived.TaylorResolution.MonomialLawConflictRegime.lcmSupport,
+    finiteComputabilityExamplePackage.conflictSupport =
+      forbiddenSupportPFinset := by
+  letI := computabilityFiniteMeasurementRegime.witnessDecidableEq
+  letI := computabilityFiniteMeasurementRegime.geometry.coeffCommRing
+  have hclass :
+      finiteComputabilityExamplePackage.selectedCoordinateHomologyClass ≠ 0 := by
+    simpa [finiteComputabilityExamplePackage, finiteAATComputabilityPackage] using
+      finiteComputabilityExampleData_selectedCoordinateClass_ne_zero
+  have hsupport : finiteComputabilityExamplePackage.conflictSupport =
+      finiteComputabilityExampleData.selectedCycleSupport :=
+    FiniteAATComputability.conflictSupport_eq_selectedCycleSupport_of_selectedCoordinateHomologyClass_ne_zero
+      finiteComputabilityExamplePackage hclass
+  rw [hsupport]
+  have hone :
+      (1 : MvPolynomial SquareFreeSupportVertex (ZMod 2) ⧸
+        finiteDimensionalMatrixLeftIdeal) ≠ 0 :=
+    finiteDimensionalMatrixQuotient_one_ne_zero
+  simp [FiniteAATComputationData.selectedCycleSupport,
     finiteComputabilityExampleData,
-    forbiddenSupportPQFinset, forbiddenSupportQRFinset]
+    finiteDimensionalMatrixRightResolution,
+    Derived.FreeResolution.MathlibResolution.Principal.finiteFreeResolution,
+    finiteDimensionalMatrixSelectedCycle,
+    finiteDimensionalMatrixOneCoordinate,
+    FiniteTensorMatrixAlgorithm.cycleValue,
+    FiniteAATComputationData.polynomialVariableSupport_one,
+    forbiddenSupportPFinset, hone]
+  exact finiteComputabilityExampleData_resolutionBasisSupport_one _
 
 /-- R11(c): the selected finite resolution computes the Mathlib Tor object. -/
 theorem finiteComputabilityExample_torRoute :
@@ -1119,7 +1389,9 @@ noncomputable def principalTensorDifferentialMatrixV2 (n : Nat) :
 def yCoordinateCycleV2 :
     principalFiniteFreeResolutionV2.BasisIndex 1 →
       R2 ⧸ idealU (ZMod 2) :=
-  fun _ => Ideal.Quotient.mk (idealU (ZMod 2)) (MvPolynomial.X y)
+  fun i => by
+    cases i.down
+    exact Ideal.Quotient.mk (idealU (ZMod 2)) (MvPolynomial.X y)
 
 theorem yCoordinateCycleV2_ne_zero : yCoordinateCycleV2 ≠ 0 := by
   intro h

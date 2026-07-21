@@ -88,52 +88,67 @@ example {M : Measurement.MeasurementProfile.{u, v}}
 
 example {M : Measurement.MeasurementProfile.{u, v}}
     (R : Measurement.FiniteMeasurementRegime M)
-    (obstructionIdealEquiv :
-      letI := R.geometry.coeffCommRing
-      M.ObstructionIdeal ≃
-        Ideal (MvPolynomial M.WitnessVariables M.Coeff))
     (leftSquareFree rightSquareFree : Measurement.FiniteSquareFreeComputationData R)
-    (selectedLeft :
-      { support : Finset M.WitnessVariables //
-        support ∈ leftSquareFree.forbiddenSupports })
-    (selectedRight :
-      { support : Finset M.WitnessVariables //
-        support ∈ rightSquareFree.forbiddenSupports })
+    (leftIdeal :
+      letI := R.geometry.coeffCommRing
+      Ideal (MvPolynomial M.WitnessVariables M.Coeff))
+    (leftIdealEq :
+      letI := R.geometry.coeffCommRing
+      leftIdeal = leftSquareFree.obstructionIdeal M.Coeff)
+    (rightIdeal :
+      letI := R.geometry.coeffCommRing
+      Ideal (MvPolynomial M.WitnessVariables M.Coeff))
+    (rightIdealEq :
+      letI := R.geometry.coeffCommRing
+      rightIdeal = rightSquareFree.obstructionIdeal M.Coeff)
     (rightResolution :
       letI := R.geometry.coeffCommRing
       Derived.FreeResolution.MathlibResolution.FiniteFreeMathlibResolution
         (MvPolynomial M.WitnessVariables M.Coeff)
-        (rightSquareFree.obstructionIdeal M.Coeff))
+        rightIdeal)
     (tensorMatrixAlgorithm :
       letI := R.geometry.coeffCommRing
       Measurement.FiniteTensorMatrixAlgorithm.{max u v, max u v}
         (MvPolynomial M.WitnessVariables M.Coeff)
-        (leftSquareFree.obstructionIdeal M.Coeff)
-        (rightSquareFree.obstructionIdeal M.Coeff)
+        leftIdeal
+        rightIdeal
         rightResolution)
-    (tensorMatrixComparison :
-      letI := R.geometry.coeffCommRing
-      Measurement.FiniteTensorMatrixComparison tensorMatrixAlgorithm)
     (torDegree : Nat)
-    (conflictCycle :
-      letI := R.witnessDecidableEq
+    (selectedCoordinateCycle :
       letI := R.geometry.coeffCommRing
-      (gU : { support : Finset M.WitnessVariables //
-        support ∈ leftSquareFree.forbiddenSupports }) →
-      (gV : { support : Finset M.WitnessVariables //
-        support ∈ rightSquareFree.forbiddenSupports }) →
-        tensorMatrixAlgorithm.Cycle torDegree) :
+      Measurement.FiniteTensorMatrixAlgorithm.Cycle.{max u v, max u v}
+        tensorMatrixAlgorithm torDegree)
+    (selectedCoordinateRepresentative :
+      letI := R.geometry.coeffCommRing
+      rightResolution.BasisIndex torDegree ->
+        MvPolynomial M.WitnessVariables M.Coeff)
+    (selectedCoordinateRepresentativeMod :
+      letI := R.geometry.coeffCommRing
+      ∀ i,
+        Ideal.Quotient.mk leftIdeal (selectedCoordinateRepresentative i) =
+          tensorMatrixAlgorithm.cycleValue torDegree selectedCoordinateCycle i)
+    (selectedCoordinateRepresentativeReduced :
+      letI := R.geometry.coeffCommRing
+      ∀ i exponent,
+        exponent ∈ (selectedCoordinateRepresentative i).support ->
+          ∀ support ∈ leftSquareFree.forbiddenSupports,
+            ¬ Measurement.FiniteSquareFreeComputationData.supportExponent support ≤
+              exponent) :
     Measurement.FiniteAATComputationData M R where
-  obstructionIdealEquiv := obstructionIdealEquiv
   leftSquareFree := leftSquareFree
   rightSquareFree := rightSquareFree
-  selectedLeftConflictGenerator := selectedLeft
-  selectedRightConflictGenerator := selectedRight
+  leftIdeal := leftIdeal
+  leftIdeal_eq_squareFree := leftIdealEq
+  rightIdeal := rightIdeal
+  rightIdeal_eq_squareFree := rightIdealEq
   rightResolution := rightResolution
   tensorMatrixAlgorithm := tensorMatrixAlgorithm
-  tensorMatrixComparison := tensorMatrixComparison
   torDegree := torDegree
-  conflictCycle := conflictCycle
+  selectedCoordinateCycle := selectedCoordinateCycle
+  selectedCoordinateRepresentative := selectedCoordinateRepresentative
+  selectedCoordinateRepresentative_mod := selectedCoordinateRepresentativeMod
+  selectedCoordinateRepresentative_reduced :=
+    selectedCoordinateRepresentativeReduced
 
 example {M : Measurement.MeasurementProfile.{u, v}}
     {G : Measurement.FiniteMeasurementGeometry M}
@@ -264,10 +279,6 @@ example {M : Measurement.MeasurementProfile.{u, v}}
     Measurement.FiniteAATComputability R D where
   siteObjFintype := C.siteObjFintype
   coverFintype := C.coverFintype
-  leftProfileObstructionIdeal := C.leftProfileObstructionIdeal
-  rightProfileObstructionIdeal := C.rightProfileObstructionIdeal
-  leftProfileObstructionIdeal_realizes := C.leftProfileObstructionIdeal_realizes
-  rightProfileObstructionIdeal_realizes := C.rightProfileObstructionIdeal_realizes
   cochainModule := C.cochainModule
   coefficientComputation := C.coefficientComputation
   verdict := C.verdict
@@ -285,6 +296,10 @@ example {M : Measurement.MeasurementProfile.{u, v}}
   rightIdealMembership_correct := C.rightIdealMembership_correct
   leftMinimalForbiddenSupports := C.leftMinimalForbiddenSupports
   rightMinimalForbiddenSupports := C.rightMinimalForbiddenSupports
+  leftMinimalForbiddenSupports_eq := C.leftMinimalForbiddenSupports_eq
+  rightMinimalForbiddenSupports_eq := C.rightMinimalForbiddenSupports_eq
+  leftMinimalForbiddenSupports_spec := C.leftMinimalForbiddenSupports_spec
+  rightMinimalForbiddenSupports_spec := C.rightMinimalForbiddenSupports_spec
   leftStanleyReisner := C.leftStanleyReisner
   rightStanleyReisner := C.rightStanleyReisner
   torComparison := C.torComparison
@@ -301,16 +316,33 @@ example {M : Measurement.MeasurementProfile.{u, v}}
   torTensorKernelDecision_correct := C.torTensorKernelDecision_correct
   torTensorImageDecision := C.torTensorImageDecision
   torTensorImageDecision_correct := C.torTensorImageDecision_correct
+  torCoordinateClassZeroDecision := C.torCoordinateClassZeroDecision
+  torCoordinateClassZeroDecision_correct :=
+    C.torCoordinateClassZeroDecision_correct
   torTensorComplex := C.torTensorComplex
   torTensorComplex_eq := C.torTensorComplex_eq
+  torCoordinateComplex := C.torCoordinateComplex
+  torCoordinateComplex_eq := C.torCoordinateComplex_eq
+  torTensorCoordinateComplexIso := C.torTensorCoordinateComplexIso
   selectedConflictClass := C.selectedConflictClass
   selectedTorClass := C.selectedTorClass
   selectedTensorHomologyClass := C.selectedTensorHomologyClass
   selectedCoordinateCycle := C.selectedCoordinateCycle
   selectedCoordinateCycle_eq := C.selectedCoordinateCycle_eq
   selectedCoordinateHomologyClass := C.selectedCoordinateHomologyClass
+  selectedCoordinateHomologyClass_eq := C.selectedCoordinateHomologyClass_eq
+  selectedTensorHomologyClass_eq := C.selectedTensorHomologyClass_eq
+  selectedTorClass_eq := C.selectedTorClass_eq
+  selectedConflictClass_eq := C.selectedConflictClass_eq
   conflictSupport := C.conflictSupport
-  conflictSupport_eq_union := C.conflictSupport_eq_union
+  conflictSupport_eq_selectedClassSupport :=
+    C.conflictSupport_eq_selectedClassSupport
+  conflictSupport_eq_empty_of_selectedCoordinateHomologyClass_eq_zero :=
+    C.conflictSupport_eq_empty_of_selectedCoordinateHomologyClass_eq_zero
+  conflictSupport_eq_empty_of_selectedConflictClass_eq_zero :=
+    C.conflictSupport_eq_empty_of_selectedConflictClass_eq_zero
+  conflictSupport_eq_selectedCycleSupport_of_selectedCoordinateHomologyClass_ne_zero :=
+    C.conflictSupport_eq_selectedCycleSupport_of_selectedCoordinateHomologyClass_ne_zero
 
 example {M : Measurement.MeasurementProfile.{u, v}}
     (R : Measurement.FiniteMeasurementRegime M)
@@ -328,9 +360,37 @@ example {M : Measurement.MeasurementProfile.{u, v}}
     (D : Measurement.FiniteAATComputationData M R)
     (C : Measurement.FiniteAATComputability R D) :
     letI := R.witnessDecidableEq
-    C.conflictSupport =
-      D.selectedLeftConflictGenerator.1 ∪ D.selectedRightConflictGenerator.1 :=
-  C.conflictSupport_eq_union
+    C.conflictSupport = D.selectedClassSupport :=
+  C.conflictSupport_eq_selectedClassSupport
+
+example {M : Measurement.MeasurementProfile.{u, v}}
+    (R : Measurement.FiniteMeasurementRegime M)
+    (D : Measurement.FiniteAATComputationData M R)
+    (C : Measurement.FiniteAATComputability R D) :
+    letI := R.witnessDecidableEq
+    letI := R.geometry.coeffCommRing
+    C.selectedCoordinateHomologyClass = 0 -> C.conflictSupport = ∅ :=
+  C.conflictSupport_eq_empty_of_selectedCoordinateHomologyClass_eq_zero
+
+example {M : Measurement.MeasurementProfile.{u, v}}
+    (R : Measurement.FiniteMeasurementRegime M)
+    (D : Measurement.FiniteAATComputationData M R)
+    (C : Measurement.FiniteAATComputability R D) :
+    letI := R.witnessDecidableEq
+    letI := R.geometry.coeffCommRing
+    C.selectedConflictClass = 0 -> C.conflictSupport = ∅ :=
+  C.conflictSupport_eq_empty_of_selectedConflictClass_eq_zero
+
+example {M : Measurement.MeasurementProfile.{u, v}}
+    (R : Measurement.FiniteMeasurementRegime M)
+    (D : Measurement.FiniteAATComputationData M R)
+    (C : Measurement.FiniteAATComputability R D) :
+    letI := R.geometry.coeffCommRing
+    ∀ n (x : D.tensorMatrixAlgorithm.Cycle n),
+      C.torCoordinateClassZeroDecision n x = true ↔
+        D.tensorMatrixAlgorithm.classOfCycle n x = 0 := by
+  intro n x
+  exact C.torCoordinateClassZeroDecision_correct n x
 
 example :
     Nonempty
@@ -386,10 +446,25 @@ example :
   Measurement.finiteComputabilityExample_effectiveProcedureRoute.2.2
 
 example :
-    Measurement.finiteComputabilityExampleData.conflictSupport =
-      Measurement.forbiddenSupportPQFinset ∪
-        Measurement.forbiddenSupportQRFinset :=
+    Measurement.finiteComputabilityExamplePackage.conflictSupport =
+      Measurement.forbiddenSupportPFinset :=
   Measurement.finiteComputabilityExample_combinatoricsRoute
+
+example :
+    Measurement.finiteDimensionalMatrixComputabilityPackage.selectedCoordinateCycle ≠ 0 ∧
+      Measurement.finiteDimensionalMatrixComputabilityPackage.selectedCoordinateHomologyClass ≠ 0 ∧
+      Measurement.finiteDimensionalMatrixComputabilityPackage.selectedTensorHomologyClass ≠ 0 ∧
+      Measurement.finiteDimensionalMatrixComputabilityPackage.selectedTorClass ≠ 0 ∧
+      Measurement.finiteDimensionalMatrixComputabilityPackage.selectedConflictClass ≠ 0 :=
+  Measurement.finiteDimensionalMatrixFullRoute_nonzero
+
+example :
+    Measurement.finiteComputabilityExamplePackage.selectedCoordinateCycle ≠ 0 ∧
+      Measurement.finiteComputabilityExamplePackage.selectedCoordinateHomologyClass ≠ 0 ∧
+      Measurement.finiteComputabilityExamplePackage.selectedTensorHomologyClass ≠ 0 ∧
+      Measurement.finiteComputabilityExamplePackage.selectedTorClass ≠ 0 ∧
+      Measurement.finiteComputabilityExamplePackage.selectedConflictClass ≠ 0 :=
+  Measurement.finiteComputabilityExampleFullRoute_nonzero
 
 example :
     Measurement.NontrivialTorFixture.principalFiniteFreeResolutionV2.length = 1 :=
