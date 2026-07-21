@@ -1228,7 +1228,7 @@ def zeroReplayDescentData :
     exact match s with
       | .high => .mid
       | other => other
-  restrictionDifference := fun _localReplay => unitTemporalCochain 1
+  replayCoefficient := unitTemporalCochain 0
   mismatchSupportedByLaw := True
   mismatchSupportedByLaw_cert := trivial
 
@@ -1245,11 +1245,10 @@ def zeroReplayAdjustmentOf
     EffectiveTemporalAdjustment zeroReplayDescentData where
   correction := correction
   adjustedReplay := zeroReplayDescentData.replay
+  adjustedCoefficient := unitTemporalCochain 0 - correction
   adjustedMismatchSupportedByLaw := True
   adjustedMismatchSupportedByLaw_cert := trivial
-  adjustment_equation := by
-    funext _σ
-    rfl
+  coefficient_adjustment := rfl
 
 /-- R10(b): temporal class package selected by the zero replay mismatch. -/
 def zeroReplayTemporalClass :

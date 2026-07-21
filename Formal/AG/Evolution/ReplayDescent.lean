@@ -24,9 +24,10 @@ Theorem 4.2.  The reverse direction is intentionally not part of this surface.
 IX.§4 / AC11: local replay descent data over a temporal cover and trace arrow.
 
 The replay maps are local chart maps
-`St_A(W_i,t) -> St_A(W_i,t')`.  Their mismatch is the restriction difference
-of those local maps, read as a degree-one cochain in the temporal Čech bridge
-attached to `TempCoeff_A`.
+`St_A(W_i,t) -> St_A(W_i,t')`.  Their coefficient reading is a degree-zero
+Čech cochain, and the replay mismatch is its actual Čech differential.  Thus
+the mismatch is not supplied as an unconstrained map from local replay maps to
+degree-one cochains.
 -/
 structure ReplayDescentData {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {E : EvolutionProfile.{u, v, w, x, y, z}}
@@ -42,11 +43,7 @@ structure ReplayDescentData {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     (i : cover.Index) ->
       St.State (sourceTrace, cover.chartContext i) ->
         St.State (targetTrace, cover.chartContext i)
-  restrictionDifference :
-    ((i : cover.Index) ->
-      St.State (sourceTrace, cover.chartContext i) ->
-        St.State (targetTrace, cover.chartContext i)) ->
-      bridge.siteComplex.Cn 1
+  replayCoefficient : bridge.siteComplex.Cn 0
   mismatchSupportedByLaw : Prop
   mismatchSupportedByLaw_cert : mismatchSupportedByLaw
 
@@ -60,10 +57,10 @@ variable {St : StateTransitionPresheaf T}
 variable {Coeff : TemporalCoefficient T}
 variable {Law : TemporalLaw St}
 
-/-- IX.§4 / AC11: the degree-one mismatch computed from the local replay maps. -/
+/-- IX.§4 / AC11: the degree-one mismatch is the Čech differential of the replay coefficient. -/
 def mismatchCochain (r : ReplayDescentData St Coeff Law) :
     r.bridge.siteComplex.Cn 1 :=
-  r.restrictionDifference r.replay
+  r.bridge.siteComplex.d 0 r.replayCoefficient
 
 /-- IX.§4 / AC11: read the replay mismatch as a selected temporal mismatch. -/
 def mismatch (r : ReplayDescentData St Coeff Law) :
@@ -157,12 +154,11 @@ structure EffectiveTemporalAdjustment {U : AtomCarrier.{u}} {A : ArchitectureObj
     (i : r.cover.Index) ->
       St.State (r.sourceTrace, r.cover.chartContext i) ->
         St.State (r.targetTrace, r.cover.chartContext i)
+  adjustedCoefficient : r.bridge.siteComplex.Cn 0
   adjustedMismatchSupportedByLaw : Prop
   adjustedMismatchSupportedByLaw_cert : adjustedMismatchSupportedByLaw
-  adjustment_equation :
-    letI := r.bridge.siteComplex.cochainAddCommGroup 1
-    r.restrictionDifference adjustedReplay =
-      r.mismatchCochain - r.bridge.siteComplex.d 0 correction
+  coefficient_adjustment :
+    adjustedCoefficient = r.replayCoefficient - correction
 
 namespace EffectiveTemporalAdjustment
 
@@ -181,10 +177,10 @@ def localReplay (A : EffectiveTemporalAdjustment r) (i : r.cover.Index) :
       St.State (r.targetTrace, r.cover.chartContext i) :=
   A.adjustedReplay i
 
-/-- IX.§4 / AC12: recompute the adjusted mismatch from the adjusted local replay. -/
+/-- IX.§4 / AC12: recompute the adjusted mismatch from its corrected coefficient reading. -/
 def adjustedMismatchCochain (A : EffectiveTemporalAdjustment r) :
     r.bridge.siteComplex.Cn 1 :=
-  r.restrictionDifference A.adjustedReplay
+  r.bridge.siteComplex.d 0 A.adjustedCoefficient
 
 /-- IX.§4 / AC12: adjusted replay data with the adjusted mismatch cochain. -/
 def adjustedData (A : EffectiveTemporalAdjustment r) :
@@ -196,7 +192,7 @@ def adjustedData (A : EffectiveTemporalAdjustment r) :
   traceArrow := r.traceArrow
   traceArrow_selected := r.traceArrow_selected
   replay := A.adjustedReplay
-  restrictionDifference := r.restrictionDifference
+  replayCoefficient := A.adjustedCoefficient
   mismatchSupportedByLaw := A.adjustedMismatchSupportedByLaw
   mismatchSupportedByLaw_cert := A.adjustedMismatchSupportedByLaw_cert
 
@@ -205,7 +201,9 @@ theorem mismatch_adjust_eq (A : EffectiveTemporalAdjustment r) :
     letI := r.bridge.siteComplex.cochainAddCommGroup 1
   A.adjustedMismatchCochain =
       r.mismatchCochain - r.bridge.siteComplex.d 0 A.correction :=
-  A.adjustment_equation
+  by
+    rw [adjustedMismatchCochain, ReplayDescentData.mismatchCochain,
+      A.coefficient_adjustment, map_sub]
 
 end EffectiveTemporalAdjustment
 
