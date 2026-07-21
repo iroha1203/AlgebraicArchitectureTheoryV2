@@ -114,22 +114,438 @@ structure AATGAGARealCechHodgeInput {M : MeasurementProfile.{u, v}} [Field M.Coe
   /-- Finiteness of selected two-cochain coordinates. -/
   [twoFinite : @Module.Finite ℝ RealC2 _ _
     ((@InnerProductSpace.toNormedSpace ℝ RealC2 _ _ twoInner).toModule)]
+  /-- Explicit coefficient comparison used to form the real Čech reading. -/
+  coefficientToReal : M.Coeff ≃+* ℝ
   /-- Additive coordinate identifications for the selected canonical Čech complex. -/
   zeroToReal : S.nerveComplex.C0 ≃+ RealC0
   oneToReal : S.nerveComplex.C1 ≃+ RealC1
   twoToReal : S.nerveComplex.C2 ≃+ RealC2
-  /-- The real Hodge complex transported from the selected canonical Čech cochains. -/
-  realFiniteComplex : RealFiniteInnerProductComplex RealC0 RealC1 RealC2
+  /-- The coordinate maps respect the selected profile coefficient comparison. -/
+  zeroToReal_smul : ∀ (a : M.Coeff) (c : S.nerveComplex.C0),
+    zeroToReal (a • c) = coefficientToReal a • zeroToReal c
+  oneToReal_smul : ∀ (a : M.Coeff) (c : S.nerveComplex.C1),
+    oneToReal (a • c) = coefficientToReal a • oneToReal c
+  twoToReal_smul : ∀ (a : M.Coeff) (c : S.nerveComplex.C2),
+    twoToReal (a • c) = coefficientToReal a • twoToReal c
+  /-- Real nerve coordinates on the selected charts. -/
+  zeroCochainCoordinates : RealC0 → (S.nerve.Chart → ℝ)
+  zeroCochainCoordinates_inv : (S.nerve.Chart → ℝ) → RealC0
+  zeroCochainCoordinates_left_inv : ∀ c,
+    zeroCochainCoordinates_inv (zeroCochainCoordinates c) = c
+  zeroCochainCoordinates_right_inv : ∀ c,
+    zeroCochainCoordinates (zeroCochainCoordinates_inv c) = c
+  zeroCochainCoordinates_add : ∀ c d,
+    zeroCochainCoordinates (c + d) = zeroCochainCoordinates c + zeroCochainCoordinates d
+  /-- Real nerve coordinates on the selected overlaps. -/
+  oneCochainCoordinates : RealC1 → (S.nerve.EdgeComponent → ℝ)
+  oneCochainCoordinates_inv : (S.nerve.EdgeComponent → ℝ) → RealC1
+  oneCochainCoordinates_left_inv : ∀ c,
+    oneCochainCoordinates_inv (oneCochainCoordinates c) = c
+  oneCochainCoordinates_right_inv : ∀ c,
+    oneCochainCoordinates (oneCochainCoordinates_inv c) = c
+  oneCochainCoordinates_add : ∀ c d,
+    oneCochainCoordinates (c + d) = oneCochainCoordinates c + oneCochainCoordinates d
+  /-- Real nerve coordinates on the selected triple overlaps. -/
+  twoCochainCoordinates : RealC2 → (S.nerve.FaceComponent → ℝ)
+  twoCochainCoordinates_inv : (S.nerve.FaceComponent → ℝ) → RealC2
+  twoCochainCoordinates_left_inv : ∀ c,
+    twoCochainCoordinates_inv (twoCochainCoordinates c) = c
+  twoCochainCoordinates_right_inv : ∀ c,
+    twoCochainCoordinates (twoCochainCoordinates_inv c) = c
+  twoCochainCoordinates_add : ∀ c d,
+    twoCochainCoordinates (c + d) = twoCochainCoordinates c + twoCochainCoordinates d
+  /-- The real chart coordinates preserve scalar multiplication. -/
+  zeroCochainCoordinates_smul : ∀ (a : ℝ) (c : RealC0),
+    zeroCochainCoordinates (a • c) = a • zeroCochainCoordinates c
+  /-- The real overlap coordinates preserve scalar multiplication. -/
+  oneCochainCoordinates_smul : ∀ (a : ℝ) (c : RealC1),
+    oneCochainCoordinates (a • c) = a • oneCochainCoordinates c
+  /-- The real triple-overlap coordinates preserve scalar multiplication. -/
+  twoCochainCoordinates_smul : ∀ (a : ℝ) (c : RealC2),
+    twoCochainCoordinates (a • c) = a • twoCochainCoordinates c
+  /-- The real coordinates are the profile Čech coordinates after coefficient comparison. -/
+  zeroCoordinates_eq_source : ∀ (c : S.nerveComplex.C0) (chart : S.nerve.Chart),
+    zeroCochainCoordinates (zeroToReal c) chart =
+      coefficientToReal (S.nerveComplex.zeroCochainCoordinates c chart)
+  oneCoordinates_eq_source : ∀ (c : S.nerveComplex.C1) (edge : S.nerve.EdgeComponent),
+    oneCochainCoordinates (oneToReal c) edge =
+      coefficientToReal (S.nerveComplex.oneCochainCoordinates c edge)
+  twoCoordinates_eq_source : ∀ (c : S.nerveComplex.C2) (face : S.nerve.FaceComponent),
+    twoCochainCoordinates (twoToReal c) face =
+      coefficientToReal (S.nerveComplex.twoCochainCoordinates c face)
+  /-- The real degree-zero map transported from the selected profile Čech complex. -/
+  realD0 : RealC0 →ₗ[ℝ] RealC1
+  /-- The real degree-one map transported from the selected profile Čech complex. -/
+  realD1 : RealC1 →ₗ[ℝ] RealC2
+  /-- The selected real Čech maps form a cochain complex. -/
+  real_d1_comp_d0 : realD1.comp realD0 = 0
   /-- The real degree-zero map is the selected Čech differential in these coordinates. -/
-  d0Real_eq_profile : ∀ c,
-    realFiniteComplex.dPrev (zeroToReal c) = oneToReal (S.nerveComplex.d0 c)
+  realD0_eq_profile : ∀ c,
+    realD0 (zeroToReal c) = oneToReal (S.nerveComplex.d0 c)
   /-- The real degree-one map is the selected Čech differential in these coordinates. -/
-  d1Real_eq_profile : ∀ c,
-    realFiniteComplex.dNext (oneToReal c) = twoToReal (S.nerveComplex.d1 c)
+  realD1_eq_profile : ∀ c,
+    realD1 (oneToReal c) = twoToReal (S.nerveComplex.d1 c)
+  /-- The real degree-zero map has the selected oriented-edge incidence formula. -/
+  d0_eq_edgeIncidence : ∀ (c : RealC0) (e : S.nerve.EdgeComponent),
+    oneCochainCoordinates (realD0 c) e =
+      zeroCochainCoordinates c (S.nerve.edgeRight e) -
+        zeroCochainCoordinates c (S.nerve.edgeLeft e)
+  /-- The real degree-one map has the selected-face incidence formula. -/
+  d1_eq_faceIncidence : ∀ (c : RealC1) (f : S.nerve.FaceComponent),
+    twoCochainCoordinates (realD1 c) f =
+      oneCochainCoordinates c (S.nerve.faceEdge0 f) -
+        oneCochainCoordinates c (S.nerve.faceEdge1 f) +
+          oneCochainCoordinates c (S.nerve.faceEdge2 f)
 
 namespace AATGAGARealCechHodgeInput
 
-/-- Hodge and harmonic/cohomology conclusions for the selected Čech model. -/
+/-- The selected real chart coordinate map with its certified scalar law. -/
+noncomputable def zeroCochainLinearCoordinates {M : MeasurementProfile.{u, v}}
+    [Field M.Coeff] {S : AATGAGAFiniteCechSource M}
+    (H : AATGAGARealCechHodgeInput S) : by
+  letI := H.zeroNormed
+  letI := H.zeroInner
+  exact H.RealC0 ≃ₗ[ℝ] (S.nerve.Chart → ℝ) := by
+  letI := H.zeroNormed
+  letI := H.zeroInner
+  exact {
+    toFun := H.zeroCochainCoordinates
+    invFun := H.zeroCochainCoordinates_inv
+    left_inv := H.zeroCochainCoordinates_left_inv
+    right_inv := H.zeroCochainCoordinates_right_inv
+    map_add' := H.zeroCochainCoordinates_add
+    map_smul' := H.zeroCochainCoordinates_smul }
+
+/-- The selected real overlap coordinate map with its certified scalar law. -/
+noncomputable def oneCochainLinearCoordinates {M : MeasurementProfile.{u, v}}
+    [Field M.Coeff] {S : AATGAGAFiniteCechSource M}
+    (H : AATGAGARealCechHodgeInput S) : by
+  letI := H.oneNormed
+  letI := H.oneInner
+  exact H.RealC1 ≃ₗ[ℝ] (S.nerve.EdgeComponent → ℝ) := by
+  letI := H.oneNormed
+  letI := H.oneInner
+  exact {
+    toFun := H.oneCochainCoordinates
+    invFun := H.oneCochainCoordinates_inv
+    left_inv := H.oneCochainCoordinates_left_inv
+    right_inv := H.oneCochainCoordinates_right_inv
+    map_add' := H.oneCochainCoordinates_add
+    map_smul' := H.oneCochainCoordinates_smul }
+
+/-- The selected real triple-overlap coordinate map with its certified scalar law. -/
+noncomputable def twoCochainLinearCoordinates {M : MeasurementProfile.{u, v}}
+    [Field M.Coeff] {S : AATGAGAFiniteCechSource M}
+    (H : AATGAGARealCechHodgeInput S) : by
+  letI := H.twoNormed
+  letI := H.twoInner
+  exact H.RealC2 ≃ₗ[ℝ] (S.nerve.FaceComponent → ℝ) := by
+  letI := H.twoNormed
+  letI := H.twoInner
+  exact {
+    toFun := H.twoCochainCoordinates
+    invFun := H.twoCochainCoordinates_inv
+    left_inv := H.twoCochainCoordinates_left_inv
+    right_inv := H.twoCochainCoordinates_right_inv
+    map_add' := H.twoCochainCoordinates_add
+    map_smul' := H.twoCochainCoordinates_smul }
+
+/-- The selected real Čech complex, built from the profile-realized cochain
+coordinates and their transported differentials. -/
+noncomputable def realNerveComplex {M : MeasurementProfile.{u, v}} [Field M.Coeff]
+    {S : AATGAGAFiniteCechSource M} (H : AATGAGARealCechHodgeInput S) : by
+  letI := H.zeroNormed
+  letI := H.zeroInner
+  letI := H.zeroFinite
+  letI := H.oneNormed
+  letI := H.oneInner
+  letI := H.oneFinite
+  letI := H.twoNormed
+  letI := H.twoInner
+  letI := H.twoFinite
+  exact Cohomology.FiniteNerveCochainComplex S.nerve ℝ := by
+  letI := H.zeroNormed
+  letI := H.zeroInner
+  letI := H.zeroFinite
+  letI := H.oneNormed
+  letI := H.oneInner
+  letI := H.oneFinite
+  letI := H.twoNormed
+  letI := H.twoInner
+  letI := H.twoFinite
+  exact {
+    C0 := H.RealC0
+    C1 := H.RealC1
+    C2 := H.RealC2
+    add_C0 := by infer_instance
+    add_C1 := by infer_instance
+    add_C2 := by infer_instance
+    module_C0 := (@InnerProductSpace.toNormedSpace ℝ H.RealC0 _ _ H.zeroInner).toModule
+    module_C1 := (@InnerProductSpace.toNormedSpace ℝ H.RealC1 _ _ H.oneInner).toModule
+    module_C2 := (@InnerProductSpace.toNormedSpace ℝ H.RealC2 _ _ H.twoInner).toModule
+    finiteDimensional_C0 := H.zeroFinite
+    finiteDimensional_C1 := H.oneFinite
+    finiteDimensional_C2 := H.twoFinite
+    d0 := H.realD0
+    d1 := H.realD1
+    d1_comp_d0 := by
+      intro c
+      exact LinearMap.congr_fun H.real_d1_comp_d0 c
+    zeroCochainCoordinates := H.zeroCochainLinearCoordinates
+    oneCochainCoordinates := H.oneCochainLinearCoordinates
+    twoCochainCoordinates := H.twoCochainLinearCoordinates
+    d0_eq_edgeIncidence := H.d0_eq_edgeIncidence
+    d1_eq_faceIncidence := H.d1_eq_faceIncidence }
+
+/-- The finite Hodge complex is formed from the selected real Čech maps. -/
+noncomputable def realFiniteComplex {M : MeasurementProfile.{u, v}} [Field M.Coeff]
+    {S : AATGAGAFiniteCechSource M} (H : AATGAGARealCechHodgeInput S) : by
+  letI := H.zeroNormed
+  letI := H.zeroInner
+  letI := H.zeroFinite
+  letI := H.oneNormed
+  letI := H.oneInner
+  letI := H.oneFinite
+  letI := H.twoNormed
+  letI := H.twoInner
+  letI := H.twoFinite
+  exact RealFiniteInnerProductComplex H.RealC0 H.RealC1 H.RealC2 := by
+  letI := H.zeroNormed
+  letI := H.zeroInner
+  letI := H.zeroFinite
+  letI := H.oneNormed
+  letI := H.oneInner
+  letI := H.oneFinite
+  letI := H.twoNormed
+  letI := H.twoInner
+  letI := H.twoFinite
+  exact {
+    dPrev := H.realNerveComplex.d0
+    dNext := H.realNerveComplex.d1
+    d_comp_d := by
+      apply LinearMap.ext
+      intro c
+      exact H.realNerveComplex.d1_comp_d0 c }
+
+/-- The selected real Čech `H¹` is linearly equivalent to the cohomology of
+the Hodge complex formed from the same differentials. -/
+noncomputable def h1LinearEquivHodgeCohomology {M : MeasurementProfile.{u, v}}
+    [Field M.Coeff] {S : AATGAGAFiniteCechSource M}
+    (H : AATGAGARealCechHodgeInput S) : by
+  letI := H.zeroNormed
+  letI := H.zeroInner
+  letI := H.zeroFinite
+  letI := H.oneNormed
+  letI := H.oneInner
+  letI := H.oneFinite
+  letI := H.twoNormed
+  letI := H.twoInner
+  letI := H.twoFinite
+  exact H.realNerveComplex.H1 ≃ₗ[ℝ] H.realFiniteComplex.cohomology := by
+  letI := H.zeroNormed
+  letI := H.zeroInner
+  letI := H.zeroFinite
+  letI := H.oneNormed
+  letI := H.oneInner
+  letI := H.oneFinite
+  letI := H.twoNormed
+  letI := H.twoInner
+  letI := H.twoFinite
+  let D := H.realNerveComplex
+  let K := H.realFiniteComplex
+  have hBoundaries : K.boundariesInCycles = LinearMap.range D.boundaryToCycles := by
+    change H.realD0.range.comap H.realD1.ker.subtype =
+      LinearMap.range D.boundaryToCycles
+    ext x
+    change (∃ y, H.realD0 y = x.val) ↔
+      (∃ y, D.boundaryToCycles y = x)
+    constructor
+    · rintro ⟨y, hy⟩
+      refine ⟨y, ?_⟩
+      apply Subtype.ext
+      exact hy
+    · rintro ⟨y, hy⟩
+      refine ⟨y, ?_⟩
+      have hy' := congrArg Subtype.val hy
+      simpa [Cohomology.FiniteNerveCochainComplex.boundaryToCycles] using hy'
+  dsimp only [Cohomology.FiniteNerveCochainComplex.H1,
+    RealFiniteInnerProductComplex.cohomology]
+  change (D.d1.ker ⧸ D.boundaryToCycles.range) ≃ₗ[ℝ]
+    D.d1.ker ⧸ K.boundariesInCycles
+  rw [hBoundaries]
+  exact LinearEquiv.refl ℝ _
+
+/-- The selected real Čech `H¹` is linearly equivalent to the harmonic
+Laplacian kernel. -/
+noncomputable def h1LinearEquivLaplacianKernel {M : MeasurementProfile.{u, v}}
+    [Field M.Coeff] {S : AATGAGAFiniteCechSource M}
+    (H : AATGAGARealCechHodgeInput S) : by
+  letI := H.zeroNormed
+  letI := H.zeroInner
+  letI := H.zeroFinite
+  letI := H.oneNormed
+  letI := H.oneInner
+  letI := H.oneFinite
+  letI := H.twoNormed
+  letI := H.twoInner
+  letI := H.twoFinite
+  exact H.realNerveComplex.H1 ≃ₗ[ℝ] H.realFiniteComplex.laplacian.ker :=
+  by
+    letI := H.zeroNormed
+    letI := H.zeroInner
+    letI := H.zeroFinite
+    letI := H.oneNormed
+    letI := H.oneInner
+    letI := H.oneFinite
+    letI := H.twoNormed
+    letI := H.twoInner
+    letI := H.twoFinite
+    exact H.h1LinearEquivHodgeCohomology.trans
+      H.realFiniteComplex.laplacianKernelEquivCohomology.symm
+
+/-- A degree-zero, degree-one, and degree-two additive cochain comparison
+that commutes with both differentials descends to additive `H¹` comparison.
+
+Implementation notes: the result is additive because the two complexes may
+use different coefficient fields.  The proof restricts the degree-one map to
+cocycles and descends it through the image of degree zero; no cohomology
+equivalence is accepted as an input. -/
+private theorem sourceH1AddEquivOfCochainComparison
+    {N : Cohomology.CoverNerve} {k : Type v} [Field k]
+    (A : Cohomology.FiniteNerveCochainComplex N k)
+    (D : Cohomology.FiniteNerveCochainComplex N ℝ)
+    (zeroToReal : A.C0 ≃+ D.C0) (oneToReal : A.C1 ≃+ D.C1)
+    (twoToReal : A.C2 ≃+ D.C2)
+    (d0_comm : ∀ c, D.d0 (zeroToReal c) = oneToReal (A.d0 c))
+    (d1_comm : ∀ c, D.d1 (oneToReal c) = twoToReal (A.d1 c)) :
+    Nonempty (A.H1 ≃+ D.H1) := by
+  let eCycles : A.d1.ker ≃+ D.d1.ker := {
+    toFun := fun x => ⟨oneToReal x, by
+      change D.d1 (oneToReal x.val) = 0
+      rw [d1_comm]
+      rw [x.property, twoToReal.map_zero]⟩
+    invFun := fun y => ⟨oneToReal.symm y.val, by
+      change A.d1 (oneToReal.symm y.val) = 0
+      apply twoToReal.injective
+      rw [← d1_comm]
+      simp⟩
+    left_inv := by
+      rintro ⟨x, hx⟩
+      apply Subtype.ext
+      exact oneToReal.symm_apply_apply x
+    right_inv := by
+      rintro ⟨y, hy⟩
+      apply Subtype.ext
+      exact oneToReal.apply_symm_apply y
+    map_add' := by
+      rintro ⟨x, hx⟩ ⟨y, hy⟩
+      apply Subtype.ext
+      exact oneToReal.map_add x y }
+  let eCyclesInv : D.d1.ker ≃+ A.d1.ker := eCycles.symm
+  let qA : AddSubgroup A.d1.ker := A.boundaryToCycles.range.toAddSubgroup
+  let qD : AddSubgroup D.d1.ker := D.boundaryToCycles.range.toAddSubgroup
+  letI : qA.Normal := AddSubgroup.normal_of_comm qA
+  letI : qD.Normal := AddSubgroup.normal_of_comm qD
+  letI : AddCommGroup (A.d1.ker ⧸ qA) :=
+    QuotientAddGroup.Quotient.addCommGroup qA
+  letI : AddCommGroup (D.d1.ker ⧸ qD) :=
+    QuotientAddGroup.Quotient.addCommGroup qD
+  have h_forward_image : ∀ x, x ∈ qA → eCycles x ∈ qD := by
+    rintro x ⟨c, rfl⟩
+    refine ⟨zeroToReal c, ?_⟩
+    apply Subtype.ext
+    exact d0_comm c
+  have h_backward_image : ∀ x, x ∈ qD → eCyclesInv x ∈ qA := by
+    rintro x ⟨c, rfl⟩
+    refine ⟨zeroToReal.symm c, ?_⟩
+    apply Subtype.ext
+    apply oneToReal.injective
+    change oneToReal (A.d0 (zeroToReal.symm c)) =
+      oneToReal (oneToReal.symm (D.d0 c))
+    rw [oneToReal.apply_symm_apply]
+    have hc := d0_comm (zeroToReal.symm c)
+    simpa using hc.symm
+  let forward : (A.d1.ker ⧸ qA) →+ (D.d1.ker ⧸ qD) :=
+    QuotientAddGroup.lift qA ((QuotientAddGroup.mk' qD).comp eCycles.toAddMonoidHom) (by
+      intro x hx
+      exact (QuotientAddGroup.eq_zero_iff (eCycles x)).mpr (h_forward_image x hx))
+  let backward : (D.d1.ker ⧸ qD) →+ (A.d1.ker ⧸ qA) :=
+    QuotientAddGroup.lift qD ((QuotientAddGroup.mk' qA).comp eCyclesInv.toAddMonoidHom) (by
+      intro x hx
+      exact (QuotientAddGroup.eq_zero_iff (eCyclesInv x)).mpr (h_backward_image x hx))
+  exact ⟨{
+    toFun := forward
+    invFun := backward
+    left_inv := by
+      intro x
+      refine Quotient.inductionOn' x ?_
+      intro x
+      change backward (forward (QuotientAddGroup.mk x)) = QuotientAddGroup.mk x
+      simp only [forward, backward, QuotientAddGroup.lift_mk, AddMonoidHom.comp_apply]
+      change QuotientAddGroup.mk (eCyclesInv (eCycles x)) = QuotientAddGroup.mk x
+      rw [eCycles.symm_apply_apply]
+    right_inv := by
+      intro x
+      refine Quotient.inductionOn' x ?_
+      intro x
+      change forward (backward (QuotientAddGroup.mk x)) = QuotientAddGroup.mk x
+      simp only [forward, backward, QuotientAddGroup.lift_mk, AddMonoidHom.comp_apply]
+      change QuotientAddGroup.mk (eCycles (eCyclesInv x)) = QuotientAddGroup.mk x
+      rw [eCycles.apply_symm_apply]
+    map_add' := forward.map_add }⟩
+
+/-- The real Čech complex is the selected profile complex after the stated
+coefficient and cochain realizations. -/
+def profileRealificationStatement {M : MeasurementProfile.{u, v}} [Field M.Coeff]
+    {S : AATGAGAFiniteCechSource M} (H : AATGAGARealCechHodgeInput S) : by
+  letI := H.zeroNormed
+  letI := H.zeroInner
+  letI := H.oneNormed
+  letI := H.oneInner
+  letI := H.twoNormed
+  letI := H.twoInner
+  exact Prop := by
+  letI := H.zeroNormed
+  letI := H.zeroInner
+  letI := H.oneNormed
+  letI := H.oneInner
+  letI := H.twoNormed
+  letI := H.twoInner
+  exact (∀ (a : M.Coeff) (c : S.nerveComplex.C0),
+    H.zeroToReal (a • c) = H.coefficientToReal a • H.zeroToReal c) ∧
+  (∀ (a : M.Coeff) (c : S.nerveComplex.C1),
+    H.oneToReal (a • c) = H.coefficientToReal a • H.oneToReal c) ∧
+  (∀ (a : M.Coeff) (c : S.nerveComplex.C2),
+    H.twoToReal (a • c) = H.coefficientToReal a • H.twoToReal c) ∧
+  (∀ c, H.realD0 (H.zeroToReal c) = H.oneToReal (S.nerveComplex.d0 c)) ∧
+  (∀ c, H.realD1 (H.oneToReal c) = H.twoToReal (S.nerveComplex.d1 c)) ∧
+  (∀ (c : S.nerveComplex.C0) (chart : S.nerve.Chart),
+    H.zeroCochainCoordinates (H.zeroToReal c) chart =
+      H.coefficientToReal (S.nerveComplex.zeroCochainCoordinates c chart)) ∧
+  (∀ (c : S.nerveComplex.C1) (edge : S.nerve.EdgeComponent),
+    H.oneCochainCoordinates (H.oneToReal c) edge =
+      H.coefficientToReal (S.nerveComplex.oneCochainCoordinates c edge)) ∧
+  ∀ (c : S.nerveComplex.C2) (face : S.nerve.FaceComponent),
+    H.twoCochainCoordinates (H.twoToReal c) face =
+      H.coefficientToReal (S.nerveComplex.twoCochainCoordinates c face)
+
+/-- The source-to-real realization follows from the concrete coordinate and
+differential data, rather than from a supplied cohomology conclusion. -/
+theorem profileRealificationStatement_holds {M : MeasurementProfile.{u, v}} [Field M.Coeff]
+    {S : AATGAGAFiniteCechSource M} (H : AATGAGARealCechHodgeInput S) :
+    H.profileRealificationStatement := by
+  letI := H.zeroNormed
+  letI := H.zeroInner
+  letI := H.oneNormed
+  letI := H.oneInner
+  letI := H.twoNormed
+  letI := H.twoInner
+  exact
+  ⟨H.zeroToReal_smul, H.oneToReal_smul, H.twoToReal_smul,
+    H.realD0_eq_profile, H.realD1_eq_profile,
+    H.zeroCoordinates_eq_source, H.oneCoordinates_eq_source, H.twoCoordinates_eq_source⟩
+
+/-- Hodge and harmonic/Čech-cohomology conclusions for the selected realified model. -/
 def hodgeStatement {M : MeasurementProfile.{u, v}} [Field M.Coeff]
     {S : AATGAGAFiniteCechSource M} (H : AATGAGARealCechHodgeInput S) : Prop := by
   letI := H.zeroNormed
@@ -141,11 +557,17 @@ def hodgeStatement {M : MeasurementProfile.{u, v}} [Field M.Coeff]
   letI := H.twoNormed
   letI := H.twoInner
   letI := H.twoFinite
-  exact (∀ c, H.realFiniteComplex.exactPart c + H.realFiniteComplex.harmonicPart c +
+  exact H.profileRealificationStatement ∧
+    (∀ c, H.realFiniteComplex.exactPart c + H.realFiniteComplex.harmonicPart c +
       H.realFiniteComplex.coexactPart c = c) ∧
-    Nonempty (H.realFiniteComplex.laplacian.ker ≃ₗ[ℝ] H.realFiniteComplex.cohomology)
+      Nonempty (S.nerveComplex.H1 ≃+ H.realFiniteComplex.laplacian.ker)
 
-/-- Derive the selected Hodge and harmonic/cohomology statements. -/
+/-- Derive the selected Hodge and harmonic/cohomology statements.
+
+Implementation notes: the source-to-real maps are restricted to cocycles and
+then descend to quotient cohomology through the two differential-compatibility
+equalities.  This makes the source Čech `H¹` comparison part of the proof,
+rather than an input certificate. -/
 theorem hodgeStatement_holds {M : MeasurementProfile.{u, v}} [Field M.Coeff]
     {S : AATGAGAFiniteCechSource M} (H : AATGAGARealCechHodgeInput S) :
     H.hodgeStatement := by
@@ -158,10 +580,14 @@ theorem hodgeStatement_holds {M : MeasurementProfile.{u, v}} [Field M.Coeff]
   letI := H.twoNormed
   letI := H.twoInner
   letI := H.twoFinite
-  exact ⟨H.realFiniteComplex.hodge_decomposition,
-    ⟨H.realFiniteComplex.laplacianKernelEquivCohomology⟩⟩
+  rcases sourceH1AddEquivOfCochainComparison S.nerveComplex H.realNerveComplex
+    H.zeroToReal H.oneToReal H.twoToReal H.realD0_eq_profile H.realD1_eq_profile with ⟨e⟩
+  exact ⟨H.profileRealificationStatement_holds,
+    H.realFiniteComplex.hodge_decomposition,
+    ⟨e.trans H.h1LinearEquivLaplacianKernel.toAddEquiv⟩⟩
 
-/-- Period/Stokes on the selected real Čech differential and its adjoint chain map. -/
+/-- Period/Stokes on the selected real Čech differential, its Riesz-dual
+selected chains, and their pairing. -/
 def periodStokesStatement {M : MeasurementProfile.{u, v}} [Field M.Coeff]
     {S : AATGAGAFiniteCechSource M} (H : AATGAGARealCechHodgeInput S) : Prop := by
   letI := H.zeroNormed
@@ -174,7 +600,7 @@ def periodStokesStatement {M : MeasurementProfile.{u, v}} [Field M.Coeff]
   letI := H.twoInner
   letI := H.twoFinite
   exact ∀ (omega : H.RealC0) (gamma : H.RealC1),
-    inner ℝ (H.realFiniteComplex.dPrev omega) gamma =
+    inner ℝ (H.realD0 omega) gamma =
       inner ℝ omega (H.realFiniteComplex.dPrev.adjoint gamma)
 
 /-- Derive Period/Stokes from the adjoint of the selected real Čech map. -/
@@ -191,7 +617,9 @@ theorem periodStokesStatement_holds {M : MeasurementProfile.{u, v}} [Field M.Coe
   letI := H.twoInner
   letI := H.twoFinite
   intro omega gamma
-  simpa using (H.realFiniteComplex.dPrev.adjoint_inner_right omega gamma).symm
+  change inner ℝ (H.realFiniteComplex.dPrev omega) gamma = _
+  simpa using
+    (H.realFiniteComplex.dPrev.adjoint_inner_right omega gamma).symm
 
 end AATGAGARealCechHodgeInput
 
@@ -226,13 +654,26 @@ def selectedCover {M : MeasurementProfile.{u, v}} [Field M.Coeff]
 def coherent {M : MeasurementProfile.{u, v}} [Field M.Coeff]
     (C : AATGAGACommonFiniteData M) : Prop :=
   M.InScope C.selectedMeasurement ∧
-    C.commonAmbient.leftDomain = C.selectedMeasurement ∧
-      C.commonAmbient.rightDomain = C.selectedMeasurement
+    C.commonAmbient.commonRingedSite ∧
+      C.commonAmbient.lawIdealsInCommonAmbient ∧
+        C.commonAmbient.coefficientsCompatible ∧
+          C.commonAmbient.witnessesComparable ∧
+            C.commonAmbient.comparisonProfileFixed ∧
+              C.commonAmbient.noComparisonWithoutCommonAmbient ∧
+                C.commonAmbient.leftDomain = C.selectedMeasurement ∧
+                  C.commonAmbient.rightDomain = C.selectedMeasurement
 
 /-- The selected finite data satisfy their direct realization equalities. -/
 theorem coherent_holds {M : MeasurementProfile.{u, v}} [Field M.Coeff]
     (C : AATGAGACommonFiniteData M) : C.coherent :=
-  ⟨C.measuredSelection.inScope, C.ambientLeftDomain_eq, C.ambientRightDomain_eq⟩
+  ⟨C.measuredSelection.inScope,
+    C.commonAmbient.commonRingedSite_cert,
+    C.commonAmbient.lawIdealsInCommonAmbient_cert,
+    C.commonAmbient.coefficientsCompatible_cert,
+    C.commonAmbient.witnessesComparable_cert,
+    C.commonAmbient.comparisonProfileFixed_cert,
+    C.commonAmbient.noComparisonWithoutCommonAmbient_cert,
+    C.ambientLeftDomain_eq, C.ambientRightDomain_eq⟩
 
 end AATGAGACommonFiniteData
 

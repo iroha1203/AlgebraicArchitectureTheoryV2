@@ -3932,39 +3932,132 @@ noncomputable def gagaRealHodgeInput :
   twoNormed := by infer_instance
   twoInner := by infer_instance
   twoFinite := by infer_instance
+  coefficientToReal := RingEquiv.refl ℝ
   zeroToReal := gagaRealZeroRealization.toAddEquiv
   oneToReal := gagaRealOneRealization.toAddEquiv
   twoToReal := gagaRealTwoRealization.toAddEquiv
-  realFiniteComplex := {
-    dPrev := gagaRealOneRealization.toLinearMap.comp
-      (gagaRealNerveComplex.d0.comp gagaRealZeroRealization.symm.toLinearMap)
-    dNext := gagaRealTwoRealization.toLinearMap.comp
-      (gagaRealNerveComplex.d1.comp gagaRealOneRealization.symm.toLinearMap)
-    d_comp_d := by
-      apply LinearMap.ext
-      intro c
-      change gagaRealTwoRealization
-        (gagaRealNerveComplex.d1
-          (gagaRealOneRealization.symm
-            (gagaRealOneRealization
-              (gagaRealNerveComplex.d0 (gagaRealZeroRealization.symm c))))) = 0
-      rw [gagaRealOneRealization.symm_apply_apply]
-      rw [gagaRealNerveComplex.d1_comp_d0]
-      exact gagaRealTwoRealization.map_zero }
-  d0Real_eq_profile := by
+  zeroToReal_smul := by
+    intro a c
+    exact gagaRealZeroRealization.map_smul a c
+  oneToReal_smul := by
+    intro a c
+    exact gagaRealOneRealization.map_smul a c
+  twoToReal_smul := by
+    intro a c
+    exact gagaRealTwoRealization.map_smul a c
+  zeroCochainCoordinates := gagaRealEuclideanCoordinates 0
+  zeroCochainCoordinates_inv := (gagaRealEuclideanCoordinates 0).symm
+  zeroCochainCoordinates_left_inv := by
+    intro c
+    exact (gagaRealEuclideanCoordinates 0).symm_apply_apply c
+  zeroCochainCoordinates_right_inv := by
+    intro c
+    exact (gagaRealEuclideanCoordinates 0).apply_symm_apply c
+  zeroCochainCoordinates_add := by
+    intro c d
+    exact (gagaRealEuclideanCoordinates 0).map_add c d
+  oneCochainCoordinates := gagaRealEuclideanCoordinates 1
+  oneCochainCoordinates_inv := (gagaRealEuclideanCoordinates 1).symm
+  oneCochainCoordinates_left_inv := by
+    intro c
+    exact (gagaRealEuclideanCoordinates 1).symm_apply_apply c
+  oneCochainCoordinates_right_inv := by
+    intro c
+    exact (gagaRealEuclideanCoordinates 1).apply_symm_apply c
+  oneCochainCoordinates_add := by
+    intro c d
+    exact (gagaRealEuclideanCoordinates 1).map_add c d
+  twoCochainCoordinates := gagaRealEuclideanCoordinates 2
+  twoCochainCoordinates_inv := (gagaRealEuclideanCoordinates 2).symm
+  twoCochainCoordinates_left_inv := by
+    intro c
+    exact (gagaRealEuclideanCoordinates 2).symm_apply_apply c
+  twoCochainCoordinates_right_inv := by
+    intro c
+    exact (gagaRealEuclideanCoordinates 2).apply_symm_apply c
+  twoCochainCoordinates_add := by
+    intro c d
+    exact (gagaRealEuclideanCoordinates 2).map_add c d
+  zeroCochainCoordinates_smul := by
+    intro a c
+    exact (gagaRealEuclideanCoordinates 0).map_smul a c
+  oneCochainCoordinates_smul := by
+    intro a c
+    exact (gagaRealEuclideanCoordinates 1).map_smul a c
+  twoCochainCoordinates_smul := by
+    intro a c
+    exact (gagaRealEuclideanCoordinates 2).map_smul a c
+  zeroCoordinates_eq_source := by
+    intro c chart
+    change (gagaRealEuclideanCoordinates 0
+      ((gagaRealEuclideanCoordinates 0).symm
+        (gagaRealNerveComplex.zeroCochainCoordinates c))) chart =
+      gagaRealNerveComplex.zeroCochainCoordinates c chart
+    rw [LinearEquiv.apply_symm_apply]
+  oneCoordinates_eq_source := by
+    intro c edge
+    change (gagaRealEuclideanCoordinates 1
+      ((gagaRealEuclideanCoordinates 1).symm
+        (gagaRealNerveComplex.oneCochainCoordinates c))) edge =
+      gagaRealNerveComplex.oneCochainCoordinates c edge
+    rw [LinearEquiv.apply_symm_apply]
+  twoCoordinates_eq_source := by
+    intro c face
+    change (gagaRealEuclideanCoordinates 2
+      ((gagaRealEuclideanCoordinates 2).symm
+        (gagaRealNerveComplex.twoCochainCoordinates c))) face =
+      gagaRealNerveComplex.twoCochainCoordinates c face
+    rw [LinearEquiv.apply_symm_apply]
+  realD0 := gagaRealOneRealization.toLinearMap.comp
+    (gagaRealNerveComplex.d0.comp gagaRealZeroRealization.symm.toLinearMap)
+  realD1 := gagaRealTwoRealization.toLinearMap.comp
+    (gagaRealNerveComplex.d1.comp gagaRealOneRealization.symm.toLinearMap)
+  real_d1_comp_d0 := by
+    apply LinearMap.ext
+    intro c
+    change gagaRealTwoRealization
+      (gagaRealNerveComplex.d1
+        (gagaRealOneRealization.symm
+          (gagaRealOneRealization
+            (gagaRealNerveComplex.d0 (gagaRealZeroRealization.symm c))))) = 0
+    rw [gagaRealOneRealization.symm_apply_apply]
+    rw [gagaRealNerveComplex.d1_comp_d0]
+    exact gagaRealTwoRealization.map_zero
+  realD0_eq_profile := by
     intro c
     change gagaRealOneRealization
       (gagaRealNerveComplex.d0
         (gagaRealZeroRealization.symm (gagaRealZeroRealization c))) =
       gagaRealOneRealization (gagaRealNerveComplex.d0 c)
     rw [gagaRealZeroRealization.symm_apply_apply]
-  d1Real_eq_profile := by
+  realD1_eq_profile := by
     intro c
     change gagaRealTwoRealization
       (gagaRealNerveComplex.d1
         (gagaRealOneRealization.symm (gagaRealOneRealization c))) =
       gagaRealTwoRealization (gagaRealNerveComplex.d1 c)
     rw [gagaRealOneRealization.symm_apply_apply]
+  d0_eq_edgeIncidence := by
+    intro c edge
+    change (gagaRealEuclideanCoordinates 1
+      ((gagaRealEuclideanCoordinates 1).symm
+        (gagaRealNerveComplex.d0 (gagaRealEuclideanCoordinates 0 c)))) edge =
+      (gagaRealEuclideanCoordinates 0 c) (gagaRealCoverNerve.edgeRight edge) -
+        (gagaRealEuclideanCoordinates 0 c) (gagaRealCoverNerve.edgeLeft edge)
+    rw [LinearEquiv.apply_symm_apply]
+    exact gagaRealNerveComplex.d0_eq_edgeIncidence
+      (gagaRealEuclideanCoordinates 0 c) edge
+  d1_eq_faceIncidence := by
+    intro c face
+    change (gagaRealEuclideanCoordinates 2
+      ((gagaRealEuclideanCoordinates 2).symm
+        (gagaRealNerveComplex.d1 (gagaRealEuclideanCoordinates 1 c)))) face =
+      (gagaRealEuclideanCoordinates 1 c) (gagaRealCoverNerve.faceEdge0 face) -
+        (gagaRealEuclideanCoordinates 1 c) (gagaRealCoverNerve.faceEdge1 face) +
+          (gagaRealEuclideanCoordinates 1 c) (gagaRealCoverNerve.faceEdge2 face)
+    rw [LinearEquiv.apply_symm_apply]
+    exact gagaRealNerveComplex.d1_eq_faceIncidence
+      (gagaRealEuclideanCoordinates 1 c) face
 
 /-- R11(g): common-ambient LawConflict input over the profile coefficient field. -/
 noncomputable def gagaDerivedConflictInput :
@@ -4019,9 +4112,9 @@ theorem gagaComparisonExamplePackage :
     AATGAGAFiniteMeasurementComparison gagaComparisonExampleData :=
   aatGAGAFiniteMeasurementComparison gagaComparisonExampleData
 
-/-- R11(g): packet / GAGA fixture with certified and candidate readings separated. -/
+/-- R11(g): GAGA fixture over one real finite profile, with certified and candidate
+readings separated. -/
 structure MeasurementPacketGAGAFiniteExample where
-  synthesisPackage : FiniteMeasurementSynthesis measurementPacketExampleData
   gagaPackage : AATGAGAFiniteMeasurementComparison gagaComparisonExampleData
   certifiedComparison : aatGAGAComparisonStatement gagaComparisonExampleData
   candidateInterfaces : AATGAGACandidateInterfaces gagaRealMeasurementProfile
@@ -4030,7 +4123,6 @@ structure MeasurementPacketGAGAFiniteExample where
 /-- R11(g): certified readings and candidate interfaces stay separated. -/
 noncomputable def measurementPacketGAGAFiniteExample :
     MeasurementPacketGAGAFiniteExample where
-  synthesisPackage := measurementPacketExampleSynthesis
   gagaPackage := gagaComparisonExamplePackage
   certifiedComparison := aatGAGAComparisonStatement_holds gagaComparisonExampleData
   candidateInterfaces := gagaCandidateInterfaces
