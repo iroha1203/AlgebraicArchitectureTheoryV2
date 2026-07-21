@@ -794,9 +794,120 @@ abbrev ofFiniteField (k : Type v) [Field k] [Fintype k] [DecidableEq k] :
 
 end FiniteLinearSystemSolver
 
+/--
+Uniform canonical representative procedure for finite linear cosets.  The
+laws quantify over every finite matrix and right-hand side, so this is
+coefficient infrastructure rather than a certificate for one selected Čech
+class.
+-/
+structure FiniteLinearCosetNormalizer (k : Type v) [Field k] where
+  /-- Canonical representative modulo the column space of a finite matrix. -/
+  normalize :
+    {m n : Type u} ->
+      [Fintype m] -> [DecidableEq m] ->
+      [Fintype n] -> [DecidableEq n] ->
+      Matrix m n k -> (m -> k) -> (m -> k)
+  /-- The normalized vector lies in the same matrix coset. -/
+  sameCoset :
+    ∀ {m n : Type u}
+      [Fintype m] [DecidableEq m] [Fintype n] [DecidableEq n]
+      (A : Matrix m n k) (b : m -> k),
+      ∃ x : n -> k, Matrix.mulVec A x = b - normalize A b
+  /-- Vectors in the same matrix coset receive the same representative. -/
+  canonical :
+    ∀ {m n : Type u}
+      [Fintype m] [DecidableEq m] [Fintype n] [DecidableEq n]
+      (A : Matrix m n k) (b₁ b₂ : m -> k),
+      (∃ x : n -> k, Matrix.mulVec A x = b₁ - b₂) ->
+      normalize A b₁ = normalize A b₂
+
+namespace FiniteLinearCosetNormalizer
+
+/-- Finite search returning a representative together with its matrix-coset
+certificate. -/
+def finiteRepresentativeCertified
+    (k : Type v) [Field k] [Fintype k] [DecidableEq k]
+    {m n : Type u}
+    [Fintype m] [DecidableEq m] [Fintype n] [DecidableEq n]
+    (A : Matrix m n k) (b : m -> k) :
+    { representative : m -> k //
+      ∃ x : n -> k, Matrix.mulVec A x = b - representative } := by
+  let solver := FiniteLinearSystemSolver.ofFiniteField k
+  let candidates := (Finset.univ : Finset (m -> k)).toList
+  let found := candidates.find? fun representative =>
+    (solver.solve A (b - representative)).isSome
+  have hfound : found.isSome = true := by
+    rw [List.find?_isSome]
+    refine ⟨b, by simp [candidates], ?_⟩
+    rw [solver.solve_isSome_iff]
+    refine ⟨0, ?_⟩
+    simp
+  refine ⟨found.get hfound, ?_⟩
+  have hs := List.find?_some (Option.some_get hfound).symm
+  exact (solver.solve_isSome_iff A
+    (b - found.get hfound)).mp (by simpa [found, candidates] using hs)
+
+/-- Canonical finite-search representative modulo a matrix column space. -/
+def finiteRepresentative
+    (k : Type v) [Field k] [Fintype k] [DecidableEq k]
+    {m n : Type u}
+    [Fintype m] [DecidableEq m] [Fintype n] [DecidableEq n]
+    (A : Matrix m n k) (b : m -> k) : m -> k :=
+  (finiteRepresentativeCertified k A b).1
+
+/-- Finite search is invariant under changing the input by a matrix-column
+vector. -/
+theorem finiteRepresentative_eq_of_sub_mem
+    (k : Type v) [Field k] [Fintype k] [DecidableEq k]
+    {m n : Type u}
+    [Fintype m] [DecidableEq m] [Fintype n] [DecidableEq n]
+    (A : Matrix m n k) (b₁ b₂ : m -> k)
+    (hcoset : ∃ x : n -> k, Matrix.mulVec A x = b₁ - b₂) :
+    finiteRepresentative k A b₁ = finiteRepresentative k A b₂ := by
+  let solver := FiniteLinearSystemSolver.ofFiniteField k
+  have hpredicate :
+      (fun representative : m -> k =>
+        (solver.solve A (b₁ - representative)).isSome) =
+      (fun representative : m -> k =>
+        (solver.solve A (b₂ - representative)).isSome) := by
+    funext representative
+    apply Bool.eq_iff_iff.mpr
+    rw [solver.solve_isSome_iff, solver.solve_isSome_iff]
+    rcases hcoset with ⟨offset, hoffset⟩
+    constructor
+    · rintro ⟨x, hx⟩
+      refine ⟨x - offset, ?_⟩
+      rw [Matrix.mulVec_sub, hx, hoffset]
+      funext i
+      simp only [Pi.sub_apply]
+      ring
+    · rintro ⟨x, hx⟩
+      refine ⟨x + offset, ?_⟩
+      rw [Matrix.mulVec_add, hx, hoffset]
+      funext i
+      simp only [Pi.add_apply, Pi.sub_apply]
+      ring
+  unfold finiteRepresentative finiteRepresentativeCertified
+  simp only
+  apply Option.some.inj
+  rw [Option.some_get, Option.some_get]
+  exact congrArg (fun predicate =>
+    List.find? predicate (Finset.univ : Finset (m -> k)).toList) hpredicate
+
+/-- Executable canonical coset normalization over a finite field. -/
+def ofFiniteField
+    (k : Type v) [Field k] [Fintype k] [DecidableEq k] :
+    FiniteLinearCosetNormalizer.{u, v} k where
+  normalize := finiteRepresentative k
+  sameCoset := fun A b => (finiteRepresentativeCertified k A b).2
+  canonical := fun A b₁ b₂ hcoset =>
+    finiteRepresentative_eq_of_sub_mem k A b₁ b₂ hcoset
+
+end FiniteLinearCosetNormalizer
+
 /-- Finite-dimensional reduction data, including the explicitly presented field. -/
 structure FiniteDimensionalCechProcedure (M : MeasurementProfile.{u, v})
-    (G : FiniteMeasurementGeometry M) where
+    (G : FiniteMeasurementGeometry M) : Type (max (u + 1) v) where
   /-- Explicitly presented coefficient-field structure. -/
   [coeffField : Field M.Coeff]
   /-- Executable equality in the explicitly presented coefficient field. -/
@@ -804,7 +915,12 @@ structure FiniteDimensionalCechProcedure (M : MeasurementProfile.{u, v})
   /-- Matrix solver supplied by the explicitly presented coefficient field. -/
   linearSystemSolver :
     letI : Field M.Coeff := coeffField
-    FiniteLinearSystemSolver M.Coeff
+    FiniteLinearSystemSolver.{u, v} M.Coeff
+  /-- Uniform canonical matrix-coset normalizer supplied by the selected
+  coefficient field implementation. -/
+  cosetNormalizer :
+    letI : Field M.Coeff := coeffField
+    FiniteLinearCosetNormalizer.{u, v} M.Coeff
   /-- Finite-dimensional matrix model connected to the canonical Čech complex. -/
   model : @FiniteDimensionalCechModel M G coeffField
 
@@ -953,6 +1069,276 @@ def modelCohomologyDecidableEq
               exact hmatrix.trans hbcoords)
   exact @Quotient.decidableEq _ _ relationDecision
 
+/-- Reconstruct a model cochain from its finite coordinate vector. -/
+def cochainOfCoordinates
+    {M : MeasurementProfile.{u, v}} {G : FiniteMeasurementGeometry M}
+    (P : FiniteDimensionalCechProcedure M G) (n : Nat)
+    (coordinates :
+      @FiniteDimensionalCechModel.CochainIndex M G P.coeffField P.model n ->
+        M.Coeff) :
+    @FiniteDimensionalCechModel.Cochain M G P.coeffField P.model n := by
+  letI : Field M.Coeff := P.coeffField
+  exact (P.model.cochainBasis n).repr.symm
+    (Finsupp.equivFunOnFinite.symm coordinates)
+
+/-- Coordinate reconstruction is inverse to the selected finite basis. -/
+theorem cochainCoordinates_cochainOfCoordinates
+    {M : MeasurementProfile.{u, v}} {G : FiniteMeasurementGeometry M}
+    (P : FiniteDimensionalCechProcedure M G) (n : Nat)
+    (coordinates :
+      @FiniteDimensionalCechModel.CochainIndex M G P.coeffField P.model n ->
+        M.Coeff) :
+    P.cochainCoordinates n (P.cochainOfCoordinates n coordinates) = coordinates := by
+  letI : Field M.Coeff := P.coeffField
+  funext i
+  simp [cochainOfCoordinates, cochainCoordinates]
+
+/-- Coordinates preserve subtraction in the selected finite basis. -/
+@[simp] theorem cochainCoordinates_sub
+    {M : MeasurementProfile.{u, v}} {G : FiniteMeasurementGeometry M}
+    (P : FiniteDimensionalCechProcedure M G) (n : Nat)
+    (c d : @FiniteDimensionalCechModel.Cochain M G P.coeffField P.model n) :
+    let _ : Field M.Coeff := P.coeffField
+    P.cochainCoordinates n (c - d) =
+      P.cochainCoordinates n c - P.cochainCoordinates n d := by
+  letI : Field M.Coeff := P.coeffField
+  funext i
+  simp [cochainCoordinates]
+
+/-- The actual differential in coordinates is multiplication by the selected
+finite differential matrix. -/
+theorem cochainCoordinates_differential
+    {M : MeasurementProfile.{u, v}} {G : FiniteMeasurementGeometry M}
+    (P : FiniteDimensionalCechProcedure M G) (n : Nat)
+    (c : @FiniteDimensionalCechModel.Cochain M G P.coeffField P.model n) :
+    let _ : Field M.Coeff := P.coeffField
+    P.cochainCoordinates (n + 1)
+        (@FiniteDimensionalCechModel.differentialLinear M G P.coeffField
+          P.model n c) =
+      Matrix.mulVec
+        (@FiniteDimensionalCechModel.differentialMatrix M G P.coeffField
+          P.model n)
+        (P.cochainCoordinates n c) := by
+  letI : Field M.Coeff := P.coeffField
+  have hmatrix := LinearMap.toMatrix_mulVec_repr
+    (P.model.cochainBasis n) (P.model.cochainBasis (n + 1))
+    (P.model.differentialLinear n) c
+  rw [P.model.differentialMatrix_correct] at hmatrix
+  funext i
+  exact congrFun hmatrix.symm i
+
+/-- Underlying normalized cochain of a positive-degree model cocycle. -/
+def normalizedCochainSucc
+    {M : MeasurementProfile.{u, v}} {G : FiniteMeasurementGeometry M}
+    (P : FiniteDimensionalCechProcedure M G) (n : Nat)
+    (z : @FiniteDimensionalCechModel.Kernel M G P.coeffField P.model (n + 1)) :
+    @FiniteDimensionalCechModel.Cochain M G P.coeffField P.model (n + 1) := by
+  letI : Field M.Coeff := P.coeffField
+  let coordinates := P.cochainCoordinates (n + 1) z.1
+  let normalizedCoordinates :=
+    P.cosetNormalizer.normalize (P.model.differentialMatrix n) coordinates
+  exact P.cochainOfCoordinates (n + 1) normalizedCoordinates
+
+/-- The normalized cochain has exactly the coordinates selected by the
+uniform coset normalizer. -/
+@[simp] theorem cochainCoordinates_normalizedCochainSucc
+    {M : MeasurementProfile.{u, v}} {G : FiniteMeasurementGeometry M}
+    (P : FiniteDimensionalCechProcedure M G) (n : Nat)
+    (z : @FiniteDimensionalCechModel.Kernel M G P.coeffField P.model (n + 1)) :
+    let _ : Field M.Coeff := P.coeffField
+    P.cochainCoordinates (n + 1) (P.normalizedCochainSucc n z) =
+      P.cosetNormalizer.normalize (P.model.differentialMatrix n)
+        (P.cochainCoordinates (n + 1) z.1) := by
+  letI : Field M.Coeff := P.coeffField
+  simp [normalizedCochainSucc, cochainCoordinates_cochainOfCoordinates]
+
+/-- Matrix-coset normalization preserves the cocycle kernel because
+consecutive selected differentials compose to zero. -/
+theorem normalizedCochainSucc_mem_kernel
+    {M : MeasurementProfile.{u, v}} {G : FiniteMeasurementGeometry M}
+    (P : FiniteDimensionalCechProcedure M G) (n : Nat)
+    (z : @FiniteDimensionalCechModel.Kernel M G P.coeffField P.model (n + 1)) :
+    @FiniteDimensionalCechModel.differentialLinear M G P.coeffField P.model
+      (n + 1) (P.normalizedCochainSucc n z) = 0 := by
+  letI : Field M.Coeff := P.coeffField
+  let coordinates := P.cochainCoordinates (n + 1) z.1
+  let normalizedCoordinates :=
+    P.cosetNormalizer.normalize (P.model.differentialMatrix n) coordinates
+  let normalized := P.normalizedCochainSucc n z
+  obtain ⟨x, hx⟩ := P.cosetNormalizer.sameCoset
+    (P.model.differentialMatrix n) coordinates
+  let b := P.cochainOfCoordinates n x
+  have hboundary : P.model.differentialLinear n b = z.1 - normalized := by
+    apply (P.model.cochainBasis (n + 1)).repr.injective
+    apply Finsupp.ext
+    intro i
+    have hcoordinates : P.cochainCoordinates (n + 1)
+          (P.model.differentialLinear n b) =
+        P.cochainCoordinates (n + 1) (z.1 - normalized) := by
+      rw [P.cochainCoordinates_differential, P.cochainCoordinates_sub,
+        P.cochainCoordinates_cochainOfCoordinates]
+      simpa [coordinates, normalizedCoordinates, normalized,
+        cochainCoordinates_normalizedCochainSucc] using hx
+    simpa [cochainCoordinates] using congrFun hcoordinates i
+  have hnormalized : normalized = z.1 - P.model.differentialLinear n b := by
+    rw [hboundary]
+    abel
+  change P.model.differentialLinear (n + 1) normalized = 0
+  rw [hnormalized, map_sub, z.2, P.model.differential_comp]
+  simp
+
+/-- Canonical normalized representative of a positive-degree model cocycle. -/
+def normalizedCocycleSucc
+    {M : MeasurementProfile.{u, v}} {G : FiniteMeasurementGeometry M}
+    (P : FiniteDimensionalCechProcedure M G) (n : Nat)
+    (z : @FiniteDimensionalCechModel.Kernel M G P.coeffField P.model (n + 1)) :
+    @FiniteDimensionalCechModel.Kernel M G P.coeffField P.model (n + 1) :=
+  ⟨P.normalizedCochainSucc n z, P.normalizedCochainSucc_mem_kernel n z⟩
+
+/-- The normalized positive-degree cocycle represents the same model
+cohomology class as the input cocycle. -/
+theorem normalizedCocycleSucc_sameClass
+    {M : MeasurementProfile.{u, v}} {G : FiniteMeasurementGeometry M}
+    (P : FiniteDimensionalCechProcedure M G) (n : Nat)
+    (z : @FiniteDimensionalCechModel.Kernel M G P.coeffField P.model (n + 1)) :
+    let _ : Field M.Coeff := P.coeffField
+    (Submodule.quotientRel
+      (@FiniteDimensionalCechModel.Boundaries M G P.coeffField P.model
+        (n + 1))).r z
+      (P.normalizedCocycleSucc n z) := by
+  letI : Field M.Coeff := P.coeffField
+  rw [Submodule.quotientRel_def]
+  change z - P.normalizedCocycleSucc n z ∈
+    LinearMap.range (P.model.boundaryLinear n)
+  let coordinates := P.cochainCoordinates (n + 1) z.1
+  obtain ⟨x, hx⟩ := P.cosetNormalizer.sameCoset
+    (P.model.differentialMatrix n) coordinates
+  let b := P.cochainOfCoordinates n x
+  refine ⟨b, ?_⟩
+  apply Subtype.ext
+  apply (P.model.cochainBasis (n + 1)).repr.injective
+  apply Finsupp.ext
+  intro i
+  have hcoordinates : P.cochainCoordinates (n + 1)
+        (P.model.differentialLinear n b) =
+      P.cochainCoordinates (n + 1)
+        (z.1 - (P.normalizedCocycleSucc n z).1) := by
+    rw [P.cochainCoordinates_differential, P.cochainCoordinates_sub,
+      P.cochainCoordinates_cochainOfCoordinates]
+    simpa [coordinates, normalizedCocycleSucc,
+      cochainCoordinates_normalizedCochainSucc] using hx
+  simpa [FiniteDimensionalCechModel.boundaryLinear,
+    cochainCoordinates] using congrFun hcoordinates i
+
+/-- The uniform normalizer assigns equal positive-degree cocycles to related
+model cocycles. -/
+theorem normalizedCocycleSucc_eq_of_rel
+    {M : MeasurementProfile.{u, v}} {G : FiniteMeasurementGeometry M}
+    (P : FiniteDimensionalCechProcedure M G) (n : Nat)
+    (z w : @FiniteDimensionalCechModel.Kernel M G P.coeffField P.model (n + 1))
+    (hrel : let _ : Field M.Coeff := P.coeffField
+      (Submodule.quotientRel
+        (@FiniteDimensionalCechModel.Boundaries M G P.coeffField P.model
+          (n + 1))).r z w) :
+    let _ : Field M.Coeff := P.coeffField
+    P.normalizedCocycleSucc n z = P.normalizedCocycleSucc n w := by
+  letI : Field M.Coeff := P.coeffField
+  rw [Submodule.quotientRel_def] at hrel
+  change z - w ∈ LinearMap.range (P.model.boundaryLinear n) at hrel
+  rcases hrel with ⟨b, hb⟩
+  have hcoordinates :
+      ∃ x : P.model.CochainIndex n -> M.Coeff,
+        Matrix.mulVec (P.model.differentialMatrix n) x =
+          P.cochainCoordinates (n + 1) z.1 -
+            P.cochainCoordinates (n + 1) w.1 := by
+    refine ⟨P.cochainCoordinates n b, ?_⟩
+    rw [← P.cochainCoordinates_differential n b]
+    have hbval : P.model.differentialLinear n b = z.1 - w.1 :=
+      congrArg Subtype.val hb
+    rw [hbval, P.cochainCoordinates_sub]
+  apply Subtype.ext
+  apply (P.model.cochainBasis (n + 1)).repr.injective
+  have hnormalized := P.cosetNormalizer.canonical
+    (P.model.differentialMatrix n)
+    (P.cochainCoordinates (n + 1) z.1)
+    (P.cochainCoordinates (n + 1) w.1) hcoordinates
+  apply Finsupp.ext
+  intro i
+  have hcoordinates : P.cochainCoordinates (n + 1)
+        (P.normalizedCocycleSucc n z).1 =
+      P.cochainCoordinates (n + 1)
+        (P.normalizedCocycleSucc n w).1 := by
+    simpa [normalizedCocycleSucc,
+      cochainCoordinates_normalizedCochainSucc] using hnormalized
+  simpa [cochainCoordinates] using congrFun hcoordinates i
+
+/-- Canonical representative of a finite-dimensional model cohomology class.
+Degree zero uses the trivial incoming-image quotient; positive degrees use the
+uniform matrix-coset normalizer. -/
+noncomputable def modelQuotientRepresentative
+    {M : MeasurementProfile.{u, v}} {G : FiniteMeasurementGeometry M}
+    (P : FiniteDimensionalCechProcedure M G) :
+    (n : Nat) ->
+      @FiniteDimensionalCechModel.Cohomology M G P.coeffField P.model n ->
+      @FiniteDimensionalCechModel.Kernel M G P.coeffField P.model n
+  | 0 => by
+      letI : Field M.Coeff := P.coeffField
+      exact @Quotient.lift _ _
+        (Submodule.quotientRel (P.model.Boundaries 0)) id
+        (fun z w hrel => by
+          have hmem : z - w ∈ P.model.Boundaries 0 :=
+            (Submodule.quotientRel_def (P.model.Boundaries 0)).mp hrel
+          have hzero : z - w = 0 := by
+            simpa [FiniteDimensionalCechModel.Boundaries] using hmem
+          exact sub_eq_zero.mp hzero)
+  | n + 1 => by
+      letI : Field M.Coeff := P.coeffField
+      exact Quotient.lift (P.normalizedCocycleSucc n) fun z w hrel =>
+        P.normalizedCocycleSucc_eq_of_rel n z w hrel
+
+/-- The model representative maps back to the requested kernel/image class. -/
+theorem modelQuotientRepresentative_correct
+    {M : MeasurementProfile.{u, v}} {G : FiniteMeasurementGeometry M}
+    (P : FiniteDimensionalCechProcedure M G) (n : Nat)
+    (h : @FiniteDimensionalCechModel.Cohomology M G P.coeffField P.model n) :
+    let _ : Field M.Coeff := P.coeffField
+    Quotient.mk (Submodule.quotientRel (P.model.Boundaries n))
+        (P.modelQuotientRepresentative n h) = h := by
+  letI : Field M.Coeff := P.coeffField
+  dsimp only
+  induction h using Quotient.inductionOn with
+  | _ z =>
+      cases n with
+      | zero => rfl
+      | succ n =>
+          symm
+          apply Quotient.sound
+          exact P.normalizedCocycleSucc_sameClass n z
+
+/-- Canonical generated Čech cocycle selected from a finite-dimensional
+cohomology class. -/
+noncomputable def quotientRepresentative
+    {M : MeasurementProfile.{u, v}} {G : FiniteMeasurementGeometry M}
+    (P : FiniteDimensionalCechProcedure M G) (n : Nat) (h : G.CechHn n) :
+    G.CechCocycle n := by
+  letI : Field M.Coeff := P.coeffField
+  exact P.model.cocycleEquivCanonical n
+    (P.modelQuotientRepresentative n ((P.cohomologyEquivCanonical n).symm h))
+
+/-- The finite-dimensional representative maps back to the requested
+canonical generated Čech class. -/
+theorem quotientRepresentative_correct
+    {M : MeasurementProfile.{u, v}} {G : FiniteMeasurementGeometry M}
+    (P : FiniteDimensionalCechProcedure M G) (n : Nat) (h : G.CechHn n) :
+    G.classOfCocycle n (P.quotientRepresentative n h) = h := by
+  letI : Field M.Coeff := P.coeffField
+  have hmodel := congrArg (P.cohomologyEquivCanonical n)
+    (P.modelQuotientRepresentative_correct n
+      ((P.cohomologyEquivCanonical n).symm h))
+  simpa [quotientRepresentative, cohomologyEquivCanonical,
+    FiniteDimensionalCechModel.cohomologyEquivCanonical,
+    FiniteMeasurementGeometry.classOfCocycle] using hmodel
+
 /-- Equality on canonical Čech cohomology is transported from model coordinates. -/
 noncomputable def canonicalCohomologyDecidableEq
     {M : MeasurementProfile.{u, v}} {G : FiniteMeasurementGeometry M}
@@ -1006,6 +1392,28 @@ def zeroDecision {M : MeasurementProfile.{u, v}}
   match P with
   | .finiteDimensional procedure => procedure.zeroDecision n
   | .effectiveFinitelyPresented procedure => procedure.zeroDecision n
+
+/-- Select a canonical generated Čech cocycle through either computation
+route. -/
+noncomputable def quotientRepresentative {M : MeasurementProfile.{u, v}}
+    {G : FiniteMeasurementGeometry M}
+    (P : CechComputationProcedure M G) (n : Nat) :
+    G.CechHn n -> G.CechCocycle n :=
+  match P with
+  | .finiteDimensional procedure => procedure.quotientRepresentative n
+  | .effectiveFinitelyPresented procedure => procedure.quotientRepresentative n
+
+/-- Either selected coefficient route returns a representative of the input
+canonical class. -/
+theorem quotientRepresentative_correct {M : MeasurementProfile.{u, v}}
+    {G : FiniteMeasurementGeometry M}
+    (P : CechComputationProcedure M G) (n : Nat) (h : G.CechHn n) :
+    G.classOfCocycle n (P.quotientRepresentative n h) = h := by
+  cases P with
+  | finiteDimensional procedure =>
+      exact procedure.quotientRepresentative_correct n h
+  | effectiveFinitelyPresented procedure =>
+      exact procedure.quotientRepresentative_correct n h
 
 /-- The selected route decides equality with the canonical zero class. -/
 theorem zeroDecision_correct {M : MeasurementProfile.{u, v}}

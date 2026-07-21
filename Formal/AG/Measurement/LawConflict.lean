@@ -6,7 +6,7 @@ noncomputable section
 namespace AAT.AG
 namespace Measurement
 
-universe u v
+universe u v w
 
 /-!
 Part VIII R7 / AC17 common ambient pairs, LawConflict measurement, and flat
@@ -90,10 +90,10 @@ structure LawConflictMeasurement {M : MeasurementProfile.{u, v}}
     (A : CommonAmbientPair M) where
   Degree : Type u
   selectedDegree : Degree
-  LeftQuotient : Type v
-  RightQuotient : Type v
-  TorObject : Type v
-  ConflictClass : Type v
+  LeftQuotient : Type w
+  RightQuotient : Type w
+  TorObject : Type w
+  ConflictClass : Type w
   selectedConflictClass : ConflictClass
   conflictSupport : ConflictClass -> A.SupportCarrier -> Prop
   selectedSupport : A.SupportCarrier
@@ -158,6 +158,47 @@ def ofDerivedLawConflictPackage {M : MeasurementProfile.{u, v}}
   lawConflictTorReading :=
     Nonempty (P.LawConflict degree ≃ₗ[R] Derived.Intersection.mathlibTor R I_U I_V degree)
   lawConflictTorReading_cert := ⟨P.lawConflictLinearEquivMathlibTor degree⟩
+  selectedClassSupportReading := conflictSupport selectedClass selectedSupport
+  selectedClassSupportReading_cert := selectedClassSupport
+  commonAmbientRequired := A.commonRingedSite ∧ A.lawIdealsInCommonAmbient
+  commonAmbientRequired_cert :=
+    ⟨A.commonRingedSite_cert, A.lawIdealsInCommonAmbient_cert⟩
+  coefficientCompatibilityUsed := A.coefficientsCompatible
+  coefficientCompatibilityUsed_cert := A.coefficientsCompatible_cert
+  topologyAndCoefficientBoundary := A.noComparisonWithoutCommonAmbient
+  topologyAndCoefficientBoundary_cert := A.noComparisonWithoutCommonAmbient_cert
+
+/--
+VIII.Definition 9.1 / R7: build a measurement reading directly from an
+existing selected Tor bridge.  This constructor is used when the finite chain
+computation already targets that bridge, without requiring a second chart
+intersection package solely to recover the same Tor equivalence.
+-/
+def ofSelectedTorBridge {M : MeasurementProfile.{u, v}}
+    (A : CommonAmbientPair M)
+    {R : Type (max u v)} [CommRing R] {I_U I_V : Ideal R}
+    (B : Derived.Intersection.SelectedTorBridge.{max u v} R I_U I_V)
+    (degree : Nat)
+    (selectedClass : B.LawConflict degree)
+    (selectedSupport : A.SupportCarrier)
+    (conflictSupport : B.LawConflict degree -> A.SupportCarrier -> Prop)
+    (selectedClassSupport : conflictSupport selectedClass selectedSupport) :
+    LawConflictMeasurement A where
+  Degree := ULift.{u} Nat
+  selectedDegree := ULift.up degree
+  LeftQuotient := R ⧸ I_U
+  RightQuotient := R ⧸ I_V
+  TorObject := B.LawConflict degree
+  ConflictClass := B.LawConflict degree
+  selectedConflictClass := selectedClass
+  conflictSupport := conflictSupport
+  selectedSupport := selectedSupport
+  ZeroConflict := fun x => x = 0
+  NontrivialConflict := fun x => x ≠ 0
+  lawConflictTorReading :=
+    Nonempty (B.LawConflict degree ≃ₗ[R]
+      Derived.Intersection.mathlibTor R I_U I_V degree)
+  lawConflictTorReading_cert := ⟨B.lawConflictLinearEquivMathlibTor degree⟩
   selectedClassSupportReading := conflictSupport selectedClass selectedSupport
   selectedClassSupportReading_cert := selectedClassSupport
   commonAmbientRequired := A.commonRingedSite ∧ A.lawIdealsInCommonAmbient
