@@ -71,9 +71,9 @@ inductive TransferResidueFlag where
 
 /-- R11(a): the profile separates measured nonzero from unmeasured axes. -/
 def pseudoCircleMeasurementProfile : MeasurementProfile where
-  SiteObj := TinyMeasurementSite
-  Cover := Unit
-  Coeff := Unit
+  SiteObj := Cohomology.FiniteExamples.PseudoCircleGolden.Chart
+  Cover := Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge
+  Coeff := ℝ
   EffCoeff := Unit
   ObstructionObject := Unit
   LawUniverse := Unit
@@ -3557,71 +3557,119 @@ def measurementPacketExampleSynthesis :
     FiniteMeasurementSynthesis measurementPacketExampleData :=
   finiteMeasurementSynthesisPackage measurementPacketExampleData
 
-/-- R11(g): common site, cover, coefficient, measurement, and ambient for GAGA. -/
-def gagaCommonFiniteData :
+/-- R11(g): common ambient whose law handles select the shared-witness ideals. -/
+def gagaCommonAmbient :
+    CommonAmbientPair pseudoCircleMeasurementProfile where
+  AmbientSpace := Unit
+  StructureSheaf := Unit
+  LawIdeal := FiniteLawHandle
+  CoefficientObject := ℝ
+  WitnessPair := Unit
+  ComparisonProfile := Unit
+  SupportCarrier := SquareFreeSupportVertex
+  leftDomain := PseudoCircleMeasurementDomain.boundaryCocycle
+  rightDomain := PseudoCircleMeasurementDomain.boundaryCocycle
+  selectedAmbient := ()
+  selectedStructureSheaf := ()
+  leftLawIdeal := .left
+  rightLawIdeal := .right
+  leftCoefficient := 1
+  rightCoefficient := 1
+  selectedWitnessPair := ()
+  selectedComparisonProfile := ()
+  commonRingedSite := True
+  commonRingedSite_cert := trivial
+  lawIdealsInCommonAmbient := True
+  lawIdealsInCommonAmbient_cert := trivial
+  coefficientsCompatible := True
+  coefficientsCompatible_cert := trivial
+  witnessesComparable := True
+  witnessesComparable_cert := trivial
+  comparisonProfileFixed := True
+  comparisonProfileFixed_cert := trivial
+  noComparisonWithoutCommonAmbient := True
+  noComparisonWithoutCommonAmbient_cert := trivial
+
+/-- R11(g): one common selected datum for the nondegenerate GAGA fixture. -/
+noncomputable def gagaCommonFiniteData :
     AATGAGACommonFiniteData pseudoCircleMeasurementProfile where
-  selectedSite := TinyMeasurementSite.u
-  selectedCover := ()
-  selectedCoefficient := ()
+  selectedSite := Cohomology.FiniteExamples.PseudoCircleGolden.Chart.B
+  selectedCover := Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.BC
+  selectedCoefficient := (1 : ℝ)
   selectedMeasurement := PseudoCircleMeasurementDomain.boundaryCocycle
   measuredSelection := {
     inScope := rfl
     method := ()
     certificate := ()
   }
-  commonAmbient := transferCommonAmbient
+  hodgeCellularModelAt := fun _ _ _ _ => threeAxisCellularModel
+  commonAmbientAt := fun _ _ _ _ => gagaCommonAmbient
 
-/-- R11(g): GAGA carries the derived finite Hodge theorem package. -/
-def threeAxisSelectedHodgeTheoremPackage :
+/-- R11(g): actual real finite Hodge input derived from the nonzero three-axis complex. -/
+noncomputable def threeAxisSelectedHodgeTheoremPackage :
     SelectedFiniteHodgeTheoremPackage gagaCommonFiniteData where
-  cellularModel := threeAxisCellularModel
   laplacianReading := threeAxisLaplacianReading
-  hodgeData := threeAxisGenericHodgeData
-  hodgePackage := threeAxisGenericHodgePackage
+  previousNormed := by
+    change NormedAddCommGroup ℝ
+    infer_instance
+  previousInner := by
+    change InnerProductSpace ℝ ℝ
+    infer_instance
+  previousFinite := by
+    change FiniteDimensional ℝ ℝ
+    infer_instance
+  selectedNormed := by
+    change NormedAddCommGroup LowDegreeRealCochain
+    infer_instance
+  selectedInner := by
+    change InnerProductSpace ℝ LowDegreeRealCochain
+    infer_instance
+  selectedFinite := by
+    change FiniteDimensional ℝ LowDegreeRealCochain
+    infer_instance
+  nextNormed := by
+    change NormedAddCommGroup ℝ
+    infer_instance
+  nextInner := by
+    change InnerProductSpace ℝ ℝ
+    infer_instance
+  nextFinite := by
+    change FiniteDimensional ℝ ℝ
+    infer_instance
+  realFiniteComplex := threeAxisRealComplex
+  cellularComparison := threeAxisCellularComparison
 
-/-- R11(g) / VIII-5: concrete extension accounting used by the GAGA Period/Stokes route. -/
-def lowDegreePeriodStokesAccounting :
-    Cohomology.ExtensionHolonomyAccounting where
-  ExtensionEvent := Unit
-  Accounting := Unit
-  eventAddCommGroup := inferInstance
-  accountingAddCommGroup := inferInstance
-  kappa_U := 0
-
-/-- R11(g) / VIII-5: selected Period/Stokes theorem package for GAGA. -/
+/-- R11(g): selected two-cover Period/Stokes input, with distinct overlap handles. -/
 def lowDegreePeriodStokesTheoremPackage :
     SelectedPeriodStokesTheoremPackage gagaCommonFiniteData where
-  extensionAccounting := lowDegreePeriodStokesAccounting
+  leftSite := Cohomology.FiniteExamples.PseudoCircleGolden.Chart.A
+  rightSite := Cohomology.FiniteExamples.PseudoCircleGolden.Chart.B
+  selectedSite_eq_right := rfl
+  leftCover := Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.AB
+  rightCover := Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.BC
+  selectedCover_eq_right := rfl
+  leftCover_ne_right := by
+    change Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.AB ≠
+      Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.BC
+    decide
 
-/-- R11(g) / VIII-5: one-chart finite nerve used by the GAGA topological-debt route. -/
-def lowDegreeTopologicalDebtNerve :
-    Cohomology.CoverNerve where
-  Chart := Unit
-  EdgeComponent := Empty
-  FaceComponent := Empty
-  edgeLeft := Empty.elim
-  edgeRight := Empty.elim
-  faceEdge0 := Empty.elim
-  faceEdge1 := Empty.elim
-  faceEdge2 := Empty.elim
-  edgeOverlapComponent := fun e => nomatch e
-  faceTripleOverlapComponent := fun f => nomatch f
-  edgeOverlapComponent_holds := fun e => nomatch e
-  faceTripleOverlapComponent_holds := fun f => nomatch f
+/-- R11(g): selected pseudo-circle nerve with three charts and three overlaps. -/
+def lowDegreeTopologicalDebtNerve : Cohomology.CoverNerve :=
+  Cohomology.FiniteExamples.PseudoCircleGolden.coverNerve
 
 /--
-R11(g) / VIII-5: concrete finite nerve cochain complex for topological debt.
+R11(g): selected nonzero finite nerve complex.
 
-The example is intentionally low-degree and zero-differential; the certified
-field below is backed by `topologicalDebtCapacity_fromComplex`, not by an
-unrelated `True` field.
+The differential `d0` is the identity on a nonzero real cochain carrier.  This
+is a finite complex attached to the three-chart selected nerve, rather than a
+one-chart or zero-complex witness.
 -/
-def lowDegreeTopologicalDebtComplex :
+noncomputable def lowDegreeTopologicalDebtComplex :
     Cohomology.FiniteNerveCochainComplex lowDegreeTopologicalDebtNerve where
-  k := ℚ
-  C0 := Unit
-  C1 := Unit
-  C2 := Unit
+  k := ℝ
+  C0 := ℝ
+  C1 := ℝ
+  C2 := ℝ
   add_C0 := inferInstance
   add_C1 := inferInstance
   add_C2 := inferInstance
@@ -3631,38 +3679,41 @@ def lowDegreeTopologicalDebtComplex :
   finiteDimensional_C0 := inferInstance
   finiteDimensional_C1 := inferInstance
   finiteDimensional_C2 := inferInstance
-  d0 := 0
+  d0 := LinearMap.id
   d1 := 0
   d1_comp_d0 := by
     intro c
-    simp
+    rfl
 
-/-- R11(g) / VIII-5: selected topological-debt theorem package for GAGA. -/
-def lowDegreeTopologicalDebtTheoremPackage :
+/-- R11(g): selected topological input visibly attached to the common site and cover. -/
+noncomputable def lowDegreeTopologicalDebtTheoremPackage :
     SelectedTopologicalDebtTheoremPackage gagaCommonFiniteData where
   nerve := lowDegreeTopologicalDebtNerve
+  chartToSite := id
+  edgeToCover := id
+  selectedSiteVisible := ⟨Cohomology.FiniteExamples.PseudoCircleGolden.Chart.B, rfl⟩
+  selectedCoverVisible :=
+    ⟨Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.BC, rfl⟩
   nerveComplex := lowDegreeTopologicalDebtComplex
+  coefficient_eq := rfl
 
-/-- R11(g) / VIII-5: canonical selected LawConflict/Tor bridge for GAGA. -/
-def lowDegreeDerivedConflictTheoremPackage :
+/-- R11(g): common-ambient reading of the shared-witness degree-one conflict. -/
+noncomputable def lowDegreeDerivedConflictTheoremPackage :
     SelectedDerivedConflictTheoremPackage gagaCommonFiniteData where
-  R := ℤ
-  commRingR := inferInstance
-  leftIdeal := ⊥
-  rightIdeal := ⊥
-  readLawIdeal := fun _ => ⊥
+  readLawIdeal
+    | .left => Derived.Counterexample.SharedWitnessCoord.idealU ℝ
+    | .right => Derived.Counterexample.SharedWitnessCoord.idealV ℝ
+    | .alternate => Derived.Counterexample.SharedWitnessCoord.idealU ℝ
   leftIdeal_eq := rfl
   rightIdeal_eq := rfl
-  torBridge := Derived.Intersection.canonicalSelectedTorBridge ℤ ⊥ ⊥
-  degree := 0
 
-/-- R11(g): theorem packages indexed by the same common finite data. -/
-def gagaCertifiedFields :
+/-- R11(g): all theorem inputs are indexed by the same common finite datum. -/
+noncomputable def gagaCertifiedFields :
     AATGAGACertifiedFields gagaCommonFiniteData where
-  finiteHodgeTheoremPackage := threeAxisSelectedHodgeTheoremPackage
-  periodStokesTheoremPackage := lowDegreePeriodStokesTheoremPackage
-  topologicalDebtTheoremPackage := lowDegreeTopologicalDebtTheoremPackage
-  derivedConflictTheoremPackage := lowDegreeDerivedConflictTheoremPackage
+  hodgeInput := threeAxisSelectedHodgeTheoremPackage
+  periodStokesInput := lowDegreePeriodStokesTheoremPackage
+  topologicalInput := lowDegreeTopologicalDebtTheoremPackage
+  derivedConflictInput := lowDegreeDerivedConflictTheoremPackage
 
 /-- R11(g): candidate interfaces remain separated from certified readings. -/
 def gagaCandidateInterfaces :
@@ -3678,9 +3729,9 @@ def gagaCandidateInterfaces :
   spectralHotspot := some ()
   transferLowerBound := some ()
 
-/-- R11(g): external-fidelity boundary for the GAGA fixture. -/
-def gagaBoundary :
-    AATGAGABoundary pseudoCircleMeasurementProfile where
+/-- R11(g): external-fidelity non-conclusion data for the GAGA fixture. -/
+def gagaNonConclusionData :
+    AATGAGANonConclusionData pseudoCircleMeasurementProfile where
   noExternalDataSourceFidelity := True
   noExternalDataSourceFidelity_cert := trivial
   noExternalProcedureCorrectness := True
@@ -3697,12 +3748,12 @@ def gagaComparisonExampleData :
   commonData := gagaCommonFiniteData
   certifiedFields := gagaCertifiedFields
   candidateInterfaces := gagaCandidateInterfaces
-  boundary := gagaBoundary
+  nonConclusionData := gagaNonConclusionData
 
 /-- R11(g): theorem 12.3 instantiated on the finite comparison fixture. -/
-def gagaComparisonExamplePackage :
+theorem gagaComparisonExamplePackage :
     AATGAGAFiniteMeasurementComparison gagaComparisonExampleData :=
-  aatGAGAFiniteMeasurementComparisonPackage gagaComparisonExampleData
+  aatGAGAFiniteMeasurementComparison gagaComparisonExampleData
 
 /-- R11(g): packet / GAGA fixture with certified and candidate readings separated. -/
 structure MeasurementPacketGAGAFiniteExample where

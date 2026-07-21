@@ -1149,37 +1149,6 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check AAT.AG.Measurement.PartVIIIFiniteExampleSuite.packetGAGA /- definition missing documentation string -/
 #check AAT.AG.Measurement.PartVIIIFiniteExampleSuite.staticFixturesReusableForPartIX /- definition missing documentation string -/
 
--- Formal.AG.Measurement.GAGA
-#check @AAT.AG.Measurement.SelectedFiniteHodgeTheoremPackage.cellularModel /- definition missing documentation string -/
-#check @AAT.AG.Measurement.SelectedFiniteHodgeTheoremPackage.laplacianReading /- definition missing documentation string -/
-#check @AAT.AG.Measurement.SelectedFiniteHodgeTheoremPackage.hodgeData /- definition missing documentation string -/
-#check @AAT.AG.Measurement.SelectedPeriodStokesTheoremPackage.extensionAccounting /- definition missing documentation string -/
-#check @AAT.AG.Measurement.SelectedTopologicalDebtTheoremPackage.nerve /- definition missing documentation string -/
-#check @AAT.AG.Measurement.SelectedTopologicalDebtTheoremPackage.nerveComplex /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGACertifiedFields.finiteHodgeTheoremPackage /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGACertifiedFields.periodStokesTheoremPackage /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGACertifiedFields.topologicalDebtTheoremPackage /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGACertifiedFields.derivedConflictTheoremPackage /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGACandidateInterfaces.MonotoneWitnessStabilityInterface /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGACandidateInterfaces.FiniteCechStabilityInterface /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGACandidateInterfaces.FlatBaseChangeInterface /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGACandidateInterfaces.SpectralHotspotInterface /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGACandidateInterfaces.TransferLowerBoundInterface /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGACandidateInterfaces.monotoneWitnessStability /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGACandidateInterfaces.finiteCechStability /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGACandidateInterfaces.flatBaseChange /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGACandidateInterfaces.spectralHotspot /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGACandidateInterfaces.transferLowerBound /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGABoundary.noExternalDataSourceFidelity /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGABoundary.noExternalProcedureCorrectness /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGABoundary.noArbitraryLawUniverseComparison /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGABoundary.candidateDependentFieldsNotCertified /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGAComparisonData.measurementPacketData /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGAComparisonData.certifiedFields /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGAComparisonData.candidateInterfaces /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGAComparisonData.boundary /- definition missing documentation string -/
-#check @AAT.AG.Measurement.AATGAGAFiniteMeasurementComparison.packet /- definition missing documentation string -/
-
 -- Formal.AG.Measurement.Hodge
 #check @AAT.AG.Measurement.FiniteHodgeDecompositionData.HarmonicRepresentative /- definition missing documentation string -/
 #check @AAT.AG.Measurement.FiniteHodgeDecompositionData.CohomologyClass /- definition missing documentation string -/

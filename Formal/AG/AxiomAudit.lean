@@ -2151,13 +2151,13 @@ theorem finiteIntervalStokesBasis
         (AAT.AG.Cohomology.IntervalBasisStokes.boundary0 γ) :=
   AAT.AG.Cohomology.IntervalBasisStokes.finiteIntervalStokes_basis ω γ
 
-theorem gagaLowDegreePeriodStokesAccountingAdditive
-    (x y :
-      Measurement.lowDegreePeriodStokesTheoremPackage.extensionAccounting.ExtensionEvent) :
-    Measurement.lowDegreePeriodStokesTheoremPackage.extensionAccounting.kappa_U (x + y) =
-      Measurement.lowDegreePeriodStokesTheoremPackage.extensionAccounting.kappa_U x +
-        Measurement.lowDegreePeriodStokesTheoremPackage.extensionAccounting.kappa_U y :=
-  Measurement.lowDegreePeriodStokesTheoremPackage.period_stokes_accounting_additive x y
+theorem gagaLowDegreePeriodStokes
+    (omega : Measurement.pseudoCircleMeasurementProfile.Cover → ℝ) (gamma : ℝ) :
+    Measurement.lowDegreePeriodStokesTheoremPackage.pair1
+        (Measurement.lowDegreePeriodStokesTheoremPackage.d0 omega) gamma =
+      Measurement.lowDegreePeriodStokesTheoremPackage.pair0 omega
+        (Measurement.lowDegreePeriodStokesTheoremPackage.chain0 gamma) :=
+  Measurement.lowDegreePeriodStokesTheoremPackage.period_stokes_holds omega gamma
 
 theorem gagaLowDegreeTopologicalDebtCapacityFromComplex :
     Module.finrank
@@ -2186,10 +2186,10 @@ theorem gagaSelectedHodgeCohomology :
     ∃ h, h = @Measurement.SelectedFiniteHodgeTheoremPackage.harmonic_cohomology_holds :=
   ⟨@Measurement.SelectedFiniteHodgeTheoremPackage.harmonic_cohomology_holds, rfl⟩
 
-/-- Direct audit entry for additive selected period accounting. -/
-theorem gagaSelectedPeriodAccountingAdditive :
-    ∃ h, h = @Measurement.SelectedPeriodStokesTheoremPackage.period_stokes_accounting_additive :=
-  ⟨@Measurement.SelectedPeriodStokesTheoremPackage.period_stokes_accounting_additive, rfl⟩
+/-- Direct audit entry for the selected real finite Period/Stokes theorem. -/
+theorem gagaSelectedPeriodStokes :
+    ∃ h, h = @Measurement.SelectedPeriodStokesTheoremPackage.period_stokes_holds :=
+  ⟨@Measurement.SelectedPeriodStokesTheoremPackage.period_stokes_holds, rfl⟩
 
 /-- Direct audit entry for the selected finite-nerve capacity theorem. -/
 theorem gagaSelectedTopologicalCapacity :
@@ -2207,37 +2207,15 @@ theorem gagaCertifiedComparisonStatement :
     ∃ h, h = @Measurement.aatGAGACertifiedComparisonStatement_holds :=
   ⟨@Measurement.aatGAGACertifiedComparisonStatement_holds, rfl⟩
 
-/-- Direct audit entry for the certified Hodge comparison accessor. -/
-theorem gagaCertifiedHodgeComparison :
-    ∃ h, h = @Measurement.AATGAGACertifiedFields.hodge_comparison_holds :=
-  ⟨@Measurement.AATGAGACertifiedFields.hodge_comparison_holds, rfl⟩
-
-/-- Direct audit entry for the certified decomposition accessor. -/
-theorem gagaCertifiedHarmonicDecomposition :
-    ∃ h, h = @Measurement.AATGAGACertifiedFields.harmonic_decomposition_holds :=
-  ⟨@Measurement.AATGAGACertifiedFields.harmonic_decomposition_holds, rfl⟩
-
-/-- Direct audit entry for the full certified comparison accessor. -/
-theorem gagaCertifiedComparison :
-    ∃ h, h = @Measurement.AATGAGACertifiedFields.certified_comparison_holds :=
-  ⟨@Measurement.AATGAGACertifiedFields.certified_comparison_holds, rfl⟩
+/-- Direct audit entry for the selected Hilbert-series accounting theorem. -/
+theorem gagaSelectedHilbertSeriesAccounting :
+    ∃ h, h = @Measurement.SelectedDerivedConflictTheoremPackage.hilbertSeriesAccounting_holds :=
+  ⟨@Measurement.SelectedDerivedConflictTheoremPackage.hilbertSeriesAccounting_holds, rfl⟩
 
 /-- Direct audit entry for raw-data comparison derivation. -/
 theorem gagaComparisonStatement :
     ∃ h, h = @Measurement.aatGAGAComparisonStatement_holds :=
   ⟨@Measurement.aatGAGAComparisonStatement_holds, rfl⟩
-
-/-- Direct audit entry for the finite comparison packet theorem. -/
-theorem gagaFiniteProfileComparison :
-    ∃ h, h = @Measurement.AATGAGAComparisonPacket.finiteProfileComparison_holds :=
-  ⟨@Measurement.AATGAGAComparisonPacket.finiteProfileComparison_holds, rfl⟩
-
-/-- Direct audit entry for the final comparison package accessor. -/
-theorem gagaFiniteMeasurementCertifiedStatement :
-    ∃ h, h =
-      @Measurement.AATGAGAFiniteMeasurementComparison.certified_statement_holds_of_package :=
-  ⟨@Measurement.AATGAGAFiniteMeasurementComparison.certified_statement_holds_of_package,
-    rfl⟩
 
 /-- Direct audit entry for existence of the derived GAGA comparison. -/
 theorem gagaFiniteMeasurementComparison :
