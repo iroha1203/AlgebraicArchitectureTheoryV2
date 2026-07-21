@@ -683,8 +683,6 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.Evolution.EvolutionFunctional.distanceToFlatnessReading /- definition missing documentation string -/
 #check @AAT.AG.Evolution.EvolutionFunctional.transferResidueNormReading /- definition missing documentation string -/
 #check @AAT.AG.Evolution.DissipativePolicy.Step /- definition missing documentation string -/
-#check @AAT.AG.Evolution.DissipativePolicy.source /- definition missing documentation string -/
-#check @AAT.AG.Evolution.DissipativePolicy.target /- definition missing documentation string -/
 #check @AAT.AG.Evolution.DissipativePolicy.sourceState /- definition missing documentation string -/
 #check @AAT.AG.Evolution.DissipativePolicy.targetState /- definition missing documentation string -/
 #check @AAT.AG.Evolution.DissipativePolicy.incidence /- definition missing documentation string -/

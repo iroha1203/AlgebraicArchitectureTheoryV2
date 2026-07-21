@@ -8906,6 +8906,24 @@ def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_USmooth_obstructio
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_instDecidableEqStratumRole__proof_1 := @AAT.AG.SingularityMonodromyStack.instDecidableEqStratumRole._proof_1
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_instDecidableEqStratumRole__proof_2 := @AAT.AG.SingularityMonodromyStack.instDecidableEqStratumRole._proof_2
 
+/-! Part IX theorem 5.3 finite-time terminal-arrival audit aliases. -/
+
+/-- Kernel-audit alias for selected-state finiteness in the stopping package. -/
+def finiteDissipationStoppingFiniteSelectedStates :=
+  @Evolution.FiniteDissipationStopping.finite_selected_states
+
+/-- Kernel-audit alias for theorem 5.3 terminal arrival on policy-generated paths. -/
+def finiteDissipationStoppingPolicyGeneratedTerminalArrival :=
+  @Evolution.FiniteDissipationStopping.policy_generated_path_reaches_terminal
+
+/-- Kernel-audit alias for the finite fixture's concrete terminal time. -/
+def evolutionPart9PolicyGeneratedDissipationTerminalAtTwo :=
+  Examples.EvolutionPart9.policy_generated_dissipation_terminal_at_two
+
+/-- Kernel-audit alias for the finite fixture's theorem-5.3 terminal arrival. -/
+def evolutionPart9PolicyGeneratedDissipationTerminalArrival :=
+  Examples.EvolutionPart9.policy_generated_dissipation_reaches_terminal
+
 
 end AAT.AG.AxiomAudit
 

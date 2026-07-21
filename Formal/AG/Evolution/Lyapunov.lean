@@ -30,8 +30,8 @@ variable {Phi : EvolutionFunctional St}
 def NonIncreasingAlongPolicy (P : DissipativePolicy Phi) : Prop :=
   ∀ step : P.Step,
     letI := Phi.valuePreorder
-    Phi.value (P.target step) (P.targetState step) <=
-      Phi.value (P.source step) (P.sourceState step)
+    Phi.value (P.targetPoint step) (P.targetStateAt step) <=
+      Phi.value (P.sourcePoint step) (P.sourceStateAt step)
 
 /-- IX.§6.1 / AC17: every dissipative policy is non-increasing along its selected steps. -/
 theorem nonIncreasingAlongPolicy_of_dissipative (P : DissipativePolicy Phi) :

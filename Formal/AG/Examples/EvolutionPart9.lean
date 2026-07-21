@@ -992,7 +992,7 @@ def phi : EvolutionFunctional statePresheaf where
 inductive DissipationStep where
   | highToMid
   | midToTerminal
-  | terminalStay
+  | terminalToNonlawfulTerminal
   deriving DecidableEq, Fintype
 
 /-- R10(d): explicit finite witness for the three selected dissipative steps. -/
@@ -1000,11 +1000,11 @@ def dissipationStepEquivFin : DissipationStep ≃ Fin 3 where
   toFun
     | .highToMid => ⟨0, by decide⟩
     | .midToTerminal => ⟨1, by decide⟩
-    | .terminalStay => ⟨2, by decide⟩
+    | .terminalToNonlawfulTerminal => ⟨2, by decide⟩
   invFun
     | ⟨0, _⟩ => .highToMid
     | ⟨1, _⟩ => .midToTerminal
-    | ⟨2, _⟩ => .terminalStay
+    | ⟨2, _⟩ => .terminalToNonlawfulTerminal
     | ⟨n + 3, h⟩ => False.elim (by omega : False)
   left_inv := by
     intro step
@@ -1021,37 +1021,38 @@ instance : Finite DissipationStep :=
 def DissipationStep.sourceState : DissipationStep -> TinyState
   | .highToMid => .high
   | .midToTerminal => .mid
-  | .terminalStay => .terminal
+  | .terminalToNonlawfulTerminal => .terminal
 
 /-- R10(d): target state of each selected dissipative step. -/
 def DissipationStep.targetState : DissipationStep -> TinyState
   | .highToMid => .mid
   | .midToTerminal => .terminal
-  | .terminalStay => .terminal
+  | .terminalToNonlawfulTerminal => .nonlawfulTerminal
+
+/-- R10(d): selected temporal point for each state in the dissipation fixture. -/
+def dissipationStatePoint : TinyState -> temporalSite.Point
+  | .high => p0
+  | .mid => p1
+  | .terminal => p1
+  | .nonlawfulTerminal => p1
+
+/-- R10(d): presheaf state carried by each selected dissipation state. -/
+def dissipationStateAt (s : TinyState) :
+    statePresheaf.State (dissipationStatePoint s) :=
+  stateAt (dissipationStatePoint s) s
 
 /-- R10(d): finite strictly dissipative policy. -/
 def dissipativePolicy : DissipativePolicy phi where
+  SelectedState := TinyState
+  point := dissipationStatePoint
+  state := dissipationStateAt
   Step := DissipationStep
-  source := fun
-    | .highToMid => p0
-    | .midToTerminal => p1
-    | .terminalStay => p1
-  target := fun
-    | .highToMid => p1
-    | .midToTerminal => p1
-    | .terminalStay => p1
-  sourceState := fun
-    | .highToMid => high0
-    | .midToTerminal => mid1
-    | .terminalStay => terminal1
-  targetState := fun
-    | .highToMid => mid1
-    | .midToTerminal => terminal1
-    | .terminalStay => nonlawfulTerminal1
+  sourceState := DissipationStep.sourceState
+  targetState := DissipationStep.targetState
   incidence := fun
     | .highToMid => stepLeg
     | .midToTerminal => temporalSite.idLeg p1
-    | .terminalStay => temporalSite.idLeg p1
+    | .terminalToNonlawfulTerminal => temporalSite.idLeg p1
   selectedEvolutionStep := fun _ => True
   selectedEvolutionStep_cert := fun _ => trivial
   nonIncrease := by
@@ -1089,8 +1090,8 @@ def strictDissipation : StrictlyDissipativeOutsideTerminal dissipativePolicy ter
 /-- R10(d): finite stopping package for the three-state toy policy. -/
 def finiteDissipationStopping :
     FiniteDissipationStopping dissipativePolicy terminalState where
-  finiteSelectedSteps := by
-    change Finite DissipationStep
+  finiteSelectedStates := by
+    change Finite TinyState
     infer_instance
   wellFoundedValue := Nat.lt_wfRel.wf
   strict := strictDissipation
@@ -1100,6 +1101,48 @@ theorem finite_dissipation_no_infinite_nonterminal_path :
     ¬ ∃ path : InfiniteSelectedEvolutionPath dissipativePolicy,
       path.StaysOutsideTerminal terminalState :=
   finiteDissipationStopping.no_infinite_nonterminal_path
+
+/-- R10(d): a policy-generated trajectory for the selected finite state chain. -/
+def policyGeneratedDissipationPath :
+    PolicyGeneratedEvolutionPath dissipativePolicy terminalState where
+  state
+    | 0 => .high
+    | 1 => .mid
+    | _ + 2 => .terminal
+  nextStep := by
+    intro n hNonTerminal
+    match n with
+    | 0 => exact .highToMid
+    | 1 => exact .midToTerminal
+    | _ + 2 => exact False.elim (hNonTerminal (Or.inl rfl))
+  step_source := by
+    intro n hNonTerminal
+    match n with
+    | 0 => rfl
+    | 1 => rfl
+    | _ + 2 => exact False.elim (hNonTerminal (Or.inl rfl))
+  step_target := by
+    intro n hNonTerminal
+    match n with
+    | 0 => rfl
+    | 1 => rfl
+    | _ + 2 => exact False.elim (hNonTerminal (Or.inl rfl))
+
+/-- R10(d): the terminal state actually occurs at time two in the finite fixture. -/
+theorem policy_generated_dissipation_terminal_at_two :
+    terminalState.terminal
+      (dissipativePolicy.point (policyGeneratedDissipationPath.state 2))
+      (dissipativePolicy.state (policyGeneratedDissipationPath.state 2)) :=
+  Or.inl rfl
+
+/-- R10(d): theorem 5.3 yields finite-time terminal arrival for the policy-generated fixture. -/
+theorem policy_generated_dissipation_reaches_terminal :
+    ∃ n : Nat,
+      terminalState.terminal
+        (dissipativePolicy.point (policyGeneratedDissipationPath.state n))
+        (dissipativePolicy.state (policyGeneratedDissipationPath.state n)) :=
+  finiteDissipationStopping.policy_generated_path_reaches_terminal
+    policyGeneratedDissipationPath
 
 /-- R10(e): a selected terminal may be non-lawful. -/
 theorem nonlawful_terminal_is_terminal :
@@ -1126,16 +1169,14 @@ def finiteDissipationPath : SelectedEvolutionPath dissipativePolicy where
   step := fun
     | ⟨0, _⟩ => .highToMid
     | ⟨1, _⟩ => .midToTerminal
-    | ⟨2, _⟩ => .terminalStay
+    | ⟨2, _⟩ => .terminalToNonlawfulTerminal
     | ⟨n + 3, h⟩ => False.elim (by omega : False)
   continuous := by
     intro i hnext
     rcases i with ⟨i, hi⟩
     interval_cases i
-    · refine ⟨rfl, ?_⟩
-      rfl
-    · refine ⟨rfl, ?_⟩
-      rfl
+    · rfl
+    · rfl
     · have : (3 : Nat) < 3 := by
         simp at hnext
       omega
@@ -1149,12 +1190,8 @@ theorem twoStep_dissipation_reaches_terminal :
 theorem twoStep_dissipation_last_maximal :
     finiteDissipationPath.MaximalAt ⟨2, by decide⟩ := by
   intro hnext
-  rcases hnext with ⟨next, hconnect⟩
-  rcases hconnect with ⟨hpoint, hstate⟩
-  cases next
-  · cases hpoint
-  · cases hstate
-  · cases hstate
+  rcases hnext with ⟨next, hnext⟩
+  cases next <;> cases hnext
 
 /-- R10(d): endpoint executability is vacuous at the selected terminal endpoint. -/
 theorem twoStep_dissipation_endpoint_executable :
@@ -1630,33 +1667,38 @@ theorem finite_temporal_examples_verified :
             pseudoCircleMismatch replayDescentNonzeroExample.edge ≠ 0 ∧
               (¬ ∃ path : InfiniteSelectedEvolutionPath dissipativePolicy,
                 path.StaysOutsideTerminal terminalState) ∧
-                finiteDissipationPath.ReachesTerminal terminalState ∧
-                terminalState.terminal p1 nonlawfulTerminal1 ∧
-                  (¬ terminalState.lawful p1 nonlawfulTerminal1) ∧
-                    oneStepPath.PathwiseNonIncrease ∧
-                      IntegrableForce toyForce ∧
-                        forceCandidateFixture.integrationData.globalReplayTransition
-                            (forceCandidateFixture.integrationData.replaySource_eq ▸
-                              toyForce.sourceState) =
-                          (forceCandidateFixture.integrationData.replayTarget_eq ▸
-                            toyForce.targetState) ∧
-                          forceCandidateFixture.concreteObstructionValue ≠ 0 ∧
-                            forceCandidateFixture.candidateData.selectedNonzero
-                              forceCandidateFixture.mismatchClass.obstructionClass ∧
-                              (forceCandidateFixture.candidateData.selectedNonzero
-                                  forceCandidateFixture.mismatchClass.obstructionClass ↔
-                                forceCandidateFixture.concreteObstructionValue ≠ 0) ∧
-                              forceCandidateFixture.candidateData.coefficientExactness ∧
-                                forceCandidateFixture.candidateData.witnessCoverage ∧
-                                  forceCandidateFixture.candidateData.temporalDescentDetecting ∧
-                                    forceCandidateFixture.candidateData.localToGlobalControlledByDescent ∧
-                                      forceCandidateFixture.candidateOnly := by
+                (∃ n : Nat,
+                  terminalState.terminal
+                    (dissipativePolicy.point (policyGeneratedDissipationPath.state n))
+                    (dissipativePolicy.state (policyGeneratedDissipationPath.state n))) ∧
+                  finiteDissipationPath.ReachesTerminal terminalState ∧
+                  terminalState.terminal p1 nonlawfulTerminal1 ∧
+                    (¬ terminalState.lawful p1 nonlawfulTerminal1) ∧
+                      oneStepPath.PathwiseNonIncrease ∧
+                        IntegrableForce toyForce ∧
+                          forceCandidateFixture.integrationData.globalReplayTransition
+                              (forceCandidateFixture.integrationData.replaySource_eq ▸
+                                toyForce.sourceState) =
+                            (forceCandidateFixture.integrationData.replayTarget_eq ▸
+                              toyForce.targetState) ∧
+                            forceCandidateFixture.concreteObstructionValue ≠ 0 ∧
+                              forceCandidateFixture.candidateData.selectedNonzero
+                                forceCandidateFixture.mismatchClass.obstructionClass ∧
+                                (forceCandidateFixture.candidateData.selectedNonzero
+                                    forceCandidateFixture.mismatchClass.obstructionClass ↔
+                                  forceCandidateFixture.concreteObstructionValue ≠ 0) ∧
+                                forceCandidateFixture.candidateData.coefficientExactness ∧
+                                  forceCandidateFixture.candidateData.witnessCoverage ∧
+                                    forceCandidateFixture.candidateData.temporalDescentDetecting ∧
+                                      forceCandidateFixture.candidateData.localToGlobalControlledByDescent ∧
+                                        forceCandidateFixture.candidateOnly := by
   exact ⟨twoStep_step_selected,
     replay_zero_theorem42_applied,
     replayDescentZeroExample.adjustedCompatibilityWitness_cert,
     replay_zero_has_global_transition,
     replay_selectedConcreteClassNonzero,
     finite_dissipation_no_infinite_nonterminal_path,
+    policy_generated_dissipation_reaches_terminal,
     twoStep_dissipation_reaches_terminal_by_theorem53,
     nonlawful_terminal_is_terminal,
     nonlawful_terminal_not_lawful,
