@@ -52,7 +52,7 @@
 - statement 品質・定義品質・スタイルの正本は
   [lean_quality_standard.md](lean_quality_standard.md)
   (mathlib 型 statement review 基準。material premise 三分類申告、
-  API 接続義務、no-unfold API 規律、target statement 固定手続きを含む)。
+  API 接続義務、no-unfold API 規律、target statement の一次仕様と直接査読を含む)。
   この節の各項目と重なる場合は正本側を参照する。
 - 明示的な相談なしに `axiom`, `admit`, `sorry`, `unsafe` を導入しない。
 - 定義は小さく保ち、同値性や対応関係は定理として育てる。

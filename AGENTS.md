@@ -142,7 +142,7 @@ AAT / Lean 形式化は mathlib 型の statement review 基準を採用する。
 接続しない閉じた wrapper theorem、再利用価値のない弱い theorem は査読を通さない。
 実装前に target statement を固定し、完了判定は theorem 名の存在ではなく固定 statement との
 一致で行う。実装中に仮定・結論・対象を変更した場合は、その時点で未達として停止する。
-この statement review 基準と固定手続きの正本は
+この statement review 基準と一次仕様・直接査読の手続きの正本は
 `docs/aat/lean_quality_standard.md`(Lean 品質基準)である。
 
 数学本文側に明示された制限は、`明示 scope`、`stated scope`、`対象の制限`、
