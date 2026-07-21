@@ -2530,8 +2530,35 @@ def replayTwoPatchZMod2CechCorrection :=
 def replayTwoPatchZMod2CechAdjustedMismatchZero :=
   Examples.EvolutionPart9.twoPatchAdjustedReplayCechMismatch_zero
 
+def replayTwoPatchZMod2NonzeroOverlap :=
+  Examples.EvolutionPart9.twoPatchReplayOverlapMismatch_ne_zero
+
+def replayTwoPatchZMod2CechReadsOverlap :=
+  Examples.EvolutionPart9.twoPatchReplayCechMismatch_eq_overlap
+
+def replayTwoPatchZMod2FullReplayDifferenceReadsOverlap :=
+  Examples.EvolutionPart9.twoPatchReplayRestrictedDifference_eq_overlap
+
+def replayTwoPatchZMod2AdjustedCechReadsOverlap :=
+  Examples.EvolutionPart9.twoPatchAdjustedReplayCechMismatch_eq_overlap
+
+def replayTwoPatchZMod2FullAdjustedReplayDifferenceReadsOverlap :=
+  Examples.EvolutionPart9.twoPatchAdjustedReplayRestrictedDifference_eq_overlap
+
+def replayTwoPatchZMod2CoefficientReflectsMatching :=
+  Examples.EvolutionPart9.twoPatchAdjustedReplay_zero_reflects_matching
+
 def replayTwoPatchZMod2NonzeroCorrectionDescends :=
   Examples.EvolutionPart9.twoPatchReplay_nonzero_correction_descends
+
+def replayTwoPatchZMod2TemporalDescentCriterion :=
+  Examples.EvolutionPart9.twoPatch_temporal_descent_criterion
+
+def replayTwoPatchZMod2TemporalDescentCriterionHolds :=
+  Examples.EvolutionPart9.twoPatch_temporal_descent_criterion_holds
+
+def replayTwoPatchZMod2TemporalDescentGlobalReplay :=
+  Examples.EvolutionPart9.twoPatch_temporal_descent_criterion_global_replay
 
 def replayTwoPatchZMod2Fixture :=
   Examples.EvolutionPart9.actual_twoPatch_zmod2_replay_fixture

@@ -2283,6 +2283,64 @@ def twoPatchZMod2CoefficientSheaf : Site.AATSheaf twoPatchSite where
 /-- Replay functions with `ZMod 2` source and target states on the two-patch site. -/
 abbrev TwoPatchZMod2ReplayFunction := ZMod 2 → ZMod 2
 
+/--
+Translation replay maps on the selected two-patch site.
+
+The coefficient is part of the replay section itself: its evaluation is the
+translation `state ↦ state + coefficient`.  Consequently equality of the
+coefficient is equality of the replay map, rather than a separate sampled
+observation of an arbitrary function.
+-/
+structure TwoPatchZMod2TranslationReplay where
+  /-- The translation parameter that determines the replay map. -/
+  coefficient : ZMod 2
+
+namespace TwoPatchZMod2TranslationReplay
+
+/-- Evaluate a translation replay map at a source state. -/
+def apply (replay : TwoPatchZMod2TranslationReplay) (state : ZMod 2) : ZMod 2 :=
+  state + replay.coefficient
+
+/-- The replay section determines its translation coefficient. -/
+theorem ext {left right : TwoPatchZMod2TranslationReplay}
+    (h : left.coefficient = right.coefficient) : left = right := by
+  cases left
+  cases right
+  cases h
+  rfl
+
+/-- Subtract a degree-zero correction from a translation replay section. -/
+def adjust (replay : TwoPatchZMod2TranslationReplay) (correction : ZMod 2) :
+    TwoPatchZMod2TranslationReplay where
+  coefficient := replay.coefficient - correction
+
+@[simp] theorem coefficient_adjust (replay : TwoPatchZMod2TranslationReplay)
+    (correction : ZMod 2) : (adjust replay correction).coefficient =
+      replay.coefficient - correction :=
+  rfl
+
+end TwoPatchZMod2TranslationReplay
+
+/-- Translation replay sections with identity restriction on the two-patch site. -/
+def twoPatchZMod2TranslationReplayPresheaf : Site.AATPresheaf twoPatchSite where
+  obj _ := TwoPatchZMod2TranslationReplay
+  map _ replay := replay
+  map_id _ := rfl
+  map_comp _ _ := rfl
+
+/-- Translation replay sections satisfy descent on every selected AAT cover. -/
+theorem twoPatchZMod2TranslationReplay_isSheaf :
+    Site.AATSheafCondition twoPatchSite twoPatchZMod2TranslationReplayPresheaf := by
+  apply (Site.AATSheafCondition.iff_presieve_isSheaf twoPatchSite _).2
+  apply twoPatchPresheaf_isSheaf_of_bijective
+  intro _X _Y _f
+  exact Function.bijective_id
+
+/-- The actual replay-function sheaf for coefficient-reflecting translations. -/
+def twoPatchZMod2TranslationReplaySheaf : Site.AATSheaf twoPatchSite where
+  carrier := twoPatchZMod2TranslationReplayPresheaf
+  isSheaf := twoPatchZMod2TranslationReplay_isSheaf
+
 /-- The actual replay-function presheaf on the selected two-patch AAT site. -/
 def twoPatchZMod2ReplayFunctionPresheaf : Site.AATPresheaf twoPatchSite where
   obj _ := TwoPatchZMod2ReplayFunction
