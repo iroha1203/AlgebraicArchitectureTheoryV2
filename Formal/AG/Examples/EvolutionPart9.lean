@@ -1190,6 +1190,7 @@ theorem twoStep_dissipation_reaches_terminal :
 theorem twoStep_dissipation_last_maximal :
     finiteDissipationPath.MaximalAt ⟨2, by decide⟩ := by
   intro hnext
+  rcases hnext with ⟨next, hnext⟩
   cases next <;> cases hnext
 
 /-- R10(d): endpoint executability is vacuous at the selected terminal endpoint. -/
