@@ -22,7 +22,10 @@ abbrev UsesSquareFreeWitnessRegime (E : Type u) :=
 
 /-- VIII.Definition 5.1: square-free repair regime over a measurement profile. -/
 structure SquareFreeRepairRegime (M : MeasurementProfile.{u, v}) where
-  finiteRegime : FiniteMeasurementRegime M
+  /-- Finite selected witness carrier used by the repair computation. -/
+  witnessFintype : Fintype M.WitnessVariables
+  /-- Decidable equality used by finite support computations. -/
+  witnessDecidableEq : DecidableEq M.WitnessVariables
   sourceWitnessRegime : UsesSquareFreeWitnessRegime M.WitnessVariables
   Witness : Type u
   witnessOfProfileWitness : M.WitnessVariables -> Witness

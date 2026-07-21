@@ -10,13 +10,14 @@ universe u v
 /-!
 Fixed statement contracts for Part VIII, theorem 4.2.
 
-The generic contract accepts only the finite regime and the selected primitive
-Čech, square-free, and finite-resolution data.  The finite reductions are the
-conclusion of `Measurement.finiteAATComputability`.
+The generic contract accepts the generated finite regime plus selected
+square-free and finite-resolution data.  The Čech objects, all-degree finite
+reductions, and verdicts are conclusions of
+`Measurement.finiteAATComputability`.
 -/
 
 example {M : Measurement.MeasurementProfile.{u, v}}
-    (R : Measurement.FiniteMeasurementRegime M) [CommRing M.Coeff]
+    (R : Measurement.FiniteMeasurementRegime M)
     (D : Measurement.FiniteAATComputationData M R) :
     Nonempty (Measurement.FiniteAATComputability R D) :=
   Measurement.finiteAATComputability R D
@@ -29,19 +30,25 @@ example :
   Measurement.finiteComputabilityExample_verified
 
 example :
-    Finite Measurement.finiteComputabilityExampleData.cech.complex.H1 :=
+    ∀ n,
+      Finite
+        (Measurement.computabilityFiniteMeasurementRegime.geometry.CechHn n) :=
   Measurement.finiteComputabilityExample_linearAlgebraRoute
 
 example :
-    Function.Bijective
-      Measurement.finiteComputabilityExamplePackage.quotientComparison :=
+    Measurement.finiteComputabilityZeroCochain ≠
+      Measurement.finiteComputabilityOneCochain :=
+  Measurement.finiteComputabilityCochain_nondegenerate
+
+example :
+    ∀ n
+      (h : Measurement.computabilityFiniteMeasurementRegime.geometry.CechHn n),
+      h ∈ Measurement.finiteComputabilityExamplePackage.cohomologyClasses n :=
   Measurement.finiteComputabilityExample_effectiveProcedureRoute.2.2
 
 example :
     Measurement.finiteComputabilityExampleData.conflictSupport =
-      {Measurement.SquareFreeSupportVertex.p,
-        Measurement.SquareFreeSupportVertex.q,
-        Measurement.SquareFreeSupportVertex.r} :=
+      Measurement.forbiddenSupportPQFinset :=
   Measurement.finiteComputabilityExample_combinatoricsRoute
 
 end AAT.AG

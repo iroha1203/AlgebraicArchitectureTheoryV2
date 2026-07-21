@@ -238,7 +238,8 @@ structure FiniteTemporalCoefficientRegime {U : AtomCarrier.{u}} {A : Architectur
     {S : Site.AATSite A} {E : EvolutionProfile.{u, v, w, x, y, z}}
     {T : TemporalSite S E} (C : TemporalCoefficient T) where
   measurementRegime : Measurement.FiniteMeasurementRegime E.measurementProfile
-  effectiveCoefficient : Measurement.EffCoeff E.measurementProfile
+  effectiveCoefficient :
+    Measurement.EffCoeff E.measurementProfile measurementRegime.geometry
   effectiveCoefficient_eq : effectiveCoefficient = measurementRegime.effCoeff
   measuredCoefficientProfile :
     E.measurementProfile.Coeff -> E.selectedCoefficientProfile -> Prop
@@ -268,18 +269,18 @@ theorem effectiveCoefficient_matches_measurement
 /-- IX.§3 / AC6: finiteness is inherited from the selected Part VIII measurement regime. -/
 theorem finite_temporal_site (R : FiniteTemporalCoefficientRegime C) :
     Finite E.measurementProfile.SiteObj := by
-  letI := R.measurementRegime.siteFintype
+  letI := R.measurementRegime.geometry.siteObjFintype
   infer_instance
 
 /-- IX.§3 / AC6: finite-cover evidence is inherited from Part VIII. -/
 theorem finite_temporal_cover (R : FiniteTemporalCoefficientRegime C) :
     Finite E.measurementProfile.Cover := by
-  letI := R.measurementRegime.coverFintype
+  letI := R.measurementRegime.geometry.coverFintype
   infer_instance
 
 /-- IX.§3 / AC6: the selected effective-coefficient procedures are inherited. -/
 def effective_coefficient_holds (R : FiniteTemporalCoefficientRegime C) :
-    Measurement.EffCoeff E.measurementProfile :=
+    Measurement.EffCoeff E.measurementProfile R.measurementRegime.geometry :=
   R.measurementRegime.effCoeff
 
 /-- IX.§3 / AC6: the selected temporal coefficient profile is measured by Part VIII data. -/

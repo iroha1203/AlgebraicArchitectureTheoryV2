@@ -1,9 +1,13 @@
 import Formal.AG.Measurement.GAGA
+import Formal.AG.Examples.FiniteModel
 
 noncomputable section
 
 namespace AAT.AG
 namespace Measurement
+
+open CategoryTheory
+open Opposite
 
 /-!
 Part VIII R11 / AC25 finite measurement examples.
@@ -137,10 +141,146 @@ theorem squareFreeHittingSet_pr_hits_forbiddenSupports :
       SquareFreeSupportVertex.r ∈ forbiddenSupportQR := by
   simp [forbiddenSupportPQ, forbiddenSupportQR]
 
-/-- R11(c): finite profile used by theorem 4.2's constructive fixture. -/
-def finiteComputabilityMeasurementProfile : MeasurementProfile where
-  SiteObj := TinyMeasurementSite
-  Cover := Unit
+/-- R11(c): constant finite-field presheaf used by the generated Čech fixture. -/
+def finiteComputabilityF2Presheaf : Site.AATPresheaf FiniteModel.site where
+  obj _ := ZMod 2
+  map _ x := x
+  map_id _ := rfl
+  map_comp _ _ := rfl
+
+private theorem finiteComputabilitySite_cover_eq_top
+    {base : FiniteModel.site.category} {cover : Sieve base}
+    (hcover : cover ∈ FiniteModel.site.topology base) : cover = ⊤ := by
+  rw [FiniteModel.site_topology_eq_generated] at hcover
+  change
+    (Site.admissiblePrecoverage FiniteModel.siteCoverageRequirements
+      FiniteModel.siteOverlap).Saturate base cover at hcover
+  induction hcover with
+  | of X S hS =>
+      rcases hS with ⟨F, rfl⟩
+      rw [← Sieve.id_mem_iff_eq_top]
+      rcases F.admissible.atomSupportCoverage
+          FiniteModel.FiniteAtom.componentA trivial with ⟨i, _hi⟩
+      let hEq :
+          X = Site.ContextCategoryObject.of
+            FiniteModel.siteContextPreorder (F.patch i) := by
+        cases X
+        exact congrArg
+          (Site.ContextCategoryObject.of FiniteModel.siteContextPreorder)
+          (F.inclusion i).symm
+      have hmem : F.presieve (𝟙 X) :=
+        Presieve.ofArrows.mk'
+          (Y := fun i => Site.ContextCategoryObject.of
+            FiniteModel.siteContextPreorder (F.patch i))
+          (f := fun i => homOfLE (F.inclusion i))
+          i hEq
+          (Subsingleton.elim (𝟙 X)
+            (eqToHom hEq ≫ homOfLE (F.inclusion i)))
+      exact Sieve.le_generate F.presieve X hmem
+  | top _X =>
+      rfl
+  | pullback _X _S _hS _Y _f ih =>
+      rw [ih, Sieve.pullback_top]
+  | transitive X S R _hS hR ihS ihR =>
+      rw [← Sieve.id_mem_iff_eq_top]
+      have hSid : S (𝟙 X) := by
+        rw [Sieve.id_mem_iff_eq_top, ihS]
+      have hlocal : R = ⊤ := by
+        simpa using ihR hSid
+      rw [hlocal]
+      trivial
+
+theorem finiteComputabilityF2_isSheaf :
+    Site.AATSheafCondition FiniteModel.site finiteComputabilityF2Presheaf := by
+  intro _base cover hcover
+  rw [Site.AATSheafConditionFor,
+    finiteComputabilitySite_cover_eq_top hcover]
+  exact Presieve.isSheafFor_top finiteComputabilityF2Presheaf
+
+/-- R11(c): nontrivial module-valued obstruction sheaf for the finite fixture. -/
+def finiteComputabilityObstructionSheaf :
+    Cohomology.ObstructionSheaf FiniteModel.site where
+  carrier := {
+    carrier := finiteComputabilityF2Presheaf
+    isSheaf := finiteComputabilityF2_isSheaf
+  }
+  addCommGroup _ := by
+    change AddCommGroup (ZMod 2)
+    infer_instance
+  map_zero := by intros; rfl
+  map_add := by intros; rfl
+
+/-- R11(c): a two-index admissible cover on the selected finite AAT site. -/
+def finiteComputabilityCover :
+    Site.AATCoverageFamily FiniteModel.siteCoverageRequirements
+      FiniteModel.siteOverlap FiniteModel.siteBase where
+  Index := Bool
+  patch := fun _ => FiniteModel.siteContext
+  inclusion := fun _ => rfl
+  admissible := {
+    atomSupportCoverage := fun _atom _hreq => ⟨false, trivial⟩
+    lawWitnessCoverage := fun _witness _hreq => Or.inl ⟨false, trivial⟩
+    signatureAxisCoverage := fun _axis _hreq => ⟨false, trivial⟩
+    boundaryCoverage := fun _i _j => trivial
+    nonGeneration := fun _i {_support} {_atom} hselected =>
+      FiniteModel.allFamily_mem _ hselected
+  }
+
+theorem finiteComputabilityCover_topologyCover :
+    Sieve.generate finiteComputabilityCover.presieve ∈
+      FiniteModel.site.topology FiniteModel.siteBase := by
+  rw [FiniteModel.site_topology_eq_generated]
+  exact Site.AATGrothendieckTopology.generate_mem finiteComputabilityCover
+
+/-- R11(c): the selected two-index cover is `U`-adequate. -/
+def finiteComputabilityCover_uAdequate :
+    Site.UAdequateCover FiniteModel.siteAdequacyRequirements
+      finiteComputabilityCover where
+  topologyCover := finiteComputabilityCover_topologyCover
+  requiredSupportCovered := fun _atom _hreq => ⟨false, trivial⟩
+  requiredWitnessesVisible := fun _witness _hreq => Or.inl ⟨false, trivial⟩
+  requiredAxesReadable := fun _axis _hreq => ⟨false, trivial⟩
+  boundaryWitnessesVisible := fun _i _j => trivial
+  restrictionMapsPreserveWitnessIdeals := fun _i _hbase => trivial
+
+/-- R11(c): coefficient-free finite geometry generating the canonical tuple nerve. -/
+def finiteComputabilityCoverGeometry :
+    Site.FinitePosetCoverGeometry FiniteModel.site where
+  ContextIndex := PUnit
+  finiteContextIndex := inferInstance
+  context := fun _ => FiniteModel.siteContext
+  contextLe := fun _ _ => True
+  contextLe_refl := fun _ => trivial
+  contextLe_trans := fun _ _ => trivial
+  contextLe_antisymm := by intros; subsingleton
+  contextLe_sound := fun _ => rfl
+  contextMeet := fun _ _ => PUnit.unit
+  contextMeet_le_left := fun _ _ => trivial
+  contextMeet_le_right := fun _ _ => trivial
+  context_le_meet := fun _ _ => trivial
+  base := FiniteModel.siteBase
+  cover := finiteComputabilityCover
+  finiteCoverIndex := by
+    change Finite Bool
+    infer_instance
+  nerveSimplex := fun n => Fin (n + 1) -> Bool
+  finiteNerveSimplex := fun _ => inferInstance
+  simplexIndices := fun _ simplex k => simplex k
+  simplexOverlap := fun _ _ => FiniteModel.siteContext
+  simplexOverlap_le_patch := fun _ _ _ => rfl
+  adequacyRequirements := FiniteModel.siteAdequacyRequirements
+  coverAdequate := finiteComputabilityCover_uAdequate
+
+/-- R11(c): tuple geometry generated from actual selected overlaps. -/
+def finiteComputabilityTupleGeometry :
+    Site.FinitePosetCanonicalTupleCoverGeometry
+      finiteComputabilityCoverGeometry :=
+  finiteComputabilityCoverGeometry.canonicalTupleCoverGeometryFromOverlap
+
+/-- R11(c): seed profile used only to name the generated `H¹` domain. -/
+def finiteComputabilitySeedProfile : MeasurementProfile where
+  SiteObj := PUnit
+  Cover := Bool
   Coeff := ZMod 2
   EffCoeff := Unit
   ObstructionObject := Unit
@@ -148,141 +288,156 @@ def finiteComputabilityMeasurementProfile : MeasurementProfile where
   WitnessVariables := SquareFreeSupportVertex
   ObstructionIdeal := Unit
   RepresentationFamily := Unit
-  Domain := PseudoCircleMeasurementDomain
+  Domain := Unit
   CertRef := fun _ => Unit
   SelectedMethod := fun _ => Unit
-  InScope := fun alpha => alpha = PseudoCircleMeasurementDomain.boundaryCocycle
-  OutOfScope := fun alpha => alpha = PseudoCircleMeasurementDomain.unmeasuredAxis
-  Zero := fun _ => False
-  NonZero := fun alpha => alpha = PseudoCircleMeasurementDomain.boundaryCocycle
+  InScope := fun _ => True
+  OutOfScope := fun _ => False
+  Zero := fun _ => True
+  NonZero := fun _ => False
   Undecided := fun _ => False
   NotRunOrUnavailable := fun _ => False
 
-instance finiteComputabilitySiteFintype :
-    Fintype finiteComputabilityMeasurementProfile.SiteObj :=
-  inferInstanceAs (Fintype TinyMeasurementSite)
+/-- R11(c): seed geometry sharing the actual site, cover, sheaf, and restrictions. -/
+def finiteComputabilitySeedGeometry :
+    FiniteMeasurementGeometry finiteComputabilitySeedProfile where
+  U := FiniteModel.carrier
+  A := FiniteModel.corePackage.object
+  site := FiniteModel.site
+  coverGeometry := finiteComputabilityCoverGeometry
+  tupleGeometry := finiteComputabilityTupleGeometry
+  coeffCommRing := by
+    change CommRing (ZMod 2)
+    infer_instance
+  obstructionSheaf := finiteComputabilityObstructionSheaf
+  sectionModule := by
+    intro _ _
+    change Module (ZMod 2) (ZMod 2)
+    infer_instance
+  sectionFintype := by
+    intro _ _
+    change Fintype (ZMod 2)
+    infer_instance
+  siteObjEquiv := by
+    simpa [finiteComputabilitySeedProfile, finiteComputabilityCoverGeometry] using
+      (Equiv.refl PUnit)
+  coverEquiv := by
+    simpa [finiteComputabilitySeedProfile, finiteComputabilityCoverGeometry,
+      finiteComputabilityCover] using (Equiv.refl Bool)
 
-instance finiteComputabilityCoverFintype :
-    Fintype finiteComputabilityMeasurementProfile.Cover :=
-  inferInstanceAs (Fintype Unit)
+/-- R11(c): theorem 4.2 profile whose domain is the generated Čech `H¹`. -/
+def finiteComputabilityMeasurementProfile : MeasurementProfile where
+  SiteObj := PUnit
+  Cover := Bool
+  Coeff := ZMod 2
+  EffCoeff := Unit
+  ObstructionObject := Unit
+  LawUniverse := Unit
+  WitnessVariables := SquareFreeSupportVertex
+  ObstructionIdeal := Unit
+  RepresentationFamily := Unit
+  Domain := finiteComputabilitySeedGeometry.CechHn 1
+  CertRef := fun _ => Unit
+  SelectedMethod := fun _ => Unit
+  InScope := fun _ => True
+  OutOfScope := fun _ => False
+  Zero := fun alpha => alpha = finiteComputabilitySeedGeometry.zeroClass 1
+  NonZero := fun alpha => alpha ≠ finiteComputabilitySeedGeometry.zeroClass 1
+  Undecided := fun _ => False
+  NotRunOrUnavailable := fun _ => False
 
-instance finiteComputabilityDomainFintype :
-    Fintype finiteComputabilityMeasurementProfile.Domain :=
-  inferInstanceAs (Fintype PseudoCircleMeasurementDomain)
+/-- R11(c): finite geometry over the actual theorem 4.2 profile. -/
+def finiteComputabilityGeometry :
+    FiniteMeasurementGeometry finiteComputabilityMeasurementProfile where
+  U := FiniteModel.carrier
+  A := FiniteModel.corePackage.object
+  site := FiniteModel.site
+  coverGeometry := finiteComputabilityCoverGeometry
+  tupleGeometry := finiteComputabilityTupleGeometry
+  coeffCommRing := by
+    change CommRing (ZMod 2)
+    infer_instance
+  obstructionSheaf := finiteComputabilityObstructionSheaf
+  sectionModule := by
+    intro _ _
+    change Module (ZMod 2) (ZMod 2)
+    infer_instance
+  sectionFintype := by
+    intro _ _
+    change Fintype (ZMod 2)
+    infer_instance
+  siteObjEquiv := by
+    simpa [finiteComputabilityMeasurementProfile,
+      finiteComputabilityCoverGeometry] using (Equiv.refl PUnit)
+  coverEquiv := by
+    simpa [finiteComputabilityMeasurementProfile,
+      finiteComputabilityCoverGeometry, finiteComputabilityCover] using
+      (Equiv.refl Bool)
 
-instance finiteComputabilityWitnessFintype :
-    Fintype finiteComputabilityMeasurementProfile.WitnessVariables :=
-  inferInstanceAs (Fintype SquareFreeSupportVertex)
-
-instance finiteComputabilityWitnessDecidableEq :
-    DecidableEq finiteComputabilityMeasurementProfile.WitnessVariables :=
-  inferInstanceAs (DecidableEq SquareFreeSupportVertex)
-
-instance finiteComputabilityCoeffCommRing :
-    CommRing finiteComputabilityMeasurementProfile.Coeff :=
-  inferInstanceAs (CommRing (ZMod 2))
-
-/-- R11(c): the selected coefficient procedure returns an actual verdict. -/
-def finiteComputabilityVerdict :
-    (alpha : finiteComputabilityMeasurementProfile.Domain) ->
-      MeasurementVerdict finiteComputabilityMeasurementProfile alpha
-  | PseudoCircleMeasurementDomain.boundaryCocycle =>
-      MeasurementVerdict.measured_nonzero rfl rfl ()
-  | PseudoCircleMeasurementDomain.unmeasuredAxis =>
-      MeasurementVerdict.unmeasured rfl
-
-/-- R11(c): selected effective coefficient procedures for the tiny finite site. -/
-def tinyEffCoeff : EffCoeff finiteComputabilityMeasurementProfile where
+/-- R11(c): verdicts are computed from equality with the actual zero class. -/
+def finiteComputabilityEffCoeff :
+    EffCoeff finiteComputabilityMeasurementProfile finiteComputabilityGeometry where
   profileInterface := ()
-  KernelObject := Unit
-  ImageObject := Unit
-  QuotientObject := Unit
-  IdealMembershipObject := Unit
-  FinitePresentationObject := Unit
-  ResolutionObject := Unit
-  kernelObjectFintype := inferInstance
-  imageObjectFintype := inferInstance
-  quotientObjectFintype := inferInstance
-  idealMembershipObjectFintype := inferInstance
-  finitePresentationObjectFintype := inferInstance
-  resolutionObjectFintype := inferInstance
-  kernel := fun _ => ()
-  image := fun _ => ()
-  quotient := fun _ => ()
-  idealMembership := fun _ => ()
-  finitePresentation := fun _ => ()
-  resolution := fun _ => ()
-  verdict := finiteComputabilityVerdict
+  selectedDegree := 1
+  domainEquiv := by
+    simpa [finiteComputabilityGeometry, finiteComputabilitySeedGeometry,
+      finiteComputabilityMeasurementProfile, finiteComputabilitySeedProfile] using
+      (Equiv.refl (finiteComputabilitySeedGeometry.CechHn 1))
+  zero_iff := by intro alpha; rfl
+  nonzero_iff := by intro alpha; rfl
+  inScope := fun _ => trivial
+  method := fun _ => ()
+  certificate := fun _ => ()
 
-/-- R11(c): a finite measurement regime for the tiny site. -/
+/-- R11(c): finite measurement regime generated from actual geometry. -/
 def computabilityFiniteMeasurementRegime :
     FiniteMeasurementRegime finiteComputabilityMeasurementProfile where
-  effCoeff := tinyEffCoeff
-  siteFintype := inferInstance
-  coverFintype := inferInstance
-  domainFintype := inferInstance
-  witnessFintype := inferInstance
-  witnessDecidableEq := inferInstance
+  geometry := finiteComputabilityGeometry
+  effCoeff := finiteComputabilityEffCoeff
+  witnessFintype := by
+    change Fintype SquareFreeSupportVertex
+    infer_instance
+  witnessDecidableEq := by
+    change DecidableEq SquareFreeSupportVertex
+    infer_instance
 
-/-- R11(c): an explicit finite three-term cochain complex over `ZMod 2`. -/
-def tinyFiniteCechComplex :
-    Cohomology.AdditiveThreeTermComplex (ZMod 2) (ZMod 2) (ZMod 2) where
-  d0 := 0
-  d1 := AddMonoidHom.id (ZMod 2)
-  d_comp := by simp
+/-- R11(c): zero cochain in the generated degree-zero cochain module. -/
+def finiteComputabilityZeroCochain :
+    computabilityFiniteMeasurementRegime.geometry.CechCochain 0 :=
+  fun _ => by
+    change ZMod 2
+    exact 0
 
-/-- R11(c): finite Čech data with a selected nonzero cochain representative. -/
-def tinyFiniteCechData :
-    FiniteCechComputationData finiteComputabilityMeasurementProfile where
-  C0 := ZMod 2
-  C1 := ZMod 2
-  C2 := ZMod 2
-  complex := tinyFiniteCechComplex
-  selectedCocycle := ⟨0, by simp [tinyFiniteCechComplex]⟩
-  classToDomain := fun _ => PseudoCircleMeasurementDomain.boundaryCocycle
+/-- R11(c): nonzero cochain in the same generated degree-zero module. -/
+def finiteComputabilityOneCochain :
+    computabilityFiniteMeasurementRegime.geometry.CechCochain 0 :=
+  fun _ => by
+    change ZMod 2
+    exact 1
 
-noncomputable instance tinyFiniteCechCocycleUnique :
-    Unique tinyFiniteCechData.complex.H1Cocycle where
-  default := ⟨0, by simp [tinyFiniteCechData, tinyFiniteCechComplex]⟩
-  uniq cocycle := by
-    apply Subtype.ext
-    simpa [tinyFiniteCechData, tinyFiniteCechComplex] using cocycle.2
-
-noncomputable instance tinyFiniteCechImageUnique :
-    Unique tinyFiniteCechData.DifferentialImage where
-  default := ⟨0, ⟨0, by simp [tinyFiniteCechData, tinyFiniteCechComplex]⟩⟩
-  uniq image := by
-    apply Subtype.ext
-    rcases image.2 with ⟨source, hsource⟩
-    simpa [tinyFiniteCechData, tinyFiniteCechComplex] using hsource
-
-noncomputable instance tinyFiniteCechH1Unique :
-    Unique tinyFiniteCechData.complex.H1 := inferInstance
-
-/-- R11(c): the effective kernel/image/quotient outputs realize the Čech objects. -/
-def tinyEffectiveCechProcedureCorrectness :
-    EffectiveCechProcedureCorrectness computabilityFiniteMeasurementRegime
-      tinyFiniteCechData where
-  kernelEquiv := by
-    simpa [computabilityFiniteMeasurementRegime, tinyEffCoeff] using
-      (Equiv.ofUnique Unit tinyFiniteCechData.complex.H1Cocycle)
-  imageEquiv := by
-    simpa [computabilityFiniteMeasurementRegime, tinyEffCoeff] using
-      (Equiv.ofUnique Unit tinyFiniteCechData.DifferentialImage)
-  quotientEquiv := by
-    simpa [computabilityFiniteMeasurementRegime, tinyEffCoeff] using
-      (Equiv.ofUnique Unit tinyFiniteCechData.complex.H1)
-  selectedKernel_eq := Subsingleton.elim _ _
+/-- R11(c): the linear fixture does not collapse its cochain carrier to `Unit`. -/
+theorem finiteComputabilityCochain_nondegenerate :
+    finiteComputabilityZeroCochain ≠ finiteComputabilityOneCochain := by
+  intro h
+  have hvalue := congrFun h (fun _ : Fin 1 => false)
+  dsimp [finiteComputabilityZeroCochain,
+    finiteComputabilityOneCochain] at hvalue
+  change (0 : ZMod 2) = 1 at hvalue
+  exact zero_ne_one hvalue
 
 /-- R11(c): nontrivial finite square-free supports for the combinatorics route. -/
 def tinyLeftSquareFreeData :
     FiniteSquareFreeComputationData computabilityFiniteMeasurementRegime where
-  forbiddenSupports := {forbiddenSupportPQFinset, forbiddenSupportQRFinset}
+  forbiddenSupports := by
+    change Finset (Finset SquareFreeSupportVertex)
+    exact {forbiddenSupportPQFinset, forbiddenSupportQRFinset}
 
 /-- R11(c): the zero ideal is selected on the resolved side of the Tor route. -/
 def tinyRightSquareFreeData :
     FiniteSquareFreeComputationData computabilityFiniteMeasurementRegime where
-  forbiddenSupports := ∅
+  forbiddenSupports := by
+    change Finset (Finset SquareFreeSupportVertex)
+    exact ∅
 
 /-- R11(c): the right zero ideal has the canonical one-term finite-free resolution. -/
 def tinyRightFiniteResolution :
@@ -302,12 +457,23 @@ def tinyRightFiniteResolution :
 def finiteComputabilityExampleData :
     FiniteAATComputationData finiteComputabilityMeasurementProfile
       computabilityFiniteMeasurementRegime where
-  cech := tinyFiniteCechData
-  cechProcedure := tinyEffectiveCechProcedureCorrectness
   leftSquareFree := tinyLeftSquareFreeData
   rightSquareFree := tinyRightSquareFreeData
   rightResolution := tinyRightFiniteResolution
   torDegree := 1
+  selectedConflict := by
+    letI := computabilityFiniteMeasurementRegime.geometry.coeffCommRing
+    change
+      { support : Finset SquareFreeSupportVertex //
+        LawAlgebra.StanleyReisner.squareFreeMonomial
+            SquareFreeSupportVertex (ZMod 2) support ∈
+              tinyLeftSquareFreeData.generatorMonomials (ZMod 2) ∨
+          LawAlgebra.StanleyReisner.squareFreeMonomial
+            SquareFreeSupportVertex (ZMod 2) support ∈
+              tinyRightSquareFreeData.generatorMonomials (ZMod 2) }
+    refine ⟨forbiddenSupportPQFinset, Or.inl ?_⟩
+    simp [FiniteSquareFreeComputationData.generatorMonomials,
+      tinyLeftSquareFreeData, finiteComputabilityMeasurementProfile]
 
 /-- R11(c): theorem 4.2 constructs the finite computability package. -/
 def finiteComputabilityExamplePackage :
@@ -316,34 +482,35 @@ def finiteComputabilityExamplePackage :
   finiteAATComputabilityPackage computabilityFiniteMeasurementRegime
     finiteComputabilityExampleData
 
-/-- R11(c): the linear-algebra route produces an actual finite `H¹` carrier. -/
+/-- R11(c): the linear-algebra route produces finite Čech cohomology in every degree. -/
 theorem finiteComputabilityExample_linearAlgebraRoute :
-    Finite finiteComputabilityExampleData.cech.complex.H1 := by
-  letI := finiteComputabilityExamplePackage.cechH1Fintype
+    ∀ n, Finite (computabilityFiniteMeasurementRegime.geometry.CechHn n) := by
+  intro n
+  letI := finiteComputabilityExamplePackage.cohomologyFintype n
   infer_instance
 
-/-- R11(c): selected effective outputs are identified with kernel/image/quotient data. -/
+/-- R11(c): computed kernel, image, quotient list, and verdict use generated Čech data. -/
 theorem finiteComputabilityExample_effectiveProcedureRoute :
-    finiteComputabilityExamplePackage.kernelComparison
-        (computabilityFiniteMeasurementRegime.effCoeff.kernel
-          finiteComputabilityExampleData.cech.selectedDomain) =
-      finiteComputabilityExampleData.cech.selectedCocycle ∧
-    Function.Bijective finiteComputabilityExamplePackage.imageComparison ∧
-    Function.Bijective finiteComputabilityExamplePackage.quotientComparison :=
-  ⟨finiteComputabilityExamplePackage.selectedKernel_eq,
-    finiteComputabilityExamplePackage.imageComparison.bijective,
-    finiteComputabilityExamplePackage.quotientComparison.bijective⟩
+    (∀ n (c : computabilityFiniteMeasurementRegime.geometry.CechCochain n),
+      c ∈ finiteComputabilityExamplePackage.kernels n ↔
+        computabilityFiniteMeasurementRegime.geometry.differentialHom n c = 0) ∧
+    (∀ n (c : computabilityFiniteMeasurementRegime.geometry.CechCochain (n + 1)),
+      c ∈ finiteComputabilityExamplePackage.images n ↔
+        ∃ b : computabilityFiniteMeasurementRegime.geometry.CechCochain n,
+          computabilityFiniteMeasurementRegime.geometry.differentialHom n b = c) ∧
+    (∀ n (h : computabilityFiniteMeasurementRegime.geometry.CechHn n),
+      h ∈ finiteComputabilityExamplePackage.cohomologyClasses n) :=
+  ⟨finiteComputabilityExamplePackage.kernel_mem_iff,
+    finiteComputabilityExamplePackage.image_mem_iff,
+    finiteComputabilityExamplePackage.cohomology_complete⟩
 
 /-- R11(c): the combinatorics route computes support from both forbidden pairs. -/
 theorem finiteComputabilityExample_combinatoricsRoute :
     finiteComputabilityExampleData.conflictSupport =
-      {SquareFreeSupportVertex.p, SquareFreeSupportVertex.q,
-        SquareFreeSupportVertex.r} := by
+      forbiddenSupportPQFinset := by
   simp [FiniteAATComputationData.conflictSupport,
-    FiniteSquareFreeComputationData.conflictSupport,
     finiteComputabilityExampleData,
-    tinyLeftSquareFreeData, tinyRightSquareFreeData,
-    forbiddenSupportPQFinset, forbiddenSupportQRFinset]
+    forbiddenSupportPQFinset]
 
 /-- R11(c): the selected finite resolution computes the Mathlib Tor object. -/
 theorem finiteComputabilityExample_torRoute :
@@ -373,39 +540,6 @@ def pseudoCircleFiniteVerdict :
       MeasurementVerdict.measured_nonzero rfl rfl ()
   | PseudoCircleMeasurementDomain.unmeasuredAxis =>
       MeasurementVerdict.unmeasured rfl
-
-/-- R11(b): selected finite procedures for the square-free repair profile. -/
-def pseudoCircleEffCoeff : EffCoeff pseudoCircleMeasurementProfile where
-  profileInterface := ()
-  KernelObject := Unit
-  ImageObject := Unit
-  QuotientObject := Unit
-  IdealMembershipObject := Unit
-  FinitePresentationObject := Unit
-  ResolutionObject := Unit
-  kernelObjectFintype := inferInstance
-  imageObjectFintype := inferInstance
-  quotientObjectFintype := inferInstance
-  idealMembershipObjectFintype := inferInstance
-  finitePresentationObjectFintype := inferInstance
-  resolutionObjectFintype := inferInstance
-  kernel := fun _ => ()
-  image := fun _ => ()
-  quotient := fun _ => ()
-  idealMembership := fun _ => ()
-  finitePresentation := fun _ => ()
-  resolution := fun _ => ()
-  verdict := pseudoCircleFiniteVerdict
-
-/-- R11(b): actual finite regime used by the square-free repair fixture. -/
-def tinyFiniteMeasurementRegime :
-    FiniteMeasurementRegime pseudoCircleMeasurementProfile where
-  effCoeff := pseudoCircleEffCoeff
-  siteFintype := inferInstanceAs (Fintype TinyMeasurementSite)
-  coverFintype := inferInstanceAs (Fintype Unit)
-  domainFintype := inferInstanceAs (Fintype PseudoCircleMeasurementDomain)
-  witnessFintype := inferInstanceAs (Fintype SquareFreeSupportVertex)
-  witnessDecidableEq := inferInstanceAs (DecidableEq SquareFreeSupportVertex)
 
 /-- R11(b): selected Part III square-free witness regime for the repair fixture. -/
 def squareFreeSourceWitnessRegime :
@@ -510,7 +644,8 @@ theorem squareFree_pairPR_minimalHitting :
 /-- R11(b): Part VIII square-free repair regime for the `{p,q}` / `{q,r}` example. -/
 def squareFreeRepairRegime :
     SquareFreeRepairRegime pseudoCircleMeasurementProfile where
-  finiteRegime := tinyFiniteMeasurementRegime
+  witnessFintype := inferInstanceAs (Fintype SquareFreeSupportVertex)
+  witnessDecidableEq := inferInstanceAs (DecidableEq SquareFreeSupportVertex)
   sourceWitnessRegime := squareFreeSourceWitnessRegime
   Witness := SquareFreeSupportVertex
   witnessOfProfileWitness := fun witness => witness

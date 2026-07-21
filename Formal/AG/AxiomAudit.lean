@@ -54,6 +54,9 @@ def finiteAATComputabilityConstructive :=
 def finiteAATComputabilityLinearFixture :=
   @Measurement.finiteComputabilityExample_linearAlgebraRoute
 
+def finiteAATComputabilityNondegenerateFixture :=
+  @Measurement.finiteComputabilityCochain_nondegenerate
+
 def finiteAATComputabilityEffectiveProcedureFixture :=
   @Measurement.finiteComputabilityExample_effectiveProcedureRoute
 
