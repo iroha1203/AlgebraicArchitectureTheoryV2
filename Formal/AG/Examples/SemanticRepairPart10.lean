@@ -1353,6 +1353,16 @@ theorem circleNerve_vertex_carrier : circleSimplex 0 = Fin 2 := rfl
 /-- X.例9.2: the edge carrier is the selected two-element type. -/
 theorem circleNerve_edge_carrier : circleSimplex 1 = Fin 2 := rfl
 
+/-- X.例9.2: the vertex carrier inherits its finite enumeration from `Fin 2`. -/
+instance circleNerve_vertex_fintype : Fintype (circleSimplex 0) := by
+  change Fintype (Fin 2)
+  infer_instance
+
+/-- X.例9.2: the edge carrier inherits its finite enumeration from `Fin 2`. -/
+instance circleNerve_edge_fintype : Fintype (circleSimplex 1) := by
+  change Fintype (Fin 2)
+  infer_instance
+
 /-- X.例9.2: the selected simplex carriers have the required two-edge shape. -/
 theorem circleNerve_has_two_vertices_two_opposite_edges :
     Fintype.card (circleSimplex 0) = 2 ∧ Fintype.card (circleSimplex 1) = 2 ∧
