@@ -468,11 +468,11 @@ export function createAtlasRenderer(host) {
     else if (data.kind === "shared-support") onSelection?.("shared-support", data.atomId, data.contextIds, additive);
   };
   let pointerStart = null;
-  const handlePointerDown = (event) => { pointerStart = { x: event.clientX, y: event.clientY, button: event.button, pointerId: event.pointerId }; };
+  const handlePointerDown = (event) => { pointerStart = { x: event.clientX, y: event.clientY, button: event.button, pointerId: event.pointerId, maxDistance: 0 }; };
   const handlePointerUp = (event) => {
     if (!pointerStart || pointerStart.pointerId !== event.pointerId) return;
     const distance = Math.hypot(event.clientX - pointerStart.x, event.clientY - pointerStart.y);
-    const select = pointerStart.button === 0 && event.button === 0 && distance <= 5;
+    const select = pointerStart.button === 0 && event.button === 0 && pointerStart.maxDistance <= 5 && distance <= 5;
     pointerStart = null;
     if (select) selectHit(hitAt(event), event.shiftKey);
   };
@@ -494,6 +494,10 @@ export function createAtlasRenderer(host) {
     else if (data.kind === "subject") onSceneHover?.(`Subject group · ${data.subject} · ${data.contextId}`);
     else if (data.kind === "atom") onSceneHover?.(`Atom · ${data.atomId} · ${data.contextId}`);
   };
+  const handlePointerMove = (event) => {
+    if (pointerStart?.pointerId === event.pointerId) pointerStart.maxDistance = Math.max(pointerStart.maxDistance, Math.hypot(event.clientX - pointerStart.x, event.clientY - pointerStart.y));
+    handleHover(event);
+  };
   const handlePointerLeave = () => onSceneHover?.(null);
   const handleKeyboard = (event) => {
     const command = event.key === "ArrowLeft" ? (event.shiftKey ? "pan-left" : "rotate-left")
@@ -512,7 +516,7 @@ export function createAtlasRenderer(host) {
   renderer.domElement.addEventListener("pointercancel", handlePointerCancel);
   renderer.domElement.addEventListener("dblclick", handleDoubleClick);
   renderer.domElement.addEventListener("contextmenu", handleContextMenu);
-  renderer.domElement.addEventListener("pointermove", handleHover);
+  renderer.domElement.addEventListener("pointermove", handlePointerMove);
   renderer.domElement.addEventListener("pointerleave", handlePointerLeave);
   renderer.domElement.addEventListener("keydown", handleKeyboard);
 
@@ -538,7 +542,7 @@ export function createAtlasRenderer(host) {
       renderer.domElement.removeEventListener("pointercancel", handlePointerCancel);
       renderer.domElement.removeEventListener("dblclick", handleDoubleClick);
       renderer.domElement.removeEventListener("contextmenu", handleContextMenu);
-      renderer.domElement.removeEventListener("pointermove", handleHover);
+      renderer.domElement.removeEventListener("pointermove", handlePointerMove);
       renderer.domElement.removeEventListener("pointerleave", handlePointerLeave);
       renderer.domElement.removeEventListener("keydown", handleKeyboard);
       disposeTree(architectureSurface);

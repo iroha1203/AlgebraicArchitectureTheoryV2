@@ -301,13 +301,16 @@ async function main() {
     };
     const activeOutline = async () => (await page.send("Runtime.evaluate", { returnByValue: true, expression: `(() => { const active = document.activeElement; return { surface: active?.dataset?.surface || null, level: active?.dataset?.outlineLevel || null, contextId: active?.dataset?.contextId || null, subject: active?.dataset?.subject || null, atomId: active?.dataset?.atomId || null, sourceId: active?.dataset?.sourceId || null }; })()` })).result.value;
 
-    const atlasSurfacePoint = await page.send("Runtime.evaluate", { returnByValue: true, expression: `(() => { const rect = document.querySelector('button[data-surface="atlas"]').getBoundingClientRect(); return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }; })()` });
-    await page.send("Input.dispatchMouseEvent", { type: "mousePressed", x: atlasSurfacePoint.result.value.x, y: atlasSurfacePoint.result.value.y, button: "left", clickCount: 1 });
-    await page.send("Input.dispatchMouseEvent", { type: "mouseReleased", x: atlasSurfacePoint.result.value.x, y: atlasSurfacePoint.result.value.y, button: "left", clickCount: 1 });
-    const atlasFocus = await activeOutline();
-    if (atlasFocus.surface !== "atlas") throw new Error(`Could not establish keyboard task focus: ${JSON.stringify(atlasFocus)}`);
-    await pressKey("Tab", "Tab", { keyCode: 9 });
-    const outlineSwitchFocus = await activeOutline();
+    await page.send("Page.navigate", { url: `http://127.0.0.1:${port}/index.html` });
+    await waitFor(page, "window.__archviewState?.architecture?.status === 'loaded'");
+    let outlineSwitchFocus = null;
+    let keyboardEntryTabs = 0;
+    for (; keyboardEntryTabs < 80; keyboardEntryTabs += 1) {
+      await pressKey("Tab", "Tab", { keyCode: 9 });
+      const active = await activeOutline();
+      if (active.surface === "outline") { outlineSwitchFocus = active; keyboardEntryTabs += 1; break; }
+    }
+    if (!outlineSwitchFocus) throw new Error(`Tab-only navigation did not reach the Outline switch within ${keyboardEntryTabs} steps.`);
     await pressKey("Enter", "Enter", { keyCode: 13, text: "\r" });
     await pressKey("Tab", "Tab", { keyCode: 9 });
     await pressKey("Tab", "Tab", { keyCode: 9 });
@@ -353,7 +356,7 @@ async function main() {
           atlasHidden: document.querySelector('#atlas-canvas-host').hidden,
           outlineVisible: !document.querySelector('#atlas-outline').hidden,
           levels: [...new Set([...document.querySelectorAll('#outline-table [data-outline-level]')].map((row) => row.dataset.outlineLevel))],
-          keyboardTrail: ${JSON.stringify({ outlineSwitchFocus, coverFocus, contextFocus, subjectFocus, atomFocus, sourceFocus })},
+          keyboardTrail: ${JSON.stringify({ keyboardEntryTabs, outlineSwitchFocus, coverFocus, contextFocus, subjectFocus, atomFocus, sourceFocus })},
           contextStep: ${JSON.stringify(contextStep.result.value)}, subjectStep: ${JSON.stringify(subjectStep.result.value)}, atomStep: ${JSON.stringify(atomStep.result.value)}, sourceStep: ${JSON.stringify(sourceStep.result.value)},
           beforeMode, analysisSelection, improveSelection,
           inspector, sourcePath, selectionVisual,
@@ -421,7 +424,8 @@ async function main() {
     const selectionBeforeGlyphDrag = (await page.send("Runtime.evaluate", { returnByValue: true, expression: `structuredClone(window.__archviewState.selection)` })).result.value;
     await page.send("Input.dispatchMouseEvent", { type: "mousePressed", x: capturePoint.x, y: capturePoint.y, button: "left", buttons: 1, clickCount: 1 });
     await page.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: capturePoint.x + 75, y: capturePoint.y + 20, button: "left", buttons: 1 });
-    await page.send("Input.dispatchMouseEvent", { type: "mouseReleased", x: capturePoint.x + 75, y: capturePoint.y + 20, button: "left", buttons: 0, clickCount: 1 });
+    await page.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: capturePoint.x + 1, y: capturePoint.y + 1, button: "left", buttons: 1 });
+    await page.send("Input.dispatchMouseEvent", { type: "mouseReleased", x: capturePoint.x + 1, y: capturePoint.y + 1, button: "left", buttons: 0, clickCount: 1 });
     const selectionAfterGlyphDrag = (await page.send("Runtime.evaluate", { returnByValue: true, expression: `structuredClone(window.__archviewState.selection)` })).result.value;
     await pressKey("0", "Digit0", { keyCode: 48 });
     capturePoint = (await page.send("Runtime.evaluate", { returnByValue: true, expression: `window.__archview.screenPointForSelection(${JSON.stringify(captureSelection)})` })).result.value;
