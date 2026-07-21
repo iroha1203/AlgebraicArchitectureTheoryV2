@@ -1140,7 +1140,6 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check AAT.AG.Measurement.SupportLocalizedTransferFiniteExample.nontrivialTransferredResidue /- definition missing documentation string -/
 #check AAT.AG.Measurement.SupportLocalizedTransferFiniteExample.sufficientConditionApplied /- definition missing documentation string -/
 #check AAT.AG.Measurement.MeasurementPacketGAGAFiniteExample.synthesisPackage /- definition missing documentation string -/
-#check AAT.AG.Measurement.MeasurementPacketGAGAFiniteExample.gagaPackage /- definition missing documentation string -/
 #check AAT.AG.Measurement.PartVIIIFiniteExampleSuite.pseudoCircleMeasuredNonzero /- definition missing documentation string -/
 #check AAT.AG.Measurement.PartVIIIFiniteExampleSuite.squareFreeRepairPackage /- definition missing documentation string -/
 #check AAT.AG.Measurement.PartVIIIFiniteExampleSuite.refactorInvariance /- definition missing documentation string -/

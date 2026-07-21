@@ -2151,28 +2151,13 @@ theorem finiteIntervalStokesBasis
         (AAT.AG.Cohomology.IntervalBasisStokes.boundary0 γ) :=
   AAT.AG.Cohomology.IntervalBasisStokes.finiteIntervalStokes_basis ω γ
 
-theorem gagaLowDegreePeriodStokes
-    (omega : Measurement.pseudoCircleMeasurementProfile.Cover → ℝ) (gamma : ℝ) :
-    Measurement.lowDegreePeriodStokesTheoremPackage.pair1
-        (Measurement.lowDegreePeriodStokesTheoremPackage.d0 omega) gamma =
-      Measurement.lowDegreePeriodStokesTheoremPackage.pair0 omega
-        (Measurement.lowDegreePeriodStokesTheoremPackage.chain0 gamma) :=
-  Measurement.lowDegreePeriodStokesTheoremPackage.period_stokes_holds omega gamma
+theorem gagaLowDegreePeriodStokes :
+    Measurement.lowDegreePeriodStokesTheoremPackage.statement :=
+  Measurement.lowDegreePeriodStokesTheoremPackage.statement_holds
 
 theorem gagaLowDegreeTopologicalDebtCapacityFromComplex :
-    Module.finrank
-        Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.k
-        Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.C1 <=
-      Module.finrank
-          Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.k
-          Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.H1 +
-        Module.finrank
-          Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.k
-          Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.C0 +
-          Module.finrank
-            Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.k
-            Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.C2 :=
-  Measurement.lowDegreeTopologicalDebtTheoremPackage.topological_debt_capacity_from_complex
+    Measurement.lowDegreePeriodStokesTheoremPackage.topologicalCapacityStatement :=
+  Measurement.lowDegreePeriodStokesTheoremPackage.topologicalCapacityStatement_holds
 
 /-! Kernel-audit inventory for theorem 12.3 derived GAGA comparison. -/
 
@@ -2188,13 +2173,13 @@ theorem gagaSelectedHodgeCohomology :
 
 /-- Direct audit entry for the selected real finite Period/Stokes theorem. -/
 theorem gagaSelectedPeriodStokes :
-    ∃ h, h = @Measurement.SelectedPeriodStokesTheoremPackage.period_stokes_holds :=
-  ⟨@Measurement.SelectedPeriodStokesTheoremPackage.period_stokes_holds, rfl⟩
+    ∃ h, h = @Measurement.SelectedPeriodStokesTheoremPackage.statement_holds :=
+  ⟨@Measurement.SelectedPeriodStokesTheoremPackage.statement_holds, rfl⟩
 
 /-- Direct audit entry for the selected finite-nerve capacity theorem. -/
 theorem gagaSelectedTopologicalCapacity :
-    ∃ h, h = @Measurement.SelectedTopologicalDebtTheoremPackage.topological_debt_capacity_from_complex :=
-  ⟨@Measurement.SelectedTopologicalDebtTheoremPackage.topological_debt_capacity_from_complex,
+    ∃ h, h = @Measurement.SelectedPeriodStokesTheoremPackage.topologicalCapacityStatement_holds :=
+  ⟨@Measurement.SelectedPeriodStokesTheoremPackage.topologicalCapacityStatement_holds,
     rfl⟩
 
 /-- Direct audit entry for the selected LawConflict/Tor theorem. -/

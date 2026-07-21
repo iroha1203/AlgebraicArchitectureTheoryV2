@@ -3557,6 +3557,87 @@ def measurementPacketExampleSynthesis :
     FiniteMeasurementSynthesis measurementPacketExampleData :=
   finiteMeasurementSynthesisPackage measurementPacketExampleData
 
+/-- R11(g): the three-axis Hodge model indexed by the selected pseudo-circle site. -/
+noncomputable def gagaThreeAxisCellularModel :
+    CellularMeasurementModel pseudoCircleMeasurementProfile where
+  Cell := Cohomology.FiniteExamples.PseudoCircleGolden.Chart
+  Degree := ThreeAxisDegree
+  Cochain := ThreeAxisCochain
+  Differential := fun _ _ => Unit
+  d := threeAxisCellularD
+  Adjoint := fun _ _ => Unit
+  dAdjoint := threeAxisCellularAdjoint
+  InnerProductValue := ℝ
+  innerProduct := threeAxisCellularInnerProduct
+  NormValue := ℝ
+  norm := threeAxisCellularNorm
+  finiteCells := Nonempty (Fintype Cohomology.FiniteExamples.PseudoCircleGolden.Chart)
+  finiteCells_cert := by
+    classical
+    exact ⟨{
+      elems := { .A, .B, .C }
+      complete := by
+        intro chart
+        cases chart <;> simp
+    }⟩
+  finiteDimensionalCochains :=
+    FiniteDimensional ℝ ℝ ∧
+      FiniteDimensional ℝ LowDegreeRealCochain ∧ FiniteDimensional ℝ ℝ
+  finiteDimensionalCochains_cert := ⟨inferInstance, inferInstance, inferInstance⟩
+  finiteIncidenceCategory := Nonempty (Fintype ThreeAxisDegree)
+  finiteIncidenceCategory_cert := ⟨inferInstance⟩
+  linearRestrictionMaps :=
+    (∀ x y, threeAxisDPrev (x + y) = threeAxisDPrev x + threeAxisDPrev y) ∧
+      ∀ x y, threeAxisDNext (x + y) = threeAxisDNext x + threeAxisDNext y
+  linearRestrictionMaps_cert :=
+    ⟨threeAxisDPrev.map_add, threeAxisDNext.map_add⟩
+  differentialSquaresZero := threeAxisDNext.comp threeAxisDPrev = 0
+  differentialSquaresZero_cert := threeAxisRealComplex.d_comp_d
+  adjointsAvailable :=
+    LinearMap.adjoint threeAxisDPrev = threeAxisRealComplex.dPrevAdjoint ∧
+      LinearMap.adjoint threeAxisDNext = threeAxisRealComplex.dNextAdjoint
+  adjointsAvailable_cert := ⟨rfl, rfl⟩
+  finiteInnerProductRegime :=
+    ∀ n x, 0 ≤ threeAxisCellularNorm n x
+  finiteInnerProductRegime_cert := by
+    intro n x
+    cases n <;> exact norm_nonneg _
+
+/-- R11(g): the selected-site Laplacian reading of the three-axis Hodge model. -/
+noncomputable def gagaThreeAxisLaplacianReading :
+    SheafLaplacianReading gagaThreeAxisCellularModel where
+  degree := .selected
+  previousDegree := .previous
+  nextDegree := .next
+  LaplacianOperator := LowDegreeRealCochain →ₗ[ℝ] LowDegreeRealCochain
+  laplacian := threeAxisRealComplex.laplacian
+  d_prev := ()
+  d_next := ()
+  d_prev_adjoint := ()
+  d_next_adjoint := ()
+  laplacian_eq_formula := rfl
+  laplacian_eq_formula_cert := rfl
+  finiteSelfAdjointReading :=
+    ∀ x, inner ℝ (threeAxisRealComplex.laplacian x) x =
+      ‖threeAxisRealComplex.dPrevAdjoint x‖ ^ 2 +
+        ‖threeAxisRealComplex.dNext x‖ ^ 2
+  finiteSelfAdjointReading_cert := by
+    intro x
+    rw [real_inner_comm]
+    simpa [real_inner_self_eq_norm_sq] using
+      threeAxisRealComplex.inner_laplacian_self x
+
+/-- R11(g): operator-level comparison for the selected-site Hodge reading. -/
+noncomputable def gagaThreeAxisCellularComparison :
+    RealFiniteInnerProductComplex.CellularRealFiniteComplexComparison
+      gagaThreeAxisLaplacianReading threeAxisRealComplex where
+  dPrev_eq := rfl
+  dNext_eq := rfl
+  dPrevAdjoint_eq := rfl
+  dNextAdjoint_eq := rfl
+  laplacianOperator_eq := rfl
+  laplacian_eq := rfl
+
 /-- R11(g): common ambient whose law handles select the shared-witness ideals. -/
 def gagaCommonAmbient :
     CommonAmbientPair pseudoCircleMeasurementProfile where
@@ -3590,25 +3671,35 @@ def gagaCommonAmbient :
   noComparisonWithoutCommonAmbient := True
   noComparisonWithoutCommonAmbient_cert := trivial
 
-/-- R11(g): one common selected datum for the nondegenerate GAGA fixture. -/
+/-- R11(g): one direct common datum for the nondegenerate GAGA fixture. -/
 noncomputable def gagaCommonFiniteData :
     AATGAGACommonFiniteData pseudoCircleMeasurementProfile where
   selectedSite := Cohomology.FiniteExamples.PseudoCircleGolden.Chart.B
-  selectedCover := Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.BC
-  selectedCoefficient := (1 : ℝ)
+  selectedCover := Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.AB
   selectedMeasurement := PseudoCircleMeasurementDomain.boundaryCocycle
   measuredSelection := {
     inScope := rfl
     method := ()
     certificate := ()
   }
-  hodgeCellularModelAt := fun _ _ _ _ => threeAxisCellularModel
-  commonAmbientAt := fun _ _ _ _ => gagaCommonAmbient
+  coefficientAddCommGroup := inferInstance
+  coefficientToReal := AddEquiv.refl ℝ
+  cellularModel := gagaThreeAxisCellularModel
+  cellToSite := id
+  selectedCell := Cohomology.FiniteExamples.PseudoCircleGolden.Chart.B
+  selectedCell_eq := rfl
+  commonAmbient := gagaCommonAmbient
+  ambientLeftDomain_eq := rfl
+  ambientRightDomain_eq := rfl
+  selectedCoefficient := 1
+  coefficientToAmbient := id
+  selectedCoefficient_left_eq := rfl
+  selectedCoefficient_right_eq := rfl
 
 /-- R11(g): actual real finite Hodge input derived from the nonzero three-axis complex. -/
 noncomputable def threeAxisSelectedHodgeTheoremPackage :
     SelectedFiniteHodgeTheoremPackage gagaCommonFiniteData where
-  laplacianReading := threeAxisLaplacianReading
+  laplacianReading := gagaThreeAxisLaplacianReading
   previousNormed := by
     change NormedAddCommGroup ℝ
     infer_instance
@@ -3637,65 +3728,28 @@ noncomputable def threeAxisSelectedHodgeTheoremPackage :
     change FiniteDimensional ℝ ℝ
     infer_instance
   realFiniteComplex := threeAxisRealComplex
-  cellularComparison := threeAxisCellularComparison
+  cellularComparison := gagaThreeAxisCellularComparison
 
 /-- R11(g): selected two-cover Period/Stokes input, with distinct overlap handles. -/
 def lowDegreePeriodStokesTheoremPackage :
     SelectedPeriodStokesTheoremPackage gagaCommonFiniteData where
-  leftSite := Cohomology.FiniteExamples.PseudoCircleGolden.Chart.A
-  rightSite := Cohomology.FiniteExamples.PseudoCircleGolden.Chart.B
-  selectedSite_eq_right := rfl
-  leftCover := Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.AB
-  rightCover := Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.BC
-  selectedCover_eq_right := rfl
-  leftCover_ne_right := by
-    change Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.AB ≠
-      Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.BC
-    decide
-
-/-- R11(g): selected pseudo-circle nerve with three charts and three overlaps. -/
-def lowDegreeTopologicalDebtNerve : Cohomology.CoverNerve :=
-  Cohomology.FiniteExamples.PseudoCircleGolden.coverNerve
-
-/--
-R11(g): selected nonzero finite nerve complex.
-
-The differential `d0` is the identity on a nonzero real cochain carrier.  This
-is a finite complex attached to the three-chart selected nerve, rather than a
-one-chart or zero-complex witness.
--/
-noncomputable def lowDegreeTopologicalDebtComplex :
-    Cohomology.FiniteNerveCochainComplex lowDegreeTopologicalDebtNerve where
-  k := ℝ
-  C0 := ℝ
-  C1 := ℝ
-  C2 := ℝ
-  add_C0 := inferInstance
-  add_C1 := inferInstance
-  add_C2 := inferInstance
-  module_C0 := inferInstance
-  module_C1 := inferInstance
-  module_C2 := inferInstance
-  finiteDimensional_C0 := inferInstance
-  finiteDimensional_C1 := inferInstance
-  finiteDimensional_C2 := inferInstance
-  d0 := LinearMap.id
-  d1 := 0
-  d1_comp_d0 := by
-    intro c
-    rfl
-
-/-- R11(g): selected topological input visibly attached to the common site and cover. -/
-noncomputable def lowDegreeTopologicalDebtTheoremPackage :
-    SelectedTopologicalDebtTheoremPackage gagaCommonFiniteData where
-  nerve := lowDegreeTopologicalDebtNerve
-  chartToSite := id
-  edgeToCover := id
-  selectedSiteVisible := ⟨Cohomology.FiniteExamples.PseudoCircleGolden.Chart.B, rfl⟩
-  selectedCoverVisible :=
-    ⟨Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.BC, rfl⟩
-  nerveComplex := lowDegreeTopologicalDebtComplex
-  coefficient_eq := rfl
+  cellRealization
+    | .left => Cohomology.FiniteExamples.PseudoCircleGolden.Chart.A
+    | .right => Cohomology.FiniteExamples.PseudoCircleGolden.Chart.B
+  siteRealization
+    | .left => Cohomology.FiniteExamples.PseudoCircleGolden.Chart.A
+    | .right => Cohomology.FiniteExamples.PseudoCircleGolden.Chart.B
+  siteRealization_eq_cellToSite := by
+    intro vertex
+    cases vertex <;> rfl
+  coverRealization
+    | .interval => Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.AB
+  rightChart_eq_selectedSite := rfl
+  intervalEdge_eq_selectedCover := rfl
+  siteRealization_injective := by
+    intro x y h
+    cases x <;> cases y <;> try rfl
+    all_goals simp at h
 
 /-- R11(g): common-ambient reading of the shared-witness degree-one conflict. -/
 noncomputable def lowDegreeDerivedConflictTheoremPackage :
@@ -3712,7 +3766,6 @@ noncomputable def gagaCertifiedFields :
     AATGAGACertifiedFields gagaCommonFiniteData where
   hodgeInput := threeAxisSelectedHodgeTheoremPackage
   periodStokesInput := lowDegreePeriodStokesTheoremPackage
-  topologicalInput := lowDegreeTopologicalDebtTheoremPackage
   derivedConflictInput := lowDegreeDerivedConflictTheoremPackage
 
 /-- R11(g): candidate interfaces remain separated from certified readings. -/
@@ -3744,11 +3797,8 @@ def gagaNonConclusionData :
 /-- R11(g): raw finite AAT-GAGA comparison data. -/
 def gagaComparisonExampleData :
     AATGAGAComparisonData pseudoCircleMeasurementProfile where
-  measurementPacketData := measurementPacketExampleData
   commonData := gagaCommonFiniteData
   certifiedFields := gagaCertifiedFields
-  candidateInterfaces := gagaCandidateInterfaces
-  nonConclusionData := gagaNonConclusionData
 
 /-- R11(g): theorem 12.3 instantiated on the finite comparison fixture. -/
 theorem gagaComparisonExamplePackage :
@@ -3760,6 +3810,10 @@ structure MeasurementPacketGAGAFiniteExample where
   synthesisPackage : FiniteMeasurementSynthesis measurementPacketExampleData
   gagaPackage : AATGAGAFiniteMeasurementComparison gagaComparisonExampleData
   certifiedComparison : aatGAGAComparisonStatement gagaComparisonExampleData
+  /-- Candidate inputs retained separately from the certified GAGA comparison. -/
+  candidateInterfaces : AATGAGACandidateInterfaces pseudoCircleMeasurementProfile
+  /-- Explicit non-conclusion data retained outside the certified statement. -/
+  nonConclusionData : AATGAGANonConclusionData pseudoCircleMeasurementProfile
 
 /-- R11(g): certified readings and candidate interfaces stay separated. -/
 def measurementPacketGAGAFiniteExample :
@@ -3767,6 +3821,8 @@ def measurementPacketGAGAFiniteExample :
   synthesisPackage := measurementPacketExampleSynthesis
   gagaPackage := gagaComparisonExamplePackage
   certifiedComparison := aatGAGAComparisonStatement_holds gagaComparisonExampleData
+  candidateInterfaces := gagaCandidateInterfaces
+  nonConclusionData := gagaNonConclusionData
 
 /-- R11(g): every theorem-12.3 certified conjunct fires in one finite fixture. -/
 theorem measurementPacketGAGAExample_certifiedComparison :

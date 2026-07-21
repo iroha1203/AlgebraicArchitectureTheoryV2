@@ -246,6 +246,76 @@ theorem finiteIntervalConnectingStokes_basis
 
 end IntervalBasisStokes
 
+/-! ### Real two-chart basis calculation for selected finite measurements -/
+
+namespace RealIntervalBasisStokes
+
+/-- The two site objects of the real selected two-chart model. -/
+abbrev Vertex := IntervalBasisStokes.Vertex
+
+/-- The oriented selected overlap of the real two-chart model. -/
+abbrev Edge := IntervalBasisStokes.Edge
+
+/-- Real cochains on the selected two-chart model. -/
+abbrev Cochain : Nat -> Type
+  | 0 => Vertex -> ℝ
+  | 1 => Edge -> ℝ
+  | _ + 2 => ℝ
+
+/-- Real chains on the selected two-chart model. -/
+abbrev Chain : Nat -> Type
+  | 0 => Vertex -> ℝ
+  | 1 => Edge -> ℝ
+  | _ + 2 => ℝ
+
+/-- The real degree-zero Čech coboundary of the selected oriented overlap. -/
+def d0 : Cochain 0 →ₗ[ℝ] Cochain 1 where
+  toFun ω
+    | Edge.interval => ω Vertex.right - ω Vertex.left
+  map_add' := by
+    intro ω η
+    funext e
+    cases e
+    simp [Pi.add_apply]
+    ring
+  map_smul' := by
+    intro a ω
+    funext e
+    cases e
+    simp [Pi.smul_apply]
+    ring
+
+/-- The real degree-zero chain map of the selected oriented overlap. -/
+def chain0 : Chain 1 →ₗ[ℝ] Chain 0 where
+  toFun γ
+    | Vertex.left => -γ Edge.interval
+    | Vertex.right => γ Edge.interval
+  map_add' := by
+    intro γ δ
+    funext v
+    cases v <;> simp [Pi.add_apply]
+  map_smul' := by
+    intro a γ
+    funext v
+    cases v <;> simp [Pi.smul_apply]
+
+/-- The real degree-zero pairing on selected site objects. -/
+def pair0 (ω : Cochain 0) (γ : Chain 0) : ℝ :=
+  ω Vertex.left * γ Vertex.left + ω Vertex.right * γ Vertex.right
+
+/-- The real degree-one pairing on the selected overlap. -/
+def pair1 (ω : Cochain 1) (γ : Chain 1) : ℝ :=
+  ω Edge.interval * γ Edge.interval
+
+/-- Finite real Čech Stokes on the selected two-chart basis model. -/
+theorem finiteIntervalStokes_basis
+    (ω : Cochain 0) (γ : Chain 1) :
+    pair1 (d0 ω) γ = pair0 ω (chain0 γ) := by
+  simp [pair0, pair1, d0, chain0]
+  ring
+
+end RealIntervalBasisStokes
+
 /--
 IV.定義13.4: extension holonomy accounting convention.
 
