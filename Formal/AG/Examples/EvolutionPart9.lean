@@ -1672,6 +1672,161 @@ theorem nondegenerate_twoChart_temporal_replay_correction :
     twoChartAdjustedMismatch_zero, twoChartAdjustedReplay_matching,
     zmod2TemporalProductIncidence_d0_step_ne_zero⟩
 
+/-- The two selected replay charts as objects of the actual AAT two-patch site. -/
+def twoPatchReplayChartObject (i : FiniteModel.TwoPatchCoverIndex) :
+    FiniteModel.twoPatchSite.category :=
+  Site.ContextCategoryObject.of FiniteModel.twoPatchContextPreorder
+    (FiniteModel.twoPatchCoverPatch i)
+
+/-- The actual overlap object of the selected AAT two-patch site. -/
+def twoPatchReplayOverlapObject : FiniteModel.twoPatchSite.category :=
+  Site.ContextCategoryObject.of FiniteModel.twoPatchContextPreorder
+    (FiniteModel.twoPatchContext FiniteModel.TwoPatchContextIndex.overlap)
+
+/-- Restriction from the selected overlap to either replay chart. -/
+noncomputable def twoPatchReplayOverlapRestriction
+    (i : FiniteModel.TwoPatchCoverIndex) :
+    twoPatchReplayOverlapObject ⟶ twoPatchReplayChartObject i := by
+  cases i
+  · exact homOfLE FiniteModel.twoPatch_overlap_le_left
+  · exact homOfLE FiniteModel.twoPatch_overlap_le_right
+
+/-- Convert a selected AAT two-patch index to the temporal replay-chart index. -/
+def twoPatchReplayChart : FiniteModel.TwoPatchCoverIndex -> Bool
+  | .left => false
+  | .right => true
+
+/-- The two local replay maps as sections of the actual replay-function sheaf. -/
+def twoPatchReplayLocalSection (i : FiniteModel.TwoPatchCoverIndex) :
+    FiniteModel.twoPatchZMod2ReplayFunctionPresheaf.obj
+      (Opposite.op (twoPatchReplayChartObject i)) :=
+  twoChartLocalReplay (twoPatchReplayChart i)
+
+/--
+The replay mismatch is the coefficient-wise difference of the two restricted
+local replay sections on the actual overlap.
+-/
+def twoPatchReplayOverlapMismatch : FiniteModel.TwoPatchZMod2ReplayFunction :=
+  fun state =>
+    FiniteModel.twoPatchZMod2ReplayFunctionPresheaf.map
+        (twoPatchReplayOverlapRestriction .right).op
+        (twoPatchReplayLocalSection .right) state -
+      FiniteModel.twoPatchZMod2ReplayFunctionPresheaf.map
+        (twoPatchReplayOverlapRestriction .left).op
+        (twoPatchReplayLocalSection .left) state
+
+/-- The overlap coefficient at zero source state agrees with the temporal mismatch. -/
+theorem twoPatchReplayOverlapMismatch_at_zero :
+    twoPatchReplayOverlapMismatch 0 = twoChartReplayMismatch :=
+  rfl
+
+/-- The selected degree-zero correction, read on the actual two-patch AAT cover. -/
+def twoPatchReplayCorrectionSection (i : FiniteModel.TwoPatchCoverIndex) : ZMod 2 :=
+  twoChartCorrection (twoPatchReplayChart i)
+
+/-- The correction acts on each local replay section by coefficient subtraction. -/
+def twoPatchAdjustedReplayLocalSection (i : FiniteModel.TwoPatchCoverIndex) :
+    FiniteModel.TwoPatchZMod2ReplayFunction :=
+  fun state => twoPatchReplayLocalSection i state - twoPatchReplayCorrectionSection i
+
+/-- The post-correction overlap mismatch is again an actual restricted-section difference. -/
+def twoPatchAdjustedReplayOverlapMismatch : FiniteModel.TwoPatchZMod2ReplayFunction :=
+  fun state =>
+    FiniteModel.twoPatchZMod2ReplayFunctionPresheaf.map
+        (twoPatchReplayOverlapRestriction .right).op
+        (twoPatchAdjustedReplayLocalSection .right) state -
+      FiniteModel.twoPatchZMod2ReplayFunctionPresheaf.map
+        (twoPatchReplayOverlapRestriction .left).op
+        (twoPatchAdjustedReplayLocalSection .left) state
+
+/-- The explicit correction kills the actual overlap mismatch. -/
+theorem twoPatchAdjustedReplayOverlapMismatch_zero :
+    twoPatchAdjustedReplayOverlapMismatch = 0 := by
+  funext state
+  change twoChartAdjustedReplay true state - twoChartAdjustedReplay false state = 0
+  exact sub_eq_zero.mpr (twoChartAdjustedReplay_matching state).symm
+
+/-- Zero overlap mismatch reflects equality of the two corrected local replay sections. -/
+theorem twoPatchAdjustedReplay_zero_reflects_matching
+    (hzero : twoPatchAdjustedReplayOverlapMismatch = 0)
+    (state : ZMod 2) :
+    twoPatchAdjustedReplayLocalSection .left state =
+      twoPatchAdjustedReplayLocalSection .right state := by
+  have hvalue := congrFun hzero state
+  change twoPatchAdjustedReplayLocalSection .right state -
+      twoPatchAdjustedReplayLocalSection .left state = 0 at hvalue
+  exact (sub_eq_zero.mp hvalue).symm
+
+/-- The selected generated AAT cover for the two replay charts. -/
+noncomputable def twoPatchReplayCover : Sieve FiniteModel.twoPatchBase :=
+  Sieve.generate FiniteModel.twoPatchCover.presieve
+
+/-- The corrected local family is the common replay section obtained from zero mismatch. -/
+def twoPatchCorrectedLocalSections
+    (_hzero : twoPatchAdjustedReplayOverlapMismatch = 0) :
+    Site.AATLocalSectionFamily FiniteModel.twoPatchSite
+      FiniteModel.twoPatchZMod2ReplayFunctionPresheaf twoPatchReplayCover :=
+  fun _Y _f _hf => twoPatchAdjustedReplayLocalSection .left
+
+/-- The corrected local family is compatible on all common refinements. -/
+theorem twoPatchCorrectedLocalSections_matching
+    (hzero : twoPatchAdjustedReplayOverlapMismatch = 0) :
+    Site.AATOverlapAgreement (twoPatchCorrectedLocalSections hzero) := by
+  intro _Y _f _hf _Z _g _hg _W _h _hh _hcomp
+  rfl
+
+/-- Membership of each selected replay chart in the generated AAT two-patch cover. -/
+theorem twoPatchReplayCover_contains
+    (i : FiniteModel.TwoPatchCoverIndex) :
+    twoPatchReplayCover
+      (homOfLE (FiniteModel.twoPatchCover.inclusion i)) :=
+  Sieve.le_generate FiniteModel.twoPatchCover.presieve _ (Presieve.ofArrows.mk i)
+
+/--
+Sheaf descent on the actual two-patch AAT cover produces a global replay
+function whose chart restrictions equal the corrected local replay maps.
+-/
+theorem twoPatchReplay_nonzero_correction_descends :
+    ∃ globalReplay : FiniteModel.TwoPatchZMod2ReplayFunction,
+      ∀ (i : FiniteModel.TwoPatchCoverIndex) (state : ZMod 2),
+        globalReplay state = twoPatchAdjustedReplayLocalSection i state := by
+  let hzero := twoPatchAdjustedReplayOverlapMismatch_zero
+  let data : Site.AATGluingData FiniteModel.twoPatchSite
+      FiniteModel.twoPatchZMod2ReplayFunctionPresheaf twoPatchReplayCover :=
+    { localSections := twoPatchCorrectedLocalSections hzero
+      overlapAgreement := twoPatchCorrectedLocalSections_matching hzero }
+  obtain ⟨globalReplay, hglobal⟩ :=
+    (FiniteModel.twoPatchZMod2ReplayFunctionSheaf.descent twoPatchReplayCover
+      (by simpa [twoPatchReplayCover] using FiniteModel.twoPatchCover_topologyCover)).exists_global
+      data
+  refine ⟨globalReplay, ?_⟩
+  intro i state
+  have hchart := hglobal (homOfLE (FiniteModel.twoPatchCover.inclusion i))
+    (twoPatchReplayCover_contains i)
+  change globalReplay = twoPatchAdjustedReplayLocalSection .left at hchart
+  cases i with
+  | left => exact congrFun hchart state
+  | right =>
+      rw [hchart]
+      exact twoPatchAdjustedReplay_zero_reflects_matching hzero state
+
+/--
+The same finite `ZMod 2` data records a nonzero correction, the actual
+overlap difference, its vanishing after correction, and the sheaf-glued global replay.
+-/
+theorem actual_twoPatch_zmod2_replay_fixture :
+    twoPatchReplayCorrectionSection .right ≠ 0 ∧
+      twoPatchReplayOverlapMismatch 0 = twoChartCorrectionCoboundary ∧
+        twoPatchAdjustedReplayOverlapMismatch = 0 ∧
+          ∃ globalReplay : FiniteModel.TwoPatchZMod2ReplayFunction,
+            ∀ (i : FiniteModel.TwoPatchCoverIndex) (state : ZMod 2),
+              globalReplay state = twoPatchAdjustedReplayLocalSection i state := by
+  refine ⟨?_, ?_, twoPatchAdjustedReplayOverlapMismatch_zero,
+    twoPatchReplay_nonzero_correction_descends⟩
+  · exact twoChartCorrection_right_nonzero
+  · rw [twoPatchReplayOverlapMismatch_at_zero]
+    exact twoChartReplayMismatch_eq_coboundary
+
 /-- R10(c): pseudo-circle temporal cover edges. -/
 inductive PseudoCircleEdge where
   | ab
