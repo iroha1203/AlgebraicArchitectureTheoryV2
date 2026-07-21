@@ -912,6 +912,9 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 
 -- Formal.AG.Examples.SemanticRepairPart10
 #check AAT.AG.Examples.SemanticRepairPart10.CircleNerveNonzeroTransferPacket.comparisonEquiv /- definition missing documentation string -/
+#check AAT.AG.Examples.SemanticRepairPart10.zmodTwoTorsor_chart1 /- definition missing documentation string -/
+#check AAT.AG.Examples.SemanticRepairPart10.zmodTwoTorsor_chart2 /- definition missing documentation string -/
+#check AAT.AG.Examples.SemanticRepairPart10.zmodTwoTorsor_triple012 /- definition missing documentation string -/
 
 -- Formal.AG.Examples.SingularityMonodromyStackPart6
 #check AAT.AG.FiniteModel.SingularityMonodromyStackPart6.ToyParameter /- definition missing documentation string -/
@@ -2037,6 +2040,12 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.SemanticRepair.SemanticRepairCoverCechData.delta0 /- definition missing documentation string -/
 #check @AAT.AG.SemanticRepair.SemanticRepairCoverCechData.delta1 /- definition missing documentation string -/
 #check @AAT.AG.SemanticRepair.SemanticRepairCoverCechData.residual /- definition missing documentation string -/
+#check @AAT.AG.SemanticRepair.SemanticRepairCoverCechRealization.Fiber /- definition missing documentation string -/
+#check @AAT.AG.SemanticRepair.SemanticRepairCoverCechRealization.eval0 /- definition missing documentation string -/
+#check @AAT.AG.SemanticRepair.SemanticRepairCoverCechRealization.eval1 /- definition missing documentation string -/
+#check @AAT.AG.SemanticRepair.SemanticRepairCoverCechRealization.eval2 /- definition missing documentation string -/
+#check @AAT.AG.SemanticRepair.SelectedRepairCoverDescentSelection.overlap /- definition missing documentation string -/
+#check @AAT.AG.SemanticRepair.SelectedRepairCoverDescentSelection.triple /- definition missing documentation string -/
 #check @AAT.AG.SemanticRepair.SemanticRepairCoverH1BoundaryRelationAbelianData.cover /- definition missing documentation string -/
 #check @AAT.AG.SemanticRepair.SemanticRepairCoverH1BoundaryRelationAbelianData.cech /- definition missing documentation string -/
 #check @AAT.AG.SemanticRepair.SemanticRepairCoverH1BoundaryRelationAbelianData.supportOf /- definition missing documentation string -/
@@ -2704,6 +2713,10 @@ UNUSED ARGUMENTS. -/
 #check @AAT.AG.FiniteModel.twoPatchContextLe_sound /- argument 3 _h : AAT.AG.FiniteModel.twoPatchContextIndexLe i j -/
 
 -- Formal.AG.Examples.SemanticRepairPart10
+#check AAT.AG.Examples.SemanticRepairPart10.zmodTwoTorsorTriple.proxyType /- argument 1 _i : Fin
+  3, argument 2 _j : Fin 3, argument 3 _k : Fin 3 -/
+#check AAT.AG.Examples.SemanticRepairPart10.zmodTwoTorsorOverlap.proxyType /- argument 1 _left : Fin
+  3, argument 2 _right : Fin 3 -/
 #check AAT.AG.Examples.SemanticRepairPart10.punitCochainAddEquiv /- argument 1 _n : ℕ -/
 #check AAT.AG.Examples.SemanticRepairPart10.punitCochainEquiv /- argument 1 _n : ℕ -/
 #check AAT.AG.Examples.SemanticRepairPart10.zmod2SingletonCochainAddEquiv /- argument 1 _n : ℕ -/
@@ -2777,12 +2790,6 @@ UNUSED ARGUMENTS. -/
 -- Formal.AG.SemanticRepair.AdditiveH1
 #check @AAT.AG.SemanticRepair.SemanticRepairAdditiveCechH1Data.Cocycle /- argument 4 _data : AAT.AG.SemanticRepair.SemanticRepairAdditiveCechH1Data
   cech -/
-#check @AAT.AG.SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.NonabelianTorsorTrivial /- argument 2 _data : AAT.AG.SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData
-  P -/
-#check @AAT.AG.SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.HigherCoherenceVanishes /- argument 2 _data : AAT.AG.SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData
-  P -/
-#check @AAT.AG.SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.StackEffectivelyVanishes /- argument 2 _data : AAT.AG.SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData
-  P -/
 
 -- Formal.AG.SingularityMonodromyStack.OperationCategory
 #check @AAT.AG.SingularityMonodromyStack.EndpointEquivalentPath /- argument 13 _gamma : AAT.AG.SingularityMonodromyStack.OperationPath

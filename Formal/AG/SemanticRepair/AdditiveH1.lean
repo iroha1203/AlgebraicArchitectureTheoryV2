@@ -113,11 +113,15 @@ structure SemanticRepairCoverCechRealization
     {P : SemanticAtomProjection.{u, v}}
     (cover : SemanticRepairCover.{u, v, w, x} P)
     (cech : SemanticRepairCoverCechData.{u, v, w, x, y, z} cover) where
+  /-- Common additive fiber receiving selected Cech components. -/
   Fiber : Type w
   fiberAddCommGroup : AddCommGroup Fiber
+  /-- Degree-zero evaluation on one repair-cover chart. -/
   eval0 : cech.C0 -> cover.CoverChart -> Fiber
+  /-- Degree-one evaluation on one selected repair-cover overlap. -/
   eval1 : cech.C1 -> forall {left right : cover.CoverChart},
     cover.Overlap left right -> Fiber
+  /-- Degree-two evaluation on one selected repair-cover triple face. -/
   eval2 : cech.C2 -> forall {i j k : cover.CoverChart},
     cover.TripleOverlap i j k -> Fiber
   eval0_injective : Function.Injective eval0
@@ -235,7 +239,9 @@ claim.
 structure SelectedRepairCoverDescentSelection
     {P : SemanticAtomProjection.{u, v}}
     (cover : SemanticRepairCover.{u, v, w, x} P) where
+  /-- Selected overlap for each ordered pair of repair-cover charts. -/
   overlap : forall left right : cover.CoverChart, cover.Overlap left right
+  /-- Selected triple face for each ordered triple of repair-cover charts. -/
   triple : forall i j k : cover.CoverChart, cover.TripleOverlap i j k
   overlap_eq_tripleEdge01 : forall i j k,
     overlap i j = cover.tripleEdge01 (triple i j k)

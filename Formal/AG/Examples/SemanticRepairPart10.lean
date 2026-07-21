@@ -3115,16 +3115,19 @@ theorem zmodTwoTorsor_h1Zero :
   zmodTwoTorsorData.toAdditiveCechH1Data.h1Zero_iff_boundary.mpr
     ⟨zmodTwoThreeChartPrimitive, rfl⟩
 
-/-- The actual triple overlap `(0, 1, 2)` is inhabited. -/
+/-- The first chart of the selected three-chart fixture. -/
 def zmodTwoTorsor_chart0 : zmodTwoTorsorCover.CoverChart := by
   exact (0 : Fin 3)
 
+/-- The second chart of the selected three-chart fixture. -/
 def zmodTwoTorsor_chart1 : zmodTwoTorsorCover.CoverChart := by
   exact (1 : Fin 3)
 
+/-- The third chart of the selected three-chart fixture. -/
 def zmodTwoTorsor_chart2 : zmodTwoTorsorCover.CoverChart := by
   exact (2 : Fin 3)
 
+/-- The actual triple overlap `(0, 1, 2)` is inhabited. -/
 def zmodTwoTorsor_triple012 :
     zmodTwoTorsorCover.TripleOverlap zmodTwoTorsor_chart0
       zmodTwoTorsor_chart1 zmodTwoTorsor_chart2 :=
