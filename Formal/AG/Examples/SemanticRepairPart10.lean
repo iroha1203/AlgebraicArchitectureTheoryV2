@@ -1,9 +1,11 @@
 import Formal.AG.Examples.FiniteModel
 import Formal.AG.Cohomology.FiniteExamples
+import Formal.AG.SemanticRepair.AdditiveH1
 import Formal.AG.SemanticRepair.Boundary
 import Formal.AG.SemanticRepair.LawEquationGeneratedPair
 import Mathlib.Data.Int.Basic
 import Mathlib.Data.ZMod.Basic
+import Mathlib.Data.ZMod.QuotientRing
 import Mathlib.LinearAlgebra.Quotient.Basic
 
 noncomputable section
@@ -638,6 +640,35 @@ theorem integerLaw_obstructionIdeal_le (W : FiniteModel.site.category) :
   intro lawIndex _hselected
   exact integerLaw_lawWitnessIdeal_le W lawIndex
 
+/-- The integer obstruction ideal is exactly the witness ideal `span {2}`. -/
+theorem integerLaw_obstructionIdeal_eq_span_two (W : FiniteModel.site.category) :
+    integerLawEquationCore.obstructionIdeal W =
+      Ideal.span ({(2 : ℤ)} : Set ℤ) := by
+  have hwitness :
+      integerLawEquationCore.lawWitnessIdeal W PUnit.unit =
+        Ideal.span ({(2 : ℤ)} : Set ℤ) := by
+    dsimp [LawAlgebra.SemanticLawEquationWitnessIdealCore.lawWitnessIdeal,
+      integerLawEquationCore]
+    congr
+    ext x
+    constructor
+    · rintro ⟨_atom, rfl⟩
+      simp
+    · intro hx
+      exact ⟨FiniteModel.FiniteAtom.componentA, by simpa using hx.symm⟩
+  apply le_antisymm
+  · change
+      (integerLawEquationCore.selectedLawWitnessIdealFamily W).localObstructionIdeal ≤
+        Ideal.span ({(2 : ℤ)} : Set ℤ)
+    rw [LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily.localObstructionIdeal_le_iff]
+    intro lawIndex _hselected
+    cases lawIndex
+    change integerLawEquationCore.lawWitnessIdeal W PUnit.unit ≤
+      Ideal.span ({(2 : ℤ)} : Set ℤ)
+    rw [hwitness]
+  · rw [← hwitness]
+    exact integerLawEquationCore.lawWitnessIdeal_le_obstructionIdeal W rfl
+
 /-- The integer defect `1` is not killed by the generated obstruction ideal. -/
 theorem integerLaw_one_notMem_obstructionIdeal (W : FiniteModel.site.category) :
     (1 : ℤ) ∉ integerLawEquationCore.obstructionIdeal W := by
@@ -1184,7 +1215,7 @@ circle nerve.
 The selected nerve below is supplied simplicial data, not generated from chart
 intersections.  These requirements deliberately have no admissible cover, so
 the generated topology is the top-only witness topology used for the concrete
-`F₂` coefficient sheaf.
+law-equation quotient coefficient sheaf.
 -/
 def circleCoverageRequirements :
     Site.CoverageRequirements FiniteModel.object
@@ -1255,62 +1286,101 @@ theorem circleSiteTopology_cover_eq_top {base : circleSite.category}
       rw [hlocal]
       trivial
 
-/-- X.例9.2: constant `F₂` coefficient presheaf on the circle witness site. -/
-def circleF2Presheaf : Site.AATPresheaf circleSite where
-  obj _ := ZMod 2
-  map _ x := x
-  map_id _ := rfl
-  map_comp _ _ := rfl
+/-- X.例9.2: law-equation quotient presheaf `Q = ℤ / I_Ob` on the circle site. -/
+abbrev circleLawQuotientPresheaf : Site.AATPresheaf circleSite :=
+  integerGeneratedLawQuotientPresheaf
 
-/-- X.例9.2: the constant `F₂` presheaf is a sheaf on the witness topology. -/
-theorem circleF2IsSheaf :
-    Site.AATSheafCondition circleSite circleF2Presheaf := by
+/-- X.例9.2: the law-equation quotient is a sheaf on the witness topology. -/
+theorem circleLawQuotientIsSheaf :
+    Site.AATSheafCondition circleSite circleLawQuotientPresheaf := by
   intro _base cover hcover
   rw [Site.AATSheafConditionFor, circleSiteTopology_cover_eq_top hcover]
-  exact Presieve.isSheafFor_top circleF2Presheaf
+  exact Presieve.isSheafFor_top circleLawQuotientPresheaf
 
-/-- X.例9.2: obstruction coefficient sheaf `Q ≅ F₂` for the circle witness. -/
+/-- X.例9.2: selected coefficient `Q = ℤ / I_Ob` at the circle base. -/
+abbrev CircleLawQuotient :=
+  integerLawEquationCore.ObstructionQuotient circleSiteBase
+
+/-- X.例9.2: the residual value is the quotient class `[1] ∈ Q`. -/
+def circleLawQuotientOne : CircleLawQuotient :=
+  Ideal.Quotient.mk (integerLawEquationCore.obstructionIdeal circleSiteBase) (1 : ℤ)
+
+/-- X.例9.2: `[1]` survives in the law-equation quotient. -/
+theorem circleLawQuotientOne_ne_zero : circleLawQuotientOne ≠ 0 :=
+  integerGeneratedLawQuotient_one_ne_zero circleSiteBase
+
+/-- X.例9.2: the concrete law quotient is `ℤ/(2) ≅ F₂`. -/
+noncomputable def circleLawQuotientEquivF2 : CircleLawQuotient ≃+* ZMod 2 :=
+  (Ideal.quotEquivOfEq (integerLaw_obstructionIdeal_eq_span_two circleSiteBase)).trans
+    (Int.quotientSpanNatEquivZMod 2)
+
+/-- X.例9.2: under `Q ≅ F₂`, the selected residual value `[1]` maps to `1`. -/
+theorem circleLawQuotientOne_toF2 :
+    circleLawQuotientEquivF2 circleLawQuotientOne = (1 : ZMod 2) := by
+  change (Int.quotientSpanNatEquivZMod 2)
+    (Ideal.quotEquivOfEq (integerLaw_obstructionIdeal_eq_span_two circleSiteBase)
+      (Ideal.Quotient.mk (integerLawEquationCore.obstructionIdeal circleSiteBase) (1 : ℤ))) = 1
+  rw [Ideal.quotEquivOfEq_mk]
+  rfl
+
+/-- X.例9.2: obstruction coefficient sheaf from the law-equation quotient. -/
 def circleObstructionSheaf :
-    Cohomology.ObstructionSheaf circleSite where
-  carrier := {
-    carrier := circleF2Presheaf
-    isSheaf := circleF2IsSheaf
-  }
-  addCommGroup _ := by
-    change AddCommGroup (ZMod 2)
-    infer_instance
-  map_zero := by
-    intro _source _target _f
-    rfl
-  map_add := by
-    intro _source _target _f _x _y
-    rfl
+    Cohomology.ObstructionSheaf circleSite :=
+  Cohomology.ObstructionSheaf.ofAddCommGrpValued
+    integerLawEquationCore.obstructionQuotientCoefficient circleLawQuotientIsSheaf
 
-/-- X.例9.2: supplied circle-nerve cover data. -/
+/--
+X.例9.2: supplied circle-nerve data with two vertices, two oppositely oriented
+edges, and no simplices in degree two or above.
+-/
 def circleSimplex : Nat -> Type
-  | 0 => Fin 3
-  | 1 => Fin 3
-  | _ + 2 => Unit
+  | 0 => Fin 2
+  | 1 => Fin 2
+  | _ + 2 => Empty
 
-/-- X.例9.2: cyclic successor on the three selected circle vertices. -/
-def circleNext (vertex : Fin 3) : Fin 3 :=
-  ⟨(vertex.val + 1) % 3, Nat.mod_lt _ (by decide : 0 < 3)⟩
+/-- X.例9.2: the vertex opposite a selected circle edge. -/
+def circleNext (vertex : Fin 2) : Fin 2 :=
+  ⟨(vertex.val + 1) % 2, Nat.mod_lt _ (by decide : 0 < 2)⟩
 
-/-- X.例9.2: selected face map for the three-edge circle nerve. -/
+/-- X.例9.2: selected face map for the two-edge circle nerve. -/
 def circleFace : ∀ n : Nat, Fin (n + 2) -> circleSimplex (n + 1) ->
     circleSimplex n
   | 0, i, edge => if i.val = 0 then circleNext edge else edge
-  | 1, _i, _twoSimplex => (0 : Fin 3)
-  | _ + 2, _i, _higherSimplex => ()
+  | _ + 1, _i, higherSimplex => Empty.elim higherSimplex
 
-/-- X.例9.2: selected circle C0 cochains. -/
-abbrev circleC0 : Type := Fin 3 -> ZMod 2
+/-- X.例9.2: the vertex carrier is the selected two-element type. -/
+theorem circleNerve_vertex_carrier : circleSimplex 0 = Fin 2 := rfl
+
+/-- X.例9.2: the edge carrier is the selected two-element type. -/
+theorem circleNerve_edge_carrier : circleSimplex 1 = Fin 2 := rfl
+
+/-- X.例9.2: the vertex carrier inherits its finite enumeration from `Fin 2`. -/
+instance circleNerve_vertex_fintype : Fintype (circleSimplex 0) := by
+  change Fintype (Fin 2)
+  infer_instance
+
+/-- X.例9.2: the edge carrier inherits its finite enumeration from `Fin 2`. -/
+instance circleNerve_edge_fintype : Fintype (circleSimplex 1) := by
+  change Fintype (Fin 2)
+  infer_instance
+
+/-- X.例9.2: the selected simplex carriers have the required two-edge shape. -/
+theorem circleNerve_has_two_vertices_two_opposite_edges :
+    Fintype.card (circleSimplex 0) = 2 ∧ Fintype.card (circleSimplex 1) = 2 ∧
+      circleFace 0 0 (0 : Fin 2) = (1 : Fin 2) ∧
+      circleFace 0 1 (0 : Fin 2) = (0 : Fin 2) ∧
+      circleFace 0 0 (1 : Fin 2) = (0 : Fin 2) ∧
+      circleFace 0 1 (1 : Fin 2) = (1 : Fin 2) := by
+  exact ⟨rfl, rfl, rfl, rfl, rfl, rfl⟩
+
+/-- X.例9.2: selected circle C0 cochains over `Q = ℤ/(2)`. -/
+abbrev circleC0 : Type := Fin 2 -> CircleLawQuotient
 
 /-- X.例9.2: selected circle C1 cochains. -/
-abbrev circleC1 : Type := Fin 3 -> ZMod 2
+abbrev circleC1 : Type := Fin 2 -> CircleLawQuotient
 
 /-- X.例9.2: selected circle C2 cochains. -/
-abbrev circleC2 : Type := Unit -> ZMod 2
+abbrev circleC2 : Type := Empty -> CircleLawQuotient
 
 /-- X.例9.2: selected circle Cech coboundary `d0`. -/
 def circleD0 (cochain : circleC0) : circleC1 :=
@@ -1318,26 +1388,41 @@ def circleD0 (cochain : circleC0) : circleC1 :=
 
 /-- X.例9.2: selected residual one-cochain on the circle. -/
 def circleResidual : circleC1 :=
-  fun _ => (1 : ZMod 2)
+  fun edge => if edge = 0 then circleLawQuotientOne else 0
+
+/-- X.例9.2: the residual has the values `([1], 0)` on the two selected edges. -/
+theorem circleResidual_eq_one_zero :
+    circleResidual (0 : Fin 2) = circleLawQuotientOne ∧
+      circleResidual (1 : Fin 2) = 0 := by
+  constructor <;> simp [circleResidual]
 
 /-- X.例9.2: selected zero one-cochain on the circle. -/
 def circleZero1 : circleC1 :=
-  fun _ => (0 : ZMod 2)
+  fun _ => 0
 
 /-- X.例9.2: selected zero two-cochain on the circle. -/
 def circleZero2 : circleC2 :=
-  fun _ : Unit => (0 : ZMod 2)
+  fun higherSimplex => Empty.elim higherSimplex
 
-/-- X.例9.2: the residual `1` on the three-edge circle is not a coboundary. -/
+/-- X.例9.2: the residual `([1], 0)` on the two-edge circle is not a coboundary. -/
 theorem circleResidual_not_coboundary :
     ¬ ∃ primitive : circleC0, circleResidual - circleZero1 = circleD0 primitive := by
-  decide
+  rintro ⟨primitive, hprimitive⟩
+  have h0 := congrFun hprimitive (0 : Fin 2)
+  have h1 := congrFun hprimitive (1 : Fin 2)
+  simp [circleResidual, circleZero1, circleD0, circleNext] at h0 h1
+  have heq : primitive (0 : Fin 2) = primitive (1 : Fin 2) :=
+    sub_eq_zero.mp h1.symm
+  apply circleLawQuotientOne_ne_zero
+  calc
+    circleLawQuotientOne = primitive (1 : Fin 2) - primitive (0 : Fin 2) := h0
+    _ = 0 := by rw [heq]; exact sub_self _
 
 /-- X.例9.2: supplied circle-nerve cover data. -/
 def circleCoverRelativeCover :
     Cohomology.CoverRelativeCechCover circleSite where
   base := circleSiteBase
-  Index := Fin 3
+  Index := Fin 2
   chart _ := circleSiteBase
   inclusion _ := 𝟙 circleSiteBase
   simplex := circleSimplex
@@ -1345,17 +1430,17 @@ def circleCoverRelativeCover :
   face := circleFace
   faceRestriction _ _ _ := 𝟙 circleSiteBase
 
-/-- X.例9.2: selected three-edge circle complex over `F₂`. -/
+/-- X.例9.2: selected two-edge circle complex over `Q = ℤ/(2)`. -/
 def circleCoverRelativeComplex :
     Cohomology.CoverRelativeCechComplex
       circleCoverRelativeCover circleObstructionSheaf where
   cochainAddCommGroup n := by
-    change AddCommGroup (circleSimplex n -> ZMod 2)
+    change AddCommGroup (circleSimplex n -> CircleLawQuotient)
     infer_instance
   alternatingFaceCombination
     | 0, terms => fun edge =>
-        (terms edge 0 : ZMod 2) - (terms edge 1 : ZMod 2)
-    | _ + 1, _terms => fun _ => (0 : ZMod 2)
+        (terms edge 0 : CircleLawQuotient) - (terms edge 1 : CircleLawQuotient)
+    | _ + 1, _terms => fun higherSimplex => Empty.elim higherSimplex
   differential
     | 0 => by
         change circleC0 →+ circleC1
@@ -1371,45 +1456,46 @@ def circleCoverRelativeComplex :
             abel
         }
     | _ + 1 => by
-        change (circleSimplex (_ + 1) -> ZMod 2) →+
-          (circleSimplex (_ + 2) -> ZMod 2)
+        change (circleSimplex (_ + 1) -> CircleLawQuotient) →+
+          (circleSimplex (_ + 2) -> CircleLawQuotient)
         exact {
-          toFun := fun _ => fun _ => (0 : ZMod 2)
+          toFun := fun _ => fun higherSimplex => Empty.elim higherSimplex
           map_zero' := by
-            funext σ
-            rfl
+            funext higherSimplex
+            exact Empty.elim higherSimplex
           map_add' := by
             intro _x _y
-            funext σ
-            rfl
+            funext higherSimplex
+            exact Empty.elim higherSimplex
         }
   differential_eq_alternatingFaceCombination := by
     intro n c
     cases n with
     | zero =>
         funext edge
-        letI := circleObstructionSheaf.addCommGroup circleSiteBase
-        dsimp [circleD0, circleFace, circleCoverRelativeCover,
-          circleObstructionSheaf, circleF2Presheaf, Site.AATSheaf.toPresheaf]
-        change circleD0 (c : circleC0) edge = _
-        rfl
+        letI : AddCommGroup
+            (circleLawQuotientPresheaf.obj (op circleSiteBase)) := by
+          change AddCommGroup CircleLawQuotient
+          infer_instance
+        change circleD0 c edge =
+          circleLawQuotientPresheaf.map (𝟙 (op circleSiteBase))
+              (c (circleNext edge)) -
+            circleLawQuotientPresheaf.map (𝟙 (op circleSiteBase)) (c edge)
+        simp [circleD0]
     | succ n =>
-        funext σ
-        change (0 : ZMod 2) = 0
-        rfl
+        funext higherSimplex
+        exact Empty.elim higherSimplex
   differential_comp := by
     intro n _c
     cases n with
     | zero =>
-        funext σ
-        change (0 : ZMod 2) = 0
-        rfl
+        funext higherSimplex
+        exact Empty.elim higherSimplex
     | succ n =>
-        funext σ
-        change (0 : ZMod 2) = 0
-        rfl
+        funext higherSimplex
+        exact Empty.elim higherSimplex
 
-/-- X.例9.2: semantic additive `H¹` surface with residual `1 ∈ F₂`. -/
+/-- X.例9.2: semantic additive `H¹` surface with residual `([1], 0)` over `Q`. -/
 def circleAdditiveH1Surface :
     SemanticRepairAdditiveH1Surface where
   C0 := circleC0
@@ -1441,15 +1527,15 @@ def circleAdditiveH1Surface :
         -(primitive (circleNext edge) - primitive edge)
     abel
   zero1_cocycle := by
-    funext σ
-    rfl
+    funext higherSimplex
+    exact Empty.elim higherSimplex
   delta1_delta0_eq_zero := by
     intro _primitive
-    funext σ
-    rfl
+    funext higherSimplex
+    exact Empty.elim higherSimplex
   residual_cocycle := by
-    funext σ
-    rfl
+    funext higherSimplex
+    exact Empty.elim higherSimplex
 
 /-- X.例9.2: the semantic residual circle cochain is not a semantic coboundary. -/
 theorem circleSemantic_residual_not_coboundary :
@@ -1469,18 +1555,16 @@ def circleCoverRelativeResidualCocycle :
     circleCoverRelativeComplex.CechCocycle 1 where
   val := circleResidual
   property := by
-    funext σ
-    change (0 : ZMod 2) = 0
-    rfl
+    funext higherSimplex
+    exact Empty.elim higherSimplex
 
 /-- X.例9.2: selected cover-relative zero cocycle. -/
 def circleCoverRelativeZeroCocycle :
     circleCoverRelativeComplex.CechCocycle 1 where
   val := circleZero1
   property := by
-    funext σ
-    change (0 : ZMod 2) = 0
-    rfl
+    funext higherSimplex
+    exact Empty.elim higherSimplex
 
 /-- X.例9.2: selected cover-relative residual class. -/
 def circleCoverRelativeResidualClass :
@@ -1523,14 +1607,14 @@ def circleH1Comparison :
     change circleC1 ≃+ circleC1
     exact AddEquiv.refl circleC1
   c2Equiv := by
-    change (Unit -> ZMod 2) ≃ (Unit -> ZMod 2)
-    exact Equiv.refl (Unit -> ZMod 2)
+    change (Empty -> CircleLawQuotient) ≃ (Empty -> CircleLawQuotient)
+    exact Equiv.refl (Empty -> CircleLawQuotient)
   c2Equiv_zero := by
-    funext σ
-    rfl
+    funext higherSimplex
+    exact Empty.elim higherSimplex
   c2Equiv_symm_zero := by
-    funext σ
-    rfl
+    funext higherSimplex
+    exact Empty.elim higherSimplex
   d0_to := by
     intro primitive
     rfl
@@ -1539,14 +1623,12 @@ def circleH1Comparison :
     rfl
   d1_to := by
     intro _cochain
-    funext σ
-    change (0 : ZMod 2) = 0
-    rfl
+    funext higherSimplex
+    exact Empty.elim higherSimplex
   d1_from := by
     intro _cochain
-    funext σ
-    change (0 : ZMod 2) = 0
-    rfl
+    funext higherSimplex
+    exact Empty.elim higherSimplex
 
 /-- X.例9.2: nonzero semantic class transfers across theorem 7.2 comparison. -/
 theorem circleTransferredCoverRelativeH1_nonzero :
@@ -1632,8 +1714,29 @@ theorem circlePartIV_h0_invisible_additiveH1_nonzero :
 /-! ## Native generated quotient circle witness -/
 
 /--
-X.例9.1 / #3102: the theorem-7.5 witness reuses the circle nerve shape over
-the native law-equation-generated quotient coefficient.
+The former three-vertex / three-edge all-one fixture, retained only for the
+native generated-quotient route.  It is distinct from the two-edge `(1, 0)`
+circle nerve of X.例9.2.
+-/
+def legacyThreeEdgeCircleSimplex : Nat -> Type
+  | 0 => Fin 3
+  | 1 => Fin 3
+  | _ + 2 => Unit
+
+/-- The cyclic successor used by the legacy three-edge fixture. -/
+def legacyThreeEdgeCircleNext (vertex : Fin 3) : Fin 3 :=
+  ⟨(vertex.val + 1) % 3, Nat.mod_lt _ (by decide : 0 < 3)⟩
+
+/-- The selected face map used by the legacy three-edge fixture. -/
+def legacyThreeEdgeCircleFace : ∀ n : Nat, Fin (n + 2) ->
+    legacyThreeEdgeCircleSimplex (n + 1) -> legacyThreeEdgeCircleSimplex n
+  | 0, i, edge => if i.val = 0 then legacyThreeEdgeCircleNext edge else edge
+  | 1, _i, _twoSimplex => (0 : Fin 3)
+  | _ + 2, _i, _higherSimplex => ()
+
+/--
+X.例9.1 / #3102: the theorem-7.5 witness reuses the legacy three-edge circle
+shape over the native law-equation-generated quotient coefficient.
 -/
 def generatedLawCircleCoverRelativeCover :
     Cohomology.CoverRelativeCechCover FiniteModel.site where
@@ -1641,9 +1744,9 @@ def generatedLawCircleCoverRelativeCover :
   Index := Fin 3
   chart _ := FiniteModel.siteBase
   inclusion _ := 𝟙 FiniteModel.siteBase
-  simplex := circleSimplex
+  simplex := legacyThreeEdgeCircleSimplex
   overlap _ _ := FiniteModel.siteBase
-  face := circleFace
+  face := legacyThreeEdgeCircleFace
   faceRestriction _ _ _ := 𝟙 FiniteModel.siteBase
 
 /--
@@ -2214,7 +2317,7 @@ abbrev generatedLawCircleC2 : Type :=
 /-- X.例9.1 / #3102: selected circle coboundary over the native quotient. -/
 def generatedLawCircleD0 (cochain : generatedLawCircleC0) :
     generatedLawCircleC1 :=
-  fun edge => cochain (circleNext edge) - cochain edge
+  fun edge => cochain (legacyThreeEdgeCircleNext edge) - cochain edge
 
 /-- X.例9.1 / #3102: selected nonzero residual over the native quotient. -/
 def generatedLawCircleResidual : generatedLawCircleC1 :=
@@ -2241,7 +2344,7 @@ theorem generatedLawCircleResidual_not_coboundary :
   have h1 := congrFun hprimitive (1 : Fin 3)
   have h2 := congrFun hprimitive (2 : Fin 3)
   simp [generatedLawCircleResidual, generatedLawCircleZero1,
-    generatedLawCircleD0, circleNext] at h0 h1 h2
+    generatedLawCircleD0, legacyThreeEdgeCircleNext] at h0 h1 h2
   have hsum :
       generatedLawQuotientOne + generatedLawQuotientOne + generatedLawQuotientOne =
         0 := by
@@ -2261,7 +2364,7 @@ def generatedLawCircleCoverRelativeComplex :
     Cohomology.CoverRelativeCechComplex
       generatedLawCircleCoverRelativeCover generatedLawQuotientObstructionSheaf where
   cochainAddCommGroup n := by
-    change AddCommGroup (circleSimplex n -> GeneratedLawQuotient)
+    change AddCommGroup (legacyThreeEdgeCircleSimplex n -> GeneratedLawQuotient)
     infer_instance
   alternatingFaceCombination
     | 0, terms => fun edge =>
@@ -2282,8 +2385,8 @@ def generatedLawCircleCoverRelativeComplex :
             abel
         }
     | _ + 1 => by
-        change (circleSimplex (_ + 1) -> GeneratedLawQuotient) →+
-          (circleSimplex (_ + 2) -> GeneratedLawQuotient)
+        change (legacyThreeEdgeCircleSimplex (_ + 1) -> GeneratedLawQuotient) →+
+          (legacyThreeEdgeCircleSimplex (_ + 2) -> GeneratedLawQuotient)
         exact {
           toFun := fun _ => fun _ => (0 : GeneratedLawQuotient)
           map_zero' := by
@@ -2304,7 +2407,7 @@ def generatedLawCircleCoverRelativeComplex :
           infer_instance
         change generatedLawCircleD0 c edge =
           generatedLawQuotientPresheaf.map (𝟙 (op FiniteModel.siteBase))
-              (c (circleNext edge)) -
+              (c (legacyThreeEdgeCircleNext edge)) -
             generatedLawQuotientPresheaf.map (𝟙 (op FiniteModel.siteBase)) (c edge)
         simp [generatedLawCircleD0]
     | succ n =>
@@ -2542,6 +2645,77 @@ def generatedLawCircleZeroBoundaryAdditiveData :
       (lawEquationCompleteRepairSupport_componentCoverage_and_faithfulness
         generatedLawCircleSemanticProjection
         generatedLawCircleSemanticCover.baseCover).2)
+
+/--
+X.定義4.6 / 定理4.8 positive fixture: the zero-residual circle packet
+constructs general `P`/`Q` faithfulness data and additive H1 laws together.
+-/
+def generatedLawCircleZeroBoundaryAdditiveFaithfulnessData :
+    AAT.AG.SemanticRepair.SemanticRepairCoverH1AdditiveFaithfulnessData
+      generatedLawCircleSemanticProjection :=
+  AAT.AG.SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.toAdditiveFaithfulnessData
+    generatedLawCircleZeroBoundaryAdditiveData
+
+/--
+X.定義4.6 positive fixture: read the general faithfulness presentation from
+the additive H1 fixture.
+-/
+def generatedLawCircleZeroBoundaryFaithfulnessData :
+    AAT.AG.SemanticRepair.SemanticRepairCoverH1FaithfulnessData
+      generatedLawCircleSemanticProjection :=
+  generatedLawCircleZeroBoundaryAdditiveFaithfulnessData.toFaithfulnessData
+
+/--
+X.定理4.8 positive fixture: additive H1 zero for the selected zero residual.
+-/
+theorem generatedLawCircleZeroBoundaryFaithfulness_additiveH1Zero :
+    generatedLawCircleZeroBoundaryAdditiveFaithfulnessData.toAdditiveCechH1Data.H1Zero := by
+  apply generatedLawCircleZeroBoundaryAdditiveFaithfulnessData.toAdditiveCechH1Data.h1Zero_iff_boundary.mpr
+  exact ⟨(0 : generatedLawCircleC0), rfl⟩
+
+/--
+X.定理4.8 positive fixture: the general `P`/`Q` additive H1 theorem produces
+a global coherence witness.
+-/
+theorem generatedLawCircleZeroBoundaryFaithfulness_globalRepairCoherent :
+    generatedLawCircleZeroBoundaryFaithfulnessData.GlobalRepairCoherent := by
+  exact
+    AAT.AG.SemanticRepair.SemanticRepairCoverH1AdditiveFaithfulnessData.globalRepairCoherent_of_additiveH1Zero
+      generatedLawCircleZeroBoundaryAdditiveFaithfulnessData
+      generatedLawCircleZeroBoundaryFaithfulness_additiveH1Zero
+
+/--
+X.定義4.6 negative fixture: `P` and `Q` remain independent predicates, rather
+than aliases for the component predicates. The nonzero circle residual can
+support `Q` while the closure predicate is empty.
+-/
+def generatedLawCircleNegativeFaithfulnessData :
+    AAT.AG.SemanticRepair.SemanticRepairCoverH1FaithfulnessData
+      generatedLawCircleSemanticProjection where
+  cover := generatedLawCircleBoundaryRelationData.cover
+  cech := generatedLawCircleBoundaryRelationData.cech
+  P := fun _ => False
+  Q := fun cochain => cochain = generatedLawCircleBoundaryRelationData.cech.residual
+  zeroPrimitive := (0 : generatedLawCircleC0)
+  delta0_zeroPrimitive := by
+    change generatedLawCircleD0 0 = generatedLawCircleZero1
+    funext edge
+    simp [generatedLawCircleD0, generatedLawCircleZero1]
+  residual_in_Q := rfl
+  faithful primitive hresidual :=
+    False.elim
+      (generatedLawCircleD0_eq_residual_impossible primitive (by
+        simpa [generatedLawCircleBoundaryRelationData,
+          generatedLawCircleSemanticCechData] using hresidual))
+
+/--
+X.定義4.6 negative fixture: arbitrary `P`/`Q` data does not manufacture a
+global coherence witness when the closure predicate is empty.
+-/
+theorem generatedLawCircleNegativeFaithfulness_not_globalRepairCoherent :
+    ¬ generatedLawCircleNegativeFaithfulnessData.GlobalRepairCoherent := by
+  rintro ⟨_primitive, _hboundary, hclosure⟩
+  exact hclosure
 
 /--
 The zero primitive generates the zero-boundary packet, separately from the

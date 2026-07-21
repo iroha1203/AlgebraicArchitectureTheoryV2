@@ -1,4 +1,5 @@
 import Formal.AG
+import Formal.AG.SemanticRepair.AdditiveH1
 import Formal.AG.SemanticRepair.LawEquationGeneratedPair
 import Formal.AG.Examples.DerivedPart5
 import Formal.AG.Examples.EvolutionPart9
@@ -250,8 +251,51 @@ kernel audit entrypoint elaborate the six advertised Part X CBI declarations.
 def semanticRepairTheorem34FiniteDescentPackage :=
   @SemanticRepair.finiteSemanticRepairGluingDescent_package
 
+/- Part X Definition 3.1 full finite gluing declarations audited by direct alias. -/
+def semanticRepairDefinition31FullFiniteDescentPackage :=
+  @SemanticRepair.FullFiniteSemanticRepairGluingComplex.finiteSemanticRepairGluingDescent_package
+
+def semanticRepairDefinition31FullRestrictionDifference :=
+  @SemanticRepair.FullFiniteSemanticRepairGluingComplex.delta0_ev_iff_restriction_xor
+
+def semanticRepairDefinition31FullNecessary :=
+  @SemanticRepair.FullFiniteSemanticRepairGluingComplex.globalRepairCoherent_forces_obstructionVanishes
+
+def semanticRepairDefinition31FullNonzeroExclusion :=
+  @SemanticRepair.FullFiniteSemanticRepairGluingComplex.no_globalRepairCoherent_of_nonzero_obstruction
+
+def semanticRepairDefinition31FullSufficiency :=
+  @SemanticRepair.FullFiniteSemanticRepairGluingComplex.globalRepairCoherent_of_obstructionVanishes
+
+def semanticRepairDefinition31FullDescentIff :=
+  @SemanticRepair.FullFiniteSemanticRepairGluingComplex.finiteSemanticRepairGluingDescent_iff
+
+def semanticRepairDefinition31FullFixtureNontrivialOverlap :=
+  @SemanticRepair.FullFiniteGluingComplexExample.has_nontrivial_overlap
+
+def semanticRepairDefinition31FullFixtureRestrictionDifference :=
+  @SemanticRepair.FullFiniteGluingComplexExample.delta0_charges_left_only_on_nontrivial_overlap
+
+def semanticRepairDefinition31FullFixtureFaithfulness :=
+  @SemanticRepair.FullFiniteGluingComplexExample.semanticFaithfulnessHypotheses
+
+def semanticRepairDefinition31FullFiniteFixture :=
+  @SemanticRepair.FullFiniteGluingComplexExample.finiteSemanticRepairGluingDescent_iff
+
 def semanticRepairTheorem48TrueSheafH1Gluing :=
   @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.globalRepairCoherent_iff_additiveH1Zero
+
+def semanticRepairDefinition46GeneralFaithfulnessSufficiency :=
+  @SemanticRepair.SemanticRepairCoverH1FaithfulnessData.globalRepairCoherent_of_boundary
+
+def semanticRepairDefinition46AdditiveZeroPrimitive :=
+  @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.toFaithfulnessData
+
+def semanticRepairDefinition46ComponentBridge :=
+  @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAbelianData.toFaithfulnessData_globalRepairCoherent_iff
+
+def semanticRepairTheorem48GeneralFaithfulnessSufficiency :=
+  @SemanticRepair.SemanticRepairCoverH1AdditiveFaithfulnessData.globalRepairCoherent_of_additiveH1Zero
 
 def semanticRepairTheorem72H1ComparisonPackage :=
   @SemanticRepair.SemanticRepairCoverRelativeH1Comparison.semanticRepairAdditiveH1_coverRelativeH1_comparison_package
@@ -532,6 +576,47 @@ def semanticRepairExample91GeneratedLawCircleComplexZeroBoundaryPacketFromZeroPr
 
 def semanticRepairExample91LegacySingletonStandardBoundedConjuncts :=
   AAT.AG.Examples.SemanticRepairPart10.legacyFiring_generatedLawSingletonStandardSourceC0_boundedConjuncts
+
+/-- Kernel-audit entries for the fixed two-edge X.例9.2 circle nerve. -/
+def semanticRepairExample92CircleNerveVertexCarrier :=
+  AAT.AG.Examples.SemanticRepairPart10.circleNerve_vertex_carrier
+
+def semanticRepairExample92CircleNerveEdgeCarrier :=
+  AAT.AG.Examples.SemanticRepairPart10.circleNerve_edge_carrier
+
+def semanticRepairExample92CircleNerveShape :=
+  AAT.AG.Examples.SemanticRepairPart10.circleNerve_has_two_vertices_two_opposite_edges
+
+def semanticRepairExample92CircleLawObstructionIdeal :=
+  AAT.AG.Examples.SemanticRepairPart10.integerLaw_obstructionIdeal_eq_span_two
+    AAT.AG.Examples.SemanticRepairPart10.circleSiteBase
+
+def semanticRepairExample92CircleLawQuotientOneNonzero :=
+  AAT.AG.Examples.SemanticRepairPart10.circleLawQuotientOne_ne_zero
+
+noncomputable def semanticRepairExample92CircleLawQuotientEquivF2 :=
+  AAT.AG.Examples.SemanticRepairPart10.circleLawQuotientEquivF2
+
+def semanticRepairExample92CircleLawQuotientOneToF2 :=
+  AAT.AG.Examples.SemanticRepairPart10.circleLawQuotientOne_toF2
+
+def semanticRepairExample92CircleResidualValues :=
+  AAT.AG.Examples.SemanticRepairPart10.circleResidual_eq_one_zero
+
+def semanticRepairExample92CircleResidualNotCoboundary :=
+  AAT.AG.Examples.SemanticRepairPart10.circleResidual_not_coboundary
+
+theorem semanticRepairExample92CircleSemanticH1Nonzero :
+    ¬ AAT.AG.Examples.SemanticRepairPart10.circleAdditiveH1Surface.H1Zero :=
+  AAT.AG.Examples.SemanticRepairPart10.circleSemanticH1_nonzero
+
+theorem semanticRepairExample92CircleCoverRelativeH1Nonzero :
+    AAT.AG.Examples.SemanticRepairPart10.circleCoverRelativeResidualClass ≠
+      AAT.AG.Examples.SemanticRepairPart10.circleCoverRelativeZeroClass :=
+  AAT.AG.Examples.SemanticRepairPart10.circleCoverRelativeH1_nonzero
+
+def semanticRepairExample92CircleNonzeroTransferPacket :=
+  AAT.AG.Examples.SemanticRepairPart10.circleNerve_nonzeroClassTransfer_packet
 
 theorem boundaryCocycleNonzero :
     Cohomology.FiniteExamples.PseudoCircleGolden.boundaryCocycle
@@ -8860,6 +8945,24 @@ def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_USmooth_liftFill :
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_USmooth_obstruction_eq_zero := @AAT.AG.SingularityMonodromyStack.USmooth.obstruction_eq_zero
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_instDecidableEqStratumRole__proof_1 := @AAT.AG.SingularityMonodromyStack.instDecidableEqStratumRole._proof_1
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_instDecidableEqStratumRole__proof_2 := @AAT.AG.SingularityMonodromyStack.instDecidableEqStratumRole._proof_2
+
+/-! Part IX theorem 5.3 finite-time terminal-arrival audit aliases. -/
+
+/-- Kernel-audit alias for selected-state finiteness in the stopping package. -/
+def finiteDissipationStoppingFiniteSelectedStates :=
+  @Evolution.FiniteDissipationStopping.finite_selected_states
+
+/-- Kernel-audit alias for theorem 5.3 terminal arrival on policy-generated paths. -/
+def finiteDissipationStoppingPolicyGeneratedTerminalArrival :=
+  @Evolution.FiniteDissipationStopping.policy_generated_path_reaches_terminal
+
+/-- Kernel-audit alias for the finite fixture's concrete terminal time. -/
+def evolutionPart9PolicyGeneratedDissipationTerminalAtTwo :=
+  Examples.EvolutionPart9.policy_generated_dissipation_terminal_at_two
+
+/-- Kernel-audit alias for the finite fixture's theorem-5.3 terminal arrival. -/
+def evolutionPart9PolicyGeneratedDissipationTerminalArrival :=
+  Examples.EvolutionPart9.policy_generated_dissipation_reaches_terminal
 
 
 end AAT.AG.AxiomAudit
