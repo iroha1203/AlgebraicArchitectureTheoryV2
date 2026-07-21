@@ -992,7 +992,7 @@ def phi : EvolutionFunctional statePresheaf where
 inductive DissipationStep where
   | highToMid
   | midToTerminal
-  | terminalStay
+  | terminalToNonlawfulTerminal
   deriving DecidableEq, Fintype
 
 /-- R10(d): explicit finite witness for the three selected dissipative steps. -/
@@ -1000,11 +1000,11 @@ def dissipationStepEquivFin : DissipationStep ≃ Fin 3 where
   toFun
     | .highToMid => ⟨0, by decide⟩
     | .midToTerminal => ⟨1, by decide⟩
-    | .terminalStay => ⟨2, by decide⟩
+    | .terminalToNonlawfulTerminal => ⟨2, by decide⟩
   invFun
     | ⟨0, _⟩ => .highToMid
     | ⟨1, _⟩ => .midToTerminal
-    | ⟨2, _⟩ => .terminalStay
+    | ⟨2, _⟩ => .terminalToNonlawfulTerminal
     | ⟨n + 3, h⟩ => False.elim (by omega : False)
   left_inv := by
     intro step
@@ -1021,13 +1021,13 @@ instance : Finite DissipationStep :=
 def DissipationStep.sourceState : DissipationStep -> TinyState
   | .highToMid => .high
   | .midToTerminal => .mid
-  | .terminalStay => .terminal
+  | .terminalToNonlawfulTerminal => .terminal
 
 /-- R10(d): target state of each selected dissipative step. -/
 def DissipationStep.targetState : DissipationStep -> TinyState
   | .highToMid => .mid
   | .midToTerminal => .terminal
-  | .terminalStay => .terminal
+  | .terminalToNonlawfulTerminal => .nonlawfulTerminal
 
 /-- R10(d): selected temporal point for each state in the dissipation fixture. -/
 def dissipationStatePoint : TinyState -> temporalSite.Point
@@ -1052,7 +1052,7 @@ def dissipativePolicy : DissipativePolicy phi where
   incidence := fun
     | .highToMid => stepLeg
     | .midToTerminal => temporalSite.idLeg p1
-    | .terminalStay => temporalSite.idLeg p1
+    | .terminalToNonlawfulTerminal => temporalSite.idLeg p1
   selectedEvolutionStep := fun _ => True
   selectedEvolutionStep_cert := fun _ => trivial
   nonIncrease := by
@@ -1169,7 +1169,7 @@ def finiteDissipationPath : SelectedEvolutionPath dissipativePolicy where
   step := fun
     | ⟨0, _⟩ => .highToMid
     | ⟨1, _⟩ => .midToTerminal
-    | ⟨2, _⟩ => .terminalStay
+    | ⟨2, _⟩ => .terminalToNonlawfulTerminal
     | ⟨n + 3, h⟩ => False.elim (by omega : False)
   continuous := by
     intro i hnext
