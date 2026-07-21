@@ -75,8 +75,11 @@ structure DissipativePolicy {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {E : EvolutionProfile.{u, v, w, x, y, z}}
     {T : TemporalSite S E} {St : StateTransitionPresheaf T}
     (Phi : EvolutionFunctional St) where
+  /-- IX.§5.2: selected state set for this policy. -/
   SelectedState : Type (max u w x y z)
+  /-- IX.§5.2: temporal point carrying each selected state. -/
   point : SelectedState -> T.Point
+  /-- IX.§5.2: presheaf state carried by each selected state. -/
   state : (selected : SelectedState) -> St.State (point selected)
   Step : Type (max u w x y z)
   sourceState : Step -> SelectedState

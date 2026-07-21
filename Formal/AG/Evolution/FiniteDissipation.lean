@@ -187,7 +187,9 @@ structure PolicyGeneratedEvolutionPath {U : AtomCarrier.{u}}
     {E : EvolutionProfile.{u, v, w, x, y, z}} {T : TemporalSite S E}
     {St : StateTransitionPresheaf T} {Phi : EvolutionFunctional St}
     (P : DissipativePolicy Phi) (Term : TerminalState Phi) where
+  /-- IX.§5.3: selected state at each discrete evolution time. -/
   state : Nat -> P.SelectedState
+  /-- IX.§5.3: policy step generated from each non-terminal selected state. -/
   nextStep : ∀ n : Nat,
     Term.NonTerminal (P.point (state n)) (P.state (state n)) -> P.Step
   step_source : ∀ (n : Nat)
