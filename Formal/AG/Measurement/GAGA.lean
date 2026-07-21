@@ -34,7 +34,7 @@ def nerve : Cohomology.CoverNerve where
   edgeOverlapComponent := fun _ => True
   faceTripleOverlapComponent := fun f => Empty.elim f
   edgeOverlapComponent_holds := fun _ => trivial
-  faceTripleOverlapComponent_holds := Empty.elim
+  faceTripleOverlapComponent_holds := fun f => Empty.elim f
 
 /-- The incidence cochain complex of the selected two-chart cover nerve. -/
 noncomputable def complex : Cohomology.FiniteNerveCochainComplex nerve where
@@ -121,8 +121,9 @@ def coherent {M : MeasurementProfile.{u, v}} (C : AATGAGACommonFiniteData M) : P
 
 /-- The selected finite data satisfy their direct realization equalities. -/
 theorem coherent_holds {M : MeasurementProfile.{u, v}} (C : AATGAGACommonFiniteData M) :
-    C.coherent :=
-  ⟨C.measuredSelection.inScope, C.coefficientToReal.injective, C.selectedCell_eq,
+    C.coherent := by
+  letI : AddCommGroup M.Coeff := C.coefficientAddCommGroup
+  exact ⟨C.measuredSelection.inScope, C.coefficientToReal.injective, C.selectedCell_eq,
     C.ambientLeftDomain_eq, C.ambientRightDomain_eq,
     C.selectedCoefficient_left_eq, C.selectedCoefficient_right_eq⟩
 
@@ -240,7 +241,7 @@ def statement {M : MeasurementProfile.{u, v}}
       P.siteRealization vertex = C.cellToSite (P.cellRealization vertex)) ∧
     P.siteRealization .right = C.selectedSite ∧
       P.coverRealization .interval = C.selectedCover ∧
-        P.siteRealization_injective ∧
+        Function.Injective P.siteRealization ∧
           ∀ (ω : Cohomology.RealIntervalBasisStokes.Cochain 0)
             (γ : Cohomology.RealIntervalBasisStokes.Chain 1),
             Cohomology.RealIntervalBasisStokes.pair1
@@ -264,7 +265,7 @@ def topologicalCapacityStatement {M : MeasurementProfile.{u, v}}
       P.siteRealization vertex = C.cellToSite (P.cellRealization vertex)) ∧
     P.siteRealization .right = C.selectedSite ∧
       P.coverRealization .interval = C.selectedCover ∧
-        P.siteRealization_injective ∧
+        Function.Injective P.siteRealization ∧
           Module.finrank GAGAIntervalNerve.complex.k GAGAIntervalNerve.complex.C1 <=
             Module.finrank GAGAIntervalNerve.complex.k GAGAIntervalNerve.complex.H1 +
               Module.finrank GAGAIntervalNerve.complex.k GAGAIntervalNerve.complex.C0 +

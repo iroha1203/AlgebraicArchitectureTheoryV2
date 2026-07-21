@@ -3615,7 +3615,10 @@ noncomputable def gagaThreeAxisLaplacianReading :
   d_next := ()
   d_prev_adjoint := ()
   d_next_adjoint := ()
-  laplacian_eq_formula := rfl
+  laplacian_eq_formula :=
+    threeAxisRealComplex.laplacian =
+      threeAxisRealComplex.dPrev.comp threeAxisRealComplex.dPrevAdjoint +
+        threeAxisRealComplex.dNextAdjoint.comp threeAxisRealComplex.dNext
   laplacian_eq_formula_cert := rfl
   finiteSelfAdjointReading :=
     ∀ x, inner ℝ (threeAxisRealComplex.laplacian x) x =
@@ -3627,6 +3630,69 @@ noncomputable def gagaThreeAxisLaplacianReading :
     simpa [real_inner_self_eq_norm_sq] using
       threeAxisRealComplex.inner_laplacian_self x
 
+/-- Normed additive structure at the preceding degree of the GAGA cellular model. -/
+local instance gagaThreeAxisPreviousNormedAddCommGroup :
+    NormedAddCommGroup
+      (gagaThreeAxisCellularModel.Cochain gagaThreeAxisLaplacianReading.previousDegree) := by
+  change NormedAddCommGroup ℝ
+  infer_instance
+
+/-- Real inner-product structure at the preceding degree of the GAGA cellular model. -/
+local instance gagaThreeAxisPreviousInnerProductSpace :
+    InnerProductSpace ℝ
+      (gagaThreeAxisCellularModel.Cochain gagaThreeAxisLaplacianReading.previousDegree) := by
+  change InnerProductSpace ℝ ℝ
+  infer_instance
+
+/-- Finite-dimensionality at the preceding degree of the GAGA cellular model. -/
+local instance gagaThreeAxisPreviousFiniteDimensional :
+    FiniteDimensional ℝ
+      (gagaThreeAxisCellularModel.Cochain gagaThreeAxisLaplacianReading.previousDegree) := by
+  change FiniteDimensional ℝ ℝ
+  infer_instance
+
+/-- Normed additive structure at the selected degree of the GAGA cellular model. -/
+local instance gagaThreeAxisSelectedNormedAddCommGroup :
+    NormedAddCommGroup
+      (gagaThreeAxisCellularModel.Cochain gagaThreeAxisLaplacianReading.degree) := by
+  change NormedAddCommGroup LowDegreeRealCochain
+  infer_instance
+
+/-- Real inner-product structure at the selected degree of the GAGA cellular model. -/
+local instance gagaThreeAxisSelectedInnerProductSpace :
+    InnerProductSpace ℝ
+      (gagaThreeAxisCellularModel.Cochain gagaThreeAxisLaplacianReading.degree) := by
+  change InnerProductSpace ℝ LowDegreeRealCochain
+  infer_instance
+
+/-- Finite-dimensionality at the selected degree of the GAGA cellular model. -/
+local instance gagaThreeAxisSelectedFiniteDimensional :
+    FiniteDimensional ℝ
+      (gagaThreeAxisCellularModel.Cochain gagaThreeAxisLaplacianReading.degree) := by
+  change FiniteDimensional ℝ LowDegreeRealCochain
+  infer_instance
+
+/-- Normed additive structure at the succeeding degree of the GAGA cellular model. -/
+local instance gagaThreeAxisNextNormedAddCommGroup :
+    NormedAddCommGroup
+      (gagaThreeAxisCellularModel.Cochain gagaThreeAxisLaplacianReading.nextDegree) := by
+  change NormedAddCommGroup ℝ
+  infer_instance
+
+/-- Real inner-product structure at the succeeding degree of the GAGA cellular model. -/
+local instance gagaThreeAxisNextInnerProductSpace :
+    InnerProductSpace ℝ
+      (gagaThreeAxisCellularModel.Cochain gagaThreeAxisLaplacianReading.nextDegree) := by
+  change InnerProductSpace ℝ ℝ
+  infer_instance
+
+/-- Finite-dimensionality at the succeeding degree of the GAGA cellular model. -/
+local instance gagaThreeAxisNextFiniteDimensional :
+    FiniteDimensional ℝ
+      (gagaThreeAxisCellularModel.Cochain gagaThreeAxisLaplacianReading.nextDegree) := by
+  change FiniteDimensional ℝ ℝ
+  infer_instance
+
 /-- R11(g): operator-level comparison for the selected-site Hodge reading. -/
 noncomputable def gagaThreeAxisCellularComparison :
     RealFiniteInnerProductComplex.CellularRealFiniteComplexComparison
@@ -3637,6 +3703,8 @@ noncomputable def gagaThreeAxisCellularComparison :
   dNextAdjoint_eq := rfl
   laplacianOperator_eq := rfl
   laplacian_eq := rfl
+  innerProductReading := id
+  innerProduct_eq := by intro x y; rfl
 
 /-- R11(g): common ambient whose law handles select the shared-witness ideals. -/
 def gagaCommonAmbient :
@@ -3672,7 +3740,7 @@ def gagaCommonAmbient :
   noComparisonWithoutCommonAmbient_cert := trivial
 
 /-- R11(g): one direct common datum for the nondegenerate GAGA fixture. -/
-noncomputable def gagaCommonFiniteData :
+noncomputable abbrev gagaCommonFiniteData :
     AATGAGACommonFiniteData pseudoCircleMeasurementProfile where
   selectedSite := Cohomology.FiniteExamples.PseudoCircleGolden.Chart.B
   selectedCover := Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.AB
@@ -3682,8 +3750,12 @@ noncomputable def gagaCommonFiniteData :
     method := ()
     certificate := ()
   }
-  coefficientAddCommGroup := inferInstance
-  coefficientToReal := AddEquiv.refl ℝ
+  coefficientAddCommGroup := by
+    change AddCommGroup ℝ
+    infer_instance
+  coefficientToReal := by
+    change ℝ ≃+ ℝ
+    exact AddEquiv.refl ℝ
   cellularModel := gagaThreeAxisCellularModel
   cellToSite := id
   selectedCell := Cohomology.FiniteExamples.PseudoCircleGolden.Chart.B
@@ -3691,7 +3763,7 @@ noncomputable def gagaCommonFiniteData :
   commonAmbient := gagaCommonAmbient
   ambientLeftDomain_eq := rfl
   ambientRightDomain_eq := rfl
-  selectedCoefficient := 1
+  selectedCoefficient := (1 : ℝ)
   coefficientToAmbient := id
   selectedCoefficient_left_eq := rfl
   selectedCoefficient_right_eq := rfl

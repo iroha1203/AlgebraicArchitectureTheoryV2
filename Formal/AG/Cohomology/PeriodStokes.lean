@@ -271,7 +271,8 @@ abbrev Chain : Nat -> Type
 /-- The real degree-zero Čech coboundary of the selected oriented overlap. -/
 def d0 : Cochain 0 →ₗ[ℝ] Cochain 1 where
   toFun ω
-    | Edge.interval => ω Vertex.right - ω Vertex.left
+    | IntervalBasisStokes.Edge.interval =>
+        ω IntervalBasisStokes.Vertex.right - ω IntervalBasisStokes.Vertex.left
   map_add' := by
     intro ω η
     funext e
@@ -288,12 +289,16 @@ def d0 : Cochain 0 →ₗ[ℝ] Cochain 1 where
 /-- The real degree-zero chain map of the selected oriented overlap. -/
 def chain0 : Chain 1 →ₗ[ℝ] Chain 0 where
   toFun γ
-    | Vertex.left => -γ Edge.interval
-    | Vertex.right => γ Edge.interval
+    | IntervalBasisStokes.Vertex.left => -γ IntervalBasisStokes.Edge.interval
+    | IntervalBasisStokes.Vertex.right => γ IntervalBasisStokes.Edge.interval
   map_add' := by
     intro γ δ
     funext v
-    cases v <;> simp [Pi.add_apply]
+    cases v with
+    | left =>
+        simp [Pi.add_apply]
+        ring
+    | right => simp [Pi.add_apply]
   map_smul' := by
     intro a γ
     funext v
@@ -301,11 +306,12 @@ def chain0 : Chain 1 →ₗ[ℝ] Chain 0 where
 
 /-- The real degree-zero pairing on selected site objects. -/
 def pair0 (ω : Cochain 0) (γ : Chain 0) : ℝ :=
-  ω Vertex.left * γ Vertex.left + ω Vertex.right * γ Vertex.right
+  ω IntervalBasisStokes.Vertex.left * γ IntervalBasisStokes.Vertex.left +
+    ω IntervalBasisStokes.Vertex.right * γ IntervalBasisStokes.Vertex.right
 
 /-- The real degree-one pairing on the selected overlap. -/
 def pair1 (ω : Cochain 1) (γ : Chain 1) : ℝ :=
-  ω Edge.interval * γ Edge.interval
+  ω IntervalBasisStokes.Edge.interval * γ IntervalBasisStokes.Edge.interval
 
 /-- Finite real Čech Stokes on the selected two-chart basis model. -/
 theorem finiteIntervalStokes_basis
