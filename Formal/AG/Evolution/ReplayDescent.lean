@@ -8,6 +8,9 @@ namespace Evolution
 
 universe u v w x y z
 
+open CategoryTheory
+open Opposite
+
 /-!
 Part IX R5 / AC11--AC13 replay descent and the temporal descent criterion.
 
