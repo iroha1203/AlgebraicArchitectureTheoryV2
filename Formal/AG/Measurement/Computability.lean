@@ -852,12 +852,48 @@ noncomputable def resolutionBasisSupport (D : FiniteAATComputationData M R) :
   | n + 1, j => by
       letI := R.witnessDecidableEq
       letI := R.geometry.coeffCommRing
+      letI := R.coeffDecidableEq
       letI : DecidableEq (D.rightResolution.BasisIndex n) :=
         Classical.decEq _
       exact Finset.univ.biUnion fun i =>
-        polynomialVariableSupport M.WitnessVariables M.Coeff
-            (D.rightResolution.differentialMatrix n i j) ∪
-          D.resolutionBasisSupport n i
+        if D.rightResolution.differentialMatrix n i j = 0 then
+          ∅
+        else
+          polynomialVariableSupport M.WitnessVariables M.Coeff
+              (D.rightResolution.differentialMatrix n i j) ∪
+            D.resolutionBasisSupport n i
+
+/-- Exact support recursion: only nonzero differential entries connect a
+higher basis vector to coefficient variables and lower basis support. -/
+theorem mem_resolutionBasisSupport_succ_iff
+    (D : FiniteAATComputationData M R) (n : Nat)
+    (j : D.rightResolution.BasisIndex (n + 1))
+    (e : M.WitnessVariables) :
+    letI := R.witnessDecidableEq
+    letI := R.geometry.coeffCommRing
+    e ∈ D.resolutionBasisSupport (n + 1) j ↔
+      ∃ i : D.rightResolution.BasisIndex n,
+        D.rightResolution.differentialMatrix n i j ≠ 0 ∧
+          (e ∈ polynomialVariableSupport M.WitnessVariables M.Coeff
+              (D.rightResolution.differentialMatrix n i j) ∨
+            e ∈ D.resolutionBasisSupport n i) := by
+  letI := R.witnessDecidableEq
+  letI := R.coeffDecidableEq
+  letI : DecidableEq (D.rightResolution.BasisIndex n) :=
+    Classical.decEq _
+  rw [resolutionBasisSupport]
+  constructor
+  · intro he
+    rw [Finset.mem_biUnion] at he
+    rcases he with ⟨i, -, hi⟩
+    by_cases hzero : D.rightResolution.differentialMatrix n i j = 0
+    · simp [hzero] at hi
+    · refine ⟨i, hzero, ?_⟩
+      simpa [hzero] using hi
+  · rintro ⟨i, hnonzero, hi⟩
+    rw [Finset.mem_biUnion]
+    refine ⟨i, Finset.mem_univ i, ?_⟩
+    simpa [hnonzero] using hi
 
 /-- Support computed from the nonzero coefficients of the actual selected
 cycle, their reduced polynomial lifts, and the recursively computed supports

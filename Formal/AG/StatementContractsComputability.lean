@@ -358,6 +358,22 @@ example {M : Measurement.MeasurementProfile.{u, v}}
 example {M : Measurement.MeasurementProfile.{u, v}}
     (R : Measurement.FiniteMeasurementRegime M)
     (D : Measurement.FiniteAATComputationData M R)
+    (n : Nat) (j : D.rightResolution.BasisIndex (n + 1))
+    (e : M.WitnessVariables) :
+    letI := R.witnessDecidableEq
+    letI := R.geometry.coeffCommRing
+    e ∈ D.resolutionBasisSupport (n + 1) j ↔
+      ∃ i : D.rightResolution.BasisIndex n,
+        D.rightResolution.differentialMatrix n i j ≠ 0 ∧
+          (e ∈ Measurement.FiniteAATComputationData.polynomialVariableSupport
+              M.WitnessVariables M.Coeff
+              (D.rightResolution.differentialMatrix n i j) ∨
+            e ∈ D.resolutionBasisSupport n i) :=
+  D.mem_resolutionBasisSupport_succ_iff n j e
+
+example {M : Measurement.MeasurementProfile.{u, v}}
+    (R : Measurement.FiniteMeasurementRegime M)
+    (D : Measurement.FiniteAATComputationData M R)
     (C : Measurement.FiniteAATComputability R D) :
     letI := R.witnessDecidableEq
     C.conflictSupport = D.selectedClassSupport :=

@@ -105,6 +105,9 @@ def finiteAATComputabilityMinimalForbiddenSupportSpec :=
 noncomputable def finiteAATComputabilityResolutionBasisSupport :=
   @Measurement.FiniteAATComputationData.resolutionBasisSupport
 
+def finiteAATComputabilityResolutionBasisSupportNonzeroEntries :=
+  @Measurement.FiniteAATComputationData.mem_resolutionBasisSupport_succ_iff
+
 def finiteAATComputabilityReducedRepresentativeFixture :=
   @Measurement.FiniteSquareFreeComputationData.allSingletons_one_isReduced
 

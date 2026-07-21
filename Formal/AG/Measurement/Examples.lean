@@ -1225,12 +1225,10 @@ theorem finiteComputabilityExampleData_resolutionBasisSupport_one
   letI : DecidableEq
       (finiteComputabilityExampleData.rightResolution.BasisIndex 0) :=
     Classical.decEq _
-  rw [FiniteAATComputationData.resolutionBasisSupport]
   ext e
+  rw [FiniteAATComputationData.mem_resolutionBasisSupport_succ_iff]
   constructor
-  · intro he
-    rcases Finset.mem_biUnion.mp he with ⟨i, -, hi⟩
-    rcases Finset.mem_union.mp hi with hi | hi
+  · rintro ⟨i, -, hi | hi⟩
     · have hmatrix :
           finiteComputabilityExampleData.rightResolution.differentialMatrix
               0 i j =
@@ -1246,8 +1244,6 @@ theorem finiteComputabilityExampleData_resolutionBasisSupport_one
     let i : finiteComputabilityExampleData.rightResolution.BasisIndex 0 := by
       change ULift Unit
       exact ULift.up ()
-    refine Finset.mem_biUnion.mpr ⟨i, Finset.mem_univ _, ?_⟩
-    apply Finset.mem_union_left
     have hmatrix :
         finiteComputabilityExampleData.rightResolution.differentialMatrix
             0 i j =
@@ -1255,8 +1251,11 @@ theorem finiteComputabilityExampleData_resolutionBasisSupport_one
             MvPolynomial SquareFreeSupportVertex (ZMod 2)) := by
       simpa [finiteComputabilityExampleData] using
         finiteDimensionalMatrixRightResolution_differentialMatrix_zero i j
-    rw [hmatrix, FiniteAATComputationData.polynomialVariableSupport_X]
-    simpa [forbiddenSupportPFinset] using he
+    refine ⟨i, ?_, Or.inl ?_⟩
+    · rw [hmatrix]
+      simp
+    · rw [hmatrix, FiniteAATComputationData.polynomialVariableSupport_X]
+      simpa [forbiddenSupportPFinset] using he
 
 /-- R11(c): theorem 4.2 constructs the finite computability package. -/
 def finiteComputabilityExamplePackage :
