@@ -90,6 +90,7 @@ def semanticCover : SemanticRepairCover semanticProjection where
   }
   CoverChart := PUnit
   chart _ := PUnit.unit
+  chartInjective := fun _ _ _ => Subsingleton.elim _ _
   chartFinite := inferInstance
   Overlap := fun _ _ => PUnit
   overlapFinite := fun _ _ => inferInstance
@@ -98,6 +99,11 @@ def semanticCover : SemanticRepairCover semanticProjection where
   tripleEdge01 := fun _ => PUnit.unit
   tripleEdge12 := fun _ => PUnit.unit
   tripleEdge02 := fun _ => PUnit.unit
+  selectedOverlap := fun _ _ => PUnit.unit
+  selectedTriple := fun _ _ _ => PUnit.unit
+  selectedOverlap_eq_tripleEdge01 := fun _ _ _ => rfl
+  selectedOverlap_eq_tripleEdge12 := fun _ _ _ => rfl
+  selectedOverlap_eq_tripleEdge02 := fun _ _ _ => rfl
 
 /-- X.例9.1: zero additive Cech data for the lawful firing witness. -/
 def semanticCechData : SemanticRepairCoverCechData semanticCover where
@@ -1774,6 +1780,7 @@ def generatedLawCircleSemanticCover :
   }
   CoverChart := Fin 3
   chart chart := chart
+  chartInjective := fun _ _ h => h
   chartFinite := inferInstance
   Overlap := fun _ _ => Fin 3
   overlapFinite := fun _ _ => inferInstance
@@ -1782,6 +1789,11 @@ def generatedLawCircleSemanticCover :
   tripleEdge01 := fun _ => 0
   tripleEdge12 := fun _ => 0
   tripleEdge02 := fun _ => 0
+  selectedOverlap := fun _ _ => 0
+  selectedTriple := fun _ _ _ => ()
+  selectedOverlap_eq_tripleEdge01 := fun _ _ _ => rfl
+  selectedOverlap_eq_tripleEdge12 := fun _ _ _ => rfl
+  selectedOverlap_eq_tripleEdge02 := fun _ _ _ => rfl
 
 /-! ## Native generated singleton standard source-C0 route witness -/
 
@@ -1847,6 +1859,7 @@ def integerLawFiniteFreeSemanticCover :
   }
   CoverChart := Fin 3
   chart chart := chart
+  chartInjective := fun _ _ h => h
   chartFinite := inferInstance
   Overlap := fun _ _ => Fin 3
   overlapFinite := fun _ _ => inferInstance
@@ -1855,6 +1868,11 @@ def integerLawFiniteFreeSemanticCover :
   tripleEdge01 := fun _ => 0
   tripleEdge12 := fun _ => 0
   tripleEdge02 := fun _ => 0
+  selectedOverlap := fun _ _ => 0
+  selectedTriple := fun _ _ _ => ()
+  selectedOverlap_eq_tripleEdge01 := fun _ _ _ => rfl
+  selectedOverlap_eq_tripleEdge12 := fun _ _ _ => rfl
+  selectedOverlap_eq_tripleEdge02 := fun _ _ _ => rfl
 
 /-- Integer witness geometry with quotient sheaf condition proved on the finite site. -/
 def integerLawFiniteFreeWitnessIdealGeometry :
@@ -1951,6 +1969,7 @@ def generatedLawFiniteFreeSemanticCover :
   }
   CoverChart := Fin 3
   chart chart := chart
+  chartInjective := fun _ _ h => h
   chartFinite := inferInstance
   Overlap := fun _ _ => Fin 3
   overlapFinite := fun _ _ => inferInstance
@@ -1959,6 +1978,11 @@ def generatedLawFiniteFreeSemanticCover :
   tripleEdge01 := fun _ => 0
   tripleEdge12 := fun _ => 0
   tripleEdge02 := fun _ => 0
+  selectedOverlap := fun _ _ => 0
+  selectedTriple := fun _ _ _ => ()
+  selectedOverlap_eq_tripleEdge01 := fun _ _ _ => rfl
+  selectedOverlap_eq_tripleEdge12 := fun _ _ _ => rfl
+  selectedOverlap_eq_tripleEdge02 := fun _ _ _ => rfl
 
 /-- Rich production witness geometry carrying trace and quotient-sheaf inputs. -/
 def generatedLawFiniteFreeWitnessIdealGeometry :
@@ -2903,9 +2927,16 @@ deriving Fintype
 
 /-- X.例9.1 / #3690: a three-chart repair cover with selected actual faces. -/
 def zmodTwoTorsorCover : SemanticRepairCover semanticProjection where
-  baseCover := semanticCover.baseCover
+  baseCover := {
+    Chart := Fin 3
+    Transition := Fin 3
+    chartFinite := inferInstance
+    transitionFinite := inferInstance
+    holonomySupport := fun _ => True
+  }
   CoverChart := Fin 3
-  chart _ := PUnit.unit
+  chart chart := chart
+  chartInjective := fun _ _ h => h
   chartFinite := inferInstance
   Overlap := zmodTwoTorsorOverlap
   overlapFinite := fun _ _ => inferInstance
@@ -2914,6 +2945,11 @@ def zmodTwoTorsorCover : SemanticRepairCover semanticProjection where
   tripleEdge01 := fun _ => .selected
   tripleEdge12 := fun _ => .selected
   tripleEdge02 := fun _ => .selected
+  selectedOverlap := fun _ _ => .selected
+  selectedTriple := fun _ _ _ => .selected
+  selectedOverlap_eq_tripleEdge01 := fun _ _ _ => rfl
+  selectedOverlap_eq_tripleEdge12 := fun _ _ _ => rfl
+  selectedOverlap_eq_tripleEdge02 := fun _ _ _ => rfl
 
 /-- The chartwise degree-zero differential for the three-chart fixture. -/
 def zmodTwoThreeChartDelta0 (primitive : Fin 3 -> ZMod 2) :
@@ -3047,33 +3083,6 @@ theorem zmodTwoTorsor_residual01_nonzero :
   change zmodTwoThreeChartDelta0 zmodTwoThreeChartPrimitive 0 1 ≠ 0
   norm_num [zmodTwoThreeChartDelta0, zmodTwoThreeChartPrimitive]
 
-/-- All selected overlap comparisons of the finite fixture are inhabited. -/
-def zmodTwoTorsor_selectedOverlap :
-    forall left right : zmodTwoTorsorCover.CoverChart,
-      zmodTwoTorsorCover.Overlap left right :=
-  fun _ _ => .selected
-
-/-- All selected triple comparisons of the finite fixture are inhabited. -/
-def zmodTwoTorsor_selectedTriple :
-    forall i j k : zmodTwoTorsorCover.CoverChart,
-      zmodTwoTorsorCover.TripleOverlap i j k :=
-  fun _ _ _ => .selected
-
-/-- Pairwise transitions and triple faces of the fixture form one coherent selected nerve. -/
-def zmodTwoTorsor_descentSelection :
-    SelectedRepairCoverDescentSelection zmodTwoTorsorCover where
-  overlap := zmodTwoTorsor_selectedOverlap
-  triple := zmodTwoTorsor_selectedTriple
-  overlap_eq_tripleEdge01 := by
-    intro i j k
-    rfl
-  overlap_eq_tripleEdge12 := by
-    intro i j k
-    rfl
-  overlap_eq_tripleEdge02 := by
-    intro i j k
-    rfl
-
 /-- The concrete chart/overlap/face realization of the three-chart Cech surface. -/
 def zmodTwoTorsorRealization :
     SemanticRepairCoverCechRealization zmodTwoTorsorCover zmodTwoTorsorCechData where
@@ -3082,20 +3091,6 @@ def zmodTwoTorsorRealization :
   eval0 primitive chart := primitive chart
   eval1 cochain := fun {left right} _ => cochain left right
   eval2 cochain := fun {i j k} _ => cochain i j k
-  eval0_injective := by
-    intro left right h
-    funext chart
-    exact congrFun h chart
-  eval1_injective := by
-    intro left right h
-    funext i j
-    exact congrArg (fun evaluated =>
-      @evaluated i j (.selected : zmodTwoTorsorCover.Overlap i j)) h
-  eval2_injective := by
-    intro left right h
-    funext i j k
-    exact congrArg (fun evaluated =>
-      @evaluated i j k (.selected : zmodTwoTorsorCover.TripleOverlap i j k)) h
   eval_delta0 := by
     intro primitive left right overlap
     rfl
@@ -3131,7 +3126,7 @@ def zmodTwoTorsor_chart2 : zmodTwoTorsorCover.CoverChart := by
 def zmodTwoTorsor_triple012 :
     zmodTwoTorsorCover.TripleOverlap zmodTwoTorsor_chart0
       zmodTwoTorsor_chart1 zmodTwoTorsor_chart2 :=
-  zmodTwoTorsor_selectedTriple zmodTwoTorsor_chart0
+  zmodTwoTorsorCover.selectedTriple zmodTwoTorsor_chart0
     zmodTwoTorsor_chart1 zmodTwoTorsor_chart2
 
 /-- The displayed degree-two coherence defect on the actual face is zero. -/
@@ -3144,7 +3139,7 @@ theorem zmodTwoTorsor_higherDefect012_zero :
 /-- The Part VI triple cocycle constructed on the actual selected face. -/
 def zmodTwoTorsor_tripleCocycle012 :=
   (zmodTwoTorsorData.selectedRepairDescentDatum zmodTwoTorsorRealization
-    zmodTwoTorsor_h1Zero zmodTwoTorsor_descentSelection).tripleCocycle zmodTwoTorsor_chart0
+    zmodTwoTorsor_h1Zero).tripleCocycle zmodTwoTorsor_chart0
       zmodTwoTorsor_chart1 zmodTwoTorsor_chart2
 
 /-- The selected triple cocycle carries its explicit composition equality. -/
@@ -3167,14 +3162,21 @@ theorem zmodTwoTorsor_higherCoherence :
 /-- The selected repair datum has effective descent from the H1-zero proof. -/
 def zmodTwoTorsor_effectiveDescent :=
   zmodTwoTorsorData.selectedRepairEffectiveDescent_of_h1Zero
-    zmodTwoTorsorRealization zmodTwoTorsor_h1Zero zmodTwoTorsor_descentSelection
+    zmodTwoTorsorRealization zmodTwoTorsor_h1Zero
 
 /-- The stack-facing selected-descent conclusion is constructed. -/
 theorem zmodTwoTorsor_stackEffectiveness :
     zmodTwoTorsorData.StackEffectivelyVanishes zmodTwoTorsorRealization
-      zmodTwoTorsor_h1Zero zmodTwoTorsor_descentSelection :=
+      zmodTwoTorsor_h1Zero :=
   zmodTwoTorsorData.stackEffectivelyVanishes_of_additive zmodTwoTorsorRealization
-    zmodTwoTorsor_h1Zero zmodTwoTorsor_descentSelection
+    zmodTwoTorsor_h1Zero
+
+/-- The actual three-chart realization has both selected higher coherence and effective descent. -/
+theorem zmodTwoTorsor_selectedHigherAndEffectiveDescent :
+    zmodTwoTorsorData.HigherCoherenceVanishes zmodTwoTorsorRealization /\
+      zmodTwoTorsorData.StackEffectivelyVanishes zmodTwoTorsorRealization
+        zmodTwoTorsor_h1Zero :=
+  ⟨zmodTwoTorsor_higherCoherence, zmodTwoTorsor_stackEffectiveness⟩
 
 end SemanticRepairPart10
 end Examples

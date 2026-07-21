@@ -591,6 +591,10 @@ noncomputable def semanticRepairTheorem48EffectiveDescent :=
 def semanticRepairTheorem48StackEffectiveness :=
   @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.stackEffectivelyVanishes_of_additive
 
+/-- Kernel-audit alias for the Part X selected higher/descent construction. -/
+def semanticRepairTheorem48SelectedHigherAndEffectiveDescent :=
+  @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.selectedHigherCoherenceAndEffectiveDescent_of_additive
+
 /-- Kernel-audit alias for the nontrivial `ZMod 2` translation fixture. -/
 def semanticRepairExample91ZmodTwoTorsorNonzeroTranslation :=
   Examples.SemanticRepairPart10.zmodTwoTorsor_nonzeroGaugeTranslation
@@ -610,6 +614,10 @@ def semanticRepairExample91ZmodTwoTorsorStackEffectiveness :=
 /-- Kernel-audit alias for the nontrivial `ZMod 2` effective-descent fixture. -/
 noncomputable def semanticRepairExample91ZmodTwoTorsorEffectiveDescent :=
   @Examples.SemanticRepairPart10.zmodTwoTorsor_effectiveDescent
+
+/-- Kernel-audit alias for the nontrivial selected higher/descent fixture. -/
+def semanticRepairExample91ZmodTwoTorsorSelectedHigherAndEffectiveDescent :=
+  Examples.SemanticRepairPart10.zmodTwoTorsor_selectedHigherAndEffectiveDescent
 
 def semanticRepairExample91SingletonStandardFiniteFreeTenConjunctPacket :=
   AAT.AG.Examples.SemanticRepairPart10.lawfulFiring_generatedLawSingletonStandardSourceC0_finiteFreeTenConjunctPacket

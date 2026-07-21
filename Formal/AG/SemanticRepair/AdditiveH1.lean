@@ -26,6 +26,7 @@ structure SemanticRepairCover
   baseCover : FiniteSemanticRepairCoverDatum.{v, w, x} P.Component
   CoverChart : Type w
   chart : CoverChart -> baseCover.Chart
+  chartInjective : Function.Injective chart
   chartFinite : Fintype CoverChart
   Overlap : CoverChart -> CoverChart -> Type w
   overlapFinite : forall left right, Fintype (Overlap left right)
@@ -34,6 +35,16 @@ structure SemanticRepairCover
   tripleEdge01 : forall {i j k}, TripleOverlap i j k -> Overlap i j
   tripleEdge12 : forall {i j k}, TripleOverlap i j k -> Overlap j k
   tripleEdge02 : forall {i j k}, TripleOverlap i j k -> Overlap i k
+  /-- The selected comparison edge for each ordered chart pair. -/
+  selectedOverlap : forall left right, Overlap left right
+  /-- The selected comparison face for each ordered chart triple. -/
+  selectedTriple : forall i j k, TripleOverlap i j k
+  selectedOverlap_eq_tripleEdge01 : forall i j k,
+    selectedOverlap i j = tripleEdge01 (selectedTriple i j k)
+  selectedOverlap_eq_tripleEdge12 : forall i j k,
+    selectedOverlap j k = tripleEdge12 (selectedTriple i j k)
+  selectedOverlap_eq_tripleEdge02 : forall i j k,
+    selectedOverlap i k = tripleEdge02 (selectedTriple i j k)
 
 namespace SemanticRepairCover
 
@@ -124,9 +135,6 @@ structure SemanticRepairCoverCechRealization
   /-- Degree-two evaluation on one selected repair-cover triple face. -/
   eval2 : cech.C2 -> forall {i j k : cover.CoverChart},
     cover.TripleOverlap i j k -> Fiber
-  eval0_injective : Function.Injective eval0
-  eval1_injective : Function.Injective eval1
-  eval2_injective : Function.Injective eval2
   eval_delta0 : forall primitive {left right : cover.CoverChart}
     (overlap : cover.Overlap left right),
     eval1 (cech.delta0 primitive) overlap =
@@ -202,13 +210,16 @@ def Supports
     {P : SemanticAtomProjection.{u, v}}
     {cover : SemanticRepairCover.{u, v, w, x} P}
     (context : AdditiveRepairCoverContext cover)
-    (chart : cover.CoverChart) : Prop :=
+    (baseChart : cover.baseCover.Chart) : Prop :=
   match context with
   | .global => True
-  | .chart value => chart = value
-  | .overlap value => chart = value.1.1 ∨ chart = value.1.2
+  | .chart value => baseChart = cover.chart value
+  | .overlap value =>
+      baseChart = cover.chart value.1.1 ∨ baseChart = cover.chart value.1.2
   | .triple value =>
-      chart = value.1.1 ∨ chart = value.1.2.1 ∨ chart = value.1.2.2
+      baseChart = cover.chart value.1.1 ∨
+        baseChart = cover.chart value.1.2.1 ∨
+          baseChart = cover.chart value.1.2.2
 
 /--
 An actual restriction arrow of the selected repair cover.
@@ -249,6 +260,17 @@ structure SelectedRepairCoverDescentSelection
     overlap j k = cover.tripleEdge12 (triple i j k)
   overlap_eq_tripleEdge02 : forall i j k,
     overlap i k = cover.tripleEdge02 (triple i j k)
+
+/-- The selected comparison data carried by a finite semantic repair cover. -/
+def SemanticRepairCover.toDescentSelection
+    {P : SemanticAtomProjection.{u, v}}
+    (cover : SemanticRepairCover.{u, v, w, x} P) :
+    SelectedRepairCoverDescentSelection cover where
+  overlap := cover.selectedOverlap
+  triple := cover.selectedTriple
+  overlap_eq_tripleEdge01 := cover.selectedOverlap_eq_tripleEdge01
+  overlap_eq_tripleEdge12 := cover.selectedOverlap_eq_tripleEdge12
+  overlap_eq_tripleEdge02 := cover.selectedOverlap_eq_tripleEdge02
 
 /-- X.定義4.2: Cech-style 1-cocycles on the bounded semantic repair cover. -/
 def CechZ1
@@ -1340,14 +1362,13 @@ def selectedRepairDescentDatum
       SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
     (realization : SemanticRepairCoverCechRealization
       data.boundaryRelation.cover data.boundaryRelation.cech)
-    (hzero : data.toAdditiveCechH1Data.H1Zero)
-    (selection : SelectedRepairCoverDescentSelection
-      data.boundaryRelation.cover) :
+    (hzero : data.toAdditiveCechH1Data.H1Zero) :
     SingularityMonodromyStack.ArchitectureDescentDatum
       (data.additiveRepairCoverTranslationPresheaf realization)
       (data.selectedRepairLocalObjects realization hzero) := by
   letI := realization.fiberAddCommGroup
   let solution := data.additiveRepairSolution_of_h1Zero hzero
+  let selection := data.boundaryRelation.cover.toDescentSelection
   exact
     { overlap := fun i j => ⟨⟨i, j, selection.overlap i j⟩, rfl, rfl⟩
       overlapIso := fun i j =>
@@ -1444,12 +1465,10 @@ def selectedRepairEffectiveDescent_of_h1Zero
       SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
     (realization : SemanticRepairCoverCechRealization
       data.boundaryRelation.cover data.boundaryRelation.cech)
-    (hzero : data.toAdditiveCechH1Data.H1Zero)
-    (selection : SelectedRepairCoverDescentSelection
-      data.boundaryRelation.cover) :
+    (hzero : data.toAdditiveCechH1Data.H1Zero) :
     SingularityMonodromyStack.EffectiveArchitectureDescent
       (data.additiveRepairCoverTranslationPresheaf realization)
-      (data.selectedRepairDescentDatum realization hzero selection) := by
+      (data.selectedRepairDescentDatum realization hzero) := by
   letI := realization.fiberAddCommGroup
   let solution := data.additiveRepairSolution_of_h1Zero hzero
   refine
@@ -1475,9 +1494,9 @@ def selectedRepairEffectiveDescent_of_h1Zero
     apply additiveFiberTranslation_unique
 
 /--
-The selected stack-facing conclusion is indexed by an actual realization,
-H1-zero proof, and coherent cover selection.  It asserts effective descent
-for that selected datum, not stackification of every local datum.
+The selected stack-facing conclusion is indexed by an actual realization and
+an H1-zero proof.  The complete repair-cover selection is part of the cover
+geometry, and the conclusion asserts effective descent for its selected datum.
 -/
 def StackEffectivelyVanishes
     {P : SemanticAtomProjection.{u, v}}
@@ -1485,13 +1504,11 @@ def StackEffectivelyVanishes
       SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
     (realization : SemanticRepairCoverCechRealization
       data.boundaryRelation.cover data.boundaryRelation.cech)
-    (hzero : data.toAdditiveCechH1Data.H1Zero)
-    (selection : SelectedRepairCoverDescentSelection
-      data.boundaryRelation.cover) :
+    (hzero : data.toAdditiveCechH1Data.H1Zero) :
     Prop :=
   Nonempty (SingularityMonodromyStack.EffectiveArchitectureDescent
     (data.additiveRepairCoverTranslationPresheaf realization)
-    (data.selectedRepairDescentDatum realization hzero selection))
+    (data.selectedRepairDescentDatum realization hzero))
 
 /-- The selected effective-descent datum is constructed from the additive H1-zero proof. -/
 theorem stackEffectivelyVanishes_of_additive
@@ -1500,11 +1517,25 @@ theorem stackEffectivelyVanishes_of_additive
       SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
     (realization : SemanticRepairCoverCechRealization
       data.boundaryRelation.cover data.boundaryRelation.cech)
-    (hzero : data.toAdditiveCechH1Data.H1Zero)
-    (selection : SelectedRepairCoverDescentSelection
-      data.boundaryRelation.cover) :
-    data.StackEffectivelyVanishes realization hzero selection := by
-  exact ⟨data.selectedRepairEffectiveDescent_of_h1Zero realization hzero selection⟩
+    (hzero : data.toAdditiveCechH1Data.H1Zero) :
+    data.StackEffectivelyVanishes realization hzero := by
+  exact ⟨data.selectedRepairEffectiveDescent_of_h1Zero realization hzero⟩
+
+/--
+An actual cover-indexed realization and an H1-zero proof give both selected
+facewise higher coherence and effective descent for the selected repair datum.
+-/
+theorem selectedHigherCoherenceAndEffectiveDescent_of_additive
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (realization : SemanticRepairCoverCechRealization
+      data.boundaryRelation.cover data.boundaryRelation.cech)
+    (hzero : data.toAdditiveCechH1Data.H1Zero) :
+    data.HigherCoherenceVanishes realization /\
+      data.StackEffectivelyVanishes realization hzero := by
+  exact ⟨data.higherCoherenceVanishes_of_additive realization,
+    data.stackEffectivelyVanishes_of_additive realization hzero⟩
 
 /-- X.定理4.8: cover membership and a sheaf condition generate the cover sheaf condition. -/
 theorem coverSheafConditionFor_of_trueSheafCertificate
@@ -1782,9 +1813,11 @@ theorem refinementPullback_package
 X.定理4.8 [CBI]: true-sheaf H1 semantic repair-gluing, boundary-relation
 additive package.
 
-The five conclusion groups are exposed in the statement: cover
-sheaf/descent, cocycle well-definedness, global-coherence/additive-H1
-equivalence, quotient boundary reading, and selected later-layer constructions.
+The core conclusion groups are exposed in the statement: cover sheaf/descent,
+cocycle well-definedness, global-coherence/additive-H1 equivalence, quotient
+boundary reading, and torsor trivialization.  The selected higher-coherence
+and effective-descent construction is stated separately with its actual
+realization input.
 -/
 theorem trueSheafH1SemanticRepairGluing_boundaryRelationAdditive_package
     {P : SemanticAtomProjection.{u, v}}
@@ -1809,15 +1842,7 @@ theorem trueSheafH1SemanticRepairGluing_boundaryRelationAdditive_package
       (data.toAdditiveCechH1Data.H1Zero <->
         CechB1 data.boundaryRelation.cech
           data.boundaryRelation.cech.residual) /\
-      NonabelianTorsorTrivial data /\
-      (forall realization : SemanticRepairCoverCechRealization
-        data.boundaryRelation.cover data.boundaryRelation.cech,
-        HigherCoherenceVanishes data realization) /\
-      (forall (realization : SemanticRepairCoverCechRealization
-        data.boundaryRelation.cover data.boundaryRelation.cech)
-        (hzero : data.toAdditiveCechH1Data.H1Zero)
-        (selection : SelectedRepairCoverDescentSelection data.boundaryRelation.cover),
-        StackEffectivelyVanishes data realization hzero selection) := by
+      NonabelianTorsorTrivial data := by
   exact
     ⟨coverSheafConditionFor_of_trueSheafCertificate certificate,
       coverDescent_of_trueSheafCertificate certificate,
@@ -1825,10 +1850,7 @@ theorem trueSheafH1SemanticRepairGluing_boundaryRelationAdditive_package
       data.boundaryRelation.cech.delta1_delta0_eq_zero,
       globalRepairCoherent_iff_additiveH1Zero data,
       data.toAdditiveCechH1Data.h1Zero_iff_boundary,
-      nonabelianTorsorTrivial_of_additiveH1Zero data,
-      fun realization => higherCoherenceVanishes_of_additive data realization,
-      fun realization hzero selection =>
-        stackEffectivelyVanishes_of_additive data realization hzero selection⟩
+      nonabelianTorsorTrivial_of_additiveH1Zero data⟩
 
 end SemanticRepairCoverH1BoundaryRelationAdditiveData
 

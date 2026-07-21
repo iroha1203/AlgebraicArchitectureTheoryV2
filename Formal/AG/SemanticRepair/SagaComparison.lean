@@ -145,15 +145,6 @@ structure SemanticRepairGroundedGlobalGluingPackage
     data.toAdditiveCechH1Data.H1Zero <->
       comparison.CoverRelativeResidualH1Zero
   torsorTrivialization_of_h1Zero : data.NonabelianTorsorTrivial
-  facewiseHigherCoherence : forall realization : SemanticRepairCoverCechRealization
-      data.boundaryRelation.cover data.boundaryRelation.cech,
-      data.HigherCoherenceVanishes realization
-  selectedEffectiveDescent_of_h1Zero : forall
-      (realization : SemanticRepairCoverCechRealization
-        data.boundaryRelation.cover data.boundaryRelation.cech)
-      (hzero : data.toAdditiveCechH1Data.H1Zero)
-      (selection : SelectedRepairCoverDescentSelection data.boundaryRelation.cover),
-      data.StackEffectivelyVanishes realization hzero selection
 
 /--
 X.定理7.3: theorem 4.8 plus theorem 7.2 and supplied gluing data yield the
@@ -212,11 +203,7 @@ theorem trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_pa
       boundedAdditiveH1Zero_iff_coverRelativeH1Zero := hBoundedCover
       torsorTrivialization_of_h1Zero :=
         SemanticRepairCoverH1BoundaryRelationAdditiveData.nonabelianTorsorTrivial_of_additiveH1Zero
-          data
-      facewiseHigherCoherence := fun realization =>
-        data.higherCoherenceVanishes_of_additive realization
-      selectedEffectiveDescent_of_h1Zero := fun realization hzero selection =>
-        data.stackEffectivelyVanishes_of_additive realization hzero selection }
+          data }
 
 /--
 X.定理7.5 conclusions 1--3: the law-grounded degree-zero generation layer.
@@ -282,16 +269,7 @@ structure SemanticRepairGeneratedLawIndependentConclusions
   boundedAdditiveH1Zero_iff_coverRelativeH1Zero :
     data.toAdditiveCechH1Data.H1Zero <->
       comparison.CoverRelativeResidualH1Zero
-  higherLayerConstructions :
-    data.NonabelianTorsorTrivial /\
-      (forall realization : SemanticRepairCoverCechRealization
-        data.boundaryRelation.cover data.boundaryRelation.cech,
-        data.HigherCoherenceVanishes realization) /\
-      (forall (realization : SemanticRepairCoverCechRealization
-        data.boundaryRelation.cover data.boundaryRelation.cech)
-        (hzero : data.toAdditiveCechH1Data.H1Zero)
-        (selection : SelectedRepairCoverDescentSelection data.boundaryRelation.cover),
-        data.StackEffectivelyVanishes realization hzero selection)
+  torsorTrivialization : data.NonabelianTorsorTrivial
 
 /--
 X.定理7.5 packet: generated end-to-end SAGA realization.
@@ -488,10 +466,7 @@ theorem lawEquation_constructs_groundedComparisonPacket
             package73.globalCoherent_iff_coverRelativeH1Zero
           boundedAdditiveH1Zero_iff_coverRelativeH1Zero :=
             package73.boundedAdditiveH1Zero_iff_coverRelativeH1Zero
-          higherLayerConstructions :=
-            ⟨package73.torsorTrivialization_of_h1Zero,
-              package73.facewiseHigherCoherence,
-              package73.selectedEffectiveDescent_of_h1Zero⟩ } }
+          torsorTrivialization := package73.torsorTrivialization_of_h1Zero } }
 
 /--
 X.定理7.5 generated-comparison form: a cochain realization generates the
