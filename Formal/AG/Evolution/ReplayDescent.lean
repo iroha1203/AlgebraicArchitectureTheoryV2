@@ -132,23 +132,6 @@ structure ReplayCoefficientRepresentation {U : AtomCarrier.{u}}
           overlapCochainValue f g leftRestriction rightRestriction
             (r.bridge.siteComplex.d 0
               (coefficientOfLocalSections (adjustLocalSections correction)))
-  globalReplayOfSection :
-    replaySheaf.toPresheaf.obj (Opposite.op r.bridge.siteCover.base) ->
-      (St.State (r.sourceTrace, r.bridge.temporalCover.baseContext) ->
-        St.State (r.targetTrace, r.bridge.temporalCover.baseContext))
-  global_section_restriction :
-    ∀ (baseSection : replaySheaf.toPresheaf.obj (Opposite.op r.bridge.siteCover.base))
-      (i : r.bridge.temporalCover.Index)
-      (state : St.State (r.sourceTrace, r.bridge.temporalCover.baseContext)),
-      St.contextRestriction r.targetTrace
-          (r.bridge.temporalCover.contextToBase i)
-          (globalReplayOfSection baseSection state) =
-        localReplayOfSection i
-          (replaySheaf.toPresheaf.map
-            (r.bridge.siteCover.inclusion
-              (r.bridge.coverComparison.siteIndexOf i)).op baseSection)
-          (St.contextRestriction r.sourceTrace
-            (r.bridge.temporalCover.contextToBase i) state)
 
 /-- IX.§4 / AC11: replay descent data with its constructed coefficient representation. -/
 structure ReplayDescentData {U : AtomCarrier.{u}} {A : ArchitectureObject U}
@@ -205,11 +188,18 @@ theorem localReplay_eq_raw (r : ReplayDescentData St Coeff Law) (i : r.cover.Ind
     r.localReplay i = r.raw.replay i :=
   r.representation.localReplay_from_section i
 
-/-- IX.§4 / AC13: type of a descended global replay transition over the base context. -/
+/--
+IX.§4 / AC13: a descended global replay section over the base context.
+
+The generic descent theorem constructs this section and its restrictions.  A
+concrete replay-function sheaf then evaluates the constructed section to a
+state transition; that evaluation is not an additional datum of the descent
+representation.
+-/
 abbrev GlobalReplayTransition (r : ReplayDescentData St Coeff Law) :
     Type (max u y) :=
-  St.State (r.raw.sourceTrace, r.cover.baseContext) ->
-    St.State (r.raw.targetTrace, r.cover.baseContext)
+  r.representation.replaySheaf.toPresheaf.obj
+    (Opposite.op r.raw.bridge.siteCover.base)
 
 /-- IX.§4 / AC13: zero degree-one cocycle used as the replay zero class representative. -/
 def zeroMismatchCocycle (r : ReplayDescentData St Coeff Law) :
@@ -379,24 +369,33 @@ theorem adjusted_mismatch_zero (D : TemporalDescentCriterion r)
   rw [ReplayDescentData.mismatch_adjust_eq, hcorrection]
   exact sub_self _
 
-/-- IX.§4 / AC13: class-zero replay data descends through the represented sheaf. -/
+/--
+IX.§4 / AC13: class-zero replay data descends through the represented sheaf.
+
+This is the generic sheaf-descent statement: it constructs a global replay
+section and proves that its restrictions are the corrected local sections.
+-/
 theorem temporal_descent_criterion_realizes_adjusted
     (D : TemporalDescentCriterion r) :
-    ∃ (correction : r.raw.bridge.siteComplex.Cn 0) (globalReplay : r.GlobalReplayTransition),
-      ∀ (i : r.cover.Index) (state : St.State (r.raw.sourceTrace, r.cover.baseContext)),
-        St.contextRestriction r.raw.targetTrace (r.cover.contextToBase i)
-            (globalReplay state) =
-          r.adjustedReplay correction i
-            (St.contextRestriction r.raw.sourceTrace (r.cover.contextToBase i) state) := by
+    ∃ (correction : r.raw.bridge.siteComplex.Cn 0) (globalSection : r.GlobalReplayTransition),
+      ∀ (i : r.cover.Index),
+        r.representation.replaySheaf.toPresheaf.map
+            (r.raw.bridge.siteCover.inclusion
+              (r.raw.bridge.coverComparison.siteIndexOf i)).op globalSection =
+          r.adjustedLocalSections correction
+            (r.raw.bridge.siteCover.chart
+              (r.raw.bridge.coverComparison.siteIndexOf i))
+            (r.raw.bridge.siteCover.inclusion
+              (r.raw.bridge.coverComparison.siteIndexOf i))
+            (r.representation.chartInCover i) := by
   rcases D.exists_correction_of_class_vanishes with ⟨correction, hcorrection⟩
   have hzero := D.adjusted_mismatch_zero correction hcorrection
   let data := r.adjusted_replay_matching_of_zero correction hzero
   obtain ⟨globalSection, hglobal⟩ :=
     (r.representation.replaySheaf.descent r.representation.descentCover
       r.representation.descentCover_topological).exists_global data
-  refine ⟨correction, r.representation.globalReplayOfSection globalSection, ?_⟩
-  intro i state
-  rw [r.representation.global_section_restriction]
+  refine ⟨correction, globalSection, ?_⟩
+  intro i
   have hsection :
       r.representation.replaySheaf.toPresheaf.map
           (r.raw.bridge.siteCover.inclusion
@@ -413,8 +412,8 @@ theorem temporal_descent_criterion_realizes_adjusted
 /-- IX.§4 / Theorem 4.2: a constructed representation and a vanishing class yield a global replay. -/
 theorem temporal_descent_criterion (D : TemporalDescentCriterion r) :
     Nonempty r.GlobalReplayTransition := by
-  rcases D.temporal_descent_criterion_realizes_adjusted with ⟨_, globalReplay, _⟩
-  exact ⟨globalReplay⟩
+  rcases D.temporal_descent_criterion_realizes_adjusted with ⟨_, globalSection, _⟩
+  exact ⟨globalSection⟩
 
 end TemporalDescentCriterion
 

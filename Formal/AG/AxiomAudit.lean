@@ -2506,10 +2506,10 @@ def squareFreeRepairSupportNotMemAlexanderDualIffHitsForbidden :=
 def squareFreeSingletonQMinimalRepairHittingSet :=
   Measurement.squareFree_singletonQ_minimalRepairHittingSet
 
-def replayZeroTheorem42GlobalTransitionExists :=
+def replayZeroTheorem42GlobalSectionExists :=
   Examples.EvolutionPart9.replay_zero_theorem42_global_transition_exists
 
-def replayZeroTheorem42RealizesAdjusted :=
+def replayZeroTheorem42GlobalSectionRestrictsToAdjusted :=
   Examples.EvolutionPart9.replay_zero_theorem42_realizes_adjusted
 
 def replayTwoChartCorrectionRightNonzero :=
@@ -2550,6 +2550,9 @@ def replayTwoPatchZMod2CoefficientReflectsMatching :=
 
 def replayTwoPatchZMod2NonzeroCorrectionDescends :=
   Examples.EvolutionPart9.twoPatchReplay_nonzero_correction_descends
+
+def replayTwoPatchZMod2NonzeroCorrectionDescendsAsFunction :=
+  Examples.EvolutionPart9.twoPatchReplay_nonzero_correction_descends_as_function
 
 def replayTwoPatchZMod2TemporalDescentCriterion :=
   Examples.EvolutionPart9.twoPatch_temporal_descent_criterion
