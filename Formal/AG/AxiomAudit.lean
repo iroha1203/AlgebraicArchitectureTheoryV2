@@ -15,6 +15,7 @@ import Formal.AG.ReadingFunctoriality.InfiniteProductCechFiring
 import Formal.AG.ReadingFunctoriality.ModTwoTorFiring
 import Formal.AG.ReadingFunctoriality.TopologyChangeFiring
 import Formal.AG.StatementContractsReadingFunctoriality
+import Formal.AG.StatementContractsComputability
 import Formal.AG.Examples.StandardGeometryReferenceModels
 import Formal.AG.StatementContractsStandardGeometryReferenceModels
 import Formal.Util.AssertStandardAxioms
@@ -45,6 +46,203 @@ namespace AAT.AG.AxiomAudit
 open CategoryTheory
 
 universe u
+
+/-! Part VIII theorem 4.2 constructive finite-computability audit aliases. -/
+
+def finiteAATComputabilityConstructive :=
+  @Measurement.finiteAATComputability
+
+def finiteAATComputabilityLinearFixture :=
+  @Measurement.finiteDimensionalMatrixRoute_fires
+
+def finiteAATComputabilityFiniteCoeffFixture :=
+  @Measurement.finiteDimensionalMatrixCoeff_finite
+
+def finiteAATComputabilityFiniteDimensionalCohomologyFixture :=
+  @Measurement.finiteDimensionalMatrixCohomology_moduleFinite
+
+noncomputable def finiteAATComputabilityCanonicalCohomologyEquiv :=
+  @Measurement.FiniteDimensionalCechModel.cohomologyEquivCanonical
+
+def finiteAATComputabilityCanonicalQuotientRelation :=
+  @Measurement.FiniteDimensionalCechModel.quotient_relation_iff_canonical
+
+def finiteAATComputabilityFiniteSearchRepresentative :=
+  @Measurement.FiniteCarrierCechPresentation.quotientRepresentative_correct
+
+def finiteAATComputabilitySelectedZeroDecision :=
+  @Measurement.CechComputationProcedure.zeroDecision_correct
+
+def finiteAATComputabilityIdealMembership :=
+  @Measurement.FiniteSquareFreeComputationData.decideObstructionIdealMembership_correct
+
+def finiteAATComputabilityResolutionMatrix :=
+  @Derived.FreeResolution.MathlibResolution.FiniteFreeMathlibResolution.differentialMatrix_correct
+
+def finiteAATComputabilityResolutionMatrixComplex :=
+  @Derived.FreeResolution.MathlibResolution.FiniteFreeMathlibResolution.differentialMatrix_mul_eq_zero
+
+def finiteAATComputabilityTensorKernelDecision :=
+  @Measurement.FiniteTensorMatrixAlgorithm.kernelDecision_correct
+
+def finiteAATComputabilityTensorImageDecision :=
+  @Measurement.FiniteTensorMatrixAlgorithm.imageDecision_correct
+
+noncomputable def finiteAATComputabilityConstructedChainIso :=
+  @Measurement.FiniteTensorMatrixAlgorithm.tensorCoordinateComplexIso
+
+def finiteAATComputabilityCoordinateClassZeroIffIncomingImage :=
+  @Measurement.FiniteTensorMatrixAlgorithm.classOfCycle_eq_zero_iff_range
+
+def finiteAATComputabilityCoordinateClassZeroIffMatrixEquation :=
+  @Measurement.FiniteTensorMatrixAlgorithm.classOfCycle_eq_zero_iff_incoming
+
+def finiteAATComputabilityCoordinateClassZeroDecision :=
+  @Measurement.FiniteTensorMatrixAlgorithm.classZeroDecision_correct
+
+def finiteAATComputabilityMinimalForbiddenSupportSpec :=
+  @Measurement.FiniteSquareFreeComputationData.mem_minimalForbiddenSupports_iff
+
+noncomputable def finiteAATComputabilityResolutionBasisSupport :=
+  @Measurement.FiniteAATComputationData.resolutionBasisSupport
+
+def finiteAATComputabilityResolutionBasisSupportNonzeroEntries :=
+  @Measurement.FiniteAATComputationData.mem_resolutionBasisSupport_succ_iff
+
+def finiteAATComputabilityReducedRepresentativeFixture :=
+  @Measurement.FiniteSquareFreeComputationData.allSingletons_one_isReduced
+
+def finiteAATComputabilityZeroCycleHasEmptySupport :=
+  @Measurement.FiniteAATComputationData.selectedCycleSupport_eq_empty_of_cycle_eq_zero
+
+def finiteAATComputabilityZeroClassHasEmptySupport :=
+  @Measurement.FiniteAATComputationData.selectedClassSupport_eq_empty_of_class_eq_zero
+
+def finiteAATComputabilityConflictZeroIffCoordinateZero :=
+  @Measurement.FiniteAATComputationData.selectedConflictClass_eq_zero_iff_coordinate
+
+def finiteAATComputabilityZeroConflictClassHasEmptySupport :=
+  @Measurement.FiniteAATComputationData.selectedClassSupport_eq_empty_of_conflictClass_eq_zero
+
+def finiteAATComputabilityNonzeroClassUsesCycleSupport :=
+  @Measurement.FiniteAATComputationData.selectedClassSupport_eq_selectedCycleSupport_of_class_ne_zero
+
+def finiteAATComputabilityPrincipalResolutionDifferential :=
+  @Derived.FreeResolution.MathlibResolution.Principal.finiteFreeResolution_coordinateDifferential_zero_ne_zero
+
+def finiteAATComputabilityEffectiveRouteFixture :=
+  @Measurement.finiteComputabilityExample_effectiveRouteSelected
+
+def finiteAATComputabilityNondegenerateFixture :=
+  @Measurement.finiteComputabilityCochain_nondegenerate
+
+def finiteAATComputabilityEffectiveProcedureFixture :=
+  @Measurement.finiteComputabilityExample_effectiveProcedureRoute
+
+def finiteAATComputabilityCombinatoricsFixture :=
+  @Measurement.finiteComputabilityExample_combinatoricsRoute
+
+def finiteAATComputabilityTorFixture :=
+  @Measurement.finiteComputabilityExample_torRoute
+
+def finiteAATComputabilityFullLinearFixture :=
+  @Measurement.finiteDimensionalMatrixFullRoute_fires
+
+def finiteAATComputabilityFullLinearFixtureNonzero :=
+  @Measurement.finiteDimensionalMatrixFullRoute_nonzero
+
+def finiteAATComputabilityEffectiveFixtureNonzero :=
+  @Measurement.finiteComputabilityExampleFullRoute_nonzero
+
+def finiteAATComputabilityNontrivialTorFixture :=
+  @Measurement.NontrivialTorFixture.nontrivialFiniteChainTorRoute_fires
+
+def finiteAATComputabilityNontrivialTensorMatrixCycle :=
+  @Measurement.NontrivialTorFixture.yCoordinateCycleV2_is_cycle
+
+def finiteAATComputabilityNontrivialTensorMatrixNonboundary :=
+  @Measurement.NontrivialTorFixture.yCoordinateCycleV2_not_boundary
+
+def finiteAATComputabilityNormalFormReduced :=
+  @Measurement.FiniteSquareFreeComputationData.normalForm_reduced
+
+def finiteAATComputabilityDiscardedPartInIdeal :=
+  @Measurement.FiniteSquareFreeComputationData.discardedPart_mem_obstructionIdeal
+
+def finiteAATComputabilityNormalFormClassInvariant :=
+  @Measurement.FiniteSquareFreeComputationData.normalForm_eq_of_sub_mem
+
+def finiteAATComputabilityQuotientNormalFormCorrect :=
+  @Measurement.FiniteSquareFreeComputationData.quotientNormalForm_correct
+
+def finiteAATComputabilityQuotientNormalFormReduced :=
+  @Measurement.FiniteSquareFreeComputationData.quotientNormalForm_reduced
+
+def finiteAATComputabilityQuotientNormalFormUnique :=
+  @Measurement.FiniteSquareFreeComputationData.quotientNormalForm_unique
+
+def finiteAATComputabilityCosetNormalizerSameCoset :=
+  @Measurement.FiniteLinearCosetNormalizer.sameCoset
+
+def finiteAATComputabilityCosetNormalizerCanonical :=
+  @Measurement.FiniteLinearCosetNormalizer.canonical
+
+def finiteAATComputabilityCommonRepresentativeCorrect :=
+  @Measurement.CechComputationProcedure.quotientRepresentative_correct
+
+def finiteAATComputabilityProfileObstructionObjectRealizes :=
+  @Measurement.FiniteAATProfileRealization.obstructionObject_realizes
+
+def finiteAATComputabilityProfileObstructionIdealRealizes :=
+  @Measurement.FiniteAATProfileRealization.obstructionIdeal_realizes
+
+def finiteAATComputabilityProfileLeftLawRealizes :=
+  @Measurement.FiniteAATProfileRealization.leftLaw_realizes
+
+def finiteAATComputabilityProfileRightLawRealizes :=
+  @Measurement.FiniteAATProfileRealization.rightLaw_realizes
+
+def finiteAATComputabilityGenericZeroClassHasEmptySupport :=
+  @Measurement.FiniteAATComputationData.classSupportOf_eq_empty_of_class_eq_zero
+
+def finiteAATComputabilityGenericNonzeroClassUsesCycleSupport :=
+  @Measurement.FiniteAATComputationData.classSupportOf_eq_cycleSupportOf_of_class_ne_zero
+
+def finiteAATComputabilityComputedConflictSupportSelected :=
+  @Measurement.FiniteAATComputationData.computedConflictSupport_selected
+
+def finiteAATComputabilityComputedConflictSupportCongr :=
+  @Measurement.FiniteAATComputationData.computedConflictSupport_congr
+
+def finiteAATComputabilityComputedConflictSupportZero :=
+  @Measurement.FiniteAATComputationData.computedConflictSupport_zero
+
+def finiteAATComputabilityActualLawConflictPackage :=
+  @Measurement.finiteAATConflictComputability
+
+def finiteAATComputabilitySelectedSupportReading :=
+  @Measurement.FiniteAATConflictRealization.selectedClassSupportReading_holds
+
+def finiteAATComputabilityActualSupportZero :=
+  @Measurement.FiniteAATConflictRealization.supportRelation_zero
+
+def finiteAATComputabilityDistinctLiftFixture :=
+  @Measurement.tinyLeftSquareFree_normalForm_identifies_distinct_lifts
+
+def finiteAATComputabilityNonzeroHOneRepresentativeFixture :=
+  @Measurement.finiteDimensionalNonzeroH1Representative
+
+def finiteAATComputabilityEffectiveRepresentativeFixture :=
+  @Measurement.finiteComputabilityExample_genericRepresentative_correct
+
+def finiteAATComputabilityActualConflictFixture :=
+  @Measurement.finiteComputabilityConflictPackage_nonzero_and_supportReading
+
+def finiteAATComputabilityProperDegreeOneConflictFixture :=
+  @Measurement.finiteComputabilityConflictPackage_proper_degree_one_nonzero_and_supportReading
+
+def finiteAATComputabilityZeroConflictSupportFixture :=
+  @Measurement.finiteComputabilityConflictPackage_zero_support
 
 /-
 Part X / peer-review hardening R1: Part X [CBI] theorem constants audited by direct alias.

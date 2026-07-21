@@ -1,5 +1,7 @@
 import Formal.AG.Derived.Intersection
 import Mathlib.Algebra.Exact
+import Mathlib.Algebra.Homology.ShortComplex.ModuleCat
+import Mathlib.LinearAlgebra.Matrix.Basis
 
 noncomputable section
 
@@ -77,6 +79,84 @@ def termIsoFree_certificate (F : FiniteFreeMathlibResolution.{v} A I) (n : Nat) 
   F.termIsoFree n
 
 /--
+V.R4(a): actual projective-resolution differential transported to the selected
+finite free coordinates.
+-/
+noncomputable def coordinateDifferential
+    (F : FiniteFreeMathlibResolution.{v} A I) (n : Nat) :
+    (F.BasisIndex (n + 1) -> A) →ₗ[A] (F.BasisIndex n -> A) :=
+  ModuleCat.Hom.hom
+    ((F.termIsoFree (n + 1)).inv ≫
+      F.projectiveResolution.complex.d (n + 1) n ≫
+      (F.termIsoFree n).hom)
+
+/-- Consecutive coordinate differentials compose to zero. -/
+theorem coordinateDifferential_comp
+    (F : FiniteFreeMathlibResolution.{v} A I) (n : Nat)
+    (x : F.BasisIndex (n + 2) -> A) :
+    F.coordinateDifferential n (F.coordinateDifferential (n + 1) x) = 0 := by
+  change ModuleCat.Hom.hom
+      ((F.termIsoFree (n + 1)).inv ≫
+        F.projectiveResolution.complex.d (n + 1) n ≫
+        (F.termIsoFree n).hom)
+      (ModuleCat.Hom.hom
+        ((F.termIsoFree (n + 2)).inv ≫
+          F.projectiveResolution.complex.d (n + 2) (n + 1) ≫
+          (F.termIsoFree (n + 1)).hom) x) = 0
+  rw [← ModuleCat.comp_apply]
+  simp only [Category.assoc, Iso.hom_inv_id_assoc]
+  simp
+
+/-- V.R4(a): finite matrix of the actual selected resolution differential. -/
+noncomputable def differentialMatrix
+    (F : FiniteFreeMathlibResolution.{v} A I) (n : Nat) :
+    Matrix (F.BasisIndex n) (F.BasisIndex (n + 1)) A := by
+  letI : DecidableEq (F.BasisIndex n) := Classical.decEq _
+  letI : DecidableEq (F.BasisIndex (n + 1)) := Classical.decEq _
+  exact LinearMap.toMatrix
+    (Pi.basisFun A (F.BasisIndex (n + 1)))
+    (Pi.basisFun A (F.BasisIndex n))
+    (F.coordinateDifferential n)
+
+/-- V.R4(a): matrix computation is definitionally tied to the actual differential. -/
+theorem differentialMatrix_correct
+    (F : FiniteFreeMathlibResolution.{v} A I) (n : Nat) :
+    letI : DecidableEq (F.BasisIndex n) := Classical.decEq _
+    letI : DecidableEq (F.BasisIndex (n + 1)) := Classical.decEq _
+    LinearMap.toMatrix
+        (Pi.basisFun A (F.BasisIndex (n + 1)))
+        (Pi.basisFun A (F.BasisIndex n))
+        (F.coordinateDifferential n) =
+      F.differentialMatrix n := by
+  rfl
+
+/-- Consecutive finite differential matrices multiply to zero. -/
+theorem differentialMatrix_mul_eq_zero
+    (F : FiniteFreeMathlibResolution.{v} A I) (n : Nat) :
+    letI : DecidableEq (F.BasisIndex n) := Classical.decEq _
+    letI : DecidableEq (F.BasisIndex (n + 1)) := Classical.decEq _
+    letI : DecidableEq (F.BasisIndex (n + 2)) := Classical.decEq _
+    F.differentialMatrix n * F.differentialMatrix (n + 1) = 0 := by
+  letI : DecidableEq (F.BasisIndex n) := Classical.decEq _
+  letI : DecidableEq (F.BasisIndex (n + 1)) := Classical.decEq _
+  letI : DecidableEq (F.BasisIndex (n + 2)) := Classical.decEq _
+  have hcomp :
+      (F.coordinateDifferential n).comp (F.coordinateDifferential (n + 1)) = 0 := by
+    apply LinearMap.ext
+    intro x
+    exact F.coordinateDifferential_comp n x
+  have hmatrix := congrArg
+    (LinearMap.toMatrix
+      (Pi.basisFun A (F.BasisIndex (n + 2)))
+      (Pi.basisFun A (F.BasisIndex n))) hcomp
+  rw [LinearMap.toMatrix_comp
+    (Pi.basisFun A (F.BasisIndex (n + 2)))
+    (Pi.basisFun A (F.BasisIndex (n + 1)))
+    (Pi.basisFun A (F.BasisIndex n))] at hmatrix
+  rw [F.differentialMatrix_correct, F.differentialMatrix_correct] at hmatrix
+  simpa using hmatrix
+
+/--
 V.R4(a) / AC5: a finite free Mathlib resolution computes
 `Tor_i(A/I_U, A/I)` by the homology of its tensor complex.
 -/
@@ -92,6 +172,240 @@ noncomputable def tensorHomologyIsoTor
   (F.torIsoTensorHomology I_U i).symm
 
 end FiniteFreeMathlibResolution
+
+/-! ### A length-one finite-free resolution of a nonzero principal ideal -/
+
+namespace Principal
+
+open CategoryTheory.Limits
+
+variable {A}
+
+/-- V.R4(a): zero module used above degree one in the principal resolution. -/
+abbrev zeroModule : ModuleCat.{v} A := ModuleCat.of A PUnit
+
+/-- V.R4(a): quotient module by the selected principal ideal. -/
+abbrev quotientModuleOf (a : A) : ModuleCat.{v} A :=
+  quotientModule A (Ideal.span ({a} : Set A))
+
+/-- V.R4(a): multiplication by the selected principal generator. -/
+def differential (a : A) : ModuleCat.of A A ⟶ ModuleCat.of A A :=
+  ModuleCat.ofHom (a • (LinearMap.id : A →ₗ[A] A))
+
+/-- V.R4(a): quotient projection for the principal ideal. -/
+def quotientπ (a : A) : ModuleCat.of A A ⟶ quotientModuleOf a :=
+  ModuleCat.ofHom (Ideal.span ({a} : Set A)).mkQ
+
+/-- V.R4(a): the principal differential lands in the quotient kernel. -/
+theorem differential_comp_quotientπ (a : A) :
+    differential a ≫ quotientπ a = 0 := by
+  rw [ModuleCat.hom_ext_iff]
+  apply LinearMap.ext
+  intro x
+  change (Ideal.span ({a} : Set A)).mkQ (a * x) = 0
+  rw [Submodule.mkQ_apply, Submodule.Quotient.mk_eq_zero]
+  exact Ideal.mem_span_singleton'.mpr ⟨x, by ring⟩
+
+/-- V.R4(a): two-term complex `0 → A → A → 0`. -/
+def complex (a : A) : ChainComplex (ModuleCat.{v} A) ℕ :=
+  ChainComplex.mk' (ModuleCat.of A A) (ModuleCat.of A A) (differential a)
+    (fun {X0 X1} f => ⟨zeroModule, 0, by simp⟩)
+
+/-- V.R4(a): degree-zero augmentation of the principal complex. -/
+def augmentation₀ (a : A) : (complex a).X 0 ⟶ quotientModuleOf a :=
+  quotientπ a
+
+/-- V.R4(a): augmentation commutes with the selected differential. -/
+theorem complex_d_comp_augmentation₀ (a : A) :
+    (complex a).d 1 0 ≫ augmentation₀ a = 0 := by
+  simpa [complex, augmentation₀] using differential_comp_quotientπ a
+
+/-- V.R4(a): augmentation to the degree-zero single complex. -/
+def augmentation (a : A) :
+    complex a ⟶ (ChainComplex.single₀ (ModuleCat.{v} A)).obj (quotientModuleOf a) := by
+  refine (ChainComplex.toSingle₀Equiv _ _).symm ?_
+  exact ⟨augmentation₀ a, complex_d_comp_augmentation₀ a⟩
+
+/-- V.R4(a): all terms above degree one are zero. -/
+def complex_X_succ_succ_iso_zero (a : A) (n : ℕ) :
+    (complex a).X (n + 2) ≅ zeroModule := by
+  let succ' : ∀ {X₀ X₁ : ModuleCat.{v} A} (f : X₁ ⟶ X₀),
+      Σ' (X₂ : ModuleCat.{v} A) (_d : X₂ ⟶ X₁), _d ≫ f = 0 :=
+    fun {X₀ X₁} f => ⟨zeroModule, 0, by simp⟩
+  exact ChainComplex.mk'XIso (ModuleCat.of A A) (ModuleCat.of A A)
+    (differential a) succ' n
+
+/-- V.R4(a): each principal-complex term is projective. -/
+theorem complex_projective (a : A) (n : ℕ) :
+    CategoryTheory.Projective ((complex a).X n) := by
+  cases n with
+  | zero =>
+      simpa [complex] using
+        (inferInstance : CategoryTheory.Projective (ModuleCat.of A A))
+  | succ n =>
+      cases n with
+      | zero =>
+          simpa [complex] using
+            (inferInstance : CategoryTheory.Projective (ModuleCat.of A A))
+      | succ n =>
+          exact CategoryTheory.Projective.of_iso
+            (complex_X_succ_succ_iso_zero a n).symm
+            (inferInstance : CategoryTheory.Projective zeroModule)
+
+/-- V.R4(a): multiplication by a nonzero element of a domain is injective. -/
+theorem differential_injective [IsDomain A] {a : A} (ha : a ≠ 0) :
+    Function.Injective (differential a).hom := by
+  intro x y hxy
+  apply sub_eq_zero.mp
+  have hmul : a * (x - y) = 0 := by
+    rw [mul_sub, sub_eq_zero]
+    exact hxy
+  exact (mul_eq_zero.mp hmul).resolve_left ha
+
+/-- V.R4(a): exactness at degree one. -/
+theorem complex_exactAt_one [IsDomain A] {a : A} (ha : a ≠ 0) :
+    (complex a).ExactAt 1 := by
+  rw [HomologicalComplex.exactAt_iff' _ 2 1 0 (by simp) (by simp)]
+  rw [ShortComplex.moduleCat_exact_iff_ker_sub_range]
+  intro y hy
+  change (differential a).hom (y : A) = 0 at hy
+  have hz : (y : A) = 0 := differential_injective ha (by simpa using hy)
+  subst hz
+  exact ⟨0, by simp [complex]⟩
+
+/-- V.R4(a): terms in degrees at least two are zero objects. -/
+theorem complex_isZero_X_succ_succ (a : A) (n : ℕ) :
+    IsZero ((complex a).X (n + 2)) :=
+  (ModuleCat.isZero_of_subsingleton zeroModule).of_iso
+    (complex_X_succ_succ_iso_zero a n)
+
+/-- V.R4(a): positive-degree exactness of the principal complex. -/
+theorem complex_exactAt_succ [IsDomain A] {a : A} (ha : a ≠ 0) (n : ℕ) :
+    (complex a).ExactAt (n + 1) := by
+  cases n with
+  | zero => simpa using complex_exactAt_one ha
+  | succ n =>
+      rw [HomologicalComplex.exactAt_iff' _ (n + 3) (n + 2) (n + 1)
+        (by simp) (by simp)]
+      apply ShortComplex.exact_of_isZero_X₂
+      exact complex_isZero_X_succ_succ a n
+
+/-- V.R4(a): exactness of `A → A → A/⟨a⟩`. -/
+theorem differential_quotientπ_exact (a : A) :
+    (ShortComplex.mk (differential a) (quotientπ a)
+      (differential_comp_quotientπ a)).Exact := by
+  rw [ShortComplex.moduleCat_exact_iff_range_eq_ker]
+  apply le_antisymm
+  · intro y hy
+    rcases hy with ⟨x, hx⟩
+    subst hx
+    change (Ideal.span ({a} : Set A)).mkQ (a * (x : A)) = 0
+    rw [Submodule.mkQ_apply, Submodule.Quotient.mk_eq_zero]
+    exact Ideal.mem_span_singleton'.mpr ⟨x, by ring⟩
+  · intro y hy
+    change (Ideal.span ({a} : Set A)).mkQ (y : A) = 0 at hy
+    rw [Submodule.mkQ_apply, Submodule.Quotient.mk_eq_zero,
+      Ideal.mem_span_singleton'] at hy
+    rcases hy with ⟨x, hx⟩
+    refine ⟨x, ?_⟩
+    rw [← hx]
+    change (differential a).hom x = x * a
+    simp [differential]
+    exact mul_comm a x
+
+/-- V.R4(a): the principal quotient projection is epic. -/
+theorem quotientπ_epi (a : A) : Epi (quotientπ a) := by
+  rw [ModuleCat.epi_iff_surjective]
+  exact Submodule.mkQ_surjective _
+
+/-- V.R4(a): degree-zero quasi-isomorphism of the principal resolution. -/
+theorem augmentation_quasiIsoAt_zero (a : A) : QuasiIsoAt (augmentation a) 0 := by
+  rw [ChainComplex.quasiIsoAt₀_iff]
+  rw [ShortComplex.quasiIso_iff_of_zeros']
+  constructor
+  · simpa [augmentation₀, complex] using differential_quotientπ_exact a
+  · simpa [augmentation, augmentation₀] using quotientπ_epi a
+  all_goals simp [complex]
+
+/-- V.R4(a): positive-degree quasi-isomorphism of the principal resolution. -/
+theorem augmentation_quasiIsoAt_succ [IsDomain A] {a : A} (ha : a ≠ 0) (n : ℕ) :
+    QuasiIsoAt (augmentation a) (n + 1) := by
+  rw [quasiIsoAt_iff_exactAt' _ _
+    (ChainComplex.exactAt_succ_single_obj (quotientModuleOf a) n)]
+  exact complex_exactAt_succ ha n
+
+/-- V.R4(a): the principal augmentation is a quasi-isomorphism. -/
+theorem augmentation_quasiIso [IsDomain A] {a : A} (ha : a ≠ 0) :
+    QuasiIso (augmentation a) where
+  quasiIsoAt i := by
+    cases i with
+    | zero => exact augmentation_quasiIsoAt_zero a
+    | succ n => exact augmentation_quasiIsoAt_succ ha n
+
+/-- V.R4(a): Mathlib projective resolution of a nonzero principal quotient. -/
+noncomputable def projectiveResolution [IsDomain A] {a : A} (ha : a ≠ 0) :
+    ProjectiveResolution (quotientModuleOf a) where
+  complex := complex a
+  projective := complex_projective a
+  π := augmentation a
+  quasiIso := augmentation_quasiIso ha
+
+/-- V.R4(a): length-one finite-free resolution of a nonzero principal quotient. -/
+noncomputable def finiteFreeResolution [IsDomain A] {a : A} (ha : a ≠ 0) :
+    FiniteFreeMathlibResolution A (Ideal.span ({a} : Set A)) where
+  projectiveResolution := projectiveResolution ha
+  length := 1
+  BasisIndex n := if n ≤ 1 then ULift.{v} Unit else ULift.{v} Empty
+  basisIndexFintype n := by
+    by_cases h : n ≤ 1
+    · simp [h]
+      infer_instance
+    · simp [h]
+      infer_instance
+  termIsoFree n := by
+    cases n with
+    | zero =>
+        simpa [projectiveResolution, complex] using
+          (LinearEquiv.funUnique (ULift.{v} Unit) A A).symm.toModuleIso
+    | succ n =>
+        cases n with
+        | zero =>
+            simpa [projectiveResolution, complex] using
+              (LinearEquiv.funUnique (ULift.{v} Unit) A A).symm.toModuleIso
+        | succ n =>
+            let hsource := complex_X_succ_succ_iso_zero a n
+            let hsourceZero : IsZero (zeroModule : ModuleCat.{v} A) := by
+              exact ModuleCat.isZero_of_subsingleton zeroModule
+            let htarget : IsZero
+                (ModuleCat.of A
+                  ((if n + 2 ≤ 1 then ULift.{v} Unit else ULift.{v} Empty) -> A)) := by
+              simp
+              letI : Subsingleton (ULift.{v} Empty -> A) :=
+                ⟨fun f g => funext fun x => nomatch x.down⟩
+              exact inferInstance
+            simpa [Nat.add_assoc] using
+              (hsource ≪≫ hsourceZero.isoZero ≪≫ htarget.isoZero.symm)
+  supported_le_length n hn := by
+    obtain ⟨m, rfl⟩ : ∃ m, n = m + 2 := by
+      use n - 2
+      omega
+    exact ModuleCat.subsingleton_of_isZero (complex_isZero_X_succ_succ a m)
+
+/--
+V.R4(a): the first coordinate differential of the principal finite-free
+resolution is nonzero whenever its generator is nonzero.
+-/
+theorem finiteFreeResolution_coordinateDifferential_zero_ne_zero
+    [IsDomain A] {a : A} (ha : a ≠ 0) :
+    (finiteFreeResolution ha).coordinateDifferential 0 ≠ 0 := by
+  intro h
+  have hvalue := congrArg
+    (fun f => f (fun _ : ULift.{v} Unit => (1 : A)) (ULift.up ())) h
+  simp [FiniteFreeMathlibResolution.coordinateDifferential,
+    finiteFreeResolution, projectiveResolution, complex, differential] at hvalue
+  exact ha hvalue
+
+end Principal
 
 end MathlibResolution
 

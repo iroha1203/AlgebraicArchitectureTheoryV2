@@ -3354,6 +3354,214 @@ noncomputable def finiteLinearCoefficientSheaf :
   modulePresheaf := finiteLinearCoefficientPresheaf
   isSheaf := finiteLinearCoefficientPresheaf_isSheaf
 
+/-!
+The finite-dimensional measurement fixture needs the same strict-diamond
+coefficient geometry over an explicitly finite field.  The following
+Type-valued presheaf is the `ZMod 2` instance of the marker-reading
+construction above.  It remains in this source file because the order and
+cover lemmas used to prove the sheaf condition are intentionally private to
+the strict-diamond model.
+-/
+
+/-- `ZMod 2` sections are nonzero exactly on contexts reading neither selected
+marker. -/
+noncomputable def finiteLinearF2CoefficientSubmodule
+    (W : Site.ArchCtx FiniteModel.object) : Submodule (ZMod 2) (ZMod 2) := by
+  classical
+  exact if FiniteLinearNoMarkerReads W then ⊤ else ⊥
+
+private theorem finiteLinearF2CoefficientSubmodule_mono
+    {W V : Site.ArchCtx FiniteModel.object}
+    (h : finiteLinearContextPreorder.le W V) :
+    finiteLinearF2CoefficientSubmodule V ≤
+      finiteLinearF2CoefficientSubmodule W := by
+  by_cases hV : FiniteLinearNoMarkerReads V
+  · have hW := finiteLinearNoMarkerReads_of_le h hV
+    simp [finiteLinearF2CoefficientSubmodule, hV, hW]
+  · simp [finiteLinearF2CoefficientSubmodule, hV]
+
+/-- Type-valued finite-field coefficient presheaf on the strict-diamond
+site. -/
+noncomputable def finiteLinearF2CoefficientPresheaf :
+    Site.AATPresheaf finiteLinearSite where
+  obj X := finiteLinearF2CoefficientSubmodule X.unop.ctx
+  map {X Y} f x :=
+    ⟨x.1, finiteLinearF2CoefficientSubmodule_mono (leOfHom f.unop) x.2⟩
+  map_id X := by
+    funext x
+    rfl
+  map_comp {X Y Z} f g := by
+    funext x
+    rfl
+
+private theorem finiteLinearF2CoefficientPresheaf_isSheaf :
+    Presieve.IsSheaf finiteLinearSite.topology
+      finiteLinearF2CoefficientPresheaf := by
+  rw [Site.AATSite.topology, Site.AATGrothendieckTopology]
+  rw [Precoverage.isSheaf_toGrothendieck_iff]
+  intro X Y f R hR
+  rcases hR with ⟨F, rfl⟩
+  intro family hfamily
+  classical
+  have hmarker : ∃ i : F.Index,
+      finiteLinearF2CoefficientSubmodule
+          (Site.productContext Y.ctx (F.patch i)) =
+        finiteLinearF2CoefficientSubmodule Y.ctx := by
+    by_cases hY : FiniteLinearNoMarkerReads Y.ctx
+    · rcases finiteLinear_admissibleCover_has_left F with ⟨i, hi⟩
+      refine ⟨i, ?_⟩
+      have hQ := finiteLinearNoMarkerReads_product_left
+        (V := F.patch i) hY
+      simp [finiteLinearF2CoefficientSubmodule, hY, hQ]
+    · simp only [FiniteLinearNoMarkerReads, not_and_or, not_forall,
+        not_not] at hY
+      rcases hY with hA | hB
+      · rcases hA with ⟨support, hsupport⟩
+        rcases finiteLinear_admissibleCover_has_left F with ⟨i, hi⟩
+        refine ⟨i, ?_⟩
+        have hQ : ¬ FiniteLinearNoMarkerReads
+            (Site.productContext Y.ctx (F.patch i)) := by
+          rw [hi]
+          exact finiteLinearProductWithLeft_not_noMarkerReads hsupport
+        have hYnot : ¬ FiniteLinearNoMarkerReads Y.ctx := fun h =>
+          h.1 support hsupport
+        unfold finiteLinearF2CoefficientSubmodule
+        rw [if_neg hQ, if_neg hYnot]
+      · rcases hB with ⟨support, hsupport⟩
+        rcases finiteLinear_admissibleCover_has_right F with ⟨i, hi⟩
+        refine ⟨i, ?_⟩
+        have hQ : ¬ FiniteLinearNoMarkerReads
+            (Site.productContext Y.ctx (F.patch i)) := by
+          rw [hi]
+          exact finiteLinearProductWithRight_not_noMarkerReads hsupport
+        have hYnot : ¬ FiniteLinearNoMarkerReads Y.ctx := fun h =>
+          h.2 support hsupport
+        unfold finiteLinearF2CoefficientSubmodule
+        rw [if_neg hQ, if_neg hYnot]
+  rcases hmarker with ⟨i, hsubmodule⟩
+  let patchObject := Site.ContextCategoryObject.of finiteLinearContextPreorder
+    (F.patch i)
+  let Q := finiteLinearProductObject Y patchObject
+  let q : Q ⟶ Y := finiteLinearProductLeft Y patchObject
+  let qpatch : Q ⟶ patchObject := finiteLinearProductRight Y patchObject
+  have hq : (Sieve.generate F.presieve).pullback f q := by
+    change Sieve.generate F.presieve (q ≫ f)
+    have hinclusion : Sieve.generate F.presieve
+        (homOfLE (F.inclusion i)) :=
+      Sieve.le_generate F.presieve _ (Presieve.ofArrows.mk i)
+    have hcomp := (Sieve.generate F.presieve).downward_closed
+      hinclusion qpatch
+    convert hcomp using 1
+  let reference := family q hq
+  have reference_mem_Y : reference.1 ∈
+      finiteLinearF2CoefficientSubmodule Y.ctx := by
+    rw [← hsubmodule]
+    exact reference.2
+  let global : finiteLinearF2CoefficientSubmodule Y.ctx :=
+    ⟨reference.1, reference_mem_Y⟩
+  have hconstant : ∀ {Z : finiteLinearSite.category}
+      (g : Z ⟶ Y) (hg : (Sieve.generate F.presieve).pullback f g),
+      (family g hg).1 = reference.1 := by
+    intro Z g hg
+    let P := finiteLinearProductObject Z Q
+    let pz : P ⟶ Z := finiteLinearProductLeft Z Q
+    let pq : P ⟶ Q := finiteLinearProductRight Z Q
+    have hcompat := hfamily pz pq hg hq (Subsingleton.elim _ _)
+    exact congrArg Subtype.val hcompat
+  refine ⟨global, ?_, ?_⟩
+  · intro Z g hg
+    apply Subtype.ext
+    change global.1 = (family g hg).1
+    exact (hconstant g hg).symm
+  · intro other hother
+    apply Subtype.ext
+    have hqOther := hother q hq
+    have hval := congrArg Subtype.val hqOther
+    change other.1 = global.1
+    exact hval
+
+/-- Named additive structure on each finite-field coefficient section. -/
+noncomputable def finiteLinearF2SectionAddCommGroup
+    (W : finiteLinearSite.category) :
+    AddCommGroup (finiteLinearF2CoefficientSubmodule W.ctx) :=
+  inferInstance
+
+/-- `ZMod 2` obstruction sheaf whose patch sections vanish while mixed-overlap
+sections remain nontrivial. -/
+noncomputable def finiteLinearF2ObstructionSheaf :
+    Cohomology.ObstructionSheaf finiteLinearSite where
+  carrier := {
+    carrier := finiteLinearF2CoefficientPresheaf
+    isSheaf := by
+      intro base cover hcover
+      exact finiteLinearF2CoefficientPresheaf_isSheaf cover hcover
+  }
+  addCommGroup W := finiteLinearF2SectionAddCommGroup W
+  map_zero := by
+    intros
+    apply Subtype.ext
+    rfl
+  map_add := by
+    intros
+    apply Subtype.ext
+    rfl
+
+@[simp]
+theorem finiteLinearF2ObstructionSheaf_toPresheaf :
+    finiteLinearF2ObstructionSheaf.carrier.toPresheaf =
+      finiteLinearF2CoefficientPresheaf :=
+  rfl
+
+/-- Every strict-diamond finite-field restriction is the linear inclusion of
+the corresponding coefficient submodules. -/
+noncomputable def finiteLinearF2RestrictionLinear
+    {source target : finiteLinearSite.category} (f : source ⟶ target) :
+    finiteLinearF2CoefficientSubmodule target.ctx →ₗ[ZMod 2]
+      finiteLinearF2CoefficientSubmodule source.ctx :=
+  Submodule.inclusion
+    (finiteLinearF2CoefficientSubmodule_mono (leOfHom f))
+
+@[simp]
+theorem finiteLinearF2Section_zero_val
+    (W : finiteLinearSite.category) :
+    letI : AddCommGroup (finiteLinearF2CoefficientSubmodule W.ctx) :=
+      finiteLinearF2ObstructionSheaf.addCommGroup W
+    ((0 : finiteLinearF2CoefficientSubmodule W.ctx).1 : ZMod 2) = 0 := by
+  rfl
+
+@[simp]
+theorem finiteLinearF2Section_add_val
+    (W : finiteLinearSite.category)
+    (x y : finiteLinearF2CoefficientSubmodule W.ctx) :
+    letI : AddCommGroup (finiteLinearF2CoefficientSubmodule W.ctx) :=
+      finiteLinearF2ObstructionSheaf.addCommGroup W
+    (x + y).1 = x.1 + y.1 := by
+  rfl
+
+@[simp]
+theorem finiteLinearF2Section_neg_val
+    (W : finiteLinearSite.category)
+    (x : finiteLinearF2CoefficientSubmodule W.ctx) :
+    letI : AddCommGroup (finiteLinearF2CoefficientSubmodule W.ctx) :=
+      finiteLinearF2ObstructionSheaf.addCommGroup W
+    (-x).1 = -x.1 := by
+  rfl
+
+@[simp]
+theorem finiteLinearF2RestrictionLinear_apply
+    {source target : finiteLinearSite.category} (f : source ⟶ target)
+    (x : finiteLinearF2CoefficientSubmodule target.ctx) :
+    finiteLinearF2RestrictionLinear f x =
+      finiteLinearF2CoefficientPresheaf.map f.op x :=
+  rfl
+
+@[simp]
+theorem finiteLinearF2CoefficientPresheaf_map_val
+    {source target : finiteLinearSite.category} (f : source ⟶ target)
+    (x : finiteLinearF2CoefficientSubmodule target.ctx) :
+    (finiteLinearF2CoefficientPresheaf.map f.op x).1 = x.1 :=
+  rfl
+
 /-- Finiteness of the selected two-branch cover, transported from `Bool`. -/
 noncomputable instance finiteLinearCoverIndexFintype :
     Fintype finiteLinearCover.Index :=
@@ -3748,6 +3956,41 @@ private theorem finiteLinearNoMarkerReads_right_left :
   · simpa [finiteLinearContext, finiteLinearSupportReads] using hread.1
   · simpa [finiteLinearContext, finiteLinearSupportReads] using hread.2
 
+/-- Finite-field potential on the two selected cover branches. -/
+def finiteLinearF2Potential : finiteLinearCover.Index → ZMod 2
+  | .left => 0
+  | .right => 1
+
+/-- Canonical finite-field section on a pair overlap.  Equal branches give the
+zero section; a mixed pair gives the nonzero section of the full overlap
+module. -/
+noncomputable def finiteLinearF2PairSection
+    (i j : finiteLinearCover.Index) :
+    finiteLinearF2CoefficientSubmodule
+      (finiteLinearSite.overlap.overlap finiteLinearBase.ctx
+        (finiteLinearCover.patch i) (finiteLinearCover.patch j)) := by
+  cases i <;> cases j
+  · exact 0
+  · refine ⟨1, ?_⟩
+    unfold finiteLinearF2CoefficientSubmodule
+    rw [if_pos]
+    · exact Submodule.mem_top
+    · exact finiteLinearNoMarkerReads_left_right
+  · refine ⟨1, ?_⟩
+    unfold finiteLinearF2CoefficientSubmodule
+    rw [if_pos]
+    · exact Submodule.mem_top
+    · exact finiteLinearNoMarkerReads_right_left
+  · exact 0
+
+@[simp]
+theorem finiteLinearF2PairSection_val
+    (i j : finiteLinearCover.Index) :
+    (finiteLinearF2PairSection i j).1 =
+      finiteLinearF2Potential j - finiteLinearF2Potential i := by
+  cases i <;> cases j <;>
+    simp [finiteLinearF2PairSection, finiteLinearF2Potential]
+
 private noncomputable def finiteLinearCechOneCochain :
     finiteLinearCech.complex.X 1 := fun σ => by
   refine ⟨finiteLinearOneValue (σ 0) (σ 1), ?_⟩
@@ -3878,6 +4121,24 @@ private theorem finiteLinearCoefficientSubmodule_right_eq_bot :
     intro h
     exact h.2 PUnit.unit (by rfl)
   simp [finiteLinearCoefficientSubmodule, hnot]
+
+/-- Every selected cover patch has only the zero finite-field section. -/
+theorem finiteLinearF2CoefficientSubmodule_patch_eq_bot
+    (i : finiteLinearCover.Index) :
+    finiteLinearF2CoefficientSubmodule (finiteLinearCover.patch i) = ⊥ := by
+  cases i with
+  | left =>
+      have hnot : ¬ FiniteLinearNoMarkerReads (finiteLinearContext .left) := by
+        intro h
+        exact h.1 PUnit.unit (by rfl)
+      simp [finiteLinearCover, finiteLinearCoverPatch,
+        finiteLinearF2CoefficientSubmodule, hnot]
+  | right =>
+      have hnot : ¬ FiniteLinearNoMarkerReads (finiteLinearContext .right) := by
+        intro h
+        exact h.2 PUnit.unit (by rfl)
+      simp [finiteLinearCover, finiteLinearCoverPatch,
+        finiteLinearF2CoefficientSubmodule, hnot]
 
 private theorem finiteLinearDegreeZeroCoefficient_eq_bot
     (σ : (Cohomology.canonicalCoverRelative finiteLinearCover).simplex 0) :
