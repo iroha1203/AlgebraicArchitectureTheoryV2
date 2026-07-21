@@ -82,7 +82,6 @@ structure ReplayCoefficientRepresentation {U : AtomCarrier.{u}}
     ∀ i : r.bridge.temporalCover.Index,
       localReplayOfSection i
         (localSections
-          (r.bridge.siteCover.chart (r.bridge.coverComparison.siteIndexOf i))
           (r.bridge.siteCover.inclusion (r.bridge.coverComparison.siteIndexOf i))
           (chartInCover i)) = r.replay i
   /-- The coefficient section read from a replay-function section over any site object. -/
@@ -105,7 +104,7 @@ structure ReplayCoefficientRepresentation {U : AtomCarrier.{u}}
           (r.bridge.coverComparison.siteIndexOf i))),
         coefficientOfLocalSections sections σ =
           coefficientReading _ (replaySheaf.toPresheaf.map q.op
-            (sections _ (r.bridge.siteCover.inclusion
+            (sections (r.bridge.siteCover.inclusion
               (r.bridge.coverComparison.siteIndexOf i)) hq))
   /-- The correction action on a family of local replay sections. -/
   adjustLocalSections : r.bridge.siteComplex.Cn 0 ->
@@ -124,8 +123,8 @@ structure ReplayCoefficientRepresentation {U : AtomCarrier.{u}}
   /-- The coefficient value of a degree-one Čech cochain on a selected overlap. -/
   overlapCochainValue :
     ∀ {Y Z W : S.category}
-      (f : Y ⟶ r.bridge.siteCover.base) (g : Z ⟶ r.bridge.siteCover.base)
-      (leftRestriction : W ⟶ Y) (rightRestriction : W ⟶ Z),
+      (_f : Y ⟶ r.bridge.siteCover.base) (_g : Z ⟶ r.bridge.siteCover.base)
+      (_leftRestriction : W ⟶ Y) (_rightRestriction : W ⟶ Z),
       r.bridge.siteComplex.Cn 1 ->
         Coeff.obstructionSheaf.carrier.toPresheaf.obj (Opposite.op W)
   /-- The zero degree-one cochain has zero value on every selected overlap. -/
@@ -145,10 +144,10 @@ structure ReplayCoefficientRepresentation {U : AtomCarrier.{u}}
       letI := Coeff.obstructionSheaf.addCommGroup W
       coefficientReading W
           (replaySheaf.toPresheaf.map leftRestriction.op
-            (adjustLocalSections correction Y f hf)) -
+            (adjustLocalSections correction f hf)) -
         coefficientReading W
           (replaySheaf.toPresheaf.map rightRestriction.op
-            (adjustLocalSections correction Z g hg)) =
+            (adjustLocalSections correction g hg)) =
           overlapCochainValue f g leftRestriction rightRestriction
             (r.bridge.siteComplex.d 0
               (coefficientOfLocalSections (adjustLocalSections correction)))
@@ -203,7 +202,6 @@ def localReplay (r : ReplayDescentData St Coeff Law) (i : r.cover.Index) :
       St.State (r.raw.targetTrace, r.cover.chartContext i) :=
   r.representation.localReplayOfSection i
     (r.representation.localSections
-      (r.raw.bridge.siteCover.chart (r.raw.bridge.coverComparison.siteIndexOf i))
       (r.raw.bridge.siteCover.inclusion (r.raw.bridge.coverComparison.siteIndexOf i))
       (r.representation.chartInCover i))
 
@@ -214,7 +212,7 @@ theorem localReplay_eq_raw (r : ReplayDescentData St Coeff Law) (i : r.cover.Ind
 
 /-- IX.§4 / AC13: a descended global replay section over the base context. -/
 abbrev GlobalReplaySection (r : ReplayDescentData St Coeff Law) :
-    Type (max u y) :=
+    Type u :=
   r.representation.replaySheaf.toPresheaf.obj
     (Opposite.op r.raw.bridge.siteCover.base)
 
@@ -258,11 +256,13 @@ variable {T : TemporalSite S E} {St : StateTransitionPresheaf T}
 variable {Coeff : TemporalCoefficient T} {Law : TemporalLaw St}
 variable {r : ReplayDescentData St Coeff Law}
 
+/-- IX.§4 / AC11: the replay mismatch has zero temporal Čech differential. -/
 theorem differential_zero_holds (h : ReplayMismatchCocycle r) :
     letI := r.raw.bridge.siteComplex.cochainAddCommGroup 2
     r.raw.bridge.siteComplex.d 1 r.mismatchCochain = 0 :=
   h.differential_zero
 
+/-- IX.§4 / AC11: package the replay mismatch as the selected temporal cocycle. -/
 def toTemporalCocycle (h : ReplayMismatchCocycle r) :
     TemporalCocycle r.mismatch where
   differential_zero := by
@@ -296,7 +296,6 @@ def adjustedReplay (r : ReplayDescentData St Coeff Law)
       St.State (r.raw.targetTrace, r.cover.chartContext i) :=
   r.representation.localReplayOfSection i
     (r.adjustedLocalSections correction
-      (r.raw.bridge.siteCover.chart (r.raw.bridge.coverComparison.siteIndexOf i))
       (r.raw.bridge.siteCover.inclusion (r.raw.bridge.coverComparison.siteIndexOf i))
       (r.representation.chartInCover i))
 
@@ -311,8 +310,11 @@ theorem mismatch_adjust_eq (r : ReplayDescentData St Coeff Law)
     letI := r.raw.bridge.siteComplex.cochainAddCommGroup 1
     r.adjustedMismatchCochain correction =
       r.mismatchCochain - r.raw.bridge.siteComplex.d 0 correction := by
+  letI := r.raw.bridge.siteComplex.cochainAddCommGroup 0
+  letI := r.raw.bridge.siteComplex.cochainAddCommGroup 1
   rw [adjustedMismatchCochain, mismatchCochain, adjustedCoefficient,
-    replayCoefficient, r.representation.coefficient_adjustment, map_sub]
+    adjustedLocalSections, replayCoefficient,
+    r.representation.coefficient_adjustment, map_sub]
 
 /-- IX.§4 / AC13: zero mismatch yields matching through the represented coefficient reading. -/
 def adjusted_replay_matching_of_zero (r : ReplayDescentData St Coeff Law)
@@ -323,15 +325,15 @@ def adjusted_replay_matching_of_zero (r : ReplayDescentData St Coeff Law)
   {
     localSections := r.adjustedLocalSections correction
     overlapAgreement := by
-      intro Y f hf Z g hg W leftRestriction rightRestriction hcomm
+      intro Y Z W leftRestriction rightRestriction f g hf hg hcomm
       apply r.representation.coefficientReading_zero_reflecting W
       calc
         r.representation.coefficientReading W
             (r.representation.replaySheaf.toPresheaf.map leftRestriction.op
-              (r.adjustedLocalSections correction Y f hf)) -
+              (r.adjustedLocalSections correction f hf)) -
           r.representation.coefficientReading W
             (r.representation.replaySheaf.toPresheaf.map rightRestriction.op
-              (r.adjustedLocalSections correction Z g hg)) =
+              (r.adjustedLocalSections correction g hg)) =
             r.representation.overlapCochainValue f g leftRestriction rightRestriction
               (r.adjustedMismatchCochain correction) :=
           r.representation.adjusted_restriction_difference correction f hf g hg
@@ -367,14 +369,17 @@ variable {T : TemporalSite S E} {St : StateTransitionPresheaf T}
 variable {Coeff : TemporalCoefficient T} {Law : TemporalLaw St}
 variable {r : ReplayDescentData St Coeff Law}
 
+/-- IX.§4 / AC13: the selected temporal class is represented by the replay mismatch. -/
 theorem class_matches_mismatch (D : TemporalDescentCriterion r) :
     D.temporalClass.cocycle = D.mismatchCocycle.toTemporalCocycle :=
   D.temporalClass_matches_mismatch
 
+/-- IX.§4 / AC13: the selected replay mismatch class is the zero class. -/
 theorem class_vanishes (D : TemporalDescentCriterion r) :
     D.temporalClass.cohomologyClass = r.zeroMismatchClass :=
   D.classVanishes_cert
 
+/-- IX.§4 / AC13: class vanishing produces a degree-zero correction primitive. -/
 theorem exists_correction_of_class_vanishes (D : TemporalDescentCriterion r) :
     ∃ correction : r.raw.bridge.siteComplex.Cn 0,
       r.mismatchCochain = r.raw.bridge.siteComplex.d 0 correction := by
@@ -390,7 +395,8 @@ theorem exists_correction_of_class_vanishes (D : TemporalDescentCriterion r) :
   simpa [ReplayMismatchCocycle.toTemporalCocycle, TemporalCocycle.asCechCocycle,
     ReplayDescentData.zeroMismatchCocycle] using hcorrection
 
-theorem adjusted_mismatch_zero (D : TemporalDescentCriterion r)
+/-- IX.§4 / AC13: a correction primitive makes the adjusted mismatch zero. -/
+theorem adjusted_mismatch_zero (_D : TemporalDescentCriterion r)
     (correction : r.raw.bridge.siteComplex.Cn 0)
     (hcorrection : r.mismatchCochain = r.raw.bridge.siteComplex.d 0 correction) :
     r.adjustedMismatchCochain correction = 0 := by
@@ -411,8 +417,6 @@ theorem temporal_descent_section_criterion_realizes_adjusted
             (r.raw.bridge.siteCover.inclusion
               (r.raw.bridge.coverComparison.siteIndexOf i)).op globalSection =
           r.adjustedLocalSections correction
-            (r.raw.bridge.siteCover.chart
-              (r.raw.bridge.coverComparison.siteIndexOf i))
             (r.raw.bridge.siteCover.inclusion
               (r.raw.bridge.coverComparison.siteIndexOf i))
             (r.representation.chartInCover i) := by
@@ -429,7 +433,6 @@ theorem temporal_descent_section_criterion_realizes_adjusted
           (r.raw.bridge.siteCover.inclusion
             (r.raw.bridge.coverComparison.siteIndexOf i)).op globalSection =
         r.adjustedLocalSections correction
-          (r.raw.bridge.siteCover.chart (r.raw.bridge.coverComparison.siteIndexOf i))
           (r.raw.bridge.siteCover.inclusion (r.raw.bridge.coverComparison.siteIndexOf i))
           (r.representation.chartInCover i) := by
     simpa [data] using hglobal

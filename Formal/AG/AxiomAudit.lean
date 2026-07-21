@@ -2536,11 +2536,20 @@ def replayTwoPatchZMod2TemporalCoverComparison :=
 def replayTwoPatchZMod2TemporalProductDifferentialCompatible :=
   Examples.EvolutionPart9.twoPatchReplayTemporalProduct_d0_compatible
 
+def replayTwoPatchZMod2TemporalProductTargetReadsRightChart :=
+  Examples.EvolutionPart9.twoPatchReplayCochainToTemporalProduct_target_reads_right_chart
+
+def replayTwoPatchZMod2TemporalProductEndpoints :=
+  Examples.EvolutionPart9.twoPatchReplayCochainToTemporalProduct_endpoints
+
 def replayTwoPatchZMod2TemporalProductClassZero :=
   Examples.EvolutionPart9.twoPatchReplayTemporalProductMismatch_eq_correction
 
 def replayTwoPatchZMod2TemporalProductCechReading :=
   Examples.EvolutionPart9.twoPatchReplayTemporalMismatch_eq_correction
+
+def replayTwoPatchZMod2CechPrimitiveViaTemporalProduct :=
+  Examples.EvolutionPart9.twoPatchReplayCechMismatch_eq_correction_via_temporal_product
 
 def replayTwoPatchZMod2CechAdjustedMismatchZero :=
   Examples.EvolutionPart9.twoPatchAdjustedReplayCechMismatch_zero
