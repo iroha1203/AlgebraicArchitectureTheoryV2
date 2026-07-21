@@ -2888,6 +2888,118 @@ theorem generatedLaw_sharedCoefficient_separateCircleNonzero_andSingletonStandar
   singletonStandardGeneratedZeroPacket :=
     lawfulFiring_generatedLawSingletonStandardSourceC0_finiteFreeTenConjunctPacket
 
+/-! ## Nontrivial additive higher-layer fixture -/
+
+/--
+X.例9.1 / #3690: a two-element degree-zero additive surface.  The regular
+torsor has two distinct primitives, while its selected origin remains zero.
+-/
+def zmodTwoTorsorCechData :
+    SemanticRepairCoverCechData semanticCover where
+  C0 := ZMod 2
+  C1 := ZMod 2
+  C2 := PUnit
+  c0Finite := inferInstance
+  c1Finite := inferInstance
+  zero1 := 0
+  zero2 := PUnit.unit
+  delta0 _ := 0
+  delta1 _ := PUnit.unit
+  residual := 0
+  zero1_cocycle := rfl
+  delta1_delta0_eq_zero := fun _ => rfl
+  residual_cocycle := rfl
+
+/-- X.例9.1 / #3690: additive laws for the two-element torsor fixture. -/
+def zmodTwoTorsorAdditiveData :
+    SemanticRepairAdditiveCechH1Data zmodTwoTorsorCechData where
+  c0AddCommGroup := by
+    change AddCommGroup (ZMod 2)
+    infer_instance
+  c1AddCommGroup := by
+    change AddCommGroup (ZMod 2)
+    infer_instance
+  zero1_eq_zero := rfl
+  delta0_zero := rfl
+  delta0_add := by
+    intro _ _
+    simp
+  delta0_neg := by
+    intro _
+    simp
+
+/-- X.例9.1 / #3690: component presentation for the nontrivial torsor fixture. -/
+def zmodTwoTorsorBoundaryRelationData :
+    SemanticRepairCoverH1BoundaryRelationAbelianData semanticProjection where
+  cover := semanticCover
+  cech := zmodTwoTorsorCechData
+  supportOf _ := fun _ => True
+  component_covered_of_boundary := by
+    intro _primitive _hboundary residual hresidual
+    exact ⟨residual, trivial, rfl⟩
+  component_faithful_of_boundary := by
+    intro _primitive _hboundary _residual _candidate _hresidual _hcandidate _hprojection
+    trivial
+
+/-- X.例9.1 / #3690: complete additive data for the nontrivial torsor fixture. -/
+def zmodTwoTorsorData :
+    SemanticRepairCoverH1BoundaryRelationAdditiveData semanticProjection where
+  boundaryRelation := zmodTwoTorsorBoundaryRelationData
+  additive := zmodTwoTorsorAdditiveData
+
+/-- X.例9.1 / #3690: the zero primitive solves the selected residual. -/
+def zmodTwoTorsor_zeroSolution :
+    AdditiveRepairSolution zmodTwoTorsorData :=
+  ⟨0, rfl⟩
+
+/-- X.例9.1 / #3690: the nonzero primitive also solves the selected residual. -/
+def zmodTwoTorsor_oneSolution :
+    AdditiveRepairSolution zmodTwoTorsorData :=
+  ⟨1, rfl⟩
+
+/--
+X.例9.1 / #3690: the canonical translation between two distinct residual
+solutions is nonzero.  This rules out a singleton-only firing fixture.
+-/
+theorem zmodTwoTorsor_nonzeroTranslation :
+    letI := zmodTwoTorsorData.additive.c0AddCommGroup
+    (zmodTwoTorsorData.additiveRepairPrimitiveTranslation
+      zmodTwoTorsor_zeroSolution zmodTwoTorsor_oneSolution).1 = (1 : ZMod 2) := by
+  letI := zmodTwoTorsorData.additive.c0AddCommGroup
+  change (1 : ZMod 2) - 0 = 1
+  simp
+
+/-- X.例9.1 / #3690: the regular torsor construction fires on `ZMod 2`. -/
+theorem zmodTwoTorsor_regularTorsor :
+    zmodTwoTorsorData.NonabelianTorsorTrivial :=
+  zmodTwoTorsorData.nonabelianTorsorTrivial_of_additive
+
+/-- X.例9.1 / #3690: the higher-coherence witness is constructed on `ZMod 2`. -/
+theorem zmodTwoTorsor_higherCoherence :
+    zmodTwoTorsorData.HigherCoherenceVanishes :=
+  zmodTwoTorsorData.higherCoherenceVanishes_of_additive
+
+/-- X.例9.1 / #3690: the translation stack has effective descent on `ZMod 2`. -/
+theorem zmodTwoTorsor_stackEffectiveness :
+    zmodTwoTorsorData.StackEffectivelyVanishes :=
+  zmodTwoTorsorData.stackEffectivelyVanishes_of_additive
+
+/--
+X.例9.1 / #3690: every selected `ZMod 2` translation descent datum receives
+the constructed effective-descent object.
+-/
+def zmodTwoTorsor_effectiveDescent
+    (hzero : zmodTwoTorsorData.toAdditiveCechH1Data.H1Zero)
+    (localData : SingularityMonodromyStack.LocalArchitectureObjects
+      (zmodTwoTorsorData.additiveTranslationPresheaf))
+    (descentDatum : SingularityMonodromyStack.ArchitectureDescentDatum
+      (zmodTwoTorsorData.additiveTranslationPresheaf) localData) :
+    letI := zmodTwoTorsorData.additive.c0AddCommGroup
+    letI := zmodTwoTorsorData.additive.c1AddCommGroup
+    SingularityMonodromyStack.EffectiveArchitectureDescent
+      (zmodTwoTorsorData.additiveTranslationPresheaf) descentDatum :=
+  zmodTwoTorsorData.additiveTranslation_effectiveDescent hzero localData descentDatum
+
 end SemanticRepairPart10
 end Examples
 end AAT.AG

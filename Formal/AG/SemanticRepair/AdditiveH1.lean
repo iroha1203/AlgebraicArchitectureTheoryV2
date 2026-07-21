@@ -1,6 +1,7 @@
 import Formal.AG.Cohomology.CoverNerve
 import Formal.AG.SemanticRepair.GluingComplex
 import Formal.AG.Site.Descent
+import Formal.AG.SingularityMonodromyStack.ArchitectureStack
 
 noncomputable section
 
@@ -593,29 +594,374 @@ structure TrueSheafConditionCertificate
   cover_mem : cover ∈ S.topology base
   sheafCondition : Site.AATSheafCondition S F
 
-/-- X.定理4.8 conclusion 5: nonabelian torsor obstruction vanishes by construction. -/
+/--
+X.定理4.8 conclusion 5, torsor layer: additive primitives whose coboundary is
+the selected residual.  This is the actual repair-solution carrier, rather
+than the ambient degree-zero cochain carrier.
+-/
+def AdditiveRepairSolution
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P) :
+    Type y :=
+  { primitive : data.boundaryRelation.cech.C0 //
+    data.boundaryRelation.cech.delta0 primitive =
+      data.boundaryRelation.cech.residual }
+
+/--
+X.定理4.8 conclusion 5: a translation between two actual additive repair
+solutions.  Its equality is the selected torsor action equation.
+-/
+def AdditiveRepairPrimitiveTranslation
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    [AddCommGroup data.boundaryRelation.cech.C0]
+    (source target : AdditiveRepairSolution data) : Type y :=
+  { translation : data.boundaryRelation.cech.C0 // translation + source.1 = target.1 }
+
+/-- X.定理4.8 conclusion 5: the canonical translation between two solutions. -/
+def additiveRepairPrimitiveTranslation
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    [AddCommGroup data.boundaryRelation.cech.C0]
+    (source target : AdditiveRepairSolution data) :
+    AdditiveRepairPrimitiveTranslation data source target :=
+  ⟨target.1 - source.1, by abel⟩
+
+/--
+X.定理4.8 conclusion 5: a translation between residual-solving primitives has
+zero coboundary, so it belongs to the additive stabilizer of the solution
+torsor.
+-/
+theorem additiveRepairPrimitiveTranslation_stabilizes
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    [AddCommGroup data.boundaryRelation.cech.C0]
+    [AddCommGroup data.boundaryRelation.cech.C1]
+    {source target : AdditiveRepairSolution data}
+    (translation : AdditiveRepairPrimitiveTranslation data source target) :
+    data.boundaryRelation.cech.delta0 translation.1 = 0 := by
+  calc
+    data.boundaryRelation.cech.delta0 translation.1 =
+        data.boundaryRelation.cech.delta0 translation.1 +
+          data.boundaryRelation.cech.delta0 source.1 -
+            data.boundaryRelation.cech.delta0 source.1 := by abel
+    _ = data.boundaryRelation.cech.delta0 (translation.1 + source.1) -
+          data.boundaryRelation.cech.delta0 source.1 := by
+      rw [data.additive.delta0_add]
+    _ = data.boundaryRelation.cech.residual - data.boundaryRelation.cech.residual := by
+      rw [translation.2, source.2, target.2]
+    _ = 0 := sub_self _
+
+/-- X.定理4.8 conclusion 5: a translation between fixed solutions is unique. -/
+theorem additiveRepairPrimitiveTranslation_unique
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    [AddCommGroup data.boundaryRelation.cech.C0]
+    {source target : AdditiveRepairSolution data}
+    (first second : AdditiveRepairPrimitiveTranslation data source target) :
+    first = second := by
+  apply Subtype.ext
+  calc
+    first.1 = (first.1 + source.1) - source.1 := by abel
+    _ = (second.1 + source.1) - source.1 := by rw [first.2, second.2]
+    _ = second.1 := by abel
+
+/--
+X.定理4.8 conclusion 5: a pointed regular torsor of actual repair solutions.
+The origin is constructed from the selected additive `H1` zero statement.
+-/
+structure AdditiveRepairPrimitiveTorsor
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    [AddCommGroup data.boundaryRelation.cech.C0]
+    [AddCommGroup data.boundaryRelation.cech.C1] where
+  origin : AdditiveRepairSolution data
+  translation : forall source target : AdditiveRepairSolution data,
+    AdditiveRepairPrimitiveTranslation data source target
+  translation_stabilizes : forall source target,
+    data.boundaryRelation.cech.delta0 (translation source target).1 = 0
+  translation_unique : forall source target
+    (candidate : AdditiveRepairPrimitiveTranslation data source target),
+    candidate = translation source target
+
+/-- X.定理4.8 conclusion 5: construct the regular additive repair torsor. -/
+def additiveRepairPrimitiveTorsor
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (hzero : data.toAdditiveCechH1Data.H1Zero) :
+    letI := data.additive.c0AddCommGroup
+    letI := data.additive.c1AddCommGroup
+    AdditiveRepairPrimitiveTorsor data := by
+  letI := data.additive.c0AddCommGroup
+  letI := data.additive.c1AddCommGroup
+  rcases data.toAdditiveCechH1Data.h1Zero_iff_boundary.mp hzero with ⟨primitive, hprimitive⟩
+  exact
+    { origin := ⟨primitive, hprimitive⟩
+      translation := fun source target => data.additiveRepairPrimitiveTranslation source target
+      translation_stabilizes := fun source target =>
+        data.additiveRepairPrimitiveTranslation_stabilizes
+          (data.additiveRepairPrimitiveTranslation source target)
+      translation_unique := fun source target candidate =>
+        data.additiveRepairPrimitiveTranslation_unique candidate
+    }
+
+/--
+X.定理4.8 conclusion 5: vanishing of the selected additive `H1` class
+constructs a nonempty regular torsor of actual repair solutions, with the
+additive stabilizer made explicit by `delta0 translation = 0`.
+-/
 def NonabelianTorsorTrivial
     {P : SemanticAtomProjection.{u, v}}
-    (_data :
+    (data :
       SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P) :
     Prop :=
-  True
+  letI := data.additive.c0AddCommGroup
+  letI := data.additive.c1AddCommGroup
+  data.toAdditiveCechH1Data.H1Zero ->
+    exists origin : AdditiveRepairSolution data,
+      forall source target : AdditiveRepairSolution data,
+        ExistsUnique fun translation : data.boundaryRelation.cech.C0 =>
+          translation + source.1 = target.1 /\
+            data.boundaryRelation.cech.delta0 translation = 0
 
-/-- X.定理4.8 conclusion 5: higher coherence obstruction vanishes by construction. -/
+/-- X.定理4.8 conclusion 5: the regular additive repair torsor is constructed. -/
+theorem nonabelianTorsorTrivial_of_additive
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P) :
+    NonabelianTorsorTrivial data := by
+  letI := data.additive.c0AddCommGroup
+  letI := data.additive.c1AddCommGroup
+  intro hzero
+  let torsor := data.additiveRepairPrimitiveTorsor hzero
+  refine ⟨torsor.origin, ?_⟩
+  intro source target
+  refine ⟨(torsor.translation source target).1, ?_, ?_⟩
+  · exact ⟨(torsor.translation source target).2,
+      torsor.translation_stabilizes source target⟩
+  · intro translation htranslation
+    have candidate : AdditiveRepairPrimitiveTranslation data source target :=
+      ⟨translation, htranslation.1⟩
+    have hcandidate : candidate = torsor.translation source target :=
+      torsor.translation_unique source target candidate
+    exact congrArg Subtype.val hcandidate
+
+/--
+X.定理4.8 conclusion 5, higher-coherence layer: the selected degree-two
+obstruction and its actual zero witness.
+-/
+structure AdditiveHigherCoherenceWitness
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P) where
+  higherObstruction : data.boundaryRelation.cech.C2
+  higherObstruction_eq_residualDifferential :
+    higherObstruction =
+      data.boundaryRelation.cech.delta1 data.boundaryRelation.cech.residual
+  vanishes : higherObstruction = data.boundaryRelation.cech.zero2
+
+/-- X.定理4.8 conclusion 5: construct the higher-coherence zero witness. -/
+def additiveHigherCoherenceWitness
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P) :
+    AdditiveHigherCoherenceWitness data where
+  higherObstruction := data.boundaryRelation.cech.delta1 data.boundaryRelation.cech.residual
+  higherObstruction_eq_residualDifferential := rfl
+  vanishes := data.boundaryRelation.cech.residual_cocycle
+
+/--
+X.定理4.8 conclusion 5: higher coherence is witnessed by the selected
+degree-two obstruction and its zero equality.
+-/
 def HigherCoherenceVanishes
     {P : SemanticAtomProjection.{u, v}}
-    (_data :
+    (data :
       SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P) :
     Prop :=
-  True
+  data.boundaryRelation.cech.delta1 data.boundaryRelation.cech.residual =
+    data.boundaryRelation.cech.zero2
 
-/-- X.定理4.8 conclusion 5: stack effectiveness obstruction vanishes by construction. -/
-def StackEffectivelyVanishes
+/-- X.定理4.8 conclusion 5: the higher-coherence witness is constructed. -/
+theorem higherCoherenceVanishes_of_additive
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P) :
+    HigherCoherenceVanishes data :=
+  data.boundaryRelation.cech.residual_cocycle
+
+/--
+X.定理4.8 conclusion 5: the one-context base used for the additive
+translation groupoid.
+-/
+def additiveTranslationStackBase
     {P : SemanticAtomProjection.{u, v}}
     (_data :
       SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P) :
+    SingularityMonodromyStack.ArchitectureStackBase.{y} where
+  Context := PUnit
+  Overlap := fun _ _ => PUnit
+  TripleOverlap := fun _ _ _ => PUnit
+  restrict := fun _ _ => PUnit
+  idRestrict := fun _ => PUnit.unit
+  compRestrict := fun _ _ => PUnit.unit
+  id_comp := fun {_ _} _ => Subsingleton.elim _ _
+  comp_id := fun {_ _} _ => Subsingleton.elim _ _
+  assoc := fun {_ _ _ _} _ _ _ => Subsingleton.elim _ _
+  overlapContext := fun {_ _} _ => PUnit.unit
+  overlap_left := fun {_ _} _ => PUnit.unit
+  overlap_right := fun {_ _} _ => PUnit.unit
+  tripleContext := fun {_ _ _} _ => PUnit.unit
+  triple_to_leftOverlap := fun {_ _ _} _ _ => PUnit.unit
+  triple_to_rightOverlap := fun {_ _ _} _ _ => PUnit.unit
+  triple_to_outerOverlap := fun {_ _ _} _ _ => PUnit.unit
+
+/--
+X.定理4.8 conclusion 5: the groupoid-valued translation presheaf of actual
+additive repair solutions.  Every isomorphism retains its translation equation.
+-/
+def additiveTranslationPresheaf
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P) :
+    letI := data.additive.c0AddCommGroup
+    SingularityMonodromyStack.ArchitecturePresheaf
+      (additiveTranslationStackBase data) := by
+  letI := data.additive.c0AddCommGroup
+  exact
+    { Obj := fun _ => AdditiveRepairSolution data
+      Iso := fun source target =>
+        AdditiveRepairPrimitiveTranslation data source target
+      id := fun primitive => ⟨0, by simp⟩
+      inv := fun translation =>
+        ⟨-translation.1, by
+          calc
+            -translation.1 + _ = -translation.1 + (translation.1 + _) := by
+              rw [translation.2]
+            _ = _ := by abel⟩
+      comp := fun {_} {source middle target} first second =>
+        ⟨second.1 + first.1, by
+          calc
+            second.1 + first.1 + source.1 =
+                second.1 + (first.1 + source.1) := by abel
+            _ = second.1 + middle := by rw [first.2]
+            _ = target.1 := second.2⟩
+      id_comp := fun {_} {_ _} translation => by
+        apply Subtype.ext
+        simp
+      comp_id := fun {_} {_ _} translation => by
+        apply Subtype.ext
+        simp
+      assoc := fun {_} {_ _ _ _} first second third => by
+        apply Subtype.ext
+        change third.1 + (second.1 + first.1) = (third.1 + second.1) + first.1
+        ac_rfl
+      inv_comp := fun {_} {_ _} translation => by
+        apply Subtype.ext
+        simp
+      comp_inv := fun {_} {_ _} translation => by
+        apply Subtype.ext
+        simp
+      pullbackObj := fun _ primitive => primitive
+      pullbackIso := fun {_ _} _ {_ _} translation => translation
+      pullback_id := fun {_ _} _ _ => rfl
+      pullback_comp := fun {_ _} _ {_ _ _} _ _ => rfl
+      pullbackBaseId := fun {_} _ => rfl
+      pullbackBaseComp := fun {_ _ _} _ _ _ => rfl
+      pullbackIsoBaseId := fun {_} {_ _} _ => HEq.rfl
+      pullbackIsoBaseComp := fun {_ _ _} _ _ {_ _} _ => HEq.rfl }
+
+/--
+X.定理4.8 conclusion 5: construct effective descent for every selected local
+datum in the additive repair-solution translation groupoid.
+-/
+def additiveTranslationArchitectureStack
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (hzero : data.toAdditiveCechH1Data.H1Zero) :
+    letI := data.additive.c0AddCommGroup
+    letI := data.additive.c1AddCommGroup
+    SingularityMonodromyStack.ArchitectureStack
+      (additiveTranslationPresheaf data) := by
+  letI := data.additive.c0AddCommGroup
+  letI := data.additive.c1AddCommGroup
+  let torsor := data.additiveRepairPrimitiveTorsor hzero
+  refine { effectiveDescent := ?_ }
+  intro localData descentDatum
+  exact
+    { globalContext := PUnit.unit
+      globalObject := torsor.origin
+      restrictToLocal := fun _ => PUnit.unit
+      localComparison := fun localIndex =>
+        torsor.translation torsor.origin (localData.object localIndex)
+      realizesOverlapData := fun localComparisons overlapIsomorphisms =>
+        forall i j,
+          overlapIsomorphisms i j =
+            (additiveTranslationPresheaf data).comp
+              ((additiveTranslationPresheaf data).inv (localComparisons i))
+              (localComparisons j)
+      realizesOverlapData_holds := by
+        intro i j
+        apply additiveRepairPrimitiveTranslation_unique }
+
+/--
+X.定理4.8 conclusion 5: each selected additive translation datum has the
+explicit effective-descent witness constructed above.
+-/
+def additiveTranslation_effectiveDescent
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (hzero : data.toAdditiveCechH1Data.H1Zero)
+    (localData : SingularityMonodromyStack.LocalArchitectureObjects
+      (additiveTranslationPresheaf data))
+    (descentDatum : SingularityMonodromyStack.ArchitectureDescentDatum
+      (additiveTranslationPresheaf data) localData) :
+    letI := data.additive.c0AddCommGroup
+    letI := data.additive.c1AddCommGroup
+    SingularityMonodromyStack.EffectiveArchitectureDescent
+      (additiveTranslationPresheaf data) descentDatum := by
+  letI := data.additive.c0AddCommGroup
+  letI := data.additive.c1AddCommGroup
+  exact data.additiveTranslationArchitectureStack hzero |>.effectiveDescent localData descentDatum
+
+/--
+X.定理4.8 conclusion 5: stack effectiveness means that the additive
+translation presheaf has effective descent for every selected local datum.
+-/
+def StackEffectivelyVanishes
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P) :
     Prop :=
-  True
+  letI := data.additive.c0AddCommGroup
+  letI := data.additive.c1AddCommGroup
+  forall hzero : data.toAdditiveCechH1Data.H1Zero,
+    forall (localData : SingularityMonodromyStack.LocalArchitectureObjects
+        (additiveTranslationPresheaf data))
+      (descentDatum : SingularityMonodromyStack.ArchitectureDescentDatum
+        (additiveTranslationPresheaf data) localData),
+      Nonempty (SingularityMonodromyStack.EffectiveArchitectureDescent
+        (additiveTranslationPresheaf data) descentDatum)
+
+/-- X.定理4.8 conclusion 5: the additive translation stack is constructed. -/
+theorem stackEffectivelyVanishes_of_additive
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P) :
+    StackEffectivelyVanishes data := by
+  letI := data.additive.c0AddCommGroup
+  letI := data.additive.c1AddCommGroup
+  intro hzero localData descentDatum
+  exact ⟨data.additiveTranslation_effectiveDescent hzero localData descentDatum⟩
 
 /-- X.定理4.8: cover membership and a sheaf condition generate the cover sheaf condition. -/
 theorem coverSheafConditionFor_of_trueSheafCertificate
@@ -930,9 +1276,9 @@ theorem trueSheafH1SemanticRepairGluing_boundaryRelationAdditive_package
       data.boundaryRelation.cech.delta1_delta0_eq_zero,
       globalRepairCoherent_iff_additiveH1Zero data,
       data.toAdditiveCechH1Data.h1Zero_iff_boundary,
-      trivial,
-      trivial,
-      trivial⟩
+      nonabelianTorsorTrivial_of_additive data,
+      higherCoherenceVanishes_of_additive data,
+      stackEffectivelyVanishes_of_additive data⟩
 
 end SemanticRepairCoverH1BoundaryRelationAdditiveData
 

@@ -1,6 +1,7 @@
 import Formal.AG
 import Formal.AG.SemanticRepair.AdditiveH1
 import Formal.AG.SemanticRepair.LawEquationGeneratedPair
+import Formal.AG.Examples.SemanticRepairPart10
 import Formal.AG.Examples.DerivedPart5
 import Formal.AG.Examples.EvolutionPart9
 import Formal.AG.Examples.SingularityMonodromyStackPart6
@@ -561,6 +562,54 @@ def semanticRepairExample91GeneratedLawCircleNonzeroResidualWithGeneratedPairSAG
 
 def semanticRepairExample91SharedCoefficientSeparateCechWitnesses :=
   AAT.AG.Examples.SemanticRepairPart10.generatedLaw_sharedCoefficient_separateCircleNonzero_andSingletonStandardPackets
+
+/-- Kernel-audit alias for the Part X regular additive torsor construction. -/
+def semanticRepairTheorem48AdditivePrimitiveTorsor :=
+  @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.additiveRepairPrimitiveTorsor
+
+/-- Kernel-audit alias for the Part X torsor-triviality theorem. -/
+def semanticRepairTheorem48TorsorTriviality :=
+  @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.nonabelianTorsorTrivial_of_additive
+
+/-- Kernel-audit alias for the Part X higher-coherence zero witness. -/
+def semanticRepairTheorem48HigherCoherenceWitness :=
+  @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.additiveHigherCoherenceWitness
+
+/-- Kernel-audit alias for the Part X higher-coherence theorem. -/
+def semanticRepairTheorem48HigherCoherenceVanishes :=
+  @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.higherCoherenceVanishes_of_additive
+
+/-- Kernel-audit alias for the Part X additive translation stack. -/
+def semanticRepairTheorem48TranslationStack :=
+  @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.additiveTranslationArchitectureStack
+
+/-- Kernel-audit alias for the Part X effective-descent construction. -/
+def semanticRepairTheorem48EffectiveDescent :=
+  @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.additiveTranslation_effectiveDescent
+
+/-- Kernel-audit alias for the Part X stack-effectiveness theorem. -/
+def semanticRepairTheorem48StackEffectiveness :=
+  @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.stackEffectivelyVanishes_of_additive
+
+/-- Kernel-audit alias for the nontrivial `ZMod 2` translation fixture. -/
+def semanticRepairExample91ZmodTwoTorsorNonzeroTranslation :=
+  Examples.SemanticRepairPart10.zmodTwoTorsor_nonzeroTranslation
+
+/-- Kernel-audit alias for the nontrivial `ZMod 2` torsor fixture. -/
+def semanticRepairExample91ZmodTwoTorsorRegularTorsor :=
+  Examples.SemanticRepairPart10.zmodTwoTorsor_regularTorsor
+
+/-- Kernel-audit alias for the nontrivial `ZMod 2` higher-coherence fixture. -/
+def semanticRepairExample91ZmodTwoTorsorHigherCoherence :=
+  Examples.SemanticRepairPart10.zmodTwoTorsor_higherCoherence
+
+/-- Kernel-audit alias for the nontrivial `ZMod 2` stack fixture. -/
+def semanticRepairExample91ZmodTwoTorsorStackEffectiveness :=
+  Examples.SemanticRepairPart10.zmodTwoTorsor_stackEffectiveness
+
+/-- Kernel-audit alias for the nontrivial `ZMod 2` effective-descent fixture. -/
+def semanticRepairExample91ZmodTwoTorsorEffectiveDescent :=
+  @Examples.SemanticRepairPart10.zmodTwoTorsor_effectiveDescent
 
 def semanticRepairExample91SingletonStandardFiniteFreeTenConjunctPacket :=
   AAT.AG.Examples.SemanticRepairPart10.lawfulFiring_generatedLawSingletonStandardSourceC0_finiteFreeTenConjunctPacket

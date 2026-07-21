@@ -1,4 +1,5 @@
 import Formal.AG.LawAlgebra.LawEquation
+import Formal.AG.SemanticRepair.AdditiveH1
 import Formal.AG.SemanticRepair.H1Comparison
 
 noncomputable section
@@ -202,9 +203,9 @@ theorem trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_pa
       coverRelativeH1Zero_to_globalCoherent := hGlobalCover.2
       globalCoherent_to_coverRelativeH1Zero := hGlobalCover.1
       boundedAdditiveH1Zero_iff_coverRelativeH1Zero := hBoundedCover
-      nonabelianTorsorTrivial := trivial
-      higherCoherenceVanishes := trivial
-      stackEffectivelyVanishes := trivial }
+      nonabelianTorsorTrivial := data.nonabelianTorsorTrivial_of_additive
+      higherCoherenceVanishes := data.higherCoherenceVanishes_of_additive
+      stackEffectivelyVanishes := data.stackEffectivelyVanishes_of_additive }
 
 /--
 X.定理7.5 conclusions 1--3: the law-grounded degree-zero generation layer.
