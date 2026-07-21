@@ -601,7 +601,7 @@ def semanticRepairExample91ZmodTwoTorsorRegularTorsor :=
 
 /-- Kernel-audit alias for the nontrivial `ZMod 2` higher-coherence fixture. -/
 def semanticRepairExample91ZmodTwoTorsorHigherCoherence :=
-  Examples.SemanticRepairPart10.zmodTwoTorsor_higherCoherence
+  Examples.SemanticRepairPart10.zmodTwoTorsor_higherDefect012_zero
 
 /-- Kernel-audit alias for the nontrivial `ZMod 2` stack fixture. -/
 def semanticRepairExample91ZmodTwoTorsorStackEffectiveness :=

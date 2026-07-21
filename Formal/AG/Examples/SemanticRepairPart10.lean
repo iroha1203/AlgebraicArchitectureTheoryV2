@@ -3059,6 +3059,21 @@ def zmodTwoTorsor_selectedTriple :
       zmodTwoTorsorCover.TripleOverlap i j k :=
   fun _ _ _ => .selected
 
+/-- Pairwise transitions and triple faces of the fixture form one coherent selected nerve. -/
+def zmodTwoTorsor_descentSelection :
+    SelectedRepairCoverDescentSelection zmodTwoTorsorCover where
+  overlap := zmodTwoTorsor_selectedOverlap
+  triple := zmodTwoTorsor_selectedTriple
+  overlap_eq_tripleEdge01 := by
+    intro i j k
+    rfl
+  overlap_eq_tripleEdge12 := by
+    intro i j k
+    rfl
+  overlap_eq_tripleEdge02 := by
+    intro i j k
+    rfl
+
 /-- The concrete chart/overlap/face realization of the three-chart Cech surface. -/
 def zmodTwoTorsorRealization :
     SemanticRepairCoverCechRealization zmodTwoTorsorCover zmodTwoTorsorCechData where
@@ -3116,11 +3131,17 @@ def zmodTwoTorsor_triple012 :
   zmodTwoTorsor_selectedTriple zmodTwoTorsor_chart0
     zmodTwoTorsor_chart1 zmodTwoTorsor_chart2
 
+/-- The displayed degree-two coherence defect on the actual face is zero. -/
+theorem zmodTwoTorsor_higherDefect012_zero :
+    zmodTwoTorsorData.SelectedHigherCoherenceDefect zmodTwoTorsorRealization
+      zmodTwoTorsor_triple012 = 0 :=
+  zmodTwoTorsorData.selectedHigherCoherenceTrivialization_of_additive
+    zmodTwoTorsorRealization zmodTwoTorsor_triple012
+
 /-- The Part VI triple cocycle constructed on the actual selected face. -/
 def zmodTwoTorsor_tripleCocycle012 :=
   (zmodTwoTorsorData.selectedRepairDescentDatum zmodTwoTorsorRealization
-    zmodTwoTorsor_h1Zero zmodTwoTorsor_selectedOverlap
-    zmodTwoTorsor_selectedTriple).tripleCocycle zmodTwoTorsor_chart0
+    zmodTwoTorsor_h1Zero zmodTwoTorsor_descentSelection).tripleCocycle zmodTwoTorsor_chart0
       zmodTwoTorsor_chart1 zmodTwoTorsor_chart2
 
 /-- The selected triple cocycle carries its explicit composition equality. -/
@@ -3135,21 +3156,22 @@ theorem zmodTwoTorsor_regularTorsor :
     zmodTwoTorsorData.NonabelianTorsorTrivial :=
   zmodTwoTorsorData.nonabelianTorsorTrivial_of_additiveH1Zero
 
-/-- The higher coherence theorem is facewise over every compatible realization. -/
+/-- The higher coherence theorem is facewise on the displayed realization. -/
 theorem zmodTwoTorsor_higherCoherence :
-    zmodTwoTorsorData.HigherCoherenceVanishes :=
-  zmodTwoTorsorData.higherCoherenceVanishes_of_additive
+    zmodTwoTorsorData.HigherCoherenceVanishes zmodTwoTorsorRealization :=
+  zmodTwoTorsorData.higherCoherenceVanishes_of_additive zmodTwoTorsorRealization
 
 /-- The selected repair datum has effective descent from the H1-zero proof. -/
 def zmodTwoTorsor_effectiveDescent :=
   zmodTwoTorsorData.selectedRepairEffectiveDescent_of_h1Zero
-    zmodTwoTorsorRealization zmodTwoTorsor_h1Zero zmodTwoTorsor_selectedOverlap
-    zmodTwoTorsor_selectedTriple
+    zmodTwoTorsorRealization zmodTwoTorsor_h1Zero zmodTwoTorsor_descentSelection
 
 /-- The stack-facing selected-descent conclusion is constructed. -/
 theorem zmodTwoTorsor_stackEffectiveness :
-    zmodTwoTorsorData.StackEffectivelyVanishes :=
-  zmodTwoTorsorData.stackEffectivelyVanishes_of_additive
+    zmodTwoTorsorData.StackEffectivelyVanishes zmodTwoTorsorRealization
+      zmodTwoTorsor_h1Zero zmodTwoTorsor_descentSelection :=
+  zmodTwoTorsorData.stackEffectivelyVanishes_of_additive zmodTwoTorsorRealization
+    zmodTwoTorsor_h1Zero zmodTwoTorsor_descentSelection
 
 end SemanticRepairPart10
 end Examples

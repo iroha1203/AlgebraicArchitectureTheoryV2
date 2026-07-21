@@ -50,10 +50,10 @@ theorem generatedSAGA_lawIndependentConclusions_withoutLawPremise
          package73.globalCoherent_iff_coverRelativeH1Zero
        boundedAdditiveH1Zero_iff_coverRelativeH1Zero :=
          package73.boundedAdditiveH1Zero_iff_coverRelativeH1Zero
-       higherObstructionsVanish :=
-         ⟨package73.nonabelianTorsorTrivial,
-           package73.higherCoherenceVanishes,
-           package73.stackEffectivelyVanishes⟩ }⟩
+       higherLayerConstructions :=
+         ⟨package73.torsorTrivialization_of_h1Zero,
+           package73.facewiseHigherCoherence,
+           package73.selectedEffectiveDescent_of_h1Zero⟩ }⟩
 
 /--
 X.定理8.4 typed comparison target.

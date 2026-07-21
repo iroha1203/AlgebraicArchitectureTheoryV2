@@ -145,8 +145,15 @@ structure SemanticRepairGroundedGlobalGluingPackage
     data.toAdditiveCechH1Data.H1Zero <->
       comparison.CoverRelativeResidualH1Zero
   torsorTrivialization_of_h1Zero : data.NonabelianTorsorTrivial
-  facewiseHigherCoherence : data.HigherCoherenceVanishes
-  selectedEffectiveDescent_of_h1Zero : data.StackEffectivelyVanishes
+  facewiseHigherCoherence : forall realization : SemanticRepairCoverCechRealization
+      data.boundaryRelation.cover data.boundaryRelation.cech,
+      data.HigherCoherenceVanishes realization
+  selectedEffectiveDescent_of_h1Zero : forall
+      (realization : SemanticRepairCoverCechRealization
+        data.boundaryRelation.cover data.boundaryRelation.cech)
+      (hzero : data.toAdditiveCechH1Data.H1Zero)
+      (selection : SelectedRepairCoverDescentSelection data.boundaryRelation.cover),
+      data.StackEffectivelyVanishes realization hzero selection
 
 /--
 X.定理7.3: theorem 4.8 plus theorem 7.2 and supplied gluing data yield the
@@ -206,8 +213,10 @@ theorem trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_pa
       torsorTrivialization_of_h1Zero :=
         SemanticRepairCoverH1BoundaryRelationAdditiveData.nonabelianTorsorTrivial_of_additiveH1Zero
           data
-      facewiseHigherCoherence := data.higherCoherenceVanishes_of_additive
-      selectedEffectiveDescent_of_h1Zero := data.stackEffectivelyVanishes_of_additive }
+      facewiseHigherCoherence := fun realization =>
+        data.higherCoherenceVanishes_of_additive realization
+      selectedEffectiveDescent_of_h1Zero := fun realization hzero selection =>
+        data.stackEffectivelyVanishes_of_additive realization hzero selection }
 
 /--
 X.定理7.5 conclusions 1--3: the law-grounded degree-zero generation layer.
@@ -275,8 +284,14 @@ structure SemanticRepairGeneratedLawIndependentConclusions
       comparison.CoverRelativeResidualH1Zero
   higherLayerConstructions :
     data.NonabelianTorsorTrivial /\
-      data.HigherCoherenceVanishes /\
-      data.StackEffectivelyVanishes
+      (forall realization : SemanticRepairCoverCechRealization
+        data.boundaryRelation.cover data.boundaryRelation.cech,
+        data.HigherCoherenceVanishes realization) /\
+      (forall (realization : SemanticRepairCoverCechRealization
+        data.boundaryRelation.cover data.boundaryRelation.cech)
+        (hzero : data.toAdditiveCechH1Data.H1Zero)
+        (selection : SelectedRepairCoverDescentSelection data.boundaryRelation.cover),
+        data.StackEffectivelyVanishes realization hzero selection)
 
 /--
 X.定理7.5 packet: generated end-to-end SAGA realization.
