@@ -2086,11 +2086,11 @@ theorem canonicalTupleStandardFinitePosetCechComplexDComp
     tupleGeometry Ob
 
 theorem coverNerveTopologicalDebtCapacityFromComplex
-    {N : Cohomology.CoverNerve}
-    (D : Cohomology.FiniteNerveCochainComplex N) :
-    Module.finrank D.k D.C1 <=
-      Module.finrank D.k D.H1 + Module.finrank D.k D.C0 +
-        Module.finrank D.k D.C2 :=
+    {N : Cohomology.CoverNerve} {k : Type} [Field k]
+    (D : Cohomology.FiniteNerveCochainComplex N k) :
+    Module.finrank k D.C1 <=
+      Module.finrank k D.H1 + Module.finrank k D.C0 +
+        Module.finrank k D.C2 :=
   Cohomology.FiniteNerveCochainComplex.topologicalDebtCapacity_fromComplex D
 
 theorem boundaryResidueTwoChartBoundaryAgreementSoundness
@@ -2152,35 +2152,34 @@ theorem finiteIntervalStokesBasis
   AAT.AG.Cohomology.IntervalBasisStokes.finiteIntervalStokes_basis ω γ
 
 theorem gagaLowDegreePeriodStokes :
-    Measurement.lowDegreePeriodStokesTheoremPackage.statement :=
-  Measurement.lowDegreePeriodStokesTheoremPackage.statement_holds
+    Measurement.AATGAGARealCechHodgeInput.periodStokesStatement
+      Measurement.gagaRealHodgeInput :=
+  Measurement.AATGAGARealCechHodgeInput.periodStokesStatement_holds
+    Measurement.gagaRealHodgeInput
 
 theorem gagaLowDegreeTopologicalDebtCapacityFromComplex :
-    Measurement.lowDegreePeriodStokesTheoremPackage.topologicalCapacityStatement :=
-  Measurement.lowDegreePeriodStokesTheoremPackage.topologicalCapacityStatement_holds
+    Measurement.AATGAGAFiniteCechSource.topologicalCapacityStatement
+      Measurement.gagaFiniteCechSource :=
+  Measurement.AATGAGAFiniteCechSource.topologicalCapacityStatement_holds
+    Measurement.gagaFiniteCechSource
 
 /-! Kernel-audit inventory for theorem 12.3 derived GAGA comparison. -/
 
-/-- Direct audit entry for the indexed Hodge decomposition theorem. -/
-theorem gagaSelectedHodgeDecomposition :
-    ∃ h, h = @Measurement.SelectedFiniteHodgeTheoremPackage.decomposition_holds :=
-  ⟨@Measurement.SelectedFiniteHodgeTheoremPackage.decomposition_holds, rfl⟩
-
-/-- Direct audit entry for the indexed harmonic/cohomology theorem. -/
-theorem gagaSelectedHodgeCohomology :
-    ∃ h, h = @Measurement.SelectedFiniteHodgeTheoremPackage.harmonic_cohomology_holds :=
-  ⟨@Measurement.SelectedFiniteHodgeTheoremPackage.harmonic_cohomology_holds, rfl⟩
+/-- Direct audit entry for Hodge decomposition and harmonic/cohomology on the
+selected real Čech coordinates. -/
+theorem gagaSelectedHodge :
+    ∃ h, h = @Measurement.AATGAGARealCechHodgeInput.hodgeStatement_holds :=
+  ⟨@Measurement.AATGAGARealCechHodgeInput.hodgeStatement_holds, rfl⟩
 
 /-- Direct audit entry for the selected real finite Period/Stokes theorem. -/
 theorem gagaSelectedPeriodStokes :
-    ∃ h, h = @Measurement.SelectedPeriodStokesTheoremPackage.statement_holds :=
-  ⟨@Measurement.SelectedPeriodStokesTheoremPackage.statement_holds, rfl⟩
+    ∃ h, h = @Measurement.AATGAGARealCechHodgeInput.periodStokesStatement_holds :=
+  ⟨@Measurement.AATGAGARealCechHodgeInput.periodStokesStatement_holds, rfl⟩
 
 /-- Direct audit entry for the selected finite-nerve capacity theorem. -/
 theorem gagaSelectedTopologicalCapacity :
-    ∃ h, h = @Measurement.SelectedPeriodStokesTheoremPackage.topologicalCapacityStatement_holds :=
-  ⟨@Measurement.SelectedPeriodStokesTheoremPackage.topologicalCapacityStatement_holds,
-    rfl⟩
+    ∃ h, h = @Measurement.AATGAGAFiniteCechSource.topologicalCapacityStatement_holds :=
+  ⟨@Measurement.AATGAGAFiniteCechSource.topologicalCapacityStatement_holds, rfl⟩
 
 /-- Direct audit entry for the selected LawConflict/Tor theorem. -/
 theorem gagaSelectedLawConflictTor :

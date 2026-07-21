@@ -129,9 +129,8 @@ nerve: its differentials are the selected Cech incidence maps in those
 coordinates.  The additive `H^1` below is defined as `ker d1 / im d0`, not
 supplied as an unrelated field.
 -/
-structure FiniteNerveCochainComplex (N : CoverNerve.{u}) where
-  k : Type v
-  [field_k : Field k]
+structure FiniteNerveCochainComplex (N : CoverNerve.{u})
+    (k : Type v) [Field k] where
   C0 : Type w
   C1 : Type w
   C2 : Type w
@@ -167,15 +166,15 @@ structure FiniteNerveCochainComplex (N : CoverNerve.{u}) where
 
 namespace FiniteNerveCochainComplex
 
-attribute [instance] field_k add_C0 add_C1 add_C2
+attribute [instance] add_C0 add_C1 add_C2
 attribute [instance] module_C0 module_C1 module_C2
 attribute [instance] finiteDimensional_C0 finiteDimensional_C1 finiteDimensional_C2
 
-variable {N : CoverNerve.{u}}
+variable {N : CoverNerve.{u}} {k : Type v} [Field k]
 
 /-- R5 / IV-5: degree-zero boundaries land in the degree-one cocycles. -/
-def boundaryToCycles (D : FiniteNerveCochainComplex N) :
-    D.C0 →ₗ[D.k] LinearMap.ker D.d1 where
+def boundaryToCycles (D : FiniteNerveCochainComplex N k) :
+    D.C0 →ₗ[k] LinearMap.ker D.d1 where
   toFun c := ⟨D.d0 c, by simpa using D.d1_comp_d0 c⟩
   map_add' x y := by
     ext
@@ -185,21 +184,21 @@ def boundaryToCycles (D : FiniteNerveCochainComplex N) :
     simp
 
 /-- R5 / IV-5: additive nerve `H^1 = ker d1 / im d0`. -/
-abbrev H1 (D : FiniteNerveCochainComplex N) : Type w :=
+abbrev H1 (D : FiniteNerveCochainComplex N k) : Type w :=
   (LinearMap.ker D.d1) ⧸ LinearMap.range D.boundaryToCycles
 
-instance h1AddCommGroup (D : FiniteNerveCochainComplex N) :
+instance h1AddCommGroup (D : FiniteNerveCochainComplex N k) :
     AddCommGroup D.H1 := by
   dsimp [H1]
   infer_instance
 
-instance h1Module (D : FiniteNerveCochainComplex N) :
-    Module D.k D.H1 := by
+instance h1Module (D : FiniteNerveCochainComplex N k) :
+    Module k D.H1 := by
   dsimp [H1]
   infer_instance
 
-instance h1FiniteDimensional (D : FiniteNerveCochainComplex N) :
-    FiniteDimensional D.k D.H1 := by
+instance h1FiniteDimensional (D : FiniteNerveCochainComplex N k) :
+    FiniteDimensional k D.H1 := by
   dsimp [H1]
   infer_instance
 
@@ -208,10 +207,10 @@ R5 / IV-5: rank-nullity inside the cocycle space:
 `dim H^1 + rank d0 = dim ker d1`.
 -/
 theorem finrank_H1_add_finrank_boundary
-    (D : FiniteNerveCochainComplex N) :
-    Module.finrank D.k D.H1 +
-        Module.finrank D.k (LinearMap.range D.boundaryToCycles) =
-      Module.finrank D.k (LinearMap.ker D.d1) := by
+    (D : FiniteNerveCochainComplex N k) :
+    Module.finrank k D.H1 +
+        Module.finrank k (LinearMap.range D.boundaryToCycles) =
+      Module.finrank k (LinearMap.ker D.d1) := by
   simpa [H1] using
     (LinearMap.range D.boundaryToCycles).finrank_quotient_add_finrank
 
@@ -222,19 +221,19 @@ This proves the theorem-12.2 lower-bound form from Mathlib rank-nullity and the
 definition `H^1 = ker d1 / im d0`.
 -/
 theorem topologicalDebtCapacity_fromComplex
-    (D : FiniteNerveCochainComplex N) :
-    Module.finrank D.k D.C1 <=
-      Module.finrank D.k D.H1 + Module.finrank D.k D.C0 +
-        Module.finrank D.k D.C2 := by
+    (D : FiniteNerveCochainComplex N k) :
+    Module.finrank k D.C1 <=
+      Module.finrank k D.H1 + Module.finrank k D.C0 +
+        Module.finrank k D.C2 := by
   have h_d1 := D.d1.finrank_range_add_finrank_ker
   have h_h1 := D.finrank_H1_add_finrank_boundary
   have h_boundary_le :
-      Module.finrank D.k (LinearMap.range D.boundaryToCycles) <=
-        Module.finrank D.k D.C0 :=
+      Module.finrank k (LinearMap.range D.boundaryToCycles) <=
+        Module.finrank k D.C0 :=
     LinearMap.finrank_range_le D.boundaryToCycles
   have h_d1_le :
-      Module.finrank D.k (LinearMap.range D.d1) <=
-        Module.finrank D.k D.C2 :=
+      Module.finrank k (LinearMap.range D.d1) <=
+        Module.finrank k D.C2 :=
     (LinearMap.range D.d1).finrank_le
   omega
 
