@@ -2436,6 +2436,10 @@ another instance-implicit argument or the return type. -/
 #check @AAT.AG.Cohomology.CoverRelativeCechComplex.cochainAddCommGroup /- argument 6 self : AAT.AG.Cohomology.CoverRelativeCechComplex
   𝒰 Ob -/
 
+-- Formal.AG.Measurement.GAGA
+#check @AAT.AG.Measurement.AATGAGACommonFiniteData.coefficientAddCommGroup /- argument 2 self : AAT.AG.Measurement.AATGAGACommonFiniteData
+  M -/
+
 -- Formal.AG.RepresentationAnalysis.GraphMatrix
 #check @AAT.AG.RepresentationAnalysis.FiniteDirectedGraphTarget.vertexFintype /- argument 4 self : AAT.AG.RepresentationAnalysis.FiniteDirectedGraphTarget
   Vertex Edge RelationLabel -/
