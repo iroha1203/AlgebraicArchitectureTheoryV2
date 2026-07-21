@@ -2577,8 +2577,9 @@ a global coherence witness.
 -/
 theorem generatedLawCircleZeroBoundaryFaithfulness_globalRepairCoherent :
     generatedLawCircleZeroBoundaryFaithfulnessData.GlobalRepairCoherent := by
-  exact generatedLawCircleZeroBoundaryAdditiveFaithfulnessData
-    .globalRepairCoherent_of_additiveH1Zero
+  exact
+    AAT.AG.SemanticRepair.SemanticRepairCoverH1AdditiveFaithfulnessData.globalRepairCoherent_of_additiveH1Zero
+      generatedLawCircleZeroBoundaryAdditiveFaithfulnessData
       generatedLawCircleZeroBoundaryFaithfulness_additiveH1Zero
 
 /--
