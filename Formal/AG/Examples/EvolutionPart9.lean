@@ -388,13 +388,17 @@ noncomputable def twoPatchReplayTemporalSite :
   traceRegime := twoStepTraceFiniteRegime
   siteRegime := FiniteModel.twoPatchZMod2FinitePosetRegime
 
-/-- The selected source point of the replay on `Tr_E × X` for the left patch. -/
+/-- The global replay source lies over the common base context at the source time. -/
 noncomputable def twoPatchReplayTemporalSource : twoPatchReplayTemporalSite.Point :=
-  (TinyTime.t0, FiniteModel.TwoPatchContextIndex.left)
+  (TinyTime.t0, FiniteModel.TwoPatchContextIndex.base)
 
-/-- The selected target point of the replay on `Tr_E × X` at the common base context. -/
+/-- The global replay target lies over the common base context at the target time. -/
 noncomputable def twoPatchReplayTemporalTarget : twoPatchReplayTemporalSite.Point :=
   (TinyTime.t1, FiniteModel.TwoPatchContextIndex.base)
+
+/-- The selected product-incidence source reads the left Čech chart. -/
+noncomputable def twoPatchReplayTemporalCechSource : twoPatchReplayTemporalSite.Point :=
+  (TinyTime.t0, FiniteModel.TwoPatchContextIndex.left)
 
 /-- Actual `ZMod 2` obstruction coefficients on the same two-patch AAT site. -/
 noncomputable def twoPatchReplayTemporalObstructionSheaf :
@@ -486,6 +490,14 @@ noncomputable def twoPatchReplayTemporalCover : TemporalCover twoPatchReplayTemp
       FiniteModel.twoPatchCoverContextIndex,
       FiniteModel.twoPatchContextIndexLe]
 
+/-- The global replay source and target both lie over the temporal cover base context. -/
+theorem twoPatchReplayTemporalGlobalEndpoints_at_base :
+    twoPatchReplayTemporalSource =
+        (TinyTime.t0, twoPatchReplayTemporalCover.baseContext) ∧
+      twoPatchReplayTemporalTarget =
+        (TinyTime.t1, twoPatchReplayTemporalCover.baseContext) := by
+  exact ⟨rfl, rfl⟩
+
 /--
 The temporal cover is compared directly with the cover-relative Čech cover of
 the same actual two-patch `ZMod 2` complex.
@@ -522,11 +534,11 @@ noncomputable def twoPatchReplayTemporalProductIncidenceComplex :
 /-- The temporal incidence whose endpoints read the left and right actual Čech charts. -/
 noncomputable def twoPatchReplayTemporalCechLeg :
     twoPatchReplayTemporalSite.IncidenceLeg
-      twoPatchReplayTemporalSource twoPatchReplayTemporalTarget where
+      twoPatchReplayTemporalCechSource twoPatchReplayTemporalTarget where
   trace := tinyStep
   trace_selected := twoStep_step_selected
   context := by
-    simp [twoPatchReplayTemporalSource, twoPatchReplayTemporalTarget,
+    simp [twoPatchReplayTemporalCechSource, twoPatchReplayTemporalTarget,
       twoPatchReplayTemporalSite, FiniteModel.twoPatchZMod2FinitePosetRegime,
       FiniteModel.twoPatchContextIndexLe]
 
@@ -1775,7 +1787,7 @@ restricted along its actual cover leg before the product differential is read.
 theorem twoPatchReplayCochainToTemporalProduct_endpoints
     (cochain : Site.FinitePosetCechCochain
       FiniteModel.twoPatchZMod2FinitePosetRegime 0) :
-    twoPatchReplayCochainToTemporalProduct cochain twoPatchReplayTemporalSource =
+    twoPatchReplayCochainToTemporalProduct cochain twoPatchReplayTemporalCechSource =
         cochain .left ∧
       twoPatchReplayCochainToTemporalProduct cochain twoPatchReplayTemporalTarget =
         cochain .right := by

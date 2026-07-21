@@ -2533,6 +2533,9 @@ def replayTwoPatchZMod2ClassZero :=
 def replayTwoPatchZMod2TemporalCoverComparison :=
   Examples.EvolutionPart9.twoPatchReplayTemporalCover_reads_actual_chart
 
+def replayTwoPatchZMod2TemporalGlobalEndpointsAtBase :=
+  Examples.EvolutionPart9.twoPatchReplayTemporalGlobalEndpoints_at_base
+
 def replayTwoPatchZMod2TemporalProductDifferentialCompatible :=
   Examples.EvolutionPart9.twoPatchReplayTemporalProduct_d0_compatible
 
