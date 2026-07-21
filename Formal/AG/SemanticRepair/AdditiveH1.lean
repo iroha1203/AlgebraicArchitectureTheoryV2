@@ -341,13 +341,21 @@ that particular support reading.
 -/
 structure SemanticRepairCoverH1FaithfulnessData
     (projection : SemanticAtomProjection.{u, v}) where
+  /-- The selected finite semantic repair cover. -/
   cover : SemanticRepairCover.{u, v, w, x} projection
+  /-- The Cech cochain data carried by the selected cover. -/
   cech : SemanticRepairCoverCechData.{u, v, w, x, y, z} cover
+  /-- The general closure predicate on degree-zero primitives. -/
   P : cech.C0 -> Prop
+  /-- The residual-support predicate on degree-one cochains. -/
   Q : cech.C1 -> Prop
+  /-- A primitive whose coboundary is the selected zero cochain. -/
   zeroPrimitive : cech.C0
+  /-- The supplied primitive maps to the selected zero cochain. -/
   delta0_zeroPrimitive : cech.delta0 zeroPrimitive = cech.zero1
+  /-- The selected residual satisfies the residual-support predicate. -/
   residual_in_Q : Q cech.residual
+  /-- Residual-support of a primitive coboundary entails its closure predicate. -/
   faithful :
     forall primitive,
       Q (cech.delta0 primitive) -> P primitive
@@ -388,6 +396,55 @@ theorem globalRepairCoherent_of_boundary
   exact data.residual_in_Q
 
 end SemanticRepairCoverH1FaithfulnessData
+
+/--
+X.定義4.6 / 定理4.8: general `P`/`Q` faithfulness data together with the
+additive Cech H1 laws on the same selected cover.
+
+The additive package supplies the quotient reading of the selected residual;
+it does not contain a residual primitive or global coherence witness.
+-/
+structure SemanticRepairCoverH1AdditiveFaithfulnessData
+    (projection : SemanticAtomProjection.{u, v}) where
+  /-- The general `P`/`Q` faithfulness presentation. -/
+  faithfulness : SemanticRepairCoverH1FaithfulnessData.{u, v, w, x, y, z} projection
+  /-- The additive Cech H1 laws for the faithfulness presentation. -/
+  additive : SemanticRepairAdditiveCechH1Data faithfulness.cech
+
+namespace SemanticRepairCoverH1AdditiveFaithfulnessData
+
+/-- X.定義4.6: read the general faithfulness presentation. -/
+def toFaithfulnessData
+    {projection : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1AdditiveFaithfulnessData.{u, v, w, x, y, z} projection) :
+    SemanticRepairCoverH1FaithfulnessData.{u, v, w, x, y, z} projection :=
+  data.faithfulness
+
+/-- X.定義4.3: read the additive Cech H1 laws. -/
+def toAdditiveCechH1Data
+    {projection : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1AdditiveFaithfulnessData.{u, v, w, x, y, z} projection) :
+    SemanticRepairAdditiveCechH1Data data.faithfulness.cech :=
+  data.additive
+
+/--
+X.定理4.8 sufficient direction for general `P`/`Q` data: vanishing of the
+selected additive H1 class yields global coherence through the faithfulness
+law.
+-/
+theorem globalRepairCoherent_of_additiveH1Zero
+    {projection : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1AdditiveFaithfulnessData.{u, v, w, x, y, z} projection) :
+    data.toAdditiveCechH1Data.H1Zero ->
+      data.toFaithfulnessData.GlobalRepairCoherent := by
+  intro hzero
+  exact data.toFaithfulnessData.globalRepairCoherent_of_boundary
+    (data.toAdditiveCechH1Data.h1Zero_iff_boundary.mp hzero)
+
+end SemanticRepairCoverH1AdditiveFaithfulnessData
 
 namespace SemanticRepairCoverH1BoundaryRelationAbelianData
 
@@ -492,8 +549,20 @@ def toFaithfulnessData
     (data.additive.delta0_zero.trans data.additive.zero1_eq_zero.symm)
 
 /--
-X.定理4.8 sufficient direction through the general `P`/`Q` faithfulness
-data: additive H1 zero yields global semantic repair coherence.
+X.定義4.6: combine the component presentation with additive Cech H1 laws as
+a concrete instance of the general `P`/`Q` additive faithfulness data.
+-/
+def toAdditiveFaithfulnessData
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P) :
+    SemanticRepairCoverH1AdditiveFaithfulnessData.{u, v, w, x, y, z} P where
+  faithfulness := data.toFaithfulnessData
+  additive := data.additive
+
+/--
+X.定理4.8 component presentation: additive H1 zero yields global semantic
+repair coherence through the general `P`/`Q` additive faithfulness data.
 -/
 theorem globalRepairCoherent_of_additiveH1Zero
     {P : SemanticAtomProjection.{u, v}}
@@ -502,8 +571,7 @@ theorem globalRepairCoherent_of_additiveH1Zero
     data.toAdditiveCechH1Data.H1Zero ->
       data.toFaithfulnessData.GlobalRepairCoherent := by
   intro hzero
-  exact data.toFaithfulnessData.globalRepairCoherent_of_boundary
-    (data.toAdditiveCechH1Data.h1Zero_iff_boundary.mp hzero)
+  exact data.toAdditiveFaithfulnessData.globalRepairCoherent_of_additiveH1Zero hzero
 
 /--
 X.定義4.7: true-sheaf condition certificate for the selected cover.

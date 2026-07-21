@@ -2545,25 +2545,41 @@ def generatedLawCircleZeroBoundaryAdditiveData :
         generatedLawCircleSemanticCover.baseCover).2)
 
 /--
-X.定義4.6 positive fixture: the zero-boundary circle packet constructs the
-general `P`/`Q` faithfulness data by the additive zero primitive.
+X.定義4.6 / 定理4.8 positive fixture: the zero-residual circle packet
+constructs general `P`/`Q` faithfulness data and additive H1 laws together.
+-/
+def generatedLawCircleZeroBoundaryAdditiveFaithfulnessData :
+    AAT.AG.SemanticRepair.SemanticRepairCoverH1AdditiveFaithfulnessData
+      generatedLawCircleSemanticProjection :=
+  AAT.AG.SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.toAdditiveFaithfulnessData
+    generatedLawCircleZeroBoundaryAdditiveData
+
+/--
+X.定義4.6 positive fixture: read the general faithfulness presentation from
+the additive H1 fixture.
 -/
 def generatedLawCircleZeroBoundaryFaithfulnessData :
     AAT.AG.SemanticRepair.SemanticRepairCoverH1FaithfulnessData
       generatedLawCircleSemanticProjection :=
-  AAT.AG.SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.toFaithfulnessData
-    generatedLawCircleZeroBoundaryAdditiveData
+  generatedLawCircleZeroBoundaryAdditiveFaithfulnessData.toFaithfulnessData
 
 /--
-X.定義4.6 positive fixture: the general faithfulness law turns the selected
-zero-boundary residual into a global coherence witness.
+X.定理4.8 positive fixture: additive H1 zero for the selected zero residual.
+-/
+theorem generatedLawCircleZeroBoundaryFaithfulness_additiveH1Zero :
+    generatedLawCircleZeroBoundaryAdditiveFaithfulnessData.toAdditiveCechH1Data.H1Zero := by
+  apply generatedLawCircleZeroBoundaryAdditiveFaithfulnessData.toAdditiveCechH1Data.h1Zero_iff_boundary.mpr
+  exact ⟨(0 : generatedLawCircleC0), rfl⟩
+
+/--
+X.定理4.8 positive fixture: the general `P`/`Q` additive H1 theorem produces
+a global coherence witness.
 -/
 theorem generatedLawCircleZeroBoundaryFaithfulness_globalRepairCoherent :
     generatedLawCircleZeroBoundaryFaithfulnessData.GlobalRepairCoherent := by
-  apply generatedLawCircleZeroBoundaryFaithfulnessData.globalRepairCoherent_of_boundary
-  change CechB1 generatedLawCircleZeroBoundaryAdditiveData.boundaryRelation.cech
-    generatedLawCircleZeroBoundaryAdditiveData.boundaryRelation.cech.residual
-  exact ⟨(0 : generatedLawCircleC0), rfl⟩
+  exact generatedLawCircleZeroBoundaryAdditiveFaithfulnessData
+    .globalRepairCoherent_of_additiveH1Zero
+      generatedLawCircleZeroBoundaryFaithfulness_additiveH1Zero
 
 /--
 X.定義4.6 negative fixture: `P` and `Q` remain independent predicates, rather
