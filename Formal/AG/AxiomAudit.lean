@@ -564,6 +564,47 @@ def semanticRepairExample91GeneratedLawCircleComplexZeroBoundaryPacketFromZeroPr
 def semanticRepairExample91LegacySingletonStandardBoundedConjuncts :=
   AAT.AG.Examples.SemanticRepairPart10.legacyFiring_generatedLawSingletonStandardSourceC0_boundedConjuncts
 
+/-- Kernel-audit entries for the fixed two-edge X.例9.2 circle nerve. -/
+def semanticRepairExample92CircleNerveVertexCarrier :=
+  AAT.AG.Examples.SemanticRepairPart10.circleNerve_vertex_carrier
+
+def semanticRepairExample92CircleNerveEdgeCarrier :=
+  AAT.AG.Examples.SemanticRepairPart10.circleNerve_edge_carrier
+
+def semanticRepairExample92CircleNerveShape :=
+  AAT.AG.Examples.SemanticRepairPart10.circleNerve_has_two_vertices_two_opposite_edges
+
+def semanticRepairExample92CircleLawObstructionIdeal :=
+  AAT.AG.Examples.SemanticRepairPart10.integerLaw_obstructionIdeal_eq_span_two
+    AAT.AG.Examples.SemanticRepairPart10.circleSiteBase
+
+def semanticRepairExample92CircleLawQuotientOneNonzero :=
+  AAT.AG.Examples.SemanticRepairPart10.circleLawQuotientOne_ne_zero
+
+noncomputable def semanticRepairExample92CircleLawQuotientEquivF2 :=
+  AAT.AG.Examples.SemanticRepairPart10.circleLawQuotientEquivF2
+
+def semanticRepairExample92CircleLawQuotientOneToF2 :=
+  AAT.AG.Examples.SemanticRepairPart10.circleLawQuotientOne_toF2
+
+def semanticRepairExample92CircleResidualValues :=
+  AAT.AG.Examples.SemanticRepairPart10.circleResidual_eq_one_zero
+
+def semanticRepairExample92CircleResidualNotCoboundary :=
+  AAT.AG.Examples.SemanticRepairPart10.circleResidual_not_coboundary
+
+theorem semanticRepairExample92CircleSemanticH1Nonzero :
+    ¬ AAT.AG.Examples.SemanticRepairPart10.circleAdditiveH1Surface.H1Zero :=
+  AAT.AG.Examples.SemanticRepairPart10.circleSemanticH1_nonzero
+
+theorem semanticRepairExample92CircleCoverRelativeH1Nonzero :
+    AAT.AG.Examples.SemanticRepairPart10.circleCoverRelativeResidualClass ≠
+      AAT.AG.Examples.SemanticRepairPart10.circleCoverRelativeZeroClass :=
+  AAT.AG.Examples.SemanticRepairPart10.circleCoverRelativeH1_nonzero
+
+def semanticRepairExample92CircleNonzeroTransferPacket :=
+  AAT.AG.Examples.SemanticRepairPart10.circleNerve_nonzeroClassTransfer_packet
+
 theorem boundaryCocycleNonzero :
     Cohomology.FiniteExamples.PseudoCircleGolden.boundaryCocycle
         Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.AB ≠ 0 :=
