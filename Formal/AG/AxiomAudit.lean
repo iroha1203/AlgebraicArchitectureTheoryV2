@@ -1,6 +1,7 @@
 import Formal.AG
 import Formal.AG.SemanticRepair.AdditiveH1
 import Formal.AG.SemanticRepair.LawEquationGeneratedPair
+import Formal.AG.Examples.SemanticRepairPart10
 import Formal.AG.Examples.DerivedPart5
 import Formal.AG.Examples.EvolutionPart9
 import Formal.AG.Examples.SingularityMonodromyStackPart6
@@ -561,6 +562,70 @@ def semanticRepairExample91GeneratedLawCircleNonzeroResidualWithGeneratedPairSAG
 
 def semanticRepairExample91SharedCoefficientSeparateCechWitnesses :=
   AAT.AG.Examples.SemanticRepairPart10.generatedLaw_sharedCoefficient_separateCircleNonzero_andSingletonStandardPackets
+
+/-- Kernel-audit alias for the Part X additive repair gauge group. -/
+def semanticRepairTheorem48AdditiveRepairGauge :=
+  @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.additiveRepairGaugeSubgroup
+
+/-- Kernel-audit alias for the Part X additive gauge action law. -/
+def semanticRepairTheorem48AdditiveGaugeAction :=
+  @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.additiveRepairGaugeAction_add
+
+/-- Kernel-audit alias for the Part X torsor-triviality theorem. -/
+def semanticRepairTheorem48TorsorTriviality :=
+  @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.nonabelianTorsorTrivial_of_additiveH1Zero
+
+/-- Kernel-audit alias for the Part X facewise higher-coherence construction. -/
+def semanticRepairTheorem48HigherCoherenceWitness :=
+  @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.selectedHigherCoherenceTrivialization_of_additive
+
+/-- Kernel-audit alias for the Part X higher-coherence theorem. -/
+def semanticRepairTheorem48HigherCoherenceVanishes :=
+  @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.higherCoherenceVanishes_of_additive
+
+/-- Kernel-audit alias for the Part X repair-cover Part VI base. -/
+def semanticRepairTheorem48TranslationStack :=
+  @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.additiveRepairCoverStackBase
+
+/-- Kernel-audit alias for the Part X effective-descent construction. -/
+noncomputable def semanticRepairTheorem48EffectiveDescent :=
+  @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.selectedRepairEffectiveDescent_of_h1Zero
+
+/-- Kernel-audit alias for the Part X stack-effectiveness theorem. -/
+def semanticRepairTheorem48StackEffectiveness :=
+  @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.stackEffectivelyVanishes_of_additive
+
+/-- Kernel-audit alias for the Part X selected higher/descent construction. -/
+def semanticRepairTheorem48SelectedHigherAndEffectiveDescent :=
+  @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.selectedHigherCoherenceAndEffectiveDescent_of_additive
+
+/-- Kernel-audit alias for the nontrivial `ZMod 2` translation fixture. -/
+def semanticRepairExample91ZmodTwoTorsorNonzeroTranslation :=
+  Examples.SemanticRepairPart10.zmodTwoTorsor_nonzeroGaugeTranslation
+
+/-- Kernel-audit alias for the nontrivial `ZMod 2` torsor fixture. -/
+def semanticRepairExample91ZmodTwoTorsorRegularTorsor :=
+  Examples.SemanticRepairPart10.zmodTwoTorsor_regularTorsor
+
+/-- Kernel-audit alias for the nontrivial `ZMod 2` gauge-action composition fixture. -/
+def semanticRepairExample91ZmodTwoTorsorGaugeAction :=
+  Examples.SemanticRepairPart10.zmodTwoTorsor_gaugeActionAdd
+
+/-- Kernel-audit alias for the nontrivial `ZMod 2` higher-coherence fixture. -/
+def semanticRepairExample91ZmodTwoTorsorHigherCoherence :=
+  Examples.SemanticRepairPart10.zmodTwoTorsor_higherDefect012_zero
+
+/-- Kernel-audit alias for the nontrivial `ZMod 2` stack fixture. -/
+def semanticRepairExample91ZmodTwoTorsorStackEffectiveness :=
+  Examples.SemanticRepairPart10.zmodTwoTorsor_stackEffectiveness
+
+/-- Kernel-audit alias for the nontrivial `ZMod 2` effective-descent fixture. -/
+noncomputable def semanticRepairExample91ZmodTwoTorsorEffectiveDescent :=
+  @Examples.SemanticRepairPart10.zmodTwoTorsor_effectiveDescent
+
+/-- Kernel-audit alias for the nontrivial selected higher/descent fixture. -/
+def semanticRepairExample91ZmodTwoTorsorSelectedHigherAndEffectiveDescent :=
+  Examples.SemanticRepairPart10.zmodTwoTorsor_selectedHigherAndEffectiveDescent
 
 def semanticRepairExample91SingletonStandardFiniteFreeTenConjunctPacket :=
   AAT.AG.Examples.SemanticRepairPart10.lawfulFiring_generatedLawSingletonStandardSourceC0_finiteFreeTenConjunctPacket

@@ -1,6 +1,7 @@
 import Formal.AG.Cohomology.CoverNerve
 import Formal.AG.SemanticRepair.GluingComplex
 import Formal.AG.Site.Descent
+import Formal.AG.SingularityMonodromyStack.ArchitectureStack
 
 noncomputable section
 
@@ -25,6 +26,7 @@ structure SemanticRepairCover
   baseCover : FiniteSemanticRepairCoverDatum.{v, w, x} P.Component
   CoverChart : Type w
   chart : CoverChart -> baseCover.Chart
+  chartInjective : Function.Injective chart
   chartFinite : Fintype CoverChart
   Overlap : CoverChart -> CoverChart -> Type w
   overlapFinite : forall left right, Fintype (Overlap left right)
@@ -33,6 +35,16 @@ structure SemanticRepairCover
   tripleEdge01 : forall {i j k}, TripleOverlap i j k -> Overlap i j
   tripleEdge12 : forall {i j k}, TripleOverlap i j k -> Overlap j k
   tripleEdge02 : forall {i j k}, TripleOverlap i j k -> Overlap i k
+  /-- The selected comparison edge for each ordered chart pair. -/
+  selectedOverlap : forall left right, Overlap left right
+  /-- The selected comparison face for each ordered chart triple. -/
+  selectedTriple : forall i j k, TripleOverlap i j k
+  selectedOverlap_eq_tripleEdge01 : forall i j k,
+    selectedOverlap i j = tripleEdge01 (selectedTriple i j k)
+  selectedOverlap_eq_tripleEdge12 : forall i j k,
+    selectedOverlap j k = tripleEdge12 (selectedTriple i j k)
+  selectedOverlap_eq_tripleEdge02 : forall i j k,
+    selectedOverlap i k = tripleEdge02 (selectedTriple i j k)
 
 namespace SemanticRepairCover
 
@@ -98,6 +110,167 @@ namespace SemanticRepairCoverCechData
 attribute [instance] c0Finite c1Finite
 
 end SemanticRepairCoverCechData
+
+/--
+Cover-indexed realization of the selected Cech surface.
+
+The realization evaluates degree-zero cochains on charts, degree-one
+cochains on selected overlaps, and degree-two cochains on selected triple
+overlaps.  Its compatibility fields describe the two differentials
+componentwise; it stores neither a vanishing conclusion nor an effective
+descent witness.
+-/
+structure SemanticRepairCoverCechRealization
+    {P : SemanticAtomProjection.{u, v}}
+    (cover : SemanticRepairCover.{u, v, w, x} P)
+    (cech : SemanticRepairCoverCechData.{u, v, w, x, y, z} cover) where
+  /-- Common additive fiber receiving selected Cech components. -/
+  Fiber : Type w
+  fiberAddCommGroup : AddCommGroup Fiber
+  /-- Degree-zero evaluation on one repair-cover chart. -/
+  eval0 : cech.C0 -> cover.CoverChart -> Fiber
+  /-- Degree-one evaluation on one selected repair-cover overlap. -/
+  eval1 : cech.C1 -> forall {left right : cover.CoverChart},
+    cover.Overlap left right -> Fiber
+  /-- Degree-two evaluation on one selected repair-cover triple face. -/
+  eval2 : cech.C2 -> forall {i j k : cover.CoverChart},
+    cover.TripleOverlap i j k -> Fiber
+  eval_delta0 : forall primitive {left right : cover.CoverChart}
+    (overlap : cover.Overlap left right),
+    eval1 (cech.delta0 primitive) overlap =
+      eval0 primitive right - eval0 primitive left
+  eval_delta1 : forall cochain {i j k : cover.CoverChart}
+    (triple : cover.TripleOverlap i j k),
+    eval2 (cech.delta1 cochain) triple =
+      eval1 cochain (cover.tripleEdge01 triple) +
+        eval1 cochain (cover.tripleEdge12 triple) -
+          eval1 cochain (cover.tripleEdge02 triple)
+  eval_zero1 : forall {left right : cover.CoverChart}
+    (overlap : cover.Overlap left right),
+    eval1 cech.zero1 overlap = 0
+  eval_zero2 : forall {i j k : cover.CoverChart}
+    (triple : cover.TripleOverlap i j k),
+    eval2 cech.zero2 triple = 0
+
+namespace SemanticRepairCoverCechRealization
+
+attribute [instance] fiberAddCommGroup
+
+/-- The residual has the selected cocycle equation on every triple overlap. -/
+def ResidualFacewiseCocycle
+    {P : SemanticAtomProjection.{u, v}}
+    {cover : SemanticRepairCover.{u, v, w, x} P}
+    {cech : SemanticRepairCoverCechData.{u, v, w, x, y, z} cover}
+    (realization : SemanticRepairCoverCechRealization cover cech) : Prop :=
+  forall {i j k : cover.CoverChart} (triple : cover.TripleOverlap i j k),
+    realization.eval1 cech.residual (cover.tripleEdge01 triple) +
+        realization.eval1 cech.residual (cover.tripleEdge12 triple) =
+      realization.eval1 cech.residual (cover.tripleEdge02 triple)
+
+/-- The residual cocycle field yields its componentwise triple-overlap form. -/
+theorem residualFacewiseCocycle
+    {P : SemanticAtomProjection.{u, v}}
+    {cover : SemanticRepairCover.{u, v, w, x} P}
+    {cech : SemanticRepairCoverCechData.{u, v, w, x, y, z} cover}
+    (realization : SemanticRepairCoverCechRealization cover cech) :
+    realization.ResidualFacewiseCocycle := by
+  intro i j k triple
+  have hdefect :
+      realization.eval1 cech.residual (cover.tripleEdge01 triple) +
+          realization.eval1 cech.residual (cover.tripleEdge12 triple) -
+            realization.eval1 cech.residual (cover.tripleEdge02 triple) = 0 := by
+    calc
+      realization.eval1 cech.residual (cover.tripleEdge01 triple) +
+          realization.eval1 cech.residual (cover.tripleEdge12 triple) -
+            realization.eval1 cech.residual (cover.tripleEdge02 triple) =
+          realization.eval2 (cech.delta1 cech.residual) triple := by
+            exact (realization.eval_delta1 cech.residual triple).symm
+      _ = realization.eval2 cech.zero2 triple := by
+            rw [cech.residual_cocycle]
+      _ = 0 := realization.eval_zero2 triple
+  exact sub_eq_zero.mp hdefect
+
+end SemanticRepairCoverCechRealization
+
+/-- Context cells generated by a selected semantic repair cover. -/
+inductive AdditiveRepairCoverContext
+    {P : SemanticAtomProjection.{u, v}}
+    (cover : SemanticRepairCover.{u, v, w, x} P) : Type w where
+  | global
+  | chart (value : cover.CoverChart)
+  | overlap (value : Sigma fun pair : cover.CoverChart × cover.CoverChart =>
+      cover.Overlap pair.1 pair.2)
+  | triple (value : Sigma fun indices : cover.CoverChart × cover.CoverChart × cover.CoverChart =>
+      cover.TripleOverlap indices.1 indices.2.1 indices.2.2)
+
+namespace AdditiveRepairCoverContext
+
+/-- The charts present in one selected repair-cover cell. -/
+def Supports
+    {P : SemanticAtomProjection.{u, v}}
+    {cover : SemanticRepairCover.{u, v, w, x} P}
+    (context : AdditiveRepairCoverContext cover)
+    (baseChart : cover.baseCover.Chart) : Prop :=
+  match context with
+  | .global => True
+  | .chart value => baseChart = cover.chart value
+  | .overlap value =>
+      baseChart = cover.chart value.1.1 ∨ baseChart = cover.chart value.1.2
+  | .triple value =>
+      baseChart = cover.chart value.1.1 ∨
+        baseChart = cover.chart value.1.2.1 ∨
+          baseChart = cover.chart value.1.2.2
+
+/--
+An actual restriction arrow of the selected repair cover.
+
+Every local cell restricts to the global cell.  Away from the global cell,
+the target charts must be represented by the source cell.  In particular,
+there is no restriction from the global cell to a proper local cell.
+-/
+def Restrict
+    {P : SemanticAtomProjection.{u, v}}
+    {cover : SemanticRepairCover.{u, v, w, x} P}
+    (source target : AdditiveRepairCoverContext cover) : Type w :=
+  Subtype fun _ : ULift.{w} PUnit =>
+    target = .global \/
+      (source ≠ .global /\
+        forall chart, Supports target chart -> Supports source chart)
+
+end AdditiveRepairCoverContext
+
+/--
+Selected complete repair-cover data used by the Part VI descent datum.
+
+The three compatibility equations require the pairwise transitions used by the
+descent datum to be the three edges of every selected triple face.  This is
+cover geometry only; it carries neither a repair primitive nor a vanishing
+claim.
+-/
+structure SelectedRepairCoverDescentSelection
+    {P : SemanticAtomProjection.{u, v}}
+    (cover : SemanticRepairCover.{u, v, w, x} P) where
+  /-- Selected overlap for each ordered pair of repair-cover charts. -/
+  overlap : forall left right : cover.CoverChart, cover.Overlap left right
+  /-- Selected triple face for each ordered triple of repair-cover charts. -/
+  triple : forall i j k : cover.CoverChart, cover.TripleOverlap i j k
+  overlap_eq_tripleEdge01 : forall i j k,
+    overlap i j = cover.tripleEdge01 (triple i j k)
+  overlap_eq_tripleEdge12 : forall i j k,
+    overlap j k = cover.tripleEdge12 (triple i j k)
+  overlap_eq_tripleEdge02 : forall i j k,
+    overlap i k = cover.tripleEdge02 (triple i j k)
+
+/-- The selected comparison data carried by a finite semantic repair cover. -/
+def SemanticRepairCover.toDescentSelection
+    {P : SemanticAtomProjection.{u, v}}
+    (cover : SemanticRepairCover.{u, v, w, x} P) :
+    SelectedRepairCoverDescentSelection cover where
+  overlap := cover.selectedOverlap
+  triple := cover.selectedTriple
+  overlap_eq_tripleEdge01 := cover.selectedOverlap_eq_tripleEdge01
+  overlap_eq_tripleEdge12 := cover.selectedOverlap_eq_tripleEdge12
+  overlap_eq_tripleEdge02 := cover.selectedOverlap_eq_tripleEdge02
 
 /-- X.定義4.2: Cech-style 1-cocycles on the bounded semantic repair cover. -/
 def CechZ1
@@ -593,29 +766,819 @@ structure TrueSheafConditionCertificate
   cover_mem : cover ∈ S.topology base
   sheafCondition : Site.AATSheafCondition S F
 
-/-- X.定理4.8 conclusion 5: nonabelian torsor obstruction vanishes by construction. -/
+/--
+X.定理4.8 conclusion 5, torsor layer: additive primitives whose differential
+is the selected residual.
+-/
+def AdditiveRepairSolution
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P) :
+    Type y :=
+  { primitive : data.boundaryRelation.cech.C0 //
+    data.boundaryRelation.cech.delta0 primitive =
+      data.boundaryRelation.cech.residual }
+
+/-- The additive gauge group is the degree-zero kernel of the selected differential. -/
+def additiveRepairGaugeSubgroup
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P) :
+    letI := data.additive.c0AddCommGroup
+    letI := data.additive.c1AddCommGroup
+    AddSubgroup data.boundaryRelation.cech.C0 := by
+  letI := data.additive.c0AddCommGroup
+  letI := data.additive.c1AddCommGroup
+  exact
+    { carrier := { gauge | data.boundaryRelation.cech.delta0 gauge = 0 }
+      zero_mem' := data.additive.delta0_zero
+      add_mem' := fun {left} {right} hleft hright => by
+        change data.boundaryRelation.cech.delta0 (left + right) = 0
+        change data.boundaryRelation.cech.delta0 left = 0 at hleft
+        change data.boundaryRelation.cech.delta0 right = 0 at hright
+        rw [data.additive.delta0_add, hleft, hright, add_zero]
+      neg_mem' := fun {gauge} hgauge => by
+        change data.boundaryRelation.cech.delta0 (-gauge) = 0
+        change data.boundaryRelation.cech.delta0 gauge = 0 at hgauge
+        rw [data.additive.delta0_neg, hgauge, neg_zero] }
+
+/-- The gauge carrier acting on residual-solving primitives. -/
+def AdditiveRepairGauge
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P) :
+    Type y := by
+  letI := data.additive.c0AddCommGroup
+  letI := data.additive.c1AddCommGroup
+  exact ↑data.additiveRepairGaugeSubgroup
+
+/-- The degree-zero kernel carries its inherited additive gauge-group structure. -/
+instance additiveRepairGaugeAddCommGroup
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P) :
+    letI := data.additive.c0AddCommGroup
+    letI := data.additive.c1AddCommGroup
+    AddCommGroup (AdditiveRepairGauge data) := by
+  letI := data.additive.c0AddCommGroup
+  letI := data.additive.c1AddCommGroup
+  exact data.additiveRepairGaugeSubgroup.toAddCommGroup
+
+/-- A translation between two residual-solving primitives. -/
+def AdditiveRepairPrimitiveTranslation
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (source target : AdditiveRepairSolution data) : Type y := by
+  letI := data.additive.c0AddCommGroup
+  exact { translation : data.boundaryRelation.cech.C0 // translation + source.1 = target.1 }
+
+/-- The canonical difference translation between two repair solutions. -/
+def additiveRepairPrimitiveTranslation
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (source target : AdditiveRepairSolution data) :
+    AdditiveRepairPrimitiveTranslation data source target := by
+  letI := data.additive.c0AddCommGroup
+  exact ⟨target.1 - source.1, by abel⟩
+
+/-- The canonical solution difference is a gauge element. -/
+def additiveRepairGaugeBetween
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (source target : AdditiveRepairSolution data) :
+    AdditiveRepairGauge data := by
+  letI := data.additive.c0AddCommGroup
+  letI := data.additive.c1AddCommGroup
+  refine ⟨target.1 - source.1, ?_⟩
+  calc
+    data.boundaryRelation.cech.delta0 (target.1 - source.1) =
+        data.boundaryRelation.cech.delta0 target.1 +
+          data.boundaryRelation.cech.delta0 (-source.1) := by
+            rw [show target.1 - source.1 = target.1 + -source.1 by abel]
+            exact data.additive.delta0_add target.1 (-source.1)
+    _ = data.boundaryRelation.cech.delta0 target.1 +
+          -data.boundaryRelation.cech.delta0 source.1 := by
+            rw [data.additive.delta0_neg]
+    _ = data.boundaryRelation.cech.delta0 target.1 -
+          data.boundaryRelation.cech.delta0 source.1 :=
+      (sub_eq_add_neg _ _).symm
+    _ = data.boundaryRelation.cech.residual -
+          data.boundaryRelation.cech.residual := by rw [target.2, source.2]
+    _ = 0 := sub_self _
+
+/-- The additive gauge action on residual-solving primitives. -/
+def additiveRepairGaugeAction
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (gauge : AdditiveRepairGauge data)
+    (solution : AdditiveRepairSolution data) :
+    AdditiveRepairSolution data := by
+  letI := data.additive.c0AddCommGroup
+  letI := data.additive.c1AddCommGroup
+  exact ⟨gauge.1 + solution.1, by
+    calc
+      data.boundaryRelation.cech.delta0 (gauge.1 + solution.1) =
+          data.boundaryRelation.cech.delta0 gauge.1 +
+            data.boundaryRelation.cech.delta0 solution.1 :=
+        data.additive.delta0_add gauge.1 solution.1
+      _ = 0 + data.boundaryRelation.cech.residual := by rw [gauge.2, solution.2]
+      _ = data.boundaryRelation.cech.residual := zero_add _⟩
+
+/-- The additive gauge group acts on the residual-solving primitive carrier. -/
+instance additiveRepairGaugeAddAction
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P) :
+    letI := data.additive.c0AddCommGroup
+    letI := data.additive.c1AddCommGroup
+    AddAction (AdditiveRepairGauge data) (AdditiveRepairSolution data) := by
+  letI := data.additive.c0AddCommGroup
+  letI := data.additive.c1AddCommGroup
+  exact
+    { vadd := data.additiveRepairGaugeAction
+      zero_vadd := fun solution => by
+        apply Subtype.ext
+        change (0 : data.boundaryRelation.cech.C0) + solution.1 = solution.1
+        exact zero_add _
+      add_vadd := fun left right solution => by
+        apply Subtype.ext
+        change (left.1 + right.1) + solution.1 = left.1 + (right.1 + solution.1)
+        exact add_assoc _ _ _ }
+
+/-- The zero gauge fixes every residual-solving primitive. -/
+theorem additiveRepairGaugeAction_zero
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (solution : AdditiveRepairSolution data) :
+    data.additiveRepairGaugeAction 0 solution = solution := by
+  change (0 : AdditiveRepairGauge data) +ᵥ solution = solution
+  exact zero_vadd _ _
+
+/-- Successive gauge translations compose by addition. -/
+theorem additiveRepairGaugeAction_add
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (left right : AdditiveRepairGauge data)
+    (solution : AdditiveRepairSolution data) :
+    data.additiveRepairGaugeAction (left + right) solution =
+      data.additiveRepairGaugeAction left (data.additiveRepairGaugeAction right solution) := by
+  change (left + right) +ᵥ solution = left +ᵥ (right +ᵥ solution)
+  exact add_vadd _ _ _
+
+/-- The gauge difference sends one solution to the other. -/
+theorem additiveRepairGaugeBetween_action
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (source target : AdditiveRepairSolution data) :
+    data.additiveRepairGaugeAction (data.additiveRepairGaugeBetween source target) source =
+      target := by
+  letI := data.additive.c0AddCommGroup
+  letI := data.additive.c1AddCommGroup
+  apply Subtype.ext
+  change target.1 - source.1 + source.1 = target.1
+  abel
+
+/-- The gauge action is free on the repair-solution carrier. -/
+theorem additiveRepairGaugeAction_free
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    {left right : AdditiveRepairGauge data}
+    {solution : AdditiveRepairSolution data}
+    (haction : data.additiveRepairGaugeAction left solution =
+      data.additiveRepairGaugeAction right solution) :
+    left = right := by
+  letI := data.additive.c0AddCommGroup
+  letI := data.additive.c1AddCommGroup
+  apply Subtype.ext
+  have hvalue := congrArg Subtype.val haction
+  change left.1 + solution.1 = right.1 + solution.1 at hvalue
+  calc
+    left.1 = (left.1 + solution.1) - solution.1 := by abel
+    _ = (right.1 + solution.1) - solution.1 := by rw [hvalue]
+    _ = right.1 := by abel
+
+/-- The gauge action is simply transitive whenever two repair solutions are given. -/
+def AdditiveRepairGaugeActsSimplyTransitively
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P) :
+    Prop :=
+  letI := data.additive.c0AddCommGroup
+  letI := data.additive.c1AddCommGroup
+  forall source target : AdditiveRepairSolution data,
+    ExistsUnique fun gauge : AdditiveRepairGauge data =>
+      gauge +ᵥ source = target
+
+/-- The repair-solution carrier has the additive gauge torsor law. -/
+theorem additiveRepairGaugeActsSimplyTransitively
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P) :
+    data.AdditiveRepairGaugeActsSimplyTransitively := by
+  letI := data.additive.c0AddCommGroup
+  letI := data.additive.c1AddCommGroup
+  intro source target
+  refine ⟨data.additiveRepairGaugeBetween source target,
+    data.additiveRepairGaugeBetween_action source target, ?_⟩
+  intro gauge hgauge
+  apply data.additiveRepairGaugeAction_free
+  calc
+    data.additiveRepairGaugeAction gauge source = target := hgauge
+    _ = data.additiveRepairGaugeAction
+          (data.additiveRepairGaugeBetween source target) source :=
+      (data.additiveRepairGaugeBetween_action source target).symm
+
+/-- A selected additive H1-zero proof determines one residual-solving primitive. -/
+def additiveRepairSolution_of_h1Zero
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (hzero : data.toAdditiveCechH1Data.H1Zero) :
+    AdditiveRepairSolution data := by
+  let hboundary := data.toAdditiveCechH1Data.h1Zero_iff_boundary.mp hzero
+  exact ⟨Classical.choose hboundary, Classical.choose_spec hboundary⟩
+
+/-- Existence of a repair solution is equivalent to the selected H1-zero statement. -/
+theorem additiveRepairSolution_nonempty_iff_h1Zero
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P) :
+    Nonempty (AdditiveRepairSolution data) <-> data.toAdditiveCechH1Data.H1Zero := by
+  constructor
+  · intro hsolution
+    rcases hsolution with ⟨solution⟩
+    exact data.toAdditiveCechH1Data.h1Zero_iff_boundary.mpr ⟨solution.1, solution.2⟩
+  · intro hzero
+    exact ⟨data.additiveRepairSolution_of_h1Zero hzero⟩
+
+/--
+Part IV torsor layer in the additive specialization: a chosen H1-zero proof
+produces a pointed torsor under the explicit gauge group.  This does not claim
+triviality for an arbitrary nonadditive torsor.
+-/
 def NonabelianTorsorTrivial
     {P : SemanticAtomProjection.{u, v}}
-    (_data :
+    (data :
       SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P) :
     Prop :=
-  True
+  letI := data.additive.c0AddCommGroup
+  letI := data.additive.c1AddCommGroup
+  data.toAdditiveCechH1Data.H1Zero ->
+    exists origin : AdditiveRepairSolution data,
+      forall target : AdditiveRepairSolution data,
+        ExistsUnique fun gauge : AdditiveRepairGauge data =>
+          data.additiveRepairGaugeAction gauge origin = target
 
-/-- X.定理4.8 conclusion 5: higher coherence obstruction vanishes by construction. -/
+/-- The H1-zero proof supplies the pointed additive torsor. -/
+theorem nonabelianTorsorTrivial_of_additiveH1Zero
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P) :
+    data.NonabelianTorsorTrivial := by
+  letI := data.additive.c0AddCommGroup
+  letI := data.additive.c1AddCommGroup
+  intro hzero
+  let origin := data.additiveRepairSolution_of_h1Zero hzero
+  refine ⟨origin, ?_⟩
+  intro target
+  exact data.additiveRepairGaugeActsSimplyTransitively origin target
+
+/-- The selected degree-two coherence defect on one actual triple face. -/
+def SelectedHigherCoherenceDefect
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (realization : SemanticRepairCoverCechRealization
+      data.boundaryRelation.cover data.boundaryRelation.cech)
+    {i j k : data.boundaryRelation.cover.CoverChart}
+    (triple : data.boundaryRelation.cover.TripleOverlap i j k) : realization.Fiber :=
+  realization.eval2
+    (data.boundaryRelation.cech.delta1 data.boundaryRelation.cech.residual) triple
+
+/-- The selected degree-two coherence defect vanishes on every actual triple face. -/
+def SelectedHigherCoherenceTrivialization
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (realization : SemanticRepairCoverCechRealization
+      data.boundaryRelation.cover data.boundaryRelation.cech) : Prop :=
+  forall {i j k : data.boundaryRelation.cover.CoverChart}
+    (triple : data.boundaryRelation.cover.TripleOverlap i j k),
+    data.SelectedHigherCoherenceDefect realization triple = 0
+
+/--
+The selected higher-coherence predicate is indexed by a concrete compatible
+realization.  It is the facewise transition equation, not a claim that an
+arbitrary H2 surface vanishes.
+-/
 def HigherCoherenceVanishes
     {P : SemanticAtomProjection.{u, v}}
-    (_data :
-      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P) :
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (realization : SemanticRepairCoverCechRealization
+      data.boundaryRelation.cover data.boundaryRelation.cech) :
     Prop :=
-  True
+  data.SelectedHigherCoherenceTrivialization realization
 
-/-- X.定理4.8 conclusion 5: stack effectiveness obstruction vanishes by construction. -/
+/-- The aggregate residual cocycle gives a zero witness for every selected C2 defect. -/
+theorem selectedHigherCoherenceTrivialization_of_additive
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (realization : SemanticRepairCoverCechRealization
+      data.boundaryRelation.cover data.boundaryRelation.cech) :
+    data.SelectedHigherCoherenceTrivialization realization := by
+  intro i j k triple
+  change realization.eval2
+    (data.boundaryRelation.cech.delta1 data.boundaryRelation.cech.residual) triple = 0
+  calc
+    realization.eval2
+        (data.boundaryRelation.cech.delta1 data.boundaryRelation.cech.residual) triple =
+        realization.eval2 data.boundaryRelation.cech.zero2 triple := by
+          rw [data.boundaryRelation.cech.residual_cocycle]
+    _ = 0 := realization.eval_zero2 triple
+
+/-- A zero selected C2 defect gives the facewise transition equation. -/
+theorem selectedHigherCoherence_facewise
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (realization : SemanticRepairCoverCechRealization
+      data.boundaryRelation.cover data.boundaryRelation.cech)
+    (hcoherence : data.SelectedHigherCoherenceTrivialization realization)
+    {i j k : data.boundaryRelation.cover.CoverChart}
+    (triple : data.boundaryRelation.cover.TripleOverlap i j k) :
+    realization.eval1 data.boundaryRelation.cech.residual
+        (data.boundaryRelation.cover.tripleEdge01 triple) +
+      realization.eval1 data.boundaryRelation.cech.residual
+        (data.boundaryRelation.cover.tripleEdge12 triple) =
+    realization.eval1 data.boundaryRelation.cech.residual
+      (data.boundaryRelation.cover.tripleEdge02 triple) := by
+  apply sub_eq_zero.mp
+  calc
+    realization.eval1 data.boundaryRelation.cech.residual
+          (data.boundaryRelation.cover.tripleEdge01 triple) +
+        realization.eval1 data.boundaryRelation.cech.residual
+          (data.boundaryRelation.cover.tripleEdge12 triple) -
+          realization.eval1 data.boundaryRelation.cech.residual
+            (data.boundaryRelation.cover.tripleEdge02 triple) =
+        data.SelectedHigherCoherenceDefect realization triple := by
+          exact (realization.eval_delta1 data.boundaryRelation.cech.residual triple).symm
+    _ = 0 := hcoherence triple
+
+/-- The selected compatible realization has the facewise higher coherence. -/
+theorem higherCoherenceVanishes_of_additive
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (realization : SemanticRepairCoverCechRealization
+      data.boundaryRelation.cover data.boundaryRelation.cech) :
+    data.HigherCoherenceVanishes realization := by
+  exact data.selectedHigherCoherenceTrivialization_of_additive realization
+
+/-- The Part VI base generated by the actual repair-cover cells and incidence. -/
+def additiveRepairCoverStackBase
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P) :
+    SingularityMonodromyStack.ArchitectureStackBase.{w} where
+  Context := AdditiveRepairCoverContext data.boundaryRelation.cover
+  Overlap := fun left right =>
+    { edge : (Sigma fun i : data.boundaryRelation.cover.CoverChart =>
+        Sigma fun j : data.boundaryRelation.cover.CoverChart =>
+          data.boundaryRelation.cover.Overlap i j) //
+      left = AdditiveRepairCoverContext.chart edge.1 /\
+        right = AdditiveRepairCoverContext.chart edge.2.1 }
+  TripleOverlap := fun left middle right =>
+    { face : (Sigma fun i : data.boundaryRelation.cover.CoverChart =>
+        Sigma fun j : data.boundaryRelation.cover.CoverChart =>
+          Sigma fun k : data.boundaryRelation.cover.CoverChart =>
+            data.boundaryRelation.cover.TripleOverlap i j k) //
+      left = AdditiveRepairCoverContext.chart face.1 /\
+        middle = AdditiveRepairCoverContext.chart face.2.1 /\
+          right = AdditiveRepairCoverContext.chart face.2.2.1 }
+  restrict := AdditiveRepairCoverContext.Restrict
+  idRestrict := by
+    intro context
+    refine ⟨ULift.up PUnit.unit, ?_⟩
+    cases context with
+    | global => exact Or.inl rfl
+    | chart value =>
+        refine Or.inr ⟨?_, fun _ h => h⟩
+        intro h
+        cases h
+    | overlap value =>
+        refine Or.inr ⟨?_, fun _ h => h⟩
+        intro h
+        cases h
+    | triple value =>
+        refine Or.inr ⟨?_, fun _ h => h⟩
+        intro h
+        cases h
+  compRestrict := by
+    intro T U V restriction next
+    refine ⟨ULift.up PUnit.unit, ?_⟩
+    rcases restriction.2 with hglobal | ⟨hsource, hrestriction⟩
+    · exact Or.inl hglobal
+    · rcases next.2 with hmiddleGlobal | ⟨hnextSource, hnext⟩
+      · exact False.elim (hsource hmiddleGlobal)
+      · exact Or.inr ⟨hnextSource, fun chart h => hnext chart (hrestriction chart h)⟩
+  id_comp := by
+    intro _ _ restriction
+    apply Subtype.ext
+    apply ULift.ext
+    exact PUnit.ext _ _
+  comp_id := by
+    intro _ _ restriction
+    apply Subtype.ext
+    apply ULift.ext
+    exact PUnit.ext _ _
+  assoc := by
+    intro _ _ _ _ _ _ _
+    apply Subtype.ext
+    apply ULift.ext
+    exact PUnit.ext _ _
+  overlapContext := fun overlap =>
+    match overlap with
+    | ⟨⟨i, j, edge⟩, _⟩ => .overlap ⟨(i, j), edge⟩
+  overlap_left := by
+    intro left right overlap
+    refine ⟨ULift.up PUnit.unit, ?_⟩
+    refine Or.inr ⟨?_, ?_⟩
+    · intro h
+      cases h
+    · intro chart hchart
+      rcases overlap with ⟨⟨i, j, edge⟩, hleft, hright⟩
+      cases hleft
+      exact Or.inl hchart
+  overlap_right := by
+    intro left right overlap
+    refine ⟨ULift.up PUnit.unit, ?_⟩
+    refine Or.inr ⟨?_, ?_⟩
+    · intro h
+      cases h
+    · intro chart hchart
+      rcases overlap with ⟨⟨i, j, edge⟩, hleft, hright⟩
+      cases hright
+      exact Or.inr hchart
+  tripleContext := fun triple =>
+    match triple with
+    | ⟨⟨i, j, k, face⟩, _⟩ => .triple ⟨(i, j, k), face⟩
+  triple_to_leftOverlap := by
+    intro left middle right overlap triple
+    refine ⟨ULift.up PUnit.unit, ?_⟩
+    refine Or.inr ⟨?_, ?_⟩
+    · intro h
+      cases h
+    · intro chart hchart
+      rcases overlap with ⟨⟨i, j, edge⟩, hleft, hmiddle⟩
+      rcases triple with ⟨⟨a, b, c, face⟩, htripleLeft, htripleMiddle, htripleRight⟩
+      have hi : AdditiveRepairCoverContext.chart i = AdditiveRepairCoverContext.chart a :=
+        hleft.symm.trans htripleLeft
+      have hj : AdditiveRepairCoverContext.chart j = AdditiveRepairCoverContext.chart b :=
+        hmiddle.symm.trans htripleMiddle
+      injection hi with hi
+      injection hj with hj
+      subst a
+      subst b
+      exact Or.elim hchart Or.inl (fun h => Or.inr (Or.inl h))
+  triple_to_rightOverlap := by
+    intro left middle right overlap triple
+    refine ⟨ULift.up PUnit.unit, ?_⟩
+    refine Or.inr ⟨?_, ?_⟩
+    · intro h
+      cases h
+    · intro chart hchart
+      rcases overlap with ⟨⟨j, k, edge⟩, hmiddle, hright⟩
+      rcases triple with ⟨⟨a, b, c, face⟩, htripleLeft, htripleMiddle, htripleRight⟩
+      have hj : AdditiveRepairCoverContext.chart j = AdditiveRepairCoverContext.chart b :=
+        hmiddle.symm.trans htripleMiddle
+      have hk : AdditiveRepairCoverContext.chart k = AdditiveRepairCoverContext.chart c :=
+        hright.symm.trans htripleRight
+      injection hj with hj
+      injection hk with hk
+      subst b
+      subst c
+      exact Or.elim hchart (fun h => Or.inr (Or.inl h)) (fun h => Or.inr (Or.inr h))
+  triple_to_outerOverlap := by
+    intro left middle right overlap triple
+    refine ⟨ULift.up PUnit.unit, ?_⟩
+    refine Or.inr ⟨?_, ?_⟩
+    · intro h
+      cases h
+    · intro chart hchart
+      rcases overlap with ⟨⟨i, k, edge⟩, hleft, hright⟩
+      rcases triple with ⟨⟨a, b, c, face⟩, htripleLeft, htripleMiddle, htripleRight⟩
+      have hi : AdditiveRepairCoverContext.chart i = AdditiveRepairCoverContext.chart a :=
+        hleft.symm.trans htripleLeft
+      have hk : AdditiveRepairCoverContext.chart k = AdditiveRepairCoverContext.chart c :=
+        hright.symm.trans htripleRight
+      injection hi with hi
+      injection hk with hk
+      subst a
+      subst c
+      exact Or.elim hchart Or.inl (fun h => Or.inr (Or.inr h))
+
+/-- A translation in one additive fiber. -/
+def AdditiveFiberTranslation
+    {F : Type w} [AddCommGroup F] (source target : F) : Type w :=
+  { translation : F // translation + source = target }
+
+/-- The canonical fiber translation. -/
+def additiveFiberTranslation
+    {F : Type w} [AddCommGroup F] (source target : F) :
+    AdditiveFiberTranslation source target :=
+  ⟨target - source, by abel⟩
+
+/-- A fiber translation between fixed objects is unique. -/
+theorem additiveFiberTranslation_unique
+    {F : Type w} [AddCommGroup F] {source target : F}
+    (first second : AdditiveFiberTranslation source target) : first = second := by
+  apply Subtype.ext
+  calc
+    first.1 = (first.1 + source) - source := by abel
+    _ = (second.1 + source) - source := by rw [first.2, second.2]
+    _ = second.1 := by abel
+
+/-- The constant additive-fiber groupoid on the repair-cover Part VI base. -/
+def additiveRepairCoverTranslationPresheaf
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (realization : SemanticRepairCoverCechRealization
+      data.boundaryRelation.cover data.boundaryRelation.cech) :
+    SingularityMonodromyStack.ArchitecturePresheaf
+      data.additiveRepairCoverStackBase := by
+  letI := realization.fiberAddCommGroup
+  exact
+    { Obj := fun _ => realization.Fiber
+      Iso := fun source target => AdditiveFiberTranslation source target
+      id := fun _ => ⟨0, by simp⟩
+      inv := fun translation => ⟨-translation.1, by
+        calc
+          -translation.1 + _ = -translation.1 + (translation.1 + _) := by
+            rw [translation.2]
+          _ = _ := by abel⟩
+      comp := fun {_} {source middle target} first second =>
+        ⟨second.1 + first.1, by
+          calc
+            second.1 + first.1 + source = second.1 + (first.1 + source) := by abel
+            _ = second.1 + middle := by rw [first.2]
+            _ = target := second.2⟩
+      id_comp := fun {_} {_ _} translation => by
+        apply Subtype.ext
+        simp
+      comp_id := fun {_} {_ _} translation => by
+        apply Subtype.ext
+        simp
+      assoc := fun {_} {_ _ _ _} first second third => by
+        apply Subtype.ext
+        change third.1 + (second.1 + first.1) = (third.1 + second.1) + first.1
+        ac_rfl
+      inv_comp := fun {_} {_ _} translation => by
+        apply Subtype.ext
+        simp
+      comp_inv := fun {_} {_ _} translation => by
+        apply Subtype.ext
+        simp
+      pullbackObj := fun _ object => object
+      pullbackIso := fun {_ _} _ {_ _} translation => translation
+      pullback_id := fun {_ _} _ _ => rfl
+      pullback_comp := fun {_ _} _ {_ _ _} _ _ => rfl
+      pullbackBaseId := fun {_} _ => rfl
+      pullbackBaseComp := fun {_ _ _} _ _ _ => rfl
+      pullbackIsoBaseId := fun {_} {_ _} _ => HEq.rfl
+      pullbackIsoBaseComp := fun {_ _ _} _ _ {_ _} _ => HEq.rfl }
+
+/-- A solution realizes the residual as a local difference on each overlap. -/
+theorem residualTransition_eq_localDifference
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (realization : SemanticRepairCoverCechRealization
+      data.boundaryRelation.cover data.boundaryRelation.cech)
+    (solution : AdditiveRepairSolution data)
+    {left right : data.boundaryRelation.cover.CoverChart}
+    (overlap : data.boundaryRelation.cover.Overlap left right) :
+    realization.eval1 data.boundaryRelation.cech.residual overlap =
+      realization.eval0 solution.1 right - realization.eval0 solution.1 left := by
+  calc
+    realization.eval1 data.boundaryRelation.cech.residual overlap =
+        realization.eval1 (data.boundaryRelation.cech.delta0 solution.1) overlap := by
+          rw [solution.2]
+    _ = realization.eval0 solution.1 right - realization.eval0 solution.1 left :=
+      realization.eval_delta0 solution.1 overlap
+
+/-- Local additive-fiber objects selected by one H1-zero repair solution. -/
+def selectedRepairLocalObjects
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (realization : SemanticRepairCoverCechRealization
+      data.boundaryRelation.cover data.boundaryRelation.cech)
+    (hzero : data.toAdditiveCechH1Data.H1Zero) :
+    SingularityMonodromyStack.LocalArchitectureObjects
+      (data.additiveRepairCoverTranslationPresheaf realization) := by
+  let solution := data.additiveRepairSolution_of_h1Zero hzero
+  exact
+    { CoverIndex := data.boundaryRelation.cover.CoverChart
+      context := fun chart =>
+        AdditiveRepairCoverContext.chart (cover := data.boundaryRelation.cover) chart
+      object := fun chart => realization.eval0 solution.1 chart }
+
+/--
+The selected repair descent datum uses actual overlaps and triple overlaps.
+The selection proves that its pairwise comparisons are the three edges of
+each selected triple face.
+-/
+def selectedRepairDescentDatum
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (realization : SemanticRepairCoverCechRealization
+      data.boundaryRelation.cover data.boundaryRelation.cech)
+    (hzero : data.toAdditiveCechH1Data.H1Zero) :
+    SingularityMonodromyStack.ArchitectureDescentDatum
+      (data.additiveRepairCoverTranslationPresheaf realization)
+      (data.selectedRepairLocalObjects realization hzero) := by
+  letI := realization.fiberAddCommGroup
+  let solution := data.additiveRepairSolution_of_h1Zero hzero
+  let selection := data.boundaryRelation.cover.toDescentSelection
+  exact
+    { overlap := fun i j => ⟨⟨i, j, selection.overlap i j⟩, rfl, rfl⟩
+      overlapIso := fun i j =>
+        ⟨realization.eval1 data.boundaryRelation.cech.residual (selection.overlap i j), by
+          have htransition :=
+            data.residualTransition_eq_localDifference realization solution (selection.overlap i j)
+          calc
+            realization.eval1 data.boundaryRelation.cech.residual (selection.overlap i j) +
+                realization.eval0 solution.1 i =
+                (realization.eval0 solution.1 j - realization.eval0 solution.1 i) +
+                  realization.eval0 solution.1 i := by rw [htransition]
+            _ = realization.eval0 solution.1 j := by abel⟩
+      triple := fun i j k => ⟨⟨i, j, k, selection.triple i j k⟩, rfl, rfl, rfl⟩
+      tripleCocycle := fun i j k =>
+        { left := realization.eval0 solution.1 i
+          middle := realization.eval0 solution.1 j
+          right := realization.eval0 solution.1 k
+          ij := ⟨realization.eval1 data.boundaryRelation.cech.residual
+              (selection.overlap i j), by
+            have htransition := data.residualTransition_eq_localDifference
+              realization solution (selection.overlap i j)
+            calc
+              realization.eval1 data.boundaryRelation.cech.residual
+                  (selection.overlap i j) +
+                    realization.eval0 solution.1 i =
+                  (realization.eval0 solution.1 j - realization.eval0 solution.1 i) +
+                    realization.eval0 solution.1 i := by rw [htransition]
+              _ = realization.eval0 solution.1 j := by abel⟩
+          jk := ⟨realization.eval1 data.boundaryRelation.cech.residual
+              (selection.overlap j k), by
+            have htransition := data.residualTransition_eq_localDifference
+              realization solution (selection.overlap j k)
+            calc
+              realization.eval1 data.boundaryRelation.cech.residual
+                  (selection.overlap j k) +
+                    realization.eval0 solution.1 j =
+                  (realization.eval0 solution.1 k - realization.eval0 solution.1 j) +
+                    realization.eval0 solution.1 j := by rw [htransition]
+              _ = realization.eval0 solution.1 k := by abel⟩
+          ik := ⟨realization.eval1 data.boundaryRelation.cech.residual
+              (selection.overlap i k), by
+            have htransition := data.residualTransition_eq_localDifference
+              realization solution (selection.overlap i k)
+            calc
+              realization.eval1 data.boundaryRelation.cech.residual
+                  (selection.overlap i k) +
+                    realization.eval0 solution.1 i =
+                  (realization.eval0 solution.1 k - realization.eval0 solution.1 i) +
+                    realization.eval0 solution.1 i := by rw [htransition]
+              _ = realization.eval0 solution.1 k := by abel⟩
+          cocycle_eq := by
+            apply Subtype.ext
+            change realization.eval1 data.boundaryRelation.cech.residual
+                (selection.overlap j k) +
+                realization.eval1 data.boundaryRelation.cech.residual
+                  (selection.overlap i j) =
+              realization.eval1 data.boundaryRelation.cech.residual
+                (selection.overlap i k)
+            rw [selection.overlap_eq_tripleEdge12,
+              selection.overlap_eq_tripleEdge01,
+              selection.overlap_eq_tripleEdge02]
+            rw [add_comm]
+            exact data.selectedHigherCoherence_facewise realization
+              (data.selectedHigherCoherenceTrivialization_of_additive realization)
+              (selection.triple i j k) }
+      cocycleCondition := fun overlapIsomorphisms _ =>
+        forall i j k,
+          (data.additiveRepairCoverTranslationPresheaf realization).comp
+              (overlapIsomorphisms i j) (overlapIsomorphisms j k) =
+            overlapIsomorphisms i k
+      cocycleCondition_holds := by
+        intro i j k
+        apply Subtype.ext
+        change realization.eval1 data.boundaryRelation.cech.residual
+            (selection.overlap j k) +
+            realization.eval1 data.boundaryRelation.cech.residual
+              (selection.overlap i j) =
+          realization.eval1 data.boundaryRelation.cech.residual
+            (selection.overlap i k)
+        rw [selection.overlap_eq_tripleEdge12,
+          selection.overlap_eq_tripleEdge01,
+          selection.overlap_eq_tripleEdge02, add_comm]
+        exact data.selectedHigherCoherence_facewise realization
+          (data.selectedHigherCoherenceTrivialization_of_additive realization)
+          (selection.triple i j k) }
+
+/--
+An H1-zero proof constructs effective descent for the selected repair datum,
+not for arbitrary local data on the cover.
+-/
+def selectedRepairEffectiveDescent_of_h1Zero
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (realization : SemanticRepairCoverCechRealization
+      data.boundaryRelation.cover data.boundaryRelation.cech)
+    (hzero : data.toAdditiveCechH1Data.H1Zero) :
+    SingularityMonodromyStack.EffectiveArchitectureDescent
+      (data.additiveRepairCoverTranslationPresheaf realization)
+      (data.selectedRepairDescentDatum realization hzero) := by
+  letI := realization.fiberAddCommGroup
+  let solution := data.additiveRepairSolution_of_h1Zero hzero
+  refine
+    { globalContext := AdditiveRepairCoverContext.global (cover := data.boundaryRelation.cover)
+      globalObject := (0 : realization.Fiber)
+      restrictToLocal := ?_
+      localComparison := ?_
+      realizesOverlapData := ?_
+      realizesOverlapData_holds := ?_ }
+  · intro _
+    exact ⟨ULift.up PUnit.unit, Or.inl rfl⟩
+  · intro chart
+    exact ⟨realization.eval0 solution.1 chart, by
+      change realization.eval0 solution.1 chart + 0 = realization.eval0 solution.1 chart
+      exact add_zero _⟩
+  · intro localComparisons overlapIsomorphisms
+    exact forall i j,
+      overlapIsomorphisms i j =
+        (data.additiveRepairCoverTranslationPresheaf realization).comp
+          ((data.additiveRepairCoverTranslationPresheaf realization).inv (localComparisons i))
+          (localComparisons j)
+  · intro i j
+    apply additiveFiberTranslation_unique
+
+/--
+The selected stack-facing conclusion is indexed by an actual realization and
+an H1-zero proof.  The complete repair-cover selection is part of the cover
+geometry, and the conclusion asserts effective descent for its selected datum.
+-/
 def StackEffectivelyVanishes
     {P : SemanticAtomProjection.{u, v}}
-    (_data :
-      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P) :
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (realization : SemanticRepairCoverCechRealization
+      data.boundaryRelation.cover data.boundaryRelation.cech)
+    (hzero : data.toAdditiveCechH1Data.H1Zero) :
     Prop :=
-  True
+  Nonempty (SingularityMonodromyStack.EffectiveArchitectureDescent
+    (data.additiveRepairCoverTranslationPresheaf realization)
+    (data.selectedRepairDescentDatum realization hzero))
+
+/-- The selected effective-descent datum is constructed from the additive H1-zero proof. -/
+theorem stackEffectivelyVanishes_of_additive
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (realization : SemanticRepairCoverCechRealization
+      data.boundaryRelation.cover data.boundaryRelation.cech)
+    (hzero : data.toAdditiveCechH1Data.H1Zero) :
+    data.StackEffectivelyVanishes realization hzero := by
+  exact ⟨data.selectedRepairEffectiveDescent_of_h1Zero realization hzero⟩
+
+/--
+An actual cover-indexed realization and an H1-zero proof give both selected
+facewise higher coherence and effective descent for the selected repair datum.
+-/
+theorem selectedHigherCoherenceAndEffectiveDescent_of_additive
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (realization : SemanticRepairCoverCechRealization
+      data.boundaryRelation.cover data.boundaryRelation.cech)
+    (hzero : data.toAdditiveCechH1Data.H1Zero) :
+    data.HigherCoherenceVanishes realization /\
+      data.StackEffectivelyVanishes realization hzero := by
+  exact ⟨data.higherCoherenceVanishes_of_additive realization,
+    data.stackEffectivelyVanishes_of_additive realization hzero⟩
 
 /-- X.定理4.8: cover membership and a sheaf condition generate the cover sheaf condition. -/
 theorem coverSheafConditionFor_of_trueSheafCertificate
@@ -893,9 +1856,11 @@ theorem refinementPullback_package
 X.定理4.8 [CBI]: true-sheaf H1 semantic repair-gluing, boundary-relation
 additive package.
 
-The five conclusion groups are exposed in the statement: cover
-sheaf/descent, cocycle well-definedness, global-coherence/additive-H1
-equivalence, quotient boundary reading, and constructed later-layer vanishing.
+The core conclusion groups are exposed in the statement: cover sheaf/descent,
+cocycle well-definedness, global-coherence/additive-H1 equivalence, quotient
+boundary reading, and torsor trivialization.  The selected higher-coherence
+and effective-descent construction is stated separately with its actual
+realization input.
 -/
 theorem trueSheafH1SemanticRepairGluing_boundaryRelationAdditive_package
     {P : SemanticAtomProjection.{u, v}}
@@ -920,9 +1885,7 @@ theorem trueSheafH1SemanticRepairGluing_boundaryRelationAdditive_package
       (data.toAdditiveCechH1Data.H1Zero <->
         CechB1 data.boundaryRelation.cech
           data.boundaryRelation.cech.residual) /\
-      NonabelianTorsorTrivial data /\
-      HigherCoherenceVanishes data /\
-      StackEffectivelyVanishes data := by
+      NonabelianTorsorTrivial data := by
   exact
     ⟨coverSheafConditionFor_of_trueSheafCertificate certificate,
       coverDescent_of_trueSheafCertificate certificate,
@@ -930,9 +1893,7 @@ theorem trueSheafH1SemanticRepairGluing_boundaryRelationAdditive_package
       data.boundaryRelation.cech.delta1_delta0_eq_zero,
       globalRepairCoherent_iff_additiveH1Zero data,
       data.toAdditiveCechH1Data.h1Zero_iff_boundary,
-      trivial,
-      trivial,
-      trivial⟩
+      nonabelianTorsorTrivial_of_additiveH1Zero data⟩
 
 end SemanticRepairCoverH1BoundaryRelationAdditiveData
 

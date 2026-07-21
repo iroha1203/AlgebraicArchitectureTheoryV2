@@ -1503,10 +1503,7 @@ theorem lawEquation_constructs_generatedPair_groundedComparisonPacket
             package73.globalCoherent_iff_coverRelativeH1Zero
           boundedAdditiveH1Zero_iff_coverRelativeH1Zero :=
             package73.boundedAdditiveH1Zero_iff_coverRelativeH1Zero
-          higherObstructionsVanish :=
-            ⟨package73.nonabelianTorsorTrivial,
-              package73.higherCoherenceVanishes,
-              package73.stackEffectivelyVanishes⟩ } }
+          torsorTrivialization := package73.torsorTrivialization_of_h1Zero } }
 
 /--
 Generated-complex form of theorem 7.5 for the body route.
@@ -1714,10 +1711,7 @@ theorem lawEquation_generatedBoundary_lawIndependentConclusions_fromPrimitive
         package73.globalCoherent_iff_coverRelativeH1Zero
       boundedAdditiveH1Zero_iff_coverRelativeH1Zero :=
         package73.boundedAdditiveH1Zero_iff_coverRelativeH1Zero
-      higherObstructionsVanish :=
-        ⟨package73.nonabelianTorsorTrivial,
-          package73.higherCoherenceVanishes,
-          package73.stackEffectivelyVanishes⟩ }
+      torsorTrivialization := package73.torsorTrivialization_of_h1Zero }
   refine ⟨⟨bridge, comparison, ?_⟩⟩
   exact ⟨lawIndependent, hBounded, hSurface, hCover⟩
 

@@ -2704,6 +2704,10 @@ UNUSED ARGUMENTS. -/
 #check @AAT.AG.FiniteModel.twoPatchContextLe_sound /- argument 3 _h : AAT.AG.FiniteModel.twoPatchContextIndexLe i j -/
 
 -- Formal.AG.Examples.SemanticRepairPart10
+#check AAT.AG.Examples.SemanticRepairPart10.zmodTwoTorsorTriple.proxyType /- argument 1 _i : Fin
+  3, argument 2 _j : Fin 3, argument 3 _k : Fin 3 -/
+#check AAT.AG.Examples.SemanticRepairPart10.zmodTwoTorsorOverlap.proxyType /- argument 1 _left : Fin
+  3, argument 2 _right : Fin 3 -/
 #check AAT.AG.Examples.SemanticRepairPart10.punitCochainAddEquiv /- argument 1 _n : ℕ -/
 #check AAT.AG.Examples.SemanticRepairPart10.punitCochainEquiv /- argument 1 _n : ℕ -/
 #check AAT.AG.Examples.SemanticRepairPart10.zmod2SingletonCochainAddEquiv /- argument 1 _n : ℕ -/
@@ -2777,12 +2781,6 @@ UNUSED ARGUMENTS. -/
 -- Formal.AG.SemanticRepair.AdditiveH1
 #check @AAT.AG.SemanticRepair.SemanticRepairAdditiveCechH1Data.Cocycle /- argument 4 _data : AAT.AG.SemanticRepair.SemanticRepairAdditiveCechH1Data
   cech -/
-#check @AAT.AG.SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.NonabelianTorsorTrivial /- argument 2 _data : AAT.AG.SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData
-  P -/
-#check @AAT.AG.SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.HigherCoherenceVanishes /- argument 2 _data : AAT.AG.SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData
-  P -/
-#check @AAT.AG.SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.StackEffectivelyVanishes /- argument 2 _data : AAT.AG.SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData
-  P -/
 
 -- Formal.AG.SingularityMonodromyStack.OperationCategory
 #check @AAT.AG.SingularityMonodromyStack.EndpointEquivalentPath /- argument 13 _gamma : AAT.AG.SingularityMonodromyStack.OperationPath
