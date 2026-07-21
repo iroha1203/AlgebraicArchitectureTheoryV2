@@ -254,8 +254,10 @@ state at a finite time.
 
 The finite selected state set, well-founded value order, and strict decrease
 outside terminals are the three theorem-5.3 conditions carried by `D`.
-The proof reuses `no_infinite_nonterminal_path`: if no terminal time existed,
-the path API would generate an infinite non-terminal selected path.
+`D.finiteSelectedStates` is retained as a theorem-5.3 premise; this proof
+consumes the well-founded order and strict decrease through
+`no_infinite_nonterminal_path`. If no terminal time existed, the path API
+would generate an infinite non-terminal selected path.
 -/
 theorem policy_generated_path_reaches_terminal
     (D : FiniteDissipationStopping P Term)
