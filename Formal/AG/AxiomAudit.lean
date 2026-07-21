@@ -1,4 +1,5 @@
 import Formal.AG
+import Formal.AG.SemanticRepair.AdditiveH1
 import Formal.AG.SemanticRepair.LawEquationGeneratedPair
 import Formal.AG.Examples.DerivedPart5
 import Formal.AG.Examples.EvolutionPart9
@@ -283,6 +284,18 @@ def semanticRepairDefinition31FullFiniteFixture :=
 
 def semanticRepairTheorem48TrueSheafH1Gluing :=
   @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.globalRepairCoherent_iff_additiveH1Zero
+
+def semanticRepairDefinition46GeneralFaithfulnessSufficiency :=
+  @SemanticRepair.SemanticRepairCoverH1FaithfulnessData.globalRepairCoherent_of_boundary
+
+def semanticRepairDefinition46AdditiveZeroPrimitive :=
+  @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.toFaithfulnessData
+
+def semanticRepairDefinition46ComponentBridge :=
+  @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAbelianData.toFaithfulnessData_globalRepairCoherent_iff
+
+def semanticRepairTheorem48GeneralFaithfulnessSufficiency :=
+  @SemanticRepair.SemanticRepairCoverH1AdditiveFaithfulnessData.globalRepairCoherent_of_additiveH1Zero
 
 def semanticRepairTheorem72H1ComparisonPackage :=
   @SemanticRepair.SemanticRepairCoverRelativeH1Comparison.semanticRepairAdditiveH1_coverRelativeH1_comparison_package
