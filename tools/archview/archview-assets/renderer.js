@@ -122,9 +122,13 @@ export function createAtlasRenderer(host) {
   let selectableMeshes = [];
   let analysisSupport = null;
   let currentLayout = null;
+  let currentIndex = null;
   let currentSelection = null;
   let onSelection = null;
   let onSceneHover = null;
+  let architectureGeneration = 0;
+  let overviewCenter = new THREE.Vector3();
+  let overviewScale = 1;
 
   scene.add(new THREE.HemisphereLight(0xfffbf2, 0xb7aa91, 1.7));
   const daylight = new THREE.DirectionalLight(0xfff6e7, 2.1);
@@ -170,8 +174,8 @@ export function createAtlasRenderer(host) {
     const damping = controls.enableDamping;
     controls.enableDamping = false;
     controls.update();
-    camera.position.fromArray(view.position);
-    controls.target.fromArray(view.target);
+    camera.position.fromArray(view.position).multiplyScalar(overviewScale).add(overviewCenter);
+    controls.target.copy(overviewCenter);
     controls.update();
     controls.enableDamping = damping;
   };
@@ -218,6 +222,31 @@ export function createAtlasRenderer(host) {
       selectionSurface.add(ring);
       if (object.userData.contextId && object.userData.kind !== "context") contextIds.add(object.userData.contextId);
     }
+    if (!matches.length && currentLayout) {
+      for (const entry of activeSelections) {
+        const atomId = entry.kind === "source" ? entry.atomId : entry.kind === "atom" ? entry.id : null;
+        const points = atomId ? currentLayout.atoms.filter((row) => row.atomId === atomId && (!entry.contextId || row.contextId === entry.contextId))
+          : entry.kind === "subject" ? currentLayout.subjects.filter((row) => row.subject === entry.id && row.contextId === entry.contextId)
+          : entry.kind === "context" ? currentLayout.contexts.filter((row) => row.id === entry.id).map((row) => ({ ...row, contextId: row.id })) : [];
+        for (const point of points) {
+          const ring = new THREE.Mesh(new THREE.RingGeometry(0.84, 1, 48), new THREE.MeshBasicMaterial({ color: 0x314d7d, side: THREE.DoubleSide, transparent: true, opacity: 0.94, depthTest: false }));
+          ring.rotation.x = -Math.PI / 2;
+          ring.position.set(point.position.x, 0.2, point.position.z);
+          ring.renderOrder = 10;
+          selectionSurface.add(ring);
+          contextIds.add(point.contextId);
+          if (atomId && currentIndex) {
+            const atom = currentIndex.atomsById.get(atomId);
+            if (atom) {
+              const detail = new THREE.Mesh(atomGeometry(atom.kind), new THREE.MeshStandardMaterial({ color: ATOM_COLORS[atom.kind] || 0x6d7890, roughness: 0.78, metalness: 0 }));
+              detail.position.set(point.position.x, point.position.y, point.position.z);
+              detail.userData = { kind: "selected-atom-detail", visualChannel: "derived" };
+              selectionSurface.add(detail);
+            }
+          }
+        }
+      }
+    }
     for (const contextId of contextIds) {
       const plate = selectableMeshes.find((candidate) => candidate.userData?.kind === "context" && candidate.userData.contextId === contextId);
       if (!plate) continue;
@@ -225,7 +254,8 @@ export function createAtlasRenderer(host) {
       helper.userData = { kind: "selection-context-frame", visualChannel: "decoration" };
       selectionSurface.add(helper);
     }
-    return Object.freeze({ kind: selection?.kind || null, id: selection?.id || selection?.atomId || null, selections: activeSelections.length, rings: matches.length, contextFrames: contextIds.size, outlines: matches.length });
+    const rings = selectionSurface.children.filter((object) => object.geometry?.type === "RingGeometry").length;
+    return Object.freeze({ kind: selection?.kind || null, id: selection?.id || selection?.atomId || null, selections: activeSelections.length, rings, contextFrames: contextIds.size, outlines: rings });
   };
 
   const selectAtom = (atomId) => setSelection({ kind: "atom", id: atomId });
@@ -323,6 +353,27 @@ export function createAtlasRenderer(host) {
     const highlight = ({ measured_nonzero: 0xb87932, measured_zero: 0x54799a, unmeasured: 0x7c7b76, unknown: 0x7c7b76, not_computed: 0x7c7b76 })[support?.state] || 0x3e7780;
     for (const object of architectureSurface.children) {
       const data = object.userData || {};
+      if (data.kind === "atom-instances") {
+        const activeSet = new Set(support?.atomIds || []);
+        data.instances.forEach((instance, index) => object.setColorAt(index, new THREE.Color(!active ? (ATOM_COLORS[data.atomKind] || 0x6d7890) : activeSet.has(instance.atomId) ? highlight : 0xb8b3a8)));
+        if (object.instanceColor) object.instanceColor.needsUpdate = true;
+        continue;
+      }
+      if (data.kind === "atom-points") {
+        const colors = object.geometry.getAttribute("color");
+        const activeSet = new Set(support?.atomIds || []);
+        data.instances.forEach((instance, index) => {
+          const color = new THREE.Color(!active ? (ATOM_COLORS[instance.atomKind] || 0x6d7890) : activeSet.has(instance.atomId) ? highlight : 0xb8b3a8);
+          colors.setXYZ(index, color.r, color.g, color.b);
+        });
+        colors.needsUpdate = true;
+        continue;
+      }
+      if (data.kind === "context-instances") {
+        const supported = data.instances.some((instance) => support?.contextIds.includes(instance.contextId));
+        object.material.color.setHex(!active ? 0xd9d0bf : supported ? highlight : 0xb8b3a8);
+        continue;
+      }
       const edgeId = data.kind === "restriction" ? `${data.sourceId}->${data.targetId}` : null;
       const supported = data.kind === "atom" ? support?.atomIds.includes(data.atomId)
         : ["context", "context-label", "subject"].includes(data.kind) ? support?.contextIds.includes(data.contextId)
@@ -349,6 +400,8 @@ export function createAtlasRenderer(host) {
   };
 
   const setArchitecture = (index, layout, selectHandler, hoverHandler = null) => {
+    const startedAt = performance.now();
+    const generation = ++architectureGeneration;
     disposeTree(architectureSurface);
     disposeTree(selectionSurface);
     atomMeshes = [];
@@ -357,10 +410,50 @@ export function createAtlasRenderer(host) {
     onSceneHover = hoverHandler;
     analysisSupport = null;
     currentLayout = layout;
+    currentIndex = index;
     currentSelection = null;
-    if (!index || index.empty || !layout) return Object.freeze({ contextPlates: 0, subjectGroups: 0, atomGlyphs: 0, restrictions: 0, sharedSupports: 0 });
+    overviewCenter.set(0, 0, 0);
+    overviewScale = 1;
+    decorativeSurface.scale.set(1, 1, 1);
+    camera.far = 300;
+    camera.updateProjectionMatrix();
+    controls.maxDistance = 80;
+    if (!index || index.empty || !layout) return Object.freeze({ contextPlates: 0, subjectGroups: 0, atomGlyphs: 0, restrictions: 0, sharedSupports: 0, progressive: false, complete: true });
 
-    layout.contexts.forEach((contextLayout, contextIndex) => {
+    const layoutPoints = [...layout.contexts, ...layout.atoms].map((row) => row.position);
+    if (layoutPoints.length) {
+      const bounds = new THREE.Box3().setFromPoints(layoutPoints.map((point) => new THREE.Vector3(point.x, point.y || 0, point.z)));
+      const candidateCenter = bounds.getCenter(new THREE.Vector3());
+      const size = bounds.getSize(new THREE.Vector3());
+      overviewScale = Math.max(1, Math.max(size.x / 22, size.z / 28));
+      if (overviewScale > 1) overviewCenter.copy(candidateCenter);
+      controls.maxDistance = Math.max(80, overviewScale * 80);
+      decorativeSurface.scale.set(overviewScale, 1, overviewScale);
+      camera.far = Math.max(300, overviewScale * 100);
+      camera.updateProjectionMatrix();
+      reset();
+    }
+
+    const progressive = layout.atoms.length > 500;
+    if (progressive) {
+      const geometry = new THREE.BoxGeometry(1, 0.16, 1);
+      const material = new THREE.MeshBasicMaterial({ color: 0xd9d0bf });
+      const plates = new THREE.InstancedMesh(geometry, material, layout.contexts.length);
+      const matrix = new THREE.Matrix4();
+      const quaternion = new THREE.Quaternion();
+      const instances = [];
+      layout.contexts.forEach((contextLayout, contextIndex) => {
+        const baseColor = contextIndex % 2 === 0 ? 0xd9d0bf : 0xe1d8c8;
+        matrix.compose(new THREE.Vector3(contextLayout.position.x, contextLayout.position.y, contextLayout.position.z), quaternion, new THREE.Vector3(contextLayout.width, 1, contextLayout.height));
+        plates.setMatrixAt(contextIndex, matrix);
+        instances.push({ contextId: contextLayout.id, kind: "context", baseColor, visualChannel: "derived", renderedFrom: `contexts.${contextLayout.id}` });
+      });
+      plates.instanceMatrix.needsUpdate = true;
+      plates.userData = { kind: "context-instances", instances };
+      architectureSurface.add(plates);
+      selectableMeshes.push(plates);
+    }
+    for (const [contextIndex, contextLayout] of (progressive ? [] : layout.contexts).entries()) {
       const context = index.contextsById.get(contextLayout.id);
       const { x, y, z } = contextLayout.position;
       const plate = new THREE.Mesh(
@@ -377,9 +470,10 @@ export function createAtlasRenderer(host) {
       label.position.set(x, 0.32, z - contextLayout.height / 2 + 0.65);
       label.userData = { contextId: context.id, kind: "context-label" };
       architectureSurface.add(label);
-    });
+    }
 
-    for (const subject of layout.subjects) {
+    const visibleSubjects = progressive ? [] : layout.subjects;
+    for (const subject of visibleSubjects) {
       const marker = labelSprite(subject.subject);
       marker.scale.set(2.7, 0.52, 1);
       marker.position.set(subject.position.x, subject.position.y, subject.position.z - 1.15);
@@ -388,7 +482,8 @@ export function createAtlasRenderer(host) {
       selectableMeshes.push(marker);
     }
 
-    for (const atomLayout of layout.atoms) {
+    const atomGeometryTypes = {};
+    const addAtom = (atomLayout) => {
       const atom = index.atomsById.get(atomLayout.atomId);
       const mesh = new THREE.Mesh(
         atomGeometry(atom.kind),
@@ -400,9 +495,34 @@ export function createAtlasRenderer(host) {
       architectureSurface.add(mesh);
       atomMeshes.push(mesh);
       selectableMeshes.push(mesh);
+      atomGeometryTypes[atom.kind] = mesh.geometry.type;
+    };
+
+    let pointCloud = null;
+    if (!progressive) for (const atomLayout of layout.atoms) addAtom(atomLayout);
+    else {
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(layout.atoms.length * 3), 3));
+      geometry.setAttribute("color", new THREE.BufferAttribute(new Float32Array(layout.atoms.length * 3), 3));
+      geometry.setDrawRange(0, 0);
+      pointCloud = new THREE.Points(geometry, new THREE.PointsMaterial({ size: 0.72, sizeAttenuation: true, vertexColors: true, transparent: true, opacity: 0.92 }));
+      pointCloud.userData = { kind: "atom-points", instances: [], visualChannel: "derived" };
+      architectureSurface.add(pointCloud);
+      atomMeshes.push(pointCloud);
+      selectableMeshes.push(pointCloud);
+      for (const kind of new Set(layout.atoms.map((row) => row.kind))) atomGeometryTypes[kind] = "Points";
     }
 
-    for (const restriction of layout.restrictions) {
+    if (progressive && layout.restrictions.length) {
+      const points = [];
+      for (const restriction of layout.restrictions) points.push(restriction.source.x, 0.27, restriction.source.z, restriction.target.x, 0.27, restriction.target.z);
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute("position", new THREE.Float32BufferAttribute(points, 3));
+      const lines = new THREE.LineSegments(geometry, new THREE.LineBasicMaterial({ color: 0x77736a, transparent: true, opacity: 0.32 }));
+      lines.userData = { kind: "restriction-bundle", visualChannel: "derived", renderedFrom: "contexts.*.restrictsTo", count: layout.restrictions.length };
+      architectureSurface.add(lines);
+    }
+    for (const restriction of progressive ? [] : layout.restrictions) {
       const start = new THREE.Vector3(restriction.source.x, 0.27, restriction.source.z);
       const end = new THREE.Vector3(restriction.target.x, 0.27, restriction.target.z);
       const direction = end.clone().sub(start);
@@ -424,7 +544,17 @@ export function createAtlasRenderer(host) {
       }
     }
 
-    for (const support of layout.sharedSupports) {
+    if (progressive && layout.sharedSupports.length) {
+      const geometry = new THREE.CircleGeometry(1.15, 16);
+      geometry.rotateX(-Math.PI / 2);
+      const mesh = new THREE.InstancedMesh(geometry, new THREE.MeshBasicMaterial({ color: 0xc9d2d0, transparent: true, opacity: 0.18, side: THREE.DoubleSide }), layout.sharedSupports.length);
+      const matrix = new THREE.Matrix4();
+      layout.sharedSupports.forEach((support, index) => { matrix.makeTranslation(support.position.x, support.position.y, support.position.z); mesh.setMatrixAt(index, matrix); });
+      mesh.instanceMatrix.needsUpdate = true;
+      mesh.userData = { kind: "shared-support-bundle", visualChannel: "derived", renderedFrom: "explicit Context Atom memberships", count: layout.sharedSupports.length };
+      architectureSurface.add(mesh);
+    }
+    for (const support of progressive ? [] : layout.sharedSupports) {
       const sheet = new THREE.Mesh(
         new THREE.CircleGeometry(1.15, 32),
         new THREE.MeshStandardMaterial({ color: 0xc9d2d0, transparent: true, opacity: 0.44, roughness: 1, side: THREE.DoubleSide })
@@ -435,16 +565,55 @@ export function createAtlasRenderer(host) {
       architectureSurface.add(sheet);
       selectableMeshes.push(sheet);
     }
-    return Object.freeze({
+    const stats = {
       contextPlates: layout.contexts.length,
       subjectGroups: layout.subjects.length,
       atomGlyphs: atomMeshes.length,
+      totalAtoms: layout.atoms.length,
       restrictions: layout.restrictions.length,
       sharedSupports: layout.sharedSupports.length,
-      atomGeometryTypes: Object.freeze(Object.fromEntries(atomMeshes.map((mesh) => [mesh.userData.atomKind, mesh.geometry.type]))),
+      progressive,
+      complete: !progressive,
+      batches: progressive ? 0 : 1,
+      skeletonReady: true,
+      subjectLabelLod: progressive ? "context" : "subject",
+      atomLod: progressive ? "points" : "glyphs",
+      startedAt,
+      skeletonReadyAt: performance.now(),
+      completedAt: progressive ? null : performance.now(),
+      atomGeometryTypes,
       restrictionRecords: Object.freeze(layout.restrictions.map(({ sourceId, targetId }) => Object.freeze({ sourceId, targetId, renderedFrom: `contexts.${sourceId}.restrictsTo`, visualChannel: "derived" }))),
       sharedSupportRecords: Object.freeze(layout.sharedSupports.map(({ atomId, contextIds }) => Object.freeze({ atomId, contextIds, renderedFrom: "explicit Context Atom memberships", visualChannel: "derived" }))),
-    });
+    };
+    if (progressive) {
+      const batchSize = 120;
+      let cursor = 0;
+      const appendBatch = () => {
+        if (generation !== architectureGeneration || disposed) return;
+        const stop = Math.min(layout.atoms.length, cursor + batchSize);
+        const positions = pointCloud.geometry.getAttribute("position");
+        const colors = pointCloud.geometry.getAttribute("color");
+        while (cursor < stop) {
+          const row = layout.atoms[cursor++];
+          const index = cursor - 1;
+          positions.setXYZ(index, row.position.x, row.position.y, row.position.z);
+          const color = new THREE.Color(ATOM_COLORS[row.kind] || 0x6d7890);
+          colors.setXYZ(index, color.r, color.g, color.b);
+          pointCloud.userData.instances[index] = { atomId: row.atomId, atomKind: row.kind, contextId: row.contextId, kind: "atom", visualChannel: "derived", renderedFrom: `contexts.${row.contextId}.atoms` };
+        }
+        positions.needsUpdate = true;
+        colors.needsUpdate = true;
+        pointCloud.geometry.setDrawRange(0, cursor);
+        stats.atomGlyphs = cursor;
+        stats.batches += 1;
+        stats.complete = cursor === layout.atoms.length;
+        if (stats.complete) stats.completedAt = performance.now();
+        window.__archviewRenderStats = stats;
+        if (!stats.complete) window.requestAnimationFrame(appendBatch);
+      };
+      window.requestAnimationFrame(appendBatch);
+    }
+    return stats;
   };
 
   const raycaster = new THREE.Raycaster();
@@ -457,9 +626,10 @@ export function createAtlasRenderer(host) {
     raycaster.setFromCamera(pointer, camera);
     return raycaster.intersectObjects(selectableMeshes, false)[0] || null;
   };
+  const hitData = (hit) => Array.isArray(hit?.object.userData?.instances) ? hit.object.userData.instances[hit.instanceId ?? hit.index] : hit?.object.userData;
   const selectHit = (hit, additive = false) => {
     if (!hit) return;
-    const data = hit.object.userData;
+    const data = hitData(hit);
     if (data.kind === "atom") {
       onSelection?.("atom", data.atomId, data.contextId, additive);
     } else if (data.kind === "context") onSelection?.("context", data.contextId, null, additive);
@@ -485,7 +655,7 @@ export function createAtlasRenderer(host) {
     focusSelection();
   };
   const handleHover = (event) => {
-    const data = hitAt(event)?.object.userData;
+    const data = hitData(hitAt(event));
     renderer.domElement.style.cursor = data ? "pointer" : "grab";
     if (!data) return onSceneHover?.(null);
     if (data.kind === "restriction") onSceneHover?.(`Restriction · ${data.sourceId} → ${data.targetId} · Rendered from ${data.renderedFrom}`);

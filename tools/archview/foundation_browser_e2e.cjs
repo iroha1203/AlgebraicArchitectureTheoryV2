@@ -6,7 +6,7 @@ const os = require("os");
 const path = require("path");
 const { spawn } = require("child_process");
 
-const root = path.resolve(process.argv[2] || "tools/archview/rebuild");
+const root = path.resolve(process.argv[2] || "tools/archview/archview-assets");
 const screenshotPath = process.argv[3] ? path.resolve(process.argv[3]) : null;
 const chromeCandidates = [
   process.env.CHROME_BIN,
