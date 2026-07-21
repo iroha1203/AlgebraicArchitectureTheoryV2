@@ -250,6 +250,7 @@ kernel audit entrypoint elaborate the six advertised Part X CBI declarations.
 def semanticRepairTheorem34FiniteDescentPackage :=
   @SemanticRepair.finiteSemanticRepairGluingDescent_package
 
+/- Part X Definition 3.1 full finite gluing declarations audited by direct alias. -/
 def semanticRepairDefinition31FullFiniteDescentPackage :=
   @SemanticRepair.FullFiniteSemanticRepairGluingComplex.finiteSemanticRepairGluingDescent_package
 

@@ -137,7 +137,7 @@ def fullFiniteSemanticRepairGluingComplex :
 /-- The fixture records an overlap between the two distinct charts. -/
 theorem has_nontrivial_overlap :
     exists overlap : Sigma fun _left : Fin 2 => Sigma fun _right : Fin 2 => Unit,
-      overlap.1 != overlap.2.1 :=
+      overlap.1 ≠ overlap.2.1 :=
   ⟨⟨(0 : Fin 2), (1 : Fin 2), ()⟩, by decide⟩
 
 /--
@@ -147,13 +147,17 @@ left-only restriction, exercising the full restriction-difference law.
 theorem delta0_charges_left_only_on_nontrivial_overlap :
     fullFiniteSemanticRepairGluingComplex.ev
         (fullFiniteSemanticRepairGluingComplex.delta0 true)
+        ⟨(0 : Fin 2), (1 : Fin 2), ()⟩ CoverageWithoutFaithfulness.Atom.t /\
+      ¬ fullFiniteSemanticRepairGluingComplex.resR true
         ⟨(0 : Fin 2), (1 : Fin 2), ()⟩ CoverageWithoutFaithfulness.Atom.t := by
-  exact
-    (FullFiniteSemanticRepairGluingComplex.delta0_ev_iff_restriction_xor
-      fullFiniteSemanticRepairGluingComplex true
-      ⟨(0 : Fin 2), (1 : Fin 2), ()⟩ CoverageWithoutFaithfulness.Atom.t).mpr
-      (Or.inl ⟨by simp [fullFiniteSemanticRepairGluingComplex],
-        by simp [fullFiniteSemanticRepairGluingComplex]⟩)
+  constructor
+  · exact
+      (FullFiniteSemanticRepairGluingComplex.delta0_ev_iff_restriction_xor
+        fullFiniteSemanticRepairGluingComplex true
+        ⟨(0 : Fin 2), (1 : Fin 2), ()⟩ CoverageWithoutFaithfulness.Atom.t).mpr
+        (Or.inl ⟨by simp [fullFiniteSemanticRepairGluingComplex],
+          by simp [fullFiniteSemanticRepairGluingComplex]⟩)
+  · simp [fullFiniteSemanticRepairGluingComplex]
 
 /-- The fixture discharges theorem 3.4's faithfulness hypotheses from total support. -/
 theorem semanticFaithfulnessHypotheses :
