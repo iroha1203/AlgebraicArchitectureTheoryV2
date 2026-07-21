@@ -90,6 +90,23 @@ noncomputable def coordinateDifferential
       F.projectiveResolution.complex.d (n + 1) n ≫
       (F.termIsoFree n).hom)
 
+/-- Consecutive coordinate differentials compose to zero. -/
+theorem coordinateDifferential_comp
+    (F : FiniteFreeMathlibResolution.{v} A I) (n : Nat)
+    (x : F.BasisIndex (n + 2) -> A) :
+    F.coordinateDifferential n (F.coordinateDifferential (n + 1) x) = 0 := by
+  change ModuleCat.Hom.hom
+      ((F.termIsoFree (n + 1)).inv ≫
+        F.projectiveResolution.complex.d (n + 1) n ≫
+        (F.termIsoFree n).hom)
+      (ModuleCat.Hom.hom
+        ((F.termIsoFree (n + 2)).inv ≫
+          F.projectiveResolution.complex.d (n + 2) (n + 1) ≫
+          (F.termIsoFree (n + 1)).hom) x) = 0
+  rw [← ModuleCat.comp_apply]
+  simp only [Category.assoc, Iso.hom_inv_id_assoc]
+  simp
+
 /-- V.R4(a): finite matrix of the actual selected resolution differential. -/
 noncomputable def differentialMatrix
     (F : FiniteFreeMathlibResolution.{v} A I) (n : Nat) :
@@ -112,6 +129,32 @@ theorem differentialMatrix_correct
         (F.coordinateDifferential n) =
       F.differentialMatrix n := by
   rfl
+
+/-- Consecutive finite differential matrices multiply to zero. -/
+theorem differentialMatrix_mul_eq_zero
+    (F : FiniteFreeMathlibResolution.{v} A I) (n : Nat) :
+    letI : DecidableEq (F.BasisIndex n) := Classical.decEq _
+    letI : DecidableEq (F.BasisIndex (n + 1)) := Classical.decEq _
+    letI : DecidableEq (F.BasisIndex (n + 2)) := Classical.decEq _
+    F.differentialMatrix n * F.differentialMatrix (n + 1) = 0 := by
+  letI : DecidableEq (F.BasisIndex n) := Classical.decEq _
+  letI : DecidableEq (F.BasisIndex (n + 1)) := Classical.decEq _
+  letI : DecidableEq (F.BasisIndex (n + 2)) := Classical.decEq _
+  have hcomp :
+      (F.coordinateDifferential n).comp (F.coordinateDifferential (n + 1)) = 0 := by
+    apply LinearMap.ext
+    intro x
+    exact F.coordinateDifferential_comp n x
+  have hmatrix := congrArg
+    (LinearMap.toMatrix
+      (Pi.basisFun A (F.BasisIndex (n + 2)))
+      (Pi.basisFun A (F.BasisIndex n))) hcomp
+  rw [LinearMap.toMatrix_comp
+    (Pi.basisFun A (F.BasisIndex (n + 2)))
+    (Pi.basisFun A (F.BasisIndex (n + 1)))
+    (Pi.basisFun A (F.BasisIndex n))] at hmatrix
+  rw [F.differentialMatrix_correct, F.differentialMatrix_correct] at hmatrix
+  simpa using hmatrix
 
 /--
 V.R4(a) / AC5: a finite free Mathlib resolution computes

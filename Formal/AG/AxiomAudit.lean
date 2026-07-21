@@ -52,13 +52,13 @@ def finiteAATComputabilityConstructive :=
   @Measurement.finiteAATComputability
 
 def finiteAATComputabilityLinearFixture :=
-  @Measurement.finiteDimensionalRationalRoute_fires
+  @Measurement.finiteDimensionalMatrixRoute_fires
 
-def finiteAATComputabilityInfiniteCoeffFixture :=
-  @Measurement.finiteDimensionalRationalCoeff_infinite
+def finiteAATComputabilityFiniteCoeffFixture :=
+  @Measurement.finiteDimensionalMatrixCoeff_finite
 
 def finiteAATComputabilityFiniteDimensionalCohomologyFixture :=
-  @Measurement.finiteDimensionalRationalCohomology_moduleFinite
+  @Measurement.finiteDimensionalMatrixCohomology_moduleFinite
 
 noncomputable def finiteAATComputabilityCanonicalCohomologyEquiv :=
   @Measurement.FiniteDimensionalCechModel.cohomologyEquivCanonical
@@ -77,6 +77,15 @@ def finiteAATComputabilityIdealMembership :=
 
 def finiteAATComputabilityResolutionMatrix :=
   @Derived.FreeResolution.MathlibResolution.FiniteFreeMathlibResolution.differentialMatrix_correct
+
+def finiteAATComputabilityResolutionMatrixComplex :=
+  @Derived.FreeResolution.MathlibResolution.FiniteFreeMathlibResolution.differentialMatrix_mul_eq_zero
+
+def finiteAATComputabilityTensorKernelDecision :=
+  @Measurement.FiniteTensorMatrixAlgorithm.kernelDecision_correct
+
+def finiteAATComputabilityTensorImageDecision :=
+  @Measurement.FiniteTensorMatrixAlgorithm.imageDecision_correct
 
 def finiteAATComputabilityPrincipalResolutionDifferential :=
   @Derived.FreeResolution.MathlibResolution.Principal.finiteFreeResolution_coordinateDifferential_zero_ne_zero
@@ -97,10 +106,16 @@ def finiteAATComputabilityTorFixture :=
   @Measurement.finiteComputabilityExample_torRoute
 
 def finiteAATComputabilityFullLinearFixture :=
-  @Measurement.finiteDimensionalRationalFullRoute_fires
+  @Measurement.finiteDimensionalMatrixFullRoute_fires
 
 def finiteAATComputabilityNontrivialTorFixture :=
   @Measurement.NontrivialTorFixture.nontrivialFiniteChainTorRoute_fires
+
+def finiteAATComputabilityNontrivialTensorMatrixCycle :=
+  @Measurement.NontrivialTorFixture.yCoordinateCycleV2_is_cycle
+
+def finiteAATComputabilityNontrivialTensorMatrixNonboundary :=
+  @Measurement.NontrivialTorFixture.yCoordinateCycleV2_not_boundary
 
 /-
 Part X / peer-review hardening R1: Part X [CBI] theorem constants audited by direct alias.

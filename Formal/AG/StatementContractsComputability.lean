@@ -19,7 +19,7 @@ square-free and finite-resolution data.  The selected coefficient branch,
 example {M : Measurement.MeasurementProfile.{u, v}}
     (R : Measurement.FiniteMeasurementRegime M)
     (D : Measurement.FiniteAATComputationData M R) :
-    Nonempty (Measurement.FiniteAATComputability R D) :=
+    Nonempty (Measurement.FiniteAATComputability.{u, v, u} R D) :=
   Measurement.finiteAATComputability R D
 
 /-!
@@ -88,6 +88,10 @@ example {M : Measurement.MeasurementProfile.{u, v}}
 
 example {M : Measurement.MeasurementProfile.{u, v}}
     (R : Measurement.FiniteMeasurementRegime M)
+    (obstructionIdealEquiv :
+      letI := R.geometry.coeffCommRing
+      M.ObstructionIdeal ≃
+        Ideal (MvPolynomial M.WitnessVariables M.Coeff))
     (leftSquareFree rightSquareFree : Measurement.FiniteSquareFreeComputationData R)
     (selectedLeft :
       { support : Finset M.WitnessVariables //
@@ -100,22 +104,36 @@ example {M : Measurement.MeasurementProfile.{u, v}}
       Derived.FreeResolution.MathlibResolution.FiniteFreeMathlibResolution
         (MvPolynomial M.WitnessVariables M.Coeff)
         (rightSquareFree.obstructionIdeal M.Coeff))
-    (torDegree : Nat)
-    (selectedConflictClass :
-      letI := R.witnessDecidableEq
+    (tensorMatrixAlgorithm :
       letI := R.geometry.coeffCommRing
-      (Derived.Intersection.canonicalSelectedTorBridge
+      Measurement.FiniteTensorMatrixAlgorithm.{max u v, max u v}
         (MvPolynomial M.WitnessVariables M.Coeff)
         (leftSquareFree.obstructionIdeal M.Coeff)
-        (rightSquareFree.obstructionIdeal M.Coeff)).LawConflict torDegree) :
+        (rightSquareFree.obstructionIdeal M.Coeff)
+        rightResolution)
+    (tensorMatrixComparison :
+      letI := R.geometry.coeffCommRing
+      Measurement.FiniteTensorMatrixComparison tensorMatrixAlgorithm)
+    (torDegree : Nat)
+    (conflictCycle :
+      letI := R.witnessDecidableEq
+      letI := R.geometry.coeffCommRing
+      (gU : { support : Finset M.WitnessVariables //
+        support ∈ leftSquareFree.forbiddenSupports }) →
+      (gV : { support : Finset M.WitnessVariables //
+        support ∈ rightSquareFree.forbiddenSupports }) →
+        tensorMatrixAlgorithm.Cycle torDegree) :
     Measurement.FiniteAATComputationData M R where
+  obstructionIdealEquiv := obstructionIdealEquiv
   leftSquareFree := leftSquareFree
   rightSquareFree := rightSquareFree
   selectedLeftConflictGenerator := selectedLeft
   selectedRightConflictGenerator := selectedRight
   rightResolution := rightResolution
+  tensorMatrixAlgorithm := tensorMatrixAlgorithm
+  tensorMatrixComparison := tensorMatrixComparison
   torDegree := torDegree
-  selectedConflictClass := selectedConflictClass
+  conflictCycle := conflictCycle
 
 example {M : Measurement.MeasurementProfile.{u, v}}
     {G : Measurement.FiniteMeasurementGeometry M}
@@ -210,10 +228,14 @@ example {M : Measurement.MeasurementProfile.{u, v}}
     {G : Measurement.FiniteMeasurementGeometry M}
     (coeffField : Field M.Coeff)
     (coeffDecidableEq : DecidableEq M.Coeff)
+    (linearSystemSolver :
+      letI : Field M.Coeff := coeffField
+      Measurement.FiniteLinearSystemSolver M.Coeff)
     (model : @Measurement.FiniteDimensionalCechModel M G coeffField) :
     Measurement.FiniteDimensionalCechProcedure M G where
   coeffField := coeffField
   coeffDecidableEq := coeffDecidableEq
+  linearSystemSolver := linearSystemSolver
   model := model
 
 example {M : Measurement.MeasurementProfile.{u, v}}
@@ -242,6 +264,10 @@ example {M : Measurement.MeasurementProfile.{u, v}}
     Measurement.FiniteAATComputability R D where
   siteObjFintype := C.siteObjFintype
   coverFintype := C.coverFintype
+  leftProfileObstructionIdeal := C.leftProfileObstructionIdeal
+  rightProfileObstructionIdeal := C.rightProfileObstructionIdeal
+  leftProfileObstructionIdeal_realizes := C.leftProfileObstructionIdeal_realizes
+  rightProfileObstructionIdeal_realizes := C.rightProfileObstructionIdeal_realizes
   cochainModule := C.cochainModule
   coefficientComputation := C.coefficientComputation
   verdict := C.verdict
@@ -269,11 +295,20 @@ example {M : Measurement.MeasurementProfile.{u, v}}
   torSupported_le_length := C.torSupported_le_length
   torDifferentialMatrix := C.torDifferentialMatrix
   torDifferentialMatrix_correct := C.torDifferentialMatrix_correct
+  torTensorDifferentialMatrix := C.torTensorDifferentialMatrix
+  torTensorDifferentialMatrix_eq_map := C.torTensorDifferentialMatrix_eq_map
+  torTensorKernelDecision := C.torTensorKernelDecision
+  torTensorKernelDecision_correct := C.torTensorKernelDecision_correct
+  torTensorImageDecision := C.torTensorImageDecision
+  torTensorImageDecision_correct := C.torTensorImageDecision_correct
   torTensorComplex := C.torTensorComplex
   torTensorComplex_eq := C.torTensorComplex_eq
   selectedConflictClass := C.selectedConflictClass
   selectedTorClass := C.selectedTorClass
   selectedTensorHomologyClass := C.selectedTensorHomologyClass
+  selectedCoordinateCycle := C.selectedCoordinateCycle
+  selectedCoordinateCycle_eq := C.selectedCoordinateCycle_eq
+  selectedCoordinateHomologyClass := C.selectedCoordinateHomologyClass
   conflictSupport := C.conflictSupport
   conflictSupport_eq_union := C.conflictSupport_eq_union
 
@@ -299,7 +334,7 @@ example {M : Measurement.MeasurementProfile.{u, v}}
 
 example :
     Nonempty
-      (Measurement.FiniteAATComputability
+      (Measurement.FiniteAATComputability.{0, 0, 0}
         Measurement.computabilityFiniteMeasurementRegime
         Measurement.finiteComputabilityExampleData) :=
   Measurement.finiteComputabilityExample_verified
@@ -311,32 +346,32 @@ example :
 
 example :
     (Measurement.CechComputationProcedure.finiteDimensional
-      Measurement.finiteDimensionalRationalCechProcedure).route =
+      Measurement.finiteDimensionalMatrixCechProcedure).route =
         Measurement.CoefficientComputationRoute.finiteDimensionalLinearAlgebra :=
-  Measurement.finiteDimensionalRationalRoute_fires
+  Measurement.finiteDimensionalMatrixRoute_fires
 
 example :
-    Measurement.finiteDimensionalRationalComputabilityPackage.coefficientComputation.route =
+    Measurement.finiteDimensionalMatrixComputabilityPackage.coefficientComputation.route =
       Measurement.CoefficientComputationRoute.finiteDimensionalLinearAlgebra :=
-  Measurement.finiteDimensionalRationalFullRoute_fires
+  Measurement.finiteDimensionalMatrixFullRoute_fires
 
-example : Infinite Measurement.finiteDimensionalRationalProfile.Coeff :=
-  Measurement.finiteDimensionalRationalCoeff_infinite
-
-example (n : Nat) :
-    letI : Field Measurement.finiteDimensionalRationalProfile.Coeff :=
-      Measurement.finiteDimensionalRationalCoeffField
-    Module.Finite Measurement.finiteDimensionalRationalProfile.Coeff
-      (Measurement.finiteDimensionalRationalCechModel.Cohomology n) :=
-  Measurement.finiteDimensionalRationalCohomology_moduleFinite n
+example : Finite Measurement.finiteDimensionalMatrixProfile.Coeff :=
+  Measurement.finiteDimensionalMatrixCoeff_finite
 
 example (n : Nat) :
-    letI : Field Measurement.finiteDimensionalRationalProfile.Coeff :=
-      Measurement.finiteDimensionalRationalCoeffField
+    letI : Field Measurement.finiteDimensionalMatrixProfile.Coeff :=
+      Measurement.finiteDimensionalMatrixCoeffField
+    Module.Finite Measurement.finiteDimensionalMatrixProfile.Coeff
+      (Measurement.finiteDimensionalMatrixCechModel.Cohomology n) :=
+  Measurement.finiteDimensionalMatrixCohomology_moduleFinite n
+
+example (n : Nat) :
+    letI : Field Measurement.finiteDimensionalMatrixProfile.Coeff :=
+      Measurement.finiteDimensionalMatrixCoeffField
     Nonempty
-      (Measurement.finiteDimensionalRationalCechModel.Cohomology n ≃
-        Measurement.finiteDimensionalRationalGeometry.CechHn n) :=
-  ⟨Measurement.finiteDimensionalRationalCohomologyEquivCanonical n⟩
+      (Measurement.finiteDimensionalMatrixCechModel.Cohomology n ≃
+        Measurement.finiteDimensionalMatrixGeometry.CechHn n) :=
+  ⟨Measurement.finiteDimensionalMatrixCohomologyEquivCanonical n⟩
 
 example :
     Measurement.finiteComputabilityZeroCochain ≠
@@ -364,5 +399,21 @@ example :
     (Measurement.NontrivialTorFixture.principalFiniteFreeResolutionV2
       |>.coordinateDifferential 0) ≠ 0 :=
   Measurement.NontrivialTorFixture.nontrivialFiniteChainTorRoute_fires.2.1
+
+example :
+    Matrix.mulVec
+      (Measurement.NontrivialTorFixture.principalTensorDifferentialMatrixV2 0)
+      Measurement.NontrivialTorFixture.yCoordinateCycleV2 = 0 :=
+  Measurement.NontrivialTorFixture.yCoordinateCycleV2_is_cycle
+
+example :
+    ¬ ∃ b :
+        Measurement.NontrivialTorFixture.principalFiniteFreeResolutionV2.BasisIndex 2 →
+          Derived.Counterexample.SharedWitnessCoord.R2 ⧸
+            Derived.Counterexample.SharedWitnessCoord.idealU (ZMod 2),
+      Matrix.mulVec
+          (Measurement.NontrivialTorFixture.principalTensorDifferentialMatrixV2 1) b =
+        Measurement.NontrivialTorFixture.yCoordinateCycleV2 :=
+  Measurement.NontrivialTorFixture.yCoordinateCycleV2_not_boundary
 
 end AAT.AG

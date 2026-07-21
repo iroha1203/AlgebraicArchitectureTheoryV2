@@ -751,15 +751,64 @@ def toEffectiveProcedure (P : FiniteCarrierCechPresentation M G) :
 
 end FiniteCarrierCechPresentation
 
+/--
+An executable solver for finite linear systems over an explicitly presented
+commutative semiring. The correctness law is uniform in the matrix and
+right-hand side: it is coefficient infrastructure, not a zero-decision
+certificate for one selected cohomology class.
+-/
+structure FiniteLinearSystemSolver (k : Type v) [CommSemiring k] where
+  solve :
+    {m n : Type u} ->
+      [Fintype m] -> [DecidableEq m] ->
+      [Fintype n] -> [DecidableEq n] ->
+      Matrix m n k -> (m -> k) -> Option (n -> k)
+  solve_isSome_iff :
+    ∀ {m n : Type u}
+      [Fintype m] [DecidableEq m] [Fintype n] [DecidableEq n]
+      (A : Matrix m n k) (b : m -> k),
+      (solve A b).isSome = true ↔ ∃ x : n -> k, Matrix.mulVec A x = b
+
+namespace FiniteLinearSystemSolver
+
+/--
+Executable linear-system solver over a finite commutative semiring, obtained by
+enumerating all coordinate vectors. This is deliberately simple but it is a
+real search whose correctness is proved for every finite matrix.
+-/
+def ofFiniteSemiring (k : Type v) [CommSemiring k] [Fintype k] [DecidableEq k] :
+    FiniteLinearSystemSolver.{u, v} k where
+  solve := fun A b =>
+    ((Finset.univ : Finset (_ -> k)).toList.find? fun x =>
+      decide (Matrix.mulVec A x = b))
+  solve_isSome_iff := by
+    intro m n _ _ _ _ A b
+    rw [List.find?_isSome]
+    simp
+
+/-- Finite-field specialization of the exhaustive matrix solver. -/
+abbrev ofFiniteField (k : Type v) [Field k] [Fintype k] [DecidableEq k] :
+    FiniteLinearSystemSolver.{u, v} k :=
+  ofFiniteSemiring k
+
+end FiniteLinearSystemSolver
+
 /-- Finite-dimensional reduction data, including the explicitly presented field. -/
 structure FiniteDimensionalCechProcedure (M : MeasurementProfile.{u, v})
     (G : FiniteMeasurementGeometry M) where
   /-- Explicitly presented coefficient-field structure. -/
-  coeffField : Field M.Coeff
+  [coeffField : Field M.Coeff]
   /-- Executable equality in the explicitly presented coefficient field. -/
-  coeffDecidableEq : DecidableEq M.Coeff
+  [coeffDecidableEq : DecidableEq M.Coeff]
+  /-- Matrix solver supplied by the explicitly presented coefficient field. -/
+  linearSystemSolver :
+    letI : Field M.Coeff := coeffField
+    FiniteLinearSystemSolver M.Coeff
   /-- Finite-dimensional matrix model connected to the canonical Čech complex. -/
   model : @FiniteDimensionalCechModel M G coeffField
+
+attribute [instance] FiniteDimensionalCechProcedure.coeffField
+attribute [instance] FiniteDimensionalCechProcedure.coeffDecidableEq
 
 namespace FiniteDimensionalCechProcedure
 
@@ -774,21 +823,137 @@ noncomputable def cohomologyEquivCanonical
       G.CechHn n :=
   @FiniteDimensionalCechModel.cohomologyEquivCanonical M G P.coeffField P.model n
 
+/-- Coordinates of a model cochain in its explicit basis. -/
+def cochainCoordinates
+    {M : MeasurementProfile.{u, v}} {G : FiniteMeasurementGeometry M}
+    (P : FiniteDimensionalCechProcedure M G) (n : Nat)
+    (c : @FiniteDimensionalCechModel.Cochain M G P.coeffField P.model n) :
+    @FiniteDimensionalCechModel.CochainIndex M G P.coeffField P.model n -> M.Coeff := by
+  letI : Field M.Coeff := P.coeffField
+  exact fun i => (P.model.cochainBasis n).repr c i
+
+/-- Decidable equality on cochains obtained from the explicit selected basis. -/
+def modelCochainDecidableEq
+    {M : MeasurementProfile.{u, v}} {G : FiniteMeasurementGeometry M}
+    (P : FiniteDimensionalCechProcedure M G) (n : Nat) :
+    DecidableEq (@FiniteDimensionalCechModel.Cochain M G P.coeffField P.model n) := by
+  letI : Field M.Coeff := P.coeffField
+  letI : DecidableEq M.Coeff := P.coeffDecidableEq
+  exact (P.model.cochainBasis n).repr.toEquiv.decidableEq
+
 /--
-Equality in the finite-dimensional model quotient is decided by coordinates in
-its finite basis.  The basis is obtained from the explicit finite-dimensional
-model rather than supplied as a zero-decision oracle.
+Decide whether a difference of cocycles is a boundary by solving the actual
+previous-differential matrix. Degree zero has no incoming differential.
 -/
-noncomputable def modelCohomologyDecidableEq
+def quotientRelationDecision
+    {M : MeasurementProfile.{u, v}} {G : FiniteMeasurementGeometry M}
+    (P : FiniteDimensionalCechProcedure M G) :
+    (n : Nat) ->
+      @FiniteDimensionalCechModel.Kernel M G P.coeffField P.model n ->
+      @FiniteDimensionalCechModel.Kernel M G P.coeffField P.model n -> Bool
+  | 0, x, y => by
+      letI : Field M.Coeff := P.coeffField
+      letI : DecidableEq M.Coeff := P.coeffDecidableEq
+      letI : DecidableEq (P.model.Cochain 0) := P.modelCochainDecidableEq 0
+      letI : DecidableEq (P.model.Kernel 0) := inferInstance
+      exact decide (x = y)
+  | n + 1, x, y => by
+      letI : Field M.Coeff := P.coeffField
+      letI : DecidableEq M.Coeff := P.coeffDecidableEq
+      exact (P.linearSystemSolver.solve
+        (P.model.differentialMatrix n)
+        (P.cochainCoordinates (n + 1) (x.1 - y.1))).isSome
+
+@[simp] theorem quotientRelationDecision_zero_true_iff
+    {M : MeasurementProfile.{u, v}} {G : FiniteMeasurementGeometry M}
+    (P : FiniteDimensionalCechProcedure M G)
+    (x y : @FiniteDimensionalCechModel.Kernel M G P.coeffField P.model 0) :
+    P.quotientRelationDecision 0 x y = true ↔ x = y := by
+  letI : Field M.Coeff := P.coeffField
+  letI : DecidableEq M.Coeff := P.coeffDecidableEq
+  letI : DecidableEq (P.model.Cochain 0) := P.modelCochainDecidableEq 0
+  letI : DecidableEq (P.model.Kernel 0) := inferInstance
+  simp [quotientRelationDecision]
+
+@[simp] theorem quotientRelationDecision_succ
+    {M : MeasurementProfile.{u, v}} {G : FiniteMeasurementGeometry M}
+    (P : FiniteDimensionalCechProcedure M G) (n : Nat)
+    (x y : @FiniteDimensionalCechModel.Kernel M G P.coeffField P.model (n + 1)) :
+    letI : Field M.Coeff := P.coeffField
+    P.quotientRelationDecision (n + 1) x y =
+      (P.linearSystemSolver.solve
+        (P.model.differentialMatrix n)
+        (P.cochainCoordinates (n + 1) (x.1 - y.1))).isSome := by
+  rfl
+
+/-- Decidable quotient equality obtained from the actual matrix relation. -/
+def modelCohomologyDecidableEq
     {M : MeasurementProfile.{u, v}} {G : FiniteMeasurementGeometry M}
     (P : FiniteDimensionalCechProcedure M G) (n : Nat) :
     DecidableEq
       (@FiniteDimensionalCechModel.Cohomology M G P.coeffField P.model n) := by
   letI : Field M.Coeff := P.coeffField
   letI : DecidableEq M.Coeff := P.coeffDecidableEq
-  letI : Module.Finite M.Coeff (P.model.Cohomology n) :=
-    P.model.cohomology_moduleFinite n
-  exact (Module.finBasis M.Coeff (P.model.Cohomology n)).repr.toEquiv.decidableEq
+  let relationDecision : DecidableRel
+      (Submodule.quotientRel (P.model.Boundaries n)) :=
+    fun x y => decidable_of_iff
+      (P.quotientRelationDecision n x y = true)
+      (by
+        cases n with
+        | zero =>
+            rw [quotientRelationDecision_zero_true_iff]
+            rw [Submodule.quotientRel_def]
+            change x = y ↔ x - y = 0
+            exact ⟨fun h => sub_eq_zero.mpr h, fun h => sub_eq_zero.mp h⟩
+        | succ n =>
+            rw [quotientRelationDecision_succ]
+            rw [P.linearSystemSolver.solve_isSome_iff
+              (P.model.differentialMatrix n)
+              (P.cochainCoordinates (n + 1) (x.1 - y.1))]
+            rw [Submodule.quotientRel_def]
+            change
+              (∃ coordinates : P.model.CochainIndex n -> M.Coeff,
+                Matrix.mulVec (P.model.differentialMatrix n) coordinates =
+                  P.cochainCoordinates (n + 1) (x.1 - y.1)) ↔
+                x - y ∈ LinearMap.range (P.model.boundaryLinear n)
+            constructor
+            · rintro ⟨coordinates, hcoordinates⟩
+              let b : P.model.Cochain n :=
+                (P.model.cochainBasis n).repr.symm
+                  (Finsupp.equivFunOnFinite.symm coordinates)
+              refine ⟨b, ?_⟩
+              apply Subtype.ext
+              apply (P.model.cochainBasis (n + 1)).repr.injective
+              have hmatrix := LinearMap.toMatrix_mulVec_repr
+                (P.model.cochainBasis n) (P.model.cochainBasis (n + 1))
+                (P.model.differentialLinear n) b
+              rw [P.model.differentialMatrix_correct] at hmatrix
+              have hbcoords : (P.model.cochainBasis n).repr b =
+                  Finsupp.equivFunOnFinite.symm coordinates := by
+                simp [b]
+              rw [hbcoords] at hmatrix
+              change (P.model.cochainBasis (n + 1)).repr
+                  (P.model.differentialLinear n b) =
+                (P.model.cochainBasis (n + 1)).repr (x.1 - y.1)
+              apply Finsupp.ext
+              intro i
+              exact congrFun (hmatrix.symm.trans hcoordinates) i
+            · rintro ⟨b, hb⟩
+              refine ⟨P.cochainCoordinates n b, ?_⟩
+              have hmatrix := LinearMap.toMatrix_mulVec_repr
+                (P.model.cochainBasis n) (P.model.cochainBasis (n + 1))
+                (P.model.differentialLinear n) b
+              rw [P.model.differentialMatrix_correct] at hmatrix
+              have hbval : P.model.differentialLinear n b = x.1 - y.1 :=
+                congrArg Subtype.val hb
+              have hbcoords := congrArg (fun c =>
+                ((P.model.cochainBasis (n + 1)).repr c :
+                  P.model.CochainIndex (n + 1) -> M.Coeff)) hbval
+              change Matrix.mulVec (P.model.differentialMatrix n)
+                  (fun i => (P.model.cochainBasis n).repr b i) =
+                (fun i => (P.model.cochainBasis (n + 1)).repr (x.1 - y.1) i)
+              exact hmatrix.trans hbcoords)
+  exact @Quotient.decidableEq _ _ relationDecision
 
 /-- Equality on canonical Čech cohomology is transported from model coordinates. -/
 noncomputable def canonicalCohomologyDecidableEq
