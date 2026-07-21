@@ -940,10 +940,10 @@ decision: approve
 result_type: proof-obligation-discharged
 proof_obligation: C0c-2 actual geometric-fiber response compatibility and circuit-locus transport
 proof_obligation_delta: actual sheaf stalk fibers and responses connected to the section tensor-fiber support theorem
-statement_contract:
+primary_specification:
   source: GitHub Issue #3595
   version: v1
-  status: implemented-as-fixed
+  status: recorded
 premise_delta:
   discharged:
     - actual restricted response and its stalk map
@@ -1061,10 +1061,10 @@ decision: approve
 result_type: proof-obligation-discharged
 proof_obligation: D0a actual lawful-space response image short exact sequence
 proof_obligation_delta: actual protected response kernel and target-response image connected to the selected-chart response maps
-statement_contract:
+primary_specification:
   source: GitHub Issue #3600
   version: v1
-  status: implemented-as-fixed
+  status: recorded
 premise_delta:
   discharged:
     - actual labeledResponse finite-product protected response
@@ -1175,10 +1175,10 @@ decision: approve
 result_type: target-proof-checkpoint
 proof_obligation: C0c-1 actual selected-chart allowed-operation tilde comparison
 proof_obligation_delta: actual selected-chart allowed-operation sheaf canonically identified with the tilde of its actual chart sections
-statement_contract:
+primary_specification:
   source: GitHub Issue #3575
   version: v1.1
-  status: implemented-as-fixed
+  status: recorded
 premise_delta:
   discharged:
     - selected lawful chart affine presentation
@@ -1265,10 +1265,10 @@ decision: approve
 result_type: target-proof-checkpoint
 proof_obligation: C0c-0 affine module-sheaf image exactness infrastructure
 proof_obligation_delta: open restriction and affine tilde canonically preserve abelian image factorizations
-statement_contract:
+primary_specification:
   source: GitHub Issue #3577
   version: v1
-  status: implemented-as-fixed
+  status: recorded
 premise_delta:
   discharged:
     - restriction preserves module-sheaf monomorphisms
@@ -1398,10 +1398,10 @@ decision: approve
 result_type: target-proof-checkpoint
 proof_obligation: C0b generated chart section-module response instantiation and circuit-locus support equality
 proof_obligation_delta: generated allowed-operation chart sections and actual required-label responses instantiate C0a and identify the section-module tensor-fiber circuit locus with response-cokernel support
-statement_contract:
+primary_specification:
   source: GitHub Issue #3557
   version: v1
-  fixed_before_implementation: true
+  status: recorded
 lean_artifacts:
   - file: research/lean/ResearchLean/AG/QualitySurface/IntrinsicLawResponseCircuitDescent/ChartCircuitLocus.lean
     declarations:
