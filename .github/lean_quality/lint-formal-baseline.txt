@@ -774,8 +774,6 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.Evolution.ReplayCoefficientRepresentation.overlapCochainValue /- definition missing documentation string -/
 #check @AAT.AG.Evolution.ReplayCoefficientRepresentation.overlapCochainValue_zero /- definition missing documentation string -/
 #check @AAT.AG.Evolution.ReplayCoefficientRepresentation.adjusted_restriction_difference /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayCoefficientRepresentation.globalReplayOfSection /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayCoefficientRepresentation.global_section_restriction /- definition missing documentation string -/
 #check @AAT.AG.Evolution.ReplayDescentData.raw /- definition missing documentation string -/
 #check @AAT.AG.Evolution.ReplayDescentData.representation /- definition missing documentation string -/
 #check @AAT.AG.Evolution.ReplayDescentData.mismatchSupportedByLaw /- definition missing documentation string -/

@@ -2530,6 +2530,12 @@ def replayTwoPatchZMod2CechCorrection :=
 def replayTwoPatchZMod2ClassZero :=
   Examples.EvolutionPart9.twoPatchReplay_class_zero
 
+def replayTwoPatchZMod2TemporalProductClassZero :=
+  Examples.EvolutionPart9.twoPatchReplayTemporalProductMismatch_eq_correction
+
+def replayTwoPatchZMod2TemporalStepReadsCech :=
+  Examples.EvolutionPart9.twoPatchReplayCochainToTemporal_d0_step
+
 def replayTwoPatchZMod2CechAdjustedMismatchZero :=
   Examples.EvolutionPart9.twoPatchAdjustedReplayCechMismatch_zero
 
