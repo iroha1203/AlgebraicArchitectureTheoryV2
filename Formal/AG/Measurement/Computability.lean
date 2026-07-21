@@ -109,7 +109,7 @@ theorem obstructionIdeal_eq_span_generatorMonomials
   simp [eq_comm]
 
 /-- Exponent vector of a square-free witness support. -/
-def supportExponent [DecidableEq M.WitnessVariables]
+def supportExponent
     (support : Finset M.WitnessVariables) : M.WitnessVariables →₀ ℕ :=
   support.sum fun e => Finsupp.single e 1
 
@@ -168,7 +168,7 @@ forbidden-support family.
 -/
 def decideObstructionIdealMembership
     (D : FiniteSquareFreeComputationData R)
-    (k : Type v) [CommRing k] [DecidableEq k]
+    (k : Type v) [CommRing k]
     (f : MvPolynomial M.WitnessVariables k) : Bool := by
   letI := R.witnessDecidableEq
   exact decide (∀ exponent ∈ f.support,
@@ -177,7 +177,7 @@ def decideObstructionIdealMembership
 /-- The finite exponent test decides membership in the generated ideal. -/
 theorem decideObstructionIdealMembership_correct
     (D : FiniteSquareFreeComputationData R)
-    (k : Type v) [CommRing k] [DecidableEq k]
+    (k : Type v) [CommRing k]
     (f : MvPolynomial M.WitnessVariables k) :
     D.decideObstructionIdealMembership k f = true ↔ f ∈ D.obstructionIdeal k := by
   letI := R.witnessDecidableEq

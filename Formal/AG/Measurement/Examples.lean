@@ -629,16 +629,11 @@ noncomputable def finiteDimensionalRationalCohomologyEquivCanonical (n : Nat) :
     finiteDimensionalRationalCoeffField
   exact finiteDimensionalRationalCechProcedure.cohomologyEquivCanonical n
 
-/-- R11(c): the rational profile selects the canonical zero class in degree one. -/
-noncomputable def finiteDimensionalRationalDomainClass
-    (_ : finiteDimensionalRationalProfile.Domain) :
-    finiteDimensionalRationalGeometry.CechHn 1 :=
-  finiteDimensionalRationalGeometry.zeroClass 1
-
 /-- R11(c): the finite-dimensional route drives a measured zero verdict. -/
 noncomputable def finiteDimensionalRationalVerdictProcedure :
     VerdictProcedure finiteDimensionalRationalProfile
-      finiteDimensionalRationalGeometry 1 finiteDimensionalRationalDomainClass
+      finiteDimensionalRationalGeometry 1
+      (fun _ => finiteDimensionalRationalGeometry.zeroClass 1)
       (.finiteDimensional finiteDimensionalRationalCechProcedure) where
   availability := fun _ => .measured
   measured_zero_sound := by
@@ -649,7 +644,7 @@ noncomputable def finiteDimensionalRationalVerdictProcedure :
     have htrue :=
       ((CechComputationProcedure.finiteDimensional
         finiteDimensionalRationalCechProcedure).zeroDecision_correct 1
-          (finiteDimensionalRationalDomainClass alpha)).mpr rfl
+          (finiteDimensionalRationalGeometry.zeroClass 1)).mpr rfl
     rw [htrue] at hfalse
     cases hfalse
   unmeasured_sound := by
@@ -669,7 +664,7 @@ noncomputable def finiteDimensionalRationalEffCoeff :
     EffCoeff finiteDimensionalRationalProfile finiteDimensionalRationalGeometry where
   profileInterface := ()
   selectedDegree := 1
-  domainClass := finiteDimensionalRationalDomainClass
+  domainClass := fun _ => finiteDimensionalRationalGeometry.zeroClass 1
   cechProcedure := .finiteDimensional finiteDimensionalRationalCechProcedure
   verdictProcedure := finiteDimensionalRationalVerdictProcedure
 

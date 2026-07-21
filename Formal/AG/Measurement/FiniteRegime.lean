@@ -676,9 +676,13 @@ finite module subcase of the selected effective coefficient route.
 -/
 structure FiniteCarrierCechPresentation (M : MeasurementProfile.{u, v})
     (G : FiniteMeasurementGeometry M) where
+  /-- Explicit finite carrier for every generated Čech cochain degree. -/
   cochainFintype : ∀ n, Fintype (G.CechCochain n)
+  /-- Executable equality on every generated Čech cochain degree. -/
   cochainDecidableEq : ∀ n, DecidableEq (G.CechCochain n)
+  /-- Explicit finite carrier for every generated cocycle kernel. -/
   cocycleFintype : ∀ n, Fintype (G.CechCocycle n)
+  /-- Executable equality on every generated canonical cohomology quotient. -/
   cohomologyDecidableEq : ∀ n, DecidableEq (G.CechHn n)
 
 namespace FiniteCarrierCechPresentation
