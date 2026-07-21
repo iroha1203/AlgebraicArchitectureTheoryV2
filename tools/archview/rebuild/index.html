@@ -98,15 +98,31 @@
           </nav>
           <div class="view-controls" aria-label="Camera views">
             <button id="overview-button" type="button">Overview</button>
+            <button id="focus-selection-button" type="button">Focus selected</button>
             <button type="button" data-view="isometric" aria-pressed="true">3D</button>
             <button type="button" data-view="top" aria-pressed="false">Top</button>
             <button type="button" data-view="front" aria-pressed="false">Front</button>
             <button type="button" data-view="reset">Reset</button>
           </div>
+          <div class="surface-controls" aria-label="Atlas presentation">
+            <button type="button" data-surface="atlas" aria-pressed="true">3D Atlas</button>
+            <button type="button" data-surface="outline" aria-pressed="false">Outline / Table</button>
+          </div>
         </div>
 
         <div id="atlas-canvas-host" class="atlas-canvas-host" aria-label="Empty Paper Atlas canvas"></div>
+        <section id="atlas-outline" class="atlas-outline" aria-labelledby="outline-heading" hidden>
+          <div class="outline-heading-row">
+            <div>
+              <p class="atlas-kicker">Keyboard-accessible fallback</p>
+              <h2 id="outline-heading">Architecture Outline / Table</h2>
+            </div>
+            <p id="outline-status" role="status" aria-live="polite">No architecture loaded</p>
+          </div>
+          <div id="outline-table"><p class="empty-list">Load an ArchMap to inspect the architecture outline.</p></div>
+        </section>
         <p id="atlas-hover-label" class="atlas-hover-label" aria-live="polite" hidden></p>
+        <p id="camera-help" class="sr-only">Camera controls: drag to rotate, right-drag or Shift-drag to pan, wheel to zoom, click to select, double-click to select and focus, and Shift-click to add a selection. Arrow keys rotate, Shift plus arrow keys pan, plus and minus zoom. F focuses, H shows the Cover, 1 selects Top, 2 Isometric, 3 Front, 0 resets the camera, and Escape returns to the previous selection.</p>
 
         <div id="atlas-empty-state" class="atlas-empty-state" aria-live="polite">
           <p class="atlas-kicker">Architecture Atlas</p>
@@ -121,9 +137,15 @@
           <p>The architecture outline remains available when data is loaded.</p>
         </div>
 
-        <div class="compass" aria-label="Atlas orientation: north is up">
+        <div id="atlas-compass" class="compass" aria-label="Atlas camera bearing">
           <span>N</span>
-          <svg viewBox="0 0 42 42" aria-hidden="true"><circle cx="21" cy="21" r="17"/><path d="m21 5 4 16-4 16-4-16Z"/></svg>
+          <svg viewBox="0 0 42 42" aria-hidden="true"><circle cx="21" cy="21" r="17"/><path id="atlas-compass-needle" d="m21 5 4 16-4 16-4-16Z"/></svg>
+        </div>
+        <nav id="atlas-mini-map" class="mini-map" aria-label="Context mini-map"><p class="empty-list">No contexts</p></nav>
+        <div class="state-legend" aria-label="Analysis state symbols">
+          <span><b aria-hidden="true">◆</b> Mismatch</span>
+          <span><b aria-hidden="true">○</b> Agreement</span>
+          <span><b aria-hidden="true">⋯</b> Unmeasured</span>
         </div>
         <p class="visual-channel-note">Paper surface · decoration only</p>
       </main>
