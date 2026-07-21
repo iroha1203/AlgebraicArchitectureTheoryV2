@@ -1349,15 +1349,15 @@ def zeroReplayTemporalDescentCriterion :
   temporalClass_matches_mismatch := rfl
   classVanishes_cert := by rfl
 
-/-- R10(b): theorem 4.2 yields a global replay section for the zero fixture. -/
-theorem replay_zero_theorem42_global_transition_exists :
-    Nonempty zeroReplayDescentData.GlobalReplayTransition :=
-  zeroReplayTemporalDescentCriterion.temporal_descent_criterion
+/-- R10(b): the section-level descent lemma yields a global replay section. -/
+theorem replay_zero_theorem42_global_section_exists :
+    Nonempty zeroReplayDescentData.GlobalReplaySection :=
+  zeroReplayTemporalDescentCriterion.temporal_descent_section_criterion
 
 /-- R10(b): the finite theorem-4.2 construction returns an adjusted global section. -/
 theorem replay_zero_theorem42_realizes_adjusted :
     ∃ (correction : temporalBridge.siteComplex.Cn 0)
-      (globalSection : zeroReplayDescentData.GlobalReplayTransition),
+      (globalSection : zeroReplayDescentData.GlobalReplaySection),
       ∀ (i : replayTemporalCover.Index),
         zeroReplayRepresentation.replaySheaf.toPresheaf.map
             (temporalBridge.siteCover.inclusion
@@ -1368,12 +1368,12 @@ theorem replay_zero_theorem42_realizes_adjusted :
             (temporalBridge.siteCover.inclusion
               (temporalBridge.coverComparison.siteIndexOf i))
             (zeroReplayRepresentation.chartInCover i) :=
-  zeroReplayTemporalDescentCriterion.temporal_descent_criterion_realizes_adjusted
+  zeroReplayTemporalDescentCriterion.temporal_descent_section_criterion_realizes_adjusted
 
 /-- R10(b): the zero fixture uses the theorem-4.2 global-section construction itself. -/
 theorem replay_zero_theorem42_applied :
-    Nonempty zeroReplayDescentData.GlobalReplayTransition :=
-  replay_zero_theorem42_global_transition_exists
+    Nonempty zeroReplayDescentData.GlobalReplaySection :=
+  replay_zero_theorem42_global_section_exists
 
 /-- R10(b): the selected finite replay transition is explicit. -/
 theorem replay_zero_has_global_transition :
@@ -1530,6 +1530,14 @@ theorem twoPatchReplayCechMismatch_eq_correction :
   funext simplex
   cases simplex
   rfl
+
+/-- The actual two-patch mismatch has a concrete degree-zero primitive. -/
+theorem twoPatchReplay_class_zero :
+    ∃ correction : Site.FinitePosetCechCochain
+        FiniteModel.twoPatchZMod2FinitePosetRegime 0,
+      twoPatchReplayCechMismatch =
+        FiniteModel.twoPatchZMod2CechComplex.differential 0 correction :=
+  ⟨twoPatchReplayCorrectionCochain, twoPatchReplayCechMismatch_eq_correction⟩
 
 /--
 The replay mismatch is the difference of the two restricted translation
@@ -1759,12 +1767,8 @@ theorem twoPatchReplay_nonzero_correction_descends_as_function :
   intro i state
   rw [hglobal i]
 
-/--
-The actual two-patch temporal descent criterion: the corrected coefficient
-cocycle is zero, hence its translation replay sections glue to a global
-replay section.
--/
-theorem twoPatch_temporal_descent_criterion :
+/-- A zero corrected Čech mismatch yields a glued translation replay section. -/
+theorem twoPatch_adjusted_mismatch_zero_descends :
     twoPatchAdjustedReplayCechMismatch = 0 ->
       ∃ globalSection : FiniteModel.TwoPatchZMod2TranslationReplay,
         ∀ i : FiniteModel.TwoPatchCoverIndex,
@@ -1776,19 +1780,53 @@ theorem twoPatch_temporal_descent_criterion :
     simpa using hvalue
   exact twoPatchReplay_correction_descends_from_zero hoverlap
 
-/-- The fixed two-patch correction satisfies the actual temporal descent criterion. -/
+/-- The fixed correction has zero mismatch and therefore glues. -/
 theorem twoPatch_temporal_descent_criterion_holds :
     ∃ globalSection : FiniteModel.TwoPatchZMod2TranslationReplay,
       ∀ i : FiniteModel.TwoPatchCoverIndex,
         globalSection = twoPatchAdjustedReplayLocalSection i :=
-  twoPatch_temporal_descent_criterion twoPatchAdjustedReplayCechMismatch_zero
+  twoPatch_adjusted_mismatch_zero_descends twoPatchAdjustedReplayCechMismatch_zero
 
-/-- The actual criterion yields a global replay function by evaluating its descended section. -/
+/--
+The actual two-patch temporal descent criterion.
+
+The concrete class-zero witness is a degree-zero correction on the same
+two-patch Čech complex.  After that correction acts on the same translation
+replay sections, sheaf descent constructs a global replay function agreeing
+with every corrected chart on every source state.
+-/
+theorem twoPatch_temporal_descent_criterion :
+    ∃ correction : Site.FinitePosetCechCochain
+        FiniteModel.twoPatchZMod2FinitePosetRegime 0,
+      twoPatchReplayCechMismatch =
+        FiniteModel.twoPatchZMod2CechComplex.differential 0 correction ∧
+        ∃ globalReplay : FiniteModel.TwoPatchZMod2ReplayFunction,
+          ∀ (i : FiniteModel.TwoPatchCoverIndex) (state : ZMod 2),
+            globalReplay state =
+              FiniteModel.TwoPatchZMod2TranslationReplay.apply
+                (FiniteModel.TwoPatchZMod2TranslationReplay.adjust
+                  (twoPatchReplayLocalSection i) (correction i)) state := by
+  refine ⟨twoPatchReplayCorrectionCochain,
+    twoPatchReplayCechMismatch_eq_correction, ?_⟩
+  rcases twoPatchReplay_nonzero_correction_descends_as_function with ⟨globalReplay, hglobal⟩
+  refine ⟨globalReplay, ?_⟩
+  intro i state
+  simpa [twoPatchReplayCorrectionCochain, twoPatchAdjustedReplayLocalSection] using
+    hglobal i state
+
+/-- The actual criterion exposes the descended replay function with its chartwise realization. -/
 theorem twoPatch_temporal_descent_criterion_global_replay
-    (hzero : twoPatchAdjustedReplayCechMismatch = 0) :
-    Nonempty FiniteModel.TwoPatchZMod2ReplayFunction := by
-  rcases twoPatch_temporal_descent_criterion hzero with ⟨globalSection, _⟩
-  exact ⟨FiniteModel.TwoPatchZMod2TranslationReplay.apply globalSection⟩
+    :
+    ∃ globalReplay : FiniteModel.TwoPatchZMod2ReplayFunction,
+      ∀ (i : FiniteModel.TwoPatchCoverIndex) (state : ZMod 2),
+        globalReplay state =
+          FiniteModel.TwoPatchZMod2TranslationReplay.apply
+            (twoPatchAdjustedReplayLocalSection i) state := by
+  rcases twoPatch_temporal_descent_criterion with ⟨_, _, globalReplay, hglobal⟩
+  refine ⟨globalReplay, ?_⟩
+  intro i state
+  simpa [twoPatchAdjustedReplayLocalSection, twoPatchReplayCorrectionCochain] using
+    hglobal i state
 
 /--
 The same finite `ZMod 2` data records a nonzero correction, the actual
@@ -1811,7 +1849,7 @@ theorem actual_twoPatch_zmod2_replay_fixture :
   refine ⟨?_, twoPatchReplayOverlapMismatch_ne_zero,
     twoPatchReplayOverlapMismatch_eq_coboundary, twoPatchReplayCechMismatch_eq_correction,
     twoPatchAdjustedReplayCechMismatch_zero, twoPatchAdjustedReplayOverlapMismatch_zero,
-    twoPatchReplay_nonzero_correction_descends_as_function⟩
+    twoPatch_temporal_descent_criterion_global_replay⟩
   exact twoChartCorrection_right_nonzero
 
 /-- R10(c): pseudo-circle temporal cover edges. -/
@@ -1909,8 +1947,8 @@ def toyForceIntegrationData : ForceIntegrationData toyForce where
   localLawData := ∃ globalReplay : TinyState -> TinyState,
     globalReplay TinyState.high = TinyState.mid
   localLawData_cert := replay_zero_has_global_transition
-  descendsToGlobalTemporalLaw := Nonempty zeroReplayDescentData.GlobalReplayTransition
-  descendsToGlobalTemporalLaw_cert := replay_zero_theorem42_global_transition_exists
+  descendsToGlobalTemporalLaw := Nonempty zeroReplayDescentData.GlobalReplaySection
+  descendsToGlobalTemporalLaw_cert := replay_zero_theorem42_global_section_exists
   lawWitness := ()
   lawSource_eq := rfl
   lawTarget_eq := rfl
@@ -2082,7 +2120,7 @@ a general temporal semantics theorem.
 theorem finite_temporal_examples_verified :
     @TraceCategory.FiniteRegime.selectedArrow twoStepTrace twoStepTraceFiniteRegime
       TinyTime.t0 TinyTime.t1 tinyStep ∧
-      Nonempty zeroReplayDescentData.GlobalReplayTransition ∧
+      Nonempty zeroReplayDescentData.GlobalReplaySection ∧
           (∃ globalReplay : TinyState -> TinyState,
             globalReplay TinyState.high = TinyState.mid) ∧
             twoChartCorrection true ≠ 0 ∧

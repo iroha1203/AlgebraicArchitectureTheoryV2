@@ -188,18 +188,17 @@ theorem localReplay_eq_raw (r : ReplayDescentData St Coeff Law) (i : r.cover.Ind
     r.localReplay i = r.raw.replay i :=
   r.representation.localReplay_from_section i
 
-/--
-IX.§4 / AC13: a descended global replay section over the base context.
-
-The generic descent theorem constructs this section and its restrictions.  A
-concrete replay-function sheaf then evaluates the constructed section to a
-state transition; that evaluation is not an additional datum of the descent
-representation.
--/
-abbrev GlobalReplayTransition (r : ReplayDescentData St Coeff Law) :
+/-- IX.§4 / AC13: a descended global replay section over the base context. -/
+abbrev GlobalReplaySection (r : ReplayDescentData St Coeff Law) :
     Type (max u y) :=
   r.representation.replaySheaf.toPresheaf.obj
     (Opposite.op r.raw.bridge.siteCover.base)
+
+/-- IX.§4 / AC13: type of a global replay transition over the base context. -/
+abbrev GlobalReplayTransition (r : ReplayDescentData St Coeff Law) :
+    Type (max u y) :=
+  St.State (r.raw.sourceTrace, r.cover.baseContext) ->
+    St.State (r.raw.targetTrace, r.cover.baseContext)
 
 /-- IX.§4 / AC13: zero degree-one cocycle used as the replay zero class representative. -/
 def zeroMismatchCocycle (r : ReplayDescentData St Coeff Law) :
@@ -375,9 +374,9 @@ IX.§4 / AC13: class-zero replay data descends through the represented sheaf.
 This is the generic sheaf-descent statement: it constructs a global replay
 section and proves that its restrictions are the corrected local sections.
 -/
-theorem temporal_descent_criterion_realizes_adjusted
+theorem temporal_descent_section_criterion_realizes_adjusted
     (D : TemporalDescentCriterion r) :
-    ∃ (correction : r.raw.bridge.siteComplex.Cn 0) (globalSection : r.GlobalReplayTransition),
+    ∃ (correction : r.raw.bridge.siteComplex.Cn 0) (globalSection : r.GlobalReplaySection),
       ∀ (i : r.cover.Index),
         r.representation.replaySheaf.toPresheaf.map
             (r.raw.bridge.siteCover.inclusion
@@ -409,10 +408,10 @@ theorem temporal_descent_criterion_realizes_adjusted
       (r.representation.chartInCover i)
   rw [hsection]
 
-/-- IX.§4 / Theorem 4.2: a constructed representation and a vanishing class yield a global replay. -/
-theorem temporal_descent_criterion (D : TemporalDescentCriterion r) :
-    Nonempty r.GlobalReplayTransition := by
-  rcases D.temporal_descent_criterion_realizes_adjusted with ⟨_, globalSection, _⟩
+/-- IX.§4 / AC13: a constructed representation and a vanishing class yield a global section. -/
+theorem temporal_descent_section_criterion (D : TemporalDescentCriterion r) :
+    Nonempty r.GlobalReplaySection := by
+  rcases D.temporal_descent_section_criterion_realizes_adjusted with ⟨_, globalSection, _⟩
   exact ⟨globalSection⟩
 
 end TemporalDescentCriterion

@@ -2507,7 +2507,7 @@ def squareFreeSingletonQMinimalRepairHittingSet :=
   Measurement.squareFree_singletonQ_minimalRepairHittingSet
 
 def replayZeroTheorem42GlobalSectionExists :=
-  Examples.EvolutionPart9.replay_zero_theorem42_global_transition_exists
+  Examples.EvolutionPart9.replay_zero_theorem42_global_section_exists
 
 def replayZeroTheorem42GlobalSectionRestrictsToAdjusted :=
   Examples.EvolutionPart9.replay_zero_theorem42_realizes_adjusted
@@ -2526,6 +2526,9 @@ def replayTwoChartNonzeroCorrection :=
 
 def replayTwoPatchZMod2CechCorrection :=
   Examples.EvolutionPart9.twoPatchReplayCechMismatch_eq_correction
+
+def replayTwoPatchZMod2ClassZero :=
+  Examples.EvolutionPart9.twoPatchReplay_class_zero
 
 def replayTwoPatchZMod2CechAdjustedMismatchZero :=
   Examples.EvolutionPart9.twoPatchAdjustedReplayCechMismatch_zero
