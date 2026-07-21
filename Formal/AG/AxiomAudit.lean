@@ -567,6 +567,10 @@ def semanticRepairExample91SharedCoefficientSeparateCechWitnesses :=
 def semanticRepairTheorem48AdditiveRepairGauge :=
   @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.additiveRepairGaugeSubgroup
 
+/-- Kernel-audit alias for the Part X additive gauge action law. -/
+def semanticRepairTheorem48AdditiveGaugeAction :=
+  @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.additiveRepairGaugeAction_add
+
 /-- Kernel-audit alias for the Part X torsor-triviality theorem. -/
 def semanticRepairTheorem48TorsorTriviality :=
   @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.nonabelianTorsorTrivial_of_additiveH1Zero
@@ -602,6 +606,10 @@ def semanticRepairExample91ZmodTwoTorsorNonzeroTranslation :=
 /-- Kernel-audit alias for the nontrivial `ZMod 2` torsor fixture. -/
 def semanticRepairExample91ZmodTwoTorsorRegularTorsor :=
   Examples.SemanticRepairPart10.zmodTwoTorsor_regularTorsor
+
+/-- Kernel-audit alias for the nontrivial `ZMod 2` gauge-action composition fixture. -/
+def semanticRepairExample91ZmodTwoTorsorGaugeAction :=
+  Examples.SemanticRepairPart10.zmodTwoTorsor_gaugeActionAdd
 
 /-- Kernel-audit alias for the nontrivial `ZMod 2` higher-coherence fixture. -/
 def semanticRepairExample91ZmodTwoTorsorHigherCoherence :=

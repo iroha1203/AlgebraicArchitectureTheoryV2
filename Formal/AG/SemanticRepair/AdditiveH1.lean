@@ -888,6 +888,49 @@ def additiveRepairGaugeAction
       _ = 0 + data.boundaryRelation.cech.residual := by rw [gauge.2, solution.2]
       _ = data.boundaryRelation.cech.residual := zero_add _⟩
 
+/-- The additive gauge group acts on the residual-solving primitive carrier. -/
+instance additiveRepairGaugeAddAction
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P) :
+    letI := data.additive.c0AddCommGroup
+    letI := data.additive.c1AddCommGroup
+    AddAction (AdditiveRepairGauge data) (AdditiveRepairSolution data) := by
+  letI := data.additive.c0AddCommGroup
+  letI := data.additive.c1AddCommGroup
+  exact
+    { vadd := data.additiveRepairGaugeAction
+      zero_vadd := fun solution => by
+        apply Subtype.ext
+        change (0 : data.boundaryRelation.cech.C0) + solution.1 = solution.1
+        exact zero_add _
+      add_vadd := fun left right solution => by
+        apply Subtype.ext
+        change (left.1 + right.1) + solution.1 = left.1 + (right.1 + solution.1)
+        exact add_assoc _ _ _ }
+
+/-- The zero gauge fixes every residual-solving primitive. -/
+theorem additiveRepairGaugeAction_zero
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (solution : AdditiveRepairSolution data) :
+    data.additiveRepairGaugeAction 0 solution = solution := by
+  change (0 : AdditiveRepairGauge data) +ᵥ solution = solution
+  exact zero_vadd _ _
+
+/-- Successive gauge translations compose by addition. -/
+theorem additiveRepairGaugeAction_add
+    {P : SemanticAtomProjection.{u, v}}
+    (data :
+      SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P)
+    (left right : AdditiveRepairGauge data)
+    (solution : AdditiveRepairSolution data) :
+    data.additiveRepairGaugeAction (left + right) solution =
+      data.additiveRepairGaugeAction left (data.additiveRepairGaugeAction right solution) := by
+  change (left + right) +ᵥ solution = left +ᵥ (right +ᵥ solution)
+  exact add_vadd _ _ _
+
 /-- The gauge difference sends one solution to the other. -/
 theorem additiveRepairGaugeBetween_action
     {P : SemanticAtomProjection.{u, v}}
@@ -932,7 +975,7 @@ def AdditiveRepairGaugeActsSimplyTransitively
   letI := data.additive.c1AddCommGroup
   forall source target : AdditiveRepairSolution data,
     ExistsUnique fun gauge : AdditiveRepairGauge data =>
-      data.additiveRepairGaugeAction gauge source = target
+      gauge +ᵥ source = target
 
 /-- The repair-solution carrier has the additive gauge torsor law. -/
 theorem additiveRepairGaugeActsSimplyTransitively

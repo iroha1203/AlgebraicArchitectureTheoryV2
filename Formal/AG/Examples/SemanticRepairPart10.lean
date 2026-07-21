@@ -3064,6 +3064,23 @@ def zmodTwoTorsor_shiftedSolution :
   exact zmodTwoTorsorData.additiveRepairGaugeAction
     zmodTwoTorsor_nonzeroGauge zmodTwoTorsor_baseSolution
 
+/-- The zero gauge fixes the displayed repair solution. -/
+theorem zmodTwoTorsor_zeroGaugeAction :
+    zmodTwoTorsorData.additiveRepairGaugeAction 0 zmodTwoTorsor_baseSolution =
+      zmodTwoTorsor_baseSolution :=
+  zmodTwoTorsorData.additiveRepairGaugeAction_zero zmodTwoTorsor_baseSolution
+
+/-- Successive displayed gauge translations obey the additive action law. -/
+theorem zmodTwoTorsor_gaugeActionAdd :
+    zmodTwoTorsorData.additiveRepairGaugeAction
+        (zmodTwoTorsor_nonzeroGauge + zmodTwoTorsor_nonzeroGauge)
+        zmodTwoTorsor_baseSolution =
+      zmodTwoTorsorData.additiveRepairGaugeAction zmodTwoTorsor_nonzeroGauge
+        (zmodTwoTorsorData.additiveRepairGaugeAction zmodTwoTorsor_nonzeroGauge
+          zmodTwoTorsor_baseSolution) :=
+  zmodTwoTorsorData.additiveRepairGaugeAction_add zmodTwoTorsor_nonzeroGauge
+    zmodTwoTorsor_nonzeroGauge zmodTwoTorsor_baseSolution
+
 /-- The gauge translation is nonzero on the first chart. -/
 theorem zmodTwoTorsor_nonzeroGaugeTranslation :
     zmodTwoTorsor_nonzeroGauge.1 0 = (1 : ZMod 2) := rfl
