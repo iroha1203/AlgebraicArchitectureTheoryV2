@@ -124,9 +124,9 @@ GOAL card の必須項目や欠陥判定は [references/goal-card-contract.md](r
    `True` で充足可能なフィールド、退化 witness(PUnit / 自明群 / singleton)、
    instance の無い仮定パッケージ、結論相当前提の field 逃がしは
    その代表例である。
-4. **固定 statement 突合**: 候補カードの`planned_lean_statement`が保持または参照する
-   statement contractと実装declarationのsignatureが一致する(判定形式は同§5.2)。premise の
-   追加・結論の弱化・対象の縮小があれば G3 合格を出さず、実装を直すか
+4. **target claim 直接突合**: 候補カードの`planned_lean_statement`が保持または参照する
+   一次仕様と実装declarationを直接突合する(判定形式は同§5.2)。完全Lean signatureがある
+   場合はそれも照合する。premise の追加・結論の弱化・対象の縮小があれば G3 合格を出さず、実装を直すか
    候補カードを改訂して **G2 再審判へ戻す**。乖離した statement のまま
    G4 / G5 へ進む経路を残さない。
 

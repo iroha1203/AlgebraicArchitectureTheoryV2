@@ -14,10 +14,7 @@ import Formal.AG.ReadingFunctoriality
 import Formal.AG.ReadingFunctoriality.InfiniteProductCechFiring
 import Formal.AG.ReadingFunctoriality.ModTwoTorFiring
 import Formal.AG.ReadingFunctoriality.TopologyChangeFiring
-import Formal.AG.StatementContractsReadingFunctoriality
-import Formal.AG.StatementContractsComputability
 import Formal.AG.Examples.StandardGeometryReferenceModels
-import Formal.AG.StatementContractsStandardGeometryReferenceModels
 import Formal.Util.AssertStandardAxioms
 import Formal.AG.Examples.LegacyConsolidation
 
@@ -1356,9 +1353,10 @@ def generatedCoreOperationMapsIdentification :=
 ### Atom-to-ringed-site Lean theorem index: SD1--SD2
 
 These aliases are the machine-elaborated Lean theorem index entries for the
-SD1 core-generation and SD2 selected-geometry surfaces. Complete signatures
-are checked by `StatementContractsAtomToRingedSite`; the namespace-wide
-kernel-dependency assertion below audits the referenced declarations.
+SD1 core-generation and SD2 selected-geometry surfaces. Their claims are
+compared directly with each task's primary specification during review; the
+namespace-wide kernel-dependency assertion below audits the
+referenced declarations.
 -/
 
 /-- SD1 index entry for the extraction-doctrine constructor fixed by the ledger. -/
@@ -2740,10 +2738,10 @@ def r6FiniteReachableNonidentityOperation :=
 
 The aliases from the canonical section-ring route below through the finite
 positive and negative reference models form the machine-elaborated Lean theorem
-index for all 222 fixed SD0--SD8 named targets. Complete signatures are checked
-by `StatementContractsStandardArchitectureScheme`; the namespace-wide
-kernel-dependency assertion below audits every referenced declaration. This
-index records the reading-decorated core. The law-generated ideal and lawful
+index for all 222 fixed SD0--SD8 named targets. Their claims are compared
+directly with each task's primary specification during review; the namespace-wide
+kernel-dependency assertion below audits every referenced
+declaration. This index records the reading-decorated core. The law-generated ideal and lawful
 closed geometry belong to the later full law-equational geometry surface.
 
 #### SD0: canonical section rings and affine Spec charts

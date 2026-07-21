@@ -13,7 +13,6 @@ import Formal.AG.Atom.ObjectAlgebra
 import Formal.AG.Atom.AATCore
 import Formal.AG.Examples.FiniteModel
 import Formal.AG.Site
-import Formal.AG.StatementContracts
 import Formal.AG.LawAlgebra
 import Formal.AG.ReadingFunctoriality
 import Formal.AG.Examples.StandardGeometryReferenceModels
@@ -29,6 +28,5 @@ import Formal.AG.Evolution
 import Formal.AG.Examples.EvolutionPart9
 import Formal.AG.SemanticRepair
 import Formal.AG.SemanticRepair.LawEquationGeneratedPair
-import Formal.AG.StatementContractsSemanticRepairPart10
 import Formal.AG.Examples.SemanticRepairPart10
 import Formal.AG.Examples.LegacyConsolidation

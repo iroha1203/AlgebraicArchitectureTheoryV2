@@ -24,7 +24,7 @@ The positive and negative firing theorems use explicit evaluations, basic opens,
 morphisms. Degenerate witnesses based only on the zero or unit ideal, an empty Scheme, or an
 identity morphism were rejected. Local firing proofs unfold the concrete fixture constructors
 only to calculate their generators; downstream use is through the named characterization and
-comparison theorems registered by the statement contract.
+comparison theorems.
 -/
 
 /-! ## Raw quotient coordinates -/

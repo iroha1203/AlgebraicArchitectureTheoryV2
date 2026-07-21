@@ -27,9 +27,10 @@ fail-closed・反証試行・証拠資格・報告形式をそのまま適用す
   `docs/aat/lean_quality_standard.md`(mathlib 型 statement review 基準)。
   material premise 三分類申告(本文由来 / 放電済み / 未放電)は実装者の
   申告を証拠採用せず、レビュー側が premise を独立に列挙して申告と突合する
-  (申告のない仮定は未放電)。指定されたstatement contract(PRD、GOALカード、
-  候補カード`planned_lean_statement`、Issue、その他の参照可能なartifact)がある対象は、実装
-  declaration の signature と突合し、乖離は anti-weakening finding とする。
+  (申告のない仮定は未放電)。指定された一次仕様(PRD、GOALカード、
+  候補カード`planned_lean_statement`、Issue、数学本文、その他の参照可能なartifact)がある対象は、実装
+  declaration と直接突合する。完全Lean signatureがある場合はそのsignatureを、ない場合はclaim、
+  必要な結論、明示された仮定・受け入れ条件を再構成して比較し、乖離は anti-weakening finding とする。
 - Lean が通ることは十分条件ではない。仮定が主張を丸ごと含んでいる、`Prop` が弱すぎる、 witness が選択済みすぎる、非空性や decidability や finite universe を hidden assumption にしている、`True` wrapper / marker theorem になっている場合は finding とする。
 - explicit certificate はそれだけでは放電ではない。certificate / class membership / structure field / theorem argument が material premise を透明に保持しているだけなら、未放電 premise として扱う。必ずその certificate 自体を生成する theorem / construction / finite witness / instance chain を追う。
 - theorem statement に現れる premise が proof term で実質的に使われているかを確認する。未使用の `sheafCondition`、`faithfulness`、`exactness`、`descent` などは、主張補強ではなく ledger/package への添付にすぎない可能性が高い。

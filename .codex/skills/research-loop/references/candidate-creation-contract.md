@@ -5,7 +5,7 @@
 候補カードは `research/ideas/TEMPLATE.md` のfield集合を唯一のschema正本として
 `research/ideas/` に置く。このcontractへfield一覧を複製しない。
 
-`planned_lean_statement` には、定理候補の予定Lean statement(theorem名+完全なsignature。statementが参照する新規defのsignatureを含む)をLeanコードブロックで固定するか、同内容を持つstatement contractの正確な位置を記録する(`docs/aat/lean_quality_standard.md` §5)。G2審判Aは指定された正本を審査対象とし、G3は実装declarationとの一致を合格条件とする。反例・計算例などLean proofを要求しない候補は`planned_lean_statement: none(証拠 artifact 型)`と書く。
+`planned_lean_statement` には、定理候補のtarget claim、必要な結論、明示された仮定を記録するか、同内容を持つ一次仕様の正確な位置を記録する(`docs/aat/lean_quality_standard.md` §5)。theorem名+完全なsignatureと、statementが参照する新規defのsignatureをLeanコードブロックで記録してよいが必須ではない。G2審判Aは指定された正本を審査対象とし、G3は実装declarationとの直接照合を合格条件とする。反例・計算例などLean proofを要求しない候補は`planned_lean_statement: none(証拠 artifact 型)`と書く。
 
 `material_premises` には、予定 statement の各仮定(明示引数、typeclass、structure field、certificate field)を三分類(本文由来 / 放電済み / 未放電。同 §1.1)で申告する。申告のない仮定は未放電として扱われる。
 
