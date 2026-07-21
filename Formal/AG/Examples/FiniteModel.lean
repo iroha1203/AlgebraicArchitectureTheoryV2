@@ -2436,6 +2436,63 @@ noncomputable def twoPatchFinitePosetRegime :
   coverAdequate := twoPatchCover_uAdequate
   coefficient := twoPatchBoolCoefficient
 
+/-- The same selected two-patch site with its actual `ZMod 2` coefficient sheaf. -/
+noncomputable def twoPatchZMod2FinitePosetRegime :
+    Site.FinitePosetAATSiteRegime twoPatchSite where
+  ContextIndex := TwoPatchContextIndex
+  finiteContextIndex := inferInstance
+  context := twoPatchContext
+  contextLe := twoPatchContextIndexLe
+  contextLe_refl := twoPatchContextIndexLe_refl
+  contextLe_trans := fun hij hjk => twoPatchContextIndexLe_trans hij hjk
+  contextLe_antisymm := fun hij hji => twoPatchContextIndexLe_antisymm hij hji
+  contextLe_sound := fun h => twoPatchContextLe_sound h
+  contextMeet := twoPatchContextMeet
+  contextMeet_le_left := twoPatchContextMeet_le_left
+  contextMeet_le_right := twoPatchContextMeet_le_right
+  context_le_meet := fun hik hjk => twoPatchContext_le_meet hik hjk
+  base := twoPatchBase
+  cover := twoPatchCover
+  finiteCoverIndex := by
+    change Finite TwoPatchCoverIndex
+    infer_instance
+  nerveSimplex := twoPatchNerveSimplex
+  finiteNerveSimplex := by
+    intro n
+    cases n with
+    | zero =>
+        change Finite TwoPatchCoverIndex
+        infer_instance
+    | succ n =>
+        cases n with
+        | zero =>
+            change Finite PUnit
+            infer_instance
+        | succ _ =>
+            change Finite Empty
+            infer_instance
+  simplexIndices := twoPatchSimplexIndices
+  simplexOverlap := twoPatchSimplexOverlap
+  simplexOverlap_le_patch := by
+    intro n simplex k
+    cases n with
+    | zero =>
+        cases simplex
+        · exact twoPatchContext_le_any TwoPatchContextIndex.left TwoPatchContextIndex.left
+        · exact twoPatchContext_le_any TwoPatchContextIndex.right TwoPatchContextIndex.right
+    | succ n =>
+        cases n with
+        | zero =>
+            change twoPatchContextPreorder.le
+              (twoPatchContext TwoPatchContextIndex.overlap)
+              (twoPatchCoverPatch (twoPatchSimplexIndices 1 simplex k))
+            unfold twoPatchCoverPatch
+            exact ⟨twoPatchContextMorphism _ _, twoPatchContextMorphism_isRestriction _ _⟩
+        | succ _ => exact Empty.elim simplex
+  adequacyRequirements := twoPatchAdequacyRequirements
+  coverAdequate := twoPatchCover_uAdequate
+  coefficient := twoPatchZMod2Coefficient
+
 /-- peer-review hardening II-5: the two-patch selected context poset has four finite contexts. -/
 theorem twoPatchFinitePosetRegime_context_finite :
     Finite twoPatchFinitePosetRegime.ContextIndex :=
@@ -2542,6 +2599,104 @@ def twoPatchCechComplex :
               (show Bool from cochain TwoPatchCoverIndex.right)) =
             ((show Bool from cochain TwoPatchCoverIndex.left) !=
               (show Bool from cochain TwoPatchCoverIndex.right))
+        rfl
+    | succ n =>
+        cases n with
+        | zero => exact Empty.elim simplex
+        | succ _ => exact Empty.elim simplex
+  differential_zero := by
+    intro n
+    funext simplex
+    cases n with
+    | zero =>
+        cases simplex
+        rfl
+    | succ n =>
+        cases n with
+        | zero => exact Empty.elim simplex
+        | succ _ => exact Empty.elim simplex
+  differential_comp_zero := by
+    intro n _cochain
+    funext simplex
+    cases n with
+    | zero => exact Empty.elim simplex
+    | succ _ => exact Empty.elim simplex
+
+/-- Additive Čech data for the actual `ZMod 2` coefficient sheaf on the two patches. -/
+def twoPatchZMod2CechAdditiveData :
+    Site.FinitePosetCechAdditiveData twoPatchZMod2FinitePosetRegime where
+  zeroSection := by
+    intro _n _simplex
+    change ZMod 2
+    exact 0
+  combineFaces := by
+    intro n _simplex faces
+    cases n with
+    | zero =>
+        change ZMod 2
+        exact (show ZMod 2 from faces ⟨1, by decide⟩) -
+          (show ZMod 2 from faces ⟨0, by decide⟩)
+    | succ _ =>
+        change ZMod 2
+        exact 0
+  combineFaces_zero := by
+    intro n simplex
+    cases n with
+    | zero =>
+        cases simplex
+        rfl
+    | succ n =>
+        cases n with
+        | zero => exact Empty.elim simplex
+        | succ _ => exact Empty.elim simplex
+
+/-- The actual two-patch `ZMod 2` Čech differential: right restriction minus left restriction. -/
+def twoPatchZMod2CechDifferential :
+    ∀ n : Nat,
+      Site.FinitePosetCechCochain twoPatchZMod2FinitePosetRegime n ->
+        Site.FinitePosetCechCochain twoPatchZMod2FinitePosetRegime (n + 1)
+  | 0, cochain, _simplex =>
+      (show ZMod 2 from cochain TwoPatchCoverIndex.right) -
+        (show ZMod 2 from cochain TwoPatchCoverIndex.left)
+  | _ + 1, _cochain, simplex => Empty.elim simplex
+
+/-- Actual `ZMod 2` Čech complex on the selected two-patch AAT site. -/
+def twoPatchZMod2CechComplex :
+    Site.FinitePosetCechComplex twoPatchZMod2FinitePosetRegime where
+  additive := twoPatchZMod2CechAdditiveData
+  faces := {
+    face := by
+      intro n simplex i
+      cases n with
+      | zero => exact if i.val = 0 then TwoPatchCoverIndex.left else TwoPatchCoverIndex.right
+      | succ n =>
+          cases n with
+          | zero => exact Empty.elim simplex
+          | succ _ => exact Empty.elim simplex
+    faceOverlap_le := by
+      intro n simplex i
+      cases n with
+      | zero =>
+          change twoPatchContextPreorder.le
+            (twoPatchContext TwoPatchContextIndex.overlap)
+            (twoPatchSimplexOverlap 0
+              (if i.val = 0 then TwoPatchCoverIndex.left else TwoPatchCoverIndex.right))
+          exact ⟨twoPatchContextMorphism _ _, twoPatchContextMorphism_isRestriction _ _⟩
+      | succ n =>
+          cases n with
+          | zero => exact Empty.elim simplex
+          | succ _ => exact Empty.elim simplex }
+  differential := twoPatchZMod2CechDifferential
+  differential_eq_restrictions := by
+    intro n cochain simplex
+    cases n with
+    | zero =>
+        cases simplex
+        change
+          ((show ZMod 2 from cochain TwoPatchCoverIndex.right) -
+              (show ZMod 2 from cochain TwoPatchCoverIndex.left)) =
+            ((show ZMod 2 from cochain TwoPatchCoverIndex.right) -
+              (show ZMod 2 from cochain TwoPatchCoverIndex.left))
         rfl
     | succ n =>
         cases n with

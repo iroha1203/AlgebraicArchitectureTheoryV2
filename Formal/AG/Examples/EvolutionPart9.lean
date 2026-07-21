@@ -1212,11 +1212,14 @@ inductive ReplayMismatchValue where
   | pseudoCircleBoundary
   deriving DecidableEq
 
-/-- R10(b): replay data whose zero mismatch is fed to theorem 4.2. -/
-def zeroReplayDescentData :
-    ReplayDescentData statePresheaf temporalCoefficient temporalLaw where
+/-- R10(b): selected singleton site cover used by the replay-function sheaf. -/
+abbrev zeroReplaySheafCover : Sieve FiniteModel.siteBase :=
+  Sieve.generate FiniteModel.siteSingletonCover.presieve
+
+/-- R10(b): raw replay maps on the temporal cover selected by `temporalBridge`. -/
+def zeroReplayRawDescentData :
+    ReplayRawDescentData statePresheaf temporalCoefficient where
   bridge := temporalBridge
-  cover := replayTemporalCover
   sourceTrace := TinyTime.t0
   targetTrace := TinyTime.t1
   traceArrow := tinyStep
@@ -1228,7 +1231,70 @@ def zeroReplayDescentData :
     exact match s with
       | .high => .mid
       | other => other
-  replayCoefficient := unitTemporalCochain 0
+
+/--
+R10(b): constructed replay/coefficient representation for the selected finite
+fixture.  Every local section, coefficient reading, correction action and
+global replay comparison is the singleton instance of the corresponding
+representation operation.
+-/
+def zeroReplayRepresentation :
+    ReplayCoefficientRepresentation zeroReplayRawDescentData where
+  replaySheaf := unitSheaf
+  descentCover := zeroReplaySheafCover
+  descentCover_topological := FiniteModel.siteSingletonCover_topologyCover
+  chartInCover := by
+    intro _i
+    trivial
+  localSections := fun _Y _f _hf => PUnit.unit
+  localReplayOfSection := fun _i _section state =>
+    match state with
+    | .high => .mid
+    | other => other
+  localReplay_from_section := by
+    intro i
+    funext state
+    cases i <;> cases state <;> rfl
+  coefficientReading := fun _X _section => PUnit.unit
+  coefficientOfLocalSections := fun _sections => unitTemporalCochain 0
+  coefficientOfLocalSections_restriction := by
+    intro _sections σ
+    cases σ
+    refine ⟨false, 𝟙 FiniteModel.siteBase, ?_, ?_⟩
+    · trivial
+    · rfl
+  adjustLocalSections := fun _correction _Y _f _hf => PUnit.unit
+  coefficient_adjustment := by
+    intro correction
+    funext σ
+    cases σ
+    rfl
+  coefficientReading_zero_reflecting := by
+    intro _X left right _hdifference
+    cases left
+    cases right
+    rfl
+  overlapCochainValue := fun _f _g _leftRestriction _rightRestriction _cochain =>
+    PUnit.unit
+  overlapCochainValue_zero := by
+    intro _Y _Z _W _f _g _leftRestriction _rightRestriction
+    rfl
+  adjusted_restriction_difference := by
+    intro _correction _Y _Z _W _f _hf _g _hg _leftRestriction _rightRestriction
+    rfl
+  globalReplayOfSection := fun _section state =>
+    match state with
+    | .high => .mid
+    | other => other
+  global_section_restriction := by
+    intro _section i state
+    cases i <;> cases state <;> rfl
+
+/-- R10(b): replay data whose constructed representation is fed to theorem 4.2. -/
+def zeroReplayDescentData :
+    ReplayDescentData statePresheaf temporalCoefficient temporalLaw where
+  raw := zeroReplayRawDescentData
+  representation := zeroReplayRepresentation
   mismatchSupportedByLaw := True
   mismatchSupportedByLaw_cert := trivial
 
@@ -1239,79 +1305,10 @@ def zeroReplayMismatchCocycle :
     funext _σ
     rfl
 
-/-- R10(b): apply a selected degree-zero correction to the finite replay data. -/
-def zeroReplayAdjustmentOf
-    (correction : temporalBridge.siteComplex.Cn 0) :
-    EffectiveTemporalAdjustment zeroReplayDescentData where
-  correction := correction
-  adjustedReplay := zeroReplayDescentData.replay
-  adjustedCoefficient := unitTemporalCochain 0 - correction
-  adjustedMismatchSupportedByLaw := True
-  adjustedMismatchSupportedByLaw_cert := trivial
-  coefficient_adjustment := rfl
-
 /-- R10(b): temporal class package selected by the zero replay mismatch. -/
 def zeroReplayTemporalClass :
     TemporalClass zeroReplayDescentData.mismatch where
   cocycle := zeroReplayMismatchCocycle.toTemporalCocycle
-
-/-- R10(b): the selected singleton site cover used by the replay transition sheaf. -/
-abbrev zeroReplaySheafCover : Sieve FiniteModel.siteBase :=
-  Sieve.generate FiniteModel.siteSingletonCover.presieve
-
-/--
-R10(b): finite replay-transition sheaf presentation.
-
-The selected sheaf is genuinely used through `AATSheaf.descent`; its unique
-section evaluates to the finite replay map.  The local restriction equation is
-checked for both temporal charts, rather than being stored as a global replay
-field.
--/
-def zeroReplayTransitionSheaf : ReplayTransitionSheaf zeroReplayDescentData where
-  sectionSheaf := unitSheaf
-  base := FiniteModel.siteBase
-  base_eq := rfl
-  cover := zeroReplaySheafCover
-  cover_topological := FiniteModel.siteSingletonCover_topologyCover
-  adjustment := zeroReplayAdjustmentOf
-  adjustment_correction := by
-    intro correction
-    rfl
-  adjustedLocalSections := fun _correction _Y _f _hf => PUnit.unit
-  coefficientComparison := fun _X _section => PUnit.unit
-  coefficientComparison_zero_reflecting := by
-    intro _X left right _hdifference
-    cases left
-    cases right
-    rfl
-  overlapCochainValue := fun _f _g _leftRestriction _rightRestriction _cochain =>
-    PUnit.unit
-  overlapCochainValue_zero := by
-    intro _Y _Z _W _f _g _leftRestriction _rightRestriction
-    rfl
-  adjustedLocalSections_overlap_difference := by
-    intro _correction _Y _Z _W _f _hf _g _hg _leftRestriction _rightRestriction
-    rfl
-  chartObject := fun _i => FiniteModel.siteBase
-  chartToBase := fun _i => 𝟙 FiniteModel.siteBase
-  chartToBase_mem := by
-    intro _i
-    trivial
-  localReplayOfSection := fun _i _section state =>
-    match state with
-    | .high => .mid
-    | other => other
-  baseSectionToReplay := fun _section state =>
-    match state with
-    | .high => .mid
-    | other => other
-  baseSection_restriction_comparison := by
-    intro _section i state
-    cases i <;> cases state <;> rfl
-  adjustedLocalSection_comparison := by
-    intro _correction i
-    funext state
-    cases i <;> cases state <;> rfl
 
 /-- R10(b): concrete theorem-4.2 assumptions for the zero replay fixture. -/
 def zeroReplayTemporalDescentCriterion :
@@ -1320,7 +1317,6 @@ def zeroReplayTemporalDescentCriterion :
   temporalClass := zeroReplayTemporalClass
   temporalClass_matches_mismatch := rfl
   classVanishes_cert := by rfl
-  replayTransitionSheaf := zeroReplayTransitionSheaf
 
 /-- R10(b): theorem 4.2 yields a global replay transition for the zero fixture. -/
 theorem replay_zero_theorem42_global_transition_exists :
@@ -1335,7 +1331,7 @@ theorem replay_zero_theorem42_realizes_adjusted :
         (state : statePresheaf.State (TinyTime.t0, replayTemporalCover.baseContext)),
         statePresheaf.contextRestriction TinyTime.t1 (replayTemporalCover.contextToBase i)
             (globalReplay state) =
-          (zeroReplayTransitionSheaf.adjustment correction).adjustedReplay i
+          zeroReplayDescentData.adjustedReplay correction i
             (statePresheaf.contextRestriction TinyTime.t0
               (replayTemporalCover.contextToBase i) state) :=
   zeroReplayTemporalDescentCriterion.temporal_descent_criterion_realizes_adjusted
@@ -1351,7 +1347,7 @@ theorem replay_zero_has_global_transition :
       globalReplay TinyState.high = TinyState.mid := by
   rcases replay_zero_theorem42_realizes_adjusted with ⟨_correction, globalReplay, hglobal⟩
   refine ⟨globalReplay, ?_⟩
-  simpa [zeroReplayTransitionSheaf, zeroReplayAdjustmentOf] using
+  simpa [zeroReplayRepresentation, ReplayDescentData.adjustedReplay] using
     hglobal false TinyState.high
 
 /-- R10(b/g): global replay transition extracted from the theorem-4.2 construction. -/
@@ -1456,6 +1452,34 @@ def twoPatchReplayLocalSection (i : FiniteModel.TwoPatchCoverIndex) :
       (Opposite.op (twoPatchReplayChartObject i)) :=
   twoChartLocalReplay (twoPatchReplayChart i)
 
+/-- The selected degree-zero correction, read on the actual two-patch AAT cover. -/
+def twoPatchReplayCorrectionSection (i : FiniteModel.TwoPatchCoverIndex) : ZMod 2 :=
+  twoChartCorrection (twoPatchReplayChart i)
+
+/-- The degree-zero Čech cochain is read from the two actual local replay sections. -/
+def twoPatchReplayCechZeroCochain :
+    Site.FinitePosetCechCochain FiniteModel.twoPatchZMod2FinitePosetRegime 0 :=
+  fun i => twoPatchReplayLocalSection i 0
+
+/-- The nonzero degree-zero correction on the same actual two-patch Čech cover. -/
+def twoPatchReplayCorrectionCochain :
+    Site.FinitePosetCechCochain FiniteModel.twoPatchZMod2FinitePosetRegime 0 :=
+  fun i => twoPatchReplayCorrectionSection i
+
+/-- The mismatch is the actual degree-one differential of the replay coefficient cochain. -/
+def twoPatchReplayCechMismatch :
+    Site.FinitePosetCechCochain FiniteModel.twoPatchZMod2FinitePosetRegime 1 :=
+  FiniteModel.twoPatchZMod2CechComplex.differential 0 twoPatchReplayCechZeroCochain
+
+/-- The actual two-patch mismatch is exactly the coboundary of its nonzero correction. -/
+theorem twoPatchReplayCechMismatch_eq_correction :
+    twoPatchReplayCechMismatch =
+      FiniteModel.twoPatchZMod2CechComplex.differential 0
+        twoPatchReplayCorrectionCochain := by
+  funext simplex
+  cases simplex
+  rfl
+
 /--
 The replay mismatch is the coefficient-wise difference of the two restricted
 local replay sections on the actual overlap.
@@ -1474,14 +1498,38 @@ theorem twoPatchReplayOverlapMismatch_at_zero :
     twoPatchReplayOverlapMismatch 0 = twoChartReplayMismatch :=
   rfl
 
-/-- The selected degree-zero correction, read on the actual two-patch AAT cover. -/
-def twoPatchReplayCorrectionSection (i : FiniteModel.TwoPatchCoverIndex) : ZMod 2 :=
-  twoChartCorrection (twoPatchReplayChart i)
-
 /-- The correction acts on each local replay section by coefficient subtraction. -/
 def twoPatchAdjustedReplayLocalSection (i : FiniteModel.TwoPatchCoverIndex) :
     FiniteModel.TwoPatchZMod2ReplayFunction :=
   fun state => twoPatchReplayLocalSection i state - twoPatchReplayCorrectionSection i
+
+/-- The corrected degree-zero cochain is read from the adjusted local replay sections. -/
+def twoPatchAdjustedReplayCechZeroCochain :
+    Site.FinitePosetCechCochain FiniteModel.twoPatchZMod2FinitePosetRegime 0 :=
+  fun i => twoPatchAdjustedReplayLocalSection i 0
+
+/-- The adjusted mismatch is computed by the same actual Čech differential. -/
+def twoPatchAdjustedReplayCechMismatch :
+    Site.FinitePosetCechCochain FiniteModel.twoPatchZMod2FinitePosetRegime 1 :=
+  FiniteModel.twoPatchZMod2CechComplex.differential 0
+    twoPatchAdjustedReplayCechZeroCochain
+
+/-- The Čech differential realizes the correction action on the actual local sections. -/
+theorem twoPatchAdjustedReplayCechMismatch_eq_sub :
+    twoPatchAdjustedReplayCechMismatch =
+      twoPatchReplayCechMismatch -
+        FiniteModel.twoPatchZMod2CechComplex.differential 0
+          twoPatchReplayCorrectionCochain := by
+  funext simplex
+  cases simplex
+  rfl
+
+/-- The corrected local replay cochain has zero actual Čech mismatch. -/
+theorem twoPatchAdjustedReplayCechMismatch_zero :
+    twoPatchAdjustedReplayCechMismatch = 0 := by
+  rw [twoPatchAdjustedReplayCechMismatch_eq_sub,
+    twoPatchReplayCechMismatch_eq_correction]
+  exact sub_self _
 
 /-- The post-correction overlap mismatch is again an actual restricted-section difference. -/
 def twoPatchAdjustedReplayOverlapMismatch : FiniteModel.TwoPatchZMod2ReplayFunction :=
@@ -1515,12 +1563,41 @@ theorem twoPatchAdjustedReplay_zero_reflects_matching
 noncomputable def twoPatchReplayCover : Sieve FiniteModel.twoPatchBase :=
   Sieve.generate FiniteModel.twoPatchCover.presieve
 
+/-- Membership of each selected replay chart in the generated AAT two-patch cover. -/
+theorem twoPatchReplayCover_contains
+    (i : FiniteModel.TwoPatchCoverIndex) :
+    twoPatchReplayCover
+      (homOfLE (FiniteModel.twoPatchCover.inclusion i)) :=
+  Sieve.le_generate FiniteModel.twoPatchCover.presieve _ (Presieve.ofArrows.mk i)
+
 /-- The corrected local family is the common replay section obtained from zero mismatch. -/
 def twoPatchCorrectedLocalSections
-    (_hzero : twoPatchAdjustedReplayOverlapMismatch = 0) :
+    (hzero : twoPatchAdjustedReplayOverlapMismatch = 0) :
     Site.AATLocalSectionFamily FiniteModel.twoPatchSite
       FiniteModel.twoPatchZMod2ReplayFunctionPresheaf twoPatchReplayCover :=
-  fun _Y _f _hf => twoPatchAdjustedReplayLocalSection .left
+  fun _Y _f _hf =>
+    fun state =>
+      if h : twoPatchAdjustedReplayLocalSection .left state =
+          twoPatchAdjustedReplayLocalSection .right state then
+        twoPatchAdjustedReplayLocalSection .right state
+      else
+        twoPatchAdjustedReplayLocalSection .left state
+
+/-- The gluing family restricts to each actual corrected chart section. -/
+theorem twoPatchCorrectedLocalSections_chart
+    (hzero : twoPatchAdjustedReplayOverlapMismatch = 0)
+    (i : FiniteModel.TwoPatchCoverIndex) :
+    twoPatchCorrectedLocalSections hzero
+      (twoPatchReplayChartObject i)
+      (homOfLE (FiniteModel.twoPatchCover.inclusion i))
+      (twoPatchReplayCover_contains i) =
+        twoPatchAdjustedReplayLocalSection i := by
+  funext state
+  simp only [twoPatchCorrectedLocalSections]
+  split_ifs with h
+  · cases i <;> simp [h]
+  · have hmatch := twoPatchAdjustedReplay_zero_reflects_matching hzero state
+    exact False.elim (h hmatch)
 
 /-- The corrected local family is compatible on all common refinements. -/
 theorem twoPatchCorrectedLocalSections_matching
@@ -1528,13 +1605,6 @@ theorem twoPatchCorrectedLocalSections_matching
     Site.AATOverlapAgreement (twoPatchCorrectedLocalSections hzero) := by
   intro _Y _f _hf _Z _g _hg _W _h _hh _hcomp
   rfl
-
-/-- Membership of each selected replay chart in the generated AAT two-patch cover. -/
-theorem twoPatchReplayCover_contains
-    (i : FiniteModel.TwoPatchCoverIndex) :
-    twoPatchReplayCover
-      (homOfLE (FiniteModel.twoPatchCover.inclusion i)) :=
-  Sieve.le_generate FiniteModel.twoPatchCover.presieve _ (Presieve.ofArrows.mk i)
 
 /--
 Sheaf descent on the actual two-patch AAT cover produces a global replay
@@ -1557,12 +1627,8 @@ theorem twoPatchReplay_nonzero_correction_descends :
   intro i state
   have hchart := hglobal (homOfLE (FiniteModel.twoPatchCover.inclusion i))
     (twoPatchReplayCover_contains i)
-  change globalReplay = twoPatchAdjustedReplayLocalSection .left at hchart
-  cases i with
-  | left => exact congrFun hchart state
-  | right =>
-      rw [hchart]
-      exact twoPatchAdjustedReplay_zero_reflects_matching hzero state
+  rw [twoPatchCorrectedLocalSections_chart hzero i] at hchart
+  exact congrFun hchart state
 
 /--
 The same finite `ZMod 2` data records a nonzero correction, the actual
@@ -1571,11 +1637,16 @@ overlap difference, its vanishing after correction, and the sheaf-glued global r
 theorem actual_twoPatch_zmod2_replay_fixture :
     twoPatchReplayCorrectionSection .right ≠ 0 ∧
       twoPatchReplayOverlapMismatch 0 = twoChartCorrectionCoboundary ∧
+        twoPatchReplayCechMismatch =
+          FiniteModel.twoPatchZMod2CechComplex.differential 0
+            twoPatchReplayCorrectionCochain ∧
+          twoPatchAdjustedReplayCechMismatch = 0 ∧
         twoPatchAdjustedReplayOverlapMismatch = 0 ∧
           ∃ globalReplay : FiniteModel.TwoPatchZMod2ReplayFunction,
             ∀ (i : FiniteModel.TwoPatchCoverIndex) (state : ZMod 2),
               globalReplay state = twoPatchAdjustedReplayLocalSection i state := by
-  refine ⟨?_, ?_, twoPatchAdjustedReplayOverlapMismatch_zero,
+  refine ⟨?_, ?_, twoPatchReplayCechMismatch_eq_correction,
+    twoPatchAdjustedReplayCechMismatch_zero, twoPatchAdjustedReplayOverlapMismatch_zero,
     twoPatchReplay_nonzero_correction_descends⟩
   · exact twoChartCorrection_right_nonzero
   · rw [twoPatchReplayOverlapMismatch_at_zero]

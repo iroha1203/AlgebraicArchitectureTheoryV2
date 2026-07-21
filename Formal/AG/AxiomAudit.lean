@@ -2439,6 +2439,18 @@ def replayTwoChartTemporalDifferentialNonzero :=
 def replayTwoChartNonzeroCorrection :=
   Examples.EvolutionPart9.nondegenerate_twoChart_temporal_replay_correction
 
+def replayTwoPatchZMod2CechCorrection :=
+  Examples.EvolutionPart9.twoPatchReplayCechMismatch_eq_correction
+
+def replayTwoPatchZMod2CechAdjustedMismatchZero :=
+  Examples.EvolutionPart9.twoPatchAdjustedReplayCechMismatch_zero
+
+def replayTwoPatchZMod2NonzeroCorrectionDescends :=
+  Examples.EvolutionPart9.twoPatchReplay_nonzero_correction_descends
+
+def replayTwoPatchZMod2Fixture :=
+  Examples.EvolutionPart9.actual_twoPatch_zmod2_replay_fixture
+
 def toyForceIntegrable :=
   Examples.EvolutionPart9.toy_force_integrable
 
