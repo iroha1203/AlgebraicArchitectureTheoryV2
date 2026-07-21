@@ -5,6 +5,7 @@ import Formal.AG.Site.FinitePoset
 import Formal.AG.Site.MinimalContextProfile
 import Formal.AG.Site.SheafCategory
 import Mathlib.Data.Fintype.Basic
+import Mathlib.Data.ZMod.Basic
 
 namespace AAT.AG
 
@@ -2192,6 +2193,115 @@ def twoPatchBoolCoefficient : Site.AATPresheaf twoPatchSite where
   map _ x := x
   map_id _ := rfl
   map_comp _ _ := rfl
+
+/-- The product of two contexts in the selected two-patch finite site. -/
+private def twoPatchProductObject
+    (X Y : twoPatchSite.category) : twoPatchSite.category :=
+  Site.ContextCategoryObject.of twoPatchContextPreorder
+    (Site.productContext X.ctx Y.ctx)
+
+/-- First projection from a product context in the selected two-patch site. -/
+private noncomputable def twoPatchProductLeft
+    (X Y : twoPatchSite.category) : twoPatchProductObject X Y ⟶ X :=
+  homOfLE (Site.productContextFiniteMeet.meet_le_left X.ctx Y.ctx)
+
+/-- Second projection from a product context in the selected two-patch site. -/
+private noncomputable def twoPatchProductRight
+    (X Y : twoPatchSite.category) : twoPatchProductObject X Y ⟶ Y :=
+  homOfLE (Site.productContextFiniteMeet.meet_le_right X.ctx Y.ctx)
+
+/--
+On the selected finite two-patch site, a presheaf with bijective restriction
+maps satisfies the generated AAT sheaf condition.
+-/
+private theorem twoPatchPresheaf_isSheaf_of_bijective
+    (P : CategoryTheory.Functor twoPatchSite.categoryᵒᵖ Type)
+    (hbij : ∀ {X Y : twoPatchSite.category} (f : X ⟶ Y),
+      Function.Bijective (P.map f.op)) :
+    Presieve.IsSheaf twoPatchSite.topology P := by
+  rw [Site.AATSite.topology, Site.AATGrothendieckTopology]
+  rw [Precoverage.isSheaf_toGrothendieck_iff]
+  intro X Y f R hR
+  rcases hR with ⟨F, rfl⟩
+  intro family hfamily
+  classical
+  rcases F.admissible.atomSupportCoverage
+      FiniteAtom.componentA (Or.inl rfl) with ⟨i, hi⟩
+  let patchObject := Site.ContextCategoryObject.of twoPatchContextPreorder
+    (F.patch i)
+  let Q := twoPatchProductObject Y patchObject
+  let q : Q ⟶ Y := twoPatchProductLeft Y patchObject
+  let qpatch : Q ⟶ patchObject := twoPatchProductRight Y patchObject
+  have hq : (Sieve.generate F.presieve).pullback f q := by
+    change Sieve.generate F.presieve (q ≫ f)
+    have hinclusion : Sieve.generate F.presieve
+        (homOfLE (F.inclusion i)) :=
+      Sieve.le_generate F.presieve _ (Presieve.ofArrows.mk i)
+    have hcomp := (Sieve.generate F.presieve).downward_closed hinclusion qpatch
+    convert hcomp using 1
+  rcases (hbij q).2 (family q hq) with ⟨global, hglobal⟩
+  refine ⟨global, ?_, ?_⟩
+  · intro Z g hg
+    let PQ := twoPatchProductObject Z Q
+    let pz : PQ ⟶ Z := twoPatchProductLeft Z Q
+    let pq : PQ ⟶ Q := twoPatchProductRight Z Q
+    apply (hbij pz).1
+    have hcompat := hfamily pz pq hg hq (Subsingleton.elim _ _)
+    calc
+      P.map pz.op (P.map g.op global) =
+          P.map pq.op (P.map q.op global) := by
+            rw [← FunctorToTypes.map_comp_apply,
+              ← FunctorToTypes.map_comp_apply]
+            congr 2
+      _ = P.map pq.op (family q hq) := by rw [hglobal]
+      _ = P.map pz.op (family g hg) := hcompat.symm
+  · intro other hother
+    apply (hbij q).1
+    rw [hglobal]
+    exact hother q hq
+
+/-- `ZMod 2`-valued coefficients with identity restriction on the two-patch site. -/
+def twoPatchZMod2Coefficient : Site.AATPresheaf twoPatchSite where
+  obj _ := ZMod 2
+  map _ x := x
+  map_id _ := rfl
+  map_comp _ _ := rfl
+
+/-- The nontrivial `ZMod 2` coefficient presheaf is an actual two-patch sheaf. -/
+theorem twoPatchZMod2Coefficient_isSheaf :
+    Site.AATSheafCondition twoPatchSite twoPatchZMod2Coefficient := by
+  apply (Site.AATSheafCondition.iff_presieve_isSheaf twoPatchSite _).2
+  apply twoPatchPresheaf_isSheaf_of_bijective
+  intro _X _Y _f
+  exact Function.bijective_id
+
+/-- Packaged nontrivial `ZMod 2` coefficient sheaf on the two-patch AAT site. -/
+def twoPatchZMod2CoefficientSheaf : Site.AATSheaf twoPatchSite where
+  carrier := twoPatchZMod2Coefficient
+  isSheaf := twoPatchZMod2Coefficient_isSheaf
+
+/-- Replay functions with `ZMod 2` source and target states on the two-patch site. -/
+abbrev TwoPatchZMod2ReplayFunction := ZMod 2 → ZMod 2
+
+/-- The actual replay-function presheaf on the selected two-patch AAT site. -/
+def twoPatchZMod2ReplayFunctionPresheaf : Site.AATPresheaf twoPatchSite where
+  obj _ := TwoPatchZMod2ReplayFunction
+  map _ replay := replay
+  map_id _ := rfl
+  map_comp _ _ := rfl
+
+/-- The `ZMod 2` replay-function presheaf satisfies descent on every AAT cover. -/
+theorem twoPatchZMod2ReplayFunction_isSheaf :
+    Site.AATSheafCondition twoPatchSite twoPatchZMod2ReplayFunctionPresheaf := by
+  apply (Site.AATSheafCondition.iff_presieve_isSheaf twoPatchSite _).2
+  apply twoPatchPresheaf_isSheaf_of_bijective
+  intro _X _Y _f
+  exact Function.bijective_id
+
+/-- Packaged actual replay-function sheaf for the two-patch `ZMod 2` fixture. -/
+def twoPatchZMod2ReplayFunctionSheaf : Site.AATSheaf twoPatchSite where
+  carrier := twoPatchZMod2ReplayFunctionPresheaf
+  isSheaf := twoPatchZMod2ReplayFunction_isSheaf
 
 /-- peer-review hardening II-5: unit-valued sheaf used for the concrete descent success. -/
 def twoPatchUnitPresheaf : Site.AATPresheaf twoPatchSite where
