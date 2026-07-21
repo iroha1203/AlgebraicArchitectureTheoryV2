@@ -1,8 +1,8 @@
 ---json
 {
   "layout": "base.njk",
-  "title": "ArchView — See the Measured Geometry",
-  "description": "ArchView renders ArchSig measurements as literal algebraic geometry: patches, overlap lenses, étale sheets, and the amber seams where sections fail to glue. Live demo included.",
+  "title": "ArchView — Paper Atlas for Architecture",
+  "description": "Explore an ArchMap as a calm Paper Atlas of Covers, Contexts, Subjects, Atoms, and source locations. A full train-ticket codebase map is included.",
   "order": 43,
   "llmsLabel": "ArchView",
   "navSection": "archsig"
@@ -12,80 +12,41 @@
       <section class="article-hero section-band">
         <div class="site-shell">
           <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../../">Home</a><a href="../">ArchSig</a><span>ArchView</span></nav>
-          <p class="eyebrow">The projection layer</p>
-          <h1>ArchSig measures. ArchView shows you where it doesn't close.</h1>
-          <p class="lede">ArchView is a no-build, single-file 3D viewer for ArchSig output. It draws the measured cover as patches, declared values as sheets floating above them, and the measured mismatch as an amber seam you can click — landing on the exact source path and line. It adds no verdict of its own.</p>
+          <p class="eyebrow">Architecture as a Paper Atlas</p>
+          <h1>Walk from a codebase overview to the Atom and source location that matters.</h1>
+          <p class="lede">ArchView reads ArchMap directly and lays its supplied Covers, Contexts, Subjects, and Atoms onto a quiet three-dimensional atlas. Optional ArchSig results appear on the same geometry, so architecture understanding and analysis share one place, camera, and selection.</p>
         </div>
       </section>
       <section class="section-band">
         <div class="site-shell article-layout">
           <aside class="article-sidebar" aria-label="ArchSig page navigation">
-            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#demo">Live demo</a></li><li><a href="#read">How to read the picture</a></li><li><a href="#scenes">The scenes</a></li><li><a href="#honesty">Three honesty features</a></li><li><a href="#own-output">On your own output</a></li><li><a href="#boundary">Boundary</a></li></ol></nav>
+            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#demo">Live atlas</a></li><li><a href="#read">How to read it</a></li><li><a href="#operate">Use your ArchMap</a></li></ol></nav>
 {% include "series-nav.njk" %}
             <div class="source-panel" data-sidebar-open="true"><h2>ArchSig</h2><ul><li><a href="../">Overview</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="../concepts/">Concepts</a></li><li><a href="../contracts/">Contracts</a></li><li><a href="../analyses/">Analyses</a></li><li><a href="../manual/">Manual</a></li><li><a href="../reference/">Reference</a></li><li><a href="./" aria-current="page">ArchView</a></li></ul></div>
           </aside>
           <div class="article-main">
             <section id="demo" class="article-section">
-              <h2>Live demo: the one-cent drift, three frames</h2>
-              <p>The viewer below is loaded with three real, committed <code>archsig analyze</code> runs of the <a href="../getting-started/">shipped demo</a> — base, head, repaired — as a measured sequence. Use the timeline at the bottom to step between frames; the camera holds still so the change you see is the change that was measured. A gate report can be supplied separately to the final SAGA stage.</p>
-              <ul class="chapter-list">
-                <li><a href="viewer/archview.html" target="_blank" rel="noopener noreferrer">Open the live demo</a><span>Opens in a new tab. Loads Three.js from a CDN; needs network access.</span></li>
-              </ul>
-              <p>What to look for: in the <em>head</em> frame, the settlement cycle appears and the Global consistency scene shows an amber seam on the edges that carry the mismatch — application↔settlement, infrastructure↔ports, infrastructure↔settlement. Switch to the Section lanes scene and the declared money conventions appear as three sheet fragments that refuse to bridge. In the <em>repaired</em> frame the seam is gone and a single teal sheet covers every patch: a global section exists, and you are looking at it.</p>
-              <p>Then open the SAGA diagnostic staircase scene and step through the same three frames. In <em>base</em> the whole staircase is grey: the SAGA questions were asked, but no RepairPlan was supplied, so every stage is typed silence. In <em>head</em> the staircase is measured end to end — grounding teal (every chart's own money law holds), descent amber (the residual class in <code>Z1/B1</code> is nonzero), comparison teal (the supplied cochain-map transport checked out) — with the harmonic-debt reading riding on the descent stage. In <em>repaired</em> the descent stage turns teal: the residual glues within the selected complex. The staircase is the demo's argument drawn as geometry: every module right, the loop wrong, the repair measured.</p>
+              <h2>Live atlas: the train-ticket codebase</h2>
+              <p>The committed demonstration contains the complete measured map: 2,118 Atoms, 43 Contexts, 3 Covers, and 440 source records. Context plates appear first; Atom glyphs arrive progressively without sampling the input.</p>
+              <ul class="chapter-list"><li><a href="viewer/archview.html" target="_blank" rel="noopener noreferrer">Open the full Paper Atlas</a><span>Search, select, zoom, switch to the keyboard outline, or load another ArchMap. Three.js is loaded from its CDN.</span></li></ul>
             </section>
             <section id="read" class="article-section">
-              <h2>How to read the picture</h2>
-              <p>The geometry is the AAT picture drawn literally, and every visual channel is driven by a measured quantity:</p>
+              <h2>How to read the Paper Atlas</h2>
               <ul class="status-list">
-                <li><strong>Patches are contexts</strong><span>Each bounded context is a translucent disk. Position comes from a spectral embedding of the measured nerve — contexts that share more structure sit closer. Patch size scales with evidence atom count.</span></li>
-                <li><strong>Lenses are overlaps</strong><span>Where two contexts overlap, a vesica-shaped lens holds the shared atoms; lens size scales with the shared-atom count, and its rim thickens with mismatch markers.</span></li>
-                <li><strong>Sheets are declared values</strong><span>Above the base, each declared section value floats as a sheet fragment over its patches. Where values agree across an overlap the sheets bridge; where they disagree the sheet is cut by a zigzag fault line.</span></li>
-                <li><strong>The amber seam is the measurement</strong><span>Only the measured H¹ cocycle support ignites amber (with the only glow in the scene). Four color lanes are reserved: teal = measured zero, amber = measured nonzero, lavender = analytic reading, grey = silence. Nothing else uses saturated color.</span></li>
+                <li><strong>Cover</strong><span>The chosen finite family sets the atlas overview.</span></li>
+                <li><strong>Context plates</strong><span>Each plate comes from an explicit Context and its Atom membership.</span></li>
+                <li><strong>Subject groups and Atom glyphs</strong><span>Shape records Atom kind; grouping records the supplied subject within its Context.</span></li>
+                <li><strong>Restrictions and shared support</strong><span>Connectors and translucent supports come only from explicit restriction and membership facts.</span></li>
+                <li><strong>Source landing</strong><span>The drawer displays the supplied file, symbol, and line metadata. ArchView does not load source bodies.</span></li>
               </ul>
-              <p>Silence is drawn as fog and frosted glass, never as red error. An unmeasured region does not look safe and does not look broken — it looks unobserved, which is what it is.</p>
+              <p>The 3D Atlas and Outline / Table share the same Cover → Context → Subject → Atom → Source selection. Architecture, Analysis, and Improve modes keep that selection and camera while changing the information shown.</p>
             </section>
-            <section id="scenes" class="article-section">
-              <h2>The scenes</h2>
-              <p>Each scene answers one question. The names below are the Engineer-terms lane; a toolbar chip switches every label to the mathematical vocabulary without changing any claim.</p>
-              <div class="article-table">
-                <table>
-                  <thead><tr><th scope="col">Scene</th><th scope="col">The question it answers</th></tr></thead>
-                  <tbody>
-                    <tr><td>Nerve &amp; Cover</td><td>What finite site and cover did ArchSig measure?</td></tr>
-                    <tr><td>Global consistency</td><td>Do the local agreements glue into a global one — and where exactly does the loop not close? A Twist view toggle draws the F₂ cochain as a literal double cover: two parallel sheets when the class is zero, one connected twisted band when it is not.</td></tr>
-                    <tr><td>Section lanes</td><td>How far does each declared value extend, and is there a global section?</td></tr>
-                    <tr><td>Curvature / debt</td><td>Where does disagreement concentrate? (analytic reading, lavender)</td></tr>
-                    <tr><td>Period / cycles</td><td>How do classes wrap around measured cycles? (analytic reading)</td></tr>
-                    <tr><td>Forbidden support</td><td>Which atom co-occurrences are forbidden, and where could sections be repaired?</td></tr>
-                    <tr><td>Projection boundary</td><td>What did the selected profile observe, and what is silence?</td></tr>
-                    <tr><td>SAGA diagnostic staircase</td><td>How do measured premise, residual class, transfer/comparison, and silence progress through H⁰ → H¹ → H²? The scene shows packet-derived stages and keeps <code>whatNext</code> visible for silence. When supplied, the final stage also shows the gate decision and each row's <code>pass</code>, <code>pass_with_boundary</code>, or <code>block</code> action.</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </section>
-            <section id="honesty" class="article-section">
-              <h2>Three honesty features</h2>
-              <ul class="status-list">
-                <li><strong>Fidelity declaration</strong><span>Click any element and the detail panel declares, per visual channel, whether it is <em>measured</em> (driven by a measured quantity), <em>layout</em> (an embedding of measured adjacency — positions carry no verdict), or <em>decoration</em> (bloom, pulses). A toolbar Decoration toggle strips the decoration entirely; the claims do not change.</span></li>
-                <li><strong>Two vocabulary lanes</strong><span>Engineer terms by default, mathematical terms on a toggle. Only the wording changes — the conclusion codes, boundaries, and claims are identical in both lanes.</span></li>
-                <li><strong>Click-to-source landing</strong><span>Atoms and amber seams resolve to <code>path:line</code> (plus symbol) from the ArchMap's source declarations. On an amber element you get the conflicting section declarations side by side, each with its code location — the screen-to-editor path for fixing the actual mismatch. ArchView displays locations resolved by ArchSig; it never invents one.</span></li>
-              </ul>
-            </section>
-            <section id="own-output" class="article-section">
-              <h2>On your own output</h2>
-              <p>ArchView is one HTML file that reads <code>archsig-atom-viewer-data.json</code> (plus the summary, manifest, and optional <code>archsig-gate-report.json</code>) from its own directory. After any <code>analyze</code> run:</p>
-              <figure class="code-panel">
-                <figcaption>Serve a run directory</figcaption>
-                <pre><code>cp archview/archview.html &lt;out-dir&gt;/        # from the release bundle
-python3 -m http.server 8000 --directory &lt;out-dir&gt;
-# open http://localhost:8000/archview.html</code></pre>
-              </figure>
-              <p>You can also drag any viewer-data JSON onto an open viewer, then choose <em>Open gate report…</em> for the second input. The report is shown only when its schema, action vocabulary, and measurement-packet digest match the loaded viewer-data; otherwise the status line explains the rejection. If an <code>archview-sequence.json</code> manifest sits beside the viewer — as in the demo above — it plays the declared frames as a measured sequence, keeping every declared slot visible even when a frame fails to load. The viewer uses ES modules and loads Three.js from a CDN, so it must be served over HTTP (not opened as a bare file) and needs network access.</p>
-            </section>
-            <section id="boundary" class="article-section">
-              <h2>Boundary</h2>
-              <p>ArchView is a projection, strictly downstream of measurement. It draws what the viewer-data artifact contains and stays silent about everything else: no new verdicts, no inferred positions, no completion of missing evidence. H² coherence is not visualized (triple overlaps appear as existence-only frosted faces), and near-flat geometry is not presented as lawfulness. If the picture and the packet ever seem to disagree, the packet is the measurement — and the fidelity declaration exists so you can tell which parts of the picture are measurement at all.</p>
+            <section id="operate" class="article-section">
+              <h2>Use your ArchMap</h2>
+              <p>Choose <strong>Load ArchMap</strong> in the top bar, or serve the release bundle and pass a same-origin file with <code>?archmap=./your-map.json</code>. Choose <strong>Load ArchSig run</strong> to add a compatible run directory as an analysis overlay.</p>
+              <figure class="code-panel"><figcaption>Serve the release bundle</figcaption><pre><code>python3 -m http.server 8000 --directory archview
+# open http://localhost:8000/archview.html</code></pre></figure>
+              <p>Rotate by dragging, pan with right-drag or Shift-drag, and zoom with the wheel. The toolbar supplies overview, focus, top, isometric, front, and reset views. The Outline / Table provides the complete keyboard path.</p>
             </section>
             <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-prev" href="../reference/"><span>Previous</span><strong>Reference</strong></a></nav>
           </div>

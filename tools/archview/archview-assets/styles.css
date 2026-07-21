@@ -445,6 +445,8 @@ summary:focus-visible {
 }
 .mini-map-field { position: relative; width: 100%; height: 100%; }
 .mini-map button { position: absolute; max-width: 72px; padding: 2px 4px; transform: translate(-50%, -50%); overflow: hidden; border: 1px solid var(--graphite); border-radius: 3px; color: var(--ink-soft); background: var(--paper-raised); font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.mini-map-field-compact button { width: 8px; height: 8px; padding: 0; border-radius: 50%; background: var(--paper-raised); }
+.mini-map-field-compact button[aria-current="true"] { width: 12px; height: 12px; background: var(--indigo-soft); }
 .mini-map button[aria-current="true"] { border-color: var(--indigo); color: var(--indigo); font-weight: 700; }
 .state-legend { position: absolute; z-index: 4; left: 50%; bottom: 18px; display: flex; gap: 10px; transform: translateX(-50%); color: var(--ink-soft); font-size: 9px; }
 .state-legend b { color: var(--ink); }

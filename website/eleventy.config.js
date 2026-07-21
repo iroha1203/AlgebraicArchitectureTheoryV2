@@ -6,11 +6,10 @@ module.exports = function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy("src/_redirects");
   eleventyConfig.addPassthroughCopy("src/favicon.ico");
 
-  // ArchView live demo: committed ArchSig run artifacts served verbatim.
-  // The viewer HTML must keep its filename (sibling fetch), so it is
-  // passthrough-copied and excluded from template processing.
-  eleventyConfig.addPassthroughCopy("src/archsig/archview/viewer");
-  eleventyConfig.ignores.add("src/archsig/archview/viewer/**");
+  // ArchView public demo: publish the tooling source of truth without a
+  // second checked-in copy under website/src.
+  eleventyConfig.addPassthroughCopy({ "../tools/archview/archview.html": "archsig/archview/viewer/archview.html" });
+  eleventyConfig.addPassthroughCopy({ "../tools/archview/archview-assets": "archsig/archview/viewer/archview-assets" });
 
   // Relative prefix from a page URL back to the site root ("./", "../", ...).
   eleventyConfig.addFilter("relprefix", (url) => {

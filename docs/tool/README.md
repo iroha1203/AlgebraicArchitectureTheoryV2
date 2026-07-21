@@ -29,8 +29,8 @@ ArchViewはstructural verdict、relation、source symbol、repair recommendation
 direct evidence、boundary participant、candidate change point、validated repairを区別し、
 描画要素と視覚チャネルの由来をsupplied artifactへ追跡可能にする。
 
-現在checked inされている`tools/archview/archview.html`は再構築前のviewer-data readerである。
-現行実装と再構築後の契約の差は[ArchView README](../../tools/archview/README.md)に記録する。
+checked inされた`tools/archview/archview.html`と`archview-assets/`がPaper Atlasの正式公開面である。
+runtime、scale fixture、browser test、release同梱契約は[ArchView README](../../tools/archview/README.md)に記録する。
 
 ## Sources of truth
 

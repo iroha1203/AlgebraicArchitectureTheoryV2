@@ -28,6 +28,26 @@ jobs:
       - name: Test FieldSig
         run: cargo test --manifest-path tools/fieldsig/Cargo.toml
 
+  archview:
+    name: ArchView browser / scale / public surface
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify Paper Atlas
+        run: |
+          node tools/archview/public_surface_test.cjs
+          node tools/archview/foundation_browser_e2e.cjs tools/archview/archview-assets
+          node tools/archview/scale_browser_e2e.cjs tools/archview .tmp/archview-train-ticket.png
+
+      - name: Upload deterministic scale screenshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: archview-train-ticket-${{ github.run_id }}
+          path: .tmp/archview-train-ticket.png
+          if-no-files-found: error
+
   archsig-example-one-cent-drift:
     name: ArchSig one-cent drift example demo
     runs-on: ubuntu-latest

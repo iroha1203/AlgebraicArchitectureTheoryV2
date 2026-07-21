@@ -112,7 +112,13 @@ jobs:
           cp -R tools/archsig/skills package/skills
           cp tools/archview/README.md package/archview/README.md
           cp tools/archview/archview.html package/archview/archview.html
+          cp -R tools/archview/archview-assets package/archview/archview-assets
           test -s package/archview/archview.html
+          test -s package/archview/archview-assets/app.js
+          test -s package/archview/archview-assets/renderer.js
+          test -s package/archview/archview-assets/styles.css
+          test -s package/archview/archview-assets/fixtures/train-ticket.archmap.json
+          grep -q './archview-assets/app.js' package/archview/archview.html
 
       - name: Create tar archive
         if: matrix.archive_format == 'tar.gz'

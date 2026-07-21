@@ -109,18 +109,28 @@ function renderSubjects(container, snapshot, actions) {
   if (!subjects.length) return replaceWithEmpty(container, "No subjects in selected Cover");
   const list = document.createElement("ul");
   list.className = "index-list subject-index";
+  const largeArchitecture = index.counts.atoms > 500;
   for (const group of subjects) {
     const item = document.createElement("li");
     const label = `${group.subject} · ${displayName(group.context)}`;
     const selected = isSelected(snapshot, (selection) => selection.kind === "subject" && selection.id === group.subject && selection.contextId === group.context.id);
     item.append(selectionButton(label, { subject: group.subject, contextId: group.context.id }, selected, (event) => actions.subject(group.context.id, group.subject, event.shiftKey), group.atoms.length));
-    for (const atom of group.atoms) {
+    const revealAtoms = !largeArchitecture || selected || selectedEntries(snapshot).some((selection) => {
+      const atomId = selection.kind === "source" ? selection.atomId : selection.kind === "atom" ? selection.id : null;
+      return atomId && selection.contextId === group.context.id && group.atoms.some((atom) => atom.id === atomId);
+    });
+    for (const atom of revealAtoms ? group.atoms : []) {
       const atomSelected = isSelected(snapshot, (selection) => selection.kind === "atom" && selection.id === atom.id && (!selection.contextId || selection.contextId === group.context.id));
       item.append(selectionButton(`${displayName(atom)} · ${atom.kind}`, { atomId: atom.id, contextId: group.context.id }, atomSelected, (event) => actions.atom(atom.id, group.context.id, event.shiftKey)));
     }
     list.append(item);
   }
-  container.replaceChildren(list);
+  if (largeArchitecture) {
+    const note = document.createElement("p");
+    note.className = "empty-list";
+    note.textContent = "Large atlas: select a Subject to reveal its Atoms, or search the complete unsampled index.";
+    container.replaceChildren(note, list);
+  } else container.replaceChildren(list);
 }
 
 function renderGeometryIndex(container, snapshot, layout, actions) {
@@ -215,9 +225,12 @@ function renderMiniMap(container, snapshot, layout, actions) {
   const rangeX = Math.max(1, maxX - minX), rangeZ = Math.max(1, maxZ - minZ);
   const map = document.createElement("div");
   map.className = "mini-map-field";
+  const compact = layout.contexts.length > 20;
+  if (compact) map.classList.add("mini-map-field-compact");
   layout.contexts.forEach((row) => {
     const context = snapshot.architecture.index.contextsById.get(row.id);
     const button = selectionButton(displayName(context), { miniMapContext: row.id }, isSelected(snapshot, (selection) => selection.kind === "context" && selection.id === row.id), (event) => actions.context(row.id, event.shiftKey));
+    if (compact) { button.setAttribute("aria-label", displayName(context)); button.textContent = ""; }
     button.style.left = `${8 + ((row.position.x - minX) / rangeX) * 78}%`;
     button.style.top = `${8 + ((row.position.z - minZ) / rangeZ) * 76}%`;
     map.append(button);
@@ -733,7 +746,8 @@ export async function startArchView() {
     requireElement("#empty-state-copy").textContent = snapshot.architecture.status === "empty" ? "The supplied ArchMap contains no sources, Atoms, Contexts, or Covers." : snapshot.architecture.status === "error" ? "Review the visible validation findings in Scope Explorer." : copy.copy;
     renderArchitecture(snapshot, layout, actions);
     renderAnalysisStatus(snapshot, analysisModel, actions);
-    renderOutline(requireElement("#outline-table"), requireElement("#outline-status"), snapshot, layout, analysisModel, actions);
+    if (snapshot.surface === "outline") renderOutline(requireElement("#outline-table"), requireElement("#outline-status"), snapshot, layout, analysisModel, actions);
+    else requireElement("#outline-status").textContent = snapshot.architecture.index ? `${snapshot.architecture.index.counts.atoms} Atoms available on demand` : "No architecture loaded";
     renderMiniMap(requireElement("#atlas-mini-map"), snapshot, layout, actions);
     publishTestState(snapshot);
   });
@@ -838,7 +852,8 @@ export async function startArchView() {
 
   const parameters = new URLSearchParams(location.search);
   const requestedArchMap = parameters.get("archmap");
-  if (requestedArchMap !== "none") await loadUrl(requestedArchMap || DEFAULT_ARCHMAP_URL);
+  const defaultArchMap = root.dataset.defaultArchmap || DEFAULT_ARCHMAP_URL;
+  if (requestedArchMap !== "none") await loadUrl(requestedArchMap || defaultArchMap);
   const requestedAnalysis = parameters.get("analysis");
   if (requestedAnalysis) await loadAnalysisUrl(requestedAnalysis);
   const dispose = () => { document.removeEventListener("keydown", handleGlobalShortcut); atlasRenderer?.dispose(); };
