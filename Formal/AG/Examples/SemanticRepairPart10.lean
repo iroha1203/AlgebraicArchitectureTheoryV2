@@ -1214,7 +1214,7 @@ circle nerve.
 The selected nerve below is supplied simplicial data, not generated from chart
 intersections.  These requirements deliberately have no admissible cover, so
 the generated topology is the top-only witness topology used for the concrete
-`F₂` coefficient sheaf.
+law-equation quotient coefficient sheaf.
 -/
 def circleCoverageRequirements :
     Site.CoverageRequirements FiniteModel.object
@@ -1355,7 +1355,7 @@ theorem circleNerve_edge_carrier : circleSimplex 1 = Fin 2 := rfl
 
 /-- X.例9.2: the selected simplex carriers have the required two-edge shape. -/
 theorem circleNerve_has_two_vertices_two_opposite_edges :
-    Fintype.card (Fin 2) = 2 ∧ Fintype.card (Fin 2) = 2 ∧
+    Fintype.card (circleSimplex 0) = 2 ∧ Fintype.card (circleSimplex 1) = 2 ∧
       circleFace 0 0 (0 : Fin 2) = (1 : Fin 2) ∧
       circleFace 0 1 (0 : Fin 2) = (0 : Fin 2) ∧
       circleFace 0 0 (1 : Fin 2) = (0 : Fin 2) ∧
@@ -1484,7 +1484,7 @@ def circleCoverRelativeComplex :
         funext higherSimplex
         exact Empty.elim higherSimplex
 
-/-- X.例9.2: semantic additive `H¹` surface with residual `1 ∈ F₂`. -/
+/-- X.例9.2: semantic additive `H¹` surface with residual `([1], 0)` over `Q`. -/
 def circleAdditiveH1Surface :
     SemanticRepairAdditiveH1Surface where
   C0 := circleC0
