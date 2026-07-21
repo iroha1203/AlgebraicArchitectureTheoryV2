@@ -238,14 +238,11 @@ def finiteAATComputabilityEffectiveRepresentativeFixture :=
 def finiteAATComputabilityActualConflictFixture :=
   @Measurement.finiteComputabilityConflictPackage_nonzero_and_supportReading
 
+def finiteAATComputabilityProperDegreeOneConflictFixture :=
+  @Measurement.finiteComputabilityConflictPackage_proper_degree_one_nonzero_and_supportReading
+
 def finiteAATComputabilityZeroConflictSupportFixture :=
   @Measurement.finiteComputabilityConflictPackage_zero_support
-
-def finiteAATComputabilityFixedOutputContract :=
-  @AAT.AG.finiteAATFixedOutputContractOf
-
-def finiteAATComputabilityFixedConflictOutputContract :=
-  @AAT.AG.finiteAATFixedConflictOutputContractOf
 
 /-
 Part X / peer-review hardening R1: Part X [CBI] theorem constants audited by direct alias.

@@ -2069,6 +2069,38 @@ theorem finiteComputabilityConflictPackage_nonzero_and_supportReading :
     exact finiteComputabilityExampleFullRoute_nonzero.2.2.2.2
   · exact finiteComputabilityConflictPackage.selectedClassSupportReading
 
+/-- The final conflict fixture explicitly records proper selected ideals,
+degree one, a nonzero actual conflict class, and its computed support reading. -/
+theorem finiteComputabilityConflictPackage_proper_degree_one_nonzero_and_supportReading :
+    finiteComputabilityExampleData.leftIdeal ≠ ⊤ ∧
+      finiteComputabilityExampleData.rightIdeal ≠ ⊤ ∧
+      finiteComputabilityExampleData.torDegree = 1 ∧
+      finiteComputabilityExampleData.selectedConflictClass ≠ 0 ∧
+      finiteComputabilityConflictPackage.lawConflictMeasurement.selectedClassSupportReading := by
+  have hleft : finiteDimensionalMatrixLeftIdeal ≠ ⊤ := by
+    rw [Ideal.ne_top_iff_one]
+    intro hone
+    apply finiteDimensionalMatrixQuotient_one_ne_zero
+    change Ideal.Quotient.mk finiteDimensionalMatrixLeftIdeal
+      (1 : MvPolynomial SquareFreeSupportVertex (ZMod 2)) = 0
+    rw [Ideal.Quotient.eq_zero_iff_mem]
+    exact hone
+  have hright_le_left :
+      finiteDimensionalMatrixRightIdeal ≤ finiteDimensionalMatrixLeftIdeal := by
+    unfold finiteDimensionalMatrixRightIdeal finiteDimensionalMatrixLeftIdeal
+    unfold MvPolynomial.idealOfVars
+    exact Ideal.span_mono
+      (Set.singleton_subset_iff.mpr
+        (Set.mem_range_self SquareFreeSupportVertex.p))
+  have hright : finiteDimensionalMatrixRightIdeal ≠ ⊤ :=
+    ne_top_of_le_ne_top hleft hright_le_left
+  have hroute := finiteComputabilityConflictPackage_nonzero_and_supportReading
+  refine ⟨?_, ?_, rfl, hroute.1, hroute.2⟩
+  · change finiteDimensionalMatrixLeftIdeal ≠ ⊤
+    exact hleft
+  · change finiteDimensionalMatrixRightIdeal ≠ ⊤
+    exact hright
+
 /-- Zero class in the actual conflict carrier, viewed through the final
 measurement's carrier field. -/
 noncomputable def finiteComputabilityMeasuredZeroConflict :
