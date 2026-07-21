@@ -56,7 +56,7 @@ fail-closed、反証試行、証拠資格、統合出力を適用する。
 
    | 分野 | 対象 | 委譲先 |
    | --- | --- | --- |
-   | AAT / Lean / 数学claim | `Formal/`、数学本文、研究GOAL、固定statement、数学claim、および Lean 実装変更に伴う `docs/aat/` 台帳整合 | `$math-lean-review` |
+   | AAT / Lean / 数学claim | `Formal/`、数学本文、研究GOAL、一次仕様、数学claim、および Lean 実装変更に伴う `docs/aat/` 台帳整合 | `$math-lean-review` |
    | Tooling | `tools/`、`docs/tool/`、schema catalog | `$tool-review` |
    | Website | `website/`、`docs/website/` | `$website-review` |
    | Docs / governance | docs-onlyの`docs/aat/`台帳、`docs/sft/`、非数学的な`docs/note/`、PRD、README、`AGENTS.md`、`.codex/skills/`、文章主体のIssue / PR template、cross-domain docs | `$docs-review`(レビューモード) |
@@ -68,7 +68,7 @@ fail-closed、反証試行、証拠資格、統合出力を適用する。
      足りる(statement と台帳の一致は一体で監査する)。
    - Lean 実装を含まない `docs/aat/` 台帳更新だけの PR は docs-only として
      `$docs-review` に渡す。
-   - 数学本文、研究GOAL、固定statement、数学claimを変更するPRは、Lean差分の
+   - 数学本文、研究GOAL、一次仕様、数学claimを変更するPRは、Lean差分の
      有無にかかわらず `$math-lean-review` に渡す。
    - 真の分野横断(例: Lean + SFT 本文)は該当する複数分野で実行する。
    - 既知分野へ分類できないprose / governance差分は`$docs-review`へ渡す。

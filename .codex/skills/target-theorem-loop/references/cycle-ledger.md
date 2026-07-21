@@ -55,6 +55,10 @@ decision: <approve | reject>
 result_type: <proof-obligation-discharged | blocker-fixed | proof-checkpoint | rejected>
 proof_obligation: <short>
 proof_obligation_delta: <short>
+primary_specification:
+  source: <Issue, PRD, GOAL, or other task artifact>
+  version: <version or null>
+  status: <recorded | revised>
 lean_artifacts:
   - file: <repo-relative path or null>
     declarations:
