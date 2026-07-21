@@ -543,6 +543,19 @@ def semanticRepairExample92CircleNerveEdgeCarrier :=
 def semanticRepairExample92CircleNerveShape :=
   AAT.AG.Examples.SemanticRepairPart10.circleNerve_has_two_vertices_two_opposite_edges
 
+def semanticRepairExample92CircleLawObstructionIdeal :=
+  AAT.AG.Examples.SemanticRepairPart10.integerLaw_obstructionIdeal_eq_span_two
+    AAT.AG.Examples.SemanticRepairPart10.circleSiteBase
+
+def semanticRepairExample92CircleLawQuotientOneNonzero :=
+  AAT.AG.Examples.SemanticRepairPart10.circleLawQuotientOne_ne_zero
+
+def semanticRepairExample92CircleLawQuotientEquivF2 :=
+  AAT.AG.Examples.SemanticRepairPart10.circleLawQuotientEquivF2
+
+def semanticRepairExample92CircleLawQuotientOneToF2 :=
+  AAT.AG.Examples.SemanticRepairPart10.circleLawQuotientOne_toF2
+
 def semanticRepairExample92CircleResidualValues :=
   AAT.AG.Examples.SemanticRepairPart10.circleResidual_eq_one_zero
 
