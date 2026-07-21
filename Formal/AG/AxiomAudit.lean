@@ -250,6 +250,36 @@ kernel audit entrypoint elaborate the six advertised Part X CBI declarations.
 def semanticRepairTheorem34FiniteDescentPackage :=
   @SemanticRepair.finiteSemanticRepairGluingDescent_package
 
+def semanticRepairDefinition31FullFiniteDescentPackage :=
+  @SemanticRepair.FullFiniteSemanticRepairGluingComplex.finiteSemanticRepairGluingDescent_package
+
+def semanticRepairDefinition31FullRestrictionDifference :=
+  @SemanticRepair.FullFiniteSemanticRepairGluingComplex.delta0_ev_iff_restriction_xor
+
+def semanticRepairDefinition31FullNecessary :=
+  @SemanticRepair.FullFiniteSemanticRepairGluingComplex.globalRepairCoherent_forces_obstructionVanishes
+
+def semanticRepairDefinition31FullNonzeroExclusion :=
+  @SemanticRepair.FullFiniteSemanticRepairGluingComplex.no_globalRepairCoherent_of_nonzero_obstruction
+
+def semanticRepairDefinition31FullSufficiency :=
+  @SemanticRepair.FullFiniteSemanticRepairGluingComplex.globalRepairCoherent_of_obstructionVanishes
+
+def semanticRepairDefinition31FullDescentIff :=
+  @SemanticRepair.FullFiniteSemanticRepairGluingComplex.finiteSemanticRepairGluingDescent_iff
+
+def semanticRepairDefinition31FullFixtureNontrivialOverlap :=
+  @SemanticRepair.FullFiniteGluingComplexExample.has_nontrivial_overlap
+
+def semanticRepairDefinition31FullFixtureRestrictionDifference :=
+  @SemanticRepair.FullFiniteGluingComplexExample.delta0_charges_left_only_on_nontrivial_overlap
+
+def semanticRepairDefinition31FullFixtureFaithfulness :=
+  @SemanticRepair.FullFiniteGluingComplexExample.semanticFaithfulnessHypotheses
+
+def semanticRepairDefinition31FullFiniteFixture :=
+  @SemanticRepair.FullFiniteGluingComplexExample.finiteSemanticRepairGluingDescent_iff
+
 def semanticRepairTheorem48TrueSheafH1Gluing :=
   @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.globalRepairCoherent_iff_additiveH1Zero
 
