@@ -2165,21 +2165,25 @@ theorem gagaLowDegreeTopologicalDebtCapacityFromComplex :
 
 /-! Kernel-audit inventory for theorem 12.3 derived GAGA comparison. -/
 
-/-- Direct audit entry for Hodge decomposition and harmonic/cohomology on the
-selected real Čech coordinates. -/
+/-- Direct audit entry for the generated-source Hodge/cohomology comparison. -/
 theorem gagaSelectedHodge :
-    ∃ h, h = @Measurement.AATGAGARealCechHodgeInput.hodgeStatement_holds :=
-  ⟨@Measurement.AATGAGARealCechHodgeInput.hodgeStatement_holds, rfl⟩
+    ∃ h, h = @Measurement.AATGAGASelectedFiniteHodgeData.harmonicKernelIdentifiesCohomology_holds :=
+  ⟨@Measurement.AATGAGASelectedFiniteHodgeData.harmonicKernelIdentifiesCohomology_holds, rfl⟩
 
-/-- Direct audit entry for the selected real finite Period/Stokes theorem. -/
-theorem gagaSelectedPeriodStokes :
-    ∃ h, h = @Measurement.AATGAGARealCechHodgeInput.periodStokesStatement_holds :=
-  ⟨@Measurement.AATGAGARealCechHodgeInput.periodStokesStatement_holds, rfl⟩
+/-- Direct audit entry for the generated-source finite Hodge decomposition. -/
+theorem gagaSelectedHodgeDecomposition :
+    ∃ h, h = @Measurement.AATGAGASelectedFiniteHodgeData.finiteHodgeDecomposition_holds :=
+  ⟨@Measurement.AATGAGASelectedFiniteHodgeData.finiteHodgeDecomposition_holds, rfl⟩
+
+/-- Direct audit entry for the selected additive extension accounting theorem. -/
+theorem gagaSelectedExtensionAccounting :
+    ∃ h, h = @Cohomology.ExtensionHolonomyAccounting.kappa_U_additive :=
+  ⟨@Cohomology.ExtensionHolonomyAccounting.kappa_U_additive, rfl⟩
 
 /-- Direct audit entry for the selected finite-nerve capacity theorem. -/
 theorem gagaSelectedTopologicalCapacity :
-    ∃ h, h = @Measurement.AATGAGAFiniteCechSource.topologicalCapacityStatement_holds :=
-  ⟨@Measurement.AATGAGAFiniteCechSource.topologicalCapacityStatement_holds, rfl⟩
+    ∃ h, h = @Measurement.SelectedTopologicalDebtTheoremPackage.topologicalCapacityStatement_holds :=
+  ⟨@Measurement.SelectedTopologicalDebtTheoremPackage.topologicalCapacityStatement_holds, rfl⟩
 
 /-- Direct audit entry for the selected LawConflict/Tor theorem. -/
 theorem gagaSelectedLawConflictTor :
@@ -2190,11 +2194,6 @@ theorem gagaSelectedLawConflictTor :
 theorem gagaCertifiedComparisonStatement :
     ∃ h, h = @Measurement.aatGAGACertifiedComparisonStatement_holds :=
   ⟨@Measurement.aatGAGACertifiedComparisonStatement_holds, rfl⟩
-
-/-- Direct audit entry for the selected Hilbert-series accounting theorem. -/
-theorem gagaSelectedHilbertSeriesAccounting :
-    ∃ h, h = @Measurement.SelectedDerivedConflictTheoremPackage.hilbertSeriesAccounting_holds :=
-  ⟨@Measurement.SelectedDerivedConflictTheoremPackage.hilbertSeriesAccounting_holds, rfl⟩
 
 /-- Direct audit entry for raw-data comparison derivation. -/
 theorem gagaComparisonStatement :
