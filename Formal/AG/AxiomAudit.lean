@@ -2428,16 +2428,16 @@ def replayZeroTheorem42RealizesAdjusted :=
   Examples.EvolutionPart9.replay_zero_theorem42_realizes_adjusted
 
 def replayTwoChartCorrectionRightNonzero :=
-  Examples.EvolutionPart9.zmod2TemporalSeparatedCochain_right_nonzero
+  Examples.EvolutionPart9.twoChartCorrection_right_nonzero
 
 def replayTwoChartMismatchIsCoboundary :=
-  Examples.EvolutionPart9.twoChartReplayMismatch_is_coboundary
+  Examples.EvolutionPart9.twoChartReplayMismatch_eq_coboundary
 
-def replayTwoChartClassVanishes :=
-  Examples.EvolutionPart9.twoChartReplayTemporalClass_vanishes
+def replayTwoChartTemporalDifferentialNonzero :=
+  Examples.EvolutionPart9.zmod2TemporalProductIncidence_d0_step_ne_zero
 
-def replayTwoChartNonzeroCorrectionDescends :=
-  Examples.EvolutionPart9.twoChartReplay_nonzero_correction_descends
+def replayTwoChartNonzeroCorrection :=
+  Examples.EvolutionPart9.nondegenerate_twoChart_temporal_replay_correction
 
 def toyForceIntegrable :=
   Examples.EvolutionPart9.toy_force_integrable

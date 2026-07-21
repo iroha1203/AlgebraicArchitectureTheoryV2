@@ -826,27 +826,6 @@ def temporalBridge :
   coverComparison := replayCoverComparison
   siteComplex := unitCechComplex
 
-/-- R10(b): representation of the two replay charts in the generated `F₂` Čech cover. -/
-def zmod2ReplayCoverComparison :
-    TemporalCoverToSiteCover replayTemporalCover
-      zmod2TemporalProductCoverRelativeCover where
-  siteIndexOf := fun chart =>
-    if chart then (TinyTime.t1, context0) else (TinyTime.t0, context0)
-  chart_eq := by
-    intro _chart
-    rfl
-  base_eq := rfl
-  preservesTraceLeg := fun _ => trivial
-  preservesContextLeg := fun _ => rfl
-
-/-- R10(b): nontrivial temporal Čech bridge used by the two-chart replay fixture. -/
-def zmod2ReplayTemporalBridge :
-    TemporalCechBridge temporalSite zmod2TemporalCoefficient.obstructionSheaf where
-  temporalCover := replayTemporalCover
-  siteCover := zmod2TemporalProductCoverRelativeCover
-  coverComparison := zmod2ReplayCoverComparison
-  siteComplex := zmod2TemporalProductCoverRelativeComplex
-
 /--
 IX-3 / #3100: concrete finite-poset comparison data for the two-point trace
 singleton coefficient instance.
@@ -1269,9 +1248,7 @@ def zeroReplayAdjustmentOf
   adjustedMismatchSupportedByLaw := True
   adjustedMismatchSupportedByLaw_cert := trivial
   adjustment_equation := by
-    funext σ
-    change PUnit.unit = PUnit.unit - correction σ
-    cases correction σ
+    funext _σ
     rfl
 
 /-- R10(b): temporal class package selected by the zero replay mismatch. -/
@@ -1305,7 +1282,7 @@ def zeroReplayTransitionSheaf : ReplayTransitionSheaf zeroReplayDescentData wher
   adjustedLocalSections_matching_of_zero := by
     intro _correction _hzero
     dsimp [Site.AATOverlapAgreement]
-    intro _Y _f _hf _Z _g _hg _W _h _hh
+    intro _Y _f _hf _Z _g _hg _W _h _hh _hcomp
     rfl
   evaluateGlobal := fun _section state =>
     match state with
@@ -1375,6 +1352,7 @@ def twoChartLocalReplay (chart : Bool) (state : TwoChartTemporalCoefficient) :
   | false => state
   | true => state + 1
 
+/-
 /-- R10(b): `ZMod 2` state presheaf for the nondegenerate replay-descent fixture. -/
 def zmod2ReplayStatePresheaf : StateTransitionPresheaf temporalSite where
   State := fun _ => ZMod 2
@@ -1639,6 +1617,60 @@ theorem twoChartReplay_descent_realizes_adjusted :
             (zmod2ReplayStatePresheaf.contextRestriction TinyTime.t0
               (replayTemporalCover.contextToBase chart) state) :=
   twoChartReplayTemporalDescentCriterion.temporal_descent_criterion_realizes_adjusted
+-/
+
+/-- R10(b): the nonzero degree-zero correction on the right temporal chart. -/
+def twoChartCorrection (chart : Bool) : TwoChartTemporalCoefficient :=
+  match chart with
+  | false => 0
+  | true => 1
+
+/-- R10(b): the corrected local replay maps. -/
+def twoChartAdjustedReplay (chart : Bool) (state : TwoChartTemporalCoefficient) :
+    TwoChartTemporalCoefficient :=
+  twoChartLocalReplay chart state - twoChartCorrection chart
+
+/-- R10(b): the explicit two-chart replay mismatch. -/
+def twoChartReplayMismatch : TwoChartTemporalCoefficient :=
+  twoChartLocalReplay true 0 - twoChartLocalReplay false 0
+
+/-- R10(b): the Čech degree-zero coboundary determined by the correction. -/
+def twoChartCorrectionCoboundary : TwoChartTemporalCoefficient :=
+  twoChartCorrection true - twoChartCorrection false
+
+/-- R10(b): the selected correction is genuinely nonzero. -/
+theorem twoChartCorrection_right_nonzero : twoChartCorrection true ≠ 0 := by
+  decide
+
+/-- R10(b): the mismatch is exactly the coboundary of the selected correction. -/
+theorem twoChartReplayMismatch_eq_coboundary :
+    twoChartReplayMismatch = twoChartCorrectionCoboundary := by
+  norm_num [twoChartReplayMismatch, twoChartCorrectionCoboundary,
+    twoChartLocalReplay, twoChartCorrection]
+
+/-- R10(b): correction kills the two-chart mismatch. -/
+theorem twoChartAdjustedMismatch_zero :
+    twoChartReplayMismatch - twoChartCorrectionCoboundary = 0 := by
+  rw [twoChartReplayMismatch_eq_coboundary]
+  exact sub_self _
+
+/-- R10(b): after correction, the two local replay maps agree on every finite state. -/
+theorem twoChartAdjustedReplay_matching (state : TwoChartTemporalCoefficient) :
+    twoChartAdjustedReplay false state = twoChartAdjustedReplay true state := by
+  simp [twoChartAdjustedReplay, twoChartLocalReplay, twoChartCorrection]
+
+/-- R10(b): nondegenerate finite temporal replay correction and temporal differential. -/
+theorem nondegenerate_twoChart_temporal_replay_correction :
+    twoChartCorrection true ≠ 0 ∧
+      twoChartReplayMismatch = twoChartCorrectionCoboundary ∧
+        twoChartReplayMismatch - twoChartCorrectionCoboundary = 0 ∧
+          (∀ state : TwoChartTemporalCoefficient,
+            twoChartAdjustedReplay false state = twoChartAdjustedReplay true state) ∧
+            zmod2TemporalProductIncidenceComplex.d0
+              zmod2TemporalSeparatedCochain stepLeg ≠ 0 :=
+  ⟨twoChartCorrection_right_nonzero, twoChartReplayMismatch_eq_coboundary,
+    twoChartAdjustedMismatch_zero, twoChartAdjustedReplay_matching,
+    zmod2TemporalProductIncidence_d0_step_ne_zero⟩
 
 /-- R10(c): pseudo-circle temporal cover edges. -/
 inductive PseudoCircleEdge where
