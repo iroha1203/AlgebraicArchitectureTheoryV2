@@ -550,7 +550,7 @@ def semanticRepairExample92CircleLawObstructionIdeal :=
 def semanticRepairExample92CircleLawQuotientOneNonzero :=
   AAT.AG.Examples.SemanticRepairPart10.circleLawQuotientOne_ne_zero
 
-def semanticRepairExample92CircleLawQuotientEquivF2 :=
+noncomputable def semanticRepairExample92CircleLawQuotientEquivF2 :=
   AAT.AG.Examples.SemanticRepairPart10.circleLawQuotientEquivF2
 
 def semanticRepairExample92CircleLawQuotientOneToF2 :=
