@@ -86,6 +86,12 @@ Body-side current input surface for the generated-pair route.
 At the AG-body level this is the existing theorem-6 cover bridge typed over the
 selected law-equation cover-relative Cech cover.  It deliberately returns the
 existing body bridge type instead of importing the research-only G-06 surface.
+
+Role split: this thin `def` only re-types the cover bridge; it carries no
+sheaf-descent data.  The rich input surface that the theorem-7.5 routes
+consume is the structure `LawEquationGeneratedCurrentG06InputSurface`, which
+additionally records the selected cover, its membership, the sheaf condition,
+and the descent object.
 -/
 def lawEquationCurrentG06InputSurface
     {P : SemanticAtomProjection.{u, v}}
@@ -113,6 +119,11 @@ Build the bounded semantic Cech data directly from a cover-relative Cech
 complex.  The degree objects and differentials are not supplied independently:
 `C0`, `C1`, `C2`, `delta0`, and `delta1` are exactly `K.Cn 0`, `K.Cn 1`,
 `K.Cn 2`, `K.d 0`, and `K.d 1`.
+
+Scaffolding: this builder requires `Fintype (K.Cn 0)` / `Fintype (K.Cn 1)`,
+premises absent from theorem 7.5.  It supports the bounded `from*` routes
+only; the canonical theorem-7.5 entry-point is the finite-free
+`lawEquation_constructs_groundedComparisonPacket_finiteFree`.
 -/
 def coverRelativeCechDataOfComplex
     {P : SemanticAtomProjection.{u, v}}
@@ -148,6 +159,11 @@ def coverRelativeCechDataOfComplex
 /--
 Additive laws for the bounded Cech data generated from a cover-relative
 complex.  The additive structure and differential laws come from `K`.
+
+Scaffolding: inherits the `Fintype` premises of
+`coverRelativeCechDataOfComplex`, which are absent from theorem 7.5; the
+canonical theorem-7.5 entry-point is the finite-free
+`lawEquation_constructs_groundedComparisonPacket_finiteFree`.
 -/
 def coverRelativeAdditiveCechDataOfComplex
     {P : SemanticAtomProjection.{u, v}}
@@ -186,6 +202,11 @@ def coverRelativeAdditiveCechDataOfComplex
 /--
 Generated boundary-relation data whose Cech degrees and differentials are
 read from the selected cover-relative complex.
+
+Scaffolding: inherits the `Fintype` premises of
+`coverRelativeCechDataOfComplex`, which are absent from theorem 7.5; the
+canonical theorem-7.5 entry-point is the finite-free
+`lawEquation_constructs_groundedComparisonPacket_finiteFree`.
 -/
 def coverRelativeBoundaryAdditiveDataOfComplex
     {P : SemanticAtomProjection.{u, v}}
@@ -371,6 +392,11 @@ AG-body translation of the Research `CurrentG06InputSurface`.
 Unlike the older body bridge, this surface retains the generated
 cover-relative complex, generated coefficient presheaf, selected cover,
 selected cover membership, sheaf condition, and descent object.
+
+Role split: this structure is the rich input surface consumed by the
+theorem-7.5 routes.  The thin `lawEquationCurrentG06InputSurface` `def` above
+only re-types the cover bridge and is kept for the older theorem-6 body
+interface; it is not an alternative theorem-7.5 input.
 -/
 structure LawEquationGeneratedCurrentG06InputSurface
     {P : SemanticAtomProjection.{u, v}}
@@ -1597,6 +1623,11 @@ This is the body-side counterpart of the research-loop
 boundary reading, and semantic/additive H1-zero readings are constructed
 without any displayed-law premise.  The law premise is used only when this
 surface is later combined with the law-dependent degree-zero conclusions.
+
+Scaffolding: this bounded route assumes `Fintype` on the degree-0/1 cochain
+groups, premises absent from theorem 7.5.  The canonical theorem-7.5
+entry-point is the finite-free
+`lawEquation_constructs_groundedComparisonPacket_finiteFree`.
 -/
 theorem lawEquation_generatedBoundary_lawIndependentConclusions_fromPrimitive
     {P : SemanticAtomProjection.{x, v}}
@@ -1718,6 +1749,11 @@ theorem lawEquation_generatedBoundary_lawIndependentConclusions_fromPrimitive
 /--
 Generated-boundary law-independent route with the Research visible conjuncts
 preserved as AG-body fields.
+
+Scaffolding: this bounded route assumes `Fintype` on the degree-0/1 cochain
+groups, premises absent from theorem 7.5.  The canonical theorem-7.5
+entry-point is the finite-free
+`lawEquation_constructs_groundedComparisonPacket_finiteFree`.
 -/
 theorem lawEquation_generatedBoundary_lawIndependentResearchConjuncts_fromPrimitive
     {P : SemanticAtomProjection.{x, v}}
@@ -1829,6 +1865,11 @@ Generated-boundary law-independent route tied to the law-equation body source.
 This is the Research-preserving form used by the final theorem-7.5 route: the
 generated residual is not selected independently, but is exactly
 `K.d 0 source.toPrimitive`.
+
+Scaffolding: this bounded route assumes `Fintype` on the degree-0/1 cochain
+groups, premises absent from theorem 7.5.  The canonical theorem-7.5
+entry-point is the finite-free
+`lawEquation_constructs_groundedComparisonPacket_finiteFree`.
 -/
 theorem lawEquation_generatedBoundary_lawIndependentResearchConjuncts_fromSource
     {P : SemanticAtomProjection.{x, v}}
@@ -1944,6 +1985,11 @@ residual is `K.d 0 primitive`, so the residual cocycle is generated by
 `d ∘ d = 0`, the bounded and finite-free H1-zero statements are generated
 inside the theorem, and the cover-relative zero statement is obtained through
 the generated H1 comparison.
+
+Scaffolding: this bounded route assumes `Fintype` on the degree-0/1 cochain
+groups, premises absent from theorem 7.5.  The canonical theorem-7.5
+entry-point is the finite-free
+`lawEquation_constructs_groundedComparisonPacket_finiteFree`.
 -/
 theorem lawEquation_constructs_generatedBoundary_groundedComparisonPacket_fromPrimitive
     {P : SemanticAtomProjection.{x, v}}
@@ -2032,7 +2078,14 @@ theorem lawEquation_constructs_generatedBoundary_groundedComparisonPacket_fromPr
       lawIndependentConclusions := lawIndependent }
   exact ⟨⟨bridge, packetComparison, packet, hBounded, hSurface, hCover⟩⟩
 
-/-- Lower generated-boundary tuple retaining pointwise source-C0 data only. -/
+/--
+Lower generated-boundary tuple retaining pointwise source-C0 data only.
+
+Scaffolding: this bounded route assumes `Fintype` on the degree-0/1 cochain
+groups, premises absent from theorem 7.5.  The canonical theorem-7.5
+entry-point is the finite-free
+`lawEquation_constructs_groundedComparisonPacket_finiteFree`.
+-/
 theorem lawEquation_constructs_groundedPointwiseResearchConjuncts_fromPrimitive
     {P : SemanticAtomProjection.{x, v}}
     (semanticCover : SemanticRepairCover.{x, v, w, x} P)
@@ -2147,6 +2200,11 @@ Unlike the primitive-parametrized helper, this lower theorem ties the
 pointwise source-C0 reading and generated residual to `source.toPrimitive`.
 It is not the theorem-7.5 completion packet because it contains no actual
 source-C0 differential-zero proof.
+
+Scaffolding: this bounded route assumes `Fintype` on the degree-0/1 cochain
+groups, premises absent from theorem 7.5.  The canonical theorem-7.5
+entry-point is the finite-free
+`lawEquation_constructs_groundedComparisonPacket_finiteFree`.
 -/
 theorem lawEquation_constructs_groundedPointwiseResearchConjuncts_fromSource
     {P : SemanticAtomProjection.{x, v}}
@@ -2563,6 +2621,11 @@ Standard finite-poset generated-boundary form of theorem 7.5.
 This route no longer accepts `FinitePosetCechComparisonData`: the
 cover-relative complex is generated directly from the standard finite-poset
 law and face data.
+
+Scaffolding: this bounded route assumes `Fintype` on the degree-0/1 cochain
+groups, premises absent from theorem 7.5.  The canonical theorem-7.5
+entry-point is the finite-free
+`lawEquation_constructs_groundedComparisonPacket_finiteFree`.
 -/
 theorem lawEquation_constructs_generatedBoundary_groundedComparisonPacket_fromStandardFinitePosetPrimitive
     {P : SemanticAtomProjection.{x, v}}
@@ -2653,6 +2716,11 @@ theorem lawEquation_constructs_generatedBoundary_groundedComparisonPacket_fromSt
 /--
 Standard finite-poset theorem-7.5 route tied to the body source primitive and
 exposing the actual source C0 differential-zero conjunct.
+
+Scaffolding: this bounded route assumes `Fintype` on the degree-0/1 cochain
+groups, premises absent from theorem 7.5.  The canonical theorem-7.5
+entry-point is the finite-free
+`lawEquation_constructs_groundedComparisonPacket_finiteFree`.
 -/
 theorem lawEquation_constructs_groundedResearchConjuncts_fromStandardFinitePosetSource
     {P : SemanticAtomProjection.{x, v}}
@@ -2899,6 +2967,11 @@ Canonical tuple generated-boundary form of theorem 7.5.
 This route does not accept a prebuilt comparison-data package or a supplied
 `d ∘ d = 0` law.  The finite-poset cover-relative complex is generated from
 the canonical tuple geometry and the native law-equation quotient coefficient.
+
+Scaffolding: this bounded route assumes `Fintype` on the degree-0/1 cochain
+groups, premises absent from theorem 7.5.  The canonical theorem-7.5
+entry-point is the finite-free
+`lawEquation_constructs_groundedComparisonPacket_finiteFree`.
 -/
 theorem lawEquation_constructs_generatedBoundary_groundedComparisonPacket_fromCanonicalTuplePrimitive
     {P : SemanticAtomProjection.{x, v}}
@@ -3047,6 +3120,11 @@ Overlap-generated law-equation-spine form of theorem 7.5.
 This is the distilled body-side analogue of the research-loop route that starts
 with the law-equation regime and constructs the canonical tuple geometry from
 the selected finite-poset cover and the site overlap operation.
+
+Scaffolding: this bounded route assumes `Fintype` on the degree-0/1 cochain
+groups, premises absent from theorem 7.5.  The canonical theorem-7.5
+entry-point is the finite-free
+`lawEquation_constructs_groundedComparisonPacket_finiteFree`.
 -/
 theorem lawEquation_constructs_generatedBoundary_groundedComparisonPacket_fromOverlapGeneratedSpinePrimitive
     {P : SemanticAtomProjection.{x, v}}
@@ -3536,12 +3614,21 @@ theorem lawEquation_constructs_finiteFreeLawIndependentConjuncts
     hboundary, hsemantic, hadditive⟩
 
 /--
-Final production theorem corresponding to the Research ten-conjunct packet.
+**Canonical theorem-7.5 witness.**  Final production theorem corresponding to
+the Research ten-conjunct packet.
 
 The standard law, cover-relative complex, selected generated cover, Cech
 source, additive surface, realization, comparison, residual witness, and both
 H1-zero conclusions are all generated internally.  No cochain finiteness is
-assumed.
+assumed, matching the input specification of theorem 7.5 in the body text;
+the bounded `from*` routes above are scaffolding with extra `Fintype`
+premises.
+
+Reading guard: the residual of this generated route is `K.d 0 primitive`, so
+its H1 class is the zero class independently of displayed-law fulfillment
+(theorem 8.2).  This theorem therefore demonstrates degree-zero vanishing on
+the law-generated route, not a cancellation of a nonzero H1 class; the
+nonzero-H1 instance is carried separately by example 9.2 (circle).
 -/
 theorem lawEquation_constructs_groundedComparisonPacket_finiteFree
     (semanticInput : LawEquationSemanticAtomInputBody.{v, x} Ulaw)
