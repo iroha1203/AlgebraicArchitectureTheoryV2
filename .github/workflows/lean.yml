@@ -2,12 +2,6 @@ name: Lean
 
 on:
   workflow_dispatch:
-    inputs:
-      run_research:
-        description: Research package validation を実行する
-        required: false
-        default: false
-        type: boolean
   pull_request:
   push:
     branches:
@@ -30,10 +24,9 @@ jobs:
           PR_BASE: ${{ github.event.pull_request.base.sha }}
           PUSH_BASE: ${{ github.event.before }}
           HEAD_SHA: ${{ github.sha }}
-          DISPATCH_RESEARCH: ${{ inputs.run_research || false }}
         run: |
           if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
-            echo "run=$DISPATCH_RESEARCH" >>"$GITHUB_OUTPUT"
+            echo "run=true" >>"$GITHUB_OUTPUT"
             exit 0
           fi
           base="$PUSH_BASE"
@@ -42,7 +35,7 @@ jobs:
             base="$(git rev-list --max-parents=0 "$HEAD_SHA" | tail -n 1)"
           fi
           if git diff --name-only "$base...$HEAD_SHA" | grep -Eq \
-              '^(lakefile\.toml$|lake-manifest\.json$|research/lean/|\.github/lean_quality/(check_research_migration|check_research_package|test_research_migration|test_research_package))'; then
+              '^(lakefile\.toml$|lake-manifest\.json$|research/lean/|\.github/lean_quality/(check_research_migration|check_research_package|test_research_migration|test_research_package)|\.github/workflows/lean\.yml$)'; then
             echo "run=true" >>"$GITHUB_OUTPUT"
           else
             echo "run=false" >>"$GITHUB_OUTPUT"
