@@ -1484,161 +1484,510 @@ inductive ReplayMismatchValue where
 abbrev zeroReplaySheafCover : Sieve FiniteModel.siteBase :=
   Sieve.generate FiniteModel.siteSingletonCover.presieve
 
-/-! ### Concrete negative instance for the generic class-zero certificate -/
+/-! ### Restriction-faithful negative instance for the generic class-zero certificate -/
 
-/-- The `ZMod 2` replay fixture uses the same selected descent-law shape. -/
-def zmod2ReplayTemporalLaw : TemporalLaw zmod2TemporalReplayStatePresheaf :=
-  TemporalLaw.descentTemporalLaw Unit (fun _ => p0) (fun _ => p1)
-    (fun _ => stepLeg) (fun _ _ _ => True)
+/-- Incidence simplices of the actual two-patch temporal product. -/
+abbrev TwoPatchReplayTemporalIncidenceSimplex :=
+  Sigma fun p : twoPatchReplayTemporalSite.Point =>
+    Sigma fun q : twoPatchReplayTemporalSite.Point =>
+      twoPatchReplayTemporalSite.IncidenceLeg p q
 
-/-- The product-point cover used to expose the non-coboundary identity-leg mismatch. -/
-def zmod2NonCoboundaryReplayTemporalCover : TemporalCover temporalSite where
-  baseTrace := TinyTime.t1
-  baseContext := context0
-  Index := temporalSite.Point
-  finiteIndex := by
-    change Finite (TinyTime × PUnit)
-    infer_instance
-  chartTrace := fun p => p.1
-  chartContext := fun p => p.2
-  traceToBase := fun _ => ()
-  traceToBase_selected := fun _ => trivial
-  contextToBase := by
-    intro _p
-    change True
-    trivial
+/-- Selected simplices for the actual temporal-incidence cover. -/
+def twoPatchReplayTemporalIncidenceSimplexType : Nat -> Type
+  | 0 => twoPatchReplayTemporalSite.Point
+  | 1 => TwoPatchReplayTemporalIncidenceSimplex
+  | _ + 2 => Empty
 
-/-- Compare every product point with its chart in the product-incidence cover. -/
-def zmod2NonCoboundaryReplayCoverComparison :
-    TemporalCoverToSiteCover zmod2NonCoboundaryReplayTemporalCover
-      zmod2TemporalProductCoverRelativeCover where
-  siteIndexOf := fun p => p
-  chart_eq := by intro _p; rfl
+/-- Selected faces of the actual temporal-incidence cover. -/
+def twoPatchReplayTemporalIncidenceFace :
+    ∀ n : Nat, Fin (n + 2) ->
+      twoPatchReplayTemporalIncidenceSimplexType (n + 1) ->
+        twoPatchReplayTemporalIncidenceSimplexType n
+  | 0, i, ⟨p, q, _leg⟩ => if i.val = 0 then q else p
+  | _ + 1, _i, σ => Empty.elim σ
+
+/-- The actual spatial object selected by a two-patch context index. -/
+def twoPatchReplayNegativeContextObject
+    (i : FiniteModel.TwoPatchContextIndex) : FiniteModel.twoPatchSite.category :=
+  Site.ContextCategoryObject.of FiniteModel.twoPatchContextPreorder
+    (FiniteModel.twoPatchContext i)
+
+/-- A readable site arrow between any two selected concrete context objects. -/
+noncomputable def twoPatchReplayNegativeContextArrow
+    (source target : FiniteModel.TwoPatchContextIndex) :
+    twoPatchReplayNegativeContextObject source ⟶
+      twoPatchReplayNegativeContextObject target :=
+  homOfLE ⟨FiniteModel.twoPatchContextMorphism source target,
+    FiniteModel.twoPatchContextMorphism_isRestriction source target⟩
+
+/-- The actual chart object selected by a replay-cover index. -/
+def twoPatchReplayNegativeChartObject
+    (i : FiniteModel.TwoPatchCoverIndex) : FiniteModel.twoPatchSite.category :=
+  twoPatchReplayNegativeContextObject (FiniteModel.twoPatchCoverContextIndex i)
+
+/--
+The actual two-patch site cover indexed by all temporal product points and
+incidence legs. Degree-one overlap objects use the selected spatial overlap.
+-/
+noncomputable def twoPatchReplayTemporalIncidenceCoverRelativeCover :
+    Cohomology.CoverRelativeCechCover FiniteModel.twoPatchSite where
+  base := FiniteModel.twoPatchBase
+  Index := twoPatchReplayTemporalSite.Point
+  chart p := twoPatchReplayNegativeContextObject p.2
+  inclusion p := homOfLE (FiniteModel.twoPatchContextLe_sound (by
+    cases p.2 <;> simp [FiniteModel.twoPatchContextIndexLe]))
+  simplex := twoPatchReplayTemporalIncidenceSimplexType
+  overlap
+    | 0, p => twoPatchReplayNegativeContextObject p.2
+    | 1, _ => twoPatchReplayNegativeContextObject .overlap
+    | _ + 2, σ => Empty.elim σ
+  face := twoPatchReplayTemporalIncidenceFace
+  faceRestriction := by
+    intro n
+    cases n with
+    | zero =>
+        intro i σ
+        rcases σ with ⟨p, q, _leg⟩
+        simpa [twoPatchReplayTemporalIncidenceFace] using
+          twoPatchReplayNegativeContextArrow .overlap
+            (if i.val = 0 then q else p).2
+    | succ n =>
+        cases n with
+        | zero => intro _i σ; exact Empty.elim σ
+        | succ _ => intro _i σ; exact Empty.elim σ
+
+/--
+The cover-relative differential is the actual temporal incidence formula
+with identity coefficient restrictions on the two-patch obstruction sheaf.
+-/
+noncomputable def twoPatchReplayTemporalIncidenceCoverRelativeComplex :
+    Cohomology.CoverRelativeCechComplex
+      twoPatchReplayTemporalIncidenceCoverRelativeCover
+      twoPatchReplayTemporalObstructionSheaf where
+  cochainAddCommGroup := by
+    intro n
+    cases n with
+    | zero =>
+        change AddCommGroup (twoPatchReplayTemporalSite.Point -> ZMod 2)
+        infer_instance
+    | succ n =>
+        cases n with
+        | zero =>
+            change AddCommGroup (TwoPatchReplayTemporalIncidenceSimplex -> ZMod 2)
+            infer_instance
+        | succ _ =>
+            change AddCommGroup (Empty -> ZMod 2)
+            infer_instance
+  alternatingFaceCombination := by
+    intro n faces
+    cases n with
+    | zero =>
+        intro σ
+        exact faces σ ⟨0, by decide⟩ - faces σ ⟨1, by decide⟩
+    | succ n =>
+        cases n with
+        | zero => intro σ; exact Empty.elim σ
+        | succ _ => intro σ; exact Empty.elim σ
+  differential := by
+    intro n
+    cases n with
+    | zero =>
+        change ((twoPatchReplayTemporalSite.Point -> ZMod 2) →+
+          (TwoPatchReplayTemporalIncidenceSimplex -> ZMod 2))
+        exact {
+          toFun := fun c σ =>
+            twoPatchReplayTemporalCoefficient.incidenceDifferential c σ.2.2
+          map_zero' := by
+            funext σ
+            simp [Evolution.TemporalCoefficient.incidenceDifferential,
+              Evolution.TemporalCoefficient.restriction]
+          map_add' := by
+            intro x y
+            funext σ
+            simp [Evolution.TemporalCoefficient.incidenceDifferential,
+              Evolution.TemporalCoefficient.restriction, sub_eq_add_neg,
+              add_comm, add_left_comm, add_assoc]
+        }
+    | succ n =>
+        cases n with
+        | zero =>
+            change ((TwoPatchReplayTemporalIncidenceSimplex -> ZMod 2) →+
+              (Empty -> ZMod 2))
+            exact {
+              toFun := fun _ σ => Empty.elim σ
+              map_zero' := by funext σ; exact Empty.elim σ
+              map_add' := by intro _x _y; funext σ; exact Empty.elim σ
+            }
+        | succ _ =>
+            change ((Empty -> ZMod 2) →+ (Empty -> ZMod 2))
+            exact 0
+  differential_eq_alternatingFaceCombination := by
+    intro n c
+    cases n with
+    | zero =>
+        funext σ
+        rcases σ with ⟨p, q, leg⟩
+        change twoPatchReplayTemporalCoefficient.incidenceDifferential
+            (fun p => (show ZMod 2 from c p)) leg =
+          (show ZMod 2 from c q) - (show ZMod 2 from c p)
+        rfl
+    | succ n =>
+        cases n with
+        | zero => funext σ; exact Empty.elim σ
+        | succ _ => funext σ; exact Empty.elim σ
+  differential_comp := by
+    intro n c
+    cases n with
+    | zero => funext σ; exact Empty.elim σ
+    | succ n =>
+        cases n with
+        | zero => funext σ; exact Empty.elim σ
+        | succ _ => rfl
+
+/-- Compare the selected two replay charts with the temporal-incidence cover. -/
+noncomputable def twoPatchReplayNonCoboundaryCoverComparison :
+    TemporalCoverToSiteCover twoPatchReplayTemporalCover
+      twoPatchReplayTemporalIncidenceCoverRelativeCover where
+  siteIndexOf := fun i =>
+    (twoPatchReplayTemporalCover.chartTrace i,
+      twoPatchReplayTemporalCover.chartContext i)
+  chart_eq := by intro i; cases i <;> rfl
   base_eq := rfl
   preservesTraceLeg := fun _ => trivial
-  preservesContextLeg := by
-    intro p
-    rcases p with ⟨_time, context⟩
-    cases context
-    rfl
+  preservesContextLeg := twoPatchReplayTemporalCoverComparison.preservesContextLeg
 
-/-- The non-coboundary replay bridge uses the actual product-incidence complex. -/
-def zmod2NonCoboundaryReplayBridge :
-    TemporalCechBridge temporalSite
-      zmod2TemporalCoefficient.obstructionSheaf where
-  temporalCover := zmod2NonCoboundaryReplayTemporalCover
-  siteCover := zmod2TemporalProductCoverRelativeCover
-  coverComparison := zmod2NonCoboundaryReplayCoverComparison
-  siteComplex := zmod2TemporalProductCoverRelativeComplex
+/-- The negative replay bridge uses the actual two-patch incidence complex. -/
+noncomputable def twoPatchReplayNonCoboundaryBridge :
+    TemporalCechBridge twoPatchReplayTemporalSite
+      twoPatchReplayTemporalObstructionSheaf where
+  temporalCover := twoPatchReplayTemporalCover
+  siteCover := twoPatchReplayTemporalIncidenceCoverRelativeCover
+  coverComparison := twoPatchReplayNonCoboundaryCoverComparison
+  siteComplex := twoPatchReplayTemporalIncidenceCoverRelativeComplex
 
-/-- Raw identity replay on every selected product point. -/
-def zmod2NonCoboundaryReplayRawData :
-    ReplayRawDescentData zmod2TemporalReplayStatePresheaf
-      zmod2TemporalCoefficient where
-  bridge := zmod2NonCoboundaryReplayBridge
+/-- The selected identity point used to detect a non-coboundary mismatch. -/
+noncomputable def twoPatchReplayNonCoboundaryIdentityPoint :
+    twoPatchReplayTemporalSite.Point :=
+  (TinyTime.t0, FiniteModel.TwoPatchContextIndex.overlap)
+
+/-- The selected identity simplex in the actual temporal-incidence cover. -/
+noncomputable def twoPatchReplayNonCoboundaryIdentitySimplex :
+    TwoPatchReplayTemporalIncidenceSimplex :=
+  ⟨twoPatchReplayNonCoboundaryIdentityPoint,
+    twoPatchReplayNonCoboundaryIdentityPoint,
+    twoPatchReplayTemporalSite.idLeg
+      twoPatchReplayNonCoboundaryIdentityPoint⟩
+
+/-- The actual replay incidence simplex from the overlap source to the base target. -/
+noncomputable def twoPatchReplayNonCoboundarySelectedSimplex :
+    TwoPatchReplayTemporalIncidenceSimplex :=
+  ⟨twoPatchReplayTemporalCechSource, twoPatchReplayTemporalTarget,
+    twoPatchReplayTemporalCechLeg⟩
+
+/-- The selected two-patch replay coefficient is zero on the left and one on the right. -/
+def twoPatchReplayNonCoboundaryChartCoefficient
+    (i : FiniteModel.TwoPatchCoverIndex) : ZMod 2 :=
+  match i with
+  | .left => 0
+  | .right => 1
+
+/-- Raw local translations whose two actual chart restrictions differ. -/
+noncomputable def twoPatchReplayNonCoboundaryRawData :
+    ReplayRawDescentData twoPatchReplayTemporalStatePresheaf
+      twoPatchReplayTemporalCoefficient where
+  bridge := twoPatchReplayNonCoboundaryBridge
   sourceTrace := TinyTime.t0
   targetTrace := TinyTime.t1
   traceArrow := tinyStep
   traceArrow_selected := twoStep_step_selected
-  replay := fun _i state => state
+  replay := by
+    intro i state
+    change ZMod 2 at state ⊢
+    exact state + twoPatchReplayNonCoboundaryChartCoefficient i
 
-/-- The identity-leg cochain, read in the cover-relative product complex. -/
-def zmod2NonCoboundaryReplayMismatch :
-    zmod2NonCoboundaryReplayBridge.siteComplex.Cn 1 :=
+/-- The two actual chart objects are distinct. -/
+theorem twoPatchReplayChartObject_left_ne_right :
+    twoPatchReplayNegativeChartObject .left ≠
+      twoPatchReplayNegativeChartObject .right := by
+  intro h
+  have hctx := congrArg Site.ContextCategoryObject.ctx h
+  cases hctx
+
+/-- Coefficient assigned to a local replay section over an arbitrary cover member. -/
+noncomputable def twoPatchReplayNonCoboundaryObjectCoefficient
+    (Y : FiniteModel.twoPatchSite.category) : ZMod 2 := by
+  classical
+  exact if Y = twoPatchReplayNegativeChartObject .right then 1 else 0
+
+/-- The selected object coefficient reproduces the two chart coefficients. -/
+@[simp] theorem twoPatchReplayNonCoboundaryObjectCoefficient_chart
+    (i : FiniteModel.TwoPatchCoverIndex) :
+    twoPatchReplayNonCoboundaryObjectCoefficient
+        (twoPatchReplayNegativeChartObject i) =
+      twoPatchReplayNonCoboundaryChartCoefficient i := by
+  cases i
+  · rw [twoPatchReplayNonCoboundaryObjectCoefficient]
+    simp [twoPatchReplayChartObject_left_ne_right,
+      twoPatchReplayNonCoboundaryChartCoefficient]
+  · rw [twoPatchReplayNonCoboundaryObjectCoefficient]
+    simp [twoPatchReplayNonCoboundaryChartCoefficient]
+
+/-- The generated actual two-patch cover used by the negative replay representation. -/
+noncomputable def twoPatchReplayNonCoboundarySheafCover : Sieve FiniteModel.twoPatchBase :=
+  Sieve.generate FiniteModel.twoPatchCover.presieve
+
+/-- Local translation sections whose actual left/right coefficients differ by one. -/
+noncomputable def twoPatchReplayNonCoboundaryLocalSections :
+    Site.AATLocalSectionFamily FiniteModel.twoPatchSite
+      FiniteModel.twoPatchZMod2TranslationReplayPresheaf
+      twoPatchReplayNonCoboundarySheafCover :=
+  fun Y _f _hf => ⟨twoPatchReplayNonCoboundaryObjectCoefficient Y⟩
+
+/-- The constant-one incidence cochain is read nontrivially by actual restrictions. -/
+noncomputable def twoPatchReplayNonCoboundaryMismatch :
+    twoPatchReplayNonCoboundaryBridge.siteComplex.Cn 1 :=
   fun _σ => (1 : ZMod 2)
 
 /--
-Concrete representation whose mismatch is the non-coboundary identity-leg
-cochain.  The overlap reader is deliberately the zero additive reading: this
-fixture tests availability of the class-zero certificate, while the actual
-two-patch completion target below supplies the restriction-faithful replay
-representation used for descent.
+Read an incidence cochain against the actual difference of the two local
+section coefficients. The target mismatch is sent to that restriction
+difference rather than annihilated by the reader.
 -/
-def zmod2NonCoboundaryReplayRepresentation :
-    ReplayCoefficientRepresentation zmod2NonCoboundaryReplayRawData where
-  replaySheaf := zmod2TemporalCoefficient.obstructionSheaf.carrier
-  descentCover := zeroReplaySheafCover
-  descentCover_topological := FiniteModel.siteSingletonCover_topologyCover
+noncomputable def twoPatchReplayNonCoboundaryOverlapCochainValue
+    {Y Z W : FiniteModel.twoPatchSite.category}
+    (_f : Y ⟶ FiniteModel.twoPatchBase)
+    (_g : Z ⟶ FiniteModel.twoPatchBase)
+    (_leftRestriction : W ⟶ Y) (_rightRestriction : W ⟶ Z)
+    (cochain : twoPatchReplayNonCoboundaryBridge.siteComplex.Cn 1) : ZMod 2 :=
+  (twoPatchReplayNonCoboundaryObjectCoefficient Y -
+      twoPatchReplayNonCoboundaryObjectCoefficient Z) *
+    (show ZMod 2 from
+      cochain twoPatchReplayNonCoboundarySelectedSimplex)
+
+/-- The negative fixture uses an equality-sensitive descent law. -/
+noncomputable def twoPatchReplayNonCoboundaryTemporalLaw :
+    TemporalLaw twoPatchReplayTemporalStatePresheaf :=
+  TemporalLaw.descentTemporalLaw Unit
+    (fun _ => twoPatchReplayNonCoboundaryIdentityPoint)
+    (fun _ => twoPatchReplayNonCoboundaryIdentityPoint)
+    (fun _ => twoPatchReplayTemporalSite.idLeg
+      twoPatchReplayNonCoboundaryIdentityPoint)
+    (fun _ source target => source = target)
+
+/--
+Concrete negative representation whose non-coboundary cochain is read as the
+actual restricted replay-section difference on the selected temporal step.
+Correction sections retain the input cochain through the same incidence
+differential.
+-/
+noncomputable def twoPatchReplayNonCoboundaryRepresentation :
+    ReplayCoefficientRepresentation twoPatchReplayNonCoboundaryRawData where
+  replaySheaf := FiniteModel.twoPatchZMod2TranslationReplaySheaf
+  descentCover := twoPatchReplayNonCoboundarySheafCover
+  descentCover_topological := FiniteModel.twoPatchCover_topologyCover
   chartInCover := by
-    intro _i
-    exact Sieve.le_generate FiniteModel.siteSingletonCover.presieve _
-      (Presieve.ofArrows.mk PUnit.unit)
-  localSections := fun _Y _f _hf => (0 : ZMod 2)
-  localReplayOfSection := by
-    intro _i replaySection state
-    change ZMod 2 at replaySection state ⊢
-    exact state + replaySection
+    intro i
+    simpa [twoPatchReplayNonCoboundaryBridge,
+      twoPatchReplayNonCoboundaryCoverComparison,
+      twoPatchReplayTemporalIncidenceCoverRelativeCover,
+      twoPatchReplayNonCoboundarySheafCover]
+      using Sieve.le_generate FiniteModel.twoPatchCover.presieve _
+        (Presieve.ofArrows.mk i)
+  localSections := twoPatchReplayNonCoboundaryLocalSections
+  localReplayOfSection := fun _i replaySection state =>
+    (show ZMod 2 from state) + replaySection.coefficient
   localReplay_from_section := by
-    intro _i
+    intro i
     funext state
-    change (show ZMod 2 from state) + 0 = (show ZMod 2 from state)
-    exact add_zero (show ZMod 2 from state)
-  coefficientReading := fun _X replaySection => replaySection
-  sectionAction := fun _X replaySection correction => replaySection - correction
+    change (show ZMod 2 from state) +
+        twoPatchReplayNonCoboundaryObjectCoefficient
+          (twoPatchReplayNegativeChartObject i) =
+      (show ZMod 2 from state) +
+        twoPatchReplayNonCoboundaryChartCoefficient i
+    rw [twoPatchReplayNonCoboundaryObjectCoefficient_chart]
+  coefficientReading := fun _X replaySection => replaySection.coefficient
+  sectionAction := fun _X replaySection correction =>
+    FiniteModel.TwoPatchZMod2TranslationReplay.adjust replaySection correction
   sectionAction_zero := by
     intro _X replaySection
-    exact sub_zero replaySection
+    apply FiniteModel.TwoPatchZMod2TranslationReplay.ext
+    exact sub_zero replaySection.coefficient
   sectionAction_restrict := by
     intro _X _Y _q _replaySection _correction
     rfl
   coefficientReading_action := by
     intro _X _replaySection _correction
     rfl
-  correctionSections := fun _correction _Y _f _hf => (0 : ZMod 2)
+  correctionSections := fun correction Y _f _hf =>
+    twoPatchReplayNonCoboundaryObjectCoefficient Y *
+      (show ZMod 2 from
+        (twoPatchReplayNonCoboundaryBridge.siteComplex.d 0 correction)
+          twoPatchReplayNonCoboundarySelectedSimplex)
   correctionSections_zero := by
-    intro _Y _f _hf
-    rfl
+    intro Y _f _hf
+    change twoPatchReplayNonCoboundaryObjectCoefficient Y * (0 : ZMod 2) = 0
+    ring
   coefficientReading_zero_reflecting := by
     intro _X left right hdifference
+    apply FiniteModel.TwoPatchZMod2TranslationReplay.ext
     exact sub_eq_zero.mp hdifference
-  overlapCochainValue := fun _f _g _leftRestriction _rightRestriction _cochain =>
-    (0 : ZMod 2)
+  overlapCochainValue := twoPatchReplayNonCoboundaryOverlapCochainValue
   overlapCochainValue_zero := by
     intro _Y _Z _W _f _g _leftRestriction _rightRestriction
-    rfl
+    change (twoPatchReplayNonCoboundaryObjectCoefficient _Y -
+      twoPatchReplayNonCoboundaryObjectCoefficient _Z) * (0 : ZMod 2) = 0
+    ring
   overlapCochainValue_sub := by
-    intro _Y _Z _W _f _g _leftRestriction _rightRestriction _left _right
-    exact (sub_self 0).symm
-  mismatchCochain := zmod2NonCoboundaryReplayMismatch
+    intro _Y _Z _W _f _g _leftRestriction _rightRestriction left right
+    change (twoPatchReplayNonCoboundaryObjectCoefficient _Y -
+        twoPatchReplayNonCoboundaryObjectCoefficient _Z) *
+          ((show ZMod 2 from left twoPatchReplayNonCoboundarySelectedSimplex) -
+            (show ZMod 2 from right twoPatchReplayNonCoboundarySelectedSimplex)) =
+      (twoPatchReplayNonCoboundaryObjectCoefficient _Y -
+          twoPatchReplayNonCoboundaryObjectCoefficient _Z) *
+            (show ZMod 2 from left twoPatchReplayNonCoboundarySelectedSimplex) -
+        (twoPatchReplayNonCoboundaryObjectCoefficient _Y -
+          twoPatchReplayNonCoboundaryObjectCoefficient _Z) *
+            (show ZMod 2 from right twoPatchReplayNonCoboundarySelectedSimplex)
+    ring
+  mismatchCochain := twoPatchReplayNonCoboundaryMismatch
   restriction_difference := by
-    intro _Y _Z _W _f _hf _g _hg _leftRestriction _rightRestriction
-    change (0 : ZMod 2) - 0 = 0
-    exact sub_self 0
+    intro Y Z _W _f _hf _g _hg _leftRestriction _rightRestriction
+    change twoPatchReplayNonCoboundaryObjectCoefficient Y -
+        twoPatchReplayNonCoboundaryObjectCoefficient Z =
+      (twoPatchReplayNonCoboundaryObjectCoefficient Y -
+        twoPatchReplayNonCoboundaryObjectCoefficient Z) * 1
+    ring
   correction_restriction_difference := by
-    intro _correction _Y _Z _W _f _hf _g _hg _leftRestriction _rightRestriction
-    change (0 : ZMod 2) - 0 = 0
-    exact sub_self 0
+    intro correction Y Z _W _f _hf _g _hg _leftRestriction _rightRestriction
+    change twoPatchReplayNonCoboundaryObjectCoefficient Y *
+          (show ZMod 2 from
+            (twoPatchReplayNonCoboundaryBridge.siteComplex.d 0 correction)
+              twoPatchReplayNonCoboundarySelectedSimplex) -
+        twoPatchReplayNonCoboundaryObjectCoefficient Z *
+          (show ZMod 2 from
+            (twoPatchReplayNonCoboundaryBridge.siteComplex.d 0 correction)
+              twoPatchReplayNonCoboundarySelectedSimplex) =
+      (twoPatchReplayNonCoboundaryObjectCoefficient Y -
+        twoPatchReplayNonCoboundaryObjectCoefficient Z) *
+          (show ZMod 2 from
+            (twoPatchReplayNonCoboundaryBridge.siteComplex.d 0 correction)
+              twoPatchReplayNonCoboundarySelectedSimplex)
+    ring
 
-/-- Replay data carrying the concrete non-coboundary product mismatch. -/
-def zmod2NonCoboundaryReplayData :
-    ReplayDescentData zmod2TemporalReplayStatePresheaf
-      zmod2TemporalCoefficient zmod2ReplayTemporalLaw where
-  raw := zmod2NonCoboundaryReplayRawData
-  representation := zmod2NonCoboundaryReplayRepresentation
-  mismatchSupportedByLaw := True
-  mismatchSupportedByLaw_cert := trivial
+/-- The represented local replay section on one selected actual chart. -/
+noncomputable def twoPatchReplayNonCoboundarySelectedLocalSection
+    (i : FiniteModel.TwoPatchCoverIndex) :
+    FiniteModel.TwoPatchZMod2TranslationReplay :=
+  twoPatchReplayNonCoboundaryRepresentation.localSections
+    (twoPatchReplayNonCoboundaryBridge.siteCover.inclusion
+      (twoPatchReplayNonCoboundaryCoverComparison.siteIndexOf i))
+    (twoPatchReplayNonCoboundaryRepresentation.chartInCover i)
 
-/-- The concrete identity-leg mismatch is not a degree-zero coboundary. -/
-theorem zmod2NonCoboundaryReplayMismatch_not_coboundary :
-    ¬ ∃ correction : zmod2NonCoboundaryReplayBridge.siteComplex.Cn 0,
-      zmod2NonCoboundaryReplayData.mismatchCochain =
-        zmod2NonCoboundaryReplayBridge.siteComplex.d 0 correction := by
+/-- The selected represented section retains its concrete chart coefficient. -/
+@[simp] theorem twoPatchReplayNonCoboundarySelectedLocalSection_coefficient
+    (i : FiniteModel.TwoPatchCoverIndex) :
+    (twoPatchReplayNonCoboundarySelectedLocalSection i).coefficient =
+      twoPatchReplayNonCoboundaryChartCoefficient i := by
+  change twoPatchReplayNonCoboundaryObjectCoefficient
+      (twoPatchReplayNegativeChartObject i) =
+    twoPatchReplayNonCoboundaryChartCoefficient i
+  exact twoPatchReplayNonCoboundaryObjectCoefficient_chart i
+
+/-- Restrict one represented chart replay to the actual spatial overlap. -/
+noncomputable def twoPatchReplayNonCoboundaryRestrictedLocalSection
+    (i : FiniteModel.TwoPatchCoverIndex) :
+    FiniteModel.TwoPatchZMod2TranslationReplay :=
+  FiniteModel.twoPatchZMod2TranslationReplayPresheaf.map
+    (twoPatchReplayNegativeContextArrow .overlap
+      (FiniteModel.twoPatchCoverContextIndex i)).op
+    (twoPatchReplayNonCoboundarySelectedLocalSection i)
+
+/-- Restriction preserves the selected translation coefficient. -/
+@[simp] theorem twoPatchReplayNonCoboundaryRestrictedLocalSection_coefficient
+    (i : FiniteModel.TwoPatchCoverIndex) :
+    (twoPatchReplayNonCoboundaryRestrictedLocalSection i).coefficient =
+      twoPatchReplayNonCoboundaryChartCoefficient i := by
+  change (twoPatchReplayNonCoboundarySelectedLocalSection i).coefficient =
+    twoPatchReplayNonCoboundaryChartCoefficient i
+  exact twoPatchReplayNonCoboundarySelectedLocalSection_coefficient i
+
+/--
+The selected overlap reader sends the concrete mismatch to the nonzero actual
+right-minus-left restriction difference.
+-/
+theorem twoPatchReplayNonCoboundaryRestrictionDifference_reads_mismatch :
+    (twoPatchReplayNonCoboundaryRestrictedLocalSection .right).coefficient -
+        (twoPatchReplayNonCoboundaryRestrictedLocalSection .left).coefficient =
+      twoPatchReplayNonCoboundaryOverlapCochainValue
+        (twoPatchReplayNonCoboundaryBridge.siteCover.inclusion
+          (twoPatchReplayNonCoboundaryCoverComparison.siteIndexOf .right))
+        (twoPatchReplayNonCoboundaryBridge.siteCover.inclusion
+          (twoPatchReplayNonCoboundaryCoverComparison.siteIndexOf .left))
+        (twoPatchReplayNegativeContextArrow .overlap .right)
+        (twoPatchReplayNegativeContextArrow .overlap .left)
+        twoPatchReplayNonCoboundaryMismatch ∧
+      (twoPatchReplayNonCoboundaryRestrictedLocalSection .right).coefficient -
+        (twoPatchReplayNonCoboundaryRestrictedLocalSection .left).coefficient = 1 := by
+  constructor
+  · have h := twoPatchReplayNonCoboundaryRepresentation.restriction_difference
+      (twoPatchReplayNonCoboundaryBridge.siteCover.inclusion
+        (twoPatchReplayNonCoboundaryCoverComparison.siteIndexOf .right))
+      (twoPatchReplayNonCoboundaryRepresentation.chartInCover .right)
+      (twoPatchReplayNonCoboundaryBridge.siteCover.inclusion
+        (twoPatchReplayNonCoboundaryCoverComparison.siteIndexOf .left))
+      (twoPatchReplayNonCoboundaryRepresentation.chartInCover .left)
+      (twoPatchReplayNegativeContextArrow .overlap .right)
+      (twoPatchReplayNegativeContextArrow .overlap .left)
+    simpa [twoPatchReplayNonCoboundaryRestrictedLocalSection,
+      twoPatchReplayNonCoboundarySelectedLocalSection] using h
+  · rw [twoPatchReplayNonCoboundaryRestrictedLocalSection_coefficient,
+      twoPatchReplayNonCoboundaryRestrictedLocalSection_coefficient]
+    rfl
+
+/-- The raw replay difference is the nonzero coefficient selected by the law. -/
+def twoPatchReplayNonCoboundarySupportedByLaw : Prop :=
+  ∀ state : ZMod 2,
+    (show ZMod 2 from
+      twoPatchReplayNonCoboundaryRawData.replay .right state) -
+      (show ZMod 2 from
+        twoPatchReplayNonCoboundaryRawData.replay .left state) = 1
+
+/-- The selected raw replay difference satisfies its concrete support equation. -/
+theorem twoPatchReplayNonCoboundarySupportedByLaw_cert :
+    twoPatchReplayNonCoboundarySupportedByLaw := by
+  intro state
+  change state + 1 - (state + 0) = (1 : ZMod 2)
+  ring
+
+/-- Replay data carrying the actual non-coboundary restriction mismatch. -/
+noncomputable def twoPatchReplayNonCoboundaryData :
+    ReplayDescentData twoPatchReplayTemporalStatePresheaf
+      twoPatchReplayTemporalCoefficient twoPatchReplayNonCoboundaryTemporalLaw where
+  raw := twoPatchReplayNonCoboundaryRawData
+  representation := twoPatchReplayNonCoboundaryRepresentation
+  mismatchSupportedByLaw := twoPatchReplayNonCoboundarySupportedByLaw
+  mismatchSupportedByLaw_cert := twoPatchReplayNonCoboundarySupportedByLaw_cert
+
+/-- The actual identity-leg restriction mismatch is not a degree-zero coboundary. -/
+theorem twoPatchReplayNonCoboundaryMismatch_not_coboundary :
+    ¬ ∃ correction : twoPatchReplayNonCoboundaryBridge.siteComplex.Cn 0,
+      twoPatchReplayNonCoboundaryData.mismatchCochain =
+        twoPatchReplayNonCoboundaryBridge.siteComplex.d 0 correction := by
   rintro ⟨correction, hcorrection⟩
-  let identitySimplex : ZMod2TemporalIncidenceSimplex :=
-    ⟨p0, p0, temporalSite.idLeg p0⟩
-  have hvalue := congrFun hcorrection identitySimplex
-  have hzero := zmod2TemporalCoefficient.incidenceDifferential_id correction p0
+  have hvalue := congrFun hcorrection
+    twoPatchReplayNonCoboundaryIdentitySimplex
   change (1 : ZMod 2) =
-    zmod2TemporalCoefficient.incidenceDifferential correction
-      (temporalSite.idLeg p0) at hvalue
-  rw [hzero] at hvalue
+    correction twoPatchReplayNonCoboundaryIdentityPoint -
+      correction twoPatchReplayNonCoboundaryIdentityPoint at hvalue
+  rw [sub_self] at hvalue
   exact one_ne_zero hvalue
 
-/-- The generic class-zero certificate fails on the concrete identity-leg mismatch. -/
-theorem zmod2NonCoboundaryReplayTemporalDescentCriterion_unsatisfied :
-    ¬ TemporalDescentCriterion zmod2NonCoboundaryReplayData :=
+/-- The generic class-zero criterion fails on the actual restriction mismatch. -/
+theorem twoPatchReplayNonCoboundaryTemporalDescentCriterion_unsatisfied :
+    ¬ TemporalDescentCriterion twoPatchReplayNonCoboundaryData :=
   TemporalDescentCriterion.not_temporalDescentCriterion_of_mismatch_not_coboundary
-    zmod2NonCoboundaryReplayMismatch_not_coboundary
+    twoPatchReplayNonCoboundaryMismatch_not_coboundary
 
 /-- R10(b): raw replay maps on the temporal cover selected by `temporalBridge`. -/
 def zeroReplayRawDescentData :

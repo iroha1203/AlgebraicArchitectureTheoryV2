@@ -2533,11 +2533,17 @@ def replayAdjustedRestrictionDifference :=
 def replayTemporalDescentCriterionFailsForNonCoboundary :=
   @Evolution.TemporalDescentCriterion.not_temporalDescentCriterion_of_mismatch_not_coboundary
 
-def replayZMod2NonCoboundaryMismatch :=
-  Examples.EvolutionPart9.zmod2NonCoboundaryReplayMismatch_not_coboundary
+def replayTwoPatchRestrictionMismatchNonCoboundary :=
+  Examples.EvolutionPart9.twoPatchReplayNonCoboundaryMismatch_not_coboundary
 
-def replayZMod2NonCoboundaryTemporalCriterionUnsatisfied :=
-  Examples.EvolutionPart9.zmod2NonCoboundaryReplayTemporalDescentCriterion_unsatisfied
+def replayTwoPatchRestrictionTemporalCriterionUnsatisfied :=
+  Examples.EvolutionPart9.twoPatchReplayNonCoboundaryTemporalDescentCriterion_unsatisfied
+
+def replayTwoPatchRestrictionLawSupport :=
+  Examples.EvolutionPart9.twoPatchReplayNonCoboundarySupportedByLaw_cert
+
+def replayTwoPatchRestrictionDifferenceReadsMismatch :=
+  Examples.EvolutionPart9.twoPatchReplayNonCoboundaryRestrictionDifference_reads_mismatch
 
 def replayTwoChartCorrectionRightNonzero :=
   Examples.EvolutionPart9.twoChartCorrection_right_nonzero
