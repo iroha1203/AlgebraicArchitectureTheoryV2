@@ -71,7 +71,14 @@ structure SemanticRepairTypedZeroComparison
   zero_preserved :
     forall source, sourceZero source -> targetZero (target.toTarget source)
 
-/-- X.定理8.4: zero preservation is a theorem of supplied comparison data. -/
+/--
+X.定理8.4: zero preservation is a theorem of supplied comparison data.
+
+Auxiliary restatement: this projects the `zero_preserved` field of the
+supplied comparison.  It documents that the comparison is data — it is not an
+independent zero-preservation theorem, and carries no content beyond its
+input.
+-/
 theorem typedZeroComparison_preserves_zero
     {Source : Type u} {Target : Type v}
     {sourceZero : Source -> Prop} {targetZero : Target -> Prop}
@@ -111,7 +118,14 @@ structure SemanticRepairRefinementZeroComparison
   zero_preserved :
     forall coarse, coarseZero coarse -> fineZero (pullback coarse)
 
-/-- X.定理8.5: refinement zero preservation is data-relative. -/
+/--
+X.定理8.5: refinement zero preservation is data-relative.
+
+Auxiliary restatement: this projects the `zero_preserved` field of the
+supplied comparison.  It documents that the refinement comparison is data —
+it is not an independent zero-preservation theorem, and carries no content
+beyond its input.
+-/
 theorem refinementZeroComparison_preserves_zero
     {Coarse : Type u} {Fine : Type v}
     {coarseZero : Coarse -> Prop} {fineZero : Fine -> Prop}
@@ -150,38 +164,6 @@ theorem refinementZeroComparison_not_unconditional_for_coarseZero_fineNonzero :
   exact
     refinementZeroComparison_blocks_coarseZero_fineNonzero
       comparison PUnit.unit trivial (by intro h; exact h)
-
-/--
-X.§8 fail-closed boundary: cover-relative H1 grounding still requires an
-explicit comparison object.
--/
-theorem coverRelativeH1Boundary_requires_explicit_comparison_provenance
-    {additive : SemanticRepairAdditiveH1Surface.{y, x, z}}
-    {U : AtomCarrier.{r}}
-    {A : ArchitectureObject U}
-    {S : Site.AATSite A}
-    {cover : Cohomology.CoverRelativeCechCover S}
-    {Ob : Cohomology.ObstructionSheaf S}
-    {K : Cohomology.CoverRelativeCechComplex cover Ob}
-    (comparison : SemanticRepairCoverRelativeH1Comparison additive K) :
-    Nonempty (SemanticRepairCoverRelativeH1Comparison additive K) :=
-  ⟨comparison⟩
-
-/--
-X.§8 fail-closed boundary: cover-level provenance is not cochain realization
-provenance; the latter remains explicit data.
--/
-theorem coverRelativeH1Boundary_requires_explicit_cochainRealization_provenance
-    {additive : SemanticRepairAdditiveH1Surface.{y, x, z}}
-    {U : AtomCarrier.{r}}
-    {A : ArchitectureObject U}
-    {S : Site.AATSite A}
-    {cover : Cohomology.CoverRelativeCechCover S}
-    {Ob : Cohomology.ObstructionSheaf S}
-    {K : Cohomology.CoverRelativeCechComplex cover Ob}
-    (realization : SemanticRepairCoverRelativeCochainRealization additive K) :
-    Nonempty (SemanticRepairCoverRelativeCochainRealization additive K) :=
-  ⟨realization⟩
 
 end SemanticRepair
 end AAT.AG

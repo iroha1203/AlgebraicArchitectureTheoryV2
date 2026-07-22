@@ -144,7 +144,7 @@ structure SemanticRepairGroundedGlobalGluingPackage
   boundedAdditiveH1Zero_iff_coverRelativeH1Zero :
     data.toAdditiveCechH1Data.H1Zero <->
       comparison.CoverRelativeResidualH1Zero
-  torsorTrivialization_of_h1Zero : data.NonabelianTorsorTrivial
+  torsorTrivialization_of_h1Zero : data.AdditiveTorsorTrivial
 
 /--
 X.定理7.3: theorem 4.8 plus theorem 7.2 and supplied gluing data yield the
@@ -202,7 +202,7 @@ theorem trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_pa
       globalCoherent_to_coverRelativeH1Zero := hGlobalCover.1
       boundedAdditiveH1Zero_iff_coverRelativeH1Zero := hBoundedCover
       torsorTrivialization_of_h1Zero :=
-        SemanticRepairCoverH1BoundaryRelationAdditiveData.nonabelianTorsorTrivial_of_additiveH1Zero
+        SemanticRepairCoverH1BoundaryRelationAdditiveData.additiveTorsorTrivial_of_additiveH1Zero
           data }
 
 /--
@@ -269,7 +269,7 @@ structure SemanticRepairGeneratedLawIndependentConclusions
   boundedAdditiveH1Zero_iff_coverRelativeH1Zero :
     data.toAdditiveCechH1Data.H1Zero <->
       comparison.CoverRelativeResidualH1Zero
-  torsorTrivialization : data.NonabelianTorsorTrivial
+  torsorTrivialization : data.AdditiveTorsorTrivial
 
 /--
 X.定理7.5 packet: generated end-to-end SAGA realization.
