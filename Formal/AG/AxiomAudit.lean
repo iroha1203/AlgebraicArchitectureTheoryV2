@@ -2170,6 +2170,12 @@ theorem gagaSelectedHodge :
     ∃ h, h = @Measurement.AATGAGASelectedFiniteHodgeData.harmonicKernelIdentifiesCohomology_holds :=
   ⟨@Measurement.AATGAGASelectedFiniteHodgeData.harmonicKernelIdentifiesCohomology_holds, rfl⟩
 
+/-- Direct audit entry for the additive canonical `H¹`/harmonic identification. -/
+theorem gagaSelectedCanonicalH1AddEquiv :
+    ∃ h, h =
+      @Measurement.AATGAGAAllDegreeRealCechHodgeInput.canonicalH1AddEquivLaplacianKernel :=
+  ⟨@Measurement.AATGAGAAllDegreeRealCechHodgeInput.canonicalH1AddEquivLaplacianKernel, rfl⟩
+
 /-- Direct audit entry for the generated-source finite Hodge decomposition. -/
 theorem gagaSelectedHodgeDecomposition :
     ∃ h, h = @Measurement.AATGAGASelectedFiniteHodgeData.finiteHodgeDecomposition_holds :=
@@ -2202,13 +2208,13 @@ theorem gagaSelectedTopologicalCapacity :
 
 /-- Direct audit entry for the selected LawConflict/Tor theorem. -/
 theorem gagaSelectedLawConflictTor :
-    ∃ h, h = @Measurement.SelectedDerivedConflictTheoremPackage.lawConflictTorReading_holds :=
-  ⟨@Measurement.SelectedDerivedConflictTheoremPackage.lawConflictTorReading_holds, rfl⟩
+    ∃ h, h = @Measurement.AATGAGACommonFiniteData.lawConflictTorReading_holds :=
+  ⟨@Measurement.AATGAGACommonFiniteData.lawConflictTorReading_holds, rfl⟩
 
 /-- Direct audit entry for the generated-law all-degree Hilbert accounting. -/
 theorem gagaSelectedHilbertAccounting :
-    ∃ h, h = @Measurement.SelectedDerivedConflictTheoremPackage.hilbertSeriesConflictStatement_holds :=
-  ⟨@Measurement.SelectedDerivedConflictTheoremPackage.hilbertSeriesConflictStatement_holds, rfl⟩
+    ∃ h, h = @Measurement.AATGAGACommonFiniteData.hilbertSeriesConflictStatement_holds :=
+  ⟨@Measurement.AATGAGACommonFiniteData.hilbertSeriesConflictStatement_holds, rfl⟩
 
 /-- Direct audit entry for all certified theorem-12.3 conjuncts. -/
 theorem gagaCertifiedComparisonStatement :

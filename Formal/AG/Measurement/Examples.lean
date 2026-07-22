@@ -3845,6 +3845,13 @@ theorem gagaGeneratedLawIdeal_xz :
     gagaGeneratedLawIdeal .xz = Derived.Counterexample.SharedWitnessCoord.idealV ℝ :=
   rfl
 
+/-- Read each selected profile law handle into the common-ambient monomial
+law carrier used by the GAGA comparison. -/
+def gagaProfileLawToAmbient : FiniteLawHandle → GAGADerivedLawIdeal
+  | .left => .xy
+  | .right => .xz
+  | .alternate => .xy
+
 /-- R11(g): the common ambient for the generated real finite-profile fixture. -/
 def gagaRealCommonAmbient :
     CommonAmbientPair gagaRealMeasurementProfile where
@@ -3924,6 +3931,14 @@ noncomputable def gagaCommonFiniteData :
     certificate := ()
   }
   commonAmbient := gagaRealCommonAmbient
+  profileLawToAmbient := gagaProfileLawToAmbient
+  selectedLeftProfileLaw := .left
+  selectedRightProfileLaw := .right
+  ambientLeftLaw_eq_profile := rfl
+  ambientRightLaw_eq_profile := rfl
+  ambientLawGenerator := gagaDerivedLawGenerator
+  selectedLeftLawGenerator_eq_xy := rfl
+  selectedRightLawGenerator_eq_xz := rfl
   ambientAtomType_eq_source := rfl
   ambientStructureSheafFromProfile := id
   selectedObstructionObject := .selected
@@ -3941,6 +3956,7 @@ noncomputable def gagaCommonFiniteData :
 local instance gagaRealSimplexFinite (n : Nat) : Finite (GAGARealSimplex n) :=
   gagaRealGeometry.coefficientRegime.finiteNerveSimplex n
 
+/-- Computable enumeration of the generated real simplices in each degree. -/
 local instance gagaRealSimplexFintype (n : Nat) :
     Fintype (GAGARealSimplex n) :=
   Fintype.ofFinite _
@@ -4173,7 +4189,6 @@ noncomputable def gagaRealHodgeInput :
 /-- R11(g): finite Hodge data for the single generated Čech source. -/
 noncomputable def gagaSelectedFiniteHodgeData :
     AATGAGASelectedFiniteHodgeData gagaCommonFiniteData where
-  realInput := gagaRealHodgeInput
   allDegreeInput := gagaRealAllDegreeHodgeInput
 
 /-- R11(g): finite Hodge theorem package for the single generated Čech source. -/
@@ -4194,22 +4209,12 @@ def gagaTopologicalDebtTheoremPackage :
   source := gagaFiniteCechSource
   source_eq_common := rfl
 
-/-- R11(g): common-ambient LawConflict input, constructed from ambient law generators. -/
-noncomputable def gagaDerivedConflictTheoremPackage :
-    SelectedDerivedConflictTheoremPackage gagaCommonFiniteData where
-  generatedLawIdeal := by
-    simpa [gagaCommonFiniteData, gagaRealCommonAmbient, gagaRealMeasurementProfile] using
-      gagaGeneratedLawIdeal
-  leftGeneratedIdeal_eq := gagaGeneratedLawIdeal_xy
-  rightGeneratedIdeal_eq := gagaGeneratedLawIdeal_xz
-
 /-- R11(g): every certified GAGA conclusion is derived from the generated source. -/
 noncomputable def gagaCertifiedFields :
     AATGAGACertifiedFields gagaCommonFiniteData where
   finiteHodgeTheoremPackage := gagaFiniteHodgeTheoremPackage
   periodStokesTheoremPackage := gagaPeriodStokesTheoremPackage
   topologicalDebtTheoremPackage := gagaTopologicalDebtTheoremPackage
-  derivedConflictTheoremPackage := gagaDerivedConflictTheoremPackage
 
 /-- R11(g): candidate interfaces remain separated from certified readings. -/
 def gagaCandidateInterfaces :
@@ -4253,9 +4258,13 @@ theorem gagaComparisonExamplePackage :
 /-- R11(g): GAGA fixture over one real finite profile, with certified and candidate
 readings separated. -/
 structure MeasurementPacketGAGAFiniteExample where
+  /-- The certified theorem-12.3 comparison on the generated fixture data. -/
   gagaPackage : AATGAGAFiniteMeasurementComparison gagaComparisonExampleData
+  /-- The certified comparison statement fired on the same fixture data. -/
   certifiedComparison : aatGAGAComparisonStatement gagaComparisonExampleData
+  /-- Candidate interfaces kept separate from the certified readings. -/
   candidateInterfaces : AATGAGACandidateInterfaces gagaRealMeasurementProfile
+  /-- Recorded non-conclusions kept outside the certified statement. -/
   nonConclusionData : AATGAGANonConclusionData gagaRealMeasurementProfile
 
 /-- R11(g): certified readings and candidate interfaces stay separated. -/

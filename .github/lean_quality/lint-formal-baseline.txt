@@ -305,7 +305,6 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.Cohomology.FiniteDimensionalNerveCohomologyData.dimH1 /- definition missing documentation string -/
 #check @AAT.AG.Cohomology.FiniteDimensionalNerveCohomologyData.rank_d0 /- definition missing documentation string -/
 #check @AAT.AG.Cohomology.FiniteDimensionalNerveCohomologyData.rank_d1 /- definition missing documentation string -/
-#check @AAT.AG.Cohomology.FiniteNerveCochainComplex.k /- definition missing documentation string -/
 #check @AAT.AG.Cohomology.FiniteNerveCochainComplex.C0 /- definition missing documentation string -/
 #check @AAT.AG.Cohomology.FiniteNerveCochainComplex.C1 /- definition missing documentation string -/
 #check @AAT.AG.Cohomology.FiniteNerveCochainComplex.C2 /- definition missing documentation string -/
@@ -1139,7 +1138,6 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check AAT.AG.Measurement.SupportLocalizedTransferFiniteExample.nontrivialPairingResidue /- definition missing documentation string -/
 #check AAT.AG.Measurement.SupportLocalizedTransferFiniteExample.nontrivialTransferredResidue /- definition missing documentation string -/
 #check AAT.AG.Measurement.SupportLocalizedTransferFiniteExample.sufficientConditionApplied /- definition missing documentation string -/
-#check AAT.AG.Measurement.MeasurementPacketGAGAFiniteExample.synthesisPackage /- definition missing documentation string -/
 #check AAT.AG.Measurement.PartVIIIFiniteExampleSuite.pseudoCircleMeasuredNonzero /- definition missing documentation string -/
 #check AAT.AG.Measurement.PartVIIIFiniteExampleSuite.squareFreeRepairPackage /- definition missing documentation string -/
 #check AAT.AG.Measurement.PartVIIIFiniteExampleSuite.refactorInvariance /- definition missing documentation string -/
@@ -2435,10 +2433,6 @@ another instance-implicit argument or the return type. -/
 -- Formal.AG.Cohomology.CechComplex
 #check @AAT.AG.Cohomology.CoverRelativeCechComplex.cochainAddCommGroup /- argument 6 self : AAT.AG.Cohomology.CoverRelativeCechComplex
   𝒰 Ob -/
-
--- Formal.AG.Measurement.GAGA
-#check @AAT.AG.Measurement.SelectedTopologicalDebtTheoremPackage.topologicalCapacityStatement /- argument 4 x✝ : AAT.AG.Measurement.SelectedTopologicalDebtTheoremPackage
-  C -/
 
 -- Formal.AG.RepresentationAnalysis.GraphMatrix
 #check @AAT.AG.RepresentationAnalysis.FiniteDirectedGraphTarget.vertexFintype /- argument 4 self : AAT.AG.RepresentationAnalysis.FiniteDirectedGraphTarget
