@@ -19,10 +19,12 @@ require chart finiteness, cochain finiteness, finite-dimensionality, or a
 semantic repair cover.  Finite cover data belongs to the bounded §4 surface
 and concrete instances, not to the general H1 comparison theorem.
 
-The additive regime covers all three displayed degrees: `C2` carries its
-coefficient group and `delta1` is additive, so degree-one cocycles are closed
-under the group operations and `H1` below is a genuine quotient group rather
-than a bare quotient set.
+The additive regime is exactly the body-text one (X.定義4.2–4.3): only `C0`
+and `C1` carry coefficient groups and only `delta0` is additive.  No group on
+`C2` and no additivity of `delta1` is assumed; the group structure on
+degree-one cocycles and on `H1` is generated below relative to a selected
+定義7.1 comparison, whose degree-one carrier identification transports Čech
+cocycle closure back to this surface.
 -/
 structure SemanticRepairAdditiveH1Surface where
   C0 : Type y
@@ -35,28 +37,17 @@ structure SemanticRepairAdditiveH1Surface where
   residual : C1
   [c0AddCommGroup : AddCommGroup C0]
   [c1AddCommGroup : AddCommGroup C1]
-  [c2AddCommGroup : AddCommGroup C2]
   zero1_eq_zero : zero1 = 0
-  zero2_eq_zero : zero2 = 0
   delta0_zero : delta0 0 = 0
   delta0_add : forall left right, delta0 (left + right) = delta0 left + delta0 right
   delta0_neg : forall primitive, delta0 (-primitive) = -delta0 primitive
-  delta1_add : forall left right, delta1 (left + right) = delta1 left + delta1 right
-  delta1_neg : forall cochain, delta1 (-cochain) = -delta1 cochain
   zero1_cocycle : delta1 zero1 = zero2
   delta1_delta0_eq_zero : forall primitive, delta1 (delta0 primitive) = zero2
   residual_cocycle : delta1 residual = zero2
 
 namespace SemanticRepairAdditiveH1Surface
 
-attribute [instance] c0AddCommGroup c1AddCommGroup c2AddCommGroup
-
-/-- X.定義7.1: the degree-one differential kills the group zero. -/
-theorem delta1_zero (data : SemanticRepairAdditiveH1Surface) :
-    data.delta1 0 = 0 := by
-  have h := data.zero1_cocycle
-  rw [data.zero1_eq_zero, data.zero2_eq_zero] at h
-  exact h
+attribute [instance] c0AddCommGroup c1AddCommGroup
 
 /-- X.定理7.2: finite-free semantic 1-cocycles. -/
 def Cocycle (data : SemanticRepairAdditiveH1Surface) :=
@@ -142,32 +133,6 @@ def zeroClass (data : SemanticRepairAdditiveH1Surface) :
 def H1Zero (data : SemanticRepairAdditiveH1Surface) : Prop :=
   data.residualClass = data.zeroClass
 
-/-- X.定理7.2: `delta1` kills natural-number multiples of cocycle values. -/
-theorem delta1_nsmul (data : SemanticRepairAdditiveH1Surface)
-    (n : Nat) (cochain : data.C1)
-    (hcochain : data.delta1 cochain = data.zero2) :
-    data.delta1 (n • cochain) = data.zero2 := by
-  induction n with
-  | zero =>
-      rw [zero_nsmul, data.delta1_zero, data.zero2_eq_zero]
-  | succ n ih =>
-      rw [succ_nsmul, data.delta1_add, ih, hcochain, data.zero2_eq_zero,
-        add_zero]
-
-/-- X.定理7.2: `delta1` kills integer multiples of cocycle values. -/
-theorem delta1_zsmul (data : SemanticRepairAdditiveH1Surface)
-    (n : Int) (cochain : data.C1)
-    (hcochain : data.delta1 cochain = data.zero2) :
-    data.delta1 (n • cochain) = data.zero2 := by
-  cases n with
-  | ofNat m =>
-      rw [Int.ofNat_eq_natCast, natCast_zsmul]
-      exact data.delta1_nsmul m cochain hcochain
-  | negSucc m =>
-      rw [negSucc_zsmul, data.delta1_neg,
-        data.delta1_nsmul (m + 1) cochain hcochain, data.zero2_eq_zero,
-        neg_zero]
-
 /-- X.定理7.2: `delta0` commutes with natural-number multiples. -/
 theorem delta0_nsmul (data : SemanticRepairAdditiveH1Surface)
     (n : Nat) (primitive : data.C0) :
@@ -188,151 +153,6 @@ theorem delta0_zsmul (data : SemanticRepairAdditiveH1Surface)
         data.delta0_nsmul]
   | negSucc m =>
       rw [negSucc_zsmul, negSucc_zsmul, data.delta0_neg, data.delta0_nsmul]
-
-/-- X.定理7.2: zero is a semantic 1-cocycle. -/
-instance cocycleZero (data : SemanticRepairAdditiveH1Surface) :
-    Zero data.Cocycle :=
-  ⟨⟨0, by rw [data.delta1_zero, data.zero2_eq_zero]⟩⟩
-
-/-- X.定理7.2: semantic 1-cocycles are closed under addition. -/
-instance cocycleAdd (data : SemanticRepairAdditiveH1Surface) :
-    Add data.Cocycle :=
-  ⟨fun left right =>
-    ⟨left.1 + right.1, by
-      rw [data.delta1_add left.1 right.1, left.2, right.2, data.zero2_eq_zero,
-        add_zero]⟩⟩
-
-/-- X.定理7.2: semantic 1-cocycles are closed under negation. -/
-instance cocycleNeg (data : SemanticRepairAdditiveH1Surface) :
-    Neg data.Cocycle :=
-  ⟨fun cochain =>
-    ⟨-cochain.1, by
-      rw [data.delta1_neg cochain.1, cochain.2, data.zero2_eq_zero,
-        neg_zero]⟩⟩
-
-/-- X.定理7.2: semantic 1-cocycles are closed under subtraction. -/
-instance cocycleSub (data : SemanticRepairAdditiveH1Surface) :
-    Sub data.Cocycle :=
-  ⟨fun left right =>
-    ⟨left.1 - right.1, by
-      rw [sub_eq_add_neg, data.delta1_add, data.delta1_neg, left.2, right.2,
-        data.zero2_eq_zero, neg_zero, add_zero]⟩⟩
-
-/-- X.定理7.2: semantic 1-cocycles are closed under natural multiples. -/
-instance cocycleSMulNat (data : SemanticRepairAdditiveH1Surface) :
-    SMul Nat data.Cocycle :=
-  ⟨fun n cochain => ⟨n • cochain.1, data.delta1_nsmul n cochain.1 cochain.2⟩⟩
-
-/-- X.定理7.2: semantic 1-cocycles are closed under integer multiples. -/
-instance cocycleSMulInt (data : SemanticRepairAdditiveH1Surface) :
-    SMul Int data.Cocycle :=
-  ⟨fun n cochain => ⟨n • cochain.1, data.delta1_zsmul n cochain.1 cochain.2⟩⟩
-
-/--
-X.定理7.2: semantic 1-cocycles form an abelian group because `delta1` is
-additive and kills zero; the group laws transfer along the injective value
-map.
--/
-instance cocycleAddCommGroup (data : SemanticRepairAdditiveH1Surface) :
-    AddCommGroup data.Cocycle :=
-  Function.Injective.addCommGroup
-    (fun cochain : data.Cocycle => cochain.1) Subtype.val_injective
-    rfl (fun _ _ => rfl) (fun _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl)
-    (fun _ _ => rfl)
-
-/-- X.定理7.2: the zero of semantic additive H1 is the selected zero class. -/
-instance h1Zero (data : SemanticRepairAdditiveH1Surface) : Zero data.H1 :=
-  ⟨data.zeroClass⟩
-
-/-- X.定理7.2: addition descends to semantic additive H1. -/
-instance h1Add (data : SemanticRepairAdditiveH1Surface) : Add data.H1 :=
-  ⟨fun left right =>
-    Quotient.liftOn₂ left right
-      (fun x y => Quotient.mk data.setoid (x + y))
-      (by
-        intro x y x' y' hx hy
-        rcases hx with ⟨p, hp⟩
-        rcases hy with ⟨q, hq⟩
-        apply Quotient.sound
-        refine ⟨p + q, ?_⟩
-        change (x.1 + y.1) - (x'.1 + y'.1) = data.delta0 (p + q)
-        rw [data.delta0_add, ← hp, ← hq]
-        abel)⟩
-
-/-- X.定理7.2: negation descends to semantic additive H1. -/
-instance h1Neg (data : SemanticRepairAdditiveH1Surface) : Neg data.H1 :=
-  ⟨fun cocycleClass =>
-    Quotient.liftOn cocycleClass
-      (fun x => Quotient.mk data.setoid (-x))
-      (by
-        intro x x' hx
-        rcases hx with ⟨p, hp⟩
-        apply Quotient.sound
-        refine ⟨-p, ?_⟩
-        change -x.1 - -x'.1 = data.delta0 (-p)
-        rw [data.delta0_neg, ← hp]
-        abel)⟩
-
-/-- X.定理7.2: subtraction on semantic additive H1. -/
-instance h1Sub (data : SemanticRepairAdditiveH1Surface) : Sub data.H1 :=
-  ⟨fun left right => left + -right⟩
-
-/-- X.定理7.2: natural multiples descend to semantic additive H1. -/
-instance h1SMulNat (data : SemanticRepairAdditiveH1Surface) :
-    SMul Nat data.H1 :=
-  ⟨fun n cocycleClass =>
-    Quotient.liftOn cocycleClass
-      (fun x => Quotient.mk data.setoid (n • x))
-      (by
-        intro x x' hx
-        rcases hx with ⟨p, hp⟩
-        apply Quotient.sound
-        refine ⟨n • p, ?_⟩
-        change n • x.1 - n • x'.1 = data.delta0 (n • p)
-        rw [← smul_sub, hp, data.delta0_nsmul])⟩
-
-/-- X.定理7.2: integer multiples descend to semantic additive H1. -/
-instance h1SMulInt (data : SemanticRepairAdditiveH1Surface) :
-    SMul Int data.H1 :=
-  ⟨fun n cocycleClass =>
-    Quotient.liftOn cocycleClass
-      (fun x => Quotient.mk data.setoid (n • x))
-      (by
-        intro x x' hx
-        rcases hx with ⟨p, hp⟩
-        apply Quotient.sound
-        refine ⟨n • p, ?_⟩
-        change n • x.1 - n • x'.1 = data.delta0 (n • p)
-        rw [← smul_sub, hp, data.delta0_zsmul])⟩
-
-/--
-X.定理7.2: semantic additive H1 is a quotient group.  The group laws transfer
-along the surjective quotient map from the cocycle group, and the zero of the
-group is the selected zero class.
--/
-instance h1AddCommGroup (data : SemanticRepairAdditiveH1Surface) :
-    AddCommGroup data.H1 :=
-  Function.Surjective.addCommGroup (Quotient.mk data.setoid)
-    (fun cocycleClass =>
-      Quotient.inductionOn cocycleClass fun x => ⟨x, rfl⟩)
-    (congrArg (Quotient.mk data.setoid)
-      (Subtype.ext data.zero1_eq_zero.symm))
-    (fun _ _ => rfl) (fun _ => rfl)
-    (fun left right =>
-      congrArg (Quotient.mk data.setoid)
-        (Subtype.ext (sub_eq_add_neg left.1 right.1)))
-    (fun _ _ => rfl) (fun _ _ => rfl)
-
-/-- X.定理7.2: the selected zero class is the zero of the H1 group. -/
-theorem zeroClass_eq_zero (data : SemanticRepairAdditiveH1Surface) :
-    data.zeroClass = (0 : data.H1) :=
-  rfl
-
-/-- X.定理7.2: H1 vanishing is vanishing of the residual class in the group. -/
-theorem h1Zero_iff_residualClass_eq_zero
-    (data : SemanticRepairAdditiveH1Surface) :
-    data.H1Zero <-> data.residualClass = (0 : data.H1) :=
-  Iff.rfl
 
 end SemanticRepairAdditiveH1Surface
 
@@ -504,6 +324,254 @@ def fromCoverRelativeCocycle
   change additive.delta1 (comparison.c1Equiv.symm cocycle.1) = additive.zero2
   rw [comparison.d1_from cocycle.1, cocycle.2, comparison.c2Equiv_symm_zero]
 
+/-!
+Comparison-relative group layer.
+
+The body-text additive regime (X.定義4.2–4.3) does not make `C2` a group or
+`delta1` additive, and degree-one cocycles need not be closed under addition
+on a bare surface.  Under a selected 定義7.1 comparison, however, semantic
+cocycle membership is exactly Čech cocycle membership through the degree-one
+carrier identification (`delta1_eq_zero2_iff` below), and the Čech
+differential is additive.  The group operations on cocycles stay the
+intrinsic `C1` operations of the surface; only their closure proofs route
+through the comparison.  All group structure below is therefore
+comparison-relative data generated from body-text premises, not an extra
+assumption on the surface.
+-/
+
+/--
+X.定理7.2: under the selected comparison, a semantic cochain is a cocycle
+exactly when its degree-one realization is a Čech cocycle.
+-/
+theorem delta1_eq_zero2_iff
+    (comparison : SemanticRepairCoverRelativeH1Comparison additive K)
+    (cochain : additive.C1) :
+    additive.delta1 cochain = additive.zero2 <->
+      (letI := K.cochainAddCommGroup 2
+       K.d 1 (comparison.c1Equiv cochain) = 0) := by
+  letI := K.cochainAddCommGroup 1
+  letI := K.cochainAddCommGroup 2
+  constructor
+  · intro h
+    rw [comparison.d1_to cochain, h, comparison.c2Equiv_zero]
+  · intro h
+    have himage : comparison.c2Equiv (additive.delta1 cochain) = 0 := by
+      rw [← comparison.d1_to cochain]
+      exact h
+    calc
+      additive.delta1 cochain =
+          comparison.c2Equiv.symm
+            (comparison.c2Equiv (additive.delta1 cochain)) := by
+            rw [comparison.c2Equiv.symm_apply_apply]
+      _ = comparison.c2Equiv.symm 0 := by rw [himage]
+      _ = additive.zero2 := comparison.c2Equiv_symm_zero
+
+/-- X.定理7.2: under the selected comparison, zero is a semantic 1-cocycle. -/
+def cocycleZero
+    (comparison : SemanticRepairCoverRelativeH1Comparison additive K) :
+    Zero additive.Cocycle :=
+  ⟨⟨0,
+    (comparison.delta1_eq_zero2_iff 0).2 (by
+      letI := K.cochainAddCommGroup 1
+      letI := K.cochainAddCommGroup 2
+      rw [map_zero, map_zero])⟩⟩
+
+/-- X.定理7.2: under the selected comparison, cocycles are closed under `+`. -/
+def cocycleAdd
+    (comparison : SemanticRepairCoverRelativeH1Comparison additive K) :
+    Add additive.Cocycle :=
+  ⟨fun left right =>
+    ⟨left.1 + right.1,
+      (comparison.delta1_eq_zero2_iff _).2 (by
+        letI := K.cochainAddCommGroup 1
+        letI := K.cochainAddCommGroup 2
+        rw [map_add, map_add, (comparison.delta1_eq_zero2_iff left.1).1 left.2,
+          (comparison.delta1_eq_zero2_iff right.1).1 right.2, add_zero])⟩⟩
+
+/-- X.定理7.2: under the selected comparison, cocycles are closed under `-·`. -/
+def cocycleNeg
+    (comparison : SemanticRepairCoverRelativeH1Comparison additive K) :
+    Neg additive.Cocycle :=
+  ⟨fun cochain =>
+    ⟨-cochain.1,
+      (comparison.delta1_eq_zero2_iff _).2 (by
+        letI := K.cochainAddCommGroup 1
+        letI := K.cochainAddCommGroup 2
+        rw [map_neg, map_neg,
+          (comparison.delta1_eq_zero2_iff cochain.1).1 cochain.2, neg_zero])⟩⟩
+
+/-- X.定理7.2: under the selected comparison, cocycles are closed under `-`. -/
+def cocycleSub
+    (comparison : SemanticRepairCoverRelativeH1Comparison additive K) :
+    Sub additive.Cocycle :=
+  ⟨fun left right =>
+    ⟨left.1 - right.1,
+      (comparison.delta1_eq_zero2_iff _).2 (by
+        letI := K.cochainAddCommGroup 1
+        letI := K.cochainAddCommGroup 2
+        rw [map_sub, map_sub, (comparison.delta1_eq_zero2_iff left.1).1 left.2,
+          (comparison.delta1_eq_zero2_iff right.1).1 right.2, sub_zero])⟩⟩
+
+/-- X.定理7.2: under the selected comparison, cocycles absorb `ℕ`-multiples. -/
+def cocycleSMulNat
+    (comparison : SemanticRepairCoverRelativeH1Comparison additive K) :
+    SMul Nat additive.Cocycle :=
+  ⟨fun n cochain =>
+    ⟨n • cochain.1,
+      (comparison.delta1_eq_zero2_iff _).2 (by
+        letI := K.cochainAddCommGroup 1
+        letI := K.cochainAddCommGroup 2
+        rw [map_nsmul, map_nsmul,
+          (comparison.delta1_eq_zero2_iff cochain.1).1 cochain.2, smul_zero])⟩⟩
+
+/-- X.定理7.2: under the selected comparison, cocycles absorb `ℤ`-multiples. -/
+def cocycleSMulInt
+    (comparison : SemanticRepairCoverRelativeH1Comparison additive K) :
+    SMul Int additive.Cocycle :=
+  ⟨fun n cochain =>
+    ⟨n • cochain.1,
+      (comparison.delta1_eq_zero2_iff _).2 (by
+        letI := K.cochainAddCommGroup 1
+        letI := K.cochainAddCommGroup 2
+        rw [map_zsmul, map_zsmul,
+          (comparison.delta1_eq_zero2_iff cochain.1).1 cochain.2, smul_zero])⟩⟩
+
+/--
+X.定理7.2: under the selected comparison, semantic 1-cocycles form an abelian
+group.  The operations are the intrinsic `C1` operations; closure is
+transported from the Čech side, and the laws transfer along the injective
+value map.
+-/
+def cocycleAddCommGroup
+    (comparison : SemanticRepairCoverRelativeH1Comparison additive K) :
+    AddCommGroup additive.Cocycle :=
+  letI := comparison.cocycleZero
+  letI := comparison.cocycleAdd
+  letI := comparison.cocycleNeg
+  letI := comparison.cocycleSub
+  letI := comparison.cocycleSMulNat
+  letI := comparison.cocycleSMulInt
+  Function.Injective.addCommGroup
+    (fun cochain : additive.Cocycle => cochain.1) Subtype.val_injective
+    rfl (fun _ _ => rfl) (fun _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl)
+    (fun _ _ => rfl)
+
+/-- X.定理7.2: addition descends to comparison-relative semantic H1. -/
+def h1Add
+    (comparison : SemanticRepairCoverRelativeH1Comparison additive K) :
+    Add additive.H1 :=
+  letI := comparison.cocycleAdd
+  ⟨fun left right =>
+    Quotient.liftOn₂ left right
+      (fun x y => Quotient.mk additive.setoid (x + y))
+      (by
+        intro x y x' y' hx hy
+        rcases hx with ⟨p, hp⟩
+        rcases hy with ⟨q, hq⟩
+        apply Quotient.sound
+        refine ⟨p + q, ?_⟩
+        change (x.1 + y.1) - (x'.1 + y'.1) = additive.delta0 (p + q)
+        rw [additive.delta0_add, ← hp, ← hq]
+        abel)⟩
+
+/-- X.定理7.2: negation descends to comparison-relative semantic H1. -/
+def h1Neg
+    (comparison : SemanticRepairCoverRelativeH1Comparison additive K) :
+    Neg additive.H1 :=
+  letI := comparison.cocycleNeg
+  ⟨fun cocycleClass =>
+    Quotient.liftOn cocycleClass
+      (fun x => Quotient.mk additive.setoid (-x))
+      (by
+        intro x x' hx
+        rcases hx with ⟨p, hp⟩
+        apply Quotient.sound
+        refine ⟨-p, ?_⟩
+        change -x.1 - -x'.1 = additive.delta0 (-p)
+        rw [additive.delta0_neg, ← hp]
+        abel)⟩
+
+/-- X.定理7.2: subtraction on comparison-relative semantic H1. -/
+def h1Sub
+    (comparison : SemanticRepairCoverRelativeH1Comparison additive K) :
+    Sub additive.H1 :=
+  letI := comparison.h1Add
+  letI := comparison.h1Neg
+  ⟨fun left right => left + -right⟩
+
+/-- X.定理7.2: `ℕ`-multiples descend to comparison-relative semantic H1. -/
+def h1SMulNat
+    (comparison : SemanticRepairCoverRelativeH1Comparison additive K) :
+    SMul Nat additive.H1 :=
+  letI := comparison.cocycleSMulNat
+  ⟨fun n cocycleClass =>
+    Quotient.liftOn cocycleClass
+      (fun x => Quotient.mk additive.setoid (n • x))
+      (by
+        intro x x' hx
+        rcases hx with ⟨p, hp⟩
+        apply Quotient.sound
+        refine ⟨n • p, ?_⟩
+        change n • x.1 - n • x'.1 = additive.delta0 (n • p)
+        rw [← smul_sub, hp, additive.delta0_nsmul])⟩
+
+/-- X.定理7.2: `ℤ`-multiples descend to comparison-relative semantic H1. -/
+def h1SMulInt
+    (comparison : SemanticRepairCoverRelativeH1Comparison additive K) :
+    SMul Int additive.H1 :=
+  letI := comparison.cocycleSMulInt
+  ⟨fun n cocycleClass =>
+    Quotient.liftOn cocycleClass
+      (fun x => Quotient.mk additive.setoid (n • x))
+      (by
+        intro x x' hx
+        rcases hx with ⟨p, hp⟩
+        apply Quotient.sound
+        refine ⟨n • p, ?_⟩
+        change n • x.1 - n • x'.1 = additive.delta0 (n • p)
+        rw [← smul_sub, hp, additive.delta0_zsmul])⟩
+
+/--
+X.定理7.2: comparison-relative semantic H1 is a quotient group.  The group
+laws transfer along the surjective quotient map from the comparison-relative
+cocycle group, and the zero of the group is the selected zero class.
+-/
+def h1AddCommGroup
+    (comparison : SemanticRepairCoverRelativeH1Comparison additive K) :
+    AddCommGroup additive.H1 :=
+  letI := comparison.cocycleAddCommGroup
+  letI : Zero additive.H1 := ⟨additive.zeroClass⟩
+  letI := comparison.h1Add
+  letI := comparison.h1Neg
+  letI := comparison.h1Sub
+  letI := comparison.h1SMulNat
+  letI := comparison.h1SMulInt
+  Function.Surjective.addCommGroup (Quotient.mk additive.setoid)
+    (fun cocycleClass =>
+      Quotient.inductionOn cocycleClass fun x => ⟨x, rfl⟩)
+    (congrArg (Quotient.mk additive.setoid)
+      (Subtype.ext additive.zero1_eq_zero.symm))
+    (fun _ _ => rfl) (fun _ => rfl)
+    (fun left right =>
+      congrArg (Quotient.mk additive.setoid)
+        (Subtype.ext (sub_eq_add_neg left.1 right.1)))
+    (fun _ _ => rfl) (fun _ _ => rfl)
+
+/-- X.定理7.2: the selected zero class is the zero of comparison-relative H1. -/
+theorem zeroClass_eq_zero
+    (comparison : SemanticRepairCoverRelativeH1Comparison additive K) :
+    letI := comparison.h1AddCommGroup
+    additive.zeroClass = (0 : additive.H1) :=
+  rfl
+
+/-- X.定理7.2: H1 vanishing is residual-class vanishing in the group. -/
+theorem h1Zero_iff_residualClass_eq_zero
+    (comparison : SemanticRepairCoverRelativeH1Comparison additive K) :
+    additive.H1Zero <->
+      (letI := comparison.h1AddCommGroup
+       additive.residualClass = (0 : additive.H1)) :=
+  Iff.rfl
+
 /--
 X.定理7.2: semantic same-class is equivalent to the selected cover-relative
 coboundary relation in degree one.
@@ -646,12 +714,15 @@ def semanticRepairAdditiveH1_equiv_coverRelativeH1
 
 /--
 X.定理7.2 結論3: the generated comparison respects addition, so the set-level
-equivalence upgrades to an additive group isomorphism onto the additive group
-reading of cover-relative Čech H1.
+equivalence upgrades to an additive group isomorphism from comparison-relative
+semantic H1 onto the additive group reading of cover-relative Čech H1.
 -/
 def semanticRepairAdditiveH1_addEquiv_additiveCechH1
     (comparison : SemanticRepairCoverRelativeH1Comparison additive K) :
+    letI := comparison.h1AddCommGroup
     additive.H1 ≃+ K.AdditiveCechH1 :=
+  letI := comparison.cocycleAdd
+  letI := comparison.h1AddCommGroup
   { comparison.semanticRepairAdditiveH1_equiv_coverRelativeH1.trans
       K.legacyCechH1EquivAdditiveCechH1 with
     map_add' := by
@@ -674,9 +745,11 @@ isomorphism alone.
 theorem h1Zero_iff_addEquiv_residualClass_eq_zero
     (comparison : SemanticRepairCoverRelativeH1Comparison additive K) :
     additive.H1Zero <->
-      comparison.semanticRepairAdditiveH1_addEquiv_additiveCechH1
-        additive.residualClass = 0 := by
-  rw [additive.h1Zero_iff_residualClass_eq_zero]
+      (letI := comparison.h1AddCommGroup
+       comparison.semanticRepairAdditiveH1_addEquiv_additiveCechH1
+         additive.residualClass = 0) := by
+  letI := comparison.h1AddCommGroup
+  rw [comparison.h1Zero_iff_residualClass_eq_zero]
   constructor
   · intro h
     rw [h]
@@ -722,6 +795,7 @@ legacy quotient transfers back to equality of the residual and zero classes.
 theorem semanticRepairAdditiveH1Zero_iff_coverRelativeH1Zero_of_addEquiv
     (comparison : SemanticRepairCoverRelativeH1Comparison additive K) :
     additive.H1Zero <-> comparison.CoverRelativeResidualH1Zero := by
+  letI := comparison.h1AddCommGroup
   constructor
   · intro hzero
     exact congrArg comparison.toCoverRelativeH1 hzero
@@ -771,8 +845,11 @@ structure SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
   fromCoverRelativeH1 : K.CechCohomologySucc 0 -> additive.H1
   h1Equiv : additive.H1 ≃ K.CechCohomologySucc 0
   /-- X.定理7.2 結論3: the additive group isomorphism onto the additive Čech
-  H1 reading; this is the group-level upgrade of `h1Equiv`. -/
-  h1AddEquiv : additive.H1 ≃+ K.AdditiveCechH1
+  H1 reading, relative to the comparison-generated group structure on
+  semantic H1; this is the group-level upgrade of `h1Equiv`. -/
+  h1AddEquiv :
+    letI := comparison.h1AddCommGroup
+    additive.H1 ≃+ K.AdditiveCechH1
   sameClass_iff_coverRelative :
     forall left right : additive.Cocycle,
       additive.Cohomologous left right <->

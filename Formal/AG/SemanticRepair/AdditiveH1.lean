@@ -301,22 +301,16 @@ structure SemanticRepairAdditiveCechH1Data
     (cech : SemanticRepairCoverCechData.{u, v, w, x, y, z} cover) where
   [c0AddCommGroup : AddCommGroup cech.C0]
   [c1AddCommGroup : AddCommGroup cech.C1]
-  [c2AddCommGroup : AddCommGroup cech.C2]
   zero1_eq_zero : cech.zero1 = 0
-  zero2_eq_zero : cech.zero2 = 0
   delta0_zero : cech.delta0 0 = 0
   delta0_add :
     forall left right,
       cech.delta0 (left + right) = cech.delta0 left + cech.delta0 right
   delta0_neg : forall primitive, cech.delta0 (-primitive) = -cech.delta0 primitive
-  delta1_add :
-    forall left right,
-      cech.delta1 (left + right) = cech.delta1 left + cech.delta1 right
-  delta1_neg : forall cochain, cech.delta1 (-cochain) = -cech.delta1 cochain
 
 namespace SemanticRepairAdditiveCechH1Data
 
-attribute [instance] c0AddCommGroup c1AddCommGroup c2AddCommGroup
+attribute [instance] c0AddCommGroup c1AddCommGroup
 
 /-- X.定義4.4: additive 1-cocycles used by the quotient `Z1/B1`. -/
 def Cocycle

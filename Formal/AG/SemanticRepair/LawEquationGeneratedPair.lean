@@ -167,11 +167,7 @@ def coverRelativeAdditiveCechDataOfComplex
         zero1 residual hzero1 hresidual) where
   c0AddCommGroup := K.cochainAddCommGroup 0
   c1AddCommGroup := K.cochainAddCommGroup 1
-  c2AddCommGroup := K.cochainAddCommGroup 2
   zero1_eq_zero := hzero1_eq_zero
-  zero2_eq_zero := by
-    letI := K.cochainAddCommGroup 2
-    rfl
   delta0_zero := by
     letI := K.cochainAddCommGroup 0
     letI := K.cochainAddCommGroup 1
@@ -186,16 +182,6 @@ def coverRelativeAdditiveCechDataOfComplex
     letI := K.cochainAddCommGroup 1
     intro primitive
     exact (K.d 0).map_neg primitive
-  delta1_add := by
-    letI := K.cochainAddCommGroup 1
-    letI := K.cochainAddCommGroup 2
-    intro left right
-    exact (K.d 1).map_add left right
-  delta1_neg := by
-    letI := K.cochainAddCommGroup 1
-    letI := K.cochainAddCommGroup 2
-    intro cochain
-    exact (K.d 1).map_neg cochain
 
 /--
 Generated boundary-relation data whose Cech degrees and differentials are
@@ -1060,12 +1046,9 @@ def coverRelativeGeneratedBoundaryAdditiveH1Surface
       delta1 := K.d 1
       residual := K.d 0 primitive
       zero1_eq_zero := rfl
-      zero2_eq_zero := rfl
       delta0_zero := (K.d 0).map_zero
       delta0_add := (K.d 0).map_add
       delta0_neg := (K.d 0).map_neg
-      delta1_add := (K.d 1).map_add
-      delta1_neg := (K.d 1).map_neg
       zero1_cocycle := (K.d 1).map_zero
       delta1_delta0_eq_zero := K.differential_comp 0
       residual_cocycle := K.differential_comp 0 primitive }
