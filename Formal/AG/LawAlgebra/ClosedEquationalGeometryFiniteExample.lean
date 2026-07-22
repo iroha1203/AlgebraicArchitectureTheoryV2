@@ -2841,7 +2841,7 @@ theorem integerPoint_objectComparison :
   cases i
   constructor
   · intro _
-    exact
+    simpa only [RingedSite.FiniteModel.site_law_eq_noCycleLaw] using
       AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclic_noCycleLaw_holds
   · intro _
     simpa only [integerPoint] using
@@ -2862,7 +2862,7 @@ theorem integerPoint_objectComparison_fails_for_cyclic :
     (hcomparison PUnit.unit (lawUniverse_required PUnit.unit)).mp hweak
   exact
     AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.cyclic_noCycleLaw_fails
-      hcyclic
+      (by simpa only [RingedSite.FiniteModel.site_law_eq_noCycleLaw] using hcyclic)
 
 /-- Computes vanishing of the weak obstruction valuation at the integral point. -/
 theorem integerPoint_omega_fires :
@@ -2878,12 +2878,14 @@ theorem integerPoint_omega_fires :
       cases index with
       | mk index _ =>
           cases index
-          exact noCycleSound)
+          simpa only [RingedSite.FiniteModel.site_law_eq_noCycleLaw] using
+            noCycleSound)
     (fun index => by
       cases index with
       | mk index _ =>
           cases index
-          exact noCycleComplete)
+          simpa only [RingedSite.FiniteModel.site_law_eq_noCycleLaw] using
+            noCycleComplete)
 
 /-- Computes the required signature-axis vanishing at the integral point. -/
 theorem integerPoint_axis_fires :
@@ -2896,8 +2898,23 @@ theorem integerPoint_axis_fires :
     AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicObject
     AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.signatureAxes
     integerPoint_objectComparison
-    (AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.lawfulness_iff_signatureAxesZero
-      AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicObject)
+    (by
+      let A :=
+        AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicObject
+      have hlegacy :=
+        AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.lawfulness_iff_signatureAxesZero A
+      constructor
+      · intro hsite
+        apply hlegacy.mp
+        intro index hrequired
+        cases index
+        have hholds := hsite PUnit.unit (by rfl)
+        simpa only [RingedSite.FiniteModel.site_law_eq_noCycleLaw] using hholds
+      · intro haxes
+        intro index hrequired
+        cases index
+        have hholds := hlegacy.mpr haxes PUnit.unit (lawUniverse_required PUnit.unit)
+        simpa only [RingedSite.FiniteModel.site_law_eq_noCycleLaw] using hholds)
 
 /-- Shows that the weak global equation vanishes at the integral point. -/
 theorem integerPoint_globalEquationsVanish_weak :
