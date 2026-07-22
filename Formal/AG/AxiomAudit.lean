@@ -833,6 +833,12 @@ def semanticRepairIssue3722CircleRefinementBlock :=
 def semanticRepairIssue3722CircleRefinementNotUnconditional :=
   AAT.AG.Examples.SemanticRepairPart10.circleRefinementZeroComparison_not_unconditional_onCircle
 
+def semanticRepairIssue3722CoarseResidualIsZeroCochain :=
+  AAT.AG.Examples.SemanticRepairPart10.lawfulCoarseResidual_is_zero_cochain
+
+def semanticRepairIssue3722CoarseCarrierNondegenerate :=
+  AAT.AG.Examples.SemanticRepairPart10.lawfulCoarse_carrier_nondegenerate
+
 def semanticRepairIssue3722CircleCounterexamplePacket :=
   AAT.AG.Examples.SemanticRepairPart10.circle_boundaryComparison_counterexample_packet
 

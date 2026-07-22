@@ -3225,8 +3225,24 @@ minimal auxiliary layer; the spec-facing main counterexamples below are
 carried by the X.例9.2 circle entity itself: the source of the impossible
 degree-one comparison is the actual circle cohomology carrier with its
 nonzero residual class, and the blocked refinement pullback goes from the
-lawful X.例9.1 singleton complex (whose residual is a zero cochain) to the
-circle residual (which is not a coboundary).
+lawful X.例9.1 generated `F₂` singleton complex (whose realized residual is
+the zero cochain of a genuinely two-element cocycle carrier) to the circle
+residual (which is not a coboundary).
+
+Disclosed reading of the two impossibility mechanisms:
+
+* the theorem-8.4 impossibility is driven by the empty section carrier over
+  the genuinely-nonzero circle `H^1` source; the nonzero-ness of the residual
+  class is a property of the selected pair and is conjoined in the packet
+  below (`circleCoverRelativeH1_nonzero`), matching the ∃-pair shape of the
+  spec.  The comparison target is the section carrier of the selected
+  coefficient presheaf: an empty-valued coefficient admits no abelian
+  obstruction sheaf at all, which is exactly the "no comparison target"
+  coefficient selection;
+* the theorem-8.5 impossibility genuinely consumes both spec conditions: the
+  coarse-residual-is-zero-cochain identity (a falsifiable equation on the
+  two-element `F₂` carrier, proved and then used in the blocking proof) and
+  the fine-side non-coboundary content of the circle residual.
 -/
 
 /--
@@ -3244,9 +3260,12 @@ X.定理8.4: on the circle complex — a finite complex whose cover-relative
 `H^1` genuinely contains the nonzero residual class — no typed comparison
 map into the empty-coefficient section carrier can be constructed.
 
-The proof consumes the actual nonzero class: `circleCoverRelativeResidualClass`
-inhabits the comparison source, so any comparison would produce an element of
-the empty section carrier.
+The nonzero residual class `circleCoverRelativeResidualClass` inhabits the
+comparison source; the impossibility itself is driven by the empty target on
+that carrier, and the nonzero-ness of the class is conjoined separately in
+`circle_boundaryComparison_counterexample_packet`, matching the ∃-pair shape
+of the spec (a nonzero-`H^1` complex together with a coefficient selection
+admitting no comparison target).
 -/
 theorem circleTypedComparisonTarget_impossible_forEmptyCoefficient :
     IsEmpty
@@ -3257,64 +3276,128 @@ theorem circleTypedComparisonTarget_impossible_forEmptyCoefficient :
   exact Empty.elim (comparison.toTarget circleCoverRelativeResidualClass)
 
 /--
-X.定理8.5: the residual of the lawful X.例9.1 singleton complex, read as a
-degree-one cocycle.  On the singleton carrier this residual is the zero
-cochain — this is the coarse side of the spec counterexample.
+X.定理8.5: the zero cocycle of the generated `F₂` lawful singleton complex —
+the coarse comparison side of the spec counterexample.
 -/
-def lawfulCoarseResidualCocycle : coverRelativeComplex.CechCocycle 1 where
-  val := fun _ => PUnit.unit
+def lawfulCoarseZeroCocycle :
+    generatedF2CoverRelativeComplex.CechCocycle 1 where
+  val := fun _ => 0
   property := by
     funext σ
     rfl
 
 /--
-X.定理8.5 blocking step: a zero-preserving refinement comparison that pulls
-the lawful coarse residual (a zero cochain, hence cohomologous to itself)
-back to the circle residual would make the circle residual a coboundary,
-contradicting `circleCoverRelative_residual_not_coboundary`.
+X.定理8.5: the coarse residual — the image of the X.例9.1 generated `F₂`
+semantic residual under the selected cochain realization
+`generatedF2H1Realization`.
+-/
+def lawfulCoarseResidualCocycle :
+    generatedF2CoverRelativeComplex.CechCocycle 1 where
+  val :=
+    generatedF2H1Realization.{0, 0, 0}.c1Equiv
+      generatedF2SemanticCechData.{0, 0, 0}.residual
+  property := by
+    funext σ
+    rfl
+
+/--
+X.定理8.5 coarse conjunct: the realized coarse residual is literally the zero
+cochain.  On the two-element `F₂` cocycle carrier this is a falsifiable
+identity, not a subsingleton triviality.
+-/
+theorem lawfulCoarseResidual_is_zero_cochain :
+    lawfulCoarseResidualCocycle = lawfulCoarseZeroCocycle := by
+  apply Subtype.ext
+  funext σ
+  rfl
+
+/--
+X.定理8.5: the constant-one cocycle of the generated `F₂` singleton complex.
+-/
+def lawfulCoarseOneCocycle :
+    generatedF2CoverRelativeComplex.CechCocycle 1 where
+  val := fun _ => (1 : ZMod 2)
+  property := by
+    funext σ
+    rfl
+
+/--
+X.定理8.5: the coarse cocycle carrier is not a subsingleton — the constant
+one cochain differs from the coarse residual, so the zero-cochain identity
+above has genuine content.
+-/
+theorem lawfulCoarse_carrier_nondegenerate :
+    lawfulCoarseOneCocycle ≠ lawfulCoarseResidualCocycle := by
+  intro h
+  have hval : (1 : ZMod 2) = 0 :=
+    congrFun (congrArg Subtype.val h) PUnit.unit
+  exact absurd hval (by decide)
+
+/--
+X.定理8.5 blocking step: a zero-preserving refinement comparison whose
+pullback of the coarse residual is cohomologous to the circle residual would
+make the circle residual a coboundary, contradicting
+`circleCoverRelative_residual_not_coboundary`.
+
+The proof consumes the coarse spec condition: the coarse residual is first
+rewritten to the zero cocycle via `lawfulCoarseResidual_is_zero_cochain`
+before zero preservation is applied.
 -/
 theorem circleRefinementZeroComparison_blocks_lawfulCoarse_to_circleResidual
     (comparison :
       SemanticRepairRefinementZeroComparison
-        (coverRelativeComplex.CechCocycle 1)
+        (generatedF2CoverRelativeComplex.CechCocycle 1)
         (circleCoverRelativeComplex.CechCocycle 1)
         (fun coarse =>
-          (coverRelativeComplex.CechCoboundarySetoidSucc 0).r
-            coarse lawfulCoarseResidualCocycle)
+          (generatedF2CoverRelativeComplex.CechCoboundarySetoidSucc 0).r
+            coarse lawfulCoarseZeroCocycle)
         (fun fine =>
           (circleCoverRelativeComplex.CechCoboundarySetoidSucc 0).r
             fine circleCoverRelativeZeroCocycle))
     (hresidual :
-      comparison.pullback lawfulCoarseResidualCocycle =
+      (circleCoverRelativeComplex.CechCoboundarySetoidSucc 0).r
+        (comparison.pullback lawfulCoarseResidualCocycle)
         circleCoverRelativeResidualCocycle) :
     False := by
   have hcoarseZero :
-      (coverRelativeComplex.CechCoboundarySetoidSucc 0).r
-        lawfulCoarseResidualCocycle lawfulCoarseResidualCocycle :=
-    (coverRelativeComplex.CechCoboundarySetoidSucc 0).iseqv.refl
-      lawfulCoarseResidualCocycle
-  have hfineZero := comparison.zero_preserved lawfulCoarseResidualCocycle hcoarseZero
-  rw [hresidual] at hfineZero
-  exact circleCoverRelative_residual_not_coboundary hfineZero
+      (generatedF2CoverRelativeComplex.CechCoboundarySetoidSucc 0).r
+        lawfulCoarseResidualCocycle lawfulCoarseZeroCocycle :=
+    lawfulCoarseResidual_is_zero_cochain ▸
+      (generatedF2CoverRelativeComplex.CechCoboundarySetoidSucc 0).iseqv.refl
+        lawfulCoarseResidualCocycle
+  have hfineZero :=
+    comparison.zero_preserved lawfulCoarseResidualCocycle hcoarseZero
+  have hresidualZero :
+      (circleCoverRelativeComplex.CechCoboundarySetoidSucc 0).r
+        circleCoverRelativeResidualCocycle circleCoverRelativeZeroCocycle :=
+    (circleCoverRelativeComplex.CechCoboundarySetoidSucc 0).iseqv.trans
+      ((circleCoverRelativeComplex.CechCoboundarySetoidSucc 0).iseqv.symm
+        hresidual)
+      hfineZero
+  exact circleCoverRelative_residual_not_coboundary hresidualZero
 
 /--
-X.定理8.5: on the actual finite pair — lawful singleton complex as coarse
-side, circle complex as fine side — no zero-preserving refinement comparison
-pulls the coarse residual back to the circle residual.
+X.定理8.5: on the actual finite pair — generated `F₂` lawful singleton
+complex as coarse side, circle complex as fine side — no zero-preserving
+refinement comparison pulls the coarse residual back to (anything
+cohomologous to) the circle residual.  The residual-preservation condition is
+stated at class level, which rules out a strictly larger family of
+comparisons than the on-the-nose cochain equality.
 -/
 theorem circleRefinementZeroComparison_not_unconditional_onCircle :
     IsEmpty
       { comparison :
           SemanticRepairRefinementZeroComparison
-            (coverRelativeComplex.CechCocycle 1)
+            (generatedF2CoverRelativeComplex.CechCocycle 1)
             (circleCoverRelativeComplex.CechCocycle 1)
             (fun coarse =>
-              (coverRelativeComplex.CechCoboundarySetoidSucc 0).r
-                coarse lawfulCoarseResidualCocycle)
+              (generatedF2CoverRelativeComplex.CechCoboundarySetoidSucc 0).r
+                coarse lawfulCoarseZeroCocycle)
             (fun fine =>
               (circleCoverRelativeComplex.CechCoboundarySetoidSucc 0).r
                 fine circleCoverRelativeZeroCocycle) //
-          comparison.pullback lawfulCoarseResidualCocycle =
+          (circleCoverRelativeComplex.CechCoboundarySetoidSucc 0).r
+            (comparison.pullback lawfulCoarseResidualCocycle)
             circleCoverRelativeResidualCocycle } := by
   refine ⟨fun blocked => ?_⟩
   exact
@@ -3325,8 +3408,9 @@ theorem circleRefinementZeroComparison_not_unconditional_onCircle :
 X.定理8.4 / 8.5 spec counterexample packet on the circle entity: the circle
 complex has a genuinely nonzero cover-relative `H^1` class, the typed
 comparison into the empty coefficient target is impossible on that carrier,
-and the residual-preserving zero-preserving refinement pullback from the
-lawful singleton complex is impossible as well.
+the coarse residual of the generated `F₂` singleton complex is the zero
+cochain of a non-subsingleton cocycle carrier, and the residual-preserving
+zero-preserving refinement pullback into the circle complex is impossible.
 -/
 theorem circle_boundaryComparison_counterexample_packet :
     (circleCoverRelativeResidualClass ≠ circleCoverRelativeZeroClass) ∧
@@ -3334,21 +3418,26 @@ theorem circle_boundaryComparison_counterexample_packet :
         (SemanticRepairTypedComparisonTarget
           (circleCoverRelativeComplex.CechCohomologySucc 0)
           (circleEmptyCoefficientPresheaf.obj (op circleSiteBase))) ∧
+      lawfulCoarseResidualCocycle = lawfulCoarseZeroCocycle ∧
+      lawfulCoarseOneCocycle ≠ lawfulCoarseResidualCocycle ∧
       IsEmpty
         { comparison :
             SemanticRepairRefinementZeroComparison
-              (coverRelativeComplex.CechCocycle 1)
+              (generatedF2CoverRelativeComplex.CechCocycle 1)
               (circleCoverRelativeComplex.CechCocycle 1)
               (fun coarse =>
-                (coverRelativeComplex.CechCoboundarySetoidSucc 0).r
-                  coarse lawfulCoarseResidualCocycle)
+                (generatedF2CoverRelativeComplex.CechCoboundarySetoidSucc 0).r
+                  coarse lawfulCoarseZeroCocycle)
               (fun fine =>
                 (circleCoverRelativeComplex.CechCoboundarySetoidSucc 0).r
                   fine circleCoverRelativeZeroCocycle) //
-            comparison.pullback lawfulCoarseResidualCocycle =
+            (circleCoverRelativeComplex.CechCoboundarySetoidSucc 0).r
+              (comparison.pullback lawfulCoarseResidualCocycle)
               circleCoverRelativeResidualCocycle } :=
   ⟨circleCoverRelativeH1_nonzero,
     circleTypedComparisonTarget_impossible_forEmptyCoefficient,
+    lawfulCoarseResidual_is_zero_cochain,
+    lawfulCoarse_carrier_nondegenerate,
     circleRefinementZeroComparison_not_unconditional_onCircle⟩
 
 end SemanticRepairPart10
