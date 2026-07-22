@@ -73,7 +73,9 @@ AAT / Lean / ArchSig の責務境界を作業前に必ず分ける。
 変更範囲に応じて選ぶ。迷う場合は広めに実行する。
 
 ```bash
-lake build                                            # Lean 変更
+lake env lean <target-file>                          # 単一ファイルの focused check
+lake build <module>                                  # 変更範囲に応じた targeted build
+# 本体のroot全体のフル lake build は PR 作成後の CI で確認
 cargo test --manifest-path tools/archsig/Cargo.toml   # ArchSig 変更
 cargo test --manifest-path tools/fieldsig/Cargo.toml  # FieldSig 変更
 git diff --check                                      # PR 前に常に

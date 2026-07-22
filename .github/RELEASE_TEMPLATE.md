@@ -52,7 +52,7 @@ This release line was verified with:
 
 - [ ] `cargo test --manifest-path tools/archsig/Cargo.toml`
 - [ ] `cargo test --manifest-path tools/fieldsig/Cargo.toml` when FieldSig boundaries are affected
-- [ ] `lake build` when Lean or docs claims are affected
+- [ ] Main package full `lake build` confirmed in CI when Lean or docs claims are affected
 - [ ] Release asset build
 - [ ] `SHA256SUMS.txt` generation
 

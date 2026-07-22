@@ -78,8 +78,7 @@ fail-closed、反証試行、証拠資格、統合出力を適用する。
    - Issue 受け入れ要件と diff の照合(条件文言と実体の対応)。
    - checklist §6 の横断機械 scan(hidden/bidi、privacy / local-path、
      `git diff --check`)。
-   - 必要なら統括エージェントが一時 worktree で `lake build` / cargo test を実行する。
-     `lake build` は1回に限り、サブエージェントに委譲しない。
+   - 必要なら変更範囲に応じた focused check / targeted build / cargo test を実行する。本体のroot全体のフル `lake build` はローカルで実行せず、PR作成後のCIで確認する。
 
 5. 統合判定する。
    - **委譲先判定の写像(合格の定義)**:

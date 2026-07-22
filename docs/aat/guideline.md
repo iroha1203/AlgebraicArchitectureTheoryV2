@@ -117,11 +117,7 @@
 
 ## 検証
 
-Lean 変更を含む場合は次を実行する。
-
-```bash
-lake build
-```
+Lean 変更を含む場合、変更範囲に応じて focused check、対象moduleの targeted build、必要な監査を選ぶ。本体のroot全体のフル `lake build` はローカルで実行せず、PR作成後のCIで確認する。
 
 単一ファイルを確認する場合は次の形を使う。
 
