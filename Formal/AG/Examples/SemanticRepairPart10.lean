@@ -3240,9 +3240,21 @@ Disclosed reading of the two impossibility mechanisms:
   obstruction sheaf at all, which is exactly the "no comparison target"
   coefficient selection;
 * the theorem-8.5 impossibility genuinely consumes both spec conditions: the
-  coarse-residual-is-zero-cochain identity (a falsifiable equation on the
-  two-element `F₂` carrier, proved and then used in the blocking proof) and
-  the fine-side non-coboundary content of the circle residual.
+  coarse-residual-is-zero-cochain identity (proved and then used in the
+  blocking proof) and the fine-side non-coboundary content of the circle
+  residual;
+* the two-element *cocycle* carrier of the coarse side is relative to the
+  selected zero degree-one differential of `generatedF2CoverRelativeComplex`
+  (the differentials of a `CoverRelativeCechComplex` are selected data).
+  Under the honest alternating-sum differential on the same singleton nerve —
+  or under the nondegenerate-nerve convention of the text — the degree-one
+  cocycles collapse to the zero cochain alone.  The selection-independent
+  falsifiable content of the zero-cochain identity lives at the cochain
+  level, where `C¹ ≅ F₂` regardless of the differential selection;
+* the remark that an empty-valued coefficient admits no abelian obstruction
+  sheaf is prose, not a formalized proposition: the formalized "no comparison
+  target" content is the emptiness of the section carrier of the selected
+  Type-valued presheaf at the base.
 -/
 
 /--
@@ -3302,8 +3314,11 @@ def lawfulCoarseResidualCocycle :
 
 /--
 X.定理8.5 coarse conjunct: the realized coarse residual is literally the zero
-cochain.  On the two-element `F₂` cocycle carrier this is a falsifiable
-identity, not a subsingleton triviality.
+cochain.  The selection-independent falsifiable content of this identity
+lives at the cochain level (`C¹ ≅ F₂`); the fact that it also holds at the
+cocycle level on a two-element carrier is relative to the selected zero
+degree-one differential of `generatedF2CoverRelativeComplex` (see the module
+docstring boundary above).
 -/
 theorem lawfulCoarseResidual_is_zero_cochain :
     lawfulCoarseResidualCocycle = lawfulCoarseZeroCocycle := by
@@ -3322,9 +3337,14 @@ def lawfulCoarseOneCocycle :
     rfl
 
 /--
-X.定理8.5: the coarse cocycle carrier is not a subsingleton — the constant
-one cochain differs from the coarse residual, so the zero-cochain identity
-above has genuine content.
+X.定理8.5: on the selected complex the coarse cocycle carrier is not a
+subsingleton — the constant one cochain differs from the coarse residual.
+
+Boundary: this anti-vacuity exhibit is relative to the selected zero
+degree-one differential (under the alternating-sum differential of the same
+nerve the cocycle carrier collapses to the zero cochain); it is not consumed
+by the impossibility proofs, whose selection-independent content is the
+cochain-level identity and the fine-side non-coboundary computation.
 -/
 theorem lawfulCoarse_carrier_nondegenerate :
     lawfulCoarseOneCocycle ≠ lawfulCoarseResidualCocycle := by
@@ -3381,8 +3401,9 @@ X.定理8.5: on the actual finite pair — generated `F₂` lawful singleton
 complex as coarse side, circle complex as fine side — no zero-preserving
 refinement comparison pulls the coarse residual back to (anything
 cohomologous to) the circle residual.  The residual-preservation condition is
-stated at class level, which rules out a strictly larger family of
-comparisons than the on-the-nose cochain equality.
+stated at class level: as a predicate it is strictly weaker than the
+on-the-nose cochain equality, so the nonexistence statement quantifies over a
+larger family of comparisons and implies the equality-conditioned version.
 -/
 theorem circleRefinementZeroComparison_not_unconditional_onCircle :
     IsEmpty
