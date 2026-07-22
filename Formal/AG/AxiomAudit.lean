@@ -3,6 +3,7 @@ import Formal.AG.SemanticRepair.AdditiveH1
 import Formal.AG.SemanticRepair.Examples
 import Formal.AG.SemanticRepair.LawEquationGeneratedPair
 import Formal.AG.Examples.SemanticRepairPart10
+import Formal.AG.Examples.SemanticRepairPart10SiteGeometry
 import Formal.AG.Examples.DerivedPart5
 import Formal.AG.Examples.EvolutionPart9
 import Formal.AG.Examples.SingularityMonodromyStackPart6
@@ -748,6 +749,79 @@ theorem semanticRepairExample92CircleCoverRelativeH1Nonzero :
 
 def semanticRepairExample92CircleNonzeroTransferPacket :=
   AAT.AG.Examples.SemanticRepairPart10.circleNerve_nonzeroClassTransfer_packet
+
+/-- Kernel-audit entries for the #3719 kite site-geometry nonzero `H^1` witness. -/
+def semanticRepairIssue3719KiteNerveShape :=
+  AAT.AG.Examples.SemanticRepairPart10.kiteNerve_shape
+
+def semanticRepairIssue3719KiteChartsInjective :=
+  AAT.AG.Examples.SemanticRepairPart10.kiteCover_charts_injective
+
+def semanticRepairIssue3719KiteChartNeBase :=
+  AAT.AG.Examples.SemanticRepairPart10.kiteCover_chart_ne_base
+
+def semanticRepairIssue3719KiteEdgeOverlapNeChart :=
+  AAT.AG.Examples.SemanticRepairPart10.kiteCover_edgeOverlap_ne_chartOverlap
+
+def semanticRepairIssue3719KiteFaceOverlapNeEdge :=
+  AAT.AG.Examples.SemanticRepairPart10.kiteCover_faceOverlap_ne_edgeOverlap
+
+def semanticRepairIssue3719KiteOverlapEqMeet :=
+  AAT.AG.Examples.SemanticRepairPart10.kiteCover_overlap_eq_meet
+
+def semanticRepairIssue3719KiteTripleOverlapEqMeet :=
+  AAT.AG.Examples.SemanticRepairPart10.kiteCover_tripleOverlap_eq_meet
+
+def semanticRepairIssue3719KiteEdgesOverlapNonempty :=
+  AAT.AG.Examples.SemanticRepairPart10.kiteEdges_overlap_nonempty
+
+def semanticRepairIssue3719KiteNonEdgeEmpty :=
+  AAT.AG.Examples.SemanticRepairPart10.kiteNonEdge_v1_v3_empty
+
+def semanticRepairIssue3719KiteTripleOverlapNonempty :=
+  AAT.AG.Examples.SemanticRepairPart10.kiteTriple_overlap_nonempty
+
+def semanticRepairIssue3719KiteOtherTriplesEmpty :=
+  AAT.AG.Examples.SemanticRepairPart10.kiteOtherTriples_empty
+
+def semanticRepairIssue3719KiteTopologyEqGenerated :=
+  AAT.AG.Examples.SemanticRepairPart10.kiteSite_topology_eq_generated
+
+def semanticRepairIssue3719KiteLawQuotientIsSheaf :=
+  AAT.AG.Examples.SemanticRepairPart10.kiteLawQuotientIsSheaf
+
+def semanticRepairIssue3719KiteLawObstructionIdeal :=
+  AAT.AG.Examples.SemanticRepairPart10.kiteLaw_obstructionIdeal_eq_span_two
+    AAT.AG.Examples.SemanticRepairPart10.kiteSiteBase
+
+def semanticRepairIssue3719KiteLawQuotientOneNonzero :=
+  AAT.AG.Examples.SemanticRepairPart10.kiteLawQuotientOne_ne_zero
+
+noncomputable def semanticRepairIssue3719KiteLawQuotientEquivF2 :=
+  AAT.AG.Examples.SemanticRepairPart10.kiteLawQuotientEquivF2
+
+def semanticRepairIssue3719KiteLawQuotientOneToF2 :=
+  AAT.AG.Examples.SemanticRepairPart10.kiteLawQuotientOne_toF2
+
+def semanticRepairIssue3719KiteResidualCocycle :=
+  AAT.AG.Examples.SemanticRepairPart10.kiteResidual_cocycle
+
+def semanticRepairIssue3719KiteIndicatorNotCocycle :=
+  AAT.AG.Examples.SemanticRepairPart10.kiteIndicatorE01_not_cocycle
+
+def semanticRepairIssue3719KiteDelta1Fires :=
+  AAT.AG.Examples.SemanticRepairPart10.kiteDelta1_not_constant_zero
+
+def semanticRepairIssue3719KiteResidualNotCoboundary :=
+  AAT.AG.Examples.SemanticRepairPart10.kiteResidual_not_coboundary
+
+theorem semanticRepairIssue3719KiteCoverRelativeH1Nonzero :
+    AAT.AG.Examples.SemanticRepairPart10.kiteCoverRelativeResidualClass ≠
+      AAT.AG.Examples.SemanticRepairPart10.kiteCoverRelativeZeroClass :=
+  AAT.AG.Examples.SemanticRepairPart10.kiteCoverRelativeH1_nonzero
+
+def semanticRepairIssue3719KiteWitnessPacket :=
+  AAT.AG.Examples.SemanticRepairPart10.kiteSiteGeometry_witness_packet
 
 theorem boundaryCocycleNonzero :
     Cohomology.FiniteExamples.PseudoCircleGolden.boundaryCocycle

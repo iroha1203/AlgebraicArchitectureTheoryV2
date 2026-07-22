@@ -29,4 +29,5 @@ import Formal.AG.Examples.EvolutionPart9
 import Formal.AG.SemanticRepair
 import Formal.AG.SemanticRepair.LawEquationGeneratedPair
 import Formal.AG.Examples.SemanticRepairPart10
+import Formal.AG.Examples.SemanticRepairPart10SiteGeometry
 import Formal.AG.Examples.LegacyConsolidation
