@@ -2512,6 +2512,12 @@ def replayZeroTheorem42GlobalSectionExists :=
 def replayZeroTheorem42GlobalSectionRestrictsToAdjusted :=
   Examples.EvolutionPart9.replay_zero_theorem42_realizes_adjusted
 
+def replayTemporalDescentSectionCriterionRealizesAdjusted :=
+  @Evolution.TemporalDescentCriterion.temporal_descent_section_criterion_realizes_adjusted
+
+def replayTemporalDescentSectionCriterion :=
+  @Evolution.TemporalDescentCriterion.temporal_descent_section_criterion
+
 def replayTwoChartCorrectionRightNonzero :=
   Examples.EvolutionPart9.twoChartCorrection_right_nonzero
 
@@ -2535,6 +2541,9 @@ def replayTwoPatchZMod2TemporalCoverComparison :=
 
 def replayTwoPatchZMod2TemporalGlobalEndpointsAtBase :=
   Examples.EvolutionPart9.twoPatchReplayTemporalGlobalEndpoints_at_base
+
+def replayTwoPatchZMod2TemporalTraceSelected :=
+  Examples.EvolutionPart9.twoPatchReplayTemporalTrace_selected
 
 def replayTwoPatchZMod2TemporalProductDifferentialCompatible :=
   Examples.EvolutionPart9.twoPatchReplayTemporalProduct_d0_compatible

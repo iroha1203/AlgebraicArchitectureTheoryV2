@@ -466,10 +466,38 @@ noncomputable def twoPatchReplayTemporalStatePresheaf :
     intro _t₀ _t₁ _e _he _i _j _hij _x
     rfl
 
-/-- The glued replay has the temporal state-transition type for the actual two-patch product site. -/
+/--
+A replay map along one selected trace arrow, with its source and target
+architecture contexts retained in the type.
+-/
+structure TwoPatchTemporalReplayAlong
+    {sourceTime targetTime : TinyTime}
+    (traceArrow : TinyHom sourceTime targetTime)
+    (sourceContext targetContext : FiniteModel.TwoPatchContextIndex) where
+  /-- The trace arrow belongs to the selected finite trace regime. -/
+  trace_selected :
+    @TraceCategory.FiniteRegime.selectedArrow twoStepTrace twoStepTraceFiniteRegime
+      sourceTime targetTime traceArrow
+  /-- The replay map between the indexed temporal states. -/
+  toFun :
+    twoPatchReplayTemporalStatePresheaf.State (sourceTime, sourceContext) ->
+      twoPatchReplayTemporalStatePresheaf.State (targetTime, targetContext)
+
+/-- Evaluate an indexed replay in the concrete `ZMod 2` state carrier. -/
+def TwoPatchTemporalReplayAlong.value
+    {sourceTime targetTime : TinyTime}
+    {traceArrow : TinyHom sourceTime targetTime}
+    {sourceContext targetContext : FiniteModel.TwoPatchContextIndex}
+    (replay : TwoPatchTemporalReplayAlong traceArrow sourceContext targetContext)
+    (state : twoPatchReplayTemporalStatePresheaf.State
+      (sourceTime, sourceContext)) : ZMod 2 :=
+  replay.toFun state
+
+/-- The glued replay follows `tinyStep` between the common base states. -/
 abbrev TwoPatchTemporalReplayTransition :=
-  twoPatchReplayTemporalStatePresheaf.State twoPatchReplayTemporalSource ->
-    twoPatchReplayTemporalStatePresheaf.State twoPatchReplayTemporalTarget
+  TwoPatchTemporalReplayAlong tinyStep
+    FiniteModel.TwoPatchContextIndex.base
+    FiniteModel.TwoPatchContextIndex.base
 
 /-- The selected temporal cover reads the left and right actual two-patch charts. -/
 noncomputable def twoPatchReplayTemporalCover : TemporalCover twoPatchReplayTemporalSite where
@@ -497,6 +525,12 @@ theorem twoPatchReplayTemporalGlobalEndpoints_at_base :
       twoPatchReplayTemporalTarget =
         (TinyTime.t1, twoPatchReplayTemporalCover.baseContext) := by
   exact ⟨rfl, rfl⟩
+
+/-- The fixed replay trace arrow `tinyStep : t0 ⟶ t1` is selected. -/
+theorem twoPatchReplayTemporalTrace_selected :
+    @TraceCategory.FiniteRegime.selectedArrow twoStepTrace twoStepTraceFiniteRegime
+      TinyTime.t0 TinyTime.t1 tinyStep :=
+  twoStep_step_selected
 
 /--
 The temporal cover is compared directly with the cover-relative Čech cover of
@@ -1687,13 +1721,23 @@ def twoPatchReplayLocalSection (i : FiniteModel.TwoPatchCoverIndex) :
   | .left => ⟨0⟩
   | .right => ⟨1⟩
 
-/-- Each actual translation section evaluates to its selected local replay map. -/
+/-- Each chart carries a replay along the same fixed `tinyStep : t0 ⟶ t1`. -/
+def twoPatchReplayLocalTransition (i : FiniteModel.TwoPatchCoverIndex) :
+    TwoPatchTemporalReplayAlong tinyStep
+      (twoPatchReplayTemporalCover.chartContext i)
+      (twoPatchReplayTemporalCover.chartContext i) where
+  trace_selected := twoPatchReplayTemporalTrace_selected
+  toFun := FiniteModel.TwoPatchZMod2TranslationReplay.apply
+    (twoPatchReplayLocalSection i)
+
+/-- Each indexed chart transition evaluates to its selected local replay map. -/
 theorem twoPatchReplayLocalSection_apply (i : FiniteModel.TwoPatchCoverIndex)
-    (state : ZMod 2) :
-    FiniteModel.TwoPatchZMod2TranslationReplay.apply
-      (twoPatchReplayLocalSection i) state =
+    (state : twoPatchReplayTemporalStatePresheaf.State
+      (TinyTime.t0, twoPatchReplayTemporalCover.chartContext i)) :
+    (twoPatchReplayLocalTransition i).toFun state =
         twoChartLocalReplay (twoPatchReplayChart i) state := by
   cases i <;> simp [twoPatchReplayLocalSection,
+    twoPatchReplayLocalTransition,
     FiniteModel.TwoPatchZMod2TranslationReplay.apply, twoPatchReplayChart,
     twoChartLocalReplay]
 
@@ -1913,18 +1957,26 @@ theorem twoPatchReplayCechMismatch_eq_overlap
   cases simplex
   rfl
 
-/-- The coefficient mismatch equals the full replay-function difference on every state. -/
+/-- Restrict an indexed chart replay to the actual overlap along the same trace arrow. -/
+noncomputable def twoPatchReplayRestrictedLocalTransition
+    (i : FiniteModel.TwoPatchCoverIndex) :
+    TwoPatchTemporalReplayAlong tinyStep
+      FiniteModel.TwoPatchContextIndex.overlap
+      FiniteModel.TwoPatchContextIndex.overlap where
+  trace_selected := twoPatchReplayTemporalTrace_selected
+  toFun := FiniteModel.TwoPatchZMod2TranslationReplay.apply
+    (FiniteModel.twoPatchZMod2TranslationReplayPresheaf.map
+      (twoPatchReplayOverlapRestriction i).op
+      (twoPatchReplayLocalSection i))
+
+/-- The coefficient mismatch equals the indexed overlap replay difference on every state. -/
 theorem twoPatchReplayRestrictedDifference_eq_overlap
-    (state : ZMod 2) :
-    FiniteModel.TwoPatchZMod2TranslationReplay.apply
-      (FiniteModel.twoPatchZMod2TranslationReplayPresheaf.map
-        (twoPatchReplayOverlapRestriction .right).op
-        (twoPatchReplayLocalSection .right)) state -
-      FiniteModel.TwoPatchZMod2TranslationReplay.apply
-        (FiniteModel.twoPatchZMod2TranslationReplayPresheaf.map
-          (twoPatchReplayOverlapRestriction .left).op
-          (twoPatchReplayLocalSection .left)) state =
+    (state : twoPatchReplayTemporalStatePresheaf.State
+      (TinyTime.t0, FiniteModel.TwoPatchContextIndex.overlap)) :
+    (twoPatchReplayRestrictedLocalTransition .right).value state -
+      (twoPatchReplayRestrictedLocalTransition .left).value state =
         twoPatchReplayOverlapMismatch := by
+  change ZMod 2 at state
   change state + 1 - (state + 0) = 1 - 0
   ring
 
@@ -1933,6 +1985,26 @@ def twoPatchAdjustedReplayLocalSection (i : FiniteModel.TwoPatchCoverIndex) :
     FiniteModel.TwoPatchZMod2TranslationReplay :=
   FiniteModel.TwoPatchZMod2TranslationReplay.adjust
     (twoPatchReplayLocalSection i) (twoPatchReplayCorrectionSection i)
+
+/-- Apply an arbitrary degree-zero correction to an indexed chart replay. -/
+def twoPatchReplayAdjustedLocalTransitionBy
+    (correction : Site.FinitePosetCechCochain
+      FiniteModel.twoPatchZMod2FinitePosetRegime 0)
+    (i : FiniteModel.TwoPatchCoverIndex) :
+    TwoPatchTemporalReplayAlong tinyStep
+      (twoPatchReplayTemporalCover.chartContext i)
+      (twoPatchReplayTemporalCover.chartContext i) where
+  trace_selected := twoPatchReplayTemporalTrace_selected
+  toFun := FiniteModel.TwoPatchZMod2TranslationReplay.apply
+    (FiniteModel.TwoPatchZMod2TranslationReplay.adjust
+      (twoPatchReplayLocalSection i) (correction i))
+
+/-- The fixed adjusted chart replay remains indexed by the same trace arrow. -/
+def twoPatchAdjustedReplayLocalTransition (i : FiniteModel.TwoPatchCoverIndex) :
+    TwoPatchTemporalReplayAlong tinyStep
+      (twoPatchReplayTemporalCover.chartContext i)
+      (twoPatchReplayTemporalCover.chartContext i) :=
+  twoPatchReplayAdjustedLocalTransitionBy twoPatchReplayCorrectionCochain i
 
 /-- The correction action realizes `m(adjust(c,r)) = m(r) - d c` pointwise. -/
 theorem twoPatchAdjustedReplayLocalSection_coefficient
@@ -1994,18 +2066,26 @@ theorem twoPatchAdjustedReplayCechMismatch_eq_overlap
   cases simplex
   rfl
 
-/-- The adjusted coefficient mismatch equals the full adjusted replay-function difference. -/
+/-- Restrict an adjusted indexed chart replay to the actual overlap. -/
+noncomputable def twoPatchAdjustedReplayRestrictedTransition
+    (i : FiniteModel.TwoPatchCoverIndex) :
+    TwoPatchTemporalReplayAlong tinyStep
+      FiniteModel.TwoPatchContextIndex.overlap
+      FiniteModel.TwoPatchContextIndex.overlap where
+  trace_selected := twoPatchReplayTemporalTrace_selected
+  toFun := FiniteModel.TwoPatchZMod2TranslationReplay.apply
+    (FiniteModel.twoPatchZMod2TranslationReplayPresheaf.map
+      (twoPatchReplayOverlapRestriction i).op
+      (twoPatchAdjustedReplayLocalSection i))
+
+/-- The adjusted mismatch equals the indexed overlap replay difference. -/
 theorem twoPatchAdjustedReplayRestrictedDifference_eq_overlap
-    (state : ZMod 2) :
-    FiniteModel.TwoPatchZMod2TranslationReplay.apply
-      (FiniteModel.twoPatchZMod2TranslationReplayPresheaf.map
-        (twoPatchReplayOverlapRestriction .right).op
-        (twoPatchAdjustedReplayLocalSection .right)) state -
-      FiniteModel.TwoPatchZMod2TranslationReplay.apply
-        (FiniteModel.twoPatchZMod2TranslationReplayPresheaf.map
-          (twoPatchReplayOverlapRestriction .left).op
-          (twoPatchAdjustedReplayLocalSection .left)) state =
+    (state : twoPatchReplayTemporalStatePresheaf.State
+      (TinyTime.t0, FiniteModel.TwoPatchContextIndex.overlap)) :
+    (twoPatchAdjustedReplayRestrictedTransition .right).value state -
+      (twoPatchAdjustedReplayRestrictedTransition .left).value state =
         twoPatchAdjustedReplayOverlapMismatch := by
+  change ZMod 2 at state
   change state + (1 - 1) - (state + (0 - 0)) = (1 - 1) - (0 - 0)
   ring
 
@@ -2132,6 +2212,24 @@ theorem twoPatch_temporal_descent_criterion_holds :
   twoPatch_adjusted_mismatch_zero_descends twoPatchAdjustedReplayCechMismatch_zero
 
 /--
+An indexed global replay realizes one correction when restriction to every
+chart agrees with the chart replay along the same `tinyStep : t0 ⟶ t1`.
+-/
+def TwoPatchTemporalReplayRealizesCorrection
+    (correction : Site.FinitePosetCechCochain
+      FiniteModel.twoPatchZMod2FinitePosetRegime 0)
+    (globalReplay : TwoPatchTemporalReplayTransition) : Prop :=
+  ∀ (i : FiniteModel.TwoPatchCoverIndex)
+    (state : twoPatchReplayTemporalStatePresheaf.State
+      (TinyTime.t0, twoPatchReplayTemporalCover.baseContext)),
+    twoPatchReplayTemporalStatePresheaf.restrictContext TinyTime.t1
+        (twoPatchReplayTemporalCover.contextToBase i)
+        (globalReplay.toFun state) =
+      (twoPatchReplayAdjustedLocalTransitionBy correction i).toFun
+        (twoPatchReplayTemporalStatePresheaf.restrictContext TinyTime.t0
+          (twoPatchReplayTemporalCover.contextToBase i) state)
+
+/--
 The actual two-patch temporal descent criterion.
 
 The concrete class-zero witness is a degree-zero correction on the same
@@ -2165,11 +2263,7 @@ theorem twoPatch_temporal_descent_criterion :
                 (twoPatchReplayTemporalSite.siteRegime.context
                   (twoPatchReplayTemporalCover.chartContext i))) ∧
           ∃ globalReplay : TwoPatchTemporalReplayTransition,
-            ∀ (i : FiniteModel.TwoPatchCoverIndex) (state : ZMod 2),
-              globalReplay state =
-                FiniteModel.TwoPatchZMod2TranslationReplay.apply
-                  (FiniteModel.TwoPatchZMod2TranslationReplay.adjust
-                    (twoPatchReplayLocalSection i) (correction i)) state := by
+            TwoPatchTemporalReplayRealizesCorrection correction globalReplay := by
   refine ⟨twoPatchReplayCorrectionCochain,
     twoPatchReplayCechMismatch_eq_correction,
     twoPatchReplayTemporalMismatch_eq_correction,
@@ -2177,8 +2271,15 @@ theorem twoPatch_temporal_descent_criterion :
   intro i
   exact twoPatchReplayTemporalCover_reads_actual_chart i
   rcases twoPatch_temporal_descent_criterion_holds with ⟨globalSection, hglobal⟩
-  refine ⟨FiniteModel.TwoPatchZMod2TranslationReplay.apply globalSection, ?_⟩
+  refine ⟨{
+    trace_selected := twoPatchReplayTemporalTrace_selected
+    toFun := FiniteModel.TwoPatchZMod2TranslationReplay.apply globalSection
+  }, ?_⟩
   intro i state
+  change FiniteModel.TwoPatchZMod2TranslationReplay.apply globalSection state =
+    FiniteModel.TwoPatchZMod2TranslationReplay.apply
+      (FiniteModel.TwoPatchZMod2TranslationReplay.adjust
+        (twoPatchReplayLocalSection i) (twoPatchReplayCorrectionCochain i)) state
   rw [hglobal i]
   rfl
 
@@ -2186,13 +2287,17 @@ theorem twoPatch_temporal_descent_criterion :
 theorem twoPatch_temporal_descent_criterion_global_replay
     :
     ∃ globalReplay : TwoPatchTemporalReplayTransition,
-      ∀ (i : FiniteModel.TwoPatchCoverIndex) (state : ZMod 2),
-        globalReplay state =
-          FiniteModel.TwoPatchZMod2TranslationReplay.apply
-            (twoPatchAdjustedReplayLocalSection i) state := by
+      TwoPatchTemporalReplayRealizesCorrection
+        twoPatchReplayCorrectionCochain globalReplay := by
   rcases twoPatch_temporal_descent_criterion_holds with ⟨globalSection, hglobal⟩
-  refine ⟨FiniteModel.TwoPatchZMod2TranslationReplay.apply globalSection, ?_⟩
+  refine ⟨{
+    trace_selected := twoPatchReplayTemporalTrace_selected
+    toFun := FiniteModel.TwoPatchZMod2TranslationReplay.apply globalSection
+  }, ?_⟩
   intro i state
+  change FiniteModel.TwoPatchZMod2TranslationReplay.apply globalSection state =
+    FiniteModel.TwoPatchZMod2TranslationReplay.apply
+      (twoPatchAdjustedReplayLocalSection i) state
   rw [hglobal i]
 
 /--
@@ -2208,11 +2313,9 @@ theorem actual_twoPatch_zmod2_replay_fixture :
             twoPatchReplayCorrectionCochain ∧
           twoPatchAdjustedReplayCechMismatch = 0 ∧
         twoPatchAdjustedReplayOverlapMismatch = 0 ∧
-          ∃ globalReplay : FiniteModel.TwoPatchZMod2ReplayFunction,
-            ∀ (i : FiniteModel.TwoPatchCoverIndex) (state : ZMod 2),
-              globalReplay state =
-                FiniteModel.TwoPatchZMod2TranslationReplay.apply
-                  (twoPatchAdjustedReplayLocalSection i) state := by
+          ∃ globalReplay : TwoPatchTemporalReplayTransition,
+            TwoPatchTemporalReplayRealizesCorrection
+              twoPatchReplayCorrectionCochain globalReplay := by
   refine ⟨?_, twoPatchReplayOverlapMismatch_ne_zero,
     twoPatchReplayOverlapMismatch_eq_coboundary, twoPatchReplayCechMismatch_eq_correction,
     twoPatchAdjustedReplayCechMismatch_zero, twoPatchAdjustedReplayOverlapMismatch_zero,
