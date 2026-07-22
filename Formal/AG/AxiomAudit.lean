@@ -788,7 +788,7 @@ def semanticRepairIssue3719KiteTopologyEqGenerated :=
   AAT.AG.Examples.SemanticRepairPart10.kiteSite_topology_eq_generated
 
 def semanticRepairIssue3719KiteLawQuotientIsSheaf :=
-  AAT.AG.Examples.SemanticRepairPart10.kiteLawQuotientIsSheaf
+  @AAT.AG.Examples.SemanticRepairPart10.kiteLawQuotientIsSheaf
 
 def semanticRepairIssue3719KiteLawObstructionIdeal :=
   AAT.AG.Examples.SemanticRepairPart10.kiteLaw_obstructionIdeal_eq_span_two
