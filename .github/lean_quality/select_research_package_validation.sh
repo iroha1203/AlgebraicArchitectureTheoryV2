@@ -6,9 +6,10 @@ if [ "${EVENT_NAME:?EVENT_NAME is required}" = "workflow_dispatch" ]; then
   exit 0
 fi
 
-base="${PUSH_BASE:?PUSH_BASE is required}"
 if [ "$EVENT_NAME" = "pull_request" ]; then
   base="${PR_BASE:?PR_BASE is required}"
+else
+  base="${PUSH_BASE:?PUSH_BASE is required}"
 fi
 if printf '%s' "$base" | grep -Eq '^0+$'; then
   base="$(git rev-list --max-parents=0 "${HEAD_SHA:?HEAD_SHA is required}" | tail -n 1)"

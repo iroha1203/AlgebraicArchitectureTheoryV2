@@ -16,7 +16,7 @@ assert_selection() {
     cd "$tmp/repo"
     EVENT_NAME=pull_request \
       PR_BASE="$base" \
-      PUSH_BASE=unused \
+      PUSH_BASE= \
       HEAD_SHA="$head" \
       GITHUB_OUTPUT="$tmp/output" \
       "$selector"
