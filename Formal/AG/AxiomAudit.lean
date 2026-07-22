@@ -2554,14 +2554,14 @@ def replayTwoPatchZMod2TemporalProductTargetReadsRightChart :=
 def replayTwoPatchZMod2TemporalProductEndpoints :=
   Examples.EvolutionPart9.twoPatchReplayCochainToTemporalProduct_endpoints
 
-def replayTwoPatchZMod2TemporalProductActualOverlapRestriction :=
+noncomputable def replayTwoPatchZMod2TemporalProductActualOverlapRestriction :=
   Examples.EvolutionPart9.twoPatchReplayCechRestrictionToOverlap
 
 def replayTwoPatchZMod2CechDifferentialReadsActualOverlapRestrictions :=
   Examples.EvolutionPart9.twoPatchReplayCechDifferential_eq_overlap_restrictions
 
 def replayTwoPatchZMod2TemporalProductClassZero :=
-  Examples.EvolutionPart9.twoPatchReplayTemporalProductMismatch_eq_correction
+  @Examples.EvolutionPart9.twoPatchReplayTemporalProductMismatch_eq_correction
 
 def replayTwoPatchZMod2TemporalProductCechReading :=
   Examples.EvolutionPart9.twoPatchReplayTemporalMismatch_eq_correction
