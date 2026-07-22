@@ -72,9 +72,9 @@ inductive TransferResidueFlag where
 
 /-- R11(a): the profile separates measured nonzero from unmeasured axes. -/
 def pseudoCircleMeasurementProfile : MeasurementProfile where
-  SiteObj := Cohomology.FiniteExamples.PseudoCircleGolden.Chart
-  Cover := Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge
-  Coeff := ℝ
+  SiteObj := TinyMeasurementSite
+  Cover := Unit
+  Coeff := Unit
   EffCoeff := Unit
   ObstructionObject := Unit
   LawUniverse := Unit
@@ -829,9 +829,9 @@ def finiteComputabilitySeedProfile : MeasurementProfile where
   Domain := Unit
   CertRef := fun _ => Unit
   SelectedMethod := fun _ => Unit
-  InScope := fun _ => (0 : Nat) = 0
+  InScope := fun _ => True
   OutOfScope := fun _ => False
-  Zero := fun _ => (0 : ℝ) = 0
+  Zero := fun _ => True
   NonZero := fun _ => False
   Undecided := fun _ => False
   NotRunOrUnavailable := fun _ => False
@@ -3558,7 +3558,12 @@ def measurementPacketExampleSynthesis :
     FiniteMeasurementSynthesis measurementPacketExampleData :=
   finiteMeasurementSynthesisPackage measurementPacketExampleData
 
-/-- R11(g): a real-coefficient profile using the generated finite-poset site and cover. -/
+/-- R11(g): a real-coefficient profile using the generated finite-poset site and cover.
+
+The verdict vocabulary is deliberately trivial: the single `Unit` measurement
+is in scope by selection, and no theorem-12.3 conjunct reads `Zero` /
+`NonZero`.  This profile only supplies the selected site, cover, real
+coefficient, and law handles for the GAGA comparison. -/
 abbrev gagaRealMeasurementProfile : MeasurementProfile where
   SiteObj := PUnit
   Cover := Bool
@@ -3572,9 +3577,9 @@ abbrev gagaRealMeasurementProfile : MeasurementProfile where
   Domain := Unit
   CertRef := fun _ => Unit
   SelectedMethod := fun _ => Unit
-  InScope := fun _ => (0 : Nat) = 0
+  InScope := fun _ => True
   OutOfScope := fun _ => False
-  Zero := fun _ => (0 : ℝ) = 0
+  Zero := fun _ => True
   NonZero := fun _ => False
   Undecided := fun _ => False
   NotRunOrUnavailable := fun _ => False
@@ -3926,7 +3931,7 @@ noncomputable def gagaCommonFiniteData :
   selectedCoefficient := 1
   selectedMeasurement := ()
   measuredSelection := {
-    inScope := rfl
+    inScope := trivial
     method := ()
     certificate := ()
   }

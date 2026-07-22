@@ -1364,7 +1364,13 @@ theorem lawConflictTorReading_holds {M : MeasurementProfile.{u, v}} [Field M.Coe
           C.leftIdeal C.rightIdeal 1) :=
   ⟨C.lawConflictLinearEquivMathlibTor⟩
 
-/-- The selected law generators are the two ideals used by the fixed Hilbert calculation. -/
+/-- The generated ideals are the shared-witness ideals and satisfy the fixed
+G5 Hilbert-series identity of the selected regime.
+
+The series are the declared coefficients of `sharedWitnessHilbertRegime`;
+identifying them with graded dimensions of the actual `mathlibTor` modules is
+Part V Theorem 12.2 provenance work tracked as Issue #3726, not a conjunct of
+this statement. -/
 def hilbertSeriesConflictStatement {M : MeasurementProfile.{u, v}} [Field M.Coeff]
     (C : AATGAGACommonFiniteData M) : Prop :=
   let regime := FiniteModel.DerivedPart5.sharedWitnessHilbertRegime M.Coeff
