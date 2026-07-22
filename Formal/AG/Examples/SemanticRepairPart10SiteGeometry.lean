@@ -45,7 +45,7 @@ Site geometry, not supplied identities:
   `Z^1 = ker d^1` is non-vacuous.
 
 Boundary (disclosed, mirroring X.例9.2): the witness-topology trick is kept.
-The selected coverage requirements admit no admissible cover, so every
+The selected coverage requirements leave no admissible cover, so every
 covering sieve of the selected topology is top and the constant-observable
 law-equation quotient is a sheaf.  The site geometry that generates the nerve
 lives in the context category and its finite meets; the Grothendieck topology
@@ -420,7 +420,7 @@ theorem kiteOtherTriples_empty (atom : FiniteModel.FiniteAtom) :
 /--
 #3719: degenerate witness-site coverage requirements for the kite site.
 
-Exactly as in X.例9.2, these requirements deliberately admit no admissible
+Exactly as in X.例9.2, these requirements deliberately leave no admissible
 cover, so the generated topology is the top-only witness topology and the
 constant-observable law-equation quotient below is a sheaf.  The multi-chart
 geometry of the kite cover lives in the context category and its meets, not
