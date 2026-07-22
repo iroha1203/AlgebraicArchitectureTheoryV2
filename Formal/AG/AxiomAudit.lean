@@ -302,6 +302,42 @@ def semanticRepairTheorem48GeneralFaithfulnessSufficiency :=
 def semanticRepairTheorem72H1ComparisonPackage :=
   @SemanticRepair.SemanticRepairCoverRelativeH1Comparison.semanticRepairAdditiveH1_coverRelativeH1_comparison_package
 
+def semanticRepairTheorem72H1AddEquiv :=
+  @SemanticRepair.SemanticRepairCoverRelativeH1Comparison.semanticRepairAdditiveH1_addEquiv_additiveCechH1
+
+def semanticRepairTheorem72H1ZeroIffFromAddEquiv :=
+  @SemanticRepair.SemanticRepairCoverRelativeH1Comparison.semanticRepairAdditiveH1Zero_iff_coverRelativeH1Zero_of_addEquiv
+
+def semanticRepairTheorem72CocycleMembershipIff :=
+  @SemanticRepair.SemanticRepairCoverRelativeH1Comparison.delta1_eq_zero2_iff
+
+def semanticRepairTheorem72CocycleAddCommGroup :=
+  @SemanticRepair.SemanticRepairCoverRelativeH1Comparison.cocycleAddCommGroup
+
+def semanticRepairTheorem72H1AddCommGroup :=
+  @SemanticRepair.SemanticRepairCoverRelativeH1Comparison.h1AddCommGroup
+
+def semanticRepairTheorem72ZeroClassEqZero :=
+  @SemanticRepair.SemanticRepairCoverRelativeH1Comparison.zeroClass_eq_zero
+
+def semanticRepairTheorem72H1ZeroIffResidualClassEqZero :=
+  @SemanticRepair.SemanticRepairCoverRelativeH1Comparison.h1Zero_iff_residualClass_eq_zero
+
+def semanticRepairTheorem72H1ZeroIffAddEquivResidualEqZero :=
+  @SemanticRepair.SemanticRepairCoverRelativeH1Comparison.h1Zero_iff_addEquiv_residualClass_eq_zero
+
+def semanticRepairTheorem72SurfaceDelta0Nsmul :=
+  @SemanticRepair.SemanticRepairAdditiveH1Surface.delta0_nsmul
+
+def semanticRepairTheorem72SurfaceDelta0Zsmul :=
+  @SemanticRepair.SemanticRepairAdditiveH1Surface.delta0_zsmul
+
+def semanticRepairTheorem72AdditiveCechH1ClassAddOfVal :=
+  @Cohomology.CoverRelativeCechComplex.additiveH1Class_add_of_val
+
+def semanticRepairTheorem72LegacyCechH1EquivAdditive :=
+  @Cohomology.CoverRelativeCechComplex.legacyCechH1EquivAdditiveCechH1
+
 def semanticRepairTheorem73GroundedGlobalGluingPackage :=
   @SemanticRepair.trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package
 
