@@ -341,9 +341,11 @@ def semanticRepairTheorem72LegacyCechH1EquivAdditive :=
 def semanticRepairTheorem73GroundedGlobalGluingPackage :=
   @SemanticRepair.trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package
 
+/-- Theorem-7.5 scaffolding: bounded through the section-4 `Fintype` cech fields, absent from the body-text theorem 7.5. -/
 def semanticRepairTheorem75NativeGeneratedEndToEndFromNativeGeneratedInputs :=
   @SemanticRepair.lawEquation_constructs_groundedComparisonPacket_fromNativeGeneratedInputs
 
+/-- Theorem-7.5 scaffolding: bounded by `Fintype` premises absent from the body-text theorem 7.5. -/
 def semanticRepairTheorem75GeneratedPairGroundedComparisonPacket :=
   @SemanticRepair.lawEquation_constructs_generatedPair_groundedComparisonPacket_fromCoverRelativeComplex
 
@@ -380,24 +382,31 @@ def semanticRepairTheorem75NoCommonRestrictionWithoutArrowCompatibility :=
 def semanticRepairTheorem75NonzeroDisplayedRestrictionRejectsRealization :=
   @SemanticRepair.LawEquationBodyCechSource.restrictedDisplayedInterpretation_ne_zero_prevents_displayedInterpretationRealization
 
+/-- Theorem-7.5 scaffolding: bounded by `Fintype` premises absent from the body-text theorem 7.5. -/
 def semanticRepairTheorem75GeneratedBoundaryGroundedComparisonPacket :=
   @SemanticRepair.lawEquation_constructs_generatedBoundary_groundedComparisonPacket_fromPrimitive
 
+/-- Theorem-7.5 scaffolding: bounded by `Fintype` premises absent from the body-text theorem 7.5. -/
 def semanticRepairTheorem75GeneratedBoundaryLawIndependentConclusions :=
   @SemanticRepair.lawEquation_generatedBoundary_lawIndependentConclusions_fromPrimitive
 
+/-- Theorem-7.5 scaffolding: bounded by `Fintype` premises absent from the body-text theorem 7.5. -/
 def semanticRepairTheorem75GeneratedBoundaryLawIndependentResearchConjuncts :=
   @SemanticRepair.lawEquation_generatedBoundary_lawIndependentResearchConjuncts_fromSource
 
+/-- Theorem-7.5 scaffolding: parametrized by the section-4 bounded Cech data, whose `Fintype` cech fields are absent from the body-text theorem 7.5. -/
 def semanticRepairTheorem75GeneratedCoverSelectedRealizationLayer :=
   @SemanticRepair.cochainRealization_constructs_selectedRealizationLayerBody
 
+/-- Theorem-7.5 scaffolding: parametrized by the section-4 bounded Cech data, whose `Fintype` cech fields are absent from the body-text theorem 7.5. -/
 def semanticRepairTheorem75SelectedRealizationLayerCoverIsGenerated :=
   @SemanticRepair.SelectedSemanticCoefficientDirectRealizationLayerBody.cover_is_generated
 
+/-- Theorem-7.5 scaffolding: parametrized by the section-4 bounded Cech data, whose `Fintype` cech fields are absent from the body-text theorem 7.5. -/
 def semanticRepairTheorem75NoSelectedRealizationLayerWithoutGeneratedCover :=
   @SemanticRepair.no_selectedRealizationLayer_without_generatedCover
 
+/-- Theorem-7.5 scaffolding: bounded by `Fintype` premises absent from the body-text theorem 7.5. -/
 def semanticRepairTheorem75GeneratedBoundaryGroundedPointwiseResearchConjuncts :=
   @SemanticRepair.lawEquation_constructs_groundedPointwiseResearchConjuncts_fromSource
 
@@ -407,12 +416,15 @@ def semanticRepairTheorem75CompleteSupportClosure :=
 def semanticRepairTheorem75CompleteSupportComponentFaithfulness :=
   @SemanticRepair.lawEquationCompleteRepairSupport_componentCoverage_and_faithfulness
 
+/-- Theorem-7.5 scaffolding: bounded by `Fintype` premises absent from the body-text theorem 7.5. -/
 def semanticRepairTheorem75FinitePosetGeneratedBoundaryGroundedComparisonPacket :=
   @SemanticRepair.lawEquation_constructs_generatedBoundary_groundedComparisonPacket_fromFinitePosetComparisonPrimitive
 
+/-- Theorem-7.5 scaffolding: bounded by `Fintype` premises absent from the body-text theorem 7.5. -/
 def semanticRepairTheorem75StandardFinitePosetGeneratedBoundaryGroundedComparisonPacket :=
   @SemanticRepair.StandardFinitePosetGeneratedBoundary.lawEquation_constructs_generatedBoundary_groundedComparisonPacket_fromStandardFinitePosetPrimitive
 
+/-- Theorem-7.5 scaffolding: bounded by `Fintype` premises absent from the body-text theorem 7.5. -/
 def semanticRepairTheorem75StandardFinitePosetSourceC0DifferentialGroundedResearchConjuncts :=
   @SemanticRepair.StandardFinitePosetGeneratedBoundary.lawEquation_constructs_groundedResearchConjuncts_fromStandardFinitePosetSource
 
@@ -425,21 +437,26 @@ def semanticRepairTheorem81StandardSourceC0CechZero :=
 def semanticRepairTheorem81UnequalFacesRejectSourceC0CechZero :=
   @SemanticRepair.StandardFinitePosetGeneratedBoundary.displayedFaceRestriction_ne_prevents_standardSourceC0CechZero
 
+/-- Theorem-7.5 scaffolding: parametrized by the section-4 bounded Cech data, whose `Fintype` cech fields are absent from the body-text theorem 7.5. -/
 def semanticRepairTheorem75SourcePrimitiveC0CechZero :=
   @SemanticRepair.LawEquationGroundedComparisonConjunctsBody.sourcePrimitiveC0CechZero
 
+/-- Theorem-7.5 scaffolding: bounded by `Fintype` premises absent from the body-text theorem 7.5. -/
 def semanticRepairTheorem75CanonicalTupleGeneratedBoundaryGroundedComparisonPacket :=
   @SemanticRepair.StandardFinitePosetGeneratedBoundary.lawEquation_constructs_generatedBoundary_groundedComparisonPacket_fromCanonicalTuplePrimitive
 
+/-- Theorem-7.5 scaffolding: bounded by `Fintype` premises absent from the body-text theorem 7.5. -/
 def semanticRepairTheorem75LawEquationSpineGeneratedBoundaryGroundedComparisonPacket :=
   @SemanticRepair.StandardFinitePosetGeneratedBoundary.lawEquation_constructs_generatedBoundary_groundedComparisonPacket_fromLawEquationSpinePrimitive
 
+/-- Theorem-7.5 scaffolding: bounded by `Fintype` premises absent from the body-text theorem 7.5. -/
 def semanticRepairTheorem75OverlapGeneratedLawEquationSpineGroundedComparisonPacket :=
   @SemanticRepair.StandardFinitePosetGeneratedBoundary.lawEquation_constructs_generatedBoundary_groundedComparisonPacket_fromOverlapGeneratedSpinePrimitive
 
 def semanticRepairTheorem75FiniteFreeLawIndependentConjuncts :=
   @SemanticRepair.StandardFinitePosetGeneratedBoundary.lawEquation_constructs_finiteFreeLawIndependentConjuncts
 
+/-- **Canonical theorem-7.5 witness** (finite-free: no cochain finiteness premises; cover-side finiteness is the body-text Definition 5.1 setting). -/
 def semanticRepairTheorem75FiniteFreeGroundedComparisonPacket :=
   @SemanticRepair.StandardFinitePosetGeneratedBoundary.lawEquation_constructs_groundedComparisonPacket_finiteFree
 
@@ -452,12 +469,15 @@ def semanticRepairTheorem75FiniteFreeSemanticH1ZeroIffResidualBoundary :=
 def semanticRepairTheorem75NoFiniteFreeSemanticH1ZeroWithoutResidualBoundary :=
   @SemanticRepair.no_generatedSemanticH1ZeroBody_without_residualBoundary
 
+/-- Theorem-7.5 scaffolding: parametrized by the section-4 bounded Cech data, whose `Fintype` cech fields are absent from the body-text theorem 7.5. -/
 def semanticRepairTheorem75BoundedResidualBoundaryIffFiniteFree :=
   @SemanticRepair.generatedResidualBoundaryBody_iff_surfaceBody
 
+/-- Theorem-7.5 scaffolding: parametrized by the section-4 bounded Cech data, whose `Fintype` cech fields are absent from the body-text theorem 7.5. -/
 def semanticRepairTheorem75BoundedSelectedLayerToFiniteFree :=
   @SemanticRepair.SelectedSemanticCoefficientDirectRealizationLayerBody.toFiniteFree
 
+/-- Theorem-7.5 scaffolding: parametrized by the section-4 bounded Cech data, whose `Fintype` cech fields are absent from the body-text theorem 7.5. -/
 def semanticRepairTheorem75FiniteFreeSelectedLayerToBounded :=
   @SemanticRepair.SelectedSemanticCoefficientFiniteFreeRealizationLayerBody.toBounded
 
