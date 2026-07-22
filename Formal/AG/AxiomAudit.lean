@@ -2157,6 +2157,12 @@ theorem gagaLowDegreePeriodStokes :
   Measurement.AATGAGARealCechHodgeInput.periodStokesStatement_holds
     Measurement.gagaRealHodgeInput
 
+theorem gagaLowDegreeHodgeStatement :
+    Measurement.AATGAGARealCechHodgeInput.hodgeStatement
+      Measurement.gagaRealHodgeInput :=
+  Measurement.AATGAGARealCechHodgeInput.hodgeStatement_holds
+    Measurement.gagaRealHodgeInput
+
 theorem gagaLowDegreeTopologicalDebtCapacityFromComplex :
     Measurement.AATGAGAFiniteCechSource.topologicalCapacityStatement
       Measurement.gagaFiniteCechSource :=
