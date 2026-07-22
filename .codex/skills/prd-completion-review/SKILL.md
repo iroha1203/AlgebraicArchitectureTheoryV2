@@ -113,8 +113,7 @@ Lean要件を含むPRDでは
 
 ## 検証の選び方
 
-- Lean 変更または Lean 達成条件: 統括エージェントが1回だけ
-  `lake build` を実行し、結果をreview laneへ渡す。サブエージェントは実行しない。
+- Lean 変更または Lean 達成条件: 本体のroot全体のフル `lake build` はPR作成後のCIで実行し、結果をreview laneへ渡す。ローカルでは変更範囲に応じた focused check または targeted build を扱う。
   必要なら focused `lake env lean <file>` だけを追加する。
 - ArchSig 変更または tooling 達成条件: `cargo test --manifest-path tools/archsig/Cargo.toml`
 - FieldSig 変更または measurement handoff 達成条件: `cargo test --manifest-path tools/fieldsig/Cargo.toml`

@@ -60,8 +60,7 @@ GitHub Release notes は原則として英語で書く。
 5. 検証する。
    - ArchSig 変更あり: `cargo test --manifest-path tools/archsig/Cargo.toml`
    - FieldSig 変更あり: `cargo test --manifest-path tools/fieldsig/Cargo.toml`
-   - Lean / docs claim 変更あり: 統括エージェントが `lake build` を1回だけ実行する。
-     サブエージェントに委譲しない。
+   - Lean / docs claim 変更あり: 本体のroot全体のフル `lake build` はローカルで実行せず、PR作成後のCIで確認する。ローカルでは変更範囲に応じた focused check または targeted build を必要に応じて実行する。
    - website 変更あり: Playwright で静的ページを確認する。
    - release notes / workflow / docs 変更のみでも:
      - `git diff --check`

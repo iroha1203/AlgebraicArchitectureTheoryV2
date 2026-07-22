@@ -178,8 +178,10 @@ static output.
 
 ## Build
 
+The root-wide full Lean build for the main package is run by CI after a pull request is opened. Choose a local check that matches the change scope; for example, a single target file or a targeted module build:
+
 ```bash
-lake build
+lake env lean Formal/Arch/Core/Layering.lean
 lake build Formal
 lake exe aatv2
 ```

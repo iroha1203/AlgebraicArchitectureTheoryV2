@@ -105,8 +105,7 @@ rg -n "<命題名|定理名|主要語>" docs research Formal
 
 - focused check: subagentへ許す場合は、親が明示した単一の非aggregate fileに対する
   `lake env lean <target-file>`だけとする。aggregate root、module群、全file loopは禁止する。
-- package / module check: 統括エージェントだけがPR前に
-  `lake build <module>`または`lake build`のどちらか1回を実行し、結果を各review laneへ渡す。
+- package / module check: `lake build <module>` は対象 module の確認として必要な場合だけ扱う。本体のフル `lake build` はローカルで実行せず、PR作成後のCI結果を各review laneへ渡す。
   Research packageのfull buildはCIで実行しない。必要な場合だけ統括エージェントが
   `cd research/lean && lake build`をローカルで1回実行し、subagentは実行しない。
 - theorem dependency audit: 対象 Lean declaration ごとに `#print axioms <DeclarationName>` を一時確認する。複数 declaration が対象なら全件必須とし、未実行の declaration 名は最終報告の coverage に列挙する。確認用 scratch は `.tmp/` に置き、成果物に混ぜない。

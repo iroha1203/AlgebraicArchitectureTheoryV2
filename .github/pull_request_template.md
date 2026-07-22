@@ -24,9 +24,9 @@
 
 ## 実施したテスト
 
-<!-- 実行したコマンドと結果を書く。未実施の場合は理由を書く。 -->
+<!-- 実行したローカル検証とCI結果を書く。未実施の場合は理由を書く。 -->
 
-- [ ] `lake build`
+- [ ] CIで本体のフル `lake build` を確認
 - [ ] `cargo test --manifest-path tools/archsig/Cargo.toml`（ArchSig 変更時）
 - [ ] `cargo test --manifest-path tools/fieldsig/Cargo.toml`（FieldSig 変更時）
 - [ ] `git diff --check`

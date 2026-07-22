@@ -50,9 +50,10 @@ git diff --check
 rg -nP "[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}]" <changed-files>
 ```
 
-Lean source や FieldSig behavior に触れた場合は、変更範囲に応じて次も実行する。
+Lean source や FieldSig behavior に触れた場合は、変更範囲に応じて focused check、対象moduleの targeted build、必要な監査を選ぶ。本体のroot全体のフル `lake build` はPR作成後のCIで確認する。
 
 ```bash
-lake build
+lake env lean <target-file>
+lake build <module>
 cargo test --manifest-path tools/fieldsig/Cargo.toml
 ```
