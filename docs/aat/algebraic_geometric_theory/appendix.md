@@ -582,93 +582,93 @@ algebraic architecture stack と呼ぶのは、diagonal representability、atlas
 
 ## B.1 Mathematical Glossary
 
-本文の主要な定義、追加仮定、theorem label は、次の数学的な役割で読む。
+本文の主要語とその数学的な読み方を次にまとめる。
 
-| 語 | status | 読み方 |
-| --- | --- | --- |
-| `Atomizes_D / Atomize_D` | mathematical definition | `Atomize_D(s).mem(a) iff Extracts_D(s,a)` で family を定義し、`Atomizes_D(s,F)` をその membership characterization とする。canonicality と A8 uniqueness は extensionality theorem である。 |
-| `Core_At : CoreRead(At) -> ObjectAlgebra(At)` | mathematical construction | admissible reading の rule を評価して operation-closed object family、context category、architectural equation system、indexed operation / circuit family を構成する。 |
-| `ConfigurationHom / Operation` | mathematical definition | operation は atom map と family membership、relation、identification の transport を持つ actual configuration homomorphism である。 |
-| `CoreExact_At(phi)` | local theorem candidate | context equivalence と observable presheaf の natural isomorphism を含む `SignedExactCoreReadingHom` から object-algebra homomorphism を導き、identity と composition、`nu` / `epsilon`、matching / acceptance を保存する。 |
-| `PositiveCoreReadingHom` | mathematical definition | atomic truth の一方向保存から positive circuit subfamily だけを運ぶ。signed circuit 全体、coarsening、projection の exact comparison とは区別する。 |
-| `ArchitecturalEquationSystem` | mathematical definition | equation index、required / optional / derived role、observable presheaf、restriction-compatibleな symbolic violation coordinate `nu` と object-dependent residual `epsilon` を持つ。 |
-| `EquationHolds_E / EquationLawful_E` | defined predicates | `epsilon` の同時消滅から equation fulfillment と required lawfulness を生成する。自然言語の lawfulness はこの派生 reading である。 |
-| `circuit soundness` | defined predicate | finite signed-query datum `Q` の matching と finite-template detector code の Boolean acceptance から selected equation failure を導く条件。 |
-| `required circuit completeness` | certified assumption | 各 required equation failure が少なくとも一つの finite circuit presentation を持つこと。 |
-| `Circ_E^loc` | selected restriction data | restriction map、identity、composition、各 local object 上の equation-indexed circuit family への inclusion、matching / Boolean acceptance preservation を持つ。 |
-| `circuit realization faithfulness` | certified assumption | local circuit が対応する local point / evaluation 上で非零の symbolic violation coordinate に写ること。 |
-| `obstruction soundness` | defined predicate | `EquationHolds_E(i,A) -> omega_{E,i}(A)=0` として読む。 |
-| `obstruction completeness` | defined predicate | `not EquationHolds_E(i,A) -> omega_{E,i}(A)>0` として読む。 |
-| `zero-reflecting aggregation` | defined predicate | `omega_E(A)=0 iff forall required i, omega_{E,i}(A)=0` を保証する集約条件。 |
-| `E-generated scheme realization` | generated construction | `E` の `nu-epsilon` difference coordinates が定める chartwise closed equalizer `EqPoint_{E,W}` と generated witness ideals から、context charts、sheafification unit、section evaluation、base-change-stable section reading を構成する standard equation-scheme output。free truth predicate や別 coordinate family を primary input にしない。 |
-| `residualRegular_E` | producer theorem | object-dependent residual evaluation が architecture-evaluation parameter chart 上の regular function であることを concrete residual definition から証明し、generated difference coordinate を scheme equation にする。 |
-| `residualRepresentable_E` | producer theorem | standard constructor が `ev(nu)=ev(epsilon)` を generator 水準で証明する。residual vanishing と ideal vanishing の同値そのものは格納しない。 |
-| `witnessIdealLocalizes_E / witnessIdealChart_E / witnessIdealQuasiCoherent_E` | producer theorems | chart restriction と local ideal localization、sheafification image と `eta_W(nu)` の生成 ideal の一致を証明し、generated ideal sheaf が quasi-coherent で closed subscheme を定めることを導く。 |
-| `EquationLawful / IdealLawful` | defined predicates + certified bounded inference | `E`-generated scheme realization の generator / localization producer theorem package から、residual vanishing と sheaf ideal `𝓘_Ob^E` の vanishing を定理として同値にする。 |
-| `axis exactness` | certified assumption | selected signature axes の zero と selected obstruction reading の一致を仮定する。 |
-| `witness coverage` | certified assumption | 必要な witness が chosen cover / reading に現れることを仮定する。 |
-| `E-adequate cover` | defined predicate | `(R,Ov)` 固定後の `(E,R,Ov)`-adequate cover の略記。required Atom support、equation coordinates、witnesses、axes と、`Ov` が実現する typed interaction-overlap requests を覆い、selected supports を restriction の下で保つ。`nu` / `epsilon` の値の compatibility は `E` の構造法則である。 |
-| `effective Ob_U-torsor` | defined predicate | local adjustment の差が abelian coefficient sheaf `Ob_U` の torsor class として `H^1(X,Ob_U)` に入ること。 |
-| `U-smooth` | defined predicate | selected deformation tests のすべてで lift / fill predicate が成立し、obstruction class が消えること。 |
-| `U-singular` | defined predicate | selected deformation test の中に非零 obstruction class が現れること。 |
-| `tangent rank jumps` | analytic / criterion | singularity の十分条件になりうる reading。主定義そのものではない。 |
-| `normal cone is nontrivial` | analytic / criterion | selected obstruction direction がある場合に singularity criterion として使う。 |
-| `LawConflict_i(U,V)` | defined object | 同一 ambient 上の lawful loci の derived non-transversality を読む Tor object。 |
-| `support-localized transfer predicate` | defined predicate | repair direction が selected conflict class の support と非自明に交わる、または pairing がその direction 上で定義されること。 |
-| `AAT measurement profile` | defined dependent package | 同じ `A_M,E_M,Sig_M,R_M,Ov_M` から finite AAT site、adequate cover、標準 obstruction ideal sheaf を構成し、selected coordinates が生成する auxiliary ideal sheaf `I_M^sel` と measurement data を束ねる。標準 ideal と selected ideal の同一視には equality proof または comparison hypothesis を要する。 |
-| `measurement verdict` | defined predicate family | selected profile 内で `measured_zero` / `measured_nonzero` / `unmeasured` / `unknown` / `not_computed` を区別する reporting discipline。 |
-| `finite measurement regime` | certified assumption | finite AAT site、adequate cover、effective coefficient data、finite selected coordinates、selected finite resolutions が固定された計算可能 regime。 |
-| `Finite AAT Computability` | certified bounded inference | finite measurement regime と `EffCoeff_M` の範囲で selected invariants を有限線形代数・有限表示加群計算・有限組合せ計算へ落とす主張。 |
-| `Stanley-Reisner / Alexander Dual Repair Theorem` | certified bounded inference | finite square-free witness regime で selected measurement ideal `I_M^sel` を Stanley-Reisner ideal として読み、Alexander dual を repair hitting set として読む主張。標準 obstruction ideal へ移すには profile 内の ideal comparison を要する。 |
-| `Cech stability` | local theorem candidate | finite square-free regime で witness perturbation と persistence / zigzag stability distance を結ぶ安定性主張。 |
-| `cellular sheaf Laplacian` | analytic reading | finite cellular sheaf model 上で residual norm、spectrum、distance-to-flatness を読む方法。structural lawfulness そのものではない。 |
-| `Refactor Invariance under Equivalence` | certified bounded inference | selected finite sites、ringed ambient、coefficient、law ideal、witness reading が同型的に保存される場合の measurement verdict 保存。 |
-| `LawConflict base change` | local theorem candidate | common ambient と flat morphism of ringed sites の下で Tor conflict の pullback 保存を読む主張。 |
-| `Support-Localized Transfer` | certified bounded inference | common ambient、conflict class、repair direction、pairing、zero predicate を固定した場合の transferred residue の十分条件。 |
-| `transfer lower bound` | local theorem candidate | support-localized pairing、norm、support weight を固定した場合の analytic residue bound。 |
-| `Finite Measurement Synthesis` | certified bounded inference | finite measurement regime と selected assumptions の範囲で第VIII部の measurement packet を bounded mathematical measurement として返す synthesis。 |
-| `NoHigherBoundaryObstruction` | future design obligation | boundary class だけで判定を完備にするための追加仮定。本文内では未証明の bounded assumption として読む。 |
-| `operation homotopy` | future design obligation | operation category / groupoid を固定した後に定義する homotopy predicate。 |
-| `trace topos` | future design obligation | temporal law を扱うための後続 ambient。AAT 本文の core site とは分けて読む。 |
-| `homotopy generator family` | defined predicate family | selected operation homotopy を生成する 2-cell relation family。採用する generator は law universe / operation family / transport profile に相対化される。 |
-| `presentation two-complex K_H` | defined object | selected operation graph に homotopy generator family の 2-cell を貼った finite / combinatorial presentation。 |
-| `measured square monodromy` | analytic reading | `K_H` の selected square boundary に沿う coefficient transport defect。all-path monodromy completeness ではない。 |
-| `Transport Descent Criterion` | certified bounded inference | edge transport が `pi_1^AAT(X,U,H,A)` へ降りることを、selected generator 2-cell 上の zero monodromy defect で検出する主張。 |
-| `Square Monodromy Nonfillability` | certified bounded inference | selected square boundary、coefficient transport、monodromy defect が固定された場合、nonzero defect が selected filler の不在を検出する主張。 |
-| `AAT-GAGA` | certified bounded inference bundle | finite measurement profile 内で Hodge / period / topological capacity / Tor を比較する束。candidate に依存する stability 条項は追加 regime の interface として読む。 |
-| `topological debt capacity` | certified bounded inference | finite cover nerve と cochain dimension から `H^1` capacity を読む。具体的な nonzero class の存在とは区別する。 |
-| `harmonic debt minimality` | certified bounded inference | finite inner-product cochain model で local adjustment 後の residual norm を harmonic representative の norm として読む。 |
-| `Finite Hodge Decomposition` | certified bounded inference | finite-dimensional inner product cochain complex と adjoint が固定された場合の直交 Hodge 分解。一般 sheaf cohomology の無条件分解ではない。 |
-| `Margin Stability` | certified bounded inference | selected metric、unsafe boundary までの margin、三角不等式、path length bound が固定された場合の safe region 不脱出。 |
-| `Hilbert series conflict accounting` | certified bounded inference | graded monomial conflict regime で Tor conflict の交代 Hilbert series を audit reading として読む。 |
-| `Repair Termination` | certified bounded inference | well-founded repair comparison profile と strictly decreasing repair step を固定した場合の有限停止。lawfulness 到達は別仮定。 |
-| `scale-stable debt` | theorem candidate / defined reading | selected aggregation family に沿って coarse side から持ち上がる `H^1` class。すべての尺度に対する絶対不変性ではない。 |
-| `discrete Morse repair reading` | analytic reading / theorem candidate | square-free complex の collapse data を combinatorial repair route として読む。operation semantics は別 profile。 |
-| `Wasserstein transfer cost` | analytic reading / theorem candidate | finite support graph 上の obstruction measure の移動距離。mass preservation と ground metric に相対化される。 |
-| `Monotone Witness Stability` | theorem candidate | monotone forbidden-support filtration、comparison map、interleaving / correspondence を固定した場合の persistence stability reading。 |
-| `architecture evolution profile` | defined dependent package | finite measurement profile `M_ev` から同じ `A_ev,E_ev,Sig_ev,R_ev,Ov_ev,X_ev,U_ev` を取り、trace category、state transition presheaf、temporal coefficient、operation family、policy を束ねる。 |
-| `state transition presheaf` | defined object | architecture evolution profile の trace category と AAT site 上で state space / transition monoid を割り当てる presheaf。descent 条件が確認された regime で sheaf と呼ぶ。 |
-| `temporal coefficient` | defined coefficient object | architecture evolution profile の selected product / incidence site 上で temporal law data の mismatch / gluing defect を測る abelian coefficient sheaf。 |
-| `Temporal Descent Criterion` | certified bounded inference | finite trace product site、temporal coefficient、zero mismatch class のもとで local adjustment 後の replay data が大域 transition へ貼れる主張。 |
-| `Force Integrability Obstruction` | theorem candidate | force に付随する temporal mismatch class が定義され、descent 検出性が固定された場合の non-integrability criterion。 |
-| `dissipative policy` | certified bounded inference when finite | 同じ architecture evolution profile 内で selected evolution functional を非増加にする operation family。未選択の future state や外部成功条件ではない。 |
-| `witness exactness` | certified assumption | selected witness family が selected obstruction reading に対して sound / complete であること。 |
-| `semantic repair-gluing complex` | defined object | 完全列挙付き有限の chart・overlap・repair primitive・residual cochain と、restriction-difference 微分からなる有限複体。 |
-| `semantic closure` | defined predicate | repair support が selected residual atom をすべて含むこと。residual component coverage と residual component faithfulness に分解される。 |
-| `Finite Semantic Repair-Gluing Descent` | certified bounded inference | 有限複体と semantic faithfulness hypothesis の下で、global semantic repair coherence と residual の境界所属の同値を読む主張。必要方向は仮定なしに成立する。 |
-| `semantic repair additive H^1` | defined object | 選ばれた有限 repair cover に付随する additive Čech 型係数データの Z^1/B^1 商。selected residual class の零性を読む。 |
-| `True Sheaf H^1 Semantic Repair-Gluing` | certified bounded inference | cover membership、global sheaf condition、boundary-relation faithfulness data、additive regime の下で、global semantic repair coherence と H^1 零 class の同値を読む主張。 |
-| `Displayed Equation Source` | defined object | architectural equation system `E` に対し、各 chart の local context、architecture object、required equation index、support Atom を一つの dependent datum で選ぶ。cover-indexed 形では source の index と chart index を一致させ、別 skeleton を置かない。displayed defect は `epsilon` から定義される(第III部 定義 11.3)。 |
-| `Generated Obstruction Quotient and Restriction Evaluator` | certified bounded inference | `nu` から obstruction quotient presheaf を、`epsilon` から displayed interpretation を構成する。`epsilon` の restriction compatibility から residual restriction naturality を、fulfillment から zero restriction evaluator を導く(第III部 定理 11.4)。 |
-| `residual nondegeneracy` | example condition | `d_q not in I_Ob^E(W_q)` により `[d_q] != 0` を得る。equation non-fulfillment だけからは置かず、具体例または定理仮定で示す。 |
-| `Generated Semantic Repair Complex` | generated construction | `Q_E` を係数とする実際の cover nerve の Čech complex を repair-cover incidence bridge に沿って次数 0〜2 で reindex し、同じ face restriction と微分を持つ semantic complex を生成する。 |
-| `Generated H^1 Comparison Data` | certified bounded inference | incidence bridge の degreewise reindexing isomorphism と inverse が微分と可換し、standard grounded route の comparison data を構成する。 |
-| `SAGA comparison` | certified bounded inference | standard grounded route では generated semantic repair complex と generated comparison data から、semantic repair additive H^1 と cover-relative Čech H^1 の比較同値と zero-predicate equivalence を証明する。独立 semantic complex には一般 comparison interface を使う。 |
-| `degree-zero equation contribution` | certified bounded inference | displayed equation fulfillment の Čech 複体への寄与が、次数 0 の pointwise 消滅であることを読む主張。site、cover nerve、係数、generated semantic complex、comparison data の構成は fulfillment に依存せず、selected residual `H^1` class の消滅とは区別する。 |
+| 語 | 読み方 |
+| --- | --- |
+| `Atomizes_D / Atomize_D` | `Atomize_D(s).mem(a) iff Extracts_D(s,a)` で family を定義し、`Atomizes_D(s,F)` をその membership characterization とする。canonicality と A8 uniqueness は extensionality theorem である。 |
+| `Core_At : CoreRead(At) -> ObjectAlgebra(At)` | admissible reading の rule を評価して operation-closed object family、context category、architectural equation system、indexed operation / circuit family を構成する。 |
+| `ConfigurationHom / Operation` | operation は atom map と family membership、relation、identification の transport を持つ actual configuration homomorphism である。 |
+| `CoreExact_At(phi)` | context equivalence と observable presheaf の natural isomorphism を含む `SignedExactCoreReadingHom` から object-algebra homomorphism を導き、identity と composition、`nu` / `epsilon`、matching / acceptance を保存する。 |
+| `PositiveCoreReadingHom` | atomic truth の一方向保存から positive circuit subfamily だけを運ぶ。signed circuit 全体、coarsening、projection の exact comparison とは区別する。 |
+| `ArchitecturalEquationSystem` | equation index、required / optional / derived role、observable presheaf、restriction-compatibleな symbolic violation coordinate `nu` と object-dependent residual `epsilon` を持つ。 |
+| `EquationHolds_E / EquationLawful_E` | `epsilon` の同時消滅から equation fulfillment と required lawfulness を生成する。自然言語の lawfulness はこの派生 reading である。 |
+| `circuit soundness` | finite signed-query datum `Q` の matching と finite-template detector code の Boolean acceptance から selected equation failure を導く条件。 |
+| `required circuit completeness` | 各 required equation failure が少なくとも一つの finite circuit presentation を持つこと。 |
+| `Circ_E^loc` | restriction map、identity、composition、各 local object 上の equation-indexed circuit family への inclusion、matching / Boolean acceptance preservation を持つ。 |
+| `circuit realization faithfulness` | local circuit が対応する local point / evaluation 上で非零の symbolic violation coordinate に写ること。 |
+| `obstruction soundness` | `EquationHolds_E(i,A) -> omega_{E,i}(A)=0` として読む。 |
+| `obstruction completeness` | `not EquationHolds_E(i,A) -> omega_{E,i}(A)>0` として読む。 |
+| `zero-reflecting aggregation` | `omega_E(A)=0 iff forall required i, omega_{E,i}(A)=0` を保証する集約条件。 |
+| `E-generated scheme realization` | `E` の `nu-epsilon` difference coordinates が定める chartwise closed equalizer `EqPoint_{E,W}` と generated witness ideals から、context charts、sheafification unit、section evaluation、base-change-stable section reading を構成する standard equation-scheme output。free truth predicate や別 coordinate family を primary input にしない。 |
+| `residualRegular_E` | object-dependent residual evaluation が architecture-evaluation parameter chart 上の regular function であることを concrete residual definition から証明し、generated difference coordinate を scheme equation にする。 |
+| `residualRepresentable_E` | standard constructor が `ev(nu)=ev(epsilon)` を generator 水準で証明する。residual vanishing と ideal vanishing の同値そのものは格納しない。 |
+| `witnessIdealLocalizes_E / witnessIdealChart_E / witnessIdealQuasiCoherent_E` | chart restriction と local ideal localization、sheafification image と `eta_W(nu)` の生成 ideal の一致を証明し、generated ideal sheaf が quasi-coherent で closed subscheme を定めることを導く。 |
+| `EquationLawful / IdealLawful` | `E`-generated scheme realization の generator / localization producer theorem package から、residual vanishing と sheaf ideal `𝓘_Ob^E` の vanishing を定理として同値にする。 |
+| `axis exactness` | selected signature axes の zero と selected obstruction reading の一致を仮定する。 |
+| `witness coverage` | 必要な witness が chosen cover / reading に現れることを仮定する。 |
+| `E-adequate cover` | `(R,Ov)` 固定後の `(E,R,Ov)`-adequate cover の略記。required Atom support、equation coordinates、witnesses、axes と、`Ov` が実現する typed interaction-overlap requests を覆い、selected supports を restriction の下で保つ。`nu` / `epsilon` の値の compatibility は `E` の構造法則である。 |
+| `effective Ob_U-torsor` | local adjustment の差が abelian coefficient sheaf `Ob_U` の torsor class として `H^1(X,Ob_U)` に入ること。 |
+| `U-smooth` | selected deformation tests のすべてで lift / fill predicate が成立し、obstruction class が消えること。 |
+| `U-singular` | selected deformation test の中に非零 obstruction class が現れること。 |
+| `tangent rank jumps` | singularity の十分条件になりうる reading。主定義そのものではない。 |
+| `normal cone is nontrivial` | selected obstruction direction がある場合に singularity criterion として使う。 |
+| `LawConflict_i(U,V)` | 同一 ambient 上の lawful loci の derived non-transversality を読む Tor object。 |
+| `support-localized transfer predicate` | repair direction が selected conflict class の support と非自明に交わる、または pairing がその direction 上で定義されること。 |
+| `AAT measurement profile` | 同じ `A_M,E_M,Sig_M,R_M,Ov_M` から finite AAT site、adequate cover、標準 obstruction ideal sheaf を構成し、selected coordinates が生成する auxiliary ideal sheaf `I_M^sel` と measurement data を束ねる。標準 ideal と selected ideal の同一視には equality proof または comparison hypothesis を要する。 |
+| `measurement verdict` | selected profile 内で `measured_zero` / `measured_nonzero` / `unmeasured` / `unknown` / `not_computed` を区別する reporting discipline。 |
+| `finite measurement regime` | finite AAT site、adequate cover、effective coefficient data、finite selected coordinates、selected finite resolutions が固定された計算可能 regime。 |
+| `Finite AAT Computability` | finite measurement regime と `EffCoeff_M` の範囲で selected invariants を有限線形代数・有限表示加群計算・有限組合せ計算へ落とす主張。 |
+| `Stanley-Reisner / Alexander Dual Repair Theorem` | finite square-free witness regime で selected measurement ideal `I_M^sel` を Stanley-Reisner ideal として読み、Alexander dual を repair hitting set として読む主張。標準 obstruction ideal へ移すには profile 内の ideal comparison を要する。 |
+| `Cech stability` | finite square-free regime で witness perturbation と persistence / zigzag stability distance を結ぶ安定性主張。 |
+| `cellular sheaf Laplacian` | finite cellular sheaf model 上で residual norm、spectrum、distance-to-flatness を読む方法。structural lawfulness そのものではない。 |
+| `Refactor Invariance under Equivalence` | selected finite sites、ringed ambient、coefficient、law ideal、witness reading が同型的に保存される場合の measurement verdict 保存。 |
+| `LawConflict base change` | common ambient と flat morphism of ringed sites の下で Tor conflict の pullback 保存を読む主張。 |
+| `Support-Localized Transfer` | common ambient、conflict class、repair direction、pairing、zero predicate を固定した場合の transferred residue の十分条件。 |
+| `transfer lower bound` | support-localized pairing、norm、support weight を固定した場合の analytic residue bound。 |
+| `Finite Measurement Synthesis` | finite measurement regime と selected assumptions の範囲で第VIII部の measurement packet を bounded mathematical measurement として返す synthesis。 |
+| `NoHigherBoundaryObstruction` | boundary class だけで判定を完備にするための追加仮定。 |
+| `operation homotopy` | operation category / groupoid を固定した後に定義する homotopy predicate。 |
+| `trace topos` | temporal law を扱う ambient。AAT 本文の core site とは分けて読む。 |
+| `homotopy generator family` | selected operation homotopy を生成する 2-cell relation family。採用する generator は law universe / operation family / transport profile に相対化される。 |
+| `presentation two-complex K_H` | selected operation graph に homotopy generator family の 2-cell を貼った finite / combinatorial presentation。 |
+| `measured square monodromy` | `K_H` の selected square boundary に沿う coefficient transport defect。all-path monodromy completeness ではない。 |
+| `Transport Descent Criterion` | edge transport が `pi_1^AAT(X,U,H,A)` へ降りることを、selected generator 2-cell 上の zero monodromy defect で検出する主張。 |
+| `Square Monodromy Nonfillability` | selected square boundary、coefficient transport、monodromy defect が固定された場合、nonzero defect が selected filler の不在を検出する主張。 |
+| `AAT-GAGA` | finite measurement profile 内で Hodge / period / topological capacity / Tor を比較する束。stability 条項は追加 regime の interface として読む。 |
+| `topological debt capacity` | finite cover nerve と cochain dimension から `H^1` capacity を読む。具体的な nonzero class の存在とは区別する。 |
+| `harmonic debt minimality` | finite inner-product cochain model で local adjustment 後の residual norm を harmonic representative の norm として読む。 |
+| `Finite Hodge Decomposition` | finite-dimensional inner product cochain complex と adjoint が固定された場合の直交 Hodge 分解。一般 sheaf cohomology の無条件分解ではない。 |
+| `Margin Stability` | selected metric、unsafe boundary までの margin、三角不等式、path length bound が固定された場合の safe region 不脱出。 |
+| `Hilbert series conflict accounting` | graded monomial conflict regime で Tor conflict の交代 Hilbert series を audit reading として読む。 |
+| `Repair Termination` | well-founded repair comparison profile と strictly decreasing repair step を固定した場合の有限停止。lawfulness 到達は別仮定。 |
+| `scale-stable debt` | selected aggregation family に沿って coarse side から持ち上がる `H^1` class。すべての尺度に対する絶対不変性ではない。 |
+| `discrete Morse repair reading` | square-free complex の collapse data を combinatorial repair route として読む。operation semantics は別 profile。 |
+| `Wasserstein transfer cost` | finite support graph 上の obstruction measure の移動距離。mass preservation と ground metric に相対化される。 |
+| `Monotone Witness Stability` | monotone forbidden-support filtration、comparison map、interleaving / correspondence を固定した場合の persistence stability reading。 |
+| `architecture evolution profile` | finite measurement profile `M_ev` から同じ `A_ev,E_ev,Sig_ev,R_ev,Ov_ev,X_ev,U_ev` を取り、trace category、state transition presheaf、temporal coefficient、operation family、policy を束ねる。 |
+| `state transition presheaf` | architecture evolution profile の trace category と AAT site 上で state space / transition monoid を割り当てる presheaf。descent 条件が確認された regime で sheaf と呼ぶ。 |
+| `temporal coefficient` | architecture evolution profile の selected product / incidence site 上で temporal law data の mismatch / gluing defect を測る abelian coefficient sheaf。 |
+| `Temporal Descent Criterion` | finite trace product site、temporal coefficient、zero mismatch class のもとで local adjustment 後の replay data が大域 transition へ貼れる主張。 |
+| `Force Integrability Obstruction` | force に付随する temporal mismatch class が定義され、descent 検出性が固定された場合の non-integrability criterion。 |
+| `dissipative policy` | 同じ architecture evolution profile 内で selected evolution functional を非増加にする operation family。未選択の future state や外部成功条件ではない。 |
+| `witness exactness` | selected witness family が selected obstruction reading に対して sound / complete であること。 |
+| `semantic repair-gluing complex` | 完全列挙付き有限の chart・overlap・repair primitive・residual cochain と、restriction-difference 微分からなる有限複体。 |
+| `semantic closure` | repair support が selected residual atom をすべて含むこと。residual component coverage と residual component faithfulness に分解される。 |
+| `Finite Semantic Repair-Gluing Descent` | 有限複体と semantic faithfulness hypothesis の下で、global semantic repair coherence と residual の境界所属の同値を読む主張。必要方向は仮定なしに成立する。 |
+| `semantic repair additive H^1` | 選ばれた有限 repair cover に付随する additive Čech 型係数データの Z^1/B^1 商。selected residual class の零性を読む。 |
+| `True Sheaf H^1 Semantic Repair-Gluing` | cover membership、global sheaf condition、boundary-relation faithfulness data、additive regime の下で、global semantic repair coherence と H^1 零 class の同値を読む主張。 |
+| `Displayed Equation Source` | architectural equation system `E` に対し、各 chart の local context、architecture object、required equation index、support Atom を一つの dependent datum で選ぶ。cover-indexed 形では source の index と chart index を一致させ、別 skeleton を置かない。displayed defect は `epsilon` から定義される(第III部 定義 11.3)。 |
+| `Generated Obstruction Quotient and Restriction Evaluator` | `nu` から obstruction quotient presheaf を、`epsilon` から displayed interpretation を構成する。`epsilon` の restriction compatibility から residual restriction naturality を、fulfillment から zero restriction evaluator を導く(第III部 定理 11.4)。 |
+| `residual nondegeneracy` | `d_q not in I_Ob^E(W_q)` により `[d_q] != 0` を得る。equation non-fulfillment だけからは置かず、具体例または定理仮定で示す。 |
+| `Generated Semantic Repair Complex` | `Q_E` を係数とする実際の cover nerve の Čech complex を repair-cover incidence bridge に沿って次数 0〜2 で reindex し、同じ face restriction と微分を持つ semantic complex を生成する。 |
+| `Generated H^1 Comparison Data` | incidence bridge の degreewise reindexing isomorphism と inverse が微分と可換し、standard grounded route の comparison data を構成する。 |
+| `SAGA comparison` | standard grounded route では generated semantic repair complex と generated comparison data から、semantic repair additive H^1 と cover-relative Čech H^1 の比較同値と zero-predicate equivalence を証明する。独立 semantic complex には一般 comparison interface を使う。 |
+| `degree-zero equation contribution` | displayed equation fulfillment の Čech 複体への寄与が、次数 0 の pointwise 消滅であることを読む主張。site、cover nerve、係数、generated semantic complex、comparison data の構成は fulfillment に依存せず、selected residual `H^1` class の消滅とは区別する。 |
 
-## B.2 Label Discipline
+## B.2 Mathematical Reading Conventions
 
-本文の label は次のように読む。
+本文の label は数学上の役割だけを表す。
 
 ```text
 Definition / Construction:
@@ -676,23 +676,14 @@ Definition / Construction:
 
 Theorem / Proposition / Lemma:
   明示された仮定のもとで読む数学命題。
-  generated comparison producer theorem / E-adequacy を明示入力とするものは certified bounded inference。
-
-Theorem candidate:
-  将来の定義・証明設計を明示した本文内の定理候補。
+  selected regime と明示仮定は statement の一部として読む。
 
 Principle:
-  claim boundary または読み方の規律。
+  claim scope または読み方の規律。
 
 Analytic reading:
-  構成済み幾何対象の representation / metric / period / mass reading。
+  幾何対象の representation / metric / period / mass reading。
 ```
-
-したがって、たとえば `Lawfulness-Zero Obstruction` は zero-reflecting aggregation と
-soundness / completeness に相対化された certified bounded inference であり、
-選ばれていない law universe や metric aggregation についての絶対 claim ではない。
-同様に、`SAGA comparison` は、選ばれた有限 cover、係数データ、comparison data に
-相対化された certified bounded inference であり、無条件の cohomology 同一視ではない。
 
 ## B.3 Finite Square-Free Worked Example
 
