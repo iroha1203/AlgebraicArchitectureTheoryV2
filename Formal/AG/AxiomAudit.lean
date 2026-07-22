@@ -2562,6 +2562,10 @@ def replayTwoChartNonzeroCorrection :=
 def replayTwoPatchZMod2CechCorrection :=
   Examples.EvolutionPart9.twoPatchReplayCechMismatch_eq_correction
 
+/-- Kernel-audit alias for the distinction of the two actual replay charts. -/
+def replayTwoPatchZMod2ActualChartsDistinct :=
+  Examples.EvolutionPart9.twoPatchReplayChartObject_left_ne_right
+
 /-- Kernel-audit alias for `replayTwoPatchZMod2ClassZero`. -/
 def replayTwoPatchZMod2ClassZero :=
   Examples.EvolutionPart9.twoPatchReplay_class_zero
@@ -2649,6 +2653,10 @@ def replayTwoPatchZMod2CoefficientReflectsMatching :=
 /-- Kernel-audit alias for `replayTwoPatchZMod2ArbitraryCoefficientReflectsMatching`. -/
 def replayTwoPatchZMod2ArbitraryCoefficientReflectsMatching :=
   @Examples.EvolutionPart9.twoPatchAdjustedReplayBy_zero_reflects_matching
+
+/-- Kernel-audit alias for the actual corrected-family overlap agreement. -/
+def replayTwoPatchZMod2ActualCorrectedFamilyMatching :=
+  @Examples.EvolutionPart9.twoPatchCorrectedLocalSectionsBy_matching
 
 /-- Kernel-audit alias for `replayTwoPatchZMod2NonzeroCorrectionDescends`. -/
 def replayTwoPatchZMod2NonzeroCorrectionDescends :=

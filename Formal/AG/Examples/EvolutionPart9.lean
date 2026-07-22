@@ -1702,6 +1702,13 @@ def twoPatchReplayChartObject (i : FiniteModel.TwoPatchCoverIndex) :
   Site.ContextCategoryObject.of FiniteModel.twoPatchContextPreorder
     (FiniteModel.twoPatchCoverPatch i)
 
+/-- The two actual replay-chart objects are distinct. -/
+theorem twoPatchReplayChartObject_left_ne_right :
+    twoPatchReplayChartObject .left ≠ twoPatchReplayChartObject .right := by
+  intro h
+  have hcontext := congrArg Site.ContextCategoryObject.ctx h
+  cases hcontext
+
 /-- The actual overlap object of the selected AAT two-patch site. -/
 def twoPatchReplayOverlapObject : FiniteModel.twoPatchSite.category :=
   Site.ContextCategoryObject.of FiniteModel.twoPatchContextPreorder
@@ -2247,36 +2254,54 @@ theorem twoPatchReplayCover_contains
       (homOfLE (FiniteModel.twoPatchCover.inclusion i)) :=
   Sieve.le_generate FiniteModel.twoPatchCover.presieve _ (Presieve.ofArrows.mk i)
 
-/-- The local family obtained by applying an arbitrary correction to the left chart. -/
-def twoPatchCorrectedLocalSectionsBy
+/-- The actual local family obtained by correcting each selected replay chart. -/
+noncomputable def twoPatchCorrectedLocalSectionsBy
     (correction : Site.FinitePosetCechCochain
       FiniteModel.twoPatchZMod2FinitePosetRegime 0) :
     Site.AATLocalSectionFamily FiniteModel.twoPatchSite
-      FiniteModel.twoPatchZMod2TranslationReplayPresheaf twoPatchReplayCover :=
-  fun _Y _f _hf => twoPatchAdjustedReplayLocalSectionBy correction .left
+      FiniteModel.twoPatchZMod2TranslationReplayPresheaf twoPatchReplayCover := by
+  classical
+  exact fun Y _f _hf =>
+    if Y = twoPatchReplayChartObject .right then
+      twoPatchAdjustedReplayLocalSectionBy correction .right
+    else
+      twoPatchAdjustedReplayLocalSectionBy correction .left
 
-/-- A class-zero primitive identifies the generalized local family with each corrected chart. -/
+/-- The actual corrected local family restricts to its selected corrected chart. -/
 theorem twoPatchCorrectedLocalSectionsBy_chart
     (correction : Site.FinitePosetCechCochain
       FiniteModel.twoPatchZMod2FinitePosetRegime 0)
-    (hclass : twoPatchReplayCechMismatch =
-      FiniteModel.twoPatchZMod2CechComplex.differential 0 correction)
     (i : FiniteModel.TwoPatchCoverIndex) :
     twoPatchCorrectedLocalSectionsBy correction
         (homOfLE (FiniteModel.twoPatchCover.inclusion i))
         (twoPatchReplayCover_contains i) =
       twoPatchAdjustedReplayLocalSectionBy correction i := by
+  classical
   cases i
-  · rfl
-  · exact twoPatchAdjustedReplayLocalSectionBy_matching_of_class_zero correction hclass
+  · change (if twoPatchReplayChartObject .left = twoPatchReplayChartObject .right then
+        twoPatchAdjustedReplayLocalSectionBy correction .right
+      else twoPatchAdjustedReplayLocalSectionBy correction .left) =
+        twoPatchAdjustedReplayLocalSectionBy correction .left
+    rw [if_neg twoPatchReplayChartObject_left_ne_right]
+  · change (if twoPatchReplayChartObject .right = twoPatchReplayChartObject .right then
+        twoPatchAdjustedReplayLocalSectionBy correction .right
+      else twoPatchAdjustedReplayLocalSectionBy correction .left) =
+        twoPatchAdjustedReplayLocalSectionBy correction .right
+    rw [if_pos rfl]
 
-/-- The generalized corrected local family is compatible on all common refinements. -/
+/-- Corrected chart matching supplies the overlap agreement consumed by descent. -/
 theorem twoPatchCorrectedLocalSectionsBy_matching
     (correction : Site.FinitePosetCechCochain
-      FiniteModel.twoPatchZMod2FinitePosetRegime 0) :
+      FiniteModel.twoPatchZMod2FinitePosetRegime 0)
+    (hmatching :
+      twoPatchAdjustedReplayLocalSectionBy correction .left =
+        twoPatchAdjustedReplayLocalSectionBy correction .right) :
     Site.AATOverlapAgreement (twoPatchCorrectedLocalSectionsBy correction) := by
-  intro _Y _Z _W _h _hh _f _g _hf _hg _hcomp
-  rfl
+  intro Y Z _W _h _hh _f _g _hf _hg _hcomp
+  classical
+  simp only [FiniteModel.twoPatchZMod2TranslationReplayPresheaf,
+    twoPatchCorrectedLocalSectionsBy]
+  split_ifs <;> simp_all
 
 /--
 An actual Čech primitive implies descent of the local replay sections corrected
@@ -2290,10 +2315,12 @@ theorem twoPatchReplay_class_zero_descends
     ∃ globalSection : FiniteModel.TwoPatchZMod2TranslationReplay,
       ∀ i : FiniteModel.TwoPatchCoverIndex,
         globalSection = twoPatchAdjustedReplayLocalSectionBy correction i := by
+  have hmatching :=
+    twoPatchAdjustedReplayLocalSectionBy_matching_of_class_zero correction hclass
   let data : Site.AATGluingData FiniteModel.twoPatchSite
       FiniteModel.twoPatchZMod2TranslationReplayPresheaf twoPatchReplayCover :=
     { localSections := twoPatchCorrectedLocalSectionsBy correction
-      overlapAgreement := twoPatchCorrectedLocalSectionsBy_matching correction }
+      overlapAgreement := twoPatchCorrectedLocalSectionsBy_matching correction hmatching }
   obtain ⟨globalSection, hglobal⟩ :=
     (FiniteModel.twoPatchZMod2TranslationReplaySheaf.descent twoPatchReplayCover
       (by simpa [twoPatchReplayCover] using FiniteModel.twoPatchCover_topologyCover)).exists_global
@@ -2306,7 +2333,7 @@ theorem twoPatchReplay_class_zero_descends
     twoPatchCorrectedLocalSectionsBy correction
       (homOfLE (FiniteModel.twoPatchCover.inclusion i))
       (twoPatchReplayCover_contains i) at hchart
-  rw [twoPatchCorrectedLocalSectionsBy_chart correction hclass i] at hchart
+  rw [twoPatchCorrectedLocalSectionsBy_chart correction i] at hchart
   exact hchart
 
 /-- The corrected local family is the common translation replay section obtained from zero mismatch. -/
