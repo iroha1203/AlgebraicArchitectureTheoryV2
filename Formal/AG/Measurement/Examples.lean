@@ -4,6 +4,7 @@ import Formal.AG.Examples.FiniteModel
 import Formal.AG.ReadingFunctoriality.FiniteExamples
 import Formal.AG.Derived.Counterexample
 import Mathlib.Data.Fintype.Pi
+import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.LinearAlgebra.StdBasis
 
 noncomputable section
@@ -3557,127 +3558,672 @@ def measurementPacketExampleSynthesis :
     FiniteMeasurementSynthesis measurementPacketExampleData :=
   finiteMeasurementSynthesisPackage measurementPacketExampleData
 
-/-- R11(g): GAGA certified fields carry the concrete finite Hodge theorem package. -/
-def threeAxisSelectedHodgeTheoremPackage :
-    SelectedFiniteHodgeTheoremPackage pseudoCircleMeasurementProfile where
-  cellularModel := threeAxisCellularModel
-  laplacianReading := threeAxisLaplacianReading
-  hodgeData := threeAxisGenericHodgeData
-  hodgePackage := threeAxisGenericHodgePackage
+/-- R11(g): a real-coefficient profile using the generated finite-poset site and cover.
 
-/-- R11(g) / VIII-5: concrete extension accounting used by the GAGA Period/Stokes route. -/
-def lowDegreePeriodStokesAccounting :
-    Cohomology.ExtensionHolonomyAccounting where
-  ExtensionEvent := Unit
-  Accounting := Unit
-  eventAddCommGroup := inferInstance
-  accountingAddCommGroup := inferInstance
-  kappa_U := 0
+The verdict vocabulary is deliberately trivial: the single `Unit` measurement
+is in scope by selection, and no theorem-12.3 conjunct reads `Zero` /
+`NonZero`.  This profile only supplies the selected site, cover, real
+coefficient, and law handles for the GAGA comparison. -/
+abbrev gagaRealMeasurementProfile : MeasurementProfile where
+  SiteObj := PUnit
+  Cover := Bool
+  Coeff := ℝ
+  EffCoeff := Unit
+  ObstructionObject := FiniteObstructionObjectHandle
+  LawUniverse := FiniteLawHandle
+  WitnessVariables := SquareFreeSupportVertex
+  ObstructionIdeal := FiniteObstructionIdealHandle
+  RepresentationFamily := Unit
+  Domain := Unit
+  CertRef := fun _ => Unit
+  SelectedMethod := fun _ => Unit
+  InScope := fun _ => True
+  OutOfScope := fun _ => False
+  Zero := fun _ => True
+  NonZero := fun _ => False
+  Undecided := fun _ => False
+  NotRunOrUnavailable := fun _ => False
 
-/-- R11(g) / VIII-5: selected Period/Stokes theorem package for GAGA. -/
-def lowDegreePeriodStokesTheoremPackage :
-    SelectedPeriodStokesTheoremPackage pseudoCircleMeasurementProfile where
-  selectedAccounting := PseudoCircleMeasurementDomain.boundaryCocycle
-  measuredAccounting := {
-    inScope := rfl
-    method := ()
-    certificate := ()
-  }
-  extensionAccounting := lowDegreePeriodStokesAccounting
+/-- Constant real presheaf on the actual selected finite-poset site. -/
+abbrev gagaRealPresheaf : Site.AATPresheaf FiniteModel.site where
+  obj _ := ℝ
+  map _ x := x
+  map_id _ := rfl
+  map_comp _ _ := rfl
 
-/-- R11(g) / VIII-5: one-chart finite nerve used by the GAGA topological-debt route. -/
-def lowDegreeTopologicalDebtNerve :
-    Cohomology.CoverNerve where
-  Chart := Unit
-  EdgeComponent := Empty
-  FaceComponent := Empty
-  edgeLeft := Empty.elim
-  edgeRight := Empty.elim
-  faceEdge0 := Empty.elim
-  faceEdge1 := Empty.elim
-  faceEdge2 := Empty.elim
-  edgeOverlapComponent := fun e => nomatch e
-  faceTripleOverlapComponent := fun f => nomatch f
-  edgeOverlapComponent_holds := fun e => nomatch e
-  faceTripleOverlapComponent_holds := fun f => nomatch f
+/-- Every restriction in the constant real presheaf is the identity. -/
+theorem gagaRealPresheaf_map_apply {X Y : FiniteModel.site.categoryᵒᵖ}
+    (f : X ⟶ Y) (x : ℝ) : gagaRealPresheaf.map f x = x :=
+  rfl
 
-/--
-R11(g) / VIII-5: concrete finite nerve cochain complex for topological debt.
+theorem gagaReal_isSheaf : Site.AATSheafCondition FiniteModel.site gagaRealPresheaf := by
+  intro _base cover hcover
+  rw [Site.AATSheafConditionFor, finiteComputabilitySite_cover_eq_top hcover]
+  exact Presieve.isSheafFor_top gagaRealPresheaf
 
-The example is intentionally low-degree and zero-differential; the certified
-field below is backed by `topologicalDebtCapacity_fromComplex`, not by an
-unrelated `True` field.
--/
-def lowDegreeTopologicalDebtComplex :
-    Cohomology.FiniteNerveCochainComplex lowDegreeTopologicalDebtNerve where
-  k := ℚ
-  C0 := Unit
-  C1 := Unit
-  C2 := Unit
-  add_C0 := inferInstance
-  add_C1 := inferInstance
-  add_C2 := inferInstance
-  module_C0 := inferInstance
-  module_C1 := inferInstance
-  module_C2 := inferInstance
-  finiteDimensional_C0 := inferInstance
-  finiteDimensional_C1 := inferInstance
-  finiteDimensional_C2 := inferInstance
-  d0 := 0
-  d1 := 0
+/-- The real coefficient obstruction sheaf used by the GAGA finite profile. -/
+abbrev gagaRealObstructionSheaf : Cohomology.ObstructionSheaf FiniteModel.site where
+  carrier := { carrier := gagaRealPresheaf, isSheaf := gagaReal_isSheaf }
+  addCommGroup _ := by
+    change AddCommGroup ℝ
+    infer_instance
+  map_zero := by intros; rfl
+  map_add := by intros; rfl
+
+/-- The generated finite Čech geometry for the real GAGA profile. -/
+abbrev gagaRealGeometry : FiniteMeasurementGeometry gagaRealMeasurementProfile where
+  U := FiniteModel.carrier
+  A := FiniteModel.corePackage.object
+  site := FiniteModel.site
+  coverGeometry := finiteComputabilityCoverGeometry
+  tupleGeometry := finiteComputabilityTupleGeometry
+  coeffCommRing := by
+    change CommRing ℝ
+    infer_instance
+  obstructionSheaf := gagaRealObstructionSheaf
+  sectionModule := by
+    intro _ _
+    change Module ℝ ℝ
+    infer_instance
+  faceRestrictionLinear := by
+    letI : CommRing gagaRealMeasurementProfile.Coeff := by
+      change CommRing ℝ
+      infer_instance
+    intro _ _ _
+    change ℝ →ₗ[ℝ] ℝ
+    exact LinearMap.id
+  faceRestrictionLinear_apply := by
+    letI : CommRing gagaRealMeasurementProfile.Coeff := by
+      change CommRing ℝ
+      infer_instance
+    intros
+    rfl
+  siteObjEquiv := by
+    simpa [gagaRealMeasurementProfile, finiteComputabilityCoverGeometry] using
+      (Equiv.refl PUnit)
+  coverEquiv := by
+    simpa [gagaRealMeasurementProfile, finiteComputabilityCoverGeometry,
+      finiteComputabilityCover] using (Equiv.refl Bool)
+
+/-- Generated canonical simplex type for the real GAGA profile. -/
+abbrev GAGARealSimplex (n : Nat) :=
+  Site.FinitePosetCechSimplex gagaRealGeometry.coefficientRegime n
+
+/-- The actual simplicial face map generated from the selected cover and sheaf. -/
+def gagaRealFace (n : Nat) (simplex : GAGARealSimplex (n + 1))
+    (i : Fin (n + 2)) : GAGARealSimplex n :=
+  (gagaRealGeometry.tupleGeometry.toSimplicialFaceAction
+    gagaRealGeometry.obstructionSheaf.carrier.toPresheaf).toFaceData.face n simplex i
+
+/-- The selected cover nerve has exactly the canonical Čech simplices as coordinates. -/
+noncomputable def gagaRealCoverNerve : Cohomology.CoverNerve where
+  Chart := GAGARealSimplex 0
+  EdgeComponent := GAGARealSimplex 1
+  FaceComponent := GAGARealSimplex 2
+  edgeLeft := fun edge => gagaRealFace 0 edge 1
+  edgeRight := fun edge => gagaRealFace 0 edge 0
+  faceEdge0 := fun face => gagaRealFace 1 face 0
+  faceEdge1 := fun face => gagaRealFace 1 face 1
+  faceEdge2 := fun face => gagaRealFace 1 face 2
+  edgeOverlapComponent := fun edge =>
+    finiteComputabilityCover.patch (edge 0) = finiteComputabilityCover.patch (edge 1)
+  faceTripleOverlapComponent := fun face =>
+    finiteComputabilityCover.patch (face 0) = finiteComputabilityCover.patch (face 1) ∧
+      finiteComputabilityCover.patch (face 1) = finiteComputabilityCover.patch (face 2)
+  edgeOverlapComponent_holds := by intro _; rfl
+  faceTripleOverlapComponent_holds := by intro _; exact ⟨rfl, rfl⟩
+
+/-- Coordinate identification of real canonical Čech cochains with their simplex functions. -/
+noncomputable def gagaRealCochainCoordinates (n : Nat) :
+    letI : CommRing ℝ := gagaRealGeometry.coeffCommRing
+    letI : AddCommGroup (gagaRealGeometry.CechCochain n) :=
+      gagaRealGeometry.cochainAddCommGroup n
+    letI : Module ℝ (gagaRealGeometry.CechCochain n) :=
+      gagaRealGeometry.cochainModule n
+    gagaRealGeometry.CechCochain n ≃ₗ[ℝ] (GAGARealSimplex n → ℝ) := by
+  letI : CommRing ℝ := gagaRealGeometry.coeffCommRing
+  letI : AddCommGroup (gagaRealGeometry.CechCochain n) :=
+    gagaRealGeometry.cochainAddCommGroup n
+  letI : Module ℝ (gagaRealGeometry.CechCochain n) :=
+    gagaRealGeometry.cochainModule n
+  refine {
+    toFun := fun c simplex => c simplex
+    invFun := fun c simplex => c simplex
+    left_inv := by intro c; rfl
+    right_inv := by intro c; rfl
+    map_add' := by intro c d; rfl
+    map_smul' := by intro r c; rfl }
+
+/-- Finite simplex basis for the real canonical Čech cochains. -/
+noncomputable def gagaRealCochainBasis (n : Nat) :
+    letI : AddCommGroup (gagaRealGeometry.CechCochain n) :=
+      gagaRealGeometry.cochainAddCommGroup n
+    letI : Module ℝ (gagaRealGeometry.CechCochain n) :=
+      gagaRealGeometry.cochainModule n
+    Module.Basis (GAGARealSimplex n) ℝ (gagaRealGeometry.CechCochain n) := by
+  letI : CommRing ℝ := gagaRealGeometry.coeffCommRing
+  letI : AddCommGroup (gagaRealGeometry.CechCochain n) :=
+    gagaRealGeometry.cochainAddCommGroup n
+  letI : Module ℝ (gagaRealGeometry.CechCochain n) :=
+    gagaRealGeometry.cochainModule n
+  letI : Finite (GAGARealSimplex n) :=
+    gagaRealGeometry.coefficientRegime.finiteNerveSimplex n
+  exact Module.Basis.ofEquivFun (gagaRealCochainCoordinates n)
+
+/-- The selected nerve complex is the canonical real Čech complex itself. -/
+noncomputable def gagaRealNerveComplex :
+    Cohomology.FiniteNerveCochainComplex gagaRealCoverNerve ℝ where
+  C0 := gagaRealGeometry.CechCochain 0
+  C1 := gagaRealGeometry.CechCochain 1
+  C2 := gagaRealGeometry.CechCochain 2
+  add_C0 := gagaRealGeometry.cochainAddCommGroup 0
+  add_C1 := gagaRealGeometry.cochainAddCommGroup 1
+  add_C2 := gagaRealGeometry.cochainAddCommGroup 2
+  module_C0 := gagaRealGeometry.cochainModule 0
+  module_C1 := gagaRealGeometry.cochainModule 1
+  module_C2 := gagaRealGeometry.cochainModule 2
+  finiteDimensional_C0 := by
+    letI : CommRing ℝ := gagaRealGeometry.coeffCommRing
+    letI : AddCommGroup (gagaRealGeometry.CechCochain 0) :=
+      gagaRealGeometry.cochainAddCommGroup 0
+    letI : Module ℝ (gagaRealGeometry.CechCochain 0) :=
+      gagaRealGeometry.cochainModule 0
+    letI : Finite (GAGARealSimplex 0) :=
+      gagaRealGeometry.coefficientRegime.finiteNerveSimplex 0
+    exact Module.Finite.of_basis (gagaRealCochainBasis 0)
+  finiteDimensional_C1 := by
+    letI : CommRing ℝ := gagaRealGeometry.coeffCommRing
+    letI : AddCommGroup (gagaRealGeometry.CechCochain 1) :=
+      gagaRealGeometry.cochainAddCommGroup 1
+    letI : Module ℝ (gagaRealGeometry.CechCochain 1) :=
+      gagaRealGeometry.cochainModule 1
+    letI : Finite (GAGARealSimplex 1) :=
+      gagaRealGeometry.coefficientRegime.finiteNerveSimplex 1
+    exact Module.Finite.of_basis (gagaRealCochainBasis 1)
+  finiteDimensional_C2 := by
+    letI : CommRing ℝ := gagaRealGeometry.coeffCommRing
+    letI : AddCommGroup (gagaRealGeometry.CechCochain 2) :=
+      gagaRealGeometry.cochainAddCommGroup 2
+    letI : Module ℝ (gagaRealGeometry.CechCochain 2) :=
+      gagaRealGeometry.cochainModule 2
+    letI : Finite (GAGARealSimplex 2) :=
+      gagaRealGeometry.coefficientRegime.finiteNerveSimplex 2
+    exact Module.Finite.of_basis (gagaRealCochainBasis 2)
+  d0 := gagaRealGeometry.differentialLinear 0
+  d1 := gagaRealGeometry.differentialLinear 1
   d1_comp_d0 := by
     intro c
-    simp
+    simpa [FiniteMeasurementGeometry.differentialLinear,
+      FiniteMeasurementGeometry.cechComplex] using
+      Cohomology.StandardFinitePosetCech.canonicalTupleStandardFinitePosetCechComplex_differential_comp
+        gagaRealGeometry.tupleGeometry gagaRealGeometry.obstructionSheaf 0 c
+  zeroCochainCoordinates := by
+    simpa only [gagaRealCoverNerve] using gagaRealCochainCoordinates 0
+  oneCochainCoordinates := by
+    simpa only [gagaRealCoverNerve] using gagaRealCochainCoordinates 1
+  twoCochainCoordinates := by
+    simpa only [gagaRealCoverNerve] using gagaRealCochainCoordinates 2
+  d0_eq_edgeIncidence := by
+    intro c edge
+    change (gagaRealCochainCoordinates 1
+      (gagaRealGeometry.cechComplex.differential 0 c)) edge =
+        (gagaRealCochainCoordinates 0 c) (gagaRealFace 0 edge 0) -
+          (gagaRealCochainCoordinates 0 c) (gagaRealFace 0 edge 1)
+    simp only [FiniteMeasurementGeometry.cechComplex,
+      Cohomology.StandardFinitePosetCech.canonicalTupleStandardFinitePosetCechComplex,
+      Cohomology.StandardFinitePosetCech.standardFinitePosetCechComplex,
+      Cohomology.StandardFinitePosetCech.standardAdditiveData,
+      Cohomology.StandardFinitePosetCech.obstructionSheafStandardAlternatingCombination]
+    unfold Cohomology.StandardFinitePosetCech.standardDifferential
+    unfold Cohomology.StandardFinitePosetCech.standardAdditiveData
+    dsimp [gagaRealCochainCoordinates]
+    have hterms :
+        (fun i : Fin 2 =>
+          Site.FinitePosetCechFaceRestriction
+            (gagaRealGeometry.tupleGeometry.toSimplicialFaceAction
+              gagaRealGeometry.obstructionSheaf.carrier.toPresheaf).toFaceData
+            c edge i) =
+          (fun i : Fin 2 => gagaRealGeometry.faceRestrictionLinear 0 edge i
+            (c (gagaRealFace 0 edge i))) := by
+      funext i
+      exact (gagaRealGeometry.faceRestrictionLinear_apply 0 edge i
+        (c (gagaRealFace 0 edge i))).symm
+    rw [hterms]
+    simp [Cohomology.StandardFinitePosetCech.obstructionSheafStandardAlternatingCombination,
+      gagaRealGeometry, Fin.sum_univ_two, sub_eq_add_neg]
+    rfl
+  d1_eq_faceIncidence := by
+    intro c face
+    change (gagaRealCochainCoordinates 2
+      (gagaRealGeometry.cechComplex.differential 1 c)) face =
+        (gagaRealCochainCoordinates 1 c) (gagaRealFace 1 face 0) -
+          (gagaRealCochainCoordinates 1 c) (gagaRealFace 1 face 1) +
+            (gagaRealCochainCoordinates 1 c) (gagaRealFace 1 face 2)
+    simp only [FiniteMeasurementGeometry.cechComplex,
+      Cohomology.StandardFinitePosetCech.canonicalTupleStandardFinitePosetCechComplex,
+      Cohomology.StandardFinitePosetCech.standardFinitePosetCechComplex,
+      Cohomology.StandardFinitePosetCech.standardAdditiveData,
+      Cohomology.StandardFinitePosetCech.obstructionSheafStandardAlternatingCombination]
+    unfold Cohomology.StandardFinitePosetCech.standardDifferential
+    unfold Cohomology.StandardFinitePosetCech.standardAdditiveData
+    dsimp [gagaRealCochainCoordinates]
+    have hterms :
+        (fun i : Fin 3 =>
+          Site.FinitePosetCechFaceRestriction
+            (gagaRealGeometry.tupleGeometry.toSimplicialFaceAction
+              gagaRealGeometry.obstructionSheaf.carrier.toPresheaf).toFaceData
+            c face i) =
+          (fun i : Fin 3 => gagaRealGeometry.faceRestrictionLinear 1 face i
+            (c (gagaRealFace 1 face i))) := by
+      funext i
+      exact (gagaRealGeometry.faceRestrictionLinear_apply 1 face i
+        (c (gagaRealFace 1 face i))).symm
+    rw [hterms]
+    simp [Cohomology.StandardFinitePosetCech.obstructionSheafStandardAlternatingCombination,
+      gagaRealGeometry, Fin.sum_univ_three, sub_eq_add_neg]
+    rfl
 
-/-- R11(g) / VIII-5: selected topological-debt theorem package for GAGA. -/
-def lowDegreeTopologicalDebtTheoremPackage :
-    SelectedTopologicalDebtTheoremPackage pseudoCircleMeasurementProfile where
-  selectedDebtData := PseudoCircleMeasurementDomain.boundaryCocycle
-  measuredDebtData := {
-    inScope := rfl
+/-- The two actual monomial-law generators used by the selected GAGA chart. -/
+inductive GAGADerivedLawIdeal where
+  | xy
+  | xz
+
+/-- Evaluate a selected ambient law generator in the shared-witness chart. -/
+def gagaDerivedLawGenerator : GAGADerivedLawIdeal →
+    Derived.Counterexample.SharedWitnessCoord.ChartRing ℝ
+  | .xy => Derived.Counterexample.SharedWitnessCoord.xy ℝ
+  | .xz => Derived.Counterexample.SharedWitnessCoord.xz ℝ
+
+/-- Construct the chart ideal generated by an ambient selected law. -/
+def gagaGeneratedLawIdeal (L : GAGADerivedLawIdeal) :
+    Ideal (Derived.Counterexample.SharedWitnessCoord.ChartRing ℝ) :=
+  Ideal.span ({gagaDerivedLawGenerator L} : Set
+    (Derived.Counterexample.SharedWitnessCoord.ChartRing ℝ))
+
+/-- The selected `xy` generator yields the canonical left monomial ideal. -/
+theorem gagaGeneratedLawIdeal_xy :
+    gagaGeneratedLawIdeal .xy = Derived.Counterexample.SharedWitnessCoord.idealU ℝ :=
+  rfl
+
+/-- The selected `xz` generator yields the canonical right monomial ideal. -/
+theorem gagaGeneratedLawIdeal_xz :
+    gagaGeneratedLawIdeal .xz = Derived.Counterexample.SharedWitnessCoord.idealV ℝ :=
+  rfl
+
+/-- Read each selected profile law handle into the common-ambient monomial
+law carrier used by the GAGA comparison. -/
+def gagaProfileLawToAmbient : FiniteLawHandle → GAGADerivedLawIdeal
+  | .left => .xy
+  | .right => .xz
+  | .alternate => .xy
+
+/-- R11(g): the common ambient for the generated real finite-profile fixture. -/
+def gagaRealCommonAmbient :
+    CommonAmbientPair gagaRealMeasurementProfile where
+  AmbientSpace := FiniteModel.FiniteAtom
+  StructureSheaf := FiniteObstructionObjectHandle
+  LawIdeal := GAGADerivedLawIdeal
+  CoefficientObject := ℝ
+  WitnessPair := Derived.Counterexample.SharedWitnessCoord
+  ComparisonProfile := FiniteObstructionIdealHandle
+  SupportCarrier := SquareFreeSupportVertex
+  leftDomain := ()
+  rightDomain := ()
+  selectedAmbient := .componentA
+  selectedStructureSheaf := .selected
+  leftLawIdeal := .xy
+  rightLawIdeal := .xz
+  leftCoefficient := 1
+  rightCoefficient := 1
+  selectedWitnessPair := .x
+  selectedComparisonProfile := .selected
+  commonRingedSite := Site.AATSheafCondition FiniteModel.site gagaRealPresheaf
+  commonRingedSite_cert := gagaReal_isSheaf
+  lawIdealsInCommonAmbient :=
+    gagaGeneratedLawIdeal .xy = Derived.Counterexample.SharedWitnessCoord.idealU ℝ ∧
+      gagaGeneratedLawIdeal .xz = Derived.Counterexample.SharedWitnessCoord.idealV ℝ
+  lawIdealsInCommonAmbient_cert := ⟨gagaGeneratedLawIdeal_xy, gagaGeneratedLawIdeal_xz⟩
+  coefficientsCompatible := (1 : ℝ) = 1
+  coefficientsCompatible_cert := rfl
+  witnessesComparable := (Derived.Counterexample.SharedWitnessCoord.x :
+    Derived.Counterexample.SharedWitnessCoord) = .x
+  witnessesComparable_cert := rfl
+  comparisonProfileFixed := (FiniteObstructionIdealHandle.selected :
+    FiniteObstructionIdealHandle) = .selected
+  comparisonProfileFixed_cert := rfl
+  noComparisonWithoutCommonAmbient := Site.AATSheafCondition FiniteModel.site gagaRealPresheaf
+  noComparisonWithoutCommonAmbient_cert := gagaReal_isSheaf
+
+/-- Interpret each profile obstruction-object handle on the actual real Čech sheaf. -/
+def gagaAmbientStructureSheafFromProfile : FiniteObstructionObjectHandle →
+    Cohomology.ObstructionSheaf FiniteModel.site
+  | .selected => gagaRealObstructionSheaf
+  | .alternate => gagaRealObstructionSheaf
+
+/-- R11(g): source data whose site, cover, cochains, and differentials are generated
+from the selected real finite profile. -/
+noncomputable def gagaFiniteCechSource :
+    AATGAGAFiniteCechSource gagaRealMeasurementProfile where
+  geometry := gagaRealGeometry
+  selectedContext := PUnit.unit
+  selectedCoverIndex := false
+  nerve := gagaRealCoverNerve
+  nerveComplex := gagaRealNerveComplex
+  chartToCanonical := Equiv.refl _
+  edgeToCanonical := Equiv.refl _
+  faceToCanonical := Equiv.refl _
+  zeroToCanonical := AddEquiv.refl _
+  oneToCanonical := AddEquiv.refl _
+  twoToCanonical := AddEquiv.refl _
+  d0_toCanonical := by
+    intro c
+    rfl
+  d1_toCanonical := by
+    intro c
+    rfl
+
+/-- R11(g): all selected data are tied to the generated finite Čech source. -/
+noncomputable def gagaCommonFiniteData :
+    AATGAGACommonFiniteData gagaRealMeasurementProfile where
+  finiteCechSource := gagaFiniteCechSource
+  selectedSite := PUnit.unit
+  selectedCover := false
+  selectedCoefficient := 1
+  selectedMeasurement := ()
+  measuredSelection := {
+    inScope := trivial
     method := ()
     certificate := ()
   }
-  nerve := lowDegreeTopologicalDebtNerve
-  nerveComplex := lowDegreeTopologicalDebtComplex
+  commonAmbient := gagaRealCommonAmbient
+  profileLawToAmbient := gagaProfileLawToAmbient
+  selectedLeftProfileLaw := .left
+  selectedRightProfileLaw := .right
+  ambientLeftLaw_eq_profile := rfl
+  ambientRightLaw_eq_profile := rfl
+  ambientLawGenerator := gagaDerivedLawGenerator
+  selectedLeftLawGenerator_eq_xy := rfl
+  selectedRightLawGenerator_eq_xz := rfl
+  ambientAtomType_eq_source := rfl
+  ambientStructureSheafFromProfile := id
+  selectedObstructionObject := .selected
+  selectedStructureSheaf_eq_profile := rfl
+  ambientStructureSheafToSource := gagaAmbientStructureSheafFromProfile
+  selectedStructureSheaf_realizes_source := rfl
+  ambientCoefficientObject_eq_profile := rfl
+  leftCoefficient_eq_selected := rfl
+  rightCoefficient_eq_selected := rfl
+  selectedSite_eq_source := rfl
+  selectedCover_eq_source := rfl
+  ambientLeftDomain_eq := rfl
+  ambientRightDomain_eq := rfl
 
-/-- R11(g) / VIII-5: selected derived-conflict theorem package for GAGA. -/
-def lowDegreeDerivedConflictTheoremPackage :
-    SelectedDerivedConflictTheoremPackage pseudoCircleMeasurementProfile where
-  commonAmbient := transferCommonAmbient
-  lawConflictMeasurement := transferLawConflict
+local instance gagaRealSimplexFinite (n : Nat) : Finite (GAGARealSimplex n) :=
+  gagaRealGeometry.coefficientRegime.finiteNerveSimplex n
 
-/-- R11(g): certified finite AAT-GAGA readings. -/
-def gagaCertifiedFields :
-    AATGAGACertifiedFields pseudoCircleMeasurementProfile where
-  HodgeComparison := Unit
-  HarmonicDecomposition := Unit
-  PeriodStokesAccounting := Unit
-  TopologicalDebtCapacity := Unit
-  DerivedConflictAccounting := Unit
-  selectedHodgeComparison := ()
-  selectedHarmonicDecomposition := ()
-  selectedPeriodStokesAccounting := ()
-  selectedTopologicalDebtCapacity := ()
-  selectedDerivedConflictAccounting := ()
-  finiteHodgeTheoremPackage := threeAxisSelectedHodgeTheoremPackage
-  periodStokesTheoremPackage := lowDegreePeriodStokesTheoremPackage
-  topologicalDebtTheoremPackage := lowDegreeTopologicalDebtTheoremPackage
-  derivedConflictTheoremPackage := lowDegreeDerivedConflictTheoremPackage
-  hodgeComparisonCertified := True
-  hodgeComparisonCertified_cert := trivial
-  harmonicDecompositionCertified := True
-  harmonicDecompositionCertified_cert := trivial
-  periodStokesAccountingCertified := True
-  periodStokesAccountingCertified_cert := trivial
-  topologicalDebtCapacityCertified := True
-  topologicalDebtCapacityCertified_cert := trivial
-  derivedConflictAccountingCertified := True
-  derivedConflictAccountingCertified_cert := trivial
+/-- Computable enumeration of the generated real simplices in each degree. -/
+local instance gagaRealSimplexFintype (n : Nat) :
+    Fintype (GAGARealSimplex n) :=
+  Fintype.ofFinite _
+
+/-- Linear coordinates for the finite real cochain carrier with its `L²` metric. -/
+noncomputable def gagaRealEuclideanCoordinates (n : Nat) :
+    EuclideanSpace ℝ (GAGARealSimplex n) ≃ₗ[ℝ] (GAGARealSimplex n → ℝ) :=
+  (EuclideanSpace.equiv (GAGARealSimplex n) ℝ).toLinearEquiv
+
+/-- The selected canonical zero-cochains in real Euclidean coordinates. -/
+noncomputable def gagaRealZeroRealization :
+    gagaFiniteCechSource.nerveComplex.C0 ≃ₗ[ℝ]
+      EuclideanSpace ℝ (GAGARealSimplex 0) :=
+  gagaRealNerveComplex.zeroCochainCoordinates.trans
+    (gagaRealEuclideanCoordinates 0).symm
+
+/-- The selected canonical one-cochains in real Euclidean coordinates. -/
+noncomputable def gagaRealOneRealization :
+    gagaFiniteCechSource.nerveComplex.C1 ≃ₗ[ℝ]
+      EuclideanSpace ℝ (GAGARealSimplex 1) :=
+  gagaRealNerveComplex.oneCochainCoordinates.trans
+    (gagaRealEuclideanCoordinates 1).symm
+
+/-- The selected canonical two-cochains in real Euclidean coordinates. -/
+noncomputable def gagaRealTwoRealization :
+    gagaFiniteCechSource.nerveComplex.C2 ≃ₗ[ℝ]
+      EuclideanSpace ℝ (GAGARealSimplex 2) :=
+  gagaRealNerveComplex.twoCochainCoordinates.trans
+    (gagaRealEuclideanCoordinates 2).symm
+
+/-- Realize every generated canonical Čech cochain space in Euclidean coordinates. -/
+noncomputable def gagaRealAllDegreeRealization (n : Nat) :
+    gagaFiniteCechSource.geometry.CechCochain n ≃+
+      EuclideanSpace ℝ (GAGARealSimplex n) := by
+  letI : CommRing ℝ := gagaRealGeometry.coeffCommRing
+  letI : AddCommGroup (gagaRealGeometry.CechCochain n) :=
+    gagaRealGeometry.cochainAddCommGroup n
+  letI : Module ℝ (gagaRealGeometry.CechCochain n) :=
+    gagaRealGeometry.cochainModule n
+  exact ((gagaRealCochainCoordinates n).trans
+    (gagaRealEuclideanCoordinates n).symm).toAddEquiv
+
+/-- The real differential is transported from the actual canonical Čech differential. -/
+noncomputable def gagaRealAllDegreeDifferential (n : Nat) :
+    EuclideanSpace ℝ (GAGARealSimplex n) →ₗ[ℝ]
+      EuclideanSpace ℝ (GAGARealSimplex (n + 1)) := by
+  letI : CommRing ℝ := gagaRealGeometry.coeffCommRing
+  letI : AddCommGroup (gagaRealGeometry.CechCochain n) :=
+    gagaRealGeometry.cochainAddCommGroup n
+  letI : AddCommGroup (gagaRealGeometry.CechCochain (n + 1)) :=
+    gagaRealGeometry.cochainAddCommGroup (n + 1)
+  letI : Module ℝ (gagaRealGeometry.CechCochain n) :=
+    gagaRealGeometry.cochainModule n
+  letI : Module ℝ (gagaRealGeometry.CechCochain (n + 1)) :=
+    gagaRealGeometry.cochainModule (n + 1)
+  let E0 := (gagaRealCochainCoordinates n).trans (gagaRealEuclideanCoordinates n).symm
+  let E1 := (gagaRealCochainCoordinates (n + 1)).trans
+    (gagaRealEuclideanCoordinates (n + 1)).symm
+  exact E1.toLinearMap.comp
+    ((gagaRealGeometry.differentialLinear n).comp E0.symm.toLinearMap)
+
+/-- The transported all-degree real differential is the generated Čech differential. -/
+theorem gagaRealAllDegreeDifferential_eq_source (n : Nat)
+    (c : gagaFiniteCechSource.geometry.CechCochain n) :
+    gagaRealAllDegreeDifferential n (gagaRealAllDegreeRealization n c) =
+      gagaRealAllDegreeRealization (n + 1)
+        (gagaFiniteCechSource.geometry.differentialLinear n c) := by
+  change gagaRealAllDegreeRealization (n + 1)
+      (gagaRealGeometry.differentialLinear n
+        ((gagaRealAllDegreeRealization n).symm
+          (gagaRealAllDegreeRealization n c))) = _
+  rw [(gagaRealAllDegreeRealization n).symm_apply_apply]
+  simp only [gagaFiniteCechSource]
+
+/-- Consecutive transported differentials form the actual all-degree Čech complex. -/
+theorem gagaRealAllDegreeDifferential_comp (n : Nat) :
+    (gagaRealAllDegreeDifferential (n + 1)).comp
+      (gagaRealAllDegreeDifferential n) = 0 := by
+  apply LinearMap.ext
+  intro c
+  change gagaRealAllDegreeRealization (n + 2)
+      (gagaRealGeometry.differentialLinear (n + 1)
+        ((gagaRealAllDegreeRealization (n + 1)).symm
+          (gagaRealAllDegreeRealization (n + 1)
+            (gagaRealGeometry.differentialLinear n
+              ((gagaRealAllDegreeRealization n).symm c))))) = 0
+  rw [(gagaRealAllDegreeRealization (n + 1)).symm_apply_apply]
+  have hcomp :=
+    Cohomology.StandardFinitePosetCech.canonicalTupleStandardFinitePosetCechComplex_differential_comp
+      gagaRealGeometry.tupleGeometry gagaRealGeometry.obstructionSheaf n
+      ((gagaRealAllDegreeRealization n).symm c)
+  have hzero :
+      gagaRealGeometry.cechComplex.differential (n + 1)
+        (gagaRealGeometry.cechComplex.differential n
+          ((gagaRealAllDegreeRealization n).symm c)) =
+        (0 : gagaRealGeometry.CechCochain (n + 2)) := by
+    simpa [FiniteMeasurementGeometry.cechComplex] using hcomp
+  have hzeroLinear :
+      gagaRealGeometry.differentialLinear (n + 1)
+        (gagaRealGeometry.differentialLinear n
+          ((gagaRealAllDegreeRealization n).symm c)) =
+        (0 : gagaRealGeometry.CechCochain (n + 2)) := by
+    simpa [FiniteMeasurementGeometry.differentialLinear] using hzero
+  rw [hzeroLinear]
+  exact (gagaRealAllDegreeRealization (n + 2)).map_zero
+
+/-- The all-degree Hodge input is constructed from the same generated real Čech source. -/
+noncomputable def gagaRealAllDegreeHodgeInput :
+    AATGAGAAllDegreeRealCechHodgeInput gagaFiniteCechSource where
+  RealCochain := fun n => EuclideanSpace ℝ (GAGARealSimplex n)
+  cochainNormed := by intro _; infer_instance
+  cochainInner := by intro _; infer_instance
+  cochainFinite := by intro _; infer_instance
+  sourceToReal := gagaRealAllDegreeRealization
+  realD := gagaRealAllDegreeDifferential
+  realD_eq_source := gagaRealAllDegreeDifferential_eq_source
+  real_d_comp := gagaRealAllDegreeDifferential_comp
+
+/-- R11(g): the Hodge realization uses the same selected real Čech complex. -/
+noncomputable def gagaRealHodgeInput :
+    AATGAGARealCechHodgeInput gagaFiniteCechSource where
+  RealC0 := EuclideanSpace ℝ (GAGARealSimplex 0)
+  RealC1 := EuclideanSpace ℝ (GAGARealSimplex 1)
+  RealC2 := EuclideanSpace ℝ (GAGARealSimplex 2)
+  zeroNormed := by infer_instance
+  zeroInner := by infer_instance
+  zeroFinite := by infer_instance
+  oneNormed := by infer_instance
+  oneInner := by infer_instance
+  oneFinite := by infer_instance
+  twoNormed := by infer_instance
+  twoInner := by infer_instance
+  twoFinite := by infer_instance
+  zeroToReal := gagaRealZeroRealization.toAddEquiv
+  oneToReal := gagaRealOneRealization.toAddEquiv
+  twoToReal := gagaRealTwoRealization.toAddEquiv
+  zeroCochainCoordinates := gagaRealEuclideanCoordinates 0
+  zeroCochainCoordinates_inv := (gagaRealEuclideanCoordinates 0).symm
+  zeroCochainCoordinates_left_inv := by
+    intro c
+    exact (gagaRealEuclideanCoordinates 0).symm_apply_apply c
+  zeroCochainCoordinates_right_inv := by
+    intro c
+    exact (gagaRealEuclideanCoordinates 0).apply_symm_apply c
+  zeroCochainCoordinates_add := by
+    intro c d
+    exact (gagaRealEuclideanCoordinates 0).map_add c d
+  oneCochainCoordinates := gagaRealEuclideanCoordinates 1
+  oneCochainCoordinates_inv := (gagaRealEuclideanCoordinates 1).symm
+  oneCochainCoordinates_left_inv := by
+    intro c
+    exact (gagaRealEuclideanCoordinates 1).symm_apply_apply c
+  oneCochainCoordinates_right_inv := by
+    intro c
+    exact (gagaRealEuclideanCoordinates 1).apply_symm_apply c
+  oneCochainCoordinates_add := by
+    intro c d
+    exact (gagaRealEuclideanCoordinates 1).map_add c d
+  twoCochainCoordinates := gagaRealEuclideanCoordinates 2
+  twoCochainCoordinates_inv := (gagaRealEuclideanCoordinates 2).symm
+  twoCochainCoordinates_left_inv := by
+    intro c
+    exact (gagaRealEuclideanCoordinates 2).symm_apply_apply c
+  twoCochainCoordinates_right_inv := by
+    intro c
+    exact (gagaRealEuclideanCoordinates 2).apply_symm_apply c
+  twoCochainCoordinates_add := by
+    intro c d
+    exact (gagaRealEuclideanCoordinates 2).map_add c d
+  zeroCochainCoordinates_smul := by
+    intro a c
+    exact (gagaRealEuclideanCoordinates 0).map_smul a c
+  oneCochainCoordinates_smul := by
+    intro a c
+    exact (gagaRealEuclideanCoordinates 1).map_smul a c
+  twoCochainCoordinates_smul := by
+    intro a c
+    exact (gagaRealEuclideanCoordinates 2).map_smul a c
+  realD0 := gagaRealOneRealization.toLinearMap.comp
+    (gagaRealNerveComplex.d0.comp gagaRealZeroRealization.symm.toLinearMap)
+  realD1 := gagaRealTwoRealization.toLinearMap.comp
+    (gagaRealNerveComplex.d1.comp gagaRealOneRealization.symm.toLinearMap)
+  real_d1_comp_d0 := by
+    apply LinearMap.ext
+    intro c
+    change gagaRealTwoRealization
+      (gagaRealNerveComplex.d1
+        (gagaRealOneRealization.symm
+          (gagaRealOneRealization
+            (gagaRealNerveComplex.d0 (gagaRealZeroRealization.symm c))))) = 0
+    rw [gagaRealOneRealization.symm_apply_apply]
+    rw [gagaRealNerveComplex.d1_comp_d0]
+    exact gagaRealTwoRealization.map_zero
+  realD0_eq_profile := by
+    intro c
+    change gagaRealOneRealization
+      (gagaRealNerveComplex.d0
+        (gagaRealZeroRealization.symm (gagaRealZeroRealization c))) =
+      gagaRealOneRealization (gagaRealNerveComplex.d0 c)
+    rw [gagaRealZeroRealization.symm_apply_apply]
+  realD1_eq_profile := by
+    intro c
+    change gagaRealTwoRealization
+      (gagaRealNerveComplex.d1
+        (gagaRealOneRealization.symm (gagaRealOneRealization c))) =
+      gagaRealTwoRealization (gagaRealNerveComplex.d1 c)
+    rw [gagaRealOneRealization.symm_apply_apply]
+  d0_eq_edgeIncidence := by
+    intro c edge
+    change (gagaRealEuclideanCoordinates 1
+      ((gagaRealEuclideanCoordinates 1).symm
+        (gagaRealNerveComplex.d0 (gagaRealEuclideanCoordinates 0 c)))) edge =
+      (gagaRealEuclideanCoordinates 0 c) (gagaRealCoverNerve.edgeRight edge) -
+        (gagaRealEuclideanCoordinates 0 c) (gagaRealCoverNerve.edgeLeft edge)
+    rw [LinearEquiv.apply_symm_apply]
+    exact gagaRealNerveComplex.d0_eq_edgeIncidence
+      (gagaRealEuclideanCoordinates 0 c) edge
+  d1_eq_faceIncidence := by
+    intro c face
+    change (gagaRealEuclideanCoordinates 2
+      ((gagaRealEuclideanCoordinates 2).symm
+        (gagaRealNerveComplex.d1 (gagaRealEuclideanCoordinates 1 c)))) face =
+      (gagaRealEuclideanCoordinates 1 c) (gagaRealCoverNerve.faceEdge0 face) -
+        (gagaRealEuclideanCoordinates 1 c) (gagaRealCoverNerve.faceEdge1 face) +
+          (gagaRealEuclideanCoordinates 1 c) (gagaRealCoverNerve.faceEdge2 face)
+    rw [LinearEquiv.apply_symm_apply]
+    exact gagaRealNerveComplex.d1_eq_faceIncidence
+      (gagaRealEuclideanCoordinates 1 c) face
+
+/-- R11(g): finite Hodge data for the single generated Čech source. -/
+noncomputable def gagaSelectedFiniteHodgeData :
+    AATGAGASelectedFiniteHodgeData gagaCommonFiniteData where
+  allDegreeInput := gagaRealAllDegreeHodgeInput
+
+/-- R11(g): finite Hodge theorem package for the single generated Čech source. -/
+noncomputable def gagaFiniteHodgeTheoremPackage :
+    SelectedFiniteHodgeTheoremPackage gagaCommonFiniteData where
+  hodgeData := gagaSelectedFiniteHodgeData
+
+/-- R11(g): Period/Stokes theorem package over the same selected measurement. -/
+def gagaPeriodStokesTheoremPackage :
+    SelectedPeriodStokesTheoremPackage gagaCommonFiniteData
+      gagaFiniteHodgeTheoremPackage where
+  sourceHodgeData := gagaSelectedFiniteHodgeData
+  sourceHodgeData_eq := rfl
+
+/-- R11(g): finite-nerve capacity package over the same selected measurement. -/
+def gagaTopologicalDebtTheoremPackage :
+    SelectedTopologicalDebtTheoremPackage gagaCommonFiniteData where
+  source := gagaFiniteCechSource
+  source_eq_common := rfl
+
+/-- R11(g): every certified GAGA conclusion is derived from the generated source. -/
+noncomputable def gagaCertifiedFields :
+    AATGAGACertifiedFields gagaCommonFiniteData where
+  finiteHodgeTheoremPackage := gagaFiniteHodgeTheoremPackage
+  periodStokesTheoremPackage := gagaPeriodStokesTheoremPackage
+  topologicalDebtTheoremPackage := gagaTopologicalDebtTheoremPackage
 
 /-- R11(g): candidate interfaces remain separated from certified readings. -/
 def gagaCandidateInterfaces :
-    AATGAGACandidateInterfaces pseudoCircleMeasurementProfile where
+    AATGAGACandidateInterfaces gagaRealMeasurementProfile where
   MonotoneWitnessStabilityInterface := Unit
   FiniteCechStabilityInterface := Unit
   FlatBaseChangeInterface := Unit
@@ -3688,87 +4234,56 @@ def gagaCandidateInterfaces :
   flatBaseChange := some ()
   spectralHotspot := some ()
   transferLowerBound := some ()
-  candidateInterfacesSeparatedFromCertified := True
-  candidateInterfacesSeparatedFromCertified_cert := trivial
 
-/-- R11(g): finite-profile comparison assumptions for the GAGA fixture. -/
-def gagaComparisonAssumptions :
-    AATGAGAComparisonAssumptions pseudoCircleMeasurementProfile where
-  finiteMeasurementRegime := True
-  finiteMeasurementRegime_cert := trivial
-  finiteCover := True
-  finiteCover_cert := trivial
-  innerProductCoefficientSheaf := True
-  innerProductCoefficientSheaf_cert := trivial
-  cellularCochainModel := True
-  cellularCochainModel_cert := trivial
-  squareFreeRegime := True
-  squareFreeRegime_cert := trivial
-  commonAmbient := True
-  commonAmbient_cert := trivial
-  stabilityDistanceAndComparisonMaps := True
-  stabilityDistanceAndComparisonMaps_cert := trivial
-
-/-- R11(g): external-fidelity boundary for the GAGA fixture. -/
-def gagaBoundary :
-    AATGAGABoundary pseudoCircleMeasurementProfile where
-  noExternalDataSourceFidelity := True
-  noExternalDataSourceFidelity_cert := trivial
-  noExternalProcedureCorrectness := True
-  noExternalProcedureCorrectness_cert := trivial
-  noArbitraryLawUniverseComparison := True
-  noArbitraryLawUniverseComparison_cert := trivial
-  candidateDependentFieldsNotCertified := True
-  candidateDependentFieldsNotCertified_cert := trivial
+/-- R11(g): non-conclusion data are retained outside the certified statement. -/
+def gagaNonConclusionData :
+    AATGAGANonConclusionData gagaRealMeasurementProfile where
+  noExternalDataSourceFidelity := ¬ gagaRealMeasurementProfile.OutOfScope ()
+  noExternalDataSourceFidelity_cert := by simp
+  noExternalProcedureCorrectness :=
+    ¬ gagaRealMeasurementProfile.NotRunOrUnavailable ()
+  noExternalProcedureCorrectness_cert := by simp
+  noArbitraryLawUniverseComparison := gagaRealCommonAmbient.coefficientsCompatible
+  noArbitraryLawUniverseComparison_cert := gagaRealCommonAmbient.coefficientsCompatible_cert
+  candidateDependentFieldsNotCertified :=
+    gagaCandidateInterfaces.monotoneWitnessStability = some ()
+  candidateDependentFieldsNotCertified_cert := rfl
 
 /-- R11(g): raw finite AAT-GAGA comparison data. -/
-def gagaComparisonExampleData :
-    AATGAGAComparisonData pseudoCircleMeasurementProfile where
-  measurementPacketData := measurementPacketExampleData
+noncomputable def gagaComparisonExampleData :
+    AATGAGAComparisonData gagaRealMeasurementProfile where
+  commonData := gagaCommonFiniteData
   certifiedFields := gagaCertifiedFields
-  candidateInterfaces := gagaCandidateInterfaces
-  assumptions := gagaComparisonAssumptions
-  boundary := gagaBoundary
-  certifiedCandidateSeparation := True
-  certifiedCandidateSeparation_cert := trivial
 
-/-- R11(g): theorem 12.3 instantiated on the finite comparison fixture. -/
-def gagaComparisonExamplePackage :
+/-- R11(g): theorem 12.3 instantiated on the generated finite comparison fixture. -/
+theorem gagaComparisonExamplePackage :
     AATGAGAFiniteMeasurementComparison gagaComparisonExampleData :=
-  aatGAGAFiniteMeasurementComparisonPackage gagaComparisonExampleData
+  aatGAGAFiniteMeasurementComparison gagaComparisonExampleData
 
-/-- R11(g): packet / GAGA fixture with certified and candidate readings separated. -/
+/-- R11(g): GAGA fixture over one real finite profile, with certified and candidate
+readings separated. -/
 structure MeasurementPacketGAGAFiniteExample where
-  synthesisPackage : FiniteMeasurementSynthesis measurementPacketExampleData
+  /-- The certified theorem-12.3 comparison on the generated fixture data. -/
   gagaPackage : AATGAGAFiniteMeasurementComparison gagaComparisonExampleData
-  certifiedReadingsSeparated : Prop
-  certifiedReadingsSeparated_cert : certifiedReadingsSeparated
-  candidateInterfacesSeparated : Prop
-  candidateInterfacesSeparated_cert : candidateInterfacesSeparated
-  boundedPacketConstructed : Prop
-  boundedPacketConstructed_cert : boundedPacketConstructed
-  finiteGAGAComparisonConstructed : Prop
-  finiteGAGAComparisonConstructed_cert : finiteGAGAComparisonConstructed
+  /-- The certified comparison statement fired on the same fixture data. -/
+  certifiedComparison : aatGAGAComparisonStatement gagaComparisonExampleData
+  /-- Candidate interfaces kept separate from the certified readings. -/
+  candidateInterfaces : AATGAGACandidateInterfaces gagaRealMeasurementProfile
+  /-- Recorded non-conclusions kept outside the certified statement. -/
+  nonConclusionData : AATGAGANonConclusionData gagaRealMeasurementProfile
 
 /-- R11(g): certified readings and candidate interfaces stay separated. -/
-def measurementPacketGAGAFiniteExample :
+noncomputable def measurementPacketGAGAFiniteExample :
     MeasurementPacketGAGAFiniteExample where
-  synthesisPackage := measurementPacketExampleSynthesis
   gagaPackage := gagaComparisonExamplePackage
-  certifiedReadingsSeparated := True
-  certifiedReadingsSeparated_cert := trivial
-  candidateInterfacesSeparated := True
-  candidateInterfacesSeparated_cert := trivial
-  boundedPacketConstructed := True
-  boundedPacketConstructed_cert := trivial
-  finiteGAGAComparisonConstructed := True
-  finiteGAGAComparisonConstructed_cert := trivial
+  certifiedComparison := aatGAGAComparisonStatement_holds gagaComparisonExampleData
+  candidateInterfaces := gagaCandidateInterfaces
+  nonConclusionData := gagaNonConclusionData
 
-theorem measurementPacketGAGAExample_certifiedCandidateSeparated :
-    measurementPacketGAGAFiniteExample.certifiedReadingsSeparated ∧
-      measurementPacketGAGAFiniteExample.candidateInterfacesSeparated :=
-  ⟨measurementPacketGAGAFiniteExample.certifiedReadingsSeparated_cert,
-    measurementPacketGAGAFiniteExample.candidateInterfacesSeparated_cert⟩
+/-- R11(g): every theorem-12.3 certified conjunct fires in one finite fixture. -/
+theorem measurementPacketGAGAExample_certifiedComparison :
+    aatGAGAComparisonStatement gagaComparisonExampleData :=
+  measurementPacketGAGAFiniteExample.certifiedComparison
 
 /-- R11: aggregate suite reused by Part IX as static measurement fixtures. -/
 structure PartVIIIFiniteExampleSuite where
@@ -3875,11 +4390,8 @@ def PartVIIIFiniteExampleSuite.CoversR11 (S : PartVIIIFiniteExampleSuite) : Prop
                         S.cellularHodge.harmonicDebtMinimal ∧
                           S.supportTransfer.nontrivialPairingResidue ∧
                             S.supportTransfer.nontrivialTransferredResidue ∧
-                              S.packetGAGA.certifiedReadingsSeparated ∧
-                                S.packetGAGA.candidateInterfacesSeparated ∧
-                                  S.packetGAGA.boundedPacketConstructed ∧
-                                    S.packetGAGA.finiteGAGAComparisonConstructed ∧
-                                      S.staticFixturesReusableForPartIX
+                              aatGAGAComparisonStatement gagaComparisonExampleData ∧
+                                S.staticFixturesReusableForPartIX
 
 /-- R11 / AC25: all requested finite example families are fully certified. -/
 theorem partVIIIFiniteExampleSuite_complete :
@@ -3901,10 +4413,7 @@ theorem partVIIIFiniteExampleSuite_complete :
     partVIIIFiniteExampleSuite.cellularHodge.harmonicDebtMinimal_cert,
     partVIIIFiniteExampleSuite.supportTransfer.nontrivialPairingResidue_cert,
     partVIIIFiniteExampleSuite.supportTransfer.nontrivialTransferredResidue_cert,
-    partVIIIFiniteExampleSuite.packetGAGA.certifiedReadingsSeparated_cert,
-    partVIIIFiniteExampleSuite.packetGAGA.candidateInterfacesSeparated_cert,
-    partVIIIFiniteExampleSuite.packetGAGA.boundedPacketConstructed_cert,
-    partVIIIFiniteExampleSuite.packetGAGA.finiteGAGAComparisonConstructed_cert,
+    partVIIIFiniteExampleSuite.packetGAGA.certifiedComparison,
     partVIIIFiniteExampleSuite.staticFixturesReusableForPartIX_cert⟩
 
 end Measurement

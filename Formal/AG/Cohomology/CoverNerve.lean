@@ -5,7 +5,7 @@ noncomputable section
 namespace AAT.AG
 namespace Cohomology
 
-universe u
+universe u v w
 
 /--
 IV.定義12.1: cover nerve with explicit connected overlap components.
@@ -122,19 +122,18 @@ end FiniteDimensionalNerveCohomologyData
 /--
 R5 / IV-5: finite selected nerve cochain complex.
 
-This is a selected finite-dimensional cochain complex attached to the chosen
-cover nerve.  It records actual vector spaces and differentials `d0`, `d1`
-with `d1 ∘ d0 = 0`; the additive `H^1` below is then defined as
-`ker d1 / im d0`, not supplied as an unrelated field.  The attachment to
-`N.Chart` / `N.EdgeComponent` / `N.FaceComponent` is intentionally selected
-data; this theorem does not construct the complex from an arbitrary cover.
+The three coordinate equivalences and the two incidence equations make the
+attachment to `N.Chart`, `N.EdgeComponent`, and `N.FaceComponent` part of the
+data being audited.  Thus this is not an arbitrary finite complex indexed by a
+nerve: its differentials are the selected Cech incidence maps in those
+coordinates.  The additive `H^1` below is defined as `ker d1 / im d0`, not
+supplied as an unrelated field.
 -/
-structure FiniteNerveCochainComplex (N : CoverNerve.{u}) where
-  k : Type u
-  [field_k : Field k]
-  C0 : Type u
-  C1 : Type u
-  C2 : Type u
+structure FiniteNerveCochainComplex (N : CoverNerve.{u})
+    (k : Type v) [Field k] where
+  C0 : Type w
+  C1 : Type w
+  C2 : Type w
   [add_C0 : AddCommGroup C0]
   [add_C1 : AddCommGroup C1]
   [add_C2 : AddCommGroup C2]
@@ -147,18 +146,35 @@ structure FiniteNerveCochainComplex (N : CoverNerve.{u}) where
   d0 : C0 →ₗ[k] C1
   d1 : C1 →ₗ[k] C2
   d1_comp_d0 : ∀ c : C0, d1 (d0 c) = 0
+  /-- Degree-zero cochains are coordinates on the selected charts. -/
+  zeroCochainCoordinates : C0 ≃ₗ[k] (N.Chart → k)
+  /-- Degree-one cochains are coordinates on the selected overlap components. -/
+  oneCochainCoordinates : C1 ≃ₗ[k] (N.EdgeComponent → k)
+  /-- Degree-two cochains are coordinates on the selected triple-overlap components. -/
+  twoCochainCoordinates : C2 ≃ₗ[k] (N.FaceComponent → k)
+  /-- The degree-zero differential is the oriented selected-edge incidence map. -/
+  d0_eq_edgeIncidence : ∀ (c : C0) (e : N.EdgeComponent),
+    oneCochainCoordinates (d0 c) e =
+      zeroCochainCoordinates c (N.edgeRight e) -
+        zeroCochainCoordinates c (N.edgeLeft e)
+  /-- The degree-one differential is the selected-face incidence map. -/
+  d1_eq_faceIncidence : ∀ (c : C1) (f : N.FaceComponent),
+    twoCochainCoordinates (d1 c) f =
+      oneCochainCoordinates c (N.faceEdge0 f) -
+        oneCochainCoordinates c (N.faceEdge1 f) +
+          oneCochainCoordinates c (N.faceEdge2 f)
 
 namespace FiniteNerveCochainComplex
 
-attribute [instance] field_k add_C0 add_C1 add_C2
+attribute [instance] add_C0 add_C1 add_C2
 attribute [instance] module_C0 module_C1 module_C2
 attribute [instance] finiteDimensional_C0 finiteDimensional_C1 finiteDimensional_C2
 
-variable {N : CoverNerve.{u}}
+variable {N : CoverNerve.{u}} {k : Type v} [Field k]
 
 /-- R5 / IV-5: degree-zero boundaries land in the degree-one cocycles. -/
-def boundaryToCycles (D : FiniteNerveCochainComplex N) :
-    D.C0 →ₗ[D.k] LinearMap.ker D.d1 where
+def boundaryToCycles (D : FiniteNerveCochainComplex N k) :
+    D.C0 →ₗ[k] LinearMap.ker D.d1 where
   toFun c := ⟨D.d0 c, by simpa using D.d1_comp_d0 c⟩
   map_add' x y := by
     ext
@@ -168,21 +184,21 @@ def boundaryToCycles (D : FiniteNerveCochainComplex N) :
     simp
 
 /-- R5 / IV-5: additive nerve `H^1 = ker d1 / im d0`. -/
-abbrev H1 (D : FiniteNerveCochainComplex N) : Type u :=
+abbrev H1 (D : FiniteNerveCochainComplex N k) : Type w :=
   (LinearMap.ker D.d1) ⧸ LinearMap.range D.boundaryToCycles
 
-instance h1AddCommGroup (D : FiniteNerveCochainComplex N) :
+instance h1AddCommGroup (D : FiniteNerveCochainComplex N k) :
     AddCommGroup D.H1 := by
   dsimp [H1]
   infer_instance
 
-instance h1Module (D : FiniteNerveCochainComplex N) :
-    Module D.k D.H1 := by
+instance h1Module (D : FiniteNerveCochainComplex N k) :
+    Module k D.H1 := by
   dsimp [H1]
   infer_instance
 
-instance h1FiniteDimensional (D : FiniteNerveCochainComplex N) :
-    FiniteDimensional D.k D.H1 := by
+instance h1FiniteDimensional (D : FiniteNerveCochainComplex N k) :
+    FiniteDimensional k D.H1 := by
   dsimp [H1]
   infer_instance
 
@@ -191,10 +207,10 @@ R5 / IV-5: rank-nullity inside the cocycle space:
 `dim H^1 + rank d0 = dim ker d1`.
 -/
 theorem finrank_H1_add_finrank_boundary
-    (D : FiniteNerveCochainComplex N) :
-    Module.finrank D.k D.H1 +
-        Module.finrank D.k (LinearMap.range D.boundaryToCycles) =
-      Module.finrank D.k (LinearMap.ker D.d1) := by
+    (D : FiniteNerveCochainComplex N k) :
+    Module.finrank k D.H1 +
+        Module.finrank k (LinearMap.range D.boundaryToCycles) =
+      Module.finrank k (LinearMap.ker D.d1) := by
   simpa [H1] using
     (LinearMap.range D.boundaryToCycles).finrank_quotient_add_finrank
 
@@ -205,19 +221,19 @@ This proves the theorem-12.2 lower-bound form from Mathlib rank-nullity and the
 definition `H^1 = ker d1 / im d0`.
 -/
 theorem topologicalDebtCapacity_fromComplex
-    (D : FiniteNerveCochainComplex N) :
-    Module.finrank D.k D.C1 <=
-      Module.finrank D.k D.H1 + Module.finrank D.k D.C0 +
-        Module.finrank D.k D.C2 := by
+    (D : FiniteNerveCochainComplex N k) :
+    Module.finrank k D.C1 <=
+      Module.finrank k D.H1 + Module.finrank k D.C0 +
+        Module.finrank k D.C2 := by
   have h_d1 := D.d1.finrank_range_add_finrank_ker
   have h_h1 := D.finrank_H1_add_finrank_boundary
   have h_boundary_le :
-      Module.finrank D.k (LinearMap.range D.boundaryToCycles) <=
-        Module.finrank D.k D.C0 :=
+      Module.finrank k (LinearMap.range D.boundaryToCycles) <=
+        Module.finrank k D.C0 :=
     LinearMap.finrank_range_le D.boundaryToCycles
   have h_d1_le :
-      Module.finrank D.k (LinearMap.range D.d1) <=
-        Module.finrank D.k D.C2 :=
+      Module.finrank k (LinearMap.range D.d1) <=
+        Module.finrank k D.C2 :=
     (LinearMap.range D.d1).finrank_le
   omega
 
