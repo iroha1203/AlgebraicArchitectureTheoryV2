@@ -481,8 +481,8 @@ H^n(𝒰, Ob_U)
 H^n(X, Ob_U)
 ```
 
-選ばれた有限 cover に相対化した `H^1` を、repair の descent 同値、
-および Atom の公理から生成された係数と接続する比較定理(SAGA)は、第X部で扱う。
+選ばれた有限 cover に相対化した `H^1` を、repair の descent 同値、および core reading `r` の
+`R_eq` から得た equation system が生成する係数と接続する比較定理(SAGA)は、第X部で扱う。
 
 ## 4. Obstruction Cohomology
 
@@ -1776,8 +1776,9 @@ period pairing は boundary mismatch の会計恒等式として読める。
 尺度変更に対しては、fine / coarse の間でどの obstruction class が持続するかを
 Leray 型の低次列として追跡する。
 
-この局所-大域の差を、選ばれた有限データの内部で、
-Atom の公理から係数・site・`H^1` まで途切れない定理連鎖として閉じる実現は、第X部で与える。
+この局所-大域の差を、選ばれた有限データの内部で、core reading `r` の `R_eq` から得る equation system、
+full coverage package、生成された商係数、selected cover、明示的な comparison data の依存図として
+接続する実現は、第X部で与える。
 
 次の問いは、複数の lawful loci を同時に満たそうとするとき、
 その交差が古典的には正しく見えても、導来的には余剰 obstruction を持つ場合をどう読むかである。

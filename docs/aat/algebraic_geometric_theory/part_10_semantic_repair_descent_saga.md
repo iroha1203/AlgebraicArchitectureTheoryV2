@@ -602,7 +602,7 @@ vanishing:
   equation fulfillment から residual zero、ideal membership、quotient zero の順に導く。
 ```
 
-## 6. Atom-Generated Site と Čech 橋
+## 6. Coverage-Generated AAT Site と Čech 橋
 
 §4 の repair cover と、第II部の AAT site・第IV部の Čech 装置を接続する。
 
@@ -926,24 +926,63 @@ lawful な例では class は必然的に零であり(定理 8.1)、
 
 ## 10. Part10 の結論
 
-第X部では、次の連鎖を定理として通した。
+第X部では、selected input、generated object、derived result を混同しない次の依存図を確定した。
 
 ```text
-Atom axioms(第I部)
-  -> architectural equation system: nu and epsilon(第I部)
-  -> admissible covers generate the AAT topology(第II部 定義 7.1、本部 定理 6.1)
-  -> nu generates witness ideals and the obstruction ideal(第III部)
-  -> the coefficient is generated: O / I_Ob(第III部 定理 11.4)
-  -> epsilon generates displayed residual interpretations(第III部 定義 11.3・定理 11.4)
-  -> cover-relative Čech H^1(第IV部、定義 6.2)
-  -> repair gluing is descent: residual boundary membership(定理 3.4)
-  -> the obstruction is a true quotient class: Z^1 / B^1(定理 4.8)
-  -> semantic repair H^1 and cover-relative Čech H^1 agree(定理 7.2・7.3)
+selected core input:
+  Atom universe At、Atom axiom system S、core reading r : CoreRead(At)
+  with equation reading r.R_eq and signature reading r.R_sig
+    -> architecture object A_r、equation system E_r、signature Sig_r(第I部)
+
+selected coverage input:
+  E_r、Sig_r、R_r : CoverageRequirements(A_r,E_r,Sig_r)、
+  Ov_r : ContextOverlapPullback(ArchCtx(A_r)) realizing R_r
+    -> generated topology J_{E_r,R_r,Ov_r}(第II部 定義 7.1、本部 定理 6.1)
+
+equation-generated algebra:
+  nu of E_r
+    -> witness ideals and obstruction ideal(第III部)
+    -> quotient coefficient O_{E_r} / I_Ob^{E_r}(第III部 定理 11.4)
+  epsilon of E_r + displayed equation source
+    -> displayed residual interpretation(第III部 定義 11.3・定理 11.4)
+
+selected geometric input:
+  (E_r,R_r,Ov_r)-adequate cover、
+  global quotient sheaf condition for O_{E_r} / I_Ob^{E_r}、
+  repair-cover incidence bridge
+
+generated / derived:
+  adequate cover + Ov_r
+    -> actual pullback nerve(本部 定理 6.5)
+  actual pullback nerve + quotient coefficient
+    -> selected cover-relative Čech complex
+       (本部 定義 6.2。一般構成は第IV部 定義 3.1〜3.3)
+  repair-cover incidence bridge
+    -> identifies the semantic cover with the actual pullback nerve in degrees 0 to 2(定義 6.3)
+  global quotient sheaf condition + cover membership
+    -> descent from sheaf condition and cover membership(本部 定理 6.6)
+
+selected semantic comparison input:
+  semantic coefficient data、boundary-relation faithfulness data、
+  H^1 comparison data、true sheaf certificate、gluing data
+
+derived:
+  semantic coefficient data with residual 1-cocycle
+    -> semantic repair H^1 class in Z^1 / B^1(定義 4.4)
+  semantic coefficient data + boundary-relation faithfulness data
+    + true sheaf certificate + gluing data
+    -> global coherence iff residual class is zero(定理 4.8)
+  semantic coefficient data + H^1 comparison data
+    -> semantic repair H^1 and cover-relative Čech H^1 comparison(定理 7.2)
+  faithfulness + true sheaf certificate + gluing data
+    -> grounded global gluing comparison(定理 7.3)
 ```
 
-幾何側の site、係数、displayed residual、cover-relative complex は equation system と full coverage package から
-生成される。最後の比較矢印は定義7.1の comparison data に相対化され、その data から商水準の同値を
-証明する。comparison equivalence や `H^1` zero を grounded surface の入力に格納しない。
+`E_r` は Atom axioms 単独から生成されるのではなく、core reading `r` の material input `R_eq` から構成される。
+同様に `R_r`、`Ov_r`、adequate cover、global quotient sheaf condition、semantic coefficient data、comparison data は
+図に明記した selected input である。生成されるのは、それらの入力から矢印の右側に置いた topology、ideal、
+quotient、displayed residual、cover nerve 上の complex と descent である。comparison equivalence は定義7.1の
+comparison data から商水準で証明し、`H^1` zero を grounded surface の入力に格納しない。
 
 第X部の核心は次である。
 
@@ -962,8 +1001,9 @@ but
 the residual class remains
 ```
 
-そしてこの現象は、選ばれた有限データの内部で、
-Atom の公理から係数・site・`H^1` まで、途切れずに接地される。
+そしてこの現象は、選ばれた有限データの内部で、`(At,S,r)`、`r.R_eq` から得た `E_r`、
+full coverage package、adequate cover、global quotient sheaf condition、semantic coefficient data、
+comparison data の明示的な依存図として接地される。
 
 equation fulfillment は `H^0` で消滅として働き、`H^1` の非自明な内容は cover の幾何から来る(意味 8.3)。
 相異なる lawful reading が非自明に貼り合う係数の読みは、本文の残る問いである。

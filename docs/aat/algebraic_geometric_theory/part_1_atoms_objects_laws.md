@@ -1785,21 +1785,28 @@ CoreExact_At(psi) compose CoreExact_At(phi)
 一方、vocabulary inclusion や observation refinement のように atomic truth を一方向にのみ保存する変更は
 
 ```text
+FiniteCircuitDatum_r^+
+  := { Q in FiniteCircuitDatum_r | Positive(Q) }
+
 theta : PositiveCoreReadingHom(r,r')
+
+theta_Obj : ArchObj_r(At) -> ArchObj_r'(At)
+theta_E   : Index(E_r) -> Index(E_r')
+theta_Q   : FiniteCircuitDatum_r^+ -> FiniteCircuitDatum_r'^+
 ```
 
 として扱う。`theta` が運べるのは positive query だけからなる circuit subfamily であり、
 次の一方向条件を持つ。
 
 ```text
-Positive(Q)
+Q : FiniteCircuitDatum_r^+
 Matches_r(Q,A)
   ->
 Matches_r'(theta_Q(Q),theta_Obj(A))
 
 Accepts_r(i,Q) = true
   ->
-Accepts_r'(theta_L(i),theta_Q(Q)) = true
+Accepts_r'(theta_E(i),theta_Q(Q)) = true
 ```
 
 negative query を含む circuit、law の反射、coarsening、projection はこの一方向射だけでは

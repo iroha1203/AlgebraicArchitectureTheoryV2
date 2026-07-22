@@ -56,13 +56,35 @@ and
 Flat_U(W)
 ```
 
-第V部では、二つ以上の architectural equation system と、その自然言語表示を同時に考える。
+第V部では、共通の architecture geometry 上に置かれた二つ以上の architectural equation subsystem と、
+その自然言語表示を同時に考える。まず、共通 ambient equation system を固定する。
 
 ```text
-Eq_U, Eq_V : ArchitecturalEquationSystem
+E_X : ArchitecturalEquationSystem on Ctx_X
+(X,O_X) : ringed AAT site from a fixed full AAT site package for E_X
+O_X := (O_{E_X})^+
+
+K_U, K_V subset Index(E_X)
+Eq_U := E_X restricted to K_U
+Eq_V := E_X restricted to K_V
+
 U := U_{Eq_U}
 V := U_{Eq_V}
 ```
+
+ここで `Eq_U` と `Eq_V` は restriction-compatible equation-index subsystem であり、
+`Ctx_X`、Atom family、observable presheaf `O_{E_X}`、その sheafification `O_X`、restriction maps、
+`nu` / `epsilon` とその構造法則を `E_X` から継承する。選ぶのは equation index subfamily であり、
+role family は `E_X` の role map の制限である。
+第III部の sheaf-image construction により、両 subsystem の obstruction ideal sheaf は
+
+```text
+I_U := 𝓘_Ob^{Eq_U} subset O_X
+I_V := 𝓘_Ob^{Eq_V} subset O_X
+```
+
+として同じ ringed AAT site `(X,O_X)` 上に置かれる。この共通 ambient data を、第V部全体の standing input
+とし、以後の `Eq_U`、`Eq_V`、`I_U`、`I_V` はこの subsystem pair とその ideal sheaf を表す。
 
 それぞれに lawful locus がある。
 
@@ -95,12 +117,12 @@ law conflict is derived non-transversality.
 
 ## 2. Lawful Loci
 
-### 定義 2.1 Lawful Locus for a Law Universe
+### 定義 2.1 Lawful Locus in the Common Ambient
 
-law universe `U` に対して、obstruction ideal sheaf を
+standing input の subsystem `Eq_U` とその自然言語表示 `U := U_{Eq_U}` に対して、obstruction ideal sheaf を
 
 ```text
-I_U subset O_X
+I_U := 𝓘_Ob^{Eq_U} subset O_X
 ```
 
 と書く。
@@ -127,7 +149,7 @@ Flat_U(X)
   V(I_U)
 ```
 
-同様に、law universe `V` に対して、
+同様に、`Eq_V` と `V := U_{Eq_V}` に対して、
 
 ```text
 Flat_V(X)
@@ -137,9 +159,11 @@ Flat_V(X)
 
 である。
 
-### 原則 2.2 Law Universes Are Distinct Readings
+### 原則 2.2 Law Universes Are Distinct Readings in One Ambient
 
-`U` と `V` は同じ architecture geometry `X` 上の異なる law readings である。
+`U` と `V` は同じ architecture geometry `X` と structure sheaf `O_X` 上の異なる law readings である。
+それぞれの equation subsystem が生成する `I_U` と `I_V` は、ともに `O_X` の ideal sheaf なので、
+和、derived tensor、Tor はこの共通 ambient 上で型付けされる。
 
 代表例は次である。
 
@@ -1439,7 +1463,8 @@ selected no-solution certificate returned.
 
 ## 14. Part5 の結論
 
-第V部では、複数の lawful loci の交差を derived geometry として扱った。
+第V部では、standing input として固定した同じ ringed AAT site `(X,O_X)` 上で、
+複数の lawful loci の交差を derived geometry として扱った。
 
 ```text
 Flat_U(X) intersection^R Flat_V(X)
