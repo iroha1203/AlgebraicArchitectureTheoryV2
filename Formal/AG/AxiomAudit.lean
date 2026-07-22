@@ -2571,8 +2571,193 @@ def squareFreeRepairSupportNotMemAlexanderDualIffHitsForbidden :=
 def squareFreeSingletonQMinimalRepairHittingSet :=
   Measurement.squareFree_singletonQ_minimalRepairHittingSet
 
-def replayZeroTheorem42GlobalTransitionExists :=
-  Examples.EvolutionPart9.replay_zero_theorem42_global_transition_exists
+/-- Kernel-audit alias for `replayZeroTheorem42GlobalSectionExists`. -/
+def replayZeroTheorem42GlobalSectionExists :=
+  Examples.EvolutionPart9.replay_zero_theorem42_global_section_exists
+
+/-- Kernel-audit alias for `replayZeroTheorem42GlobalSectionRestrictsToAdjusted`. -/
+def replayZeroTheorem42GlobalSectionRestrictsToAdjusted :=
+  Examples.EvolutionPart9.replay_zero_theorem42_realizes_adjusted
+
+/-- Kernel-audit alias for `replayTemporalDescentSectionCriterionRealizesAdjusted`. -/
+def replayTemporalDescentSectionCriterionRealizesAdjusted :=
+  @Evolution.TemporalDescentCriterion.temporal_descent_section_criterion_realizes_adjusted
+
+/-- Kernel-audit alias for `replayTemporalDescentSectionCriterion`. -/
+def replayTemporalDescentSectionCriterion :=
+  @Evolution.TemporalDescentCriterion.temporal_descent_section_criterion
+
+/-- Kernel-audit alias for `replayAdjustedLocalSectionsZero`. -/
+def replayAdjustedLocalSectionsZero :=
+  @Evolution.ReplayDescentData.adjustedLocalSections_zero
+
+/-- Kernel-audit alias for `replayAdjustedReplayFromSectionAction`. -/
+def replayAdjustedReplayFromSectionAction :=
+  @Evolution.ReplayDescentData.adjustedReplay_eq_adjustReplayAtChart
+
+/-- Kernel-audit alias for `replayAdjustReplayAtChartZero`. -/
+def replayAdjustReplayAtChartZero :=
+  @Evolution.ReplayDescentData.adjustReplayAtChart_zero
+
+/-- Kernel-audit alias for `replayAdjustedRestrictionDifference`. -/
+def replayAdjustedRestrictionDifference :=
+  @Evolution.ReplayDescentData.adjusted_restriction_difference
+
+/-- Kernel-audit alias for `replayTemporalDescentCriterionFailsForNonCoboundary`. -/
+def replayTemporalDescentCriterionFailsForNonCoboundary :=
+  @Evolution.TemporalDescentCriterion.not_temporalDescentCriterion_of_mismatch_not_coboundary
+
+/-- Kernel-audit alias for `replayTwoChartCorrectionRightNonzero`. -/
+def replayTwoChartCorrectionRightNonzero :=
+  Examples.EvolutionPart9.twoChartCorrection_right_nonzero
+
+/-- Kernel-audit alias for `replayTwoChartMismatchIsCoboundary`. -/
+def replayTwoChartMismatchIsCoboundary :=
+  Examples.EvolutionPart9.twoChartReplayMismatch_eq_coboundary
+
+/-- Kernel-audit alias for `replayTwoChartTemporalDifferentialNonzero`. -/
+def replayTwoChartTemporalDifferentialNonzero :=
+  Examples.EvolutionPart9.zmod2TemporalProductIncidence_d0_step_ne_zero
+
+/-- Kernel-audit alias for `replayTwoChartNonzeroCorrection`. -/
+def replayTwoChartNonzeroCorrection :=
+  Examples.EvolutionPart9.nondegenerate_twoChart_temporal_replay_correction
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2CechCorrection`. -/
+def replayTwoPatchZMod2CechCorrection :=
+  Examples.EvolutionPart9.twoPatchReplayCechMismatch_eq_correction
+
+/-- Kernel-audit alias for the distinction of the two actual replay charts. -/
+def replayTwoPatchZMod2ActualChartsDistinct :=
+  Examples.EvolutionPart9.twoPatchReplayChartObject_left_ne_right
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2ClassZero`. -/
+def replayTwoPatchZMod2ClassZero :=
+  Examples.EvolutionPart9.twoPatchReplay_class_zero
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2TemporalCoverComparison`. -/
+def replayTwoPatchZMod2TemporalCoverComparison :=
+  Examples.EvolutionPart9.twoPatchReplayTemporalCover_reads_actual_chart
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2TemporalGlobalEndpointsAtBase`. -/
+def replayTwoPatchZMod2TemporalGlobalEndpointsAtBase :=
+  Examples.EvolutionPart9.twoPatchReplayTemporalGlobalEndpoints_at_base
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2TemporalTraceSelected`. -/
+def replayTwoPatchZMod2TemporalTraceSelected :=
+  Examples.EvolutionPart9.twoPatchReplayTemporalTrace_selected
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2TemporalProductDifferentialCompatible`. -/
+def replayTwoPatchZMod2TemporalProductDifferentialCompatible :=
+  Examples.EvolutionPart9.twoPatchReplayTemporalProduct_d0_compatible
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2TemporalProductTargetReadsRightChart`. -/
+def replayTwoPatchZMod2TemporalProductTargetReadsRightChart :=
+  Examples.EvolutionPart9.twoPatchReplayCochainToTemporalProduct_target_reads_right_chart
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2TemporalProductEndpoints`. -/
+def replayTwoPatchZMod2TemporalProductEndpoints :=
+  Examples.EvolutionPart9.twoPatchReplayCochainToTemporalProduct_endpoints
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2TemporalProductActualOverlapRestriction`. -/
+noncomputable def replayTwoPatchZMod2TemporalProductActualOverlapRestriction :=
+  Examples.EvolutionPart9.twoPatchReplayCechRestrictionToOverlap
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2CechDifferentialReadsActualOverlapRestrictions`. -/
+def replayTwoPatchZMod2CechDifferentialReadsActualOverlapRestrictions :=
+  Examples.EvolutionPart9.twoPatchReplayCechDifferential_eq_overlap_restrictions
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2TemporalProductClassZero`. -/
+def replayTwoPatchZMod2TemporalProductClassZero :=
+  @Examples.EvolutionPart9.twoPatchReplayTemporalProductMismatch_eq_correction
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2TemporalProductCechReading`. -/
+def replayTwoPatchZMod2TemporalProductCechReading :=
+  Examples.EvolutionPart9.twoPatchReplayTemporalMismatch_eq_correction
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2CechPrimitiveViaTemporalProduct`. -/
+def replayTwoPatchZMod2CechPrimitiveViaTemporalProduct :=
+  Examples.EvolutionPart9.twoPatchReplayCechMismatch_eq_correction_via_temporal_product
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2CechAdjustedMismatchZero`. -/
+def replayTwoPatchZMod2CechAdjustedMismatchZero :=
+  Examples.EvolutionPart9.twoPatchAdjustedReplayCechMismatch_zero
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2ArbitraryAdjustedMismatchFormula`. -/
+def replayTwoPatchZMod2ArbitraryAdjustedMismatchFormula :=
+  @Examples.EvolutionPart9.twoPatchAdjustedReplayCechMismatchBy_eq_sub
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2ArbitraryAdjustedMismatchZero`. -/
+def replayTwoPatchZMod2ArbitraryAdjustedMismatchZero :=
+  @Examples.EvolutionPart9.twoPatchAdjustedReplayCechMismatchBy_zero_of_class_zero
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2NonzeroOverlap`. -/
+def replayTwoPatchZMod2NonzeroOverlap :=
+  Examples.EvolutionPart9.twoPatchReplayOverlapMismatch_ne_zero
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2CechReadsOverlap`. -/
+def replayTwoPatchZMod2CechReadsOverlap :=
+  Examples.EvolutionPart9.twoPatchReplayCechMismatch_eq_overlap
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2FullReplayDifferenceReadsOverlap`. -/
+def replayTwoPatchZMod2FullReplayDifferenceReadsOverlap :=
+  Examples.EvolutionPart9.twoPatchReplayRestrictedDifference_eq_overlap
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2AdjustedCechReadsOverlap`. -/
+def replayTwoPatchZMod2AdjustedCechReadsOverlap :=
+  Examples.EvolutionPart9.twoPatchAdjustedReplayCechMismatch_eq_overlap
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2FullAdjustedReplayDifferenceReadsOverlap`. -/
+def replayTwoPatchZMod2FullAdjustedReplayDifferenceReadsOverlap :=
+  Examples.EvolutionPart9.twoPatchAdjustedReplayRestrictedDifference_eq_overlap
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2CoefficientReflectsMatching`. -/
+def replayTwoPatchZMod2CoefficientReflectsMatching :=
+  Examples.EvolutionPart9.twoPatchAdjustedReplay_zero_reflects_matching
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2ArbitraryCoefficientReflectsMatching`. -/
+def replayTwoPatchZMod2ArbitraryCoefficientReflectsMatching :=
+  @Examples.EvolutionPart9.twoPatchAdjustedReplayBy_zero_reflects_matching
+
+/-- Kernel-audit alias for the actual corrected-family overlap agreement. -/
+def replayTwoPatchZMod2ActualCorrectedFamilyMatching :=
+  @Examples.EvolutionPart9.twoPatchCorrectedLocalSectionsBy_matching
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2NonzeroCorrectionDescends`. -/
+def replayTwoPatchZMod2NonzeroCorrectionDescends :=
+  Examples.EvolutionPart9.twoPatchReplay_nonzero_correction_descends
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2NonzeroCorrectionDescendsAsFunction`. -/
+def replayTwoPatchZMod2NonzeroCorrectionDescendsAsFunction :=
+  Examples.EvolutionPart9.twoPatchReplay_nonzero_correction_descends_as_function
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2TemporalDescentCriterion`. -/
+def replayTwoPatchZMod2TemporalDescentCriterion :=
+  Examples.EvolutionPart9.twoPatch_temporal_descent_criterion
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2ClassZeroDescends`. -/
+def replayTwoPatchZMod2ClassZeroDescends :=
+  Examples.EvolutionPart9.twoPatchReplay_class_zero_descends
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2TemporalDescentOfClassZero`. -/
+def replayTwoPatchZMod2TemporalDescentOfClassZero :=
+  Examples.EvolutionPart9.twoPatch_temporal_descent_criterion_of_class_zero
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2TemporalDescentCriterionHolds`. -/
+def replayTwoPatchZMod2TemporalDescentCriterionHolds :=
+  Examples.EvolutionPart9.twoPatch_temporal_descent_criterion_holds
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2TemporalDescentGlobalReplay`. -/
+def replayTwoPatchZMod2TemporalDescentGlobalReplay :=
+  Examples.EvolutionPart9.twoPatch_temporal_descent_criterion_global_replay
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2TemporalRealizationZeroUnsatisfied`. -/
+def replayTwoPatchZMod2TemporalRealizationZeroUnsatisfied :=
+  Examples.EvolutionPart9.twoPatchTemporalReplayRealizesCorrection_zero_unsatisfied
+
+/-- Kernel-audit alias for `replayTwoPatchZMod2Fixture`. -/
+def replayTwoPatchZMod2Fixture :=
+  Examples.EvolutionPart9.actual_twoPatch_zmod2_replay_fixture
 
 def toyForceIntegrable :=
   Examples.EvolutionPart9.toy_force_integrable

@@ -706,7 +706,6 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.Evolution.ForceIntegrationData.globalTemporalLaw /- definition missing documentation string -/
 #check @AAT.AG.Evolution.ForceIntegrationData.coefficient /- definition missing documentation string -/
 #check @AAT.AG.Evolution.ForceIntegrationData.replayData /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ForceIntegrationData.descentCriterion /- definition missing documentation string -/
 #check @AAT.AG.Evolution.ForceIntegrationData.globalReplayTransition /- definition missing documentation string -/
 #check @AAT.AG.Evolution.ForceIntegrationData.localLawData /- definition missing documentation string -/
 #check @AAT.AG.Evolution.ForceIntegrationData.descendsToGlobalTemporalLaw /- definition missing documentation string -/
@@ -750,24 +749,6 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.Evolution.EvolutionProfile.TraceRelativity.selectedTrace /- definition missing documentation string -/
 #check @AAT.AG.Evolution.EvolutionGeometry.obj /- definition missing documentation string -/
 #check @AAT.AG.Evolution.EvolutionGeometry.map /- definition missing documentation string -/
-
--- Formal.AG.Evolution.ReplayDescent
-#check @AAT.AG.Evolution.ReplayDescentData.bridge /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayDescentData.cover /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayDescentData.sourceTrace /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayDescentData.targetTrace /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayDescentData.traceArrow /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayDescentData.replay /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayDescentData.mismatchCochain /- definition missing documentation string -/
-#check @AAT.AG.Evolution.ReplayDescentData.mismatchSupportedByLaw /- definition missing documentation string -/
-#check @AAT.AG.Evolution.EffectiveTemporalAdjustment.correction /- definition missing documentation string -/
-#check @AAT.AG.Evolution.EffectiveTemporalAdjustment.adjustedReplay /- definition missing documentation string -/
-#check @AAT.AG.Evolution.EffectiveTemporalAdjustment.adjustedMismatchCochain /- definition missing documentation string -/
-#check @AAT.AG.Evolution.EffectiveTemporalAdjustment.adjustedMismatchSupportedByLaw /- definition missing documentation string -/
-#check @AAT.AG.Evolution.TemporalDescentRealization.globalReplay /- definition missing documentation string -/
-#check @AAT.AG.Evolution.TemporalDescentRealization.globalReplay_from_vanishing_and_compatibility /- definition missing documentation string -/
-#check @AAT.AG.Evolution.TemporalDescentCriterion.adjustment /- definition missing documentation string -/
-#check @AAT.AG.Evolution.TemporalDescentCriterion.adjustedCompatible /- definition missing documentation string -/
 
 -- Formal.AG.Evolution.StateTransition
 #check @AAT.AG.Evolution.StateTransitionPresheaf.State /- definition missing documentation string -/
@@ -855,13 +836,6 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check AAT.AG.Examples.EvolutionPart9.mid1 /- definition missing documentation string -/
 #check AAT.AG.Examples.EvolutionPart9.terminal1 /- definition missing documentation string -/
 #check AAT.AG.Examples.EvolutionPart9.nonlawfulTerminal1 /- definition missing documentation string -/
-#check AAT.AG.Examples.EvolutionPart9.ReplayDescentZeroExample.localCharts /- definition missing documentation string -/
-#check AAT.AG.Examples.EvolutionPart9.ReplayDescentZeroExample.mismatch /- definition missing documentation string -/
-#check AAT.AG.Examples.EvolutionPart9.ReplayDescentZeroExample.replayData /- definition missing documentation string -/
-#check AAT.AG.Examples.EvolutionPart9.ReplayDescentZeroExample.adjustedCompatibility /- definition missing documentation string -/
-#check AAT.AG.Examples.EvolutionPart9.ReplayDescentZeroExample.theorem42Criterion /- definition missing documentation string -/
-#check AAT.AG.Examples.EvolutionPart9.ReplayDescentZeroExample.adjustedCompatibilityWitness /- definition missing documentation string -/
-#check AAT.AG.Examples.EvolutionPart9.ReplayDescentZeroExample.globalReplayTransition /- definition missing documentation string -/
 #check AAT.AG.Examples.EvolutionPart9.ReplayDescentNonzeroExample.edge /- definition missing documentation string -/
 #check AAT.AG.Examples.EvolutionPart9.ReplayDescentNonzeroExample.noGlobalFailureClaimWithoutDetectingAssumption /- definition missing documentation string -/
 #check AAT.AG.Examples.EvolutionPart9.ForceCandidateFixture.integrationData /- definition missing documentation string -/

@@ -5,6 +5,7 @@ import Formal.AG.Site.FinitePoset
 import Formal.AG.Site.MinimalContextProfile
 import Formal.AG.Site.SheafCategory
 import Mathlib.Data.Fintype.Basic
+import Mathlib.Data.ZMod.Basic
 
 namespace AAT.AG
 
@@ -2193,6 +2194,173 @@ def twoPatchBoolCoefficient : Site.AATPresheaf twoPatchSite where
   map_id _ := rfl
   map_comp _ _ := rfl
 
+/-- The product of two contexts in the selected two-patch finite site. -/
+private def twoPatchProductObject
+    (X Y : twoPatchSite.category) : twoPatchSite.category :=
+  Site.ContextCategoryObject.of twoPatchContextPreorder
+    (Site.productContext X.ctx Y.ctx)
+
+/-- First projection from a product context in the selected two-patch site. -/
+private noncomputable def twoPatchProductLeft
+    (X Y : twoPatchSite.category) : twoPatchProductObject X Y ⟶ X :=
+  homOfLE (Site.productContextFiniteMeet.meet_le_left X.ctx Y.ctx)
+
+/-- Second projection from a product context in the selected two-patch site. -/
+private noncomputable def twoPatchProductRight
+    (X Y : twoPatchSite.category) : twoPatchProductObject X Y ⟶ Y :=
+  homOfLE (Site.productContextFiniteMeet.meet_le_right X.ctx Y.ctx)
+
+/--
+On the selected finite two-patch site, a presheaf with bijective restriction
+maps satisfies the generated AAT sheaf condition.
+-/
+private theorem twoPatchPresheaf_isSheaf_of_bijective
+    (P : CategoryTheory.Functor twoPatchSite.categoryᵒᵖ Type)
+    (hbij : ∀ {X Y : twoPatchSite.category} (f : X ⟶ Y),
+      Function.Bijective (P.map f.op)) :
+    Presieve.IsSheaf twoPatchSite.topology P := by
+  rw [Site.AATSite.topology, Site.AATGrothendieckTopology]
+  rw [Precoverage.isSheaf_toGrothendieck_iff]
+  intro X Y f R hR
+  rcases hR with ⟨F, rfl⟩
+  intro family hfamily
+  classical
+  rcases F.admissible.atomSupportCoverage
+      FiniteAtom.componentA (Or.inl rfl) with ⟨i, hi⟩
+  let patchObject := Site.ContextCategoryObject.of twoPatchContextPreorder
+    (F.patch i)
+  let Q := twoPatchProductObject Y patchObject
+  let q : Q ⟶ Y := twoPatchProductLeft Y patchObject
+  let qpatch : Q ⟶ patchObject := twoPatchProductRight Y patchObject
+  have hq : (Sieve.generate F.presieve).pullback f q := by
+    change Sieve.generate F.presieve (q ≫ f)
+    have hinclusion : Sieve.generate F.presieve
+        (homOfLE (F.inclusion i)) :=
+      Sieve.le_generate F.presieve _ (Presieve.ofArrows.mk i)
+    have hcomp := (Sieve.generate F.presieve).downward_closed hinclusion qpatch
+    convert hcomp using 1
+  rcases (hbij q).2 (family q hq) with ⟨global, hglobal⟩
+  refine ⟨global, ?_, ?_⟩
+  · intro Z g hg
+    let PQ := twoPatchProductObject Z Q
+    let pz : PQ ⟶ Z := twoPatchProductLeft Z Q
+    let pq : PQ ⟶ Q := twoPatchProductRight Z Q
+    apply (hbij pz).1
+    have hcompat := hfamily pz pq hg hq (Subsingleton.elim _ _)
+    calc
+      P.map pz.op (P.map g.op global) =
+          P.map pq.op (P.map q.op global) := by
+            rw [← FunctorToTypes.map_comp_apply,
+              ← FunctorToTypes.map_comp_apply]
+            congr 2
+      _ = P.map pq.op (family q hq) := by rw [hglobal]
+      _ = P.map pz.op (family g hg) := hcompat.symm
+  · intro other hother
+    apply (hbij q).1
+    rw [hglobal]
+    exact hother q hq
+
+/-- `ZMod 2`-valued coefficients with identity restriction on the two-patch site. -/
+def twoPatchZMod2Coefficient : Site.AATPresheaf twoPatchSite where
+  obj _ := ZMod 2
+  map _ x := x
+  map_id _ := rfl
+  map_comp _ _ := rfl
+
+/-- The nontrivial `ZMod 2` coefficient presheaf is an actual two-patch sheaf. -/
+theorem twoPatchZMod2Coefficient_isSheaf :
+    Site.AATSheafCondition twoPatchSite twoPatchZMod2Coefficient := by
+  apply (Site.AATSheafCondition.iff_presieve_isSheaf twoPatchSite _).2
+  apply twoPatchPresheaf_isSheaf_of_bijective
+  intro _X _Y _f
+  exact Function.bijective_id
+
+/-- Packaged nontrivial `ZMod 2` coefficient sheaf on the two-patch AAT site. -/
+def twoPatchZMod2CoefficientSheaf : Site.AATSheaf twoPatchSite where
+  carrier := twoPatchZMod2Coefficient
+  isSheaf := twoPatchZMod2Coefficient_isSheaf
+
+/-- Replay functions with `ZMod 2` source and target states on the two-patch site. -/
+abbrev TwoPatchZMod2ReplayFunction := ZMod 2 → ZMod 2
+
+/--
+Translation replay maps on the selected two-patch site.
+
+The coefficient is part of the replay section itself: its evaluation is the
+translation `state ↦ state + coefficient`.  Consequently equality of the
+coefficient is equality of the replay map, rather than a separate sampled
+observation of an arbitrary function.
+-/
+structure TwoPatchZMod2TranslationReplay where
+  /-- The translation parameter that determines the replay map. -/
+  coefficient : ZMod 2
+
+namespace TwoPatchZMod2TranslationReplay
+
+/-- Evaluate a translation replay map at a source state. -/
+def apply (replay : TwoPatchZMod2TranslationReplay) (state : ZMod 2) : ZMod 2 :=
+  state + replay.coefficient
+
+/-- The replay section determines its translation coefficient. -/
+theorem ext {left right : TwoPatchZMod2TranslationReplay}
+    (h : left.coefficient = right.coefficient) : left = right := by
+  cases left
+  cases right
+  cases h
+  rfl
+
+/-- Subtract a degree-zero correction from a translation replay section. -/
+def adjust (replay : TwoPatchZMod2TranslationReplay) (correction : ZMod 2) :
+    TwoPatchZMod2TranslationReplay where
+  coefficient := replay.coefficient - correction
+
+@[simp] theorem coefficient_adjust (replay : TwoPatchZMod2TranslationReplay)
+    (correction : ZMod 2) : (adjust replay correction).coefficient =
+      replay.coefficient - correction :=
+  rfl
+
+end TwoPatchZMod2TranslationReplay
+
+/-- Translation replay sections with identity restriction on the two-patch site. -/
+def twoPatchZMod2TranslationReplayPresheaf : Site.AATPresheaf twoPatchSite where
+  obj _ := TwoPatchZMod2TranslationReplay
+  map _ replay := replay
+  map_id _ := rfl
+  map_comp _ _ := rfl
+
+/-- Translation replay sections satisfy descent on every selected AAT cover. -/
+theorem twoPatchZMod2TranslationReplay_isSheaf :
+    Site.AATSheafCondition twoPatchSite twoPatchZMod2TranslationReplayPresheaf := by
+  apply (Site.AATSheafCondition.iff_presieve_isSheaf twoPatchSite _).2
+  apply twoPatchPresheaf_isSheaf_of_bijective
+  intro _X _Y _f
+  exact Function.bijective_id
+
+/-- The actual replay-function sheaf for coefficient-reflecting translations. -/
+def twoPatchZMod2TranslationReplaySheaf : Site.AATSheaf twoPatchSite where
+  carrier := twoPatchZMod2TranslationReplayPresheaf
+  isSheaf := twoPatchZMod2TranslationReplay_isSheaf
+
+/-- The actual replay-function presheaf on the selected two-patch AAT site. -/
+def twoPatchZMod2ReplayFunctionPresheaf : Site.AATPresheaf twoPatchSite where
+  obj _ := TwoPatchZMod2ReplayFunction
+  map _ replay := replay
+  map_id _ := rfl
+  map_comp _ _ := rfl
+
+/-- The `ZMod 2` replay-function presheaf satisfies descent on every AAT cover. -/
+theorem twoPatchZMod2ReplayFunction_isSheaf :
+    Site.AATSheafCondition twoPatchSite twoPatchZMod2ReplayFunctionPresheaf := by
+  apply (Site.AATSheafCondition.iff_presieve_isSheaf twoPatchSite _).2
+  apply twoPatchPresheaf_isSheaf_of_bijective
+  intro _X _Y _f
+  exact Function.bijective_id
+
+/-- Packaged actual replay-function sheaf for the two-patch `ZMod 2` fixture. -/
+def twoPatchZMod2ReplayFunctionSheaf : Site.AATSheaf twoPatchSite where
+  carrier := twoPatchZMod2ReplayFunctionPresheaf
+  isSheaf := twoPatchZMod2ReplayFunction_isSheaf
+
 /-- peer-review hardening II-5: unit-valued sheaf used for the concrete descent success. -/
 def twoPatchUnitPresheaf : Site.AATPresheaf twoPatchSite where
   obj _ := PUnit
@@ -2326,6 +2494,63 @@ noncomputable def twoPatchFinitePosetRegime :
   coverAdequate := twoPatchCover_uAdequate
   coefficient := twoPatchBoolCoefficient
 
+/-- The same selected two-patch site with its actual `ZMod 2` coefficient sheaf. -/
+noncomputable def twoPatchZMod2FinitePosetRegime :
+    Site.FinitePosetAATSiteRegime twoPatchSite where
+  ContextIndex := TwoPatchContextIndex
+  finiteContextIndex := inferInstance
+  context := twoPatchContext
+  contextLe := twoPatchContextIndexLe
+  contextLe_refl := twoPatchContextIndexLe_refl
+  contextLe_trans := fun hij hjk => twoPatchContextIndexLe_trans hij hjk
+  contextLe_antisymm := fun hij hji => twoPatchContextIndexLe_antisymm hij hji
+  contextLe_sound := fun h => twoPatchContextLe_sound h
+  contextMeet := twoPatchContextMeet
+  contextMeet_le_left := twoPatchContextMeet_le_left
+  contextMeet_le_right := twoPatchContextMeet_le_right
+  context_le_meet := fun hik hjk => twoPatchContext_le_meet hik hjk
+  base := twoPatchBase
+  cover := twoPatchCover
+  finiteCoverIndex := by
+    change Finite TwoPatchCoverIndex
+    infer_instance
+  nerveSimplex := twoPatchNerveSimplex
+  finiteNerveSimplex := by
+    intro n
+    cases n with
+    | zero =>
+        change Finite TwoPatchCoverIndex
+        infer_instance
+    | succ n =>
+        cases n with
+        | zero =>
+            change Finite PUnit
+            infer_instance
+        | succ _ =>
+            change Finite Empty
+            infer_instance
+  simplexIndices := twoPatchSimplexIndices
+  simplexOverlap := twoPatchSimplexOverlap
+  simplexOverlap_le_patch := by
+    intro n simplex k
+    cases n with
+    | zero =>
+        cases simplex
+        · exact twoPatchContext_le_any TwoPatchContextIndex.left TwoPatchContextIndex.left
+        · exact twoPatchContext_le_any TwoPatchContextIndex.right TwoPatchContextIndex.right
+    | succ n =>
+        cases n with
+        | zero =>
+            change twoPatchContextPreorder.le
+              (twoPatchContext TwoPatchContextIndex.overlap)
+              (twoPatchCoverPatch (twoPatchSimplexIndices 1 simplex k))
+            unfold twoPatchCoverPatch
+            exact ⟨twoPatchContextMorphism _ _, twoPatchContextMorphism_isRestriction _ _⟩
+        | succ _ => exact Empty.elim simplex
+  adequacyRequirements := twoPatchAdequacyRequirements
+  coverAdequate := twoPatchCover_uAdequate
+  coefficient := twoPatchZMod2Coefficient
+
 /-- peer-review hardening II-5: the two-patch selected context poset has four finite contexts. -/
 theorem twoPatchFinitePosetRegime_context_finite :
     Finite twoPatchFinitePosetRegime.ContextIndex :=
@@ -2432,6 +2657,104 @@ def twoPatchCechComplex :
               (show Bool from cochain TwoPatchCoverIndex.right)) =
             ((show Bool from cochain TwoPatchCoverIndex.left) !=
               (show Bool from cochain TwoPatchCoverIndex.right))
+        rfl
+    | succ n =>
+        cases n with
+        | zero => exact Empty.elim simplex
+        | succ _ => exact Empty.elim simplex
+  differential_zero := by
+    intro n
+    funext simplex
+    cases n with
+    | zero =>
+        cases simplex
+        rfl
+    | succ n =>
+        cases n with
+        | zero => exact Empty.elim simplex
+        | succ _ => exact Empty.elim simplex
+  differential_comp_zero := by
+    intro n _cochain
+    funext simplex
+    cases n with
+    | zero => exact Empty.elim simplex
+    | succ _ => exact Empty.elim simplex
+
+/-- Additive Čech data for the actual `ZMod 2` coefficient sheaf on the two patches. -/
+def twoPatchZMod2CechAdditiveData :
+    Site.FinitePosetCechAdditiveData twoPatchZMod2FinitePosetRegime where
+  zeroSection := by
+    intro _n _simplex
+    change ZMod 2
+    exact 0
+  combineFaces := by
+    intro n _simplex faces
+    cases n with
+    | zero =>
+        change ZMod 2
+        exact (show ZMod 2 from faces ⟨1, by decide⟩) -
+          (show ZMod 2 from faces ⟨0, by decide⟩)
+    | succ _ =>
+        change ZMod 2
+        exact 0
+  combineFaces_zero := by
+    intro n simplex
+    cases n with
+    | zero =>
+        cases simplex
+        rfl
+    | succ n =>
+        cases n with
+        | zero => exact Empty.elim simplex
+        | succ _ => exact Empty.elim simplex
+
+/-- The actual two-patch `ZMod 2` Čech differential: right restriction minus left restriction. -/
+def twoPatchZMod2CechDifferential :
+    ∀ n : Nat,
+      Site.FinitePosetCechCochain twoPatchZMod2FinitePosetRegime n ->
+        Site.FinitePosetCechCochain twoPatchZMod2FinitePosetRegime (n + 1)
+  | 0, cochain, _simplex =>
+      (show ZMod 2 from cochain TwoPatchCoverIndex.right) -
+        (show ZMod 2 from cochain TwoPatchCoverIndex.left)
+  | _ + 1, _cochain, simplex => Empty.elim simplex
+
+/-- Actual `ZMod 2` Čech complex on the selected two-patch AAT site. -/
+def twoPatchZMod2CechComplex :
+    Site.FinitePosetCechComplex twoPatchZMod2FinitePosetRegime where
+  additive := twoPatchZMod2CechAdditiveData
+  faces := {
+    face := by
+      intro n simplex i
+      cases n with
+      | zero => exact if i.val = 0 then TwoPatchCoverIndex.left else TwoPatchCoverIndex.right
+      | succ n =>
+          cases n with
+          | zero => exact Empty.elim simplex
+          | succ _ => exact Empty.elim simplex
+    faceOverlap_le := by
+      intro n simplex i
+      cases n with
+      | zero =>
+          change twoPatchContextPreorder.le
+            (twoPatchContext TwoPatchContextIndex.overlap)
+            (twoPatchSimplexOverlap 0
+              (if i.val = 0 then TwoPatchCoverIndex.left else TwoPatchCoverIndex.right))
+          exact ⟨twoPatchContextMorphism _ _, twoPatchContextMorphism_isRestriction _ _⟩
+      | succ n =>
+          cases n with
+          | zero => exact Empty.elim simplex
+          | succ _ => exact Empty.elim simplex }
+  differential := twoPatchZMod2CechDifferential
+  differential_eq_restrictions := by
+    intro n cochain simplex
+    cases n with
+    | zero =>
+        cases simplex
+        change
+          ((show ZMod 2 from cochain TwoPatchCoverIndex.right) -
+              (show ZMod 2 from cochain TwoPatchCoverIndex.left)) =
+            ((show ZMod 2 from cochain TwoPatchCoverIndex.right) -
+              (show ZMod 2 from cochain TwoPatchCoverIndex.left))
         rfl
     | succ n =>
         cases n with

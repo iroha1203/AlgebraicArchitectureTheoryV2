@@ -80,8 +80,8 @@ structure ForceIntegrationData {U : AtomCarrier.{u}} {A : ArchitectureObject U}
   replayData : ReplayDescentData St coefficient globalTemporalLaw
   descentCriterion : TemporalDescentCriterion replayData
   globalReplayTransition : replayData.GlobalReplayTransition
-  replaySource_eq : F.source = (replayData.sourceTrace, replayData.cover.baseContext)
-  replayTarget_eq : F.target = (replayData.targetTrace, replayData.cover.baseContext)
+  replaySource_eq : F.source = (replayData.raw.sourceTrace, replayData.cover.baseContext)
+  replayTarget_eq : F.target = (replayData.raw.targetTrace, replayData.cover.baseContext)
   globalReplay_hits_force :
     globalReplayTransition (replaySource_eq ▸ F.sourceState) =
       (replayTarget_eq ▸ F.targetState)
@@ -128,10 +128,10 @@ theorem descends_to_global_temporal_law (D : ForceIntegrationData F) :
     D.descendsToGlobalTemporalLaw :=
   D.descendsToGlobalTemporalLaw_cert
 
-/-- IX.定義7.1 / AC18: the R5 theorem-4.2 package yields a global replay transition. -/
+/-- IX.定義7.1 / AC18: the R5 theorem-4.2 package yields a global replay section. -/
 theorem temporal_descent_criterion_holds (D : ForceIntegrationData F) :
-    Nonempty D.replayData.GlobalReplayTransition :=
-  D.descentCriterion.temporal_descent_criterion
+    Nonempty D.replayData.GlobalReplaySection :=
+  D.descentCriterion.temporal_descent_section_criterion
 
 /--
 IX.定義7.1 / AC18: the selected global replay transition realizes the force on
