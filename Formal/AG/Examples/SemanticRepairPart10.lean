@@ -154,6 +154,26 @@ def boundaryAdditiveData :
   boundaryRelation := boundaryRelationData
   additive := semanticAdditiveData
 
+/--
+X.定理3.5: the lawful-firing fixture instantiates the complete-support
+boundary class; its primitives all carry the full Λ-support, so closure is
+generated rather than assumed.
+-/
+def boundaryRelationCompleteSupportClass :
+    CompleteSupportBoundaryComplex :=
+  CompleteSupportBoundaryComplex.ofFullSupport
+    ((boundaryRelationData :
+        SemanticRepairCoverH1BoundaryRelationAbelianData.{0, 0, 0, 0, 0, 0}
+          semanticProjection).toFiniteGluingComplex)
+    (fun _ => rfl)
+
+/-- X.定理3.5: the descent equivalence fires on the complete-support fixture. -/
+theorem boundaryRelationCompleteSupport_descent_iff :
+    GlobalSemanticRepairCoherent boundaryRelationCompleteSupportClass.K <->
+      ObstructionClassVanishes boundaryRelationCompleteSupportClass.K :=
+  finiteSemanticRepairGluingDescent_iff_of_completeSupportBoundary
+    boundaryRelationCompleteSupportClass
+
 /-- X.例9.1: cover-relative singleton cover for the concrete Cech complex. -/
 def coverRelativeCover :
     Cohomology.CoverRelativeCechCover FiniteModel.site where
@@ -3168,8 +3188,8 @@ theorem zmodTwoTorsor_tripleCocycle012_eq :
 
 /-- The additive gauge torsor is obtained from the selected H1-zero proof. -/
 theorem zmodTwoTorsor_regularTorsor :
-    zmodTwoTorsorData.NonabelianTorsorTrivial :=
-  zmodTwoTorsorData.nonabelianTorsorTrivial_of_additiveH1Zero
+    zmodTwoTorsorData.AdditiveTorsorTrivial :=
+  zmodTwoTorsorData.additiveTorsorTrivial_of_additiveH1Zero
 
 /-- The higher coherence theorem is facewise on the displayed realization. -/
 theorem zmodTwoTorsor_higherCoherence :

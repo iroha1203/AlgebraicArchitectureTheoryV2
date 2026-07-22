@@ -284,6 +284,15 @@ def semanticRepairDefinition31FullFixtureFaithfulness :=
 def semanticRepairDefinition31FullFiniteFixture :=
   @SemanticRepair.FullFiniteGluingComplexExample.finiteSemanticRepairGluingDescent_iff
 
+def semanticRepairTheorem35CompleteSupportTopClosure :=
+  @SemanticRepair.semanticRepairClosed_top
+
+def semanticRepairTheorem35CompleteSupportFullSupportClass :=
+  @SemanticRepair.CompleteSupportBoundaryComplex.ofFullSupport
+
+def semanticRepairTheorem35CompleteSupportFixtureDescent :=
+  Examples.SemanticRepairPart10.boundaryRelationCompleteSupport_descent_iff
+
 def semanticRepairTheorem48TrueSheafH1Gluing :=
   @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.globalRepairCoherent_iff_additiveH1Zero
 
@@ -630,7 +639,7 @@ def semanticRepairTheorem48AdditiveGaugeAction :=
 
 /-- Kernel-audit alias for the Part X torsor-triviality theorem. -/
 def semanticRepairTheorem48TorsorTriviality :=
-  @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.nonabelianTorsorTrivial_of_additiveH1Zero
+  @SemanticRepair.SemanticRepairCoverH1BoundaryRelationAdditiveData.additiveTorsorTrivial_of_additiveH1Zero
 
 /-- Kernel-audit alias for the Part X facewise higher-coherence construction. -/
 def semanticRepairTheorem48HigherCoherenceWitness :=

@@ -1024,7 +1024,7 @@ Part IV torsor layer in the additive specialization: a chosen H1-zero proof
 produces a pointed torsor under the explicit gauge group.  This does not claim
 triviality for an arbitrary nonadditive torsor.
 -/
-def NonabelianTorsorTrivial
+def AdditiveTorsorTrivial
     {P : SemanticAtomProjection.{u, v}}
     (data :
       SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P) :
@@ -1038,11 +1038,11 @@ def NonabelianTorsorTrivial
           data.additiveRepairGaugeAction gauge origin = target
 
 /-- The H1-zero proof supplies the pointed additive torsor. -/
-theorem nonabelianTorsorTrivial_of_additiveH1Zero
+theorem additiveTorsorTrivial_of_additiveH1Zero
     {P : SemanticAtomProjection.{u, v}}
     (data :
       SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P) :
-    data.NonabelianTorsorTrivial := by
+    data.AdditiveTorsorTrivial := by
   letI := data.additive.c0AddCommGroup
   letI := data.additive.c1AddCommGroup
   intro hzero
@@ -1885,7 +1885,7 @@ theorem trueSheafH1SemanticRepairGluing_boundaryRelationAdditive_package
       (data.toAdditiveCechH1Data.H1Zero <->
         CechB1 data.boundaryRelation.cech
           data.boundaryRelation.cech.residual) /\
-      NonabelianTorsorTrivial data := by
+      AdditiveTorsorTrivial data := by
   exact
     ⟨coverSheafConditionFor_of_trueSheafCertificate certificate,
       coverDescent_of_trueSheafCertificate certificate,
@@ -1893,7 +1893,7 @@ theorem trueSheafH1SemanticRepairGluing_boundaryRelationAdditive_package
       data.boundaryRelation.cech.delta1_delta0_eq_zero,
       globalRepairCoherent_iff_additiveH1Zero data,
       data.toAdditiveCechH1Data.h1Zero_iff_boundary,
-      nonabelianTorsorTrivial_of_additiveH1Zero data⟩
+      additiveTorsorTrivial_of_additiveH1Zero data⟩
 
 end SemanticRepairCoverH1BoundaryRelationAdditiveData
 
