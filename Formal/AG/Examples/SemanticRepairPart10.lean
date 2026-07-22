@@ -3461,6 +3461,299 @@ theorem circle_boundaryComparison_counterexample_packet :
     lawfulCoarse_carrier_nondegenerate,
     circleRefinementZeroComparison_not_unconditional_onCircle⟩
 
+/-!
+## #3720: faithfulness-discharging global coherence firing instance
+
+X.定理3.4(ii) / X.定理4.8 の sufficient direction は semantic faithfulness を
+仮定として消費する。既存の発火 instance では、この放電が singleton 系の
+`supportOf _ := fun _ => True`(自明放電)か、circle 系の境界 primitive 不在
+による空虚放電(`False.elim`)に退化していた。この節は X.例2.6 の alias
+射影の担体を再利用し、faithfulness が実質的に効く正の発火 instance と、
+同一担体上で faithfulness が破れて global coherence が失敗する負例を対で
+構成する。
+
+* holonomy support を `shared` 成分に絞った cover の下で、residual atom は
+  alias fiber `{s, o}` になる。
+* 正例: fiber-closed support `π⁻¹(shared)`(`t` を含まない — `True` 充填では
+  ない)は component coverage と faithfulness を実証明で満たし、X.補題2.5 を
+  経由して semantic closure が導出される。faithfulness の証明は projection
+  等式を実際に使う(`False.elim` を経由しない)。
+* 境界 primitive は実在し(`delta0 1 = residual`)、residual は非零 cochain
+  (`1 ≠ 0` in `F₂`)。X.定理4.8 の additive 経路(`H1Zero` →
+  `GlobalRepairCoherent`)が発火する。
+* 負例: 同じ cover 上の狭い support `{s}` は component coverage を満たすが
+  faithfulness が alias pair `(o, s)` で破れ(X.例2.6 と同じ機構)、semantic
+  closure が失敗し、その supportOf を持つ gluing complex では global
+  semantic repair coherence が成立しない。
+-/
+
+/--
+#3720: cover datum on the X.例2.6 alias projection whose holonomy support
+selects only the `shared` component, so the residual atoms are exactly the
+alias fiber `{s, o}`.
+-/
+def sharedAliasCover :
+    FiniteSemanticRepairCoverDatum
+      CoverageWithoutFaithfulness.Component where
+  Chart := PUnit
+  Transition := PUnit
+  chartFinite := inferInstance
+  transitionFinite := inferInstance
+  holonomySupport
+    | CoverageWithoutFaithfulness.Component.trace => False
+    | CoverageWithoutFaithfulness.Component.shared => True
+
+/--
+#3720: the fiber-closed support `π⁻¹(shared)`.  It contains `s` and `o` but
+not `t`, so it is not a `True`-filled support.
+-/
+def aliasSharedFiberSupport : CoverageWithoutFaithfulness.projection.Support :=
+  fun atom =>
+    CoverageWithoutFaithfulness.projection.project atom =
+      CoverageWithoutFaithfulness.Component.shared
+
+/-- #3720: the narrow support `{s}` used by the paired negative example. -/
+def aliasNarrowSupport : CoverageWithoutFaithfulness.projection.Support :=
+  fun atom => atom = CoverageWithoutFaithfulness.Atom.s
+
+/-- #3720: the fiber-closed support does not read the trace atom `t`. -/
+theorem aliasSharedFiberSupport_not_trivial :
+    ¬ aliasSharedFiberSupport CoverageWithoutFaithfulness.Atom.t := by
+  intro h
+  have h' :
+      CoverageWithoutFaithfulness.Component.trace =
+        CoverageWithoutFaithfulness.Component.shared := h
+  exact absurd h' (by decide)
+
+/-- #3720: the fiber-closed support covers every residual component. -/
+theorem aliasSharedFiberSupport_covered :
+    ResidualComponentCoveredSupport CoverageWithoutFaithfulness.projection
+      sharedAliasCover aliasSharedFiberSupport := by
+  intro residual hresidual
+  cases residual with
+  | t => exact False.elim hresidual
+  | s => exact ⟨CoverageWithoutFaithfulness.Atom.s, rfl, rfl⟩
+  | o => exact ⟨CoverageWithoutFaithfulness.Atom.o, rfl, rfl⟩
+
+/--
+#3720: the fiber-closed support is component-faithful.  The proof genuinely
+uses the projection equality: a candidate in the support projects to
+`shared`, so the residual sharing its component projects to `shared` as well
+and therefore lies in the fiber support.  No `False.elim` is involved.
+-/
+theorem aliasSharedFiberSupport_faithful :
+    ResidualComponentFaithfulSupport CoverageWithoutFaithfulness.projection
+      sharedAliasCover aliasSharedFiberSupport := by
+  intro residual candidate _hresidual hcandidate hprojection
+  exact hprojection.symm.trans hcandidate
+
+/--
+#3720: semantic closure of the fiber-closed support, derived through
+X.補題2.5 from coverage and faithfulness — faithfulness genuinely enters the
+closure derivation.
+-/
+theorem aliasSharedFiberSupport_closed :
+    SemanticRepairClosed CoverageWithoutFaithfulness.projection
+      sharedAliasCover aliasSharedFiberSupport :=
+  (semanticRepairClosed_iff_residualComponentCovered_and_faithful).mpr
+    ⟨aliasSharedFiberSupport_covered, aliasSharedFiberSupport_faithful⟩
+
+/-- #3720: singleton semantic repair cover over the shared-alias cover datum. -/
+def aliasSemanticCover :
+    SemanticRepairCover CoverageWithoutFaithfulness.projection where
+  baseCover := sharedAliasCover
+  CoverChart := PUnit
+  chart _ := PUnit.unit
+  chartInjective := fun _ _ _ => Subsingleton.elim _ _
+  chartFinite := inferInstance
+  Overlap := fun _ _ => PUnit
+  overlapFinite := fun _ _ => inferInstance
+  TripleOverlap := fun _ _ _ => PUnit
+  tripleFinite := fun _ _ _ => inferInstance
+  tripleEdge01 := fun _ => PUnit.unit
+  tripleEdge12 := fun _ => PUnit.unit
+  tripleEdge02 := fun _ => PUnit.unit
+  selectedOverlap := fun _ _ => PUnit.unit
+  selectedTriple := fun _ _ _ => PUnit.unit
+  selectedOverlap_eq_tripleEdge01 := fun _ _ _ => rfl
+  selectedOverlap_eq_tripleEdge12 := fun _ _ _ => rfl
+  selectedOverlap_eq_tripleEdge02 := fun _ _ _ => rfl
+
+/--
+#3720: `F₂` Cech data with identity `delta0` and nonzero residual `1`.  The
+residual is a genuine boundary (`delta0 1 = 1`), so a boundary primitive
+exists and is nonzero — the firing is neither vacuous nor zero-residual.
+-/
+def aliasCechData : SemanticRepairCoverCechData aliasSemanticCover where
+  C0 := ZMod 2
+  C1 := ZMod 2
+  C2 := ZMod 2
+  c0Finite := inferInstance
+  c1Finite := inferInstance
+  zero1 := 0
+  zero2 := 0
+  delta0 := id
+  delta1 _ := 0
+  residual := 1
+  zero1_cocycle := rfl
+  delta1_delta0_eq_zero := fun _ => rfl
+  residual_cocycle := rfl
+
+/-- #3720: additive laws for the alias `F₂` Cech data. -/
+def aliasAdditiveData : SemanticRepairAdditiveCechH1Data aliasCechData where
+  c0AddCommGroup := by
+    change AddCommGroup (ZMod 2)
+    infer_instance
+  c1AddCommGroup := by
+    change AddCommGroup (ZMod 2)
+    infer_instance
+  zero1_eq_zero := rfl
+  delta0_zero := rfl
+  delta0_add := fun _ _ => rfl
+  delta0_neg := fun _ => rfl
+
+/--
+#3720: boundary-relation data whose `supportOf` is the fiber-closed support —
+not a `True`-filled slot — and whose coverage / faithfulness fields are
+discharged by the real proofs above (no `False.elim`).
+-/
+def aliasBoundaryRelationData :
+    SemanticRepairCoverH1BoundaryRelationAbelianData
+      CoverageWithoutFaithfulness.projection where
+  cover := aliasSemanticCover
+  cech := aliasCechData
+  supportOf _ := aliasSharedFiberSupport
+  component_covered_of_boundary := fun _ _ => aliasSharedFiberSupport_covered
+  component_faithful_of_boundary := fun _ _ => aliasSharedFiberSupport_faithful
+
+/-- #3720: additive boundary-relation data for the alias firing instance. -/
+def aliasBoundaryAdditiveData :
+    SemanticRepairCoverH1BoundaryRelationAdditiveData
+      CoverageWithoutFaithfulness.projection where
+  boundaryRelation := aliasBoundaryRelationData
+  additive := aliasAdditiveData
+
+/-- #3720: the nonzero residual is a boundary, so the additive `H¹` class vanishes. -/
+theorem aliasFiring_h1Zero : aliasAdditiveData.H1Zero :=
+  aliasAdditiveData.h1Zero_iff_boundary.mpr ⟨(1 : ZMod 2), rfl⟩
+
+/-- #3720: general `P`/`Q` faithfulness data generated from the component bridge. -/
+def aliasFaithfulnessData :
+    SemanticRepairCoverH1FaithfulnessData
+      CoverageWithoutFaithfulness.projection :=
+  aliasBoundaryRelationData.toFaithfulnessData (0 : ZMod 2) rfl
+
+/-- #3720: the X.定理4.8 additive faithfulness package for the alias instance. -/
+def aliasAdditiveFaithfulnessData :
+    SemanticRepairCoverH1AdditiveFaithfulnessData
+      CoverageWithoutFaithfulness.projection where
+  faithfulness := aliasFaithfulnessData
+  additive := aliasAdditiveData
+
+/--
+#3720: X.定理4.8 fires — the vanishing additive `H¹` class yields global
+repair coherence through the genuinely discharged faithfulness law.
+-/
+theorem aliasFiring_globalRepairCoherent :
+    aliasFaithfulnessData.GlobalRepairCoherent :=
+  aliasAdditiveFaithfulnessData.globalRepairCoherent_of_additiveH1Zero
+    aliasFiring_h1Zero
+
+/--
+#3720: the derived coherence is exactly the support-based global semantic
+repair coherence of the alias gluing complex (X.定理3.4(ii) reading).
+-/
+theorem aliasFiring_globalSemanticRepairCoherent :
+    GlobalSemanticRepairCoherent
+      aliasBoundaryRelationData.toFiniteGluingComplex :=
+  (aliasBoundaryRelationData.toFaithfulnessData_globalRepairCoherent_iff
+    (0 : ZMod 2) rfl).mp aliasFiring_globalRepairCoherent
+
+/-- #3720: the narrow support still covers every residual component. -/
+theorem aliasNarrowSupport_covered :
+    ResidualComponentCoveredSupport CoverageWithoutFaithfulness.projection
+      sharedAliasCover aliasNarrowSupport := by
+  intro residual hresidual
+  cases residual with
+  | t => exact False.elim hresidual
+  | s => exact ⟨CoverageWithoutFaithfulness.Atom.s, rfl, rfl⟩
+  | o => exact ⟨CoverageWithoutFaithfulness.Atom.s, rfl, rfl⟩
+
+/--
+#3720 (paired negative): the narrow support is not component-faithful — the
+alias pair `(o, s)` breaks faithfulness exactly as in X.例2.6.
+-/
+theorem aliasNarrowSupport_not_faithful :
+    ¬ ResidualComponentFaithfulSupport CoverageWithoutFaithfulness.projection
+      sharedAliasCover aliasNarrowSupport := by
+  intro hfaithful
+  have ho :
+      CoverageWithoutFaithfulness.Atom.o = CoverageWithoutFaithfulness.Atom.s :=
+    hfaithful CoverageWithoutFaithfulness.Atom.o
+      CoverageWithoutFaithfulness.Atom.s True.intro rfl rfl
+  exact absurd ho (by decide)
+
+/-- #3720 (paired negative): the narrow support is not semantically closed. -/
+theorem aliasNarrowSupport_not_closed :
+    ¬ SemanticRepairClosed CoverageWithoutFaithfulness.projection
+      sharedAliasCover aliasNarrowSupport := by
+  intro hclosed
+  have ho :
+      CoverageWithoutFaithfulness.Atom.o = CoverageWithoutFaithfulness.Atom.s :=
+    hclosed CoverageWithoutFaithfulness.Atom.o True.intro
+  exact absurd ho (by decide)
+
+/--
+#3720 (paired negative): the alias gluing complex whose `supportOf` is the
+narrow support.  Same projection, cover, cochain carriers, differential, and
+residual as the positive instance — only the support assignment differs.
+-/
+def aliasNarrowGluingComplex : FiniteSemanticRepairGluingComplex where
+  projection := CoverageWithoutFaithfulness.projection
+  cover := sharedAliasCover
+  C0 := ZMod 2
+  C1 := ZMod 2
+  primitiveFinite := inferInstance
+  cochainFinite := inferInstance
+  supportOf _ := aliasNarrowSupport
+  delta0 := id
+  residual := 1
+
+/--
+#3720 (paired negative): with the narrow support, global semantic repair
+coherence fails — faithfulness has genuine discriminating power on this
+carrier: the same complex fires with the fiber-closed support and fails with
+the narrow one.
+-/
+theorem aliasNarrow_globalCoherence_fails :
+    ¬ GlobalSemanticRepairCoherent aliasNarrowGluingComplex := by
+  rintro ⟨_primitive, _hboundary, hclosed⟩
+  exact aliasNarrowSupport_not_closed hclosed
+
+/--
+#3720 summary packet: the boundary primitive exists and the residual is a
+nonzero cochain, the fiber-closed support excludes `t` (not `True`-filled),
+X.定理4.8 fires to global coherence, and the paired narrow support is
+covered but unfaithful and fails global coherence.
+-/
+theorem aliasFiring_faithfulness_discharge_packet :
+    (aliasCechData.delta0 (1 : ZMod 2) = aliasCechData.residual) ∧
+      aliasCechData.residual ≠ aliasCechData.zero1 ∧
+      ¬ aliasSharedFiberSupport CoverageWithoutFaithfulness.Atom.t ∧
+      aliasAdditiveData.H1Zero ∧
+      aliasFaithfulnessData.GlobalRepairCoherent ∧
+      GlobalSemanticRepairCoherent
+        aliasBoundaryRelationData.toFiniteGluingComplex ∧
+      ResidualComponentCoveredSupport CoverageWithoutFaithfulness.projection
+        sharedAliasCover aliasNarrowSupport ∧
+      ¬ ResidualComponentFaithfulSupport CoverageWithoutFaithfulness.projection
+        sharedAliasCover aliasNarrowSupport ∧
+      ¬ GlobalSemanticRepairCoherent aliasNarrowGluingComplex :=
+  ⟨rfl, (by decide : (1 : ZMod 2) ≠ 0), aliasSharedFiberSupport_not_trivial,
+    aliasFiring_h1Zero, aliasFiring_globalRepairCoherent,
+    aliasFiring_globalSemanticRepairCoherent, aliasNarrowSupport_covered,
+    aliasNarrowSupport_not_faithful, aliasNarrow_globalCoherence_fails⟩
+
 end SemanticRepairPart10
 end Examples
 end AAT.AG

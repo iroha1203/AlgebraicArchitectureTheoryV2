@@ -842,6 +842,43 @@ def semanticRepairIssue3722CoarseCarrierNondegenerate :=
 def semanticRepairIssue3722CircleCounterexamplePacket :=
   AAT.AG.Examples.SemanticRepairPart10.circle_boundaryComparison_counterexample_packet
 
+/-- Kernel-audit entries for the #3720 faithfulness-discharging firing instance. -/
+def semanticRepairIssue3720FiberSupportNotTrivial :=
+  AAT.AG.Examples.SemanticRepairPart10.aliasSharedFiberSupport_not_trivial
+
+def semanticRepairIssue3720FiberSupportCovered :=
+  AAT.AG.Examples.SemanticRepairPart10.aliasSharedFiberSupport_covered
+
+def semanticRepairIssue3720FiberSupportFaithful :=
+  AAT.AG.Examples.SemanticRepairPart10.aliasSharedFiberSupport_faithful
+
+def semanticRepairIssue3720FiberSupportClosed :=
+  AAT.AG.Examples.SemanticRepairPart10.aliasSharedFiberSupport_closed
+
+def semanticRepairIssue3720H1Zero :=
+  AAT.AG.Examples.SemanticRepairPart10.aliasFiring_h1Zero
+
+def semanticRepairIssue3720GlobalRepairCoherent :=
+  AAT.AG.Examples.SemanticRepairPart10.aliasFiring_globalRepairCoherent
+
+def semanticRepairIssue3720GlobalSemanticRepairCoherent :=
+  AAT.AG.Examples.SemanticRepairPart10.aliasFiring_globalSemanticRepairCoherent
+
+def semanticRepairIssue3720NarrowSupportCovered :=
+  AAT.AG.Examples.SemanticRepairPart10.aliasNarrowSupport_covered
+
+def semanticRepairIssue3720NarrowSupportNotFaithful :=
+  AAT.AG.Examples.SemanticRepairPart10.aliasNarrowSupport_not_faithful
+
+def semanticRepairIssue3720NarrowSupportNotClosed :=
+  AAT.AG.Examples.SemanticRepairPart10.aliasNarrowSupport_not_closed
+
+def semanticRepairIssue3720NarrowGlobalCoherenceFails :=
+  AAT.AG.Examples.SemanticRepairPart10.aliasNarrow_globalCoherence_fails
+
+def semanticRepairIssue3720FaithfulnessDischargePacket :=
+  AAT.AG.Examples.SemanticRepairPart10.aliasFiring_faithfulness_discharge_packet
+
 theorem boundaryCocycleNonzero :
     Cohomology.FiniteExamples.PseudoCircleGolden.boundaryCocycle
         Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.AB ≠ 0 :=
