@@ -1,5 +1,6 @@
 import Formal.AG
 import Formal.AG.SemanticRepair.AdditiveH1
+import Formal.AG.SemanticRepair.Examples
 import Formal.AG.SemanticRepair.LawEquationGeneratedPair
 import Formal.AG.Examples.SemanticRepairPart10
 import Formal.AG.Examples.DerivedPart5
@@ -300,6 +301,42 @@ def semanticRepairTheorem48GeneralFaithfulnessSufficiency :=
 
 def semanticRepairTheorem72H1ComparisonPackage :=
   @SemanticRepair.SemanticRepairCoverRelativeH1Comparison.semanticRepairAdditiveH1_coverRelativeH1_comparison_package
+
+def semanticRepairTheorem72H1AddEquiv :=
+  @SemanticRepair.SemanticRepairCoverRelativeH1Comparison.semanticRepairAdditiveH1_addEquiv_additiveCechH1
+
+def semanticRepairTheorem72H1ZeroIffFromAddEquiv :=
+  @SemanticRepair.SemanticRepairCoverRelativeH1Comparison.semanticRepairAdditiveH1Zero_iff_coverRelativeH1Zero_of_addEquiv
+
+def semanticRepairTheorem72CocycleMembershipIff :=
+  @SemanticRepair.SemanticRepairCoverRelativeH1Comparison.delta1_eq_zero2_iff
+
+def semanticRepairTheorem72CocycleAddCommGroup :=
+  @SemanticRepair.SemanticRepairCoverRelativeH1Comparison.cocycleAddCommGroup
+
+def semanticRepairTheorem72H1AddCommGroup :=
+  @SemanticRepair.SemanticRepairCoverRelativeH1Comparison.h1AddCommGroup
+
+def semanticRepairTheorem72ZeroClassEqZero :=
+  @SemanticRepair.SemanticRepairCoverRelativeH1Comparison.zeroClass_eq_zero
+
+def semanticRepairTheorem72H1ZeroIffResidualClassEqZero :=
+  @SemanticRepair.SemanticRepairCoverRelativeH1Comparison.h1Zero_iff_residualClass_eq_zero
+
+def semanticRepairTheorem72H1ZeroIffAddEquivResidualEqZero :=
+  @SemanticRepair.SemanticRepairCoverRelativeH1Comparison.h1Zero_iff_addEquiv_residualClass_eq_zero
+
+def semanticRepairTheorem72SurfaceDelta0Nsmul :=
+  @SemanticRepair.SemanticRepairAdditiveH1Surface.delta0_nsmul
+
+def semanticRepairTheorem72SurfaceDelta0Zsmul :=
+  @SemanticRepair.SemanticRepairAdditiveH1Surface.delta0_zsmul
+
+def semanticRepairTheorem72AdditiveCechH1ClassAddOfVal :=
+  @Cohomology.CoverRelativeCechComplex.additiveH1Class_add_of_val
+
+def semanticRepairTheorem72LegacyCechH1EquivAdditive :=
+  @Cohomology.CoverRelativeCechComplex.legacyCechH1EquivAdditiveCechH1
 
 def semanticRepairTheorem73GroundedGlobalGluingPackage :=
   @SemanticRepair.trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package
@@ -2151,11 +2188,11 @@ theorem canonicalTupleStandardFinitePosetCechComplexDComp
     tupleGeometry Ob
 
 theorem coverNerveTopologicalDebtCapacityFromComplex
-    {N : Cohomology.CoverNerve}
-    (D : Cohomology.FiniteNerveCochainComplex N) :
-    Module.finrank D.k D.C1 <=
-      Module.finrank D.k D.H1 + Module.finrank D.k D.C0 +
-        Module.finrank D.k D.C2 :=
+    {N : Cohomology.CoverNerve} {k : Type} [Field k]
+    (D : Cohomology.FiniteNerveCochainComplex N k) :
+    Module.finrank k D.C1 <=
+      Module.finrank k D.H1 + Module.finrank k D.C0 +
+        Module.finrank k D.C2 :=
   Cohomology.FiniteNerveCochainComplex.topologicalDebtCapacity_fromComplex D
 
 theorem boundaryResidueTwoChartBoundaryAgreementSoundness
@@ -2216,28 +2253,96 @@ theorem finiteIntervalStokesBasis
         (AAT.AG.Cohomology.IntervalBasisStokes.boundary0 γ) :=
   AAT.AG.Cohomology.IntervalBasisStokes.finiteIntervalStokes_basis ω γ
 
-theorem gagaLowDegreePeriodStokesAccountingAdditive
-    (x y :
-      Measurement.lowDegreePeriodStokesTheoremPackage.extensionAccounting.ExtensionEvent) :
-    Measurement.lowDegreePeriodStokesTheoremPackage.extensionAccounting.kappa_U (x + y) =
-      Measurement.lowDegreePeriodStokesTheoremPackage.extensionAccounting.kappa_U x +
-        Measurement.lowDegreePeriodStokesTheoremPackage.extensionAccounting.kappa_U y :=
-  Measurement.lowDegreePeriodStokesTheoremPackage.period_stokes_accounting_additive x y
+theorem gagaLowDegreePeriodStokes :
+    Measurement.AATGAGARealCechHodgeInput.periodStokesStatement
+      Measurement.gagaRealHodgeInput :=
+  Measurement.AATGAGARealCechHodgeInput.periodStokesStatement_holds
+    Measurement.gagaRealHodgeInput
+
+theorem gagaLowDegreeHodgeStatement :
+    Measurement.AATGAGARealCechHodgeInput.hodgeStatement
+      Measurement.gagaRealHodgeInput :=
+  Measurement.AATGAGARealCechHodgeInput.hodgeStatement_holds
+    Measurement.gagaRealHodgeInput
 
 theorem gagaLowDegreeTopologicalDebtCapacityFromComplex :
-    Module.finrank
-        Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.k
-        Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.C1 <=
-      Module.finrank
-          Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.k
-          Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.H1 +
-        Module.finrank
-          Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.k
-          Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.C0 +
-          Module.finrank
-            Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.k
-            Measurement.lowDegreeTopologicalDebtTheoremPackage.nerveComplex.C2 :=
-  Measurement.lowDegreeTopologicalDebtTheoremPackage.topological_debt_capacity_from_complex
+    Measurement.AATGAGAFiniteCechSource.topologicalCapacityStatement
+      Measurement.gagaFiniteCechSource :=
+  Measurement.AATGAGAFiniteCechSource.topologicalCapacityStatement_holds
+    Measurement.gagaFiniteCechSource
+
+/-! Kernel-audit inventory for theorem 12.3 derived GAGA comparison. -/
+
+/-- Direct audit entry for the generated-source Hodge/cohomology comparison. -/
+theorem gagaSelectedHodge :
+    ∃ h, h = @Measurement.AATGAGASelectedFiniteHodgeData.harmonicKernelIdentifiesCohomology_holds :=
+  ⟨@Measurement.AATGAGASelectedFiniteHodgeData.harmonicKernelIdentifiesCohomology_holds, rfl⟩
+
+/-- Direct audit entry for the additive canonical `H¹`/harmonic identification. -/
+theorem gagaSelectedCanonicalH1AddEquiv :
+    ∃ h, h =
+      @Measurement.AATGAGAAllDegreeRealCechHodgeInput.canonicalH1AddEquivLaplacianKernel :=
+  ⟨@Measurement.AATGAGAAllDegreeRealCechHodgeInput.canonicalH1AddEquivLaplacianKernel, rfl⟩
+
+/-- Direct audit entry for the generated-source finite Hodge decomposition. -/
+theorem gagaSelectedHodgeDecomposition :
+    ∃ h, h = @Measurement.AATGAGASelectedFiniteHodgeData.finiteHodgeDecomposition_holds :=
+  ⟨@Measurement.AATGAGASelectedFiniteHodgeData.finiteHodgeDecomposition_holds, rfl⟩
+
+/-- Direct audit entry for all-degree harmonic cohomology readings. -/
+theorem gagaSelectedAllDegreeHodge :
+    ∃ h, h = @Measurement.AATGAGASelectedFiniteHodgeData.allDegreeHodge_holds :=
+  ⟨@Measurement.AATGAGASelectedFiniteHodgeData.allDegreeHodge_holds, rfl⟩
+
+/-- Direct audit entry for all-degree Hodge decompositions. -/
+theorem gagaSelectedAllDegreeHodgeDecomposition :
+    ∃ h, h = @Measurement.AATGAGASelectedFiniteHodgeData.allDegreeDecomposition_holds :=
+  ⟨@Measurement.AATGAGASelectedFiniteHodgeData.allDegreeDecomposition_holds, rfl⟩
+
+/-- Direct audit entry for the source-to-real differential transport. -/
+theorem gagaSelectedAllDegreeSourceTransport :
+    ∃ h, h = @Measurement.AATGAGASelectedFiniteHodgeData.allDegreeDifferentialFromSource_holds :=
+  ⟨@Measurement.AATGAGASelectedFiniteHodgeData.allDegreeDifferentialFromSource_holds, rfl⟩
+
+/-- Direct audit entry for source-derived Period/Stokes. -/
+theorem gagaSelectedPeriodStokes :
+    ∃ h, h = @Measurement.SelectedPeriodStokesTheoremPackage.periodStokesStatement_holds :=
+  ⟨@Measurement.SelectedPeriodStokesTheoremPackage.periodStokesStatement_holds, rfl⟩
+
+/-- Direct audit entry for the selected finite-nerve capacity theorem. -/
+theorem gagaSelectedTopologicalCapacity :
+    ∃ h, h = @Measurement.SelectedTopologicalDebtTheoremPackage.topologicalCapacityStatement_holds :=
+  ⟨@Measurement.SelectedTopologicalDebtTheoremPackage.topologicalCapacityStatement_holds, rfl⟩
+
+/-- Direct audit entry for the selected LawConflict/Tor theorem. -/
+theorem gagaSelectedLawConflictTor :
+    ∃ h, h = @Measurement.AATGAGACommonFiniteData.lawConflictTorReading_holds :=
+  ⟨@Measurement.AATGAGACommonFiniteData.lawConflictTorReading_holds, rfl⟩
+
+/-- Direct audit entry for the generated-law all-degree Hilbert accounting. -/
+theorem gagaSelectedHilbertAccounting :
+    ∃ h, h = @Measurement.AATGAGACommonFiniteData.hilbertSeriesConflictStatement_holds :=
+  ⟨@Measurement.AATGAGACommonFiniteData.hilbertSeriesConflictStatement_holds, rfl⟩
+
+/-- Direct audit entry for all certified theorem-12.3 conjuncts. -/
+theorem gagaCertifiedComparisonStatement :
+    ∃ h, h = @Measurement.aatGAGACertifiedComparisonStatement_holds :=
+  ⟨@Measurement.aatGAGACertifiedComparisonStatement_holds, rfl⟩
+
+/-- Direct audit entry for raw-data comparison derivation. -/
+theorem gagaComparisonStatement :
+    ∃ h, h = @Measurement.aatGAGAComparisonStatement_holds :=
+  ⟨@Measurement.aatGAGAComparisonStatement_holds, rfl⟩
+
+/-- Direct audit entry for existence of the derived GAGA comparison. -/
+theorem gagaFiniteMeasurementComparison :
+    ∃ h, h = @Measurement.aatGAGAFiniteMeasurementComparison :=
+  ⟨@Measurement.aatGAGAFiniteMeasurementComparison, rfl⟩
+
+/-- Direct audit entry for the integrated finite GAGA fixture. -/
+theorem gagaIntegratedFiniteFixture :
+    ∃ h, h = @Measurement.measurementPacketGAGAExample_certifiedComparison :=
+  ⟨@Measurement.measurementPacketGAGAExample_certifiedComparison, rfl⟩
 
 theorem finiteForestEdgeAbsorptionVanishing
     {N : Cohomology.CoverNerve}

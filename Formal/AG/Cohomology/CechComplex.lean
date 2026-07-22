@@ -351,6 +351,70 @@ theorem cohomologyClassSucc_eq_iff_additiveH1Class_eq
   exact (K.additiveH1Class_eq_iff_legacy_setoid x y).symm
 
 /--
+R5 / IV-1: `additiveH1Class` is additive on cocycle values.  The hypothesis
+form (value-level sum) lets callers avoid an `Add` instance on the bare
+cocycle subtype.
+-/
+theorem additiveH1Class_add_of_val (K : CoverRelativeCechComplex 𝒰 Ob)
+    {c left right : K.CechCocycle 1}
+    (h :
+      letI := K.cochainAddCommGroup 1
+      c.1 = left.1 + right.1) :
+    K.additiveH1Class c = K.additiveH1Class left + K.additiveH1Class right := by
+  letI := K.cochainAddCommGroup 1
+  letI := K.additiveCochainAddCommGroup 0
+  letI := K.additiveCochainAddCommGroup 1
+  letI := K.additiveCochainAddCommGroup 2
+  have hsub :
+      (⟨c.1, c.2⟩ : K.CechCocycleSubgroup 1) =
+        (⟨left.1, left.2⟩ : K.CechCocycleSubgroup 1) +
+          (⟨right.1, right.2⟩ : K.CechCocycleSubgroup 1) := by
+    apply Subtype.ext
+    exact h
+  change ((⟨c.1, c.2⟩ : K.CechCocycleSubgroup 1) : K.AdditiveCechH1) = _
+  rw [hsub]
+  rfl
+
+/--
+R5 / IV-1: generated identification between the legacy degree-one quotient
+and its additive group reading.  Both quotients are taken along the same
+selected coboundary relation, so the identification is the identity on
+selected cocycles.
+-/
+def legacyCechH1EquivAdditiveCechH1 (K : CoverRelativeCechComplex 𝒰 Ob) :
+    K.CechCohomologySucc 0 ≃ K.AdditiveCechH1 where
+  toFun :=
+    Quotient.lift (fun c => K.additiveH1Class c)
+      (fun x y hxy => (K.additiveH1Class_eq_iff_legacy_setoid x y).2 hxy)
+  invFun :=
+    Quotient.lift
+      (fun c => K.cohomologyClassSucc 0 ⟨c.1, c.2⟩)
+      (by
+        letI := K.cochainAddCommGroup 0
+        letI := K.cochainAddCommGroup 1
+        letI := K.cochainAddCommGroup 2
+        letI := K.additiveCochainAddCommGroup 0
+        letI := K.additiveCochainAddCommGroup 1
+        letI := K.additiveCochainAddCommGroup 2
+        intro x y hxy
+        have hmem := QuotientAddGroup.leftRel_apply.1 hxy
+        rcases hmem with ⟨b, hb⟩
+        have hval : -x.1 + y.1 = K.d 0 b := congrArg Subtype.val hb
+        refine Quotient.sound ⟨-b, ?_⟩
+        rw [map_neg, ← hval]
+        abel)
+  left_inv := by
+    intro h
+    refine Quotient.inductionOn h ?_
+    intro c
+    rfl
+  right_inv := by
+    intro h
+    refine Quotient.inductionOn h ?_
+    intro c
+    rfl
+
+/--
 IV.R2 frontier: finite-poset comparison witness for a general Čech complex.
 
 The actual Part II comparison theorem is intentionally left for the R2 issue.

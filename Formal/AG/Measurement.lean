@@ -14,3 +14,4 @@ import Formal.AG.Measurement.SupportTransfer
 import Formal.AG.Measurement.Packet
 import Formal.AG.Measurement.GAGA
 import Formal.AG.Measurement.Examples
+import Formal.AG.Measurement.StatementContractsGAGA
