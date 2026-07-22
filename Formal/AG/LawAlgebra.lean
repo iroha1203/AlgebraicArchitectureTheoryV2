@@ -17,4 +17,5 @@ import Formal.AG.LawAlgebra.RawPresheafFiniteExample
 import Formal.AG.LawAlgebra.RingedSiteFiniteExample
 import Formal.AG.LawAlgebra.StandardSchemeFiniteExample
 import Formal.AG.LawAlgebra.ClosedEquationalGeometry
+import Formal.AG.LawAlgebra.ClosedEquationalGeometryLegacy
 import Formal.AG.LawAlgebra.ClosedEquationalGeometryFiniteExample

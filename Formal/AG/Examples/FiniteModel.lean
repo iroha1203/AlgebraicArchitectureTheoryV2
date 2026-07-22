@@ -1,4 +1,5 @@
 import Formal.AG.Atom.AATCore
+import Formal.AG.Atom.ObstructionLegacy
 import Formal.AG.Atom.LawfulnessZero
 import Formal.AG.Atom.ThreeReading
 import Formal.AG.Site.FinitePoset
@@ -207,19 +208,24 @@ def acyclicObject : ArchitectureObject carrier where
   structureMaps := PUnit.unit
   selectedQuantities := PUnit.unit
 
+/-- The concrete three-edge dependency cycle detected by the finite fixture. -/
+def hasDependencyCycle (A : ArchitectureObject carrier) : Prop :=
+  A.configuration.relation FiniteAtom.dependsAB FiniteAtom.dependsBC ∧
+    A.configuration.relation FiniteAtom.dependsBC FiniteAtom.dependsCA ∧
+      A.configuration.relation FiniteAtom.dependsCA FiniteAtom.dependsAB
+
 /-- R10 / example 7.4: selected NoCycle law on the finite model. -/
 def noCycleLaw : Law carrier where
-  holds A := ¬
-    (A.configuration.relation FiniteAtom.dependsAB FiniteAtom.dependsBC ∧
-      A.configuration.relation FiniteAtom.dependsBC FiniteAtom.dependsCA ∧
-        A.configuration.relation FiniteAtom.dependsCA FiniteAtom.dependsAB)
+  holds A := ¬ hasDependencyCycle A
+
+/-- The concrete substitution conflict detected by the finite fixture. -/
+def hasSubstitutionConflict (A : ArchitectureObject carrier) : Prop :=
+  A.configuration.relation FiniteAtom.contractImpl FiniteAtom.contractBase ∧
+    A.configuration.relation FiniteAtom.substitutesImplBase FiniteAtom.contractBase
 
 /-- R10 / example 8.4: selected substitution compatibility law. -/
 def substitutionLaw : Law carrier where
-  holds A := ¬
-    (A.configuration.relation FiniteAtom.contractImpl FiniteAtom.contractBase ∧
-      A.configuration.relation FiniteAtom.substitutesImplBase
-        FiniteAtom.contractBase)
+  holds A := ¬ hasSubstitutionConflict A
 
 /-- R10: singleton invariant family used by the finite core package. -/
 def invariantFamily : InvariantFamily carrier where
@@ -280,7 +286,7 @@ def equationProbeContext : Site.ArchCtx object where
 /-- The NoCycle equation residual: lawful objects read `0`, cyclic objects read `1`. -/
 noncomputable def noCycleResidual (A : ArchitectureObject carrier) : Int := by
   classical
-  exact if noCycleLaw.holds A then 0 else 1
+  exact if hasDependencyCycle A then 1 else 0
 
 /--
 The finite core equation system over any selected readable context preorder.
@@ -308,13 +314,13 @@ theorem equationHolds_iff_noCycleLaw
     (C : Site.ContextPreorderCategory object) (A : ArchitectureObject carrier) :
     (equationSystem C).EquationHolds PUnit.unit A ↔ noCycleLaw.holds A := by
   constructor
-  · intro h
-    by_contra hnot
+  · intro h hcycle
     have hzero := h (Site.ContextCategoryObject.of C equationProbeContext)
       FiniteAtom.componentA
-    simp [equationSystem, noCycleResidual, hnot] at hzero
+    simp [equationSystem, noCycleResidual, hcycle] at hzero
   · intro h W atom
-    simp [equationSystem, noCycleResidual, h]
+    simp [equationSystem, noCycleResidual, hasDependencyCycle, noCycleLaw] at h ⊢
+    exact h
 
 /-- The one-way legacy law generated from the finite equation is the NoCycle predicate. -/
 theorem equationSystem_legacy_law_eq_noCycleLaw
@@ -1102,25 +1108,30 @@ theorem completeCircuitReading_nonvacuous :
 
 /-- R10: the main core reading selects the exact cycle detector template. -/
 theorem coreReading_circuit_code (i : lawUniverse.Index) :
-    coreReading.lawReading.circuits.code i = .exact cycleQueryDatum := by
+    coreReading.equationReading.toLegacyLawReading.circuits.code i =
+      .exact cycleQueryDatum := by
   cases i
   rfl
 
 /-- R10: the finite-template detector accepts the concrete cycle datum. -/
 theorem cycleQueryDatum_accepted :
-    coreReading.lawReading.circuits.accepts PUnit.unit cycleQueryDatum = true :=
+    coreReading.equationReading.toLegacyLawReading.circuits.accepts
+      PUnit.unit cycleQueryDatum = true :=
   (CircuitReading.accepts_eq_true_iff_of_code_exact
-    coreReading.lawReading.circuits PUnit.unit cycleQueryDatum cycleQueryDatum
+    coreReading.equationReading.toLegacyLawReading.circuits
+      PUnit.unit cycleQueryDatum cycleQueryDatum
     (coreReading_circuit_code PUnit.unit)).mpr rfl
 
 /-- R10: a distinct empty datum is rejected by the finite-template detector. -/
 theorem emptyQueryDatum_rejected :
-    coreReading.lawReading.circuits.accepts PUnit.unit ⟨[]⟩ = false := by
+    coreReading.equationReading.toLegacyLawReading.circuits.accepts
+      PUnit.unit ⟨[]⟩ = false := by
   apply Bool.eq_false_of_not_eq_true
   intro haccepts
   have heq : cycleQueryDatum = ⟨[]⟩ :=
     (CircuitReading.accepts_eq_true_iff_of_code_exact
-      coreReading.lawReading.circuits PUnit.unit cycleQueryDatum ⟨[]⟩
+      coreReading.equationReading.toLegacyLawReading.circuits
+        PUnit.unit cycleQueryDatum ⟨[]⟩
       (coreReading_circuit_code PUnit.unit)).mp haccepts
   have hqueries := congrArg FiniteCircuitDatum.queries heq
   simp [cycleQueryDatum] at hqueries
@@ -1573,18 +1584,32 @@ noncomputable def siteSelectedGeometryReading :
 noncomputable def site : Site.AATSite corePackage.object :=
   siteSelectedGeometryReading.toAATSite
 
+/-- Every equation in the generated singleton site is required. -/
+theorem site_equation_required (index : site.equationSystem.Index) :
+    site.equationSystem.Required index := by
+  cases index
+  rfl
+
 /-- The generated site law display is exactly the finite NoCycle equation. -/
-@[simp] theorem site_law_holds_iff_noCycleLaw
+@[simp] theorem site_equationHolds_iff_noCycleLaw
     (A : ArchitectureObject carrier) :
-    (site.lawUniverse.law PUnit.unit).holds A ↔ noCycleLaw.holds A := by
+    site.equationSystem.EquationHolds PUnit.unit A ↔ noCycleLaw.holds A := by
   change (equationSystem siteContextPreorder).EquationHolds PUnit.unit A ↔
     noCycleLaw.holds A
   exact equationHolds_iff_noCycleLaw siteContextPreorder A
 
+/-- The generated site legacy display is exactly the finite NoCycle equation. -/
+@[simp] theorem site_law_holds_iff_noCycleLaw
+    (A : ArchitectureObject carrier) :
+    (site.equationSystem.toLegacyLawUniverse.law PUnit.unit).holds A ↔
+      noCycleLaw.holds A := by
+  exact site_equationHolds_iff_noCycleLaw A
+
 /-- SD2: the finite site retains the generated core law universe. -/
 theorem site_lawUniverse_eq_core :
-    site.lawUniverse = siteCorePackage.equationSystem.toLegacyLawUniverse :=
-  Site.SelectedGeometryReading.toAATSite_lawUniverse siteSelectedGeometryReading
+    site.equationSystem.toLegacyLawUniverse =
+      siteCorePackage.equationSystem.toLegacyLawUniverse :=
+  rfl
 
 /-- SD2: the finite site retains the generated core signature reading. -/
 theorem site_signature_eq_core :

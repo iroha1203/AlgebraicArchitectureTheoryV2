@@ -89,5 +89,15 @@ theorem toLegacyLawUniverse_derived_iff
     simp [LawUniverse.Derived, ArchitecturalEquationSystem.Derived,
       toLegacyLawUniverse, EquationRole.toLegacy, hrole]
 
+/-- Required equation fulfillment agrees with its generated legacy display. -/
+theorem equationLawful_iff_legacyLawfulness
+    (E : ArchitecturalEquationSystem C) (object : ArchitectureObject U) :
+    E.EquationLawful object ↔ Lawfulness object E.toLegacyLawUniverse := by
+  constructor
+  · intro h index hrequired
+    exact h index ((E.toLegacyLawUniverse_required_iff index).mp hrequired)
+  · intro h index hrequired
+    exact h index ((E.toLegacyLawUniverse_required_iff index).mpr hrequired)
+
 end ArchitecturalEquationSystem
 end AAT.AG

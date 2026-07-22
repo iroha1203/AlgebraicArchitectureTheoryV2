@@ -1816,7 +1816,9 @@ private noncomputable def falseEquationReading
         (Site.ContextCategoryObject.of
           (Site.contextMorphismPreorderCategory A) (emptyEquationContext A))
         FiniteModel.FiniteAtom.componentA
-      norm_num [falseEquationSystem] at hcoordinate
+      have hfalse : (1 : Int) = 0 := by
+        simpa only [falseEquationSystem] using hcoordinate
+      norm_num at hfalse
   }
 
 private def positiveLaw : Law FiniteModel.carrier where
@@ -2082,7 +2084,7 @@ noncomputable def positiveCoreChange :
 
 /-- Selected law of the positive finite model. -/
 noncomputable def positiveLawIndex :
-    positiveSourceCore.algebra.lawReading.lawUniverse.Index :=
+    positiveSourceCore.algebra.equationReading.toLegacyLawReading.lawUniverse.Index :=
   PUnit.unit
 
 /-- Distinguished positive atom-presence query. -/
@@ -7790,7 +7792,7 @@ noncomputable def coefficientSemanticCore :
     cases atom <;> simp only [map_ofNat, map_zero]
   supportAtom := FiniteModel.FiniteAtom.componentA
   supportLawIndex := PUnit.unit
-  supportLawIndex_required := FiniteModel.lawUniverse_required PUnit.unit
+  supportLawIndex_required := by rfl
 
 /-- The semantic observable ring is identified with the selected raw quotient objectwise. -/
 noncomputable def coefficientBridge :
@@ -7833,7 +7835,7 @@ theorem coefficientSemanticCore_realized :
 /-- The realized source equation agrees with its transported equation on the changed chart. -/
 theorem coefficientSemanticCore_baseChangedChart
     (j : coefficientScheme.atlas.Index)
-    (i : finiteSite.lawUniverse.Index) :
+    (i : finiteSite.equationSystem.toLegacyLawUniverse.Index) :
     let R' :=
       LawAlgebra.ClosedEquationalLawReading.baseChangeOfSemanticCore
         coefficientRaw coefficientScheme coefficientSemanticCore
@@ -8141,7 +8143,8 @@ private theorem targetAmbientEval_baseChanged_interpretation (z : ZMod 2)
   exact congrArg (fun f => f x) hcomp
 
 private theorem targetEquation_eval_zero (z : ZMod 2)
-    (i : finiteSite.lawUniverse.Index) (atom : FiniteModel.FiniteAtom) :
+    (i : finiteSite.equationSystem.toLegacyLawUniverse.Index)
+    (atom : FiniteModel.FiniteAtom) :
     targetAmbientEval z
       (baseChangedSemanticCoreGlobalEquation coefficientRaw coefficientScheme
       coefficientSemanticCore coefficientBridge intPolynomialFlatChange i atom) = 0 := by

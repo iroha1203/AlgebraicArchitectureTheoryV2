@@ -33,10 +33,6 @@ def equationSystem (P : PartIPrerequisites.{u}) :
     ArchitecturalEquationSystem P.contextPreorder :=
   P.core.equationSystem
 
-/-- II.R0: generated legacy display of the Part I equation system. -/
-def lawUniverse (P : PartIPrerequisites.{u}) : LawUniverse P.carrier :=
-  P.equationSystem.toLegacyLawUniverse
-
 /-- II.R0: read the selected ArchitectureSignature supplied by Part I. -/
 def signature (P : PartIPrerequisites.{u}) :
     ArchitectureSignature P.carrier :=

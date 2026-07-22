@@ -230,10 +230,10 @@ structure SemanticRepairGeneratedLawDependentConclusions
   nonzeroInterpretationDetectsDisplayedLawFailure :
     forall i : D.Chart,
       D.interpret i ≠ 0 ->
-        forall lawIndex : S.lawUniverse.Index,
+        forall lawIndex : S.equationSystem.Index,
           lawIndex ∈ D.lawSupport i (D.input i) ->
-            S.lawUniverse.Required lawIndex ->
-              ¬ (S.lawUniverse.law lawIndex).holds
+            S.equationSystem.Required lawIndex ->
+              ¬ S.equationSystem.EquationHolds lawIndex
                 (D.objectOfLocalInput i (D.input i))
 
 /-- X.定理7.5 conclusions 4--10: law-independent SAGA descent/H1 layer. -/

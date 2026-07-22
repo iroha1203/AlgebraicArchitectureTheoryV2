@@ -59,7 +59,7 @@ noncomputable def baseChangedSemanticCoreGlobalEquation
     [S.topology.HasSheafCompose
       (f.coefficientExtension :
         AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
-    (i : S.lawUniverse.Index) (a : U.Atom) :
+    (i : S.equationSystem.Index) (a : U.Atom) :
     Γ((X.baseChange raw f).underlying, ⊤) :=
   (X.baseChangeMap raw f).appTop
     (semanticCoreGlobalEquation raw X G B i a)
@@ -101,7 +101,7 @@ theorem ClosedEquationalLawReading.baseChangeOfSemanticCore_geometric_iff
         AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
     {T : AlgebraicGeometry.Scheme}
     (s : T ⟶ (X.baseChange raw f).underlying)
-    (i : S.lawUniverse.Index) :
+    (i : S.equationSystem.Index) :
     (ClosedEquationalLawReading.baseChangeOfSemanticCore
       raw X G B f).geometric.HoldsOn s i ↔
       (ClosedEquationalLawReading.ofSemanticCore
@@ -438,7 +438,7 @@ private theorem lawWitnessIdealSheaf_baseChange_ofSemanticCore
     [S.topology.HasSheafCompose
       (f.coefficientExtension :
         AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
-    (i : S.lawUniverse.Index) :
+    (i : S.equationSystem.Index) :
     let R := ClosedEquationalLawReading.ofSemanticCore raw X G B
     let hR :=
       (ClosedEquationalLawReading.ofSemanticCore_valid raw X G B).witness_compatible
@@ -476,7 +476,7 @@ private theorem lawGeneratedIdealSheaf_eq_iSup_of_allLawsSelected
     (hclosed : RequiredClosed raw X R)
     (hall : AllLawsSelected raw X R) :
     lawGeneratedIdealSheaf raw X R hR hclosed =
-      ⨆ i : {i : S.lawUniverse.Index // S.lawUniverse.Required i},
+      ⨆ i : {i : S.equationSystem.Index // S.equationSystem.Required i},
         lawWitnessIdealSheaf raw X R hR.witness_compatible
           i.1 (hclosed.closed i.1 i.2) := by
   apply Scheme.IdealSheafData.ext
@@ -484,19 +484,19 @@ private theorem lawGeneratedIdealSheaf_eq_iSup_of_allLawsSelected
   rw [lawGeneratedIdealSheaf_ideal, Scheme.IdealSheafData.ideal_iSup, iSup_apply]
   apply le_antisymm
   · refine iSup_le fun i => ?_
-    let j : {q : S.lawUniverse.Index // S.lawUniverse.Required q} :=
+    let j : {q : S.equationSystem.Index // S.equationSystem.Required q} :=
       ⟨i.1, i.2.1⟩
     simpa only [lawWitnessIdealSheaf_ideal, j, Subtype.coe_mk] using
-      (le_iSup (fun q : {q : S.lawUniverse.Index // S.lawUniverse.Required q} =>
+      (le_iSup (fun q : {q : S.equationSystem.Index // S.equationSystem.Required q} =>
         (lawWitnessIdealSheaf raw X R hR.witness_compatible q.1
           (hclosed.closed q.1 q.2)).ideal V) j)
   · refine iSup_le fun i => ?_
-    let j : {q : S.lawUniverse.Index //
-        S.lawUniverse.Required q ∧ R.selected V q} :=
+    let j : {q : S.equationSystem.Index //
+        S.equationSystem.Required q ∧ R.selected V q} :=
       ⟨i.1, i.2, hall.selected V i.1⟩
     simpa only [lawWitnessIdealSheaf_ideal, j, Subtype.coe_mk] using
-      (le_iSup (fun q : {q : S.lawUniverse.Index //
-          S.lawUniverse.Required q ∧ R.selected V q} =>
+      (le_iSup (fun q : {q : S.equationSystem.Index //
+          S.equationSystem.Required q ∧ R.selected V q} =>
         localLawWitnessIdeal raw X
           (R.witness q.1 (hclosed.closed q.1 q.2.1)) V) j)
 
@@ -507,7 +507,7 @@ private theorem allLawGeneratedIdealSheaf_eq_iSup_of_allLawsSelected
     (hR : IsClosedEquationalLawReading raw X R)
     (hall : AllLawsSelected raw X R) :
     allLawGeneratedIdealSheaf raw X R hR =
-      ⨆ i : S.lawUniverse.Index,
+      ⨆ i : S.equationSystem.Index,
         lawWitnessIdealSheaf raw X R hR.witness_compatible
           i (hall.closed i) := by
   apply Scheme.IdealSheafData.ext
@@ -516,14 +516,14 @@ private theorem allLawGeneratedIdealSheaf_eq_iSup_of_allLawsSelected
   apply le_antisymm
   · refine iSup_le fun i => ?_
     simpa only [lawWitnessIdealSheaf_ideal] using
-      (le_iSup (fun q : S.lawUniverse.Index =>
+      (le_iSup (fun q : S.equationSystem.Index =>
         (lawWitnessIdealSheaf raw X R hR.witness_compatible q
           (hall.closed q)).ideal V) i.1)
   · refine iSup_le fun i => ?_
-    let j : {q : S.lawUniverse.Index // R.selected V q} :=
+    let j : {q : S.equationSystem.Index // R.selected V q} :=
       ⟨i, hall.selected V i⟩
     simpa only [lawWitnessIdealSheaf_ideal, j, Subtype.coe_mk] using
-      (le_iSup (fun q : {q : S.lawUniverse.Index // R.selected V q} =>
+      (le_iSup (fun q : {q : S.equationSystem.Index // R.selected V q} =>
         localLawWitnessIdeal raw X
           (R.witness q.1 (hR.selected_closed V q.1 q.2)) V) j)
 
@@ -540,7 +540,7 @@ theorem semanticCoreLawWitnessIdeal_baseChangedChart
       (f.coefficientExtension :
         AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
     (j : X.atlas.Index)
-    (i : S.lawUniverse.Index) :
+    (i : S.equationSystem.Index) :
     let R' := ClosedEquationalLawReading.baseChangeOfSemanticCore
       raw X G B f
     let hR' :=

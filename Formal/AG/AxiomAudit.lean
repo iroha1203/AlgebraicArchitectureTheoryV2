@@ -1596,7 +1596,8 @@ theorem finiteCoreNonidentityReachableOperation :
   FiniteModel.nonidentity_reachable_operation_fires
 
 theorem finiteCoreGeneratedCircuitSound :
-    ¬ (FiniteModel.corePackage.algebra.lawReading.lawUniverse.law PUnit.unit).holds
+    ¬ (FiniteModel.corePackage.algebra.equationReading.toLegacyLawReading.lawUniverse.law
+      PUnit.unit).holds
       (FiniteModel.corePackage.algebra.object FiniteModel.corePackage.baseObject) :=
   FiniteModel.generatedCycleCircuit_sound
 
@@ -1874,7 +1875,7 @@ def sd2SiteArchitectureObject :=
   @Site.SelectedGeometryReading.toAATSite_architectureObject
 def sd2SiteContextPreorder :=
   @Site.SelectedGeometryReading.toAATSite_contextPreorder
-def sd2SiteLawUniverse := @Site.SelectedGeometryReading.toAATSite_lawUniverse
+def sd2SiteEquationSystem := @Site.SelectedGeometryReading.toAATSite_equationSystem
 def sd2SiteSignature := @Site.SelectedGeometryReading.toAATSite_signature
 def sd2SiteRequirements := @Site.SelectedGeometryReading.toAATSite_requirements
 def sd2SiteOverlap := @Site.SelectedGeometryReading.toAATSite_overlap
@@ -3412,9 +3413,9 @@ def standardSchemeReadingDecoration :=
 def standardSchemeReadingCoordinateFamily :=
   @LawAlgebra.AATReadingDecoration.coordinateFamily
 
-/-- Audit alias for the selected law-universe projection. -/
-def standardSchemeReadingLawUniverse :=
-  @LawAlgebra.AATReadingDecoration.lawUniverse
+/-- Audit alias for the selected equation-system projection. -/
+def standardSchemeReadingEquationSystem :=
+  @LawAlgebra.AATReadingDecoration.equationSystem
 
 /-- Audit alias for the selected architecture-signature projection. -/
 def standardSchemeReadingSignature :=
@@ -3444,9 +3445,9 @@ def standardSchemeReadingExt :=
 def standardSchemeReadingCoordinateFamilyEq :=
   @LawAlgebra.AATReadingDecoration.coordinateFamily_eq
 
-/-- Audit alias for the law-universe characterization. -/
-def standardSchemeReadingLawUniverseEq :=
-  @LawAlgebra.AATReadingDecoration.lawUniverse_eq
+/-- Audit alias for the equation-system characterization. -/
+def standardSchemeReadingEquationSystemEq :=
+  @LawAlgebra.AATReadingDecoration.equationSystem_eq
 
 /-- Audit alias for the architecture-signature characterization. -/
 def standardSchemeReadingSignatureEq :=
@@ -4453,9 +4454,9 @@ def closedEquationalGeometryLawfulSubschemeCoverX :=
 def closedEquationalGeometryLawfulDecorationContext :=
   @LawAlgebra.lawfulClosedDecoration_context
 
-/-- Audit alias for preservation of the pulled decoration law universe. -/
-def closedEquationalGeometryLawfulDecorationLawUniverse :=
-  @LawAlgebra.lawfulClosedDecoration_lawUniverse
+/-- Audit alias for preservation of the pulled decoration equation system. -/
+def closedEquationalGeometryLawfulDecorationEquationSystem :=
+  @LawAlgebra.lawfulClosedDecoration_equationSystem
 
 /-- Audit alias for preservation of the pulled decoration signature. -/
 def closedEquationalGeometryLawfulDecorationSignature :=
@@ -9332,7 +9333,7 @@ def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_SquareZeroExtensio
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_SquareZeroExtensionData_mk_sizeOf_spec := @AAT.AG.SingularityMonodromyStack.SquareZeroExtensionData.mk.sizeOf_spec
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_SquareZeroExtensionData_obstructionClass_eq_ob := @AAT.AG.SingularityMonodromyStack.SquareZeroExtensionData.obstructionClass_eq_ob
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_SquareZeroExtensionData_squareZeroLiftingObstruction := @AAT.AG.SingularityMonodromyStack.SquareZeroExtensionData.squareZeroLiftingObstruction
-def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_StratumReadingParameter_lawUniverse_eq := @AAT.AG.SingularityMonodromyStack.StratumReadingParameter.lawUniverse_eq
+def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_StratumReadingParameter_equationSystem_eq := @AAT.AG.SingularityMonodromyStack.StratumReadingParameter.equationSystem_eq
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_StratumReadingParameter_mk_inj := @AAT.AG.SingularityMonodromyStack.StratumReadingParameter.mk.inj
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_StratumReadingParameter_mk_injEq := @AAT.AG.SingularityMonodromyStack.StratumReadingParameter.mk.injEq
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_StratumReadingParameter_mk_sizeOf_spec := @AAT.AG.SingularityMonodromyStack.StratumReadingParameter.mk.sizeOf_spec
@@ -9423,6 +9424,10 @@ def architecturalEquationSystemToLegacyLawUniverse :=
 def architecturalEquationSystemToLegacyRequiredIff :=
   @ArchitecturalEquationSystem.toLegacyLawUniverse_required_iff
 
+/-- Kernel-audit alias for equation lawfulness versus its generated legacy display. -/
+def architecturalEquationSystemEquationLawfulIffLegacyLawfulness :=
+  @ArchitecturalEquationSystem.equationLawful_iff_legacyLawfulness
+
 /-- Kernel-audit alias for equation-indexed circuit soundness. -/
 def equationCircuitReadingSound :=
   @EquationCircuitReading.circuit_sound
@@ -9442,6 +9447,14 @@ def selectedGeometryToAATSiteEquationSystem :=
 /-- Kernel-audit alias for the finite residual/NoCycle equivalence. -/
 def finiteCoreEquationHoldsIffNoCycleLaw :=
   @FiniteModel.equationHolds_iff_noCycleLaw
+
+/-- Kernel-audit alias for the finite site's required equation. -/
+def finiteSiteEquationRequired :=
+  @FiniteModel.site_equation_required
+
+/-- Kernel-audit alias for the finite site's residual/NoCycle equivalence. -/
+def finiteSiteEquationHoldsIffNoCycleLaw :=
+  @FiniteModel.site_equationHolds_iff_noCycleLaw
 
 /-- Kernel-audit alias for the finite generated site law display. -/
 def finiteSiteLawHoldsIffNoCycleLaw :=

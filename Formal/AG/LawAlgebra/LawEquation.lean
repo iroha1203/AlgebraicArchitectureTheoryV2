@@ -38,15 +38,15 @@ structure SemanticLawEquationWitnessIdealCore
       (x : Observable W₂),
       restrict (f ≫ g) x = restrict f (restrict g x)
   violationWitness :
-    forall (W : S.category), S.lawUniverse.Index -> U.Atom -> Observable W
+    forall (W : S.category), S.equationSystem.Index -> U.Atom -> Observable W
   violationWitness_restrict :
     forall {source target : S.category} (f : source ⟶ target)
-      (lawIndex : S.lawUniverse.Index) (atom : U.Atom),
+      (lawIndex : S.equationSystem.Index) (atom : U.Atom),
       restrict f (violationWitness target lawIndex atom) =
         violationWitness source lawIndex atom
   supportAtom : U.Atom
-  supportLawIndex : S.lawUniverse.Index
-  supportLawIndex_required : S.lawUniverse.Required supportLawIndex
+  supportLawIndex : S.equationSystem.Index
+  supportLawIndex_required : S.equationSystem.Required supportLawIndex
 
 attribute [instance] SemanticLawEquationWitnessIdealCore.observableCommRing
 
@@ -61,7 +61,7 @@ violation coordinates.
 -/
 def lawWitnessIdeal
     (G : SemanticLawEquationWitnessIdealCore S)
-    (W : S.category) (lawIndex : S.lawUniverse.Index) :
+    (W : S.category) (lawIndex : S.equationSystem.Index) :
     Ideal (G.Observable W) :=
   Ideal.span (Set.range (G.violationWitness W lawIndex))
 
@@ -70,8 +70,8 @@ def selectedLawWitnessIdealFamily
     (G : SemanticLawEquationWitnessIdealCore S)
     (W : S.category) :
     ObstructionIdeal.SelectedLawWitnessIdealFamily.{u, u} (G.Observable W) where
-  LawIndex := S.lawUniverse.Index
-  selected := S.lawUniverse.Required
+  LawIndex := S.equationSystem.Index
+  selected := S.equationSystem.Required
   witnessIdeal := G.lawWitnessIdeal W
 
 /-- III.定義11.3: local obstruction ideal `I_Ob(W) = Σ_L I_L(W)`. -/
@@ -83,8 +83,8 @@ def obstructionIdeal
 /-- Required law witness ideals are contained in the generated local obstruction ideal. -/
 theorem lawWitnessIdeal_le_obstructionIdeal
     (G : SemanticLawEquationWitnessIdealCore S)
-    (W : S.category) {lawIndex : S.lawUniverse.Index}
-    (hrequired : S.lawUniverse.Required lawIndex) :
+    (W : S.category) {lawIndex : S.equationSystem.Index}
+    (hrequired : S.equationSystem.Required lawIndex) :
     G.lawWitnessIdeal W lawIndex ≤ G.obstructionIdeal W :=
   ObstructionIdeal.SelectedLawWitnessIdealFamily.witnessIdeal_le_localObstructionIdeal
     (G.Observable W) (G.selectedLawWitnessIdealFamily W) hrequired
@@ -96,7 +96,7 @@ witness ideal on the restricted context.
 theorem map_lawWitnessIdeal_le
     (G : SemanticLawEquationWitnessIdealCore S)
     {source target : S.category} (f : source ⟶ target)
-    (lawIndex : S.lawUniverse.Index) :
+    (lawIndex : S.equationSystem.Index) :
     Ideal.map (G.restrict f) (G.lawWitnessIdeal target lawIndex) ≤
       G.lawWitnessIdeal source lawIndex := by
   rw [lawWitnessIdeal, Ideal.map_span]
@@ -209,11 +209,11 @@ theorem quotient_mk_eq_zero_iff_mem_obstructionIdeal
 /-- III.定理11.4 package: generated witness ideals and quotient coefficient laws. -/
 theorem generatedCoefficient_package
     (G : SemanticLawEquationWitnessIdealCore S) :
-    (forall W (lawIndex : S.lawUniverse.Index),
-      S.lawUniverse.Required lawIndex ->
+    (forall W (lawIndex : S.equationSystem.Index),
+      S.equationSystem.Required lawIndex ->
         G.lawWitnessIdeal W lawIndex ≤ G.obstructionIdeal W) /\
       (forall {source target : S.category} (f : source ⟶ target)
-        (lawIndex : S.lawUniverse.Index),
+        (lawIndex : S.equationSystem.Index),
         Ideal.map (G.restrict f) (G.lawWitnessIdeal target lawIndex) ≤
           G.lawWitnessIdeal source lawIndex) /\
       (forall {source target : S.category} (f : source ⟶ target),
@@ -247,20 +247,21 @@ structure LawEquationDefectSource
   chart : Chart -> S.category
   LocalInput : Chart -> Type u
   input : (i : Chart) -> LocalInput i
-  lawSupport : (i : Chart) -> LocalInput i -> List S.lawUniverse.Index
+  lawSupport : (i : Chart) -> LocalInput i -> List S.equationSystem.Index
   lawSupport_nonempty :
-    forall i, exists lawIndex : S.lawUniverse.Index,
+    forall i, exists lawIndex : S.equationSystem.Index,
       lawIndex ∈ lawSupport i (input i)
   lawSupport_required :
-    forall i (lawIndex : S.lawUniverse.Index),
-      lawIndex ∈ lawSupport i (input i) -> S.lawUniverse.Required lawIndex
+    forall i (lawIndex : S.equationSystem.Index),
+      lawIndex ∈ lawSupport i (input i) -> S.equationSystem.Required lawIndex
   objectOfLocalInput : (i : Chart) -> LocalInput i -> ArchitectureObject U
   defect : (i : Chart) -> LocalInput i -> G.Observable (chart i)
   holds_defect_mem :
-    forall i (lawIndex : S.lawUniverse.Index),
+    forall i (lawIndex : S.equationSystem.Index),
       lawIndex ∈ lawSupport i (input i) ->
-        S.lawUniverse.Required lawIndex ->
-          (S.lawUniverse.law lawIndex).holds (objectOfLocalInput i (input i)) ->
+        S.equationSystem.Required lawIndex ->
+          S.equationSystem.EquationHolds lawIndex
+            (objectOfLocalInput i (input i)) ->
             defect i (input i) ∈ G.lawWitnessIdeal (chart i) lawIndex
 
 namespace LawEquationDefectSource
@@ -277,10 +278,11 @@ def interpret (D : LawEquationDefectSource G) (i : D.Chart) :
 
 /-- Displayed required laws hold on all selected local readings. -/
 def DisplayedRequiredLawsHoldOn (D : LawEquationDefectSource G) : Prop :=
-  forall i (lawIndex : S.lawUniverse.Index),
+  forall i (lawIndex : S.equationSystem.Index),
     lawIndex ∈ D.lawSupport i (D.input i) ->
-      S.lawUniverse.Required lawIndex ->
-        (S.lawUniverse.law lawIndex).holds (D.objectOfLocalInput i (D.input i))
+      S.equationSystem.Required lawIndex ->
+        S.equationSystem.EquationHolds lawIndex
+          (D.objectOfLocalInput i (D.input i))
 
 /-- Pointwise zero of the generated quotient interpretation. -/
 def GeneratedInterpretationPointwiseZero (D : LawEquationDefectSource G) : Prop :=
@@ -296,10 +298,11 @@ theorem displayedRequiredLawsHoldOn_constructs_interpret_eq_zero
     forall i : D.Chart, D.interpret i = 0 := by
   intro i
   obtain ⟨lawIndex, hmem⟩ := D.lawSupport_nonempty i
-  have hrequired : S.lawUniverse.Required lawIndex :=
+  have hrequired : S.equationSystem.Required lawIndex :=
     D.lawSupport_required i lawIndex hmem
   have hholdsLaw :
-      (S.lawUniverse.law lawIndex).holds (D.objectOfLocalInput i (D.input i)) :=
+      S.equationSystem.EquationHolds lawIndex
+        (D.objectOfLocalInput i (D.input i)) :=
     hholds i lawIndex hmem hrequired
   have hdefect :
       D.defect i (D.input i) ∈ G.lawWitnessIdeal (D.chart i) lawIndex :=
@@ -333,10 +336,10 @@ theorem interpret_ne_zero_detects_displayed_required_law_failure
     (D : LawEquationDefectSource G)
     (i : D.Chart)
     (hne : D.interpret i ≠ 0) :
-    forall lawIndex : S.lawUniverse.Index,
+    forall lawIndex : S.equationSystem.Index,
       lawIndex ∈ D.lawSupport i (D.input i) ->
-        S.lawUniverse.Required lawIndex ->
-          ¬ (S.lawUniverse.law lawIndex).holds
+        S.equationSystem.Required lawIndex ->
+          ¬ S.equationSystem.EquationHolds lawIndex
               (D.objectOfLocalInput i (D.input i)) := by
   intro lawIndex hmem hrequired hholdsLaw
   refine hne ?_
@@ -364,10 +367,10 @@ theorem lawEquation_grounding_packet
           D.defect i (D.input i) ∈ G.obstructionIdeal (D.chart i)) /\
       (forall i : D.Chart,
         D.interpret i ≠ 0 ->
-          forall lawIndex : S.lawUniverse.Index,
+          forall lawIndex : S.equationSystem.Index,
             lawIndex ∈ D.lawSupport i (D.input i) ->
-              S.lawUniverse.Required lawIndex ->
-                ¬ (S.lawUniverse.law lawIndex).holds
+              S.equationSystem.Required lawIndex ->
+                ¬ S.equationSystem.EquationHolds lawIndex
                     (D.objectOfLocalInput i (D.input i))) :=
   ⟨D.displayedRequiredLawsHoldOn_constructs_interpret_eq_zero hholds,
     D.displayedRequiredLawsHoldOn_constructs_generatedInterpretationPointwiseZero hholds,

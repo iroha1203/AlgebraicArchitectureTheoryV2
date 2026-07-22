@@ -1,4 +1,3 @@
-import Formal.AG.Atom.LawfulnessZero
 import Formal.AG.LawAlgebra.LawEquation
 import Formal.AG.LawAlgebra.AffineChart
 import Formal.AG.LawAlgebra.StandardScheme
@@ -43,7 +42,7 @@ variable (X : StandardArchitectureScheme raw)
 structure GeometricLawReading where
   /-- The semantic law predicate on a section of a test Scheme. -/
   HoldsOn : ∀ {T : AlgebraicGeometry.Scheme},
-    (T ⟶ X.underlying) → S.lawUniverse.Index → Prop
+    (T ⟶ X.underlying) → S.equationSystem.Index → Prop
 
 /-- Geometric readings are determined by their section predicate. -/
 @[ext] theorem GeometricLawReading.ext
@@ -57,18 +56,18 @@ structure GeometricLawReading where
 /-- Stability of a geometric reading under base change of a test section. -/
 def IsGeometricLawReading (R : GeometricLawReading raw X) : Prop :=
   ∀ {T T' : AlgebraicGeometry.Scheme}
-    (s : T ⟶ X.underlying) (f : T' ⟶ T) (i : S.lawUniverse.Index),
+    (s : T ⟶ X.underlying) (f : T' ⟶ T) (i : S.equationSystem.Index),
     R.HoldsOn s i → R.HoldsOn (f ≫ s) i
 
 /-- Atom-indexed violation coordinates for one law on every affine open. -/
-structure ClosedEquationalLawWitness (i : S.lawUniverse.Index) where
+structure ClosedEquationalLawWitness (i : S.equationSystem.Index) where
   /-- The violation coordinate of each atom on an affine open. -/
   coordinate : ∀ V : X.underlying.affineOpens,
     U.Atom → Γ(X.underlying, V)
 
 /-- Closed-equational witnesses are determined by their coordinates. -/
 @[ext] theorem ClosedEquationalLawWitness.ext
-    {i : S.lawUniverse.Index}
+    {i : S.equationSystem.Index}
     (W Z : ClosedEquationalLawWitness raw X i)
     (h : W.coordinate = Z.coordinate) : W = Z := by
   cases W
@@ -78,7 +77,7 @@ structure ClosedEquationalLawWitness (i : S.lawUniverse.Index) where
 
 /-- Exact compatibility of witness coordinates with basic-open restriction. -/
 def IsClosedEquationalLawWitness
-    {i : S.lawUniverse.Index}
+    {i : S.equationSystem.Index}
     (W : ClosedEquationalLawWitness raw X i) : Prop :=
   ∀ (V : X.underlying.affineOpens) (f : Γ(X.underlying, V)) (a : U.Atom),
     X.underlying.presheaf.map
@@ -87,14 +86,14 @@ def IsClosedEquationalLawWitness
 
 /-- The local ideal spanned by the atom-indexed coordinates of one law. -/
 def localLawWitnessIdeal
-    {i : S.lawUniverse.Index}
+    {i : S.equationSystem.Index}
     (W : ClosedEquationalLawWitness raw X i)
     (V : X.underlying.affineOpens) : Ideal Γ(X.underlying, V) :=
   Ideal.span (Set.range (W.coordinate V))
 
 /-- Coordinate compatibility induces exact basic-open compatibility of the spanned ideal. -/
 theorem localLawWitnessIdeal_map_basicOpen
-    {i : S.lawUniverse.Index}
+    {i : S.equationSystem.Index}
     (W : ClosedEquationalLawWitness raw X i)
     (hW : IsClosedEquationalLawWitness raw X W)
     (V : X.underlying.affineOpens) (f : Γ(X.underlying, V)) :
@@ -114,7 +113,7 @@ theorem localLawWitnessIdeal_map_basicOpen
 
 /-- Restrict a family of global equations to every affine open. -/
 noncomputable def ClosedEquationalLawWitness.ofGlobalSections
-    (i : S.lawUniverse.Index)
+    (i : S.equationSystem.Index)
     (equation : U.Atom → Γ(X.underlying, ⊤)) :
     ClosedEquationalLawWitness raw X i where
   coordinate V a :=
@@ -122,7 +121,7 @@ noncomputable def ClosedEquationalLawWitness.ofGlobalSections
 
 /-- The global-section constructor satisfies basic-open compatibility. -/
 theorem ClosedEquationalLawWitness.ofGlobalSections_valid
-    (i : S.lawUniverse.Index)
+    (i : S.equationSystem.Index)
     (equation : U.Atom → Γ(X.underlying, ⊤)) :
     IsClosedEquationalLawWitness raw X
       (ClosedEquationalLawWitness.ofGlobalSections raw X i equation) := by
@@ -133,7 +132,7 @@ theorem ClosedEquationalLawWitness.ofGlobalSections_valid
 
 /-- Coordinates of the global-section constructor are canonical restrictions. -/
 @[simp] theorem ClosedEquationalLawWitness.ofGlobalSections_coordinate
-    (i : S.lawUniverse.Index)
+    (i : S.equationSystem.Index)
     (equation : U.Atom → Γ(X.underlying, ⊤))
     (V : X.underlying.affineOpens) (a : U.Atom) :
     (ClosedEquationalLawWitness.ofGlobalSections raw X i equation).coordinate V a =
@@ -196,7 +195,7 @@ theorem SemanticLawEquationSchemeBridge.toSheafifiedSection_bijective
 noncomputable def semanticCoreGlobalEquation
     (G : SemanticLawEquationWitnessIdealCore S)
     (B : SemanticLawEquationSchemeBridge raw G)
-    (i : S.lawUniverse.Index) (a : U.Atom) : Γ(X.underlying, ⊤) :=
+    (i : S.equationSystem.Index) (a : U.Atom) : Γ(X.underlying, ⊤) :=
   X.decoration.interpretation
     (B.toSheafifiedSection X.decoration.context
       (G.violationWitness X.decoration.context i a))
@@ -230,7 +229,7 @@ theorem GeometricLawReading.ofSemanticCore_valid
     (G : SemanticLawEquationWitnessIdealCore S)
     (B : SemanticLawEquationSchemeBridge raw G)
     {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
-    (i : S.lawUniverse.Index) :
+    (i : S.equationSystem.Index) :
     (GeometricLawReading.ofSemanticCore raw X G B).HoldsOn s i ↔
       ∀ a, s.appTop (semanticCoreGlobalEquation raw X G B i a) = 0 :=
   Iff.rfl
@@ -241,7 +240,7 @@ theorem semanticCoreWitness_restrict
     (B : SemanticLawEquationSchemeBridge raw G)
     (hB : IsSemanticLawEquationSchemeBridge raw G B)
     {source target : S.category} (f : source ⟶ target)
-    (i : S.lawUniverse.Index) (a : U.Atom) :
+    (i : S.equationSystem.Index) (a : U.Atom) :
     B.toSheafifiedSection source (G.violationWitness source i a) =
       sheafifiedRestriction raw f
         (B.toSheafifiedSection target (G.violationWitness target i a)) := by
@@ -252,7 +251,7 @@ theorem semanticCoreWitness_restrict
 theorem semanticCoreLawWitnessIdeal_map
     (G : SemanticLawEquationWitnessIdealCore S)
     (B : SemanticLawEquationSchemeBridge raw G)
-    (W : S.category) (i : S.lawUniverse.Index) :
+    (W : S.category) (i : S.equationSystem.Index) :
     Ideal.map (B.toSheafifiedSection W) (G.lawWitnessIdeal W i) =
       Ideal.span (Set.range (fun a =>
         B.toSheafifiedSection W (G.violationWitness W i a))) := by
@@ -270,7 +269,7 @@ theorem semanticCoreLawWitnessIdeal_comap_map
     (G : SemanticLawEquationWitnessIdealCore S)
     (B : SemanticLawEquationSchemeBridge raw G)
     (hB : IsSemanticLawEquationSchemeBridge raw G B)
-    (W : S.category) (i : S.lawUniverse.Index) :
+    (W : S.category) (i : S.equationSystem.Index) :
     Ideal.comap (B.toSheafifiedSection W)
         (Ideal.map (B.toSheafifiedSection W) (G.lawWitnessIdeal W i)) =
       G.lawWitnessIdeal W i := by
@@ -282,7 +281,7 @@ theorem semanticCoreGlobalEquation_on_chart
     (G : SemanticLawEquationWitnessIdealCore S)
     (B : SemanticLawEquationSchemeBridge raw G)
     (hB : IsSemanticLawEquationSchemeBridge raw G B)
-    (j : X.atlas.Index) (i : S.lawUniverse.Index) (a : U.Atom) :
+    (j : X.atlas.Index) (i : S.equationSystem.Index) (a : U.Atom) :
     ((X.atlas.chart j).map.appTop ≫
         (AlgebraicGeometry.Scheme.ΓSpecIso
           (SheafifiedSectionRing raw (X.atlas.chart j).context)).hom)
@@ -310,7 +309,7 @@ theorem semanticCoreGlobalEquation_on_chart
 noncomputable def ClosedEquationalLawWitness.ofSemanticCore
     (G : SemanticLawEquationWitnessIdealCore S)
     (B : SemanticLawEquationSchemeBridge raw G)
-    (i : S.lawUniverse.Index) : ClosedEquationalLawWitness raw X i :=
+    (i : S.equationSystem.Index) : ClosedEquationalLawWitness raw X i :=
   ClosedEquationalLawWitness.ofGlobalSections raw X i
     (semanticCoreGlobalEquation raw X G B i)
 
@@ -318,7 +317,7 @@ noncomputable def ClosedEquationalLawWitness.ofSemanticCore
 theorem ClosedEquationalLawWitness.ofSemanticCore_valid
     (G : SemanticLawEquationWitnessIdealCore S)
     (B : SemanticLawEquationSchemeBridge raw G)
-    (i : S.lawUniverse.Index) :
+    (i : S.equationSystem.Index) :
     IsClosedEquationalLawWitness raw X
       (ClosedEquationalLawWitness.ofSemanticCore raw X G B i) :=
   ClosedEquationalLawWitness.ofGlobalSections_valid raw X i _
@@ -330,9 +329,9 @@ structure ClosedEquationalLawReading where
   /-- The semantic reading carried by this closed-equational package. -/
   geometric : GeometricLawReading raw X
   /-- The laws certified as closed equations. -/
-  closed : Set S.lawUniverse.Index
+  closed : Set S.equationSystem.Index
   /-- The closed laws selected on each affine context. -/
-  selected : X.underlying.affineOpens → Set S.lawUniverse.Index
+  selected : X.underlying.affineOpens → Set S.equationSystem.Index
   /-- The atom-indexed equation witness for each closed law. -/
   witness : ∀ i, closed i → ClosedEquationalLawWitness raw X i
 
@@ -366,21 +365,21 @@ structure IsClosedEquationalLawReading
     ∀ V i, R.selected V i → R.closed i
   selected_basicOpen :
     ∀ (V : X.underlying.affineOpens)
-      (f : Γ(X.underlying, V)) (i : S.lawUniverse.Index),
+      (f : Γ(X.underlying, V)) (i : S.equationSystem.Index),
       R.selected V i ↔
         R.selected (X.underlying.affineBasicOpen f) i
 
 /-- Every required law is closed-equational and selected on every affine context. -/
 structure RequiredClosed (R : ClosedEquationalLawReading raw X) : Prop where
-  closed : ∀ i, S.lawUniverse.Required i → R.closed i
+  closed : ∀ i, S.equationSystem.Required i → R.closed i
   selected :
-    ∀ V i, S.lawUniverse.Required i → R.selected V i
+    ∀ V i, S.equationSystem.Required i → R.selected V i
 
 /-- Required-law semantic truth along a section. -/
 def SemanticLawfulAlong
     (R : ClosedEquationalLawReading raw X)
     {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying) : Prop :=
-  ∀ i, S.lawUniverse.Required i → R.geometric.HoldsOn s i
+  ∀ i, S.equationSystem.Required i → R.geometric.HoldsOn s i
 
 /-- Semantic truth of every law index along a section. -/
 def FullySemanticLawfulAlong
@@ -408,7 +407,7 @@ noncomputable def ClosedEquationalLawReading.ofSemanticCore
 @[simp] theorem ClosedEquationalLawReading.ofSemanticCore_witness
     (G : SemanticLawEquationWitnessIdealCore S)
     (B : SemanticLawEquationSchemeBridge raw G)
-    (i : S.lawUniverse.Index)
+    (i : S.equationSystem.Index)
     (hi : (ClosedEquationalLawReading.ofSemanticCore raw X G B).closed i) :
     (ClosedEquationalLawReading.ofSemanticCore raw X G B).witness i hi =
       ClosedEquationalLawWitness.ofSemanticCore raw X G B i :=
@@ -449,7 +448,7 @@ theorem ClosedEquationalLawReading.ofSemanticCore_requiredClosed
 theorem ClosedEquationalLawReading.ofSemanticCore_selected
     (G : SemanticLawEquationWitnessIdealCore S)
     (B : SemanticLawEquationSchemeBridge raw G)
-    (V : X.underlying.affineOpens) (i : S.lawUniverse.Index) :
+    (V : X.underlying.affineOpens) (i : S.equationSystem.Index) :
     (ClosedEquationalLawReading.ofSemanticCore raw X G B).selected V i :=
   Set.mem_univ i
 
@@ -468,7 +467,7 @@ theorem ClosedEquationalLawReading.ofSemanticCore_allLawsSelected
 noncomputable def lawWitnessIdealSheaf
     (R : ClosedEquationalLawReading raw X)
     (hR : IsClosedEquationalWitnessReading raw X R)
-    (i : S.lawUniverse.Index) (hi : R.closed i) :
+    (i : S.equationSystem.Index) (hi : R.closed i) :
     X.underlying.IdealSheafData where
   ideal := localLawWitnessIdeal raw X (R.witness i hi)
   map_ideal_basicOpen :=
@@ -478,7 +477,7 @@ noncomputable def lawWitnessIdealSheaf
 @[simp] theorem lawWitnessIdealSheaf_ideal
     (R : ClosedEquationalLawReading raw X)
     (hR : IsClosedEquationalWitnessReading raw X R)
-    (i : S.lawUniverse.Index) (hi : R.closed i)
+    (i : S.equationSystem.Index) (hi : R.closed i)
     (V : X.underlying.affineOpens) :
     (lawWitnessIdealSheaf raw X R hR i hi).ideal V =
       localLawWitnessIdeal raw X (R.witness i hi) V :=
@@ -488,7 +487,7 @@ noncomputable def lawWitnessIdealSheaf
 theorem lawWitnessIdealSheaf_ofGlobalSections
     (R : ClosedEquationalLawReading raw X)
     (hR : IsClosedEquationalWitnessReading raw X R)
-    (i : S.lawUniverse.Index) (hi : R.closed i)
+    (i : S.equationSystem.Index) (hi : R.closed i)
     (equation : U.Atom → Γ(X.underlying, ⊤))
     (hw : R.witness i hi =
       ClosedEquationalLawWitness.ofGlobalSections raw X i equation) :
@@ -514,7 +513,7 @@ def SemanticCoreIdealSheafRealized
     (B : SemanticLawEquationSchemeBridge raw G) : Prop :=
   (∀ W : S.category,
     AffineChart.AffineAATChart.SheafifiedChartPresentation raw W) ∧
-  ∀ (j : X.atlas.Index) (i : S.lawUniverse.Index),
+  ∀ (j : X.atlas.Index) (i : S.equationSystem.Index),
     let R := ClosedEquationalLawReading.ofSemanticCore raw X G B
     let hR := ClosedEquationalLawReading.ofSemanticCore_witnessCompatible raw X G B
     ((lawWitnessIdealSheaf raw X R hR i (Set.mem_univ i)).comap
@@ -646,12 +645,12 @@ theorem requiredLocalLawIdeal_map_basicOpen
     Ideal.map
         (X.underlying.presheaf.map
           (homOfLE (X.underlying.basicOpen_le f)).op).hom
-        (⨆ i : {i : S.lawUniverse.Index //
-            S.lawUniverse.Required i ∧ R.selected V i},
+        (⨆ i : {i : S.equationSystem.Index //
+            S.equationSystem.Required i ∧ R.selected V i},
           localLawWitnessIdeal raw X
             (R.witness i.1 (hclosed.closed i.1 i.2.1)) V) =
-      ⨆ i : {i : S.lawUniverse.Index //
-          S.lawUniverse.Required i ∧
+      ⨆ i : {i : S.equationSystem.Index //
+          S.equationSystem.Required i ∧
             R.selected (X.underlying.affineBasicOpen f) i},
         localLawWitnessIdeal raw X
             (R.witness i.1 (hclosed.closed i.1 i.2.1))
@@ -661,23 +660,23 @@ theorem requiredLocalLawIdeal_map_basicOpen
   · refine iSup_le fun i => ?_
     rw [localLawWitnessIdeal_map_basicOpen raw X _
       (hR.witness_compatible i.1 (hclosed.closed i.1 i.2.1))]
-    let j : {q : S.lawUniverse.Index //
-        S.lawUniverse.Required q ∧
+    let j : {q : S.equationSystem.Index //
+        S.equationSystem.Required q ∧
           R.selected (X.underlying.affineBasicOpen f) q} :=
       ⟨i.1, i.2.1, (hR.selected_basicOpen V f i.1).mp i.2.2⟩
     simpa only [j, Subtype.coe_mk] using
-      (le_iSup (fun q : {q : S.lawUniverse.Index //
-        S.lawUniverse.Required q ∧
+      (le_iSup (fun q : {q : S.equationSystem.Index //
+        S.equationSystem.Required q ∧
           R.selected (X.underlying.affineBasicOpen f) q} =>
           localLawWitnessIdeal raw X
             (R.witness q.1 (hclosed.closed q.1 q.2.1))
             (X.underlying.affineBasicOpen f)) j)
   · refine iSup_le fun i => ?_
-    let j : {q : S.lawUniverse.Index //
-        S.lawUniverse.Required q ∧ R.selected V q} :=
+    let j : {q : S.equationSystem.Index //
+        S.equationSystem.Required q ∧ R.selected V q} :=
       ⟨i.1, i.2.1, (hR.selected_basicOpen V f i.1).mpr i.2.2⟩
-    have hj := le_iSup (fun q : {q : S.lawUniverse.Index //
-        S.lawUniverse.Required q ∧ R.selected V q} =>
+    have hj := le_iSup (fun q : {q : S.equationSystem.Index //
+        S.equationSystem.Required q ∧ R.selected V q} =>
       Ideal.map
         (X.underlying.presheaf.map
           (homOfLE (X.underlying.basicOpen_le f)).op).hom
@@ -695,10 +694,10 @@ theorem allSelectedLocalLawIdeal_map_basicOpen
     Ideal.map
         (X.underlying.presheaf.map
           (homOfLE (X.underlying.basicOpen_le f)).op).hom
-        (⨆ i : {i : S.lawUniverse.Index // R.selected V i},
+        (⨆ i : {i : S.equationSystem.Index // R.selected V i},
           localLawWitnessIdeal raw X
             (R.witness i.1 (hR.selected_closed V i.1 i.2)) V) =
-      ⨆ i : {i : S.lawUniverse.Index //
+      ⨆ i : {i : S.equationSystem.Index //
           R.selected (X.underlying.affineBasicOpen f) i},
           localLawWitnessIdeal raw X
             (R.witness i.1
@@ -710,20 +709,20 @@ theorem allSelectedLocalLawIdeal_map_basicOpen
   · refine iSup_le fun i => ?_
     rw [localLawWitnessIdeal_map_basicOpen raw X _
       (hR.witness_compatible i.1 (hR.selected_closed V i.1 i.2))]
-    let j : {q : S.lawUniverse.Index //
+    let j : {q : S.equationSystem.Index //
         R.selected (X.underlying.affineBasicOpen f) q} :=
       ⟨i.1, (hR.selected_basicOpen V f i.1).mp i.2⟩
     simpa only [j, Subtype.coe_mk] using
-      (le_iSup (fun q : {q : S.lawUniverse.Index //
+      (le_iSup (fun q : {q : S.equationSystem.Index //
           R.selected (X.underlying.affineBasicOpen f) q} =>
         localLawWitnessIdeal raw X
           (R.witness q.1 (hR.selected_closed
             (X.underlying.affineBasicOpen f) q.1 q.2))
           (X.underlying.affineBasicOpen f)) j)
   · refine iSup_le fun i => ?_
-    let j : {q : S.lawUniverse.Index // R.selected V q} :=
+    let j : {q : S.equationSystem.Index // R.selected V q} :=
       ⟨i.1, (hR.selected_basicOpen V f i.1).mpr i.2⟩
-    have hj := le_iSup (fun q : {q : S.lawUniverse.Index // R.selected V q} =>
+    have hj := le_iSup (fun q : {q : S.equationSystem.Index // R.selected V q} =>
       Ideal.map
         (X.underlying.presheaf.map
           (homOfLE (X.underlying.basicOpen_le f)).op).hom
@@ -740,8 +739,8 @@ noncomputable def lawGeneratedIdealSheaf
     (hclosed : RequiredClosed raw X R) :
     X.underlying.IdealSheafData where
   ideal V :=
-    ⨆ i : {i : S.lawUniverse.Index //
-        S.lawUniverse.Required i ∧ R.selected V i},
+    ⨆ i : {i : S.equationSystem.Index //
+        S.equationSystem.Required i ∧ R.selected V i},
       localLawWitnessIdeal raw X
         (R.witness i.1 (hclosed.closed i.1 i.2.1)) V
   map_ideal_basicOpen :=
@@ -753,7 +752,7 @@ noncomputable def allLawGeneratedIdealSheaf
     (hR : IsClosedEquationalLawReading raw X R) :
     X.underlying.IdealSheafData where
   ideal V :=
-    ⨆ i : {i : S.lawUniverse.Index // R.selected V i},
+    ⨆ i : {i : S.equationSystem.Index // R.selected V i},
       localLawWitnessIdeal raw X
         (R.witness i.1 (hR.selected_closed V i.1 i.2)) V
   map_ideal_basicOpen := allSelectedLocalLawIdeal_map_basicOpen raw X R hR
@@ -765,8 +764,8 @@ noncomputable def allLawGeneratedIdealSheaf
     (hclosed : RequiredClosed raw X R)
     (V : X.underlying.affineOpens) :
     (lawGeneratedIdealSheaf raw X R hR hclosed).ideal V =
-      ⨆ i : {i : S.lawUniverse.Index //
-          S.lawUniverse.Required i ∧ R.selected V i},
+      ⨆ i : {i : S.equationSystem.Index //
+          S.equationSystem.Required i ∧ R.selected V i},
         localLawWitnessIdeal raw X
           (R.witness i.1 (hclosed.closed i.1 i.2.1)) V :=
   rfl
@@ -777,7 +776,7 @@ noncomputable def allLawGeneratedIdealSheaf
     (hR : IsClosedEquationalLawReading raw X R)
     (V : X.underlying.affineOpens) :
     (allLawGeneratedIdealSheaf raw X R hR).ideal V =
-      ⨆ i : {i : S.lawUniverse.Index // R.selected V i},
+      ⨆ i : {i : S.equationSystem.Index // R.selected V i},
         localLawWitnessIdeal raw X
           (R.witness i.1 (hR.selected_closed V i.1 i.2)) V :=
   rfl
@@ -791,9 +790,9 @@ theorem lawGeneratedIdealSheaf_le_all
       allLawGeneratedIdealSheaf raw X R hR := by
   intro V
   refine iSup_le fun i => ?_
-  let j : {q : S.lawUniverse.Index // R.selected V q} := ⟨i.1, i.2.2⟩
+  let j : {q : S.equationSystem.Index // R.selected V q} := ⟨i.1, i.2.2⟩
   simpa only [j, Subtype.coe_mk] using
-    (le_iSup (fun q : {q : S.lawUniverse.Index // R.selected V q} =>
+    (le_iSup (fun q : {q : S.equationSystem.Index // R.selected V q} =>
       localLawWitnessIdeal raw X
         (R.witness q.1 (hR.selected_closed V q.1 q.2)) V) j)
 
@@ -905,13 +904,13 @@ noncomputable def lawfulClosedDecoration
     (lawfulClosedDecoration raw X R hR hclosed).context = X.decoration.context :=
   rfl
 
-/-- Pullback of the decoration preserves the site law universe. -/
-@[simp] theorem lawfulClosedDecoration_lawUniverse
+/-- Pullback of the decoration preserves the site equation system. -/
+@[simp] theorem lawfulClosedDecoration_equationSystem
     (R : ClosedEquationalLawReading raw X)
     (hR : IsClosedEquationalLawReading raw X R)
     (hclosed : RequiredClosed raw X R) :
-    (lawfulClosedDecoration raw X R hR hclosed).lawUniverse raw =
-      X.decoration.lawUniverse raw :=
+    (lawfulClosedDecoration raw X R hR hclosed).equationSystem raw =
+      X.decoration.equationSystem raw :=
   rfl
 
 /-- Pullback of the decoration preserves the architecture signature. -/
@@ -970,7 +969,7 @@ theorem fullToRequiredLawfulMap_isClosedImmersion
 def LawIdealSound
     (R : ClosedEquationalLawReading raw X)
     (hR : IsClosedEquationalWitnessReading raw X R)
-    (i : S.lawUniverse.Index) (hi : R.closed i) : Prop :=
+    (i : S.equationSystem.Index) (hi : R.closed i) : Prop :=
   ∀ {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying),
     R.geometric.HoldsOn s i →
       (lawWitnessIdealSheaf raw X R hR i hi).comap s = ⊥
@@ -979,7 +978,7 @@ def LawIdealSound
 def LawIdealComplete
     (R : ClosedEquationalLawReading raw X)
     (hR : IsClosedEquationalWitnessReading raw X R)
-    (i : S.lawUniverse.Index) (hi : R.closed i) : Prop :=
+    (i : S.equationSystem.Index) (hi : R.closed i) : Prop :=
   ∀ {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying),
     (lawWitnessIdealSheaf raw X R hR i hi).comap s = ⊥ →
       R.geometric.HoldsOn s i
@@ -988,7 +987,7 @@ def LawIdealComplete
 def LawIdealExact
     (R : ClosedEquationalLawReading raw X)
     (hR : IsClosedEquationalWitnessReading raw X R)
-    (i : S.lawUniverse.Index) (hi : R.closed i) : Prop :=
+    (i : S.equationSystem.Index) (hi : R.closed i) : Prop :=
   ∀ {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying),
     R.geometric.HoldsOn s i ↔
       (lawWitnessIdealSheaf raw X R hR i hi).comap s = ⊥
@@ -997,7 +996,7 @@ def LawIdealExact
 theorem lawIdealExact_iff_sound_and_complete
     (R : ClosedEquationalLawReading raw X)
     (hR : IsClosedEquationalWitnessReading raw X R)
-    (i : S.lawUniverse.Index) (hi : R.closed i) :
+    (i : S.equationSystem.Index) (hi : R.closed i) :
     LawIdealExact raw X R hR i hi ↔
       LawIdealSound raw X R hR i hi ∧
         LawIdealComplete raw X R hR i hi := by
@@ -1012,7 +1011,7 @@ def RequiredLawIdealExact
     (R : ClosedEquationalLawReading raw X)
     (hR : IsClosedEquationalLawReading raw X R)
     (hclosed : RequiredClosed raw X R) : Prop :=
-  ∀ i (hi : S.lawUniverse.Required i),
+  ∀ i (hi : S.equationSystem.Required i),
     LawIdealExact raw X R hR.witness_compatible i (hclosed.closed i hi)
 
 /-- Law-ideal exactness for every selected law index. -/
@@ -1028,7 +1027,7 @@ def WitnessVanishes
     (hR : IsClosedEquationalLawReading raw X R)
     (hclosed : RequiredClosed raw X R)
     {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying) : Prop :=
-  ∀ i (hi : S.lawUniverse.Required i),
+  ∀ i (hi : S.equationSystem.Required i),
     (lawWitnessIdealSheaf raw X R hR.witness_compatible i
       (hclosed.closed i hi)).comap s = ⊥
 
@@ -1259,12 +1258,12 @@ theorem witnessVanishes_iff_idealLawfulAlong
             (hclosed.closed i hi) ≤
           lawGeneratedIdealSheaf raw X R hR hclosed := by
       intro V
-      let j : {q : S.lawUniverse.Index //
-          S.lawUniverse.Required q ∧ R.selected V q} :=
+      let j : {q : S.equationSystem.Index //
+          S.equationSystem.Required q ∧ R.selected V q} :=
         ⟨i, hi, hclosed.selected V i hi⟩
       simpa only [lawWitnessIdealSheaf_ideal, j, Subtype.coe_mk] using
-        (le_iSup (fun q : {q : S.lawUniverse.Index //
-            S.lawUniverse.Required q ∧ R.selected V q} =>
+        (le_iSup (fun q : {q : S.equationSystem.Index //
+            S.equationSystem.Required q ∧ R.selected V q} =>
           localLawWitnessIdeal raw X
             (R.witness q.1 (hclosed.closed q.1 q.2.1)) V) j)
     rw [eq_bot_iff]
@@ -1358,10 +1357,10 @@ theorem fullySemanticLawfulAlong_iff_fullIdealLawfulAlong
             (Scheme.IdealSheafData.map_gc s _ ⊥).mp h
         apply le_trans ?_ hagg
         intro V
-        let j : {q : S.lawUniverse.Index // R.selected V q} :=
+        let j : {q : S.equationSystem.Index // R.selected V q} :=
           ⟨i, hall.selected V i⟩
         simpa only [lawWitnessIdealSheaf_ideal, j, Subtype.coe_mk] using
-          (le_iSup (fun q : {q : S.lawUniverse.Index // R.selected V q} =>
+          (le_iSup (fun q : {q : S.equationSystem.Index // R.selected V q} =>
             localLawWitnessIdeal raw X
               (R.witness q.1 (hR.selected_closed V q.1 q.2)) V) j))
 
@@ -1386,8 +1385,8 @@ def RequiredObjectPointComparison
     (R : ClosedEquationalLawReading raw X)
     {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
     (Obj : ArchitectureObject U) : Prop :=
-  ∀ i, S.lawUniverse.Required i →
-    (R.geometric.HoldsOn s i ↔ (S.lawUniverse.law i).holds Obj)
+  ∀ i, S.equationSystem.Required i →
+    (R.geometric.HoldsOn s i ↔ S.equationSystem.EquationHolds i Obj)
 
 /-- Required semantic lawfulness agrees with object-level lawfulness under point comparison. -/
 theorem semanticLawfulAlong_iff_lawfulness
@@ -1395,32 +1394,12 @@ theorem semanticLawfulAlong_iff_lawfulness
     {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
     (Obj : ArchitectureObject U)
     (hpoint : RequiredObjectPointComparison raw X R s Obj) :
-    SemanticLawfulAlong raw X R s ↔ Lawfulness Obj S.lawUniverse := by
+    SemanticLawfulAlong raw X R s ↔ S.equationSystem.EquationLawful Obj := by
   constructor
   · intro h i hi
     exact (hpoint i hi).mp (h i hi)
   · intro h i hi
     exact (hpoint i hi).mpr (h i hi)
-
-/-- Required semantic lawfulness is equivalent to zero aggregate obstruction valuation. -/
-theorem semanticLawfulAlong_iff_omegaU_zero
-    (R : ClosedEquationalLawReading raw X)
-    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
-    (Obj : ArchitectureObject U)
-    {Value : Type u}
-    (valuation : ObstructionValuation U Value)
-    (aggregation : ZeroReflectingAggregation Value valuation.domain
-      S.lawUniverse.RequiredIndex)
-    (hpoint : RequiredObjectPointComparison raw X R s Obj)
-    (hsound : ∀ i : S.lawUniverse.RequiredIndex,
-      ObstructionSound valuation (S.lawUniverse.law i.1))
-    (hcomplete : ∀ i : S.lawUniverse.RequiredIndex,
-      ObstructionComplete valuation (S.lawUniverse.law i.1)) :
-    SemanticLawfulAlong raw X R s ↔
-      omegaU valuation S.lawUniverse aggregation Obj = valuation.domain.zero :=
-  (semanticLawfulAlong_iff_lawfulness raw X R s Obj hpoint).trans
-    (lawfulness_iff_omegaU_zero valuation S.lawUniverse aggregation
-      hsound hcomplete Obj)
 
 /-- Required semantic lawfulness is equivalent to vanishing of required signature axes. -/
 theorem semanticLawfulAlong_iff_requiredSignatureAxesZero
@@ -1428,34 +1407,10 @@ theorem semanticLawfulAlong_iff_requiredSignatureAxesZero
     {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
     (Obj : ArchitectureObject U) (Sig : SignatureAxes U)
     (hpoint : RequiredObjectPointComparison raw X R s Obj)
-    (haxis : Lawfulness Obj S.lawUniverse ↔
+    (haxis : S.equationSystem.EquationLawful Obj ↔
       RequiredSignatureAxesZero Obj Sig) :
     SemanticLawfulAlong raw X R s ↔ RequiredSignatureAxesZero Obj Sig :=
   (semanticLawfulAlong_iff_lawfulness raw X R s Obj hpoint).trans haxis
-
-/-- Actual factorization through the required closed subscheme is equivalent to zero aggregate valuation. -/
-theorem factorsThroughLawfulClosedSubscheme_iff_omegaU_zero
-    (R : ClosedEquationalLawReading raw X)
-    (hR : IsClosedEquationalLawReading raw X R)
-    (hclosed : RequiredClosed raw X R)
-    (hexact : RequiredLawIdealExact raw X R hR hclosed)
-    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
-    (Obj : ArchitectureObject U)
-    {Value : Type u}
-    (valuation : ObstructionValuation U Value)
-    (aggregation : ZeroReflectingAggregation Value valuation.domain
-      S.lawUniverse.RequiredIndex)
-    (hpoint : RequiredObjectPointComparison raw X R s Obj)
-    (hsound : ∀ i : S.lawUniverse.RequiredIndex,
-      ObstructionSound valuation (S.lawUniverse.law i.1))
-    (hcomplete : ∀ i : S.lawUniverse.RequiredIndex,
-      ObstructionComplete valuation (S.lawUniverse.law i.1)) :
-    Nonempty (FactorsThroughLawfulClosedSubscheme raw X R hR hclosed s) ↔
-      omegaU valuation S.lawUniverse aggregation Obj = valuation.domain.zero := by
-  have hcorr := lawfulnessIdealFactorizationCorrespondence raw X R hR hclosed hexact s
-  exact (hcorr.1.trans (hcorr.2.1.trans hcorr.2.2)).symm.trans
-    (semanticLawfulAlong_iff_omegaU_zero raw X R s Obj valuation aggregation
-      hpoint hsound hcomplete)
 
 /-- Actual factorization through the required closed subscheme is equivalent to signature-axis vanishing. -/
 theorem factorsThroughLawfulClosedSubscheme_iff_requiredSignatureAxesZero
@@ -1466,7 +1421,7 @@ theorem factorsThroughLawfulClosedSubscheme_iff_requiredSignatureAxesZero
     {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
     (Obj : ArchitectureObject U) (Sig : SignatureAxes U)
     (hpoint : RequiredObjectPointComparison raw X R s Obj)
-    (haxis : Lawfulness Obj S.lawUniverse ↔
+    (haxis : S.equationSystem.EquationLawful Obj ↔
       RequiredSignatureAxesZero Obj Sig) :
     Nonempty (FactorsThroughLawfulClosedSubscheme raw X R hR hclosed s) ↔
       RequiredSignatureAxesZero Obj Sig := by
@@ -1480,9 +1435,9 @@ theorem factorsThroughLawfulClosedSubscheme_iff_requiredSignatureAxesZero
 structure ClosedEquationalLawInclusion
     (R Q : ClosedEquationalLawReading raw X) where
   /-- The map from source laws to target laws. -/
-  lawMap : S.lawUniverse.Index → S.lawUniverse.Index
+  lawMap : S.equationSystem.Index → S.equationSystem.Index
   /-- The atom map associated to each source law. -/
-  atomMap : ∀ i : S.lawUniverse.Index, U.Atom → U.Atom
+  atomMap : ∀ i : S.equationSystem.Index, U.Atom → U.Atom
 
 /-- Primitive law inclusions are determined by their two maps. -/
 @[ext] theorem ClosedEquationalLawInclusion.ext
@@ -1500,8 +1455,8 @@ structure ClosedEquationalLawInclusion
 structure IsClosedEquationalLawInclusion
     {R Q : ClosedEquationalLawReading raw X}
     (e : ClosedEquationalLawInclusion raw X R Q) : Prop where
-  required_map : ∀ i, S.lawUniverse.Required i →
-    S.lawUniverse.Required (e.lawMap i)
+  required_map : ∀ i, S.equationSystem.Required i →
+    S.equationSystem.Required (e.lawMap i)
   closed_map : ∀ i, R.closed i → Q.closed (e.lawMap i)
   selected_map :
     ∀ V i, R.selected V i → Q.selected V (e.lawMap i)
@@ -1569,7 +1524,7 @@ theorem lawWitnessIdealSheaf_le
     (hQ : IsClosedEquationalLawReading raw X Q)
     (e : ClosedEquationalLawInclusion raw X R Q)
     (he : IsClosedEquationalLawInclusion raw X e)
-    (i : S.lawUniverse.Index) (hi : R.closed i) :
+    (i : S.equationSystem.Index) (hi : R.closed i) :
     lawWitnessIdealSheaf raw X R hR.witness_compatible i hi ≤
       lawWitnessIdealSheaf raw X Q hQ.witness_compatible
         (e.lawMap i) (he.closed_map i hi) := by
@@ -1592,11 +1547,11 @@ theorem lawGeneratedIdealSheaf_mono
       lawGeneratedIdealSheaf raw X Q hQ hQclosed := by
   intro V
   refine iSup_le fun i => ?_
-  let j : {q : S.lawUniverse.Index //
-      S.lawUniverse.Required q ∧ Q.selected V q} :=
+  let j : {q : S.equationSystem.Index //
+      S.equationSystem.Required q ∧ Q.selected V q} :=
     ⟨e.lawMap i.1, he.required_map i.1 i.2.1, he.selected_map V i.1 i.2.2⟩
-  apply le_trans ?_ (le_iSup (fun q : {q : S.lawUniverse.Index //
-      S.lawUniverse.Required q ∧ Q.selected V q} =>
+  apply le_trans ?_ (le_iSup (fun q : {q : S.equationSystem.Index //
+      S.equationSystem.Required q ∧ Q.selected V q} =>
     localLawWitnessIdeal raw X
       (Q.witness q.1 (hQclosed.closed q.1 q.2.1)) V) j)
   simpa only [lawWitnessIdealSheaf_ideal, j, Subtype.coe_mk] using
@@ -1614,9 +1569,9 @@ theorem allLawGeneratedIdealSheaf_mono
       allLawGeneratedIdealSheaf raw X Q hQ := by
   intro V
   refine iSup_le fun i => ?_
-  let j : {q : S.lawUniverse.Index // Q.selected V q} :=
+  let j : {q : S.equationSystem.Index // Q.selected V q} :=
     ⟨e.lawMap i.1, he.selected_map V i.1 i.2⟩
-  apply le_trans ?_ (le_iSup (fun q : {q : S.lawUniverse.Index // Q.selected V q} =>
+  apply le_trans ?_ (le_iSup (fun q : {q : S.equationSystem.Index // Q.selected V q} =>
     localLawWitnessIdeal raw X
       (Q.witness q.1 (hQ.selected_closed V q.1 q.2)) V) j)
   simpa only [lawWitnessIdealSheaf_ideal, j, Subtype.coe_mk] using

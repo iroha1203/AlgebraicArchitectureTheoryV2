@@ -326,10 +326,6 @@ def circuits {U : AtomCarrier.{u}} (K : ObjectAlgebra U) :
     EquationCircuitReading K.equationSystem :=
   K.equationReading.circuits
 
-/-- The old law reading generated one-way from the primary equation reading. -/
-def lawReading {U : AtomCarrier.{u}} (K : ObjectAlgebra U) : LawReading U :=
-  K.equationReading.toLegacyLawReading
-
 /-- I.定義10.1: read an object of the algebra. -/
 def getObject {U : AtomCarrier.{u}} (algebra : ObjectAlgebra U)
     (object : algebra.Obj) : ArchitectureObject U :=

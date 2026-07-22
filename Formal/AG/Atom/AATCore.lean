@@ -135,10 +135,6 @@ theorem ext {U : AtomCarrier.{u}} {R S : CoreReading U}
   cases hoperationReading
   rfl
 
-/-- The old law reading generated one-way from the primary equation reading. -/
-def lawReading {U : AtomCarrier.{u}} (R : CoreReading U) : LawReading U :=
-  R.equationReading.toLegacyLawReading
-
 end CoreReading
 
 namespace AATCorePackage
@@ -272,11 +268,6 @@ theorem object_family_mem_iff_extracts {U : AtomCarrier.{u}}
   rw [core.object_configuration_eq]
   exact core.configuration_family_mem_iff_extracts atom
 
-/-- The generated algebra's legacy display is generated from the core equation reading. -/
-theorem algebra_lawReading_eq {U : AtomCarrier.{u}} (core : AATCorePackage U) :
-    core.algebra.lawReading = core.reading.lawReading :=
-  rfl
-
 /-- The generated algebra retains the core reading's equation-indexed circuits. -/
 theorem algebra_circuitReading_eq {U : AtomCarrier.{u}}
     (core : AATCorePackage U) :
@@ -388,12 +379,6 @@ theorem generate_object_configuration_eq
     (AATCorePackage.generate S r).object.configuration =
       (AATCorePackage.generate S r).configuration :=
   r.objectReading.configuration_eq _
-
-/-- The generated algebra's legacy law view is derived from its equation reading. -/
-theorem generate_lawReading_eq {U : AtomCarrier.{u}}
-    (S : AtomAxiomSystem U) (r : CoreReading U) :
-    (AATCorePackage.generate S r).algebra.lawReading = r.lawReading :=
-  rfl
 
 /-- The distinguished algebra object is the generated architecture object. -/
 theorem generate_algebra_base_object

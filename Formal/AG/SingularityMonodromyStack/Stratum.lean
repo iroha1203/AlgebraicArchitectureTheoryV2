@@ -57,9 +57,9 @@ def coverageTopology (_P : StratumReadingParameter S) :
     GrothendieckTopology S.category :=
   S.topology
 
-/-- VI.原則2.2: expose the selected law universe. -/
-theorem lawUniverse_eq (_P : StratumReadingParameter S) :
-    S.lawUniverse = S.lawUniverse :=
+/-- VI.原則2.2: expose the selected architectural equation system. -/
+theorem equationSystem_eq (_P : StratumReadingParameter S) :
+    S.equationSystem = S.equationSystem :=
   rfl
 
 /-- VI.原則2.2: expose the selected coefficient structure. -/

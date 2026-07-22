@@ -60,9 +60,23 @@ noncomputable def selectedGeometryReading :
 noncomputable abbrev site : Site.AATSite twoPatchCorePackage.object :=
   selectedGeometryReading.toAATSite
 
+/-- Every equation in the generated singleton ringed-site fixture is required. -/
+theorem site_equation_required (index : site.equationSystem.Index) :
+    site.equationSystem.Required index := by
+  cases index
+  rfl
+
+/-- Residual vanishing on the generated ringed-site equation is NoCycle. -/
+@[simp] theorem site_equationHolds_iff_noCycleLaw
+    (A : ArchitectureObject carrier) :
+    site.equationSystem.EquationHolds PUnit.unit A ↔ noCycleLaw.holds A := by
+  change (equationSystem twoPatchContextPreorder).EquationHolds PUnit.unit A ↔
+    noCycleLaw.holds A
+  exact equationHolds_iff_noCycleLaw twoPatchContextPreorder A
+
 /-- The generated compatibility law of the ringed-site fixture is NoCycle. -/
 @[simp] theorem site_law_eq_noCycleLaw :
-    site.lawUniverse.law PUnit.unit = noCycleLaw := by
+    site.equationSystem.toLegacyLawUniverse.law PUnit.unit = noCycleLaw := by
   change (equationSystem twoPatchContextPreorder).toLegacyLawUniverse.law
     PUnit.unit = noCycleLaw
   exact equationSystem_legacy_law_eq_noCycleLaw twoPatchContextPreorder
@@ -285,17 +299,20 @@ theorem raw_leftToBase_quotientDesc_X_ne_X :
 
 /-- The actual finite detector accepts the selected signed query datum. -/
 theorem detector_accepts :
-    coreReading.lawReading.circuits.accepts PUnit.unit cycleQueryDatum = true :=
+    coreReading.equationReading.toLegacyLawReading.circuits.accepts
+      PUnit.unit cycleQueryDatum = true :=
   cycleQueryDatum_accepted
 
 /-- The same detector rejects a distinct empty datum. -/
 theorem detector_rejects :
-    coreReading.lawReading.circuits.accepts PUnit.unit ⟨[]⟩ = false :=
+    coreReading.equationReading.toLegacyLawReading.circuits.accepts
+      PUnit.unit ⟨[]⟩ = false :=
   emptyQueryDatum_rejected
 
 /-- Soundness of the accepted detector datum produces the generated law failure. -/
 theorem detector_sound :
-    ¬ (corePackage.algebra.lawReading.lawUniverse.law PUnit.unit).holds
+    ¬ (corePackage.algebra.equationReading.toLegacyLawReading.lawUniverse.law
+      PUnit.unit).holds
       (corePackage.algebra.object corePackage.baseObject) :=
   generatedCycleCircuit_sound
 

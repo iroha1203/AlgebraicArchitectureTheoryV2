@@ -649,7 +649,7 @@ theorem integerGeneratedLawQuotientIsSheaf :
 /-- Every integer witness ideal is contained in `span {2}`. -/
 theorem integerLaw_lawWitnessIdeal_le
     (W : FiniteModel.site.category)
-    (lawIndex : FiniteModel.site.lawUniverse.Index) :
+    (lawIndex : FiniteModel.site.equationSystem.toLegacyLawUniverse.Index) :
     integerLawEquationCore.lawWitnessIdeal W lawIndex ≤
       Ideal.span ({(2 : ℤ)} : Set ℤ) := by
   refine Ideal.span_le.mpr ?_
@@ -722,13 +722,13 @@ theorem integerGeneratedLawQuotient_nontrivial (W : FiniteModel.site.category) :
 /-- Every selected integer violation witness has zero quotient class. -/
 theorem integerLaw_violationWitness_class_eq_zero
     (W : FiniteModel.site.category)
-    (lawIndex : FiniteModel.site.lawUniverse.Index)
+    (lawIndex : FiniteModel.site.equationSystem.Index)
     (atom : FiniteModel.carrier.Atom) :
     Ideal.Quotient.mk (integerLawEquationCore.obstructionIdeal W)
         (integerLawEquationCore.violationWitness W lawIndex atom) = 0 :=
   Ideal.Quotient.eq_zero_iff_mem.mpr
     (integerLawEquationCore.lawWitnessIdeal_le_obstructionIdeal W
-      (FiniteModel.lawUniverse_required lawIndex)
+      (FiniteModel.site_equation_required lawIndex)
       (Ideal.subset_span ⟨atom, rfl⟩))
 
 /-- X.例9.1: displayed defect source whose defect lies in the selected witness ideal. -/
@@ -758,7 +758,7 @@ theorem displayedRequiredLawsHoldOn :
     defectSource.DisplayedRequiredLawsHoldOn := by
   intro i lawIndex hmem hrequired
   cases lawIndex
-  exact (FiniteModel.site_law_holds_iff_noCycleLaw lawfulObject).mpr
+  exact (FiniteModel.site_equationHolds_iff_noCycleLaw lawfulObject).mpr
     lawfulObject_noCycleLaw
 
 /-!
@@ -804,7 +804,7 @@ def nonlawfulDefectSource :
     intro _i lawIndex _hmem _hrequired hholds
     cases lawIndex
     exact False.elim (nonlawfulObject_not_noCycleLaw
-      ((FiniteModel.site_law_holds_iff_noCycleLaw nonlawfulObject).mp hholds))
+      ((FiniteModel.site_equationHolds_iff_noCycleLaw nonlawfulObject).mp hholds))
 
 /-! ## Native generated quotient coefficient for example 9.1 -/
 
@@ -1936,7 +1936,7 @@ theorem integerLawFiniteFreeDisplayedRequiredLawsHoldOn :
     integerLawFiniteFreeDefectSource.DisplayedRequiredLawsHoldOn := by
   intro _ lawIndex _ _
   cases lawIndex
-  exact (FiniteModel.site_law_holds_iff_noCycleLaw lawfulObject).mpr
+  exact (FiniteModel.site_equationHolds_iff_noCycleLaw lawfulObject).mpr
     lawfulObject_noCycleLaw
 
 /--
@@ -2048,7 +2048,7 @@ theorem generatedLawFiniteFreeDisplayedRequiredLawsHoldOn :
     generatedLawFiniteFreeDefectSource.DisplayedRequiredLawsHoldOn := by
   intro _ lawIndex _ _
   cases lawIndex
-  exact (FiniteModel.site_law_holds_iff_noCycleLaw lawfulObject).mpr
+  exact (FiniteModel.site_equationHolds_iff_noCycleLaw lawfulObject).mpr
     lawfulObject_noCycleLaw
 
 /--
@@ -2196,7 +2196,7 @@ def mixedDefectSource :
     | true =>
         cases lawIndex
         exact False.elim (nonlawfulObject_not_noCycleLaw
-          ((FiniteModel.site_law_holds_iff_noCycleLaw nonlawfulObject).mp hholds))
+          ((FiniteModel.site_equationHolds_iff_noCycleLaw nonlawfulObject).mp hholds))
 
 /-- Cover-relative two-chart presentation used by the mixed-source counterexample. -/
 def mixedCoverRelativeCover :
@@ -2252,16 +2252,18 @@ theorem mixedBodySource_has_displayedRequiredLawRestrictionEvaluator :
     mixedBodySource.DisplayedRequiredLawRestrictionEvaluator := by
   intro sigma tau Z gSigma gTau hcomm lawIndexSigma lawIndexTau
     hmemSigma hmemTau hrequiredSigma hrequiredTau hholdsSigma hholdsTau
+  cases lawIndexSigma
+  cases lawIndexTau
   cases sigma <;> cases tau
   · simp [mixedBodySource, mixedDefectSource,
       LawAlgebra.LawEquationDefectSource.interpret]
   · exact False.elim
       (nonlawfulObject_not_noCycleLaw
-        ((FiniteModel.site_law_holds_iff_noCycleLaw nonlawfulObject).mp
+        ((FiniteModel.site_equationHolds_iff_noCycleLaw nonlawfulObject).mp
           (by simpa [mixedDefectSource] using hholdsTau)))
   · exact False.elim
       (nonlawfulObject_not_noCycleLaw
-        ((FiniteModel.site_law_holds_iff_noCycleLaw nonlawfulObject).mp
+        ((FiniteModel.site_equationHolds_iff_noCycleLaw nonlawfulObject).mp
           (by simpa [mixedDefectSource] using hholdsSigma)))
   · have heq : gSigma = gTau := Subsingleton.elim _ _
     subst gTau

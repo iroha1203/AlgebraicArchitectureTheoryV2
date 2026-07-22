@@ -562,7 +562,7 @@ theorem kiteLawQuotientIsSheaf :
 
 /-- #3719: every kite witness ideal is contained in `span {2}`. -/
 theorem kiteLaw_lawWitnessIdeal_le (W : kiteSite.category)
-    (lawIndex : kiteSite.lawUniverse.Index) :
+    (lawIndex : kiteSite.equationSystem.toLegacyLawUniverse.Index) :
     kiteLawCore.lawWitnessIdeal W lawIndex ≤
       Ideal.span ({(2 : ℤ)} : Set ℤ) := by
   refine Ideal.span_le.mpr ?_

@@ -1,0 +1,80 @@
+import Formal.AG.Atom.LawfulnessZero
+import Formal.AG.Equation.Legacy
+import Formal.AG.LawAlgebra.ClosedEquationalGeometry
+
+/-!
+# Legacy obstruction-valuation comparisons
+
+This compatibility leaf compares equation-generated lawfulness with the older
+law-indexed obstruction valuation. The standard closed-equational geometry
+module uses `ArchitecturalEquationSystem` directly and does not import the
+legacy bridge.
+-/
+
+noncomputable section
+
+namespace AAT.AG.LawAlgebra
+
+open CategoryTheory
+
+universe u v
+
+variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+variable {S : Site.AATSite A} {k : Type v} [CommRing k]
+variable (raw : RawAmbientRestrictionSystem S k)
+variable [HasSheafify S.topology (AATCommAlgCat k)]
+variable (X : StandardArchitectureScheme raw)
+
+/-- Required equation fulfillment agrees with zero in the legacy aggregate valuation. -/
+theorem semanticLawfulAlong_iff_omegaU_zero
+    (R : ClosedEquationalLawReading raw X)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
+    (Obj : ArchitectureObject U)
+    {Value : Type u}
+    (valuation : ObstructionValuation U Value)
+    (aggregation : ZeroReflectingAggregation Value valuation.domain
+      S.equationSystem.toLegacyLawUniverse.RequiredIndex)
+    (hpoint : RequiredObjectPointComparison raw X R s Obj)
+    (hsound : ∀ i : S.equationSystem.toLegacyLawUniverse.RequiredIndex,
+      ObstructionSound valuation
+        (S.equationSystem.toLegacyLawUniverse.law i.1))
+    (hcomplete : ∀ i : S.equationSystem.toLegacyLawUniverse.RequiredIndex,
+      ObstructionComplete valuation
+        (S.equationSystem.toLegacyLawUniverse.law i.1)) :
+    SemanticLawfulAlong raw X R s ↔
+      omegaU valuation S.equationSystem.toLegacyLawUniverse aggregation Obj =
+        valuation.domain.zero :=
+  (semanticLawfulAlong_iff_lawfulness raw X R s Obj hpoint).trans
+    ((S.equationSystem.equationLawful_iff_legacyLawfulness Obj).trans
+      (lawfulness_iff_omegaU_zero valuation
+        S.equationSystem.toLegacyLawUniverse aggregation
+        hsound hcomplete Obj))
+
+/-- Required closed-subscheme factorization agrees with the legacy aggregate valuation. -/
+theorem factorsThroughLawfulClosedSubscheme_iff_omegaU_zero
+    (R : ClosedEquationalLawReading raw X)
+    (hR : IsClosedEquationalLawReading raw X R)
+    (hclosed : RequiredClosed raw X R)
+    (hexact : RequiredLawIdealExact raw X R hR hclosed)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
+    (Obj : ArchitectureObject U)
+    {Value : Type u}
+    (valuation : ObstructionValuation U Value)
+    (aggregation : ZeroReflectingAggregation Value valuation.domain
+      S.equationSystem.toLegacyLawUniverse.RequiredIndex)
+    (hpoint : RequiredObjectPointComparison raw X R s Obj)
+    (hsound : ∀ i : S.equationSystem.toLegacyLawUniverse.RequiredIndex,
+      ObstructionSound valuation
+        (S.equationSystem.toLegacyLawUniverse.law i.1))
+    (hcomplete : ∀ i : S.equationSystem.toLegacyLawUniverse.RequiredIndex,
+      ObstructionComplete valuation
+        (S.equationSystem.toLegacyLawUniverse.law i.1)) :
+    Nonempty (FactorsThroughLawfulClosedSubscheme raw X R hR hclosed s) ↔
+      omegaU valuation S.equationSystem.toLegacyLawUniverse aggregation Obj =
+        valuation.domain.zero := by
+  have hcorr := lawfulnessIdealFactorizationCorrespondence raw X R hR hclosed hexact s
+  exact (hcorr.1.trans (hcorr.2.1.trans hcorr.2.2)).symm.trans
+    (semanticLawfulAlong_iff_omegaU_zero raw X R s Obj valuation aggregation
+      hpoint hsound hcomplete)
+
+end AAT.AG.LawAlgebra

@@ -5584,7 +5584,7 @@ private theorem reference_ofIdealTop_span_comap_eq_bot_iff
 private theorem referenceCore_lawIdealExact
     (G : SemanticLawEquationWitnessIdealCore referenceSite)
     (B : SemanticLawEquationSchemeBridge referenceRaw G)
-    (i : referenceSite.lawUniverse.Index) :
+    (i : referenceSite.equationSystem.toLegacyLawUniverse.Index) :
     LawIdealExact referenceRaw referenceScheme
       (ClosedEquationalLawReading.ofSemanticCore referenceRaw
         referenceScheme G B)
@@ -6365,14 +6365,15 @@ private theorem reference_generated_top_eq_span
   · refine iSup_le fun i => ?_
     cases i.1
     exact (reference_local_top_eq_span G B _).le
-  · let idx : {i : referenceSite.lawUniverse.Index //
-        referenceSite.lawUniverse.Required i ∧
+  · let idx : {i : referenceSite.equationSystem.toLegacyLawUniverse.Index //
+        referenceSite.equationSystem.toLegacyLawUniverse.Required i ∧
           reading.selected ambientTopAffineOpen i} :=
       ⟨PUnit.unit, AAT.AG.FiniteModel.lawUniverse_required PUnit.unit,
         ClosedEquationalLawReading.ofSemanticCore_selected referenceRaw
           referenceScheme G B ambientTopAffineOpen PUnit.unit⟩
-    have h := le_iSup (fun i : {i : referenceSite.lawUniverse.Index //
-      referenceSite.lawUniverse.Required i ∧
+    have h := le_iSup (fun i :
+      {i : referenceSite.equationSystem.toLegacyLawUniverse.Index //
+        referenceSite.equationSystem.toLegacyLawUniverse.Required i ∧
         reading.selected ambientTopAffineOpen i} =>
         localLawWitnessIdeal referenceRaw referenceScheme
           (reading.witness i.1 (required.closed i.1 i.2.1))
@@ -6423,14 +6424,14 @@ private theorem reference_generated_eq_witness
         (ClosedEquationalLawReading.ofSemanticCore_witnessCompatible referenceRaw
           referenceScheme G B)
         PUnit.unit (show PUnit.unit ∈
-          (Set.univ : Set referenceSite.lawUniverse.Index) from
+          (Set.univ : Set referenceSite.equationSystem.toLegacyLawUniverse.Index) from
             Set.mem_univ PUnit.unit) := by
   letI : IsAffine referenceScheme.underlying := by
     rw [referenceScheme_underlying, ambientScheme_eq]
     infer_instance
   apply Scheme.IdealSheafData.ext_of_isAffine
   let hi : PUnit.unit ∈
-      (Set.univ : Set referenceSite.lawUniverse.Index) :=
+      (Set.univ : Set referenceSite.equationSystem.toLegacyLawUniverse.Index) :=
     Set.mem_univ PUnit.unit
   have hw := lawWitnessIdealSheaf_ofGlobalSections referenceRaw
     referenceScheme
@@ -8084,10 +8085,10 @@ theorem weakToStrong_valid :
       referenceRaw referenceScheme weakToStrong where
   required_map := fun i hi => by simpa [weakToStrong] using hi
   closed_map := fun i _ => by
-    change i ∈ (Set.univ : Set referenceSite.lawUniverse.Index)
+    change i ∈ (Set.univ : Set referenceSite.equationSystem.toLegacyLawUniverse.Index)
     exact Set.mem_univ i
   selected_map := fun V i _ => by
-    change i ∈ (Set.univ : Set referenceSite.lawUniverse.Index)
+    change i ∈ (Set.univ : Set referenceSite.equationSystem.toLegacyLawUniverse.Index)
     exact Set.mem_univ i
   coordinate_eq := by
     intro i hi V a
@@ -8222,10 +8223,10 @@ theorem strongToRigid_valid :
       referenceRaw referenceScheme strongToRigid where
   required_map := fun i hi => by simpa [strongToRigid] using hi
   closed_map := fun i _ => by
-    change i ∈ (Set.univ : Set referenceSite.lawUniverse.Index)
+    change i ∈ (Set.univ : Set referenceSite.equationSystem.toLegacyLawUniverse.Index)
     exact Set.mem_univ i
   selected_map := fun V i _ => by
-    change i ∈ (Set.univ : Set referenceSite.lawUniverse.Index)
+    change i ∈ (Set.univ : Set referenceSite.equationSystem.toLegacyLawUniverse.Index)
     exact Set.mem_univ i
   coordinate_eq := by
     intro i hi V a
@@ -8659,10 +8660,10 @@ theorem coefficientChangedWeakToStrong_valid :
   required_map := fun i hi => by
     simpa [coefficientChangedWeakToStrong] using hi
   closed_map := fun i _ => by
-    change i ∈ (Set.univ : Set referenceSite.lawUniverse.Index)
+    change i ∈ (Set.univ : Set referenceSite.equationSystem.toLegacyLawUniverse.Index)
     exact Set.mem_univ i
   selected_map := fun V i _ => by
-    change i ∈ (Set.univ : Set referenceSite.lawUniverse.Index)
+    change i ∈ (Set.univ : Set referenceSite.equationSystem.toLegacyLawUniverse.Index)
     exact Set.mem_univ i
   coordinate_eq := by
     intro i hi V a

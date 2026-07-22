@@ -1,5 +1,5 @@
 import Formal.AG.RepresentationAnalysis.PeriodSeparation
-import Formal.AG.LawAlgebra.ClosedEquationalGeometry
+import Formal.AG.LawAlgebra.ClosedEquationalGeometryLegacy
 import Formal.AG.Cohomology.FlatnessCriterion
 import Formal.AG.Derived.Intersection
 
@@ -302,13 +302,13 @@ structure CurvatureLawfulFactorizationContext
     {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
     (Obj : ArchitectureObject U) {Value : Type u}
     (valuation : ObstructionValuation U Value)
-    (aggregation : ZeroReflectingAggregation Value valuation.domain S.lawUniverse.RequiredIndex)
-    extends CurvatureReadingContext S.lawUniverse valuation aggregation where
+    (aggregation : ZeroReflectingAggregation Value valuation.domain S.equationSystem.toLegacyLawUniverse.RequiredIndex)
+    extends CurvatureReadingContext S.equationSystem.toLegacyLawUniverse valuation aggregation where
   pointComparison : LawAlgebra.RequiredObjectPointComparison raw X R s Obj
   obstructionSoundness :
-    ∀ i : S.lawUniverse.RequiredIndex, ObstructionSound valuation (S.lawUniverse.law i.1)
+    ∀ i : S.equationSystem.toLegacyLawUniverse.RequiredIndex, ObstructionSound valuation (S.equationSystem.toLegacyLawUniverse.law i.1)
   obstructionCompleteness :
-    ∀ i : S.lawUniverse.RequiredIndex, ObstructionComplete valuation (S.lawUniverse.law i.1)
+    ∀ i : S.equationSystem.toLegacyLawUniverse.RequiredIndex, ObstructionComplete valuation (S.equationSystem.toLegacyLawUniverse.law i.1)
 
 /--
 VII.定義7.2: comparison data between signature readings and actual lawful
@@ -330,7 +330,8 @@ structure SignatureLawfulFactorizationContext
     (Obj : ArchitectureObject U) (Sig : SignatureAxes U) where
   signatureProfile : SignatureReadingProfile Sig
   pointComparison : LawAlgebra.RequiredObjectPointComparison raw X R s Obj
-  axisExactness : Lawfulness Obj S.lawUniverse ↔ RequiredSignatureAxesZero Obj Sig
+  axisExactness : S.equationSystem.EquationLawful Obj ↔
+    RequiredSignatureAxesZero Obj Sig
 
 namespace CurvatureLawfulFactorizationContext
 
@@ -346,7 +347,7 @@ variable {hexact : LawAlgebra.RequiredLawIdealExact raw X R hR hclosed}
 variable {T : AlgebraicGeometry.Scheme} {s : T ⟶ X.underlying}
 variable {Value : Type u} {valuation : ObstructionValuation U Value}
 variable {aggregation :
-  ZeroReflectingAggregation Value valuation.domain S.lawUniverse.RequiredIndex}
+  ZeroReflectingAggregation Value valuation.domain S.equationSystem.toLegacyLawUniverse.RequiredIndex}
 
 /-- Zero curvature produces an actual factorization through the lawful closed subscheme. -/
 theorem factorsThroughLawfulClosedSubscheme_of_curvature_zero
