@@ -18,6 +18,11 @@ This is the comparison-level quotient surface.  It deliberately does not
 require chart finiteness, cochain finiteness, finite-dimensionality, or a
 semantic repair cover.  Finite cover data belongs to the bounded §4 surface
 and concrete instances, not to the general H1 comparison theorem.
+
+The additive regime covers all three displayed degrees: `C2` carries its
+coefficient group and `delta1` is additive, so degree-one cocycles are closed
+under the group operations and `H1` below is a genuine quotient group rather
+than a bare quotient set.
 -/
 structure SemanticRepairAdditiveH1Surface where
   C0 : Type y
@@ -30,17 +35,28 @@ structure SemanticRepairAdditiveH1Surface where
   residual : C1
   [c0AddCommGroup : AddCommGroup C0]
   [c1AddCommGroup : AddCommGroup C1]
+  [c2AddCommGroup : AddCommGroup C2]
   zero1_eq_zero : zero1 = 0
+  zero2_eq_zero : zero2 = 0
   delta0_zero : delta0 0 = 0
   delta0_add : forall left right, delta0 (left + right) = delta0 left + delta0 right
   delta0_neg : forall primitive, delta0 (-primitive) = -delta0 primitive
+  delta1_add : forall left right, delta1 (left + right) = delta1 left + delta1 right
+  delta1_neg : forall cochain, delta1 (-cochain) = -delta1 cochain
   zero1_cocycle : delta1 zero1 = zero2
   delta1_delta0_eq_zero : forall primitive, delta1 (delta0 primitive) = zero2
   residual_cocycle : delta1 residual = zero2
 
 namespace SemanticRepairAdditiveH1Surface
 
-attribute [instance] c0AddCommGroup c1AddCommGroup
+attribute [instance] c0AddCommGroup c1AddCommGroup c2AddCommGroup
+
+/-- X.定義7.1: the degree-one differential kills the group zero. -/
+theorem delta1_zero (data : SemanticRepairAdditiveH1Surface) :
+    data.delta1 0 = 0 := by
+  have h := data.zero1_cocycle
+  rw [data.zero1_eq_zero, data.zero2_eq_zero] at h
+  exact h
 
 /-- X.定理7.2: finite-free semantic 1-cocycles. -/
 def Cocycle (data : SemanticRepairAdditiveH1Surface) :=
@@ -125,6 +141,198 @@ def zeroClass (data : SemanticRepairAdditiveH1Surface) :
 /-- X.定理7.2: selected residual class vanishes in semantic additive H1. -/
 def H1Zero (data : SemanticRepairAdditiveH1Surface) : Prop :=
   data.residualClass = data.zeroClass
+
+/-- X.定理7.2: `delta1` kills natural-number multiples of cocycle values. -/
+theorem delta1_nsmul (data : SemanticRepairAdditiveH1Surface)
+    (n : Nat) (cochain : data.C1)
+    (hcochain : data.delta1 cochain = data.zero2) :
+    data.delta1 (n • cochain) = data.zero2 := by
+  induction n with
+  | zero =>
+      rw [zero_nsmul, data.delta1_zero, data.zero2_eq_zero]
+  | succ n ih =>
+      rw [succ_nsmul, data.delta1_add, ih, hcochain, data.zero2_eq_zero,
+        add_zero]
+
+/-- X.定理7.2: `delta1` kills integer multiples of cocycle values. -/
+theorem delta1_zsmul (data : SemanticRepairAdditiveH1Surface)
+    (n : Int) (cochain : data.C1)
+    (hcochain : data.delta1 cochain = data.zero2) :
+    data.delta1 (n • cochain) = data.zero2 := by
+  cases n with
+  | ofNat m =>
+      rw [Int.ofNat_eq_natCast, natCast_zsmul]
+      exact data.delta1_nsmul m cochain hcochain
+  | negSucc m =>
+      rw [negSucc_zsmul, data.delta1_neg,
+        data.delta1_nsmul (m + 1) cochain hcochain, data.zero2_eq_zero,
+        neg_zero]
+
+/-- X.定理7.2: `delta0` commutes with natural-number multiples. -/
+theorem delta0_nsmul (data : SemanticRepairAdditiveH1Surface)
+    (n : Nat) (primitive : data.C0) :
+    data.delta0 (n • primitive) = n • data.delta0 primitive := by
+  induction n with
+  | zero =>
+      rw [zero_nsmul, zero_nsmul, data.delta0_zero]
+  | succ n ih =>
+      rw [succ_nsmul, succ_nsmul, data.delta0_add, ih]
+
+/-- X.定理7.2: `delta0` commutes with integer multiples. -/
+theorem delta0_zsmul (data : SemanticRepairAdditiveH1Surface)
+    (n : Int) (primitive : data.C0) :
+    data.delta0 (n • primitive) = n • data.delta0 primitive := by
+  cases n with
+  | ofNat m =>
+      rw [Int.ofNat_eq_natCast, natCast_zsmul, natCast_zsmul,
+        data.delta0_nsmul]
+  | negSucc m =>
+      rw [negSucc_zsmul, negSucc_zsmul, data.delta0_neg, data.delta0_nsmul]
+
+/-- X.定理7.2: zero is a semantic 1-cocycle. -/
+instance cocycleZero (data : SemanticRepairAdditiveH1Surface) :
+    Zero data.Cocycle :=
+  ⟨⟨0, by rw [data.delta1_zero, data.zero2_eq_zero]⟩⟩
+
+/-- X.定理7.2: semantic 1-cocycles are closed under addition. -/
+instance cocycleAdd (data : SemanticRepairAdditiveH1Surface) :
+    Add data.Cocycle :=
+  ⟨fun left right =>
+    ⟨left.1 + right.1, by
+      rw [data.delta1_add left.1 right.1, left.2, right.2, data.zero2_eq_zero,
+        add_zero]⟩⟩
+
+/-- X.定理7.2: semantic 1-cocycles are closed under negation. -/
+instance cocycleNeg (data : SemanticRepairAdditiveH1Surface) :
+    Neg data.Cocycle :=
+  ⟨fun cochain =>
+    ⟨-cochain.1, by
+      rw [data.delta1_neg cochain.1, cochain.2, data.zero2_eq_zero,
+        neg_zero]⟩⟩
+
+/-- X.定理7.2: semantic 1-cocycles are closed under subtraction. -/
+instance cocycleSub (data : SemanticRepairAdditiveH1Surface) :
+    Sub data.Cocycle :=
+  ⟨fun left right =>
+    ⟨left.1 - right.1, by
+      rw [sub_eq_add_neg, data.delta1_add, data.delta1_neg, left.2, right.2,
+        data.zero2_eq_zero, neg_zero, add_zero]⟩⟩
+
+/-- X.定理7.2: semantic 1-cocycles are closed under natural multiples. -/
+instance cocycleSMulNat (data : SemanticRepairAdditiveH1Surface) :
+    SMul Nat data.Cocycle :=
+  ⟨fun n cochain => ⟨n • cochain.1, data.delta1_nsmul n cochain.1 cochain.2⟩⟩
+
+/-- X.定理7.2: semantic 1-cocycles are closed under integer multiples. -/
+instance cocycleSMulInt (data : SemanticRepairAdditiveH1Surface) :
+    SMul Int data.Cocycle :=
+  ⟨fun n cochain => ⟨n • cochain.1, data.delta1_zsmul n cochain.1 cochain.2⟩⟩
+
+/--
+X.定理7.2: semantic 1-cocycles form an abelian group because `delta1` is
+additive and kills zero; the group laws transfer along the injective value
+map.
+-/
+instance cocycleAddCommGroup (data : SemanticRepairAdditiveH1Surface) :
+    AddCommGroup data.Cocycle :=
+  Function.Injective.addCommGroup
+    (fun cochain : data.Cocycle => cochain.1) Subtype.val_injective
+    rfl (fun _ _ => rfl) (fun _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl)
+    (fun _ _ => rfl)
+
+/-- X.定理7.2: the zero of semantic additive H1 is the selected zero class. -/
+instance h1Zero (data : SemanticRepairAdditiveH1Surface) : Zero data.H1 :=
+  ⟨data.zeroClass⟩
+
+/-- X.定理7.2: addition descends to semantic additive H1. -/
+instance h1Add (data : SemanticRepairAdditiveH1Surface) : Add data.H1 :=
+  ⟨fun left right =>
+    Quotient.liftOn₂ left right
+      (fun x y => Quotient.mk data.setoid (x + y))
+      (by
+        intro x y x' y' hx hy
+        rcases hx with ⟨p, hp⟩
+        rcases hy with ⟨q, hq⟩
+        apply Quotient.sound
+        refine ⟨p + q, ?_⟩
+        change (x.1 + y.1) - (x'.1 + y'.1) = data.delta0 (p + q)
+        rw [data.delta0_add, ← hp, ← hq]
+        abel)⟩
+
+/-- X.定理7.2: negation descends to semantic additive H1. -/
+instance h1Neg (data : SemanticRepairAdditiveH1Surface) : Neg data.H1 :=
+  ⟨fun cocycleClass =>
+    Quotient.liftOn cocycleClass
+      (fun x => Quotient.mk data.setoid (-x))
+      (by
+        intro x x' hx
+        rcases hx with ⟨p, hp⟩
+        apply Quotient.sound
+        refine ⟨-p, ?_⟩
+        change -x.1 - -x'.1 = data.delta0 (-p)
+        rw [data.delta0_neg, ← hp]
+        abel)⟩
+
+/-- X.定理7.2: subtraction on semantic additive H1. -/
+instance h1Sub (data : SemanticRepairAdditiveH1Surface) : Sub data.H1 :=
+  ⟨fun left right => left + -right⟩
+
+/-- X.定理7.2: natural multiples descend to semantic additive H1. -/
+instance h1SMulNat (data : SemanticRepairAdditiveH1Surface) :
+    SMul Nat data.H1 :=
+  ⟨fun n cocycleClass =>
+    Quotient.liftOn cocycleClass
+      (fun x => Quotient.mk data.setoid (n • x))
+      (by
+        intro x x' hx
+        rcases hx with ⟨p, hp⟩
+        apply Quotient.sound
+        refine ⟨n • p, ?_⟩
+        change n • x.1 - n • x'.1 = data.delta0 (n • p)
+        rw [← smul_sub, hp, data.delta0_nsmul])⟩
+
+/-- X.定理7.2: integer multiples descend to semantic additive H1. -/
+instance h1SMulInt (data : SemanticRepairAdditiveH1Surface) :
+    SMul Int data.H1 :=
+  ⟨fun n cocycleClass =>
+    Quotient.liftOn cocycleClass
+      (fun x => Quotient.mk data.setoid (n • x))
+      (by
+        intro x x' hx
+        rcases hx with ⟨p, hp⟩
+        apply Quotient.sound
+        refine ⟨n • p, ?_⟩
+        change n • x.1 - n • x'.1 = data.delta0 (n • p)
+        rw [← smul_sub, hp, data.delta0_zsmul])⟩
+
+/--
+X.定理7.2: semantic additive H1 is a quotient group.  The group laws transfer
+along the surjective quotient map from the cocycle group, and the zero of the
+group is the selected zero class.
+-/
+instance h1AddCommGroup (data : SemanticRepairAdditiveH1Surface) :
+    AddCommGroup data.H1 :=
+  Function.Surjective.addCommGroup (Quotient.mk data.setoid)
+    (fun cocycleClass =>
+      Quotient.inductionOn cocycleClass fun x => ⟨x, rfl⟩)
+    (congrArg (Quotient.mk data.setoid)
+      (Subtype.ext data.zero1_eq_zero.symm))
+    (fun _ _ => rfl) (fun _ => rfl)
+    (fun left right =>
+      congrArg (Quotient.mk data.setoid)
+        (Subtype.ext (sub_eq_add_neg left.1 right.1)))
+    (fun _ _ => rfl) (fun _ _ => rfl)
+
+/-- X.定理7.2: the selected zero class is the zero of the H1 group. -/
+theorem zeroClass_eq_zero (data : SemanticRepairAdditiveH1Surface) :
+    data.zeroClass = (0 : data.H1) :=
+  rfl
+
+/-- X.定理7.2: H1 vanishing is vanishing of the residual class in the group. -/
+theorem h1Zero_iff_residualClass_eq_zero
+    (data : SemanticRepairAdditiveH1Surface) :
+    data.H1Zero <-> data.residualClass = (0 : data.H1) :=
+  Iff.rfl
 
 end SemanticRepairAdditiveH1Surface
 
@@ -436,6 +644,49 @@ def semanticRepairAdditiveH1_equiv_coverRelativeH1
   left_inv := comparison.from_to_semanticH1
   right_inv := comparison.to_from_coverRelativeH1
 
+/--
+X.定理7.2 結論3: the generated comparison respects addition, so the set-level
+equivalence upgrades to an additive group isomorphism onto the additive group
+reading of cover-relative Čech H1.
+-/
+def semanticRepairAdditiveH1_addEquiv_additiveCechH1
+    (comparison : SemanticRepairCoverRelativeH1Comparison additive K) :
+    additive.H1 ≃+ K.AdditiveCechH1 :=
+  { comparison.semanticRepairAdditiveH1_equiv_coverRelativeH1.trans
+      K.legacyCechH1EquivAdditiveCechH1 with
+    map_add' := by
+      intro left right
+      refine Quotient.inductionOn₂ left right ?_
+      intro x y
+      show K.additiveH1Class (comparison.toCoverRelativeCocycle (x + y)) =
+        K.additiveH1Class (comparison.toCoverRelativeCocycle x) +
+          K.additiveH1Class (comparison.toCoverRelativeCocycle y)
+      refine K.additiveH1Class_add_of_val ?_
+      change comparison.c1Equiv (x.1 + y.1) =
+        comparison.c1Equiv x.1 + comparison.c1Equiv y.1
+      exact map_add comparison.c1Equiv x.1 y.1 }
+
+/--
+X.定理7.2: residual vanishing is vanishing of its image under the additive
+comparison; this regenerates the zero correspondence from the group
+isomorphism alone.
+-/
+theorem h1Zero_iff_addEquiv_residualClass_eq_zero
+    (comparison : SemanticRepairCoverRelativeH1Comparison additive K) :
+    additive.H1Zero <->
+      comparison.semanticRepairAdditiveH1_addEquiv_additiveCechH1
+        additive.residualClass = 0 := by
+  rw [additive.h1Zero_iff_residualClass_eq_zero]
+  constructor
+  · intro h
+    rw [h]
+    exact map_zero _
+  · intro h
+    have h2 := congrArg
+      (comparison.semanticRepairAdditiveH1_addEquiv_additiveCechH1).symm h
+    rw [AddEquiv.symm_apply_apply, map_zero] at h2
+    exact h2
+
 /-- X.定理7.2: selected residual zero predicate in cover-relative H1. -/
 def CoverRelativeResidualH1Zero
     (comparison : SemanticRepairCoverRelativeH1Comparison additive K) : Prop :=
@@ -464,6 +715,32 @@ theorem semanticRepairAdditiveH1Zero_iff_coverRelativeH1Zero
       _ = additive.zeroClass := comparison.from_to_semanticH1 additive.zeroClass
 
 /--
+X.定理7.2: the legacy zero correspondence is derivable from the additive
+comparison: the group isomorphism is injective, so equality of images in the
+legacy quotient transfers back to equality of the residual and zero classes.
+-/
+theorem semanticRepairAdditiveH1Zero_iff_coverRelativeH1Zero_of_addEquiv
+    (comparison : SemanticRepairCoverRelativeH1Comparison additive K) :
+    additive.H1Zero <-> comparison.CoverRelativeResidualH1Zero := by
+  constructor
+  · intro hzero
+    exact congrArg comparison.toCoverRelativeH1 hzero
+  · intro hzero
+    have himage :
+        comparison.semanticRepairAdditiveH1_addEquiv_additiveCechH1
+            additive.residualClass =
+          comparison.semanticRepairAdditiveH1_addEquiv_additiveCechH1
+            additive.zeroClass := by
+      show K.legacyCechH1EquivAdditiveCechH1
+          (comparison.toCoverRelativeH1 additive.residualClass) =
+        K.legacyCechH1EquivAdditiveCechH1
+          (comparison.toCoverRelativeH1 additive.zeroClass)
+      rw [hzero]
+    exact
+      (comparison.semanticRepairAdditiveH1_addEquiv_additiveCechH1).injective
+        himage
+
+/--
 X.定理7.4: selected cover-relative nonzero residual transfers back to the
 semantic additive H1 surface by contraposition of theorem 7.2.
 -/
@@ -484,8 +761,8 @@ theorem coverRelativeH1Nonzero_of_semanticRepairAdditiveH1Nonzero
   exact hsemantic ((comparison.semanticRepairAdditiveH1Zero_iff_coverRelativeH1Zero).2 hcover)
 
 /--
-X.定理7.2 package: the generated comparison maps, H1 equivalence, same-class
-equivalence, and zero-predicate equivalence.
+X.定理7.2 package: the generated comparison maps, H1 equivalence, additive H1
+group isomorphism, same-class equivalence, and zero-predicate equivalence.
 -/
 structure SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
     (comparison : SemanticRepairCoverRelativeH1Comparison additive K) :
@@ -493,6 +770,7 @@ structure SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
   toCoverRelativeH1 : additive.H1 -> K.CechCohomologySucc 0
   fromCoverRelativeH1 : K.CechCohomologySucc 0 -> additive.H1
   h1Equiv : additive.H1 ≃ K.CechCohomologySucc 0
+  h1AddEquiv : additive.H1 ≃+ K.AdditiveCechH1
   sameClass_iff_coverRelative :
     forall left right : additive.Cocycle,
       additive.Cohomologous left right <->
@@ -509,6 +787,7 @@ def semanticRepairAdditiveH1_coverRelativeH1_comparison_packageData
   toCoverRelativeH1 := comparison.toCoverRelativeH1
   fromCoverRelativeH1 := comparison.fromCoverRelativeH1
   h1Equiv := comparison.semanticRepairAdditiveH1_equiv_coverRelativeH1
+  h1AddEquiv := comparison.semanticRepairAdditiveH1_addEquiv_additiveCechH1
   sameClass_iff_coverRelative := by
     intro left right
     exact comparison.semantic_sameClass_iff_coverRelative_sameClass left right

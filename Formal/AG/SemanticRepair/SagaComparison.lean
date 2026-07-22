@@ -79,10 +79,14 @@ def toAdditiveH1Surface
   residual := data.boundaryRelation.cech.residual
   c0AddCommGroup := data.toAdditiveCechH1Data.c0AddCommGroup
   c1AddCommGroup := data.toAdditiveCechH1Data.c1AddCommGroup
+  c2AddCommGroup := data.toAdditiveCechH1Data.c2AddCommGroup
   zero1_eq_zero := data.toAdditiveCechH1Data.zero1_eq_zero
+  zero2_eq_zero := data.toAdditiveCechH1Data.zero2_eq_zero
   delta0_zero := data.toAdditiveCechH1Data.delta0_zero
   delta0_add := data.toAdditiveCechH1Data.delta0_add
   delta0_neg := data.toAdditiveCechH1Data.delta0_neg
+  delta1_add := data.toAdditiveCechH1Data.delta1_add
+  delta1_neg := data.toAdditiveCechH1Data.delta1_neg
   zero1_cocycle := data.boundaryRelation.cech.zero1_cocycle
   delta1_delta0_eq_zero := data.boundaryRelation.cech.delta1_delta0_eq_zero
   residual_cocycle := data.boundaryRelation.cech.residual_cocycle

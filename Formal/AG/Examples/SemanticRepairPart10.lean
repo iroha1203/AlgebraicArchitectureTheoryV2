@@ -130,10 +130,16 @@ def semanticAdditiveData :
   c1AddCommGroup := by
     change AddCommGroup PUnit
     infer_instance
+  c2AddCommGroup := by
+    change AddCommGroup PUnit
+    infer_instance
   zero1_eq_zero := rfl
+  zero2_eq_zero := rfl
   delta0_zero := rfl
   delta0_add := fun _ _ => rfl
   delta0_neg := fun _ => rfl
+  delta1_add := fun _ _ => rfl
+  delta1_neg := fun _ => rfl
 
 /-- X.例9.1: boundary-relation data for the lawful zero instance. -/
 def boundaryRelationData :
@@ -425,10 +431,18 @@ def generatedF2SemanticAdditiveData :
   c1AddCommGroup := by
     change AddCommGroup (ZMod 2)
     infer_instance
+  c2AddCommGroup := by
+    change AddCommGroup (ZMod 2)
+    infer_instance
   zero1_eq_zero := rfl
+  zero2_eq_zero := rfl
   delta0_zero := rfl
   delta0_add := fun _ _ => rfl
   delta0_neg := by
+    intro x
+    simp [generatedF2SemanticCechData]
+  delta1_add := fun _ _ => rfl
+  delta1_neg := by
     intro x
     simp [generatedF2SemanticCechData]
 
@@ -942,10 +956,19 @@ def generatedLawSemanticAdditiveData :
   c1AddCommGroup := by
     change AddCommGroup GeneratedLawQuotient
     infer_instance
+  c2AddCommGroup := by
+    change AddCommGroup GeneratedLawQuotient
+    infer_instance
   zero1_eq_zero := rfl
+  zero2_eq_zero := rfl
   delta0_zero := rfl
   delta0_add := fun _ _ => rfl
   delta0_neg := by
+    intro x
+    change (0 : GeneratedLawQuotient) = -0
+    simp
+  delta1_add := fun _ _ => rfl
+  delta1_neg := by
     intro x
     change (0 : GeneratedLawQuotient) = -0
     simp
@@ -1515,9 +1538,13 @@ def circleAdditiveH1Surface :
   residual := circleResidual
   c0AddCommGroup := inferInstance
   c1AddCommGroup := inferInstance
+  c2AddCommGroup := inferInstance
   zero1_eq_zero := by
     funext edge
     rfl
+  zero2_eq_zero := by
+    funext higherSimplex
+    exact Empty.elim higherSimplex
   delta0_zero := by
     funext edge
     simp [circleD0]
@@ -1533,6 +1560,14 @@ def circleAdditiveH1Surface :
       (-primitive (circleNext edge) - -primitive edge) =
         -(primitive (circleNext edge) - primitive edge)
     abel
+  delta1_add := by
+    intro left right
+    funext higherSimplex
+    exact Empty.elim higherSimplex
+  delta1_neg := by
+    intro cochain
+    funext higherSimplex
+    exact Empty.elim higherSimplex
   zero1_cocycle := by
     funext higherSimplex
     exact Empty.elim higherSimplex
@@ -3005,7 +3040,11 @@ def zmodTwoTorsorAdditiveData :
   c1AddCommGroup := by
     change AddCommGroup (Fin 3 -> Fin 3 -> ZMod 2)
     infer_instance
+  c2AddCommGroup := by
+    change AddCommGroup (Fin 3 -> Fin 3 -> Fin 3 -> ZMod 2)
+    infer_instance
   zero1_eq_zero := rfl
+  zero2_eq_zero := rfl
   delta0_zero := by
     funext i j
     change (0 : ZMod 2) - 0 = 0
@@ -3020,6 +3059,19 @@ def zmodTwoTorsorAdditiveData :
     intro primitive
     funext i j
     change (-primitive j) - (-primitive i) = -(primitive j - primitive i)
+    abel
+  delta1_add := by
+    intro left right
+    funext i j k
+    change (left i j + right i j) + (left j k + right j k) -
+        (left i k + right i k) =
+      (left i j + left j k - left i k) + (right i j + right j k - right i k)
+    abel
+  delta1_neg := by
+    intro cochain
+    funext i j k
+    change (-cochain i j) + (-cochain j k) - (-cochain i k) =
+      -(cochain i j + cochain j k - cochain i k)
     abel
 
 /-- X.例9.1 / #3690: component presentation for the cover-indexed fixture. -/

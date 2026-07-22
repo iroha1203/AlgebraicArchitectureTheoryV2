@@ -301,6 +301,12 @@ def semanticRepairTheorem48GeneralFaithfulnessSufficiency :=
 def semanticRepairTheorem72H1ComparisonPackage :=
   @SemanticRepair.SemanticRepairCoverRelativeH1Comparison.semanticRepairAdditiveH1_coverRelativeH1_comparison_package
 
+def semanticRepairTheorem72H1AddEquiv :=
+  @SemanticRepair.SemanticRepairCoverRelativeH1Comparison.semanticRepairAdditiveH1_addEquiv_additiveCechH1
+
+def semanticRepairTheorem72H1ZeroIffFromAddEquiv :=
+  @SemanticRepair.SemanticRepairCoverRelativeH1Comparison.semanticRepairAdditiveH1Zero_iff_coverRelativeH1Zero_of_addEquiv
+
 def semanticRepairTheorem73GroundedGlobalGluingPackage :=
   @SemanticRepair.trueSheafBoundaryRelationAdditive_coverRelativeH1Zero_effectiveGluing_package
 
