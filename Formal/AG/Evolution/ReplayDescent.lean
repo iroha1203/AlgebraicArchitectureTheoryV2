@@ -45,11 +45,11 @@ structure ReplayRawDescentData {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 /--
 IX.§4: a constructed replay/coefficient representation for one raw replay.
 
-`localSections` and `adjustLocalSections` are sections of the same actual
-replay-function sheaf over the site cover.  The only coefficient input is the
-degree-zero reading of such a local section family; the degree-one mismatch is
-therefore always formed by the selected Čech differential below, never by an
-independent map from replay maps to `C¹`.
+`localSections` are sections of the actual replay-function sheaf over the site
+cover.  A correction is first realized as a local coefficient-section family
+and then acts on those replay sections.  The degree-one mismatch is the actual
+restricted-section difference and is independent of the degree-zero reading,
+so its cohomology class need not vanish definitionally.
 -/
 structure ReplayCoefficientRepresentation {U : AtomCarrier.{u}}
     {A : ArchitectureObject U} {S : Site.AATSite A}
@@ -89,30 +89,44 @@ structure ReplayCoefficientRepresentation {U : AtomCarrier.{u}}
     ∀ (X : S.category),
       replaySheaf.toPresheaf.obj (Opposite.op X) ->
         Coeff.obstructionSheaf.carrier.toPresheaf.obj (Opposite.op X)
-  /-- The degree-zero Čech cochain read from a family of local replay sections. -/
-  coefficientOfLocalSections :
-    Site.AATLocalSectionFamily S replaySheaf.toPresheaf descentCover ->
-      r.bridge.siteComplex.Cn 0
-  /-- The representation's degree-zero reading is evaluated from restricted local sections. -/
-  coefficientOfLocalSections_restriction :
-    ∀ (sections : Site.AATLocalSectionFamily S replaySheaf.toPresheaf descentCover)
-      (σ : r.bridge.siteCover.simplex 0),
-      ∃ (i : r.bridge.temporalCover.Index)
-        (q : r.bridge.siteCover.overlap 0 σ ⟶
-          r.bridge.siteCover.chart (r.bridge.coverComparison.siteIndexOf i))
-        (hq : descentCover (r.bridge.siteCover.inclusion
-          (r.bridge.coverComparison.siteIndexOf i))),
-        coefficientOfLocalSections sections σ =
-          coefficientReading _ (replaySheaf.toPresheaf.map q.op
-            (sections (r.bridge.siteCover.inclusion
-              (r.bridge.coverComparison.siteIndexOf i)) hq))
-  /-- The correction action on a family of local replay sections. -/
-  adjustLocalSections : r.bridge.siteComplex.Cn 0 ->
-    Site.AATLocalSectionFamily S replaySheaf.toPresheaf descentCover
-  /-- The coefficient reading after correction is the original reading minus that correction. -/
-  coefficient_adjustment : ∀ correction : r.bridge.siteComplex.Cn 0,
-    coefficientOfLocalSections (adjustLocalSections correction) =
-      coefficientOfLocalSections localSections - correction
+  /-- A coefficient section acts on a replay section over the same site object. -/
+  sectionAction :
+    ∀ (X : S.category),
+      replaySheaf.toPresheaf.obj (Opposite.op X) ->
+      Coeff.obstructionSheaf.carrier.toPresheaf.obj (Opposite.op X) ->
+        replaySheaf.toPresheaf.obj (Opposite.op X)
+  /-- The zero coefficient section acts as the identity on replay sections. -/
+  sectionAction_zero :
+    ∀ (X : S.category)
+      (replaySection : replaySheaf.toPresheaf.obj (Opposite.op X)),
+      letI := Coeff.obstructionSheaf.addCommGroup X
+      sectionAction X replaySection 0 = replaySection
+  /-- The section action commutes with restriction in the replay sheaf. -/
+  sectionAction_restrict :
+    ∀ {X Y : S.category} (q : Y ⟶ X)
+      (replaySection : replaySheaf.toPresheaf.obj (Opposite.op X))
+      (correction : Coeff.obstructionSheaf.carrier.toPresheaf.obj (Opposite.op X)),
+      replaySheaf.toPresheaf.map q.op (sectionAction X replaySection correction) =
+        sectionAction Y
+          (replaySheaf.toPresheaf.map q.op replaySection)
+          (Coeff.obstructionSheaf.carrier.toPresheaf.map q.op correction)
+  /-- The coefficient reader turns the replay-section action into subtraction. -/
+  coefficientReading_action :
+    ∀ (X : S.category)
+      (replaySection : replaySheaf.toPresheaf.obj (Opposite.op X))
+      (correction : Coeff.obstructionSheaf.carrier.toPresheaf.obj (Opposite.op X)),
+      letI := Coeff.obstructionSheaf.addCommGroup X
+      coefficientReading X (sectionAction X replaySection correction) =
+        coefficientReading X replaySection - correction
+  /-- A degree-zero cochain supplies the coefficient section acting on each cover member. -/
+  correctionSections : r.bridge.siteComplex.Cn 0 ->
+    Site.AATLocalSectionFamily S
+      Coeff.obstructionSheaf.carrier.toPresheaf descentCover
+  /-- The zero cochain supplies the zero coefficient section on every cover member. -/
+  correctionSections_zero :
+    ∀ {Y : S.category} (f : Y ⟶ r.bridge.siteCover.base) (hf : descentCover f),
+      letI := Coeff.obstructionSheaf.addCommGroup Y
+      correctionSections 0 f hf = 0
   /-- Zero coefficient difference reflects equality of represented replay sections. -/
   coefficientReading_zero_reflecting :
     ∀ (X : S.category)
@@ -134,23 +148,44 @@ structure ReplayCoefficientRepresentation {U : AtomCarrier.{u}}
       (leftRestriction : W ⟶ Y) (rightRestriction : W ⟶ Z),
       letI := Coeff.obstructionSheaf.addCommGroup W
       overlapCochainValue f g leftRestriction rightRestriction 0 = 0
-  /-- The adjusted restricted-section difference is read by the adjusted Čech mismatch. -/
-  adjusted_restriction_difference :
+  /-- Reading an overlap value preserves subtraction of degree-one cochains. -/
+  overlapCochainValue_sub :
+    ∀ {Y Z W : S.category}
+      (f : Y ⟶ r.bridge.siteCover.base) (g : Z ⟶ r.bridge.siteCover.base)
+      (leftRestriction : W ⟶ Y) (rightRestriction : W ⟶ Z)
+      (left right : r.bridge.siteComplex.Cn 1),
+      letI := Coeff.obstructionSheaf.addCommGroup W
+      overlapCochainValue f g leftRestriction rightRestriction (left - right) =
+        overlapCochainValue f g leftRestriction rightRestriction left -
+          overlapCochainValue f g leftRestriction rightRestriction right
+  /-- The actual mismatch cochain reads the original restricted-section difference. -/
+  mismatchCochain : r.bridge.siteComplex.Cn 1
+  /-- The mismatch is obtained from the two actual restricted replay sections. -/
+  restriction_difference :
+    ∀ {Y Z W : S.category}
+      (f : Y ⟶ r.bridge.siteCover.base) (hf : descentCover f)
+      (g : Z ⟶ r.bridge.siteCover.base) (hg : descentCover g)
+      (leftRestriction : W ⟶ Y) (rightRestriction : W ⟶ Z),
+      letI := Coeff.obstructionSheaf.addCommGroup W
+      coefficientReading W
+          (replaySheaf.toPresheaf.map leftRestriction.op (localSections f hf)) -
+        coefficientReading W
+          (replaySheaf.toPresheaf.map rightRestriction.op (localSections g hg)) =
+          overlapCochainValue f g leftRestriction rightRestriction mismatchCochain
+  /-- The coboundary of a correction is its restricted coefficient-section difference. -/
+  correction_restriction_difference :
     ∀ (correction : r.bridge.siteComplex.Cn 0)
       {Y Z W : S.category}
       (f : Y ⟶ r.bridge.siteCover.base) (hf : descentCover f)
       (g : Z ⟶ r.bridge.siteCover.base) (hg : descentCover g)
       (leftRestriction : W ⟶ Y) (rightRestriction : W ⟶ Z),
       letI := Coeff.obstructionSheaf.addCommGroup W
-      coefficientReading W
-          (replaySheaf.toPresheaf.map leftRestriction.op
-            (adjustLocalSections correction f hf)) -
-        coefficientReading W
-          (replaySheaf.toPresheaf.map rightRestriction.op
-            (adjustLocalSections correction g hg)) =
+      Coeff.obstructionSheaf.carrier.toPresheaf.map leftRestriction.op
+          (correctionSections correction f hf) -
+        Coeff.obstructionSheaf.carrier.toPresheaf.map rightRestriction.op
+          (correctionSections correction g hg) =
           overlapCochainValue f g leftRestriction rightRestriction
-            (r.bridge.siteComplex.d 0
-              (coefficientOfLocalSections (adjustLocalSections correction)))
+            (r.bridge.siteComplex.d 0 correction)
 
 /-- IX.§4 / AC11: replay descent data with its constructed coefficient representation. -/
 structure ReplayDescentData {U : AtomCarrier.{u}} {A : ArchitectureObject U}
@@ -177,15 +212,10 @@ variable {Coeff : TemporalCoefficient T} {Law : TemporalLaw St}
 abbrev cover (r : ReplayDescentData St Coeff Law) : TemporalCover T :=
   r.raw.bridge.temporalCover
 
-/-- IX.§4 / AC11: the coefficient cochain is read from the actual replay sections. -/
-def replayCoefficient (r : ReplayDescentData St Coeff Law) :
-    r.raw.bridge.siteComplex.Cn 0 :=
-  r.representation.coefficientOfLocalSections r.representation.localSections
-
-/-- IX.§4 / AC11: mismatch is the actual Čech differential of that coefficient reading. -/
+/-- IX.§4 / AC11: mismatch is the actual restricted-section difference. -/
 def mismatchCochain (r : ReplayDescentData St Coeff Law) :
     r.raw.bridge.siteComplex.Cn 1 :=
-  r.raw.bridge.siteComplex.d 0 r.replayCoefficient
+  r.representation.mismatchCochain
 
 /-- IX.§4 / AC11: read the replay mismatch as a selected temporal mismatch. -/
 def mismatch (r : ReplayDescentData St Coeff Law) :
@@ -282,12 +312,17 @@ def adjustedLocalSections (r : ReplayDescentData St Coeff Law)
     (correction : r.raw.bridge.siteComplex.Cn 0) :
     Site.AATLocalSectionFamily S r.representation.replaySheaf.toPresheaf
       r.representation.descentCover :=
-  r.representation.adjustLocalSections correction
+  fun _Y f hf =>
+    r.representation.sectionAction _
+      (r.representation.localSections f hf)
+      (r.representation.correctionSections correction f hf)
 
-/-- The adjusted degree-zero coefficient is read from the adjusted local sections. -/
-def adjustedCoefficient (r : ReplayDescentData St Coeff Law)
-    (correction : r.raw.bridge.siteComplex.Cn 0) : r.raw.bridge.siteComplex.Cn 0 :=
-  r.representation.coefficientOfLocalSections (r.adjustedLocalSections correction)
+/-- The zero cochain leaves the represented local replay sections unchanged. -/
+theorem adjustedLocalSections_zero (r : ReplayDescentData St Coeff Law) :
+    r.adjustedLocalSections 0 = r.representation.localSections := by
+  funext Y f hf
+  rw [adjustedLocalSections, r.representation.correctionSections_zero f hf,
+    r.representation.sectionAction_zero]
 
 /-- The adjusted local replay is recovered from the adjusted local section. -/
 def adjustedReplay (r : ReplayDescentData St Coeff Law)
@@ -299,10 +334,39 @@ def adjustedReplay (r : ReplayDescentData St Coeff Law)
       (r.raw.bridge.siteCover.inclusion (r.raw.bridge.coverComparison.siteIndexOf i))
       (r.representation.chartInCover i))
 
-/-- IX.§4 / AC12: recompute the adjusted mismatch from the adjusted local sections. -/
+/-- The replay obtained by acting on the original chart section with a correction. -/
+def adjustReplayAtChart (r : ReplayDescentData St Coeff Law)
+    (correction : r.raw.bridge.siteComplex.Cn 0) (i : r.cover.Index) :
+    St.State (r.raw.sourceTrace, r.cover.chartContext i) ->
+      St.State (r.raw.targetTrace, r.cover.chartContext i) :=
+  r.representation.localReplayOfSection i
+    (r.representation.sectionAction _
+      (r.representation.localSections
+        (r.raw.bridge.siteCover.inclusion (r.raw.bridge.coverComparison.siteIndexOf i))
+        (r.representation.chartInCover i))
+      (r.representation.correctionSections correction
+        (r.raw.bridge.siteCover.inclusion (r.raw.bridge.coverComparison.siteIndexOf i))
+        (r.representation.chartInCover i)))
+
+/-- Adjusted chart replay is evaluation of the coefficient action on the raw replay section. -/
+theorem adjustedReplay_eq_adjustReplayAtChart (r : ReplayDescentData St Coeff Law)
+    (correction : r.raw.bridge.siteComplex.Cn 0) (i : r.cover.Index) :
+    r.adjustedReplay correction i = r.adjustReplayAtChart correction i :=
+  rfl
+
+/-- The zero correction recovers the raw replay on every selected chart. -/
+theorem adjustReplayAtChart_zero (r : ReplayDescentData St Coeff Law)
+    (i : r.cover.Index) :
+    r.adjustReplayAtChart 0 i = r.raw.replay i := by
+  rw [adjustReplayAtChart, r.representation.correctionSections_zero,
+    r.representation.sectionAction_zero]
+  exact r.representation.localReplay_from_section i
+
+/-- IX.§4 / AC12: subtract the correction coboundary from the actual mismatch. -/
 def adjustedMismatchCochain (r : ReplayDescentData St Coeff Law)
     (correction : r.raw.bridge.siteComplex.Cn 0) : r.raw.bridge.siteComplex.Cn 1 :=
-  r.raw.bridge.siteComplex.d 0 (r.adjustedCoefficient correction)
+  letI := r.raw.bridge.siteComplex.cochainAddCommGroup 1
+  r.mismatchCochain - r.raw.bridge.siteComplex.d 0 correction
 
 /-- IX.§4 / AC12: `m(adjust(c,r)) = m(r) - d c`. -/
 theorem mismatch_adjust_eq (r : ReplayDescentData St Coeff Law)
@@ -310,11 +374,51 @@ theorem mismatch_adjust_eq (r : ReplayDescentData St Coeff Law)
     letI := r.raw.bridge.siteComplex.cochainAddCommGroup 1
     r.adjustedMismatchCochain correction =
       r.mismatchCochain - r.raw.bridge.siteComplex.d 0 correction := by
-  letI := r.raw.bridge.siteComplex.cochainAddCommGroup 0
   letI := r.raw.bridge.siteComplex.cochainAddCommGroup 1
-  rw [adjustedMismatchCochain, mismatchCochain, adjustedCoefficient,
-    adjustedLocalSections, replayCoefficient,
-    r.representation.coefficient_adjustment, map_sub]
+  rfl
+
+/-- The adjusted restricted-section difference is the adjusted actual mismatch. -/
+theorem adjusted_restriction_difference (r : ReplayDescentData St Coeff Law)
+    (correction : r.raw.bridge.siteComplex.Cn 0)
+    {Y Z W : S.category}
+    (f : Y ⟶ r.raw.bridge.siteCover.base) (hf : r.representation.descentCover f)
+    (g : Z ⟶ r.raw.bridge.siteCover.base) (hg : r.representation.descentCover g)
+    (leftRestriction : W ⟶ Y) (rightRestriction : W ⟶ Z) :
+    letI := Coeff.obstructionSheaf.addCommGroup W
+    r.representation.coefficientReading W
+        (r.representation.replaySheaf.toPresheaf.map leftRestriction.op
+          (r.adjustedLocalSections correction f hf)) -
+      r.representation.coefficientReading W
+        (r.representation.replaySheaf.toPresheaf.map rightRestriction.op
+          (r.adjustedLocalSections correction g hg)) =
+        r.representation.overlapCochainValue f g leftRestriction rightRestriction
+          (r.adjustedMismatchCochain correction) := by
+  letI := Coeff.obstructionSheaf.addCommGroup W
+  simp only [adjustedLocalSections]
+  rw [r.representation.sectionAction_restrict,
+    r.representation.sectionAction_restrict,
+    r.representation.coefficientReading_action,
+    r.representation.coefficientReading_action,
+    adjustedMismatchCochain]
+  rw [r.representation.overlapCochainValue_sub]
+  calc
+    _ =
+        (r.representation.coefficientReading W
+            (r.representation.replaySheaf.toPresheaf.map leftRestriction.op
+              (r.representation.localSections f hf)) -
+          r.representation.coefficientReading W
+            (r.representation.replaySheaf.toPresheaf.map rightRestriction.op
+              (r.representation.localSections g hg))) -
+        (Coeff.obstructionSheaf.carrier.toPresheaf.map leftRestriction.op
+            (r.representation.correctionSections correction f hf) -
+          Coeff.obstructionSheaf.carrier.toPresheaf.map rightRestriction.op
+            (r.representation.correctionSections correction g hg)) := by abel
+    _ = _ := by
+      rw [r.representation.restriction_difference f hf g hg
+          leftRestriction rightRestriction,
+        r.representation.correction_restriction_difference correction f hf g hg
+          leftRestriction rightRestriction]
+      rfl
 
 /-- IX.§4 / AC13: zero mismatch yields matching through the represented coefficient reading. -/
 def adjusted_replay_matching_of_zero (r : ReplayDescentData St Coeff Law)
@@ -336,7 +440,7 @@ def adjusted_replay_matching_of_zero (r : ReplayDescentData St Coeff Law)
               (r.adjustedLocalSections correction g hg)) =
             r.representation.overlapCochainValue f g leftRestriction rightRestriction
               (r.adjustedMismatchCochain correction) :=
-          r.representation.adjusted_restriction_difference correction f hf g hg
+          r.adjusted_restriction_difference correction f hf g hg
             leftRestriction rightRestriction
         _ = r.representation.overlapCochainValue f g leftRestriction rightRestriction 0 := by
           rw [hzero]

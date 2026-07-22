@@ -2518,6 +2518,18 @@ def replayTemporalDescentSectionCriterionRealizesAdjusted :=
 def replayTemporalDescentSectionCriterion :=
   @Evolution.TemporalDescentCriterion.temporal_descent_section_criterion
 
+def replayAdjustedLocalSectionsZero :=
+  @Evolution.ReplayDescentData.adjustedLocalSections_zero
+
+def replayAdjustedReplayFromSectionAction :=
+  @Evolution.ReplayDescentData.adjustedReplay_eq_adjustReplayAtChart
+
+def replayAdjustReplayAtChartZero :=
+  @Evolution.ReplayDescentData.adjustReplayAtChart_zero
+
+def replayAdjustedRestrictionDifference :=
+  @Evolution.ReplayDescentData.adjusted_restriction_difference
+
 def replayTwoChartCorrectionRightNonzero :=
   Examples.EvolutionPart9.twoChartCorrection_right_nonzero
 

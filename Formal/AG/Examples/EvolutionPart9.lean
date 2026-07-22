@@ -1526,19 +1526,24 @@ def zeroReplayRepresentation :
     funext state
     cases i <;> cases state <;> rfl
   coefficientReading := fun _X _section => PUnit.unit
-  coefficientOfLocalSections := fun _sections => unitTemporalCochain 0
-  coefficientOfLocalSections_restriction := by
-    intro _sections σ
-    cases σ
-    refine ⟨false, 𝟙 FiniteModel.siteBase, ?_, ?_⟩
-    · exact Sieve.le_generate FiniteModel.siteSingletonCover.presieve _
-        (Presieve.ofArrows.mk PUnit.unit)
-    · rfl
-  adjustLocalSections := fun _correction _Y _f _hf => PUnit.unit
-  coefficient_adjustment := by
-    intro correction
-    funext σ
-    cases σ
+  sectionAction := fun _X _section _correction => PUnit.unit
+  sectionAction_zero := by
+    intro _X replaySection
+    cases replaySection
+    rfl
+  sectionAction_restrict := by
+    intro _X _Y _q replaySection correction
+    cases replaySection
+    cases correction
+    rfl
+  coefficientReading_action := by
+    intro _X replaySection correction
+    cases replaySection
+    cases correction
+    rfl
+  correctionSections := fun _correction _Y _f _hf => PUnit.unit
+  correctionSections_zero := by
+    intro _Y _f _hf
     rfl
   coefficientReading_zero_reflecting := by
     intro _X left right _hdifference
@@ -1550,7 +1555,14 @@ def zeroReplayRepresentation :
   overlapCochainValue_zero := by
     intro _Y _Z _W _f _g _leftRestriction _rightRestriction
     rfl
-  adjusted_restriction_difference := by
+  overlapCochainValue_sub := by
+    intro _Y _Z _W _f _g _leftRestriction _rightRestriction _left _right
+    rfl
+  mismatchCochain := unitTemporalCochain 1
+  restriction_difference := by
+    intro _Y _Z _W _f _hf _g _hg _leftRestriction _rightRestriction
+    rfl
+  correction_restriction_difference := by
     intro _correction _Y _Z _W _f _hf _g _hg _leftRestriction _rightRestriction
     rfl
 
