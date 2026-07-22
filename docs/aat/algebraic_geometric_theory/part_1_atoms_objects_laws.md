@@ -1730,32 +1730,70 @@ exact signed change
 phi : SignedExactCoreReadingHom(r,r')
 ```
 
-は、少なくとも次の data と可換条件を持つ。
+は、少なくとも次の data と可換条件を持つ。context と observable の成分は、単なる
+object map と点ごとの写像ではなく、category / presheaf 水準で与える。
 
 ```text
 phi_F   : F_r -> F_r'
 phi_C   : ConfigurationHom(C_r,C_r')
 phi_Obj : ArchObj_r(At) -> ArchObj_r'(At)
-phi_W   : Context_r -> Context_r'
+phi_Ctx : Ctx_r ≃ Ctx_r'
 phi_E   : Index(E_r) -> Index(E_r')
-phi_O   : O_{E_r}(W) -> O_{E_r'}(phi_W(W))
+phi_O   : O_{E_r} ≅ O_{E_r'} compose phi_Ctx^op
 phi_Q   : FiniteCircuitDatum_r -> FiniteCircuitDatum_r'
 phi_Op  : Op_r(A,B) -> Op_r'(phi_Obj(A),phi_Obj(B))
+```
+
+`phi_Ctx` は context category の equivalence であり、object map と morphism map、identity / composition
+法則、quasi-inverse と unit / counit coherence を含む。`phi_O` は `CommRing` 値 presheaf の
+natural isomorphism である。その `W` 成分を
+
+```text
+phi_{O,W} : O_{E_r}(W) ->+* O_{E_r'}(phi_Ctx(W))
+```
+
+と書く。context morphism `j : W' -> W` について、naturality square は
+
+```text
+res'_{phi_Ctx(j)} compose phi_{O,W}
+  =
+phi_{O,W'} compose res_j
+```
+
+で可換する。各 `phi_{O,W}` は環準同型であり、inverse component も自然に可換する。
+equation component の primitive compatibility は generator 水準で次を要求する。
+
+```text
 
 role_r(i) = role_r'(phi_E(i))
-phi_O(nu_{W,i,a}) = nu'_{phi_W(W),phi_E(i),a}
-phi_O(epsilon_{W,A,i,a})
-  = epsilon'_{phi_W(W),phi_Obj(A),phi_E(i),a}
-EquationHolds_{E_r}(i,A)
-  iff EquationHolds_{E_r'}(phi_E(i),phi_Obj(A))
-Matches_r(Q,A) iff Matches_r'(phi_Q(Q),phi_Obj(A))
-Accepts_r(i,Q) iff Accepts_r'(phi_E(i),phi_Q(Q))
+phi_{O,W}(nu_{W,i,a})
+  = nu'_{phi_Ctx(W),phi_E(i),a}
+phi_{O,W}(epsilon_{W,A,i,a})
+  = epsilon'_{phi_Ctx(W),phi_Obj(A),phi_E(i),a}
 ```
 
 `phi_F` は atom-level extraction characterization、`phi_C` は composition、`phi_Obj` は
 object formation を保存する。`phi_Op` は source、target、実際の configuration map と可換する。
 invariant と signature coordinates は `phi_Obj` に沿って transport される。
-matching の同値は、negative query に対する absence が変更後も正確に反射されることを保証する。
+`phi_Q` は signed query の entry、presence / absence 判定、detector code を成分ごとに保存・反射する。
+したがって matching / acceptance の同値は field として結論を再格納せず、signed query の
+成分保存・反射から証明する。
+
+`phi_Ctx` の essential surjectivity、`phi_O` の componentwise inverse、residual の generator-level
+compatibility から、次が定理として従う。
+
+```text
+EquationHolds_{E_r}(i,A)
+  iff EquationHolds_{E_r'}(phi_E(i),phi_Obj(A))
+Matches_r(Q,A)
+  iff Matches_r'(phi_Q(Q),phi_Obj(A))
+Accepts_r(i,Q)
+  iff Accepts_r'(phi_E(i),phi_Q(Q))
+```
+
+ここで最初の同値の逆向きは、任意の target context を `phi_Ctx` の像へ移し、natural inverse で
+residual zero を反射することで得る。matching の同値は、negative query に対する absence が
+変更後も正確に反射されることを保証する。
 
 object algebra の homomorphism は、object map、context map、equation index map、observable map、
 operation map、circuit map、invariant / signature transport とそれらの可換性からなる。
@@ -1772,7 +1810,9 @@ ObjectAlgebraHom(Core_At(r),Core_At(r'))
 base object を `phi_Obj` で送り、operation-closure の生成導出に関する帰納法で
 reachable object の map を構成し、他の component と合わせて `CoreExact_At(phi)` を得る。
 
-identity と composition は componentwise に定まり、relative core construction はそれを保存する。
+identity と composition は componentwise に定まる。context 成分では equivalence の identity / composition、
+observable 成分では natural isomorphism の identity / whiskering / vertical composition を使う。
+それらの unit / associativity coherence により、relative core construction は identity と composition を保存する。
 
 ```text
 CoreExact_At(id_r) = id_{Core_At(r)}

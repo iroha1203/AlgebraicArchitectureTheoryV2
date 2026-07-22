@@ -235,7 +235,7 @@ selected operation policy is strictly dissipative outside terminal states.
 このとき、任意の selected evolution path は有限時間で terminal state に到達する。
 
 terminal state が `P_ev` の architectural equation system `E_ev` に対して lawful であるためには、
-第III部・第IV部の obstruction vanishing、named comparison hypothesis、
+第III部・第IV部の obstruction vanishing、standard scheme realization の generator-level producer theorem、
 `(E_ev,R_ev,Ov_ev)`-adequate cover `U_ev` が別途必要である。
 
 ## 6. Lyapunov Reading

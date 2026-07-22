@@ -8,7 +8,7 @@ I_Ob^U subset O_X^U
 Flat_U(X) = V(I_Ob^U)
 ```
 
-第III部の required equation ごとの `ClosedPresented_E(i)`、および selected
+第III部の standard constructor が生成する scheme realization と `residualRepresentable_E`、および selected
 ringed / scheme regime の下で、equation lawfulness は obstruction ideal の零点集合として読める。
 
 しかし、局所的に lawful であることは、ただちに大域的な lawfulness を意味しない。
@@ -50,8 +50,9 @@ The gap is obstruction cohomology.
 
 ## 1. Part3 から Part4 へ
 
-第III部の Equation Lawfulness-Ideal Correspondence は、required equation ごとの
-`ClosedPresented_E(i)`、extension-ideal compatibility、selected ringed / scheme regime の下で次を与える。
+第III部の Equation Lawfulness-Ideal Correspondence は、`E`-generated scheme realization、
+generator-level producer theorem `residualRepresentable_E`、extension-ideal compatibility、
+selected ringed / scheme regime の下で次を与える。
 
 ```text
 EquationLawful_E(s)

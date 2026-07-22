@@ -96,7 +96,8 @@ representation、measurement profile、trace category、semantic repair-gluing c
   現実のアーキテクチャは複数の law が同時に効き、同時に成立するか同時に破れる。
   代数幾何は連立方程式の数学である。required equations の symbolic violation coordinates は
   obstruction ideal を生成し、object-dependent residuals の同時消滅が equation lawfulness を定める。
-  closed-presentation comparison の下で ideal-theoretic lawful locus は共通零点
+  standard equation-scheme constructor の generator / localization producer theorems により、
+  ideal-theoretic lawful locus は共通零点
   Flat_U(X) = V(I_Ob^U) であり、
   law の相互作用はイデアルの演算になる。
   open、constructible、descent、temporal、stacky law は対応する幾何条件として読む。
@@ -163,7 +164,8 @@ Formal theorem:
   公理・定義・仮定から証明される数学的命題。
 
 Certified bounded inference:
-  E-adequacy、named comparison hypothesis、witness completeness などの仮定の下で成立する相対的推論。
+  E-adequacy、standard constructor が生成した comparison producer theorem、
+  witness completeness などの明示入力の下で成立する相対的推論。
 
 Analytic reading:
   構成された幾何対象を graph、signature、period、metric などで読む表現。
@@ -177,7 +179,7 @@ Definition / Construction:
 
 Theorem / Proposition / Lemma:
   本文で明示した定義と仮定のもとで読む数学命題。
-  ただし E-adequacy、named comparison hypothesis、witness completeness などを仮定に置くものは
+  ただし E-adequacy、生成元水準の comparison producer theorem、witness completeness などを仮定に置くものは
   Certified bounded inference であり、無条件の絶対 claim ではない。
 
 Theorem candidate:
