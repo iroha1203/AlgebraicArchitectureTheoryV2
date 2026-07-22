@@ -1484,6 +1484,162 @@ inductive ReplayMismatchValue where
 abbrev zeroReplaySheafCover : Sieve FiniteModel.siteBase :=
   Sieve.generate FiniteModel.siteSingletonCover.presieve
 
+/-! ### Concrete negative instance for the generic class-zero certificate -/
+
+/-- The `ZMod 2` replay fixture uses the same selected descent-law shape. -/
+def zmod2ReplayTemporalLaw : TemporalLaw zmod2TemporalReplayStatePresheaf :=
+  TemporalLaw.descentTemporalLaw Unit (fun _ => p0) (fun _ => p1)
+    (fun _ => stepLeg) (fun _ _ _ => True)
+
+/-- The product-point cover used to expose the non-coboundary identity-leg mismatch. -/
+def zmod2NonCoboundaryReplayTemporalCover : TemporalCover temporalSite where
+  baseTrace := TinyTime.t1
+  baseContext := context0
+  Index := temporalSite.Point
+  finiteIndex := by
+    change Finite (TinyTime × PUnit)
+    infer_instance
+  chartTrace := fun p => p.1
+  chartContext := fun p => p.2
+  traceToBase := fun _ => ()
+  traceToBase_selected := fun _ => trivial
+  contextToBase := by
+    intro _p
+    change True
+    trivial
+
+/-- Compare every product point with its chart in the product-incidence cover. -/
+def zmod2NonCoboundaryReplayCoverComparison :
+    TemporalCoverToSiteCover zmod2NonCoboundaryReplayTemporalCover
+      zmod2TemporalProductCoverRelativeCover where
+  siteIndexOf := fun p => p
+  chart_eq := by intro _p; rfl
+  base_eq := rfl
+  preservesTraceLeg := fun _ => trivial
+  preservesContextLeg := by
+    intro p
+    rcases p with ⟨_time, context⟩
+    cases context
+    rfl
+
+/-- The non-coboundary replay bridge uses the actual product-incidence complex. -/
+def zmod2NonCoboundaryReplayBridge :
+    TemporalCechBridge temporalSite
+      zmod2TemporalCoefficient.obstructionSheaf where
+  temporalCover := zmod2NonCoboundaryReplayTemporalCover
+  siteCover := zmod2TemporalProductCoverRelativeCover
+  coverComparison := zmod2NonCoboundaryReplayCoverComparison
+  siteComplex := zmod2TemporalProductCoverRelativeComplex
+
+/-- Raw identity replay on every selected product point. -/
+def zmod2NonCoboundaryReplayRawData :
+    ReplayRawDescentData zmod2TemporalReplayStatePresheaf
+      zmod2TemporalCoefficient where
+  bridge := zmod2NonCoboundaryReplayBridge
+  sourceTrace := TinyTime.t0
+  targetTrace := TinyTime.t1
+  traceArrow := tinyStep
+  traceArrow_selected := twoStep_step_selected
+  replay := fun _i state => state
+
+/-- The identity-leg cochain, read in the cover-relative product complex. -/
+def zmod2NonCoboundaryReplayMismatch :
+    zmod2NonCoboundaryReplayBridge.siteComplex.Cn 1 :=
+  fun _σ => (1 : ZMod 2)
+
+/--
+Concrete representation whose mismatch is the non-coboundary identity-leg
+cochain.  The overlap reader is deliberately the zero additive reading: this
+fixture tests availability of the class-zero certificate, while the actual
+two-patch completion target below supplies the restriction-faithful replay
+representation used for descent.
+-/
+def zmod2NonCoboundaryReplayRepresentation :
+    ReplayCoefficientRepresentation zmod2NonCoboundaryReplayRawData where
+  replaySheaf := zmod2TemporalCoefficient.obstructionSheaf.carrier
+  descentCover := zeroReplaySheafCover
+  descentCover_topological := FiniteModel.siteSingletonCover_topologyCover
+  chartInCover := by
+    intro _i
+    exact Sieve.le_generate FiniteModel.siteSingletonCover.presieve _
+      (Presieve.ofArrows.mk PUnit.unit)
+  localSections := fun _Y _f _hf => (0 : ZMod 2)
+  localReplayOfSection := by
+    intro _i replaySection state
+    change ZMod 2 at replaySection state ⊢
+    exact state + replaySection
+  localReplay_from_section := by
+    intro _i
+    funext state
+    change (show ZMod 2 from state) + 0 = (show ZMod 2 from state)
+    exact add_zero (show ZMod 2 from state)
+  coefficientReading := fun _X replaySection => replaySection
+  sectionAction := fun _X replaySection correction => replaySection - correction
+  sectionAction_zero := by
+    intro _X replaySection
+    exact sub_zero replaySection
+  sectionAction_restrict := by
+    intro _X _Y _q _replaySection _correction
+    rfl
+  coefficientReading_action := by
+    intro _X _replaySection _correction
+    rfl
+  correctionSections := fun _correction _Y _f _hf => (0 : ZMod 2)
+  correctionSections_zero := by
+    intro _Y _f _hf
+    rfl
+  coefficientReading_zero_reflecting := by
+    intro _X left right hdifference
+    exact sub_eq_zero.mp hdifference
+  overlapCochainValue := fun _f _g _leftRestriction _rightRestriction _cochain =>
+    (0 : ZMod 2)
+  overlapCochainValue_zero := by
+    intro _Y _Z _W _f _g _leftRestriction _rightRestriction
+    rfl
+  overlapCochainValue_sub := by
+    intro _Y _Z _W _f _g _leftRestriction _rightRestriction _left _right
+    exact (sub_self 0).symm
+  mismatchCochain := zmod2NonCoboundaryReplayMismatch
+  restriction_difference := by
+    intro _Y _Z _W _f _hf _g _hg _leftRestriction _rightRestriction
+    change (0 : ZMod 2) - 0 = 0
+    exact sub_self 0
+  correction_restriction_difference := by
+    intro _correction _Y _Z _W _f _hf _g _hg _leftRestriction _rightRestriction
+    change (0 : ZMod 2) - 0 = 0
+    exact sub_self 0
+
+/-- Replay data carrying the concrete non-coboundary product mismatch. -/
+def zmod2NonCoboundaryReplayData :
+    ReplayDescentData zmod2TemporalReplayStatePresheaf
+      zmod2TemporalCoefficient zmod2ReplayTemporalLaw where
+  raw := zmod2NonCoboundaryReplayRawData
+  representation := zmod2NonCoboundaryReplayRepresentation
+  mismatchSupportedByLaw := True
+  mismatchSupportedByLaw_cert := trivial
+
+/-- The concrete identity-leg mismatch is not a degree-zero coboundary. -/
+theorem zmod2NonCoboundaryReplayMismatch_not_coboundary :
+    ¬ ∃ correction : zmod2NonCoboundaryReplayBridge.siteComplex.Cn 0,
+      zmod2NonCoboundaryReplayData.mismatchCochain =
+        zmod2NonCoboundaryReplayBridge.siteComplex.d 0 correction := by
+  rintro ⟨correction, hcorrection⟩
+  let identitySimplex : ZMod2TemporalIncidenceSimplex :=
+    ⟨p0, p0, temporalSite.idLeg p0⟩
+  have hvalue := congrFun hcorrection identitySimplex
+  have hzero := zmod2TemporalCoefficient.incidenceDifferential_id correction p0
+  change (1 : ZMod 2) =
+    zmod2TemporalCoefficient.incidenceDifferential correction
+      (temporalSite.idLeg p0) at hvalue
+  rw [hzero] at hvalue
+  exact one_ne_zero hvalue
+
+/-- The generic class-zero certificate fails on the concrete identity-leg mismatch. -/
+theorem zmod2NonCoboundaryReplayTemporalDescentCriterion_unsatisfied :
+    ¬ TemporalDescentCriterion zmod2NonCoboundaryReplayData :=
+  TemporalDescentCriterion.not_temporalDescentCriterion_of_mismatch_not_coboundary
+    zmod2NonCoboundaryReplayMismatch_not_coboundary
+
 /-- R10(b): raw replay maps on the temporal cover selected by `temporalBridge`. -/
 def zeroReplayRawDescentData :
     ReplayRawDescentData statePresheaf temporalCoefficient where
@@ -2026,11 +2182,19 @@ theorem twoPatchReplayRestrictedDifference_eq_overlap
   change state + 1 - (state + 0) = 1 - 0
   ring
 
-/-- The correction acts on each actual translation replay section. -/
-def twoPatchAdjustedReplayLocalSection (i : FiniteModel.TwoPatchCoverIndex) :
+/-- Apply an arbitrary degree-zero correction to each actual translation replay section. -/
+def twoPatchAdjustedReplayLocalSectionBy
+    (correction : Site.FinitePosetCechCochain
+      FiniteModel.twoPatchZMod2FinitePosetRegime 0)
+    (i : FiniteModel.TwoPatchCoverIndex) :
     FiniteModel.TwoPatchZMod2TranslationReplay :=
   FiniteModel.TwoPatchZMod2TranslationReplay.adjust
-    (twoPatchReplayLocalSection i) (twoPatchReplayCorrectionSection i)
+    (twoPatchReplayLocalSection i) (correction i)
+
+/-- The selected correction acts on each actual translation replay section. -/
+def twoPatchAdjustedReplayLocalSection (i : FiniteModel.TwoPatchCoverIndex) :
+    FiniteModel.TwoPatchZMod2TranslationReplay :=
+  twoPatchAdjustedReplayLocalSectionBy twoPatchReplayCorrectionCochain i
 
 /-- Apply an arbitrary degree-zero correction to an indexed chart replay. -/
 def twoPatchReplayAdjustedLocalTransitionBy
@@ -2042,8 +2206,7 @@ def twoPatchReplayAdjustedLocalTransitionBy
       (twoPatchReplayTemporalCover.chartContext i) where
   trace_selected := twoPatchReplayTemporalTrace_selected
   toFun := FiniteModel.TwoPatchZMod2TranslationReplay.apply
-    (FiniteModel.TwoPatchZMod2TranslationReplay.adjust
-      (twoPatchReplayLocalSection i) (correction i))
+    (twoPatchAdjustedReplayLocalSectionBy correction i)
 
 /-- The fixed adjusted chart replay remains indexed by the same trace arrow. -/
 def twoPatchAdjustedReplayLocalTransition (i : FiniteModel.TwoPatchCoverIndex) :
@@ -2150,6 +2313,24 @@ theorem twoPatchAdjustedReplay_zero_reflects_matching
   apply FiniteModel.TwoPatchZMod2TranslationReplay.ext
   exact (sub_eq_zero.mp hcoefficient).symm
 
+/-- A supplied actual Čech primitive makes the two corrected chart sections equal. -/
+theorem twoPatchAdjustedReplayLocalSectionBy_matching_of_class_zero
+    (correction : Site.FinitePosetCechCochain
+      FiniteModel.twoPatchZMod2FinitePosetRegime 0)
+    (hclass : twoPatchReplayCechMismatch =
+      FiniteModel.twoPatchZMod2CechComplex.differential 0 correction) :
+    twoPatchAdjustedReplayLocalSectionBy correction .left =
+      twoPatchAdjustedReplayLocalSectionBy correction .right := by
+  apply FiniteModel.TwoPatchZMod2TranslationReplay.ext
+  have hvalue := congrFun hclass PUnit.unit
+  change (1 : ZMod 2) =
+    (show ZMod 2 from correction .right) -
+      (show ZMod 2 from correction .left) at hvalue
+  change (0 : ZMod 2) - (show ZMod 2 from correction .left) =
+    1 - (show ZMod 2 from correction .right)
+  rw [hvalue]
+  ring
+
 /-- The selected generated AAT cover for the two replay charts. -/
 noncomputable def twoPatchReplayCover : Sieve FiniteModel.twoPatchBase :=
   Sieve.generate FiniteModel.twoPatchCover.presieve
@@ -2160,6 +2341,68 @@ theorem twoPatchReplayCover_contains
     twoPatchReplayCover
       (homOfLE (FiniteModel.twoPatchCover.inclusion i)) :=
   Sieve.le_generate FiniteModel.twoPatchCover.presieve _ (Presieve.ofArrows.mk i)
+
+/-- The local family obtained by applying an arbitrary correction to the left chart. -/
+def twoPatchCorrectedLocalSectionsBy
+    (correction : Site.FinitePosetCechCochain
+      FiniteModel.twoPatchZMod2FinitePosetRegime 0) :
+    Site.AATLocalSectionFamily FiniteModel.twoPatchSite
+      FiniteModel.twoPatchZMod2TranslationReplayPresheaf twoPatchReplayCover :=
+  fun _Y _f _hf => twoPatchAdjustedReplayLocalSectionBy correction .left
+
+/-- A class-zero primitive identifies the generalized local family with each corrected chart. -/
+theorem twoPatchCorrectedLocalSectionsBy_chart
+    (correction : Site.FinitePosetCechCochain
+      FiniteModel.twoPatchZMod2FinitePosetRegime 0)
+    (hclass : twoPatchReplayCechMismatch =
+      FiniteModel.twoPatchZMod2CechComplex.differential 0 correction)
+    (i : FiniteModel.TwoPatchCoverIndex) :
+    twoPatchCorrectedLocalSectionsBy correction
+        (homOfLE (FiniteModel.twoPatchCover.inclusion i))
+        (twoPatchReplayCover_contains i) =
+      twoPatchAdjustedReplayLocalSectionBy correction i := by
+  cases i
+  · rfl
+  · exact twoPatchAdjustedReplayLocalSectionBy_matching_of_class_zero correction hclass
+
+/-- The generalized corrected local family is compatible on all common refinements. -/
+theorem twoPatchCorrectedLocalSectionsBy_matching
+    (correction : Site.FinitePosetCechCochain
+      FiniteModel.twoPatchZMod2FinitePosetRegime 0) :
+    Site.AATOverlapAgreement (twoPatchCorrectedLocalSectionsBy correction) := by
+  intro _Y _Z _W _h _hh _f _g _hf _hg _hcomp
+  rfl
+
+/--
+An actual Čech primitive implies descent of the local replay sections corrected
+by that same primitive.
+-/
+theorem twoPatchReplay_class_zero_descends
+    (correction : Site.FinitePosetCechCochain
+      FiniteModel.twoPatchZMod2FinitePosetRegime 0)
+    (hclass : twoPatchReplayCechMismatch =
+      FiniteModel.twoPatchZMod2CechComplex.differential 0 correction) :
+    ∃ globalSection : FiniteModel.TwoPatchZMod2TranslationReplay,
+      ∀ i : FiniteModel.TwoPatchCoverIndex,
+        globalSection = twoPatchAdjustedReplayLocalSectionBy correction i := by
+  let data : Site.AATGluingData FiniteModel.twoPatchSite
+      FiniteModel.twoPatchZMod2TranslationReplayPresheaf twoPatchReplayCover :=
+    { localSections := twoPatchCorrectedLocalSectionsBy correction
+      overlapAgreement := twoPatchCorrectedLocalSectionsBy_matching correction }
+  obtain ⟨globalSection, hglobal⟩ :=
+    (FiniteModel.twoPatchZMod2TranslationReplaySheaf.descent twoPatchReplayCover
+      (by simpa [twoPatchReplayCover] using FiniteModel.twoPatchCover_topologyCover)).exists_global
+      data
+  refine ⟨globalSection, ?_⟩
+  intro i
+  have hchart := hglobal (homOfLE (FiniteModel.twoPatchCover.inclusion i))
+    (twoPatchReplayCover_contains i)
+  change globalSection =
+    twoPatchCorrectedLocalSectionsBy correction
+      (homOfLE (FiniteModel.twoPatchCover.inclusion i))
+      (twoPatchReplayCover_contains i) at hchart
+  rw [twoPatchCorrectedLocalSectionsBy_chart correction hclass i] at hchart
+  exact hchart
 
 /-- The corrected local family is the common translation replay section obtained from zero mismatch. -/
 def twoPatchCorrectedLocalSections :
@@ -2276,6 +2519,29 @@ def TwoPatchTemporalReplayRealizesCorrection
           (twoPatchReplayTemporalCover.contextToBase i) state)
 
 /--
+An actual degree-zero primitive produces a global temporal replay realizing
+the chart replays corrected by that same primitive.
+-/
+theorem twoPatch_temporal_descent_criterion_of_class_zero
+    (correction : Site.FinitePosetCechCochain
+      FiniteModel.twoPatchZMod2FinitePosetRegime 0)
+    (hclass : twoPatchReplayCechMismatch =
+      FiniteModel.twoPatchZMod2CechComplex.differential 0 correction) :
+    ∃ globalReplay : TwoPatchTemporalReplayTransition,
+      TwoPatchTemporalReplayRealizesCorrection correction globalReplay := by
+  rcases twoPatchReplay_class_zero_descends correction hclass with
+    ⟨globalSection, hglobal⟩
+  refine ⟨{
+    trace_selected := twoPatchReplayTemporalTrace_selected
+    toFun := FiniteModel.TwoPatchZMod2TranslationReplay.apply globalSection
+  }, ?_⟩
+  intro i state
+  change FiniteModel.TwoPatchZMod2TranslationReplay.apply globalSection state =
+    FiniteModel.TwoPatchZMod2TranslationReplay.apply
+      (twoPatchAdjustedReplayLocalSectionBy correction i) state
+  rw [hglobal i]
+
+/--
 The realization predicate is not vacuous: the zero correction leaves the two
 chart translations unequal, so no single base replay realizes both charts.
 -/
@@ -2347,18 +2613,8 @@ theorem twoPatch_temporal_descent_criterion :
   exact twoPatchReplayTemporalCover_reads_actual_chart i
   intro cochain
   exact twoPatchReplayCochainToTemporalProduct_endpoints cochain
-  rcases twoPatch_temporal_descent_criterion_holds with ⟨globalSection, hglobal⟩
-  refine ⟨{
-    trace_selected := twoPatchReplayTemporalTrace_selected
-    toFun := FiniteModel.TwoPatchZMod2TranslationReplay.apply globalSection
-  }, ?_⟩
-  intro i state
-  change FiniteModel.TwoPatchZMod2TranslationReplay.apply globalSection state =
-    FiniteModel.TwoPatchZMod2TranslationReplay.apply
-      (FiniteModel.TwoPatchZMod2TranslationReplay.adjust
-        (twoPatchReplayLocalSection i) (twoPatchReplayCorrectionCochain i)) state
-  rw [hglobal i]
-  rfl
+  exact twoPatch_temporal_descent_criterion_of_class_zero
+    twoPatchReplayCorrectionCochain twoPatchReplayCechMismatch_eq_correction
 
 /-- The actual criterion exposes the descended replay function with its chartwise realization. -/
 theorem twoPatch_temporal_descent_criterion_global_replay
@@ -2366,16 +2622,8 @@ theorem twoPatch_temporal_descent_criterion_global_replay
     ∃ globalReplay : TwoPatchTemporalReplayTransition,
       TwoPatchTemporalReplayRealizesCorrection
         twoPatchReplayCorrectionCochain globalReplay := by
-  rcases twoPatch_temporal_descent_criterion_holds with ⟨globalSection, hglobal⟩
-  refine ⟨{
-    trace_selected := twoPatchReplayTemporalTrace_selected
-    toFun := FiniteModel.TwoPatchZMod2TranslationReplay.apply globalSection
-  }, ?_⟩
-  intro i state
-  change FiniteModel.TwoPatchZMod2TranslationReplay.apply globalSection state =
-    FiniteModel.TwoPatchZMod2TranslationReplay.apply
-      (twoPatchAdjustedReplayLocalSection i) state
-  rw [hglobal i]
+  exact twoPatch_temporal_descent_criterion_of_class_zero
+    twoPatchReplayCorrectionCochain twoPatchReplayCechMismatch_eq_correction
 
 /--
 The same finite `ZMod 2` data records a nonzero correction, the actual
