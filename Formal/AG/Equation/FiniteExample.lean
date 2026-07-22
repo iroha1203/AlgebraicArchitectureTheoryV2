@@ -97,10 +97,13 @@ def role : FixtureEquationIndex -> EquationRole
   | .derivedEquation => .derived
 
 /-- A nonconstant symbolic violation coordinate on the two-Atom fixture. -/
-def violationValue (_index : FixtureEquationIndex) (atom : Bool) : Int :=
-  match atom with
-  | false => -1
-  | true => 1
+def violationValue : FixtureEquationIndex -> Bool -> Int
+  | .requiredEquation, false => -1
+  | .requiredEquation, true => 1
+  | .optionalEquation, false => -1
+  | .optionalEquation, true => 1
+  | .derivedEquation, false => -1
+  | .derivedEquation, true => 1
 
 /-- Residual value determined from the distinguished Atom of an input object. -/
 def residualValue (object : ArchitectureObject carrier) : Int := by

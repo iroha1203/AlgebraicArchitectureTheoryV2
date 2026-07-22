@@ -79,6 +79,7 @@ use context-indexed observable rings without importing coverage or topology.
 -/
 structure ContextCategoryObject {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     (C : ContextPreorderCategory A) where
+  /-- The selected architecture context represented by this thin-category object. -/
   ctx : ArchCtx A
 
 namespace ContextCategoryObject
