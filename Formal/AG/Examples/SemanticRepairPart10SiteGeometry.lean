@@ -17,8 +17,10 @@ X.意味8.3 states that nontrivial `H^1` content comes from the geometry of the
 cover.  The fixed circle witness of X.例9.2 discloses that its nerve is
 supplied simplicial data over a single-object site with identity inclusions,
 `C^2 = Empty`, and a vacuous `Z^1` condition.  This file adds the
-complementary witness demanded by #3719: a cover-relative Cech complex whose
-nerve is generated from genuine chart intersections of a multi-chart AAT site.
+complementary witness demanded by #3719: a cover-relative Cech complex over a
+multi-chart AAT site whose overlap objects are definitionally the
+chart-intersection meets and whose nerve incidence is certified against the
+atom-level intersection geometry.
 
 The selected *kite* cover has four charts `v0 v1 v2 v3`, five pairwise
 overlaps `e01 e02 e12 e03 e23`, and one triple overlap `f012`.  Its geometric
@@ -44,12 +46,28 @@ Site geometry, not supplied identities:
   the residual cocycle condition has a genuine computational proof, so
   `Z^1 = ker d^1` is non-vacuous.
 
-Boundary (disclosed, mirroring X.例9.2): the witness-topology trick is kept.
-The selected coverage requirements leave no admissible cover, so every
-covering sieve of the selected topology is top and the constant-observable
-law-equation quotient is a sheaf.  The site geometry that generates the nerve
-lives in the context category and its finite meets; the Grothendieck topology
-side stays the degenerate witness topology, exactly as in the circle witness.
+Boundaries (disclosed, mirroring the X.例9.2 discipline):
+
+* the witness-topology trick is kept.  The selected coverage requirements
+  leave no admissible cover, so every covering sieve of the selected topology
+  is top and the constant-observable law-equation quotient is a sheaf.  The
+  site geometry behind the nerve lives in the context category and its finite
+  meets; the Grothendieck topology side stays the degenerate witness
+  topology, exactly as in the circle witness;
+* the simplex sets are *selected* by the nonempty-intersection nerve rule and
+  then certified against the atom-level intersection geometry by the decide
+  theorems below.  The generated coefficient `Q` does not vanish on
+  empty-overlap meet contexts (the obstruction ideal is `(2)` at every
+  context), so dropping the empty intersections from the nerve is part of the
+  selected nerve rule, not a consequence forced by the coefficient; on a
+  full-tuple nerve that includes the empty overlaps, the residual would fail
+  the cocycle condition at the `(v0, v1, v3)` triple;
+* the four chart read-sets do not jointly cover the base read-set
+  (`contractImpl` and `substitutesImplBase` are read only by the base
+  context): the kite family is a chart family strictly below the base, not a
+  covering family of it in either the atom-level or the topological sense,
+  and the degree-one computation depends only on the pairwise and triple
+  overlaps.
 -/
 
 /-! ## Kite nerve carriers -/
