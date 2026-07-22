@@ -56,11 +56,12 @@ and
 Flat_U(W)
 ```
 
-第V部では、二つ以上の law universe を同時に考える。
+第V部では、二つ以上の architectural equation system と、その自然言語表示を同時に考える。
 
 ```text
-U : LawUniverse
-V : LawUniverse
+E_U, E_V : ArchitecturalEquationSystem
+U := U_{E_U}
+V := U_{E_V}
 ```
 
 それぞれに lawful locus がある。

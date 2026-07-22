@@ -117,7 +117,8 @@ stratification は次に相対化される。
 
 ```text
 AtomVocabulary V
-LawUniverse U
+ArchitecturalEquationSystem E
+law display U := U_E
 CoverageTopology J
 selected signature axes
 coefficient structure

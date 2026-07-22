@@ -209,7 +209,7 @@ selected operation policy is strictly dissipative outside terminal states.
 このとき、任意の selected evolution path は有限時間で terminal state に到達する。
 
 terminal state が lawful であるためには、
-第III部・第IV部の obstruction vanishing、exactness、coverage assumptions が別途必要である。
+第III部・第IV部の obstruction vanishing、named comparison theorem、E-adequate cover が別途必要である。
 
 ## 6. Lyapunov Reading
 

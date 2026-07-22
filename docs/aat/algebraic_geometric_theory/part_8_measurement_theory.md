@@ -213,7 +213,7 @@ selected Tor computations use finite free, Koszul, Taylor, Scarf, or monomial re
 
 ```text
 M is a finite measurement regime.
-the chosen cover is U-adequate for selected witnesses and axes.
+the chosen cover is E-adequate for selected equation coordinates, witnesses, and axes.
 coefficient sheaf Ob_M is module-valued on the finite site.
 restriction maps are given by finite matrices or finite module maps.
 EffCoeff_M contains the coefficient algorithms used by the verdict predicates.
@@ -1045,7 +1045,7 @@ structural verdict
 
 ```text
 M is a finite measurement regime.
-cover is U-adequate.
+cover is E-adequate.
 witness and axis exactness hold where reflection is claimed.
 coefficient objects are finite/effective and explicit under EffCoeff_M.
 common ambient exists for selected LawConflict readings.

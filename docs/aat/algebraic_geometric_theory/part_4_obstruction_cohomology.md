@@ -1,15 +1,15 @@
 # 第IV部 Obstruction Cohomology
 
 第III部では、architecture geometry `X` の上に可換環の層 `O_X^U` を置き、
-selected required law defect が生成する obstruction ideal sheaf `I_Ob^U` を定義した。
+required equation witness が生成する obstruction ideal sheaf `I_Ob^U` を定義した。
 
 ```text
 I_Ob^U subset O_X^U
 Flat_U(X) = V(I_Ob^U)
 ```
 
-Part III の required law ごとの closed-equationality と law-ideal exactness、および selected
-ringed / scheme regime の下で、semantic lawfulness は obstruction ideal の零点集合として読める。
+第III部の required equation ごとの `ClosedPresented_E(i)`、および selected
+ringed / scheme regime の下で、equation lawfulness は obstruction ideal の零点集合として読める。
 
 しかし、局所的に lawful であることは、ただちに大域的な lawfulness を意味しない。
 
@@ -50,11 +50,11 @@ The gap is obstruction cohomology.
 
 ## 1. Part3 から Part4 へ
 
-第III部の Lawfulness-Ideal Correspondence は、required law ごとの closed-equationality と
-law-ideal exactness、extension-ideal compatibility、selected ringed / scheme regime の下で次を与える。
+第III部の Equation Lawfulness-Ideal Correspondence は、required equation ごとの
+`ClosedPresented_E(i)`、extension-ideal compatibility、selected ringed / scheme regime の下で次を与える。
 
 ```text
-SemanticLawful_U(s)
+EquationLawful_E(s)
   iff
 IdealLawful_U(s)
   iff
@@ -65,7 +65,7 @@ s factors through Flat_U(X)
 
 これは、一つの architecture section が lawful locus を通る条件である。
 以下で local lawful section と書くときは、この `IdealLawful_U` を指す。
-`SemanticLawful_U` との交換は上の correspondence 仮定を伴う。
+`EquationLawful_E` との交換は上の correspondence 仮定を伴う。
 
 第IV部では、cover
 
@@ -133,91 +133,91 @@ descent failure witness
 
 ### 定義 2.1A Circuit-to-Coefficient Realization
 
-Part III の `Circ_U^loc(A,L;W)` は restriction-stable な local circuit の型であり、
+第III部の `Circ_E^loc(A,i;W)` は restriction-stable な local circuit の型であり、
 
 ```text
-real_{L,W}^{circ}
+real_{E,i,W}^{circ}
   :
-Circ_U^loc(A,L;W) -> Viol_L(W)
+Circ_E^loc(A,i;W) -> Viol_E(i,W)
 ```
 
-によって law ideal の generator `x_{real(c)} in I_L(W)` へ写る。
+によって equation witness ideal の generator `nu_{W,i,real(c)} in I_i^E(W)` へ写る。
 一方、`Ob_U(W)` は cohomology、torsor、derived deformation に使う coefficient object である。
 両者の provenance を保つ circuit-to-coefficient realization は、まず natural additive morphism、
 または selected module structure に対する module morphism
 
 ```text
-rho_{L,W}
+rho_{i,W}
   :
-I_L(W) -> Ob_U(W)
+I_i^E(W) -> Ob_U(W)
 ```
 
 を持ち、次の合成として定義する。
 
 ```text
-kappa_{L,W}(c)
+kappa_{i,W}(c)
   :=
-rho_{L,W}(x_{real_{L,W}^{circ}(c)})
+rho_{i,W}(nu_{W,i,real_{E,i,W}^{circ}(c)})
 ```
 
 すなわち次の図式が定義で可換である。
 
 ```text
-Circ_U^loc(A,L;W)  --real^{circ}-->  Viol_L(W)
+Circ_E^loc(A,i;W)  --real^{circ}-->  Viol_E(i,W)
         |                                  |
         | kappa                            | generator
         v                                  v
-      Ob_U(W)          <--rho_{L,W}--     I_L(W)
+      Ob_U(W)          <--rho_{i,W}--     I_i^E(W)
 ```
 
 context morphism `j : W' -> W` に対し、`rho` は ideal restriction と coefficient restriction に
 関して natural である。
 
 ```text
-res_j(rho_{L,W}(z))
+res_j(rho_{i,W}(z))
   =
-rho_{L,W'}(res_j(z))
+rho_{i,W'}(res_j(z))
 
-res_j(kappa_{L,W}(c))
+res_j(kappa_{i,W}(c))
   =
-kappa_{L,W'}(res_j(c)).
+kappa_{i,W'}(res_j(c)).
 ```
 
-この family が与えられるとき、local circuit realization は law ideal sheaf を経由して
+この family が与えられるとき、local circuit realization は equation witness ideal sheaf を経由して
 obstruction coefficient presheaf、さらに sheafification 後の `Ob_U` へ接続する。
 ideal realization と無関係な独立の map `Circ -> Ob_U` だけでは、
-law equation から coefficient への provenance は得られない。
+symbolic violation coordinates から coefficient への provenance は得られない。
 
 abelian group sheaf または module sheaf としての `Ob_U(W)` は zero section を持つため、
-その underlying type の非空性は law failure を表さない。law failure を読むのは、selected defect
-section、valuation、または `kappa_{L,W}(c)` の nonzero / positive reading である。
+その underlying type の非空性は equation failure を表さない。equation failure を読むのは、selected residual、
+valuation、または `kappa_{i,W}(c)` の nonzero / positive reading である。
 
 ```text
 circuit-detecting realization:
   for every selected circuit c,
-  kappa_{L,W}(c) is nonzero or positive
+  kappa_{i,W}(c) is nonzero or positive
   in the selected coefficient reading.
 
 coefficient-complete realization:
-  every selected required law failure produces a circuit c
-  whose image kappa_{L,W}(c) is nonzero or positive.
+  every selected required equation failure produces a circuit c
+  whose image kappa_{i,W}(c) is nonzero or positive.
 ```
 
 no-cancellation、witness coverage、effectivity は、この nonzero / positive reading を
-law failure と結び付ける条件として明示する。
+equation failure と結び付ける条件として明示する。
 
 `rho` の由来は coefficient regime ごとに固定する。
 
 ```text
 conormal regime:
-  I_L -> I_L / I_L^2
+  I_i^E -> I_i^E / (I_i^E)^2
   is the quotient map, followed by the canonical or selected morphism into Ob_U
   after source and target are placed in the same sheaf category.
   This morphism is not assumed to be injective; injectivity is a separate condition.
 
 torsor regime:
   a torsor mismatch is first sent to the selected abelianization;
-  a circuit coefficient is claimed only when an explicit natural rho from I_L is also given.
+  a circuit coefficient is claimed only when an explicit natural rho from I_i^E is also given.
 
 selected coefficient regime:
   rho is named as part of the coefficient reading and its additivity,
@@ -368,7 +368,8 @@ H^1(Flat_U(X), ConDef_U)
 
 ```text
 AtomVocabulary V
-LawUniverse U
+ArchitecturalEquationSystem E
+law display U := U_E
 CoverageTopology J
 coefficient structure
 selected witness family
@@ -1375,7 +1376,7 @@ forall i, s_i factors through Flat_U(X)
 Ob_U is an abelian sheaf, or an O_X^U-module, on the chosen site.
 overlap mismatch cocycle g is defined as an Ob_U-valued Cech 1-cocycle.
 the local lawful sections form an effective Ob_U-torsor.
-𝒰 is U-adequate for the selected witnesses and axes
+𝒰 is E-adequate for the selected equation coordinates, witnesses, and axes
 obstruction soundness holds
 obstruction completeness holds
 axis exactness holds
