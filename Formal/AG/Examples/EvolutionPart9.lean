@@ -1575,7 +1575,7 @@ def zeroReplayTemporalClass :
   cocycle := zeroReplayMismatchCocycle.toTemporalCocycle
 
 /-- R10(b): concrete theorem-4.2 assumptions for the zero replay fixture. -/
-def zeroReplayTemporalDescentCriterion :
+theorem zeroReplayTemporalDescentCriterion :
     TemporalDescentCriterion zeroReplayDescentData where
   mismatchCocycle := zeroReplayMismatchCocycle
   temporalClass := zeroReplayTemporalClass
