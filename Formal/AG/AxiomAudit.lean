@@ -823,6 +823,25 @@ theorem semanticRepairIssue3719KiteCoverRelativeH1Nonzero :
 def semanticRepairIssue3719KiteWitnessPacket :=
   AAT.AG.Examples.SemanticRepairPart10.kiteSiteGeometry_witness_packet
 
+/-- Kernel-audit entries for the #3722 X.定理8.4/8.5 circle-entity counterexamples. -/
+def semanticRepairIssue3722CircleTypedComparisonImpossible :=
+  AAT.AG.Examples.SemanticRepairPart10.circleTypedComparisonTarget_impossible_forEmptyCoefficient
+
+def semanticRepairIssue3722CircleRefinementBlock :=
+  AAT.AG.Examples.SemanticRepairPart10.circleRefinementZeroComparison_blocks_lawfulCoarse_to_circleResidual
+
+def semanticRepairIssue3722CircleRefinementNotUnconditional :=
+  AAT.AG.Examples.SemanticRepairPart10.circleRefinementZeroComparison_not_unconditional_onCircle
+
+def semanticRepairIssue3722CoarseResidualIsZeroCochain :=
+  AAT.AG.Examples.SemanticRepairPart10.lawfulCoarseResidual_is_zero_cochain
+
+def semanticRepairIssue3722CoarseCarrierNondegenerate :=
+  AAT.AG.Examples.SemanticRepairPart10.lawfulCoarse_carrier_nondegenerate
+
+def semanticRepairIssue3722CircleCounterexamplePacket :=
+  AAT.AG.Examples.SemanticRepairPart10.circle_boundaryComparison_counterexample_packet
+
 theorem boundaryCocycleNonzero :
     Cohomology.FiniteExamples.PseudoCircleGolden.boundaryCocycle
         Cohomology.FiniteExamples.PseudoCircleGolden.BoundaryEdge.AB ≠ 0 :=
