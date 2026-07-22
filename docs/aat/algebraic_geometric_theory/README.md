@@ -46,9 +46,11 @@ cohomology class として現れる。
   -> Atom family F_r
   -> configuration C_r
   -> architecture object A_r
-  -> operation-closed object algebra Core_At(r)
   -> Architecture context category
   -> Atom-indexed architectural equation system
+  -> operation / circuit / signature families
+  -> operation-closed object algebra Core_At(r)
+  -> coverage requirements + selected overlaps
   -> AAT site
   -> Sheaves
   -> Ringed AAT topos
@@ -114,7 +116,7 @@ representation、measurement profile、trace category、semantic repair-gluing c
 
 相対性:
   グロタンディーク以来、代数幾何は絶対的な対象ではなく base に相対的な対象を研究する。
-  vocabulary、law universe、coverage topology、係数環を固定し、
+  vocabulary、architectural equation system、coverage requirements、coverage topology、係数環を固定し、
   選ばれなかったものについて沈黙する本文の規律は、
   理論に後付けした安全条項ではなく、この数学そのものの標準的な作業姿勢である。
 
@@ -155,7 +157,7 @@ Formal theorem:
   公理・定義・仮定から証明される数学的命題。
 
 Certified bounded inference:
-  E-adequacy、named comparison theorem、witness completeness などの仮定の下で成立する相対的推論。
+  E-adequacy、named comparison hypothesis、witness completeness などの仮定の下で成立する相対的推論。
 
 Analytic reading:
   構成された幾何対象を graph、signature、period、metric などで読む表現。
@@ -169,7 +171,7 @@ Definition / Construction:
 
 Theorem / Proposition / Lemma:
   本文で明示した定義と仮定のもとで読む数学命題。
-  ただし E-adequacy、named comparison theorem、witness completeness などを仮定に置くものは
+  ただし E-adequacy、named comparison hypothesis、witness completeness などを仮定に置くものは
   Certified bounded inference であり、無条件の絶対 claim ではない。
 
 Theorem candidate:

@@ -64,12 +64,15 @@ AAT measurement profile は、次のデータからなる。
 ```text
 M =
   finite site X_M
+  architectural equation system E_M
+  architecture signature Sig_M
+  coverage requirements R_M and selected overlap package Ov_M owned by X_M
   selected cover U_M
   coefficient ring or field k_M
   coefficient effectiveness data EffCoeff_M
   coefficient sheaf Ob_M
-  selected law universe U
-  selected witness variables E
+  law display U := U_{E_M}
+  selected witness coordinates Coord_M
   obstruction ideal sheaf I_Ob^U
   representation family Rep_M
   measured domain Dom_M
@@ -199,7 +202,7 @@ EffCoeff_M supplies the kernel / image / quotient / ideal-membership procedures
   actually used by M.
 restriction maps are explicit matrices or finite module homomorphisms.
 zero / nonzero predicates are backed by the selected algorithms or certificates.
-selected witness variables E are finite.
+selected witness coordinates Coord_M are finite.
 selected obstruction ideals are finitely generated.
 selected Tor computations use finite free, Koszul, Taylor, Scarf, or monomial resolutions.
 ```
@@ -213,11 +216,11 @@ selected Tor computations use finite free, Koszul, Taylor, Scarf, or monomial re
 
 ```text
 M is a finite measurement regime.
-the chosen cover is E-adequate for selected equation coordinates, witnesses, and axes.
+the chosen cover is E_M-adequate for selected equation coordinates, witnesses, and axes.
 coefficient sheaf Ob_M is module-valued on the finite site.
 restriction maps are given by finite matrices or finite module maps.
 EffCoeff_M contains the coefficient algorithms used by the verdict predicates.
-square-free witness variables E are finite when Stanley-Reisner reading is used.
+square-free witness coordinates Coord_M are finite when Stanley-Reisner reading is used.
 monomial or finitely presented resolutions are selected when Tor is measured.
 ```
 
@@ -265,10 +268,10 @@ selected finite resolutions
 
 ### 定義 5.1 Square-Free Repair Regime
 
-square-free repair regime では、finite witness set `E` と forbidden support family
+square-free repair regime では、finite witness coordinate set `Coord_M` と forbidden support family
 
 ```text
-Forb_U subset FinSubsets(E)
+Forb_U subset FinSubsets(Coord_M)
 ```
 
 を固定する。
@@ -296,7 +299,7 @@ I_Ob^U = < x_S | S in Forb_U >
 ```text
 Delta_U
   =
-{ T subset E | no S in MinForb_U satisfies S subset T }
+{ T subset Coord_M | no S in MinForb_U satisfies S subset T }
 ```
 
 を定義でき、
@@ -1045,7 +1048,7 @@ structural verdict
 
 ```text
 M is a finite measurement regime.
-cover is E-adequate.
+cover is E_M-adequate.
 witness and axis exactness hold where reflection is claimed.
 coefficient objects are finite/effective and explicit under EffCoeff_M.
 common ambient exists for selected LawConflict readings.

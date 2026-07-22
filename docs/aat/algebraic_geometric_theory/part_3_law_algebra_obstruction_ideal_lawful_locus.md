@@ -638,10 +638,13 @@ equation witness ideal sheaf `𝓘_i^E subset O_X^U` と書く。
 ### 定義 5.2A Equation Fulfillment on Sections
 
 scheme-theoretic section `s : T -> X` が選ぶ local architecture reading を `A_s` とする。
+この section reading には、任意の `f : T' -> T` に対して `A_{s compose f}` を `A_s` の
+pullback reading と同一視する指定を含め、その同一視が identity と composition に整合すると仮定する。
+これを base-change-stable section reading と呼ぶ。
 equation residual を section に沿って引き戻した族を
 
 ```text
-epsilon_{i,a}(s) := s^#(epsilon_{W,A_s,i,a})
+epsilon_{W,i,a}(s) := s^#(epsilon_{W,A_s,i,a})
 ```
 
 と書く。section 上の equation fulfillment と lawfulness を次で定義する。
@@ -650,7 +653,7 @@ epsilon_{i,a}(s) := s^#(epsilon_{W,A_s,i,a})
 EquationHolds_E(i;s)
   iff
 forall W in C, forall a in At,
-  epsilon_{i,a}(s) = 0
+  epsilon_{W,i,a}(s) = 0
 
 EquationLawful_E(s)
   iff
@@ -663,7 +666,15 @@ forall i in K_E,
   EquationHolds_E(i;s)
 ```
 
-residual の restriction compatibility により、この fulfillment は base change で保存される。
+base-change-stable section reading の下で、`(s compose f)^# = f^# compose s^#` と
+`A_{s compose f} = A_s` の指定から
+
+```text
+epsilon_{W,i,a}(s compose f)
+  = f^#(epsilon_{W,i,a}(s))
+```
+
+が成り立つ。環準同型 `f^#` は零を零へ送るため、section fulfillment は base change で保存される。
 selected architecture point `a_A : T_A -> X` では、section reading は第I部の object reading と一致し、
 
 ```text
@@ -696,7 +707,9 @@ forall T s,
 
 各向きを分けて使う場合は、residual vanishing から extension ideal vanishing への向きを
 `ClosedPresentationSound_E(i)`、逆向きを `ClosedPresentationComplete_E(i)` と呼ぶ。
-これは residual family と symbolic witness ideal の比較命題であり、equation system の field ではない。
+これは residual family と symbolic witness ideal の比較を定める predicate であり、equation system の field ではない。
+定理11.1では明示的な hypothesis として用いる。selected regime でこの predicate を構成・証明した場合に、
+その証明を closed-presentation comparison theorem と呼ぶ。
 
 ### 定義 5.3 Displayed Equation Residual
 
@@ -782,18 +795,31 @@ d_semantic != 0
 ### 例 5.5 Defect Encoding
 
 coefficient ring `k` と selected witness family が固定されているとき、
-cycle defect の安全な encoding は、選ばれた cycle witness coordinate が生成する ideal である。
+選ばれた cycle witness coordinate が生成する auxiliary ideal を
 
 ```text
-I_cycle^E(W)
+I_cycle^{E,sel}(W)
   =
   < nu_{W,cycle,c} | c in CycleWitness_E(W) >
   subset O_E(W)
 ```
 
-ここで `nu_{W,cycle,c}` は cycle witness `c` に対応する symbolic violation coordinate である。
-`s^*_{ideal} I_cycle(W) = 0`、または `I_cycle(W) subset p` は、
+と定義する。ここで `nu_{W,cycle,c}` は cycle witness `c` に対応する symbolic violation coordinate である。
+section が誘導する chart evaluation について `ev_s(I_cycle^{E,sel}(W)) = 0`、
+または `I_cycle^{E,sel}(W) subset p` は、
 選ばれた cycle witness が section や点に沿ってすべて zero であることを読む。
+
+標準 witness ideal は定義5.2どおり Atom 全域から生成される。
+
+```text
+I_cycle^E(W)
+  =
+  < nu_{W,cycle,a} | a in At >.
+```
+
+したがって `I_cycle^{E,sel}(W)` を標準 `I_cycle^E(W)` と同一視してよいのは、
+各 `a` outside `CycleWitness_E(W)` について `nu_{W,cycle,a}` が selected ideal に属するときに限る。
+support 外で `nu_{W,cycle,a}=0` であることは、その十分条件である。
 
 no-cancellation discipline が固定されている場合に限り、代表元として
 
@@ -805,8 +831,8 @@ g_cycle(W)
 
 を使ってよい。
 しかし、標数や符号付き係数によって witness の和が cancellation しうるため(原則 5.6)、
-ideal-side satisfaction の定義は `g_cycle = 0` ではなく `s^*_{ideal} I_cycle^E = 0` または
-`I_cycle^E subset p` に置く。
+selected-family satisfaction は `g_cycle = 0` ではなく `ev_s(I_cycle^{E,sel}) = 0` または
+`I_cycle^{E,sel} subset p` に置く。これを標準 equation satisfaction と読むには、上の ideal equality を要する。
 
 substitution defect も同様に、contract mismatch witness coordinate が生成する ideal として定義する。
 `nu_{W,substitution,a}=0` が selected mismatch support の外で成り立つ具体的な equation system では、
@@ -831,7 +857,7 @@ no-cancellation discipline が必要である。
 
 ```text
 Boolean evaluation:
-  ev_s(x_v) in {0,1}.
+  ev_s(nu_{W,i,a}) in {0,1} for selected (i,a).
 
 monomial witness ideals:
   I_i^E(W) = < nu_{W,i,a} | a in At >.
@@ -855,10 +881,10 @@ I_sub   = < substitutes_Impl_Base * contract_mismatch >
 
 ### 補題 5.6A Idempotent Coordinate Collapse
 
-有限個の selected coordinate に対して、体 `k` 上で
+有限個の selected coordinate の添字集合 `Coord` に対して、体 `k` 上で
 
 ```text
-A = k[x_v | v in E] / < x_v^2 - x_v | v in E >
+A = k[x_v | v in Coord] / < x_v^2 - x_v | v in Coord >
 ```
 
 と置く。
@@ -875,7 +901,7 @@ Omega_{A/k} = 0.
 context `W` 上で、選ばれた primitive witness coordinate の有限集合を
 
 ```text
-E_W = { e_1, ..., e_n }
+Coord_W = { e_1, ..., e_n }
 ```
 
 とし、coordinate algebra の deformation 側を
@@ -891,7 +917,7 @@ square-free monomial `x_S` であるとする。raw forbidden support を
 ```text
 RawForb_E(W)
   =
-  { S subset E_W
+  { S subset Coord_W
     | exists required i and a in At,
       nu_{W,i,a} = u * x_S for a unit u }
 ```
@@ -912,7 +938,7 @@ x_S = product_{e in S} e
 I_Ob^E(W)
   =
   < x_S | S in Forb_E(W) >
-  subset k[E_W]
+  subset k[Coord_W]
 ```
 
 である。
@@ -925,7 +951,7 @@ simplicial complex
 ```text
 Delta_E(W)
   =
-  { T subset E_W | no S in Forb_E(W) satisfies S subset T }
+  { T subset Coord_W | no S in Forb_E(W) satisfies S subset T }
 ```
 
 を定義し、自然言語表示では `Delta_U(W) := Delta_E(W)` と書く。
@@ -950,7 +976,7 @@ Flat_U(W)
 記法は次である。
 
 ```text
-E_W:
+Coord_W:
   primitive readable witness coordinates.
 
 Forb_E(W):
@@ -981,7 +1007,7 @@ minimal monomial generators of I_Ob^E(W):
 ### 例 5.6E Three-Witness Stanley-Reisner Chart
 
 ```text
-E_W = { x, y, z }
+Coord_W = { x, y, z }
 Forb_U(W) = { {x,y} }
 ```
 
@@ -1309,23 +1335,23 @@ FullyEquationLawful_E(s)
 affine chart
 
 ```text
-X_W = Spec k[E_W]
+X_W = Spec k[Coord_W]
 ```
 
 を固定し、`k` を algebraically closed field とする。
-Boolean evaluation を課す coordinate の集合を `E_bool subset E_W` とし、
+Boolean evaluation を課す coordinate の集合を `Coord_bool subset Coord_W` とし、
 
 ```text
 B_W
   =
-  < e^2 - e | e in E_bool >
+  < e^2 - e | e in Coord_bool >
 ```
 
 と置く。
 closed equational obstruction ideal を
 
 ```text
-I_U(W) = I_Ob^U(W) subset k[E_W]
+I_U(W) = I_Ob^U(W) subset k[Coord_W]
 ```
 
 とする。
@@ -1741,7 +1767,7 @@ coefficient ring k
 chart atlas
 ```
 
-したがって、同じ source `S` でも、`V`、`U`、`J`、`k`、chart atlas が変われば、
+したがって、同じ source `S` でも、`V`、`E`、`J`、`k`、chart atlas が変われば、
 一般に異なる architecture scheme が得られる。
 
 ```text
@@ -1924,14 +1950,16 @@ FullIdealLawful_U(s)
 
 が得られる。
 
-### 原則 11.2 Closed Presentation Is a Named Comparison
+### 原則 11.2 Closed Presentation Is an Explicit Comparison Hypothesis
 
 定理11.1の同値は、各 required index に対する `ClosedPresented_E(i)`、selected ringed / scheme regime、
 extension ideal と indexed sum の可換性に相対化される。cover から計算する場合は、
 `E`-adequacy と ideal-sheaf descent を明示する。
 
 `ClosedPresented_E(i)` は residual vanishing と witness ideal vanishing の二方向をそのまま述べる
-comparison theorem である。coverage や exactness という名前だけの slot で置き換えない。
+defined comparison predicate であり、定理11.1では explicit hypothesis である。
+個々の regime でこの predicate を構成・証明したとき、その証明が comparison theorem になる。
+coverage や exactness という名前だけの slot で置き換えない。
 
 以下では、equation system の `nu` から obstruction coefficient と restriction を生成し、
 `epsilon` から displayed interpretation を生成する。

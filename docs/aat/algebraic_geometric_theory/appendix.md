@@ -50,18 +50,21 @@ r : CoreRead(At)
     invariant / signature reading
     operation reading
 
-J_E : CoverageTopology generated for E_r
+Sig_r : selected architecture signature reading
+R_r : CoverageRequirements(A_s^r,E_r,Sig_r)
+Ov_r : selected context-overlap package realizing the overlap requirements in R_r
+J_{E_r,R_r,Ov_r} : topology generated from the selected coverage package
 k : coefficient ring
 ```
 
 この組を記号的に
 
 ```text
-p = (r,J,k)
+p = (r,Sig,R,Ov,J,k)
 ```
 
 と書くことがある。
-source、doctrine、object / context / equation / operation / signature reading、`J_E`、`k` のいずれかが変われば、
+source、doctrine、object / context / equation / operation / signature reading、`R`、`Ov`、`J`、`k` のいずれかが変われば、
 一般に異なる core または geometry が得られる。
 
 ```text
@@ -69,7 +72,7 @@ Core_At(r)
 X_s^{r,J,k}
 ```
 
-`source`、extraction doctrine、object reading、operation reading が固定されている場合、
+`source`、extraction doctrine、object reading、operation reading、`Sig`、`R`、`Ov` が固定されている場合、
 visible parameter だけを表示して従来どおり
 
 ```text
@@ -382,18 +385,18 @@ general law is a geometric condition.
 
 ## A.7 Closed Equational Laws
 
-equation system `E` の index `i` は、symbolic violation coordinates が生成する ideal
+equation system `E` の index `i` は、各 context `W` で symbolic violation coordinates が生成する ideal
 
 ```text
-I_i^E
+I_i^E(W)
   = < nu_{W,i,a} | a in At >
-  subset O_E
+  subset O_E(W)
 ```
+
+を持つ。一方、equation fulfillment は object-dependent residuals の同時消滅である。
 
 selected violation-witness support は finite circuit と cover 上の可視性を記録するが、
 この標準 ideal の generator family を切り詰めない。
-
-を持つ。一方、equation fulfillment は object-dependent residuals の同時消滅である。
 
 ```text
 EquationHolds_E(i;s)
@@ -530,11 +533,11 @@ algebraic architecture stack と呼ぶのは、diagonal representability、atlas
 | `obstruction soundness` | defined predicate | `EquationHolds_E(i,A) -> omega_{E,i}(A)=0` として読む。 |
 | `obstruction completeness` | defined predicate | `not EquationHolds_E(i,A) -> omega_{E,i}(A)>0` として読む。 |
 | `zero-reflecting aggregation` | defined predicate | `omega_E(A)=0 iff forall required i, omega_{E,i}(A)=0` を保証する集約条件。 |
-| `ClosedPresented_E(i)` | named comparison theorem | section 上の equation residual vanishing と sheaf ideal `𝓘_i^E` の extension vanishing を同値にする。equation systemのfieldではない。 |
+| `ClosedPresented_E(i)` | defined comparison predicate / theorem hypothesis | section 上の equation residual vanishing と sheaf ideal `𝓘_i^E` の extension vanishing を同値にする。equation systemのfieldではない。個々の regime で構成・証明されたとき、その証明が comparison theorem になる。 |
 | `EquationLawful / IdealLawful` | defined predicates + local theorem | required index ごとの `ClosedPresented_E(i)` の下で、residual vanishing と sheaf ideal `𝓘_Ob^E` の vanishing を同値にする。 |
 | `axis exactness` | certified assumption | selected signature axes の zero と selected obstruction reading の一致を仮定する。 |
 | `witness coverage` | certified assumption | 必要な witness が chosen cover / reading に現れることを仮定する。 |
-| `E-adequate cover` | defined predicate | cover であるだけでなく、required Atom support、equation coordinates、witnesses、axes、selected interaction overlaps、restriction-stable ideals を保つ cover。 |
+| `E-adequate cover` | defined predicate | fixed coverage requirements の required Atom support、equation coordinates、witnesses、axes、selected interaction overlaps を覆い、selected supports を restriction の下で保つ cover。`nu` / `epsilon` の値の compatibility は `E` の構造法則である。 |
 | `effective Ob_U-torsor` | defined predicate | local adjustment の差が abelian coefficient sheaf `Ob_U` の torsor class として `H^1(X,Ob_U)` に入ること。 |
 | `U-smooth` | defined predicate | selected deformation tests のすべてで lift / fill predicate が成立し、obstruction class が消えること。 |
 | `U-singular` | defined predicate | selected deformation test の中に非零 obstruction class が現れること。 |
@@ -599,7 +602,7 @@ Definition / Construction:
 
 Theorem / Proposition / Lemma:
   明示された仮定のもとで読む数学命題。
-  named comparison theorem / E-adequacy を仮定するものは certified bounded inference。
+  named comparison hypothesis / E-adequacy を仮定するものは certified bounded inference。
 
 Theorem candidate:
   将来の定義・証明設計を明示した本文内の定理候補。

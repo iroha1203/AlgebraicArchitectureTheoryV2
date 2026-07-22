@@ -1048,9 +1048,11 @@ U_E = { L_i | i in K_E }
 required laws = { i | role_E(i) = required }
 optional laws = { i | role_E(i) = optional }
 derived laws  = { i | role_E(i) = derived }
+
+K_E^req := { i in K_E | role_E(i) = required }
 ```
 
-ここで `L_i` は index `i` とその coordinate family を自然言語で表示する記法であり、
+ここで `K_E^req` は required equation indices の部分族である。`L_i` は index `i` とその coordinate family を自然言語で表示する記法であり、
 追加の truth predicate や別の mathematical field ではない。
 自然言語の law `L_i` は equation index `i` の読みであり、独立した真偽述語ではない。
 violation witness、observable、restriction は `E` のデータから得る。

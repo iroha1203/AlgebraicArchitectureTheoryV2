@@ -798,12 +798,11 @@ SAGA は Sémantique Architecturale, Géométrie Algébrique と読む。
 SAGA の名は、代数幾何における比較定理の伝統(GAGA)への言及であり、
 Serre の定理の適用でも一般化でもない。
 
-## 8. 境界定理 — Law 寄与の所在
+## 8. Equation 寄与の所在
 
-law の充足が、この cohomology のどこを動かすか。
-その所在は、境界として弁明するのではなく、定理として確定する。
+equation fulfillment が、この cohomology のどこを動かすかを定理として確定する。
 
-### 定理 8.1 Degree-Zero Law Contribution [Certified bounded inference]
+### 定理 8.1 Degree-Zero Equation Contribution [Certified bounded inference]
 
 architectural equation grounded surface の上で displayed equation fulfillment が成立するならば、
 生成された 0-cochain は各点で零である。
@@ -811,21 +810,21 @@ architectural equation grounded surface の上で displayed equation fulfillment
 equation fulfillment が Čech 複体に到達する地点は、正確に cochain 次数 0 であり、
 定理 7.5 の Čech 零は、その微分の像である。
 
-### 定理 8.2 Law-Independence of the Grounded Route
+### 定理 8.2 Equation-Fulfillment Independence of the Grounded Route
 
 定理 7.5 の equation fulfillment に依存しない結論群は、fulfillment を仮定せずに証明される。
-これらは、生成された入力面の上で residual が生成された primitive の境界
+これらは、生成された入力面の上で residual が生成された primitive の coboundary
 
 ```text
 residual = δ^0(primitive)
 ```
 
 として構成されることの、構成水準の事実であり、
-law に根拠づけられた descent 内容として読まない。
+equation fulfillment に根拠づけられた descent 内容として読まない。
 
-### 意味 8.3 Where Law Semantics Lives
+### 意味 8.3 Where Equation Semantics Lives
 
-定理 8.1 と定理 8.2 により、law 意味論の寄与の所在が上下から確定する。
+定理 8.1 と定理 8.2 により、equation fulfillment の寄与の所在が上下から確定する。
 
 ```text
 law satisfaction acts at H^0: vanishing.

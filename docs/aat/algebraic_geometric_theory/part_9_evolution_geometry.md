@@ -25,13 +25,13 @@ evolution geometry:
 
 ### 定義 2.1 Trace Category
 
-architecture evolution profile `E` に対して、trace category を次で表す。
+architecture evolution profile `P_ev` に対して、trace category を次で表す。
 
 ```text
-Tr_E
+Tr_{P_ev}
 ```
 
-`Tr_E` の object は selected time point、operation stage、または abstract event state である。
+`Tr_{P_ev}` の object は selected time point、operation stage、または abstract event state である。
 射は selected transition を表す。
 
 代表的な射は次である。
@@ -63,7 +63,7 @@ different trace category
 
 ### 定義 3.1 State Transition Presheaf
 
-AAT site `X` と trace category `Tr_E` を固定する。
+AAT site `X` と trace category `Tr_{P_ev}` を固定する。
 各 context `W` と trace object `t` に、`W` 上で時刻 `t` に見える state space と
 transition monoid を割り当てる presheaf を state transition presheaf と呼ぶ。
 
@@ -98,7 +98,7 @@ TempCoeff_A
 
 ### 定義 3.3 Temporal Law
 
-temporal law は、`St_A` と `Tr_E` の上の可換図式または関係式として読む。
+temporal law は、`St_A` と `Tr_{P_ev}` の上の可換図式または関係式として読む。
 
 代表例は次である。
 
@@ -117,10 +117,10 @@ temporal law `L_t` が selected context family 上で局所的に成立するが
 整合しない場合、その mismatch を temporal obstruction と呼ぶ。
 
 ```text
-Ob_t in H^n(Tr_E x X, TempCoeff_A)
+Ob_t in H^n(Tr_{P_ev} x X, TempCoeff_A)
 ```
 
-ここで `Tr_E x X` は、trace category と AAT site から作る selected product site または incidence model である。
+ここで `Tr_{P_ev} x X` は、trace category と AAT site から作る selected product site または incidence model である。
 積構造、temporal coefficient、mismatch cocycle が固定されていない場合、上式は定義ではなく
 reading schema として扱う。
 
@@ -144,11 +144,11 @@ replay descent data と呼ぶ。
 次を仮定する。
 
 ```text
-Tr_E and X are finite.
-selected product/incidence site Tr_E x X is fixed.
+Tr_{P_ev} and X are finite.
+selected product/incidence site Tr_{P_ev} x X is fixed.
 TempCoeff_A is an abelian coefficient sheaf in the selected regime.
 local replay data has a temporal mismatch cocycle m(r).
-[m(r)] = 0 in H^1(Tr_E x X, TempCoeff_A).
+[m(r)] = 0 in H^1(Tr_{P_ev} x X, TempCoeff_A).
 ```
 
 このとき、selected regime では local adjustment の後、replay data は大域 transition として貼り合う。
@@ -208,8 +208,8 @@ selected operation policy is strictly dissipative outside terminal states.
 
 このとき、任意の selected evolution path は有限時間で terminal state に到達する。
 
-terminal state が lawful であるためには、
-第III部・第IV部の obstruction vanishing、named comparison theorem、E-adequate cover が別途必要である。
+terminal state が architectural equation system `E` に対して lawful であるためには、
+第III部・第IV部の obstruction vanishing、named comparison hypothesis、`E`-adequate cover が別途必要である。
 
 ## 6. Lyapunov Reading
 
@@ -252,7 +252,7 @@ force が local law data を大域 law data へ積分できるとき、integrabl
 force `F` により生じる temporal mismatch class
 
 ```text
-ob(F) in H^1(Tr_E x X, TempCoeff_A)
+ob(F) in H^1(Tr_{P_ev} x X, TempCoeff_A)
 ```
 
 が定義されているとする。
