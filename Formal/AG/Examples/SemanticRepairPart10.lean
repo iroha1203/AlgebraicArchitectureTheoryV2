@@ -3215,6 +3215,142 @@ theorem zmodTwoTorsor_selectedHigherAndEffectiveDescent :
         zmodTwoTorsor_h1Zero :=
   ⟨zmodTwoTorsor_higherCoherence, zmodTwoTorsor_stackEffectiveness⟩
 
+/-!
+## #3722: X.定理8.4 / 8.5 counterexamples on the circle entity
+
+The spec counterexamples of X.定理8.4 and X.定理8.5 speak about a finite
+complex with nonzero cover-relative `H^1`.  The abstract type-level
+counterexamples in `Formal/AG/SemanticRepair/Boundary.lean` remain as the
+minimal auxiliary layer; the spec-facing main counterexamples below are
+carried by the X.例9.2 circle entity itself: the source of the impossible
+degree-one comparison is the actual circle cohomology carrier with its
+nonzero residual class, and the blocked refinement pullback goes from the
+lawful X.例9.1 singleton complex (whose residual is a zero cochain) to the
+circle residual (which is not a coboundary).
+-/
+
+/--
+X.定理8.4: the coefficient selection with no comparison target, realized as
+the empty-valued presheaf on the circle witness site.
+-/
+def circleEmptyCoefficientPresheaf : Site.AATPresheaf circleSite where
+  obj _ := Empty
+  map _ x := x
+  map_id _ := rfl
+  map_comp _ _ := rfl
+
+/--
+X.定理8.4: on the circle complex — a finite complex whose cover-relative
+`H^1` genuinely contains the nonzero residual class — no typed comparison
+map into the empty-coefficient section carrier can be constructed.
+
+The proof consumes the actual nonzero class: `circleCoverRelativeResidualClass`
+inhabits the comparison source, so any comparison would produce an element of
+the empty section carrier.
+-/
+theorem circleTypedComparisonTarget_impossible_forEmptyCoefficient :
+    IsEmpty
+      (SemanticRepairTypedComparisonTarget
+        (circleCoverRelativeComplex.CechCohomologySucc 0)
+        (circleEmptyCoefficientPresheaf.obj (op circleSiteBase))) := by
+  refine ⟨fun comparison => ?_⟩
+  exact Empty.elim (comparison.toTarget circleCoverRelativeResidualClass)
+
+/--
+X.定理8.5: the residual of the lawful X.例9.1 singleton complex, read as a
+degree-one cocycle.  On the singleton carrier this residual is the zero
+cochain — this is the coarse side of the spec counterexample.
+-/
+def lawfulCoarseResidualCocycle : coverRelativeComplex.CechCocycle 1 where
+  val := fun _ => PUnit.unit
+  property := by
+    funext σ
+    rfl
+
+/--
+X.定理8.5 blocking step: a zero-preserving refinement comparison that pulls
+the lawful coarse residual (a zero cochain, hence cohomologous to itself)
+back to the circle residual would make the circle residual a coboundary,
+contradicting `circleCoverRelative_residual_not_coboundary`.
+-/
+theorem circleRefinementZeroComparison_blocks_lawfulCoarse_to_circleResidual
+    (comparison :
+      SemanticRepairRefinementZeroComparison
+        (coverRelativeComplex.CechCocycle 1)
+        (circleCoverRelativeComplex.CechCocycle 1)
+        (fun coarse =>
+          (coverRelativeComplex.CechCoboundarySetoidSucc 0).r
+            coarse lawfulCoarseResidualCocycle)
+        (fun fine =>
+          (circleCoverRelativeComplex.CechCoboundarySetoidSucc 0).r
+            fine circleCoverRelativeZeroCocycle))
+    (hresidual :
+      comparison.pullback lawfulCoarseResidualCocycle =
+        circleCoverRelativeResidualCocycle) :
+    False := by
+  have hcoarseZero :
+      (coverRelativeComplex.CechCoboundarySetoidSucc 0).r
+        lawfulCoarseResidualCocycle lawfulCoarseResidualCocycle :=
+    (coverRelativeComplex.CechCoboundarySetoidSucc 0).iseqv.refl
+      lawfulCoarseResidualCocycle
+  have hfineZero := comparison.zero_preserved lawfulCoarseResidualCocycle hcoarseZero
+  rw [hresidual] at hfineZero
+  exact circleCoverRelative_residual_not_coboundary hfineZero
+
+/--
+X.定理8.5: on the actual finite pair — lawful singleton complex as coarse
+side, circle complex as fine side — no zero-preserving refinement comparison
+pulls the coarse residual back to the circle residual.
+-/
+theorem circleRefinementZeroComparison_not_unconditional_onCircle :
+    IsEmpty
+      { comparison :
+          SemanticRepairRefinementZeroComparison
+            (coverRelativeComplex.CechCocycle 1)
+            (circleCoverRelativeComplex.CechCocycle 1)
+            (fun coarse =>
+              (coverRelativeComplex.CechCoboundarySetoidSucc 0).r
+                coarse lawfulCoarseResidualCocycle)
+            (fun fine =>
+              (circleCoverRelativeComplex.CechCoboundarySetoidSucc 0).r
+                fine circleCoverRelativeZeroCocycle) //
+          comparison.pullback lawfulCoarseResidualCocycle =
+            circleCoverRelativeResidualCocycle } := by
+  refine ⟨fun blocked => ?_⟩
+  exact
+    circleRefinementZeroComparison_blocks_lawfulCoarse_to_circleResidual
+      blocked.1 blocked.2
+
+/--
+X.定理8.4 / 8.5 spec counterexample packet on the circle entity: the circle
+complex has a genuinely nonzero cover-relative `H^1` class, the typed
+comparison into the empty coefficient target is impossible on that carrier,
+and the residual-preserving zero-preserving refinement pullback from the
+lawful singleton complex is impossible as well.
+-/
+theorem circle_boundaryComparison_counterexample_packet :
+    (circleCoverRelativeResidualClass ≠ circleCoverRelativeZeroClass) ∧
+      IsEmpty
+        (SemanticRepairTypedComparisonTarget
+          (circleCoverRelativeComplex.CechCohomologySucc 0)
+          (circleEmptyCoefficientPresheaf.obj (op circleSiteBase))) ∧
+      IsEmpty
+        { comparison :
+            SemanticRepairRefinementZeroComparison
+              (coverRelativeComplex.CechCocycle 1)
+              (circleCoverRelativeComplex.CechCocycle 1)
+              (fun coarse =>
+                (coverRelativeComplex.CechCoboundarySetoidSucc 0).r
+                  coarse lawfulCoarseResidualCocycle)
+              (fun fine =>
+                (circleCoverRelativeComplex.CechCoboundarySetoidSucc 0).r
+                  fine circleCoverRelativeZeroCocycle) //
+            comparison.pullback lawfulCoarseResidualCocycle =
+              circleCoverRelativeResidualCocycle } :=
+  ⟨circleCoverRelativeH1_nonzero,
+    circleTypedComparisonTarget_impossible_forEmptyCoefficient,
+    circleRefinementZeroComparison_not_unconditional_onCircle⟩
+
 end SemanticRepairPart10
 end Examples
 end AAT.AG
