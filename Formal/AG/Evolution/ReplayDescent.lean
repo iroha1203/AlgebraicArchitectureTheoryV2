@@ -396,7 +396,7 @@ theorem exists_correction_of_class_vanishes (D : TemporalDescentCriterion r) :
     ReplayDescentData.zeroMismatchCocycle] using hcorrection
 
 /-- IX.§4 / AC13: a correction primitive makes the adjusted mismatch zero. -/
-theorem adjusted_mismatch_zero (_D : TemporalDescentCriterion r)
+theorem adjusted_mismatch_zero
     (correction : r.raw.bridge.siteComplex.Cn 0)
     (hcorrection : r.mismatchCochain = r.raw.bridge.siteComplex.d 0 correction) :
     r.adjustedMismatchCochain correction = 0 := by
@@ -421,7 +421,7 @@ theorem temporal_descent_section_criterion_realizes_adjusted
               (r.raw.bridge.coverComparison.siteIndexOf i))
             (r.representation.chartInCover i) := by
   rcases D.exists_correction_of_class_vanishes with ⟨correction, hcorrection⟩
-  have hzero := D.adjusted_mismatch_zero correction hcorrection
+  have hzero := adjusted_mismatch_zero correction hcorrection
   let data := r.adjusted_replay_matching_of_zero correction hzero
   obtain ⟨globalSection, hglobal⟩ :=
     (r.representation.replaySheaf.descent r.representation.descentCover

@@ -396,9 +396,9 @@ noncomputable def twoPatchReplayTemporalSource : twoPatchReplayTemporalSite.Poin
 noncomputable def twoPatchReplayTemporalTarget : twoPatchReplayTemporalSite.Point :=
   (TinyTime.t1, FiniteModel.TwoPatchContextIndex.base)
 
-/-- The selected product-incidence source reads the left Čech chart. -/
+/-- The selected product-incidence source lies on the actual Čech overlap. -/
 noncomputable def twoPatchReplayTemporalCechSource : twoPatchReplayTemporalSite.Point :=
-  (TinyTime.t0, FiniteModel.TwoPatchContextIndex.left)
+  (TinyTime.t0, FiniteModel.TwoPatchContextIndex.overlap)
 
 /-- Actual `ZMod 2` obstruction coefficients on the same two-patch AAT site. -/
 noncomputable def twoPatchReplayTemporalObstructionSheaf :
@@ -565,7 +565,7 @@ noncomputable def twoPatchReplayTemporalProductIncidenceComplex :
   d0 := twoPatchReplayTemporalCoefficient.incidenceDifferential
   d0_eq := rfl
 
-/-- The temporal incidence whose endpoints read the left and right actual Čech charts. -/
+/-- The temporal incidence runs from the actual overlap to the common base. -/
 noncomputable def twoPatchReplayTemporalCechLeg :
     twoPatchReplayTemporalSite.IncidenceLeg
       twoPatchReplayTemporalCechSource twoPatchReplayTemporalTarget where
@@ -1753,6 +1753,19 @@ def twoPatchReplayCechZeroCochain :
     Site.FinitePosetCechCochain FiniteModel.twoPatchZMod2FinitePosetRegime 0 :=
   fun i => (twoPatchReplayLocalSection i).coefficient
 
+/--
+Restrict a Čech degree-zero coefficient to the actual overlap through the
+translation-replay presheaf. This reader retains the two overlap morphisms
+used by the Čech differential instead of copying chart values directly.
+-/
+def twoPatchReplayCechRestrictionToOverlap
+    (cochain : Site.FinitePosetCechCochain
+      FiniteModel.twoPatchZMod2FinitePosetRegime 0)
+    (i : FiniteModel.TwoPatchCoverIndex) : ZMod 2 :=
+  (FiniteModel.twoPatchZMod2TranslationReplayPresheaf.map
+      (twoPatchReplayOverlapRestriction i).op
+      (show FiniteModel.TwoPatchZMod2TranslationReplay from ⟨cochain i⟩)).coefficient
+
 /-- The nonzero degree-zero correction on the same actual two-patch Čech cover. -/
 def twoPatchReplayCorrectionCochain :
     Site.FinitePosetCechCochain FiniteModel.twoPatchZMod2FinitePosetRegime 0 :=
@@ -1791,18 +1804,24 @@ theorem twoPatchReplay_class_zero :
 
 /--
 Read an actual degree-zero Čech cochain on every point of the actual
-`Tr_E × X` temporal site.  The selected base context reads the right chart,
-so the selected temporal leg reads the same right-minus-left coefficient as
-the two-patch overlap.
+`Tr_E × X` temporal site. Both selected endpoint values are obtained through
+the actual chart-to-overlap restriction maps. The remaining product points use
+the corresponding restricted face so the full temporal carrier is available
+while the chosen `overlap -> base` incidence computes the oriented
+right-minus-left Čech difference.
+
+The alternative of assigning raw chart values directly is intentionally not
+used: it would reproduce the coefficient difference without retaining the two
+actual overlap morphisms that supply its Čech provenance.
 -/
 def twoPatchReplayCochainToTemporalProduct
     (cochain : Site.FinitePosetCechCochain
       FiniteModel.twoPatchZMod2FinitePosetRegime 0) :
     twoPatchReplayTemporalCoefficient.FiberZeroCochain
-  | (_, .overlap) => cochain .left
-  | (_, .left) => cochain .left
-  | (_, .right) => cochain .right
-  | (_, .base) => cochain .right
+  | (_, .overlap) => twoPatchReplayCechRestrictionToOverlap cochain .left
+  | (_, .left) => twoPatchReplayCechRestrictionToOverlap cochain .left
+  | (_, .right) => twoPatchReplayCechRestrictionToOverlap cochain .right
+  | (_, .base) => twoPatchReplayCechRestrictionToOverlap cochain .right
 
 /-- Read a full temporal incidence one-cochain at the actual Čech overlap simplex. -/
 def twoPatchReplayTemporalProductToCechOne
@@ -1811,8 +1830,8 @@ def twoPatchReplayTemporalProductToCechOne
   fun _ => cochain twoPatchReplayTemporalCechLeg
 
 /--
-The product target over the common base reads the restriction of the actual
-right temporal chart selected by the two-patch cover.
+The product target over the common base reads the actual right-chart
+restriction to the overlap.
 -/
 theorem twoPatchReplayCochainToTemporalProduct_target_reads_right_chart
     (cochain : Site.FinitePosetCechCochain
@@ -1824,18 +1843,33 @@ theorem twoPatchReplayCochainToTemporalProduct_target_reads_right_chart
   rfl
 
 /--
-The selected temporal source and target read the left and right actual Čech
-faces.  The target lies over the common base context because the right chart is
-restricted along its actual cover leg before the product differential is read.
+The selected temporal source and target read the two actual chart restrictions
+on the overlap. Their difference is therefore the same typed restriction pair
+used by the Čech differential.
 -/
 theorem twoPatchReplayCochainToTemporalProduct_endpoints
     (cochain : Site.FinitePosetCechCochain
       FiniteModel.twoPatchZMod2FinitePosetRegime 0) :
     twoPatchReplayCochainToTemporalProduct cochain twoPatchReplayTemporalCechSource =
-        cochain .left ∧
+        twoPatchReplayCechRestrictionToOverlap cochain .left ∧
       twoPatchReplayCochainToTemporalProduct cochain twoPatchReplayTemporalTarget =
-        cochain .right := by
+        twoPatchReplayCechRestrictionToOverlap cochain .right := by
   exact ⟨rfl, rfl⟩
+
+/--
+The actual two-patch Čech differential is the difference of the right and left
+presheaf restrictions to the overlap.
+-/
+theorem twoPatchReplayCechDifferential_eq_overlap_restrictions
+    (cochain : Site.FinitePosetCechCochain
+      FiniteModel.twoPatchZMod2FinitePosetRegime 0)
+    (simplex : Site.FinitePosetCechSimplex
+      FiniteModel.twoPatchZMod2FinitePosetRegime 1) :
+    FiniteModel.twoPatchZMod2CechComplex.differential 0 cochain simplex =
+      twoPatchReplayCechRestrictionToOverlap cochain .right -
+        twoPatchReplayCechRestrictionToOverlap cochain .left := by
+  cases simplex
+  rfl
 
 /--
 The full product-incidence differential reads to the actual two-patch Čech
@@ -1851,7 +1885,7 @@ theorem twoPatchReplayTemporalProduct_d0_compatible
           (twoPatchReplayCochainToTemporalProduct cochain)) =
       FiniteModel.twoPatchZMod2CechComplex.differential 0 cochain := by
   funext simplex
-  cases simplex
+  rw [twoPatchReplayCechDifferential_eq_overlap_restrictions]
   rfl
 
 /-- The initial and correction cochains agree on every temporal product point. -/
@@ -2230,6 +2264,27 @@ def TwoPatchTemporalReplayRealizesCorrection
           (twoPatchReplayTemporalCover.contextToBase i) state)
 
 /--
+The realization predicate is not vacuous: the zero correction leaves the two
+chart translations unequal, so no single base replay realizes both charts.
+-/
+theorem twoPatchTemporalReplayRealizesCorrection_zero_unsatisfied
+    (globalReplay : TwoPatchTemporalReplayTransition) :
+    ¬ TwoPatchTemporalReplayRealizesCorrection
+        (0 : Site.FinitePosetCechCochain
+          FiniteModel.twoPatchZMod2FinitePosetRegime 0) globalReplay := by
+  intro hrealizes
+  let zeroState : twoPatchReplayTemporalStatePresheaf.State
+      (TinyTime.t0, twoPatchReplayTemporalCover.baseContext) := by
+    change ZMod 2
+    exact 0
+  have hleft := hrealizes FiniteModel.TwoPatchCoverIndex.left zeroState
+  have hright := hrealizes FiniteModel.TwoPatchCoverIndex.right zeroState
+  change globalReplay.toFun zeroState = (0 : ZMod 2) at hleft
+  change globalReplay.toFun zeroState = (1 : ZMod 2) at hright
+  have hzero_one : (0 : ZMod 2) = 1 := hleft.symm.trans hright
+  exact zero_ne_one hzero_one
+
+/--
 The actual two-patch temporal descent criterion.
 
 The concrete class-zero witness is a degree-zero correction on the same
@@ -2262,14 +2317,24 @@ theorem twoPatch_temporal_descent_criterion :
               Site.ContextCategoryObject.of FiniteModel.twoPatchSite.contextPreorder
                 (twoPatchReplayTemporalSite.siteRegime.context
                   (twoPatchReplayTemporalCover.chartContext i))) ∧
+          (∀ cochain : Site.FinitePosetCechCochain
+              FiniteModel.twoPatchZMod2FinitePosetRegime 0,
+            twoPatchReplayCochainToTemporalProduct cochain
+                twoPatchReplayTemporalCechSource =
+                  twoPatchReplayCechRestrictionToOverlap cochain .left ∧
+            twoPatchReplayCochainToTemporalProduct cochain
+                twoPatchReplayTemporalTarget =
+                  twoPatchReplayCechRestrictionToOverlap cochain .right) ∧
           ∃ globalReplay : TwoPatchTemporalReplayTransition,
             TwoPatchTemporalReplayRealizesCorrection correction globalReplay := by
   refine ⟨twoPatchReplayCorrectionCochain,
     twoPatchReplayCechMismatch_eq_correction,
     twoPatchReplayTemporalMismatch_eq_correction,
-    twoPatchReplayTemporalProductMismatch_eq_correction, ?_, ?_⟩
+    twoPatchReplayTemporalProductMismatch_eq_correction, ?_, ?_, ?_⟩
   intro i
   exact twoPatchReplayTemporalCover_reads_actual_chart i
+  intro cochain
+  exact twoPatchReplayCochainToTemporalProduct_endpoints cochain
   rcases twoPatch_temporal_descent_criterion_holds with ⟨globalSection, hglobal⟩
   refine ⟨{
     trace_selected := twoPatchReplayTemporalTrace_selected
