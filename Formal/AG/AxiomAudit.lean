@@ -1,5 +1,6 @@
 import Formal.AG
 import Formal.AG.SemanticRepair.AdditiveH1
+import Formal.AG.SemanticRepair.Examples
 import Formal.AG.SemanticRepair.LawEquationGeneratedPair
 import Formal.AG.Examples.SemanticRepairPart10
 import Formal.AG.Examples.DerivedPart5
