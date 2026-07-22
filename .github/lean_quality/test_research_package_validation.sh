@@ -79,7 +79,12 @@ step = workflow.fetch("jobs").fetch("research-integrity-gates").fetch("steps").f
   candidate["name"] == "Set up Lean for Research package validation"
 end
 abort "missing Research package setup step" unless step
-expected = { "build" => false, "test" => false, "lint" => false }
+expected = {
+  "build" => false,
+  "test" => false,
+  "lint" => false,
+  "use-github-cache" => false,
+}
 abort "unexpected lean-action controls: #{step["with"].inspect}" unless step["with"] == expected
 RUBY
 

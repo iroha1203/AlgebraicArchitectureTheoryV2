@@ -63,6 +63,7 @@ jobs:
           build: false
           test: false
           lint: false
+          use-github-cache: false
 
       - name: Package dependency direction (runtime)
         if: steps.research-changes.outputs.run == 'true'
