@@ -410,6 +410,11 @@ end SemanticRepairNativeGeneratedEndToEndInputs
 /--
 X.定理7.5: generated law-equation grounding plus theorem 7.3 yields the
 10-conclusion SAGA packet, with law dependency confined to conclusions 1--3.
+
+Scaffolding: this route consumes the section-4 bounded Cech data, whose
+`c0Finite` / `c1Finite` fields carry `Fintype` premises absent from theorem
+7.5.  The canonical theorem-7.5 entry-point is the finite-free
+`lawEquation_constructs_groundedComparisonPacket_finiteFree`.
 -/
 theorem lawEquation_constructs_groundedComparisonPacket
     {P : SemanticAtomProjection.{u, v}}
@@ -475,6 +480,11 @@ H1 comparison used by the end-to-end packet.
 This keeps theorem 7.5 from taking `SemanticRepairCoverRelativeH1Comparison`
 as a material premise.  The returned dependent pair exposes the generated
 comparison together with the usual ten-conclusion packet.
+
+Scaffolding: this route consumes the section-4 bounded Cech data, whose
+`c0Finite` / `c1Finite` fields carry `Fintype` premises absent from theorem
+7.5.  The canonical theorem-7.5 entry-point is the finite-free
+`lawEquation_constructs_groundedComparisonPacket_finiteFree`.
 -/
 theorem lawEquation_constructs_groundedComparisonPacket_fromRealization
     {P : SemanticAtomProjection.{u, v}}
@@ -515,6 +525,11 @@ theorem lawEquation_constructs_groundedComparisonPacket_fromRealization
 X.定理7.5 realized generated-comparison form: the returned packet retains the
 cochain realization that generated the comparison and the theorem-7.2
 comparison package derived from it.
+
+Scaffolding: this route consumes the section-4 bounded Cech data, whose
+`c0Finite` / `c1Finite` fields carry `Fintype` premises absent from theorem
+7.5.  The canonical theorem-7.5 entry-point is the finite-free
+`lawEquation_constructs_groundedComparisonPacket_finiteFree`.
 -/
 theorem lawEquation_constructs_realizedGroundedComparisonPacket_fromRealization
     {P : SemanticAtomProjection.{u, v}}
@@ -561,6 +576,11 @@ theorem lawEquation_constructs_realizedGroundedComparisonPacket_fromRealization
 X.定理7.5 native generated-input form: the theorem consumes cochain
 realization data while the coefficient presheaf is definitionally the
 law-equation-generated obstruction quotient `O/I_Ob`.
+
+Scaffolding: this route consumes the section-4 bounded Cech data, whose
+`c0Finite` / `c1Finite` fields carry `Fintype` premises absent from theorem
+7.5.  The canonical theorem-7.5 entry-point is the finite-free
+`lawEquation_constructs_groundedComparisonPacket_finiteFree`.
 -/
 theorem lawEquation_constructs_groundedComparisonPacket_fromNativeGeneratedInputs
     {P : SemanticAtomProjection.{u, v}}
