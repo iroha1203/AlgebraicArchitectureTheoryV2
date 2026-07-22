@@ -83,7 +83,10 @@ noncomputable def infiniteDuplicatedCover :
           FiniteModel.twoPatchCoverContextIndex,
           FiniteModel.twoPatchCoverageRequirements,
           FiniteModel.twoPatchSupportVisibleOn]
-    lawWitnessCoverage := by
+    equationCoordinateCoverage := by
+      intro _coordinate _hreq
+      exact Or.inl ⟨0, trivial⟩
+    violationWitnessCoverage := by
       intro _witness _hreq
       exact Or.inl ⟨0, trivial⟩
     signatureAxisCoverage := by

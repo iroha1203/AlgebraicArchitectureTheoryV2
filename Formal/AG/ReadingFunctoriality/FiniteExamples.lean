@@ -135,7 +135,10 @@ noncomputable def coarseCover :
             FiniteModel.twoPatchCoverContextIndex,
             FiniteModel.twoPatchCoverageRequirements,
             FiniteModel.twoPatchSupportVisibleOn]⟩
-    lawWitnessCoverage := by
+    equationCoordinateCoverage := by
+      intro _coordinate _hreq
+      exact Or.inl ⟨FiniteModel.TwoPatchCoverIndex.left, trivial⟩
+    violationWitnessCoverage := by
       intro _witness _hreq
       exact Or.inl ⟨FiniteModel.TwoPatchCoverIndex.left, trivial⟩
     signatureAxisCoverage := by
@@ -169,9 +172,16 @@ noncomputable def fineCover :
       intro atom hreq
       rcases coarseCover.admissible.atomSupportCoverage atom hreq with ⟨i, hi⟩
       exact ⟨(i, false), hi⟩
-    lawWitnessCoverage := by
+    equationCoordinateCoverage := by
+      intro coordinate hreq
+      rcases coarseCover.admissible.equationCoordinateCoverage coordinate hreq with h | h
+      · rcases h with ⟨i, hi⟩
+        exact Or.inl ⟨(i, false), hi⟩
+      · rcases h with ⟨i, j, hij⟩
+        exact Or.inr ⟨(i, false), (j, false), hij⟩
+    violationWitnessCoverage := by
       intro witness hreq
-      rcases coarseCover.admissible.lawWitnessCoverage witness hreq with h | h
+      rcases coarseCover.admissible.violationWitnessCoverage witness hreq with h | h
       · rcases h with ⟨i, hi⟩
         exact Or.inl ⟨(i, false), hi⟩
       · rcases h with ⟨i, j, hij⟩
@@ -374,14 +384,16 @@ private def nonLeraySupportVisibleOn
 
 private def nonLerayCoverageRequirements :
     Site.CoverageRequirements FiniteModel.object
-      FiniteModel.lawUniverse FiniteModel.signature where
+      (FiniteModel.equationSystem nonLerayContextPreorder) FiniteModel.signature where
   requiredSupport := fun atom =>
     atom = FiniteModel.FiniteAtom.componentA ∨
       atom = FiniteModel.FiniteAtom.componentB
-  requiredWitness := fun _ => True
+  requiredEquationCoordinate := fun _ => True
+  selectedViolationWitness := fun _ => True
   requiredAxis := fun _ => True
   supportVisibleOn := nonLeraySupportVisibleOn
-  witnessVisibleOn := fun _ _ => True
+  equationCoordinateVisibleOn := fun _ _ => True
+  violationWitnessVisibleOn := fun _ _ => True
   axisReadableOn := fun W _ =>
     W = nonLerayContext .left ∨ W = nonLerayContext .right
   boundaryVisibleOn := fun _ _ => True
@@ -390,7 +402,7 @@ private def nonLerayCoverageRequirements :
 noncomputable def nonLeraySite :
     Site.AATSite FiniteModel.corePackage.object where
   contextPreorder := nonLerayContextPreorder
-  lawUniverse := FiniteModel.lawUniverse
+  equationSystem := FiniteModel.equationSystem nonLerayContextPreorder
   signature := FiniteModel.signature
   requirements := nonLerayCoverageRequirements
   overlap := nonLerayOverlap
@@ -425,7 +437,10 @@ noncomputable def nonLerayComparisonCover :
       rcases h with rfl | rfl
       · exact ⟨.left, Or.inl ⟨rfl, rfl⟩⟩
       · exact ⟨.right, Or.inr ⟨rfl, rfl⟩⟩
-    lawWitnessCoverage := by
+    equationCoordinateCoverage := by
+      intro coordinate h
+      exact Or.inl ⟨.left, trivial⟩
+    violationWitnessCoverage := by
       intro witness h
       exact Or.inl ⟨.left, trivial⟩
     signatureAxisCoverage := by
@@ -1359,7 +1374,10 @@ noncomputable def nonLerayCover :
       rcases h with rfl | rfl
       · exact ⟨some .left, Or.inl ⟨rfl, rfl⟩⟩
       · exact ⟨some .right, Or.inr ⟨rfl, rfl⟩⟩
-    lawWitnessCoverage := by
+    equationCoordinateCoverage := by
+      intro coordinate h
+      exact Or.inl ⟨some .left, trivial⟩
+    violationWitnessCoverage := by
       intro witness h
       exact Or.inl ⟨some .left, trivial⟩
     signatureAxisCoverage := by
@@ -1753,6 +1771,54 @@ private def positiveCompositionReading :
     intro family hfinite
     exact ⟨fun h => False.elim h, fun h => False.elim h⟩
 
+/-- Empty readable context used to refute the constant nonzero residual below. -/
+private def emptyEquationContext
+    (A : ArchitectureObject FiniteModel.carrier) : Site.ArchCtx A where
+  minimal := {
+    Support := PUnit
+    Axis := PUnit
+    Observable := PUnit
+    supportReads := fun _ _ => False
+    supportReads_objectFamily := fun h => False.elim h
+    axisReads := fun _ => False
+    observableReads := fun _ => False
+  }
+  Extension := PUnit
+  extension := PUnit.unit
+
+/-- Singleton required equation whose residual is constantly nonzero. -/
+private noncomputable def falseEquationSystem
+    (A : ArchitectureObject FiniteModel.carrier) :
+    ArchitecturalEquationSystem (Site.contextMorphismPreorderCategory A) where
+  Index := PUnit
+  role _ := EquationRole.required
+  Observable := fun _ => Int
+  observableCommRing := fun _ => inferInstance
+  restrict := fun _ => RingHom.id Int
+  restrict_id := by intros; rfl
+  restrict_comp := by intros; rfl
+  violationCoordinate := fun _ _ _ => 2
+  violationCoordinate_restrict := by intros; rfl
+  equationResidual := fun _ _ _ _ => 1
+  equationResidual_restrict := by intros; rfl
+
+/-- Equation reading for a selected exact detector of the constantly false equation. -/
+private noncomputable def falseEquationReading
+    (A : ArchitectureObject FiniteModel.carrier)
+    (datum : FiniteCircuitDatum FiniteModel.carrier) : EquationReading A where
+  contextPreorder := Site.contextMorphismPreorderCategory A
+  equationSystem := falseEquationSystem A
+  circuits := {
+    code := fun _ => .exact datum
+    sound := by
+      intro _index _object _query _hmatches _haccepts hequation
+      have hcoordinate := hequation
+        (Site.ContextCategoryObject.of
+          (Site.contextMorphismPreorderCategory A) (emptyEquationContext A))
+        FiniteModel.FiniteAtom.componentA
+      norm_num [falseEquationSystem] at hcoordinate
+  }
+
 private def positiveLaw : Law FiniteModel.carrier where
   holds _ := False
 
@@ -1763,8 +1829,6 @@ private def positiveLawUniverse : LawUniverse FiniteModel.carrier where
   witnessFamily := { Witness := PUnit, badWitness := fun _ _ => True }
   SelectedReading := PUnit
   selectedReading := PUnit.unit
-  coverageAssumptions := True
-  exactnessAssumptions := True
 
 private def positiveSourceDatum : FiniteCircuitDatum FiniteModel.carrier where
   queries := [(.atomPresent FiniteModel.FiniteAtom.componentA, true)]
@@ -1804,7 +1868,7 @@ private noncomputable def positiveSourceCoreReading :
     fun atom _ => FiniteModel.FiniteAtom.mem_all atom⟩
   composition := positiveCompositionReading
   objectReading := FiniteModel.objectReading
-  lawReading := positiveSourceLawReading
+  equationReading := falseEquationReading _ positiveSourceDatum
   invariantReading := FiniteModel.invariantFamily
   signatureReading := FiniteModel.signature
   operationReading := FiniteModel.operationReading
@@ -1817,7 +1881,7 @@ private noncomputable def positiveTargetCoreReading :
     fun atom _ => FiniteModel.FiniteAtom.mem_all atom⟩
   composition := positiveCompositionReading
   objectReading := FiniteModel.objectReading
-  lawReading := positiveTargetLawReading
+  equationReading := falseEquationReading _ positiveTargetDatum
   invariantReading := FiniteModel.invariantFamily
   signatureReading := FiniteModel.signature
   operationReading := FiniteModel.operationReading
@@ -2324,8 +2388,6 @@ private def exactLawUniverse : LawUniverse FiniteModel.carrier where
   witnessFamily := { Witness := PUnit, badWitness := fun _ _ => True }
   SelectedReading := PUnit
   selectedReading := PUnit.unit
-  coverageAssumptions := True
-  exactnessAssumptions := True
 
 private def exactCircuitDatum : FiniteCircuitDatum FiniteModel.carrier where
   queries := [(.atomPresent FiniteModel.FiniteAtom.componentC, true)]
@@ -2360,7 +2422,7 @@ private noncomputable def exactCoreReading : CoreReading FiniteModel.carrier whe
     fun atom _ => FiniteModel.FiniteAtom.mem_all atom⟩
   composition := exactCompositionReading
   objectReading := FiniteModel.objectReading
-  lawReading := exactLawReading
+  equationReading := falseEquationReading _ exactCircuitDatum
   invariantReading := exactInvariantFamily
   signatureReading := exactSignature
   operationReading := FiniteModel.operationReading
@@ -2920,14 +2982,16 @@ private def finiteLinearSupportVisibleOn
 
 private def finiteLinearCoverageRequirements :
     Site.CoverageRequirements FiniteModel.object
-      FiniteModel.lawUniverse FiniteModel.signature where
+      (FiniteModel.equationSystem finiteLinearContextPreorder) FiniteModel.signature where
   requiredSupport := fun atom =>
     atom = FiniteModel.FiniteAtom.componentA ∨
       atom = FiniteModel.FiniteAtom.componentB
-  requiredWitness := fun _ => True
+  requiredEquationCoordinate := fun _ => True
+  selectedViolationWitness := fun _ => True
   requiredAxis := fun _ => True
   supportVisibleOn := finiteLinearSupportVisibleOn
-  witnessVisibleOn := fun _ _ => True
+  equationCoordinateVisibleOn := fun _ _ => True
+  violationWitnessVisibleOn := fun _ _ => True
   axisReadableOn := fun W _ =>
     W = finiteLinearContext .left ∨ W = finiteLinearContext .right
   boundaryVisibleOn := fun _ _ => True
@@ -2936,7 +3000,7 @@ private def finiteLinearCoverageRequirements :
 noncomputable def finiteLinearSite :
     Site.AATSite FiniteModel.corePackage.object where
   contextPreorder := finiteLinearContextPreorder
-  lawUniverse := FiniteModel.lawUniverse
+  equationSystem := FiniteModel.equationSystem finiteLinearContextPreorder
   signature := FiniteModel.signature
   requirements := finiteLinearCoverageRequirements
   overlap := finiteLinearOverlap
@@ -3098,7 +3162,10 @@ noncomputable def finiteLinearCover :
       rcases h with rfl | rfl
       · exact ⟨.left, Or.inl ⟨rfl, rfl⟩⟩
       · exact ⟨.right, Or.inr ⟨rfl, rfl⟩⟩
-    lawWitnessCoverage := by
+    equationCoordinateCoverage := by
+      intro coordinate h
+      exact Or.inl ⟨.left, trivial⟩
+    violationWitnessCoverage := by
       intro witness h
       exact Or.inl ⟨.left, trivial⟩
     signatureAxisCoverage := by
@@ -4538,14 +4605,16 @@ private def topologySupportVisibleOn
 
 private def topologyCoverageRequirements :
     Site.CoverageRequirements FiniteModel.object
-      FiniteModel.lawUniverse FiniteModel.signature where
+      (FiniteModel.equationSystem topologyContextPreorder) FiniteModel.signature where
   requiredSupport := fun atom =>
     atom = FiniteModel.FiniteAtom.componentA ∨
       atom = FiniteModel.FiniteAtom.componentB
-  requiredWitness := fun _ => True
+  requiredEquationCoordinate := fun _ => True
+  selectedViolationWitness := fun _ => True
   requiredAxis := fun _ => True
   supportVisibleOn := topologySupportVisibleOn
-  witnessVisibleOn := fun _ _ => True
+  equationCoordinateVisibleOn := fun _ _ => True
+  violationWitnessVisibleOn := fun _ _ => True
   axisReadableOn := fun W _ =>
     W = topologyContext .left ∨ W = topologyContext .right
   boundaryVisibleOn := fun _ base => base = topologyContext .base
@@ -4554,7 +4623,7 @@ private def topologyCoverageRequirements :
 noncomputable def topologySite :
     Site.AATSite FiniteModel.corePackage.object where
   contextPreorder := topologyContextPreorder
-  lawUniverse := FiniteModel.lawUniverse
+  equationSystem := FiniteModel.equationSystem topologyContextPreorder
   signature := FiniteModel.signature
   requirements := topologyCoverageRequirements
   overlap := topologyOverlap
@@ -4928,7 +4997,10 @@ noncomputable def topologyCoarseCover :
       rcases h with rfl | rfl
       · exact ⟨.left, Or.inl ⟨rfl, rfl⟩⟩
       · exact ⟨.right, Or.inr ⟨rfl, rfl⟩⟩
-    lawWitnessCoverage := by
+    equationCoordinateCoverage := by
+      intro coordinate h
+      exact Or.inl ⟨.left, trivial⟩
+    violationWitnessCoverage := by
       intro witness h
       exact Or.inl ⟨.left, trivial⟩
     signatureAxisCoverage := by
@@ -4964,7 +5036,10 @@ noncomputable def topologyFineCover :
       rcases h with rfl | rfl
       · exact ⟨(false, false), Or.inl ⟨rfl, rfl⟩⟩
       · exact ⟨(true, false), Or.inr ⟨rfl, rfl⟩⟩
-    lawWitnessCoverage := by
+    equationCoordinateCoverage := by
+      intro coordinate h
+      exact Or.inl ⟨(false, false), trivial⟩
+    violationWitnessCoverage := by
       intro witness h
       exact Or.inl ⟨(false, false), trivial⟩
     signatureAxisCoverage := by
@@ -6410,21 +6485,23 @@ private def topologyFineBoundaryVisibleOn
 
 private def topologyFineCoverageRequirements :
     Site.CoverageRequirements FiniteModel.object
-      FiniteModel.lawUniverse FiniteModel.signature where
+      (FiniteModel.equationSystem topologyContextPreorder) FiniteModel.signature where
   requiredSupport := fun atom =>
     atom = FiniteModel.FiniteAtom.componentA ∨
       atom = FiniteModel.FiniteAtom.componentB
-  requiredWitness := fun _ => False
+  requiredEquationCoordinate := fun _ => False
+  selectedViolationWitness := fun _ => False
   requiredAxis := fun _ => False
   supportVisibleOn := topologyFineSupportVisibleOn
-  witnessVisibleOn := fun _ _ => False
+  equationCoordinateVisibleOn := fun _ _ => False
+  violationWitnessVisibleOn := fun _ _ => False
   axisReadableOn := fun _ _ => False
   boundaryVisibleOn := topologyFineBoundaryVisibleOn
 
 private noncomputable def topologyFineSite :
     Site.AATSite FiniteModel.corePackage.object where
   contextPreorder := topologyContextPreorder
-  lawUniverse := FiniteModel.lawUniverse
+  equationSystem := FiniteModel.equationSystem topologyContextPreorder
   signature := FiniteModel.signature
   requirements := topologyFineCoverageRequirements
   overlap := topologyOverlap
@@ -6445,7 +6522,10 @@ private noncomputable def topologyFineSiteCoarseCover :
       rcases h with rfl | rfl
       · exact ⟨.left, Or.inl (Or.inl ⟨rfl, rfl⟩)⟩
       · exact ⟨.right, Or.inl (Or.inr ⟨rfl, rfl⟩)⟩
-    lawWitnessCoverage := by
+    equationCoordinateCoverage := by
+      intro coordinate h
+      exact False.elim h
+    violationWitnessCoverage := by
       intro witness h
       exact False.elim h
     signatureAxisCoverage := by
@@ -6476,7 +6556,10 @@ private noncomputable def topologyFineSiteAuxCover :
       rcases h with rfl | rfl
       · exact ⟨PUnit.unit, Or.inr ⟨rfl, Or.inl rfl⟩⟩
       · exact ⟨PUnit.unit, Or.inr ⟨rfl, Or.inr rfl⟩⟩
-    lawWitnessCoverage := by
+    equationCoordinateCoverage := by
+      intro coordinate h
+      exact False.elim h
+    violationWitnessCoverage := by
       intro witness h
       exact False.elim h
     signatureAxisCoverage := by

@@ -758,7 +758,8 @@ theorem displayedRequiredLawsHoldOn :
     defectSource.DisplayedRequiredLawsHoldOn := by
   intro i lawIndex hmem hrequired
   cases lawIndex
-  exact lawfulObject_noCycleLaw
+  exact (FiniteModel.site_law_holds_iff_noCycleLaw lawfulObject).mpr
+    lawfulObject_noCycleLaw
 
 /-!
 The following source is a negative witness for the displayed realization
@@ -802,7 +803,8 @@ def nonlawfulDefectSource :
   holds_defect_mem := by
     intro _i lawIndex _hmem _hrequired hholds
     cases lawIndex
-    exact False.elim (nonlawfulObject_not_noCycleLaw hholds)
+    exact False.elim (nonlawfulObject_not_noCycleLaw
+      ((FiniteModel.site_law_holds_iff_noCycleLaw nonlawfulObject).mp hholds))
 
 /-! ## Native generated quotient coefficient for example 9.1 -/
 
@@ -1246,24 +1248,25 @@ law-equation quotient coefficient sheaf.
 -/
 def circleCoverageRequirements :
     Site.CoverageRequirements FiniteModel.object
-      FiniteModel.lawUniverse FiniteModel.signature where
+      FiniteModel.siteCorePackage.equationSystem FiniteModel.signature where
   requiredSupport := fun _ => True
-  requiredWitness := fun _ => False
+  requiredEquationCoordinate := fun _ => False
+  selectedViolationWitness := fun _ => False
   requiredAxis := fun _ => False
   supportVisibleOn := fun _ _ => False
-  witnessVisibleOn := fun _ _ => False
+  equationCoordinateVisibleOn := fun _ _ => False
+  violationWitnessVisibleOn := fun _ _ => False
   axisReadableOn := fun _ _ => False
   boundaryVisibleOn := fun _ _ => False
 
 /-- X.例9.2: generated-core geometry for the selected circle witness site. -/
 noncomputable def circleSelectedGeometryReading :
-    Site.SelectedGeometryReading FiniteModel.corePackage where
-  contextPreorder := FiniteModel.siteContextPreorder
+    Site.SelectedGeometryReading FiniteModel.siteCorePackage where
   requirements := circleCoverageRequirements
   overlap := FiniteModel.siteOverlap
 
 /-- X.例9.2: selected witness site for the circle-nerve nonzero class. -/
-noncomputable def circleSite : Site.AATSite FiniteModel.corePackage.object :=
+noncomputable def circleSite : Site.AATSite FiniteModel.siteCorePackage.object :=
   circleSelectedGeometryReading.toAATSite
 
 /-- X.例9.2: the circle witness topology is generated from its selected coverage. -/
@@ -1933,7 +1936,8 @@ theorem integerLawFiniteFreeDisplayedRequiredLawsHoldOn :
     integerLawFiniteFreeDefectSource.DisplayedRequiredLawsHoldOn := by
   intro _ lawIndex _ _
   cases lawIndex
-  exact lawfulObject_noCycleLaw
+  exact (FiniteModel.site_law_holds_iff_noCycleLaw lawfulObject).mpr
+    lawfulObject_noCycleLaw
 
 /--
 X.例9.1 / Part X R9(b): the integer observable core, witness `2`, proved quotient
@@ -2044,7 +2048,8 @@ theorem generatedLawFiniteFreeDisplayedRequiredLawsHoldOn :
     generatedLawFiniteFreeDefectSource.DisplayedRequiredLawsHoldOn := by
   intro _ lawIndex _ _
   cases lawIndex
-  exact lawfulObject_noCycleLaw
+  exact (FiniteModel.site_law_holds_iff_noCycleLaw lawfulObject).mpr
+    lawfulObject_noCycleLaw
 
 /--
 Concrete R5 final firing on the PUnit singleton standard complex.  The result
@@ -2190,7 +2195,8 @@ def mixedDefectSource :
         exact Ideal.zero_mem _
     | true =>
         cases lawIndex
-        exact False.elim (nonlawfulObject_not_noCycleLaw hholds)
+        exact False.elim (nonlawfulObject_not_noCycleLaw
+          ((FiniteModel.site_law_holds_iff_noCycleLaw nonlawfulObject).mp hholds))
 
 /-- Cover-relative two-chart presentation used by the mixed-source counterexample. -/
 def mixedCoverRelativeCover :
@@ -2251,10 +2257,12 @@ theorem mixedBodySource_has_displayedRequiredLawRestrictionEvaluator :
       LawAlgebra.LawEquationDefectSource.interpret]
   · exact False.elim
       (nonlawfulObject_not_noCycleLaw
-        (by simpa [mixedDefectSource] using hholdsTau))
+        ((FiniteModel.site_law_holds_iff_noCycleLaw nonlawfulObject).mp
+          (by simpa [mixedDefectSource] using hholdsTau)))
   · exact False.elim
       (nonlawfulObject_not_noCycleLaw
-        (by simpa [mixedDefectSource] using hholdsSigma))
+        ((FiniteModel.site_law_holds_iff_noCycleLaw nonlawfulObject).mp
+          (by simpa [mixedDefectSource] using hholdsSigma)))
   · have heq : gSigma = gTau := Subsingleton.elim _ _
     subst gTau
     rfl

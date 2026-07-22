@@ -33,13 +33,17 @@ def supportVisibleOn (W : Site.ArchCtx object) (atom : carrier.Atom) : Prop :=
 
 /-- R6: coverage requirements whose admissible families must contain the base patch. -/
 def coverageRequirements :
-    Site.CoverageRequirements object lawUniverse signature where
+    Site.CoverageRequirements object twoPatchCorePackage.equationSystem signature where
   requiredSupport := fun atom =>
     atom = FiniteAtom.componentA ∨ atom = FiniteAtom.componentB
-  requiredWitness := fun _ => True
+  requiredEquationCoordinate := fun _ => True
+  selectedViolationWitness := fun _ => True
   requiredAxis := fun _ => True
   supportVisibleOn := supportVisibleOn
-  witnessVisibleOn := fun W _ =>
+  equationCoordinateVisibleOn := fun W _ =>
+    W = twoPatchContext TwoPatchContextIndex.left ∨
+      W = twoPatchContext TwoPatchContextIndex.right
+  violationWitnessVisibleOn := fun W _ =>
     W = twoPatchContext TwoPatchContextIndex.left ∨
       W = twoPatchContext TwoPatchContextIndex.right
   axisReadableOn := fun W _ => W = twoPatchContext TwoPatchContextIndex.base
@@ -48,14 +52,20 @@ def coverageRequirements :
 
 /-- R6: the selected geometry uses the same generated core and finite context preorder. -/
 noncomputable def selectedGeometryReading :
-    Site.SelectedGeometryReading corePackage where
-  contextPreorder := twoPatchContextPreorder
+    Site.SelectedGeometryReading twoPatchCorePackage where
   requirements := coverageRequirements
   overlap := twoPatchOverlap
 
 /-- R6: the finite AAT site selected for the concrete ringed presentation. -/
-noncomputable abbrev site : Site.AATSite corePackage.object :=
+noncomputable abbrev site : Site.AATSite twoPatchCorePackage.object :=
   selectedGeometryReading.toAATSite
+
+/-- The generated compatibility law of the ringed-site fixture is NoCycle. -/
+@[simp] theorem site_law_eq_noCycleLaw :
+    site.lawUniverse.law PUnit.unit = noCycleLaw := by
+  change (equationSystem twoPatchContextPreorder).toLegacyLawUniverse.law
+    PUnit.unit = noCycleLaw
+  exact equationSystem_legacy_law_eq_noCycleLaw twoPatchContextPreorder
 
 /-- R6: the concrete base object. -/
 def base : site.category :=
@@ -96,7 +106,11 @@ noncomputable def cover :
           simp [coverPatch, coverContextIndex, coverageRequirements, supportVisibleOn]⟩
       · exact ⟨CoverIndex.right, by
           simp [coverPatch, coverContextIndex, coverageRequirements, supportVisibleOn]⟩
-    lawWitnessCoverage := by
+    equationCoordinateCoverage := by
+      intro _ _
+      exact Or.inl ⟨CoverIndex.left, by
+        simp [coverPatch, coverContextIndex, coverageRequirements]⟩
+    violationWitnessCoverage := by
       intro _ _
       exact Or.inl ⟨CoverIndex.left, by
         simp [coverPatch, coverContextIndex, coverageRequirements]⟩
@@ -179,8 +193,8 @@ theorem cover_reads_axis_at_base :
 
 /-- The left patch discharges every selected witness requirement. -/
 theorem cover_reads_witness_on_left
-    (witness : lawUniverse.witnessFamily.Witness) :
-    coverageRequirements.witnessVisibleOn
+    (witness : twoPatchCorePackage.equationSystem.Coordinate) :
+    coverageRequirements.violationWitnessVisibleOn
       (cover.patch CoverIndex.left) witness := by
   simp [cover, coverPatch, coverContextIndex, coverageRequirements]
 

@@ -90,7 +90,8 @@ private theorem base_ctx_ne_left_ctx : base.ctx ≠ RawPresheaf.left.ctx := by
   exact TwoPatchContextIndex.noConfusion hindex
 
 private theorem gauge_base : RawPresheaf.gauge base = 1 := by
-  simp [RawPresheaf.gauge, base_ctx_ne_left_ctx]
+  unfold RawPresheaf.gauge
+  rw [if_neg base_ctx_ne_left_ctx]
 
 private theorem rawRestriction_id (W : RingedSite.FiniteModel.site.category)
     (x : rawSystem.rawAlgebra W) :
@@ -1507,25 +1508,43 @@ inductive RequiredAllLawIndex
   | strengthening
   deriving DecidableEq
 
-/-- The base law is required while the strengthening law remains optional. -/
-def requiredAllLawUniverse : LawUniverse carrier where
-  Index := RequiredAllLawIndex
-  law
+/-- Residual value of the selected required/all equation family. -/
+private noncomputable def requiredAllResidual
+    (index : RequiredAllLawIndex) (A : ArchitectureObject carrier) : Int := by
+  classical
+  exact if (match index with
     | .base => noCycleLaw
-    | .strengthening => substitutionLaw
+    | .strengthening => substitutionLaw).holds A then 0 else 1
+
+/-- The base equation is required while the strengthening equation remains optional. -/
+noncomputable def requiredAllEquationSystem : ArchitecturalEquationSystem
+    RingedSite.FiniteModel.site.contextPreorder where
+  Index := RequiredAllLawIndex
   role
-    | .base => LawRole.required
-    | .strengthening => LawRole.optional
-  witnessFamily := concreteNoCycleWitnessFamily
-  SelectedReading := PUnit
-  selectedReading := PUnit.unit
-  coverageAssumptions := True
-  exactnessAssumptions := True
+    | .base => EquationRole.required
+    | .strengthening => EquationRole.optional
+  Observable := fun _ => Int
+  observableCommRing := fun _ => inferInstance
+  restrict := fun _ => RingHom.id Int
+  restrict_id := by intros; rfl
+  restrict_comp := by intros; rfl
+  violationCoordinate := fun _ index _ => match index with
+    | .base => 2
+    | .strengthening => 3
+  violationCoordinate_restrict := by intros; rfl
+  equationResidual := fun _ A index _ => requiredAllResidual index A
+  equationResidual_restrict := by intros; rfl
+
+/-- One-way natural-language display generated from the required/all equation family. -/
+noncomputable def requiredAllLawUniverse : LawUniverse carrier :=
+  requiredAllEquationSystem.toLegacyLawUniverse
 
 /-- Characterizes the unique required law in the two-law SD9 universe. -/
 theorem requiredAllLawUniverse_required_iff (i : RequiredAllLawIndex) :
     requiredAllLawUniverse.Required i ↔ i = .base := by
-  cases i <;> simp [requiredAllLawUniverse, LawUniverse.Required]
+  cases i <;> simp [requiredAllLawUniverse, requiredAllEquationSystem,
+    ArchitecturalEquationSystem.Required,
+    ArchitecturalEquationSystem.toLegacyLawUniverse_required_iff]
 
 /-- Records that the strengthening law is optional in the required/all fixture. -/
 theorem requiredAllLawUniverse_optional_strengthening :
@@ -1533,13 +1552,17 @@ theorem requiredAllLawUniverse_optional_strengthening :
   rfl
 
 private def requiredAllCoverageRequirements :
-    Site.CoverageRequirements corePackage.object requiredAllLawUniverse
+    Site.CoverageRequirements corePackage.object requiredAllEquationSystem
       RingedSite.FiniteModel.site.signature where
   requiredSupport := coverageRequirements.requiredSupport
-  requiredWitness := fun _ => True
+  requiredEquationCoordinate := fun _ => True
+  selectedViolationWitness := fun _ => True
   requiredAxis := coverageRequirements.requiredAxis
   supportVisibleOn := coverageRequirements.supportVisibleOn
-  witnessVisibleOn := fun W _ =>
+  equationCoordinateVisibleOn := fun W _ =>
+    W = twoPatchContext TwoPatchContextIndex.left ∨
+      W = twoPatchContext TwoPatchContextIndex.right
+  violationWitnessVisibleOn := fun W _ =>
     W = twoPatchContext TwoPatchContextIndex.left ∨
       W = twoPatchContext TwoPatchContextIndex.right
   axisReadableOn := coverageRequirements.axisReadableOn
@@ -1548,7 +1571,7 @@ private def requiredAllCoverageRequirements :
 /-- The existing finite context geometry retargeted to the two-law universe. -/
 noncomputable def requiredAllSite : Site.AATSite corePackage.object where
   contextPreorder := RingedSite.FiniteModel.site.contextPreorder
-  lawUniverse := requiredAllLawUniverse
+  equationSystem := requiredAllEquationSystem
   signature := RingedSite.FiniteModel.site.signature
   requirements := requiredAllCoverageRequirements
   overlap := RingedSite.FiniteModel.site.overlap

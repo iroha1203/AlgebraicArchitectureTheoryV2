@@ -317,6 +317,11 @@ noncomputable def referenceContextPreorder :
   readableMorphism_isRestriction := fun h =>
     Classical.choose_spec (referenceReadableMorphismExists h)
 
+/-- Generated finite core specialized to the reference context preorder. -/
+noncomputable def referenceCorePackage :
+    AATCorePackage AAT.AG.FiniteModel.carrier :=
+  AAT.AG.FiniteModel.corePackageFor referenceContextPreorder
+
 /--
 SD0 constructor-provenance or no-unfold API lemma for Part II definitions 3.1, 4.1, and 6.1–8.1, including proposition 4.2 and assumption 4.3.
 Its material data are fixed or constructed inside this fixture; no external material certificate is used.
@@ -503,9 +508,9 @@ The executable contract fixes the exact declaration type.
 -/
 def referenceCoverageRequirements :
     Site.CoverageRequirements
-      AAT.AG.FiniteModel.corePackage.object
-      AAT.AG.FiniteModel.corePackage.algebra.lawReading.lawUniverse
-      AAT.AG.FiniteModel.corePackage.algebra.signatureReading :=
+      referenceCorePackage.object
+      referenceCorePackage.equationSystem
+      referenceCorePackage.algebra.signatureReading :=
   AAT.AG.FiniteModel.twoPatchCoverageRequirements
 
 /--
@@ -524,8 +529,7 @@ Its material data are fixed or constructed inside this fixture; no external mate
 The executable contract fixes the exact declaration type.
 -/
 noncomputable def referenceSelectedGeometryReading :
-    Site.SelectedGeometryReading AAT.AG.FiniteModel.corePackage where
-  contextPreorder := referenceContextPreorder
+    Site.SelectedGeometryReading referenceCorePackage where
   requirements := referenceCoverageRequirements
   overlap := referenceOverlap
 
@@ -537,8 +541,7 @@ The executable contract fixes the exact declaration type.
 -/
 @[simp] theorem referenceSelectedGeometryReading_eq :
     referenceSelectedGeometryReading =
-      { contextPreorder := referenceContextPreorder
-        requirements := referenceCoverageRequirements
+      { requirements := referenceCoverageRequirements
         overlap := referenceOverlap } :=
   rfl
 
@@ -548,7 +551,7 @@ Its material data are fixed or constructed inside this fixture; no external mate
 The executable contract fixes the exact declaration type.
 -/
 noncomputable def referenceSite :
-    Site.AATSite AAT.AG.FiniteModel.corePackage.object :=
+    Site.AATSite referenceCorePackage.object :=
   referenceSelectedGeometryReading.toAATSite
 
 /--
@@ -1006,7 +1009,10 @@ noncomputable def referenceCover :
             AAT.AG.FiniteModel.twoPatchCoverContextIndex,
             AAT.AG.FiniteModel.twoPatchCoverageRequirements,
             AAT.AG.FiniteModel.twoPatchSupportVisibleOn]⟩
-    lawWitnessCoverage := by
+    equationCoordinateCoverage := by
+      intro _ _
+      exact Or.inl ⟨AAT.AG.FiniteModel.TwoPatchCoverIndex.left, trivial⟩
+    violationWitnessCoverage := by
       intro _ _
       exact Or.inl ⟨AAT.AG.FiniteModel.TwoPatchCoverIndex.left, trivial⟩
     signatureAxisCoverage := by

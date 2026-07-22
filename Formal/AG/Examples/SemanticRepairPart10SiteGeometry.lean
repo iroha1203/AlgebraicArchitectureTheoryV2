@@ -435,6 +435,10 @@ theorem kiteOtherTriples_empty (atom : FiniteModel.FiniteAtom) :
 
 /-! ## Kite witness site -/
 
+/-- #3719: generated finite core specialized to the kite context preorder. -/
+noncomputable def kiteCorePackage : AATCorePackage FiniteModel.carrier :=
+  FiniteModel.corePackageFor kitePreorder
+
 /--
 #3719: degenerate witness-site coverage requirements for the kite site.
 
@@ -446,12 +450,14 @@ in this topology selection.
 -/
 def kiteCoverageRequirements :
     Site.CoverageRequirements FiniteModel.object
-      FiniteModel.lawUniverse FiniteModel.signature where
+      kiteCorePackage.equationSystem FiniteModel.signature where
   requiredSupport := fun _ => True
-  requiredWitness := fun _ => False
+  requiredEquationCoordinate := fun _ => False
+  selectedViolationWitness := fun _ => False
   requiredAxis := fun _ => False
   supportVisibleOn := fun _ _ => False
-  witnessVisibleOn := fun _ _ => False
+  equationCoordinateVisibleOn := fun _ _ => False
+  violationWitnessVisibleOn := fun _ _ => False
   axisReadableOn := fun _ _ => False
   boundaryVisibleOn := fun _ _ => False
 
@@ -461,13 +467,12 @@ noncomputable def kiteSiteOverlap : Site.ContextOverlapPullback kitePreorder :=
 
 /-- #3719: generated-core geometry reading for the kite witness site. -/
 noncomputable def kiteGeometryReading :
-    Site.SelectedGeometryReading FiniteModel.corePackage where
-  contextPreorder := kitePreorder
+    Site.SelectedGeometryReading kiteCorePackage where
   requirements := kiteCoverageRequirements
   overlap := kiteSiteOverlap
 
 /-- #3719: the kite witness site over the generated finite core object. -/
-noncomputable def kiteSite : Site.AATSite FiniteModel.corePackage.object :=
+noncomputable def kiteSite : Site.AATSite kiteCorePackage.object :=
   kiteGeometryReading.toAATSite
 
 /-- #3719: the kite topology is generated from its selected coverage. -/

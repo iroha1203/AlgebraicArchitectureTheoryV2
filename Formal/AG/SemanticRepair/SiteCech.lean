@@ -20,9 +20,9 @@ the selected `J_U` Grothendieck topology.
 theorem atomGeneratedCoverage_generates_AATGrothendieckTopology
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {C : Site.ContextPreorderCategory A}
-    {LU : LawUniverse U}
+    {E : ArchitecturalEquationSystem C}
     {Sig : ArchitectureSignature U}
-    {R : Site.CoverageRequirements A LU Sig}
+    {R : Site.CoverageRequirements A E Sig}
     {P : Site.ContextOverlapPullback C}
     {base : Site.ContextCategoryObject C}
     (family : Site.AATCoverageFamily R P base) :

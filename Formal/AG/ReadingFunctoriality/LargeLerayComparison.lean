@@ -4677,7 +4677,12 @@ theorem zeroObstructionSheaf_isLerayForSheaf
     [HasExt.{u + 2} (Sheaf S.topology AddCommGrpCat.{u + 1})]
     (𝒰 : Site.AATCoverageFamily S.requirements S.overlap base) :
     IsLerayForSheaf 𝒰 (zeroObstructionSheaf S).toAddCommGrpSheaf :=
-  zeroObstructionSheaf_isLerayFor 𝒰
+  by
+    intro q hq p σ
+    obtain ⟨n, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (by omega : q ≠ 0)
+    letI : Injective (zeroObstructionSheaf S).toAddCommGrpSheaf :=
+      zeroObstructionSheaf_toAddCommGrpSheaf_isZero.injective
+    exact CategoryTheory.Abelian.Ext.subsingleton_of_injective _ _ n
 
 /-- A nontrivial positive-degree local `H'` rejects the Leray predicate. -/
 theorem not_isLerayForSheaf_of_nontrivialHPrime
