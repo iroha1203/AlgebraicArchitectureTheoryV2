@@ -115,8 +115,8 @@ def indexedResidualValue (object : ArchitectureObject carrier) :
   | .derivedEquation => 0
 
 /--
-I.例7.4: a finite architectural equation system whose required residual
-separates the two fixture objects.
+A finite firing fixture for Issue #3729 whose required residual separates the
+two fixture objects.
 -/
 def system : ArchitecturalEquationSystem contextPreorder where
   Index := FixtureEquationIndex
