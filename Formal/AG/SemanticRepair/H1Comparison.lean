@@ -770,6 +770,8 @@ structure SemanticRepairAdditiveH1CoverRelativeH1ComparisonPackage
   toCoverRelativeH1 : additive.H1 -> K.CechCohomologySucc 0
   fromCoverRelativeH1 : K.CechCohomologySucc 0 -> additive.H1
   h1Equiv : additive.H1 ≃ K.CechCohomologySucc 0
+  /-- X.定理7.2 結論3: the additive group isomorphism onto the additive Čech
+  H1 reading; this is the group-level upgrade of `h1Equiv`. -/
   h1AddEquiv : additive.H1 ≃+ K.AdditiveCechH1
   sameClass_iff_coverRelative :
     forall left right : additive.Cocycle,
