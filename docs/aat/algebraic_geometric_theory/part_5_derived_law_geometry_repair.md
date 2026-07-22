@@ -59,9 +59,9 @@ Flat_U(W)
 第V部では、二つ以上の architectural equation system と、その自然言語表示を同時に考える。
 
 ```text
-E_U, E_V : ArchitecturalEquationSystem
-U := U_{E_U}
-V := U_{E_V}
+Eq_U, Eq_V : ArchitecturalEquationSystem
+U := U_{Eq_U}
+V := U_{Eq_V}
 ```
 
 それぞれに lawful locus がある。
@@ -170,11 +170,11 @@ law cuts out loci.
 
 ### 定義 2.3 Derived Lawful Locus
 
-law universe `U` の closed defect data が、perfect module または vector bundle `E_U` に値を持つ
+law universe `U` の closed defect data が、perfect module または vector bundle `M_U` に値を持つ
 defect section として与えられるとする。
 
 ```text
-delta_U in Gamma(X, E_U^vee)
+delta_U in Gamma(X, M_U^vee)
 ```
 
 このとき、`U` に対する derived lawful locus を `delta_U` の derived zero locus として定義する。
@@ -414,7 +414,7 @@ law conflict object:
 局所 chart `W` 上で、`U` と `V` の obstruction ideals が同じ polynomial witness algebra
 
 ```text
-R_W = k[E_W]
+R_W = k[Coord_W]
 ```
 
 上の square-free monomial ideals

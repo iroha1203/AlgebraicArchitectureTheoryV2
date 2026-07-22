@@ -17,20 +17,26 @@ r : CoreRead(At), with source C
     including extraction doctrine, Atom vocabulary,
     finite composition, object / context / equation / circuit readings,
     signature / operation readings
-J_E : CoverageTopology generated for the equation system
+E_r : architectural equation system produced by the equation reading of r
+Sig_r : architecture signature produced by the signature reading of r
+R_r : CoverageRequirements(A_r,E_r,Sig_r)
+Ov_r : ContextOverlapPullback(ArchCtx(A_r)) realizing the requests in R_r
+J_{E_r,R_r,Ov_r} : topology generated from the selected coverage package
 k : coefficient ring
 
 X_C^{r,J,k} : AATGeometry
 ```
 
 `S` は Atom carrier の primitive existence と coordinate stability を認証し、`r` はその carrier 上の
-extraction・composition・context・equation・operation reading を選ぶ。両者は core package で統合するが、
-reading を使われない axiom parameter に添字付けない。
+extraction・composition・context・equation・signature・operation reading を選ぶ。`E_r` と `Sig_r` は
+それぞれ `r` の equation reading と signature reading の値であり、別入力ではない。両者は core package で
+統合するが、reading を使われない axiom parameter に添字付けない。
 
 core reading のうち source、extraction doctrine、object reading、operation reading を固定し、
 Atom vocabulary `V` と architectural equation system `E` を表示する場合は
 `X_C^{V,E,J,k}` と略記する。自然言語の law universe `U_E` は `E` の index と role の読みであり、
-別入力ではない。係数環を明示しない `X_C^{V,E,J}` は `k` を固定済みとする。
+別入力ではない。ここで `J` は、固定済みの `Sig`、`R`、`Ov` から生成された
+`J_{E,R,Ov}` の略記である。係数環を明示しない `X_C^{V,E,J}` は `k` を固定済みとする。
 
 この本文では、AAT を「代数幾何的アーキテクチャ論」として定式化する。
 Atom は primitive architectural fact として公理化される。architectural equation system は Atom を生成せず、
@@ -50,7 +56,7 @@ cohomology class として現れる。
   -> Atom-indexed architectural equation system
   -> operation / circuit / signature families
   -> operation-closed object algebra Core_At(r)
-  -> coverage requirements + selected overlaps
+  -> coverage requirements + context-overlap pullback package
   -> AAT site
   -> Sheaves
   -> Ringed AAT topos

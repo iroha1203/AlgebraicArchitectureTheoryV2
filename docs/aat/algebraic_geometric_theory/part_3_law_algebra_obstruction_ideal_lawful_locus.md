@@ -6,9 +6,12 @@ coverage topology を入れて AAT site を得た。
 ```text
 ArchitectureObject A_S^V
   -> ArchitecturalEquationSystem E
-  -> ArchitectureGeometry X_S^{V,E,J}
-  -> AATSite(S,V,E,J)
-  -> AATSh(A_S^V,E,J)
+  -> ArchitectureSignature Sig
+  -> CoverageRequirements R
+  -> ContextOverlapPullback Ov
+  -> ArchitectureGeometry X_S^{V,E,J_{E,R,Ov}}
+  -> AATSite(S,V,E,Sig,R,Ov)
+  -> AATSh(A_S^V,E,Sig,R,Ov)
 ```
 
 しかし site と sheaf category だけでは、まだ代数幾何ではない。
@@ -24,6 +27,10 @@ a sheaf of commutative rings.
 law failure を obstruction ideal sheaf として集め、その零点集合として lawful locus を定義することである。
 
 本部を通じて、architectural equation system を `E`、その natural-language law reading を `U := U_E` と書く。
+architecture signature `Sig`、coverage requirements `R`、context-overlap package `Ov` を固定し、
+第II部の full AAT site `Site_AAT(A,E,Sig,R,Ov)` 上で読む。`J_E`、`E`-adequate、
+`AATSh(A,E,J)` は、それぞれ `J_{E,R,Ov}`、`(E,R,Ov)`-adequate、
+`AATSh(A,E,Sig,R,Ov)` の略記である。
 上付き記法 `O_X^U`、`I_Ob^U` は、それぞれ `E` の observable presheaf の sheafification
 `(O_E)^+` と、そこに生成される ideal sheaf `𝓘_Ob^E` の自然言語表示であり、
 独立した law input を表さない。
@@ -477,7 +484,7 @@ law cuts out loci
 
 equation system `E` は equation index、role、`nu`、`epsilon` を指定する。
 violation-witness support は equation reading、signature axis は signature reading、cover で要求する support は
-第II部の `Req_E` がそれぞれ指定する。
+第II部の `Req_R` がそれぞれ指定する。
 しかし、law は Atom や coordinate の存在根拠ではない。
 
 ## 5. Law as Equation
@@ -1762,12 +1769,16 @@ architecture scheme は次に相対化される。
 source S
 AtomVocabulary V
 ArchitecturalEquationSystem E
-CoverageTopology J
+ArchitectureSignature Sig
+CoverageRequirements R
+ContextOverlapPullback Ov
+CoverageTopology J_{E,R,Ov}
 coefficient ring k
 chart atlas
 ```
 
-したがって、同じ source `S` でも、`V`、`E`、`J`、`k`、chart atlas が変われば、
+したがって、同じ source `S` でも、`V`、`E`、`Sig`、`R`、`Ov`、`J_{E,R,Ov}`、`k`、
+chart atlas が変われば、
 一般に異なる architecture scheme が得られる。
 
 ```text
