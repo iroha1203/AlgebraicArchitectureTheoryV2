@@ -34,7 +34,9 @@ def lawEquationCompleteRepairSupport
 
 /--
 Complete support semantically closes every residual atom.  This is the AG-body
-counterpart of the Research complete-support closure theorem.
+counterpart of the Research complete-support closure theorem; the general
+form over an arbitrary full support is `semanticRepairClosed_top` in
+`GluingComplex.lean`.
 -/
 theorem lawEquationCompleteRepairSupport_semanticRepairClosed
     (P : SemanticAtomProjection.{u, v})

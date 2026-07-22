@@ -284,6 +284,9 @@ def semanticRepairDefinition31FullFixtureFaithfulness :=
 def semanticRepairDefinition31FullFiniteFixture :=
   @SemanticRepair.FullFiniteGluingComplexExample.finiteSemanticRepairGluingDescent_iff
 
+def semanticRepairTheorem35CompleteSupportTopClosure :=
+  @SemanticRepair.semanticRepairClosed_top
+
 def semanticRepairTheorem35CompleteSupportFullSupportClass :=
   @SemanticRepair.CompleteSupportBoundaryComplex.ofFullSupport
 

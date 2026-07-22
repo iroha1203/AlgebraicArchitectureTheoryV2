@@ -51,10 +51,11 @@ as a separate certificate over the minimal complex would hide `resL`, `resR`,
 and `ev` from the object whose differential they describe.
 
 Boundary: `resL`, `resR`, `ev`, and `restriction_difference` are
-Definition-3.1 presentation data.  Their only theorem-level consumer is the
-field projection `delta0_ev_iff_restriction_xor`; the §3 descent theorems are
-proved on the forgotten minimal complex and depend only on the abstract
-`delta0` boundary structure, not on this presentation.
+Definition-3.1 presentation data.  Beyond the field projection
+`delta0_ev_iff_restriction_xor` and fixture example theorems that exercise
+these fields on concrete data, no general theorem consumes them; the §3
+descent theorems are proved on the forgotten minimal complex and depend only
+on the abstract `delta0` boundary structure, not on this presentation.
 -/
 structure FullFiniteSemanticRepairGluingComplex where
   /-- The semantic atom vocabulary and its component projection. -/
@@ -288,7 +289,13 @@ structure CompleteSupportBoundaryComplex where
   support_eq : forall primitive, K.supportOf primitive = completeSupport
   complete_closed : SemanticRepairClosed K.projection K.cover completeSupport
 
-/-- X.定理3.5: the full support is semantically closed for every cover. -/
+/--
+X.定理3.5: the full support is semantically closed for every cover.
+
+The law-equation route states the same fact for its complete repair support
+as `lawEquationCompleteRepairSupport_semanticRepairClosed`; that file sits
+above this one in the import graph, so the general form is stated here.
+-/
 theorem semanticRepairClosed_top
     (P : SemanticAtomProjection.{u, v})
     (cover : FiniteSemanticRepairCoverDatum.{v, w, x} P.Component) :
