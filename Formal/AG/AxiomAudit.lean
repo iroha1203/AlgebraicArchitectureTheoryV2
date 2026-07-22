@@ -9379,6 +9379,72 @@ def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_instDecidableEqStr
 
 /-! Part IX theorem 5.3 finite-time terminal-arrival audit aliases. -/
 
+/-! Issue #3729 architectural-equation-system audit aliases. -/
+
+/-- Kernel-audit alias for the residual-vanishing characterization. -/
+def architecturalEquationSystemEquationHoldsIff :=
+  @ArchitecturalEquationSystem.equationHolds_iff
+
+/-- Kernel-audit alias for required-equation lawfulness. -/
+def architecturalEquationSystemEquationLawfulIff :=
+  @ArchitecturalEquationSystem.equationLawful_iff
+
+/-- Kernel-audit alias for full equation lawfulness. -/
+def architecturalEquationSystemFullyEquationLawfulIff :=
+  @ArchitecturalEquationSystem.fullyEquationLawful_iff
+
+/-- Kernel-audit alias for required-equation extraction. -/
+def architecturalEquationSystemEquationLawfulHolds :=
+  @ArchitecturalEquationSystem.equationLawful_holds
+
+/-- Kernel-audit alias for full-equation extraction. -/
+def architecturalEquationSystemFullyEquationLawfulHolds :=
+  @ArchitecturalEquationSystem.fullyEquationLawful_holds
+
+/-- Kernel-audit alias for the observable-presheaf object API. -/
+def architecturalEquationSystemObservablePresheafObj :=
+  @ArchitecturalEquationSystem.observablePresheaf_obj
+
+/-- Kernel-audit alias for the observable-presheaf restriction API. -/
+def architecturalEquationSystemObservablePresheafMapApply :=
+  @ArchitecturalEquationSystem.observablePresheaf_map_apply
+
+/-- Kernel-audit alias for the one-way legacy bridge equivalence. -/
+def architecturalEquationSystemToLegacyLawHoldsIff :=
+  @ArchitecturalEquationSystem.toLegacyLaw_holds_iff
+
+/-- Kernel-audit alias for the fixture's three distinct equation roles. -/
+def architecturalEquationSystemFiniteRoleSelectorSeparates :=
+  Examples.ArchitecturalEquationSystemFiniteExample.role_selector_separates
+
+/-- Kernel-audit alias for positive residual vanishing. -/
+def architecturalEquationSystemFinitePositiveEquationHolds :=
+  @Examples.ArchitecturalEquationSystemFiniteExample.positive_equationHolds
+
+/-- Kernel-audit alias for positive required-equation lawfulness. -/
+def architecturalEquationSystemFinitePositiveEquationLawful :=
+  Examples.ArchitecturalEquationSystemFiniteExample.positive_equationLawful
+
+/-- Kernel-audit alias for positive full equation lawfulness. -/
+def architecturalEquationSystemFinitePositiveFullyEquationLawful :=
+  Examples.ArchitecturalEquationSystemFiniteExample.positive_fullyEquationLawful
+
+/-- Kernel-audit alias for the required negative residual. -/
+def architecturalEquationSystemFiniteNegativeNotEquationHoldsRequired :=
+  Examples.ArchitecturalEquationSystemFiniteExample.negative_not_equationHolds_required
+
+/-- Kernel-audit alias for negative required-equation lawfulness. -/
+def architecturalEquationSystemFiniteNegativeNotEquationLawful :=
+  Examples.ArchitecturalEquationSystemFiniteExample.negative_not_equationLawful
+
+/-- Kernel-audit alias for negative full equation lawfulness. -/
+def architecturalEquationSystemFiniteNegativeNotFullyEquationLawful :=
+  Examples.ArchitecturalEquationSystemFiniteExample.negative_not_fullyEquationLawful
+
+/-- Kernel-audit alias for the positive/negative finite separation theorem. -/
+def architecturalEquationSystemFiniteLawfulnessSeparates :=
+  Examples.ArchitecturalEquationSystemFiniteExample.lawfulness_separates
+
 /-- Kernel-audit alias for selected-state finiteness in the stopping package. -/
 def finiteDissipationStoppingFiniteSelectedStates :=
   @Evolution.FiniteDissipationStopping.finite_selected_states

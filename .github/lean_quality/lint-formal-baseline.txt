@@ -2396,7 +2396,6 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.Site.ArchitectureSheafFamily.Trace /- definition missing documentation string -/
 
 -- Formal.AG.Site.Topology
-#check @AAT.AG.Site.ContextCategoryObject.ctx /- definition missing documentation string -/
 #check @AAT.AG.Site.AATCoverageFamily.Index /- definition missing documentation string -/
 #check @AAT.AG.Site.AATCoverageFamily.patch /- definition missing documentation string -/
 

@@ -1,5 +1,4 @@
 import Formal.AG.Site.Coverage
-import Mathlib.CategoryTheory.Category.Preorder
 import Mathlib.CategoryTheory.Sites.Coverage
 
 namespace AAT.AG
@@ -8,34 +7,6 @@ namespace Site
 universe u
 
 open CategoryTheory
-
-/--
-II.定義7.1: Mathlib-facing object wrapper for the thin category attached to
-the selected context preorder.
-
-The wrapper keeps the AAT context preorder as explicit data while allowing
-Mathlib's preorder category instance to supply morphisms, sieves, coverages,
-and Grothendieck topologies.
--/
-structure ContextCategoryObject {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    (C : ContextPreorderCategory A) where
-  ctx : ArchCtx A
-
-namespace ContextCategoryObject
-
-instance {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    (C : ContextPreorderCategory A) : Preorder (ContextCategoryObject C) where
-  le X Y := C.le X.ctx Y.ctx
-  le_refl X := C.refl X.ctx
-  le_trans _X _Y _Z hXY hYZ := C.trans hXY hYZ
-
-/-- II.定義7.1: wrap an AAT context as an object of the Mathlib thin category. -/
-def of {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    (C : ContextPreorderCategory A) (W : ArchCtx A) :
-    ContextCategoryObject C where
-  ctx := W
-
-end ContextCategoryObject
 
 /--
 II.定義7.1: a Mathlib-facing admissible family over a fixed base object.

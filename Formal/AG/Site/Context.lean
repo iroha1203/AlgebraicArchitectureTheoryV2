@@ -1,4 +1,4 @@
-import Formal.AG.Site.Basic
+import Formal.AG.Atom.ArchitectureObject
 
 namespace AAT.AG
 namespace Site
