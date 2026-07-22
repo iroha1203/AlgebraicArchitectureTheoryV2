@@ -1,9 +1,12 @@
 import Formal.AG.Site.Context
+import Mathlib.CategoryTheory.Category.Preorder
 
 namespace AAT.AG
 namespace Site
 
 universe u
+
+open CategoryTheory
 
 /-- II.定義4.1: the objects of `ArchCtx(A)` are architecture contexts over `A`. -/
 abbrev ArchCtx {U : AtomCarrier.{u}} (A : ArchitectureObject U) :=
@@ -66,6 +69,33 @@ theorem morphism_isRestriction {U : AtomCarrier.{u}} {A : ArchitectureObject U}
   C.readableMorphism_isRestriction h
 
 end ContextPreorderCategory
+
+/--
+II.定義7.1: Mathlib-facing object wrapper for the thin category attached to
+the selected context preorder.
+
+The wrapper lives with the low-level context category so equation systems can
+use context-indexed observable rings without importing coverage or topology.
+-/
+structure ContextCategoryObject {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    (C : ContextPreorderCategory A) where
+  ctx : ArchCtx A
+
+namespace ContextCategoryObject
+
+instance {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    (C : ContextPreorderCategory A) : Preorder (ContextCategoryObject C) where
+  le X Y := C.le X.ctx Y.ctx
+  le_refl X := C.refl X.ctx
+  le_trans _X _Y _Z hXY hYZ := C.trans hXY hYZ
+
+/-- II.定義7.1: wrap an AAT context as an object of the Mathlib thin category. -/
+def of {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    (C : ContextPreorderCategory A) (W : ArchCtx A) :
+    ContextCategoryObject C where
+  ctx := W
+
+end ContextCategoryObject
 
 /--
 II.命題4.2: finite-meet structure on the minimal context preorder.
