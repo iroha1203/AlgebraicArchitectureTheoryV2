@@ -71,7 +71,7 @@ theorem morphism_isRestriction {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 end ContextPreorderCategory
 
 /--
-II.定義7.1: Mathlib-facing object wrapper for the thin category attached to
+II.定義4.1: Mathlib-facing object wrapper for the thin category attached to
 the selected context preorder.
 
 The wrapper lives with the low-level context category so equation systems can
@@ -89,7 +89,7 @@ instance {U : AtomCarrier.{u}} {A : ArchitectureObject U}
   le_refl X := C.refl X.ctx
   le_trans _X _Y _Z hXY hYZ := C.trans hXY hYZ
 
-/-- II.定義7.1: wrap an AAT context as an object of the Mathlib thin category. -/
+/-- II.定義4.1: wrap an AAT context as an object of the Mathlib thin category. -/
 def of {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     (C : ContextPreorderCategory A) (W : ArchCtx A) :
     ContextCategoryObject C where
