@@ -15,10 +15,12 @@ open Opposite
 Part IX R5 / AC11--AC13 replay descent and the temporal descent criterion.
 
 The datum below separates a raw temporal replay from its constructed
-replay/coefficient representation.  The representation fixes one temporal
-cover through `TemporalCechBridge`, realizes its charts as sections of a
-replay-function sheaf, reads degree-zero coefficients from those sections, and
-defines every adjusted replay by acting on those same local sections.
+replay/coefficient representation.  The generic section theorem is packaged
+(assumption-relative): its representation supplies the replay sheaf, section
+action, coefficient reflection, and restriction comparison required for
+descent.  It does not discharge those premises from raw replay data.  The
+actual theorem-4.2 completion target constructs the corresponding ingredients
+for the two-patch translation replay sheaf in `EvolutionPart9`.
 -/
 
 /-- IX.§4: raw local replay maps on the temporal cover selected by the bridge. -/
@@ -50,6 +52,14 @@ cover.  A correction is first realized as a local coefficient-section family
 and then acts on those replay sections.  The degree-one mismatch is the actual
 restricted-section difference and is independent of the degree-zero reading,
 so its cohomology class need not vanish definitionally.
+
+Implementation notes: this structure is the explicit premise ledger for the
+generic, packaged (assumption-relative) section theorem.  The alternative of
+deriving a replay-sheaf action and coefficient reflection from arbitrary raw
+state functions is rejected because those constructions depend on the chosen
+replay-function sheaf.  Concrete theorem-4.2 evidence must construct these
+operations for its selected sheaf rather than count this package itself as a
+premise discharge.
 -/
 structure ReplayCoefficientRepresentation {U : AtomCarrier.{u}}
     {A : ArchitectureObject U} {S : Site.AATSite A}
@@ -508,10 +518,32 @@ theorem adjusted_mismatch_zero
   exact sub_self _
 
 /--
+IX.§4 / AC13: a non-coboundary mismatch cannot satisfy the class-zero criterion.
+
+This is the negative instance API for `TemporalDescentCriterion`: together
+with a concrete non-coboundary witness it proves that the certificate is not
+available.  The positive instance is supplied by the zero replay fixture.
+
+Implementation notes: this module does not manufacture a closed negative
+fixture because Issue #3684 fixes a class-zero two-patch completion target, and
+the existing Part X nonzero carrier is not identified with this replay bridge.
+The theorem therefore exposes the exact non-coboundary condition required by
+future concrete replay data without asserting such an identification.
+-/
+theorem not_temporalDescentCriterion_of_mismatch_not_coboundary
+    (hnot : ¬ ∃ correction : r.raw.bridge.siteComplex.Cn 0,
+      r.mismatchCochain = r.raw.bridge.siteComplex.d 0 correction) :
+    ¬ TemporalDescentCriterion r := by
+  intro D
+  exact hnot D.exists_correction_of_class_vanishes
+
+/--
 IX.§4 / AC13: class-zero replay data descends through the represented sheaf.
 
-This is the generic sheaf-descent statement: it constructs a global replay
-section and proves that its restrictions are the corrected local sections.
+This is a packaged (assumption-relative) sheaf-descent statement: it constructs
+a global replay section and proves that its restrictions are the corrected
+local sections from a supplied `ReplayCoefficientRepresentation`.  It is not a
+discharge of that representation from raw replay data.
 -/
 theorem temporal_descent_section_criterion_realizes_adjusted
     (D : TemporalDescentCriterion r) :
@@ -544,7 +576,11 @@ theorem temporal_descent_section_criterion_realizes_adjusted
       (r.representation.chartInCover i)
   rw [hsection]
 
-/-- IX.§4 / AC13: a constructed representation and a vanishing class yield a global section. -/
+/--
+IX.§4 / AC13: a constructed representation and a vanishing class yield a
+global section.  This convenience theorem has the same packaged
+(assumption-relative) status as the realization theorem above.
+-/
 theorem temporal_descent_section_criterion (D : TemporalDescentCriterion r) :
     Nonempty r.GlobalReplaySection := by
   rcases D.temporal_descent_section_criterion_realizes_adjusted with ⟨_, globalSection, _⟩

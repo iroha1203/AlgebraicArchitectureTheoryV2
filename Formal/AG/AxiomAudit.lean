@@ -2530,6 +2530,9 @@ def replayAdjustReplayAtChartZero :=
 def replayAdjustedRestrictionDifference :=
   @Evolution.ReplayDescentData.adjusted_restriction_difference
 
+def replayTemporalDescentCriterionFailsForNonCoboundary :=
+  @Evolution.TemporalDescentCriterion.not_temporalDescentCriterion_of_mismatch_not_coboundary
+
 def replayTwoChartCorrectionRightNonzero :=
   Examples.EvolutionPart9.twoChartCorrection_right_nonzero
 
