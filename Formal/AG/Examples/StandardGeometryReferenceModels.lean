@@ -1,5 +1,6 @@
 import Formal.AG.Examples.FiniteModel
 import Formal.AG.LawAlgebra.ClosedEquationalGeometry
+import Formal.AG.LawAlgebra.Correspondence
 import Formal.AG.ReadingFunctoriality.Coefficient
 import Formal.AG.ReadingFunctoriality.StandardSchemeCoefficient
 import Formal.AG.ReadingFunctoriality.CoefficientGeometry
@@ -5551,12 +5552,8 @@ noncomputable def referenceSiteGlobalEquation
     (i : referenceSite.equationSystem.Index)
     (a : AAT.AG.FiniteModel.carrier.Atom) :
     Γ(referenceScheme.underlying, ⊤) :=
-  referenceScheme.decoration.interpretation
-    (sheafificationUnitAlgHom referenceRaw referenceScheme.decoration.context
-      (algebraMap Int
-        (referenceRaw.rawAlgebra referenceScheme.decoration.context)
-        (referenceSite.equationSystem.violationCoordinate
-          referenceScheme.decoration.context i a)))
+  siteEquationGlobalEquation
+    baseContext referenceRaw referenceScheme rfl i a
 
 /--
 The closed-equational reading generated from the equation system owned by
@@ -5564,83 +5561,22 @@ The closed-equational reading generated from the equation system owned by
 -/
 noncomputable def referenceSiteReading :
     ClosedEquationalLawReading referenceRaw referenceScheme
-      referenceSite.equationSystem where
-  geometric.HoldsOn s i :=
-    GlobalEquationsVanishAlong referenceRaw referenceScheme
-      (referenceSiteGlobalEquation i) s
-  closed := Set.univ
-  selected := fun _ => Set.univ
-  witness i _ :=
-    ClosedEquationalLawWitness.ofGlobalSections referenceRaw referenceScheme i
-      (referenceSiteGlobalEquation i)
+      referenceSite.equationSystem :=
+  ClosedEquationalLawReading.ofSiteEquationSystem
+    baseContext referenceRaw referenceScheme rfl
 
 /-- The site-generated reading satisfies the closed-equational recognition laws. -/
 theorem referenceSiteReading_valid :
     IsClosedEquationalLawReading referenceRaw referenceScheme
-      referenceSiteReading where
-  geometric_stable := by
-    intro T T' s f i hs a
-    rw [Scheme.Hom.comp_appTop, CommRingCat.comp_apply, hs a, map_zero]
-  witness_compatible := by
-    intro i hi
-    exact ClosedEquationalLawWitness.ofGlobalSections_valid
-      referenceRaw referenceScheme i (referenceSiteGlobalEquation i)
-  selected_closed := fun _ i _ => Set.mem_univ i
-  selected_basicOpen := fun _ _ i =>
-    iff_of_true (Set.mem_univ i) (Set.mem_univ i)
+      referenceSiteReading :=
+  ClosedEquationalLawReading.ofSiteEquationSystem_valid
+    baseContext referenceRaw referenceScheme rfl
 
 /-- Every required site equation is closed and selected by the site-generated reading. -/
 theorem referenceSiteReading_requiredClosed :
-    RequiredClosed referenceRaw referenceScheme referenceSiteReading where
-  closed := fun i _ => Set.mem_univ i
-  selected := fun _ i _ => Set.mem_univ i
-
-private theorem reference_ofIdealTop_span_comap_eq_bot_iff
-    (equation : AAT.AG.FiniteModel.carrier.Atom →
-      Γ(referenceScheme.underlying, ⊤))
-    {T : AlgebraicGeometry.Scheme}
-    (s : T ⟶ referenceScheme.underlying) :
-    (Scheme.IdealSheafData.ofIdealTop
-        (X := referenceScheme.underlying)
-        (Ideal.span (Set.range equation))).comap s = ⊥ ↔
-      ∀ a, s.appTop (equation a) = 0 := by
-  haveI : IsAffine referenceScheme.underlying := by
-    rw [referenceScheme_underlying, ambientScheme_eq]
-    infer_instance
-  let e := Scheme.IdealSheafData.equivOfIsAffine
-    (X := referenceScheme.underlying)
-  constructor
-  · intro h a
-    have hcomap :
-        (Scheme.IdealSheafData.ofIdealTop
-            (X := referenceScheme.underlying)
-            (Ideal.span (Set.range equation))).comap s ≤ ⊥ := h.le
-    have hle := (Scheme.IdealSheafData.map_gc s _ _).mp hcomap
-    change Scheme.IdealSheafData.ofIdealTop
-      (Ideal.span (Set.range equation)) ≤
-        (⊥ : T.IdealSheafData).map s at hle
-    rw [Scheme.IdealSheafData.map_bot,
-      Scheme.ker_of_isAffine] at hle
-    have hideal :
-        Ideal.span (Set.range equation) ≤ RingHom.ker s.appTop.hom := by
-      simpa [e] using e.toOrderIso.monotone hle
-    exact hideal (Ideal.subset_span ⟨a, rfl⟩)
-  · intro h
-    apply le_antisymm
-    · apply (Scheme.IdealSheafData.map_gc s _ _).mpr
-      change Scheme.IdealSheafData.ofIdealTop
-        (Ideal.span (Set.range equation)) ≤
-          (⊥ : T.IdealSheafData).map s
-      rw [Scheme.IdealSheafData.map_bot,
-        Scheme.ker_of_isAffine]
-      have hideal :
-          Ideal.span (Set.range equation) ≤ RingHom.ker s.appTop.hom := by
-        apply Ideal.span_le.mpr
-        rintro _ ⟨a, rfl⟩
-        exact h a
-      apply Scheme.IdealSheafData.le_of_isAffine
-      simpa using hideal
-    · exact bot_le
+    RequiredClosed referenceRaw referenceScheme referenceSiteReading :=
+  ClosedEquationalLawReading.ofSiteEquationSystem_requiredClosed
+    baseContext referenceRaw referenceScheme rfl
 
 private theorem referenceCore_lawIdealExact
     (G : ArchitecturalEquationSystem referenceSite.contextPreorder)
@@ -5652,6 +5588,9 @@ private theorem referenceCore_lawIdealExact
       (ClosedEquationalLawReading.ofSemanticCore_witnessCompatible
         referenceRaw referenceScheme G B)
       i (Set.mem_univ i) := by
+  letI : IsAffine referenceScheme.underlying := by
+    rw [referenceScheme_underlying, ambientScheme_eq]
+    infer_instance
   intro T s
   change (GeometricLawReading.ofSemanticCore referenceRaw referenceScheme
     G B).HoldsOn s i ↔ _
@@ -5668,8 +5607,9 @@ private theorem referenceCore_lawIdealExact
       exact ClosedEquationalLawReading.ofSemanticCore_witness referenceRaw
         referenceScheme G B i (Set.mem_univ i))
   rw [hsheaf]
-  exact (reference_ofIdealTop_span_comap_eq_bot_iff
-    (semanticCoreGlobalEquation referenceRaw referenceScheme G B i) s).symm
+  exact globalEquationsVanishAlong_iff_ofIdealTop_span_comap_eq_bot
+    referenceRaw referenceScheme
+    (semanticCoreGlobalEquation referenceRaw referenceScheme G B i) s
 
 /--
 The semantic predicate of the site-generated reading is exactly the vanishing
@@ -5679,17 +5619,28 @@ theorem referenceSiteReading_requiredLawIdealExact :
     RequiredLawIdealExact referenceRaw referenceScheme
       referenceSiteReading referenceSiteReading_valid
       referenceSiteReading_requiredClosed := by
-  intro i hi T s
-  change
-    (∀ a, s.appTop (referenceSiteGlobalEquation i a) = 0) ↔ _
-  have hsheaf := lawWitnessIdealSheaf_ofGlobalSections referenceRaw
-    referenceScheme referenceSiteReading
-    referenceSiteReading_valid.witness_compatible
-    i (Set.mem_univ i) (referenceSiteGlobalEquation i) rfl
-  rw [hsheaf]
+  letI : IsAffine referenceScheme.underlying := by
+    rw [referenceScheme_underlying, ambientScheme_eq]
+    infer_instance
   exact
-    (reference_ofIdealTop_span_comap_eq_bot_iff
-      (referenceSiteGlobalEquation i) s).symm
+    ClosedEquationalLawReading.ofSiteEquationSystem_requiredLawIdealExact
+      baseContext referenceRaw referenceScheme rfl
+
+/--
+The ideal sheaf of the reference site reading is generated directly from the
+site-owned obstruction ideal.
+-/
+theorem referenceSiteGeneratedIdealSheaf_eq_obstructionIdeal :
+    siteEquationGeneratedIdealSheaf
+        baseContext referenceRaw referenceScheme rfl =
+      Scheme.IdealSheafData.ofIdealTop
+        (X := referenceScheme.underlying)
+        (Ideal.map
+          (referenceScheme.decoration.siteEquationGlobalSectionMap
+            baseContext referenceRaw rfl)
+          (referenceSite.equationSystem.obstructionIdeal baseContext)) :=
+  siteEquationGeneratedIdealSheaf_eq_ofIdealTop_map_obstructionIdeal
+    baseContext referenceRaw referenceScheme rfl
 
 /--
 SD2-SD3 standard-geometry reference-model declaration.
@@ -6000,17 +5951,58 @@ theorem referenceSiteGlobalEquation_image
         (referenceSite.equationSystem.violationCoordinate baseContext i a) := by
   change ambientGlobalSectionsIso.hom
       (ambientDecoration.interpretation
-        ((sheafificationUnitAlgHom referenceRaw baseContext)
-          (algebraMap Int (referenceRaw.rawAlgebra baseContext)
+        (sheafifiedRestriction referenceRaw (eqToHom rfl)
+          ((sheafifiedSectionAlgebraMap referenceRaw baseContext)
             (referenceSite.equationSystem.violationCoordinate
               baseContext i a)))) = _
-  rw [ambientGlobalSectionsIso_unit]
-  change baseRawToAmbientAlgHom
-      (algebraMap Int (referenceRaw.rawAlgebra baseContext)
-        (referenceSite.equationSystem.violationCoordinate baseContext i a)) =
-    algebraMap Int AmbientRing
-      (referenceSite.equationSystem.violationCoordinate baseContext i a)
-  exact baseRawToAmbientAlgHom.commutes _
+  rw [show eqToHom rfl = 𝟙 baseContext by rfl]
+  have hrestriction :
+      sheafifiedRestriction referenceRaw (𝟙 baseContext)
+          ((sheafifiedSectionAlgebraMap referenceRaw baseContext)
+            (referenceSite.equationSystem.violationCoordinate
+              baseContext i a)) =
+        (sheafifiedSectionAlgebraMap referenceRaw baseContext)
+          (referenceSite.equationSystem.violationCoordinate
+            baseContext i a) := by
+    rw [sheafifiedRestriction_id]
+    rfl
+  calc
+    _ = ambientGlobalSectionsIso.hom
+        (ambientDecoration.interpretation
+          ((sheafifiedSectionAlgebraMap referenceRaw baseContext)
+            (referenceSite.equationSystem.violationCoordinate
+              baseContext i a))) :=
+      congrArg
+        (fun z => ambientGlobalSectionsIso.hom
+          (ambientDecoration.interpretation z))
+        hrestriction
+    _ = ambientGlobalSectionsIso.hom
+        (ambientDecoration.interpretation
+          ((sheafificationUnitAlgHom referenceRaw baseContext)
+            (algebraMap Int (referenceRaw.rawAlgebra baseContext)
+              (referenceSite.equationSystem.violationCoordinate
+                baseContext i a)))) := by
+      exact congrArg
+        (fun z => ambientGlobalSectionsIso.hom
+          (ambientDecoration.interpretation z))
+        ((sheafificationUnitAlgHom referenceRaw baseContext).commutes
+          (referenceSite.equationSystem.violationCoordinate
+            baseContext i a)).symm
+    _ = baseRawAlgebraIso.hom
+        (algebraMap Int (referenceRaw.rawAlgebra baseContext)
+          (referenceSite.equationSystem.violationCoordinate
+            baseContext i a)) :=
+      ambientGlobalSectionsIso_unit _
+    _ = algebraMap Int AmbientRing
+        (referenceSite.equationSystem.violationCoordinate
+          baseContext i a) := by
+      change baseRawToAmbientAlgHom
+          (algebraMap Int (referenceRaw.rawAlgebra baseContext)
+            (referenceSite.equationSystem.violationCoordinate
+              baseContext i a)) =
+        algebraMap Int AmbientRing
+          (referenceSite.equationSystem.violationCoordinate baseContext i a)
+      exact baseRawToAmbientAlgHom.commutes _
 
 private theorem weakGlobalEquation_image
     (a : AAT.AG.FiniteModel.carrier.Atom) :
@@ -7172,18 +7164,33 @@ theorem siteEquationModTwoPoint_semantic :
   rw [map_ofNat]
   decide
 
+/--
+The mod-two point factors through the closed subscheme generated directly
+from the site-owned equation system.
+-/
+theorem siteEquationModTwoPoint_factors_generated :
+    Nonempty
+      {t : (AlgebraicGeometry.Spec (CommRingCat.of (ZMod 2)) ⟶
+          siteEquationLawfulClosedSubscheme
+            baseContext referenceRaw referenceScheme rfl) //
+        t ≫ siteEquationLawfulClosedImmersion
+          baseContext referenceRaw referenceScheme rfl =
+            siteEquationModTwoPoint} := by
+  letI : IsAffine referenceScheme.underlying := by
+    rw [referenceScheme_underlying, ambientScheme_eq]
+    infer_instance
+  have h :=
+    Correspondence.siteEquationLawfulnessIdealFactorizationCorrespondence
+      baseContext referenceRaw referenceScheme rfl siteEquationModTwoPoint
+  exact h.2.mp (h.1.mp siteEquationModTwoPoint_semantic)
+
 /-- The mod-two point factors through the site-generated lawful closed subscheme. -/
 theorem siteEquationModTwoPoint_factors :
     Nonempty (FactorsThroughLawfulClosedSubscheme
       referenceRaw referenceScheme referenceSiteReading
       referenceSiteReading_valid referenceSiteReading_requiredClosed
       siteEquationModTwoPoint) := by
-  have h :=
-    lawfulnessIdealFactorizationCorrespondence referenceRaw referenceScheme
-      referenceSiteReading referenceSiteReading_valid
-      referenceSiteReading_requiredClosed
-      referenceSiteReading_requiredLawIdealExact siteEquationModTwoPoint
-  exact h.2.2.mp (h.2.1.mp (h.1.mp siteEquationModTwoPoint_semantic))
+  exact siteEquationModTwoPoint_factors_generated
 
 /--
 SD2-SD3 standard-geometry reference-model declaration.

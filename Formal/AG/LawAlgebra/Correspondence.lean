@@ -1,5 +1,6 @@
 import Formal.AG.Atom.LawfulnessZero
 import Formal.AG.Atom.ThreeReading
+import Formal.AG.LawAlgebra.ClosedEquationalGeometry
 import Formal.AG.LawAlgebra.LawEquation
 import Formal.AG.LawAlgebra.LawfulLocus
 
@@ -12,6 +13,7 @@ universe u v w
 
 namespace Correspondence
 
+open CategoryTheory
 open LawfulLocus
 
 variable {U : AtomCarrier.{u}}
@@ -70,6 +72,68 @@ theorem lawful_of_generatedLawWitnessIdeals_le_ker
     s.Lawful :=
   lawful_of_selectedWitnessIdeals_le_ker
     (F := E.selectedWitnessIdealFamily W) (s := s) hkill
+
+/--
+For an affine standard architecture scheme, semantic lawfulness for the
+site-owned equation system is exactly generated-ideal vanishing and exactly
+factorization through the generated lawful closed subscheme.
+
+The exactness theorem is discharged by the canonical site-equation
+realization; callers supply neither a geometric predicate nor a scheme bridge.
+-/
+theorem siteEquationLawfulnessIdealFactorizationCorrespondence
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    (W : S.category)
+    (siteRaw :
+      RawAmbientRestrictionSystem S (S.equationSystem.Observable W))
+    [CategoryTheory.HasSheafify S.topology
+      (AATCommAlgCat (S.equationSystem.Observable W))]
+    (Y : StandardArchitectureScheme siteRaw)
+    (hcontext : Y.decoration.context = W)
+    [AlgebraicGeometry.IsAffine Y.underlying]
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ Y.underlying) :
+    let reading :=
+      ClosedEquationalLawReading.ofSiteEquationSystem
+        W siteRaw Y hcontext
+    let valid :=
+      ClosedEquationalLawReading.ofSiteEquationSystem_valid
+        W siteRaw Y hcontext
+    let requiredClosed :=
+      ClosedEquationalLawReading.ofSiteEquationSystem_requiredClosed
+        W siteRaw Y hcontext
+    (SemanticLawfulAlong siteRaw Y reading s ↔
+      IdealLawfulAlong siteRaw Y reading valid requiredClosed s) ∧
+    (IdealLawfulAlong siteRaw Y reading valid requiredClosed s ↔
+      Nonempty
+        {t : (T ⟶
+            siteEquationLawfulClosedSubscheme W siteRaw Y hcontext) //
+          t ≫ siteEquationLawfulClosedImmersion W siteRaw Y hcontext = s}) := by
+  dsimp only
+  let reading :=
+    ClosedEquationalLawReading.ofSiteEquationSystem
+      W siteRaw Y hcontext
+  let valid :=
+    ClosedEquationalLawReading.ofSiteEquationSystem_valid
+      W siteRaw Y hcontext
+  let requiredClosed :=
+    ClosedEquationalLawReading.ofSiteEquationSystem_requiredClosed
+      W siteRaw Y hcontext
+  have hexact :=
+    ClosedEquationalLawReading.ofSiteEquationSystem_requiredLawIdealExact
+      W siteRaw Y hcontext
+  constructor
+  · exact
+      (semanticLawfulAlong_iff_witnessVanishes
+        siteRaw Y reading valid requiredClosed hexact s).trans
+      (witnessVanishes_iff_idealLawfulAlong
+        siteRaw Y reading valid requiredClosed s)
+  · change
+      IdealLawfulAlong siteRaw Y reading valid requiredClosed s ↔
+        Nonempty
+          (FactorsThroughLawfulClosedSubscheme
+            siteRaw Y reading valid requiredClosed s)
+    exact idealLawfulAlong_iff_nonempty_factorsThrough
+      siteRaw Y reading valid requiredClosed s
 
 /--
 III.定理11.1 / III.定理11.4 bridge: displayed required laws force the displayed

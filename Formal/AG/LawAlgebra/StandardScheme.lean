@@ -438,6 +438,31 @@ noncomputable def coefficientMap
   D.interpretation.hom.comp
     (sheafifiedSectionAlgebraMap raw D.context)
 
+/--
+The canonical global-section realization of the equation system selected by
+the ambient AAT site.
+
+Implementation notes: the selected context's observable ring is used as the
+coefficient ring of `raw`.  The realization therefore follows the canonical
+coefficient map, sheafification, context identification, and the decoration's
+interpretation.  It accepts neither a second equation system nor an
+independently supplied coordinate family.
+-/
+noncomputable def siteEquationGlobalSectionMap
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    (W : S.category)
+    (raw : RawAmbientRestrictionSystem S (S.equationSystem.Observable W))
+    [CategoryTheory.HasSheafify S.topology
+      (AATCommAlgCat (S.equationSystem.Observable W))]
+    {X : AlgebraicGeometry.Scheme}
+    (D : AATReadingDecoration raw X)
+    (hcontext : D.context = W) :
+    S.equationSystem.Observable W →+* Γ(X, ⊤) :=
+  D.interpretation.hom.comp
+    ((sheafifiedRestriction raw (eqToHom hcontext)).hom.comp
+      (sheafifiedSectionAlgebraMap raw W))
+
 /-- The global section represented by a selected typed coordinate. -/
 noncomputable def coordinateSection
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
@@ -536,6 +561,24 @@ def Preserves
     D.coefficientMap raw =
       D.interpretation.hom.comp
         (sheafifiedSectionAlgebraMap raw D.context) :=
+  rfl
+
+/-- The site-equation realization follows the canonical coefficient and decoration maps. -/
+@[simp] theorem siteEquationGlobalSectionMap_apply
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    (W : S.category)
+    (raw : RawAmbientRestrictionSystem S (S.equationSystem.Observable W))
+    [CategoryTheory.HasSheafify S.topology
+      (AATCommAlgCat (S.equationSystem.Observable W))]
+    {X : AlgebraicGeometry.Scheme}
+    (D : AATReadingDecoration raw X)
+    (hcontext : D.context = W)
+    (x : S.equationSystem.Observable W) :
+    D.siteEquationGlobalSectionMap W raw hcontext x =
+      D.interpretation
+        (sheafifiedRestriction raw (eqToHom hcontext)
+          ((sheafifiedSectionAlgebraMap raw W) x)) :=
   rfl
 
 /-- Coordinate sections expose the variable, quotient, unit, and interpretation route. -/
