@@ -50,7 +50,7 @@ AAT / Lean / ArchSig の責務境界を作業前に必ず分ける。
 
 | 領域 | 場所 | 役割 |
 | --- | --- | --- |
-| Lean / AAT | `Formal/AG`, `Formal/Arch`, `Formal.lean`, `Main.lean` | AAT / SFT の形式化(定義・定理・例) |
+| Lean / AAT | `Formal/AG`, `Formal/Arch`, `Formal.lean` | AAT / SFT の形式化(定義・定理・例) |
 | AAT docs | `docs/aat` | AAT 数学本文、Lean status、proof obligation |
 | SFT docs | `docs/sft` | Software Field Theory と AAT / SFT interface |
 | Tooling | `tools/archsig`, `tools/fieldsig`, `docs/tool` | ArchMap / LawPolicy / ArchSig / FieldSig の CLI・schema・workflow |
