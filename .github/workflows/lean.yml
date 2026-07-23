@@ -113,7 +113,7 @@ jobs:
         run: .github/lean_quality/test_changed_public_artifacts.sh
 
   build:
-    name: active AAT algebraic geometry
+    name: lake build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
