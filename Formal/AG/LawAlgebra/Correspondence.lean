@@ -74,9 +74,9 @@ theorem lawful_of_generatedLawWitnessIdeals_le_ker
     (F := E.selectedWitnessIdealFamily W) (s := s) hkill
 
 /--
-For an affine standard architecture scheme, semantic lawfulness for the
-site-owned equation system is exactly generated-ideal vanishing and exactly
-factorization through the generated lawful closed subscheme.
+For a standard architecture scheme, semantic lawfulness for the site-owned
+equation system is exactly generated-ideal vanishing and exactly factorization
+through the generated lawful closed subscheme.
 
 The exactness theorem is discharged by the canonical site-equation
 realization; callers supply neither a geometric predicate nor a scheme bridge.
@@ -90,7 +90,6 @@ theorem siteEquationLawfulnessIdealFactorizationCorrespondence
       (AATCommAlgCat (S.equationSystem.Observable W))]
     (Y : StandardArchitectureScheme siteRaw)
     (hcontext : Y.decoration.context = W)
-    [AlgebraicGeometry.IsAffine Y.underlying]
     {T : AlgebraicGeometry.Scheme} (s : T ⟶ Y.underlying) :
     let reading :=
       ClosedEquationalLawReading.ofSiteEquationSystem

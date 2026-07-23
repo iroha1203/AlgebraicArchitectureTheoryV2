@@ -4645,7 +4645,11 @@ def closedEquationalGeometrySiteEquationRequiredClosed :=
 def closedEquationalGeometrySiteEquationAllLawsSelected :=
   @LawAlgebra.ClosedEquationalLawReading.ofSiteEquationSystem_allLawsSelected
 
-/-- Audit alias for affine global-equation and ideal-sheaf vanishing equivalence. -/
+/-- Audit alias for global-section ideal containment in a scheme kernel. -/
+def closedEquationalGeometryOfIdealTopLeSchemeKernelIff :=
+  @LawAlgebra.ofIdealTop_le_schemeKernel_iff
+
+/-- Audit alias for global-equation and ideal-sheaf vanishing equivalence on any scheme. -/
 def closedEquationalGeometryGlobalEquationsVanishIffIdealSheafComapBot :=
   @LawAlgebra.globalEquationsVanishAlong_iff_ofIdealTop_span_comap_eq_bot
 
@@ -4701,7 +4705,7 @@ def closedEquationalGeometrySiteEquationLawfulImmersionIsClosed :=
 def closedEquationalGeometrySiteEquationLawfulImmersionKer :=
   @LawAlgebra.siteEquationLawfulClosedImmersion_ker
 
-/-- Audit alias for exactness of site-owned equation ideals on affine schemes. -/
+/-- Audit alias for exactness of site-owned equation ideals on standard schemes. -/
 def closedEquationalGeometrySiteEquationRequiredLawIdealExact :=
   @LawAlgebra.ClosedEquationalLawReading.ofSiteEquationSystem_requiredLawIdealExact
 

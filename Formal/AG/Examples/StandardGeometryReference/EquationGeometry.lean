@@ -580,9 +580,6 @@ private theorem referenceCore_lawIdealExact
       (ClosedEquationalLawReading.ofSemanticCore_witnessCompatible
         referenceRaw referenceScheme G B)
       i (Set.mem_univ i) := by
-  letI : IsAffine referenceScheme.underlying := by
-    rw [referenceScheme_underlying, ambientScheme_eq]
-    infer_instance
   intro T s
   change (GeometricLawReading.ofSemanticCore referenceRaw referenceScheme
     G B).HoldsOn s i ↔ _
@@ -611,9 +608,6 @@ theorem referenceSiteReading_requiredLawIdealExact :
     RequiredLawIdealExact referenceRaw referenceScheme
       referenceSiteReading referenceSiteReading_valid
       referenceSiteReading_requiredClosed := by
-  letI : IsAffine referenceScheme.underlying := by
-    rw [referenceScheme_underlying, ambientScheme_eq]
-    infer_instance
   exact
     ClosedEquationalLawReading.ofSiteEquationSystem_requiredLawIdealExact
       baseContext referenceRaw referenceScheme rfl
@@ -2163,9 +2157,6 @@ theorem siteEquationModTwoPoint_factors_generated :
         t ≫ siteEquationLawfulClosedImmersion
           baseContext referenceRaw referenceScheme rfl =
             siteEquationModTwoPoint} := by
-  letI : IsAffine referenceScheme.underlying := by
-    rw [referenceScheme_underlying, ambientScheme_eq]
-    infer_instance
   have h :=
     Correspondence.siteEquationLawfulnessIdealFactorizationCorrespondence
       baseContext referenceRaw referenceScheme rfl siteEquationModTwoPoint
