@@ -161,6 +161,7 @@ jobs:
       - name: Kernel axiom audit
         if: steps.ag-changes.outputs.run == 'true'
         run: |
+          lake build Formal.Util.AssertStandardAxioms
           lake env lean Formal/Util/AssertStandardAxiomsTest.lean
           lake env lean Formal/AG/AxiomAudit.lean
           test "$(grep -v '^[[:space:]]*$' Formal/AG/AxiomAudit.lean | tail -n 1)" = '#assert_standard_axioms_only AAT.AG.AxiomAudit'
