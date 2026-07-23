@@ -180,12 +180,16 @@ def toCoverRelativeBaseRestrictionSource
   atomSupport_traceVisible := fun sigma =>
     D.atomSupport_traceVisible
       ((lawEquationRegime coverGeometry G).simplexIndices 0 sigma 0)
-  lawSupport := fun _ _ => [G.provenanceLawIndex]
-  lawSupport_nonempty := fun _ _ =>
-    ⟨G.provenanceLawIndex, List.mem_singleton_self G.provenanceLawIndex⟩
-  lawSupport_required := fun _ _ lawIndex hmem => by
-    have heq : lawIndex = G.provenanceLawIndex := List.eq_of_mem_singleton hmem
-    exact heq ▸ G.provenanceLawIndex_required
+  lawSupport := fun sigma =>
+    D.lawSupport ((lawEquationRegime coverGeometry G).simplexIndices 0 sigma 0)
+  lawSupport_nonempty := fun sigma =>
+    D.lawSupport_nonempty
+      ((lawEquationRegime coverGeometry G).simplexIndices 0 sigma 0)
+  lawSupport_required := fun sigma localInput lawIndex hmem =>
+    (S.equationSystem.toLegacyLawUniverse_required_iff lawIndex).mpr
+      (D.lawSupport_required
+        ((lawEquationRegime coverGeometry G).simplexIndices 0 sigma 0)
+        localInput lawIndex hmem)
 
 /--
 Displayed-interpretation realization: under displayed required-law

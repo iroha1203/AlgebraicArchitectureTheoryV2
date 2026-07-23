@@ -3254,14 +3254,25 @@ end LawEquationSemanticAtomInputBody
 structure LawEquationWitnessIdealGeometryBody
     (semanticInput : LawEquationSemanticAtomInputBody.{v, x} Ulaw)
     (S : Site.AATSite.{x} Alaw) where
-  /-- The substantive equation system generating all witness ideals. -/
-  equationSystem : ArchitecturalEquationSystem S.contextPreorder
   /-- Displayed source atom whose provenance is visible in the semantic input. -/
   supportAtom : Ulaw.Atom
   supportAtom_traceVisible :
     semanticInput.sourceTraceToken supportAtom = true
   quotientIsSheaf :
-    Site.AATSheafCondition S equationSystem.obstructionQuotientPresheaf
+    Site.AATSheafCondition S
+      S.equationSystem.obstructionQuotientPresheaf
+
+namespace LawEquationWitnessIdealGeometryBody
+
+/-- The witness geometry always uses the equation system selected by its site. -/
+abbrev equationSystem
+    {semanticInput : LawEquationSemanticAtomInputBody.{v, x} Ulaw}
+    {S : Site.AATSite.{x} Alaw}
+    (_G : LawEquationWitnessIdealGeometryBody semanticInput S) :
+    ArchitecturalEquationSystem S.contextPreorder :=
+  S.equationSystem
+
+end LawEquationWitnessIdealGeometryBody
 
 /--
 Law-equation defect input indexed by the selected finite-poset cover.

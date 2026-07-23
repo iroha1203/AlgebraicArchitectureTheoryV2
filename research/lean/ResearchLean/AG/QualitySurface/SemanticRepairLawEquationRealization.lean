@@ -57,9 +57,9 @@ namespace CoverRelativeCechGeneratedSemanticCoefficient
 /--
 G-06 law-equation input geometry.
 
-This bundles the native equation system with displayed semantic provenance and
-the sheaf condition of its generated obstruction-quotient presheaf.  The sheaf
-condition is input geometry in the
+This reads the equation system selected by the AAT site and bundles displayed
+semantic provenance, native law-support metadata, and the sheaf condition of
+the generated obstruction-quotient presheaf.  The sheaf condition is input geometry in the
 same ambient position as the existing
 `SemanticAtomLawAdditiveCoefficientGeometry.isSheaf` field; it asserts nothing
 about interpretation maps, overlap equality of any source, `sourceC0CechZero`,
@@ -69,22 +69,37 @@ structure SemanticLawEquationWitnessIdealGeometry
     {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
     (semanticSite : SemanticRepairSite.{r, v} U.Atom)
     (S : AAT.AG.Site.AATSite A) where
-  equationSystem : AAT.AG.ArchitecturalEquationSystem S.contextPreorder
   supportAtom : U.Atom
   supportAtom_traceVisible :
     semanticSite.sourceTraceToken supportAtom = true
-  provenanceLawIndex : S.equationSystem.toLegacyLawUniverse.Index
-  provenanceLawIndex_required :
-    S.equationSystem.toLegacyLawUniverse.Required provenanceLawIndex
+  lawSupport :
+    (W : S.category) ->
+      S.equationSystem.ObstructionQuotient W ->
+        List S.equationSystem.toLegacyLawUniverse.Index
+  lawSupport_nonempty :
+    forall (W : S.category) (localSection : S.equationSystem.ObstructionQuotient W),
+      exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
+        lawIndex ∈ lawSupport W localSection
+  lawSupport_required :
+    forall (W : S.category) (localSection : S.equationSystem.ObstructionQuotient W)
+      (lawIndex : S.equationSystem.toLegacyLawUniverse.Index),
+      lawIndex ∈ lawSupport W localSection ->
+        S.equationSystem.toLegacyLawUniverse.Required lawIndex
   quotientIsSheaf :
     AAT.AG.Site.AATSheafCondition S
-      equationSystem.obstructionQuotientPresheaf
+      S.equationSystem.obstructionQuotientPresheaf
 
 namespace SemanticLawEquationWitnessIdealGeometry
 
 variable {U : AAT.AG.AtomCarrier.{r}} {A : AAT.AG.ArchitectureObject U}
 variable {semanticSite : SemanticRepairSite.{r, v} U.Atom}
 variable {S : AAT.AG.Site.AATSite A}
+
+/-- The Research geometry uses exactly the equation system selected by its site. -/
+abbrev equationSystem
+    (_G : SemanticLawEquationWitnessIdealGeometry semanticSite S) :
+    AAT.AG.ArchitecturalEquationSystem S.contextPreorder :=
+  S.equationSystem
 
 /--
 The law-equation geometry generates the Cycle 247 semantic atom/law additive
@@ -103,12 +118,9 @@ def toSemanticAtomLawAdditiveCoefficientGeometry
   atomSupport_traceVisible := fun _ _ =>
     ⟨G.supportAtom, List.mem_singleton_self G.supportAtom,
       G.supportAtom_traceVisible⟩
-  lawSupport := fun _ _ => [G.provenanceLawIndex]
-  lawSupport_nonempty := fun _ _ =>
-    ⟨G.provenanceLawIndex, List.mem_singleton_self G.provenanceLawIndex⟩
-  lawSupport_required := fun _ _ lawIndex hmem => by
-    have heq : lawIndex = G.provenanceLawIndex := List.eq_of_mem_singleton hmem
-    exact heq ▸ G.provenanceLawIndex_required
+  lawSupport := G.lawSupport
+  lawSupport_nonempty := G.lawSupport_nonempty
+  lawSupport_required := G.lawSupport_required
 
 /--
 The generated obstruction sheaf of the law-equation realization: the
@@ -271,12 +283,11 @@ def toSupportOnlySemanticAtomLawInputBoundarySource
   input := D.input
   atomSupport := D.atomSupport
   atomSupport_traceVisible := D.atomSupport_traceVisible
-  lawSupport := fun _ _ => [G.provenanceLawIndex]
-  lawSupport_nonempty := fun _ _ =>
-    ⟨G.provenanceLawIndex, List.mem_singleton_self G.provenanceLawIndex⟩
-  lawSupport_required := fun _ _ lawIndex hmem => by
-    have heq : lawIndex = G.provenanceLawIndex := List.eq_of_mem_singleton hmem
-    exact heq ▸ G.provenanceLawIndex_required
+  lawSupport := D.lawSupport
+  lawSupport_nonempty := D.lawSupport_nonempty
+  lawSupport_required := fun i localInput lawIndex hmem =>
+    (S.equationSystem.toLegacyLawUniverse_required_iff lawIndex).mpr
+      (D.lawSupport_required i localInput lawIndex hmem)
   interpret := fun i localInput =>
     G.toObstructionSection (lawEquationChart coverGeometry G i)
       (Ideal.Quotient.mk
@@ -432,12 +443,11 @@ def toBaseRestrictionSource
   input := D.input
   atomSupport := D.atomSupport
   atomSupport_traceVisible := D.atomSupport_traceVisible
-  lawSupport := fun _ _ => [G.provenanceLawIndex]
-  lawSupport_nonempty := fun _ _ =>
-    ⟨G.provenanceLawIndex, List.mem_singleton_self G.provenanceLawIndex⟩
-  lawSupport_required := fun _ _ lawIndex hmem => by
-    have heq : lawIndex = G.provenanceLawIndex := List.eq_of_mem_singleton hmem
-    exact heq ▸ G.provenanceLawIndex_required
+  lawSupport := D.lawSupport
+  lawSupport_nonempty := D.lawSupport_nonempty
+  lawSupport_required := fun i localInput lawIndex hmem =>
+    (S.equationSystem.toLegacyLawUniverse_required_iff lawIndex).mpr
+      (D.lawSupport_required i localInput lawIndex hmem)
 
 /--
 G-06 positive lower construction, display-preserving form: under displayed

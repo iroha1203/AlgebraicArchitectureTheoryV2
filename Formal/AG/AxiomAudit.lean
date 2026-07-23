@@ -4391,6 +4391,18 @@ def lawEquationObstructionQuotientRestrictId :=
 def lawEquationObstructionQuotientRestrictComp :=
   @ArchitecturalEquationSystem.obstructionQuotientRestrict_comp_apply
 
+/-- Audit alias identifying the quotient presheaf with the forgotten coefficient. -/
+def lawEquationObstructionQuotientPresheafEqForgetCoefficient :=
+  @ArchitecturalEquationSystem.obstructionQuotientPresheaf_eq_forget_coefficient
+
+/-- Audit alias for quotient-class vanishing as obstruction-ideal membership. -/
+def lawEquationQuotientMkEqZeroIffMemObstructionIdeal :=
+  @ArchitecturalEquationSystem.quotient_mk_eq_zero_iff_mem_obstructionIdeal
+
+/-- Audit alias for the generated coefficient package. -/
+def lawEquationGeneratedCoefficientPackage :=
+  @ArchitecturalEquationSystem.generatedCoefficient_package
+
 /-! #### SD0: geometric law reading and closed-equational witnesses -/
 
 /-- Audit alias for geometric-law-reading extensionality. -/

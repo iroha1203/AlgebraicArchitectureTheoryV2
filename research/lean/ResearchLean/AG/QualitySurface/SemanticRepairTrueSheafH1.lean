@@ -59,16 +59,6 @@ structure SemanticRepairCover
     forall {i j k}, TripleOverlap i j k -> Overlap j k
   tripleEdge02 :
     forall {i j k}, TripleOverlap i j k -> Overlap i k
-  /-- Selected overlap component for every ordered chart pair. -/
-  selectedOverlap : forall left right, Overlap left right
-  /-- Selected triple-overlap component for every ordered chart triple. -/
-  selectedTriple : forall i j k, TripleOverlap i j k
-  selectedOverlap_eq_tripleEdge01 : forall i j k,
-    selectedOverlap i j = tripleEdge01 (selectedTriple i j k)
-  selectedOverlap_eq_tripleEdge12 : forall i j k,
-    selectedOverlap j k = tripleEdge12 (selectedTriple i j k)
-  selectedOverlap_eq_tripleEdge02 : forall i j k,
-    selectedOverlap i k = tripleEdge02 (selectedTriple i j k)
   tripleOrder :
     List (Sigma fun triple : CoverChart × CoverChart × CoverChart =>
       TripleOverlap triple.1 triple.2.1 triple.2.2)

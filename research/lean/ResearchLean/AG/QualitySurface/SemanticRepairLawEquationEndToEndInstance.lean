@@ -331,11 +331,6 @@ def finiteModelSemanticCover :
   tripleEdge01 := fun _ => PUnit.unit
   tripleEdge12 := fun _ => PUnit.unit
   tripleEdge02 := fun _ => PUnit.unit
-  selectedOverlap := fun _ _ => PUnit.unit
-  selectedTriple := fun _ _ _ => PUnit.unit
-  selectedOverlap_eq_tripleEdge01 := fun _ _ _ => rfl
-  selectedOverlap_eq_tripleEdge12 := fun _ _ _ => rfl
-  selectedOverlap_eq_tripleEdge02 := fun _ _ _ => rfl
   tripleOrder := [Sigma.mk (PUnit.unit, PUnit.unit, PUnit.unit) PUnit.unit]
   triple_complete := fun i j k triple => by
     cases i

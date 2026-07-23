@@ -11,7 +11,7 @@ open Opposite
 
 universe u
 
-/-! ## III.定義11.3 / III.定理11.4: laws as generated equation coefficients -/
+/-! ## III.定義5.2 / III.定義6.1 / III.定理11.4: generated equation coefficients -/
 
 namespace ArchitecturalEquationSystem
 
@@ -19,7 +19,7 @@ variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {C : Site.ContextPreorderCategory A}
 
 /--
-III.定義11.3: the witness ideal of one equation is the span of its atom-indexed
+III.定義5.2: the witness ideal of one equation is the span of its atom-indexed
 violation coordinates.
 -/
 def witnessIdeal
@@ -36,7 +36,7 @@ def witnessIdeal
       Ideal.span (Set.range (E.violationCoordinate W equationIndex)) :=
   rfl
 
-/-- III.定義11.3: selected required-equation witness ideals at one context. -/
+/-- III.定義6.1: selected required-equation witness ideals at one context. -/
 def selectedWitnessIdealFamily
     (E : ArchitecturalEquationSystem C)
     (W : Site.ContextCategoryObject C) :
@@ -45,13 +45,13 @@ def selectedWitnessIdealFamily
   selected := E.Required
   witnessIdeal := E.witnessIdeal W
 
-/-- III.定義11.3: local obstruction ideal `I_Ob(W) = Σ_L I_L(W)`. -/
+/-- III.定義6.1: local obstruction ideal `I_Ob(W) = Σ_L I_L(W)`. -/
 def obstructionIdeal
     (E : ArchitecturalEquationSystem C)
     (W : Site.ContextCategoryObject C) : Ideal (E.Observable W) :=
   (E.selectedWitnessIdealFamily W).localObstructionIdeal
 
-/-- III.定義11.3: the obstruction ideal is the supremum of required witness ideals. -/
+/-- III.定義6.1: the obstruction ideal is the supremum of required witness ideals. -/
 theorem obstructionIdeal_eq_iSup_required
     (E : ArchitecturalEquationSystem C)
     (W : Site.ContextCategoryObject C) :
@@ -245,7 +245,7 @@ end ArchitecturalEquationSystem
 namespace LawAlgebra
 
 /--
-III.定理11.4: displayed local law-equation defect source.
+Transitional displayed local law-equation defect interface for III.定義11.3.
 
 The interpretation is generated as the obstruction quotient class of
 `defect`; it is not a field.  The law-as-equation tie is chart-local: a

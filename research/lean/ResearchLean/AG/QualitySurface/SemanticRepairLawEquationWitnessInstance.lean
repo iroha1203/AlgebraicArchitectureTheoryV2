@@ -186,14 +186,17 @@ The `quotientIsSheaf` field is discharged by
 def finiteModelLawEquationGeometry :
     SemanticLawEquationWitnessIdealGeometry finiteModelSemanticRepairSite
       AAT.AG.FiniteModel.site where
-  equationSystem := AAT.AG.FiniteModel.site.equationSystem
   supportAtom := AAT.AG.FiniteModel.FiniteAtom.componentA
   supportAtom_traceVisible := rfl
-  provenanceLawIndex := PUnit.unit
-  provenanceLawIndex_required :=
-    (AAT.AG.FiniteModel.site.equationSystem.toLegacyLawUniverse_required_iff
-      PUnit.unit).mpr
-      (AAT.AG.FiniteModel.site_equation_required PUnit.unit)
+  lawSupport := fun _ _ => [PUnit.unit]
+  lawSupport_nonempty := fun _ _ =>
+    ⟨PUnit.unit, List.mem_singleton_self PUnit.unit⟩
+  lawSupport_required := fun _ _ lawIndex _ => by
+    cases lawIndex
+    exact
+      (AAT.AG.FiniteModel.site.equationSystem.toLegacyLawUniverse_required_iff
+        PUnit.unit).mpr
+        (AAT.AG.FiniteModel.site_equation_required PUnit.unit)
   quotientIsSheaf :=
     finiteModelSite_AATSheafCondition
       AAT.AG.FiniteModel.site.equationSystem.obstructionQuotientPresheaf
