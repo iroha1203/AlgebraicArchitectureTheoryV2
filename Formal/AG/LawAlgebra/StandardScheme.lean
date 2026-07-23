@@ -564,7 +564,7 @@ def Preserves
   rfl
 
 /-- The site-equation realization follows the canonical coefficient and decoration maps. -/
-@[simp] theorem siteEquationGlobalSectionMap_apply
+theorem siteEquationGlobalSectionMap_apply
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A}
     (W : S.category)

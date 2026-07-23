@@ -292,7 +292,7 @@ theorem GeometricLawReading.ofSiteEquationSystem_valid
   rw [Scheme.Hom.comp_appTop, CommRingCat.comp_apply, hs a, map_zero]
 
 /-- The site-generated geometric predicate is generatorwise scheme-equation vanishing. -/
-@[simp] theorem GeometricLawReading.ofSiteEquationSystem_holdsOn
+theorem GeometricLawReading.ofSiteEquationSystem_holdsOn
     (W : S.category)
     (siteRaw :
       RawAmbientRestrictionSystem S (S.equationSystem.Observable W))
@@ -590,7 +590,7 @@ noncomputable def ClosedEquationalLawReading.ofSiteEquationSystem
       W siteRaw Y hcontext i
 
 /-- The standard site-generated reading uses the standard site-generated witness. -/
-@[simp] theorem ClosedEquationalLawReading.ofSiteEquationSystem_witness
+theorem ClosedEquationalLawReading.ofSiteEquationSystem_witness
     (W : S.category)
     (siteRaw :
       RawAmbientRestrictionSystem S (S.equationSystem.Observable W))
@@ -1358,7 +1358,7 @@ theorem siteEquationLawfulClosedImmersion_isClosedImmersion
   infer_instance
 
 /-- The site-equation closed immersion has the generated ideal sheaf as kernel. -/
-@[simp] theorem siteEquationLawfulClosedImmersion_ker
+theorem siteEquationLawfulClosedImmersion_ker
     (W : S.category)
     (siteRaw :
       RawAmbientRestrictionSystem S (S.equationSystem.Observable W))
