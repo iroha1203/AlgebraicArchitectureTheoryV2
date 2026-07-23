@@ -1653,8 +1653,7 @@ theorem finiteCoreNonidentityReachableOperation :
   FiniteModel.nonidentity_reachable_operation_fires
 
 theorem finiteCoreGeneratedCircuitSound :
-    ¬ (FiniteModel.corePackage.algebra.equationReading.toLegacyLawReading.lawUniverse.law
-      PUnit.unit).holds
+    ¬ FiniteModel.corePackage.algebra.equationSystem.EquationHolds PUnit.unit
       (FiniteModel.corePackage.algebra.object FiniteModel.corePackage.baseObject) :=
   FiniteModel.generatedCycleCircuit_sound
 
@@ -9388,7 +9387,6 @@ def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_SquareZeroExtensio
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_SquareZeroExtensionData_mk_sizeOf_spec := @AAT.AG.SingularityMonodromyStack.SquareZeroExtensionData.mk.sizeOf_spec
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_SquareZeroExtensionData_obstructionClass_eq_ob := @AAT.AG.SingularityMonodromyStack.SquareZeroExtensionData.obstructionClass_eq_ob
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_SquareZeroExtensionData_squareZeroLiftingObstruction := @AAT.AG.SingularityMonodromyStack.SquareZeroExtensionData.squareZeroLiftingObstruction
-def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_StratumReadingParameter_equationSystem_eq := @AAT.AG.SingularityMonodromyStack.StratumReadingParameter.equationSystem_eq
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_StratumReadingParameter_mk_inj := @AAT.AG.SingularityMonodromyStack.StratumReadingParameter.mk.inj
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_StratumReadingParameter_mk_injEq := @AAT.AG.SingularityMonodromyStack.StratumReadingParameter.mk.injEq
 def legacyConsolidationAudit_AAT_AG_SingularityMonodromyStack_StratumReadingParameter_mk_sizeOf_spec := @AAT.AG.SingularityMonodromyStack.StratumReadingParameter.mk.sizeOf_spec
@@ -9471,6 +9469,28 @@ def architecturalEquationSystemToLegacyLawHoldsIff :=
 
 /-! Issue #3730 equation-generated core/site audit aliases. -/
 
+/-- Kernel-audit alias for extensional equality of legacy law displays. -/
+def lawExt := @Law.ext
+
+/-- Kernel-audit alias for extensional equality of equation detector code. -/
+def equationCircuitReadingExt := @EquationCircuitReading.ext
+
+/-- Kernel-audit alias for equation-detector acceptance evaluation. -/
+def equationCircuitReadingAcceptsEqEval :=
+  @EquationCircuitReading.accepts_eq_eval
+
+/-- Kernel-audit alias for reject-code evaluation. -/
+def equationCircuitReadingAcceptsEqFalseOfCodeReject :=
+  @EquationCircuitReading.accepts_eq_false_of_code_reject
+
+/-- Kernel-audit alias for exact-code evaluation. -/
+def equationCircuitReadingAcceptsEqTrueIffOfCodeExact :=
+  @EquationCircuitReading.accepts_eq_true_iff_of_code_exact
+
+/-- Kernel-audit alias for disjunctive-code evaluation. -/
+def equationCircuitReadingAcceptsEqTrueIffOfCodeAny :=
+  @EquationCircuitReading.accepts_eq_true_iff_of_code_any
+
 /-- Kernel-audit alias for the equation-generated legacy universe. -/
 def architecturalEquationSystemToLegacyLawUniverse :=
   @ArchitecturalEquationSystem.toLegacyLawUniverse
@@ -9478,6 +9498,14 @@ def architecturalEquationSystemToLegacyLawUniverse :=
 /-- Kernel-audit alias for preservation of the required equation role. -/
 def architecturalEquationSystemToLegacyRequiredIff :=
   @ArchitecturalEquationSystem.toLegacyLawUniverse_required_iff
+
+/-- Kernel-audit alias for preservation of the optional equation role. -/
+def architecturalEquationSystemToLegacyOptionalIff :=
+  @ArchitecturalEquationSystem.toLegacyLawUniverse_optional_iff
+
+/-- Kernel-audit alias for preservation of the derived equation role. -/
+def architecturalEquationSystemToLegacyDerivedIff :=
+  @ArchitecturalEquationSystem.toLegacyLawUniverse_derived_iff
 
 /-- Kernel-audit alias for equation lawfulness versus its generated legacy display. -/
 def architecturalEquationSystemEquationLawfulIffLegacyLawfulness :=
@@ -9503,9 +9531,53 @@ def selectedGeometryToAATSiteEquationSystem :=
 def finiteCoreEquationHoldsIffNoCycleLaw :=
   @FiniteModel.equationHolds_iff_noCycleLaw
 
+/-- Kernel-audit alias for the equation-generated NoCycle legacy display. -/
+def finiteCoreEquationSystemLegacyLawEqNoCycleLaw :=
+  @FiniteModel.equationSystem_legacy_law_eq_noCycleLaw
+
+/-- Kernel-audit alias for the concrete NoCycle detector-soundness proof. -/
+def finiteCoreEquationCircuitReadingSound :=
+  @FiniteModel.equationCircuitReading_sound
+
+/-- Kernel-audit alias for the component-A residual characterization. -/
+def finiteComponentAAbsentEquationHoldsIff :=
+  @FiniteModel.componentAAbsentEquationHolds_iff
+
+/-- Kernel-audit alias for the positive component-A detector soundness proof. -/
+def finiteComponentAPresentEquationCircuitReadingSound :=
+  @FiniteModel.componentAPresentEquationCircuitReading_sound
+
+/-- Kernel-audit alias for positive equation-detector completeness. -/
+def finiteComponentAPresentEquationCircuitReadingRequiredComplete :=
+  @FiniteModel.componentAPresentEquationCircuitReading_requiredComplete
+
+/-- Kernel-audit alias for the negative equation-detector completeness instance. -/
+def finiteRejectingEquationCircuitReadingNotRequiredComplete :=
+  @FiniteModel.rejectingEquationCircuitReading_not_requiredComplete
+
+/-- Kernel-audit alias for the empty-family negative datum match. -/
+def finiteComponentAAbsentDatumMatchesUnreachableEmptyObject :=
+  FiniteModel.componentAAbsentDatum_matches_unreachableEmptyObject
+
+/-- Kernel-audit alias for the explicit detector unsoundness counterexample. -/
+def finiteUnsoundEquationCircuitReadingNotSound :=
+  @FiniteModel.unsoundEquationCircuitReading_not_sound
+
 /-- Kernel-audit alias for the finite site's required equation. -/
 def finiteSiteEquationRequired :=
   @FiniteModel.site_equation_required
+
+/-- Kernel-audit alias for the ringed-site fixture's required equation. -/
+def finiteRingedSiteEquationRequired :=
+  @LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site_equation_required
+
+/-- Kernel-audit alias for the ringed-site residual/NoCycle equivalence. -/
+def finiteRingedSiteEquationHoldsIffNoCycleLaw :=
+  @LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site_equationHolds_iff_noCycleLaw
+
+/-- Kernel-audit alias for the ringed-site generated NoCycle legacy display. -/
+def finiteRingedSiteLawEqNoCycleLaw :=
+  @LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site_law_eq_noCycleLaw
 
 /-- Kernel-audit alias for the finite site's residual/NoCycle equivalence. -/
 def finiteSiteEquationHoldsIffNoCycleLaw :=
@@ -9514,6 +9586,34 @@ def finiteSiteEquationHoldsIffNoCycleLaw :=
 /-- Kernel-audit alias for the finite generated site law display. -/
 def finiteSiteLawHoldsIffNoCycleLaw :=
   @FiniteModel.site_law_holds_iff_noCycleLaw
+
+/-- Kernel-audit alias for required coordinates on admissible covers. -/
+def admissibleCoverEquationCoordinate :=
+  @Site.AdmissibleCover.equationCoordinate
+
+/-- Kernel-audit alias for selected witnesses on admissible covers. -/
+def admissibleCoverViolationWitness :=
+  @Site.AdmissibleCover.violationWitness
+
+/-- Kernel-audit alias for required coordinates on adequate covers. -/
+def uAdequateCoverEquationCoordinate :=
+  @Site.UAdequateCover.equationCoordinate
+
+/-- Kernel-audit alias for the reference site's required equation. -/
+def standardGeometryReferenceSiteEquationRequired :=
+  @Examples.StandardGeometryReferenceModels.referenceSite_equation_required
+
+/-- Kernel-audit alias for the required role in the two-equation fixture. -/
+def closedEquationalRequiredAllEquationSystemRequiredIff :=
+  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.requiredAllEquationSystem_required_iff
+
+/-- Kernel-audit alias for legacy valuation of equation lawfulness. -/
+def closedEquationalSemanticLawfulAlongIffOmegaUZero :=
+  @LawAlgebra.semanticLawfulAlong_iff_omegaU_zero
+
+/-- Kernel-audit alias for legacy valuation of lawful factorization. -/
+def closedEquationalFactorsThroughLawfulIffOmegaUZero :=
+  @LawAlgebra.factorsThroughLawfulClosedSubscheme_iff_omegaU_zero
 
 /-- Kernel-audit alias for the fixture's three distinct equation roles. -/
 def architecturalEquationSystemFiniteRoleSelectorSeparates :=

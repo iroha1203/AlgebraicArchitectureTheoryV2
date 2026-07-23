@@ -17,6 +17,7 @@ It does not construct presheaves, sheaves, descent data, or Cech complexes.
 -/
 structure AATSite {U : AtomCarrier.{u}} (A : ArchitectureObject U) where
   contextPreorder : ContextPreorderCategory A
+  /-- The architectural equation system whose required roles generate coverage. -/
   equationSystem : ArchitecturalEquationSystem contextPreorder
   signature : ArchitectureSignature U
   requirements : CoverageRequirements A equationSystem signature

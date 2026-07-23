@@ -367,12 +367,16 @@ theorem operation_configurationMap {U : AtomCarrier.{u}}
     (K.operation op).configurationMap = K.configurationMap op :=
   rfl
 
-/-- Every circuit in an indexed algebra refutes its selected equation. -/
+/--
+Every circuit in an indexed algebra refutes its selected equation, relative
+to the explicit detector-soundness direction hypothesis.
+-/
 theorem circuit_sound {U : AtomCarrier.{u}} (K : ObjectAlgebra U)
+    (hSound : K.circuits.Sound)
     (A : K.Obj) (i : K.equationSystem.Index)
     (c : K.Circuit A i) :
     ¬ K.equationSystem.EquationHolds i (K.object A) :=
-  K.circuits.sound i (K.object A) c.1 c.2.1 c.2.2
+  hSound i (K.object A) c.1 c.2.1 c.2.2
 
 /--
 The indexed circuit fiber is inhabited exactly when a matching datum is

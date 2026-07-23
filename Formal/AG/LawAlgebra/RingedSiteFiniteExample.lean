@@ -299,20 +299,19 @@ theorem raw_leftToBase_quotientDesc_X_ne_X :
 
 /-- The actual finite detector accepts the selected signed query datum. -/
 theorem detector_accepts :
-    coreReading.equationReading.toLegacyLawReading.circuits.accepts
+    coreReading.equationReading.circuits.accepts
       PUnit.unit cycleQueryDatum = true :=
   cycleQueryDatum_accepted
 
 /-- The same detector rejects a distinct empty datum. -/
 theorem detector_rejects :
-    coreReading.equationReading.toLegacyLawReading.circuits.accepts
+    coreReading.equationReading.circuits.accepts
       PUnit.unit ⟨[]⟩ = false :=
   emptyQueryDatum_rejected
 
 /-- Soundness of the accepted detector datum produces the generated law failure. -/
 theorem detector_sound :
-    ¬ (corePackage.algebra.equationReading.toLegacyLawReading.lawUniverse.law
-      PUnit.unit).holds
+    ¬ corePackage.algebra.equationSystem.EquationHolds PUnit.unit
       (corePackage.algebra.object corePackage.baseObject) :=
   generatedCycleCircuit_sound
 

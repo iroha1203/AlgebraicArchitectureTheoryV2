@@ -13,7 +13,15 @@ open AAT.AG.FiniteModel
 open AAT.AG.LawAlgebra.FiniteExamples.RingedSite.FiniteModel
 open AAT.AG.LawAlgebra.FiniteExamples.StandardArchitectureScheme
 
-/-! ## Implementation notes
+/-!
+# Legacy compatibility finite examples for closed equational geometry
+
+This compatibility leaf is intentionally excluded from the standard
+`Formal.AG.LawAlgebra` aggregate. It checks that equation-generated legacy
+displays still drive the older closed-equational examples while the standard
+LawAlgebra entrypoint remains equation-native.
+
+## Implementation notes
 
 The first SD9 fixture keeps the existing two-chart Scheme and compares the concrete equations
 `x - 1` and `x + 1`. The second fixture retargets the same context geometry, raw relation, and

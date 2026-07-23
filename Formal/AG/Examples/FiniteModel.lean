@@ -336,29 +336,36 @@ noncomputable def equationCircuitReading
     (C : Site.ContextPreorderCategory object) :
     EquationCircuitReading (equationSystem C) where
   code _ := .exact cycleQueryDatum
-  sound := by
-    intro index A Q hmatches haccepts
-    cases index
-    have hdatum : cycleQueryDatum = Q :=
-      (CircuitDetectorCode.eval_exact_eq_true_iff cycleQueryDatum Q).mp haccepts
-    subst Q
-    have hab :
-        A.configuration.relation FiniteAtom.dependsAB FiniteAtom.dependsBC :=
-      ((hmatches
-        (.relationPresent FiniteAtom.dependsAB FiniteAtom.dependsBC) true
-        (by simp [cycleQueryDatum])).mpr rfl).2.2
-    have hbc :
-        A.configuration.relation FiniteAtom.dependsBC FiniteAtom.dependsCA :=
-      ((hmatches
-        (.relationPresent FiniteAtom.dependsBC FiniteAtom.dependsCA) true
-        (by simp [cycleQueryDatum])).mpr rfl).2.2
-    have hca :
-        A.configuration.relation FiniteAtom.dependsCA FiniteAtom.dependsAB :=
-      ((hmatches
-        (.relationPresent FiniteAtom.dependsCA FiniteAtom.dependsAB) true
-        (by simp [cycleQueryDatum])).mpr rfl).2.2
-    intro hequation
-    exact (equationHolds_iff_noCycleLaw C A).mp hequation ⟨hab, hbc, hca⟩
+
+/--
+The finite NoCycle detector is sound because an accepted matching datum
+supplies all three relations that contradict residual vanishing.
+-/
+theorem equationCircuitReading_sound
+    (C : Site.ContextPreorderCategory object) :
+    (equationCircuitReading C).Sound := by
+  intro index A Q hmatches haccepts
+  cases index
+  have hdatum : cycleQueryDatum = Q :=
+    (CircuitDetectorCode.eval_exact_eq_true_iff cycleQueryDatum Q).mp haccepts
+  subst Q
+  have hab :
+      A.configuration.relation FiniteAtom.dependsAB FiniteAtom.dependsBC :=
+    ((hmatches
+      (.relationPresent FiniteAtom.dependsAB FiniteAtom.dependsBC) true
+      (by simp [cycleQueryDatum])).mpr rfl).2.2
+  have hbc :
+      A.configuration.relation FiniteAtom.dependsBC FiniteAtom.dependsCA :=
+    ((hmatches
+      (.relationPresent FiniteAtom.dependsBC FiniteAtom.dependsCA) true
+      (by simp [cycleQueryDatum])).mpr rfl).2.2
+  have hca :
+      A.configuration.relation FiniteAtom.dependsCA FiniteAtom.dependsAB :=
+    ((hmatches
+      (.relationPresent FiniteAtom.dependsCA FiniteAtom.dependsAB) true
+      (by simp [cycleQueryDatum])).mpr rfl).2.2
+  intro hequation
+  exact (equationHolds_iff_noCycleLaw C A).mp hequation ⟨hab, hbc, hca⟩
 
 /-- Context, equation, and circuit reading used by the generated finite core. -/
 noncomputable def equationReading (C : Site.ContextPreorderCategory object) :
@@ -1067,6 +1074,155 @@ theorem componentAPresentDatum_matches_iff (A : ArchitectureObject carrier) :
     · intro _htrue
       exact (CircuitQuery.atomPresent_holds_iff _ _).mpr hmem
 
+/--
+Residual for the equation-indexed completeness fixture: component A is absent
+exactly when the residual vanishes.
+-/
+noncomputable def componentAAbsentResidual
+    (A : ArchitectureObject carrier) : Int := by
+  classical
+  exact if A.configuration.family.mem FiniteAtom.componentA then 1 else 0
+
+/--
+A singleton required equation whose fulfillment says that component A is
+absent. This supplies a direct equation-system fixture rather than passing
+through the legacy `Law` display.
+-/
+noncomputable def componentAAbsentEquationSystem
+    (C : Site.ContextPreorderCategory object) :
+    ArchitecturalEquationSystem C where
+  Index := PUnit
+  role _ := EquationRole.required
+  Observable := fun _ => Int
+  observableCommRing := fun _ => inferInstance
+  restrict := fun _ => RingHom.id Int
+  restrict_id := by intros; rfl
+  restrict_comp := by intros; rfl
+  violationCoordinate := fun _ _ _ => 1
+  violationCoordinate_restrict := by intros; rfl
+  equationResidual := fun _ A _ _ => componentAAbsentResidual A
+  equationResidual_restrict := by intros; rfl
+
+/--
+The component-A equation holds exactly on objects whose family omits the
+selected component.
+-/
+theorem componentAAbsentEquationHolds_iff
+    (C : Site.ContextPreorderCategory object) (A : ArchitectureObject carrier) :
+    (componentAAbsentEquationSystem C).EquationHolds PUnit.unit A ↔
+      ¬ A.configuration.family.mem FiniteAtom.componentA := by
+  constructor
+  · intro h hmem
+    have hzero := h (Site.ContextCategoryObject.of C equationProbeContext)
+      FiniteAtom.componentA
+    simp [componentAAbsentEquationSystem, componentAAbsentResidual, hmem] at hzero
+  · intro hmem W atom
+    simp [componentAAbsentEquationSystem, componentAAbsentResidual, hmem]
+
+/-- Exact positive-query detector for the component-A equation. -/
+noncomputable def componentAPresentEquationCircuitReading
+    (C : Site.ContextPreorderCategory object) :
+    EquationCircuitReading (componentAAbsentEquationSystem C) where
+  code _ := .exact componentAPresentDatum
+
+/--
+The positive-query detector is sound by the direct residual characterization.
+-/
+theorem componentAPresentEquationCircuitReading_sound
+    (C : Site.ContextPreorderCategory object) :
+    (componentAPresentEquationCircuitReading C).Sound := by
+  intro index A Q hmatches haccepts
+  cases index
+  have hdatum : componentAPresentDatum = Q :=
+    (CircuitDetectorCode.eval_exact_eq_true_iff componentAPresentDatum Q).mp haccepts
+  subst Q
+  intro hequation
+  exact (componentAAbsentEquationHolds_iff C A).mp hequation
+    ((componentAPresentDatum_matches_iff A).mp hmatches)
+
+/--
+Every failure of the required component-A equation has the accepted positive
+query, so the equation-indexed completeness predicate fires nonvacuously.
+-/
+theorem componentAPresentEquationCircuitReading_requiredComplete
+    (C : Site.ContextPreorderCategory object) :
+    (componentAPresentEquationCircuitReading C).RequiredComplete := by
+  intro A index _hrequired hfailure
+  cases index
+  have hmem : A.configuration.family.mem FiniteAtom.componentA := by
+    by_contra habsent
+    exact hfailure ((componentAAbsentEquationHolds_iff C A).mpr habsent)
+  refine ⟨⟨componentAPresentDatum,
+    (componentAPresentDatum_matches_iff A).mpr hmem, ?_⟩⟩
+  exact (CircuitDetectorCode.eval_exact_eq_true_iff
+    componentAPresentDatum componentAPresentDatum).mpr rfl
+
+/-- Reject-only equation detector used as the negative completeness instance. -/
+noncomputable def rejectingEquationCircuitReading
+    (C : Site.ContextPreorderCategory object) :
+    EquationCircuitReading (componentAAbsentEquationSystem C) where
+  code _ := .reject
+
+/--
+The reject-only equation detector is not required-complete on the generated
+component-A object.
+-/
+theorem rejectingEquationCircuitReading_not_requiredComplete
+    (C : Site.ContextPreorderCategory object) :
+    ¬ (rejectingEquationCircuitReading C).RequiredComplete := by
+  intro hcomplete
+  have hfailure :
+      ¬ (componentAAbsentEquationSystem C).EquationHolds PUnit.unit
+        corePackage.object := by
+    intro hequation
+    exact (componentAAbsentEquationHolds_iff C corePackage.object).mp hequation
+      corePackage_componentA_mem
+  obtain ⟨circuit⟩ := hcomplete corePackage.object PUnit.unit rfl hfailure
+  have hreject :
+      (rejectingEquationCircuitReading C).accepts PUnit.unit circuit.1 = false := by
+    simp [EquationCircuitReading.accepts, rejectingEquationCircuitReading,
+      CircuitDetectorCode.eval]
+  exact Bool.noConfusion (hreject.symm.trans circuit.2.2)
+
+/-- The negative signed component-A query matches the empty-family object. -/
+theorem componentAAbsentDatum_matches_unreachableEmptyObject :
+    componentAAbsentDatum.Matches unreachableEmptyObject := by
+  intro query expected hquery
+  simp only [componentAAbsentDatum, List.mem_singleton] at hquery
+  cases hquery
+  simp [CircuitQuery.Holds, unreachableEmptyObject, objectOfConfiguration,
+    unreachableEmptyConfiguration, emptyFamily]
+
+/--
+An exact negative-query detector for the same equation, used to refute
+vacuous universal soundness.
+-/
+noncomputable def unsoundEquationCircuitReading
+    (C : Site.ContextPreorderCategory object) :
+    EquationCircuitReading (componentAAbsentEquationSystem C) where
+  code _ := .exact componentAAbsentDatum
+
+/--
+The negative-query detector is not sound: it accepts the empty-family object,
+where the component-A equation actually holds.
+-/
+theorem unsoundEquationCircuitReading_not_sound
+    (C : Site.ContextPreorderCategory object) :
+    ¬ (unsoundEquationCircuitReading C).Sound := by
+  intro hSound
+  have haccepts :
+      (unsoundEquationCircuitReading C).accepts PUnit.unit
+        componentAAbsentDatum = true := by
+    exact (CircuitDetectorCode.eval_exact_eq_true_iff
+      componentAAbsentDatum componentAAbsentDatum).mpr rfl
+  have hholds :
+      (componentAAbsentEquationSystem C).EquationHolds PUnit.unit
+        unreachableEmptyObject :=
+    (componentAAbsentEquationHolds_iff C unreachableEmptyObject).mpr
+      componentAAbsentLaw_holds_unreachableEmptyObject
+  exact hSound PUnit.unit unreachableEmptyObject componentAAbsentDatum
+    componentAAbsentDatum_matches_unreachableEmptyObject haccepts hholds
+
 /-- R10: an exact positive-query detector for the component-A absence law. -/
 noncomputable def completeCircuitReading :
     CircuitReading componentAAbsentLawUniverse where
@@ -1108,29 +1264,29 @@ theorem completeCircuitReading_nonvacuous :
 
 /-- R10: the main core reading selects the exact cycle detector template. -/
 theorem coreReading_circuit_code (i : lawUniverse.Index) :
-    coreReading.equationReading.toLegacyLawReading.circuits.code i =
+    coreReading.equationReading.circuits.code i =
       .exact cycleQueryDatum := by
   cases i
   rfl
 
 /-- R10: the finite-template detector accepts the concrete cycle datum. -/
 theorem cycleQueryDatum_accepted :
-    coreReading.equationReading.toLegacyLawReading.circuits.accepts
+    coreReading.equationReading.circuits.accepts
       PUnit.unit cycleQueryDatum = true :=
-  (CircuitReading.accepts_eq_true_iff_of_code_exact
-    coreReading.equationReading.toLegacyLawReading.circuits
+  (EquationCircuitReading.accepts_eq_true_iff_of_code_exact
+    coreReading.equationReading.circuits
       PUnit.unit cycleQueryDatum cycleQueryDatum
     (coreReading_circuit_code PUnit.unit)).mpr rfl
 
 /-- R10: a distinct empty datum is rejected by the finite-template detector. -/
 theorem emptyQueryDatum_rejected :
-    coreReading.equationReading.toLegacyLawReading.circuits.accepts
+    coreReading.equationReading.circuits.accepts
       PUnit.unit ⟨[]⟩ = false := by
   apply Bool.eq_false_of_not_eq_true
   intro haccepts
   have heq : cycleQueryDatum = ⟨[]⟩ :=
-    (CircuitReading.accepts_eq_true_iff_of_code_exact
-      coreReading.equationReading.toLegacyLawReading.circuits
+    (EquationCircuitReading.accepts_eq_true_iff_of_code_exact
+      coreReading.equationReading.circuits
         PUnit.unit cycleQueryDatum ⟨[]⟩
       (coreReading_circuit_code PUnit.unit)).mp haccepts
   have hqueries := congrArg FiniteCircuitDatum.queries heq
@@ -1146,6 +1302,7 @@ theorem generatedCycleCircuit_sound :
     ¬ corePackage.algebra.equationSystem.EquationHolds PUnit.unit
       (corePackage.algebra.object corePackage.baseObject) :=
   AATCorePackage.generate_circuit_sound axiomSystem coreReading
+    (equationCircuitReading_sound (Site.contextMorphismPreorderCategory object))
     corePackage.baseObject PUnit.unit generatedCycleCircuit
 
 /-!

@@ -1810,16 +1810,21 @@ private noncomputable def falseEquationReading
   equationSystem := falseEquationSystem A
   circuits := {
     code := fun _ => .exact datum
-    sound := by
-      intro _index _object _query _hmatches _haccepts hequation
-      have hcoordinate := hequation
-        (Site.ContextCategoryObject.of
-          (Site.contextMorphismPreorderCategory A) (emptyEquationContext A))
-        FiniteModel.FiniteAtom.componentA
-      have hfalse : (1 : Int) = 0 := by
-        simpa only [falseEquationSystem] using hcoordinate
-      norm_num at hfalse
   }
+
+/-- The constantly nonzero residual makes every selected detector sound. -/
+private theorem falseEquationReading_sound
+    (A : ArchitectureObject FiniteModel.carrier)
+    (datum : FiniteCircuitDatum FiniteModel.carrier) :
+    (falseEquationReading A datum).circuits.Sound := by
+  intro _index _object _query _hmatches _haccepts hequation
+  have hcoordinate := hequation
+    (Site.ContextCategoryObject.of
+      (Site.contextMorphismPreorderCategory A) (emptyEquationContext A))
+    FiniteModel.FiniteAtom.componentA
+  have hfalse : (1 : Int) = 0 := by
+    simpa only [falseEquationReading, falseEquationSystem] using hcoordinate
+  norm_num at hfalse
 
 private def positiveLaw : Law FiniteModel.carrier where
   holds _ := False
@@ -2084,7 +2089,7 @@ noncomputable def positiveCoreChange :
 
 /-- Selected law of the positive finite model. -/
 noncomputable def positiveLawIndex :
-    positiveSourceCore.algebra.equationReading.toLegacyLawReading.lawUniverse.Index :=
+    positiveSourceCore.algebra.equationSystem.Index :=
   PUnit.unit
 
 /-- Distinguished positive atom-presence query. -/

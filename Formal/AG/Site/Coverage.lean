@@ -55,11 +55,15 @@ structure CoverageRequirements {U : AtomCarrier.{u}} (A : ArchitectureObject U)
     {C : ContextPreorderCategory A} (E : ArchitecturalEquationSystem C)
     (Sig : ArchitectureSignature U) where
   requiredSupport : U.Atom -> Prop
+  /-- Required-role equation coordinates selected for coverage. -/
   requiredEquationCoordinate : E.RequiredCoordinate -> Prop
+  /-- Symbolic equation/Atom coordinates selected as violation witnesses. -/
   selectedViolationWitness : E.Coordinate -> Prop
   requiredAxis : Sig.Axis -> Prop
   supportVisibleOn : ArchCtx A -> U.Atom -> Prop
+  /-- Visibility of required equation coordinates on a readable context. -/
   equationCoordinateVisibleOn : ArchCtx A -> E.RequiredCoordinate -> Prop
+  /-- Visibility of selected symbolic violation witnesses on a context. -/
   violationWitnessVisibleOn : ArchCtx A -> E.Coordinate -> Prop
   axisReadableOn : ArchCtx A -> Sig.Axis -> Prop
   boundaryVisibleOn : ArchCtx A -> ArchCtx A -> Prop
