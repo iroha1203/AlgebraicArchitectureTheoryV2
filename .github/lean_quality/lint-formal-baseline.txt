@@ -121,8 +121,6 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.LawUniverse.witnessFamily /- definition missing documentation string -/
 #check @AAT.AG.LawUniverse.SelectedReading /- definition missing documentation string -/
 #check @AAT.AG.LawUniverse.selectedReading /- definition missing documentation string -/
-#check @AAT.AG.LawUniverse.coverageAssumptions /- definition missing documentation string -/
-#check @AAT.AG.LawUniverse.exactnessAssumptions /- definition missing documentation string -/
 
 -- Formal.AG.Atom.ObjectAlgebra
 #check @AAT.AG.Operation.source /- definition missing documentation string -/
@@ -2325,10 +2323,12 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check @AAT.AG.Site.CoverageFamily.Index /- definition missing documentation string -/
 #check @AAT.AG.Site.CoverageFamily.patch /- definition missing documentation string -/
 #check @AAT.AG.Site.CoverageRequirements.requiredSupport /- definition missing documentation string -/
-#check @AAT.AG.Site.CoverageRequirements.requiredWitness /- definition missing documentation string -/
+#check @AAT.AG.Site.CoverageRequirements.requiredEquationCoordinate /- definition missing documentation string -/
+#check @AAT.AG.Site.CoverageRequirements.selectedViolationWitness /- definition missing documentation string -/
 #check @AAT.AG.Site.CoverageRequirements.requiredAxis /- definition missing documentation string -/
 #check @AAT.AG.Site.CoverageRequirements.supportVisibleOn /- definition missing documentation string -/
-#check @AAT.AG.Site.CoverageRequirements.witnessVisibleOn /- definition missing documentation string -/
+#check @AAT.AG.Site.CoverageRequirements.equationCoordinateVisibleOn /- definition missing documentation string -/
+#check @AAT.AG.Site.CoverageRequirements.violationWitnessVisibleOn /- definition missing documentation string -/
 #check @AAT.AG.Site.CoverageRequirements.axisReadableOn /- definition missing documentation string -/
 #check @AAT.AG.Site.CoverageRequirements.boundaryVisibleOn /- definition missing documentation string -/
 
@@ -2375,7 +2375,7 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 
 -- Formal.AG.Site.Geometry
 #check @AAT.AG.Site.AATSite.contextPreorder /- definition missing documentation string -/
-#check @AAT.AG.Site.AATSite.lawUniverse /- definition missing documentation string -/
+#check @AAT.AG.Site.AATSite.equationSystem /- definition missing documentation string -/
 #check @AAT.AG.Site.AATSite.signature /- definition missing documentation string -/
 #check @AAT.AG.Site.AATSite.requirements /- definition missing documentation string -/
 #check @AAT.AG.Site.AATSite.overlap /- definition missing documentation string -/
@@ -2443,7 +2443,7 @@ THE FOLLOWING DECLARATIONS ARE SYNTACTIC TAUTOLOGIES. This usually means that th
 #check @AAT.AG.SingularityMonodromyStack.OperationCategoryData.selectedState_eq /- LHS equals RHS syntactically -/
 
 -- Formal.AG.SingularityMonodromyStack.Stratum
-#check @AAT.AG.SingularityMonodromyStack.StratumReadingParameter.lawUniverse_eq /- LHS equals RHS syntactically -/
+#check @AAT.AG.SingularityMonodromyStack.StratumReadingParameter.equationSystem_eq /- LHS equals RHS syntactically -/
 #check @AAT.AG.SingularityMonodromyStack.StratumReadingParameter.selectedCoeff_eq /- LHS equals RHS syntactically -/
 
 /- The `unusedArguments` linter reports:
@@ -2639,8 +2639,8 @@ UNUSED ARGUMENTS. -/
   E, argument 5 inst✝ : DecidableEq E -/
 
 -- Formal.AG.LawAlgebra.StandardScheme
-#check @AAT.AG.LawAlgebra.AATReadingDecoration.lawUniverse /- argument 9 _D : AAT.AG.LawAlgebra.AATReadingDecoration raw
-  X -/
+#check @AAT.AG.LawAlgebra.AATReadingDecoration.equationSystem /- argument 9 _D : AAT.AG.LawAlgebra.AATReadingDecoration
+  raw X -/
 #check @AAT.AG.LawAlgebra.AATReadingDecoration.signature /- argument 9 _D : AAT.AG.LawAlgebra.AATReadingDecoration raw
   X -/
 
@@ -2689,7 +2689,7 @@ UNUSED ARGUMENTS. -/
 -- Formal.AG.SingularityMonodromyStack.Stratum
 #check @AAT.AG.SingularityMonodromyStack.StratumReadingParameter.coverageTopology /- argument 4 _P : AAT.AG.SingularityMonodromyStack.StratumReadingParameter
   S -/
-#check @AAT.AG.SingularityMonodromyStack.StratumReadingParameter.lawUniverse_eq /- argument 4 _P : AAT.AG.SingularityMonodromyStack.StratumReadingParameter
+#check @AAT.AG.SingularityMonodromyStack.StratumReadingParameter.equationSystem_eq /- argument 4 _P : AAT.AG.SingularityMonodromyStack.StratumReadingParameter
   S -/
 
 -- Formal.AG.Site.Geometry
