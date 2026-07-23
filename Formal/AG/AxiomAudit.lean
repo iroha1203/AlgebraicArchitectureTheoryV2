@@ -526,8 +526,40 @@ def semanticRepairTheorem75SemanticAtomProjectionFromLawInput :=
 def semanticRepairTheorem75FinitePosetDefectSourceToGenericSource :=
   @SemanticRepair.StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.toLawEquationDefectSource
 
+/-- Audit alias for the projected finite-poset chart. -/
+def semanticRepairTheorem75FinitePosetToGenericSourceChart :=
+  @SemanticRepair.StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.toLawEquationDefectSource_chart
+
+/-- Audit alias for the projected finite-poset local input. -/
+def semanticRepairTheorem75FinitePosetToGenericSourceInput :=
+  @SemanticRepair.StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.toLawEquationDefectSource_input
+
+/-- Audit alias for the finite-poset residual characterization. -/
+def semanticRepairTheorem75FinitePosetDefectEqEquationResidual :=
+  @SemanticRepair.StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.defect_eq_equationResidual
+
+/-- Audit alias for preservation of residuals by projection to the generic source. -/
+def semanticRepairTheorem75FinitePosetToGenericSourceDefect :=
+  @SemanticRepair.StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.toLawEquationDefectSource_defect
+
 def semanticRepairTheorem75FinitePosetDefectSourceToBodyCechSource :=
   @SemanticRepair.StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.toLawEquationBodyCechSource
+
+/-- Audit alias for degree-zero restricted interpretation on the generated body source. -/
+def semanticRepairTheorem75FinitePosetBodySourceRestrictedDisplayedInterpretation :=
+  @SemanticRepair.StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.toLawEquationBodyCechSource_restrictedDisplayedInterpretation
+
+/-- Audit alias for generated singleton Atom support on the finite-poset source. -/
+def semanticRepairTheorem75FinitePosetDisplayedAtomSupportTraceVisible :=
+  @SemanticRepair.StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.atomSupport_traceVisible
+
+/-- Audit alias for generated nonempty equation support on the finite-poset source. -/
+def semanticRepairTheorem75FinitePosetDisplayedLawSupportNonempty :=
+  @SemanticRepair.StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.lawSupport_nonempty
+
+/-- Audit alias for the required role of generated finite-poset equation support. -/
+def semanticRepairTheorem75FinitePosetDisplayedLawSupportRequired :=
+  @SemanticRepair.StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.lawSupport_required
 
 def semanticRepairTheorem81DegreeZeroLawContribution :=
   @SemanticRepair.displayedRequiredLawsHoldOn_constructs_generatedSourceC0_zeroPackage
@@ -575,6 +607,30 @@ def semanticRepairExample91IntegerViolationWitnessClassZero :=
 
 def semanticRepairExample91IntegerDisplayedLawsHold :=
   AAT.AG.Examples.SemanticRepairPart10.integerLawFiniteFreeDisplayedRequiredLawsHoldOn
+
+/-- Audit alias for the zero residual of the lawful displayed fixture. -/
+def semanticRepairExample91LawfulEquationResidualZero :=
+  @AAT.AG.Examples.SemanticRepairPart10.lawEquationSystem_equationResidual_lawfulObject
+
+/-- Audit alias for the unit residual of the nonlawful displayed fixture. -/
+def semanticRepairExample91NonlawfulEquationResidualOne :=
+  @AAT.AG.Examples.SemanticRepairPart10.lawEquationSystem_equationResidual_nonlawfulObject
+
+/-- Audit alias for non-membership of the direct nonlawful fixture residual. -/
+def semanticRepairExample91DirectNonlawfulDefectNotMemObstructionIdeal :=
+  AAT.AG.Examples.SemanticRepairPart10.nonlawfulDefectSource_defect_notMem_obstructionIdeal
+
+/-- Audit alias for non-membership of the projected nonlawful fixture residual. -/
+def semanticRepairExample91NonlawfulDisplayedDefectNotMemObstructionIdeal :=
+  AAT.AG.Examples.SemanticRepairPart10.generatedLawFiniteFreeNonlawfulDefectSource_defect_notMem_obstructionIdeal
+
+/-- Audit alias for zero quotient interpretation on the lawful displayed fixture. -/
+def semanticRepairExample91GeneratedDisplayedInterpretationZero :=
+  AAT.AG.Examples.SemanticRepairPart10.generatedLawFiniteFreeDefectSource_interpret_eq_zero
+
+/-- Audit alias for positive/negative displayed-equation fixture separation. -/
+def semanticRepairExample91DisplayedEquationFixturesSeparate :=
+  AAT.AG.Examples.SemanticRepairPart10.generatedLawFiniteFree_displayedEquationFixtures_separate
 
 def semanticRepairExample91IntegerFiniteFreeTenConjunctPacket :=
   AAT.AG.Examples.SemanticRepairPart10.lawfulFiring_integerLawSingletonStandardSourceC0_finiteFreeTenConjunctPacket
@@ -4402,6 +4458,50 @@ def lawEquationQuotientMkEqZeroIffMemObstructionIdeal :=
 /-- Audit alias for the generated coefficient package. -/
 def lawEquationGeneratedCoefficientPackage :=
   @ArchitecturalEquationSystem.generatedCoefficient_package
+
+/-- Audit alias for the singleton equation support generated by a displayed source. -/
+def lawEquationDisplayedSourceLawSupportEqSingleton :=
+  @LawAlgebra.DisplayedEquationSource.lawSupport_eq_singleton
+
+/-- Audit alias for nonempty singleton equation support on a displayed source. -/
+def lawEquationDisplayedSourceLawSupportNonempty :=
+  @LawAlgebra.DisplayedEquationSource.lawSupport_nonempty
+
+/-- Audit alias for requiredness of generated displayed equation support. -/
+def lawEquationDisplayedSourceLawSupportRequired :=
+  @LawAlgebra.DisplayedEquationSource.lawSupport_required
+
+/-- Audit alias for the displayed defect's equation-residual characterization. -/
+def lawEquationDisplayedSourceDefectEqEquationResidual :=
+  @LawAlgebra.DisplayedEquationSource.defect_eq_equationResidual
+
+/-- Audit alias for restriction naturality of a generated displayed residual. -/
+def lawEquationDisplayedSourceRestrictDefect :=
+  @LawAlgebra.DisplayedEquationSource.restrict_defect
+
+/-- Audit alias for residual zero derived from selected equation fulfillment. -/
+def lawEquationDisplayedSourceEquationHoldsDefectEqZero :=
+  @LawAlgebra.DisplayedEquationSource.equationHolds_defect_eq_zero
+
+/-- Audit alias for witness-ideal membership derived from equation fulfillment. -/
+def lawEquationDisplayedSourceEquationHoldsDefectMemWitnessIdeal :=
+  @LawAlgebra.DisplayedEquationSource.equationHolds_defect_mem_witnessIdeal
+
+/-- Audit alias for obstruction-ideal membership derived from equation fulfillment. -/
+def lawEquationDisplayedSourceEquationHoldsDefectMemObstructionIdeal :=
+  @LawAlgebra.DisplayedEquationSource.equationHolds_defect_mem_obstructionIdeal
+
+/-- Audit alias for quotient zero derived from equation fulfillment. -/
+def lawEquationDisplayedSourceEquationHoldsDefectQuotientEqZero :=
+  @LawAlgebra.DisplayedEquationSource.equationHolds_defect_quotient_eq_zero
+
+/-- Audit alias for selected-equation characterization of displayed fulfillment. -/
+def lawEquationDisplayedRequiredLawsHoldOnIffSelected :=
+  @LawAlgebra.LawEquationDefectSource.displayedRequiredLawsHoldOn_iff_selected
+
+/-- Audit alias for nonzero quotient detection of selected equation failure. -/
+def lawEquationDisplayedInterpretationNonzeroDetectsSelectedFailure :=
+  @LawAlgebra.LawEquationDefectSource.interpret_ne_zero_detects_selected_equation_failure
 
 /-! #### SD0: geometric law reading and closed-equational witnesses -/
 
