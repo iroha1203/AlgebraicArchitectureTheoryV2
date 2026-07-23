@@ -472,6 +472,11 @@ theorem interpret_ne_zero_detects_selected_equation_failure
 /--
 III.定理11.4: detector soundness.  A nonzero generated interpretation rules
 out every displayed required law on that local reading.
+
+The explicit `E.Required equationIndex` premise is retained for compatibility
+with consumers of the former list-support API.  Generated singleton membership
+already identifies `equationIndex` with the source's `RequiredIndex`; new code
+should use `interpret_ne_zero_detects_selected_equation_failure`.
 -/
 theorem interpret_ne_zero_detects_displayed_required_law_failure
     (D : LawEquationDefectSource E)
@@ -495,7 +500,14 @@ theorem displayedRequiredLawsHoldOn_constructs_generatedInterpretationPointwiseZ
     D.GeneratedInterpretationPointwiseZero :=
   D.displayedRequiredLawsHoldOn_constructs_interpret_eq_zero hholds
 
-/-- III.定理11.4 package: law-equation grounding for generated coefficients. -/
+/--
+III.定理11.4 package: law-equation grounding for generated coefficients.
+
+The final conjunct retains the former list-support detector shape for existing
+grounding-packet consumers.  Its explicit requiredness premise carries no new
+mathematical input: singleton membership selects the source's `RequiredIndex`,
+and the preceding selected-equation detector supplies the proof.
+-/
 theorem lawEquation_grounding_packet
     (D : LawEquationDefectSource E)
     (hholds : D.DisplayedRequiredLawsHoldOn) :

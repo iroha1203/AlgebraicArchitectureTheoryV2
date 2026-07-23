@@ -3387,6 +3387,25 @@ def defect
     (D.objectOfLocalInput i localInput)
     (D.equationIndex i).1 (D.supportAtom i)
 
+/--
+The finite-poset displayed defect is characterized by its selected equation
+residual.  The simp direction exposes the canonical residual expression for
+downstream equation APIs.
+-/
+@[simp] theorem defect_eq_equationResidual
+    {semanticInput : LawEquationSemanticAtomInputBody.{v, x} Ulaw}
+    {G : LawEquationWitnessIdealGeometryBody semanticInput Slaw}
+    {geometry : Site.FinitePosetCoverGeometry Slaw}
+    (D : FinitePosetLawEquationDefectSourceBody semanticInput G geometry)
+    (i : geometry.cover.Index) (localInput : D.LocalInput i) :
+    D.defect i localInput =
+      G.equationSystem.equationResidual
+        (Site.ContextCategoryObject.of Slaw.contextPreorder
+          (geometry.cover.patch i))
+        (D.objectOfLocalInput i localInput)
+        (D.equationIndex i).1 (D.supportAtom i) :=
+  rfl
+
 /-- Forget only the finite-poset chart indexing, retaining all law data. -/
 def toLawEquationDefectSource
     {semanticInput : LawEquationSemanticAtomInputBody.{v, x} Ulaw}
@@ -3402,6 +3421,21 @@ def toLawEquationDefectSource
   objectOfLocalInput := D.objectOfLocalInput
   equationIndex := D.equationIndex
   supportAtom := D.supportAtom
+
+/--
+Projection to the generic displayed source preserves the generated residual.
+The simp direction rewrites the projected defect to the finite-poset source API
+without exposing the projection's structure fields.
+-/
+@[simp] theorem toLawEquationDefectSource_defect
+    {semanticInput : LawEquationSemanticAtomInputBody.{v, x} Ulaw}
+    {G : LawEquationWitnessIdealGeometryBody semanticInput Slaw}
+    {geometry : Site.FinitePosetCoverGeometry Slaw}
+    (D : FinitePosetLawEquationDefectSourceBody semanticInput G geometry)
+    (i : geometry.cover.Index) (localInput : D.LocalInput i) :
+    D.toLawEquationDefectSource.defect i localInput =
+      D.defect i localInput :=
+  rfl
 
 /-- Displayed-law fulfillment for the generated generic defect source. -/
 abbrev DisplayedRequiredLawsHoldOn

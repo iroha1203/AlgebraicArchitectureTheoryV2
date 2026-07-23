@@ -2207,6 +2207,36 @@ def generatedLawFiniteFreeNonlawfulDefectSource :
   supportAtom _ := FiniteModel.FiniteAtom.componentA
   supportAtom_traceVisible _ := rfl
 
+/--
+The projected nonlawful fixture residual lies outside its generated obstruction
+ideal.  The proof localizes concrete fixture unfolding behind the finite-poset
+residual comparison API.
+-/
+theorem generatedLawFiniteFreeNonlawfulDefectSource_defect_notMem_obstructionIdeal :
+    generatedLawFiniteFreeNonlawfulDefectSource.toLawEquationDefectSource.defect
+        PUnit.unit
+        (generatedLawFiniteFreeNonlawfulDefectSource.toLawEquationDefectSource.input
+          PUnit.unit) ∉
+      generatedLawFiniteFreeWitnessIdealGeometry.equationSystem.obstructionIdeal
+        (generatedLawFiniteFreeNonlawfulDefectSource.toLawEquationDefectSource.chart
+          PUnit.unit) := by
+  rw [
+    StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.toLawEquationDefectSource_defect]
+  simp only [
+    StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.defect_eq_equationResidual,
+    StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.toLawEquationDefectSource,
+    generatedLawFiniteFreeNonlawfulDefectSource,
+    StandardFinitePosetGeneratedBoundary.LawEquationWitnessIdealGeometryBody.equationSystem,
+    generatedLawFiniteFreeWitnessIdealGeometry,
+    lawEquationFinitePosetCoverGeometry,
+    lawEquationSiteSingletonCover,
+    lawEquationSiteBase,
+    lawEquationSite,
+    lawEquationSystem_equationResidual_nonlawfulObject]
+  change (1 : ZMod 4) ∉ lawEquationSystem.obstructionIdeal FiniteModel.siteBase
+  rw [generatedLaw_obstructionIdeal_eq_span_two]
+  exact generatedLaw_one_notMem_span_two
+
 /-- Displayed required laws hold on the rich singleton defect input. -/
 theorem generatedLawFiniteFreeDisplayedRequiredLawsHoldOn :
     generatedLawFiniteFreeDefectSource.DisplayedRequiredLawsHoldOn := by
@@ -2228,19 +2258,8 @@ theorem generatedLawFiniteFreeNonlawfulDefectSource_interpret_ne_zero :
       PUnit.unit ≠ 0 := by
   apply
     generatedLawFiniteFreeNonlawfulDefectSource.toLawEquationDefectSource.interpret_ne_zero_of_defect_notMem_obstructionIdeal
-  simp only [LawAlgebra.DisplayedEquationSource.defect_eq_equationResidual,
-    StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.toLawEquationDefectSource,
-    generatedLawFiniteFreeNonlawfulDefectSource,
-    StandardFinitePosetGeneratedBoundary.LawEquationWitnessIdealGeometryBody.equationSystem,
-    generatedLawFiniteFreeWitnessIdealGeometry,
-    lawEquationFinitePosetCoverGeometry,
-    lawEquationSiteSingletonCover,
-    lawEquationSiteBase,
-    lawEquationSite,
-    lawEquationSystem_equationResidual_nonlawfulObject]
-  change (1 : ZMod 4) ∉ lawEquationSystem.obstructionIdeal FiniteModel.siteBase
-  rw [generatedLaw_obstructionIdeal_eq_span_two]
-  exact generatedLaw_one_notMem_span_two
+  exact
+    generatedLawFiniteFreeNonlawfulDefectSource_defect_notMem_obstructionIdeal
 
 /-- The lawful finite-poset fixture has zero generated quotient interpretation. -/
 theorem generatedLawFiniteFreeDefectSource_interpret_eq_zero :
