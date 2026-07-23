@@ -51,15 +51,15 @@ open LawGeneratedLabeledConormal
 
 universe uR uE uF uk uOp uChart uState uBefore uAfter u uA
 
-variable {R : Type uR} {E : Type uE} {F : Type uF}
-variable [CommRing R] [AddCommGroup E] [Module R E]
+variable {R : Type uR} {M : Type uE} {F : Type uF}
+variable [CommRing R] [AddCommGroup M] [Module R M]
 variable [AddCommGroup F] [Module R F]
 
 /-- The affine split constant-rank direction data used by C0b. It records
 source-level sections for the range and cokernel, without storing any
 projectivity, comparison, repair, support, or circuit conclusion. -/
-structure AffineSplitConstantRankData (f : E →ₗ[R] F) where
-  rangeSection : f.range →ₗ[R] E
+structure AffineSplitConstantRankData (f : M →ₗ[R] F) where
+  rangeSection : f.range →ₗ[R] M
   rangeSection_spec : f.rangeRestrict ∘ₗ rangeSection = LinearMap.id
   cokernelSection : (F ⧸ f.range) →ₗ[R] F
   cokernelSection_spec : f.range.mkQ ∘ₗ cokernelSection = LinearMap.id
@@ -67,15 +67,15 @@ structure AffineSplitConstantRankData (f : E →ₗ[R] F) where
 /-- A range split from a projective source is projective. This discharges the
 first C0a regularity premise from the explicit range section. -/
 theorem AffineSplitConstantRankData.range_projective
-    (f : E →ₗ[R] F) (split : AffineSplitConstantRankData f)
-    [Module.Projective R E] : Module.Projective R f.range :=
+    (f : M →ₗ[R] F) (split : AffineSplitConstantRankData f)
+    [Module.Projective R M] : Module.Projective R f.range :=
   Module.Projective.of_split split.rangeSection f.rangeRestrict
     split.rangeSection_spec
 
 /-- A cokernel split from a projective target is projective. For chart
 responses the target is the canonical finite product of scalar copies. -/
 theorem AffineSplitConstantRankData.cokernel_projective
-    (f : E →ₗ[R] F) (split : AffineSplitConstantRankData f)
+    (f : M →ₗ[R] F) (split : AffineSplitConstantRankData f)
     [Module.Projective R F] : Module.Projective R (F ⧸ f.range) :=
   Module.Projective.of_split split.cokernelSection f.range.mkQ
     split.cokernelSection_spec
@@ -86,225 +86,225 @@ variable {k : Type uk} {Op : Type uOp} {Chart : Type uChart}
 variable {State : Type uState} {BeforeWitness : Type uBefore}
 variable {AfterWitness : Type uAfter}
 variable [Field k] [Fintype Op] [Fintype Chart]
-variable (Core : SemanticLawEquationWitnessIdealCore S) (W : S.category)
-variable [Algebra k (Core.Observable W)]
+variable (E : ArchitecturalEquationSystem S.contextPreorder) (W : S.category)
+variable [Algebra k (E.Observable W)]
 
 /-- The actual scalar ring of the selected lawful-space chart. -/
 noncomputable abbrev chartRing
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
     (i : Chart) :=
-  Γ(G.lawfulSpace (Core.obstructionIdeal W),
-    G.lawfulChartOpenOnSpace (Core.obstructionIdeal W) i)
+  Γ(G.lawfulSpace (E.obstructionIdeal W),
+    G.lawfulChartOpenOnSpace (E.obstructionIdeal W) i)
 
 /-- The actual selected-chart section module of the generated
 allowed-operation sheaf. -/
 noncomputable abbrev chartAllowedOperationModule
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
     (i : Chart) :=
-  Γ(Pres.allowedOperationSheaf G (Core.obstructionIdeal W),
-    G.lawfulChartOpenOnSpace (Core.obstructionIdeal W) i)
+  Γ(Pres.allowedOperationSheaf G (E.obstructionIdeal W),
+    G.lawfulChartOpenOnSpace (E.obstructionIdeal W) i)
 
 /-- The required `(lawIndex, atom)` response family obtained from the
 existing `labeledResponse` sheaf morphism on the selected chart. -/
 noncomputable def chartLabeledResponse
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
     (i : Chart) :
-    RequiredGeneratorLabel S →
-      Module.Dual (chartRing Core W G i)
-        (chartAllowedOperationModule Core W Pres G i) :=
+    RequiredGeneratorLabel E →
+      Module.Dual (chartRing E W G i)
+        (chartAllowedOperationModule E W Pres G i) :=
   fun e ↦
-    ((Pres.labeledResponse Core W G e).val.app
-      (.op (G.lawfulChartOpenOnSpace (Core.obstructionIdeal W) i))).hom
+    ((Pres.labeledResponse E W G e).val.app
+      (.op (G.lawfulChartOpenOnSpace (E.obstructionIdeal W) i))).hom
 
 /-- The chart response is exactly the component of the previously generated
 `labeledResponse`; no evaluator family is accepted as a new input. -/
 theorem chartLabeledResponse_eq_labeledResponse_app
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (e : RequiredGeneratorLabel S) :
-    chartLabeledResponse Core W Pres G i e =
-      ((Pres.labeledResponse Core W G e).val.app
-        (.op (G.lawfulChartOpenOnSpace (Core.obstructionIdeal W) i))).hom := rfl
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (e : RequiredGeneratorLabel E) :
+    chartLabeledResponse E W Pres G i e =
+      ((Pres.labeledResponse E W G e).val.app
+        (.op (G.lawfulChartOpenOnSpace (E.obstructionIdeal W) i))).hom := rfl
 
 /-- The protected response map formed canonically from the actual chart
 response family and the finite protected-label set. -/
 noncomputable def chartProtectedResponseMap
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel S)) :
-    chartAllowedOperationModule Core W Pres G i →ₗ[chartRing Core W G i]
-      (protectedLabels → chartRing Core W G i) :=
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel E)) :
+    chartAllowedOperationModule E W Pres G i →ₗ[chartRing E W G i]
+      (protectedLabels → chartRing E W G i) :=
   CircuitLocus.protectedResponseMap
-    (chartLabeledResponse Core W Pres G i) protectedLabels
+    (chartLabeledResponse E W Pres G i) protectedLabels
 
 /-- The target response restricted to the kernel of the actual protected
 chart response map. -/
 noncomputable def chartTargetOnProtectedKernel
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel S))
-    (target : RequiredGeneratorLabel S) :
-    (chartProtectedResponseMap Core W Pres G i protectedLabels).ker
-        →ₗ[chartRing Core W G i] chartRing Core W G i :=
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel E))
+    (target : RequiredGeneratorLabel E) :
+    (chartProtectedResponseMap E W Pres G i protectedLabels).ker
+        →ₗ[chartRing E W G i] chartRing E W G i :=
   CircuitLocus.targetOnProtectedKernel
-    (chartLabeledResponse Core W Pres G i) protectedLabels target
+    (chartLabeledResponse E W Pres G i) protectedLabels target
 
 /-- The response cokernel whose support measures failure of the target
 response on the protected kernel. -/
 noncomputable abbrev chartResponseCokernel
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel S))
-    (target : RequiredGeneratorLabel S) :=
-  chartRing Core W G i ⧸ LinearMap.range
-    (chartTargetOnProtectedKernel Core W Pres G i protectedLabels target)
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel E))
+    (target : RequiredGeneratorLabel E) :=
+  chartRing E W G i ⧸ LinearMap.range
+    (chartTargetOnProtectedKernel E W Pres G i protectedLabels target)
 
 /-- The selected-chart section-module circuit locus generated from
 support-minimal dependencies among the residue-field tensor response family. -/
 noncomputable def chartCircuitLocus
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel S))
-    (target : RequiredGeneratorLabel S) :
-    Set (PrimeSpectrum (chartRing Core W G i)) :=
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel E))
+    (target : RequiredGeneratorLabel E) :
+    Set (PrimeSpectrum (chartRing E W G i)) :=
   { p |
-      ∃ C : Set (RequiredGeneratorLabel S),
+      ∃ C : Set (RequiredGeneratorLabel E),
         LinearRepair.IsSupportMinimalDependence
           (K := p.asIdeal.ResidueField)
           (CircuitLocus.fiberResponse p.asIdeal.ResidueField
-            (chartLabeledResponse Core W Pres G i)) C ∧
+            (chartLabeledResponse E W Pres G i)) C ∧
         target ∈ C ∧
-        C ⊆ insert target (protectedLabels : Set (RequiredGeneratorLabel S)) }
+        C ⊆ insert target (protectedLabels : Set (RequiredGeneratorLabel E)) }
 
 /-- A finite projective actual operation module and its explicit range split
 give a finite protected kernel through the C0a kernel theorem. -/
 theorem chartProtectedKernel_finite
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel S))
-    [Module.Finite (chartRing Core W G i)
-      (chartAllowedOperationModule Core W Pres G i)]
-    [Module.Projective (chartRing Core W G i)
-      (chartAllowedOperationModule Core W Pres G i)]
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel E))
+    [Module.Finite (chartRing E W G i)
+      (chartAllowedOperationModule E W Pres G i)]
+    [Module.Projective (chartRing E W G i)
+      (chartAllowedOperationModule E W Pres G i)]
     (split : AffineSplitConstantRankData
-      (chartProtectedResponseMap Core W Pres G i protectedLabels)) :
-    Module.Finite (chartRing Core W G i)
-      (chartProtectedResponseMap Core W Pres G i protectedLabels).ker := by
-  letI : Module.Projective (chartRing Core W G i)
-      (chartProtectedResponseMap Core W Pres G i protectedLabels).range :=
+      (chartProtectedResponseMap E W Pres G i protectedLabels)) :
+    Module.Finite (chartRing E W G i)
+      (chartProtectedResponseMap E W Pres G i protectedLabels).ker := by
+  letI : Module.Projective (chartRing E W G i)
+      (chartProtectedResponseMap E W Pres G i protectedLabels).range :=
     split.range_projective _
   exact CircuitLocus.kernel_finite
-    (chartProtectedResponseMap Core W Pres G i protectedLabels)
+    (chartProtectedResponseMap E W Pres G i protectedLabels)
 
 /-- A projective actual operation module and its explicit range split give a
 projective protected kernel through the C0a kernel theorem. -/
 theorem chartProtectedKernel_projective
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel S))
-    [Module.Projective (chartRing Core W G i)
-      (chartAllowedOperationModule Core W Pres G i)]
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel E))
+    [Module.Projective (chartRing E W G i)
+      (chartAllowedOperationModule E W Pres G i)]
     (split : AffineSplitConstantRankData
-      (chartProtectedResponseMap Core W Pres G i protectedLabels)) :
-    Module.Projective (chartRing Core W G i)
-      (chartProtectedResponseMap Core W Pres G i protectedLabels).ker := by
-  letI : Module.Projective (chartRing Core W G i)
-      (chartProtectedResponseMap Core W Pres G i protectedLabels).range :=
+      (chartProtectedResponseMap E W Pres G i protectedLabels)) :
+    Module.Projective (chartRing E W G i)
+      (chartProtectedResponseMap E W Pres G i protectedLabels).ker := by
+  letI : Module.Projective (chartRing E W G i)
+      (chartProtectedResponseMap E W Pres G i protectedLabels).range :=
     split.range_projective _
   exact CircuitLocus.kernel_projective
-    (chartProtectedResponseMap Core W Pres G i protectedLabels)
+    (chartProtectedResponseMap E W Pres G i protectedLabels)
 
 /-- C0a's canonical tensor-to-kernel map for the actual selected-chart
 protected response is an equivalence after every commutative scalar extension.
 The two needed projectivity instances are reconstructed from the split data. -/
 noncomputable def chartKernelBaseChangeEquiv
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel S))
-    [Module.Projective (chartRing Core W G i)
-      (chartAllowedOperationModule Core W Pres G i)]
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel E))
+    [Module.Projective (chartRing E W G i)
+      (chartAllowedOperationModule E W Pres G i)]
     (split : AffineSplitConstantRankData
-      (chartProtectedResponseMap Core W Pres G i protectedLabels))
-    (A : Type uA) [CommRing A] [Algebra (chartRing Core W G i) A] :
-    TensorProduct (chartRing Core W G i) A
-        (chartProtectedResponseMap Core W Pres G i protectedLabels).ker
+      (chartProtectedResponseMap E W Pres G i protectedLabels))
+    (A : Type uA) [CommRing A] [Algebra (chartRing E W G i) A] :
+    TensorProduct (chartRing E W G i) A
+        (chartProtectedResponseMap E W Pres G i protectedLabels).ker
         ≃ₗ[A]
-      ((chartProtectedResponseMap Core W Pres G i protectedLabels).baseChange A).ker := by
-  letI : Module.Projective (chartRing Core W G i)
-      (chartProtectedResponseMap Core W Pres G i protectedLabels).range :=
+      ((chartProtectedResponseMap E W Pres G i protectedLabels).baseChange A).ker := by
+  letI : Module.Projective (chartRing E W G i)
+      (chartProtectedResponseMap E W Pres G i protectedLabels).range :=
     split.range_projective _
-  letI : Module.Projective (chartRing Core W G i)
-      ((protectedLabels → chartRing Core W G i) ⧸
-        (chartProtectedResponseMap Core W Pres G i protectedLabels).range) :=
+  letI : Module.Projective (chartRing E W G i)
+      ((protectedLabels → chartRing E W G i) ⧸
+        (chartProtectedResponseMap E W Pres G i protectedLabels).range) :=
     split.cokernel_projective _
   exact CircuitLocus.kernelBaseChangeEquiv A
-    (chartProtectedResponseMap Core W Pres G i protectedLabels)
+    (chartProtectedResponseMap E W Pres G i protectedLabels)
 
 /-- Membership in the chart circuit locus unfolds to a target-containing
 support-minimal dependence in the actual residue-field response family. -/
 theorem mem_chartCircuitLocus_iff
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel S))
-    (target : RequiredGeneratorLabel S)
-    (p : PrimeSpectrum (chartRing Core W G i)) :
-    p ∈ chartCircuitLocus Core W Pres G i protectedLabels target ↔
-      ∃ C : Set (RequiredGeneratorLabel S),
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel E))
+    (target : RequiredGeneratorLabel E)
+    (p : PrimeSpectrum (chartRing E W G i)) :
+    p ∈ chartCircuitLocus E W Pres G i protectedLabels target ↔
+      ∃ C : Set (RequiredGeneratorLabel E),
         LinearRepair.IsSupportMinimalDependence
           (K := p.asIdeal.ResidueField)
           (CircuitLocus.fiberResponse p.asIdeal.ResidueField
-            (chartLabeledResponse Core W Pres G i)) C ∧
+            (chartLabeledResponse E W Pres G i)) C ∧
         target ∈ C ∧
-        C ⊆ insert target (protectedLabels : Set (RequiredGeneratorLabel S)) :=
+        C ⊆ insert target (protectedLabels : Set (RequiredGeneratorLabel E)) :=
   Iff.rfl
 
 /-- C0a instantiated on the actual selected-chart response: response-cokernel
 support is equivalent to a target-containing support-minimal circuit in the
 residue-field response family. -/
 theorem mem_support_chartResponseCokernel_iff_exists_supportMinimalCircuit
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel S))
-    (target : RequiredGeneratorLabel S) (htarget : target ∉ protectedLabels)
-    [Module.Projective (chartRing Core W G i)
-      (chartAllowedOperationModule Core W Pres G i)]
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel E))
+    (target : RequiredGeneratorLabel E) (htarget : target ∉ protectedLabels)
+    [Module.Projective (chartRing E W G i)
+      (chartAllowedOperationModule E W Pres G i)]
     (split : AffineSplitConstantRankData
-      (chartProtectedResponseMap Core W Pres G i protectedLabels))
-    (p : PrimeSpectrum (chartRing Core W G i)) :
-    p ∈ Module.support (chartRing Core W G i)
-        (chartResponseCokernel Core W Pres G i protectedLabels target) ↔
-      ∃ C : Set (RequiredGeneratorLabel S),
+      (chartProtectedResponseMap E W Pres G i protectedLabels))
+    (p : PrimeSpectrum (chartRing E W G i)) :
+    p ∈ Module.support (chartRing E W G i)
+        (chartResponseCokernel E W Pres G i protectedLabels target) ↔
+      ∃ C : Set (RequiredGeneratorLabel E),
         LinearRepair.IsSupportMinimalDependence
           (K := p.asIdeal.ResidueField)
           (CircuitLocus.fiberResponse p.asIdeal.ResidueField
-            (chartLabeledResponse Core W Pres G i)) C ∧
+            (chartLabeledResponse E W Pres G i)) C ∧
         target ∈ C ∧
-        C ⊆ insert target (protectedLabels : Set (RequiredGeneratorLabel S)) := by
-  let response := chartLabeledResponse Core W Pres G i
+        C ⊆ insert target (protectedLabels : Set (RequiredGeneratorLabel E)) := by
+  let response := chartLabeledResponse E W Pres G i
   let f := CircuitLocus.protectedResponseMap response protectedLabels
-  letI : Module.Projective (chartRing Core W G i) f.range := by
-    change Module.Projective (chartRing Core W G i)
-      (chartProtectedResponseMap Core W Pres G i protectedLabels).range
+  letI : Module.Projective (chartRing E W G i) f.range := by
+    change Module.Projective (chartRing E W G i)
+      (chartProtectedResponseMap E W Pres G i protectedLabels).range
     exact split.range_projective _
-  letI : Module.Projective (chartRing Core W G i)
-      ((protectedLabels → chartRing Core W G i) ⧸ f.range) := by
-    change Module.Projective (chartRing Core W G i)
-      ((protectedLabels → chartRing Core W G i) ⧸
-        (chartProtectedResponseMap Core W Pres G i protectedLabels).range)
+  letI : Module.Projective (chartRing E W G i)
+      ((protectedLabels → chartRing E W G i) ⧸ f.range) := by
+    change Module.Projective (chartRing E W G i)
+      ((protectedLabels → chartRing E W G i) ⧸
+        (chartProtectedResponseMap E W Pres G i protectedLabels).range)
     exact split.cokernel_projective _
   simpa only [response, f, chartResponseCokernel, chartTargetOnProtectedKernel,
     chartProtectedResponseMap] using
@@ -315,22 +315,22 @@ theorem mem_support_chartResponseCokernel_iff_exists_supportMinimalCircuit
 sheaf-response components is exactly the support of the target-response
 cokernel. -/
 theorem chartCircuitLocus_eq_support
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel S))
-    (target : RequiredGeneratorLabel S) (htarget : target ∉ protectedLabels)
-    [Module.Projective (chartRing Core W G i)
-      (chartAllowedOperationModule Core W Pres G i)]
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel E))
+    (target : RequiredGeneratorLabel E) (htarget : target ∉ protectedLabels)
+    [Module.Projective (chartRing E W G i)
+      (chartAllowedOperationModule E W Pres G i)]
     (split : AffineSplitConstantRankData
-      (chartProtectedResponseMap Core W Pres G i protectedLabels)) :
-    chartCircuitLocus Core W Pres G i protectedLabels target =
-      Module.support (chartRing Core W G i)
-        (chartResponseCokernel Core W Pres G i protectedLabels target) := by
+      (chartProtectedResponseMap E W Pres G i protectedLabels)) :
+    chartCircuitLocus E W Pres G i protectedLabels target =
+      Module.support (chartRing E W G i)
+        (chartResponseCokernel E W Pres G i protectedLabels target) := by
   ext p
   rw [mem_chartCircuitLocus_iff]
   exact (mem_support_chartResponseCokernel_iff_exists_supportMinimalCircuit
-    Core W Pres G i protectedLabels target htarget split p).symm
+    E W Pres G i protectedLabels target htarget split p).symm
 
 #assert_standard_axioms_only
   ResearchLean.AG.QualitySurface.IntrinsicLawResponseCircuitDescent.ChartCircuitLocus

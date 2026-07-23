@@ -62,14 +62,14 @@ local obstruction ideal.
 -/
 theorem lawful_of_generatedLawWitnessIdeals_le_ker
     {A : ArchitectureObject U} {S : Site.AATSite A}
-    (G : SemanticLawEquationWitnessIdealCore S) (W : S.category)
-    (s : LawfulSectionData.{u, w} (G.Observable W) (G.obstructionIdeal W))
+    (E : ArchitecturalEquationSystem S.contextPreorder) (W : S.category)
+    (s : LawfulSectionData.{u, w} (E.Observable W) (E.obstructionIdeal W))
     (hkill :
-      ∀ lawIndex, S.equationSystem.Required lawIndex ->
-        G.lawWitnessIdeal W lawIndex ≤ RingHom.ker s.pullback) :
+      ∀ lawIndex, E.Required lawIndex ->
+        E.witnessIdeal W lawIndex ≤ RingHom.ker s.pullback) :
     s.Lawful :=
   lawful_of_selectedWitnessIdeals_le_ker
-    (F := G.selectedLawWitnessIdealFamily W) (s := s) hkill
+    (F := E.selectedWitnessIdealFamily W) (s := s) hkill
 
 /--
 III.定理11.1 / III.定理11.4 bridge: displayed required laws force the displayed
@@ -77,10 +77,10 @@ defect into the generated local obstruction ideal.
 -/
 theorem displayedRequiredLawsHoldOn_defect_mem_localObstructionIdeal
     {A : ArchitectureObject U} {S : Site.AATSite A}
-    {G : SemanticLawEquationWitnessIdealCore S}
-    (D : LawEquationDefectSource G)
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (D : LawEquationDefectSource E)
     (hholds : D.DisplayedRequiredLawsHoldOn) (i : D.Chart) :
-    D.defect i (D.input i) ∈ G.obstructionIdeal (D.chart i) :=
+    D.defect i (D.input i) ∈ E.obstructionIdeal (D.chart i) :=
   (D.interpret_eq_zero_iff_defect_mem_obstructionIdeal i).mp
     (D.displayedRequiredLawsHoldOn_constructs_interpret_eq_zero hholds i)
 

@@ -592,9 +592,17 @@ theorem lawfulObject_noCycleLaw :
   intro hcycle
   exact hcycle.1
 
-/-- X.例9.1: concrete law-equation witness-ideal core over `ZMod 4`. -/
-def lawEquationCore :
-    LawAlgebra.SemanticLawEquationWitnessIdealCore FiniteModel.site where
+/--
+X.例9.1: the finite-site equation system read over `ZMod 4`.
+
+The equation indices and roles come from the selected site equation system.
+The symbolic violation coordinate remains the concrete value `2`, while the
+object-dependent residual is the image of the site's integer residual.
+-/
+def lawEquationSystem :
+    ArchitecturalEquationSystem FiniteModel.site.contextPreorder where
+  Index := FiniteModel.site.equationSystem.Index
+  role := FiniteModel.site.equationSystem.role
   Observable _ := ZMod 4
   observableCommRing _ := inferInstance
   restrict _ := RingHom.id (ZMod 4)
@@ -604,42 +612,137 @@ def lawEquationCore :
   restrict_comp := by
     intro _W₀ _W₁ _W₂ _f _g x
     rfl
-  violationWitness _ _ _ := (2 : ZMod 4)
-  violationWitness_restrict := by
+  violationCoordinate _ _ _ := (2 : ZMod 4)
+  violationCoordinate_restrict := by
     intro _source _target _f _lawIndex _atom
     rfl
-  supportAtom := FiniteModel.FiniteAtom.componentA
-  supportLawIndex := PUnit.unit
-  supportLawIndex_required := rfl
-
-/-! ## Integer law-equation core required by Part X R9(b) -/
+  equationResidual := fun _W object _equationIndex _atom =>
+    (FiniteModel.noCycleResidual object : ZMod 4)
+  equationResidual_restrict := by
+    intros
+    rfl
 
 /--
-X.例9.1 / #3102: production law-equation core with observable ring `ℤ` and
-constant violation witness `2`.
--/
-def integerLawEquationCore :
-    LawAlgebra.SemanticLawEquationWitnessIdealCore FiniteModel.site where
-  Observable _ := ℤ
-  observableCommRing _ := inferInstance
-  restrict _ := RingHom.id ℤ
-  restrict_id := by
-    intro _W x
-    rfl
-  restrict_comp := by
-    intro _W₀ _W₁ _W₂ _f _g x
-    rfl
-  violationWitness _ _ _ := (2 : ℤ)
-  violationWitness_restrict := by
-    intro _source _target _f _lawIndex _atom
-    rfl
-  supportAtom := FiniteModel.FiniteAtom.componentA
-  supportLawIndex := PUnit.unit
-  supportLawIndex_required := rfl
+X.例9.1: coverage requirements for the `ZMod 4` equation system.
 
-/-- Generated quotient presheaf `ℤ / I_Ob` for the integer law core. -/
+The selected contexts and overlap data agree with the finite model, while the
+equation coordinates are read from `lawEquationSystem` itself.
+-/
+def lawEquationSiteCoverageRequirements :
+    Site.CoverageRequirements FiniteModel.object lawEquationSystem
+      FiniteModel.site.signature where
+  requiredSupport := fun _ => True
+  requiredEquationCoordinate := fun _ => True
+  selectedViolationWitness := fun _ => True
+  requiredAxis := fun _ => True
+  supportVisibleOn := fun _ _ => True
+  equationCoordinateVisibleOn := fun _ _ => True
+  violationWitnessVisibleOn := fun _ _ => True
+  axisReadableOn := fun _ _ => True
+  boundaryVisibleOn := fun _ _ => True
+
+/--
+X.例9.1: finite singleton site whose selected equation system is the native
+`ZMod 4` law-equation system.
+-/
+noncomputable def lawEquationSite :
+    Site.AATSite FiniteModel.corePackage.object where
+  contextPreorder := FiniteModel.site.contextPreorder
+  equationSystem := lawEquationSystem
+  signature := FiniteModel.site.signature
+  requirements := lawEquationSiteCoverageRequirements
+  overlap := FiniteModel.site.overlap
+
+/-- X.例9.1: base object of the native `ZMod 4` law-equation site. -/
+def lawEquationSiteBase : lawEquationSite.category :=
+  Site.ContextCategoryObject.of lawEquationSite.contextPreorder
+    FiniteModel.siteContext
+
+/-- X.例9.1: every covering sieve of the native law-equation site is top. -/
+theorem lawEquationSiteTopology_cover_eq_top
+    {base : lawEquationSite.category}
+    {cover : Sieve base} (hcover : cover ∈ lawEquationSite.topology base) :
+    cover = ⊤ := by
+  change
+    (Site.admissiblePrecoverage lawEquationSiteCoverageRequirements
+      FiniteModel.siteOverlap).Saturate base cover at hcover
+  induction hcover with
+  | of X S hS =>
+      rcases hS with ⟨F, rfl⟩
+      rw [← Sieve.id_mem_iff_eq_top]
+      rcases F.admissible.atomSupportCoverage
+          FiniteModel.FiniteAtom.componentA trivial with ⟨i, _hi⟩
+      let hEq :
+          X = Site.ContextCategoryObject.of
+            lawEquationSite.contextPreorder (F.patch i) := by
+        cases X
+        exact congrArg
+          (Site.ContextCategoryObject.of lawEquationSite.contextPreorder)
+          (F.inclusion i).symm
+      have hmem : F.presieve (𝟙 X) :=
+        Presieve.ofArrows.mk'
+          (Y := fun i => Site.ContextCategoryObject.of
+            lawEquationSite.contextPreorder (F.patch i))
+          (f := fun i => homOfLE (F.inclusion i))
+          i hEq
+          (Subsingleton.elim (𝟙 X)
+            (eqToHom hEq ≫ homOfLE (F.inclusion i)))
+      exact Sieve.le_generate F.presieve X hmem
+  | top _X =>
+      rfl
+  | pullback _X _S _hS _Y _f ih =>
+      rw [ih, Sieve.pullback_top]
+  | transitive X S R _hS hR ihS ihR =>
+      rw [← Sieve.id_mem_iff_eq_top]
+      have hSid : S (𝟙 X) := by
+        rw [Sieve.id_mem_iff_eq_top, ihS]
+      have hlocal : R = ⊤ := by
+        simpa using ihR hSid
+      rw [hlocal]
+      trivial
+
+/-- Native `ZMod 4` obstruction quotient presheaf on its selected site. -/
+abbrev lawEquationSiteGeneratedQuotientPresheaf :
+    Site.AATPresheaf lawEquationSite :=
+  lawEquationSite.equationSystem.obstructionQuotientPresheaf
+
+/-- The native `ZMod 4` quotient is a sheaf on its selected singleton site. -/
+theorem lawEquationSiteGeneratedQuotientIsSheaf :
+    Site.AATSheafCondition lawEquationSite
+      lawEquationSiteGeneratedQuotientPresheaf := by
+  intro _base cover hcover
+  rw [Site.AATSheafConditionFor,
+    lawEquationSiteTopology_cover_eq_top hcover]
+  exact Presieve.isSheafFor_top lawEquationSiteGeneratedQuotientPresheaf
+
+/--
+The `ZMod 4` equation holds exactly when the selected finite NoCycle equation
+holds: the site residual is `0` or `1`, and its cast preserves that distinction.
+-/
+theorem lawEquationSystem_equationHolds_iff_noCycleLaw
+    (A : ArchitectureObject FiniteModel.carrier) :
+    lawEquationSystem.EquationHolds PUnit.unit A ↔
+      FiniteModel.noCycleLaw.holds A := by
+  constructor
+  · intro h hcycle
+    have hzero :=
+      h FiniteModel.siteBase FiniteModel.FiniteAtom.componentA
+    change (FiniteModel.noCycleResidual A : ZMod 4) = 0 at hzero
+    have hone : (1 : ZMod 4) = 0 := by
+      simpa [FiniteModel.noCycleResidual, hcycle] using hzero
+    exact (by decide : (1 : ZMod 4) ≠ 0) hone
+  · intro h W atom
+    have hzero : FiniteModel.noCycleResidual A = 0 := by
+      simpa [FiniteModel.equationSystem] using
+        (FiniteModel.site_equationHolds_iff_noCycleLaw A).mpr h W atom
+    change (FiniteModel.noCycleResidual A : ZMod 4) = 0
+    simp [hzero]
+
+/-! ## Integer law-equation system required by Part X R9(b) -/
+
+/-- Generated quotient presheaf `ℤ / I_Ob` for the finite-site equation system. -/
 abbrev integerGeneratedLawQuotientPresheaf : Site.AATPresheaf FiniteModel.site :=
-  integerLawEquationCore.obstructionQuotientPresheaf
+  FiniteModel.site.equationSystem.obstructionQuotientPresheaf
 
 /-- The integer generated quotient is a sheaf on the singleton finite site. -/
 theorem integerGeneratedLawQuotientIsSheaf :
@@ -647,10 +750,10 @@ theorem integerGeneratedLawQuotientIsSheaf :
   finiteSite_allPresheaves_isSheaf integerGeneratedLawQuotientPresheaf
 
 /-- Every integer witness ideal is contained in `span {2}`. -/
-theorem integerLaw_lawWitnessIdeal_le
+theorem integerLaw_witnessIdeal_le
     (W : FiniteModel.site.category)
-    (lawIndex : FiniteModel.site.equationSystem.toLegacyLawUniverse.Index) :
-    integerLawEquationCore.lawWitnessIdeal W lawIndex ≤
+    (lawIndex : FiniteModel.site.equationSystem.Index) :
+    FiniteModel.site.equationSystem.witnessIdeal W lawIndex ≤
       Ideal.span ({(2 : ℤ)} : Set ℤ) := by
   refine Ideal.span_le.mpr ?_
   rintro _x ⟨atom, rfl⟩
@@ -658,24 +761,24 @@ theorem integerLaw_lawWitnessIdeal_le
 
 /-- The integer obstruction ideal is contained in `span {2}`. -/
 theorem integerLaw_obstructionIdeal_le (W : FiniteModel.site.category) :
-    integerLawEquationCore.obstructionIdeal W ≤
+    FiniteModel.site.equationSystem.obstructionIdeal W ≤
       Ideal.span ({(2 : ℤ)} : Set ℤ) := by
   change
-    (integerLawEquationCore.selectedLawWitnessIdealFamily W).localObstructionIdeal ≤
+    (FiniteModel.site.equationSystem.selectedWitnessIdealFamily W).localObstructionIdeal ≤
       Ideal.span ({(2 : ℤ)} : Set ℤ)
   rw [LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily.localObstructionIdeal_le_iff]
   intro lawIndex _hselected
-  exact integerLaw_lawWitnessIdeal_le W lawIndex
+  exact integerLaw_witnessIdeal_le W lawIndex
 
 /-- The integer obstruction ideal is exactly the witness ideal `span {2}`. -/
 theorem integerLaw_obstructionIdeal_eq_span_two (W : FiniteModel.site.category) :
-    integerLawEquationCore.obstructionIdeal W =
+    FiniteModel.site.equationSystem.obstructionIdeal W =
       Ideal.span ({(2 : ℤ)} : Set ℤ) := by
   have hwitness :
-      integerLawEquationCore.lawWitnessIdeal W PUnit.unit =
+      FiniteModel.site.equationSystem.witnessIdeal W PUnit.unit =
         Ideal.span ({(2 : ℤ)} : Set ℤ) := by
-    dsimp [LawAlgebra.SemanticLawEquationWitnessIdealCore.lawWitnessIdeal,
-      integerLawEquationCore]
+    change Ideal.span (Set.range (fun _ : FiniteModel.carrier.Atom => (2 : ℤ))) =
+      Ideal.span ({(2 : ℤ)} : Set ℤ)
     congr
     ext x
     constructor
@@ -685,20 +788,20 @@ theorem integerLaw_obstructionIdeal_eq_span_two (W : FiniteModel.site.category) 
       exact ⟨FiniteModel.FiniteAtom.componentA, by simpa using hx.symm⟩
   apply le_antisymm
   · change
-      (integerLawEquationCore.selectedLawWitnessIdealFamily W).localObstructionIdeal ≤
+      (FiniteModel.site.equationSystem.selectedWitnessIdealFamily W).localObstructionIdeal ≤
         Ideal.span ({(2 : ℤ)} : Set ℤ)
     rw [LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily.localObstructionIdeal_le_iff]
     intro lawIndex _hselected
     cases lawIndex
-    change integerLawEquationCore.lawWitnessIdeal W PUnit.unit ≤
+    change FiniteModel.site.equationSystem.witnessIdeal W PUnit.unit ≤
       Ideal.span ({(2 : ℤ)} : Set ℤ)
     rw [hwitness]
   · rw [← hwitness]
-    exact integerLawEquationCore.lawWitnessIdeal_le_obstructionIdeal W rfl
+    exact FiniteModel.site.equationSystem.witnessIdeal_le_obstructionIdeal W rfl
 
 /-- The integer defect `1` is not killed by the generated obstruction ideal. -/
 theorem integerLaw_one_notMem_obstructionIdeal (W : FiniteModel.site.category) :
-    (1 : ℤ) ∉ integerLawEquationCore.obstructionIdeal W := by
+    (1 : ℤ) ∉ FiniteModel.site.equationSystem.obstructionIdeal W := by
   intro hmem
   have hspan := integerLaw_obstructionIdeal_le W hmem
   rw [Ideal.mem_span_singleton] at hspan
@@ -708,32 +811,32 @@ theorem integerLaw_one_notMem_obstructionIdeal (W : FiniteModel.site.category) :
 
 /-- The quotient class of `1` is nonzero for the integer generated coefficient. -/
 theorem integerGeneratedLawQuotient_one_ne_zero (W : FiniteModel.site.category) :
-    Ideal.Quotient.mk (integerLawEquationCore.obstructionIdeal W) (1 : ℤ) ≠ 0 := by
+    Ideal.Quotient.mk (FiniteModel.site.equationSystem.obstructionIdeal W) (1 : ℤ) ≠ 0 := by
   intro hzero
   exact integerLaw_one_notMem_obstructionIdeal W
     (Ideal.Quotient.eq_zero_iff_mem.mp hzero)
 
 /-- The integer generated quotient coefficient is nontrivial at every context. -/
 theorem integerGeneratedLawQuotient_nontrivial (W : FiniteModel.site.category) :
-    ∃ x : integerLawEquationCore.ObstructionQuotient W, x ≠ 0 :=
-  ⟨Ideal.Quotient.mk (integerLawEquationCore.obstructionIdeal W) 1,
+    ∃ x : FiniteModel.site.equationSystem.ObstructionQuotient W, x ≠ 0 :=
+  ⟨Ideal.Quotient.mk (FiniteModel.site.equationSystem.obstructionIdeal W) 1,
     integerGeneratedLawQuotient_one_ne_zero W⟩
 
-/-- Every selected integer violation witness has zero quotient class. -/
-theorem integerLaw_violationWitness_class_eq_zero
+/-- Every selected integer violation coordinate has zero quotient class. -/
+theorem integerLaw_violationCoordinate_class_eq_zero
     (W : FiniteModel.site.category)
     (lawIndex : FiniteModel.site.equationSystem.Index)
     (atom : FiniteModel.carrier.Atom) :
-    Ideal.Quotient.mk (integerLawEquationCore.obstructionIdeal W)
-        (integerLawEquationCore.violationWitness W lawIndex atom) = 0 :=
+    Ideal.Quotient.mk (FiniteModel.site.equationSystem.obstructionIdeal W)
+        (FiniteModel.site.equationSystem.violationCoordinate W lawIndex atom) = 0 :=
   Ideal.Quotient.eq_zero_iff_mem.mpr
-    (integerLawEquationCore.lawWitnessIdeal_le_obstructionIdeal W
+    (FiniteModel.site.equationSystem.witnessIdeal_le_obstructionIdeal W
       (FiniteModel.site_equation_required lawIndex)
       (Ideal.subset_span ⟨atom, rfl⟩))
 
 /-- X.例9.1: displayed defect source whose defect lies in the selected witness ideal. -/
 def defectSource :
-    LawAlgebra.LawEquationDefectSource lawEquationCore where
+    LawAlgebra.LawEquationDefectSource lawEquationSystem where
   Chart := PUnit
   chart _ := FiniteModel.siteBase
   LocalInput _ := PUnit
@@ -758,7 +861,7 @@ theorem displayedRequiredLawsHoldOn :
     defectSource.DisplayedRequiredLawsHoldOn := by
   intro i lawIndex hmem hrequired
   cases lawIndex
-  exact (FiniteModel.site_equationHolds_iff_noCycleLaw lawfulObject).mpr
+  exact (lawEquationSystem_equationHolds_iff_noCycleLaw lawfulObject).mpr
     lawfulObject_noCycleLaw
 
 /-!
@@ -785,7 +888,7 @@ theorem nonlawfulObject_not_noCycleLaw :
 
 /-- Defect source whose displayed law interpretation is nonzero. -/
 def nonlawfulDefectSource :
-    LawAlgebra.LawEquationDefectSource lawEquationCore where
+    LawAlgebra.LawEquationDefectSource lawEquationSystem where
   Chart := PUnit
   chart _ := FiniteModel.siteBase
   LocalInput _ := PUnit
@@ -804,16 +907,16 @@ def nonlawfulDefectSource :
     intro _i lawIndex _hmem _hrequired hholds
     cases lawIndex
     exact False.elim (nonlawfulObject_not_noCycleLaw
-      ((FiniteModel.site_equationHolds_iff_noCycleLaw nonlawfulObject).mp hholds))
+      ((lawEquationSystem_equationHolds_iff_noCycleLaw nonlawfulObject).mp hholds))
 
 /-! ## Native generated quotient coefficient for example 9.1 -/
 
 /--
-X.例9.1 / #3102: the coefficient presheaf generated by `lawEquationCore`
+X.例9.1 / #3102: the coefficient presheaf generated by `lawEquationSystem`
 itself, namely the obstruction quotient `O/I_Ob`.
 -/
 abbrev generatedLawQuotientPresheaf : Site.AATPresheaf FiniteModel.site :=
-  lawEquationCore.obstructionQuotientPresheaf
+  lawEquationSystem.obstructionQuotientPresheaf
 
 /--
 X.例9.1 / #3102: the law-equation-generated quotient coefficient is a true
@@ -832,28 +935,28 @@ law-equation-generated quotient presheaf.
 def generatedLawQuotientObstructionSheaf :
     Cohomology.ObstructionSheaf FiniteModel.site :=
   Cohomology.ObstructionSheaf.ofAddCommGrpValued
-    lawEquationCore.obstructionQuotientCoefficient generatedLawQuotientIsSheaf
+    lawEquationSystem.obstructionQuotientCoefficient generatedLawQuotientIsSheaf
 
 /-- X.例9.1 / #3102: selected native quotient value at the singleton base. -/
 abbrev GeneratedLawQuotient :=
-  lawEquationCore.ObstructionQuotient FiniteModel.siteBase
+  lawEquationSystem.ObstructionQuotient FiniteModel.siteBase
 
 instance generatedLawQuotientFintype :
     Fintype GeneratedLawQuotient := by
   dsimp [GeneratedLawQuotient,
-    LawAlgebra.SemanticLawEquationWitnessIdealCore.ObstructionQuotient,
-    lawEquationCore]
+    ArchitecturalEquationSystem.ObstructionQuotient,
+    lawEquationSystem]
   infer_instance
 
 /-- X.例9.1 / #3102: the native generated obstruction ideal is `span {2}`. -/
 private theorem generatedLaw_obstructionIdeal_eq_span_two :
-    lawEquationCore.obstructionIdeal FiniteModel.siteBase =
+    lawEquationSystem.obstructionIdeal FiniteModel.siteBase =
       Ideal.span ({(2 : ZMod 4)} : Set (ZMod 4)) := by
   have hwitness :
-      lawEquationCore.lawWitnessIdeal FiniteModel.siteBase PUnit.unit =
+      lawEquationSystem.witnessIdeal FiniteModel.siteBase PUnit.unit =
         Ideal.span ({(2 : ZMod 4)} : Set (ZMod 4)) := by
-    dsimp [LawAlgebra.SemanticLawEquationWitnessIdealCore.lawWitnessIdeal,
-      lawEquationCore]
+    dsimp [ArchitecturalEquationSystem.witnessIdeal,
+      lawEquationSystem]
     congr
     ext x
     constructor
@@ -863,16 +966,16 @@ private theorem generatedLaw_obstructionIdeal_eq_span_two :
       exact ⟨FiniteModel.FiniteAtom.componentA, by simpa using hx.symm⟩
   apply le_antisymm
   · change
-      (lawEquationCore.selectedLawWitnessIdealFamily FiniteModel.siteBase).localObstructionIdeal ≤
+      (lawEquationSystem.selectedWitnessIdealFamily FiniteModel.siteBase).localObstructionIdeal ≤
         Ideal.span ({(2 : ZMod 4)} : Set (ZMod 4))
     rw [LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily.localObstructionIdeal_le_iff]
     intro lawIndex _hselected
     cases lawIndex
-    change lawEquationCore.lawWitnessIdeal FiniteModel.siteBase PUnit.unit ≤
+    change lawEquationSystem.witnessIdeal FiniteModel.siteBase PUnit.unit ≤
       Ideal.span ({(2 : ZMod 4)} : Set (ZMod 4))
     rw [hwitness]
   · rw [← hwitness]
-    exact lawEquationCore.lawWitnessIdeal_le_obstructionIdeal FiniteModel.siteBase rfl
+    exact lawEquationSystem.witnessIdeal_le_obstructionIdeal FiniteModel.siteBase rfl
 
 /-- X.例9.1 / #3102: `1` is not killed by the generated ideal `span {2}`. -/
 private theorem generatedLaw_one_notMem_span_two :
@@ -884,7 +987,7 @@ private theorem generatedLaw_one_notMem_span_two :
 
 /-- X.例9.1 / #3102: the native generated quotient has a concrete nonzero class. -/
 theorem generatedLawQuotient_one_ne_zero :
-    (Ideal.Quotient.mk (lawEquationCore.obstructionIdeal FiniteModel.siteBase)
+    (Ideal.Quotient.mk (lawEquationSystem.obstructionIdeal FiniteModel.siteBase)
       (1 : ZMod 4)) ≠ 0 := by
   intro hzero
   rw [Ideal.Quotient.eq_zero_iff_mem] at hzero
@@ -904,14 +1007,14 @@ instance generatedLawQuotientNontrivial :
     Nontrivial GeneratedLawQuotient := by
   refine
     ⟨⟨0,
-      Ideal.Quotient.mk (lawEquationCore.obstructionIdeal FiniteModel.siteBase)
+      Ideal.Quotient.mk (lawEquationSystem.obstructionIdeal FiniteModel.siteBase)
         (1 : ZMod 4), ?_⟩⟩
   intro h
   exact generatedLawQuotient_one_ne_zero h.symm
 
 /-- X.例9.1 / #3102: selected nonzero class in the native generated quotient. -/
 def generatedLawQuotientOne : GeneratedLawQuotient :=
-  Ideal.Quotient.mk (lawEquationCore.obstructionIdeal FiniteModel.siteBase)
+  Ideal.Quotient.mk (lawEquationSystem.obstructionIdeal FiniteModel.siteBase)
     (1 : ZMod 4)
 
 /-- X.例9.1 / #3102: the selected native quotient class is nonzero. -/
@@ -925,7 +1028,7 @@ theorem generatedLawQuotientOne_add_self :
   dsimp [generatedLawQuotientOne]
   rw [← map_add]
   change
-    Ideal.Quotient.mk (lawEquationCore.obstructionIdeal FiniteModel.siteBase)
+    Ideal.Quotient.mk (lawEquationSystem.obstructionIdeal FiniteModel.siteBase)
       (2 : ZMod 4) = 0
   rw [Ideal.Quotient.eq_zero_iff_mem]
   rw [generatedLaw_obstructionIdeal_eq_span_two]
@@ -935,7 +1038,7 @@ theorem generatedLawQuotientOne_add_self :
 def generatedLawZeroSection (Y : FiniteModel.site.category) :
     generatedLawQuotientPresheaf.obj (op Y) :=
   by
-    change lawEquationCore.ObstructionQuotient Y
+    change lawEquationSystem.ObstructionQuotient Y
     exact 0
 
 /-- X.例9.1 / #3102: Cech data over the native generated quotient coefficient. -/
@@ -1156,7 +1259,7 @@ def generatedLawTrueSheafCertificate :
 X.例9.1 / #3102: native generated theorem-7.5 input surface.
 
 Here the obstruction sheaf carrier is definitionally
-`lawEquationCore.obstructionQuotientPresheaf`.
+`lawEquationSystem.obstructionQuotientPresheaf`.
 -/
 def generatedLawNativeEndToEndInputs :
     SemanticRepairNativeGeneratedEndToEndInputs
@@ -1205,7 +1308,7 @@ X.例9.1 / #3102: theorem 7.5 fires over the native law-equation-generated
 obstruction quotient coefficient.
 
 This is audit-facing compatibility evidence: the coefficient presheaf is
-`lawEquationCore.obstructionQuotientPresheaf`, the sheaf condition is proved by
+`lawEquationSystem.obstructionQuotientPresheaf`, the sheaf condition is proved by
 `generatedLawQuotientIsSheaf`, and the comparison is generated from the selected
 cochain realization stored in `generatedLawNativeEndToEndInputs`.
 -/
@@ -1329,11 +1432,11 @@ theorem circleLawQuotientIsSheaf :
 
 /-- X.例9.2: selected coefficient `Q = ℤ / I_Ob` at the circle base. -/
 abbrev CircleLawQuotient :=
-  integerLawEquationCore.ObstructionQuotient circleSiteBase
+  FiniteModel.site.equationSystem.ObstructionQuotient circleSiteBase
 
 /-- X.例9.2: the residual value is the quotient class `[1] ∈ Q`. -/
 def circleLawQuotientOne : CircleLawQuotient :=
-  Ideal.Quotient.mk (integerLawEquationCore.obstructionIdeal circleSiteBase) (1 : ℤ)
+  Ideal.Quotient.mk (FiniteModel.site.equationSystem.obstructionIdeal circleSiteBase) (1 : ℤ)
 
 /-- X.例9.2: `[1]` survives in the law-equation quotient. -/
 theorem circleLawQuotientOne_ne_zero : circleLawQuotientOne ≠ 0 :=
@@ -1349,7 +1452,7 @@ theorem circleLawQuotientOne_toF2 :
     circleLawQuotientEquivF2 circleLawQuotientOne = (1 : ZMod 2) := by
   change (Int.quotientSpanNatEquivZMod 2)
     (Ideal.quotEquivOfEq (integerLaw_obstructionIdeal_eq_span_two circleSiteBase)
-      (Ideal.Quotient.mk (integerLawEquationCore.obstructionIdeal circleSiteBase) (1 : ℤ))) = 1
+      (Ideal.Quotient.mk (FiniteModel.site.equationSystem.obstructionIdeal circleSiteBase) (1 : ℤ))) = 1
   rw [Ideal.quotEquivOfEq_mk]
   rfl
 
@@ -1357,7 +1460,7 @@ theorem circleLawQuotientOne_toF2 :
 def circleObstructionSheaf :
     Cohomology.ObstructionSheaf circleSite :=
   Cohomology.ObstructionSheaf.ofAddCommGrpValued
-    integerLawEquationCore.obstructionQuotientCoefficient circleLawQuotientIsSheaf
+    FiniteModel.site.equationSystem.obstructionQuotientCoefficient circleLawQuotientIsSheaf
 
 /--
 X.例9.2: supplied circle-nerve data with two vertices, two oppositely oriented
@@ -1860,6 +1963,88 @@ def generatedLawFinitePosetCoverGeometry :
 abbrev generatedLawTupleGeometry :=
   generatedLawFinitePosetCoverGeometry.canonicalTupleCoverGeometryFromOverlap
 
+/-- Singleton admissible cover selected by the native `ZMod 4` equation site. -/
+def lawEquationSiteSingletonCover :
+    Site.AATCoverageFamily lawEquationSite.requirements
+      lawEquationSite.overlap lawEquationSiteBase where
+  Index := PUnit
+  patch := fun _ => FiniteModel.siteContext
+  inclusion := fun _ => rfl
+  admissible := {
+    atomSupportCoverage := fun _atom _hreq => ⟨PUnit.unit, trivial⟩
+    equationCoordinateCoverage := fun _coordinate _hreq =>
+      Or.inl ⟨PUnit.unit, trivial⟩
+    violationWitnessCoverage := fun _witness _hreq =>
+      Or.inl ⟨PUnit.unit, trivial⟩
+    signatureAxisCoverage := fun _axis _hreq => ⟨PUnit.unit, trivial⟩
+    boundaryCoverage := fun _i _j => trivial
+    nonGeneration := fun _i {_support} {_atom} hselected =>
+      FiniteModel.allFamily_mem _ hselected
+  }
+
+/-- The native `ZMod 4` singleton cover belongs to its generated topology. -/
+theorem lawEquationSiteSingletonCover_topologyCover :
+    Sieve.generate lawEquationSiteSingletonCover.presieve ∈
+      lawEquationSite.topology lawEquationSiteBase := by
+  exact Site.AATGrothendieckTopology.generate_mem lawEquationSiteSingletonCover
+
+/-- Witness-ideal adequacy requirements for the native `ZMod 4` site. -/
+def lawEquationSiteAdequacyRequirements :
+    Site.UAdequacyRequirements lawEquationSite.contextPreorder
+      lawEquationSite.requirements where
+  selectedWitnessIdeal := fun _ => True
+  witnessIdealPreservedBy := fun _h _hideal => trivial
+
+/-- Direct adequacy of the native `ZMod 4` singleton cover. -/
+theorem lawEquationSiteSingletonCover_uAdequate :
+    Site.UAdequateCover lawEquationSiteAdequacyRequirements
+      lawEquationSiteSingletonCover where
+  topologyCover := lawEquationSiteSingletonCover_topologyCover
+  requiredSupportCovered := fun _atom _hreq => ⟨PUnit.unit, trivial⟩
+  requiredEquationCoordinatesVisible := fun _coordinate _hreq =>
+    Or.inl ⟨PUnit.unit, trivial⟩
+  selectedViolationWitnessesVisible := fun _witness _hreq =>
+    Or.inl ⟨PUnit.unit, trivial⟩
+  requiredAxesReadable := fun _axis _hreq => ⟨PUnit.unit, trivial⟩
+  boundaryWitnessesVisible := fun _i _j => trivial
+  restrictionMapsPreserveWitnessIdeals := fun _i _hbase => trivial
+
+/-- PUnit finite-poset cover geometry carried by the native `ZMod 4` site. -/
+def lawEquationFinitePosetCoverGeometry :
+    Site.FinitePosetCoverGeometry lawEquationSite where
+  ContextIndex := PUnit
+  finiteContextIndex := inferInstance
+  context := fun _ => FiniteModel.siteContext
+  contextLe := fun _ _ => True
+  contextLe_refl := fun _ => trivial
+  contextLe_trans := fun _ _ => trivial
+  contextLe_antisymm := by
+    intro i j _ _
+    cases i
+    cases j
+    rfl
+  contextLe_sound := fun _ => rfl
+  contextMeet := fun _ _ => PUnit.unit
+  contextMeet_le_left := fun _ _ => trivial
+  contextMeet_le_right := fun _ _ => trivial
+  context_le_meet := fun _ _ => trivial
+  base := lawEquationSiteBase
+  cover := lawEquationSiteSingletonCover
+  finiteCoverIndex := by
+    change Finite PUnit
+    infer_instance
+  nerveSimplex := fun _ => PUnit
+  finiteNerveSimplex := fun _ => inferInstance
+  simplexIndices := fun _ _ _ => PUnit.unit
+  simplexOverlap := fun _ _ => FiniteModel.siteContext
+  simplexOverlap_le_patch := fun _ _ _ => rfl
+  adequacyRequirements := lawEquationSiteAdequacyRequirements
+  coverAdequate := lawEquationSiteSingletonCover_uAdequate
+
+/-- Canonical tuple geometry generated from the native `ZMod 4` site. -/
+abbrev lawEquationTupleGeometry :=
+  lawEquationFinitePosetCoverGeometry.canonicalTupleCoverGeometryFromOverlap
+
 /-! ## Part X R9(b) integer lawful firing -/
 
 /-- Semantic input for the integer law-equation lawful firing. -/
@@ -1901,7 +2086,7 @@ def integerLawFiniteFreeSemanticCover :
 def integerLawFiniteFreeWitnessIdealGeometry :
     StandardFinitePosetGeneratedBoundary.LawEquationWitnessIdealGeometryBody
       integerLawFiniteFreeSemanticInput FiniteModel.site where
-  toCore := integerLawEquationCore
+  supportAtom := FiniteModel.FiniteAtom.componentA
   supportAtom_traceVisible := rfl
   quotientIsSheaf := integerGeneratedLawQuotientIsSheaf
 
@@ -1940,13 +2125,13 @@ theorem integerLawFiniteFreeDisplayedRequiredLawsHoldOn :
     lawfulObject_noCycleLaw
 
 /--
-X.例9.1 / Part X R9(b): the integer observable core, witness `2`, proved quotient
-sheaf condition, and geometry-indexed lawful source fire the final ten-conclusion
-theorem.
+X.例9.1 / Part X R9(b): the finite-site integer equation system, coordinate
+`2`, proved quotient sheaf condition, and geometry-indexed lawful source fire
+the final ten-conclusion theorem.
 -/
 theorem lawfulFiring_integerLawSingletonStandardSourceC0_finiteFreeTenConjunctPacket :
     let K := StandardFinitePosetGeneratedBoundary.lawEquationCechComplex
-      (G := integerLawEquationCore) integerGeneratedLawQuotientIsSheaf
+      (E := FiniteModel.site.equationSystem) integerGeneratedLawQuotientIsSheaf
       generatedLawTupleGeometry
     let source := integerLawFiniteFreeDefectSource.toLawEquationBodyCechSource
     let surface := lawEquationGeneratedCurrentG06InputSurfaceOfFinitePosetGeometry
@@ -1970,8 +2155,9 @@ theorem lawfulFiring_integerLawSingletonStandardSourceC0_finiteFreeTenConjunctPa
 /-- Standard generated cover-relative complex used by the singleton source example. -/
 abbrev generatedLawStandardSourceC0Complex :=
   StandardFinitePosetGeneratedBoundary.lawEquationCechComplex
-    (G := lawEquationCore) generatedLawQuotientIsSheaf
-    generatedLawTupleGeometry
+    (E := lawEquationSite.equationSystem)
+    lawEquationSiteGeneratedQuotientIsSheaf
+    lawEquationTupleGeometry
 
 /-- Semantic atom input tied definitionally to the finite law carrier. -/
 def generatedLawFiniteFreeSemanticInput :
@@ -2011,16 +2197,16 @@ def generatedLawFiniteFreeSemanticCover :
 /-- Rich production witness geometry carrying trace and quotient-sheaf inputs. -/
 def generatedLawFiniteFreeWitnessIdealGeometry :
     StandardFinitePosetGeneratedBoundary.LawEquationWitnessIdealGeometryBody
-      generatedLawFiniteFreeSemanticInput FiniteModel.site where
-  toCore := lawEquationCore
+      generatedLawFiniteFreeSemanticInput lawEquationSite where
+  supportAtom := FiniteModel.FiniteAtom.componentA
   supportAtom_traceVisible := rfl
-  quotientIsSheaf := generatedLawQuotientIsSheaf
+  quotientIsSheaf := lawEquationSiteGeneratedQuotientIsSheaf
 
 /-- Geometry-indexed lawful defect input for the singleton standard route. -/
 def generatedLawFiniteFreeDefectSource :
     StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody
       generatedLawFiniteFreeSemanticInput generatedLawFiniteFreeWitnessIdealGeometry
-      generatedLawFinitePosetCoverGeometry where
+      lawEquationFinitePosetCoverGeometry where
   LocalInput _ := PUnit
   input _ := PUnit.unit
   atomSupport _ _ := [FiniteModel.FiniteAtom.componentA]
@@ -2043,13 +2229,67 @@ def generatedLawFiniteFreeDefectSource :
     cases lawIndex
     exact Ideal.subset_span ⟨FiniteModel.FiniteAtom.componentA, rfl⟩
 
+/-- Geometry-indexed nonlawful source for the native `ZMod 4` site. -/
+def generatedLawFiniteFreeNonlawfulDefectSource :
+    StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody
+      generatedLawFiniteFreeSemanticInput generatedLawFiniteFreeWitnessIdealGeometry
+      lawEquationFinitePosetCoverGeometry where
+  LocalInput _ := PUnit
+  input _ := PUnit.unit
+  atomSupport _ _ := [FiniteModel.FiniteAtom.componentA]
+  atomSupport_traceVisible := by
+    intro _ _
+    exact ⟨FiniteModel.FiniteAtom.componentA, by simp, rfl⟩
+  lawSupport _ _ := [PUnit.unit]
+  lawSupport_nonempty := by
+    intro _
+    exact ⟨PUnit.unit, by simp⟩
+  lawSupport_required := by
+    intro _ lawIndex _
+    cases lawIndex
+    rfl
+  objectOfLocalInput _ _ := nonlawfulObject
+  defect _ _ := (1 : ZMod 4)
+  holds_defect_mem := by
+    intro _ lawIndex _ _ hholds
+    cases lawIndex
+    exact False.elim
+      (nonlawfulObject_not_noCycleLaw
+        ((lawEquationSystem_equationHolds_iff_noCycleLaw nonlawfulObject).mp
+          hholds))
+
 /-- Displayed required laws hold on the rich singleton defect input. -/
 theorem generatedLawFiniteFreeDisplayedRequiredLawsHoldOn :
     generatedLawFiniteFreeDefectSource.DisplayedRequiredLawsHoldOn := by
   intro _ lawIndex _ _
   cases lawIndex
-  exact (FiniteModel.site_equationHolds_iff_noCycleLaw lawfulObject).mpr
+  exact (lawEquationSystem_equationHolds_iff_noCycleLaw lawfulObject).mpr
     lawfulObject_noCycleLaw
+
+/-- The concrete nonlawful source does not satisfy the displayed equation. -/
+theorem generatedLawFiniteFreeNonlawfulDefectSource_not_displayedRequiredLawsHoldOn :
+    ¬ generatedLawFiniteFreeNonlawfulDefectSource.DisplayedRequiredLawsHoldOn := by
+  intro hholds
+  have hmem :
+      PUnit.unit ∈
+        generatedLawFiniteFreeNonlawfulDefectSource.lawSupport
+          PUnit.unit PUnit.unit :=
+    List.mem_singleton_self PUnit.unit
+  have hfailure :=
+    hholds PUnit.unit PUnit.unit hmem rfl
+  exact nonlawfulObject_not_noCycleLaw
+    ((lawEquationSystem_equationHolds_iff_noCycleLaw nonlawfulObject).mp hfailure)
+
+/-- The nonlawful finite-poset source has a nonzero generated interpretation. -/
+theorem generatedLawFiniteFreeNonlawfulDefectSource_interpret_ne_zero :
+    generatedLawFiniteFreeNonlawfulDefectSource.toLawEquationDefectSource.interpret
+      PUnit.unit ≠ 0 := by
+  apply
+    generatedLawFiniteFreeNonlawfulDefectSource.toLawEquationDefectSource.interpret_ne_zero_of_defect_notMem_obstructionIdeal
+  change (1 : ZMod 4) ∉
+    lawEquationSystem.obstructionIdeal FiniteModel.siteBase
+  rw [generatedLaw_obstructionIdeal_eq_span_two]
+  exact generatedLaw_one_notMem_span_two
 
 /--
 Concrete R5 final firing on the PUnit singleton standard complex.  The result
@@ -2058,20 +2298,21 @@ circle nonzero residual route.
 -/
 theorem lawfulFiring_generatedLawSingletonStandardSourceC0_finiteFreeTenConjunctPacket :
     let K := StandardFinitePosetGeneratedBoundary.lawEquationCechComplex
-      (G := lawEquationCore) generatedLawQuotientIsSheaf generatedLawTupleGeometry
+      (E := lawEquationSite.equationSystem)
+      lawEquationSiteGeneratedQuotientIsSheaf lawEquationTupleGeometry
     let source := generatedLawFiniteFreeDefectSource.toLawEquationBodyCechSource
     let surface := lawEquationGeneratedCurrentG06InputSurfaceOfFinitePosetGeometry
-      generatedLawFiniteFreeSemanticCover generatedLawFinitePosetCoverGeometry K
+      generatedLawFiniteFreeSemanticCover lawEquationFinitePosetCoverGeometry K
       (fun _ => fun _ => PUnit.unit)
       (fun _ => fun _ => PUnit.unit)
       (fun _ => fun _ => PUnit.unit)
-      generatedLawQuotientIsSheaf
+      lawEquationSiteGeneratedQuotientIsSheaf
     Nonempty
       (StandardFinitePosetGeneratedBoundary.LawEquationGroundedComparisonFiniteFreeConjunctsBody
         generatedLawFiniteFreeDefectSource surface source) :=
   StandardFinitePosetGeneratedBoundary.lawEquation_constructs_groundedComparisonPacket_finiteFree
     generatedLawFiniteFreeSemanticInput generatedLawFiniteFreeSemanticCover
-    generatedLawFiniteFreeWitnessIdealGeometry generatedLawFinitePosetCoverGeometry
+    generatedLawFiniteFreeWitnessIdealGeometry lawEquationFinitePosetCoverGeometry
     generatedLawFiniteFreeDefectSource
     (fun _ => fun _ => PUnit.unit)
     (fun _ => fun _ => PUnit.unit)
@@ -2084,7 +2325,7 @@ theorem generatedLawSingletonStandardBodySource_toPrimitive_eq_zero :
       generatedLawFiniteFreeDefectSource.toLawEquationBodyCechSource.toPrimitive sigma = 0 := by
   intro sigma
   exact
-    (lawEquationCore.obstructionQuotientCoefficient.map
+    (lawEquationSite.equationSystem.obstructionQuotientCoefficient.map
       (generatedLawFiniteFreeDefectSource.toLawEquationBodyCechSource.zeroSimplexToBase
         sigma).op).hom.map_zero
 
@@ -2125,26 +2366,13 @@ def generatedLawStandardSourceC1Fintype :
         GeneratedLawQuotient)
   infer_instance
 
-/-- Body Cech source generated by the singleton standard geometry. -/
-def generatedLawStandardBodySource :
-    LawEquationBodyCechSource defectSource generatedLawStandardSourceC0Complex where
-  chartOf _ := PUnit.unit
-  chartToBase _ := 𝟙 _
-  restriction sigma :=
-    homOfLE
-      (generatedLawFinitePosetCoverGeometry.canonicalTupleOverlapFromOverlap_le_base
-        0 sigma)
+/-- Body Cech source generated from the lawful finite-poset source. -/
+abbrev generatedLawStandardBodySource :=
+  generatedLawFiniteFreeDefectSource.toLawEquationBodyCechSource
 
-/-- Nonlawful body Cech source used to refute automatic realization. -/
-def generatedLawStandardNonlawfulBodySource :
-    LawEquationBodyCechSource nonlawfulDefectSource
-      generatedLawStandardSourceC0Complex where
-  chartOf _ := PUnit.unit
-  chartToBase _ := 𝟙 _
-  restriction sigma :=
-    homOfLE
-      (generatedLawFinitePosetCoverGeometry.canonicalTupleOverlapFromOverlap_le_base
-        0 sigma)
+/-- Body Cech source generated from the concrete nonlawful source. -/
+abbrev generatedLawStandardNonlawfulBodySource :=
+  generatedLawFiniteFreeNonlawfulDefectSource.toLawEquationBodyCechSource
 
 /-- Selected degree-zero simplex exposing the nonlawful interpretation. -/
 def generatedLawStandardSourceC0SelectedSimplex :
@@ -2158,11 +2386,14 @@ theorem generatedLawStandardNonlawfulBodySource_not_displayedInterpretationReali
       generatedLawStandardSourceC0SelectedSimplex
   simpa [LawEquationBodyCechSource.restrictedDisplayedInterpretation,
     generatedLawStandardNonlawfulBodySource,
-    nonlawfulDefectSource,
+    generatedLawFiniteFreeNonlawfulDefectSource,
+    StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.toLawEquationBodyCechSource,
+    StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.toLawEquationDefectSource,
     LawAlgebra.LawEquationDefectSource.interpret,
-    LawAlgebra.SemanticLawEquationWitnessIdealCore.obstructionQuotientPresheaf,
-    LawAlgebra.SemanticLawEquationWitnessIdealCore.obstructionQuotientCoefficient,
-    lawEquationCore] using nonlawfulDefectSource_interpret_ne_zero
+    ArchitecturalEquationSystem.obstructionQuotientPresheaf,
+    ArchitecturalEquationSystem.obstructionQuotientCoefficient,
+    lawEquationSystem] using
+      generatedLawFiniteFreeNonlawfulDefectSource_interpret_ne_zero
 
 /-!
 Two-chart negative instance for the chart-level common-source and arrow laws.
@@ -2172,7 +2403,7 @@ The first chart reads zero and the second reads the nonzero quotient class of
 
 /-- Two-chart defect source with one zero and one nonzero interpretation. -/
 def mixedDefectSource :
-    LawAlgebra.LawEquationDefectSource lawEquationCore where
+    LawAlgebra.LawEquationDefectSource lawEquationSystem where
   Chart := Bool
   chart _ := FiniteModel.siteBase
   LocalInput _ := PUnit
@@ -2196,7 +2427,7 @@ def mixedDefectSource :
     | true =>
         cases lawIndex
         exact False.elim (nonlawfulObject_not_noCycleLaw
-          ((FiniteModel.site_equationHolds_iff_noCycleLaw nonlawfulObject).mp hholds))
+          ((lawEquationSystem_equationHolds_iff_noCycleLaw nonlawfulObject).mp hholds))
 
 /-- Cover-relative two-chart presentation used by the mixed-source counterexample. -/
 def mixedCoverRelativeCover :
@@ -2259,11 +2490,11 @@ theorem mixedBodySource_has_displayedRequiredLawRestrictionEvaluator :
       LawAlgebra.LawEquationDefectSource.interpret]
   · exact False.elim
       (nonlawfulObject_not_noCycleLaw
-        ((FiniteModel.site_equationHolds_iff_noCycleLaw nonlawfulObject).mp
+        ((lawEquationSystem_equationHolds_iff_noCycleLaw nonlawfulObject).mp
           (by simpa [mixedDefectSource] using hholdsTau)))
   · exact False.elim
       (nonlawfulObject_not_noCycleLaw
-        ((FiniteModel.site_equationHolds_iff_noCycleLaw nonlawfulObject).mp
+        ((lawEquationSystem_equationHolds_iff_noCycleLaw nonlawfulObject).mp
           (by simpa [mixedDefectSource] using hholdsSigma)))
   · have heq : gSigma = gTau := Subsingleton.elim _ _
     subst gTau
@@ -2334,23 +2565,27 @@ theorem legacyFiring_generatedLawSingletonStandardSourceC0_boundedConjuncts :
     Nonempty
       (Sigma fun surface :
         LawEquationGeneratedCurrentG06InputSurface
-          generatedLawCircleSemanticCover FiniteModel.site
-          lawEquationCore.obstructionQuotientPresheaf
+          generatedLawCircleSemanticCover lawEquationSite
+          lawEquationSite.equationSystem.obstructionQuotientPresheaf
           generatedLawStandardSourceC0Complex =>
         Sigma fun comparison :
           SemanticRepairCoverRelativeH1Comparison
             generatedLawStandardSourceC0BoundaryAdditiveData.toAdditiveH1Surface
             generatedLawStandardSourceC0Complex =>
           LawEquationGroundedComparisonConjunctsBody
-            defectSource surface generatedLawStandardBodySource
+            generatedLawFiniteFreeDefectSource.toLawEquationDefectSource
+            surface generatedLawStandardBodySource
             generatedLawStandardSourceC0BoundaryAdditiveData
             comparison) :=
   StandardFinitePosetGeneratedBoundary.lawEquation_constructs_groundedResearchConjuncts_fromStandardFinitePosetSource
-    generatedLawCircleSemanticCover defectSource displayedRequiredLawsHoldOn
-    generatedLawQuotientIsSheaf
+    generatedLawCircleSemanticCover
+    generatedLawFiniteFreeDefectSource.toLawEquationDefectSource
+    generatedLawFiniteFreeDisplayedRequiredLawsHoldOn
+    lawEquationSiteGeneratedQuotientIsSheaf
     (StandardFinitePosetGeneratedBoundary.canonicalTupleGeneratedBoundaryLaw
-      (G := lawEquationCore) generatedLawQuotientIsSheaf
-      generatedLawTupleGeometry)
+      (E := lawEquationSite.equationSystem)
+      lawEquationSiteGeneratedQuotientIsSheaf
+      lawEquationTupleGeometry)
     (fun _ => fun _ => PUnit.unit)
     (fun _ => fun _ => PUnit.unit)
     (fun _ => fun _ => PUnit.unit)
@@ -2918,14 +3153,15 @@ structure GeneratedLawSharedCoefficientSeparateCechWitnesses where
             (⊤ : Sieve FiniteModel.siteBase) generatedLawGluingData comparison)
   singletonStandardGeneratedZeroPacket :
     let K := StandardFinitePosetGeneratedBoundary.lawEquationCechComplex
-      (G := lawEquationCore) generatedLawQuotientIsSheaf generatedLawTupleGeometry
+      (E := lawEquationSite.equationSystem)
+      lawEquationSiteGeneratedQuotientIsSheaf lawEquationTupleGeometry
     let source := generatedLawFiniteFreeDefectSource.toLawEquationBodyCechSource
     let surface := lawEquationGeneratedCurrentG06InputSurfaceOfFinitePosetGeometry
-      generatedLawFiniteFreeSemanticCover generatedLawFinitePosetCoverGeometry K
+      generatedLawFiniteFreeSemanticCover lawEquationFinitePosetCoverGeometry K
       (fun _ => fun _ => PUnit.unit)
       (fun _ => fun _ => PUnit.unit)
       (fun _ => fun _ => PUnit.unit)
-      generatedLawQuotientIsSheaf
+      lawEquationSiteGeneratedQuotientIsSheaf
     Nonempty
       (StandardFinitePosetGeneratedBoundary.LawEquationGroundedComparisonFiniteFreeConjunctsBody
         generatedLawFiniteFreeDefectSource surface source)

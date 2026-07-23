@@ -32,7 +32,7 @@ open AAT.AG AAT.AG.LawAlgebra
 
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A}
-variable (G : SemanticLawEquationWitnessIdealCore S)
+variable (G : ArchitecturalEquationSystem S.contextPreorder)
 
 /-- The ambient observable rings, read through their additive groups. -/
 def observableCoefficient : S.categoryᵒᵖ ⥤ AddCommGrpCat.{u} where

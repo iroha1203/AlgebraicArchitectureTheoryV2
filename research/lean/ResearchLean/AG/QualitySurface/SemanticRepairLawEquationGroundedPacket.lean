@@ -185,9 +185,11 @@ def toCoverRelativeBaseRestrictionSource
   lawSupport_nonempty := fun sigma =>
     D.lawSupport_nonempty
       ((lawEquationRegime coverGeometry G).simplexIndices 0 sigma 0)
-  lawSupport_required := fun sigma =>
-    D.lawSupport_required
-      ((lawEquationRegime coverGeometry G).simplexIndices 0 sigma 0)
+  lawSupport_required := fun sigma localInput lawIndex hmem =>
+    (S.equationSystem.toLegacyLawUniverse_required_iff lawIndex).mpr
+      (D.lawSupport_required
+        ((lawEquationRegime coverGeometry G).simplexIndices 0 sigma 0)
+        localInput lawIndex hmem)
 
 /--
 Displayed-interpretation realization: under displayed required-law
@@ -203,9 +205,7 @@ theorem displayedRequiredLawsHoldOn_constructs_primitive_realizes_displayedInter
     (D :
       LawEquationDefectSemanticAtomLawInputBoundarySource coverGeometry G
         skeleton)
-    (hholds :
-      D.toSupportOnlySemanticAtomLawInputBoundarySource.displayedRequiredLawsHoldOn
-        D.objectOfLocalInput) :
+    (hholds : D.DisplayedRequiredEquationsHoldOn) :
     forall sigma :
       (AAT.AG.Cohomology.finitePosetCoverRelativeCover
         (lawEquationStandardComplex coverGeometry G)).simplex 0,
@@ -283,9 +283,7 @@ theorem lawEquation_constructs_groundedComparisonPacket
         semanticCover.TripleOverlap triple.1 triple.2.1 triple.2.2) ->
           (AAT.AG.Cohomology.finitePosetCoverRelativeCover
             (lawEquationStandardComplex coverGeometry G)).simplex 2)
-    (hholds :
-      D.toSupportOnlySemanticAtomLawInputBoundarySource.displayedRequiredLawsHoldOn
-        D.objectOfLocalInput) :
+    (hholds : D.DisplayedRequiredEquationsHoldOn) :
     let surface :=
       lawEquationCurrentG06InputSurface coverGeometry G semanticCover
         chartSimplex overlapSimplex tripleSimplex

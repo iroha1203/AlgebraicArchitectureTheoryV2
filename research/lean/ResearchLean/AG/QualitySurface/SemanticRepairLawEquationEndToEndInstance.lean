@@ -73,9 +73,7 @@ theorem displayedRequiredLawsHoldOn_constructs_sourceC0_pointwise_zero
     (D :
       LawEquationDefectSemanticAtomLawInputBoundarySource coverGeometry G
         skeleton)
-    (hholds :
-      D.toSupportOnlySemanticAtomLawInputBoundarySource.displayedRequiredLawsHoldOn
-        D.objectOfLocalInput) :
+    (hholds : D.DisplayedRequiredEquationsHoldOn) :
     forall sigma :
       (AAT.AG.Cohomology.finitePosetCoverRelativeCover
         (lawEquationStandardComplex coverGeometry G)).simplex 0,
@@ -269,7 +267,10 @@ def finiteModelLawEquationSkeleton :
   atom := fun _ => AAT.AG.FiniteModel.FiniteAtom.componentA
   atom_traceVisible := fun _ => rfl
   lawIndex := fun _ => PUnit.unit
-  law_required := fun _ => AAT.AG.FiniteModel.lawUniverse_required PUnit.unit
+  law_required := fun _ =>
+    (AAT.AG.FiniteModel.site.equationSystem.toLegacyLawUniverse_required_iff
+      PUnit.unit).mpr
+      (AAT.AG.FiniteModel.site_equation_required PUnit.unit)
 
 /--
 The concrete law-equation defect source on the finite model: singleton local
@@ -290,8 +291,7 @@ def finiteModelLawEquationDefectSource :
   lawSupport := fun _ _ => [PUnit.unit]
   lawSupport_nonempty := fun _ _ => ⟨PUnit.unit, List.mem_singleton_self _⟩
   lawSupport_required := fun _ _ lawIndex _ => by
-    cases lawIndex
-    exact AAT.AG.FiniteModel.lawUniverse_required PUnit.unit
+    exact AAT.AG.FiniteModel.site_equation_required lawIndex
   objectOfLocalInput := fun _ _ => finiteModelLawfulObject
   defect := fun _ _ => 2
   holds_defect_mem := fun _ _ _ _ _ =>
@@ -303,11 +303,13 @@ every displayed law is the required NoCycle law and the displayed reading is
 the relation-free lawful object.
 -/
 theorem finiteModelLawEquationDefectSource_displayedRequiredLawsHoldOn :
-    finiteModelLawEquationDefectSource.toSupportOnlySemanticAtomLawInputBoundarySource.displayedRequiredLawsHoldOn
-      finiteModelLawEquationDefectSource.objectOfLocalInput := by
-  intro i lawIndex _hmem _hrequired
-  cases lawIndex
-  exact noCycleLaw_holds_finiteModelLawfulObject
+    finiteModelLawEquationDefectSource.DisplayedRequiredEquationsHoldOn := by
+  intro _i equationIndex _hmem _hrequired
+  cases equationIndex
+  exact
+    (AAT.AG.FiniteModel.site_equationHolds_iff_noCycleLaw
+      finiteModelLawfulObject).mpr
+      noCycleLaw_holds_finiteModelLawfulObject
 
 /-- The singleton semantic repair cover over the finite-model semantic site. -/
 def finiteModelSemanticCover :

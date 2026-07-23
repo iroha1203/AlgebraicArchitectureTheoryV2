@@ -7777,22 +7777,26 @@ private theorem coefficientRawRestriction_comp
 
 /-- The coefficient firing core generates the proper equation `(2)` from its selected atom. -/
 noncomputable def coefficientSemanticCore :
-    LawAlgebra.SemanticLawEquationWitnessIdealCore finiteSite where
+    ArchitecturalEquationSystem finiteSite.contextPreorder where
+  Index := finiteSite.equationSystem.Index
+  role := finiteSite.equationSystem.role
   Observable W := coefficientRaw.rawAlgebra W
   observableCommRing W := inferInstance
   restrict f := (coefficientRaw.restrictionStable f).quotientDesc
   restrict_id := coefficientRawRestriction_id
   restrict_comp := coefficientRawRestriction_comp
-  violationWitness W _ atom :=
+  violationCoordinate W _ atom :=
     match atom with
     | FiniteModel.FiniteAtom.componentA => 2
     | _ => 0
-  violationWitness_restrict := by
+  violationCoordinate_restrict := by
     intro source target f lawIndex atom
     cases atom <;> simp only [map_ofNat, map_zero]
-  supportAtom := FiniteModel.FiniteAtom.componentA
-  supportLawIndex := PUnit.unit
-  supportLawIndex_required := by rfl
+  equationResidual W A _i _atom :=
+    (FiniteModel.noCycleResidual A : coefficientRaw.rawAlgebra W)
+  equationResidual_restrict := by
+    intro source target f A i atom
+    rw [map_intCast]
 
 /-- The semantic observable ring is identified with the selected raw quotient objectwise. -/
 noncomputable def coefficientBridge :
@@ -7835,7 +7839,7 @@ theorem coefficientSemanticCore_realized :
 /-- The realized source equation agrees with its transported equation on the changed chart. -/
 theorem coefficientSemanticCore_baseChangedChart
     (j : coefficientScheme.atlas.Index)
-    (i : finiteSite.equationSystem.toLegacyLawUniverse.Index) :
+    (i : finiteSite.equationSystem.Index) :
     let R' :=
       LawAlgebra.ClosedEquationalLawReading.baseChangeOfSemanticCore
         coefficientRaw coefficientScheme coefficientSemanticCore
@@ -7857,7 +7861,7 @@ theorem coefficientSemanticCore_baseChangedChart
             (Ideal.map
               (coefficientBridge.toSheafifiedSection
                 (coefficientScheme.atlas.chart j).context)
-              (coefficientSemanticCore.lawWitnessIdeal
+              (coefficientSemanticCore.witnessIdeal
                 (coefficientScheme.atlas.chart j).context i))))
         (coefficientScheme.baseChangedChartMap
           coefficientRaw intPolynomialFlatChange j) =
@@ -8143,7 +8147,7 @@ private theorem targetAmbientEval_baseChanged_interpretation (z : ZMod 2)
   exact congrArg (fun f => f x) hcomp
 
 private theorem targetEquation_eval_zero (z : ZMod 2)
-    (i : finiteSite.equationSystem.toLegacyLawUniverse.Index)
+    (i : finiteSite.equationSystem.Index)
     (atom : FiniteModel.FiniteAtom) :
     targetAmbientEval z
       (baseChangedSemanticCoreGlobalEquation coefficientRaw coefficientScheme

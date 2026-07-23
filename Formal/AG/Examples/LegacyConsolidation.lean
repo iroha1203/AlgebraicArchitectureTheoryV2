@@ -551,10 +551,12 @@ noncomputable def synthesisPackage :
     AATSynthesisPackage standardPartIPrerequisites Int standardGeometry
       StandardGeometryReferenceModels.referenceRaw where
   architectureScheme := StandardGeometryReferenceModels.referenceScheme
-  lawReading := StandardGeometryReferenceModels.weakReading
-  lawReadingValid := StandardGeometryReferenceModels.weakReading_valid
-  requiredClosed := StandardGeometryReferenceModels.weakReading_requiredClosed
-  requiredLawIdealExact := StandardGeometryReferenceModels.weakReading_requiredLawIdealExact
+  lawReading := StandardGeometryReferenceModels.referenceSiteReading
+  lawReadingValid := StandardGeometryReferenceModels.referenceSiteReading_valid
+  requiredClosed :=
+    StandardGeometryReferenceModels.referenceSiteReading_requiredClosed
+  requiredLawIdealExact :=
+    StandardGeometryReferenceModels.referenceSiteReading_requiredLawIdealExact
   cover := synthesisCover
   obstructionSheaf := synthesisObstructionSheaf
   obstructionCohomology := synthesisCechComplex
@@ -564,37 +566,38 @@ noncomputable def synthesisPackage :
   readingParameter := readingParameter
   representationPeriodMetricAnalysis := synthesisAnalyticReadingContext
 
-/-- The normalized package fires the canonical site, Scheme, ideal, and factorization chain. -/
+/-- The normalized package fires the canonical site, Scheme, and site-generated ideal chain. -/
 theorem synthesisPackage_fires :
     synthesisPackage.site = StandardGeometryReferenceModels.referenceSite ∧
     synthesisPackage.ringedAATSite =
       StandardGeometryReferenceModels.referenceRaw.toRingedSite ∧
     synthesisPackage.architectureScheme =
       StandardGeometryReferenceModels.referenceScheme ∧
-    synthesisPackage.lawReading = StandardGeometryReferenceModels.weakReading ∧
+    synthesisPackage.lawReading =
+      StandardGeometryReferenceModels.referenceSiteReading ∧
     synthesisPackage.readingParameter = readingParameter ∧
     synthesisPackage.obstructionIdealSheaf =
       LawAlgebra.lawGeneratedIdealSheaf
         StandardGeometryReferenceModels.referenceRaw
         StandardGeometryReferenceModels.referenceScheme
-        StandardGeometryReferenceModels.weakReading
-        StandardGeometryReferenceModels.weakReading_valid
-        StandardGeometryReferenceModels.weakReading_requiredClosed ∧
+        StandardGeometryReferenceModels.referenceSiteReading
+        StandardGeometryReferenceModels.referenceSiteReading_valid
+        StandardGeometryReferenceModels.referenceSiteReading_requiredClosed ∧
     synthesisPackage.lawfulClosedSubscheme =
       LawAlgebra.lawfulClosedSubscheme
         StandardGeometryReferenceModels.referenceRaw
         StandardGeometryReferenceModels.referenceScheme
-        StandardGeometryReferenceModels.weakReading
-        StandardGeometryReferenceModels.weakReading_valid
-        StandardGeometryReferenceModels.weakReading_requiredClosed ∧
+        StandardGeometryReferenceModels.referenceSiteReading
+        StandardGeometryReferenceModels.referenceSiteReading_valid
+        StandardGeometryReferenceModels.referenceSiteReading_requiredClosed ∧
     Nonempty (LawAlgebra.FactorsThroughLawfulClosedSubscheme
       StandardGeometryReferenceModels.referenceRaw
       StandardGeometryReferenceModels.referenceScheme
-      StandardGeometryReferenceModels.weakReading
-      StandardGeometryReferenceModels.weakReading_valid
-      StandardGeometryReferenceModels.weakReading_requiredClosed
-      StandardGeometryReferenceModels.zeroPoint) := by
-  refine ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, ?_⟩
-  exact StandardGeometryReferenceModels.zeroPoint_fires.2.2.2.1
+      StandardGeometryReferenceModels.referenceSiteReading
+      StandardGeometryReferenceModels.referenceSiteReading_valid
+      StandardGeometryReferenceModels.referenceSiteReading_requiredClosed
+      StandardGeometryReferenceModels.siteEquationModTwoPoint) := by
+  exact ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl,
+    StandardGeometryReferenceModels.siteEquationModTwoPoint_factors⟩
 
 end AAT.AG.Examples.LegacyConsolidation

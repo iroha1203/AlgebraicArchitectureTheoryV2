@@ -1532,7 +1532,7 @@ response is nonzero on the selected support patch.
 - fixed inputs: the existing Boolean-circle site and admissible three-patch
   cover, plus the G-08 response core, required-law membership, and support Atom.
 - certificate provenance: the law witness is the response core's generated
-  `violationWitness`; chart values are canonical algebra-map images; chart
+  `violationCoordinate`; chart values are canonical algebra-map images; chart
   nonmembership is recovered through canonical localization maps to the
   dual-number factor.
 - proof use: the square-zero generator, obstruction-ideal theorem,
@@ -1608,7 +1608,7 @@ premise_delta:
 certificate_provenance:
   discharged:
     - required-law membership and support Atom from the G-08 response core
-    - response witness from the response core's generated square-zero violationWitness
+    - response witness from the response core's generated square-zero violationCoordinate
     - chart transport from canonical algebra maps and localization maps to the dual-number factor
     - overlap transport from the canonical product-denominator localization
   unresolved:
@@ -2320,9 +2320,9 @@ image inclusion and J3a readout before applying the full Jacobian.
 
 `RequiredGeneratorLabel` is the product of a required law subtype and an Atom.
 For every label, `requiredGeneratorWitness` obtains obstruction-ideal
-membership from `lawWitnessIdeal_le_obstructionIdeal` and `Ideal.subset_span`.
+membership from `witnessIdeal_le_obstructionIdeal` and `Ideal.subset_span`.
 Its conormal class is therefore generated from the existing
-`violationWitness`. The G-07 `Raw.conormalRestrict` theorem proves context
+`violationCoordinate`. The G-07 `Raw.conormalRestrict` theorem proves context
 restriction, while `Ideal.mapCotangent` proves both typed chart-to-overlap
 class restrictions.
 
@@ -2366,7 +2366,7 @@ sheaf identification is asserted.
   span and required-law inclusion; conormal classes use `Ideal.toCotangent`;
   response descent uses the Leibniz rule and `Submodule.liftQ`; `alpha_e` is
   produced by `tilde.map`, open restriction, and the J3b inclusion.
-- proof use: `violationWitness_restrict`, `Raw.conormalRestrict_toCotangent`,
+- proof use: `violationCoordinate_restrict`, `Raw.conormalRestrict_toCotangent`,
   both `Ideal.mapCotangent` transports, `IsLocalizedModule.ext`, the J3a chart /
   overlap readouts, J3b selected-section recovery, the sheaf naturality law,
   and the two J2 naturality theorems occur in proof terms.
@@ -2646,7 +2646,7 @@ For the AAT law data, the existing definition
 `obstructionIdeal = localObstructionIdeal` and
 `localObstructionIdeal_le_iff` reduce generation to every required law witness
 ideal. Each such ideal is already the span of the atom-indexed
-`violationWitness`, so the required `(lawIndex, atom)` labels generate the
+`violationCoordinate`, so the required `(lawIndex, atom)` labels generate the
 ambient obstruction ideal. Mapping this equality along each typed localization
 proves the corresponding chart and overlap ideal generation, hence ambient,
 chart, and overlap conormal span-top theorems.
@@ -2668,10 +2668,10 @@ generation certificate is accepted as input.
 - fixed ambient inputs: selected AAT site context and existing law core, base
   field, typed localization geometry, and finite chart labels.
 - certificate provenance: required-law selection comes from the law universe;
-  witness values are the existing atom-indexed `violationWitness`; transported
+  witness values are the existing atom-indexed `violationCoordinate`; transported
   values are canonical algebra-map images.
 - proof use: `localObstructionIdeal_le_iff`, the definition of
-  `lawWitnessIdeal`, `Ideal.map_span`, injectivity of the ideal subtype,
+  `witnessIdeal`, `Ideal.map_span`, injectivity of the ideal subtype,
   surjectivity of `Ideal.toCotangent`, and the full-response kernel occur in
   proof terms.
 - structure-field escape: none. The ideal equality, conormal span, and
@@ -2737,7 +2737,7 @@ premise_delta:
 certificate_provenance:
   discharged:
     - required-law membership from the selected law universe
-    - atom-indexed generators from existing violationWitness values
+    - atom-indexed generators from existing violationCoordinate values
     - typed generators from canonical algebra-map transport
   unresolved:
     - typed nonzero response, cover adequacy, descent, and witness nonvacuity

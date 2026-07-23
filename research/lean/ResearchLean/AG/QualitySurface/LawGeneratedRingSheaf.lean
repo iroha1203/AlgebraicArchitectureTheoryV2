@@ -41,7 +41,7 @@ open AAT.AG AAT.AG.LawAlgebra
 
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A}
-variable (G : SemanticLawEquationWitnessIdealCore S)
+variable (G : ArchitecturalEquationSystem S.contextPreorder)
 
 /-- Large-universe integers used as the scalar ring for internal ring objects. -/
 abbrev LargeInt := ULift.{u + 1} ℤ

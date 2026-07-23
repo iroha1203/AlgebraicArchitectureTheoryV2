@@ -7,8 +7,8 @@ import Mathlib.Tactic
 /-!
 # Law-generated raw ideal-power sequence
 
-This file constructs the raw first-order coefficient sequence directly from a
-`SemanticLawEquationWitnessIdealCore`.  The obstruction ideal, its square, the
+This file constructs the raw first-order coefficient sequence directly from an
+`ArchitecturalEquationSystem`.  The obstruction ideal, its square, the
 two quotient presheaves, and the conormal presheaf are generated from the law
 witness coordinates and their restriction laws.  The projection, conormal
 inclusion, and objectwise kernel comparison are proved constructions; no sheaf
@@ -34,7 +34,7 @@ variable {S : Site.AATSite A}
 
 namespace Raw
 
-variable (G : SemanticLawEquationWitnessIdealCore S)
+variable (G : ArchitecturalEquationSystem S.contextPreorder)
 
 /-- The law-generated obstruction ideal. -/
 abbrev I (W : S.category) : Ideal (G.Observable W) :=

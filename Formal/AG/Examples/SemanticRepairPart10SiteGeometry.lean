@@ -525,33 +525,15 @@ theorem kiteSiteTopology_cover_eq_top {base : kiteSite.category}
 
 /-! ## Law-equation quotient coefficient on the kite site -/
 
-/--
-#3719: production law-equation core with observable ring `ZZ` and constant
-violation witness `2` on the kite site, mirroring the X.例9.1/9.2 integer
-core so the coefficient is generated, not supplied.
+/-!
+The kite coefficient is generated directly from `kiteSite.equationSystem`.
+That selected site system already has integer observables, symbolic coordinate
+`2`, and the concrete NoCycle residual.
 -/
-def kiteLawCore :
-    LawAlgebra.SemanticLawEquationWitnessIdealCore kiteSite where
-  Observable _ := ℤ
-  observableCommRing _ := inferInstance
-  restrict _ := RingHom.id ℤ
-  restrict_id := by
-    intro _W x
-    rfl
-  restrict_comp := by
-    intro _W₀ _W₁ _W₂ _f _g x
-    rfl
-  violationWitness _ _ _ := (2 : ℤ)
-  violationWitness_restrict := by
-    intro _source _target _f _lawIndex _atom
-    rfl
-  supportAtom := FiniteModel.FiniteAtom.componentA
-  supportLawIndex := PUnit.unit
-  supportLawIndex_required := rfl
 
 /-- #3719: generated quotient presheaf `ZZ / I_Ob` on the kite site. -/
 abbrev kiteLawQuotientPresheaf : Site.AATPresheaf kiteSite :=
-  kiteLawCore.obstructionQuotientPresheaf
+  kiteSite.equationSystem.obstructionQuotientPresheaf
 
 /-- #3719: the law-equation quotient is a sheaf on the kite witness topology. -/
 theorem kiteLawQuotientIsSheaf :
@@ -561,9 +543,9 @@ theorem kiteLawQuotientIsSheaf :
   exact Presieve.isSheafFor_top kiteLawQuotientPresheaf
 
 /-- #3719: every kite witness ideal is contained in `span {2}`. -/
-theorem kiteLaw_lawWitnessIdeal_le (W : kiteSite.category)
-    (lawIndex : kiteSite.equationSystem.toLegacyLawUniverse.Index) :
-    kiteLawCore.lawWitnessIdeal W lawIndex ≤
+theorem kiteLaw_witnessIdeal_le (W : kiteSite.category)
+    (lawIndex : kiteSite.equationSystem.Index) :
+    kiteSite.equationSystem.witnessIdeal W lawIndex ≤
       Ideal.span ({(2 : ℤ)} : Set ℤ) := by
   refine Ideal.span_le.mpr ?_
   rintro _x ⟨atom, rfl⟩
@@ -571,13 +553,13 @@ theorem kiteLaw_lawWitnessIdeal_le (W : kiteSite.category)
 
 /-- #3719: the kite obstruction ideal is exactly `span {2}`. -/
 theorem kiteLaw_obstructionIdeal_eq_span_two (W : kiteSite.category) :
-    kiteLawCore.obstructionIdeal W =
+    kiteSite.equationSystem.obstructionIdeal W =
       Ideal.span ({(2 : ℤ)} : Set ℤ) := by
   have hwitness :
-      kiteLawCore.lawWitnessIdeal W PUnit.unit =
+      kiteSite.equationSystem.witnessIdeal W PUnit.unit =
         Ideal.span ({(2 : ℤ)} : Set ℤ) := by
-    dsimp [LawAlgebra.SemanticLawEquationWitnessIdealCore.lawWitnessIdeal,
-      kiteLawCore]
+    change Ideal.span (Set.range (fun _ : FiniteModel.carrier.Atom => (2 : ℤ))) =
+      Ideal.span ({(2 : ℤ)} : Set ℤ)
     congr
     ext x
     constructor
@@ -587,31 +569,31 @@ theorem kiteLaw_obstructionIdeal_eq_span_two (W : kiteSite.category) :
       exact ⟨FiniteModel.FiniteAtom.componentA, by simpa using hx.symm⟩
   apply le_antisymm
   · change
-      (kiteLawCore.selectedLawWitnessIdealFamily W).localObstructionIdeal ≤
+      (kiteSite.equationSystem.selectedWitnessIdealFamily W).localObstructionIdeal ≤
         Ideal.span ({(2 : ℤ)} : Set ℤ)
     rw [LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily.localObstructionIdeal_le_iff]
     intro lawIndex _hselected
     cases lawIndex
-    change kiteLawCore.lawWitnessIdeal W PUnit.unit ≤
+    change kiteSite.equationSystem.witnessIdeal W PUnit.unit ≤
       Ideal.span ({(2 : ℤ)} : Set ℤ)
     rw [hwitness]
   · rw [← hwitness]
-    exact kiteLawCore.lawWitnessIdeal_le_obstructionIdeal W rfl
+    exact kiteSite.equationSystem.witnessIdeal_le_obstructionIdeal W rfl
 
 /-- #3719: the defect `1` is not killed by the kite obstruction ideal. -/
 theorem kiteLaw_one_notMem_obstructionIdeal (W : kiteSite.category) :
-    (1 : ℤ) ∉ kiteLawCore.obstructionIdeal W := by
+    (1 : ℤ) ∉ kiteSite.equationSystem.obstructionIdeal W := by
   intro hmem
   rw [kiteLaw_obstructionIdeal_eq_span_two W, Ideal.mem_span_singleton] at hmem
   obtain ⟨c, hc⟩ := hmem
   omega
 
 /-- #3719: selected coefficient `Q = ZZ / I_Ob` at the kite base. -/
-abbrev KiteLawQuotient := kiteLawCore.ObstructionQuotient kiteSiteBase
+abbrev KiteLawQuotient := kiteSite.equationSystem.ObstructionQuotient kiteSiteBase
 
 /-- #3719: the residual value is the quotient class `[1] ∈ Q`. -/
 def kiteLawQuotientOne : KiteLawQuotient :=
-  Ideal.Quotient.mk (kiteLawCore.obstructionIdeal kiteSiteBase) (1 : ℤ)
+  Ideal.Quotient.mk (kiteSite.equationSystem.obstructionIdeal kiteSiteBase) (1 : ℤ)
 
 /-- #3719: `[1]` survives in the kite law-equation quotient. -/
 theorem kiteLawQuotientOne_ne_zero : kiteLawQuotientOne ≠ 0 := by
@@ -629,25 +611,25 @@ theorem kiteLawQuotientOne_toF2 :
     kiteLawQuotientEquivF2 kiteLawQuotientOne = (1 : ZMod 2) := by
   change (Int.quotientSpanNatEquivZMod 2)
     (Ideal.quotEquivOfEq (kiteLaw_obstructionIdeal_eq_span_two kiteSiteBase)
-      (Ideal.Quotient.mk (kiteLawCore.obstructionIdeal kiteSiteBase) (1 : ℤ))) = 1
+      (Ideal.Quotient.mk (kiteSite.equationSystem.obstructionIdeal kiteSiteBase) (1 : ℤ))) = 1
   rw [Ideal.quotEquivOfEq_mk]
   rfl
 
 /-- #3719: obstruction coefficient sheaf from the kite law-equation quotient. -/
 def kiteObstructionSheaf : Cohomology.ObstructionSheaf kiteSite :=
   Cohomology.ObstructionSheaf.ofAddCommGrpValued
-    kiteLawCore.obstructionQuotientCoefficient kiteLawQuotientIsSheaf
+    kiteSite.equationSystem.obstructionQuotientCoefficient kiteLawQuotientIsSheaf
 
 /-- #3719: the generated quotient restriction acts as the identity on `Q`. -/
 theorem kiteQuotientRestrict_apply {source target : kiteSite.category}
     (f : source ⟶ target) (x : KiteLawQuotient) :
-    kiteLawCore.obstructionQuotientRestrict f x = x := by
+    kiteSite.equationSystem.obstructionQuotientRestrict f x = x := by
   refine Quotient.inductionOn' x ?_
   intro r
-  show kiteLawCore.obstructionQuotientRestrict f
-      (Ideal.Quotient.mk (kiteLawCore.obstructionIdeal target) r) =
-    Ideal.Quotient.mk (kiteLawCore.obstructionIdeal target) r
-  rw [kiteLawCore.obstructionQuotientRestrict_mk]
+  show kiteSite.equationSystem.obstructionQuotientRestrict f
+      (Ideal.Quotient.mk (kiteSite.equationSystem.obstructionIdeal target) r) =
+    Ideal.Quotient.mk (kiteSite.equationSystem.obstructionIdeal target) r
+  rw [kiteSite.equationSystem.obstructionQuotientRestrict_mk]
   rfl
 
 /-- #3719: the obstruction sheaf restriction maps act as the identity on `Q`. -/

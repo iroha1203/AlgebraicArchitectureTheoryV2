@@ -55,18 +55,18 @@ variable {S : Site.AATSite Arch}
 /-- The required law/Atom witness values generate the existing obstruction
 ideal; no representative generator family is supplied. -/
 theorem span_requiredGeneratorWitness_eq_obstructionIdeal
-    (Core : SemanticLawEquationWitnessIdealCore S) (W : S.category) :
-    Ideal.span (Set.range fun e : RequiredGeneratorLabel S ↦
-      (requiredGeneratorWitness Core W e : Core.Observable W)) =
-        Core.obstructionIdeal W := by
+    (E : ArchitecturalEquationSystem S.contextPreorder) (W : S.category) :
+    Ideal.span (Set.range fun e : RequiredGeneratorLabel E ↦
+      (requiredGeneratorWitness E W e : E.Observable W)) =
+        E.obstructionIdeal W := by
   apply le_antisymm
   · apply Ideal.span_le.mpr
     rintro x ⟨e, rfl⟩
-    exact (requiredGeneratorWitness Core W e).property
-  · change (Core.selectedLawWitnessIdealFamily W).localObstructionIdeal ≤ _
+    exact (requiredGeneratorWitness E W e).property
+  · change (E.selectedWitnessIdealFamily W).localObstructionIdeal ≤ _
     rw [ObstructionIdeal.SelectedLawWitnessIdealFamily.localObstructionIdeal_le_iff]
     intro lawIndex hrequired
-    change Ideal.span (Set.range (Core.violationWitness W lawIndex)) ≤ _
+    change Ideal.span (Set.range (E.violationCoordinate W lawIndex)) ≤ _
     apply Ideal.span_le.mpr
     rintro x ⟨atom, rfl⟩
     apply Ideal.subset_span
@@ -74,81 +74,81 @@ theorem span_requiredGeneratorWitness_eq_obstructionIdeal
 
 /-- Required labeled classes generate the full objectwise conormal module. -/
 theorem requiredGeneratorConormal_span_top
-    (Core : SemanticLawEquationWitnessIdealCore S) (W : S.category) :
-    Submodule.span (Core.Observable W ⧸ Core.obstructionIdeal W)
-        (Set.range (requiredGeneratorConormal Core W)) = ⊤ := by
-  exact cotangent_span_top_of_ideal_span (Core.obstructionIdeal W)
-    (requiredGeneratorWitness Core W)
-    (span_requiredGeneratorWitness_eq_obstructionIdeal Core W)
+    (E : ArchitecturalEquationSystem S.contextPreorder) (W : S.category) :
+    Submodule.span (E.Observable W ⧸ E.obstructionIdeal W)
+        (Set.range (requiredGeneratorConormal E W)) = ⊤ := by
+  exact cotangent_span_top_of_ideal_span (E.obstructionIdeal W)
+    (requiredGeneratorWitness E W)
+    (span_requiredGeneratorWitness_eq_obstructionIdeal E W)
 
 section TypedLocalization
 
 variable {k : Type uk} {Chart : Type uChart}
 variable [Field k] [Fintype Chart]
-variable (Core : SemanticLawEquationWitnessIdealCore S) (W : S.category)
-variable [Algebra k (Core.Observable W)]
+variable (E : ArchitecturalEquationSystem S.contextPreorder) (W : S.category)
+variable [Algebra k (E.Observable W)]
 
 /-- The transported required witnesses generate each chart law ideal. -/
 theorem span_chartRequiredGeneratorWitness_eq_chartLawIdeal
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart) (i : Chart) :
-    Ideal.span (Set.range fun e : RequiredGeneratorLabel S ↦
-      (chartRequiredGeneratorWitness Core W G e i : G.chartRing i)) =
-        G.chartLawIdeal (Core.obstructionIdeal W) i := by
-  let f := algebraMap (Core.Observable W) (G.chartRing i)
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart) (i : Chart) :
+    Ideal.span (Set.range fun e : RequiredGeneratorLabel E ↦
+      (chartRequiredGeneratorWitness E W G e i : G.chartRing i)) =
+        G.chartLawIdeal (E.obstructionIdeal W) i := by
+  let f := algebraMap (E.Observable W) (G.chartRing i)
   calc
-    _ = Ideal.span (f '' Set.range fun e : RequiredGeneratorLabel S ↦
-        (requiredGeneratorWitness Core W e : Core.Observable W)) := by
+    _ = Ideal.span (f '' Set.range fun e : RequiredGeneratorLabel E ↦
+        (requiredGeneratorWitness E W e : E.Observable W)) := by
       congr 1
       ext x
       simp [f, chartRequiredGeneratorWitness, requiredGeneratorWitness]
-    _ = Ideal.map f (Ideal.span (Set.range fun e : RequiredGeneratorLabel S ↦
-        (requiredGeneratorWitness Core W e : Core.Observable W))) := by
+    _ = Ideal.map f (Ideal.span (Set.range fun e : RequiredGeneratorLabel E ↦
+        (requiredGeneratorWitness E W e : E.Observable W))) := by
       rw [Ideal.map_span]
-    _ = Ideal.map f (Core.obstructionIdeal W) := congrArg (Ideal.map f)
-      (span_requiredGeneratorWitness_eq_obstructionIdeal Core W)
+    _ = Ideal.map f (E.obstructionIdeal W) := congrArg (Ideal.map f)
+      (span_requiredGeneratorWitness_eq_obstructionIdeal E W)
     _ = _ := rfl
 
 /-- The transported required witnesses generate each overlap law ideal. -/
 theorem span_overlapRequiredGeneratorWitness_eq_overlapLawIdeal
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart) (i j : Chart) :
-    Ideal.span (Set.range fun e : RequiredGeneratorLabel S ↦
-      (overlapRequiredGeneratorWitness Core W G e i j : G.overlapRing i j)) =
-        G.overlapLawIdeal (Core.obstructionIdeal W) i j := by
-  let f := algebraMap (Core.Observable W) (G.overlapRing i j)
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart) (i j : Chart) :
+    Ideal.span (Set.range fun e : RequiredGeneratorLabel E ↦
+      (overlapRequiredGeneratorWitness E W G e i j : G.overlapRing i j)) =
+        G.overlapLawIdeal (E.obstructionIdeal W) i j := by
+  let f := algebraMap (E.Observable W) (G.overlapRing i j)
   calc
-    _ = Ideal.span (f '' Set.range fun e : RequiredGeneratorLabel S ↦
-        (requiredGeneratorWitness Core W e : Core.Observable W)) := by
+    _ = Ideal.span (f '' Set.range fun e : RequiredGeneratorLabel E ↦
+        (requiredGeneratorWitness E W e : E.Observable W)) := by
       congr 1
       ext x
       simp [f, overlapRequiredGeneratorWitness, requiredGeneratorWitness]
-    _ = Ideal.map f (Ideal.span (Set.range fun e : RequiredGeneratorLabel S ↦
-        (requiredGeneratorWitness Core W e : Core.Observable W))) := by
+    _ = Ideal.map f (Ideal.span (Set.range fun e : RequiredGeneratorLabel E ↦
+        (requiredGeneratorWitness E W e : E.Observable W))) := by
       rw [Ideal.map_span]
-    _ = Ideal.map f (Core.obstructionIdeal W) := congrArg (Ideal.map f)
-      (span_requiredGeneratorWitness_eq_obstructionIdeal Core W)
+    _ = Ideal.map f (E.obstructionIdeal W) := congrArg (Ideal.map f)
+      (span_requiredGeneratorWitness_eq_obstructionIdeal E W)
     _ = _ := rfl
 
 /-- Required labeled chart classes generate the full chart conormal module. -/
 theorem chartLabeledConormal_span_top
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart) (i : Chart) :
-    Submodule.span (G.chartLawQuotient (Core.obstructionIdeal W) i)
-        (Set.range fun e : RequiredGeneratorLabel S ↦
-          chartLabeledConormal Core W G e i) = ⊤ := by
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart) (i : Chart) :
+    Submodule.span (G.chartLawQuotient (E.obstructionIdeal W) i)
+        (Set.range fun e : RequiredGeneratorLabel E ↦
+          chartLabeledConormal E W G e i) = ⊤ := by
   exact cotangent_span_top_of_ideal_span
-    (G.chartLawIdeal (Core.obstructionIdeal W) i)
-    (fun e ↦ chartRequiredGeneratorWitness Core W G e i)
-    (span_chartRequiredGeneratorWitness_eq_chartLawIdeal Core W G i)
+    (G.chartLawIdeal (E.obstructionIdeal W) i)
+    (fun e ↦ chartRequiredGeneratorWitness E W G e i)
+    (span_chartRequiredGeneratorWitness_eq_chartLawIdeal E W G i)
 
 /-- Required labeled overlap classes generate the full overlap conormal module. -/
 theorem overlapLabeledConormal_span_top
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart) (i j : Chart) :
-    Submodule.span (G.overlapLawQuotient (Core.obstructionIdeal W) i j)
-        (Set.range fun e : RequiredGeneratorLabel S ↦
-          overlapLabeledConormal Core W G e i j) = ⊤ := by
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart) (i j : Chart) :
+    Submodule.span (G.overlapLawQuotient (E.obstructionIdeal W) i j)
+        (Set.range fun e : RequiredGeneratorLabel E ↦
+          overlapLabeledConormal E W G e i j) = ⊤ := by
   exact cotangent_span_top_of_ideal_span
-    (G.overlapLawIdeal (Core.obstructionIdeal W) i j)
-    (fun e ↦ overlapRequiredGeneratorWitness Core W G e i j)
-    (span_overlapRequiredGeneratorWitness_eq_overlapLawIdeal Core W G i j)
+    (G.overlapLawIdeal (E.obstructionIdeal W) i j)
+    (fun e ↦ overlapRequiredGeneratorWitness E W G e i j)
+    (span_overlapRequiredGeneratorWitness_eq_overlapLawIdeal E W G i j)
 
 end TypedLocalization
 
@@ -165,23 +165,23 @@ variable {k : Type uk} [Field k]
 /-- A quotient-valued derivation has zero response on every required label
 exactly when its full conormal response is zero. -/
 theorem allLabeledResponses_zero_iff_conormalResponse_eq_zero
-    (Core : SemanticLawEquationWitnessIdealCore S) (W : S.category)
-    [Algebra k (Core.Observable W)]
-    (d : Derivation k (Core.Observable W)
-      (Core.Observable W ⧸ Core.obstructionIdeal W)) :
-    (∀ e : RequiredGeneratorLabel S,
-      conormalResponse (Core.obstructionIdeal W) d
-        (requiredGeneratorConormal Core W e) = 0) ↔
-      conormalResponse (Core.obstructionIdeal W) d = 0 := by
+    (E : ArchitecturalEquationSystem S.contextPreorder) (W : S.category)
+    [Algebra k (E.Observable W)]
+    (d : Derivation k (E.Observable W)
+      (E.Observable W ⧸ E.obstructionIdeal W)) :
+    (∀ e : RequiredGeneratorLabel E,
+      conormalResponse (E.obstructionIdeal W) d
+        (requiredGeneratorConormal E W e) = 0) ↔
+      conormalResponse (E.obstructionIdeal W) d = 0 := by
   constructor
   · intro h
     rw [← LinearMap.ker_eq_top]
     apply top_unique
-    rw [← LawGeneratedLabeledConormal.requiredGeneratorConormal_span_top Core W]
+    rw [← LawGeneratedLabeledConormal.requiredGeneratorConormal_span_top E W]
     apply Submodule.span_le.mpr
     rintro c ⟨e, rfl⟩
-    change conormalResponse (Core.obstructionIdeal W) d
-      (requiredGeneratorConormal Core W e) = 0
+    change conormalResponse (E.obstructionIdeal W) d
+      (requiredGeneratorConormal E W e) = 0
     exact h e
   · intro h e
     rw [h]
@@ -194,24 +194,24 @@ variable {Chart : Type uChart} [Fintype Chart]
 /-- On a typed chart, vanishing on every required label is equivalent to
 vanishing of the full chart conormal Jacobian. -/
 theorem allChartLabeledResponses_zero_iff_conormalJacobian_eq_zero
-    (Core : SemanticLawEquationWitnessIdealCore S) (W : S.category)
-    [Algebra k (Core.Observable W)]
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart) (i : Chart)
+    (E : ArchitecturalEquationSystem S.contextPreorder) (W : S.category)
+    [Algebra k (E.Observable W)]
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart) (i : Chart)
     (d : Derivation k (G.chartRing i)
-      (G.chartLawQuotient (Core.obstructionIdeal W) i)) :
-    (∀ e : RequiredGeneratorLabel S,
-      G.chartConormalJacobian (Core.obstructionIdeal W) i d
-        (chartLabeledConormal Core W G e i) = 0) ↔
-      G.chartConormalJacobian (Core.obstructionIdeal W) i d = 0 := by
+      (G.chartLawQuotient (E.obstructionIdeal W) i)) :
+    (∀ e : RequiredGeneratorLabel E,
+      G.chartConormalJacobian (E.obstructionIdeal W) i d
+        (chartLabeledConormal E W G e i) = 0) ↔
+      G.chartConormalJacobian (E.obstructionIdeal W) i d = 0 := by
   constructor
   · intro h
     rw [← LinearMap.ker_eq_top]
     apply top_unique
-    rw [← chartLabeledConormal_span_top Core W G i]
+    rw [← chartLabeledConormal_span_top E W G i]
     apply Submodule.span_le.mpr
     rintro c ⟨e, rfl⟩
-    change G.chartConormalJacobian (Core.obstructionIdeal W) i d
-      (chartLabeledConormal Core W G e i) = 0
+    change G.chartConormalJacobian (E.obstructionIdeal W) i d
+      (chartLabeledConormal E W G e i) = 0
     exact h e
   · intro h e
     rw [h]
@@ -220,24 +220,24 @@ theorem allChartLabeledResponses_zero_iff_conormalJacobian_eq_zero
 /-- On a typed overlap, vanishing on every required label is equivalent to
 vanishing of the full overlap conormal Jacobian. -/
 theorem allOverlapLabeledResponses_zero_iff_conormalJacobian_eq_zero
-    (Core : SemanticLawEquationWitnessIdealCore S) (W : S.category)
-    [Algebra k (Core.Observable W)]
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart) (i j : Chart)
+    (E : ArchitecturalEquationSystem S.contextPreorder) (W : S.category)
+    [Algebra k (E.Observable W)]
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart) (i j : Chart)
     (d : Derivation k (G.overlapRing i j)
-      (G.overlapLawQuotient (Core.obstructionIdeal W) i j)) :
-    (∀ e : RequiredGeneratorLabel S,
-      G.overlapConormalJacobian (Core.obstructionIdeal W) i j d
-        (overlapLabeledConormal Core W G e i j) = 0) ↔
-      G.overlapConormalJacobian (Core.obstructionIdeal W) i j d = 0 := by
+      (G.overlapLawQuotient (E.obstructionIdeal W) i j)) :
+    (∀ e : RequiredGeneratorLabel E,
+      G.overlapConormalJacobian (E.obstructionIdeal W) i j d
+        (overlapLabeledConormal E W G e i j) = 0) ↔
+      G.overlapConormalJacobian (E.obstructionIdeal W) i j d = 0 := by
   constructor
   · intro h
     rw [← LinearMap.ker_eq_top]
     apply top_unique
-    rw [← overlapLabeledConormal_span_top Core W G i j]
+    rw [← overlapLabeledConormal_span_top E W G i j]
     apply Submodule.span_le.mpr
     rintro c ⟨e, rfl⟩
-    change G.overlapConormalJacobian (Core.obstructionIdeal W) i j d
-      (overlapLabeledConormal Core W G e i j) = 0
+    change G.overlapConormalJacobian (E.obstructionIdeal W) i j d
+      (overlapLabeledConormal E W G e i j) = 0
     exact h e
   · intro h e
     rw [h]

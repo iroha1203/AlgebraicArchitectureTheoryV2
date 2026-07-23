@@ -295,7 +295,7 @@ structure CurvatureLawfulFactorizationContext
     (raw : LawAlgebra.RawAmbientRestrictionSystem S k)
     [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
     (X : LawAlgebra.StandardArchitectureScheme raw)
-    (R : LawAlgebra.ClosedEquationalLawReading raw X)
+    (R : LawAlgebra.ClosedEquationalLawReading raw X S.equationSystem)
     (hR : LawAlgebra.IsClosedEquationalLawReading raw X R)
     (hclosed : LawAlgebra.RequiredClosed raw X R)
     (hexact : LawAlgebra.RequiredLawIdealExact raw X R hR hclosed)
@@ -322,7 +322,7 @@ structure SignatureLawfulFactorizationContext
     (raw : LawAlgebra.RawAmbientRestrictionSystem S k)
     [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
     (X : LawAlgebra.StandardArchitectureScheme raw)
-    (R : LawAlgebra.ClosedEquationalLawReading raw X)
+    (R : LawAlgebra.ClosedEquationalLawReading raw X S.equationSystem)
     (hR : LawAlgebra.IsClosedEquationalLawReading raw X R)
     (hclosed : LawAlgebra.RequiredClosed raw X R)
     (hexact : LawAlgebra.RequiredLawIdealExact raw X R hR hclosed)
@@ -340,7 +340,7 @@ variable {S : Site.AATSite Obj} {k : Type v} [CommRing k]
 variable {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
 variable [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
 variable {X : LawAlgebra.StandardArchitectureScheme raw}
-variable {R : LawAlgebra.ClosedEquationalLawReading raw X}
+variable {R : LawAlgebra.ClosedEquationalLawReading raw X S.equationSystem}
 variable {hR : LawAlgebra.IsClosedEquationalLawReading raw X R}
 variable {hclosed : LawAlgebra.RequiredClosed raw X R}
 variable {hexact : LawAlgebra.RequiredLawIdealExact raw X R hR hclosed}
@@ -394,7 +394,7 @@ variable {S : Site.AATSite Obj} {k : Type v} [CommRing k]
 variable {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
 variable [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
 variable {X : LawAlgebra.StandardArchitectureScheme raw}
-variable {R : LawAlgebra.ClosedEquationalLawReading raw X}
+variable {R : LawAlgebra.ClosedEquationalLawReading raw X S.equationSystem}
 variable {hR : LawAlgebra.IsClosedEquationalLawReading raw X R}
 variable {hclosed : LawAlgebra.RequiredClosed raw X R}
 variable {hexact : LawAlgebra.RequiredLawIdealExact raw X R hR hclosed}

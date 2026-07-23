@@ -317,7 +317,7 @@ comparison used to instantiate this generic D0 theorem.
 
 ### Checkpoint delta
 
-The existing law-equation witness core now generates the raw first-order
+The existing `ArchitecturalEquationSystem` now generates the raw first-order
 sequence without accepting any new geometric or effectivity field.  The
 selected law witnesses generate `I`; its square is restriction-compatible;
 and `O/I²`, `O/I`, and `I/I²` form additive presheaves.  The quotient
@@ -327,7 +327,7 @@ projection and conormal inclusion are natural transformations generated from
 Objectwise, the projection kills the conormal inclusion.  Mathlib's canonical
 cotangent ideal and quotient-factor kernel identify `I/I²` with the actual
 kernel of `O/I² -> O/I`.  The conormal inclusion is injective and the quotient
-projection is surjective.  These are theorem outputs from the law-witness core,
+projection is surjective.  These are theorem outputs from the equation system,
 not supplied exactness or comparison fields.
 
 ### Premise delta
@@ -348,8 +348,8 @@ not supplied exactness or comparison fields.
 - supplied-field audit: no sheaf, exactness, kernel comparison, naturality, or
   effectivity field was added
 - certificate provenance: every carrier and map is generated from
-  `SemanticLawEquationWitnessIdealCore.obstructionIdeal`, `restrict`, and the
-  existing restriction theorem
+  `ArchitecturalEquationSystem.obstructionIdeal`, `restrict`, and
+  `map_obstructionIdeal_le`
 - target classification: raw D1 sequence checkpoint; G-07 remains a proof
   checkpoint until sheafification, D0 instantiation, D2, D3, and the final
   package are complete
@@ -492,7 +492,7 @@ mono or provenance square is not completion evidence for them.
 - focused Cycle 8 elaboration: pass
 - module-wide standard-axiom assertion: pass (9 declarations)
 - construction provenance: every object and morphism is generated from
-  `SemanticLawEquationWitnessIdealCore.Observable`, `obstructionIdeal`,
+  `ArchitecturalEquationSystem.Observable`, `obstructionIdeal`,
   `restrict`, and `map_obstructionIdeal_le`
 - supplied-field audit: no ideal-presheaf, naturality, mono, subobject,
   sheafification comparison, ring-action, or ideal-subsheaf field was added

@@ -1,5 +1,6 @@
 import Formal.AG.Cohomology.CechComplex
 import Formal.AG.Cohomology.FinitePosetComparison
+import Formal.AG.Equation.Legacy
 import ResearchLean.AG.QualitySurface.SemanticRepairTrueSheafH1
 import Mathlib.Algebra.BigOperators.Fin
 import Mathlib.AlgebraicTopology.SimplexCategory.Basic
@@ -38,9 +39,9 @@ selected `AATGrothendieckTopology`.
 theorem atomGeneratedCoverage_generates_AATGrothendieckTopology
     {U : AAT.AG.AtomCarrier.{u}} {A : AAT.AG.ArchitectureObject U}
     {C : AAT.AG.Site.ContextPreorderCategory A}
-    {LU : AAT.AG.LawUniverse U}
+    {E : AAT.AG.ArchitecturalEquationSystem C}
     {Sig : AAT.AG.ArchitectureSignature U}
-    {R : AAT.AG.Site.CoverageRequirements A LU Sig}
+    {R : AAT.AG.Site.CoverageRequirements A E Sig}
     {P : AAT.AG.Site.ContextOverlapPullback C}
     {base : AAT.AG.Site.ContextCategoryObject C}
     (family : AAT.AG.Site.AATCoverageFamily R P base) :
@@ -9849,15 +9850,15 @@ structure SemanticAtomLawAdditiveCoefficientGeometry
           semanticSite.sourceTraceToken atom = true
   lawSupport :
     (W : S.category) ->
-      coefficient.obj (Opposite.op W) -> List S.lawUniverse.Index
+      coefficient.obj (Opposite.op W) -> List S.equationSystem.toLegacyLawUniverse.Index
   lawSupport_nonempty :
     forall (W : S.category) (localSection : coefficient.obj (Opposite.op W)),
-      exists lawIndex : S.lawUniverse.Index,
+      exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ lawSupport W localSection
   lawSupport_required :
     forall (W : S.category) (localSection : coefficient.obj (Opposite.op W))
-      (lawIndex : S.lawUniverse.Index),
-      lawIndex ∈ lawSupport W localSection -> S.lawUniverse.Required lawIndex
+      (lawIndex : S.equationSystem.toLegacyLawUniverse.Index),
+      lawIndex ∈ lawSupport W localSection -> S.equationSystem.toLegacyLawUniverse.Required lawIndex
 
 namespace SemanticAtomLawAdditiveCoefficientGeometry
 
@@ -9975,9 +9976,9 @@ theorem exposes_pointwise_atomLaw_support
       (exists atom : U.Atom,
         atom ∈ geometry.atomSupport W localSection ∧
           semanticSite.sourceTraceToken atom = true) /\
-      (exists lawIndex : S.lawUniverse.Index,
+      (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ geometry.lawSupport W localSection ∧
-          S.lawUniverse.Required lawIndex) := by
+          S.equationSystem.toLegacyLawUniverse.Required lawIndex) := by
   intro W localSection
   rcases geometry.lawSupport_nonempty W localSection with
     ⟨lawIndex, hLawMem⟩
@@ -10007,9 +10008,9 @@ theorem constructs_additiveRestrictionLaw_from_atomLawGeneratedCoefficientGeomet
         (exists atom : U.Atom,
           atom ∈ geometry.atomSupport W localSection ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ geometry.lawSupport W localSection ∧
-            S.lawUniverse.Required lawIndex)) := by
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex)) := by
   exact
     ⟨⟨geometry.toAdditiveRestrictionLaw⟩,
       ⟨geometry.toAdditiveRestrictionLaw.toObstructionSheaf⟩,
@@ -13726,15 +13727,15 @@ structure CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
           semanticSite.sourceTraceToken atom = true
   lawSupport :
     (sigma : cover.simplex 0) ->
-      LocalInput sigma -> List S.lawUniverse.Index
+      LocalInput sigma -> List S.equationSystem.toLegacyLawUniverse.Index
   lawSupport_nonempty :
     forall (sigma : cover.simplex 0) (localInput : LocalInput sigma),
-      exists lawIndex : S.lawUniverse.Index,
+      exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ lawSupport sigma localInput
   lawSupport_required :
     forall (sigma : cover.simplex 0) (localInput : LocalInput sigma)
-      (lawIndex : S.lawUniverse.Index),
-      lawIndex ∈ lawSupport sigma localInput -> S.lawUniverse.Required lawIndex
+      (lawIndex : S.equationSystem.toLegacyLawUniverse.Index),
+      lawIndex ∈ lawSupport sigma localInput -> S.equationSystem.toLegacyLawUniverse.Required lawIndex
   interpret :
     (sigma : cover.simplex 0) -> LocalInput sigma ->
       Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma))
@@ -13757,7 +13758,7 @@ inductive CoverRelativeCechFreeSemanticAtomLawBoundary
       CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
         semanticSite S cover Ob) :
     (sigma : cover.simplex 0) -> source.LocalInput sigma ->
-      List U.Atom -> List S.lawUniverse.Index ->
+      List U.Atom -> List S.equationSystem.toLegacyLawUniverse.Index ->
         Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) -> Prop
   | generated (sigma : cover.simplex 0)
       (localInput : source.LocalInput sigma) :
@@ -13785,7 +13786,7 @@ theorem freeBoundary_iff_generated_input
     {sigma : cover.simplex 0}
     {localInput : source.LocalInput sigma}
     {atoms : List U.Atom}
-    {laws : List S.lawUniverse.Index}
+    {laws : List S.equationSystem.toLegacyLawUniverse.Index}
     {localSection : Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma))} :
     CoverRelativeCechFreeSemanticAtomLawBoundary source sigma localInput
         atoms laws localSection <->
@@ -13820,9 +13821,9 @@ theorem exposes_pointwise_nonvacuity_and_support
       (exists atom : U.Atom,
         atom ∈ source.atomSupport sigma localInput ∧
           semanticSite.sourceTraceToken atom = true) /\
-      (exists lawIndex : S.lawUniverse.Index,
+      (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ source.lawSupport sigma localInput ∧
-          S.lawUniverse.Required lawIndex) /\
+          S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
       Exists fun localSection :
         Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) =>
         localSection = source.interpret sigma localInput /\
@@ -13865,9 +13866,9 @@ theorem no_freeSemanticAtomLawInputBoundarySource_of_pointwise_atom_or_law_obstr
         (forall atom : U.Atom,
           atom ∈ source.atomSupport sigma localInput ->
             semanticSite.sourceTraceToken atom ≠ true) \/
-        (forall lawIndex : S.lawUniverse.Index,
+        (forall lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ source.lawSupport sigma localInput ->
-            ¬ S.lawUniverse.Required lawIndex)) :
+            ¬ S.equationSystem.toLegacyLawUniverse.Required lawIndex)) :
     IsEmpty
       (CoverRelativeCechFreeSemanticAtomLawInputBoundarySource
         semanticSite S cover Ob) := by
@@ -13916,15 +13917,15 @@ structure CoverRelativeCechBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySour
           semanticSite.sourceTraceToken atom = true
   lawSupport :
     (sigma : cover.simplex 0) ->
-      LocalInput sigma -> List S.lawUniverse.Index
+      LocalInput sigma -> List S.equationSystem.toLegacyLawUniverse.Index
   lawSupport_nonempty :
     forall (sigma : cover.simplex 0) (localInput : LocalInput sigma),
-      exists lawIndex : S.lawUniverse.Index,
+      exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ lawSupport sigma localInput
   lawSupport_required :
     forall (sigma : cover.simplex 0) (localInput : LocalInput sigma)
-      (lawIndex : S.lawUniverse.Index),
-      lawIndex ∈ lawSupport sigma localInput -> S.lawUniverse.Required lawIndex
+      (lawIndex : S.equationSystem.toLegacyLawUniverse.Index),
+      lawIndex ∈ lawSupport sigma localInput -> S.equationSystem.toLegacyLawUniverse.Required lawIndex
 
 /--
 Cycle 234 canonical/free cover-boundary data name for the boundary-primitive
@@ -14021,9 +14022,9 @@ theorem constructs_freeSource_and_exposes_pointwise_nonvacuity_and_support
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma localInput ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma localInput ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         Exists fun localSection :
           Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) =>
           localSection = freeSource.interpret sigma localInput /\
@@ -14077,15 +14078,15 @@ structure CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomL
           semanticSite.sourceTraceToken atom = true
   lawSupport :
     (sigma : cover.simplex 0) ->
-      LocalInput sigma -> List S.lawUniverse.Index
+      LocalInput sigma -> List S.equationSystem.toLegacyLawUniverse.Index
   lawSupport_nonempty :
     forall (sigma : cover.simplex 0) (localInput : LocalInput sigma),
-      exists lawIndex : S.lawUniverse.Index,
+      exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ lawSupport sigma localInput
   lawSupport_required :
     forall (sigma : cover.simplex 0) (localInput : LocalInput sigma)
-      (lawIndex : S.lawUniverse.Index),
-      lawIndex ∈ lawSupport sigma localInput -> S.lawUniverse.Required lawIndex
+      (lawIndex : S.equationSystem.toLegacyLawUniverse.Index),
+      lawIndex ∈ lawSupport sigma localInput -> S.equationSystem.toLegacyLawUniverse.Required lawIndex
 
 namespace CoverRelativeCechRestrictionRealizedBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
 
@@ -14189,9 +14190,9 @@ theorem constructs_freeSource_and_exposes_pointwise_nonvacuity_and_support
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma localInput ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma localInput ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         Exists fun localSection :
           Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) =>
           localSection = freeSource.interpret sigma localInput /\
@@ -14244,15 +14245,15 @@ structure CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawIn
           semanticSite.sourceTraceToken atom = true
   lawSupport :
     (sigma : cover.simplex 0) ->
-      LocalInput sigma -> List S.lawUniverse.Index
+      LocalInput sigma -> List S.equationSystem.toLegacyLawUniverse.Index
   lawSupport_nonempty :
     forall (sigma : cover.simplex 0) (localInput : LocalInput sigma),
-      exists lawIndex : S.lawUniverse.Index,
+      exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ lawSupport sigma localInput
   lawSupport_required :
     forall (sigma : cover.simplex 0) (localInput : LocalInput sigma)
-      (lawIndex : S.lawUniverse.Index),
-      lawIndex ∈ lawSupport sigma localInput -> S.lawUniverse.Required lawIndex
+      (lawIndex : S.equationSystem.toLegacyLawUniverse.Index),
+      lawIndex ∈ lawSupport sigma localInput -> S.equationSystem.toLegacyLawUniverse.Required lawIndex
 
 namespace CoverRelativeCechBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
 
@@ -14399,9 +14400,9 @@ theorem constructs_freeSource_and_exposes_pointwise_nonvacuity_and_support
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma localInput ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma localInput ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         Exists fun localSection :
           Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) =>
           localSection = freeSource.interpret sigma localInput /\
@@ -14467,20 +14468,20 @@ structure CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemant
   lawSupport :
     (sigma :
       (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0) ->
-      LocalInput sigma -> List S.lawUniverse.Index
+      LocalInput sigma -> List S.equationSystem.toLegacyLawUniverse.Index
   lawSupport_nonempty :
     forall
       (sigma :
         (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0)
       (localInput : LocalInput sigma),
-      exists lawIndex : S.lawUniverse.Index,
+      exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ lawSupport sigma localInput
   lawSupport_required :
     forall
       (sigma :
         (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0)
-      (localInput : LocalInput sigma) (lawIndex : S.lawUniverse.Index),
-      lawIndex ∈ lawSupport sigma localInput -> S.lawUniverse.Required lawIndex
+      (localInput : LocalInput sigma) (lawIndex : S.equationSystem.toLegacyLawUniverse.Index),
+      lawIndex ∈ lawSupport sigma localInput -> S.equationSystem.toLegacyLawUniverse.Required lawIndex
 
 namespace CoverRelativeCechFinitePosetChartProjectionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
 
@@ -14668,15 +14669,15 @@ structure CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtom
           semanticSite.sourceTraceToken atom = true
   lawSupport :
     (sigma : cover.simplex 0) ->
-      LocalInput sigma -> List S.lawUniverse.Index
+      LocalInput sigma -> List S.equationSystem.toLegacyLawUniverse.Index
   lawSupport_nonempty :
     forall (sigma : cover.simplex 0) (localInput : LocalInput sigma),
-      exists lawIndex : S.lawUniverse.Index,
+      exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ lawSupport sigma localInput
   lawSupport_required :
     forall (sigma : cover.simplex 0) (localInput : LocalInput sigma)
-      (lawIndex : S.lawUniverse.Index),
-      lawIndex ∈ lawSupport sigma localInput -> S.lawUniverse.Required lawIndex
+      (lawIndex : S.equationSystem.toLegacyLawUniverse.Index),
+      lawIndex ∈ lawSupport sigma localInput -> S.equationSystem.toLegacyLawUniverse.Required lawIndex
 
 namespace CoverRelativeCechChartBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
 
@@ -14880,9 +14881,9 @@ theorem constructs_freeSource_and_exposes_pointwise_nonvacuity_and_support
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma localInput ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma localInput ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         Exists fun localSection :
           Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) =>
           localSection = freeSource.interpret sigma localInput /\
@@ -14931,16 +14932,16 @@ structure CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeS
           semanticSite.sourceTraceToken atom = true
   lawSupport :
     (sigma : charted.toCoverRelativeCechCover.simplex 0) ->
-      LocalInput sigma -> List S.lawUniverse.Index
+      LocalInput sigma -> List S.equationSystem.toLegacyLawUniverse.Index
   lawSupport_nonempty :
     forall (sigma : charted.toCoverRelativeCechCover.simplex 0)
       (localInput : LocalInput sigma),
-      exists lawIndex : S.lawUniverse.Index,
+      exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ lawSupport sigma localInput
   lawSupport_required :
     forall (sigma : charted.toCoverRelativeCechCover.simplex 0)
-      (localInput : LocalInput sigma) (lawIndex : S.lawUniverse.Index),
-      lawIndex ∈ lawSupport sigma localInput -> S.lawUniverse.Required lawIndex
+      (localInput : LocalInput sigma) (lawIndex : S.equationSystem.toLegacyLawUniverse.Index),
+      lawIndex ∈ lawSupport sigma localInput -> S.equationSystem.toLegacyLawUniverse.Required lawIndex
 
 namespace CoverRelativeCechChartIndexedZeroBaseRestrictionBoundaryPrimitiveFreeSemanticAtomLawInputBoundarySource
 
@@ -15048,9 +15049,9 @@ theorem constructs_freeSource_and_exposes_pointwise_nonvacuity_and_support
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma localInput ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma localInput ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         Exists fun localSection :
           Ob.carrier.toPresheaf.obj
             (op (charted.toCoverRelativeCechCover.overlap 0 sigma)) =>
@@ -15125,9 +15126,9 @@ theorem proofUses_chartIndexedCoverGeometry_in_freeSourceRoute
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma localInput ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma localInput ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         Exists fun localSection :
           Ob.carrier.toPresheaf.obj
             (op (charted.toCoverRelativeCechCover.overlap 0 sigma)) =>
@@ -15215,9 +15216,9 @@ theorem finitePosetGeneratedCoverGeometry_proofUses_freeSourceRoute
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma localInput ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma localInput ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         Exists fun localSection :
           Ob.carrier.toPresheaf.obj
             (op (charted.toCoverRelativeCechCover.overlap 0 sigma)) =>
@@ -15352,8 +15353,8 @@ structure CoverRelativeCechPointwiseSemanticAtomLawLocalInput
     (sigma : cover.simplex 0) where
   atom : U.Atom
   atom_traceVisible : semanticSite.sourceTraceToken atom = true
-  lawIndex : S.lawUniverse.Index
-  law_required : S.lawUniverse.Required lawIndex
+  lawIndex : S.equationSystem.toLegacyLawUniverse.Index
+  law_required : S.equationSystem.toLegacyLawUniverse.Required lawIndex
   localSection : Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma))
 
 /--
@@ -15453,9 +15454,9 @@ theorem constructs_freeSource_and_exposes_pointwise_nonvacuity_and_support
         (exists atom : U.Atom,
           atom ∈ source.atomSupport sigma localInput ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ source.lawSupport sigma localInput ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         Exists fun localSection :
           Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) =>
           localSection = source.interpret sigma localInput /\
@@ -15506,10 +15507,10 @@ structure CoverRelativeCechChartIndexedZeroPointwiseAtomLawInputBoundaryBasis
     forall sigma : charted.toCoverRelativeCechCover.simplex 0,
       semanticSite.sourceTraceToken (atom sigma) = true
   lawIndex :
-    charted.toCoverRelativeCechCover.simplex 0 -> S.lawUniverse.Index
+    charted.toCoverRelativeCechCover.simplex 0 -> S.equationSystem.toLegacyLawUniverse.Index
   law_required :
     forall sigma : charted.toCoverRelativeCechCover.simplex 0,
-      S.lawUniverse.Required (lawIndex sigma)
+      S.equationSystem.toLegacyLawUniverse.Required (lawIndex sigma)
 
 namespace CoverRelativeCechChartIndexedZeroPointwiseAtomLawInputBoundaryBasis
 
@@ -15653,9 +15654,9 @@ theorem constructs_source_and_exposes_singleton_pointwise_support
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma localInput ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma localInput ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         Exists fun localSection :
           Ob.carrier.toPresheaf.obj
             (op (charted.toCoverRelativeCechCover.overlap 0 sigma)) =>
@@ -15724,10 +15725,10 @@ structure CoverRelativeCechChartIndexedZeroOrderFreePointwiseAtomLawInputBoundar
     forall sigma : charted.toCoverRelativeCechCover.simplex 0,
       semanticSite.sourceTraceToken (atom sigma) = true
   lawIndex :
-    charted.toCoverRelativeCechCover.simplex 0 -> S.lawUniverse.Index
+    charted.toCoverRelativeCechCover.simplex 0 -> S.equationSystem.toLegacyLawUniverse.Index
   law_required :
     forall sigma : charted.toCoverRelativeCechCover.simplex 0,
-      S.lawUniverse.Required (lawIndex sigma)
+      S.equationSystem.toLegacyLawUniverse.Required (lawIndex sigma)
 
 namespace CoverRelativeCechChartIndexedZeroOrderFreePointwiseAtomLawInputBoundaryBasis
 
@@ -15785,9 +15786,9 @@ theorem constructs_pointwiseBasis_and_exposes_free_orders
           atom ∈ [basis.atom sigma] ∧
             semanticSite.sourceTraceToken atom = true) /\
       (forall sigma : charted.toCoverRelativeCechCover.simplex 0,
-        exists lawIndex : S.lawUniverse.Index,
+        exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ [basis.lawIndex sigma] ∧
-            S.lawUniverse.Required lawIndex) := by
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) := by
   dsimp
   exact
     ⟨⟨basis.toChartIndexedZeroPointwiseAtomLawInputBoundaryBasis⟩,
@@ -15846,12 +15847,12 @@ structure CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBounda
   lawIndex :
     (sigma :
       (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0) ->
-      S.lawUniverse.Index
+      S.equationSystem.toLegacyLawUniverse.Index
   law_required :
     forall
       (sigma :
         (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0),
-      S.lawUniverse.Required (lawIndex sigma)
+      S.equationSystem.toLegacyLawUniverse.Required (lawIndex sigma)
 
 namespace CoverRelativeCechFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis
 
@@ -15981,9 +15982,9 @@ theorem constructs_freeSource_and_exposes_singleton_pointwise_support
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma localInput ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma localInput ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         Exists fun localSection :
           Ob.carrier.toPresheaf.obj
             (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).overlap
@@ -16037,12 +16038,12 @@ structure CoverRelativeCechFinitePosetChartProjectionOrderFreePointwiseAtomLawIn
   lawIndex :
     (sigma :
       (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0) ->
-      S.lawUniverse.Index
+      S.equationSystem.toLegacyLawUniverse.Index
   law_required :
     forall
       (sigma :
         (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0),
-      S.lawUniverse.Required (lawIndex sigma)
+      S.equationSystem.toLegacyLawUniverse.Required (lawIndex sigma)
 
 namespace CoverRelativeCechFinitePosetChartProjectionOrderFreePointwiseAtomLawInputBoundaryBasis
 
@@ -16107,9 +16108,9 @@ theorem constructs_pointwiseBasis_and_exposes_free_orders
             semanticSite.sourceTraceToken atom = true) /\
       (forall sigma :
         (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
-        exists lawIndex : S.lawUniverse.Index,
+        exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ (source.lawSupport sigma (source.input sigma)) ∧
-            S.lawUniverse.Required lawIndex) := by
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) := by
   dsimp
   exact
     ⟨⟨basis.toFinitePosetChartProjectionPointwiseAtomLawInputBoundaryBasis⟩,
@@ -16152,12 +16153,12 @@ structure SourceSectionFreeSkeleton where
   lawIndex :
     (sigma :
       (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0) ->
-      S.lawUniverse.Index
+      S.equationSystem.toLegacyLawUniverse.Index
   law_required :
     forall
       (sigma :
         (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0),
-      S.lawUniverse.Required (lawIndex sigma)
+      S.equationSystem.toLegacyLawUniverse.Required (lawIndex sigma)
 
 /--
 Cycle 341 source-section-free and order-free skeleton.
@@ -16181,12 +16182,12 @@ structure SourceSectionFreeOrderFreeSkeleton where
   lawIndex :
     (sigma :
       (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0) ->
-      S.lawUniverse.Index
+      S.equationSystem.toLegacyLawUniverse.Index
   law_required :
     forall
       (sigma :
         (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0),
-      S.lawUniverse.Required (lawIndex sigma)
+      S.equationSystem.toLegacyLawUniverse.Required (lawIndex sigma)
 
 namespace SourceSectionFreeOrderFreeSkeleton
 
@@ -16237,9 +16238,9 @@ theorem constructs_sourceSectionFreeSkeleton_and_exposes_free_orders
             semanticSite.sourceTraceToken atom = true) /\
       (forall sigma :
         (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).simplex 0,
-        exists lawIndex : S.lawUniverse.Index,
+        exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex = generated.lawIndex sigma ∧
-            S.lawUniverse.Required lawIndex) := by
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) := by
   dsimp [toSourceSectionFreeSkeleton]
   exact
     ⟨⟨skeleton.toSourceSectionFreeSkeleton⟩,
@@ -16570,15 +16571,15 @@ structure GeneratedFinitePosetSelectedCoverPresieveFreeSemanticAtomLawInputBound
         atom ∈ atomSupport i localInput ∧
           semanticSite.sourceTraceToken atom = true
   lawSupport :
-    (i : regime.cover.Index) -> LocalInput i -> List S.lawUniverse.Index
+    (i : regime.cover.Index) -> LocalInput i -> List S.equationSystem.toLegacyLawUniverse.Index
   lawSupport_nonempty :
     forall (i : regime.cover.Index) (localInput : LocalInput i),
-      exists lawIndex : S.lawUniverse.Index,
+      exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ lawSupport i localInput
   lawSupport_required :
     forall (i : regime.cover.Index) (localInput : LocalInput i)
-      (lawIndex : S.lawUniverse.Index),
-      lawIndex ∈ lawSupport i localInput -> S.lawUniverse.Required lawIndex
+      (lawIndex : S.equationSystem.toLegacyLawUniverse.Index),
+      lawIndex ∈ lawSupport i localInput -> S.equationSystem.toLegacyLawUniverse.Required lawIndex
   interpret :
     (i : regime.cover.Index) -> LocalInput i ->
       Ob.carrier.toPresheaf.obj
@@ -16656,9 +16657,9 @@ theorem exposes_pointwise_nonvacuity_support_and_presieve_evaluation
       (exists atom : U.Atom,
         atom ∈ source.atomSupport i localInput ∧
           semanticSite.sourceTraceToken atom = true) /\
-      (exists lawIndex : S.lawUniverse.Index,
+      (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ source.lawSupport i localInput ∧
-          S.lawUniverse.Required lawIndex) /\
+          S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
       Exists fun localSection :
         Ob.carrier.toPresheaf.obj
           (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)) =>
@@ -16728,15 +16729,15 @@ structure GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInp
         atom ∈ atomSupport i localInput ∧
           semanticSite.sourceTraceToken atom = true
   lawSupport :
-    (i : regime.cover.Index) -> LocalInput i -> List S.lawUniverse.Index
+    (i : regime.cover.Index) -> LocalInput i -> List S.equationSystem.toLegacyLawUniverse.Index
   lawSupport_nonempty :
     forall (i : regime.cover.Index) (localInput : LocalInput i),
-      exists lawIndex : S.lawUniverse.Index,
+      exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ lawSupport i localInput
   lawSupport_required :
     forall (i : regime.cover.Index) (localInput : LocalInput i)
-      (lawIndex : S.lawUniverse.Index),
-      lawIndex ∈ lawSupport i localInput -> S.lawUniverse.Required lawIndex
+      (lawIndex : S.equationSystem.toLegacyLawUniverse.Index),
+      lawIndex ∈ lawSupport i localInput -> S.equationSystem.toLegacyLawUniverse.Required lawIndex
   interpret :
     (i : regime.cover.Index) -> LocalInput i ->
       Ob.carrier.toPresheaf.obj
@@ -16782,9 +16783,9 @@ def displayedRequiredLawSupport
       GeneratedFinitePosetSelectedCoverPresieveSupportOnlySemanticAtomLawInputBoundarySource
         skeleton) : Prop :=
   forall i : regime.cover.Index,
-    exists lawIndex : S.lawUniverse.Index,
+    exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
       lawIndex ∈ source.lawSupport i (source.input i) ∧
-        S.lawUniverse.Required lawIndex
+        S.equationSystem.toLegacyLawUniverse.Required lawIndex
 
 /--
 The support-only source itself constructs the displayed required-law support.
@@ -16833,10 +16834,10 @@ def displayedRequiredLawsHoldOn
     (objectOfLocalInput :
       (i : regime.cover.Index) -> source.LocalInput i ->
         AAT.AG.ArchitectureObject U) : Prop :=
-  forall (i : regime.cover.Index) (lawIndex : S.lawUniverse.Index),
+  forall (i : regime.cover.Index) (lawIndex : S.equationSystem.toLegacyLawUniverse.Index),
     lawIndex ∈ source.lawSupport i (source.input i) ->
-      S.lawUniverse.Required lawIndex ->
-        (S.lawUniverse.law lawIndex).holds
+      S.equationSystem.toLegacyLawUniverse.Required lawIndex ->
+        (S.equationSystem.toLegacyLawUniverse.law lawIndex).holds
           (objectOfLocalInput i (source.input i))
 
 /--
@@ -16860,7 +16861,7 @@ theorem lawfulLocalObjects_constructs_displayedRequiredLawsHoldOn
     (hlawful :
       forall i : regime.cover.Index,
         AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
-          S.lawUniverse) :
+          S.equationSystem.toLegacyLawUniverse) :
     source.displayedRequiredLawsHoldOn objectOfLocalInput := by
   intro i lawIndex _hLawMem hrequired
   exact AAT.AG.lawfulness_required_holds (hlawful i) hrequired
@@ -17286,15 +17287,15 @@ structure GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLa
         atom ∈ atomSupport i localInput ∧
           semanticSite.sourceTraceToken atom = true
   lawSupport :
-    (i : regime.cover.Index) -> LocalInput i -> List S.lawUniverse.Index
+    (i : regime.cover.Index) -> LocalInput i -> List S.equationSystem.toLegacyLawUniverse.Index
   lawSupport_nonempty :
     forall (i : regime.cover.Index) (localInput : LocalInput i),
-      exists lawIndex : S.lawUniverse.Index,
+      exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ lawSupport i localInput
   lawSupport_required :
     forall (i : regime.cover.Index) (localInput : LocalInput i)
-      (lawIndex : S.lawUniverse.Index),
-      lawIndex ∈ lawSupport i localInput -> S.lawUniverse.Required lawIndex
+      (lawIndex : S.equationSystem.toLegacyLawUniverse.Index),
+      lawIndex ∈ lawSupport i localInput -> S.equationSystem.toLegacyLawUniverse.Required lawIndex
 
 namespace GeneratedFinitePosetSelectedCoverPresieveBaseRestrictionSemanticAtomLawInputBoundarySource
 
@@ -17376,8 +17377,8 @@ structure GeneratedFinitePosetSelectedCoverPresievePointwiseSemanticAtomLawLocal
     (i : regime.cover.Index) where
   atom : U.Atom
   atom_traceVisible : semanticSite.sourceTraceToken atom = true
-  lawIndex : S.lawUniverse.Index
-  law_required : S.lawUniverse.Required lawIndex
+  lawIndex : S.equationSystem.toLegacyLawUniverse.Index
+  law_required : S.equationSystem.toLegacyLawUniverse.Required lawIndex
   localSection :
     Ob.carrier.toPresheaf.obj
       (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i))
@@ -17520,9 +17521,9 @@ theorem presievePointwiseSemanticAtomLawInputBoundaryBasis_constructs_presieveFr
         (exists atom : U.Atom,
           atom ∈ source.atomSupport i localInput ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ source.lawSupport i localInput ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         Exists fun localSection :
           Ob.carrier.toPresheaf.obj
             (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)) =>
@@ -17580,9 +17581,9 @@ theorem commonRestrictionRealization_constructs_presieveFreeSource_and_presieveL
         (exists atom : U.Atom,
           atom ∈ presieveSource.atomSupport i localInput ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ presieveSource.lawSupport i localInput ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         Exists fun localSection :
           Ob.carrier.toPresheaf.obj
             (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)) =>
@@ -17640,9 +17641,9 @@ theorem arrowCompatibilityLaw_constructs_commonRestriction_presieveFreeSource_an
         (exists atom : U.Atom,
           atom ∈ presieveSource.atomSupport i localInput ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ presieveSource.lawSupport i localInput ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         Exists fun localSection :
           Ob.carrier.toPresheaf.obj
             (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)) =>
@@ -17937,15 +17938,15 @@ def pointwiseSupportOnlySemanticAtomLawOverlapLaw
       (exists atom : U.Atom,
         atom ∈ source.atomSupport i (source.input i) ∧
           semanticSite.sourceTraceToken atom = true) /\
-      (exists lawIndex : S.lawUniverse.Index,
+      (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ source.lawSupport i (source.input i) ∧
-          S.lawUniverse.Required lawIndex) /\
+          S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
       (exists atom : U.Atom,
         atom ∈ source.atomSupport j (source.input j) ∧
           semanticSite.sourceTraceToken atom = true) /\
-      (exists lawIndex : S.lawUniverse.Index,
+      (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ source.lawSupport j (source.input j) ∧
-          S.lawUniverse.Required lawIndex) /\
+          S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
       Ob.carrier.toPresheaf.map gi.op
           (source.interpret i (source.input i)) =
         Ob.carrier.toPresheaf.map gj.op
@@ -18113,9 +18114,9 @@ theorem pointwiseSupportOnlyOverlapRestrictionEquality_constructs_commonRestrict
         (exists atom : U.Atom,
           atom ∈ presieveSource.atomSupport i localInput ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ presieveSource.lawSupport i localInput ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         Exists fun localSection :
           Ob.carrier.toPresheaf.obj
             (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)) =>
@@ -18196,14 +18197,14 @@ def displayedRequiredLawRestrictionEvaluator
         Z ⟶ (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart j),
     gi ≫ (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion i =
         gj ≫ (AAT.AG.Cohomology.finitePosetCoverRelativeCover C).inclusion j ->
-      forall (lawIndexI lawIndexJ : S.lawUniverse.Index),
+      forall (lawIndexI lawIndexJ : S.equationSystem.toLegacyLawUniverse.Index),
         lawIndexI ∈ source.lawSupport i (source.input i) ->
           lawIndexJ ∈ source.lawSupport j (source.input j) ->
-            S.lawUniverse.Required lawIndexI ->
-              S.lawUniverse.Required lawIndexJ ->
-                (S.lawUniverse.law lawIndexI).holds
+            S.equationSystem.toLegacyLawUniverse.Required lawIndexI ->
+              S.equationSystem.toLegacyLawUniverse.Required lawIndexJ ->
+                (S.equationSystem.toLegacyLawUniverse.law lawIndexI).holds
                     (objectOfLocalInput i (source.input i)) ->
-                  (S.lawUniverse.law lawIndexJ).holds
+                  (S.equationSystem.toLegacyLawUniverse.law lawIndexJ).holds
                       (objectOfLocalInput j (source.input j)) ->
                     Ob.carrier.toPresheaf.map gi.op
                         (source.interpret i (source.input i)) =
@@ -18242,10 +18243,10 @@ theorem displayedRequiredLawRestrictionEvaluator_constructs_pointwiseSupportOnly
   rcases source.lawSupport_nonempty j (source.input j) with
     ⟨lawIndexJ, hLawIndexJ⟩
   have hrequiredI :
-      S.lawUniverse.Required lawIndexI :=
+      S.equationSystem.toLegacyLawUniverse.Required lawIndexI :=
     source.lawSupport_required i (source.input i) lawIndexI hLawIndexI
   have hrequiredJ :
-      S.lawUniverse.Required lawIndexJ :=
+      S.equationSystem.toLegacyLawUniverse.Required lawIndexJ :=
     source.lawSupport_required j (source.input j) lawIndexJ hLawIndexJ
   exact
     evaluator i j gi gj hcomm lawIndexI lawIndexJ hLawIndexI hLawIndexJ
@@ -18301,7 +18302,7 @@ theorem lawfulLocalObjects_and_displayedRequiredLawRestrictionEvaluator_construc
     (hlawful :
       forall i : regime.cover.Index,
         AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
-          S.lawUniverse)
+          S.equationSystem.toLegacyLawUniverse)
     (evaluator :
       source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput) :
     source.arrowCompatibilityLaw := by
@@ -18333,7 +18334,7 @@ theorem no_displayedRequiredLawRestrictionEvaluator_without_arrowCompatibilityLa
     (hlawful :
       forall i : regime.cover.Index,
         AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
-          S.lawUniverse)
+          S.equationSystem.toLegacyLawUniverse)
     (hmissing : ¬ source.arrowCompatibilityLaw) :
     ¬ source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput := by
   intro evaluator
@@ -18344,10 +18345,9 @@ theorem no_displayedRequiredLawRestrictionEvaluator_without_arrowCompatibilityLa
 /--
 Cycle 323 current-law API boundary.
 
-This is exactly the law-side information currently exposed by `LawUniverse`
-and the support-only source for the selected local object readings:
-law-universe coverage and exactness assumptions as bare propositions,
-displayed required-law support, and displayed `Law.holds` proofs.
+This is exactly the law-side information currently exposed by the generated
+legacy display and the support-only source for the selected local object
+readings: displayed required-law support and displayed `Law.holds` proofs.
 
 It intentionally contains no common-refinement arrows, no restriction map
 equality, no `arrowCompatibilityLaw`, no residual-zero, and no `H1` zero.
@@ -18363,14 +18363,12 @@ def currentLawUniverseHoldsInputBoundary
     (objectOfLocalInput :
       (i : regime.cover.Index) -> source.LocalInput i ->
         AAT.AG.ArchitectureObject U) : Prop :=
-  S.lawUniverse.coverageAssumptions /\
-    S.lawUniverse.exactnessAssumptions /\
-    source.displayedRequiredLawSupport /\
+  source.displayedRequiredLawSupport /\
     source.displayedRequiredLawsHoldOn objectOfLocalInput
 
 /--
-The current law-universe assumptions and lawful local object readings construct
-the current-law API boundary.
+The generated legacy display and lawful local object readings construct the
+current-law API boundary.
 
 This proof uses `Lawfulness` only to obtain displayed `Law.holds`; it does not
 produce a restriction-level semantic evaluator.
@@ -18386,17 +18384,13 @@ theorem lawfulLocalObjects_constructs_currentLawUniverseHoldsInputBoundary
     (objectOfLocalInput :
       (i : regime.cover.Index) -> source.LocalInput i ->
         AAT.AG.ArchitectureObject U)
-    (hcoverage : S.lawUniverse.coverageAssumptions)
-    (hexactness : S.lawUniverse.exactnessAssumptions)
     (hlawful :
       forall i : regime.cover.Index,
         AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
-          S.lawUniverse) :
+          S.equationSystem.toLegacyLawUniverse) :
     source.currentLawUniverseHoldsInputBoundary objectOfLocalInput := by
   exact
-    ⟨hcoverage,
-      hexactness,
-      source.constructs_displayedRequiredLawSupport,
+    ⟨source.constructs_displayedRequiredLawSupport,
       source.lawfulLocalObjects_constructs_displayedRequiredLawsHoldOn
         objectOfLocalInput hlawful⟩
 
@@ -18420,12 +18414,10 @@ theorem no_currentLawUniverseHoldsInputBoundary_constructor_to_displayedRequired
     (objectOfLocalInput :
       (i : regime.cover.Index) -> source.LocalInput i ->
         AAT.AG.ArchitectureObject U)
-    (hcoverage : S.lawUniverse.coverageAssumptions)
-    (hexactness : S.lawUniverse.exactnessAssumptions)
     (hlawful :
       forall i : regime.cover.Index,
         AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
-          S.lawUniverse)
+          S.equationSystem.toLegacyLawUniverse)
     (hmissing : ¬ source.arrowCompatibilityLaw) :
     ¬ (source.currentLawUniverseHoldsInputBoundary objectOfLocalInput ->
         source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput) := by
@@ -18433,7 +18425,7 @@ theorem no_currentLawUniverseHoldsInputBoundary_constructor_to_displayedRequired
   have hboundary :
       source.currentLawUniverseHoldsInputBoundary objectOfLocalInput :=
     source.lawfulLocalObjects_constructs_currentLawUniverseHoldsInputBoundary
-      objectOfLocalInput hcoverage hexactness hlawful
+      objectOfLocalInput hlawful
   exact
     source.no_displayedRequiredLawRestrictionEvaluator_without_arrowCompatibilityLaw
       objectOfLocalInput hlawful hmissing (constructor hboundary)
@@ -18459,12 +18451,10 @@ theorem no_currentLawUniverseHoldsInputBoundary_constructor_to_pointwiseSupportO
     (objectOfLocalInput :
       (i : regime.cover.Index) -> source.LocalInput i ->
         AAT.AG.ArchitectureObject U)
-    (hcoverage : S.lawUniverse.coverageAssumptions)
-    (hexactness : S.lawUniverse.exactnessAssumptions)
     (hlawful :
       forall i : regime.cover.Index,
         AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
-          S.lawUniverse)
+          S.equationSystem.toLegacyLawUniverse)
     (hmissing : ¬ source.arrowCompatibilityLaw) :
     ¬ (source.currentLawUniverseHoldsInputBoundary objectOfLocalInput ->
         source.pointwiseSupportOnlyOverlapRestrictionEquality) := by
@@ -18472,7 +18462,7 @@ theorem no_currentLawUniverseHoldsInputBoundary_constructor_to_pointwiseSupportO
   have hboundary :
       source.currentLawUniverseHoldsInputBoundary objectOfLocalInput :=
     source.lawfulLocalObjects_constructs_currentLawUniverseHoldsInputBoundary
-      objectOfLocalInput hcoverage hexactness hlawful
+      objectOfLocalInput hlawful
   exact hmissing
     ((source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw).1
       (constructor hboundary))
@@ -18563,12 +18553,10 @@ theorem no_interpretationBlind_currentLawUniverseHoldsInputBoundary_constructor_
     (objectOfLocalInput :
       (i : regime.cover.Index) -> source.LocalInput i ->
         AAT.AG.ArchitectureObject U)
-    (hcoverage : S.lawUniverse.coverageAssumptions)
-    (hexactness : S.lawUniverse.exactnessAssumptions)
     (hlawful :
       forall i : regime.cover.Index,
         AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
-          S.lawUniverse)
+          S.equationSystem.toLegacyLawUniverse)
     (hmissing : ¬ source.arrowCompatibilityLaw) :
     ¬ (forall interpret' :
         (i : regime.cover.Index) -> source.LocalInput i ->
@@ -18583,12 +18571,12 @@ theorem no_interpretationBlind_currentLawUniverseHoldsInputBoundary_constructor_
   have hlawfulReplaced :
       forall i : regime.cover.Index,
         AAT.AG.Lawfulness (objectOfLocalInput i (replaced.input i))
-          S.lawUniverse := by
+          S.equationSystem.toLegacyLawUniverse := by
     simpa [replaced, withDisplayedInterpretation] using hlawful
   have hboundary :
       replaced.currentLawUniverseHoldsInputBoundary objectOfLocalInput :=
     replaced.lawfulLocalObjects_constructs_currentLawUniverseHoldsInputBoundary
-      objectOfLocalInput hcoverage hexactness hlawfulReplaced
+      objectOfLocalInput hlawfulReplaced
   have hmissingReplaced : ¬ replaced.arrowCompatibilityLaw := by
     simpa [replaced, withDisplayedInterpretation] using hmissing
   exact
@@ -18636,9 +18624,9 @@ theorem pointwiseSupportOnlySemanticAtomLawOverlapLaw_constructs_commonRestricti
         (exists atom : U.Atom,
           atom ∈ presieveSource.atomSupport i localInput ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ presieveSource.lawSupport i localInput ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         Exists fun localSection :
           Ob.carrier.toPresheaf.obj
             (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)) =>
@@ -18687,10 +18675,10 @@ structure GeneratedFinitePosetSelectedCoverPresieveRestrictionRealizedSemanticAt
   atom_traceVisible :
     forall i : regime.cover.Index,
       semanticSite.sourceTraceToken (atom i) = true
-  lawIndex : regime.cover.Index -> S.lawUniverse.Index
+  lawIndex : regime.cover.Index -> S.equationSystem.toLegacyLawUniverse.Index
   law_required :
     forall i : regime.cover.Index,
-      S.lawUniverse.Required (lawIndex i)
+      S.equationSystem.toLegacyLawUniverse.Required (lawIndex i)
 
 namespace GeneratedFinitePosetSelectedCoverPresieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis
 
@@ -18779,10 +18767,10 @@ structure GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtom
   atom_traceVisible :
     forall i : regime.cover.Index,
       semanticSite.sourceTraceToken (atom i) = true
-  lawIndex : regime.cover.Index -> S.lawUniverse.Index
+  lawIndex : regime.cover.Index -> S.equationSystem.toLegacyLawUniverse.Index
   law_required :
     forall i : regime.cover.Index,
-      S.lawUniverse.Required (lawIndex i)
+      S.equationSystem.toLegacyLawUniverse.Required (lawIndex i)
 
 namespace GeneratedFinitePosetSelectedCoverPresieveSourceSectionFreeSemanticAtomLawInputBoundaryBasis
 
@@ -19315,7 +19303,7 @@ theorem presieveFreeSemanticAtomLawInputBoundarySource_constructs_sourceSectionF
           semanticSite.sourceTraceToken (choices.atom i) = true) /\
       (forall i : regime.cover.Index,
         choices.lawIndex i ∈ source.lawSupport i (source.input i) ∧
-          S.lawUniverse.Required (choices.lawIndex i)) := by
+          S.equationSystem.toLegacyLawUniverse.Required (choices.lawIndex i)) := by
   dsimp
   let choices := source.toSourceSectionFreeChoices
   refine
@@ -19377,9 +19365,9 @@ theorem presieveRestrictionRealizedSemanticAtomLawInputBoundaryBasis_constructs_
         (exists atom : U.Atom,
           atom ∈ source.atomSupport i localInput ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ source.lawSupport i localInput ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         Exists fun localSection :
           Ob.carrier.toPresheaf.obj
             (op ((AAT.AG.Cohomology.finitePosetCoverRelativeCover C).chart i)) =>
@@ -19801,10 +19789,10 @@ structure CoverRelativeCechRestrictionRealizedPointwiseAtomLawInputBoundaryBasis
   atom_traceVisible :
     forall sigma : cover.simplex 0,
       semanticSite.sourceTraceToken (atom sigma) = true
-  lawIndex : (sigma : cover.simplex 0) -> S.lawUniverse.Index
+  lawIndex : (sigma : cover.simplex 0) -> S.equationSystem.toLegacyLawUniverse.Index
   law_required :
     forall sigma : cover.simplex 0,
-      S.lawUniverse.Required (lawIndex sigma)
+      S.equationSystem.toLegacyLawUniverse.Required (lawIndex sigma)
 
 namespace CoverRelativeCechRestrictionRealizedPointwiseAtomLawInputBoundaryBasis
 
@@ -19882,9 +19870,9 @@ theorem constructs_freeSource_and_exposes_pointwise_nonvacuity_and_support
         (exists atom : U.Atom,
           atom ∈ source.atomSupport sigma localInput ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ source.lawSupport sigma localInput ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         Exists fun localSection :
           Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) =>
           localSection = source.interpret sigma localInput /\
@@ -19925,10 +19913,10 @@ structure CoverRelativeCechBoundaryPrimitivePointwiseAtomLawInputBoundaryBasis
   atom_traceVisible :
     forall sigma : cover.simplex 0,
       semanticSite.sourceTraceToken (atom sigma) = true
-  lawIndex : (sigma : cover.simplex 0) -> S.lawUniverse.Index
+  lawIndex : (sigma : cover.simplex 0) -> S.equationSystem.toLegacyLawUniverse.Index
   law_required :
     forall sigma : cover.simplex 0,
-      S.lawUniverse.Required (lawIndex sigma)
+      S.equationSystem.toLegacyLawUniverse.Required (lawIndex sigma)
 
 namespace CoverRelativeCechBoundaryPrimitivePointwiseAtomLawInputBoundaryBasis
 
@@ -20005,9 +19993,9 @@ theorem constructs_freeSource_and_exposes_pointwise_nonvacuity_and_support
         (exists atom : U.Atom,
           atom ∈ source.atomSupport sigma localInput ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ source.lawSupport sigma localInput ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         Exists fun localSection :
           Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) =>
           localSection = source.interpret sigma localInput /\
@@ -20111,18 +20099,18 @@ structure CoverRelativeCechSemanticAtomLawInputBoundaryGeometry
           semanticSite.sourceTraceToken atom = true
   lawSupport :
     (sigma : cover.simplex 0) ->
-      LocalBoundaryGenerator sigma -> List S.lawUniverse.Index
+      LocalBoundaryGenerator sigma -> List S.equationSystem.toLegacyLawUniverse.Index
   lawSupport_nonempty :
     forall (sigma : cover.simplex 0) (localGen : LocalBoundaryGenerator sigma),
-      exists lawIndex : S.lawUniverse.Index,
+      exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ lawSupport sigma localGen
   lawSupport_required :
     forall (sigma : cover.simplex 0) (localGen : LocalBoundaryGenerator sigma)
-      (lawIndex : S.lawUniverse.Index),
-      lawIndex ∈ lawSupport sigma localGen -> S.lawUniverse.Required lawIndex
+      (lawIndex : S.equationSystem.toLegacyLawUniverse.Index),
+      lawIndex ∈ lawSupport sigma localGen -> S.equationSystem.toLegacyLawUniverse.Required lawIndex
   semanticAtomLawBoundary :
     (sigma : cover.simplex 0) -> LocalBoundaryGenerator sigma ->
-      List U.Atom -> List S.lawUniverse.Index ->
+      List U.Atom -> List S.equationSystem.toLegacyLawUniverse.Index ->
         Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) -> Prop
   interpret :
     (sigma : cover.simplex 0) -> LocalBoundaryGenerator sigma ->
@@ -20217,9 +20205,9 @@ theorem exposes_visible_atom_required_law_and_local_boundary
       (exists atom : U.Atom,
         atom ∈ geometry.atomSupport sigma (geometry.generator sigma) ∧
           semanticSite.sourceTraceToken atom = true) /\
-      (exists lawIndex : S.lawUniverse.Index,
+      (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ geometry.lawSupport sigma (geometry.generator sigma) ∧
-          S.lawUniverse.Required lawIndex) /\
+          S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
       geometry.semanticAtomLawBoundary sigma
         (geometry.generator sigma)
         (geometry.atomSupport sigma (geometry.generator sigma))
@@ -20406,9 +20394,9 @@ theorem constructs_additiveCechCocycleInputLayer_and_residualBoundary_and_h1Zero
       (exists atom : U.Atom,
         atom ∈ geometry.atomSupport sigma (geometry.generator sigma) ∧
           semanticSite.sourceTraceToken atom = true) /\
-      (exists lawIndex : S.lawUniverse.Index,
+      (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ geometry.lawSupport sigma (geometry.generator sigma) ∧
-          S.lawUniverse.Required lawIndex) /\
+          S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
       geometry.semanticAtomLawBoundary sigma
         (geometry.generator sigma)
         (geometry.atomSupport sigma (geometry.generator sigma))
@@ -20509,9 +20497,9 @@ theorem constructs_groundedComparisonPackage_and_h1Zero
       (exists atom : U.Atom,
         atom ∈ geometry.atomSupport sigma (geometry.generator sigma) ∧
           semanticSite.sourceTraceToken atom = true) /\
-      (exists lawIndex : S.lawUniverse.Index,
+      (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ geometry.lawSupport sigma (geometry.generator sigma) ∧
-          S.lawUniverse.Required lawIndex) /\
+          S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
       geometry.semanticAtomLawBoundary sigma
         (geometry.generator sigma)
         (geometry.atomSupport sigma (geometry.generator sigma))
@@ -20595,9 +20583,9 @@ theorem freeSource_constructs_groundedComparisonPackage_and_h1Zero
       (exists atom : U.Atom,
         atom ∈ source.atomSupport sigma (source.input sigma) ∧
           semanticSite.sourceTraceToken atom = true) /\
-      (exists lawIndex : S.lawUniverse.Index,
+      (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ source.lawSupport sigma (source.input sigma) ∧
-          S.lawUniverse.Required lawIndex) /\
+          S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
       CoverRelativeCechFreeSemanticAtomLawBoundary source sigma
         (source.input sigma)
         (source.atomSupport sigma (source.input sigma))
@@ -20663,9 +20651,9 @@ theorem pointwiseInputBoundaryBasis_constructs_groundedComparisonPackage_and_h1Z
       (exists atom : U.Atom,
         atom ∈ source.atomSupport sigma (source.input sigma) ∧
           semanticSite.sourceTraceToken atom = true) /\
-      (exists lawIndex : S.lawUniverse.Index,
+      (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ source.lawSupport sigma (source.input sigma) ∧
-          S.lawUniverse.Required lawIndex) /\
+          S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
       CoverRelativeCechFreeSemanticAtomLawBoundary source sigma
         (source.input sigma)
         (source.atomSupport sigma (source.input sigma))
@@ -20732,9 +20720,9 @@ theorem restrictionRealizedPointwiseBasis_constructs_groundedComparisonPackage_a
       (exists atom : U.Atom,
         atom ∈ source.atomSupport sigma (source.input sigma) ∧
           semanticSite.sourceTraceToken atom = true) /\
-      (exists lawIndex : S.lawUniverse.Index,
+      (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ source.lawSupport sigma (source.input sigma) ∧
-          S.lawUniverse.Required lawIndex) /\
+          S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
       CoverRelativeCechFreeSemanticAtomLawBoundary source sigma
         (source.input sigma)
         (source.atomSupport sigma (source.input sigma))
@@ -20801,9 +20789,9 @@ theorem boundaryPrimitivePointwiseBasis_constructs_groundedComparisonPackage_and
       (exists atom : U.Atom,
         atom ∈ source.atomSupport sigma (source.input sigma) ∧
           semanticSite.sourceTraceToken atom = true) /\
-      (exists lawIndex : S.lawUniverse.Index,
+      (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ source.lawSupport sigma (source.input sigma) ∧
-          S.lawUniverse.Required lawIndex) /\
+          S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
       CoverRelativeCechFreeSemanticAtomLawBoundary source sigma
         (source.input sigma)
         (source.atomSupport sigma (source.input sigma))
@@ -20878,9 +20866,9 @@ theorem inputBoundaryGeometry_constructs_boundaryPrimitivePointwiseBasis_and_gro
         (exists atom : U.Atom,
           atom ∈ source.atomSupport sigma (source.input sigma) ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ source.lawSupport sigma (source.input sigma) ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         CoverRelativeCechFreeSemanticAtomLawBoundary source sigma
           (source.input sigma)
           (source.atomSupport sigma (source.input sigma))
@@ -21008,9 +20996,9 @@ theorem constructs_groundedComparisonPackage_and_h1Zero
       (exists atom : U.Atom,
         atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
           semanticSite.sourceTraceToken atom = true) /\
-      (exists lawIndex : S.lawUniverse.Index,
+      (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
-          S.lawUniverse.Required lawIndex) /\
+          S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
       CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
         (freeSource.input sigma)
         (freeSource.atomSupport sigma (freeSource.input sigma))
@@ -21103,9 +21091,9 @@ theorem canonicalFreeCoverBoundary_constructs_boundaryPrimitivePointwiseBasis_an
       (exists atom : U.Atom,
         atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
           semanticSite.sourceTraceToken atom = true) /\
-      (exists lawIndex : S.lawUniverse.Index,
+      (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
-          S.lawUniverse.Required lawIndex) /\
+          S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
       CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
         (freeSource.input sigma)
         (freeSource.atomSupport sigma (freeSource.input sigma))
@@ -21240,9 +21228,9 @@ theorem constructs_groundedComparisonPackage_and_h1Zero
       (exists atom : U.Atom,
         atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
           semanticSite.sourceTraceToken atom = true) /\
-      (exists lawIndex : S.lawUniverse.Index,
+      (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
-          S.lawUniverse.Required lawIndex) /\
+          S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
       CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
         (freeSource.input sigma)
         (freeSource.atomSupport sigma (freeSource.input sigma))
@@ -21335,9 +21323,9 @@ theorem atomLawOverlap_restrictionRealized_constructs_boundaryGeneratedRoute_and
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma localInput ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma localInput ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         Exists fun localSection :
           Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) =>
           localSection = freeSource.interpret sigma localInput /\
@@ -21503,9 +21491,9 @@ theorem constructs_groundedComparisonPackage_and_h1Zero
       (exists atom : U.Atom,
         atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
           semanticSite.sourceTraceToken atom = true) /\
-      (exists lawIndex : S.lawUniverse.Index,
+      (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
-          S.lawUniverse.Required lawIndex) /\
+          S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
       CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
         (freeSource.input sigma)
         (freeSource.atomSupport sigma (freeSource.input sigma))
@@ -21599,9 +21587,9 @@ theorem atomLawOverlap_baseRestriction_constructs_boundaryGeneratedRoute_and_h1Z
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma localInput ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma localInput ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         Exists fun localSection :
           Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) =>
           localSection = freeSource.interpret sigma localInput /\
@@ -21753,9 +21741,9 @@ theorem atomLawOverlap_finitePosetChartProjection_constructs_boundaryGeneratedRo
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma localInput ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma localInput ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         Exists fun localSection :
           Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) =>
           localSection = freeSource.interpret sigma localInput /\
@@ -21904,9 +21892,9 @@ theorem atomLawOverlap_pointwiseFinitePosetChartProjection_constructs_source_and
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma localInput ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma localInput ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         Exists fun localSection :
           Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) =>
           localSection = freeSource.interpret sigma localInput /\
@@ -22029,9 +22017,9 @@ theorem atomLawOverlap_pointwiseFinitePosetChartProjection_constructs_generatedC
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma localInput ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma localInput ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         Exists fun localSection :
           Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) =>
           localSection = freeSource.interpret sigma localInput /\
@@ -27305,7 +27293,7 @@ theorem no_atomLawOverlap_sourceSectionFreeSkeleton_requiredSupport_supportReadi
 Cycle 320 lawful-local-object constructor reduction.
 
 Even if the support-only source is enriched with local architecture-object
-readings that are lawful for every required law in `S.lawUniverse`, a uniform
+readings that are lawful for every required law in `S.equationSystem.toLegacyLawUniverse`, a uniform
 constructor of source-`C0` generated residual-zero still constructs the same
 isolated `source.arrowCompatibilityLaw`.
 
@@ -27347,7 +27335,7 @@ theorem atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_supportReadi
           |>.toObstructionCoefficientRegime
             coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
         AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
-          S.lawUniverse)
+          S.equationSystem.toLegacyLawUniverse)
     (hsupport :
       Nonempty
         (AtomLawOverlapCanonicalFreeSupportReading
@@ -27416,7 +27404,7 @@ theorem no_atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_supportRe
           |>.toObstructionCoefficientRegime
             coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
         AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
-          S.lawUniverse)
+          S.equationSystem.toLegacyLawUniverse)
     (hmissing : ¬ source.arrowCompatibilityLaw)
     (hsupport :
       Nonempty
@@ -27483,7 +27471,7 @@ theorem atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_supportReadi
           |>.toObstructionCoefficientRegime
             coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
         AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
-          S.lawUniverse)
+          S.equationSystem.toLegacyLawUniverse)
     (hsupport :
       Nonempty
         (AtomLawOverlapCanonicalFreeSupportReading
@@ -27546,7 +27534,7 @@ theorem no_atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_supportRe
           |>.toObstructionCoefficientRegime
             coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
         AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
-          S.lawUniverse)
+          S.equationSystem.toLegacyLawUniverse)
     (hmissing : ¬ source.arrowCompatibilityLaw)
     (hsupport :
       Nonempty
@@ -27607,7 +27595,7 @@ theorem atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_displayedReq
           |>.toObstructionCoefficientRegime
             coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
         AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
-          S.lawUniverse)
+          S.equationSystem.toLegacyLawUniverse)
     (evaluator :
       source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput) :
     source.pointwiseSupportOnlyOverlapRestrictionEquality := by
@@ -27658,7 +27646,7 @@ theorem atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_displayedReq
           |>.toObstructionCoefficientRegime
             coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
         AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
-          S.lawUniverse)
+          S.equationSystem.toLegacyLawUniverse)
     (evaluator :
       source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput) :
     source.arrowCompatibilityLaw := by
@@ -27706,7 +27694,7 @@ theorem no_atomLawOverlap_sourceSectionFreeSkeleton_lawfulLocalObjects_displayed
           |>.toObstructionCoefficientRegime
             coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
         AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
-          S.lawUniverse)
+          S.equationSystem.toLegacyLawUniverse)
     (hmissing : ¬ source.arrowCompatibilityLaw) :
     ¬ source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput := by
   intro evaluator
@@ -27755,21 +27743,19 @@ theorem no_atomLawOverlap_sourceSectionFreeSkeleton_currentLawHolds_displayedReq
           |>.toObstructionCoefficientRegime
             coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
         source.LocalInput i -> AAT.AG.ArchitectureObject U)
-    (hcoverage : S.lawUniverse.coverageAssumptions)
-    (hexactness : S.lawUniverse.exactnessAssumptions)
     (hlawful :
       forall i :
         ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
           |>.toObstructionCoefficientRegime
             coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
         AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
-          S.lawUniverse)
+          S.equationSystem.toLegacyLawUniverse)
     (hmissing : ¬ source.arrowCompatibilityLaw) :
     ¬ (source.currentLawUniverseHoldsInputBoundary objectOfLocalInput ->
         source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput) := by
   exact
     source.no_currentLawUniverseHoldsInputBoundary_constructor_to_displayedRequiredLawRestrictionEvaluator_without_arrowCompatibilityLaw
-      objectOfLocalInput hcoverage hexactness hlawful hmissing
+      objectOfLocalInput hlawful hmissing
 
 /--
 Cycle 324 generated-`K` direct bare-equality obstruction.
@@ -27807,21 +27793,19 @@ theorem no_atomLawOverlap_sourceSectionFreeSkeleton_currentLawHolds_pointwiseSup
           |>.toObstructionCoefficientRegime
             coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
         source.LocalInput i -> AAT.AG.ArchitectureObject U)
-    (hcoverage : S.lawUniverse.coverageAssumptions)
-    (hexactness : S.lawUniverse.exactnessAssumptions)
     (hlawful :
       forall i :
         ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
           |>.toObstructionCoefficientRegime
             coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
         AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
-          S.lawUniverse)
+          S.equationSystem.toLegacyLawUniverse)
     (hmissing : ¬ source.arrowCompatibilityLaw) :
     ¬ (source.currentLawUniverseHoldsInputBoundary objectOfLocalInput ->
         source.pointwiseSupportOnlyOverlapRestrictionEquality) := by
   exact
     source.no_currentLawUniverseHoldsInputBoundary_constructor_to_pointwiseSupportOnlyOverlapRestrictionEquality_without_arrowCompatibilityLaw
-      objectOfLocalInput hcoverage hexactness hlawful hmissing
+      objectOfLocalInput hlawful hmissing
 
 /--
 Cycle 324 generated-`K` interpretation-blindness boundary.
@@ -27912,15 +27896,13 @@ theorem no_atomLawOverlap_sourceSectionFreeSkeleton_interpretationBlind_currentL
           |>.toObstructionCoefficientRegime
             coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
         source.LocalInput i -> AAT.AG.ArchitectureObject U)
-    (hcoverage : S.lawUniverse.coverageAssumptions)
-    (hexactness : S.lawUniverse.exactnessAssumptions)
     (hlawful :
       forall i :
         ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
           |>.toObstructionCoefficientRegime
             coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
         AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
-          S.lawUniverse)
+          S.equationSystem.toLegacyLawUniverse)
     (hmissing : ¬ source.arrowCompatibilityLaw) :
     ¬ (forall interpret' :
         (i :
@@ -27938,7 +27920,7 @@ theorem no_atomLawOverlap_sourceSectionFreeSkeleton_interpretationBlind_currentL
             objectOfLocalInput) := by
   exact
     source.no_interpretationBlind_currentLawUniverseHoldsInputBoundary_constructor_to_displayedRequiredLawRestrictionEvaluator_without_arrowCompatibilityLaw
-      objectOfLocalInput hcoverage hexactness hlawful hmissing
+      objectOfLocalInput hlawful hmissing
 
 /--
 Cycle 317 generated-residual constructor: support-only canonical/free atom/law
@@ -28214,7 +28196,7 @@ theorem atomLawOverlap_sourceSectionFreeSkeleton_lawfulRestrictionEvaluator_cons
           |>.toObstructionCoefficientRegime
             coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
         AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
-          S.lawUniverse)
+          S.equationSystem.toLegacyLawUniverse)
     (evaluator :
       source.displayedRequiredLawRestrictionEvaluator objectOfLocalInput) :
     let K :=
@@ -28417,15 +28399,13 @@ theorem no_atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_supportRe
           |>.toObstructionCoefficientRegime
             coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
         source.LocalInput i -> AAT.AG.ArchitectureObject U)
-    (hcoverage : S.lawUniverse.coverageAssumptions)
-    (hexactness : S.lawUniverse.exactnessAssumptions)
     (hlawful :
       forall i :
         ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
           |>.toObstructionCoefficientRegime
             coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
         AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
-          S.lawUniverse)
+          S.equationSystem.toLegacyLawUniverse)
     (hmissing : ¬ source.arrowCompatibilityLaw)
     (hsupport :
       Nonempty
@@ -28442,7 +28422,7 @@ theorem no_atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_supportRe
   have hboundary :
       source.currentLawUniverseHoldsInputBoundary objectOfLocalInput :=
     source.lawfulLocalObjects_constructs_currentLawUniverseHoldsInputBoundary
-      objectOfLocalInput hcoverage hexactness hlawful
+      objectOfLocalInput hlawful
   exact hmissing
     (atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_supportReading_canonicalFreeOverlapReading_constructor_constructs_arrowCompatibilityLaw
       coverGeometry coefficientGeometry skeleton source objectOfLocalInput
@@ -28502,7 +28482,7 @@ def atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_supportReading_d
   have hoverlap :
       source.pointwiseSupportOnlyOverlapRestrictionEquality :=
     source.displayedRequiredLawRestrictionEvaluator_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
-      objectOfLocalInput hboundary.2.2.2 evaluator
+      objectOfLocalInput hboundary.2 evaluator
   exact
     atomLawOverlap_sourceSectionFreeSkeleton_supportReading_and_overlapEquality_constructs_canonicalFreeOverlapReading
       coverGeometry coefficientGeometry skeleton source supportReading hoverlap
@@ -28619,7 +28599,7 @@ theorem atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_displayedReq
   have hoverlap :
       source.pointwiseSupportOnlyOverlapRestrictionEquality :=
     source.displayedRequiredLawRestrictionEvaluator_constructs_pointwiseSupportOnlyOverlapRestrictionEquality
-      objectOfLocalInput hboundary.2.2.2 evaluator
+      objectOfLocalInput hboundary.2 evaluator
   have harrow : source.arrowCompatibilityLaw :=
     (source.pointwiseSupportOnlyOverlapRestrictionEquality_iff_arrowCompatibilityLaw).1
       hoverlap
@@ -29061,15 +29041,13 @@ theorem no_atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_coefficie
           |>.toObstructionCoefficientRegime
             coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index) ->
         source.LocalInput i -> AAT.AG.ArchitectureObject U)
-    (hcoverage : S.lawUniverse.coverageAssumptions)
-    (hexactness : S.lawUniverse.exactnessAssumptions)
     (hlawful :
       forall i :
         ((coverGeometry.canonicalTupleOverlapGeometryFromOverlap.toCanonicalTupleCoverGeometry)
           |>.toObstructionCoefficientRegime
             coefficientGeometry.toAdditiveRestrictionLaw.toObstructionSheaf).cover.Index,
         AAT.AG.Lawfulness (objectOfLocalInput i (source.input i))
-          S.lawUniverse)
+          S.equationSystem.toLegacyLawUniverse)
     (hmissing : ¬ source.arrowCompatibilityLaw)
     (hlawSupport :
       forall i :
@@ -29139,7 +29117,7 @@ theorem no_atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_coefficie
   have hboundary :
       source.currentLawUniverseHoldsInputBoundary objectOfLocalInput :=
     source.lawfulLocalObjects_constructs_currentLawUniverseHoldsInputBoundary
-      objectOfLocalInput hcoverage hexactness hlawful
+      objectOfLocalInput hlawful
   exact hmissing
     (atomLawOverlap_sourceSectionFreeSkeleton_currentLawBoundary_coefficientLawSupport_overlapReader_constructor_constructs_arrowCompatibilityLaw
       coverGeometry coefficientGeometry skeleton source choices objectOfLocalInput
@@ -29328,9 +29306,9 @@ theorem constructs_groundedComparisonPackage_and_h1Zero
       (exists atom : U.Atom,
         atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
           semanticSite.sourceTraceToken atom = true) /\
-      (exists lawIndex : S.lawUniverse.Index,
+      (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
-          S.lawUniverse.Required lawIndex) /\
+          S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
       CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
         (freeSource.input sigma)
         (freeSource.atomSupport sigma (freeSource.input sigma))
@@ -29431,9 +29409,9 @@ theorem atomLawOverlap_chartBaseRestriction_constructs_boundaryGeneratedRoute_an
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma localInput ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma localInput ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         Exists fun localSection :
           Ob.carrier.toPresheaf.obj (op (cover.overlap 0 sigma)) =>
           localSection = freeSource.interpret sigma localInput /\
@@ -38975,9 +38953,9 @@ theorem constructs_selectedSemanticCoefficientDirectRealizationLayer_and_additiv
       (exists atom : U.Atom,
         atom ∈ geometry.atomSupport sigma (geometry.generator sigma) ∧
           semanticSite.sourceTraceToken atom = true) /\
-      (exists lawIndex : S.lawUniverse.Index,
+      (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ geometry.lawSupport sigma (geometry.generator sigma) ∧
-          S.lawUniverse.Required lawIndex) /\
+          S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
       geometry.semanticAtomLawBoundary sigma
         (geometry.generator sigma)
         (geometry.atomSupport sigma (geometry.generator sigma))
@@ -39140,9 +39118,9 @@ theorem constructs_identityC0ReplacementRoute_and_additiveCechBoundaryRoute
       (exists atom : U.Atom,
         atom ∈ geometry.atomSupport sigma (geometry.generator sigma) ∧
           semanticSite.sourceTraceToken atom = true) /\
-      (exists lawIndex : S.lawUniverse.Index,
+      (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ geometry.lawSupport sigma (geometry.generator sigma) ∧
-          S.lawUniverse.Required lawIndex) /\
+          S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
       geometry.semanticAtomLawBoundary sigma
         (geometry.generator sigma)
         (geometry.atomSupport sigma (geometry.generator sigma))
@@ -39265,9 +39243,9 @@ theorem canonicalFreeCoverBoundary_constructs_selectedSemanticCoefficientDirectR
       (exists atom : U.Atom,
         atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
           semanticSite.sourceTraceToken atom = true) /\
-      (exists lawIndex : S.lawUniverse.Index,
+      (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
-          S.lawUniverse.Required lawIndex) /\
+          S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
       CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
         (freeSource.input sigma)
         (freeSource.atomSupport sigma (freeSource.input sigma))
@@ -39369,9 +39347,9 @@ theorem canonicalFreeCoverBoundary_constructs_selectedSemanticCoefficientDirectR
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
           (freeSource.input sigma)
           (freeSource.atomSupport sigma (freeSource.input sigma))
@@ -39460,9 +39438,9 @@ theorem canonicalFreeCoverBoundary_constructs_selectedSemanticCoefficientDirectR
       (exists atom : U.Atom,
         atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
           semanticSite.sourceTraceToken atom = true) /\
-      (exists lawIndex : S.lawUniverse.Index,
+      (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
-          S.lawUniverse.Required lawIndex) /\
+          S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
       CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
         (freeSource.input sigma)
         (freeSource.atomSupport sigma (freeSource.input sigma))
@@ -39595,9 +39573,9 @@ theorem canonicalFreeCoverBoundary_constructs_identityC0ReplacementRoute_and_add
       (exists atom : U.Atom,
         atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
           semanticSite.sourceTraceToken atom = true) /\
-      (exists lawIndex : S.lawUniverse.Index,
+      (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
         lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
-          S.lawUniverse.Required lawIndex) /\
+          S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
       CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
         (freeSource.input sigma)
         (freeSource.atomSupport sigma (freeSource.input sigma))
@@ -39665,9 +39643,9 @@ theorem canonicalFreeCoverBoundary_constructs_identityC0ReplacementRoute_and_add
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
           (freeSource.input sigma)
           (freeSource.atomSupport sigma (freeSource.input sigma))
@@ -39765,9 +39743,9 @@ theorem restrictionRealized_constructs_selectedSemanticCoefficientDirectRealizat
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
           (freeSource.input sigma)
           (freeSource.atomSupport sigma (freeSource.input sigma))
@@ -39963,9 +39941,9 @@ theorem restrictionRealized_constructs_identityC0ReplacementRoute_and_additiveCe
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
           (freeSource.input sigma)
           (freeSource.atomSupport sigma (freeSource.input sigma))
@@ -40132,9 +40110,9 @@ theorem baseRestriction_constructs_selectedSemanticCoefficientDirectRealizationL
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
           (freeSource.input sigma)
           (freeSource.atomSupport sigma (freeSource.input sigma))
@@ -40353,9 +40331,9 @@ theorem baseRestriction_constructs_identityC0ReplacementRoute_and_additiveCechBo
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
           (freeSource.input sigma)
           (freeSource.atomSupport sigma (freeSource.input sigma))
@@ -40550,9 +40528,9 @@ theorem chartBaseRestriction_constructs_selectedSemanticCoefficientDirectRealiza
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
           (freeSource.input sigma)
           (freeSource.atomSupport sigma (freeSource.input sigma))
@@ -40804,9 +40782,9 @@ theorem chartBaseRestriction_constructs_identityC0ReplacementRoute_and_additiveC
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
           (freeSource.input sigma)
           (freeSource.atomSupport sigma (freeSource.input sigma))
@@ -41057,9 +41035,9 @@ theorem chartIndexedZeroBaseRestriction_constructs_selectedSemanticCoefficientDi
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
           (freeSource.input sigma)
           (freeSource.atomSupport sigma (freeSource.input sigma))
@@ -41379,9 +41357,9 @@ theorem chartIndexedZeroBaseRestriction_constructs_identityC0ReplacementRoute_an
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
           (freeSource.input sigma)
           (freeSource.atomSupport sigma (freeSource.input sigma))
@@ -41660,9 +41638,9 @@ theorem atomLawSelectedChartGeometry_constructs_selectedSemanticCoefficientDirec
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
           (freeSource.input sigma)
           (freeSource.atomSupport sigma (freeSource.input sigma))
@@ -41911,9 +41889,9 @@ theorem atomLawSelectedChartGeometry_constructs_identityC0ReplacementRoute_and_a
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
           (freeSource.input sigma)
           (freeSource.atomSupport sigma (freeSource.input sigma))
@@ -42181,9 +42159,9 @@ theorem finitePosetGeneratedCoverGeometry_constructs_identityC0ReplacementRoute_
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
           (freeSource.input sigma)
           (freeSource.atomSupport sigma (freeSource.input sigma))
@@ -42426,9 +42404,9 @@ theorem finitePosetGeneratedCoverGeometry_pointwiseBasis_constructs_identityC0Re
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma localInput ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma localInput ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         Exists fun localSection :
           Ob.carrier.toPresheaf.obj
             (op (charted.toCoverRelativeCechCover.overlap 0 sigma)) =>
@@ -42486,9 +42464,9 @@ theorem finitePosetGeneratedCoverGeometry_pointwiseBasis_constructs_identityC0Re
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma (freeSource.input sigma) ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma (freeSource.input sigma) ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         CoverRelativeCechFreeSemanticAtomLawBoundary freeSource sigma
           (freeSource.input sigma)
           (freeSource.atomSupport sigma (freeSource.input sigma))
@@ -42743,9 +42721,9 @@ theorem finitePosetGeneratedCoverGeometry_orderFreePointwiseBasis_constructs_ide
         (exists atom : U.Atom,
           atom ∈ freeSource.atomSupport sigma localInput ∧
             semanticSite.sourceTraceToken atom = true) /\
-        (exists lawIndex : S.lawUniverse.Index,
+        (exists lawIndex : S.equationSystem.toLegacyLawUniverse.Index,
           lawIndex ∈ freeSource.lawSupport sigma localInput ∧
-            S.lawUniverse.Required lawIndex) /\
+            S.equationSystem.toLegacyLawUniverse.Required lawIndex) /\
         Exists fun localSection :
           Ob.carrier.toPresheaf.obj
             (op (charted.toCoverRelativeCechCover.overlap 0 sigma)) =>

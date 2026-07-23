@@ -165,7 +165,8 @@ def circleDefectOneSection : CircleSection :=
   finiteModelLawEquationGeometry.toObstructionSection
     AAT.AG.FiniteModel.siteBase
     (Ideal.Quotient.mk
-      (finiteModelLawEquationCore.obstructionIdeal AAT.AG.FiniteModel.siteBase)
+      (AAT.AG.FiniteModel.site.equationSystem.obstructionIdeal
+        AAT.AG.FiniteModel.siteBase)
       (1 : ℤ))
 
 /-- Read a degree-`0` circle cochain at a vertex, in the shared section carrier. -/

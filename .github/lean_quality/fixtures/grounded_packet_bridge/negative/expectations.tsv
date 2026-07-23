@@ -1,7 +1,0 @@
-# case_id	contract	error_code
-constant-project	constant-project.contract.tsv	E_BRIDGE_PROJECT_PROVENANCE
-arbitrary-skeleton	arbitrary-skeleton.contract.tsv	E_BRIDGE_SKELETON_PROVENANCE
-binder-unused	binder-unused.contract.tsv	E_BRIDGE_BINDER_USE
-field-swap	field-swap.contract.tsv	E_BRIDGE_FIELD_MAPPING
-missing-conclusion	missing-conclusion.contract.tsv	E_BRIDGE_CONCLUSION_SET
-added-premise	added-premise.contract.tsv	E_BRIDGE_PREMISE_SET

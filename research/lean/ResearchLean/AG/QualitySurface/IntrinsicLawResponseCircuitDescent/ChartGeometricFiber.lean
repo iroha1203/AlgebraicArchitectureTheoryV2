@@ -60,8 +60,8 @@ variable {k : Type uk} {Op : Type uOp} {Chart : Type uChart}
 variable {State : Type uState} {BeforeWitness : Type uBefore}
 variable {AfterWitness : Type uAfter}
 variable [Field k] [Fintype Op] [Fintype Chart]
-variable (Core : SemanticLawEquationWitnessIdealCore S) (W : S.category)
-variable [Algebra k (Core.Observable W)]
+variable (E : ArchitecturalEquationSystem S.contextPreorder) (W : S.category)
+variable [Algebra k (E.Observable W)]
 
 namespace LocalizationFiber
 
@@ -437,50 +437,50 @@ private noncomputable def tildeRestrictFreeIso
 /-- Every selected lawful-space chart is affine: its image under the lawful
 open immersion is the corresponding principal basic open. -/
 theorem lawfulChartOpenOnSpace_isAffineOpen
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
     (i : Chart) :
     AlgebraicGeometry.IsAffineOpen
-      (G.lawfulChartOpenOnSpace (Core.obstructionIdeal W) i) := by
+      (G.lawfulChartOpenOnSpace (E.obstructionIdeal W) i) := by
   apply (Scheme.Hom.isAffineOpen_iff_of_isOpenImmersion
-    (G.lawfulOpen (Core.obstructionIdeal W)).ι).mp
+    (G.lawfulOpen (E.obstructionIdeal W)).ι).mp
   rw [G.image_lawfulChartOpenOnSpace]
   exact IsAffineOpen.Spec_basicOpen _
 
 /-- The actual allowed-operation image sheaf restricted along the affine
 spectrum presentation of a selected lawful-space chart. -/
 noncomputable abbrev chartAllowedOperationOnSpec
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
     (i : Chart) :
     (AlgebraicGeometry.Spec
-      (.of (ChartCircuitLocus.chartRing Core W G i))).Modules :=
-  let hU := lawfulChartOpenOnSpace_isAffineOpen Core W G i
-  (Pres.allowedOperationSheaf G (Core.obstructionIdeal W)).restrict hU.fromSpec
+      (.of (ChartCircuitLocus.chartRing E W G i))).Modules :=
+  let hU := lawfulChartOpenOnSpace_isAffineOpen E W G i
+  (Pres.allowedOperationSheaf G (E.obstructionIdeal W)).restrict hU.fromSpec
 
 private noncomputable def chartSectionsToRestrictedTop
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
     (i : Chart) :
-    ModuleCat.of (ChartCircuitLocus.chartRing Core W G i)
-        (ChartCircuitLocus.chartAllowedOperationModule Core W Pres G i) ⟶
-      moduleSpecΓFunctor.obj (chartAllowedOperationOnSpec Core W Pres G i) := by
-  let U0 := G.lawfulChartOpenOnSpace (Core.obstructionIdeal W) i
-  let hU := lawfulChartOpenOnSpace_isAffineOpen Core W G i
+    ModuleCat.of (ChartCircuitLocus.chartRing E W G i)
+        (ChartCircuitLocus.chartAllowedOperationModule E W Pres G i) ⟶
+      moduleSpecΓFunctor.obj (chartAllowedOperationOnSpec E W Pres G i) := by
+  let U0 := G.lawfulChartOpenOnSpace (E.obstructionIdeal W) i
+  let hU := lawfulChartOpenOnSpace_isAffineOpen E W G i
   let j := hU.fromSpec
-  let M := Pres.allowedOperationSheaf G (Core.obstructionIdeal W)
-  let eU : j ''ᵁ (⊤ : (Spec (.of (ChartCircuitLocus.chartRing Core W G i))).Opens) = U0 :=
+  let M := Pres.allowedOperationSheaf G (E.obstructionIdeal W)
+  let eU : j ''ᵁ (⊤ : (Spec (.of (ChartCircuitLocus.chartRing E W G i))).Opens) = U0 :=
     j.image_top_eq_opensRange.trans hU.opensRange_fromSpec
-  let R0 := ChartCircuitLocus.chartRing Core W G i
-  let T := chartAllowedOperationOnSpec Core W Pres G i
+  let R0 := ChartCircuitLocus.chartRing E W G i
+  let T := chartAllowedOperationOnSpec E W Pres G i
   let Q := ((SheafOfModules.forgetToSheafModuleCat
     (Spec (.of R0)).ringCatSheaf (.op ⊤)
     (initialOpOfTerminal isTerminalTop)).obj T).val.obj (.op ⊤)
   letI : Module R0 Q :=
     Module.compHom Q (StructureSheaf.globalSectionsIso R0).hom.hom
   have hscalar :
-      (G.lawfulSpace (Core.obstructionIdeal W)).presheaf.map
+      (G.lawfulSpace (E.obstructionIdeal W)).presheaf.map
           (eqToHom eU).op =
         (Scheme.ΓSpecIso R0).inv ≫
           (j.appIso (⊤ : (Spec (.of R0)).Opens)).inv := by
@@ -500,12 +500,12 @@ private noncomputable def chartSectionsToRestrictedTop
       map_smul' := ?_ }
   intro r x
   calc
-    _ = ((G.lawfulSpace (Core.obstructionIdeal W)).ringCatSheaf.val.map
+    _ = ((G.lawfulSpace (E.obstructionIdeal W)).ringCatSheaf.val.map
           (eqToHom eU).op).hom r •
         (M.val.map (eqToHom eU).op).hom x := by
       exact (M.val.map (eqToHom eU).op).hom.map_smul r x
     _ = _ := by
-      change ((G.lawfulSpace (Core.obstructionIdeal W)).ringCatSheaf.val.map
+      change ((G.lawfulSpace (E.obstructionIdeal W)).ringCatSheaf.val.map
             (eqToHom eU).op).hom r •
           (M.val.map (eqToHom eU).op).hom x =
         (j.appIso (⊤ : (Spec (.of R0)).Opens)).inv.hom
@@ -515,21 +515,21 @@ private noncomputable def chartSectionsToRestrictedTop
       exact ConcreteCategory.congr_hom hscalar r
 
 private noncomputable def chartSectionsIso
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
     (i : Chart) :
-    ModuleCat.of (ChartCircuitLocus.chartRing Core W G i)
-        (ChartCircuitLocus.chartAllowedOperationModule Core W Pres G i) ≅
-      moduleSpecΓFunctor.obj (chartAllowedOperationOnSpec Core W Pres G i) :=
+    ModuleCat.of (ChartCircuitLocus.chartRing E W G i)
+        (ChartCircuitLocus.chartAllowedOperationModule E W Pres G i) ≅
+      moduleSpecΓFunctor.obj (chartAllowedOperationOnSpec E W Pres G i) :=
   LinearEquiv.toModuleIso <| LinearEquiv.ofBijective
-    (chartSectionsToRestrictedTop Core W Pres G i).hom (by
-      let U0 := G.lawfulChartOpenOnSpace (Core.obstructionIdeal W) i
-      let hU := lawfulChartOpenOnSpace_isAffineOpen Core W G i
+    (chartSectionsToRestrictedTop E W Pres G i).hom (by
+      let U0 := G.lawfulChartOpenOnSpace (E.obstructionIdeal W) i
+      let hU := lawfulChartOpenOnSpace_isAffineOpen E W G i
       let j := hU.fromSpec
-      let M := Pres.allowedOperationSheaf G (Core.obstructionIdeal W)
+      let M := Pres.allowedOperationSheaf G (E.obstructionIdeal W)
       let eU : j ''ᵁ
-          (⊤ : (Spec (.of (ChartCircuitLocus.chartRing Core W G i))).Opens) = U0 :=
+          (⊤ : (Spec (.of (ChartCircuitLocus.chartRing E W G i))).Opens) = U0 :=
         j.image_top_eq_opensRange.trans hU.opensRange_fromSpec
       change Function.Bijective
         (M.presheaf.map (eqToHom eU).op).hom
@@ -537,13 +537,13 @@ private noncomputable def chartSectionsIso
         (M.presheaf.map (eqToHom eU).op))
 
 private noncomputable def chartDerivationCoefficientPresentation
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
     (i : Chart) :
-    let hU := lawfulChartOpenOnSpace_isAffineOpen Core W G i
+    let hU := lawfulChartOpenOnSpace_isAffineOpen E W G i
     ((Scheme.Modules.restrictFunctor hU.fromSpec).obj
-      (G.derivationCoefficientSheaf (Core.obstructionIdeal W))).Presentation := by
-  let I0 := Core.obstructionIdeal W
-  let hU := lawfulChartOpenOnSpace_isAffineOpen Core W G i
+      (G.derivationCoefficientSheaf (E.obstructionIdeal W))).Presentation := by
+  let I0 := E.obstructionIdeal W
+  let hU := lawfulChartOpenOnSpace_isAffineOpen E W G i
   let P0 := AlgebraicGeometry.presentationTilde
     (R := .of (TypedLocalizationGeometry.ambientLawQuotient I0))
     (M := TypedLocalizationGeometry.ambientDerivationModule
@@ -557,121 +557,121 @@ private noncomputable def chartDerivationCoefficientPresentation
     (restrictPresentation (G.lawfulOpen I0).ι P0)
 
 private theorem restrictedOperationFree_mem_essImage
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
     (i : Chart) :
-    let hU := lawfulChartOpenOnSpace_isAffineOpen Core W G i
-    (tilde.functor (ChartCircuitLocus.chartRing Core W G i)).essImage
+    let hU := lawfulChartOpenOnSpace_isAffineOpen E W G i
+    (tilde.functor (ChartCircuitLocus.chartRing E W G i)).essImage
       ((Scheme.Modules.restrictFunctor hU.fromSpec).obj
         (ArchitectureOperationPresentation.operationFreeSheaf Op G
-          (Core.obstructionIdeal W))) := by
-  let hU := lawfulChartOpenOnSpace_isAffineOpen Core W G i
-  exact ⟨ModuleCat.of (ChartCircuitLocus.chartRing Core W G i)
+          (E.obstructionIdeal W))) := by
+  let hU := lawfulChartOpenOnSpace_isAffineOpen E W G i
+  exact ⟨ModuleCat.of (ChartCircuitLocus.chartRing E W G i)
       (ArchitectureOperationPresentation.operationIndex
-        (Core.Observable W) Op →₀ ChartCircuitLocus.chartRing Core W G i),
+        (E.Observable W) Op →₀ ChartCircuitLocus.chartRing E W G i),
     ⟨tildeRestrictFreeIso hU.fromSpec
       (ArchitectureOperationPresentation.operationIndex
-        (Core.Observable W) Op)⟩⟩
+        (E.Observable W) Op)⟩⟩
 
 private theorem restrictedDerivationCoefficient_mem_essImage
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
     (i : Chart) :
-    let hU := lawfulChartOpenOnSpace_isAffineOpen Core W G i
-    (tilde.functor (ChartCircuitLocus.chartRing Core W G i)).essImage
+    let hU := lawfulChartOpenOnSpace_isAffineOpen E W G i
+    (tilde.functor (ChartCircuitLocus.chartRing E W G i)).essImage
       ((Scheme.Modules.restrictFunctor hU.fromSpec).obj
-        (G.derivationCoefficientSheaf (Core.obstructionIdeal W))) := by
+        (G.derivationCoefficientSheaf (E.obstructionIdeal W))) := by
   exact presentation_mem_tilde_essImage
-    (chartDerivationCoefficientPresentation Core W G i)
+    (chartDerivationCoefficientPresentation E W G i)
 
 private instance restrictedOperationFree_fromTildeΓ_isIso
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
     (i : Chart) :
-    let hU := lawfulChartOpenOnSpace_isAffineOpen Core W G i
+    let hU := lawfulChartOpenOnSpace_isAffineOpen E W G i
     IsIso (Scheme.Modules.fromTildeΓ
-      (R := ChartCircuitLocus.chartRing Core W G i)
+      (R := ChartCircuitLocus.chartRing E W G i)
       ((Scheme.Modules.restrictFunctor hU.fromSpec).obj
         (ArchitectureOperationPresentation.operationFreeSheaf Op G
-          (Core.obstructionIdeal W)))) := by
+          (E.obstructionIdeal W)))) := by
   exact isIso_fromTildeΓ_iff.mpr
-    (restrictedOperationFree_mem_essImage Core W G i)
+    (restrictedOperationFree_mem_essImage E W G i)
 
 private instance restrictedDerivationCoefficient_fromTildeΓ_isIso
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
     (i : Chart) :
-    let hU := lawfulChartOpenOnSpace_isAffineOpen Core W G i
+    let hU := lawfulChartOpenOnSpace_isAffineOpen E W G i
     IsIso (Scheme.Modules.fromTildeΓ
-      (R := ChartCircuitLocus.chartRing Core W G i)
+      (R := ChartCircuitLocus.chartRing E W G i)
       ((Scheme.Modules.restrictFunctor hU.fromSpec).obj
-        (G.derivationCoefficientSheaf (Core.obstructionIdeal W)))) := by
+        (G.derivationCoefficientSheaf (E.obstructionIdeal W)))) := by
   exact isIso_fromTildeΓ_iff.mpr
-    (restrictedDerivationCoefficient_mem_essImage Core W G i)
+    (restrictedDerivationCoefficient_mem_essImage E W G i)
 
 private noncomputable def restrictedOperationArrowIso
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
     (i : Chart) :
-    let hU := lawfulChartOpenOnSpace_isAffineOpen Core W G i
+    let hU := lawfulChartOpenOnSpace_isAffineOpen E W G i
     let F := Scheme.Modules.restrictFunctor hU.fromSpec
-    let f := Pres.operationToCoefficient G (Core.obstructionIdeal W)
+    let f := Pres.operationToCoefficient G (E.obstructionIdeal W)
     Arrow.mk ((tilde.functor
-      (ChartCircuitLocus.chartRing Core W G i)).map
+      (ChartCircuitLocus.chartRing E W G i)).map
         ((moduleSpecΓFunctor
-          (R := ChartCircuitLocus.chartRing Core W G i)).map (F.map f))) ≅
+          (R := ChartCircuitLocus.chartRing E W G i)).map (F.map f))) ≅
       Arrow.mk (F.map f) := by
-  let hU := lawfulChartOpenOnSpace_isAffineOpen Core W G i
+  let hU := lawfulChartOpenOnSpace_isAffineOpen E W G i
   let F := Scheme.Modules.restrictFunctor hU.fromSpec
-  let f := Pres.operationToCoefficient G (Core.obstructionIdeal W)
+  let f := Pres.operationToCoefficient G (E.obstructionIdeal W)
   exact Arrow.isoMk'
-    ((tilde.functor (ChartCircuitLocus.chartRing Core W G i)).map
+    ((tilde.functor (ChartCircuitLocus.chartRing E W G i)).map
       ((moduleSpecΓFunctor
-        (R := ChartCircuitLocus.chartRing Core W G i)).map (F.map f)))
+        (R := ChartCircuitLocus.chartRing E W G i)).map (F.map f)))
     (F.map f)
     (asIso (Scheme.Modules.fromTildeΓ
-      (R := ChartCircuitLocus.chartRing Core W G i)
+      (R := ChartCircuitLocus.chartRing E W G i)
       (F.obj (ArchitectureOperationPresentation.operationFreeSheaf Op G
-        (Core.obstructionIdeal W)))))
+        (E.obstructionIdeal W)))))
     (asIso (Scheme.Modules.fromTildeΓ
-      (R := ChartCircuitLocus.chartRing Core W G i)
-      (F.obj (G.derivationCoefficientSheaf (Core.obstructionIdeal W)))))
+      (R := ChartCircuitLocus.chartRing E W G i)
+      (F.obj (G.derivationCoefficientSheaf (E.obstructionIdeal W)))))
     ((Scheme.Modules.fromTildeΓNatTrans
-      (R := ChartCircuitLocus.chartRing Core W G i)).naturality
+      (R := ChartCircuitLocus.chartRing E W G i)).naturality
         (F.map f)).symm
 
 private noncomputable def chartAllowedOperationImageTildeIso
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
     (i : Chart) :
-    let hU := lawfulChartOpenOnSpace_isAffineOpen Core W G i
+    let hU := lawfulChartOpenOnSpace_isAffineOpen E W G i
     let F := Scheme.Modules.restrictFunctor hU.fromSpec
-    let f := Pres.operationToCoefficient G (Core.obstructionIdeal W)
+    let f := Pres.operationToCoefficient G (E.obstructionIdeal W)
     let g := (moduleSpecΓFunctor
-      (R := ChartCircuitLocus.chartRing Core W G i)).map (F.map f)
-    tilde (R := ChartCircuitLocus.chartRing Core W G i)
+      (R := ChartCircuitLocus.chartRing E W G i)).map (F.map f)
+    tilde (R := ChartCircuitLocus.chartRing E W G i)
       (Abelian.image g) ≅ F.obj (Abelian.image f) := by
-  let hU := lawfulChartOpenOnSpace_isAffineOpen Core W G i
+  let hU := lawfulChartOpenOnSpace_isAffineOpen E W G i
   let F := Scheme.Modules.restrictFunctor hU.fromSpec
-  let f := Pres.operationToCoefficient G (Core.obstructionIdeal W)
+  let f := Pres.operationToCoefficient G (E.obstructionIdeal W)
   let g := (moduleSpecΓFunctor
-    (R := ChartCircuitLocus.chartRing Core W G i)).map (F.map f)
+    (R := ChartCircuitLocus.chartRing E W G i)).map (F.map f)
   exact AffineImageExactness.tildeAbelianImageIso g ≪≫
-    Abelian.im.mapIso (restrictedOperationArrowIso Core W Pres G i) ≪≫
+    Abelian.im.mapIso (restrictedOperationArrowIso E W Pres G i) ≪≫
     (AffineImageExactness.restrictAbelianImageIso hU.fromSpec f).symm
 
 private theorem chartAllowedOperationOnSpec_mem_essImage
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
     (i : Chart) :
-    (tilde.functor (ChartCircuitLocus.chartRing Core W G i)).essImage
-      (chartAllowedOperationOnSpec Core W Pres G i) := by
-  let hU := lawfulChartOpenOnSpace_isAffineOpen Core W G i
+    (tilde.functor (ChartCircuitLocus.chartRing E W G i)).essImage
+      (chartAllowedOperationOnSpec E W Pres G i) := by
+  let hU := lawfulChartOpenOnSpace_isAffineOpen E W G i
   let F := Scheme.Modules.restrictFunctor hU.fromSpec
-  let f := Pres.operationToCoefficient G (Core.obstructionIdeal W)
+  let f := Pres.operationToCoefficient G (E.obstructionIdeal W)
   let g := (moduleSpecΓFunctor
-    (R := ChartCircuitLocus.chartRing Core W G i)).map (F.map f)
+    (R := ChartCircuitLocus.chartRing E W G i)).map (F.map f)
   exact ⟨Abelian.image g,
-    ⟨chartAllowedOperationImageTildeIso Core W Pres G i⟩⟩
+    ⟨chartAllowedOperationImageTildeIso E W Pres G i⟩⟩
 
 /-- The canonical affine comparison for the actual allowed-operation image
 sheaf on a selected chart.  Its image provenance is the composite
@@ -679,90 +679,90 @@ sheaf on a selected chart.  Its image provenance is the composite
 restrictAbelianImageIso.symm`, applied to the defining
 `operationToCoefficient` morphism. -/
 noncomputable def allowedOperationChartTildeIso
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
     (i : Chart) :
     AlgebraicGeometry.tilde
-        (ModuleCat.of (ChartCircuitLocus.chartRing Core W G i)
-          (ChartCircuitLocus.chartAllowedOperationModule Core W Pres G i)) ≅
-      chartAllowedOperationOnSpec Core W Pres G i := by
-  let T := chartAllowedOperationOnSpec Core W Pres G i
+        (ModuleCat.of (ChartCircuitLocus.chartRing E W G i)
+          (ChartCircuitLocus.chartAllowedOperationModule E W Pres G i)) ≅
+      chartAllowedOperationOnSpec E W Pres G i := by
+  let T := chartAllowedOperationOnSpec E W Pres G i
   letI : IsIso (Scheme.Modules.fromTildeΓ T) :=
     isIso_fromTildeΓ_iff.mpr
-      (chartAllowedOperationOnSpec_mem_essImage Core W Pres G i)
+      (chartAllowedOperationOnSpec_mem_essImage E W Pres G i)
   exact (tilde.functor
-      (ChartCircuitLocus.chartRing Core W G i)).mapIso
-        (chartSectionsIso Core W Pres G i) ≪≫
+      (ChartCircuitLocus.chartRing E W G i)).mapIso
+        (chartSectionsIso E W Pres G i) ≪≫
       asIso (Scheme.Modules.fromTildeΓ T)
 
 /-- The `tilde`--Gamma counit of the actual selected-chart
 allowed-operation sheaf is an isomorphism. -/
 instance chartAllowedOperation_fromTildeΓ_isIso
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
     (i : Chart) :
     IsIso (AlgebraicGeometry.Scheme.Modules.fromTildeΓ
-      (R := ChartCircuitLocus.chartRing Core W G i)
-      (chartAllowedOperationOnSpec Core W Pres G i)) :=
+      (R := ChartCircuitLocus.chartRing E W G i)
+      (chartAllowedOperationOnSpec E W Pres G i)) :=
   isIso_fromTildeΓ_iff.mpr
-    ⟨ModuleCat.of (ChartCircuitLocus.chartRing Core W G i)
-        (ChartCircuitLocus.chartAllowedOperationModule Core W Pres G i),
-      ⟨allowedOperationChartTildeIso Core W Pres G i⟩⟩
+    ⟨ModuleCat.of (ChartCircuitLocus.chartRing E W G i)
+        (ChartCircuitLocus.chartAllowedOperationModule E W Pres G i),
+      ⟨allowedOperationChartTildeIso E W Pres G i⟩⟩
 
 /-- The actual restricted labeled response on the affine spectrum presentation
 of a selected chart. -/
 noncomputable def chartLabeledResponseOnSpec
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (e : RequiredGeneratorLabel S) :
-    chartAllowedOperationOnSpec Core W Pres G i ⟶
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (e : RequiredGeneratorLabel E) :
+    chartAllowedOperationOnSpec E W Pres G i ⟶
       SheafOfModules.unit
         (AlgebraicGeometry.Spec
-          (.of (ChartCircuitLocus.chartRing Core W G i))).ringCatSheaf := by
-  let hU := lawfulChartOpenOnSpace_isAffineOpen Core W G i
+          (.of (ChartCircuitLocus.chartRing E W G i))).ringCatSheaf := by
+  let hU := lawfulChartOpenOnSpace_isAffineOpen E W G i
   exact (Scheme.Modules.restrictFunctor hU.fromSpec).map
-      (Pres.labeledResponse Core W G e) ≫
+      (Pres.labeledResponse E W G e) ≫
     (restrictUnitIso hU.fromSpec).hom
 
 /-- The actual allowed-operation sheaf stalk, read as a module over the
 selected chart's global section ring. -/
 noncomputable abbrev chartAllowedOperationStalk
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (p : PrimeSpectrum (ChartCircuitLocus.chartRing Core W G i)) :=
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (p : PrimeSpectrum (ChartCircuitLocus.chartRing E W G i)) :=
   (AlgebraicGeometry.modulesSpecToSheaf.obj
-    (chartAllowedOperationOnSpec Core W Pres G i)).presheaf.stalk p
+    (chartAllowedOperationOnSpec E W Pres G i)).presheaf.stalk p
 
 /-- The actual unit-sheaf stalk on the selected affine chart. -/
 noncomputable abbrev chartUnitStalk
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (p : PrimeSpectrum (ChartCircuitLocus.chartRing Core W G i)) :=
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (p : PrimeSpectrum (ChartCircuitLocus.chartRing E W G i)) :=
   (AlgebraicGeometry.modulesSpecToSheaf.obj
     (SheafOfModules.unit
       (AlgebraicGeometry.Spec
-        (.of (ChartCircuitLocus.chartRing Core W G i))).ringCatSheaf)).presheaf.stalk p
+        (.of (ChartCircuitLocus.chartRing E W G i))).ringCatSheaf)).presheaf.stalk p
 
 /-- Transport the fixed stalk of the `tilde` chart-section presentation to the
 actual restricted allowed-operation stalk using the Cycle 16 comparison. -/
 private noncomputable def allowedOperationFixedStalkIso
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (p : PrimeSpectrum (ChartCircuitLocus.chartRing Core W G i)) :
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (p : PrimeSpectrum (ChartCircuitLocus.chartRing E W G i)) :
     (AlgebraicGeometry.modulesSpecToSheaf.obj
       (AlgebraicGeometry.tilde
-        (ModuleCat.of (ChartCircuitLocus.chartRing Core W G i)
-          (ChartCircuitLocus.chartAllowedOperationModule Core W Pres G i)))).presheaf.stalk p ≅
-      ModuleCat.of (ChartCircuitLocus.chartRing Core W G i)
-        (chartAllowedOperationStalk Core W Pres G i p) :=
-  let R0 := ChartCircuitLocus.chartRing Core W G i
+        (ModuleCat.of (ChartCircuitLocus.chartRing E W G i)
+          (ChartCircuitLocus.chartAllowedOperationModule E W Pres G i)))).presheaf.stalk p ≅
+      ModuleCat.of (ChartCircuitLocus.chartRing E W G i)
+        (chartAllowedOperationStalk E W Pres G i p) :=
+  let R0 := ChartCircuitLocus.chartRing E W G i
   let X := AlgebraicGeometry.Spec (.of R0)
   let e := (AlgebraicGeometry.modulesSpecToSheaf).mapIso
-    (allowedOperationChartTildeIso Core W Pres G i)
+    (allowedOperationChartTildeIso E W Pres G i)
   (TopCat.Presheaf.stalkFunctor
     (X := (AlgebraicGeometry.Spec (.of R0) : TopCat))
     (ModuleCat.{u} R0) p).mapIso
@@ -771,15 +771,15 @@ private noncomputable def allowedOperationFixedStalkIso
 /-- Transport the fixed stalk of `tilde` of the chart ring to the actual unit
 sheaf stalk using `tildeSelf`. -/
 private noncomputable def unitFixedStalkIso
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (p : PrimeSpectrum (ChartCircuitLocus.chartRing Core W G i)) :
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (p : PrimeSpectrum (ChartCircuitLocus.chartRing E W G i)) :
     (AlgebraicGeometry.modulesSpecToSheaf.obj
       (AlgebraicGeometry.tilde
-        (ModuleCat.of (ChartCircuitLocus.chartRing Core W G i)
-          (ChartCircuitLocus.chartRing Core W G i)))).presheaf.stalk p ≅
-      ModuleCat.of (ChartCircuitLocus.chartRing Core W G i)
-        (chartUnitStalk Core W G i p) :=
-  let R0 := ChartCircuitLocus.chartRing Core W G i
+        (ModuleCat.of (ChartCircuitLocus.chartRing E W G i)
+          (ChartCircuitLocus.chartRing E W G i)))).presheaf.stalk p ≅
+      ModuleCat.of (ChartCircuitLocus.chartRing E W G i)
+        (chartUnitStalk E W G i p) :=
+  let R0 := ChartCircuitLocus.chartRing E W G i
   let X := AlgebraicGeometry.Spec (.of R0)
   let e := (AlgebraicGeometry.modulesSpecToSheaf).mapIso
     AlgebraicGeometry.tildeSelf
@@ -791,150 +791,150 @@ private noncomputable def unitFixedStalkIso
 /-- The canonical localization map from actual chart sections to the actual
 allowed-operation sheaf stalk. -/
 noncomputable def chartModuleToAllowedOperationStalk
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (p : PrimeSpectrum (ChartCircuitLocus.chartRing Core W G i)) :
-    ChartCircuitLocus.chartAllowedOperationModule Core W Pres G i
-        →ₗ[ChartCircuitLocus.chartRing Core W G i]
-      chartAllowedOperationStalk Core W Pres G i p :=
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (p : PrimeSpectrum (ChartCircuitLocus.chartRing E W G i)) :
+    ChartCircuitLocus.chartAllowedOperationModule E W Pres G i
+        →ₗ[ChartCircuitLocus.chartRing E W G i]
+      chartAllowedOperationStalk E W Pres G i p :=
   (AlgebraicGeometry.tilde.toStalk
-      (ModuleCat.of (ChartCircuitLocus.chartRing Core W G i)
-        (ChartCircuitLocus.chartAllowedOperationModule Core W Pres G i)) p ≫
+      (ModuleCat.of (ChartCircuitLocus.chartRing E W G i)
+        (ChartCircuitLocus.chartAllowedOperationModule E W Pres G i)) p ≫
     (rawTildeStalkToFixedStalkIso
-      (ChartCircuitLocus.chartRing Core W G i)
-      (ModuleCat.of (ChartCircuitLocus.chartRing Core W G i)
-        (ChartCircuitLocus.chartAllowedOperationModule Core W Pres G i)) p).hom ≫
-    (allowedOperationFixedStalkIso Core W Pres G i p).hom).hom
+      (ChartCircuitLocus.chartRing E W G i)
+      (ModuleCat.of (ChartCircuitLocus.chartRing E W G i)
+        (ChartCircuitLocus.chartAllowedOperationModule E W Pres G i)) p).hom ≫
+    (allowedOperationFixedStalkIso E W Pres G i p).hom).hom
 
 /-- The canonical chart-section map to the actual allowed-operation stalk has
 the localization universal property. -/
 instance chartModuleToAllowedOperationStalk_isLocalized
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (p : PrimeSpectrum (ChartCircuitLocus.chartRing Core W G i)) :
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (p : PrimeSpectrum (ChartCircuitLocus.chartRing E W G i)) :
     IsLocalizedModule p.asIdeal.primeCompl
-      (chartModuleToAllowedOperationStalk Core W Pres G i p) := by
+      (chartModuleToAllowedOperationStalk E W Pres G i p) := by
   letI : IsLocalizedModule p.asIdeal.primeCompl
       (AlgebraicGeometry.tilde.toStalk
-        (ModuleCat.of (ChartCircuitLocus.chartRing Core W G i)
-          (ChartCircuitLocus.chartAllowedOperationModule Core W Pres G i)) p).hom := by
+        (ModuleCat.of (ChartCircuitLocus.chartRing E W G i)
+          (ChartCircuitLocus.chartAllowedOperationModule E W Pres G i)) p).hom := by
     change IsLocalizedModule p.asIdeal.primeCompl
       (AlgebraicGeometry.StructureSheaf.toStalkₗ
-        (ChartCircuitLocus.chartRing Core W G i)
-        (ChartCircuitLocus.chartAllowedOperationModule Core W Pres G i) p)
+        (ChartCircuitLocus.chartRing E W G i)
+        (ChartCircuitLocus.chartAllowedOperationModule E W Pres G i) p)
     infer_instance
   exact IsLocalizedModule.of_linearEquiv p.asIdeal.primeCompl
     (AlgebraicGeometry.tilde.toStalk
-      (ModuleCat.of (ChartCircuitLocus.chartRing Core W G i)
-        (ChartCircuitLocus.chartAllowedOperationModule Core W Pres G i)) p).hom
+      (ModuleCat.of (ChartCircuitLocus.chartRing E W G i)
+        (ChartCircuitLocus.chartAllowedOperationModule E W Pres G i)) p).hom
     ((rawTildeStalkToFixedStalkIso
-        (ChartCircuitLocus.chartRing Core W G i)
-        (ModuleCat.of (ChartCircuitLocus.chartRing Core W G i)
-          (ChartCircuitLocus.chartAllowedOperationModule Core W Pres G i)) p).toLinearEquiv.trans
-      (allowedOperationFixedStalkIso Core W Pres G i p).toLinearEquiv)
+        (ChartCircuitLocus.chartRing E W G i)
+        (ModuleCat.of (ChartCircuitLocus.chartRing E W G i)
+          (ChartCircuitLocus.chartAllowedOperationModule E W Pres G i)) p).toLinearEquiv.trans
+      (allowedOperationFixedStalkIso E W Pres G i p).toLinearEquiv)
 
 /-- The canonical localization map from the chart ring to the actual unit
 sheaf stalk. -/
 noncomputable def chartRingToUnitStalk
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (p : PrimeSpectrum (ChartCircuitLocus.chartRing Core W G i)) :
-    ChartCircuitLocus.chartRing Core W G i
-        →ₗ[ChartCircuitLocus.chartRing Core W G i]
-      chartUnitStalk Core W G i p :=
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (p : PrimeSpectrum (ChartCircuitLocus.chartRing E W G i)) :
+    ChartCircuitLocus.chartRing E W G i
+        →ₗ[ChartCircuitLocus.chartRing E W G i]
+      chartUnitStalk E W G i p :=
   (AlgebraicGeometry.tilde.toStalk
-      (ModuleCat.of (ChartCircuitLocus.chartRing Core W G i)
-        (ChartCircuitLocus.chartRing Core W G i)) p ≫
+      (ModuleCat.of (ChartCircuitLocus.chartRing E W G i)
+        (ChartCircuitLocus.chartRing E W G i)) p ≫
     (rawTildeStalkToFixedStalkIso
-      (ChartCircuitLocus.chartRing Core W G i)
-      (ModuleCat.of (ChartCircuitLocus.chartRing Core W G i)
-        (ChartCircuitLocus.chartRing Core W G i)) p).hom ≫
-    (unitFixedStalkIso Core W G i p).hom).hom
+      (ChartCircuitLocus.chartRing E W G i)
+      (ModuleCat.of (ChartCircuitLocus.chartRing E W G i)
+        (ChartCircuitLocus.chartRing E W G i)) p).hom ≫
+    (unitFixedStalkIso E W G i p).hom).hom
 
 /-- The canonical chart-ring map to the actual unit stalk has the localization
 universal property. -/
 instance chartRingToUnitStalk_isLocalized
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (p : PrimeSpectrum (ChartCircuitLocus.chartRing Core W G i)) :
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (p : PrimeSpectrum (ChartCircuitLocus.chartRing E W G i)) :
     IsLocalizedModule p.asIdeal.primeCompl
-      (chartRingToUnitStalk Core W G i p) := by
+      (chartRingToUnitStalk E W G i p) := by
   letI : IsLocalizedModule p.asIdeal.primeCompl
       (AlgebraicGeometry.tilde.toStalk
-        (ModuleCat.of (ChartCircuitLocus.chartRing Core W G i)
-          (ChartCircuitLocus.chartRing Core W G i)) p).hom := by
+        (ModuleCat.of (ChartCircuitLocus.chartRing E W G i)
+          (ChartCircuitLocus.chartRing E W G i)) p).hom := by
     change IsLocalizedModule p.asIdeal.primeCompl
       (AlgebraicGeometry.StructureSheaf.toStalkₗ
-        (ChartCircuitLocus.chartRing Core W G i)
-        (ChartCircuitLocus.chartRing Core W G i) p)
+        (ChartCircuitLocus.chartRing E W G i)
+        (ChartCircuitLocus.chartRing E W G i) p)
     infer_instance
   exact IsLocalizedModule.of_linearEquiv p.asIdeal.primeCompl
     (AlgebraicGeometry.tilde.toStalk
-      (ModuleCat.of (ChartCircuitLocus.chartRing Core W G i)
-        (ChartCircuitLocus.chartRing Core W G i)) p).hom
+      (ModuleCat.of (ChartCircuitLocus.chartRing E W G i)
+        (ChartCircuitLocus.chartRing E W G i)) p).hom
     ((rawTildeStalkToFixedStalkIso
-        (ChartCircuitLocus.chartRing Core W G i)
-        (ModuleCat.of (ChartCircuitLocus.chartRing Core W G i)
-          (ChartCircuitLocus.chartRing Core W G i)) p).toLinearEquiv.trans
-      (unitFixedStalkIso Core W G i p).toLinearEquiv)
+        (ChartCircuitLocus.chartRing E W G i)
+        (ModuleCat.of (ChartCircuitLocus.chartRing E W G i)
+          (ChartCircuitLocus.chartRing E W G i)) p).toLinearEquiv.trans
+      (unitFixedStalkIso E W G i p).toLinearEquiv)
 
 /-- The stalk map induced by the actual restricted labeled response. -/
 noncomputable def chartLabeledResponseStalk
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (e : RequiredGeneratorLabel S)
-    (p : PrimeSpectrum (ChartCircuitLocus.chartRing Core W G i)) :
-    chartAllowedOperationStalk Core W Pres G i p
-        →ₗ[ChartCircuitLocus.chartRing Core W G i]
-      chartUnitStalk Core W G i p :=
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (e : RequiredGeneratorLabel E)
+    (p : PrimeSpectrum (ChartCircuitLocus.chartRing E W G i)) :
+    chartAllowedOperationStalk E W Pres G i p
+        →ₗ[ChartCircuitLocus.chartRing E W G i]
+      chartUnitStalk E W G i p :=
   ((TopCat.Presheaf.stalkFunctor
     (X := (AlgebraicGeometry.Spec
-      (.of (ChartCircuitLocus.chartRing Core W G i)) : TopCat))
-    (ModuleCat.{u} (ChartCircuitLocus.chartRing Core W G i)) p).map
+      (.of (ChartCircuitLocus.chartRing E W G i)) : TopCat))
+    (ModuleCat.{u} (ChartCircuitLocus.chartRing E W G i)) p).map
       ((AlgebraicGeometry.modulesSpecToSheaf.map
-        (chartLabeledResponseOnSpec Core W Pres G i e)).val)).hom
+        (chartLabeledResponseOnSpec E W Pres G i e)).val)).hom
 
 /-- Compare the chart ring with top sections of the actual unit sheaf. -/
 private noncomputable def unitTopIso
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
     (i : Chart) :
-    ModuleCat.of (ChartCircuitLocus.chartRing Core W G i)
-        (ChartCircuitLocus.chartRing Core W G i) ≅
+    ModuleCat.of (ChartCircuitLocus.chartRing E W G i)
+        (ChartCircuitLocus.chartRing E W G i) ≅
       AlgebraicGeometry.moduleSpecΓFunctor.obj
         (SheafOfModules.unit
           (AlgebraicGeometry.Spec
-            (.of (ChartCircuitLocus.chartRing Core W G i))).ringCatSheaf) :=
+            (.of (ChartCircuitLocus.chartRing E W G i))).ringCatSheaf) :=
   AlgebraicGeometry.tilde.toTildeΓNatIso.app
-      (ModuleCat.of (ChartCircuitLocus.chartRing Core W G i)
-        (ChartCircuitLocus.chartRing Core W G i)) ≪≫
+      (ModuleCat.of (ChartCircuitLocus.chartRing E W G i)
+        (ChartCircuitLocus.chartRing E W G i)) ≪≫
     (AlgebraicGeometry.moduleSpecΓFunctor.mapIso
       AlgebraicGeometry.tildeSelf)
 
 /-- The top-section comparison for the unit sheaf satisfies the
 `tilde`--Gamma triangle. -/
 private theorem unitTopIso_triangle
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
     (i : Chart) :
-    AlgebraicGeometry.tilde.map (unitTopIso Core W G i).hom ≫
+    AlgebraicGeometry.tilde.map (unitTopIso E W G i).hom ≫
         AlgebraicGeometry.Scheme.Modules.fromTildeΓ
           (SheafOfModules.unit
             (AlgebraicGeometry.Spec
-              (.of (ChartCircuitLocus.chartRing Core W G i))).ringCatSheaf) =
+              (.of (ChartCircuitLocus.chartRing E W G i))).ringCatSheaf) =
       AlgebraicGeometry.tildeSelf.hom := by
-  have hunit : (unitTopIso Core W G i).hom =
+  have hunit : (unitTopIso E W G i).hom =
       (AlgebraicGeometry.tilde.toTildeΓNatIso
         (R := CommRingCat.of
-          (ChartCircuitLocus.chartRing Core W G i))).hom.app
+          (ChartCircuitLocus.chartRing E W G i))).hom.app
           (ModuleCat.of
-            (CommRingCat.of (ChartCircuitLocus.chartRing Core W G i))
-            (CommRingCat.of (ChartCircuitLocus.chartRing Core W G i))) ≫
+            (CommRingCat.of (ChartCircuitLocus.chartRing E W G i))
+            (CommRingCat.of (ChartCircuitLocus.chartRing E W G i))) ≫
         AlgebraicGeometry.moduleSpecΓFunctor.map
           AlgebraicGeometry.tildeSelf.hom := by
     rfl
   rw [hunit, AlgebraicGeometry.tilde.map_comp, Category.assoc]
   have hnat := (AlgebraicGeometry.Scheme.Modules.fromTildeΓNatTrans
-    (R := ChartCircuitLocus.chartRing Core W G i)).naturality
+    (R := ChartCircuitLocus.chartRing E W G i)).naturality
       AlgebraicGeometry.tildeSelf.hom
   change AlgebraicGeometry.tilde.map
         (AlgebraicGeometry.moduleSpecΓFunctor.map
@@ -942,62 +942,62 @@ private theorem unitTopIso_triangle
       AlgebraicGeometry.Scheme.Modules.fromTildeΓ
         (SheafOfModules.unit
           (AlgebraicGeometry.Spec
-            (.of (ChartCircuitLocus.chartRing Core W G i))).ringCatSheaf) = _ at hnat
+            (.of (ChartCircuitLocus.chartRing E W G i))).ringCatSheaf) = _ at hnat
   rw [hnat]
   rw [← Category.assoc]
   rw [tilde_unit_fromTildeΓ
-    (R := CommRingCat.of (ChartCircuitLocus.chartRing Core W G i))
-    (ModuleCat.of (CommRingCat.of (ChartCircuitLocus.chartRing Core W G i))
-      (CommRingCat.of (ChartCircuitLocus.chartRing Core W G i)))]
+    (R := CommRingCat.of (ChartCircuitLocus.chartRing E W G i))
+    (ModuleCat.of (CommRingCat.of (ChartCircuitLocus.chartRing E W G i))
+      (CommRingCat.of (ChartCircuitLocus.chartRing E W G i)))]
   simp
 
 /-- The actual restricted response on top sections agrees with the existing
 chart-section response under the canonical source and unit comparisons. -/
 private theorem chartSectionsIso_response_top
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (e : RequiredGeneratorLabel S) :
-    (chartSectionsIso Core W Pres G i).hom ≫
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (e : RequiredGeneratorLabel E) :
+    (chartSectionsIso E W Pres G i).hom ≫
         AlgebraicGeometry.moduleSpecΓFunctor.map
-          (chartLabeledResponseOnSpec Core W Pres G i e) =
+          (chartLabeledResponseOnSpec E W Pres G i e) =
       ModuleCat.ofHom (ChartCircuitLocus.chartLabeledResponse
-        Core W Pres G i e) ≫ (unitTopIso Core W G i).hom := by
-  change chartSectionsToRestrictedTop Core W Pres G i ≫
+        E W Pres G i e) ≫ (unitTopIso E W G i).hom := by
+  change chartSectionsToRestrictedTop E W Pres G i ≫
         AlgebraicGeometry.moduleSpecΓFunctor.map
-          (chartLabeledResponseOnSpec Core W Pres G i e) = _
+          (chartLabeledResponseOnSpec E W Pres G i e) = _
   ext m
   change (AlgebraicGeometry.moduleSpecΓFunctor.map
-      (chartLabeledResponseOnSpec Core W Pres G i e)).hom
-        ((chartSectionsToRestrictedTop Core W Pres G i).hom m) =
-    (unitTopIso Core W G i).hom.hom
-      (ChartCircuitLocus.chartLabeledResponse Core W Pres G i e m)
-  let U0 := G.lawfulChartOpenOnSpace (Core.obstructionIdeal W) i
-  let hU := lawfulChartOpenOnSpace_isAffineOpen Core W G i
+      (chartLabeledResponseOnSpec E W Pres G i e)).hom
+        ((chartSectionsToRestrictedTop E W Pres G i).hom m) =
+    (unitTopIso E W G i).hom.hom
+      (ChartCircuitLocus.chartLabeledResponse E W Pres G i e m)
+  let U0 := G.lawfulChartOpenOnSpace (E.obstructionIdeal W) i
+  let hU := lawfulChartOpenOnSpace_isAffineOpen E W G i
   let j := hU.fromSpec
-  let M := Pres.allowedOperationSheaf G (Core.obstructionIdeal W)
+  let M := Pres.allowedOperationSheaf G (E.obstructionIdeal W)
   let eU : j ''ᵁ (⊤ : (Spec
-      (.of (ChartCircuitLocus.chartRing Core W G i))).Opens) = U0 :=
+      (.of (ChartCircuitLocus.chartRing E W G i))).Opens) = U0 :=
     j.image_top_eq_opensRange.trans hU.opensRange_fromSpec
   change ((restrictUnitIso j).hom.val.app (.op ⊤)).hom
-      (((Pres.labeledResponse Core W G e).val.app (.op (j ''ᵁ ⊤))).hom
+      (((Pres.labeledResponse E W G e).val.app (.op (j ''ᵁ ⊤))).hom
         ((M.presheaf.map (eqToHom eU).op).hom m)) = _
-  rw [show ((Pres.labeledResponse Core W G e).val.app (.op (j ''ᵁ ⊤))).hom
+  rw [show ((Pres.labeledResponse E W G e).val.app (.op (j ''ᵁ ⊤))).hom
         ((M.presheaf.map (eqToHom eU).op).hom m) =
-      ((G.lawfulSpace (Core.obstructionIdeal W)).ringCatSheaf.val.map
+      ((G.lawfulSpace (E.obstructionIdeal W)).ringCatSheaf.val.map
         (eqToHom eU).op).hom
-        ((Pres.labeledResponse Core W G e).val.app (.op U0) m) by
-    exact congr($((Pres.labeledResponse Core W G e).val.naturality
+        ((Pres.labeledResponse E W G e).val.app (.op U0) m) by
+    exact congr($((Pres.labeledResponse E W G e).val.naturality
       (eqToHom eU).op) m)]
   have hscalar :
-      (G.lawfulSpace (Core.obstructionIdeal W)).presheaf.map
+      (G.lawfulSpace (E.obstructionIdeal W)).presheaf.map
           (eqToHom eU).op =
-        (Scheme.ΓSpecIso (ChartCircuitLocus.chartRing Core W G i)).inv ≫
+        (Scheme.ΓSpecIso (ChartCircuitLocus.chartRing E W G i)).inv ≫
           (j.appIso (⊤ : (Spec
-            (.of (ChartCircuitLocus.chartRing Core W G i))).Opens)).inv := by
+            (.of (ChartCircuitLocus.chartRing E W G i))).Opens)).inv := by
     rw [← cancel_mono
       (j.appIso (⊤ : (Spec
-        (.of (ChartCircuitLocus.chartRing Core W G i))).Opens)).hom]
+        (.of (ChartCircuitLocus.chartRing E W G i))).Opens)).hom]
     simp only [Category.assoc]
     rw [j.appIso_hom]
     rw [j.naturality_assoc]
@@ -1005,12 +1005,12 @@ private theorem chartSectionsIso_response_top
     simp only [Category.assoc, ← Functor.map_comp]
     simp only [j.appIso_inv_app_assoc, ← Functor.map_comp]
     congr 1
-  rw [show ((G.lawfulSpace (Core.obstructionIdeal W)).ringCatSheaf.val.map
+  rw [show ((G.lawfulSpace (E.obstructionIdeal W)).ringCatSheaf.val.map
         (eqToHom eU).op).hom
-        ((Pres.labeledResponse Core W G e).val.app (.op U0) m) =
-      ((G.lawfulSpace (Core.obstructionIdeal W)).presheaf.map
+        ((Pres.labeledResponse E W G e).val.app (.op U0) m) =
+      ((G.lawfulSpace (E.obstructionIdeal W)).presheaf.map
         (eqToHom eU).op).hom
-        ((Pres.labeledResponse Core W G e).val.app (.op U0) m) from rfl]
+        ((Pres.labeledResponse E W G e).val.app (.op U0) m) from rfl]
   rw [ConcreteCategory.congr_hom hscalar]
   rw [restrictUnitIso_hom_app_apply]
   simp only [ConcreteCategory.comp_apply, Iso.inv_hom_id_apply]
@@ -1019,37 +1019,37 @@ private theorem chartSectionsIso_response_top
 /-- The Cycle 16 actual-sheaf comparison intertwines the `tilde` of the chart
 response with the actual restricted labeled response. -/
 private theorem allowedOperationChartTildeIso_response
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (e : RequiredGeneratorLabel S) :
-    (allowedOperationChartTildeIso Core W Pres G i).hom ≫
-        chartLabeledResponseOnSpec Core W Pres G i e =
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (e : RequiredGeneratorLabel E) :
+    (allowedOperationChartTildeIso E W Pres G i).hom ≫
+        chartLabeledResponseOnSpec E W Pres G i e =
       AlgebraicGeometry.tilde.map
           (ModuleCat.ofHom (ChartCircuitLocus.chartLabeledResponse
-            Core W Pres G i e)) ≫
+            E W Pres G i e)) ≫
         AlgebraicGeometry.tildeSelf.hom := by
-  let T := chartAllowedOperationOnSpec Core W Pres G i
+  let T := chartAllowedOperationOnSpec E W Pres G i
   letI : IsIso (AlgebraicGeometry.Scheme.Modules.fromTildeΓ T) :=
-    chartAllowedOperation_fromTildeΓ_isIso Core W Pres G i
+    chartAllowedOperation_fromTildeΓ_isIso E W Pres G i
   change (AlgebraicGeometry.tilde.map
-        (chartSectionsIso Core W Pres G i).hom ≫
+        (chartSectionsIso E W Pres G i).hom ≫
       AlgebraicGeometry.Scheme.Modules.fromTildeΓ T) ≫
-        chartLabeledResponseOnSpec Core W Pres G i e = _
+        chartLabeledResponseOnSpec E W Pres G i e = _
   rw [Category.assoc]
   have hnat := (AlgebraicGeometry.Scheme.Modules.fromTildeΓNatTrans
     (R := CommRingCat.of
-      (ChartCircuitLocus.chartRing Core W G i))).naturality
-        (chartLabeledResponseOnSpec Core W Pres G i e)
+      (ChartCircuitLocus.chartRing E W G i))).naturality
+        (chartLabeledResponseOnSpec E W Pres G i e)
   change AlgebraicGeometry.tilde.map
         (AlgebraicGeometry.moduleSpecΓFunctor.map
-          (chartLabeledResponseOnSpec Core W Pres G i e)) ≫
+          (chartLabeledResponseOnSpec E W Pres G i e)) ≫
       AlgebraicGeometry.Scheme.Modules.fromTildeΓ
         (SheafOfModules.unit
           (AlgebraicGeometry.Spec
-            (.of (ChartCircuitLocus.chartRing Core W G i))).ringCatSheaf) =
+            (.of (ChartCircuitLocus.chartRing E W G i))).ringCatSheaf) =
       AlgebraicGeometry.Scheme.Modules.fromTildeΓ T ≫
-        chartLabeledResponseOnSpec Core W Pres G i e at hnat
+        chartLabeledResponseOnSpec E W Pres G i e at hnat
   rw [← hnat]
   rw [← Category.assoc]
   rw [← AlgebraicGeometry.tilde.map_comp]
@@ -1069,96 +1069,96 @@ private theorem residueField_denominator_isUnit
 
 /-- The residue-field tensor of the actual allowed-operation sheaf stalk. -/
 noncomputable abbrev chartAllowedOperationGeometricFiber
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (p : PrimeSpectrum (ChartCircuitLocus.chartRing Core W G i)) :=
-  TensorProduct (ChartCircuitLocus.chartRing Core W G i) p.asIdeal.ResidueField
-    (chartAllowedOperationStalk Core W Pres G i p)
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (p : PrimeSpectrum (ChartCircuitLocus.chartRing E W G i)) :=
+  TensorProduct (ChartCircuitLocus.chartRing E W G i) p.asIdeal.ResidueField
+    (chartAllowedOperationStalk E W Pres G i p)
 
 /-- The residue-field tensor of the actual unit-sheaf stalk. -/
 noncomputable abbrev chartUnitGeometricFiber
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (p : PrimeSpectrum (ChartCircuitLocus.chartRing Core W G i)) :=
-  TensorProduct (ChartCircuitLocus.chartRing Core W G i) p.asIdeal.ResidueField
-    (chartUnitStalk Core W G i p)
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (p : PrimeSpectrum (ChartCircuitLocus.chartRing E W G i)) :=
+  TensorProduct (ChartCircuitLocus.chartRing E W G i) p.asIdeal.ResidueField
+    (chartUnitStalk E W G i p)
 
 /-- The canonical comparison from the section tensor fiber to the actual
 allowed-operation sheaf stalk fiber. -/
 noncomputable def chartSectionFiberEquivGeometricFiber
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (p : PrimeSpectrum (ChartCircuitLocus.chartRing Core W G i)) :
-    TensorProduct (ChartCircuitLocus.chartRing Core W G i) p.asIdeal.ResidueField
-        (ChartCircuitLocus.chartAllowedOperationModule Core W Pres G i)
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (p : PrimeSpectrum (ChartCircuitLocus.chartRing E W G i)) :
+    TensorProduct (ChartCircuitLocus.chartRing E W G i) p.asIdeal.ResidueField
+        (ChartCircuitLocus.chartAllowedOperationModule E W Pres G i)
         ≃ₗ[p.asIdeal.ResidueField]
-      chartAllowedOperationGeometricFiber Core W Pres G i p :=
+      chartAllowedOperationGeometricFiber E W Pres G i p :=
   LocalizationFiber.baseChangeEquiv p.asIdeal.primeCompl
-    (chartModuleToAllowedOperationStalk Core W Pres G i p)
+    (chartModuleToAllowedOperationStalk E W Pres G i p)
     (residueField_denominator_isUnit p)
 
 /-- The canonical comparison from the chart-ring tensor fiber to the actual
 unit-sheaf stalk fiber. -/
 noncomputable def chartUnitFiberEquivGeometricFiber
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (p : PrimeSpectrum (ChartCircuitLocus.chartRing Core W G i)) :
-    TensorProduct (ChartCircuitLocus.chartRing Core W G i) p.asIdeal.ResidueField
-        (ChartCircuitLocus.chartRing Core W G i) ≃ₗ[p.asIdeal.ResidueField]
-      chartUnitGeometricFiber Core W G i p :=
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (p : PrimeSpectrum (ChartCircuitLocus.chartRing E W G i)) :
+    TensorProduct (ChartCircuitLocus.chartRing E W G i) p.asIdeal.ResidueField
+        (ChartCircuitLocus.chartRing E W G i) ≃ₗ[p.asIdeal.ResidueField]
+      chartUnitGeometricFiber E W G i p :=
   LocalizationFiber.baseChangeEquiv p.asIdeal.primeCompl
-    (chartRingToUnitStalk Core W G i p)
+    (chartRingToUnitStalk E W G i p)
     (residueField_denominator_isUnit p)
 
 /-- The actual geometric-fiber response induced by the restricted sheaf
 morphism on stalks and residue-field base change. -/
 noncomputable def chartGeometricFiberResponse
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (e : RequiredGeneratorLabel S)
-    (p : PrimeSpectrum (ChartCircuitLocus.chartRing Core W G i)) :
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (e : RequiredGeneratorLabel E)
+    (p : PrimeSpectrum (ChartCircuitLocus.chartRing E W G i)) :
     Module.Dual p.asIdeal.ResidueField
-      (chartAllowedOperationGeometricFiber Core W Pres G i p) :=
+      (chartAllowedOperationGeometricFiber E W Pres G i p) :=
   (TensorProduct.AlgebraTensorModule.rid
-      (ChartCircuitLocus.chartRing Core W G i) p.asIdeal.ResidueField
+      (ChartCircuitLocus.chartRing E W G i) p.asIdeal.ResidueField
       p.asIdeal.ResidueField).toLinearMap.comp
-    ((chartUnitFiberEquivGeometricFiber Core W G i p).symm.toLinearMap.comp
-      ((chartLabeledResponseStalk Core W Pres G i e p).baseChange
+    ((chartUnitFiberEquivGeometricFiber E W G i p).symm.toLinearMap.comp
+      ((chartLabeledResponseStalk E W Pres G i e p).baseChange
         p.asIdeal.ResidueField))
 
 /-- The actual stalk response commutes with the two canonical localization
 maps before residue-field base change. -/
 private theorem chartLabeledResponseStalk_comp_moduleToStalk
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (e : RequiredGeneratorLabel S)
-    (p : PrimeSpectrum (ChartCircuitLocus.chartRing Core W G i)) :
-    (chartLabeledResponseStalk Core W Pres G i e p).comp
-        (chartModuleToAllowedOperationStalk Core W Pres G i p) =
-      (chartRingToUnitStalk Core W G i p).comp
-        (ChartCircuitLocus.chartLabeledResponse Core W Pres G i e) := by
-  let R0 := CommRingCat.of (ChartCircuitLocus.chartRing Core W G i)
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (e : RequiredGeneratorLabel E)
+    (p : PrimeSpectrum (ChartCircuitLocus.chartRing E W G i)) :
+    (chartLabeledResponseStalk E W Pres G i e p).comp
+        (chartModuleToAllowedOperationStalk E W Pres G i p) =
+      (chartRingToUnitStalk E W G i p).comp
+        (ChartCircuitLocus.chartLabeledResponse E W Pres G i e) := by
+  let R0 := CommRingCat.of (ChartCircuitLocus.chartRing E W G i)
   let M := ModuleCat.of R0
-    (ChartCircuitLocus.chartAllowedOperationModule Core W Pres G i)
+    (ChartCircuitLocus.chartAllowedOperationModule E W Pres G i)
   let N := ModuleCat.of R0 R0
   let f : M ⟶ N := ModuleCat.ofHom
-    (ChartCircuitLocus.chartLabeledResponse Core W Pres G i e)
+    (ChartCircuitLocus.chartLabeledResponse E W Pres G i e)
   let F := TopCat.Presheaf.stalkFunctor
     (X := PrimeSpectrum.Top R0) (ModuleCat.{u} R0) p
   have hmap :
       F.map (AlgebraicGeometry.modulesSpecToSheaf.map
-          (allowedOperationChartTildeIso Core W Pres G i).hom).val ≫
+          (allowedOperationChartTildeIso E W Pres G i).hom).val ≫
         F.map (AlgebraicGeometry.modulesSpecToSheaf.map
-          (chartLabeledResponseOnSpec Core W Pres G i e)).val =
+          (chartLabeledResponseOnSpec E W Pres G i e)).val =
       F.map (AlgebraicGeometry.modulesSpecToSheaf.map
           (AlgebraicGeometry.tilde.map f)).val ≫
         F.map (AlgebraicGeometry.modulesSpecToSheaf.map
           AlgebraicGeometry.tildeSelf.hom).val := by
     have hs := congrArg
       (fun q ↦ AlgebraicGeometry.modulesSpecToSheaf.map q)
-      (allowedOperationChartTildeIso_response Core W Pres G i e)
+      (allowedOperationChartTildeIso_response E W Pres G i e)
     simp only [Functor.map_comp] at hs
     have hv := congrArg (fun q ↦ q.val) hs
     dsimp only at hv
@@ -1169,9 +1169,9 @@ private theorem chartLabeledResponseStalk_comp_moduleToStalk
       ((AlgebraicGeometry.tilde.toStalk M p ≫
           (rawTildeStalkToFixedStalkIso R0 M p).hom) ≫
         F.map (AlgebraicGeometry.modulesSpecToSheaf.map
-          (allowedOperationChartTildeIso Core W Pres G i).hom).val) ≫
+          (allowedOperationChartTildeIso E W Pres G i).hom).val) ≫
         F.map (AlgebraicGeometry.modulesSpecToSheaf.map
-          (chartLabeledResponseOnSpec Core W Pres G i e)).val =
+          (chartLabeledResponseOnSpec E W Pres G i e)).val =
       f ≫ ((AlgebraicGeometry.tilde.toStalk N p ≫
           (rawTildeStalkToFixedStalkIso R0 N p).hom) ≫
         F.map (AlgebraicGeometry.modulesSpecToSheaf.map
@@ -1182,9 +1182,9 @@ private theorem chartLabeledResponseStalk_comp_moduleToStalk
   change ((AlgebraicGeometry.tilde.toStalk M p ≫
         (rawTildeStalkToFixedStalkIso R0 M p).hom ≫
         F.map (AlgebraicGeometry.modulesSpecToSheaf.map
-          (allowedOperationChartTildeIso Core W Pres G i).hom).val) ≫
+          (allowedOperationChartTildeIso E W Pres G i).hom).val) ≫
       F.map (AlgebraicGeometry.modulesSpecToSheaf.map
-        (chartLabeledResponseOnSpec Core W Pres G i e)).val).hom =
+        (chartLabeledResponseOnSpec E W Pres G i e)).val).hom =
     (f ≫ AlgebraicGeometry.tilde.toStalk N p ≫
       (rawTildeStalkToFixedStalkIso R0 N p).hom ≫
       F.map (AlgebraicGeometry.modulesSpecToSheaf.map
@@ -1194,43 +1194,43 @@ private theorem chartLabeledResponseStalk_comp_moduleToStalk
 /-- The actual geometric-fiber response agrees with the section tensor
 response under the canonical localization comparison. -/
 theorem chartGeometricFiberResponse_comp_sectionFiberEquiv
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (e : RequiredGeneratorLabel S)
-    (p : PrimeSpectrum (ChartCircuitLocus.chartRing Core W G i)) :
-    (chartGeometricFiberResponse Core W Pres G i e p).comp
-        (chartSectionFiberEquivGeometricFiber Core W Pres G i p).toLinearMap =
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (e : RequiredGeneratorLabel E)
+    (p : PrimeSpectrum (ChartCircuitLocus.chartRing E W G i)) :
+    (chartGeometricFiberResponse E W Pres G i e p).comp
+        (chartSectionFiberEquivGeometricFiber E W Pres G i p).toLinearMap =
       CircuitLocus.fiberResponse p.asIdeal.ResidueField
-        (ChartCircuitLocus.chartLabeledResponse Core W Pres G i) e := by
+        (ChartCircuitLocus.chartLabeledResponse E W Pres G i) e := by
   have hbc := congrArg
     (fun q ↦ q.baseChange p.asIdeal.ResidueField)
     (chartLabeledResponseStalk_comp_moduleToStalk
-      Core W Pres G i e p)
+      E W Pres G i e p)
   dsimp only at hbc
   rw [LinearMap.baseChange_comp, LinearMap.baseChange_comp] at hbc
   apply LinearMap.ext
   intro x
   change (TensorProduct.AlgebraTensorModule.rid
-      (ChartCircuitLocus.chartRing Core W G i) p.asIdeal.ResidueField
+      (ChartCircuitLocus.chartRing E W G i) p.asIdeal.ResidueField
       p.asIdeal.ResidueField)
-        ((chartUnitFiberEquivGeometricFiber Core W G i p).symm
-          ((chartLabeledResponseStalk Core W Pres G i e p).baseChange
+        ((chartUnitFiberEquivGeometricFiber E W G i p).symm
+          ((chartLabeledResponseStalk E W Pres G i e p).baseChange
             p.asIdeal.ResidueField
-              ((chartSectionFiberEquivGeometricFiber Core W Pres G i p) x))) =
+              ((chartSectionFiberEquivGeometricFiber E W Pres G i p) x))) =
     (TensorProduct.AlgebraTensorModule.rid
-      (ChartCircuitLocus.chartRing Core W G i) p.asIdeal.ResidueField
+      (ChartCircuitLocus.chartRing E W G i) p.asIdeal.ResidueField
       p.asIdeal.ResidueField)
         (LinearMap.baseChange p.asIdeal.ResidueField
           (ChartCircuitLocus.chartLabeledResponse
-            Core W Pres G i e) x)
-  rw [show (chartLabeledResponseStalk Core W Pres G i e p).baseChange
+            E W Pres G i e) x)
+  rw [show (chartLabeledResponseStalk E W Pres G i e p).baseChange
         p.asIdeal.ResidueField
-          ((chartSectionFiberEquivGeometricFiber Core W Pres G i p) x) =
-      (chartUnitFiberEquivGeometricFiber Core W G i p)
+          ((chartSectionFiberEquivGeometricFiber E W Pres G i p) x) =
+      (chartUnitFiberEquivGeometricFiber E W G i p)
         (LinearMap.baseChange p.asIdeal.ResidueField
           (ChartCircuitLocus.chartLabeledResponse
-            Core W Pres G i e) x) by
+            E W Pres G i e) x) by
     exact LinearMap.congr_fun hbc x]
   rw [LinearEquiv.symm_apply_apply]
 
@@ -1262,100 +1262,100 @@ private theorem isSupportMinimalDependence_linearEquiv
 
 /-- The actual geometric-fiber response family on a selected chart. -/
 noncomputable def chartGeometricFiberResponseFamily
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
     (i : Chart)
-    (p : PrimeSpectrum (ChartCircuitLocus.chartRing Core W G i)) :
-    RequiredGeneratorLabel S →
+    (p : PrimeSpectrum (ChartCircuitLocus.chartRing E W G i)) :
+    RequiredGeneratorLabel E →
       Module.Dual p.asIdeal.ResidueField
-        (chartAllowedOperationGeometricFiber Core W Pres G i p) :=
-  fun e ↦ chartGeometricFiberResponse Core W Pres G i e p
+        (chartAllowedOperationGeometricFiber E W Pres G i p) :=
+  fun e ↦ chartGeometricFiberResponse E W Pres G i e p
 
 /-- The circuit locus generated by the actual sheaf geometric-fiber response
 family. -/
 noncomputable def chartGeometricFiberCircuitLocus
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel S))
-    (target : RequiredGeneratorLabel S) :
-    Set (PrimeSpectrum (ChartCircuitLocus.chartRing Core W G i)) :=
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel E))
+    (target : RequiredGeneratorLabel E) :
+    Set (PrimeSpectrum (ChartCircuitLocus.chartRing E W G i)) :=
   { p |
-      ∃ C : Set (RequiredGeneratorLabel S),
+      ∃ C : Set (RequiredGeneratorLabel E),
         LinearRepair.IsSupportMinimalDependence
           (K := p.asIdeal.ResidueField)
-          (chartGeometricFiberResponseFamily Core W Pres G i p) C ∧
+          (chartGeometricFiberResponseFamily E W Pres G i p) C ∧
         target ∈ C ∧
-        C ⊆ insert target (protectedLabels : Set (RequiredGeneratorLabel S)) }
+        C ⊆ insert target (protectedLabels : Set (RequiredGeneratorLabel E)) }
 
 /-- The actual sheaf geometric-fiber circuit locus is the section tensor
 circuit locus under the canonical localization comparison. -/
 theorem chartGeometricFiberCircuitLocus_eq_chartCircuitLocus
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel S))
-    (target : RequiredGeneratorLabel S) :
-    chartGeometricFiberCircuitLocus Core W Pres G i protectedLabels target =
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel E))
+    (target : RequiredGeneratorLabel E) :
+    chartGeometricFiberCircuitLocus E W Pres G i protectedLabels target =
       ChartCircuitLocus.chartCircuitLocus
-        Core W Pres G i protectedLabels target := by
+        E W Pres G i protectedLabels target := by
   ext p
-  change (∃ C : Set (RequiredGeneratorLabel S),
+  change (∃ C : Set (RequiredGeneratorLabel E),
       LinearRepair.IsSupportMinimalDependence
         (K := p.asIdeal.ResidueField)
-        (chartGeometricFiberResponseFamily Core W Pres G i p) C ∧
+        (chartGeometricFiberResponseFamily E W Pres G i p) C ∧
       target ∈ C ∧
-      C ⊆ insert target (protectedLabels : Set (RequiredGeneratorLabel S))) ↔
-    ∃ C : Set (RequiredGeneratorLabel S),
+      C ⊆ insert target (protectedLabels : Set (RequiredGeneratorLabel E))) ↔
+    ∃ C : Set (RequiredGeneratorLabel E),
       LinearRepair.IsSupportMinimalDependence
         (K := p.asIdeal.ResidueField)
         (CircuitLocus.fiberResponse p.asIdeal.ResidueField
-          (ChartCircuitLocus.chartLabeledResponse Core W Pres G i)) C ∧
+          (ChartCircuitLocus.chartLabeledResponse E W Pres G i)) C ∧
       target ∈ C ∧
-      C ⊆ insert target (protectedLabels : Set (RequiredGeneratorLabel S))
-  let eFiber := chartSectionFiberEquivGeometricFiber Core W Pres G i p
+      C ⊆ insert target (protectedLabels : Set (RequiredGeneratorLabel E))
+  let eFiber := chartSectionFiberEquivGeometricFiber E W Pres G i p
   let eDual := eFiber.dualMap
   have hfamily :
       (fun l ↦ eDual (chartGeometricFiberResponseFamily
-        Core W Pres G i p l)) =
+        E W Pres G i p l)) =
         CircuitLocus.fiberResponse p.asIdeal.ResidueField
-          (ChartCircuitLocus.chartLabeledResponse Core W Pres G i) := by
+          (ChartCircuitLocus.chartLabeledResponse E W Pres G i) := by
     funext l
     exact chartGeometricFiberResponse_comp_sectionFiberEquiv
-      Core W Pres G i l p
+      E W Pres G i l p
   constructor
   · rintro ⟨C, hC, htarget, hsubset⟩
     refine ⟨C, ?_, htarget, hsubset⟩
     rw [← hfamily]
     exact (isSupportMinimalDependence_linearEquiv
-      eDual (chartGeometricFiberResponseFamily Core W Pres G i p) C).mpr hC
+      eDual (chartGeometricFiberResponseFamily E W Pres G i p) C).mpr hC
   · rintro ⟨C, hC, htarget, hsubset⟩
     refine ⟨C, ?_, htarget, hsubset⟩
     rw [← hfamily] at hC
     exact (isSupportMinimalDependence_linearEquiv
-      eDual (chartGeometricFiberResponseFamily Core W Pres G i p) C).mp hC
+      eDual (chartGeometricFiberResponseFamily E W Pres G i p) C).mp hC
 
 /-- The actual sheaf geometric-fiber circuit locus is the support of the
 target-response cokernel. -/
 theorem chartGeometricFiberCircuitLocus_eq_support
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel S))
-    (target : RequiredGeneratorLabel S) (htarget : target ∉ protectedLabels)
-    [Module.Projective (ChartCircuitLocus.chartRing Core W G i)
-      (ChartCircuitLocus.chartAllowedOperationModule Core W Pres G i)]
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel E))
+    (target : RequiredGeneratorLabel E) (htarget : target ∉ protectedLabels)
+    [Module.Projective (ChartCircuitLocus.chartRing E W G i)
+      (ChartCircuitLocus.chartAllowedOperationModule E W Pres G i)]
     (split : ChartCircuitLocus.AffineSplitConstantRankData
       (ChartCircuitLocus.chartProtectedResponseMap
-        Core W Pres G i protectedLabels)) :
-    chartGeometricFiberCircuitLocus Core W Pres G i protectedLabels target =
-      Module.support (ChartCircuitLocus.chartRing Core W G i)
+        E W Pres G i protectedLabels)) :
+    chartGeometricFiberCircuitLocus E W Pres G i protectedLabels target =
+      Module.support (ChartCircuitLocus.chartRing E W G i)
         (ChartCircuitLocus.chartResponseCokernel
-          Core W Pres G i protectedLabels target) := by
+          E W Pres G i protectedLabels target) := by
   rw [chartGeometricFiberCircuitLocus_eq_chartCircuitLocus]
   exact ChartCircuitLocus.chartCircuitLocus_eq_support
-    Core W Pres G i protectedLabels target htarget split
+    E W Pres G i protectedLabels target htarget split
 
 #assert_standard_axioms_only
   ResearchLean.AG.QualitySurface.IntrinsicLawResponseCircuitDescent.ChartGeometricFiber

@@ -861,7 +861,7 @@ the large-coefficient D0 effectivity theorem for every explicitly locally
 liftable quotient section.
 -/
 theorem lawGenerated_connectingClass_isZero_iff_nonempty_globalLift
-    (G : AAT.AG.LawAlgebra.SemanticLawEquationWitnessIdealCore S)
+    (G : AAT.AG.ArchitecturalEquationSystem S.contextPreorder)
     (P : LocalLiftData geometry
       (LawGeneratedIdealPowerLiftedSheafification.sheafifiedShortComplex G))
     (L : P.GeneratorLocalLiftFamily) :

@@ -145,14 +145,14 @@ variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A}
 variable {geometry' : Site.FinitePosetCoverGeometry S}
 
-/-- Cover-relative conormal `H⁰` for a law-generated ideal core. -/
+/-- Cover-relative conormal `H⁰` for an architectural equation system. -/
 abbrev LawGeneratedH0
-    (G : SemanticLawEquationWitnessIdealCore S) :=
+    (G : ArchitecturalEquationSystem S.contextPreorder) :=
   H0 geometry' (AdditiveSequence G).X₁.val
 
 /-- The canonical `H⁰` action on a law-generated global-lift fiber. -/
 def globalLiftH0Action
-    (G : SemanticLawEquationWitnessIdealCore S)
+    (G : ArchitecturalEquationSystem S.contextPreorder)
     (atlas : ExplicitLawGeneratedReadingAtlas (geometry := geometry') G)
     (c : LawGeneratedH0 (geometry' := geometry') G)
     (lift : (toLocalLiftData G atlas).GlobalLift) :
@@ -163,7 +163,7 @@ def globalLiftH0Action
 
 /-- The generic global-lift fiber is simply transitive under conormal `H⁰`. -/
 theorem globalLiftH0Action_simplyTransitive
-    (G : SemanticLawEquationWitnessIdealCore S)
+    (G : ArchitecturalEquationSystem S.contextPreorder)
     (atlas : ExplicitLawGeneratedReadingAtlas (geometry := geometry') G)
     (left right : (toLocalLiftData G atlas).GlobalLift) :
     ∃! c : LawGeneratedH0 (geometry' := geometry') G,
@@ -183,7 +183,7 @@ theorem globalLiftH0Action_simplyTransitive
 
 /-- The canonical `H⁰` action transported to semantic correction primitives. -/
 def semanticRepairH0Action
-    (G : SemanticLawEquationWitnessIdealCore S)
+    (G : ArchitecturalEquationSystem S.contextPreorder)
     (atlas : ExplicitLawGeneratedReadingAtlas (geometry := geometry') G)
     (c : LawGeneratedH0 (geometry' := geometry') G)
     (repair : SemanticFirstOrderRepair G atlas) :
@@ -193,7 +193,7 @@ def semanticRepairH0Action
 
 /-- The semantic-repair fiber is simply transitive under conormal `H⁰`. -/
 theorem semanticRepairH0Action_simplyTransitive
-    (G : SemanticLawEquationWitnessIdealCore S)
+    (G : ArchitecturalEquationSystem S.contextPreorder)
     (atlas : ExplicitLawGeneratedReadingAtlas (geometry := geometry') G)
     (left right : SemanticFirstOrderRepair G atlas) :
     ∃! c : LawGeneratedH0 (geometry' := geometry') G,
@@ -211,7 +211,7 @@ theorem semanticRepairH0Action_simplyTransitive
 
 /-- Internal first-order lifts and semantic repairs are generically equivalent. -/
 noncomputable def internalFirstOrderLiftSemanticRepairEquiv
-    (G : SemanticLawEquationWitnessIdealCore S)
+    (G : ArchitecturalEquationSystem S.contextPreorder)
     (atlas : ExplicitLawGeneratedReadingAtlas (geometry := geometry') G) :
     InternalFirstOrderLift G atlas ≃ SemanticFirstOrderRepair G atlas :=
   (internalFirstOrderLiftEquiv G atlas).trans
@@ -219,7 +219,7 @@ noncomputable def internalFirstOrderLiftSemanticRepairEquiv
 
 /-- Universal `H¹` vanishing globalizes every explicit locally liftable atlas. -/
 theorem allGlobalLifts_nonempty_of_H1_isZero
-    (G : SemanticLawEquationWitnessIdealCore S)
+    (G : ArchitecturalEquationSystem S.contextPreorder)
     (hzero : ∀ x : H1 geometry' (AdditiveSequence G).X₁.val,
       (threeTermComplex geometry' (AdditiveSequence G).X₁.val).H1IsZero x)
     (atlas : ExplicitLawGeneratedReadingAtlas (geometry := geometry') G) :
@@ -237,7 +237,7 @@ independence, actual effectivity, both repair representations, the conormal
 witnesses.
 -/
 theorem lawGeneratedConormalFirstOrderDescent_package
-    (G : SemanticLawEquationWitnessIdealCore S)
+    (G : ArchitecturalEquationSystem S.contextPreorder)
     (atlas : ExplicitLawGeneratedReadingAtlas (geometry := geometry') G) :
     let P := toLocalLiftData G atlas
     let hK := sheafifiedShortComplex_shortExact G

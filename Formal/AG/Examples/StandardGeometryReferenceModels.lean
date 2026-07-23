@@ -1,5 +1,4 @@
 import Formal.AG.Examples.FiniteModel
-import Formal.AG.Equation.Legacy
 import Formal.AG.LawAlgebra.ClosedEquationalGeometry
 import Formal.AG.ReadingFunctoriality.Coefficient
 import Formal.AG.ReadingFunctoriality.StandardSchemeCoefficient
@@ -66,11 +65,11 @@ isomorphisms, `leftChart`, `rightChart`, `referenceAtlas`,
 ## Implementation notes — R3--R4 / SD2--SD3
 
 These notes cover every nontrivial SD2--SD3 definition, including the weak,
-strong, and rigid semantic cores and scheme bridges; their readings,
+strong, and rigid architectural equation systems and scheme bridges; their readings,
 generated ideal sheaves, lawful closed subschemes, evaluation morphisms, and
 0/1/2 firing packages.
 
-* The three semantic cores share the fixed raw coordinate and differ by their
+* The three equation systems share the fixed raw coordinate and differ by their
   concrete atom-indexed equations.  Their scheme bridges are built from the
   actual raw presentation, and the readings, ideals, and closed subschemes
   are obtained through the generic closed-equational APIs.  Supplying
@@ -598,6 +597,14 @@ theorem referenceSite_equation_required
     (index : referenceSite.equationSystem.Index) :
     referenceSite.equationSystem.Required index := by
   cases index
+  rfl
+
+/-- The reference site's symbolic coordinate is the core-selected constant `2`. -/
+@[simp] theorem referenceSite_violationCoordinate
+    (W : referenceSite.category)
+    (index : referenceSite.equationSystem.Index)
+    (atom : AAT.AG.FiniteModel.carrier.Atom) :
+    referenceSite.equationSystem.violationCoordinate W index atom = 2 :=
   rfl
 
 private noncomputable def referenceIncomingCode
@@ -5082,64 +5089,72 @@ SD2-SD3 standard-geometry reference-model declaration.
 Its material data are constructed within the fixed integer-polynomial fixture, and the executable contract fixes the exact declaration type.
 -/
 noncomputable def weakLawEquationCore :
-    SemanticLawEquationWitnessIdealCore referenceSite where
+    ArchitecturalEquationSystem referenceSite.contextPreorder where
+  Index := referenceSite.equationSystem.Index
+  role := referenceSite.equationSystem.role
   Observable W := referenceRaw.rawAlgebra W
   observableCommRing W := inferInstance
   restrict f := (referenceRaw.restrictionStable f).quotientDesc
   restrict_id := referenceRawRestriction_id
   restrict_comp := referenceRawRestriction_comp
-  violationWitness W _ a :=
+  violationCoordinate W _ a :=
     match a with
     | AAT.AG.FiniteModel.FiniteAtom.componentA =>
         rawCoordinate W * (rawCoordinate W - 1)
     | _ => 0
-  violationWitness_restrict := by
+  violationCoordinate_restrict := by
     intro source target f lawIndex atom
     cases atom <;> simp only [map_mul, map_sub, map_one, map_zero,
       rawCoordinate_restrict]
-  supportAtom := AAT.AG.FiniteModel.FiniteAtom.componentA
-  supportLawIndex := PUnit.unit
-  supportLawIndex_required :=
-    referenceSite_equation_required PUnit.unit
+  equationResidual W object _index _atom :=
+    (AAT.AG.FiniteModel.noCycleResidual object : referenceRaw.rawAlgebra W)
+  equationResidual_restrict := by
+    intro source target f object index atom
+    rw [map_intCast]
 
 /--
 SD2-SD3 standard-geometry reference-model declaration.
 Its material data are constructed within the fixed integer-polynomial fixture, and the executable contract fixes the exact declaration type.
 -/
 noncomputable def strongLawEquationCore :
-    SemanticLawEquationWitnessIdealCore referenceSite where
+    ArchitecturalEquationSystem referenceSite.contextPreorder where
+  Index := referenceSite.equationSystem.Index
+  role := referenceSite.equationSystem.role
   Observable W := referenceRaw.rawAlgebra W
   observableCommRing W := inferInstance
   restrict f := (referenceRaw.restrictionStable f).quotientDesc
   restrict_id := referenceRawRestriction_id
   restrict_comp := referenceRawRestriction_comp
-  violationWitness W _ a :=
+  violationCoordinate W _ a :=
     match a with
     | AAT.AG.FiniteModel.FiniteAtom.componentA =>
         rawCoordinate W * (rawCoordinate W - 1)
     | AAT.AG.FiniteModel.FiniteAtom.componentB => rawCoordinate W
     | _ => 0
-  violationWitness_restrict := by
+  violationCoordinate_restrict := by
     intro source target f lawIndex atom
     cases atom <;> simp only [map_mul, map_sub, map_one, map_zero,
       rawCoordinate_restrict]
-  supportAtom := AAT.AG.FiniteModel.FiniteAtom.componentA
-  supportLawIndex := PUnit.unit
-  supportLawIndex_required :=
-    referenceSite_equation_required PUnit.unit
+  equationResidual W object _index _atom :=
+    (AAT.AG.FiniteModel.noCycleResidual object : referenceRaw.rawAlgebra W)
+  equationResidual_restrict := by
+    intro source target f object index atom
+    rw [map_intCast]
 
 /--
 SD2-SD3 standard-geometry reference-model declaration.
 Its material data are constructed within the fixed integer-polynomial fixture, and the executable contract fixes the exact declaration type.
 -/
 noncomputable def rigidLawEquationCore :
-    SemanticLawEquationWitnessIdealCore referenceSite where
+    ArchitecturalEquationSystem referenceSite.contextPreorder where
+  Index := referenceSite.equationSystem.Index
+  role := referenceSite.equationSystem.role
   Observable W := referenceRaw.rawAlgebra W
   observableCommRing W := inferInstance
   restrict f := (referenceRaw.restrictionStable f).quotientDesc
   restrict_id := referenceRawRestriction_id
   restrict_comp := referenceRawRestriction_comp
-  violationWitness W _ a :=
+  violationCoordinate W _ a :=
     match a with
     | AAT.AG.FiniteModel.FiniteAtom.componentA =>
         rawCoordinate W * (rawCoordinate W - 1)
@@ -5147,14 +5162,15 @@ noncomputable def rigidLawEquationCore :
     | AAT.AG.FiniteModel.FiniteAtom.componentC =>
         algebraMap Int (referenceRaw.rawAlgebra W) 2
     | _ => 0
-  violationWitness_restrict := by
+  violationCoordinate_restrict := by
     intro source target f lawIndex atom
     cases atom <;> simp only [map_mul, map_sub, map_one, map_zero,
       map_ofNat, rawCoordinate_restrict]
-  supportAtom := AAT.AG.FiniteModel.FiniteAtom.componentA
-  supportLawIndex := PUnit.unit
-  supportLawIndex_required :=
-    referenceSite_equation_required PUnit.unit
+  equationResidual W object _index _atom :=
+    (AAT.AG.FiniteModel.noCycleResidual object : referenceRaw.rawAlgebra W)
+  equationResidual_restrict := by
+    intro source target f object index atom
+    rw [map_intCast]
 
 /--
 SD2-SD3 standard-geometry reference-model declaration.
@@ -5250,7 +5266,7 @@ Its material data are constructed within the fixed integer-polynomial fixture, a
 @[simp] theorem weakViolationWitness_eq
     (W : referenceSite.category)
     (a : AAT.AG.FiniteModel.carrier.Atom) :
-    weakLawEquationCore.violationWitness W PUnit.unit a =
+    weakLawEquationCore.violationCoordinate W PUnit.unit a =
       if a = AAT.AG.FiniteModel.FiniteAtom.componentA then
         rawCoordinate W * (rawCoordinate W - 1)
       else 0 :=
@@ -5264,7 +5280,7 @@ Its material data are constructed within the fixed integer-polynomial fixture, a
 @[simp] theorem strongViolationWitness_eq
     (W : referenceSite.category)
     (a : AAT.AG.FiniteModel.carrier.Atom) :
-    strongLawEquationCore.violationWitness W PUnit.unit a =
+    strongLawEquationCore.violationCoordinate W PUnit.unit a =
       if a = AAT.AG.FiniteModel.FiniteAtom.componentA then
         rawCoordinate W * (rawCoordinate W - 1)
       else if a = AAT.AG.FiniteModel.FiniteAtom.componentB then
@@ -5280,7 +5296,7 @@ Its material data are constructed within the fixed integer-polynomial fixture, a
 @[simp] theorem rigidViolationWitness_eq
     (W : referenceSite.category)
     (a : AAT.AG.FiniteModel.carrier.Atom) :
-    rigidLawEquationCore.violationWitness W PUnit.unit a =
+    rigidLawEquationCore.violationCoordinate W PUnit.unit a =
       if a = AAT.AG.FiniteModel.FiniteAtom.componentA then
         rawCoordinate W * (rawCoordinate W - 1)
       else if a = AAT.AG.FiniteModel.FiniteAtom.componentB then
@@ -5290,57 +5306,6 @@ Its material data are constructed within the fixed integer-polynomial fixture, a
       else 0 :=
   by
     cases a <;> simp [rigidLawEquationCore]
-
-/--
-SD2-SD3 standard-geometry reference-model declaration.
-Its material data are constructed within the fixed integer-polynomial fixture, and the executable contract fixes the exact declaration type.
--/
-@[simp] theorem weakLawEquationCore_supportAtom :
-    weakLawEquationCore.supportAtom =
-      AAT.AG.FiniteModel.FiniteAtom.componentA :=
-  rfl
-
-/--
-SD2-SD3 standard-geometry reference-model declaration.
-Its material data are constructed within the fixed integer-polynomial fixture, and the executable contract fixes the exact declaration type.
--/
-@[simp] theorem strongLawEquationCore_supportAtom :
-    strongLawEquationCore.supportAtom =
-      AAT.AG.FiniteModel.FiniteAtom.componentA :=
-  rfl
-
-/--
-SD2-SD3 standard-geometry reference-model declaration.
-Its material data are constructed within the fixed integer-polynomial fixture, and the executable contract fixes the exact declaration type.
--/
-@[simp] theorem rigidLawEquationCore_supportAtom :
-    rigidLawEquationCore.supportAtom =
-      AAT.AG.FiniteModel.FiniteAtom.componentA :=
-  rfl
-
-/--
-SD2-SD3 standard-geometry reference-model declaration.
-Its material data are constructed within the fixed integer-polynomial fixture, and the executable contract fixes the exact declaration type.
--/
-@[simp] theorem weakLawEquationCore_supportLawIndex :
-    weakLawEquationCore.supportLawIndex = PUnit.unit :=
-  rfl
-
-/--
-SD2-SD3 standard-geometry reference-model declaration.
-Its material data are constructed within the fixed integer-polynomial fixture, and the executable contract fixes the exact declaration type.
--/
-@[simp] theorem strongLawEquationCore_supportLawIndex :
-    strongLawEquationCore.supportLawIndex = PUnit.unit :=
-  rfl
-
-/--
-SD2-SD3 standard-geometry reference-model declaration.
-Its material data are constructed within the fixed integer-polynomial fixture, and the executable contract fixes the exact declaration type.
--/
-@[simp] theorem rigidLawEquationCore_supportLawIndex :
-    rigidLawEquationCore.supportLawIndex = PUnit.unit :=
-  rfl
 
 /--
 SD2-SD3 standard-geometry reference-model declaration.
@@ -5464,7 +5429,8 @@ SD2-SD3 standard-geometry reference-model declaration.
 Its material data are constructed within the fixed integer-polynomial fixture, and the executable contract fixes the exact declaration type.
 -/
 noncomputable def weakReading :
-    ClosedEquationalLawReading referenceRaw referenceScheme :=
+    ClosedEquationalLawReading referenceRaw referenceScheme
+      weakLawEquationCore :=
   ClosedEquationalLawReading.ofSemanticCore
     referenceRaw referenceScheme weakLawEquationCore weakSchemeBridge
 
@@ -5483,7 +5449,8 @@ SD2-SD3 standard-geometry reference-model declaration.
 Its material data are constructed within the fixed integer-polynomial fixture, and the executable contract fixes the exact declaration type.
 -/
 noncomputable def strongReading :
-    ClosedEquationalLawReading referenceRaw referenceScheme :=
+    ClosedEquationalLawReading referenceRaw referenceScheme
+      strongLawEquationCore :=
   ClosedEquationalLawReading.ofSemanticCore
     referenceRaw referenceScheme strongLawEquationCore strongSchemeBridge
 
@@ -5502,7 +5469,8 @@ SD2-SD3 standard-geometry reference-model declaration.
 Its material data are constructed within the fixed integer-polynomial fixture, and the executable contract fixes the exact declaration type.
 -/
 noncomputable def rigidReading :
-    ClosedEquationalLawReading referenceRaw referenceScheme :=
+    ClosedEquationalLawReading referenceRaw referenceScheme
+      rigidLawEquationCore :=
   ClosedEquationalLawReading.ofSemanticCore
     referenceRaw referenceScheme rigidLawEquationCore rigidSchemeBridge
 
@@ -5570,6 +5538,63 @@ theorem rigidReading_requiredClosed :
   ClosedEquationalLawReading.ofSemanticCore_requiredClosed
     referenceRaw referenceScheme rigidLawEquationCore rigidSchemeBridge
 
+/--
+The global equation obtained from the equation system selected by
+`referenceSite`.
+
+The site coordinate is sent through the canonical `Int`-algebra map into the
+raw algebra at the decorated context and then through the existing
+sheafification and interpretation maps.  Thus this equation has no separately
+supplied coordinate family.
+-/
+noncomputable def referenceSiteGlobalEquation
+    (i : referenceSite.equationSystem.Index)
+    (a : AAT.AG.FiniteModel.carrier.Atom) :
+    Γ(referenceScheme.underlying, ⊤) :=
+  referenceScheme.decoration.interpretation
+    (sheafificationUnitAlgHom referenceRaw referenceScheme.decoration.context
+      (algebraMap Int
+        (referenceRaw.rawAlgebra referenceScheme.decoration.context)
+        (referenceSite.equationSystem.violationCoordinate
+          referenceScheme.decoration.context i a)))
+
+/--
+The closed-equational reading generated from the equation system owned by
+`referenceSite`.
+-/
+noncomputable def referenceSiteReading :
+    ClosedEquationalLawReading referenceRaw referenceScheme
+      referenceSite.equationSystem where
+  geometric.HoldsOn s i :=
+    GlobalEquationsVanishAlong referenceRaw referenceScheme
+      (referenceSiteGlobalEquation i) s
+  closed := Set.univ
+  selected := fun _ => Set.univ
+  witness i _ :=
+    ClosedEquationalLawWitness.ofGlobalSections referenceRaw referenceScheme i
+      (referenceSiteGlobalEquation i)
+
+/-- The site-generated reading satisfies the closed-equational recognition laws. -/
+theorem referenceSiteReading_valid :
+    IsClosedEquationalLawReading referenceRaw referenceScheme
+      referenceSiteReading where
+  geometric_stable := by
+    intro T T' s f i hs a
+    rw [Scheme.Hom.comp_appTop, CommRingCat.comp_apply, hs a, map_zero]
+  witness_compatible := by
+    intro i hi
+    exact ClosedEquationalLawWitness.ofGlobalSections_valid
+      referenceRaw referenceScheme i (referenceSiteGlobalEquation i)
+  selected_closed := fun _ i _ => Set.mem_univ i
+  selected_basicOpen := fun _ _ i =>
+    iff_of_true (Set.mem_univ i) (Set.mem_univ i)
+
+/-- Every required site equation is closed and selected by the site-generated reading. -/
+theorem referenceSiteReading_requiredClosed :
+    RequiredClosed referenceRaw referenceScheme referenceSiteReading where
+  closed := fun i _ => Set.mem_univ i
+  selected := fun _ i _ => Set.mem_univ i
+
 private theorem reference_ofIdealTop_span_comap_eq_bot_iff
     (equation : AAT.AG.FiniteModel.carrier.Atom →
       Γ(referenceScheme.underlying, ⊤))
@@ -5618,9 +5643,9 @@ private theorem reference_ofIdealTop_span_comap_eq_bot_iff
     · exact bot_le
 
 private theorem referenceCore_lawIdealExact
-    (G : SemanticLawEquationWitnessIdealCore referenceSite)
+    (G : ArchitecturalEquationSystem referenceSite.contextPreorder)
     (B : SemanticLawEquationSchemeBridge referenceRaw G)
-    (i : referenceSite.equationSystem.toLegacyLawUniverse.Index) :
+    (i : G.Index) :
     LawIdealExact referenceRaw referenceScheme
       (ClosedEquationalLawReading.ofSemanticCore referenceRaw
         referenceScheme G B)
@@ -5645,6 +5670,26 @@ private theorem referenceCore_lawIdealExact
   rw [hsheaf]
   exact (reference_ofIdealTop_span_comap_eq_bot_iff
     (semanticCoreGlobalEquation referenceRaw referenceScheme G B i) s).symm
+
+/--
+The semantic predicate of the site-generated reading is exactly the vanishing
+of its generated law ideal.
+-/
+theorem referenceSiteReading_requiredLawIdealExact :
+    RequiredLawIdealExact referenceRaw referenceScheme
+      referenceSiteReading referenceSiteReading_valid
+      referenceSiteReading_requiredClosed := by
+  intro i hi T s
+  change
+    (∀ a, s.appTop (referenceSiteGlobalEquation i a) = 0) ↔ _
+  have hsheaf := lawWitnessIdealSheaf_ofGlobalSections referenceRaw
+    referenceScheme referenceSiteReading
+    referenceSiteReading_valid.witness_compatible
+    i (Set.mem_univ i) (referenceSiteGlobalEquation i) rfl
+  rw [hsheaf]
+  exact
+    (reference_ofIdealTop_span_comap_eq_bot_iff
+      (referenceSiteGlobalEquation i) s).symm
 
 /--
 SD2-SD3 standard-geometry reference-model declaration.
@@ -5943,21 +5988,45 @@ private theorem ambientGlobalSectionsIso_unit
             (op baseContext)).right x) = x by
         simpa only [CommRingCat.comp_apply, Category.id_comp] using hcancel]
 
+/--
+The global equation used by `referenceSiteReading` is the canonical image of
+the coordinate selected by `referenceSite.equationSystem`.
+-/
+theorem referenceSiteGlobalEquation_image
+    (i : referenceSite.equationSystem.Index)
+    (a : AAT.AG.FiniteModel.carrier.Atom) :
+    ambientGlobalSectionsIso.hom (referenceSiteGlobalEquation i a) =
+      algebraMap Int AmbientRing
+        (referenceSite.equationSystem.violationCoordinate baseContext i a) := by
+  change ambientGlobalSectionsIso.hom
+      (ambientDecoration.interpretation
+        ((sheafificationUnitAlgHom referenceRaw baseContext)
+          (algebraMap Int (referenceRaw.rawAlgebra baseContext)
+            (referenceSite.equationSystem.violationCoordinate
+              baseContext i a)))) = _
+  rw [ambientGlobalSectionsIso_unit]
+  change baseRawToAmbientAlgHom
+      (algebraMap Int (referenceRaw.rawAlgebra baseContext)
+        (referenceSite.equationSystem.violationCoordinate baseContext i a)) =
+    algebraMap Int AmbientRing
+      (referenceSite.equationSystem.violationCoordinate baseContext i a)
+  exact baseRawToAmbientAlgHom.commutes _
+
 private theorem weakGlobalEquation_image
     (a : AAT.AG.FiniteModel.carrier.Atom) :
     ambientGlobalSectionsIso.hom
         (semanticCoreGlobalEquation referenceRaw referenceScheme
           weakLawEquationCore weakSchemeBridge PUnit.unit a) =
       baseRawAlgebraIso.hom
-        (weakLawEquationCore.violationWitness baseContext PUnit.unit a) := by
+        (weakLawEquationCore.violationCoordinate baseContext PUnit.unit a) := by
   change ambientGlobalSectionsIso.hom
       (ambientDecoration.interpretation
         (weakSchemeBridge.toSheafifiedSection baseContext
-          (weakLawEquationCore.violationWitness baseContext PUnit.unit a))) = _
+          (weakLawEquationCore.violationCoordinate baseContext PUnit.unit a))) = _
   simpa [weakSchemeBridge,
     SemanticLawEquationSchemeBridge.toSheafifiedSection] using
       ambientGlobalSectionsIso_unit
-        (weakLawEquationCore.violationWitness baseContext PUnit.unit a)
+        (weakLawEquationCore.violationCoordinate baseContext PUnit.unit a)
 
 private theorem strongGlobalEquation_image
     (a : AAT.AG.FiniteModel.carrier.Atom) :
@@ -5965,15 +6034,15 @@ private theorem strongGlobalEquation_image
         (semanticCoreGlobalEquation referenceRaw referenceScheme
           strongLawEquationCore strongSchemeBridge PUnit.unit a) =
       baseRawAlgebraIso.hom
-        (strongLawEquationCore.violationWitness baseContext PUnit.unit a) := by
+        (strongLawEquationCore.violationCoordinate baseContext PUnit.unit a) := by
   change ambientGlobalSectionsIso.hom
       (ambientDecoration.interpretation
         (strongSchemeBridge.toSheafifiedSection baseContext
-          (strongLawEquationCore.violationWitness baseContext PUnit.unit a))) = _
+          (strongLawEquationCore.violationCoordinate baseContext PUnit.unit a))) = _
   simpa [strongSchemeBridge,
     SemanticLawEquationSchemeBridge.toSheafifiedSection] using
       ambientGlobalSectionsIso_unit
-        (strongLawEquationCore.violationWitness baseContext PUnit.unit a)
+        (strongLawEquationCore.violationCoordinate baseContext PUnit.unit a)
 
 private theorem rigidGlobalEquation_image
     (a : AAT.AG.FiniteModel.carrier.Atom) :
@@ -5981,15 +6050,15 @@ private theorem rigidGlobalEquation_image
         (semanticCoreGlobalEquation referenceRaw referenceScheme
           rigidLawEquationCore rigidSchemeBridge PUnit.unit a) =
       baseRawAlgebraIso.hom
-        (rigidLawEquationCore.violationWitness baseContext PUnit.unit a) := by
+        (rigidLawEquationCore.violationCoordinate baseContext PUnit.unit a) := by
   change ambientGlobalSectionsIso.hom
       (ambientDecoration.interpretation
         (rigidSchemeBridge.toSheafifiedSection baseContext
-          (rigidLawEquationCore.violationWitness baseContext PUnit.unit a))) = _
+          (rigidLawEquationCore.violationCoordinate baseContext PUnit.unit a))) = _
   simpa [rigidSchemeBridge,
     SemanticLawEquationSchemeBridge.toSheafifiedSection] using
       ambientGlobalSectionsIso_unit
-        (rigidLawEquationCore.violationWitness baseContext PUnit.unit a)
+        (rigidLawEquationCore.violationCoordinate baseContext PUnit.unit a)
 
 /--
 SD2-SD3 standard-geometry reference-model declaration.
@@ -6349,37 +6418,40 @@ Its material data are constructed within the fixed integer-polynomial fixture, a
   rfl
 
 private theorem reference_local_top_eq_span
-    (G : SemanticLawEquationWitnessIdealCore referenceSite)
+    (G : ArchitecturalEquationSystem referenceSite.contextPreorder)
     (B : SemanticLawEquationSchemeBridge referenceRaw G)
+    (i : G.Index)
     (hi : (ClosedEquationalLawReading.ofSemanticCore referenceRaw
-      referenceScheme G B).closed PUnit.unit) :
+      referenceScheme G B).closed i) :
     localLawWitnessIdeal referenceRaw referenceScheme
         ((ClosedEquationalLawReading.ofSemanticCore referenceRaw
-          referenceScheme G B).witness PUnit.unit hi)
+          referenceScheme G B).witness i hi)
         ambientTopAffineOpen =
       Ideal.span (Set.range (semanticCoreGlobalEquation referenceRaw
-        referenceScheme G B PUnit.unit)) := by
+        referenceScheme G B i)) := by
   let reading := ClosedEquationalLawReading.ofSemanticCore referenceRaw
     referenceScheme G B
   rw [← lawWitnessIdealSheaf_ideal referenceRaw referenceScheme
     reading
     (ClosedEquationalLawReading.ofSemanticCore_valid referenceRaw
-      referenceScheme G B).witness_compatible PUnit.unit hi
+      referenceScheme G B).witness_compatible i hi
     ambientTopAffineOpen]
   rw [lawWitnessIdealSheaf_ofGlobalSections referenceRaw referenceScheme
     reading
     (ClosedEquationalLawReading.ofSemanticCore_valid referenceRaw
-      referenceScheme G B).witness_compatible PUnit.unit hi
-    (semanticCoreGlobalEquation referenceRaw referenceScheme G B PUnit.unit)]
+      referenceScheme G B).witness_compatible i hi
+    (semanticCoreGlobalEquation referenceRaw referenceScheme G B i)]
   · rw [Scheme.IdealSheafData.ofIdealTop_ideal]
     simp [ambientTopAffineOpen]
   · simpa only [reading] using
       ClosedEquationalLawReading.ofSemanticCore_witness referenceRaw
-        referenceScheme G B PUnit.unit hi
+        referenceScheme G B i hi
 
 private theorem reference_generated_top_eq_span
-    (G : SemanticLawEquationWitnessIdealCore referenceSite)
-    (B : SemanticLawEquationSchemeBridge referenceRaw G) :
+    (G : ArchitecturalEquationSystem referenceSite.contextPreorder)
+    (B : SemanticLawEquationSchemeBridge referenceRaw G)
+    (i₀ : G.Index) (hi₀ : G.Required i₀)
+    (hunique : ∀ i, G.Required i → i = i₀) :
     (lawGeneratedIdealSheaf referenceRaw referenceScheme
       (ClosedEquationalLawReading.ofSemanticCore referenceRaw
         referenceScheme G B)
@@ -6388,7 +6460,7 @@ private theorem reference_generated_top_eq_span
       (ClosedEquationalLawReading.ofSemanticCore_requiredClosed referenceRaw
         referenceScheme G B)).ideal ambientTopAffineOpen =
       Ideal.span (Set.range (semanticCoreGlobalEquation referenceRaw
-        referenceScheme G B PUnit.unit)) := by
+        referenceScheme G B i₀)) := by
   let reading := ClosedEquationalLawReading.ofSemanticCore referenceRaw
     referenceScheme G B
   let valid := ClosedEquationalLawReading.ofSemanticCore_valid referenceRaw
@@ -6399,23 +6471,23 @@ private theorem reference_generated_top_eq_span
   rw [lawGeneratedIdealSheaf_ideal]
   apply le_antisymm
   · refine iSup_le fun i => ?_
-    cases i.1
-    exact (reference_local_top_eq_span G B _).le
-  · let idx : {i : referenceSite.equationSystem.Index //
-        referenceSite.equationSystem.Required i ∧
+    have hi : i.1 = i₀ := hunique i.1 i.2.1
+    subst i₀
+    exact (reference_local_top_eq_span G B i.1 _).le
+  · let idx : {i : G.Index //
+        G.Required i ∧
           reading.selected ambientTopAffineOpen i} :=
-      ⟨PUnit.unit,
-        referenceSite_equation_required PUnit.unit,
+      ⟨i₀, hi₀,
         ClosedEquationalLawReading.ofSemanticCore_selected referenceRaw
-          referenceScheme G B ambientTopAffineOpen PUnit.unit⟩
+          referenceScheme G B ambientTopAffineOpen i₀⟩
     have h := le_iSup (fun i :
-      {i : referenceSite.equationSystem.Index //
-          referenceSite.equationSystem.Required i ∧
+      {i : G.Index //
+          G.Required i ∧
             reading.selected ambientTopAffineOpen i} =>
         localLawWitnessIdeal referenceRaw referenceScheme
           (reading.witness i.1 (required.closed i.1 i.2.1))
           ambientTopAffineOpen) idx
-    rw [reference_local_top_eq_span] at h
+    rw [reference_local_top_eq_span G B i₀] at h
     exact h
 
 private theorem weak_generated_top_eq_span :
@@ -6426,6 +6498,11 @@ private theorem weak_generated_top_eq_span :
         referenceScheme weakLawEquationCore weakSchemeBridge PUnit.unit)) := by
   simpa only [weakReading, weakReading_valid, weakReading_requiredClosed] using
     reference_generated_top_eq_span weakLawEquationCore weakSchemeBridge
+      PUnit.unit
+      (by
+        change referenceSite.equationSystem.Required PUnit.unit
+        exact referenceSite_equation_required PUnit.unit)
+      (by intro i _hi; cases i; rfl)
 
 private theorem strong_generated_top_eq_span :
     (lawGeneratedIdealSheaf referenceRaw referenceScheme
@@ -6435,6 +6512,11 @@ private theorem strong_generated_top_eq_span :
         referenceScheme strongLawEquationCore strongSchemeBridge PUnit.unit)) := by
   simpa only [strongReading, strongReading_valid, strongReading_requiredClosed] using
     reference_generated_top_eq_span strongLawEquationCore strongSchemeBridge
+      PUnit.unit
+      (by
+        change referenceSite.equationSystem.Required PUnit.unit
+        exact referenceSite_equation_required PUnit.unit)
+      (by intro i _hi; cases i; rfl)
 
 private theorem rigid_generated_top_eq_span :
     (lawGeneratedIdealSheaf referenceRaw referenceScheme
@@ -6444,10 +6526,17 @@ private theorem rigid_generated_top_eq_span :
         referenceScheme rigidLawEquationCore rigidSchemeBridge PUnit.unit)) := by
   simpa only [rigidReading, rigidReading_valid, rigidReading_requiredClosed] using
     reference_generated_top_eq_span rigidLawEquationCore rigidSchemeBridge
+      PUnit.unit
+      (by
+        change referenceSite.equationSystem.Required PUnit.unit
+        exact referenceSite_equation_required PUnit.unit)
+      (by intro i _hi; cases i; rfl)
 
 private theorem reference_generated_eq_witness
-    (G : SemanticLawEquationWitnessIdealCore referenceSite)
-    (B : SemanticLawEquationSchemeBridge referenceRaw G) :
+    (G : ArchitecturalEquationSystem referenceSite.contextPreorder)
+    (B : SemanticLawEquationSchemeBridge referenceRaw G)
+    (i₀ : G.Index) (hi₀ : G.Required i₀)
+    (hunique : ∀ i, G.Required i → i = i₀) :
     lawGeneratedIdealSheaf referenceRaw referenceScheme
         (ClosedEquationalLawReading.ofSemanticCore referenceRaw
           referenceScheme G B)
@@ -6460,33 +6549,32 @@ private theorem reference_generated_eq_witness
           referenceScheme G B)
         (ClosedEquationalLawReading.ofSemanticCore_witnessCompatible referenceRaw
           referenceScheme G B)
-        PUnit.unit (show PUnit.unit ∈
-          (Set.univ : Set referenceSite.equationSystem.toLegacyLawUniverse.Index) from
-            Set.mem_univ PUnit.unit) := by
+        i₀ (show i₀ ∈ (Set.univ : Set G.Index) from Set.mem_univ i₀) := by
   letI : IsAffine referenceScheme.underlying := by
     rw [referenceScheme_underlying, ambientScheme_eq]
     infer_instance
   apply Scheme.IdealSheafData.ext_of_isAffine
-  let hi : PUnit.unit ∈
-      (Set.univ : Set referenceSite.equationSystem.toLegacyLawUniverse.Index) :=
-    Set.mem_univ PUnit.unit
+  let hi : i₀ ∈ (Set.univ : Set G.Index) := Set.mem_univ i₀
   have hw := lawWitnessIdealSheaf_ofGlobalSections referenceRaw
     referenceScheme
     (ClosedEquationalLawReading.ofSemanticCore referenceRaw
       referenceScheme G B)
     (ClosedEquationalLawReading.ofSemanticCore_witnessCompatible referenceRaw
       referenceScheme G B)
-    PUnit.unit hi
-    (semanticCoreGlobalEquation referenceRaw referenceScheme G B PUnit.unit)
+    i₀ hi
+    (semanticCoreGlobalEquation referenceRaw referenceScheme G B i₀)
     (ClosedEquationalLawReading.ofSemanticCore_witness referenceRaw
-      referenceScheme G B PUnit.unit hi)
+      referenceScheme G B i₀ hi)
   rw [hw, Scheme.IdealSheafData.ofIdealTop_ideal]
-  simpa [ambientTopAffineOpen] using reference_generated_top_eq_span G B
+  simpa [ambientTopAffineOpen] using
+    reference_generated_top_eq_span G B i₀ hi₀ hunique
 
 private theorem reference_generated_comap_chart
-    (G : SemanticLawEquationWitnessIdealCore referenceSite)
+    (G : ArchitecturalEquationSystem referenceSite.contextPreorder)
     (B : SemanticLawEquationSchemeBridge referenceRaw G)
     (hB : IsSemanticLawEquationSchemeBridge referenceRaw G B)
+    (i₀ : G.Index) (hi₀ : G.Required i₀)
+    (hunique : ∀ i, G.Required i → i = i₀)
     (j : referenceScheme.atlas.Index) :
     (lawGeneratedIdealSheaf referenceRaw referenceScheme
       (ClosedEquationalLawReading.ofSemanticCore referenceRaw
@@ -6505,16 +6593,18 @@ private theorem reference_generated_comap_chart
           (Ideal.map
             (B.toSheafifiedSection
               (referenceScheme.atlas.chart j).context)
-            (G.lawWitnessIdeal
-              (referenceScheme.atlas.chart j).context PUnit.unit))) := by
-  rw [reference_generated_eq_witness G B]
+            (G.witnessIdeal
+              (referenceScheme.atlas.chart j).context i₀))) := by
+  rw [reference_generated_eq_witness G B i₀ hi₀ hunique]
   exact (semanticCoreIdealSheaf_realized referenceRaw referenceScheme
-    G B hB).2 j PUnit.unit
+    G B hB).2 j i₀
 
 private theorem referenceIdeal_left_raw
-    (G : SemanticLawEquationWitnessIdealCore referenceSite)
+    (G : ArchitecturalEquationSystem referenceSite.contextPreorder)
     (B : SemanticLawEquationSchemeBridge referenceRaw G)
-    (hB : IsSemanticLawEquationSchemeBridge referenceRaw G B) :
+    (hB : IsSemanticLawEquationSchemeBridge referenceRaw G B)
+    (i₀ : G.Index) (hi₀ : G.Required i₀)
+    (hunique : ∀ i, G.Required i → i = i₀) :
     Ideal.map leftChartGlobalSectionsIso.hom.hom
         (((lawGeneratedIdealSheaf referenceRaw referenceScheme
           (ClosedEquationalLawReading.ofSemanticCore referenceRaw
@@ -6527,13 +6617,13 @@ private theorem referenceIdeal_left_raw
             leftChart.domain_isAffine⟩) =
       Ideal.map (leftRawAlgebraIso.hom.hom.comp
         (B.toRawPresentation leftContext).toRingHom)
-        (G.lawWitnessIdeal leftContext PUnit.unit) := by
+        (G.witnessIdeal leftContext i₀) := by
   letI := (hB.presentation_stable leftContext).canonical_isIso
   have hreal := congrArg
     (fun I : leftChart.domain.IdealSheafData =>
       I.ideal ⟨⊤, @isAffineOpen_top leftChart.domain
         leftChart.domain_isAffine⟩)
-    (reference_generated_comap_chart G B hB leftIndex)
+    (reference_generated_comap_chart G B hB i₀ hi₀ hunique leftIndex)
   change
     (((lawGeneratedIdealSheaf referenceRaw referenceScheme
       (ClosedEquationalLawReading.ofSemanticCore referenceRaw
@@ -6549,7 +6639,7 @@ private theorem referenceIdeal_left_raw
         (AlgebraicGeometry.Scheme.ΓSpecIso
           (SheafifiedSectionRing referenceRaw leftContext)).inv.hom
         (Ideal.map (B.toSheafifiedSection leftContext)
-          (G.lawWitnessIdeal leftContext PUnit.unit)))).ideal
+          (G.witnessIdeal leftContext i₀)))).ideal
       ⟨⊤, @isAffineOpen_top leftChart.domain leftChart.domain_isAffine⟩ at hreal
   change Ideal.map leftChartGlobalSectionsIso.hom.hom
       (((lawGeneratedIdealSheaf referenceRaw referenceScheme
@@ -6581,9 +6671,11 @@ private theorem referenceIdeal_left_raw
   simpa only [CommRingCat.comp_apply, Category.id_comp] using hcancel
 
 private theorem referenceIdeal_right_raw
-    (G : SemanticLawEquationWitnessIdealCore referenceSite)
+    (G : ArchitecturalEquationSystem referenceSite.contextPreorder)
     (B : SemanticLawEquationSchemeBridge referenceRaw G)
-    (hB : IsSemanticLawEquationSchemeBridge referenceRaw G B) :
+    (hB : IsSemanticLawEquationSchemeBridge referenceRaw G B)
+    (i₀ : G.Index) (hi₀ : G.Required i₀)
+    (hunique : ∀ i, G.Required i → i = i₀) :
     Ideal.map rightChartGlobalSectionsIso.hom.hom
         (((lawGeneratedIdealSheaf referenceRaw referenceScheme
           (ClosedEquationalLawReading.ofSemanticCore referenceRaw
@@ -6596,13 +6688,13 @@ private theorem referenceIdeal_right_raw
             rightChart.domain_isAffine⟩) =
       Ideal.map (rightRawAlgebraIso.hom.hom.comp
         (B.toRawPresentation rightContext).toRingHom)
-        (G.lawWitnessIdeal rightContext PUnit.unit) := by
+        (G.witnessIdeal rightContext i₀) := by
   letI := (hB.presentation_stable rightContext).canonical_isIso
   have hreal := congrArg
     (fun I : rightChart.domain.IdealSheafData =>
       I.ideal ⟨⊤, @isAffineOpen_top rightChart.domain
         rightChart.domain_isAffine⟩)
-    (reference_generated_comap_chart G B hB rightIndex)
+    (reference_generated_comap_chart G B hB i₀ hi₀ hunique rightIndex)
   change
     (((lawGeneratedIdealSheaf referenceRaw referenceScheme
       (ClosedEquationalLawReading.ofSemanticCore referenceRaw
@@ -6618,7 +6710,7 @@ private theorem referenceIdeal_right_raw
         (AlgebraicGeometry.Scheme.ΓSpecIso
           (SheafifiedSectionRing referenceRaw rightContext)).inv.hom
         (Ideal.map (B.toSheafifiedSection rightContext)
-          (G.lawWitnessIdeal rightContext PUnit.unit)))).ideal
+          (G.witnessIdeal rightContext i₀)))).ideal
       ⟨⊤, @isAffineOpen_top rightChart.domain rightChart.domain_isAffine⟩ at hreal
   change Ideal.map rightChartGlobalSectionsIso.hom.hom
       (((lawGeneratedIdealSheaf referenceRaw referenceScheme
@@ -6660,23 +6752,27 @@ theorem weakIdeal_left_eq :
             leftChart.domain_isAffine⟩) =
       weakLeftIdeal := by
   have hraw := referenceIdeal_left_raw weakLawEquationCore
-    weakSchemeBridge weakSchemeBridge_valid
+    weakSchemeBridge weakSchemeBridge_valid PUnit.unit
+      (by
+        change referenceSite.equationSystem.Required PUnit.unit
+        exact referenceSite_equation_required PUnit.unit)
+      (by intro i _hi; cases i; rfl)
   have hsource :
       Ideal.map leftChartGlobalSectionsIso.hom.hom
           ((weakIdealSheaf.comap leftChart.map).ideal
             ⟨⊤, @isAffineOpen_top leftChart.domain
               leftChart.domain_isAffine⟩) =
         Ideal.map leftRawAlgebraIso.hom.hom
-          (weakLawEquationCore.lawWitnessIdeal leftContext PUnit.unit) := by
+          (weakLawEquationCore.witnessIdeal leftContext PUnit.unit) := by
     simpa only [weakReading, weakReading_valid, weakReading_requiredClosed,
       weakSchemeBridge, RingHom.comp_id] using hraw
-  rw [hsource, SemanticLawEquationWitnessIdealCore.lawWitnessIdeal,
+  rw [hsource, ArchitecturalEquationSystem.witnessIdeal,
     Ideal.map_span]
   apply le_antisymm
   · apply Ideal.span_le.mpr
     rintro y ⟨_, ⟨a, rfl⟩, rfl⟩
     change leftRawAlgebraIso.hom
-      (weakLawEquationCore.violationWitness leftContext PUnit.unit a) ∈
+      (weakLawEquationCore.violationCoordinate leftContext PUnit.unit a) ∈
         weakLeftIdeal
     rw [weakViolationWitness_eq]
     split
@@ -6694,7 +6790,7 @@ theorem weakIdeal_left_eq :
     rw [Set.mem_singleton_iff] at hy
     subst y
     apply Ideal.subset_span
-    refine ⟨weakLawEquationCore.violationWitness leftContext PUnit.unit
+    refine ⟨weakLawEquationCore.violationCoordinate leftContext PUnit.unit
       AAT.AG.FiniteModel.FiniteAtom.componentA, ⟨?_, ?_⟩⟩
     · exact ⟨AAT.AG.FiniteModel.FiniteAtom.componentA, rfl⟩
     · rw [weakViolationWitness_eq, if_pos rfl]
@@ -6715,23 +6811,27 @@ theorem weakIdeal_right_eq :
             rightChart.domain_isAffine⟩) =
       weakRightIdeal := by
   have hraw := referenceIdeal_right_raw weakLawEquationCore
-    weakSchemeBridge weakSchemeBridge_valid
+    weakSchemeBridge weakSchemeBridge_valid PUnit.unit
+      (by
+        change referenceSite.equationSystem.Required PUnit.unit
+        exact referenceSite_equation_required PUnit.unit)
+      (by intro i _hi; cases i; rfl)
   have hsource :
       Ideal.map rightChartGlobalSectionsIso.hom.hom
           ((weakIdealSheaf.comap rightChart.map).ideal
             ⟨⊤, @isAffineOpen_top rightChart.domain
               rightChart.domain_isAffine⟩) =
         Ideal.map rightRawAlgebraIso.hom.hom
-          (weakLawEquationCore.lawWitnessIdeal rightContext PUnit.unit) := by
+          (weakLawEquationCore.witnessIdeal rightContext PUnit.unit) := by
     simpa only [weakReading, weakReading_valid, weakReading_requiredClosed,
       weakSchemeBridge, RingHom.comp_id] using hraw
-  rw [hsource, SemanticLawEquationWitnessIdealCore.lawWitnessIdeal,
+  rw [hsource, ArchitecturalEquationSystem.witnessIdeal,
     Ideal.map_span]
   apply le_antisymm
   · apply Ideal.span_le.mpr
     rintro y ⟨_, ⟨a, rfl⟩, rfl⟩
     change rightRawAlgebraIso.hom
-      (weakLawEquationCore.violationWitness rightContext PUnit.unit a) ∈
+      (weakLawEquationCore.violationCoordinate rightContext PUnit.unit a) ∈
         weakRightIdeal
     rw [weakViolationWitness_eq]
     split
@@ -6749,7 +6849,7 @@ theorem weakIdeal_right_eq :
     rw [Set.mem_singleton_iff] at hy
     subst y
     apply Ideal.subset_span
-    refine ⟨weakLawEquationCore.violationWitness rightContext PUnit.unit
+    refine ⟨weakLawEquationCore.violationCoordinate rightContext PUnit.unit
       AAT.AG.FiniteModel.FiniteAtom.componentA, ⟨?_, ?_⟩⟩
     · exact ⟨AAT.AG.FiniteModel.FiniteAtom.componentA, rfl⟩
     · rw [weakViolationWitness_eq, if_pos rfl]
@@ -6770,23 +6870,27 @@ theorem strongIdeal_left_eq :
             leftChart.domain_isAffine⟩) =
       strongLeftIdeal := by
   have hraw := referenceIdeal_left_raw strongLawEquationCore
-    strongSchemeBridge strongSchemeBridge_valid
+    strongSchemeBridge strongSchemeBridge_valid PUnit.unit
+      (by
+        change referenceSite.equationSystem.Required PUnit.unit
+        exact referenceSite_equation_required PUnit.unit)
+      (by intro i _hi; cases i; rfl)
   have hsource :
       Ideal.map leftChartGlobalSectionsIso.hom.hom
           ((strongIdealSheaf.comap leftChart.map).ideal
             ⟨⊤, @isAffineOpen_top leftChart.domain
               leftChart.domain_isAffine⟩) =
         Ideal.map leftRawAlgebraIso.hom.hom
-          (strongLawEquationCore.lawWitnessIdeal leftContext PUnit.unit) := by
+          (strongLawEquationCore.witnessIdeal leftContext PUnit.unit) := by
     simpa only [strongReading, strongReading_valid, strongReading_requiredClosed,
       strongSchemeBridge, RingHom.comp_id] using hraw
-  rw [hsource, SemanticLawEquationWitnessIdealCore.lawWitnessIdeal,
+  rw [hsource, ArchitecturalEquationSystem.witnessIdeal,
     Ideal.map_span]
   apply le_antisymm
   · apply Ideal.span_le.mpr
     rintro y ⟨_, ⟨a, rfl⟩, rfl⟩
     change leftRawAlgebraIso.hom
-      (strongLawEquationCore.violationWitness leftContext PUnit.unit a) ∈
+      (strongLawEquationCore.violationCoordinate leftContext PUnit.unit a) ∈
         strongLeftIdeal
     rw [strongViolationWitness_eq]
     split
@@ -6806,7 +6910,7 @@ theorem strongIdeal_left_eq :
     rw [Set.mem_singleton_iff] at hy
     subst y
     apply Ideal.subset_span
-    refine ⟨strongLawEquationCore.violationWitness leftContext PUnit.unit
+    refine ⟨strongLawEquationCore.violationCoordinate leftContext PUnit.unit
       AAT.AG.FiniteModel.FiniteAtom.componentB, ⟨?_, ?_⟩⟩
     · exact ⟨AAT.AG.FiniteModel.FiniteAtom.componentB, rfl⟩
     · rw [strongViolationWitness_eq, if_neg (by simp), if_pos rfl]
@@ -6824,23 +6928,27 @@ theorem strongIdeal_right_eq :
             rightChart.domain_isAffine⟩) =
       strongRightIdeal := by
   have hraw := referenceIdeal_right_raw strongLawEquationCore
-    strongSchemeBridge strongSchemeBridge_valid
+    strongSchemeBridge strongSchemeBridge_valid PUnit.unit
+      (by
+        change referenceSite.equationSystem.Required PUnit.unit
+        exact referenceSite_equation_required PUnit.unit)
+      (by intro i _hi; cases i; rfl)
   have hsource :
       Ideal.map rightChartGlobalSectionsIso.hom.hom
           ((strongIdealSheaf.comap rightChart.map).ideal
             ⟨⊤, @isAffineOpen_top rightChart.domain
               rightChart.domain_isAffine⟩) =
         Ideal.map rightRawAlgebraIso.hom.hom
-          (strongLawEquationCore.lawWitnessIdeal rightContext PUnit.unit) := by
+          (strongLawEquationCore.witnessIdeal rightContext PUnit.unit) := by
     simpa only [strongReading, strongReading_valid, strongReading_requiredClosed,
       strongSchemeBridge, RingHom.comp_id] using hraw
-  rw [hsource, SemanticLawEquationWitnessIdealCore.lawWitnessIdeal,
+  rw [hsource, ArchitecturalEquationSystem.witnessIdeal,
     Ideal.map_span]
   apply le_antisymm
   · apply Ideal.span_le.mpr
     rintro y ⟨_, ⟨a, rfl⟩, rfl⟩
     change rightRawAlgebraIso.hom
-      (strongLawEquationCore.violationWitness rightContext PUnit.unit a) ∈
+      (strongLawEquationCore.violationCoordinate rightContext PUnit.unit a) ∈
         strongRightIdeal
     rw [strongViolationWitness_eq]
     split
@@ -6860,7 +6968,7 @@ theorem strongIdeal_right_eq :
     rw [Set.mem_singleton_iff] at hy
     subst y
     apply Ideal.subset_span
-    refine ⟨strongLawEquationCore.violationWitness rightContext PUnit.unit
+    refine ⟨strongLawEquationCore.violationCoordinate rightContext PUnit.unit
       AAT.AG.FiniteModel.FiniteAtom.componentB, ⟨?_, ?_⟩⟩
     · exact ⟨AAT.AG.FiniteModel.FiniteAtom.componentB, rfl⟩
     · rw [strongViolationWitness_eq, if_neg (by simp), if_pos rfl]
@@ -7014,6 +7122,68 @@ Its material data are constructed within the fixed integer-polynomial fixture, a
     evaluationRingHom n =
       MvPolynomial.eval₂Hom (RingHom.id Int) (fun _ => n) :=
   rfl
+
+/-- Evaluation at `x = 0` after reducing coefficients modulo `2`. -/
+def siteEquationModTwoRingHom : AmbientRing →+* ZMod 2 :=
+  MvPolynomial.eval₂Hom (Int.castRingHom (ZMod 2)) (fun _ => 0)
+
+/--
+The reference point on which the site-selected constant coordinate `2`
+vanishes.
+-/
+noncomputable def siteEquationModTwoPoint :
+    AlgebraicGeometry.Spec (CommRingCat.of (ZMod 2)) ⟶
+      referenceScheme.underlying :=
+  AlgebraicGeometry.Scheme.Spec.map
+    (CommRingCat.ofHom siteEquationModTwoRingHom).op
+
+private theorem siteEquationModTwoPoint_normalized_appTop :
+    siteEquationModTwoPoint.appTop ≫
+        (AlgebraicGeometry.Scheme.ΓSpecIso (CommRingCat.of (ZMod 2))).hom =
+      ambientGlobalSectionsIso.hom ≫
+        CommRingCat.ofHom siteEquationModTwoRingHom := by
+  simpa only [siteEquationModTwoPoint, referenceScheme_underlying,
+    ambientScheme_eq, ambientGlobalSectionsIso,
+    AlgebraicGeometry.Scheme.Spec_map, Quiver.Hom.unop_op] using
+      AlgebraicGeometry.Scheme.ΓSpecIso_naturality
+        (CommRingCat.ofHom siteEquationModTwoRingHom)
+
+private theorem siteEquationModTwoPoint_normalized_apply
+    (x : Γ(referenceScheme.underlying, ⊤)) :
+    (AlgebraicGeometry.Scheme.ΓSpecIso (CommRingCat.of (ZMod 2))).hom
+        (siteEquationModTwoPoint.appTop x) =
+      siteEquationModTwoRingHom (ambientGlobalSectionsIso.hom x) := by
+  simpa only [CommRingCat.comp_apply] using congrArg
+    (fun q => q x) siteEquationModTwoPoint_normalized_appTop
+
+/-- The mod-two point satisfies every required equation of the site-generated reading. -/
+theorem siteEquationModTwoPoint_semantic :
+    SemanticLawfulAlong referenceRaw referenceScheme referenceSiteReading
+      siteEquationModTwoPoint := by
+  intro i _
+  change ∀ a, siteEquationModTwoPoint.appTop
+    (referenceSiteGlobalEquation i a) = 0
+  intro a
+  apply (ConcreteCategory.bijective_of_isIso
+    (AlgebraicGeometry.Scheme.ΓSpecIso (CommRingCat.of (ZMod 2))).hom).1
+  rw [map_zero, siteEquationModTwoPoint_normalized_apply,
+    referenceSiteGlobalEquation_image, referenceSite_violationCoordinate]
+  change siteEquationModTwoRingHom (2 : AmbientRing) = 0
+  rw [map_ofNat]
+  decide
+
+/-- The mod-two point factors through the site-generated lawful closed subscheme. -/
+theorem siteEquationModTwoPoint_factors :
+    Nonempty (FactorsThroughLawfulClosedSubscheme
+      referenceRaw referenceScheme referenceSiteReading
+      referenceSiteReading_valid referenceSiteReading_requiredClosed
+      siteEquationModTwoPoint) := by
+  have h :=
+    lawfulnessIdealFactorizationCorrespondence referenceRaw referenceScheme
+      referenceSiteReading referenceSiteReading_valid
+      referenceSiteReading_requiredClosed
+      referenceSiteReading_requiredLawIdealExact siteEquationModTwoPoint
+  exact h.2.2.mp (h.2.1.mp (h.1.mp siteEquationModTwoPoint_semantic))
 
 /--
 SD2-SD3 standard-geometry reference-model declaration.
@@ -8121,12 +8291,16 @@ theorem weakToStrong_valid :
     IsClosedEquationalLawInclusion
       referenceRaw referenceScheme weakToStrong where
   required_map := fun i hi => by simpa [weakToStrong] using hi
-  closed_map := fun i _ => by
-    change i ∈ (Set.univ : Set referenceSite.equationSystem.toLegacyLawUniverse.Index)
-    exact Set.mem_univ i
-  selected_map := fun V i _ => by
-    change i ∈ (Set.univ : Set referenceSite.equationSystem.toLegacyLawUniverse.Index)
-    exact Set.mem_univ i
+  closed_map := by
+    intro i _
+    change weakToStrong.lawMap i ∈
+      (Set.univ : Set strongLawEquationCore.Index)
+    exact Set.mem_univ _
+  selected_map := by
+    intro _V i _
+    change weakToStrong.lawMap i ∈
+      (Set.univ : Set strongLawEquationCore.Index)
+    exact Set.mem_univ _
   coordinate_eq := by
     intro i hi V a
     cases i
@@ -8259,12 +8433,16 @@ theorem strongToRigid_valid :
     IsClosedEquationalLawInclusion
       referenceRaw referenceScheme strongToRigid where
   required_map := fun i hi => by simpa [strongToRigid] using hi
-  closed_map := fun i _ => by
-    change i ∈ (Set.univ : Set referenceSite.equationSystem.toLegacyLawUniverse.Index)
-    exact Set.mem_univ i
-  selected_map := fun V i _ => by
-    change i ∈ (Set.univ : Set referenceSite.equationSystem.toLegacyLawUniverse.Index)
-    exact Set.mem_univ i
+  closed_map := by
+    intro i _
+    change strongToRigid.lawMap i ∈
+      (Set.univ : Set rigidLawEquationCore.Index)
+    exact Set.mem_univ _
+  selected_map := by
+    intro _V i _
+    change strongToRigid.lawMap i ∈
+      (Set.univ : Set rigidLawEquationCore.Index)
+    exact Set.mem_univ _
   coordinate_eq := by
     intro i hi V a
     cases i
@@ -8507,7 +8685,7 @@ The target equations are the source equations sent through the actual base-chang
 noncomputable def coefficientChangedWeakReading :
     ClosedEquationalLawReading
       (referenceRaw.baseChange coefficientChange.hom)
-      coefficientChangedScheme :=
+      coefficientChangedScheme weakLawEquationCore :=
   ClosedEquationalLawReading.baseChangeOfSemanticCore
     referenceRaw referenceScheme
     weakLawEquationCore weakSchemeBridge coefficientChange
@@ -8529,7 +8707,7 @@ The target equations are the source equations sent through the actual base-chang
 noncomputable def coefficientChangedStrongReading :
     ClosedEquationalLawReading
       (referenceRaw.baseChange coefficientChange.hom)
-      coefficientChangedScheme :=
+      coefficientChangedScheme strongLawEquationCore :=
   ClosedEquationalLawReading.baseChangeOfSemanticCore
     referenceRaw referenceScheme
     strongLawEquationCore strongSchemeBridge coefficientChange
@@ -8696,12 +8874,16 @@ theorem coefficientChangedWeakToStrong_valid :
       coefficientChangedScheme coefficientChangedWeakToStrong where
   required_map := fun i hi => by
     simpa [coefficientChangedWeakToStrong] using hi
-  closed_map := fun i _ => by
-    change i ∈ (Set.univ : Set referenceSite.equationSystem.toLegacyLawUniverse.Index)
-    exact Set.mem_univ i
-  selected_map := fun V i _ => by
-    change i ∈ (Set.univ : Set referenceSite.equationSystem.toLegacyLawUniverse.Index)
-    exact Set.mem_univ i
+  closed_map := by
+    intro i _
+    change coefficientChangedWeakToStrong.lawMap i ∈
+      (Set.univ : Set strongLawEquationCore.Index)
+    exact Set.mem_univ _
+  selected_map := by
+    intro _V i _
+    change coefficientChangedWeakToStrong.lawMap i ∈
+      (Set.univ : Set strongLawEquationCore.Index)
+    exact Set.mem_univ _
   coordinate_eq := by
     intro i hi V a
     cases i
@@ -9417,7 +9599,8 @@ theorem duplicateLeftAtlas_not_valid :
 
 /-- The strong reading collapsed to the weak reading. -/
 noncomputable def collapsedStrongReading :
-    ClosedEquationalLawReading referenceRaw referenceScheme :=
+    ClosedEquationalLawReading referenceRaw referenceScheme
+      weakLawEquationCore :=
   weakReading
 
 /-- The collapsed strong reading is definitionally the weak reading. -/
