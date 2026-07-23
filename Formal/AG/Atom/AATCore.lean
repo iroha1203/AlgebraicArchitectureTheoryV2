@@ -407,18 +407,17 @@ theorem generate_algebra_operation_target
   rfl
 
 /--
-Every generated circuit refutes its indexed equation under the explicit
-detector-soundness direction hypothesis supplied for the core reading.
+Every generated circuit refutes its indexed equation by the admissibility
+proof retained in the core reading.
 -/
 theorem generate_circuit_sound
     {U : AtomCarrier.{u}} (S : AtomAxiomSystem U) (r : CoreReading U)
-    (hSound : r.equationReading.circuits.Sound)
     (A : (AATCorePackage.generate S r).algebra.Obj)
     (i : (AATCorePackage.generate S r).algebra.equationSystem.Index)
     (c : (AATCorePackage.generate S r).algebra.Circuit A i) :
     ¬ (AATCorePackage.generate S r).algebra.equationSystem.EquationHolds i
       ((AATCorePackage.generate S r).algebra.object A) :=
-  hSound i A.1 c.1 c.2.1 c.2.2
+  r.equationReading.circuitSound i A.1 c.1 c.2.1 c.2.2
 
 /-- Generated operations transport family membership through their actual atom map. -/
 theorem generate_algebra_operation_maps_family

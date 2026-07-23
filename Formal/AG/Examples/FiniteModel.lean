@@ -373,6 +373,7 @@ noncomputable def equationReading (C : Site.ContextPreorderCategory object) :
   contextPreorder := C
   equationSystem := equationSystem C
   circuits := equationCircuitReading C
+  circuitSound := equationCircuitReading_sound C
 
 /-- R10: the finite-template circuit reading for the required NoCycle law. -/
 noncomputable def circuitReading : CircuitReading lawUniverse where
@@ -1302,7 +1303,6 @@ theorem generatedCycleCircuit_sound :
     ¬ corePackage.algebra.equationSystem.EquationHolds PUnit.unit
       (corePackage.algebra.object corePackage.baseObject) :=
   AATCorePackage.generate_circuit_sound axiomSystem coreReading
-    (equationCircuitReading_sound (Site.contextMorphismPreorderCategory object))
     corePackage.baseObject PUnit.unit generatedCycleCircuit
 
 /-!

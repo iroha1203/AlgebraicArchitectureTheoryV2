@@ -1811,20 +1811,15 @@ private noncomputable def falseEquationReading
   circuits := {
     code := fun _ => .exact datum
   }
-
-/-- The constantly nonzero residual makes every selected detector sound. -/
-private theorem falseEquationReading_sound
-    (A : ArchitectureObject FiniteModel.carrier)
-    (datum : FiniteCircuitDatum FiniteModel.carrier) :
-    (falseEquationReading A datum).circuits.Sound := by
-  intro _index _object _query _hmatches _haccepts hequation
-  have hcoordinate := hequation
-    (Site.ContextCategoryObject.of
-      (Site.contextMorphismPreorderCategory A) (emptyEquationContext A))
-    FiniteModel.FiniteAtom.componentA
-  have hfalse : (1 : Int) = 0 := by
-    simpa only [falseEquationReading, falseEquationSystem] using hcoordinate
-  norm_num at hfalse
+  circuitSound := by
+    intro _index _object _query _hmatches _haccepts hequation
+    have hcoordinate := hequation
+      (Site.ContextCategoryObject.of
+        (Site.contextMorphismPreorderCategory A) (emptyEquationContext A))
+      FiniteModel.FiniteAtom.componentA
+    have hfalse : (1 : Int) = 0 := by
+      simpa only [falseEquationSystem] using hcoordinate
+    norm_num at hfalse
 
 private def positiveLaw : Law FiniteModel.carrier where
   holds _ := False

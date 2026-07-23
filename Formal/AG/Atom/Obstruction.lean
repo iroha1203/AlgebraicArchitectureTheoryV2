@@ -237,6 +237,8 @@ structure EquationReading {U : AtomCarrier.{u}} (object : ArchitectureObject U) 
   equationSystem : ArchitecturalEquationSystem contextPreorder
   /-- Finite obstruction circuits indexed by the same equation system. -/
   circuits : EquationCircuitReading equationSystem
+  /-- Admissibility proof that accepted matching circuits refute their equations. -/
+  circuitSound : circuits.Sound
 
 /--
 SD1: law-indexed finite detector code together with semantic soundness.
