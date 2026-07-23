@@ -67,9 +67,7 @@ theorem lawEquation_constructs_groundedComparisonPacket_viaBody
         semanticCover.TripleOverlap triple.1 triple.2.1 triple.2.2) ->
           (AAT.AG.Cohomology.finitePosetCoverRelativeCover
             (lawEquationStandardComplex coverGeometry G)).simplex 2)
-    (hholds :
-      D.toSupportOnlySemanticAtomLawInputBoundarySource.displayedRequiredLawsHoldOn
-        D.objectOfLocalInput) :
+    (hholds : D.DisplayedRequiredEquationsHoldOn) :
     let surface :=
       lawEquationCurrentG06InputSurface coverGeometry G semanticCover
         chartSimplex overlapSimplex tripleSimplex
@@ -195,7 +193,7 @@ theorem lawEquation_constructs_groundedComparisonPacket_viaBody
     | simpa [surface, boundary, geometry, freeSource, boundarySource,
         restrictionSource, source, bodyK, bodySource, bodyD, bodyGeometry,
         bodyG, toBodyDefectSource, toBodyFinitePosetCoverGeometry,
-        toBodyWitnessIdealGeometry, toBodyWitnessIdealCore,
+        toBodyWitnessIdealGeometry,
         lawEquationCurrentG06InputSurface, lawEquationCoverBridge,
         LawEquationDefectSemanticAtomLawInputBoundarySource.toCoverRelativeBaseRestrictionSource,
         CoverRelativeCechBoundaryGeneratedSemanticCoefficient.toGeneratedCoefficient,
@@ -204,7 +202,7 @@ theorem lawEquation_constructs_groundedComparisonPacket_viaBody
     | simpa [surface, boundary, geometry, freeSource, boundarySource,
         restrictionSource, source, bodyK, bodySource, bodyD, bodyGeometry,
         bodyG, toBodyDefectSource, toBodyFinitePosetCoverGeometry,
-        toBodyWitnessIdealGeometry, toBodyWitnessIdealCore,
+        toBodyWitnessIdealGeometry,
         lawEquationCurrentG06InputSurface, lawEquationCoverBridge,
         LawEquationDefectSemanticAtomLawInputBoundarySource.toCoverRelativeBaseRestrictionSource,
         AAT.AG.SemanticRepair.coverRelativeGeneratedBoundaryAdditiveH1Surface]
@@ -212,7 +210,7 @@ theorem lawEquation_constructs_groundedComparisonPacket_viaBody
     | simpa [surface, boundary, geometry, freeSource, boundarySource,
         restrictionSource, source, bodyK, bodySource, bodyD, bodyGeometry,
         bodyG, toBodyDefectSource, toBodyFinitePosetCoverGeometry,
-        toBodyWitnessIdealGeometry, toBodyWitnessIdealCore,
+        toBodyWitnessIdealGeometry,
         lawEquationCurrentG06InputSurface, lawEquationCoverBridge,
         LawEquationDefectSemanticAtomLawInputBoundarySource.toCoverRelativeBaseRestrictionSource,
         AAT.AG.SemanticRepair.coverRelativeGeneratedBoundaryAdditiveH1Surface]
@@ -220,7 +218,7 @@ theorem lawEquation_constructs_groundedComparisonPacket_viaBody
     | simpa [surface, boundary, geometry, freeSource, boundarySource,
         restrictionSource, source, bodyK, bodySource, bodyD, bodyGeometry,
         bodyG, toBodyDefectSource, toBodyFinitePosetCoverGeometry,
-        toBodyWitnessIdealGeometry, toBodyWitnessIdealCore,
+        toBodyWitnessIdealGeometry,
         lawEquationCurrentG06InputSurface, lawEquationCoverBridge,
         LawEquationDefectSemanticAtomLawInputBoundarySource.toCoverRelativeBaseRestrictionSource,
         AAT.AG.SemanticRepair.coverRelativeGeneratedBoundaryAdditiveH1Surface]
@@ -228,7 +226,7 @@ theorem lawEquation_constructs_groundedComparisonPacket_viaBody
     | simpa [surface, boundary, geometry, freeSource, boundarySource,
         restrictionSource, source, bodyK, bodySource, bodyD, bodyGeometry,
         bodyG, toBodyDefectSource, toBodyFinitePosetCoverGeometry,
-        toBodyWitnessIdealGeometry, toBodyWitnessIdealCore,
+        toBodyWitnessIdealGeometry,
         lawEquationCurrentG06InputSurface, lawEquationCoverBridge,
         LawEquationDefectSemanticAtomLawInputBoundarySource.toCoverRelativeBaseRestrictionSource,
         AAT.AG.SemanticRepair.coverRelativeGeneratedBoundaryAdditiveH1Surface]
@@ -236,7 +234,7 @@ theorem lawEquation_constructs_groundedComparisonPacket_viaBody
     | simpa [surface, boundary, geometry, freeSource, boundarySource,
         restrictionSource, source, bodyK, bodySource, bodyD, bodyGeometry,
         bodyG, toBodyDefectSource, toBodyFinitePosetCoverGeometry,
-        toBodyWitnessIdealGeometry, toBodyWitnessIdealCore,
+        toBodyWitnessIdealGeometry,
         lawEquationCurrentG06InputSurface, lawEquationCoverBridge,
         LawEquationDefectSemanticAtomLawInputBoundarySource.toCoverRelativeBaseRestrictionSource,
         AAT.AG.SemanticRepair.coverRelativeGeneratedBoundaryAdditiveH1Surface]
@@ -244,7 +242,7 @@ theorem lawEquation_constructs_groundedComparisonPacket_viaBody
     | simpa [surface, boundary, geometry, freeSource, boundarySource,
         restrictionSource, source, bodyK, bodySource, bodyD, bodyGeometry,
         bodyG, toBodyDefectSource, toBodyFinitePosetCoverGeometry,
-        toBodyWitnessIdealGeometry, toBodyWitnessIdealCore,
+        toBodyWitnessIdealGeometry,
         lawEquationCurrentG06InputSurface, lawEquationCoverBridge,
         LawEquationDefectSemanticAtomLawInputBoundarySource.toCoverRelativeBaseRestrictionSource,
         AAT.AG.SemanticRepair.coverRelativeGeneratedBoundaryAdditiveH1Surface]
@@ -252,7 +250,7 @@ theorem lawEquation_constructs_groundedComparisonPacket_viaBody
     | simpa [surface, boundary, geometry, freeSource, boundarySource,
         restrictionSource, source, bodyK, bodySource, bodyD, bodyGeometry,
         bodyG, toBodyDefectSource, toBodyFinitePosetCoverGeometry,
-        toBodyWitnessIdealGeometry, toBodyWitnessIdealCore,
+        toBodyWitnessIdealGeometry,
         lawEquationCurrentG06InputSurface, lawEquationCoverBridge,
         LawEquationDefectSemanticAtomLawInputBoundarySource.toCoverRelativeBaseRestrictionSource,
         AAT.AG.SemanticRepair.coverRelativeGeneratedBoundaryAdditiveH1Surface]
@@ -260,7 +258,7 @@ theorem lawEquation_constructs_groundedComparisonPacket_viaBody
     | simpa [surface, boundary, geometry, freeSource, boundarySource,
         restrictionSource, source, bodyK, bodySource, bodyD, bodyGeometry,
         bodyG, toBodyDefectSource, toBodyFinitePosetCoverGeometry,
-        toBodyWitnessIdealGeometry, toBodyWitnessIdealCore,
+        toBodyWitnessIdealGeometry,
         lawEquationCurrentG06InputSurface, lawEquationCoverBridge,
         LawEquationDefectSemanticAtomLawInputBoundarySource.toCoverRelativeBaseRestrictionSource,
         AAT.AG.SemanticRepair.coverRelativeGeneratedBoundaryAdditiveH1Surface]
@@ -280,13 +278,14 @@ theorem lawEquation_constructs_groundedComparisonPacket_viaBody
       { toCoverRelativeH1 := ?_
         fromCoverRelativeH1 := ?_
         h1Equiv := ?_
+        h1AddEquiv := ?_
         sameClass_iff_coverRelative := ?_
         zero_iff_coverRelativeZero := ?_ }
     · simpa [comparison, bodyRealization', bodyRealization, surface, boundary,
         geometry, freeSource, boundarySource, restrictionSource, source, bodyK,
         bodySource, bodyD, bodyGeometry, bodyG, toBodyDefectSource,
         toBodyFinitePosetCoverGeometry, toBodyWitnessIdealGeometry,
-        toBodyWitnessIdealCore, lawEquationCurrentG06InputSurface,
+        lawEquationCurrentG06InputSurface,
         lawEquationCoverBridge,
         LawEquationDefectSemanticAtomLawInputBoundarySource.toCoverRelativeBaseRestrictionSource,
         AAT.AG.SemanticRepair.coverRelativeGeneratedBoundaryAdditiveH1Surface]
@@ -295,7 +294,7 @@ theorem lawEquation_constructs_groundedComparisonPacket_viaBody
         geometry, freeSource, boundarySource, restrictionSource, source, bodyK,
         bodySource, bodyD, bodyGeometry, bodyG, toBodyDefectSource,
         toBodyFinitePosetCoverGeometry, toBodyWitnessIdealGeometry,
-        toBodyWitnessIdealCore, lawEquationCurrentG06InputSurface,
+        lawEquationCurrentG06InputSurface,
         lawEquationCoverBridge,
         LawEquationDefectSemanticAtomLawInputBoundarySource.toCoverRelativeBaseRestrictionSource,
         AAT.AG.SemanticRepair.coverRelativeGeneratedBoundaryAdditiveH1Surface]
@@ -304,17 +303,26 @@ theorem lawEquation_constructs_groundedComparisonPacket_viaBody
         geometry, freeSource, boundarySource, restrictionSource, source, bodyK,
         bodySource, bodyD, bodyGeometry, bodyG, toBodyDefectSource,
         toBodyFinitePosetCoverGeometry, toBodyWitnessIdealGeometry,
-        toBodyWitnessIdealCore, lawEquationCurrentG06InputSurface,
+        lawEquationCurrentG06InputSurface,
         lawEquationCoverBridge,
         LawEquationDefectSemanticAtomLawInputBoundarySource.toCoverRelativeBaseRestrictionSource,
         AAT.AG.SemanticRepair.coverRelativeGeneratedBoundaryAdditiveH1Surface]
         using bodyComparisonPackage.h1Equiv
+    · simpa [comparison, bodyRealization', bodyRealization, surface, boundary,
+        geometry, freeSource, boundarySource, restrictionSource, source, bodyK,
+        bodySource, bodyD, bodyGeometry, bodyG, toBodyDefectSource,
+        toBodyFinitePosetCoverGeometry, toBodyWitnessIdealGeometry,
+        lawEquationCurrentG06InputSurface,
+        lawEquationCoverBridge,
+        LawEquationDefectSemanticAtomLawInputBoundarySource.toCoverRelativeBaseRestrictionSource,
+        AAT.AG.SemanticRepair.coverRelativeGeneratedBoundaryAdditiveH1Surface]
+        using bodyComparisonPackage.h1AddEquiv
     intro left right
     simpa [comparison, bodyRealization', bodyRealization, surface, boundary,
       geometry, freeSource, boundarySource, restrictionSource, source, bodyK,
       bodySource, bodyD, bodyGeometry, bodyG, toBodyDefectSource,
       toBodyFinitePosetCoverGeometry, toBodyWitnessIdealGeometry,
-      toBodyWitnessIdealCore, lawEquationCurrentG06InputSurface,
+      lawEquationCurrentG06InputSurface,
       lawEquationCoverBridge,
       LawEquationDefectSemanticAtomLawInputBoundarySource.toCoverRelativeBaseRestrictionSource,
       AAT.AG.SemanticRepair.coverRelativeGeneratedBoundaryAdditiveH1Surface]
@@ -323,7 +331,7 @@ theorem lawEquation_constructs_groundedComparisonPacket_viaBody
         geometry, freeSource, boundarySource, restrictionSource, source, bodyK,
         bodySource, bodyD, bodyGeometry, bodyG, toBodyDefectSource,
         toBodyFinitePosetCoverGeometry, toBodyWitnessIdealGeometry,
-        toBodyWitnessIdealCore, lawEquationCurrentG06InputSurface,
+        lawEquationCurrentG06InputSurface,
         lawEquationCoverBridge,
         LawEquationDefectSemanticAtomLawInputBoundarySource.toCoverRelativeBaseRestrictionSource,
         AAT.AG.SemanticRepair.coverRelativeGeneratedBoundaryAdditiveH1Surface]
@@ -331,7 +339,7 @@ theorem lawEquation_constructs_groundedComparisonPacket_viaBody
   exact
     ⟨toResearchDisplayedInterpretationRealization D
         packet.displayedInterpretationRealization,
-      toResearchDisplayedRequiredLawRestrictionEvaluator D
+      toResearchDisplayedRequiredLawRestrictionEvaluator D hholds
         packet.displayedRequiredLawRestrictionEvaluator,
       toResearchSourceC0CechZero D packet.sourceC0CechZero,
       toResearchSelectedRealizationLayer D semanticCover chartSimplex overlapSimplex

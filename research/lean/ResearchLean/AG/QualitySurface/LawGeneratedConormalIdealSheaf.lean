@@ -30,7 +30,7 @@ open LawGeneratedRingSheaf
 
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A}
-variable (G : SemanticLawEquationWitnessIdealCore S)
+variable (G : ArchitecturalEquationSystem S.contextPreorder)
 
 noncomputable local instance moduleSheafMonoidal :
     MonoidalCategory (Sheaf S.topology (LargeZMod.{u})) :=

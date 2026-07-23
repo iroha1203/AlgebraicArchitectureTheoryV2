@@ -329,7 +329,7 @@ noncomputable def baseSectionsEquivH0
 
 /-- The law-generated kernel sheaf satisfies the required base-section/Čech-H⁰ comparison. -/
 noncomputable def lawGeneratedConormalSectionsEquivH0
-    (G : AAT.AG.LawAlgebra.SemanticLawEquationWitnessIdealCore S) :
+    (G : AAT.AG.ArchitecturalEquationSystem S.contextPreorder) :
     (LawGeneratedIdealPowerLiftedSheafification.sheafifiedShortComplex G).X₁.val.obj
         (op geometry.base) ≃+
       H0 geometry

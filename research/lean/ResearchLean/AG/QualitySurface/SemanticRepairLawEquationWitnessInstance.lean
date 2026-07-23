@@ -99,36 +99,14 @@ def finiteModelSemanticRepairSite :
   chartOrder := [PUnit.unit]
   sourceTraceToken := fun _ => true
 
-/--
-The concrete law-equation witness-ideal core on the finite-model site.
-
-The observable ring is `ℤ` on every context with identity restrictions, and
-the single required NoCycle law is realized by the constant violation
-coordinate `2`.  All structure laws are definitional; nothing is postulated.
--/
-def finiteModelLawEquationCore :
-    SemanticLawEquationWitnessIdealCore finiteModelSemanticRepairSite
-      AAT.AG.FiniteModel.site where
-  Observable _ := ℤ
-  observableCommRing _ := inferInstance
-  restrict _ := RingHom.id ℤ
-  restrict_id _ _ := rfl
-  restrict_comp _ _ _ := rfl
-  violationWitness _ _ _ := 2
-  violationWitness_restrict _ _ _ := rfl
-  supportAtom := AAT.AG.FiniteModel.FiniteAtom.componentA
-  supportAtom_traceVisible := rfl
-  supportLawIndex := PUnit.unit
-  supportLawIndex_required := AAT.AG.FiniteModel.lawUniverse_required PUnit.unit
-
 instance : Nonempty AAT.AG.FiniteModel.FiniteAtom :=
   ⟨AAT.AG.FiniteModel.FiniteAtom.componentA⟩
 
 /-- Each witness ideal of the finite-model law realization is inside `span {2}`. -/
-theorem finiteModel_lawWitnessIdeal_le
+theorem finiteModel_witnessIdeal_le
     (W : AAT.AG.FiniteModel.site.category)
-    (lawIndex : AAT.AG.FiniteModel.site.lawUniverse.Index) :
-    finiteModelLawEquationCore.lawWitnessIdeal W lawIndex ≤
+    (equationIndex : AAT.AG.FiniteModel.site.equationSystem.Index) :
+    AAT.AG.FiniteModel.site.equationSystem.witnessIdeal W equationIndex ≤
       Ideal.span {(2 : ℤ)} := by
   refine Ideal.span_le.mpr ?_
   rintro x ⟨atom, rfl⟩
@@ -137,12 +115,13 @@ theorem finiteModel_lawWitnessIdeal_le
 /-- The local obstruction ideal of the finite-model realization is inside `span {2}`. -/
 theorem finiteModel_obstructionIdeal_le
     (W : AAT.AG.FiniteModel.site.category) :
-    finiteModelLawEquationCore.obstructionIdeal W ≤ Ideal.span {(2 : ℤ)} := by
+    AAT.AG.FiniteModel.site.equationSystem.obstructionIdeal W ≤
+      Ideal.span {(2 : ℤ)} := by
   refine
     (AAT.AG.LawAlgebra.ObstructionIdeal.SelectedLawWitnessIdealFamily.localObstructionIdeal_le_iff
       _ _ _).mpr ?_
   intro lawIndex _hselected
-  exact finiteModel_lawWitnessIdeal_le W lawIndex
+  exact finiteModel_witnessIdeal_le W lawIndex
 
 /--
 Nondegeneracy, ideal level: the defect `1` is not in the local obstruction
@@ -150,7 +129,7 @@ ideal of the finite-model realization.
 -/
 theorem finiteModel_one_notMem_obstructionIdeal
     (W : AAT.AG.FiniteModel.site.category) :
-    (1 : ℤ) ∉ finiteModelLawEquationCore.obstructionIdeal W := by
+    (1 : ℤ) ∉ AAT.AG.FiniteModel.site.equationSystem.obstructionIdeal W := by
   intro hmem
   have htwo := finiteModel_obstructionIdeal_le W hmem
   rw [Ideal.mem_span_singleton] at htwo
@@ -165,7 +144,8 @@ remaining work: the generated coefficient does not collapse to zero.
 -/
 theorem finiteModel_defectOne_class_ne_zero
     (W : AAT.AG.FiniteModel.site.category) :
-    Ideal.Quotient.mk (finiteModelLawEquationCore.obstructionIdeal W)
+    Ideal.Quotient.mk
+        (AAT.AG.FiniteModel.site.equationSystem.obstructionIdeal W)
         (1 : ℤ) ≠ 0 := by
   intro h
   exact finiteModel_one_notMem_obstructionIdeal W
@@ -174,8 +154,9 @@ theorem finiteModel_defectOne_class_ne_zero
 /-- The generated obstruction quotient of the finite-model realization is nontrivial. -/
 theorem finiteModel_obstructionQuotient_nontrivial
     (W : AAT.AG.FiniteModel.site.category) :
-    ∃ x : finiteModelLawEquationCore.ObstructionQuotient W, x ≠ 0 :=
-  ⟨Ideal.Quotient.mk (finiteModelLawEquationCore.obstructionIdeal W) 1,
+    ∃ x : AAT.AG.FiniteModel.site.equationSystem.ObstructionQuotient W, x ≠ 0 :=
+  ⟨Ideal.Quotient.mk
+      (AAT.AG.FiniteModel.site.equationSystem.obstructionIdeal W) 1,
     finiteModel_defectOne_class_ne_zero W⟩
 
 /--
@@ -183,15 +164,17 @@ Lawful side: every violation coordinate has zero obstruction-quotient class.
 Together with the nonzero defect class this shows the quotient realization
 separates lawful from non-lawful readings.
 -/
-theorem finiteModel_violationWitness_class_eq_zero
+theorem finiteModel_violationCoordinate_class_eq_zero
     (W : AAT.AG.FiniteModel.site.category)
-    (lawIndex : AAT.AG.FiniteModel.site.lawUniverse.Index)
+    (equationIndex : AAT.AG.FiniteModel.site.equationSystem.Index)
     (atom : AAT.AG.FiniteModel.carrier.Atom) :
-    Ideal.Quotient.mk (finiteModelLawEquationCore.obstructionIdeal W)
-        (finiteModelLawEquationCore.violationWitness W lawIndex atom) = 0 :=
+    Ideal.Quotient.mk
+        (AAT.AG.FiniteModel.site.equationSystem.obstructionIdeal W)
+        (AAT.AG.FiniteModel.site.equationSystem.violationCoordinate
+          W equationIndex atom) = 0 :=
   Ideal.Quotient.eq_zero_iff_mem.mpr
-    (finiteModelLawEquationCore.lawWitnessIdeal_le_obstructionIdeal W
-      (AAT.AG.FiniteModel.lawUniverse_required lawIndex)
+    (AAT.AG.FiniteModel.site.equationSystem.witnessIdeal_le_obstructionIdeal W
+      (AAT.AG.FiniteModel.site_equation_required equationIndex)
       (Ideal.subset_span ⟨atom, rfl⟩))
 
 /--
@@ -203,11 +186,17 @@ The `quotientIsSheaf` field is discharged by
 def finiteModelLawEquationGeometry :
     SemanticLawEquationWitnessIdealGeometry finiteModelSemanticRepairSite
       AAT.AG.FiniteModel.site where
-  toSemanticLawEquationWitnessIdealCore := finiteModelLawEquationCore
+  equationSystem := AAT.AG.FiniteModel.site.equationSystem
+  supportAtom := AAT.AG.FiniteModel.FiniteAtom.componentA
+  supportAtom_traceVisible := rfl
+  provenanceLawIndex := PUnit.unit
+  provenanceLawIndex_required :=
+    (AAT.AG.FiniteModel.site.equationSystem.toLegacyLawUniverse_required_iff
+      PUnit.unit).mpr
+      (AAT.AG.FiniteModel.site_equation_required PUnit.unit)
   quotientIsSheaf :=
     finiteModelSite_AATSheafCondition
-      (finiteModelLawEquationCore.obstructionQuotientCoefficient ⋙
-        forget AddCommGrpCat)
+      AAT.AG.FiniteModel.site.equationSystem.obstructionQuotientPresheaf
 
 /--
 Cycle 349 witness packet: the concrete finite instance exists, its quotient
@@ -221,21 +210,25 @@ theorem finiteModel_lawEquation_witness_packet :
       (forall F : AAT.AG.Site.AATPresheaf AAT.AG.FiniteModel.site,
         AAT.AG.Site.AATSheafCondition AAT.AG.FiniteModel.site F) /\
       (forall W : AAT.AG.FiniteModel.site.category,
-        ∃ x : finiteModelLawEquationCore.ObstructionQuotient W, x ≠ 0) /\
+        ∃ x : AAT.AG.FiniteModel.site.equationSystem.ObstructionQuotient W,
+          x ≠ 0) /\
       (forall W : AAT.AG.FiniteModel.site.category,
-        Ideal.Quotient.mk (finiteModelLawEquationCore.obstructionIdeal W)
+        Ideal.Quotient.mk
+            (AAT.AG.FiniteModel.site.equationSystem.obstructionIdeal W)
             (1 : ℤ) ≠ 0) /\
       (forall (W : AAT.AG.FiniteModel.site.category)
-        (lawIndex : AAT.AG.FiniteModel.site.lawUniverse.Index)
+        (equationIndex : AAT.AG.FiniteModel.site.equationSystem.Index)
         (atom : AAT.AG.FiniteModel.carrier.Atom),
-        Ideal.Quotient.mk (finiteModelLawEquationCore.obstructionIdeal W)
-            (finiteModelLawEquationCore.violationWitness W lawIndex atom) =
+        Ideal.Quotient.mk
+            (AAT.AG.FiniteModel.site.equationSystem.obstructionIdeal W)
+            (AAT.AG.FiniteModel.site.equationSystem.violationCoordinate
+              W equationIndex atom) =
           0) :=
   ⟨⟨finiteModelLawEquationGeometry⟩,
     finiteModelSite_AATSheafCondition,
     finiteModel_obstructionQuotient_nontrivial,
     finiteModel_defectOne_class_ne_zero,
-    finiteModel_violationWitness_class_eq_zero⟩
+    finiteModel_violationCoordinate_class_eq_zero⟩
 
 end CoverRelativeCechGeneratedSemanticCoefficient
 end SemanticRepairCoverRelativeCochainRealization

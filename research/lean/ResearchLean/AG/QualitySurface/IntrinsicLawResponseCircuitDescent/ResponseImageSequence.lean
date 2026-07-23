@@ -56,162 +56,162 @@ variable {k : Type uk} {Op : Type uOp} {Chart : Type uChart}
 variable {State : Type uState} {BeforeWitness : Type uBefore}
 variable {AfterWitness : Type uAfter}
 variable [Field k] [Fintype Op] [Fintype Chart]
-variable (Core : SemanticLawEquationWitnessIdealCore S) (W : S.category)
-variable [Algebra k (Core.Observable W)]
+variable (E : ArchitecturalEquationSystem S.contextPreorder) (W : S.category)
+variable [Algebra k (E.Observable W)]
 
 /-- The finite product of copies of the structure sheaf indexed by protected
 required-generator labels. -/
 noncomputable abbrev protectedResponseTarget
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (protectedLabels : Finset (RequiredGeneratorLabel S)) :
-    (G.lawfulSpace (Core.obstructionIdeal W)).Modules :=
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (protectedLabels : Finset (RequiredGeneratorLabel E)) :
+    (G.lawfulSpace (E.obstructionIdeal W)).Modules :=
   ∏ᶜ fun _ : protectedLabels ↦
     SheafOfModules.unit
-      ((G.lawfulSpace (Core.obstructionIdeal W)).ringCatSheaf)
+      ((G.lawfulSpace (E.obstructionIdeal W)).ringCatSheaf)
 
 /-- The actual protected response, assembled from the existing labeled
 responses by the categorical product universal property. -/
 noncomputable def protectedResponse
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (protectedLabels : Finset (RequiredGeneratorLabel S)) :
-    Pres.allowedOperationSheaf G (Core.obstructionIdeal W) ⟶
-      protectedResponseTarget Core W G protectedLabels :=
-  Pi.lift fun e ↦ Pres.labeledResponse Core W G e.1
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (protectedLabels : Finset (RequiredGeneratorLabel E)) :
+    Pres.allowedOperationSheaf G (E.obstructionIdeal W) ⟶
+      protectedResponseTarget E W G protectedLabels :=
+  Pi.lift fun e ↦ Pres.labeledResponse E W G e.1
 
 /-- Every component of the protected response is its actual labeled response. -/
 theorem protectedResponseComponent
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (protectedLabels : Finset (RequiredGeneratorLabel S))
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (protectedLabels : Finset (RequiredGeneratorLabel E))
     (e : protectedLabels) :
-    protectedResponse Core W Pres G protectedLabels ≫
+    protectedResponse E W Pres G protectedLabels ≫
         Pi.π (fun _ : protectedLabels ↦
           SheafOfModules.unit
-            ((G.lawfulSpace (Core.obstructionIdeal W)).ringCatSheaf)) e =
-      Pres.labeledResponse Core W G e.1 := by
+            ((G.lawfulSpace (E.obstructionIdeal W)).ringCatSheaf)) e =
+      Pres.labeledResponse E W G e.1 := by
   simp [protectedResponse]
 
 /-- The kernel of all protected labeled responses. -/
 noncomputable abbrev protectedKernelSheaf
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (protectedLabels : Finset (RequiredGeneratorLabel S)) :
-    (G.lawfulSpace (Core.obstructionIdeal W)).Modules :=
-  kernel (protectedResponse Core W Pres G protectedLabels)
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (protectedLabels : Finset (RequiredGeneratorLabel E)) :
+    (G.lawfulSpace (E.obstructionIdeal W)).Modules :=
+  kernel (protectedResponse E W Pres G protectedLabels)
 
 /-- The actual target response restricted to the protected kernel. -/
 noncomputable abbrev targetResponseOnProtectedKernel
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (protectedLabels : Finset (RequiredGeneratorLabel S))
-    (target : RequiredGeneratorLabel S) :
-    protectedKernelSheaf Core W Pres G protectedLabels ⟶
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (protectedLabels : Finset (RequiredGeneratorLabel E))
+    (target : RequiredGeneratorLabel E) :
+    protectedKernelSheaf E W Pres G protectedLabels ⟶
       SheafOfModules.unit
-        ((G.lawfulSpace (Core.obstructionIdeal W)).ringCatSheaf) :=
-  kernel.ι (protectedResponse Core W Pres G protectedLabels) ≫
-    Pres.labeledResponse Core W G target
+        ((G.lawfulSpace (E.obstructionIdeal W)).ringCatSheaf) :=
+  kernel.ι (protectedResponse E W Pres G protectedLabels) ≫
+    Pres.labeledResponse E W G target
 
 /-- The kernel of the target response on the protected kernel. -/
 noncomputable abbrev responseKernelSheaf
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (protectedLabels : Finset (RequiredGeneratorLabel S))
-    (target : RequiredGeneratorLabel S) :
-    (G.lawfulSpace (Core.obstructionIdeal W)).Modules :=
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (protectedLabels : Finset (RequiredGeneratorLabel E))
+    (target : RequiredGeneratorLabel E) :
+    (G.lawfulSpace (E.obstructionIdeal W)).Modules :=
   kernel (targetResponseOnProtectedKernel
-    Core W Pres G protectedLabels target)
+    E W Pres G protectedLabels target)
 
 /-- The categorical image of the target response on the protected kernel. -/
 noncomputable abbrev responseImageSheaf
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (protectedLabels : Finset (RequiredGeneratorLabel S))
-    (target : RequiredGeneratorLabel S) :
-    (G.lawfulSpace (Core.obstructionIdeal W)).Modules :=
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (protectedLabels : Finset (RequiredGeneratorLabel E))
+    (target : RequiredGeneratorLabel E) :
+    (G.lawfulSpace (E.obstructionIdeal W)).Modules :=
   Abelian.image (targetResponseOnProtectedKernel
-    Core W Pres G protectedLabels target)
+    E W Pres G protectedLabels target)
 
 /-- The kernel inclusion in the response image sequence. -/
 noncomputable abbrev responseKernelInclusion
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (protectedLabels : Finset (RequiredGeneratorLabel S))
-    (target : RequiredGeneratorLabel S) :
-    responseKernelSheaf Core W Pres G protectedLabels target ⟶
-      protectedKernelSheaf Core W Pres G protectedLabels :=
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (protectedLabels : Finset (RequiredGeneratorLabel E))
+    (target : RequiredGeneratorLabel E) :
+    responseKernelSheaf E W Pres G protectedLabels target ⟶
+      protectedKernelSheaf E W Pres G protectedLabels :=
   kernel.ι (targetResponseOnProtectedKernel
-    Core W Pres G protectedLabels target)
+    E W Pres G protectedLabels target)
 
 /-- The canonical epimorphism from the protected kernel to the response image. -/
 noncomputable abbrev responseImageProjection
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (protectedLabels : Finset (RequiredGeneratorLabel S))
-    (target : RequiredGeneratorLabel S) :
-    protectedKernelSheaf Core W Pres G protectedLabels ⟶
-      responseImageSheaf Core W Pres G protectedLabels target :=
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (protectedLabels : Finset (RequiredGeneratorLabel E))
+    (target : RequiredGeneratorLabel E) :
+    protectedKernelSheaf E W Pres G protectedLabels ⟶
+      responseImageSheaf E W Pres G protectedLabels target :=
   Abelian.factorThruImage (targetResponseOnProtectedKernel
-    Core W Pres G protectedLabels target)
+    E W Pres G protectedLabels target)
 
 /-- The canonical monomorphism from the response image to the structure sheaf. -/
 noncomputable abbrev responseImageInclusion
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (protectedLabels : Finset (RequiredGeneratorLabel S))
-    (target : RequiredGeneratorLabel S) :
-    responseImageSheaf Core W Pres G protectedLabels target ⟶
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (protectedLabels : Finset (RequiredGeneratorLabel E))
+    (target : RequiredGeneratorLabel E) :
+    responseImageSheaf E W Pres G protectedLabels target ⟶
       SheafOfModules.unit
-        ((G.lawfulSpace (Core.obstructionIdeal W)).ringCatSheaf) :=
+        ((G.lawfulSpace (E.obstructionIdeal W)).ringCatSheaf) :=
   Abelian.image.ι (targetResponseOnProtectedKernel
-    Core W Pres G protectedLabels target)
+    E W Pres G protectedLabels target)
 
 /-- The image factorization recovers the actual restricted target response. -/
 theorem responseImageFactorization
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (protectedLabels : Finset (RequiredGeneratorLabel S))
-    (target : RequiredGeneratorLabel S) :
-    responseImageProjection Core W Pres G protectedLabels target ≫
-        responseImageInclusion Core W Pres G protectedLabels target =
-      targetResponseOnProtectedKernel Core W Pres G protectedLabels target := by
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (protectedLabels : Finset (RequiredGeneratorLabel E))
+    (target : RequiredGeneratorLabel E) :
+    responseImageProjection E W Pres G protectedLabels target ≫
+        responseImageInclusion E W Pres G protectedLabels target =
+      targetResponseOnProtectedKernel E W Pres G protectedLabels target := by
   exact Abelian.image.fac _
 
 /-- The kernel-to-image short complex of the actual target response. -/
 noncomputable def responseImageShortComplex
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (protectedLabels : Finset (RequiredGeneratorLabel S))
-    (target : RequiredGeneratorLabel S) :
-    ShortComplex ((G.lawfulSpace (Core.obstructionIdeal W)).Modules) :=
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (protectedLabels : Finset (RequiredGeneratorLabel E))
+    (target : RequiredGeneratorLabel E) :
+    ShortComplex ((G.lawfulSpace (E.obstructionIdeal W)).Modules) :=
   ShortComplex.mk
-    (responseKernelInclusion Core W Pres G protectedLabels target)
-    (responseImageProjection Core W Pres G protectedLabels target)
+    (responseKernelInclusion E W Pres G protectedLabels target)
+    (responseImageProjection E W Pres G protectedLabels target)
     (by
       apply (cancel_mono
-        (responseImageInclusion Core W Pres G protectedLabels target)).1
+        (responseImageInclusion E W Pres G protectedLabels target)).1
       simp [Category.assoc])
 
 /-- The actual response kernel-to-image complex is short exact. -/
 theorem responseImageShortComplex_shortExact
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (protectedLabels : Finset (RequiredGeneratorLabel S))
-    (target : RequiredGeneratorLabel S) :
-    (responseImageShortComplex Core W Pres G protectedLabels target).ShortExact := by
-  let s := targetResponseOnProtectedKernel Core W Pres G protectedLabels target
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (protectedLabels : Finset (RequiredGeneratorLabel E))
+    (target : RequiredGeneratorLabel E) :
+    (responseImageShortComplex E W Pres G protectedLabels target).ShortExact := by
+  let s := targetResponseOnProtectedKernel E W Pres G protectedLabels target
   let q := Abelian.factorThruImage s
   have hzero : kernel.ι s ≫ q = 0 := by
     apply (cancel_mono (Abelian.image.ι s)).1
@@ -233,53 +233,53 @@ theorem responseImageShortComplex_shortExact
 /-- Evaluation of the protected response target on a selected chart is the
 concrete module of protected-label families. -/
 noncomputable def chartProtectedResponseTargetIso
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel S)) :
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel E)) :
     (SheafOfModules.evaluation
-        ((G.lawfulSpace (Core.obstructionIdeal W)).ringCatSheaf)
-        (.op (G.lawfulChartOpenOnSpace (Core.obstructionIdeal W) i))).obj
-        (protectedResponseTarget Core W G protectedLabels) ≅
-      ModuleCat.of (ChartCircuitLocus.chartRing Core W G i)
-        (protectedLabels → ChartCircuitLocus.chartRing Core W G i) := by
+        ((G.lawfulSpace (E.obstructionIdeal W)).ringCatSheaf)
+        (.op (G.lawfulChartOpenOnSpace (E.obstructionIdeal W) i))).obj
+        (protectedResponseTarget E W G protectedLabels) ≅
+      ModuleCat.of (ChartCircuitLocus.chartRing E W G i)
+        (protectedLabels → ChartCircuitLocus.chartRing E W G i) := by
   let ev := SheafOfModules.evaluation
-    ((G.lawfulSpace (Core.obstructionIdeal W)).ringCatSheaf)
-    (.op (G.lawfulChartOpenOnSpace (Core.obstructionIdeal W) i))
+    ((G.lawfulSpace (E.obstructionIdeal W)).ringCatSheaf)
+    (.op (G.lawfulChartOpenOnSpace (E.obstructionIdeal W) i))
   let family := fun _ : protectedLabels ↦
       SheafOfModules.unit
-        ((G.lawfulSpace (Core.obstructionIdeal W)).ringCatSheaf)
+        ((G.lawfulSpace (E.obstructionIdeal W)).ringCatSheaf)
   exact PreservesProduct.iso ev family ≪≫
     ModuleCat.piIsoPi (fun e : protectedLabels ↦ ev.obj (family e))
 
 /-- On a selected chart, the protected-response component is the existing
 linear protected response map. -/
 theorem chartProtectedResponse_app_comp_targetIso
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel S)) :
-    (protectedResponse Core W Pres G protectedLabels).val.app
-        (.op (G.lawfulChartOpenOnSpace (Core.obstructionIdeal W) i)) ≫
-        (chartProtectedResponseTargetIso Core W G i protectedLabels).hom =
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel E)) :
+    (protectedResponse E W Pres G protectedLabels).val.app
+        (.op (G.lawfulChartOpenOnSpace (E.obstructionIdeal W) i)) ≫
+        (chartProtectedResponseTargetIso E W G i protectedLabels).hom =
       ModuleCat.ofHom (ChartCircuitLocus.chartProtectedResponseMap
-        Core W Pres G i protectedLabels) := by
+        E W Pres G i protectedLabels) := by
   apply ConcreteCategory.hom_ext
   intro x
   funext e
   let ev := SheafOfModules.evaluation
-    ((G.lawfulSpace (Core.obstructionIdeal W)).ringCatSheaf)
-    (.op (G.lawfulChartOpenOnSpace (Core.obstructionIdeal W) i))
+    ((G.lawfulSpace (E.obstructionIdeal W)).ringCatSheaf)
+    (.op (G.lawfulChartOpenOnSpace (E.obstructionIdeal W) i))
   have hcomponent :
-      (((protectedResponse Core W Pres G protectedLabels).val.app
-          (.op (G.lawfulChartOpenOnSpace (Core.obstructionIdeal W) i)) ≫
-        (chartProtectedResponseTargetIso Core W G i protectedLabels).hom) ≫
+      (((protectedResponse E W Pres G protectedLabels).val.app
+          (.op (G.lawfulChartOpenOnSpace (E.obstructionIdeal W) i)) ≫
+        (chartProtectedResponseTargetIso E W G i protectedLabels).hom) ≫
           ModuleCat.ofHom (LinearMap.proj e)) =
-        (Pres.labeledResponse Core W G e.1).val.app
-          (.op (G.lawfulChartOpenOnSpace (Core.obstructionIdeal W) i)) := by
+        (Pres.labeledResponse E W G e.1).val.app
+          (.op (G.lawfulChartOpenOnSpace (E.obstructionIdeal W) i)) := by
     change
-      (ev.map (protectedResponse Core W Pres G protectedLabels) ≫
-        (chartProtectedResponseTargetIso Core W G i protectedLabels).hom) ≫
+      (ev.map (protectedResponse E W Pres G protectedLabels) ≫
+        (chartProtectedResponseTargetIso E W G i protectedLabels).hom) ≫
           ModuleCat.ofHom (LinearMap.proj e) =
-        ev.map (Pres.labeledResponse Core W G e.1)
+        ev.map (Pres.labeledResponse E W G e.1)
     simp only [chartProtectedResponseTargetIso, Iso.trans_hom,
       Category.assoc, ModuleCat.piIsoPi_hom_ker_subtype,
       PreservesProduct.iso_hom]
@@ -290,25 +290,25 @@ theorem chartProtectedResponse_app_comp_targetIso
 /-- Sections of the protected kernel on a selected chart agree with the
 linear kernel already used by the chart circuit construction. -/
 noncomputable def chartProtectedKernelSectionsEquiv
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel S)) :
-    Γ(protectedKernelSheaf Core W Pres G protectedLabels,
-        G.lawfulChartOpenOnSpace (Core.obstructionIdeal W) i) ≃ₗ[
-          ChartCircuitLocus.chartRing Core W G i]
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel E)) :
+    Γ(protectedKernelSheaf E W Pres G protectedLabels,
+        G.lawfulChartOpenOnSpace (E.obstructionIdeal W) i) ≃ₗ[
+          ChartCircuitLocus.chartRing E W G i]
       (ChartCircuitLocus.chartProtectedResponseMap
-        Core W Pres G i protectedLabels).ker := by
+        E W Pres G i protectedLabels).ker := by
   let ev := SheafOfModules.evaluation
-    ((G.lawfulSpace (Core.obstructionIdeal W)).ringCatSheaf)
-    (.op (G.lawfulChartOpenOnSpace (Core.obstructionIdeal W) i))
-  let f := protectedResponse Core W Pres G protectedLabels
+    ((G.lawfulSpace (E.obstructionIdeal W)).ringCatSheaf)
+    (.op (G.lawfulChartOpenOnSpace (E.obstructionIdeal W) i))
+  let f := protectedResponse E W Pres G protectedLabels
   let chartMap := ChartCircuitLocus.chartProtectedResponseMap
-    Core W Pres G i protectedLabels
-  let targetIso := chartProtectedResponseTargetIso Core W G i protectedLabels
+    E W Pres G i protectedLabels
+  let targetIso := chartProtectedResponseTargetIso E W G i protectedLabels
   let chartHom := ModuleCat.ofHom chartMap
   let comparison := chartProtectedResponse_app_comp_targetIso
-    Core W Pres G i protectedLabels
+    E W Pres G i protectedLabels
   exact
     (PreservesKernel.iso ev f ≪≫
       kernel.mapIso (f := ev.map f) chartHom
@@ -319,27 +319,27 @@ noncomputable def chartProtectedKernelSectionsEquiv
 /-- The selected-chart kernel equivalence commutes with the actual protected
 kernel inclusion. -/
 theorem chartProtectedKernelSectionsEquiv_subtype
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel S)) :
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel E)) :
     (ChartCircuitLocus.chartProtectedResponseMap
-        Core W Pres G i protectedLabels).ker.subtype.comp
+        E W Pres G i protectedLabels).ker.subtype.comp
         (chartProtectedKernelSectionsEquiv
-          Core W Pres G i protectedLabels).toLinearMap =
-      ((kernel.ι (protectedResponse Core W Pres G protectedLabels)).val.app
+          E W Pres G i protectedLabels).toLinearMap =
+      ((kernel.ι (protectedResponse E W Pres G protectedLabels)).val.app
         (.op (G.lawfulChartOpenOnSpace
-          (Core.obstructionIdeal W) i))).hom := by
+          (E.obstructionIdeal W) i))).hom := by
   let ev := SheafOfModules.evaluation
-    ((G.lawfulSpace (Core.obstructionIdeal W)).ringCatSheaf)
-    (.op (G.lawfulChartOpenOnSpace (Core.obstructionIdeal W) i))
-  let f := protectedResponse Core W Pres G protectedLabels
+    ((G.lawfulSpace (E.obstructionIdeal W)).ringCatSheaf)
+    (.op (G.lawfulChartOpenOnSpace (E.obstructionIdeal W) i))
+  let f := protectedResponse E W Pres G protectedLabels
   let chartMap := ChartCircuitLocus.chartProtectedResponseMap
-    Core W Pres G i protectedLabels
-  let targetIso := chartProtectedResponseTargetIso Core W G i protectedLabels
+    E W Pres G i protectedLabels
+  let targetIso := chartProtectedResponseTargetIso E W G i protectedLabels
   let chartHom := ModuleCat.ofHom chartMap
   let comparison := chartProtectedResponse_app_comp_targetIso
-    Core W Pres G i protectedLabels
+    E W Pres G i protectedLabels
   let kernelIso := PreservesKernel.iso ev f ≪≫
     kernel.mapIso (f := ev.map f) chartHom
       (Iso.refl _) targetIso (by
@@ -361,30 +361,30 @@ theorem chartProtectedKernelSectionsEquiv_subtype
 /-- Under the selected-chart kernel identification, the actual target map is
 the target response used by the chart circuit construction. -/
 theorem chartTargetOnProtectedKernel_compatibility
-    (Pres : ArchitectureOperationPresentation k (Core.Observable W) Op
+    (Pres : ArchitectureOperationPresentation k (E.Observable W) Op
       State BeforeWitness AfterWitness)
-    (G : TypedLocalizationGeometry k (Core.Observable W) Chart)
-    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel S))
-    (target : RequiredGeneratorLabel S) :
+    (G : TypedLocalizationGeometry k (E.Observable W) Chart)
+    (i : Chart) (protectedLabels : Finset (RequiredGeneratorLabel E))
+    (target : RequiredGeneratorLabel E) :
     (ChartCircuitLocus.chartTargetOnProtectedKernel
-        Core W Pres G i protectedLabels target).comp
+        E W Pres G i protectedLabels target).comp
         (chartProtectedKernelSectionsEquiv
-          Core W Pres G i protectedLabels).toLinearMap =
-      ((targetResponseOnProtectedKernel Core W Pres G protectedLabels target).val.app
+          E W Pres G i protectedLabels).toLinearMap =
+      ((targetResponseOnProtectedKernel E W Pres G protectedLabels target).val.app
         (.op (G.lawfulChartOpenOnSpace
-          (Core.obstructionIdeal W) i))).hom := by
+          (E.obstructionIdeal W) i))).hom := by
   change
-    (ChartCircuitLocus.chartLabeledResponse Core W Pres G i target).comp
+    (ChartCircuitLocus.chartLabeledResponse E W Pres G i target).comp
         ((ChartCircuitLocus.chartProtectedResponseMap
-          Core W Pres G i protectedLabels).ker.subtype.comp
+          E W Pres G i protectedLabels).ker.subtype.comp
           (chartProtectedKernelSectionsEquiv
-            Core W Pres G i protectedLabels).toLinearMap) =
-      ((Pres.labeledResponse Core W G target).val.app
+            E W Pres G i protectedLabels).toLinearMap) =
+      ((Pres.labeledResponse E W G target).val.app
         (.op (G.lawfulChartOpenOnSpace
-          (Core.obstructionIdeal W) i))).hom.comp
-        ((kernel.ι (protectedResponse Core W Pres G protectedLabels)).val.app
+          (E.obstructionIdeal W) i))).hom.comp
+        ((kernel.ι (protectedResponse E W Pres G protectedLabels)).val.app
           (.op (G.lawfulChartOpenOnSpace
-            (Core.obstructionIdeal W) i))).hom
+            (E.obstructionIdeal W) i))).hom
   rw [chartProtectedKernelSectionsEquiv_subtype]
   rfl
 

@@ -78,7 +78,7 @@ def primitiveSource (g : AmbientRing) :
   lawSupport := fun _ _ => [PUnit.unit]
   lawSupport_required := by
     intro _ _ lawIndex _
-    exact FiniteModel.lawUniverse_required lawIndex
+    exact core_required g lawIndex
   readingOfLocalInput := fun _ atom => readingFromComponent g atom
 
 /-- The required law displayed by one primitive chart input. -/
@@ -122,7 +122,7 @@ noncomputable def primitiveOverlap (g : AmbientRing) (i j : Fin 3) :
       change ambientRestrict (pairToLeft (geometry := geometry) i j) =
         RingHom.id AmbientRing
       exact ambientRestrict_of_not_deep _ hpair
-    have hwitness : (core g).violationWitness
+    have hcoordinate : (core g).violationCoordinate
         (PairOverlap (geometry := geometry) i j) PUnit.unit
           FiniteModel.FiniteAtom.componentA = g := by
       change generatorWitness g (PairOverlap (geometry := geometry) i j) = g
@@ -134,7 +134,7 @@ noncomputable def primitiveOverlap (g : AmbientRing) (i j : Fin 3) :
     classical
     change lawfulUnit + chartWeight j * g - (lawfulUnit + chartWeight i * g) =
       (primitiveCoefficients g i j).sum fun p c =>
-        c * (core g).violationWitness (PairOverlap (geometry := geometry) i j)
+        c * (core g).violationCoordinate (PairOverlap (geometry := geometry) i j)
           (PairDisplayedRequiredLaw.lawIndex (G := core g) p.1) p.2
     rw [show primitiveCoefficients g i j =
       Finsupp.single
@@ -145,7 +145,7 @@ noncomputable def primitiveOverlap (g : AmbientRing) (i j : Fin 3) :
         (chartWeight j - chartWeight i) *
           generatorWitness g (PairOverlap (geometry := geometry) i j)
       rw [show generatorWitness g (PairOverlap (geometry := geometry) i j) = g by
-        simpa using hwitness]
+        simpa using hcoordinate]
       ring
     · simp
 

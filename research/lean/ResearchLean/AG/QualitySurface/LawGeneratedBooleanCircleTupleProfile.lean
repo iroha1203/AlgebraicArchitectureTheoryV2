@@ -44,7 +44,7 @@ theorem overlapObject_one_ctx (sigma : Tuple geometry 1) :
   simp [overlapObject, tupleGeometry,
     Site.FinitePosetCoverGeometry.canonicalTupleCoverGeometryFromOverlap,
     Site.FinitePosetCoverGeometry.canonicalTupleOverlapFromOverlap,
-    site, selectedGeometryReading, contextOverlap, overlapContext, geometry, base,
+    site, contextOverlap, overlapContext, geometry, base,
     cover, chartContextIndex, Site.ContextCategoryObject.of, recognized_context,
     indexOf_context]
 
@@ -55,7 +55,7 @@ theorem overlapObject_two_ctx (sigma : Tuple geometry 2) :
   simp [overlapObject, tupleGeometry,
     Site.FinitePosetCoverGeometry.canonicalTupleCoverGeometryFromOverlap,
     Site.FinitePosetCoverGeometry.canonicalTupleOverlapFromOverlap,
-    site, selectedGeometryReading, contextOverlap, overlapContext, geometry, base,
+    site, contextOverlap, overlapContext, geometry, base,
     cover, chartContextIndex, Site.ContextCategoryObject.of, recognized_context,
     indexOf_context]
 

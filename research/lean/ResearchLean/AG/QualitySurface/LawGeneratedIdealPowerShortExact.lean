@@ -30,7 +30,7 @@ open AAT.AG AAT.AG.LawAlgebra
 
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A}
-variable (G : SemanticLawEquationWitnessIdealCore S)
+variable (G : ArchitecturalEquationSystem S.contextPreorder)
 
 /-- The ambient category of additive presheaves used by the raw sequence. -/
 abbrev PresheafCategory := S.categoryᵒᵖ ⥤ AddCommGrpCat.{u}

@@ -173,7 +173,7 @@ theorem ambientRestrict_comp {W₀ W₁ W₂ : site.category}
   · have hd1 : ¬ Deep W₁ := fun h => hd0 (deep_source_of_deep_target f h)
     simp [ambientRestrict, h01, h02, hd0, hd1]
 
-/-! ## Two cores sharing the ambient presheaf verbatim -/
+/-! ## Two equation systems sharing the ambient presheaf verbatim -/
 
 /-- A generator restricted into the cardinality-three context. -/
 def generatorWitness (g : AmbientRing) (W : site.category) : AmbientRing := by
@@ -239,18 +239,27 @@ theorem ambientRestrict_generatorWitness (g : AmbientRing)
   · have ht : ¬ Deep target := fun h => hs (deep_source_of_deep_target f h)
     simp [ambientRestrict, generatorWitness, heq, hs, ht]
 
-/-- The common law core constructor; its only parameter is the law generator. -/
-noncomputable def core (g : AmbientRing) : SemanticLawEquationWitnessIdealCore site where
+/--
+The common equation-system constructor.  Its only parameter is the symbolic
+violation generator; fulfillment is still evaluated by the finite NoCycle
+residual.
+-/
+noncomputable def core (g : AmbientRing) :
+    ArchitecturalEquationSystem site.contextPreorder where
+  Index := site.equationSystem.Index
+  role := site.equationSystem.role
   Observable _ := AmbientRing
   observableCommRing _ := inferInstance
   restrict f := ambientRestrict f
   restrict_id := ambientRestrict_id
   restrict_comp := ambientRestrict_comp
-  violationWitness W _ _ := generatorWitness g W
-  violationWitness_restrict f _ _ := ambientRestrict_generatorWitness g f
-  supportAtom := FiniteModel.FiniteAtom.componentA
-  supportLawIndex := PUnit.unit
-  supportLawIndex_required := FiniteModel.lawUniverse_required PUnit.unit
+  violationCoordinate W _ _ := generatorWitness g W
+  violationCoordinate_restrict f _ _ := ambientRestrict_generatorWitness g f
+  equationResidual _ A _ _ :=
+    (FiniteModel.noCycleResidual A : AmbientRing)
+  equationResidual_restrict := by
+    intro source target f A equationIndex atom
+    rw [map_intCast]
 
 /-- The idempotent law core on the fixed ambient presheaf. -/
 noncomputable abbrev idempotentCore := core idempotentGenerator
@@ -268,17 +277,16 @@ theorem cores_same_restrict {source target : site.category}
 theorem cores_same_observableCommRing (W : site.category) :
     idempotentCore.observableCommRing W = squareZeroCore.observableCommRing W := rfl
 
-theorem cores_same_supportAtom :
-    idempotentCore.supportAtom = squareZeroCore.supportAtom := rfl
-
-theorem cores_same_supportLawIndex :
-    idempotentCore.supportLawIndex = squareZeroCore.supportLawIndex := rfl
-
 theorem cores_differ_only_by_generator :
     idempotentCore = core idempotentGenerator ∧
       squareZeroCore = core squareZeroGenerator := ⟨rfl, rfl⟩
 
 /-! ## Generated ideal-power and conormal profiles -/
+
+theorem core_required (g : AmbientRing) (equationIndex : (core g).Index) :
+    (core g).Required equationIndex := by
+  cases equationIndex
+  rfl
 
 private theorem range_constant_eq_singleton (x : AmbientRing) :
     Set.range (fun _ : FiniteModel.carrier.Atom => x) = {x} := by
@@ -291,49 +299,54 @@ private theorem range_constant_eq_singleton (x : AmbientRing) :
     subst y
     exact ⟨FiniteModel.FiniteAtom.componentA, rfl⟩
 
-theorem idempotent_lawWitnessIdeal (W : site.category)
-    (lawIndex : site.lawUniverse.Index) :
-    idempotentCore.lawWitnessIdeal W lawIndex =
+theorem idempotent_witnessIdeal (W : site.category)
+    (equationIndex : idempotentCore.Index) :
+    idempotentCore.witnessIdeal W equationIndex =
       Ideal.span {idempotentGenerator} := by
-  rw [SemanticLawEquationWitnessIdealCore.lawWitnessIdeal]
+  rw [ArchitecturalEquationSystem.witnessIdeal]
   change Ideal.span (Set.range (fun _ : FiniteModel.carrier.Atom =>
     generatorWitness idempotentGenerator W)) = _
   simp only [generatorWitness_idempotentGenerator]
   rw [range_constant_eq_singleton]
 
-theorem squareZero_lawWitnessIdeal (W : site.category)
-    (lawIndex : site.lawUniverse.Index) :
-    squareZeroCore.lawWitnessIdeal W lawIndex =
+theorem squareZero_witnessIdeal (W : site.category)
+    (equationIndex : squareZeroCore.Index) :
+    squareZeroCore.witnessIdeal W equationIndex =
       Ideal.span {squareZeroWitness W} := by
-  rw [SemanticLawEquationWitnessIdealCore.lawWitnessIdeal]
+  rw [ArchitecturalEquationSystem.witnessIdeal]
   change Ideal.span (Set.range (fun _ : FiniteModel.carrier.Atom =>
     squareZeroWitness W)) = _
   rw [range_constant_eq_singleton]
 
-theorem obstructionIdeal_eq_lawWitnessIdeal
-    (G : SemanticLawEquationWitnessIdealCore site)
-    (W : site.category) (lawIndex : site.lawUniverse.Index) :
-    G.obstructionIdeal W = G.lawWitnessIdeal W lawIndex := by
+theorem obstructionIdeal_eq_witnessIdeal
+    (G : ArchitecturalEquationSystem site.contextPreorder)
+    (W : site.category) (equationIndex : G.Index)
+    (hrequired : G.Required equationIndex)
+    (hunique :
+      ∀ other : G.Index, G.Required other → other = equationIndex) :
+    G.obstructionIdeal W = G.witnessIdeal W equationIndex := by
   apply le_antisymm
   · apply
       (ObstructionIdeal.SelectedLawWitnessIdealFamily.localObstructionIdeal_le_iff
         _ _ _).mpr
-    intro other _hrequired
-    cases lawIndex
-    cases other
-    exact le_rfl
-  · exact G.lawWitnessIdeal_le_obstructionIdeal W
-      (FiniteModel.lawUniverse_required lawIndex)
+    intro other hother
+    change G.witnessIdeal W other ≤ G.witnessIdeal W equationIndex
+    rw [hunique other hother]
+  · exact G.witnessIdeal_le_obstructionIdeal W hrequired
 
 theorem idempotent_obstructionIdeal (W : site.category) :
     idempotentCore.obstructionIdeal W = Ideal.span {idempotentGenerator} := by
-  rw [obstructionIdeal_eq_lawWitnessIdeal idempotentCore W PUnit.unit,
-    idempotent_lawWitnessIdeal]
+  rw [obstructionIdeal_eq_witnessIdeal idempotentCore W PUnit.unit
+      (core_required idempotentGenerator PUnit.unit)
+      (fun other _ => by cases other; rfl),
+    idempotent_witnessIdeal]
 
 theorem squareZero_obstructionIdeal (W : site.category) :
     squareZeroCore.obstructionIdeal W = Ideal.span {squareZeroWitness W} := by
-  rw [obstructionIdeal_eq_lawWitnessIdeal squareZeroCore W PUnit.unit,
-    squareZero_lawWitnessIdeal]
+  rw [obstructionIdeal_eq_witnessIdeal squareZeroCore W PUnit.unit
+      (core_required squareZeroGenerator PUnit.unit)
+      (fun other _ => by cases other; rfl),
+    squareZero_witnessIdeal]
 
 theorem idempotent_obstructionIdeal_sq (W : site.category) :
     idempotentCore.obstructionIdeal W ^ 2 = idempotentCore.obstructionIdeal W := by

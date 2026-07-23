@@ -255,13 +255,15 @@ noncomputable def contextOverlap : Site.ContextOverlapPullback contextPreorder w
 def chartContextIndex (i : Fin 3) : ContextIndex := {i}
 
 /-- Requirements forcing every admissible family to contain the three chart patches. -/
-def coverageRequirements : Site.CoverageRequirements FiniteModel.object
-    FiniteModel.lawUniverse FiniteModel.signature where
+def coverageRequirements :
+    Site.CoverageRequirements FiniteModel.object
+      (FiniteModel.equationSystem contextPreorder) FiniteModel.signature where
   requiredSupport := fun atom =>
     atom = FiniteModel.FiniteAtom.componentA ∨
     atom = FiniteModel.FiniteAtom.componentB ∨
     atom = FiniteModel.FiniteAtom.dependsAB
-  requiredWitness := fun _ => False
+  requiredEquationCoordinate := fun _ => False
+  selectedViolationWitness := fun _ => False
   requiredAxis := fun _ => False
   supportVisibleOn := fun W atom =>
     (W = context (chartContextIndex 0) ∧ atom = FiniteModel.FiniteAtom.componentA ∧
@@ -270,26 +272,32 @@ def coverageRequirements : Site.CoverageRequirements FiniteModel.object
       ∃ support : W.minimal.Support, W.minimal.supportReads support atom) ∨
     (W = context (chartContextIndex 2) ∧ atom = FiniteModel.FiniteAtom.dependsAB ∧
       ∃ support : W.minimal.Support, W.minimal.supportReads support atom)
-  witnessVisibleOn := fun _ _ => False
+  equationCoordinateVisibleOn := fun _ _ => False
+  violationWitnessVisibleOn := fun _ _ => False
   axisReadableOn := fun _ _ => False
   boundaryVisibleOn := fun _ _ => True
 
 /-- The generated-core geometry on the selected Boolean-lattice context preorder. -/
 noncomputable def selectedGeometryReading :
-    Site.SelectedGeometryReading FiniteModel.corePackage where
-  contextPreorder := contextPreorder
+    Site.SelectedGeometryReading (FiniteModel.corePackageFor contextPreorder) where
   requirements := coverageRequirements
   overlap := contextOverlap
 
-/-- The AAT site generated from the selected Boolean-lattice geometry. -/
+/-- The AAT site on the selected Boolean-lattice context preorder. -/
 noncomputable def site : Site.AATSite FiniteModel.corePackage.object :=
-  selectedGeometryReading.toAATSite
+  {
+    contextPreorder := contextPreorder
+    equationSystem := FiniteModel.equationSystem contextPreorder
+    signature := FiniteModel.signature
+    requirements := coverageRequirements
+    overlap := contextOverlap
+  }
 
 /-- The three-patch topology is generated from the core-typed coverage. -/
 theorem site_topology_eq_generated :
     site.topology =
       Site.AATGrothendieckTopology coverageRequirements contextOverlap :=
-  Site.SelectedGeometryReading.topology_eq_generated selectedGeometryReading
+  rfl
 
 /-- The empty-index context serving as the selected cover base. -/
 def base : site.category :=
@@ -312,7 +320,8 @@ noncomputable def cover :
           ⟨rfl, rfl, PUnit.unit, FiniteModel.allFamily_mem _ (by simp)⟩)⟩
       · exact ⟨2, Or.inr (Or.inr
           ⟨rfl, rfl, PUnit.unit, FiniteModel.allFamily_mem _ (by simp)⟩)⟩
-    lawWitnessCoverage := by simp [coverageRequirements]
+    equationCoordinateCoverage := by simp [coverageRequirements]
+    violationWitnessCoverage := by simp [coverageRequirements]
     signatureAxisCoverage := by simp [coverageRequirements]
     boundaryCoverage := by simp [coverageRequirements]
     nonGeneration := by
@@ -350,7 +359,10 @@ theorem cover_uAdequate :
     Site.UAdequateCover adequacyRequirements cover where
   topologyCover := cover_topologyCover
   requiredSupportCovered := cover.admissible.atomSupportCoverage
-  requiredWitnessesVisible := cover.admissible.lawWitnessCoverage
+  requiredEquationCoordinatesVisible :=
+    cover.admissible.equationCoordinateCoverage
+  selectedViolationWitnessesVisible :=
+    cover.admissible.violationWitnessCoverage
   requiredAxesReadable := cover.admissible.signatureAxisCoverage
   boundaryWitnessesVisible := cover.admissible.boundaryCoverage
   restrictionMapsPreserveWitnessIdeals := fun _ _ => trivial

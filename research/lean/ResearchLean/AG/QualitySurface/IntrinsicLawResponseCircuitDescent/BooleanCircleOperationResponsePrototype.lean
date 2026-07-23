@@ -64,27 +64,37 @@ def epsilonDerivative :
     epsilonDerivative responseGenerator = responseValue := by
   rfl
 
-/-- The constant square-zero law core on the three-patch Boolean-circle site. -/
-noncomputable def responseCore : SemanticLawEquationWitnessIdealCore site where
+/-- The constant square-zero equation system on the three-patch Boolean-circle site. -/
+noncomputable def responseCore :
+    ArchitecturalEquationSystem site.contextPreorder where
+  Index := site.equationSystem.Index
+  role := site.equationSystem.role
   Observable _ := ResponseRing
   observableCommRing _ := inferInstance
   restrict _ := RingHom.id ResponseRing
   restrict_id _ _ := rfl
   restrict_comp _ _ _ := rfl
-  violationWitness _ _ _ := responseGenerator
-  violationWitness_restrict _ _ _ := rfl
-  supportAtom := FiniteModel.FiniteAtom.componentA
-  supportLawIndex := PUnit.unit
-  supportLawIndex_required := FiniteModel.lawUniverse_required PUnit.unit
+  violationCoordinate _ _ _ := responseGenerator
+  violationCoordinate_restrict _ _ _ := rfl
+  equationResidual _ object _ _ :=
+    (FiniteModel.noCycleResidual object : ResponseRing)
+  equationResidual_restrict := by
+    intros
+    rfl
+
+/-- The required equation and Atom displayed by the operation response. -/
+def selectedLabel :
+    LawGeneratedLabeledConormal.RequiredGeneratorLabel responseCore :=
+  (⟨PUnit.unit, by rfl⟩, FiniteModel.FiniteAtom.componentA)
 
 local instance responseCoreAlgebra :
     Algebra ResponseField (responseCore.Observable base) :=
   inferInstanceAs (Algebra ResponseField ResponseRing)
 
-theorem response_lawWitnessIdeal (W : site.category)
-    (lawIndex : site.lawUniverse.Index) :
-    responseCore.lawWitnessIdeal W lawIndex = Ideal.span {responseGenerator} := by
-  rw [SemanticLawEquationWitnessIdealCore.lawWitnessIdeal]
+theorem response_witnessIdeal (W : site.category)
+    (equationIndex : responseCore.Index) :
+    responseCore.witnessIdeal W equationIndex = Ideal.span {responseGenerator} := by
+  rw [ArchitecturalEquationSystem.witnessIdeal_eq_span]
   change Ideal.span (Set.range (fun _ : FiniteModel.carrier.Atom ↦
     responseGenerator)) = _
   congr 1
@@ -99,8 +109,10 @@ theorem response_lawWitnessIdeal (W : site.category)
 
 theorem response_obstructionIdeal (W : site.category) :
     responseCore.obstructionIdeal W = Ideal.span {responseGenerator} := by
-  rw [obstructionIdeal_eq_lawWitnessIdeal responseCore W PUnit.unit,
-    response_lawWitnessIdeal]
+  rw [obstructionIdeal_eq_witnessIdeal responseCore W
+      selectedLabel.1.1 selectedLabel.1.2
+      (fun other _ => by cases other; rfl),
+    response_witnessIdeal]
 
 theorem responseValue_not_mem_obstructionIdeal :
     responseValue ∉ responseCore.obstructionIdeal base := by
@@ -384,11 +396,11 @@ theorem aatCover_admissible :
 
 theorem selectedSupport_visibleOn_aatPatch :
     coverageRequirements.supportVisibleOn
-      (cover.patch (chartEquivCoverIndex 0)) responseCore.supportAtom := by
+      (cover.patch (chartEquivCoverIndex 0)) selectedLabel.2 := by
   apply Or.inl
   refine ⟨?_, rfl, PUnit.unit, ?_⟩
   · simp [cover, chartEquivCoverIndex, chartContextIndex]
-  · exact FiniteModel.allFamily_mem _ (by simp [responseCore])
+  · exact FiniteModel.allFamily_mem _ (by simp [selectedLabel])
 
 theorem aatPatch_pair_overlap (i j : Fin 3) :
     contextOverlap.overlap base.1
@@ -553,12 +565,6 @@ theorem responseValue_not_mem_overlapZeroOneLawIdeal :
   rw [overlapZeroOneToDual_algebraMap] at hh
   exact hh
 
-/-- The existing required law paired with the support Atom selected by the
-prototype core. -/
-def selectedLabel : LawGeneratedLabeledConormal.RequiredGeneratorLabel site :=
-  (⟨PUnit.unit, FiniteModel.lawUniverse_required PUnit.unit⟩,
-    FiniteModel.FiniteAtom.componentA)
-
 @[simp] theorem selected_requiredGeneratorWitness_value :
     (LawGeneratedLabeledConormal.requiredGeneratorWitness
       responseCore base selectedLabel : responseCore.Observable base) =
@@ -650,7 +656,7 @@ theorem selectedSupportEdge_response_ne_zero :
 matched-index fact, rather than two independently named constructions. -/
 theorem selectedSupportPatch_visible_and_response_ne_zero :
     coverageRequirements.supportVisibleOn
-        (cover.patch (chartEquivCoverIndex 0)) responseCore.supportAtom ∧
+        (cover.patch (chartEquivCoverIndex 0)) selectedLabel.2 ∧
       geometry.chartConormalJacobian (responseCore.obstructionIdeal base) 0
           chartZeroDerivative
           (LawGeneratedLabeledConormal.chartLabeledConormal
@@ -663,7 +669,7 @@ the matched nonempty typed principal intersection carries the restricted
 nonzero response. -/
 theorem selectedSupportCircleEdge_visible_and_response_ne_zero :
     coverageRequirements.supportVisibleOn
-        (cover.patch (chartEquivCoverIndex 0)) responseCore.supportAtom ∧
+        (cover.patch (chartEquivCoverIndex 0)) selectedLabel.2 ∧
       contextOverlap.overlap base.1
           (cover.patch (chartEquivCoverIndex 0))
           (cover.patch (chartEquivCoverIndex 1)) =

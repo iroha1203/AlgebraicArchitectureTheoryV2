@@ -30,7 +30,7 @@ open LawGeneratedRingSheaf LawGeneratedConormalIdealSheaf
 
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A}
-variable (G : SemanticLawEquationWitnessIdealCore S)
+variable (G : ArchitecturalEquationSystem S.contextPreorder)
 
 noncomputable def moduleForgetEquivalence :
     CategoryTheory.Equivalence (LargeZMod.{u}) AddCommGrpCat.{u + 1} :=

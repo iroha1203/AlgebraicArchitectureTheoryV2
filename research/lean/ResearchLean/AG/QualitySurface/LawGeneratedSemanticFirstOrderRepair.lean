@@ -32,7 +32,7 @@ open LawGeneratedRingSheaf LawGeneratedConormalIdealSheaf
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A}
 variable {geometry : Site.FinitePosetCoverGeometry S}
-variable (G : SemanticLawEquationWitnessIdealCore S)
+variable (G : ArchitecturalEquationSystem S.contextPreorder)
 
 noncomputable local instance moduleSheafMonoidal :
     MonoidalCategory (Sheaf S.topology (LargeZMod.{u})) :=
@@ -82,10 +82,10 @@ structure PatchReadingSource where
   LocalInput : geometry.cover.Index → Type u
   input : ∀ i : geometry.cover.Index, LocalInput i
   lawSupport :
-    ∀ i : geometry.cover.Index, LocalInput i → List S.lawUniverse.Index
+    ∀ i : geometry.cover.Index, LocalInput i → List G.Index
   lawSupport_required :
-    ∀ i (localInput : LocalInput i) (lawIndex : S.lawUniverse.Index),
-      lawIndex ∈ lawSupport i localInput → S.lawUniverse.Required lawIndex
+    ∀ i (localInput : LocalInput i) (lawIndex : G.Index),
+      lawIndex ∈ lawSupport i localInput → G.Required lawIndex
   readingOfLocalInput :
     ∀ i : geometry.cover.Index, LocalInput i →
       G.Observable (Patch (geometry := geometry) i)
@@ -103,7 +103,7 @@ end PatchReadingSource
 structure DisplayedRequiredLaw
     (D : PatchReadingSource (geometry := geometry) G)
     (i : geometry.cover.Index) where
-  lawIndex : S.lawUniverse.Index
+  lawIndex : G.Index
   mem : lawIndex ∈ D.lawSupport i (D.input i)
 
 /-- Requiredness is generated from the source's displayed law support. -/
@@ -111,7 +111,7 @@ theorem DisplayedRequiredLaw.required
     {D : PatchReadingSource (geometry := geometry) G}
     {i : geometry.cover.Index}
     (law : DisplayedRequiredLaw (G := G) (geometry := geometry) D i) :
-    S.lawUniverse.Required law.lawIndex :=
+    G.Required law.lawIndex :=
   D.lawSupport_required i (D.input i) law.lawIndex law.mem
 
 /-- A displayed required law from either endpoint of a canonical pair. -/
@@ -126,16 +126,16 @@ def PairDisplayedRequiredLaw.lawIndex
     {D : PatchReadingSource (geometry := geometry) G}
     {i j : geometry.cover.Index} :
     PairDisplayedRequiredLaw (G := G) (geometry := geometry) D i j →
-      S.lawUniverse.Index
+      G.Index
   | Sum.inl law => law.lawIndex
   | Sum.inr law => law.lawIndex
 
-/-- Its law index is required by the selected law universe. -/
+/-- Its law index is required by the selected equation system. -/
 theorem PairDisplayedRequiredLaw.required
     {D : PatchReadingSource (geometry := geometry) G}
     {i j : geometry.cover.Index}
     (law : PairDisplayedRequiredLaw (G := G) (geometry := geometry) D i j) :
-    S.lawUniverse.Required law.lawIndex := by
+    G.Required law.lawIndex := by
   cases law with
   | inl law => exact DisplayedRequiredLaw.required (G := G) law
   | inr law => exact DisplayedRequiredLaw.required (G := G) law
@@ -148,7 +148,7 @@ def evaluateCombination
       (PairDisplayedRequiredLaw (G := G) (geometry := geometry) D i j × U.Atom) →₀
       G.Observable (PairOverlap (geometry := geometry) i j)) :
     G.Observable (PairOverlap (geometry := geometry) i j) :=
-  coeff.sum fun p c ↦ c * G.violationWitness _
+  coeff.sum fun p c ↦ c * G.violationCoordinate _
     (PairDisplayedRequiredLaw.lawIndex (G := G) p.1) p.2
 
 /--
@@ -201,12 +201,12 @@ theorem evaluateCombination_mem_obstructionIdeal
   apply Ideal.sum_mem
   intro p hp
   apply (G.obstructionIdeal (PairOverlap (geometry := geometry) i j)).mul_mem_left
-  have hrequired : S.lawUniverse.Required
+  have hrequired : G.Required
       (PairDisplayedRequiredLaw.lawIndex (G := G) p.1) := by
     cases p.1 with
     | inl law => exact law.required
     | inr law => exact law.required
-  apply G.lawWitnessIdeal_le_obstructionIdeal _ hrequired
+  apply G.witnessIdeal_le_obstructionIdeal _ hrequired
   apply Ideal.subset_span
   exact ⟨p.2, rfl⟩
 

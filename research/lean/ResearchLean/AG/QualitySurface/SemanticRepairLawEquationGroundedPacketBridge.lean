@@ -70,8 +70,9 @@ Translate the list-enumerated Research semantic cover to the body `Fintype`
 surface.  The body base-chart carrier is the finite graph of the Research
 chart map, so `semanticCover.chart` is retained as data rather than replaced
 by an identity map.  Overlap and triple-overlap fibers are universe-lifted
-fieldwise.  The transition carrier indexes `overlapOrder`, which is the
-Research representation of the selected finite transitions.
+fieldwise, and the selected comparison data is transported fieldwise.  The
+transition carrier indexes `overlapOrder`, which is the Research
+representation of the selected finite transitions.
 -/
 def toBodySemanticCover
     (semanticCover : SemanticRepairCover.{r, v, w} semanticSite)
@@ -110,6 +111,10 @@ def toBodySemanticCover
   CoverChart := ULift.{max v w, w} semanticCover.CoverChart
   chart := fun chart =>
     ⟨(chart.down, semanticCover.chart chart.down), rfl⟩
+  chartInjective := by
+    intro left right hchart
+    apply ULift.ext
+    exact congrArg (fun chart : BodyBaseChart semanticCover => chart.1.1) hchart
   chartFinite := by
     classical
     letI : Fintype semanticCover.CoverChart :=
@@ -168,6 +173,22 @@ def toBodySemanticCover
   tripleEdge01 := fun triple => ULift.up (semanticCover.tripleEdge01 triple.down)
   tripleEdge12 := fun triple => ULift.up (semanticCover.tripleEdge12 triple.down)
   tripleEdge02 := fun triple => ULift.up (semanticCover.tripleEdge02 triple.down)
+  selectedOverlap := fun left right =>
+    ULift.up (semanticCover.selectedOverlap left.down right.down)
+  selectedTriple := fun i j k =>
+    ULift.up (semanticCover.selectedTriple i.down j.down k.down)
+  selectedOverlap_eq_tripleEdge01 := by
+    intro i j k
+    apply ULift.ext
+    exact semanticCover.selectedOverlap_eq_tripleEdge01 i.down j.down k.down
+  selectedOverlap_eq_tripleEdge12 := by
+    intro i j k
+    apply ULift.ext
+    exact semanticCover.selectedOverlap_eq_tripleEdge12 i.down j.down k.down
+  selectedOverlap_eq_tripleEdge02 := by
+    intro i j k
+    apply ULift.ext
+    exact semanticCover.selectedOverlap_eq_tripleEdge02 i.down j.down k.down
 
 /-- Fieldwise copy of the accepted coefficient-free finite-poset geometry. -/
 def toBodyFinitePosetCoverGeometry
@@ -196,24 +217,9 @@ def toBodyFinitePosetCoverGeometry
   adequacyRequirements := coverGeometry.adequacyRequirements
   coverAdequate := coverGeometry.coverAdequate
 
-/-- Copy the Research witness-ideal core into the native law-algebra core. -/
-def toBodyWitnessIdealCore
-    (G : SemanticLawEquationWitnessIdealGeometry semanticSite S) :
-    AAT.AG.LawAlgebra.SemanticLawEquationWitnessIdealCore S where
-  Observable := G.Observable
-  observableCommRing := G.observableCommRing
-  restrict := G.restrict
-  restrict_id := G.restrict_id
-  restrict_comp := G.restrict_comp
-  violationWitness := G.violationWitness
-  violationWitness_restrict := G.violationWitness_restrict
-  supportAtom := G.supportAtom
-  supportLawIndex := G.supportLawIndex
-  supportLawIndex_required := G.supportLawIndex_required
-
 /--
-Move the Research trace-visibility field outside the core, matching the native
-body organization, and retain the generated quotient sheaf condition.
+Retain the native equation system, displayed atom provenance, and generated
+quotient sheaf condition in the body organization.
 -/
 def toBodyWitnessIdealGeometry
     (G : SemanticLawEquationWitnessIdealGeometry semanticSite S)
@@ -226,16 +232,10 @@ def toBodyWitnessIdealGeometry
         (K := lawEquationCechComplex coverGeometry G)) :
     AAT.AG.SemanticRepair.StandardFinitePosetGeneratedBoundary.LawEquationWitnessIdealGeometryBody
       (toBodySemanticInput semanticSite skeleton) S where
-  toCore := toBodyWitnessIdealCore G
+  equationSystem := G.equationSystem
+  supportAtom := G.supportAtom
   supportAtom_traceVisible := G.supportAtom_traceVisible
-  quotientIsSheaf := by
-    change AAT.AG.Site.AATSheafCondition S
-      ((toBodyWitnessIdealCore G).obstructionQuotientCoefficient ⋙
-        forget AddCommGrpCat)
-    change AAT.AG.Site.AATSheafCondition S
-      (G.toSemanticLawEquationWitnessIdealCore.obstructionQuotientCoefficient ⋙
-        forget AddCommGrpCat)
-    exact G.quotientIsSheaf
+  quotientIsSheaf := G.quotientIsSheaf
 
 variable {coverGeometry : FinitePosetAtomLawCoverGeometry S}
 variable {G : SemanticLawEquationWitnessIdealGeometry semanticSite S}
@@ -272,9 +272,7 @@ theorem toBodyDisplayedRequiredLawsHoldOn
     (D :
       LawEquationDefectSemanticAtomLawInputBoundarySource coverGeometry G
         skeleton)
-    (hholds :
-      D.toSupportOnlySemanticAtomLawInputBoundarySource.displayedRequiredLawsHoldOn
-        D.objectOfLocalInput) :
+    (hholds : D.DisplayedRequiredEquationsHoldOn) :
     (toBodyDefectSource D).DisplayedRequiredLawsHoldOn := by
   intro i lawIndex hmem hrequired
   exact hholds i lawIndex hmem hrequired
@@ -288,7 +286,7 @@ def toBodyDegreeZeroSimplexMap
           (lawEquationStandardComplex coverGeometry G)).simplex 0) :
     (toBodySemanticCover semanticCover skeleton).CoverChart ->
       (AAT.AG.SemanticRepair.StandardFinitePosetGeneratedBoundary.lawEquationCoverRelativeCover
-        (G := (toBodyWitnessIdealGeometry G skeleton).toCore)
+        (E := (toBodyWitnessIdealGeometry G skeleton).equationSystem)
         (toBodyWitnessIdealGeometry G skeleton).quotientIsSheaf
         (toBodyFinitePosetCoverGeometry coverGeometry).canonicalTupleCoverGeometryFromOverlap).simplex 0 :=
   by
@@ -308,7 +306,7 @@ def toBodyDegreeOneSimplexMap
         (toBodySemanticCover semanticCover skeleton).CoverChart =>
       (toBodySemanticCover semanticCover skeleton).Overlap pair.1 pair.2) ->
       (AAT.AG.SemanticRepair.StandardFinitePosetGeneratedBoundary.lawEquationCoverRelativeCover
-        (G := (toBodyWitnessIdealGeometry G skeleton).toCore)
+        (E := (toBodyWitnessIdealGeometry G skeleton).equationSystem)
         (toBodyWitnessIdealGeometry G skeleton).quotientIsSheaf
         (toBodyFinitePosetCoverGeometry coverGeometry).canonicalTupleCoverGeometryFromOverlap).simplex 1 :=
   by
@@ -333,7 +331,7 @@ def toBodyDegreeTwoSimplexMap
       (toBodySemanticCover semanticCover skeleton).TripleOverlap
         triple.1 triple.2.1 triple.2.2) ->
       (AAT.AG.SemanticRepair.StandardFinitePosetGeneratedBoundary.lawEquationCoverRelativeCover
-        (G := (toBodyWitnessIdealGeometry G skeleton).toCore)
+        (E := (toBodyWitnessIdealGeometry G skeleton).equationSystem)
         (toBodyWitnessIdealGeometry G skeleton).quotientIsSheaf
         (toBodyFinitePosetCoverGeometry coverGeometry).canonicalTupleCoverGeometryFromOverlap).simplex 2 :=
   by
@@ -414,13 +412,10 @@ theorem toResearchDisplayedInterpretationRealization
       SemanticLawEquationWitnessIdealGeometry.toObstructionSection,
       lawEquationRegime,
       FinitePosetAtomLawCanonicalTupleOverlapGeometry.toCanonicalTupleCoverGeometry,
-      toBodyWitnessIdealGeometry, toBodyWitnessIdealCore,
-      AAT.AG.LawAlgebra.SemanticLawEquationWitnessIdealCore.obstructionIdeal,
-      AAT.AG.LawAlgebra.SemanticLawEquationWitnessIdealCore.selectedLawWitnessIdealFamily,
-      AAT.AG.LawAlgebra.SemanticLawEquationWitnessIdealCore.lawWitnessIdeal,
-      CoverRelativeCechGeneratedSemanticCoefficient.SemanticLawEquationWitnessIdealCore.obstructionIdeal,
-      CoverRelativeCechGeneratedSemanticCoefficient.SemanticLawEquationWitnessIdealCore.selectedLawWitnessIdealFamily,
-      CoverRelativeCechGeneratedSemanticCoefficient.SemanticLawEquationWitnessIdealCore.lawWitnessIdeal]
+      toBodyWitnessIdealGeometry,
+      AAT.AG.ArchitecturalEquationSystem.obstructionIdeal,
+      AAT.AG.ArchitecturalEquationSystem.selectedWitnessIdealFamily,
+      AAT.AG.ArchitecturalEquationSystem.witnessIdeal]
       using hbodyInterpret
   rw [hinterpret]
   exact

@@ -30,7 +30,7 @@ open LawGeneratedIdealPowerLiftedSheafification
 
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A}
-variable (G : SemanticLawEquationWitnessIdealCore S)
+variable (G : ArchitecturalEquationSystem S.contextPreorder)
 
 /-- A raw conormal sheaf remains a sheaf after the canonical additive universe lift. -/
 theorem liftedConormal_isSheaf

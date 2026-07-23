@@ -40,6 +40,7 @@ theorem toResearchDisplayedRequiredLawRestrictionEvaluator
     (D :
       LawEquationDefectSemanticAtomLawInputBoundarySource coverGeometry G
         skeleton)
+    (hholds : D.DisplayedRequiredEquationsHoldOn)
     (hbody :
       (toBodyDefectSource D).toLawEquationBodyCechSource
         |>.DisplayedRequiredLawRestrictionEvaluator) :
@@ -64,9 +65,19 @@ theorem toResearchDisplayedRequiredLawRestrictionEvaluator
       lawEquationRegime,
       FinitePosetAtomLawCanonicalTupleOverlapGeometry.toCanonicalTupleCoverGeometry]
       using hcomm
+  obtain ⟨equationIndexI, hequationMemI⟩ :=
+    D.lawSupport_nonempty i (D.input i)
+  obtain ⟨equationIndexJ, hequationMemJ⟩ :=
+    D.lawSupport_nonempty j (D.input j)
+  have hequationRequiredI :=
+    D.lawSupport_required i (D.input i) equationIndexI hequationMemI
+  have hequationRequiredJ :=
+    D.lawSupport_required j (D.input j) equationIndexJ hequationMemJ
   exact
-    hbody sigma tau gi gj hbodyComm lawIndexI lawIndexJ hmemI hmemJ
-      hrequiredI hrequiredJ hholdsI hholdsJ
+    hbody sigma tau gi gj hbodyComm equationIndexI equationIndexJ
+      hequationMemI hequationMemJ hequationRequiredI hequationRequiredJ
+      (hholds i equationIndexI hequationMemI hequationRequiredI)
+      (hholds j equationIndexJ hequationMemJ hequationRequiredJ)
 
 /-- Body conjunct 3, unfolded to the original generated-Cech zero predicate. -/
 theorem toResearchSourceC0CechZero
@@ -84,7 +95,7 @@ theorem toResearchSourceC0CechZero
     AAT.AG.SemanticRepair.LawEquationBodyCechSource.restrictedDisplayedInterpretation,
     atomLawOverlap_sourceSectionFreeSkeleton_sourceC0CechZero,
     atomLawOverlap_sourceSectionFreeSkeleton_sourceC0,
-    toBodyDefectSource, toBodyWitnessIdealGeometry, toBodyWitnessIdealCore,
+    toBodyDefectSource, toBodyWitnessIdealGeometry,
     toBodyFinitePosetCoverGeometry]
     using hbody
 

@@ -54,17 +54,6 @@ example : (toBodyFinitePosetCoverGeometry coverGeometry).adequacyRequirements =
 
 variable (G : SemanticLawEquationWitnessIdealGeometry semanticSite S)
 
-example : (toBodyWitnessIdealCore G).Observable = G.Observable := rfl
-example {source target : S.category} (f : source ⟶ target) :
-    (toBodyWitnessIdealCore G).restrict f = G.restrict f := rfl
-example (W : S.category) (lawIndex : S.lawUniverse.Index) (atom : U.Atom) :
-    (toBodyWitnessIdealCore G).violationWitness W lawIndex atom =
-      G.violationWitness W lawIndex atom := rfl
-example : (toBodyWitnessIdealCore G).supportAtom = G.supportAtom := rfl
-example : (toBodyWitnessIdealCore G).supportLawIndex = G.supportLawIndex := rfl
-example : (toBodyWitnessIdealCore G).supportLawIndex_required =
-    G.supportLawIndex_required := rfl
-
 variable {coverGeometry G}
 variable {skeleton :
   SourceSectionFreeSkeleton
@@ -73,6 +62,25 @@ variable {skeleton :
     (C := lawEquationStandardComplex coverGeometry G)
     (Ob := G.lawEquationObstructionSheaf)
     (K := lawEquationCechComplex coverGeometry G)}
+
+example :
+    (toBodyWitnessIdealGeometry G skeleton).equationSystem =
+      G.equationSystem := rfl
+example {source target : S.category} (f : source ⟶ target) :
+    (toBodyWitnessIdealGeometry G skeleton).equationSystem.restrict f =
+      G.equationSystem.restrict f := rfl
+example (W : S.category) (equationIndex : G.equationSystem.Index)
+    (atom : U.Atom) :
+    (toBodyWitnessIdealGeometry G skeleton).equationSystem.violationCoordinate
+        W equationIndex atom =
+      G.equationSystem.violationCoordinate W equationIndex atom := rfl
+example (W : S.category) (object : AAT.AG.ArchitectureObject U)
+    (equationIndex : G.equationSystem.Index) (atom : U.Atom) :
+    (toBodyWitnessIdealGeometry G skeleton).equationSystem.equationResidual
+        W object equationIndex atom =
+      G.equationSystem.equationResidual W object equationIndex atom := rfl
+example :
+    (toBodyWitnessIdealGeometry G skeleton).supportAtom = G.supportAtom := rfl
 
 example : (toBodySemanticInput semanticSite skeleton).Component =
     (U.Atom × SourceSectionFreeSkeleton
@@ -117,6 +125,14 @@ example (left middle right : semanticCover.CoverChart) :
     (toBodySemanticCover semanticCover skeleton).TripleOverlap
         (ULift.up left) (ULift.up middle) (ULift.up right) =
       ULift.{max v w, w} (semanticCover.TripleOverlap left middle right) := rfl
+example (left right : semanticCover.CoverChart) :
+    (toBodySemanticCover semanticCover skeleton).selectedOverlap
+        (ULift.up left) (ULift.up right) =
+      ULift.up (semanticCover.selectedOverlap left right) := rfl
+example (left middle right : semanticCover.CoverChart) :
+    (toBodySemanticCover semanticCover skeleton).selectedTriple
+        (ULift.up left) (ULift.up middle) (ULift.up right) =
+      ULift.up (semanticCover.selectedTriple left middle right) := rfl
 
 variable (chartSimplex :
   semanticCover.CoverChart ->
@@ -154,9 +170,7 @@ example (triple :
       tripleSimplex triple := rfl
 
 example
-    (hholds :
-      D.toSupportOnlySemanticAtomLawInputBoundarySource.displayedRequiredLawsHoldOn
-        D.objectOfLocalInput) :
+    (hholds : D.DisplayedRequiredEquationsHoldOn) :
     let surface :=
       lawEquationCurrentG06InputSurface coverGeometry G semanticCover
         chartSimplex overlapSimplex tripleSimplex
