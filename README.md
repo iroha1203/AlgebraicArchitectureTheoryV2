@@ -169,8 +169,6 @@ static output.
 - `outreach`
   - External article drafts, English and Japanese translations, and publication assets
     for AAT, SFT, and ArchSig.
-- `Main.lean`
-  - Minimal entry point for the executable target `aatv2`.
 - `lakefile.toml`
   - Lake build configuration.
 - `lean-toolchain`
@@ -181,15 +179,8 @@ static output.
 The root-wide full Lean build for the main package is run by CI after a pull request is opened. Choose a local check that matches the change scope; for example, a single target file or a targeted module build:
 
 ```bash
-lake env lean Formal/Arch/Core/Layering.lean
-lake build Formal
-lake exe aatv2
-```
-
-The output of `lake exe aatv2` is:
-
-```text
-Algebraic Architecture Theory V2
+lake env lean Formal/AG/Atom/Atom.lean
+lake build +Formal.AG
 ```
 
 ## License

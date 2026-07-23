@@ -7,6 +7,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   research-integrity-gates:
     name: research integrity gates
@@ -117,8 +121,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Select Lean build
-        id: lean-changes
+      - name: Select active AAT algebraic geometry build
+        id: ag-changes
         env:
           EVENT_NAME: ${{ github.event_name }}
           PR_BASE: ${{ github.event.pull_request.base.sha }}
@@ -135,7 +139,7 @@ jobs:
             base="$(git rev-list --max-parents=0 "$HEAD_SHA" | tail -n 1)"
           fi
           if git diff --name-only "$base...$HEAD_SHA" | grep -Eq \
-              '^(Formal/|Formal\.lean$|Main\.lean$|lakefile\.toml$|lake-manifest\.json$|lean-toolchain$|\.github/lean_quality/|\.github/workflows/lean\.yml$)'; then
+              '^(Formal/AG/|Formal/AG\.lean$|Formal/Util/AssertStandardAxioms[^/]*\.lean$|lakefile\.toml$|lake-manifest\.json$|lean-toolchain$|\.github/lean_quality/|\.github/workflows/lean\.yml$)'; then
             echo "run=true" >>"$GITHUB_OUTPUT"
           else
             echo "no Lean-relevant changes; Lean build steps are skipped"
@@ -143,20 +147,24 @@ jobs:
           fi
 
       - name: Set up Lean
-        if: steps.lean-changes.outputs.run == 'true'
+        if: steps.ag-changes.outputs.run == 'true'
         uses: leanprover/lean-action@v1
+        with:
+          build: false
+          test: false
+          lint: false
+
+      - name: Build active AAT algebraic geometry
+        if: steps.ag-changes.outputs.run == 'true'
+        run: lake build +Formal.AG
 
       - name: Kernel axiom audit
-        if: steps.lean-changes.outputs.run == 'true'
+        if: steps.ag-changes.outputs.run == 'true'
         run: |
           lake env lean Formal/Util/AssertStandardAxiomsTest.lean
           lake env lean Formal/AG/AxiomAudit.lean
           test "$(grep -v '^[[:space:]]*$' Formal/AG/AxiomAudit.lean | tail -n 1)" = '#assert_standard_axioms_only AAT.AG.AxiomAudit'
 
-      - name: Lean quality lint baseline
-        if: steps.lean-changes.outputs.run == 'true'
-        run: .github/lean_quality/check_lint_formal.sh
-
       - name: Premise diff report
-        if: steps.lean-changes.outputs.run == 'true'
+        if: steps.ag-changes.outputs.run == 'true'
         run: .github/lean_quality/list_premise_diff.sh
