@@ -251,22 +251,10 @@ proof-use、actual APIへの接続を査読する。
 
 ## §7 機械検査一覧(執行層への送り状)
 
-[機械] タグ項目は CI job `lake build` 内で執行する。既存宣言への遡及修正は
-要求しないため、`Formal/` 全体の lint 出力は
-`.github/lean_quality/lint-formal-baseline.txt` に baseline として固定し、
-`.github/lean_quality/check_lint_formal.sh` が現在出力との差分を検出する。
-baseline を更新する場合は、`.github/lean_quality/LintFormal.lean` を
-実行して `.tmp/lean-quality/lint-formal.txt` を生成し、差分の理由を PR
-本文に書いた上で baseline を置き換える。
+[機械] タグ項目は CI の現行AAT代数幾何ジョブまたは Research integrity gates で執行する。
 
 | 検査 | 規則 | 実装状態 |
 | --- | --- | --- |
-| 未使用 premise | §1.2 | CI step `Lean quality lint baseline`: `.github/lean_quality/LintFormal.lean` の `#lint- only unusedArguments ... in Formal` |
-| docstring 欠落 | §3.2 | CI step `Lean quality lint baseline`: `docBlame` を baseline 差分で検出 |
-| def / theorem 区別 | §3.4 | CI step `Lean quality lint baseline`: `defLemma` を baseline 差分で検出 |
-| 構文的恒真 statement | §1(空虚化) | CI step `Lean quality lint baseline`: `synTaut` を baseline 差分で検出 |
-| 未使用 have / suffices | §1.2 | CI step `Lean quality lint baseline`: `unusedHavesSuffices` を baseline 差分で検出 |
-| namespace 重複・不能 instance | §3 | CI step `Lean quality lint baseline`: `dupNamespace`, `impossibleInstance` を baseline 差分で検出 |
 | AxiomAudit | §4.1 | CI step `Kernel axiom audit`: `lake env lean Formal/AG/AxiomAudit.lean` と末尾 `#assert_standard_axioms_only AAT.AG.AxiomAudit` 確認 |
 | Research import 方向 | refutation-checklist §6 | CI step `Research import direction scan`: `.github/lean_quality/check_research_import_direction.sh` が `research/lean/ResearchLean` 外への新規 `import ResearchLean.AG` 追加を fail |
 | premise 一覧 | §1.1 | CI step `Premise diff report`: `.github/lean_quality/list_premise_diff.sh` が `.tmp/lean-quality/premise-diff.txt` を出力する。これはレビュー突合用で hard fail ではない |
