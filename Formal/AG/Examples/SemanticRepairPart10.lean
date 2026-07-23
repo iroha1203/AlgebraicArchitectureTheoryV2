@@ -2395,16 +2395,9 @@ theorem generatedLawStandardNonlawfulBodySource_not_displayedInterpretationReali
   apply
     generatedLawStandardNonlawfulBodySource.restrictedDisplayedInterpretation_ne_zero_prevents_displayedInterpretationRealization
       generatedLawStandardSourceC0SelectedSimplex
-  simpa [LawEquationBodyCechSource.restrictedDisplayedInterpretation,
-    generatedLawStandardNonlawfulBodySource,
-    generatedLawFiniteFreeNonlawfulDefectSource,
-    StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.toLawEquationBodyCechSource,
-    StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.toLawEquationDefectSource,
-    LawAlgebra.LawEquationDefectSource.interpret,
-    ArchitecturalEquationSystem.obstructionQuotientPresheaf,
-    ArchitecturalEquationSystem.obstructionQuotientCoefficient,
-    lawEquationSystem] using
-      generatedLawFiniteFreeNonlawfulDefectSource_interpret_ne_zero
+  rw [
+    StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.toLawEquationBodyCechSource_restrictedDisplayedInterpretation]
+  exact generatedLawFiniteFreeNonlawfulDefectSource_interpret_ne_zero
 
 /-!
 Two-chart negative instance for the chart-level common-source and arrow laws.

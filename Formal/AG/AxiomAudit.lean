@@ -545,6 +545,10 @@ def semanticRepairTheorem75FinitePosetToGenericSourceDefect :=
 def semanticRepairTheorem75FinitePosetDefectSourceToBodyCechSource :=
   @SemanticRepair.StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.toLawEquationBodyCechSource
 
+/-- Audit alias for degree-zero restricted interpretation on the generated body source. -/
+def semanticRepairTheorem75FinitePosetBodySourceRestrictedDisplayedInterpretation :=
+  @SemanticRepair.StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.toLawEquationBodyCechSource_restrictedDisplayedInterpretation
+
 /-- Audit alias for generated singleton Atom support on the finite-poset source. -/
 def semanticRepairTheorem75FinitePosetDisplayedAtomSupportTraceVisible :=
   @SemanticRepair.StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.atomSupport_traceVisible

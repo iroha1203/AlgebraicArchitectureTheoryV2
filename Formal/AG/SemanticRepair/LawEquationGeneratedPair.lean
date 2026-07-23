@@ -3494,6 +3494,27 @@ def toLawEquationBodyCechSource
           (geometry.cover.patch (sigma 0)) from
         geometry.canonicalTupleOverlapFromOverlap_le_patch 0 sigma 0)
 
+/--
+At degree zero, the canonical tuple overlap is the selected patch, so the
+generated body source restricts a displayed interpretation along the identity.
+This comparison keeps downstream consumers independent of both source
+projection implementations.
+-/
+@[simp] theorem toLawEquationBodyCechSource_restrictedDisplayedInterpretation
+    {semanticInput : LawEquationSemanticAtomInputBody.{v, x} Ulaw}
+    {G : LawEquationWitnessIdealGeometryBody semanticInput Slaw}
+    {geometry : Site.FinitePosetCoverGeometry Slaw}
+    (D : FinitePosetLawEquationDefectSourceBody semanticInput G geometry)
+    (sigma :
+      Site.FinitePosetCechCanonicalTupleSimplex geometry.cover.Index 0) :
+    D.toLawEquationBodyCechSource.restrictedDisplayedInterpretation sigma =
+      D.toLawEquationDefectSource.interpret (sigma 0) := by
+  simp [LawEquationBodyCechSource.restrictedDisplayedInterpretation,
+    FinitePosetLawEquationDefectSourceBody.toLawEquationBodyCechSource]
+  exact
+    G.equationSystem.obstructionQuotientRestrict_id_apply _
+      (D.toLawEquationDefectSource.interpret (sigma 0))
+
 end FinitePosetLawEquationDefectSourceBody
 
 /--

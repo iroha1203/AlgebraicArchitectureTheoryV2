@@ -377,8 +377,9 @@ theorem equationHolds_defect_quotient_eq_zero
         (D.objectOfLocalInput i localInput)) :
     Ideal.Quotient.mk (E.obstructionIdeal (D.chart i))
         (D.defect i localInput) = 0 :=
-  Ideal.Quotient.eq_zero_iff_mem.mpr
-    (D.equationHolds_defect_mem_obstructionIdeal i localInput hholds)
+  by
+    rw [D.equationHolds_defect_eq_zero i localInput hholds]
+    rfl
 
 end DisplayedEquationSource
 
