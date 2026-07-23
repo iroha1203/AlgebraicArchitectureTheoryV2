@@ -46,40 +46,54 @@ end CoverageFamily
 /--
 II.定義7.1 前半: selected requirements read by admissible covers.
 
-The required support, witness, and signature axes are typed by the selected
-law universe and architecture signature. The law universe owns its unique
-`selectedReading`; coverage does not select a second reading value. Visibility
-predicates remain separate from the context data.
+Required equation coordinates are indexed by the required-role subtype of the
+selected architectural equation system. Selected symbolic violation witnesses
+use the full equation-index/Atom coordinate type. Visibility predicates remain
+separate from the context data.
 -/
 structure CoverageRequirements {U : AtomCarrier.{u}} (A : ArchitectureObject U)
-    (LU : LawUniverse U) (Sig : ArchitectureSignature U) where
+    {C : ContextPreorderCategory A} (E : ArchitecturalEquationSystem C)
+    (Sig : ArchitectureSignature U) where
   requiredSupport : U.Atom -> Prop
-  requiredWitness : LU.witnessFamily.Witness -> Prop
+  /-- Required-role equation coordinates selected for coverage. -/
+  requiredEquationCoordinate : E.RequiredCoordinate -> Prop
+  /-- Symbolic equation/Atom coordinates selected as violation witnesses. -/
+  selectedViolationWitness : E.Coordinate -> Prop
   requiredAxis : Sig.Axis -> Prop
   supportVisibleOn : ArchCtx A -> U.Atom -> Prop
-  witnessVisibleOn : ArchCtx A -> LU.witnessFamily.Witness -> Prop
+  /-- Visibility of required equation coordinates on a readable context. -/
+  equationCoordinateVisibleOn : ArchCtx A -> E.RequiredCoordinate -> Prop
+  /-- Visibility of selected symbolic violation witnesses on a context. -/
+  violationWitnessVisibleOn : ArchCtx A -> E.Coordinate -> Prop
   axisReadableOn : ArchCtx A -> Sig.Axis -> Prop
   boundaryVisibleOn : ArchCtx A -> ArchCtx A -> Prop
 
 /--
 II.定義7.1 前半: admissible cover conditions for a coverage family.
 
-The five fields are exactly the R3 admissibility clauses: Atom support
-coverage, law witness coverage, signature axis coverage, boundary coverage,
-and context non-generation.
+The six coverage fields are the selected Atom, required equation-coordinate,
+symbolic violation-witness, signature-axis, overlap, and non-generation
+clauses of the generated AAT coverage.
 -/
 structure AdmissibleCover {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {C : ContextPreorderCategory A} {LU : LawUniverse U}
-    {Sig : ArchitectureSignature U} (R : CoverageRequirements A LU Sig)
+    {C : ContextPreorderCategory A} {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U} (R : CoverageRequirements A E Sig)
     (P : ContextOverlapPullback C) (F : CoverageFamily C) : Prop where
   atomSupportCoverage :
     ∀ atom : U.Atom, R.requiredSupport atom ->
       ∃ i : F.Index, R.supportVisibleOn (F.patch i) atom
-  lawWitnessCoverage :
-    ∀ witness : LU.witnessFamily.Witness, R.requiredWitness witness ->
-      (∃ i : F.Index, R.witnessVisibleOn (F.patch i) witness) ∨
+  equationCoordinateCoverage :
+    ∀ coordinate : E.RequiredCoordinate, R.requiredEquationCoordinate coordinate ->
+      (∃ i : F.Index, R.equationCoordinateVisibleOn (F.patch i) coordinate) ∨
         ∃ i j : F.Index,
-          R.witnessVisibleOn (P.overlap F.base (F.patch i) (F.patch j)) witness
+          R.equationCoordinateVisibleOn
+            (P.overlap F.base (F.patch i) (F.patch j)) coordinate
+  violationWitnessCoverage :
+    ∀ witness : E.Coordinate, R.selectedViolationWitness witness ->
+      (∃ i : F.Index, R.violationWitnessVisibleOn (F.patch i) witness) ∨
+        ∃ i j : F.Index,
+          R.violationWitnessVisibleOn
+            (P.overlap F.base (F.patch i) (F.patch j)) witness
   signatureAxisCoverage :
     ∀ axis : Sig.Axis, R.requiredAxis axis ->
       ∃ i : F.Index, R.axisReadableOn (F.patch i) axis
@@ -94,32 +108,42 @@ namespace AdmissibleCover
 
 /-- II.定義7.1: admissible covers expose required Atom support on patches. -/
 theorem support {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {C : ContextPreorderCategory A} {LU : LawUniverse U}
-    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+    {C : ContextPreorderCategory A} {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A E Sig}
     {P : ContextOverlapPullback C} {F : CoverageFamily C} (h : AdmissibleCover R P F)
     {atom : U.Atom} (hreq : R.requiredSupport atom) :
     ∃ i : F.Index, R.supportVisibleOn (F.patch i) atom :=
   h.atomSupportCoverage atom hreq
 
-/--
-II.定義7.1: admissible covers expose required law witnesses on patches or
-their selected overlaps.
--/
-theorem witness {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {C : ContextPreorderCategory A} {LU : LawUniverse U}
-    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+/-- II.定義7.1: admissible covers expose required equation coordinates. -/
+theorem equationCoordinate {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {C : ContextPreorderCategory A} {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A E Sig}
     {P : ContextOverlapPullback C} {F : CoverageFamily C} (h : AdmissibleCover R P F)
-    {witness : LU.witnessFamily.Witness}
-    (hreq : R.requiredWitness witness) :
-    (∃ i : F.Index, R.witnessVisibleOn (F.patch i) witness) ∨
+    {coordinate : E.RequiredCoordinate}
+    (hreq : R.requiredEquationCoordinate coordinate) :
+    (∃ i : F.Index, R.equationCoordinateVisibleOn (F.patch i) coordinate) ∨
       ∃ i j : F.Index,
-        R.witnessVisibleOn (P.overlap F.base (F.patch i) (F.patch j)) witness :=
-  h.lawWitnessCoverage witness hreq
+        R.equationCoordinateVisibleOn
+          (P.overlap F.base (F.patch i) (F.patch j)) coordinate :=
+  h.equationCoordinateCoverage coordinate hreq
+
+/-- II.定義7.1: admissible covers expose selected symbolic violation witnesses. -/
+theorem violationWitness {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {C : ContextPreorderCategory A} {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A E Sig}
+    {P : ContextOverlapPullback C} {F : CoverageFamily C} (h : AdmissibleCover R P F)
+    {witness : E.Coordinate} (hreq : R.selectedViolationWitness witness) :
+    (∃ i : F.Index, R.violationWitnessVisibleOn (F.patch i) witness) ∨
+      ∃ i j : F.Index,
+        R.violationWitnessVisibleOn
+          (P.overlap F.base (F.patch i) (F.patch j)) witness :=
+  h.violationWitnessCoverage witness hreq
 
 /-- II.定義7.1: admissible covers expose required signature axes on patches. -/
 theorem axis {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {C : ContextPreorderCategory A} {LU : LawUniverse U}
-    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+    {C : ContextPreorderCategory A} {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A E Sig}
     {P : ContextOverlapPullback C} {F : CoverageFamily C} (h : AdmissibleCover R P F)
     {axis : Sig.Axis} (hreq : R.requiredAxis axis) :
     ∃ i : F.Index, R.axisReadableOn (F.patch i) axis :=
@@ -127,8 +151,8 @@ theorem axis {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 
 /-- II.定義7.1: admissible covers expose boundary readings on overlaps. -/
 theorem boundary {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {C : ContextPreorderCategory A} {LU : LawUniverse U}
-    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+    {C : ContextPreorderCategory A} {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A E Sig}
     {P : ContextOverlapPullback C} {F : CoverageFamily C} (h : AdmissibleCover R P F)
     (i j : F.Index) :
     R.boundaryVisibleOn (P.overlap F.base (F.patch i) (F.patch j)) F.base :=
@@ -136,8 +160,8 @@ theorem boundary {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 
 /-- II.定義7.1: admissible covers do not generate atoms along inclusions. -/
 theorem nonGenerating {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {C : ContextPreorderCategory A} {LU : LawUniverse U}
-    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+    {C : ContextPreorderCategory A} {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A E Sig}
     {P : ContextOverlapPullback C} {F : CoverageFamily C} (h : AdmissibleCover R P F)
     (i : F.Index) :
     SupportMapNonGenerating (F.patch i) F.base

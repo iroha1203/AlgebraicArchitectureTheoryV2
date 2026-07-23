@@ -47,8 +47,10 @@ structure CoreReading (U : AtomCarrier.{u}) where
   composition : CompositionReading U
   /-- Architecture-object formation rule. -/
   objectReading : ObjectReading U
-  /-- Law universe and indexed circuit semantics. -/
-  lawReading : LawReading U
+  /-- Context, architectural equation, and equation-indexed circuit reading. -/
+  equationReading : EquationReading
+    (objectReading.object
+      (composition.compose (doctrine.atomize source) family_listFinite))
   /-- Invariant reading. -/
   invariantReading : InvariantFamily U
   /-- Architecture signature reading. -/
@@ -117,7 +119,7 @@ theorem ext {U : AtomCarrier.{u}} {R S : CoreReading U}
     (hsource : HEq R.source S.source)
     (hcomposition : R.composition = S.composition)
     (hobjectReading : R.objectReading = S.objectReading)
-    (hlawReading : R.lawReading = S.lawReading)
+    (hequationReading : HEq R.equationReading S.equationReading)
     (hinvariantReading : R.invariantReading = S.invariantReading)
     (hsignatureReading : R.signatureReading = S.signatureReading)
     (hoperationReading : R.operationReading = S.operationReading) : R = S := by
@@ -127,7 +129,7 @@ theorem ext {U : AtomCarrier.{u}} {R S : CoreReading U}
   cases hsource
   cases hcomposition
   cases hobjectReading
-  cases hlawReading
+  cases hequationReading
   cases hinvariantReading
   cases hsignatureReading
   cases hoperationReading
@@ -171,16 +173,32 @@ def algebra {U : AtomCarrier.{u}} (core : AATCorePackage U) : ObjectAlgebra U wh
   Obj := {A : ArchitectureObject U //
     core.reading.operationReading.Reachable core.object A}
   object A := A.1
+  base := ⟨core.object, OperationReading.Reachable.base⟩
+  equationReading := core.reading.equationReading
   Op A B := core.reading.operationReading.Op A.1 B.1
   configurationMap op := core.reading.operationReading.configurationMap op
   invariantReading := core.reading.invariantReading
-  lawReading := core.reading.lawReading
   signatureReading := core.reading.signatureReading
 
 /-- The generated object as the distinguished base member of the reachable algebra. -/
 def baseObject {U : AtomCarrier.{u}}
     (core : AATCorePackage U) : core.algebra.Obj :=
-  ⟨core.object, OperationReading.Reachable.base⟩
+  core.algebra.base
+
+/-- The generated core's selected context preorder. -/
+def contextPreorder {U : AtomCarrier.{u}} (core : AATCorePackage U) :
+    Site.ContextPreorderCategory core.object :=
+  core.algebra.contextPreorder
+
+/-- The generated core's primary architectural equation system. -/
+def equationSystem {U : AtomCarrier.{u}} (core : AATCorePackage U) :
+    ArchitecturalEquationSystem core.contextPreorder :=
+  core.algebra.equationSystem
+
+/-- The generated core's equation-indexed circuit reading. -/
+def circuitReading {U : AtomCarrier.{u}} (core : AATCorePackage U) :
+    EquationCircuitReading core.equationSystem :=
+  core.algebra.circuits
 
 /-- The canonical family of any core satisfies its extraction doctrine. -/
 theorem family_atomizes {U : AtomCarrier.{u}} (core : AATCorePackage U) :
@@ -250,32 +268,27 @@ theorem object_family_mem_iff_extracts {U : AtomCarrier.{u}}
   rw [core.object_configuration_eq]
   exact core.configuration_family_mem_iff_extracts atom
 
-/-- The generated algebra retains the core reading's selected law reading. -/
-theorem algebra_lawReading_eq {U : AtomCarrier.{u}} (core : AATCorePackage U) :
-    core.algebra.lawReading = core.reading.lawReading :=
-  rfl
-
-/-- The generated algebra retains the core reading's indexed circuit reading. -/
+/-- The generated algebra retains the core reading's equation-indexed circuits. -/
 theorem algebra_circuitReading_eq {U : AtomCarrier.{u}}
     (core : AATCorePackage U) :
-    core.algebra.lawReading.circuits = core.reading.lawReading.circuits :=
+    core.algebra.circuits = core.reading.equationReading.circuits :=
   rfl
 
 /-- The generated algebra uses the detector code selected by the core reading. -/
 theorem algebra_detectorCode_eq {U : AtomCarrier.{u}}
     (core : AATCorePackage U)
-    (i : core.reading.lawReading.lawUniverse.Index) :
-    core.algebra.lawReading.circuits.code i =
-      core.reading.lawReading.circuits.code i :=
+    (i : core.reading.equationReading.equationSystem.Index) :
+    core.algebra.circuits.code i =
+      core.reading.equationReading.circuits.code i :=
   rfl
 
 /-- Generated circuit acceptance computes by the core reading's selected detector. -/
 theorem algebra_accepts_eq_detector_eval {U : AtomCarrier.{u}}
     (core : AATCorePackage U)
-    (i : core.reading.lawReading.lawUniverse.Index)
+    (i : core.reading.equationReading.equationSystem.Index)
     (Q : FiniteCircuitDatum U) :
-    core.algebra.lawReading.circuits.accepts i Q =
-      (core.reading.lawReading.circuits.code i).eval Q :=
+    core.algebra.circuits.accepts i Q =
+      (core.reading.equationReading.circuits.code i).eval Q :=
   rfl
 
 /--
@@ -299,11 +312,11 @@ finite detector accepts a datum matching the selected generated object.
 -/
 theorem algebra_circuit_nonempty_iff {U : AtomCarrier.{u}}
     (core : AATCorePackage U) (A : core.algebra.Obj)
-    (i : core.algebra.lawReading.lawUniverse.Index) :
+    (i : core.algebra.equationSystem.Index) :
     Nonempty (core.algebra.Circuit A i) ↔
       ∃ Q : FiniteCircuitDatum U,
         Q.Matches (core.algebra.object A) ∧
-          core.algebra.lawReading.circuits.accepts i Q = true := by
+          core.algebra.circuits.accepts i Q = true := by
   constructor
   · rintro ⟨c⟩
     exact ⟨c.1, c.2⟩
@@ -367,12 +380,6 @@ theorem generate_object_configuration_eq
       (AATCorePackage.generate S r).configuration :=
   r.objectReading.configuration_eq _
 
-/-- The generated algebra uses the reading's law/circuit family. -/
-theorem generate_lawReading_eq {U : AtomCarrier.{u}}
-    (S : AtomAxiomSystem U) (r : CoreReading U) :
-    (AATCorePackage.generate S r).algebra.lawReading = r.lawReading :=
-  rfl
-
 /-- The distinguished algebra object is the generated architecture object. -/
 theorem generate_algebra_base_object
     {U : AtomCarrier.{u}} (S : AtomAxiomSystem U) (r : CoreReading U) :
@@ -399,15 +406,18 @@ theorem generate_algebra_operation_target
       (AATCorePackage.generate S r).algebra.object B :=
   rfl
 
-/-- Every generated circuit proves failure through the reading's soundness theorem. -/
+/--
+Every generated circuit refutes its indexed equation by the admissibility
+proof retained in the core reading.
+-/
 theorem generate_circuit_sound
     {U : AtomCarrier.{u}} (S : AtomAxiomSystem U) (r : CoreReading U)
     (A : (AATCorePackage.generate S r).algebra.Obj)
-    (i : (AATCorePackage.generate S r).algebra.lawReading.lawUniverse.Index)
+    (i : (AATCorePackage.generate S r).algebra.equationSystem.Index)
     (c : (AATCorePackage.generate S r).algebra.Circuit A i) :
-    ¬ ((AATCorePackage.generate S r).algebra.lawReading.lawUniverse.law i).holds
+    ¬ (AATCorePackage.generate S r).algebra.equationSystem.EquationHolds i
       ((AATCorePackage.generate S r).algebra.object A) :=
-  r.lawReading.circuits.sound i A.1 c.1 c.2.1 c.2.2
+  r.equationReading.circuitSound i A.1 c.1 c.2.1 c.2.2
 
 /-- Generated operations transport family membership through their actual atom map. -/
 theorem generate_algebra_operation_maps_family

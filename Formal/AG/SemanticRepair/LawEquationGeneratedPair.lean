@@ -676,19 +676,19 @@ def DisplayedRequiredLawRestrictionEvaluator
       (gTau : Z ⟶ D.chart (source.chartOf tau)),
     gSigma ≫ source.chartToBase sigma =
         gTau ≫ source.chartToBase tau ->
-      forall (lawIndexSigma lawIndexTau : S.lawUniverse.Index),
+      forall (lawIndexSigma lawIndexTau : S.equationSystem.Index),
         lawIndexSigma ∈
             D.lawSupport (source.chartOf sigma)
               (D.input (source.chartOf sigma)) ->
           lawIndexTau ∈
               D.lawSupport (source.chartOf tau)
                 (D.input (source.chartOf tau)) ->
-            S.lawUniverse.Required lawIndexSigma ->
-              S.lawUniverse.Required lawIndexTau ->
-                (S.lawUniverse.law lawIndexSigma).holds
+            S.equationSystem.Required lawIndexSigma ->
+              S.equationSystem.Required lawIndexTau ->
+                S.equationSystem.EquationHolds lawIndexSigma
                     (D.objectOfLocalInput (source.chartOf sigma)
                       (D.input (source.chartOf sigma))) ->
-                  (S.lawUniverse.law lawIndexTau).holds
+                  S.equationSystem.EquationHolds lawIndexTau
                       (D.objectOfLocalInput (source.chartOf tau)
                         (D.input (source.chartOf tau))) ->
                     G.obstructionQuotientPresheaf.map gSigma.op
@@ -3286,13 +3286,13 @@ structure FinitePosetLawEquationDefectSourceBody
           semanticInput.sourceTraceToken atom = true
   /-- Required-law indices inspected at a local input. -/
   lawSupport :
-    (i : geometry.cover.Index) -> LocalInput i -> List Slaw.lawUniverse.Index
+    (i : geometry.cover.Index) -> LocalInput i -> List Slaw.equationSystem.Index
   lawSupport_nonempty :
-    forall i, exists lawIndex : Slaw.lawUniverse.Index,
+    forall i, exists lawIndex : Slaw.equationSystem.Index,
       lawIndex ∈ lawSupport i (input i)
   lawSupport_required :
-    forall i (lawIndex : Slaw.lawUniverse.Index),
-      lawIndex ∈ lawSupport i (input i) -> Slaw.lawUniverse.Required lawIndex
+    forall i (lawIndex : Slaw.equationSystem.Index),
+      lawIndex ∈ lawSupport i (input i) -> Slaw.equationSystem.Required lawIndex
   /-- Architecture object presented by a local input. -/
   objectOfLocalInput :
     (i : geometry.cover.Index) -> LocalInput i -> ArchitectureObject Ulaw
@@ -3304,10 +3304,10 @@ structure FinitePosetLawEquationDefectSourceBody
           (Site.ContextCategoryObject.of Slaw.contextPreorder
             (geometry.cover.patch i))
   holds_defect_mem :
-    forall i (lawIndex : Slaw.lawUniverse.Index),
+    forall i (lawIndex : Slaw.equationSystem.Index),
       lawIndex ∈ lawSupport i (input i) ->
-        Slaw.lawUniverse.Required lawIndex ->
-          (Slaw.lawUniverse.law lawIndex).holds
+        Slaw.equationSystem.Required lawIndex ->
+          Slaw.equationSystem.EquationHolds lawIndex
               (objectOfLocalInput i (input i)) ->
             defect i (input i) ∈
               G.toCore.lawWitnessIdeal

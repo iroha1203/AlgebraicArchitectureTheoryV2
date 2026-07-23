@@ -8,6 +8,14 @@ universe u
 structure Law (U : AtomCarrier.{u}) where
   holds : ArchitectureObject U -> Prop
 
+/-- Laws are equal when their predicates agree. -/
+@[ext] theorem Law.ext {U : AtomCarrier.{u}} {L₁ L₂ : Law U}
+    (hholds : L₁.holds = L₂.holds) : L₁ = L₂ := by
+  cases L₁
+  cases L₂
+  cases hholds
+  rfl
+
 /-- I.定義7.2: the role assigned to a law inside a law universe. -/
 inductive LawRole where
   | required
@@ -26,7 +34,14 @@ structure SignatureAxes (U : AtomCarrier.{u}) where
   selected : Axis -> Prop
   zero : ArchitectureObject U -> Axis -> Prop
 
-/-- I.定義7.2: a selected universe of laws and its reading assumptions. -/
+/--
+Legacy display surface for a selected equation family.
+
+Standard AAT construction obtains this structure from an
+`ArchitecturalEquationSystem`; it no longer carries untyped coverage or
+exactness assumptions. The eventual removal of this compatibility type is
+tracked separately from the equation-system migration.
+-/
 structure LawUniverse (U : AtomCarrier.{u}) where
   Index : Type u
   law : Index -> Law U
@@ -34,8 +49,6 @@ structure LawUniverse (U : AtomCarrier.{u}) where
   witnessFamily : LawWitnessFamily U
   SelectedReading : Type u
   selectedReading : SelectedReading
-  coverageAssumptions : Prop
-  exactnessAssumptions : Prop
 
 namespace LawUniverse
 

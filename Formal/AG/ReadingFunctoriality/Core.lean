@@ -44,10 +44,6 @@ namespace ReadingCore
 abbrev site (p : ReadingCore.{u, v} U) : Site.AATSite p.core.object :=
   p.geometry.toAATSite
 
-/-- The law universe carried by the reading core's site. -/
-abbrev lawUniverse (p : ReadingCore.{u, v} U) : LawUniverse U :=
-  p.site.lawUniverse
-
 /-- The architecture signature carried by the reading core's site. -/
 abbrev signature (p : ReadingCore.{u, v} U) : ArchitectureSignature U :=
   p.site.signature
@@ -78,8 +74,8 @@ Optional witness, circuit, and axis selectors over a reading core (Part 4 SD0).
 Geometric and cohomological comparison data are intentionally not stored here.
 -/
 structure ReadingSelection (p : ReadingCore.{u, v} U) where
-  /-- The selected law witnesses. -/
-  selectedWitness : p.lawUniverse.witnessFamily.Witness → Prop
+  /-- The selected symbolic equation/Atom witness coordinates. -/
+  selectedWitness : p.site.equationSystem.Coordinate → Prop
   /-- The selected finite circuit data. -/
   selectedCircuit : FiniteCircuitDatum U → Prop
   /-- The selected signature axes. -/
@@ -259,19 +255,17 @@ structure ObjectAlgebraHom
       (L.object (objMap A)).configuration
   /-- Map between law indices. -/
   lawMap :
-    K.lawReading.lawUniverse.Index →
-      L.lawReading.lawUniverse.Index
+    K.equationSystem.Index → L.equationSystem.Index
   /-- Preservation and reflection of required-law status. -/
   required_iff :
     ∀ i,
-      K.lawReading.lawUniverse.Required i ↔
-        L.lawReading.lawUniverse.Required (lawMap i)
+      K.equationSystem.Required i ↔
+        L.equationSystem.Required (lawMap i)
   /-- Preservation and reflection of law satisfaction. -/
   law_holds_iff :
     ∀ i A,
-      (K.lawReading.lawUniverse.law i).holds (K.object A) ↔
-        (L.lawReading.lawUniverse.law (lawMap i)).holds
-          (L.object (objMap A))
+      K.equationSystem.EquationHolds i (K.object A) ↔
+        L.equationSystem.EquationHolds (lawMap i) (L.object (objMap A))
   /-- Transport of signed circuit certificates. -/
   circuitMap :
     ∀ A i, K.Circuit A i →
@@ -537,19 +531,17 @@ structure SignedExactCoreReadingHom
     ∀ A, (configurationMap A).atomMap = atomMap
   /-- Map between generated law indices. -/
   lawMap :
-    P.algebra.lawReading.lawUniverse.Index →
-      Q.algebra.lawReading.lawUniverse.Index
+    P.algebra.equationSystem.Index → Q.algebra.equationSystem.Index
   /-- Preservation and reflection of required-law status. -/
   required_iff :
     ∀ i,
-      P.algebra.lawReading.lawUniverse.Required i ↔
-        Q.algebra.lawReading.lawUniverse.Required (lawMap i)
+      P.algebra.equationSystem.Required i ↔
+        Q.algebra.equationSystem.Required (lawMap i)
   /-- Preservation and reflection of law satisfaction on mapped objects. -/
   law_holds_iff :
     ∀ i A,
-      (P.algebra.lawReading.lawUniverse.law i).holds A ↔
-        (Q.algebra.lawReading.lawUniverse.law (lawMap i)).holds
-          (objectMap A)
+      P.algebra.equationSystem.EquationHolds i A ↔
+        Q.algebra.equationSystem.EquationHolds (lawMap i) (objectMap A)
   /-- Map on signed finite circuit queries. -/
   queryMap : FiniteCircuitDatum U → FiniteCircuitDatum U
   /-- Preservation and reflection of signed query matching. -/
@@ -558,8 +550,8 @@ structure SignedExactCoreReadingHom
   /-- Preservation and reflection of circuit acceptance. -/
   accepts_iff :
     ∀ i Qry,
-      P.algebra.lawReading.circuits.accepts i Qry = true ↔
-        Q.algebra.lawReading.circuits.accepts
+      P.algebra.circuits.accepts i Qry = true ↔
+        Q.algebra.circuits.accepts
           (lawMap i) (queryMap Qry) = true
   /-- Map on operations between architecture objects. -/
   operationMap :
@@ -878,11 +870,11 @@ The concrete nonidentity finite-model firing required by AC9 is supplied in R9.
 def PositiveCircuitDatum
     (P : AATCorePackage U)
     (A : P.algebra.Obj)
-    (i : P.algebra.lawReading.lawUniverse.Index) : Type u :=
+    (i : P.algebra.equationSystem.Index) : Type u :=
   {Qry : FiniteCircuitDatum U //
     Qry.Positive ∧
       Qry.Matches (P.algebra.object A) ∧
-        P.algebra.lawReading.circuits.accepts i Qry = true}
+        P.algebra.circuits.accepts i Qry = true}
 
 /--
 Primitive data for a positive-only change between generated AAT cores (Part 4 SD1).
@@ -945,8 +937,7 @@ structure PositiveCoreReadingHom
           (P.reading.operationReading.configurationMap op)
   /-- Map between generated law indices. -/
   lawMap :
-    P.algebra.lawReading.lawUniverse.Index →
-      Q.algebra.lawReading.lawUniverse.Index
+    P.algebra.equationSystem.Index → Q.algebra.equationSystem.Index
   /-- Map on finite circuit data. -/
   queryMap : FiniteCircuitDatum U → FiniteCircuitDatum U
   /-- Preservation of positive polarity. -/
@@ -959,8 +950,8 @@ structure PositiveCoreReadingHom
   /-- One-way preservation of acceptance for positive circuit data. -/
   accepts_mono :
     ∀ i Qry, Qry.Positive →
-      P.algebra.lawReading.circuits.accepts i Qry = true →
-        Q.algebra.lawReading.circuits.accepts
+      P.algebra.circuits.accepts i Qry = true →
+        Q.algebra.circuits.accepts
           (lawMap i) (queryMap Qry) = true
 
 namespace PositiveCoreReadingHom
@@ -1151,7 +1142,7 @@ def mapPositiveCircuit
     {P Q : AATCorePackage U}
     (f : PositiveCoreReadingHom P Q)
     {A : P.algebra.Obj}
-    {i : P.algebra.lawReading.lawUniverse.Index}
+    {i : P.algebra.equationSystem.Index}
     (c : PositiveCircuitDatum P A i) :
     PositiveCircuitDatum Q (f.objMap A) (f.lawMap i) :=
   ⟨f.queryMap c.1,

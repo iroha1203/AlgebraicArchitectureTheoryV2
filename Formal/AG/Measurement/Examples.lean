@@ -256,7 +256,8 @@ def finiteComputabilityCover :
   inclusion := fun _ => rfl
   admissible := {
     atomSupportCoverage := fun _atom _hreq => ⟨false, trivial⟩
-    lawWitnessCoverage := fun _witness _hreq => Or.inl ⟨false, trivial⟩
+    equationCoordinateCoverage := fun _coordinate _hreq => Or.inl ⟨false, trivial⟩
+    violationWitnessCoverage := fun _witness _hreq => Or.inl ⟨false, trivial⟩
     signatureAxisCoverage := fun _axis _hreq => ⟨false, trivial⟩
     boundaryCoverage := fun _i _j => trivial
     nonGeneration := fun _i {_support} {_atom} hselected =>
@@ -275,7 +276,8 @@ theorem finiteComputabilityCover_uAdequate :
       finiteComputabilityCover where
   topologyCover := finiteComputabilityCover_topologyCover
   requiredSupportCovered := fun _atom _hreq => ⟨false, trivial⟩
-  requiredWitnessesVisible := fun _witness _hreq => Or.inl ⟨false, trivial⟩
+  requiredEquationCoordinatesVisible := fun _coordinate _hreq => Or.inl ⟨false, trivial⟩
+  selectedViolationWitnessesVisible := fun _witness _hreq => Or.inl ⟨false, trivial⟩
   requiredAxesReadable := fun _axis _hreq => ⟨false, trivial⟩
   boundaryWitnessesVisible := fun _i _j => trivial
   restrictionMapsPreserveWitnessIdeals := fun _i _hbase => trivial
@@ -382,8 +384,10 @@ theorem finiteDimensionalNonzeroH1Cover_uAdequate :
       ReadingFunctorialityFinite.finiteLinearCover
   requiredSupportCovered :=
     ReadingFunctorialityFinite.finiteLinearCover.admissible.atomSupportCoverage
-  requiredWitnessesVisible :=
-    ReadingFunctorialityFinite.finiteLinearCover.admissible.lawWitnessCoverage
+  requiredEquationCoordinatesVisible :=
+    ReadingFunctorialityFinite.finiteLinearCover.admissible.equationCoordinateCoverage
+  selectedViolationWitnessesVisible :=
+    ReadingFunctorialityFinite.finiteLinearCover.admissible.violationWitnessCoverage
   requiredAxesReadable :=
     ReadingFunctorialityFinite.finiteLinearCover.admissible.signatureAxisCoverage
   boundaryWitnessesVisible :=

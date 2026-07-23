@@ -40,6 +40,10 @@ def all : List FiniteAtom :=
 theorem mem_all (atom : FiniteAtom) : atom ∈ all := by
   cases atom <;> simp [all]
 
+/-- The selected Atom vocabulary is finite. -/
+instance : Fintype FiniteAtom :=
+  Fintype.ofList all mem_all
+
 end FiniteAtom
 
 /-- R10: source modes for the primary finite extraction doctrine. -/
@@ -203,19 +207,24 @@ def acyclicObject : ArchitectureObject carrier where
   structureMaps := PUnit.unit
   selectedQuantities := PUnit.unit
 
+/-- The concrete three-edge dependency cycle detected by the finite fixture. -/
+def hasDependencyCycle (A : ArchitectureObject carrier) : Prop :=
+  A.configuration.relation FiniteAtom.dependsAB FiniteAtom.dependsBC ∧
+    A.configuration.relation FiniteAtom.dependsBC FiniteAtom.dependsCA ∧
+      A.configuration.relation FiniteAtom.dependsCA FiniteAtom.dependsAB
+
 /-- R10 / example 7.4: selected NoCycle law on the finite model. -/
 def noCycleLaw : Law carrier where
-  holds A := ¬
-    (A.configuration.relation FiniteAtom.dependsAB FiniteAtom.dependsBC ∧
-      A.configuration.relation FiniteAtom.dependsBC FiniteAtom.dependsCA ∧
-        A.configuration.relation FiniteAtom.dependsCA FiniteAtom.dependsAB)
+  holds A := ¬ hasDependencyCycle A
+
+/-- The concrete substitution conflict detected by the finite fixture. -/
+def hasSubstitutionConflict (A : ArchitectureObject carrier) : Prop :=
+  A.configuration.relation FiniteAtom.contractImpl FiniteAtom.contractBase ∧
+    A.configuration.relation FiniteAtom.substitutesImplBase FiniteAtom.contractBase
 
 /-- R10 / example 8.4: selected substitution compatibility law. -/
 def substitutionLaw : Law carrier where
-  holds A := ¬
-    (A.configuration.relation FiniteAtom.contractImpl FiniteAtom.contractBase ∧
-      A.configuration.relation FiniteAtom.substitutesImplBase
-        FiniteAtom.contractBase)
+  holds A := ¬ hasSubstitutionConflict A
 
 /-- R10: singleton invariant family used by the finite core package. -/
 def invariantFamily : InvariantFamily carrier where
@@ -230,8 +239,6 @@ def lawUniverse : LawUniverse carrier where
   witnessFamily := { Witness := PUnit, badWitness := fun _ _ => True }
   SelectedReading := PUnit
   selectedReading := PUnit.unit
-  coverageAssumptions := True
-  exactnessAssumptions := True
 
 /-- R10: every law in the finite universe is required. -/
 theorem lawUniverse_required (index : lawUniverse.Index) :
@@ -260,6 +267,103 @@ def cycleQueryDatum : FiniteCircuitDatum carrier where
     (.relationPresent FiniteAtom.dependsAB FiniteAtom.dependsBC, true),
     (.relationPresent FiniteAtom.dependsBC FiniteAtom.dependsCA, true),
     (.relationPresent FiniteAtom.dependsCA FiniteAtom.dependsAB, true)]
+
+/-- A concrete context used to read the finite equation residual. -/
+def equationProbeContext : Site.ArchCtx object where
+  minimal := {
+    Support := PUnit
+    Axis := PUnit
+    Observable := PUnit
+    supportReads := fun _ atom => atom ≠ FiniteAtom.componentC
+    supportReads_objectFamily := fun hselected => allFamily_mem _ hselected
+    axisReads := fun _ => True
+    observableReads := fun _ => True
+  }
+  Extension := PUnit
+  extension := PUnit.unit
+
+/-- The NoCycle equation residual: lawful objects read `0`, cyclic objects read `1`. -/
+noncomputable def noCycleResidual (A : ArchitectureObject carrier) : Int := by
+  classical
+  exact if hasDependencyCycle A then 1 else 0
+
+/--
+The finite core equation system over any selected readable context preorder.
+
+Its symbolic witness coordinate is `2 : Int`; the object-dependent residual
+is `0` or `1`, so the later generated ideal `(2)` can distinguish the cyclic
+fixture in the quotient without storing a membership or quotient certificate.
+-/
+noncomputable def equationSystem (C : Site.ContextPreorderCategory object) :
+    ArchitecturalEquationSystem C where
+  Index := PUnit
+  role _ := EquationRole.required
+  Observable := fun _ => Int
+  observableCommRing := fun _ => inferInstance
+  restrict := fun _ => RingHom.id Int
+  restrict_id := by intros; rfl
+  restrict_comp := by intros; rfl
+  violationCoordinate := fun _ _ _ => 2
+  violationCoordinate_restrict := by intros; rfl
+  equationResidual := fun _ A _ _ => noCycleResidual A
+  equationResidual_restrict := by intros; rfl
+
+/-- Residual vanishing in the finite equation system is exactly the NoCycle reading. -/
+theorem equationHolds_iff_noCycleLaw
+    (C : Site.ContextPreorderCategory object) (A : ArchitectureObject carrier) :
+    (equationSystem C).EquationHolds PUnit.unit A ↔ noCycleLaw.holds A := by
+  constructor
+  · intro h hcycle
+    have hzero := h (Site.ContextCategoryObject.of C equationProbeContext)
+      FiniteAtom.componentA
+    simp [equationSystem, noCycleResidual, hcycle] at hzero
+  · intro h W atom
+    simp [equationSystem, noCycleResidual, hasDependencyCycle, noCycleLaw] at h ⊢
+    exact h
+
+/-- Equation-indexed finite detector reading used by every finite-core context choice. -/
+noncomputable def equationCircuitReading
+    (C : Site.ContextPreorderCategory object) :
+    EquationCircuitReading (equationSystem C) where
+  code _ := .exact cycleQueryDatum
+
+/--
+The finite NoCycle detector is sound because an accepted matching datum
+supplies all three relations that contradict residual vanishing.
+-/
+theorem equationCircuitReading_sound
+    (C : Site.ContextPreorderCategory object) :
+    (equationCircuitReading C).Sound := by
+  intro index A Q hmatches haccepts
+  cases index
+  have hdatum : cycleQueryDatum = Q :=
+    (CircuitDetectorCode.eval_exact_eq_true_iff cycleQueryDatum Q).mp haccepts
+  subst Q
+  have hab :
+      A.configuration.relation FiniteAtom.dependsAB FiniteAtom.dependsBC :=
+    ((hmatches
+      (.relationPresent FiniteAtom.dependsAB FiniteAtom.dependsBC) true
+      (by simp [cycleQueryDatum])).mpr rfl).2.2
+  have hbc :
+      A.configuration.relation FiniteAtom.dependsBC FiniteAtom.dependsCA :=
+    ((hmatches
+      (.relationPresent FiniteAtom.dependsBC FiniteAtom.dependsCA) true
+      (by simp [cycleQueryDatum])).mpr rfl).2.2
+  have hca :
+      A.configuration.relation FiniteAtom.dependsCA FiniteAtom.dependsAB :=
+    ((hmatches
+      (.relationPresent FiniteAtom.dependsCA FiniteAtom.dependsAB) true
+      (by simp [cycleQueryDatum])).mpr rfl).2.2
+  intro hequation
+  exact (equationHolds_iff_noCycleLaw C A).mp hequation ⟨hab, hbc, hca⟩
+
+/-- Context, equation, and circuit reading used by the generated finite core. -/
+noncomputable def equationReading (C : Site.ContextPreorderCategory object) :
+    EquationReading object where
+  contextPreorder := C
+  equationSystem := equationSystem C
+  circuits := equationCircuitReading C
+  circuitSound := equationCircuitReading_sound C
 
 /-- R10: the finite-template circuit reading for the required NoCycle law. -/
 noncomputable def circuitReading : CircuitReading lawUniverse where
@@ -298,8 +402,9 @@ def operationReading : OperationReading carrier where
   Op A B := ConfigurationHom A.configuration B.configuration
   configurationMap op := op
 
-/-- R10: admissible reading that generates the finite Part I core. -/
-noncomputable def coreReading : CoreReading carrier where
+/-- R10: admissible reading specialized to a selected generated-object context preorder. -/
+noncomputable def coreReadingFor (C : Site.ContextPreorderCategory object) :
+    CoreReading carrier where
   doctrine := extractionDoctrine
   source := ExtractionSource.withoutComponentC
   family_listFinite := by
@@ -308,10 +413,14 @@ noncomputable def coreReading : CoreReading carrier where
     exact FiniteAtom.mem_all atom
   composition := compositionReading
   objectReading := objectReading
-  lawReading := lawReading
+  equationReading := equationReading C
   invariantReading := invariantFamily
   signatureReading := signature
   operationReading := operationReading
+
+/-- R10: the canonical finite core uses the full readable-context preorder. -/
+noncomputable def coreReading : CoreReading carrier :=
+  coreReadingFor (Site.contextMorphismPreorderCategory object)
 
 /-- R10: Atom A0-A8 system for the finite model. -/
 theorem axiomSystem : AtomAxiomSystem carrier where
@@ -576,9 +685,14 @@ theorem finite_lawfulness_iff_omega_zero :
           exact noCycleComplete)
     object
 
+/-- Generate the same finite object with equations on a selected context preorder. -/
+noncomputable def corePackageFor (C : Site.ContextPreorderCategory object) :
+    AATCorePackage carrier :=
+  AATCorePackage.generate axiomSystem (coreReadingFor C)
+
 /-- R10: the finite model generates its Part I core from axioms and reading rules. -/
 noncomputable def corePackage : AATCorePackage carrier :=
-  AATCorePackage.generate axiomSystem coreReading
+  corePackageFor (Site.contextMorphismPreorderCategory object)
 
 /-- R10: the generated core object is the selected finite architecture object. -/
 theorem corePackage_object : corePackage.object = object := by
@@ -917,8 +1031,6 @@ def componentAAbsentLawUniverse : LawUniverse carrier where
   witnessFamily := { Witness := PUnit, badWitness := fun _ _ => True }
   SelectedReading := PUnit
   selectedReading := PUnit.unit
-  coverageAssumptions := True
-  exactnessAssumptions := True
 
 /-- R10: the component-A absence law holds on the concrete empty-family object. -/
 theorem componentAAbsentLaw_holds_unreachableEmptyObject :
@@ -952,6 +1064,155 @@ theorem componentAPresentDatum_matches_iff (A : ArchitectureObject carrier) :
       rfl
     · intro _htrue
       exact (CircuitQuery.atomPresent_holds_iff _ _).mpr hmem
+
+/--
+Residual for the equation-indexed completeness fixture: component A is absent
+exactly when the residual vanishes.
+-/
+noncomputable def componentAAbsentResidual
+    (A : ArchitectureObject carrier) : Int := by
+  classical
+  exact if A.configuration.family.mem FiniteAtom.componentA then 1 else 0
+
+/--
+A singleton required equation whose fulfillment says that component A is
+absent. This supplies a direct equation-system fixture rather than passing
+through the legacy `Law` display.
+-/
+noncomputable def componentAAbsentEquationSystem
+    (C : Site.ContextPreorderCategory object) :
+    ArchitecturalEquationSystem C where
+  Index := PUnit
+  role _ := EquationRole.required
+  Observable := fun _ => Int
+  observableCommRing := fun _ => inferInstance
+  restrict := fun _ => RingHom.id Int
+  restrict_id := by intros; rfl
+  restrict_comp := by intros; rfl
+  violationCoordinate := fun _ _ _ => 1
+  violationCoordinate_restrict := by intros; rfl
+  equationResidual := fun _ A _ _ => componentAAbsentResidual A
+  equationResidual_restrict := by intros; rfl
+
+/--
+The component-A equation holds exactly on objects whose family omits the
+selected component.
+-/
+theorem componentAAbsentEquationHolds_iff
+    (C : Site.ContextPreorderCategory object) (A : ArchitectureObject carrier) :
+    (componentAAbsentEquationSystem C).EquationHolds PUnit.unit A ↔
+      ¬ A.configuration.family.mem FiniteAtom.componentA := by
+  constructor
+  · intro h hmem
+    have hzero := h (Site.ContextCategoryObject.of C equationProbeContext)
+      FiniteAtom.componentA
+    simp [componentAAbsentEquationSystem, componentAAbsentResidual, hmem] at hzero
+  · intro hmem W atom
+    simp [componentAAbsentEquationSystem, componentAAbsentResidual, hmem]
+
+/-- Exact positive-query detector for the component-A equation. -/
+noncomputable def componentAPresentEquationCircuitReading
+    (C : Site.ContextPreorderCategory object) :
+    EquationCircuitReading (componentAAbsentEquationSystem C) where
+  code _ := .exact componentAPresentDatum
+
+/--
+The positive-query detector is sound by the direct residual characterization.
+-/
+theorem componentAPresentEquationCircuitReading_sound
+    (C : Site.ContextPreorderCategory object) :
+    (componentAPresentEquationCircuitReading C).Sound := by
+  intro index A Q hmatches haccepts
+  cases index
+  have hdatum : componentAPresentDatum = Q :=
+    (CircuitDetectorCode.eval_exact_eq_true_iff componentAPresentDatum Q).mp haccepts
+  subst Q
+  intro hequation
+  exact (componentAAbsentEquationHolds_iff C A).mp hequation
+    ((componentAPresentDatum_matches_iff A).mp hmatches)
+
+/--
+Every failure of the required component-A equation has the accepted positive
+query, so the equation-indexed completeness predicate fires nonvacuously.
+-/
+theorem componentAPresentEquationCircuitReading_requiredComplete
+    (C : Site.ContextPreorderCategory object) :
+    (componentAPresentEquationCircuitReading C).RequiredComplete := by
+  intro A index _hrequired hfailure
+  cases index
+  have hmem : A.configuration.family.mem FiniteAtom.componentA := by
+    by_contra habsent
+    exact hfailure ((componentAAbsentEquationHolds_iff C A).mpr habsent)
+  refine ⟨⟨componentAPresentDatum,
+    (componentAPresentDatum_matches_iff A).mpr hmem, ?_⟩⟩
+  exact (CircuitDetectorCode.eval_exact_eq_true_iff
+    componentAPresentDatum componentAPresentDatum).mpr rfl
+
+/-- Reject-only equation detector used as the negative completeness instance. -/
+noncomputable def rejectingEquationCircuitReading
+    (C : Site.ContextPreorderCategory object) :
+    EquationCircuitReading (componentAAbsentEquationSystem C) where
+  code _ := .reject
+
+/--
+The reject-only equation detector is not required-complete on the generated
+component-A object.
+-/
+theorem rejectingEquationCircuitReading_not_requiredComplete
+    (C : Site.ContextPreorderCategory object) :
+    ¬ (rejectingEquationCircuitReading C).RequiredComplete := by
+  intro hcomplete
+  have hfailure :
+      ¬ (componentAAbsentEquationSystem C).EquationHolds PUnit.unit
+        corePackage.object := by
+    intro hequation
+    exact (componentAAbsentEquationHolds_iff C corePackage.object).mp hequation
+      corePackage_componentA_mem
+  obtain ⟨circuit⟩ := hcomplete corePackage.object PUnit.unit rfl hfailure
+  have hreject :
+      (rejectingEquationCircuitReading C).accepts PUnit.unit circuit.1 = false := by
+    simp [EquationCircuitReading.accepts, rejectingEquationCircuitReading,
+      CircuitDetectorCode.eval]
+  exact Bool.noConfusion (hreject.symm.trans circuit.2.2)
+
+/-- The negative signed component-A query matches the empty-family object. -/
+theorem componentAAbsentDatum_matches_unreachableEmptyObject :
+    componentAAbsentDatum.Matches unreachableEmptyObject := by
+  intro query expected hquery
+  simp only [componentAAbsentDatum, List.mem_singleton] at hquery
+  cases hquery
+  simp [CircuitQuery.Holds, unreachableEmptyObject, objectOfConfiguration,
+    unreachableEmptyConfiguration, emptyFamily]
+
+/--
+An exact negative-query detector for the same equation, used to refute
+vacuous universal soundness.
+-/
+noncomputable def unsoundEquationCircuitReading
+    (C : Site.ContextPreorderCategory object) :
+    EquationCircuitReading (componentAAbsentEquationSystem C) where
+  code _ := .exact componentAAbsentDatum
+
+/--
+The negative-query detector is not sound: it accepts the empty-family object,
+where the component-A equation actually holds.
+-/
+theorem unsoundEquationCircuitReading_not_sound
+    (C : Site.ContextPreorderCategory object) :
+    ¬ (unsoundEquationCircuitReading C).Sound := by
+  intro hSound
+  have haccepts :
+      (unsoundEquationCircuitReading C).accepts PUnit.unit
+        componentAAbsentDatum = true := by
+    exact (CircuitDetectorCode.eval_exact_eq_true_iff
+      componentAAbsentDatum componentAAbsentDatum).mpr rfl
+  have hholds :
+      (componentAAbsentEquationSystem C).EquationHolds PUnit.unit
+        unreachableEmptyObject :=
+    (componentAAbsentEquationHolds_iff C unreachableEmptyObject).mpr
+      componentAAbsentLaw_holds_unreachableEmptyObject
+  exact hSound PUnit.unit unreachableEmptyObject componentAAbsentDatum
+    componentAAbsentDatum_matches_unreachableEmptyObject haccepts hholds
 
 /-- R10: an exact positive-query detector for the component-A absence law. -/
 noncomputable def completeCircuitReading :
@@ -994,25 +1255,30 @@ theorem completeCircuitReading_nonvacuous :
 
 /-- R10: the main core reading selects the exact cycle detector template. -/
 theorem coreReading_circuit_code (i : lawUniverse.Index) :
-    coreReading.lawReading.circuits.code i = .exact cycleQueryDatum := by
+    coreReading.equationReading.circuits.code i =
+      .exact cycleQueryDatum := by
   cases i
   rfl
 
 /-- R10: the finite-template detector accepts the concrete cycle datum. -/
 theorem cycleQueryDatum_accepted :
-    coreReading.lawReading.circuits.accepts PUnit.unit cycleQueryDatum = true :=
-  (CircuitReading.accepts_eq_true_iff_of_code_exact
-    coreReading.lawReading.circuits PUnit.unit cycleQueryDatum cycleQueryDatum
+    coreReading.equationReading.circuits.accepts
+      PUnit.unit cycleQueryDatum = true :=
+  (EquationCircuitReading.accepts_eq_true_iff_of_code_exact
+    coreReading.equationReading.circuits
+      PUnit.unit cycleQueryDatum cycleQueryDatum
     (coreReading_circuit_code PUnit.unit)).mpr rfl
 
 /-- R10: a distinct empty datum is rejected by the finite-template detector. -/
 theorem emptyQueryDatum_rejected :
-    coreReading.lawReading.circuits.accepts PUnit.unit ⟨[]⟩ = false := by
+    coreReading.equationReading.circuits.accepts
+      PUnit.unit ⟨[]⟩ = false := by
   apply Bool.eq_false_of_not_eq_true
   intro haccepts
   have heq : cycleQueryDatum = ⟨[]⟩ :=
-    (CircuitReading.accepts_eq_true_iff_of_code_exact
-      coreReading.lawReading.circuits PUnit.unit cycleQueryDatum ⟨[]⟩
+    (EquationCircuitReading.accepts_eq_true_iff_of_code_exact
+      coreReading.equationReading.circuits
+        PUnit.unit cycleQueryDatum ⟨[]⟩
       (coreReading_circuit_code PUnit.unit)).mp haccepts
   have hqueries := congrArg FiniteCircuitDatum.queries heq
   simp [cycleQueryDatum] at hqueries
@@ -1022,9 +1288,9 @@ def generatedCycleCircuit :
     corePackage.algebra.Circuit corePackage.baseObject PUnit.unit :=
   ⟨cycleQueryDatum, cycleQueryDatum_matches_core, cycleQueryDatum_accepted⟩
 
-/-- R10: law failure is derived from detector soundness, not stored in the datum. -/
+/-- R10: equation failure is derived from detector soundness, not stored in the datum. -/
 theorem generatedCycleCircuit_sound :
-    ¬ (corePackage.algebra.lawReading.lawUniverse.law PUnit.unit).holds
+    ¬ corePackage.algebra.equationSystem.EquationHolds PUnit.unit
       (corePackage.algebra.object corePackage.baseObject) :=
   AATCorePackage.generate_circuit_sound axiomSystem coreReading
     corePackage.baseObject PUnit.unit generatedCycleCircuit
@@ -1098,6 +1364,10 @@ def siteContextPreorder : Site.ContextPreorderCategory object where
     cases h
     exact ⟨fun h => h, fun h => h, fun h => h,
       fun h => W.supportReads_objectFamily h⟩
+
+/-- The finite core specialized to the singleton Part II context preorder. -/
+noncomputable def siteCorePackage : AATCorePackage carrier :=
+  corePackageFor siteContextPreorder
 
 /-- R11 / II.AC16: singleton selected finite context index. -/
 abbrev SiteContextIndex := PUnit
@@ -1440,18 +1710,20 @@ def siteOverlap : Site.ContextOverlapPullback siteContextPreorder where
 
 /-- R11 / II.AC16: coverage requirements that make every selected finite datum visible. -/
 def siteCoverageRequirements :
-    Site.CoverageRequirements object lawUniverse signature where
+    Site.CoverageRequirements object siteCorePackage.equationSystem signature where
   requiredSupport := fun _ => True
-  requiredWitness := fun _ => True
+  requiredEquationCoordinate := fun _ => True
+  selectedViolationWitness := fun _ => True
   requiredAxis := fun _ => True
   supportVisibleOn := fun _ _ => True
-  witnessVisibleOn := fun _ _ => True
+  equationCoordinateVisibleOn := fun _ _ => True
+  violationWitnessVisibleOn := fun _ _ => True
   axisReadableOn := fun _ _ => True
   boundaryVisibleOn := fun _ _ => True
 
 /-- SD2: selected geometry data typed by the generated finite core. -/
-noncomputable def siteSelectedGeometryReading : Site.SelectedGeometryReading corePackage where
-  contextPreorder := siteContextPreorder
+noncomputable def siteSelectedGeometryReading :
+    Site.SelectedGeometryReading siteCorePackage where
   requirements := siteCoverageRequirements
   overlap := siteOverlap
 
@@ -1459,10 +1731,19 @@ noncomputable def siteSelectedGeometryReading : Site.SelectedGeometryReading cor
 noncomputable def site : Site.AATSite corePackage.object :=
   siteSelectedGeometryReading.toAATSite
 
-/-- SD2: the finite site retains the generated core law universe. -/
-theorem site_lawUniverse_eq_core :
-    site.lawUniverse = corePackage.algebra.lawReading.lawUniverse :=
-  Site.SelectedGeometryReading.toAATSite_lawUniverse siteSelectedGeometryReading
+/-- Every equation in the generated singleton site is required. -/
+theorem site_equation_required (index : site.equationSystem.Index) :
+    site.equationSystem.Required index := by
+  cases index
+  rfl
+
+/-- The generated site law display is exactly the finite NoCycle equation. -/
+@[simp] theorem site_equationHolds_iff_noCycleLaw
+    (A : ArchitectureObject carrier) :
+    site.equationSystem.EquationHolds PUnit.unit A ↔ noCycleLaw.holds A := by
+  change (equationSystem siteContextPreorder).EquationHolds PUnit.unit A ↔
+    noCycleLaw.holds A
+  exact equationHolds_iff_noCycleLaw siteContextPreorder A
 
 /-- SD2: the finite site retains the generated core signature reading. -/
 theorem site_signature_eq_core :
@@ -1488,7 +1769,9 @@ def siteSingletonCover :
   inclusion := fun _ => rfl
   admissible := {
     atomSupportCoverage := fun _atom _hreq => ⟨PUnit.unit, trivial⟩
-    lawWitnessCoverage := fun _witness _hreq => Or.inl ⟨PUnit.unit, trivial⟩
+    equationCoordinateCoverage := fun _coordinate _hreq =>
+      Or.inl ⟨PUnit.unit, trivial⟩
+    violationWitnessCoverage := fun _witness _hreq => Or.inl ⟨PUnit.unit, trivial⟩
     signatureAxisCoverage := fun _axis _hreq => ⟨PUnit.unit, trivial⟩
     boundaryCoverage := fun _i _j => trivial
     nonGeneration := fun _i {_support} {_atom} hselected =>
@@ -1512,7 +1795,9 @@ theorem siteSingletonCover_uAdequate :
     Site.UAdequateCover siteAdequacyRequirements siteSingletonCover where
   topologyCover := siteSingletonCover_topologyCover
   requiredSupportCovered := fun _atom _hreq => ⟨PUnit.unit, trivial⟩
-  requiredWitnessesVisible := fun _witness _hreq => Or.inl ⟨PUnit.unit, trivial⟩
+  requiredEquationCoordinatesVisible := fun _coordinate _hreq =>
+    Or.inl ⟨PUnit.unit, trivial⟩
+  selectedViolationWitnessesVisible := fun _witness _hreq => Or.inl ⟨PUnit.unit, trivial⟩
   requiredAxesReadable := fun _axis _hreq => ⟨PUnit.unit, trivial⟩
   boundaryWitnessesVisible := fun _i _j => trivial
   restrictionMapsPreserveWitnessIdeals := fun _i _hbase => trivial
@@ -1610,7 +1895,9 @@ noncomputable instance siteAdmissiblePrecoverage_stableUnderBaseChange :
       inclusion := fun _ => (siteContextPreorder.refl Y.ctx)
       admissible := {
         atomSupportCoverage := fun _atom _hreq => ⟨PUnit.unit, trivial⟩
-        lawWitnessCoverage := fun _witness _hreq => Or.inl ⟨PUnit.unit, trivial⟩
+        equationCoordinateCoverage := fun _coordinate _hreq =>
+          Or.inl ⟨PUnit.unit, trivial⟩
+        violationWitnessCoverage := fun _witness _hreq => Or.inl ⟨PUnit.unit, trivial⟩
         signatureAxisCoverage := fun _axis _hreq => ⟨PUnit.unit, trivial⟩
         boundaryCoverage := fun _i _j => trivial
         nonGeneration := fun _i {_support} {_atom} hread =>
@@ -1634,7 +1921,7 @@ theorem siteTopology_eq_coverage_toGrothendieck :
 /-- R11 / II.AC16: the finite model has finitely many required witnesses. -/
 theorem site_requiredWitnessSubtype_finite :
     Finite (Site.RequiredWitnessSubtype siteCoverageRequirements) := by
-  change Finite { witness : PUnit // True }
+  change Finite { witness : PUnit × FiniteAtom // True }
   infer_instance
 
 /-- R11 / II.AC16: witness-closure cover package for the finite model. -/
@@ -1648,6 +1935,8 @@ def siteWitnessClosureCover :
   requiredWitnessSupport_inclusion := fun _ => rfl
   requiredWitnessSupport_visible := fun _ => trivial
   requiredSupportCovered := fun _atom _hreq => ⟨Sum.inl PUnit.unit, trivial⟩
+  requiredEquationCoordinatesVisible := fun _coordinate _hreq =>
+    Or.inl ⟨Sum.inl PUnit.unit, trivial⟩
   readableRequiredAxes := fun _axis _hreq => ⟨Sum.inl PUnit.unit, trivial⟩
   visibleBoundaryWitnesses := fun _i _j => trivial
 
@@ -1668,6 +1957,8 @@ def siteSeedWitnessClosureCover :
   requiredWitnessSupport_inclusion := fun _ => rfl
   requiredWitnessSupport_visible := fun _ => trivial
   seedSupportCovered := fun _atom _hreq => ⟨PUnit.unit, trivial⟩
+  seedEquationCoordinatesVisible := fun _coordinate _hreq =>
+    ⟨PUnit.unit, trivial⟩
   seedAxesReadable := fun _axis _hreq => ⟨PUnit.unit, trivial⟩
   boundary_seed_seed := fun _i _j => trivial
   boundary_seed_witness := fun _i _witness => trivial
@@ -2015,6 +2306,10 @@ theorem twoPatchContextMorphism_isRestriction (i j : TwoPatchContextIndex) :
 noncomputable abbrev twoPatchContextPreorder : Site.ContextPreorderCategory object :=
   Site.contextMorphismPreorderCategory object
 
+/-- The finite core specialized to the nondegenerate two-patch context preorder. -/
+noncomputable def twoPatchCorePackage : AATCorePackage carrier :=
+  corePackageFor twoPatchContextPreorder
+
 /-- peer-review hardening II-5: selected order maps into the canonical restriction preorder. -/
 theorem twoPatchContextLe_sound {i j : TwoPatchContextIndex}
     (_h : twoPatchContextIndexLe i j) :
@@ -2074,13 +2369,15 @@ def twoPatchSupportVisibleOn (W : Site.ArchCtx object) (atom : carrier.Atom) : P
 
 /-- peer-review hardening II-5: selected requirements for the two-patch cover. -/
 def twoPatchCoverageRequirements :
-    Site.CoverageRequirements object lawUniverse signature where
+    Site.CoverageRequirements object twoPatchCorePackage.equationSystem signature where
   requiredSupport := fun atom =>
     atom = FiniteAtom.componentA ∨ atom = FiniteAtom.componentB
-  requiredWitness := fun _ => True
+  requiredEquationCoordinate := fun _ => True
+  selectedViolationWitness := fun _ => True
   requiredAxis := fun _ => True
   supportVisibleOn := twoPatchSupportVisibleOn
-  witnessVisibleOn := fun _ _ => True
+  equationCoordinateVisibleOn := fun _ _ => True
+  violationWitnessVisibleOn := fun _ _ => True
   axisReadableOn := fun W _ =>
     W = twoPatchContext TwoPatchContextIndex.left ∨
       W = twoPatchContext TwoPatchContextIndex.right
@@ -2088,8 +2385,7 @@ def twoPatchCoverageRequirements :
 
 /-- SD2: the nondegenerate two-patch geometry is typed by the generated core. -/
 noncomputable def twoPatchSelectedGeometryReading :
-    Site.SelectedGeometryReading corePackage where
-  contextPreorder := twoPatchContextPreorder
+    Site.SelectedGeometryReading twoPatchCorePackage where
   requirements := twoPatchCoverageRequirements
   overlap := twoPatchOverlap
 
@@ -2130,7 +2426,10 @@ noncomputable def twoPatchCover :
       · exact ⟨TwoPatchCoverIndex.right, by
           simp [twoPatchCoverPatch, twoPatchCoverContextIndex,
             twoPatchCoverageRequirements, twoPatchSupportVisibleOn]⟩
-    lawWitnessCoverage := by
+    equationCoordinateCoverage := by
+      intro _coordinate _hreq
+      exact Or.inl ⟨TwoPatchCoverIndex.left, trivial⟩
+    violationWitnessCoverage := by
       intro _witness _hreq
       exact Or.inl ⟨TwoPatchCoverIndex.left, trivial⟩
     signatureAxisCoverage := by
@@ -2162,7 +2461,9 @@ theorem twoPatchCover_uAdequate :
     Site.UAdequateCover twoPatchAdequacyRequirements twoPatchCover where
   topologyCover := twoPatchCover_topologyCover
   requiredSupportCovered := twoPatchCover.admissible.atomSupportCoverage
-  requiredWitnessesVisible := twoPatchCover.admissible.lawWitnessCoverage
+  requiredEquationCoordinatesVisible :=
+    twoPatchCover.admissible.equationCoordinateCoverage
+  selectedViolationWitnessesVisible := twoPatchCover.admissible.violationWitnessCoverage
   requiredAxesReadable := twoPatchCover.admissible.signatureAxisCoverage
   boundaryWitnessesVisible := twoPatchCover.admissible.boundaryCoverage
   restrictionMapsPreserveWitnessIdeals := fun _i _hbase => trivial

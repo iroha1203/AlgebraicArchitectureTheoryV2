@@ -1,3 +1,4 @@
+import Formal.AG.Equation.Basic
 import Formal.AG.Atom.Law
 
 namespace AAT.AG
@@ -127,6 +128,117 @@ theorem eval_any_eq_true_iff {U : AtomCarrier.{u}}
   simp [CircuitDetectorCode.eval]
 
 end CircuitDetectorCode
+
+/--
+Equation-indexed finite detector code.
+
+Implementation notes: this structure carries finite syntax only. Semantic
+soundness is the separate predicate `EquationCircuitReading.Sound`, so a
+generic core never stores equation failure as a field of its detector data.
+-/
+structure EquationCircuitReading
+    {U : AtomCarrier.{u}} {A₀ : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A₀}
+  (E : ArchitecturalEquationSystem C) where
+  /-- The finite detector syntax selected for each equation. -/
+  code : E.Index -> CircuitDetectorCode U
+
+namespace EquationCircuitReading
+
+variable {U : AtomCarrier.{u}} {A₀ : ArchitectureObject U}
+variable {C : Site.ContextPreorderCategory A₀}
+variable {E : ArchitecturalEquationSystem C}
+
+/-- Boolean acceptance of a finite datum by the selected equation detector. -/
+noncomputable def accepts (R : EquationCircuitReading E)
+    (index : E.Index) (datum : FiniteCircuitDatum U) : Bool :=
+  (R.code index).eval datum
+
+/-- Accepted matching circuit data for an object and equation index. -/
+def Circuit (R : EquationCircuitReading E) (object : ArchitectureObject U)
+    (index : E.Index) : Type u :=
+  {datum : FiniteCircuitDatum U //
+    datum.Matches object ∧ R.accepts index datum = true}
+
+/--
+Direction hypothesis for an equation detector: every accepted matching datum
+refutes the indexed residual-vanishing equation. Concrete fixtures must prove
+this predicate from their residual and query semantics.
+-/
+def Sound (R : EquationCircuitReading E) : Prop :=
+  ∀ (index : E.Index) (object : ArchitectureObject U)
+    (datum : FiniteCircuitDatum U),
+      datum.Matches object -> (R.code index).eval datum = true ->
+        ¬ E.EquationHolds index object
+
+/-- Completeness for required equation failure, kept separate from the reading data. -/
+def RequiredComplete (R : EquationCircuitReading E) : Prop :=
+  ∀ (object : ArchitectureObject U) (index : E.Index), E.Required index ->
+    ¬ E.EquationHolds index object -> Nonempty (R.Circuit object index)
+
+/-- Equation circuit readings agree when their detector families agree. -/
+@[ext]
+theorem ext {R S : EquationCircuitReading E} (hcode : R.code = S.code) : R = S := by
+  cases R
+  cases S
+  cases hcode
+  rfl
+
+/-- Acceptance is evaluation of the selected finite detector code. -/
+theorem accepts_eq_eval (R : EquationCircuitReading E) (index : E.Index)
+    (datum : FiniteCircuitDatum U) :
+    R.accepts index datum = (R.code index).eval datum :=
+  rfl
+
+/-- A rejecting equation detector accepts no finite datum. -/
+theorem accepts_eq_false_of_code_reject (R : EquationCircuitReading E)
+    (index : E.Index) (datum : FiniteCircuitDatum U)
+    (hcode : R.code index = .reject) :
+    R.accepts index datum = false := by
+  rw [accepts_eq_eval, hcode]
+  exact CircuitDetectorCode.eval_reject datum
+
+/-- An exact equation detector accepts precisely its selected template. -/
+theorem accepts_eq_true_iff_of_code_exact (R : EquationCircuitReading E)
+    (index : E.Index) (pattern datum : FiniteCircuitDatum U)
+    (hcode : R.code index = .exact pattern) :
+    R.accepts index datum = true ↔ pattern = datum := by
+  rw [accepts_eq_eval, hcode]
+  exact CircuitDetectorCode.eval_exact_eq_true_iff pattern datum
+
+/-- A disjunctive equation detector accepts when either branch accepts. -/
+theorem accepts_eq_true_iff_of_code_any (R : EquationCircuitReading E)
+    (index : E.Index) (left right : CircuitDetectorCode U)
+    (datum : FiniteCircuitDatum U)
+    (hcode : R.code index = .any left right) :
+    R.accepts index datum = true ↔
+      left.eval datum = true ∨ right.eval datum = true := by
+  rw [accepts_eq_eval, hcode]
+  exact CircuitDetectorCode.eval_any_eq_true_iff left right datum
+
+/-- An accepted matching circuit refutes its indexed equation. -/
+theorem circuit_sound (R : EquationCircuitReading E)
+    (hSound : R.Sound)
+    (object : ArchitectureObject U) (index : E.Index)
+    (circuit : R.Circuit object index) :
+    ¬ E.EquationHolds index object :=
+  hSound index object circuit.1 circuit.2.1 circuit.2.2
+
+end EquationCircuitReading
+
+/--
+Core equation reading on the context category selected for one generated
+architecture object.
+-/
+structure EquationReading {U : AtomCarrier.{u}} (object : ArchitectureObject U) where
+  /-- The readable context preorder selected for the generated object. -/
+  contextPreorder : Site.ContextPreorderCategory object
+  /-- The architectural equation system on that context preorder. -/
+  equationSystem : ArchitecturalEquationSystem contextPreorder
+  /-- Finite obstruction circuits indexed by the same equation system. -/
+  circuits : EquationCircuitReading equationSystem
+  /-- Admissibility proof that accepted matching circuits refute their equations. -/
+  circuitSound : circuits.Sound
 
 /--
 SD1: law-indexed finite detector code together with semantic soundness.

@@ -65,7 +65,7 @@ theorem lawful_of_generatedLawWitnessIdeals_le_ker
     (G : SemanticLawEquationWitnessIdealCore S) (W : S.category)
     (s : LawfulSectionData.{u, w} (G.Observable W) (G.obstructionIdeal W))
     (hkill :
-      ∀ lawIndex, S.lawUniverse.Required lawIndex ->
+      ∀ lawIndex, S.equationSystem.Required lawIndex ->
         G.lawWitnessIdeal W lawIndex ≤ RingHom.ker s.pullback) :
     s.Lawful :=
   lawful_of_selectedWitnessIdeals_le_ker

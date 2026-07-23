@@ -400,17 +400,18 @@ def coordinateFamily
   raw.coordFamily D.context
 
 /--
-The selected law universe read from the ambient AAT site.  The decoration receiver fixes the
-same `raw` and site for dot notation; the returned universe is intentionally site-level data.
+The architectural equation system read from the ambient AAT site. The
+decoration receiver fixes the same `raw` and site for dot notation.
 -/
-def lawUniverse
+def equationSystem
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
     (raw : RawAmbientRestrictionSystem S k)
     [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
     {X : AlgebraicGeometry.Scheme}
-    (_D : AATReadingDecoration raw X) : LawUniverse U :=
-  S.lawUniverse
+    (_D : AATReadingDecoration raw X) :
+    ArchitecturalEquationSystem S.contextPreorder :=
+  S.equationSystem
 
 /--
 The architecture signature read from the ambient AAT site.  The decoration receiver fixes the
@@ -502,15 +503,15 @@ def Preserves
     D.coordinateFamily raw = raw.coordFamily D.context :=
   rfl
 
-/-- The law-universe projection is the selected site's law universe. -/
-@[simp] theorem lawUniverse_eq
+/-- The equation-system projection is the selected site's equation system. -/
+@[simp] theorem equationSystem_eq
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
     (raw : RawAmbientRestrictionSystem S k)
     [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
     {X : AlgebraicGeometry.Scheme}
     (D : AATReadingDecoration raw X) :
-    D.lawUniverse raw = S.lawUniverse :=
+    D.equationSystem raw = S.equationSystem :=
   rfl
 
 /-- The signature projection is the selected site's architecture signature. -/

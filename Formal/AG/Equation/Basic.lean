@@ -102,6 +102,23 @@ def Optional (E : ArchitecturalEquationSystem C) (index : E.Index) : Prop :=
 def Derived (E : ArchitecturalEquationSystem C) (index : E.Index) : Prop :=
   E.role index = EquationRole.derived
 
+/-- I.定義7.2: an equation index whose role is required. -/
+abbrev RequiredIndex (E : ArchitecturalEquationSystem C) :=
+  {index : E.Index // E.Required index}
+
+/-- II.定義6.1: an Atom-indexed coordinate selected from the equation family. -/
+abbrev Coordinate (E : ArchitecturalEquationSystem C) :=
+  E.Index × U.Atom
+
+/--
+II.定義6.1: an Atom-indexed coordinate whose equation role is required.
+
+The subtype makes required-role selection part of the coordinate type rather
+than a detached proposition supplied to the coverage layer.
+-/
+abbrev RequiredCoordinate (E : ArchitecturalEquationSystem C) :=
+  E.RequiredIndex × U.Atom
+
 /--
 I.定義7.3: an equation holds on an architecture object when every local,
 Atom-indexed residual coordinate vanishes.

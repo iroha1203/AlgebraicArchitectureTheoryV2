@@ -14,9 +14,9 @@ The selected witness ideal is not built into the context category. It is an
 explicit predicate on the readable restriction maps of a chosen cover.
 -/
 structure UAdequacyRequirements {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {LU : LawUniverse U} {Sig : ArchitectureSignature U}
-    (C : ContextPreorderCategory A)
-    (R : CoverageRequirements A LU Sig) where
+    (C : ContextPreorderCategory A) {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U}
+    (R : CoverageRequirements A E Sig) where
   selectedWitnessIdeal : ArchCtx A -> Prop
   witnessIdealPreservedBy :
     {source target : ArchCtx A} -> C.Hom source target ->
@@ -30,8 +30,8 @@ boundary, and witness-ideal preservation conditions needed by later theorem
 packages.
 -/
 structure UAdequateCover {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {C : ContextPreorderCategory A} {LU : LawUniverse U}
-    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+    {C : ContextPreorderCategory A} {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A E Sig}
     (Q : UAdequacyRequirements C R) {P : ContextOverlapPullback C}
     {base : ContextCategoryObject C} (F : AATCoverageFamily R P base) : Prop where
   topologyCover :
@@ -39,11 +39,19 @@ structure UAdequateCover {U : AtomCarrier.{u}} {A : ArchitectureObject U}
   requiredSupportCovered :
     ∀ atom : U.Atom, R.requiredSupport atom ->
       ∃ i : F.Index, R.supportVisibleOn (F.patch i) atom
-  requiredWitnessesVisible :
-    ∀ witness : LU.witnessFamily.Witness, R.requiredWitness witness ->
-      (∃ i : F.Index, R.witnessVisibleOn (F.patch i) witness) ∨
+  requiredEquationCoordinatesVisible :
+    ∀ coordinate : E.RequiredCoordinate,
+      R.requiredEquationCoordinate coordinate ->
+        (∃ i : F.Index,
+          R.equationCoordinateVisibleOn (F.patch i) coordinate) ∨
+          ∃ i j : F.Index,
+            R.equationCoordinateVisibleOn
+              (P.overlap base.ctx (F.patch i) (F.patch j)) coordinate
+  selectedViolationWitnessesVisible :
+    ∀ witness : E.Coordinate, R.selectedViolationWitness witness ->
+      (∃ i : F.Index, R.violationWitnessVisibleOn (F.patch i) witness) ∨
         ∃ i j : F.Index,
-          R.witnessVisibleOn (P.overlap base.ctx (F.patch i) (F.patch j)) witness
+          R.violationWitnessVisibleOn (P.overlap base.ctx (F.patch i) (F.patch j)) witness
   requiredAxesReadable :
     ∀ axis : Sig.Axis, R.requiredAxis axis ->
       ∃ i : F.Index, R.axisReadableOn (F.patch i) axis
@@ -58,8 +66,8 @@ namespace UAdequateCover
 
 /-- II.定義7.2: an adequate cover is a cover in the generated topology. -/
 theorem isCover {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {C : ContextPreorderCategory A} {LU : LawUniverse U}
-    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+    {C : ContextPreorderCategory A} {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A E Sig}
     {Q : UAdequacyRequirements C R} {P : ContextOverlapPullback C}
     {base : ContextCategoryObject C} {F : AATCoverageFamily R P base}
     (h : UAdequateCover Q F) :
@@ -68,8 +76,8 @@ theorem isCover {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 
 /-- II.定義7.2: adequate covers expose required support. -/
 theorem support {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {C : ContextPreorderCategory A} {LU : LawUniverse U}
-    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+    {C : ContextPreorderCategory A} {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A E Sig}
     {Q : UAdequacyRequirements C R} {P : ContextOverlapPullback C}
     {base : ContextCategoryObject C} {F : AATCoverageFamily R P base}
     (h : UAdequateCover Q F) {atom : U.Atom}
@@ -77,23 +85,37 @@ theorem support {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     ∃ i : F.Index, R.supportVisibleOn (F.patch i) atom :=
   h.requiredSupportCovered atom hreq
 
-/-- II.定義7.2: adequate covers expose required witnesses on patches or overlaps. -/
-theorem witness {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {C : ContextPreorderCategory A} {LU : LawUniverse U}
-    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+/-- II.定義7.2: adequate covers expose required equation coordinates. -/
+theorem equationCoordinate {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {C : ContextPreorderCategory A} {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A E Sig}
     {Q : UAdequacyRequirements C R} {P : ContextOverlapPullback C}
     {base : ContextCategoryObject C} {F : AATCoverageFamily R P base}
-    (h : UAdequateCover Q F) {witness : LU.witnessFamily.Witness}
-    (hreq : R.requiredWitness witness) :
-    (∃ i : F.Index, R.witnessVisibleOn (F.patch i) witness) ∨
+    (h : UAdequateCover Q F) {coordinate : E.RequiredCoordinate}
+    (hreq : R.requiredEquationCoordinate coordinate) :
+    (∃ i : F.Index, R.equationCoordinateVisibleOn (F.patch i) coordinate) ∨
       ∃ i j : F.Index,
-        R.witnessVisibleOn (P.overlap base.ctx (F.patch i) (F.patch j)) witness :=
-  h.requiredWitnessesVisible witness hreq
+        R.equationCoordinateVisibleOn
+          (P.overlap base.ctx (F.patch i) (F.patch j)) coordinate :=
+  h.requiredEquationCoordinatesVisible coordinate hreq
+
+/-- II.定義7.2: adequate covers expose required witnesses on patches or overlaps. -/
+theorem witness {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {C : ContextPreorderCategory A} {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A E Sig}
+    {Q : UAdequacyRequirements C R} {P : ContextOverlapPullback C}
+    {base : ContextCategoryObject C} {F : AATCoverageFamily R P base}
+    (h : UAdequateCover Q F) {witness : E.Coordinate}
+    (hreq : R.selectedViolationWitness witness) :
+    (∃ i : F.Index, R.violationWitnessVisibleOn (F.patch i) witness) ∨
+      ∃ i j : F.Index,
+        R.violationWitnessVisibleOn (P.overlap base.ctx (F.patch i) (F.patch j)) witness :=
+  h.selectedViolationWitnessesVisible witness hreq
 
 /-- II.定義7.2: adequate covers make required axes readable. -/
 theorem axis {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {C : ContextPreorderCategory A} {LU : LawUniverse U}
-    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+    {C : ContextPreorderCategory A} {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A E Sig}
     {Q : UAdequacyRequirements C R} {P : ContextOverlapPullback C}
     {base : ContextCategoryObject C} {F : AATCoverageFamily R P base}
     (h : UAdequateCover Q F) {axis : Sig.Axis}
@@ -103,8 +125,8 @@ theorem axis {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 
 /-- II.定義7.2: adequate covers keep selected boundary witnesses visible. -/
 theorem boundary {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {C : ContextPreorderCategory A} {LU : LawUniverse U}
-    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+    {C : ContextPreorderCategory A} {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A E Sig}
     {Q : UAdequacyRequirements C R} {P : ContextOverlapPullback C}
     {base : ContextCategoryObject C} {F : AATCoverageFamily R P base}
     (h : UAdequateCover Q F) (i j : F.Index) :
@@ -113,8 +135,8 @@ theorem boundary {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 
 /-- II.定義7.2: adequate covers preserve selected witness ideals on restrictions. -/
 theorem witnessIdeal {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {C : ContextPreorderCategory A} {LU : LawUniverse U}
-    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+    {C : ContextPreorderCategory A} {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A E Sig}
     {Q : UAdequacyRequirements C R} {P : ContextOverlapPullback C}
     {base : ContextCategoryObject C} {F : AATCoverageFamily R P base}
     (h : UAdequateCover Q F) (i : F.Index) :
@@ -125,25 +147,27 @@ end UAdequateCover
 
 /-- II.補題7.2A: required witnesses fixed by the selected coverage requirements. -/
 abbrev RequiredWitnessSubtype {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {LU : LawUniverse U} {Sig : ArchitectureSignature U}
-    (R : CoverageRequirements A LU Sig) :=
-  {witness : LU.witnessFamily.Witness // R.requiredWitness witness}
+    {C : ContextPreorderCategory A} {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U}
+    (R : CoverageRequirements A E Sig) :=
+  {witness : E.Coordinate // R.selectedViolationWitness witness}
 
 /--
 II.補題7.2A: closed index generated by seed patches, required witness supports,
 and seed-boundary overlaps.
 -/
 abbrev WitnessClosureIndex {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {LU : LawUniverse U} {Sig : ArchitectureSignature U}
-    (R : CoverageRequirements A LU Sig) (SeedIndex : Type u) :=
+    {C : ContextPreorderCategory A} {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U}
+    (R : CoverageRequirements A E Sig) (SeedIndex : Type u) :=
   SeedIndex ⊕ (RequiredWitnessSubtype R ⊕ (SeedIndex × SeedIndex))
 
 namespace WitnessClosureIndex
 
 /-- II.補題7.2A: context selected by a closed-cover index. -/
 def patch {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {C : ContextPreorderCategory A} {LU : LawUniverse U}
-    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+    {C : ContextPreorderCategory A} {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A E Sig}
     {SeedIndex : Type u} (P : ContextOverlapPullback C)
     (base : ContextCategoryObject C) (seedPatch : SeedIndex -> ArchCtx A)
     (requiredWitnessSupport : RequiredWitnessSubtype R -> ArchCtx A) :
@@ -163,8 +187,8 @@ The visibility and preservation fields are the explicit hypotheses that remain
 after the closure construction has supplied those contexts.
 -/
 structure WitnessClosureCover {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {C : ContextPreorderCategory A} {LU : LawUniverse U}
-    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+    {C : ContextPreorderCategory A} {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A E Sig}
     (Q : UAdequacyRequirements C R) (P : ContextOverlapPullback C)
     (base : ContextCategoryObject C) where
   SeedIndex : Type u
@@ -177,12 +201,25 @@ structure WitnessClosureCover {U : AtomCarrier.{u}} {A : ArchitectureObject U}
   requiredWitnessSupport_inclusion :
     ∀ witness, C.Hom (RequiredWitnessSupport witness) base.ctx
   requiredWitnessSupport_visible :
-    ∀ witness, R.witnessVisibleOn (RequiredWitnessSupport witness) witness.1
+    ∀ witness, R.violationWitnessVisibleOn (RequiredWitnessSupport witness) witness.1
   requiredSupportCovered :
     ∀ atom : U.Atom, R.requiredSupport atom ->
       ∃ i : WitnessClosureIndex R SeedIndex,
         R.supportVisibleOn
           (WitnessClosureIndex.patch P base seedPatch RequiredWitnessSupport i) atom
+  requiredEquationCoordinatesVisible :
+    ∀ coordinate : E.RequiredCoordinate,
+      R.requiredEquationCoordinate coordinate ->
+        (∃ i : WitnessClosureIndex R SeedIndex,
+          R.equationCoordinateVisibleOn
+            (WitnessClosureIndex.patch P base seedPatch RequiredWitnessSupport i)
+            coordinate) ∨
+          ∃ i j : WitnessClosureIndex R SeedIndex,
+            R.equationCoordinateVisibleOn
+              (P.overlap base.ctx
+                (WitnessClosureIndex.patch P base seedPatch RequiredWitnessSupport i)
+                (WitnessClosureIndex.patch P base seedPatch RequiredWitnessSupport j))
+              coordinate
   readableRequiredAxes :
     ∀ axis : Sig.Axis, R.requiredAxis axis ->
       ∃ i : WitnessClosureIndex R SeedIndex,
@@ -199,16 +236,16 @@ namespace WitnessClosureCover
 
 /-- II.補題7.2A: index set of the closed cover. -/
 abbrev ClosedIndex {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {C : ContextPreorderCategory A} {LU : LawUniverse U}
-    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+    {C : ContextPreorderCategory A} {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A E Sig}
     {Q : UAdequacyRequirements C R} {P : ContextOverlapPullback C}
     {base : ContextCategoryObject C} (K : WitnessClosureCover Q P base) :=
   WitnessClosureIndex R K.SeedIndex
 
 /-- II.補題7.2A: context carried by a closed-cover index. -/
 def patch {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {C : ContextPreorderCategory A} {LU : LawUniverse U}
-    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+    {C : ContextPreorderCategory A} {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A E Sig}
     {Q : UAdequacyRequirements C R} {P : ContextOverlapPullback C}
     {base : ContextCategoryObject C} (K : WitnessClosureCover Q P base) :
     K.ClosedIndex -> ArchCtx A :=
@@ -216,8 +253,8 @@ def patch {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 
 /-- II.補題7.2A: each closed-cover context reads into the base. -/
 def inclusion {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {C : ContextPreorderCategory A} {LU : LawUniverse U}
-    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+    {C : ContextPreorderCategory A} {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A E Sig}
     {Q : UAdequacyRequirements C R} {P : ContextOverlapPullback C}
     {base : ContextCategoryObject C} (K : WitnessClosureCover Q P base) :
     ∀ i : K.ClosedIndex, C.Hom (K.patch i) base.ctx
@@ -228,8 +265,8 @@ def inclusion {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 
 /-- II.補題7.2A: the witness-closure construction as an admissible family. -/
 def toAATCoverageFamily {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {C : ContextPreorderCategory A} {LU : LawUniverse U}
-    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+    {C : ContextPreorderCategory A} {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A E Sig}
     {Q : UAdequacyRequirements C R} {P : ContextOverlapPullback C}
     {base : ContextCategoryObject C} (K : WitnessClosureCover Q P base) :
     AATCoverageFamily R P base where
@@ -242,9 +279,13 @@ def toAATCoverageFamily {U : AtomCarrier.{u}} {A : ArchitectureObject U}
       ⟨i, by
         change R.supportVisibleOn (K.patch i) atom
         simpa [WitnessClosureCover.patch] using hi⟩
-    lawWitnessCoverage := fun witness hreq =>
-      let required : {witness : LU.witnessFamily.Witness //
-          R.requiredWitness witness} := ⟨witness, hreq⟩
+    equationCoordinateCoverage := fun coordinate hreq => by
+      rcases K.requiredEquationCoordinatesVisible coordinate hreq with h | h
+      · exact Or.inl h
+      · exact Or.inr h
+    violationWitnessCoverage := fun witness hreq =>
+      let required : {witness : E.Coordinate //
+          R.selectedViolationWitness witness} := ⟨witness, hreq⟩
       Or.inl ⟨Sum.inr (Sum.inl required), K.requiredWitnessSupport_visible required⟩
     signatureAxisCoverage := fun axis hreq =>
       let ⟨i, hi⟩ := K.readableRequiredAxes axis hreq
@@ -271,8 +312,8 @@ The older `WitnessClosureCover` remains as the Research-compatible packaged
 surface.
 -/
 structure SeedWitnessClosureCover {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {C : ContextPreorderCategory A} {LU : LawUniverse U}
-    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+    {C : ContextPreorderCategory A} {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A E Sig}
     (Q : UAdequacyRequirements C R) (P : ContextOverlapPullback C)
     (base : ContextCategoryObject C) where
   SeedIndex : Type u
@@ -285,10 +326,15 @@ structure SeedWitnessClosureCover {U : AtomCarrier.{u}} {A : ArchitectureObject 
   requiredWitnessSupport_inclusion :
     ∀ witness, C.Hom (RequiredWitnessSupport witness) base.ctx
   requiredWitnessSupport_visible :
-    ∀ witness, R.witnessVisibleOn (RequiredWitnessSupport witness) witness.1
+    ∀ witness, R.violationWitnessVisibleOn (RequiredWitnessSupport witness) witness.1
   seedSupportCovered :
     ∀ atom : U.Atom, R.requiredSupport atom ->
       ∃ i : SeedIndex, R.supportVisibleOn (seedPatch i) atom
+  seedEquationCoordinatesVisible :
+    ∀ coordinate : E.RequiredCoordinate,
+      R.requiredEquationCoordinate coordinate ->
+        ∃ i : SeedIndex,
+          R.equationCoordinateVisibleOn (seedPatch i) coordinate
   seedAxesReadable :
     ∀ axis : Sig.Axis, R.requiredAxis axis ->
       ∃ i : SeedIndex, R.axisReadableOn (seedPatch i) axis
@@ -341,16 +387,16 @@ namespace SeedWitnessClosureCover
 
 /-- peer-review hardening II-1: index set generated from seeds, required witnesses, and seed overlaps. -/
 abbrev ClosedIndex {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {C : ContextPreorderCategory A} {LU : LawUniverse U}
-    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+    {C : ContextPreorderCategory A} {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A E Sig}
     {Q : UAdequacyRequirements C R} {P : ContextOverlapPullback C}
     {base : ContextCategoryObject C} (K : SeedWitnessClosureCover Q P base) :=
   WitnessClosureIndex R K.SeedIndex
 
 /-- peer-review hardening II-1: context selected by a generated closed index. -/
 def patch {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {C : ContextPreorderCategory A} {LU : LawUniverse U}
-    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+    {C : ContextPreorderCategory A} {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A E Sig}
     {Q : UAdequacyRequirements C R} {P : ContextOverlapPullback C}
     {base : ContextCategoryObject C} (K : SeedWitnessClosureCover Q P base) :
     K.ClosedIndex -> ArchCtx A :=
@@ -358,8 +404,8 @@ def patch {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 
 /-- peer-review hardening II-1: each generated context reads into the base context. -/
 def inclusion {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {C : ContextPreorderCategory A} {LU : LawUniverse U}
-    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+    {C : ContextPreorderCategory A} {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A E Sig}
     {Q : UAdequacyRequirements C R} {P : ContextOverlapPullback C}
     {base : ContextCategoryObject C} (K : SeedWitnessClosureCover Q P base) :
     ∀ i : K.ClosedIndex, C.Hom (K.patch i) base.ctx
@@ -370,8 +416,8 @@ def inclusion {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 
 /-- peer-review hardening II-1: generated boundary visibility, by closed-index constructor. -/
 def closedBoundaryVisible {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {C : ContextPreorderCategory A} {LU : LawUniverse U}
-    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+    {C : ContextPreorderCategory A} {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A E Sig}
     {Q : UAdequacyRequirements C R} {P : ContextOverlapPullback C}
     {base : ContextCategoryObject C} (K : SeedWitnessClosureCover Q P base) :
     ∀ i j : K.ClosedIndex,
@@ -392,8 +438,8 @@ def closedBoundaryVisible {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 
 /-- peer-review hardening II-1: convert the seed-driven input to the frozen witness-closure package. -/
 def toWitnessClosureCover {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {C : ContextPreorderCategory A} {LU : LawUniverse U}
-    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+    {C : ContextPreorderCategory A} {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A E Sig}
     {Q : UAdequacyRequirements C R} {P : ContextOverlapPullback C}
     {base : ContextCategoryObject C} (K : SeedWitnessClosureCover Q P base) :
     WitnessClosureCover Q P base where
@@ -407,6 +453,9 @@ def toWitnessClosureCover {U : AtomCarrier.{u}} {A : ArchitectureObject U}
   requiredSupportCovered := fun atom hreq =>
     let ⟨i, hi⟩ := K.seedSupportCovered atom hreq
     ⟨Sum.inl i, hi⟩
+  requiredEquationCoordinatesVisible := fun coordinate hreq =>
+    let ⟨i, hi⟩ := K.seedEquationCoordinatesVisible coordinate hreq
+    Or.inl ⟨Sum.inl i, hi⟩
   readableRequiredAxes := fun axis hreq =>
     let ⟨i, hi⟩ := K.seedAxesReadable axis hreq
     ⟨Sum.inl i, hi⟩
@@ -414,8 +463,8 @@ def toWitnessClosureCover {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 
 /-- peer-review hardening II-1: the generated closed cover as an admissible AAT coverage family. -/
 def toAATCoverageFamily {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {C : ContextPreorderCategory A} {LU : LawUniverse U}
-    {Sig : ArchitectureSignature U} {R : CoverageRequirements A LU Sig}
+    {C : ContextPreorderCategory A} {E : ArchitecturalEquationSystem C}
+    {Sig : ArchitectureSignature U} {R : CoverageRequirements A E Sig}
     {Q : UAdequacyRequirements C R} {P : ContextOverlapPullback C}
     {base : ContextCategoryObject C} (K : SeedWitnessClosureCover Q P base) :
     AATCoverageFamily R P base :=
@@ -428,8 +477,8 @@ contexts, and boundary coverage from the closed-index constructor cases.
 -/
 theorem toAATCoverageFamily_admissible {U : AtomCarrier.{u}}
     {A : ArchitectureObject U} {C : ContextPreorderCategory A}
-    {LU : LawUniverse U} {Sig : ArchitectureSignature U}
-    {R : CoverageRequirements A LU Sig} {Q : UAdequacyRequirements C R}
+    {E : ArchitecturalEquationSystem C} {Sig : ArchitectureSignature U}
+    {R : CoverageRequirements A E Sig} {Q : UAdequacyRequirements C R}
     {P : ContextOverlapPullback C} {base : ContextCategoryObject C}
     (K : SeedWitnessClosureCover Q P base) :
     AdmissibleCover R P K.toAATCoverageFamily.toCoverageFamily :=
@@ -443,8 +492,8 @@ is `U`-adequate.
 -/
 theorem witnessClosureCover_uAdequate {U : AtomCarrier.{u}}
     {A : ArchitectureObject U} {C : ContextPreorderCategory A}
-    {LU : LawUniverse U} {Sig : ArchitectureSignature U}
-    {R : CoverageRequirements A LU Sig} {Q : UAdequacyRequirements C R}
+    {E : ArchitecturalEquationSystem C} {Sig : ArchitectureSignature U}
+    {R : CoverageRequirements A E Sig} {Q : UAdequacyRequirements C R}
     {P : ContextOverlapPullback C} {base : ContextCategoryObject C}
     (K : WitnessClosureCover Q P base) :
     UAdequateCover Q K.toAATCoverageFamily where
@@ -454,11 +503,15 @@ theorem witnessClosureCover_uAdequate {U : AtomCarrier.{u}}
     ⟨i, by
       change R.supportVisibleOn (K.patch i) atom
       simpa [WitnessClosureCover.patch] using hi⟩
-  requiredWitnessesVisible := fun witness hreq =>
-    let required : {witness : LU.witnessFamily.Witness //
-        R.requiredWitness witness} := ⟨witness, hreq⟩
+  requiredEquationCoordinatesVisible := fun coordinate hreq => by
+    rcases K.requiredEquationCoordinatesVisible coordinate hreq with h | h
+    · exact Or.inl h
+    · exact Or.inr h
+  selectedViolationWitnessesVisible := fun witness hreq =>
+    let required : {witness : E.Coordinate //
+        R.selectedViolationWitness witness} := ⟨witness, hreq⟩
     Or.inl ⟨Sum.inr (Sum.inl required), by
-      change R.witnessVisibleOn (K.patch (Sum.inr (Sum.inl required))) witness
+      change R.violationWitnessVisibleOn (K.patch (Sum.inr (Sum.inl required))) witness
       exact K.requiredWitnessSupport_visible required⟩
   requiredAxesReadable := fun axis hreq =>
     let ⟨i, hi⟩ := K.readableRequiredAxes axis hreq
@@ -476,8 +529,8 @@ namespace SeedWitnessClosureCover
 /-- peer-review hardening II-1: the seed-driven closed cover is `U`-adequate. -/
 theorem uAdequate {U : AtomCarrier.{u}}
     {A : ArchitectureObject U} {C : ContextPreorderCategory A}
-    {LU : LawUniverse U} {Sig : ArchitectureSignature U}
-    {R : CoverageRequirements A LU Sig} {Q : UAdequacyRequirements C R}
+    {E : ArchitecturalEquationSystem C} {Sig : ArchitectureSignature U}
+    {R : CoverageRequirements A E Sig} {Q : UAdequacyRequirements C R}
     {P : ContextOverlapPullback C} {base : ContextCategoryObject C}
     (K : SeedWitnessClosureCover Q P base) :
     UAdequateCover Q K.toAATCoverageFamily :=
