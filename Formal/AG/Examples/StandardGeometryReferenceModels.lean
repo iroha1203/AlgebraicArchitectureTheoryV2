@@ -599,6 +599,14 @@ theorem referenceSite_equation_required
   cases index
   rfl
 
+/-- The reference site's symbolic coordinate is the core-selected constant `2`. -/
+@[simp] theorem referenceSite_violationCoordinate
+    (W : referenceSite.category)
+    (index : referenceSite.equationSystem.Index)
+    (atom : AAT.AG.FiniteModel.carrier.Atom) :
+    referenceSite.equationSystem.violationCoordinate W index atom = 2 :=
+  rfl
+
 private noncomputable def referenceIncomingCode
     {X Y : referenceSite.category} (_f : Y ⟶ X) :
     Option AAT.AG.FiniteModel.TwoPatchContextIndex := by
@@ -5530,6 +5538,63 @@ theorem rigidReading_requiredClosed :
   ClosedEquationalLawReading.ofSemanticCore_requiredClosed
     referenceRaw referenceScheme rigidLawEquationCore rigidSchemeBridge
 
+/--
+The global equation obtained from the equation system selected by
+`referenceSite`.
+
+The site coordinate is sent through the canonical `Int`-algebra map into the
+raw algebra at the decorated context and then through the existing
+sheafification and interpretation maps.  Thus this equation has no separately
+supplied coordinate family.
+-/
+noncomputable def referenceSiteGlobalEquation
+    (i : referenceSite.equationSystem.Index)
+    (a : AAT.AG.FiniteModel.carrier.Atom) :
+    Γ(referenceScheme.underlying, ⊤) :=
+  referenceScheme.decoration.interpretation
+    (sheafificationUnitAlgHom referenceRaw referenceScheme.decoration.context
+      (algebraMap Int
+        (referenceRaw.rawAlgebra referenceScheme.decoration.context)
+        (referenceSite.equationSystem.violationCoordinate
+          referenceScheme.decoration.context i a)))
+
+/--
+The closed-equational reading generated from the equation system owned by
+`referenceSite`.
+-/
+noncomputable def referenceSiteReading :
+    ClosedEquationalLawReading referenceRaw referenceScheme
+      referenceSite.equationSystem where
+  geometric.HoldsOn s i :=
+    GlobalEquationsVanishAlong referenceRaw referenceScheme
+      (referenceSiteGlobalEquation i) s
+  closed := Set.univ
+  selected := fun _ => Set.univ
+  witness i _ :=
+    ClosedEquationalLawWitness.ofGlobalSections referenceRaw referenceScheme i
+      (referenceSiteGlobalEquation i)
+
+/-- The site-generated reading satisfies the closed-equational recognition laws. -/
+theorem referenceSiteReading_valid :
+    IsClosedEquationalLawReading referenceRaw referenceScheme
+      referenceSiteReading where
+  geometric_stable := by
+    intro T T' s f i hs a
+    rw [Scheme.Hom.comp_appTop, CommRingCat.comp_apply, hs a, map_zero]
+  witness_compatible := by
+    intro i hi
+    exact ClosedEquationalLawWitness.ofGlobalSections_valid
+      referenceRaw referenceScheme i (referenceSiteGlobalEquation i)
+  selected_closed := fun _ i _ => Set.mem_univ i
+  selected_basicOpen := fun _ _ i =>
+    iff_of_true (Set.mem_univ i) (Set.mem_univ i)
+
+/-- Every required site equation is closed and selected by the site-generated reading. -/
+theorem referenceSiteReading_requiredClosed :
+    RequiredClosed referenceRaw referenceScheme referenceSiteReading where
+  closed := fun i _ => Set.mem_univ i
+  selected := fun _ i _ => Set.mem_univ i
+
 private theorem reference_ofIdealTop_span_comap_eq_bot_iff
     (equation : AAT.AG.FiniteModel.carrier.Atom →
       Γ(referenceScheme.underlying, ⊤))
@@ -5605,6 +5670,26 @@ private theorem referenceCore_lawIdealExact
   rw [hsheaf]
   exact (reference_ofIdealTop_span_comap_eq_bot_iff
     (semanticCoreGlobalEquation referenceRaw referenceScheme G B i) s).symm
+
+/--
+The semantic predicate of the site-generated reading is exactly the vanishing
+of its generated law ideal.
+-/
+theorem referenceSiteReading_requiredLawIdealExact :
+    RequiredLawIdealExact referenceRaw referenceScheme
+      referenceSiteReading referenceSiteReading_valid
+      referenceSiteReading_requiredClosed := by
+  intro i hi T s
+  change
+    (∀ a, s.appTop (referenceSiteGlobalEquation i a) = 0) ↔ _
+  have hsheaf := lawWitnessIdealSheaf_ofGlobalSections referenceRaw
+    referenceScheme referenceSiteReading
+    referenceSiteReading_valid.witness_compatible
+    i (Set.mem_univ i) (referenceSiteGlobalEquation i) rfl
+  rw [hsheaf]
+  exact
+    (reference_ofIdealTop_span_comap_eq_bot_iff
+      (referenceSiteGlobalEquation i) s).symm
 
 /--
 SD2-SD3 standard-geometry reference-model declaration.
@@ -5902,6 +5987,30 @@ private theorem ambientGlobalSectionsIso_unit
           ((referenceRaw.toRingedSite.canonical.app
             (op baseContext)).right x) = x by
         simpa only [CommRingCat.comp_apply, Category.id_comp] using hcancel]
+
+/--
+The global equation used by `referenceSiteReading` is the canonical image of
+the coordinate selected by `referenceSite.equationSystem`.
+-/
+theorem referenceSiteGlobalEquation_image
+    (i : referenceSite.equationSystem.Index)
+    (a : AAT.AG.FiniteModel.carrier.Atom) :
+    ambientGlobalSectionsIso.hom (referenceSiteGlobalEquation i a) =
+      algebraMap Int AmbientRing
+        (referenceSite.equationSystem.violationCoordinate baseContext i a) := by
+  change ambientGlobalSectionsIso.hom
+      (ambientDecoration.interpretation
+        ((sheafificationUnitAlgHom referenceRaw baseContext)
+          (algebraMap Int (referenceRaw.rawAlgebra baseContext)
+            (referenceSite.equationSystem.violationCoordinate
+              baseContext i a)))) = _
+  rw [ambientGlobalSectionsIso_unit]
+  change baseRawToAmbientAlgHom
+      (algebraMap Int (referenceRaw.rawAlgebra baseContext)
+        (referenceSite.equationSystem.violationCoordinate baseContext i a)) =
+    algebraMap Int AmbientRing
+      (referenceSite.equationSystem.violationCoordinate baseContext i a)
+  exact baseRawToAmbientAlgHom.commutes _
 
 private theorem weakGlobalEquation_image
     (a : AAT.AG.FiniteModel.carrier.Atom) :
@@ -7013,6 +7122,68 @@ Its material data are constructed within the fixed integer-polynomial fixture, a
     evaluationRingHom n =
       MvPolynomial.eval₂Hom (RingHom.id Int) (fun _ => n) :=
   rfl
+
+/-- Evaluation at `x = 0` after reducing coefficients modulo `2`. -/
+def siteEquationModTwoRingHom : AmbientRing →+* ZMod 2 :=
+  MvPolynomial.eval₂Hom (Int.castRingHom (ZMod 2)) (fun _ => 0)
+
+/--
+The reference point on which the site-selected constant coordinate `2`
+vanishes.
+-/
+noncomputable def siteEquationModTwoPoint :
+    AlgebraicGeometry.Spec (CommRingCat.of (ZMod 2)) ⟶
+      referenceScheme.underlying :=
+  AlgebraicGeometry.Scheme.Spec.map
+    (CommRingCat.ofHom siteEquationModTwoRingHom).op
+
+private theorem siteEquationModTwoPoint_normalized_appTop :
+    siteEquationModTwoPoint.appTop ≫
+        (AlgebraicGeometry.Scheme.ΓSpecIso (CommRingCat.of (ZMod 2))).hom =
+      ambientGlobalSectionsIso.hom ≫
+        CommRingCat.ofHom siteEquationModTwoRingHom := by
+  simpa only [siteEquationModTwoPoint, referenceScheme_underlying,
+    ambientScheme_eq, ambientGlobalSectionsIso,
+    AlgebraicGeometry.Scheme.Spec_map, Quiver.Hom.unop_op] using
+      AlgebraicGeometry.Scheme.ΓSpecIso_naturality
+        (CommRingCat.ofHom siteEquationModTwoRingHom)
+
+private theorem siteEquationModTwoPoint_normalized_apply
+    (x : Γ(referenceScheme.underlying, ⊤)) :
+    (AlgebraicGeometry.Scheme.ΓSpecIso (CommRingCat.of (ZMod 2))).hom
+        (siteEquationModTwoPoint.appTop x) =
+      siteEquationModTwoRingHom (ambientGlobalSectionsIso.hom x) := by
+  simpa only [CommRingCat.comp_apply] using congrArg
+    (fun q => q x) siteEquationModTwoPoint_normalized_appTop
+
+/-- The mod-two point satisfies every required equation of the site-generated reading. -/
+theorem siteEquationModTwoPoint_semantic :
+    SemanticLawfulAlong referenceRaw referenceScheme referenceSiteReading
+      siteEquationModTwoPoint := by
+  intro i _
+  change ∀ a, siteEquationModTwoPoint.appTop
+    (referenceSiteGlobalEquation i a) = 0
+  intro a
+  apply (ConcreteCategory.bijective_of_isIso
+    (AlgebraicGeometry.Scheme.ΓSpecIso (CommRingCat.of (ZMod 2))).hom).1
+  rw [map_zero, siteEquationModTwoPoint_normalized_apply,
+    referenceSiteGlobalEquation_image, referenceSite_violationCoordinate]
+  change siteEquationModTwoRingHom (2 : AmbientRing) = 0
+  rw [map_ofNat]
+  decide
+
+/-- The mod-two point factors through the site-generated lawful closed subscheme. -/
+theorem siteEquationModTwoPoint_factors :
+    Nonempty (FactorsThroughLawfulClosedSubscheme
+      referenceRaw referenceScheme referenceSiteReading
+      referenceSiteReading_valid referenceSiteReading_requiredClosed
+      siteEquationModTwoPoint) := by
+  have h :=
+    lawfulnessIdealFactorizationCorrespondence referenceRaw referenceScheme
+      referenceSiteReading referenceSiteReading_valid
+      referenceSiteReading_requiredClosed
+      referenceSiteReading_requiredLawIdealExact siteEquationModTwoPoint
+  exact h.2.2.mp (h.2.1.mp (h.1.mp siteEquationModTwoPoint_semantic))
 
 /--
 SD2-SD3 standard-geometry reference-model declaration.

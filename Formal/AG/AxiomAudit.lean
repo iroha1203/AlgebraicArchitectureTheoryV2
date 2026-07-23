@@ -7621,6 +7621,27 @@ def standardGeometry_strongReading_requiredClosed :=
 def standardGeometry_rigidReading_requiredClosed :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.rigidReading_requiredClosed
 
+def standardGeometry_referenceSite_violationCoordinate :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceSite_violationCoordinate
+
+def standardGeometry_referenceSiteReading_valid :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceSiteReading_valid
+
+def standardGeometry_referenceSiteReading_requiredClosed :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceSiteReading_requiredClosed
+
+def standardGeometry_referenceSiteGlobalEquation_image :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceSiteGlobalEquation_image
+
+def standardGeometry_referenceSiteReading_requiredLawIdealExact :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceSiteReading_requiredLawIdealExact
+
+def standardGeometry_siteEquationModTwoPoint_semantic :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.siteEquationModTwoPoint_semantic
+
+def standardGeometry_siteEquationModTwoPoint_factors :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.siteEquationModTwoPoint_factors
+
 def standardGeometry_weakReading_requiredLawIdealExact :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.weakReading_requiredLawIdealExact
 

@@ -1271,14 +1271,14 @@ noncomputable def finiteSynthesisAATSynthesisPackage :
     AATSynthesisPackage finiteSynthesisPartI Int finiteSynthesisGeometry
       finiteSynthesisRawAmbient where
   architectureScheme := finiteSynthesisArchitectureScheme
-  equationSystem :=
-    AAT.AG.Examples.StandardGeometryReferenceModels.weakLawEquationCore
-  lawReading := AAT.AG.Examples.StandardGeometryReferenceModels.weakReading
-  lawReadingValid := AAT.AG.Examples.StandardGeometryReferenceModels.weakReading_valid
+  lawReading :=
+    AAT.AG.Examples.StandardGeometryReferenceModels.referenceSiteReading
+  lawReadingValid :=
+    AAT.AG.Examples.StandardGeometryReferenceModels.referenceSiteReading_valid
   requiredClosed :=
-    AAT.AG.Examples.StandardGeometryReferenceModels.weakReading_requiredClosed
+    AAT.AG.Examples.StandardGeometryReferenceModels.referenceSiteReading_requiredClosed
   requiredLawIdealExact :=
-    AAT.AG.Examples.StandardGeometryReferenceModels.weakReading_requiredLawIdealExact
+    AAT.AG.Examples.StandardGeometryReferenceModels.referenceSiteReading_requiredLawIdealExact
   cover := finiteSynthesisCover
   obstructionSheaf := finiteSynthesisObstructionSheaf
   obstructionCohomology := finiteSynthesisCechComplex
@@ -1300,14 +1300,14 @@ noncomputable def nondegenerateSynthesisPackage :
     AATSynthesisPackage finiteSynthesisPartI Int finiteSynthesisGeometry
       finiteSynthesisRawAmbient where
   architectureScheme := finiteSynthesisArchitectureScheme
-  equationSystem :=
-    AAT.AG.Examples.StandardGeometryReferenceModels.weakLawEquationCore
-  lawReading := AAT.AG.Examples.StandardGeometryReferenceModels.weakReading
-  lawReadingValid := AAT.AG.Examples.StandardGeometryReferenceModels.weakReading_valid
+  lawReading :=
+    AAT.AG.Examples.StandardGeometryReferenceModels.referenceSiteReading
+  lawReadingValid :=
+    AAT.AG.Examples.StandardGeometryReferenceModels.referenceSiteReading_valid
   requiredClosed :=
-    AAT.AG.Examples.StandardGeometryReferenceModels.weakReading_requiredClosed
+    AAT.AG.Examples.StandardGeometryReferenceModels.referenceSiteReading_requiredClosed
   requiredLawIdealExact :=
-    AAT.AG.Examples.StandardGeometryReferenceModels.weakReading_requiredLawIdealExact
+    AAT.AG.Examples.StandardGeometryReferenceModels.referenceSiteReading_requiredLawIdealExact
   cover := finiteSynthesisCover
   obstructionSheaf := finiteSynthesisObstructionSheaf
   obstructionCohomology := finiteSynthesisCechComplex

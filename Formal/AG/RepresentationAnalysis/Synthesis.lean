@@ -29,10 +29,9 @@ structure AATSynthesisPackage
     (raw : LawAlgebra.RawAmbientRestrictionSystem geometry.site k)
     [HasSheafify geometry.site.topology (LawAlgebra.AATCommAlgCat k)] where
   architectureScheme : LawAlgebra.StandardArchitectureScheme raw
-  /-- The equation system whose generated ideals define the package reading. -/
-  equationSystem : ArchitecturalEquationSystem geometry.site.contextPreorder
   lawReading :
-    LawAlgebra.ClosedEquationalLawReading raw architectureScheme equationSystem
+    LawAlgebra.ClosedEquationalLawReading raw architectureScheme
+      geometry.site.equationSystem
   lawReadingValid :
     LawAlgebra.IsClosedEquationalLawReading raw architectureScheme lawReading
   requiredClosed : LawAlgebra.RequiredClosed raw architectureScheme lawReading

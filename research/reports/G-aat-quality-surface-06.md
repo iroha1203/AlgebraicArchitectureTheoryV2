@@ -153,10 +153,10 @@ Initial axiom audit over representative declarations reported only standard
 
 ### Accepted target theorem package (law-equation grounding layer)
 
-- Vocabulary: laws as equations — `SemanticLawEquationWitnessIdealCore` /
-  `SemanticLawEquationWitnessIdealGeometry` (Cycle 348), ambient rows recorded
-  in the G-06 GOAL card claim boundary and material premise ledger
-  (human-approved revision).
+- Vocabulary: laws as equations — the site-selected
+  `ArchitecturalEquationSystem` / `SemanticLawEquationWitnessIdealGeometry`
+  (Cycle 348), ambient rows recorded in the G-06 GOAL card claim boundary and
+  material premise ledger (human-approved revision).
 - Evaluator as theorem:
   `displayedRequiredLawsHoldOn_constructs_displayedRequiredLawRestrictionEvaluator`
   with the generated-Cech proof-use chain to `sourceC0CechZero` (Cycle 348).
@@ -615,14 +615,15 @@ New file
   site satisfies the AAT sheaf condition, proved through
   `Precoverage.isSheaf_toGrothendieck_iff`; no subsingleton assumption on the
   coefficient values is used.
-- `finiteModelSemanticRepairSite`, `finiteModelLawEquationCore`: the concrete
-  law-equation core with observable ring `ℤ`, identity restrictions, and the
-  constant violation coordinate `2` for the single required NoCycle law.
-- `finiteModel_lawWitnessIdeal_le`, `finiteModel_obstructionIdeal_le`,
+- `finiteModelSemanticRepairSite`,
+  `AAT.AG.FiniteModel.site.equationSystem`: the concrete site-selected
+  equation system with observable ring `ℤ`, identity restrictions, and the
+  constant violation coordinate `2` for the single required NoCycle equation.
+- `finiteModel_witnessIdeal_le`, `finiteModel_obstructionIdeal_le`,
   `finiteModel_one_notMem_obstructionIdeal`,
   `finiteModel_defectOne_class_ne_zero`,
   `finiteModel_obstructionQuotient_nontrivial`,
-  `finiteModel_violationWitness_class_eq_zero`: the nondegeneracy ledger; the
+  `finiteModel_violationCoordinate_class_eq_zero`: the nondegeneracy ledger; the
   defect `1` has nonzero class while every violation coordinate has zero
   class.
 - `finiteModelLawEquationGeometry`: the concrete
@@ -727,9 +728,9 @@ New file `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairLawEquation
 (imported by `research/lean/ResearchLean.lean`), inside the existing
 `SemanticRepairCechGrounding` namespaces:
 
-- `...CoverRelativeCechGeneratedSemanticCoefficient.SemanticLawEquationWitnessIdealCore`
-  with `lawWitnessIdeal`, `selectedLawWitnessIdealFamily`, `obstructionIdeal`,
-  `map_lawWitnessIdeal_le`, `restrictionCompatible`, `map_obstructionIdeal_le`,
+- the site-derived `S.equationSystem : AAT.AG.ArchitecturalEquationSystem`
+  with `witnessIdeal`, `selectedWitnessIdealFamily`, `obstructionIdeal`,
+  `map_witnessIdeal_le`, `restrictionCompatible`, `map_obstructionIdeal_le`,
   `obstructionQuotientRestrict`, `obstructionQuotientCoefficient`
 - `...SemanticLawEquationWitnessIdealGeometry` with
   `toSemanticAtomLawAdditiveCoefficientGeometry`,
