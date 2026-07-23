@@ -1271,6 +1271,8 @@ noncomputable def finiteSynthesisAATSynthesisPackage :
     AATSynthesisPackage finiteSynthesisPartI Int finiteSynthesisGeometry
       finiteSynthesisRawAmbient where
   architectureScheme := finiteSynthesisArchitectureScheme
+  equationSystem :=
+    AAT.AG.Examples.StandardGeometryReferenceModels.weakLawEquationCore
   lawReading := AAT.AG.Examples.StandardGeometryReferenceModels.weakReading
   lawReadingValid := AAT.AG.Examples.StandardGeometryReferenceModels.weakReading_valid
   requiredClosed :=
@@ -1298,6 +1300,8 @@ noncomputable def nondegenerateSynthesisPackage :
     AATSynthesisPackage finiteSynthesisPartI Int finiteSynthesisGeometry
       finiteSynthesisRawAmbient where
   architectureScheme := finiteSynthesisArchitectureScheme
+  equationSystem :=
+    AAT.AG.Examples.StandardGeometryReferenceModels.weakLawEquationCore
   lawReading := AAT.AG.Examples.StandardGeometryReferenceModels.weakReading
   lawReadingValid := AAT.AG.Examples.StandardGeometryReferenceModels.weakReading_valid
   requiredClosed :=

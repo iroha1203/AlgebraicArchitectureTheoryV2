@@ -20,10 +20,11 @@ structure RepairRoute
     {Obj : ArchitectureObject U}
     (C : DistanceFlatnessMassContext Obj)
     {S : Site.AATSite Obj} {k : Type v} [CommRing k]
+    {E : ArchitecturalEquationSystem S.contextPreorder}
     (raw : LawAlgebra.RawAmbientRestrictionSystem S k)
     [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
     (X : LawAlgebra.StandardArchitectureScheme raw)
-    (R : LawAlgebra.ClosedEquationalLawReading raw X)
+    (R : LawAlgebra.ClosedEquationalLawReading raw X E)
     (hR : LawAlgebra.IsClosedEquationalLawReading raw X R)
     (hclosed : LawAlgebra.RequiredClosed raw X R) where
   source : C.operationDistance.GeometryState
@@ -44,10 +45,11 @@ namespace RepairRoute
 variable {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
 variable {C : DistanceFlatnessMassContext Obj}
 variable {S : Site.AATSite Obj} {k : Type v} [CommRing k]
+variable {E : ArchitecturalEquationSystem S.contextPreorder}
 variable {raw : LawAlgebra.RawAmbientRestrictionSystem S k}
 variable [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
 variable {X : LawAlgebra.StandardArchitectureScheme raw}
-variable {R : LawAlgebra.ClosedEquationalLawReading raw X}
+variable {R : LawAlgebra.ClosedEquationalLawReading raw X E}
 variable {hR : LawAlgebra.IsClosedEquationalLawReading raw X R}
 variable {hclosed : LawAlgebra.RequiredClosed raw X R}
 
@@ -93,10 +95,11 @@ Implementation notes: the profile is indexed by an already constructed
 -/
 structure RepairProfileReading {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
     {S : Site.AATSite Obj} {k : Type v} [CommRing k]
+    {E : ArchitecturalEquationSystem S.contextPreorder}
     {rawR0 : LawAlgebra.RawAmbientRestrictionSystem S k}
     [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
     {schemeR0 : LawAlgebra.StandardArchitectureScheme rawR0}
-    {readingR0 : LawAlgebra.ClosedEquationalLawReading rawR0 schemeR0}
+    {readingR0 : LawAlgebra.ClosedEquationalLawReading rawR0 schemeR0 E}
     {readingClosedR0 : LawAlgebra.IsClosedEquationalLawReading rawR0 schemeR0 readingR0}
     {requiredClosedR0 : LawAlgebra.RequiredClosed rawR0 schemeR0 readingR0}
     {C : DistanceFlatnessMassContext Obj}
@@ -122,10 +125,11 @@ namespace RepairProfileReading
 
 variable {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
 variable {S : Site.AATSite Obj} {k : Type v} [CommRing k]
+    {E : ArchitecturalEquationSystem S.contextPreorder}
     {rawR0 : LawAlgebra.RawAmbientRestrictionSystem S k}
     [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
     {schemeR0 : LawAlgebra.StandardArchitectureScheme rawR0}
-    {readingR0 : LawAlgebra.ClosedEquationalLawReading rawR0 schemeR0}
+    {readingR0 : LawAlgebra.ClosedEquationalLawReading rawR0 schemeR0 E}
     {readingClosedR0 : LawAlgebra.IsClosedEquationalLawReading rawR0 schemeR0 readingR0}
     {requiredClosedR0 : LawAlgebra.RequiredClosed rawR0 schemeR0 readingR0}
 variable {C : DistanceFlatnessMassContext Obj}
@@ -646,10 +650,11 @@ profiles and indexes the repair profile by the same canonical repair route.
 -/
 structure RepairMarginDehnContext {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
     {S : Site.AATSite Obj} {k : Type v} [CommRing k]
+    {E : ArchitecturalEquationSystem S.contextPreorder}
     {rawR0 : LawAlgebra.RawAmbientRestrictionSystem S k}
     [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
     {schemeR0 : LawAlgebra.StandardArchitectureScheme rawR0}
-    {readingR0 : LawAlgebra.ClosedEquationalLawReading rawR0 schemeR0}
+    {readingR0 : LawAlgebra.ClosedEquationalLawReading rawR0 schemeR0 E}
     {readingClosedR0 : LawAlgebra.IsClosedEquationalLawReading rawR0 schemeR0 readingR0}
     {requiredClosedR0 : LawAlgebra.RequiredClosed rawR0 schemeR0 readingR0}
     (C : DistanceFlatnessMassContext Obj) where
@@ -663,10 +668,11 @@ namespace RepairMarginDehnContext
 
 variable {U : AtomCarrier.{u}} {Obj : ArchitectureObject U}
 variable {S : Site.AATSite Obj} {k : Type v} [CommRing k]
+    {E : ArchitecturalEquationSystem S.contextPreorder}
     {rawR0 : LawAlgebra.RawAmbientRestrictionSystem S k}
     [CategoryTheory.HasSheafify S.topology (LawAlgebra.AATCommAlgCat k)]
     {schemeR0 : LawAlgebra.StandardArchitectureScheme rawR0}
-    {readingR0 : LawAlgebra.ClosedEquationalLawReading rawR0 schemeR0}
+    {readingR0 : LawAlgebra.ClosedEquationalLawReading rawR0 schemeR0 E}
     {readingClosedR0 : LawAlgebra.IsClosedEquationalLawReading rawR0 schemeR0 readingR0}
     {requiredClosedR0 : LawAlgebra.RequiredClosed rawR0 schemeR0 readingR0}
 variable {C : DistanceFlatnessMassContext Obj}

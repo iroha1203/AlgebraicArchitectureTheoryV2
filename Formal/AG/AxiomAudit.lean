@@ -556,7 +556,7 @@ theorem semanticRepairExample91IntegerQuotientIsSheaf :
   AAT.AG.Examples.SemanticRepairPart10.integerGeneratedLawQuotientIsSheaf
 
 def semanticRepairExample91IntegerLawWitnessIdealLe :=
-  @AAT.AG.Examples.SemanticRepairPart10.integerLaw_lawWitnessIdeal_le
+  @AAT.AG.Examples.SemanticRepairPart10.integerLaw_witnessIdeal_le
 
 def semanticRepairExample91IntegerObstructionIdealLe :=
   @AAT.AG.Examples.SemanticRepairPart10.integerLaw_obstructionIdeal_le
@@ -571,7 +571,7 @@ def semanticRepairExample91IntegerQuotientNontrivial :=
   @AAT.AG.Examples.SemanticRepairPart10.integerGeneratedLawQuotient_nontrivial
 
 def semanticRepairExample91IntegerViolationWitnessClassZero :=
-  @AAT.AG.Examples.SemanticRepairPart10.integerLaw_violationWitness_class_eq_zero
+  @AAT.AG.Examples.SemanticRepairPart10.integerLaw_violationCoordinate_class_eq_zero
 
 def semanticRepairExample91IntegerDisplayedLawsHold :=
   AAT.AG.Examples.SemanticRepairPart10.integerLawFiniteFreeDisplayedRequiredLawsHoldOn
@@ -4365,6 +4365,32 @@ The aliases below register every public theorem from the main
 closed-equational geometry module in the namespace-wide kernel dependency audit.
 -/
 
+/-! #### Generated equation ideals and quotient restriction -/
+
+/-- Audit alias for generation of a single equation witness ideal. -/
+def lawEquationWitnessIdealEqSpan :=
+  @ArchitecturalEquationSystem.witnessIdeal_eq_span
+
+/-- Audit alias for the required-equation supremum formula. -/
+def lawEquationObstructionIdealEqISupRequired :=
+  @ArchitecturalEquationSystem.obstructionIdeal_eq_iSup_required
+
+/-- Audit alias for restriction compatibility of generated witness ideals. -/
+def lawEquationMapWitnessIdealLe :=
+  @ArchitecturalEquationSystem.map_witnessIdeal_le
+
+/-- Audit alias for restriction compatibility of generated obstruction ideals. -/
+def lawEquationMapObstructionIdealLe :=
+  @ArchitecturalEquationSystem.map_obstructionIdeal_le
+
+/-- Audit alias for identity restriction on generated obstruction quotients. -/
+def lawEquationObstructionQuotientRestrictId :=
+  @ArchitecturalEquationSystem.obstructionQuotientRestrict_id_apply
+
+/-- Audit alias for composite restriction on generated obstruction quotients. -/
+def lawEquationObstructionQuotientRestrictComp :=
+  @ArchitecturalEquationSystem.obstructionQuotientRestrict_comp_apply
+
 /-! #### SD0: geometric law reading and closed-equational witnesses -/
 
 /-- Audit alias for geometric-law-reading extensionality. -/
@@ -7537,24 +7563,6 @@ def standardGeometry_strongViolationWitness_eq :=
 
 def standardGeometry_rigidViolationWitness_eq :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.rigidViolationWitness_eq
-
-def standardGeometry_weakLawEquationCore_supportAtom :=
-  @AAT.AG.Examples.StandardGeometryReferenceModels.weakLawEquationCore_supportAtom
-
-def standardGeometry_strongLawEquationCore_supportAtom :=
-  @AAT.AG.Examples.StandardGeometryReferenceModels.strongLawEquationCore_supportAtom
-
-def standardGeometry_rigidLawEquationCore_supportAtom :=
-  @AAT.AG.Examples.StandardGeometryReferenceModels.rigidLawEquationCore_supportAtom
-
-def standardGeometry_weakLawEquationCore_supportLawIndex :=
-  @AAT.AG.Examples.StandardGeometryReferenceModels.weakLawEquationCore_supportLawIndex
-
-def standardGeometry_strongLawEquationCore_supportLawIndex :=
-  @AAT.AG.Examples.StandardGeometryReferenceModels.strongLawEquationCore_supportLawIndex
-
-def standardGeometry_rigidLawEquationCore_supportLawIndex :=
-  @AAT.AG.Examples.StandardGeometryReferenceModels.rigidLawEquationCore_supportLawIndex
 
 def standardGeometry_weakSchemeBridge_toRawPresentation :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.weakSchemeBridge_toRawPresentation

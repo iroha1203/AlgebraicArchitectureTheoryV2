@@ -21,7 +21,7 @@ def GeneratedSourceC0PointwiseZero
     {U : AtomCarrier.{u}}
     {A : ArchitectureObject U}
     {S : Site.AATSite.{u} A}
-    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} S}
+    {G : ArchitecturalEquationSystem S.contextPreorder}
     (D : LawAlgebra.LawEquationDefectSource.{u} G) : Prop :=
   forall i : D.Chart, D.interpret i = 0
 
@@ -30,7 +30,7 @@ structure GeneratedSourceC0ZeroPackage
     {U : AtomCarrier.{u}}
     {A : ArchitectureObject U}
     {S : Site.AATSite.{u} A}
-    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} S}
+    {G : ArchitecturalEquationSystem S.contextPreorder}
     (D : LawAlgebra.LawEquationDefectSource.{u} G) : Type (u + 1) where
   pointwiseZero : GeneratedSourceC0PointwiseZero D
 
@@ -39,7 +39,7 @@ theorem displayedRequiredLawsHoldOn_constructs_generatedSourceC0_pointwiseZero
     {U : AtomCarrier.{u}}
     {A : ArchitectureObject U}
     {S : Site.AATSite.{u} A}
-    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} S}
+    {G : ArchitecturalEquationSystem S.contextPreorder}
     (D : LawAlgebra.LawEquationDefectSource.{u} G)
     (hholds : D.DisplayedRequiredLawsHoldOn) :
     GeneratedSourceC0PointwiseZero D :=
@@ -50,7 +50,7 @@ theorem displayedRequiredLawsHoldOn_constructs_generatedSourceC0_zeroPackage
     {U : AtomCarrier.{u}}
     {A : ArchitectureObject U}
     {S : Site.AATSite.{u} A}
-    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} S}
+    {G : ArchitecturalEquationSystem S.contextPreorder}
     (D : LawAlgebra.LawEquationDefectSource.{u} G)
     (hholds : D.DisplayedRequiredLawsHoldOn) :
     Nonempty (GeneratedSourceC0ZeroPackage D) :=
@@ -216,7 +216,7 @@ structure SemanticRepairGeneratedLawDependentConclusions
     {U : AtomCarrier.{u}}
     {A : ArchitectureObject U}
     {S : Site.AATSite.{u} A}
-    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} S}
+    {G : ArchitecturalEquationSystem S.contextPreorder}
     (D : LawAlgebra.LawEquationDefectSource.{u} G) : Type (u + 1) where
   /-- Generated source package, including the degree-zero Cech vanishing proof. -/
   generatedSourceC0ZeroPackage : GeneratedSourceC0ZeroPackage D
@@ -230,10 +230,10 @@ structure SemanticRepairGeneratedLawDependentConclusions
   nonzeroInterpretationDetectsDisplayedLawFailure :
     forall i : D.Chart,
       D.interpret i ≠ 0 ->
-        forall lawIndex : S.equationSystem.Index,
+        forall lawIndex : G.Index,
           lawIndex ∈ D.lawSupport i (D.input i) ->
-            S.equationSystem.Required lawIndex ->
-              ¬ S.equationSystem.EquationHolds lawIndex
+            G.Required lawIndex ->
+              ¬ G.EquationHolds lawIndex
                 (D.objectOfLocalInput i (D.input i))
 
 /-- X.定理7.5 conclusions 4--10: law-independent SAGA descent/H1 layer. -/
@@ -285,7 +285,7 @@ structure SemanticRepairGeneratedEndToEndSAGAPacket
     {Ulaw : AtomCarrier.{u}}
     {Alaw : ArchitectureObject Ulaw}
     {Slaw : Site.AATSite.{u} Alaw}
-    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} Slaw}
+    {G : ArchitecturalEquationSystem Slaw.contextPreorder}
     (D : LawAlgebra.LawEquationDefectSource.{u} G)
     {U : AtomCarrier.{r}}
     {A : ArchitectureObject U}
@@ -322,7 +322,7 @@ structure SemanticRepairGeneratedRealizedEndToEndSAGAPacket
     {Ulaw : AtomCarrier.{u}}
     {Alaw : ArchitectureObject Ulaw}
     {Slaw : Site.AATSite.{u} Alaw}
-    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} Slaw}
+    {G : ArchitecturalEquationSystem Slaw.contextPreorder}
     (D : LawAlgebra.LawEquationDefectSource.{u} G)
     {U : AtomCarrier.{r}}
     {A : ArchitectureObject U}
@@ -368,7 +368,7 @@ structure SemanticRepairNativeGeneratedEndToEndInputs
     {Ulaw : AtomCarrier.{u}}
     {Alaw : ArchitectureObject Ulaw}
     {Slaw : Site.AATSite.{u} Alaw}
-    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} Slaw}
+    {G : ArchitecturalEquationSystem Slaw.contextPreorder}
     (D : LawAlgebra.LawEquationDefectSource.{u} G)
     {base : Slaw.category}
     (cover : Sieve base)
@@ -389,7 +389,7 @@ variable {data :
   SemanticRepairCoverH1BoundaryRelationAdditiveData.{u, v, w, x, y, z} P}
 variable {Ulaw : AtomCarrier.{u}} {Alaw : ArchitectureObject Ulaw}
 variable {Slaw : Site.AATSite.{u} Alaw}
-variable {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} Slaw}
+variable {G : ArchitecturalEquationSystem Slaw.contextPreorder}
 variable {D : LawAlgebra.LawEquationDefectSource.{u} G}
 variable {base : Slaw.category} {cover : Sieve base}
 variable {certificate :
@@ -423,7 +423,7 @@ theorem lawEquation_constructs_groundedComparisonPacket
     {Ulaw : AtomCarrier.{u}}
     {Alaw : ArchitectureObject Ulaw}
     {Slaw : Site.AATSite.{u} Alaw}
-    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} Slaw}
+    {G : ArchitecturalEquationSystem Slaw.contextPreorder}
     (D : LawAlgebra.LawEquationDefectSource.{u} G)
     (hDisplayedRequiredLaws : D.DisplayedRequiredLawsHoldOn)
     {U : AtomCarrier.{r}}
@@ -493,7 +493,7 @@ theorem lawEquation_constructs_groundedComparisonPacket_fromRealization
     {Ulaw : AtomCarrier.{u}}
     {Alaw : ArchitectureObject Ulaw}
     {Slaw : Site.AATSite.{u} Alaw}
-    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} Slaw}
+    {G : ArchitecturalEquationSystem Slaw.contextPreorder}
     (D : LawAlgebra.LawEquationDefectSource.{u} G)
     (hDisplayedRequiredLaws : D.DisplayedRequiredLawsHoldOn)
     {U : AtomCarrier.{r}}
@@ -538,7 +538,7 @@ theorem lawEquation_constructs_realizedGroundedComparisonPacket_fromRealization
     {Ulaw : AtomCarrier.{u}}
     {Alaw : ArchitectureObject Ulaw}
     {Slaw : Site.AATSite.{u} Alaw}
-    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} Slaw}
+    {G : ArchitecturalEquationSystem Slaw.contextPreorder}
     (D : LawAlgebra.LawEquationDefectSource.{u} G)
     (hDisplayedRequiredLaws : D.DisplayedRequiredLawsHoldOn)
     {U : AtomCarrier.{r}}
@@ -589,7 +589,7 @@ theorem lawEquation_constructs_groundedComparisonPacket_fromNativeGeneratedInput
     {Ulaw : AtomCarrier.{u}}
     {Alaw : ArchitectureObject Ulaw}
     {Slaw : Site.AATSite.{u} Alaw}
-    {G : LawAlgebra.SemanticLawEquationWitnessIdealCore.{u} Slaw}
+    {G : ArchitecturalEquationSystem Slaw.contextPreorder}
     (D : LawAlgebra.LawEquationDefectSource.{u} G)
     (hDisplayedRequiredLaws : D.DisplayedRequiredLawsHoldOn)
     {base : Slaw.category}

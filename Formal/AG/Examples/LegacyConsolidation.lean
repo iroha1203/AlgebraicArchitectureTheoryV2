@@ -551,6 +551,7 @@ noncomputable def synthesisPackage :
     AATSynthesisPackage standardPartIPrerequisites Int standardGeometry
       StandardGeometryReferenceModels.referenceRaw where
   architectureScheme := StandardGeometryReferenceModels.referenceScheme
+  equationSystem := StandardGeometryReferenceModels.weakLawEquationCore
   lawReading := StandardGeometryReferenceModels.weakReading
   lawReadingValid := StandardGeometryReferenceModels.weakReading_valid
   requiredClosed := StandardGeometryReferenceModels.weakReading_requiredClosed

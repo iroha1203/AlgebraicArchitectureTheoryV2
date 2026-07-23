@@ -53,6 +53,21 @@ theorem localObstructionIdeal_le_iff (F : SelectedLawWitnessIdealFamily A) (I : 
     rintro x ⟨L, hL, hx⟩
     exact h L hL hx
 
+/--
+III.定義6.1: the local obstruction ideal is the supremum of the witness ideals
+indexed by selected laws.
+-/
+theorem localObstructionIdeal_eq_iSup (F : SelectedLawWitnessIdealFamily A) :
+    F.localObstructionIdeal =
+      ⨆ L : {L : F.LawIndex // F.selected L}, F.witnessIdeal L.1 := by
+  apply le_antisymm
+  · refine (localObstructionIdeal_le_iff A F _).2 ?_
+    intro L hL
+    exact le_iSup_of_le ⟨L, hL⟩ le_rfl
+  · refine iSup_le ?_
+    rintro ⟨L, hL⟩
+    exact witnessIdeal_le_localObstructionIdeal A F hL
+
 variable {A}
 
 /--

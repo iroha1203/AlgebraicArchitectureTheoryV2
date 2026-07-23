@@ -24,7 +24,7 @@ INCORRECT DEF/LEMMA: -/
 #check AAT.AG.Examples.SemanticRepairPart10.generatedLawCircleTrueSheafCertificate /- is a def, should be lemma/theorem -/
 
 -- Formal.AG.LawAlgebra.LawEquation
-#check @AAT.AG.LawAlgebra.SemanticLawEquationWitnessIdealCore.restrictionCompatible /- is a def, should be lemma/theorem -/
+#check @AAT.AG.ArchitecturalEquationSystem.restrictionCompatible /- is a def, should be lemma/theorem -/
 
 -- Formal.AG.LawAlgebra.StandardSchemeFiniteExample
 #check AAT.AG.LawAlgebra.FiniteExamples.StandardArchitectureScheme.baseSheafifiedPresentation /- is a def, should be lemma/theorem -/
@@ -966,11 +966,6 @@ DEFINITIONS ARE MISSING DOCUMENTATION STRINGS: -/
 #check AAT.AG.LawAlgebra.IdempotentCollapse.boolIndicator /- definition missing documentation string -/
 
 -- Formal.AG.LawAlgebra.LawEquation
-#check @AAT.AG.LawAlgebra.SemanticLawEquationWitnessIdealCore.Observable /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.SemanticLawEquationWitnessIdealCore.restrict /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.SemanticLawEquationWitnessIdealCore.violationWitness /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.SemanticLawEquationWitnessIdealCore.supportAtom /- definition missing documentation string -/
-#check @AAT.AG.LawAlgebra.SemanticLawEquationWitnessIdealCore.supportLawIndex /- definition missing documentation string -/
 #check @AAT.AG.LawAlgebra.LawEquationDefectSource.Chart /- definition missing documentation string -/
 #check @AAT.AG.LawAlgebra.LawEquationDefectSource.chart /- definition missing documentation string -/
 #check @AAT.AG.LawAlgebra.LawEquationDefectSource.LocalInput /- definition missing documentation string -/
