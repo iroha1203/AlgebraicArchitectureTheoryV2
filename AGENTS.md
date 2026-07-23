@@ -98,6 +98,10 @@
   とする。PRD作業では同guidelineをhard ruleとして適用し、既存違反も例外扱いしない。
 - 作業は原則として GitHub Issue 起点で進める。次タスクは `priority:blocking`、`status:ready`、
   milestone の依存順を優先する。
+- 一時的な検証や監査のための gate / task を恒久 CI に追加してはならない。
+  一回限りの確認は `.tmp/` またはローカルコマンドで実施し、必要な証拠だけを Issue / PR に記録する。
+  workflow への job / step 追加など、CI に新しい task を追加する変更は、編集前に人間の明示的な承認を
+  得なければならない。
 - 目的に対して自然に必要な設計、実装、docs、tests、website surface まで広げてよい。
   ただし、無関係な既存変更の巻き戻し、claim scope を越える主張、根拠のない互換性維持、
   不要な抽象化は避ける。
