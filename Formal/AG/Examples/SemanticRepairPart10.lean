@@ -622,6 +622,16 @@ def lawEquationSystem :
     intros
     rfl
 
+/-- The displayed residual generated from the lawful fixture is zero. -/
+@[simp] theorem lawEquationSystem_equationResidual_lawfulObject
+    (W : FiniteModel.site.category)
+    (equationIndex : lawEquationSystem.Index)
+    (atom : FiniteModel.carrier.Atom) :
+    lawEquationSystem.equationResidual W lawfulObject equationIndex atom = 0 := by
+  have hacyclic : ¬ FiniteModel.hasDependencyCycle lawfulObject :=
+    lawfulObject_noCycleLaw
+  simp [lawEquationSystem, FiniteModel.noCycleResidual, hacyclic]
+
 /--
 X.例9.1: coverage requirements for the `ZMod 4` equation system.
 
@@ -834,33 +844,21 @@ theorem integerLaw_violationCoordinate_class_eq_zero
       (FiniteModel.site_equation_required lawIndex)
       (Ideal.subset_span ⟨atom, rfl⟩))
 
-/-- X.例9.1: displayed defect source whose defect lies in the selected witness ideal. -/
+/-- X.例9.1: displayed source whose generated residual vanishes on the lawful object. -/
 def defectSource :
     LawAlgebra.LawEquationDefectSource lawEquationSystem where
   Chart := PUnit
   chart _ := FiniteModel.siteBase
   LocalInput _ := PUnit
   input _ := PUnit.unit
-  lawSupport _ _ := [PUnit.unit]
-  lawSupport_nonempty := by
-    intro i
-    exact ⟨PUnit.unit, by simp⟩
-  lawSupport_required := by
-    intro i lawIndex hmem
-    cases lawIndex
-    rfl
   objectOfLocalInput _ _ := lawfulObject
-  defect _ _ := (2 : ZMod 4)
-  holds_defect_mem := by
-    intro i lawIndex hmem hrequired _hholds
-    exact Ideal.subset_span
-      ⟨FiniteModel.FiniteAtom.componentA, rfl⟩
+  equationIndex _ := ⟨PUnit.unit, rfl⟩
+  supportAtom _ := FiniteModel.FiniteAtom.componentA
 
 /-- X.例9.1: displayed required laws hold on the selected lawful local input. -/
 theorem displayedRequiredLawsHoldOn :
     defectSource.DisplayedRequiredLawsHoldOn := by
-  intro i lawIndex hmem hrequired
-  cases lawIndex
+  intro i
   exact (lawEquationSystem_equationHolds_iff_noCycleLaw lawfulObject).mpr
     lawfulObject_noCycleLaw
 
@@ -886,6 +884,16 @@ theorem nonlawfulObject_not_noCycleLaw :
   apply hholds
   exact ⟨trivial, trivial, trivial⟩
 
+/-- The displayed residual generated from the cyclic fixture is one. -/
+@[simp] theorem lawEquationSystem_equationResidual_nonlawfulObject
+    (W : FiniteModel.site.category)
+    (equationIndex : lawEquationSystem.Index)
+    (atom : FiniteModel.carrier.Atom) :
+    lawEquationSystem.equationResidual W nonlawfulObject equationIndex atom = 1 := by
+  have hcycle : FiniteModel.hasDependencyCycle nonlawfulObject :=
+    ⟨trivial, trivial, trivial⟩
+  simp [lawEquationSystem, FiniteModel.noCycleResidual, hcycle]
+
 /-- Defect source whose displayed law interpretation is nonzero. -/
 def nonlawfulDefectSource :
     LawAlgebra.LawEquationDefectSource lawEquationSystem where
@@ -893,21 +901,9 @@ def nonlawfulDefectSource :
   chart _ := FiniteModel.siteBase
   LocalInput _ := PUnit
   input _ := PUnit.unit
-  lawSupport _ _ := [PUnit.unit]
-  lawSupport_nonempty := by
-    intro _i
-    exact ⟨PUnit.unit, by simp⟩
-  lawSupport_required := by
-    intro _i lawIndex _hmem
-    cases lawIndex
-    rfl
   objectOfLocalInput _ _ := nonlawfulObject
-  defect _ _ := (1 : ZMod 4)
-  holds_defect_mem := by
-    intro _i lawIndex _hmem _hrequired hholds
-    cases lawIndex
-    exact False.elim (nonlawfulObject_not_noCycleLaw
-      ((lawEquationSystem_equationHolds_iff_noCycleLaw nonlawfulObject).mp hholds))
+  equationIndex _ := ⟨PUnit.unit, rfl⟩
+  supportAtom _ := FiniteModel.FiniteAtom.componentA
 
 /-! ## Native generated quotient coefficient for example 9.1 -/
 
@@ -1000,7 +996,7 @@ theorem nonlawfulDefectSource_interpret_ne_zero :
     nonlawfulDefectSource.interpret_ne_zero_of_defect_notMem_obstructionIdeal
   dsimp [nonlawfulDefectSource]
   rw [generatedLaw_obstructionIdeal_eq_span_two]
-  exact generatedLaw_one_notMem_span_two
+  simpa using generatedLaw_one_notMem_span_two
 
 /-- X.例9.1 / #3102: the native law-equation-generated quotient is nontrivial. -/
 instance generatedLawQuotientNontrivial :
@@ -2090,37 +2086,22 @@ def integerLawFiniteFreeWitnessIdealGeometry :
   supportAtom_traceVisible := rfl
   quotientIsSheaf := integerGeneratedLawQuotientIsSheaf
 
-/-- Geometry-indexed integer defect input with selected defect `2`. -/
+/-- Geometry-indexed integer source whose lawful displayed residual is generated as zero. -/
 def integerLawFiniteFreeDefectSource :
     StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody
       integerLawFiniteFreeSemanticInput integerLawFiniteFreeWitnessIdealGeometry
       generatedLawFinitePosetCoverGeometry where
   LocalInput _ := PUnit
   input _ := PUnit.unit
-  atomSupport _ _ := [FiniteModel.FiniteAtom.componentA]
-  atomSupport_traceVisible := by
-    intro _ _
-    exact ⟨FiniteModel.FiniteAtom.componentA, by simp, rfl⟩
-  lawSupport _ _ := [PUnit.unit]
-  lawSupport_nonempty := by
-    intro _
-    exact ⟨PUnit.unit, by simp⟩
-  lawSupport_required := by
-    intro _ lawIndex _
-    cases lawIndex
-    rfl
   objectOfLocalInput _ _ := lawfulObject
-  defect _ _ := (2 : ℤ)
-  holds_defect_mem := by
-    intro _ lawIndex _ _ _
-    cases lawIndex
-    exact Ideal.subset_span ⟨FiniteModel.FiniteAtom.componentA, rfl⟩
+  equationIndex _ := ⟨PUnit.unit, rfl⟩
+  supportAtom _ := FiniteModel.FiniteAtom.componentA
+  supportAtom_traceVisible _ := rfl
 
 /-- Displayed required laws hold for the integer lawful input. -/
 theorem integerLawFiniteFreeDisplayedRequiredLawsHoldOn :
     integerLawFiniteFreeDefectSource.DisplayedRequiredLawsHoldOn := by
-  intro _ lawIndex _ _
-  cases lawIndex
+  intro _
   exact (FiniteModel.site_equationHolds_iff_noCycleLaw lawfulObject).mpr
     lawfulObject_noCycleLaw
 
@@ -2209,25 +2190,10 @@ def generatedLawFiniteFreeDefectSource :
       lawEquationFinitePosetCoverGeometry where
   LocalInput _ := PUnit
   input _ := PUnit.unit
-  atomSupport _ _ := [FiniteModel.FiniteAtom.componentA]
-  atomSupport_traceVisible := by
-    intro _ _
-    exact ⟨FiniteModel.FiniteAtom.componentA, by simp,
-      rfl⟩
-  lawSupport _ _ := [PUnit.unit]
-  lawSupport_nonempty := by
-    intro _
-    exact ⟨PUnit.unit, by simp⟩
-  lawSupport_required := by
-    intro _ lawIndex _
-    cases lawIndex
-    rfl
   objectOfLocalInput _ _ := lawfulObject
-  defect _ _ := (2 : ZMod 4)
-  holds_defect_mem := by
-    intro _ lawIndex _ _ _
-    cases lawIndex
-    exact Ideal.subset_span ⟨FiniteModel.FiniteAtom.componentA, rfl⟩
+  equationIndex _ := ⟨PUnit.unit, rfl⟩
+  supportAtom _ := FiniteModel.FiniteAtom.componentA
+  supportAtom_traceVisible _ := rfl
 
 /-- Geometry-indexed nonlawful source for the native `ZMod 4` site. -/
 def generatedLawFiniteFreeNonlawfulDefectSource :
@@ -2236,33 +2202,15 @@ def generatedLawFiniteFreeNonlawfulDefectSource :
       lawEquationFinitePosetCoverGeometry where
   LocalInput _ := PUnit
   input _ := PUnit.unit
-  atomSupport _ _ := [FiniteModel.FiniteAtom.componentA]
-  atomSupport_traceVisible := by
-    intro _ _
-    exact ⟨FiniteModel.FiniteAtom.componentA, by simp, rfl⟩
-  lawSupport _ _ := [PUnit.unit]
-  lawSupport_nonempty := by
-    intro _
-    exact ⟨PUnit.unit, by simp⟩
-  lawSupport_required := by
-    intro _ lawIndex _
-    cases lawIndex
-    rfl
   objectOfLocalInput _ _ := nonlawfulObject
-  defect _ _ := (1 : ZMod 4)
-  holds_defect_mem := by
-    intro _ lawIndex _ _ hholds
-    cases lawIndex
-    exact False.elim
-      (nonlawfulObject_not_noCycleLaw
-        ((lawEquationSystem_equationHolds_iff_noCycleLaw nonlawfulObject).mp
-          hholds))
+  equationIndex _ := ⟨PUnit.unit, rfl⟩
+  supportAtom _ := FiniteModel.FiniteAtom.componentA
+  supportAtom_traceVisible _ := rfl
 
 /-- Displayed required laws hold on the rich singleton defect input. -/
 theorem generatedLawFiniteFreeDisplayedRequiredLawsHoldOn :
     generatedLawFiniteFreeDefectSource.DisplayedRequiredLawsHoldOn := by
-  intro _ lawIndex _ _
-  cases lawIndex
+  intro _
   exact (lawEquationSystem_equationHolds_iff_noCycleLaw lawfulObject).mpr
     lawfulObject_noCycleLaw
 
@@ -2270,13 +2218,7 @@ theorem generatedLawFiniteFreeDisplayedRequiredLawsHoldOn :
 theorem generatedLawFiniteFreeNonlawfulDefectSource_not_displayedRequiredLawsHoldOn :
     ¬ generatedLawFiniteFreeNonlawfulDefectSource.DisplayedRequiredLawsHoldOn := by
   intro hholds
-  have hmem :
-      PUnit.unit ∈
-        generatedLawFiniteFreeNonlawfulDefectSource.lawSupport
-          PUnit.unit PUnit.unit :=
-    List.mem_singleton_self PUnit.unit
-  have hfailure :=
-    hholds PUnit.unit PUnit.unit hmem rfl
+  have hfailure := hholds PUnit.unit
   exact nonlawfulObject_not_noCycleLaw
     ((lawEquationSystem_equationHolds_iff_noCycleLaw nonlawfulObject).mp hfailure)
 
@@ -2286,10 +2228,43 @@ theorem generatedLawFiniteFreeNonlawfulDefectSource_interpret_ne_zero :
       PUnit.unit ≠ 0 := by
   apply
     generatedLawFiniteFreeNonlawfulDefectSource.toLawEquationDefectSource.interpret_ne_zero_of_defect_notMem_obstructionIdeal
-  change (1 : ZMod 4) ∉
-    lawEquationSystem.obstructionIdeal FiniteModel.siteBase
+  simp only [LawAlgebra.DisplayedEquationSource.defect_eq_equationResidual,
+    StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.toLawEquationDefectSource,
+    generatedLawFiniteFreeNonlawfulDefectSource,
+    StandardFinitePosetGeneratedBoundary.LawEquationWitnessIdealGeometryBody.equationSystem,
+    generatedLawFiniteFreeWitnessIdealGeometry,
+    lawEquationFinitePosetCoverGeometry,
+    lawEquationSiteSingletonCover,
+    lawEquationSiteBase,
+    lawEquationSite,
+    lawEquationSystem_equationResidual_nonlawfulObject]
+  change (1 : ZMod 4) ∉ lawEquationSystem.obstructionIdeal FiniteModel.siteBase
   rw [generatedLaw_obstructionIdeal_eq_span_two]
   exact generatedLaw_one_notMem_span_two
+
+/-- The lawful finite-poset fixture has zero generated quotient interpretation. -/
+theorem generatedLawFiniteFreeDefectSource_interpret_eq_zero :
+    generatedLawFiniteFreeDefectSource.toLawEquationDefectSource.interpret
+      PUnit.unit = 0 :=
+  generatedLawFiniteFreeDefectSource.toLawEquationDefectSource
+    |>.displayedRequiredLawsHoldOn_constructs_interpret_eq_zero
+      generatedLawFiniteFreeDisplayedRequiredLawsHoldOn PUnit.unit
+
+/--
+The finite positive and negative displayed sources separate fulfillment and
+generated quotient zero without a membership or quotient certificate field.
+-/
+theorem generatedLawFiniteFree_displayedEquationFixtures_separate :
+    generatedLawFiniteFreeDefectSource.DisplayedRequiredLawsHoldOn /\
+      generatedLawFiniteFreeDefectSource.toLawEquationDefectSource.interpret
+          PUnit.unit = 0 /\
+      (¬ generatedLawFiniteFreeNonlawfulDefectSource.DisplayedRequiredLawsHoldOn) /\
+      generatedLawFiniteFreeNonlawfulDefectSource.toLawEquationDefectSource.interpret
+          PUnit.unit ≠ 0 :=
+  ⟨generatedLawFiniteFreeDisplayedRequiredLawsHoldOn,
+    generatedLawFiniteFreeDefectSource_interpret_eq_zero,
+    generatedLawFiniteFreeNonlawfulDefectSource_not_displayedRequiredLawsHoldOn,
+    generatedLawFiniteFreeNonlawfulDefectSource_interpret_ne_zero⟩
 
 /--
 Concrete R5 final firing on the PUnit singleton standard complex.  The result
@@ -2408,26 +2383,9 @@ def mixedDefectSource :
   chart _ := FiniteModel.siteBase
   LocalInput _ := PUnit
   input _ := PUnit.unit
-  lawSupport _ _ := [PUnit.unit]
-  lawSupport_nonempty := by
-    intro _i
-    exact ⟨PUnit.unit, by simp⟩
-  lawSupport_required := by
-    intro _i lawIndex _hmem
-    cases lawIndex
-    rfl
   objectOfLocalInput i _ := if i then nonlawfulObject else lawfulObject
-  defect i _ := if i then (1 : ZMod 4) else 0
-  holds_defect_mem := by
-    intro i lawIndex _hmem _hrequired hholds
-    cases i with
-    | false =>
-        cases lawIndex
-        exact Ideal.zero_mem _
-    | true =>
-        cases lawIndex
-        exact False.elim (nonlawfulObject_not_noCycleLaw
-          ((lawEquationSystem_equationHolds_iff_noCycleLaw nonlawfulObject).mp hholds))
+  equationIndex _ := ⟨PUnit.unit, rfl⟩
+  supportAtom _ := FiniteModel.FiniteAtom.componentA
 
 /-- Cover-relative two-chart presentation used by the mixed-source counterexample. -/
 def mixedCoverRelativeCover :
