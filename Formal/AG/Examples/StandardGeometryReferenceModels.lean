@@ -510,8 +510,22 @@ def referenceCoverageRequirements :
     Site.CoverageRequirements
       referenceCorePackage.object
       referenceCorePackage.equationSystem
-      referenceCorePackage.algebra.signatureReading :=
-  AAT.AG.FiniteModel.twoPatchCoverageRequirements
+      referenceCorePackage.algebra.signatureReading where
+  requiredSupport := fun atom =>
+    atom = AAT.AG.FiniteModel.FiniteAtom.componentA ∨
+      atom = AAT.AG.FiniteModel.FiniteAtom.componentB
+  requiredEquationCoordinate := fun _ => True
+  selectedViolationWitness := fun _ => True
+  requiredAxis := fun _ => True
+  supportVisibleOn := AAT.AG.FiniteModel.twoPatchSupportVisibleOn
+  equationCoordinateVisibleOn := fun _ _ => True
+  violationWitnessVisibleOn := fun _ _ => True
+  axisReadableOn := fun W _ =>
+    W = AAT.AG.FiniteModel.twoPatchContext
+        AAT.AG.FiniteModel.TwoPatchContextIndex.left ∨
+      W = AAT.AG.FiniteModel.twoPatchContext
+        AAT.AG.FiniteModel.TwoPatchContextIndex.right
+  boundaryVisibleOn := fun _ _ => True
 
 /--
 SD0 constructor-provenance or no-unfold API lemma for Part II definitions 3.1, 4.1, and 6.1–8.1, including proposition 4.2 and assumption 4.3.
@@ -520,7 +534,21 @@ The executable contract fixes the exact declaration type.
 -/
 theorem referenceCoverageRequirements_eq :
     referenceCoverageRequirements =
-      AAT.AG.FiniteModel.twoPatchCoverageRequirements :=
+      { requiredSupport := fun atom =>
+          atom = AAT.AG.FiniteModel.FiniteAtom.componentA ∨
+            atom = AAT.AG.FiniteModel.FiniteAtom.componentB
+        requiredEquationCoordinate := fun _ => True
+        selectedViolationWitness := fun _ => True
+        requiredAxis := fun _ => True
+        supportVisibleOn := AAT.AG.FiniteModel.twoPatchSupportVisibleOn
+        equationCoordinateVisibleOn := fun _ _ => True
+        violationWitnessVisibleOn := fun _ _ => True
+        axisReadableOn := fun W _ =>
+          W = AAT.AG.FiniteModel.twoPatchContext
+              AAT.AG.FiniteModel.TwoPatchContextIndex.left ∨
+            W = AAT.AG.FiniteModel.twoPatchContext
+              AAT.AG.FiniteModel.TwoPatchContextIndex.right
+        boundaryVisibleOn := fun _ _ => True } :=
   rfl
 
 /--
@@ -562,6 +590,13 @@ The executable contract fixes the exact declaration type.
 -/
 @[simp] theorem referenceSite_eq :
     referenceSite = referenceSelectedGeometryReading.toAATSite :=
+  rfl
+
+/-- Every equation in the reference site is required. -/
+theorem referenceSite_equation_required
+    (index : referenceSite.equationSystem.Index) :
+    referenceSite.equationSystem.Required index := by
+  cases index
   rfl
 
 private noncomputable def referenceIncomingCode
@@ -5064,7 +5099,7 @@ noncomputable def weakLawEquationCore :
   supportAtom := AAT.AG.FiniteModel.FiniteAtom.componentA
   supportLawIndex := PUnit.unit
   supportLawIndex_required :=
-    AAT.AG.FiniteModel.lawUniverse_required PUnit.unit
+    referenceSite_equation_required PUnit.unit
 
 /--
 SD2-SD3 standard-geometry reference-model declaration.
@@ -5090,7 +5125,7 @@ noncomputable def strongLawEquationCore :
   supportAtom := AAT.AG.FiniteModel.FiniteAtom.componentA
   supportLawIndex := PUnit.unit
   supportLawIndex_required :=
-    AAT.AG.FiniteModel.lawUniverse_required PUnit.unit
+    referenceSite_equation_required PUnit.unit
 
 /--
 SD2-SD3 standard-geometry reference-model declaration.
@@ -5118,7 +5153,7 @@ noncomputable def rigidLawEquationCore :
   supportAtom := AAT.AG.FiniteModel.FiniteAtom.componentA
   supportLawIndex := PUnit.unit
   supportLawIndex_required :=
-    AAT.AG.FiniteModel.lawUniverse_required PUnit.unit
+    referenceSite_equation_required PUnit.unit
 
 /--
 SD2-SD3 standard-geometry reference-model declaration.
@@ -6365,16 +6400,17 @@ private theorem reference_generated_top_eq_span
   · refine iSup_le fun i => ?_
     cases i.1
     exact (reference_local_top_eq_span G B _).le
-  · let idx : {i : referenceSite.equationSystem.toLegacyLawUniverse.Index //
-        referenceSite.equationSystem.toLegacyLawUniverse.Required i ∧
+  · let idx : {i : referenceSite.equationSystem.Index //
+        referenceSite.equationSystem.Required i ∧
           reading.selected ambientTopAffineOpen i} :=
-      ⟨PUnit.unit, AAT.AG.FiniteModel.lawUniverse_required PUnit.unit,
+      ⟨PUnit.unit,
+        referenceSite_equation_required PUnit.unit,
         ClosedEquationalLawReading.ofSemanticCore_selected referenceRaw
           referenceScheme G B ambientTopAffineOpen PUnit.unit⟩
     have h := le_iSup (fun i :
-      {i : referenceSite.equationSystem.toLegacyLawUniverse.Index //
-        referenceSite.equationSystem.toLegacyLawUniverse.Required i ∧
-        reading.selected ambientTopAffineOpen i} =>
+      {i : referenceSite.equationSystem.Index //
+          referenceSite.equationSystem.Required i ∧
+            reading.selected ambientTopAffineOpen i} =>
         localLawWitnessIdeal referenceRaw referenceScheme
           (reading.witness i.1 (required.closed i.1 i.2.1))
           ambientTopAffineOpen) idx
@@ -7109,7 +7145,7 @@ private theorem evaluationPoint_not_weak_semantic
       (evaluationPoint n) := by
   intro h
   have hrequired := h PUnit.unit
-    (AAT.AG.FiniteModel.lawUniverse_required PUnit.unit)
+    (referenceSite_equation_required PUnit.unit)
   change (GeometricLawReading.ofSemanticCore referenceRaw referenceScheme
     weakLawEquationCore weakSchemeBridge).HoldsOn (evaluationPoint n) PUnit.unit
       at hrequired
@@ -7129,7 +7165,7 @@ private theorem evaluationPoint_not_strong_semantic
       (evaluationPoint n) := by
   intro h
   have hrequired := h PUnit.unit
-    (AAT.AG.FiniteModel.lawUniverse_required PUnit.unit)
+    (referenceSite_equation_required PUnit.unit)
   change (GeometricLawReading.ofSemanticCore referenceRaw referenceScheme
     strongLawEquationCore strongSchemeBridge).HoldsOn (evaluationPoint n) PUnit.unit
       at hrequired

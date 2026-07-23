@@ -1,4 +1,5 @@
 import Formal.AG
+import Formal.AG.Equation.FiniteExample
 import Formal.AG.SemanticRepair.AdditiveH1
 import Formal.AG.SemanticRepair.Examples
 import Formal.AG.SemanticRepair.LawEquationGeneratedPair
@@ -1751,7 +1752,6 @@ def sd1GenerateFamilyUnique := @AATCorePackage.generate_family_unique
 def sd1GenerateConfigurationFamilyEq := @AATCorePackage.generate_configuration_family_eq
 def sd1GenerateConfigurationSupported := @AATCorePackage.generate_configuration_familySupported
 def sd1GenerateObjectConfigurationEq := @AATCorePackage.generate_object_configuration_eq
-def sd1GenerateLawReadingEq := @AATCorePackage.generate_lawReading_eq
 def sd1GenerateAlgebraBaseObject := @AATCorePackage.generate_algebra_base_object
 def sd1GenerateOperationSource := @AATCorePackage.generate_algebra_operation_source
 def sd1GenerateOperationTarget := @AATCorePackage.generate_algebra_operation_target
@@ -1840,7 +1840,6 @@ def sd1CoreConfigurationRelationIff := @AATCorePackage.configuration_relation_if
 def sd1CoreConfigurationIdentificationIff :=
   @AATCorePackage.configuration_identification_iff_compose
 def sd1CoreObjectFamilyMemIff := @AATCorePackage.object_family_mem_iff_extracts
-def sd1CoreAlgebraLawReadingEq := @AATCorePackage.algebra_lawReading_eq
 def sd1CoreAlgebraCircuitReadingEq := @AATCorePackage.algebra_circuitReading_eq
 def sd1CoreAlgebraDetectorCodeEq := @AATCorePackage.algebra_detectorCode_eq
 def sd1CoreAlgebraAcceptsEq := @AATCorePackage.algebra_accepts_eq_detector_eval
