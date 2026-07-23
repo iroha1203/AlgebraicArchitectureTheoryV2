@@ -1086,14 +1086,13 @@ noncomputable def allLawGeneratedIdealSheaf
   rfl
 
 /--
-When every equation is selected, the required generated ideal sheaf is the
-supremum of the required per-equation witness ideal sheaves.
+The required generated ideal sheaf is the supremum of the required
+per-equation witness ideal sheaves.
 -/
 theorem lawGeneratedIdealSheaf_eq_iSup_required
     (R : ClosedEquationalLawReading raw X E)
     (hR : IsClosedEquationalLawReading raw X R)
-    (hclosed : RequiredClosed raw X R)
-    (hall : AllLawsSelected raw X R) :
+    (hclosed : RequiredClosed raw X R) :
     lawGeneratedIdealSheaf raw X R hR hclosed =
       ⨆ i : E.RequiredIndex,
         lawWitnessIdealSheaf raw X R hR.witness_compatible
@@ -1112,7 +1111,7 @@ theorem lawGeneratedIdealSheaf_eq_iSup_required
   · refine iSup_le fun i => ?_
     let j : {q : E.Index //
         E.Required q ∧ R.selected V q} :=
-      ⟨i.1, i.2, hall.selected V i.1⟩
+      ⟨i.1, i.2, hclosed.selected V i.1 i.2⟩
     simpa only [lawWitnessIdealSheaf_ideal, j, Subtype.coe_mk] using
       (le_iSup (fun q : {q : E.Index //
           E.Required q ∧ R.selected V q} =>
@@ -1271,8 +1270,6 @@ theorem siteEquationGeneratedIdealSheaf_eq_ofIdealTop_map_obstructionIdeal
       (ClosedEquationalLawReading.ofSiteEquationSystem_valid
         W siteRaw Y hcontext)
       (ClosedEquationalLawReading.ofSiteEquationSystem_requiredClosed
-        W siteRaw Y hcontext)
-      (ClosedEquationalLawReading.ofSiteEquationSystem_allLawsSelected
         W siteRaw Y hcontext)]
   rw [S.equationSystem.obstructionIdeal_eq_iSup_required,
     Ideal.map_iSup, ofIdealTop_iSup]

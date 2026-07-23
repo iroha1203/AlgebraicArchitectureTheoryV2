@@ -738,8 +738,6 @@ theorem siteEquationGeneratedIdealSheaf_baseChange
     (ClosedEquationalLawReading.ofSiteEquationSystem_valid
       W siteRaw Y hcontext)
     (ClosedEquationalLawReading.ofSiteEquationSystem_requiredClosed
-      W siteRaw Y hcontext)
-    (ClosedEquationalLawReading.ofSiteEquationSystem_allLawsSelected
       W siteRaw Y hcontext)]
   rw [lawGeneratedIdealSheaf_eq_iSup_required
     (siteRaw.baseChange f.hom) (Y.baseChange siteRaw f)
@@ -748,8 +746,6 @@ theorem siteEquationGeneratedIdealSheaf_baseChange
     (ClosedEquationalLawReading.baseChangeOfSiteEquationSystem_valid
       W siteRaw Y hcontext f)
     (ClosedEquationalLawReading.baseChangeOfSiteEquationSystem_requiredClosed
-      W siteRaw Y hcontext f)
-    (ClosedEquationalLawReading.baseChangeOfSiteEquationSystem_allLawsSelected
       W siteRaw Y hcontext f)]
   rw [(Scheme.IdealSheafData.map_gc
     (Y.baseChangeMap siteRaw f)).l_iSup]
@@ -960,14 +956,12 @@ theorem lawGeneratedIdealSheaf_baseChange_ofSemanticCore
   rw [lawGeneratedIdealSheaf_eq_iSup_required raw X
     (ClosedEquationalLawReading.ofSemanticCore raw X G B)
     (ClosedEquationalLawReading.ofSemanticCore_valid raw X G B)
-    (ClosedEquationalLawReading.ofSemanticCore_requiredClosed raw X G B)
-    (ClosedEquationalLawReading.ofSemanticCore_allLawsSelected raw X G B)]
+    (ClosedEquationalLawReading.ofSemanticCore_requiredClosed raw X G B)]
   rw [lawGeneratedIdealSheaf_eq_iSup_required
     (raw.baseChange f.hom) (X.baseChange raw f)
     (ClosedEquationalLawReading.baseChangeOfSemanticCore raw X G B f)
     (ClosedEquationalLawReading.baseChangeOfSemanticCore_valid raw X G B f)
-    (ClosedEquationalLawReading.baseChangeOfSemanticCore_requiredClosed raw X G B f)
-    (ClosedEquationalLawReading.baseChangeOfSemanticCore_allLawsSelected raw X G B f)]
+    (ClosedEquationalLawReading.baseChangeOfSemanticCore_requiredClosed raw X G B f)]
   rw [(Scheme.IdealSheafData.map_gc (X.baseChangeMap raw f)).l_iSup]
   congr 1
   funext i
