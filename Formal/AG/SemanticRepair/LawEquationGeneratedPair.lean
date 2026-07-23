@@ -3423,6 +3423,33 @@ def toLawEquationDefectSource
   supportAtom := D.supportAtom
 
 /--
+Projection to the generic displayed source uses the context selected by the
+finite-poset cover.
+-/
+@[simp] theorem toLawEquationDefectSource_chart
+    {semanticInput : LawEquationSemanticAtomInputBody.{v, x} Ulaw}
+    {G : LawEquationWitnessIdealGeometryBody semanticInput Slaw}
+    {geometry : Site.FinitePosetCoverGeometry Slaw}
+    (D : FinitePosetLawEquationDefectSourceBody semanticInput G geometry)
+    (i : geometry.cover.Index) :
+    D.toLawEquationDefectSource.chart i =
+      Site.ContextCategoryObject.of Slaw.contextPreorder
+        (geometry.cover.patch i) :=
+  rfl
+
+/--
+Projection to the generic displayed source preserves the selected local input.
+-/
+@[simp] theorem toLawEquationDefectSource_input
+    {semanticInput : LawEquationSemanticAtomInputBody.{v, x} Ulaw}
+    {G : LawEquationWitnessIdealGeometryBody semanticInput Slaw}
+    {geometry : Site.FinitePosetCoverGeometry Slaw}
+    (D : FinitePosetLawEquationDefectSourceBody semanticInput G geometry)
+    (i : geometry.cover.Index) :
+    D.toLawEquationDefectSource.input i = D.input i :=
+  rfl
+
+/--
 Projection to the generic displayed source preserves the generated residual.
 The simp direction rewrites the projected defect to the finite-poset source API
 without exposing the projection's structure fields.

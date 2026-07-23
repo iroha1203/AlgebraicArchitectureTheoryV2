@@ -981,6 +981,23 @@ private theorem generatedLaw_one_notMem_span_two :
   rcases h with ⟨a, ha⟩
   exact (by fin_cases a <;> decide : ¬ a * 2 = (1 : ZMod 4)) ha
 
+/--
+The generated residual of the direct nonlawful source lies outside its
+obstruction ideal.  This characterization keeps concrete source reduction out
+of downstream interpretation proofs.
+-/
+theorem nonlawfulDefectSource_defect_notMem_obstructionIdeal :
+    nonlawfulDefectSource.defect PUnit.unit
+        (nonlawfulDefectSource.input PUnit.unit) ∉
+      lawEquationSystem.obstructionIdeal
+        (nonlawfulDefectSource.chart PUnit.unit) := by
+  simp only [
+    LawAlgebra.DisplayedEquationSource.defect_eq_equationResidual,
+    nonlawfulDefectSource,
+    lawEquationSystem_equationResidual_nonlawfulObject]
+  rw [generatedLaw_obstructionIdeal_eq_span_two]
+  exact generatedLaw_one_notMem_span_two
+
 /-- X.例9.1 / #3102: the native generated quotient has a concrete nonzero class. -/
 theorem generatedLawQuotient_one_ne_zero :
     (Ideal.Quotient.mk (lawEquationSystem.obstructionIdeal FiniteModel.siteBase)
@@ -994,9 +1011,7 @@ theorem nonlawfulDefectSource_interpret_ne_zero :
     nonlawfulDefectSource.interpret PUnit.unit ≠ 0 := by
   apply
     nonlawfulDefectSource.interpret_ne_zero_of_defect_notMem_obstructionIdeal
-  dsimp [nonlawfulDefectSource]
-  rw [generatedLaw_obstructionIdeal_eq_span_two]
-  simpa using generatedLaw_one_notMem_span_two
+  exact nonlawfulDefectSource_defect_notMem_obstructionIdeal
 
 /-- X.例9.1 / #3102: the native law-equation-generated quotient is nontrivial. -/
 instance generatedLawQuotientNontrivial :
@@ -2221,10 +2236,12 @@ theorem generatedLawFiniteFreeNonlawfulDefectSource_defect_notMem_obstructionIde
         (generatedLawFiniteFreeNonlawfulDefectSource.toLawEquationDefectSource.chart
           PUnit.unit) := by
   rw [
+    StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.toLawEquationDefectSource_input,
     StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.toLawEquationDefectSource_defect]
+  rw [
+    StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.toLawEquationDefectSource_chart,
+    StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.defect_eq_equationResidual]
   simp only [
-    StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.defect_eq_equationResidual,
-    StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.toLawEquationDefectSource,
     generatedLawFiniteFreeNonlawfulDefectSource,
     StandardFinitePosetGeneratedBoundary.LawEquationWitnessIdealGeometryBody.equationSystem,
     generatedLawFiniteFreeWitnessIdealGeometry,

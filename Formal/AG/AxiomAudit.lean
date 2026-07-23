@@ -526,6 +526,14 @@ def semanticRepairTheorem75SemanticAtomProjectionFromLawInput :=
 def semanticRepairTheorem75FinitePosetDefectSourceToGenericSource :=
   @SemanticRepair.StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.toLawEquationDefectSource
 
+/-- Audit alias for the projected finite-poset chart. -/
+def semanticRepairTheorem75FinitePosetToGenericSourceChart :=
+  @SemanticRepair.StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.toLawEquationDefectSource_chart
+
+/-- Audit alias for the projected finite-poset local input. -/
+def semanticRepairTheorem75FinitePosetToGenericSourceInput :=
+  @SemanticRepair.StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.toLawEquationDefectSource_input
+
 /-- Audit alias for the finite-poset residual characterization. -/
 def semanticRepairTheorem75FinitePosetDefectEqEquationResidual :=
   @SemanticRepair.StandardFinitePosetGeneratedBoundary.FinitePosetLawEquationDefectSourceBody.defect_eq_equationResidual
@@ -603,6 +611,10 @@ def semanticRepairExample91LawfulEquationResidualZero :=
 /-- Audit alias for the unit residual of the nonlawful displayed fixture. -/
 def semanticRepairExample91NonlawfulEquationResidualOne :=
   @AAT.AG.Examples.SemanticRepairPart10.lawEquationSystem_equationResidual_nonlawfulObject
+
+/-- Audit alias for non-membership of the direct nonlawful fixture residual. -/
+def semanticRepairExample91DirectNonlawfulDefectNotMemObstructionIdeal :=
+  AAT.AG.Examples.SemanticRepairPart10.nonlawfulDefectSource_defect_notMem_obstructionIdeal
 
 /-- Audit alias for non-membership of the projected nonlawful fixture residual. -/
 def semanticRepairExample91NonlawfulDisplayedDefectNotMemObstructionIdeal :=
