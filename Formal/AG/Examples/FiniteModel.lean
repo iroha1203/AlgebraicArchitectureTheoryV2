@@ -1,5 +1,4 @@
 import Formal.AG.Atom.AATCore
-import Formal.AG.Atom.ObstructionLegacy
 import Formal.AG.Atom.LawfulnessZero
 import Formal.AG.Atom.ThreeReading
 import Formal.AG.Site.FinitePoset
@@ -321,15 +320,6 @@ theorem equationHolds_iff_noCycleLaw
   · intro h W atom
     simp [equationSystem, noCycleResidual, hasDependencyCycle, noCycleLaw] at h ⊢
     exact h
-
-/-- The one-way legacy law generated from the finite equation is the NoCycle predicate. -/
-theorem equationSystem_legacy_law_eq_noCycleLaw
-    (C : Site.ContextPreorderCategory object) :
-    (equationSystem C).toLegacyLawUniverse.law PUnit.unit = noCycleLaw := by
-  apply Law.ext
-  funext A
-  apply propext
-  exact equationHolds_iff_noCycleLaw C A
 
 /-- Equation-indexed finite detector reading used by every finite-core context choice. -/
 noncomputable def equationCircuitReading
@@ -1754,19 +1744,6 @@ theorem site_equation_required (index : site.equationSystem.Index) :
   change (equationSystem siteContextPreorder).EquationHolds PUnit.unit A ↔
     noCycleLaw.holds A
   exact equationHolds_iff_noCycleLaw siteContextPreorder A
-
-/-- The generated site legacy display is exactly the finite NoCycle equation. -/
-@[simp] theorem site_law_holds_iff_noCycleLaw
-    (A : ArchitectureObject carrier) :
-    (site.equationSystem.toLegacyLawUniverse.law PUnit.unit).holds A ↔
-      noCycleLaw.holds A := by
-  exact site_equationHolds_iff_noCycleLaw A
-
-/-- SD2: the finite site retains the generated core law universe. -/
-theorem site_lawUniverse_eq_core :
-    site.equationSystem.toLegacyLawUniverse =
-      siteCorePackage.equationSystem.toLegacyLawUniverse :=
-  rfl
 
 /-- SD2: the finite site retains the generated core signature reading. -/
 theorem site_signature_eq_core :

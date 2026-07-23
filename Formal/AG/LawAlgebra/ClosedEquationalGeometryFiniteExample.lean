@@ -1,4 +1,5 @@
 import Formal.AG.LawAlgebra.ClosedEquationalGeometryLegacy
+import Formal.AG.LawAlgebra.RingedSiteFiniteExampleLegacy
 import Formal.AG.LawAlgebra.StandardSchemeFiniteExample
 import Formal.AG.LawAlgebra.FiniteExamples
 

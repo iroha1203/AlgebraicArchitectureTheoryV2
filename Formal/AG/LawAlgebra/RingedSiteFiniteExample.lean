@@ -74,13 +74,6 @@ theorem site_equation_required (index : site.equationSystem.Index) :
     noCycleLaw.holds A
   exact equationHolds_iff_noCycleLaw twoPatchContextPreorder A
 
-/-- The generated compatibility law of the ringed-site fixture is NoCycle. -/
-@[simp] theorem site_law_eq_noCycleLaw :
-    site.equationSystem.toLegacyLawUniverse.law PUnit.unit = noCycleLaw := by
-  change (equationSystem twoPatchContextPreorder).toLegacyLawUniverse.law
-    PUnit.unit = noCycleLaw
-  exact equationSystem_legacy_law_eq_noCycleLaw twoPatchContextPreorder
-
 /-- R6: the concrete base object. -/
 def base : site.category :=
   Site.ContextCategoryObject.of twoPatchContextPreorder
