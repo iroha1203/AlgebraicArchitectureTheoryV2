@@ -3485,6 +3485,34 @@ X.定理3.4(ii) / X.定理4.8 の sufficient direction は semantic faithfulness
   faithfulness が alias pair `(o, s)` で破れ(X.例2.6 と同じ機構)、semantic
   closure が失敗し、その supportOf を持つ gluing complex では global
   semantic repair coherence が成立しない。
+
+Boundaries (disclosed):
+
+* the discriminating content of this instance lives in the *support pair*,
+  not in the positive discharge alone.  By the easy direction of X.補題2.5,
+  any semantically closed support is automatically component-covered and
+  component-faithful, so a "propositionally nontrivial" positive discharge is
+  unachievable by design; the text itself assigns the substance of the
+  faithfulness condition to the X.例2.6-style negative.  The pair below
+  discriminates faithful supports from unfaithful ones on the same carrier,
+  cover, cochain complex, and residual;
+* on this instance the fiber support coincides extensionally with the
+  residual predicate, so semantic closure also admits a short direct proof;
+  the derivation through X.補題2.5 adopted below exhibits the faithfulness
+  route consumed by the firing chain, it is not mathematically forced.  The
+  non-`True` content of the fiber support is the exclusion of the
+  non-residual atom `t` (`aliasSharedFiberSupport_not_trivial`), which the
+  firing theorems do not read;
+* the cohomological side is maximally degenerate: `delta0 = id` makes every
+  cochain a boundary, so `H1Zero` holds for any residual choice and, on this
+  instance, global coherence is propositionally equivalent to obstruction
+  vanishing.  The nonzero residual (`1 ≠ 0` in `F₂`) rules out the
+  zero-residual reading but is not consumed by the firing chain.  Nontrivial
+  `H¹` content is the business of the circle and kite witnesses, not of this
+  instance;
+* the faithfulness proof does not use its residual hypothesis: fiber-closed
+  supports are component-faithful over *any* cover datum.  The holonomy
+  restriction to `shared` matters only for the coverage side.
 -/
 
 /--
@@ -3549,8 +3577,10 @@ theorem aliasSharedFiberSupport_faithful :
 
 /--
 #3720: semantic closure of the fiber-closed support, derived through
-X.補題2.5 from coverage and faithfulness — faithfulness genuinely enters the
-closure derivation.
+X.補題2.5 from coverage and faithfulness.  This is the adopted proof route
+(the firing chain consumes faithfulness through it); a short direct proof
+also exists because the fiber support coincides with the residual predicate
+— see the module boundary above.
 -/
 theorem aliasSharedFiberSupport_closed :
     SemanticRepairClosed CoverageWithoutFaithfulness.projection
@@ -3651,8 +3681,10 @@ def aliasAdditiveFaithfulnessData :
   additive := aliasAdditiveData
 
 /--
-#3720: X.定理4.8 fires — the vanishing additive `H¹` class yields global
-repair coherence through the genuinely discharged faithfulness law.
+#3720: the sufficient direction of X.定理4.8 fires — the vanishing additive
+`H¹` class yields global repair coherence through the discharged
+faithfulness law (the conclusions derived from faithfulness data and the
+additive regime; no true sheaf certificate is instantiated here).
 -/
 theorem aliasFiring_globalRepairCoherent :
     aliasFaithfulnessData.GlobalRepairCoherent :=
