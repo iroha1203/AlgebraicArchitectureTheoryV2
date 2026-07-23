@@ -91,6 +91,11 @@ theorem typedZeroComparison_preserves_zero
 /--
 X.定理8.4 counterexample layer: no typed comparison can target an empty
 carrier from a selected inhabited source.
+
+Role division (#3722): this is the minimal auxiliary type-level layer.  The
+spec-facing main counterexample lives on the circle entity with its nonzero
+cover-relative `H^1` class:
+`Examples.SemanticRepairPart10.circleTypedComparisonTarget_impossible_forEmptyCoefficient`.
 -/
 theorem typedComparisonTarget_not_unconditional_for_emptyTarget :
     IsEmpty (SemanticRepairTypedComparisonTarget PUnit Empty) := by
@@ -154,6 +159,11 @@ theorem refinementZeroComparison_blocks_coarseZero_fineNonzero
 X.定理8.5 counterexample layer: a coarse point that is always zero and a fine
 point that is never zero allow no unconditional zero-preserving refinement
 comparison.
+
+Role division (#3722): this is the minimal auxiliary type-level layer.  The
+spec-facing main counterexample runs from the lawful singleton complex to the
+circle complex:
+`Examples.SemanticRepairPart10.circleRefinementZeroComparison_not_unconditional_onCircle`.
 -/
 theorem refinementZeroComparison_not_unconditional_for_coarseZero_fineNonzero :
     IsEmpty

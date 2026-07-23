@@ -3225,6 +3225,577 @@ theorem zmodTwoTorsor_selectedHigherAndEffectiveDescent :
         zmodTwoTorsor_h1Zero :=
   ⟨zmodTwoTorsor_higherCoherence, zmodTwoTorsor_stackEffectiveness⟩
 
+/-!
+## #3722: X.定理8.4 / 8.5 counterexamples on the circle entity
+
+The spec counterexamples of X.定理8.4 and X.定理8.5 speak about a finite
+complex with nonzero cover-relative `H^1`.  The abstract type-level
+counterexamples in `Formal/AG/SemanticRepair/Boundary.lean` remain as the
+minimal auxiliary layer; the spec-facing main counterexamples below are
+carried by the X.例9.2 circle entity itself: the source of the impossible
+degree-one comparison is the actual circle cohomology carrier with its
+nonzero residual class, and the blocked refinement pullback goes from the
+lawful X.例9.1 generated `F₂` singleton complex (whose realized residual is
+the zero cochain of a genuinely two-element cocycle carrier) to the circle
+residual (which is not a coboundary).
+
+Disclosed reading of the two impossibility mechanisms:
+
+* the theorem-8.4 impossibility is driven by the empty section carrier over
+  the genuinely-nonzero circle `H^1` source; the nonzero-ness of the residual
+  class is a property of the selected pair and is conjoined in the packet
+  below (`circleCoverRelativeH1_nonzero`), matching the ∃-pair shape of the
+  spec.  The comparison target is the section carrier of the selected
+  coefficient presheaf: an empty-valued coefficient admits no abelian
+  obstruction sheaf at all, which is exactly the "no comparison target"
+  coefficient selection;
+* the theorem-8.5 impossibility genuinely consumes both spec conditions: the
+  coarse-residual-is-zero-cochain identity (proved and then used in the
+  blocking proof) and the fine-side non-coboundary content of the circle
+  residual;
+* the two-element *cocycle* carrier of the coarse side is relative to the
+  selected zero degree-one differential of `generatedF2CoverRelativeComplex`
+  (the differentials of a `CoverRelativeCechComplex` are selected data).
+  Under the honest alternating-sum differential on the same singleton nerve —
+  or under the nondegenerate-nerve convention of the text — the degree-one
+  cocycles collapse to the zero cochain alone.  The selection-independent
+  falsifiable content of the zero-cochain identity lives at the cochain
+  level, where `C¹ ≅ F₂` regardless of the differential selection;
+* the remark that an empty-valued coefficient admits no abelian obstruction
+  sheaf is prose, not a formalized proposition: the formalized "no comparison
+  target" content is the emptiness of the section carrier of the selected
+  Type-valued presheaf at the base.
+-/
+
+/--
+X.定理8.4: the coefficient selection with no comparison target, realized as
+the empty-valued presheaf on the circle witness site.
+-/
+def circleEmptyCoefficientPresheaf : Site.AATPresheaf circleSite where
+  obj _ := Empty
+  map _ x := x
+  map_id _ := rfl
+  map_comp _ _ := rfl
+
+/--
+X.定理8.4: on the circle complex — a finite complex whose cover-relative
+`H^1` genuinely contains the nonzero residual class — no typed comparison
+map into the empty-coefficient section carrier can be constructed.
+
+The nonzero residual class `circleCoverRelativeResidualClass` inhabits the
+comparison source; the impossibility itself is driven by the empty target on
+that carrier, and the nonzero-ness of the class is conjoined separately in
+`circle_boundaryComparison_counterexample_packet`, matching the ∃-pair shape
+of the spec (a nonzero-`H^1` complex together with a coefficient selection
+admitting no comparison target).
+-/
+theorem circleTypedComparisonTarget_impossible_forEmptyCoefficient :
+    IsEmpty
+      (SemanticRepairTypedComparisonTarget
+        (circleCoverRelativeComplex.CechCohomologySucc 0)
+        (circleEmptyCoefficientPresheaf.obj (op circleSiteBase))) := by
+  refine ⟨fun comparison => ?_⟩
+  exact Empty.elim (comparison.toTarget circleCoverRelativeResidualClass)
+
+/--
+X.定理8.5: the zero cocycle of the generated `F₂` lawful singleton complex —
+the coarse comparison side of the spec counterexample.
+-/
+def lawfulCoarseZeroCocycle :
+    generatedF2CoverRelativeComplex.CechCocycle 1 where
+  val := fun _ => 0
+  property := by
+    funext σ
+    rfl
+
+/--
+X.定理8.5: the coarse residual — the image of the X.例9.1 generated `F₂`
+semantic residual under the selected cochain realization
+`generatedF2H1Realization`.
+-/
+def lawfulCoarseResidualCocycle :
+    generatedF2CoverRelativeComplex.CechCocycle 1 where
+  val :=
+    generatedF2H1Realization.{0, 0, 0}.c1Equiv
+      generatedF2SemanticCechData.{0, 0, 0}.residual
+  property := by
+    funext σ
+    rfl
+
+/--
+X.定理8.5 coarse conjunct: the realized coarse residual is literally the zero
+cochain.  The selection-independent falsifiable content of this identity
+lives at the cochain level (`C¹ ≅ F₂`); the fact that it also holds at the
+cocycle level on a two-element carrier is relative to the selected zero
+degree-one differential of `generatedF2CoverRelativeComplex` (see the module
+docstring boundary above).
+-/
+theorem lawfulCoarseResidual_is_zero_cochain :
+    lawfulCoarseResidualCocycle = lawfulCoarseZeroCocycle := by
+  apply Subtype.ext
+  funext σ
+  rfl
+
+/--
+X.定理8.5: the constant-one cocycle of the generated `F₂` singleton complex.
+-/
+def lawfulCoarseOneCocycle :
+    generatedF2CoverRelativeComplex.CechCocycle 1 where
+  val := fun _ => (1 : ZMod 2)
+  property := by
+    funext σ
+    rfl
+
+/--
+X.定理8.5: on the selected complex the coarse cocycle carrier is not a
+subsingleton — the constant one cochain differs from the coarse residual.
+
+Boundary: this anti-vacuity exhibit is relative to the selected zero
+degree-one differential (under the alternating-sum differential of the same
+nerve the cocycle carrier collapses to the zero cochain); it is not consumed
+by the impossibility proofs, whose selection-independent content is the
+cochain-level identity and the fine-side non-coboundary computation.
+-/
+theorem lawfulCoarse_carrier_nondegenerate :
+    lawfulCoarseOneCocycle ≠ lawfulCoarseResidualCocycle := by
+  intro h
+  have hval : (1 : ZMod 2) = 0 :=
+    congrFun (congrArg Subtype.val h) PUnit.unit
+  exact absurd hval (by decide)
+
+/--
+X.定理8.5 blocking step: a zero-preserving refinement comparison whose
+pullback of the coarse residual is cohomologous to the circle residual would
+make the circle residual a coboundary, contradicting
+`circleCoverRelative_residual_not_coboundary`.
+
+The proof consumes the coarse spec condition: the coarse residual is first
+rewritten to the zero cocycle via `lawfulCoarseResidual_is_zero_cochain`
+before zero preservation is applied.
+-/
+theorem circleRefinementZeroComparison_blocks_lawfulCoarse_to_circleResidual
+    (comparison :
+      SemanticRepairRefinementZeroComparison
+        (generatedF2CoverRelativeComplex.CechCocycle 1)
+        (circleCoverRelativeComplex.CechCocycle 1)
+        (fun coarse =>
+          (generatedF2CoverRelativeComplex.CechCoboundarySetoidSucc 0).r
+            coarse lawfulCoarseZeroCocycle)
+        (fun fine =>
+          (circleCoverRelativeComplex.CechCoboundarySetoidSucc 0).r
+            fine circleCoverRelativeZeroCocycle))
+    (hresidual :
+      (circleCoverRelativeComplex.CechCoboundarySetoidSucc 0).r
+        (comparison.pullback lawfulCoarseResidualCocycle)
+        circleCoverRelativeResidualCocycle) :
+    False := by
+  have hcoarseZero :
+      (generatedF2CoverRelativeComplex.CechCoboundarySetoidSucc 0).r
+        lawfulCoarseResidualCocycle lawfulCoarseZeroCocycle :=
+    lawfulCoarseResidual_is_zero_cochain ▸
+      (generatedF2CoverRelativeComplex.CechCoboundarySetoidSucc 0).iseqv.refl
+        lawfulCoarseResidualCocycle
+  have hfineZero :=
+    comparison.zero_preserved lawfulCoarseResidualCocycle hcoarseZero
+  have hresidualZero :
+      (circleCoverRelativeComplex.CechCoboundarySetoidSucc 0).r
+        circleCoverRelativeResidualCocycle circleCoverRelativeZeroCocycle :=
+    (circleCoverRelativeComplex.CechCoboundarySetoidSucc 0).iseqv.trans
+      ((circleCoverRelativeComplex.CechCoboundarySetoidSucc 0).iseqv.symm
+        hresidual)
+      hfineZero
+  exact circleCoverRelative_residual_not_coboundary hresidualZero
+
+/--
+X.定理8.5: on the actual finite pair — generated `F₂` lawful singleton
+complex as coarse side, circle complex as fine side — no zero-preserving
+refinement comparison pulls the coarse residual back to (anything
+cohomologous to) the circle residual.  The residual-preservation condition is
+stated at class level: as a predicate it is strictly weaker than the
+on-the-nose cochain equality, so the nonexistence statement quantifies over a
+larger family of comparisons and implies the equality-conditioned version.
+-/
+theorem circleRefinementZeroComparison_not_unconditional_onCircle :
+    IsEmpty
+      { comparison :
+          SemanticRepairRefinementZeroComparison
+            (generatedF2CoverRelativeComplex.CechCocycle 1)
+            (circleCoverRelativeComplex.CechCocycle 1)
+            (fun coarse =>
+              (generatedF2CoverRelativeComplex.CechCoboundarySetoidSucc 0).r
+                coarse lawfulCoarseZeroCocycle)
+            (fun fine =>
+              (circleCoverRelativeComplex.CechCoboundarySetoidSucc 0).r
+                fine circleCoverRelativeZeroCocycle) //
+          (circleCoverRelativeComplex.CechCoboundarySetoidSucc 0).r
+            (comparison.pullback lawfulCoarseResidualCocycle)
+            circleCoverRelativeResidualCocycle } := by
+  refine ⟨fun blocked => ?_⟩
+  exact
+    circleRefinementZeroComparison_blocks_lawfulCoarse_to_circleResidual
+      blocked.1 blocked.2
+
+/--
+X.定理8.4 / 8.5 spec counterexample packet on the circle entity: the circle
+complex has a genuinely nonzero cover-relative `H^1` class, the typed
+comparison into the empty coefficient target is impossible on that carrier,
+the coarse residual of the generated `F₂` singleton complex is the zero
+cochain of a non-subsingleton cocycle carrier, and the residual-preserving
+zero-preserving refinement pullback into the circle complex is impossible.
+-/
+theorem circle_boundaryComparison_counterexample_packet :
+    (circleCoverRelativeResidualClass ≠ circleCoverRelativeZeroClass) ∧
+      IsEmpty
+        (SemanticRepairTypedComparisonTarget
+          (circleCoverRelativeComplex.CechCohomologySucc 0)
+          (circleEmptyCoefficientPresheaf.obj (op circleSiteBase))) ∧
+      lawfulCoarseResidualCocycle = lawfulCoarseZeroCocycle ∧
+      lawfulCoarseOneCocycle ≠ lawfulCoarseResidualCocycle ∧
+      IsEmpty
+        { comparison :
+            SemanticRepairRefinementZeroComparison
+              (generatedF2CoverRelativeComplex.CechCocycle 1)
+              (circleCoverRelativeComplex.CechCocycle 1)
+              (fun coarse =>
+                (generatedF2CoverRelativeComplex.CechCoboundarySetoidSucc 0).r
+                  coarse lawfulCoarseZeroCocycle)
+              (fun fine =>
+                (circleCoverRelativeComplex.CechCoboundarySetoidSucc 0).r
+                  fine circleCoverRelativeZeroCocycle) //
+            (circleCoverRelativeComplex.CechCoboundarySetoidSucc 0).r
+              (comparison.pullback lawfulCoarseResidualCocycle)
+              circleCoverRelativeResidualCocycle } :=
+  ⟨circleCoverRelativeH1_nonzero,
+    circleTypedComparisonTarget_impossible_forEmptyCoefficient,
+    lawfulCoarseResidual_is_zero_cochain,
+    lawfulCoarse_carrier_nondegenerate,
+    circleRefinementZeroComparison_not_unconditional_onCircle⟩
+
+/-!
+## #3720: faithfulness-discharging global coherence firing instance
+
+X.定理3.4(ii) / X.定理4.8 の sufficient direction は semantic faithfulness を
+仮定として消費する。既存の発火 instance では、この放電が singleton 系の
+`supportOf _ := fun _ => True`(自明放電)か、circle 系の境界 primitive 不在
+による空虚放電(`False.elim`)に退化していた。この節は X.例2.6 の alias
+射影の担体を再利用し、faithfulness が実質的に効く正の発火 instance と、
+同一担体上で faithfulness が破れて global coherence が失敗する負例を対で
+構成する。
+
+* holonomy support を `shared` 成分に絞った cover の下で、residual atom は
+  alias fiber `{s, o}` になる。
+* 正例: fiber-closed support `π⁻¹(shared)`(`t` を含まない — `True` 充填では
+  ない)は component coverage と faithfulness を実証明で満たし、X.補題2.5 を
+  経由して semantic closure が導出される。faithfulness の証明は projection
+  等式を実際に使う(`False.elim` を経由しない)。
+* 境界 primitive は実在し(`delta0 1 = residual`)、residual は非零 cochain
+  (`1 ≠ 0` in `F₂`)。X.定理4.8 の additive 経路(`H1Zero` →
+  `GlobalRepairCoherent`)が発火する。
+* 負例: 同じ cover 上の狭い support `{s}` は component coverage を満たすが
+  faithfulness が alias pair `(o, s)` で破れ(X.例2.6 と同じ機構)、semantic
+  closure が失敗し、その supportOf を持つ gluing complex では global
+  semantic repair coherence が成立しない。
+
+Boundaries (disclosed):
+
+* the discriminating content of this instance lives in the *support pair*,
+  not in the positive discharge alone.  By the easy direction of X.補題2.5,
+  any semantically closed support is automatically component-covered and
+  component-faithful, so a "propositionally nontrivial" positive discharge is
+  unachievable by design; the text itself assigns the substance of the
+  faithfulness condition to the X.例2.6-style negative.  The pair below
+  discriminates faithful supports from unfaithful ones on the same carrier,
+  cover, cochain complex, and residual;
+* on this instance the fiber support coincides extensionally with the
+  residual predicate, so semantic closure also admits a short direct proof;
+  the derivation through X.補題2.5 adopted below exhibits the faithfulness
+  route consumed by the firing chain, it is not mathematically forced.  The
+  non-`True` content of the fiber support is the exclusion of the
+  non-residual atom `t` (`aliasSharedFiberSupport_not_trivial`), which the
+  firing theorems do not read;
+* the cohomological side is maximally degenerate: `delta0 = id` makes every
+  cochain a boundary, so `H1Zero` holds for any residual choice and, on this
+  instance, global coherence is propositionally equivalent to obstruction
+  vanishing.  The nonzero residual (`1 ≠ 0` in `F₂`) rules out the
+  zero-residual reading but is not consumed by the firing chain.  Nontrivial
+  `H¹` content is the business of the circle and kite witnesses, not of this
+  instance;
+* the faithfulness proof does not use its residual hypothesis: fiber-closed
+  supports are component-faithful over *any* cover datum.  The holonomy
+  restriction to `shared` matters only for the coverage side.
+-/
+
+/--
+#3720: cover datum on the X.例2.6 alias projection whose holonomy support
+selects only the `shared` component, so the residual atoms are exactly the
+alias fiber `{s, o}`.
+-/
+def sharedAliasCover :
+    FiniteSemanticRepairCoverDatum
+      CoverageWithoutFaithfulness.Component where
+  Chart := PUnit
+  Transition := PUnit
+  chartFinite := inferInstance
+  transitionFinite := inferInstance
+  holonomySupport
+    | CoverageWithoutFaithfulness.Component.trace => False
+    | CoverageWithoutFaithfulness.Component.shared => True
+
+/--
+#3720: the fiber-closed support `π⁻¹(shared)`.  It contains `s` and `o` but
+not `t`, so it is not a `True`-filled support.
+-/
+def aliasSharedFiberSupport : CoverageWithoutFaithfulness.projection.Support :=
+  fun atom =>
+    CoverageWithoutFaithfulness.projection.project atom =
+      CoverageWithoutFaithfulness.Component.shared
+
+/-- #3720: the narrow support `{s}` used by the paired negative example. -/
+def aliasNarrowSupport : CoverageWithoutFaithfulness.projection.Support :=
+  fun atom => atom = CoverageWithoutFaithfulness.Atom.s
+
+/-- #3720: the fiber-closed support does not read the trace atom `t`. -/
+theorem aliasSharedFiberSupport_not_trivial :
+    ¬ aliasSharedFiberSupport CoverageWithoutFaithfulness.Atom.t := by
+  intro h
+  have h' :
+      CoverageWithoutFaithfulness.Component.trace =
+        CoverageWithoutFaithfulness.Component.shared := h
+  exact absurd h' (by decide)
+
+/-- #3720: the fiber-closed support covers every residual component. -/
+theorem aliasSharedFiberSupport_covered :
+    ResidualComponentCoveredSupport CoverageWithoutFaithfulness.projection
+      sharedAliasCover aliasSharedFiberSupport := by
+  intro residual hresidual
+  cases residual with
+  | t => exact False.elim hresidual
+  | s => exact ⟨CoverageWithoutFaithfulness.Atom.s, rfl, rfl⟩
+  | o => exact ⟨CoverageWithoutFaithfulness.Atom.o, rfl, rfl⟩
+
+/--
+#3720: the fiber-closed support is component-faithful.  The proof genuinely
+uses the projection equality: a candidate in the support projects to
+`shared`, so the residual sharing its component projects to `shared` as well
+and therefore lies in the fiber support.  No `False.elim` is involved.
+-/
+theorem aliasSharedFiberSupport_faithful :
+    ResidualComponentFaithfulSupport CoverageWithoutFaithfulness.projection
+      sharedAliasCover aliasSharedFiberSupport := by
+  intro residual candidate _hresidual hcandidate hprojection
+  exact hprojection.symm.trans hcandidate
+
+/--
+#3720: semantic closure of the fiber-closed support, derived through
+X.補題2.5 from coverage and faithfulness.  This is the adopted proof route
+(the firing chain consumes faithfulness through it); a short direct proof
+also exists because the fiber support coincides with the residual predicate
+— see the module boundary above.
+-/
+theorem aliasSharedFiberSupport_closed :
+    SemanticRepairClosed CoverageWithoutFaithfulness.projection
+      sharedAliasCover aliasSharedFiberSupport :=
+  (semanticRepairClosed_iff_residualComponentCovered_and_faithful).mpr
+    ⟨aliasSharedFiberSupport_covered, aliasSharedFiberSupport_faithful⟩
+
+/-- #3720: singleton semantic repair cover over the shared-alias cover datum. -/
+def aliasSemanticCover :
+    SemanticRepairCover CoverageWithoutFaithfulness.projection where
+  baseCover := sharedAliasCover
+  CoverChart := PUnit
+  chart _ := PUnit.unit
+  chartInjective := fun _ _ _ => Subsingleton.elim _ _
+  chartFinite := inferInstance
+  Overlap := fun _ _ => PUnit
+  overlapFinite := fun _ _ => inferInstance
+  TripleOverlap := fun _ _ _ => PUnit
+  tripleFinite := fun _ _ _ => inferInstance
+  tripleEdge01 := fun _ => PUnit.unit
+  tripleEdge12 := fun _ => PUnit.unit
+  tripleEdge02 := fun _ => PUnit.unit
+  selectedOverlap := fun _ _ => PUnit.unit
+  selectedTriple := fun _ _ _ => PUnit.unit
+  selectedOverlap_eq_tripleEdge01 := fun _ _ _ => rfl
+  selectedOverlap_eq_tripleEdge12 := fun _ _ _ => rfl
+  selectedOverlap_eq_tripleEdge02 := fun _ _ _ => rfl
+
+/--
+#3720: `F₂` Cech data with identity `delta0` and nonzero residual `1`.  The
+residual is a genuine boundary (`delta0 1 = 1`), so a boundary primitive
+exists and is nonzero — the firing is neither vacuous nor zero-residual.
+-/
+def aliasCechData : SemanticRepairCoverCechData aliasSemanticCover where
+  C0 := ZMod 2
+  C1 := ZMod 2
+  C2 := ZMod 2
+  c0Finite := inferInstance
+  c1Finite := inferInstance
+  zero1 := 0
+  zero2 := 0
+  delta0 := id
+  delta1 _ := 0
+  residual := 1
+  zero1_cocycle := rfl
+  delta1_delta0_eq_zero := fun _ => rfl
+  residual_cocycle := rfl
+
+/-- #3720: additive laws for the alias `F₂` Cech data. -/
+def aliasAdditiveData : SemanticRepairAdditiveCechH1Data aliasCechData where
+  c0AddCommGroup := by
+    change AddCommGroup (ZMod 2)
+    infer_instance
+  c1AddCommGroup := by
+    change AddCommGroup (ZMod 2)
+    infer_instance
+  zero1_eq_zero := rfl
+  delta0_zero := rfl
+  delta0_add := fun _ _ => rfl
+  delta0_neg := fun _ => rfl
+
+/--
+#3720: boundary-relation data whose `supportOf` is the fiber-closed support —
+not a `True`-filled slot — and whose coverage / faithfulness fields are
+discharged by the real proofs above (no `False.elim`).
+-/
+def aliasBoundaryRelationData :
+    SemanticRepairCoverH1BoundaryRelationAbelianData
+      CoverageWithoutFaithfulness.projection where
+  cover := aliasSemanticCover
+  cech := aliasCechData
+  supportOf _ := aliasSharedFiberSupport
+  component_covered_of_boundary := fun _ _ => aliasSharedFiberSupport_covered
+  component_faithful_of_boundary := fun _ _ => aliasSharedFiberSupport_faithful
+
+/-- #3720: additive boundary-relation data for the alias firing instance. -/
+def aliasBoundaryAdditiveData :
+    SemanticRepairCoverH1BoundaryRelationAdditiveData
+      CoverageWithoutFaithfulness.projection where
+  boundaryRelation := aliasBoundaryRelationData
+  additive := aliasAdditiveData
+
+/-- #3720: the nonzero residual is a boundary, so the additive `H¹` class vanishes. -/
+theorem aliasFiring_h1Zero : aliasAdditiveData.H1Zero :=
+  aliasAdditiveData.h1Zero_iff_boundary.mpr ⟨(1 : ZMod 2), rfl⟩
+
+/-- #3720: general `P`/`Q` faithfulness data generated from the component bridge. -/
+def aliasFaithfulnessData :
+    SemanticRepairCoverH1FaithfulnessData
+      CoverageWithoutFaithfulness.projection :=
+  aliasBoundaryRelationData.toFaithfulnessData (0 : ZMod 2) rfl
+
+/-- #3720: the X.定理4.8 additive faithfulness package for the alias instance. -/
+def aliasAdditiveFaithfulnessData :
+    SemanticRepairCoverH1AdditiveFaithfulnessData
+      CoverageWithoutFaithfulness.projection where
+  faithfulness := aliasFaithfulnessData
+  additive := aliasAdditiveData
+
+/--
+#3720: the sufficient direction of X.定理4.8 fires — the vanishing additive
+`H¹` class yields global repair coherence through the discharged
+faithfulness law (the conclusions derived from faithfulness data and the
+additive regime; no true sheaf certificate is instantiated here).
+-/
+theorem aliasFiring_globalRepairCoherent :
+    aliasFaithfulnessData.GlobalRepairCoherent :=
+  aliasAdditiveFaithfulnessData.globalRepairCoherent_of_additiveH1Zero
+    aliasFiring_h1Zero
+
+/--
+#3720: the derived coherence is exactly the support-based global semantic
+repair coherence of the alias gluing complex (X.定理3.4(ii) reading).
+-/
+theorem aliasFiring_globalSemanticRepairCoherent :
+    GlobalSemanticRepairCoherent
+      aliasBoundaryRelationData.toFiniteGluingComplex :=
+  (aliasBoundaryRelationData.toFaithfulnessData_globalRepairCoherent_iff
+    (0 : ZMod 2) rfl).mp aliasFiring_globalRepairCoherent
+
+/-- #3720: the narrow support still covers every residual component. -/
+theorem aliasNarrowSupport_covered :
+    ResidualComponentCoveredSupport CoverageWithoutFaithfulness.projection
+      sharedAliasCover aliasNarrowSupport := by
+  intro residual hresidual
+  cases residual with
+  | t => exact False.elim hresidual
+  | s => exact ⟨CoverageWithoutFaithfulness.Atom.s, rfl, rfl⟩
+  | o => exact ⟨CoverageWithoutFaithfulness.Atom.s, rfl, rfl⟩
+
+/--
+#3720 (paired negative): the narrow support is not component-faithful — the
+alias pair `(o, s)` breaks faithfulness exactly as in X.例2.6.
+-/
+theorem aliasNarrowSupport_not_faithful :
+    ¬ ResidualComponentFaithfulSupport CoverageWithoutFaithfulness.projection
+      sharedAliasCover aliasNarrowSupport := by
+  intro hfaithful
+  have ho :
+      CoverageWithoutFaithfulness.Atom.o = CoverageWithoutFaithfulness.Atom.s :=
+    hfaithful CoverageWithoutFaithfulness.Atom.o
+      CoverageWithoutFaithfulness.Atom.s True.intro rfl rfl
+  exact absurd ho (by decide)
+
+/-- #3720 (paired negative): the narrow support is not semantically closed. -/
+theorem aliasNarrowSupport_not_closed :
+    ¬ SemanticRepairClosed CoverageWithoutFaithfulness.projection
+      sharedAliasCover aliasNarrowSupport := by
+  intro hclosed
+  have ho :
+      CoverageWithoutFaithfulness.Atom.o = CoverageWithoutFaithfulness.Atom.s :=
+    hclosed CoverageWithoutFaithfulness.Atom.o True.intro
+  exact absurd ho (by decide)
+
+/--
+#3720 (paired negative): the alias gluing complex whose `supportOf` is the
+narrow support.  Same projection, cover, cochain carriers, differential, and
+residual as the positive instance — only the support assignment differs.
+-/
+def aliasNarrowGluingComplex : FiniteSemanticRepairGluingComplex where
+  projection := CoverageWithoutFaithfulness.projection
+  cover := sharedAliasCover
+  C0 := ZMod 2
+  C1 := ZMod 2
+  primitiveFinite := inferInstance
+  cochainFinite := inferInstance
+  supportOf _ := aliasNarrowSupport
+  delta0 := id
+  residual := 1
+
+/--
+#3720 (paired negative): with the narrow support, global semantic repair
+coherence fails — faithfulness has genuine discriminating power on this
+carrier: the same complex fires with the fiber-closed support and fails with
+the narrow one.
+-/
+theorem aliasNarrow_globalCoherence_fails :
+    ¬ GlobalSemanticRepairCoherent aliasNarrowGluingComplex := by
+  rintro ⟨_primitive, _hboundary, hclosed⟩
+  exact aliasNarrowSupport_not_closed hclosed
+
+/--
+#3720 summary packet: the boundary primitive exists and the residual is a
+nonzero cochain, the fiber-closed support excludes `t` (not `True`-filled),
+X.定理4.8 fires to global coherence, and the paired narrow support is
+covered but unfaithful and fails global coherence.
+-/
+theorem aliasFiring_faithfulness_discharge_packet :
+    (aliasCechData.delta0 (1 : ZMod 2) = aliasCechData.residual) ∧
+      aliasCechData.residual ≠ aliasCechData.zero1 ∧
+      ¬ aliasSharedFiberSupport CoverageWithoutFaithfulness.Atom.t ∧
+      aliasAdditiveData.H1Zero ∧
+      aliasFaithfulnessData.GlobalRepairCoherent ∧
+      GlobalSemanticRepairCoherent
+        aliasBoundaryRelationData.toFiniteGluingComplex ∧
+      ResidualComponentCoveredSupport CoverageWithoutFaithfulness.projection
+        sharedAliasCover aliasNarrowSupport ∧
+      ¬ ResidualComponentFaithfulSupport CoverageWithoutFaithfulness.projection
+        sharedAliasCover aliasNarrowSupport ∧
+      ¬ GlobalSemanticRepairCoherent aliasNarrowGluingComplex :=
+  ⟨rfl, (by decide : (1 : ZMod 2) ≠ 0), aliasSharedFiberSupport_not_trivial,
+    aliasFiring_h1Zero, aliasFiring_globalRepairCoherent,
+    aliasFiring_globalSemanticRepairCoherent, aliasNarrowSupport_covered,
+    aliasNarrowSupport_not_faithful, aliasNarrow_globalCoherence_fails⟩
+
 end SemanticRepairPart10
 end Examples
 end AAT.AG
