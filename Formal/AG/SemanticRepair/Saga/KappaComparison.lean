@@ -9,27 +9,34 @@ import Formal.AG.SemanticRepair.Saga.EquationRealization
   equivalence, inverse, or commutation is taken as a certificate.
 * Theorem 7.2 (`kappa1_delta0` / `kappa2_delta1`): both commutation squares,
   by componentwise naturality and additivity.
-* `kappaEquivalence`: the generated cochain-level equivalence packaged into
-  the generic transport hub `Cohomology.AdditiveThreeTermComplex.Equivalence`
-  (`CochainComparison.lean`).  Division of labour: the hub supplies the
-  generic quotient transport; the equivalence fed into it is generated here
-  from Definition 7.1, not supplied.
 * Corollary 7.3 (`kappa1_cocycle` / `kappa1_cocycle_reflect` /
   `kappa1_coboundary` / `kappa1_coboundary_reflect`): preservation and
   reflection of cocycles and coboundaries.
-* Theorem 7.4: `κ_* : H¹_sem ≃ Ȟ¹(𝒰, Q_E)` — well-definedness, both-sided
-  inverses, and zero-class transfer are the hub-generated
-  `toH1/fromH1/to_from_H1/from_to_H1/toH1_zero_iff` on `kappaEquivalence`.
-* Theorem 7.5 (`residual_correspondence` and friends): for independently
-  selected atlases, `r_E = κ¹(r_sem) + δ⁰_E h` with the generated gauge `h`,
-  hence `κ_*([r_sem]) = [r_E]`; for the `β`-aligned atlas the cochain-level
+* Theorem 7.4: `κ_* : H¹_sem ≃ Ȟ¹(𝒰, Q_E)`.  Division of labour with the
+  generic transport hub (`CochainComparison.lean`): the hub is a
+  single-universe complex-equivalence transport and is used for the Part IV
+  connection (Lemma 2.1A bridge); `κ` crosses the coefficient universes of
+  `M_sem` (`Type v`) and `Q_E` (`Type u`), so the quotient transport with the
+  same statement shape is **generated directly** here (`kappaH1To` /
+  `kappaH1From` via `Quotient.lift`, well-definedness from Corollary 7.3(3),
+  both-sided inverses `kappaH1_from_to` / `kappaH1_to_from`, zero-class
+  transfer `kappaH1To_zero_iff`) — nothing is supplied.
+* Theorem 7.5 (`residual_correspondence_cochain` / `_class` /
+  `betaAligned_residual`): for independently selected atlases,
+  `r_E = κ¹(r_sem) + δ⁰_E h` with the generated gauge `h`, hence
+  `κ_*([r_sem]) = [r_E]`; for the `β`-aligned atlas the cochain-level
   equality `κ¹(r_sem) = r_E` holds on the nose.
-* Theorem 7.6 (`sagaComparison` / `sagaCentralTheorem_comparison`): the
-  packaged conclusions (coefficient, complex, cochain, cohomology, residual,
-  zero/nonzero).  The Theorem 1.1-named surface takes `[Fintype]` on the
-  index per Part X §1 (the comparison core itself does not use finiteness;
-  the instance argument is the faithful transcription of the fixed finite
-  index set of the central theorem).
+* Theorem 7.6: the six conclusions are provided as the named surface —
+  coefficient (`phiFamily`, Corollary 6.7), complex/cochain (`kappa0/1/2`
+  with Theorem 7.2 and the degreewise equivalences; the packaged
+  complex-equivalence object belongs to the C5 final bundling surface),
+  cohomology (`kappaStar`/`kappaStarInv` with both-sided inverses), residual
+  (Theorem 7.5), zero/nonzero (`sagaComparison_zero_iff`) — and
+  `sagaCentralTheorem_comparison` bundles the residual-transfer and
+  zero/nonzero conclusions as the Theorem 1.1 comparison part.  That surface
+  takes `[Fintype]` on the index per Part X §1 (the comparison core itself
+  does not use finiteness; the instance argument is the faithful
+  transcription of the fixed finite index set of the central theorem).
 -/
 
 noncomputable section
