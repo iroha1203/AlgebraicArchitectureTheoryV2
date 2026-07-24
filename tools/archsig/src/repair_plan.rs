@@ -44,6 +44,8 @@ pub(crate) struct PresentationGeneratedH1Checks {
     pub restriction_naturality: bool,
     pub degree_zero_commutative: bool,
     pub degree_one_commutative: bool,
+    pub source_cocycle: bool,
+    pub source_class_nonzero: Option<bool>,
     pub target_cocycle: bool,
     pub equation_lift_atlas_present: bool,
     pub residual_witness_computed: bool,
@@ -60,6 +62,7 @@ impl PresentationGeneratedH1Checks {
             && self.restriction_naturality
             && self.degree_zero_commutative
             && self.degree_one_commutative
+            && self.source_cocycle
             && self.target_cocycle
             && self.equation_lift_atlas_present
             && self.residual_witness_computed
@@ -75,6 +78,8 @@ struct PresentationResidualWitness {
 
 #[derive(Debug, Clone)]
 struct PresentationResidualAnalysis {
+    source_cocycle: bool,
+    source_class_nonzero: Option<bool>,
     target_cocycle: bool,
     target_class_nonzero: Option<bool>,
     witness: Option<PresentationResidualWitness>,
@@ -332,6 +337,8 @@ mod tests {
         );
         let checks = presentation_generated_h1_checks(&plan, &plan.complex, h1);
         assert!(checks.all_pass());
+        assert_eq!(checks.source_class_nonzero, Some(true));
+        assert_eq!(checks.target_class_nonzero, Some(true));
         let output = presentation_generated_h1_output(&plan, &plan.complex, h1, &checks);
         assert_eq!(output["kind"], "presentation-generated");
         assert_eq!(output["presentationExactness"], true);
@@ -455,15 +462,17 @@ mod tests {
             .comparison
             .as_mut()
             .expect("comparison is supplied")["h1ComparisonData"] = Value::Object(missing_atlas);
-        let missing_validation = validate_repair_plan_v1_checks(&missing_atlas_plan, &archmap, None);
+        let missing_validation =
+            validate_repair_plan_v1_checks(&missing_atlas_plan, &archmap, None);
         let missing_slots = missing_validation
             .iter()
             .find(|check| check.id == "repair-plan-schema052-supplied-slots")
             .expect("supplied slot validation exists");
         assert!(missing_slots.examples.iter().any(|example| {
-            example.evidence.as_deref().is_some_and(|target| {
-                target.contains("equationLiftAtlasPresent=false")
-            })
+            example
+                .evidence
+                .as_deref()
+                .is_some_and(|target| target.contains("equationLiftAtlasPresent=false"))
         }));
     }
 }
@@ -1236,6 +1245,12 @@ pub(crate) fn presentation_generated_h1_checks(
             )
         })
         .flatten();
+    let source_cocycle = analysis
+        .as_ref()
+        .is_some_and(|analysis| analysis.source_cocycle);
+    let source_class_nonzero = analysis
+        .as_ref()
+        .and_then(|analysis| analysis.source_class_nonzero);
     let target_cocycle = analysis
         .as_ref()
         .is_some_and(|analysis| analysis.target_cocycle);
@@ -1251,6 +1266,8 @@ pub(crate) fn presentation_generated_h1_checks(
         restriction_naturality,
         degree_zero_commutative,
         degree_one_commutative,
+        source_cocycle,
+        source_class_nonzero,
         target_cocycle,
         equation_lift_atlas_present,
         residual_witness_computed,
@@ -1337,6 +1354,11 @@ pub(crate) fn presentation_generated_h1_output(
             "kind": "derived-from-independent-equation-lift-atlas",
             "targetCocycle": checks.target_cocycle,
             "targetClassNonZero": checks.target_class_nonzero
+        },
+        "semanticResidual": {
+            "kind": "derived-from-semantic-repair-presentation",
+            "sourceCocycle": checks.source_cocycle,
+            "sourceClassNonZero": checks.source_class_nonzero
         },
         "residualWitness": residual_witness,
         "restrictionNaturality": checks.restriction_naturality
@@ -1491,13 +1513,22 @@ fn presentation_residual_analysis(
     cells: &BTreeMap<&str, &H1PresentationCellV052>,
     restrictions: &BTreeMap<(&str, &str), &H1PresentationRestrictionV052>,
 ) -> Option<PresentationResidualAnalysis> {
-    let source_image = generated_source_image(plan, target_complex, cells)?;
+    let semantic_residual = generated_semantic_residual(plan, target_complex, cells)?;
+    let source_image = generated_source_image(target_complex, cells, &semantic_residual)?;
+    let source_cocycle =
+        semantic_cochain_is_cocycle(target_complex, cells, restrictions, &semantic_residual)?;
+    let source_class_nonzero = source_cocycle.then(|| {
+        semantic_delta_zero_solution(target_complex, cells, restrictions, &semantic_residual)
+            .is_none()
+    });
     let equation_residual =
         equation_residual_from_lift_atlas(target_complex, presentation, cells, restrictions)?;
     let target_cocycle =
         equation_cochain_is_cocycle(target_complex, cells, restrictions, &equation_residual)?;
-    if !target_cocycle {
+    if !source_cocycle || !target_cocycle {
         return Some(PresentationResidualAnalysis {
+            source_cocycle,
+            source_class_nonzero,
             target_cocycle: false,
             target_class_nonzero: None,
             witness: None,
@@ -1515,13 +1546,15 @@ fn presentation_residual_analysis(
             h,
         });
     Some(PresentationResidualAnalysis {
+        source_cocycle,
+        source_class_nonzero,
         target_cocycle: true,
         target_class_nonzero,
         witness,
     })
 }
 
-fn generated_source_image(
+fn generated_semantic_residual(
     plan: &RepairPlanDocumentV1,
     target_complex: &RepairPlanComplexV1,
     cells: &BTreeMap<&str, &H1PresentationCellV052>,
@@ -1540,7 +1573,7 @@ fn generated_source_image(
     {
         return None;
     }
-    let mut source_image = BTreeMap::new();
+    let mut semantic_cochain = BTreeMap::new();
     for overlap in &target_complex.overlaps {
         let cell = cells.get(overlap.id.as_str())?;
         let primitive = primitives.get(overlap.id.as_str())?;
@@ -1560,16 +1593,34 @@ fn generated_source_image(
             .enumerate()
             .map(|(index, generator)| (generator.as_str(), index))
             .collect::<BTreeMap<_, _>>();
-        let mut semantic_residual = vec![0; cell.semantic_generators.len()];
+        let mut coefficients = vec![0; cell.semantic_generators.len()];
         for variable in &primitive.support.variables {
-            semantic_residual[*semantic_index.get(variable.as_str())?] ^= 1;
+            coefficients[*semantic_index.get(variable.as_str())?] ^= 1;
         }
-        source_image.insert(
-            overlap.id.clone(),
-            f2_matrix_vector(&cell.generator_map, &semantic_residual),
-        );
+        semantic_cochain.insert(overlap.id.clone(), coefficients);
     }
-    Some(source_image)
+    Some(semantic_cochain)
+}
+
+fn generated_source_image(
+    target_complex: &RepairPlanComplexV1,
+    cells: &BTreeMap<&str, &H1PresentationCellV052>,
+    semantic_residual: &BTreeMap<String, Vec<u8>>,
+) -> Option<BTreeMap<String, Vec<u8>>> {
+    target_complex
+        .overlaps
+        .iter()
+        .map(|overlap| {
+            let cell = cells.get(overlap.id.as_str())?;
+            let residual = semantic_residual.get(&overlap.id)?;
+            (residual.len() == cell.semantic_generators.len()).then(|| {
+                (
+                    overlap.id.clone(),
+                    f2_matrix_vector(&cell.generator_map, residual),
+                )
+            })
+        })
+        .collect()
 }
 
 fn equation_residual_from_lift_atlas(
@@ -1670,6 +1721,37 @@ fn equation_cochain_is_cocycle(
     Some(true)
 }
 
+fn semantic_cochain_is_cocycle(
+    target_complex: &RepairPlanComplexV1,
+    cells: &BTreeMap<&str, &H1PresentationCellV052>,
+    restrictions: &BTreeMap<(&str, &str), &H1PresentationRestrictionV052>,
+    cochain: &BTreeMap<String, Vec<u8>>,
+) -> Option<bool> {
+    for triple in &target_complex.triple_overlaps {
+        let target = cells.get(triple.id.as_str())?;
+        let mut differential = vec![0; target.semantic_generators.len()];
+        for overlap_ref in &triple.overlap_refs {
+            let restriction = restrictions.get(&(overlap_ref.as_str(), triple.id.as_str()))?;
+            let restricted =
+                f2_matrix_vector(&restriction.semantic_matrix, cochain.get(overlap_ref)?);
+            if restricted.len() != differential.len() {
+                return None;
+            }
+            for (entry, value) in differential.iter_mut().zip(restricted) {
+                *entry ^= value;
+            }
+        }
+        if !f2_vector_in_span(
+            &target.repair_relation_matrix,
+            target.semantic_generators.len(),
+            &differential,
+        )? {
+            return Some(false);
+        }
+    }
+    Some(true)
+}
+
 fn cochain_sum(
     target_complex: &RepairPlanComplexV1,
     cells: &BTreeMap<&str, &H1PresentationCellV052>,
@@ -1750,6 +1832,62 @@ fn equation_delta_zero_solution(
         .map(|chart| {
             let offset = chart_offsets[chart.as_str()];
             let width = cells.get(chart.as_str())?.equation_generators.len();
+            Some((chart.clone(), solution[offset..offset + width].to_vec()))
+        })
+        .collect()
+}
+
+fn semantic_delta_zero_solution(
+    target_complex: &RepairPlanComplexV1,
+    cells: &BTreeMap<&str, &H1PresentationCellV052>,
+    restrictions: &BTreeMap<(&str, &str), &H1PresentationRestrictionV052>,
+    cochain: &BTreeMap<String, Vec<u8>>,
+) -> Option<BTreeMap<String, Vec<u8>>> {
+    let mut chart_offsets = BTreeMap::new();
+    let mut unknown_count = 0;
+    for chart in &target_complex.charts {
+        chart_offsets.insert(chart.as_str(), unknown_count);
+        unknown_count += cells.get(chart.as_str())?.semantic_generators.len();
+    }
+    let mut relation_offsets = BTreeMap::new();
+    for overlap in &target_complex.overlaps {
+        relation_offsets.insert(overlap.id.as_str(), unknown_count);
+        unknown_count += cells.get(overlap.id.as_str())?.repair_relation_matrix.len();
+    }
+    let mut rows = Vec::new();
+    for overlap in &target_complex.overlaps {
+        let target = cells.get(overlap.id.as_str())?;
+        let left = restrictions.get(&(overlap.left.as_str(), overlap.id.as_str()))?;
+        let right = restrictions.get(&(overlap.right.as_str(), overlap.id.as_str()))?;
+        let rhs = cochain.get(&overlap.id)?;
+        if rhs.len() != target.semantic_generators.len() {
+            return None;
+        }
+        for coordinate in 0..target.semantic_generators.len() {
+            let mut row = vec![0; unknown_count + 1];
+            for (chart, restriction) in [(&overlap.left, left), (&overlap.right, right)] {
+                let offset = chart_offsets[chart.as_str()];
+                for (index, coefficient) in
+                    restriction.semantic_matrix[coordinate].iter().enumerate()
+                {
+                    row[offset + index] ^= coefficient;
+                }
+            }
+            let relation_offset = relation_offsets[overlap.id.as_str()];
+            for (index, relation) in target.repair_relation_matrix.iter().enumerate() {
+                row[relation_offset + index] ^= relation[coordinate];
+            }
+            row[unknown_count] = rhs[coordinate];
+            rows.push(row);
+        }
+    }
+    let solution = f2_solve(rows, unknown_count)?;
+    target_complex
+        .charts
+        .iter()
+        .map(|chart| {
+            let offset = chart_offsets[chart.as_str()];
+            let width = cells.get(chart.as_str())?.semantic_generators.len();
             Some((chart.clone(), solution[offset..offset + width].to_vec()))
         })
         .collect()

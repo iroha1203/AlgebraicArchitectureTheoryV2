@@ -2300,6 +2300,46 @@ fn presentation_generated_saga_plan(root: &Path, nonzero_class: bool) -> Value {
     plan
 }
 
+fn presentation_generated_circle_archmap(root: &Path) -> Value {
+    let mut archmap = read_json(&root.join("archmap_v2.json"));
+    archmap["sources"]
+        .as_object_mut()
+        .expect("sources are an object")
+        .insert(
+            "src:circle".to_string(),
+            json!({
+                "kind": "rust",
+                "path": "src/circle.rs",
+                "symbol": "CircleContext",
+                "line": 1
+            }),
+        );
+    archmap["atoms"]
+        .as_array_mut()
+        .expect("atoms are an array")
+        .push(json!({
+            "id": "atom:circle",
+            "kind": "component",
+            "subject": "src:circle",
+            "axis": "static",
+            "predicate": "component",
+            "refs": ["src:circle"]
+        }));
+    archmap["contexts"]
+        .as_array_mut()
+        .expect("contexts are an array")
+        .push(json!({
+            "id": "ctx:circle",
+            "atoms": ["atom:circle"],
+            "refs": ["src:circle"]
+        }));
+    archmap["covers"][0]["contexts"]
+        .as_array_mut()
+        .expect("cover contexts are an array")
+        .push(json!("ctx:circle"));
+    archmap
+}
+
 #[test]
 fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() {
     let root = ag_measurement_root();
@@ -2439,6 +2479,34 @@ fn cli_analyze_saga_comparison_generates_transfer_from_presentations() {
 }
 
 #[test]
+fn cli_analyze_presentation_generated_circle_establishes_independent_h1_transfer() {
+    let root = ag_measurement_root();
+    let plan = read_json(&root.join("repair_plan_presentation_generated_circle.json"));
+    let archmap = presentation_generated_circle_archmap(&root);
+    let out_dir =
+        run_saga_fixture_lock_with_archmap("ag-saga-presentation-generated-circle", plan, archmap);
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let comparison = invariant_by_id(&packet, "saga-comparison:h1-transfer");
+    assert_eq!(comparison["status"], "established");
+    assert_eq!(
+        comparison["conclusionCode"],
+        ARCHSIG_SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS
+    );
+    assert_eq!(
+        comparison["presentationGenerated"]["semanticResidual"]["sourceCocycle"],
+        true
+    );
+    assert_eq!(
+        comparison["presentationGenerated"]["semanticResidual"]["sourceClassNonZero"],
+        true
+    );
+    assert_eq!(
+        comparison["presentationGenerated"]["equationResidual"]["targetClassNonZero"],
+        true
+    );
+}
+
+#[test]
 fn cli_presentation_generated_transfer_uses_equation_quotient_for_target_h1() {
     let root = ag_measurement_root();
     let mut plan = presentation_generated_saga_plan(&root, true);
@@ -2458,12 +2526,15 @@ fn cli_presentation_generated_transfer_uses_equation_quotient_for_target_h1() {
         comparison["presentationGenerated"]["equationResidual"]["targetClassNonZero"],
         false
     );
-    assert_eq!(comparison["status"], "not_computed");
+    assert_eq!(comparison["status"], "established");
     assert_eq!(
-        comparison["failureCode"],
-        "COMPARISON_DATA_CONTRACT_VIOLATION"
+        comparison["generatedQuotientTransfer"]["sourceClassNonZero"],
+        false
     );
-    assert!(comparison["conclusionCode"].is_null());
+    assert_eq!(
+        comparison["generatedQuotientTransfer"]["targetClassNonZero"],
+        false
+    );
 }
 
 #[test]
@@ -14997,6 +15068,19 @@ fn run_saga_compare_fixture(case_id: &str, archmap: Value, repair_plan: Value) -
 
 fn run_saga_fixture_lock(case_id: &str, repair_plan: Value) -> PathBuf {
     let root = ag_measurement_root();
+    run_saga_fixture_lock_with_archmap(
+        case_id,
+        repair_plan,
+        read_json(&root.join("archmap_v2.json")),
+    )
+}
+
+fn run_saga_fixture_lock_with_archmap(
+    case_id: &str,
+    repair_plan: Value,
+    archmap: Value,
+) -> PathBuf {
+    let root = ag_measurement_root();
     let out_dir = temp_dir(case_id);
     let (mut policy, profile) = read_fixture_policy_profile(&root.join("law_policy_ag.json"));
     policy["policies"] = json!([{
@@ -15010,6 +15094,12 @@ fn run_saga_fixture_lock(case_id: &str, repair_plan: Value) -> PathBuf {
     write_test_policy_and_profile(&policy_path, policy, profile);
     let law_surface_path = out_dir.join("law_surface.json");
     let repair_plan_path = out_dir.join("repair_plan.json");
+    let archmap_path = out_dir.join("archmap.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("ArchMap serializes"),
+    )
+    .expect("ArchMap writes");
     fs::write(
         &repair_plan_path,
         serde_json::to_vec_pretty(&repair_plan).expect("repair plan serializes"),
@@ -15018,9 +15108,7 @@ fn run_saga_fixture_lock(case_id: &str, repair_plan: Value) -> PathBuf {
     run_sig0(&[
         "analyze",
         "--archmap",
-        root.join("archmap_v2.json")
-            .to_str()
-            .expect("path is utf-8"),
+        archmap_path.to_str().expect("path is utf-8"),
         "--law-policy",
         policy_path.to_str().expect("path is utf-8"),
         "--measurement-profile",

@@ -750,7 +750,7 @@ fn evaluate_saga_comparison_v1(
             }
         });
     };
-    let class_available = structural_verdict.iter().any(|verdict| {
+    let measured_class_available = structural_verdict.iter().any(|verdict| {
         verdict.evaluator == "ag.saga-descent"
             && verdict.law == "saga.residual-class"
             && matches!(
@@ -758,7 +758,7 @@ fn evaluate_saga_comparison_v1(
                 "measured_zero" | "measured_nonzero"
             )
     });
-    let class_nonzero = structural_verdict.iter().any(|verdict| {
+    let measured_class_nonzero = structural_verdict.iter().any(|verdict| {
         verdict.evaluator == "ag.saga-descent"
             && verdict.law == "saga.residual-class"
             && verdict.verdict == "measured_nonzero"
@@ -798,6 +798,26 @@ fn evaluate_saga_comparison_v1(
     } else {
         true
     };
+    let (class_available, class_nonzero, source_invariant) = if h1_kind == "presentation-generated"
+    {
+        presentation_checks
+            .as_ref()
+            .and_then(|checks| checks.source_class_nonzero)
+            .map(|source_class_nonzero| {
+                (
+                    true,
+                    source_class_nonzero,
+                    "presentation-generated:semantic-h1-class",
+                )
+            })
+            .unwrap_or((false, false, "presentation-generated:semantic-h1-class"))
+    } else {
+        (
+            measured_class_available,
+            measured_class_nonzero,
+            "saga-descent:residual-class",
+        )
+    };
     let target_class_nonzero = if h1_kind == "presentation-generated" {
         presentation_checks
             .as_ref()
@@ -817,7 +837,11 @@ fn evaluate_saga_comparison_v1(
             "kind": "h1-comparison-transfer",
             "status": "silence_by_design",
             "reason": "residual_class_prerequisite_not_measured",
-            "whatNext": "supply valid inputs for complex.tripleOverlaps, coefficient, trueSheafCertificate, and gluingData so the source residual class can be measured before evaluating H1 comparison transfer",
+            "whatNext": if h1_kind == "presentation-generated" {
+                "supply a valid semantic presentation, restriction maps, and equation lift atlas so the source presentation H1 class can be computed before evaluating transfer"
+            } else {
+                "supply valid inputs for complex.tripleOverlaps, coefficient, trueSheafCertificate, and gluingData so the source residual class can be measured before evaluating H1 comparison transfer"
+            },
             "contract": {
                 "incidenceBridgeKind": bridge_kind,
                 "h1ComparisonDataKind": h1_kind,
@@ -896,7 +920,7 @@ fn evaluate_saga_comparison_v1(
                 "preservesZeroPredicate": preserves_zero_predicate,
                 "sourceClassNonZero": class_nonzero,
                 "targetClassNonZero": target_class_nonzero,
-                "sourceInvariant": "saga-descent:residual-class",
+                "sourceInvariant": source_invariant,
                 "targetInvariant": "saga-comparison:h1-transfer"
             })
         } else {
