@@ -1772,6 +1772,111 @@ structure StandardArchitectureScheme
   overlapsValid : IsArchitectureOverlapPresentation raw overlaps
 
 /--
+Part III, Definition 5.2A's context-indexed affine open cover.
+
+The context assignment is an actual functor into Scheme charts over `Y`.
+`cover` supplies open immersions and joint coverage, while `transition`
+records the morphism `X_{W'} ⟶ X_W` attached to a context morphism
+`W' ⟶ W`.  Observable evaluation is deliberately absent: the equation
+realization constructs it by pulling back its represented universal point.
+-/
+structure EquationContextChartCover
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    (S : Site.AATSite A)
+    (Y : AlgebraicGeometry.Scheme.{max u v}) where
+  /-- The actual affine open cover of the represented Scheme. -/
+  cover : Y.OpenCover
+  /-- Every equation context selects exactly one component of the cover. -/
+  contextIndex : S.category ≃ cover.I₀
+  /-- Every selected context chart is affine. -/
+  chartAffine :
+    ∀ W : S.category,
+      AlgebraicGeometry.IsAffine (cover.X (contextIndex W))
+  /-- The Scheme transition induced by a context restriction. -/
+  transition :
+    ∀ {source target : S.category}, (source ⟶ target) →
+      (cover.X (contextIndex source) ⟶
+        cover.X (contextIndex target))
+  /-- Context transitions commute with the chart maps to the represented Scheme. -/
+  transition_to_base :
+    ∀ {source target : S.category} (f : source ⟶ target),
+      transition f ≫ cover.f (contextIndex target) =
+        cover.f (contextIndex source)
+  /-- The context-chart assignment preserves identities. -/
+  transition_id :
+    ∀ W : S.category,
+      transition (𝟙 W) = 𝟙 (cover.X (contextIndex W))
+  /-- The context-chart assignment preserves composition. -/
+  transition_comp :
+    ∀ {W₀ W₁ W₂ : S.category} (f : W₀ ⟶ W₁) (g : W₁ ⟶ W₂),
+      transition (f ≫ g) = transition f ≫ transition g
+
+namespace EquationContextChartCover
+
+/-- The actual affine chart selected by an equation context. -/
+abbrev chart
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    {Y : AlgebraicGeometry.Scheme.{max u v}}
+    (C : EquationContextChartCover.{u, v} S Y)
+    (W : S.category) : AlgebraicGeometry.Scheme.{max u v} :=
+  C.cover.X (C.contextIndex W)
+
+/-- The actual open immersion from a context chart to the represented Scheme. -/
+abbrev chartMap
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    {Y : AlgebraicGeometry.Scheme.{max u v}}
+    (C : EquationContextChartCover.{u, v} S Y)
+    (W : S.category) : C.chart W ⟶ Y :=
+  C.cover.f (C.contextIndex W)
+
+/-- The context-indexed charts and transitions form a Scheme-valued functor. -/
+noncomputable def chartFunctor
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    {Y : AlgebraicGeometry.Scheme.{max u v}}
+    (C : EquationContextChartCover.{u, v} S Y) :
+    S.category ⥤ AlgebraicGeometry.Scheme.{max u v} where
+  obj W := C.chart W
+  map f := C.transition f
+  map_id W := C.transition_id W
+  map_comp f g := C.transition_comp f g
+
+/--
+The whole affine Scheme, repeated at every equation context, is the canonical
+context-chart cover for a globally represented affine regime.
+-/
+noncomputable def whole
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    (S : Site.AATSite A)
+    (base : S.category)
+    (Y : AlgebraicGeometry.Scheme.{max u v})
+    [AlgebraicGeometry.IsAffine Y] :
+    EquationContextChartCover.{u, v} S Y where
+  cover :=
+    AlgebraicGeometry.Scheme.Cover.mkOfCovers
+      S.category (fun _ => Y) (fun _ => 𝟙 Y)
+      (fun x => ⟨base, x, by simp⟩)
+  contextIndex := Equiv.refl S.category
+  chartAffine := by
+    intro W
+    change AlgebraicGeometry.IsAffine Y
+    infer_instance
+  transition := fun _ => 𝟙 Y
+  transition_to_base := by
+    intro source target f
+    simp
+  transition_id := by
+    intro W
+    rfl
+  transition_comp := by
+    intro W₀ W₁ W₂ f g
+    simp
+
+end EquationContextChartCover
+
+/--
 Part III, Definition 5.2A's base-change-stable architecture reading.
 
 Only architecture data is selected here.  Observable evaluation is not a

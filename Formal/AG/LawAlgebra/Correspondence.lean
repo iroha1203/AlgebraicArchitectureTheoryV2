@@ -86,14 +86,15 @@ theorem siteEquationLawfulnessIdealFactorizationCorrespondence
     {X : StandardArchitectureScheme raw}
     (R : EquationObservableRealization raw X S.equationSystem)
     (hR : IsEquationObservableRealization R)
-    (L : EquationObservableRealization.EquationChartLocalization R)
+    (C : EquationObservableRealization.EquationContextCharts (X := X))
+    (P : EquationObservableRealization.EquationSchemeChartProducer R C)
     {T : AlgebraicGeometry.Scheme}
     (s : T ⟶ R.realizationScheme) :
-    (R.EquationLawfulAlong s ↔
-      R.GeneratedLawfulLocusAlong L s) ∧
-    (R.GeneratedLawfulLocusAlong L s ↔
+    (R.EquationLawfulAlong C s ↔
+      R.generatedIdealSheaf.comap s = ⊥) ∧
+    (R.generatedIdealSheaf.comap s = ⊥ ↔
       Nonempty (R.FactorsThroughLawfulClosedSubscheme s)) :=
-  R.lawfulnessIdealFactorizationCorrespondence hR L s
+  R.lawfulnessIdealFactorizationCorrespondence hR C P s
 
 /--
 Part III, Theorem 5.2C for the site-owned equation system: fulfillment of one
@@ -108,15 +109,16 @@ theorem siteEquationIdealFactorizationCorrespondence
     {X : StandardArchitectureScheme raw}
     (R : EquationObservableRealization raw X S.equationSystem)
     (hR : IsEquationObservableRealization R)
-    (L : EquationObservableRealization.EquationChartLocalization R)
+    (C : EquationObservableRealization.EquationContextCharts (X := X))
+    (P : EquationObservableRealization.EquationSchemeChartProducer R C)
     {T : AlgebraicGeometry.Scheme}
     (s : T ⟶ R.realizationScheme)
     (i : S.equationSystem.Index) :
-    (R.EquationHoldsAlong s i ↔
-      R.EquationIdealChartCondition L s i) ∧
-    (R.EquationIdealChartCondition L s i ↔
+    (R.EquationHoldsAlong C s i ↔
+      (R.witnessIdealSheaf i).comap s = ⊥) ∧
+    ((R.witnessIdealSheaf i).comap s = ⊥ ↔
       Nonempty (R.FactorsThroughEquationClosedSubscheme i s)) :=
-  R.equationIdealFactorizationCorrespondence hR L s i
+  R.equationIdealFactorizationCorrespondence hR C P s i
 
 /--
 III.定理11.1 / III.定理11.4 bridge: displayed required laws force the displayed

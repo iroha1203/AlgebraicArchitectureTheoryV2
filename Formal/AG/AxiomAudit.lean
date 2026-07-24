@@ -4920,29 +4920,62 @@ def closedEquationalGeometryEquationGeneratedIdealSheafEqObstruction :=
 def closedEquationalGeometryEquationHoldsAlong :=
   @LawAlgebra.EquationObservableRealization.EquationHoldsAlong
 
+def closedEquationalGeometryEquationContextCharts :=
+  @LawAlgebra.EquationObservableRealization.EquationContextCharts
+
+noncomputable def closedEquationalGeometryEquationContextRealizationCover :=
+  @LawAlgebra.EquationObservableRealization.contextRealizationCover
+
+noncomputable def closedEquationalGeometryEquationContextRealizationChart :=
+  @LawAlgebra.EquationObservableRealization.contextRealizationChart
+
+noncomputable def closedEquationalGeometryEquationContextTestCover :=
+  @LawAlgebra.EquationObservableRealization.contextTestCover
+
+noncomputable def closedEquationalGeometryEquationContextTestChart :=
+  @LawAlgebra.EquationObservableRealization.contextTestChart
+
+noncomputable def closedEquationalGeometryEquationContextTestEvaluation :=
+  @LawAlgebra.EquationObservableRealization.contextTestEvaluation
+
+def closedEquationalGeometryEquationContextResidualRepresentable :=
+  @LawAlgebra.EquationObservableRealization.contextResidualRepresentable
+
+def closedEquationalGeometryEquationContextChartProducer :=
+  @LawAlgebra.EquationObservableRealization.EquationContextChartProducer
+
+def closedEquationalGeometryEquationContextChartLocalization :=
+  @LawAlgebra.EquationObservableRealization.EquationContextChartLocalization
+
+def closedEquationalGeometryEquationSchemeChartProducer :=
+  @LawAlgebra.EquationObservableRealization.EquationSchemeChartProducer
+
+noncomputable def closedEquationalGeometryEquationContextWitnessIdealLocalizes :=
+  @LawAlgebra.EquationObservableRealization.contextWitnessIdealLocalizes
+
+def closedEquationalGeometryEquationContextWitnessIdealChart :=
+  @LawAlgebra.EquationObservableRealization.contextWitnessIdealChart
+
 def closedEquationalGeometryEquationGlobalHoldsAlong :=
   @LawAlgebra.EquationObservableRealization.GlobalEquationHoldsAlong
 
-def closedEquationalGeometryEquationPointRealization :=
-  @LawAlgebra.EquationObservableRealization.EquationPointRealization
+def closedEquationalGeometryEquationPointComponent :=
+  @LawAlgebra.EquationObservableRealization.IsEquationPointComponent
 
-noncomputable def closedEquationalGeometryEquationPointTestChartFunctor :=
-  @LawAlgebra.EquationObservableRealization.EquationPointRealization.testChartFunctor
+noncomputable def closedEquationalGeometryEquationPointContextTestTransition :=
+  @LawAlgebra.EquationObservableRealization.contextTestTransition
 
 noncomputable def closedEquationalGeometryEquationPointKappa :=
-  @LawAlgebra.EquationObservableRealization.EquationPointRealization.kappa
+  @LawAlgebra.EquationObservableRealization.EquationPointComponent.kappa
 
 def closedEquationalGeometryEquationPointKappaEvaluation :=
-  @LawAlgebra.EquationObservableRealization.EquationPointRealization.kappa_testChartEvaluation
+  @LawAlgebra.EquationObservableRealization.EquationPointComponent.kappa_contextTestEvaluation
 
 def closedEquationalGeometryEquationPointKappaNatural :=
-  @LawAlgebra.EquationObservableRealization.EquationPointRealization.kappa_natural
+  @LawAlgebra.EquationObservableRealization.EquationPointComponent.kappa_natural
 
 def closedEquationalGeometryEquationPointKappaResidual :=
-  @LawAlgebra.EquationObservableRealization.EquationPointRealization.kappa_testChartResidualValue
-
-def closedEquationalGeometryEquationHoldsAlongIffGlobal :=
-  @LawAlgebra.EquationObservableRealization.equationHoldsAlong_iff_global
+  @LawAlgebra.EquationObservableRealization.EquationPointComponent.kappa_contextTestResidualValue
 
 def closedEquationalGeometryEquationHoldsAlongIffEquationHolds :=
   @LawAlgebra.EquationObservableRealization.equationHoldsAlong_iff_equationHolds
@@ -5000,9 +5033,6 @@ def closedEquationalGeometryEquationIdealFactorizationCorrespondence :=
 
 def closedEquationalGeometryEquationLawfulIffGeneratedIdeal :=
   @LawAlgebra.EquationObservableRealization.equationLawfulAlong_iff_generatedIdeal
-
-def closedEquationalGeometryGeneratedLawfulLocusAlong :=
-  @LawAlgebra.EquationObservableRealization.GeneratedLawfulLocusAlong
 
 noncomputable def closedEquationalGeometryEquationLawfulClosedSubscheme :=
   @LawAlgebra.EquationObservableRealization.lawfulClosedSubscheme
@@ -8294,6 +8324,18 @@ noncomputable def standardGeometry_referenceEquationRepresentingGeometry :=
 def standardGeometry_referenceEquationRepresentingGeometryRealizationValid :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.referenceEquationRepresentingGeometry_realization_valid
 
+noncomputable def standardGeometry_referenceEquationContextCharts :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceEquationContextCharts
+
+noncomputable def standardGeometry_referenceEquationContextChartLocalization :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceEquationContextChartLocalization
+
+noncomputable def standardGeometry_referenceEquationContextChartProducer :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceEquationContextChartProducer
+
+noncomputable def standardGeometry_referenceEquationSchemeChartProducer :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceEquationSchemeChartProducer
+
 def standardGeometry_referenceSiteViolationSection_image :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.referenceSiteViolationSection_image
 
@@ -8374,6 +8416,27 @@ noncomputable def standardGeometry_cyclicUnitEquationObservableRealization :=
 
 def standardGeometry_cyclicUnitEquationObservableRealization_valid :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.cyclicUnitEquationObservableRealization_valid
+
+noncomputable def standardGeometry_cyclicUnitEquationContextChartProducer :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.cyclicUnitEquationContextChartProducer
+
+noncomputable def standardGeometry_cyclicUnitEquationSchemeChartProducer :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.cyclicUnitEquationSchemeChartProducer
+
+def standardGeometry_cyclicUnitEquationRealization_relation_zero :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.cyclicUnitEquationRealization_relation_zero
+
+noncomputable def standardGeometry_cyclicUnitIntegerRealizationPoint :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.cyclicUnitIntegerRealizationPoint
+
+def standardGeometry_cyclicUnitIntegerRealizationPoint_component :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.cyclicUnitIntegerRealizationPoint_component
+
+noncomputable def standardGeometry_cyclicUnitIntegerKappa :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.cyclicUnitIntegerKappa
+
+def standardGeometry_cyclicUnitIntegerKappa_evaluation :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.cyclicUnitIntegerKappa_evaluation
 
 def standardGeometry_cyclicUnitEquationSystem_residual_one :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.cyclicUnitEquationSystem_residual_one
