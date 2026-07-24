@@ -152,6 +152,56 @@ Deppy artifact で確認する。
 直接リンクは確認できていない。Related Work 本文では、公開ページで確認できる主張を引用し、
 source-level comparison は artifact の所在を確認してから確定する。
 
+### 2.7 確認結果(2026-07-24 調査)
+
+§2.6 の精読項目のうち、公開版(arXiv HTML)と web 調査で確定できた事実を記録する。
+
+**書誌事項。** arXiv:2603.27015 は v1(2026-03-27 submitted)のみ、subject は cs.PL、
+単著(Halley Young)。abs ページに Comments field はなく、code / artifact URL の記載もない。
+Microsoft Research の publication ページも outbound link は arXiv と BibTeX のみで、
+code repository へのリンクを持たない。venue は arXiv preprint(会議未採録)。
+
+**定義・定理番号(HTML 版で確認)。**
+
+| 番号 | 内容 |
+| --- | --- |
+| Definition 3.1 | site kind(five families) |
+| Definition 3.2 | program site category |
+| Definition 3.3 | refinement lattice |
+| Definition 3.4 | local section |
+| Definition 3.5 | semantic presheaf |
+| Definition 3.6 | covering family |
+| Definition 3.8 | Čech cochains |
+| Theorem 5.1 | bugs as gluing obstructions(`H¹≠0` iff bug) |
+| Prop.(5.1 直後) | `rank H¹` over `F₂` = minimum independent fixes |
+| Theorem 5.3 | descent for equivalence |
+| Theorem 6.1 / 6.2 | soundness / relative completeness |
+| Theorem 6.3 | Mayer–Vietoris for programs |
+| Theorem 6.4 | fixed-point convergence |
+
+**`F₂` realization(精読項目1に対応)。** lattice-valued presheaf から `F₂` への移行は
+§5.1 で行われる。overlap 上の一致 / 不一致を Boolean に落とし、行を overlap、
+列を site とする coboundary matrix `∂⁰:C⁰(F₂)→C¹(F₂)` の rank 計算に帰着する。
+
+**Lean 形式化(精読項目6に対応)。** 本文は 1,259 lines of Lean 4 と報告し、
+declaration 名として `DeppyProofs.Soundness.soundness`、
+`DeppyProofs.Presheaf.h0_lifts_to_section`、`DeppyProofs.Descent.descent_theorem` を挙げる。
+形式化対象は soundness、sheaf condition characterization、`H⁰` section lifting、
+descent for equivalence、Mayer–Vietoris exactness、fixed-point convergence。
+source repository へのリンクは本文にない。
+
+**Artifact の所在(精読項目2・7に対応)。** 著者の GitHub に
+[`thehalleyyoung/deppy`](https://github.com/thehalleyyoung/deppy)("Dependent Types for
+Python"、MIT license、Lean 4 export 機構、tutorial book に Čech decomposition 章、
+`paper/` ディレクトリあり)が存在し、同名 tool の公開実装として最有力候補である。
+ただし repo README は本論文・375 benchmarks・`DeppyProofs` を明示引用していない。
+375 benchmarks と evaluation script の公開は未確認である。
+
+**引用方針への帰結。** Related Work 本文の Young への言及は「the paper reports」
+(論文が報告する)の形を維持する。1,259-line Lean、375 benchmarks、evaluation 数値は
+論文の報告として引用し、独立検証済みの事実としては書かない。`thehalleyyoung/deppy` は
+本文では引用せず、artifact が論文と明示的に接続された時点で citation へ昇格させる。
+
 ## 3. 同時期の直接関連研究
 
 ### 3.1 Gibson 2026: architecture、sheaf condition、Lean
@@ -441,8 +491,10 @@ finite witnesses、ArchSig measurement への接続を比較する。
 
 ## 9. 原稿化前の作業
 
-- [ ] Young の TeX source を精読し、definition と theorem の正確な番号を記録する
-- [ ] Young の Lean / Deppy artifact の公開先を確認する
+- [x] Young の definition と theorem の正確な番号を記録する(§2.7、HTML 版で確認。
+      TeX source 水準の照合は投稿前の最新版再確認と併せて行う)
+- [x] Young の Lean / Deppy artifact の公開先を確認する(§2.7: 論文・MSR ページに
+      リンクなし、候補 repo `thehalleyyoung/deppy` を記録、引用は「論文が報告する」形)
 - [ ] Gibson の Lean declarations と Mathlib theorem の対応を確認する
 - [ ] Felber の task-sheaf construction と cohomology statement を精読する
 - [ ] P0 文献を BibTeX に固定する
