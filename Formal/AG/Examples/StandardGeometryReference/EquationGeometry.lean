@@ -1085,13 +1085,19 @@ actual context chart.
 noncomputable def referenceEquationContextChartProducer :
     EquationObservableRealization.EquationContextChartProducer
       referenceEquationObservableRealization
-      referenceEquationContextCharts where
-  violation_on_chart W V i a := by
-    simpa [referenceEquationContextCharts,
-      EquationContextChartCover.whole,
-      EquationObservableRealization.contextChartEvaluation,
-      EquationObservableRealization.violationSection] using
-        (referenceViolationSection_context_eq V W i a)
+      referenceEquationContextCharts :=
+  EquationObservableRealization.EquationContextChartProducer.ofGlobalSections
+    referenceEquationObservableRealization
+    referenceEquationContextCharts
+    (fun i a =>
+      referenceEquationObservableRealization.violationSection
+        baseContext i a)
+    (by
+      intro W i a
+      simpa [EquationObservableRealization.contextChartEvaluation,
+        EquationObservableRealization.violationSection] using
+          congrArg (referenceEquationContextCharts.chartMap W).appTop
+            (referenceViolationSection_context_eq baseContext W i a))
 
 /-- Complete actual-chart producer for the site-owned equation realization. -/
 noncomputable def referenceEquationSchemeChartProducer :
@@ -2497,13 +2503,19 @@ private theorem cyclicUnitViolationSection_context_eq
 noncomputable def cyclicUnitEquationContextChartProducer :
     EquationObservableRealization.EquationContextChartProducer
       cyclicUnitEquationObservableRealization
-      referenceEquationContextCharts where
-  violation_on_chart W V i a := by
-    simpa [referenceEquationContextCharts,
-      EquationContextChartCover.whole,
-      EquationObservableRealization.contextChartEvaluation,
-      EquationObservableRealization.violationSection] using
-        (cyclicUnitViolationSection_context_eq V W i a)
+      referenceEquationContextCharts :=
+  EquationObservableRealization.EquationContextChartProducer.ofGlobalSections
+    cyclicUnitEquationObservableRealization
+    referenceEquationContextCharts
+    (fun i a =>
+      cyclicUnitEquationObservableRealization.violationSection
+        baseContext i a)
+    (by
+      intro W i a
+      simpa [EquationObservableRealization.contextChartEvaluation,
+        EquationObservableRealization.violationSection] using
+          congrArg (referenceEquationContextCharts.chartMap W).appTop
+            (cyclicUnitViolationSection_context_eq baseContext W i a))
 
 /-- Complete actual-chart producer for the cyclic negative fixture. -/
 noncomputable def cyclicUnitEquationSchemeChartProducer :
@@ -2820,11 +2832,15 @@ generated from the site-owned witness ideals.
 -/
 theorem siteEquationModTwoPoint_factors_generated :
     Nonempty
-      (referenceEquationObservableRealization.FactorsThroughLawfulClosedSubscheme
+      (referenceEquationObservableRealization.FactorsThroughEquationGeneratedLawfulClosedSubscheme
+          referenceEquationContextCharts
+          referenceEquationSchemeChartProducer
           siteEquationModTwoRealizationPoint) := by
   apply
-    (referenceEquationObservableRealization.generatedIdeal_iff_nonempty_factorsThrough
-      siteEquationModTwoRealizationPoint).mp
+    (referenceEquationObservableRealization.equationGeneratedIdeal_iff_nonempty_factorsThrough
+        referenceEquationContextCharts
+        referenceEquationSchemeChartProducer
+        siteEquationModTwoRealizationPoint).mp
   exact
     (referenceEquationObservableRealization.equationLawfulAlong_iff_generatedIdeal
       referenceEquationObservableRealization_valid
@@ -2841,8 +2857,10 @@ theorem siteEquationModTwoPoint_factors_equation
     (i : referenceSite.equationSystem.Index)
     (hi : referenceSite.equationSystem.Required i) :
     Nonempty
-      (referenceEquationObservableRealization.FactorsThroughEquationClosedSubscheme
-        i siteEquationModTwoRealizationPoint) := by
+      (referenceEquationObservableRealization.FactorsThroughEquationGeneratedClosedSubscheme
+          referenceEquationContextCharts
+          referenceEquationSchemeChartProducer
+          i siteEquationModTwoRealizationPoint) := by
   have h :=
     referenceEquationObservableRealization.equationHoldsAlong_iff_nonempty_factorsThrough
       referenceEquationObservableRealization_valid
@@ -3000,8 +3018,10 @@ The generated lawful ideal remains nonzero after pullback to the cyclic point,
 so the lawful closed subscheme is proper relative to this realization point.
 -/
 theorem cyclicUnitSitePoint_generatedIdeal_comap_ne_bot :
-    cyclicUnitEquationObservableRealization.generatedIdealSheaf.comap
-      cyclicUnitSiteRealizationPoint ≠ ⊥ := by
+    (cyclicUnitEquationObservableRealization.equationGeneratedIdealSheaf
+      referenceEquationContextCharts
+      cyclicUnitEquationSchemeChartProducer).comap
+        cyclicUnitSiteRealizationPoint ≠ ⊥ := by
   intro h
   exact cyclicUnitSitePoint_not_equationLawful
     ((EquationObservableRealization.equationLawfulAlong_iff_generatedIdeal
@@ -3014,12 +3034,15 @@ theorem cyclicUnitSitePoint_generatedIdeal_comap_ne_bot :
 /-- The cyclic realization point cannot factor through the lawful subscheme. -/
 theorem cyclicUnitSitePoint_not_factors_generated :
     ¬ Nonempty
-      (cyclicUnitEquationObservableRealization.FactorsThroughLawfulClosedSubscheme
-        cyclicUnitSiteRealizationPoint) := by
+      (cyclicUnitEquationObservableRealization.FactorsThroughEquationGeneratedLawfulClosedSubscheme
+          referenceEquationContextCharts
+          cyclicUnitEquationSchemeChartProducer
+          cyclicUnitSiteRealizationPoint) := by
   intro hfactor
   exact cyclicUnitSitePoint_generatedIdeal_comap_ne_bot
-    ((EquationObservableRealization.generatedIdeal_iff_nonempty_factorsThrough
-      cyclicUnitEquationObservableRealization
+    ((cyclicUnitEquationObservableRealization.equationGeneratedIdeal_iff_nonempty_factorsThrough
+      referenceEquationContextCharts
+      cyclicUnitEquationSchemeChartProducer
       cyclicUnitSiteRealizationPoint).mpr hfactor)
 
 /--
@@ -3028,8 +3051,10 @@ generated zero locus.
 -/
 theorem cyclicUnitSitePoint_not_factors_equation :
     ¬ Nonempty
-      (cyclicUnitEquationObservableRealization.FactorsThroughEquationClosedSubscheme
-        PUnit.unit cyclicUnitSiteRealizationPoint) := by
+      (cyclicUnitEquationObservableRealization.FactorsThroughEquationGeneratedClosedSubscheme
+          referenceEquationContextCharts
+          cyclicUnitEquationSchemeChartProducer
+          PUnit.unit cyclicUnitSiteRealizationPoint) := by
   intro hfactor
   have h :=
     cyclicUnitEquationObservableRealization.equationHoldsAlong_iff_nonempty_factorsThrough
@@ -4187,35 +4212,96 @@ noncomputable def referenceEquationChartLocalization
         j i).symm
 
 /--
+The equation-generated route uses the same nontrivial two-principal-open
+localizations without accepting any ideal-equality field.
+-/
+noncomputable def referenceEquationAmbientChartLocalization :
+    EquationObservableRealization.EquationAmbientChartLocalization
+      (raw := referenceRaw) (X := referenceScheme) where
+  submonoid := referenceEquationChartLocalization.submonoid
+  isLocalization := referenceEquationChartLocalization.isLocalization
+
+/--
 The site-owned equation realization uses the concrete localization producer
 in its full lawfulness, ideal, factorization, and chart correspondence.
 -/
+theorem referenceSiteEquationLawfulnessIdealFactorizationChartCorrespondence
+    {T : AlgebraicGeometry.Scheme}
+    (s : T ⟶ referenceEquationObservableRealization.realizationScheme) :
+    ((referenceEquationObservableRealization.EquationLawfulAlong
+          referenceEquationContextCharts s ↔
+        (referenceEquationObservableRealization.equationGeneratedIdealSheaf
+          referenceEquationContextCharts
+          referenceEquationSchemeChartProducer).comap s = ⊥) ∧
+      ((referenceEquationObservableRealization.equationGeneratedIdealSheaf
+          referenceEquationContextCharts
+          referenceEquationSchemeChartProducer).comap s = ⊥ ↔
+        Nonempty
+          (referenceEquationObservableRealization.FactorsThroughEquationGeneratedLawfulClosedSubscheme
+            referenceEquationContextCharts
+            referenceEquationSchemeChartProducer
+            s))) ∧
+      ∀ i : referenceSite.equationSystem.RequiredIndex,
+        referenceEquationObservableRealization.EquationContextWitnessChartRealized
+          referenceEquationContextCharts
+          referenceEquationSchemeChartProducer
+          referenceEquationAmbientChartLocalization
+          i.1 :=
+  Correspondence.siteEquationLawfulnessIdealFactorizationChartCorrespondence
+    referenceEquationObservableRealization
+    referenceEquationObservableRealization_valid
+    referenceEquationContextCharts
+    referenceEquationSchemeChartProducer
+    referenceEquationAmbientChartLocalization
+    s
+
+/-- The ideal/factorization pair projected from the full chart theorem. -/
 theorem referenceSiteEquationLawfulnessIdealFactorizationCorrespondence
     {T : AlgebraicGeometry.Scheme}
     (s : T ⟶ referenceEquationObservableRealization.realizationScheme) :
     (referenceEquationObservableRealization.EquationLawfulAlong
         referenceEquationContextCharts s ↔
-      referenceEquationObservableRealization.generatedIdealSheaf.comap s =
-        ⊥) ∧
-    (referenceEquationObservableRealization.generatedIdealSheaf.comap s =
-        ⊥ ↔
+      (referenceEquationObservableRealization.equationGeneratedIdealSheaf
+        referenceEquationContextCharts
+        referenceEquationSchemeChartProducer).comap s = ⊥) ∧
+    ((referenceEquationObservableRealization.equationGeneratedIdealSheaf
+        referenceEquationContextCharts
+        referenceEquationSchemeChartProducer).comap s = ⊥ ↔
       Nonempty
-        (referenceEquationObservableRealization.FactorsThroughLawfulClosedSubscheme
+        (referenceEquationObservableRealization.FactorsThroughEquationGeneratedLawfulClosedSubscheme
+          referenceEquationContextCharts
+          referenceEquationSchemeChartProducer
           s)) :=
-  Correspondence.siteEquationLawfulnessIdealFactorizationCorrespondence
-    referenceEquationObservableRealization
-    referenceEquationObservableRealization_valid
-    referenceEquationContextCharts
-    referenceEquationSchemeChartProducer
-    s
+  (referenceSiteEquationLawfulnessIdealFactorizationChartCorrespondence s).1
+
+/--
+The full correspondence consumes the left/right principal-open localization
+on the actual atlas overlap.
+-/
+theorem referenceSiteEquation_leftRightLocalization_used
+    (i : referenceSite.equationSystem.RequiredIndex) :
+    Function.Bijective
+      (referenceEquationObservableRealization.gluedWitnessIdealLocalizes
+        referenceEquationContextCharts
+        referenceEquationSchemeChartProducer
+        referenceEquationAmbientChartLocalization
+        leftIndex rightIndex i.1) := by
+  let s : referenceEquationObservableRealization.realizationScheme ⟶
+      referenceEquationObservableRealization.realizationScheme :=
+    𝟙 _
+  exact
+    ((referenceSiteEquationLawfulnessIdealFactorizationChartCorrespondence
+      s).2 i).2.2.2.1 leftIndex rightIndex
 
 /--
 The nontrivial mod-two realization satisfies the generated lawful-locus
 condition through the actual context-chart producer.
 -/
 theorem siteEquationModTwoPoint_generatedLawfulLocus :
-    referenceEquationObservableRealization.generatedIdealSheaf.comap
-      siteEquationModTwoRealizationPoint = ⊥ :=
+    (referenceEquationObservableRealization.equationGeneratedIdealSheaf
+      referenceEquationContextCharts
+      referenceEquationSchemeChartProducer).comap
+        siteEquationModTwoRealizationPoint = ⊥ :=
   (referenceSiteEquationLawfulnessIdealFactorizationCorrespondence
     siteEquationModTwoRealizationPoint).1.mp
       siteEquationModTwoPoint_equationLawful
