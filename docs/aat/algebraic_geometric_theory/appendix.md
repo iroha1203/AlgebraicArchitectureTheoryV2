@@ -1016,6 +1016,9 @@ given selected Atom family
 第X部の SAGA 比較定理(第X部 定理 7.6)の最小の非零例を、
 実際の 4-chart AAT cover、独立な semantic presentation、equation-generated quotient の
 三つを明示して固定する。
+本例が構成する係数、local-state system、comparison data は、定理 7.6 が用いる
+cover intersection diagram `Int_{\le2}(𝒰)` 上に置く。この diagram の対象は chart、
+pairwise intersection、triple intersection であり、base context `W` 上の値を含まない。
 
 ### B.9.1 Circle AAT cover
 
@@ -1026,8 +1029,9 @@ W_{01}, W_{12}, W_{23}, W_{30}
 ```
 
 を持つ有限 context category を取る。non-adjacent overlap と triple overlap は空 context とする。
-cover `𝒰={W_j→W}_{j=0}^3` と coverage package `(E,R,Ov)` はこの四つの overlap を生成し、
-その Čech nerve は次の 4-cycle である。
+cover `𝒰={W_j→W}_{j=0}^3` と coverage package `(E,R,Ov)` はこの四つの overlap を生成する。
+以下では ambient context category から `Int_{\le2}(𝒰)` を取り出し、その Čech nerve を
+次の 4-cycle として用いる。
 
 ```text
 vertices: v_0, v_1, v_2, v_3
@@ -1050,16 +1054,19 @@ O_E(∅) = Q_E(∅) = 0
 P_sem(∅) = P_E(∅) = {*}
 ```
 
-empty context 上の equation index と displayed Atom は空とし、そこへ値を持つ
-symbolic violation coordinate `ν` と object-dependent residual `ε` は零とする。
+equation system の index `i` と ambient Atom `a` は diagram 全体で同じ singleton とする。
+empty context 上では displayed source と supported Atom の選択を空とし、
+symbolic violation coordinate `ν_{∅,i,a}` と object-dependent residual
+`ε_{∅,A,i,a}` を零とする。
 nonempty context から empty context への係数 restriction と local-state restriction、
 および empty context 間の restriction は、それぞれ零群または singleton への一意な写像とする。
+`beta_∅:P_sem(∅)→P_E(∅)` も singleton 間の一意な写像とする。
 したがって semantic presentation、equation-generated coefficient、二つの local-state
-presheaf は空交叉を含む有限 context category 全体で恒等則と合成則を満たす。
+presheaf は空交叉を含む `Int_{\le2}(𝒰)` 上で恒等則と合成則を満たす。
 
 ### B.9.2 Semantic presentation
 
-各 nonempty intersection `V` に一つの supported semantic atom `σ_V` を置き、
+`Int_{\le2}(𝒰)` の各 nonempty object `V` に一つの supported semantic atom `σ_V` を置き、
 restriction を `σ_V↦σ_{V'}` とする。Atom projection は singleton Atom `a` へ送る。
 local repair relation は
 
@@ -1079,7 +1086,8 @@ M_sem(V) = Z[sigma_V] / 2 Z[sigma_V] ≅ F_2
 
 ### B.9.3 Equation-generated presentation
 
-equation system `E` の observable ring を各 nonempty context `V` で `O_E(V)=Z`、
+equation system `E` の observable ring を `Int_{\le2}(𝒰)` の各 nonempty object `V` で
+`O_E(V)=Z`、
 restriction を恒等とする。required equation index `i` を一つ取り、symbolic violation
 coordinate を `ν_{V,i,a}=2` とする。第III部 定理 11.4 により
 
@@ -1134,7 +1142,8 @@ C_sem^2 = 0            C_E^2 = 0
 `kappa` は各 chart と overlap で `Phi_V` を適用して構成され、
 第X部 定理 7.2 が微分可換性を証明する。
 
-各 chart と nonempty overlap 上で `P_sem=F_2` とし、`M_sem` は加法で作用する。
+`Int_{\le2}(𝒰)` の各 chart と nonempty overlap 上で `P_sem=F_2` とし、
+`M_sem` は加法で作用する。
 oriented edge `e` の source restriction を恒等、target restriction を
 `x↦x+t_e` と置き、
 
@@ -1144,7 +1153,7 @@ oriented edge `e` の source restriction を恒等、target restriction を
 
 とする。最後の edge は `U_03` を `3→0` に向けたものであり、`F_2` では向きの反転による
 符号は変わらない。triple overlap がないため、この local restriction system は
-必要な functoriality 条件を満たす。各 chart で `p_i=0` を選ぶと、
+`Int_{\le2}(𝒰)` 上で必要な functoriality 条件を満たす。各 chart で `p_i=0` を選ぶと、
 semantic local repair atlas の difference は
 
 ```text
