@@ -7,7 +7,9 @@ import Formal.AG.ReadingFunctoriality.LerayComparison
 import Formal.AG.ReadingFunctoriality.LargeLerayComparison
 import Formal.AG.ReadingFunctoriality.LinearLerayComparison
 import Formal.AG.Examples.FiniteModel
-import Formal.AG.LawAlgebra.ClosedEquationalGeometryFiniteExample
+import Formal.AG.LawAlgebra.ClosedEquationalGeometry
+import Formal.AG.LawAlgebra.StandardSchemeFiniteExample
+import Formal.AG.LawAlgebra.FiniteExamples
 import Mathlib.Algebra.Category.ModuleCat.Adjunctions
 import Mathlib.Algebra.Homology.DerivedCategory.Ext.EnoughProjectives
 import Mathlib.CategoryTheory.Limits.Preserves.Over
@@ -2320,6 +2322,13 @@ private def exactAtomMap : FiniteModel.carrier.Atom → FiniteModel.carrier.Atom
 private theorem exactAtomMap_injective : Function.Injective exactAtomMap :=
   Function.LeftInverse.injective exactAtomMap_involutive
 
+private def exactAtomEquiv :
+    FiniteModel.carrier.Atom ≃ FiniteModel.carrier.Atom where
+  toFun := exactAtomMap
+  invFun := exactAtomMap
+  left_inv := exactAtomMap_involutive
+  right_inv := exactAtomMap_involutive
+
 private def exactExtractionDoctrine : ExtractionDoctrine FiniteModel.carrier where
   Source := PUnit
   Vocabulary := PUnit
@@ -2348,6 +2357,68 @@ private def exactCompositionReading : CompositionReading FiniteModel.carrier whe
 private def exactCircuitDatum : FiniteCircuitDatum FiniteModel.carrier where
   queries := [(.atomPresent FiniteModel.FiniteAtom.componentC, true)]
 
+private def exactRoleWeight : EquationRole → Int
+  | .required => 1
+  | .optional => 2
+  | .derived => 3
+
+/--
+Three-role equation system whose residual records actual Atom membership in
+the selected architecture object.
+-/
+private noncomputable def exactEquationSystem
+    (A : ArchitectureObject FiniteModel.carrier) :
+    ArchitecturalEquationSystem (Site.contextMorphismPreorderCategory A) := by
+  classical
+  exact {
+    Index := EquationRole
+    role := id
+    Observable := fun _ => Int
+    observableCommRing := fun _ => inferInstance
+    restrict := fun _ => RingHom.id Int
+    restrict_id := by intros; rfl
+    restrict_comp := by intros; rfl
+    violationCoordinate := fun _ role _ => exactRoleWeight role
+    violationCoordinate_restrict := by intros; rfl
+    equationResidual := fun _ object role atom =>
+      if object.configuration.family.mem atom then exactRoleWeight role else 0
+    equationResidual_restrict := by intros; rfl
+  }
+
+/--
+Exact detector reading for the role-complete, object-dependent equation
+fixture.
+-/
+private noncomputable def exactEquationReading
+    (A : ArchitectureObject FiniteModel.carrier) :
+    EquationReading A where
+  contextPreorder := Site.contextMorphismPreorderCategory A
+  equationSystem := exactEquationSystem A
+  circuits := {
+    code := fun _ => .exact exactCircuitDatum
+  }
+  circuitSound := by
+    classical
+    intro index object datum hmatches haccepts hequation
+    have hdatum : exactCircuitDatum = datum :=
+      (CircuitDetectorCode.eval_exact_eq_true_iff
+        exactCircuitDatum datum).mp haccepts
+    subst datum
+    have hpresent :
+        object.configuration.family.mem FiniteModel.FiniteAtom.componentC := by
+      exact (hmatches
+        (.atomPresent FiniteModel.FiniteAtom.componentC) true
+        (by simp [exactCircuitDatum])).mpr rfl
+    have hcoordinate := hequation
+      (Site.ContextCategoryObject.of
+        (Site.contextMorphismPreorderCategory A) (emptyEquationContext A))
+      FiniteModel.FiniteAtom.componentC
+    change
+      (if object.configuration.family.mem FiniteModel.FiniteAtom.componentC
+        then exactRoleWeight index else 0) = 0 at hcoordinate
+    rw [if_pos hpresent] at hcoordinate
+    cases index <;> norm_num [exactRoleWeight] at hcoordinate
+
 private def exactInvariantFamily : InvariantFamily FiniteModel.carrier where
   Index := Bool
   invariant
@@ -2367,7 +2438,7 @@ private noncomputable def exactCoreReading : CoreReading FiniteModel.carrier whe
     fun atom _ => FiniteModel.FiniteAtom.mem_all atom⟩
   composition := exactCompositionReading
   objectReading := FiniteModel.objectReading
-  equationReading := falseEquationReading _ exactCircuitDatum
+  equationReading := exactEquationReading _
   invariantReading := exactInvariantFamily
   signatureReading := exactSignature
   operationReading := FiniteModel.operationReading
@@ -2515,6 +2586,17 @@ private theorem exactDatumMap_accepts_iff
   · intro h
     exact exactDatumMap_injective (by simpa using h)
 
+private theorem exactDatumMap_eq_transport
+    (datum : FiniteCircuitDatum FiniteModel.carrier) :
+    exactDatumMap datum = datum.transport exactAtomEquiv := by
+  have hquery :
+      exactQueryMap =
+        fun query => query.transport exactAtomEquiv := by
+    funext query
+    cases query <;> rfl
+  cases datum
+  simp [exactDatumMap, FiniteCircuitDatum.transport, hquery]
+
 private theorem exactComposition_eq
     (family : AtomFamily FiniteModel.carrier) (hfinite : family.ListFinite) :
     exactTargetCore.reading.composition.compose
@@ -2556,19 +2638,56 @@ private def exactOperationMap
 /-- Exact finite core change induced by the component-A/component-B involution. -/
 noncomputable def nonidentityExactCoreChange :
     SignedExactCoreReadingHom exactSourceCore exactTargetCore where
-  atomMap := exactAtomMap
-  extraction_eq := exactFamily_transport
-  composition_eq := exactComposition_eq
+  atomEquiv := exactAtomEquiv
+  extraction_eq := by
+    simpa [exactAtomEquiv] using exactFamily_transport
+  composition_eq := by
+    intro family hfinite
+    simpa [exactAtomEquiv] using exactComposition_eq family hfinite
   objectMap := exactObjectMap
   object_formation_eq := by intros; rfl
-  configurationMap A := AtomConfiguration.transportHom exactAtomMap A.configuration
+  configurationMap A :=
+    AtomConfiguration.transportHom exactAtomEquiv A.configuration
   configurationMap_atomMap := by intros; rfl
-  equationMap := id
-  required_iff := by intro i; cases i; rfl
-  equation_holds_iff := by intro i A; cases i; rfl
-  queryMap := exactDatumMap
-  matches_iff := exactDatumMap_matches_iff
-  accepts_iff := by intro i datum; cases i; exact exactDatumMap_accepts_iff datum
+  configuration_eq := by intros; rfl
+  equationTransport := {
+    contextForward := id
+    contextBackward := id
+    contextForward_map := id
+    contextBackward_map := id
+    contextForward_backward := by intros; rfl
+    contextBackward_forward := by intros; rfl
+    equationMap := id
+    role_eq := by intro i; rfl
+    observableEquiv := fun _ => RingEquiv.refl Int
+    observable_naturality := by intros; rfl
+    violationCoordinate_eq := by intros; rfl
+    equationResidual_eq := by
+      classical
+      intro W A role atom
+      have hmem :
+          (exactObjectMap A).configuration.family.mem
+              (exactAtomEquiv atom) ↔
+            A.configuration.family.mem atom := by
+        simpa [exactAtomEquiv] using
+          exactQueryMap_holds_iff (.atomPresent atom) A
+      change
+        (if A.configuration.family.mem atom
+          then exactRoleWeight role else 0) =
+        (if (exactObjectMap A).configuration.family.mem (exactAtomEquiv atom)
+          then exactRoleWeight role else 0)
+      by_cases h : A.configuration.family.mem atom
+      · rw [if_pos h, if_pos (hmem.mpr h)]
+      · rw [if_neg h, if_neg (fun htarget => h (hmem.mp htarget))]
+  }
+  detectorCode_eq := by
+    intro i
+    cases i <;>
+      change
+        CircuitDetectorCode.exact exactCircuitDatum =
+          CircuitDetectorCode.exact
+            (exactCircuitDatum.transport exactAtomEquiv) <;>
+      rw [← exactDatumMap_eq_transport, exactDatumMap_exactCircuitDatum]
   operationMap := exactOperationMap
   operation_naturality := by
     intro A B op
@@ -2596,6 +2715,20 @@ theorem nonidentityExactCoreChange_fires :
   change FiniteModel.FiniteAtom.componentB =
     FiniteModel.FiniteAtom.componentA at h
   exact FiniteModel.FiniteAtom.noConfusion h
+
+/-- The exact fixture preserves the optional role rather than swapping it with derived. -/
+theorem nonidentityExactCoreChange_optional_role :
+    exactTargetCore.algebra.equationSystem.role
+        (nonidentityExactCoreChange.equationMap EquationRole.optional) =
+      EquationRole.optional :=
+  nonidentityExactCoreChange.equationTransport.role_eq EquationRole.optional
+
+/-- The exact fixture preserves the derived role rather than swapping it with optional. -/
+theorem nonidentityExactCoreChange_derived_role :
+    exactTargetCore.algebra.equationSystem.role
+        (nonidentityExactCoreChange.equationMap EquationRole.derived) =
+      EquationRole.derived :=
+  nonidentityExactCoreChange.equationTransport.role_eq EquationRole.derived
 
 /-! ## R9e: coefficient arithmetic, raw data, and negative primitives -/
 

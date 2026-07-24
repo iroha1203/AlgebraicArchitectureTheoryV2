@@ -1672,15 +1672,17 @@ theorem presentedArchitectureRelatorIffActualAttachingLoop :
 theorem concreteThreeReadingAgreementEquation
     {U : AtomCarrier} {A₀ : ArchitectureObject U}
     {C : Site.ContextPreorderCategory A₀}
-    {E : ArchitecturalEquationSystem C}
+    {E : ArchitecturalEquationSystem C} {S : SignatureAxes U}
     (R : EquationCircuitReading E) (hSound : R.Sound)
-    (hComplete : R.RequiredComplete) (A : ArchitectureObject U) :
+    (hComplete : R.RequiredComplete)
+    (comparison : EquationSignatureComparison E S)
+    (A : ArchitectureObject U) :
     (E.EquationLawful A ↔ NoRequiredEquationCircuit R A) ∧
       (NoRequiredEquationCircuit R A ↔
-        RequiredSignatureAxesZero A (requiredEquationSignatureAxes E)) ∧
-      (E.EquationLawful A ↔
-        RequiredSignatureAxesZero A (requiredEquationSignatureAxes E)) :=
-  AAT.AG.concreteThreeReadingAgreement R hSound hComplete A
+        RequiredSignatureAxesZero A S) ∧
+      (E.EquationLawful A ↔ RequiredSignatureAxesZero A S) :=
+  AAT.AG.concreteThreeReadingAgreement
+    R hSound hComplete comparison A
 
 theorem finiteComponentAConcreteThreeReadingAgreement :
     let C := Site.contextMorphismPreorderCategory FiniteModel.object
@@ -1693,12 +1695,12 @@ theorem finiteComponentAConcreteThreeReadingAgreement :
           (FiniteModel.componentAPresentEquationCircuitReading C)
           FiniteModel.corePackage.object ↔
         RequiredSignatureAxesZero FiniteModel.corePackage.object
-          (requiredEquationSignatureAxes
+          (equationResidualSignatureAxes
             (FiniteModel.componentAAbsentEquationSystem C))) ∧
       ((FiniteModel.componentAAbsentEquationSystem C).EquationLawful
           FiniteModel.corePackage.object ↔
         RequiredSignatureAxesZero FiniteModel.corePackage.object
-          (requiredEquationSignatureAxes
+          (equationResidualSignatureAxes
             (FiniteModel.componentAAbsentEquationSystem C))) :=
   FiniteModel.componentAAbsent_concreteThreeReadingAgreement
     (Site.contextMorphismPreorderCategory FiniteModel.object)

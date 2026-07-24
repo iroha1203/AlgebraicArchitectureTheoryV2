@@ -15,21 +15,40 @@ relative to the selected profile, and no complement relation between `Zero`
 and `NonZero` is assumed.
 -/
 
+/-- VIII.Definition 2.1: architecture object and generated AAT site of a profile. -/
+structure MeasurementEquationGeometry where
+  U : AtomCarrier.{u}
+  A : ArchitectureObject U
+  site : Site.AATSite A
+
+namespace MeasurementEquationGeometry
+
+/-- Package an existing generated AAT site as measurement equation geometry. -/
+def ofSite {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    (site : Site.AATSite A) :
+    MeasurementEquationGeometry.{u} where
+  U := U
+  A := A
+  site := site
+
+end MeasurementEquationGeometry
+
 /--
 VIII.Definition 2.1: an AAT measurement profile.
 
-The fields are type-level handles for the selected site, cover, coefficient,
-effective interface, obstruction object, equation handles, witness variables,
+The equation geometry is an actual architecture object, equation-generated
+site, and architecture signature.  The remaining fields select the cover,
+coefficient, effective interface, obstruction object, witness variables,
 obstruction ideal, representation family, domain, predicates, certificates,
-and selected computation method.
+and computation method.
 -/
 structure MeasurementProfile where
+  equationGeometry : MeasurementEquationGeometry.{u}
   SiteObj : Type u
   Cover : Type u
   Coeff : Type v
   EffCoeff : Type (max u v)
   ObstructionObject : Type u
-  EquationHandle : Type u
   WitnessVariables : Type u
   ObstructionIdeal : Type u
   RepresentationFamily : Type u
@@ -44,6 +63,10 @@ structure MeasurementProfile where
   NotRunOrUnavailable : Domain -> Prop
 
 namespace MeasurementProfile
+
+/-- Equation indices are the actual indices of the profile's generated site. -/
+abbrev EquationHandle (M : MeasurementProfile.{u, v}) : Type u :=
+  M.equationGeometry.site.equationSystem.Index
 
 /--
 VIII.R1: bounded measurement data for a selected element of the profile domain.

@@ -1,6 +1,7 @@
 import Formal.AG.Atom.AATCore
 import Formal.AG.Site.Geometry
 import Formal.AG.LawAlgebra.StructureSheaf
+import Mathlib.CategoryTheory.Equivalence
 import Mathlib.Logic.Equiv.Defs
 
 /-!
@@ -13,6 +14,8 @@ fixed by Part 4 SD0–SD1.
 namespace AAT.AG
 
 universe u v w
+
+open CategoryTheory
 
 /--
 The typed reading parameter `p = (r, J, k)` from Part 4 SD0, retaining one
@@ -151,6 +154,206 @@ def AtomConfiguration.transportHom
   maps_family h := ⟨_, h, rfl⟩
   maps_relation h := ⟨_, _, h, rfl, rfl⟩
   maps_identification h := ⟨_, _, h, rfl, rfl⟩
+
+/-- Transport an Atom-level circuit query along an Atom equivalence. -/
+def CircuitQuery.transport
+    (e : U.Atom ≃ U.Atom) :
+    CircuitQuery U → CircuitQuery U
+  | .atomPresent atom => .atomPresent (e atom)
+  | .relationPresent atom₁ atom₂ =>
+      .relationPresent (e atom₁) (e atom₂)
+  | .identificationPresent atom₁ atom₂ =>
+      .identificationPresent (e atom₁) (e atom₂)
+
+/-- Transport every signed query component along an Atom equivalence. -/
+def FiniteCircuitDatum.transport
+    (e : U.Atom ≃ U.Atom)
+    (datum : FiniteCircuitDatum U) :
+    FiniteCircuitDatum U where
+  queries := datum.queries.map fun pair => (pair.1.transport e, pair.2)
+
+/-- Transport finite detector syntax together with its signed query templates. -/
+def CircuitDetectorCode.transport
+    (e : U.Atom ≃ U.Atom) :
+    CircuitDetectorCode U → CircuitDetectorCode U
+  | .reject => .reject
+  | .exact pattern => .exact (pattern.transport e)
+  | .any left right => .any (left.transport e) (right.transport e)
+
+/-- Query transport commutes with composition of Atom equivalences. -/
+@[simp] theorem CircuitQuery.transport_trans
+    (e₁ e₂ : U.Atom ≃ U.Atom) (query : CircuitQuery U) :
+    (query.transport e₁).transport e₂ = query.transport (e₁.trans e₂) := by
+  cases query <;> rfl
+
+/-- Signed finite-circuit transport commutes with composition. -/
+@[simp] theorem FiniteCircuitDatum.transport_trans
+    (e₁ e₂ : U.Atom ≃ U.Atom) (datum : FiniteCircuitDatum U) :
+    (datum.transport e₁).transport e₂ = datum.transport (e₁.trans e₂) := by
+  cases datum with
+  | mk queries =>
+      simp [FiniteCircuitDatum.transport, Function.comp_def]
+
+/-- Identity Atom transport leaves each circuit query unchanged. -/
+@[simp] theorem CircuitQuery.transport_refl
+    (query : CircuitQuery U) :
+    query.transport (Equiv.refl U.Atom) = query := by
+  cases query <;> rfl
+
+/-- Identity Atom transport leaves signed finite-circuit data unchanged. -/
+@[simp] theorem FiniteCircuitDatum.transport_refl
+    (datum : FiniteCircuitDatum U) :
+    datum.transport (Equiv.refl U.Atom) = datum := by
+  cases datum with
+  | mk queries =>
+      simp [FiniteCircuitDatum.transport]
+
+/-- Signed finite-circuit transport along an Atom equivalence is injective. -/
+theorem FiniteCircuitDatum.transport_injective
+    {U : AtomCarrier.{u}}
+    (e : U.Atom ≃ U.Atom) :
+    Function.Injective (FiniteCircuitDatum.transport e) := by
+  intro source target heq
+  have hback := congrArg
+    (FiniteCircuitDatum.transport e.symm) heq
+  simpa using hback
+
+/-- Detector syntax transport commutes with composition of Atom equivalences. -/
+@[simp] theorem CircuitDetectorCode.transport_trans
+    {U : AtomCarrier.{u}}
+    (e₁ e₂ : U.Atom ≃ U.Atom) (code : CircuitDetectorCode U) :
+    (code.transport e₁).transport e₂ =
+      code.transport (e₁.trans e₂) := by
+  induction code with
+  | reject => rfl
+  | exact pattern =>
+      simp [CircuitDetectorCode.transport]
+  | any left right hleft hright =>
+      simp [CircuitDetectorCode.transport, hleft, hright]
+
+/-- Identity Atom transport leaves finite detector syntax unchanged. -/
+@[simp] theorem CircuitDetectorCode.transport_refl
+    {U : AtomCarrier.{u}}
+    (code : CircuitDetectorCode U) :
+    code.transport (Equiv.refl U.Atom) = code := by
+  induction code with
+  | reject => rfl
+  | exact pattern =>
+      simp [CircuitDetectorCode.transport]
+  | any left right hleft hright =>
+      simp [CircuitDetectorCode.transport, hleft, hright]
+
+/--
+Evaluation of transported detector syntax on transported signed data is the
+original evaluation.
+-/
+theorem CircuitDetectorCode.eval_transport
+    {U : AtomCarrier.{u}}
+    (e : U.Atom ≃ U.Atom)
+    (code : CircuitDetectorCode U)
+    (datum : FiniteCircuitDatum U) :
+    (code.transport e).eval (datum.transport e) = code.eval datum := by
+  induction code with
+  | reject =>
+      simp [CircuitDetectorCode.transport, CircuitDetectorCode.eval]
+  | exact pattern =>
+      by_cases hpattern : pattern = datum
+      · subst datum
+        simp [CircuitDetectorCode.transport, CircuitDetectorCode.eval]
+      · have htransport :
+          pattern.transport e ≠ datum.transport e :=
+            fun heq => hpattern
+              (FiniteCircuitDatum.transport_injective e heq)
+        simp [CircuitDetectorCode.transport, CircuitDetectorCode.eval,
+          hpattern, htransport]
+  | any left right hleft hright =>
+      simp [CircuitDetectorCode.transport, CircuitDetectorCode.eval,
+        hleft, hright]
+
+/--
+An Atom query is preserved and reflected by direct-image configuration
+transport along an Atom equivalence.
+-/
+theorem CircuitQuery.transport_holds_iff
+    (e : U.Atom ≃ U.Atom) (query : CircuitQuery U)
+    (A : ArchitectureObject U) :
+    (query.transport e).Holds
+        { A with configuration := A.configuration.transport e } ↔
+      query.Holds A := by
+  cases query with
+  | atomPresent atom =>
+      constructor
+      · rintro ⟨source, hsource, heq⟩
+        simpa only [e.injective heq] using hsource
+      · intro h
+        exact ⟨atom, h, rfl⟩
+  | relationPresent atom₁ atom₂ =>
+      constructor
+      · rintro ⟨⟨source₁, hsource₁, heq₁⟩,
+          ⟨⟨source₂, hsource₂, heq₂⟩,
+            ⟨relationSource₁, relationSource₂, hrelation,
+              hrelation₁, hrelation₂⟩⟩⟩
+        have hs₁ : source₁ = atom₁ := e.injective heq₁
+        have hs₂ : source₂ = atom₂ := e.injective heq₂
+        have hr₁ : relationSource₁ = atom₁ := e.injective hrelation₁
+        have hr₂ : relationSource₂ = atom₂ := e.injective hrelation₂
+        subst source₁
+        subst source₂
+        subst relationSource₁
+        subst relationSource₂
+        exact ⟨hsource₁, hsource₂, hrelation⟩
+      · rintro ⟨h₁, h₂, hrelation⟩
+        exact ⟨⟨atom₁, h₁, rfl⟩, ⟨⟨atom₂, h₂, rfl⟩,
+          ⟨atom₁, atom₂, hrelation, rfl, rfl⟩⟩⟩
+  | identificationPresent atom₁ atom₂ =>
+      constructor
+      · rintro ⟨⟨source₁, hsource₁, heq₁⟩,
+          ⟨⟨source₂, hsource₂, heq₂⟩,
+            ⟨identificationSource₁, identificationSource₂, hidentification,
+              hidentification₁, hidentification₂⟩⟩⟩
+        have hs₁ : source₁ = atom₁ := e.injective heq₁
+        have hs₂ : source₂ = atom₂ := e.injective heq₂
+        have hi₁ : identificationSource₁ = atom₁ :=
+          e.injective hidentification₁
+        have hi₂ : identificationSource₂ = atom₂ :=
+          e.injective hidentification₂
+        subst source₁
+        subst source₂
+        subst identificationSource₁
+        subst identificationSource₂
+        exact ⟨hsource₁, hsource₂, hidentification⟩
+      · rintro ⟨h₁, h₂, hidentification⟩
+        exact ⟨⟨atom₁, h₁, rfl⟩, ⟨⟨atom₂, h₂, rfl⟩,
+          ⟨atom₁, atom₂, hidentification, rfl, rfl⟩⟩⟩
+
+/--
+Signed query matching is preserved and reflected by exact configuration
+transport.
+-/
+theorem FiniteCircuitDatum.transport_matches_iff
+    (e : U.Atom ≃ U.Atom) (datum : FiniteCircuitDatum U)
+    (A B : ArchitectureObject U)
+    (hconfiguration :
+      B.configuration = A.configuration.transport e) :
+    datum.Matches A ↔ (datum.transport e).Matches B := by
+  have holds_iff (query : CircuitQuery U) :
+      query.Holds B ↔
+        query.Holds { A with configuration := A.configuration.transport e } := by
+    cases query <;> simp [CircuitQuery.Holds, hconfiguration]
+  have query_iff (query : CircuitQuery U) :
+      (query.transport e).Holds B ↔ query.Holds A := by
+    exact (holds_iff (query.transport e)).trans
+      (CircuitQuery.transport_holds_iff e query A)
+  constructor
+  · intro hmatches query expected hmem
+    rcases List.mem_map.mp hmem with ⟨pair, hpair, hp⟩
+    cases hp
+    exact (query_iff pair.1).trans
+      (hmatches pair.1 pair.2 hpair)
+  · intro hmatches query expected hmem
+    have hmapped := hmatches (query.transport e) expected
+      (List.mem_map.mpr ⟨(query, expected), hmem, rfl⟩)
+    exact (query_iff query).symm.trans hmapped
 
 /--
 The canonical transport hom uses the supplied atom map.
@@ -496,6 +699,259 @@ private theorem AtomConfiguration.transport_comp
         ⟨source₁, source₂, h, rfl, rfl⟩, rfl, rfl⟩
 
 /--
+Primitive exact transport between two architectural equation systems.
+
+The context maps form an equivalence of the selected thin categories.
+`observableEquiv` and `observable_naturality` are the component and naturality
+data of the induced observable-presheaf isomorphism.  Equation fulfillment is
+not stored: it is derived below from role equality and compatibility of the
+violation and residual generators.
+-/
+structure EquationSystemExactTransport
+    {A₀ B₀ : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A₀}
+    {D : Site.ContextPreorderCategory B₀}
+    (E : ArchitecturalEquationSystem C)
+    (F : ArchitecturalEquationSystem D)
+    (atomEquiv : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U) where
+  /-- Forward object map of the context-category equivalence. -/
+  contextForward :
+    Site.ContextCategoryObject C → Site.ContextCategoryObject D
+  /-- Inverse object map of the context-category equivalence. -/
+  contextBackward :
+    Site.ContextCategoryObject D → Site.ContextCategoryObject C
+  /-- Forward map on readable context morphisms. -/
+  contextForward_map :
+    ∀ {W V}, (W ⟶ V) → (contextForward W ⟶ contextForward V)
+  /-- Inverse map on readable context morphisms. -/
+  contextBackward_map :
+    ∀ {W V}, (W ⟶ V) → (contextBackward W ⟶ contextBackward V)
+  /-- Forward after inverse is strictly the selected target context. -/
+  contextForward_backward :
+    ∀ W, contextForward (contextBackward W) = W
+  /-- Inverse after forward is strictly the selected source context. -/
+  contextBackward_forward :
+    ∀ W, contextBackward (contextForward W) = W
+  /-- Map between equation indices. -/
+  equationMap : E.Index → F.Index
+  /-- Required, optional, and derived roles are all preserved exactly. -/
+  role_eq : ∀ i, F.role (equationMap i) = E.role i
+  /-- Observable-ring equivalence at every source context. -/
+  observableEquiv :
+    ∀ W, E.Observable W ≃+* F.Observable (contextForward W)
+  /-- Observable-ring equivalences commute with restriction. -/
+  observable_naturality :
+    ∀ {W V} (f : W ⟶ V) (x : E.Observable V),
+      observableEquiv W (E.restrict f x) =
+        F.restrict (contextForward_map f) (observableEquiv V x)
+  /-- Symbolic violation generators commute with exact transport. -/
+  violationCoordinate_eq :
+    ∀ W i atom,
+      observableEquiv W (E.violationCoordinate W i atom) =
+        F.violationCoordinate (contextForward W) (equationMap i)
+          (atomEquiv atom)
+  /-- Object-dependent residual generators commute with exact transport. -/
+  equationResidual_eq :
+    ∀ W A i atom,
+      observableEquiv W (E.equationResidual W A i atom) =
+        F.equationResidual (contextForward W) (objectMap A)
+          (equationMap i) (atomEquiv atom)
+
+namespace EquationSystemExactTransport
+
+variable
+    {A₀ B₀ : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A₀}
+    {D : Site.ContextPreorderCategory B₀}
+    {E : ArchitecturalEquationSystem C}
+    {F : ArchitecturalEquationSystem D}
+    {atomEquiv : U.Atom ≃ U.Atom}
+    {objectMap : ArchitectureObject U → ArchitectureObject U}
+
+/-- The forward context data define an actual functor. -/
+def contextFunctor
+    (T : EquationSystemExactTransport E F atomEquiv objectMap) :
+    (Site.ContextCategoryObject C) ⥤ (Site.ContextCategoryObject D) where
+  obj := T.contextForward
+  map := T.contextForward_map
+  map_id _ := Subsingleton.elim _ _
+  map_comp _ _ := Subsingleton.elim _ _
+
+/-- The inverse context data define an actual functor. -/
+def contextInverse
+    (T : EquationSystemExactTransport E F atomEquiv objectMap) :
+    (Site.ContextCategoryObject D) ⥤ (Site.ContextCategoryObject C) where
+  obj := T.contextBackward
+  map := T.contextBackward_map
+  map_id _ := Subsingleton.elim _ _
+  map_comp _ _ := Subsingleton.elim _ _
+
+/-- The two strict context maps determine a category equivalence. -/
+noncomputable def contextEquivalence
+    (T : EquationSystemExactTransport E F atomEquiv objectMap) :
+    (Site.ContextCategoryObject C) ≌ (Site.ContextCategoryObject D) where
+  functor := T.contextFunctor
+  inverse := T.contextInverse
+  unitIso := NatIso.ofComponents fun W =>
+    eqToIso (T.contextBackward_forward W).symm
+  counitIso := NatIso.ofComponents fun W =>
+    eqToIso (T.contextForward_backward W)
+  functor_unitIso_comp _ := Subsingleton.elim _ _
+
+/--
+The observable-ring components and restriction compatibility assemble into a
+natural isomorphism of `CommRingCat`-valued presheaves.
+-/
+noncomputable def observablePresheafIso
+    (T : EquationSystemExactTransport E F atomEquiv objectMap) :
+    E.observablePresheaf ≅
+      T.contextFunctor.op ⋙ F.observablePresheaf :=
+  NatIso.ofComponents
+    (fun W => (T.observableEquiv W.unop).toCommRingCatIso)
+    (by
+      intro X Y f
+      apply CommRingCat.hom_ext
+      ext x
+      exact T.observable_naturality f.unop x)
+
+/-- Full role equality yields required-role preservation and reflection. -/
+theorem required_iff
+    (T : EquationSystemExactTransport E F atomEquiv objectMap)
+    (i : E.Index) :
+    E.Required i ↔ F.Required (T.equationMap i) := by
+  unfold ArchitecturalEquationSystem.Required
+  rw [T.role_eq]
+
+/--
+Equation fulfillment is derived from context equivalence, observable-ring
+equivalence, and residual-generator compatibility.
+-/
+theorem equationHolds_iff
+    (T : EquationSystemExactTransport E F atomEquiv objectMap)
+    (i : E.Index) (A : ArchitectureObject U) :
+    E.EquationHolds i A ↔
+      F.EquationHolds (T.equationMap i) (objectMap A) := by
+  constructor
+  · intro hsource W atom
+    let sourceContext := T.contextBackward W
+    let sourceAtom := atomEquiv.symm atom
+    have hzero := hsource sourceContext sourceAtom
+    have hmapped :
+        T.observableEquiv sourceContext
+            (E.equationResidual sourceContext A i sourceAtom) = 0 := by
+      rw [hzero]
+      exact map_zero _
+    rw [T.equationResidual_eq] at hmapped
+    dsimp [sourceContext, sourceAtom] at hmapped
+    rw [T.contextForward_backward W] at hmapped
+    simpa using hmapped
+  · intro htarget W atom
+    apply (T.observableEquiv W).injective
+    rw [T.equationResidual_eq]
+    simpa using htarget (T.contextForward W) (atomEquiv atom)
+
+/-- Identity transport of an equation system. -/
+def refl
+    {A₀ : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A₀}
+    (E : ArchitecturalEquationSystem C) :
+    EquationSystemExactTransport E E (Equiv.refl U.Atom) _root_.id where
+  contextForward := _root_.id
+  contextBackward := _root_.id
+  contextForward_map := _root_.id
+  contextBackward_map := _root_.id
+  contextForward_backward _ := rfl
+  contextBackward_forward _ := rfl
+  equationMap := _root_.id
+  role_eq _ := rfl
+  observableEquiv _ := RingEquiv.refl _
+  observable_naturality := by intros; rfl
+  violationCoordinate_eq := by intros; rfl
+  equationResidual_eq := by intros; rfl
+
+/-- Composition of primitive exact equation-system transports. -/
+def comp
+    {A₀ B₀ D₀ : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A₀}
+    {D : Site.ContextPreorderCategory B₀}
+    {G : Site.ContextPreorderCategory D₀}
+    {E : ArchitecturalEquationSystem C}
+    {F : ArchitecturalEquationSystem D}
+    {H : ArchitecturalEquationSystem G}
+    {atomEquiv₁ atomEquiv₂ : U.Atom ≃ U.Atom}
+    {objectMap₁ objectMap₂ : ArchitectureObject U → ArchitectureObject U}
+    (T : EquationSystemExactTransport E F atomEquiv₁ objectMap₁)
+    (S : EquationSystemExactTransport F H atomEquiv₂ objectMap₂) :
+    EquationSystemExactTransport E H (atomEquiv₁.trans atomEquiv₂)
+      (objectMap₂ ∘ objectMap₁) where
+  contextForward := S.contextForward ∘ T.contextForward
+  contextBackward := T.contextBackward ∘ S.contextBackward
+  contextForward_map f := S.contextForward_map (T.contextForward_map f)
+  contextBackward_map f := T.contextBackward_map (S.contextBackward_map f)
+  contextForward_backward W := by
+    change S.contextForward
+        (T.contextForward (T.contextBackward (S.contextBackward W))) = W
+    rw [T.contextForward_backward, S.contextForward_backward]
+  contextBackward_forward W := by
+    change T.contextBackward
+        (S.contextBackward (S.contextForward (T.contextForward W))) = W
+    rw [S.contextBackward_forward, T.contextBackward_forward]
+  equationMap := S.equationMap ∘ T.equationMap
+  role_eq i := by
+    change H.role (S.equationMap (T.equationMap i)) = E.role i
+    exact (S.role_eq (T.equationMap i)).trans (T.role_eq i)
+  observableEquiv W :=
+    (T.observableEquiv W).trans (S.observableEquiv (T.contextForward W))
+  observable_naturality f x := by
+    simp only [RingEquiv.trans_apply]
+    calc
+      S.observableEquiv (T.contextForward _)
+          (T.observableEquiv _ (E.restrict f x)) =
+          S.observableEquiv (T.contextForward _)
+            (F.restrict (T.contextForward_map f)
+              (T.observableEquiv _ x)) := by
+            rw [T.observable_naturality]
+      _ = H.restrict
+          (S.contextForward_map (T.contextForward_map f))
+          (S.observableEquiv (T.contextForward _) (T.observableEquiv _ x)) :=
+        S.observable_naturality (T.contextForward_map f)
+          (T.observableEquiv _ x)
+  violationCoordinate_eq W i atom := by
+    simp only [RingEquiv.trans_apply]
+    calc
+      S.observableEquiv (T.contextForward W)
+          (T.observableEquiv W (E.violationCoordinate W i atom)) =
+          S.observableEquiv (T.contextForward W)
+            (F.violationCoordinate (T.contextForward W)
+              (T.equationMap i) (atomEquiv₁ atom)) := by
+            rw [T.violationCoordinate_eq]
+      _ = H.violationCoordinate
+          (S.contextForward (T.contextForward W))
+          (S.equationMap (T.equationMap i))
+          (atomEquiv₂ (atomEquiv₁ atom)) :=
+        S.violationCoordinate_eq (T.contextForward W)
+          (T.equationMap i) (atomEquiv₁ atom)
+  equationResidual_eq W A i atom := by
+    simp only [RingEquiv.trans_apply]
+    calc
+      S.observableEquiv (T.contextForward W)
+          (T.observableEquiv W (E.equationResidual W A i atom)) =
+          S.observableEquiv (T.contextForward W)
+            (F.equationResidual (T.contextForward W)
+              (objectMap₁ A) (T.equationMap i) (atomEquiv₁ atom)) := by
+            rw [T.equationResidual_eq]
+      _ = H.equationResidual
+          (S.contextForward (T.contextForward W))
+          (objectMap₂ (objectMap₁ A))
+          (S.equationMap (T.equationMap i))
+          (atomEquiv₂ (atomEquiv₁ atom)) :=
+        S.equationResidual_eq (T.contextForward W)
+          (objectMap₁ A) (T.equationMap i) (atomEquiv₁ atom)
+
+end EquationSystemExactTransport
+
+/--
 Primitive data for an exact signed change between generated AAT cores (Part 4 SD1).
 
 The data preserve and reflect laws and signed queries while transporting objects,
@@ -508,54 +964,50 @@ construction required by SD1.
 -/
 structure SignedExactCoreReadingHom
     (P Q : AATCorePackage U) where
-  /-- Map on primitive atoms. -/
-  atomMap : U.Atom → U.Atom
+  /-- Equivalence on primitive atoms. -/
+  atomEquiv : U.Atom ≃ U.Atom
   /-- Exact identification of the target extracted family with the direct image. -/
   extraction_eq :
-    Q.family = P.family.transport atomMap
+    Q.family = P.family.transport atomEquiv
   /-- Compatibility of generated composition with direct-image transport. -/
   composition_eq :
     ∀ (F : AtomFamily U) (hF : F.ListFinite),
       Q.reading.composition.compose
-          (F.transport atomMap) (hF.transport atomMap) =
-        (P.reading.composition.compose F hF).transport atomMap
+          (F.transport atomEquiv) (hF.transport atomEquiv) =
+        (P.reading.composition.compose F hF).transport atomEquiv
   /-- Map on architecture objects. -/
   objectMap : ArchitectureObject U → ArchitectureObject U
   /-- Compatibility of object formation with configuration transport. -/
   object_formation_eq :
     ∀ C,
       objectMap (P.reading.objectReading.object C) =
-        Q.reading.objectReading.object (C.transport atomMap)
+        Q.reading.objectReading.object (C.transport atomEquiv)
   /-- Configuration hom attached to every object. -/
   configurationMap :
     ∀ A, ConfigurationHom A.configuration (objectMap A).configuration
-  /-- Every configuration hom uses the primitive atom map. -/
+  /-- Every configuration hom uses the primitive Atom equivalence. -/
   configurationMap_atomMap :
-    ∀ A, (configurationMap A).atomMap = atomMap
-  /-- Map between generated equation indices. -/
-  equationMap :
-    P.algebra.equationSystem.Index → Q.algebra.equationSystem.Index
-  /-- Preservation and reflection of required-equation status. -/
-  required_iff :
+    ∀ A, (configurationMap A).atomMap = atomEquiv
+  /-- Exact identification of target configuration data with direct image. -/
+  configuration_eq :
+    ∀ A,
+      (objectMap A).configuration =
+        A.configuration.transport atomEquiv
+  /--
+  Context equivalence, observable-presheaf equivalence, role equality, and
+  violation/residual generator compatibility.
+  -/
+  equationTransport :
+    EquationSystemExactTransport
+      P.algebra.equationSystem Q.algebra.equationSystem atomEquiv objectMap
+  /--
+  The target finite detector code is the structural transport of the source
+  detector code and its signed templates.
+  -/
+  detectorCode_eq :
     ∀ i,
-      P.algebra.equationSystem.Required i ↔
-        Q.algebra.equationSystem.Required (equationMap i)
-  /-- Preservation and reflection of equation fulfillment on mapped objects. -/
-  equation_holds_iff :
-    ∀ i A,
-      P.algebra.equationSystem.EquationHolds i A ↔
-        Q.algebra.equationSystem.EquationHolds (equationMap i) (objectMap A)
-  /-- Map on signed finite circuit queries. -/
-  queryMap : FiniteCircuitDatum U → FiniteCircuitDatum U
-  /-- Preservation and reflection of signed query matching. -/
-  matches_iff :
-    ∀ Qry A, Qry.Matches A ↔ (queryMap Qry).Matches (objectMap A)
-  /-- Preservation and reflection of circuit acceptance. -/
-  accepts_iff :
-    ∀ i Qry,
-      P.algebra.circuits.accepts i Qry = true ↔
-        Q.algebra.circuits.accepts
-          (equationMap i) (queryMap Qry) = true
+      Q.algebra.circuits.code (equationTransport.equationMap i) =
+        (P.algebra.circuits.code i).transport atomEquiv
   /-- Map on operations between architecture objects. -/
   operationMap :
     ∀ {A B},
@@ -605,6 +1057,79 @@ structure SignedExactCoreReadingHom
 
 namespace SignedExactCoreReadingHom
 
+/-- Underlying function of the exact Atom equivalence. -/
+def atomMap
+    {P Q : AATCorePackage U}
+    (f : SignedExactCoreReadingHom P Q) :
+    U.Atom → U.Atom :=
+  f.atomEquiv
+
+/-- Equation-index map supplied by the primitive equation transport. -/
+def equationMap
+    {P Q : AATCorePackage U}
+    (f : SignedExactCoreReadingHom P Q) :
+    P.algebra.equationSystem.Index →
+      Q.algebra.equationSystem.Index :=
+  f.equationTransport.equationMap
+
+/-- Canonical signed-query transport induced by the Atom equivalence. -/
+def queryMap
+    {P Q : AATCorePackage U}
+    (f : SignedExactCoreReadingHom P Q) :
+    FiniteCircuitDatum U → FiniteCircuitDatum U :=
+  fun datum => datum.transport f.atomEquiv
+
+/-- Required-role preservation is derived from full role equality. -/
+theorem required_iff
+    {P Q : AATCorePackage U}
+    (f : SignedExactCoreReadingHom P Q)
+    (i : P.algebra.equationSystem.Index) :
+    P.algebra.equationSystem.Required i ↔
+      Q.algebra.equationSystem.Required (f.equationMap i) :=
+  f.equationTransport.required_iff i
+
+/--
+Equation fulfillment is derived from context, observable, and residual
+transport.
+-/
+theorem equation_holds_iff
+    {P Q : AATCorePackage U}
+    (f : SignedExactCoreReadingHom P Q)
+    (i : P.algebra.equationSystem.Index)
+    (A : ArchitectureObject U) :
+    P.algebra.equationSystem.EquationHolds i A ↔
+      Q.algebra.equationSystem.EquationHolds
+        (f.equationMap i) (f.objectMap A) :=
+  f.equationTransport.equationHolds_iff i A
+
+/-- Signed query matching is derived componentwise from configuration transport. -/
+theorem matches_iff
+    {P Q : AATCorePackage U}
+    (f : SignedExactCoreReadingHom P Q)
+    (datum : FiniteCircuitDatum U)
+    (A : ArchitectureObject U) :
+    datum.Matches A ↔ (f.queryMap datum).Matches (f.objectMap A) :=
+  FiniteCircuitDatum.transport_matches_iff f.atomEquiv datum A
+    (f.objectMap A) (f.configuration_eq A)
+
+/-- Circuit acceptance is derived from detector evaluation compatibility. -/
+theorem accepts_iff
+    {P Q : AATCorePackage U}
+    (f : SignedExactCoreReadingHom P Q)
+    (i : P.algebra.equationSystem.Index)
+    (datum : FiniteCircuitDatum U) :
+    P.algebra.circuits.accepts i datum = true ↔
+      Q.algebra.circuits.accepts
+        (f.equationMap i) (f.queryMap datum) = true := by
+  unfold EquationCircuitReading.accepts
+  change
+    (P.algebra.circuits.code i).eval datum = true ↔
+      (Q.algebra.circuits.code
+        (f.equationTransport.equationMap i)).eval
+          (datum.transport f.atomEquiv) = true
+  rw [f.detectorCode_eq]
+  rw [CircuitDetectorCode.eval_transport]
+
 private theorem configurationHom_heq
     {C D E : AtomConfiguration U}
     (f : ConfigurationHom C D) (g : ConfigurationHom C E)
@@ -617,10 +1142,9 @@ private theorem configurationHom_heq
 @[ext (iff := false)] theorem ext
     {P Q : AATCorePackage U}
     {f g : SignedExactCoreReadingHom P Q}
-    (hatom : f.atomMap = g.atomMap)
+    (hatom : f.atomEquiv = g.atomEquiv)
     (hobject : f.objectMap = g.objectMap)
-    (hequation : HEq f.equationMap g.equationMap)
-    (hquery : HEq f.queryMap g.queryMap)
+    (hequation : HEq f.equationTransport g.equationTransport)
     (hoperation : HEq
       (@SignedExactCoreReadingHom.operationMap U P Q f)
       (@SignedExactCoreReadingHom.operationMap U P Q g))
@@ -641,7 +1165,6 @@ private theorem configurationHom_heq
   cases hobject
   cases hconfiguration
   cases hequation
-  cases hquery
   cases hoperation
   cases hinvariant
   cases haxis
@@ -651,19 +1174,20 @@ private theorem configurationHom_heq
 /-- The identity exact core change. -/
 def refl (P : AATCorePackage U) :
     SignedExactCoreReadingHom P P where
-  atomMap := _root_.id
-  extraction_eq := (AtomFamily.transport_id P.family).symm
+  atomEquiv := Equiv.refl U.Atom
+  extraction_eq := by
+    simpa using (AtomFamily.transport_id P.family).symm
   composition_eq F hF := by simp
   objectMap := _root_.id
   object_formation_eq C := by simp
   configurationMap A := ConfigurationHom.id A.configuration
   configurationMap_atomMap _ := rfl
-  equationMap := _root_.id
-  required_iff _ := Iff.rfl
-  equation_holds_iff _ _ := Iff.rfl
-  queryMap := _root_.id
-  matches_iff _ _ := Iff.rfl
-  accepts_iff _ _ := Iff.rfl
+  configuration_eq A := by
+    simpa using (AtomConfiguration.transport_id A.configuration).symm
+  equationTransport :=
+    EquationSystemExactTransport.refl P.algebra.equationSystem
+  detectorCode_eq i := by
+    simp [EquationSystemExactTransport.refl]
   operationMap := _root_.id
   operation_naturality _ := by
     apply ConfigurationHom.ext
@@ -683,9 +1207,10 @@ def comp
     (f : SignedExactCoreReadingHom P Q)
     (g : SignedExactCoreReadingHom Q R) :
     SignedExactCoreReadingHom P R where
-  atomMap := g.atomMap ∘ f.atomMap
+  atomEquiv := f.atomEquiv.trans g.atomEquiv
   extraction_eq := by
     rw [g.extraction_eq, f.extraction_eq, AtomFamily.transport_comp]
+    rfl
   composition_eq F hF := by
     have hg := g.composition_eq
       (F.transport f.atomMap) (hF.transport f.atomMap)
@@ -702,7 +1227,10 @@ def comp
       _ = ((P.reading.composition.compose F hF).transport f.atomMap).transport
             g.atomMap := congrArg (fun C => C.transport g.atomMap)
               (f.composition_eq F hF)
-      _ = _ := AtomConfiguration.transport_comp _ _ _
+      _ = _ := by
+        simpa only [Equiv.trans_apply] using
+          AtomConfiguration.transport_comp
+            (P.reading.composition.compose F hF) f.atomMap g.atomMap
   objectMap := g.objectMap ∘ f.objectMap
   object_formation_eq C := by
     simp only [Function.comp_apply]
@@ -715,18 +1243,32 @@ def comp
   configurationMap_atomMap A := by
     simp only [ConfigurationHom.comp]
     rw [f.configurationMap_atomMap A, g.configurationMap_atomMap]
-  equationMap := g.equationMap ∘ f.equationMap
-  required_iff i :=
-    (f.required_iff i).trans (g.required_iff (f.equationMap i))
-  equation_holds_iff i A :=
-    (f.equation_holds_iff i A).trans
-      (g.equation_holds_iff (f.equationMap i) (f.objectMap A))
-  queryMap := g.queryMap ∘ f.queryMap
-  matches_iff Qry A :=
-    (f.matches_iff Qry A).trans (g.matches_iff (f.queryMap Qry) (f.objectMap A))
-  accepts_iff i Qry :=
-    (f.accepts_iff i Qry).trans
-      (g.accepts_iff (f.equationMap i) (f.queryMap Qry))
+    apply funext
+    intro atom
+    rfl
+  configuration_eq A := by
+    change (g.objectMap (f.objectMap A)).configuration =
+      A.configuration.transport (f.atomEquiv.trans g.atomEquiv)
+    rw [g.configuration_eq, f.configuration_eq]
+    simpa only [Equiv.trans_apply] using
+      AtomConfiguration.transport_comp A.configuration f.atomMap g.atomMap
+  equationTransport :=
+    f.equationTransport.comp g.equationTransport
+  detectorCode_eq i := by
+    calc
+      R.algebra.circuits.code
+          ((f.equationTransport.comp g.equationTransport).equationMap i) =
+          (Q.algebra.circuits.code (f.equationMap i)).transport
+            g.atomEquiv := by
+              simpa [equationMap, EquationSystemExactTransport.comp] using
+                g.detectorCode_eq (f.equationMap i)
+      _ = ((P.algebra.circuits.code i).transport f.atomEquiv).transport
+            g.atomEquiv := by
+              exact congrArg (CircuitDetectorCode.transport g.atomEquiv)
+                (f.detectorCode_eq i)
+      _ = (P.algebra.circuits.code i).transport
+            (f.atomEquiv.trans g.atomEquiv) :=
+        CircuitDetectorCode.transport_trans _ _ _
   operationMap op := g.operationMap (f.operationMap op)
   operation_naturality op := by
     apply ConfigurationHom.ext
@@ -768,7 +1310,10 @@ theorem base_eq
     f.objectMap P.object = Q.object := by
   unfold AATCorePackage.object
   rw [f.object_formation_eq]
-  rw [← f.generatedConfiguration_eq]
+  have hconfiguration := f.generatedConfiguration_eq
+  change Q.configuration =
+    P.configuration.transport f.atomEquiv at hconfiguration
+  rw [← hconfiguration]
 
 private theorem mapReachable
     {P Q : AATCorePackage U}
@@ -826,6 +1371,12 @@ This is the simplifier normal form for exact identity changes.
   · funext A
     apply Subtype.ext
     rfl
+  · rfl
+  · rfl
+  · apply heq_of_eq
+    funext A i circuit
+    apply Subtype.ext
+    simp [toObjectAlgebraHom, queryMap, refl, ObjectAlgebraHom.id]
   all_goals rfl
 
 /--
@@ -842,6 +1393,12 @@ This is the simplifier normal form for exact composite changes.
   · funext A
     apply Subtype.ext
     rfl
+  · rfl
+  · rfl
+  · apply heq_of_eq
+    funext A i circuit
+    apply Subtype.ext
+    simp [toObjectAlgebraHom, queryMap, comp, ObjectAlgebraHom.comp]
   all_goals rfl
 
 end SignedExactCoreReadingHom

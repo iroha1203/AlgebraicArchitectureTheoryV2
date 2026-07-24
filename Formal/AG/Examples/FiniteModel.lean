@@ -1132,16 +1132,47 @@ theorem componentAAbsent_concreteThreeReadingAgreement
       (NoRequiredEquationCircuit
           (componentAPresentEquationCircuitReading C) corePackage.object ↔
         RequiredSignatureAxesZero corePackage.object
-          (requiredEquationSignatureAxes (componentAAbsentEquationSystem C))) ∧
+          (equationResidualSignatureAxes
+            (componentAAbsentEquationSystem C))) ∧
       ((componentAAbsentEquationSystem C).EquationLawful corePackage.object ↔
         RequiredSignatureAxesZero corePackage.object
-          (requiredEquationSignatureAxes
+          (equationResidualSignatureAxes
             (componentAAbsentEquationSystem C))) :=
   concreteThreeReadingAgreement
     (componentAPresentEquationCircuitReading C)
     (componentAPresentEquationCircuitReading_sound C)
     (componentAPresentEquationCircuitReading_requiredComplete C)
+    (equationResidualSignatureComparison
+      (componentAAbsentEquationSystem C))
     corePackage.object
+
+/-- The residual-coordinate signature vanishes on the component-A-absent object. -/
+theorem componentAAbsent_signatureAxesZero_unreachableEmptyObject
+    (C : Site.ContextPreorderCategory object) :
+    RequiredSignatureAxesZero unreachableEmptyObject
+      (equationResidualSignatureAxes (componentAAbsentEquationSystem C)) := by
+  apply (equationLawful_iff_requiredSignatureAxesZero
+    (equationResidualSignatureComparison
+      (componentAAbsentEquationSystem C)) unreachableEmptyObject).mp
+  intro index _hrequired
+  cases index
+  exact (componentAAbsentEquationHolds_iff C unreachableEmptyObject).mpr
+    (by
+      simp [unreachableEmptyObject, objectOfConfiguration,
+        unreachableEmptyConfiguration, emptyFamily])
+
+/-- The same residual-coordinate signature is nonzero on the generated core object. -/
+theorem componentAAbsent_signatureAxesZero_fails_core
+    (C : Site.ContextPreorderCategory object) :
+    ¬ RequiredSignatureAxesZero corePackage.object
+      (equationResidualSignatureAxes (componentAAbsentEquationSystem C)) := by
+  intro hzero
+  have hlawful :=
+    (equationLawful_iff_requiredSignatureAxesZero
+      (equationResidualSignatureComparison
+        (componentAAbsentEquationSystem C)) corePackage.object).mpr hzero
+  exact (componentAAbsentEquationHolds_iff C corePackage.object).mp
+    (hlawful PUnit.unit rfl) corePackage_componentA_mem
 
 /-- R10: the main core reading selects the exact cycle detector template. -/
 theorem coreReading_circuit_code

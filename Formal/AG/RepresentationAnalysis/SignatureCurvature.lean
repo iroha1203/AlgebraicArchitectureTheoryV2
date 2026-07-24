@@ -271,8 +271,7 @@ structure CurvatureAxisComparisonContext
     ∀ i : E.RequiredIndex, EquationObstructionSound valuation i.1
   obstructionCompleteness :
     ∀ i : E.RequiredIndex, EquationObstructionComplete valuation i.1
-  axisExactness :
-    E.EquationLawful Obj ↔ RequiredSignatureAxesZero Obj Sig
+  signatureComparison : EquationSignatureComparison E Sig
 
 namespace CurvatureAxisComparisonContext
 
@@ -290,7 +289,8 @@ theorem curvature_zero_iff_requiredSignatureAxesZero
   (K.curvatureProfile.curvatureZero_iff_omegaE_zero Obj).trans
     ((equationLawful_iff_omegaE_zero valuation aggregation
       K.obstructionSoundness K.obstructionCompleteness Obj).symm.trans
-        K.axisExactness)
+        (equationLawful_iff_requiredSignatureAxesZero
+          K.signatureComparison Obj))
 
 /-- Curvature zero is equivalent to the selected signature reading being zero. -/
 theorem curvature_zero_iff_requiredSignatureReadingZero
@@ -362,8 +362,8 @@ structure SignatureLawfulFactorizationContext
     (Obj : ArchitectureObject U) (Sig : SignatureAxes U) where
   signatureProfile : SignatureReadingProfile Sig
   pointComparison : LawAlgebra.RequiredObjectPointComparison raw X R s Obj
-  axisExactness : S.equationSystem.EquationLawful Obj ↔
-    RequiredSignatureAxesZero Obj Sig
+  signatureComparison :
+    EquationSignatureComparison S.equationSystem Sig
 
 namespace CurvatureLawfulFactorizationContext
 
@@ -455,7 +455,8 @@ theorem factorsThroughLawfulClosedSubscheme_of_requiredSignatureReadingZero
     Nonempty (LawAlgebra.FactorsThroughLawfulClosedSubscheme
       raw X R hR hclosed s) :=
   (LawAlgebra.factorsThroughLawfulClosedSubscheme_iff_requiredSignatureAxesZero
-    raw X R hR hclosed hexact s Obj Sig C.pointComparison C.axisExactness).mpr
+    raw X R hR hclosed hexact s Obj Sig C.pointComparison
+      C.signatureComparison).mpr
       ((C.signatureProfile.requiredSignatureReadingZero_iff_requiredSignatureAxesZero
         Obj).mp hsig)
 

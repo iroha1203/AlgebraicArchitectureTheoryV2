@@ -1101,6 +1101,14 @@ structure AATGAGACommonFiniteData (M : MeasurementProfile.{u, v}) [Field M.Coeff
   selectedLeftProfileEquation : M.EquationHandle
   /-- The selected right profile equation used in the common ambient. -/
   selectedRightProfileEquation : M.EquationHandle
+  /-- The selected left profile equation belongs to the required family. -/
+  selectedLeftProfileEquation_required :
+    M.equationGeometry.site.equationSystem.Required
+      selectedLeftProfileEquation
+  /-- The selected right profile equation belongs to the required family. -/
+  selectedRightProfileEquation_required :
+    M.equationGeometry.site.equationSystem.Required
+      selectedRightProfileEquation
   /-- The left common-ambient ideal is read from the selected profile equation. -/
   ambientLeftLaw_eq_equationProfile :
     commonAmbient.leftLawIdeal =

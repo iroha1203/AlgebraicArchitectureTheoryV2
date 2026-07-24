@@ -393,7 +393,7 @@ private def synthesisRepairProfile :
 
 private def synthesisSignatureAxes :
     SignatureAxes FiniteModel.carrier :=
-  requiredEquationSignatureAxes
+  equationResidualSignatureAxes
     StandardGeometryReferenceModels.referenceSite.equationSystem
 
 private def synthesisStratumParameter :

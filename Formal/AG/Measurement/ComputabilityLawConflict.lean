@@ -13,23 +13,23 @@ Part VIII theorem 4.2 connection from the computed finite support relation to
 the existing relation-valued `LawConflictMeasurement` API.
 -/
 
-/-- Local common-ambient realization for the profile-selected equation handles and
+/-- Local common-ambient realization for the profile-selected actual equations and
 the computed finite support carrier. -/
 structure FiniteAATConflictRealization
     {M : MeasurementProfile.{u, v}}
     {R : FiniteMeasurementRegime M}
     (D : FiniteAATComputationData M R) where
-  /-- Existing selected common ambient for the two equation handles. -/
+  /-- Existing selected common ambient for the two actual equations. -/
   commonAmbient : CommonAmbientPair M
-  /-- Interpret profile equation handles in the common ambient. -/
-  equationHandleToAmbient : M.EquationHandle -> commonAmbient.LawIdeal
-  /-- The selected left equation handle gives the common ambient's left ideal. -/
+  /-- Interpret actual profile equations in the common ambient. -/
+  equationToAmbient : M.EquationHandle -> commonAmbient.LawIdeal
+  /-- The selected left equation gives the common ambient's left ideal. -/
   leftLaw_ambient :
-    equationHandleToAmbient D.profileRealization.selectedLeftEquation =
+    equationToAmbient D.profileRealization.selectedLeftEquation =
       commonAmbient.leftLawIdeal
-  /-- The selected right equation handle gives the common ambient's right ideal. -/
+  /-- The selected right equation gives the common ambient's right ideal. -/
   rightLaw_ambient :
-    equationHandleToAmbient D.profileRealization.selectedRightEquation =
+    equationToAmbient D.profileRealization.selectedRightEquation =
       commonAmbient.rightLawIdeal
   /-- Local identification of computed witness supports with the existing
   measurement support carrier. -/

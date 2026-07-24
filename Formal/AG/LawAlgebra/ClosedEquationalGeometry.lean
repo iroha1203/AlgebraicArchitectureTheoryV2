@@ -1,7 +1,7 @@
 import Formal.AG.LawAlgebra.LawEquation
 import Formal.AG.LawAlgebra.AffineChart
 import Formal.AG.LawAlgebra.StandardScheme
-import Formal.AG.Atom.Signature
+import Formal.AG.Atom.ThreeReading
 import Mathlib.AlgebraicGeometry.IdealSheaf.Functorial
 import Mathlib.AlgebraicGeometry.IdealSheaf.Subscheme
 import Mathlib.AlgebraicGeometry.Morphisms.Separated
@@ -1412,10 +1412,10 @@ theorem semanticLawfulAlong_iff_requiredSignatureAxesZero
     {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
     (Obj : ArchitectureObject U) (Sig : SignatureAxes U)
     (hpoint : RequiredObjectPointComparison raw X R s Obj)
-    (haxis : E.EquationLawful Obj ↔
-      RequiredSignatureAxesZero Obj Sig) :
+    (comparison : EquationSignatureComparison E Sig) :
     SemanticLawfulAlong raw X R s ↔ RequiredSignatureAxesZero Obj Sig :=
-  (semanticLawfulAlong_iff_lawfulness raw X R s Obj hpoint).trans haxis
+  (semanticLawfulAlong_iff_lawfulness raw X R s Obj hpoint).trans
+    (equationLawful_iff_requiredSignatureAxesZero comparison Obj)
 
 /-- Actual factorization through the required closed subscheme is equivalent to signature-axis vanishing. -/
 theorem factorsThroughLawfulClosedSubscheme_iff_requiredSignatureAxesZero
@@ -1426,13 +1426,13 @@ theorem factorsThroughLawfulClosedSubscheme_iff_requiredSignatureAxesZero
     {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
     (Obj : ArchitectureObject U) (Sig : SignatureAxes U)
     (hpoint : RequiredObjectPointComparison raw X R s Obj)
-    (haxis : E.EquationLawful Obj ↔
-      RequiredSignatureAxesZero Obj Sig) :
+    (comparison : EquationSignatureComparison E Sig) :
     Nonempty (FactorsThroughLawfulClosedSubscheme raw X R hR hclosed s) ↔
       RequiredSignatureAxesZero Obj Sig := by
   have hcorr := lawfulnessIdealFactorizationCorrespondence raw X R hR hclosed hexact s
   exact (hcorr.1.trans (hcorr.2.1.trans hcorr.2.2)).symm.trans
-    (semanticLawfulAlong_iff_requiredSignatureAxesZero raw X R s Obj Sig hpoint haxis)
+    (semanticLawfulAlong_iff_requiredSignatureAxesZero
+      raw X R s Obj Sig hpoint comparison)
 
 /-! ## Law inclusions and contravariant closed geometry -/
 

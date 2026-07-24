@@ -433,14 +433,15 @@ theorem cyclicSection_not_lawful :
 
 /-- III.R13: selected equation-generated signature axes for the finite model. -/
 def signatureAxes : SignatureAxes FiniteModel.carrier :=
-  requiredEquationSignatureAxes noCycleEquationSystem
+  equationResidualSignatureAxes noCycleEquationSystem
 
 /-- III.R13: equation lawfulness is exact on the generated signature axes. -/
 theorem equationLawful_iff_signatureAxesZero
     (A : ArchitectureObject FiniteModel.carrier) :
     noCycleEquationSystem.EquationLawful A ↔
       RequiredSignatureAxesZero A signatureAxes :=
-  equationLawful_iff_requiredSignatureAxesZero noCycleEquationSystem A
+  equationLawful_iff_requiredSignatureAxesZero
+    (equationResidualSignatureComparison noCycleEquationSystem) A
 
 end CycleCorrespondenceExample
 
