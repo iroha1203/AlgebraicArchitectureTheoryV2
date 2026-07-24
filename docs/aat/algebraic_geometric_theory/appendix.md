@@ -608,6 +608,7 @@ algebraic architecture stack と呼ぶのは、diagonal representability、atlas
 | `axis exactness` | selected signature axes の zero と selected obstruction reading の一致を仮定する。 |
 | `witness coverage` | 必要な witness が chosen cover / reading に現れることを仮定する。 |
 | `E-adequate cover` | `(R,Ov)` 固定後の `(E,R,Ov)`-adequate cover の略記。required Atom support、equation coordinates、witnesses、axes と、`Ov` が実現する typed interaction-overlap requests を覆い、selected supports を restriction の下で保つ。`nu` / `epsilon` の値の compatibility は `E` の構造法則である。 |
+| `monomorphic AAT cover` | 各 cover leg が monomorphism である AAT cover。self-overlap の二つの projection が一致し、empty-overlap normalization と合わせて increasing-index Čech model から全 ordered overlap の descent data を復元できる。 |
 | `effective Ob_U-torsor` | local adjustment の差が abelian coefficient sheaf `Ob_U` の torsor class として `H^1(X,Ob_U)` に入ること。 |
 | `U-smooth` | selected deformation tests のすべてで lift / fill predicate が成立し、obstruction class が消えること。 |
 | `U-singular` | selected deformation test の中に非零 obstruction class が現れること。 |
@@ -653,18 +654,20 @@ algebraic architecture stack と呼ぶのは、diagonal representability、atlas
 | `Force Integrability Obstruction` | force に付随する temporal mismatch class が定義され、descent 検出性が固定された場合の non-integrability criterion。 |
 | `dissipative policy` | 同じ architecture evolution profile 内で selected evolution functional を非増加にする operation family。未選択の future state や外部成功条件ではない。 |
 | `witness exactness` | selected witness family が selected obstruction reading に対して sound / complete であること。 |
-| `semantic repair-gluing complex` | 完全列挙付き有限の chart・overlap・repair primitive・residual cochain と、restriction-difference 微分からなる有限複体。 |
-| `semantic closure` | repair support が selected residual atom をすべて含むこと。residual component coverage と residual component faithfulness に分解される。 |
-| `Finite Semantic Repair-Gluing Descent` | 有限複体と semantic faithfulness hypothesis の下で、global semantic repair coherence と residual の境界所属の同値を読む主張。必要方向は仮定なしに成立する。 |
-| `semantic repair additive H^1` | 選ばれた有限 repair cover に付随する additive Čech 型係数データの Z^1/B^1 商。selected residual class の零性を読む。 |
-| `True Sheaf H^1 Semantic Repair-Gluing` | cover membership、global sheaf condition、boundary-relation faithfulness data、additive regime の下で、global semantic repair coherence と H^1 零 class の同値を読む主張。 |
+| `semantic repair presentation` | 各 local context の supported semantic atom 上の free abelian group と、restriction-stable な局所 repair relation からなる表示。 |
+| `semantic repair coefficient M_sem` | semantic repair presentation の free group を local repair relation が生成する部分群で割って構成する可換群値 presheaf。 |
+| `affine semantic repair system` | semantic repair words が local repair states に作用し、relation soundness、stabilizer completeness、local transitivity から `M_sem`-torsor structure を導く system。 |
+| `semantic residual r_sem` | selected local semantic repairs の pairwise difference として一意に生成される `M_sem`-valued Čech 1-cocycle。 |
+| `semantic repair additive H^1` | `M_sem` と AAT cover から作る `Z^1/B^1`。semantic residual class は local repair atlas の選択に依存しない。 |
+| `Grounded Global Gluing` | monomorphic AAT cover、empty-overlap normalization、true semantic repair sheaf の下で、semantic residual class の零性と actual global repair の存在を同値にし、corrected matching family を sheaf amalgamation で global section へ貼り合わせる定理。 |
 | `Displayed Equation Source` | architectural equation system `E` に対し、各 chart の local context、architecture object、required equation index、support Atom を一つの dependent datum で選ぶ。cover-indexed 形では source の index と chart index を一致させ、別 skeleton を置かない。displayed defect は `epsilon` から定義される(第III部 定義 11.3)。 |
 | `Generated Obstruction Quotient and Restriction Evaluator` | `nu` から obstruction quotient presheaf を、`epsilon` から displayed interpretation を構成する。`epsilon` の restriction compatibility から residual restriction naturality を、fulfillment から zero restriction evaluator を導く(第III部 定理 11.4)。 |
 | `residual nondegeneracy` | `d_q not in I_Ob^E(W_q)` により `[d_q] != 0` を得る。equation non-fulfillment だけからは置かず、具体例または定理仮定で示す。 |
-| `Generated Semantic Repair Complex` | `Q_E` を係数とする実際の cover nerve の Čech complex を repair-cover incidence bridge に沿って次数 0〜2 で reindex し、同じ face restriction と微分を持つ semantic complex を生成する。 |
-| `Generated H^1 Comparison Data` | incidence bridge の degreewise reindexing isomorphism と inverse が微分と可換し、standard grounded route の comparison data を構成する。 |
-| `SAGA comparison` | standard grounded route では generated semantic repair complex と generated comparison data から、semantic repair additive H^1 と cover-relative Čech H^1 の比較同値と zero-predicate equivalence を証明する。独立 semantic complex には一般 comparison interface を使う。 |
-| `degree-zero equation contribution` | displayed equation fulfillment の Čech 複体への寄与が、次数 0 の pointwise 消滅であることを読む主張。site、cover nerve、係数、generated semantic complex、comparison data の構成は fulfillment に依存せず、selected residual `H^1` class の消滅とは区別する。 |
+| `SAGA presentation exactness` | supported semantic generators の equation interpretation について、repair relation と kernel の一致、および image と `Q_E` の一致を要求する generator/relation 条件。 |
+| `Coefficient Presentation Theorem` | 任意の target coefficient `Q` に対する SAGA presentation exactness から `M_sem ≃ Q` を構成する comparison core。inverse や degreewise complex equivalence は入力にしない。 |
+| `Equation Coefficient Comparison` | displayed equation source と residual restriction naturality から target を `Q_E` に instantiate する。affine local-state data と `β` が soundness を与え、repair-relation completeness と equation-generator completeness の下で Coefficient Presentation Theorem が `M_sem ≃ Q_E` を構成する。 |
+| `SAGA comparison` | 独立に構成した `C_sem^bullet(U)` と `C_E^bullet(U)` の間で、coefficient isomorphism から cochain map を構成し、微分可換性、`H^1` 同型、`[r_sem]` と `[r_E]` の対応を証明する定理。 |
+| `degree-zero equation contribution` | displayed equation fulfillment が displayed interpretation class を pointwise に零へ送る第III部の主張。SAGA presentation exactness や selected residual `H^1` class の零性とは別に判定する。 |
 
 ## B.2 Mathematical Reading Conventions
 
@@ -1009,12 +1012,17 @@ given selected Atom family
 これは、未選択の trace completeness や外部 authority model の正しさを主張しない。
 本文内で構成済みの Atom family を入力にした、finite AAT geometry の worked example である。
 
-## B.9 Equation-System Coefficient and Circle Nerve Worked Example
+## B.9 Independent Presentations on the Circle Nerve
 
-第X部の SAGA 比較定理(第X部 定理 7.2)の最小の非零例を、
-第I部・第II部の語彙で構成した、実際の 4-chart cover nerve を持つ有限 AAT site の上で固定する。
+第X部の SAGA 比較定理(第X部 定理 7.6)の最小の非零例を、
+実際の 4-chart AAT cover、独立な semantic presentation、equation-generated quotient の
+三つを明示して固定する。
+本例が構成する係数、local-state system、comparison data は、定理 7.6 が用いる
+cover intersection diagram `Int_{\le2}(𝒰)` 上に置く。この diagram の対象は chart、
+nonempty pairwise intersection、nonempty triple intersection であり、base context `W` と
+empty intersection 上の値を含まない。
 
-### B.9.1 Generated Coefficient
+### B.9.1 Circle AAT cover
 
 base context `W`、四つの chart `W_0,W_1,W_2,W_3`、四つの nonempty pullback overlap
 
@@ -1022,52 +1030,12 @@ base context `W`、四つの chart `W_0,W_1,W_2,W_3`、四つの nonempty pullba
 W_{01}, W_{12}, W_{23}, W_{30}
 ```
 
-を持つ有限 context category を取る。non-adjacent overlap と triple overlap は空 context とする。
-equation system `E` の observable ring を各 nonempty context `V` で `O_E(V) = Z`、restriction を恒等とし、
-空 context では `O_E(empty) = 0`、そこへの restriction を一意な写像とする。
-Atom universe を singleton `At = {a}` とし、required equation index `i` を一つ取る。
-symbolic violation coordinate を
-
-```text
-nu_{V,i,a} = 2  for every nonempty context V
-nu_{empty,i,a} = 0
-```
-
-とする。
-object-dependent residual も空 context では zero とし、nonempty context からの restriction compatibility を満たす。
-第III部 定理 11.4 の構成により、
-
-```text
-I_i^E(V) = I_Ob^E(V) = (2) subset Z
-
-Q_E(V) = Z/(2) ≅ F_2  for every nonempty context V
-Q_E(empty) = 0
-```
-
-である。三つの object reading に対する equation residual を
-
-```text
-epsilon_{V,A_0,i,a} = 0
-epsilon_{V,A_1,i,a} = 1
-epsilon_{V,A_2,i,a} = 2
-```
-
-とする。`A_0` は equation を満たし、`A_1` と `A_2` は満たさない。商 class は
-
-```text
-[1] != 0(1 not in (2))
-[2] = 0
-```
-
-を満たす。したがって `A_1` は nondegenerate detector の例であり、`A_2` は
-equation non-fulfillment だけでは quotient nonzero が従わないことを示す。
-
-### B.9.2 Circle Nerve
-
-cover `𝒰 = {W_j -> W}_{j=0}^3` を取り、`R` は required Atom / equation coordinate を各 chart で覆い、
-`Ov` は上の四つの nonempty pullback overlap を指定するとする。topology `J_{E,R,Ov}` はこの cover と
-その pullback から生成する。これは `(E,R,Ov)`-adequate cover であり、その実際の Čech nerve は
-次の 4-cycle である。
+を持つ有限 context category を取り、各 `W_j→W` は monomorphism とする。
+non-adjacent overlap と triple overlap は空 context とする。
+cover `𝒰={W_j→W}_{j=0}^3` と coverage package `(E,R,Ov)` はこの四つの overlap を生成する。
+以下では第X部 §1 の規約に従い、ambient context category から nonempty pullback だけを
+対象とする `Int_{\le2}(𝒰)` を取り出す。したがって non-adjacent overlap、triple overlap、
+base context `W` はこの diagram の対象ではない。その Čech nerve を次の 4-cycle として用いる。
 
 ```text
 vertices: v_0, v_1, v_2, v_3
@@ -1081,70 +1049,147 @@ edges:
 no nondegenerate simplices in degree >= 2
 ```
 
-各 edge は対応する nonempty pullback overlap `W_{jk}` そのものである。
+### B.9.2 Semantic presentation
 
-### B.9.3 Complex and Residual
-
-```text
-C^0 = Map({v_0,v_1,v_2,v_3}, F_2) ≅ F_2^4
-C^1 = Map({e_01,e_12,e_23,e_30}, F_2) ≅ F_2^4
-C^2 = 0
-
-(d^0 p)(e) = p(target e) - p(source e)
-d^1 = 0
-```
-
-residual を次で置く。
+`Int_{\le2}(𝒰)` の各 object `V` に一つの supported semantic atom `σ_V` を置き、
+restriction を `σ_V↦σ_{V'}` とする。Atom projection は singleton Atom `a` へ送る。
+local repair relation は
 
 ```text
-r(e_01) = [1]
-r(e_12) = r(e_23) = r(e_30) = 0
+2 sigma_V = 0
 ```
 
-`r` は 1-cocycle である。
-これは選ばれた複体に次数 2 の単体が存在しないためであり、cocycle 条件は自明に成り立つ。
+で生成する。したがって semantic coefficient は
 
-### B.9.4 Nonzero Class and Transfer
+```text
+F_sem(V) = Z[sigma_V]
+R_rep(V) = 2 Z[sigma_V]
+M_sem(V) = Z[sigma_V] / 2 Z[sigma_V] ≅ F_2
+```
 
-`r = d^0 p` と仮定する。4-cycle の向きに沿って coboundary の辺値を足すと telescope して
+である。これは semantic atom と local repair relation だけから生成される。
+
+### B.9.3 Equation-generated presentation
+
+equation system の index `i` と ambient Atom `a` は diagram 全体で同じ singleton とする。
+equation system `E` の observable ring を `Int_{\le2}(𝒰)` の各 object `V` で
+`O_E(V)=Z`、
+restriction を恒等とする。required equation index `i` を一つ取り、symbolic violation
+coordinate を `ν_{V,i,a}=2` とする。第III部 定理 11.4 により
+
+```text
+I_i^E(V) = I_Ob^E(V) = (2)
+Q_E(V) = Z/(2)
+```
+
+が生成される。semantic generator の equation interpretation を
+
+```text
+chi_V(sigma_V) = [1]
+```
+
+とする。この class は object-dependent residual
+`epsilon_{V,A_1,i,a}=1` から生成でき、restriction naturality を満たす。
+
+SAGA presentation exactness は直接計算できる。
+
+```text
+soundness:
+  chi_V(2 sigma_V) = [2] = 0.
+
+completeness:
+  ker(Z[sigma_V] -> Z/(2)) = 2 Z[sigma_V].
+
+generation:
+  [1] generates Z/(2).
+```
+
+よって Coefficient Presentation Theorem が
+
+```text
+Phi_V : M_sem(V) ≃ Q_E(V)
+```
+
+を構成する。semantic coefficient と equation coefficient は同型だが、
+前者は free semantic presentation の商、後者は equation obstruction ideal の商として
+別々に構成されている。
+
+### B.9.4 Two complexes and residuals
+
+両係数を同じ cover に適用すると、それぞれ
+
+```text
+C_sem^0 ≅ F_2^4        C_E^0 ≅ F_2^4
+C_sem^1 ≅ F_2^4        C_E^1 ≅ F_2^4
+C_sem^2 = 0            C_E^2 = 0
+```
+
+を得る。二つの differential は各 presheaf の restriction から別々に作られる。
+`kappa` は各 chart と overlap で `Phi_V` を適用して構成され、
+第X部 定理 7.2 が微分可換性を証明する。
+
+`Int_{\le2}(𝒰)` の各 object、すなわち各 chart と四つの overlap 上で `P_sem=F_2` とし、
+`M_sem` は加法で作用する。
+oriented edge `e` の source restriction を恒等、target restriction を
+`x↦x+t_e` と置き、
+
+```text
+(t_01,t_12,t_23,t_30) = (1,0,0,0)
+```
+
+とする。最後の edge は `U_03` を `3→0` に向けたものであり、`F_2` では向きの反転による
+符号は変わらない。diagram の非恒等射は chart から overlap への restriction だけであり、
+非恒等射どうしの composable pair はない。したがってこの local restriction system は
+`Int_{\le2}(𝒰)` 上で恒等則と合成則を満たす。各 chart で `p_i=0` を選ぶと、
+semantic local repair atlas の difference は
+
+```text
+r_sem(e_01) = 1
+r_sem(e_12) = r_sem(e_23) = r_sem(e_30) = 0
+```
+
+となる。equation 側も `P_E=F_2`、transition `Phi(t_e)` として別に構成する。
+`beta` を local coordinate 上の `Phi` とし、各 chart で `e_i=0` を選ぶと、
+その difference から生成される `r_E` は
+
+```text
+r_E = kappa^1(r_sem)
+```
+
+を満たす。独立な equation atlas を選んでも、両者の差は第X部 定理 7.5 の
+明示的な `δ_E^0 h` である。
+
+### B.9.5 Nonzero class
+
+triple overlap がないため、`r_sem` と `r_E` は `1`-cocycle である。
+`r_sem=δ⁰p` と仮定すると、4-cycle の向きに沿った edge sum は
 
 ```text
 (p_1-p_0) + (p_2-p_1) + (p_3-p_2) + (p_0-p_3) = 0
 ```
 
-となる。一方、`r` の四辺の値の和は `[1] != 0` である。したがって `r` は coboundary ではない。
-非零性は equation-system 商の算術的事実 `1 not in (2)` に帰着する。
-
-この 1-cochain は生成済み係数上の selected simplicial data であり、displayed equation fulfillment から
-生成される 0-cochain とは別の次数に属する。
-
-この複体を担体とする semantic 係数データ、additive regime のデータ、恒等 comparison の下で、
+となる。一方、`r_sem` の edge sum は `1` である。よって
 
 ```text
-semantic additive H^1 の residual class != 0
-cover-relative Čech H^1 の class != 0
-zero-predicate equivalence が非零性を双方向に転送する
+[r_sem] != 0 in H^1_sem(U)
+[r_E] != 0 in Cech H^1(U,Q_E)
+kappa_*([r_sem]) = [r_E]
 ```
 
-が成り立つ(第X部 定理 7.4)。
+である。
 
-### B.9.5 Example Data Summary
-
-この例の quotient coefficient は各 nonempty context で `F_2`、restriction が恒等な定数係数であり、
-空 context では zero である。四つの chart 上の matching family は cycle overlap 上の等式により
-一つの値へ一致するため、生成 cover に対する sheaf 条件が直接成立する。各 chart または overlap への
-pullback cover は identity chart を含むので同じ条件を満たし、したがって `Q_E` は生成 topology
-`J_{E,R,Ov}` 上の sheaf である。semantic 側も同じ四頂点・四辺と同じ differential から構成し、
-comparison は次数 0〜2 で定義的に等しい複体の恒等写像である。
-
-この worked example は、次の経路を一つの有限モデルで通す。
+この worked example は次の経路を一つの有限モデルで通す。
 
 ```text
-symbolic violation coordinate 2
-  -> witness ideal (2) subset Z
-  -> generated quotient F_2
-  -> actual four-chart cover nerve residual
-  -> non-coboundary computation
-  -> nonzero class on both sides
-  -> transfer through the comparison
+semantic atom sigma + relation 2 sigma = 0
+  -> independently generated M_sem = Z[sigma]/(2 sigma)
+
+equation coordinate 2
+  -> obstruction ideal (2)
+  -> independently generated Q_E = Z/(2)
+
+generator/relation exactness
+  -> Phi
+  -> cochain commutation
+  -> nonzero residual class comparison
 ```
