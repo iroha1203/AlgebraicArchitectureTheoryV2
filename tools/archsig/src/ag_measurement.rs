@@ -12,6 +12,7 @@ use crate::{
     ARCHSIG_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE, ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS,
     ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE,
     ARCHSIG_REPAIR_TARGETS_IDENTIFIED, ARCHSIG_SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA,
+    ARCHSIG_SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS,
     ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL, ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
     ARCHSIG_TWO_PROFILES_REPORTED_SEPARATELY, ARCHSIG_VERDICT_PRESERVED_UNDER_DECLARED_REFACTOR,
     AgAnalyticReadingV1, AgAssumptionLedgerEntryV1, AgStructuralVerdictV1, AgVerdictDataV1,
@@ -13365,6 +13366,7 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
         "residualClassSupport",
         "suppliedSlots",
         "suppliedCochainMap",
+        "presentationGenerated",
         "generatedQuotientTransfer",
         "resolutionSelector",
         "restrictionMatrix",
@@ -13499,6 +13501,13 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
                 let contract_checked = contract["contractChecked"].as_bool();
                 let failure_code = invariant["failureCode"].as_str();
                 let conclusion_code = invariant["conclusionCode"].as_str();
+                let established_conclusion = if contract["h1ComparisonDataKind"].as_str()
+                    == Some("presentation-generated")
+                {
+                    ARCHSIG_SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS
+                } else {
+                    ARCHSIG_SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA
+                };
                 if failure_code
                     .is_some_and(|code| code != ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION)
                 {
@@ -13535,9 +13544,7 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
                             "established comparison requires all contract completion flags=true",
                         ));
                     }
-                    if conclusion_code
-                        != Some(ARCHSIG_SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA)
-                        || failure_code.is_some()
+                    if conclusion_code != Some(established_conclusion) || failure_code.is_some()
                     {
                         examples.push(generic_validation_example(
                             &contract_label,
@@ -13547,8 +13554,11 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
                     }
                 }
                 if status == Some("not_computed") {
-                    if conclusion_code
-                        == Some(ARCHSIG_SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA)
+                    if matches!(
+                        conclusion_code,
+                        Some(ARCHSIG_SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA)
+                            | Some(ARCHSIG_SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS)
+                    )
                     {
                         examples.push(generic_validation_example(
                             &contract_label,

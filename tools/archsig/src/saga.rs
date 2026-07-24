@@ -5,11 +5,13 @@ use serde_json::{Value, json};
 use crate::law_execution::LawExecutionPlanV1;
 use crate::repair_plan::{
     comparison_complex_fingerprint, comparison_target_complex, explicit_h1_comparison_checks,
+    presentation_generated_h1_checks, presentation_generated_h1_output,
 };
 use crate::{
     ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION, ARCHSIG_DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS,
     ARCHSIG_MEASURED_LAW_DEFECT_AT_CHART, ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS,
-    ARCHSIG_SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA, ARCHSIG_SAGA_CONCLUSIONS_V1_SCHEMA,
+    ARCHSIG_SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA,
+    ARCHSIG_SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS, ARCHSIG_SAGA_CONCLUSIONS_V1_SCHEMA,
     AgAssumptionLedgerEntryV1, AgStructuralVerdictV1, AgVerdictDataV1, ArchMapDocumentV2,
     MeasurementProfileV1, NormalizedArchMapV2, RepairPlanDocumentV1, assumption_id_for_schema,
 };
@@ -777,8 +779,20 @@ fn evaluate_saga_comparison_v1(
     } else {
         None
     };
+    let presentation_checks = if h1_kind == "presentation-generated" {
+        comparison_target_complex(plan, comparison).and_then(|target_complex| {
+            comparison
+                .get("h1ComparisonData")
+                .and_then(Value::as_object)
+                .map(|h1| presentation_generated_h1_checks(plan, &target_complex, h1))
+        })
+    } else {
+        None
+    };
     let contract_checked = if h1_kind == "explicit" {
         explicit_checks.is_some_and(|checks| checks.all_pass())
+    } else if h1_kind == "presentation-generated" {
+        presentation_checks.as_ref().is_some_and(|checks| checks.all_pass())
     } else {
         true
     };
@@ -811,12 +825,36 @@ fn evaluate_saga_comparison_v1(
         });
     }
     let established = contract_checked && class_available && preserves_zero_predicate;
+    let conclusion_code = if established {
+        if h1_kind == "presentation-generated" {
+            Some(ARCHSIG_SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS)
+        } else {
+            Some(ARCHSIG_SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA)
+        }
+    } else {
+        None
+    };
+    let presentation_generated = if h1_kind == "presentation-generated" {
+        comparison_target_complex(plan, comparison)
+            .zip(
+                comparison
+                    .get("h1ComparisonData")
+                    .and_then(Value::as_object),
+            )
+            .zip(presentation_checks.as_ref())
+            .map(|((target_complex, h1), checks)| {
+                presentation_generated_h1_output(plan, &target_complex, h1, checks)
+            })
+            .unwrap_or(Value::Null)
+    } else {
+        Value::Null
+    };
     json!({
         "invariantId": "saga-comparison:h1-transfer",
         "evaluator": "ag.saga-comparison",
         "kind": "h1-comparison-transfer",
         "status": if established { "established" } else { "not_computed" },
-        "conclusionCode": established.then_some(ARCHSIG_SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA),
+        "conclusionCode": conclusion_code,
         "contract": {
             "incidenceBridgeKind": bridge_kind,
             "h1ComparisonDataKind": h1_kind,
@@ -828,7 +866,7 @@ fn evaluate_saga_comparison_v1(
         "suppliedCochainMap": {
             "level": "cochain",
             "kind": h1_kind,
-            "contractChecked": contract_checked,
+            "contractChecked": (h1_kind == "explicit").then_some(contract_checked),
             "checkedProperties": explicit_checks.map(|checks| json!({
                 "degreeOneLeftInverse": checks.degree_one_left_inverse,
                 "degreeOneRightInverse": checks.degree_one_right_inverse,
@@ -838,10 +876,15 @@ fn evaluate_saga_comparison_v1(
             })),
             "targetSupportComputed": target_class_nonzero.is_some()
         },
+        "presentationGenerated": presentation_generated,
         "generatedQuotientTransfer": if established {
             json!({
                 "level": "quotient",
-                "kind": "Z1/B1-class-transfer",
+                "kind": if h1_kind == "presentation-generated" {
+                    "presentation-derived-Z1/B1-class-transfer"
+                } else {
+                    "Z1/B1-class-transfer"
+                },
                 "preservesZeroPredicate": preserves_zero_predicate,
                 "sourceClassNonZero": class_nonzero,
                 "targetClassNonZero": target_class_nonzero,

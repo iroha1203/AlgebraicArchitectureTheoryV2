@@ -192,10 +192,10 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "primary",
                 "ArchSig v0.5.4 Algebraic Geometry Measurement",
                 vec!["archsig-contract:saga-stage2-v0.5.4"],
-                "H1 comparison data v0.5.4 supplies an explicitly typed finite cochain map over degree-zero charts, degree-one overlaps, and degree-two triple-overlap bases, including the declared image of zero. The validator recomputes basis bijections, difference preservation, zero preservation, and differential commutativity from the finite map.",
+                "H1 comparison data v0.5.4 accepts either an explicitly typed finite cochain map over degree-zero charts, degree-one overlaps, and degree-two triple-overlap bases, or a presentation-generated contract with semantic/equation matrices and restriction maps. The validator recomputes explicit-map properties, or checks F2 presentation exactness, generator completeness, restriction naturality, derived cochain commutativity, and the residual witness.",
                 vec![
-                    "The cochain map contract validates supplied finite data; it does not itself prove a theorem or generate a quotient-level conclusion.",
-                    "H1 transfer is generated only after the supplied class prerequisite and target class computation are available.",
+                    "Explicit cochain data remains supplied and is validated as such; presentation-generated data derives its local Phi and cochain map only after matrix exactness and naturality checks pass.",
+                    "H1 transfer is generated only after the measured source-class prerequisite and target class computation are available.",
                 ],
             ),
             artifact(

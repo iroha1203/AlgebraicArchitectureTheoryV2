@@ -342,7 +342,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "H1 comparison data v0.5.4 supplies an explicitly typed finite cochain map over degree-zero charts, degree-one overlaps, and degree-two triple-overlap bases, including the declared image of zero. The validator recomputes basis bijections, difference preservation, zero preservation, and differential commutativity from the finite map.",
+        "fieldMappingPolicy": "H1 comparison data v0.5.4 accepts either an explicitly typed finite cochain map over degree-zero charts, degree-one overlaps, and degree-two triple-overlap bases, or a presentation-generated contract with semantic/equation matrices and restriction maps. The validator recomputes explicit-map properties, or checks F2 presentation exactness, generator completeness, restriction naturality, derived cochain commutativity, and the residual witness.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -352,8 +352,8 @@
           "Coverage and exactness are artifact-local and do not imply semantic completeness."
         ],
         "nonConclusions": [
-          "The cochain map contract validates supplied finite data; it does not itself prove a theorem or generate a quotient-level conclusion.",
-          "H1 transfer is generated only after the supplied class prerequisite and target class computation are available."
+          "Explicit cochain data remains supplied and is validated as such; presentation-generated data derives its local Phi and cochain map only after matrix exactness and naturality checks pass.",
+          "H1 transfer is generated only after the measured source-class prerequisite and target class computation are available."
         ]
       }
     },
@@ -424,7 +424,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "ArchSig measurement packet v0.5.4 carries profile, structuralVerdict with optional dependsOnAssumptions refs, computedInvariants, analyticReadings, assumptions, boundaryStatements, and legacy-compatible nonConclusions as the AG Definition 11.1-aligned output contract. The h1-comparison-transfer computed invariant is owned by ag.saga-comparison and carries a closed six-field comparison contract: incidenceBridgeKind, h1ComparisonDataKind, and normalizedComplexFingerprint are strings; classPrerequisite, targetClassComputed, and contractChecked are booleans. Registered SAGA conclusionCode values include REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, MEASURED_NONGLUING_RESIDUAL, MEASURED_NONGLUING_RESIDUAL_CLASS, SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA, COMPARISON_DATA_CONTRACT_VIOLATION, COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION, REPAIR_TARGETS_IDENTIFIED, MEASURED_LAW_DEFECT_AT_CHART, DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS, VERDICT_PRESERVED_UNDER_DECLARED_REFACTOR, and TWO_PROFILES_REPORTED_SEPARATELY.",
+        "fieldMappingPolicy": "ArchSig measurement packet v0.5.4 carries profile, structuralVerdict with optional dependsOnAssumptions refs, computedInvariants, analyticReadings, assumptions, boundaryStatements, and legacy-compatible nonConclusions as the AG Definition 11.1-aligned output contract. The h1-comparison-transfer computed invariant is owned by ag.saga-comparison and carries a closed six-field comparison contract: incidenceBridgeKind, h1ComparisonDataKind, and normalizedComplexFingerprint are strings; classPrerequisite, targetClassComputed, and contractChecked are booleans. Registered SAGA conclusionCode values include REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, MEASURED_NONGLUING_RESIDUAL, MEASURED_NONGLUING_RESIDUAL_CLASS, SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA, SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS, COMPARISON_DATA_CONTRACT_VIOLATION, COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION, REPAIR_TARGETS_IDENTIFIED, MEASURED_LAW_DEFECT_AT_CHART, DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS, VERDICT_PRESERVED_UNDER_DECLARED_REFACTOR, and TWO_PROFILES_REPORTED_SEPARATELY.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",

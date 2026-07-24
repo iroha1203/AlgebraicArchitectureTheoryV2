@@ -13,7 +13,8 @@ use archsig::{
     ARCHSIG_COMPARISON_NO_NEW_MEASURED_OBSTRUCTION_RECORDED,
     ARCHSIG_COMPARISON_RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA, ARCHSIG_GATE_REPORT_DECISIONS,
     ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS, ARCHSIG_REPAIR_TARGETS_IDENTIFIED,
-    ARCHSIG_SAGA_CONCLUSION_CODES, ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL,
+    ARCHSIG_SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS, ARCHSIG_SAGA_CONCLUSION_CODES,
+    ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL,
     ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, ArchMapDocumentV2, ArchSigRunManifestV1,
     RepairPlanDocumentV1, compare_archmap_v2_doctrine, validate_measurement_packet_value_v1,
     validate_refactor_morphism_v1, validate_refinement_comparison_v1,
@@ -2206,6 +2207,100 @@ fn supplied_triple_saga_plan(root: &Path, nonzero_class: bool) -> Value {
     plan
 }
 
+fn presentation_generated_saga_plan(root: &Path, nonzero_class: bool) -> Value {
+    let mut plan = supplied_triple_saga_plan(root, nonzero_class);
+    let typed_plan: RepairPlanDocumentV1 =
+        serde_json::from_value(plan.clone()).expect("presentation plan matches RepairPlan schema");
+    let complex_fingerprint = format!(
+        "{:x}",
+        Sha256::digest(
+            serde_json::to_vec(&typed_plan.complex).expect("presentation complex serializes")
+        )
+    );
+    let cells = typed_plan
+        .complex
+        .charts
+        .iter()
+        .cloned()
+        .chain(typed_plan.complex.overlaps.iter().map(|overlap| overlap.id.clone()))
+        .chain(
+            typed_plan
+                .complex
+                .triple_overlaps
+                .iter()
+                .map(|triple| triple.id.clone()),
+        )
+        .map(|cell_ref| {
+            json!({
+                "cellRef": cell_ref,
+                "semanticGenerators": ["repair:cycle"],
+                "repairRelationMatrix": [],
+                "equationGenerators": ["equation:cycle"],
+                "equationRelationMatrix": [],
+                "generatorMap": [[1]]
+            })
+        })
+        .collect::<Vec<_>>();
+    let mut restrictions = Vec::new();
+    for overlap in &typed_plan.complex.overlaps {
+        for chart in [&overlap.left, &overlap.right] {
+            restrictions.push(json!({
+                "fromRef": chart,
+                "toRef": overlap.id,
+                "semanticMatrix": [[1]],
+                "equationMatrix": [[1]]
+            }));
+        }
+    }
+    for triple in &typed_plan.complex.triple_overlaps {
+        for overlap_ref in &triple.overlap_refs {
+            restrictions.push(json!({
+                "fromRef": overlap_ref,
+                "toRef": triple.id,
+                "semanticMatrix": [[1]],
+                "equationMatrix": [[1]]
+            }));
+        }
+    }
+    plan["comparison"] = json!({
+        "kind": "saga-comparison",
+        "incidenceBridge": {
+            "kind": "chart-indexed",
+            "repairChartRefs": typed_plan.complex.charts,
+            "cechChartRefs": typed_plan.complex.charts
+        },
+        "h1ComparisonData": {
+            "schema": "h1-comparison-data/v0.5.4",
+            "kind": "presentation-generated",
+            "sourceComplexFingerprint": complex_fingerprint,
+            "targetComplexFingerprint": complex_fingerprint,
+            "targetCochainSupport": plan["primitives"]
+                .as_array()
+                .expect("comparison primitives are an array")
+                .iter()
+                .map(|primitive| {
+                    let support = primitive["support"]["variables"]
+                        .as_array()
+                        .expect("primitive support is an array")
+                        .iter()
+                        .filter(|variable| variable.as_str() == Some("repair:cycle"))
+                        .map(|_| Value::String("equation:cycle".to_string()))
+                        .collect::<Vec<_>>();
+                    json!({
+                        "overlapRef": primitive["overlapRef"],
+                        "support": support
+                    })
+                })
+                .collect::<Vec<_>>(),
+            "presentation": {
+                "cells": cells,
+                "restrictions": restrictions
+            }
+        }
+    });
+    plan
+}
+
 #[test]
 fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() {
     let root = ag_measurement_root();
@@ -2301,6 +2396,46 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
         summary["translationRule"]["principalText"]
             .as_str()
             .is_some_and(|text| text.contains("Z1/B1"))
+    );
+}
+
+#[test]
+fn cli_analyze_saga_comparison_generates_transfer_from_presentations() {
+    let root = ag_measurement_root();
+    let plan = presentation_generated_saga_plan(&root, true);
+    let out_dir = run_saga_fixture_lock("ag-saga-presentation-generated", plan);
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let comparison = invariant_by_id(&packet, "saga-comparison:h1-transfer");
+    assert_eq!(comparison["status"], "established");
+    assert_eq!(
+        comparison["conclusionCode"],
+        ARCHSIG_SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS
+    );
+    assert_eq!(comparison["contract"]["h1ComparisonDataKind"], "presentation-generated");
+    assert_eq!(comparison["contract"]["contractChecked"], true);
+    assert_eq!(
+        comparison["presentationGenerated"]["presentationExactness"],
+        true
+    );
+    assert_eq!(
+        comparison["presentationGenerated"]["generatorCompleteness"],
+        true
+    );
+    assert_eq!(
+        comparison["presentationGenerated"]["generatedCochainMap"]["degreeZeroCommutative"],
+        true
+    );
+    assert_eq!(
+        comparison["presentationGenerated"]["generatedCochainMap"]["degreeOneCommutative"],
+        true
+    );
+    assert_eq!(
+        comparison["presentationGenerated"]["residualWitness"]["kind"],
+        "computed-zero-atlas-witness"
+    );
+    assert_eq!(
+        comparison["generatedQuotientTransfer"]["kind"],
+        "presentation-derived-Z1/B1-class-transfer"
     );
 }
 

@@ -1,9 +1,12 @@
 use std::collections::{BTreeMap, BTreeSet};
 
-use serde_json::Value;
+use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 
-use crate::schema::{H1ComparisonDataV052, RepairPlanComplexV1};
+use crate::schema::{
+    H1ComparisonDataV052, H1PresentationCellV052, H1PresentationRestrictionV052,
+    RepairPlanComplexV1,
+};
 use crate::validation::{generic_validation_example, validation_check};
 use crate::{
     ARCHSIG_REPAIR_PLAN_V1_SCHEMA, ArchMapDocumentV2, RepairPlanDocumentV1, ValidationCheck,
@@ -31,6 +34,31 @@ impl ExplicitH1ComparisonChecks {
             && self.difference_preserving
             && self.degree_two_zero_preserving
             && self.differential_commutative
+    }
+}
+
+#[derive(Debug, Default, Clone)]
+pub(crate) struct PresentationGeneratedH1Checks {
+    pub presentation_exactness: bool,
+    pub generator_completeness: bool,
+    pub restriction_naturality: bool,
+    pub degree_zero_commutative: bool,
+    pub degree_one_commutative: bool,
+    pub target_support_derived: bool,
+    pub residual_witness_computed: bool,
+    map_complete: bool,
+}
+
+impl PresentationGeneratedH1Checks {
+    pub(crate) fn all_pass(&self) -> bool {
+        self.map_complete
+            && self.presentation_exactness
+            && self.generator_completeness
+            && self.restriction_naturality
+            && self.degree_zero_commutative
+            && self.degree_one_commutative
+            && self.target_support_derived
+            && self.residual_witness_computed
     }
 }
 
@@ -268,6 +296,87 @@ mod tests {
             .clone();
         bridge["targetComplex"]["overlaps"][2]["right"] = Value::String("ctx:inventory".into());
         assert!(comparison_target_complex_from_bridge(&plan, &bridge).is_none());
+    }
+
+    #[test]
+    fn presentation_generated_circle_derives_exact_local_maps_and_zero_atlas_witness() {
+        let plan: RepairPlanDocumentV1 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/repair_plan_presentation_generated_circle.json"
+        ))
+        .expect("presentation-generated circle fixture parses");
+        let comparison = plan.comparison.as_ref().expect("comparison is supplied");
+        let h1 = comparison["h1ComparisonData"]
+            .as_object()
+            .expect("H1 comparison data is an object");
+        assert_eq!(
+            h1["sourceComplexFingerprint"],
+            comparison_complex_fingerprint(&plan)
+        );
+        let checks = presentation_generated_h1_checks(&plan, &plan.complex, h1);
+        assert!(checks.all_pass());
+        let output = presentation_generated_h1_output(&plan, &plan.complex, h1, &checks);
+        assert_eq!(output["kind"], "presentation-generated");
+        assert_eq!(output["presentationExactness"], true);
+        assert_eq!(
+            output["residualWitness"]["equation"],
+            "kappa1(r_sem) = r_E + delta0(h)"
+        );
+        assert_eq!(output["residualWitness"]["h"].as_array().map(Vec::len), Some(4));
+    }
+
+    #[test]
+    fn presentation_generated_circle_rejects_kernel_mismatch_and_missing_generation() {
+        let plan: RepairPlanDocumentV1 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/repair_plan_presentation_generated_circle.json"
+        ))
+        .expect("presentation-generated circle fixture parses");
+        let comparison = plan.comparison.as_ref().expect("comparison is supplied");
+        let mut kernel_mismatch = comparison["h1ComparisonData"]
+            .as_object()
+            .expect("H1 comparison data is an object")
+            .clone();
+        kernel_mismatch["presentation"]["cells"]
+            .as_array_mut()
+            .expect("presentation cells are an array")[0]["repairRelationMatrix"] =
+            serde_json::json!([[1]]);
+        let kernel_checks =
+            presentation_generated_h1_checks(&plan, &plan.complex, &kernel_mismatch);
+        assert!(!kernel_checks.presentation_exactness);
+        assert!(!kernel_checks.all_pass());
+
+        let mut generation_missing = comparison["h1ComparisonData"]
+            .as_object()
+            .expect("H1 comparison data is an object")
+            .clone();
+        let cell = &mut generation_missing["presentation"]["cells"]
+            .as_array_mut()
+            .expect("presentation cells are an array")[0];
+        cell["equationGenerators"] = serde_json::json!(["q", "q2"]);
+        cell["generatorMap"] = serde_json::json!([[1], [0]]);
+        let generation_checks =
+            presentation_generated_h1_checks(&plan, &plan.complex, &generation_missing);
+        assert!(!generation_checks.generator_completeness);
+        assert!(!generation_checks.all_pass());
+
+        let mut invalid_plan = plan.clone();
+        invalid_plan.comparison.as_mut().expect("comparison is supplied")["h1ComparisonData"] =
+            Value::Object(kernel_mismatch);
+        let archmap: ArchMapDocumentV2 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/archmap_v2.json"
+        ))
+        .expect("ArchMap fixture parses");
+        let validation = validate_repair_plan_v1_checks(&invalid_plan, &archmap, None);
+        let supplied_slots = validation
+            .iter()
+            .find(|check| check.id == "repair-plan-schema052-supplied-slots")
+            .expect("supplied slot validation exists");
+        assert_eq!(supplied_slots.result, "fail");
+        assert!(supplied_slots.examples.iter().any(|example| {
+            example
+                .evidence
+                .as_deref()
+                .is_some_and(|target| target.contains("presentationExactness=false"))
+        }));
     }
 }
 
@@ -574,6 +683,15 @@ fn check_supplied_slots(
                                     "cochainMap",
                                 ]
                                 .as_slice(),
+                                Some("presentation-generated") => [
+                                    "schema",
+                                    "kind",
+                                    "sourceComplexFingerprint",
+                                    "targetComplexFingerprint",
+                                    "targetCochainSupport",
+                                    "presentation",
+                                ]
+                                .as_slice(),
                                 _ => ["kind"].as_slice(),
                             };
                             if !allowed.contains(&key.as_str()) {
@@ -634,6 +752,7 @@ fn check_supplied_slots(
                             }
                         });
                     let mut explicit_checks = None;
+                    let mut presentation_checks = None;
                     let h1_ok = !nested_unknown
                         && h1.is_some_and(|h1| {
                             let source_complex_fingerprint = comparison_complex_fingerprint(plan);
@@ -671,6 +790,21 @@ fn check_supplied_slots(
                                                 && checks.all_pass()
                                         })
                                 }
+                                Some("presentation-generated") => {
+                                    h1.get("schema").and_then(Value::as_str)
+                                        == Some("h1-comparison-data/v0.5.4")
+                                        && fingerprints_ok
+                                        && target_fingerprint.as_deref()
+                                            == Some(source_complex_fingerprint.as_str())
+                                        && target_complex.as_ref().is_some_and(|complex| {
+                                            let checks = presentation_generated_h1_checks(
+                                                plan, complex, h1,
+                                            );
+                                            presentation_checks = Some(checks.clone());
+                                            comparison_target_cochain_support_matches(complex, h1)
+                                                && checks.all_pass()
+                                        })
+                                }
                                 _ => false,
                             }
                         });
@@ -685,6 +819,20 @@ fn check_supplied_slots(
                                     checks.degree_two_zero_preserving,
                                     checks.differential_commutative,
                                 )
+                            })
+                            .or_else(|| {
+                                presentation_checks.map(|checks| {
+                                    format!(
+                                        "COMPARISON_DATA_CONTRACT_VIOLATION: presentationExactness={} generatorCompleteness={} restrictionNaturality={} degreeZeroCommutative={} degreeOneCommutative={} targetSupportDerived={} residualWitnessComputed={}",
+                                        checks.presentation_exactness,
+                                        checks.generator_completeness,
+                                        checks.restriction_naturality,
+                                        checks.degree_zero_commutative,
+                                        checks.degree_one_commutative,
+                                        checks.target_support_derived,
+                                        checks.residual_witness_computed,
+                                    )
+                                })
                             })
                             .unwrap_or_else(|| "COMPARISON_DATA_CONTRACT_VIOLATION: comparison requires a chart-indexed or explicit incidence bridge and a validated identity or explicit finite H1 comparison contract".to_string());
                         examples.push(generic_validation_example(
@@ -905,6 +1053,373 @@ pub(crate) fn explicit_h1_comparison_checks(
         differential_commutative,
         map_complete,
     }
+}
+
+pub(crate) fn presentation_generated_h1_checks(
+    plan: &RepairPlanDocumentV1,
+    target_complex: &RepairPlanComplexV1,
+    h1: &serde_json::Map<String, Value>,
+) -> PresentationGeneratedH1Checks {
+    let Some(target_support) = comparison_target_cochain_support(target_complex, h1) else {
+        return PresentationGeneratedH1Checks::default();
+    };
+    let Ok(typed) = serde_json::from_value::<H1ComparisonDataV052>(Value::Object(h1.clone()))
+    else {
+        return PresentationGeneratedH1Checks::default();
+    };
+    if typed.schema != crate::H1_COMPARISON_DATA_V052_SCHEMA
+        || typed.kind != "presentation-generated"
+    {
+        return PresentationGeneratedH1Checks::default();
+    }
+    let Some(presentation) = typed.presentation.as_ref() else {
+        return PresentationGeneratedH1Checks::default();
+    };
+
+    let expected_cells = presentation_cell_refs(plan);
+    let mut cells = BTreeMap::new();
+    for cell in &presentation.cells {
+        if cells.insert(cell.cell_ref.as_str(), cell).is_some() {
+            return PresentationGeneratedH1Checks::default();
+        }
+    }
+    let map_complete = cells.keys().copied().collect::<BTreeSet<_>>()
+        == expected_cells.iter().map(String::as_str).collect();
+    if !map_complete {
+        return PresentationGeneratedH1Checks::default();
+    }
+
+    let cell_checks = cells
+        .values()
+        .map(|cell| presentation_cell_checks(cell))
+        .collect::<Option<Vec<_>>>();
+    let Some(cell_checks) = cell_checks else {
+        return PresentationGeneratedH1Checks::default();
+    };
+
+    let expected_restrictions = presentation_restriction_refs(plan);
+    let mut restrictions = BTreeMap::new();
+    for restriction in &presentation.restrictions {
+        if restrictions
+            .insert(
+                (restriction.from_ref.as_str(), restriction.to_ref.as_str()),
+                restriction,
+            )
+            .is_some()
+        {
+            return PresentationGeneratedH1Checks::default();
+        }
+    }
+    let restriction_complete = restrictions.keys().copied().collect::<BTreeSet<_>>()
+        == expected_restrictions
+            .iter()
+            .map(|(from, to)| (from.as_str(), to.as_str()))
+            .collect();
+    let restriction_naturality = restriction_complete
+        && restrictions.iter().all(|((from, to), restriction)| {
+            cells
+                .get(from)
+                .zip(cells.get(to))
+                .is_some_and(|(source, target)| {
+                    presentation_restriction_commutes(source, target, restriction)
+                })
+        });
+    let degree_zero_commutative = restriction_naturality
+        && plan.complex.overlaps.iter().all(|overlap| {
+            restrictions.contains_key(&(overlap.left.as_str(), overlap.id.as_str()))
+                && restrictions.contains_key(&(overlap.right.as_str(), overlap.id.as_str()))
+        });
+    let degree_one_commutative = restriction_naturality
+        && plan.complex.triple_overlaps.iter().all(|triple| {
+            triple.overlap_refs.iter().all(|overlap_ref| {
+                restrictions.contains_key(&(overlap_ref.as_str(), triple.id.as_str()))
+            })
+        });
+    let derived_target_support = generated_target_cochain_support(plan, &cells);
+    let target_support_derived = derived_target_support.as_ref() == Some(&target_support);
+
+    PresentationGeneratedH1Checks {
+        presentation_exactness: cell_checks.iter().all(|(exactness, _)| *exactness),
+        generator_completeness: cell_checks.iter().all(|(_, generation)| *generation),
+        restriction_naturality,
+        degree_zero_commutative,
+        degree_one_commutative,
+        target_support_derived,
+        residual_witness_computed: target_support_derived,
+        map_complete,
+    }
+}
+
+pub(crate) fn presentation_generated_h1_output(
+    plan: &RepairPlanDocumentV1,
+    target_complex: &RepairPlanComplexV1,
+    h1: &serde_json::Map<String, Value>,
+    checks: &PresentationGeneratedH1Checks,
+) -> Value {
+    let cells = h1
+        .get("presentation")
+        .and_then(|presentation| presentation.get("cells"))
+        .and_then(Value::as_array)
+        .cloned()
+        .unwrap_or_default();
+    let refs = |kind: &str| {
+        let expected = match kind {
+            "degreeZero" => plan
+                .complex
+                .charts
+                .iter()
+                .map(String::as_str)
+                .collect::<BTreeSet<_>>(),
+            "degreeOne" => plan
+                .complex
+                .overlaps
+                .iter()
+                .map(|overlap| overlap.id.as_str())
+                .collect::<BTreeSet<_>>(),
+            "degreeTwo" => plan
+                .complex
+                .triple_overlaps
+                .iter()
+                .map(|triple| triple.id.as_str())
+                .collect::<BTreeSet<_>>(),
+            _ => BTreeSet::new(),
+        };
+        cells
+            .iter()
+            .filter(|cell| {
+                cell.get("cellRef")
+                    .and_then(Value::as_str)
+                    .is_some_and(|cell_ref| expected.contains(cell_ref))
+            })
+            .map(|cell| {
+                json!({
+                    "cellRef": cell["cellRef"],
+                    "localPhiDerivedFrom": "generatorMap modulo repair/equation relations"
+                })
+            })
+            .collect::<Vec<_>>()
+    };
+    json!({
+        "kind": "presentation-generated",
+        "presentationExactness": checks.presentation_exactness,
+        "generatorCompleteness": checks.generator_completeness,
+        "generatedCochainMap": {
+            "kind": "derived-from-local-phi",
+            "degreeZero": refs("degreeZero"),
+            "degreeOne": refs("degreeOne"),
+            "degreeTwo": refs("degreeTwo"),
+            "degreeZeroCommutative": checks.degree_zero_commutative,
+            "degreeOneCommutative": checks.degree_one_commutative
+        },
+        "residualWitness": checks.residual_witness_computed.then(|| json!({
+            "kind": "computed-zero-atlas-witness",
+            "equation": "kappa1(r_sem) = r_E + delta0(h)",
+            "h": target_complex.charts.iter().map(|chart| json!({
+                "chartRef": chart,
+                "variables": []
+            })).collect::<Vec<_>>(),
+            "sourceImageEqualsTarget": true
+        })),
+        "restrictionNaturality": checks.restriction_naturality
+    })
+}
+
+fn presentation_cell_refs(plan: &RepairPlanDocumentV1) -> BTreeSet<String> {
+    plan.complex
+        .charts
+        .iter()
+        .cloned()
+        .chain(plan.complex.overlaps.iter().map(|overlap| overlap.id.clone()))
+        .chain(
+            plan.complex
+                .triple_overlaps
+                .iter()
+                .map(|triple| triple.id.clone()),
+        )
+        .collect()
+}
+
+fn presentation_restriction_refs(plan: &RepairPlanDocumentV1) -> BTreeSet<(String, String)> {
+    let mut refs = BTreeSet::new();
+    for overlap in &plan.complex.overlaps {
+        refs.insert((overlap.left.clone(), overlap.id.clone()));
+        refs.insert((overlap.right.clone(), overlap.id.clone()));
+    }
+    for triple in &plan.complex.triple_overlaps {
+        for overlap_ref in &triple.overlap_refs {
+            refs.insert((overlap_ref.clone(), triple.id.clone()));
+        }
+    }
+    refs
+}
+
+fn presentation_cell_checks(cell: &H1PresentationCellV052) -> Option<(bool, bool)> {
+    let semantic_count = cell.semantic_generators.len();
+    let equation_count = cell.equation_generators.len();
+    if semantic_count == 0
+        || equation_count == 0
+        || cell.semantic_generators.iter().collect::<BTreeSet<_>>().len() != semantic_count
+        || cell.equation_generators.iter().collect::<BTreeSet<_>>().len() != equation_count
+        || !binary_matrix(&cell.repair_relation_matrix, semantic_count)
+        || !binary_matrix(&cell.equation_relation_matrix, equation_count)
+        || !binary_matrix_with_shape(&cell.generator_map, equation_count, semantic_count)
+    {
+        return None;
+    }
+    let relation_rank = f2_rank(&cell.repair_relation_matrix, semantic_count)?;
+    let equation_rank = f2_rank(&cell.equation_relation_matrix, equation_count)?;
+    let generator_columns = matrix_columns(&cell.generator_map, semantic_count);
+    let mut quotient_generators = cell.equation_relation_matrix.clone();
+    quotient_generators.extend(generator_columns);
+    let quotient_generator_rank = f2_rank(&quotient_generators, equation_count)?;
+    let soundness = cell.repair_relation_matrix.iter().all(|relation| {
+        f2_vector_in_span(
+            &cell.equation_relation_matrix,
+            equation_count,
+            &f2_matrix_vector(&cell.generator_map, relation),
+        )
+        .unwrap_or(false)
+    });
+    let kernel_dimension = semantic_count.checked_sub(quotient_generator_rank - equation_rank)?;
+    Some((
+        soundness && relation_rank == kernel_dimension,
+        quotient_generator_rank == equation_count,
+    ))
+}
+
+fn presentation_restriction_commutes(
+    source: &H1PresentationCellV052,
+    target: &H1PresentationCellV052,
+    restriction: &H1PresentationRestrictionV052,
+) -> bool {
+    let source_semantic = source.semantic_generators.len();
+    let source_equation = source.equation_generators.len();
+    let target_semantic = target.semantic_generators.len();
+    let target_equation = target.equation_generators.len();
+    if !binary_matrix_with_shape(
+        &restriction.semantic_matrix,
+        target_semantic,
+        source_semantic,
+    ) || !binary_matrix_with_shape(
+        &restriction.equation_matrix,
+        target_equation,
+        source_equation,
+    ) {
+        return false;
+    }
+    (0..source_semantic).all(|index| {
+        let mut basis = vec![0; source_semantic];
+        basis[index] = 1;
+        let through_semantic = f2_matrix_vector(
+            &target.generator_map,
+            &f2_matrix_vector(&restriction.semantic_matrix, &basis),
+        );
+        let through_equation = f2_matrix_vector(
+            &restriction.equation_matrix,
+            &f2_matrix_vector(&source.generator_map, &basis),
+        );
+        let difference = through_semantic
+            .iter()
+            .zip(through_equation)
+            .map(|(left, right)| left ^ right)
+            .collect::<Vec<_>>();
+        f2_vector_in_span(
+            &target.equation_relation_matrix,
+            target_equation,
+            &difference,
+        )
+        .unwrap_or(false)
+    })
+}
+
+fn generated_target_cochain_support(
+    plan: &RepairPlanDocumentV1,
+    cells: &BTreeMap<&str, &H1PresentationCellV052>,
+) -> Option<BTreeMap<String, BTreeSet<String>>> {
+    let mut target_support = BTreeMap::new();
+    for primitive in &plan.primitives {
+        let cell = cells.get(primitive.overlap_ref.as_str())?;
+        let semantic_index = cell
+            .semantic_generators
+            .iter()
+            .enumerate()
+            .map(|(index, generator)| (generator.as_str(), index))
+            .collect::<BTreeMap<_, _>>();
+        let mut support = BTreeSet::new();
+        for source_variable in &primitive.support.variables {
+            let index = *semantic_index.get(source_variable.as_str())?;
+            for (equation_index, equation_generator) in cell.equation_generators.iter().enumerate() {
+                if cell.generator_map.get(equation_index)?.get(index) == Some(&1) {
+                    support.insert(equation_generator.clone());
+                }
+            }
+        }
+        if target_support.insert(primitive.overlap_ref.clone(), support).is_some() {
+            return None;
+        }
+    }
+    Some(target_support)
+}
+
+fn binary_matrix(rows: &[Vec<u8>], width: usize) -> bool {
+    rows
+        .iter()
+        .all(|row| row.len() == width && row.iter().all(|value| *value <= 1))
+}
+
+fn binary_matrix_with_shape(rows: &[Vec<u8>], height: usize, width: usize) -> bool {
+    rows.len() == height && binary_matrix(rows, width)
+}
+
+fn f2_rank(rows: &[Vec<u8>], width: usize) -> Option<usize> {
+    if !binary_matrix(rows, width) {
+        return None;
+    }
+    let mut rows = rows.to_vec();
+    let mut rank = 0;
+    for column in 0..width {
+        let pivot = (rank..rows.len()).find(|row| rows[*row][column] == 1);
+        let Some(pivot) = pivot else {
+            continue;
+        };
+        rows.swap(rank, pivot);
+        for row in 0..rows.len() {
+            if row != rank && rows[row][column] == 1 {
+                for entry in column..width {
+                    rows[row][entry] ^= rows[rank][entry];
+                }
+            }
+        }
+        rank += 1;
+    }
+    Some(rank)
+}
+
+fn matrix_columns(matrix: &[Vec<u8>], width: usize) -> Vec<Vec<u8>> {
+    (0..width)
+        .map(|column| matrix.iter().map(|row| row[column]).collect())
+        .collect()
+}
+
+fn f2_matrix_vector(matrix: &[Vec<u8>], vector: &[u8]) -> Vec<u8> {
+    matrix
+        .iter()
+        .map(|row| {
+            row.iter()
+                .zip(vector)
+                .fold(0, |sum, (coefficient, value)| sum ^ (*coefficient & *value))
+        })
+        .collect()
+}
+
+fn f2_vector_in_span(rows: &[Vec<u8>], width: usize, vector: &[u8]) -> Option<bool> {
+    if vector.len() != width || vector.iter().any(|value| *value > 1) {
+        return None;
+    }
+    let rank = f2_rank(rows, width)?;
+    let mut augmented = rows.to_vec();
+    augmented.push(vector.to_vec());
+    Some(f2_rank(&augmented, width)? == rank)
 }
 
 fn parse_explicit_cochain_map(

@@ -95,6 +95,33 @@ pub struct H1ComparisonCochainMapV052 {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct H1PresentationCellV052 {
+    pub cell_ref: String,
+    pub semantic_generators: Vec<String>,
+    pub repair_relation_matrix: Vec<Vec<u8>>,
+    pub equation_generators: Vec<String>,
+    pub equation_relation_matrix: Vec<Vec<u8>>,
+    pub generator_map: Vec<Vec<u8>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct H1PresentationRestrictionV052 {
+    pub from_ref: String,
+    pub to_ref: String,
+    pub semantic_matrix: Vec<Vec<u8>>,
+    pub equation_matrix: Vec<Vec<u8>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct H1PresentationDataV052 {
+    pub cells: Vec<H1PresentationCellV052>,
+    pub restrictions: Vec<H1PresentationRestrictionV052>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct H1ComparisonDataV052 {
     pub schema: String,
     pub kind: String,
@@ -105,6 +132,8 @@ pub struct H1ComparisonDataV052 {
     pub target_cochain_support: Vec<H1ComparisonSupportV052>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub cochain_map: Option<H1ComparisonCochainMapV052>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub presentation: Option<H1PresentationDataV052>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
