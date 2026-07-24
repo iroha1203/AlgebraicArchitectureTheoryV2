@@ -2627,7 +2627,7 @@ fn cli_analyze_saga_descent_certifies_the_one_cent_component_without_other_tripl
             .as_array()
             .expect("assumption ledger is an array")
             .iter()
-            .find(|assumption| assumption["theoremRef"] == "part4/4.7")
+            .find(|assumption| assumption["theoremRef"] == "part10/8.1")
             .and_then(|assumption| assumption["assumptionId"].as_str())
             .expect("true-sheaf assumption has an authored ID");
         assert!(

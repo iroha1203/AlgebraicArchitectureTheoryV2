@@ -500,7 +500,7 @@ pub(crate) fn evaluate_saga_descent_v1(
             .and_then(|certificate| {
                 (certificate.get("globalCondition").and_then(Value::as_str) == Some("assumed"))
                     .then(|| AgAssumptionLedgerEntryV1 {
-                        theorem_ref: "part4/4.7".to_string(),
+                        theorem_ref: "part10/8.1".to_string(),
                         assumption: format!("global sheaf condition for {}", plan.id),
                         status: "assumed".to_string(),
                         checked_by: None,
