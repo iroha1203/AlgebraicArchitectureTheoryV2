@@ -1359,108 +1359,39 @@ theorem rightIdeal_eq_sharedWitness {M : MeasurementProfile.{u, v}} [Field M.Coe
 ideals.  The ambient scheme and both ideal sheaves are generated internally. -/
 noncomputable def commonAmbient {M : MeasurementProfile.{u, v}} [Field M.Coeff]
     (C : AATGAGACommonFiniteData M) :
-    CommonAmbientPair M where
-  AmbientSpace := ULift.{u, 0} Unit
-  StructureSheaf :=
-    ULift.{max u v + 1, v + 1} AffineIdealSheafPair.{v}
-  LawIdeal :=
-    ULift.{max u v, v}
-      (Ideal (Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff))
-  CoefficientObject := M.Coeff
-  WitnessPair := ULift.{u, 0} Derived.Counterexample.SharedWitnessCoord
-  ComparisonProfile :=
-    M.equationGeometry.site.equationSystem.RequiredIndex ×
-      M.equationGeometry.site.equationSystem.RequiredIndex
-  SupportCarrier := M.WitnessVariables
-  leftDomain := C.selectedMeasurement
-  rightDomain := C.selectedMeasurement
-  selectedAmbient := ULift.up ()
-  selectedStructureSheaf :=
-    ULift.up (AffineIdealSheafPair.ofSpec C.leftIdeal C.rightIdeal)
-  leftLawIdeal := ULift.up C.leftIdeal
-  rightLawIdeal := ULift.up C.rightIdeal
-  leftCoefficient := C.selectedCoefficient
-  rightCoefficient := C.selectedCoefficient
-  selectedWitnessPair := ULift.up .x
-  selectedComparisonProfile :=
+    CommonAmbientPair M
+      (Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff)
+      C.leftIdeal C.rightIdeal :=
+  CommonAmbientPair.ofAffineSpec
+    C.leftIdeal C.rightIdeal
+    C.selectedMeasurement C.selectedMeasurement C.selectedCoefficient
+    (ULift.{u, 0} Derived.Counterexample.SharedWitnessCoord)
+    (M.equationGeometry.site.equationSystem.RequiredIndex ×
+      M.equationGeometry.site.equationSystem.RequiredIndex)
+    M.WitnessVariables
+    (ULift.up .x)
     (C.selectedLeftProfileEquation, C.selectedRightProfileEquation)
-  commonRingedSite :=
-    (AffineIdealSheafPair.ofSpec
-      C.leftIdeal C.rightIdeal).scheme.toLocallyRingedSpace =
-        AlgebraicGeometry.Spec.locallyRingedSpaceObj
-          (CommRingCat.of
-            (Derived.Counterexample.SharedWitnessCoord.ChartRing
-              M.Coeff))
-  commonRingedSite_cert := rfl
-  lawIdealsInCommonAmbient :=
-    let e :=
-      (AlgebraicGeometry.Scheme.ΓSpecIso
-        (CommRingCat.of
-          (Derived.Counterexample.SharedWitnessCoord.ChartRing
-            M.Coeff))).commRingCatIsoToRingEquiv
-    let pair := AffineIdealSheafPair.ofSpec C.leftIdeal C.rightIdeal
-    let _ : IsAffine pair.scheme := pair.schemeIsAffine
-    Ideal.map e.toRingHom
-        (pair.leftIdealSheaf.ideal
-          ⟨⊤, isAffineOpen_top pair.scheme⟩) =
-          C.leftIdeal ∧
-      Ideal.map e.toRingHom
-        (pair.rightIdealSheaf.ideal
-          ⟨⊤, isAffineOpen_top pair.scheme⟩) =
-          C.rightIdeal
-  lawIdealsInCommonAmbient_cert :=
-    ⟨AffineIdealSheafPair.ofSpec_leftIdealSheaf_top
-        C.leftIdeal C.rightIdeal,
-      AffineIdealSheafPair.ofSpec_rightIdealSheaf_top
-        C.leftIdeal C.rightIdeal⟩
-  coefficientsCompatible := C.selectedCoefficient = C.selectedCoefficient
-  coefficientsCompatible_cert := rfl
-  witnessesComparable :=
-    (ULift.up .x :
-      ULift.{u, 0} Derived.Counterexample.SharedWitnessCoord) =
-        ULift.up .x
-  witnessesComparable_cert := rfl
-  comparisonProfileFixed :=
-    (C.selectedLeftProfileEquation, C.selectedRightProfileEquation) =
-      (C.selectedLeftProfileEquation, C.selectedRightProfileEquation)
-  comparisonProfileFixed_cert := rfl
-  noComparisonWithoutCommonAmbient :=
-    (AffineIdealSheafPair.ofSpec
-      C.leftIdeal C.rightIdeal).scheme.toLocallyRingedSpace =
-        AlgebraicGeometry.Spec.locallyRingedSpaceObj
-          (CommRingCat.of
-            (Derived.Counterexample.SharedWitnessCoord.ChartRing
-              M.Coeff))
-  noComparisonWithoutCommonAmbient_cert := rfl
 
-/-- The actual affine ideal-sheaf pair carried by the universe-lifted common
-ambient field. -/
+/-- The actual affine ideal-sheaf pair carried by the common ambient. -/
 abbrev ambientIdealSheafPair
     {M : MeasurementProfile.{u, v}} [Field M.Coeff]
     (C : AATGAGACommonFiniteData M) :
     AffineIdealSheafPair.{v} :=
-  (show ULift.{max u v + 1, v + 1} AffineIdealSheafPair.{v} from
-    C.commonAmbient.selectedStructureSheaf).down
+  C.commonAmbient.selectedStructureSheaf
 
-/-- The actual left chart ideal carried by the universe-lifted common ambient
-field. -/
+/-- The actual left chart ideal indexed by the common ambient. -/
 abbrev ambientLeftIdeal
     {M : MeasurementProfile.{u, v}} [Field M.Coeff]
     (C : AATGAGACommonFiniteData M) :
     Ideal (Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff) :=
-  (show ULift.{max u v, v}
-      (Ideal (Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff)) from
-    C.commonAmbient.leftLawIdeal).down
+  C.commonAmbient.leftLawIdeal
 
-/-- The actual right chart ideal carried by the universe-lifted common ambient
-field. -/
+/-- The actual right chart ideal indexed by the common ambient. -/
 abbrev ambientRightIdeal
     {M : MeasurementProfile.{u, v}} [Field M.Coeff]
     (C : AATGAGACommonFiniteData M) :
     Ideal (Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff) :=
-  (show ULift.{max u v, v}
-      (Ideal (Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff)) from
-    C.commonAmbient.rightLawIdeal).down
+  C.commonAmbient.rightLawIdeal
 
 /-- The left ideal selected by the common ambient is definitionally the
 actual left equation ideal. -/

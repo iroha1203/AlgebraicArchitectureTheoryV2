@@ -2748,7 +2748,10 @@ noncomputable def finiteComputabilityConflictRealization :
 /-- Canonical common ambient generated from the two actual
 equation-coordinate ideals on one affine spectrum. -/
 noncomputable def finiteComputabilityCommonAmbient :
-    CommonAmbientPair finiteComputabilityMeasurementProfile :=
+    CommonAmbientPair finiteComputabilityMeasurementProfile
+      (MvPolynomial SquareFreeSupportVertex (ZMod 2))
+      finiteComputabilityExampleData.leftIdeal
+      finiteComputabilityExampleData.rightIdeal :=
   finiteComputabilityConflictRealization.commonAmbient
 
 /-- The canonical common ambient uses the actual locally ringed space of the
@@ -4068,61 +4071,27 @@ theorem cellularHodgeExample_harmonicDebtMinimal :
 
 /-- R11(f): common ambient for the support-localized transfer fixture. -/
 def transferCommonAmbient :
-    CommonAmbientPair pseudoCircleMeasurementProfile where
-  AmbientSpace := Unit
-  StructureSheaf := ULift.{1, 0} Unit
-  LawIdeal := Unit
-  CoefficientObject := Unit
-  WitnessPair := Unit
-  ComparisonProfile := Unit
-  SupportCarrier := SquareFreeSupportVertex
-  leftDomain := PseudoCircleMeasurementDomain.boundaryCocycle
-  rightDomain := PseudoCircleMeasurementDomain.boundaryCocycle
-  selectedAmbient := ()
-  selectedStructureSheaf := ULift.up ()
-  leftLawIdeal := ()
-  rightLawIdeal := ()
-  leftCoefficient := ()
-  rightCoefficient := ()
-  selectedWitnessPair := ()
-  selectedComparisonProfile := ()
-  commonRingedSite := True
-  commonRingedSite_cert := trivial
-  lawIdealsInCommonAmbient := True
-  lawIdealsInCommonAmbient_cert := trivial
-  coefficientsCompatible := True
-  coefficientsCompatible_cert := trivial
-  witnessesComparable := True
-  witnessesComparable_cert := trivial
-  comparisonProfileFixed := True
-  comparisonProfileFixed_cert := trivial
-  noComparisonWithoutCommonAmbient := True
-  noComparisonWithoutCommonAmbient_cert := trivial
+    CommonAmbientPair pseudoCircleMeasurementProfile
+      (ZMod 2) (⊥ : Ideal (ZMod 2)) (⊥ : Ideal (ZMod 2)) :=
+  CommonAmbientPair.ofAffineSpec
+    (M := pseudoCircleMeasurementProfile) (R := ZMod 2)
+    (⊥ : Ideal (ZMod 2)) (⊥ : Ideal (ZMod 2))
+    PseudoCircleMeasurementDomain.boundaryCocycle
+    PseudoCircleMeasurementDomain.boundaryCocycle
+    () Unit Unit SquareFreeSupportVertex () ()
 
-/-- R11(f): nontrivial selected LawConflict class. -/
+/-- R11(f): canonical selected LawConflict class on the actual affine
+ambient. -/
 def transferLawConflict :
-    LawConflictMeasurement transferCommonAmbient where
-  Degree := Unit
-  selectedDegree := ()
-  LeftQuotient := Unit
-  RightQuotient := Unit
-  TorObject := Unit
-  ConflictClass := Unit
-  selectedConflictClass := ()
-  conflictSupport := fun _ support => support = SquareFreeSupportVertex.q
-  selectedSupport := SquareFreeSupportVertex.q
-  ZeroConflict := fun _ => False
-  NontrivialConflict := fun _ => True
-  lawConflictTorReading := True
-  lawConflictTorReading_cert := trivial
-  selectedClassSupportReading := True
-  selectedClassSupportReading_cert := trivial
-  commonAmbientRequired := True
-  commonAmbientRequired_cert := trivial
-  coefficientCompatibilityUsed := True
-  coefficientCompatibilityUsed_cert := trivial
-  topologyAndCoefficientBoundary := True
-  topologyAndCoefficientBoundary_cert := trivial
+    LawConflictMeasurement transferCommonAmbient :=
+  LawConflictMeasurement.ofAffineSpecCanonicalTor
+    (M := pseudoCircleMeasurementProfile) (R := ZMod 2)
+    (⊥ : Ideal (ZMod 2)) (⊥ : Ideal (ZMod 2))
+    PseudoCircleMeasurementDomain.boundaryCocycle
+    PseudoCircleMeasurementDomain.boundaryCocycle
+    () Unit Unit SquareFreeSupportVertex () ()
+    0 0 SquareFreeSupportVertex.q
+    (fun _ support => support = SquareFreeSupportVertex.q) rfl
 
 /-- R11(f): selected support-localized path through the conflict support. -/
 def transferRepairPath :
@@ -4134,7 +4103,7 @@ def transferRepairPath :
   selectedRepairDirection := ()
   directionSupport := fun _ => SquareFreeSupportVertex.q
   directionHitsConflictSupport := fun _ _ => True
-  selectedConflictClass := ()
+  selectedConflictClass := transferLawConflict.selectedConflictClass
   selectedClass_eq_lawConflictClass := rfl
   pathImageIntersectsSupport := True
   pathImageIntersectsSupport_cert := trivial

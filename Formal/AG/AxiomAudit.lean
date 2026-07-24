@@ -10027,6 +10027,21 @@ def issue3735AffineCommonAmbientRightIdealSheaf :=
 def issue3735AffineCommonAmbientGlobalSectionsIdeals :=
   @AAT.AG.Measurement.CommonAmbientPair.ofAffineSpec_globalSectionsIdeals
 
+def issue3735IndexedCommonAmbientGlobalSectionsIdeals :=
+  @AAT.AG.Measurement.CommonAmbientPair.lawIdealsInCommonAmbient_cert
+
+noncomputable def issue3735AffineCanonicalTorMeasurement :=
+  @AAT.AG.Measurement.LawConflictMeasurement.ofAffineSpecCanonicalTor
+
+def issue3735AffineCanonicalTorLeftIdeal :=
+  @AAT.AG.Measurement.LawConflictMeasurement.ofAffineSpecCanonicalTor_leftIdeal
+
+def issue3735AffineCanonicalTorRightIdeal :=
+  @AAT.AG.Measurement.LawConflictMeasurement.ofAffineSpecCanonicalTor_rightIdeal
+
+def issue3735IndexedCanonicalTorReading :=
+  @AAT.AG.Measurement.LawConflictMeasurement.lawConflictTorReading_holds
+
 def issue3735ConflictComputedLeftIdealAmbient :=
   @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_leftLawIdeal
 
@@ -10065,6 +10080,9 @@ def issue3735ConflictAmbientGeneratedIdeals :=
 
 def issue3735ConflictMeasurementAmbientShape :=
   @AAT.AG.Measurement.FiniteAATConflictRealization.lawConflictMeasurement_commonAmbientRequired_shape
+
+def issue3735ConflictMeasurementTorShape :=
+  @AAT.AG.Measurement.FiniteAATConflictRealization.lawConflictMeasurement_torReading_shape
 
 def issue3735FiniteConflictMeasurementAmbientShape :=
   AAT.AG.Measurement.finiteComputabilityConflictPackage_commonAmbientRequired_shape

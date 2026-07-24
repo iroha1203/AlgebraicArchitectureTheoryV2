@@ -51,7 +51,10 @@ The equation context and module-valued obstruction sheaf remain in the finite
 Čech source, and the affine spectrum carries the ring-valued structure sheaf.
 -/
 def commonAmbient (C : FiniteAATConflictRealization D) :
-    CommonAmbientPair M :=
+    letI := R.geometry.coeffCommRing
+    CommonAmbientPair M
+      (MvPolynomial M.WitnessVariables M.Coeff)
+      D.leftIdeal D.rightIdeal :=
   letI := R.geometry.coeffCommRing
   CommonAmbientPair.ofAffineSpec
     D.leftIdeal D.rightIdeal C.leftDomain C.rightDomain (1 : M.Coeff)
@@ -250,60 +253,21 @@ bridge, actual class, and computed relation-valued support. -/
 def lawConflictMeasurement (C : FiniteAATConflictRealization D) :
     LawConflictMeasurement C.commonAmbient := by
   letI := R.geometry.coeffCommRing
-  let B := Derived.Intersection.canonicalSelectedTorBridge
-    (MvPolynomial M.WitnessVariables M.Coeff)
-      C.commonAmbient.leftLawIdeal C.commonAmbient.rightLawIdeal
-  let selectedClass : B.LawConflict D.torDegree := D.selectedConflictClass
-  let relation : B.LawConflict D.torDegree ->
-      C.commonAmbient.SupportCarrier -> Prop := C.supportRelation
-  have hselected : relation selectedClass C.selectedSupport := by
-    exact C.selectedSupport_holds
-  exact {
-    Degree := ULift.{u} Nat
-    selectedDegree := ULift.up D.torDegree
-    LeftQuotient :=
-      MvPolynomial M.WitnessVariables M.Coeff ⧸
-        (show Ideal (MvPolynomial M.WitnessVariables M.Coeff) from
-          C.commonAmbient.leftLawIdeal)
-    RightQuotient :=
-      MvPolynomial M.WitnessVariables M.Coeff ⧸
-        (show Ideal (MvPolynomial M.WitnessVariables M.Coeff) from
-          C.commonAmbient.rightLawIdeal)
-    TorObject := B.LawConflict D.torDegree
-    ConflictClass := B.LawConflict D.torDegree
-    selectedConflictClass := selectedClass
-    conflictSupport := relation
-    selectedSupport := C.selectedSupport
-    ZeroConflict := fun x => x = 0
-    NontrivialConflict := fun x => x ≠ 0
-    lawConflictTorReading :=
-      Nonempty
-        (B.LawConflict D.torDegree ≃ₗ[
-          MvPolynomial M.WitnessVariables M.Coeff]
-          Derived.Intersection.mathlibTor
-            (MvPolynomial M.WitnessVariables M.Coeff)
-            C.commonAmbient.leftLawIdeal C.commonAmbient.rightLawIdeal
-            D.torDegree)
-    lawConflictTorReading_cert :=
-      ⟨B.lawConflictLinearEquivMathlibTor D.torDegree⟩
-    selectedClassSupportReading :=
-      relation selectedClass C.selectedSupport
-    selectedClassSupportReading_cert := hselected
-    commonAmbientRequired :=
-      C.commonAmbient.commonRingedSite ∧
-        C.commonAmbient.lawIdealsInCommonAmbient
-    commonAmbientRequired_cert :=
-      ⟨C.commonAmbient.commonRingedSite_cert,
-        C.commonAmbient.lawIdealsInCommonAmbient_cert⟩
-    coefficientCompatibilityUsed :=
-      C.commonAmbient.coefficientsCompatible
-    coefficientCompatibilityUsed_cert :=
-      C.commonAmbient.coefficientsCompatible_cert
-    topologyAndCoefficientBoundary :=
-      C.commonAmbient.noComparisonWithoutCommonAmbient
-    topologyAndCoefficientBoundary_cert :=
-      C.commonAmbient.noComparisonWithoutCommonAmbient_cert
-  }
+  exact
+    LawConflictMeasurement.ofAffineSpecCanonicalTor
+      D.leftIdeal D.rightIdeal C.leftDomain C.rightDomain
+      (1 : M.Coeff)
+      (Finset (Finset M.WitnessVariables) ×
+        Finset (Finset M.WitnessVariables))
+      (M.equationGeometry.site.equationSystem.RequiredIndex ×
+        M.equationGeometry.site.equationSystem.RequiredIndex)
+      (Finset M.WitnessVariables)
+      (D.leftSquareFree.forbiddenSupports,
+        D.rightSquareFree.forbiddenSupports)
+      (D.profileRealization.selectedLeftEquation,
+        D.profileRealization.selectedRightEquation)
+      D.torDegree D.selectedConflictClass C.selectedSupport
+      C.supportRelation C.selectedSupport_holds
 
 /-- The final measurement's common-ambient obligation contains the actual
 equation-generated ideals used by its selected Tor bridge. -/
@@ -313,6 +277,22 @@ theorem lawConflictMeasurement_commonAmbientRequired_shape
     C.lawConflictMeasurement.commonAmbientRequired =
       (C.commonAmbient.commonRingedSite ∧
         C.commonAmbient.lawIdealsInCommonAmbient) :=
+  rfl
+
+/-- The final measurement's Tor reading is indexed by the same two actual
+equation ideals used to construct its affine ideal sheaves. -/
+theorem lawConflictMeasurement_torReading_shape
+    (C : FiniteAATConflictRealization D) :
+    letI := R.geometry.coeffCommRing
+    C.lawConflictMeasurement.lawConflictTorReading =
+      Nonempty
+        ((Derived.Intersection.canonicalSelectedTorBridge
+            (MvPolynomial M.WitnessVariables M.Coeff)
+            D.leftIdeal D.rightIdeal).LawConflict D.torDegree ≃ₗ[
+              MvPolynomial M.WitnessVariables M.Coeff]
+          Derived.Intersection.mathlibTor
+            (MvPolynomial M.WitnessVariables M.Coeff)
+            D.leftIdeal D.rightIdeal D.torDegree) :=
   rfl
 
 /-- The final measurement exposes the selected computed-support reading. -/
@@ -338,7 +318,7 @@ structure FiniteAATConflictComputability
   /-- Existing measurement semantics instantiated by the computed support
   relation and the actual transported conflict class. -/
   lawConflictMeasurement :
-    LawConflictMeasurement.{u, v, max u v} C.commonAmbient
+    LawConflictMeasurement C.commonAmbient
   /-- The exposed measurement is exactly the one constructed from the
   canonical selected Tor bridge and `ComputedConflictSupport`. -/
   lawConflictMeasurement_eq_computed :
