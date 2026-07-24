@@ -10897,6 +10897,72 @@ def sagaEquationGlobalLift :=
 def sagaCentralTheoremFinal :=
   @SemanticRepair.Saga.SagaEquationPacket.sagaCentralTheorem
 
+/-! ## G-07 conormal first-order descent distillation (Issue #3757, C6 #3767) -/
+
+/-- Kernel-audit alias for the raw patch-reading source (G-07 generalize row). -/
+def conormalPatchReadingSource :=
+  @SemanticRepair.Conormal.LawGeneratedSemanticFirstOrderRepair.PatchReadingSource
+
+/-- Kernel-audit alias for the pairwise required-law expansion (G-07 generalize row). -/
+def conormalOverlapLawCombination :=
+  @SemanticRepair.Conormal.LawGeneratedSemanticFirstOrderRepair.OverlapLawCombination
+
+/-- Kernel-audit alias for generator-relation soundness in the obstruction ideal. -/
+def conormalEvaluateCombinationMemObstructionIdeal :=
+  @SemanticRepair.Conormal.LawGeneratedSemanticFirstOrderRepair.evaluateCombination_mem_obstructionIdeal
+
+/-- Kernel-audit alias for `O/I` compatibility generated from required-law relations. -/
+def conormalRawQ0PairCompatible :=
+  @SemanticRepair.Conormal.LawGeneratedSemanticFirstOrderRepair.rawQ0_pair_compatible
+
+/-- Kernel-audit alias for the base-section/local-lift problem (G-07 reuse row). -/
+def conormalLocalLiftData :=
+  @SemanticRepair.Conormal.LawGeneratedLargeConormalDescent.LocalLiftData
+
+/-- Kernel-audit alias for the kernel-valued residual of local-lift differences. -/
+noncomputable def conormalLocalLiftDifferenceFor :=
+  @SemanticRepair.Conormal.LawGeneratedLargeConormalDescent.LocalLiftData.localLiftDifferenceFor
+
+/-- Kernel-audit alias for the cocycle law of the local-lift residual. -/
+def conormalLocalLiftDifferenceForCocycle :=
+  @SemanticRepair.Conormal.LawGeneratedLargeConormalDescent.LocalLiftData.localLiftDifferenceFor_cocycle
+
+/-- Kernel-audit alias for choice independence of the connecting class. -/
+def conormalConnectingClassChoiceIndependent :=
+  @SemanticRepair.Conormal.LawGeneratedLargeConormalDescent.LocalLiftData.connectingClass_choice_independent
+
+/-- Kernel-audit alias for the matching-correction coboundary vanishing. -/
+def conormalCorrectedLocalLiftCochainDEqZero :=
+  @SemanticRepair.Conormal.LawGeneratedLargeConormalDescent.LocalLiftData.correctedLocalLiftCochain_d_eq_zero
+
+/-- Kernel-audit alias for the true-sheaf amalgamated global lift. -/
+noncomputable def conormalAmalgamatedCorrectedLocalLift :=
+  @SemanticRepair.Conormal.LawGeneratedLargeConormalDescent.LocalLiftData.amalgamatedCorrectedLocalLift
+
+/-- Kernel-audit alias for the class-zero iff global-lift equivalence. -/
+def conormalConnectingClassForIsZeroIffNonemptyGlobalLift :=
+  @SemanticRepair.Conormal.LawGeneratedLargeConormalDescent.LocalLiftData.connectingClassFor_isZero_iff_nonempty_globalLift
+
+/-- Kernel-audit alias for the conormal-valued correction primitive (specialization). -/
+noncomputable def conormalSemanticFirstOrderRepair :=
+  @SemanticRepair.Conormal.LawGeneratedSemanticFirstOrderRepair.SemanticFirstOrderRepair
+
+/-- Kernel-audit alias for the primitive/global-lift constructive equivalence. -/
+noncomputable def conormalSemanticFirstOrderRepairEquiv :=
+  @SemanticRepair.Conormal.LawGeneratedSemanticFirstOrderRepair.SemanticFirstOrderRepairEquiv
+
+/-- Kernel-audit alias for class zero iff semantic first-order repair existence. -/
+def conormalConnectingClassIsZeroIffNonemptySemanticFirstOrderRepair :=
+  @SemanticRepair.Conormal.LawGeneratedSemanticFirstOrderRepair.connectingClass_isZero_iff_nonempty_semanticFirstOrderRepair
+
+/-- Kernel-audit alias for the closing G-07 descent package theorem. -/
+def conormalFirstOrderDescentPackage :=
+  @SemanticRepair.Conormal.LawGeneratedConormalFirstOrderDescentPackage.lawGeneratedConormalFirstOrderDescent_package
+
+/-- Kernel-audit alias for the Boolean-circle zero/nonzero conormal witness pair. -/
+def conormalH1ZeroNonzeroPair :=
+  @SemanticRepair.Conormal.LawGeneratedBooleanCircleConormalH1Pair.conormalH1_zero_nonzero_pair
+
 
 end AAT.AG.AxiomAudit
 
