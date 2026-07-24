@@ -14,13 +14,16 @@ target `HasSheafify` instances type the two standard schemes; the explicit site-
 canonical scheme pullback.
 
 The equation-system route starts from the represented point source of
-`S.equationSystem`.  Coefficient change uses the actual base-changed scheme as
-the new representing point functor; its observable evaluation is generated
-from the source universal sections followed by the canonical projection.
-Section-dependent architecture readings, regular residuals,
-symbolic-residual equalizers, generated witness and obstruction ideals, their
-ideal sheaves, and both closed subschemes are therefore transported without a
-second evaluation family.
+`S.equationSystem`.  For every flat coefficient map, the actual base-changed
+scheme carries the canonical pullback of the source universal point.
+Its observable evaluation, section-dependent architecture reading, regular
+residuals, symbolic-residual equalizer, locally glued witness ideals, ideal
+sheaves, and lawful closed subscheme are constructed directly from the
+coefficient projection, without a second evaluation family or a target
+representation premise.  Re-representation of the unchanged absolute point
+functor is retained only as an optional isomorphic case; a theorem shows that
+such a package forces the coefficient-change projection to be an
+isomorphism.
 
 The fixed definition sends each source global equation through the actual
 `StandardArchitectureScheme.baseChangeMap.appTop`.  The target geometric predicate and its
@@ -312,6 +315,56 @@ theorem universalPoint
         (R.pointAt (𝟙 X.underlying)) := by
   rw [P.representingEquiv_eq_pullback]
   exact EquationArchitecturePoint.pullback_id _
+
+/--
+Re-representing the unchanged absolute point functor forces the actual
+coefficient-change projection to be an isomorphism.  Thus
+`BaseChangeRepresentation` is an optional re-representation package, while
+the general flat geometry below does not depend on it.
+-/
+theorem baseChangeMap_isIso
+    (R : EquationObservableRealization raw X E)
+    (hR : IsEquationObservableRealization R)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (P : BaseChangeRepresentation R f) :
+    IsIso (X.baseChangeMap raw f) := by
+  let b := X.baseChangeMap raw f
+  have hP :
+      ∀ {T : AlgebraicGeometry.Scheme.{max u v}}
+        (s : T ⟶ (X.baseChange raw f).underlying),
+        P.representingEquiv T s = R.pointAt (s ≫ b) := by
+    intro T s
+    calc
+      P.representingEquiv T s =
+          EquationArchitecturePoint.pullback s
+            (EquationArchitecturePoint.pullback b
+              (R.pointAt (𝟙 X.underlying))) :=
+        P.representingEquiv_eq_pullback s
+      _ = EquationArchitecturePoint.pullback s (R.pointAt b) := by
+        congr 1
+        simpa only [b, Category.comp_id] using
+          (hR.representingEquiv_natural
+            (𝟙 X.underlying) b).symm
+      _ = R.pointAt (s ≫ b) :=
+        (hR.representingEquiv_natural b s).symm
+  let g : X.underlying ⟶ (X.baseChange raw f).underlying :=
+    (P.representingEquiv X.underlying).symm
+      (R.pointAt (𝟙 X.underlying))
+  have hgb : g ≫ b = 𝟙 X.underlying := by
+    apply (R.representingEquiv X.underlying).injective
+    have hg :=
+      (P.representingEquiv X.underlying).apply_symm_apply
+        (R.pointAt (𝟙 X.underlying))
+    exact (hP g).symm.trans (by simpa only [g] using hg)
+  have hbg : b ≫ g = 𝟙 (X.baseChange raw f).underlying := by
+    apply (P.representingEquiv
+      (X.baseChange raw f).underlying).injective
+    rw [hP, hP, Category.assoc, hgb,
+      Category.comp_id, Category.id_comp]
+  exact ⟨⟨g, hbg, hgb⟩⟩
 
 /-- A concrete flat, bijective coefficient change exchanging two factors. -/
 def coefficientSwap
@@ -605,6 +658,259 @@ theorem globalObstructionIdeal_baseChange
   funext W
   rw [R.baseChange_sectionMap_eq f P W, Ideal.map_map]
 
+/-! ### Canonical geometry for every flat coefficient change -/
+
+/--
+The canonical coefficient-changed universal point.  It exists for every flat
+coefficient change and is the pullback of the source universal point along
+the actual standard-scheme projection; no target representation is required.
+-/
+noncomputable def flatBaseChangePoint
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
+    EquationArchitecturePoint R.reading
+      (X.baseChange raw f).underlying :=
+  EquationArchitecturePoint.pullback (X.baseChangeMap raw f)
+    (R.pointAt (𝟙 X.underlying))
+
+/-- Observable sections transported by the actual coefficient-change map. -/
+noncomputable def flatBaseChangeSectionMap
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (W : S.category) :
+    E.Observable W →+* Γ((X.baseChange raw f).underlying, ⊤) :=
+  (R.flatBaseChangePoint f).evaluation W
+
+/-- The canonical section map is the source section map followed by projection. -/
+theorem flatBaseChangeSectionMap_eq
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (W : S.category) :
+    R.flatBaseChangeSectionMap f W =
+      (X.baseChangeMap raw f).appTop.hom.comp (R.sectionMap W) :=
+  rfl
+
+/-- The architecture read from the canonical coefficient-changed point. -/
+noncomputable def flatBaseChangeArchitecture
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
+    ArchitectureObject U :=
+  R.reading.object (R.flatBaseChangePoint f).reading
+
+/-- Canonically transported symbolic violation section. -/
+noncomputable def flatBaseChangeViolationSection
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (W : S.category) (i : E.Index) (a : U.Atom) :
+    Γ((X.baseChange raw f).underlying, ⊤) :=
+  R.flatBaseChangeSectionMap f W (E.violationCoordinate W i a)
+
+/-- Canonically transported object-dependent residual section. -/
+noncomputable def flatBaseChangeResidualSection
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (W : S.category) (i : E.Index) (a : U.Atom) :
+    Γ((X.baseChange raw f).underlying, ⊤) :=
+  R.flatBaseChangeSectionMap f W
+    (E.equationResidual W (R.flatBaseChangeArchitecture f) i a)
+
+/-- Residual transport is derived from architecture-reading pullback. -/
+theorem flatBaseChangeResidualSection_eq
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (W : S.category) (i : E.Index) (a : U.Atom) :
+    R.flatBaseChangeResidualSection f W i a =
+      (X.baseChangeMap raw f).appTop (R.residualSection W i a) := by
+  exact R.reading.residual_pullback
+    (X.baseChangeMap raw f)
+    (R.pointAt (𝟙 X.underlying)).reading W i a
+    (R.sectionMap W)
+
+/-- One transported equalizer relation. -/
+noncomputable def flatBaseChangeRealizationRelation
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (g : GeneratorIndex E) :
+    Γ((X.baseChange raw f).underlying, ⊤) :=
+  R.flatBaseChangeViolationSection f g.1 g.2.1 g.2.2 -
+    R.flatBaseChangeResidualSection f g.1 g.2.1 g.2.2
+
+/-- Every transported relation is the actual image of its source relation. -/
+theorem flatBaseChangeRealizationRelation_eq
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (g : GeneratorIndex E) :
+    R.flatBaseChangeRealizationRelation f g =
+      (X.baseChangeMap raw f).appTop (R.realizationRelation g) := by
+  rw [flatBaseChangeRealizationRelation,
+    flatBaseChangeViolationSection, flatBaseChangeSectionMap_eq,
+    flatBaseChangeResidualSection_eq]
+  rw [realizationRelation, violationSection, map_sub]
+  rfl
+
+/-- The equalizer ideal generated on the coefficient-changed scheme. -/
+noncomputable def flatBaseChangeRealizationIdeal
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
+    Ideal Γ((X.baseChange raw f).underlying, ⊤) :=
+  Ideal.span (Set.range (R.flatBaseChangeRealizationRelation f))
+
+/-- The flat coefficient equalizer ideal is scalar extension of the source. -/
+theorem flatBaseChangeRealizationIdeal_eq
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
+    R.flatBaseChangeRealizationIdeal f =
+      Ideal.map (X.baseChangeMap raw f).appTop.hom
+        R.realizationIdeal := by
+  rw [flatBaseChangeRealizationIdeal, realizationIdeal, Ideal.map_span]
+  congr 1
+  ext z
+  constructor
+  · rintro ⟨g, rfl⟩
+    exact ⟨R.realizationRelation g, ⟨g, rfl⟩,
+      (R.flatBaseChangeRealizationRelation_eq f g).symm⟩
+  · rintro ⟨_, ⟨g, rfl⟩, rfl⟩
+    exact ⟨g, R.flatBaseChangeRealizationRelation_eq f g⟩
+
+/-- The global witness ideal generated by transported equation coordinates. -/
+noncomputable def flatBaseChangeGlobalWitnessIdeal
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (i : E.Index) :
+    Ideal Γ((X.baseChange raw f).underlying, ⊤) :=
+  ⨆ W : S.category,
+    Ideal.map (R.flatBaseChangeSectionMap f W) (E.witnessIdeal W i)
+
+/-- Global witness ideals commute with every flat coefficient change. -/
+theorem flatBaseChangeGlobalWitnessIdeal_eq
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (i : E.Index) :
+    R.flatBaseChangeGlobalWitnessIdeal f i =
+      Ideal.map (X.baseChangeMap raw f).appTop.hom
+        (R.globalWitnessIdeal i) := by
+  rw [flatBaseChangeGlobalWitnessIdeal, globalWitnessIdeal, Ideal.map_iSup]
+  congr 1
+  funext W
+  rw [flatBaseChangeSectionMap_eq, contextWitnessIdeal, Ideal.map_map]
+
+/-- The transported global obstruction ideal for every flat coefficient map. -/
+noncomputable def flatBaseChangeGlobalObstructionIdeal
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
+    Ideal Γ((X.baseChange raw f).underlying, ⊤) :=
+  ⨆ W : S.category,
+    Ideal.map (R.flatBaseChangeSectionMap f W) (E.obstructionIdeal W)
+
+/-- Global obstruction ideals commute with every flat coefficient change. -/
+theorem flatBaseChangeGlobalObstructionIdeal_eq
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
+    R.flatBaseChangeGlobalObstructionIdeal f =
+      Ideal.map (X.baseChangeMap raw f).appTop.hom
+        R.globalObstructionIdeal := by
+  rw [flatBaseChangeGlobalObstructionIdeal,
+    globalObstructionIdeal, Ideal.map_iSup]
+  congr 1
+  funext W
+  rw [flatBaseChangeSectionMap_eq, Ideal.map_map]
+
+/-- A glued local equation section transported through the coefficient map. -/
+noncomputable def flatBaseChangeGluedViolationSection
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (C : EquationContextCharts (X := X))
+    (P : EquationSchemeChartProducer R C)
+    (i : E.Index) (a : U.Atom) :
+    Γ((X.baseChange raw f).underlying, ⊤) :=
+  (X.baseChangeMap raw f).appTop
+    (R.gluedViolationSection C P.coordinate i a)
+
+/-- The transported ideal generated from the glued local equation family. -/
+noncomputable def flatBaseChangeGluedWitnessIdeal
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (C : EquationContextCharts (X := X))
+    (P : EquationSchemeChartProducer R C)
+    (i : E.Index) :
+    Ideal Γ((X.baseChange raw f).underlying, ⊤) :=
+  Ideal.span (Set.range
+    (R.flatBaseChangeGluedViolationSection f C P i))
+
+/-- Locally glued witness ideals commute with every flat coefficient change. -/
+theorem flatBaseChangeGluedWitnessIdeal_eq
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (C : EquationContextCharts (X := X))
+    (P : EquationSchemeChartProducer R C)
+    (i : E.Index) :
+    R.flatBaseChangeGluedWitnessIdeal f C P i =
+      Ideal.map (X.baseChangeMap raw f).appTop.hom
+        (R.gluedWitnessIdeal C P.coordinate i) := by
+  rw [flatBaseChangeGluedWitnessIdeal, gluedWitnessIdeal, Ideal.map_span]
+  congr 1
+  ext z
+  constructor
+  · rintro ⟨a, rfl⟩
+    exact ⟨R.gluedViolationSection C P.coordinate i a,
+      ⟨a, rfl⟩, rfl⟩
+  · rintro ⟨_, ⟨a, rfl⟩, rfl⟩
+    exact ⟨a, rfl⟩
+
 end EquationObservableRealization
 
 /-- Proof-internal AC32 algebra API: the kernel of scalar extension to a quotient is the
@@ -873,6 +1179,366 @@ namespace EquationObservableRealization
 variable {raw : RawAmbientRestrictionSystem S k}
 variable {X : StandardArchitectureScheme raw}
 variable {E : ArchitecturalEquationSystem S.contextPreorder}
+
+/-- The equalizer ideal sheaf constructed for every flat coefficient change. -/
+noncomputable def flatBaseChangeRealizationIdealSheaf
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
+    (X.baseChange raw f).underlying.IdealSheafData :=
+  Scheme.IdealSheafData.ofIdealTop
+    (R.flatBaseChangeRealizationIdeal f)
+
+/--
+The source equalizer ideal sheaf pulls back to the canonically generated
+coefficient-changed equalizer for every flat coefficient map.
+-/
+theorem realizationIdealSheaf_flatBaseChange
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
+    R.realizationIdealSheaf.comap (X.baseChangeMap raw f) =
+      R.flatBaseChangeRealizationIdealSheaf f := by
+  rw [realizationIdealSheaf, flatBaseChangeRealizationIdealSheaf,
+    ofIdealTop_comap_baseChangeMap raw X,
+    R.flatBaseChangeRealizationIdeal_eq f]
+
+/-- The coefficient-changed equalizer scheme for an arbitrary flat map. -/
+noncomputable def flatBaseChangeRealizationScheme
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
+    AlgebraicGeometry.Scheme :=
+  (R.flatBaseChangeRealizationIdealSheaf f).subscheme
+
+/-- Its canonical closed immersion into the base-changed standard scheme. -/
+noncomputable def flatBaseChangeRealizationImmersion
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
+    R.flatBaseChangeRealizationScheme f ⟶
+      (X.baseChange raw f).underlying :=
+  (R.flatBaseChangeRealizationIdealSheaf f).subschemeι
+
+/-- The canonical map from the flatly transported equalizer to the source. -/
+noncomputable def flatRealizationBaseChangeMap
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
+    R.flatBaseChangeRealizationScheme f ⟶ R.realizationScheme :=
+  Scheme.IdealSheafData.subschemeMap
+    (R.flatBaseChangeRealizationIdealSheaf f)
+    R.realizationIdealSheaf
+    (X.baseChangeMap raw f)
+    (Scheme.IdealSheafData.le_map_iff_comap_le.mpr
+      (le_of_eq (R.realizationIdealSheaf_flatBaseChange f)))
+
+/-- The general flat equalizer map lies over the actual coefficient projection. -/
+@[reassoc] theorem flatRealizationBaseChangeMap_immersion
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
+    R.flatRealizationBaseChangeMap f ≫ R.realizationImmersion =
+      R.flatBaseChangeRealizationImmersion f ≫
+        X.baseChangeMap raw f :=
+  Scheme.IdealSheafData.subschemeMap_subschemeι _ _ _ _
+
+/-- A transported global witness ideal sheaf on the changed ambient scheme. -/
+noncomputable def flatBaseChangeGlobalWitnessIdealSheaf
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (i : E.Index) :
+    (X.baseChange raw f).underlying.IdealSheafData :=
+  Scheme.IdealSheafData.ofIdealTop
+    (R.flatBaseChangeGlobalWitnessIdeal f i)
+
+/-- Every source global witness sheaf pulls back along an arbitrary flat map. -/
+theorem globalWitnessIdealSheaf_flatBaseChange
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (i : E.Index) :
+    (R.globalWitnessIdealSheaf i).comap (X.baseChangeMap raw f) =
+      R.flatBaseChangeGlobalWitnessIdealSheaf f i := by
+  rw [globalWitnessIdealSheaf, flatBaseChangeGlobalWitnessIdealSheaf,
+    ofIdealTop_comap_baseChangeMap raw X,
+    R.flatBaseChangeGlobalWitnessIdeal_eq f i]
+
+/-- A transported global obstruction ideal sheaf on the changed ambient scheme. -/
+noncomputable def flatBaseChangeGlobalObstructionIdealSheaf
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
+    (X.baseChange raw f).underlying.IdealSheafData :=
+  Scheme.IdealSheafData.ofIdealTop
+    (R.flatBaseChangeGlobalObstructionIdeal f)
+
+/-- The source obstruction sheaf pulls back along every flat coefficient map. -/
+theorem globalObstructionIdealSheaf_flatBaseChange
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
+    R.globalObstructionIdealSheaf.comap (X.baseChangeMap raw f) =
+      R.flatBaseChangeGlobalObstructionIdealSheaf f := by
+  rw [globalObstructionIdealSheaf,
+    flatBaseChangeGlobalObstructionIdealSheaf,
+    ofIdealTop_comap_baseChangeMap raw X,
+    R.flatBaseChangeGlobalObstructionIdeal_eq f]
+
+/--
+The transported sheaf generated from compatible local equation sections on
+the changed ambient scheme.
+-/
+noncomputable def flatBaseChangeGluedWitnessIdealSheaf
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (C : EquationContextCharts (X := X))
+    (P : EquationSchemeChartProducer R C)
+    (i : E.Index) :
+    (X.baseChange raw f).underlying.IdealSheafData :=
+  Scheme.IdealSheafData.ofIdealTop
+    (R.flatBaseChangeGluedWitnessIdeal f C P i)
+
+/-- Locally glued ambient witness sheaves commute with every flat change. -/
+theorem gluedWitnessIdealSheaf_flatBaseChange
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (C : EquationContextCharts (X := X))
+    (P : EquationSchemeChartProducer R C)
+    (i : E.Index) :
+    (R.gluedWitnessIdealSheaf C P.coordinate i).comap
+        (X.baseChangeMap raw f) =
+      R.flatBaseChangeGluedWitnessIdealSheaf f C P i := by
+  rw [gluedWitnessIdealSheaf, flatBaseChangeGluedWitnessIdealSheaf,
+    ofIdealTop_comap_baseChangeMap raw X,
+    R.flatBaseChangeGluedWitnessIdeal_eq f C P i]
+
+/-- One transported global witness sheaf on the changed equalizer. -/
+noncomputable def flatBaseChangeWitnessIdealSheaf
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (i : E.Index) :
+    (R.flatBaseChangeRealizationScheme f).IdealSheafData :=
+  (R.flatBaseChangeGlobalWitnessIdealSheaf f i).comap
+    (R.flatBaseChangeRealizationImmersion f)
+
+/-- Global witness sheaves commute with the general flat equalizer map. -/
+theorem witnessIdealSheaf_flatBaseChange
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (i : E.Index) :
+    (R.witnessIdealSheaf i).comap
+        (R.flatRealizationBaseChangeMap f) =
+      R.flatBaseChangeWitnessIdealSheaf f i := by
+  rw [witnessIdealSheaf, flatBaseChangeWitnessIdealSheaf,
+    ← Scheme.IdealSheafData.comap_comp,
+    R.flatRealizationBaseChangeMap_immersion f,
+    Scheme.IdealSheafData.comap_comp,
+    R.globalWitnessIdealSheaf_flatBaseChange f i]
+
+/-- One locally generated equation witness sheaf on the changed equalizer. -/
+noncomputable def flatBaseChangeEquationWitnessIdealSheaf
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (C : EquationContextCharts (X := X))
+    (P : EquationSchemeChartProducer R C)
+    (i : E.Index) :
+    (R.flatBaseChangeRealizationScheme f).IdealSheafData :=
+  (R.flatBaseChangeGluedWitnessIdealSheaf f C P i).comap
+    (R.flatBaseChangeRealizationImmersion f)
+
+/--
+The standard locally generated equation witness sheaf commutes with every
+flat coefficient change.
+-/
+theorem equationWitnessIdealSheaf_flatBaseChange
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (C : EquationContextCharts (X := X))
+    (P : EquationSchemeChartProducer R C)
+    (i : E.Index) :
+    (R.equationWitnessIdealSheaf C P i).comap
+        (R.flatRealizationBaseChangeMap f) =
+      R.flatBaseChangeEquationWitnessIdealSheaf f C P i := by
+  rw [equationWitnessIdealSheaf,
+    flatBaseChangeEquationWitnessIdealSheaf,
+    ← Scheme.IdealSheafData.comap_comp,
+    R.flatRealizationBaseChangeMap_immersion f,
+    Scheme.IdealSheafData.comap_comp,
+    R.gluedWitnessIdealSheaf_flatBaseChange f C P i]
+
+/-- The required locally generated ideal on the changed equalizer. -/
+noncomputable def flatBaseChangeEquationGeneratedIdealSheaf
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (C : EquationContextCharts (X := X))
+    (P : EquationSchemeChartProducer R C) :
+    (R.flatBaseChangeRealizationScheme f).IdealSheafData :=
+  ⨆ i : E.RequiredIndex,
+    R.flatBaseChangeEquationWitnessIdealSheaf f C P i.1
+
+/-- Required locally generated ideals commute with every flat change. -/
+theorem equationGeneratedIdealSheaf_flatBaseChange
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (C : EquationContextCharts (X := X))
+    (P : EquationSchemeChartProducer R C) :
+    (R.equationGeneratedIdealSheaf C P).comap
+        (R.flatRealizationBaseChangeMap f) =
+      R.flatBaseChangeEquationGeneratedIdealSheaf f C P := by
+  rw [equationGeneratedIdealSheaf,
+    flatBaseChangeEquationGeneratedIdealSheaf,
+    (Scheme.IdealSheafData.map_gc
+      (R.flatRealizationBaseChangeMap f)).l_iSup]
+  congr 1
+  funext i
+  exact R.equationWitnessIdealSheaf_flatBaseChange f C P i.1
+
+/-- The required lawful closed subscheme after an arbitrary flat change. -/
+noncomputable def flatBaseChangeEquationLawfulClosedSubscheme
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (C : EquationContextCharts (X := X))
+    (P : EquationSchemeChartProducer R C) :
+    AlgebraicGeometry.Scheme :=
+  (R.flatBaseChangeEquationGeneratedIdealSheaf f C P).subscheme
+
+/-- Its canonical closed immersion into the changed equalizer. -/
+noncomputable def flatBaseChangeEquationLawfulClosedImmersion
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (C : EquationContextCharts (X := X))
+    (P : EquationSchemeChartProducer R C) :
+    R.flatBaseChangeEquationLawfulClosedSubscheme f C P ⟶
+      R.flatBaseChangeRealizationScheme f :=
+  (R.flatBaseChangeEquationGeneratedIdealSheaf f C P).subschemeι
+
+/-- The transported required lawful locus is a closed subscheme. -/
+theorem flatBaseChangeEquationLawfulClosedImmersion_isClosedImmersion
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (C : EquationContextCharts (X := X))
+    (P : EquationSchemeChartProducer R C) :
+    IsClosedImmersion
+      (R.flatBaseChangeEquationLawfulClosedImmersion f C P) := by
+  change IsClosedImmersion
+    (R.flatBaseChangeEquationGeneratedIdealSheaf f C P).subschemeι
+  infer_instance
+
+/-- The canonical lawful-locus map for every flat coefficient change. -/
+noncomputable def flatEquationLawfulClosedSubschemeBaseChangeMap
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (C : EquationContextCharts (X := X))
+    (P : EquationSchemeChartProducer R C) :
+    R.flatBaseChangeEquationLawfulClosedSubscheme f C P ⟶
+      R.equationGeneratedLawfulClosedSubscheme C P :=
+  Scheme.IdealSheafData.subschemeMap
+    (R.flatBaseChangeEquationGeneratedIdealSheaf f C P)
+    (R.equationGeneratedIdealSheaf C P)
+    (R.flatRealizationBaseChangeMap f)
+    (Scheme.IdealSheafData.le_map_iff_comap_le.mpr
+      (le_of_eq
+        (R.equationGeneratedIdealSheaf_flatBaseChange f C P)))
+
+/-- The lawful-locus map lies over the general flat equalizer map. -/
+@[reassoc] theorem flatEquationLawfulClosedSubschemeBaseChangeMap_immersion
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (C : EquationContextCharts (X := X))
+    (P : EquationSchemeChartProducer R C) :
+    R.flatEquationLawfulClosedSubschemeBaseChangeMap f C P ≫
+        R.equationGeneratedLawfulClosedImmersion C P =
+      R.flatBaseChangeEquationLawfulClosedImmersion f C P ≫
+        R.flatRealizationBaseChangeMap f :=
+  Scheme.IdealSheafData.subschemeMap_subschemeι _ _ _ _
+
+/--
+Complete general-flat producer: equalizer, every locally generated equation
+ideal, the required aggregate, and the lawful closed-locus map are all
+constructed without a target representation premise.
+-/
+theorem flatBaseChangeEquationGeometry_realized
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (C : EquationContextCharts (X := X))
+    (P : EquationSchemeChartProducer R C) :
+    R.realizationIdealSheaf.comap (X.baseChangeMap raw f) =
+        R.flatBaseChangeRealizationIdealSheaf f ∧
+      (∀ i : E.Index,
+        (R.equationWitnessIdealSheaf C P i).comap
+            (R.flatRealizationBaseChangeMap f) =
+          R.flatBaseChangeEquationWitnessIdealSheaf f C P i) ∧
+      (R.equationGeneratedIdealSheaf C P).comap
+          (R.flatRealizationBaseChangeMap f) =
+        R.flatBaseChangeEquationGeneratedIdealSheaf f C P := by
+  exact
+    ⟨R.realizationIdealSheaf_flatBaseChange f,
+      fun i => R.equationWitnessIdealSheaf_flatBaseChange f C P i,
+      R.equationGeneratedIdealSheaf_flatBaseChange f C P⟩
 
 /-- The realization ideal sheaf pulls back to the coefficient-changed realization. -/
 theorem realizationIdealSheaf_baseChange

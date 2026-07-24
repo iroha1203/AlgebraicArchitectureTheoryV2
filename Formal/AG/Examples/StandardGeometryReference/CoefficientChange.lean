@@ -123,6 +123,36 @@ noncomputable def coefficientChangedScheme :
       referenceScheme.baseChange referenceRaw coefficientChange :=
   rfl
 
+/--
+The non-surjective flat inclusion `ℤ → ℤ[X]` fires the complete
+equation-generated coefficient geometry without a target representation.
+-/
+theorem coefficientChange_equationGeometry_realized :
+    referenceEquationObservableRealization.realizationIdealSheaf.comap
+          (referenceScheme.baseChangeMap referenceRaw coefficientChange) =
+        referenceEquationObservableRealization.flatBaseChangeRealizationIdealSheaf
+          coefficientChange ∧
+      (∀ i : referenceSite.equationSystem.Index,
+        (referenceEquationObservableRealization.equationWitnessIdealSheaf
+            referenceEquationContextCharts
+            referenceEquationSchemeChartProducer i).comap
+              (referenceEquationObservableRealization.flatRealizationBaseChangeMap
+                coefficientChange) =
+          referenceEquationObservableRealization.flatBaseChangeEquationWitnessIdealSheaf
+            coefficientChange referenceEquationContextCharts
+            referenceEquationSchemeChartProducer i) ∧
+      (referenceEquationObservableRealization.equationGeneratedIdealSheaf
+          referenceEquationContextCharts
+          referenceEquationSchemeChartProducer).comap
+            (referenceEquationObservableRealization.flatRealizationBaseChangeMap
+              coefficientChange) =
+        referenceEquationObservableRealization.flatBaseChangeEquationGeneratedIdealSheaf
+          coefficientChange referenceEquationContextCharts
+          referenceEquationSchemeChartProducer :=
+  referenceEquationObservableRealization.flatBaseChangeEquationGeometry_realized
+    coefficientChange referenceEquationContextCharts
+    referenceEquationSchemeChartProducer
+
 /-- The weak reading transported by the generic semantic-core coefficient construction.
 
 ## Implementation notes
@@ -936,6 +966,23 @@ theorem coefficientChange_schemeMap_not_isIso :
   rw [coefficientPointEval_targetCoefficientX,
     coefficientPointEval_targetCoefficientX] at hx
   norm_num at hx
+
+/--
+Accordingly, the non-surjective flat fixture cannot re-represent the
+unchanged absolute point functor, while
+`coefficientChange_equationGeometry_realized` still constructs all
+coefficient-changed equation geometry.
+-/
+theorem coefficientChange_no_absoluteReRepresentation :
+    ¬ Nonempty
+      (LawAlgebra.EquationObservableRealization.BaseChangeRepresentation
+        referenceEquationObservableRealization coefficientChange) := by
+  rintro ⟨P⟩
+  exact coefficientChange_schemeMap_not_isIso
+    (LawAlgebra.EquationObservableRealization.BaseChangeRepresentation.baseChangeMap_isIso
+        referenceEquationObservableRealization
+        referenceEquationObservableRealization_valid
+        coefficientChange P)
 
 
 end
