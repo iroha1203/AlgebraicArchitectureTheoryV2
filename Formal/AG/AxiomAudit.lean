@@ -10806,6 +10806,64 @@ def sagaComparisonZeroIff :=
 def sagaCentralTheoremComparison :=
   @SemanticRepair.Saga.SagaEquationPacket.sagaCentralTheorem_comparison
 
+/-! ## Part X SAGA route C5 (#3766): true sheaf descent -/
+
+/-- Kernel-audit alias for the semantic state presheaf reading. -/
+noncomputable def sagaStatePresheaf :=
+  @SemanticRepair.Saga.AffineSemanticRepairSystem.statePresheaf
+
+/-- Kernel-audit alias for the sheaf-condition separatedness of states. -/
+def sagaStateSeparated :=
+  @SemanticRepair.Saga.state_separated
+
+/-- Kernel-audit alias for the Theorem 8.2 amalgamation of matching families. -/
+def sagaExistsUniqueGlue :=
+  @SemanticRepair.Saga.exists_unique_glue
+
+/-- Kernel-audit alias for Theorem 8.2 forward direction (zero class gives glue). -/
+def sagaGlobalRepairOfH1IsZero :=
+  @SemanticRepair.Saga.SagaEquationPacket.globalRepair_of_h1IsZero
+
+/-- Kernel-audit alias for Theorem 8.2 reverse direction. -/
+def sagaH1IsZeroOfGlobalRepair :=
+  @SemanticRepair.Saga.SagaEquationPacket.h1IsZero_of_globalRepair
+
+/-- Kernel-audit alias for the Theorem 8.2 nonempty/zero equivalence. -/
+def sagaGlobalRepairNonemptyIff :=
+  @SemanticRepair.Saga.SagaEquationPacket.globalRepair_nonempty_iff
+
+/-- Kernel-audit alias for the Theorem 8.2 packaged triple equivalence. -/
+def sagaGroundedGluing :=
+  @SemanticRepair.Saga.SagaEquationPacket.sagaGroundedGluing
+
+/-- Kernel-audit alias for the equation state presheaf reading. -/
+noncomputable def sagaEquationStatePresheaf :=
+  @SemanticRepair.Saga.SagaEquationPacket.equationStatePresheaf
+
+/-- Kernel-audit alias for the equation-side separatedness. -/
+def sagaEquationStateSeparated :=
+  @SemanticRepair.Saga.SagaEquationPacket.equationState_separated
+
+/-- Kernel-audit alias for the Corollary 8.3 injectivity of β_W. -/
+def sagaBetaBaseInjective :=
+  @SemanticRepair.Saga.SagaEquationPacket.betaBase_injective
+
+/-- Kernel-audit alias for the Corollary 8.3 surjectivity of β_W. -/
+def sagaBetaBaseSurjective :=
+  @SemanticRepair.Saga.SagaEquationPacket.betaBase_surjective
+
+/-- Kernel-audit alias for the Corollary 8.3 bijectivity of β_W. -/
+def sagaBetaBaseBijective :=
+  @SemanticRepair.Saga.SagaEquationPacket.betaBase_bijective
+
+/-- Kernel-audit alias for the Corollary 8.3 equation global lift equivalences. -/
+def sagaEquationGlobalLift :=
+  @SemanticRepair.Saga.SagaEquationPacket.sagaEquationGlobalLift
+
+/-- Kernel-audit alias for the Theorem 1.1 final packaged statement. -/
+def sagaCentralTheoremFinal :=
+  @SemanticRepair.Saga.SagaEquationPacket.sagaCentralTheorem
+
 
 end AAT.AG.AxiomAudit
 
