@@ -6,6 +6,7 @@ import Formal.AG.SemanticRepair.Saga.PartIVBridge
 import Formal.AG.SemanticRepair.Saga.EquationLift
 import Formal.AG.SemanticRepair.Saga.RepairTorsor
 import Formal.AG.SemanticRepair.Saga.Exactness
+import Formal.AG.SemanticRepair.Saga.EquationRealization
 
 /-!
 Part X SAGA route (Issue #3757 tree, C1 #3762).

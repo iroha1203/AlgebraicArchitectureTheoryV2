@@ -10786,6 +10786,64 @@ def sagaCompletenessFailure :=
 def sagaGenerationFailure :=
   @SemanticRepair.Saga.ExactnessFixtures.generation_failure
 
+/-! ## Part X SAGA route C3a (#3771): equation semantic realization -/
+
+/-- Kernel-audit alias for the Proposition 6.1A generated correspondence χ^E. -/
+noncomputable def sagaChiE :=
+  @SemanticRepair.Saga.EquationSemanticRealization.chiE
+
+/-- Kernel-audit alias for the Proposition 6.1A restriction naturality of χ^E. -/
+def sagaChiENatural :=
+  @SemanticRepair.Saga.EquationSemanticRealization.chiE_natural
+
+/-- Kernel-audit alias for the §1 atlas witness at every intersection. -/
+noncomputable def sagaAtlasWitness :=
+  @SemanticRepair.Saga.SemanticRepairAtlas.witness
+
+/-- Kernel-audit alias for the Corollary 6.7 derived soundness premise. -/
+def sagaEquationRelationSound :=
+  @SemanticRepair.Saga.equationRelationSound
+
+/-- Kernel-audit alias for the Corollary 6.7 comparison homomorphism Φ_E. -/
+noncomputable def sagaEquationPhi :=
+  @SemanticRepair.Saga.equationPhi
+
+/-- Kernel-audit alias for the Corollary 6.7 comparison equivalence Φ_E. -/
+noncomputable def sagaEquationPhiEquiv :=
+  @SemanticRepair.Saga.equationPhiEquiv
+
+/-- Kernel-audit alias for the Corollary 6.7 naturality of Φ_E. -/
+def sagaEquationPhiNatural :=
+  @SemanticRepair.Saga.equationPhi_natural
+
+/-- Kernel-audit alias for the input-8 semantic pair normalization derivation. -/
+def sagaNormalizationMsemHpair :=
+  @SemanticRepair.Saga.EmptyOverlapNormalization.msem_hpair
+
+/-- Kernel-audit alias for the input-8 semantic triple normalization derivation. -/
+def sagaNormalizationMsemHtriple :=
+  @SemanticRepair.Saga.EmptyOverlapNormalization.msem_htriple
+
+/-- Kernel-audit alias for the input-8 equation pair normalization derivation. -/
+def sagaNormalizationQEHpair :=
+  @SemanticRepair.Saga.EmptyOverlapNormalization.qE_hpair
+
+/-- Kernel-audit alias for the input-8 equation triple normalization derivation. -/
+def sagaNormalizationQEHtriple :=
+  @SemanticRepair.Saga.EmptyOverlapNormalization.qE_htriple
+
+/-- Kernel-audit alias for the packet-level equation residual cocycle. -/
+def sagaPacketEquationResidualCocycle :=
+  @SemanticRepair.Saga.SagaEquationPacket.equationResidualCochain_cocycle
+
+/-- Kernel-audit alias for the packet-level equation residual choice independence. -/
+def sagaPacketEquationResidualChoiceIndependent :=
+  @SemanticRepair.Saga.SagaEquationPacket.equationResidualClass_choice_independent
+
+/-- Kernel-audit alias for the packet-level Corollary 6.7 equivalence. -/
+noncomputable def sagaPacketPhiEquiv :=
+  @SemanticRepair.Saga.SagaEquationPacket.phiEquiv
+
 
 end AAT.AG.AxiomAudit
 
