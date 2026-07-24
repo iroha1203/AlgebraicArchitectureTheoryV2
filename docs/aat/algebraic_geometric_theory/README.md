@@ -86,6 +86,21 @@ representation、measurement profile、trace category、semantic repair presenta
 この理論史における古典的な有限・構成的基礎である。この本文は、その先行体系への
 注釈書ではなく、Atom の公理から代数幾何的アーキテクチャ論を自立して構成する。
 
+## 数学本文の自立性（hard rule）
+
+このディレクトリの数学本文は Tier 1 の正典であり、定義、命題、定理、証明を
+数学本文自身の公理、構成、仮定だけで閉じる。次を数学本文へ持ち込むことを禁止する。
+
+1. Lean status、宣言名、source path、import、build、CI、axiom audit、形式化の進捗。
+2. この正典シリーズ外にある repository 内文書への参照。research、GOAL、台帳、PRD、
+   tooling、website、outreach、archive その他の文書を、定義・仮定・証明・完了根拠に用いない。
+3. GitHub Issue、Pull Request、review comment、番号、URL、acceptance、merge state への参照。
+4. web page、外部 repository、release artifact、外部 status、その他の外部資料への参照。
+
+第I部から第X部および付録の間の参照は、同じ数学正典の内部参照として扱う。
+歴史的説明、実装状況、形式化状況、研究運用、公開計画、外部資料との比較が必要な場合は、
+数学本文の外で記述する。それらは数学 claim の仮定、証拠、完成判定にならない。
+
 ## なぜ代数幾何か
 
 この本文が代数幾何を選ぶのは見立てではない。各階層が、ソフトウェアアーキテクチャが

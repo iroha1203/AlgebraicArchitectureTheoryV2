@@ -130,7 +130,7 @@ atlas から差として生成した `r_E` について、
 `𝒰` がその topology の cover ならば、
 
 ```math
-\operatorname{Nonempty}P_{\mathrm{sem}}(W)
+\mathrm{Nonempty}\,P_{\mathrm{sem}}(W)
 \iff
 [r_{\mathrm{sem}}]=0
 \iff
@@ -153,9 +153,9 @@ atlas から差として生成した `r_E` について、
 C^0(\mathcal U,F)
   &=\prod_i F(U_i),\\
 C^1(\mathcal U,F)
-  &=\prod_{i<j}F(U_{ij}),\\
+  &=\prod_{i\lt j}F(U_{ij}),\\
 C^2(\mathcal U,F)
-  &=\prod_{i<j<k}F(U_{ijk})
+  &=\prod_{i\lt j\lt k}F(U_{ijk})
 \end{aligned}
 ```
 
@@ -204,7 +204,7 @@ restriction は同じ triple overlap 上で比較できる。そこで
 
 ```math
 Z^1(\mathcal U,F)=\ker\delta_F^1,\qquad
-B^1(\mathcal U,F)=\operatorname{im}\delta_F^0
+B^1(\mathcal U,F)=\mathrm{im}\,\delta_F^0
 ```
 
 とし、補題 2.2 により
@@ -251,7 +251,7 @@ semantic atom と Atom の restriction があり、
 すなわち、`V''→V'→V` が composable なら
 
 ```math
-\lambda|_{\operatorname{id}_V}=\lambda,
+\lambda|_{\mathrm{id}_V}=\lambda,
 \qquad
 (\lambda|_{V'})|_{V''}=\lambda|_{V''},
 ```
@@ -261,9 +261,9 @@ support は restriction で保たれ、
 free abelian group 上の induced map は
 
 ```math
-\operatorname{res}_f(\operatorname{Rel}_{\mathrm{rep}}(V))
+\mathrm{res}_f(\mathrm{Rel}_{\mathrm{rep}}(V))
 \subset
-\langle\operatorname{Rel}_{\mathrm{rep}}(V')\rangle
+\langle\mathrm{Rel}_{\mathrm{rep}}(V')\rangle
 ```
 
 を満たす。
@@ -288,7 +288,7 @@ F_{\mathrm{sem}}(V)=\mathbb Z^{(S(V))}
 
 ```math
 R_{\mathrm{rep}}(V)
-  =\langle\operatorname{Rel}_{\mathrm{rep}}(V)\rangle
+  =\langle\mathrm{Rel}_{\mathrm{rep}}(V)\rangle
 \subset F_{\mathrm{sem}}(V)
 ```
 
@@ -393,7 +393,7 @@ p_j|_{U_{ij}}
 
 ```math
 r_{\mathrm{sem}}
-  =(r_{\mathrm{sem},ij})_{i<j}
+  =(r_{\mathrm{sem},ij})_{i\lt j}
   \in C^1_{\mathrm{sem}}(\mathcal U)
 ```
 
@@ -503,7 +503,7 @@ Q_E(V)=O_E(V)/I_{\mathrm{Ob}}^E(V)
 displayed Atom/equation coordinate `q=(A_q,i_q,a_q)` の equation interpretation は
 
 ```math
-\operatorname{int}_E(q)
+\mathrm{int}_E(q)
   =[\epsilon_{V,A_q,i_q,a_q}]\in Q_E(V)
 ```
 
@@ -557,7 +557,7 @@ e_j|_{U_{ij}}
 により
 
 ```math
-r_E=(r_{E,ij})_{i<j}\in C_E^1(\mathcal U)
+r_E=(r_{E,ij})_{i\lt j}\in C_E^1(\mathcal U)
 ```
 
 を定義する。
@@ -786,7 +786,7 @@ target-generator completeness を外し、repair-relation soundness と complete
 ```math
 M_{\mathrm{sem}}(V)
 \xrightarrow{\sim}
-\operatorname{im}(\widetilde\chi_V)
+\mathrm{im}(\widetilde\chi_V)
 ```
 
 が得られる。full `Q` comparison に必要な追加条件は、正確に
@@ -862,9 +862,9 @@ repair-relation completeness と equation-generator completeness が各 intersec
 
 ```math
 \Phi_E:
-M_{\mathrm{sem}}|_{\operatorname{Int}_{\le2}(\mathcal U)}
+M_{\mathrm{sem}}|_{\mathrm{Int}_{\le2}(\mathcal U)}
 \xrightarrow{\sim}
-Q_E|_{\operatorname{Int}_{\le2}(\mathcal U)}
+Q_E|_{\mathrm{Int}_{\le2}(\mathcal U)}
 ```
 
 を構成する。
@@ -1108,7 +1108,7 @@ per-cover amalgamation map を別データとして置かない。
 global semantic repair を
 
 ```math
-\operatorname{GlobalRepair}_{\mathrm{sem}}(W)
+\mathrm{GlobalRepair}_{\mathrm{sem}}(W)
   :=P_{\mathrm{sem}}(W)
 ```
 
@@ -1119,7 +1119,7 @@ global semantic repair を
 定理 7.6 の設定に加え、`P_sem` が true semantic repair sheaf なら、
 
 ```math
-\operatorname{Nonempty}P_{\mathrm{sem}}(W)
+\mathrm{Nonempty}\,P_{\mathrm{sem}}(W)
 \iff
 [r_{\mathrm{sem}}]=0
 \iff
@@ -1179,9 +1179,9 @@ restriction により各 chart と nonempty overlap 上の二つの local-state 
 も全単射である。したがって
 
 ```math
-\operatorname{Nonempty}P_{\mathrm{sem}}(W)
+\mathrm{Nonempty}\,P_{\mathrm{sem}}(W)
 \iff
-\operatorname{Nonempty}P_E(W)
+\mathrm{Nonempty}\,P_E(W)
 \iff
 [r_E]=0.
 ```

@@ -80,7 +80,7 @@ H^1_{\mathrm{sem}}(\mathcal U)
 ```
 
 ```math
-\operatorname{Nonempty}P_{\mathrm{sem}}(W)
+\mathrm{Nonempty}\,P_{\mathrm{sem}}(W)
 \iff
 [r_{\mathrm{sem}}]=0
 \iff
@@ -263,7 +263,7 @@ Atom
 各 local context で semantic atom projection
 
 ```math
-\pi_V:\Lambda(V)\to \operatorname{At}(V)
+\pi_V:\Lambda(V)\to \mathrm{At}(V)
 ```
 
 と repair support \(S(V)\)、restriction-stable な局所 repair relation
@@ -301,7 +301,7 @@ C^0\xrightarrow{\delta^0}C^1\xrightarrow{\delta^1}C^2
 
 ```math
 Z^1=\ker\delta^1,\qquad
-B^1=\operatorname{im}\delta^0,\qquad
+B^1=\mathrm{im}\,\delta^0,\qquad
 H^1_{\mathrm{sem}}=Z^1/B^1
 ```
 
@@ -414,9 +414,9 @@ Z^1(\mathcal U,I/I^2)
 ```math
 [r_{\mathrm{con}}]=0
 \iff
-\operatorname{Nonempty}(\text{global }O/I^2\text{ lift})
+\mathrm{Nonempty}\,(\text{global }O/I^2\text{ lift})
 \iff
-\operatorname{Nonempty}\mathcal R_{\mathrm{sem}}^{(1)}(W)
+\mathrm{Nonempty}\,\mathcal R_{\mathrm{sem}}^{(1)}(W)
 ```
 
 を証明する。これは第X部 定理 8.2 の local correction と true sheaf amalgamation に対応する
