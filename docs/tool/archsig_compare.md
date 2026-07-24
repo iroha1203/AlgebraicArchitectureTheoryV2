@@ -25,10 +25,18 @@ target `Z¹/B¹` class を再計算する。semantic presentation 側でも `r_s
 どちらの kind でも適合条件を満たす場合だけ analyze の転送 invariant が立つ。
 compare の run-pair 記録はこの run 内写像を自動生成しない。
 
-SAGA の run 内 comparison は、source の `saga.residual-class` が未計測なら
-`silence_by_design`、reason `residual_class_prerequisite_not_measured` と
-不足している入力slot (`complex.tripleOverlaps`, `coefficient`,
-`trueSheafCertificate`, `gluingData`) を案内する `whatNext` を記録する。この前提未供給は比較違反として扱わない。source class が計測済みの場合だけ、有限 map の適合検査または target class の zero predicate の検査へ進む。
+SAGA の run 内 comparison で `kind: "explicit"` を選ぶ場合は、source の
+`saga.residual-class` が未計測なら `silence_by_design`、reason
+`residual_class_prerequisite_not_measured` と、不足している入力slot
+(`complex.tripleOverlaps`, `coefficient`, `trueSheafCertificate`, `gluingData`) を案内する
+`whatNext` を記録する。この前提未供給は比較違反として扱わない。source class が計測済みの場合だけ、有限 map の適合検査または target class の zero predicate の検査へ進む。
+
+`kind: "presentation-generated"` では `saga.residual-class` を入力前提にせず、上記の
+finite presentation 検査から semantic presentation の source `Z¹/B¹` class を計算する。
+その計算に必要な presentation、restriction maps、または `equationLiftAtlas` が不成立なら同じ
+`silence_by_design` と reason を記録し、それらの補充を `whatNext` に示す。4-cycle のように
+selected `C²=0` で triple overlap が空でも、presentation による source / target class と
+quotient-atlas witness が計算できれば、この経路は `established` になりうる。
 
 `h1-comparison-transfer` は `ag.saga-comparison` evaluator が所有する computed invariant であり、`contract` を必須とする。contract は `incidenceBridgeKind`、`h1ComparisonDataKind`、`normalizedComplexFingerprint`（文字列）と、`classPrerequisite`、`targetClassComputed`、`contractChecked`（真偽値）の6フィールドを持ち、未知フィールドや別 evaluator への付け替えは受理しない。presentation-generated 経路が established のときは `SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS` を出力し、explicit 経路の `SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA` と区別する。
 不一致になった場合だけ `COMPARISON_DATA_CONTRACT_VIOLATION` を記録する。

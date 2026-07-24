@@ -2476,6 +2476,65 @@ fn cli_analyze_saga_comparison_generates_transfer_from_presentations() {
         comparison["generatedQuotientTransfer"]["kind"],
         "presentation-derived-Z1/B1-class-transfer"
     );
+    assert!(
+        validate_measurement_packet_value_v1(&packet)
+            .iter()
+            .all(|check| check.result == "pass")
+    );
+}
+
+#[test]
+fn cli_presentation_generated_packet_validator_rejects_tampered_evidence() {
+    let root = ag_measurement_root();
+    let plan = presentation_generated_saga_plan(&root, true);
+    let out_dir = run_saga_fixture_lock("ag-saga-presentation-generated-packet-validator", plan);
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let validator_failure = |candidate: &Value, path: &str| {
+        validate_measurement_packet_value_v1(candidate)
+            .iter()
+            .any(|check| {
+                check.id == "measurement-packet-schema052-saga-presentation-generated-evidence"
+                    && check.result == "fail"
+                    && check.examples.iter().any(|example| {
+                        example
+                            .source
+                            .as_deref()
+                            .is_some_and(|source| source.contains(path))
+                    })
+            })
+    };
+
+    let mut missing_witness = packet.clone();
+    invariant_by_id_mut(&mut missing_witness, "saga-comparison:h1-transfer")["presentationGenerated"]
+        ["residualWitness"] = Value::Null;
+    assert!(validator_failure(
+        &missing_witness,
+        "presentationGenerated.residualWitness"
+    ));
+
+    let mut malformed_witness = packet.clone();
+    invariant_by_id_mut(&mut malformed_witness, "saga-comparison:h1-transfer")["presentationGenerated"]
+        ["residualWitness"]["h"] = Value::Null;
+    assert!(validator_failure(
+        &malformed_witness,
+        "presentationGenerated.residualWitness.h"
+    ));
+
+    let mut forged_class = packet.clone();
+    invariant_by_id_mut(&mut forged_class, "saga-comparison:h1-transfer")["presentationGenerated"]
+        ["semanticResidual"]["sourceClassNonZero"] = json!(false);
+    assert!(validator_failure(
+        &forged_class,
+        "generatedQuotientTransfer"
+    ));
+
+    let mut non_f2_witness = packet.clone();
+    invariant_by_id_mut(&mut non_f2_witness, "saga-comparison:h1-transfer")["presentationGenerated"]
+        ["residualWitness"]["h"][0]["coefficients"] = json!([2]);
+    assert!(validator_failure(
+        &non_f2_witness,
+        "presentationGenerated.residualWitness.h"
+    ));
 }
 
 #[test]
