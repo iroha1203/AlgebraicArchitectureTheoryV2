@@ -743,8 +743,10 @@ theorem weakLawEquationCore_equationHolds_iff_noCycleLaw
     (A : ArchitectureObject carrier) :
     weakLawEquationCore.EquationHolds PUnit.unit A ↔ noCycleLaw.holds A := by
   constructor
-  · intro h hcycle
-    have hzero := h base FiniteAtom.componentA
+  · intro hequation
+    apply (AAT.AG.FiniteModel.noCycleLaw_holds_iff A).mpr
+    intro hcycle
+    have hzero := hequation base FiniteAtom.componentA
     change (AAT.AG.FiniteModel.noCycleResidual A :
       rawSystem.rawAlgebra base) = 0 at hzero
     have hone : (1 : rawSystem.rawAlgebra base) = 0 := by
@@ -752,13 +754,59 @@ theorem weakLawEquationCore_equationHolds_iff_noCycleLaw
     have honeInt := congrArg rawEvalOne hone
     norm_num at honeInt
   · intro h W atom
+    have hnoCycle :=
+      (AAT.AG.FiniteModel.noCycleLaw_holds_iff A).mp h
     have hzero : AAT.AG.FiniteModel.noCycleResidual A = 0 := by
       change AAT.AG.FiniteModel.noCycleResidual A = 0
       simpa [AAT.AG.FiniteModel.equationSystem] using
-        (RingedSite.FiniteModel.site_equationHolds_iff_noCycle A).mpr h W atom
+        (RingedSite.FiniteModel.site_equationHolds_iff_noCycle A).mpr
+          hnoCycle W atom
     change (AAT.AG.FiniteModel.noCycleResidual A :
       rawSystem.rawAlgebra W) = 0
     simp [hzero]
+
+/--
+Residual-coordinate comparison from the weak raw equation to the standard
+finite NoCycle signature axes.
+-/
+noncomputable def weakLawSignatureComparison :
+    EquationSignatureComparison weakLawEquationCore
+      AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.signatureAxes where
+  axisOf _ atom := {
+    equation := ⟨PUnit.unit, rfl⟩
+    atom := atom
+  }
+  axis_selected := by intros; trivial
+  selected_axis_covered := by
+    intro axis _
+    rcases axis with ⟨⟨index, hrequired⟩, atom⟩
+    cases index
+    exact ⟨⟨PUnit.unit, rfl⟩, atom, rfl⟩
+  residual_zero_iff_axis_zero := by
+    intro A index atom
+    rcases index with ⟨index, hrequired⟩
+    cases index
+    change
+      (∀ W : RingedSite.FiniteModel.site.category,
+        (AAT.AG.FiniteModel.noCycleResidual A :
+          rawSystem.rawAlgebra W) = 0) ↔
+      (∀ _W : Site.ContextCategoryObject
+          (Site.contextMorphismPreorderCategory AAT.AG.FiniteModel.object),
+        AAT.AG.FiniteModel.noCycleResidual A = 0)
+    constructor
+    · intro hsource _W
+      have hbase := hsource base
+      have hmapped := congrArg rawEvalOne hbase
+      simpa using hmapped
+    · intro htarget W
+      have hzero := htarget
+        (Site.ContextCategoryObject.of
+          (Site.contextMorphismPreorderCategory AAT.AG.FiniteModel.object)
+          AAT.AG.FiniteModel.equationProbeContext)
+      change (AAT.AG.FiniteModel.noCycleResidual A :
+        rawSystem.rawAlgebra W) = 0
+      rw [hzero]
+      simp
 
 /-- The count valuation is sound for the weak equation-generated legacy display. -/
 theorem weakLawEquationCore_obstructionSound :
@@ -2860,13 +2908,13 @@ theorem integerPoint_objectComparison :
   cases i
   constructor
   · intro _
-    exact (weakLawEquationCore_equationHolds_iff_noCycleLaw _).mpr
-      (by
-        change ¬ AAT.AG.FiniteModel.hasDependencyCycle
-          AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicObject
-        exact (AAT.AG.FiniteModel.equationHolds_iff_noCycle _
-          AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicObject).mp
-            AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclic_noCycleEquationHolds)
+    apply (weakLawEquationCore_equationHolds_iff_noCycleLaw _).mpr
+    apply (AAT.AG.FiniteModel.noCycleLaw_holds_iff _).mpr
+    change ¬ AAT.AG.FiniteModel.hasDependencyCycle
+      AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicObject
+    exact (AAT.AG.FiniteModel.equationHolds_iff_noCycle _
+      AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicObject).mp
+        AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclic_noCycleEquationHolds
   · intro _
     simpa only [integerPoint] using
       integerTestPoint_semanticLawful PUnit.unit
@@ -2886,7 +2934,8 @@ theorem integerPoint_objectComparison_fails_for_cyclic :
   apply
     AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.cyclic_noCycleEquation_fails
   apply (AAT.AG.FiniteModel.equationHolds_iff_noCycle _ _).mpr
-  exact (weakLawEquationCore_equationHolds_iff_noCycleLaw _).mp hcyclic
+  exact (AAT.AG.FiniteModel.noCycleLaw_holds_iff _).mp
+    ((weakLawEquationCore_equationHolds_iff_noCycleLaw _).mp hcyclic)
 
 /-- Computes vanishing of the weak obstruction valuation at the integral point. -/
 theorem integerPoint_omega_fires :
@@ -2918,25 +2967,7 @@ theorem integerPoint_axis_fires :
     twoChartReferenceModel weakReading integerPoint
     AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicObject
     AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.signatureAxes
-    integerPoint_objectComparison
-    (by
-      let A :=
-        AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicObject
-      have hequation :=
-        AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.equationLawful_iff_signatureAxesZero A
-      constructor
-      · intro hsite
-        apply hequation.mp
-        intro index hrequired
-        cases index
-        have hholds := hsite PUnit.unit (by rfl)
-        apply (AAT.AG.FiniteModel.equationHolds_iff_noCycle _ _).mpr
-        exact (weakLawEquationCore_equationHolds_iff_noCycleLaw _).mp hholds
-      · intro haxes index hrequired
-        cases index
-        have hholds := hequation.mpr haxes PUnit.unit rfl
-        apply (weakLawEquationCore_equationHolds_iff_noCycleLaw _).mpr
-        exact (AAT.AG.FiniteModel.equationHolds_iff_noCycle _ _).mp hholds)
+    integerPoint_objectComparison weakLawSignatureComparison
 
 /-- Shows that the weak global equation vanishes at the integral point. -/
 theorem integerPoint_globalEquationsVanish_weak :

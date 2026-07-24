@@ -5,16 +5,16 @@ namespace AAT.AG
 
 namespace FiniteModel
 
-/--
-Compatibility display of the finite NoCycle equation as a predicate-valued
-law. Standard finite consumers use `equationSystem`.
--/
-def noCycleLaw : Law carrier where
-  holds A := ¬ hasDependencyCycle A
-
 /-- Compatibility universe obtained from the generated finite equation system. -/
 noncomputable def lawUniverse : LawUniverse carrier :=
   site.equationSystem.toLegacyLawUniverse
+
+/--
+Compatibility display name for the generated finite NoCycle equation.
+Standard finite consumers use `equationSystem`.
+-/
+noncomputable def noCycleLaw : Law carrier :=
+  lawUniverse.law PUnit.unit
 
 /-- Every compatibility law in the singleton universe is required. -/
 theorem lawUniverse_required (index : lawUniverse.Index) :
@@ -29,15 +29,26 @@ theorem equationSystem_legacy_law_eq_noCycleLaw
   apply Law.ext
   funext A
   apply propext
-  exact (equationHolds_iff_noCycle C A).trans Iff.rfl
+  change
+    (equationSystem C).EquationHolds PUnit.unit A ↔
+      site.equationSystem.EquationHolds PUnit.unit A
+  exact (equationHolds_iff_noCycle C A).trans
+    (site_equationHolds_iff_noCycle A).symm
+
+/-- The generated compatibility display holds exactly on NoCycle objects. -/
+@[simp] theorem noCycleLaw_holds_iff
+    (A : ArchitectureObject carrier) :
+    noCycleLaw.holds A ↔ ¬ hasDependencyCycle A := by
+  change site.equationSystem.EquationHolds PUnit.unit A ↔
+    ¬ hasDependencyCycle A
+  exact site_equationHolds_iff_noCycle A
 
 /-- The generated site legacy display is exactly the finite NoCycle equation. -/
 @[simp] theorem site_law_holds_iff_noCycleLaw
     (A : ArchitectureObject carrier) :
     (site.equationSystem.toLegacyLawUniverse.law PUnit.unit).holds A ↔
       noCycleLaw.holds A := by
-  change site.equationSystem.EquationHolds PUnit.unit A ↔ ¬ hasDependencyCycle A
-  exact site_equationHolds_iff_noCycle A
+  rfl
 
 /-- SD2: the finite site retains the generated core law universe. -/
 theorem site_lawUniverse_eq_core :
@@ -77,7 +88,8 @@ theorem noCycleSound :
   intro A h
   classical
   have hnot : ¬ hasCycleWitness A := by
-    simpa [hasCycleWitness, hasDependencyCycle, noCycleLaw] using h
+    simpa [hasCycleWitness, hasDependencyCycle] using
+      (noCycleLaw_holds_iff A).mp h
   simp [noCycleValuation, noCycleOmega, ObstructionValueDomain.nat, hnot]
 
 /-- Compatibility completeness theorem for the NoCycle display. -/
@@ -88,7 +100,8 @@ theorem noCycleComplete :
   have hcycle : hasCycleWitness A := by
     exact Classical.byContradiction (fun hnot =>
       hfailure (by
-        simpa [hasCycleWitness, hasDependencyCycle, noCycleLaw] using hnot))
+        apply (noCycleLaw_holds_iff A).mpr
+        simpa [hasCycleWitness, hasDependencyCycle] using hnot))
   simp [noCycleValuation, noCycleOmega, ObstructionValueDomain.nat, hcycle]
 
 end FiniteModel
