@@ -8,6 +8,12 @@
 - `research mode`: `target-theorem`
 - `tracking issue`: [#3246](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3246) closed as `COMPLETED`.
 - `completion report`: [research/reports/G-aat-quality-surface-07.md](../reports/G-aat-quality-surface-07.md)
+- `mainline distillation`: `2026-07-25` C6([#3767](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3767))で
+  large-coefficient 系 statement family(G-07 対応表の reuse/generalize/specialization 全行+Boolean-circle
+  zero/nonzero conormal witness 対)を `Formal/AG/SemanticRepair/Conormal/` へ本体内再構成として蒸留し、
+  `unported (Research-proved)` を解消。宣言名・statement は Research 原本と同一
+  (namespace root のみ `AAT.AG.SemanticRepair.Conormal` へ変更)。small-cover 版
+  (`LawGeneratedConormalDescent.lean`)は R0 note §7 のとおり補助参照のまま Research 側に残る。
 - `source note`: [docs/note/aat_descent_theorem_value_and_route.md](../../docs/note/aat_descent_theorem_value_and_route.md)
 - `predecessor / successor relation`: G-02 / G-05 / G-06(SAGA)を証明済みの地盤として使う。G-07はlaw-generated abelian first-order descentを担当し、G-03は一般generated nerve、G-04はideal-power higher stagesとnonabelian / higher / stacky / universalityを担当する。
 - `research aim`: law witnessから`I`、`O/I^2 -> O/I`、`ConDef = I/I^2`を生成し、lawful sectionごとのconnecting classがactual global first-order liftの存在をちょうど判定することをLeanで証明する。
