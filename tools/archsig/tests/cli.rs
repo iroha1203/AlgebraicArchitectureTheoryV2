@@ -3055,8 +3055,8 @@ fn cli_saga_comparison_separates_missing_class_from_contract_violation() {
         .as_str()
         .expect("missing source class explains required input slots");
     for slot in [
-        "complex.tripleOverlaps",
-        "coefficient",
+        "F2 coefficient",
+        "cocycle certificate for the residual component",
         "trueSheafCertificate",
         "gluingData",
     ] {
