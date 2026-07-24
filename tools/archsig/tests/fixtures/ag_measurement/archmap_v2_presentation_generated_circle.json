@@ -1,0 +1,51 @@
+{
+  "schema": "archmap/v0.5.4",
+  "id": "ag-measurement-presentation-generated-circle-fixture",
+  "sources": {
+    "src:order": { "kind": "rust", "path": "src/order.rs", "symbol": "OrderChart", "line": 1 },
+    "src:inventory": { "kind": "rust", "path": "src/inventory.rs", "symbol": "InventoryChart", "line": 1 },
+    "src:shared": { "kind": "rust", "path": "src/shared.rs", "symbol": "SharedChart", "line": 1 },
+    "src:circle": { "kind": "rust", "path": "src/circle.rs", "symbol": "CircleChart", "line": 1 },
+    "src:overlap-01": { "kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "10.2/U01" },
+    "src:overlap-12": { "kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "10.2/U12" },
+    "src:overlap-23": { "kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "10.2/U23" },
+    "src:overlap-30": { "kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "10.2/U30" },
+    "src:cover": { "kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "10.2" }
+  },
+  "atoms": [
+    { "id": "atom:order", "kind": "component", "subject": "src:order", "axis": "static", "predicate": "component", "refs": ["src:order"] },
+    { "id": "atom:inventory", "kind": "component", "subject": "src:inventory", "axis": "static", "predicate": "component", "refs": ["src:inventory"] },
+    { "id": "atom:shared", "kind": "component", "subject": "src:shared", "axis": "static", "predicate": "component", "refs": ["src:shared"] },
+    { "id": "atom:circle", "kind": "component", "subject": "src:circle", "axis": "static", "predicate": "component", "refs": ["src:circle"] },
+    { "id": "atom:overlap-01", "kind": "contract", "subject": "src:overlap-01", "axis": "static", "predicate": "component", "refs": ["src:overlap-01"] },
+    { "id": "atom:overlap-12", "kind": "contract", "subject": "src:overlap-12", "axis": "static", "predicate": "component", "refs": ["src:overlap-12"] },
+    { "id": "atom:overlap-23", "kind": "contract", "subject": "src:overlap-23", "axis": "static", "predicate": "component", "refs": ["src:overlap-23"] },
+    { "id": "atom:overlap-30", "kind": "contract", "subject": "src:overlap-30", "axis": "static", "predicate": "component", "refs": ["src:overlap-30"] }
+  ],
+  "contexts": [
+    { "id": "ctx:order", "atoms": ["atom:order"], "restrictsTo": ["ctx:overlap-01", "ctx:overlap-30"], "refs": ["src:order"] },
+    { "id": "ctx:inventory", "atoms": ["atom:inventory"], "restrictsTo": ["ctx:overlap-01", "ctx:overlap-12"], "refs": ["src:inventory"] },
+    { "id": "ctx:shared", "atoms": ["atom:shared"], "restrictsTo": ["ctx:overlap-12", "ctx:overlap-23"], "refs": ["src:shared"] },
+    { "id": "ctx:circle", "atoms": ["atom:circle"], "restrictsTo": ["ctx:overlap-23", "ctx:overlap-30"], "refs": ["src:circle"] },
+    { "id": "ctx:overlap-01", "atoms": ["atom:overlap-01"], "refs": ["src:overlap-01"] },
+    { "id": "ctx:overlap-12", "atoms": ["atom:overlap-12"], "refs": ["src:overlap-12"] },
+    { "id": "ctx:overlap-23", "atoms": ["atom:overlap-23"], "refs": ["src:overlap-23"] },
+    { "id": "ctx:overlap-30", "atoms": ["atom:overlap-30"], "refs": ["src:overlap-30"] }
+  ],
+  "covers": [
+    {
+      "id": "cover:order-inventory",
+      "contexts": [
+        "ctx:order",
+        "ctx:inventory",
+        "ctx:shared",
+        "ctx:circle",
+        "ctx:overlap-01",
+        "ctx:overlap-12",
+        "ctx:overlap-23",
+        "ctx:overlap-30"
+      ],
+      "refs": ["src:cover"]
+    }
+  ]
+}

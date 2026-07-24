@@ -2301,43 +2301,7 @@ fn presentation_generated_saga_plan(root: &Path, nonzero_class: bool) -> Value {
 }
 
 fn presentation_generated_circle_archmap(root: &Path) -> Value {
-    let mut archmap = read_json(&root.join("archmap_v2.json"));
-    archmap["sources"]
-        .as_object_mut()
-        .expect("sources are an object")
-        .insert(
-            "src:circle".to_string(),
-            json!({
-                "kind": "rust",
-                "path": "src/circle.rs",
-                "symbol": "CircleContext",
-                "line": 1
-            }),
-        );
-    archmap["atoms"]
-        .as_array_mut()
-        .expect("atoms are an array")
-        .push(json!({
-            "id": "atom:circle",
-            "kind": "component",
-            "subject": "src:circle",
-            "axis": "static",
-            "predicate": "component",
-            "refs": ["src:circle"]
-        }));
-    archmap["contexts"]
-        .as_array_mut()
-        .expect("contexts are an array")
-        .push(json!({
-            "id": "ctx:circle",
-            "atoms": ["atom:circle"],
-            "refs": ["src:circle"]
-        }));
-    archmap["covers"][0]["contexts"]
-        .as_array_mut()
-        .expect("cover contexts are an array")
-        .push(json!("ctx:circle"));
-    archmap
+    read_json(&root.join("archmap_v2_presentation_generated_circle.json"))
 }
 
 #[test]

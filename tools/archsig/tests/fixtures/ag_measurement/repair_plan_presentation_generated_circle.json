@@ -4,11 +4,12 @@
   "residual": { "kind": "supplied" },
   "complex": {
     "charts": ["ctx:order", "ctx:inventory", "ctx:shared", "ctx:circle"],
+    "archmapCoverRef": "cover:order-inventory",
     "overlaps": [
-      { "id": "overlap:01", "left": "ctx:order", "right": "ctx:inventory" },
-      { "id": "overlap:12", "left": "ctx:inventory", "right": "ctx:shared" },
-      { "id": "overlap:23", "left": "ctx:shared", "right": "ctx:circle" },
-      { "id": "overlap:30", "left": "ctx:circle", "right": "ctx:order" }
+      { "id": "overlap:01", "left": "ctx:order", "right": "ctx:inventory", "archmapContextRef": "ctx:overlap-01" },
+      { "id": "overlap:12", "left": "ctx:inventory", "right": "ctx:shared", "archmapContextRef": "ctx:overlap-12" },
+      { "id": "overlap:23", "left": "ctx:shared", "right": "ctx:circle", "archmapContextRef": "ctx:overlap-23" },
+      { "id": "overlap:30", "left": "ctx:circle", "right": "ctx:order", "archmapContextRef": "ctx:overlap-30" }
     ],
     "tripleOverlaps": [],
     "enumerationComplete": true
@@ -56,8 +57,8 @@
     "h1ComparisonData": {
       "schema": "h1-comparison-data/v0.5.4",
       "kind": "presentation-generated",
-      "sourceComplexFingerprint": "b3afcfc8895076144822322d6e6bcd27e81e4c130fce9adbeb98d1116eb41a93",
-      "targetComplexFingerprint": "b3afcfc8895076144822322d6e6bcd27e81e4c130fce9adbeb98d1116eb41a93",
+      "sourceComplexFingerprint": "2a6477405aecad1eacd7edbcb0876f058c556cc53695c5f57970564b5e85ccb9",
+      "targetComplexFingerprint": "2a6477405aecad1eacd7edbcb0876f058c556cc53695c5f57970564b5e85ccb9",
       "presentation": {
         "cells": [
           { "cellRef": "ctx:order", "semanticGenerators": ["sigma"], "repairRelationMatrix": [], "equationGenerators": ["q"], "equationRelationMatrix": [], "generatorMap": [[1]] },

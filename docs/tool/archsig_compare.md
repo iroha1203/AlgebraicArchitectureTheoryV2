@@ -9,6 +9,9 @@
 fingerprint 不一致かつ refinement 不在の場合は `profileConclusionCode: TWO_PROFILES_REPORTED_SEPARATELY` を記録する。
 
 SAGA の run 内 H¹ comparison は `RepairPlan.comparison.h1ComparisonData` が所有する。
+`complex.archmapCoverRef` と overlap / triple の `archmapContextRef` を宣言した RepairPlan では、
+validator が指定coverのcontext集合、chart→overlap および overlap→triple の直接restrictionを照合する。
+`enumerationComplete: true` の場合、そのcoverは列挙されたchartとintersection contextだけから成らなければならない。
 `kind: "explicit"` では `cochainMap.degreeZero` / `degreeOne` / `degreeTwo.basisMap` と
 `degreeTwo.zeroImage` の有限写像表を validator が再計算する。
 `kind: "presentation-generated"` では各 chart / overlap / triple cell の semantic generators、

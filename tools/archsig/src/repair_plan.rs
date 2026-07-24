@@ -286,12 +286,15 @@ mod tests {
                     id: id.to_string(),
                     left: left.to_string(),
                     right: right.to_string(),
+                    archmap_context_ref: None,
                 })
                 .collect(),
             triple_overlaps: vec![RepairPlanTripleOverlapV1 {
                 id: "t".to_string(),
                 overlap_refs: vec!["e1".to_string(), "e2".to_string(), "e3".to_string()],
+                archmap_context_ref: None,
             }],
+            archmap_cover_ref: None,
             enumeration_complete: true,
         }
     }
@@ -363,6 +366,49 @@ mod tests {
             output["residualWitness"]["equationResidual"],
             "Example 10.2 has r_E = kappa^1(r_sem) with zero local coordinate witness"
         );
+    }
+
+    #[test]
+    fn presentation_generated_circle_archmap_mapping_is_exact_and_rejects_missing_overlap_edge() {
+        let plan: RepairPlanDocumentV1 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/repair_plan_presentation_generated_circle.json"
+        ))
+        .expect("presentation-generated circle fixture parses");
+        let archmap: ArchMapDocumentV2 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/archmap_v2_presentation_generated_circle.json"
+        ))
+        .expect("presentation-generated circle ArchMap parses");
+        let binding = validate_repair_plan_v1_checks(&plan, &archmap, None)
+            .into_iter()
+            .find(|check| check.id == "repair-plan-schema052-archmap-bindings")
+            .expect("ArchMap binding validation exists");
+        assert_eq!(binding.result, "pass");
+
+        assert_eq!(plan.complex.charts.len(), 4);
+        assert_eq!(plan.complex.overlaps.len(), 4);
+        assert!(plan.complex.triple_overlaps.is_empty());
+        assert_eq!(
+            plan.complex.archmap_cover_ref.as_deref(),
+            Some("cover:order-inventory")
+        );
+
+        let mut missing_overlap_edge = archmap.clone();
+        missing_overlap_edge
+            .contexts
+            .iter_mut()
+            .find(|context| context.id == "ctx:order")
+            .expect("ctx:order exists")
+            .restricts_to
+            .retain(|target| target != "ctx:overlap-30");
+        let binding = validate_repair_plan_v1_checks(&plan, &missing_overlap_edge, None)
+            .into_iter()
+            .find(|check| check.id == "repair-plan-schema052-archmap-bindings")
+            .expect("ArchMap binding validation exists");
+        assert_eq!(binding.result, "fail");
+        assert!(binding.examples.iter().any(|example| {
+            example.source.as_deref() == Some("complex.overlaps[overlap:30].archmapContextRef")
+                && example.target.as_deref() == Some("ctx:order->ctx:overlap-30")
+        }));
     }
 
     #[test]
@@ -2568,6 +2614,199 @@ fn check_archmap_bindings(
             ));
         }
     }
+    let has_archmap_complex_mapping = plan.complex.archmap_cover_ref.is_some()
+        || plan
+            .complex
+            .overlaps
+            .iter()
+            .any(|overlap| overlap.archmap_context_ref.is_some())
+        || plan
+            .complex
+            .triple_overlaps
+            .iter()
+            .any(|triple| triple.archmap_context_ref.is_some());
+    if has_archmap_complex_mapping {
+        let contexts = archmap
+            .contexts
+            .iter()
+            .map(|context| (context.id.as_str(), context))
+            .collect::<BTreeMap<_, _>>();
+        let chart_ids = plan
+            .complex
+            .charts
+            .iter()
+            .map(String::as_str)
+            .collect::<BTreeSet<_>>();
+        let mut mapped_contexts = BTreeSet::new();
+        let mut overlap_contexts = BTreeMap::new();
+
+        for overlap in &plan.complex.overlaps {
+            let path = format!("complex.overlaps[{}].archmapContextRef", overlap.id);
+            let Some(context_ref) = overlap.archmap_context_ref.as_deref() else {
+                examples.push(generic_validation_example(
+                    &path,
+                    "missing",
+                    "an ArchMap complex mapping requires every overlap to declare archmapContextRef",
+                ));
+                continue;
+            };
+            overlap_contexts.insert(overlap.id.as_str(), context_ref);
+            if chart_ids.contains(context_ref) {
+                examples.push(generic_validation_example(
+                    &path,
+                    context_ref,
+                    "an overlap archmapContextRef must be distinct from every chart context",
+                ));
+            }
+            if !mapped_contexts.insert(context_ref) {
+                examples.push(generic_validation_example(
+                    &path,
+                    context_ref,
+                    "each overlap or triple requires its own ArchMap intersection context",
+                ));
+            }
+            let Some(intersection) = contexts.get(context_ref) else {
+                examples.push(generic_validation_example(
+                    &path,
+                    context_ref,
+                    "overlap archmapContextRef must resolve to an ArchMap context",
+                ));
+                continue;
+            };
+            for chart in [&overlap.left, &overlap.right] {
+                let has_direct_restriction = contexts.get(chart.as_str()).is_some_and(|source| {
+                    source
+                        .restricts_to
+                        .iter()
+                        .any(|target| target == context_ref)
+                });
+                if !has_direct_restriction {
+                    examples.push(generic_validation_example(
+                        &path,
+                        &format!("{chart}->{context_ref}"),
+                        "each mapped overlap must receive direct restrictions from its two chart contexts",
+                    ));
+                }
+            }
+            if !intersection
+                .refs
+                .iter()
+                .any(|reference| !reference.trim().is_empty())
+            {
+                examples.push(generic_validation_example(
+                    &path,
+                    context_ref,
+                    "mapped overlap contexts must retain a source-grounded ArchMap reference",
+                ));
+            }
+        }
+
+        for triple in &plan.complex.triple_overlaps {
+            let path = format!("complex.tripleOverlaps[{}].archmapContextRef", triple.id);
+            let Some(context_ref) = triple.archmap_context_ref.as_deref() else {
+                examples.push(generic_validation_example(
+                    &path,
+                    "missing",
+                    "an ArchMap complex mapping requires every triple overlap to declare archmapContextRef",
+                ));
+                continue;
+            };
+            if chart_ids.contains(context_ref) {
+                examples.push(generic_validation_example(
+                    &path,
+                    context_ref,
+                    "a triple archmapContextRef must be distinct from every chart context",
+                ));
+            }
+            if !mapped_contexts.insert(context_ref) {
+                examples.push(generic_validation_example(
+                    &path,
+                    context_ref,
+                    "each overlap or triple requires its own ArchMap intersection context",
+                ));
+            }
+            let Some(intersection) = contexts.get(context_ref) else {
+                examples.push(generic_validation_example(
+                    &path,
+                    context_ref,
+                    "triple archmapContextRef must resolve to an ArchMap context",
+                ));
+                continue;
+            };
+            for overlap_ref in &triple.overlap_refs {
+                let Some(source_ref) = overlap_contexts.get(overlap_ref.as_str()) else {
+                    examples.push(generic_validation_example(
+                        &path,
+                        overlap_ref,
+                        "triple overlap mapping requires every referenced overlap mapping",
+                    ));
+                    continue;
+                };
+                let has_direct_restriction = contexts.get(source_ref).is_some_and(|source| {
+                    source
+                        .restricts_to
+                        .iter()
+                        .any(|target| target == context_ref)
+                });
+                if !has_direct_restriction {
+                    examples.push(generic_validation_example(
+                        &path,
+                        &format!("{source_ref}->{context_ref}"),
+                        "each mapped triple overlap must receive direct restrictions from its three mapped overlap contexts",
+                    ));
+                }
+            }
+            if !intersection
+                .refs
+                .iter()
+                .any(|reference| !reference.trim().is_empty())
+            {
+                examples.push(generic_validation_example(
+                    &path,
+                    context_ref,
+                    "mapped triple contexts must retain a source-grounded ArchMap reference",
+                ));
+            }
+        }
+
+        match plan.complex.archmap_cover_ref.as_deref() {
+            Some(cover_ref) => match archmap.covers.iter().find(|cover| cover.id == cover_ref) {
+                Some(cover) => {
+                    let expected_contexts = chart_ids
+                        .into_iter()
+                        .chain(mapped_contexts.iter().copied())
+                        .collect::<BTreeSet<_>>();
+                    let actual_contexts = cover
+                        .contexts
+                        .iter()
+                        .map(String::as_str)
+                        .collect::<BTreeSet<_>>();
+                    let membership_valid = if plan.complex.enumeration_complete {
+                        actual_contexts == expected_contexts
+                    } else {
+                        expected_contexts.is_subset(&actual_contexts)
+                    };
+                    if !membership_valid {
+                        examples.push(generic_validation_example(
+                            "complex.archmapCoverRef",
+                            &format!("cover={actual_contexts:?}, complex={expected_contexts:?}"),
+                            "the mapped ArchMap cover must contain exactly the enumerated chart and intersection contexts when enumerationComplete is true",
+                        ));
+                    }
+                }
+                None => examples.push(generic_validation_example(
+                    "complex.archmapCoverRef",
+                    cover_ref,
+                    "archmapCoverRef must resolve to an ArchMap cover",
+                )),
+            },
+            None => examples.push(generic_validation_example(
+                "complex.archmapCoverRef",
+                "missing",
+                "overlap or triple ArchMap mappings require complex.archmapCoverRef",
+            )),
+        }
+    }
     for atom_ref in &plan.semantic_projection.lambda {
         if !atom_subjects.contains_key(atom_ref.as_str()) {
             examples.push(generic_validation_example(
@@ -2617,7 +2856,7 @@ fn check_archmap_bindings(
     }
     examples_check(
         "repair-plan-schema052-archmap-bindings",
-        "RepairPlan charts and semantic projection resolve against the supplied ArchMap",
+        "RepairPlan charts, declared finite-complex mappings, and semantic projection resolve against the supplied ArchMap",
         examples,
     )
 }
