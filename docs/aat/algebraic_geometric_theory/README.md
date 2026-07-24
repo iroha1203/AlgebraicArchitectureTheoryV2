@@ -79,7 +79,7 @@ cohomology class として現れる。
 
 このディレクトリの本文では、AAT を純粋な数学理論として扱う。
 本文の内部対象は、Atom、architecture object、architectural equation system、site、sheaf、cohomology、
-representation、measurement profile、trace category、semantic repair-gluing complex である。
+representation、measurement profile、trace category、semantic repair presentation とその Čech complex である。
 未選択の観測過程、外部過程、応用上の判定手続きについて、本文は主張しない。
 
 従来の Atom / law / obstruction / flatness / signature による AAT は、
@@ -230,10 +230,10 @@ Evolution geometry:
   AAT geometry の時間方向の構造として扱う。
 
 Semantic repair descent geometry:
-  選ばれた有限 cover の上で、repair の貼り合わせを descent として読み、
-  その障害を semantic repair additive H^1 として構成し、
-  architectural equation system が生成する係数を持つ AAT site 上の
-  cover-relative Čech H^1 と比較する(SAGA)。
+  semantic atom と局所 repair relation から係数と residual class を構成し、
+  architectural equation system が生成する係数と residual class へ
+  Atom/equation presentation map を通じて比較する(SAGA)。
+  true sheaf 条件の下で零類を actual global repair へ貼り合わせる。
 ```
 
 したがって、`ringed AAT topos` は architecture scheme を作るための基礎階である。
