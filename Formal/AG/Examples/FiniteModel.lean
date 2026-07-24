@@ -1146,6 +1146,33 @@ theorem componentAAbsent_concreteThreeReadingAgreement
       (componentAAbsentEquationSystem C))
     corePackage.object
 
+/-- A deliberately incorrect signature reading that declares its sole axis
+zero on every architecture object. -/
+def componentAAlwaysZeroSignatureAxes : SignatureAxes carrier where
+  Axis := PUnit
+  selected _ := True
+  zero _ _ := True
+
+/-- The nonzero component-A residual prevents an always-zero signature from
+carrying an `EquationSignatureComparison`, providing its negative instance. -/
+theorem componentAAbsent_not_alwaysZeroSignatureComparison
+    (C : Site.ContextPreorderCategory object) :
+    ¬ Nonempty
+      (EquationSignatureComparison
+        (componentAAbsentEquationSystem C)
+        componentAAlwaysZeroSignatureAxes) := by
+  rintro ⟨comparison⟩
+  let requiredIndex :
+      (componentAAbsentEquationSystem C).RequiredIndex :=
+    ⟨PUnit.unit, rfl⟩
+  have hzero :=
+    (comparison.residual_zero_iff_axis_zero
+      corePackage.object requiredIndex FiniteAtom.componentA).mpr trivial
+  have hcoordinate :=
+    hzero (Site.ContextCategoryObject.of C equationProbeContext)
+  simp [componentAAbsentEquationSystem, componentAAbsentResidual] at hcoordinate
+  exact hcoordinate corePackage_componentA_mem
+
 /-- The residual-coordinate signature vanishes on the component-A-absent object. -/
 theorem componentAAbsent_signatureAxesZero_unreachableEmptyObject
     (C : Site.ContextPreorderCategory object) :
