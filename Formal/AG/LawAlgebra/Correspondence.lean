@@ -86,13 +86,14 @@ theorem siteEquationLawfulnessIdealFactorizationCorrespondence
     {X : StandardArchitectureScheme raw}
     (R : EquationObservableRealization raw X S.equationSystem)
     (hR : IsEquationObservableRealization R)
+    (L : EquationObservableRealization.EquationChartLocalization R)
     {T : AlgebraicGeometry.Scheme}
     (s : T ⟶ R.realizationScheme) :
     (R.EquationLawfulAlong s ↔
-      R.generatedIdealSheaf.comap s = ⊥) ∧
-    (R.generatedIdealSheaf.comap s = ⊥ ↔
+      R.GeneratedLawfulLocusAlong L s) ∧
+    (R.GeneratedLawfulLocusAlong L s ↔
       Nonempty (R.FactorsThroughLawfulClosedSubscheme s)) :=
-  R.lawfulnessIdealFactorizationCorrespondence hR s
+  R.lawfulnessIdealFactorizationCorrespondence hR L s
 
 /--
 Part III, Theorem 5.2C for the site-owned equation system: fulfillment of one
@@ -112,10 +113,9 @@ theorem siteEquationIdealFactorizationCorrespondence
     (s : T ⟶ R.realizationScheme)
     (i : S.equationSystem.Index) :
     (R.EquationHoldsAlong s i ↔
-      (R.witnessIdealSheaf i).comap s = ⊥) ∧
-    (R.EquationHoldsAlong s i ↔
-      Nonempty (R.FactorsThroughEquationClosedSubscheme i s)) ∧
-    R.EquationWitnessChartRealized L i :=
+      R.EquationIdealChartCondition L s i) ∧
+    (R.EquationIdealChartCondition L s i ↔
+      Nonempty (R.FactorsThroughEquationClosedSubscheme i s)) :=
   R.equationIdealFactorizationCorrespondence hR L s i
 
 /--

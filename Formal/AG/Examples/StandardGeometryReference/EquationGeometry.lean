@@ -981,6 +981,19 @@ theorem referenceEquationObservableRealization_valid :
     referenceEquationRepresentingEquiv
     referenceEquationRepresentingEquiv_natural
 
+/-- The reference realization as one categorical representing geometry. -/
+noncomputable def referenceEquationRepresentingGeometry :
+    EquationObservableRealization.EquationRepresentingGeometry
+      referenceRaw referenceScheme referenceSite.equationSystem :=
+  referenceEquationObservableRealization.toRepresentingGeometry
+    referenceEquationObservableRealization_valid
+
+/-- The categorical standard producer fires on the reference geometry. -/
+theorem referenceEquationRepresentingGeometry_realization_valid :
+    IsEquationObservableRealization
+      referenceEquationRepresentingGeometry.realization :=
+  referenceEquationRepresentingGeometry.realization_valid
+
 /-- One symbolic equation section in the generated reference realization. -/
 noncomputable def referenceSiteGlobalEquation
     (i : referenceSite.equationSystem.Index)
@@ -2523,12 +2536,14 @@ theorem siteEquationModTwoPoint_factors_generated :
     Nonempty
       (referenceEquationObservableRealization.FactorsThroughLawfulClosedSubscheme
           siteEquationModTwoRealizationPoint) := by
-  have h :=
-    Correspondence.siteEquationLawfulnessIdealFactorizationCorrespondence
-      referenceEquationObservableRealization
+  apply
+    (referenceEquationObservableRealization.generatedIdeal_iff_nonempty_factorsThrough
+      siteEquationModTwoRealizationPoint).mp
+  exact
+    (referenceEquationObservableRealization.equationLawfulAlong_iff_generatedIdeal
       referenceEquationObservableRealization_valid
-      siteEquationModTwoRealizationPoint
-  exact h.2.mp (h.1.mp siteEquationModTwoPoint_equationLawful)
+      siteEquationModTwoRealizationPoint).mp
+        siteEquationModTwoPoint_equationLawful
 
 /--
 Each required equation at the mod-two point factors through its own generated
@@ -2645,7 +2660,10 @@ theorem cyclicUnitSitePoint_not_equationHoldsAlong :
   intro h
   exact cyclicUnitSitePoint_residualValue_ne_zero
     baseContext PUnit.unit AAT.AG.FiniteModel.FiniteAtom.componentA
-    (h baseContext AAT.AG.FiniteModel.FiniteAtom.componentA)
+    ((cyclicUnitEquationObservableRealization.equationHoldsAlong_iff_global
+      cyclicUnitEquationObservableRealization_valid
+      cyclicUnitSiteRealizationPoint PUnit.unit).mp h
+        baseContext AAT.AG.FiniteModel.FiniteAtom.componentA)
 
 /-- The cyclic realization point is not required-equation lawful. -/
 theorem cyclicUnitSitePoint_not_equationLawful :
@@ -3531,6 +3549,363 @@ private theorem actualOverlap_left_appTop :
   slice_lhs 2 4 =>
     rw [Iso.inv_hom_id_assoc]
   exact overlap_left_restriction_is_localization
+
+private theorem actualOverlapIso_inv_snd :
+    actualOverlapIso.inv ≫ pullback.snd leftChart.map rightChart.map =
+      overlapChartDomainIso.inv ≫
+        architectureChartRestriction referenceRaw overlapToRight := by
+  rw [actualOverlapIso_eq]
+  simp only [Iso.trans_inv, Iso.symm_inv,
+    StandardArchitectureScheme.overlap_is_actual_pullback, Category.assoc]
+  have hcmp :=
+    referenceScheme.overlapsValid.comparison_snd leftIndex rightIndex
+  change (referenceScheme.overlaps.comparison leftIndex rightIndex).hom ≫
+      pullback.snd leftChart.map rightChart.map =
+    architectureChartRestriction referenceRaw
+      (referenceScheme.atlas.pairToRight
+        referenceRaw leftIndex rightIndex) at hcmp
+  slice_lhs 3 4 =>
+    rw [hcmp]
+  rw [← cancel_epi overlapChartDomainIso.hom,
+    Iso.hom_inv_id_assoc, Iso.hom_inv_id_assoc]
+  rw [pairContext_cast_inv]
+  rw [← architectureChartRestriction_comp]
+  exact congrArg (architectureChartRestriction referenceRaw)
+    (Subsingleton.elim _ _)
+
+private theorem actualOverlap_right_appTop :
+    rightChartGlobalSectionsIso.inv ≫
+        (pullback.snd leftChart.map rightChart.map).appTop ≫
+        actualOverlapGlobalSectionsIso.hom =
+      CommRingCat.ofHom rightToOverlapRingHom := by
+  have hsnd := congrArg (fun q => q.appTop) actualOverlapIso_inv_snd
+  simp only [AlgebraicGeometry.Scheme.Hom.comp_appTop] at hsnd
+  rw [rightChartGlobalSectionsIso, actualOverlapGlobalSectionsIso,
+    Iso.trans_inv, Iso.trans_hom]
+  simp only [Category.assoc, asIso_hom]
+  slice_lhs 3 4 => rw [hsnd]
+  slice_lhs 4 5 => rw [overlapChartDomainIso_inv_appTop]
+  slice_lhs 3 4 =>
+    rw [architectureChartRestriction_appTop]
+  slice_lhs 2 4 =>
+    rw [Iso.inv_hom_id_assoc]
+  exact overlap_right_restriction_is_localization
+
+/--
+The actual left-to-overlap section map is the transported principal
+localization at the right chart generator.
+-/
+private theorem actualOverlap_left_isLocalization :
+    letI : Algebra Γ(leftChart.domain, ⊤)
+        Γ(referenceScheme.atlas.actualOverlap
+          referenceRaw leftIndex rightIndex, ⊤) :=
+      (pullback.fst leftChart.map rightChart.map).appTop.hom.toAlgebra
+    IsLocalization
+      ((Submonoid.powers
+        (algebraMap AmbientRing
+          (Localization.Away leftGenerator) rightGenerator)).map
+        leftChartGlobalSectionsIso.commRingCatIsoToRingEquiv.symm.toMonoidHom)
+      Γ(referenceScheme.atlas.actualOverlap
+        referenceRaw leftIndex rightIndex, ⊤) := by
+  letI := leftToOverlapRingHom.toAlgebra
+  letI : IsLocalization
+      (Submonoid.powers
+        (algebraMap AmbientRing
+          (Localization.Away leftGenerator) rightGenerator))
+      (Localization.Away overlapGenerator) :=
+    leftToOverlap_isLocalization
+  have hmap :
+      actualOverlapGlobalSectionsIso.inv.hom.comp
+          (leftToOverlapRingHom.comp
+            leftChartGlobalSectionsIso.hom.hom) =
+        (pullback.fst leftChart.map rightChart.map).appTop.hom := by
+    have hcat :
+        leftChartGlobalSectionsIso.hom ≫
+            CommRingCat.ofHom leftToOverlapRingHom ≫
+            actualOverlapGlobalSectionsIso.inv =
+          (pullback.fst leftChart.map rightChart.map).appTop := by
+      rw [← actualOverlap_left_appTop]
+      simp only [Category.assoc]
+      rw [Iso.hom_inv_id_assoc, Iso.hom_inv_id]
+      simp
+    exact congrArg CommRingCat.Hom.hom hcat
+  exact IsLocalization.transportRingEquivOfEq
+    (Submonoid.powers
+      (algebraMap AmbientRing
+        (Localization.Away leftGenerator) rightGenerator))
+    leftChartGlobalSectionsIso.commRingCatIsoToRingEquiv.symm
+    actualOverlapGlobalSectionsIso.commRingCatIsoToRingEquiv.symm
+    (pullback.fst leftChart.map rightChart.map).appTop.hom
+    hmap
+
+/--
+The actual right-to-overlap section map is the transported principal
+localization at the left chart generator.
+-/
+private theorem actualOverlap_right_isLocalization :
+    letI : Algebra Γ(rightChart.domain, ⊤)
+        Γ(referenceScheme.atlas.actualOverlap
+          referenceRaw leftIndex rightIndex, ⊤) :=
+      (pullback.snd leftChart.map rightChart.map).appTop.hom.toAlgebra
+    IsLocalization
+      ((Submonoid.powers
+        (algebraMap AmbientRing
+          (Localization.Away rightGenerator) leftGenerator)).map
+        rightChartGlobalSectionsIso.commRingCatIsoToRingEquiv.symm.toMonoidHom)
+      Γ(referenceScheme.atlas.actualOverlap
+        referenceRaw leftIndex rightIndex, ⊤) := by
+  letI := rightToOverlapRingHom.toAlgebra
+  letI : IsLocalization
+      (Submonoid.powers
+        (algebraMap AmbientRing
+          (Localization.Away rightGenerator) leftGenerator))
+      (Localization.Away overlapGenerator) :=
+    rightToOverlap_isLocalization
+  have hmap :
+      actualOverlapGlobalSectionsIso.inv.hom.comp
+          (rightToOverlapRingHom.comp
+            rightChartGlobalSectionsIso.hom.hom) =
+        (pullback.snd leftChart.map rightChart.map).appTop.hom := by
+    have hcat :
+        rightChartGlobalSectionsIso.hom ≫
+            CommRingCat.ofHom rightToOverlapRingHom ≫
+            actualOverlapGlobalSectionsIso.inv =
+          (pullback.snd leftChart.map rightChart.map).appTop := by
+      rw [← actualOverlap_right_appTop]
+      simp only [Category.assoc]
+      rw [Iso.hom_inv_id_assoc, Iso.hom_inv_id]
+      simp
+    exact congrArg CommRingCat.Hom.hom hcat
+  exact IsLocalization.transportRingEquivOfEq
+    (Submonoid.powers
+      (algebraMap AmbientRing
+        (Localization.Away rightGenerator) leftGenerator))
+    rightChartGlobalSectionsIso.commRingCatIsoToRingEquiv.symm
+    actualOverlapGlobalSectionsIso.commRingCatIsoToRingEquiv.symm
+    (pullback.snd leftChart.map rightChart.map).appTop.hom
+    hmap
+
+/-- Global sections of the same actual overlap with the chart order reversed. -/
+private noncomputable def reverseActualOverlapGlobalSectionsIso :
+    Γ(referenceScheme.atlas.actualOverlap
+        referenceRaw rightIndex leftIndex, ⊤) ≅
+      CommRingCat.of (Localization.Away overlapGenerator) :=
+  (asIso ((pullbackSymmetry rightChart.map leftChart.map).inv.appTop)) ≪≫
+    actualOverlapGlobalSectionsIso
+
+private theorem reverseActualOverlap_left_appTop :
+    rightChartGlobalSectionsIso.inv ≫
+        (pullback.fst rightChart.map leftChart.map).appTop ≫
+        reverseActualOverlapGlobalSectionsIso.hom =
+      CommRingCat.ofHom rightToOverlapRingHom := by
+  have hsymm := congrArg (fun q => q.appTop)
+    (pullbackSymmetry_hom_comp_snd rightChart.map leftChart.map)
+  simp only [AlgebraicGeometry.Scheme.Hom.comp_appTop] at hsymm
+  rw [reverseActualOverlapGlobalSectionsIso, Iso.trans_hom]
+  simp only [asIso_hom]
+  slice_lhs 2 3 =>
+    rw [← hsymm]
+  have hcancel :
+      (pullbackSymmetry rightChart.map leftChart.map).hom.appTop ≫
+          (pullbackSymmetry rightChart.map leftChart.map).inv.appTop =
+        𝟙 _ := by
+    rw [← AlgebraicGeometry.Scheme.Hom.comp_appTop]
+    simp
+  slice_lhs 3 4 =>
+    rw [hcancel]
+  simp only [Category.id_comp]
+  exact actualOverlap_right_appTop
+
+private theorem reverseActualOverlap_left_isLocalization :
+    letI : Algebra Γ(rightChart.domain, ⊤)
+        Γ(referenceScheme.atlas.actualOverlap
+          referenceRaw rightIndex leftIndex, ⊤) :=
+      (pullback.fst rightChart.map leftChart.map).appTop.hom.toAlgebra
+    IsLocalization
+      ((Submonoid.powers
+        (algebraMap AmbientRing
+          (Localization.Away rightGenerator) leftGenerator)).map
+        rightChartGlobalSectionsIso.commRingCatIsoToRingEquiv.symm.toMonoidHom)
+      Γ(referenceScheme.atlas.actualOverlap
+        referenceRaw rightIndex leftIndex, ⊤) := by
+  letI := rightToOverlapRingHom.toAlgebra
+  letI : IsLocalization
+      (Submonoid.powers
+        (algebraMap AmbientRing
+          (Localization.Away rightGenerator) leftGenerator))
+      (Localization.Away overlapGenerator) :=
+    rightToOverlap_isLocalization
+  have hmap :
+      reverseActualOverlapGlobalSectionsIso.inv.hom.comp
+          (rightToOverlapRingHom.comp
+            rightChartGlobalSectionsIso.hom.hom) =
+        (pullback.fst rightChart.map leftChart.map).appTop.hom := by
+    have hcat :
+        rightChartGlobalSectionsIso.hom ≫
+            CommRingCat.ofHom rightToOverlapRingHom ≫
+            reverseActualOverlapGlobalSectionsIso.inv =
+          (pullback.fst rightChart.map leftChart.map).appTop := by
+      rw [← reverseActualOverlap_left_appTop]
+      simp only [Category.assoc]
+      rw [Iso.hom_inv_id_assoc, Iso.hom_inv_id]
+      simp
+    exact congrArg CommRingCat.Hom.hom hcat
+  exact IsLocalization.transportRingEquivOfEq
+    (Submonoid.powers
+      (algebraMap AmbientRing
+        (Localization.Away rightGenerator) leftGenerator))
+    rightChartGlobalSectionsIso.commRingCatIsoToRingEquiv.symm
+    reverseActualOverlapGlobalSectionsIso.commRingCatIsoToRingEquiv.symm
+    (pullback.fst rightChart.map leftChart.map).appTop.hom
+    hmap
+
+private theorem selfOverlap_isLocalization
+    (j : referenceScheme.atlas.Index) :
+    letI : Algebra Γ((referenceScheme.atlas.chart j).domain, ⊤)
+        Γ(referenceScheme.atlas.actualOverlap
+          referenceRaw j j, ⊤) :=
+      (pullback.fst
+        (referenceScheme.atlas.chart j).map
+        (referenceScheme.atlas.chart j).map).appTop.hom.toAlgebra
+    IsLocalization
+      (Submonoid.powers
+        (1 : Γ((referenceScheme.atlas.chart j).domain, ⊤)))
+      Γ(referenceScheme.atlas.actualOverlap
+        referenceRaw j j, ⊤) := by
+  letI : Algebra Γ((referenceScheme.atlas.chart j).domain, ⊤)
+      Γ(referenceScheme.atlas.actualOverlap
+        referenceRaw j j, ⊤) :=
+    (pullback.fst
+      (referenceScheme.atlas.chart j).map
+      (referenceScheme.atlas.chart j).map).appTop.hom.toAlgebra
+  letI : IsOpenImmersion (referenceScheme.atlas.chart j).map :=
+    (referenceScheme.atlasValid.chart_valid j).isOpenImmersion
+  letI : Mono (referenceScheme.atlas.chart j).map := inferInstance
+  letI : IsIso
+      (pullback.fst
+        (referenceScheme.atlas.chart j).map
+        (referenceScheme.atlas.chart j).map) := inferInstance
+  letI : IsIso
+      (pullback.fst
+        (referenceScheme.atlas.chart j).map
+        (referenceScheme.atlas.chart j).map).appTop := inferInstance
+  exact IsLocalization.away_of_isUnit_of_bijective _
+    (show IsUnit
+      (1 : Γ((referenceScheme.atlas.chart j).domain, ⊤)) from isUnit_one)
+    (ConcreteCategory.bijective_of_isIso
+      (pullback.fst
+        (referenceScheme.atlas.chart j).map
+        (referenceScheme.atlas.chart j).map).appTop)
+
+/-- Reference symbolic sections are independent of the selected context. -/
+private theorem referenceViolationSection_context_eq
+    (W V : referenceSite.category)
+    (i : referenceSite.equationSystem.Index)
+    (a : AAT.AG.FiniteModel.carrier.Atom) :
+    referenceEquationObservableRealization.violationSection W i a =
+      referenceEquationObservableRealization.violationSection V i a := by
+  apply (ConcreteCategory.bijective_of_isIso
+    ambientGlobalSectionsIso.hom).1
+  rw [referenceSiteViolationSection_image,
+    referenceSiteViolationSection_image,
+    referenceSite_violationCoordinate,
+    referenceSite_violationCoordinate]
+
+/-- Hence every reference context generates the same witness ideal. -/
+private theorem referenceContextWitnessIdeal_eq
+    (W V : referenceSite.category)
+    (i : referenceSite.equationSystem.Index) :
+    referenceEquationObservableRealization.contextWitnessIdeal W i =
+      referenceEquationObservableRealization.contextWitnessIdeal V i := by
+  rw [referenceEquationObservableRealization.contextWitnessIdeal_eq_span,
+    referenceEquationObservableRealization.contextWitnessIdeal_eq_span]
+  congr 1
+
+/-- The reference global witness ideal is generated at any one context. -/
+private theorem referenceGlobalWitnessIdeal_eq_context
+    (W : referenceSite.category)
+    (i : referenceSite.equationSystem.Index) :
+    referenceEquationObservableRealization.globalWitnessIdeal i =
+      referenceEquationObservableRealization.contextWitnessIdeal W i := by
+  apply le_antisymm
+  · rw [EquationObservableRealization.globalWitnessIdeal]
+    apply iSup_le
+    intro V
+    exact (referenceContextWitnessIdeal_eq V W i).le
+  · exact le_iSup
+      (fun V : referenceSite.category =>
+        referenceEquationObservableRealization.contextWitnessIdeal V i) W
+
+/--
+Concrete Definition 5.2B localization producer for the two-principal-open
+reference atlas.  All four ordered chart pairs are discharged.
+-/
+noncomputable def referenceEquationChartLocalization
+    : EquationObservableRealization.EquationChartLocalization
+        referenceEquationObservableRealization where
+  submonoid
+    | false, false => Submonoid.powers 1
+    | false, true =>
+        (Submonoid.powers
+          (algebraMap AmbientRing
+            (Localization.Away leftGenerator) rightGenerator)).map
+          leftChartGlobalSectionsIso.commRingCatIsoToRingEquiv.symm.toMonoidHom
+    | true, false =>
+        (Submonoid.powers
+          (algebraMap AmbientRing
+            (Localization.Away rightGenerator) leftGenerator)).map
+          rightChartGlobalSectionsIso.commRingCatIsoToRingEquiv.symm.toMonoidHom
+    | true, true => Submonoid.powers 1
+  isLocalization j l := by
+    cases j <;> cases l
+    · simpa only [EquationObservableRealization.overlapToLeft,
+        leftIndex] using selfOverlap_isLocalization leftIndex
+    · simpa only [EquationObservableRealization.overlapToLeft,
+        leftIndex, rightIndex] using actualOverlap_left_isLocalization
+    · simpa only [EquationObservableRealization.overlapToLeft,
+        leftIndex, rightIndex] using
+          reverseActualOverlap_left_isLocalization
+    · simpa only [EquationObservableRealization.overlapToLeft,
+        rightIndex] using selfOverlap_isLocalization rightIndex
+  globalWitnessIdeal_restricts j i := by
+    rw [referenceGlobalWitnessIdeal_eq_context
+      (referenceScheme.atlas.chart j).context i]
+    exact
+      (referenceEquationObservableRealization.chartWitnessIdeal_eq_map_context
+        j i).symm
+
+/--
+The site-owned equation realization uses the concrete localization producer
+in its full lawfulness, ideal, factorization, and chart correspondence.
+-/
+theorem referenceSiteEquationLawfulnessIdealFactorizationCorrespondence
+    {T : AlgebraicGeometry.Scheme}
+    (s : T ⟶ referenceEquationObservableRealization.realizationScheme) :
+    (referenceEquationObservableRealization.EquationLawfulAlong s ↔
+      referenceEquationObservableRealization.GeneratedLawfulLocusAlong
+        referenceEquationChartLocalization s) ∧
+    (referenceEquationObservableRealization.GeneratedLawfulLocusAlong
+        referenceEquationChartLocalization s ↔
+      Nonempty
+        (referenceEquationObservableRealization.FactorsThroughLawfulClosedSubscheme
+          s)) :=
+  Correspondence.siteEquationLawfulnessIdealFactorizationCorrespondence
+    referenceEquationObservableRealization
+    referenceEquationObservableRealization_valid
+    referenceEquationChartLocalization
+    s
+
+/--
+The nontrivial mod-two realization fires the chart-generated lawful-locus
+condition with the concrete four-pair localization producer.
+-/
+theorem siteEquationModTwoPoint_generatedLawfulLocus :
+    referenceEquationObservableRealization.GeneratedLawfulLocusAlong
+      referenceEquationChartLocalization
+      siteEquationModTwoRealizationPoint :=
+  (referenceSiteEquationLawfulnessIdealFactorizationCorrespondence
+    siteEquationModTwoRealizationPoint).1.mp
+      siteEquationModTwoPoint_equationLawful
 
 private theorem reference_ofIdealTop_comap_open
     {Y Z : Scheme} [IsAffine Y]

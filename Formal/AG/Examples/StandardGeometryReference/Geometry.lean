@@ -3123,6 +3123,66 @@ private theorem awayToAway_left_eq :
     leftToOverlapRingHom_comp_algebraMap]
   simp only [overlapGenerator]
 
+/--
+The actual left-to-overlap ring map is localization away from the image of
+the right principal-open generator.
+-/
+theorem leftToOverlap_isLocalization :
+    letI := leftToOverlapRingHom.toAlgebra
+    IsLocalization
+      (Submonoid.powers
+        (algebraMap AmbientRing
+          (Localization.Away leftGenerator) rightGenerator))
+      (Localization.Away overlapGenerator) := by
+  letI := leftToOverlapRingHom.toAlgebra
+  let Q :=
+    Localization.Away
+      (algebraMap AmbientRing
+        (Localization.Away leftGenerator) rightGenerator)
+  letI : IsScalarTower AmbientRing
+      (Localization.Away leftGenerator)
+      (Localization.Away overlapGenerator) :=
+    IsScalarTower.of_algebraMap_eq'
+      leftToOverlapRingHom_comp_algebraMap.symm
+  letI : IsLocalization.Away overlapGenerator Q := by
+    simpa only [overlapGenerator] using
+      (inferInstance :
+        IsLocalization.Away (leftGenerator * rightGenerator) Q)
+  let e₀ :
+      Q ≃ₐ[AmbientRing] Localization.Away overlapGenerator :=
+    IsLocalization.algEquiv
+      (Submonoid.powers overlapGenerator) Q
+        (Localization.Away overlapGenerator)
+  have he :
+      e₀.toRingEquiv.toRingHom.comp
+          (algebraMap (Localization.Away leftGenerator) Q) =
+        leftToOverlapRingHom := by
+    apply IsLocalization.ringHom_ext
+      (Submonoid.powers leftGenerator)
+    apply RingHom.ext
+    intro x
+    simp only [RingHom.comp_apply]
+    rw [← IsScalarTower.algebraMap_apply AmbientRing
+      (Localization.Away leftGenerator) Q]
+    change e₀ ((algebraMap AmbientRing Q) x) =
+      leftToOverlapRingHom
+        ((algebraMap AmbientRing
+          (Localization.Away leftGenerator)) x)
+    rw [e₀.commutes]
+    exact (RingHom.congr_fun
+      leftToOverlapRingHom_comp_algebraMap x).symm
+  let e :
+      Q ≃ₐ[Localization.Away leftGenerator]
+        Localization.Away overlapGenerator :=
+    { e₀.toRingEquiv with
+      commutes' := fun z => RingHom.congr_fun he z }
+  exact IsLocalization.isLocalization_of_algEquiv
+    (S := Q)
+    (P := Localization.Away overlapGenerator)
+    (Submonoid.powers
+      (algebraMap AmbientRing
+        (Localization.Away leftGenerator) rightGenerator)) e
+
 private theorem awayToAway_right_eq :
     IsLocalization.Away.awayToAwayLeft
         (S := Localization.Away rightGenerator)
@@ -3134,6 +3194,66 @@ private theorem awayToAway_right_eq :
     IsLocalization.Away.lift_comp,
     rightToOverlapRingHom_comp_algebraMap]
   simp only [overlapGenerator]
+
+/--
+The actual right-to-overlap ring map is localization away from the image of
+the left principal-open generator.
+-/
+theorem rightToOverlap_isLocalization :
+    letI := rightToOverlapRingHom.toAlgebra
+    IsLocalization
+      (Submonoid.powers
+        (algebraMap AmbientRing
+          (Localization.Away rightGenerator) leftGenerator))
+      (Localization.Away overlapGenerator) := by
+  letI := rightToOverlapRingHom.toAlgebra
+  let Q :=
+    Localization.Away
+      (algebraMap AmbientRing
+        (Localization.Away rightGenerator) leftGenerator)
+  letI : IsScalarTower AmbientRing
+      (Localization.Away rightGenerator)
+      (Localization.Away overlapGenerator) :=
+    IsScalarTower.of_algebraMap_eq'
+      rightToOverlapRingHom_comp_algebraMap.symm
+  letI : IsLocalization.Away overlapGenerator Q := by
+    simpa only [overlapGenerator, mul_comm] using
+      (inferInstance :
+        IsLocalization.Away (rightGenerator * leftGenerator) Q)
+  let e₀ :
+      Q ≃ₐ[AmbientRing] Localization.Away overlapGenerator :=
+    IsLocalization.algEquiv
+      (Submonoid.powers overlapGenerator) Q
+        (Localization.Away overlapGenerator)
+  have he :
+      e₀.toRingEquiv.toRingHom.comp
+          (algebraMap (Localization.Away rightGenerator) Q) =
+        rightToOverlapRingHom := by
+    apply IsLocalization.ringHom_ext
+      (Submonoid.powers rightGenerator)
+    apply RingHom.ext
+    intro x
+    simp only [RingHom.comp_apply]
+    rw [← IsScalarTower.algebraMap_apply AmbientRing
+      (Localization.Away rightGenerator) Q]
+    change e₀ ((algebraMap AmbientRing Q) x) =
+      rightToOverlapRingHom
+        ((algebraMap AmbientRing
+          (Localization.Away rightGenerator)) x)
+    rw [e₀.commutes]
+    exact (RingHom.congr_fun
+      rightToOverlapRingHom_comp_algebraMap x).symm
+  let e :
+      Q ≃ₐ[Localization.Away rightGenerator]
+        Localization.Away overlapGenerator :=
+    { e₀.toRingEquiv with
+      commutes' := fun z => RingHom.congr_fun he z }
+  exact IsLocalization.isLocalization_of_algEquiv
+    (S := Q)
+    (P := Localization.Away overlapGenerator)
+    (Submonoid.powers
+      (algebraMap AmbientRing
+        (Localization.Away rightGenerator) leftGenerator)) e
 
 private noncomputable def overlapSwapRingHom :
     Localization.Away overlapGenerator →+*
