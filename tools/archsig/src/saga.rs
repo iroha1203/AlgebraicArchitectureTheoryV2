@@ -693,8 +693,8 @@ pub(crate) fn evaluate_saga_descent_v1(
                 "nonZero": class_nonzero,
                 "quotient": "Z1/B1",
                 "component": {
-                    "chartRefs": class_certificate.cocycle.component.chart_refs,
-                    "overlapRefs": class_certificate.cocycle.component.overlap_refs
+                    "chartRefs": &class_certificate.cocycle.component.chart_refs,
+                    "overlapRefs": &class_certificate.cocycle.component.overlap_refs
                 },
                 "cocycle": {
                     "checked": true,
@@ -704,12 +704,12 @@ pub(crate) fn evaluate_saga_descent_v1(
                 },
                 "suppliedData": {
                     "trueSheafCertificate": {
-                        "coverRef": class_certificate.true_sheaf_cover_ref,
-                        "memberChartRefs": class_certificate.true_sheaf_member_chart_refs
+                        "coverRef": &class_certificate.true_sheaf_cover_ref,
+                        "memberChartRefs": &class_certificate.true_sheaf_member_chart_refs
                     },
                     "gluingData": {
-                        "overlapRefs": class_certificate.gluing_overlap_refs,
-                        "sectionRefsChecked": true
+                        "overlapRefs": class_certificate.gluing_overlap_refs(),
+                        "sectionRefs": class_certificate.gluing_section_refs_json()
                     }
                 }
             },
@@ -1040,7 +1040,28 @@ struct SagaClassSupplyCertificate {
     cocycle: SagaComponentCocycleCertificate,
     true_sheaf_cover_ref: String,
     true_sheaf_member_chart_refs: Vec<String>,
-    gluing_overlap_refs: Vec<String>,
+    gluing_section_refs: Vec<(String, String)>,
+}
+
+impl SagaClassSupplyCertificate {
+    fn gluing_overlap_refs(&self) -> Vec<&str> {
+        self.gluing_section_refs
+            .iter()
+            .map(|(overlap_ref, _)| overlap_ref.as_str())
+            .collect()
+    }
+
+    fn gluing_section_refs_json(&self) -> Vec<Value> {
+        self.gluing_section_refs
+            .iter()
+            .map(|(overlap_ref, section_ref)| {
+                json!({
+                    "overlapRef": overlap_ref,
+                    "sectionRef": section_ref
+                })
+            })
+            .collect()
+    }
 }
 
 fn class_supply_is_checked(
@@ -1051,12 +1072,12 @@ fn class_supply_is_checked(
     let coefficient_ok = coefficient_is_f2_additive(plan);
     let (true_sheaf_cover_ref, true_sheaf_member_chart_refs) =
         component_true_sheaf_certificate(archmap, plan, &cocycle.component)?;
-    let gluing_overlap_refs = component_gluing_data(plan, &cocycle.component)?;
+    let gluing_section_refs = component_gluing_data(plan, &cocycle.component)?;
     coefficient_ok.then_some(SagaClassSupplyCertificate {
         cocycle,
         true_sheaf_cover_ref,
         true_sheaf_member_chart_refs,
-        gluing_overlap_refs,
+        gluing_section_refs,
     })
 }
 
@@ -1100,7 +1121,7 @@ fn component_true_sheaf_certificate(
 fn component_gluing_data(
     plan: &RepairPlanDocumentV1,
     component: &RepairComplexComponent,
-) -> Option<Vec<String>> {
+) -> Option<Vec<(String, String)>> {
     let gluing = plan.gluing_data.as_ref()?.as_object()?;
     if gluing.get("kind").and_then(Value::as_str) != Some("gluing-data") {
         return None;
@@ -1129,7 +1150,8 @@ fn component_gluing_data(
             let item = item.as_object()?;
             let overlap_ref = item.get("overlapRef")?.as_str()?;
             let section_ref = item.get("sectionRef")?.as_str()?;
-            (!section_ref.is_empty()).then_some((overlap_ref, section_ref))
+            (canonical_section_ref(overlap_ref).as_deref() == Some(section_ref))
+                .then_some((overlap_ref, section_ref))
         })
         .collect::<Option<Vec<_>>>()?;
     let supplied_overlaps = section_refs
@@ -1140,10 +1162,25 @@ fn component_gluing_data(
         .iter()
         .map(|(_, section_ref)| *section_ref)
         .collect::<BTreeSet<_>>();
-    (section_refs.len() == component_overlap_refs.len()
-        && supplied_overlaps == component_overlap_refs
-        && supplied_sections.len() == component_overlap_refs.len())
-    .then(|| component.overlap_refs.clone())
+    if section_refs.len() != component_overlap_refs.len()
+        || supplied_overlaps != component_overlap_refs
+        || supplied_sections.len() != component_overlap_refs.len()
+    {
+        return None;
+    }
+    let mut section_refs = section_refs
+        .into_iter()
+        .map(|(overlap_ref, section_ref)| (overlap_ref.to_string(), section_ref.to_string()))
+        .collect::<Vec<_>>();
+    section_refs.sort_by(|left, right| left.0.cmp(&right.0));
+    Some(section_refs)
+}
+
+fn canonical_section_ref(overlap_ref: &str) -> Option<String> {
+    overlap_ref
+        .strip_prefix("overlap:")
+        .filter(|suffix| !suffix.is_empty())
+        .map(|suffix| format!("section:{suffix}"))
 }
 
 fn coefficient_is_f2_additive(plan: &RepairPlanDocumentV1) -> bool {

@@ -238,39 +238,39 @@
     "sectionRefs": [
       {
         "overlapRef": "overlap:application-settlement",
-        "sectionRef": "section:money-application-settlement"
+        "sectionRef": "section:application-settlement"
       },
       {
         "overlapRef": "overlap:application-ports",
-        "sectionRef": "section:money-application-ports"
+        "sectionRef": "section:application-ports"
       },
       {
         "overlapRef": "overlap:infrastructure-ports",
-        "sectionRef": "section:money-infrastructure-ports"
+        "sectionRef": "section:infrastructure-ports"
       },
       {
         "overlapRef": "overlap:infrastructure-settlement",
-        "sectionRef": "section:money-infrastructure-settlement"
+        "sectionRef": "section:infrastructure-settlement"
       },
       {
         "overlapRef": "overlap:application-domain",
-        "sectionRef": "section:money-application-domain"
+        "sectionRef": "section:application-domain"
       },
       {
         "overlapRef": "overlap:application-shared",
-        "sectionRef": "section:money-application-shared"
+        "sectionRef": "section:application-shared"
       },
       {
         "overlapRef": "overlap:domain-shared",
-        "sectionRef": "section:money-domain-shared"
+        "sectionRef": "section:domain-shared"
       },
       {
         "overlapRef": "overlap:policy-shared",
-        "sectionRef": "section:money-policy-shared"
+        "sectionRef": "section:policy-shared"
       },
       {
         "overlapRef": "overlap:runtime-application",
-        "sectionRef": "section:money-runtime-application"
+        "sectionRef": "section:runtime-application"
       }
     ]
   },

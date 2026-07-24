@@ -153,21 +153,39 @@ fn edge_mismatch_section(packet: &Value) -> Value {
 /// that F2 coefficients carry no orientation; consumers must not render
 /// direction, rotation, or magnitude from this section.
 fn class_support_section(packet: &Value) -> Value {
-    let Some(cech) = invariant_with_id_prefix(packet, "cech-cohomology:") else {
+    let cech = invariant_with_id_prefix(packet, "cech-cohomology:");
+    let residual = invariant_with_id_prefix(packet, "saga-descent:residual-class");
+    let membership = invariant_with_id_prefix(packet, "saga-descent:boundary-membership");
+    if cech.is_none() && residual.is_none() && membership.is_none() {
         return Value::Null;
-    };
-    let rep = representation(cech);
-    let observed = &rep["observedCocycle"];
-    let mut section = json!({
-        "coefficient": rep["coefficient"],
-        "undirected": true,
-        "classNonzero": observed["classNonzero"],
-        "representativeEdgeRefs": rep["classSupport"]["edgeRefs"],
-        "supportAtomRefs": rep["classSupport"]["supportAtomRefs"],
-        "b1": rep["nerveShape"]["b1"],
-        "isForest": rep["nerveShape"]["isForest"],
-    });
-    if let Some(residual) = invariant_with_id_prefix(packet, "saga-descent:residual-class") {
+    }
+    let mut section = cech.map_or_else(
+        || {
+            json!({
+                "coefficient": null,
+                "undirected": null,
+                "classNonzero": null,
+                "representativeEdgeRefs": null,
+                "supportAtomRefs": null,
+                "b1": null,
+                "isForest": null,
+            })
+        },
+        |cech| {
+            let rep = representation(cech);
+            let observed = &rep["observedCocycle"];
+            json!({
+                "coefficient": rep["coefficient"],
+                "undirected": true,
+                "classNonzero": observed["classNonzero"],
+                "representativeEdgeRefs": rep["classSupport"]["edgeRefs"],
+                "supportAtomRefs": rep["classSupport"]["supportAtomRefs"],
+                "b1": rep["nerveShape"]["b1"],
+                "isForest": rep["nerveShape"]["isForest"],
+            })
+        },
+    );
+    if let Some(residual) = residual {
         let residual_rep = representation(residual);
         section["residualClass"] = json!({
             "nonZero": residual_rep["residualClassSupport"]["nonZero"],
@@ -179,7 +197,7 @@ fn class_support_section(packet: &Value) -> Value {
             "suppliedData": residual_rep["residualClassSupport"]["suppliedData"],
         });
     }
-    if let Some(membership) = invariant_with_id_prefix(packet, "saga-descent:boundary-membership") {
+    if let Some(membership) = membership {
         let membership_value = if membership["value"].is_object() {
             &membership["value"]
         } else {

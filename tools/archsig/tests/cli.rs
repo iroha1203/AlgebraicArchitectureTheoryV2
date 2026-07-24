@@ -2586,11 +2586,8 @@ fn cli_analyze_saga_descent_certifies_the_one_cent_component_without_other_tripl
         archmap,
     );
 
-    for packet_path in [
-        with_disconnected_triple.join("archsig-measurement-packet.json"),
-        without_disconnected_triple.join("archsig-measurement-packet.json"),
-    ] {
-        let packet = read_json(&packet_path);
+    for out_dir in [with_disconnected_triple, without_disconnected_triple] {
+        let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
         assert_eq!(
             saga_row(&packet, "saga.residual-class")["verdict"],
             "measured_nonzero"
@@ -2631,9 +2628,37 @@ fn cli_analyze_saga_descent_certifies_the_one_cent_component_without_other_tripl
             ])
         );
         assert_eq!(
-            support["suppliedData"]["gluingData"]["sectionRefsChecked"],
-            true
+            support["suppliedData"]["gluingData"]["sectionRefs"],
+            json!([
+                {
+                    "overlapRef": "overlap:cancel-inside-payment",
+                    "sectionRef": "section:cancel-inside-payment"
+                },
+                {
+                    "overlapRef": "overlap:cancel-order",
+                    "sectionRef": "section:cancel-order"
+                },
+                {
+                    "overlapRef": "overlap:inside-payment-order",
+                    "sectionRef": "section:inside-payment-order"
+                }
+            ])
         );
+        let view_model = read_json(&out_dir.join("archsig-measurement-view-model.json"));
+        let view_residual = &view_model["classSupport"]["residualClass"];
+        assert_eq!(
+            view_residual["component"]["chartRefs"],
+            json!(["ctx:cancel", "ctx:inside-payment", "ctx:order"])
+        );
+        assert_eq!(
+            view_residual["cocycleCertificateKind"],
+            "automatic-c2-zero"
+        );
+        assert_eq!(
+            view_residual["suppliedData"]["gluingData"]["sectionRefs"],
+            support["suppliedData"]["gluingData"]["sectionRefs"]
+        );
+        assert!(view_model["classSupport"]["classNonzero"].is_null());
     }
 }
 
@@ -2692,6 +2717,27 @@ fn cli_analyze_saga_descent_rejects_supplied_data_from_another_component() {
         remote_certificate_archmap,
     );
 
+    let mut remote_section_plan = local_plan.clone();
+    remote_section_plan["gluingData"]["sectionRefs"] = json!([
+        {
+            "overlapRef": "overlap:cancel-inside-payment",
+            "sectionRef": "section:consign-parcel"
+        },
+        {
+            "overlapRef": "overlap:inside-payment-order",
+            "sectionRef": "section:parcel-shipping"
+        },
+        {
+            "overlapRef": "overlap:cancel-order",
+            "sectionRef": "section:consign-shipping"
+        }
+    ]);
+    let remote_section_out = run_saga_fixture_lock_with_archmap(
+        "ag-saga-component-aware-remote-section-refs",
+        remote_section_plan,
+        component_aware_one_cent_archmap(&root),
+    );
+
     let mut remote_gluing_plan = local_plan;
     remote_gluing_plan["gluingData"]["overlapRefs"] = json!([
         "overlap:consign-parcel",
@@ -2720,6 +2766,7 @@ fn cli_analyze_saga_descent_rejects_supplied_data_from_another_component() {
 
     for packet_path in [
         remote_certificate_out.join("archsig-measurement-packet.json"),
+        remote_section_out.join("archsig-measurement-packet.json"),
         remote_gluing_out.join("archsig-measurement-packet.json"),
     ] {
         let packet = read_json(&packet_path);
@@ -12297,7 +12344,7 @@ fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_diges
 
     let manifest = read_json(&first_out.join("archsig-run-manifest.json"));
     assert_eq!(manifest["toolVersion"], "0.5.4");
-    assert_eq!(manifest["runId"], "run:492434adf066");
+    assert_eq!(manifest["runId"], "run:edf063ef116e");
     assert_eq!(
         manifest["inputDigests"]["archmap"]["sha256"],
         "653037e1812bad367d211b926b976065d69842ec6d26cb5d4f82bdb9ac5f46e3"
@@ -12330,7 +12377,7 @@ fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_diges
     );
     assert_eq!(
         manifest["inputDigests"]["repairPlan"]["sha256"],
-        "705954f81878a1d164734aebd24ba7fa10fa2f7b605e835f6ec2a1726865435e"
+        "3a4d961908002609421e28830fd36bd7e0c47c92223a82d1ce1875fea4766f69"
     );
 }
 
@@ -12507,7 +12554,7 @@ fn cli_analyze_stamp_appends_opt_in_run_id_suffix() {
     assert!(
         manifest["runId"]
             .as_str()
-            .is_some_and(|run_id| run_id.starts_with("run:492434adf066-stamp:")),
+            .is_some_and(|run_id| run_id.starts_with("run:edf063ef116e-stamp:")),
         "stamp opt-in should append a wall-clock suffix to the deterministic input-derived prefix"
     );
 }
