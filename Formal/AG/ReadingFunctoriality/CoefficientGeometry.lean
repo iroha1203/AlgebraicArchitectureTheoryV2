@@ -14,10 +14,12 @@ target `HasSheafify` instances type the two standard schemes; the explicit site-
 canonical scheme pullback.
 
 The equation-system route starts from an `EquationObservableRealization` of
-`S.equationSystem`.  Coefficient change composes every observable component
-with the actual standard-scheme projection, then transports the
-symbolic-residual equalizer, generated witness and obstruction ideals, their
-ideal sheaves, and the realization and lawful closed subschemes.
+`S.equationSystem`.  Coefficient change transports every context-owned
+observable and residual section through the canonical sheafified-section map,
+transports section-dependent architecture readings through the actual
+standard-scheme projection, and then carries the symbolic-residual equalizer,
+generated witness and obstruction ideals, their ideal sheaves, and the
+realization and lawful closed subschemes.
 
 The fixed definition sends each source global equation through the actual
 `StandardArchitectureScheme.baseChangeMap.appTop`.  The target geometric predicate and its
@@ -183,8 +185,45 @@ variable {X : StandardArchitectureScheme raw}
 variable {E : ArchitecturalEquationSystem S.contextPreorder}
 
 /--
+The canonical map on sheafified sections commutes with context
+restriction.
+-/
+private theorem sectionBaseChangeMap_natural
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    {W V : S.category} (g : W ⟶ V) :
+    RawAmbientRestrictionSystem.sheafifiedSectionBaseChangeMap raw f V ≫
+        sheafifiedRestriction (raw.baseChange f.hom) g =
+      sheafifiedRestriction raw g ≫
+        RawAmbientRestrictionSystem.sheafifiedSectionBaseChangeMap raw f W := by
+  let comparison :
+      raw.toRingedSite.structureSheaf.val ⋙ f.coefficientExtension ≅
+        (raw.baseChange f.hom).toRingedSite.structureSheaf.val :=
+    (sheafifyComposeIso S.topology f.coefficientExtension raw.toPresheaf).symm ≪≫
+      ((CategoryTheory.sheafification S.topology
+        (AATCommAlgCat.{u, v} k')).mapIso
+          (RawAmbientRestrictionSystem.baseChangePresheafIso raw f)).symm
+  have hnat := congrArg (fun q => q.right)
+    (comparison.hom.naturality g.op)
+  change ((f.coefficientExtension.map
+      (raw.toRingedSite.structureSheaf.val.map g.op)).right ≫
+        (comparison.app (Opposite.op W)).hom.right) =
+    (comparison.app (Opposite.op V)).hom.right ≫
+      ((raw.baseChange f.hom).toRingedSite.structureSheaf.val.map g.op).right at hnat
+  change pushout.inl _ _ ≫ (comparison.app (Opposite.op V)).hom.right ≫
+      ((raw.baseChange f.hom).toRingedSite.structureSheaf.val.map g.op).right =
+    (raw.toRingedSite.structureSheaf.val.map g.op).right ≫
+      pushout.inl _ _ ≫ (comparison.app (Opposite.op W)).hom.right
+  rw [← hnat]
+  simp only [← Category.assoc]
+  rw [cancel_mono (comparison.app (Opposite.op W)).hom.right]
+  simp [FlatCoefficientChange.coefficientExtension]
+
+/--
 Coefficient change transports every observable component through the actual
-standard-scheme projection.
+canonical map of the corresponding sheafified section ring.
 -/
 noncomputable def baseChange
     (R : EquationObservableRealization raw X E)
@@ -195,14 +234,208 @@ noncomputable def baseChange
     EquationObservableRealization
       (raw.baseChange f.hom) (X.baseChange raw f) E where
   sectionMap := fun W =>
-    (X.baseChangeMap raw f).appTop.hom.comp (R.sectionMap W)
-  naturality := by
-    intro source target g x
-    change
+    (RawAmbientRestrictionSystem.sheafifiedSectionBaseChangeMap
+      raw f W).hom.comp (R.sectionMap W)
+  architectureAt := fun s =>
+    R.architectureAt (s ≫ X.baseChangeMap raw f)
+  residualSection := fun W i a =>
+    RawAmbientRestrictionSystem.sheafifiedSectionBaseChangeMap
+      raw f W (R.residualSection W i a)
+
+/-- The changed base-context section map is the source map followed by the
+actual standard-scheme projection on global sections. -/
+theorem baseSectionMap_baseChange
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
+    (R.baseChange f).baseSectionMap =
+      (X.baseChangeMap raw f).appTop.hom.comp R.baseSectionMap := by
+  ext x
+  change
+    (X.baseChange raw f).decoration.interpretation
+        (RawAmbientRestrictionSystem.sheafifiedSectionBaseChangeMap
+          raw f X.decoration.context (R.sectionMap X.decoration.context x)) =
       (X.baseChangeMap raw f).appTop
-          (R.sectionMap source (E.restrict g x)) =
-        (X.baseChangeMap raw f).appTop (R.sectionMap target x)
-    rw [R.naturality g x]
+        (X.decoration.interpretation
+          (R.sectionMap X.decoration.context x))
+  simpa only [CommRingCat.comp_apply] using congrArg
+    (fun q => q (R.sectionMap X.decoration.context x))
+    (StandardArchitectureScheme.baseChangedDecoration_interpretation
+      raw X f)
+
+/-- The map from a changed test-chart pullback to the corresponding source
+test-chart pullback. -/
+noncomputable def chartPullbackBaseChangeMap
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    {T : AlgebraicGeometry.Scheme}
+    (s : T ⟶ (X.baseChange raw f).underlying)
+    (j : X.atlas.Index) :
+    (R.baseChange f).chartPullback s j ⟶
+      R.chartPullback (s ≫ X.baseChangeMap raw f) j :=
+  pullback.lift
+    (pullback.fst s ((X.baseChange raw f).atlas.chart j).map)
+    (pullback.snd s ((X.baseChange raw f).atlas.chart j).map ≫
+      StandardArchitectureScheme.baseChangedChartMap raw X f j)
+    (by
+      rw [← Category.assoc, pullback.condition]
+      simpa only [Category.assoc] using congrArg
+        (fun q =>
+          pullback.snd s ((X.baseChange raw f).atlas.chart j).map ≫ q)
+        (StandardArchitectureScheme.baseChangedChart_isPullback
+          raw X f j).w)
+
+/-- Evaluation on a changed test-chart pullback is the pullback of source
+evaluation through the canonical comparison map. -/
+theorem chartEvaluation_baseChange
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    {T : AlgebraicGeometry.Scheme}
+    (s : T ⟶ (X.baseChange raw f).underlying)
+    (j : X.atlas.Index)
+    (x : SheafifiedSectionRing raw (X.atlas.chart j).context) :
+    (R.baseChange f).chartEvaluation s j
+        (RawAmbientRestrictionSystem.sheafifiedSectionBaseChangeMap
+          raw f (X.atlas.chart j).context x) =
+      (R.chartPullbackBaseChangeMap f s j).appTop
+        (R.chartEvaluation (s ≫ X.baseChangeMap raw f) j x) := by
+  have hChart :
+      StandardArchitectureScheme.baseChangedChartMap raw X f j =
+        Scheme.Spec.map
+          (RawAmbientRestrictionSystem.sheafifiedSectionBaseChangeMap
+            raw f (X.atlas.chart j).context).op := by
+    exact
+      RawAmbientRestrictionSystem.sheafifiedSectionSpecBaseChangeIso_hom_fst
+        raw f (X.atlas.chart j).context
+  have hLift :
+      R.chartPullbackBaseChangeMap f s j ≫
+          pullback.snd (s ≫ X.baseChangeMap raw f)
+            (X.atlas.chart j).map =
+        pullback.snd s ((X.baseChange raw f).atlas.chart j).map ≫
+          StandardArchitectureScheme.baseChangedChartMap raw X f j := by
+    exact pullback.lift_snd _ _ _
+  have hTop := congrArg (fun q => q.appTop) hLift
+  simp only [Scheme.Hom.comp_appTop] at hTop
+  change
+    ((Scheme.ΓSpecIso
+        (SheafifiedSectionRing (raw.baseChange f.hom)
+          (X.atlas.chart j).context)).inv ≫
+      (pullback.snd s ((X.baseChange raw f).atlas.chart j).map).appTop)
+        (RawAmbientRestrictionSystem.sheafifiedSectionBaseChangeMap
+          raw f (X.atlas.chart j).context x) =
+      ((Scheme.ΓSpecIso
+          (SheafifiedSectionRing raw
+            (X.atlas.chart j).context)).inv ≫
+        (pullback.snd (s ≫ X.baseChangeMap raw f)
+          (X.atlas.chart j).map).appTop ≫
+        (R.chartPullbackBaseChangeMap f s j).appTop) x
+  rw [hTop, hChart]
+  apply congrArg
+    (fun z =>
+      (pullback.snd s
+        ((X.baseChange raw f).atlas.chart j).map).appTop z)
+  simpa only [Category.assoc, CommRingCat.comp_apply] using congrArg
+    (fun q => q x)
+      (Scheme.ΓSpecIso_inv_naturality
+        (RawAmbientRestrictionSystem.sheafifiedSectionBaseChangeMap
+          raw f (X.atlas.chart j).context))
+
+/-- Coefficient change preserves the representable-regime recognition laws. -/
+theorem baseChange_valid
+    (R : EquationObservableRealization raw X E)
+    (hR : IsEquationObservableRealization R)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
+    IsEquationObservableRealization (R.baseChange f) where
+  sectionMap_natural := by
+    intro source target g x
+    change RawAmbientRestrictionSystem.sheafifiedSectionBaseChangeMap raw f source
+        (R.sectionMap source (E.restrict g x)) =
+      sheafifiedRestriction (raw.baseChange f.hom) g
+        (RawAmbientRestrictionSystem.sheafifiedSectionBaseChangeMap raw f target
+          (R.sectionMap target x))
+    rw [hR.sectionMap_natural g x]
+    simpa only [CommRingCat.comp_apply] using congrArg
+      (fun q => q (R.sectionMap target x))
+      (sectionBaseChangeMap_natural (raw := raw) f g).symm
+  residualSection_natural := by
+    intro source target g i a
+    change RawAmbientRestrictionSystem.sheafifiedSectionBaseChangeMap raw f source
+        (R.residualSection source i a) =
+      sheafifiedRestriction (raw.baseChange f.hom) g
+        (RawAmbientRestrictionSystem.sheafifiedSectionBaseChangeMap raw f target
+          (R.residualSection target i a))
+    rw [hR.residualSection_natural g i a]
+    simpa only [CommRingCat.comp_apply] using congrArg
+      (fun q => q (R.residualSection target i a))
+      (sectionBaseChangeMap_natural (raw := raw) f g).symm
+  architectureAt_comp := by
+    intro T T' s g
+    simpa only [baseChange, Category.assoc] using
+      hR.architectureAt_comp (s ≫ X.baseChangeMap raw f) g
+  residualSection_evaluates := by
+    intro T s i a
+    change s.appTop
+        ((R.baseChange f).ambientResidualSection i a) =
+      s.appTop
+        ((R.baseChange f).baseSectionMap
+          (E.equationResidual X.decoration.context
+            (R.architectureAt (s ≫ X.baseChangeMap raw f)) i a))
+    rw [R.baseSectionMap_baseChange f]
+    change s.appTop
+        ((X.baseChange raw f).decoration.interpretation
+          (RawAmbientRestrictionSystem.sheafifiedSectionBaseChangeMap
+            raw f X.decoration.context
+            (R.residualSection X.decoration.context i a))) =
+      s.appTop
+        ((X.baseChangeMap raw f).appTop
+          (R.baseSectionMap
+            (E.equationResidual X.decoration.context
+              (R.architectureAt (s ≫ X.baseChangeMap raw f)) i a)))
+    rw [show
+      (X.baseChange raw f).decoration.interpretation
+          (RawAmbientRestrictionSystem.sheafifiedSectionBaseChangeMap
+            raw f X.decoration.context
+            (R.residualSection X.decoration.context i a)) =
+        (X.baseChangeMap raw f).appTop
+          (X.decoration.interpretation
+            (R.residualSection X.decoration.context i a)) by
+      simpa only [CommRingCat.comp_apply] using congrArg
+        (fun q => q (R.residualSection X.decoration.context i a))
+        (StandardArchitectureScheme.baseChangedDecoration_interpretation
+          raw X f)]
+    simpa only [Scheme.Hom.comp_appTop, CommRingCat.comp_apply] using
+      hR.residualSection_evaluates
+        (s ≫ X.baseChangeMap raw f) i a
+  residualSection_evaluates_on_chart := by
+    intro T s j i a
+    change
+      (R.baseChange f).chartEvaluation s j
+          (RawAmbientRestrictionSystem.sheafifiedSectionBaseChangeMap
+            raw f (X.atlas.chart j).context
+            (R.residualSection (X.atlas.chart j).context i a)) =
+        (R.baseChange f).chartEvaluation s j
+          (RawAmbientRestrictionSystem.sheafifiedSectionBaseChangeMap
+            raw f (X.atlas.chart j).context
+            (R.sectionMap (X.atlas.chart j).context
+              (E.equationResidual (X.atlas.chart j).context
+                (R.architectureAt (s ≫ X.baseChangeMap raw f)) i a)))
+    rw [R.chartEvaluation_baseChange f s j,
+      R.chartEvaluation_baseChange f s j]
+    exact congrArg
+      (fun z => (R.chartPullbackBaseChangeMap f s j).appTop z)
+      (hR.residualSection_evaluates_on_chart
+        (s ≫ X.baseChangeMap raw f) j i a)
 
 @[simp] theorem baseChange_sectionMap
     (R : EquationObservableRealization raw X E)
@@ -212,7 +445,8 @@ noncomputable def baseChange
         AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
     (W : S.category) (x : E.Observable W) :
     (R.baseChange f).sectionMap W x =
-      (X.baseChangeMap raw f).appTop (R.sectionMap W x) :=
+      RawAmbientRestrictionSystem.sheafifiedSectionBaseChangeMap
+        raw f W (R.sectionMap W x) :=
   rfl
 
 @[simp] theorem violationSection_baseChange
@@ -221,10 +455,18 @@ noncomputable def baseChange
     [S.topology.HasSheafCompose
       (f.coefficientExtension :
         AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
-    (W : S.category) (i : E.Index) (a : U.Atom) :
-    (R.baseChange f).violationSection W i a =
-      (X.baseChangeMap raw f).appTop (R.violationSection W i a) :=
-  rfl
+    (i : E.Index) (a : U.Atom) :
+    (R.baseChange f).violationSection i a =
+      (X.baseChangeMap raw f).appTop (R.violationSection i a) :=
+  by
+    change
+      (R.baseChange f).baseSectionMap
+          (E.violationCoordinate X.decoration.context i a) =
+        (X.baseChangeMap raw f).appTop
+          (R.baseSectionMap
+            (E.violationCoordinate X.decoration.context i a))
+    rw [R.baseSectionMap_baseChange f]
+    rfl
 
 @[simp] theorem residualSection_baseChange
     (R : EquationObservableRealization raw X E)
@@ -232,11 +474,34 @@ noncomputable def baseChange
     [S.topology.HasSheafCompose
       (f.coefficientExtension :
         AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
-    (Obj : ArchitectureObject U)
     (W : S.category) (i : E.Index) (a : U.Atom) :
-    (R.baseChange f).residualSection Obj W i a =
-      (X.baseChangeMap raw f).appTop (R.residualSection Obj W i a) :=
+    (R.baseChange f).residualSection W i a =
+      RawAmbientRestrictionSystem.sheafifiedSectionBaseChangeMap
+        raw f W (R.residualSection W i a) :=
   rfl
+
+@[simp] theorem ambientResidualSection_baseChange
+    (R : EquationObservableRealization raw X E)
+    (f : FlatCoefficientChange k k')
+    [S.topology.HasSheafCompose
+      (f.coefficientExtension :
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
+    (i : E.Index) (a : U.Atom) :
+    (R.baseChange f).ambientResidualSection i a =
+      (X.baseChangeMap raw f).appTop
+        (R.ambientResidualSection i a) := by
+  change
+    (X.baseChange raw f).decoration.interpretation
+        (RawAmbientRestrictionSystem.sheafifiedSectionBaseChangeMap
+          raw f X.decoration.context
+          (R.residualSection X.decoration.context i a)) =
+      (X.baseChangeMap raw f).appTop
+        (X.decoration.interpretation
+          (R.residualSection X.decoration.context i a))
+  simpa only [CommRingCat.comp_apply] using congrArg
+    (fun q => q (R.residualSection X.decoration.context i a))
+    (StandardArchitectureScheme.baseChangedDecoration_interpretation
+      raw X f)
 
 @[simp] theorem realizationRelation_baseChange
     (R : EquationObservableRealization raw X E)
@@ -244,12 +509,11 @@ noncomputable def baseChange
     [S.topology.HasSheafCompose
       (f.coefficientExtension :
         AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
-    (Obj : ArchitectureObject U)
     (g : EquationObservableRealization.GeneratorIndex E) :
-    (R.baseChange f).realizationRelation Obj g =
-      (X.baseChangeMap raw f).appTop (R.realizationRelation Obj g) := by
+    (R.baseChange f).realizationRelation g =
+      (X.baseChangeMap raw f).appTop (R.realizationRelation g) := by
   simp only [realizationRelation, violationSection_baseChange,
-    residualSection_baseChange, map_sub]
+    ambientResidualSection_baseChange, map_sub]
 
 /-- The equalizer ideal is extended by the actual coefficient map. -/
 theorem realizationIdeal_baseChange
@@ -257,20 +521,19 @@ theorem realizationIdeal_baseChange
     (f : FlatCoefficientChange k k')
     [S.topology.HasSheafCompose
       (f.coefficientExtension :
-        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
-    (Obj : ArchitectureObject U) :
-    (R.baseChange f).realizationIdeal Obj =
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
+    (R.baseChange f).realizationIdeal =
       Ideal.map (X.baseChangeMap raw f).appTop.hom
-        (R.realizationIdeal Obj) := by
+        R.realizationIdeal := by
   rw [realizationIdeal, realizationIdeal, Ideal.map_span]
   congr 1
   ext z
   constructor
   · rintro ⟨g, rfl⟩
-    exact ⟨R.realizationRelation Obj g, ⟨g, rfl⟩,
-      (R.realizationRelation_baseChange f Obj g).symm⟩
+    exact ⟨R.realizationRelation g, ⟨g, rfl⟩,
+      (R.realizationRelation_baseChange f g).symm⟩
   · rintro ⟨_, ⟨g, rfl⟩, rfl⟩
-    exact ⟨g, R.realizationRelation_baseChange f Obj g⟩
+    exact ⟨g, R.realizationRelation_baseChange f g⟩
 
 /-- Every global witness ideal is extended by the actual coefficient map. -/
 theorem globalWitnessIdeal_baseChange
@@ -283,10 +546,8 @@ theorem globalWitnessIdeal_baseChange
     (R.baseChange f).globalWitnessIdeal i =
       Ideal.map (X.baseChangeMap raw f).appTop.hom
         (R.globalWitnessIdeal i) := by
-  rw [globalWitnessIdeal, globalWitnessIdeal, Ideal.map_iSup]
-  congr 1
-  funext W
-  rw [Ideal.map_map]
+  rw [globalWitnessIdeal, globalWitnessIdeal,
+    R.baseSectionMap_baseChange f, Ideal.map_map]
   rfl
 
 /-- The global obstruction ideal is extended by the actual coefficient map. -/
@@ -299,10 +560,8 @@ theorem globalObstructionIdeal_baseChange
     (R.baseChange f).globalObstructionIdeal =
       Ideal.map (X.baseChangeMap raw f).appTop.hom
         R.globalObstructionIdeal := by
-  rw [globalObstructionIdeal, globalObstructionIdeal, Ideal.map_iSup]
-  congr 1
-  funext W
-  rw [Ideal.map_map]
+  rw [globalObstructionIdeal, globalObstructionIdeal,
+    R.baseSectionMap_baseChange f, Ideal.map_map]
   rfl
 
 end EquationObservableRealization
@@ -580,14 +839,13 @@ theorem realizationIdealSheaf_baseChange
     (f : FlatCoefficientChange k k')
     [S.topology.HasSheafCompose
       (f.coefficientExtension :
-        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
-    (Obj : ArchitectureObject U) :
-    (R.realizationIdealSheaf Obj).comap
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
+    R.realizationIdealSheaf.comap
         (X.baseChangeMap raw f) =
-      (R.baseChange f).realizationIdealSheaf Obj := by
+      (R.baseChange f).realizationIdealSheaf := by
   rw [realizationIdealSheaf, realizationIdealSheaf,
     ofIdealTop_comap_baseChangeMap raw X,
-    ← R.realizationIdeal_baseChange f Obj]
+    ← R.realizationIdeal_baseChange f]
 
 /-- Every global witness ideal sheaf pulls back to its transported realization. -/
 theorem globalWitnessIdealSheaf_baseChange
@@ -624,16 +882,15 @@ noncomputable def realizationBaseChangeMap
     (f : FlatCoefficientChange k k')
     [S.topology.HasSheafCompose
       (f.coefficientExtension :
-        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
-    (Obj : ArchitectureObject U) :
-    (R.baseChange f).realizationScheme Obj ⟶
-      R.realizationScheme Obj :=
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
+    (R.baseChange f).realizationScheme ⟶
+      R.realizationScheme :=
   Scheme.IdealSheafData.subschemeMap
-    ((R.baseChange f).realizationIdealSheaf Obj)
-    (R.realizationIdealSheaf Obj)
+    (R.baseChange f).realizationIdealSheaf
+    R.realizationIdealSheaf
     (X.baseChangeMap raw f)
     (Scheme.IdealSheafData.le_map_iff_comap_le.mpr
-      (le_of_eq (R.realizationIdealSheaf_baseChange f Obj)))
+      (le_of_eq (R.realizationIdealSheaf_baseChange f)))
 
 /-- The equalizer map lies over the standard coefficient-change projection. -/
 @[reassoc] theorem realizationBaseChangeMap_immersion
@@ -641,11 +898,10 @@ noncomputable def realizationBaseChangeMap
     (f : FlatCoefficientChange k k')
     [S.topology.HasSheafCompose
       (f.coefficientExtension :
-        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
-    (Obj : ArchitectureObject U) :
-    R.realizationBaseChangeMap f Obj ≫
-        R.realizationImmersion Obj =
-      (R.baseChange f).realizationImmersion Obj ≫
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
+    R.realizationBaseChangeMap f ≫
+        R.realizationImmersion =
+      (R.baseChange f).realizationImmersion ≫
         X.baseChangeMap raw f := by
   exact Scheme.IdealSheafData.subschemeMap_subschemeι _ _ _ _
 
@@ -656,13 +912,13 @@ theorem witnessIdealSheaf_baseChange
     [S.topology.HasSheafCompose
       (f.coefficientExtension :
         AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
-    (Obj : ArchitectureObject U) (i : E.Index) :
-    (R.witnessIdealSheaf Obj i).comap
-        (R.realizationBaseChangeMap f Obj) =
-      (R.baseChange f).witnessIdealSheaf Obj i := by
+    (i : E.Index) :
+    (R.witnessIdealSheaf i).comap
+        (R.realizationBaseChangeMap f) =
+      (R.baseChange f).witnessIdealSheaf i := by
   rw [witnessIdealSheaf, witnessIdealSheaf,
     ← Scheme.IdealSheafData.comap_comp,
-    R.realizationBaseChangeMap_immersion f Obj,
+    R.realizationBaseChangeMap_immersion f,
     Scheme.IdealSheafData.comap_comp,
     R.globalWitnessIdealSheaf_baseChange f i]
 
@@ -672,17 +928,16 @@ theorem generatedIdealSheaf_baseChange
     (f : FlatCoefficientChange k k')
     [S.topology.HasSheafCompose
       (f.coefficientExtension :
-        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
-    (Obj : ArchitectureObject U) :
-    (R.generatedIdealSheaf Obj).comap
-        (R.realizationBaseChangeMap f Obj) =
-      (R.baseChange f).generatedIdealSheaf Obj := by
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
+    R.generatedIdealSheaf.comap
+        (R.realizationBaseChangeMap f) =
+      (R.baseChange f).generatedIdealSheaf := by
   rw [generatedIdealSheaf, generatedIdealSheaf,
     (Scheme.IdealSheafData.map_gc
-      (R.realizationBaseChangeMap f Obj)).l_iSup]
+      (R.realizationBaseChangeMap f)).l_iSup]
   congr 1
   funext i
-  exact R.witnessIdealSheaf_baseChange f Obj i.1
+  exact R.witnessIdealSheaf_baseChange f i.1
 
 /-- The canonical map between the transported and source lawful subschemes. -/
 noncomputable def lawfulClosedSubschemeBaseChangeMap
@@ -690,16 +945,15 @@ noncomputable def lawfulClosedSubschemeBaseChangeMap
     (f : FlatCoefficientChange k k')
     [S.topology.HasSheafCompose
       (f.coefficientExtension :
-        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
-    (Obj : ArchitectureObject U) :
-    (R.baseChange f).lawfulClosedSubscheme Obj ⟶
-      R.lawfulClosedSubscheme Obj :=
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
+    (R.baseChange f).lawfulClosedSubscheme ⟶
+      R.lawfulClosedSubscheme :=
   Scheme.IdealSheafData.subschemeMap
-    ((R.baseChange f).generatedIdealSheaf Obj)
-    (R.generatedIdealSheaf Obj)
-    (R.realizationBaseChangeMap f Obj)
+    (R.baseChange f).generatedIdealSheaf
+    R.generatedIdealSheaf
+    (R.realizationBaseChangeMap f)
     (Scheme.IdealSheafData.le_map_iff_comap_le.mpr
-      (le_of_eq (R.generatedIdealSheaf_baseChange f Obj)))
+      (le_of_eq (R.generatedIdealSheaf_baseChange f)))
 
 /-- The lawful-subscheme map lies over the generated equalizer map. -/
 @[reassoc] theorem lawfulClosedSubschemeBaseChangeMap_immersion
@@ -707,12 +961,11 @@ noncomputable def lawfulClosedSubschemeBaseChangeMap
     (f : FlatCoefficientChange k k')
     [S.topology.HasSheafCompose
       (f.coefficientExtension :
-        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
-    (Obj : ArchitectureObject U) :
-    R.lawfulClosedSubschemeBaseChangeMap f Obj ≫
-        R.lawfulClosedImmersion Obj =
-      (R.baseChange f).lawfulClosedImmersion Obj ≫
-        R.realizationBaseChangeMap f Obj := by
+        AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')] :
+    R.lawfulClosedSubschemeBaseChangeMap f ≫
+        R.lawfulClosedImmersion =
+      (R.baseChange f).lawfulClosedImmersion ≫
+        R.realizationBaseChangeMap f := by
   exact Scheme.IdealSheafData.subschemeMap_subschemeι _ _ _ _
 
 end EquationObservableRealization

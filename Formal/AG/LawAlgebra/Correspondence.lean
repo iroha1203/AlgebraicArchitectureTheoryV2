@@ -85,14 +85,14 @@ theorem siteEquationLawfulnessIdealFactorizationCorrespondence
     {raw : RawAmbientRestrictionSystem S k}
     {X : StandardArchitectureScheme raw}
     (R : EquationObservableRealization raw X S.equationSystem)
-    (Obj : ArchitectureObject U)
+    (hR : IsEquationObservableRealization R)
     {T : AlgebraicGeometry.Scheme}
-    (s : T ⟶ R.realizationScheme Obj) :
-    (R.EquationLawfulAlong Obj s ↔
-      (R.generatedIdealSheaf Obj).comap s = ⊥) ∧
-    ((R.generatedIdealSheaf Obj).comap s = ⊥ ↔
-      Nonempty (R.FactorsThroughLawfulClosedSubscheme Obj s)) :=
-  R.lawfulnessIdealFactorizationCorrespondence Obj s
+    (s : T ⟶ R.realizationScheme) :
+    (R.EquationLawfulAlong s ↔
+      R.generatedIdealSheaf.comap s = ⊥) ∧
+    (R.generatedIdealSheaf.comap s = ⊥ ↔
+      Nonempty (R.FactorsThroughLawfulClosedSubscheme s)) :=
+  R.lawfulnessIdealFactorizationCorrespondence hR s
 
 /--
 III.定理11.1 / III.定理11.4 bridge: displayed required laws force the displayed

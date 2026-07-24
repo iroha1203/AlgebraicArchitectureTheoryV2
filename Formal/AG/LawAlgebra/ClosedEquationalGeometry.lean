@@ -4,12 +4,13 @@ import Formal.AG.LawAlgebra.StandardScheme
 import Mathlib.AlgebraicGeometry.IdealSheaf.Functorial
 import Mathlib.AlgebraicGeometry.IdealSheaf.Subscheme
 import Mathlib.AlgebraicGeometry.Morphisms.Separated
+import Mathlib.RingTheory.Localization.Algebra
 
 noncomputable section
 
 namespace AAT.AG.LawAlgebra
 
-open CategoryTheory Opposite
+open CategoryTheory CategoryTheory.Limits Opposite
 open AlgebraicGeometry
 open scoped AlgebraicGeometry
 
@@ -637,222 +638,434 @@ variable {E : ArchitecturalEquationSystem S.contextPreorder}
 variable
   (R : AAT.AG.LawAlgebra.EquationObservableRealization raw X E)
 
-/-- Indices for the equalizer equations generated from all contexts. -/
+/-- Indices for the base-chart equalizer equations. -/
 abbrev GeneratorIndex
     (E : ArchitecturalEquationSystem S.contextPreorder) :=
-  S.category × E.Index × U.Atom
+  E.Index × U.Atom
 
 /-- Indices for one equation's contextual Atom generators. -/
 abbrev WitnessIndex (S : Site.AATSite A) :=
   S.category × U.Atom
 
-/-- The global section represented by one symbolic violation coordinate. -/
+/-- The canonical section map on the decoration's base context. -/
+noncomputable def baseSectionMap :
+    E.Observable X.decoration.context →+* Γ(X.underlying, ⊤) :=
+  X.decoration.interpretation.hom.comp
+    (R.sectionMap X.decoration.context)
+
+/-- The ambient global section represented by one symbolic coordinate. -/
 noncomputable def violationSection
-    (W : S.category) (i : E.Index) (a : U.Atom) :
-    Γ(X.underlying, ⊤) :=
-  R.sectionMap W (E.violationCoordinate W i a)
-
-/-- The global section represented by one actual object residual. -/
-noncomputable def residualSection
-    (Obj : ArchitectureObject U)
-    (W : S.category) (i : E.Index) (a : U.Atom) :
-    Γ(X.underlying, ⊤) :=
-  R.sectionMap W (E.equationResidual W Obj i a)
-
-/-- Observable naturality identifies symbolic sections across restriction. -/
-theorem violationSection_restrict
-    {source target : S.category} (f : source ⟶ target)
     (i : E.Index) (a : U.Atom) :
-    R.violationSection source i a =
-      R.violationSection target i a := by
-  rw [violationSection, violationSection,
-    ← E.violationCoordinate_restrict f i a]
-  exact R.naturality f _
+    Γ(X.underlying, ⊤) :=
+  R.baseSectionMap
+    (E.violationCoordinate X.decoration.context i a)
 
-/-- Observable naturality identifies residual sections across restriction. -/
-theorem residualSection_restrict
-    (Obj : ArchitectureObject U)
-    {source target : S.category} (f : source ⟶ target)
+/-- The ambient global section representing one actual residual function. -/
+noncomputable def ambientResidualSection
     (i : E.Index) (a : U.Atom) :
-    R.residualSection Obj source i a =
-      R.residualSection Obj target i a := by
-  rw [residualSection, residualSection,
-    ← E.equationResidual_restrict f Obj i a]
-  exact R.naturality f _
+    Γ(X.underlying, ⊤) :=
+  X.decoration.interpretation
+    (R.residualSection X.decoration.context i a)
+
+/--
+On every selected atlas chart, the global symbolic coordinate is exactly the
+context-owned image of `E.violationCoordinate`.
+-/
+theorem violationSection_on_chart
+    (hR : IsEquationObservableRealization R)
+    (j : X.atlas.Index)
+    (i : E.Index) (a : U.Atom) :
+    ((X.atlas.chart j).map.appTop ≫
+        (AlgebraicGeometry.Scheme.ΓSpecIso
+          (SheafifiedSectionRing raw
+            (X.atlas.chart j).context)).hom)
+        (R.violationSection i a) =
+      R.sectionMap (X.atlas.chart j).context
+        (E.violationCoordinate (X.atlas.chart j).context i a) := by
+  let x :=
+    R.sectionMap X.decoration.context
+      (E.violationCoordinate X.decoration.context i a)
+  calc
+    ((X.atlas.chart j).map.appTop ≫
+        (AlgebraicGeometry.Scheme.ΓSpecIso
+          (SheafifiedSectionRing raw
+            (X.atlas.chart j).context)).hom)
+        (R.violationSection i a) =
+      sheafifiedRestriction raw (X.atlas.chart j).contextHom x := by
+        simpa only [violationSection, baseSectionMap, x,
+          Category.assoc, CommRingCat.comp_apply] using
+          congrArg (fun q => q x)
+            (X.atlasValid.chart_valid j).interpretation_compatible.symm
+    _ = R.sectionMap (X.atlas.chart j).context
+        (E.restrict (X.atlas.chart j).contextHom
+          (E.violationCoordinate X.decoration.context i a)) :=
+      (hR.sectionMap_natural (X.atlas.chart j).contextHom _).symm
+    _ = R.sectionMap (X.atlas.chart j).context
+        (E.violationCoordinate (X.atlas.chart j).context i a) := by
+      rw [E.violationCoordinate_restrict]
+
+/--
+On every selected atlas chart, the global regular residual restricts to the
+context-owned residual section.
+-/
+theorem ambientResidualSection_on_chart
+    (hR : IsEquationObservableRealization R)
+    (j : X.atlas.Index)
+    (i : E.Index) (a : U.Atom) :
+    ((X.atlas.chart j).map.appTop ≫
+        (AlgebraicGeometry.Scheme.ΓSpecIso
+          (SheafifiedSectionRing raw
+            (X.atlas.chart j).context)).hom)
+        (R.ambientResidualSection i a) =
+      R.residualSection (X.atlas.chart j).context i a := by
+  let x := R.residualSection X.decoration.context i a
+  calc
+    ((X.atlas.chart j).map.appTop ≫
+        (AlgebraicGeometry.Scheme.ΓSpecIso
+          (SheafifiedSectionRing raw
+            (X.atlas.chart j).context)).hom)
+        (R.ambientResidualSection i a) =
+      sheafifiedRestriction raw (X.atlas.chart j).contextHom x := by
+        simpa only [ambientResidualSection, x,
+          Category.assoc, CommRingCat.comp_apply] using
+          congrArg (fun q => q x)
+            (X.atlasValid.chart_valid j).interpretation_compatible.symm
+    _ = R.residualSection (X.atlas.chart j).context i a :=
+      (hR.residualSection_natural
+        (X.atlas.chart j).contextHom i a).symm
 
 /-- The regular equalizer equation `ν - ε` generated at one context and Atom. -/
 noncomputable def realizationRelation
-    (Obj : ArchitectureObject U)
     (g : GeneratorIndex E) : Γ(X.underlying, ⊤) :=
-  R.violationSection g.1 g.2.1 g.2.2 -
-    R.residualSection Obj g.1 g.2.1 g.2.2
+  R.violationSection g.1 g.2 -
+    R.ambientResidualSection g.1 g.2
 
 /-- The ideal generated by all symbolic-residual equalizer equations. -/
-noncomputable def realizationIdeal
-    (Obj : ArchitectureObject U) :
-    Ideal Γ(X.underlying, ⊤) :=
-  Ideal.span (Set.range (R.realizationRelation Obj))
+noncomputable def realizationIdeal : Ideal Γ(X.underlying, ⊤) :=
+  Ideal.span (Set.range R.realizationRelation)
 
 /-- The ideal sheaf generated by all symbolic-residual equalizer equations. -/
-noncomputable def realizationIdealSheaf
-    (Obj : ArchitectureObject U) :
-    X.underlying.IdealSheafData :=
-  Scheme.IdealSheafData.ofIdealTop (R.realizationIdeal Obj)
+noncomputable def realizationIdealSheaf : X.underlying.IdealSheafData :=
+  Scheme.IdealSheafData.ofIdealTop R.realizationIdeal
 
 /--
-The equation-generated scheme realization is the closed equalizer on which
-the symbolic coordinate specializes to the actual object residual.
+Part III, Definition 5.2B's single equation-generated scheme.  It is the
+closed equalizer on which every symbolic coordinate specializes to the
+regular residual function of the section-dependent reading.
 -/
-noncomputable def realizationScheme
-    (Obj : ArchitectureObject U) : AlgebraicGeometry.Scheme :=
-  (R.realizationIdealSheaf Obj).subscheme
+noncomputable def realizationScheme : AlgebraicGeometry.Scheme :=
+  R.realizationIdealSheaf.subscheme
 
 /-- The canonical closed immersion of the equation-generated realization. -/
-noncomputable def realizationImmersion
-    (Obj : ArchitectureObject U) :
-    R.realizationScheme Obj ⟶ X.underlying :=
-  (R.realizationIdealSheaf Obj).subschemeι
+noncomputable def realizationImmersion :
+    R.realizationScheme ⟶ X.underlying :=
+  R.realizationIdealSheaf.subschemeι
 
 /-- The equation-generated realization map is a closed immersion. -/
-theorem realizationImmersion_isClosedImmersion
-    (Obj : ArchitectureObject U) :
-    IsClosedImmersion (R.realizationImmersion Obj) := by
-  change IsClosedImmersion (R.realizationIdealSheaf Obj).subschemeι
+theorem realizationImmersion_isClosedImmersion :
+    IsClosedImmersion R.realizationImmersion := by
+  change IsClosedImmersion R.realizationIdealSheaf.subschemeι
   infer_instance
 
 /-- The realization immersion has the generated equalizer ideal as kernel. -/
-@[simp] theorem realizationImmersion_ker
-    (Obj : ArchitectureObject U) :
-    (R.realizationImmersion Obj).ker =
-      R.realizationIdealSheaf Obj := by
-  change (R.realizationIdealSheaf Obj).subschemeι.ker =
-    R.realizationIdealSheaf Obj
-  exact (R.realizationIdealSheaf Obj).ker_subschemeι
+@[simp] theorem realizationImmersion_ker :
+    R.realizationImmersion.ker = R.realizationIdealSheaf := by
+  change R.realizationIdealSheaf.subschemeι.ker =
+    R.realizationIdealSheaf
+  exact R.realizationIdealSheaf.ker_subschemeι
 
 /-- Every generated equalizer relation vanishes on the realization scheme. -/
 theorem realizationImmersion_relation_zero
-    (Obj : ArchitectureObject U) (g : GeneratorIndex E) :
-    (R.realizationImmersion Obj).appTop
-        (R.realizationRelation Obj g) = 0 := by
+    (g : GeneratorIndex E) :
+    R.realizationImmersion.appTop (R.realizationRelation g) = 0 := by
   rw [RingHom.mem_ker.symm]
   have hle :
-      R.realizationIdealSheaf Obj ≤
-        (R.realizationImmersion Obj).ker := by
-    rw [R.realizationImmersion_ker Obj]
+      R.realizationIdealSheaf ≤ R.realizationImmersion.ker := by
+    rw [R.realizationImmersion_ker]
   have hideal :
-      R.realizationIdeal Obj ≤
-        RingHom.ker (R.realizationImmersion Obj).appTop.hom :=
+      R.realizationIdeal ≤
+        RingHom.ker R.realizationImmersion.appTop.hom :=
     (ofIdealTop_le_schemeKernel_iff raw X
-      (R.realizationIdeal Obj) (R.realizationImmersion Obj)).mp hle
+      R.realizationIdeal R.realizationImmersion).mp hle
   exact hideal (Ideal.subset_span ⟨g, rfl⟩)
 
 /--
-Residual representability for the constant architecture reading selected by
-`Obj`.  It compares the two generated section families on every test section
-of the realization scheme.
+The architecture reading selected by a test section of the generated scheme.
 -/
-def ResidualRepresentable (Obj : ArchitectureObject U) : Prop :=
+noncomputable def sectionArchitecture
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ R.realizationScheme) :
+    ArchitectureObject U :=
+  R.architectureAt (s ≫ R.realizationImmersion)
+
+/-- The actual base-chart residual evaluated by a realization section. -/
+noncomputable def residualValue
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ R.realizationScheme)
+    (i : E.Index) (a : U.Atom) :
+    Γ(T, ⊤) :=
+  (s ≫ R.realizationImmersion).appTop
+    (R.baseSectionMap
+      (E.equationResidual X.decoration.context
+        (R.sectionArchitecture s) i a))
+
+/-- The actual residual evaluated on one pulled-back atlas chart. -/
+noncomputable def chartResidualValue
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ R.realizationScheme)
+    (j : X.atlas.Index) (i : E.Index) (a : U.Atom) :
+    Γ(R.chartPullback (s ≫ R.realizationImmersion) j, ⊤) :=
+  R.chartEvaluation (s ≫ R.realizationImmersion) j
+    (R.sectionMap (X.atlas.chart j).context
+      (E.equationResidual (X.atlas.chart j).context
+        (R.sectionArchitecture s) i a))
+
+/-- The symbolic coordinate evaluated on one pulled-back atlas chart. -/
+noncomputable def chartViolationValue
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ R.realizationScheme)
+    (j : X.atlas.Index) (i : E.Index) (a : U.Atom) :
+    Γ(R.chartPullback (s ≫ R.realizationImmersion) j, ⊤) :=
+  R.chartEvaluation (s ≫ R.realizationImmersion) j
+    (R.sectionMap (X.atlas.chart j).context
+      (E.violationCoordinate (X.atlas.chart j).context i a))
+
+/--
+Part III, Definition 5.2B's residual-representability statement for the
+single generated scheme and its section-dependent reading.
+-/
+def ResidualRepresentable : Prop :=
   ∀ {T : AlgebraicGeometry.Scheme}
-    (s : T ⟶ R.realizationScheme Obj)
-    (W : S.category) (i : E.Index) (a : U.Atom),
-    (s ≫ R.realizationImmersion Obj).appTop
-        (R.violationSection W i a) =
-      (s ≫ R.realizationImmersion Obj).appTop
-        (R.residualSection Obj W i a)
+    (s : T ⟶ R.realizationScheme)
+    (j : X.atlas.Index) (i : E.Index) (a : U.Atom),
+    R.chartViolationValue s j i a =
+      R.chartResidualValue s j i a
+
+/--
+Part III, Definition 5.2B's named regularity producer.  Its only premise is the
+selected representable-regime recognition property from the same definition.
+-/
+theorem residualRegular
+    (hR : IsEquationObservableRealization R)
+    {T : AlgebraicGeometry.Scheme}
+    (s : T ⟶ X.underlying)
+    (i : E.Index) (a : U.Atom) :
+    s.appTop (R.ambientResidualSection i a) =
+      s.appTop
+        (R.baseSectionMap
+          (E.equationResidual X.decoration.context
+            (R.architectureAt s) i a)) :=
+  hR.residualSection_evaluates s i a
+
+/-- The regular residual equation evaluated on a pulled-back atlas chart. -/
+theorem residualRegularOnChart
+    (hR : IsEquationObservableRealization R)
+    {T : AlgebraicGeometry.Scheme}
+    (s : T ⟶ X.underlying) (j : X.atlas.Index)
+    (i : E.Index) (a : U.Atom) :
+    R.chartEvaluation s j
+        (R.residualSection (X.atlas.chart j).context i a) =
+      R.chartEvaluation s j
+        (R.sectionMap (X.atlas.chart j).context
+          (E.equationResidual (X.atlas.chart j).context
+            (R.architectureAt s) i a)) :=
+  hR.residualSection_evaluates_on_chart s j i a
+
+/--
+Evaluation of a local chart section obtained from a global section agrees with
+pullback of that global evaluation.
+-/
+theorem chartEvaluation_of_global
+    {T : AlgebraicGeometry.Scheme}
+    (s : T ⟶ X.underlying) (j : X.atlas.Index)
+    (x : Γ(X.underlying, ⊤))
+    (xj : SheafifiedSectionRing raw (X.atlas.chart j).context)
+    (hchart :
+      ((X.atlas.chart j).map.appTop ≫
+          (AlgebraicGeometry.Scheme.ΓSpecIso
+            (SheafifiedSectionRing raw
+              (X.atlas.chart j).context)).hom) x = xj) :
+    R.chartEvaluation s j xj =
+      (pullback.fst s (X.atlas.chart j).map).appTop
+        (s.appTop x) := by
+  have hx :
+      (X.atlas.chart j).map.appTop x =
+        (AlgebraicGeometry.Scheme.ΓSpecIso
+          (SheafifiedSectionRing raw
+            (X.atlas.chart j).context)).inv xj := by
+    apply (AlgebraicGeometry.Scheme.ΓSpecIso
+      (SheafifiedSectionRing raw
+        (X.atlas.chart j).context)
+      ).commRingCatIsoToRingEquiv.eq_symm_apply.mpr
+    simpa only [CommRingCat.comp_apply] using hchart
+  rw [chartEvaluation]
+  change
+    (pullback.snd s (X.atlas.chart j).map).appTop
+        ((AlgebraicGeometry.Scheme.ΓSpecIso
+          (SheafifiedSectionRing raw
+            (X.atlas.chart j).context)).inv xj) =
+      (pullback.fst s (X.atlas.chart j).map).appTop
+        (s.appTop x)
+  rw [← hx]
+  change
+    ((pullback.snd s (X.atlas.chart j).map ≫
+      (X.atlas.chart j).map).appTop x) =
+      ((pullback.fst s (X.atlas.chart j).map ≫ s).appTop x)
+  rw [pullback.condition]
 
 /--
 The standard equalizer constructor proves residual representability by
-pulling back its generated `ν - ε` relations.
+pulling back its generated `ν - ε` relations and the regularity producer.
 -/
 theorem residualRepresentable
-    (Obj : ArchitectureObject U) :
-    R.ResidualRepresentable Obj := by
-  intro T s W i a
-  let g : GeneratorIndex E := (W, i, a)
-  have hzero :
-      (s ≫ R.realizationImmersion Obj).appTop
-          (R.realizationRelation Obj g) = 0 := by
-    rw [Scheme.Hom.comp_appTop, CommRingCat.comp_apply,
-      R.realizationImmersion_relation_zero Obj g, map_zero]
-  change
-    (s ≫ R.realizationImmersion Obj).appTop
-        (R.violationSection W i a -
-          R.residualSection Obj W i a) = 0 at hzero
-  rw [map_sub, sub_eq_zero] at hzero
-  exact hzero
+    (hR : IsEquationObservableRealization R) :
+    R.ResidualRepresentable := by
+  intro T s j i a
+  let g : GeneratorIndex E := (i, a)
+  have hglobal :
+      (s ≫ R.realizationImmersion).appTop
+          (R.violationSection i a) =
+        (s ≫ R.realizationImmersion).appTop
+          (R.ambientResidualSection i a) := by
+    have hzero :
+      (s ≫ R.realizationImmersion).appTop
+          (R.realizationRelation g) = 0 := by
+      rw [Scheme.Hom.comp_appTop, CommRingCat.comp_apply,
+        R.realizationImmersion_relation_zero g, map_zero]
+    change
+      (s ≫ R.realizationImmersion).appTop
+        (R.violationSection i a -
+          R.ambientResidualSection i a) = 0 at hzero
+    rwa [map_sub, sub_eq_zero] at hzero
+  calc
+    R.chartViolationValue s j i a =
+      (pullback.fst (s ≫ R.realizationImmersion)
+        (X.atlas.chart j).map).appTop
+        ((s ≫ R.realizationImmersion).appTop
+          (R.violationSection i a)) :=
+      R.chartEvaluation_of_global
+        (s ≫ R.realizationImmersion) j
+        (R.violationSection i a)
+        (R.sectionMap (X.atlas.chart j).context
+          (E.violationCoordinate (X.atlas.chart j).context i a))
+        (R.violationSection_on_chart hR j i a)
+    _ = (pullback.fst (s ≫ R.realizationImmersion)
+        (X.atlas.chart j).map).appTop
+        ((s ≫ R.realizationImmersion).appTop
+          (R.ambientResidualSection i a)) := by
+      rw [hglobal]
+    _ = R.chartEvaluation (s ≫ R.realizationImmersion) j
+        (R.residualSection (X.atlas.chart j).context i a) :=
+      (R.chartEvaluation_of_global
+        (s ≫ R.realizationImmersion) j
+        (R.ambientResidualSection i a)
+        (R.residualSection (X.atlas.chart j).context i a)
+        (R.ambientResidualSection_on_chart hR j i a)).symm
+    _ = R.chartResidualValue s j i a :=
+      R.residualRegularOnChart hR
+        (s ≫ R.realizationImmersion) j i a
 
-/-- The global witness ideal is the sum of all mapped generated witness ideals. -/
-noncomputable def globalWitnessIdeal (i : E.Index) :
-    Ideal Γ(X.underlying, ⊤) :=
-  ⨆ W : S.category,
-    Ideal.map (R.sectionMap W) (E.witnessIdeal W i)
+/-- The base-chart universal equality evaluated by a realization section. -/
+theorem residualRepresentableGlobal
+    (hR : IsEquationObservableRealization R)
+    {T : AlgebraicGeometry.Scheme}
+    (s : T ⟶ R.realizationScheme)
+    (i : E.Index) (a : U.Atom) :
+    (s ≫ R.realizationImmersion).appTop
+        (R.violationSection i a) =
+      R.residualValue s i a := by
+  let g : GeneratorIndex E := (i, a)
+  have hzero :
+      (s ≫ R.realizationImmersion).appTop
+          (R.realizationRelation g) = 0 := by
+    rw [Scheme.Hom.comp_appTop, CommRingCat.comp_apply,
+      R.realizationImmersion_relation_zero g, map_zero]
+  change
+    (s ≫ R.realizationImmersion).appTop
+        (R.violationSection i a -
+          R.ambientResidualSection i a) = 0 at hzero
+  rw [map_sub, sub_eq_zero] at hzero
+  exact hzero.trans
+    (R.residualRegular hR
+      (s ≫ R.realizationImmersion) i a)
+
+/-- The witness ideal owned by one canonical context chart. -/
+noncomputable def contextWitnessIdeal
+    (W : S.category) (i : E.Index) :
+    Ideal (SheafifiedSectionRing raw W) :=
+  Ideal.map (R.sectionMap W) (E.witnessIdeal W i)
+
+/-- A context witness ideal is generated by the mapped symbolic coordinates. -/
+theorem contextWitnessIdeal_eq_span
+    (W : S.category) (i : E.Index) :
+    R.contextWitnessIdeal W i =
+      Ideal.span (Set.range (fun a : U.Atom =>
+        R.sectionMap W (E.violationCoordinate W i a))) := by
+  rw [contextWitnessIdeal, E.witnessIdeal_eq_span, Ideal.map_span]
+  congr 1
+  ext x
+  constructor
+  · rintro ⟨_, ⟨a, rfl⟩, rfl⟩
+    exact ⟨a, rfl⟩
+  · rintro ⟨a, rfl⟩
+    exact ⟨_, ⟨a, rfl⟩, rfl⟩
 
 /--
-Restriction compatibility of `E` makes mapped witness ideals monotone along
-context morphisms in the common global-section ring.
+Part III, Definition 5.2B's context-localization producer: restriction extends
+the target chart witness ideal to the source chart witness ideal.
 -/
 theorem witnessIdealLocalizes
+    (hR : IsEquationObservableRealization R)
     {source target : S.category} (f : source ⟶ target)
     (i : E.Index) :
-    Ideal.map (R.sectionMap target) (E.witnessIdeal target i) ≤
-      Ideal.map (R.sectionMap source) (E.witnessIdeal source i) := by
-  rw [E.witnessIdeal_eq_span, E.witnessIdeal_eq_span,
-    Ideal.map_span, Ideal.map_span]
-  apply Ideal.span_mono
-  rintro _ ⟨_, ⟨a, rfl⟩, rfl⟩
-  exact ⟨E.violationCoordinate source i a, ⟨a, rfl⟩,
-    by simpa only [violationSection] using
-      R.violationSection_restrict f i a⟩
+    Ideal.map (sheafifiedRestriction raw f).hom
+        (R.contextWitnessIdeal target i) =
+      R.contextWitnessIdeal source i := by
+  rw [R.contextWitnessIdeal_eq_span target i,
+    R.contextWitnessIdeal_eq_span source i, Ideal.map_span]
+  congr 1
+  ext x
+  constructor
+  · rintro ⟨_, ⟨a, rfl⟩, rfl⟩
+    refine ⟨a, ?_⟩
+    rw [← hR.sectionMap_natural f
+      (E.violationCoordinate target i a),
+      E.violationCoordinate_restrict]
+  · rintro ⟨a, rfl⟩
+    refine ⟨R.sectionMap target
+      (E.violationCoordinate target i a), ⟨a, rfl⟩, ?_⟩
+    rw [← hR.sectionMap_natural f
+      (E.violationCoordinate target i a),
+      E.violationCoordinate_restrict]
 
-/-- The global witness ideal is generated by every context-Atom coordinate. -/
+/-- The ambient witness ideal generated from the base-context coordinates. -/
+noncomputable def globalWitnessIdeal (i : E.Index) :
+    Ideal Γ(X.underlying, ⊤) :=
+  Ideal.map R.baseSectionMap
+    (E.witnessIdeal X.decoration.context i)
+
+/-- The ambient witness ideal is the span of its generated global sections. -/
 theorem globalWitnessIdeal_eq_span (i : E.Index) :
     R.globalWitnessIdeal i =
-      Ideal.span (Set.range (fun q : WitnessIndex S =>
-        R.violationSection q.1 i q.2)) := by
-  rw [globalWitnessIdeal]
-  apply le_antisymm
-  · refine iSup_le fun W => ?_
-    rw [E.witnessIdeal_eq_span, Ideal.map_span]
-    apply Ideal.span_mono
-    rintro _ ⟨_, ⟨a, rfl⟩, rfl⟩
-    exact ⟨(W, a), rfl⟩
-  · apply Ideal.span_le.mpr
-    rintro _ ⟨q, rfl⟩
-    have hmem :
-        R.violationSection q.1 i q.2 ∈
-          Ideal.map (R.sectionMap q.1) (E.witnessIdeal q.1 i) :=
-      Ideal.mem_map_of_mem (R.sectionMap q.1)
-        (Ideal.subset_span ⟨q.2, rfl⟩)
-    exact (le_iSup (fun W : S.category =>
-      Ideal.map (R.sectionMap W) (E.witnessIdeal W i)) q.1) hmem
+      Ideal.span (Set.range (R.violationSection i)) := by
+  rw [globalWitnessIdeal, E.witnessIdeal_eq_span, Ideal.map_span]
+  congr 1
+  ext x
+  constructor
+  · rintro ⟨_, ⟨a, rfl⟩, rfl⟩
+    exact ⟨a, rfl⟩
+  · rintro ⟨a, rfl⟩
+    exact ⟨_, ⟨a, rfl⟩, rfl⟩
 
-/-- The global obstruction ideal is generated from every contextual obstruction ideal. -/
+/-- The ambient obstruction ideal is generated at the decoration context. -/
 noncomputable def globalObstructionIdeal :
     Ideal Γ(X.underlying, ⊤) :=
-  ⨆ W : S.category,
-    Ideal.map (R.sectionMap W) (E.obstructionIdeal W)
+  Ideal.map R.baseSectionMap
+    (E.obstructionIdeal X.decoration.context)
 
 /-- The global obstruction ideal is the sum of the required global witness ideals. -/
 theorem globalObstructionIdeal_eq_iSup_required :
     R.globalObstructionIdeal =
       ⨆ i : E.RequiredIndex, R.globalWitnessIdeal i.1 := by
-  apply le_antisymm
-  · rw [globalObstructionIdeal]
-    refine iSup_le fun W => ?_
-    rw [E.obstructionIdeal_eq_iSup_required, Ideal.map_iSup]
-    refine iSup_le fun i => ?_
-    exact le_trans
-      (le_iSup (fun V : S.category =>
-        Ideal.map (R.sectionMap V) (E.witnessIdeal V i.1)) W)
-      (le_iSup (fun q : E.RequiredIndex =>
-        R.globalWitnessIdeal q.1) i)
-  · refine iSup_le fun i => ?_
-    rw [globalWitnessIdeal]
-    refine iSup_le fun W => ?_
-    exact le_trans
-      (Ideal.map_mono (E.witnessIdeal_le_obstructionIdeal W i.2))
-      (le_iSup (fun V : S.category =>
-        Ideal.map (R.sectionMap V) (E.obstructionIdeal V)) W)
+  rw [globalObstructionIdeal,
+    E.obstructionIdeal_eq_iSup_required, Ideal.map_iSup]
+  rfl
 
 /-- The ambient ideal sheaf generated from all contextual witness ideals. -/
 noncomputable def globalWitnessIdealSheaf
@@ -866,80 +1079,274 @@ noncomputable def globalObstructionIdealSheaf :
 
 /-- The witness ideal sheaf on the generated realization scheme. -/
 noncomputable def witnessIdealSheaf
-    (Obj : ArchitectureObject U) (i : E.Index) :
-    (R.realizationScheme Obj).IdealSheafData :=
+    (i : E.Index) :
+    R.realizationScheme.IdealSheafData :=
   (R.globalWitnessIdealSheaf i).comap
-    (R.realizationImmersion Obj)
+    R.realizationImmersion
 
 /-- The required generated ideal sheaf on the realization scheme. -/
-noncomputable def generatedIdealSheaf
-    (Obj : ArchitectureObject U) :
-    (R.realizationScheme Obj).IdealSheafData :=
-  ⨆ i : E.RequiredIndex, R.witnessIdealSheaf Obj i.1
+noncomputable def generatedIdealSheaf :
+    R.realizationScheme.IdealSheafData :=
+  ⨆ i : E.RequiredIndex, R.witnessIdealSheaf i.1
 
 /--
 The required generated ideal sheaf is the pullback of the sheaf generated by
 the equation system's contextual obstruction ideals.
 -/
-theorem generatedIdealSheaf_eq_globalObstructionIdealSheaf
-    (Obj : ArchitectureObject U) :
-    R.generatedIdealSheaf Obj =
+theorem generatedIdealSheaf_eq_globalObstructionIdealSheaf :
+    R.generatedIdealSheaf =
       R.globalObstructionIdealSheaf.comap
-        (R.realizationImmersion Obj) := by
+        R.realizationImmersion := by
   rw [generatedIdealSheaf, globalObstructionIdealSheaf,
     R.globalObstructionIdeal_eq_iSup_required,
     ofIdealTop_iSup raw X,
     (Scheme.IdealSheafData.map_gc
-      (R.realizationImmersion Obj)).l_iSup]
+      R.realizationImmersion).l_iSup]
   rfl
 
-/-- Actual section-level fulfillment reads `E.equationResidual` at every context and Atom. -/
+/--
+On one selected atlas chart, the ambient global witness ideal becomes exactly
+the corresponding context-owned witness ideal under `ΓSpecIso`.
+-/
+theorem globalWitnessIdeal_on_chart
+    (hR : IsEquationObservableRealization R)
+    (j : X.atlas.Index) (i : E.Index) :
+    Ideal.map (X.atlas.chart j).map.appTop.hom
+        (R.globalWitnessIdeal i) =
+      Ideal.map
+        (AlgebraicGeometry.Scheme.ΓSpecIso
+          (SheafifiedSectionRing raw
+            (X.atlas.chart j).context)).inv.hom
+        (R.contextWitnessIdeal (X.atlas.chart j).context i) := by
+  rw [R.globalWitnessIdeal_eq_span i,
+    R.contextWitnessIdeal_eq_span (X.atlas.chart j).context i,
+    Ideal.map_span, Ideal.map_span]
+  congr 1
+  ext x
+  constructor
+  · rintro ⟨_, ⟨a, rfl⟩, rfl⟩
+    refine ⟨R.sectionMap (X.atlas.chart j).context
+      (E.violationCoordinate (X.atlas.chart j).context i a),
+      ⟨a, rfl⟩, ?_⟩
+    have heq :
+        (X.atlas.chart j).map.appTop (R.violationSection i a) =
+          (AlgebraicGeometry.Scheme.ΓSpecIso
+            (SheafifiedSectionRing raw
+              (X.atlas.chart j).context)).inv
+            (R.sectionMap (X.atlas.chart j).context
+              (E.violationCoordinate
+                (X.atlas.chart j).context i a)) := by
+      apply (AlgebraicGeometry.Scheme.ΓSpecIso
+        (SheafifiedSectionRing raw
+          (X.atlas.chart j).context)
+        ).commRingCatIsoToRingEquiv.eq_symm_apply.mpr
+      simpa only [CommRingCat.comp_apply] using
+        R.violationSection_on_chart hR j i a
+    exact heq.symm
+  · rintro ⟨_, ⟨a, rfl⟩, rfl⟩
+    refine ⟨R.violationSection i a, ⟨a, rfl⟩, ?_⟩
+    have heq :
+        (X.atlas.chart j).map.appTop (R.violationSection i a) =
+          (AlgebraicGeometry.Scheme.ΓSpecIso
+            (SheafifiedSectionRing raw
+              (X.atlas.chart j).context)).inv
+            (R.sectionMap (X.atlas.chart j).context
+              (E.violationCoordinate
+                (X.atlas.chart j).context i a)) := by
+      apply (AlgebraicGeometry.Scheme.ΓSpecIso
+        (SheafifiedSectionRing raw
+          (X.atlas.chart j).context)
+        ).commRingCatIsoToRingEquiv.eq_symm_apply.mpr
+      simpa only [CommRingCat.comp_apply] using
+        R.violationSection_on_chart hR j i a
+    exact heq
+
+/--
+Pullback of an `ofIdealTop` sheaf along an affine open immersion is generated
+by the induced map on global sections.
+-/
+theorem ofIdealTop_comap_of_isOpenImmersion
+    {Y Z : AlgebraicGeometry.Scheme} [IsAffine Y]
+    (I : Ideal Γ(Z, ⊤)) (g : Y ⟶ Z) [IsOpenImmersion g] :
+    (Scheme.IdealSheafData.ofIdealTop I).comap g =
+      Scheme.IdealSheafData.ofIdealTop (Ideal.map g.appTop.hom I) := by
+  apply Scheme.IdealSheafData.ext_of_isAffine
+  rw [Scheme.IdealSheafData.ideal_comap_of_isOpenImmersion]
+  simp only [Scheme.IdealSheafData.ofIdealTop_ideal]
+  let e := g.appIso ⊤
+  have comap_inv (J : Ideal Γ(Z,
+      g ''ᵁ (⊤ : Y.Opens))) :
+      Ideal.comap e.inv.hom J = Ideal.map e.hom.hom J := by
+    ext x
+    constructor
+    · intro hx
+      change e.inv x ∈ J at hx
+      simpa using Ideal.mem_map_of_mem e.hom.hom hx
+    · intro hx
+      rw [Ideal.mem_map_iff_of_surjective e.hom.hom
+        e.commRingCatIsoToRingEquiv.surjective] at hx
+      obtain ⟨y, hy, hxy⟩ := hx
+      change e.inv x ∈ J
+      rw [← hxy]
+      simpa using hy
+  rw [comap_inv, Ideal.map_map]
+  have appTop_eq :
+      e.hom.hom.comp
+          (Z.presheaf.map (homOfLE le_top).op).hom =
+        g.appTop.hom := by
+    apply RingHom.ext
+    intro z
+    change
+      ((Z.presheaf.map (homOfLE le_top).op) ≫ e.hom) z =
+        g.appTop z
+    simp only [e, Scheme.Hom.appIso_hom]
+    rw [← Category.assoc, g.naturality, Category.assoc,
+      ← Functor.map_comp]
+    simp
+  rw [appTop_eq]
+  have top_res :
+      (Y.presheaf.map (homOfLE le_top).op).hom =
+        RingHom.id Γ(Y, ⊤) := by
+    apply RingHom.ext
+    intro z
+    have h := Y.presheaf.map_id (Opposite.op (⊤ : Y.Opens))
+    exact congrArg (fun q => q z) h
+  rw [top_res, Ideal.map_id]
+
+/--
+Part III, Definition 5.2B's chart producer: the ambient witness ideal sheaf
+restricts to the ideal sheaf associated to the generated context ideal.
+-/
+theorem witnessIdealChart
+    (hR : IsEquationObservableRealization R)
+    (j : X.atlas.Index) (i : E.Index) :
+    (R.globalWitnessIdealSheaf i).comap
+        (X.atlas.chart j).map =
+      Scheme.IdealSheafData.ofIdealTop
+        (Ideal.map
+          (AlgebraicGeometry.Scheme.ΓSpecIso
+            (SheafifiedSectionRing raw
+              (X.atlas.chart j).context)).inv.hom
+          (R.contextWitnessIdeal (X.atlas.chart j).context i)) := by
+  letI : IsOpenImmersion (X.atlas.chart j).map :=
+    (X.atlasValid.chart_valid j).isOpenImmersion
+  letI : IsAffine (X.atlas.chart j).domain :=
+    (X.atlas.chart j).domain_isAffine
+  rw [globalWitnessIdealSheaf,
+    ofIdealTop_comap_of_isOpenImmersion,
+    R.globalWitnessIdeal_on_chart hR j i]
+
+/--
+Part III, Definition 5.2B's quasi-coherence producer, expressed by Mathlib's
+defining affine-basic-open localization criterion for ideal sheaves.
+-/
+theorem witnessIdealQuasiCoherent
+    (i : E.Index) :
+    ∀ (V : R.realizationScheme.affineOpens)
+      (f : Γ(R.realizationScheme, V)),
+      Ideal.map
+          (R.realizationScheme.presheaf.map
+            (homOfLE (R.realizationScheme.basicOpen_le f)).op).hom
+          ((R.witnessIdealSheaf i).ideal V) =
+        (R.witnessIdealSheaf i).ideal
+          (R.realizationScheme.affineBasicOpen f) :=
+  (R.witnessIdealSheaf i).map_ideal_basicOpen
+
+/--
+Actual section-level fulfillment records the base-chart residual and its
+evaluations on every pulled-back atlas chart.
+-/
 def EquationHoldsAlong
-    (Obj : ArchitectureObject U)
     {T : AlgebraicGeometry.Scheme}
-    (s : T ⟶ R.realizationScheme Obj) (i : E.Index) : Prop :=
-  ∀ (W : S.category) (a : U.Atom),
-    (s ≫ R.realizationImmersion Obj).appTop
-      (R.residualSection Obj W i a) = 0
+    (s : T ⟶ R.realizationScheme) (i : E.Index) : Prop :=
+  (∀ a : U.Atom, R.residualValue s i a = 0) ∧
+    ∀ (j : X.atlas.Index) (a : U.Atom),
+      R.chartResidualValue s j i a = 0
 
 /-- Required section-level lawfulness is generated from actual residual fulfillment. -/
 def EquationLawfulAlong
-    (Obj : ArchitectureObject U)
     {T : AlgebraicGeometry.Scheme}
-    (s : T ⟶ R.realizationScheme Obj) : Prop :=
+    (s : T ⟶ R.realizationScheme) : Prop :=
   ∀ i : E.Index, E.Required i →
-    R.EquationHoldsAlong Obj s i
+    R.EquationHoldsAlong s i
 
-/-- Object-level residual fulfillment produces section-level fulfillment. -/
+/--
+Base-chart residual vanishing generates all chartwise residual vanishing via
+the equalizer, chart evaluation, and residual-regularity producers.
+-/
+theorem equationHoldsAlong_of_globalResidual
+    (hR : IsEquationObservableRealization R)
+    {T : AlgebraicGeometry.Scheme}
+    (s : T ⟶ R.realizationScheme) (i : E.Index)
+    (hglobal : ∀ a : U.Atom, R.residualValue s i a = 0) :
+    R.EquationHoldsAlong s i := by
+  refine ⟨hglobal, ?_⟩
+  intro j a
+  rw [← R.residualRepresentable hR s j i a]
+  rw [chartViolationValue]
+  rw [R.chartEvaluation_of_global
+    (s ≫ R.realizationImmersion) j
+    (R.violationSection i a)
+    (R.sectionMap (X.atlas.chart j).context
+      (E.violationCoordinate (X.atlas.chart j).context i a))
+    (R.violationSection_on_chart hR j i a)]
+  rw [R.residualRepresentableGlobal hR s i a,
+    hglobal a, map_zero]
+
+/-- An identified object reading transfers object-level fulfillment to the section. -/
 theorem equationHoldsAlong_of_equationHolds
+    (hR : IsEquationObservableRealization R)
     (Obj : ArchitectureObject U)
     {T : AlgebraicGeometry.Scheme}
-    (s : T ⟶ R.realizationScheme Obj) (i : E.Index)
+    (s : T ⟶ R.realizationScheme) (i : E.Index)
+    (hObj : R.sectionArchitecture s = Obj)
     (h : E.EquationHolds i Obj) :
-    R.EquationHoldsAlong Obj s i := by
-  intro W a
-  rw [residualSection, h W a, map_zero, map_zero]
+    R.EquationHoldsAlong s i := by
+  apply R.equationHoldsAlong_of_globalResidual hR s i
+  intro a
+  simp only [residualValue, hObj,
+    h X.decoration.context a, map_zero]
 
-/-- Object-level required lawfulness produces section-level lawfulness. -/
+/-- An identified object reading transfers object-level required lawfulness. -/
 theorem equationLawfulAlong_of_equationLawful
+    (hR : IsEquationObservableRealization R)
     (Obj : ArchitectureObject U)
     {T : AlgebraicGeometry.Scheme}
-    (s : T ⟶ R.realizationScheme Obj)
+    (s : T ⟶ R.realizationScheme)
+    (hObj : R.sectionArchitecture s = Obj)
     (h : E.EquationLawful Obj) :
-    R.EquationLawfulAlong Obj s := by
+    R.EquationLawfulAlong s := by
   intro i hi
-  exact R.equationHoldsAlong_of_equationHolds Obj s i (h i hi)
+  exact R.equationHoldsAlong_of_equationHolds
+    hR Obj s i hObj (h i hi)
 
 /-- Actual section-level fulfillment is preserved by test-scheme base change. -/
 theorem equationHoldsAlong_comp
-    (Obj : ArchitectureObject U)
+    (hR : IsEquationObservableRealization R)
     {T T' : AlgebraicGeometry.Scheme}
-    (s : T ⟶ R.realizationScheme Obj) (f : T' ⟶ T)
-    (i : E.Index) (h : R.EquationHoldsAlong Obj s i) :
-    R.EquationHoldsAlong Obj (f ≫ s) i := by
-  intro W a
-  rw [Category.assoc, Scheme.Hom.comp_appTop, CommRingCat.comp_apply,
-    h W a, map_zero]
+    (s : T ⟶ R.realizationScheme) (f : T' ⟶ T)
+    (i : E.Index) (h : R.EquationHoldsAlong s i) :
+    R.EquationHoldsAlong (f ≫ s) i := by
+  have harchitecture :
+      R.sectionArchitecture (f ≫ s) = R.sectionArchitecture s := by
+    change R.architectureAt ((f ≫ s) ≫ R.realizationImmersion) =
+      R.architectureAt (s ≫ R.realizationImmersion)
+    rw [Category.assoc]
+    exact hR.architectureAt_comp (s ≫ R.realizationImmersion) f
+  apply R.equationHoldsAlong_of_globalResidual hR (f ≫ s) i
+  intro a
+  change ((f ≫ s) ≫ R.realizationImmersion).appTop
+    (R.baseSectionMap
+      (E.equationResidual X.decoration.context
+        (R.sectionArchitecture (f ≫ s)) i a)) = 0
+  have hzero :
+      (s ≫ R.realizationImmersion).appTop
+        (R.baseSectionMap
+          (E.equationResidual X.decoration.context
+            (R.sectionArchitecture s) i a)) = 0 :=
+    h.1 a
+  rw [harchitecture, Category.assoc,
+    Scheme.Hom.comp_appTop, CommRingCat.comp_apply, hzero, map_zero]
 
 theorem vanish_iff_ofIdealTop_span_comap_eq_bot
     {ι : Type w} (equation : ι → Γ(X.underlying, ⊤))
@@ -983,184 +1390,174 @@ theorem vanish_iff_ofIdealTop_span_comap_eq_bot
 
 /-- Equalizer-relation vanishing is exactly the generated realization ideal. -/
 theorem realizationRelationsVanishAlong_iff_ideal
-    (Obj : ArchitectureObject U)
     {T : AlgebraicGeometry.Scheme}
     (s : T ⟶ X.underlying) :
     (∀ g : GeneratorIndex E,
-      s.appTop (R.realizationRelation Obj g) = 0) ↔
-      (R.realizationIdealSheaf Obj).comap s = ⊥ := by
+      s.appTop (R.realizationRelation g) = 0) ↔
+      R.realizationIdealSheaf.comap s = ⊥ := by
   rw [realizationIdealSheaf, realizationIdeal]
   exact vanish_iff_ofIdealTop_span_comap_eq_bot
-    (raw := raw) (X := X) (R.realizationRelation Obj) s
+    (raw := raw) (X := X) R.realizationRelation s
 
 /-- Factorizations through the generated symbolic-residual equalizer. -/
 def FactorsThroughRealization
-    (Obj : ArchitectureObject U)
     {T : AlgebraicGeometry.Scheme}
     (s : T ⟶ X.underlying) :=
-  {t : T ⟶ R.realizationScheme Obj //
-    t ≫ R.realizationImmersion Obj = s}
+  {t : T ⟶ R.realizationScheme //
+    t ≫ R.realizationImmersion = s}
 
 /-- Equalizer-ideal vanishing is exactly factorization through the realization. -/
 theorem realizationIdeal_iff_nonempty_factorsThrough
-    (Obj : ArchitectureObject U)
     {T : AlgebraicGeometry.Scheme}
     (s : T ⟶ X.underlying) :
-    (R.realizationIdealSheaf Obj).comap s = ⊥ ↔
-      Nonempty (R.FactorsThroughRealization Obj s) := by
+    R.realizationIdealSheaf.comap s = ⊥ ↔
+      Nonempty (R.FactorsThroughRealization s) := by
   constructor
   · intro hs
-    have hle : R.realizationIdealSheaf Obj ≤ s.ker := by
+    have hle : R.realizationIdealSheaf ≤ s.ker := by
       rw [← Scheme.IdealSheafData.map_bot,
         ← Scheme.IdealSheafData.map_gc]
       exact hs.le
-    letI : IsClosedImmersion (R.realizationImmersion Obj) :=
-      R.realizationImmersion_isClosedImmersion Obj
+    letI : IsClosedImmersion R.realizationImmersion :=
+      R.realizationImmersion_isClosedImmersion
     let lift :=
-      IsClosedImmersion.lift (R.realizationImmersion Obj) s (by
-        rw [R.realizationImmersion_ker Obj]
+      IsClosedImmersion.lift R.realizationImmersion s (by
+        rw [R.realizationImmersion_ker]
         exact hle)
     exact ⟨⟨lift, IsClosedImmersion.lift_fac _ _ _⟩⟩
   · rintro ⟨t⟩
     rw [eq_bot_iff]
     apply (Scheme.IdealSheafData.map_gc s _ ⊥).mpr
-    change R.realizationIdealSheaf Obj ≤
+    change R.realizationIdealSheaf ≤
       (⊥ : T.IdealSheafData).map s
     rw [Scheme.IdealSheafData.map_bot, ← t.2]
-    exact (R.realizationImmersion_ker Obj).symm.le.trans
-      (Scheme.Hom.le_ker_comp t.1 (R.realizationImmersion Obj))
+    exact R.realizationImmersion_ker.symm.le.trans
+      (Scheme.Hom.le_ker_comp t.1 R.realizationImmersion)
 
 /-- Actual residual fulfillment is exactly generated witness-ideal vanishing. -/
 theorem equationHoldsAlong_iff_witnessIdeal
-    (Obj : ArchitectureObject U)
+    (hR : IsEquationObservableRealization R)
     {T : AlgebraicGeometry.Scheme}
-    (s : T ⟶ R.realizationScheme Obj) (i : E.Index) :
-    R.EquationHoldsAlong Obj s i ↔
-      (R.witnessIdealSheaf Obj i).comap s = ⊥ := by
+    (s : T ⟶ R.realizationScheme) (i : E.Index) :
+    R.EquationHoldsAlong s i ↔
+      (R.witnessIdealSheaf i).comap s = ⊥ := by
   have hviolation :
-      (∀ q : WitnessIndex S,
-        (s ≫ R.realizationImmersion Obj).appTop
-          (R.violationSection q.1 i q.2) = 0) ↔
+      (∀ a : U.Atom,
+        (s ≫ R.realizationImmersion).appTop
+          (R.violationSection i a) = 0) ↔
         (R.globalWitnessIdealSheaf i).comap
-          (s ≫ R.realizationImmersion Obj) = ⊥ := by
+          (s ≫ R.realizationImmersion) = ⊥ := by
     rw [globalWitnessIdealSheaf, R.globalWitnessIdeal_eq_span i]
     exact vanish_iff_ofIdealTop_span_comap_eq_bot
       (raw := raw) (X := X)
-      (fun q : WitnessIndex S =>
-        R.violationSection q.1 i q.2)
-      (s ≫ R.realizationImmersion Obj)
-  rw [EquationHoldsAlong]
+      (R.violationSection i)
+      (s ≫ R.realizationImmersion)
   constructor
   · intro h
     rw [witnessIdealSheaf, ← Scheme.IdealSheafData.comap_comp]
     apply hviolation.mp
-    intro q
-    rw [R.residualRepresentable Obj s q.1 i q.2]
-    exact h q.1 q.2
-  · intro h W a
-    rw [← R.residualRepresentable Obj s W i a]
+    intro a
+    rw [R.residualRepresentableGlobal hR s i a]
+    exact h.1 a
+  · intro h
+    apply R.equationHoldsAlong_of_globalResidual hR s i
+    intro a
+    rw [← R.residualRepresentableGlobal hR s i a]
     exact (hviolation.mpr (by
       simpa only [witnessIdealSheaf,
-        Scheme.IdealSheafData.comap_comp] using h)) (W, a)
+        Scheme.IdealSheafData.comap_comp] using h)) a
 
 /-- Required residual lawfulness is exactly generated-ideal vanishing. -/
 theorem equationLawfulAlong_iff_generatedIdeal
-    (Obj : ArchitectureObject U)
+    (hR : IsEquationObservableRealization R)
     {T : AlgebraicGeometry.Scheme}
-    (s : T ⟶ R.realizationScheme Obj) :
-    R.EquationLawfulAlong Obj s ↔
-      (R.generatedIdealSheaf Obj).comap s = ⊥ := by
+    (s : T ⟶ R.realizationScheme) :
+    R.EquationLawfulAlong s ↔
+      R.generatedIdealSheaf.comap s = ⊥ := by
   rw [EquationLawfulAlong, generatedIdealSheaf,
     (Scheme.IdealSheafData.map_gc s).l_iSup]
   constructor
   · intro h
     rw [iSup_eq_bot]
     intro i
-    exact (R.equationHoldsAlong_iff_witnessIdeal Obj s i.1).mp
+    exact (R.equationHoldsAlong_iff_witnessIdeal hR s i.1).mp
       (h i.1 i.2)
   · intro h i hi
-    apply (R.equationHoldsAlong_iff_witnessIdeal Obj s i).mpr
+    apply (R.equationHoldsAlong_iff_witnessIdeal hR s i).mpr
     rw [iSup_eq_bot] at h
     exact h ⟨i, hi⟩
 
 /-- The lawful closed subscheme inside the equation-generated realization. -/
-noncomputable def lawfulClosedSubscheme
-    (Obj : ArchitectureObject U) : AlgebraicGeometry.Scheme :=
-  (R.generatedIdealSheaf Obj).subscheme
+noncomputable def lawfulClosedSubscheme : AlgebraicGeometry.Scheme :=
+  R.generatedIdealSheaf.subscheme
 
 /-- The canonical closed immersion of the generated lawful subscheme. -/
-noncomputable def lawfulClosedImmersion
-    (Obj : ArchitectureObject U) :
-    R.lawfulClosedSubscheme Obj ⟶ R.realizationScheme Obj :=
-  (R.generatedIdealSheaf Obj).subschemeι
+noncomputable def lawfulClosedImmersion :
+    R.lawfulClosedSubscheme ⟶ R.realizationScheme :=
+  R.generatedIdealSheaf.subschemeι
 
 /-- The generated lawful map is a closed immersion. -/
-theorem lawfulClosedImmersion_isClosedImmersion
-    (Obj : ArchitectureObject U) :
-    IsClosedImmersion (R.lawfulClosedImmersion Obj) := by
-  change IsClosedImmersion (R.generatedIdealSheaf Obj).subschemeι
+theorem lawfulClosedImmersion_isClosedImmersion :
+    IsClosedImmersion R.lawfulClosedImmersion := by
+  change IsClosedImmersion R.generatedIdealSheaf.subschemeι
   infer_instance
 
 /-- The generated lawful immersion has the generated ideal sheaf as kernel. -/
-@[simp] theorem lawfulClosedImmersion_ker
-    (Obj : ArchitectureObject U) :
-    (R.lawfulClosedImmersion Obj).ker =
-      R.generatedIdealSheaf Obj := by
-  change (R.generatedIdealSheaf Obj).subschemeι.ker =
-    R.generatedIdealSheaf Obj
-  exact (R.generatedIdealSheaf Obj).ker_subschemeι
+@[simp] theorem lawfulClosedImmersion_ker :
+    R.lawfulClosedImmersion.ker = R.generatedIdealSheaf := by
+  change R.generatedIdealSheaf.subschemeι.ker =
+    R.generatedIdealSheaf
+  exact R.generatedIdealSheaf.ker_subschemeι
 
 /-- Factorizations through the generated lawful closed subscheme. -/
 def FactorsThroughLawfulClosedSubscheme
-    (Obj : ArchitectureObject U)
     {T : AlgebraicGeometry.Scheme}
-    (s : T ⟶ R.realizationScheme Obj) :=
-  {t : T ⟶ R.lawfulClosedSubscheme Obj //
-    t ≫ R.lawfulClosedImmersion Obj = s}
+    (s : T ⟶ R.realizationScheme) :=
+  {t : T ⟶ R.lawfulClosedSubscheme //
+    t ≫ R.lawfulClosedImmersion = s}
 
 /-- Generated-ideal vanishing is exactly actual factorization. -/
 theorem generatedIdeal_iff_nonempty_factorsThrough
-    (Obj : ArchitectureObject U)
     {T : AlgebraicGeometry.Scheme}
-    (s : T ⟶ R.realizationScheme Obj) :
-    (R.generatedIdealSheaf Obj).comap s = ⊥ ↔
-      Nonempty (R.FactorsThroughLawfulClosedSubscheme Obj s) := by
+    (s : T ⟶ R.realizationScheme) :
+    R.generatedIdealSheaf.comap s = ⊥ ↔
+      Nonempty (R.FactorsThroughLawfulClosedSubscheme s) := by
   constructor
   · intro hs
-    have hle : R.generatedIdealSheaf Obj ≤ s.ker := by
+    have hle : R.generatedIdealSheaf ≤ s.ker := by
       rw [← Scheme.IdealSheafData.map_bot,
         ← Scheme.IdealSheafData.map_gc]
       exact hs.le
-    letI : IsClosedImmersion (R.lawfulClosedImmersion Obj) :=
-      R.lawfulClosedImmersion_isClosedImmersion Obj
+    letI : IsClosedImmersion R.lawfulClosedImmersion :=
+      R.lawfulClosedImmersion_isClosedImmersion
     let lift :=
-      IsClosedImmersion.lift (R.lawfulClosedImmersion Obj) s (by
-        rw [R.lawfulClosedImmersion_ker Obj]
+      IsClosedImmersion.lift R.lawfulClosedImmersion s (by
+        rw [R.lawfulClosedImmersion_ker]
         exact hle)
     exact ⟨⟨lift, IsClosedImmersion.lift_fac _ _ _⟩⟩
   · rintro ⟨t⟩
     rw [eq_bot_iff]
     apply (Scheme.IdealSheafData.map_gc s _ ⊥).mpr
-    change R.generatedIdealSheaf Obj ≤
+    change R.generatedIdealSheaf ≤
       (⊥ : T.IdealSheafData).map s
     rw [Scheme.IdealSheafData.map_bot, ← t.2]
-    exact (R.lawfulClosedImmersion_ker Obj).symm.le.trans
-      (Scheme.Hom.le_ker_comp t.1 (R.lawfulClosedImmersion Obj))
+    exact R.lawfulClosedImmersion_ker.symm.le.trans
+      (Scheme.Hom.le_ker_comp t.1 R.lawfulClosedImmersion)
 
 /--
 Actual required residual lawfulness, generated-ideal vanishing, and
 factorization through the generated lawful closed subscheme agree.
 -/
 theorem lawfulnessIdealFactorizationCorrespondence
-    (Obj : ArchitectureObject U)
+    (hR : IsEquationObservableRealization R)
     {T : AlgebraicGeometry.Scheme}
-    (s : T ⟶ R.realizationScheme Obj) :
-    (R.EquationLawfulAlong Obj s ↔
-      (R.generatedIdealSheaf Obj).comap s = ⊥) ∧
-    ((R.generatedIdealSheaf Obj).comap s = ⊥ ↔
-      Nonempty (R.FactorsThroughLawfulClosedSubscheme Obj s)) :=
-  ⟨R.equationLawfulAlong_iff_generatedIdeal Obj s,
-    R.generatedIdeal_iff_nonempty_factorsThrough Obj s⟩
+    (s : T ⟶ R.realizationScheme) :
+    (R.EquationLawfulAlong s ↔
+      R.generatedIdealSheaf.comap s = ⊥) ∧
+    (R.generatedIdealSheaf.comap s = ⊥ ↔
+      Nonempty (R.FactorsThroughLawfulClosedSubscheme s)) :=
+  ⟨R.equationLawfulAlong_iff_generatedIdeal hR s,
+    R.generatedIdeal_iff_nonempty_factorsThrough s⟩
 
 end EquationObservableRealization
 

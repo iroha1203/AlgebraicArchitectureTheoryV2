@@ -1772,14 +1772,23 @@ structure StandardArchitectureScheme
   overlapsValid : IsArchitectureOverlapPresentation raw overlaps
 
 /--
-A natural global-section realization of an architectural equation system on a
-standard architecture scheme.
+Data of a selected representable scheme regime for an architectural equation
+system.
 
-Each component maps the observable ring owned by `E` at one context into the
-same scheme's global sections.  Naturality identifies the component after the
-equation system's own restriction map.  The structure carries neither a second
-coordinate family nor a fulfillment/ideal comparison: both symbolic
-coordinates and object residuals are read through `sectionMap`.
+Implementation notes: Part III, Definition 5.2B first represents architecture
+evaluation points and then proves regularity of the object-dependent residual
+functions.  `sectionMap` is the universal observable evaluation,
+`architectureAt s` is the section-dependent reading `A_s`, and
+`residualSection` is the regular function representing the residual.  The
+naturality, base-change, and evaluation equations are deliberately separated
+into `IsEquationObservableRealization`; this data structure contains no
+fulfillment, ideal-vanishing, or factorization conclusion.
+
+An ambient standard scheme alone cannot manufacture these data because
+`ArchitecturalEquationSystem.equationResidual` is allowed to be an arbitrary
+function of `ArchitectureObject`.  The selected representable regime is the
+explicit premise of Definition 5.2B; the closed equalizer and its producer
+theorems are constructed from a valid value of this type downstream.
 -/
 structure EquationObservableRealization
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
@@ -1788,18 +1797,21 @@ structure EquationObservableRealization
     [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
     (X : StandardArchitectureScheme raw)
     (E : ArchitecturalEquationSystem S.contextPreorder) where
-  /-- The contextwise map from the equation system's observable ring. -/
+  /-- The universal observable evaluation on each canonical context chart. -/
   sectionMap :
-    ∀ W : S.category, E.Observable W →+* Γ(X.underlying, ⊤)
-  /-- Observable restriction and the global-section realization commute. -/
-  naturality :
-    ∀ {source target : S.category} (f : source ⟶ target)
-      (x : E.Observable target),
-      sectionMap source (E.restrict f x) = sectionMap target x
+    ∀ W : S.category, E.Observable W →+* SheafifiedSectionRing raw W
+  /-- The architecture reading selected by a test-scheme section. -/
+  architectureAt :
+    ∀ {T : AlgebraicGeometry.Scheme},
+      (T ⟶ X.underlying) → ArchitectureObject U
+  /-- The regular chart section representing one object residual function. -/
+  residualSection :
+    ∀ W : S.category, E.Index → U.Atom →
+      SheafifiedSectionRing raw W
 
 namespace EquationObservableRealization
 
-/-- Realizations agree when all context components agree. -/
+/-- Presentation data agree when their three data-bearing components agree. -/
 @[ext] theorem ext
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
@@ -1808,13 +1820,110 @@ namespace EquationObservableRealization
     {X : StandardArchitectureScheme raw}
     {E : ArchitecturalEquationSystem S.contextPreorder}
     (R Q : EquationObservableRealization raw X E)
-    (h : R.sectionMap = Q.sectionMap) : R = Q := by
+    (hsectionMap : R.sectionMap = Q.sectionMap)
+    (harchitectureAt : @R.architectureAt = @Q.architectureAt)
+    (hresidualSection : R.residualSection = Q.residualSection) : R = Q := by
   cases R
   cases Q
-  cases h
+  cases hsectionMap
+  cases harchitectureAt
+  cases hresidualSection
   rfl
 
+/--
+The pullback chart `T ×_X X_j` on which a test section is evaluated.
+-/
+noncomputable def chartPullback
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : StandardArchitectureScheme raw}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (_R : EquationObservableRealization raw X E)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
+    (j : X.atlas.Index) : AlgebraicGeometry.Scheme :=
+  pullback s (X.atlas.chart j).map
+
+/--
+Evaluation of a canonical chart section on `T ×_X X_j`.
+-/
+noncomputable def chartEvaluation
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : StandardArchitectureScheme raw}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (R : EquationObservableRealization raw X E)
+    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
+    (j : X.atlas.Index) :
+    SheafifiedSectionRing raw (X.atlas.chart j).context →+*
+      Γ(R.chartPullback s j, ⊤) :=
+  (pullback.snd s (X.atlas.chart j).map).appTop.hom.comp
+    (AlgebraicGeometry.Scheme.ΓSpecIso
+      (SheafifiedSectionRing raw (X.atlas.chart j).context)).inv.hom
+
 end EquationObservableRealization
+
+/--
+Recognition property for the selected representable scheme regime of Part III,
+Definition 5.2B.
+
+The three clauses are the material premises stated in the mathematical source:
+the universal evaluation is natural in contexts, `A_s` is stable under test
+scheme base change, and each actual residual evaluation is represented by the
+stored regular section.  They are not lawfulness or zero-locus conclusions.
+-/
+structure IsEquationObservableRealization
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : StandardArchitectureScheme raw}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (R : EquationObservableRealization raw X E) : Prop where
+  /-- Observable restriction commutes with the universal evaluation. -/
+  sectionMap_natural :
+    ∀ {source target : S.category} (f : source ⟶ target)
+      (x : E.Observable target),
+      R.sectionMap source (E.restrict f x) =
+        sheafifiedRestriction raw f (R.sectionMap target x)
+  /-- Regular residual sections commute with context restriction. -/
+  residualSection_natural :
+    ∀ {source target : S.category} (f : source ⟶ target)
+      (i : E.Index) (a : U.Atom),
+      R.residualSection source i a =
+        sheafifiedRestriction raw f (R.residualSection target i a)
+  /-- The selected architecture reading is stable under test-scheme base change. -/
+  architectureAt_comp :
+    ∀ {T T' : AlgebraicGeometry.Scheme}
+      (s : T ⟶ X.underlying) (f : T' ⟶ T),
+      R.architectureAt (f ≫ s) = R.architectureAt s
+  /-- The global base-chart residual evaluates to the residual of `A_s`. -/
+  residualSection_evaluates :
+    ∀ {T : AlgebraicGeometry.Scheme}
+      (s : T ⟶ X.underlying)
+      (i : E.Index) (a : U.Atom),
+      s.appTop
+          (X.decoration.interpretation
+            (R.residualSection X.decoration.context i a)) =
+        s.appTop
+          (X.decoration.interpretation
+            (R.sectionMap X.decoration.context
+              (E.equationResidual X.decoration.context
+                (R.architectureAt s) i a)))
+  /-- The same regular residual equation holds on every selected atlas chart. -/
+  residualSection_evaluates_on_chart :
+    ∀ {T : AlgebraicGeometry.Scheme}
+      (s : T ⟶ X.underlying) (j : X.atlas.Index)
+      (i : E.Index) (a : U.Atom),
+      R.chartEvaluation s j
+          (R.residualSection (X.atlas.chart j).context i a) =
+        R.chartEvaluation s j
+          (R.sectionMap (X.atlas.chart j).context
+            (E.equationResidual (X.atlas.chart j).context
+              (R.architectureAt s) i a))
 
 namespace StandardArchitectureScheme
 
