@@ -353,7 +353,7 @@
         ],
         "nonConclusions": [
           "Explicit cochain data remains supplied and is validated as such; presentation-generated data derives local Phi, cochain map, semantic/equation residuals, and quotient-level witnesses after matrix exactness and naturality checks pass.",
-          "H1 transfer is generated only after the measured source-class prerequisite and target class computation are available."
+          "H1 transfer is generated only after the applicable computed source-class prerequisite and target class computation are available."
         ]
       }
     },

@@ -195,7 +195,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "H1 comparison data v0.5.4 accepts either an explicitly typed finite cochain map over degree-zero charts, degree-one overlaps, and degree-two triple-overlap bases, or a presentation-generated contract with semantic/equation matrices, restriction maps, an independently supplied equation lift atlas, and a complete ArchMap cover/incidence mapping. The validator recomputes explicit-map properties, or checks F2 presentation exactness, generator completeness, restriction naturality, derived cochain commutativity, semantic/equation residual construction, source/target quotient-level cocycle/class calculation, the residual witness, and the declared finite complex against the supplied ArchMap.",
                 vec![
                     "Explicit cochain data remains supplied and is validated as such; presentation-generated data derives local Phi, cochain map, semantic/equation residuals, and quotient-level witnesses after matrix exactness and naturality checks pass.",
-                    "H1 transfer is generated only after the measured source-class prerequisite and target class computation are available.",
+                    "H1 transfer is generated only after the applicable computed source-class prerequisite and target class computation are available.",
                 ],
             ),
             artifact(

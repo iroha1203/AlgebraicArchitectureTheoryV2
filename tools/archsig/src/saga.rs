@@ -831,17 +831,32 @@ fn evaluate_saga_comparison_v1(
         && target_class_nonzero.is_some()
         && (!contract_checked || !preserves_zero_predicate);
     if !class_available {
+        let (reason, what_next, non_conclusions) = if h1_kind == "presentation-generated" {
+            (
+                "presentation_source_class_prerequisite_not_computed",
+                "supply a valid semantic presentation, restriction maps, and equation lift atlas so the source presentation H1 class can be computed before evaluating transfer",
+                [
+                    "The comparison contract is not a replacement for the computed source presentation H1 class.",
+                    "No comparison failure code is emitted until the source presentation H1 class is computed.",
+                ],
+            )
+        } else {
+            (
+                "residual_class_prerequisite_not_measured",
+                "supply valid inputs for complex.tripleOverlaps, coefficient, trueSheafCertificate, and gluingData so the source residual class can be measured before evaluating H1 comparison transfer",
+                [
+                    "The comparison contract is not a replacement for the measured source residual class.",
+                    "No comparison failure code is emitted until the residual-class prerequisite is measured.",
+                ],
+            )
+        };
         return json!({
             "invariantId": "saga-comparison:h1-transfer",
             "evaluator": "ag.saga-comparison",
             "kind": "h1-comparison-transfer",
             "status": "silence_by_design",
-            "reason": "residual_class_prerequisite_not_measured",
-            "whatNext": if h1_kind == "presentation-generated" {
-                "supply a valid semantic presentation, restriction maps, and equation lift atlas so the source presentation H1 class can be computed before evaluating transfer"
-            } else {
-                "supply valid inputs for complex.tripleOverlaps, coefficient, trueSheafCertificate, and gluingData so the source residual class can be measured before evaluating H1 comparison transfer"
-            },
+            "reason": reason,
+            "whatNext": what_next,
             "contract": {
                 "incidenceBridgeKind": bridge_kind,
                 "h1ComparisonDataKind": h1_kind,
@@ -850,10 +865,7 @@ fn evaluate_saga_comparison_v1(
                 "targetClassComputed": target_class_nonzero.is_some(),
                 "contractChecked": contract_checked
             },
-            "nonConclusions": [
-                "The comparison contract is not a replacement for the measured source residual class.",
-                "No comparison failure code is emitted until the residual-class prerequisite is measured."
-            ]
+            "nonConclusions": non_conclusions
         });
     }
     let established = contract_checked && class_available && preserves_zero_predicate;
@@ -1321,6 +1333,34 @@ mod tests {
         let result = evaluate_saga_comparison_v1(&plan, &[]);
         assert_eq!(result["status"], "silence_by_design");
         assert_eq!(result["reason"], "residual_class_prerequisite_not_measured");
+        assert!(result.get("failureCode").is_none());
+    }
+
+    #[test]
+    fn presentation_generated_silence_names_its_computed_source_class_prerequisite() {
+        let mut plan: RepairPlanDocumentV1 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/repair_plan_presentation_generated_circle.json"
+        ))
+        .expect("presentation-generated fixture parses");
+        plan.comparison.as_mut().expect("comparison exists")["h1ComparisonData"]["presentation"] =
+            serde_json::json!({});
+
+        let result = evaluate_saga_comparison_v1(&plan, &[]);
+        assert_eq!(result["status"], "silence_by_design");
+        assert_eq!(
+            result["reason"],
+            "presentation_source_class_prerequisite_not_computed"
+        );
+        assert!(result["whatNext"]
+            .as_str()
+            .is_some_and(|text| text.contains("semantic presentation")));
+        assert!(result["nonConclusions"]
+            .as_array()
+            .is_some_and(|entries| entries.iter().all(|entry| {
+                entry
+                    .as_str()
+                    .is_some_and(|text| text.contains("source presentation H1 class"))
+            })));
         assert!(result.get("failureCode").is_none());
     }
 

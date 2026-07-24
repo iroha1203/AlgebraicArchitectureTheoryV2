@@ -328,14 +328,16 @@ mod tests {
     fn presentation_generated_fixture_provenance_is_test_local() {
         const CLI_FIXTURE_GENERATORS: &str = include_str!("../tests/cli.rs");
 
-        for (fixture, symbol) in [
+        for (fixture, symbol, filename) in [
             (
                 include_str!("../tests/fixtures/ag_measurement/archmap_v2_presentation_generated_circle.json"),
                 "presentation_generated_circle_archmap",
+                "archmap_v2_presentation_generated_circle.json",
             ),
             (
                 include_str!("../tests/fixtures/ag_measurement/archmap_v2_presentation_generated_triple.json"),
-                "presentation_generated_saga_plan",
+                "presentation_generated_triple_archmap",
+                "archmap_v2_presentation_generated_triple.json",
             ),
         ] {
             let archmap: ArchMapDocumentV2 =
@@ -355,8 +357,13 @@ mod tests {
                 );
             }
             assert!(
-                CLI_FIXTURE_GENERATORS.contains(&format!("fn {symbol}(")),
-                "fixture source symbol must be a checked-in test generator"
+                CLI_FIXTURE_GENERATORS
+                    .split_once(&format!("fn {symbol}("))
+                    .and_then(|(_, reader)| reader.split_once("\n}"))
+                    .is_some_and(|(reader, _)| reader.contains(&format!(
+                        "read_json(&root.join(\"{filename}\"))"
+                    ))),
+                "fixture source symbol must read its declared fixture file"
             );
         }
     }
