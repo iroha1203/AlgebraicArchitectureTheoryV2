@@ -10724,6 +10724,68 @@ def sagaSemanticResidualClassIsZeroIffCoboundary :=
 def sagaSemanticResidualClassIsZeroIffMatchingCorrection :=
   @SemanticRepair.Saga.SemanticRepairAtlas.semanticResidualClass_isZero_iff_matching_correction
 
+/-! ## Part X SAGA route C3 (#3764): presentation exactness and Φ -/
+
+/-- Kernel-audit alias for the restriction naturality of the free extension. -/
+def sagaChiHomNatural :=
+  @SemanticRepair.Saga.PrimaryCoefficientCorrespondence.chiHom_natural
+
+/-- Kernel-audit alias for Lemma 6.2A (derived repair-relation soundness). -/
+def sagaRelationSoundOfStateCorrespondence :=
+  @SemanticRepair.Saga.PrimaryStateCorrespondence.relationSound_of_stateCorrespondence
+
+/-- Kernel-audit alias for the word-level equivariance of β. -/
+def sagaBetaWord :=
+  @SemanticRepair.Saga.PrimaryStateCorrespondence.beta_word
+
+/-- Kernel-audit alias for the Theorem 6.3 descended comparison map Φ. -/
+noncomputable def sagaPhi :=
+  @SemanticRepair.Saga.PrimaryCoefficientCorrespondence.phi
+
+/-- Kernel-audit alias for the Theorem 6.3 injectivity of Φ. -/
+def sagaPhiInjective :=
+  @SemanticRepair.Saga.PrimaryCoefficientCorrespondence.phi_injective
+
+/-- Kernel-audit alias for the Theorem 6.3 surjectivity of Φ. -/
+def sagaPhiSurjective :=
+  @SemanticRepair.Saga.PrimaryCoefficientCorrespondence.phi_surjective
+
+/-- Kernel-audit alias for the Theorem 6.3 restriction naturality of Φ. -/
+def sagaPhiNatural :=
+  @SemanticRepair.Saga.PrimaryCoefficientCorrespondence.phi_natural
+
+/-- Kernel-audit alias for the Theorem 6.3 additive equivalence Φ. -/
+noncomputable def sagaPhiEquiv :=
+  @SemanticRepair.Saga.PrimaryCoefficientCorrespondence.phiEquiv
+
+/-- Kernel-audit alias for the Corollary 6.4 image comparison. -/
+noncomputable def sagaImageComparison :=
+  @SemanticRepair.Saga.PrimaryCoefficientCorrespondence.imageComparison
+
+/-- Kernel-audit alias for the Corollary 6.4 subpresheaf naturality of the image. -/
+def sagaRangeRestrictMem :=
+  @SemanticRepair.Saga.PrimaryCoefficientCorrespondence.range_restrict_mem
+
+/-- Kernel-audit alias for the M_sem-level equivariance of β. -/
+def sagaBetaMaction :=
+  @SemanticRepair.Saga.PrimaryStateCorrespondence.beta_maction
+
+/-- Kernel-audit alias for the Corollary 6.5 bijectivity of β. -/
+def sagaBetaBijective :=
+  @SemanticRepair.Saga.PrimaryStateCorrespondence.beta_bijective
+
+/-- Kernel-audit alias for the Example 6.6 soundness-failure fixture. -/
+def sagaSoundnessFailure :=
+  @SemanticRepair.Saga.ExactnessFixtures.soundness_failure
+
+/-- Kernel-audit alias for the Example 6.6 completeness-failure fixture. -/
+def sagaCompletenessFailure :=
+  @SemanticRepair.Saga.ExactnessFixtures.completeness_failure
+
+/-- Kernel-audit alias for the Example 6.6 generation-failure fixture. -/
+def sagaGenerationFailure :=
+  @SemanticRepair.Saga.ExactnessFixtures.generation_failure
+
 
 end AAT.AG.AxiomAudit
 
