@@ -182,7 +182,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 vec![
                     "RepairPlan validation checks supplied premises before use; it does not compute boundary membership or global coherence.",
                     "RepairPlan input cannot supply generated conclusion tokens such as glues, verdict, h1Zero, or globalCoherent.",
-                    "Enumeration completeness is recorded as an author assumption, not mechanically verified.",
+                    "External semantic completeness remains an author assumption; declared ArchMap cover/incidence is mechanically checked when the RepairPlan supplies the mapping.",
                 ],
             ),
             artifact(

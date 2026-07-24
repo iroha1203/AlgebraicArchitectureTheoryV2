@@ -2,15 +2,15 @@
   "schema": "archmap/v0.5.4",
   "id": "ag-measurement-presentation-generated-circle-fixture",
   "sources": {
-    "src:order": { "kind": "rust", "path": "src/order.rs", "symbol": "OrderChart", "line": 1 },
-    "src:inventory": { "kind": "rust", "path": "src/inventory.rs", "symbol": "InventoryChart", "line": 1 },
-    "src:shared": { "kind": "rust", "path": "src/shared.rs", "symbol": "SharedChart", "line": 1 },
-    "src:circle": { "kind": "rust", "path": "src/circle.rs", "symbol": "CircleChart", "line": 1 },
-    "src:overlap-01": { "kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "10.2/U01" },
-    "src:overlap-12": { "kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "10.2/U12" },
-    "src:overlap-23": { "kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "10.2/U23" },
-    "src:overlap-30": { "kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "10.2/U30" },
-    "src:cover": { "kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "10.2" }
+    "src:order": { "kind": "test-fixture", "path": "tools/archsig/tests/cli.rs", "symbol": "presentation_generated_circle_archmap" },
+    "src:inventory": { "kind": "test-fixture", "path": "tools/archsig/tests/cli.rs", "symbol": "presentation_generated_circle_archmap" },
+    "src:shared": { "kind": "test-fixture", "path": "tools/archsig/tests/cli.rs", "symbol": "presentation_generated_circle_archmap" },
+    "src:circle": { "kind": "test-fixture", "path": "tools/archsig/tests/cli.rs", "symbol": "presentation_generated_circle_archmap" },
+    "src:overlap-01": { "kind": "test-fixture", "path": "tools/archsig/tests/cli.rs", "symbol": "presentation_generated_circle_archmap" },
+    "src:overlap-12": { "kind": "test-fixture", "path": "tools/archsig/tests/cli.rs", "symbol": "presentation_generated_circle_archmap" },
+    "src:overlap-23": { "kind": "test-fixture", "path": "tools/archsig/tests/cli.rs", "symbol": "presentation_generated_circle_archmap" },
+    "src:overlap-30": { "kind": "test-fixture", "path": "tools/archsig/tests/cli.rs", "symbol": "presentation_generated_circle_archmap" },
+    "src:cover": { "kind": "test-fixture", "path": "tools/archsig/tests/cli.rs", "symbol": "presentation_generated_circle_archmap" }
   },
   "atoms": [
     { "id": "atom:order", "kind": "component", "subject": "src:order", "axis": "static", "predicate": "component", "refs": ["src:order"] },

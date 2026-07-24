@@ -993,6 +993,14 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
         valid["assumptionLedger"][0]["assumedBy"], "repair-plan author",
         "enumerationComplete is recorded as author assumption, not verified"
     );
+    assert_eq!(
+        valid["assumptionLedger"][0]["assumption"],
+        "external semantic completeness beyond the declared ArchMap cover/incidence"
+    );
+    assert_eq!(
+        check_by_id(&valid, "repair-plan-schema052-enumeration-assumption")["title"],
+        "External semantic completeness remains an author assumption; declared ArchMap cover/incidence is checked separately"
+    );
 
     let supplied_path = root.join("repair_plan_supplied_faithfulness.json");
     let supplied_report = out_dir.join("repair-plan-supplied-valid.json");

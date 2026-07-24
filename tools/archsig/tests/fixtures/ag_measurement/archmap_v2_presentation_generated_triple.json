@@ -2,15 +2,15 @@
   "schema": "archmap/v0.5.4",
   "id": "ag-measurement-presentation-generated-triple-fixture",
   "sources": {
-    "src:order": { "kind": "rust", "path": "src/order.rs", "symbol": "OrderChart", "line": 1 },
-    "src:inventory": { "kind": "rust", "path": "src/inventory.rs", "symbol": "InventoryChart", "line": 1 },
-    "src:shared": { "kind": "rust", "path": "src/shared.rs", "symbol": "SharedChart", "line": 1 },
-    "src:overlap-order-inventory": { "kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "presentation/U01" },
-    "src:overlap-inventory-shared": { "kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "presentation/U12" },
-    "src:overlap-order-shared": { "kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "presentation/U02" },
-    "src:overlap-order-inventory-alt": { "kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "presentation/U01-alt" },
-    "src:triple-class": { "kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "presentation/U012" },
-    "src:cover": { "kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "presentation" }
+    "src:order": { "kind": "test-fixture", "path": "tools/archsig/tests/cli.rs", "symbol": "presentation_generated_saga_plan" },
+    "src:inventory": { "kind": "test-fixture", "path": "tools/archsig/tests/cli.rs", "symbol": "presentation_generated_saga_plan" },
+    "src:shared": { "kind": "test-fixture", "path": "tools/archsig/tests/cli.rs", "symbol": "presentation_generated_saga_plan" },
+    "src:overlap-order-inventory": { "kind": "test-fixture", "path": "tools/archsig/tests/cli.rs", "symbol": "presentation_generated_saga_plan" },
+    "src:overlap-inventory-shared": { "kind": "test-fixture", "path": "tools/archsig/tests/cli.rs", "symbol": "presentation_generated_saga_plan" },
+    "src:overlap-order-shared": { "kind": "test-fixture", "path": "tools/archsig/tests/cli.rs", "symbol": "presentation_generated_saga_plan" },
+    "src:overlap-order-inventory-alt": { "kind": "test-fixture", "path": "tools/archsig/tests/cli.rs", "symbol": "presentation_generated_saga_plan" },
+    "src:triple-class": { "kind": "test-fixture", "path": "tools/archsig/tests/cli.rs", "symbol": "presentation_generated_saga_plan" },
+    "src:cover": { "kind": "test-fixture", "path": "tools/archsig/tests/cli.rs", "symbol": "presentation_generated_saga_plan" }
   },
   "atoms": [
     { "id": "atom:order", "kind": "component", "subject": "src:order", "axis": "static", "predicate": "component", "refs": ["src:order"] },

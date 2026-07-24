@@ -140,7 +140,7 @@ pub fn build_repair_plan_validation_report_v1(
         "checks": checks,
         "assumptionLedger": [{
             "theoremRef": "part10/3.1",
-            "assumption": "repair-plan complex enumeration completeness",
+            "assumption": "external semantic completeness beyond the declared ArchMap cover/incidence",
             "status": "assumed",
             "assumedBy": "repair-plan author",
             "source": "complex.enumerationComplete"
@@ -322,6 +322,43 @@ mod tests {
             .clone();
         bridge["targetComplex"]["overlaps"][2]["right"] = Value::String("ctx:inventory".into());
         assert!(comparison_target_complex_from_bridge(&plan, &bridge).is_none());
+    }
+
+    #[test]
+    fn presentation_generated_fixture_provenance_is_test_local() {
+        const CLI_FIXTURE_GENERATORS: &str = include_str!("../tests/cli.rs");
+
+        for (fixture, symbol) in [
+            (
+                include_str!("../tests/fixtures/ag_measurement/archmap_v2_presentation_generated_circle.json"),
+                "presentation_generated_circle_archmap",
+            ),
+            (
+                include_str!("../tests/fixtures/ag_measurement/archmap_v2_presentation_generated_triple.json"),
+                "presentation_generated_saga_plan",
+            ),
+        ] {
+            let archmap: ArchMapDocumentV2 =
+                serde_json::from_str(fixture).expect("presentation-generated fixture parses");
+            assert!(!archmap.sources.is_empty());
+            for source in archmap.sources.values() {
+                assert_eq!(source.kind, "test-fixture");
+                assert_eq!(source.path.as_deref(), Some("tools/archsig/tests/cli.rs"));
+                assert_eq!(source.symbol.as_deref(), Some(symbol));
+                assert_eq!(source.section, None);
+                assert!(
+                    source
+                        .path
+                        .as_deref()
+                        .map_or(true, |path| !path.starts_with("docs/aat/")),
+                    "presentation-generated test fixtures must not cite the protected math source"
+                );
+            }
+            assert!(
+                CLI_FIXTURE_GENERATORS.contains(&format!("fn {symbol}(")),
+                "fixture source symbol must be a checked-in test generator"
+            );
+        }
     }
 
     #[test]
@@ -3299,11 +3336,11 @@ fn check_complete_support(plan: &RepairPlanDocumentV1) -> ValidationCheck {
 fn check_enumeration_assumption(plan: &RepairPlanDocumentV1) -> ValidationCheck {
     let mut check = validation_check(
         "repair-plan-schema052-enumeration-assumption",
-        "Enumeration completeness is recorded as an author assumption, not verified",
+        "External semantic completeness remains an author assumption; declared ArchMap cover/incidence is checked separately",
         "warn",
     );
     check.reason = Some(format!(
-        "complex.enumerationComplete={} is recorded in the assumption ledger with assumed_by=repair-plan author",
+        "complex.enumerationComplete={} records the author assumption about external semantic completeness; mapped declared cover/incidence is checked by repair-plan-schema052-archmap-bindings",
         plan.complex.enumeration_complete
     ));
     check

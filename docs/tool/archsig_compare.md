@@ -13,6 +13,8 @@ SAGA の run 内 H¹ comparison は `RepairPlan.comparison.h1ComparisonData` が
 `archmapContextRef` を必須とする。validator は指定coverのcontext集合と、各intersectionの直接restriction
 predecessor集合を照合する。`enumerationComplete: true` の場合、そのcoverは列挙されたchartとintersection
 context、および宣言されたchart→overlap / overlap→tripleの直接restrictionだけから成らなければならない。
+この照合は宣言された有限入力の一致を検査するものであり、外部意味論上の完全性はRepairPlan authorの
+assumptionとして記録する。
 `kind: "explicit"` では `cochainMap.degreeZero` / `degreeOne` / `degreeTwo.basisMap` と
 `degreeTwo.zeroImage` の有限写像表を validator が再計算する。
 `kind: "presentation-generated"` では各 chart / overlap / triple cell の semantic generators、
