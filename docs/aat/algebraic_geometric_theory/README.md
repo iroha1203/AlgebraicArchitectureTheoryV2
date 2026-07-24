@@ -248,7 +248,8 @@ Semantic repair descent geometry:
   semantic presentation が生成する係数と selected local repair atlas の residual class を、
   architectural equation system が生成する係数と selected local-lift atlas の residual class へ
   Atom/equation presentation map を通じて比較する(SAGA)。
-  monomorphic cover と true sheaf 条件の下で零類を actual global repair へ貼り合わせる。
+  monomorphic cover の下で零類から correction と matching family を構成し、
+  true sheaf 条件により actual global repair へ一意に貼り合わせる。
 ```
 
 したがって、`ringed AAT topos` は architecture scheme を作るための基礎階である。
