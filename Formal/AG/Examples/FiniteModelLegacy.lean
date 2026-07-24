@@ -1,5 +1,6 @@
 import Formal.AG.Examples.FiniteModel
 import Formal.AG.Atom.LawfulnessZeroLegacy
+import Formal.Util.AssertStandardAxioms
 
 namespace AAT.AG
 
@@ -107,3 +108,5 @@ theorem noCycleComplete :
 end FiniteModel
 
 end AAT.AG
+
+#assert_standard_axioms_only AAT.AG.FiniteModel

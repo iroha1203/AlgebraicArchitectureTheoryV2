@@ -2,6 +2,7 @@ import Formal.AG.LawAlgebra.ClosedEquationalGeometryLegacy
 import Formal.AG.LawAlgebra.RingedSiteFiniteExampleLegacy
 import Formal.AG.LawAlgebra.StandardSchemeFiniteExample
 import Formal.AG.LawAlgebra.FiniteExamples
+import Formal.Util.AssertStandardAxioms
 
 noncomputable section
 
@@ -4027,3 +4028,5 @@ theorem coordinateBrokenInclusion_not_valid :
   norm_num at heval
 
 end AAT.AG.LawAlgebra.FiniteExamples.ClosedEquationalGeometry
+
+#assert_standard_axioms_only AAT.AG.LawAlgebra.FiniteExamples.ClosedEquationalGeometry

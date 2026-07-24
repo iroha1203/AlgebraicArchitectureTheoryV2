@@ -1,6 +1,7 @@
 import Formal.AG.Atom.LawfulnessZeroLegacy
 import Formal.AG.Equation.Legacy
 import Formal.AG.LawAlgebra.ClosedEquationalGeometry
+import Formal.Util.AssertStandardAxioms
 
 /-!
 # Legacy obstruction-valuation comparisons
@@ -79,3 +80,5 @@ theorem factorsThroughLawfulClosedSubscheme_iff_omegaU_zero
       hpoint hsound hcomplete)
 
 end AAT.AG.LawAlgebra
+
+#assert_standard_axioms_only AAT.AG.LawAlgebra
