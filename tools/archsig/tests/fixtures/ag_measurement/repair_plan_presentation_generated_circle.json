@@ -58,12 +58,6 @@
       "kind": "presentation-generated",
       "sourceComplexFingerprint": "b3afcfc8895076144822322d6e6bcd27e81e4c130fce9adbeb98d1116eb41a93",
       "targetComplexFingerprint": "b3afcfc8895076144822322d6e6bcd27e81e4c130fce9adbeb98d1116eb41a93",
-      "targetCochainSupport": [
-        { "overlapRef": "overlap:01", "support": ["q"] },
-        { "overlapRef": "overlap:12", "support": [] },
-        { "overlapRef": "overlap:23", "support": [] },
-        { "overlapRef": "overlap:30", "support": [] }
-      ],
       "presentation": {
         "cells": [
           { "cellRef": "ctx:order", "semanticGenerators": ["sigma"], "repairRelationMatrix": [], "equationGenerators": ["q"], "equationRelationMatrix": [], "generatorMap": [[1]] },
@@ -84,7 +78,21 @@
           { "fromRef": "ctx:circle", "toRef": "overlap:23", "semanticMatrix": [[1]], "equationMatrix": [[1]] },
           { "fromRef": "ctx:circle", "toRef": "overlap:30", "semanticMatrix": [[1]], "equationMatrix": [[1]] },
           { "fromRef": "ctx:order", "toRef": "overlap:30", "semanticMatrix": [[1]], "equationMatrix": [[1]] }
-        ]
+        ],
+        "equationLiftAtlas": {
+          "localLifts": [
+            { "chartRef": "ctx:order", "coefficients": [0] },
+            { "chartRef": "ctx:inventory", "coefficients": [0] },
+            { "chartRef": "ctx:shared", "coefficients": [0] },
+            { "chartRef": "ctx:circle", "coefficients": [0] }
+          ],
+          "transitionDifferences": [
+            { "overlapRef": "overlap:01", "coefficients": [0] },
+            { "overlapRef": "overlap:12", "coefficients": [0] },
+            { "overlapRef": "overlap:23", "coefficients": [0] },
+            { "overlapRef": "overlap:30", "coefficients": [1] }
+          ]
+        }
       }
     }
   }

@@ -15,8 +15,11 @@ SAGA の run 内 H¹ comparison は `RepairPlan.comparison.h1ComparisonData` が
 repair relation 行列、equation quotient presentation、`generatorMap` と restriction 行列を入力し、
 F₂ 上で `im(R)=ker(χ̃)`、`im(χ̃)=Q_E`、restriction naturality を検査する。これにより
 local `Φ` と `κ⁰ / κ¹ / κ²` を導出し、`κ¹D_sem⁰=D_E⁰κ⁰` と
-`κ²D_sem¹=D_E¹κ¹` を有限 cell incidence で確認する。residual image が target cochain support と
-一致する場合は `κ¹(r_sem)=r_E+δ⁰h` の computed zero-atlas witness `h` を出力する。
+`κ²D_sem¹=D_E¹κ¹` を有限 cell incidence で確認する。presentation は independently authored な
+`equationLiftAtlas`（chart ごとの local lift と overlap ごとの transition difference）も持ち、
+ArchSig はそこから `r_E` を導出する。`κ¹(r_sem)=r_E+δ⁰h` は equation relation を含む商上で
+解き、解があるときだけ computed quotient-atlas witness `h` を出力する。同じ商上で target cocycle と
+target `Z¹/B¹` class も再計算する。
 どちらの kind でも適合条件を満たす場合だけ analyze の転送 invariant が立つ。
 compare の run-pair 記録はこの run 内写像を自動生成しない。
 

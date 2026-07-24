@@ -2274,27 +2274,26 @@ fn presentation_generated_saga_plan(root: &Path, nonzero_class: bool) -> Value {
             "kind": "presentation-generated",
             "sourceComplexFingerprint": complex_fingerprint,
             "targetComplexFingerprint": complex_fingerprint,
-            "targetCochainSupport": plan["primitives"]
-                .as_array()
-                .expect("comparison primitives are an array")
-                .iter()
-                .map(|primitive| {
-                    let support = primitive["support"]["variables"]
-                        .as_array()
-                        .expect("primitive support is an array")
-                        .iter()
-                        .filter(|variable| variable.as_str() == Some("repair:cycle"))
-                        .map(|_| Value::String("equation:cycle".to_string()))
-                        .collect::<Vec<_>>();
-                    json!({
-                        "overlapRef": primitive["overlapRef"],
-                        "support": support
-                    })
-                })
-                .collect::<Vec<_>>(),
             "presentation": {
                 "cells": cells,
-                "restrictions": restrictions
+                "restrictions": restrictions,
+                "equationLiftAtlas": {
+                    "localLifts": typed_plan.complex.charts.iter().map(|chart| json!({
+                        "chartRef": chart,
+                        "coefficients": [0]
+                    })).collect::<Vec<_>>(),
+                    "transitionDifferences": typed_plan.complex.overlaps.iter().map(|overlap| {
+                        let active = typed_plan.primitives.iter().find(|primitive| {
+                            primitive.overlap_ref == overlap.id
+                        }).is_some_and(|primitive| {
+                            primitive.support.variables.iter().any(|variable| variable == "repair:cycle")
+                        });
+                        json!({
+                            "overlapRef": overlap.id,
+                            "coefficients": [u8::from(active)]
+                        })
+                    }).collect::<Vec<_>>()
+                }
             }
         }
     });
@@ -2431,12 +2430,40 @@ fn cli_analyze_saga_comparison_generates_transfer_from_presentations() {
     );
     assert_eq!(
         comparison["presentationGenerated"]["residualWitness"]["kind"],
-        "computed-zero-atlas-witness"
+        "computed-quotient-atlas-witness"
     );
     assert_eq!(
         comparison["generatedQuotientTransfer"]["kind"],
         "presentation-derived-Z1/B1-class-transfer"
     );
+}
+
+#[test]
+fn cli_presentation_generated_transfer_uses_equation_quotient_for_target_h1() {
+    let root = ag_measurement_root();
+    let mut plan = presentation_generated_saga_plan(&root, true);
+    for cell in plan["comparison"]["h1ComparisonData"]["presentation"]["cells"]
+        .as_array_mut()
+        .expect("presentation cells")
+    {
+        cell["repairRelationMatrix"] = json!([[1]]);
+        cell["equationRelationMatrix"] = json!([[1]]);
+    }
+    let out_dir = run_saga_fixture_lock("ag-saga-presentation-quotient-zero", plan);
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let comparison = invariant_by_id(&packet, "saga-comparison:h1-transfer");
+    assert_eq!(comparison["contract"]["contractChecked"], true);
+    assert_eq!(comparison["contract"]["targetClassComputed"], true);
+    assert_eq!(
+        comparison["presentationGenerated"]["equationResidual"]["targetClassNonZero"],
+        false
+    );
+    assert_eq!(comparison["status"], "not_computed");
+    assert_eq!(
+        comparison["failureCode"],
+        "COMPARISON_DATA_CONTRACT_VIOLATION"
+    );
+    assert!(comparison["conclusionCode"].is_null());
 }
 
 #[test]

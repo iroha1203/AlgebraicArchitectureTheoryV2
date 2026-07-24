@@ -115,9 +115,31 @@ pub struct H1PresentationRestrictionV052 {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct H1PresentationEquationLiftV052 {
+    pub chart_ref: String,
+    pub coefficients: Vec<u8>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct H1PresentationEquationTransitionV052 {
+    pub overlap_ref: String,
+    pub coefficients: Vec<u8>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct H1PresentationEquationLiftAtlasV052 {
+    pub local_lifts: Vec<H1PresentationEquationLiftV052>,
+    pub transition_differences: Vec<H1PresentationEquationTransitionV052>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct H1PresentationDataV052 {
     pub cells: Vec<H1PresentationCellV052>,
     pub restrictions: Vec<H1PresentationRestrictionV052>,
+    pub equation_lift_atlas: H1PresentationEquationLiftAtlasV052,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -129,7 +151,8 @@ pub struct H1ComparisonDataV052 {
     pub cochain_map_ref: Option<String>,
     pub source_complex_fingerprint: String,
     pub target_complex_fingerprint: String,
-    pub target_cochain_support: Vec<H1ComparisonSupportV052>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub target_cochain_support: Option<Vec<H1ComparisonSupportV052>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub cochain_map: Option<H1ComparisonCochainMapV052>,
     #[serde(skip_serializing_if = "Option::is_none")]

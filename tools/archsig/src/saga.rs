@@ -792,11 +792,19 @@ fn evaluate_saga_comparison_v1(
     let contract_checked = if h1_kind == "explicit" {
         explicit_checks.is_some_and(|checks| checks.all_pass())
     } else if h1_kind == "presentation-generated" {
-        presentation_checks.as_ref().is_some_and(|checks| checks.all_pass())
+        presentation_checks
+            .as_ref()
+            .is_some_and(|checks| checks.all_pass())
     } else {
         true
     };
-    let target_class_nonzero = comparison_target_class_nonzero(plan, comparison);
+    let target_class_nonzero = if h1_kind == "presentation-generated" {
+        presentation_checks
+            .as_ref()
+            .and_then(|checks| checks.target_class_nonzero)
+    } else {
+        comparison_target_class_nonzero(plan, comparison)
+    };
     let preserves_zero_predicate =
         target_class_nonzero.is_some_and(|target| target == class_nonzero);
     let comparison_contract_violation = class_available
