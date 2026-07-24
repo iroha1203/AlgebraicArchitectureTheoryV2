@@ -10638,6 +10638,92 @@ def sagaCoverRelativeToIncIncToCoverRelative :=
 def sagaCoverRelativeToIncH1ZeroIff :=
   @SemanticRepair.Saga.MonomorphicOrderedCover.coverRelativeToIncH1_zero_iff
 
+/-! ## Part X SAGA route C2 (#3763): torsor residual engine -/
+
+/-- Kernel-audit alias for uniqueness of the generated torsor difference. -/
+def sagaDiffAtUnique :=
+  @SemanticRepair.Saga.AffineCoefficientLiftSystem.diffAt_unique
+
+/-- Kernel-audit alias for the torsor-difference composition law. -/
+def sagaDiffAtComp :=
+  @SemanticRepair.Saga.AffineCoefficientLiftSystem.diffAt_comp
+
+/-- Kernel-audit alias for restriction compatibility of the torsor difference. -/
+def sagaDiffAtRestrict :=
+  @SemanticRepair.Saga.AffineCoefficientLiftSystem.diffAt_restrict
+
+/-- Kernel-audit alias for Lemma 4.3 / 5.4: the generated residual is a cocycle. -/
+def sagaResidualCocycle :=
+  @SemanticRepair.Saga.CoefficientLiftAtlas.residual_cocycle
+
+/-- Kernel-audit alias for Theorem 4.4 / Lemma 5.4: atlas-choice gauge shift. -/
+def sagaResidualChoice :=
+  @SemanticRepair.Saga.CoefficientLiftAtlas.residual_choice
+
+/-- Kernel-audit alias for choice independence of the residual class. -/
+def sagaResidualClassChoiceIndependent :=
+  @SemanticRepair.Saga.CoefficientLiftAtlas.residualClass_choice_independent
+
+/-- Kernel-audit alias for Corollary 4.5 (zero class vs coboundary). -/
+def sagaResidualClassIsZeroIffCoboundary :=
+  @SemanticRepair.Saga.CoefficientLiftAtlas.residualClass_isZero_iff_coboundary
+
+/-- Kernel-audit alias for Corollary 4.5 (zero class vs matching correction). -/
+def sagaResidualClassIsZeroIffMatchingCorrection :=
+  @SemanticRepair.Saga.CoefficientLiftAtlas.residualClass_isZero_iff_matching_correction
+
+/-- Kernel-audit alias for the residual-vanishing / overlap-matching equivalence. -/
+def sagaResidualEqZeroIffMatching :=
+  @SemanticRepair.Saga.CoefficientLiftAtlas.residual_eq_zero_iff_matching
+
+/-- Kernel-audit alias for the reused Part III `Q_E` sitewide presheaf reading. -/
+noncomputable def sagaEquationSitePresheaf :=
+  @SemanticRepair.Saga.equationSitePresheaf
+
+/-- Kernel-audit alias for the Definition 5.2 geometric complex `C_E`. -/
+noncomputable def sagaEquationComplex :=
+  @SemanticRepair.Saga.equationComplex
+
+/-- Kernel-audit alias for the short-exact-sequence lift-fiber instance. -/
+noncomputable def sagaLiftFiberLiftSystem :=
+  @SemanticRepair.Saga.LiftFiberData.liftSystem
+
+/-- Kernel-audit alias for the derived freeness of the `M_sem` action. -/
+def sagaMactFree :=
+  @SemanticRepair.Saga.AffineSemanticRepairSystem.mact_free
+
+/-- Kernel-audit alias for the derived transitivity of the `M_sem` action. -/
+def sagaMactTransitive :=
+  @SemanticRepair.Saga.AffineSemanticRepairSystem.mact_transitive
+
+/-- Kernel-audit alias for the derived semantic faithfulness theorem. -/
+def sagaMactFaithful :=
+  @SemanticRepair.Saga.AffineSemanticRepairSystem.mact_faithful
+
+/-- Kernel-audit alias for the descended `M_sem`-affine system. -/
+noncomputable def sagaToLiftSystem :=
+  @SemanticRepair.Saga.AffineSemanticRepairSystem.toLiftSystem
+
+/-- Kernel-audit alias for Lemma 4.3 on the generated semantic residual. -/
+def sagaSemanticResidualCocycle :=
+  @SemanticRepair.Saga.SemanticRepairAtlas.semanticResidual_cocycle
+
+/-- Kernel-audit alias for Theorem 4.4 on the generated semantic residual. -/
+def sagaSemanticResidualChoice :=
+  @SemanticRepair.Saga.SemanticRepairAtlas.semanticResidual_choice
+
+/-- Kernel-audit alias for choice independence of `[r_sem]`. -/
+def sagaSemanticResidualClassChoiceIndependent :=
+  @SemanticRepair.Saga.SemanticRepairAtlas.semanticResidualClass_choice_independent
+
+/-- Kernel-audit alias for Corollary 4.5 (semantic, zero vs coboundary). -/
+def sagaSemanticResidualClassIsZeroIffCoboundary :=
+  @SemanticRepair.Saga.SemanticRepairAtlas.semanticResidualClass_isZero_iff_coboundary
+
+/-- Kernel-audit alias for Corollary 4.5 (semantic, zero vs matching correction). -/
+def sagaSemanticResidualClassIsZeroIffMatchingCorrection :=
+  @SemanticRepair.Saga.SemanticRepairAtlas.semanticResidualClass_isZero_iff_matching_correction
+
 
 end AAT.AG.AxiomAudit
 
