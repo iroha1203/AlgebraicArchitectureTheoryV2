@@ -325,6 +325,25 @@ mod tests {
     }
 
     #[test]
+    fn references_require_unique_triple_ids_across_components() {
+        let mut plan: RepairPlanDocumentV1 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/repair_plan_component_aware_one_cent.json"
+        ))
+        .expect("component-aware fixture parses");
+        plan.complex.triple_overlaps.push(RepairPlanTripleOverlapV1 {
+            id: "triple:consign-parcel-shipping".to_string(),
+            overlap_refs: vec![
+                "overlap:cancel-inside-payment".to_string(),
+                "overlap:inside-payment-order".to_string(),
+                "overlap:cancel-order".to_string(),
+            ],
+            archmap_context_ref: None,
+        });
+
+        assert_eq!(check_references(&plan).result, "fail");
+    }
+
+    #[test]
     fn presentation_generated_fixture_provenance_is_test_local() {
         const CLI_FIXTURE_GENERATORS: &str = include_str!("../tests/cli.rs");
 
@@ -2685,6 +2704,7 @@ fn check_references(plan: &RepairPlanDocumentV1) -> ValidationCheck {
         .map(|overlap| overlap.id.as_str())
         .collect::<BTreeSet<_>>();
     let mut examples = Vec::new();
+    let mut triple_ids = BTreeSet::new();
     for overlap in &plan.complex.overlaps {
         for (field, chart) in [("left", &overlap.left), ("right", &overlap.right)] {
             if !charts.contains(chart) {
@@ -2706,6 +2726,13 @@ fn check_references(plan: &RepairPlanDocumentV1) -> ValidationCheck {
         }
     }
     for triple in &plan.complex.triple_overlaps {
+        if !triple_ids.insert(triple.id.as_str()) {
+            examples.push(generic_validation_example(
+                &format!("complex.tripleOverlaps[{}].id", triple.id),
+                &triple.id,
+                "triple overlap IDs must be unique across the RepairPlan complex",
+            ));
+        }
         for overlap_ref in &triple.overlap_refs {
             if !overlaps.contains(overlap_ref.as_str()) {
                 examples.push(generic_validation_example(

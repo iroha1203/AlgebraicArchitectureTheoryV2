@@ -1214,6 +1214,17 @@ fn component_cocycle_certificate(
     if !plan.complex.enumeration_complete {
         return None;
     }
+    if plan
+        .complex
+        .triple_overlaps
+        .iter()
+        .map(|triple| triple.id.as_str())
+        .collect::<BTreeSet<_>>()
+        .len()
+        != plan.complex.triple_overlaps.len()
+    {
+        return None;
+    }
     let component = residual_support_component(plan)?;
     let component_overlap_refs = component
         .overlap_refs
@@ -1226,9 +1237,9 @@ fn component_cocycle_certificate(
         .iter()
         .filter(|triple| {
             triple
-            .overlap_refs
-            .iter()
-            .any(|overlap_ref| component_overlap_refs.contains(overlap_ref.as_str()))
+                .overlap_refs
+                .iter()
+                .any(|overlap_ref| component_overlap_refs.contains(overlap_ref.as_str()))
         })
         .cloned()
         .collect::<Vec<_>>();
@@ -1642,12 +1653,31 @@ mod tests {
             .as_array_mut()
             .expect("triple overlaps are an array");
         triples.push(local_triple.clone());
-        triples.push(local_triple);
+        triples.push(local_triple.clone());
         let duplicate_id: RepairPlanDocumentV1 =
             serde_json::from_value(duplicate_id).expect("duplicate-ID fixture still parses");
         assert!(
             component_cocycle_certificate(&duplicate_id).is_none(),
             "duplicate selected triple IDs must not certify C2"
+        );
+
+        let mut cross_component_duplicate = component_aware_one_cent_fixture();
+        cross_component_duplicate["primitives"][1]["resL"] = serde_json::json!(["drift:one-cent"]);
+        cross_component_duplicate["primitives"][1]["support"]["variables"] =
+            serde_json::json!(["drift:one-cent"]);
+        let mut duplicate_remote_id = local_triple;
+        duplicate_remote_id["id"] = serde_json::json!("triple:consign-parcel-shipping");
+        cross_component_duplicate["complex"]["tripleOverlaps"]
+            .as_array_mut()
+            .expect("triple overlaps are an array")
+            .push(duplicate_remote_id);
+        let cross_component_duplicate: RepairPlanDocumentV1 = serde_json::from_value(
+            cross_component_duplicate,
+        )
+        .expect("cross-component duplicate-ID fixture still parses");
+        assert!(
+            component_cocycle_certificate(&cross_component_duplicate).is_none(),
+            "duplicate triple IDs outside the selected component must not certify C2"
         );
     }
 
