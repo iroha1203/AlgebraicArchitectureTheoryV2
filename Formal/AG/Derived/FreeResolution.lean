@@ -68,6 +68,35 @@ namespace FiniteFreeMathlibResolution
 variable {A}
 variable {I : Ideal A}
 
+/--
+Transport a finite-free resolution along an equality of ideals while retaining
+the same chosen finite basis in every degree.
+-/
+noncomputable def transportIdeal
+    {J : Ideal A}
+    (F : FiniteFreeMathlibResolution.{v} A I)
+    (h : I = J) :
+    FiniteFreeMathlibResolution.{v} A J where
+  projectiveResolution := h ▸ F.projectiveResolution
+  length := F.length
+  BasisIndex := F.BasisIndex
+  basisIndexFintype := F.basisIndexFintype
+  termIsoFree := by
+    subst J
+    exact F.termIsoFree
+  supported_le_length := by
+    subst J
+    exact F.supported_le_length
+
+/-- Transporting the resolved ideal keeps the selected basis indices. -/
+theorem transportIdeal_BasisIndex
+    {J : Ideal A}
+    (F : FiniteFreeMathlibResolution.{v} A I)
+    (h : I = J)
+    (n : Nat) :
+    (F.transportIdeal h).BasisIndex n = F.BasisIndex n :=
+  rfl
+
 /-- V.R4(a): the categorical complex obtained by tensoring the finite free resolution. -/
 abbrev tensorComplex (F : FiniteFreeMathlibResolution.{v} A I) (I_U : Ideal A) :
     ChainComplex (ModuleCat.{v} A) ℕ :=
@@ -117,6 +146,17 @@ noncomputable def differentialMatrix
     (Pi.basisFun A (F.BasisIndex (n + 1)))
     (Pi.basisFun A (F.BasisIndex n))
     (F.coordinateDifferential n)
+
+/-- Transporting the resolved ideal leaves the coordinate differential matrix
+unchanged. -/
+theorem transportIdeal_differentialMatrix
+    {J : Ideal A}
+    (F : FiniteFreeMathlibResolution.{v} A I)
+    (h : I = J)
+    (n : Nat) :
+    (F.transportIdeal h).differentialMatrix n = F.differentialMatrix n := by
+  subst J
+  rfl
 
 /-- V.R4(a): matrix computation is definitionally tied to the actual differential. -/
 theorem differentialMatrix_correct

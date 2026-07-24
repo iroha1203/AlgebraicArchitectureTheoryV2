@@ -1080,6 +1080,60 @@ theorem realD_eq_source_holds {M : MeasurementProfile.{u, v}} [Field M.Coeff]
 
 end AATGAGAAllDegreeRealCechHodgeInput
 
+/--
+Exact computation of a coordinate family whose nonzero values are one fixed
+principal generator. The active index is part of the computation data, so
+equality of generated ideals is derived rather than supplied.
+-/
+structure PrincipalCoordinatePresentation
+    {R : Type v} [CommRing R]
+    {ι : Type u}
+    (coordinate : ι → R)
+    (generator : R) where
+  /-- Computed activity marker for every coordinate. -/
+  active : ι → Option Unit
+  /-- Every coordinate computes to either zero or the principal generator. -/
+  coordinate_eq :
+    ∀ i, coordinate i =
+      match active i with
+      | none => 0
+      | some _ => generator
+  /-- One computed coordinate realizes the principal generator. -/
+  generatorIndex : ι
+  generatorIndex_active : active generatorIndex = some ()
+
+namespace PrincipalCoordinatePresentation
+
+/-- The exact coordinate computation generates precisely the principal ideal. -/
+theorem span_range_eq_span_singleton
+    {R : Type v} [CommRing R]
+    {ι : Type u}
+    {coordinate : ι → R}
+    {generator : R}
+    (P : PrincipalCoordinatePresentation coordinate generator) :
+    Ideal.span (Set.range coordinate) =
+      Ideal.span ({generator} : Set R) := by
+  apply le_antisymm
+  · apply Ideal.span_le.mpr
+    rintro polynomial ⟨i, rfl⟩
+    cases hactive : P.active i with
+    | none =>
+        rw [P.coordinate_eq i, hactive]
+        exact Ideal.zero_mem _
+    | some marker =>
+        rw [P.coordinate_eq i, hactive]
+        exact Ideal.subset_span (by rfl)
+  · apply Ideal.span_le.mpr
+    intro polynomial hpolynomial
+    have hgenerator : polynomial = generator := by
+      simpa using hpolynomial
+    subst polynomial
+    apply Ideal.subset_span
+    refine ⟨P.generatorIndex, ?_⟩
+    rw [P.coordinate_eq P.generatorIndex, P.generatorIndex_active]
+
+end PrincipalCoordinatePresentation
+
 /-- VIII.Theorem 12.3: finite data shared by every certified comparison. -/
 structure AATGAGACommonFiniteData (M : MeasurementProfile.{u, v}) [Field M.Coeff] where
   /-- The generated finite Čech source shared by all four packages. -/
@@ -1112,34 +1166,22 @@ structure AATGAGACommonFiniteData (M : MeasurementProfile.{u, v}) [Field M.Coeff
   /-- The selected right required equation used in the common chart. -/
   selectedRightProfileEquation :
     M.equationGeometry.site.equationSystem.RequiredIndex
-  /-- Every mapped left coordinate lies in the principal `xy` ideal. -/
-  leftEquationCoordinate_mem :
-    ∀ atom,
-      leftEquationObservableMap
+  /-- Exact coordinate computation for the selected left equation. -/
+  leftCoordinatePresentation :
+    PrincipalCoordinatePresentation
+      (fun atom =>
+        leftEquationObservableMap
           (M.equationGeometry.site.equationSystem.violationCoordinate
-            equationContext selectedLeftProfileEquation.1 atom) ∈
-        Derived.Counterexample.SharedWitnessCoord.idealU M.Coeff
-  /-- One actual left equation coordinate realizes the `xy` generator. -/
-  leftGeneratorAtom : M.equationGeometry.U.Atom
-  leftEquationGenerator_eq_xy :
-    leftEquationObservableMap
-        (M.equationGeometry.site.equationSystem.violationCoordinate
-          equationContext selectedLeftProfileEquation.1 leftGeneratorAtom) =
-      Derived.Counterexample.SharedWitnessCoord.xy M.Coeff
-  /-- Every mapped right coordinate lies in the principal `xz` ideal. -/
-  rightEquationCoordinate_mem :
-    ∀ atom,
-      rightEquationObservableMap
+            equationContext selectedLeftProfileEquation.1 atom))
+      (Derived.Counterexample.SharedWitnessCoord.xy M.Coeff)
+  /-- Exact coordinate computation for the selected right equation. -/
+  rightCoordinatePresentation :
+    PrincipalCoordinatePresentation
+      (fun atom =>
+        rightEquationObservableMap
           (M.equationGeometry.site.equationSystem.violationCoordinate
-            equationContext selectedRightProfileEquation.1 atom) ∈
-        Derived.Counterexample.SharedWitnessCoord.idealV M.Coeff
-  /-- One actual right equation coordinate realizes the `xz` generator. -/
-  rightGeneratorAtom : M.equationGeometry.U.Atom
-  rightEquationGenerator_eq_xz :
-    rightEquationObservableMap
-        (M.equationGeometry.site.equationSystem.violationCoordinate
-          equationContext selectedRightProfileEquation.1 rightGeneratorAtom) =
-      Derived.Counterexample.SharedWitnessCoord.xz M.Coeff
+            equationContext selectedRightProfileEquation.1 atom))
+      (Derived.Counterexample.SharedWitnessCoord.xz M.Coeff)
   /-- The common ambient has the atom carrier selected by the Čech source. -/
   ambientAtomType_eq_source : commonAmbient.AmbientSpace = finiteCechSource.geometry.U.Atom
   /-- The profile obstruction-object handle is read in the common ambient. -/
@@ -1339,40 +1381,14 @@ theorem leftIdeal_eq_sharedWitness {M : MeasurementProfile.{u, v}} [Field M.Coef
     (C : AATGAGACommonFiniteData M) :
     C.leftIdeal = Derived.Counterexample.SharedWitnessCoord.idealU M.Coeff := by
   rw [leftIdeal, profileEquationIdeal_eq_span_range]
-  apply le_antisymm
-  · apply Ideal.span_le.mpr
-    rintro polynomial ⟨atom, rfl⟩
-    exact C.leftEquationCoordinate_mem atom
-  · unfold Derived.Counterexample.SharedWitnessCoord.idealU
-    apply Ideal.span_le.mpr
-    intro polynomial hpolynomial
-    have hgenerator :
-        polynomial =
-          Derived.Counterexample.SharedWitnessCoord.xy M.Coeff := by
-      simpa using hpolynomial
-    subst polynomial
-    apply Ideal.subset_span
-    exact ⟨C.leftGeneratorAtom, C.leftEquationGenerator_eq_xy⟩
+  exact C.leftCoordinatePresentation.span_range_eq_span_singleton
 
 /-- Actual mapped equation coordinates derive the selected right principal ideal. -/
 theorem rightIdeal_eq_sharedWitness {M : MeasurementProfile.{u, v}} [Field M.Coeff]
     (C : AATGAGACommonFiniteData M) :
     C.rightIdeal = Derived.Counterexample.SharedWitnessCoord.idealV M.Coeff := by
   rw [rightIdeal, profileEquationIdeal_eq_span_range]
-  apply le_antisymm
-  · apply Ideal.span_le.mpr
-    rintro polynomial ⟨atom, rfl⟩
-    exact C.rightEquationCoordinate_mem atom
-  · unfold Derived.Counterexample.SharedWitnessCoord.idealV
-    apply Ideal.span_le.mpr
-    intro polynomial hpolynomial
-    have hgenerator :
-        polynomial =
-          Derived.Counterexample.SharedWitnessCoord.xz M.Coeff := by
-      simpa using hpolynomial
-    subst polynomial
-    apply Ideal.subset_span
-    exact ⟨C.rightGeneratorAtom, C.rightEquationGenerator_eq_xz⟩
+  exact C.rightCoordinatePresentation.span_range_eq_span_singleton
 
 /-- The degree-one LawConflict object of the canonical selected Tor bridge. -/
 abbrev lawConflict {M : MeasurementProfile.{u, v}} [Field M.Coeff]

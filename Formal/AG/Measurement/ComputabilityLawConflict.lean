@@ -19,26 +19,12 @@ structure FiniteAATConflictRealization
     {M : MeasurementProfile.{u, v}}
     {R : FiniteMeasurementRegime M}
     (D : FiniteAATComputationData M R) where
-  /-- Existing selected common ambient for the two actual equations. -/
-  commonAmbient : CommonAmbientPair M
-  /-- Interpret actual generated equation ideals in the common ambient. -/
-  idealToAmbient :
-    letI := R.geometry.coeffCommRing
-    Ideal (MvPolynomial M.WitnessVariables M.Coeff) →
-      commonAmbient.LawIdeal
-  /-- The canonical selected left equation ideal gives the ambient left ideal. -/
-  leftEquationIdeal_ambient :
-    letI := R.geometry.coeffCommRing
-    idealToAmbient D.profileRealization.leftIdeal =
-      commonAmbient.leftLawIdeal
-  /-- The canonical selected right equation ideal gives the ambient right ideal. -/
-  rightEquationIdeal_ambient :
-    letI := R.geometry.coeffCommRing
-    idealToAmbient D.profileRealization.rightIdeal =
-      commonAmbient.rightLawIdeal
+  /-- Selected ambient data before inserting the two computed equation ideals. -/
+  ambientTemplate : CommonAmbientPair M
   /-- Local identification of computed witness supports with the existing
   measurement support carrier. -/
-  supportEquiv : Finset M.WitnessVariables ≃ commonAmbient.SupportCarrier
+  supportEquiv :
+    Finset M.WitnessVariables ≃ ambientTemplate.SupportCarrier
 
 namespace FiniteAATConflictRealization
 
@@ -46,25 +32,28 @@ variable {M : MeasurementProfile.{u, v}}
 variable {R : FiniteMeasurementRegime M}
 variable {D : FiniteAATComputationData M R}
 
-/-- The concrete left ideal used by the Tor computation realizes the ambient
-left ideal through the canonical equation-generated presentation. -/
-theorem computedLeftIdeal_ambient
-    (C : FiniteAATConflictRealization D) :
-    letI := R.geometry.coeffCommRing
-    C.idealToAmbient D.leftIdeal = C.commonAmbient.leftLawIdeal := by
+/-- Common ambient whose selected ideals are the actual equation ideals used
+by the finite Tor computation. -/
+def commonAmbient (C : FiniteAATConflictRealization D) :
+    CommonAmbientPair M := by
   letI := R.geometry.coeffCommRing
-  rw [← D.canonicalLeftIdeal_eq]
-  exact C.leftEquationIdeal_ambient
+  exact C.ambientTemplate.withSelectedIdeals D.leftIdeal D.rightIdeal
 
-/-- The concrete right ideal used by the Tor computation realizes the ambient
-right ideal through the canonical equation-generated presentation. -/
-theorem computedRightIdeal_ambient
+/-- The selected ambient left ideal is fixed by construction to the actual
+left equation ideal. -/
+theorem commonAmbient_leftLawIdeal
     (C : FiniteAATConflictRealization D) :
     letI := R.geometry.coeffCommRing
-    C.idealToAmbient D.rightIdeal = C.commonAmbient.rightLawIdeal := by
-  letI := R.geometry.coeffCommRing
-  rw [← D.canonicalRightIdeal_eq]
-  exact C.rightEquationIdeal_ambient
+    C.commonAmbient.leftLawIdeal = D.leftIdeal :=
+  rfl
+
+/-- The selected ambient right ideal is fixed by construction to the actual
+right equation ideal. -/
+theorem commonAmbient_rightLawIdeal
+    (C : FiniteAATConflictRealization D) :
+    letI := R.geometry.coeffCommRing
+    C.commonAmbient.rightLawIdeal = D.rightIdeal :=
+  rfl
 
 /-- Relation-valued support semantics transported to the selected common
 ambient carrier. -/
@@ -115,10 +104,9 @@ def lawConflictMeasurement (C : FiniteAATConflictRealization D) :
       C.commonAmbient.SupportCarrier -> Prop := C.supportRelation
   have hselected : relation selectedClass C.selectedSupport := by
     exact C.selectedSupport_holds
-  exact @LawConflictMeasurement.ofSelectedTorBridge M C.commonAmbient
+  exact @LawConflictMeasurement.ofSelectedTorBridge M C.ambientTemplate
     (MvPolynomial M.WitnessVariables M.Coeff) inferInstance
-    D.leftIdeal D.rightIdeal C.idealToAmbient
-    C.computedLeftIdeal_ambient C.computedRightIdeal_ambient
+    D.leftIdeal D.rightIdeal
     B D.torDegree selectedClass C.selectedSupport relation hselected
 
 /-- The final measurement's common-ambient obligation contains the actual
@@ -128,11 +116,7 @@ theorem lawConflictMeasurement_commonAmbientRequired_shape
     letI := R.geometry.coeffCommRing
     C.lawConflictMeasurement.commonAmbientRequired =
       (C.commonAmbient.commonRingedSite ∧
-        C.commonAmbient.lawIdealsInCommonAmbient ∧
-          C.idealToAmbient D.leftIdeal =
-            C.commonAmbient.leftLawIdeal ∧
-          C.idealToAmbient D.rightIdeal =
-            C.commonAmbient.rightLawIdeal) :=
+        C.commonAmbient.lawIdealsInCommonAmbient) :=
   rfl
 
 /-- The final measurement exposes the selected computed-support reading. -/

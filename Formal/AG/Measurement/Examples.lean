@@ -1509,8 +1509,203 @@ theorem finiteDimensionalMatrixProfileRealization_rightIdeal :
   exact finiteMeasurement_rightEquationIdeal_realizes.trans
     finiteDimensionalMatrixRightIdeal_eq_squareFree.symm
 
-/-- R11(c): selected length-one finite-free resolution on the finite-field right ideal. -/
-def finiteDimensionalMatrixRightResolution :
+/-- Computed support presentation of each actual left equation coordinate. -/
+private def finiteMeasurementLeftCoordinateSupport
+    (atom : FiniteModel.FiniteAtom) :
+    Option (Finset SquareFreeSupportVertex) :=
+  some {finiteAtomWitnessVariable atom}
+
+/-- Computed support presentation of each actual right equation coordinate. -/
+private def finiteMeasurementRightCoordinateSupport
+    (atom : FiniteModel.FiniteAtom) :
+    Option (Finset SquareFreeSupportVertex) :=
+  if atom = FiniteModel.FiniteAtom.componentA then
+    some forbiddenSupportPFinset
+  else
+    none
+
+/-- Computed support presentation of every required equation/Atom coordinate. -/
+private def finiteMeasurementRequiredCoordinateSupport
+    (index :
+      finiteMeasurementEquationSite.equationSystem.RequiredIndex ×
+        FiniteModel.FiniteAtom) :
+    Option (Finset SquareFreeSupportVertex) :=
+  match index.1.1 with
+  | .left => finiteMeasurementLeftCoordinateSupport index.2
+  | .right => finiteMeasurementRightCoordinateSupport index.2
+  | .alternate => none
+
+/-- The actual left equation coordinates compute the all-singleton
+square-free presentation. -/
+noncomputable def finiteMeasurementLeftCoordinatePresentation :
+    SquareFreeCoordinatePresentation finiteDimensionalMatrixRegime
+      (finiteDimensionalMatrixProfileRealization.equationCoordinate
+        FiniteEquationHandle.left)
+      finiteDimensionalMatrixLeftSquareFree where
+  support := finiteMeasurementLeftCoordinateSupport
+  coordinate_eq := by
+    intro atom
+    simpa [finiteMeasurementLeftCoordinateSupport,
+      FiniteAATProfileRealization.equationCoordinate,
+      finiteDimensionalMatrixProfileRealization,
+      LawAlgebra.StanleyReisner.squareFreeMonomial] using
+        finiteMeasurement_leftEquationCoordinate_zmod2 atom
+  support_exact := by
+    letI := finiteDimensionalMatrixRegime.witnessFintype
+    letI := finiteDimensionalMatrixRegime.witnessDecidableEq
+    intro selectedSupport
+    constructor
+    · intro hselected
+      rcases Finset.mem_image.mp hselected with
+        ⟨supportVertex, -, hsupport⟩
+      subst selectedSupport
+      cases supportVertex with
+      | p =>
+          exact ⟨FiniteModel.FiniteAtom.componentA, by
+            simp [finiteMeasurementLeftCoordinateSupport,
+              finiteAtomWitnessVariable]⟩
+      | q =>
+          exact ⟨FiniteModel.FiniteAtom.componentB, by
+            simp [finiteMeasurementLeftCoordinateSupport,
+              finiteAtomWitnessVariable]⟩
+      | r =>
+          exact ⟨FiniteModel.FiniteAtom.componentC, by
+            simp [finiteMeasurementLeftCoordinateSupport,
+              finiteAtomWitnessVariable]⟩
+    · rintro ⟨atom, hatom⟩
+      change selectedSupport ∈
+        Finset.univ.image (fun supportVertex => {supportVertex})
+      apply Finset.mem_image.mpr
+      refine ⟨finiteAtomWitnessVariable atom, Finset.mem_univ _, ?_⟩
+      exact Option.some.inj hatom
+
+/-- The actual right equation coordinates compute the singleton-`p`
+square-free presentation. -/
+noncomputable def finiteMeasurementRightCoordinatePresentation :
+    SquareFreeCoordinatePresentation finiteDimensionalMatrixRegime
+      (finiteDimensionalMatrixProfileRealization.equationCoordinate
+        FiniteEquationHandle.right)
+      finiteDimensionalMatrixRightSquareFree where
+  support := finiteMeasurementRightCoordinateSupport
+  coordinate_eq := by
+    intro atom
+    by_cases hcomponent : atom = FiniteModel.FiniteAtom.componentA
+    · simpa [finiteDimensionalMatrixProfile,
+        finiteMeasurementRightCoordinateSupport, hcomponent,
+        forbiddenSupportPFinset,
+        LawAlgebra.StanleyReisner.squareFreeMonomial] using
+          finiteMeasurement_rightEquationCoordinate_zmod2 atom
+    · simpa [finiteDimensionalMatrixProfile,
+        finiteMeasurementRightCoordinateSupport, hcomponent] using
+          finiteMeasurement_rightEquationCoordinate_zmod2 atom
+  support_exact := by
+    letI := finiteDimensionalMatrixRegime.witnessDecidableEq
+    intro selectedSupport
+    constructor
+    · intro hselected
+      have hsupport : selectedSupport = forbiddenSupportPFinset := by
+        simpa [finiteDimensionalMatrixRightSquareFree] using hselected
+      subst selectedSupport
+      exact ⟨FiniteModel.FiniteAtom.componentA, by
+        simp [finiteMeasurementRightCoordinateSupport]⟩
+    · rintro ⟨atom, hatom⟩
+      by_cases hcomponent : atom = FiniteModel.FiniteAtom.componentA
+      · subst atom
+        have hsupport := Option.some.inj hatom
+        subst selectedSupport
+        simp [finiteDimensionalMatrixRightSquareFree]
+      · simp [finiteMeasurementRightCoordinateSupport, hcomponent] at hatom
+
+/-- Every required equation coordinate computes the all-singleton
+obstruction presentation. -/
+noncomputable def finiteMeasurementRequiredCoordinatePresentation :
+    SquareFreeCoordinatePresentation finiteDimensionalMatrixRegime
+      finiteDimensionalMatrixProfileRealization.requiredCoordinate
+      finiteDimensionalMatrixObstructionSquareFree where
+  support := finiteMeasurementRequiredCoordinateSupport
+  coordinate_eq := by
+    rintro ⟨⟨equation, hrequired⟩, atom⟩
+    cases equation with
+    | left =>
+        simpa [finiteMeasurementRequiredCoordinateSupport,
+          finiteMeasurementLeftCoordinateSupport,
+          FiniteAATProfileRealization.requiredCoordinate,
+          FiniteAATProfileRealization.equationCoordinate,
+          finiteDimensionalMatrixProfileRealization,
+          LawAlgebra.StanleyReisner.squareFreeMonomial] using
+            finiteMeasurement_leftEquationCoordinate_zmod2 atom
+    | right =>
+        by_cases hcomponent : atom = FiniteModel.FiniteAtom.componentA
+        · simpa [finiteDimensionalMatrixProfile,
+            finiteMeasurementRequiredCoordinateSupport,
+            finiteMeasurementRightCoordinateSupport, hcomponent,
+            forbiddenSupportPFinset,
+            LawAlgebra.StanleyReisner.squareFreeMonomial] using
+              finiteMeasurement_rightEquationCoordinate_zmod2 atom
+        · simpa [finiteDimensionalMatrixProfile,
+            finiteMeasurementRequiredCoordinateSupport,
+            finiteMeasurementRightCoordinateSupport, hcomponent] using
+              finiteMeasurement_rightEquationCoordinate_zmod2 atom
+    | alternate =>
+        simp [ArchitecturalEquationSystem.Required,
+          finiteDimensionalMatrixProfile, MeasurementEquationGeometry.ofSite,
+          finiteMeasurementEquationSite, finiteMeasurementEquationSystem] at hrequired
+  support_exact := by
+    letI := finiteDimensionalMatrixRegime.witnessFintype
+    letI := finiteDimensionalMatrixRegime.witnessDecidableEq
+    intro selectedSupport
+    constructor
+    · intro hselected
+      change selectedSupport ∈
+        (FiniteSquareFreeComputationData.allSingletons
+          finiteDimensionalMatrixRegime).forbiddenSupports at hselected
+      rcases Finset.mem_image.mp hselected with
+        ⟨supportVertex, -, hsupport⟩
+      subst selectedSupport
+      cases supportVertex with
+      | p =>
+          exact ⟨(⟨FiniteEquationHandle.left, rfl⟩,
+            FiniteModel.FiniteAtom.componentA), by
+              simp [finiteMeasurementRequiredCoordinateSupport,
+                finiteMeasurementLeftCoordinateSupport,
+                finiteAtomWitnessVariable]⟩
+      | q =>
+          exact ⟨(⟨FiniteEquationHandle.left, rfl⟩,
+            FiniteModel.FiniteAtom.componentB), by
+              simp [finiteMeasurementRequiredCoordinateSupport,
+                finiteMeasurementLeftCoordinateSupport,
+                finiteAtomWitnessVariable]⟩
+      | r =>
+          exact ⟨(⟨FiniteEquationHandle.left, rfl⟩,
+            FiniteModel.FiniteAtom.componentC), by
+              simp [finiteMeasurementRequiredCoordinateSupport,
+                finiteMeasurementLeftCoordinateSupport,
+                finiteAtomWitnessVariable]⟩
+    · rintro ⟨⟨⟨equation, hrequired⟩, atom⟩, hsupport⟩
+      cases equation with
+      | left =>
+          change selectedSupport ∈
+            Finset.univ.image (fun supportVertex => {supportVertex})
+          apply Finset.mem_image.mpr
+          refine ⟨finiteAtomWitnessVariable atom, Finset.mem_univ _, ?_⟩
+          exact Option.some.inj hsupport
+      | right =>
+          by_cases hcomponent : atom = FiniteModel.FiniteAtom.componentA
+          · subst atom
+            have hselected := Option.some.inj hsupport
+            subst selectedSupport
+            apply Finset.mem_image.mpr
+            exact ⟨SquareFreeSupportVertex.p, Finset.mem_univ _, rfl⟩
+          · simp [finiteMeasurementRequiredCoordinateSupport,
+              finiteMeasurementRightCoordinateSupport, hcomponent] at hsupport
+      | alternate =>
+          simp [ArchitecturalEquationSystem.Required,
+            finiteDimensionalMatrixProfile, MeasurementEquationGeometry.ofSite,
+            finiteMeasurementEquationSite, finiteMeasurementEquationSystem] at hrequired
+
+/-- The concrete principal resolution before identifying its generated ideal
+with the selected equation ideal. -/
+private noncomputable def finiteDimensionalMatrixConcreteRightResolution :
     Derived.FreeResolution.MathlibResolution.FiniteFreeMathlibResolution
       (MvPolynomial SquareFreeSupportVertex (ZMod 2))
       finiteDimensionalMatrixRightIdeal := by
@@ -1520,6 +1715,15 @@ def finiteDimensionalMatrixRightResolution :
     simp
   exact Derived.FreeResolution.MathlibResolution.Principal.finiteFreeResolution
     (A := MvPolynomial SquareFreeSupportVertex (ZMod 2)) hnonzero
+
+/-- R11(c): selected length-one finite-free resolution on the actual right
+equation ideal. -/
+noncomputable def finiteDimensionalMatrixRightResolution :
+    Derived.FreeResolution.MathlibResolution.FiniteFreeMathlibResolution
+      (MvPolynomial SquareFreeSupportVertex (ZMod 2))
+      finiteDimensionalMatrixProfileRealization.rightIdeal :=
+  finiteDimensionalMatrixConcreteRightResolution.transportIdeal
+    finiteDimensionalMatrixProfileRealization_rightIdeal.symm
 
 /-- The first matrix of the selected principal resolution is multiplication
 by its actual singleton generator. -/
@@ -1532,7 +1736,14 @@ theorem finiteDimensionalMatrixRightResolution_differentialMatrix_zero
   change ULift Unit at i j
   rcases i with ⟨⟨⟩⟩
   rcases j with ⟨⟨⟩⟩
-  simp [finiteDimensionalMatrixRightResolution,
+  rw [show
+    finiteDimensionalMatrixRightResolution.differentialMatrix 0 =
+      finiteDimensionalMatrixConcreteRightResolution.differentialMatrix 0 by
+    exact
+      Derived.FreeResolution.MathlibResolution.FiniteFreeMathlibResolution.transportIdeal_differentialMatrix
+          finiteDimensionalMatrixConcreteRightResolution
+          finiteDimensionalMatrixProfileRealization_rightIdeal.symm 0]
+  simp [finiteDimensionalMatrixConcreteRightResolution,
     Derived.FreeResolution.MathlibResolution.Principal.finiteFreeResolution,
     Derived.FreeResolution.MathlibResolution.FiniteFreeMathlibResolution.differentialMatrix,
     Derived.FreeResolution.MathlibResolution.FiniteFreeMathlibResolution.coordinateDifferential,
@@ -1545,7 +1756,8 @@ witness variables. -/
 noncomputable def finiteDimensionalMatrixTensorQuotientFintype :
     Fintype
       (MvPolynomial SquareFreeSupportVertex (ZMod 2) ⧸
-        finiteDimensionalMatrixLeftIdeal) := by
+        finiteDimensionalMatrixProfileRealization.leftIdeal) := by
+  rw [finiteDimensionalMatrixProfileRealization_leftIdeal]
   unfold finiteDimensionalMatrixLeftIdeal
   exact PolynomialQuotient.quotientIdealOfVarsFintype
     SquareFreeSupportVertex (ZMod 2)
@@ -1554,19 +1766,20 @@ noncomputable def finiteDimensionalMatrixTensorQuotientFintype :
 noncomputable def finiteDimensionalMatrixTensorAlgorithm :
     FiniteTensorMatrixAlgorithm
       (MvPolynomial SquareFreeSupportVertex (ZMod 2))
-      finiteDimensionalMatrixLeftIdeal
-      finiteDimensionalMatrixRightIdeal
+      finiteDimensionalMatrixProfileRealization.leftIdeal
+      finiteDimensionalMatrixProfileRealization.rightIdeal
       finiteDimensionalMatrixRightResolution := by
   letI := finiteDimensionalMatrixTensorQuotientFintype
   letI : DecidableEq
       (MvPolynomial SquareFreeSupportVertex (ZMod 2) ⧸
-        finiteDimensionalMatrixLeftIdeal) :=
+        finiteDimensionalMatrixProfileRealization.leftIdeal) :=
     Classical.decEq _
   exact FiniteTensorMatrixAlgorithm.ofFiniteQuotient
 
 theorem finiteDimensionalMatrixQuotient_one_ne_zero :
     (1 : MvPolynomial SquareFreeSupportVertex (ZMod 2) ⧸
-      finiteDimensionalMatrixLeftIdeal) ≠ 0 := by
+      finiteDimensionalMatrixProfileRealization.leftIdeal) ≠ 0 := by
+  rw [finiteDimensionalMatrixProfileRealization_leftIdeal]
   intro h
   change (Ideal.Quotient.mk finiteDimensionalMatrixLeftIdeal)
     (1 : MvPolynomial SquareFreeSupportVertex (ZMod 2)) = 0 at h
@@ -1595,7 +1808,7 @@ theorem finiteDimensionalMatrixOneCoordinate_isCycle :
       finiteDimensionalMatrixOneCoordinate = 0 := by
   rw [show finiteDimensionalMatrixOneCoordinate =
       (Ideal.Quotient.mk
-        finiteDimensionalMatrixLeftIdeal) ∘
+        finiteDimensionalMatrixProfileRealization.leftIdeal) ∘
         (fun _ : finiteDimensionalMatrixRightResolution.BasisIndex 1 =>
           (1 : MvPolynomial SquareFreeSupportVertex (ZMod 2))) by
     rfl]
@@ -1603,21 +1816,20 @@ theorem finiteDimensionalMatrixOneCoordinate_isCycle :
   unfold FiniteTensorMatrixAlgorithm.differentialMatrix
   funext i
   rw [Matrix.mulVecLin_apply]
-  rw [← RingHom.map_mulVec]
-  simp [
-    finiteDimensionalMatrixRightResolution,
-    Derived.FreeResolution.MathlibResolution.Principal.finiteFreeResolution,
-    Derived.FreeResolution.MathlibResolution.FiniteFreeMathlibResolution.differentialMatrix,
-    Derived.FreeResolution.MathlibResolution.FiniteFreeMathlibResolution.coordinateDifferential,
-    Derived.FreeResolution.MathlibResolution.Principal.projectiveResolution,
-    Derived.FreeResolution.MathlibResolution.Principal.complex,
-    Derived.FreeResolution.MathlibResolution.Principal.differential]
-  change (Ideal.Quotient.mk
-    finiteDimensionalMatrixLeftIdeal)
-      (MvPolynomial.X SquareFreeSupportVertex.p) = 0
-  rw [Ideal.Quotient.eq_zero_iff_mem]
-  unfold finiteDimensionalMatrixLeftIdeal
-  exact Ideal.subset_span ⟨SquareFreeSupportVertex.p, rfl⟩
+  have hx :
+      (Ideal.Quotient.mk
+        finiteDimensionalMatrixProfileRealization.leftIdeal)
+          (MvPolynomial.X SquareFreeSupportVertex.p) = 0 := by
+    rw [Ideal.Quotient.eq_zero_iff_mem]
+    rw [finiteDimensionalMatrixProfileRealization_leftIdeal]
+    unfold finiteDimensionalMatrixLeftIdeal
+    exact Ideal.subset_span ⟨SquareFreeSupportVertex.p, rfl⟩
+  simp only [Matrix.mulVec, dotProduct, Pi.zero_apply]
+  apply Finset.sum_eq_zero
+  intro j _
+  simp only [Matrix.map_apply, Function.comp_apply]
+  rw [finiteDimensionalMatrixRightResolution_differentialMatrix_zero]
+  simpa using hx
 
 /-- Actual degree-one cycle selected by the finite matrix computation. -/
 noncomputable def finiteDimensionalMatrixSelectedCycle :
@@ -1651,13 +1863,14 @@ theorem finiteDimensionalMatrixIncomingSubsingleton :
   change Subsingleton
     (finiteDimensionalMatrixRightResolution.BasisIndex 2 →
       MvPolynomial SquareFreeSupportVertex (ZMod 2) ⧸
-        finiteDimensionalMatrixLeftIdeal)
+        finiteDimensionalMatrixProfileRealization.leftIdeal)
   let hsub : Subsingleton
       (ULift.{0, 0} Empty →
         MvPolynomial SquareFreeSupportVertex (ZMod 2) ⧸
-          finiteDimensionalMatrixLeftIdeal) :=
+          finiteDimensionalMatrixProfileRealization.leftIdeal) :=
     ⟨fun f g => funext fun i => nomatch i.down⟩
   simpa [finiteDimensionalMatrixRightResolution,
+    finiteDimensionalMatrixConcreteRightResolution,
     Derived.FreeResolution.MathlibResolution.Principal.finiteFreeResolution] using hsub
 
 /-- The selected cycle represents a nonzero class in the actual coordinate
@@ -1690,19 +1903,9 @@ noncomputable def finiteDimensionalMatrixComputationData :
   leftSquareFree := finiteDimensionalMatrixLeftSquareFree
   rightSquareFree := finiteDimensionalMatrixRightSquareFree
   profileRealization := finiteDimensionalMatrixProfileRealization
-  profileObstructionIdeal_eq_squareFree :=
-    finiteDimensionalMatrixProfileRealization_obstructionIdeal.trans
-      finiteDimensionalMatrixLeftIdeal_eq_squareFree
-  leftIdeal := finiteDimensionalMatrixLeftIdeal
-  profileLeftIdeal_eq_presentation :=
-    finiteDimensionalMatrixProfileRealization_leftIdeal
-  leftPresentation_eq_squareFree :=
-    finiteDimensionalMatrixLeftIdeal_eq_squareFree
-  rightIdeal := finiteDimensionalMatrixRightIdeal
-  profileRightIdeal_eq_presentation :=
-    finiteDimensionalMatrixProfileRealization_rightIdeal
-  rightPresentation_eq_squareFree :=
-    finiteDimensionalMatrixRightIdeal_eq_squareFree
+  obstructionPresentation := finiteMeasurementRequiredCoordinatePresentation
+  leftPresentation := finiteMeasurementLeftCoordinatePresentation
+  rightPresentation := finiteMeasurementRightCoordinatePresentation
   rightResolution := finiteDimensionalMatrixRightResolution
   tensorMatrixAlgorithm := finiteDimensionalMatrixTensorAlgorithm
   torDegree := 1
@@ -2028,6 +2231,278 @@ theorem finiteComputabilityProfileRealization_rightIdeal :
     finiteComputabilityMeasurementProfile, finiteDimensionalMatrixProfile] using
       finiteDimensionalMatrixProfileRealization_rightIdeal
 
+/-- Effective-route left coordinates with their exact all-singleton support calculation. -/
+noncomputable def finiteComputabilityLeftCoordinatePresentation :
+    SquareFreeCoordinatePresentation computabilityFiniteMeasurementRegime
+      (finiteComputabilityProfileRealization.equationCoordinate
+        FiniteEquationHandle.left)
+      tinyLeftSquareFreeData where
+  support := finiteMeasurementLeftCoordinateSupport
+  coordinate_eq := by
+    intro atom
+    simpa [finiteMeasurementLeftCoordinateSupport,
+      FiniteAATProfileRealization.equationCoordinate,
+      finiteComputabilityProfileRealization,
+      LawAlgebra.StanleyReisner.squareFreeMonomial] using
+        finiteMeasurement_leftEquationCoordinate_zmod2 atom
+  support_exact := by
+    letI := computabilityFiniteMeasurementRegime.witnessFintype
+    letI := computabilityFiniteMeasurementRegime.witnessDecidableEq
+    intro selectedSupport
+    simpa [tinyLeftSquareFreeData, finiteDimensionalMatrixLeftSquareFree,
+      FiniteSquareFreeComputationData.allSingletons] using
+        finiteMeasurementLeftCoordinatePresentation.support_exact selectedSupport
+
+/-- Effective-route right coordinates with their exact singleton-`p` calculation. -/
+noncomputable def finiteComputabilityRightCoordinatePresentation :
+    SquareFreeCoordinatePresentation computabilityFiniteMeasurementRegime
+      (finiteComputabilityProfileRealization.equationCoordinate
+        FiniteEquationHandle.right)
+      tinyRightSquareFreeData where
+  support := finiteMeasurementRightCoordinateSupport
+  coordinate_eq := by
+    intro atom
+    by_cases hcomponent : atom = FiniteModel.FiniteAtom.componentA
+    · simpa [finiteComputabilityMeasurementProfile,
+        finiteDimensionalMatrixProfile,
+        finiteMeasurementRightCoordinateSupport, hcomponent,
+        forbiddenSupportPFinset,
+        LawAlgebra.StanleyReisner.squareFreeMonomial] using
+          finiteMeasurement_rightEquationCoordinate_zmod2 atom
+    · simpa [finiteComputabilityMeasurementProfile,
+        finiteDimensionalMatrixProfile,
+        finiteMeasurementRightCoordinateSupport, hcomponent] using
+          finiteMeasurement_rightEquationCoordinate_zmod2 atom
+  support_exact := by
+    letI := computabilityFiniteMeasurementRegime.witnessDecidableEq
+    intro selectedSupport
+    simpa [tinyRightSquareFreeData, finiteDimensionalMatrixRightSquareFree] using
+      finiteMeasurementRightCoordinatePresentation.support_exact selectedSupport
+
+/-- Effective-route required coordinates with their exact obstruction support calculation. -/
+noncomputable def finiteComputabilityRequiredCoordinatePresentation :
+    SquareFreeCoordinatePresentation computabilityFiniteMeasurementRegime
+      finiteComputabilityProfileRealization.requiredCoordinate
+      tinyObstructionSquareFreeData where
+  support := finiteMeasurementRequiredCoordinateSupport
+  coordinate_eq := by
+    rintro ⟨⟨equation, hrequired⟩, atom⟩
+    cases equation with
+    | left =>
+        simpa [finiteMeasurementRequiredCoordinateSupport,
+          finiteMeasurementLeftCoordinateSupport,
+          FiniteAATProfileRealization.requiredCoordinate,
+          FiniteAATProfileRealization.equationCoordinate,
+          finiteComputabilityProfileRealization,
+          LawAlgebra.StanleyReisner.squareFreeMonomial] using
+            finiteMeasurement_leftEquationCoordinate_zmod2 atom
+    | right =>
+        by_cases hcomponent : atom = FiniteModel.FiniteAtom.componentA
+        · simpa [finiteComputabilityMeasurementProfile,
+            finiteDimensionalMatrixProfile,
+            finiteMeasurementRequiredCoordinateSupport,
+            finiteMeasurementRightCoordinateSupport, hcomponent,
+            forbiddenSupportPFinset,
+            LawAlgebra.StanleyReisner.squareFreeMonomial] using
+              finiteMeasurement_rightEquationCoordinate_zmod2 atom
+        · simpa [finiteComputabilityMeasurementProfile,
+            finiteDimensionalMatrixProfile,
+            finiteMeasurementRequiredCoordinateSupport,
+            finiteMeasurementRightCoordinateSupport, hcomponent] using
+              finiteMeasurement_rightEquationCoordinate_zmod2 atom
+    | alternate =>
+        simp [ArchitecturalEquationSystem.Required,
+          finiteComputabilityMeasurementProfile,
+          MeasurementEquationGeometry.ofSite,
+          finiteMeasurementEquationSite, finiteMeasurementEquationSystem] at hrequired
+  support_exact := by
+    letI := computabilityFiniteMeasurementRegime.witnessFintype
+    letI := computabilityFiniteMeasurementRegime.witnessDecidableEq
+    intro selectedSupport
+    simpa [tinyObstructionSquareFreeData, tinyLeftSquareFreeData,
+      finiteDimensionalMatrixObstructionSquareFree,
+      finiteDimensionalMatrixLeftSquareFree,
+      FiniteSquareFreeComputationData.allSingletons] using
+        finiteMeasurementRequiredCoordinatePresentation.support_exact selectedSupport
+
+/-- Effective-route resolution transported to its canonical right equation ideal. -/
+noncomputable def finiteComputabilityCanonicalRightResolution :
+    Derived.FreeResolution.MathlibResolution.FiniteFreeMathlibResolution
+      (MvPolynomial SquareFreeSupportVertex (ZMod 2))
+      finiteComputabilityProfileRealization.rightIdeal :=
+  finiteDimensionalMatrixConcreteRightResolution.transportIdeal
+    finiteComputabilityProfileRealization_rightIdeal.symm
+
+/-- The effective route retains the concrete principal differential matrix. -/
+theorem finiteComputabilityCanonicalRightResolution_differentialMatrix_zero
+    (i : finiteComputabilityCanonicalRightResolution.BasisIndex 0)
+    (j : finiteComputabilityCanonicalRightResolution.BasisIndex 1) :
+    finiteComputabilityCanonicalRightResolution.differentialMatrix 0 i j =
+      (MvPolynomial.X SquareFreeSupportVertex.p :
+        MvPolynomial SquareFreeSupportVertex (ZMod 2)) := by
+  change ULift Unit at i j
+  rcases i with ⟨⟨⟩⟩
+  rcases j with ⟨⟨⟩⟩
+  rw [show
+    finiteComputabilityCanonicalRightResolution.differentialMatrix 0 =
+      finiteDimensionalMatrixConcreteRightResolution.differentialMatrix 0 by
+    exact
+      Derived.FreeResolution.MathlibResolution.FiniteFreeMathlibResolution.transportIdeal_differentialMatrix
+        finiteDimensionalMatrixConcreteRightResolution
+        finiteComputabilityProfileRealization_rightIdeal.symm 0]
+  simp [finiteDimensionalMatrixConcreteRightResolution,
+    Derived.FreeResolution.MathlibResolution.Principal.finiteFreeResolution,
+    Derived.FreeResolution.MathlibResolution.FiniteFreeMathlibResolution.differentialMatrix,
+    Derived.FreeResolution.MathlibResolution.FiniteFreeMathlibResolution.coordinateDifferential,
+    Derived.FreeResolution.MathlibResolution.Principal.projectiveResolution,
+    Derived.FreeResolution.MathlibResolution.Principal.complex,
+    Derived.FreeResolution.MathlibResolution.Principal.differential]
+
+/-- The effective route's actual left-equation quotient has a finite carrier. -/
+noncomputable def finiteComputabilityTensorQuotientFintype :
+    Fintype
+      (MvPolynomial SquareFreeSupportVertex (ZMod 2) ⧸
+        finiteComputabilityProfileRealization.leftIdeal) := by
+  rw [finiteComputabilityProfileRealization_leftIdeal]
+  unfold finiteDimensionalMatrixLeftIdeal
+  exact PolynomialQuotient.quotientIdealOfVarsFintype
+    SquareFreeSupportVertex (ZMod 2)
+
+/-- Effective-route tensor algorithm on its two canonical equation ideals. -/
+noncomputable def finiteComputabilityCanonicalTensorAlgorithm :
+    FiniteTensorMatrixAlgorithm
+      (MvPolynomial SquareFreeSupportVertex (ZMod 2))
+      finiteComputabilityProfileRealization.leftIdeal
+      finiteComputabilityProfileRealization.rightIdeal
+      finiteComputabilityCanonicalRightResolution := by
+  letI := finiteComputabilityTensorQuotientFintype
+  letI : DecidableEq
+      (MvPolynomial SquareFreeSupportVertex (ZMod 2) ⧸
+        finiteComputabilityProfileRealization.leftIdeal) :=
+    Classical.decEq _
+  exact FiniteTensorMatrixAlgorithm.ofFiniteQuotient
+
+/-- The effective route's actual left-equation quotient is nonzero. -/
+theorem finiteComputabilityQuotient_one_ne_zero :
+    (1 : MvPolynomial SquareFreeSupportVertex (ZMod 2) ⧸
+      finiteComputabilityProfileRealization.leftIdeal) ≠ 0 := by
+  rw [finiteComputabilityProfileRealization_leftIdeal]
+  intro h
+  change (Ideal.Quotient.mk finiteDimensionalMatrixLeftIdeal)
+    (1 : MvPolynomial SquareFreeSupportVertex (ZMod 2)) = 0 at h
+  rw [Ideal.Quotient.eq_zero_iff_mem] at h
+  unfold finiteDimensionalMatrixLeftIdeal at h
+  rw [← PolynomialQuotient.ker_constantCoeff_eq_idealOfVars] at h
+  simp at h
+
+/-- Nonzero degree-one coordinate vector for the effective route. -/
+def finiteComputabilityOneCoordinate :
+    FiniteTensorMatrixAlgorithm.CoordinateTerm.{0, 0}
+      finiteComputabilityCanonicalTensorAlgorithm 1 :=
+  fun _ => 1
+
+theorem finiteComputabilityOneCoordinate_ne_zero :
+    finiteComputabilityOneCoordinate ≠ 0 := by
+  intro h
+  have hvalue := congrFun h (ULift.up ())
+  exact finiteComputabilityQuotient_one_ne_zero hvalue
+
+/-- The principal differential vanishes after reduction by the actual left
+equation ideal. -/
+theorem finiteComputabilityOneCoordinate_isCycle :
+    FiniteTensorMatrixAlgorithm.differential.{0, 0}
+      finiteComputabilityCanonicalTensorAlgorithm 0
+      finiteComputabilityOneCoordinate = 0 := by
+  letI := computabilityFiniteMeasurementRegime.geometry.coeffCommRing
+  rw [show finiteComputabilityOneCoordinate =
+      (Ideal.Quotient.mk
+        finiteComputabilityProfileRealization.leftIdeal) ∘
+        (fun _ : finiteComputabilityCanonicalRightResolution.BasisIndex 1 =>
+          (1 : MvPolynomial SquareFreeSupportVertex (ZMod 2))) by
+    rfl]
+  unfold FiniteTensorMatrixAlgorithm.differential
+  unfold FiniteTensorMatrixAlgorithm.differentialMatrix
+  funext i
+  rw [Matrix.mulVecLin_apply]
+  have hx :
+      (Ideal.Quotient.mk
+        finiteComputabilityProfileRealization.leftIdeal)
+          (MvPolynomial.X SquareFreeSupportVertex.p) = 0 := by
+    rw [Ideal.Quotient.eq_zero_iff_mem]
+    rw [finiteComputabilityProfileRealization_leftIdeal]
+    unfold finiteDimensionalMatrixLeftIdeal
+    exact Ideal.subset_span ⟨SquareFreeSupportVertex.p, rfl⟩
+  simp only [Matrix.mulVec, dotProduct, Pi.zero_apply]
+  apply Finset.sum_eq_zero
+  intro j _
+  simp only [Matrix.map_apply, Function.comp_apply]
+  rw [finiteComputabilityCanonicalRightResolution_differentialMatrix_zero]
+  simpa using hx
+
+/-- Effective-route selected cycle in the canonical equation-ideal computation. -/
+noncomputable def finiteComputabilityCanonicalSelectedCycle :
+    FiniteTensorMatrixAlgorithm.Cycle.{0, 0}
+      finiteComputabilityCanonicalTensorAlgorithm 1 := by
+  refine ⟨finiteComputabilityOneCoordinate, ?_⟩
+  change ModuleCat.Hom.hom
+      ((finiteComputabilityCanonicalTensorAlgorithm.coordinateComplex).d 1
+        ((ComplexShape.down ℕ).next 1))
+        finiteComputabilityOneCoordinate = 0
+  rw [ChainComplex.next_nat_succ]
+  simpa [FiniteTensorMatrixAlgorithm.coordinateComplex,
+    ChainComplex.of_d] using finiteComputabilityOneCoordinate_isCycle
+
+theorem finiteComputabilityCanonicalSelectedCycle_ne_zero :
+    finiteComputabilityCanonicalSelectedCycle ≠ 0 := by
+  intro h
+  apply finiteComputabilityOneCoordinate_ne_zero
+  exact congrArg Subtype.val h
+
+/-- The effective route has no incoming degree-two coordinates. -/
+theorem finiteComputabilityIncomingSubsingleton :
+    Subsingleton
+      (((FiniteTensorMatrixAlgorithm.coordinateComplex.{0, 0}
+        finiteComputabilityCanonicalTensorAlgorithm).sc 1).X₁) := by
+  change Subsingleton
+    ((FiniteTensorMatrixAlgorithm.coordinateComplex.{0, 0}
+      finiteComputabilityCanonicalTensorAlgorithm).X
+        ((ComplexShape.down ℕ).prev 1))
+  rw [ChainComplex.prev]
+  change Subsingleton
+    (finiteComputabilityCanonicalRightResolution.BasisIndex 2 →
+      MvPolynomial SquareFreeSupportVertex (ZMod 2) ⧸
+        finiteComputabilityProfileRealization.leftIdeal)
+  let hsub : Subsingleton
+      (ULift.{0, 0} Empty →
+        MvPolynomial SquareFreeSupportVertex (ZMod 2) ⧸
+          finiteComputabilityProfileRealization.leftIdeal) :=
+    ⟨fun f g => funext fun i => nomatch i.down⟩
+  simpa [finiteComputabilityCanonicalRightResolution,
+    finiteDimensionalMatrixConcreteRightResolution,
+    Derived.FreeResolution.MathlibResolution.Principal.finiteFreeResolution] using hsub
+
+/-- The effective route's selected cycle defines a nonzero coordinate
+homology class. -/
+theorem finiteComputabilityCanonicalSelectedCoordinateClass_ne_zero :
+    FiniteTensorMatrixAlgorithm.classOfCycle.{0, 0}
+      finiteComputabilityCanonicalTensorAlgorithm 1
+        finiteComputabilityCanonicalSelectedCycle ≠ 0 := by
+  intro hclass
+  have hrange :=
+    (FiniteTensorMatrixAlgorithm.classOfCycle_eq_zero_iff_range.{0, 0}
+      finiteComputabilityCanonicalTensorAlgorithm 1
+        finiteComputabilityCanonicalSelectedCycle).mp hclass
+  rcases hrange with ⟨b, hb⟩
+  letI : Subsingleton
+      (((FiniteTensorMatrixAlgorithm.coordinateComplex.{0, 0}
+        finiteComputabilityCanonicalTensorAlgorithm).sc 1).X₁) :=
+    finiteComputabilityIncomingSubsingleton
+  have hbzero : b = 0 := by
+    apply Subsingleton.elim
+  subst b
+  simp only [map_zero] at hb
+  exact finiteComputabilityCanonicalSelectedCycle_ne_zero hb.symm
+
 /-- R11(c): all theorem 4.2 inputs are selected from actual nonzero finite
 chain data. -/
 noncomputable def finiteComputabilityExampleData :
@@ -2037,21 +2512,13 @@ noncomputable def finiteComputabilityExampleData :
   leftSquareFree := tinyLeftSquareFreeData
   rightSquareFree := tinyRightSquareFreeData
   profileRealization := finiteComputabilityProfileRealization
-  profileObstructionIdeal_eq_squareFree :=
-    finiteComputabilityProfileRealization_obstructionIdeal.trans
-      tinyLeftIdeal_eq_squareFree
-  leftIdeal := finiteDimensionalMatrixLeftIdeal
-  profileLeftIdeal_eq_presentation :=
-    finiteComputabilityProfileRealization_leftIdeal
-  leftPresentation_eq_squareFree := tinyLeftIdeal_eq_squareFree
-  rightIdeal := finiteDimensionalMatrixRightIdeal
-  profileRightIdeal_eq_presentation :=
-    finiteComputabilityProfileRealization_rightIdeal
-  rightPresentation_eq_squareFree := tinyRightIdeal_eq_squareFree
-  rightResolution := finiteDimensionalMatrixRightResolution
-  tensorMatrixAlgorithm := finiteDimensionalMatrixTensorAlgorithm
+  obstructionPresentation := finiteComputabilityRequiredCoordinatePresentation
+  leftPresentation := finiteComputabilityLeftCoordinatePresentation
+  rightPresentation := finiteComputabilityRightCoordinatePresentation
+  rightResolution := finiteComputabilityCanonicalRightResolution
+  tensorMatrixAlgorithm := finiteComputabilityCanonicalTensorAlgorithm
   torDegree := 1
-  selectedCoordinateCycle := finiteDimensionalMatrixSelectedCycle
+  selectedCoordinateCycle := finiteComputabilityCanonicalSelectedCycle
 
 /-- The degree-one basis support is derived from the actual principal
 differential entry `X p`. -/
@@ -2078,7 +2545,7 @@ theorem finiteComputabilityExampleData_resolutionBasisSupport_one
             (MvPolynomial.X SquareFreeSupportVertex.p :
               MvPolynomial SquareFreeSupportVertex (ZMod 2)) := by
         simpa [finiteComputabilityExampleData] using
-          finiteDimensionalMatrixRightResolution_differentialMatrix_zero i j
+          finiteComputabilityCanonicalRightResolution_differentialMatrix_zero i j
       rw [hmatrix,
         FiniteAATComputationData.polynomialVariableSupport_X] at hi
       simpa [forbiddenSupportPFinset] using hi
@@ -2093,7 +2560,7 @@ theorem finiteComputabilityExampleData_resolutionBasisSupport_one
           (MvPolynomial.X SquareFreeSupportVertex.p :
             MvPolynomial SquareFreeSupportVertex (ZMod 2)) := by
       simpa [finiteComputabilityExampleData] using
-        finiteDimensionalMatrixRightResolution_differentialMatrix_zero i j
+        finiteComputabilityCanonicalRightResolution_differentialMatrix_zero i j
     refine ⟨i, ?_, Or.inl ?_⟩
     · rw [hmatrix]
       simp
@@ -2134,7 +2601,7 @@ theorem finiteComputabilityExampleData_selectedCoordinateClass_ne_zero :
     finiteComputabilityExampleData.selectedCoordinateHomologyClass ≠ 0 := by
   simpa [FiniteAATComputationData.selectedCoordinateHomologyClass,
     finiteComputabilityExampleData] using
-      finiteDimensionalMatrixSelectedCoordinateClass_ne_zero
+      finiteComputabilityCanonicalSelectedCoordinateClass_ne_zero
 
 /-- The effective full package transports its selected nonzero class through
 the same constructed Tor and LawConflict route. -/
@@ -2151,7 +2618,7 @@ theorem finiteComputabilityExampleFullRoute_nonzero :
   have htor := finiteComputabilityExampleData.selectedTorClass_ne_zero htensor
   have hconflict :=
     finiteComputabilityExampleData.selectedConflictClass_ne_zero htor
-  exact ⟨finiteDimensionalMatrixSelectedCycle_ne_zero,
+  exact ⟨finiteComputabilityCanonicalSelectedCycle_ne_zero,
     hcoordinate, htensor, htor, hconflict⟩
 
 /-- R11(c): kernel, image, and quotient procedures use generated Čech data. -/
@@ -2189,18 +2656,19 @@ theorem finiteComputabilityExample_combinatoricsRoute :
   rw [hsupport]
   have hone :
       (1 : MvPolynomial SquareFreeSupportVertex (ZMod 2) ⧸
-      finiteDimensionalMatrixLeftIdeal) ≠ 0 :=
-    finiteDimensionalMatrixQuotient_one_ne_zero
+      finiteComputabilityExampleData.leftIdeal) ≠ 0 := by
+    simpa [finiteComputabilityExampleData] using
+      finiteComputabilityQuotient_one_ne_zero
   have hrepresentative
       (i : finiteComputabilityExampleData.rightResolution.BasisIndex 1) :
       finiteComputabilityExampleData.coordinateRepresentative
           finiteComputabilityExampleData.selectedCoordinateCycle i = 1 := by
     apply tinyLeftSquareFreeData.quotientNormalFormOfIdealEq_unique
-      (ZMod 2) finiteDimensionalMatrixLeftIdeal
-      tinyLeftIdeal_eq_squareFree _ 1
+      (ZMod 2) finiteComputabilityExampleData.leftIdeal
+      finiteComputabilityExampleData.leftIdeal_eq_squareFree _ 1
     · change (1 : MvPolynomial SquareFreeSupportVertex (ZMod 2) ⧸
-        finiteDimensionalMatrixLeftIdeal) =
-          finiteDimensionalMatrixOneCoordinate i
+        finiteComputabilityExampleData.leftIdeal) =
+          finiteComputabilityOneCoordinate i
       rfl
     · simpa [tinyLeftSquareFreeData] using
         (FiniteSquareFreeComputationData.allSingletons_one_isReduced
@@ -2209,7 +2677,7 @@ theorem finiteComputabilityExample_combinatoricsRoute :
       (i : finiteComputabilityExampleData.rightResolution.BasisIndex 1) :
       finiteComputabilityExampleData.tensorMatrixAlgorithm.cycleValue 1
         finiteComputabilityExampleData.selectedCoordinateCycle i = 1 := by
-    change finiteDimensionalMatrixOneCoordinate i = 1
+    change finiteComputabilityOneCoordinate i = 1
     rfl
   have hresolution
       (i : finiteComputabilityExampleData.rightResolution.BasisIndex 1) :
@@ -2270,13 +2738,14 @@ theorem finiteComputabilityExample_combinatoricsRoute :
                 FiniteAATComputationData.polynomialVariableSupport_one]
     _ = forbiddenSupportPFinset := hbiUnion
 
-/-- Common ambient used to connect the computed finite support relation to the
-existing measurement semantics. -/
+/-- Ambient template used to connect the computed finite support relation to
+the existing measurement semantics. The actual equation ideals are inserted
+by `FiniteAATConflictRealization.commonAmbient`. -/
 noncomputable def finiteComputabilityCommonAmbient :
     CommonAmbientPair finiteComputabilityMeasurementProfile where
   AmbientSpace := Unit
   StructureSheaf := Unit
-  LawIdeal := Ideal (MvPolynomial SquareFreeSupportVertex (ZMod 2))
+  LawIdeal := Unit
   CoefficientObject := Unit
   WitnessPair := Unit
   ComparisonProfile := Unit
@@ -2285,8 +2754,8 @@ noncomputable def finiteComputabilityCommonAmbient :
   rightDomain := finiteComputabilitySeedGeometry.zeroClass 1
   selectedAmbient := ()
   selectedStructureSheaf := ()
-  leftLawIdeal := finiteComputabilityExampleData.leftIdeal
-  rightLawIdeal := finiteComputabilityExampleData.rightIdeal
+  leftLawIdeal := ()
+  rightLawIdeal := ()
   leftCoefficient := ()
   rightCoefficient := ()
   selectedWitnessPair := ()
@@ -2308,12 +2777,7 @@ noncomputable def finiteComputabilityCommonAmbient :
 in the selected common ambient. -/
 noncomputable def finiteComputabilityConflictRealization :
     FiniteAATConflictRealization finiteComputabilityExampleData where
-  commonAmbient := finiteComputabilityCommonAmbient
-  idealToAmbient := id
-  leftEquationIdeal_ambient :=
-    finiteComputabilityExampleData.canonicalLeftIdeal_eq
-  rightEquationIdeal_ambient :=
-    finiteComputabilityExampleData.canonicalRightIdeal_eq
+  ambientTemplate := finiteComputabilityCommonAmbient
   supportEquiv := Equiv.refl _
 
 /-- Final theorem 4.2 fixture including the actual relation-valued
@@ -2328,19 +2792,22 @@ noncomputable def finiteComputabilityConflictPackage :
 right ideals obtained from the selected actual equation coordinates. -/
 theorem finiteComputabilityConflictPackage_commonAmbientRequired_shape :
     finiteComputabilityConflictPackage.lawConflictMeasurement.commonAmbientRequired =
-      (finiteComputabilityCommonAmbient.commonRingedSite ∧
-        finiteComputabilityCommonAmbient.lawIdealsInCommonAmbient ∧
-          finiteComputabilityConflictRealization.idealToAmbient
-              finiteComputabilityExampleData.leftIdeal =
-            finiteComputabilityCommonAmbient.leftLawIdeal ∧
-          finiteComputabilityConflictRealization.idealToAmbient
-              finiteComputabilityExampleData.rightIdeal =
-            finiteComputabilityCommonAmbient.rightLawIdeal) := by
+      (finiteComputabilityConflictRealization.commonAmbient.commonRingedSite ∧
+        finiteComputabilityConflictRealization.commonAmbient.lawIdealsInCommonAmbient) := by
   change
     (finiteComputabilityConflictRealization.lawConflictMeasurement).commonAmbientRequired = _
   exact
     FiniteAATConflictRealization.lawConflictMeasurement_commonAmbientRequired_shape
       finiteComputabilityConflictRealization
+
+/-- The final common ambient contains exactly the two equation ideals used by
+the selected Tor computation. -/
+theorem finiteComputabilityConflictRealization_selectedIdeals_shape :
+    finiteComputabilityConflictRealization.commonAmbient.leftLawIdeal =
+        finiteComputabilityExampleData.leftIdeal ∧
+      finiteComputabilityConflictRealization.commonAmbient.rightLawIdeal =
+        finiteComputabilityExampleData.rightIdeal :=
+  ⟨rfl, rfl⟩
 
 /-- The proper degree-one nonzero conflict class and its computed support
 reading both survive in the final measurement package. -/
@@ -2360,29 +2827,29 @@ theorem finiteComputabilityConflictPackage_proper_degree_one_nonzero_and_support
       finiteComputabilityExampleData.torDegree = 1 ∧
       finiteComputabilityExampleData.selectedConflictClass ≠ 0 ∧
       finiteComputabilityConflictPackage.lawConflictMeasurement.selectedClassSupportReading := by
-  have hleft : finiteDimensionalMatrixLeftIdeal ≠ ⊤ := by
+  have hleft : finiteComputabilityExampleData.leftIdeal ≠ ⊤ := by
     rw [Ideal.ne_top_iff_one]
     intro hone
-    apply finiteDimensionalMatrixQuotient_one_ne_zero
-    change Ideal.Quotient.mk finiteDimensionalMatrixLeftIdeal
-      (1 : MvPolynomial SquareFreeSupportVertex (ZMod 2)) = 0
-    rw [Ideal.Quotient.eq_zero_iff_mem]
-    exact hone
+    apply finiteComputabilityQuotient_one_ne_zero
+    exact Ideal.Quotient.eq_zero_iff_mem.mpr hone
   have hright_le_left :
-      finiteDimensionalMatrixRightIdeal ≤ finiteDimensionalMatrixLeftIdeal := by
+      finiteComputabilityExampleData.rightIdeal ≤
+        finiteComputabilityExampleData.leftIdeal := by
+    rw [show finiteComputabilityExampleData.rightIdeal =
+        finiteDimensionalMatrixRightIdeal by
+      exact finiteComputabilityProfileRealization_rightIdeal]
+    rw [show finiteComputabilityExampleData.leftIdeal =
+        finiteDimensionalMatrixLeftIdeal by
+      exact finiteComputabilityProfileRealization_leftIdeal]
     unfold finiteDimensionalMatrixRightIdeal finiteDimensionalMatrixLeftIdeal
     unfold MvPolynomial.idealOfVars
     exact Ideal.span_mono
       (Set.singleton_subset_iff.mpr
         (Set.mem_range_self SquareFreeSupportVertex.p))
-  have hright : finiteDimensionalMatrixRightIdeal ≠ ⊤ :=
+  have hright : finiteComputabilityExampleData.rightIdeal ≠ ⊤ :=
     ne_top_of_le_ne_top hleft hright_le_left
   have hroute := finiteComputabilityConflictPackage_nonzero_and_supportReading
-  refine ⟨?_, ?_, rfl, hroute.1, hroute.2⟩
-  · change finiteDimensionalMatrixLeftIdeal ≠ ⊤
-    exact hleft
-  · change finiteDimensionalMatrixRightIdeal ≠ ⊤
-    exact hright
+  exact ⟨hleft, hright, rfl, hroute.1, hroute.2⟩
 
 /-- Zero class in the actual conflict carrier, viewed through the final
 measurement's carrier field. -/
@@ -4181,6 +4648,58 @@ theorem gagaRightEquationCoordinate
     simp [gagaRightEquationObservableMap, finiteMeasurementEquationSite,
       finiteMeasurementEquationSystem, finiteEquationViolation]
 
+/-- Computed activity marker for the selected left equation coordinate. -/
+def gagaLeftEquationCoordinateActive
+    (atom : FiniteModel.FiniteAtom) : Option Unit :=
+  if finiteAtomWitnessVariable atom = SquareFreeSupportVertex.p then
+    some ()
+  else
+    none
+
+/-- Computed activity marker for the selected right equation coordinate. -/
+def gagaRightEquationCoordinateActive
+    (atom : FiniteModel.FiniteAtom) : Option Unit :=
+  if atom = FiniteModel.FiniteAtom.componentA then some () else none
+
+/-- Exact coordinate computation for the selected left GAGA equation. -/
+def gagaLeftCoordinatePresentation :
+    PrincipalCoordinatePresentation
+      (fun atom =>
+        gagaLeftEquationObservableMap
+          (finiteMeasurementEquationSite.equationSystem.violationCoordinate
+            finiteMeasurementSiteBase .left atom))
+      (Derived.Counterexample.SharedWitnessCoord.xy ℝ) where
+  active := gagaLeftEquationCoordinateActive
+  coordinate_eq := by
+    intro atom
+    rw [gagaLeftEquationCoordinate]
+    by_cases hactive :
+        finiteAtomWitnessVariable atom = SquareFreeSupportVertex.p
+    · simp [gagaLeftEquationCoordinateActive, hactive]
+    · simp [gagaLeftEquationCoordinateActive, hactive]
+  generatorIndex := .componentA
+  generatorIndex_active := by
+    simp [gagaLeftEquationCoordinateActive, finiteAtomWitnessVariable]
+
+/-- Exact coordinate computation for the selected right GAGA equation. -/
+def gagaRightCoordinatePresentation :
+    PrincipalCoordinatePresentation
+      (fun atom =>
+        gagaRightEquationObservableMap
+          (finiteMeasurementEquationSite.equationSystem.violationCoordinate
+            finiteMeasurementSiteBase .right atom))
+      (Derived.Counterexample.SharedWitnessCoord.xz ℝ) where
+  active := gagaRightEquationCoordinateActive
+  coordinate_eq := by
+    intro atom
+    rw [gagaRightEquationCoordinate]
+    by_cases hactive : atom = FiniteModel.FiniteAtom.componentA
+    · simp [gagaRightEquationCoordinateActive, hactive]
+    · simp [gagaRightEquationCoordinateActive, hactive]
+  generatorIndex := .componentA
+  generatorIndex_active := by
+    simp [gagaRightEquationCoordinateActive]
+
 theorem gagaLeftEquationCoordinate_mem
     (atom : FiniteModel.FiniteAtom) :
     gagaLeftEquationObservableMap
@@ -4289,14 +4808,8 @@ noncomputable def gagaCommonFiniteData :
   rightEquationObservableMap := gagaRightEquationObservableMap
   selectedLeftProfileEquation := ⟨.left, rfl⟩
   selectedRightProfileEquation := ⟨.right, rfl⟩
-  leftEquationCoordinate_mem := gagaLeftEquationCoordinate_mem
-  leftGeneratorAtom := .componentA
-  leftEquationGenerator_eq_xy := by
-    simpa using gagaLeftEquationCoordinate FiniteModel.FiniteAtom.componentA
-  rightEquationCoordinate_mem := gagaRightEquationCoordinate_mem
-  rightGeneratorAtom := .componentA
-  rightEquationGenerator_eq_xz := by
-    simpa using gagaRightEquationCoordinate FiniteModel.FiniteAtom.componentA
+  leftCoordinatePresentation := gagaLeftCoordinatePresentation
+  rightCoordinatePresentation := gagaRightCoordinatePresentation
   ambientAtomType_eq_source := rfl
   ambientStructureSheafFromProfile := id
   selectedObstructionObject := .selected

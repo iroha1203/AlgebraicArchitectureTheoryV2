@@ -197,10 +197,10 @@ def finiteAATComputabilityProfileObstructionIdealRealizes :=
   @Measurement.profileRequiredEquationIdeal_eq_map_obstructionIdeal
 
 def finiteAATComputabilityProfileLeftEquationIdealRealizes :=
-  @Measurement.FiniteAATComputationData.canonicalLeftIdeal_eq
+  @Measurement.FiniteAATProfileRealization.leftIdeal_eq_span_range
 
 def finiteAATComputabilityProfileRightEquationIdealRealizes :=
-  @Measurement.FiniteAATComputationData.canonicalRightIdeal_eq
+  @Measurement.FiniteAATProfileRealization.rightIdeal_eq_span_range
 
 def finiteAATComputabilityGenericZeroClassHasEmptySupport :=
   @Measurement.FiniteAATComputationData.classSupportOf_eq_empty_of_class_eq_zero
@@ -9998,25 +9998,25 @@ def issue3735ProfileRequiredIdealSpan :=
   @AAT.AG.Measurement.profileRequiredEquationIdeal_eq_span
 
 def issue3735ComputationCanonicalLeftIdeal :=
-  @AAT.AG.Measurement.FiniteAATComputationData.canonicalLeftIdeal_eq
+  @AAT.AG.Measurement.FiniteAATProfileRealization.leftIdeal_eq_span_range
 
 def issue3735ComputationCanonicalRightIdeal :=
-  @AAT.AG.Measurement.FiniteAATComputationData.canonicalRightIdeal_eq
+  @AAT.AG.Measurement.FiniteAATProfileRealization.rightIdeal_eq_span_range
 
 def issue3735ComputationProfileLeftSquareFree :=
-  @AAT.AG.Measurement.FiniteAATComputationData.profileLeftIdeal_eq_squareFree
+  @AAT.AG.Measurement.FiniteAATComputationData.leftIdeal_eq_squareFree
 
 def issue3735ComputationProfileRightSquareFree :=
-  @AAT.AG.Measurement.FiniteAATComputationData.profileRightIdeal_eq_squareFree
+  @AAT.AG.Measurement.FiniteAATComputationData.rightIdeal_eq_squareFree
 
 def issue3735SelectedTorBridgeUsesAmbientIdeals :=
   @AAT.AG.Measurement.LawConflictMeasurement.ofSelectedTorBridge
 
 def issue3735ConflictComputedLeftIdealAmbient :=
-  @AAT.AG.Measurement.FiniteAATConflictRealization.computedLeftIdeal_ambient
+  @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_leftLawIdeal
 
 def issue3735ConflictComputedRightIdealAmbient :=
-  @AAT.AG.Measurement.FiniteAATConflictRealization.computedRightIdeal_ambient
+  @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_rightLawIdeal
 
 def issue3735ConflictMeasurementAmbientShape :=
   @AAT.AG.Measurement.FiniteAATConflictRealization.lawConflictMeasurement_commonAmbientRequired_shape
@@ -10050,6 +10050,9 @@ def issue3735GAGACommonLeftIdeal :=
 
 def issue3735GAGACommonRightIdeal :=
   @AAT.AG.Measurement.AATGAGACommonFiniteData.rightIdeal_eq_sharedWitness
+
+def issue3735GAGAPrincipalCoordinatePresentation :=
+  @AAT.AG.Measurement.PrincipalCoordinatePresentation.span_range_eq_span_singleton
 
 def issue3735GAGARealPresheafMap :=
   @AAT.AG.Measurement.gagaRealPresheaf_map_apply
