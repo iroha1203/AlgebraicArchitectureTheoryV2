@@ -54,7 +54,7 @@ U_{ijk}=U_i\times_W U_j\times_W U_k
 ```
 
 と書く。空の pullback は積から除く。以下の比較 core 自体には有限性は要らないが、
-有限 cover は paper statement、finite witness、実行可能な realization を同じ記号で
+有限 cover は中心定理、finite witness、実行可能な realization を同じ記号で
 扱うために固定する。
 
 本部では入力、構成、帰結を次のように区別する。
@@ -65,7 +65,7 @@ U_{ijk}=U_i\times_W U_j\times_W U_k
 | generated | `M_sem`、`Q_E`、二つの Čech complex、`r_sem`、`r_E`、係数写像 `Phi`、cochain map `kappa` |
 | proved | `Phi` の同型性、微分可換性、cocycle / coboundary 保存、`H^1` 同型、residual class 対応、true sheaf descent |
 
-### 定理 1.1 SAGA 中心定理（preprint fixed statement）
+### 定理 1.1 SAGA 中心定理
 
 `𝒰` 上で次を固定する。
 
@@ -1356,6 +1356,7 @@ U_{01},U_{12},U_{23},U_{30}
 ```
 
 を持ち、nondegenerate triple overlap を持たない 4-cycle cover を取る。
+§1 の規約により empty pullback は intersection category の対象から除く。
 各 nonempty intersection `V` で semantic support を一 generator
 `S(V)={σ_V}`、restriction を `σ_V↦σ_{V'}` とし、local repair relation を
 
