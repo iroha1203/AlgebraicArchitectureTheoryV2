@@ -95,6 +95,30 @@ theorem siteEquationLawfulnessIdealFactorizationCorrespondence
   R.lawfulnessIdealFactorizationCorrespondence hR s
 
 /--
+Part III, Theorem 5.2C for the site-owned equation system: fulfillment of one
+equation, vanishing of its generated witness ideal, and factorization through
+its closed zero locus agree.
+-/
+theorem siteEquationIdealFactorizationCorrespondence
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k : Type v} [CommRing k]
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {raw : RawAmbientRestrictionSystem S k}
+    {X : StandardArchitectureScheme raw}
+    (R : EquationObservableRealization raw X S.equationSystem)
+    (hR : IsEquationObservableRealization R)
+    (L : EquationObservableRealization.EquationChartLocalization R)
+    {T : AlgebraicGeometry.Scheme}
+    (s : T ⟶ R.realizationScheme)
+    (i : S.equationSystem.Index) :
+    (R.EquationHoldsAlong s i ↔
+      (R.witnessIdealSheaf i).comap s = ⊥) ∧
+    (R.EquationHoldsAlong s i ↔
+      Nonempty (R.FactorsThroughEquationClosedSubscheme i s)) ∧
+    R.EquationWitnessChartRealized L i :=
+  R.equationIdealFactorizationCorrespondence hR L s i
+
+/--
 III.定理11.1 / III.定理11.4 bridge: displayed required laws force the displayed
 defect into the generated local obstruction ideal.
 -/

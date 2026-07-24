@@ -1772,73 +1772,148 @@ structure StandardArchitectureScheme
   overlapsValid : IsArchitectureOverlapPresentation raw overlaps
 
 /--
-Part III, Definition 5.2B's source functor of architecture-evaluation points.
+Part III, Definition 5.2A's base-change-stable architecture reading.
 
-Implementation notes: a selected representable regime may use one joint point
-functor for all contexts.  Keeping the point type opaque permits concrete
-representable subfunctors, while the only observable operations exposed from
-it are the architecture reading and the `E`-owned evaluations below.  An
-independent section map or residual family is deliberately not stored.
-
-The point type is fixed before a representing scheme is selected.  A point
-provides its architecture reading and the equation system's observable
-evaluation on every context.  Pullback, architecture stability, section
-evaluation, and context naturality are verified separately by
-`IsEquationArchitecturePointSource`.
+Only architecture data is selected here.  Observable evaluation is not a
+field of this structure: it is generated from `E` in
+`EquationArchitecturePoint`.  `residual_pullback` is the concrete compatibility
+needed to evaluate the object-dependent residual after test-scheme base
+change; it does not contain a vanishing or factorization conclusion.
 -/
-structure EquationArchitecturePointSource
+structure EquationArchitectureReading
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A}
     (E : ArchitecturalEquationSystem S.contextPreorder) where
-  /-- Architecture-evaluation points on a test scheme. -/
-  Point : AlgebraicGeometry.Scheme.{max u v} → Type (max u v)
-  /-- Pullback of a point along a test-scheme morphism. -/
+  /-- Architecture readings over a test scheme. -/
+  Reading : AlgebraicGeometry.Scheme.{max u v} → Type (max u v)
+  /-- Pullback of an architecture reading along a test-scheme morphism. -/
   pullback :
     ∀ {T T' : AlgebraicGeometry.Scheme.{max u v}},
-      (T' ⟶ T) → Point T → Point T'
-  /-- Architecture reading carried by a source point. -/
-  architecture :
+      (T' ⟶ T) → Reading T → Reading T'
+  /-- The architecture object read from relative architecture data. -/
+  object :
     ∀ {T : AlgebraicGeometry.Scheme.{max u v}},
-      Point T → ArchitectureObject U
-  /-- Evaluation of every context-owned observable at a source point. -/
-  evaluation :
-    ∀ {T : AlgebraicGeometry.Scheme.{max u v}},
-      Point T → ∀ W : S.category, E.Observable W →+* Γ(T, ⊤)
+      Reading T → ArchitectureObject U
+  /-- Reading pullback preserves identities. -/
+  pullback_id :
+    ∀ {T : AlgebraicGeometry.Scheme.{max u v}} (r : Reading T),
+      pullback (𝟙 T) r = r
+  /-- Reading pullback preserves composition. -/
+  pullback_comp :
+    ∀ {T T' T'' : AlgebraicGeometry.Scheme.{max u v}}
+      (f : T' ⟶ T) (g : T'' ⟶ T') (r : Reading T),
+      pullback (g ≫ f) r = pullback g (pullback f r)
+  /--
+  Evaluation of every object-dependent residual commutes with reading
+  pullback.
+  -/
+  residual_pullback :
+    ∀ {T T' : AlgebraicGeometry.Scheme.{max u v}}
+      (f : T' ⟶ T) (r : Reading T) (W : S.category)
+      (i : E.Index) (a : U.Atom)
+      (e : E.Observable W →+* Γ(T, ⊤)),
+      (f.appTop.hom.comp e)
+          (E.equationResidual W (object (pullback f r)) i a) =
+        f.appTop
+          (e (E.equationResidual W (object r) i a))
 
-/-- Functoriality and context compatibility of architecture-evaluation points. -/
-structure IsEquationArchitecturePointSource
+/--
+Part III, Definition 5.2B's `E`-generated architecture-evaluation point.
+
+The observable ring maps and their context compatibility are part of this
+fixed construction rather than an opaque source supplied by a caller.
+-/
+structure EquationArchitecturePoint
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A}
     {E : ArchitecturalEquationSystem S.contextPreorder}
-    (P : EquationArchitecturePointSource.{u, v} E) : Prop where
-  /-- Point pullback preserves identities. -/
-  pullback_id :
-    ∀ {T : AlgebraicGeometry.Scheme.{max u v}} (p : P.Point T),
-      P.pullback (𝟙 T) p = p
-  /-- Point pullback preserves composition. -/
-  pullback_comp :
-    ∀ {T T' T'' : AlgebraicGeometry.Scheme.{max u v}}
-      (f : T' ⟶ T) (g : T'' ⟶ T') (p : P.Point T),
-      P.pullback (g ≫ f) p = P.pullback g (P.pullback f p)
-  /-- Architecture readings are stable under point pullback. -/
-  architecture_pullback :
-    ∀ {T T' : AlgebraicGeometry.Scheme.{max u v}}
-      (f : T' ⟶ T) (p : P.Point T),
-      P.architecture (P.pullback f p) = P.architecture p
-  /-- Observable evaluation is pulled back through `Scheme.Hom.appTop`. -/
-  evaluation_pullback :
-    ∀ {T T' : AlgebraicGeometry.Scheme.{max u v}}
-      (f : T' ⟶ T) (p : P.Point T) (W : S.category)
-      (x : E.Observable W),
-      P.evaluation (P.pullback f p) W x =
-        f.appTop (P.evaluation p W x)
-  /-- Observable restriction is evaluated by the same global section. -/
+    (D : EquationArchitectureReading.{u, v} E)
+    (T : AlgebraicGeometry.Scheme.{max u v}) where
+  /-- Relative architecture data over the test scheme. -/
+  reading : D.Reading T
+  /-- Evaluation of every `E`-owned observable ring. -/
+  evaluation :
+    ∀ W : S.category, E.Observable W →+* Γ(T, ⊤)
+  /-- Observable evaluation commutes with context restriction. -/
   evaluation_natural :
-    ∀ {T : AlgebraicGeometry.Scheme.{max u v}} (p : P.Point T)
-      {source target : S.category} (f : source ⟶ target)
+    ∀ {source target : S.category} (f : source ⟶ target)
       (x : E.Observable target),
-      P.evaluation p source (E.restrict f x) =
-        P.evaluation p target x
+      evaluation source (E.restrict f x) =
+        evaluation target x
+
+namespace EquationArchitecturePoint
+
+/-- Pull back an `E`-generated architecture-evaluation point. -/
+def pullback
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    {D : EquationArchitectureReading.{u, v} E}
+    {T T' : AlgebraicGeometry.Scheme.{max u v}}
+    (f : T' ⟶ T) (p : EquationArchitecturePoint D T) :
+    EquationArchitecturePoint D T' where
+  reading := D.pullback f p.reading
+  evaluation W := f.appTop.hom.comp (p.evaluation W)
+  evaluation_natural := by
+    intro source target g x
+    simp only [RingHom.comp_apply, p.evaluation_natural g x]
+
+/-- Equality of generated points is equality of reading and evaluation data. -/
+@[ext] theorem ext
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    {D : EquationArchitectureReading.{u, v} E}
+    {T : AlgebraicGeometry.Scheme.{max u v}}
+    {p q : EquationArchitecturePoint D T}
+    (hreading : p.reading = q.reading)
+    (hevaluation :
+      ∀ (W : S.category) (x : E.Observable W),
+        p.evaluation W x = q.evaluation W x) :
+    p = q := by
+  cases p with
+  | mk pReading pEvaluation pNatural =>
+      cases q with
+      | mk qReading qEvaluation qNatural =>
+          cases hreading
+          have hEvaluation : pEvaluation = qEvaluation := by
+            funext W
+            apply RingHom.ext
+            intro x
+            exact hevaluation W x
+          cases hEvaluation
+          rfl
+
+/-- Generated point pullback preserves identities. -/
+theorem pullback_id
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    {D : EquationArchitectureReading.{u, v} E}
+    {T : AlgebraicGeometry.Scheme.{max u v}}
+    (p : EquationArchitecturePoint D T) :
+    pullback (𝟙 T) p = p := by
+  apply ext
+  · exact D.pullback_id p.reading
+  · intro W x
+    simp [pullback]
+
+/-- Generated point pullback preserves composition. -/
+theorem pullback_comp
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    {D : EquationArchitectureReading.{u, v} E}
+    {T T' T'' : AlgebraicGeometry.Scheme.{max u v}}
+    (f : T' ⟶ T) (g : T'' ⟶ T')
+    (p : EquationArchitecturePoint D T) :
+    pullback (g ≫ f) p = pullback g (pullback f p) := by
+  apply ext
+  · exact D.pullback_comp f g p.reading
+  · intro W x
+    rfl
+
+end EquationArchitecturePoint
 
 /--
 Selected representable equation-point regime.
@@ -1857,19 +1932,18 @@ structure EquationObservableRealization
     [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
     (X : StandardArchitectureScheme raw)
     (E : ArchitecturalEquationSystem S.contextPreorder) where
-  /-- The architecture-evaluation point source defined before representation. -/
-  source : EquationArchitecturePointSource.{u, v} E
-  /-- The scheme represents the source point functor on every test scheme. -/
+  /-- The selected base-change-stable architecture reading. -/
+  reading : EquationArchitectureReading.{u, v} E
+  /-- The scheme represents the `E`-generated point functor on every test scheme. -/
   representingEquiv :
     ∀ T : AlgebraicGeometry.Scheme.{max u v},
-      (T ⟶ X.underlying) ≃ source.Point T
+      (T ⟶ X.underlying) ≃ EquationArchitecturePoint reading T
 
 namespace EquationObservableRealization
 
 /--
-The named selected-regime constructor from a source functor and its
-representing equivalence.  All scheme sections and residual functions are
-derived accessors below.
+The named selected-regime constructor from architecture reading data and the
+representing equivalence for the `E`-generated point functor.
 -/
 noncomputable def ofRepresentingEquiv
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
@@ -1878,26 +1952,26 @@ noncomputable def ofRepresentingEquiv
     [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
     {X : StandardArchitectureScheme raw}
     {E : ArchitecturalEquationSystem S.contextPreorder}
-    (P : EquationArchitecturePointSource.{u, v} E)
+    (D : EquationArchitectureReading.{u, v} E)
     (e : ∀ T : AlgebraicGeometry.Scheme.{max u v},
-      (T ⟶ X.underlying) ≃ P.Point T) :
+      (T ⟶ X.underlying) ≃ EquationArchitecturePoint D T) :
     EquationObservableRealization raw X E where
-  source := P
+  reading := D
   representingEquiv := e
 
-/-- The named constructor retains exactly the selected source functor. -/
-@[simp] theorem ofRepresentingEquiv_source
+/-- The named constructor retains exactly the selected architecture reading. -/
+@[simp] theorem ofRepresentingEquiv_reading
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
     {raw : RawAmbientRestrictionSystem S k}
     [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
     {X : StandardArchitectureScheme raw}
     {E : ArchitecturalEquationSystem S.contextPreorder}
-    (P : EquationArchitecturePointSource.{u, v} E)
+    (D : EquationArchitectureReading.{u, v} E)
     (e : ∀ T : AlgebraicGeometry.Scheme.{max u v},
-      (T ⟶ X.underlying) ≃ P.Point T) :
-    (ofRepresentingEquiv P e :
-      EquationObservableRealization raw X E).source = P :=
+      (T ⟶ X.underlying) ≃ EquationArchitecturePoint D T) :
+    (ofRepresentingEquiv D e :
+      EquationObservableRealization raw X E).reading = D :=
   rfl
 
 /-- The named constructor retains exactly the representing equivalence. -/
@@ -1908,10 +1982,10 @@ noncomputable def ofRepresentingEquiv
     [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
     {X : StandardArchitectureScheme raw}
     {E : ArchitecturalEquationSystem S.contextPreorder}
-    (P : EquationArchitecturePointSource.{u, v} E)
+    (D : EquationArchitectureReading.{u, v} E)
     (e : ∀ T : AlgebraicGeometry.Scheme.{max u v},
-      (T ⟶ X.underlying) ≃ P.Point T) :
-    (ofRepresentingEquiv P e :
+      (T ⟶ X.underlying) ≃ EquationArchitecturePoint D T) :
+    (ofRepresentingEquiv D e :
       EquationObservableRealization raw X E).representingEquiv = e :=
   rfl
 
@@ -1925,7 +1999,8 @@ noncomputable def pointAt
     {E : ArchitecturalEquationSystem S.contextPreorder}
     (R : EquationObservableRealization raw X E)
     {T : AlgebraicGeometry.Scheme.{max u v}}
-    (s : T ⟶ X.underlying) : R.source.Point T :=
+    (s : T ⟶ X.underlying) :
+    EquationArchitecturePoint R.reading T :=
   R.representingEquiv T s
 
 /-- The architecture reading derived from the represented point. -/
@@ -1939,7 +2014,7 @@ noncomputable def architectureAt
     (R : EquationObservableRealization raw X E)
     {T : AlgebraicGeometry.Scheme.{max u v}}
     (s : T ⟶ X.underlying) : ArchitectureObject U :=
-  R.source.architecture (R.pointAt s)
+  R.reading.object (R.pointAt s).reading
 
 /-- Evaluation derived from the represented point, with no independent map. -/
 noncomputable def evaluation
@@ -1953,7 +2028,7 @@ noncomputable def evaluation
     {T : AlgebraicGeometry.Scheme.{max u v}}
     (s : T ⟶ X.underlying) (W : S.category) :
     E.Observable W →+* Γ(T, ⊤) :=
-  R.source.evaluation (R.pointAt s) W
+  (R.pointAt s).evaluation W
 
 /-- The universal section map derived by evaluating the represented identity. -/
 noncomputable def sectionMap
@@ -1992,19 +2067,18 @@ structure IsEquationObservableRealization
     {X : StandardArchitectureScheme raw}
     {E : ArchitecturalEquationSystem S.contextPreorder}
     (R : EquationObservableRealization raw X E) : Prop where
-  /-- The represented source is a genuine contravariant point functor. -/
-  source_valid : IsEquationArchitecturePointSource R.source
   /-- The representing equivalence commutes with test-scheme pullback. -/
   representingEquiv_natural :
     ∀ {T T' : AlgebraicGeometry.Scheme.{max u v}}
       (s : T ⟶ X.underlying) (f : T' ⟶ T),
-      R.pointAt (f ≫ s) = R.source.pullback f (R.pointAt s)
+      R.pointAt (f ≫ s) =
+        EquationArchitecturePoint.pullback f (R.pointAt s)
 
 namespace EquationObservableRealization
 
 /--
-The named constructor discharges realization validity from source
-functoriality and naturality of the representing equivalence.
+The named constructor discharges realization validity from naturality of the
+representing equivalence.  Point functoriality is generated above.
 -/
 theorem ofRepresentingEquiv_valid
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
@@ -2013,18 +2087,17 @@ theorem ofRepresentingEquiv_valid
     [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
     {X : StandardArchitectureScheme raw}
     {E : ArchitecturalEquationSystem S.contextPreorder}
-    (P : EquationArchitecturePointSource.{u, v} E)
+    (D : EquationArchitectureReading.{u, v} E)
     (e : ∀ T : AlgebraicGeometry.Scheme.{max u v},
-      (T ⟶ X.underlying) ≃ P.Point T)
-    (hP : IsEquationArchitecturePointSource P)
+      (T ⟶ X.underlying) ≃ EquationArchitecturePoint D T)
     (he :
       ∀ {T T' : AlgebraicGeometry.Scheme.{max u v}}
         (s : T ⟶ X.underlying) (f : T' ⟶ T),
-        e T' (f ≫ s) = P.pullback f (e T s)) :
+        e T' (f ≫ s) =
+          EquationArchitecturePoint.pullback f (e T s)) :
     IsEquationObservableRealization
-      (ofRepresentingEquiv P e :
+      (ofRepresentingEquiv D e :
         EquationObservableRealization raw X E) where
-  source_valid := hP
   representingEquiv_natural := he
 
 end EquationObservableRealization
