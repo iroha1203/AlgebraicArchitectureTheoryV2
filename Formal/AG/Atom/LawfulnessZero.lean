@@ -1,65 +1,98 @@
 import Formal.AG.Atom.Obstruction
 
+/-!
+# Equation lawfulness and zero obstruction
+
+This module formalizes Part I, Propositions 9.1--9.2 and Theorem 9.3 directly
+for an `ArchitecturalEquationSystem`.
+
+Implementation notes: valuation indices and required roles come from the same
+equation system that defines residual vanishing.  The former predicate-valued
+law surface is retained only by `Atom.LawfulnessZeroLegacy`.
+-/
+
 namespace AAT.AG
 
 universe u
 
-/-- I.命題9.1: obstruction soundness for a selected law valuation. -/
-def ObstructionSound {U : AtomCarrier.{u}} {Value : Type u}
-    (valuation : ObstructionValuation U Value) (L : Law U) : Prop :=
-  ∀ A : ArchitectureObject U, L.holds A ->
-    valuation.omega L A = valuation.domain.zero
+/-- I.命題9.1: equation-indexed obstruction soundness. -/
+def EquationObstructionSound
+    {U : AtomCarrier.{u}} {A₀ : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A₀}
+    {E : ArchitecturalEquationSystem C} {Value : Type u}
+    (valuation : EquationObstructionValuation E Value) (index : E.Index) : Prop :=
+  ∀ A : ArchitectureObject U, E.EquationHolds index A ->
+    valuation.omega index A = valuation.domain.zero
 
-/-- I.命題9.2: obstruction completeness for a selected law valuation. -/
-def ObstructionComplete {U : AtomCarrier.{u}} {Value : Type u}
-    (valuation : ObstructionValuation U Value) (L : Law U) : Prop :=
-  ∀ A : ArchitectureObject U, ¬ L.holds A ->
-    valuation.domain.positive (valuation.omega L A)
+/-- I.命題9.2: equation-indexed obstruction completeness. -/
+def EquationObstructionComplete
+    {U : AtomCarrier.{u}} {A₀ : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A₀}
+    {E : ArchitecturalEquationSystem C} {Value : Type u}
+    (valuation : EquationObstructionValuation E Value) (index : E.Index) : Prop :=
+  ∀ A : ArchitectureObject U, ¬ E.EquationHolds index A ->
+    valuation.domain.positive (valuation.omega index A)
 
 /--
-I.命題9.1 / 9.2: soundness and completeness make a selected law equivalent to
-zero obstruction valuation.
+I.命題9.1 / 9.2: soundness and completeness identify equation fulfillment
+with zero obstruction value.
+
+The material premises are precisely the soundness and completeness conditions
+from Part I, Propositions 9.1 and 9.2.
 -/
-theorem law_holds_iff_omega_zero {U : AtomCarrier.{u}} {Value : Type u}
-    (valuation : ObstructionValuation U Value) (L : Law U)
-    (hsound : ObstructionSound valuation L)
-    (hcomplete : ObstructionComplete valuation L)
+theorem equationHolds_iff_omega_zero
+    {U : AtomCarrier.{u}} {A₀ : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A₀}
+    {E : ArchitecturalEquationSystem C} {Value : Type u}
+    (valuation : EquationObstructionValuation E Value) (index : E.Index)
+    (hsound : EquationObstructionSound valuation index)
+    (hcomplete : EquationObstructionComplete valuation index)
     (A : ArchitectureObject U) :
-    L.holds A ↔ valuation.omega L A = valuation.domain.zero := by
+    E.EquationHolds index A ↔
+      valuation.omega index A = valuation.domain.zero := by
   constructor
-  · intro hlaw
-    exact hsound A hlaw
+  · intro hequation
+    exact hsound A hequation
   · intro hzero
-    by_cases hlaw : L.holds A
-    · exact hlaw
+    by_cases hequation : E.EquationHolds index A
+    · exact hequation
     · exact False.elim
-        ((valuation.domain.noCancellationAtZero (hcomplete A hlaw)) hzero)
+        ((valuation.domain.noCancellationAtZero (hcomplete A hequation)) hzero)
 
 /--
-I.定理9.3: Lawfulness-Zero Obstruction for a selected law universe, required
-laws, and zero-reflecting aggregate valuation.
+I.定理9.3: required equation lawfulness is equivalent to zero aggregate
+obstruction value.
+
+The material premises are the theorem's required-index soundness,
+required-index completeness, and zero-reflecting aggregation.
 -/
-theorem lawfulness_iff_omegaU_zero {U : AtomCarrier.{u}} {Value : Type u}
-    (valuation : ObstructionValuation U Value) (LU : LawUniverse U)
+theorem equationLawful_iff_omegaE_zero
+    {U : AtomCarrier.{u}} {A₀ : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A₀}
+    {E : ArchitecturalEquationSystem C} {Value : Type u}
+    (valuation : EquationObstructionValuation E Value)
     (aggregation :
-      ZeroReflectingAggregation Value valuation.domain LU.RequiredIndex)
+      ZeroReflectingAggregation Value valuation.domain E.RequiredIndex)
     (hsound :
-      ∀ index : LU.RequiredIndex, ObstructionSound valuation (LU.law index.1))
+      ∀ index : E.RequiredIndex,
+        EquationObstructionSound valuation index.1)
     (hcomplete :
-      ∀ index : LU.RequiredIndex, ObstructionComplete valuation (LU.law index.1))
+      ∀ index : E.RequiredIndex,
+        EquationObstructionComplete valuation index.1)
     (A : ArchitectureObject U) :
-    Lawfulness A LU ↔ omegaU valuation LU aggregation A = valuation.domain.zero := by
+    E.EquationLawful A ↔
+      omegaE valuation aggregation A = valuation.domain.zero := by
   constructor
   · intro hlawful
-    apply (omegaU_zero_iff_required valuation LU aggregation A).mpr
+    apply (omegaE_zero_iff_required valuation aggregation A).mpr
     intro index
     exact hsound index A (hlawful index.1 index.2)
   · intro hzero index hrequired
-    let requiredIndex : LU.RequiredIndex := ⟨index, hrequired⟩
+    let requiredIndex : E.RequiredIndex := ⟨index, hrequired⟩
     have hvalue :
-        valuation.omega (LU.law index) A = valuation.domain.zero :=
-      (omegaU_zero_iff_required valuation LU aggregation A).mp hzero requiredIndex
-    exact (law_holds_iff_omega_zero valuation (LU.law index)
+        valuation.omega index A = valuation.domain.zero :=
+      (omegaE_zero_iff_required valuation aggregation A).mp hzero requiredIndex
+    exact (equationHolds_iff_omega_zero valuation index
       (hsound requiredIndex) (hcomplete requiredIndex) A).mpr hvalue
 
 end AAT.AG

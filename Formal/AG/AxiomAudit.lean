@@ -1,4 +1,6 @@
 import Formal.AG
+import Formal.AG.Atom.ObstructionLegacy
+import Formal.AG.Atom.LawfulnessZeroLegacy
 import Formal.AG.Equation.FiniteExample
 import Formal.AG.SemanticRepair.AdditiveH1
 import Formal.AG.SemanticRepair.Examples
@@ -199,11 +201,11 @@ def finiteAATComputabilityProfileObstructionObjectRealizes :=
 def finiteAATComputabilityProfileObstructionIdealRealizes :=
   @Measurement.FiniteAATProfileRealization.obstructionIdeal_realizes
 
-def finiteAATComputabilityProfileLeftLawRealizes :=
-  @Measurement.FiniteAATProfileRealization.leftLaw_realizes
+def finiteAATComputabilityProfileLeftEquationIdealRealizes :=
+  @Measurement.FiniteAATProfileRealization.leftEquationIdeal_realizes
 
-def finiteAATComputabilityProfileRightLawRealizes :=
-  @Measurement.FiniteAATProfileRealization.rightLaw_realizes
+def finiteAATComputabilityProfileRightEquationIdealRealizes :=
+  @Measurement.FiniteAATProfileRealization.rightEquationIdeal_realizes
 
 def finiteAATComputabilityGenericZeroClassHasEmptySupport :=
   @Measurement.FiniteAATComputationData.classSupportOf_eq_empty_of_class_eq_zero
@@ -1667,37 +1669,53 @@ theorem presentedArchitectureRelatorIffActualAttachingLoop :
       @SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.relator_iff_actual_attaching_loop :=
   ⟨_, rfl⟩
 
-theorem concreteThreeReadingAgreementRequiredLaw {U : AtomCarrier}
-    (A : ArchitectureObject U) (LU : LawUniverse U) :
-    (SemanticLawful A LU ↔
-        NoRequiredObstruction A (requiredLawWitnessFamily LU)) ∧
-      (NoRequiredObstruction A (requiredLawWitnessFamily LU) ↔
-        RequiredSignatureAxesZero A (requiredLawSignatureAxes LU)) ∧
-        (SemanticLawful A LU ↔
-          RequiredSignatureAxesZero A (requiredLawSignatureAxes LU)) :=
-  AAT.AG.concreteThreeReadingAgreement A LU
+theorem concreteThreeReadingAgreementEquation
+    {U : AtomCarrier} {A₀ : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A₀}
+    {E : ArchitecturalEquationSystem C}
+    (R : EquationCircuitReading E) (hSound : R.Sound)
+    (hComplete : R.RequiredComplete) (A : ArchitectureObject U) :
+    (E.EquationLawful A ↔ NoRequiredEquationCircuit R A) ∧
+      (NoRequiredEquationCircuit R A ↔
+        RequiredSignatureAxesZero A (requiredEquationSignatureAxes E)) ∧
+      (E.EquationLawful A ↔
+        RequiredSignatureAxesZero A (requiredEquationSignatureAxes E)) :=
+  AAT.AG.concreteThreeReadingAgreement R hSound hComplete A
 
-theorem finiteAcyclicConcreteThreeReadingAgreement :
-    (SemanticLawful FiniteModel.acyclicObject FiniteModel.lawUniverse ↔
-        NoRequiredObstruction FiniteModel.acyclicObject
-          FiniteModel.concreteNoCycleWitnessFamily) ∧
-      (NoRequiredObstruction FiniteModel.acyclicObject
-          FiniteModel.concreteNoCycleWitnessFamily ↔
-        RequiredSignatureAxesZero FiniteModel.acyclicObject
-          FiniteModel.concreteNoCycleSignatureAxes) ∧
-        (SemanticLawful FiniteModel.acyclicObject FiniteModel.lawUniverse ↔
-          RequiredSignatureAxesZero FiniteModel.acyclicObject
-            FiniteModel.concreteNoCycleSignatureAxes) :=
-  FiniteModel.acyclic_concreteThreeReadingAgreement
+theorem finiteComponentAConcreteThreeReadingAgreement :
+    let C := Site.contextMorphismPreorderCategory FiniteModel.object
+    ((FiniteModel.componentAAbsentEquationSystem C).EquationLawful
+          FiniteModel.corePackage.object ↔
+        NoRequiredEquationCircuit
+          (FiniteModel.componentAPresentEquationCircuitReading C)
+          FiniteModel.corePackage.object) ∧
+      (NoRequiredEquationCircuit
+          (FiniteModel.componentAPresentEquationCircuitReading C)
+          FiniteModel.corePackage.object ↔
+        RequiredSignatureAxesZero FiniteModel.corePackage.object
+          (requiredEquationSignatureAxes
+            (FiniteModel.componentAAbsentEquationSystem C))) ∧
+      ((FiniteModel.componentAAbsentEquationSystem C).EquationLawful
+          FiniteModel.corePackage.object ↔
+        RequiredSignatureAxesZero FiniteModel.corePackage.object
+          (requiredEquationSignatureAxes
+            (FiniteModel.componentAAbsentEquationSystem C))) :=
+  FiniteModel.componentAAbsent_concreteThreeReadingAgreement
+    (Site.contextMorphismPreorderCategory FiniteModel.object)
 
-theorem finiteCyclicConcreteThreeReadingFires :
-    (¬ SemanticLawful FiniteModel.object FiniteModel.lawUniverse) ∧
-      (∃ witness : FiniteModel.concreteNoCycleWitnessFamily.Witness,
-        FiniteModel.concreteNoCycleWitnessFamily.badWitness FiniteModel.object
-          witness) ∧
-        ¬ RequiredSignatureAxesZero FiniteModel.object
-          FiniteModel.concreteNoCycleSignatureAxes :=
-  FiniteModel.object_concreteThreeReadingAgreement_fires
+theorem finiteAcyclicEquationLawful :
+    (FiniteModel.equationSystem
+      (Site.contextMorphismPreorderCategory FiniteModel.object)).EquationLawful
+        FiniteModel.acyclicObject :=
+  FiniteModel.acyclic_equationLawful
+    (Site.contextMorphismPreorderCategory FiniteModel.object)
+
+theorem finiteCyclicEquationLawfulFails :
+    ¬ (FiniteModel.equationSystem
+      (Site.contextMorphismPreorderCategory FiniteModel.object)).EquationLawful
+        FiniteModel.object :=
+  FiniteModel.object_equationLawful_fails
+    (Site.contextMorphismPreorderCategory FiniteModel.object)
 
 theorem finiteCoreGeneratedFamilyAtomizes :
     FiniteModel.coreReading.doctrine.Atomizes
@@ -1920,11 +1938,11 @@ def sd1FiniteOperationFires := FiniteModel.nonidentity_reachable_operation_fires
 def sd1FiniteDatumMatches := FiniteModel.cycleQueryDatum_matches_core
 def sd1FiniteDatumNotMatches := FiniteModel.componentAAbsentDatum_not_matches_core
 def sd1FiniteRequiredCompleteNegative :=
-  FiniteModel.rejectingCircuitReading_not_requiredComplete
+  FiniteModel.rejectingEquationCircuitReading_not_requiredComplete
 def sd1FiniteRequiredCompletePositive :=
-  FiniteModel.completeCircuitReading_requiredComplete
+  FiniteModel.componentAPresentEquationCircuitReading_requiredComplete
 def sd1FiniteRequiredCompleteNonvacuous :=
-  @FiniteModel.completeCircuitReading_nonvacuous
+  @FiniteModel.componentAPresentEquationCircuitReading_nonvacuous
 def sd1FiniteDatumAccepted := FiniteModel.cycleQueryDatum_accepted
 def sd1FiniteDatumRejected := FiniteModel.emptyQueryDatum_rejected
 def sd1FiniteGeneratedCircuitSound := FiniteModel.generatedCycleCircuit_sound
@@ -1933,17 +1951,21 @@ def sd1FiniteGeneratedCircuitSound := FiniteModel.generatedCycleCircuit_sound
 def sd1ExtractsIff := @ExtractionDoctrine.extracts_iff
 def sd1AtomizeMemIff := @ExtractionDoctrine.atomize_mem_iff
 def sd1AtomizesMemIff := @ExtractionDoctrine.mem_iff_extracts_of_atomizes
-def sd1SemanticObstructionIff := @SemanticObstruction.iff_not_holds
+def sd1EquationSemanticObstructionIff :=
+  @EquationSemanticObstruction.iff_not_equationHolds
 def sd1AtomPresentHoldsIff := @CircuitQuery.atomPresent_holds_iff
 def sd1RelationPresentHoldsIff := @CircuitQuery.relationPresent_holds_iff
 def sd1IdentificationPresentHoldsIff := @CircuitQuery.identificationPresent_holds_iff
 def sd1DetectorReject := @CircuitDetectorCode.eval_reject
 def sd1DetectorExact := @CircuitDetectorCode.eval_exact_eq_true_iff
 def sd1DetectorAny := @CircuitDetectorCode.eval_any_eq_true_iff
-def sd1CircuitAcceptsEval := @CircuitReading.accepts_eq_true_iff_eval
-def sd1CircuitAcceptsReject := @CircuitReading.accepts_eq_false_of_code_reject
-def sd1CircuitAcceptsExact := @CircuitReading.accepts_eq_true_iff_of_code_exact
-def sd1CircuitAcceptsAny := @CircuitReading.accepts_eq_true_iff_of_code_any
+def sd1EquationCircuitAcceptsEval := @EquationCircuitReading.accepts_eq_eval
+def sd1EquationCircuitAcceptsReject :=
+  @EquationCircuitReading.accepts_eq_false_of_code_reject
+def sd1EquationCircuitAcceptsExact :=
+  @EquationCircuitReading.accepts_eq_true_iff_of_code_exact
+def sd1EquationCircuitAcceptsAny :=
+  @EquationCircuitReading.accepts_eq_true_iff_of_code_any
 def sd1CoreFamilyMemIff := @AATCorePackage.family_mem_iff_extracts
 def sd1CoreConfigurationEqCompose := @AATCorePackage.configuration_eq_compose
 def sd1CoreConfigurationFamilyMemIff :=
@@ -1955,8 +1977,10 @@ def sd1CoreObjectFamilyMemIff := @AATCorePackage.object_family_mem_iff_extracts
 def sd1CoreAlgebraCircuitReadingEq := @AATCorePackage.algebra_circuitReading_eq
 def sd1CoreAlgebraDetectorCodeEq := @AATCorePackage.algebra_detectorCode_eq
 def sd1CoreAlgebraAcceptsEq := @AATCorePackage.algebra_accepts_eq_detector_eval
-def sd1FiniteSemanticObstruction := FiniteModel.object_semanticObstruction
-def sd1FiniteNoSemanticObstruction := FiniteModel.acyclicObject_not_semanticObstruction
+def sd1FiniteEquationSemanticObstruction :=
+  FiniteModel.object_equationSemanticObstruction
+def sd1FiniteNoEquationSemanticObstruction :=
+  FiniteModel.acyclicObject_not_equationSemanticObstruction
 def sd1FiniteAtomPresentHolds := FiniteModel.componentA_atomPresent_holds_core
 def sd1FiniteAtomPresentNotHolds := FiniteModel.componentC_atomPresent_not_holds_core
 def sd1FiniteExtractsIffSelected := FiniteModel.extractionDoctrine_extracts_iff_selected
@@ -1964,14 +1988,16 @@ def sd1FiniteConfigurationRelationIff := FiniteModel.corePackage_configuration_r
 def sd1FiniteObjectRelationIff := FiniteModel.corePackage_object_relation_iff
 def sd1FiniteReachableFamilyNonempty := @FiniteModel.reachable_object_family_nonempty
 def sd1FiniteUnreachableObject := FiniteModel.unreachableEmptyObject_not_reachable
-def sd1FiniteRejectingCode := FiniteModel.rejectingCircuitReading_code
-def sd1FiniteComponentAAbsentLawful :=
-  FiniteModel.componentAAbsentLaw_holds_unreachableEmptyObject
+def sd1FiniteRejectingCode :=
+  FiniteModel.rejectingEquationCircuitReading_code
+def sd1FiniteComponentAAbsentEquation :=
+  @FiniteModel.componentAAbsentEquationHolds_iff
 def sd1FiniteComponentAAbsentFailure :=
-  FiniteModel.componentAAbsentLaw_failure_core
+  @FiniteModel.componentAPresentEquationCircuitReading_nonvacuous
 def sd1FiniteComponentAPresentDatumMatches :=
   @FiniteModel.componentAPresentDatum_matches_iff
-def sd1FiniteCompleteCode := FiniteModel.completeCircuitReading_code
+def sd1FiniteCompleteCode :=
+  FiniteModel.componentAPresentEquationCircuitReading_code
 def sd1FiniteCoreDetectorCode := FiniteModel.coreReading_circuit_code
 
 /- SD2 selected geometry and generated topology declarations. -/
@@ -6874,8 +6900,8 @@ noncomputable def readingFunctoriality_positiveCoreChange :=
   AAT.AG.ReadingFunctorialityFinite.positiveCoreChange
 
 /-- Audit alias for the selected positive law. -/
-noncomputable def readingFunctoriality_positiveLawIndex :=
-  AAT.AG.ReadingFunctorialityFinite.positiveLawIndex
+noncomputable def readingFunctoriality_positiveEquationIndex :=
+  AAT.AG.ReadingFunctorialityFinite.positiveEquationIndex
 
 /-- Audit alias for the accepted positive circuit. -/
 noncomputable def readingFunctoriality_positiveCircuit :=
@@ -8616,8 +8642,8 @@ def legacyConsolidationAudit_AAT_AG_LawAlgebra_Correspondence_localObstructionId
 def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_acyclicLocalSection_lawful_from_witnessIdeals := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicLocalSection_lawful_from_witnessIdeals
 def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_acyclicSectionData_eq_1 := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicSectionData.eq_1
 def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_acyclic_cycleWitnessIdeal_le_ker := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclic_cycleWitnessIdeal_le_ker
-def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_acyclic_lawfulness := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclic_lawfulness
-def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_acyclic_noCycleLaw_holds := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclic_noCycleLaw_holds
+def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_acyclic_equationLawful := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclic_equationLawful
+def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_acyclic_noCycleEquationHolds := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclic_noCycleEquationHolds
 def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_acyclic_pulledObstructionIdeal_eq_bot := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclic_pulledObstructionIdeal_eq_bot
 def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_acyclic_pulled_lawful_locus_has_point := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclic_pulled_lawful_locus_has_point
 def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_acyclic_sectionPrimeMap_mem_localLawfulLocus := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclic_sectionPrimeMap_mem_localLawfulLocus
@@ -8626,11 +8652,11 @@ def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenc
 def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_cycleIdeal_eq_1 := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.cycleIdeal.eq_1
 def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_cyclicSectionData_eq_1 := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.cyclicSectionData.eq_1
 def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_cyclicSection_not_lawful := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.cyclicSection_not_lawful
-def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_cyclic_lawfulness_fails := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.cyclic_lawfulness_fails
-def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_cyclic_noCycleLaw_fails := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.cyclic_noCycleLaw_fails
+def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_cyclic_equationLawful_fails := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.cyclic_equationLawful_fails
+def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_cyclic_noCycleEquation_fails := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.cyclic_noCycleEquation_fails
 def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_cyclic_pulledObstructionIdeal_eq_top := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.cyclic_pulledObstructionIdeal_eq_top
 def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_cyclic_pulled_lawful_locus_no_point := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.cyclic_pulled_lawful_locus_no_point
-def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_lawfulness_iff_signatureAxesZero := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.lawfulness_iff_signatureAxesZero
+def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_equationLawful_iff_signatureAxesZero := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.equationLawful_iff_signatureAxesZero
 def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_localObstructionIdeal_eq_cycleIdeal := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.localObstructionIdeal_eq_cycleIdeal
 def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_oneEval_eq_1 := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.oneEval.eq_1
 def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_zeroEval_eq_1 := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.zeroEval.eq_1
@@ -8786,15 +8812,15 @@ def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureAxisComparis
 def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureLawfulFactorizationContext_curvature_zero_iff_factorsThroughLawfulClosedSubscheme := @AAT.AG.RepresentationAnalysis.CurvatureLawfulFactorizationContext.curvature_zero_iff_factorsThroughLawfulClosedSubscheme
 def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureLawfulFactorizationContext_curvature_zero_of_factorsThroughLawfulClosedSubscheme := @AAT.AG.RepresentationAnalysis.CurvatureLawfulFactorizationContext.curvature_zero_of_factorsThroughLawfulClosedSubscheme
 def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureLawfulFactorizationContext_factorsThroughLawfulClosedSubscheme_of_curvature_zero := @AAT.AG.RepresentationAnalysis.CurvatureLawfulFactorizationContext.factorsThroughLawfulClosedSubscheme_of_curvature_zero
-def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureReadingContext_curvature_zero_iff_omegaU_zero := @AAT.AG.RepresentationAnalysis.CurvatureReadingContext.curvature_zero_iff_omegaU_zero
+def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureReadingContext_curvature_zero_iff_omegaE_zero := @AAT.AG.RepresentationAnalysis.CurvatureReadingContext.curvature_zero_iff_omegaE_zero
 def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureReadingContext_curvature_zero_iff_requiredObstructionValuesZero := @AAT.AG.RepresentationAnalysis.CurvatureReadingContext.curvature_zero_iff_requiredObstructionValuesZero
-def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureReadingProfile_curvatureReading_eq_omegaU := @AAT.AG.RepresentationAnalysis.CurvatureReadingProfile.curvatureReading_eq_omegaU
-def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureReadingProfile_curvatureZero_iff_omegaU_zero := @AAT.AG.RepresentationAnalysis.CurvatureReadingProfile.curvatureZero_iff_omegaU_zero
+def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureReadingProfile_curvatureReading_eq_omegaE := @AAT.AG.RepresentationAnalysis.CurvatureReadingProfile.curvatureReading_eq_omegaE
+def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureReadingProfile_curvatureZero_iff_omegaE_zero := @AAT.AG.RepresentationAnalysis.CurvatureReadingProfile.curvatureZero_iff_omegaE_zero
 def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureReadingProfile_curvatureZero_iff_requiredObstructionValuesZero := @AAT.AG.RepresentationAnalysis.CurvatureReadingProfile.curvatureZero_iff_requiredObstructionValuesZero
 def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureReadingProfile_mk_inj := @AAT.AG.RepresentationAnalysis.CurvatureReadingProfile.mk.inj
 def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureReadingProfile_mk_injEq := @AAT.AG.RepresentationAnalysis.CurvatureReadingProfile.mk.injEq
 def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureReadingProfile_mk_sizeOf_spec := @AAT.AG.RepresentationAnalysis.CurvatureReadingProfile.mk.sizeOf_spec
-def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureReadingProfile_ofOmegaU__proof_1 := @AAT.AG.RepresentationAnalysis.CurvatureReadingProfile.ofOmegaU._proof_1
+def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureReadingProfile_ofOmegaE := @AAT.AG.RepresentationAnalysis.CurvatureReadingProfile.ofOmegaE
 def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_DependencyAcyclicityProfile_acyclicityPreservation := @AAT.AG.RepresentationAnalysis.DependencyAcyclicityProfile.acyclicityPreservation
 def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_DependencyAcyclicityProfile_graphCycle_yields_obstructionWitness := @AAT.AG.RepresentationAnalysis.DependencyAcyclicityProfile.graphCycle_yields_obstructionWitness
 def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_DependencyAcyclicityProfile_mk_inj := @AAT.AG.RepresentationAnalysis.DependencyAcyclicityProfile.mk.inj
@@ -9674,8 +9700,8 @@ def selectedGeometryToAATSiteEquationSystem :=
   @Site.SelectedGeometryReading.toAATSite_equationSystem
 
 /-- Kernel-audit alias for the finite residual/NoCycle equivalence. -/
-def finiteCoreEquationHoldsIffNoCycleLaw :=
-  @FiniteModel.equationHolds_iff_noCycleLaw
+def finiteCoreEquationHoldsIffNoCycle :=
+  @FiniteModel.equationHolds_iff_noCycle
 
 /-- Kernel-audit alias for the equation-generated NoCycle legacy display. -/
 def finiteCoreEquationSystemLegacyLawEqNoCycleLaw :=
@@ -9718,16 +9744,16 @@ def finiteRingedSiteEquationRequired :=
   @LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site_equation_required
 
 /-- Kernel-audit alias for the ringed-site residual/NoCycle equivalence. -/
-def finiteRingedSiteEquationHoldsIffNoCycleLaw :=
-  @LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site_equationHolds_iff_noCycleLaw
+def finiteRingedSiteEquationHoldsIffNoCycle :=
+  @LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site_equationHolds_iff_noCycle
 
 /-- Kernel-audit alias for the ringed-site generated NoCycle legacy display. -/
 def finiteRingedSiteLawEqNoCycleLaw :=
   @LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site_law_eq_noCycleLaw
 
 /-- Kernel-audit alias for the finite site's residual/NoCycle equivalence. -/
-def finiteSiteEquationHoldsIffNoCycleLaw :=
-  @FiniteModel.site_equationHolds_iff_noCycleLaw
+def finiteSiteEquationHoldsIffNoCycle :=
+  @FiniteModel.site_equationHolds_iff_noCycle
 
 /-- Kernel-audit alias for the finite generated site law display. -/
 def finiteSiteLawHoldsIffNoCycleLaw :=

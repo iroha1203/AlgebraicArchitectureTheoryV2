@@ -238,9 +238,9 @@ def finiteModelLawfulObject :
     AAT.AG.ArchitectureObject AAT.AG.FiniteModel.carrier :=
   AAT.AG.FiniteModel.objectOfConfiguration finiteModelLawfulConfiguration
 
-/-- The NoCycle law holds on the relation-free finite-model object. -/
-theorem noCycleLaw_holds_finiteModelLawfulObject :
-    AAT.AG.FiniteModel.noCycleLaw.holds finiteModelLawfulObject :=
+/-- The selected dependency cycle is absent from the relation-free object. -/
+theorem noCycle_holds_finiteModelLawfulObject :
+    ¬ AAT.AG.FiniteModel.hasDependencyCycle finiteModelLawfulObject :=
   fun h => h.1
 
 /--
@@ -307,9 +307,9 @@ theorem finiteModelLawEquationDefectSource_displayedRequiredLawsHoldOn :
   intro _i equationIndex _hmem _hrequired
   cases equationIndex
   exact
-    (AAT.AG.FiniteModel.site_equationHolds_iff_noCycleLaw
+    (AAT.AG.FiniteModel.site_equationHolds_iff_noCycle
       finiteModelLawfulObject).mpr
-      noCycleLaw_holds_finiteModelLawfulObject
+      noCycle_holds_finiteModelLawfulObject
 
 /-- The singleton semantic repair cover over the finite-model semantic site. -/
 def finiteModelSemanticCover :

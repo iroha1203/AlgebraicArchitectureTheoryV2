@@ -388,29 +388,39 @@ def acyclicObject : ArchitectureObject FiniteModel.carrier :=
 def cyclicObject : ArchitectureObject FiniteModel.carrier :=
   FiniteModel.object
 
-/-- III.R13: the acyclic finite object satisfies the selected NoCycle law. -/
-theorem acyclic_noCycleLaw_holds :
-    FiniteModel.noCycleLaw.holds acyclicObject := by
+/-- III.R13: equation system selected for the finite NoCycle correspondence. -/
+noncomputable def noCycleEquationSystem :=
+  FiniteModel.equationSystem
+    (Site.contextMorphismPreorderCategory FiniteModel.object)
+
+/-- III.R13: the acyclic finite object fulfills the selected NoCycle equation. -/
+theorem acyclic_noCycleEquationHolds :
+    noCycleEquationSystem.EquationHolds PUnit.unit acyclicObject := by
+  apply (FiniteModel.equationHolds_iff_noCycle _ acyclicObject).mpr
   intro hcycle
   exact hcycle.1
 
-/-- III.R13: the cyclic finite object violates the selected NoCycle law. -/
-theorem cyclic_noCycleLaw_fails :
-    ¬ FiniteModel.noCycleLaw.holds cyclicObject :=
-  FiniteModel.cycle_obstruction_law_failure
+/-- III.R13: the cyclic finite object violates the selected NoCycle equation. -/
+theorem cyclic_noCycleEquation_fails :
+    ¬ noCycleEquationSystem.EquationHolds PUnit.unit cyclicObject := by
+  intro hequation
+  exact (FiniteModel.equationHolds_iff_noCycle _ cyclicObject).mp hequation
+    (by
+      simpa [cyclicObject, FiniteModel.hasCycleWitness,
+        FiniteModel.hasDependencyCycle] using FiniteModel.object_hasCycleWitness)
 
-/-- III.R13: the acyclic finite object is lawful in the singleton NoCycle universe. -/
-theorem acyclic_lawfulness :
-    Lawfulness acyclicObject FiniteModel.lawUniverse := by
+/-- III.R13: the acyclic finite object fulfills every required equation. -/
+theorem acyclic_equationLawful :
+    noCycleEquationSystem.EquationLawful acyclicObject := by
   intro index _hrequired
   cases index
-  exact acyclic_noCycleLaw_holds
+  exact acyclic_noCycleEquationHolds
 
-/-- III.R13: the cyclic finite object is not lawful in the singleton NoCycle universe. -/
-theorem cyclic_lawfulness_fails :
-    ¬ Lawfulness cyclicObject FiniteModel.lawUniverse := by
+/-- III.R13: the cyclic finite object fails required equation lawfulness. -/
+theorem cyclic_equationLawful_fails :
+    ¬ noCycleEquationSystem.EquationLawful cyclicObject := by
   intro h
-  exact cyclic_noCycleLaw_fails (h PUnit.unit rfl)
+  exact cyclic_noCycleEquation_fails (h PUnit.unit rfl)
 
 /-- III.R13: the cyclic witness section is not locally lawful. -/
 theorem cyclicSection_not_lawful :
@@ -421,22 +431,16 @@ theorem cyclicSection_not_lawful :
     trivial
   simp at hone
 
-/-- III.R13: selected signature axes for the finite NoCycle model. -/
-def signatureAxes : SignatureAxes FiniteModel.carrier where
-  Axis := PUnit
-  selected _ := True
-  zero A _ := FiniteModel.noCycleLaw.holds A
+/-- III.R13: selected equation-generated signature axes for the finite model. -/
+def signatureAxes : SignatureAxes FiniteModel.carrier :=
+  requiredEquationSignatureAxes noCycleEquationSystem
 
-/-- III.R13: signature-axis exactness for the singleton NoCycle universe. -/
-theorem lawfulness_iff_signatureAxesZero (A : ArchitectureObject FiniteModel.carrier) :
-    Lawfulness A FiniteModel.lawUniverse ↔ RequiredSignatureAxesZero A signatureAxes := by
-  constructor
-  · intro h axis _hselected
-    cases axis
-    exact h PUnit.unit rfl
-  · intro h index _hrequired
-    cases index
-    exact h PUnit.unit trivial
+/-- III.R13: equation lawfulness is exact on the generated signature axes. -/
+theorem equationLawful_iff_signatureAxesZero
+    (A : ArchitectureObject FiniteModel.carrier) :
+    noCycleEquationSystem.EquationLawful A ↔
+      RequiredSignatureAxesZero A signatureAxes :=
+  equationLawful_iff_requiredSignatureAxesZero noCycleEquationSystem A
 
 end CycleCorrespondenceExample
 

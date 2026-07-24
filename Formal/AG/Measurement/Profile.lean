@@ -19,7 +19,7 @@ and `NonZero` is assumed.
 VIII.Definition 2.1: an AAT measurement profile.
 
 The fields are type-level handles for the selected site, cover, coefficient,
-effective interface, obstruction object, law universe, witness variables,
+effective interface, obstruction object, equation handles, witness variables,
 obstruction ideal, representation family, domain, predicates, certificates,
 and selected computation method.
 -/
@@ -29,7 +29,7 @@ structure MeasurementProfile where
   Coeff : Type v
   EffCoeff : Type (max u v)
   ObstructionObject : Type u
-  LawUniverse : Type u
+  EquationHandle : Type u
   WitnessVariables : Type u
   ObstructionIdeal : Type u
   RepresentationFamily : Type u

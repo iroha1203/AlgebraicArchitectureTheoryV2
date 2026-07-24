@@ -1037,7 +1037,7 @@ end FiniteTensorMatrixAlgorithm
 
 /--
 VIII.Theorem 4.2 local realization of the profile-selected obstruction object,
-obstruction ideal, and law ideals.  `MeasurementProfile` intentionally stores
+obstruction ideal, and equation-generated ideals.  `MeasurementProfile` stores
 opaque handle types, so this contract interprets only the selected handles and
 records their equality with the concrete finite data used below.  It does not
 identify either whole handle type with a concrete ideal type.
@@ -1051,10 +1051,10 @@ structure FiniteAATProfileRealization
   selectedObstructionObject : M.ObstructionObject
   /-- Selected profile handle for the square-free obstruction ideal. -/
   selectedObstructionIdeal : M.ObstructionIdeal
-  /-- Selected profile handle for the left law ideal. -/
-  selectedLeftLaw : M.LawUniverse
-  /-- Selected profile handle for the right law ideal. -/
-  selectedRightLaw : M.LawUniverse
+  /-- Selected profile handle for the left equation ideal. -/
+  selectedLeftEquation : M.EquationHandle
+  /-- Selected profile handle for the right equation ideal. -/
+  selectedRightEquation : M.EquationHandle
   /-- Interpret obstruction-object handles on the selected finite site. -/
   realizeObstructionObject :
     M.ObstructionObject -> Cohomology.ObstructionSheaf R.geometry.site
@@ -1062,10 +1062,10 @@ structure FiniteAATProfileRealization
   realizeObstructionIdeal :
     letI := R.geometry.coeffCommRing
     M.ObstructionIdeal -> Ideal (MvPolynomial M.WitnessVariables M.Coeff)
-  /-- Interpret law handles in the selected polynomial ring. -/
-  realizeLawIdeal :
+  /-- Interpret equation handles in the selected polynomial ring. -/
+  realizeEquationIdeal :
     letI := R.geometry.coeffCommRing
-    M.LawUniverse -> Ideal (MvPolynomial M.WitnessVariables M.Coeff)
+    M.EquationHandle -> Ideal (MvPolynomial M.WitnessVariables M.Coeff)
   /-- The selected obstruction object is the actual Čech coefficient sheaf. -/
   obstructionObject_realizes :
     realizeObstructionObject selectedObstructionObject =
@@ -1076,15 +1076,15 @@ structure FiniteAATProfileRealization
     letI := R.geometry.coeffCommRing
     realizeObstructionIdeal selectedObstructionIdeal =
       obstructionSquareFree.obstructionIdeal M.Coeff
-  /-- The selected left law handle realizes the generated left law ideal. -/
-  leftLaw_realizes :
+  /-- The selected left equation handle realizes the generated left ideal. -/
+  leftEquationIdeal_realizes :
     letI := R.geometry.coeffCommRing
-    realizeLawIdeal selectedLeftLaw =
+    realizeEquationIdeal selectedLeftEquation =
       leftSquareFree.obstructionIdeal M.Coeff
-  /-- The selected right law handle realizes the generated right law ideal. -/
-  rightLaw_realizes :
+  /-- The selected right equation handle realizes the generated right ideal. -/
+  rightEquationIdeal_realizes :
     letI := R.geometry.coeffCommRing
-    realizeLawIdeal selectedRightLaw =
+    realizeEquationIdeal selectedRightEquation =
       rightSquareFree.obstructionIdeal M.Coeff
 
 /-- VIII.Theorem 4.2 selected square-free, resolution, and conflict data. -/
@@ -1758,18 +1758,18 @@ structure FiniteAATComputability {M : MeasurementProfile.{u, v}}
     D.profileRealization.realizeObstructionIdeal
         D.profileRealization.selectedObstructionIdeal =
       D.obstructionIdeal
-  /-- The profile-selected left-law handle realizes the concrete left ideal
+  /-- The profile-selected left-equation handle realizes the concrete left ideal
   used in the tensor computation. -/
-  profileLeftLaw_realizes :
+  profileLeftEquationIdeal_realizes :
     letI := R.geometry.coeffCommRing
-    D.profileRealization.realizeLawIdeal
-        D.profileRealization.selectedLeftLaw = D.leftIdeal
-  /-- The profile-selected right-law handle realizes the concrete ideal
+    D.profileRealization.realizeEquationIdeal
+        D.profileRealization.selectedLeftEquation = D.leftIdeal
+  /-- The profile-selected right-equation handle realizes the concrete ideal
   resolved by the selected finite-free resolution. -/
-  profileRightLaw_realizes :
+  profileRightEquationIdeal_realizes :
     letI := R.geometry.coeffCommRing
-    D.profileRealization.realizeLawIdeal
-        D.profileRealization.selectedRightLaw = D.rightIdeal
+    D.profileRealization.realizeEquationIdeal
+        D.profileRealization.selectedRightEquation = D.rightIdeal
   /-- Finite monomial presentation of the selected obstruction ideal. -/
   obstructionGenerators :
     letI := R.geometry.coeffCommRing
@@ -2086,14 +2086,14 @@ def finiteAATComputabilityPackage {M : MeasurementProfile.{u, v}}
   profileObstructionIdeal_realizes := by
     letI := R.geometry.coeffCommRing
     exact D.profileRealization.obstructionIdeal_realizes
-  profileLeftLaw_realizes := by
+  profileLeftEquationIdeal_realizes := by
     letI := R.geometry.coeffCommRing
     rw [D.leftIdeal_eq_squareFree]
-    exact D.profileRealization.leftLaw_realizes
-  profileRightLaw_realizes := by
+    exact D.profileRealization.leftEquationIdeal_realizes
+  profileRightEquationIdeal_realizes := by
     letI := R.geometry.coeffCommRing
     rw [D.rightIdeal_eq_squareFree]
-    exact D.profileRealization.rightLaw_realizes
+    exact D.profileRealization.rightEquationIdeal_realizes
   obstructionGenerators := by
     letI := R.geometry.coeffCommRing
     exact D.obstructionSquareFree.generatorMonomials M.Coeff

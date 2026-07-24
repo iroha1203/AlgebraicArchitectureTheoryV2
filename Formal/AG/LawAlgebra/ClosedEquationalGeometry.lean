@@ -1,6 +1,7 @@
 import Formal.AG.LawAlgebra.LawEquation
 import Formal.AG.LawAlgebra.AffineChart
 import Formal.AG.LawAlgebra.StandardScheme
+import Formal.AG.Atom.Signature
 import Mathlib.AlgebraicGeometry.IdealSheaf.Functorial
 import Mathlib.AlgebraicGeometry.IdealSheaf.Subscheme
 import Mathlib.AlgebraicGeometry.Morphisms.Separated

@@ -391,10 +391,15 @@ private def synthesisRepairProfile :
   section_improves_implies_comparison := fun h => h.le
   geometry_improves_implies_comparison := fun h => h.le
 
+private def synthesisSignatureAxes :
+    SignatureAxes FiniteModel.carrier :=
+  requiredEquationSignatureAxes
+    StandardGeometryReferenceModels.referenceSite.equationSystem
+
 private def synthesisStratumParameter :
     SingularityMonodromyStack.StratumReadingParameter
       StandardGeometryReferenceModels.referenceSite where
-  signatureAxes := FiniteModel.concreteNoCycleSignatureAxes
+  signatureAxes := synthesisSignatureAxes
   Coeff := Int
   selectedCoeff := 0
 
@@ -519,7 +524,6 @@ private noncomputable def synthesisAnalyticReadingContext :
       standardPartIPrerequisites.architectureObject readingParameter where
   AtomVocabulary := FiniteModel.FiniteAtom
   atomVocabularyOf := id
-  lawUniverse := FiniteModel.lawUniverse
   CoverageTopology := Site.AATCoverageFamily
     StandardGeometryReferenceModels.referenceSite.requirements
     StandardGeometryReferenceModels.referenceSite.overlap
@@ -530,9 +534,9 @@ private noncomputable def synthesisAnalyticReadingContext :
   distanceMassContext := synthesisDistanceMassContext
   selectedWitnessFamily := PUnit
   selectedWitness := PUnit.unit
-  selectedSignatureAxes := FiniteModel.concreteNoCycleSignatureAxes
+  selectedSignatureAxes := synthesisSignatureAxes
   signatureProfile := RepresentationAnalysis.SignatureReadingProfile.ofSignatureAxes
-    FiniteModel.concreteNoCycleSignatureAxes
+    synthesisSignatureAxes
   detectingFamily := synthesisDetectingFamily
   coverageAdequacy := True
   witnessExactness := True

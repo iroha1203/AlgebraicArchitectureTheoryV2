@@ -1,4 +1,4 @@
-import Formal.AG.Atom.ArchitectureObject
+import Formal.AG.Atom.Signature
 
 namespace AAT.AG
 
@@ -27,12 +27,6 @@ inductive LawRole where
 structure LawWitnessFamily (U : AtomCarrier.{u}) where
   Witness : Type u
   badWitness : ArchitectureObject U -> Witness -> Prop
-
-/-- I.定義7.2: selected signature axes for zero-axis readings. -/
-structure SignatureAxes (U : AtomCarrier.{u}) where
-  Axis : Type u
-  selected : Axis -> Prop
-  zero : ArchitectureObject U -> Axis -> Prop
 
 /--
 Legacy display surface for a selected equation family.
@@ -84,11 +78,6 @@ def NoRequiredObstruction {U : AtomCarrier.{u}} (A : ArchitectureObject U)
     (W : LawWitnessFamily U) : Prop :=
   ∀ witness : W.Witness, ¬ W.badWitness A witness
 
-/-- I.定義7.2: every selected signature axis reads as zero. -/
-def RequiredSignatureAxesZero {U : AtomCarrier.{u}} (A : ArchitectureObject U)
-    (S : SignatureAxes U) : Prop :=
-  ∀ axis : S.Axis, S.selected axis -> S.zero A axis
-
 /-- I.定義7.3: extract a required law proof from lawfulness. -/
 theorem lawfulness_required_holds {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {LU : LawUniverse U} {index : LU.Index} (h : Lawfulness A LU)
@@ -108,13 +97,5 @@ theorem noRequiredObstruction_no_bad_witness {U : AtomCarrier.{u}}
     (h : NoRequiredObstruction A W) (witness : W.Witness) :
     ¬ W.badWitness A witness :=
   h witness
-
-/-- I.定義7.2: selected zero-axis readings expose zero on each selected axis. -/
-theorem requiredSignatureAxesZero_axis {U : AtomCarrier.{u}}
-    {A : ArchitectureObject U} {S : SignatureAxes U}
-    (h : RequiredSignatureAxesZero A S) {axis : S.Axis}
-    (hselected : S.selected axis) :
-    S.zero A axis :=
-  h axis hselected
 
 end AAT.AG

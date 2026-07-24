@@ -1821,46 +1821,11 @@ private noncomputable def falseEquationReading
       simpa only [falseEquationSystem] using hcoordinate
     norm_num at hfalse
 
-private def positiveLaw : Law FiniteModel.carrier where
-  holds _ := False
-
-private def positiveLawUniverse : LawUniverse FiniteModel.carrier where
-  Index := PUnit
-  law _ := positiveLaw
-  role _ := LawRole.required
-  witnessFamily := { Witness := PUnit, badWitness := fun _ _ => True }
-  SelectedReading := PUnit
-  selectedReading := PUnit.unit
-
 private def positiveSourceDatum : FiniteCircuitDatum FiniteModel.carrier where
   queries := [(.atomPresent FiniteModel.FiniteAtom.componentA, true)]
 
 private def positiveTargetDatum : FiniteCircuitDatum FiniteModel.carrier where
   queries := [(.atomPresent FiniteModel.FiniteAtom.componentC, true)]
-
-private noncomputable def positiveSourceCircuitReading :
-    CircuitReading positiveLawUniverse where
-  code _ := .exact positiveSourceDatum
-  sound := by
-    intro i A Q hmatches haccepts
-    exact fun h => h
-
-private noncomputable def positiveTargetCircuitReading :
-    CircuitReading positiveLawUniverse where
-  code _ := .exact positiveTargetDatum
-  sound := by
-    intro i A Q hmatches haccepts
-    exact fun h => h
-
-private noncomputable def positiveSourceLawReading :
-    LawReading FiniteModel.carrier where
-  lawUniverse := positiveLawUniverse
-  circuits := positiveSourceCircuitReading
-
-private noncomputable def positiveTargetLawReading :
-    LawReading FiniteModel.carrier where
-  lawUniverse := positiveLawUniverse
-  circuits := positiveTargetCircuitReading
 
 private noncomputable def positiveSourceCoreReading :
     CoreReading FiniteModel.carrier where
@@ -2067,7 +2032,7 @@ noncomputable def positiveCoreChange :
     apply ConfigurationHom.ext
     funext atom
     rfl
-  lawMap := id
+  equationMap := id
   queryMap := positiveCircuitMap
   positive_preserved := positiveCircuitMap_positive
   matches_of_positive := positiveCircuitMap_matches
@@ -2082,8 +2047,8 @@ noncomputable def positiveCoreChange :
     apply (CircuitDetectorCode.eval_exact_eq_true_iff _ _).mpr
     rfl
 
-/-- Selected law of the positive finite model. -/
-noncomputable def positiveLawIndex :
+/-- Selected equation of the positive finite model. -/
+noncomputable def positiveEquationIndex :
     positiveSourceCore.algebra.equationSystem.Index :=
   PUnit.unit
 
@@ -2094,7 +2059,7 @@ noncomputable def positiveQuery : CircuitQuery FiniteModel.carrier :=
 /-- Positive circuit accepted at the selected source base object. -/
 noncomputable def positiveCircuit :
     PositiveCircuitDatum positiveSourceCore
-      positiveSourceCore.baseObject positiveLawIndex := by
+      positiveSourceCore.baseObject positiveEquationIndex := by
   refine ⟨positiveSourceDatum, ?_, ?_, ?_⟩
   · exact FiniteCircuitDatum.positive_singleton positiveQuery
   · intro query expected hmem
@@ -2121,11 +2086,11 @@ theorem positiveCircuit_queries_nonempty :
     positiveCircuit.1.queries ≠ [] :=
   List.ne_nil_of_mem positiveQuery_mem
 
-/-- Transported positive circuit at the mapped base object and law. -/
+/-- Transported positive circuit at the mapped base object and equation. -/
 def positiveCircuit_transport :
     PositiveCircuitDatum positiveTargetCore
       (positiveCoreChange.objMap positiveSourceCore.baseObject)
-      (positiveCoreChange.lawMap positiveLawIndex) :=
+      (positiveCoreChange.equationMap positiveEquationIndex) :=
   positiveCoreChange.mapPositiveCircuit positiveCircuit
 
 /-- The mapped source base is reachable from the selected target base. -/
@@ -2380,30 +2345,8 @@ private def exactCompositionReading : CompositionReading FiniteModel.carrier whe
     intro family hfinite
     exact ⟨fun h => False.elim h, fun h => False.elim h⟩
 
-private def exactLaw : Law FiniteModel.carrier where
-  holds _ := False
-
-private def exactLawUniverse : LawUniverse FiniteModel.carrier where
-  Index := PUnit
-  law _ := exactLaw
-  role _ := LawRole.required
-  witnessFamily := { Witness := PUnit, badWitness := fun _ _ => True }
-  SelectedReading := PUnit
-  selectedReading := PUnit.unit
-
 private def exactCircuitDatum : FiniteCircuitDatum FiniteModel.carrier where
   queries := [(.atomPresent FiniteModel.FiniteAtom.componentC, true)]
-
-private noncomputable def exactCircuitReading :
-    CircuitReading exactLawUniverse where
-  code _ := .exact exactCircuitDatum
-  sound := by
-    intro i A Q hmatches haccepts
-    exact fun h => h
-
-private noncomputable def exactLawReading : LawReading FiniteModel.carrier where
-  lawUniverse := exactLawUniverse
-  circuits := exactCircuitReading
 
 private def exactInvariantFamily : InvariantFamily FiniteModel.carrier where
   Index := Bool
@@ -2560,10 +2503,9 @@ private theorem exactDatumMap_matches_iff
 
 private theorem exactDatumMap_accepts_iff
     (datum : FiniteCircuitDatum FiniteModel.carrier) :
-    exactCircuitReading.accepts PUnit.unit datum = true ↔
-      exactCircuitReading.accepts PUnit.unit (exactDatumMap datum) = true := by
-  change (CircuitDetectorCode.exact exactCircuitDatum).eval datum = true ↔
-    (CircuitDetectorCode.exact exactCircuitDatum).eval (exactDatumMap datum) = true
+    (CircuitDetectorCode.exact exactCircuitDatum).eval datum = true ↔
+    (CircuitDetectorCode.exact exactCircuitDatum).eval
+      (exactDatumMap datum) = true := by
   rw [CircuitDetectorCode.eval_exact_eq_true_iff,
     CircuitDetectorCode.eval_exact_eq_true_iff]
   constructor
@@ -2621,9 +2563,9 @@ noncomputable def nonidentityExactCoreChange :
   object_formation_eq := by intros; rfl
   configurationMap A := AtomConfiguration.transportHom exactAtomMap A.configuration
   configurationMap_atomMap := by intros; rfl
-  lawMap := id
+  equationMap := id
   required_iff := by intro i; cases i; rfl
-  law_holds_iff := by intro i A; cases i; rfl
+  equation_holds_iff := by intro i A; cases i; rfl
   queryMap := exactDatumMap
   matches_iff := exactDatumMap_matches_iff
   accepts_iff := by intro i datum; cases i; exact exactDatumMap_accepts_iff datum

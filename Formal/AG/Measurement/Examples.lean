@@ -77,7 +77,7 @@ def pseudoCircleMeasurementProfile : MeasurementProfile where
   Coeff := Unit
   EffCoeff := Unit
   ObstructionObject := Unit
-  LawUniverse := Unit
+  EquationHandle := Unit
   WitnessVariables := SquareFreeSupportVertex
   ObstructionIdeal := Unit
   RepresentationFamily := Unit
@@ -330,9 +330,9 @@ inductive FiniteObstructionIdealHandle where
   | alternate
   deriving DecidableEq
 
-/-- Nontrivial profile handles distinguishing the selected left and right law
+/-- Nontrivial profile handles distinguishing the selected left and right equation
 ideals. -/
-inductive FiniteLawHandle where
+inductive FiniteEquationHandle where
   | left
   | right
   | alternate
@@ -353,7 +353,7 @@ def finiteDimensionalNonzeroH1Profile : MeasurementProfile where
   Coeff := ZMod 2
   EffCoeff := Unit
   ObstructionObject := Unit
-  LawUniverse := Unit
+  EquationHandle := Unit
   WitnessVariables := SquareFreeSupportVertex
   ObstructionIdeal := Unit
   RepresentationFamily := Unit
@@ -826,7 +826,7 @@ def finiteComputabilitySeedProfile : MeasurementProfile where
   Coeff := ZMod 2
   EffCoeff := Unit
   ObstructionObject := Unit
-  LawUniverse := Unit
+  EquationHandle := Unit
   WitnessVariables := SquareFreeSupportVertex
   ObstructionIdeal := Unit
   RepresentationFamily := Unit
@@ -883,7 +883,7 @@ def finiteComputabilityMeasurementProfile : MeasurementProfile where
   Coeff := ZMod 2
   EffCoeff := Unit
   ObstructionObject := FiniteObstructionObjectHandle
-  LawUniverse := FiniteLawHandle
+  EquationHandle := FiniteEquationHandle
   WitnessVariables := SquareFreeSupportVertex
   ObstructionIdeal := FiniteObstructionIdealHandle
   RepresentationFamily := Unit
@@ -941,7 +941,7 @@ def finiteDimensionalMatrixProfile : MeasurementProfile where
   Coeff := ZMod 2
   EffCoeff := Unit
   ObstructionObject := FiniteObstructionObjectHandle
-  LawUniverse := FiniteLawHandle
+  EquationHandle := FiniteEquationHandle
   WitnessVariables := SquareFreeSupportVertex
   ObstructionIdeal := FiniteObstructionIdealHandle
   RepresentationFamily := Unit
@@ -1258,8 +1258,8 @@ noncomputable def finiteDimensionalMatrixProfileRealization :
       finiteDimensionalMatrixRightSquareFree where
   selectedObstructionObject := .selected
   selectedObstructionIdeal := .selected
-  selectedLeftLaw := .left
-  selectedRightLaw := .right
+  selectedLeftEquation := .left
+  selectedRightEquation := .right
   realizeObstructionObject := fun
     | .selected => finiteDimensionalMatrixGeometry.obstructionSheaf
     | .alternate => finiteDimensionalMatrixGeometry.obstructionSheaf
@@ -1267,14 +1267,14 @@ noncomputable def finiteDimensionalMatrixProfileRealization :
     | .selected =>
         finiteDimensionalMatrixObstructionSquareFree.obstructionIdeal (ZMod 2)
     | .alternate => ⊥
-  realizeLawIdeal := fun
+  realizeEquationIdeal := fun
     | .left => finiteDimensionalMatrixLeftSquareFree.obstructionIdeal (ZMod 2)
     | .right => finiteDimensionalMatrixRightSquareFree.obstructionIdeal (ZMod 2)
     | .alternate => ⊥
   obstructionObject_realizes := rfl
   obstructionIdeal_realizes := rfl
-  leftLaw_realizes := rfl
-  rightLaw_realizes := rfl
+  leftEquationIdeal_realizes := rfl
+  rightEquationIdeal_realizes := rfl
 
 /-- R11(c): selected length-one finite-free resolution on the finite-field right ideal. -/
 def finiteDimensionalMatrixRightResolution :
@@ -1760,22 +1760,22 @@ noncomputable def finiteComputabilityProfileRealization :
       tinyLeftSquareFreeData tinyRightSquareFreeData where
   selectedObstructionObject := .selected
   selectedObstructionIdeal := .selected
-  selectedLeftLaw := .left
-  selectedRightLaw := .right
+  selectedLeftEquation := .left
+  selectedRightEquation := .right
   realizeObstructionObject := fun
     | .selected => finiteComputabilityGeometry.obstructionSheaf
     | .alternate => finiteComputabilityGeometry.obstructionSheaf
   realizeObstructionIdeal := fun
     | .selected => tinyObstructionSquareFreeData.obstructionIdeal (ZMod 2)
     | .alternate => ⊥
-  realizeLawIdeal := fun
+  realizeEquationIdeal := fun
     | .left => tinyLeftSquareFreeData.obstructionIdeal (ZMod 2)
     | .right => tinyRightSquareFreeData.obstructionIdeal (ZMod 2)
     | .alternate => ⊥
   obstructionObject_realizes := rfl
   obstructionIdeal_realizes := rfl
-  leftLaw_realizes := rfl
-  rightLaw_realizes := rfl
+  leftEquationIdeal_realizes := rfl
+  rightEquationIdeal_realizes := rfl
 
 /-- R11(c): all theorem 4.2 inputs are selected from actual nonzero finite
 chain data. -/
@@ -2018,7 +2018,7 @@ noncomputable def finiteComputabilityCommonAmbient :
     CommonAmbientPair finiteComputabilityMeasurementProfile where
   AmbientSpace := Unit
   StructureSheaf := Unit
-  LawIdeal := FiniteLawHandle
+  LawIdeal := FiniteEquationHandle
   CoefficientObject := Unit
   WitnessPair := Unit
   ComparisonProfile := Unit
@@ -2046,12 +2046,12 @@ noncomputable def finiteComputabilityCommonAmbient :
   noComparisonWithoutCommonAmbient := True
   noComparisonWithoutCommonAmbient_cert := trivial
 
-/-- Local realization of the nontrivial law handles and finite support carrier
+/-- Local realization of the nontrivial equation handles and finite support carrier
 in the selected common ambient. -/
 noncomputable def finiteComputabilityConflictRealization :
     FiniteAATConflictRealization finiteComputabilityExampleData where
   commonAmbient := finiteComputabilityCommonAmbient
-  lawHandleToAmbient := id
+  equationHandleToAmbient := id
   leftLaw_ambient := rfl
   rightLaw_ambient := rfl
   supportEquiv := Equiv.refl _
@@ -2847,7 +2847,7 @@ def integerCohomologyMeasurementProfile : MeasurementProfile where
   Coeff := ℤ
   EffCoeff := Unit
   ObstructionObject := ℤ
-  LawUniverse := Unit
+  EquationHandle := Unit
   WitnessVariables := Fin 2
   ObstructionIdeal := ℤ
   RepresentationFamily := Fin 2
@@ -3567,14 +3567,14 @@ def measurementPacketExampleSynthesis :
 The verdict vocabulary is deliberately trivial: the single `Unit` measurement
 is in scope by selection, and no theorem-12.3 conjunct reads `Zero` /
 `NonZero`.  This profile only supplies the selected site, cover, real
-coefficient, and law handles for the GAGA comparison. -/
+coefficient, and equation handles for the GAGA comparison. -/
 abbrev gagaRealMeasurementProfile : MeasurementProfile where
   SiteObj := PUnit
   Cover := Bool
   Coeff := ℝ
   EffCoeff := Unit
   ObstructionObject := FiniteObstructionObjectHandle
-  LawUniverse := FiniteLawHandle
+  EquationHandle := FiniteEquationHandle
   WitnessVariables := SquareFreeSupportVertex
   ObstructionIdeal := FiniteObstructionIdealHandle
   RepresentationFamily := Unit
@@ -3854,9 +3854,9 @@ theorem gagaGeneratedLawIdeal_xz :
     gagaGeneratedLawIdeal .xz = Derived.Counterexample.SharedWitnessCoord.idealV ℝ :=
   rfl
 
-/-- Read each selected profile law handle into the common-ambient monomial
-law carrier used by the GAGA comparison. -/
-def gagaProfileLawToAmbient : FiniteLawHandle → GAGADerivedLawIdeal
+/-- Read each selected profile equation handle into the common-ambient monomial
+carrier used by the GAGA comparison. -/
+def gagaProfileEquationToAmbient : FiniteEquationHandle → GAGADerivedLawIdeal
   | .left => .xy
   | .right => .xz
   | .alternate => .xy
@@ -3940,14 +3940,14 @@ noncomputable def gagaCommonFiniteData :
     certificate := ()
   }
   commonAmbient := gagaRealCommonAmbient
-  profileLawToAmbient := gagaProfileLawToAmbient
-  selectedLeftProfileLaw := .left
-  selectedRightProfileLaw := .right
-  ambientLeftLaw_eq_profile := rfl
-  ambientRightLaw_eq_profile := rfl
+  profileEquationToAmbient := gagaProfileEquationToAmbient
+  selectedLeftProfileEquation := .left
+  selectedRightProfileEquation := .right
+  ambientLeftLaw_eq_equationProfile := rfl
+  ambientRightLaw_eq_equationProfile := rfl
   ambientLawGenerator := gagaDerivedLawGenerator
-  selectedLeftLawGenerator_eq_xy := rfl
-  selectedRightLawGenerator_eq_xz := rfl
+  selectedLeftEquationGenerator_eq_xy := rfl
+  selectedRightEquationGenerator_eq_xz := rfl
   ambientAtomType_eq_source := rfl
   ambientStructureSheafFromProfile := id
   selectedObstructionObject := .selected
@@ -4247,8 +4247,10 @@ def gagaNonConclusionData :
   noExternalProcedureCorrectness :=
     ¬ gagaRealMeasurementProfile.NotRunOrUnavailable ()
   noExternalProcedureCorrectness_cert := by simp
-  noArbitraryLawUniverseComparison := gagaRealCommonAmbient.coefficientsCompatible
-  noArbitraryLawUniverseComparison_cert := gagaRealCommonAmbient.coefficientsCompatible_cert
+  noArbitraryEquationHandleComparison :=
+    gagaRealCommonAmbient.coefficientsCompatible
+  noArbitraryEquationHandleComparison_cert :=
+    gagaRealCommonAmbient.coefficientsCompatible_cert
   candidateDependentFieldsNotCertified :=
     gagaCandidateInterfaces.monotoneWitnessStability = some ()
   candidateDependentFieldsNotCertified_cert := rfl

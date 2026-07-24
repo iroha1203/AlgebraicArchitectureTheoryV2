@@ -837,7 +837,6 @@ def toyAnalyticReadingContext :
     AnalyticReadingContext AAT.AG.FiniteModel.object toyReadingParameter where
   AtomVocabulary := PUnit
   atomVocabularyOf _ := PUnit.unit
-  lawUniverse := AAT.AG.FiniteModel.lawUniverse
   CoverageTopology := PUnit
   selectedCoverage := PUnit.unit
   coefficientSheaf := PUnit
@@ -990,7 +989,6 @@ def finiteSynthesisAnalyticReadingContext :
       finiteSynthesisReadingParameter where
   AtomVocabulary := PUnit
   atomVocabularyOf _ := PUnit.unit
-  lawUniverse := AAT.AG.FiniteModel.lawUniverse
   CoverageTopology := PUnit
   selectedCoverage := PUnit.unit
   coefficientSheaf := PUnit
@@ -1117,7 +1115,6 @@ def nondegenerateSynthesisAnalyticReadingContext (I : Ideal Int) :
       nondegenerateSynthesisReadingParameter where
   AtomVocabulary := AAT.AG.FiniteModel.FiniteAtom
   atomVocabularyOf := id
-  lawUniverse := AAT.AG.FiniteModel.lawUniverse
   CoverageTopology := Bool
   selectedCoverage := true
   coefficientSheaf := Bool

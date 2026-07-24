@@ -755,7 +755,7 @@ theorem weakLawEquationCore_equationHolds_iff_noCycleLaw
     have hzero : AAT.AG.FiniteModel.noCycleResidual A = 0 := by
       change AAT.AG.FiniteModel.noCycleResidual A = 0
       simpa [AAT.AG.FiniteModel.equationSystem] using
-        (RingedSite.FiniteModel.site_equationHolds_iff_noCycleLaw A).mpr h W atom
+        (RingedSite.FiniteModel.site_equationHolds_iff_noCycle A).mpr h W atom
     change (AAT.AG.FiniteModel.noCycleResidual A :
       rawSystem.rawAlgebra W) = 0
     simp [hzero]
@@ -2861,7 +2861,12 @@ theorem integerPoint_objectComparison :
   constructor
   · intro _
     exact (weakLawEquationCore_equationHolds_iff_noCycleLaw _).mpr
-      AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclic_noCycleLaw_holds
+      (by
+        change ¬ AAT.AG.FiniteModel.hasDependencyCycle
+          AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicObject
+        exact (AAT.AG.FiniteModel.equationHolds_iff_noCycle _
+          AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicObject).mp
+            AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclic_noCycleEquationHolds)
   · intro _
     simpa only [integerPoint] using
       integerTestPoint_semanticLawful PUnit.unit
@@ -2878,9 +2883,10 @@ theorem integerPoint_objectComparison_fails_for_cyclic :
         (RingedSite.FiniteModel.site_equation_required PUnit.unit)
   have hcyclic :=
     (hcomparison PUnit.unit (RingedSite.FiniteModel.site_equation_required PUnit.unit)).mp hweak
-  exact
-    AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.cyclic_noCycleLaw_fails
-      ((weakLawEquationCore_equationHolds_iff_noCycleLaw _).mp hcyclic)
+  apply
+    AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.cyclic_noCycleEquation_fails
+  apply (AAT.AG.FiniteModel.equationHolds_iff_noCycle _ _).mpr
+  exact (weakLawEquationCore_equationHolds_iff_noCycleLaw _).mp hcyclic
 
 /-- Computes vanishing of the weak obstruction valuation at the integral point. -/
 theorem integerPoint_omega_fires :
@@ -2916,20 +2922,21 @@ theorem integerPoint_axis_fires :
     (by
       let A :=
         AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicObject
-      have hlegacy :=
-        AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.lawfulness_iff_signatureAxesZero A
+      have hequation :=
+        AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.equationLawful_iff_signatureAxesZero A
       constructor
       · intro hsite
-        apply hlegacy.mp
+        apply hequation.mp
         intro index hrequired
         cases index
         have hholds := hsite PUnit.unit (by rfl)
+        apply (AAT.AG.FiniteModel.equationHolds_iff_noCycle _ _).mpr
         exact (weakLawEquationCore_equationHolds_iff_noCycleLaw _).mp hholds
       · intro haxes index hrequired
         cases index
-        have hholds := hlegacy.mpr haxes PUnit.unit
-          (AAT.AG.FiniteModel.lawUniverse_required PUnit.unit)
-        exact (weakLawEquationCore_equationHolds_iff_noCycleLaw _).mpr hholds)
+        have hholds := hequation.mpr haxes PUnit.unit rfl
+        apply (weakLawEquationCore_equationHolds_iff_noCycleLaw _).mpr
+        exact (AAT.AG.FiniteModel.equationHolds_iff_noCycle _ _).mp hholds)
 
 /-- Shows that the weak global equation vanishes at the integral point. -/
 theorem integerPoint_globalEquationsVanish_weak :

@@ -1095,28 +1095,32 @@ structure AATGAGACommonFiniteData (M : MeasurementProfile.{u, v}) [Field M.Coeff
   measuredSelection : M.Measured_M selectedMeasurement
   /-- The common ambient used for the selected law-ideal reading. -/
   commonAmbient : CommonAmbientPair M
-  /-- Read each profile-law handle into the common ambient law carrier. -/
-  profileLawToAmbient : M.LawUniverse → commonAmbient.LawIdeal
-  /-- The selected left profile law used in the common ambient. -/
-  selectedLeftProfileLaw : M.LawUniverse
-  /-- The selected right profile law used in the common ambient. -/
-  selectedRightProfileLaw : M.LawUniverse
-  /-- The left common-ambient law is the reading of the selected profile law. -/
-  ambientLeftLaw_eq_profile :
-    commonAmbient.leftLawIdeal = profileLawToAmbient selectedLeftProfileLaw
-  /-- The right common-ambient law is the reading of the selected profile law. -/
-  ambientRightLaw_eq_profile :
-    commonAmbient.rightLawIdeal = profileLawToAmbient selectedRightProfileLaw
+  /-- Read each profile equation handle into the common ambient ideal carrier. -/
+  profileEquationToAmbient : M.EquationHandle → commonAmbient.LawIdeal
+  /-- The selected left profile equation used in the common ambient. -/
+  selectedLeftProfileEquation : M.EquationHandle
+  /-- The selected right profile equation used in the common ambient. -/
+  selectedRightProfileEquation : M.EquationHandle
+  /-- The left common-ambient ideal is read from the selected profile equation. -/
+  ambientLeftLaw_eq_equationProfile :
+    commonAmbient.leftLawIdeal =
+      profileEquationToAmbient selectedLeftProfileEquation
+  /-- The right common-ambient ideal is read from the selected profile equation. -/
+  ambientRightLaw_eq_equationProfile :
+    commonAmbient.rightLawIdeal =
+      profileEquationToAmbient selectedRightProfileEquation
   /-- Evaluate each common-ambient law as a monomial in the shared-witness chart. -/
   ambientLawGenerator : commonAmbient.LawIdeal →
     Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff
-  /-- The selected left profile law reads as the fixed `xy` monomial. -/
-  selectedLeftLawGenerator_eq_xy :
-    ambientLawGenerator (profileLawToAmbient selectedLeftProfileLaw) =
+  /-- The selected left profile equation reads as the fixed `xy` monomial. -/
+  selectedLeftEquationGenerator_eq_xy :
+    ambientLawGenerator
+      (profileEquationToAmbient selectedLeftProfileEquation) =
       Derived.Counterexample.SharedWitnessCoord.xy M.Coeff
-  /-- The selected right profile law reads as the fixed `xz` monomial. -/
-  selectedRightLawGenerator_eq_xz :
-    ambientLawGenerator (profileLawToAmbient selectedRightProfileLaw) =
+  /-- The selected right profile equation reads as the fixed `xz` monomial. -/
+  selectedRightEquationGenerator_eq_xz :
+    ambientLawGenerator
+      (profileEquationToAmbient selectedRightProfileEquation) =
       Derived.Counterexample.SharedWitnessCoord.xz M.Coeff
   /-- The common ambient has the atom carrier selected by the Čech source. -/
   ambientAtomType_eq_source : commonAmbient.AmbientSpace = finiteCechSource.geometry.U.Atom
@@ -1323,8 +1327,8 @@ ideal without accepting an ideal-equality certificate. -/
 theorem leftIdeal_eq_sharedWitness {M : MeasurementProfile.{u, v}} [Field M.Coeff]
     (C : AATGAGACommonFiniteData M) :
     C.leftIdeal = Derived.Counterexample.SharedWitnessCoord.idealU M.Coeff := by
-  rw [leftIdeal, generatedLawIdeal, C.ambientLeftLaw_eq_profile,
-    C.selectedLeftLawGenerator_eq_xy]
+  rw [leftIdeal, generatedLawIdeal, C.ambientLeftLaw_eq_equationProfile,
+    C.selectedLeftEquationGenerator_eq_xy]
   rfl
 
 /-- The profile-to-ambient monomial path derives the selected right principal
@@ -1332,8 +1336,8 @@ ideal without accepting an ideal-equality certificate. -/
 theorem rightIdeal_eq_sharedWitness {M : MeasurementProfile.{u, v}} [Field M.Coeff]
     (C : AATGAGACommonFiniteData M) :
     C.rightIdeal = Derived.Counterexample.SharedWitnessCoord.idealV M.Coeff := by
-  rw [rightIdeal, generatedLawIdeal, C.ambientRightLaw_eq_profile,
-    C.selectedRightLawGenerator_eq_xz]
+  rw [rightIdeal, generatedLawIdeal, C.ambientRightLaw_eq_equationProfile,
+    C.selectedRightEquationGenerator_eq_xz]
   rfl
 
 /-- The degree-one LawConflict object of the canonical selected Tor bridge. -/
@@ -1435,9 +1439,10 @@ structure AATGAGANonConclusionData (M : MeasurementProfile.{u, v}) where
   /-- Witness for the recorded external-procedure silence. -/
   noExternalProcedureCorrectness_cert : noExternalProcedureCorrectness
   /-- Recorded silence: no comparison claim over arbitrary law universes. -/
-  noArbitraryLawUniverseComparison : Prop
+  noArbitraryEquationHandleComparison : Prop
   /-- Witness for the recorded law-universe silence. -/
-  noArbitraryLawUniverseComparison_cert : noArbitraryLawUniverseComparison
+  noArbitraryEquationHandleComparison_cert :
+    noArbitraryEquationHandleComparison
   /-- Recorded silence: candidate-dependent fields carry no certified conclusion. -/
   candidateDependentFieldsNotCertified : Prop
   /-- Witness for the recorded candidate-dependence silence. -/

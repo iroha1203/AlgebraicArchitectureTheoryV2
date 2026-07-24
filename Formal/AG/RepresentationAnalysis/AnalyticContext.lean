@@ -73,11 +73,11 @@ end UDetectingRepresentationFamily
 /--
 VII.定義14.1: analytic reading context.
 
-This context collects the selected vocabulary, law universe, coverage topology,
-coefficient sheaf, representation family, distance / obstruction mass profile,
-witness family, and signature axes used by the Part VII reading layer.  It is a
-context object only: adequacy, exactness, and conservativity theorems remain
-explicit assumptions in later results.
+This context collects the selected vocabulary, site equation system, coverage
+topology, coefficient sheaf, representation family, distance / obstruction
+mass profile, witness family, and signature axes used by the Part VII reading
+layer. It is a context object only: adequacy, exactness, and conservativity
+theorems remain explicit assumptions in later results.
 -/
 structure AnalyticReadingContext {U : AtomCarrier.{u}} (Obj : ArchitectureObject U)
     {S : Site.AATSite Obj} {k : Type v} [CommRing k]
@@ -86,7 +86,6 @@ structure AnalyticReadingContext {U : AtomCarrier.{u}} (Obj : ArchitectureObject
     (p : AATSchReadingParameter raw) where
   AtomVocabulary : Type u
   atomVocabularyOf : U.Atom -> AtomVocabulary
-  lawUniverse : LawUniverse U
   CoverageTopology : Type w
   selectedCoverage : CoverageTopology
   coefficientSheaf : Type z

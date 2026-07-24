@@ -1,4 +1,4 @@
-import Formal.AG.Atom.LawfulnessZero
+import Formal.AG.Atom.LawfulnessZeroLegacy
 import Formal.AG.Equation.Legacy
 import Formal.AG.LawAlgebra.ClosedEquationalGeometry
 

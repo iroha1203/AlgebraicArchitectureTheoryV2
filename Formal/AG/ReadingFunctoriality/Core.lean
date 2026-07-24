@@ -237,7 +237,7 @@ private theorem invariantTransportedAlong_precomp
 /--
 A morphism between object algebras (Part 4 SD1).
 
-Its fields transport objects, configurations, laws, signed circuits,
+Its fields transport objects, configurations, equations, signed circuits,
 operations, invariants, and signature coordinates.
 
 Implementation notes: this generic notion is the completed output type used by
@@ -253,23 +253,23 @@ structure ObjectAlgebraHom
   configurationMap :
     ∀ A, ConfigurationHom (K.object A).configuration
       (L.object (objMap A)).configuration
-  /-- Map between law indices. -/
-  lawMap :
+  /-- Map between equation indices. -/
+  equationMap :
     K.equationSystem.Index → L.equationSystem.Index
-  /-- Preservation and reflection of required-law status. -/
+  /-- Preservation and reflection of required-equation status. -/
   required_iff :
     ∀ i,
       K.equationSystem.Required i ↔
-        L.equationSystem.Required (lawMap i)
-  /-- Preservation and reflection of law satisfaction. -/
-  law_holds_iff :
+        L.equationSystem.Required (equationMap i)
+  /-- Preservation and reflection of equation fulfillment. -/
+  equation_holds_iff :
     ∀ i A,
       K.equationSystem.EquationHolds i (K.object A) ↔
-        L.equationSystem.EquationHolds (lawMap i) (L.object (objMap A))
+        L.equationSystem.EquationHolds (equationMap i) (L.object (objMap A))
   /-- Transport of signed circuit certificates. -/
   circuitMap :
     ∀ A i, K.Circuit A i →
-      L.Circuit (objMap A) (lawMap i)
+      L.Circuit (objMap A) (equationMap i)
   /-- Transport of operations between actual objects. -/
   operationMap :
     ∀ {A B}, K.Op A B → L.Op (objMap A) (objMap B)
@@ -321,7 +321,7 @@ namespace ObjectAlgebraHom
     {f g : ObjectAlgebraHom K L}
     (hobj : f.objMap = g.objMap)
     (hconfiguration : HEq f.configurationMap g.configurationMap)
-    (hlaw : HEq f.lawMap g.lawMap)
+    (hequation : HEq f.equationMap g.equationMap)
     (hcircuit : HEq f.circuitMap g.circuitMap)
     (hoperation : HEq
       (@ObjectAlgebraHom.operationMap U K L f)
@@ -334,7 +334,7 @@ namespace ObjectAlgebraHom
   cases g
   cases hobj
   cases hconfiguration
-  cases hlaw
+  cases hequation
   cases hcircuit
   cases hoperation
   cases hinvariant
@@ -346,9 +346,9 @@ namespace ObjectAlgebraHom
 def id (K : ObjectAlgebra U) : ObjectAlgebraHom K K where
   objMap := _root_.id
   configurationMap A := ConfigurationHom.id (K.object A).configuration
-  lawMap := _root_.id
+  equationMap := _root_.id
   required_iff _ := Iff.rfl
-  law_holds_iff _ _ := Iff.rfl
+  equation_holds_iff _ _ := Iff.rfl
   circuitMap _ _ := _root_.id
   operationMap := _root_.id
   operation_naturality _ := by
@@ -372,11 +372,14 @@ def comp
   configurationMap A :=
     ConfigurationHom.comp (g.configurationMap (f.objMap A))
       (f.configurationMap A)
-  lawMap := g.lawMap ∘ f.lawMap
-  required_iff i := (f.required_iff i).trans (g.required_iff (f.lawMap i))
-  law_holds_iff i A :=
-    (f.law_holds_iff i A).trans (g.law_holds_iff (f.lawMap i) (f.objMap A))
-  circuitMap A i c := g.circuitMap (f.objMap A) (f.lawMap i) (f.circuitMap A i c)
+  equationMap := g.equationMap ∘ f.equationMap
+  required_iff i :=
+    (f.required_iff i).trans (g.required_iff (f.equationMap i))
+  equation_holds_iff i A :=
+    (f.equation_holds_iff i A).trans
+      (g.equation_holds_iff (f.equationMap i) (f.objMap A))
+  circuitMap A i c :=
+    g.circuitMap (f.objMap A) (f.equationMap i) (f.circuitMap A i c)
   operationMap op := g.operationMap (f.operationMap op)
   operation_naturality op := by
     apply ConfigurationHom.ext
@@ -529,19 +532,19 @@ structure SignedExactCoreReadingHom
   /-- Every configuration hom uses the primitive atom map. -/
   configurationMap_atomMap :
     ∀ A, (configurationMap A).atomMap = atomMap
-  /-- Map between generated law indices. -/
-  lawMap :
+  /-- Map between generated equation indices. -/
+  equationMap :
     P.algebra.equationSystem.Index → Q.algebra.equationSystem.Index
-  /-- Preservation and reflection of required-law status. -/
+  /-- Preservation and reflection of required-equation status. -/
   required_iff :
     ∀ i,
       P.algebra.equationSystem.Required i ↔
-        Q.algebra.equationSystem.Required (lawMap i)
-  /-- Preservation and reflection of law satisfaction on mapped objects. -/
-  law_holds_iff :
+        Q.algebra.equationSystem.Required (equationMap i)
+  /-- Preservation and reflection of equation fulfillment on mapped objects. -/
+  equation_holds_iff :
     ∀ i A,
       P.algebra.equationSystem.EquationHolds i A ↔
-        Q.algebra.equationSystem.EquationHolds (lawMap i) (objectMap A)
+        Q.algebra.equationSystem.EquationHolds (equationMap i) (objectMap A)
   /-- Map on signed finite circuit queries. -/
   queryMap : FiniteCircuitDatum U → FiniteCircuitDatum U
   /-- Preservation and reflection of signed query matching. -/
@@ -552,7 +555,7 @@ structure SignedExactCoreReadingHom
     ∀ i Qry,
       P.algebra.circuits.accepts i Qry = true ↔
         Q.algebra.circuits.accepts
-          (lawMap i) (queryMap Qry) = true
+          (equationMap i) (queryMap Qry) = true
   /-- Map on operations between architecture objects. -/
   operationMap :
     ∀ {A B},
@@ -616,7 +619,7 @@ private theorem configurationHom_heq
     {f g : SignedExactCoreReadingHom P Q}
     (hatom : f.atomMap = g.atomMap)
     (hobject : f.objectMap = g.objectMap)
-    (hlaw : HEq f.lawMap g.lawMap)
+    (hequation : HEq f.equationMap g.equationMap)
     (hquery : HEq f.queryMap g.queryMap)
     (hoperation : HEq
       (@SignedExactCoreReadingHom.operationMap U P Q f)
@@ -637,7 +640,7 @@ private theorem configurationHom_heq
   cases hatom
   cases hobject
   cases hconfiguration
-  cases hlaw
+  cases hequation
   cases hquery
   cases hoperation
   cases hinvariant
@@ -655,9 +658,9 @@ def refl (P : AATCorePackage U) :
   object_formation_eq C := by simp
   configurationMap A := ConfigurationHom.id A.configuration
   configurationMap_atomMap _ := rfl
-  lawMap := _root_.id
+  equationMap := _root_.id
   required_iff _ := Iff.rfl
-  law_holds_iff _ _ := Iff.rfl
+  equation_holds_iff _ _ := Iff.rfl
   queryMap := _root_.id
   matches_iff _ _ := Iff.rfl
   accepts_iff _ _ := Iff.rfl
@@ -712,15 +715,18 @@ def comp
   configurationMap_atomMap A := by
     simp only [ConfigurationHom.comp]
     rw [f.configurationMap_atomMap A, g.configurationMap_atomMap]
-  lawMap := g.lawMap ∘ f.lawMap
-  required_iff i := (f.required_iff i).trans (g.required_iff (f.lawMap i))
-  law_holds_iff i A :=
-    (f.law_holds_iff i A).trans (g.law_holds_iff (f.lawMap i) (f.objectMap A))
+  equationMap := g.equationMap ∘ f.equationMap
+  required_iff i :=
+    (f.required_iff i).trans (g.required_iff (f.equationMap i))
+  equation_holds_iff i A :=
+    (f.equation_holds_iff i A).trans
+      (g.equation_holds_iff (f.equationMap i) (f.objectMap A))
   queryMap := g.queryMap ∘ f.queryMap
   matches_iff Qry A :=
     (f.matches_iff Qry A).trans (g.matches_iff (f.queryMap Qry) (f.objectMap A))
   accepts_iff i Qry :=
-    (f.accepts_iff i Qry).trans (g.accepts_iff (f.lawMap i) (f.queryMap Qry))
+    (f.accepts_iff i Qry).trans
+      (g.accepts_iff (f.equationMap i) (f.queryMap Qry))
   operationMap op := g.operationMap (f.operationMap op)
   operation_naturality op := by
     apply ConfigurationHom.ext
@@ -791,9 +797,9 @@ noncomputable def toObjectAlgebraHom
     ObjectAlgebraHom P.algebra Q.algebra where
   objMap A := ⟨f.objectMap A.1, f.mapReachable A.2⟩
   configurationMap A := f.configurationMap A.1
-  lawMap := f.lawMap
+  equationMap := f.equationMap
   required_iff := f.required_iff
-  law_holds_iff i A := f.law_holds_iff i A.1
+  equation_holds_iff i A := f.equation_holds_iff i A.1
   circuitMap A i c :=
     ⟨f.queryMap c.1, (f.matches_iff c.1 A.1).mp c.2.1,
       (f.accepts_iff i c.1).mp c.2.2⟩
@@ -935,8 +941,8 @@ structure PositiveCoreReadingHom
         ConfigurationHom.comp
           (configurationMap B)
           (P.reading.operationReading.configurationMap op)
-  /-- Map between generated law indices. -/
-  lawMap :
+  /-- Map between generated equation indices. -/
+  equationMap :
     P.algebra.equationSystem.Index → Q.algebra.equationSystem.Index
   /-- Map on finite circuit data. -/
   queryMap : FiniteCircuitDatum U → FiniteCircuitDatum U
@@ -952,7 +958,7 @@ structure PositiveCoreReadingHom
     ∀ i Qry, Qry.Positive →
       P.algebra.circuits.accepts i Qry = true →
         Q.algebra.circuits.accepts
-          (lawMap i) (queryMap Qry) = true
+          (equationMap i) (queryMap Qry) = true
 
 namespace PositiveCoreReadingHom
 
@@ -998,7 +1004,7 @@ private theorem mapReachableAux
     (hoperation : HEq
       (@PositiveCoreReadingHom.operationMap U P Q f)
       (@PositiveCoreReadingHom.operationMap U P Q g))
-    (hlaw : HEq f.lawMap g.lawMap)
+    (hequation : HEq f.equationMap g.equationMap)
     (hquery : f.queryMap = g.queryMap) :
     f = g := by
   have hcomposition : HEq f.compositionMap g.compositionMap := by
@@ -1028,7 +1034,7 @@ private theorem mapReachableAux
   cases hobject
   cases hconfiguration
   cases hoperation
-  cases hlaw
+  cases hequation
   cases hquery
   rfl
 
@@ -1054,7 +1060,7 @@ def refl (P : AATCorePackage U) :
   operation_naturality _ := by
     apply ConfigurationHom.ext
     rfl
-  lawMap := _root_.id
+  equationMap := _root_.id
   queryMap := _root_.id
   positive_preserved _ h := h
   matches_of_positive _ _ _ h := h
@@ -1111,7 +1117,7 @@ def comp
       (g.operation_naturality (f.operationMap op))
     simp only [ConfigurationHom.comp] at hf hg ⊢
     rw [← Function.comp_assoc, hg, Function.comp_assoc, hf, ← Function.comp_assoc]
-  lawMap := g.lawMap ∘ f.lawMap
+  equationMap := g.equationMap ∘ f.equationMap
   queryMap := g.queryMap ∘ f.queryMap
   positive_preserved Qry h := g.positive_preserved _ (f.positive_preserved Qry h)
   matches_of_positive Qry A hpositive hmatches :=
@@ -1137,14 +1143,14 @@ def objMap
     P.algebra.Obj → Q.algebra.Obj :=
   fun A => ⟨f.objectMap A.1, f.mapReachable A.2⟩
 
-/-- Transport a positive circuit certificate to the mapped object and law. -/
+/-- Transport a positive circuit certificate to the mapped object and equation. -/
 def mapPositiveCircuit
     {P Q : AATCorePackage U}
     (f : PositiveCoreReadingHom P Q)
     {A : P.algebra.Obj}
     {i : P.algebra.equationSystem.Index}
     (c : PositiveCircuitDatum P A i) :
-    PositiveCircuitDatum Q (f.objMap A) (f.lawMap i) :=
+    PositiveCircuitDatum Q (f.objMap A) (f.equationMap i) :=
   ⟨f.queryMap c.1,
     f.positive_preserved c.1 c.2.1,
     f.matches_of_positive c.1 A.1 c.2.1 c.2.2.1,
