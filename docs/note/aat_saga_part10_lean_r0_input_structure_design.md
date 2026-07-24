@@ -1,6 +1,6 @@
 # SAGA 中心定理 Lean 形式化 R0: 入力 structure 設計(Issue #3757)
 
-status: R0 fixed(本 note が #3757 R0 の固定成果物。R1 改訂: PR #3775 レビュー finding 1–7 反映。R2 改訂: 敵対セルフレビュー4並列の finding 反映。R3 改訂: 再レビュー残余 F2/F3 反映。R4 改訂: C1 実装(#3788)の bridge 形状を反映。R5 改訂: 定義5.1/5.2 の C2(#3789)着地を反映)
+status: R0 fixed(本 note が #3757 R0 の固定成果物。R1 改訂: PR #3775 レビュー finding 1–7 反映。R2 改訂: 敵対セルフレビュー4並列の finding 反映。R3 改訂: 再レビュー残余 F2/F3 反映。R4 改訂: C1 実装(#3788)の bridge 形状を反映。R5 改訂: 定義5.1/5.2 の C2(#3789)着地を反映。R6 改訂: `SagaCentralTheoremConclusions` 型と最終 `sagaCentralTheorem` は C5 束ね段で生成、と明記)
 tracking: #3757(親)、C1 #3762 以降の各子 Issue
 source of truth: `docs/aat/algebraic_geometric_theory/part_10_semantic_repair_descent_saga.md`(現行 main)
 
@@ -669,7 +669,9 @@ theorem sagaCentralTheorem {S : Site.AATSite A}
 `P_sem` の topology 上の sheaf condition(定義8.1。既存 `Site.AATSheafCondition`
 API に接続)、系8.3 では exactness / `β` の site 全域拡張を追加仮定として受け取る
 (本文 系8.3「SAGA presentation exactness と primary state correspondence が
-`S_X` 上で成立し」)。C5 が固定する。
+`S_X` 上で成立し」)。C5 が固定する。結論束の型 `SagaCentralTheoremConclusions`
+と最終 `sagaCentralTheorem` は C5 の束ね段で生成する(C4 は比較部の named
+theorem 群と residual/零非零の統合 statement を提供する)。
 
 ## 5. field にしないもの(縮小禁止リスト対応)
 

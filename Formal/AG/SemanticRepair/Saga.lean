@@ -8,6 +8,7 @@ import Formal.AG.SemanticRepair.Saga.RepairTorsor
 import Formal.AG.SemanticRepair.Saga.Exactness
 import Formal.AG.SemanticRepair.Saga.EquationRealization
 import Formal.AG.SemanticRepair.Saga.KappaComparison
+import Formal.AG.SemanticRepair.Saga.TrueSheafDescent
 
 /-!
 Part X SAGA route (Issue #3757 tree, C1 #3762).
