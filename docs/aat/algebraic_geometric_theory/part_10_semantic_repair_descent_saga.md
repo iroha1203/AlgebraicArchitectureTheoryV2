@@ -1198,70 +1198,7 @@ stack:
 
 additive `H¹` comparison から、これらの結論を自動的に導かない。
 
-## 9. G-07 との対応と循環しない依存
-
-G-07 `Law-Generated Conormal First-Order Descent Theorem` は、
-本部の local-lift、connecting cocycle、choice independence、actual sheaf gluing の
-最も強い既存資産である。その役割を数学的構成単位で固定する。
-
-| G-07 の数学的構成 | 本部での扱い | 数学的役割 |
-| --- | --- | --- |
-| local patch reading source | generalize | semantic local input と required-law support の一次 source |
-| overlap law combination | generalize | pairwise reading difference を required-law generators で表す局所 relation |
-| evaluated combination の obstruction-ideal membership | reuse pattern | generator relation が equation ideal で零になる soundness |
-| raw quotient compatibility | specialization | required-law relation から `O/I` compatibility を生成 |
-| explicit local-lift data | reuse | base section と local lifts だけを入力にする local-lift problem |
-| kernel-valued local-lift difference | reuse | local lifts の差から residual を生成 |
-| local-lift difference の cocycle identity | reuse | `d¹d⁰=0` と kernel identification による cocycle proof |
-| connecting class の choice independence | reuse | local lift choice の変更が `δ⁰`-像になる証明 |
-| corrected local-lift matching | reuse | zero class から matching correction を構成 |
-| corrected family の sheaf amalgamation | reuse | true sheaf amalgamation による actual global lift |
-| connecting class zero と global lift existence の同値 | reuse | class zero と global lift existence の同値 |
-| conormal-valued semantic first-order repair | specialization | correction primitive を独立に定義 |
-| semantic repair と global first-order lift の同値 | specialization | correction primitive と global first-order lift の構成的同値 |
-| conormal class zero と semantic repair existence の同値 | specialization | first-order residual の effectivity |
-| conormal first-order descent package | specialization | choice independence、effectivity、`H⁰` torsor、zero/nonzero witness の統合 |
-
-### 定理 9.1 First-order conormal specialization
-
-G-07 の short exact sequence
-
-\[
-0\longrightarrow I/I^2
-\longrightarrow O/I^2
-\longrightarrow O/I
-\longrightarrow 0
-\]
-
-において、`O/I` の selected base section と各 chart 上の `O/I²` local lifts を取る。
-pairwise difference は `I/I²` に一意に持ち上がり、
-
-\[
-r_{\mathrm{con}}\in
-Z^1(\mathcal U,I/I^2)
-\]
-
-を生成する。G-07 の定理群は
-
-\[
-[r_{\mathrm{con}}]=0
-\iff
-\operatorname{Nonempty}(\text{global }O/I^2\text{ lift})
-\iff
-\operatorname{Nonempty}(\text{SemanticFirstOrderRepair})
-\]
-
-を証明する。これは定理 8.2 で使う local correction と true sheaf amalgamation の
-first-order conormal specialization である。G-07 単独は定理 6.3 の
-semantic presentation comparison や定理 7.6 の full SAGA comparison を instantiate しない。
-
-一方、一般 SAGA の coefficient presentation theorem は
-semantic atom presentation と full equation coefficient `Q_E` の間の exactness を扱う。
-G-07 の conormal coefficient `I/I²` はその自動的な代替ではない。
-一般 theorem へ再利用するのは local-lift construction と sheaf proof であり、
-`I/I²`、`O/I²→O/I`、first-order lift は specialization に留める。
-
-### 命題 9.2 Dependency audit
+## 9. SAGA 定理依存
 
 本部の論理依存は次である。
 
@@ -1280,9 +1217,6 @@ SAGA presentation exactness:
 
 true sheaf condition:
   zero class -> corrected matching family -> actual global section
-
-first-order specialization:
-  Q = I/I^2 and O/I^2 -> O/I local lifts
 ```
 
 定理番号で書くと、依存は次である。
@@ -1320,13 +1254,6 @@ Theorem 7.4 + Theorem 7.5
 Theorem 7.6 + true semantic repair sheaf
   -> Theorem 8.2
 ```
-
-一般 SAGA comparison の証明は G-07 の conormal theorem を premise とせず、
-semantic presentation、equation-generated coefficient、presentation exactness から
-定理 6.3–7.6 を構成する。G-07 から一般 theorem へ再利用するのは
-local-lift difference、choice independence、matching correction、sheaf amalgamation の
-証明 pattern である。定理 9.1 は一般 theorem の後に first-order conormal data を代入する。
-したがって一般 theorem の証明と first-order specialization の間に循環はない。
 
 ## 10. Finite executable realization
 
