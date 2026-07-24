@@ -204,7 +204,7 @@ fn comparison_target_complex_from_bridge(
     valid.then_some(target)
 }
 
-fn complex_has_valid_finite_incidence(complex: &RepairPlanComplexV1) -> bool {
+pub(crate) fn complex_has_valid_finite_incidence(complex: &RepairPlanComplexV1) -> bool {
     let charts = complex.charts.iter().cloned().collect::<BTreeSet<_>>();
     let overlap_ids = complex
         .overlaps
@@ -322,6 +322,25 @@ mod tests {
             .clone();
         bridge["targetComplex"]["overlaps"][2]["right"] = Value::String("ctx:inventory".into());
         assert!(comparison_target_complex_from_bridge(&plan, &bridge).is_none());
+    }
+
+    #[test]
+    fn references_require_unique_triple_ids_across_components() {
+        let mut plan: RepairPlanDocumentV1 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/repair_plan_component_aware_one_cent.json"
+        ))
+        .expect("component-aware fixture parses");
+        plan.complex.triple_overlaps.push(RepairPlanTripleOverlapV1 {
+            id: "triple:consign-parcel-shipping".to_string(),
+            overlap_refs: vec![
+                "overlap:cancel-inside-payment".to_string(),
+                "overlap:inside-payment-order".to_string(),
+                "overlap:cancel-order".to_string(),
+            ],
+            archmap_context_ref: None,
+        });
+
+        assert_eq!(check_references(&plan).result, "fail");
     }
 
     #[test]
@@ -977,16 +996,17 @@ fn check_supplied_slots(
                         .get("sectionRefs")
                         .and_then(Value::as_array)
                         .map_or(0, Vec::len);
-                    if overlap_refs != expected
-                        || overlap_count != expected.len()
-                        || section_refs != expected
-                        || section_count != expected.len()
-                        || section_ids.len() != expected.len()
+                    if overlap_refs.is_empty()
+                        || overlap_count != overlap_refs.len()
+                        || !overlap_refs.is_subset(&expected)
+                        || section_refs != overlap_refs
+                        || section_count != overlap_refs.len()
+                        || section_ids.len() != overlap_refs.len()
                     {
                         examples.push(generic_validation_example(
                             path,
                             "overlap-section-membership-invalid",
-                            "gluing data must name every selected overlap exactly once and provide a non-empty sectionRef for each overlap",
+                            "gluing data must name a nonempty declared subset of complex overlaps exactly once and provide a non-empty, distinct sectionRef for each overlap",
                         ));
                     }
                 }
@@ -2684,6 +2704,7 @@ fn check_references(plan: &RepairPlanDocumentV1) -> ValidationCheck {
         .map(|overlap| overlap.id.as_str())
         .collect::<BTreeSet<_>>();
     let mut examples = Vec::new();
+    let mut triple_ids = BTreeSet::new();
     for overlap in &plan.complex.overlaps {
         for (field, chart) in [("left", &overlap.left), ("right", &overlap.right)] {
             if !charts.contains(chart) {
@@ -2705,6 +2726,13 @@ fn check_references(plan: &RepairPlanDocumentV1) -> ValidationCheck {
         }
     }
     for triple in &plan.complex.triple_overlaps {
+        if !triple_ids.insert(triple.id.as_str()) {
+            examples.push(generic_validation_example(
+                &format!("complex.tripleOverlaps[{}].id", triple.id),
+                &triple.id,
+                "triple overlap IDs must be unique across the RepairPlan complex",
+            ));
+        }
         for overlap_ref in &triple.overlap_refs {
             if !overlaps.contains(overlap_ref.as_str()) {
                 examples.push(generic_validation_example(

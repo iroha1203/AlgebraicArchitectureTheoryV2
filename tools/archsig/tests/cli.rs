@@ -2329,6 +2329,40 @@ fn presentation_generated_triple_archmap(root: &Path) -> Value {
     read_json(&root.join("archmap_v2_presentation_generated_triple.json"))
 }
 
+fn component_aware_one_cent_saga_plan(root: &Path) -> Value {
+    read_json(&root.join("repair_plan_component_aware_one_cent.json"))
+}
+
+fn component_aware_one_cent_archmap(root: &Path) -> Value {
+    let mut archmap = read_json(&root.join("archmap_v2.json"));
+    let contexts = archmap["contexts"]
+        .as_array_mut()
+        .expect("ArchMap contexts are an array");
+    for (source_context, component_context) in [
+        ("ctx:order", "ctx:cancel"),
+        ("ctx:inventory", "ctx:inside-payment"),
+        ("ctx:shared", "ctx:consign"),
+        ("ctx:inventory", "ctx:parcel"),
+        ("ctx:shared", "ctx:shipping"),
+    ] {
+        let mut context = contexts
+            .iter()
+            .find(|context| context["id"] == source_context)
+            .cloned()
+            .expect("source context exists for component fixture");
+        context["id"] = json!(component_context);
+        contexts.push(context);
+    }
+    archmap["covers"]
+        .as_array_mut()
+        .expect("ArchMap covers are an array")
+        .iter_mut()
+        .find(|cover| cover["id"] == "cover:order-inventory")
+        .expect("fixture cover exists")["contexts"] =
+        json!(["ctx:cancel", "ctx:inside-payment", "ctx:order"]);
+    archmap
+}
+
 #[test]
 fn cli_repair_plan_rejects_presentation_generated_archmap_mapping_bypasses() {
     let root = ag_measurement_root();
@@ -2456,6 +2490,14 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
         invariant["residualClassSupport"]["cocycle"]["deltaOne"],
         "zero"
     );
+    assert_eq!(
+        invariant["residualClassSupport"]["cocycle"]["certificateKind"],
+        "checked-triple-cocycle-zero"
+    );
+    assert_eq!(
+        invariant["residualClassSupport"]["component"]["chartRefs"],
+        json!(["ctx:inventory", "ctx:order", "ctx:shared"])
+    );
     let comparison = packet["computedInvariants"]
         .as_array()
         .unwrap()
@@ -2524,6 +2566,268 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
             .as_str()
             .is_some_and(|text| text.contains("Z1/B1"))
     );
+}
+
+#[test]
+fn cli_analyze_saga_descent_certifies_the_one_cent_component_without_other_triples() {
+    let root = ag_measurement_root();
+    let plan = component_aware_one_cent_saga_plan(&root);
+    let archmap = component_aware_one_cent_archmap(&root);
+    let with_disconnected_triple = run_saga_fixture_lock_with_archmap(
+        "ag-saga-component-aware-one-cent-with-disconnected-triple",
+        plan.clone(),
+        archmap.clone(),
+    );
+    let mut without_disconnected_triple_plan = plan;
+    without_disconnected_triple_plan["complex"]["tripleOverlaps"] = json!([]);
+    let without_disconnected_triple = run_saga_fixture_lock_with_archmap(
+        "ag-saga-component-aware-one-cent-without-disconnected-triple",
+        without_disconnected_triple_plan,
+        archmap,
+    );
+
+    for out_dir in [with_disconnected_triple, without_disconnected_triple] {
+        let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+        assert_eq!(
+            saga_row(&packet, "saga.residual-class")["verdict"],
+            "measured_nonzero"
+        );
+        let invariant = invariant_by_id(&packet, "saga-descent:residual-class");
+        let support = &invariant["residualClassSupport"];
+        assert_eq!(
+            support["component"]["chartRefs"],
+            json!(["ctx:cancel", "ctx:inside-payment", "ctx:order"])
+        );
+        assert_eq!(
+            support["component"]["overlapRefs"],
+            json!([
+                "overlap:cancel-inside-payment",
+                "overlap:cancel-order",
+                "overlap:inside-payment-order"
+            ])
+        );
+        assert_eq!(
+            support["cocycle"]["certificateKind"],
+            "automatic-c2-zero"
+        );
+        assert_eq!(support["cocycle"]["tripleOverlapRefs"], json!([]));
+        assert_eq!(
+            support["suppliedData"]["trueSheafCertificate"]["coverRef"],
+            "cover:order-inventory"
+        );
+        assert_eq!(
+            support["suppliedData"]["trueSheafCertificate"]["memberChartRefs"],
+            json!(["ctx:cancel", "ctx:inside-payment", "ctx:order"])
+        );
+        assert_eq!(
+            support["suppliedData"]["trueSheafCertificate"]["globalCondition"],
+            "assumed"
+        );
+        let sheaf_assumption_id = packet["assumptions"]
+            .as_array()
+            .expect("assumption ledger is an array")
+            .iter()
+            .find(|assumption| assumption["theoremRef"] == "part10/8.1")
+            .and_then(|assumption| assumption["assumptionId"].as_str())
+            .expect("true-sheaf assumption has an authored ID");
+        assert!(
+            saga_row(&packet, "saga.residual-class")["dependsOnAssumptions"]
+                .as_array()
+                .expect("residual class dependencies are an array")
+                .iter()
+                .any(|assumption_id| assumption_id == sheaf_assumption_id),
+            "the class verdict must retain the global sheaf condition it uses"
+        );
+        assert_eq!(
+            support["suppliedData"]["gluingData"]["overlapRefs"],
+            json!([
+                "overlap:cancel-inside-payment",
+                "overlap:cancel-order",
+                "overlap:inside-payment-order"
+            ])
+        );
+        assert_eq!(
+            support["suppliedData"]["gluingData"]["sectionRefs"],
+            json!([
+                {
+                    "overlapRef": "overlap:cancel-inside-payment",
+                    "sectionRef": "section:cancel-inside-payment"
+                },
+                {
+                    "overlapRef": "overlap:cancel-order",
+                    "sectionRef": "section:cancel-order"
+                },
+                {
+                    "overlapRef": "overlap:inside-payment-order",
+                    "sectionRef": "section:inside-payment-order"
+                }
+            ])
+        );
+        let view_model = read_json(&out_dir.join("archsig-measurement-view-model.json"));
+        let view_residual = &view_model["classSupport"]["residualClass"];
+        assert_eq!(
+            view_residual["component"]["chartRefs"],
+            json!(["ctx:cancel", "ctx:inside-payment", "ctx:order"])
+        );
+        assert_eq!(
+            view_residual["cocycleCertificateKind"],
+            "automatic-c2-zero"
+        );
+        assert_eq!(
+            view_residual["suppliedData"]["gluingData"]["sectionRefs"],
+            support["suppliedData"]["gluingData"]["sectionRefs"]
+        );
+        assert!(view_model["classSupport"]["classNonzero"].is_null());
+    }
+}
+
+#[test]
+fn cli_analyze_saga_descent_requires_complete_enumeration_for_automatic_c2_zero() {
+    let root = ag_measurement_root();
+    let mut plan = component_aware_one_cent_saga_plan(&root);
+    plan["complex"]["enumerationComplete"] = json!(false);
+
+    let out_dir = run_saga_fixture_lock_with_archmap(
+        "ag-saga-component-aware-incomplete-enumeration",
+        plan,
+        component_aware_one_cent_archmap(&root),
+    );
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert!(
+        packet["structuralVerdict"]
+            .as_array()
+            .expect("structural verdict is an array")
+            .iter()
+            .all(|row| row["law"] != "saga.residual-class"),
+        "automatic C2=0 must not certify a component whose triple enumeration is incomplete"
+    );
+    assert!(
+        packet["computedInvariants"]
+            .as_array()
+            .expect("computed invariants are an array")
+            .iter()
+            .all(|row| row["invariantId"] != "saga-descent:residual-class"),
+        "an incomplete complex must not emit a residual-class invariant"
+    );
+}
+
+#[test]
+fn cli_analyze_saga_descent_rejects_a_class_certificate_spanning_components() {
+    let root = ag_measurement_root();
+    let mut plan = component_aware_one_cent_saga_plan(&root);
+    for primitive_id in ["primitive:consign-parcel", "primitive:parcel-shipping"] {
+        let primitive = plan["primitives"]
+            .as_array_mut()
+            .expect("primitives are an array")
+            .iter_mut()
+            .find(|primitive| primitive["id"] == primitive_id)
+            .expect("component primitive exists");
+        primitive["resL"] = json!(["drift:other-component"]);
+        primitive["support"]["variables"] = json!(["drift:other-component"]);
+    }
+    plan["faithfulness"]["supplied"]["residualSupportPredicate"]["supportVariables"] =
+        json!(["drift:one-cent", "drift:other-component"]);
+
+    let out_dir = run_saga_fixture_lock_with_archmap(
+        "ag-saga-component-aware-cross-component-certificate",
+        plan,
+        component_aware_one_cent_archmap(&root),
+    );
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert!(
+        packet["structuralVerdict"]
+            .as_array()
+            .expect("structural verdict is an array")
+            .iter()
+            .all(|row| row["law"] != "saga.residual-class"),
+        "a residual support that spans components must not receive a single component certificate"
+    );
+}
+
+#[test]
+fn cli_analyze_saga_descent_rejects_supplied_data_from_another_component() {
+    let root = ag_measurement_root();
+    let local_plan = component_aware_one_cent_saga_plan(&root);
+
+    let mut remote_certificate_plan = local_plan.clone();
+    remote_certificate_plan["trueSheafCertificate"]["memberCharts"] =
+        json!(["ctx:consign", "ctx:parcel", "ctx:shipping"]);
+    let mut remote_certificate_archmap = component_aware_one_cent_archmap(&root);
+    remote_certificate_archmap["covers"]
+        .as_array_mut()
+        .expect("ArchMap covers are an array")
+        .iter_mut()
+        .find(|cover| cover["id"] == "cover:order-inventory")
+        .expect("fixture cover exists")["contexts"] =
+        json!(["ctx:consign", "ctx:parcel", "ctx:shipping"]);
+    let remote_certificate_out = run_saga_fixture_lock_with_archmap(
+        "ag-saga-component-aware-remote-true-sheaf-certificate",
+        remote_certificate_plan,
+        remote_certificate_archmap,
+    );
+
+    let mut remote_section_plan = local_plan.clone();
+    remote_section_plan["gluingData"]["sectionRefs"] = json!([
+        {
+            "overlapRef": "overlap:cancel-inside-payment",
+            "sectionRef": "section:consign-parcel"
+        },
+        {
+            "overlapRef": "overlap:inside-payment-order",
+            "sectionRef": "section:parcel-shipping"
+        },
+        {
+            "overlapRef": "overlap:cancel-order",
+            "sectionRef": "section:consign-shipping"
+        }
+    ]);
+    let remote_section_out = run_saga_fixture_lock_with_archmap(
+        "ag-saga-component-aware-remote-section-refs",
+        remote_section_plan,
+        component_aware_one_cent_archmap(&root),
+    );
+
+    let mut remote_gluing_plan = local_plan;
+    remote_gluing_plan["gluingData"]["overlapRefs"] = json!([
+        "overlap:consign-parcel",
+        "overlap:parcel-shipping",
+        "overlap:consign-shipping"
+    ]);
+    remote_gluing_plan["gluingData"]["sectionRefs"] = json!([
+        {
+            "overlapRef": "overlap:consign-parcel",
+            "sectionRef": "section:consign-parcel"
+        },
+        {
+            "overlapRef": "overlap:parcel-shipping",
+            "sectionRef": "section:parcel-shipping"
+        },
+        {
+            "overlapRef": "overlap:consign-shipping",
+            "sectionRef": "section:consign-shipping"
+        }
+    ]);
+    let remote_gluing_out = run_saga_fixture_lock_with_archmap(
+        "ag-saga-component-aware-remote-gluing-data",
+        remote_gluing_plan,
+        component_aware_one_cent_archmap(&root),
+    );
+
+    for packet_path in [
+        remote_certificate_out.join("archsig-measurement-packet.json"),
+        remote_section_out.join("archsig-measurement-packet.json"),
+        remote_gluing_out.join("archsig-measurement-packet.json"),
+    ] {
+        let packet = read_json(&packet_path);
+        assert!(
+            packet["structuralVerdict"]
+                .as_array()
+                .expect("structural verdict is an array")
+                .iter()
+                .all(|row| row["law"] != "saga.residual-class"),
+            "a residual class must not receive a certificate from another component's supplied data"
+        );
+    }
 }
 
 #[test]
@@ -2931,8 +3235,8 @@ fn cli_saga_comparison_separates_missing_class_from_contract_violation() {
         .as_str()
         .expect("missing source class explains required input slots");
     for slot in [
-        "complex.tripleOverlaps",
-        "coefficient",
+        "F2 coefficient",
+        "cocycle certificate for the residual component",
         "trueSheafCertificate",
         "gluingData",
     ] {
@@ -12089,7 +12393,7 @@ fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_diges
 
     let manifest = read_json(&first_out.join("archsig-run-manifest.json"));
     assert_eq!(manifest["toolVersion"], "0.5.4");
-    assert_eq!(manifest["runId"], "run:492434adf066");
+    assert_eq!(manifest["runId"], "run:edf063ef116e");
     assert_eq!(
         manifest["inputDigests"]["archmap"]["sha256"],
         "653037e1812bad367d211b926b976065d69842ec6d26cb5d4f82bdb9ac5f46e3"
@@ -12122,7 +12426,7 @@ fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_diges
     );
     assert_eq!(
         manifest["inputDigests"]["repairPlan"]["sha256"],
-        "705954f81878a1d164734aebd24ba7fa10fa2f7b605e835f6ec2a1726865435e"
+        "3a4d961908002609421e28830fd36bd7e0c47c92223a82d1ce1875fea4766f69"
     );
 }
 
@@ -12299,7 +12603,7 @@ fn cli_analyze_stamp_appends_opt_in_run_id_suffix() {
     assert!(
         manifest["runId"]
             .as_str()
-            .is_some_and(|run_id| run_id.starts_with("run:492434adf066-stamp:")),
+            .is_some_and(|run_id| run_id.starts_with("run:edf063ef116e-stamp:")),
         "stamp opt-in should append a wall-clock suffix to the deterministic input-derived prefix"
     );
 }

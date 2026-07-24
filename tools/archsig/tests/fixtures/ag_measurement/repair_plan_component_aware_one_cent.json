@@ -1,0 +1,187 @@
+{
+  "schema": "archsig-repair-plan/v0.5.4",
+  "id": "repair-plan:component-aware-one-cent",
+  "residual": {
+    "kind": "supplied"
+  },
+  "complex": {
+    "charts": [
+      "ctx:cancel",
+      "ctx:inside-payment",
+      "ctx:order",
+      "ctx:consign",
+      "ctx:parcel",
+      "ctx:shipping"
+    ],
+    "overlaps": [
+      {
+        "id": "overlap:cancel-inside-payment",
+        "left": "ctx:cancel",
+        "right": "ctx:inside-payment"
+      },
+      {
+        "id": "overlap:inside-payment-order",
+        "left": "ctx:inside-payment",
+        "right": "ctx:order"
+      },
+      {
+        "id": "overlap:cancel-order",
+        "left": "ctx:cancel",
+        "right": "ctx:order"
+      },
+      {
+        "id": "overlap:consign-parcel",
+        "left": "ctx:consign",
+        "right": "ctx:parcel"
+      },
+      {
+        "id": "overlap:parcel-shipping",
+        "left": "ctx:parcel",
+        "right": "ctx:shipping"
+      },
+      {
+        "id": "overlap:consign-shipping",
+        "left": "ctx:consign",
+        "right": "ctx:shipping"
+      }
+    ],
+    "tripleOverlaps": [
+      {
+        "id": "triple:consign-parcel-shipping",
+        "overlapRefs": [
+          "overlap:consign-parcel",
+          "overlap:parcel-shipping",
+          "overlap:consign-shipping"
+        ]
+      }
+    ],
+    "enumerationComplete": true
+  },
+  "primitives": [
+    {
+      "id": "primitive:cancel-inside-payment",
+      "overlapRef": "overlap:cancel-inside-payment",
+      "resL": [
+        "drift:one-cent"
+      ],
+      "resR": [],
+      "support": {
+        "kind": "supplied",
+        "variables": [
+          "drift:one-cent"
+        ]
+      }
+    },
+    {
+      "id": "primitive:inside-payment-order",
+      "overlapRef": "overlap:inside-payment-order",
+      "resL": [],
+      "resR": [],
+      "support": {
+        "kind": "supplied",
+        "variables": []
+      }
+    },
+    {
+      "id": "primitive:cancel-order",
+      "overlapRef": "overlap:cancel-order",
+      "resL": [],
+      "resR": [],
+      "support": {
+        "kind": "supplied",
+        "variables": []
+      }
+    },
+    {
+      "id": "primitive:consign-parcel",
+      "overlapRef": "overlap:consign-parcel",
+      "resL": [],
+      "resR": [],
+      "support": {
+        "kind": "supplied",
+        "variables": []
+      }
+    },
+    {
+      "id": "primitive:parcel-shipping",
+      "overlapRef": "overlap:parcel-shipping",
+      "resL": [],
+      "resR": [],
+      "support": {
+        "kind": "supplied",
+        "variables": []
+      }
+    },
+    {
+      "id": "primitive:consign-shipping",
+      "overlapRef": "overlap:consign-shipping",
+      "resL": [],
+      "resR": [],
+      "support": {
+        "kind": "supplied",
+        "variables": []
+      }
+    }
+  ],
+  "semanticProjection": {
+    "lambda": [
+      "atom:order"
+    ],
+    "k": [
+      "src:order"
+    ],
+    "pi": [
+      {
+        "atomRef": "atom:order",
+        "subject": "src:order"
+      }
+    ]
+  },
+  "faithfulness": {
+    "mode": "supplied",
+    "supplied": {
+      "zeroPrimitiveRef": "primitive:inside-payment-order",
+      "residualSupportPredicate": {
+        "kind": "finite-support",
+        "supportVariables": [
+          "drift:one-cent"
+        ],
+        "zeroOnZeroPrimitive": true
+      },
+      "faithfulnessLaw": "the one-cent residual support is faithful on the diagnostic component"
+    }
+  },
+  "coefficient": "f2-additive",
+  "trueSheafCertificate": {
+    "kind": "true-sheaf-certificate",
+    "coverRef": "cover:order-inventory",
+    "memberCharts": [
+      "ctx:cancel",
+      "ctx:inside-payment",
+      "ctx:order"
+    ],
+    "globalCondition": "assumed"
+  },
+  "gluingData": {
+    "kind": "gluing-data",
+    "overlapRefs": [
+      "overlap:cancel-inside-payment",
+      "overlap:inside-payment-order",
+      "overlap:cancel-order"
+    ],
+    "sectionRefs": [
+      {
+        "overlapRef": "overlap:cancel-inside-payment",
+        "sectionRef": "section:cancel-inside-payment"
+      },
+      {
+        "overlapRef": "overlap:inside-payment-order",
+        "sectionRef": "section:inside-payment-order"
+      },
+      {
+        "overlapRef": "overlap:cancel-order",
+        "sectionRef": "section:cancel-order"
+      }
+    ]
+  }
+}

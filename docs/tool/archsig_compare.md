@@ -35,9 +35,17 @@ compare の run-pair 記録はこの run 内写像を自動生成しない。
 
 SAGA の run 内 comparison で `kind: "explicit"` を選ぶ場合は、source の
 `saga.residual-class` が未計測なら `silence_by_design`、reason
-`residual_class_prerequisite_not_measured` と、不足している入力slot
-(`complex.tripleOverlaps`, `coefficient`, `trueSheafCertificate`, `gluingData`) を案内する
-`whatNext` を記録する。この前提未供給は比較違反として扱わない。source class が計測済みの場合だけ、有限 map の適合検査または target class の zero predicate の検査へ進む。
+`residual_class_prerequisite_not_measured` と、不足している F₂ coefficient、residual component の
+cocycle 認証、同じ component に完全一致する `trueSheafCertificate` と `gluingData` を案内する `whatNext` を記録する。cocycle 認証は、
+その component の一意な triple ID を持つ三 chart・三 edge の triple cocycle-zero 検査、または
+`complex.enumerationComplete=true` かつ triple overlap cell が無い `C²=0` の
+`automatic-c2-zero` である。`trueSheafCertificate` の
+`memberCharts` / `coverRef` / `globalCondition=assumed` と
+`gluingData.overlapRefs` は residual component の overlap 集合に完全一致し、各
+`sectionRefs[].sectionRef` は対応する `overlapRef` から得られるcanonical
+`section:<overlap suffix>` でなければならない。別 component の supplied row や任意の section
+参照は residual class 認証に使えない。class row はこの global condition の assumptionId を
+`dependsOnAssumptions` に記録する。この前提未供給は比較違反として扱わない。source class が計測済みの場合だけ、有限 map の適合検査または target class の zero predicate の検査へ進む。
 
 `kind: "presentation-generated"` では `saga.residual-class` を入力前提にせず、上記の
 finite presentation 検査から semantic presentation の source `Z¹/B¹` class を計算する。
