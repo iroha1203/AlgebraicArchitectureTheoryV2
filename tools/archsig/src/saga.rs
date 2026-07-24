@@ -4,8 +4,9 @@ use serde_json::{Value, json};
 
 use crate::law_execution::LawExecutionPlanV1;
 use crate::repair_plan::{
-    comparison_complex_fingerprint, comparison_target_complex, explicit_h1_comparison_checks,
-    presentation_generated_h1_checks, presentation_generated_h1_output,
+    comparison_complex_fingerprint, comparison_target_complex, complex_has_valid_finite_incidence,
+    explicit_h1_comparison_checks, presentation_generated_h1_checks,
+    presentation_generated_h1_output,
 };
 use crate::{
     ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION, ARCHSIG_DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS,
@@ -13,7 +14,8 @@ use crate::{
     ARCHSIG_SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA,
     ARCHSIG_SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS, ARCHSIG_SAGA_CONCLUSIONS_V1_SCHEMA,
     AgAssumptionLedgerEntryV1, AgStructuralVerdictV1, AgVerdictDataV1, ArchMapDocumentV2,
-    MeasurementProfileV1, NormalizedArchMapV2, RepairPlanDocumentV1, assumption_id_for_schema,
+    MeasurementProfileV1, NormalizedArchMapV2, RepairPlanComplexV1, RepairPlanDocumentV1,
+    assumption_id_for_schema,
 };
 
 #[derive(Debug, Clone)]
@@ -1218,15 +1220,36 @@ fn component_cocycle_certificate(
         .iter()
         .map(String::as_str)
         .collect::<BTreeSet<_>>();
-    let mut triple_overlaps = Vec::new();
-    for triple in &plan.complex.triple_overlaps {
-        let touches_component = triple
+    let component_triples = plan
+        .complex
+        .triple_overlaps
+        .iter()
+        .filter(|triple| {
+            triple
             .overlap_refs
             .iter()
-            .any(|overlap_ref| component_overlap_refs.contains(overlap_ref.as_str()));
-        if !touches_component {
-            continue;
-        }
+            .any(|overlap_ref| component_overlap_refs.contains(overlap_ref.as_str()))
+        })
+        .cloned()
+        .collect::<Vec<_>>();
+    let component_complex = RepairPlanComplexV1 {
+        charts: component.chart_refs.clone(),
+        overlaps: plan
+            .complex
+            .overlaps
+            .iter()
+            .filter(|overlap| component_overlap_refs.contains(overlap.id.as_str()))
+            .cloned()
+            .collect(),
+        triple_overlaps: component_triples.clone(),
+        archmap_cover_ref: plan.complex.archmap_cover_ref.clone(),
+        enumeration_complete: true,
+    };
+    if !complex_has_valid_finite_incidence(&component_complex) {
+        return None;
+    }
+    let mut triple_overlaps = Vec::new();
+    for triple in &component_triples {
         let refs = triple
             .overlap_refs
             .iter()
@@ -1574,6 +1597,58 @@ mod tests {
             "../tests/fixtures/ag_measurement/repair_plan_comparison.json"
         ))
         .expect("comparison fixture parses as RepairPlanDocumentV1")
+    }
+
+    fn component_aware_one_cent_fixture() -> Value {
+        serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/repair_plan_component_aware_one_cent.json"
+        ))
+        .expect("component-aware fixture parses as JSON")
+    }
+
+    #[test]
+    fn component_cocycle_certificate_requires_unique_actual_triangles() {
+        let local_triple = serde_json::json!({
+            "id": "triple:diagnostic",
+            "overlapRefs": [
+                "overlap:cancel-inside-payment",
+                "overlap:inside-payment-order",
+                "overlap:cancel-order"
+            ]
+        });
+
+        let mut nontriangular = component_aware_one_cent_fixture();
+        nontriangular["primitives"][1]["resL"] = serde_json::json!(["drift:one-cent"]);
+        nontriangular["primitives"][1]["support"]["variables"] =
+            serde_json::json!(["drift:one-cent"]);
+        nontriangular["complex"]["overlaps"][2]["right"] =
+            serde_json::json!("ctx:inside-payment");
+        nontriangular["complex"]["tripleOverlaps"]
+            .as_array_mut()
+            .expect("triple overlaps are an array")
+            .push(local_triple.clone());
+        let nontriangular: RepairPlanDocumentV1 =
+            serde_json::from_value(nontriangular).expect("nontriangular fixture still parses");
+        assert!(
+            component_cocycle_certificate(&nontriangular).is_none(),
+            "a three-edge list that is not a three-chart triangle must not certify C2"
+        );
+
+        let mut duplicate_id = component_aware_one_cent_fixture();
+        duplicate_id["primitives"][1]["resL"] = serde_json::json!(["drift:one-cent"]);
+        duplicate_id["primitives"][1]["support"]["variables"] =
+            serde_json::json!(["drift:one-cent"]);
+        let triples = duplicate_id["complex"]["tripleOverlaps"]
+            .as_array_mut()
+            .expect("triple overlaps are an array");
+        triples.push(local_triple.clone());
+        triples.push(local_triple);
+        let duplicate_id: RepairPlanDocumentV1 =
+            serde_json::from_value(duplicate_id).expect("duplicate-ID fixture still parses");
+        assert!(
+            component_cocycle_certificate(&duplicate_id).is_none(),
+            "duplicate selected triple IDs must not certify C2"
+        );
     }
 
     fn measured_class_verdict() -> AgStructuralVerdictV1 {

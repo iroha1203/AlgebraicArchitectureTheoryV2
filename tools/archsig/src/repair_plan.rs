@@ -204,7 +204,7 @@ fn comparison_target_complex_from_bridge(
     valid.then_some(target)
 }
 
-fn complex_has_valid_finite_incidence(complex: &RepairPlanComplexV1) -> bool {
+pub(crate) fn complex_has_valid_finite_incidence(complex: &RepairPlanComplexV1) -> bool {
     let charts = complex.charts.iter().cloned().collect::<BTreeSet<_>>();
     let overlap_ids = complex
         .overlaps
