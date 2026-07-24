@@ -693,14 +693,24 @@ pub(crate) fn evaluate_saga_descent_v1(
                 "nonZero": class_nonzero,
                 "quotient": "Z1/B1",
                 "component": {
-                    "chartRefs": class_certificate.component.chart_refs,
-                    "overlapRefs": class_certificate.component.overlap_refs
+                    "chartRefs": class_certificate.cocycle.component.chart_refs,
+                    "overlapRefs": class_certificate.cocycle.component.overlap_refs
                 },
                 "cocycle": {
                     "checked": true,
                     "deltaOne": "zero",
-                    "certificateKind": class_certificate.certificate_kind,
-                    "tripleOverlapRefs": class_certificate.triple_overlap_refs_json()
+                    "certificateKind": class_certificate.cocycle.certificate_kind,
+                    "tripleOverlapRefs": class_certificate.cocycle.triple_overlap_refs_json()
+                },
+                "suppliedData": {
+                    "trueSheafCertificate": {
+                        "coverRef": class_certificate.true_sheaf_cover_ref,
+                        "memberChartRefs": class_certificate.true_sheaf_member_chart_refs
+                    },
+                    "gluingData": {
+                        "overlapRefs": class_certificate.gluing_overlap_refs,
+                        "sectionRefsChecked": true
+                    }
                 }
             },
             "suppliedSlots": [
@@ -846,7 +856,7 @@ fn evaluate_saga_comparison_v1(
         } else {
             (
                 "residual_class_prerequisite_not_measured",
-                "supply an F2 coefficient, a valid cocycle certificate for the residual component, trueSheafCertificate, and gluingData so the source residual class can be measured before evaluating H1 comparison transfer",
+                "supply an F2 coefficient, a valid cocycle certificate for the residual component, and trueSheafCertificate plus gluingData that each match that component exactly so the source residual class can be measured before evaluating H1 comparison transfer",
                 [
                     "The comparison contract is not a replacement for the measured source residual class.",
                     "No comparison failure code is emitted until the residual-class prerequisite is measured.",
@@ -1005,13 +1015,13 @@ struct RepairComplexComponent {
 }
 
 #[derive(Debug, Clone)]
-struct SagaClassSupplyCertificate {
+struct SagaComponentCocycleCertificate {
     component: RepairComplexComponent,
     certificate_kind: &'static str,
     triple_overlaps: Vec<(String, Vec<String>)>,
 }
 
-impl SagaClassSupplyCertificate {
+impl SagaComponentCocycleCertificate {
     fn triple_overlap_refs_json(&self) -> Vec<Value> {
         self.triple_overlaps
             .iter()
@@ -1025,88 +1035,115 @@ impl SagaClassSupplyCertificate {
     }
 }
 
+#[derive(Debug, Clone)]
+struct SagaClassSupplyCertificate {
+    cocycle: SagaComponentCocycleCertificate,
+    true_sheaf_cover_ref: String,
+    true_sheaf_member_chart_refs: Vec<String>,
+    gluing_overlap_refs: Vec<String>,
+}
+
 fn class_supply_is_checked(
     archmap: &ArchMapDocumentV2,
     plan: &RepairPlanDocumentV1,
 ) -> Option<SagaClassSupplyCertificate> {
-    let certificate = component_cocycle_certificate(plan)?;
-    let overlap_ids = plan
-        .complex
-        .overlaps
-        .iter()
-        .map(|overlap| overlap.id.as_str())
-        .collect::<BTreeSet<_>>();
+    let cocycle = component_cocycle_certificate(plan)?;
     let coefficient_ok = coefficient_is_f2_additive(plan);
-    let certificate_ok = plan
-        .true_sheaf_certificate
-        .as_ref()
-        .and_then(Value::as_object)
-        .is_some_and(|certificate| {
-            certificate.get("kind").and_then(Value::as_str) == Some("true-sheaf-certificate")
-                && certificate
-                    .get("globalCondition")
-                    .and_then(Value::as_str)
-                    .is_some_and(|condition| matches!(condition, "assumed"))
-                && certificate
-                    .get("coverRef")
-                    .and_then(Value::as_str)
-                    .is_some_and(|cover| archmap.covers.iter().any(|item| item.id == cover))
-                && certificate
-                    .get("memberCharts")
-                    .and_then(Value::as_array)
-                    .is_some_and(|members| {
-                        !members.is_empty()
-                            && members.iter().all(|member| {
-                                member.as_str().is_some_and(|chart| {
-                                    plan.complex.charts.iter().any(|item| item == chart)
-                                })
-                            })
-                            && members
-                                .iter()
-                                .filter_map(Value::as_str)
-                                .collect::<BTreeSet<_>>()
-                                .len()
-                                == members.len()
-                    })
-        });
-    let gluing_ok = plan
-        .gluing_data
-        .as_ref()
-        .and_then(Value::as_object)
-        .is_some_and(|gluing| {
-            gluing.get("kind").and_then(Value::as_str) == Some("gluing-data")
-                && gluing
-                    .get("overlapRefs")
-                    .and_then(Value::as_array)
-                    .is_some_and(|refs| {
-                        refs.len() == overlap_ids.len()
-                            && refs
-                                .iter()
-                                .filter_map(Value::as_str)
-                                .collect::<BTreeSet<_>>()
-                                == overlap_ids
-                    })
-                && gluing
-                    .get("sectionRefs")
-                    .and_then(Value::as_array)
-                    .is_some_and(|refs| {
-                        let overlaps = refs
-                            .iter()
-                            .filter_map(Value::as_object)
-                            .filter_map(|item| item.get("overlapRef")?.as_str())
-                            .collect::<BTreeSet<_>>();
-                        let sections = refs
-                            .iter()
-                            .filter_map(Value::as_object)
-                            .filter_map(|item| item.get("sectionRef")?.as_str())
-                            .filter(|section| !section.is_empty())
-                            .collect::<BTreeSet<_>>();
-                        refs.len() == overlap_ids.len()
-                            && overlaps == overlap_ids
-                            && sections.len() == overlap_ids.len()
-                    })
-        });
-    (coefficient_ok && certificate_ok && gluing_ok).then_some(certificate)
+    let (true_sheaf_cover_ref, true_sheaf_member_chart_refs) =
+        component_true_sheaf_certificate(archmap, plan, &cocycle.component)?;
+    let gluing_overlap_refs = component_gluing_data(plan, &cocycle.component)?;
+    coefficient_ok.then_some(SagaClassSupplyCertificate {
+        cocycle,
+        true_sheaf_cover_ref,
+        true_sheaf_member_chart_refs,
+        gluing_overlap_refs,
+    })
+}
+
+fn component_true_sheaf_certificate(
+    archmap: &ArchMapDocumentV2,
+    plan: &RepairPlanDocumentV1,
+    component: &RepairComplexComponent,
+) -> Option<(String, Vec<String>)> {
+    let certificate = plan.true_sheaf_certificate.as_ref()?.as_object()?;
+    if certificate.get("kind").and_then(Value::as_str) != Some("true-sheaf-certificate")
+        || certificate.get("globalCondition").and_then(Value::as_str) != Some("assumed")
+    {
+        return None;
+    }
+    let cover_ref = certificate.get("coverRef")?.as_str()?;
+    let cover = archmap.covers.iter().find(|cover| cover.id == cover_ref)?;
+    let component_chart_refs = component
+        .chart_refs
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    let member_charts = certificate
+        .get("memberCharts")?
+        .as_array()?
+        .iter()
+        .map(Value::as_str)
+        .collect::<Option<Vec<_>>>()?;
+    let cover_charts = cover
+        .contexts
+        .iter()
+        .map(String::as_str)
+        .collect::<Vec<_>>();
+    let has_exact_component_charts = |charts: &[&str]| {
+        charts.len() == component_chart_refs.len()
+            && charts.iter().copied().collect::<BTreeSet<_>>() == component_chart_refs
+    };
+    (has_exact_component_charts(&member_charts) && has_exact_component_charts(&cover_charts))
+        .then_some((cover_ref.to_string(), component.chart_refs.clone()))
+}
+
+fn component_gluing_data(
+    plan: &RepairPlanDocumentV1,
+    component: &RepairComplexComponent,
+) -> Option<Vec<String>> {
+    let gluing = plan.gluing_data.as_ref()?.as_object()?;
+    if gluing.get("kind").and_then(Value::as_str) != Some("gluing-data") {
+        return None;
+    }
+    let component_overlap_refs = component
+        .overlap_refs
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    let overlap_refs = gluing
+        .get("overlapRefs")?
+        .as_array()?
+        .iter()
+        .map(Value::as_str)
+        .collect::<Option<Vec<_>>>()?;
+    if overlap_refs.len() != component_overlap_refs.len()
+        || overlap_refs.iter().copied().collect::<BTreeSet<_>>() != component_overlap_refs
+    {
+        return None;
+    }
+    let section_refs = gluing
+        .get("sectionRefs")?
+        .as_array()?
+        .iter()
+        .map(|item| {
+            let item = item.as_object()?;
+            let overlap_ref = item.get("overlapRef")?.as_str()?;
+            let section_ref = item.get("sectionRef")?.as_str()?;
+            (!section_ref.is_empty()).then_some((overlap_ref, section_ref))
+        })
+        .collect::<Option<Vec<_>>>()?;
+    let supplied_overlaps = section_refs
+        .iter()
+        .map(|(overlap_ref, _)| *overlap_ref)
+        .collect::<BTreeSet<_>>();
+    let supplied_sections = section_refs
+        .iter()
+        .map(|(_, section_ref)| *section_ref)
+        .collect::<BTreeSet<_>>();
+    (section_refs.len() == component_overlap_refs.len()
+        && supplied_overlaps == component_overlap_refs
+        && supplied_sections.len() == component_overlap_refs.len())
+    .then(|| component.overlap_refs.clone())
 }
 
 fn coefficient_is_f2_additive(plan: &RepairPlanDocumentV1) -> bool {
@@ -1120,7 +1157,9 @@ fn coefficient_is_f2_additive(plan: &RepairPlanDocumentV1) -> bool {
         })
 }
 
-fn component_cocycle_certificate(plan: &RepairPlanDocumentV1) -> Option<SagaClassSupplyCertificate> {
+fn component_cocycle_certificate(
+    plan: &RepairPlanDocumentV1,
+) -> Option<SagaComponentCocycleCertificate> {
     let component = residual_support_component(plan)?;
     let component_overlap_refs = component
         .overlap_refs
@@ -1156,7 +1195,7 @@ fn component_cocycle_certificate(plan: &RepairPlanDocumentV1) -> Option<SagaClas
     } else {
         "checked-triple-cocycle-zero"
     };
-    Some(SagaClassSupplyCertificate {
+    Some(SagaComponentCocycleCertificate {
         component,
         certificate_kind,
         triple_overlaps,

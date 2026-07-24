@@ -176,6 +176,7 @@ fn class_support_section(packet: &Value) -> Value {
             "component": residual_rep["residualClassSupport"]["component"],
             "cocycleCertificateKind": residual_rep["residualClassSupport"]["cocycle"]["certificateKind"],
             "tripleOverlapRefs": residual_rep["residualClassSupport"]["cocycle"]["tripleOverlapRefs"],
+            "suppliedData": residual_rep["residualClassSupport"]["suppliedData"],
         });
     }
     if let Some(membership) = invariant_with_id_prefix(packet, "saga-descent:boundary-membership") {

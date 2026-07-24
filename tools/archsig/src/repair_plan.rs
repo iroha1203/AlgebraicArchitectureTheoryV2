@@ -977,16 +977,17 @@ fn check_supplied_slots(
                         .get("sectionRefs")
                         .and_then(Value::as_array)
                         .map_or(0, Vec::len);
-                    if overlap_refs != expected
-                        || overlap_count != expected.len()
-                        || section_refs != expected
-                        || section_count != expected.len()
-                        || section_ids.len() != expected.len()
+                    if overlap_refs.is_empty()
+                        || overlap_count != overlap_refs.len()
+                        || !overlap_refs.is_subset(&expected)
+                        || section_refs != overlap_refs
+                        || section_count != overlap_refs.len()
+                        || section_ids.len() != overlap_refs.len()
                     {
                         examples.push(generic_validation_example(
                             path,
                             "overlap-section-membership-invalid",
-                            "gluing data must name every selected overlap exactly once and provide a non-empty sectionRef for each overlap",
+                            "gluing data must name a nonempty declared subset of complex overlaps exactly once and provide a non-empty, distinct sectionRef for each overlap",
                         ));
                     }
                 }

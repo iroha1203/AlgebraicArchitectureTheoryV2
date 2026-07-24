@@ -167,10 +167,7 @@
     "overlapRefs": [
       "overlap:cancel-inside-payment",
       "overlap:inside-payment-order",
-      "overlap:cancel-order",
-      "overlap:consign-parcel",
-      "overlap:parcel-shipping",
-      "overlap:consign-shipping"
+      "overlap:cancel-order"
     ],
     "sectionRefs": [
       {
@@ -184,18 +181,6 @@
       {
         "overlapRef": "overlap:cancel-order",
         "sectionRef": "section:cancel-order"
-      },
-      {
-        "overlapRef": "overlap:consign-parcel",
-        "sectionRef": "section:consign-parcel"
-      },
-      {
-        "overlapRef": "overlap:parcel-shipping",
-        "sectionRef": "section:parcel-shipping"
-      },
-      {
-        "overlapRef": "overlap:consign-shipping",
-        "sectionRef": "section:consign-shipping"
       }
     ]
   }

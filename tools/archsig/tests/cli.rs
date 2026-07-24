@@ -2614,6 +2614,26 @@ fn cli_analyze_saga_descent_certifies_the_one_cent_component_without_other_tripl
             "automatic-c2-zero"
         );
         assert_eq!(support["cocycle"]["tripleOverlapRefs"], json!([]));
+        assert_eq!(
+            support["suppliedData"]["trueSheafCertificate"]["coverRef"],
+            "cover:order-inventory"
+        );
+        assert_eq!(
+            support["suppliedData"]["trueSheafCertificate"]["memberChartRefs"],
+            json!(["ctx:cancel", "ctx:inside-payment", "ctx:order"])
+        );
+        assert_eq!(
+            support["suppliedData"]["gluingData"]["overlapRefs"],
+            json!([
+                "overlap:cancel-inside-payment",
+                "overlap:cancel-order",
+                "overlap:inside-payment-order"
+            ])
+        );
+        assert_eq!(
+            support["suppliedData"]["gluingData"]["sectionRefsChecked"],
+            true
+        );
     }
 }
 
@@ -2648,6 +2668,70 @@ fn cli_analyze_saga_descent_rejects_a_class_certificate_spanning_components() {
             .all(|row| row["law"] != "saga.residual-class"),
         "a residual support that spans components must not receive a single component certificate"
     );
+}
+
+#[test]
+fn cli_analyze_saga_descent_rejects_supplied_data_from_another_component() {
+    let root = ag_measurement_root();
+    let local_plan = component_aware_one_cent_saga_plan(&root);
+
+    let mut remote_certificate_plan = local_plan.clone();
+    remote_certificate_plan["trueSheafCertificate"]["memberCharts"] =
+        json!(["ctx:consign", "ctx:parcel", "ctx:shipping"]);
+    let mut remote_certificate_archmap = component_aware_one_cent_archmap(&root);
+    remote_certificate_archmap["covers"]
+        .as_array_mut()
+        .expect("ArchMap covers are an array")
+        .iter_mut()
+        .find(|cover| cover["id"] == "cover:order-inventory")
+        .expect("fixture cover exists")["contexts"] =
+        json!(["ctx:consign", "ctx:parcel", "ctx:shipping"]);
+    let remote_certificate_out = run_saga_fixture_lock_with_archmap(
+        "ag-saga-component-aware-remote-true-sheaf-certificate",
+        remote_certificate_plan,
+        remote_certificate_archmap,
+    );
+
+    let mut remote_gluing_plan = local_plan;
+    remote_gluing_plan["gluingData"]["overlapRefs"] = json!([
+        "overlap:consign-parcel",
+        "overlap:parcel-shipping",
+        "overlap:consign-shipping"
+    ]);
+    remote_gluing_plan["gluingData"]["sectionRefs"] = json!([
+        {
+            "overlapRef": "overlap:consign-parcel",
+            "sectionRef": "section:consign-parcel"
+        },
+        {
+            "overlapRef": "overlap:parcel-shipping",
+            "sectionRef": "section:parcel-shipping"
+        },
+        {
+            "overlapRef": "overlap:consign-shipping",
+            "sectionRef": "section:consign-shipping"
+        }
+    ]);
+    let remote_gluing_out = run_saga_fixture_lock_with_archmap(
+        "ag-saga-component-aware-remote-gluing-data",
+        remote_gluing_plan,
+        component_aware_one_cent_archmap(&root),
+    );
+
+    for packet_path in [
+        remote_certificate_out.join("archsig-measurement-packet.json"),
+        remote_gluing_out.join("archsig-measurement-packet.json"),
+    ] {
+        let packet = read_json(&packet_path);
+        assert!(
+            packet["structuralVerdict"]
+                .as_array()
+                .expect("structural verdict is an array")
+                .iter()
+                .all(|row| row["law"] != "saga.residual-class"),
+            "a residual class must not receive a certificate from another component's supplied data"
+        );
+    }
 }
 
 #[test]
