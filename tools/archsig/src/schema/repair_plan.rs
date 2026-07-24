@@ -35,6 +35,8 @@ pub struct RepairPlanResidualV1 {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RepairPlanComplexV1 {
     pub charts: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub archmap_cover_ref: Option<String>,
     pub overlaps: Vec<RepairPlanOverlapV1>,
     #[serde(default)]
     pub triple_overlaps: Vec<RepairPlanTripleOverlapV1>,
@@ -95,6 +97,55 @@ pub struct H1ComparisonCochainMapV052 {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct H1PresentationCellV052 {
+    pub cell_ref: String,
+    pub semantic_generators: Vec<String>,
+    pub repair_relation_matrix: Vec<Vec<u8>>,
+    pub equation_generators: Vec<String>,
+    pub equation_relation_matrix: Vec<Vec<u8>>,
+    pub generator_map: Vec<Vec<u8>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct H1PresentationRestrictionV052 {
+    pub from_ref: String,
+    pub to_ref: String,
+    pub semantic_matrix: Vec<Vec<u8>>,
+    pub equation_matrix: Vec<Vec<u8>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct H1PresentationEquationLiftV052 {
+    pub chart_ref: String,
+    pub coefficients: Vec<u8>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct H1PresentationEquationTransitionV052 {
+    pub overlap_ref: String,
+    pub coefficients: Vec<u8>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct H1PresentationEquationLiftAtlasV052 {
+    pub local_lifts: Vec<H1PresentationEquationLiftV052>,
+    pub transition_differences: Vec<H1PresentationEquationTransitionV052>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct H1PresentationDataV052 {
+    pub cells: Vec<H1PresentationCellV052>,
+    pub restrictions: Vec<H1PresentationRestrictionV052>,
+    pub equation_lift_atlas: H1PresentationEquationLiftAtlasV052,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct H1ComparisonDataV052 {
     pub schema: String,
     pub kind: String,
@@ -102,9 +153,12 @@ pub struct H1ComparisonDataV052 {
     pub cochain_map_ref: Option<String>,
     pub source_complex_fingerprint: String,
     pub target_complex_fingerprint: String,
-    pub target_cochain_support: Vec<H1ComparisonSupportV052>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub target_cochain_support: Option<Vec<H1ComparisonSupportV052>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub cochain_map: Option<H1ComparisonCochainMapV052>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub presentation: Option<H1PresentationDataV052>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -113,6 +167,8 @@ pub struct RepairPlanOverlapV1 {
     pub id: String,
     pub left: String,
     pub right: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub archmap_context_ref: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -120,6 +176,8 @@ pub struct RepairPlanOverlapV1 {
 pub struct RepairPlanTripleOverlapV1 {
     pub id: String,
     pub overlap_refs: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub archmap_context_ref: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

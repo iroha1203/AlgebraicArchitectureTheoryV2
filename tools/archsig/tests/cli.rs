@@ -13,7 +13,8 @@ use archsig::{
     ARCHSIG_COMPARISON_NO_NEW_MEASURED_OBSTRUCTION_RECORDED,
     ARCHSIG_COMPARISON_RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA, ARCHSIG_GATE_REPORT_DECISIONS,
     ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS, ARCHSIG_REPAIR_TARGETS_IDENTIFIED,
-    ARCHSIG_SAGA_CONCLUSION_CODES, ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL,
+    ARCHSIG_SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS, ARCHSIG_SAGA_CONCLUSION_CODES,
+    ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL,
     ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, ArchMapDocumentV2, ArchSigRunManifestV1,
     RepairPlanDocumentV1, compare_archmap_v2_doctrine, validate_measurement_packet_value_v1,
     validate_refactor_morphism_v1, validate_refinement_comparison_v1,
@@ -991,6 +992,14 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
     assert_eq!(
         valid["assumptionLedger"][0]["assumedBy"], "repair-plan author",
         "enumerationComplete is recorded as author assumption, not verified"
+    );
+    assert_eq!(
+        valid["assumptionLedger"][0]["assumption"],
+        "external semantic completeness beyond the declared ArchMap cover/incidence"
+    );
+    assert_eq!(
+        check_by_id(&valid, "repair-plan-schema052-enumeration-assumption")["title"],
+        "External semantic completeness remains an author assumption; declared ArchMap cover/incidence is checked separately"
     );
 
     let supplied_path = root.join("repair_plan_supplied_faithfulness.json");
@@ -2206,6 +2215,219 @@ fn supplied_triple_saga_plan(root: &Path, nonzero_class: bool) -> Value {
     plan
 }
 
+fn presentation_generated_saga_plan(root: &Path, nonzero_class: bool) -> Value {
+    let mut plan = supplied_triple_saga_plan(root, nonzero_class);
+    plan["complex"]["archmapCoverRef"] = json!("cover:presentation-generated-triple");
+    for (overlap_index, context_ref) in [
+        "ctx:overlap-order-inventory",
+        "ctx:overlap-inventory-shared",
+        "ctx:overlap-order-shared",
+        "ctx:overlap-order-inventory-alt",
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        plan["complex"]["overlaps"][overlap_index]["archmapContextRef"] = json!(context_ref);
+    }
+    plan["complex"]["tripleOverlaps"][0]["archmapContextRef"] = json!("ctx:triple-class");
+    let typed_plan: RepairPlanDocumentV1 =
+        serde_json::from_value(plan.clone()).expect("presentation plan matches RepairPlan schema");
+    let complex_fingerprint = format!(
+        "{:x}",
+        Sha256::digest(
+            serde_json::to_vec(&typed_plan.complex).expect("presentation complex serializes")
+        )
+    );
+    let cells = typed_plan
+        .complex
+        .charts
+        .iter()
+        .cloned()
+        .chain(typed_plan.complex.overlaps.iter().map(|overlap| overlap.id.clone()))
+        .chain(
+            typed_plan
+                .complex
+                .triple_overlaps
+                .iter()
+                .map(|triple| triple.id.clone()),
+        )
+        .map(|cell_ref| {
+            json!({
+                "cellRef": cell_ref,
+                "semanticGenerators": ["repair:cycle"],
+                "repairRelationMatrix": [],
+                "equationGenerators": ["equation:cycle"],
+                "equationRelationMatrix": [],
+                "generatorMap": [[1]]
+            })
+        })
+        .collect::<Vec<_>>();
+    let mut restrictions = Vec::new();
+    for overlap in &typed_plan.complex.overlaps {
+        for chart in [&overlap.left, &overlap.right] {
+            restrictions.push(json!({
+                "fromRef": chart,
+                "toRef": overlap.id,
+                "semanticMatrix": [[1]],
+                "equationMatrix": [[1]]
+            }));
+        }
+    }
+    for triple in &typed_plan.complex.triple_overlaps {
+        for overlap_ref in &triple.overlap_refs {
+            restrictions.push(json!({
+                "fromRef": overlap_ref,
+                "toRef": triple.id,
+                "semanticMatrix": [[1]],
+                "equationMatrix": [[1]]
+            }));
+        }
+    }
+    plan["comparison"] = json!({
+        "kind": "saga-comparison",
+        "incidenceBridge": {
+            "kind": "chart-indexed",
+            "repairChartRefs": typed_plan.complex.charts,
+            "cechChartRefs": typed_plan.complex.charts
+        },
+        "h1ComparisonData": {
+            "schema": "h1-comparison-data/v0.5.4",
+            "kind": "presentation-generated",
+            "sourceComplexFingerprint": complex_fingerprint,
+            "targetComplexFingerprint": complex_fingerprint,
+            "presentation": {
+                "cells": cells,
+                "restrictions": restrictions,
+                "equationLiftAtlas": {
+                    "localLifts": typed_plan.complex.charts.iter().map(|chart| json!({
+                        "chartRef": chart,
+                        "coefficients": [0]
+                    })).collect::<Vec<_>>(),
+                    "transitionDifferences": typed_plan.complex.overlaps.iter().map(|overlap| {
+                        let active = typed_plan.primitives.iter().find(|primitive| {
+                            primitive.overlap_ref == overlap.id
+                        }).is_some_and(|primitive| {
+                            primitive.support.variables.iter().any(|variable| variable == "repair:cycle")
+                        });
+                        json!({
+                            "overlapRef": overlap.id,
+                            "coefficients": [u8::from(active)]
+                        })
+                    }).collect::<Vec<_>>()
+                }
+            }
+        }
+    });
+    plan
+}
+
+fn presentation_generated_circle_archmap(root: &Path) -> Value {
+    read_json(&root.join("archmap_v2_presentation_generated_circle.json"))
+}
+
+fn presentation_generated_triple_archmap(root: &Path) -> Value {
+    read_json(&root.join("archmap_v2_presentation_generated_triple.json"))
+}
+
+#[test]
+fn cli_repair_plan_rejects_presentation_generated_archmap_mapping_bypasses() {
+    let root = ag_measurement_root();
+    let out_dir = temp_dir("ag-presentation-generated-archmap-mapping-bypasses");
+    let plan = read_json(&root.join("repair_plan_presentation_generated_circle.json"));
+    let archmap = presentation_generated_circle_archmap(&root);
+    let archmap_path = out_dir.join("archmap.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("ArchMap serializes"),
+    )
+    .expect("ArchMap writes");
+
+    let mut missing_mapping = plan.clone();
+    missing_mapping["complex"].as_object_mut().expect("complex object").remove("archmapCoverRef");
+    for overlap in missing_mapping["complex"]["overlaps"]
+        .as_array_mut()
+        .expect("overlaps array")
+    {
+        overlap
+            .as_object_mut()
+            .expect("overlap object")
+            .remove("archmapContextRef");
+    }
+    let missing_mapping_path = out_dir.join("missing-mapping.json");
+    let missing_mapping_report = out_dir.join("missing-mapping-report.json");
+    fs::write(
+        &missing_mapping_path,
+        serde_json::to_vec_pretty(&missing_mapping).expect("RepairPlan serializes"),
+    )
+    .expect("RepairPlan writes");
+    run_sig0_expect_code(
+        &[
+            "repair-plan",
+            "--archmap",
+            archmap_path.to_str().expect("ArchMap path is utf-8"),
+            "--repair-plan",
+            missing_mapping_path
+                .to_str()
+                .expect("RepairPlan path is utf-8"),
+            "--out",
+            missing_mapping_report
+                .to_str()
+                .expect("report path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(
+        check_by_id(
+            &read_json(&missing_mapping_report),
+            "repair-plan-schema052-archmap-bindings"
+        )["result"],
+        "fail"
+    );
+
+    let mut extra_predecessor = presentation_generated_circle_archmap(&root);
+    extra_predecessor["contexts"]
+        .as_array_mut()
+        .expect("contexts array")
+        .iter_mut()
+        .find(|context| context["id"] == "ctx:shared")
+        .expect("ctx:shared exists")["restrictsTo"]
+        .as_array_mut()
+        .expect("restriction array")
+        .push(json!("ctx:overlap-01"));
+    let extra_predecessor_archmap_path = out_dir.join("extra-predecessor-archmap.json");
+    let extra_predecessor_report = out_dir.join("extra-predecessor-report.json");
+    fs::write(
+        &extra_predecessor_archmap_path,
+        serde_json::to_vec_pretty(&extra_predecessor).expect("ArchMap serializes"),
+    )
+    .expect("ArchMap writes");
+    run_sig0_expect_code(
+        &[
+            "repair-plan",
+            "--archmap",
+            extra_predecessor_archmap_path
+                .to_str()
+                .expect("ArchMap path is utf-8"),
+            "--repair-plan",
+            root.join("repair_plan_presentation_generated_circle.json")
+                .to_str()
+                .expect("RepairPlan path is utf-8"),
+            "--out",
+            extra_predecessor_report
+                .to_str()
+                .expect("report path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(
+        check_by_id(
+            &read_json(&extra_predecessor_report),
+            "repair-plan-schema052-archmap-bindings"
+        )["result"],
+        "fail"
+    );
+}
+
 #[test]
 fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() {
     let root = ag_measurement_root();
@@ -2301,6 +2523,373 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
         summary["translationRule"]["principalText"]
             .as_str()
             .is_some_and(|text| text.contains("Z1/B1"))
+    );
+}
+
+#[test]
+fn cli_analyze_saga_comparison_generates_transfer_from_presentations() {
+    let root = ag_measurement_root();
+    let plan = presentation_generated_saga_plan(&root, true);
+    let out_dir = run_presentation_generated_saga_fixture_lock(
+        "ag-saga-presentation-generated",
+        plan,
+    );
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let comparison = invariant_by_id(&packet, "saga-comparison:h1-transfer");
+    assert_eq!(comparison["status"], "established");
+    assert_eq!(
+        comparison["conclusionCode"],
+        ARCHSIG_SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS
+    );
+    assert_eq!(comparison["contract"]["h1ComparisonDataKind"], "presentation-generated");
+    assert_eq!(comparison["contract"]["contractChecked"], true);
+    assert_eq!(
+        comparison["presentationGenerated"]["presentationExactness"],
+        true
+    );
+    assert_eq!(
+        comparison["presentationGenerated"]["generatorCompleteness"],
+        true
+    );
+    assert_eq!(
+        comparison["presentationGenerated"]["comparisonInput"]["kind"],
+        "canonical-presentation-repair-plan"
+    );
+    assert_eq!(
+        packet["inputDigests"]["repairPlan"]["path"],
+        "input:repair_plan.json"
+    );
+    assert_eq!(
+        comparison["presentationGenerated"]["generatedCochainMap"]["degreeZeroCommutative"],
+        true
+    );
+    assert_eq!(
+        comparison["presentationGenerated"]["generatedCochainMap"]["degreeOneCommutative"],
+        true
+    );
+    assert_eq!(
+        comparison["presentationGenerated"]["residualWitness"]["kind"],
+        "computed-quotient-atlas-witness"
+    );
+    assert_eq!(
+        comparison["generatedQuotientTransfer"]["kind"],
+        "presentation-derived-Z1/B1-class-transfer"
+    );
+    assert!(
+        validate_measurement_packet_value_v1(&packet)
+            .iter()
+            .all(|check| check.result == "pass")
+    );
+}
+
+#[test]
+fn cli_presentation_generated_packet_validator_rejects_tampered_evidence() {
+    let root = ag_measurement_root();
+    let plan = presentation_generated_saga_plan(&root, true);
+    let out_dir = run_presentation_generated_saga_fixture_lock(
+        "ag-saga-presentation-generated-packet-validator",
+        plan,
+    );
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let validator_failure = |candidate: &Value, path: &str| {
+        validate_measurement_packet_value_v1(candidate)
+            .iter()
+            .any(|check| {
+                check.id == "measurement-packet-schema052-saga-presentation-generated-evidence"
+                    && check.result == "fail"
+                    && check.examples.iter().any(|example| {
+                        example
+                            .source
+                            .as_deref()
+                            .is_some_and(|source| source.contains(path))
+                    })
+            })
+    };
+
+    let mut missing_witness = packet.clone();
+    invariant_by_id_mut(&mut missing_witness, "saga-comparison:h1-transfer")["presentationGenerated"]
+        ["residualWitness"] = Value::Null;
+    assert!(validator_failure(
+        &missing_witness,
+        "presentationGenerated.residualWitness"
+    ));
+
+    let mut malformed_witness = packet.clone();
+    invariant_by_id_mut(&mut malformed_witness, "saga-comparison:h1-transfer")["presentationGenerated"]
+        ["residualWitness"]["h"] = Value::Null;
+    assert!(validator_failure(
+        &malformed_witness,
+        "presentationGenerated.residualWitness.h"
+    ));
+
+    let mut coordinated_class_forgery = packet.clone();
+    let comparison = invariant_by_id_mut(&mut coordinated_class_forgery, "saga-comparison:h1-transfer");
+    comparison["presentationGenerated"]["semanticResidual"]["sourceClassNonZero"] = json!(false);
+    comparison["presentationGenerated"]["equationResidual"]["targetClassNonZero"] = json!(false);
+    comparison["generatedQuotientTransfer"]["sourceClassNonZero"] = json!(false);
+    comparison["generatedQuotientTransfer"]["targetClassNonZero"] = json!(false);
+    assert!(validator_failure(
+        &coordinated_class_forgery,
+        "presentationGenerated"
+    ));
+
+    let mut empty_derived_evidence = packet.clone();
+    let generated = &mut invariant_by_id_mut(
+        &mut empty_derived_evidence,
+        "saga-comparison:h1-transfer",
+    )["presentationGenerated"];
+    generated["generatedCochainMap"]["degreeZero"] = json!([]);
+    generated["generatedCochainMap"]["degreeOne"] = json!([]);
+    generated["generatedCochainMap"]["degreeTwo"] = json!([]);
+    generated["residualWitness"]["sourceImage"] = json!([]);
+    generated["residualWitness"]["equationResidual"] = json!([]);
+    generated["residualWitness"]["h"] = json!([]);
+    assert!(validator_failure(
+        &empty_derived_evidence,
+        "presentationGenerated"
+    ));
+
+    let mut altered_comparison_input = packet.clone();
+    invariant_by_id_mut(&mut altered_comparison_input, "saga-comparison:h1-transfer")
+        ["presentationGenerated"]["comparisonInput"]["repairPlan"]["id"] =
+        json!("repair-plan:forged-input");
+    assert!(validator_failure(
+        &altered_comparison_input,
+        "inputDigests.repairPlan.sha256"
+    ));
+}
+
+#[test]
+fn cli_presentation_generated_packet_validator_rejects_valid_f2_witness_forgery() {
+    let root = ag_measurement_root();
+    let plan = read_json(&root.join("repair_plan_presentation_generated_circle.json"));
+    let archmap = presentation_generated_circle_archmap(&root);
+    let out_dir = run_saga_fixture_lock_with_archmap(
+        "ag-saga-presentation-generated-circle-packet-validator",
+        plan,
+        archmap,
+    );
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let mut forged = packet.clone();
+    invariant_by_id_mut(&mut forged, "saga-comparison:h1-transfer")["presentationGenerated"]
+        ["residualWitness"]["h"][0]["coefficients"] = json!([1]);
+    assert!(validate_measurement_packet_value_v1(&forged)
+        .iter()
+        .any(|check| {
+            check.id == "measurement-packet-schema052-saga-presentation-generated-evidence"
+                && check.result == "fail"
+                && check.examples.iter().any(|example| {
+                    example
+                        .source
+                        .as_deref()
+                        .is_some_and(|source| source.contains("presentationGenerated"))
+                })
+        }));
+}
+
+#[test]
+fn cli_analyze_presentation_generated_circle_establishes_independent_h1_transfer() {
+    let root = ag_measurement_root();
+    let plan = read_json(&root.join("repair_plan_presentation_generated_circle.json"));
+    let archmap = presentation_generated_circle_archmap(&root);
+    let out_dir =
+        run_saga_fixture_lock_with_archmap("ag-saga-presentation-generated-circle", plan, archmap);
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let comparison = invariant_by_id(&packet, "saga-comparison:h1-transfer");
+    assert_eq!(comparison["status"], "established");
+    assert_eq!(
+        comparison["conclusionCode"],
+        ARCHSIG_SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS
+    );
+    assert_eq!(
+        comparison["presentationGenerated"]["semanticResidual"]["sourceCocycle"],
+        true
+    );
+    assert_eq!(
+        comparison["presentationGenerated"]["semanticResidual"]["sourceClassNonZero"],
+        true
+    );
+    assert_eq!(
+        comparison["presentationGenerated"]["equationResidual"]["targetClassNonZero"],
+        true
+    );
+}
+
+#[test]
+fn cli_compare_records_repair_plan_provenance_without_suppressing_verdict_rows() {
+    let root = ag_measurement_root();
+    let base_plan = presentation_generated_saga_plan(&root, true);
+    let mut changed_atlas_plan = base_plan.clone();
+    changed_atlas_plan["comparison"]["h1ComparisonData"]["presentation"]
+        ["equationLiftAtlas"]["localLifts"][0]["coefficients"] = json!([1]);
+
+    let base_run = run_presentation_generated_saga_fixture_lock(
+        "ag-saga-compare-repair-plan-base",
+        base_plan,
+    );
+    let head_run = run_presentation_generated_saga_fixture_lock(
+        "ag-saga-compare-repair-plan-changed-atlas",
+        changed_atlas_plan,
+    );
+    let base_manifest = read_json(&base_run.join("archsig-run-manifest.json"));
+    let head_manifest = read_json(&head_run.join("archsig-run-manifest.json"));
+    assert_ne!(
+        base_manifest["inputDigests"]["repairPlan"]["sha256"],
+        head_manifest["inputDigests"]["repairPlan"]["sha256"]
+    );
+    assert_ne!(base_manifest["runId"], head_manifest["runId"]);
+
+    let compare_out = temp_dir("ag-saga-compare-repair-plan-provenance");
+    run_sig0(&[
+        "compare",
+        "--base-run",
+        base_run.to_str().expect("base run path is utf-8"),
+        "--head-run",
+        head_run.to_str().expect("head run path is utf-8"),
+        "--out-dir",
+        compare_out.to_str().expect("comparison output path is utf-8"),
+    ]);
+    let report = read_json(&compare_out.join("archsig-comparison-report.json"));
+    assert_eq!(report["comparability"]["level"], "verdict-row");
+    assert_eq!(report["comparability"]["sameRepairPlanDigest"], false);
+    assert!(report["boundaryStatements"]
+        .as_array()
+        .expect("comparison boundaries are an array")
+        .iter()
+        .any(|boundary| boundary["kind"] == "repair_plan_changed_between_runs"));
+}
+
+#[test]
+fn cli_compare_rejects_artifact_and_manifest_provenance_mismatches() {
+    let root = ag_measurement_root();
+    let base_plan = presentation_generated_saga_plan(&root, true);
+    let mut changed_plan = base_plan.clone();
+    changed_plan["comparison"]["h1ComparisonData"]["presentation"]["equationLiftAtlas"]
+        ["localLifts"][0]["coefficients"] = json!([1]);
+    let base_run = run_presentation_generated_saga_fixture_lock(
+        "ag-saga-compare-manifest-binding-base",
+        base_plan,
+    );
+    let packet_mismatch_run = run_presentation_generated_saga_fixture_lock(
+        "ag-saga-compare-manifest-binding-packet-mismatch",
+        changed_plan.clone(),
+    );
+    fs::copy(
+        base_run.join("archsig-measurement-packet.json"),
+        packet_mismatch_run.join("archsig-measurement-packet.json"),
+    )
+    .expect("different-run packet can be substituted for negative test");
+    let packet_mismatch_out = temp_dir("ag-saga-compare-manifest-binding-packet-output");
+    run_sig0_expect_code(
+        &[
+            "compare",
+            "--base-run",
+            base_run.to_str().expect("base run path is utf-8"),
+            "--head-run",
+            packet_mismatch_run
+                .to_str()
+                .expect("packet mismatch run path is utf-8"),
+            "--out-dir",
+            packet_mismatch_out
+                .to_str()
+                .expect("packet mismatch output path is utf-8"),
+        ],
+        2,
+    );
+
+    let normalized_mismatch_run = run_presentation_generated_saga_fixture_lock(
+        "ag-saga-compare-manifest-binding-normalized-mismatch",
+        changed_plan.clone(),
+    );
+    let normalized_path = normalized_mismatch_run.join("normalized-archmap.json");
+    let mut normalized = read_json(&normalized_path);
+    normalized["atoms"][0]["object"] = json!("tampered-normalized-archmap-object");
+    fs::write(
+        &normalized_path,
+        serde_json::to_vec_pretty(&normalized).expect("normalized archmap serializes"),
+    )
+    .expect("tampered normalized archmap writes");
+    let normalized_mismatch_out = temp_dir("ag-saga-compare-manifest-binding-normalized-output");
+    run_sig0_expect_code(
+        &[
+            "compare",
+            "--base-run",
+            base_run.to_str().expect("base run path is utf-8"),
+            "--head-run",
+            normalized_mismatch_run
+                .to_str()
+                .expect("normalized mismatch run path is utf-8"),
+            "--out-dir",
+            normalized_mismatch_out
+                .to_str()
+                .expect("normalized mismatch output path is utf-8"),
+        ],
+        2,
+    );
+
+    let digest_mismatch_run = run_presentation_generated_saga_fixture_lock(
+        "ag-saga-compare-manifest-binding-digest-mismatch",
+        changed_plan,
+    );
+    let manifest_path = digest_mismatch_run.join("archsig-run-manifest.json");
+    let mut manifest = read_json(&manifest_path);
+    manifest["artifactDigests"]["measurementPacket"]["sha256"] =
+        json!("0000000000000000000000000000000000000000000000000000000000000000");
+    fs::write(
+        &manifest_path,
+        serde_json::to_vec_pretty(&manifest).expect("manifest serializes"),
+    )
+    .expect("tampered manifest writes");
+    let digest_mismatch_out = temp_dir("ag-saga-compare-manifest-binding-digest-output");
+    run_sig0_expect_code(
+        &[
+            "compare",
+            "--base-run",
+            base_run.to_str().expect("base run path is utf-8"),
+            "--head-run",
+            digest_mismatch_run
+                .to_str()
+                .expect("digest mismatch run path is utf-8"),
+            "--out-dir",
+            digest_mismatch_out
+                .to_str()
+                .expect("digest mismatch output path is utf-8"),
+        ],
+        2,
+    );
+}
+
+#[test]
+fn cli_presentation_generated_transfer_uses_equation_quotient_for_target_h1() {
+    let root = ag_measurement_root();
+    let mut plan = presentation_generated_saga_plan(&root, true);
+    for cell in plan["comparison"]["h1ComparisonData"]["presentation"]["cells"]
+        .as_array_mut()
+        .expect("presentation cells")
+    {
+        cell["repairRelationMatrix"] = json!([[1]]);
+        cell["equationRelationMatrix"] = json!([[1]]);
+    }
+    let out_dir = run_presentation_generated_saga_fixture_lock(
+        "ag-saga-presentation-quotient-zero",
+        plan,
+    );
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let comparison = invariant_by_id(&packet, "saga-comparison:h1-transfer");
+    assert_eq!(comparison["contract"]["contractChecked"], true);
+    assert_eq!(comparison["contract"]["targetClassComputed"], true);
+    assert_eq!(
+        comparison["presentationGenerated"]["equationResidual"]["targetClassNonZero"],
+        false
+    );
+    assert_eq!(comparison["status"], "established");
+    assert_eq!(
+        comparison["generatedQuotientTransfer"]["sourceClassNonZero"],
+        false
+    );
+    assert_eq!(
+        comparison["generatedQuotientTransfer"]["targetClassNonZero"],
+        false
     );
 }
 
@@ -11332,6 +11921,15 @@ fn practical_rust_service_example_runs_current_analyze() {
             .is_some_and(|run_id| run_id.starts_with("run:") && run_id.len() == 16)
     );
     assert!(manifest["inputDigests"]["profileFingerprint"]["sha256"].is_string());
+    for (artifact_key, artifact_path) in [
+        ("normalizedArchmap", "normalized-archmap.json"),
+        ("measurementPacket", "archsig-measurement-packet.json"),
+    ] {
+        assert_eq!(manifest["artifactDigests"][artifact_key]["path"], artifact_path);
+        assert!(manifest["artifactDigests"][artifact_key]["sha256"]
+            .as_str()
+            .is_some_and(|digest| digest.len() == 64));
+    }
     assert!(
         manifest["generatedArtifacts"]
             .as_array()
@@ -11491,7 +12089,7 @@ fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_diges
 
     let manifest = read_json(&first_out.join("archsig-run-manifest.json"));
     assert_eq!(manifest["toolVersion"], "0.5.4");
-    assert_eq!(manifest["runId"], "run:9fcdae261214");
+    assert_eq!(manifest["runId"], "run:492434adf066");
     assert_eq!(
         manifest["inputDigests"]["archmap"]["sha256"],
         "653037e1812bad367d211b926b976065d69842ec6d26cb5d4f82bdb9ac5f46e3"
@@ -11521,6 +12119,10 @@ fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_diges
     assert_eq!(
         manifest["inputDigests"]["siteCoverDigest"]["basis"],
         "normalized contexts + covers + derived finite cover nerve"
+    );
+    assert_eq!(
+        manifest["inputDigests"]["repairPlan"]["sha256"],
+        "705954f81878a1d164734aebd24ba7fa10fa2f7b605e835f6ec2a1726865435e"
     );
 }
 
@@ -11697,7 +12299,7 @@ fn cli_analyze_stamp_appends_opt_in_run_id_suffix() {
     assert!(
         manifest["runId"]
             .as_str()
-            .is_some_and(|run_id| run_id.starts_with("run:9fcdae261214-stamp:")),
+            .is_some_and(|run_id| run_id.starts_with("run:492434adf066-stamp:")),
         "stamp opt-in should append a wall-clock suffix to the deterministic input-derived prefix"
     );
 }
@@ -13560,6 +14162,7 @@ fn cli_compare_asserts_identical_and_verdict_row_transitions() {
             serde_json::to_vec_pretty(&packet).expect("transition packet serializes"),
         )
         .expect("transition packet writes");
+        refresh_run_measurement_packet_digest(run);
     };
     let set_measured_nonzero = |run: &Path| {
         let packet_path = run.join("archsig-measurement-packet.json");
@@ -13576,6 +14179,7 @@ fn cli_compare_asserts_identical_and_verdict_row_transitions() {
             serde_json::to_vec_pretty(&packet).expect("transition packet serializes"),
         )
         .expect("transition packet writes");
+        refresh_run_measurement_packet_digest(run);
     };
 
     let new_base = clone_run("new-base");
@@ -14568,6 +15172,26 @@ fn read_json(path: &Path) -> Value {
         .expect("json fixture parses")
 }
 
+fn refresh_run_measurement_packet_digest(run: &Path) {
+    let packet_path = run.join("archsig-measurement-packet.json");
+    let packet = read_json(&packet_path);
+    let digest = format!(
+        "{:x}",
+        Sha256::digest(serde_json::to_vec(&packet).expect("measurement packet canonicalizes")),
+    );
+    let manifest_path = run.join("archsig-run-manifest.json");
+    let mut manifest = read_json(&manifest_path);
+    manifest["artifactDigests"]["measurementPacket"] = json!({
+        "path": "archsig-measurement-packet.json",
+        "sha256": digest,
+    });
+    fs::write(
+        manifest_path,
+        serde_json::to_vec_pretty(&manifest).expect("manifest serializes"),
+    )
+    .expect("manifest writes");
+}
+
 fn sidecar_measurement_profile_path(policy_path: &Path) -> PathBuf {
     if policy_path.file_name().and_then(|name| name.to_str()) == Some("law_policy.json") {
         policy_path.with_file_name("measurement_profile.json")
@@ -14835,6 +15459,28 @@ fn run_saga_compare_fixture(case_id: &str, archmap: Value, repair_plan: Value) -
 
 fn run_saga_fixture_lock(case_id: &str, repair_plan: Value) -> PathBuf {
     let root = ag_measurement_root();
+    run_saga_fixture_lock_with_archmap(
+        case_id,
+        repair_plan,
+        read_json(&root.join("archmap_v2.json")),
+    )
+}
+
+fn run_presentation_generated_saga_fixture_lock(case_id: &str, repair_plan: Value) -> PathBuf {
+    let root = ag_measurement_root();
+    run_saga_fixture_lock_with_archmap(
+        case_id,
+        repair_plan,
+        presentation_generated_triple_archmap(&root),
+    )
+}
+
+fn run_saga_fixture_lock_with_archmap(
+    case_id: &str,
+    repair_plan: Value,
+    archmap: Value,
+) -> PathBuf {
+    let root = ag_measurement_root();
     let out_dir = temp_dir(case_id);
     let (mut policy, profile) = read_fixture_policy_profile(&root.join("law_policy_ag.json"));
     policy["policies"] = json!([{
@@ -14848,6 +15494,12 @@ fn run_saga_fixture_lock(case_id: &str, repair_plan: Value) -> PathBuf {
     write_test_policy_and_profile(&policy_path, policy, profile);
     let law_surface_path = out_dir.join("law_surface.json");
     let repair_plan_path = out_dir.join("repair_plan.json");
+    let archmap_path = out_dir.join("archmap.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("ArchMap serializes"),
+    )
+    .expect("ArchMap writes");
     fs::write(
         &repair_plan_path,
         serde_json::to_vec_pretty(&repair_plan).expect("repair plan serializes"),
@@ -14856,9 +15508,7 @@ fn run_saga_fixture_lock(case_id: &str, repair_plan: Value) -> PathBuf {
     run_sig0(&[
         "analyze",
         "--archmap",
-        root.join("archmap_v2.json")
-            .to_str()
-            .expect("path is utf-8"),
+        archmap_path.to_str().expect("path is utf-8"),
         "--law-policy",
         policy_path.to_str().expect("path is utf-8"),
         "--measurement-profile",

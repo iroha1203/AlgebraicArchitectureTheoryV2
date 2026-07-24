@@ -79,10 +79,13 @@ compareのR8契約では、contextsまたはcoversに差分がある場合、pro
 `other_transition`として扱う。差分のある行だけに限定する実装変更は行わず、
 「差分があるprofile行」という要件は、この保守的なrun全体分類を許す注記として読む。
 
-SAGA の explicit H¹ comparison は LawPolicy の selector ではなく RepairPlan 側の supplied
-cochain data である。`h1ComparisonData.cochainMap` の次数0/1/2有限写像表と
-次数2の `zeroImage` を入力し、
-ArchSig が差保存・零保存・微分可換性を再計算する。適合条件を宣言するbooleanは採用しない。
+SAGA の H¹ comparison は LawPolicy の selector ではなく RepairPlan 側の finite data である。
+`kind: "explicit"` は `h1ComparisonData.cochainMap` の次数0/1/2有限写像表と次数2の
+`zeroImage` を入力し、ArchSig が差保存・零保存・微分可換性を再計算する。
+`kind: "presentation-generated"` は semantic / equation presentation と restriction 行列を入力し、
+independently authored な equation local-lift atlas も入力する。ArchSig は exactness、local `Φ`、
+cochain map、semantic / equation residual、各商上の residual witness と source / target class を導出する。
+適合条件を宣言するbooleanは採用しない。
 
 R8 の class-zero reading は、`--refinement` で
 `refinement-comparison/v0.5.4` を供給し、その coarse-to-fine と

@@ -1,11 +1,10 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::error::Error;
 use std::fmt;
-use std::fs::File;
 use std::path::Path;
 
 use serde::de::{DeserializeSeed, MapAccess, SeqAccess, Visitor};
-use serde_json::{Value, json};
+use serde_json::{Map, Value, json};
 use sha2::{Digest, Sha256};
 
 use crate::validate_refinement_comparison_v1;
@@ -63,6 +62,16 @@ pub fn build_comparison_artifacts_with_refinement_v1(
         NORMALIZED_ARCHMAP_V2_SCHEMA,
         "head normalized archmap",
     )?;
+    let base_normalized_digest = validate_compare_normalized_archmap(
+        &base_normalized,
+        &base_manifest,
+        "base normalized archmap",
+    )?;
+    let head_normalized_digest = validate_compare_normalized_archmap(
+        &head_normalized,
+        &head_manifest,
+        "head normalized archmap",
+    )?;
     let base_packet = read_run_json(base_run, "archsig-measurement-packet.json")?;
     let head_packet = read_run_json(head_run, "archsig-measurement-packet.json")?;
     require_schema(
@@ -75,10 +84,25 @@ pub fn build_comparison_artifacts_with_refinement_v1(
         ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA,
         "head measurement packet",
     )?;
-    validate_compare_packet(&base_packet, "base measurement packet")?;
-    validate_compare_packet(&head_packet, "head measurement packet")?;
+    validate_compare_packet(
+        &base_packet,
+        &base_manifest,
+        "base measurement packet",
+    )?;
+    validate_compare_packet(
+        &head_packet,
+        &head_manifest,
+        "head measurement packet",
+    )?;
 
-    let archmap_diff = build_archmap_diff(base_run, head_run, &base_normalized, &head_normalized)?;
+    let archmap_diff = build_archmap_diff(
+        base_run,
+        head_run,
+        &base_normalized,
+        &head_normalized,
+        &base_normalized_digest,
+        &head_normalized_digest,
+    )?;
     let comparability = comparability(&base_manifest, &head_manifest);
     let cover_or_context_changed =
         diff_has_changes(&archmap_diff, "contexts") || diff_has_changes(&archmap_diff, "covers");
@@ -245,6 +269,8 @@ fn build_archmap_diff(
     head_run: &Path,
     base: &Value,
     head: &Value,
+    base_normalized_digest: &str,
+    head_normalized_digest: &str,
 ) -> Result<Value, Box<dyn Error>> {
     Ok(json!({
         "schema": ARCHSIG_ARCHMAP_DIFF_V1_SCHEMA,
@@ -253,11 +279,11 @@ fn build_archmap_diff(
         "inputDigests": {
             "baseNormalizedArchmap": {
                 "path": artifact_ref(base_run, "normalized-archmap.json"),
-                "sha256": canonical_json_file_digest(&base_run.join("normalized-archmap.json"))?
+                "sha256": base_normalized_digest
             },
             "headNormalizedArchmap": {
                 "path": artifact_ref(head_run, "normalized-archmap.json"),
-                "sha256": canonical_json_file_digest(&head_run.join("normalized-archmap.json"))?
+                "sha256": head_normalized_digest
             }
         },
         "sources": diff_sources(base, head),
@@ -278,6 +304,7 @@ fn comparability(base: &Value, head: &Value) -> Value {
     let same_profile =
         digest_at(base, "profileFingerprint") == digest_at(head, "profileFingerprint");
     let same_cover = digest_at(base, "siteCoverDigest") == digest_at(head, "siteCoverDigest");
+    let same_repair_plan = digest_at(base, "repairPlan") == digest_at(head, "repairPlan");
     let same_component_fingerprints = component_fingerprints_at(base)
         .zip(component_fingerprints_at(head))
         .is_some_and(|(base, head)| base == head);
@@ -290,6 +317,7 @@ fn comparability(base: &Value, head: &Value) -> Value {
         && same_law_policy
         && same_profile
         && same_component_fingerprints
+        && same_repair_plan
     {
         "identical"
     } else if same_tool
@@ -311,7 +339,8 @@ fn comparability(base: &Value, head: &Value) -> Value {
         "sameComponentFingerprints": same_component_fingerprints,
         "sameLawSurfaceFingerprint": same_law_surface,
         "sameSiteCoverDigest": same_cover,
-        "basis": "identical requires archmap, LawPolicy, law-surface, and MeasurementProfile component fingerprints plus tool version equality; verdict-row requires all three LawPolicy, law-surface, and MeasurementProfile component fingerprints, site cover digest, and tool version equality"
+        "sameRepairPlanDigest": same_repair_plan,
+        "basis": "identical requires archmap, LawPolicy, law-surface, MeasurementProfile, and optional RepairPlan input digests plus tool version equality; verdict-row requires all three LawPolicy, law-surface, and MeasurementProfile component fingerprints, site cover digest, and tool version equality, while recording whether the optional RepairPlan digest changed"
     })
 }
 
@@ -403,21 +432,31 @@ fn conclusion_code(comparability: &Value, transitions: &[Value]) -> &'static str
 }
 
 fn comparison_boundaries(comparability: &Value, cover_or_context_changed: bool) -> Vec<Value> {
-    if comparability["level"].as_str() != Some("not-comparable") && !cover_or_context_changed {
-        return Vec::new();
+    let mut boundaries = Vec::new();
+    if comparability["level"].as_str() == Some("not-comparable") || cover_or_context_changed {
+        let kind = if cover_or_context_changed {
+            "cover_changed_between_runs"
+        } else {
+            "runs_not_comparable_without_comparison_data"
+        };
+        boundaries.push(json!({
+            "id": format!("boundary:comparison:{kind}"),
+            "kind": kind,
+            "reason": "record-level comparison data does not support class identity or causal transition claims outside classTransport's checked refinement contract",
+            "scopeRefs": ["comparison:run-pair"],
+            "text": "Record transitions remain side by side; any class-zero reading is limited to classTransport's checked coarse-to-fine refinement contract."
+        }));
     }
-    let kind = if cover_or_context_changed {
-        "cover_changed_between_runs"
-    } else {
-        "runs_not_comparable_without_comparison_data"
-    };
-    vec![json!({
-        "id": format!("boundary:comparison:{kind}"),
-        "kind": kind,
-        "reason": "record-level comparison data does not support class identity or causal transition claims outside classTransport's checked refinement contract",
-        "scopeRefs": ["comparison:run-pair"],
-        "text": "Record transitions remain side by side; any class-zero reading is limited to classTransport's checked coarse-to-fine refinement contract."
-    })]
+    if comparability["sameRepairPlanDigest"] == Value::Bool(false) {
+        boundaries.push(json!({
+            "id": "boundary:comparison:repair-plan-changed-between-runs",
+            "kind": "repair_plan_changed_between_runs",
+            "reason": "the compared runs bind different RepairPlan input digests",
+            "scopeRefs": ["comparison:run-pair"],
+            "text": "Record-level verdict rows remain comparable under the shared policy, law-surface, profile, and site-cover contract; the RepairPlan change is recorded and does not establish causal repair."
+        }));
+    }
+    boundaries
 }
 
 fn diff_sources(base: &Value, head: &Value) -> Value {
@@ -523,7 +562,11 @@ fn verdict_row_map(packet: &Value) -> BTreeMap<String, Value> {
         .collect()
 }
 
-fn validate_compare_packet(packet: &Value, label: &str) -> Result<(), Box<dyn Error>> {
+fn validate_compare_packet(
+    packet: &Value,
+    manifest: &Value,
+    label: &str,
+) -> Result<(), Box<dyn Error>> {
     serde_json::from_value::<ArchSigMeasurementPacketV1>(packet.clone())
         .map_err(|error| format!("{label} shape is invalid: {error}"))?;
     let failed = validate_measurement_packet_value_v1(packet)
@@ -538,7 +581,53 @@ fn validate_compare_packet(packet: &Value, label: &str) -> Result<(), Box<dyn Er
     {
         return Err(format!("{label} must contain at least one structuralVerdict row").into());
     }
+    validate_compare_run_contract(packet, manifest, label)?;
+    validate_manifest_artifact_digest(packet, manifest, "measurementPacket", label)?;
     Ok(())
+}
+
+fn validate_compare_normalized_archmap(
+    normalized_archmap: &Value,
+    manifest: &Value,
+    label: &str,
+) -> Result<String, Box<dyn Error>> {
+    validate_compare_run_contract(normalized_archmap, manifest, label)?;
+    validate_manifest_artifact_digest(normalized_archmap, manifest, "normalizedArchmap", label)
+}
+
+fn validate_compare_run_contract(
+    artifact: &Value,
+    manifest: &Value,
+    label: &str,
+) -> Result<(), Box<dyn Error>> {
+    for field in ["toolVersion", "runId", "inputDigests", "componentFingerprints"] {
+        if artifact.get(field) != manifest.get(field) {
+            return Err(format!(
+                "{label} {field} must match its run manifest provenance"
+            )
+            .into());
+        }
+    }
+    Ok(())
+}
+
+fn validate_manifest_artifact_digest(
+    artifact: &Value,
+    manifest: &Value,
+    artifact_key: &str,
+    label: &str,
+) -> Result<String, Box<dyn Error>> {
+    let expected_digest = manifest["artifactDigests"][artifact_key]["sha256"]
+        .as_str()
+        .ok_or_else(|| format!("{label} run manifest requires artifactDigests.{artifact_key}.sha256"))?;
+    let actual_digest = canonical_json_value_digest(artifact)?;
+    if expected_digest != actual_digest {
+        return Err(format!(
+            "{label} digest does not match its run manifest artifactDigests.{artifact_key}.sha256"
+        )
+        .into());
+    }
+    Ok(actual_digest)
 }
 
 fn row_key(row: &Value) -> String {
@@ -625,10 +714,9 @@ fn run_digest(run: &Path, manifest: &Value) -> Value {
         "profileFingerprint": manifest["inputDigests"]["profileFingerprint"],
         "componentFingerprints": manifest["componentFingerprints"],
         "siteCoverDigest": manifest["inputDigests"]["siteCoverDigest"],
-        "measurementPacket": {
-            "path": artifact_ref(run, "archsig-measurement-packet.json"),
-            "sha256": canonical_json_file_digest(&run.join("archsig-measurement-packet.json")).unwrap_or_default()
-        }
+        "repairPlan": manifest["inputDigests"]["repairPlan"],
+        "normalizedArchmap": manifest["artifactDigests"]["normalizedArchmap"],
+        "measurementPacket": manifest["artifactDigests"]["measurementPacket"]
     })
 }
 
@@ -718,6 +806,17 @@ mod tests {
     }
 
     #[test]
+    fn repair_plan_digest_change_excludes_identical_but_keeps_verdict_row_comparability() {
+        let mut base = manifest("sha256:surface-a");
+        let mut head = manifest("sha256:surface-a");
+        base["inputDigests"]["repairPlan"] = json!({"sha256": "repair-plan-a"});
+        head["inputDigests"]["repairPlan"] = json!({"sha256": "repair-plan-b"});
+        let result = comparability(&base, &head);
+        assert_eq!(result["level"], "verdict-row");
+        assert_eq!(result["sameRepairPlanDigest"], false);
+    }
+
+    #[test]
     fn malformed_component_fingerprints_are_rejected() {
         let mut value = manifest("sha256:surface-a");
         value["componentFingerprints"] = json!({});
@@ -790,6 +889,7 @@ fn validate_component_fingerprints(manifest: &Value, label: &str) -> Result<(), 
         "measurementProfile",
         "measurementProfiles",
         "profileFingerprint",
+        "repairPlan",
         "residualPacket",
         "siteCoverDigest",
     ]);
@@ -886,6 +986,31 @@ fn validate_component_fingerprints(manifest: &Value, label: &str) -> Result<(), 
             }
         }
     }
+    let repair_plan_input = manifest.get("repairPlanInputPath");
+    let repair_plan_path = repair_plan_input.and_then(Value::as_str);
+    let repair_plan_digest = input_digests.get("repairPlan");
+    match (repair_plan_path, repair_plan_digest) {
+        (Some(path), Some(digest)) if digest["path"].as_str() == Some(path) => {}
+        (Some(_), Some(_)) => {
+            return Err(format!(
+                "{label} inputDigests.repairPlan.path must match repairPlanInputPath"
+            )
+            .into());
+        }
+        (Some(_), None) => {
+            return Err(format!(
+                "{label} requires inputDigests.repairPlan when repairPlanInputPath is present"
+            )
+            .into());
+        }
+        (None, Some(_)) => {
+            return Err(format!(
+                "{label} must not contain inputDigests.repairPlan without repairPlanInputPath"
+            )
+            .into());
+        }
+        (None, None) => {}
+    }
     for (component, digest_key) in [
         ("lawPolicy", "lawPolicy"),
         ("lawSurface", "lawSurface"),
@@ -925,6 +1050,7 @@ fn validate_run_manifest_shape(manifest: &Value, label: &str) -> Result<(), Box<
         "toolVersion",
         "runId",
         "inputDigests",
+        "artifactDigests",
         "componentFingerprints",
         "commandName",
         "mode",
@@ -949,6 +1075,7 @@ fn validate_run_manifest_shape(manifest: &Value, label: &str) -> Result<(), Box<
         "toolVersion",
         "runId",
         "inputDigests",
+        "artifactDigests",
         "componentFingerprints",
         "commandName",
         "mode",
@@ -969,6 +1096,52 @@ fn validate_run_manifest_shape(manifest: &Value, label: &str) -> Result<(), Box<
     }
     if required.difference(&actual).next().is_some() {
         return Err(format!("{label} is missing required top-level manifest fields").into());
+    }
+    let artifact_digests = manifest
+        .get("artifactDigests")
+        .and_then(Value::as_object)
+        .ok_or_else(|| format!("{label} artifactDigests must be an object"))?;
+    let expected_artifacts = if manifest["mode"].as_str() == Some("measurement") {
+        BTreeSet::from(["measurementPacket", "normalizedArchmap"])
+    } else {
+        BTreeSet::new()
+    };
+    let actual_artifacts = artifact_digests
+        .keys()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    if actual_artifacts != expected_artifacts {
+        return Err(format!(
+            "{label} artifactDigests must match artifacts emitted by its run mode"
+        )
+        .into());
+    }
+    for (artifact_key, artifact_path) in [
+        ("measurementPacket", "archsig-measurement-packet.json"),
+        ("normalizedArchmap", "normalized-archmap.json"),
+    ] {
+        let artifact = artifact_digests
+            .get(artifact_key)
+            .ok_or_else(|| format!("{label} artifactDigests.{artifact_key} is required"))?;
+        let object = artifact
+            .as_object()
+            .ok_or_else(|| format!("{label} artifactDigests.{artifact_key} must be an object"))?;
+        if object.keys().map(String::as_str).collect::<BTreeSet<_>>()
+            != BTreeSet::from(["path", "sha256"])
+            || object.get("path").and_then(Value::as_str)
+                != Some(artifact_path)
+            || !object
+                .get("sha256")
+                .and_then(Value::as_str)
+                .is_some_and(|digest| {
+                    digest.len() == 64 && digest.bytes().all(|byte| byte.is_ascii_hexdigit())
+                })
+        {
+            return Err(format!(
+                "{label} artifactDigests.{artifact_key} must contain its artifact path and sha256 digest"
+            )
+            .into());
+        }
     }
     Ok(())
 }
@@ -1066,12 +1239,29 @@ fn artifact_ref(run: &Path, name: &str) -> String {
     format!("{run_name}/{name}")
 }
 
-fn canonical_json_file_digest(path: &Path) -> Result<String, Box<dyn Error>> {
-    let value: Value = serde_json::from_reader(File::open(path)?)?;
-    let bytes = serde_json::to_vec(&value)?;
+fn canonical_json_value_digest(value: &Value) -> Result<String, Box<dyn Error>> {
+    let bytes = serde_json::to_vec(&canonical_json_value(value))?;
     let mut hasher = Sha256::new();
     hasher.update(bytes);
     Ok(format!("{:x}", hasher.finalize()))
+}
+
+fn canonical_json_value(value: &Value) -> Value {
+    match value {
+        Value::Array(items) => Value::Array(items.iter().map(canonical_json_value).collect()),
+        Value::Object(object) => {
+            let sorted = object
+                .iter()
+                .map(|(key, value)| (key.clone(), canonical_json_value(value)))
+                .collect::<BTreeMap<_, _>>();
+            let mut map = Map::new();
+            for (key, value) in sorted {
+                map.insert(key, value);
+            }
+            Value::Object(map)
+        }
+        _ => value.clone(),
+    }
 }
 
 fn canonical_value(value: &Value) -> String {

@@ -1,9 +1,12 @@
 use std::collections::{BTreeMap, BTreeSet};
 
-use serde_json::Value;
+use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 
-use crate::schema::{H1ComparisonDataV052, RepairPlanComplexV1};
+use crate::schema::{
+    H1ComparisonDataV052, H1PresentationCellV052, H1PresentationDataV052,
+    H1PresentationRestrictionV052, RepairPlanComplexV1,
+};
 use crate::validation::{generic_validation_example, validation_check};
 use crate::{
     ARCHSIG_REPAIR_PLAN_V1_SCHEMA, ArchMapDocumentV2, RepairPlanDocumentV1, ValidationCheck,
@@ -32,6 +35,54 @@ impl ExplicitH1ComparisonChecks {
             && self.degree_two_zero_preserving
             && self.differential_commutative
     }
+}
+
+#[derive(Debug, Default, Clone)]
+pub(crate) struct PresentationGeneratedH1Checks {
+    pub presentation_exactness: bool,
+    pub generator_completeness: bool,
+    pub restriction_naturality: bool,
+    pub degree_zero_commutative: bool,
+    pub degree_one_commutative: bool,
+    pub source_cocycle: bool,
+    pub source_class_nonzero: Option<bool>,
+    pub target_cocycle: bool,
+    pub equation_lift_atlas_present: bool,
+    pub residual_witness_computed: bool,
+    pub target_class_nonzero: Option<bool>,
+    residual_witness: Option<PresentationResidualWitness>,
+    map_complete: bool,
+}
+
+impl PresentationGeneratedH1Checks {
+    pub(crate) fn all_pass(&self) -> bool {
+        self.map_complete
+            && self.presentation_exactness
+            && self.generator_completeness
+            && self.restriction_naturality
+            && self.degree_zero_commutative
+            && self.degree_one_commutative
+            && self.source_cocycle
+            && self.target_cocycle
+            && self.equation_lift_atlas_present
+            && self.residual_witness_computed
+    }
+}
+
+#[derive(Debug, Clone)]
+struct PresentationResidualWitness {
+    source_image: BTreeMap<String, Vec<u8>>,
+    equation_residual: BTreeMap<String, Vec<u8>>,
+    h: BTreeMap<String, Vec<u8>>,
+}
+
+#[derive(Debug, Clone)]
+struct PresentationResidualAnalysis {
+    source_cocycle: bool,
+    source_class_nonzero: Option<bool>,
+    target_cocycle: bool,
+    target_class_nonzero: Option<bool>,
+    witness: Option<PresentationResidualWitness>,
 }
 
 #[derive(Debug, Clone)]
@@ -89,7 +140,7 @@ pub fn build_repair_plan_validation_report_v1(
         "checks": checks,
         "assumptionLedger": [{
             "theoremRef": "part10/3.1",
-            "assumption": "repair-plan complex enumeration completeness",
+            "assumption": "external semantic completeness beyond the declared ArchMap cover/incidence",
             "status": "assumed",
             "assumedBy": "repair-plan author",
             "source": "complex.enumerationComplete"
@@ -235,12 +286,15 @@ mod tests {
                     id: id.to_string(),
                     left: left.to_string(),
                     right: right.to_string(),
+                    archmap_context_ref: None,
                 })
                 .collect(),
             triple_overlaps: vec![RepairPlanTripleOverlapV1 {
                 id: "t".to_string(),
                 overlap_refs: vec!["e1".to_string(), "e2".to_string(), "e3".to_string()],
+                archmap_context_ref: None,
             }],
+            archmap_cover_ref: None,
             enumeration_complete: true,
         }
     }
@@ -268,6 +322,432 @@ mod tests {
             .clone();
         bridge["targetComplex"]["overlaps"][2]["right"] = Value::String("ctx:inventory".into());
         assert!(comparison_target_complex_from_bridge(&plan, &bridge).is_none());
+    }
+
+    #[test]
+    fn presentation_generated_fixture_provenance_is_test_local() {
+        const CLI_FIXTURE_GENERATORS: &str = include_str!("../tests/cli.rs");
+
+        for (fixture, symbol, filename) in [
+            (
+                include_str!("../tests/fixtures/ag_measurement/archmap_v2_presentation_generated_circle.json"),
+                "presentation_generated_circle_archmap",
+                "archmap_v2_presentation_generated_circle.json",
+            ),
+            (
+                include_str!("../tests/fixtures/ag_measurement/archmap_v2_presentation_generated_triple.json"),
+                "presentation_generated_triple_archmap",
+                "archmap_v2_presentation_generated_triple.json",
+            ),
+        ] {
+            let archmap: ArchMapDocumentV2 =
+                serde_json::from_str(fixture).expect("presentation-generated fixture parses");
+            assert!(!archmap.sources.is_empty());
+            for source in archmap.sources.values() {
+                assert_eq!(source.kind, "test-fixture");
+                assert_eq!(source.path.as_deref(), Some("tools/archsig/tests/cli.rs"));
+                assert_eq!(source.symbol.as_deref(), Some(symbol));
+                assert_eq!(source.section, None);
+                assert!(
+                    source
+                        .path
+                        .as_deref()
+                        .map_or(true, |path| !path.starts_with("docs/aat/")),
+                    "presentation-generated test fixtures must not cite the protected math source"
+                );
+            }
+            assert!(
+                CLI_FIXTURE_GENERATORS
+                    .split_once(&format!("fn {symbol}("))
+                    .and_then(|(_, reader)| reader.split_once("\n}"))
+                    .is_some_and(|(reader, _)| reader.contains(&format!(
+                        "read_json(&root.join(\"{filename}\"))"
+                    ))),
+                "fixture source symbol must read its declared fixture file"
+            );
+        }
+    }
+
+    #[test]
+    fn presentation_generated_circle_derives_exact_local_maps_and_independent_atlas_witness() {
+        let plan: RepairPlanDocumentV1 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/repair_plan_presentation_generated_circle.json"
+        ))
+        .expect("presentation-generated circle fixture parses");
+        let comparison = plan.comparison.as_ref().expect("comparison is supplied");
+        let h1 = comparison["h1ComparisonData"]
+            .as_object()
+            .expect("H1 comparison data is an object");
+        assert_eq!(
+            h1["sourceComplexFingerprint"],
+            comparison_complex_fingerprint(&plan)
+        );
+        let checks = presentation_generated_h1_checks(&plan, &plan.complex, h1);
+        assert!(checks.all_pass());
+        assert_eq!(checks.source_class_nonzero, Some(true));
+        assert_eq!(checks.target_class_nonzero, Some(true));
+        let output = presentation_generated_h1_output(&plan, &plan.complex, h1, &checks);
+        assert_eq!(output["kind"], "presentation-generated");
+        assert_eq!(output["presentationExactness"], true);
+        assert_eq!(
+            output["residualWitness"]["equation"],
+            "kappa1(r_sem) = r_E + delta0(h)"
+        );
+        assert_eq!(
+            output["residualWitness"]["h"].as_array().map(Vec::len),
+            Some(4)
+        );
+        assert!(
+            output["residualWitness"]["h"]
+                .as_array()
+                .expect("computed chart witness")
+                .iter()
+                .flat_map(|row| row["coefficients"].as_array().into_iter().flatten())
+                .all(|entry| entry.as_u64() == Some(0))
+        );
+        assert_eq!(
+            output["residualWitness"]["sourceImage"],
+            output["residualWitness"]["equationResidual"],
+            "Example 10.2 has r_E = kappa^1(r_sem) with zero local coordinate witness"
+        );
+    }
+
+    #[test]
+    fn presentation_generated_circle_archmap_mapping_is_required_and_exact() {
+        let plan: RepairPlanDocumentV1 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/repair_plan_presentation_generated_circle.json"
+        ))
+        .expect("presentation-generated circle fixture parses");
+        let archmap: ArchMapDocumentV2 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/archmap_v2_presentation_generated_circle.json"
+        ))
+        .expect("presentation-generated circle ArchMap parses");
+        let binding = validate_repair_plan_v1_checks(&plan, &archmap, None)
+            .into_iter()
+            .find(|check| check.id == "repair-plan-schema052-archmap-bindings")
+            .expect("ArchMap binding validation exists");
+        assert_eq!(binding.result, "pass");
+
+        assert_eq!(plan.complex.charts.len(), 4);
+        assert_eq!(plan.complex.overlaps.len(), 4);
+        assert!(plan.complex.triple_overlaps.is_empty());
+        assert_eq!(
+            plan.complex.archmap_cover_ref.as_deref(),
+            Some("cover:order-inventory")
+        );
+
+        let mut missing_overlap_edge = archmap.clone();
+        missing_overlap_edge
+            .contexts
+            .iter_mut()
+            .find(|context| context.id == "ctx:order")
+            .expect("ctx:order exists")
+            .restricts_to
+            .retain(|target| target != "ctx:overlap-30");
+        let binding = validate_repair_plan_v1_checks(&plan, &missing_overlap_edge, None)
+            .into_iter()
+            .find(|check| check.id == "repair-plan-schema052-archmap-bindings")
+            .expect("ArchMap binding validation exists");
+        assert_eq!(binding.result, "fail");
+        assert!(binding.examples.iter().any(|example| {
+            example.source.as_deref() == Some("complex.overlaps[overlap:30].archmapContextRef")
+                && example
+                    .target
+                    .as_deref()
+                    .is_some_and(|target| target.contains("expected={\"ctx:circle\", \"ctx:order\"}"))
+        }));
+
+        let mut missing_mapping = plan.clone();
+        missing_mapping.complex.archmap_cover_ref = None;
+        for overlap in &mut missing_mapping.complex.overlaps {
+            overlap.archmap_context_ref = None;
+        }
+        let binding = validate_repair_plan_v1_checks(&missing_mapping, &archmap, None)
+            .into_iter()
+            .find(|check| check.id == "repair-plan-schema052-archmap-bindings")
+            .expect("ArchMap binding validation exists");
+        assert_eq!(binding.result, "fail");
+        assert!(binding.examples.iter().any(|example| {
+            example.source.as_deref() == Some("complex.archmapCoverRef")
+                && example.target.as_deref() == Some("missing")
+        }));
+
+        let mut cover_only_mapping = plan.clone();
+        for overlap in &mut cover_only_mapping.complex.overlaps {
+            overlap.archmap_context_ref = None;
+        }
+        let binding = validate_repair_plan_v1_checks(&cover_only_mapping, &archmap, None)
+            .into_iter()
+            .find(|check| check.id == "repair-plan-schema052-archmap-bindings")
+            .expect("ArchMap binding validation exists");
+        assert_eq!(binding.result, "fail");
+        assert!(binding.examples.iter().any(|example| {
+            example.source.as_deref() == Some("complex.overlaps[overlap:01].archmapContextRef")
+                && example.target.as_deref() == Some("missing")
+        }));
+
+        let mut intersection_only_mapping = plan.clone();
+        intersection_only_mapping.complex.archmap_cover_ref = None;
+        let binding = validate_repair_plan_v1_checks(&intersection_only_mapping, &archmap, None)
+            .into_iter()
+            .find(|check| check.id == "repair-plan-schema052-archmap-bindings")
+            .expect("ArchMap binding validation exists");
+        assert_eq!(binding.result, "fail");
+        assert!(binding.examples.iter().any(|example| {
+            example.source.as_deref() == Some("complex.archmapCoverRef")
+                && example.target.as_deref() == Some("missing")
+        }));
+
+        let mut partial_mapping = plan.clone();
+        partial_mapping.complex.overlaps[0].archmap_context_ref = None;
+        let binding = validate_repair_plan_v1_checks(&partial_mapping, &archmap, None)
+            .into_iter()
+            .find(|check| check.id == "repair-plan-schema052-archmap-bindings")
+            .expect("ArchMap binding validation exists");
+        assert_eq!(binding.result, "fail");
+        assert!(binding.examples.iter().any(|example| {
+            example.source.as_deref() == Some("complex.overlaps[overlap:01].archmapContextRef")
+                && example.target.as_deref() == Some("missing")
+        }));
+
+        let mut extra_overlap_predecessor = archmap.clone();
+        extra_overlap_predecessor
+            .contexts
+            .iter_mut()
+            .find(|context| context.id == "ctx:shared")
+            .expect("ctx:shared exists")
+            .restricts_to
+            .push("ctx:overlap-01".to_string());
+        let binding = validate_repair_plan_v1_checks(&plan, &extra_overlap_predecessor, None)
+            .into_iter()
+            .find(|check| check.id == "repair-plan-schema052-archmap-bindings")
+            .expect("ArchMap binding validation exists");
+        assert_eq!(binding.result, "fail");
+        assert!(binding.examples.iter().any(|example| {
+            example.source.as_deref() == Some("complex.overlaps[overlap:01].archmapContextRef")
+                && example.target.as_deref().is_some_and(|target| {
+                    target.contains("actual={\"ctx:inventory\", \"ctx:order\", \"ctx:shared\"}")
+                })
+        }));
+    }
+
+    #[test]
+    fn presentation_generated_triple_mapping_rejects_extra_predecessor() {
+        let mut plan: Value = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/repair_plan_supplied_faithfulness.json"
+        ))
+        .expect("triple RepairPlan fixture parses");
+        plan["complex"]["archmapCoverRef"] = json!("cover:presentation-generated-triple");
+        for (overlap_ref, context_ref) in [
+            ("overlap:order-inventory", "ctx:overlap-order-inventory"),
+            ("overlap:inventory-shared", "ctx:overlap-inventory-shared"),
+            ("overlap:order-shared", "ctx:overlap-order-shared"),
+        ] {
+            let overlap = plan["complex"]["overlaps"]
+                .as_array_mut()
+                .expect("overlaps are an array")
+                .iter_mut()
+                .find(|overlap| overlap["id"] == overlap_ref)
+                .expect("mapped overlap exists");
+            overlap["archmapContextRef"] = json!(context_ref);
+        }
+        plan["complex"]["overlaps"]
+            .as_array_mut()
+            .expect("overlaps are an array")
+            .push(json!({
+                "id": "overlap:order-inventory-alt",
+                "left": "ctx:order",
+                "right": "ctx:inventory",
+                "archmapContextRef": "ctx:overlap-order-inventory-alt"
+            }));
+        plan["complex"]["tripleOverlaps"][0]["archmapContextRef"] = json!("ctx:triple-class");
+        plan["comparison"] = json!({
+            "h1ComparisonData": { "kind": "presentation-generated" }
+        });
+        let plan: RepairPlanDocumentV1 =
+            serde_json::from_value(plan).expect("mapped triple RepairPlan parses");
+        let archmap: ArchMapDocumentV2 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/archmap_v2_presentation_generated_triple.json"
+        ))
+        .expect("presentation-generated triple ArchMap parses");
+        let binding = validate_repair_plan_v1_checks(&plan, &archmap, None)
+            .into_iter()
+            .find(|check| check.id == "repair-plan-schema052-archmap-bindings")
+            .expect("ArchMap binding validation exists");
+        assert_eq!(binding.result, "pass");
+
+        let mut extra_triple_predecessor = archmap.clone();
+        extra_triple_predecessor
+            .contexts
+            .iter_mut()
+            .find(|context| context.id == "ctx:overlap-order-inventory-alt")
+            .expect("alternate overlap context exists")
+            .restricts_to
+            .push("ctx:triple-class".to_string());
+        let binding = validate_repair_plan_v1_checks(&plan, &extra_triple_predecessor, None)
+            .into_iter()
+            .find(|check| check.id == "repair-plan-schema052-archmap-bindings")
+            .expect("ArchMap binding validation exists");
+        assert_eq!(binding.result, "fail");
+        assert!(binding.examples.iter().any(|example| {
+            example.source.as_deref()
+                == Some("complex.tripleOverlaps[triple:order-inventory-shared].archmapContextRef")
+                && example.target.as_deref().is_some_and(|target| {
+                    target.contains("ctx:overlap-order-inventory-alt")
+                })
+        }));
+    }
+
+    #[test]
+    fn presentation_generated_circle_derives_nonzero_cohomologous_atlas_witness() {
+        let mut plan: RepairPlanDocumentV1 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/repair_plan_presentation_generated_circle.json"
+        ))
+        .expect("presentation-generated circle fixture parses");
+        let transitions = plan.comparison.as_mut().expect("comparison is supplied")
+            ["h1ComparisonData"]["presentation"]["equationLiftAtlas"]["transitionDifferences"]
+            .as_array_mut()
+            .expect("equation lift atlas transitions are an array");
+        transitions
+            .iter_mut()
+            .find(|transition| transition["overlapRef"] == "overlap:01")
+            .expect("overlap:01 transition")["coefficients"] = json!([0]);
+        transitions
+            .iter_mut()
+            .find(|transition| transition["overlapRef"] == "overlap:30")
+            .expect("overlap:30 transition")["coefficients"] = json!([1]);
+        let comparison = plan.comparison.as_ref().expect("comparison is supplied");
+        let h1 = comparison["h1ComparisonData"]
+            .as_object()
+            .expect("H1 comparison data is an object");
+        let checks = presentation_generated_h1_checks(&plan, &plan.complex, h1);
+        assert!(checks.all_pass());
+        let output = presentation_generated_h1_output(&plan, &plan.complex, h1, &checks);
+        assert!(
+            output["residualWitness"]["h"]
+                .as_array()
+                .expect("computed chart witness")
+                .iter()
+                .flat_map(|row| row["coefficients"].as_array().into_iter().flatten())
+                .any(|entry| entry.as_u64() == Some(1)),
+            "a distinct cohomologous atlas input must retain the nonzero local-coordinate witness path"
+        );
+    }
+
+    #[test]
+    fn presentation_generated_circle_rejects_kernel_mismatch_and_missing_generation() {
+        let plan: RepairPlanDocumentV1 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/repair_plan_presentation_generated_circle.json"
+        ))
+        .expect("presentation-generated circle fixture parses");
+        let comparison = plan.comparison.as_ref().expect("comparison is supplied");
+        let mut kernel_mismatch = comparison["h1ComparisonData"]
+            .as_object()
+            .expect("H1 comparison data is an object")
+            .clone();
+        kernel_mismatch["presentation"]["cells"]
+            .as_array_mut()
+            .expect("presentation cells are an array")[0]["repairRelationMatrix"] =
+            serde_json::json!([[1]]);
+        let kernel_checks =
+            presentation_generated_h1_checks(&plan, &plan.complex, &kernel_mismatch);
+        assert!(!kernel_checks.presentation_exactness);
+        assert!(!kernel_checks.all_pass());
+
+        let mut generation_missing = comparison["h1ComparisonData"]
+            .as_object()
+            .expect("H1 comparison data is an object")
+            .clone();
+        let cell = &mut generation_missing["presentation"]["cells"]
+            .as_array_mut()
+            .expect("presentation cells are an array")[0];
+        cell["equationGenerators"] = serde_json::json!(["q", "q2"]);
+        cell["generatorMap"] = serde_json::json!([[1], [0]]);
+        let generation_checks =
+            presentation_generated_h1_checks(&plan, &plan.complex, &generation_missing);
+        assert!(!generation_checks.generator_completeness);
+        assert!(!generation_checks.all_pass());
+
+        let mut residual_mismatch = comparison["h1ComparisonData"]
+            .as_object()
+            .expect("H1 comparison data is an object")
+            .clone();
+        residual_mismatch["presentation"]["equationLiftAtlas"]["transitionDifferences"][0]["coefficients"] =
+            serde_json::json!([0]);
+        let residual_checks =
+            presentation_generated_h1_checks(&plan, &plan.complex, &residual_mismatch);
+        assert!(!residual_checks.residual_witness_computed);
+        assert!(!residual_checks.all_pass());
+
+        let mut relation_not_stable = comparison["h1ComparisonData"]
+            .as_object()
+            .expect("H1 comparison data is an object")
+            .clone();
+        relation_not_stable["presentation"]["cells"]
+            .as_array_mut()
+            .expect("presentation cells are an array")[0]["repairRelationMatrix"] =
+            serde_json::json!([[1]]);
+        relation_not_stable["presentation"]["cells"]
+            .as_array_mut()
+            .expect("presentation cells are an array")[0]["equationRelationMatrix"] =
+            serde_json::json!([[1]]);
+        let relation_checks =
+            presentation_generated_h1_checks(&plan, &plan.complex, &relation_not_stable);
+        assert!(relation_checks.presentation_exactness);
+        assert!(!relation_checks.restriction_naturality);
+        assert!(!relation_checks.all_pass());
+
+        let mut invalid_plan = plan.clone();
+        invalid_plan
+            .comparison
+            .as_mut()
+            .expect("comparison is supplied")["h1ComparisonData"] = Value::Object(kernel_mismatch);
+        let archmap: ArchMapDocumentV2 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/archmap_v2.json"
+        ))
+        .expect("ArchMap fixture parses");
+        let validation = validate_repair_plan_v1_checks(&invalid_plan, &archmap, None);
+        let supplied_slots = validation
+            .iter()
+            .find(|check| check.id == "repair-plan-schema052-supplied-slots")
+            .expect("supplied slot validation exists");
+        assert_eq!(supplied_slots.result, "fail");
+        assert!(supplied_slots.examples.iter().any(|example| {
+            example
+                .evidence
+                .as_deref()
+                .is_some_and(|target| target.contains("presentationExactness=false"))
+        }));
+
+        let mut missing_atlas = comparison["h1ComparisonData"]
+            .as_object()
+            .expect("H1 comparison data is an object")
+            .clone();
+        missing_atlas["presentation"]
+            .as_object_mut()
+            .expect("presentation is an object")
+            .remove("equationLiftAtlas");
+        let missing_checks = presentation_generated_h1_checks(&plan, &plan.complex, &missing_atlas);
+        assert!(!missing_checks.equation_lift_atlas_present);
+        assert!(!missing_checks.all_pass());
+
+        let mut missing_atlas_plan = plan.clone();
+        missing_atlas_plan
+            .comparison
+            .as_mut()
+            .expect("comparison is supplied")["h1ComparisonData"] = Value::Object(missing_atlas);
+        let missing_validation =
+            validate_repair_plan_v1_checks(&missing_atlas_plan, &archmap, None);
+        let missing_slots = missing_validation
+            .iter()
+            .find(|check| check.id == "repair-plan-schema052-supplied-slots")
+            .expect("supplied slot validation exists");
+        assert!(missing_slots.examples.iter().any(|example| {
+            example
+                .evidence
+                .as_deref()
+                .is_some_and(|target| target.contains("equationLiftAtlasPresent=false"))
+        }));
     }
 }
 
@@ -574,6 +1054,14 @@ fn check_supplied_slots(
                                     "cochainMap",
                                 ]
                                 .as_slice(),
+                                Some("presentation-generated") => [
+                                    "schema",
+                                    "kind",
+                                    "sourceComplexFingerprint",
+                                    "targetComplexFingerprint",
+                                    "presentation",
+                                ]
+                                .as_slice(),
                                 _ => ["kind"].as_slice(),
                             };
                             if !allowed.contains(&key.as_str()) {
@@ -634,6 +1122,7 @@ fn check_supplied_slots(
                             }
                         });
                     let mut explicit_checks = None;
+                    let mut presentation_checks = None;
                     let h1_ok = !nested_unknown
                         && h1.is_some_and(|h1| {
                             let source_complex_fingerprint = comparison_complex_fingerprint(plan);
@@ -671,6 +1160,19 @@ fn check_supplied_slots(
                                                 && checks.all_pass()
                                         })
                                 }
+                                Some("presentation-generated") => {
+                                    h1.get("schema").and_then(Value::as_str)
+                                        == Some("h1-comparison-data/v0.5.4")
+                                        && fingerprints_ok
+                                        && target_fingerprint.as_deref()
+                                            == Some(source_complex_fingerprint.as_str())
+                                        && target_complex.as_ref().is_some_and(|complex| {
+                                            let checks =
+                                                presentation_generated_h1_checks(plan, complex, h1);
+                                            presentation_checks = Some(checks.clone());
+                                            checks.all_pass()
+                                        })
+                                }
                                 _ => false,
                             }
                         });
@@ -685,6 +1187,21 @@ fn check_supplied_slots(
                                     checks.degree_two_zero_preserving,
                                     checks.differential_commutative,
                                 )
+                            })
+                            .or_else(|| {
+                                presentation_checks.map(|checks| {
+                                    format!(
+                                        "COMPARISON_DATA_CONTRACT_VIOLATION: presentationExactness={} generatorCompleteness={} restrictionNaturality={} degreeZeroCommutative={} degreeOneCommutative={} targetCocycle={} equationLiftAtlasPresent={} residualWitnessComputed={}",
+                                        checks.presentation_exactness,
+                                        checks.generator_completeness,
+                                        checks.restriction_naturality,
+                                        checks.degree_zero_commutative,
+                                        checks.degree_one_commutative,
+                                        checks.target_cocycle,
+                                        checks.equation_lift_atlas_present,
+                                        checks.residual_witness_computed,
+                                    )
+                                })
                             })
                             .unwrap_or_else(|| "COMPARISON_DATA_CONTRACT_VIOLATION: comparison requires a chart-indexed or explicit incidence bridge and a validated identity or explicit finite H1 comparison contract".to_string());
                         examples.push(generic_validation_example(
@@ -905,6 +1422,917 @@ pub(crate) fn explicit_h1_comparison_checks(
         differential_commutative,
         map_complete,
     }
+}
+
+pub(crate) fn presentation_generated_h1_checks(
+    plan: &RepairPlanDocumentV1,
+    target_complex: &RepairPlanComplexV1,
+    h1: &serde_json::Map<String, Value>,
+) -> PresentationGeneratedH1Checks {
+    let equation_lift_atlas_present = h1
+        .get("presentation")
+        .and_then(Value::as_object)
+        .is_some_and(|presentation| presentation.get("equationLiftAtlas").is_some());
+    let Ok(typed) = serde_json::from_value::<H1ComparisonDataV052>(Value::Object(h1.clone()))
+    else {
+        return PresentationGeneratedH1Checks {
+            equation_lift_atlas_present,
+            ..PresentationGeneratedH1Checks::default()
+        };
+    };
+    if typed.schema != crate::H1_COMPARISON_DATA_V052_SCHEMA
+        || typed.kind != "presentation-generated"
+    {
+        return PresentationGeneratedH1Checks::default();
+    }
+    let Some(presentation) = typed.presentation.as_ref() else {
+        return PresentationGeneratedH1Checks::default();
+    };
+
+    let expected_cells = presentation_cell_refs(plan);
+    let mut cells = BTreeMap::new();
+    for cell in &presentation.cells {
+        if cells.insert(cell.cell_ref.as_str(), cell).is_some() {
+            return PresentationGeneratedH1Checks::default();
+        }
+    }
+    let map_complete = cells.keys().copied().collect::<BTreeSet<_>>()
+        == expected_cells.iter().map(String::as_str).collect();
+    if !map_complete {
+        return PresentationGeneratedH1Checks::default();
+    }
+
+    let cell_checks = cells
+        .values()
+        .map(|cell| presentation_cell_checks(cell))
+        .collect::<Option<Vec<_>>>();
+    let Some(cell_checks) = cell_checks else {
+        return PresentationGeneratedH1Checks::default();
+    };
+
+    let expected_restrictions = presentation_restriction_refs(plan);
+    let mut restrictions = BTreeMap::new();
+    for restriction in &presentation.restrictions {
+        if restrictions
+            .insert(
+                (restriction.from_ref.as_str(), restriction.to_ref.as_str()),
+                restriction,
+            )
+            .is_some()
+        {
+            return PresentationGeneratedH1Checks::default();
+        }
+    }
+    let restriction_complete = restrictions.keys().copied().collect::<BTreeSet<_>>()
+        == expected_restrictions
+            .iter()
+            .map(|(from, to)| (from.as_str(), to.as_str()))
+            .collect();
+    let restriction_naturality = restriction_complete
+        && restrictions.iter().all(|((from, to), restriction)| {
+            cells
+                .get(from)
+                .zip(cells.get(to))
+                .is_some_and(|(source, target)| {
+                    presentation_restriction_commutes(source, target, restriction)
+                })
+        });
+    let degree_zero_commutative = restriction_naturality
+        && plan.complex.overlaps.iter().all(|overlap| {
+            restrictions.contains_key(&(overlap.left.as_str(), overlap.id.as_str()))
+                && restrictions.contains_key(&(overlap.right.as_str(), overlap.id.as_str()))
+        });
+    let degree_one_commutative = restriction_naturality
+        && plan.complex.triple_overlaps.iter().all(|triple| {
+            triple.overlap_refs.iter().all(|overlap_ref| {
+                restrictions.contains_key(&(overlap_ref.as_str(), triple.id.as_str()))
+            })
+        });
+    let analysis = (restriction_naturality && degree_zero_commutative && degree_one_commutative)
+        .then(|| {
+            presentation_residual_analysis(
+                plan,
+                target_complex,
+                presentation,
+                &cells,
+                &restrictions,
+            )
+        })
+        .flatten();
+    let source_cocycle = analysis
+        .as_ref()
+        .is_some_and(|analysis| analysis.source_cocycle);
+    let source_class_nonzero = analysis
+        .as_ref()
+        .and_then(|analysis| analysis.source_class_nonzero);
+    let target_cocycle = analysis
+        .as_ref()
+        .is_some_and(|analysis| analysis.target_cocycle);
+    let target_class_nonzero = analysis
+        .as_ref()
+        .and_then(|analysis| analysis.target_class_nonzero);
+    let residual_witness = analysis.and_then(|analysis| analysis.witness);
+    let residual_witness_computed = residual_witness.is_some();
+
+    PresentationGeneratedH1Checks {
+        presentation_exactness: cell_checks.iter().all(|(exactness, _)| *exactness),
+        generator_completeness: cell_checks.iter().all(|(_, generation)| *generation),
+        restriction_naturality,
+        degree_zero_commutative,
+        degree_one_commutative,
+        source_cocycle,
+        source_class_nonzero,
+        target_cocycle,
+        equation_lift_atlas_present,
+        residual_witness_computed,
+        target_class_nonzero,
+        residual_witness,
+        map_complete,
+    }
+}
+
+pub(crate) fn presentation_generated_h1_output(
+    plan: &RepairPlanDocumentV1,
+    target_complex: &RepairPlanComplexV1,
+    h1: &serde_json::Map<String, Value>,
+    checks: &PresentationGeneratedH1Checks,
+) -> Value {
+    let typed = serde_json::from_value::<H1ComparisonDataV052>(Value::Object(h1.clone())).ok();
+    let cells = typed
+        .as_ref()
+        .and_then(|typed| typed.presentation.as_ref())
+        .map(|presentation| {
+            presentation
+                .cells
+                .iter()
+                .map(|cell| (cell.cell_ref.as_str(), cell))
+                .collect::<BTreeMap<_, _>>()
+        })
+        .unwrap_or_default();
+    let refs = |kind: &str| {
+        let expected = match kind {
+            "degreeZero" => plan
+                .complex
+                .charts
+                .iter()
+                .map(String::as_str)
+                .collect::<BTreeSet<_>>(),
+            "degreeOne" => plan
+                .complex
+                .overlaps
+                .iter()
+                .map(|overlap| overlap.id.as_str())
+                .collect::<BTreeSet<_>>(),
+            "degreeTwo" => plan
+                .complex
+                .triple_overlaps
+                .iter()
+                .map(|triple| triple.id.as_str())
+                .collect::<BTreeSet<_>>(),
+            _ => BTreeSet::new(),
+        };
+        cells
+            .iter()
+            .filter(|(cell_ref, _)| expected.contains(*cell_ref))
+            .map(|(_, cell)| {
+                json!({
+                    "cellRef": cell.cell_ref,
+                    "localPhiDerivedFrom": "generatorMap modulo repair/equation relations"
+                })
+            })
+            .collect::<Vec<_>>()
+    };
+    let residual_witness = checks.residual_witness.as_ref().and_then(|witness| {
+        Some(json!({
+            "kind": "computed-quotient-atlas-witness",
+            "equation": "kappa1(r_sem) = r_E + delta0(h)",
+            "sourceImage": equation_cochain_json(target_complex, &cells, &witness.source_image)?,
+            "equationResidual": equation_cochain_json(target_complex, &cells, &witness.equation_residual)?,
+            "h": equation_chart_assignment_json(target_complex, &cells, &witness.h)?,
+            "differenceIsDeltaZero": true
+        }))
+    });
+    json!({
+        "kind": "presentation-generated",
+        "comparisonInput": {
+            "kind": "canonical-presentation-repair-plan",
+            "repairPlan": plan
+        },
+        "presentationExactness": checks.presentation_exactness,
+        "generatorCompleteness": checks.generator_completeness,
+        "generatedCochainMap": {
+            "kind": "derived-from-local-phi",
+            "degreeZero": refs("degreeZero"),
+            "degreeOne": refs("degreeOne"),
+            "degreeTwo": refs("degreeTwo"),
+            "degreeZeroCommutative": checks.degree_zero_commutative,
+            "degreeOneCommutative": checks.degree_one_commutative
+        },
+        "equationResidual": {
+            "kind": "derived-from-independent-equation-lift-atlas",
+            "targetCocycle": checks.target_cocycle,
+            "targetClassNonZero": checks.target_class_nonzero
+        },
+        "semanticResidual": {
+            "kind": "derived-from-semantic-repair-presentation",
+            "sourceCocycle": checks.source_cocycle,
+            "sourceClassNonZero": checks.source_class_nonzero
+        },
+        "residualWitness": residual_witness,
+        "restrictionNaturality": checks.restriction_naturality
+    })
+}
+
+pub(crate) fn recompute_presentation_generated_h1_output(
+    plan: &RepairPlanDocumentV1,
+) -> Option<Value> {
+    let comparison = plan.comparison.as_ref()?;
+    let h1 = comparison.get("h1ComparisonData")?.as_object()?;
+    if h1.get("kind").and_then(Value::as_str) != Some("presentation-generated") {
+        return None;
+    }
+    let target_complex = comparison_target_complex(plan, comparison)?;
+    let checks = presentation_generated_h1_checks(plan, &target_complex, h1);
+    Some(presentation_generated_h1_output(
+        plan,
+        &target_complex,
+        h1,
+        &checks,
+    ))
+}
+
+fn presentation_cell_refs(plan: &RepairPlanDocumentV1) -> BTreeSet<String> {
+    plan.complex
+        .charts
+        .iter()
+        .cloned()
+        .chain(
+            plan.complex
+                .overlaps
+                .iter()
+                .map(|overlap| overlap.id.clone()),
+        )
+        .chain(
+            plan.complex
+                .triple_overlaps
+                .iter()
+                .map(|triple| triple.id.clone()),
+        )
+        .collect()
+}
+
+fn presentation_restriction_refs(plan: &RepairPlanDocumentV1) -> BTreeSet<(String, String)> {
+    let mut refs = BTreeSet::new();
+    for overlap in &plan.complex.overlaps {
+        refs.insert((overlap.left.clone(), overlap.id.clone()));
+        refs.insert((overlap.right.clone(), overlap.id.clone()));
+    }
+    for triple in &plan.complex.triple_overlaps {
+        for overlap_ref in &triple.overlap_refs {
+            refs.insert((overlap_ref.clone(), triple.id.clone()));
+        }
+    }
+    refs
+}
+
+fn presentation_cell_checks(cell: &H1PresentationCellV052) -> Option<(bool, bool)> {
+    let semantic_count = cell.semantic_generators.len();
+    let equation_count = cell.equation_generators.len();
+    if semantic_count == 0
+        || equation_count == 0
+        || cell
+            .semantic_generators
+            .iter()
+            .collect::<BTreeSet<_>>()
+            .len()
+            != semantic_count
+        || cell
+            .equation_generators
+            .iter()
+            .collect::<BTreeSet<_>>()
+            .len()
+            != equation_count
+        || !binary_matrix(&cell.repair_relation_matrix, semantic_count)
+        || !binary_matrix(&cell.equation_relation_matrix, equation_count)
+        || !binary_matrix_with_shape(&cell.generator_map, equation_count, semantic_count)
+    {
+        return None;
+    }
+    let relation_rank = f2_rank(&cell.repair_relation_matrix, semantic_count)?;
+    let equation_rank = f2_rank(&cell.equation_relation_matrix, equation_count)?;
+    let generator_columns = matrix_columns(&cell.generator_map, semantic_count);
+    let mut quotient_generators = cell.equation_relation_matrix.clone();
+    quotient_generators.extend(generator_columns);
+    let quotient_generator_rank = f2_rank(&quotient_generators, equation_count)?;
+    let soundness = cell.repair_relation_matrix.iter().all(|relation| {
+        f2_vector_in_span(
+            &cell.equation_relation_matrix,
+            equation_count,
+            &f2_matrix_vector(&cell.generator_map, relation),
+        )
+        .unwrap_or(false)
+    });
+    let kernel_dimension = semantic_count.checked_sub(quotient_generator_rank - equation_rank)?;
+    Some((
+        soundness && relation_rank == kernel_dimension,
+        quotient_generator_rank == equation_count,
+    ))
+}
+
+fn presentation_restriction_commutes(
+    source: &H1PresentationCellV052,
+    target: &H1PresentationCellV052,
+    restriction: &H1PresentationRestrictionV052,
+) -> bool {
+    let source_semantic = source.semantic_generators.len();
+    let source_equation = source.equation_generators.len();
+    let target_semantic = target.semantic_generators.len();
+    let target_equation = target.equation_generators.len();
+    if !binary_matrix_with_shape(
+        &restriction.semantic_matrix,
+        target_semantic,
+        source_semantic,
+    ) || !binary_matrix_with_shape(
+        &restriction.equation_matrix,
+        target_equation,
+        source_equation,
+    ) {
+        return false;
+    }
+    let semantic_relations_preserved = source.repair_relation_matrix.iter().all(|relation| {
+        f2_vector_in_span(
+            &target.repair_relation_matrix,
+            target_semantic,
+            &f2_matrix_vector(&restriction.semantic_matrix, relation),
+        )
+        .unwrap_or(false)
+    });
+    let equation_relations_preserved = source.equation_relation_matrix.iter().all(|relation| {
+        f2_vector_in_span(
+            &target.equation_relation_matrix,
+            target_equation,
+            &f2_matrix_vector(&restriction.equation_matrix, relation),
+        )
+        .unwrap_or(false)
+    });
+    semantic_relations_preserved
+        && equation_relations_preserved
+        && (0..source_semantic).all(|index| {
+            let mut basis = vec![0; source_semantic];
+            basis[index] = 1;
+            let through_semantic = f2_matrix_vector(
+                &target.generator_map,
+                &f2_matrix_vector(&restriction.semantic_matrix, &basis),
+            );
+            let through_equation = f2_matrix_vector(
+                &restriction.equation_matrix,
+                &f2_matrix_vector(&source.generator_map, &basis),
+            );
+            let difference = through_semantic
+                .iter()
+                .zip(through_equation)
+                .map(|(left, right)| left ^ right)
+                .collect::<Vec<_>>();
+            f2_vector_in_span(
+                &target.equation_relation_matrix,
+                target_equation,
+                &difference,
+            )
+            .unwrap_or(false)
+        })
+}
+
+fn presentation_residual_analysis(
+    plan: &RepairPlanDocumentV1,
+    target_complex: &RepairPlanComplexV1,
+    presentation: &H1PresentationDataV052,
+    cells: &BTreeMap<&str, &H1PresentationCellV052>,
+    restrictions: &BTreeMap<(&str, &str), &H1PresentationRestrictionV052>,
+) -> Option<PresentationResidualAnalysis> {
+    let semantic_residual = generated_semantic_residual(plan, target_complex, cells)?;
+    let source_image = generated_source_image(target_complex, cells, &semantic_residual)?;
+    let source_cocycle =
+        semantic_cochain_is_cocycle(target_complex, cells, restrictions, &semantic_residual)?;
+    let source_class_nonzero = source_cocycle.then(|| {
+        semantic_delta_zero_solution(target_complex, cells, restrictions, &semantic_residual)
+            .is_none()
+    });
+    let equation_residual =
+        equation_residual_from_lift_atlas(target_complex, presentation, cells, restrictions)?;
+    let target_cocycle =
+        equation_cochain_is_cocycle(target_complex, cells, restrictions, &equation_residual)?;
+    if !source_cocycle || !target_cocycle {
+        return Some(PresentationResidualAnalysis {
+            source_cocycle,
+            source_class_nonzero,
+            target_cocycle: false,
+            target_class_nonzero: None,
+            witness: None,
+        });
+    }
+    let difference = cochain_sum(target_complex, cells, &source_image, &equation_residual)?;
+    let target_class_nonzero = Some(
+        equation_delta_zero_solution(target_complex, cells, restrictions, &equation_residual)
+            .is_none(),
+    );
+    let witness = equation_delta_zero_solution(target_complex, cells, restrictions, &difference)
+        .map(|h| PresentationResidualWitness {
+            source_image,
+            equation_residual,
+            h,
+        });
+    Some(PresentationResidualAnalysis {
+        source_cocycle,
+        source_class_nonzero,
+        target_cocycle: true,
+        target_class_nonzero,
+        witness,
+    })
+}
+
+fn generated_semantic_residual(
+    plan: &RepairPlanDocumentV1,
+    target_complex: &RepairPlanComplexV1,
+    cells: &BTreeMap<&str, &H1PresentationCellV052>,
+) -> Option<BTreeMap<String, Vec<u8>>> {
+    let primitives = plan
+        .primitives
+        .iter()
+        .map(|primitive| (primitive.overlap_ref.as_str(), primitive))
+        .collect::<BTreeMap<_, _>>();
+    if primitives.keys().copied().collect::<BTreeSet<_>>()
+        != target_complex
+            .overlaps
+            .iter()
+            .map(|overlap| overlap.id.as_str())
+            .collect()
+    {
+        return None;
+    }
+    let mut semantic_cochain = BTreeMap::new();
+    for overlap in &target_complex.overlaps {
+        let cell = cells.get(overlap.id.as_str())?;
+        let primitive = primitives.get(overlap.id.as_str())?;
+        if primitive
+            .support
+            .variables
+            .iter()
+            .collect::<BTreeSet<_>>()
+            .len()
+            != primitive.support.variables.len()
+        {
+            return None;
+        }
+        let semantic_index = cell
+            .semantic_generators
+            .iter()
+            .enumerate()
+            .map(|(index, generator)| (generator.as_str(), index))
+            .collect::<BTreeMap<_, _>>();
+        let mut coefficients = vec![0; cell.semantic_generators.len()];
+        for variable in &primitive.support.variables {
+            coefficients[*semantic_index.get(variable.as_str())?] ^= 1;
+        }
+        semantic_cochain.insert(overlap.id.clone(), coefficients);
+    }
+    Some(semantic_cochain)
+}
+
+fn generated_source_image(
+    target_complex: &RepairPlanComplexV1,
+    cells: &BTreeMap<&str, &H1PresentationCellV052>,
+    semantic_residual: &BTreeMap<String, Vec<u8>>,
+) -> Option<BTreeMap<String, Vec<u8>>> {
+    target_complex
+        .overlaps
+        .iter()
+        .map(|overlap| {
+            let cell = cells.get(overlap.id.as_str())?;
+            let residual = semantic_residual.get(&overlap.id)?;
+            (residual.len() == cell.semantic_generators.len()).then(|| {
+                (
+                    overlap.id.clone(),
+                    f2_matrix_vector(&cell.generator_map, residual),
+                )
+            })
+        })
+        .collect()
+}
+
+fn equation_residual_from_lift_atlas(
+    target_complex: &RepairPlanComplexV1,
+    presentation: &H1PresentationDataV052,
+    cells: &BTreeMap<&str, &H1PresentationCellV052>,
+    restrictions: &BTreeMap<(&str, &str), &H1PresentationRestrictionV052>,
+) -> Option<BTreeMap<String, Vec<u8>>> {
+    let mut lifts = BTreeMap::new();
+    for lift in &presentation.equation_lift_atlas.local_lifts {
+        let cell = cells.get(lift.chart_ref.as_str())?;
+        if !binary_vector(&lift.coefficients, cell.equation_generators.len())
+            || lifts
+                .insert(lift.chart_ref.as_str(), lift.coefficients.as_slice())
+                .is_some()
+        {
+            return None;
+        }
+    }
+    if lifts.keys().copied().collect::<BTreeSet<_>>()
+        != target_complex.charts.iter().map(String::as_str).collect()
+    {
+        return None;
+    }
+    let mut transitions = BTreeMap::new();
+    for transition in &presentation.equation_lift_atlas.transition_differences {
+        let cell = cells.get(transition.overlap_ref.as_str())?;
+        if !binary_vector(&transition.coefficients, cell.equation_generators.len())
+            || transitions
+                .insert(
+                    transition.overlap_ref.as_str(),
+                    transition.coefficients.as_slice(),
+                )
+                .is_some()
+        {
+            return None;
+        }
+    }
+    if transitions.keys().copied().collect::<BTreeSet<_>>()
+        != target_complex
+            .overlaps
+            .iter()
+            .map(|overlap| overlap.id.as_str())
+            .collect()
+    {
+        return None;
+    }
+    let mut residual = BTreeMap::new();
+    for overlap in &target_complex.overlaps {
+        let cell = cells.get(overlap.id.as_str())?;
+        let left = restrictions.get(&(overlap.left.as_str(), overlap.id.as_str()))?;
+        let right = restrictions.get(&(overlap.right.as_str(), overlap.id.as_str()))?;
+        let mut value = transitions.get(overlap.id.as_str())?.to_vec();
+        for restricted_lift in [
+            f2_matrix_vector(&left.equation_matrix, lifts.get(overlap.left.as_str())?),
+            f2_matrix_vector(&right.equation_matrix, lifts.get(overlap.right.as_str())?),
+        ] {
+            if restricted_lift.len() != cell.equation_generators.len() {
+                return None;
+            }
+            for (entry, lift) in value.iter_mut().zip(restricted_lift) {
+                *entry ^= lift;
+            }
+        }
+        residual.insert(overlap.id.clone(), value);
+    }
+    Some(residual)
+}
+
+fn equation_cochain_is_cocycle(
+    target_complex: &RepairPlanComplexV1,
+    cells: &BTreeMap<&str, &H1PresentationCellV052>,
+    restrictions: &BTreeMap<(&str, &str), &H1PresentationRestrictionV052>,
+    cochain: &BTreeMap<String, Vec<u8>>,
+) -> Option<bool> {
+    for triple in &target_complex.triple_overlaps {
+        let target = cells.get(triple.id.as_str())?;
+        let mut differential = vec![0; target.equation_generators.len()];
+        for overlap_ref in &triple.overlap_refs {
+            let restriction = restrictions.get(&(overlap_ref.as_str(), triple.id.as_str()))?;
+            let restricted =
+                f2_matrix_vector(&restriction.equation_matrix, cochain.get(overlap_ref)?);
+            if restricted.len() != differential.len() {
+                return None;
+            }
+            for (entry, value) in differential.iter_mut().zip(restricted) {
+                *entry ^= value;
+            }
+        }
+        if !f2_vector_in_span(
+            &target.equation_relation_matrix,
+            target.equation_generators.len(),
+            &differential,
+        )? {
+            return Some(false);
+        }
+    }
+    Some(true)
+}
+
+fn semantic_cochain_is_cocycle(
+    target_complex: &RepairPlanComplexV1,
+    cells: &BTreeMap<&str, &H1PresentationCellV052>,
+    restrictions: &BTreeMap<(&str, &str), &H1PresentationRestrictionV052>,
+    cochain: &BTreeMap<String, Vec<u8>>,
+) -> Option<bool> {
+    for triple in &target_complex.triple_overlaps {
+        let target = cells.get(triple.id.as_str())?;
+        let mut differential = vec![0; target.semantic_generators.len()];
+        for overlap_ref in &triple.overlap_refs {
+            let restriction = restrictions.get(&(overlap_ref.as_str(), triple.id.as_str()))?;
+            let restricted =
+                f2_matrix_vector(&restriction.semantic_matrix, cochain.get(overlap_ref)?);
+            if restricted.len() != differential.len() {
+                return None;
+            }
+            for (entry, value) in differential.iter_mut().zip(restricted) {
+                *entry ^= value;
+            }
+        }
+        if !f2_vector_in_span(
+            &target.repair_relation_matrix,
+            target.semantic_generators.len(),
+            &differential,
+        )? {
+            return Some(false);
+        }
+    }
+    Some(true)
+}
+
+fn cochain_sum(
+    target_complex: &RepairPlanComplexV1,
+    cells: &BTreeMap<&str, &H1PresentationCellV052>,
+    left: &BTreeMap<String, Vec<u8>>,
+    right: &BTreeMap<String, Vec<u8>>,
+) -> Option<BTreeMap<String, Vec<u8>>> {
+    target_complex
+        .overlaps
+        .iter()
+        .map(|overlap| {
+            let width = cells.get(overlap.id.as_str())?.equation_generators.len();
+            let left = left.get(&overlap.id)?;
+            let right = right.get(&overlap.id)?;
+            (left.len() == width && right.len() == width).then(|| {
+                (
+                    overlap.id.clone(),
+                    left.iter()
+                        .zip(right)
+                        .map(|(left, right)| left ^ right)
+                        .collect(),
+                )
+            })
+        })
+        .collect()
+}
+
+fn equation_delta_zero_solution(
+    target_complex: &RepairPlanComplexV1,
+    cells: &BTreeMap<&str, &H1PresentationCellV052>,
+    restrictions: &BTreeMap<(&str, &str), &H1PresentationRestrictionV052>,
+    cochain: &BTreeMap<String, Vec<u8>>,
+) -> Option<BTreeMap<String, Vec<u8>>> {
+    let mut chart_offsets = BTreeMap::new();
+    let mut unknown_count = 0;
+    for chart in &target_complex.charts {
+        chart_offsets.insert(chart.as_str(), unknown_count);
+        unknown_count += cells.get(chart.as_str())?.equation_generators.len();
+    }
+    let mut relation_offsets = BTreeMap::new();
+    for overlap in &target_complex.overlaps {
+        relation_offsets.insert(overlap.id.as_str(), unknown_count);
+        unknown_count += cells
+            .get(overlap.id.as_str())?
+            .equation_relation_matrix
+            .len();
+    }
+    let mut rows = Vec::new();
+    for overlap in &target_complex.overlaps {
+        let target = cells.get(overlap.id.as_str())?;
+        let left = restrictions.get(&(overlap.left.as_str(), overlap.id.as_str()))?;
+        let right = restrictions.get(&(overlap.right.as_str(), overlap.id.as_str()))?;
+        let rhs = cochain.get(&overlap.id)?;
+        if rhs.len() != target.equation_generators.len() {
+            return None;
+        }
+        for coordinate in 0..target.equation_generators.len() {
+            let mut row = vec![0; unknown_count + 1];
+            for (chart, restriction) in [(&overlap.left, left), (&overlap.right, right)] {
+                let offset = chart_offsets[chart.as_str()];
+                for (index, coefficient) in
+                    restriction.equation_matrix[coordinate].iter().enumerate()
+                {
+                    row[offset + index] ^= coefficient;
+                }
+            }
+            let relation_offset = relation_offsets[overlap.id.as_str()];
+            for (index, relation) in target.equation_relation_matrix.iter().enumerate() {
+                row[relation_offset + index] ^= relation[coordinate];
+            }
+            row[unknown_count] = rhs[coordinate];
+            rows.push(row);
+        }
+    }
+    let solution = f2_solve(rows, unknown_count)?;
+    target_complex
+        .charts
+        .iter()
+        .map(|chart| {
+            let offset = chart_offsets[chart.as_str()];
+            let width = cells.get(chart.as_str())?.equation_generators.len();
+            Some((chart.clone(), solution[offset..offset + width].to_vec()))
+        })
+        .collect()
+}
+
+fn semantic_delta_zero_solution(
+    target_complex: &RepairPlanComplexV1,
+    cells: &BTreeMap<&str, &H1PresentationCellV052>,
+    restrictions: &BTreeMap<(&str, &str), &H1PresentationRestrictionV052>,
+    cochain: &BTreeMap<String, Vec<u8>>,
+) -> Option<BTreeMap<String, Vec<u8>>> {
+    let mut chart_offsets = BTreeMap::new();
+    let mut unknown_count = 0;
+    for chart in &target_complex.charts {
+        chart_offsets.insert(chart.as_str(), unknown_count);
+        unknown_count += cells.get(chart.as_str())?.semantic_generators.len();
+    }
+    let mut relation_offsets = BTreeMap::new();
+    for overlap in &target_complex.overlaps {
+        relation_offsets.insert(overlap.id.as_str(), unknown_count);
+        unknown_count += cells.get(overlap.id.as_str())?.repair_relation_matrix.len();
+    }
+    let mut rows = Vec::new();
+    for overlap in &target_complex.overlaps {
+        let target = cells.get(overlap.id.as_str())?;
+        let left = restrictions.get(&(overlap.left.as_str(), overlap.id.as_str()))?;
+        let right = restrictions.get(&(overlap.right.as_str(), overlap.id.as_str()))?;
+        let rhs = cochain.get(&overlap.id)?;
+        if rhs.len() != target.semantic_generators.len() {
+            return None;
+        }
+        for coordinate in 0..target.semantic_generators.len() {
+            let mut row = vec![0; unknown_count + 1];
+            for (chart, restriction) in [(&overlap.left, left), (&overlap.right, right)] {
+                let offset = chart_offsets[chart.as_str()];
+                for (index, coefficient) in
+                    restriction.semantic_matrix[coordinate].iter().enumerate()
+                {
+                    row[offset + index] ^= coefficient;
+                }
+            }
+            let relation_offset = relation_offsets[overlap.id.as_str()];
+            for (index, relation) in target.repair_relation_matrix.iter().enumerate() {
+                row[relation_offset + index] ^= relation[coordinate];
+            }
+            row[unknown_count] = rhs[coordinate];
+            rows.push(row);
+        }
+    }
+    let solution = f2_solve(rows, unknown_count)?;
+    target_complex
+        .charts
+        .iter()
+        .map(|chart| {
+            let offset = chart_offsets[chart.as_str()];
+            let width = cells.get(chart.as_str())?.semantic_generators.len();
+            Some((chart.clone(), solution[offset..offset + width].to_vec()))
+        })
+        .collect()
+}
+
+fn equation_cochain_json(
+    target_complex: &RepairPlanComplexV1,
+    cells: &BTreeMap<&str, &H1PresentationCellV052>,
+    cochain: &BTreeMap<String, Vec<u8>>,
+) -> Option<Vec<Value>> {
+    target_complex
+        .overlaps
+        .iter()
+        .map(|overlap| {
+            let cell = cells.get(overlap.id.as_str())?;
+            let coefficients = cochain.get(&overlap.id)?;
+            (coefficients.len() == cell.equation_generators.len()).then(|| {
+                json!({
+                    "overlapRef": overlap.id,
+                    "equationGenerators": cell.equation_generators,
+                    "coefficients": coefficients
+                })
+            })
+        })
+        .collect()
+}
+
+fn equation_chart_assignment_json(
+    target_complex: &RepairPlanComplexV1,
+    cells: &BTreeMap<&str, &H1PresentationCellV052>,
+    assignment: &BTreeMap<String, Vec<u8>>,
+) -> Option<Vec<Value>> {
+    target_complex
+        .charts
+        .iter()
+        .map(|chart| {
+            let cell = cells.get(chart.as_str())?;
+            let coefficients = assignment.get(chart)?;
+            (coefficients.len() == cell.equation_generators.len()).then(|| {
+                json!({
+                    "chartRef": chart,
+                    "equationGenerators": cell.equation_generators,
+                    "coefficients": coefficients
+                })
+            })
+        })
+        .collect()
+}
+
+fn binary_vector(vector: &[u8], width: usize) -> bool {
+    vector.len() == width && vector.iter().all(|value| *value <= 1)
+}
+
+fn f2_solve(mut rows: Vec<Vec<u8>>, unknown_count: usize) -> Option<Vec<u8>> {
+    if rows
+        .iter()
+        .any(|row| row.len() != unknown_count + 1 || row.iter().any(|value| *value > 1))
+    {
+        return None;
+    }
+    let mut pivot_row = 0;
+    let mut pivots = Vec::new();
+    for column in 0..unknown_count {
+        let pivot = (pivot_row..rows.len()).find(|row| rows[*row][column] == 1);
+        let Some(pivot) = pivot else {
+            continue;
+        };
+        rows.swap(pivot_row, pivot);
+        for row in 0..rows.len() {
+            if row != pivot_row && rows[row][column] == 1 {
+                for entry in column..=unknown_count {
+                    rows[row][entry] ^= rows[pivot_row][entry];
+                }
+            }
+        }
+        pivots.push((pivot_row, column));
+        pivot_row += 1;
+    }
+    if rows
+        .iter()
+        .any(|row| row[..unknown_count].iter().all(|value| *value == 0) && row[unknown_count] == 1)
+    {
+        return None;
+    }
+    let mut solution = vec![0; unknown_count];
+    for (row, column) in pivots {
+        solution[column] = rows[row][unknown_count];
+    }
+    Some(solution)
+}
+
+fn binary_matrix(rows: &[Vec<u8>], width: usize) -> bool {
+    rows.iter()
+        .all(|row| row.len() == width && row.iter().all(|value| *value <= 1))
+}
+
+fn binary_matrix_with_shape(rows: &[Vec<u8>], height: usize, width: usize) -> bool {
+    rows.len() == height && binary_matrix(rows, width)
+}
+
+fn f2_rank(rows: &[Vec<u8>], width: usize) -> Option<usize> {
+    if !binary_matrix(rows, width) {
+        return None;
+    }
+    let mut rows = rows.to_vec();
+    let mut rank = 0;
+    for column in 0..width {
+        let pivot = (rank..rows.len()).find(|row| rows[*row][column] == 1);
+        let Some(pivot) = pivot else {
+            continue;
+        };
+        rows.swap(rank, pivot);
+        for row in 0..rows.len() {
+            if row != rank && rows[row][column] == 1 {
+                for entry in column..width {
+                    rows[row][entry] ^= rows[rank][entry];
+                }
+            }
+        }
+        rank += 1;
+    }
+    Some(rank)
+}
+
+fn matrix_columns(matrix: &[Vec<u8>], width: usize) -> Vec<Vec<u8>> {
+    (0..width)
+        .map(|column| matrix.iter().map(|row| row[column]).collect())
+        .collect()
+}
+
+fn f2_matrix_vector(matrix: &[Vec<u8>], vector: &[u8]) -> Vec<u8> {
+    matrix
+        .iter()
+        .map(|row| {
+            row.iter()
+                .zip(vector)
+                .fold(0, |sum, (coefficient, value)| sum ^ (*coefficient & *value))
+        })
+        .collect()
+}
+
+fn f2_vector_in_span(rows: &[Vec<u8>], width: usize, vector: &[u8]) -> Option<bool> {
+    if vector.len() != width || vector.iter().any(|value| *value > 1) {
+        return None;
+    }
+    let rank = f2_rank(rows, width)?;
+    let mut augmented = rows.to_vec();
+    augmented.push(vector.to_vec());
+    Some(f2_rank(&augmented, width)? == rank)
 }
 
 fn parse_explicit_cochain_map(
@@ -1373,6 +2801,265 @@ fn check_archmap_bindings(
             ));
         }
     }
+    let has_archmap_complex_mapping = plan.complex.archmap_cover_ref.is_some()
+        || plan
+            .complex
+            .overlaps
+            .iter()
+            .any(|overlap| overlap.archmap_context_ref.is_some())
+        || plan
+            .complex
+            .triple_overlaps
+            .iter()
+            .any(|triple| triple.archmap_context_ref.is_some());
+    let presentation_generated = plan
+        .comparison
+        .as_ref()
+        .and_then(|comparison| comparison.get("h1ComparisonData"))
+        .and_then(|h1| h1.get("kind"))
+        .and_then(Value::as_str)
+        == Some("presentation-generated");
+    if has_archmap_complex_mapping || presentation_generated {
+        let contexts = archmap
+            .contexts
+            .iter()
+            .map(|context| (context.id.as_str(), context))
+            .collect::<BTreeMap<_, _>>();
+        let direct_predecessors = archmap
+            .contexts
+            .iter()
+            .flat_map(|context| {
+                context
+                    .restricts_to
+                    .iter()
+                    .map(move |target| (target.as_str(), context.id.as_str()))
+            })
+            .fold(BTreeMap::new(), |mut predecessors, (target, source)| {
+                predecessors
+                    .entry(target)
+                    .or_insert_with(BTreeSet::new)
+                    .insert(source);
+                predecessors
+            });
+        let chart_ids = plan
+            .complex
+            .charts
+            .iter()
+            .map(String::as_str)
+            .collect::<BTreeSet<_>>();
+        let mut mapped_contexts = BTreeSet::new();
+        let mut overlap_contexts = BTreeMap::new();
+
+        for overlap in &plan.complex.overlaps {
+            let path = format!("complex.overlaps[{}].archmapContextRef", overlap.id);
+            let Some(context_ref) = overlap.archmap_context_ref.as_deref() else {
+                examples.push(generic_validation_example(
+                    &path,
+                    "missing",
+                    "an ArchMap complex mapping requires every overlap to declare archmapContextRef",
+                ));
+                continue;
+            };
+            overlap_contexts.insert(overlap.id.as_str(), context_ref);
+            if chart_ids.contains(context_ref) {
+                examples.push(generic_validation_example(
+                    &path,
+                    context_ref,
+                    "an overlap archmapContextRef must be distinct from every chart context",
+                ));
+            }
+            if !mapped_contexts.insert(context_ref) {
+                examples.push(generic_validation_example(
+                    &path,
+                    context_ref,
+                    "each overlap or triple requires its own ArchMap intersection context",
+                ));
+            }
+            let Some(intersection) = contexts.get(context_ref) else {
+                examples.push(generic_validation_example(
+                    &path,
+                    context_ref,
+                    "overlap archmapContextRef must resolve to an ArchMap context",
+                ));
+                continue;
+            };
+            let expected_predecessors = [&overlap.left, &overlap.right]
+                .into_iter()
+                .map(String::as_str)
+                .collect::<BTreeSet<_>>();
+            let actual_predecessors = direct_predecessors
+                .get(context_ref)
+                .cloned()
+                .unwrap_or_default();
+            if actual_predecessors != expected_predecessors {
+                examples.push(generic_validation_example(
+                    &path,
+                    &format!("actual={actual_predecessors:?}, expected={expected_predecessors:?}"),
+                    "a mapped overlap must have exactly its two chart contexts as direct restriction predecessors",
+                ));
+            }
+            if !intersection
+                .refs
+                .iter()
+                .any(|reference| !reference.trim().is_empty())
+            {
+                examples.push(generic_validation_example(
+                    &path,
+                    context_ref,
+                    "mapped overlap contexts must retain a source-grounded ArchMap reference",
+                ));
+            }
+        }
+
+        for triple in &plan.complex.triple_overlaps {
+            let path = format!("complex.tripleOverlaps[{}].archmapContextRef", triple.id);
+            let Some(context_ref) = triple.archmap_context_ref.as_deref() else {
+                examples.push(generic_validation_example(
+                    &path,
+                    "missing",
+                    "an ArchMap complex mapping requires every triple overlap to declare archmapContextRef",
+                ));
+                continue;
+            };
+            if chart_ids.contains(context_ref) {
+                examples.push(generic_validation_example(
+                    &path,
+                    context_ref,
+                    "a triple archmapContextRef must be distinct from every chart context",
+                ));
+            }
+            if !mapped_contexts.insert(context_ref) {
+                examples.push(generic_validation_example(
+                    &path,
+                    context_ref,
+                    "each overlap or triple requires its own ArchMap intersection context",
+                ));
+            }
+            let Some(intersection) = contexts.get(context_ref) else {
+                examples.push(generic_validation_example(
+                    &path,
+                    context_ref,
+                    "triple archmapContextRef must resolve to an ArchMap context",
+                ));
+                continue;
+            };
+            let mut expected_predecessors = BTreeSet::new();
+            for overlap_ref in &triple.overlap_refs {
+                let Some(source_ref) = overlap_contexts.get(overlap_ref.as_str()) else {
+                    examples.push(generic_validation_example(
+                        &path,
+                        overlap_ref,
+                        "triple overlap mapping requires every referenced overlap mapping",
+                    ));
+                    continue;
+                };
+                expected_predecessors.insert(*source_ref);
+            }
+            let actual_predecessors = direct_predecessors
+                .get(context_ref)
+                .cloned()
+                .unwrap_or_default();
+            if actual_predecessors != expected_predecessors {
+                examples.push(generic_validation_example(
+                    &path,
+                    &format!("actual={actual_predecessors:?}, expected={expected_predecessors:?}"),
+                    "a mapped triple overlap must have exactly its mapped overlap contexts as direct restriction predecessors",
+                ));
+            }
+            if !intersection
+                .refs
+                .iter()
+                .any(|reference| !reference.trim().is_empty())
+            {
+                examples.push(generic_validation_example(
+                    &path,
+                    context_ref,
+                    "mapped triple contexts must retain a source-grounded ArchMap reference",
+                ));
+            }
+        }
+
+        match plan.complex.archmap_cover_ref.as_deref() {
+            Some(cover_ref) => match archmap.covers.iter().find(|cover| cover.id == cover_ref) {
+                Some(cover) => {
+                    let expected_contexts = chart_ids
+                        .into_iter()
+                        .chain(mapped_contexts.iter().copied())
+                        .collect::<BTreeSet<_>>();
+                    let actual_contexts = cover
+                        .contexts
+                        .iter()
+                        .map(String::as_str)
+                        .collect::<BTreeSet<_>>();
+                    let expected_direct_restrictions = plan
+                        .complex
+                        .overlaps
+                        .iter()
+                        .filter_map(|overlap| {
+                            overlap.archmap_context_ref.as_deref().map(|context_ref| {
+                                [&overlap.left, &overlap.right]
+                                    .into_iter()
+                                    .map(move |chart| (chart.as_str(), context_ref))
+                            })
+                        })
+                        .flatten()
+                        .chain(plan.complex.triple_overlaps.iter().flat_map(|triple| {
+                            let Some(context_ref) = triple.archmap_context_ref.as_deref() else {
+                                return Vec::new().into_iter();
+                            };
+                            triple
+                                .overlap_refs
+                                .iter()
+                                .filter_map(|overlap_ref| {
+                                    overlap_contexts
+                                        .get(overlap_ref.as_str())
+                                        .map(|source_ref| (*source_ref, context_ref))
+                                })
+                                .collect::<Vec<_>>()
+                                .into_iter()
+                        }))
+                        .collect::<BTreeSet<_>>();
+                    let actual_direct_restrictions = archmap
+                        .contexts
+                        .iter()
+                        .filter(|context| actual_contexts.contains(context.id.as_str()))
+                        .flat_map(|context| {
+                            context
+                                .restricts_to
+                                .iter()
+                                .filter(|target| actual_contexts.contains(target.as_str()))
+                                .map(move |target| (context.id.as_str(), target.as_str()))
+                        })
+                        .collect::<BTreeSet<_>>();
+                    let membership_valid = if plan.complex.enumeration_complete {
+                        actual_contexts == expected_contexts
+                            && actual_direct_restrictions == expected_direct_restrictions
+                    } else {
+                        expected_contexts.is_subset(&actual_contexts)
+                    };
+                    if !membership_valid {
+                        examples.push(generic_validation_example(
+                            "complex.archmapCoverRef",
+                            &format!(
+                                "cover={actual_contexts:?}, complex={expected_contexts:?}, restrictions={actual_direct_restrictions:?}, expectedRestrictions={expected_direct_restrictions:?}"
+                            ),
+                            "the mapped ArchMap cover must contain exactly the enumerated contexts and direct restrictions when enumerationComplete is true",
+                        ));
+                    }
+                }
+                None => examples.push(generic_validation_example(
+                    "complex.archmapCoverRef",
+                    cover_ref,
+                    "archmapCoverRef must resolve to an ArchMap cover",
+                )),
+            },
+            None => examples.push(generic_validation_example(
+                "complex.archmapCoverRef",
+                "missing",
+                "overlap or triple ArchMap mappings require complex.archmapCoverRef",
+            )),
+        }
+    }
     for atom_ref in &plan.semantic_projection.lambda {
         if !atom_subjects.contains_key(atom_ref.as_str()) {
             examples.push(generic_validation_example(
@@ -1422,7 +3109,7 @@ fn check_archmap_bindings(
     }
     examples_check(
         "repair-plan-schema052-archmap-bindings",
-        "RepairPlan charts and semantic projection resolve against the supplied ArchMap",
+        "RepairPlan charts, declared finite-complex mappings, and semantic projection resolve against the supplied ArchMap",
         examples,
     )
 }
@@ -1656,11 +3343,11 @@ fn check_complete_support(plan: &RepairPlanDocumentV1) -> ValidationCheck {
 fn check_enumeration_assumption(plan: &RepairPlanDocumentV1) -> ValidationCheck {
     let mut check = validation_check(
         "repair-plan-schema052-enumeration-assumption",
-        "Enumeration completeness is recorded as an author assumption, not verified",
+        "External semantic completeness remains an author assumption; declared ArchMap cover/incidence is checked separately",
         "warn",
     );
     check.reason = Some(format!(
-        "complex.enumerationComplete={} is recorded in the assumption ledger with assumed_by=repair-plan author",
+        "complex.enumerationComplete={} records the author assumption about external semantic completeness; mapped declared cover/incidence is checked by repair-plan-schema052-archmap-bindings",
         plan.complex.enumeration_complete
     ));
     check

@@ -182,7 +182,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 vec![
                     "RepairPlan validation checks supplied premises before use; it does not compute boundary membership or global coherence.",
                     "RepairPlan input cannot supply generated conclusion tokens such as glues, verdict, h1Zero, or globalCoherent.",
-                    "Enumeration completeness is recorded as an author assumption, not mechanically verified.",
+                    "External semantic completeness remains an author assumption; declared ArchMap cover/incidence is mechanically checked when the RepairPlan supplies the mapping.",
                 ],
             ),
             artifact(
@@ -192,10 +192,10 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "primary",
                 "ArchSig v0.5.4 Algebraic Geometry Measurement",
                 vec!["archsig-contract:saga-stage2-v0.5.4"],
-                "H1 comparison data v0.5.4 supplies an explicitly typed finite cochain map over degree-zero charts, degree-one overlaps, and degree-two triple-overlap bases, including the declared image of zero. The validator recomputes basis bijections, difference preservation, zero preservation, and differential commutativity from the finite map.",
+                "H1 comparison data v0.5.4 accepts either an explicitly typed finite cochain map over degree-zero charts, degree-one overlaps, and degree-two triple-overlap bases, or a presentation-generated contract with semantic/equation matrices, restriction maps, an independently supplied equation lift atlas, and a complete ArchMap cover/incidence mapping. The validator recomputes explicit-map properties, or checks F2 presentation exactness, generator completeness, restriction naturality, derived cochain commutativity, semantic/equation residual construction, source/target quotient-level cocycle/class calculation, the residual witness, and the declared finite complex against the supplied ArchMap.",
                 vec![
-                    "The cochain map contract validates supplied finite data; it does not itself prove a theorem or generate a quotient-level conclusion.",
-                    "H1 transfer is generated only after the supplied class prerequisite and target class computation are available.",
+                    "Explicit cochain data remains supplied and is validated as such; presentation-generated data derives local Phi, cochain map, semantic/equation residuals, and quotient-level witnesses after matrix exactness and naturality checks pass.",
+                    "H1 transfer is generated only after the applicable computed source-class prerequisite and target class computation are available.",
                 ],
             ),
             artifact(

@@ -5,11 +5,13 @@ use serde_json::{Value, json};
 use crate::law_execution::LawExecutionPlanV1;
 use crate::repair_plan::{
     comparison_complex_fingerprint, comparison_target_complex, explicit_h1_comparison_checks,
+    presentation_generated_h1_checks, presentation_generated_h1_output,
 };
 use crate::{
     ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION, ARCHSIG_DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS,
     ARCHSIG_MEASURED_LAW_DEFECT_AT_CHART, ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS,
-    ARCHSIG_SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA, ARCHSIG_SAGA_CONCLUSIONS_V1_SCHEMA,
+    ARCHSIG_SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA,
+    ARCHSIG_SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS, ARCHSIG_SAGA_CONCLUSIONS_V1_SCHEMA,
     AgAssumptionLedgerEntryV1, AgStructuralVerdictV1, AgVerdictDataV1, ArchMapDocumentV2,
     MeasurementProfileV1, NormalizedArchMapV2, RepairPlanDocumentV1, assumption_id_for_schema,
 };
@@ -748,7 +750,7 @@ fn evaluate_saga_comparison_v1(
             }
         });
     };
-    let class_available = structural_verdict.iter().any(|verdict| {
+    let measured_class_available = structural_verdict.iter().any(|verdict| {
         verdict.evaluator == "ag.saga-descent"
             && verdict.law == "saga.residual-class"
             && matches!(
@@ -756,7 +758,7 @@ fn evaluate_saga_comparison_v1(
                 "measured_zero" | "measured_nonzero"
             )
     });
-    let class_nonzero = structural_verdict.iter().any(|verdict| {
+    let measured_class_nonzero = structural_verdict.iter().any(|verdict| {
         verdict.evaluator == "ag.saga-descent"
             && verdict.law == "saga.residual-class"
             && verdict.verdict == "measured_nonzero"
@@ -777,25 +779,84 @@ fn evaluate_saga_comparison_v1(
     } else {
         None
     };
+    let presentation_checks = if h1_kind == "presentation-generated" {
+        comparison_target_complex(plan, comparison).and_then(|target_complex| {
+            comparison
+                .get("h1ComparisonData")
+                .and_then(Value::as_object)
+                .map(|h1| presentation_generated_h1_checks(plan, &target_complex, h1))
+        })
+    } else {
+        None
+    };
     let contract_checked = if h1_kind == "explicit" {
         explicit_checks.is_some_and(|checks| checks.all_pass())
+    } else if h1_kind == "presentation-generated" {
+        presentation_checks
+            .as_ref()
+            .is_some_and(|checks| checks.all_pass())
     } else {
         true
     };
-    let target_class_nonzero = comparison_target_class_nonzero(plan, comparison);
+    let (class_available, class_nonzero, source_invariant) = if h1_kind == "presentation-generated"
+    {
+        presentation_checks
+            .as_ref()
+            .and_then(|checks| checks.source_class_nonzero)
+            .map(|source_class_nonzero| {
+                (
+                    true,
+                    source_class_nonzero,
+                    "presentation-generated:semantic-h1-class",
+                )
+            })
+            .unwrap_or((false, false, "presentation-generated:semantic-h1-class"))
+    } else {
+        (
+            measured_class_available,
+            measured_class_nonzero,
+            "saga-descent:residual-class",
+        )
+    };
+    let target_class_nonzero = if h1_kind == "presentation-generated" {
+        presentation_checks
+            .as_ref()
+            .and_then(|checks| checks.target_class_nonzero)
+    } else {
+        comparison_target_class_nonzero(plan, comparison)
+    };
     let preserves_zero_predicate =
         target_class_nonzero.is_some_and(|target| target == class_nonzero);
     let comparison_contract_violation = class_available
         && target_class_nonzero.is_some()
         && (!contract_checked || !preserves_zero_predicate);
     if !class_available {
+        let (reason, what_next, non_conclusions) = if h1_kind == "presentation-generated" {
+            (
+                "presentation_source_class_prerequisite_not_computed",
+                "supply a valid semantic presentation, restriction maps, and equation lift atlas so the source presentation H1 class can be computed before evaluating transfer",
+                [
+                    "The comparison contract is not a replacement for the computed source presentation H1 class.",
+                    "No comparison failure code is emitted until the source presentation H1 class is computed.",
+                ],
+            )
+        } else {
+            (
+                "residual_class_prerequisite_not_measured",
+                "supply valid inputs for complex.tripleOverlaps, coefficient, trueSheafCertificate, and gluingData so the source residual class can be measured before evaluating H1 comparison transfer",
+                [
+                    "The comparison contract is not a replacement for the measured source residual class.",
+                    "No comparison failure code is emitted until the residual-class prerequisite is measured.",
+                ],
+            )
+        };
         return json!({
             "invariantId": "saga-comparison:h1-transfer",
             "evaluator": "ag.saga-comparison",
             "kind": "h1-comparison-transfer",
             "status": "silence_by_design",
-            "reason": "residual_class_prerequisite_not_measured",
-            "whatNext": "supply valid inputs for complex.tripleOverlaps, coefficient, trueSheafCertificate, and gluingData so the source residual class can be measured before evaluating H1 comparison transfer",
+            "reason": reason,
+            "whatNext": what_next,
             "contract": {
                 "incidenceBridgeKind": bridge_kind,
                 "h1ComparisonDataKind": h1_kind,
@@ -804,19 +865,40 @@ fn evaluate_saga_comparison_v1(
                 "targetClassComputed": target_class_nonzero.is_some(),
                 "contractChecked": contract_checked
             },
-            "nonConclusions": [
-                "The comparison contract is not a replacement for the measured source residual class.",
-                "No comparison failure code is emitted until the residual-class prerequisite is measured."
-            ]
+            "nonConclusions": non_conclusions
         });
     }
     let established = contract_checked && class_available && preserves_zero_predicate;
+    let conclusion_code = if established {
+        if h1_kind == "presentation-generated" {
+            Some(ARCHSIG_SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS)
+        } else {
+            Some(ARCHSIG_SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA)
+        }
+    } else {
+        None
+    };
+    let presentation_generated = if h1_kind == "presentation-generated" {
+        comparison_target_complex(plan, comparison)
+            .zip(
+                comparison
+                    .get("h1ComparisonData")
+                    .and_then(Value::as_object),
+            )
+            .zip(presentation_checks.as_ref())
+            .map(|((target_complex, h1), checks)| {
+                presentation_generated_h1_output(plan, &target_complex, h1, checks)
+            })
+            .unwrap_or(Value::Null)
+    } else {
+        Value::Null
+    };
     json!({
         "invariantId": "saga-comparison:h1-transfer",
         "evaluator": "ag.saga-comparison",
         "kind": "h1-comparison-transfer",
         "status": if established { "established" } else { "not_computed" },
-        "conclusionCode": established.then_some(ARCHSIG_SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA),
+        "conclusionCode": conclusion_code,
         "contract": {
             "incidenceBridgeKind": bridge_kind,
             "h1ComparisonDataKind": h1_kind,
@@ -828,7 +910,7 @@ fn evaluate_saga_comparison_v1(
         "suppliedCochainMap": {
             "level": "cochain",
             "kind": h1_kind,
-            "contractChecked": contract_checked,
+            "contractChecked": (h1_kind == "explicit").then_some(contract_checked),
             "checkedProperties": explicit_checks.map(|checks| json!({
                 "degreeOneLeftInverse": checks.degree_one_left_inverse,
                 "degreeOneRightInverse": checks.degree_one_right_inverse,
@@ -838,14 +920,19 @@ fn evaluate_saga_comparison_v1(
             })),
             "targetSupportComputed": target_class_nonzero.is_some()
         },
+        "presentationGenerated": presentation_generated,
         "generatedQuotientTransfer": if established {
             json!({
                 "level": "quotient",
-                "kind": "Z1/B1-class-transfer",
+                "kind": if h1_kind == "presentation-generated" {
+                    "presentation-derived-Z1/B1-class-transfer"
+                } else {
+                    "Z1/B1-class-transfer"
+                },
                 "preservesZeroPredicate": preserves_zero_predicate,
                 "sourceClassNonZero": class_nonzero,
                 "targetClassNonZero": target_class_nonzero,
-                "sourceInvariant": "saga-descent:residual-class",
+                "sourceInvariant": source_invariant,
                 "targetInvariant": "saga-comparison:h1-transfer"
             })
         } else {
@@ -1246,6 +1333,34 @@ mod tests {
         let result = evaluate_saga_comparison_v1(&plan, &[]);
         assert_eq!(result["status"], "silence_by_design");
         assert_eq!(result["reason"], "residual_class_prerequisite_not_measured");
+        assert!(result.get("failureCode").is_none());
+    }
+
+    #[test]
+    fn presentation_generated_silence_names_its_computed_source_class_prerequisite() {
+        let mut plan: RepairPlanDocumentV1 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/repair_plan_presentation_generated_circle.json"
+        ))
+        .expect("presentation-generated fixture parses");
+        plan.comparison.as_mut().expect("comparison exists")["h1ComparisonData"]["presentation"] =
+            serde_json::json!({});
+
+        let result = evaluate_saga_comparison_v1(&plan, &[]);
+        assert_eq!(result["status"], "silence_by_design");
+        assert_eq!(
+            result["reason"],
+            "presentation_source_class_prerequisite_not_computed"
+        );
+        assert!(result["whatNext"]
+            .as_str()
+            .is_some_and(|text| text.contains("semantic presentation")));
+        assert!(result["nonConclusions"]
+            .as_array()
+            .is_some_and(|entries| entries.iter().all(|entry| {
+                entry
+                    .as_str()
+                    .is_some_and(|text| text.contains("source presentation H1 class"))
+            })));
         assert!(result.get("failureCode").is_none());
     }
 

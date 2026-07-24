@@ -1,0 +1,100 @@
+{
+  "schema": "archsig-repair-plan/v0.5.4",
+  "id": "repair-plan:presentation-generated-circle",
+  "residual": { "kind": "supplied" },
+  "complex": {
+    "charts": ["ctx:order", "ctx:inventory", "ctx:shared", "ctx:circle"],
+    "archmapCoverRef": "cover:order-inventory",
+    "overlaps": [
+      { "id": "overlap:01", "left": "ctx:order", "right": "ctx:inventory", "archmapContextRef": "ctx:overlap-01" },
+      { "id": "overlap:12", "left": "ctx:inventory", "right": "ctx:shared", "archmapContextRef": "ctx:overlap-12" },
+      { "id": "overlap:23", "left": "ctx:shared", "right": "ctx:circle", "archmapContextRef": "ctx:overlap-23" },
+      { "id": "overlap:30", "left": "ctx:circle", "right": "ctx:order", "archmapContextRef": "ctx:overlap-30" }
+    ],
+    "tripleOverlaps": [],
+    "enumerationComplete": true
+  },
+  "primitives": [
+    {
+      "id": "primitive:01",
+      "overlapRef": "overlap:01",
+      "resL": ["sigma"],
+      "resR": [],
+      "support": { "kind": "complete", "variables": ["sigma"] }
+    },
+    {
+      "id": "primitive:12",
+      "overlapRef": "overlap:12",
+      "resL": [],
+      "resR": [],
+      "support": { "kind": "complete", "variables": [] }
+    },
+    {
+      "id": "primitive:23",
+      "overlapRef": "overlap:23",
+      "resL": [],
+      "resR": [],
+      "support": { "kind": "complete", "variables": [] }
+    },
+    {
+      "id": "primitive:30",
+      "overlapRef": "overlap:30",
+      "resL": [],
+      "resR": [],
+      "support": { "kind": "complete", "variables": [] }
+    }
+  ],
+  "semanticProjection": { "lambda": [], "k": [], "pi": [] },
+  "faithfulness": { "mode": "complete-support" },
+  "coefficient": "f2-additive",
+  "comparison": {
+    "kind": "saga-comparison",
+    "incidenceBridge": {
+      "kind": "chart-indexed",
+      "repairChartRefs": ["ctx:order", "ctx:inventory", "ctx:shared", "ctx:circle"],
+      "cechChartRefs": ["ctx:order", "ctx:inventory", "ctx:shared", "ctx:circle"]
+    },
+    "h1ComparisonData": {
+      "schema": "h1-comparison-data/v0.5.4",
+      "kind": "presentation-generated",
+      "sourceComplexFingerprint": "2a6477405aecad1eacd7edbcb0876f058c556cc53695c5f57970564b5e85ccb9",
+      "targetComplexFingerprint": "2a6477405aecad1eacd7edbcb0876f058c556cc53695c5f57970564b5e85ccb9",
+      "presentation": {
+        "cells": [
+          { "cellRef": "ctx:order", "semanticGenerators": ["sigma"], "repairRelationMatrix": [], "equationGenerators": ["q"], "equationRelationMatrix": [], "generatorMap": [[1]] },
+          { "cellRef": "ctx:inventory", "semanticGenerators": ["sigma"], "repairRelationMatrix": [], "equationGenerators": ["q"], "equationRelationMatrix": [], "generatorMap": [[1]] },
+          { "cellRef": "ctx:shared", "semanticGenerators": ["sigma"], "repairRelationMatrix": [], "equationGenerators": ["q"], "equationRelationMatrix": [], "generatorMap": [[1]] },
+          { "cellRef": "ctx:circle", "semanticGenerators": ["sigma"], "repairRelationMatrix": [], "equationGenerators": ["q"], "equationRelationMatrix": [], "generatorMap": [[1]] },
+          { "cellRef": "overlap:01", "semanticGenerators": ["sigma"], "repairRelationMatrix": [], "equationGenerators": ["q"], "equationRelationMatrix": [], "generatorMap": [[1]] },
+          { "cellRef": "overlap:12", "semanticGenerators": ["sigma"], "repairRelationMatrix": [], "equationGenerators": ["q"], "equationRelationMatrix": [], "generatorMap": [[1]] },
+          { "cellRef": "overlap:23", "semanticGenerators": ["sigma"], "repairRelationMatrix": [], "equationGenerators": ["q"], "equationRelationMatrix": [], "generatorMap": [[1]] },
+          { "cellRef": "overlap:30", "semanticGenerators": ["sigma"], "repairRelationMatrix": [], "equationGenerators": ["q"], "equationRelationMatrix": [], "generatorMap": [[1]] }
+        ],
+        "restrictions": [
+          { "fromRef": "ctx:order", "toRef": "overlap:01", "semanticMatrix": [[1]], "equationMatrix": [[1]] },
+          { "fromRef": "ctx:inventory", "toRef": "overlap:01", "semanticMatrix": [[1]], "equationMatrix": [[1]] },
+          { "fromRef": "ctx:inventory", "toRef": "overlap:12", "semanticMatrix": [[1]], "equationMatrix": [[1]] },
+          { "fromRef": "ctx:shared", "toRef": "overlap:12", "semanticMatrix": [[1]], "equationMatrix": [[1]] },
+          { "fromRef": "ctx:shared", "toRef": "overlap:23", "semanticMatrix": [[1]], "equationMatrix": [[1]] },
+          { "fromRef": "ctx:circle", "toRef": "overlap:23", "semanticMatrix": [[1]], "equationMatrix": [[1]] },
+          { "fromRef": "ctx:circle", "toRef": "overlap:30", "semanticMatrix": [[1]], "equationMatrix": [[1]] },
+          { "fromRef": "ctx:order", "toRef": "overlap:30", "semanticMatrix": [[1]], "equationMatrix": [[1]] }
+        ],
+        "equationLiftAtlas": {
+          "localLifts": [
+            { "chartRef": "ctx:order", "coefficients": [0] },
+            { "chartRef": "ctx:inventory", "coefficients": [0] },
+            { "chartRef": "ctx:shared", "coefficients": [0] },
+            { "chartRef": "ctx:circle", "coefficients": [0] }
+          ],
+          "transitionDifferences": [
+            { "overlapRef": "overlap:01", "coefficients": [1] },
+            { "overlapRef": "overlap:12", "coefficients": [0] },
+            { "overlapRef": "overlap:23", "coefficients": [0] },
+            { "overlapRef": "overlap:30", "coefficients": [0] }
+          ]
+        }
+      }
+    }
+  }
+}

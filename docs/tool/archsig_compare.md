@@ -9,17 +9,45 @@
 fingerprint 不一致かつ refinement 不在の場合は `profileConclusionCode: TWO_PROFILES_REPORTED_SEPARATELY` を記録する。
 
 SAGA の run 内 H¹ comparison は `RepairPlan.comparison.h1ComparisonData` が所有する。
-explicit comparison では `cochainMap.degreeZero` / `degreeOne` / `degreeTwo.basisMap` と
-`degreeTwo.zeroImage` の有限写像表を validator が再計算し、適合条件を満たす場合だけ
-analyze の転送 invariant が立つ。
+`kind: "presentation-generated"` のRepairPlanは `complex.archmapCoverRef` と全overlap / tripleの
+`archmapContextRef` を必須とする。validator は指定coverのcontext集合と、各intersectionの直接restriction
+predecessor集合を照合する。`enumerationComplete: true` の場合、そのcoverは列挙されたchartとintersection
+context、および宣言されたchart→overlap / overlap→tripleの直接restrictionだけから成らなければならない。
+この照合は宣言された有限入力の一致を検査するものであり、外部意味論上の完全性はRepairPlan authorの
+assumptionとして記録する。
+`kind: "explicit"` では `cochainMap.degreeZero` / `degreeOne` / `degreeTwo.basisMap` と
+`degreeTwo.zeroImage` の有限写像表を validator が再計算する。
+`kind: "presentation-generated"` では各 chart / overlap / triple cell の semantic generators、
+repair relation 行列、equation quotient presentation、`generatorMap` と restriction 行列を入力し、
+F₂ 上で `im(R)=ker(χ̃)`、`im(χ̃)=Q_E`、restriction naturality を検査する。これにより
+local `Φ` と `κ⁰ / κ¹ / κ²` を導出し、`κ¹D_sem⁰=D_E⁰κ⁰` と
+`κ²D_sem¹=D_E¹κ¹` を有限 cell incidence で確認する。presentation は independently authored な
+`equationLiftAtlas`（chart ごとの local lift と overlap ごとの transition difference）も持ち、
+ArchSig はそこから `r_E` を導出する。`κ¹(r_sem)=r_E+δ⁰h` は equation relation を含む商上で
+解き、解があるときだけ computed quotient-atlas witness `h` を出力する。同じ商上で target cocycle と
+target `Z¹/B¹` class を再計算する。semantic presentation 側でも `r_sem` の cocycle と
+`Z¹/B¹` class を計算するため、nonempty triple がない selected `C²=0` complex でも、有限presentation
+そのものから source / target H¹ transfer を確立できる。
+出力の `presentationGenerated.comparisonInput` には canonical RepairPlan を保持し、packet validator は
+その入力から generated evidence 全体を再計算して `inputDigests.repairPlan.sha256` と照合する。
+どちらの kind でも適合条件を満たす場合だけ analyze の転送 invariant が立つ。
 compare の run-pair 記録はこの run 内写像を自動生成しない。
 
-SAGA の run 内 comparison は、source の `saga.residual-class` が未計測なら
-`silence_by_design`、reason `residual_class_prerequisite_not_measured` と
-不足している入力slot (`complex.tripleOverlaps`, `coefficient`,
-`trueSheafCertificate`, `gluingData`) を案内する `whatNext` を記録する。この前提未供給は比較違反として扱わない。source class が計測済みの場合だけ、有限 map の適合検査または target class の zero predicate の検査へ進む。
+SAGA の run 内 comparison で `kind: "explicit"` を選ぶ場合は、source の
+`saga.residual-class` が未計測なら `silence_by_design`、reason
+`residual_class_prerequisite_not_measured` と、不足している入力slot
+(`complex.tripleOverlaps`, `coefficient`, `trueSheafCertificate`, `gluingData`) を案内する
+`whatNext` を記録する。この前提未供給は比較違反として扱わない。source class が計測済みの場合だけ、有限 map の適合検査または target class の zero predicate の検査へ進む。
 
-`h1-comparison-transfer` は `ag.saga-comparison` evaluator が所有する computed invariant であり、`contract` を必須とする。contract は `incidenceBridgeKind`、`h1ComparisonDataKind`、`normalizedComplexFingerprint`（文字列）と、`classPrerequisite`、`targetClassComputed`、`contractChecked`（真偽値）の6フィールドを持ち、未知フィールドや別 evaluator への付け替えは受理しない。
+`kind: "presentation-generated"` では `saga.residual-class` を入力前提にせず、上記の
+finite presentation 検査から semantic presentation の source `Z¹/B¹` class を計算する。
+その計算に必要な presentation、restriction maps、または `equationLiftAtlas` が不成立なら
+`silence_by_design` と reason `presentation_source_class_prerequisite_not_computed` を記録し、
+それらの補充を `whatNext` に示す。4-cycle のように
+selected `C²=0` で triple overlap が空でも、presentation による source / target class と
+quotient-atlas witness が計算できれば、この経路は `established` になりうる。
+
+`h1-comparison-transfer` は `ag.saga-comparison` evaluator が所有する computed invariant であり、`contract` を必須とする。contract は `incidenceBridgeKind`、`h1ComparisonDataKind`、`normalizedComplexFingerprint`（文字列）と、`classPrerequisite`、`targetClassComputed`、`contractChecked`（真偽値）の6フィールドを持ち、未知フィールドや別 evaluator への付け替えは受理しない。presentation-generated 経路が established のときは `SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS` を出力し、explicit 経路の `SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA` と区別する。
 不一致になった場合だけ `COMPARISON_DATA_CONTRACT_VIOLATION` を記録する。
 
 ## Inputs and outputs
@@ -47,11 +75,17 @@ Outputs:
 ## Comparability
 
 `identical` requires matching ArchMap digest, LawPolicy, law-surface, and
-MeasurementProfile component fingerprints, plus tool version.
+MeasurementProfile component fingerprints, optional RepairPlan digest, plus tool version.
 `verdict-row` requires matching LawPolicy, law-surface, and MeasurementProfile component fingerprints, site cover
-digest, and tool version. A policy-bundle component change is therefore
-explicitly recorded as `not-comparable`.
+digest, and tool version. RepairPlan digest differences are emitted as
+`sameRepairPlanDigest: false` with a `repair_plan_changed_between_runs` record, while preserving
+the record-level comparison. A policy-bundle component change is therefore explicitly recorded as
+`not-comparable`.
 Other pairs are `not-comparable`; the report records both independent run conclusions and emits a typed boundary.
+
+Each measurement run manifest records the canonical digests of its normalized ArchMap and measurement packet.
+`compare` verifies both digests and each artifact's run contract (`runId`, tool version, input digests,
+component fingerprints) against the manifest before computing an ArchMap diff or verdict transition.
 
 When a checked refinement artifact binds both run site-cover fingerprints, `classTransport.recordComparability`
 may remain `not-comparable` while the separate refinement reading is established.

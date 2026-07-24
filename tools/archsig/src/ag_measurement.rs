@@ -1,8 +1,12 @@
 use std::collections::{BTreeMap, BTreeSet};
 
+use serde::Deserialize;
 use serde_json::{Value, json};
+use sha2::{Digest, Sha256};
 
 use crate::law_execution::{LawExecutionPlanV1, build_law_execution_plan};
+use crate::policy_bundle::canonical_json_bytes;
+use crate::repair_plan::recompute_presentation_generated_h1_output;
 use crate::saga::{evaluate_saga_descent_v1, evaluate_saga_grounded_v1};
 use crate::validation::{generic_validation_example, validation_check};
 use crate::{
@@ -12,6 +16,7 @@ use crate::{
     ARCHSIG_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE, ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS,
     ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE,
     ARCHSIG_REPAIR_TARGETS_IDENTIFIED, ARCHSIG_SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA,
+    ARCHSIG_SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS,
     ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL, ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
     ARCHSIG_TWO_PROFILES_REPORTED_SEPARATELY, ARCHSIG_VERDICT_PRESERVED_UNDER_DECLARED_REFACTOR,
     AgAnalyticReadingV1, AgAssumptionLedgerEntryV1, AgStructuralVerdictV1, AgVerdictDataV1,
@@ -91,6 +96,104 @@ const BOUNDARY_STATEMENT_KINDS: [&str; 6] = [
     "blocked_method",
     "not_applicable",
 ];
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct SagaPresentationGeneratedEvidenceV1 {
+    kind: String,
+    comparison_input: SagaPresentationGeneratedInputEvidenceV1,
+    presentation_exactness: bool,
+    generator_completeness: bool,
+    generated_cochain_map: SagaGeneratedCochainMapEvidenceV1,
+    equation_residual: SagaEquationResidualEvidenceV1,
+    semantic_residual: SagaSemanticResidualEvidenceV1,
+    residual_witness: Option<SagaResidualWitnessEvidenceV1>,
+    restriction_naturality: bool,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct SagaPresentationGeneratedInputEvidenceV1 {
+    kind: String,
+    repair_plan: RepairPlanDocumentV1,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct SagaGeneratedCochainMapEvidenceV1 {
+    kind: String,
+    degree_zero: Vec<SagaDerivedCellEvidenceV1>,
+    degree_one: Vec<SagaDerivedCellEvidenceV1>,
+    degree_two: Vec<SagaDerivedCellEvidenceV1>,
+    degree_zero_commutative: bool,
+    degree_one_commutative: bool,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct SagaDerivedCellEvidenceV1 {
+    cell_ref: String,
+    local_phi_derived_from: String,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct SagaEquationResidualEvidenceV1 {
+    kind: String,
+    target_cocycle: bool,
+    #[serde(rename = "targetClassNonZero")]
+    target_class_nonzero: Option<bool>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct SagaSemanticResidualEvidenceV1 {
+    kind: String,
+    source_cocycle: bool,
+    #[serde(rename = "sourceClassNonZero")]
+    source_class_nonzero: Option<bool>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct SagaResidualWitnessEvidenceV1 {
+    kind: String,
+    equation: String,
+    source_image: Vec<SagaEquationCochainEvidenceV1>,
+    equation_residual: Vec<SagaEquationCochainEvidenceV1>,
+    h: Vec<SagaEquationChartAssignmentEvidenceV1>,
+    difference_is_delta_zero: bool,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct SagaEquationCochainEvidenceV1 {
+    overlap_ref: String,
+    equation_generators: Vec<String>,
+    coefficients: Vec<u8>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct SagaEquationChartAssignmentEvidenceV1 {
+    chart_ref: String,
+    equation_generators: Vec<String>,
+    coefficients: Vec<u8>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct SagaGeneratedQuotientTransferEvidenceV1 {
+    level: String,
+    kind: String,
+    preserves_zero_predicate: bool,
+    #[serde(rename = "sourceClassNonZero")]
+    source_class_nonzero: bool,
+    #[serde(rename = "targetClassNonZero")]
+    target_class_nonzero: bool,
+    source_invariant: String,
+    target_invariant: String,
+}
 
 struct SummaryTranslationRule {
     conclusion_code: &'static str,
@@ -13188,6 +13291,7 @@ fn validate_measurement_packet_components(
         check_structural_verdict_data(packet),
         check_structural_verdict_new_shape_value(packet_value),
         check_computed_invariant_shape_value(packet_value),
+        check_saga_presentation_generated_evidence_value(packet_value),
         check_analytic_regime_boundary(packet, packet_value),
         check_assumption_ledger_value(packet, packet_value),
         check_supplied_data_shape(packet),
@@ -13365,6 +13469,7 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
         "residualClassSupport",
         "suppliedSlots",
         "suppliedCochainMap",
+        "presentationGenerated",
         "generatedQuotientTransfer",
         "resolutionSelector",
         "restrictionMatrix",
@@ -13499,6 +13604,13 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
                 let contract_checked = contract["contractChecked"].as_bool();
                 let failure_code = invariant["failureCode"].as_str();
                 let conclusion_code = invariant["conclusionCode"].as_str();
+                let established_conclusion = if contract["h1ComparisonDataKind"].as_str()
+                    == Some("presentation-generated")
+                {
+                    ARCHSIG_SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS
+                } else {
+                    ARCHSIG_SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA
+                };
                 if failure_code
                     .is_some_and(|code| code != ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION)
                 {
@@ -13535,9 +13647,7 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
                             "established comparison requires all contract completion flags=true",
                         ));
                     }
-                    if conclusion_code
-                        != Some(ARCHSIG_SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA)
-                        || failure_code.is_some()
+                    if conclusion_code != Some(established_conclusion) || failure_code.is_some()
                     {
                         examples.push(generic_validation_example(
                             &contract_label,
@@ -13547,8 +13657,11 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
                     }
                 }
                 if status == Some("not_computed") {
-                    if conclusion_code
-                        == Some(ARCHSIG_SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA)
+                    if matches!(
+                        conclusion_code,
+                        Some(ARCHSIG_SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA)
+                            | Some(ARCHSIG_SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS)
+                    )
                     {
                         examples.push(generic_validation_example(
                             &contract_label,
@@ -13725,6 +13838,33 @@ fn check_object_keys(
             ));
         }
     }
+}
+
+fn check_required_object_keys(
+    value: &Value,
+    path: &str,
+    required: &[&str],
+    examples: &mut Vec<ValidationExample>,
+) -> bool {
+    let Some(object) = value.as_object() else {
+        examples.push(generic_validation_example(
+            path,
+            "object",
+            "generated SAGA evidence must be an object with its documented fields",
+        ));
+        return false;
+    };
+    check_object_keys(value, path, required, examples);
+    for field in required {
+        if !object.contains_key(*field) {
+            examples.push(generic_validation_example(
+                &format!("{path}.{field}"),
+                "required",
+                "generated SAGA evidence field is required",
+            ));
+        }
+    }
+    true
 }
 
 fn check_packet_schema(packet: &ArchSigMeasurementPacketV1) -> ValidationCheck {
@@ -14276,6 +14416,526 @@ fn check_computed_invariant_shape_value(packet_value: &Value) -> ValidationCheck
         "computed invariants expose invariantId, kind, value, and representation",
         examples,
     )
+}
+
+fn check_saga_presentation_generated_evidence_value(packet_value: &Value) -> ValidationCheck {
+    let mut examples = Vec::new();
+    for (index, invariant) in packet_value["computedInvariants"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .enumerate()
+    {
+        if invariant["kind"].as_str() != Some("h1-comparison-transfer")
+            || invariant["evaluator"].as_str() != Some("ag.saga-comparison")
+            || invariant["contract"]["h1ComparisonDataKind"].as_str()
+                != Some("presentation-generated")
+        {
+            continue;
+        }
+        let prefix = format!("computedInvariants[{index}]");
+        let status = invariant["status"].as_str();
+        let requires_generated_evidence =
+            matches!(status, Some("established") | Some("not_computed"));
+        let presentation = invariant.get("presentationGenerated");
+        let parsed_presentation = match presentation {
+            Some(value) if !value.is_null() => {
+                check_saga_presentation_generated_evidence_shape(
+                    value,
+                    &format!("{prefix}.presentationGenerated"),
+                    &mut examples,
+                );
+                match serde_json::from_value::<SagaPresentationGeneratedEvidenceV1>(value.clone()) {
+                    Ok(evidence) => Some(evidence),
+                    Err(error) => {
+                        examples.push(generic_validation_example(
+                            &format!("{prefix}.presentationGenerated"),
+                            "typed-shape",
+                            &format!(
+                                "presentation-generated evidence must have the documented typed shape: {error}"
+                            ),
+                        ));
+                        None
+                    }
+                }
+            }
+            _ if requires_generated_evidence => {
+                examples.push(generic_validation_example(
+                    &format!("{prefix}.presentationGenerated"),
+                    "required",
+                    "presentation-generated established or not_computed comparison requires generated evidence",
+                ));
+                None
+            }
+            _ => None,
+        };
+
+        if status == Some("established") {
+            let Some(presentation) = parsed_presentation.as_ref() else {
+                continue;
+            };
+            check_saga_presentation_generated_recomputation(
+                packet_value,
+                presentation,
+                invariant
+                    .get("presentationGenerated")
+                    .expect("parsed presentation retains its source value"),
+                &prefix,
+                &mut examples,
+            );
+            check_saga_presentation_generated_established_consistency(
+                invariant,
+                &prefix,
+                presentation,
+                &mut examples,
+            );
+        } else if let (Some(presentation), Some(raw_presentation)) = (
+            parsed_presentation.as_ref(),
+            invariant.get("presentationGenerated"),
+        ) {
+            check_saga_presentation_generated_recomputation(
+                packet_value,
+                presentation,
+                raw_presentation,
+                &prefix,
+                &mut examples,
+            );
+        } else if invariant
+            .get("generatedQuotientTransfer")
+            .is_some_and(|value| !value.is_null())
+        {
+            examples.push(generic_validation_example(
+                &format!("{prefix}.generatedQuotientTransfer"),
+                "status",
+                "presentation-generated quotient transfer is emitted only for established comparisons",
+            ));
+        }
+    }
+    check_examples(
+        "measurement-packet-schema052-saga-presentation-generated-evidence",
+        "presentation-generated SAGA evidence is typed, complete, and consistent with its transfer",
+        examples,
+    )
+}
+
+fn check_saga_presentation_generated_recomputation(
+    packet_value: &Value,
+    presentation: &SagaPresentationGeneratedEvidenceV1,
+    raw_presentation: &Value,
+    prefix: &str,
+    examples: &mut Vec<ValidationExample>,
+) {
+    let input_path = format!("{prefix}.presentationGenerated.comparisonInput");
+    if presentation.comparison_input.kind != "canonical-presentation-repair-plan" {
+        examples.push(generic_validation_example(
+            &format!("{input_path}.kind"),
+            "canonical-presentation-repair-plan",
+            "presentation-generated evidence must retain the canonical RepairPlan comparison input",
+        ));
+        return;
+    }
+
+    let Some(expected) = recompute_presentation_generated_h1_output(
+        &presentation.comparison_input.repair_plan,
+    ) else {
+        examples.push(generic_validation_example(
+            &format!("{input_path}.repairPlan"),
+            "presentation-generated-h1-input",
+            "comparisonInput.repairPlan must contain a recomputable presentation-generated H1 comparison",
+        ));
+        return;
+    };
+    if expected != *raw_presentation {
+        examples.push(generic_validation_example(
+            &format!("{prefix}.presentationGenerated"),
+            "recomputed-output",
+            "presentation-generated evidence must exactly equal the output recomputed from comparisonInput.repairPlan",
+        ));
+    }
+
+    let repair_plan_value = match serde_json::to_value(&presentation.comparison_input.repair_plan) {
+        Ok(value) => value,
+        Err(error) => {
+            examples.push(generic_validation_example(
+                &format!("{input_path}.repairPlan"),
+                "canonical-json",
+                &format!("comparisonInput.repairPlan must serialize canonically: {error}"),
+            ));
+            return;
+        }
+    };
+    let repair_plan_digest = match canonical_json_bytes(&repair_plan_value) {
+        Ok(bytes) => format!("{:x}", Sha256::digest(bytes)),
+        Err(error) => {
+            examples.push(generic_validation_example(
+                &format!("{input_path}.repairPlan"),
+                "canonical-json",
+                &format!("comparisonInput.repairPlan must have a canonical digest: {error}"),
+            ));
+            return;
+        }
+    };
+    let recorded_digest = packet_value
+        .pointer("/inputDigests/repairPlan/sha256")
+        .and_then(Value::as_str);
+    if recorded_digest != Some(repair_plan_digest.as_str()) {
+        examples.push(generic_validation_example(
+            "inputDigests.repairPlan.sha256",
+            "comparisonInput.repairPlan",
+            "presentation-generated comparison input must match the analyzed RepairPlan digest",
+        ));
+    }
+}
+
+fn check_saga_presentation_generated_evidence_shape(
+    value: &Value,
+    path: &str,
+    examples: &mut Vec<ValidationExample>,
+) {
+    let fields = [
+        "kind",
+        "comparisonInput",
+        "presentationExactness",
+        "generatorCompleteness",
+        "generatedCochainMap",
+        "equationResidual",
+        "semanticResidual",
+        "residualWitness",
+        "restrictionNaturality",
+    ];
+    if !check_required_object_keys(value, path, &fields, examples) {
+        return;
+    }
+    check_required_object_keys(
+        &value["comparisonInput"],
+        &format!("{path}.comparisonInput"),
+        &["kind", "repairPlan"],
+        examples,
+    );
+    check_required_object_keys(
+        &value["generatedCochainMap"],
+        &format!("{path}.generatedCochainMap"),
+        &[
+            "kind",
+            "degreeZero",
+            "degreeOne",
+            "degreeTwo",
+            "degreeZeroCommutative",
+            "degreeOneCommutative",
+        ],
+        examples,
+    );
+    check_required_object_keys(
+        &value["equationResidual"],
+        &format!("{path}.equationResidual"),
+        &["kind", "targetCocycle", "targetClassNonZero"],
+        examples,
+    );
+    check_required_object_keys(
+        &value["semanticResidual"],
+        &format!("{path}.semanticResidual"),
+        &["kind", "sourceCocycle", "sourceClassNonZero"],
+        examples,
+    );
+    for degree in ["degreeZero", "degreeOne", "degreeTwo"] {
+        let rows = &value["generatedCochainMap"][degree];
+        let Some(rows) = rows.as_array() else {
+            examples.push(generic_validation_example(
+                &format!("{path}.generatedCochainMap.{degree}"),
+                "array",
+                "generated cochain-map cell evidence must be an array",
+            ));
+            continue;
+        };
+        for (index, row) in rows.iter().enumerate() {
+            check_required_object_keys(
+                row,
+                &format!("{path}.generatedCochainMap.{degree}[{index}]"),
+                &["cellRef", "localPhiDerivedFrom"],
+                examples,
+            );
+        }
+    }
+    let witness = &value["residualWitness"];
+    if witness.is_null() {
+        return;
+    }
+    if !check_required_object_keys(
+        witness,
+        &format!("{path}.residualWitness"),
+        &[
+            "kind",
+            "equation",
+            "sourceImage",
+            "equationResidual",
+            "h",
+            "differenceIsDeltaZero",
+        ],
+        examples,
+    ) {
+        return;
+    }
+    for (field, reference) in [
+        ("sourceImage", "overlapRef"),
+        ("equationResidual", "overlapRef"),
+        ("h", "chartRef"),
+    ] {
+        let rows = &witness[field];
+        let Some(rows) = rows.as_array() else {
+            examples.push(generic_validation_example(
+                &format!("{path}.residualWitness.{field}"),
+                "array",
+                "computed quotient-atlas witness rows must be an array",
+            ));
+            continue;
+        };
+        for (index, row) in rows.iter().enumerate() {
+            check_required_object_keys(
+                row,
+                &format!("{path}.residualWitness.{field}[{index}]"),
+                &[reference, "equationGenerators", "coefficients"],
+                examples,
+            );
+        }
+    }
+}
+
+fn check_saga_presentation_generated_established_consistency(
+    invariant: &Value,
+    prefix: &str,
+    presentation: &SagaPresentationGeneratedEvidenceV1,
+    examples: &mut Vec<ValidationExample>,
+) {
+    if presentation.kind != "presentation-generated"
+        || !presentation.presentation_exactness
+        || !presentation.generator_completeness
+        || !presentation.restriction_naturality
+        || presentation.generated_cochain_map.kind != "derived-from-local-phi"
+        || !presentation.generated_cochain_map.degree_zero_commutative
+        || !presentation.generated_cochain_map.degree_one_commutative
+        || presentation.equation_residual.kind != "derived-from-independent-equation-lift-atlas"
+        || !presentation.equation_residual.target_cocycle
+        || presentation.semantic_residual.kind != "derived-from-semantic-repair-presentation"
+        || !presentation.semantic_residual.source_cocycle
+    {
+        examples.push(generic_validation_example(
+            &format!("{prefix}.presentationGenerated"),
+            "established-evidence",
+            "established presentation-generated comparison requires all generated exactness, naturality, cocycle, and cochain-map checks",
+        ));
+    }
+
+    let degree_zero_refs = check_saga_derived_cell_rows(
+        &presentation.generated_cochain_map.degree_zero,
+        &format!("{prefix}.presentationGenerated.generatedCochainMap.degreeZero"),
+        examples,
+    );
+    let degree_one_refs = check_saga_derived_cell_rows(
+        &presentation.generated_cochain_map.degree_one,
+        &format!("{prefix}.presentationGenerated.generatedCochainMap.degreeOne"),
+        examples,
+    );
+    check_saga_derived_cell_rows(
+        &presentation.generated_cochain_map.degree_two,
+        &format!("{prefix}.presentationGenerated.generatedCochainMap.degreeTwo"),
+        examples,
+    );
+
+    let Some(source_class_nonzero) = presentation.semantic_residual.source_class_nonzero else {
+        examples.push(generic_validation_example(
+            &format!("{prefix}.presentationGenerated.semanticResidual.sourceClassNonZero"),
+            "boolean",
+            "established presentation-generated comparison requires a computed source H1 class",
+        ));
+        return;
+    };
+    let Some(target_class_nonzero) = presentation.equation_residual.target_class_nonzero else {
+        examples.push(generic_validation_example(
+            &format!("{prefix}.presentationGenerated.equationResidual.targetClassNonZero"),
+            "boolean",
+            "established presentation-generated comparison requires a computed target H1 class",
+        ));
+        return;
+    };
+    let Some(witness) = presentation.residual_witness.as_ref() else {
+        examples.push(generic_validation_example(
+            &format!("{prefix}.presentationGenerated.residualWitness"),
+            "required",
+            "established presentation-generated comparison requires a computed quotient-atlas witness",
+        ));
+        return;
+    };
+    check_saga_residual_witness(
+        witness,
+        &format!("{prefix}.presentationGenerated.residualWitness"),
+        &degree_zero_refs,
+        &degree_one_refs,
+        examples,
+    );
+
+    let transfer_value = &invariant["generatedQuotientTransfer"];
+    let transfer_fields = [
+        "level",
+        "kind",
+        "preservesZeroPredicate",
+        "sourceClassNonZero",
+        "targetClassNonZero",
+        "sourceInvariant",
+        "targetInvariant",
+    ];
+    if !check_required_object_keys(
+        transfer_value,
+        &format!("{prefix}.generatedQuotientTransfer"),
+        &transfer_fields,
+        examples,
+    ) {
+        return;
+    }
+    let transfer = match serde_json::from_value::<SagaGeneratedQuotientTransferEvidenceV1>(
+        transfer_value.clone(),
+    ) {
+        Ok(transfer) => transfer,
+        Err(error) => {
+            examples.push(generic_validation_example(
+                &format!("{prefix}.generatedQuotientTransfer"),
+                "typed-shape",
+                &format!(
+                    "established presentation-generated quotient transfer must have the documented typed shape: {error}"
+                ),
+            ));
+            return;
+        }
+    };
+    if transfer.level != "quotient"
+        || transfer.kind != "presentation-derived-Z1/B1-class-transfer"
+        || !transfer.preserves_zero_predicate
+        || transfer.source_invariant != "presentation-generated:semantic-h1-class"
+        || transfer.target_invariant != "saga-comparison:h1-transfer"
+        || transfer.source_class_nonzero != source_class_nonzero
+        || transfer.target_class_nonzero != target_class_nonzero
+    {
+        examples.push(generic_validation_example(
+            &format!("{prefix}.generatedQuotientTransfer"),
+            "presentation-consistency",
+            "generated quotient transfer must preserve the computed presentation source and target H1 classes",
+        ));
+    }
+}
+
+fn check_saga_derived_cell_rows(
+    rows: &[SagaDerivedCellEvidenceV1],
+    path: &str,
+    examples: &mut Vec<ValidationExample>,
+) -> BTreeSet<String> {
+    let refs = rows
+        .iter()
+        .map(|row| row.cell_ref.clone())
+        .collect::<BTreeSet<_>>();
+    if refs.len() != rows.len()
+        || rows.iter().any(|row| {
+            row.cell_ref.is_empty()
+                || row.local_phi_derived_from != "generatorMap modulo repair/equation relations"
+        })
+    {
+        examples.push(generic_validation_example(
+            path,
+            "derived-cell-rows",
+            "derived cochain-map rows require unique nonempty cellRef values and local Phi provenance",
+        ));
+    }
+    refs
+}
+
+fn check_saga_residual_witness(
+    witness: &SagaResidualWitnessEvidenceV1,
+    path: &str,
+    degree_zero_refs: &BTreeSet<String>,
+    degree_one_refs: &BTreeSet<String>,
+    examples: &mut Vec<ValidationExample>,
+) {
+    if witness.kind != "computed-quotient-atlas-witness"
+        || witness.equation != "kappa1(r_sem) = r_E + delta0(h)"
+        || !witness.difference_is_delta_zero
+    {
+        examples.push(generic_validation_example(
+            path,
+            "witness-contract",
+            "computed quotient-atlas witness must retain its equation and delta-zero conclusion",
+        ));
+    }
+    let source_refs = check_saga_equation_cochain_rows(
+        &witness.source_image,
+        &format!("{path}.sourceImage"),
+        examples,
+    );
+    let residual_refs = check_saga_equation_cochain_rows(
+        &witness.equation_residual,
+        &format!("{path}.equationResidual"),
+        examples,
+    );
+    let chart_refs = check_saga_equation_chart_rows(&witness.h, &format!("{path}.h"), examples);
+    if &source_refs != degree_one_refs
+        || &residual_refs != degree_one_refs
+        || &chart_refs != degree_zero_refs
+    {
+        examples.push(generic_validation_example(
+            path,
+            "witness-cell-coverage",
+            "computed quotient-atlas witness must cover exactly the generated degree-one and degree-zero cells",
+        ));
+    }
+}
+
+fn check_saga_equation_cochain_rows(
+    rows: &[SagaEquationCochainEvidenceV1],
+    path: &str,
+    examples: &mut Vec<ValidationExample>,
+) -> BTreeSet<String> {
+    let refs = rows
+        .iter()
+        .map(|row| row.overlap_ref.clone())
+        .collect::<BTreeSet<_>>();
+    if refs.len() != rows.len()
+        || rows.iter().any(|row| {
+            row.overlap_ref.is_empty()
+                || row.equation_generators.is_empty()
+                || row.equation_generators.len() != row.coefficients.len()
+                || row.coefficients.iter().any(|coefficient| *coefficient > 1)
+        })
+    {
+        examples.push(generic_validation_example(
+            path,
+            "F2-cochain-rows",
+            "computed witness cochain rows require unique overlapRef values, aligned generators, and F2 coefficients",
+        ));
+    }
+    refs
+}
+
+fn check_saga_equation_chart_rows(
+    rows: &[SagaEquationChartAssignmentEvidenceV1],
+    path: &str,
+    examples: &mut Vec<ValidationExample>,
+) -> BTreeSet<String> {
+    let refs = rows
+        .iter()
+        .map(|row| row.chart_ref.clone())
+        .collect::<BTreeSet<_>>();
+    if refs.len() != rows.len()
+        || rows.iter().any(|row| {
+            row.chart_ref.is_empty()
+                || row.equation_generators.is_empty()
+                || row.equation_generators.len() != row.coefficients.len()
+                || row.coefficients.iter().any(|coefficient| *coefficient > 1)
+        })
+    {
+        examples.push(generic_validation_example(
+            path,
+            "F2-chart-rows",
+            "computed witness chart rows require unique chartRef values, aligned generators, and F2 coefficients",
+        ));
+    }
+    refs
 }
 
 fn validate_saga_grounded_packet_shape(
