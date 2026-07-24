@@ -1,5 +1,6 @@
 import Formal.AG.Examples.StandardGeometryReference.Geometry
 import Formal.AG.LawAlgebra.ClosedEquationalGeometry
+import Formal.AG.LawAlgebra.Correspondence
 
 /-!
 # Standard geometry reference: equation geometry
@@ -530,110 +531,6 @@ theorem rigidReading_requiredClosed :
   ClosedEquationalLawReading.ofSemanticCore_requiredClosed
     referenceRaw referenceScheme rigidLawEquationCore rigidSchemeBridge
 
-/--
-The global equation obtained from the equation system selected by
-`referenceSite`.
-
-The site coordinate is sent through the canonical `Int`-algebra map into the
-raw algebra at the decorated context and then through the existing
-sheafification and interpretation maps.  Thus this equation has no separately
-supplied coordinate family.
--/
-noncomputable def referenceSiteGlobalEquation
-    (i : referenceSite.equationSystem.Index)
-    (a : AAT.AG.FiniteModel.carrier.Atom) :
-    Γ(referenceScheme.underlying, ⊤) :=
-  referenceScheme.decoration.interpretation
-    (sheafificationUnitAlgHom referenceRaw referenceScheme.decoration.context
-      (algebraMap Int
-        (referenceRaw.rawAlgebra referenceScheme.decoration.context)
-        (referenceSite.equationSystem.violationCoordinate
-          referenceScheme.decoration.context i a)))
-
-/--
-The closed-equational reading generated from the equation system owned by
-`referenceSite`.
--/
-noncomputable def referenceSiteReading :
-    ClosedEquationalLawReading referenceRaw referenceScheme
-      referenceSite.equationSystem where
-  geometric.HoldsOn s i :=
-    GlobalEquationsVanishAlong referenceRaw referenceScheme
-      (referenceSiteGlobalEquation i) s
-  closed := Set.univ
-  selected := fun _ => Set.univ
-  witness i _ :=
-    ClosedEquationalLawWitness.ofGlobalSections referenceRaw referenceScheme i
-      (referenceSiteGlobalEquation i)
-
-/-- The site-generated reading satisfies the closed-equational recognition laws. -/
-theorem referenceSiteReading_valid :
-    IsClosedEquationalLawReading referenceRaw referenceScheme
-      referenceSiteReading where
-  geometric_stable := by
-    intro T T' s f i hs a
-    rw [Scheme.Hom.comp_appTop, CommRingCat.comp_apply, hs a, map_zero]
-  witness_compatible := by
-    intro i hi
-    exact ClosedEquationalLawWitness.ofGlobalSections_valid
-      referenceRaw referenceScheme i (referenceSiteGlobalEquation i)
-  selected_closed := fun _ i _ => Set.mem_univ i
-  selected_basicOpen := fun _ _ i =>
-    iff_of_true (Set.mem_univ i) (Set.mem_univ i)
-
-/-- Every required site equation is closed and selected by the site-generated reading. -/
-theorem referenceSiteReading_requiredClosed :
-    RequiredClosed referenceRaw referenceScheme referenceSiteReading where
-  closed := fun i _ => Set.mem_univ i
-  selected := fun _ i _ => Set.mem_univ i
-
-private theorem reference_ofIdealTop_span_comap_eq_bot_iff
-    (equation : AAT.AG.FiniteModel.carrier.Atom →
-      Γ(referenceScheme.underlying, ⊤))
-    {T : AlgebraicGeometry.Scheme}
-    (s : T ⟶ referenceScheme.underlying) :
-    (Scheme.IdealSheafData.ofIdealTop
-        (X := referenceScheme.underlying)
-        (Ideal.span (Set.range equation))).comap s = ⊥ ↔
-      ∀ a, s.appTop (equation a) = 0 := by
-  haveI : IsAffine referenceScheme.underlying := by
-    rw [referenceScheme_underlying, ambientScheme_eq]
-    infer_instance
-  let e := Scheme.IdealSheafData.equivOfIsAffine
-    (X := referenceScheme.underlying)
-  constructor
-  · intro h a
-    have hcomap :
-        (Scheme.IdealSheafData.ofIdealTop
-            (X := referenceScheme.underlying)
-            (Ideal.span (Set.range equation))).comap s ≤ ⊥ := h.le
-    have hle := (Scheme.IdealSheafData.map_gc s _ _).mp hcomap
-    change Scheme.IdealSheafData.ofIdealTop
-      (Ideal.span (Set.range equation)) ≤
-        (⊥ : T.IdealSheafData).map s at hle
-    rw [Scheme.IdealSheafData.map_bot,
-      Scheme.ker_of_isAffine] at hle
-    have hideal :
-        Ideal.span (Set.range equation) ≤ RingHom.ker s.appTop.hom := by
-      simpa [e] using e.toOrderIso.monotone hle
-    exact hideal (Ideal.subset_span ⟨a, rfl⟩)
-  · intro h
-    apply le_antisymm
-    · apply (Scheme.IdealSheafData.map_gc s _ _).mpr
-      change Scheme.IdealSheafData.ofIdealTop
-        (Ideal.span (Set.range equation)) ≤
-          (⊥ : T.IdealSheafData).map s
-      rw [Scheme.IdealSheafData.map_bot,
-        Scheme.ker_of_isAffine]
-      have hideal :
-          Ideal.span (Set.range equation) ≤ RingHom.ker s.appTop.hom := by
-        apply Ideal.span_le.mpr
-        rintro _ ⟨a, rfl⟩
-        exact h a
-      apply Scheme.IdealSheafData.le_of_isAffine
-      simpa using hideal
-    · exact bot_le
-
 private theorem referenceCore_lawIdealExact
     (G : ArchitecturalEquationSystem referenceSite.contextPreorder)
     (B : SemanticLawEquationSchemeBridge referenceRaw G)
@@ -660,28 +557,9 @@ private theorem referenceCore_lawIdealExact
       exact ClosedEquationalLawReading.ofSemanticCore_witness referenceRaw
         referenceScheme G B i (Set.mem_univ i))
   rw [hsheaf]
-  exact (reference_ofIdealTop_span_comap_eq_bot_iff
-    (semanticCoreGlobalEquation referenceRaw referenceScheme G B i) s).symm
-
-/--
-The semantic predicate of the site-generated reading is exactly the vanishing
-of its generated law ideal.
--/
-theorem referenceSiteReading_requiredLawIdealExact :
-    RequiredLawIdealExact referenceRaw referenceScheme
-      referenceSiteReading referenceSiteReading_valid
-      referenceSiteReading_requiredClosed := by
-  intro i hi T s
-  change
-    (∀ a, s.appTop (referenceSiteGlobalEquation i a) = 0) ↔ _
-  have hsheaf := lawWitnessIdealSheaf_ofGlobalSections referenceRaw
-    referenceScheme referenceSiteReading
-    referenceSiteReading_valid.witness_compatible
-    i (Set.mem_univ i) (referenceSiteGlobalEquation i) rfl
-  rw [hsheaf]
-  exact
-    (reference_ofIdealTop_span_comap_eq_bot_iff
-      (referenceSiteGlobalEquation i) s).symm
+  exact globalEquationsVanishAlong_iff_ofIdealTop_span_comap_eq_bot
+    referenceRaw referenceScheme
+    (semanticCoreGlobalEquation referenceRaw referenceScheme G B i) s
 
 /--
 SD2-SD3 standard-geometry reference-model declaration.
@@ -981,29 +859,364 @@ private theorem ambientGlobalSectionsIso_unit
         simpa only [CommRingCat.comp_apply, Category.id_comp] using hcancel]
 
 /--
-The global equation used by `referenceSiteReading` is the canonical image of
-the coordinate selected by `referenceSite.equationSystem`.
+The reference architecture reading transports its polynomial coordinate over
+test schemes and reads the finite acyclic architecture.  Observable maps are
+not selected here; they are generated by `referenceSite.equationSystem` in
+`EquationArchitecturePoint`.
 -/
+noncomputable def referenceEquationArchitectureReading :
+    EquationArchitectureReading.{0, 0}
+      referenceSite.equationSystem where
+  Reading T := Unit → Γ(T, ⊤)
+  pullback f r := fun i => f.appTop (r i)
+  object := fun _ => AAT.AG.FiniteModel.acyclicObject
+  pullback_id := by
+    intro T r
+    funext i
+    simp
+  pullback_comp := by
+    intro T T' T'' f g r
+    funext i
+    rfl
+  residual_pullback := by
+    intro T T' f r W i a e
+    rfl
+
+/--
+Morphisms into `Spec ℤ[x]` are equivalent to a single global section, the
+value of the polynomial coordinate `x`.
+-/
+noncomputable def referenceEquationRepresentingEquiv
+    (T : AlgebraicGeometry.Scheme.{0}) :
+    (T ⟶ referenceScheme.underlying) ≃
+      EquationArchitecturePoint referenceEquationArchitectureReading T where
+  toFun s :=
+    { reading := fun _ =>
+        s.appTop
+          ((AlgebraicGeometry.Scheme.ΓSpecIso
+            (CommRingCat.of AmbientRing)).inv
+            (MvPolynomial.X ()))
+      evaluation := fun _ => Int.castRingHom _
+      evaluation_natural := by
+        intro source target f x
+        rfl }
+  invFun p :=
+    AlgebraicGeometry.ΓSpec.adjunction.homEquiv T
+      (op (CommRingCat.of AmbientRing))
+      (CommRingCat.ofHom
+        (MvPolynomial.eval₂Hom (Int.castRingHom _) p.reading)).op
+  left_inv s := by
+    let φ :=
+      ((AlgebraicGeometry.ΓSpec.adjunction.homEquiv T
+        (op (CommRingCat.of AmbientRing))).symm s).unop
+    have hφ :
+        AlgebraicGeometry.ΓSpec.adjunction.homEquiv T
+          (op (CommRingCat.of AmbientRing)) φ.op = s :=
+      Equiv.apply_symm_apply _ s
+    have hΓ :=
+      AlgebraicGeometry.ΓSpecIso_inv_ΓSpec_adjunction_homEquiv φ
+    rw [hφ] at hΓ
+    apply
+      (AlgebraicGeometry.ΓSpec.adjunction.homEquiv T
+        (op (CommRingCat.of AmbientRing))).symm.injective
+    apply Quiver.Hom.unop_inj
+    rw [Equiv.symm_apply_apply]
+    apply CommRingCat.hom_ext
+    apply MvPolynomial.ringHom_ext
+    · intro z
+      simp
+    · intro i
+      cases i
+      simpa [φ, CommRingCat.comp_apply] using
+        congrArg (fun q => q (MvPolynomial.X ())) hΓ
+  right_inv p := by
+    apply EquationArchitecturePoint.ext
+    · funext i
+      cases i
+      let φ : CommRingCat.of AmbientRing ⟶ Γ(T, ⊤) :=
+        CommRingCat.ofHom
+          (MvPolynomial.eval₂Hom (Int.castRingHom _) p.reading)
+      have hΓ :=
+        AlgebraicGeometry.ΓSpecIso_inv_ΓSpec_adjunction_homEquiv φ
+      simpa [φ, CommRingCat.comp_apply] using
+        congrArg (fun q => q (MvPolynomial.X ())) hΓ
+    · intro W x
+      change Int at x
+      change (x : Γ(T, ⊤)) = p.evaluation W x
+      exact (map_intCast (p.evaluation W) x).symm
+
+/-- The representing equivalence commutes with pullback of test schemes. -/
+theorem referenceEquationRepresentingEquiv_natural
+    {T T' : AlgebraicGeometry.Scheme.{0}}
+    (s : T ⟶ referenceScheme.underlying) (f : T' ⟶ T) :
+    referenceEquationRepresentingEquiv T' (f ≫ s) =
+      EquationArchitecturePoint.pullback f
+        (referenceEquationRepresentingEquiv T s) := by
+  apply EquationArchitecturePoint.ext
+  · funext i
+    cases i
+    rfl
+  · intro W x
+    change Int at x
+    change (x : Γ(T', ⊤)) = f.appTop (x : Γ(T, ⊤))
+    exact (map_intCast f.appTop.hom x).symm
+
+/--
+The reference equation system is represented by `Spec ℤ[x]`; all section,
+architecture, and residual maps are derived from its universal point.
+-/
+noncomputable def referenceEquationObservableRealization :
+  EquationObservableRealization
+      referenceRaw referenceScheme referenceSite.equationSystem :=
+  EquationObservableRealization.ofRepresentingEquiv
+    referenceEquationArchitectureReading
+    referenceEquationRepresentingEquiv
+
+/-- The reference scheme represents the valid architecture-evaluation source. -/
+theorem referenceEquationObservableRealization_valid :
+  IsEquationObservableRealization
+      referenceEquationObservableRealization :=
+  EquationObservableRealization.ofRepresentingEquiv_valid
+    referenceEquationArchitectureReading
+    referenceEquationRepresentingEquiv
+    referenceEquationRepresentingEquiv_natural
+
+/--
+The equation contexts select an actual context-indexed affine cover of the
+reference polynomial scheme.
+-/
+noncomputable def referenceEquationContextCharts :
+    EquationObservableRealization.EquationContextCharts
+      (X := referenceScheme) := by
+  letI : IsAffine referenceScheme.underlying := by
+    rw [referenceScheme_underlying, ambientScheme_eq]
+    infer_instance
+  exact EquationContextChartCover.whole
+    referenceSite baseContext referenceScheme.underlying
+
+/--
+Every transition of the whole affine reference cover is the identity
+localization.
+-/
+noncomputable def referenceEquationContextChartLocalization :
+    EquationObservableRealization.EquationContextChartLocalization
+      referenceEquationContextCharts where
+  submonoid _ := Submonoid.powers 1
+  isLocalization := by
+    intro source target f
+    letI : Algebra
+        Γ(referenceEquationContextCharts.chart target, ⊤)
+        Γ(referenceEquationContextCharts.chart source, ⊤) :=
+      (referenceEquationContextCharts.transition f).appTop.hom.toAlgebra
+    exact IsLocalization.away_of_isUnit_of_bijective _
+      isUnit_one
+      (by
+        simpa [referenceEquationContextCharts,
+          EquationContextChartCover.whole] using
+            (Function.bijective_id :
+              Function.Bijective
+                (id : Γ(referenceScheme.underlying, ⊤) →
+                  Γ(referenceScheme.underlying, ⊤))))
+
+/-- The reference realization as one categorical representing geometry. -/
+noncomputable def referenceEquationRepresentingGeometry :
+    EquationObservableRealization.EquationRepresentingGeometry
+      referenceRaw referenceScheme referenceSite.equationSystem :=
+  referenceEquationObservableRealization.toRepresentingGeometry
+    referenceEquationObservableRealization_valid
+
+/-- The categorical standard producer fires on the reference geometry. -/
+theorem referenceEquationRepresentingGeometry_realization_valid :
+    IsEquationObservableRealization
+      referenceEquationRepresentingGeometry.realization :=
+  referenceEquationRepresentingGeometry.realization_valid
+
+/-- One symbolic equation section in the generated reference realization. -/
+noncomputable def referenceSiteGlobalEquation
+    (i : referenceSite.equationSystem.Index)
+    (a : AAT.AG.FiniteModel.carrier.Atom) :
+    Γ(referenceScheme.underlying, ⊤) :=
+  referenceEquationObservableRealization.violationSection
+    baseContext i a
+
+/-- One actual object-residual section in the generated reference realization. -/
+noncomputable def referenceSiteResidualSection
+    (i : referenceSite.equationSystem.Index)
+    (a : AAT.AG.FiniteModel.carrier.Atom) :
+    Γ(referenceScheme.underlying, ⊤) :=
+  referenceEquationObservableRealization.ambientResidualSection
+    baseContext i a
+
+/-- Every contextual symbolic section is the corresponding integer constant. -/
+theorem referenceSiteViolationSection_image
+    (W : referenceSite.category)
+    (i : referenceSite.equationSystem.Index)
+    (a : AAT.AG.FiniteModel.carrier.Atom) :
+    ambientGlobalSectionsIso.hom
+        (referenceEquationObservableRealization.violationSection W i a) =
+      algebraMap Int AmbientRing
+        (referenceSite.equationSystem.violationCoordinate W i a) := by
+  simp only [EquationObservableRealization.violationSection,
+    EquationObservableRealization.sectionMap,
+    EquationObservableRealization.evaluation,
+    EquationObservableRealization.pointAt,
+    referenceEquationObservableRealization,
+    referenceEquationArchitectureReading]
+  exact map_intCast ambientGlobalSectionsIso.hom.hom _
+
+/-- Reference symbolic sections are independent of the selected context. -/
+private theorem referenceViolationSection_context_eq
+    (W V : referenceSite.category)
+    (i : referenceSite.equationSystem.Index)
+    (a : AAT.AG.FiniteModel.carrier.Atom) :
+    referenceEquationObservableRealization.violationSection W i a =
+      referenceEquationObservableRealization.violationSection V i a := by
+  apply (ConcreteCategory.bijective_of_isIso
+    ambientGlobalSectionsIso.hom).1
+  rw [referenceSiteViolationSection_image,
+    referenceSiteViolationSection_image,
+    referenceSite_violationCoordinate,
+    referenceSite_violationCoordinate]
+
+/--
+The reference universal sections generate the symbolic coordinate on every
+actual context chart.
+-/
+noncomputable def referenceEquationContextChartProducer :
+    EquationObservableRealization.EquationContextChartProducer
+      referenceEquationObservableRealization
+      referenceEquationContextCharts where
+  violation_on_chart W V i a := by
+    simpa [referenceEquationContextCharts,
+      EquationContextChartCover.whole,
+      EquationObservableRealization.contextChartEvaluation,
+      EquationObservableRealization.violationSection] using
+        (referenceViolationSection_context_eq V W i a)
+
+/-- Complete actual-chart producer for the site-owned equation realization. -/
+noncomputable def referenceEquationSchemeChartProducer :
+    EquationObservableRealization.EquationSchemeChartProducer
+      referenceEquationObservableRealization
+      referenceEquationContextCharts where
+  coordinate := referenceEquationContextChartProducer
+  localization := referenceEquationContextChartLocalization
+
+/-- Every contextual residual section is the corresponding integer constant. -/
+theorem referenceSiteAmbientResidualSection_image
+    (W : referenceSite.category)
+    (i : referenceSite.equationSystem.Index)
+    (a : AAT.AG.FiniteModel.carrier.Atom) :
+    ambientGlobalSectionsIso.hom
+        (referenceEquationObservableRealization.ambientResidualSection W i a) =
+      algebraMap Int AmbientRing
+        (referenceSite.equationSystem.equationResidual W
+          AAT.AG.FiniteModel.acyclicObject i a) := by
+  simp only [EquationObservableRealization.ambientResidualSection,
+    EquationObservableRealization.residualSection,
+    EquationObservableRealization.sectionMap,
+    EquationObservableRealization.evaluation,
+    EquationObservableRealization.architectureAt,
+    EquationObservableRealization.pointAt,
+    referenceEquationObservableRealization,
+    referenceEquationArchitectureReading]
+  exact map_intCast ambientGlobalSectionsIso.hom.hom _
+
+/-- The symbolic section is the canonical image of the selected coordinate. -/
 theorem referenceSiteGlobalEquation_image
     (i : referenceSite.equationSystem.Index)
     (a : AAT.AG.FiniteModel.carrier.Atom) :
     ambientGlobalSectionsIso.hom (referenceSiteGlobalEquation i a) =
       algebraMap Int AmbientRing
-        (referenceSite.equationSystem.violationCoordinate baseContext i a) := by
-  change ambientGlobalSectionsIso.hom
-      (ambientDecoration.interpretation
-        ((sheafificationUnitAlgHom referenceRaw baseContext)
-          (algebraMap Int (referenceRaw.rawAlgebra baseContext)
-            (referenceSite.equationSystem.violationCoordinate
-              baseContext i a)))) = _
-  rw [ambientGlobalSectionsIso_unit]
-  change baseRawAlgebraIso.hom
-      (algebraMap Int (referenceRaw.rawAlgebra baseContext)
-        (referenceSite.equationSystem.violationCoordinate baseContext i a)) =
-    algebraMap Int AmbientRing
-      (referenceSite.equationSystem.violationCoordinate baseContext i a)
-  simpa using map_intCast baseRawAlgebraIso.hom
-    (referenceSite.equationSystem.violationCoordinate baseContext i a)
+        (referenceSite.equationSystem.violationCoordinate
+          baseContext i a) := by
+  exact referenceSiteViolationSection_image baseContext i a
+
+/-- The residual section is the canonical image of the actual residual. -/
+theorem referenceSiteResidualSection_image
+    (i : referenceSite.equationSystem.Index)
+    (a : AAT.AG.FiniteModel.carrier.Atom) :
+    ambientGlobalSectionsIso.hom
+        (referenceSiteResidualSection i a) =
+      algebraMap Int AmbientRing
+        (referenceSite.equationSystem.equationResidual baseContext
+          AAT.AG.FiniteModel.acyclicObject i a) := by
+  exact referenceSiteAmbientResidualSection_image baseContext i a
+
+/--
+The required generated ideal sheaf is the pullback of the site equation
+system's contextual obstruction ideal sheaf.
+-/
+theorem referenceSiteGeneratedIdealSheaf_eq_obstructionIdeal :
+    referenceEquationObservableRealization.generatedIdealSheaf
+        =
+      referenceEquationObservableRealization.globalObstructionIdealSheaf.comap
+        referenceEquationObservableRealization.realizationImmersion :=
+  EquationObservableRealization.generatedIdealSheaf_eq_globalObstructionIdealSheaf
+    referenceEquationObservableRealization
+
+/--
+Compatibility adapter for synthesis packages that still consume the generic
+`ClosedEquationalLawReading` record.  The Issue 3733 standard route uses
+`referenceEquationObservableRealization` and its actual residual predicates.
+-/
+noncomputable def referenceLegacySiteReading :
+    ClosedEquationalLawReading referenceRaw referenceScheme
+      referenceSite.equationSystem where
+  geometric := {
+    HoldsOn := fun s i =>
+      GlobalEquationsVanishAlong referenceRaw referenceScheme
+        (referenceSiteGlobalEquation i) s
+  }
+  closed := Set.univ
+  selected := fun _ => Set.univ
+  witness := fun i _ =>
+    ClosedEquationalLawWitness.ofGlobalSections
+      referenceRaw referenceScheme i
+      (referenceSiteGlobalEquation i)
+
+/-- The synthesis compatibility adapter satisfies the generic recognition laws. -/
+theorem referenceLegacySiteReading_valid :
+    IsClosedEquationalLawReading referenceRaw referenceScheme
+      referenceLegacySiteReading where
+  geometric_stable := by
+    intro T T' s f i hs a
+    rw [Scheme.Hom.comp_appTop, CommRingCat.comp_apply, hs a, map_zero]
+  witness_compatible := by
+    intro i _
+    exact ClosedEquationalLawWitness.ofGlobalSections_valid
+      referenceRaw referenceScheme i _
+  selected_closed := fun _ i _ => Set.mem_univ i
+  selected_basicOpen := fun _ _ i =>
+    iff_of_true (Set.mem_univ i) (Set.mem_univ i)
+
+/-- Every required equation is selected by the synthesis compatibility adapter. -/
+theorem referenceLegacySiteReading_requiredClosed :
+    RequiredClosed referenceRaw referenceScheme
+      referenceLegacySiteReading where
+  closed := fun i _ => Set.mem_univ i
+  selected := fun _ i _ => Set.mem_univ i
+
+/-- The compatibility adapter's semantic predicate is exactly its witness ideal. -/
+theorem referenceLegacySiteReading_requiredLawIdealExact :
+    RequiredLawIdealExact referenceRaw referenceScheme
+      referenceLegacySiteReading referenceLegacySiteReading_valid
+      referenceLegacySiteReading_requiredClosed := by
+  intro i _ T s
+  change
+    GlobalEquationsVanishAlong referenceRaw referenceScheme
+        (referenceSiteGlobalEquation i) s ↔
+      (lawWitnessIdealSheaf referenceRaw referenceScheme
+        referenceLegacySiteReading
+        referenceLegacySiteReading_valid.witness_compatible
+        i (Set.mem_univ i)).comap s = ⊥
+  rw [lawWitnessIdealSheaf_ofGlobalSections
+    referenceRaw referenceScheme referenceLegacySiteReading
+    referenceLegacySiteReading_valid.witness_compatible
+    i (Set.mem_univ i)
+    (referenceSiteGlobalEquation i) rfl]
+  exact globalEquationsVanishAlong_iff_ofIdealTop_span_comap_eq_bot
+    referenceRaw referenceScheme
+    (referenceSiteGlobalEquation i) s
 
 private theorem weakGlobalEquation_image
     (a : AAT.AG.FiniteModel.carrier.Atom) :
@@ -2121,6 +2334,359 @@ def siteEquationModTwoRingHom : AmbientRing →+* ZMod 2 :=
   MvPolynomial.eval₂Hom (Int.castRingHom (ZMod 2)) (fun _ => 0)
 
 /--
+A required unit-coordinate equation system for the negative realization
+fixture.  Its cyclic residual is also `1`, so the equalizer scheme is
+nonempty while the generated witness ideal cuts out no lawful point.
+-/
+noncomputable def cyclicUnitEquationSystem :
+    ArchitecturalEquationSystem referenceSite.contextPreorder where
+  Index := PUnit
+  role _ := EquationRole.required
+  Observable _ := Int
+  observableCommRing _ := inferInstance
+  restrict _ := RingHom.id Int
+  restrict_id := by
+    intro W x
+    rfl
+  restrict_comp := by
+    intro W₀ W₁ W₂ f g x
+    rfl
+  violationCoordinate _ _ _ := 1
+  violationCoordinate_restrict := by
+    intro source target f i a
+    rfl
+  equationResidual _ object _ _ :=
+    AAT.AG.FiniteModel.noCycleResidual object
+  equationResidual_restrict := by
+    intro source target f object i a
+    rfl
+
+/--
+The cyclic architecture reading transports the polynomial coordinate and
+reads the concrete cyclic architecture.
+-/
+noncomputable def cyclicUnitEquationArchitectureReading :
+    EquationArchitectureReading.{0, 0}
+      cyclicUnitEquationSystem where
+  Reading T := Unit → Γ(T, ⊤)
+  pullback f r := fun i => f.appTop (r i)
+  object := fun _ => AAT.AG.FiniteModel.object
+  pullback_id := by
+    intro T r
+    funext i
+    simp
+  pullback_comp := by
+    intro T T' T'' f g r
+    funext i
+    rfl
+  residual_pullback := by
+    intro T T' f r W i a e
+    rfl
+
+/-- The cyclic generated point functor is represented by the same polynomial scheme. -/
+noncomputable def cyclicUnitEquationRepresentingEquiv
+    (T : AlgebraicGeometry.Scheme.{0}) :
+    (T ⟶ referenceScheme.underlying) ≃
+      EquationArchitecturePoint cyclicUnitEquationArchitectureReading T where
+  toFun s :=
+    { reading := fun _ =>
+        s.appTop
+          ((AlgebraicGeometry.Scheme.ΓSpecIso
+            (CommRingCat.of AmbientRing)).inv
+            (MvPolynomial.X ()))
+      evaluation := fun _ => Int.castRingHom _
+      evaluation_natural := by
+        intro source target f x
+        rfl }
+  invFun p :=
+    AlgebraicGeometry.ΓSpec.adjunction.homEquiv T
+      (op (CommRingCat.of AmbientRing))
+      (CommRingCat.ofHom
+        (MvPolynomial.eval₂Hom (Int.castRingHom _) p.reading)).op
+  left_inv s := by
+    let φ :=
+      ((AlgebraicGeometry.ΓSpec.adjunction.homEquiv T
+        (op (CommRingCat.of AmbientRing))).symm s).unop
+    have hφ :
+        AlgebraicGeometry.ΓSpec.adjunction.homEquiv T
+          (op (CommRingCat.of AmbientRing)) φ.op = s :=
+      Equiv.apply_symm_apply _ s
+    have hΓ :=
+      AlgebraicGeometry.ΓSpecIso_inv_ΓSpec_adjunction_homEquiv φ
+    rw [hφ] at hΓ
+    apply
+      (AlgebraicGeometry.ΓSpec.adjunction.homEquiv T
+        (op (CommRingCat.of AmbientRing))).symm.injective
+    apply Quiver.Hom.unop_inj
+    rw [Equiv.symm_apply_apply]
+    apply CommRingCat.hom_ext
+    apply MvPolynomial.ringHom_ext
+    · intro z
+      simp
+    · intro i
+      cases i
+      simpa [φ, CommRingCat.comp_apply] using
+        congrArg (fun q => q (MvPolynomial.X ())) hΓ
+  right_inv p := by
+    apply EquationArchitecturePoint.ext
+    · funext i
+      cases i
+      let φ : CommRingCat.of AmbientRing ⟶ Γ(T, ⊤) :=
+        CommRingCat.ofHom
+          (MvPolynomial.eval₂Hom (Int.castRingHom _) p.reading)
+      have hΓ :=
+        AlgebraicGeometry.ΓSpecIso_inv_ΓSpec_adjunction_homEquiv φ
+      simpa [φ, CommRingCat.comp_apply] using
+        congrArg (fun q => q (MvPolynomial.X ())) hΓ
+    · intro W x
+      change Int at x
+      change (x : Γ(T, ⊤)) = p.evaluation W x
+      exact (map_intCast (p.evaluation W) x).symm
+
+/-- The cyclic representing equivalence commutes with test-scheme pullback. -/
+theorem cyclicUnitEquationRepresentingEquiv_natural
+    {T T' : AlgebraicGeometry.Scheme.{0}}
+    (s : T ⟶ referenceScheme.underlying) (f : T' ⟶ T) :
+    cyclicUnitEquationRepresentingEquiv T' (f ≫ s) =
+      EquationArchitecturePoint.pullback f
+        (cyclicUnitEquationRepresentingEquiv T s) := by
+  apply EquationArchitecturePoint.ext
+  · funext i
+    cases i
+    rfl
+  · intro W x
+    change Int at x
+    change (x : Γ(T', ⊤)) = f.appTop (x : Γ(T, ⊤))
+    exact (map_intCast f.appTop.hom x).symm
+
+/-- The cyclic generated point functor is represented by the polynomial scheme. -/
+noncomputable def cyclicUnitEquationObservableRealization :
+    EquationObservableRealization
+      referenceRaw referenceScheme cyclicUnitEquationSystem :=
+  EquationObservableRealization.ofRepresentingEquiv
+    cyclicUnitEquationArchitectureReading
+    cyclicUnitEquationRepresentingEquiv
+
+/-- The cyclic realization satisfies natural representability. -/
+theorem cyclicUnitEquationObservableRealization_valid :
+    IsEquationObservableRealization
+      cyclicUnitEquationObservableRealization :=
+  EquationObservableRealization.ofRepresentingEquiv_valid
+    cyclicUnitEquationArchitectureReading
+    cyclicUnitEquationRepresentingEquiv
+    cyclicUnitEquationRepresentingEquiv_natural
+
+/-- The cyclic unit symbolic section is the same unit in every context. -/
+private theorem cyclicUnitViolationSection_context_eq
+    (W V : referenceSite.category)
+    (i : cyclicUnitEquationSystem.Index)
+    (a : AAT.AG.FiniteModel.carrier.Atom) :
+    cyclicUnitEquationObservableRealization.violationSection W i a =
+      cyclicUnitEquationObservableRealization.violationSection V i a := by
+  simp [EquationObservableRealization.violationSection,
+    EquationObservableRealization.sectionMap,
+    EquationObservableRealization.evaluation,
+    EquationObservableRealization.pointAt,
+    EquationObservableRealization.ofRepresentingEquiv_reading,
+    EquationObservableRealization.ofRepresentingEquiv_representingEquiv,
+    cyclicUnitEquationObservableRealization,
+    cyclicUnitEquationArchitectureReading,
+    cyclicUnitEquationSystem]
+
+/-- Generator provenance for the cyclic unit actual context charts. -/
+noncomputable def cyclicUnitEquationContextChartProducer :
+    EquationObservableRealization.EquationContextChartProducer
+      cyclicUnitEquationObservableRealization
+      referenceEquationContextCharts where
+  violation_on_chart W V i a := by
+    simpa [referenceEquationContextCharts,
+      EquationContextChartCover.whole,
+      EquationObservableRealization.contextChartEvaluation,
+      EquationObservableRealization.violationSection] using
+        (cyclicUnitViolationSection_context_eq V W i a)
+
+/-- Complete actual-chart producer for the cyclic negative fixture. -/
+noncomputable def cyclicUnitEquationSchemeChartProducer :
+    EquationObservableRealization.EquationSchemeChartProducer
+      cyclicUnitEquationObservableRealization
+      referenceEquationContextCharts where
+  coordinate := cyclicUnitEquationContextChartProducer
+  localization := referenceEquationContextChartLocalization
+
+/-- Every cyclic-unit equalizer relation is identically zero. -/
+theorem cyclicUnitEquationRealization_relation_zero
+    (g : EquationObservableRealization.GeneratorIndex
+      cyclicUnitEquationSystem) :
+    cyclicUnitEquationObservableRealization.realizationRelation g = 0 := by
+  rcases g with ⟨W, i, a⟩
+  have hcycle :
+      AAT.AG.FiniteModel.hasDependencyCycle
+        AAT.AG.FiniteModel.object := by
+    simpa [AAT.AG.FiniteModel.hasCycleWitness,
+      AAT.AG.FiniteModel.hasDependencyCycle] using
+        AAT.AG.FiniteModel.object_hasCycleWitness
+  have hresidual :
+      AAT.AG.FiniteModel.noCycleResidual
+        AAT.AG.FiniteModel.object = 1 := by
+    simp [AAT.AG.FiniteModel.noCycleResidual, hcycle]
+  simp only [EquationObservableRealization.realizationRelation,
+    EquationObservableRealization.violationSection,
+    EquationObservableRealization.ambientResidualSection,
+    EquationObservableRealization.residualSection,
+    EquationObservableRealization.sectionMap,
+    EquationObservableRealization.evaluation,
+    EquationObservableRealization.architectureAt,
+    EquationObservableRealization.pointAt,
+    EquationObservableRealization.ofRepresentingEquiv_reading,
+    EquationObservableRealization.ofRepresentingEquiv_representingEquiv,
+    cyclicUnitEquationObservableRealization,
+    cyclicUnitEquationArchitectureReading,
+    cyclicUnitEquationSystem, hresidual,
+    map_one, sub_self]
+
+/-- The integer point `x = 0` of the reference polynomial scheme. -/
+noncomputable def cyclicUnitIntegerAmbientPoint :
+    AlgebraicGeometry.Spec (CommRingCat.of Int) ⟶
+      referenceScheme.underlying :=
+  AlgebraicGeometry.Scheme.Spec.map
+    (CommRingCat.ofHom (evaluationRingHom 0)).op
+
+/-- The integer point kills every cyclic-unit equalizer relation. -/
+theorem cyclicUnitIntegerAmbientPoint_realizationRelations
+    (g : EquationObservableRealization.GeneratorIndex
+      cyclicUnitEquationSystem) :
+    cyclicUnitIntegerAmbientPoint.appTop
+      (cyclicUnitEquationObservableRealization.realizationRelation g) = 0 := by
+  rw [cyclicUnitEquationRealization_relation_zero g, map_zero]
+
+/-- The integer point factors through the cyclic-unit equalizer scheme. -/
+theorem cyclicUnitIntegerAmbientPoint_realizes :
+    Nonempty
+      (cyclicUnitEquationObservableRealization.FactorsThroughRealization
+        cyclicUnitIntegerAmbientPoint) := by
+  apply
+    (cyclicUnitEquationObservableRealization.realizationIdeal_iff_nonempty_factorsThrough
+      cyclicUnitIntegerAmbientPoint).mp
+  apply
+    (cyclicUnitEquationObservableRealization.realizationRelationsVanishAlong_iff_ideal
+      cyclicUnitIntegerAmbientPoint).mp
+  exact cyclicUnitIntegerAmbientPoint_realizationRelations
+
+/-- The integer point as a point of the cyclic-unit equalizer scheme. -/
+noncomputable def cyclicUnitIntegerRealizationPoint :
+    AlgebraicGeometry.Spec (CommRingCat.of Int) ⟶
+      cyclicUnitEquationObservableRealization.realizationScheme :=
+  (Classical.choice cyclicUnitIntegerAmbientPoint_realizes).1
+
+/-- The cyclic integer realization point maps to the polynomial point. -/
+@[reassoc] theorem cyclicUnitIntegerRealizationPoint_immersion :
+    cyclicUnitIntegerRealizationPoint ≫
+        cyclicUnitEquationObservableRealization.realizationImmersion =
+      cyclicUnitIntegerAmbientPoint :=
+  (Classical.choice cyclicUnitIntegerAmbientPoint_realizes).2
+
+/-- Integer constants exhaust the global sections of `Spec ℤ`. -/
+private theorem intCast_specInt_bijective :
+    Function.Bijective
+      (Int.castRingHom
+        Γ(AlgebraicGeometry.Spec (CommRingCat.of Int), ⊤)) := by
+  constructor
+  · intro x y hxy
+    have h := congrArg
+      (AlgebraicGeometry.Scheme.ΓSpecIso
+        (CommRingCat.of Int)).hom hxy
+    simpa using h
+  · intro y
+    refine ⟨(AlgebraicGeometry.Scheme.ΓSpecIso
+      (CommRingCat.of Int)).hom y, ?_⟩
+    apply (ConcreteCategory.bijective_of_isIso
+      (AlgebraicGeometry.Scheme.ΓSpecIso
+        (CommRingCat.of Int)).hom).1
+    simp
+
+/--
+The cyclic integer point supplies the selected architecture component: every
+actual local evaluation is the integer-constant equivalence followed by the
+isomorphism induced from the whole affine cover.
+-/
+theorem cyclicUnitIntegerRealizationPoint_component :
+    cyclicUnitEquationObservableRealization.IsEquationPointComponent
+      referenceEquationContextCharts
+      cyclicUnitIntegerRealizationPoint := by
+  intro W
+  haveI : IsIso
+      (referenceEquationContextCharts.chartMap W) := by
+    change IsIso (𝟙 referenceScheme.underlying)
+    infer_instance
+  haveI : IsIso
+      (cyclicUnitEquationObservableRealization.contextRealizationChartMap
+        referenceEquationContextCharts W) := by
+    change IsIso
+      (pullback.fst
+        cyclicUnitEquationObservableRealization.realizationImmersion
+        (referenceEquationContextCharts.chartMap W))
+    infer_instance
+  haveI : IsIso
+      (cyclicUnitEquationObservableRealization.contextTestChartMap
+        referenceEquationContextCharts
+        cyclicUnitIntegerRealizationPoint W) := by
+    change IsIso
+      (pullback.fst cyclicUnitIntegerRealizationPoint
+        (cyclicUnitEquationObservableRealization.contextRealizationChartMap
+          referenceEquationContextCharts W))
+    infer_instance
+  have hevaluation :
+      cyclicUnitEquationObservableRealization.contextTestEvaluation
+          referenceEquationContextCharts
+          cyclicUnitIntegerRealizationPoint W =
+        (cyclicUnitEquationObservableRealization.contextTestChartMap
+          referenceEquationContextCharts
+          cyclicUnitIntegerRealizationPoint W).appTop.hom.comp
+            (Int.castRingHom
+              Γ(AlgebraicGeometry.Spec (CommRingCat.of Int), ⊤)) := by
+    ext x
+    rw [cyclicUnitEquationObservableRealization.contextTestEvaluation_eq_restrict
+      cyclicUnitEquationObservableRealization_valid
+      referenceEquationContextCharts
+      cyclicUnitIntegerRealizationPoint W x]
+    simp only [EquationObservableRealization.evaluation,
+      EquationObservableRealization.pointAt,
+      EquationObservableRealization.ofRepresentingEquiv_representingEquiv,
+      cyclicUnitEquationObservableRealization,
+      cyclicUnitEquationRepresentingEquiv]
+    rfl
+  rw [hevaluation]
+  exact
+    (ConcreteCategory.bijective_of_isIso
+      (cyclicUnitEquationObservableRealization.contextTestChartMap
+        referenceEquationContextCharts
+        cyclicUnitIntegerRealizationPoint W).appTop).comp
+      intCast_specInt_bijective
+
+/-- The concrete architecture-reading component at the cyclic integer point. -/
+noncomputable def cyclicUnitIntegerKappa
+    (W : referenceSite.category) :
+    Γ(cyclicUnitEquationObservableRealization.contextTestChart
+        referenceEquationContextCharts
+        cyclicUnitIntegerRealizationPoint W, ⊤) ≃+* Int :=
+  EquationObservableRealization.EquationPointComponent.kappa
+    (R := cyclicUnitEquationObservableRealization)
+    referenceEquationContextCharts
+    cyclicUnitIntegerRealizationPoint_component W
+
+/-- The concrete `κ` inverts the local evaluation on every context. -/
+@[simp] theorem cyclicUnitIntegerKappa_evaluation
+    (W : referenceSite.category) (x : Int) :
+    cyclicUnitIntegerKappa W
+        (cyclicUnitEquationObservableRealization.contextTestEvaluation
+          referenceEquationContextCharts
+          cyclicUnitIntegerRealizationPoint W x) = x :=
+  EquationObservableRealization.EquationPointComponent.kappa_contextTestEvaluation
+    (R := cyclicUnitEquationObservableRealization)
+    referenceEquationContextCharts
+    cyclicUnitIntegerRealizationPoint_component W x
+
+/--
 The reference point on which the site-selected constant coordinate `2`
 vanishes.
 -/
@@ -2149,10 +2715,334 @@ private theorem siteEquationModTwoPoint_normalized_apply
   simpa only [CommRingCat.comp_apply] using congrArg
     (fun q => q x) siteEquationModTwoPoint_normalized_appTop
 
-/-- The mod-two point satisfies every required equation of the site-generated reading. -/
-theorem siteEquationModTwoPoint_semantic :
-    SemanticLawfulAlong referenceRaw referenceScheme referenceSiteReading
-      siteEquationModTwoPoint := by
+/-- The acyclic fixture has zero actual residual in every context and Atom. -/
+theorem referenceSite_acyclic_residual_zero
+    (W : referenceSite.category)
+    (i : referenceSite.equationSystem.Index)
+    (a : AAT.AG.FiniteModel.carrier.Atom) :
+    referenceSite.equationSystem.equationResidual W
+      AAT.AG.FiniteModel.acyclicObject i a = 0 := by
+  cases i
+  simp [Site.SelectedGeometryReading.toAATSite,
+    referenceCorePackage, AAT.AG.FiniteModel.corePackageFor,
+    AATCorePackage.generate, AATCorePackage.equationSystem,
+    AATCorePackage.algebra, ObjectAlgebra.equationSystem,
+    AAT.AG.FiniteModel.coreReadingFor,
+    AAT.AG.FiniteModel.equationReading,
+    AAT.AG.FiniteModel.equationSystem,
+    AAT.AG.FiniteModel.noCycleResidual,
+    AAT.AG.FiniteModel.hasDependencyCycle,
+    AAT.AG.FiniteModel.acyclicObject,
+    AAT.AG.FiniteModel.acyclicConfiguration]
+
+/-- The mod-two point kills every symbolic-residual equalizer relation. -/
+theorem siteEquationModTwoPoint_realizationRelations
+    (g : EquationObservableRealization.GeneratorIndex
+      referenceSite.equationSystem) :
+    siteEquationModTwoPoint.appTop
+      (referenceEquationObservableRealization.realizationRelation
+        g) = 0 := by
+  rcases g with ⟨W, i, a⟩
+  apply (ConcreteCategory.bijective_of_isIso
+    (AlgebraicGeometry.Scheme.ΓSpecIso (CommRingCat.of (ZMod 2))).hom).1
+  rw [map_zero, siteEquationModTwoPoint_normalized_apply]
+  change siteEquationModTwoRingHom
+    (ambientGlobalSectionsIso.hom
+      (referenceEquationObservableRealization.violationSection W i a -
+        referenceEquationObservableRealization.ambientResidualSection
+          W i a)) = 0
+  rw [map_sub, referenceSiteViolationSection_image,
+    referenceSiteAmbientResidualSection_image,
+    referenceSite_violationCoordinate,
+    referenceSite_acyclic_residual_zero W, map_zero, sub_zero]
+  change siteEquationModTwoRingHom (2 : AmbientRing) = 0
+  rw [map_ofNat]
+  decide
+
+/-- The mod-two point factors through the generated symbolic-residual equalizer. -/
+theorem siteEquationModTwoPoint_realizes :
+    Nonempty
+      (referenceEquationObservableRealization.FactorsThroughRealization
+        siteEquationModTwoPoint) := by
+  apply
+    (referenceEquationObservableRealization.realizationIdeal_iff_nonempty_factorsThrough
+        siteEquationModTwoPoint).mp
+  apply
+    (referenceEquationObservableRealization.realizationRelationsVanishAlong_iff_ideal
+        siteEquationModTwoPoint).mp
+  exact siteEquationModTwoPoint_realizationRelations
+
+/-- The mod-two point as a point of the generated realization scheme. -/
+noncomputable def siteEquationModTwoRealizationPoint :
+    AlgebraicGeometry.Spec (CommRingCat.of (ZMod 2)) ⟶
+      referenceEquationObservableRealization.realizationScheme :=
+  (Classical.choice siteEquationModTwoPoint_realizes).1
+
+/-- The generated realization point maps to the original mod-two point. -/
+@[reassoc] theorem siteEquationModTwoRealizationPoint_immersion :
+    siteEquationModTwoRealizationPoint ≫
+        referenceEquationObservableRealization.realizationImmersion =
+      siteEquationModTwoPoint :=
+  (Classical.choice siteEquationModTwoPoint_realizes).2
+
+/-- Residual representability fires on the nontrivial mod-two realization. -/
+theorem siteEquationModTwoPoint_residualRepresentable
+    (W : referenceSite.category)
+    (i : referenceSite.equationSystem.Index)
+    (a : AAT.AG.FiniteModel.carrier.Atom) :
+    referenceEquationObservableRealization.evaluation
+        (siteEquationModTwoRealizationPoint ≫
+          referenceEquationObservableRealization.realizationImmersion)
+        W (referenceSite.equationSystem.violationCoordinate W i a) =
+      referenceEquationObservableRealization.residualValue
+        siteEquationModTwoRealizationPoint W i a :=
+  referenceEquationObservableRealization.residualRepresentable
+    referenceEquationObservableRealization_valid
+      siteEquationModTwoRealizationPoint W i a
+
+/-- The realization point satisfies every required actual residual equation. -/
+theorem siteEquationModTwoPoint_equationLawful :
+    referenceEquationObservableRealization.EquationLawfulAlong
+      referenceEquationContextCharts
+      siteEquationModTwoRealizationPoint := by
+  apply
+    referenceEquationObservableRealization.equationLawfulAlong_of_equationLawful
+        referenceEquationContextCharts
+        AAT.AG.FiniteModel.acyclicObject
+        siteEquationModTwoRealizationPoint
+        (by rfl)
+  intro i _ W a
+  exact referenceSite_acyclic_residual_zero W i a
+
+/--
+The mod-two realization point factors through the lawful closed subscheme
+generated from the site-owned witness ideals.
+-/
+theorem siteEquationModTwoPoint_factors_generated :
+    Nonempty
+      (referenceEquationObservableRealization.FactorsThroughLawfulClosedSubscheme
+          siteEquationModTwoRealizationPoint) := by
+  apply
+    (referenceEquationObservableRealization.generatedIdeal_iff_nonempty_factorsThrough
+      siteEquationModTwoRealizationPoint).mp
+  exact
+    (referenceEquationObservableRealization.equationLawfulAlong_iff_generatedIdeal
+      referenceEquationObservableRealization_valid
+      referenceEquationContextCharts
+      referenceEquationSchemeChartProducer
+      siteEquationModTwoRealizationPoint).mp
+        siteEquationModTwoPoint_equationLawful
+
+/--
+Each required equation at the mod-two point factors through its own generated
+closed zero locus, realizing the second equivalence of Theorem 5.2C.
+-/
+theorem siteEquationModTwoPoint_factors_equation
+    (i : referenceSite.equationSystem.Index)
+    (hi : referenceSite.equationSystem.Required i) :
+    Nonempty
+      (referenceEquationObservableRealization.FactorsThroughEquationClosedSubscheme
+        i siteEquationModTwoRealizationPoint) := by
+  have h :=
+    referenceEquationObservableRealization.equationHoldsAlong_iff_nonempty_factorsThrough
+      referenceEquationObservableRealization_valid
+      referenceEquationContextCharts
+      referenceEquationSchemeChartProducer
+      siteEquationModTwoRealizationPoint i
+  exact h.mp (siteEquationModTwoPoint_equationLawful i hi)
+
+/-- The finite cyclic architecture evaluates every selected residual to `1`. -/
+theorem cyclicUnitEquationSystem_residual_one
+    (W : referenceSite.category)
+    (i : cyclicUnitEquationSystem.Index)
+    (a : AAT.AG.FiniteModel.carrier.Atom) :
+    cyclicUnitEquationSystem.equationResidual W
+      AAT.AG.FiniteModel.object i a = 1 := by
+  have hcycle :
+      AAT.AG.FiniteModel.hasDependencyCycle
+        AAT.AG.FiniteModel.object := by
+    simpa [AAT.AG.FiniteModel.hasCycleWitness,
+      AAT.AG.FiniteModel.hasDependencyCycle] using
+        AAT.AG.FiniteModel.object_hasCycleWitness
+  simp [cyclicUnitEquationSystem,
+    AAT.AG.FiniteModel.noCycleResidual, hcycle]
+
+/-- The cyclic unit fixture has zero equalizer relations at the mod-two point. -/
+theorem cyclicUnitSitePoint_realizationRelations
+    (g : EquationObservableRealization.GeneratorIndex
+      cyclicUnitEquationSystem) :
+    siteEquationModTwoPoint.appTop
+      (cyclicUnitEquationObservableRealization.realizationRelation g) = 0 := by
+  rcases g with ⟨W, i, a⟩
+  have hresidual :
+      AAT.AG.FiniteModel.noCycleResidual
+        AAT.AG.FiniteModel.object = 1 := by
+    simpa [cyclicUnitEquationSystem] using
+      cyclicUnitEquationSystem_residual_one W i a
+  simp only [EquationObservableRealization.realizationRelation,
+    EquationObservableRealization.violationSection,
+    EquationObservableRealization.ambientResidualSection,
+    EquationObservableRealization.residualSection,
+    EquationObservableRealization.sectionMap,
+    EquationObservableRealization.evaluation,
+    EquationObservableRealization.architectureAt,
+    EquationObservableRealization.pointAt,
+    EquationObservableRealization.ofRepresentingEquiv_reading,
+    EquationObservableRealization.ofRepresentingEquiv_representingEquiv,
+    cyclicUnitEquationObservableRealization,
+    cyclicUnitEquationArchitectureReading,
+    cyclicUnitEquationSystem, hresidual,
+    map_one, sub_self, map_zero]
+
+/-- The mod-two point factors through the cyclic unit equalizer scheme. -/
+theorem cyclicUnitSitePoint_realizes :
+    Nonempty
+      (cyclicUnitEquationObservableRealization.FactorsThroughRealization
+        siteEquationModTwoPoint) := by
+  apply
+    (cyclicUnitEquationObservableRealization.realizationIdeal_iff_nonempty_factorsThrough
+      siteEquationModTwoPoint).mp
+  apply
+    (cyclicUnitEquationObservableRealization.realizationRelationsVanishAlong_iff_ideal
+      siteEquationModTwoPoint).mp
+  exact cyclicUnitSitePoint_realizationRelations
+
+/-- The negative fixture's point on the cyclic unit equalizer scheme. -/
+noncomputable def cyclicUnitSiteRealizationPoint :
+    AlgebraicGeometry.Spec (CommRingCat.of (ZMod 2)) ⟶
+      cyclicUnitEquationObservableRealization.realizationScheme :=
+  (Classical.choice cyclicUnitSitePoint_realizes).1
+
+/-- The negative realization point maps to the original mod-two point. -/
+@[reassoc] theorem cyclicUnitSiteRealizationPoint_immersion :
+    cyclicUnitSiteRealizationPoint ≫
+        cyclicUnitEquationObservableRealization.realizationImmersion =
+      siteEquationModTwoPoint :=
+  (Classical.choice cyclicUnitSitePoint_realizes).2
+
+/-- Every residual value at the cyclic negative realization point is nonzero. -/
+theorem cyclicUnitSitePoint_residualValue_ne_zero
+    (W : referenceSite.category)
+    (i : cyclicUnitEquationSystem.Index)
+    (a : AAT.AG.FiniteModel.carrier.Atom) :
+    cyclicUnitEquationObservableRealization.residualValue
+      cyclicUnitSiteRealizationPoint W i a ≠ 0 := by
+  simp only [EquationObservableRealization.residualValue,
+    EquationObservableRealization.sectionArchitecture,
+    EquationObservableRealization.evaluation,
+    EquationObservableRealization.architectureAt,
+    EquationObservableRealization.pointAt,
+    EquationObservableRealization.ofRepresentingEquiv_reading,
+    EquationObservableRealization.ofRepresentingEquiv_representingEquiv,
+    cyclicUnitEquationObservableRealization,
+    cyclicUnitEquationArchitectureReading]
+  rw [cyclicUnitEquationSystem_residual_one]
+  intro hzero
+  have hnormalized := congrArg
+    (AlgebraicGeometry.Scheme.ΓSpecIso
+      (CommRingCat.of (ZMod 2))).hom hzero
+  norm_num at hnormalized
+
+/-- The cyclic realization point does not satisfy its required equation. -/
+theorem cyclicUnitSitePoint_not_equationHoldsAlong :
+    ¬ cyclicUnitEquationObservableRealization.EquationHoldsAlong
+      referenceEquationContextCharts
+      cyclicUnitSiteRealizationPoint PUnit.unit := by
+  intro h
+  apply cyclicUnitSitePoint_residualValue_ne_zero
+    baseContext PUnit.unit AAT.AG.FiniteModel.FiniteAtom.componentA
+  apply AlgebraicGeometry.Scheme.zero_of_zero_cover
+    (cyclicUnitEquationObservableRealization.residualValue
+      cyclicUnitSiteRealizationPoint baseContext PUnit.unit
+        AAT.AG.FiniteModel.FiniteAtom.componentA)
+    (cyclicUnitEquationObservableRealization.contextTestCover
+      referenceEquationContextCharts cyclicUnitSiteRealizationPoint)
+  intro W
+  have hW := h W AAT.AG.FiniteModel.FiniteAtom.componentA
+  rw [cyclicUnitEquationObservableRealization.contextTestResidualValue_eq_restrict
+    cyclicUnitEquationObservableRealization_valid
+    referenceEquationContextCharts cyclicUnitSiteRealizationPoint
+    W PUnit.unit AAT.AG.FiniteModel.FiniteAtom.componentA] at hW
+  have hresidual :
+      cyclicUnitEquationObservableRealization.residualValue
+          cyclicUnitSiteRealizationPoint W PUnit.unit
+            AAT.AG.FiniteModel.FiniteAtom.componentA =
+        cyclicUnitEquationObservableRealization.residualValue
+          cyclicUnitSiteRealizationPoint baseContext PUnit.unit
+            AAT.AG.FiniteModel.FiniteAtom.componentA := by
+    simp only [EquationObservableRealization.residualValue,
+      EquationObservableRealization.sectionArchitecture,
+      EquationObservableRealization.evaluation,
+      EquationObservableRealization.architectureAt,
+      EquationObservableRealization.pointAt,
+      EquationObservableRealization.ofRepresentingEquiv_reading,
+      EquationObservableRealization.ofRepresentingEquiv_representingEquiv,
+      cyclicUnitEquationObservableRealization,
+      cyclicUnitEquationArchitectureReading,
+      cyclicUnitEquationRepresentingEquiv]
+    rw [cyclicUnitEquationSystem_residual_one,
+      cyclicUnitEquationSystem_residual_one]
+    simp
+  rw [hresidual] at hW
+  exact hW
+
+/-- The cyclic realization point is not required-equation lawful. -/
+theorem cyclicUnitSitePoint_not_equationLawful :
+    ¬ cyclicUnitEquationObservableRealization.EquationLawfulAlong
+      referenceEquationContextCharts
+      cyclicUnitSiteRealizationPoint := by
+  intro h
+  exact cyclicUnitSitePoint_not_equationHoldsAlong
+    (h PUnit.unit rfl)
+
+/--
+The generated lawful ideal remains nonzero after pullback to the cyclic point,
+so the lawful closed subscheme is proper relative to this realization point.
+-/
+theorem cyclicUnitSitePoint_generatedIdeal_comap_ne_bot :
+    cyclicUnitEquationObservableRealization.generatedIdealSheaf.comap
+      cyclicUnitSiteRealizationPoint ≠ ⊥ := by
+  intro h
+  exact cyclicUnitSitePoint_not_equationLawful
+    ((EquationObservableRealization.equationLawfulAlong_iff_generatedIdeal
+      cyclicUnitEquationObservableRealization
+      cyclicUnitEquationObservableRealization_valid
+      referenceEquationContextCharts
+      cyclicUnitEquationSchemeChartProducer
+      cyclicUnitSiteRealizationPoint).mpr h)
+
+/-- The cyclic realization point cannot factor through the lawful subscheme. -/
+theorem cyclicUnitSitePoint_not_factors_generated :
+    ¬ Nonempty
+      (cyclicUnitEquationObservableRealization.FactorsThroughLawfulClosedSubscheme
+        cyclicUnitSiteRealizationPoint) := by
+  intro hfactor
+  exact cyclicUnitSitePoint_generatedIdeal_comap_ne_bot
+    ((EquationObservableRealization.generatedIdeal_iff_nonempty_factorsThrough
+      cyclicUnitEquationObservableRealization
+      cyclicUnitSiteRealizationPoint).mpr hfactor)
+
+/--
+The cyclic negative point cannot factor through the required equation's own
+generated zero locus.
+-/
+theorem cyclicUnitSitePoint_not_factors_equation :
+    ¬ Nonempty
+      (cyclicUnitEquationObservableRealization.FactorsThroughEquationClosedSubscheme
+        PUnit.unit cyclicUnitSiteRealizationPoint) := by
+  intro hfactor
+  have h :=
+    cyclicUnitEquationObservableRealization.equationHoldsAlong_iff_nonempty_factorsThrough
+      cyclicUnitEquationObservableRealization_valid
+      referenceEquationContextCharts
+      cyclicUnitEquationSchemeChartProducer
+      cyclicUnitSiteRealizationPoint PUnit.unit
+  exact cyclicUnitSitePoint_not_equationHoldsAlong (h.mpr hfactor)
+
+/-- The ambient mod-two point satisfies the synthesis compatibility adapter. -/
+theorem siteEquationModTwoPoint_legacySemantic :
+    SemanticLawfulAlong referenceRaw referenceScheme
+      referenceLegacySiteReading siteEquationModTwoPoint := by
   intro i _
   change ∀ a, siteEquationModTwoPoint.appTop
     (referenceSiteGlobalEquation i a) = 0
@@ -2165,18 +3055,33 @@ theorem siteEquationModTwoPoint_semantic :
   rw [map_ofNat]
   decide
 
-/-- The mod-two point factors through the site-generated lawful closed subscheme. -/
-theorem siteEquationModTwoPoint_factors :
+/--
+The ambient mod-two point factors through the lawful closed subscheme owned
+by the synthesis compatibility adapter.
+-/
+theorem siteEquationModTwoPoint_factors_legacy :
     Nonempty (FactorsThroughLawfulClosedSubscheme
-      referenceRaw referenceScheme referenceSiteReading
-      referenceSiteReading_valid referenceSiteReading_requiredClosed
+      referenceRaw referenceScheme referenceLegacySiteReading
+      referenceLegacySiteReading_valid
+      referenceLegacySiteReading_requiredClosed
       siteEquationModTwoPoint) := by
-  have h :=
-    lawfulnessIdealFactorizationCorrespondence referenceRaw referenceScheme
-      referenceSiteReading referenceSiteReading_valid
-      referenceSiteReading_requiredClosed
-      referenceSiteReading_requiredLawIdealExact siteEquationModTwoPoint
-  exact h.2.2.mp (h.2.1.mp (h.1.mp siteEquationModTwoPoint_semantic))
+  apply (idealLawfulAlong_iff_nonempty_factorsThrough
+    referenceRaw referenceScheme referenceLegacySiteReading
+    referenceLegacySiteReading_valid
+    referenceLegacySiteReading_requiredClosed
+    siteEquationModTwoPoint).mp
+  apply (witnessVanishes_iff_idealLawfulAlong
+    referenceRaw referenceScheme referenceLegacySiteReading
+    referenceLegacySiteReading_valid
+    referenceLegacySiteReading_requiredClosed
+    siteEquationModTwoPoint).mp
+  apply (semanticLawfulAlong_iff_witnessVanishes
+    referenceRaw referenceScheme referenceLegacySiteReading
+    referenceLegacySiteReading_valid
+    referenceLegacySiteReading_requiredClosed
+    referenceLegacySiteReading_requiredLawIdealExact
+    siteEquationModTwoPoint).mp
+  exact siteEquationModTwoPoint_legacySemantic
 
 /--
 SD2-SD3 standard-geometry reference-model declaration.
@@ -2970,6 +3875,350 @@ private theorem actualOverlap_left_appTop :
   slice_lhs 2 4 =>
     rw [Iso.inv_hom_id_assoc]
   exact overlap_left_restriction_is_localization
+
+private theorem actualOverlapIso_inv_snd :
+    actualOverlapIso.inv ≫ pullback.snd leftChart.map rightChart.map =
+      overlapChartDomainIso.inv ≫
+        architectureChartRestriction referenceRaw overlapToRight := by
+  rw [actualOverlapIso_eq]
+  simp only [Iso.trans_inv, Iso.symm_inv,
+    StandardArchitectureScheme.overlap_is_actual_pullback, Category.assoc]
+  have hcmp :=
+    referenceScheme.overlapsValid.comparison_snd leftIndex rightIndex
+  change (referenceScheme.overlaps.comparison leftIndex rightIndex).hom ≫
+      pullback.snd leftChart.map rightChart.map =
+    architectureChartRestriction referenceRaw
+      (referenceScheme.atlas.pairToRight
+        referenceRaw leftIndex rightIndex) at hcmp
+  slice_lhs 3 4 =>
+    rw [hcmp]
+  rw [← cancel_epi overlapChartDomainIso.hom,
+    Iso.hom_inv_id_assoc, Iso.hom_inv_id_assoc]
+  rw [pairContext_cast_inv]
+  rw [← architectureChartRestriction_comp]
+  exact congrArg (architectureChartRestriction referenceRaw)
+    (Subsingleton.elim _ _)
+
+private theorem actualOverlap_right_appTop :
+    rightChartGlobalSectionsIso.inv ≫
+        (pullback.snd leftChart.map rightChart.map).appTop ≫
+        actualOverlapGlobalSectionsIso.hom =
+      CommRingCat.ofHom rightToOverlapRingHom := by
+  have hsnd := congrArg (fun q => q.appTop) actualOverlapIso_inv_snd
+  simp only [AlgebraicGeometry.Scheme.Hom.comp_appTop] at hsnd
+  rw [rightChartGlobalSectionsIso, actualOverlapGlobalSectionsIso,
+    Iso.trans_inv, Iso.trans_hom]
+  simp only [Category.assoc, asIso_hom]
+  slice_lhs 3 4 => rw [hsnd]
+  slice_lhs 4 5 => rw [overlapChartDomainIso_inv_appTop]
+  slice_lhs 3 4 =>
+    rw [architectureChartRestriction_appTop]
+  slice_lhs 2 4 =>
+    rw [Iso.inv_hom_id_assoc]
+  exact overlap_right_restriction_is_localization
+
+/--
+The actual left-to-overlap section map is the transported principal
+localization at the right chart generator.
+-/
+private theorem actualOverlap_left_isLocalization :
+    letI : Algebra Γ(leftChart.domain, ⊤)
+        Γ(referenceScheme.atlas.actualOverlap
+          referenceRaw leftIndex rightIndex, ⊤) :=
+      (pullback.fst leftChart.map rightChart.map).appTop.hom.toAlgebra
+    IsLocalization
+      ((Submonoid.powers
+        (algebraMap AmbientRing
+          (Localization.Away leftGenerator) rightGenerator)).map
+        leftChartGlobalSectionsIso.commRingCatIsoToRingEquiv.symm.toMonoidHom)
+      Γ(referenceScheme.atlas.actualOverlap
+        referenceRaw leftIndex rightIndex, ⊤) := by
+  letI := leftToOverlapRingHom.toAlgebra
+  letI : IsLocalization
+      (Submonoid.powers
+        (algebraMap AmbientRing
+          (Localization.Away leftGenerator) rightGenerator))
+      (Localization.Away overlapGenerator) :=
+    leftToOverlap_isLocalization
+  have hmap :
+      actualOverlapGlobalSectionsIso.inv.hom.comp
+          (leftToOverlapRingHom.comp
+            leftChartGlobalSectionsIso.hom.hom) =
+        (pullback.fst leftChart.map rightChart.map).appTop.hom := by
+    have hcat :
+        leftChartGlobalSectionsIso.hom ≫
+            CommRingCat.ofHom leftToOverlapRingHom ≫
+            actualOverlapGlobalSectionsIso.inv =
+          (pullback.fst leftChart.map rightChart.map).appTop := by
+      rw [← actualOverlap_left_appTop]
+      simp only [Category.assoc]
+      rw [Iso.hom_inv_id_assoc, Iso.hom_inv_id]
+      simp
+    exact congrArg CommRingCat.Hom.hom hcat
+  exact IsLocalization.transportRingEquivOfEq
+    (Submonoid.powers
+      (algebraMap AmbientRing
+        (Localization.Away leftGenerator) rightGenerator))
+    leftChartGlobalSectionsIso.commRingCatIsoToRingEquiv.symm
+    actualOverlapGlobalSectionsIso.commRingCatIsoToRingEquiv.symm
+    (pullback.fst leftChart.map rightChart.map).appTop.hom
+    hmap
+
+/--
+The actual right-to-overlap section map is the transported principal
+localization at the left chart generator.
+-/
+private theorem actualOverlap_right_isLocalization :
+    letI : Algebra Γ(rightChart.domain, ⊤)
+        Γ(referenceScheme.atlas.actualOverlap
+          referenceRaw leftIndex rightIndex, ⊤) :=
+      (pullback.snd leftChart.map rightChart.map).appTop.hom.toAlgebra
+    IsLocalization
+      ((Submonoid.powers
+        (algebraMap AmbientRing
+          (Localization.Away rightGenerator) leftGenerator)).map
+        rightChartGlobalSectionsIso.commRingCatIsoToRingEquiv.symm.toMonoidHom)
+      Γ(referenceScheme.atlas.actualOverlap
+        referenceRaw leftIndex rightIndex, ⊤) := by
+  letI := rightToOverlapRingHom.toAlgebra
+  letI : IsLocalization
+      (Submonoid.powers
+        (algebraMap AmbientRing
+          (Localization.Away rightGenerator) leftGenerator))
+      (Localization.Away overlapGenerator) :=
+    rightToOverlap_isLocalization
+  have hmap :
+      actualOverlapGlobalSectionsIso.inv.hom.comp
+          (rightToOverlapRingHom.comp
+            rightChartGlobalSectionsIso.hom.hom) =
+        (pullback.snd leftChart.map rightChart.map).appTop.hom := by
+    have hcat :
+        rightChartGlobalSectionsIso.hom ≫
+            CommRingCat.ofHom rightToOverlapRingHom ≫
+            actualOverlapGlobalSectionsIso.inv =
+          (pullback.snd leftChart.map rightChart.map).appTop := by
+      rw [← actualOverlap_right_appTop]
+      simp only [Category.assoc]
+      rw [Iso.hom_inv_id_assoc, Iso.hom_inv_id]
+      simp
+    exact congrArg CommRingCat.Hom.hom hcat
+  exact IsLocalization.transportRingEquivOfEq
+    (Submonoid.powers
+      (algebraMap AmbientRing
+        (Localization.Away rightGenerator) leftGenerator))
+    rightChartGlobalSectionsIso.commRingCatIsoToRingEquiv.symm
+    actualOverlapGlobalSectionsIso.commRingCatIsoToRingEquiv.symm
+    (pullback.snd leftChart.map rightChart.map).appTop.hom
+    hmap
+
+/-- Global sections of the same actual overlap with the chart order reversed. -/
+private noncomputable def reverseActualOverlapGlobalSectionsIso :
+    Γ(referenceScheme.atlas.actualOverlap
+        referenceRaw rightIndex leftIndex, ⊤) ≅
+      CommRingCat.of (Localization.Away overlapGenerator) :=
+  (asIso ((pullbackSymmetry rightChart.map leftChart.map).inv.appTop)) ≪≫
+    actualOverlapGlobalSectionsIso
+
+private theorem reverseActualOverlap_left_appTop :
+    rightChartGlobalSectionsIso.inv ≫
+        (pullback.fst rightChart.map leftChart.map).appTop ≫
+        reverseActualOverlapGlobalSectionsIso.hom =
+      CommRingCat.ofHom rightToOverlapRingHom := by
+  have hsymm := congrArg (fun q => q.appTop)
+    (pullbackSymmetry_hom_comp_snd rightChart.map leftChart.map)
+  simp only [AlgebraicGeometry.Scheme.Hom.comp_appTop] at hsymm
+  rw [reverseActualOverlapGlobalSectionsIso, Iso.trans_hom]
+  simp only [asIso_hom]
+  slice_lhs 2 3 =>
+    rw [← hsymm]
+  have hcancel :
+      (pullbackSymmetry rightChart.map leftChart.map).hom.appTop ≫
+          (pullbackSymmetry rightChart.map leftChart.map).inv.appTop =
+        𝟙 _ := by
+    rw [← AlgebraicGeometry.Scheme.Hom.comp_appTop]
+    simp
+  slice_lhs 3 4 =>
+    rw [hcancel]
+  simp only [Category.id_comp]
+  exact actualOverlap_right_appTop
+
+private theorem reverseActualOverlap_left_isLocalization :
+    letI : Algebra Γ(rightChart.domain, ⊤)
+        Γ(referenceScheme.atlas.actualOverlap
+          referenceRaw rightIndex leftIndex, ⊤) :=
+      (pullback.fst rightChart.map leftChart.map).appTop.hom.toAlgebra
+    IsLocalization
+      ((Submonoid.powers
+        (algebraMap AmbientRing
+          (Localization.Away rightGenerator) leftGenerator)).map
+        rightChartGlobalSectionsIso.commRingCatIsoToRingEquiv.symm.toMonoidHom)
+      Γ(referenceScheme.atlas.actualOverlap
+        referenceRaw rightIndex leftIndex, ⊤) := by
+  letI := rightToOverlapRingHom.toAlgebra
+  letI : IsLocalization
+      (Submonoid.powers
+        (algebraMap AmbientRing
+          (Localization.Away rightGenerator) leftGenerator))
+      (Localization.Away overlapGenerator) :=
+    rightToOverlap_isLocalization
+  have hmap :
+      reverseActualOverlapGlobalSectionsIso.inv.hom.comp
+          (rightToOverlapRingHom.comp
+            rightChartGlobalSectionsIso.hom.hom) =
+        (pullback.fst rightChart.map leftChart.map).appTop.hom := by
+    have hcat :
+        rightChartGlobalSectionsIso.hom ≫
+            CommRingCat.ofHom rightToOverlapRingHom ≫
+            reverseActualOverlapGlobalSectionsIso.inv =
+          (pullback.fst rightChart.map leftChart.map).appTop := by
+      rw [← reverseActualOverlap_left_appTop]
+      simp only [Category.assoc]
+      rw [Iso.hom_inv_id_assoc, Iso.hom_inv_id]
+      simp
+    exact congrArg CommRingCat.Hom.hom hcat
+  exact IsLocalization.transportRingEquivOfEq
+    (Submonoid.powers
+      (algebraMap AmbientRing
+        (Localization.Away rightGenerator) leftGenerator))
+    rightChartGlobalSectionsIso.commRingCatIsoToRingEquiv.symm
+    reverseActualOverlapGlobalSectionsIso.commRingCatIsoToRingEquiv.symm
+    (pullback.fst rightChart.map leftChart.map).appTop.hom
+    hmap
+
+private theorem selfOverlap_isLocalization
+    (j : referenceScheme.atlas.Index) :
+    letI : Algebra Γ((referenceScheme.atlas.chart j).domain, ⊤)
+        Γ(referenceScheme.atlas.actualOverlap
+          referenceRaw j j, ⊤) :=
+      (pullback.fst
+        (referenceScheme.atlas.chart j).map
+        (referenceScheme.atlas.chart j).map).appTop.hom.toAlgebra
+    IsLocalization
+      (Submonoid.powers
+        (1 : Γ((referenceScheme.atlas.chart j).domain, ⊤)))
+      Γ(referenceScheme.atlas.actualOverlap
+        referenceRaw j j, ⊤) := by
+  letI : Algebra Γ((referenceScheme.atlas.chart j).domain, ⊤)
+      Γ(referenceScheme.atlas.actualOverlap
+        referenceRaw j j, ⊤) :=
+    (pullback.fst
+      (referenceScheme.atlas.chart j).map
+      (referenceScheme.atlas.chart j).map).appTop.hom.toAlgebra
+  letI : IsOpenImmersion (referenceScheme.atlas.chart j).map :=
+    (referenceScheme.atlasValid.chart_valid j).isOpenImmersion
+  letI : Mono (referenceScheme.atlas.chart j).map := inferInstance
+  letI : IsIso
+      (pullback.fst
+        (referenceScheme.atlas.chart j).map
+        (referenceScheme.atlas.chart j).map) := inferInstance
+  letI : IsIso
+      (pullback.fst
+        (referenceScheme.atlas.chart j).map
+        (referenceScheme.atlas.chart j).map).appTop := inferInstance
+  exact IsLocalization.away_of_isUnit_of_bijective _
+    (show IsUnit
+      (1 : Γ((referenceScheme.atlas.chart j).domain, ⊤)) from isUnit_one)
+    (ConcreteCategory.bijective_of_isIso
+      (pullback.fst
+        (referenceScheme.atlas.chart j).map
+        (referenceScheme.atlas.chart j).map).appTop)
+
+/-- Hence every reference context generates the same witness ideal. -/
+private theorem referenceContextWitnessIdeal_eq
+    (W V : referenceSite.category)
+    (i : referenceSite.equationSystem.Index) :
+    referenceEquationObservableRealization.contextWitnessIdeal W i =
+      referenceEquationObservableRealization.contextWitnessIdeal V i := by
+  rw [referenceEquationObservableRealization.contextWitnessIdeal_eq_span,
+    referenceEquationObservableRealization.contextWitnessIdeal_eq_span]
+  congr 1
+
+/-- The reference global witness ideal is generated at any one context. -/
+private theorem referenceGlobalWitnessIdeal_eq_context
+    (W : referenceSite.category)
+    (i : referenceSite.equationSystem.Index) :
+    referenceEquationObservableRealization.globalWitnessIdeal i =
+      referenceEquationObservableRealization.contextWitnessIdeal W i := by
+  apply le_antisymm
+  · rw [EquationObservableRealization.globalWitnessIdeal]
+    apply iSup_le
+    intro V
+    exact (referenceContextWitnessIdeal_eq V W i).le
+  · exact le_iSup
+      (fun V : referenceSite.category =>
+        referenceEquationObservableRealization.contextWitnessIdeal V i) W
+
+/--
+Concrete Definition 5.2B localization producer for the two-principal-open
+reference atlas.  All four ordered chart pairs are discharged.
+-/
+noncomputable def referenceEquationChartLocalization
+    : EquationObservableRealization.EquationChartLocalization
+        referenceEquationObservableRealization where
+  submonoid
+    | false, false => Submonoid.powers 1
+    | false, true =>
+        (Submonoid.powers
+          (algebraMap AmbientRing
+            (Localization.Away leftGenerator) rightGenerator)).map
+          leftChartGlobalSectionsIso.commRingCatIsoToRingEquiv.symm.toMonoidHom
+    | true, false =>
+        (Submonoid.powers
+          (algebraMap AmbientRing
+            (Localization.Away rightGenerator) leftGenerator)).map
+          rightChartGlobalSectionsIso.commRingCatIsoToRingEquiv.symm.toMonoidHom
+    | true, true => Submonoid.powers 1
+  isLocalization j l := by
+    cases j <;> cases l
+    · simpa only [EquationObservableRealization.overlapToLeft,
+        leftIndex] using selfOverlap_isLocalization leftIndex
+    · simpa only [EquationObservableRealization.overlapToLeft,
+        leftIndex, rightIndex] using actualOverlap_left_isLocalization
+    · simpa only [EquationObservableRealization.overlapToLeft,
+        leftIndex, rightIndex] using
+          reverseActualOverlap_left_isLocalization
+    · simpa only [EquationObservableRealization.overlapToLeft,
+        rightIndex] using selfOverlap_isLocalization rightIndex
+  globalWitnessIdeal_restricts j i := by
+    rw [referenceGlobalWitnessIdeal_eq_context
+      (referenceScheme.atlas.chart j).context i]
+    exact
+      (referenceEquationObservableRealization.chartWitnessIdeal_eq_map_context
+        j i).symm
+
+/--
+The site-owned equation realization uses the concrete localization producer
+in its full lawfulness, ideal, factorization, and chart correspondence.
+-/
+theorem referenceSiteEquationLawfulnessIdealFactorizationCorrespondence
+    {T : AlgebraicGeometry.Scheme}
+    (s : T ⟶ referenceEquationObservableRealization.realizationScheme) :
+    (referenceEquationObservableRealization.EquationLawfulAlong
+        referenceEquationContextCharts s ↔
+      referenceEquationObservableRealization.generatedIdealSheaf.comap s =
+        ⊥) ∧
+    (referenceEquationObservableRealization.generatedIdealSheaf.comap s =
+        ⊥ ↔
+      Nonempty
+        (referenceEquationObservableRealization.FactorsThroughLawfulClosedSubscheme
+          s)) :=
+  Correspondence.siteEquationLawfulnessIdealFactorizationCorrespondence
+    referenceEquationObservableRealization
+    referenceEquationObservableRealization_valid
+    referenceEquationContextCharts
+    referenceEquationSchemeChartProducer
+    s
+
+/--
+The nontrivial mod-two realization satisfies the generated lawful-locus
+condition through the actual context-chart producer.
+-/
+theorem siteEquationModTwoPoint_generatedLawfulLocus :
+    referenceEquationObservableRealization.generatedIdealSheaf.comap
+      siteEquationModTwoRealizationPoint = ⊥ :=
+  (referenceSiteEquationLawfulnessIdealFactorizationCorrespondence
+    siteEquationModTwoRealizationPoint).1.mp
+      siteEquationModTwoPoint_equationLawful
 
 private theorem reference_ofIdealTop_comap_open
     {Y Z : Scheme} [IsAffine Y]

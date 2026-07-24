@@ -1,5 +1,6 @@
 import Formal.AG.Atom.LawfulnessZero
 import Formal.AG.Atom.ThreeReading
+import Formal.AG.LawAlgebra.ClosedEquationalGeometry
 import Formal.AG.LawAlgebra.LawEquation
 import Formal.AG.LawAlgebra.LawfulLocus
 
@@ -12,6 +13,7 @@ universe u v w
 
 namespace Correspondence
 
+open CategoryTheory
 open LawfulLocus
 
 variable {U : AtomCarrier.{u}}
@@ -70,6 +72,53 @@ theorem lawful_of_generatedLawWitnessIdeals_le_ker
     s.Lawful :=
   lawful_of_selectedWitnessIdeals_le_ker
     (F := E.selectedWitnessIdealFamily W) (s := s) hkill
+
+/--
+For a standard architecture scheme equipped with its site-owned equation
+realization, actual residual lawfulness is exactly generated-ideal vanishing
+and exactly factorization through the generated lawful closed subscheme.
+-/
+theorem siteEquationLawfulnessIdealFactorizationCorrespondence
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k : Type v} [CommRing k]
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {raw : RawAmbientRestrictionSystem S k}
+    {X : StandardArchitectureScheme raw}
+    (R : EquationObservableRealization raw X S.equationSystem)
+    (hR : IsEquationObservableRealization R)
+    (C : EquationObservableRealization.EquationContextCharts (X := X))
+    (P : EquationObservableRealization.EquationSchemeChartProducer R C)
+    {T : AlgebraicGeometry.Scheme}
+    (s : T ⟶ R.realizationScheme) :
+    (R.EquationLawfulAlong C s ↔
+      R.generatedIdealSheaf.comap s = ⊥) ∧
+    (R.generatedIdealSheaf.comap s = ⊥ ↔
+      Nonempty (R.FactorsThroughLawfulClosedSubscheme s)) :=
+  R.lawfulnessIdealFactorizationCorrespondence hR C P s
+
+/--
+Part III, Theorem 5.2C for the site-owned equation system: fulfillment of one
+equation, vanishing of its generated witness ideal, and factorization through
+its closed zero locus agree.
+-/
+theorem siteEquationIdealFactorizationCorrespondence
+    {A : ArchitectureObject U} {S : Site.AATSite A}
+    {k : Type v} [CommRing k]
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {raw : RawAmbientRestrictionSystem S k}
+    {X : StandardArchitectureScheme raw}
+    (R : EquationObservableRealization raw X S.equationSystem)
+    (hR : IsEquationObservableRealization R)
+    (C : EquationObservableRealization.EquationContextCharts (X := X))
+    (P : EquationObservableRealization.EquationSchemeChartProducer R C)
+    {T : AlgebraicGeometry.Scheme}
+    (s : T ⟶ R.realizationScheme)
+    (i : S.equationSystem.Index) :
+    (R.EquationHoldsAlong C s i ↔
+      (R.witnessIdealSheaf i).comap s = ⊥) ∧
+    ((R.witnessIdealSheaf i).comap s = ⊥ ↔
+      Nonempty (R.FactorsThroughEquationClosedSubscheme i s)) :=
+  R.equationIdealFactorizationCorrespondence hR C P s i
 
 /--
 III.定理11.1 / III.定理11.4 bridge: displayed required laws force the displayed

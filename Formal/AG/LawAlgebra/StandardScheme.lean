@@ -1771,6 +1771,610 @@ structure StandardArchitectureScheme
   /-- Compatibility of each comparison with the actual pullback projections. -/
   overlapsValid : IsArchitectureOverlapPresentation raw overlaps
 
+/--
+Part III, Definition 5.2A's context-indexed affine open cover.
+
+The context assignment is an actual functor into Scheme charts over `Y`.
+`cover` supplies open immersions and joint coverage, while `transition`
+records the morphism `X_{W'} ⟶ X_W` attached to a context morphism
+`W' ⟶ W`.  Observable evaluation is deliberately absent: the equation
+realization constructs it by pulling back its represented universal point.
+-/
+structure EquationContextChartCover
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    (S : Site.AATSite A)
+    (Y : AlgebraicGeometry.Scheme.{max u v}) where
+  /-- The actual affine open cover of the represented Scheme. -/
+  cover : Y.OpenCover
+  /-- Every equation context selects exactly one component of the cover. -/
+  contextIndex : S.category ≃ cover.I₀
+  /-- Every selected context chart is affine. -/
+  chartAffine :
+    ∀ W : S.category,
+      AlgebraicGeometry.IsAffine (cover.X (contextIndex W))
+  /-- The Scheme transition induced by a context restriction. -/
+  transition :
+    ∀ {source target : S.category}, (source ⟶ target) →
+      (cover.X (contextIndex source) ⟶
+        cover.X (contextIndex target))
+  /-- Context transitions commute with the chart maps to the represented Scheme. -/
+  transition_to_base :
+    ∀ {source target : S.category} (f : source ⟶ target),
+      transition f ≫ cover.f (contextIndex target) =
+        cover.f (contextIndex source)
+  /-- The context-chart assignment preserves identities. -/
+  transition_id :
+    ∀ W : S.category,
+      transition (𝟙 W) = 𝟙 (cover.X (contextIndex W))
+  /-- The context-chart assignment preserves composition. -/
+  transition_comp :
+    ∀ {W₀ W₁ W₂ : S.category} (f : W₀ ⟶ W₁) (g : W₁ ⟶ W₂),
+      transition (f ≫ g) = transition f ≫ transition g
+
+namespace EquationContextChartCover
+
+/-- The actual affine chart selected by an equation context. -/
+abbrev chart
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    {Y : AlgebraicGeometry.Scheme.{max u v}}
+    (C : EquationContextChartCover.{u, v} S Y)
+    (W : S.category) : AlgebraicGeometry.Scheme.{max u v} :=
+  C.cover.X (C.contextIndex W)
+
+/-- The actual open immersion from a context chart to the represented Scheme. -/
+abbrev chartMap
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    {Y : AlgebraicGeometry.Scheme.{max u v}}
+    (C : EquationContextChartCover.{u, v} S Y)
+    (W : S.category) : C.chart W ⟶ Y :=
+  C.cover.f (C.contextIndex W)
+
+/-- The context-indexed charts and transitions form a Scheme-valued functor. -/
+noncomputable def chartFunctor
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    {Y : AlgebraicGeometry.Scheme.{max u v}}
+    (C : EquationContextChartCover.{u, v} S Y) :
+    S.category ⥤ AlgebraicGeometry.Scheme.{max u v} where
+  obj W := C.chart W
+  map f := C.transition f
+  map_id W := C.transition_id W
+  map_comp f g := C.transition_comp f g
+
+/--
+The whole affine Scheme, repeated at every equation context, is the canonical
+context-chart cover for a globally represented affine regime.
+-/
+noncomputable def whole
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    (S : Site.AATSite A)
+    (base : S.category)
+    (Y : AlgebraicGeometry.Scheme.{max u v})
+    [AlgebraicGeometry.IsAffine Y] :
+    EquationContextChartCover.{u, v} S Y where
+  cover :=
+    AlgebraicGeometry.Scheme.Cover.mkOfCovers
+      S.category (fun _ => Y) (fun _ => 𝟙 Y)
+      (fun x => ⟨base, x, by simp⟩)
+  contextIndex := Equiv.refl S.category
+  chartAffine := by
+    intro W
+    change AlgebraicGeometry.IsAffine Y
+    infer_instance
+  transition := fun _ => 𝟙 Y
+  transition_to_base := by
+    intro source target f
+    simp
+  transition_id := by
+    intro W
+    rfl
+  transition_comp := by
+    intro W₀ W₁ W₂ f g
+    simp
+
+end EquationContextChartCover
+
+/--
+Part III, Definition 5.2A's base-change-stable architecture reading.
+
+Only architecture data is selected here.  Observable evaluation is not a
+field of this structure: it is generated from `E` in
+`EquationArchitecturePoint`.  `residual_pullback` is the concrete compatibility
+needed to evaluate the object-dependent residual after test-scheme base
+change; it does not contain a vanishing or factorization conclusion.
+-/
+structure EquationArchitectureReading
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    (E : ArchitecturalEquationSystem S.contextPreorder) where
+  /-- Architecture readings over a test scheme. -/
+  Reading : AlgebraicGeometry.Scheme.{max u v} → Type (max u v)
+  /-- Pullback of an architecture reading along a test-scheme morphism. -/
+  pullback :
+    ∀ {T T' : AlgebraicGeometry.Scheme.{max u v}},
+      (T' ⟶ T) → Reading T → Reading T'
+  /-- The architecture object read from relative architecture data. -/
+  object :
+    ∀ {T : AlgebraicGeometry.Scheme.{max u v}},
+      Reading T → ArchitectureObject U
+  /-- Reading pullback preserves identities. -/
+  pullback_id :
+    ∀ {T : AlgebraicGeometry.Scheme.{max u v}} (r : Reading T),
+      pullback (𝟙 T) r = r
+  /-- Reading pullback preserves composition. -/
+  pullback_comp :
+    ∀ {T T' T'' : AlgebraicGeometry.Scheme.{max u v}}
+      (f : T' ⟶ T) (g : T'' ⟶ T') (r : Reading T),
+      pullback (g ≫ f) r = pullback g (pullback f r)
+  /--
+  Evaluation of every object-dependent residual commutes with reading
+  pullback.
+  -/
+  residual_pullback :
+    ∀ {T T' : AlgebraicGeometry.Scheme.{max u v}}
+      (f : T' ⟶ T) (r : Reading T) (W : S.category)
+      (i : E.Index) (a : U.Atom)
+      (e : E.Observable W →+* Γ(T, ⊤)),
+      (f.appTop.hom.comp e)
+          (E.equationResidual W (object (pullback f r)) i a) =
+        f.appTop
+          (e (E.equationResidual W (object r) i a))
+
+/--
+Part III, Definition 5.2B's `E`-generated architecture-evaluation point.
+
+The observable ring maps and their context compatibility are part of this
+fixed construction rather than an opaque source supplied by a caller.
+-/
+structure EquationArchitecturePoint
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (D : EquationArchitectureReading.{u, v} E)
+    (T : AlgebraicGeometry.Scheme.{max u v}) where
+  /-- Relative architecture data over the test scheme. -/
+  reading : D.Reading T
+  /-- Evaluation of every `E`-owned observable ring. -/
+  evaluation :
+    ∀ W : S.category, E.Observable W →+* Γ(T, ⊤)
+  /-- Observable evaluation commutes with context restriction. -/
+  evaluation_natural :
+    ∀ {source target : S.category} (f : source ⟶ target)
+      (x : E.Observable target),
+      evaluation source (E.restrict f x) =
+        evaluation target x
+
+namespace EquationArchitecturePoint
+
+/-- Pull back an `E`-generated architecture-evaluation point. -/
+def pullback
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    {D : EquationArchitectureReading.{u, v} E}
+    {T T' : AlgebraicGeometry.Scheme.{max u v}}
+    (f : T' ⟶ T) (p : EquationArchitecturePoint D T) :
+    EquationArchitecturePoint D T' where
+  reading := D.pullback f p.reading
+  evaluation W := f.appTop.hom.comp (p.evaluation W)
+  evaluation_natural := by
+    intro source target g x
+    simp only [RingHom.comp_apply, p.evaluation_natural g x]
+
+/-- Equality of generated points is equality of reading and evaluation data. -/
+@[ext] theorem ext
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    {D : EquationArchitectureReading.{u, v} E}
+    {T : AlgebraicGeometry.Scheme.{max u v}}
+    {p q : EquationArchitecturePoint D T}
+    (hreading : p.reading = q.reading)
+    (hevaluation :
+      ∀ (W : S.category) (x : E.Observable W),
+        p.evaluation W x = q.evaluation W x) :
+    p = q := by
+  cases p with
+  | mk pReading pEvaluation pNatural =>
+      cases q with
+      | mk qReading qEvaluation qNatural =>
+          cases hreading
+          have hEvaluation : pEvaluation = qEvaluation := by
+            funext W
+            apply RingHom.ext
+            intro x
+            exact hevaluation W x
+          cases hEvaluation
+          rfl
+
+/-- Generated point pullback preserves identities. -/
+theorem pullback_id
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    {D : EquationArchitectureReading.{u, v} E}
+    {T : AlgebraicGeometry.Scheme.{max u v}}
+    (p : EquationArchitecturePoint D T) :
+    pullback (𝟙 T) p = p := by
+  apply ext
+  · exact D.pullback_id p.reading
+  · intro W x
+    simp [pullback]
+
+/-- Generated point pullback preserves composition. -/
+theorem pullback_comp
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    {D : EquationArchitectureReading.{u, v} E}
+    {T T' T'' : AlgebraicGeometry.Scheme.{max u v}}
+    (f : T' ⟶ T) (g : T'' ⟶ T')
+    (p : EquationArchitecturePoint D T) :
+    pullback (g ≫ f) p = pullback g (pullback f p) := by
+  apply ext
+  · exact D.pullback_comp f g p.reading
+  · intro W x
+    rfl
+
+end EquationArchitecturePoint
+
+namespace EquationArchitectureReading
+
+/--
+Part III, Definition 5.2A's architecture-reading functor on test schemes.
+
+The object part is the `E`-generated architecture point and the arrow part is
+the already constructed pullback.  Functoriality is proved from
+`EquationArchitectureReading.pullback_id` and `pullback_comp`; it is not an
+additional field of a realization package.
+-/
+noncomputable def pointFunctor
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (D : EquationArchitectureReading.{u, v} E) :
+    AlgebraicGeometry.Scheme.{max u v}ᵒᵖ ⥤
+      Type (max (u + 1) v) where
+  obj T := EquationArchitecturePoint D T.unop
+  map := fun {T T'} f p =>
+    EquationArchitecturePoint.pullback (D := D)
+      (T := T.unop) (T' := T'.unop) f.unop p
+  map_id T := by
+    funext p
+    exact EquationArchitecturePoint.pullback_id p
+  map_comp f g := by
+    funext p
+    exact EquationArchitecturePoint.pullback_comp f.unop g.unop p
+
+/-- The architecture-reading functor evaluates a test scheme at generated points. -/
+@[simp] theorem pointFunctor_obj
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (D : EquationArchitectureReading.{u, v} E)
+    (T : AlgebraicGeometry.Scheme.{max u v}ᵒᵖ) :
+    D.pointFunctor.obj T = EquationArchitecturePoint D T.unop :=
+  by rfl
+
+/-- The architecture-reading functor sends a test arrow to generated point pullback. -/
+@[simp] theorem pointFunctor_map
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (D : EquationArchitectureReading.{u, v} E)
+    {T T' : AlgebraicGeometry.Scheme.{max u v}ᵒᵖ}
+    (f : T ⟶ T') :
+    D.pointFunctor.map f =
+      EquationArchitecturePoint.pullback (D := D)
+        (T := T.unop) (T' := T'.unop) f.unop :=
+  by rfl
+
+end EquationArchitectureReading
+
+/--
+Selected representable equation-point regime.
+
+Implementation notes: this is the selected-representability input of
+Definition 5.2B, not a truth certificate.  It stores only the `E`-indexed
+source functor and its representing equivalence.  A presentation containing
+caller-supplied section maps, architecture readings, or residual functions was
+rejected: the universal observable maps, section reading `A_s`, and regular
+residual sections are instead derived from the universal represented point.
+-/
+structure EquationObservableRealization
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (X : StandardArchitectureScheme raw)
+    (E : ArchitecturalEquationSystem S.contextPreorder) where
+  /-- The selected base-change-stable architecture reading. -/
+  reading : EquationArchitectureReading.{u, v} E
+  /-- The scheme represents the `E`-generated point functor on every test scheme. -/
+  representingEquiv :
+    ∀ T : AlgebraicGeometry.Scheme.{max u v},
+      (T ⟶ X.underlying) ≃ EquationArchitecturePoint reading T
+
+namespace EquationObservableRealization
+
+/--
+The contravariant functor of scheme morphisms into the selected representing
+scheme, with the universe chosen to match `EquationArchitecturePoint`.
+-/
+noncomputable def schemePointFunctor
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : StandardArchitectureScheme raw}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (R : EquationObservableRealization raw X E) :
+    AlgebraicGeometry.Scheme.{max u v}ᵒᵖ ⥤
+      Type (max (u + 1) v) :=
+  yoneda.obj X.underlying ⋙
+    CategoryTheory.uliftFunctor.{u + 1, max u v}
+
+/--
+Selected geometry whose generated architecture-point functor is represented
+by the standard architecture scheme.  Representability is supplied once as a
+natural isomorphism rather than as unrelated pointwise equivalences.
+-/
+structure EquationRepresentingGeometry
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (X : StandardArchitectureScheme raw)
+    (E : ArchitecturalEquationSystem S.contextPreorder) where
+  /-- The selected base-change-stable architecture reading. -/
+  reading : EquationArchitectureReading.{u, v} E
+  /-- The scheme represents the generated point functor naturally. -/
+  representation :
+    (yoneda.obj X.underlying ⋙
+      CategoryTheory.uliftFunctor.{u + 1, max u v}) ≅
+        reading.pointFunctor
+
+namespace EquationRepresentingGeometry
+
+/--
+Standard producer from an equation system and selected representing geometry.
+-/
+noncomputable def realization
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : StandardArchitectureScheme raw}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (P : EquationRepresentingGeometry raw X E) :
+    EquationObservableRealization raw X E where
+  reading := P.reading
+  representingEquiv T :=
+    Equiv.ulift.symm.trans (P.representation.app (op T)).toEquiv
+
+end EquationRepresentingGeometry
+
+/--
+The named selected-regime constructor from architecture reading data and the
+representing equivalence for the `E`-generated point functor.
+-/
+noncomputable def ofRepresentingEquiv
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : StandardArchitectureScheme raw}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (D : EquationArchitectureReading.{u, v} E)
+    (e : ∀ T : AlgebraicGeometry.Scheme.{max u v},
+      (T ⟶ X.underlying) ≃ EquationArchitecturePoint D T) :
+    EquationObservableRealization raw X E where
+  reading := D
+  representingEquiv := e
+
+/-- The named constructor retains exactly the selected architecture reading. -/
+@[simp] theorem ofRepresentingEquiv_reading
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : StandardArchitectureScheme raw}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (D : EquationArchitectureReading.{u, v} E)
+    (e : ∀ T : AlgebraicGeometry.Scheme.{max u v},
+      (T ⟶ X.underlying) ≃ EquationArchitecturePoint D T) :
+    (ofRepresentingEquiv D e :
+      EquationObservableRealization raw X E).reading = D :=
+  rfl
+
+/-- The named constructor retains exactly the representing equivalence. -/
+@[simp] theorem ofRepresentingEquiv_representingEquiv
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : StandardArchitectureScheme raw}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (D : EquationArchitectureReading.{u, v} E)
+    (e : ∀ T : AlgebraicGeometry.Scheme.{max u v},
+      (T ⟶ X.underlying) ≃ EquationArchitecturePoint D T) :
+    (ofRepresentingEquiv D e :
+      EquationObservableRealization raw X E).representingEquiv = e :=
+  rfl
+
+/-- The source point represented by a scheme morphism. -/
+noncomputable def pointAt
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : StandardArchitectureScheme raw}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (R : EquationObservableRealization raw X E)
+    {T : AlgebraicGeometry.Scheme.{max u v}}
+    (s : T ⟶ X.underlying) :
+    EquationArchitecturePoint R.reading T :=
+  R.representingEquiv T s
+
+/-- The architecture reading derived from the represented point. -/
+noncomputable def architectureAt
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : StandardArchitectureScheme raw}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (R : EquationObservableRealization raw X E)
+    {T : AlgebraicGeometry.Scheme.{max u v}}
+    (s : T ⟶ X.underlying) : ArchitectureObject U :=
+  R.reading.object (R.pointAt s).reading
+
+/-- Evaluation derived from the represented point, with no independent map. -/
+noncomputable def evaluation
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : StandardArchitectureScheme raw}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (R : EquationObservableRealization raw X E)
+    {T : AlgebraicGeometry.Scheme.{max u v}}
+    (s : T ⟶ X.underlying) (W : S.category) :
+    E.Observable W →+* Γ(T, ⊤) :=
+  (R.pointAt s).evaluation W
+
+/-- The universal section map derived by evaluating the represented identity. -/
+noncomputable def sectionMap
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : StandardArchitectureScheme raw}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (R : EquationObservableRealization raw X E)
+    (W : S.category) : E.Observable W →+* Γ(X.underlying, ⊤) :=
+  R.evaluation (𝟙 X.underlying) W
+
+/-- The universal residual section is generated from `E.equationResidual`. -/
+noncomputable def residualSection
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : StandardArchitectureScheme raw}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (R : EquationObservableRealization raw X E)
+    (W : S.category) (i : E.Index) (a : U.Atom) :
+    Γ(X.underlying, ⊤) :=
+  R.sectionMap W
+    (E.equationResidual W (R.architectureAt (𝟙 X.underlying)) i a)
+
+end EquationObservableRealization
+
+/-- Recognition property for a represented architecture-evaluation source. -/
+structure IsEquationObservableRealization
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : StandardArchitectureScheme raw}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (R : EquationObservableRealization raw X E) : Prop where
+  /-- The representing equivalence commutes with test-scheme pullback. -/
+  representingEquiv_natural :
+    ∀ {T T' : AlgebraicGeometry.Scheme.{max u v}}
+      (s : T ⟶ X.underlying) (f : T' ⟶ T),
+      R.pointAt (f ≫ s) =
+        EquationArchitecturePoint.pullback f (R.pointAt s)
+
+namespace EquationObservableRealization.EquationRepresentingGeometry
+
+/-- The categorical representation discharges pointwise naturality. -/
+theorem realization_valid
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : StandardArchitectureScheme raw}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (P : EquationRepresentingGeometry raw X E) :
+    IsEquationObservableRealization P.realization := by
+  constructor
+  intro T T' s f
+  have hn := P.representation.hom.naturality f.op
+  have hs := congrArg (fun q => q (ULift.up s)) hn
+  simpa [realization, EquationArchitectureReading.pointFunctor,
+    EquationArchitecturePoint.pullback] using hs
+
+end EquationObservableRealization.EquationRepresentingGeometry
+
+namespace EquationObservableRealization
+
+/--
+The named constructor discharges realization validity from naturality of the
+representing equivalence.  Point functoriality is generated above.
+-/
+theorem ofRepresentingEquiv_valid
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : StandardArchitectureScheme raw}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (D : EquationArchitectureReading.{u, v} E)
+    (e : ∀ T : AlgebraicGeometry.Scheme.{max u v},
+      (T ⟶ X.underlying) ≃ EquationArchitecturePoint D T)
+    (he :
+      ∀ {T T' : AlgebraicGeometry.Scheme.{max u v}}
+        (s : T ⟶ X.underlying) (f : T' ⟶ T),
+        e T' (f ≫ s) =
+          EquationArchitecturePoint.pullback f (e T s)) :
+    IsEquationObservableRealization
+      (ofRepresentingEquiv D e :
+        EquationObservableRealization raw X E) where
+  representingEquiv_natural := he
+
+/--
+The selected representing equivalences assemble into the natural
+representation of the generated architecture-reading functor.
+-/
+noncomputable def representingIso
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : StandardArchitectureScheme raw}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (R : EquationObservableRealization raw X E)
+    (hR : IsEquationObservableRealization R) :
+    R.schemePointFunctor ≅
+      R.reading.pointFunctor :=
+  NatIso.ofComponents
+    (fun T => Equiv.toIso
+      (Equiv.ulift.trans (R.representingEquiv T.unop)))
+    (fun {T T'} f => by
+      funext s
+      rcases s with ⟨s⟩
+      exact hR.representingEquiv_natural s f.unop)
+
+/-- A valid realization determines its categorical representing geometry. -/
+noncomputable def toRepresentingGeometry
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : StandardArchitectureScheme raw}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (R : EquationObservableRealization raw X E)
+    (hR : IsEquationObservableRealization R) :
+    EquationRepresentingGeometry raw X E where
+  reading := R.reading
+  representation := R.representingIso hR
+
+end EquationObservableRealization
+
 namespace StandardArchitectureScheme
 
 /--

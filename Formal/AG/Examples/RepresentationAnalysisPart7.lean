@@ -1272,13 +1272,13 @@ noncomputable def finiteSynthesisAATSynthesisPackage :
       finiteSynthesisRawAmbient where
   architectureScheme := finiteSynthesisArchitectureScheme
   lawReading :=
-    AAT.AG.Examples.StandardGeometryReferenceModels.referenceSiteReading
+    AAT.AG.Examples.StandardGeometryReferenceModels.referenceLegacySiteReading
   lawReadingValid :=
-    AAT.AG.Examples.StandardGeometryReferenceModels.referenceSiteReading_valid
+    AAT.AG.Examples.StandardGeometryReferenceModels.referenceLegacySiteReading_valid
   requiredClosed :=
-    AAT.AG.Examples.StandardGeometryReferenceModels.referenceSiteReading_requiredClosed
+    AAT.AG.Examples.StandardGeometryReferenceModels.referenceLegacySiteReading_requiredClosed
   requiredLawIdealExact :=
-    AAT.AG.Examples.StandardGeometryReferenceModels.referenceSiteReading_requiredLawIdealExact
+    AAT.AG.Examples.StandardGeometryReferenceModels.referenceLegacySiteReading_requiredLawIdealExact
   cover := finiteSynthesisCover
   obstructionSheaf := finiteSynthesisObstructionSheaf
   obstructionCohomology := finiteSynthesisCechComplex
@@ -1301,13 +1301,13 @@ noncomputable def nondegenerateSynthesisPackage :
       finiteSynthesisRawAmbient where
   architectureScheme := finiteSynthesisArchitectureScheme
   lawReading :=
-    AAT.AG.Examples.StandardGeometryReferenceModels.referenceSiteReading
+    AAT.AG.Examples.StandardGeometryReferenceModels.referenceLegacySiteReading
   lawReadingValid :=
-    AAT.AG.Examples.StandardGeometryReferenceModels.referenceSiteReading_valid
+    AAT.AG.Examples.StandardGeometryReferenceModels.referenceLegacySiteReading_valid
   requiredClosed :=
-    AAT.AG.Examples.StandardGeometryReferenceModels.referenceSiteReading_requiredClosed
+    AAT.AG.Examples.StandardGeometryReferenceModels.referenceLegacySiteReading_requiredClosed
   requiredLawIdealExact :=
-    AAT.AG.Examples.StandardGeometryReferenceModels.referenceSiteReading_requiredLawIdealExact
+    AAT.AG.Examples.StandardGeometryReferenceModels.referenceLegacySiteReading_requiredLawIdealExact
   cover := finiteSynthesisCover
   obstructionSheaf := finiteSynthesisObstructionSheaf
   obstructionCohomology := finiteSynthesisCechComplex

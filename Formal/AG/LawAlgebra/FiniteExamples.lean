@@ -1,5 +1,5 @@
 import Formal.AG.Examples.FiniteModel
-import Formal.AG.LawAlgebra.Correspondence
+import Formal.AG.LawAlgebra.LawfulLocus
 import Formal.AG.LawAlgebra.Nullstellensatz
 import Formal.AG.LawAlgebra.StanleyReisner
 
@@ -335,12 +335,13 @@ Lawfulness-Ideal bridge through selected witness ideals and
 `localObstructionIdeal`, not through the old `witnessCoverage` field.
 -/
 theorem acyclicLocalSection_lawful_from_witnessIdeals :
-    acyclicLocalSectionData.Lawful :=
-  Correspondence.lawful_of_selectedWitnessIdeals_le_ker
-    cycleWitnessIdealFamily acyclicLocalSectionData
-    (by
-      intro index _hselected
-      exact acyclic_cycleWitnessIdeal_le_ker index)
+    acyclicLocalSectionData.Lawful := by
+  rw [LawfulLocus.LawfulSectionData.Lawful,
+    LawfulLocus.LawfulSectionData.pulledObstructionIdeal]
+  apply (Ideal.map_eq_bot_iff_le_ker acyclicLocalSectionData.pullback).2
+  rw [ObstructionIdeal.SelectedLawWitnessIdealFamily.localObstructionIdeal_le_iff]
+  intro index _hselected
+  exact acyclic_cycleWitnessIdeal_le_ker index
 
 /--
 III.R4 / III-2: the acyclic finite section's induced prime map lands in the
