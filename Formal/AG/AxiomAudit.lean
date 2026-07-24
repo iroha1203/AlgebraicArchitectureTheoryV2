@@ -10724,6 +10724,88 @@ def sagaPacketEquationResidualChoiceIndependent :=
 noncomputable def sagaPacketPhiEquiv :=
   @SemanticRepair.Saga.SagaEquationPacket.phiEquiv
 
+/-! ## Part X SAGA route C4 (#3765): cochain comparison κ and H¹ -/
+
+/-- Kernel-audit alias for the Definition 7.1 degree-0 comparison map. -/
+noncomputable def sagaKappa0 :=
+  @SemanticRepair.Saga.kappa0
+
+/-- Kernel-audit alias for the Definition 7.1 degree-1 comparison map. -/
+noncomputable def sagaKappa1 :=
+  @SemanticRepair.Saga.kappa1
+
+/-- Kernel-audit alias for the Definition 7.1 degree-2 comparison map. -/
+noncomputable def sagaKappa2 :=
+  @SemanticRepair.Saga.kappa2
+
+/-- Kernel-audit alias for Theorem 7.2 first commutation square. -/
+def sagaKappa1Delta0 :=
+  @SemanticRepair.Saga.kappa1_delta0
+
+/-- Kernel-audit alias for Theorem 7.2 second commutation square. -/
+def sagaKappa2Delta1 :=
+  @SemanticRepair.Saga.kappa2_delta1
+
+/-- Kernel-audit alias for Corollary 7.3 cocycle preservation. -/
+def sagaKappa1Cocycle :=
+  @SemanticRepair.Saga.kappa1_cocycle
+
+/-- Kernel-audit alias for Corollary 7.3 cocycle reflection. -/
+def sagaKappa1CocycleReflect :=
+  @SemanticRepair.Saga.kappa1_cocycle_reflect
+
+/-- Kernel-audit alias for Corollary 7.3 coboundary transport. -/
+def sagaKappa1Coboundary :=
+  @SemanticRepair.Saga.kappa1_coboundary
+
+/-- Kernel-audit alias for Corollary 7.3 coboundary reflection. -/
+def sagaKappa1CoboundaryReflect :=
+  @SemanticRepair.Saga.kappa1_coboundary_reflect
+
+/-- Kernel-audit alias for the Theorem 7.4 forward H¹ transport. -/
+noncomputable def sagaKappaH1To :=
+  @SemanticRepair.Saga.kappaH1To
+
+/-- Kernel-audit alias for the Theorem 7.4 inverse H¹ transport. -/
+noncomputable def sagaKappaH1From :=
+  @SemanticRepair.Saga.kappaH1From
+
+/-- Kernel-audit alias for the Theorem 7.4 left-inverse law. -/
+def sagaKappaH1FromTo :=
+  @SemanticRepair.Saga.kappaH1_from_to
+
+/-- Kernel-audit alias for the Theorem 7.4 right-inverse law. -/
+def sagaKappaH1ToFrom :=
+  @SemanticRepair.Saga.kappaH1_to_from
+
+/-- Kernel-audit alias for the Theorem 7.4 zero-class transfer. -/
+def sagaKappaH1ToZeroIff :=
+  @SemanticRepair.Saga.kappaH1To_zero_iff
+
+/-- Kernel-audit alias for the packet-level κ_*. -/
+noncomputable def sagaKappaStar :=
+  @SemanticRepair.Saga.SagaEquationPacket.kappaStar
+
+/-- Kernel-audit alias for the Theorem 7.5 cochain-level residual formula. -/
+def sagaResidualCorrespondenceCochain :=
+  @SemanticRepair.Saga.SagaEquationPacket.residual_correspondence_cochain
+
+/-- Kernel-audit alias for the Theorem 7.5 class-level residual transfer. -/
+def sagaResidualCorrespondenceClass :=
+  @SemanticRepair.Saga.SagaEquationPacket.residual_correspondence_class
+
+/-- Kernel-audit alias for the Theorem 7.5 β-aligned cochain equality. -/
+def sagaBetaAlignedResidual :=
+  @SemanticRepair.Saga.SagaEquationPacket.betaAligned_residual
+
+/-- Kernel-audit alias for the Theorem 7.6 zero/nonzero equivalence. -/
+def sagaComparisonZeroIff :=
+  @SemanticRepair.Saga.SagaEquationPacket.sagaComparison_zero_iff
+
+/-- Kernel-audit alias for the Theorem 1.1 comparison-part packaged statement. -/
+def sagaCentralTheoremComparison :=
+  @SemanticRepair.Saga.SagaEquationPacket.sagaCentralTheorem_comparison
+
 
 end AAT.AG.AxiomAudit
 
