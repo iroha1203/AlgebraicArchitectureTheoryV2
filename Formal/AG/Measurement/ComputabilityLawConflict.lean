@@ -12,7 +12,7 @@ open AlgebraicGeometry
 
 /-!
 Part VIII theorem 4.2 connection from the computed finite support relation to
-the existing relation-valued `LawConflictMeasurement` API.
+the canonical `LawConflictMeasurement` API.
 
 The common ambient in this module is generated from the finite regime itself.
 Its affine scheme is the Mathlib spectrum of the witness polynomial ring, and
@@ -249,7 +249,8 @@ theorem supportRelation_zero
   exact D.computedConflictSupport_zero h
 
 /-- Existing `LawConflictMeasurement` constructed from the same selected Tor
-bridge, actual class, and computed relation-valued support. -/
+bridge and actual class. The computed support remains a theorem of the finite
+regime rather than a freely supplied field of the generic measurement. -/
 def lawConflictMeasurement (C : FiniteAATConflictRealization D) :
     LawConflictMeasurement C.commonAmbient := by
   letI := R.geometry.coeffCommRing
@@ -266,8 +267,7 @@ def lawConflictMeasurement (C : FiniteAATConflictRealization D) :
         D.rightSquareFree.forbiddenSupports)
       (D.profileRealization.selectedLeftEquation,
         D.profileRealization.selectedRightEquation)
-      D.torDegree D.selectedConflictClass C.selectedSupport
-      C.supportRelation C.selectedSupport_holds
+      D.torDegree D.selectedConflictClass
 
 /-- The final measurement's common-ambient obligation contains the actual
 equation-generated ideals used by its selected Tor bridge. -/
@@ -295,18 +295,13 @@ theorem lawConflictMeasurement_torReading_shape
             D.leftIdeal D.rightIdeal D.torDegree) :=
   rfl
 
-/-- The final measurement exposes the selected computed-support reading. -/
-theorem selectedClassSupportReading_holds
-    (C : FiniteAATConflictRealization D) :
-    C.lawConflictMeasurement.selectedClassSupportReading :=
-  C.lawConflictMeasurement.selectedClassSupportReading_holds
-
 end FiniteAATConflictRealization
 
 /-- Final theorem 4.2 package after a selected common ambient has been
-realized.  The base computation and relation-valued `LawConflictMeasurement`
-are both conclusions; the caller supplies no class-specific support
-certificate. -/
+realized.  The base computation and canonical `LawConflictMeasurement`
+are both conclusions. The selected support theorem is derived directly from
+the computation data by `FiniteAATConflictRealization.selectedSupport_holds`.
+-/
 structure FiniteAATConflictComputability
     {M : MeasurementProfile.{u, v}}
     (R : FiniteMeasurementRegime M)
@@ -323,12 +318,8 @@ structure FiniteAATConflictComputability
   canonical selected Tor bridge and `ComputedConflictSupport`. -/
   lawConflictMeasurement_eq_computed :
     lawConflictMeasurement = C.lawConflictMeasurement
-  /-- The final package exposes the selected class/support reading. -/
-  selectedClassSupportReading :
-    lawConflictMeasurement.selectedClassSupportReading
 
-/-- Construct the final common-ambient theorem 4.2 package without accepting
-any selected support correctness proof. -/
+/-- Construct the final common-ambient theorem 4.2 package. -/
 def finiteAATConflictComputabilityPackage
     {M : MeasurementProfile.{u, v}}
     (R : FiniteMeasurementRegime M)
@@ -338,10 +329,9 @@ def finiteAATConflictComputabilityPackage
   computation := finiteAATComputabilityPackage R D
   lawConflictMeasurement := C.lawConflictMeasurement
   lawConflictMeasurement_eq_computed := rfl
-  selectedClassSupportReading := C.selectedClassSupportReading_holds
 
 /-- A finite regime, selected computation data, and local common-ambient
-realization determine the final relation-valued conflict computation. -/
+realization determine the final conflict computation. -/
 theorem finiteAATConflictComputability
     {M : MeasurementProfile.{u, v}}
     (R : FiniteMeasurementRegime M)

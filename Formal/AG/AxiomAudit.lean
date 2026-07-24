@@ -221,7 +221,7 @@ def finiteAATComputabilityActualLawConflictPackage :=
   @Measurement.finiteAATConflictComputability
 
 def finiteAATComputabilitySelectedSupportReading :=
-  @Measurement.FiniteAATConflictRealization.selectedClassSupportReading_holds
+  @Measurement.FiniteAATConflictRealization.selectedSupport_holds
 
 def finiteAATComputabilityActualSupportZero :=
   @Measurement.FiniteAATConflictRealization.supportRelation_zero
@@ -236,10 +236,10 @@ def finiteAATComputabilityEffectiveRepresentativeFixture :=
   @Measurement.finiteComputabilityExample_genericRepresentative_correct
 
 def finiteAATComputabilityActualConflictFixture :=
-  @Measurement.finiteComputabilityConflictPackage_nonzero_and_supportReading
+  @Measurement.finiteComputabilityConflictPackage_nonzero_and_computedSupport
 
 def finiteAATComputabilityProperDegreeOneConflictFixture :=
-  @Measurement.finiteComputabilityConflictPackage_proper_degree_one_nonzero_and_supportReading
+  @Measurement.finiteComputabilityConflictPackage_proper_degree_one_nonzero_and_computedSupport
 
 def finiteAATComputabilityZeroConflictSupportFixture :=
   @Measurement.finiteComputabilityConflictPackage_zero_support
@@ -10041,6 +10041,15 @@ def issue3735AffineCanonicalTorRightIdeal :=
 
 def issue3735IndexedCanonicalTorReading :=
   @AAT.AG.Measurement.LawConflictMeasurement.lawConflictTorReading_holds
+
+def issue3735ComputedSelectedSupport :=
+  @AAT.AG.Measurement.FiniteAATConflictRealization.selectedSupport_holds
+
+def issue3735ComputedSupportIntersection :=
+  @AAT.AG.Measurement.transferRepairPath_direction_intersects
+
+def issue3735SupportLocalizedTransfer :=
+  @AAT.AG.Measurement.supportTransferExamplePackage
 
 def issue3735ConflictComputedLeftIdealAmbient :=
   @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_leftLawIdeal

@@ -2813,24 +2813,28 @@ theorem finiteComputabilityConflictRealization_selectedIdeals_shape :
         finiteComputabilityExampleData.rightIdeal :=
   ⟨rfl, rfl⟩
 
-/-- The proper degree-one nonzero conflict class and its computed support
-reading both survive in the final measurement package. -/
-theorem finiteComputabilityConflictPackage_nonzero_and_supportReading :
+/-- The proper degree-one nonzero conflict class and its support are both
+computed from the finite regime. -/
+theorem finiteComputabilityConflictPackage_nonzero_and_computedSupport :
     finiteComputabilityExampleData.selectedConflictClass ≠ 0 ∧
-      finiteComputabilityConflictPackage.lawConflictMeasurement.selectedClassSupportReading := by
+      finiteComputabilityConflictRealization.supportRelation
+        finiteComputabilityExampleData.selectedConflictClass
+        finiteComputabilityConflictRealization.selectedSupport := by
   constructor
   · change finiteComputabilityExampleData.selectedConflictClass ≠ 0
     exact finiteComputabilityExampleFullRoute_nonzero.2.2.2.2
-  · exact finiteComputabilityConflictPackage.selectedClassSupportReading
+  · exact finiteComputabilityConflictRealization.selectedSupport_holds
 
-/-- The final conflict fixture explicitly records proper selected ideals,
-degree one, a nonzero actual conflict class, and its computed support reading. -/
-theorem finiteComputabilityConflictPackage_proper_degree_one_nonzero_and_supportReading :
+/-- The final conflict fixture has proper selected ideals, degree one, a
+nonzero actual conflict class, and its support computed by the finite regime. -/
+theorem finiteComputabilityConflictPackage_proper_degree_one_nonzero_and_computedSupport :
     finiteComputabilityExampleData.leftIdeal ≠ ⊤ ∧
       finiteComputabilityExampleData.rightIdeal ≠ ⊤ ∧
       finiteComputabilityExampleData.torDegree = 1 ∧
       finiteComputabilityExampleData.selectedConflictClass ≠ 0 ∧
-      finiteComputabilityConflictPackage.lawConflictMeasurement.selectedClassSupportReading := by
+      finiteComputabilityConflictRealization.supportRelation
+        finiteComputabilityExampleData.selectedConflictClass
+        finiteComputabilityConflictRealization.selectedSupport := by
   have hleft : finiteComputabilityExampleData.leftIdeal ≠ ⊤ := by
     rw [Ideal.ne_top_iff_one]
     intro hone
@@ -2852,7 +2856,7 @@ theorem finiteComputabilityConflictPackage_proper_degree_one_nonzero_and_support
         (Set.mem_range_self SquareFreeSupportVertex.p))
   have hright : finiteComputabilityExampleData.rightIdeal ≠ ⊤ :=
     ne_top_of_le_ne_top hleft hright_le_left
-  have hroute := finiteComputabilityConflictPackage_nonzero_and_supportReading
+  have hroute := finiteComputabilityConflictPackage_nonzero_and_computedSupport
   exact ⟨hleft, hright, rfl, hroute.1, hroute.2⟩
 
 /-- Zero class in the actual conflict carrier, viewed through the final
@@ -2866,15 +2870,10 @@ noncomputable def finiteComputabilityMeasuredZeroConflict :
 to every reading of the zero conflict class. -/
 theorem finiteComputabilityConflictPackage_zero_support
     {support : Finset SquareFreeSupportVertex}
-    (h : finiteComputabilityConflictPackage.lawConflictMeasurement.conflictSupport
+    (h : finiteComputabilityConflictRealization.supportRelation
       finiteComputabilityMeasuredZeroConflict support) :
     support = ∅ := by
-  have hrelation : finiteComputabilityConflictRealization.supportRelation
-      (0 : finiteComputabilityExampleData.ActualConflictClass) support := by
-    simpa [finiteComputabilityConflictPackage,
-      finiteAATConflictComputabilityPackage,
-      FiniteAATConflictRealization.lawConflictMeasurement] using h
-  have hzero := finiteComputabilityConflictRealization.supportRelation_zero hrelation
+  have hzero := finiteComputabilityConflictRealization.supportRelation_zero h
   simpa [finiteComputabilityConflictRealization] using hzero
 
 /-- R11(c): the selected finite resolution computes the Mathlib Tor object. -/
@@ -4069,105 +4068,110 @@ theorem cellularHodgeExample_harmonicDebtMinimal :
     cellularHodgeFiniteExample.harmonicDebtMinimal :=
   cellularHodgeFiniteExample.harmonicDebtMinimal_cert
 
-/-- R11(f): common ambient for the support-localized transfer fixture. -/
-def transferCommonAmbient :
-    CommonAmbientPair pseudoCircleMeasurementProfile
-      (ZMod 2) (⊥ : Ideal (ZMod 2)) (⊥ : Ideal (ZMod 2)) :=
-  CommonAmbientPair.ofAffineSpec
-    (M := pseudoCircleMeasurementProfile) (R := ZMod 2)
-    (⊥ : Ideal (ZMod 2)) (⊥ : Ideal (ZMod 2))
-    PseudoCircleMeasurementDomain.boundaryCocycle
-    PseudoCircleMeasurementDomain.boundaryCocycle
-    () Unit Unit SquareFreeSupportVertex () ()
-
-/-- R11(f): canonical selected LawConflict class on the actual affine
-ambient. -/
-def transferLawConflict :
-    LawConflictMeasurement transferCommonAmbient :=
-  LawConflictMeasurement.ofAffineSpecCanonicalTor
-    (M := pseudoCircleMeasurementProfile) (R := ZMod 2)
-    (⊥ : Ideal (ZMod 2)) (⊥ : Ideal (ZMod 2))
-    PseudoCircleMeasurementDomain.boundaryCocycle
-    PseudoCircleMeasurementDomain.boundaryCocycle
-    () Unit Unit SquareFreeSupportVertex () ()
-    0 0 SquareFreeSupportVertex.q
-    (fun _ support => support = SquareFreeSupportVertex.q) rfl
-
-/-- R11(f): selected support-localized path through the conflict support. -/
-def transferRepairPath :
-    SupportLocalizedRepairPath transferLawConflict where
+/-- R11(f): selected repair path through the degree-one conflict support
+computed by the finite equation regime. -/
+noncomputable def transferRepairPath :
+    SupportLocalizedRepairPath
+      finiteComputabilityConflictPackage.lawConflictMeasurement where
   RepairPath := Unit
   RepairDirection := Unit
-  DirectionSupport := SquareFreeSupportVertex
   selectedRepairPath := ()
   selectedRepairDirection := ()
-  directionSupport := fun _ => SquareFreeSupportVertex.q
-  directionHitsConflictSupport := fun _ _ => True
-  selectedConflictClass := transferLawConflict.selectedConflictClass
-  selectedClass_eq_lawConflictClass := rfl
-  pathImageIntersectsSupport := True
-  pathImageIntersectsSupport_cert := trivial
-  directionSupportIntersectsConflict := True
-  directionSupportIntersectsConflict_cert := trivial
-  supportLocalizedOnly := True
-  supportLocalizedOnly_cert := trivial
+  pathImage := fun _ =>
+    {finiteComputabilityConflictRealization.selectedSupport}
+  directionSupport := fun _ =>
+    {finiteComputabilityConflictRealization.selectedSupport}
+  conflictSupport := fun conflictClass =>
+    {support |
+      finiteComputabilityConflictRealization.supportRelation
+        conflictClass support}
+
+/-- R11(f): the selected direction meets the support computed from the actual
+nonzero degree-one conflict class. -/
+theorem transferRepairPath_direction_intersects :
+    transferRepairPath.directionSupportIntersectsConflict := by
+  refine ⟨finiteComputabilityConflictRealization.selectedSupport, ?_⟩
+  constructor
+  · simp [transferRepairPath]
+  · change
+      finiteComputabilityConflictRealization.supportRelation
+        finiteComputabilityExampleData.selectedConflictClass
+        finiteComputabilityConflictRealization.selectedSupport
+    exact finiteComputabilityConflictRealization.selectedSupport_holds
+
+/-- R11(f): the concrete direction-support intersection supplies the
+support-localized premise. -/
+theorem transferRepairPath_supportLocalized :
+    transferRepairPath.SupportLocalized :=
+  transferRepairPath.supportLocalized_of_direction
+    transferRepairPath_direction_intersects
 
 /-- R11(f): finite pairing with a nontrivial selected residue. -/
-def transferPairing :
+noncomputable def transferPairing :
     TransferMeasurementPairing transferRepairPath where
   TransferResidue := TransferResidueFlag
   NormValue := Unit
   zeroResidue := TransferResidueFlag.zero
-  ZeroResidue := fun residue => residue = TransferResidueFlag.zero
   NontrivialResidue := fun residue => residue = TransferResidueFlag.nontrivial
   norm := fun _ => ()
   pairing := fun _ _ => TransferResidueFlag.nontrivial
-  selectedResidue := TransferResidueFlag.nontrivial
-  selectedResidue_eq_pairing := rfl
-  selectedDirectionNontrivialResidue := True
-  selectedDirectionNontrivialResidue_cert := trivial
-  nontrivialPairingSufficient :=
-    TransferResidueFlag.nontrivial = TransferResidueFlag.nontrivial -> True
-  nontrivialPairingSufficient_shape := rfl
-  nontrivialPairingSufficient_cert := fun _ => trivial
-  detectingPairingRequiredForNecessity := True
-  detectingPairingRequiredForNecessity_cert := trivial
+
+/-- R11(f): evaluating the concrete pairing yields the nontrivial residue
+flag. -/
+theorem transferPairing_selected_nontrivial :
+    transferPairing.NontrivialResidue transferPairing.selectedResidue :=
+  rfl
 
 /-- R11(f): theorem 10.3 instantiated on the finite transfer fixture. -/
-def supportTransferExamplePackage :
+theorem supportTransferExamplePackage :
     SupportLocalizedTransfer transferPairing :=
   supportLocalizedTransferPackage transferPairing
 
-/-- R11(f): finite-dimensional support-localized transfer fixture. -/
+/-- R11(f): finite data exposed by the support-localized transfer fixture. -/
 structure SupportLocalizedTransferFiniteExample where
   pairingCarrier : Type
+  selectedSupport : Finset SquareFreeSupportVertex
   selectedResidue : TransferResidueFlag
   transferredResidue : TransferResidueFlag
-  theoremPackage : SupportLocalizedTransfer transferPairing
-  nontrivialPairingResidue : Prop
-  nontrivialPairingResidue_cert : nontrivialPairingResidue
-  nontrivialTransferredResidue : Prop
-  nontrivialTransferredResidue_cert : nontrivialTransferredResidue
-  sufficientConditionApplied : Prop
-  sufficientConditionApplied_cert : sufficientConditionApplied
 
 /-- R11(f): nontrivial finite pairing residue transfers to a nontrivial residue. -/
-def supportLocalizedTransferFiniteExample :
+noncomputable def supportLocalizedTransferFiniteExample :
     SupportLocalizedTransferFiniteExample where
   pairingCarrier := Unit
+  selectedSupport := finiteComputabilityConflictRealization.selectedSupport
   selectedResidue := TransferResidueFlag.nontrivial
   transferredResidue := TransferResidueFlag.nontrivial
-  theoremPackage := supportTransferExamplePackage
-  nontrivialPairingResidue := True
-  nontrivialPairingResidue_cert := trivial
-  nontrivialTransferredResidue := True
-  nontrivialTransferredResidue_cert := trivial
-  sufficientConditionApplied := True
-  sufficientConditionApplied_cert := trivial
 
+/-- R11(f): the fixture's selected pairing residue is the computed pairing
+value. -/
+theorem supportTransferExample_selectedResidue_eq_pairing :
+    supportLocalizedTransferFiniteExample.selectedResidue =
+      transferPairing.selectedResidue :=
+  rfl
+
+/-- R11(f): the fixture's transferred residue is the computed pairing value. -/
+theorem supportTransferExample_transferredResidue_eq_pairing :
+    supportLocalizedTransferFiniteExample.transferredResidue =
+      transferPairing.selectedResidue :=
+  rfl
+
+/-- R11(f): the actual selected residue satisfies the nontrivial predicate. -/
+theorem supportTransferExample_nontrivialSelectedResidue :
+    transferPairing.NontrivialResidue
+      supportLocalizedTransferFiniteExample.selectedResidue :=
+  rfl
+
+/-- R11(f): the actual transferred residue satisfies the selected nontrivial
+predicate. -/
 theorem supportTransferExample_nontrivialTransferredResidue :
-    supportLocalizedTransferFiniteExample.nontrivialTransferredResidue :=
-  supportLocalizedTransferFiniteExample.nontrivialTransferredResidue_cert
+    transferPairing.NontrivialResidue
+      supportLocalizedTransferFiniteExample.transferredResidue := by
+  have h :=
+    supportTransferExamplePackage
+      transferRepairPath_supportLocalized
+      transferPairing_selected_nontrivial
+  simpa [TransferMeasurementPairing.selectedDirectionNontrivialResidue,
+    supportLocalizedTransferFiniteExample] using h
 
 /-- R11(g): finite computed-invariant handles for the packet fixture. -/
 def packetComputedInvariants :
@@ -5142,10 +5146,14 @@ def PartVIIIFiniteExampleSuite.CoversR11 (S : PartVIIIFiniteExampleSuite) : Prop
                         integerOneClass) ∧
                       S.cellularHodge.kerL1_equiv_H1 ∧
                         S.cellularHodge.harmonicDebtMinimal ∧
-                          S.supportTransfer.nontrivialPairingResidue ∧
-                            S.supportTransfer.nontrivialTransferredResidue ∧
-                              aatGAGAComparisonStatement gagaComparisonExampleData ∧
-                                S.staticFixturesReusableForPartIX
+                          transferRepairPath.SupportLocalized ∧
+                            transferPairing.NontrivialResidue
+                              S.supportTransfer.selectedResidue ∧
+                              transferPairing.NontrivialResidue
+                                S.supportTransfer.transferredResidue ∧
+                                aatGAGAComparisonStatement
+                                  gagaComparisonExampleData ∧
+                                  S.staticFixturesReusableForPartIX
 
 /-- R11 / AC25: all requested finite example families are fully certified. -/
 theorem partVIIIFiniteExampleSuite_complete :
@@ -5165,8 +5173,9 @@ theorem partVIIIFiniteExampleSuite_complete :
     partVIIIFiniteExampleSuite.refactorPullbackNonidentity,
     partVIIIFiniteExampleSuite.cellularHodge.kerL1_equiv_H1_cert,
     partVIIIFiniteExampleSuite.cellularHodge.harmonicDebtMinimal_cert,
-    partVIIIFiniteExampleSuite.supportTransfer.nontrivialPairingResidue_cert,
-    partVIIIFiniteExampleSuite.supportTransfer.nontrivialTransferredResidue_cert,
+    transferRepairPath_supportLocalized,
+    supportTransferExample_nontrivialSelectedResidue,
+    supportTransferExample_nontrivialTransferredResidue,
     partVIIIFiniteExampleSuite.packetGAGA.certifiedComparison,
     partVIIIFiniteExampleSuite.staticFixturesReusableForPartIX_cert⟩
 

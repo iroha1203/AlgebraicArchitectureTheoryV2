@@ -634,7 +634,8 @@ VIII.Definition 9.1: selected LawConflict measurement.
 
 The indexed `CommonAmbientPair` fixes the shared affine scheme and both
 ideals. The canonical Tor object is derived from those indices; the record
-stores only the degree, selected class, and its computed support relation.
+stores only the degree and selected class. Support readings are computed by
+the concrete measurement regime rather than accepted by this generic record.
 -/
 structure LawConflictMeasurement
     {M : MeasurementProfile.{u, v}}
@@ -645,13 +646,6 @@ structure LawConflictMeasurement
   selectedConflictClass :
     (Derived.Intersection.canonicalSelectedTorBridge
       R I_U I_V).LawConflict selectedDegree
-  conflictSupport :
-    (Derived.Intersection.canonicalSelectedTorBridge
-      R I_U I_V).LawConflict selectedDegree ->
-        A.SupportCarrier -> Prop
-  selectedSupport : A.SupportCarrier
-  selectedClassSupportReading_cert :
-    conflictSupport selectedConflictClass selectedSupport
 
 namespace LawConflictMeasurement
 
@@ -733,15 +727,6 @@ def lawConflictTorReading
       Derived.Intersection.mathlibTor
         R I_U I_V L.selectedDegree)
 
-/-- The selected conflict class satisfies its computed support relation. -/
-def selectedClassSupportReading
-    {M : MeasurementProfile.{u, v}}
-    {R : Type w} [CommRing R]
-    {I_U I_V : Ideal R}
-    {A : CommonAmbientPair M R I_U I_V}
-    (L : LawConflictMeasurement A) : Prop :=
-  L.conflictSupport L.selectedConflictClass L.selectedSupport
-
 /-- The measurement uses the common affine scheme and its two ideal sheaves. -/
 def commonAmbientRequired
     {M : MeasurementProfile.{u, v}}
@@ -781,16 +766,6 @@ theorem lawConflictTorReading_holds
   ⟨(Derived.Intersection.canonicalSelectedTorBridge
     R I_U I_V).lawConflictLinearEquivMathlibTor L.selectedDegree⟩
 
-/-- VIII.Definition 9.1: expose the selected support reading for the conflict class. -/
-theorem selectedClassSupportReading_holds
-    {M : MeasurementProfile.{u, v}}
-    {R : Type w} [CommRing R]
-    {I_U I_V : Ideal R}
-    {A : CommonAmbientPair M R I_U I_V}
-    (L : LawConflictMeasurement A) :
-    L.selectedClassSupportReading :=
-  L.selectedClassSupportReading_cert
-
 /-- VIII.Definition 9.1: LawConflict measurements require the selected common ambient. -/
 theorem commonAmbientRequired_holds
     {M : MeasurementProfile.{u, v}}
@@ -821,14 +796,7 @@ noncomputable def ofAffineSpecCanonicalTor
     (degree : Nat)
     (selectedClass :
       (Derived.Intersection.canonicalSelectedTorBridge
-        R I_U I_V).LawConflict degree)
-    (selectedSupport : SupportCarrier)
-    (conflictSupport :
-      (Derived.Intersection.canonicalSelectedTorBridge
-        R I_U I_V).LawConflict degree ->
-          SupportCarrier -> Prop)
-    (selectedClassSupport :
-      conflictSupport selectedClass selectedSupport) :
+        R I_U I_V).LawConflict degree) :
     LawConflictMeasurement
       (CommonAmbientPair.ofAffineSpec
         I_U I_V leftDomain rightDomain selectedCoefficient
@@ -836,9 +804,6 @@ noncomputable def ofAffineSpecCanonicalTor
         selectedWitnessPair selectedComparisonProfile) where
   selectedDegree := degree
   selectedConflictClass := selectedClass
-  conflictSupport := conflictSupport
-  selectedSupport := selectedSupport
-  selectedClassSupportReading_cert := selectedClassSupport
 
 /-- The standard affine constructor uses exactly the left ideal recovered
 from its selected ideal sheaf. -/
