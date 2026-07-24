@@ -10009,6 +10009,24 @@ def issue3735ComputationProfileLeftSquareFree :=
 def issue3735ComputationProfileRightSquareFree :=
   @AAT.AG.Measurement.FiniteAATComputationData.rightIdeal_eq_squareFree
 
+def issue3735AffineIdealSheafPairLeftTop :=
+  @AAT.AG.Measurement.AffineIdealSheafPair.ofSpec_leftIdealSheaf_top
+
+def issue3735AffineIdealSheafPairRightTop :=
+  @AAT.AG.Measurement.AffineIdealSheafPair.ofSpec_rightIdealSheaf_top
+
+def issue3735AffineCommonAmbientSelectedScheme :=
+  @AAT.AG.Measurement.CommonAmbientPair.ofAffineSpec_selectedScheme
+
+def issue3735AffineCommonAmbientLeftIdealSheaf :=
+  @AAT.AG.Measurement.CommonAmbientPair.ofAffineSpec_leftIdealSheaf
+
+def issue3735AffineCommonAmbientRightIdealSheaf :=
+  @AAT.AG.Measurement.CommonAmbientPair.ofAffineSpec_rightIdealSheaf
+
+def issue3735AffineCommonAmbientGlobalSectionsIdeals :=
+  @AAT.AG.Measurement.CommonAmbientPair.ofAffineSpec_globalSectionsIdeals
+
 def issue3735ConflictComputedLeftIdealAmbient :=
   @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_leftLawIdeal
 
@@ -10016,13 +10034,25 @@ def issue3735ConflictComputedRightIdealAmbient :=
   @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_rightLawIdeal
 
 def issue3735ConflictAmbientSelectedSite :=
-  @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_selectedAmbient
+  @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_selectedScheme
 
 def issue3735ConflictAmbientStructureSheafType :=
   @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_structureSheaf
 
 def issue3735ConflictAmbientSelectedStructureSheaf :=
   @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_selectedStructureSheaf
+
+def issue3735ConflictAmbientSchemeSheaf :=
+  @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_schemeSheaf
+
+def issue3735ConflictAmbientLeftIdealSheaf :=
+  @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_leftIdealSheaf
+
+def issue3735ConflictAmbientRightIdealSheaf :=
+  @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_rightIdealSheaf
+
+def issue3735ConflictAmbientGlobalSectionsIdeals :=
+  @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_globalSectionsIdeals
 
 def issue3735ConflictAmbientLawIdealCarrier :=
   @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_lawIdeal
@@ -10074,6 +10104,30 @@ def issue3735GAGACommonLeftIdeal :=
 
 def issue3735GAGACommonRightIdeal :=
   @AAT.AG.Measurement.AATGAGACommonFiniteData.rightIdeal_eq_sharedWitness
+
+def issue3735GAGAAmbientLeftIdeal :=
+  @AAT.AG.Measurement.AATGAGACommonFiniteData.commonAmbient_leftLawIdeal
+
+def issue3735GAGAAmbientRightIdeal :=
+  @AAT.AG.Measurement.AATGAGACommonFiniteData.commonAmbient_rightLawIdeal
+
+def issue3735GAGAAmbientSelectedScheme :=
+  @AAT.AG.Measurement.AATGAGACommonFiniteData.commonAmbient_selectedScheme
+
+def issue3735GAGAAmbientSchemeSheaf :=
+  @AAT.AG.Measurement.AATGAGACommonFiniteData.commonAmbient_schemeSheaf
+
+def issue3735GAGAAmbientLeftIdealSheaf :=
+  @AAT.AG.Measurement.AATGAGACommonFiniteData.commonAmbient_leftIdealSheaf
+
+def issue3735GAGAAmbientRightIdealSheaf :=
+  @AAT.AG.Measurement.AATGAGACommonFiniteData.commonAmbient_rightIdealSheaf
+
+def issue3735GAGAAmbientGlobalSectionsIdeals :=
+  @AAT.AG.Measurement.AATGAGACommonFiniteData.commonAmbient_globalSectionsIdeals
+
+def issue3735GAGAAmbientSharedWitnessIdeals :=
+  @AAT.AG.Measurement.AATGAGACommonFiniteData.commonAmbient_ideals_eq_sharedWitness
 
 def issue3735GAGAPrincipalCoordinatePresentation :=
   @AAT.AG.Measurement.PrincipalCoordinatePresentation.span_range_eq_span_singleton
