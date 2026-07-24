@@ -522,6 +522,10 @@ pub(crate) fn evaluate_saga_descent_v1(
     if let Some(assumption) = faithfulness_assumption.as_ref() {
         evaluator_assumption_ids.push(assumption_id_for_schema(assumption));
     }
+    let mut class_assumption_ids = evaluator_assumption_ids.clone();
+    if let Some(assumption) = sheaf_assumption.as_ref() {
+        class_assumption_ids.push(assumption_id_for_schema(assumption));
+    }
     let mut structural_verdict = Vec::new();
     let boundary_verdict = if boundary.in_b1 {
         "measured_zero"
@@ -677,7 +681,7 @@ pub(crate) fn evaluate_saga_descent_v1(
                 .to_string(),
                 cert_ref: Some("computedInvariants/saga-descent:residual-class".to_string()),
             },
-            depends_on_assumptions: evaluator_assumption_ids.clone(),
+            depends_on_assumptions: class_assumption_ids.clone(),
             reason: Some(if class_nonzero {
                 format!("{ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS}: supplied Z1 representative is not in B1")
             } else {
@@ -705,7 +709,8 @@ pub(crate) fn evaluate_saga_descent_v1(
                 "suppliedData": {
                     "trueSheafCertificate": {
                         "coverRef": &class_certificate.true_sheaf_cover_ref,
-                        "memberChartRefs": &class_certificate.true_sheaf_member_chart_refs
+                        "memberChartRefs": &class_certificate.true_sheaf_member_chart_refs,
+                        "globalCondition": &class_certificate.true_sheaf_global_condition
                     },
                     "gluingData": {
                         "overlapRefs": class_certificate.gluing_overlap_refs(),
@@ -1040,6 +1045,7 @@ struct SagaClassSupplyCertificate {
     cocycle: SagaComponentCocycleCertificate,
     true_sheaf_cover_ref: String,
     true_sheaf_member_chart_refs: Vec<String>,
+    true_sheaf_global_condition: String,
     gluing_section_refs: Vec<(String, String)>,
 }
 
@@ -1070,13 +1076,14 @@ fn class_supply_is_checked(
 ) -> Option<SagaClassSupplyCertificate> {
     let cocycle = component_cocycle_certificate(plan)?;
     let coefficient_ok = coefficient_is_f2_additive(plan);
-    let (true_sheaf_cover_ref, true_sheaf_member_chart_refs) =
+    let (true_sheaf_cover_ref, true_sheaf_member_chart_refs, true_sheaf_global_condition) =
         component_true_sheaf_certificate(archmap, plan, &cocycle.component)?;
     let gluing_section_refs = component_gluing_data(plan, &cocycle.component)?;
     coefficient_ok.then_some(SagaClassSupplyCertificate {
         cocycle,
         true_sheaf_cover_ref,
         true_sheaf_member_chart_refs,
+        true_sheaf_global_condition,
         gluing_section_refs,
     })
 }
@@ -1085,10 +1092,11 @@ fn component_true_sheaf_certificate(
     archmap: &ArchMapDocumentV2,
     plan: &RepairPlanDocumentV1,
     component: &RepairComplexComponent,
-) -> Option<(String, Vec<String>)> {
+) -> Option<(String, Vec<String>, String)> {
     let certificate = plan.true_sheaf_certificate.as_ref()?.as_object()?;
+    let global_condition = certificate.get("globalCondition").and_then(Value::as_str)?;
     if certificate.get("kind").and_then(Value::as_str) != Some("true-sheaf-certificate")
-        || certificate.get("globalCondition").and_then(Value::as_str) != Some("assumed")
+        || global_condition != "assumed"
     {
         return None;
     }
@@ -1115,7 +1123,11 @@ fn component_true_sheaf_certificate(
             && charts.iter().copied().collect::<BTreeSet<_>>() == component_chart_refs
     };
     (has_exact_component_charts(&member_charts) && has_exact_component_charts(&cover_charts))
-        .then_some((cover_ref.to_string(), component.chart_refs.clone()))
+        .then_some((
+            cover_ref.to_string(),
+            component.chart_refs.clone(),
+            global_condition.to_string(),
+        ))
 }
 
 fn component_gluing_data(
@@ -1197,6 +1209,9 @@ fn coefficient_is_f2_additive(plan: &RepairPlanDocumentV1) -> bool {
 fn component_cocycle_certificate(
     plan: &RepairPlanDocumentV1,
 ) -> Option<SagaComponentCocycleCertificate> {
+    if !plan.complex.enumeration_complete {
+        return None;
+    }
     let component = residual_support_component(plan)?;
     let component_overlap_refs = component
         .overlap_refs

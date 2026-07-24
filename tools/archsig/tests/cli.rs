@@ -2620,6 +2620,25 @@ fn cli_analyze_saga_descent_certifies_the_one_cent_component_without_other_tripl
             json!(["ctx:cancel", "ctx:inside-payment", "ctx:order"])
         );
         assert_eq!(
+            support["suppliedData"]["trueSheafCertificate"]["globalCondition"],
+            "assumed"
+        );
+        let sheaf_assumption_id = packet["assumptions"]
+            .as_array()
+            .expect("assumption ledger is an array")
+            .iter()
+            .find(|assumption| assumption["theoremRef"] == "part4/4.7")
+            .and_then(|assumption| assumption["assumptionId"].as_str())
+            .expect("true-sheaf assumption has an authored ID");
+        assert!(
+            saga_row(&packet, "saga.residual-class")["dependsOnAssumptions"]
+                .as_array()
+                .expect("residual class dependencies are an array")
+                .iter()
+                .any(|assumption_id| assumption_id == sheaf_assumption_id),
+            "the class verdict must retain the global sheaf condition it uses"
+        );
+        assert_eq!(
             support["suppliedData"]["gluingData"]["overlapRefs"],
             json!([
                 "overlap:cancel-inside-payment",
@@ -2660,6 +2679,36 @@ fn cli_analyze_saga_descent_certifies_the_one_cent_component_without_other_tripl
         );
         assert!(view_model["classSupport"]["classNonzero"].is_null());
     }
+}
+
+#[test]
+fn cli_analyze_saga_descent_requires_complete_enumeration_for_automatic_c2_zero() {
+    let root = ag_measurement_root();
+    let mut plan = component_aware_one_cent_saga_plan(&root);
+    plan["complex"]["enumerationComplete"] = json!(false);
+
+    let out_dir = run_saga_fixture_lock_with_archmap(
+        "ag-saga-component-aware-incomplete-enumeration",
+        plan,
+        component_aware_one_cent_archmap(&root),
+    );
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert!(
+        packet["structuralVerdict"]
+            .as_array()
+            .expect("structural verdict is an array")
+            .iter()
+            .all(|row| row["law"] != "saga.residual-class"),
+        "automatic C2=0 must not certify a component whose triple enumeration is incomplete"
+    );
+    assert!(
+        packet["computedInvariants"]
+            .as_array()
+            .expect("computed invariants are an array")
+            .iter()
+            .all(|row| row["invariantId"] != "saga-descent:residual-class"),
+        "an incomplete complex must not emit a residual-class invariant"
+    );
 }
 
 #[test]
