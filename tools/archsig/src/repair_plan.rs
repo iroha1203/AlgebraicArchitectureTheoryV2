@@ -369,7 +369,7 @@ mod tests {
     }
 
     #[test]
-    fn presentation_generated_circle_archmap_mapping_is_exact_and_rejects_missing_overlap_edge() {
+    fn presentation_generated_circle_archmap_mapping_is_required_and_exact() {
         let plan: RepairPlanDocumentV1 = serde_json::from_str(include_str!(
             "../tests/fixtures/ag_measurement/repair_plan_presentation_generated_circle.json"
         ))
@@ -407,7 +407,150 @@ mod tests {
         assert_eq!(binding.result, "fail");
         assert!(binding.examples.iter().any(|example| {
             example.source.as_deref() == Some("complex.overlaps[overlap:30].archmapContextRef")
-                && example.target.as_deref() == Some("ctx:order->ctx:overlap-30")
+                && example
+                    .target
+                    .as_deref()
+                    .is_some_and(|target| target.contains("expected={\"ctx:circle\", \"ctx:order\"}"))
+        }));
+
+        let mut missing_mapping = plan.clone();
+        missing_mapping.complex.archmap_cover_ref = None;
+        for overlap in &mut missing_mapping.complex.overlaps {
+            overlap.archmap_context_ref = None;
+        }
+        let binding = validate_repair_plan_v1_checks(&missing_mapping, &archmap, None)
+            .into_iter()
+            .find(|check| check.id == "repair-plan-schema052-archmap-bindings")
+            .expect("ArchMap binding validation exists");
+        assert_eq!(binding.result, "fail");
+        assert!(binding.examples.iter().any(|example| {
+            example.source.as_deref() == Some("complex.archmapCoverRef")
+                && example.target.as_deref() == Some("missing")
+        }));
+
+        let mut cover_only_mapping = plan.clone();
+        for overlap in &mut cover_only_mapping.complex.overlaps {
+            overlap.archmap_context_ref = None;
+        }
+        let binding = validate_repair_plan_v1_checks(&cover_only_mapping, &archmap, None)
+            .into_iter()
+            .find(|check| check.id == "repair-plan-schema052-archmap-bindings")
+            .expect("ArchMap binding validation exists");
+        assert_eq!(binding.result, "fail");
+        assert!(binding.examples.iter().any(|example| {
+            example.source.as_deref() == Some("complex.overlaps[overlap:01].archmapContextRef")
+                && example.target.as_deref() == Some("missing")
+        }));
+
+        let mut intersection_only_mapping = plan.clone();
+        intersection_only_mapping.complex.archmap_cover_ref = None;
+        let binding = validate_repair_plan_v1_checks(&intersection_only_mapping, &archmap, None)
+            .into_iter()
+            .find(|check| check.id == "repair-plan-schema052-archmap-bindings")
+            .expect("ArchMap binding validation exists");
+        assert_eq!(binding.result, "fail");
+        assert!(binding.examples.iter().any(|example| {
+            example.source.as_deref() == Some("complex.archmapCoverRef")
+                && example.target.as_deref() == Some("missing")
+        }));
+
+        let mut partial_mapping = plan.clone();
+        partial_mapping.complex.overlaps[0].archmap_context_ref = None;
+        let binding = validate_repair_plan_v1_checks(&partial_mapping, &archmap, None)
+            .into_iter()
+            .find(|check| check.id == "repair-plan-schema052-archmap-bindings")
+            .expect("ArchMap binding validation exists");
+        assert_eq!(binding.result, "fail");
+        assert!(binding.examples.iter().any(|example| {
+            example.source.as_deref() == Some("complex.overlaps[overlap:01].archmapContextRef")
+                && example.target.as_deref() == Some("missing")
+        }));
+
+        let mut extra_overlap_predecessor = archmap.clone();
+        extra_overlap_predecessor
+            .contexts
+            .iter_mut()
+            .find(|context| context.id == "ctx:shared")
+            .expect("ctx:shared exists")
+            .restricts_to
+            .push("ctx:overlap-01".to_string());
+        let binding = validate_repair_plan_v1_checks(&plan, &extra_overlap_predecessor, None)
+            .into_iter()
+            .find(|check| check.id == "repair-plan-schema052-archmap-bindings")
+            .expect("ArchMap binding validation exists");
+        assert_eq!(binding.result, "fail");
+        assert!(binding.examples.iter().any(|example| {
+            example.source.as_deref() == Some("complex.overlaps[overlap:01].archmapContextRef")
+                && example.target.as_deref().is_some_and(|target| {
+                    target.contains("actual={\"ctx:inventory\", \"ctx:order\", \"ctx:shared\"}")
+                })
+        }));
+    }
+
+    #[test]
+    fn presentation_generated_triple_mapping_rejects_extra_predecessor() {
+        let mut plan: Value = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/repair_plan_supplied_faithfulness.json"
+        ))
+        .expect("triple RepairPlan fixture parses");
+        plan["complex"]["archmapCoverRef"] = json!("cover:presentation-generated-triple");
+        for (overlap_ref, context_ref) in [
+            ("overlap:order-inventory", "ctx:overlap-order-inventory"),
+            ("overlap:inventory-shared", "ctx:overlap-inventory-shared"),
+            ("overlap:order-shared", "ctx:overlap-order-shared"),
+        ] {
+            let overlap = plan["complex"]["overlaps"]
+                .as_array_mut()
+                .expect("overlaps are an array")
+                .iter_mut()
+                .find(|overlap| overlap["id"] == overlap_ref)
+                .expect("mapped overlap exists");
+            overlap["archmapContextRef"] = json!(context_ref);
+        }
+        plan["complex"]["overlaps"]
+            .as_array_mut()
+            .expect("overlaps are an array")
+            .push(json!({
+                "id": "overlap:order-inventory-alt",
+                "left": "ctx:order",
+                "right": "ctx:inventory",
+                "archmapContextRef": "ctx:overlap-order-inventory-alt"
+            }));
+        plan["complex"]["tripleOverlaps"][0]["archmapContextRef"] = json!("ctx:triple-class");
+        plan["comparison"] = json!({
+            "h1ComparisonData": { "kind": "presentation-generated" }
+        });
+        let plan: RepairPlanDocumentV1 =
+            serde_json::from_value(plan).expect("mapped triple RepairPlan parses");
+        let archmap: ArchMapDocumentV2 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/archmap_v2_presentation_generated_triple.json"
+        ))
+        .expect("presentation-generated triple ArchMap parses");
+        let binding = validate_repair_plan_v1_checks(&plan, &archmap, None)
+            .into_iter()
+            .find(|check| check.id == "repair-plan-schema052-archmap-bindings")
+            .expect("ArchMap binding validation exists");
+        assert_eq!(binding.result, "pass");
+
+        let mut extra_triple_predecessor = archmap.clone();
+        extra_triple_predecessor
+            .contexts
+            .iter_mut()
+            .find(|context| context.id == "ctx:overlap-order-inventory-alt")
+            .expect("alternate overlap context exists")
+            .restricts_to
+            .push("ctx:triple-class".to_string());
+        let binding = validate_repair_plan_v1_checks(&plan, &extra_triple_predecessor, None)
+            .into_iter()
+            .find(|check| check.id == "repair-plan-schema052-archmap-bindings")
+            .expect("ArchMap binding validation exists");
+        assert_eq!(binding.result, "fail");
+        assert!(binding.examples.iter().any(|example| {
+            example.source.as_deref()
+                == Some("complex.tripleOverlaps[triple:order-inventory-shared].archmapContextRef")
+                && example.target.as_deref().is_some_and(|target| {
+                    target.contains("ctx:overlap-order-inventory-alt")
+                })
         }));
     }
 
@@ -2625,12 +2768,35 @@ fn check_archmap_bindings(
             .triple_overlaps
             .iter()
             .any(|triple| triple.archmap_context_ref.is_some());
-    if has_archmap_complex_mapping {
+    let presentation_generated = plan
+        .comparison
+        .as_ref()
+        .and_then(|comparison| comparison.get("h1ComparisonData"))
+        .and_then(|h1| h1.get("kind"))
+        .and_then(Value::as_str)
+        == Some("presentation-generated");
+    if has_archmap_complex_mapping || presentation_generated {
         let contexts = archmap
             .contexts
             .iter()
             .map(|context| (context.id.as_str(), context))
             .collect::<BTreeMap<_, _>>();
+        let direct_predecessors = archmap
+            .contexts
+            .iter()
+            .flat_map(|context| {
+                context
+                    .restricts_to
+                    .iter()
+                    .map(move |target| (target.as_str(), context.id.as_str()))
+            })
+            .fold(BTreeMap::new(), |mut predecessors, (target, source)| {
+                predecessors
+                    .entry(target)
+                    .or_insert_with(BTreeSet::new)
+                    .insert(source);
+                predecessors
+            });
         let chart_ids = plan
             .complex
             .charts
@@ -2673,20 +2839,20 @@ fn check_archmap_bindings(
                 ));
                 continue;
             };
-            for chart in [&overlap.left, &overlap.right] {
-                let has_direct_restriction = contexts.get(chart.as_str()).is_some_and(|source| {
-                    source
-                        .restricts_to
-                        .iter()
-                        .any(|target| target == context_ref)
-                });
-                if !has_direct_restriction {
-                    examples.push(generic_validation_example(
-                        &path,
-                        &format!("{chart}->{context_ref}"),
-                        "each mapped overlap must receive direct restrictions from its two chart contexts",
-                    ));
-                }
+            let expected_predecessors = [&overlap.left, &overlap.right]
+                .into_iter()
+                .map(String::as_str)
+                .collect::<BTreeSet<_>>();
+            let actual_predecessors = direct_predecessors
+                .get(context_ref)
+                .cloned()
+                .unwrap_or_default();
+            if actual_predecessors != expected_predecessors {
+                examples.push(generic_validation_example(
+                    &path,
+                    &format!("actual={actual_predecessors:?}, expected={expected_predecessors:?}"),
+                    "a mapped overlap must have exactly its two chart contexts as direct restriction predecessors",
+                ));
             }
             if !intersection
                 .refs
@@ -2733,6 +2899,7 @@ fn check_archmap_bindings(
                 ));
                 continue;
             };
+            let mut expected_predecessors = BTreeSet::new();
             for overlap_ref in &triple.overlap_refs {
                 let Some(source_ref) = overlap_contexts.get(overlap_ref.as_str()) else {
                     examples.push(generic_validation_example(
@@ -2742,19 +2909,18 @@ fn check_archmap_bindings(
                     ));
                     continue;
                 };
-                let has_direct_restriction = contexts.get(source_ref).is_some_and(|source| {
-                    source
-                        .restricts_to
-                        .iter()
-                        .any(|target| target == context_ref)
-                });
-                if !has_direct_restriction {
-                    examples.push(generic_validation_example(
-                        &path,
-                        &format!("{source_ref}->{context_ref}"),
-                        "each mapped triple overlap must receive direct restrictions from its three mapped overlap contexts",
-                    ));
-                }
+                expected_predecessors.insert(*source_ref);
+            }
+            let actual_predecessors = direct_predecessors
+                .get(context_ref)
+                .cloned()
+                .unwrap_or_default();
+            if actual_predecessors != expected_predecessors {
+                examples.push(generic_validation_example(
+                    &path,
+                    &format!("actual={actual_predecessors:?}, expected={expected_predecessors:?}"),
+                    "a mapped triple overlap must have exactly its mapped overlap contexts as direct restriction predecessors",
+                ));
             }
             if !intersection
                 .refs
@@ -2781,16 +2947,59 @@ fn check_archmap_bindings(
                         .iter()
                         .map(String::as_str)
                         .collect::<BTreeSet<_>>();
+                    let expected_direct_restrictions = plan
+                        .complex
+                        .overlaps
+                        .iter()
+                        .filter_map(|overlap| {
+                            overlap.archmap_context_ref.as_deref().map(|context_ref| {
+                                [&overlap.left, &overlap.right]
+                                    .into_iter()
+                                    .map(move |chart| (chart.as_str(), context_ref))
+                            })
+                        })
+                        .flatten()
+                        .chain(plan.complex.triple_overlaps.iter().flat_map(|triple| {
+                            let Some(context_ref) = triple.archmap_context_ref.as_deref() else {
+                                return Vec::new().into_iter();
+                            };
+                            triple
+                                .overlap_refs
+                                .iter()
+                                .filter_map(|overlap_ref| {
+                                    overlap_contexts
+                                        .get(overlap_ref.as_str())
+                                        .map(|source_ref| (*source_ref, context_ref))
+                                })
+                                .collect::<Vec<_>>()
+                                .into_iter()
+                        }))
+                        .collect::<BTreeSet<_>>();
+                    let actual_direct_restrictions = archmap
+                        .contexts
+                        .iter()
+                        .filter(|context| actual_contexts.contains(context.id.as_str()))
+                        .flat_map(|context| {
+                            context
+                                .restricts_to
+                                .iter()
+                                .filter(|target| actual_contexts.contains(target.as_str()))
+                                .map(move |target| (context.id.as_str(), target.as_str()))
+                        })
+                        .collect::<BTreeSet<_>>();
                     let membership_valid = if plan.complex.enumeration_complete {
                         actual_contexts == expected_contexts
+                            && actual_direct_restrictions == expected_direct_restrictions
                     } else {
                         expected_contexts.is_subset(&actual_contexts)
                     };
                     if !membership_valid {
                         examples.push(generic_validation_example(
                             "complex.archmapCoverRef",
-                            &format!("cover={actual_contexts:?}, complex={expected_contexts:?}"),
-                            "the mapped ArchMap cover must contain exactly the enumerated chart and intersection contexts when enumerationComplete is true",
+                            &format!(
+                                "cover={actual_contexts:?}, complex={expected_contexts:?}, restrictions={actual_direct_restrictions:?}, expectedRestrictions={expected_direct_restrictions:?}"
+                            ),
+                            "the mapped ArchMap cover must contain exactly the enumerated contexts and direct restrictions when enumerationComplete is true",
                         ));
                     }
                 }

@@ -1,0 +1,56 @@
+{
+  "schema": "archmap/v0.5.4",
+  "id": "ag-measurement-presentation-generated-triple-fixture",
+  "sources": {
+    "src:order": { "kind": "rust", "path": "src/order.rs", "symbol": "OrderChart", "line": 1 },
+    "src:inventory": { "kind": "rust", "path": "src/inventory.rs", "symbol": "InventoryChart", "line": 1 },
+    "src:shared": { "kind": "rust", "path": "src/shared.rs", "symbol": "SharedChart", "line": 1 },
+    "src:overlap-order-inventory": { "kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "presentation/U01" },
+    "src:overlap-inventory-shared": { "kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "presentation/U12" },
+    "src:overlap-order-shared": { "kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "presentation/U02" },
+    "src:overlap-order-inventory-alt": { "kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "presentation/U01-alt" },
+    "src:triple-class": { "kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "presentation/U012" },
+    "src:cover": { "kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "presentation" }
+  },
+  "atoms": [
+    { "id": "atom:order", "kind": "component", "subject": "src:order", "axis": "static", "predicate": "component", "refs": ["src:order"] },
+    { "id": "atom:inventory", "kind": "component", "subject": "src:inventory", "axis": "static", "predicate": "component", "refs": ["src:inventory"] },
+    { "id": "atom:shared", "kind": "component", "subject": "src:shared", "axis": "static", "predicate": "component", "refs": ["src:shared"] },
+    { "id": "atom:overlap-order-inventory", "kind": "contract", "subject": "src:overlap-order-inventory", "axis": "static", "predicate": "component", "refs": ["src:overlap-order-inventory"] },
+    { "id": "atom:overlap-inventory-shared", "kind": "contract", "subject": "src:overlap-inventory-shared", "axis": "static", "predicate": "component", "refs": ["src:overlap-inventory-shared"] },
+    { "id": "atom:overlap-order-shared", "kind": "contract", "subject": "src:overlap-order-shared", "axis": "static", "predicate": "component", "refs": ["src:overlap-order-shared"] },
+    { "id": "atom:overlap-order-inventory-alt", "kind": "contract", "subject": "src:overlap-order-inventory-alt", "axis": "static", "predicate": "component", "refs": ["src:overlap-order-inventory-alt"] },
+    { "id": "atom:triple-class", "kind": "contract", "subject": "src:triple-class", "axis": "static", "predicate": "component", "refs": ["src:triple-class"] }
+  ],
+  "contexts": [
+    { "id": "ctx:order", "atoms": ["atom:order"], "restrictsTo": ["ctx:overlap-order-inventory", "ctx:overlap-order-shared", "ctx:overlap-order-inventory-alt"], "refs": ["src:order"] },
+    { "id": "ctx:inventory", "atoms": ["atom:inventory"], "restrictsTo": ["ctx:overlap-order-inventory", "ctx:overlap-inventory-shared", "ctx:overlap-order-inventory-alt"], "refs": ["src:inventory"] },
+    { "id": "ctx:shared", "atoms": ["atom:shared"], "restrictsTo": ["ctx:overlap-inventory-shared", "ctx:overlap-order-shared"], "refs": ["src:shared"] },
+    { "id": "ctx:overlap-order-inventory", "atoms": ["atom:overlap-order-inventory"], "restrictsTo": ["ctx:triple-class"], "refs": ["src:overlap-order-inventory"] },
+    { "id": "ctx:overlap-inventory-shared", "atoms": ["atom:overlap-inventory-shared"], "restrictsTo": ["ctx:triple-class"], "refs": ["src:overlap-inventory-shared"] },
+    { "id": "ctx:overlap-order-shared", "atoms": ["atom:overlap-order-shared"], "restrictsTo": ["ctx:triple-class"], "refs": ["src:overlap-order-shared"] },
+    { "id": "ctx:overlap-order-inventory-alt", "atoms": ["atom:overlap-order-inventory-alt"], "refs": ["src:overlap-order-inventory-alt"] },
+    { "id": "ctx:triple-class", "atoms": ["atom:triple-class"], "refs": ["src:triple-class"] }
+  ],
+  "covers": [
+    {
+      "id": "cover:order-inventory",
+      "contexts": ["ctx:order", "ctx:inventory", "ctx:shared"],
+      "refs": ["src:cover"]
+    },
+    {
+      "id": "cover:presentation-generated-triple",
+      "contexts": [
+        "ctx:order",
+        "ctx:inventory",
+        "ctx:shared",
+        "ctx:overlap-order-inventory",
+        "ctx:overlap-inventory-shared",
+        "ctx:overlap-order-shared",
+        "ctx:overlap-order-inventory-alt",
+        "ctx:triple-class"
+      ],
+      "refs": ["src:cover"]
+    }
+  ]
+}

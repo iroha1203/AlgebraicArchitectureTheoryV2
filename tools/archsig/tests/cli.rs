@@ -2209,6 +2209,19 @@ fn supplied_triple_saga_plan(root: &Path, nonzero_class: bool) -> Value {
 
 fn presentation_generated_saga_plan(root: &Path, nonzero_class: bool) -> Value {
     let mut plan = supplied_triple_saga_plan(root, nonzero_class);
+    plan["complex"]["archmapCoverRef"] = json!("cover:presentation-generated-triple");
+    for (overlap_index, context_ref) in [
+        "ctx:overlap-order-inventory",
+        "ctx:overlap-inventory-shared",
+        "ctx:overlap-order-shared",
+        "ctx:overlap-order-inventory-alt",
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        plan["complex"]["overlaps"][overlap_index]["archmapContextRef"] = json!(context_ref);
+    }
+    plan["complex"]["tripleOverlaps"][0]["archmapContextRef"] = json!("ctx:triple-class");
     let typed_plan: RepairPlanDocumentV1 =
         serde_json::from_value(plan.clone()).expect("presentation plan matches RepairPlan schema");
     let complex_fingerprint = format!(
@@ -2302,6 +2315,109 @@ fn presentation_generated_saga_plan(root: &Path, nonzero_class: bool) -> Value {
 
 fn presentation_generated_circle_archmap(root: &Path) -> Value {
     read_json(&root.join("archmap_v2_presentation_generated_circle.json"))
+}
+
+fn presentation_generated_triple_archmap(root: &Path) -> Value {
+    read_json(&root.join("archmap_v2_presentation_generated_triple.json"))
+}
+
+#[test]
+fn cli_repair_plan_rejects_presentation_generated_archmap_mapping_bypasses() {
+    let root = ag_measurement_root();
+    let out_dir = temp_dir("ag-presentation-generated-archmap-mapping-bypasses");
+    let plan = read_json(&root.join("repair_plan_presentation_generated_circle.json"));
+    let archmap = presentation_generated_circle_archmap(&root);
+    let archmap_path = out_dir.join("archmap.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("ArchMap serializes"),
+    )
+    .expect("ArchMap writes");
+
+    let mut missing_mapping = plan.clone();
+    missing_mapping["complex"].as_object_mut().expect("complex object").remove("archmapCoverRef");
+    for overlap in missing_mapping["complex"]["overlaps"]
+        .as_array_mut()
+        .expect("overlaps array")
+    {
+        overlap
+            .as_object_mut()
+            .expect("overlap object")
+            .remove("archmapContextRef");
+    }
+    let missing_mapping_path = out_dir.join("missing-mapping.json");
+    let missing_mapping_report = out_dir.join("missing-mapping-report.json");
+    fs::write(
+        &missing_mapping_path,
+        serde_json::to_vec_pretty(&missing_mapping).expect("RepairPlan serializes"),
+    )
+    .expect("RepairPlan writes");
+    run_sig0_expect_code(
+        &[
+            "repair-plan",
+            "--archmap",
+            archmap_path.to_str().expect("ArchMap path is utf-8"),
+            "--repair-plan",
+            missing_mapping_path
+                .to_str()
+                .expect("RepairPlan path is utf-8"),
+            "--out",
+            missing_mapping_report
+                .to_str()
+                .expect("report path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(
+        check_by_id(
+            &read_json(&missing_mapping_report),
+            "repair-plan-schema052-archmap-bindings"
+        )["result"],
+        "fail"
+    );
+
+    let mut extra_predecessor = presentation_generated_circle_archmap(&root);
+    extra_predecessor["contexts"]
+        .as_array_mut()
+        .expect("contexts array")
+        .iter_mut()
+        .find(|context| context["id"] == "ctx:shared")
+        .expect("ctx:shared exists")["restrictsTo"]
+        .as_array_mut()
+        .expect("restriction array")
+        .push(json!("ctx:overlap-01"));
+    let extra_predecessor_archmap_path = out_dir.join("extra-predecessor-archmap.json");
+    let extra_predecessor_report = out_dir.join("extra-predecessor-report.json");
+    fs::write(
+        &extra_predecessor_archmap_path,
+        serde_json::to_vec_pretty(&extra_predecessor).expect("ArchMap serializes"),
+    )
+    .expect("ArchMap writes");
+    run_sig0_expect_code(
+        &[
+            "repair-plan",
+            "--archmap",
+            extra_predecessor_archmap_path
+                .to_str()
+                .expect("ArchMap path is utf-8"),
+            "--repair-plan",
+            root.join("repair_plan_presentation_generated_circle.json")
+                .to_str()
+                .expect("RepairPlan path is utf-8"),
+            "--out",
+            extra_predecessor_report
+                .to_str()
+                .expect("report path is utf-8"),
+        ],
+        1,
+    );
+    assert_eq!(
+        check_by_id(
+            &read_json(&extra_predecessor_report),
+            "repair-plan-schema052-archmap-bindings"
+        )["result"],
+        "fail"
+    );
 }
 
 #[test]
@@ -2406,7 +2522,10 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
 fn cli_analyze_saga_comparison_generates_transfer_from_presentations() {
     let root = ag_measurement_root();
     let plan = presentation_generated_saga_plan(&root, true);
-    let out_dir = run_saga_fixture_lock("ag-saga-presentation-generated", plan);
+    let out_dir = run_presentation_generated_saga_fixture_lock(
+        "ag-saga-presentation-generated",
+        plan,
+    );
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
     let comparison = invariant_by_id(&packet, "saga-comparison:h1-transfer");
     assert_eq!(comparison["status"], "established");
@@ -2459,7 +2578,10 @@ fn cli_analyze_saga_comparison_generates_transfer_from_presentations() {
 fn cli_presentation_generated_packet_validator_rejects_tampered_evidence() {
     let root = ag_measurement_root();
     let plan = presentation_generated_saga_plan(&root, true);
-    let out_dir = run_saga_fixture_lock("ag-saga-presentation-generated-packet-validator", plan);
+    let out_dir = run_presentation_generated_saga_fixture_lock(
+        "ag-saga-presentation-generated-packet-validator",
+        plan,
+    );
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
     let validator_failure = |candidate: &Value, path: &str| {
         validate_measurement_packet_value_v1(candidate)
@@ -2593,8 +2715,11 @@ fn cli_compare_records_repair_plan_provenance_without_suppressing_verdict_rows()
     changed_atlas_plan["comparison"]["h1ComparisonData"]["presentation"]
         ["equationLiftAtlas"]["localLifts"][0]["coefficients"] = json!([1]);
 
-    let base_run = run_saga_fixture_lock("ag-saga-compare-repair-plan-base", base_plan);
-    let head_run = run_saga_fixture_lock(
+    let base_run = run_presentation_generated_saga_fixture_lock(
+        "ag-saga-compare-repair-plan-base",
+        base_plan,
+    );
+    let head_run = run_presentation_generated_saga_fixture_lock(
         "ag-saga-compare-repair-plan-changed-atlas",
         changed_atlas_plan,
     );
@@ -2633,8 +2758,11 @@ fn cli_compare_rejects_artifact_and_manifest_provenance_mismatches() {
     let mut changed_plan = base_plan.clone();
     changed_plan["comparison"]["h1ComparisonData"]["presentation"]["equationLiftAtlas"]
         ["localLifts"][0]["coefficients"] = json!([1]);
-    let base_run = run_saga_fixture_lock("ag-saga-compare-manifest-binding-base", base_plan);
-    let packet_mismatch_run = run_saga_fixture_lock(
+    let base_run = run_presentation_generated_saga_fixture_lock(
+        "ag-saga-compare-manifest-binding-base",
+        base_plan,
+    );
+    let packet_mismatch_run = run_presentation_generated_saga_fixture_lock(
         "ag-saga-compare-manifest-binding-packet-mismatch",
         changed_plan.clone(),
     );
@@ -2661,7 +2789,7 @@ fn cli_compare_rejects_artifact_and_manifest_provenance_mismatches() {
         2,
     );
 
-    let normalized_mismatch_run = run_saga_fixture_lock(
+    let normalized_mismatch_run = run_presentation_generated_saga_fixture_lock(
         "ag-saga-compare-manifest-binding-normalized-mismatch",
         changed_plan.clone(),
     );
@@ -2691,7 +2819,7 @@ fn cli_compare_rejects_artifact_and_manifest_provenance_mismatches() {
         2,
     );
 
-    let digest_mismatch_run = run_saga_fixture_lock(
+    let digest_mismatch_run = run_presentation_generated_saga_fixture_lock(
         "ag-saga-compare-manifest-binding-digest-mismatch",
         changed_plan,
     );
@@ -2734,7 +2862,10 @@ fn cli_presentation_generated_transfer_uses_equation_quotient_for_target_h1() {
         cell["repairRelationMatrix"] = json!([[1]]);
         cell["equationRelationMatrix"] = json!([[1]]);
     }
-    let out_dir = run_saga_fixture_lock("ag-saga-presentation-quotient-zero", plan);
+    let out_dir = run_presentation_generated_saga_fixture_lock(
+        "ag-saga-presentation-quotient-zero",
+        plan,
+    );
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
     let comparison = invariant_by_id(&packet, "saga-comparison:h1-transfer");
     assert_eq!(comparison["contract"]["contractChecked"], true);
@@ -15324,6 +15455,15 @@ fn run_saga_fixture_lock(case_id: &str, repair_plan: Value) -> PathBuf {
         case_id,
         repair_plan,
         read_json(&root.join("archmap_v2.json")),
+    )
+}
+
+fn run_presentation_generated_saga_fixture_lock(case_id: &str, repair_plan: Value) -> PathBuf {
+    let root = ag_measurement_root();
+    run_saga_fixture_lock_with_archmap(
+        case_id,
+        repair_plan,
+        presentation_generated_triple_archmap(&root),
     )
 }
 

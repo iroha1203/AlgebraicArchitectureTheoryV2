@@ -342,7 +342,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "H1 comparison data v0.5.4 accepts either an explicitly typed finite cochain map over degree-zero charts, degree-one overlaps, and degree-two triple-overlap bases, or a presentation-generated contract with semantic/equation matrices, restriction maps, and an independently supplied equation lift atlas. The validator recomputes explicit-map properties, or checks F2 presentation exactness, generator completeness, restriction naturality, derived cochain commutativity, semantic/equation residual construction, source/target quotient-level cocycle/class calculation, and the residual witness.",
+        "fieldMappingPolicy": "H1 comparison data v0.5.4 accepts either an explicitly typed finite cochain map over degree-zero charts, degree-one overlaps, and degree-two triple-overlap bases, or a presentation-generated contract with semantic/equation matrices, restriction maps, an independently supplied equation lift atlas, and a complete ArchMap cover/incidence mapping. The validator recomputes explicit-map properties, or checks F2 presentation exactness, generator completeness, restriction naturality, derived cochain commutativity, semantic/equation residual construction, source/target quotient-level cocycle/class calculation, the residual witness, and the declared finite complex against the supplied ArchMap.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
