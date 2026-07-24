@@ -1220,21 +1220,26 @@ end SquareFreeCoordinatePresentation
 VIII.Theorem 4.2 realization of standard obstruction and selected equation
 ideals from the profile's actual equation system.
 
-The caller supplies one context and one ring homomorphism out of its observable
-ring.  All three ideals are then generated from the selected symbolic
-violation coordinates; no arbitrary equation-handle-to-ideal function is
-accepted.
+The caller supplies one profile site object and one ring homomorphism out of
+the observable ring at its finite-geometry context.  All three ideals are then
+generated from the selected symbolic violation coordinates; no arbitrary
+equation-handle-to-ideal function is accepted.
 -/
 structure FiniteAATProfileRealization
     (M : MeasurementProfile.{u, v})
     (R : FiniteMeasurementRegime M) where
-  /-- Context at which the actual symbolic equation coordinates are realized. -/
-  equationContext : M.equationGeometry.site.category
+  /-- Profile site object at which the actual symbolic equation coordinates
+  are realized.  Its context is generated through the finite geometry. -/
+  equationSite : M.SiteObj
   /-- Ring map from the actual observable ring into the finite witness chart. -/
   equationObservableMap :
     letI := R.geometry.coeffCommRing
-    M.equationGeometry.site.equationSystem.Observable equationContext →+*
-      MvPolynomial M.WitnessVariables M.Coeff
+    M.equationGeometry.site.equationSystem.Observable
+        (Site.ContextCategoryObject.of
+          M.equationGeometry.site.contextPreorder
+          (R.geometry.coverGeometry.context
+            (R.geometry.siteObjEquiv equationSite))) →+*
+        MvPolynomial M.WitnessVariables M.Coeff
   /-- Selected actual left required equation. -/
   selectedLeftEquation :
     M.equationGeometry.site.equationSystem.RequiredIndex
@@ -1243,6 +1248,17 @@ structure FiniteAATProfileRealization
     M.equationGeometry.site.equationSystem.RequiredIndex
 
 namespace FiniteAATProfileRealization
+
+/-- Actual equation context generated from the selected profile site object and
+the finite cover geometry. -/
+abbrev equationContext
+    {M : MeasurementProfile.{u, v}} {R : FiniteMeasurementRegime M}
+    (P : FiniteAATProfileRealization M R) :
+    M.equationGeometry.site.category :=
+  Site.ContextCategoryObject.of
+    M.equationGeometry.site.contextPreorder
+    (R.geometry.coverGeometry.context
+      (R.geometry.siteObjEquiv P.equationSite))
 
 /-- Canonical obstruction ideal obtained from all required equation witnesses. -/
 def obstructionIdeal

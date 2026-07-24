@@ -10009,20 +10009,44 @@ def issue3735ComputationProfileLeftSquareFree :=
 def issue3735ComputationProfileRightSquareFree :=
   @AAT.AG.Measurement.FiniteAATComputationData.rightIdeal_eq_squareFree
 
-def issue3735SelectedTorBridgeUsesAmbientIdeals :=
-  @AAT.AG.Measurement.LawConflictMeasurement.ofSelectedTorBridge
-
 def issue3735ConflictComputedLeftIdealAmbient :=
   @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_leftLawIdeal
 
 def issue3735ConflictComputedRightIdealAmbient :=
   @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_rightLawIdeal
 
+def issue3735ConflictAmbientSelectedSite :=
+  @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_selectedAmbient
+
+def issue3735ConflictAmbientStructureSheafType :=
+  @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_structureSheaf
+
+def issue3735ConflictAmbientSelectedStructureSheaf :=
+  @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_selectedStructureSheaf
+
+def issue3735ConflictAmbientLawIdealCarrier :=
+  @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_lawIdeal
+
+def issue3735ConflictAmbientActualSheaf :=
+  @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_commonRingedSite
+
+def issue3735ConflictAmbientGeneratedIdeals :=
+  @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_ideals_eq_span_range
+
 def issue3735ConflictMeasurementAmbientShape :=
   @AAT.AG.Measurement.FiniteAATConflictRealization.lawConflictMeasurement_commonAmbientRequired_shape
 
 def issue3735FiniteConflictMeasurementAmbientShape :=
   AAT.AG.Measurement.finiteComputabilityConflictPackage_commonAmbientRequired_shape
+
+def issue3735FiniteConflictAmbientActualSheaf :=
+  AAT.AG.Measurement.finiteComputabilityCommonAmbient_commonRingedSite
+
+def issue3735FiniteConflictAmbientSelectedStructureSheaf :=
+  AAT.AG.Measurement.finiteComputabilityCommonAmbient_selectedStructureSheaf
+
+def issue3735FiniteConflictAmbientGeneratedIdeals :=
+  AAT.AG.Measurement.finiteComputabilityConflictRealization_ideals_eq_span_range
 
 def issue3735FiniteF2Sheaf :=
   @AAT.AG.Measurement.finiteComputabilityF2_isSheaf

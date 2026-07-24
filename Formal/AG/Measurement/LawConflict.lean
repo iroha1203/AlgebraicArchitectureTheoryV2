@@ -26,7 +26,7 @@ measurements may be compared.
 -/
 structure CommonAmbientPair (M : MeasurementProfile.{u, v}) where
   AmbientSpace : Type u
-  StructureSheaf : Type v
+  StructureSheaf : Type (u + 1)
   LawIdeal : Type (max u v)
   CoefficientObject : Type v
   WitnessPair : Type u
@@ -56,46 +56,6 @@ structure CommonAmbientPair (M : MeasurementProfile.{u, v}) where
   noComparisonWithoutCommonAmbient_cert : noComparisonWithoutCommonAmbient
 
 namespace CommonAmbientPair
-
-/--
-Replace the selected law-ideal carrier by two actual ideals while retaining
-the chosen ambient, coefficients, witnesses, support carrier, and certified
-comparison data.
--/
-def withSelectedIdeals {M : MeasurementProfile.{u, v}}
-    (A : CommonAmbientPair M)
-    {R : Type (max u v)} [CommRing R]
-    (leftIdeal rightIdeal : Ideal R) :
-    CommonAmbientPair M where
-  AmbientSpace := A.AmbientSpace
-  StructureSheaf := A.StructureSheaf
-  LawIdeal := Ideal R
-  CoefficientObject := A.CoefficientObject
-  WitnessPair := A.WitnessPair
-  ComparisonProfile := A.ComparisonProfile
-  SupportCarrier := A.SupportCarrier
-  leftDomain := A.leftDomain
-  rightDomain := A.rightDomain
-  selectedAmbient := A.selectedAmbient
-  selectedStructureSheaf := A.selectedStructureSheaf
-  leftLawIdeal := leftIdeal
-  rightLawIdeal := rightIdeal
-  leftCoefficient := A.leftCoefficient
-  rightCoefficient := A.rightCoefficient
-  selectedWitnessPair := A.selectedWitnessPair
-  selectedComparisonProfile := A.selectedComparisonProfile
-  commonRingedSite := A.commonRingedSite
-  commonRingedSite_cert := A.commonRingedSite_cert
-  lawIdealsInCommonAmbient := leftIdeal ≤ ⊤ ∧ rightIdeal ≤ ⊤
-  lawIdealsInCommonAmbient_cert := ⟨le_top, le_top⟩
-  coefficientsCompatible := A.coefficientsCompatible
-  coefficientsCompatible_cert := A.coefficientsCompatible_cert
-  witnessesComparable := A.witnessesComparable
-  witnessesComparable_cert := A.witnessesComparable_cert
-  comparisonProfileFixed := A.comparisonProfileFixed
-  comparisonProfileFixed_cert := A.comparisonProfileFixed_cert
-  noComparisonWithoutCommonAmbient := A.noComparisonWithoutCommonAmbient
-  noComparisonWithoutCommonAmbient_cert := A.noComparisonWithoutCommonAmbient_cert
 
 /-- VIII.Definition 9.1: expose the selected common ringed-site certificate. -/
 theorem commonRingedSite_holds {M : MeasurementProfile.{u, v}}
@@ -207,57 +167,6 @@ def ofDerivedLawConflictPackage {M : MeasurementProfile.{u, v}}
   coefficientCompatibilityUsed_cert := A.coefficientsCompatible_cert
   topologyAndCoefficientBoundary := A.noComparisonWithoutCommonAmbient
   topologyAndCoefficientBoundary_cert := A.noComparisonWithoutCommonAmbient_cert
-
-/--
-VIII.Definition 9.1 / R7: build a measurement reading directly from an
-existing selected Tor bridge.  This constructor is used when the finite chain
-computation already targets that bridge, without requiring a second chart
-intersection package solely to recover the same Tor equivalence.  The selected
-ideals are also interpreted in the common ambient, so the ambient certificate
-records the actual ideals used by the Tor bridge.
--/
-def ofSelectedTorBridge {M : MeasurementProfile.{u, v}}
-    (ambientTemplate : CommonAmbientPair M)
-    {R : Type (max u v)} [CommRing R] {I_U I_V : Ideal R}
-    (B : Derived.Intersection.SelectedTorBridge.{max u v} R I_U I_V)
-    (degree : Nat)
-    (selectedClass : B.LawConflict degree)
-    (selectedSupport : ambientTemplate.SupportCarrier)
-    (conflictSupport :
-      B.LawConflict degree -> ambientTemplate.SupportCarrier -> Prop)
-    (selectedClassSupport : conflictSupport selectedClass selectedSupport) :
-    LawConflictMeasurement
-      (ambientTemplate.withSelectedIdeals I_U I_V) where
-  Degree := ULift.{u} Nat
-  selectedDegree := ULift.up degree
-  LeftQuotient := R ⧸ I_U
-  RightQuotient := R ⧸ I_V
-  TorObject := B.LawConflict degree
-  ConflictClass := B.LawConflict degree
-  selectedConflictClass := selectedClass
-  conflictSupport := conflictSupport
-  selectedSupport := selectedSupport
-  ZeroConflict := fun x => x = 0
-  NontrivialConflict := fun x => x ≠ 0
-  lawConflictTorReading :=
-    Nonempty (B.LawConflict degree ≃ₗ[R]
-      Derived.Intersection.mathlibTor R I_U I_V degree)
-  lawConflictTorReading_cert := ⟨B.lawConflictLinearEquivMathlibTor degree⟩
-  selectedClassSupportReading := conflictSupport selectedClass selectedSupport
-  selectedClassSupportReading_cert := selectedClassSupport
-  commonAmbientRequired :=
-    (ambientTemplate.withSelectedIdeals I_U I_V).commonRingedSite ∧
-      (ambientTemplate.withSelectedIdeals I_U I_V).lawIdealsInCommonAmbient
-  commonAmbientRequired_cert :=
-    ⟨(ambientTemplate.withSelectedIdeals I_U I_V).commonRingedSite_cert,
-      (ambientTemplate.withSelectedIdeals I_U I_V).lawIdealsInCommonAmbient_cert⟩
-  coefficientCompatibilityUsed := ambientTemplate.coefficientsCompatible
-  coefficientCompatibilityUsed_cert :=
-    ambientTemplate.coefficientsCompatible_cert
-  topologyAndCoefficientBoundary :=
-    ambientTemplate.noComparisonWithoutCommonAmbient
-  topologyAndCoefficientBoundary_cert :=
-    ambientTemplate.noComparisonWithoutCommonAmbient_cert
 
 /--
 VIII.R7: the measurement bridge exposes the same Mathlib Tor equivalence carried

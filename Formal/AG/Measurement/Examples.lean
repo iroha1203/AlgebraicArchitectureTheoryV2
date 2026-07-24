@@ -1483,7 +1483,7 @@ obstruction sheaf and the generated monomial ideals. -/
 noncomputable def finiteDimensionalMatrixProfileRealization :
     FiniteAATProfileRealization finiteDimensionalMatrixProfile
       finiteDimensionalMatrixRegime where
-  equationContext := finiteMeasurementSiteBase
+  equationSite := PUnit.unit
   equationObservableMap := finiteEquationObservableMapZMod2
   selectedLeftEquation := ⟨.left, rfl⟩
   selectedRightEquation := ⟨.right, rfl⟩
@@ -2202,7 +2202,7 @@ theorem tinyLeftSquareFree_normalForm_identifies_distinct_lifts :
 noncomputable def finiteComputabilityProfileRealization :
     FiniteAATProfileRealization finiteComputabilityMeasurementProfile
       computabilityFiniteMeasurementRegime where
-  equationContext := finiteMeasurementSiteBase
+  equationSite := PUnit.unit
   equationObservableMap := finiteEquationObservableMapZMod2
   selectedLeftEquation := ⟨.left, rfl⟩
   selectedRightEquation := ⟨.right, rfl⟩
@@ -2738,47 +2738,33 @@ theorem finiteComputabilityExample_combinatoricsRoute :
                 FiniteAATComputationData.polynomialVariableSupport_one]
     _ = forbiddenSupportPFinset := hbiUnion
 
-/-- Ambient template used to connect the computed finite support relation to
-the existing measurement semantics. The actual equation ideals are inserted
-by `FiniteAATConflictRealization.commonAmbient`. -/
-noncomputable def finiteComputabilityCommonAmbient :
-    CommonAmbientPair finiteComputabilityMeasurementProfile where
-  AmbientSpace := Unit
-  StructureSheaf := Unit
-  LawIdeal := Unit
-  CoefficientObject := Unit
-  WitnessPair := Unit
-  ComparisonProfile := Unit
-  SupportCarrier := Finset SquareFreeSupportVertex
-  leftDomain := finiteComputabilitySeedGeometry.zeroClass 1
-  rightDomain := finiteComputabilitySeedGeometry.zeroClass 1
-  selectedAmbient := ()
-  selectedStructureSheaf := ()
-  leftLawIdeal := ()
-  rightLawIdeal := ()
-  leftCoefficient := ()
-  rightCoefficient := ()
-  selectedWitnessPair := ()
-  selectedComparisonProfile := ()
-  commonRingedSite := True
-  commonRingedSite_cert := trivial
-  lawIdealsInCommonAmbient := True
-  lawIdealsInCommonAmbient_cert := trivial
-  coefficientsCompatible := True
-  coefficientsCompatible_cert := trivial
-  witnessesComparable := True
-  witnessesComparable_cert := trivial
-  comparisonProfileFixed := True
-  comparisonProfileFixed_cert := trivial
-  noComparisonWithoutCommonAmbient := True
-  noComparisonWithoutCommonAmbient_cert := trivial
-
-/-- Local realization of the nontrivial equation handles and finite support carrier
-in the selected common ambient. -/
+/-- Domain selections for the two equation-generated lawful loci.  The common
+ambient itself is derived from the finite regime and computation data. -/
 noncomputable def finiteComputabilityConflictRealization :
     FiniteAATConflictRealization finiteComputabilityExampleData where
-  ambientTemplate := finiteComputabilityCommonAmbient
-  supportEquiv := Equiv.refl _
+  leftDomain := finiteComputabilitySeedGeometry.zeroClass 1
+  rightDomain := finiteComputabilitySeedGeometry.zeroClass 1
+
+/-- Canonical common ambient generated from the selected finite site,
+module-valued obstruction sheaf, and actual equation-coordinate ideals. -/
+noncomputable def finiteComputabilityCommonAmbient :
+    CommonAmbientPair finiteComputabilityMeasurementProfile :=
+  finiteComputabilityConflictRealization.commonAmbient
+
+/-- The canonical common ambient uses the sheaf condition of the actual
+finite-regime obstruction sheaf. -/
+theorem finiteComputabilityCommonAmbient_commonRingedSite :
+    finiteComputabilityCommonAmbient.commonRingedSite =
+      Site.AATSheafCondition
+        finiteMeasurementEquationSite finiteComputabilityF2Presheaf :=
+  rfl
+
+/-- The selected structure sheaf is the actual module-valued obstruction
+sheaf used by the finite regime. -/
+theorem finiteComputabilityCommonAmbient_selectedStructureSheaf :
+    finiteComputabilityCommonAmbient.selectedStructureSheaf =
+      finiteComputabilityObstructionSheaf.carrier :=
+  rfl
 
 /-- Final theorem 4.2 fixture including the actual relation-valued
 `LawConflictMeasurement`. -/
@@ -2788,17 +2774,38 @@ noncomputable def finiteComputabilityConflictPackage :
   finiteAATConflictComputabilityPackage computabilityFiniteMeasurementRegime
     finiteComputabilityExampleData finiteComputabilityConflictRealization
 
-/-- The final measurement's ambient obligation records the concrete left and
-right ideals obtained from the selected actual equation coordinates. -/
+/-- The final measurement requires the actual finite sheaf condition and the
+two span equalities generated from the selected equation coordinates. -/
 theorem finiteComputabilityConflictPackage_commonAmbientRequired_shape :
     finiteComputabilityConflictPackage.lawConflictMeasurement.commonAmbientRequired =
-      (finiteComputabilityConflictRealization.commonAmbient.commonRingedSite ∧
-        finiteComputabilityConflictRealization.commonAmbient.lawIdealsInCommonAmbient) := by
-  change
-    (finiteComputabilityConflictRealization.lawConflictMeasurement).commonAmbientRequired = _
-  exact
-    FiniteAATConflictRealization.lawConflictMeasurement_commonAmbientRequired_shape
-      finiteComputabilityConflictRealization
+      (Site.AATSheafCondition
+          finiteMeasurementEquationSite finiteComputabilityF2Presheaf ∧
+        (finiteComputabilityExampleData.leftIdeal =
+            Ideal.span
+              (Set.range
+                (finiteComputabilityProfileRealization.equationCoordinate
+                  finiteComputabilityProfileRealization.selectedLeftEquation.1)) ∧
+          finiteComputabilityExampleData.rightIdeal =
+            Ideal.span
+              (Set.range
+                (finiteComputabilityProfileRealization.equationCoordinate
+                  finiteComputabilityProfileRealization.selectedRightEquation.1)))) :=
+  rfl
+
+/-- The generated span equalities, rather than caller-supplied ideal
+comparisons, certify both actual Tor ideals in the common ambient. -/
+theorem finiteComputabilityConflictRealization_ideals_eq_span_range :
+    finiteComputabilityExampleData.leftIdeal =
+          Ideal.span
+            (Set.range
+              (finiteComputabilityProfileRealization.equationCoordinate
+                finiteComputabilityProfileRealization.selectedLeftEquation.1)) ∧
+      finiteComputabilityExampleData.rightIdeal =
+          Ideal.span
+            (Set.range
+              (finiteComputabilityProfileRealization.equationCoordinate
+                finiteComputabilityProfileRealization.selectedRightEquation.1)) :=
+  finiteComputabilityConflictRealization.commonAmbient_ideals_eq_span_range
 
 /-- The final common ambient contains exactly the two equation ideals used by
 the selected Tor computation. -/
@@ -4069,7 +4076,7 @@ theorem cellularHodgeExample_harmonicDebtMinimal :
 def transferCommonAmbient :
     CommonAmbientPair pseudoCircleMeasurementProfile where
   AmbientSpace := Unit
-  StructureSheaf := Unit
+  StructureSheaf := ULift.{1, 0} Unit
   LawIdeal := Unit
   CoefficientObject := Unit
   WitnessPair := Unit
@@ -4078,7 +4085,7 @@ def transferCommonAmbient :
   leftDomain := PseudoCircleMeasurementDomain.boundaryCocycle
   rightDomain := PseudoCircleMeasurementDomain.boundaryCocycle
   selectedAmbient := ()
-  selectedStructureSheaf := ()
+  selectedStructureSheaf := ULift.up ()
   leftLawIdeal := ()
   rightLawIdeal := ()
   leftCoefficient := ()
@@ -4726,7 +4733,8 @@ theorem gagaRightEquationCoordinate_mem
 def gagaRealCommonAmbient :
     CommonAmbientPair gagaRealMeasurementProfile where
   AmbientSpace := FiniteModel.FiniteAtom
-  StructureSheaf := FiniteObstructionObjectHandle
+  StructureSheaf :=
+    Cohomology.ObstructionSheaf finiteMeasurementEquationSite
   LawIdeal := GAGADerivedLawIdeal
   CoefficientObject := ℝ
   WitnessPair := Derived.Counterexample.SharedWitnessCoord
@@ -4735,7 +4743,7 @@ def gagaRealCommonAmbient :
   leftDomain := ()
   rightDomain := ()
   selectedAmbient := .componentA
-  selectedStructureSheaf := .selected
+  selectedStructureSheaf := gagaRealObstructionSheaf
   leftLawIdeal := .xy
   rightLawIdeal := .xz
   leftCoefficient := 1
@@ -4811,10 +4819,10 @@ noncomputable def gagaCommonFiniteData :
   leftCoordinatePresentation := gagaLeftCoordinatePresentation
   rightCoordinatePresentation := gagaRightCoordinatePresentation
   ambientAtomType_eq_source := rfl
-  ambientStructureSheafFromProfile := id
+  ambientStructureSheafFromProfile := gagaAmbientStructureSheafFromProfile
   selectedObstructionObject := .selected
   selectedStructureSheaf_eq_profile := rfl
-  ambientStructureSheafToSource := gagaAmbientStructureSheafFromProfile
+  ambientStructureSheafToSource := id
   selectedStructureSheaf_realizes_source := rfl
   ambientCoefficientObject_eq_profile := rfl
   leftCoefficient_eq_selected := rfl
