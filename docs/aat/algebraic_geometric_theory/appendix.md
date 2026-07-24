@@ -1041,6 +1041,22 @@ edges:
 no nondegenerate simplices in degree >= 2
 ```
 
+各 designated empty intersection `∅` 上では、全データを次で固定する。
+
+```text
+Lambda(∅) = S(∅) = empty
+F_sem(∅) = R_rep(∅) = M_sem(∅) = 0
+O_E(∅) = Q_E(∅) = 0
+P_sem(∅) = P_E(∅) = {*}
+```
+
+empty context 上の equation index と displayed Atom は空とし、そこへ値を持つ
+symbolic violation coordinate `ν` と object-dependent residual `ε` は零とする。
+nonempty context から empty context への係数 restriction と local-state restriction、
+および empty context 間の restriction は、それぞれ零群または singleton への一意な写像とする。
+したがって semantic presentation、equation-generated coefficient、二つの local-state
+presheaf は空交叉を含む有限 context category 全体で恒等則と合成則を満たす。
+
 ### B.9.2 Semantic presentation
 
 各 nonempty intersection `V` に一つの supported semantic atom `σ_V` を置き、

@@ -247,7 +247,17 @@ semantic atom と Atom の restriction があり、
   =\pi_V(\lambda)|_{V'}
 \]
 
-を満たす。support は restriction で保たれ、
+を満たす。semantic atom restriction は恒等射と合成に関して functorial である。
+すなわち、`V''→V'→V` が composable なら
+
+\[
+\lambda|_{\operatorname{id}_V}=\lambda,
+\qquad
+(\lambda|_{V'})|_{V''}=\lambda|_{V''},
+\]
+
+ここで右辺の restriction は合成射 `V''→V` に沿うものとする。
+support は restriction で保たれ、
 free abelian group 上の induced map は
 
 \[
@@ -1155,10 +1165,18 @@ p_i=a_i+p|_{U_i}
 
 ### 系 8.3 Equation-side global lift
 
-SAGA presentation exactness と primary state correspondence が `S_X` 上で成立し、
-`P_E` も選ばれた topology 上の sheaf であるとする。系 6.5 により
-`β:P_sem→P_E` は `𝒰` 上で局所同型であり、selected base `W` 上の写像
-`β_W:P_sem(W)→P_E(W)` は全単射である。したがって
+定理 8.2 の設定、特に `P_sem` が true semantic repair sheaf であることを仮定する。
+さらに SAGA presentation exactness と primary state correspondence が `S_X` 上で成立し、
+`P_E` も選ばれた topology 上の sheaf であるとする。selected local atlases の
+restriction により各 chart と nonempty overlap 上の二つの local-state system は非空なので、
+系 6.5 はそれらの context 上で `β_V:P_sem(V)→P_E(V)` が全単射であることを与える。
+このとき selected base `W` 上の写像
+
+\[
+\beta_W:P_{\mathrm{sem}}(W)\longrightarrow P_E(W)
+\]
+
+も全単射である。したがって
 
 \[
 \operatorname{Nonempty}P_{\mathrm{sem}}(W)
@@ -1171,10 +1189,15 @@ SAGA presentation exactness と primary state correspondence が `S_X` 上で成
 零類から構成した matching equation lifts は `P_E` の sheaf condition により
 actual global equation lift へ貼り合わされる。
 
-実際、`P_E(W)` の section は cover 上で `β` の一意な preimage を持つ。
-それらは overlap 上で一致し、`P_sem` の sheaf condition により一つの section へ貼り合うので
-`β_W` は全射である。二つの semantic sections の像が等しければ、
-cover 上の local injectivity と separatedness から元も等しい。よって `β_W` は全単射である。
+実際、`e∈P_E(W)` を取る。各 chart 上の `e|_{U_i}` は局所全単射 `β_{U_i}` による
+一意な preimage `p_i∈P_sem(U_i)` を持つ。overlap 上では `β` の naturality と
+局所単射性により `p_i` の restriction が一致する。`P_sem` の sheaf condition で
+これらを `p∈P_sem(W)` へ貼り合わせると、`β_W(p)` と `e` は全 chart 上で一致する。
+`P_E` の separatedness により `β_W(p)=e` なので、`β_W` は全射である。
+
+また `β_W(p)=β_W(q)` なら、各 chart 上の局所単射性により
+`p|_{U_i}=q|_{U_i}` である。`P_sem` の separatedness から `p=q` となるので、
+`β_W` は単射でもある。三項同値はこの全単射性と定理 8.2 から従う。
 
 ### 原則 8.4 Additive、torsor、higher の分離
 
@@ -1222,37 +1245,70 @@ true sheaf condition:
 定理番号で書くと、依存は次である。
 
 ```text
+Definition 3.1
+  -> Definition 3.2
+
 Definition 3.1 + Definition 3.2
   -> Proposition 3.3
+
+Proposition 3.3 + Definition 2.1
   -> Definition 3.4
+
+Definition 3.2 + Definition 3.4 + Definition 4.1
   -> Definition 4.2
-  -> Lemma 4.3 + Theorem 4.4
+
+Definition 4.2 + Definition 2.1
+  -> Lemma 4.3
+
+Lemma 4.3 + Definition 4.2
+  -> Theorem 4.4
+  -> Corollary 4.5
 
 Part III Theorem 11.4
   -> Definition 5.1
-  -> Definition 5.2 + Definition 5.3
+
+Definition 5.1 + Definition 2.1
+  -> Definition 5.2
+
+Definition 5.1
+  -> Definition 5.3
+
+Definition 5.2 + Definition 5.3
   -> Lemma 5.4
+
+Definition 6.1 + Part III Theorem 11.4
   -> Proposition 6.1A
 
-Definition 4.1 + Definition 5.3 + Definition 6.1 + Definition 6.1B
+Definition 3.2 + Definition 6.1 + Definition 6.2
+  -> Theorem 6.3
+
+Definition 4.1 + Definition 6.1 + Definition 6.1B
   -> Lemma 6.2A
 
-Lemma 6.2A + relation completeness + generator completeness
-  -> Theorem 6.3
+Proposition 6.1A + Lemma 6.2A
+  + relation completeness + generator completeness + Theorem 6.3
   -> Corollary 6.7
+
+Definition 4.1 + Definition 6.1B + Theorem 6.3
+  -> Corollary 6.5
+
+Definition 3.4 + Definition 5.2 + Corollary 6.7
   -> Definition 7.1
   -> Theorem 7.2
   -> Corollary 7.3
   -> Theorem 7.4
 
-Theorem 4.4 + Lemma 5.4 + Theorem 6.3 + beta
+Definition 6.1B + Lemma 4.3 + Lemma 5.4 + Corollary 6.5
   -> Theorem 7.5
 
-Theorem 7.4 + Theorem 7.5
+Corollary 6.7 + Theorem 7.2 + Theorem 7.4 + Theorem 7.5
   -> Theorem 7.6
 
-Theorem 7.6 + true semantic repair sheaf
+Corollary 4.5 + Theorem 7.6 + Definition 8.1
   -> Theorem 8.2
+
+Theorem 8.2 + Corollary 6.5 + equation-lift sheaf
+  -> Corollary 8.3
 ```
 
 ## 10. Finite executable realization
