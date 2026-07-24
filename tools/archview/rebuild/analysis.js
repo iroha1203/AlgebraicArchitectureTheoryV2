@@ -19,6 +19,9 @@ const SCHEMAS = Object.freeze({
 });
 
 const REQUIRED = Object.freeze(["manifest", "normalized", "packet", "summary", "insight"]);
+const COMPARISON_DISCIPLINE = "Comparison is a record-level juxtaposition of two ArchSig runs. It does not claim causal repair, semantic equivalence, or preserved obstruction identity; a class-zero reading is available only under a checked coarse-to-fine refinement contract.";
+const COMPARISON_CONCLUSIONS = new Set(["NO_NEW_MEASURED_OBSTRUCTION_RECORDED", "MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE", "MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE", "RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA"]);
+const COMPARISON_TRANSITIONS = new Set(["new_recorded_row", "removed_recorded_row", "measured_obstruction_no_longer_recorded", "measured_obstruction_recorded_after_change", "preexisting_recorded_row", "other_transition"]);
 const RAW_CANONICAL = new WeakMap();
 
 export class AnalysisValidationError extends Error {
@@ -80,6 +83,14 @@ function validateArtifactRows(packet, summary, insight, issues) {
     if (requireRecord(row.verdictData, `${path}.verdictData`, issues)) {
       for (const field of ["inScope", "zero", "nonZero"]) if (typeof row.verdictData[field] !== "boolean") issues.push(issue(`${path}.verdictData.${field}`, `${path}.verdictData.${field} must be boolean.`));
       requireString(row.verdictData.methodStatus, `${path}.verdictData.methodStatus`, issues);
+      const expectedFlags = {
+        measured_zero: { inScope: true, zero: true, nonZero: false },
+        measured_nonzero: { inScope: true, zero: false, nonZero: true },
+        unmeasured: { zero: false, nonZero: false },
+        unknown: { zero: false, nonZero: false },
+        not_computed: { zero: false, nonZero: false },
+      }[row.verdict];
+      for (const [field, expected] of Object.entries(expectedFlags || {})) if (row.verdictData[field] !== expected) issues.push(issue(`${path}.verdictData.${field}`, `${path}.verdictData.${field} contradicts verdict ${row.verdict}.`, expected, row.verdictData[field]));
     }
     if (requireRecord(row.evidence, `${path}.evidence`, issues)) for (const field of ["computedInvariantRefs", "sourceRefs"]) requireStringArray(row.evidence[field], `${path}.evidence.${field}`, issues);
   });
@@ -94,6 +105,40 @@ function validateArtifactRows(packet, summary, insight, issues) {
     for (const field of ["structuralVerdictRefs", "computedInvariantRefs", "analyticReadingRefs", "assumptionRefs", "sourceRefs", "atomRefs", "contextRefs", "coverRefs", "evaluatorRefs"]) requireStringArray(row.evidence[field], `${FILES.insight}.insightCards[${position}].evidence.${field}`, issues);
   });
   requireObjectArray(insight.actionQueue, `${FILES.insight}.actionQueue`, ["id", "kind", "title", "reason"], issues);
+  const uniqueField = (rows, field, path) => {
+    const seen = new Set();
+    (rows || []).forEach((row, position) => {
+      const value = row?.[field];
+      if (typeof value !== "string") return;
+      if (seen.has(value)) issues.push(issue(`${path}[${position}].${field}`, `${path}.${field} values must be unique.`, null, value));
+      seen.add(value);
+    });
+    return seen;
+  };
+  const verdictRefs = uniqueField(packet.structuralVerdict, "verdictRef", `${FILES.packet}.structuralVerdict`);
+  const invariantRefs = uniqueField(packet.computedInvariants, "invariantId", `${FILES.packet}.computedInvariants`);
+  const readingRefs = uniqueField(packet.analyticReadings, "readingId", `${FILES.packet}.analyticReadings`);
+  const assumptionRefs = uniqueField(packet.assumptions, "assumptionId", `${FILES.packet}.assumptions`);
+  (packet.assumptions || []).forEach((row) => { if (typeof row?.theoremRef === "string") assumptionRefs.add(row.theoremRef); });
+  uniqueField(packet.suppliedData, "suppliedId", `${FILES.packet}.suppliedData`);
+  uniqueField(packet.boundaryStatements, "id", `${FILES.packet}.boundaryStatements`);
+  uniqueField(insight.insightCards, "id", `${FILES.insight}.insightCards`);
+  uniqueField(insight.actionQueue, "id", `${FILES.insight}.actionQueue`);
+  const evaluatorRefs = new Set([...(packet.structuralVerdict || []), ...(packet.computedInvariants || []), ...(packet.analyticReadings || [])].map((row) => row?.evaluator).filter((value) => typeof value === "string"));
+  const requireExistingRefs = (refs, known, path, label) => (refs || []).forEach((ref, position) => {
+    if (!known.has(ref)) issues.push(issue(`${path}[${position}]`, `${ref} does not identify a ${label} in the loaded measurement packet.`, null, ref));
+  });
+  (packet.structuralVerdict || []).forEach((row, position) => requireExistingRefs(row?.evidence?.computedInvariantRefs, invariantRefs, `${FILES.packet}.structuralVerdict[${position}].evidence.computedInvariantRefs`, "computed invariant"));
+  (insight.insightCards || []).forEach((row, position) => {
+    const evidence = row?.evidence;
+    if (!isRecord(evidence)) return;
+    const path = `${FILES.insight}.insightCards[${position}].evidence`;
+    requireExistingRefs(evidence.structuralVerdictRefs, verdictRefs, `${path}.structuralVerdictRefs`, "structural verdict");
+    requireExistingRefs(evidence.computedInvariantRefs, invariantRefs, `${path}.computedInvariantRefs`, "computed invariant");
+    requireExistingRefs(evidence.analyticReadingRefs, readingRefs, `${path}.analyticReadingRefs`, "analytic reading");
+    requireExistingRefs(evidence.assumptionRefs, assumptionRefs, `${path}.assumptionRefs`, "valid assumption or theorem reference");
+    requireExistingRefs(evidence.evaluatorRefs, evaluatorRefs, `${path}.evaluatorRefs`, "measurement evaluator");
+  });
   const verdicts = packet.structuralVerdict || [];
   const expectedCounts = {
     rowCount: verdicts.length,
@@ -113,6 +158,10 @@ function validateArtifactRows(packet, summary, insight, issues) {
 function validateReferenceShapes(value, path, issues) {
   if (Array.isArray(value)) return value.forEach((entry, position) => validateReferenceShapes(entry, `${path}[${position}]`, issues));
   if (!isRecord(value)) return;
+  if (typeof value.edgeId === "string" && Object.hasOwn(value, "sectionObservation")) {
+    if (!["observed", "not_observed"].includes(value.sectionObservation)) issues.push(issue(`${path}.sectionObservation`, `${path}.sectionObservation is not an ArchSig observation state.`, null, value.sectionObservation));
+    if (value.sectionObservation === "observed" && ![0, 1, "0", "1"].includes(value.value)) issues.push(issue(`${path}.value`, `${path}.value must be 0 or 1 for an observed F2 relation.`, "0 or 1", value.value));
+  }
   for (const [key, child] of Object.entries(value)) {
     const childPath = `${path}.${key}`;
     if (REF_FIELDS[key] || key === "targetRefs" || key === "edgeRefs" || key === "unobservedEdgeRefs") {
@@ -467,6 +516,94 @@ function collectUnresolved(value, path, index, bridges, unresolved) {
   }
 }
 
+function collectNamedRefs(value, names, output = []) {
+  if (Array.isArray(value)) {
+    value.forEach((entry) => collectNamedRefs(entry, names, output));
+    return output;
+  }
+  if (!isRecord(value)) return output;
+  for (const [key, child] of Object.entries(value)) {
+    if (names.has(key)) {
+      if (Array.isArray(child)) output.push(...child.filter((entry) => typeof entry === "string"));
+      else if (typeof child === "string") output.push(child);
+    }
+    collectNamedRefs(child, names, output);
+  }
+  return output;
+}
+
+function comparisonRowKey(row) {
+  const evaluator = row?.evaluator || "unknown-evaluator";
+  const law = row?.law || "unknown-law";
+  let target;
+  if (isRecord(row?.target)) {
+    target = { ...row.target };
+    delete target.classRef;
+    target = JSON.parse(canonicalJson(target));
+  } else {
+    target = row?.verdictRef || row?.structuralVerdictRef || row?.verdictData?.methodStatus || row?.methodStatus || "unknown-target";
+  }
+  return `${evaluator}|${law}|${typeof target === "string" ? target : canonicalJson(target)}`;
+}
+
+function gateVerdictRows(packet) {
+  const structural = packet.structuralVerdict || [];
+  const boundariesByScope = new Map();
+  (packet.boundaryStatements || []).forEach((row) => (row?.scopeRefs || []).forEach((ref) => {
+    const kinds = boundariesByScope.get(ref) || new Set();
+    kinds.add(row.kind);
+    boundariesByScope.set(ref, kinds);
+  }));
+  const analyticSilence = structural.length ? [] : (packet.analyticReadings || []).filter((row) => boundariesByScope.get(row.readingId)?.has("silence_by_design")).map((row) => ({
+    verdictRef: row.readingId, evaluator: row.evaluator, law: row.evaluator, verdict: "not_computed", verdictData: { methodStatus: "analytic_reading_silence_by_design" }, dependsOnAssumptions: [],
+  }));
+  const comparisonSilence = (packet.computedInvariants || []).filter((row) => row.evaluator === "ag.saga-comparison" && row.status === "silence_by_design" && boundariesByScope.get(row.invariantId)?.has("silence_by_design")).map((row) => ({
+    verdictRef: row.invariantId, evaluator: row.evaluator, law: row.evaluator, verdict: "not_computed", verdictData: { methodStatus: row.reason }, dependsOnAssumptions: [],
+  }));
+  return [...structural, ...analyticSilence, ...(structural.length || analyticSilence.length ? comparisonSilence : [])];
+}
+
+function validateFindingProvenance(documents, index, bridges, issues) {
+  const packet = documents.packet;
+  const verdictByRef = new Map(packet.structuralVerdict.map((row) => [row.verdictRef, row]));
+  const invariantByRef = new Map(packet.computedInvariants.map((row) => [row.invariantId, row]));
+  const rawRef = (ref, kind) => bridges[kind]?.get(ref) || ref;
+  (documents.insight.insightCards || []).forEach((card, position) => {
+    const evidence = card?.evidence;
+    if (!isRecord(evidence) || !(evidence.structuralVerdictRefs || []).length) return;
+    const path = `${FILES.insight}.insightCards[${position}].evidence`;
+    const rows = evidence.structuralVerdictRefs.map((ref) => verdictByRef.get(ref)).filter(Boolean);
+    const rowInvariants = rows.flatMap((row) => {
+      const certInvariant = row.verdictData?.certRef?.startsWith("computedInvariants/") ? row.verdictData.certRef.slice("computedInvariants/".length) : null;
+      const explicitRefs = new Set(row.evidence?.computedInvariantRefs || []);
+      return packet.computedInvariants.filter((invariant) => explicitRefs.has(invariant.invariantId) || invariant.invariantId === certInvariant);
+    });
+    const allowedInvariantRefs = new Set(rowInvariants.map((row) => row.invariantId));
+    const cardInvariantRefs = new Set(evidence.computedInvariantRefs || []);
+    rows.forEach((row) => {
+      if (!(evidence.evaluatorRefs || []).includes(row.evaluator)) issues.push(issue(`${path}.evaluatorRefs`, `Finding does not preserve evaluator provenance for ${row.verdictRef}.`, row.evaluator, evidence.evaluatorRefs));
+      (row.evidence?.computedInvariantRefs || []).forEach((ref) => { if (!cardInvariantRefs.has(ref)) issues.push(issue(`${path}.computedInvariantRefs`, `Finding omits a computed invariant cited by ${row.verdictRef}.`, ref, evidence.computedInvariantRefs)); });
+    });
+    (evidence.computedInvariantRefs || []).forEach((ref, refPosition) => { if (!allowedInvariantRefs.has(ref)) issues.push(issue(`${path}.computedInvariantRefs[${refPosition}]`, `Finding invariant is not derived from its selected structural verdict row.`, null, ref)); });
+    const selectedInvariants = (evidence.computedInvariantRefs || []).map((ref) => invariantByRef.get(ref)).filter(Boolean);
+    const explicitRowSources = new Set(rows.flatMap((row) => row.evidence?.sourceRefs || []));
+    const allowedAtoms = new Set(collectNamedRefs(selectedInvariants, new Set(["supportAtomRefs", "mismatchSupportRefs", "witnessSupportRefs", "atomRefs", "atomRef"])).map((ref) => rawRef(ref, "atoms")));
+    (evidence.atomRefs || []).forEach((ref, refPosition) => { if (!allowedAtoms.has(rawRef(ref, "atoms"))) issues.push(issue(`${path}.atomRefs[${refPosition}]`, `Finding Atom is not supported by an explicit selected verdict or invariant reference.`, null, ref)); });
+    const allowedContexts = new Set(collectNamedRefs(selectedInvariants, new Set(["contextRefs", "contextRef", "selectedContexts", "sourceContext", "targetContext"])).map((ref) => rawRef(ref, "contexts")));
+    collectNamedRefs(selectedInvariants, new Set(["edgeId", "edgeRefs", "unobservedEdgeRefs"])).forEach((edge) => {
+      const match = edge.match(/^(ctx:[^>]+)->(ctx:.+)$/);
+      if (match) { allowedContexts.add(rawRef(match[1], "contexts")); allowedContexts.add(rawRef(match[2], "contexts")); }
+    });
+    allowedAtoms.forEach((atomId) => (index.contextIdsByAtom.get(atomId) || []).forEach((contextId) => allowedContexts.add(contextId)));
+    (evidence.contextRefs || []).forEach((ref, refPosition) => { if (!allowedContexts.has(rawRef(ref, "contexts"))) issues.push(issue(`${path}.contextRefs[${refPosition}]`, `Finding Context is not supported by its selected verdict evidence.`, null, ref)); });
+    const allowedSources = new Set([...explicitRowSources, ...collectNamedRefs(selectedInvariants, new Set(["sourceRefs", "sourceRef"]))]);
+    allowedAtoms.forEach((atomId) => (index.atomsById.get(atomId)?.refs || []).forEach((sourceRef) => allowedSources.add(sourceRef)));
+    const selectedCover = rawRef(packet.profile.coverRef, "covers");
+    (evidence.coverRefs || []).forEach((ref, refPosition) => { if (rawRef(ref, "covers") !== selectedCover) issues.push(issue(`${path}.coverRefs[${refPosition}]`, `Finding Cover does not match the selected measurement profile Cover.`, selectedCover, ref)); });
+    (evidence.sourceRefs || []).forEach((ref, refPosition) => { if (!allowedSources.has(ref)) issues.push(issue(`${path}.sourceRefs[${refPosition}]`, `Finding source is not supported by its selected verdict evidence.`, null, ref)); });
+  });
+}
+
 function validateNormalizedReferences(normalized, index, bridges, unresolved) {
   normalized.atoms.forEach((row, position) => {
     (row.sourceRefs || []).forEach((ref, refPosition) => { if (!resolves(ref, "sources", index, bridges)) unresolved.push(issue(`${FILES.normalized}.atoms[${position}].sourceRefs[${refPosition}]`, `${ref} does not resolve to an ArchMap source.`)); });
@@ -489,20 +626,52 @@ function validateOptionalArtifacts(documents, issues) {
   if (isRecord(documents.gate)) {
     requireString(documents.gate.toolVersion, `${FILES.gate}.toolVersion`, issues);
     requireString(documents.gate.decision, `${FILES.gate}.decision`, issues);
+    if (!new Set(["PASS_WITHIN_GATE_POLICY", "BLOCKED_BY_GATE_POLICY", "NOT_EVALUABLE"]).has(documents.gate.decision)) issues.push(issue(`${FILES.gate}.decision`, "Gate decision is not an ArchSig gate decision.", null, documents.gate.decision));
     requireRecord(documents.gate.inputDigests, `${FILES.gate}.inputDigests`, issues);
     requireDigestEntry(documents.gate.inputDigests?.measurementPacket, `${FILES.gate}.inputDigests.measurementPacket`, issues);
     requireDigestEntry(documents.gate.inputDigests?.gatePolicy, `${FILES.gate}.inputDigests.gatePolicy`, issues);
-    for (const field of ["policyValidation", "ruleOutcomes", "nonConclusions"]) requireArray(documents.gate[field], `${FILES.gate}.${field}`, issues);
-    for (const field of ["policyValidation", "ruleOutcomes"]) requireObjectArray(documents.gate[field], `${FILES.gate}.${field}`, [], issues);
+    for (const field of ["ruleOutcomes", "nonConclusions"]) requireArray(documents.gate[field], `${FILES.gate}.${field}`, issues);
+    requireObjectArray(documents.gate.ruleOutcomes, `${FILES.gate}.ruleOutcomes`, [], issues);
+    if (documents.gate.decision === "NOT_EVALUABLE") {
+      requireString(documents.gate.reason, `${FILES.gate}.reason`, issues);
+      if ((documents.gate.ruleOutcomes || []).length) issues.push(issue(`${FILES.gate}.ruleOutcomes`, "A NOT_EVALUABLE gate report cannot contain evaluated rule outcomes."));
+    } else {
+      requireObjectArray(documents.gate.policyValidation, `${FILES.gate}.policyValidation`, ["id", "result"], issues);
+      if (!(documents.gate.policyValidation || []).length) issues.push(issue(`${FILES.gate}.policyValidation`, "An evaluated gate report must contain policy validation checks."));
+      requireObjectArray(documents.gate.ruleOutcomes, `${FILES.gate}.ruleOutcomes`, ["ruleId", "scope", "status"], issues);
+      if (!(documents.gate.ruleOutcomes || []).length) issues.push(issue(`${FILES.gate}.ruleOutcomes`, "An evaluated gate report must contain rule outcomes."));
+      (documents.gate.ruleOutcomes || []).forEach((row, position) => {
+        const path = `${FILES.gate}.ruleOutcomes[${position}]`;
+        if (!new Set(["absolute", "introduced-by-change"]).has(row?.scope)) issues.push(issue(`${path}.scope`, "Gate rule scope is not in the producer vocabulary.", null, row?.scope));
+        if (!new Set(["evaluated", "not_applicable"]).has(row?.status)) issues.push(issue(`${path}.status`, "Gate rule status is not in the producer vocabulary.", null, row?.status));
+        if (row?.status === "evaluated") requireObjectArray(row.appliedMapping, `${path}.appliedMapping`, ["action"], issues);
+        if (row?.scope === "introduced-by-change" && row?.status === "evaluated" && !documents.comparison) issues.push(issue(`${path}.status`, "An introduced-by-change rule can be evaluated only when a comparison report is supplied.", "not_applicable", row.status));
+        if (row?.status === "not_applicable") {
+          if (row.scope !== "introduced-by-change") issues.push(issue(`${path}.scope`, "Only introduced-by-change rules can be not_applicable.", "introduced-by-change", row.scope));
+          requireString(row.reason, `${path}.reason`, issues);
+          if (row.appliedMapping !== undefined) issues.push(issue(`${path}.appliedMapping`, "A not_applicable gate outcome cannot contain applied mappings."));
+          if (documents.comparison) issues.push(issue(`${path}.status`, "An introduced-by-change rule must be evaluated when a comparison report is supplied.", "evaluated", row.status));
+        }
+      });
+      (documents.gate.policyValidation || []).forEach((check, position) => { if (check?.result !== "pass") issues.push(issue(`${FILES.gate}.policyValidation[${position}].result`, "An evaluated gate report requires passing policy validation checks.", "pass", check?.result)); });
+      const actions = (documents.gate.ruleOutcomes || []).flatMap((row) => row?.appliedMapping || []).map((row) => row?.action);
+      actions.forEach((action, position) => { if (!new Set(["pass", "pass_with_boundary", "block"]).has(action)) issues.push(issue(`${FILES.gate}.ruleOutcomes.appliedMapping[${position}].action`, "Gate action is not in the closed ArchSig action vocabulary.", null, action)); });
+      const expectedDecision = actions.includes("block") ? "BLOCKED_BY_GATE_POLICY" : "PASS_WITHIN_GATE_POLICY";
+      if (documents.gate.decision !== expectedDecision) issues.push(issue(`${FILES.gate}.decision`, "Gate decision does not match its applied rule actions.", expectedDecision, documents.gate.decision));
+    }
   }
   if (isRecord(documents.comparison)) {
     requireString(documents.comparison.toolVersion, `${FILES.comparison}.toolVersion`, issues);
+    requireString(documents.comparison.conclusionCode, `${FILES.comparison}.conclusionCode`, issues);
+    if (!COMPARISON_CONCLUSIONS.has(documents.comparison.conclusionCode)) issues.push(issue(`${FILES.comparison}.conclusionCode`, "Comparison conclusionCode is not an ArchSig comparison conclusion.", null, documents.comparison.conclusionCode));
     if (requireRecord(documents.comparison.inputDigests, `${FILES.comparison}.inputDigests`, issues)) {
       requireRecord(documents.comparison.inputDigests.baseRun, `${FILES.comparison}.inputDigests.baseRun`, issues);
       requireRecord(documents.comparison.inputDigests.headRun, `${FILES.comparison}.inputDigests.headRun`, issues);
     }
     requireRecord(documents.comparison.comparability, `${FILES.comparison}.comparability`, issues);
     requireString(documents.comparison.discipline, `${FILES.comparison}.discipline`, issues);
+    if (documents.comparison.discipline !== COMPARISON_DISCIPLINE) issues.push(issue(`${FILES.comparison}.discipline`, "Comparison discipline does not match the ArchSig record discipline.", COMPARISON_DISCIPLINE, documents.comparison.discipline));
+    if (!new Set(["identical", "verdict-row", "not-comparable"]).has(documents.comparison.comparability?.level)) issues.push(issue(`${FILES.comparison}.comparability.level`, "Comparison comparability level is not supported.", null, documents.comparison.comparability?.level));
     requireRecord(documents.comparison.artifactRefs, `${FILES.comparison}.artifactRefs`, issues);
     requireRecord(documents.comparison.independentConclusions, `${FILES.comparison}.independentConclusions`, issues);
     requireArray(documents.comparison.verdictTransitions, `${FILES.comparison}.verdictTransitions`, issues);
@@ -511,6 +680,46 @@ function validateOptionalArtifacts(documents, issues) {
     requireArray(documents.comparison.nonConclusions, `${FILES.comparison}.nonConclusions`, issues);
     requireObjectArray(documents.comparison.verdictTransitions, `${FILES.comparison}.verdictTransitions`, [], issues);
     requireObjectArray(documents.comparison.boundaryStatements, `${FILES.comparison}.boundaryStatements`, [], issues);
+    const transitionKeys = new Set();
+    (documents.comparison.verdictTransitions || []).forEach((row, position) => {
+      if (!isRecord(row)) return;
+      const path = `${FILES.comparison}.verdictTransitions[${position}]`;
+      for (const field of ["rowKey", "baseVerdict", "headVerdict", "transition", "introducedByChangeCategory", "discipline"]) requireString(row[field], `${path}.${field}`, issues);
+      if (!COMPARISON_TRANSITIONS.has(row.transition)) issues.push(issue(`${path}.transition`, "Comparison transition is not an ArchSig record transition.", null, row.transition));
+      for (const field of ["baseVerdict", "headVerdict"]) if (!new Set(["measured_zero", "measured_nonzero", "unmeasured", "unknown", "not_computed", "absent"]).has(row[field])) issues.push(issue(`${path}.${field}`, `Comparison ${field} is not a structural verdict or absent.`, null, row[field]));
+      if (row.discipline !== COMPARISON_DISCIPLINE) issues.push(issue(`${path}.discipline`, "Comparison transition discipline does not match the ArchSig record discipline.", COMPARISON_DISCIPLINE, row.discipline));
+      const expectedCategory = ({ new_recorded_row: "new", removed_recorded_row: "removed", measured_obstruction_no_longer_recorded: "cleared", measured_obstruction_recorded_after_change: "new", preexisting_recorded_row: "preexisting", other_transition: "other" })[row.transition];
+      if (row.introducedByChangeCategory !== expectedCategory) issues.push(issue(`${path}.introducedByChangeCategory`, "Comparison change category does not match its transition.", expectedCategory, row.introducedByChangeCategory));
+      for (const field of ["baseRowRef", "headRowRef"]) if (row[field] !== null && row[field] !== undefined) requireString(row[field], `${path}.${field}`, issues);
+      requireObjectArray(row.deltaRefs, `${path}.deltaRefs`, ["diffRef", "op", "kind", "id"], issues);
+      (row.deltaRefs || []).forEach((delta, deltaPosition) => {
+        if (!isRecord(delta)) return;
+        if (!["added", "removed", "modified"].includes(delta.op)) issues.push(issue(`${path}.deltaRefs[${deltaPosition}].op`, "Comparison delta op is not supported.", null, delta.op));
+        if (!["sources", "atoms", "contexts", "covers"].includes(delta.kind)) issues.push(issue(`${path}.deltaRefs[${deltaPosition}].kind`, "Comparison delta kind is not supported.", null, delta.kind));
+        const expectedDiffRef = `archmap-diff/${delta.kind}/${delta.op}/${delta.id}`;
+        if (delta.diffRef !== expectedDiffRef) issues.push(issue(`${path}.deltaRefs[${deltaPosition}].diffRef`, "Comparison diffRef does not match kind, op, and id.", expectedDiffRef, delta.diffRef));
+      });
+      if (typeof row.rowKey === "string" && transitionKeys.has(row.rowKey)) issues.push(issue(`${path}.rowKey`, "Comparison verdict transition rowKey values must be unique.", null, row.rowKey));
+      transitionKeys.add(row.rowKey);
+    });
+    const coverChanged = (documents.comparison.boundaryStatements || []).some((row) => row?.kind === "cover_changed_between_runs");
+    const notComparable = documents.comparison.comparability?.level === "not-comparable";
+    (documents.comparison.verdictTransitions || []).forEach((row, position) => {
+      if (!isRecord(row)) return;
+      const expectedTransition = notComparable || coverChanged ? "other_transition"
+        : row.baseVerdict === "absent" ? "new_recorded_row"
+        : row.headVerdict === "absent" ? "removed_recorded_row"
+        : row.baseVerdict === "measured_nonzero" && row.headVerdict === "measured_zero" ? "measured_obstruction_no_longer_recorded"
+        : row.baseVerdict === "measured_zero" && row.headVerdict === "measured_nonzero" ? "measured_obstruction_recorded_after_change"
+        : row.baseVerdict === row.headVerdict ? "preexisting_recorded_row" : "other_transition";
+      if (row.transition !== expectedTransition) issues.push(issue(`${FILES.comparison}.verdictTransitions[${position}].transition`, "Comparison transition does not match its declared verdict pair and comparability.", expectedTransition, row.transition));
+    });
+    const transitions = documents.comparison.verdictTransitions || [];
+    const expectedConclusion = notComparable ? "RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA"
+      : transitions.some((row) => row?.transition === "measured_obstruction_recorded_after_change") ? "MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE"
+      : transitions.some((row) => row?.transition === "measured_obstruction_no_longer_recorded") ? "MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE"
+      : "NO_NEW_MEASURED_OBSTRUCTION_RECORDED";
+    if (documents.comparison.conclusionCode !== expectedConclusion) issues.push(issue(`${FILES.comparison}.conclusionCode`, "Comparison conclusionCode does not match its record transitions.", expectedConclusion, documents.comparison.conclusionCode));
   }
 }
 
@@ -575,6 +784,7 @@ export async function validateAnalysisBundle(documents, architectureIndex) {
   validateNormalizedReferences(documents.normalized, architectureIndex, bridges, unresolved);
   collectUnresolved(documents.packet, FILES.packet, architectureIndex, bridges, unresolved);
   collectUnresolved(documents.insight, FILES.insight, architectureIndex, bridges, unresolved);
+  validateFindingProvenance(documents, architectureIndex, bridges, unresolved);
   if (unresolved.length) throw new AnalysisValidationError("unresolved", unresolved);
 
   const packetDigest = await sha256Hex(documents.packet);
@@ -586,20 +796,114 @@ export async function validateAnalysisBundle(documents, architectureIndex) {
   if (documents.gate?.inputDigests?.measurementPacket?.sha256 && documents.gate.inputDigests.measurementPacket.sha256 !== packetDigest) {
     throw new AnalysisValidationError("mismatch", [issue(`${FILES.gate}.inputDigests.measurementPacket.sha256`, "Gate report packet digest does not match the loaded measurement packet.", packetDigest, documents.gate.inputDigests.measurementPacket.sha256)]);
   }
+  let comparisonSides = [];
   if (documents.comparison) {
     const runs = [documents.comparison.inputDigests?.baseRun, documents.comparison.inputDigests?.headRun].filter(isRecord);
     const comparisonShapeIssues = [];
     runs.forEach((run, position) => validateComparisonRun(run, `${FILES.comparison}.inputDigests.${position ? "headRun" : "baseRun"}`, comparisonShapeIssues));
     if (comparisonShapeIssues.length) throw new AnalysisValidationError("malformed", comparisonShapeIssues);
-    const compatible = runs.some((run) => run.runId === documents.manifest.runId && run.archmap?.sha256 === currentArchmapDigest && run.measurementPacket?.sha256 === packetDigest);
-    if (!compatible) throw new AnalysisValidationError("mismatch", [issue(`${FILES.comparison}.inputDigests`, "Comparison report does not bind either run to the loaded measurement run.")]);
+    const [baseRun, headRun] = runs;
+    const sameToolVersion = baseRun.toolVersion === headRun.toolVersion;
+    const sameArchmapDigest = baseRun.archmap?.sha256 === headRun.archmap?.sha256;
+    const sameLawPolicyDigest = baseRun.lawPolicy?.sha256 === headRun.lawPolicy?.sha256;
+    const sameProfileFingerprint = baseRun.profileFingerprint?.sha256 === headRun.profileFingerprint?.sha256;
+    const sameSiteCoverDigest = baseRun.siteCoverDigest?.sha256 === headRun.siteCoverDigest?.sha256;
+    const sameComponentFingerprints = canonicalJson(baseRun.componentFingerprints) === canonicalJson(headRun.componentFingerprints);
+    const sameLawSurfaceFingerprint = baseRun.componentFingerprints?.lawSurface !== undefined && baseRun.componentFingerprints?.lawSurface === headRun.componentFingerprints?.lawSurface;
+    const expectedComparability = sameToolVersion && sameArchmapDigest && sameLawPolicyDigest && sameProfileFingerprint && sameComponentFingerprints ? "identical"
+      : sameToolVersion && sameProfileFingerprint && sameSiteCoverDigest && sameLawSurfaceFingerprint && sameComponentFingerprints ? "verdict-row" : "not-comparable";
+    const comparisonConsistencyIssues = [];
+    if (documents.comparison.comparability.level !== expectedComparability) comparisonConsistencyIssues.push(issue(`${FILES.comparison}.comparability.level`, "Comparison comparability does not match its run digests.", expectedComparability, documents.comparison.comparability.level));
+    for (const [field, expected] of Object.entries({ sameToolVersion, sameArchmapDigest, sameLawPolicyDigest, sameProfileFingerprint, sameComponentFingerprints, sameLawSurfaceFingerprint, sameSiteCoverDigest })) {
+      if (documents.comparison.comparability[field] !== undefined && documents.comparison.comparability[field] !== expected) comparisonConsistencyIssues.push(issue(`${FILES.comparison}.comparability.${field}`, `Comparison ${field} does not match its run digests.`, expected, documents.comparison.comparability[field]));
+    }
+    if (comparisonConsistencyIssues.length) throw new AnalysisValidationError("mismatch", comparisonConsistencyIssues);
+    const compatibleSides = runs.map((run, position) => ({ run, side: position ? "head" : "base" })).filter(({ run }) => run.runId === documents.manifest.runId
+      && run.toolVersion === documents.manifest.toolVersion
+      && run.archmap?.sha256 === currentArchmapDigest
+      && run.lawPolicy?.sha256 === documents.manifest.inputDigests.lawPolicy.sha256
+      && run.profileFingerprint?.sha256 === documents.manifest.inputDigests.profileFingerprint.sha256
+      && run.siteCoverDigest?.sha256 === documents.manifest.inputDigests.siteCoverDigest.sha256
+      && canonicalJson(run.componentFingerprints) === canonicalJson(documents.manifest.componentFingerprints)
+      && run.measurementPacket?.sha256 === packetDigest);
+    if (!compatibleSides.length) throw new AnalysisValidationError("mismatch", [issue(`${FILES.comparison}.inputDigests`, "Comparison report does not bind either run to the loaded measurement run.")]);
+    if (documents.gate && !compatibleSides.some(({ side }) => side === "head")) throw new AnalysisValidationError("mismatch", [issue(`${FILES.comparison}.inputDigests.headRun`, "A gate-bound comparison must bind its complete head run to the loaded measurement run.")]);
+    comparisonSides = compatibleSides.map(({ side }) => side);
+    const verdictByRef = new Map(documents.packet.structuralVerdict.map((row) => [row.verdictRef, row]));
+    const verdictByKey = new Map(documents.packet.structuralVerdict.map((row) => [comparisonRowKey(row), row]));
+    const transitionByKey = new Map(documents.comparison.verdictTransitions.map((row) => [row.rowKey, row]));
+    const transitionIssues = [];
+    compatibleSides.forEach(({ side }) => {
+      verdictByKey.forEach((row, rowKey) => {
+        const transition = transitionByKey.get(rowKey);
+        if (!transition) transitionIssues.push(issue(`${FILES.comparison}.verdictTransitions`, `Comparison omits a ${side} structural verdict row from the loaded packet.`, rowKey, null));
+        else if (transition[`${side}RowRef`] !== row.verdictRef) transitionIssues.push(issue(`${FILES.comparison}.verdictTransitions.${rowKey}.${side}RowRef`, `Comparison ${side} row ref does not match the loaded packet row key.`, row.verdictRef, transition[`${side}RowRef`]));
+      });
+    });
+    if (compatibleSides.length === 2) documents.comparison.verdictTransitions.forEach((row, position) => {
+      if (!verdictByKey.has(row.rowKey)) transitionIssues.push(issue(`${FILES.comparison}.verdictTransitions[${position}].rowKey`, "Comparison contains a row outside both loaded packet sides.", null, row.rowKey));
+    });
+    documents.comparison.verdictTransitions.forEach((transition, position) => {
+      const path = `${FILES.comparison}.verdictTransitions[${position}]`;
+      compatibleSides.forEach(({ side }) => {
+        const rowRef = transition[`${side}RowRef`];
+        const declaredVerdict = transition[`${side}Verdict`];
+        if (rowRef === null || rowRef === undefined) {
+          if (declaredVerdict !== "absent") transitionIssues.push(issue(`${path}.${side}Verdict`, `Comparison ${side} verdict must be absent when its row ref is absent.`, "absent", declaredVerdict));
+          return;
+        }
+        const packetRow = verdictByRef.get(rowRef);
+        if (!packetRow) transitionIssues.push(issue(`${path}.${side}RowRef`, `Comparison ${side} row does not identify a structural verdict in the loaded packet.`, null, rowRef));
+        else if (packetRow.verdict !== declaredVerdict) transitionIssues.push(issue(`${path}.${side}Verdict`, `Comparison ${side} verdict does not match the loaded packet row.`, packetRow.verdict, declaredVerdict));
+      });
+      (transition.deltaRefs || []).forEach((delta, deltaPosition) => {
+        const belongsToLoadedSide = compatibleSides.some(({ side }) => delta.op === "modified" || (side === "base" && delta.op === "removed") || (side === "head" && delta.op === "added"));
+        if (belongsToLoadedSide && !resolves(delta.id, delta.kind, architectureIndex, bridges)) transitionIssues.push(issue(`${path}.deltaRefs[${deltaPosition}].id`, `Comparison delta does not resolve on the loaded run side.`, null, delta.id));
+      });
+    });
+    if (transitionIssues.length) throw new AnalysisValidationError("mismatch", transitionIssues);
   }
   const comparisonDigest = documents.comparison ? await sha256Hex(documents.comparison) : null;
   const gateComparisonDigest = documents.gate?.inputDigests?.comparisonReport;
   if (documents.gate && documents.comparison) {
     if (!isRecord(gateComparisonDigest) || gateComparisonDigest.sha256 !== comparisonDigest) throw new AnalysisValidationError("mismatch", [issue(`${FILES.gate}.inputDigests.comparisonReport`, "Gate report comparison digest does not match the loaded comparison report.", comparisonDigest, gateComparisonDigest?.sha256)]);
+    if (documents.comparison.inputDigests.headRun.measurementPacket.sha256 !== packetDigest) throw new AnalysisValidationError("mismatch", [issue(`${FILES.comparison}.inputDigests.headRun.measurementPacket.sha256`, "A gate-bound comparison must identify the loaded packet as its head run.", packetDigest, documents.comparison.inputDigests.headRun.measurementPacket.sha256)]);
   } else if (isRecord(gateComparisonDigest)) {
     throw new AnalysisValidationError("mismatch", [issue(`${FILES.gate}.inputDigests.comparisonReport`, "Gate report references a comparison report that was not loaded.")]);
+  }
+  if (documents.gate && documents.gate.decision !== "NOT_EVALUABLE") {
+    const gateIssues = [];
+    const verdictByRef = new Map(gateVerdictRows(documents.packet).map((row) => [row.verdictRef, row]));
+    const transitionByKey = new Map((documents.comparison?.verdictTransitions || []).map((row) => [row.rowKey, row]));
+    const violatedAssumptions = new Set((documents.packet.assumptions || []).filter((row) => row.status === "violated").map((row) => row.assumptionId));
+    (documents.gate.ruleOutcomes || []).forEach((outcome, outcomePosition) => {
+      if (outcome.status !== "evaluated") return;
+      const mappings = outcome.appliedMapping || [];
+      const path = `${FILES.gate}.ruleOutcomes[${outcomePosition}].appliedMapping`;
+      const mappingIds = mappings.map((mapping) => outcome.scope === "absolute" ? mapping.rowRef : mapping.rowKey);
+      if (new Set(mappingIds).size !== mappingIds.length) gateIssues.push(issue(path, "Gate outcome mappings must identify each row exactly once.", null, mappingIds));
+      if (outcome.scope === "absolute" && mappings.length !== verdictByRef.size) gateIssues.push(issue(path, "An absolute gate outcome must map every producer gate row.", verdictByRef.size, mappings.length));
+      if (outcome.scope === "introduced-by-change" && mappings.length !== transitionByKey.size) gateIssues.push(issue(path, "An introduced-by-change outcome must map every loaded comparison transition.", transitionByKey.size, mappings.length));
+      mappings.forEach((mapping, mappingPosition) => {
+        if (outcome.scope === "absolute") {
+          const row = verdictByRef.get(mapping.rowRef);
+          if (!row) gateIssues.push(issue(`${path}[${mappingPosition}].rowRef`, "Gate mapping does not identify a producer gate row.", null, mapping.rowRef));
+          else if (mapping.verdict !== row.verdict) gateIssues.push(issue(`${path}[${mappingPosition}].verdict`, "Gate mapping verdict does not match its loaded structural verdict.", row.verdict, mapping.verdict));
+          else {
+            const expectedMappingKey = (row.dependsOnAssumptions || []).some((ref) => violatedAssumptions.has(ref)) ? "violated_assumption_dependency" : row.verdict;
+            if (mapping.mappingKey !== expectedMappingKey) gateIssues.push(issue(`${path}[${mappingPosition}].mappingKey`, "Gate mapping key does not match the producer row classification.", expectedMappingKey, mapping.mappingKey));
+          }
+        } else if (outcome.scope === "introduced-by-change") {
+          const transition = transitionByKey.get(mapping.rowKey);
+          if (!transition) gateIssues.push(issue(`${path}[${mappingPosition}].rowKey`, "Gate mapping does not identify a loaded comparison transition.", null, mapping.rowKey));
+          else {
+            if (mapping.transition !== transition.transition) gateIssues.push(issue(`${path}[${mappingPosition}].transition`, "Gate mapping transition does not match the comparison report.", transition.transition, mapping.transition));
+            if (mapping.mappingKey !== transition.introducedByChangeCategory) gateIssues.push(issue(`${path}[${mappingPosition}].mappingKey`, "Gate mapping key does not match the comparison category.", transition.introducedByChangeCategory, mapping.mappingKey));
+          }
+        }
+      });
+    });
+    if (gateIssues.length) throw new AnalysisValidationError("mismatch", gateIssues);
   }
   const acceptedBridges = Object.freeze(Object.fromEntries(Object.entries(bridges).map(([kind, map]) => [kind, readonlyMap(map)])));
   return deepFreeze({
@@ -608,6 +912,7 @@ export async function validateAnalysisBundle(documents, architectureIndex) {
     profileRef: documents.summary.profileRef,
     archmapDigest: currentArchmapDigest,
     packetDigest,
+    comparisonSides,
     bridges: acceptedBridges,
     artifacts: Object.fromEntries(Object.entries(documents).filter(([, value]) => value !== undefined)),
   });

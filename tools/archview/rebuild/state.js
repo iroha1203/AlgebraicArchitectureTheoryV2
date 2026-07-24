@@ -10,6 +10,7 @@ const initialState = Object.freeze({
   cover: null,
   zoom: "cover",
   selection: null,
+  finding: null,
   architecture: Object.freeze({ status: "idle", index: null, issues: Object.freeze([]), source: null }),
   analysis: Object.freeze({ status: "absent", bundle: null, issues: Object.freeze([]), source: null }),
   error: null,
@@ -58,7 +59,7 @@ export function createArchViewState() {
       return publish();
     },
     architectureLoading(source) {
-      state = { ...state, architecture: Object.freeze({ status: "loading", index: null, issues: Object.freeze([]), source }), analysis: Object.freeze({ status: "absent", bundle: null, issues: Object.freeze([]), source: null }) };
+      state = { ...state, finding: null, architecture: Object.freeze({ status: "loading", index: null, issues: Object.freeze([]), source }), analysis: Object.freeze({ status: "absent", bundle: null, issues: Object.freeze([]), source: null }) };
       return publish();
     },
     architectureLoaded(index, source) {
@@ -70,6 +71,7 @@ export function createArchViewState() {
         cover: index.covers[0]?.id || null,
         zoom: index.covers.length ? "cover" : "context",
         selection: null,
+        finding: null,
         architecture: Object.freeze({ status, index, issues: index.unresolved, source }),
         analysis: Object.freeze({ status: "absent", bundle: null, issues: Object.freeze([]), source: null }),
       };
@@ -84,23 +86,29 @@ export function createArchViewState() {
         cover: null,
         zoom: "cover",
         selection: null,
+        finding: null,
         architecture: Object.freeze({ status: "error", index: null, issues: Object.freeze(issues), source }),
         analysis: Object.freeze({ status: "absent", bundle: null, issues: Object.freeze([]), source: null }),
       };
       return publish();
     },
     analysisLoading(source) {
-      state = { ...state, analysis: Object.freeze({ status: "loading", bundle: null, issues: Object.freeze([]), source }) };
+      state = { ...state, finding: null, analysis: Object.freeze({ status: "loading", bundle: null, issues: Object.freeze([]), source }) };
       return publish();
     },
     analysisAccepted(bundle, source) {
-      state = { ...state, analysis: Object.freeze({ status: "accepted", bundle, issues: Object.freeze([]), source }) };
+      state = { ...state, finding: null, analysis: Object.freeze({ status: "accepted", bundle, issues: Object.freeze([]), source }) };
       return publish();
     },
     analysisRejected(error, source) {
       const status = ["malformed", "mismatch", "unresolved"].includes(error?.status) ? error.status : "malformed";
       const issues = Array.isArray(error?.issues) ? error.issues : [{ path: "$", message: error instanceof Error ? error.message : String(error) }];
-      state = { ...state, analysis: Object.freeze({ status, bundle: null, issues: Object.freeze(issues), source }) };
+      state = { ...state, finding: null, analysis: Object.freeze({ status, bundle: null, issues: Object.freeze(issues), source }) };
+      return publish();
+    },
+    selectFinding(findingId) {
+      if (state.analysis.status !== "accepted" || typeof findingId !== "string" || !findingId) throw new Error(`Unknown finding selection: ${findingId}`);
+      state = { ...state, mode: state.mode === "architecture" ? "analysis" : state.mode, finding: findingId, selection: null };
       return publish();
     },
     selectCover(coverId) {
@@ -130,11 +138,11 @@ export function createArchViewState() {
       state = { ...state, zoom: "atom", selection: Object.freeze({ kind: "atom", id: atomId, contextId }) };
       return publish();
     },
-    selectSource(sourceId, atomId = null, contextId = null) {
+    selectSource(sourceId, atomId = null, contextId = null, sourceTargetKey = null) {
       const index = state.architecture.index;
       if (!index?.sourcesById.has(sourceId)) throw new Error(`Unknown Source selection: ${sourceId}`);
       if (atomId && !index.atomsById.has(atomId)) throw new Error(`Unknown Atom source owner: ${atomId}`);
-      state = { ...state, zoom: "source", selection: Object.freeze({ kind: "source", id: sourceId, atomId, contextId }) };
+      state = { ...state, zoom: "source", selection: Object.freeze({ kind: "source", id: sourceId, atomId, contextId, sourceTargetKey }) };
       return publish();
     },
     selectRestriction(sourceId, targetId) {
