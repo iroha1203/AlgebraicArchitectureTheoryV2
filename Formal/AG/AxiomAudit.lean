@@ -10567,11 +10567,11 @@ def sagaMSemRestrictComp :=
   @SemanticRepair.Saga.SemanticRepairPresentation.mSemRestrict_comp
 
 /-- Kernel-audit alias for the Proposition 3.3 presheaf packaging of `M_sem`. -/
-def sagaMSemPresheaf :=
+noncomputable def sagaMSemPresheaf :=
   @SemanticRepair.Saga.SemanticRepairPresentation.mSemPresheaf
 
 /-- Kernel-audit alias for the Definition 3.4 semantic complex. -/
-def sagaSemanticComplex :=
+noncomputable def sagaSemanticComplex :=
   @SemanticRepair.Saga.SemanticRepairPresentation.semanticComplex
 
 /-- Kernel-audit alias for the ordered-tuple `δ¹δ⁰ = 0`. -/
