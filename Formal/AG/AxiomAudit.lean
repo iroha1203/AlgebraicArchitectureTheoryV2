@@ -10544,6 +10544,100 @@ def evolutionPart9PolicyGeneratedDissipationTerminalAtTwo :=
 def evolutionPart9PolicyGeneratedDissipationTerminalArrival :=
   Examples.EvolutionPart9.policy_generated_dissipation_reaches_terminal
 
+/-! ## Part X SAGA route (Issue #3757, C1 #3762) -/
+
+/-- Kernel-audit alias for thin-model monomorphy of context morphisms. -/
+def sagaMonoOfContextHom :=
+  @SemanticRepair.Saga.mono_of_contextHom
+
+/-- Kernel-audit alias for the canonical cover constructor from the overlap package. -/
+def sagaOfOverlapPackage :=
+  @SemanticRepair.Saga.MonomorphicOrderedCover.ofOverlapPackage
+
+/-- Kernel-audit alias for Part X Lemma 2.2 (`δ¹δ⁰ = 0`). -/
+def sagaDelta1Delta0 :=
+  @SemanticRepair.Saga.delta1_delta0
+
+/-- Kernel-audit alias for Proposition 3.3 identity law of the `M_sem` restriction. -/
+def sagaMSemRestrictId :=
+  @SemanticRepair.Saga.SemanticRepairPresentation.mSemRestrict_id
+
+/-- Kernel-audit alias for Proposition 3.3 composition law of the `M_sem` restriction. -/
+def sagaMSemRestrictComp :=
+  @SemanticRepair.Saga.SemanticRepairPresentation.mSemRestrict_comp
+
+/-- Kernel-audit alias for the Proposition 3.3 presheaf packaging of `M_sem`. -/
+noncomputable def sagaMSemPresheaf :=
+  @SemanticRepair.Saga.SemanticRepairPresentation.mSemPresheaf
+
+/-- Kernel-audit alias for the Definition 3.4 semantic complex. -/
+noncomputable def sagaSemanticComplex :=
+  @SemanticRepair.Saga.SemanticRepairPresentation.semanticComplex
+
+/-- Kernel-audit alias for the ordered-tuple `δ¹δ⁰ = 0`. -/
+def sagaOrdDelta1OrdDelta0 :=
+  @SemanticRepair.Saga.ordDelta1_ordDelta0
+
+/-- Kernel-audit alias for the Lemma 2.1A normal-form cocycle master lemma. -/
+def sagaOrdDelta1EqZeroOfNormalForm :=
+  @SemanticRepair.Saga.ordDelta1_eq_zero_of_normalForm
+
+/-- Kernel-audit alias for the Lemma 2.1A injectivity of increasing restriction. -/
+def sagaCocycleEqZeroOfRestrictEqZero :=
+  @SemanticRepair.Saga.cocycle_eq_zero_of_restrict_eq_zero
+
+/-- Kernel-audit alias for the Lemma 2.1A antisymmetric extension cocycle theorem. -/
+def sagaExtend1Cocycle :=
+  @SemanticRepair.Saga.extend1_cocycle
+
+/-- Kernel-audit alias for extension of increasing coboundaries. -/
+def sagaExtend1Delta0 :=
+  @SemanticRepair.Saga.extend1_delta0
+
+/-- Kernel-audit alias for the cochain-level left inverse of the extension. -/
+def sagaRestrictCochain1Extend1 :=
+  @SemanticRepair.Saga.restrictCochain1_extend1
+
+/-- Kernel-audit alias for the cocycle-level right inverse of the extension. -/
+def sagaExtend1RestrictCochain1 :=
+  @SemanticRepair.Saga.extend1_restrictCochain1
+
+/-- Kernel-audit alias for the Lemma 2.1A `H¹` inverse law (tuple side). -/
+def sagaIncToOrdOrdToInc :=
+  @SemanticRepair.Saga.incToOrd_ordToInc
+
+/-- Kernel-audit alias for the Lemma 2.1A `H¹` inverse law (increasing side). -/
+def sagaOrdToIncIncToOrd :=
+  @SemanticRepair.Saga.ordToInc_incToOrd
+
+/-- Kernel-audit alias for the Lemma 2.1A `H¹` zero-class transfer. -/
+def sagaOrdToIncH1ZeroIff :=
+  @SemanticRepair.Saga.ordToIncH1_zero_iff
+
+/-- Kernel-audit alias for the Lemma 2.1A matching-family clause. -/
+def sagaMatchingFamilyIff :=
+  @SemanticRepair.Saga.SiteStateData.matchingFamily_iff
+
+/-- Kernel-audit alias for the generated Part IV tuple Čech complex. -/
+def sagaToTupleCechComplex :=
+  @SemanticRepair.Saga.MonomorphicOrderedCover.toTupleCechComplex
+
+/-- Kernel-audit alias for the degree-one spine identification with the Part IV complex. -/
+def sagaDegreeOneThreeTermToTupleCechComplex :=
+  @SemanticRepair.Saga.MonomorphicOrderedCover.degreeOneThreeTerm_toTupleCechComplex
+
+/-- Kernel-audit alias for the Part IV `H¹` inverse law (cover-relative side). -/
+def sagaIncToCoverRelativeCoverRelativeToInc :=
+  @SemanticRepair.Saga.MonomorphicOrderedCover.incToCoverRelative_coverRelativeToInc
+
+/-- Kernel-audit alias for the Part IV `H¹` inverse law (increasing side). -/
+def sagaCoverRelativeToIncIncToCoverRelative :=
+  @SemanticRepair.Saga.MonomorphicOrderedCover.coverRelativeToInc_incToCoverRelative
+
+/-- Kernel-audit alias for the Part IV `H¹` zero-class transfer. -/
+def sagaCoverRelativeToIncH1ZeroIff :=
+  @SemanticRepair.Saga.MonomorphicOrderedCover.coverRelativeToIncH1_zero_iff
+
 
 end AAT.AG.AxiomAudit
 
