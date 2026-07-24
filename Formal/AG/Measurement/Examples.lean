@@ -4074,13 +4074,13 @@ noncomputable def transferRepairPath :
     SupportLocalizedRepairPath
       finiteComputabilityConflictPackage.lawConflictMeasurement where
   RepairPath := Unit
-  RepairDirection := Unit
+  RepairDirection := Bool
   selectedRepairPath := ()
-  selectedRepairDirection := ()
-  pathImage := fun _ =>
-    {finiteComputabilityConflictRealization.selectedSupport}
-  directionSupport := fun _ =>
-    {finiteComputabilityConflictRealization.selectedSupport}
+  selectedRepairDirection := true
+  pathImage := fun _ => ∅
+  directionSupport
+    | true => {finiteComputabilityConflictRealization.selectedSupport}
+    | false => ∅
   conflictSupport := fun conflictClass =>
     {support |
       finiteComputabilityConflictRealization.supportRelation
@@ -4106,72 +4106,159 @@ theorem transferRepairPath_supportLocalized :
   transferRepairPath.supportLocalized_of_direction
     transferRepairPath_direction_intersects
 
-/-- R11(f): finite pairing with a nontrivial selected residue. -/
+/-- R11(f): the actual selected conflict support is nonempty. -/
+theorem finiteComputabilityConflictRealization_selectedSupport_ne_empty :
+    finiteComputabilityConflictRealization.selectedSupport ≠
+      (∅ : Finset SquareFreeSupportVertex) := by
+  letI := computabilityFiniteMeasurementRegime.witnessDecidableEq
+  letI := computabilityFiniteMeasurementRegime.geometry.coeffCommRing
+  change finiteComputabilityExampleData.selectedClassSupport ≠ ∅
+  rw [← finiteComputabilityExamplePackage.conflictSupport_eq_selectedClassSupport,
+    finiteComputabilityExample_combinatoricsRoute]
+  simp [forbiddenSupportPFinset]
+
+/-- R11(f): finite pairing selected by direction membership and the actual
+computed support relation of the supplied conflict class. -/
 noncomputable def transferPairing :
+    TransferMeasurementPairing transferRepairPath := by
+  classical
+  exact {
+    TransferResidue := TransferResidueFlag
+    NormValue := Unit
+    zeroResidue := TransferResidueFlag.zero
+    NontrivialResidue := fun residue =>
+      residue = TransferResidueFlag.nontrivial
+    norm := fun _ => ()
+    pairing := fun direction conflictClass =>
+      if finiteComputabilityConflictRealization.selectedSupport ∈
+            transferRepairPath.directionSupport direction ∧
+          finiteComputabilityConflictRealization.supportRelation
+            conflictClass finiteComputabilityConflictRealization.selectedSupport then
+        TransferResidueFlag.nontrivial
+      else
+        TransferResidueFlag.zero
+  }
+
+/-- R11(f): evaluating the concrete pairing yields the nontrivial residue
+flag. -/
+theorem transferPairing_selected_nontrivial :
+    transferPairing.NontrivialResidue transferPairing.selectedResidue :=
+  by
+    classical
+    simp [TransferMeasurementPairing.selectedResidue, transferPairing,
+      transferRepairPath]
+    change
+      finiteComputabilityConflictRealization.supportRelation
+        finiteComputabilityExampleData.selectedConflictClass
+        finiteComputabilityConflictRealization.selectedSupport
+    exact finiteComputabilityConflictRealization.selectedSupport_holds
+
+/-- R11(f): the unselected repair direction has zero transfer residue. -/
+theorem transferPairing_unselectedDirection_zero :
+    transferPairing.pairing false
+        finiteComputabilityExampleData.selectedConflictClass =
+      TransferResidueFlag.zero := by
+  classical
+  simp [transferPairing, transferRepairPath]
+
+/-- R11(f): the zero conflict class has zero transfer residue even along the
+selected direction. -/
+theorem transferPairing_zeroConflict_zero :
+    transferPairing.pairing true finiteComputabilityMeasuredZeroConflict =
+      TransferResidueFlag.zero := by
+  classical
+  have hnot :
+      ¬ finiteComputabilityConflictRealization.supportRelation
+        finiteComputabilityMeasuredZeroConflict
+        finiteComputabilityConflictRealization.selectedSupport := by
+    intro h
+    exact finiteComputabilityConflictRealization_selectedSupport_ne_empty
+      (finiteComputabilityConflictRealization.supportRelation_zero h)
+  simp [transferPairing, transferRepairPath, hnot]
+
+/-- R11(f): theorem 10.3 instantiated on the finite transfer fixture. -/
+theorem supportTransferExamplePackage :
+    SupportLocalizedTransfer transferPairing :=
+  supportLocalizedTransferPackage transferPairing
+    transferRepairPath_supportLocalized
+    transferPairing_selected_nontrivial
+
+/-- R11(f): the actual support intersection and support-sensitive pairing
+construct a nontrivial selected transfer result. -/
+theorem supportTransferExample_nontrivialTransferredResidue :
+    transferPairing.selectedDirectionNontrivialResidue :=
+  SupportLocalizedTransfer.nontrivial_transferred_residue_of_pairing
+    supportTransferExamplePackage
+
+/-- R11(f): zero pairing on the same localized repair data. -/
+noncomputable def transferZeroPairing :
     TransferMeasurementPairing transferRepairPath where
   TransferResidue := TransferResidueFlag
   NormValue := Unit
   zeroResidue := TransferResidueFlag.zero
   NontrivialResidue := fun residue => residue = TransferResidueFlag.nontrivial
   norm := fun _ => ()
-  pairing := fun _ _ => TransferResidueFlag.nontrivial
+  pairing := fun _ _ => TransferResidueFlag.zero
 
-/-- R11(f): evaluating the concrete pairing yields the nontrivial residue
-flag. -/
-theorem transferPairing_selected_nontrivial :
-    transferPairing.NontrivialResidue transferPairing.selectedResidue :=
-  rfl
+/-- R11(f): the zero pairing cannot construct a nontrivial selected transfer
+result, providing the negative instance for theorem 10.3. -/
+theorem transferZeroPairing_not_nontrivialTransferredResidue :
+    ¬ transferZeroPairing.selectedDirectionNontrivialResidue := by
+  intro h
+  rcases h with ⟨result, hNontrivial⟩
+  have hzero : result.residue = TransferResidueFlag.zero := by
+    calc
+      result.residue =
+          transferZeroPairing.pairing
+            transferRepairPath.selectedRepairDirection
+            finiteComputabilityConflictPackage.lawConflictMeasurement.selectedConflictClass :=
+        result.residue_eq_pairing
+      _ = TransferResidueFlag.zero := rfl
+  change result.residue = TransferResidueFlag.nontrivial at hNontrivial
+  have hbad :
+      TransferResidueFlag.zero = TransferResidueFlag.nontrivial :=
+    hzero.symm.trans hNontrivial
+  cases hbad
 
-/-- R11(f): theorem 10.3 instantiated on the finite transfer fixture. -/
-theorem supportTransferExamplePackage :
-    SupportLocalizedTransfer transferPairing :=
-  supportLocalizedTransferPackage transferPairing
+/-- R11(f): the theorem-10.3 conclusion fails for the zero pairing. -/
+theorem transferZeroPairing_not_supportLocalizedTransfer :
+    ¬ SupportLocalizedTransfer transferZeroPairing := by
+  simpa [SupportLocalizedTransfer] using
+    transferZeroPairing_not_nontrivialTransferredResidue
 
-/-- R11(f): finite data exposed by the support-localized transfer fixture. -/
+/-- R11(f): data-only snapshot of the actual selected support, direction, and
+computed pairing residue used by the finite transfer fixture. -/
 structure SupportLocalizedTransferFiniteExample where
-  pairingCarrier : Type
   selectedSupport : Finset SquareFreeSupportVertex
+  selectedDirection : Bool
   selectedResidue : TransferResidueFlag
-  transferredResidue : TransferResidueFlag
 
-/-- R11(f): nontrivial finite pairing residue transfers to a nontrivial residue. -/
+/-- R11(f): expose only values derived from the actual finite transfer
+construction; theorem evidence remains in separate declarations. -/
 noncomputable def supportLocalizedTransferFiniteExample :
     SupportLocalizedTransferFiniteExample where
-  pairingCarrier := Unit
   selectedSupport := finiteComputabilityConflictRealization.selectedSupport
-  selectedResidue := TransferResidueFlag.nontrivial
-  transferredResidue := TransferResidueFlag.nontrivial
+  selectedDirection := transferRepairPath.selectedRepairDirection
+  selectedResidue := transferPairing.selectedResidue
 
-/-- R11(f): the fixture's selected pairing residue is the computed pairing
+/-- R11(f): the snapshot uses the support computed from the actual conflict. -/
+theorem supportTransferExample_selectedSupport_eq_computed :
+    supportLocalizedTransferFiniteExample.selectedSupport =
+      finiteComputabilityConflictRealization.selectedSupport :=
+  rfl
+
+/-- R11(f): the snapshot uses the actual selected repair direction. -/
+theorem supportTransferExample_selectedDirection_eq_selected :
+    supportLocalizedTransferFiniteExample.selectedDirection =
+      transferRepairPath.selectedRepairDirection :=
+  rfl
+
+/-- R11(f): the snapshot residue is the actual support-sensitive pairing
 value. -/
 theorem supportTransferExample_selectedResidue_eq_pairing :
     supportLocalizedTransferFiniteExample.selectedResidue =
       transferPairing.selectedResidue :=
   rfl
-
-/-- R11(f): the fixture's transferred residue is the computed pairing value. -/
-theorem supportTransferExample_transferredResidue_eq_pairing :
-    supportLocalizedTransferFiniteExample.transferredResidue =
-      transferPairing.selectedResidue :=
-  rfl
-
-/-- R11(f): the actual selected residue satisfies the nontrivial predicate. -/
-theorem supportTransferExample_nontrivialSelectedResidue :
-    transferPairing.NontrivialResidue
-      supportLocalizedTransferFiniteExample.selectedResidue :=
-  rfl
-
-/-- R11(f): the actual transferred residue satisfies the selected nontrivial
-predicate. -/
-theorem supportTransferExample_nontrivialTransferredResidue :
-    transferPairing.NontrivialResidue
-      supportLocalizedTransferFiniteExample.transferredResidue := by
-  have h :=
-    supportTransferExamplePackage
-      transferRepairPath_supportLocalized
-      transferPairing_selected_nontrivial
-  simpa [TransferMeasurementPairing.selectedDirectionNontrivialResidue,
-    supportLocalizedTransferFiniteExample] using h
 
 /-- R11(g): finite computed-invariant handles for the packet fixture. -/
 def packetComputedInvariants :
@@ -5147,13 +5234,18 @@ def PartVIIIFiniteExampleSuite.CoversR11 (S : PartVIIIFiniteExampleSuite) : Prop
                       S.cellularHodge.kerL1_equiv_H1 ∧
                         S.cellularHodge.harmonicDebtMinimal ∧
                           transferRepairPath.SupportLocalized ∧
-                            transferPairing.NontrivialResidue
-                              S.supportTransfer.selectedResidue ∧
-                              transferPairing.NontrivialResidue
-                                S.supportTransfer.transferredResidue ∧
-                                aatGAGAComparisonStatement
-                                  gagaComparisonExampleData ∧
-                                  S.staticFixturesReusableForPartIX
+                            S.supportTransfer.selectedSupport =
+                              finiteComputabilityConflictRealization.selectedSupport ∧
+                              S.supportTransfer.selectedDirection =
+                                transferRepairPath.selectedRepairDirection ∧
+                                S.supportTransfer.selectedResidue =
+                                  transferPairing.selectedResidue ∧
+                                  SupportLocalizedTransfer transferPairing ∧
+                                    (¬ SupportLocalizedTransfer
+                                      transferZeroPairing) ∧
+                                      aatGAGAComparisonStatement
+                                        gagaComparisonExampleData ∧
+                                        S.staticFixturesReusableForPartIX
 
 /-- R11 / AC25: all requested finite example families are fully certified. -/
 theorem partVIIIFiniteExampleSuite_complete :
@@ -5174,8 +5266,11 @@ theorem partVIIIFiniteExampleSuite_complete :
     partVIIIFiniteExampleSuite.cellularHodge.kerL1_equiv_H1_cert,
     partVIIIFiniteExampleSuite.cellularHodge.harmonicDebtMinimal_cert,
     transferRepairPath_supportLocalized,
-    supportTransferExample_nontrivialSelectedResidue,
-    supportTransferExample_nontrivialTransferredResidue,
+    supportTransferExample_selectedSupport_eq_computed,
+    supportTransferExample_selectedDirection_eq_selected,
+    supportTransferExample_selectedResidue_eq_pairing,
+    supportTransferExamplePackage,
+    transferZeroPairing_not_supportLocalizedTransfer,
     partVIIIFiniteExampleSuite.packetGAGA.certifiedComparison,
     partVIIIFiniteExampleSuite.staticFixturesReusableForPartIX_cert⟩
 

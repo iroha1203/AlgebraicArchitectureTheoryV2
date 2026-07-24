@@ -1598,9 +1598,9 @@ structure AATGAGANonConclusionData (M : MeasurementProfile.{u, v}) where
   noExternalProcedureCorrectness : Prop
   /-- Witness for the recorded external-procedure silence. -/
   noExternalProcedureCorrectness_cert : noExternalProcedureCorrectness
-  /-- Recorded silence: no comparison claim over arbitrary law universes. -/
+  /-- Recorded silence: no comparison claim over arbitrary equation handles. -/
   noArbitraryEquationHandleComparison : Prop
-  /-- Witness for the recorded law-universe silence. -/
+  /-- Witness for the recorded equation-handle comparison silence. -/
   noArbitraryEquationHandleComparison_cert :
     noArbitraryEquationHandleComparison
   /-- Recorded silence: candidate-dependent fields carry no certified conclusion. -/

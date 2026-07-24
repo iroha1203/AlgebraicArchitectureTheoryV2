@@ -10048,8 +10048,29 @@ def issue3735ComputedSelectedSupport :=
 def issue3735ComputedSupportIntersection :=
   @AAT.AG.Measurement.transferRepairPath_direction_intersects
 
+def issue3735ComputedSelectedSupportNonempty :=
+  @AAT.AG.Measurement.finiteComputabilityConflictRealization_selectedSupport_ne_empty
+
 def issue3735SupportLocalizedTransfer :=
+  @AAT.AG.Measurement.supportTransferExample_nontrivialTransferredResidue
+
+def issue3735SelectedTransferResiduePairingValue :=
+  @AAT.AG.Measurement.TransferMeasurementPairing.SelectedTransferResidue.residue_eq_selectedResidue
+
+def issue3735SupportLocalizedTransferConstructor :=
+  @AAT.AG.Measurement.supportLocalizedTransferPackage
+
+def issue3735SupportLocalizedTransferPackage :=
   @AAT.AG.Measurement.supportTransferExamplePackage
+
+def issue3735SupportSensitiveTransferUnselectedDirection :=
+  @AAT.AG.Measurement.transferPairing_unselectedDirection_zero
+
+def issue3735SupportSensitiveTransferZeroConflict :=
+  @AAT.AG.Measurement.transferPairing_zeroConflict_zero
+
+def issue3735SupportLocalizedTransferZeroPairingNegative :=
+  @AAT.AG.Measurement.transferZeroPairing_not_supportLocalizedTransfer
 
 def issue3735ConflictComputedLeftIdealAmbient :=
   @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_leftLawIdeal

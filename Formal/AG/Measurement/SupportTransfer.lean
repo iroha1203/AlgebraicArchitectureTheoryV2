@@ -134,15 +134,59 @@ def ZeroResidue {M : MeasurementProfile.{u, v}}
     P.TransferResidue -> Prop :=
   fun residue => residue = P.zeroResidue
 
-/-- The selected direction has a nontrivial transfer residue precisely when
-the fixed predicate holds of the computed pairing value. -/
+/--
+VIII.Theorem 10.3 result data for the selected support-localized transfer.
+
+The result retains an actual support point shared by the selected repair
+source and selected conflict support, together with the residue computed by
+the selected pairing. Nontriviality is deliberately not stored here; it is
+the separate theorem conclusion.
+
+Implementation notes: the support point prevents the transfer result from
+being reconstructed from a residue alone, while `residue_eq_pairing` connects
+the result to Definition 10.2 rather than accepting an unrelated residue.
+-/
+structure SelectedTransferResidue
+    {M : MeasurementProfile.{u, v}}
+    {R : Type w} [CommRing R] {I_U I_V : Ideal R}
+    {A : CommonAmbientPair M R I_U I_V}
+    {L : LawConflictMeasurement A}
+    {S : SupportLocalizedRepairPath L}
+    (P : TransferMeasurementPairing S) where
+  supportPoint : A.SupportCarrier
+  supportPointOnSelectedRepair :
+    supportPoint ∈ S.pathImage S.selectedRepairPath ∨
+      supportPoint ∈ S.directionSupport S.selectedRepairDirection
+  supportPointInSelectedConflict :
+    supportPoint ∈ S.conflictSupport L.selectedConflictClass
+  residue : P.TransferResidue
+  residue_eq_pairing :
+    residue =
+      P.pairing S.selectedRepairDirection L.selectedConflictClass
+
+/-- The selected direction has a nontrivial transferred residue when an
+actual support-localized result has been constructed and its computed residue
+satisfies the fixed nontriviality predicate. -/
 def selectedDirectionNontrivialResidue {M : MeasurementProfile.{u, v}}
     {R : Type w} [CommRing R] {I_U I_V : Ideal R}
     {A : CommonAmbientPair M R I_U I_V}
     {L : LawConflictMeasurement A}
     {S : SupportLocalizedRepairPath L}
     (P : TransferMeasurementPairing S) : Prop :=
-  P.NontrivialResidue P.selectedResidue
+  ∃ result : SelectedTransferResidue P,
+    P.NontrivialResidue result.residue
+
+/-- Every selected transfer result records the actual selected pairing value. -/
+theorem SelectedTransferResidue.residue_eq_selectedResidue
+    {M : MeasurementProfile.{u, v}}
+    {R : Type w} [CommRing R] {I_U I_V : Ideal R}
+    {A : CommonAmbientPair M R I_U I_V}
+    {L : LawConflictMeasurement A}
+    {S : SupportLocalizedRepairPath L}
+    {P : TransferMeasurementPairing S}
+    (result : SelectedTransferResidue P) :
+    result.residue = P.selectedResidue := by
+  simpa [selectedResidue] using result.residue_eq_pairing
 
 /-- The selected residue equation follows from its definition. -/
 theorem selectedResidue_eq_pairing {M : MeasurementProfile.{u, v}}
@@ -160,9 +204,9 @@ end TransferMeasurementPairing
 /--
 VIII.Theorem 10.3: support-localized transfer theorem package.
 
-The theorem is conditional on an actual support intersection and on the
-computed pairing residue satisfying the fixed nontriviality predicate. Its
-conclusion is the derived selected-direction reading.
+The proposition records the existence of a support-localized result whose
+actual pairing value is nontrivial. The construction theorem below consumes
+both the support intersection and the computed pairing nontriviality.
 -/
 def SupportLocalizedTransfer
     {M : MeasurementProfile.{u, v}}
@@ -171,9 +215,7 @@ def SupportLocalizedTransfer
     {L : LawConflictMeasurement A}
     {S : SupportLocalizedRepairPath L}
     (P : TransferMeasurementPairing S) : Prop :=
-  S.SupportLocalized ->
-    P.NontrivialResidue P.selectedResidue ->
-      P.selectedDirectionNontrivialResidue
+  P.selectedDirectionNontrivialResidue
 
 namespace SupportLocalizedTransfer
 
@@ -184,11 +226,9 @@ theorem nontrivial_transferred_residue_of_pairing {M : MeasurementProfile.{u, v}
     {A : CommonAmbientPair M R I_U I_V}
     {L : LawConflictMeasurement A}
     {S : SupportLocalizedRepairPath L} {P : TransferMeasurementPairing S}
-    (T : SupportLocalizedTransfer P)
-    (hLocalized : S.SupportLocalized)
-    (hNontrivial : P.NontrivialResidue P.selectedResidue) :
+    (T : SupportLocalizedTransfer P) :
     P.selectedDirectionNontrivialResidue :=
-  T hLocalized hNontrivial
+  T
 
 end SupportLocalizedTransfer
 
@@ -199,10 +239,30 @@ theorem supportLocalizedTransferPackage {M : MeasurementProfile.{u, v}}
     {A : CommonAmbientPair M R I_U I_V}
     {L : LawConflictMeasurement A}
     {S : SupportLocalizedRepairPath L}
-    (P : TransferMeasurementPairing S) :
+    (P : TransferMeasurementPairing S)
+    (hLocalized : S.SupportLocalized)
+    (hNontrivial : P.NontrivialResidue P.selectedResidue) :
     SupportLocalizedTransfer P := by
-  intro _ hNontrivial
-  exact hNontrivial
+  unfold SupportLocalizedTransfer
+  rcases hLocalized with hPath | hDirection
+  · rcases hPath with ⟨supportPoint, hPath, hConflict⟩
+    refine ⟨{
+      supportPoint := supportPoint
+      supportPointOnSelectedRepair := Or.inl hPath
+      supportPointInSelectedConflict := hConflict
+      residue := P.selectedResidue
+      residue_eq_pairing := rfl
+    }, ?_⟩
+    exact hNontrivial
+  · rcases hDirection with ⟨supportPoint, hDirection, hConflict⟩
+    refine ⟨{
+      supportPoint := supportPoint
+      supportPointOnSelectedRepair := Or.inr hDirection
+      supportPointInSelectedConflict := hConflict
+      residue := P.selectedResidue
+      residue_eq_pairing := rfl
+    }, ?_⟩
+    exact hNontrivial
 
 /-- VIII.Theorem 10.3: direct form of the support-localized transfer
 inference. -/
@@ -211,9 +271,11 @@ theorem supportLocalizedTransfer {M : MeasurementProfile.{u, v}}
     {A : CommonAmbientPair M R I_U I_V}
     {L : LawConflictMeasurement A}
     {S : SupportLocalizedRepairPath L}
-    (P : TransferMeasurementPairing S) :
+    (P : TransferMeasurementPairing S)
+    (hLocalized : S.SupportLocalized)
+    (hNontrivial : P.NontrivialResidue P.selectedResidue) :
     SupportLocalizedTransfer P :=
-  supportLocalizedTransferPackage P
+  supportLocalizedTransferPackage P hLocalized hNontrivial
 
 /--
 VIII.Theorem candidate 10.4: transfer lower-bound statement-only interface.
