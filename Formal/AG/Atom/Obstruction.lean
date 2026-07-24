@@ -1,27 +1,32 @@
 import Formal.AG.Equation.Basic
-import Formal.AG.Atom.Law
 
 namespace AAT.AG
 
 universe u
 
 /--
-SD1: semantic obstruction is failure of the selected law on the selected
-architecture object.
+I.定義8.1: semantic obstruction is failure of the selected equation on the
+selected architecture object.
 -/
-def SemanticObstruction {U : AtomCarrier.{u}} (L : Law U)
+def EquationSemanticObstruction
+    {U : AtomCarrier.{u}} {A₀ : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A₀}
+    (E : ArchitecturalEquationSystem C) (index : E.Index)
     (A : ArchitectureObject U) : Prop :=
-  ¬ L.holds A
+  ¬ E.EquationHolds index A
 
-namespace SemanticObstruction
+namespace EquationSemanticObstruction
 
-/-- Semantic obstruction is exactly failure of the selected law. -/
-theorem iff_not_holds {U : AtomCarrier.{u}} (L : Law U)
+/-- Semantic obstruction is exactly failure of residual vanishing. -/
+theorem iff_not_equationHolds
+    {U : AtomCarrier.{u}} {A₀ : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A₀}
+    (E : ArchitecturalEquationSystem C) (index : E.Index)
     (A : ArchitectureObject U) :
-    SemanticObstruction L A ↔ ¬ L.holds A :=
+    EquationSemanticObstruction E index A ↔ ¬ E.EquationHolds index A :=
   Iff.rfl
 
-end SemanticObstruction
+end EquationSemanticObstruction
 
 /-- SD1: a finite circuit query over Atom-level configuration data. -/
 inductive CircuitQuery (U : AtomCarrier.{u}) where
@@ -240,48 +245,6 @@ structure EquationReading {U : AtomCarrier.{u}} (object : ArchitectureObject U) 
   /-- Admissibility proof that accepted matching circuits refute their equations. -/
   circuitSound : circuits.Sound
 
-/--
-SD1: law-indexed finite detector code together with semantic soundness.
-
-Implementation notes: law failure is derived by `sound`; it is not stored in
-`CircuitDetectorCode` or `FiniteCircuitDatum`.
--/
-structure CircuitReading {U : AtomCarrier.{u}} (LU : LawUniverse U) where
-  /-- The finite detector syntax selected for each law. -/
-  code : (i : LU.Index) -> CircuitDetectorCode U
-  sound : ∀ (i : LU.Index) (A : ArchitectureObject U)
-    (Q : FiniteCircuitDatum U),
-      Q.Matches A -> (code i).eval Q = true ->
-        ¬ (LU.law i).holds A
-
-/-- SD1: Boolean acceptance of a finite datum by the selected law detector. -/
-noncomputable def CircuitReading.accepts {U : AtomCarrier.{u}}
-    {LU : LawUniverse U} (R : CircuitReading LU)
-    (i : LU.Index) (Q : FiniteCircuitDatum U) : Bool :=
-  (R.code i).eval Q
-
-/-- SD1: the type of accepted matching circuit data for an object and law index. -/
-def CircuitReading.Circuit {U : AtomCarrier.{u}} {LU : LawUniverse U}
-    (R : CircuitReading LU) (A : ArchitectureObject U)
-    (i : LU.Index) : Type u :=
-  {Q : FiniteCircuitDatum U // Q.Matches A ∧ R.accepts i Q = true}
-
-/--
-SD1: every failure of a required law has an accepted matching finite circuit.
-This is an additional completeness condition, not a field of `CircuitReading`.
--/
-def CircuitReading.RequiredComplete {U : AtomCarrier.{u}}
-    {LU : LawUniverse U} (R : CircuitReading LU) : Prop :=
-  ∀ (A : ArchitectureObject U) (i : LU.Index), LU.Required i ->
-    ¬ (LU.law i).holds A -> Nonempty (R.Circuit A i)
-
-/-- SD1: a selected law universe equipped with its finite circuit reading. -/
-structure LawReading (U : AtomCarrier.{u}) where
-  /-- The selected universe of laws. -/
-  lawUniverse : LawUniverse U
-  /-- The finite circuit detector reading for that universe. -/
-  circuits : CircuitReading lawUniverse
-
 namespace FiniteCircuitDatum
 
 /-- Two finite circuit data are equal when their signed query lists are equal. -/
@@ -303,97 +266,6 @@ theorem holds_iff_of_matches {U : AtomCarrier.{u}}
 
 end FiniteCircuitDatum
 
-namespace CircuitReading
-
-/-- Circuit readings over a fixed law universe are equal when their detector families agree. -/
-@[ext]
-theorem ext {U : AtomCarrier.{u}} {LU : LawUniverse U}
-    {R S : CircuitReading LU} (hcode : R.code = S.code) : R = S := by
-  cases R
-  cases S
-  cases hcode
-  rfl
-
-/-- Acceptance is exactly evaluation of the selected finite detector code. -/
-theorem accepts_eq_eval {U : AtomCarrier.{u}} {LU : LawUniverse U}
-    (R : CircuitReading LU) (i : LU.Index) (Q : FiniteCircuitDatum U) :
-    R.accepts i Q = (R.code i).eval Q :=
-  rfl
-
-/-- Acceptance is true exactly when the indexed detector evaluates to true. -/
-theorem accepts_eq_true_iff_eval {U : AtomCarrier.{u}} {LU : LawUniverse U}
-    (R : CircuitReading LU) (i : LU.Index) (Q : FiniteCircuitDatum U) :
-    R.accepts i Q = true ↔ (R.code i).eval Q = true :=
-  Iff.rfl
-
-/-- A rejecting indexed detector accepts no finite datum. -/
-theorem accepts_eq_false_of_code_reject {U : AtomCarrier.{u}}
-    {LU : LawUniverse U} (R : CircuitReading LU) (i : LU.Index)
-    (Q : FiniteCircuitDatum U) (hcode : R.code i = .reject) :
-    R.accepts i Q = false := by
-  rw [accepts_eq_eval, hcode]
-  exact CircuitDetectorCode.eval_reject Q
-
-/-- An exact indexed detector accepts precisely the selected finite template. -/
-theorem accepts_eq_true_iff_of_code_exact {U : AtomCarrier.{u}}
-    {LU : LawUniverse U} (R : CircuitReading LU) (i : LU.Index)
-    (pattern Q : FiniteCircuitDatum U) (hcode : R.code i = .exact pattern) :
-    R.accepts i Q = true ↔ pattern = Q := by
-  rw [accepts_eq_eval, hcode]
-  exact CircuitDetectorCode.eval_exact_eq_true_iff pattern Q
-
-/-- A disjunctive indexed detector accepts precisely when either branch accepts. -/
-theorem accepts_eq_true_iff_of_code_any {U : AtomCarrier.{u}}
-    {LU : LawUniverse U} (R : CircuitReading LU) (i : LU.Index)
-    (left right : CircuitDetectorCode U) (Q : FiniteCircuitDatum U)
-    (hcode : R.code i = .any left right) :
-    R.accepts i Q = true ↔ left.eval Q = true ∨ right.eval Q = true := by
-  rw [accepts_eq_eval, hcode]
-  exact CircuitDetectorCode.eval_any_eq_true_iff left right Q
-
-/-- An accepted matching circuit yields failure of its indexed law. -/
-theorem circuit_sound {U : AtomCarrier.{u}} {LU : LawUniverse U}
-    (R : CircuitReading LU) (A : ArchitectureObject U) (i : LU.Index)
-    (c : R.Circuit A i) : ¬ (LU.law i).holds A :=
-  R.sound i A c.1 c.2.1 c.2.2
-
-end CircuitReading
-
-namespace LawReading
-
-/--
-Law readings are equal when their law universes agree and their dependent
-circuit readings are heterogeneously equal.
--/
-@[ext]
-theorem ext {U : AtomCarrier.{u}} {R S : LawReading U}
-    (huniverse : R.lawUniverse = S.lawUniverse)
-    (hcircuits : HEq R.circuits S.circuits) : R = S := by
-  cases R
-  cases S
-  cases huniverse
-  cases hcircuits
-  rfl
-
-end LawReading
-
-/-- I.定義8.1: an obstruction is a selected witness of law failure. -/
-structure Obstruction {U : AtomCarrier.{u}} (L : Law U)
-    (A : ArchitectureObject U) where
-  Witness : Type u
-  witness : Witness
-  law_failure : ¬ L.holds A
-
-/-- I.定義8.2: an obstruction circuit `O = (F_O, R_O, L)`. -/
-structure ObstructionCircuit {U : AtomCarrier.{u}} (L : Law U)
-    (A : ArchitectureObject U) where
-  family : AtomFamily U
-  relation : U.Atom -> U.Atom -> Prop
-  relation_supported : ∀ {a b}, relation a b -> family.mem a ∧ family.mem b
-  finite : Prop
-  finite_holds : finite
-  law_failure : ¬ L.holds A
-
 /-- I.定義8.5: value domain for obstruction valuation readings. -/
 structure ObstructionValueDomain (Value : Type u) where
   zero : Value
@@ -401,12 +273,21 @@ structure ObstructionValueDomain (Value : Type u) where
   zero_or_positive : ∀ value, value = zero ∨ positive value
   noCancellationAtZero : ∀ {value}, positive value -> value ≠ zero
 
-/-- I.定義8.5: a law-indexed obstruction valuation `omega_L(A)`. -/
-structure ObstructionValuation (U : AtomCarrier.{u}) (Value : Type u) where
-  domain : ObstructionValueDomain Value
-  omega : Law U -> ArchitectureObject U -> Value
+/--
+I.定義8.5: an equation-indexed obstruction valuation `omega_{E,i}(A)`.
 
-/-- I.定義8.5: zero-reflecting aggregation over a selected law index type. -/
+Implementation notes: the valuation receives an equation index from the same
+`ArchitecturalEquationSystem` that determines fulfillment.  A predicate-valued
+law argument was rejected because it loses the residual and role provenance.
+-/
+structure EquationObstructionValuation
+    {U : AtomCarrier.{u}} {A₀ : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A₀}
+    (E : ArchitecturalEquationSystem C) (Value : Type u) where
+  domain : ObstructionValueDomain Value
+  omega : E.Index -> ArchitectureObject U -> Value
+
+/-- I.定義8.5: zero-reflecting aggregation over a selected index type. -/
 structure ZeroReflectingAggregation (Value : Type u)
     (domain : ObstructionValueDomain Value) (Index : Type u) where
   aggregate : (Index -> Value) -> Value
@@ -420,14 +301,6 @@ structure ZeroReflectingListAggregation (Value : Type u)
   zero_reflecting :
     ∀ values, aggregate values = domain.zero ↔
       ∀ value, value ∈ values -> value = domain.zero
-
-namespace LawUniverse
-
-/-- I.定義8.5: the selected required-law index type used by aggregate valuation. -/
-def RequiredIndex {U : AtomCarrier.{u}} (LU : LawUniverse U) : Type u :=
-  { index : LU.Index // LU.Required index }
-
-end LawUniverse
 
 /-- I.定義8.5: a finite enumeration covering a selected index type. -/
 structure FiniteIndexEnumeration (Index : Type u) where
@@ -459,63 +332,30 @@ def toIndexed {Value : Type u} {domain : ObstructionValueDomain Value}
 
 end ZeroReflectingListAggregation
 
-/-- I.定義8.5: aggregate selected per-law obstruction values. -/
-def omegaU {U : AtomCarrier.{u}} {Value : Type u}
-    (valuation : ObstructionValuation U Value) (LU : LawUniverse U)
+/-- I.定義8.5: aggregate the obstruction values of all required equations. -/
+def omegaE
+    {U : AtomCarrier.{u}} {A₀ : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A₀}
+    {E : ArchitecturalEquationSystem C} {Value : Type u}
+    (valuation : EquationObstructionValuation E Value)
     (aggregation :
-      ZeroReflectingAggregation Value valuation.domain LU.RequiredIndex)
+      ZeroReflectingAggregation Value valuation.domain E.RequiredIndex)
     (A : ArchitectureObject U) : Value :=
-  aggregation.aggregate (fun index => valuation.omega (LU.law index.1) A)
+  aggregation.aggregate (fun index => valuation.omega index.1 A)
 
-/-- I.定義8.5: `omegaU = 0` is exactly zero on each required law index. -/
-theorem omegaU_zero_iff_required {U : AtomCarrier.{u}} {Value : Type u}
-    (valuation : ObstructionValuation U Value) (LU : LawUniverse U)
+/-- I.定義8.5: `omegaE = 0` exactly when every required value is zero. -/
+theorem omegaE_zero_iff_required
+    {U : AtomCarrier.{u}} {A₀ : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A₀}
+    {E : ArchitecturalEquationSystem C} {Value : Type u}
+    (valuation : EquationObstructionValuation E Value)
     (aggregation :
-      ZeroReflectingAggregation Value valuation.domain LU.RequiredIndex)
+      ZeroReflectingAggregation Value valuation.domain E.RequiredIndex)
     (A : ArchitectureObject U) :
-    omegaU valuation LU aggregation A = valuation.domain.zero ↔
-      ∀ index : LU.RequiredIndex,
-        valuation.omega (LU.law index.1) A = valuation.domain.zero :=
+    omegaE valuation aggregation A = valuation.domain.zero ↔
+      ∀ index : E.RequiredIndex,
+        valuation.omega index.1 A = valuation.domain.zero :=
   aggregation.zero_reflecting _
-
-namespace ObstructionCircuit
-
-/--
-peer-review hardening I-3: concrete finite-support reading for an obstruction circuit. New
-finite examples should provide this explicit list cover in addition to any
-legacy marker required by frozen declarations.
--/
-def ListFinite {U : AtomCarrier.{u}} {L : Law U}
-    {A : ArchitectureObject U} (O : ObstructionCircuit L A) : Prop :=
-  O.family.ListFinite
-
-/-- I.定義8.2: the relation of an obstruction circuit is supported by its family. -/
-theorem relation_supported_holds {U : AtomCarrier.{u}} {L : Law U}
-    {A : ArchitectureObject U} (O : ObstructionCircuit L A)
-    {a b : U.Atom} (h : O.relation a b) :
-    O.family.mem a ∧ O.family.mem b :=
-  O.relation_supported h
-
-/-- I.定義8.2: the finite marker recorded by an obstruction circuit. -/
-theorem finite_marker {U : AtomCarrier.{u}} {L : Law U}
-    {A : ArchitectureObject U} (O : ObstructionCircuit L A) :
-    O.finite :=
-  O.finite_holds
-
-/-- peer-review hardening I-3: expose the explicit atom cover carried by list-finite evidence. -/
-theorem listFinite_has_cover {U : AtomCarrier.{u}} {L : Law U}
-    {A : ArchitectureObject U} (O : ObstructionCircuit L A)
-    (h : O.ListFinite) :
-    ∃ atoms : List U.Atom, ∀ atom, O.family.mem atom -> atom ∈ atoms :=
-  h
-
-/-- I.定義8.2: an obstruction circuit records failure of its selected law. -/
-theorem law_failure_holds {U : AtomCarrier.{u}} {L : Law U}
-    {A : ArchitectureObject U} (O : ObstructionCircuit L A) :
-    ¬ L.holds A :=
-  O.law_failure
-
-end ObstructionCircuit
 
 namespace ObstructionValueDomain
 

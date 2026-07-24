@@ -1,5 +1,6 @@
 import Formal.AG.Cohomology.PeriodStokes
 import Formal.AG.Examples.DerivedPart5
+import Formal.AG.Measurement.Computability
 import Formal.AG.Measurement.FiniteRegime
 import Formal.AG.Measurement.Packet
 
@@ -9,6 +10,8 @@ namespace AAT.AG
 namespace Measurement
 
 universe u v
+
+open AlgebraicGeometry
 
 /-!
 Part VIII theorem 12.3: finite AAT-GAGA comparison.
@@ -1079,76 +1082,102 @@ theorem realD_eq_source_holds {M : MeasurementProfile.{u, v}} [Field M.Coeff]
 
 end AATGAGAAllDegreeRealCechHodgeInput
 
+/--
+Exact computation of a coordinate family whose nonzero values are one fixed
+principal generator. The active index is part of the computation data, so
+equality of generated ideals is derived rather than supplied.
+-/
+structure PrincipalCoordinatePresentation
+    {R : Type v} [CommRing R]
+    {ι : Type u}
+    (coordinate : ι → R)
+    (generator : R) where
+  /-- Computed activity marker for every coordinate. -/
+  active : ι → Option Unit
+  /-- Every coordinate computes to either zero or the principal generator. -/
+  coordinate_eq :
+    ∀ i, coordinate i =
+      match active i with
+      | none => 0
+      | some _ => generator
+  /-- One computed coordinate realizes the principal generator. -/
+  generatorIndex : ι
+  generatorIndex_active : active generatorIndex = some ()
+
+namespace PrincipalCoordinatePresentation
+
+/-- The exact coordinate computation generates precisely the principal ideal. -/
+theorem span_range_eq_span_singleton
+    {R : Type v} [CommRing R]
+    {ι : Type u}
+    {coordinate : ι → R}
+    {generator : R}
+    (P : PrincipalCoordinatePresentation coordinate generator) :
+    Ideal.span (Set.range coordinate) =
+      Ideal.span ({generator} : Set R) := by
+  apply le_antisymm
+  · apply Ideal.span_le.mpr
+    rintro polynomial ⟨i, rfl⟩
+    cases hactive : P.active i with
+    | none =>
+        rw [P.coordinate_eq i, hactive]
+        exact Ideal.zero_mem _
+    | some marker =>
+        rw [P.coordinate_eq i, hactive]
+        exact Ideal.subset_span (by rfl)
+  · apply Ideal.span_le.mpr
+    intro polynomial hpolynomial
+    have hgenerator : polynomial = generator := by
+      simpa using hpolynomial
+    subst polynomial
+    apply Ideal.subset_span
+    refine ⟨P.generatorIndex, ?_⟩
+    rw [P.coordinate_eq P.generatorIndex, P.generatorIndex_active]
+
+end PrincipalCoordinatePresentation
+
 /-- VIII.Theorem 12.3: finite data shared by every certified comparison. -/
 structure AATGAGACommonFiniteData (M : MeasurementProfile.{u, v}) [Field M.Coeff] where
   /-- The generated finite Čech source shared by all four packages. -/
   finiteCechSource : AATGAGAFiniteCechSource M
-  /-- The site selected from the generated source. -/
-  selectedSite : M.SiteObj
-  /-- The adequate-cover member selected from the generated source. -/
-  selectedCover : M.Cover
   /-- The profile coefficient selected for this comparison. -/
   selectedCoefficient : M.Coeff
   /-- The measurement-domain element selected for the comparison. -/
   selectedMeasurement : M.Domain
   /-- Evidence that the selected measurement belongs to the measured profile. -/
   measuredSelection : M.Measured_M selectedMeasurement
-  /-- The common ambient used for the selected law-ideal reading. -/
-  commonAmbient : CommonAmbientPair M
-  /-- Read each profile-law handle into the common ambient law carrier. -/
-  profileLawToAmbient : M.LawUniverse → commonAmbient.LawIdeal
-  /-- The selected left profile law used in the common ambient. -/
-  selectedLeftProfileLaw : M.LawUniverse
-  /-- The selected right profile law used in the common ambient. -/
-  selectedRightProfileLaw : M.LawUniverse
-  /-- The left common-ambient law is the reading of the selected profile law. -/
-  ambientLeftLaw_eq_profile :
-    commonAmbient.leftLawIdeal = profileLawToAmbient selectedLeftProfileLaw
-  /-- The right common-ambient law is the reading of the selected profile law. -/
-  ambientRightLaw_eq_profile :
-    commonAmbient.rightLawIdeal = profileLawToAmbient selectedRightProfileLaw
-  /-- Evaluate each common-ambient law as a monomial in the shared-witness chart. -/
-  ambientLawGenerator : commonAmbient.LawIdeal →
-    Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff
-  /-- The selected left profile law reads as the fixed `xy` monomial. -/
-  selectedLeftLawGenerator_eq_xy :
-    ambientLawGenerator (profileLawToAmbient selectedLeftProfileLaw) =
-      Derived.Counterexample.SharedWitnessCoord.xy M.Coeff
-  /-- The selected right profile law reads as the fixed `xz` monomial. -/
-  selectedRightLawGenerator_eq_xz :
-    ambientLawGenerator (profileLawToAmbient selectedRightProfileLaw) =
-      Derived.Counterexample.SharedWitnessCoord.xz M.Coeff
-  /-- The common ambient has the atom carrier selected by the Čech source. -/
-  ambientAtomType_eq_source : commonAmbient.AmbientSpace = finiteCechSource.geometry.U.Atom
-  /-- The profile obstruction-object handle is read in the common ambient. -/
-  ambientStructureSheafFromProfile : M.ObstructionObject → commonAmbient.StructureSheaf
-  /-- The selected ambient sheaf is the reading of the selected profile handle. -/
-  selectedObstructionObject : M.ObstructionObject
-  selectedStructureSheaf_eq_profile : commonAmbient.selectedStructureSheaf =
-    ambientStructureSheafFromProfile selectedObstructionObject
-  /-- Interpret the selected ambient structure sheaf on the actual Čech site. -/
-  ambientStructureSheafToSource : commonAmbient.StructureSheaf →
-    Cohomology.ObstructionSheaf finiteCechSource.geometry.site
-  /-- The selected common-ambient sheaf is exactly the source coefficient sheaf. -/
-  selectedStructureSheaf_realizes_source :
-    ambientStructureSheafToSource commonAmbient.selectedStructureSheaf =
-      finiteCechSource.geometry.obstructionSheaf
-  /-- The ambient coefficient object is the profile coefficient type. -/
-  ambientCoefficientObject_eq_profile : commonAmbient.CoefficientObject = M.Coeff
-  /-- The left ambient coefficient is the selected profile coefficient. -/
-  leftCoefficient_eq_selected :
-    cast ambientCoefficientObject_eq_profile commonAmbient.leftCoefficient = selectedCoefficient
-  /-- The right ambient coefficient is the selected profile coefficient. -/
-  rightCoefficient_eq_selected :
-    cast ambientCoefficientObject_eq_profile commonAmbient.rightCoefficient = selectedCoefficient
-  /-- The selected site is the finite Čech source site. -/
-  selectedSite_eq_source : selectedSite = finiteCechSource.selectedSite
-  /-- The selected cover is the finite Čech source cover. -/
-  selectedCover_eq_source : selectedCover = finiteCechSource.selectedCover
-  /-- The left ambient domain is the selected measurement-domain element. -/
-  ambientLeftDomain_eq : commonAmbient.leftDomain = selectedMeasurement
-  /-- The right ambient domain is the selected measurement-domain element. -/
-  ambientRightDomain_eq : commonAmbient.rightDomain = selectedMeasurement
+  /-- Context at which the actual equation coordinates enter the shared chart. -/
+  equationContext : M.equationGeometry.site.category
+  /-- Actual observable-ring map used for the selected left equation. -/
+  leftEquationObservableMap :
+    M.equationGeometry.site.equationSystem.Observable equationContext →+*
+      Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff
+  /-- Actual observable-ring map used for the selected right equation. -/
+  rightEquationObservableMap :
+    M.equationGeometry.site.equationSystem.Observable equationContext →+*
+      Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff
+  /-- The selected left required equation used in the common chart. -/
+  selectedLeftProfileEquation :
+    M.equationGeometry.site.equationSystem.RequiredIndex
+  /-- The selected right required equation used in the common chart. -/
+  selectedRightProfileEquation :
+    M.equationGeometry.site.equationSystem.RequiredIndex
+  /-- Exact coordinate computation for the selected left equation. -/
+  leftCoordinatePresentation :
+    PrincipalCoordinatePresentation
+      (fun atom =>
+        leftEquationObservableMap
+          (M.equationGeometry.site.equationSystem.violationCoordinate
+            equationContext selectedLeftProfileEquation.1 atom))
+      (Derived.Counterexample.SharedWitnessCoord.xy M.Coeff)
+  /-- Exact coordinate computation for the selected right equation. -/
+  rightCoordinatePresentation :
+    PrincipalCoordinatePresentation
+      (fun atom =>
+        rightEquationObservableMap
+          (M.equationGeometry.site.equationSystem.violationCoordinate
+            equationContext selectedRightProfileEquation.1 atom))
+      (Derived.Counterexample.SharedWitnessCoord.xz M.Coeff)
 
 /-- The Hodge data are a real realization of the generated Čech source. -/
 structure AATGAGASelectedFiniteHodgeData {M : MeasurementProfile.{u, v}} [Field M.Coeff]
@@ -1296,52 +1325,186 @@ theorem topologicalCapacityStatement_holds {M : MeasurementProfile.{u, v}} [Fiel
 
 end SelectedTopologicalDebtTheoremPackage
 
-/-- VIII.Theorem 12.3: evaluate a common-ambient selected law as the principal
-chart ideal generated by its actual monomial reading. -/
-def AATGAGACommonFiniteData.generatedLawIdeal {M : MeasurementProfile.{u, v}}
-    [Field M.Coeff] (C : AATGAGACommonFiniteData M) (L : C.commonAmbient.LawIdeal) :
-    Ideal (Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff) :=
-  Ideal.span ({C.ambientLawGenerator L} : Set
-    (Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff))
-
 namespace AATGAGACommonFiniteData
 
-/-- The left chart ideal is generated from the profile-selected left law. -/
+/-- The left chart ideal is the image of the selected canonical witness ideal. -/
 def leftIdeal {M : MeasurementProfile.{u, v}} [Field M.Coeff]
     (C : AATGAGACommonFiniteData M) :
     Ideal (Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff) :=
-  C.generatedLawIdeal C.commonAmbient.leftLawIdeal
+  profileEquationIdeal M C.equationContext C.leftEquationObservableMap
+    C.selectedLeftProfileEquation.1
 
-/-- The right chart ideal is generated from the profile-selected right law. -/
+/-- The right chart ideal is the image of the selected canonical witness ideal. -/
 def rightIdeal {M : MeasurementProfile.{u, v}} [Field M.Coeff]
     (C : AATGAGACommonFiniteData M) :
     Ideal (Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff) :=
-  C.generatedLawIdeal C.commonAmbient.rightLawIdeal
+  profileEquationIdeal M C.equationContext C.rightEquationObservableMap
+    C.selectedRightProfileEquation.1
 
-/-- The profile-to-ambient monomial path derives the selected left principal
-ideal without accepting an ideal-equality certificate. -/
+/-- Actual mapped equation coordinates derive the selected left principal ideal. -/
 theorem leftIdeal_eq_sharedWitness {M : MeasurementProfile.{u, v}} [Field M.Coeff]
     (C : AATGAGACommonFiniteData M) :
     C.leftIdeal = Derived.Counterexample.SharedWitnessCoord.idealU M.Coeff := by
-  rw [leftIdeal, generatedLawIdeal, C.ambientLeftLaw_eq_profile,
-    C.selectedLeftLawGenerator_eq_xy]
-  rfl
+  rw [leftIdeal, profileEquationIdeal_eq_span_range]
+  exact C.leftCoordinatePresentation.span_range_eq_span_singleton
 
-/-- The profile-to-ambient monomial path derives the selected right principal
-ideal without accepting an ideal-equality certificate. -/
+/-- Actual mapped equation coordinates derive the selected right principal ideal. -/
 theorem rightIdeal_eq_sharedWitness {M : MeasurementProfile.{u, v}} [Field M.Coeff]
     (C : AATGAGACommonFiniteData M) :
     C.rightIdeal = Derived.Counterexample.SharedWitnessCoord.idealV M.Coeff := by
-  rw [rightIdeal, generatedLawIdeal, C.ambientRightLaw_eq_profile,
-    C.selectedRightLawGenerator_eq_xz]
+  rw [rightIdeal, profileEquationIdeal_eq_span_range]
+  exact C.rightCoordinatePresentation.span_range_eq_span_singleton
+
+/-- Canonical affine common ambient derived from the two actual equation
+ideals.  The ambient scheme and both ideal sheaves are generated internally. -/
+noncomputable def commonAmbient {M : MeasurementProfile.{u, v}} [Field M.Coeff]
+    (C : AATGAGACommonFiniteData M) :
+    CommonAmbientPair M
+      (Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff)
+      C.leftIdeal C.rightIdeal :=
+  CommonAmbientPair.ofAffineSpec
+    C.leftIdeal C.rightIdeal
+    C.selectedMeasurement C.selectedMeasurement C.selectedCoefficient
+    (ULift.{u, 0} Derived.Counterexample.SharedWitnessCoord)
+    (M.equationGeometry.site.equationSystem.RequiredIndex ×
+      M.equationGeometry.site.equationSystem.RequiredIndex)
+    M.WitnessVariables
+    (ULift.up .x)
+    (C.selectedLeftProfileEquation, C.selectedRightProfileEquation)
+
+/-- The actual affine ideal-sheaf pair carried by the common ambient. -/
+abbrev ambientIdealSheafPair
+    {M : MeasurementProfile.{u, v}} [Field M.Coeff]
+    (C : AATGAGACommonFiniteData M) :
+    AffineIdealSheafPair.{v} :=
+  C.commonAmbient.selectedStructureSheaf
+
+/-- The actual left chart ideal indexed by the common ambient. -/
+abbrev ambientLeftIdeal
+    {M : MeasurementProfile.{u, v}} [Field M.Coeff]
+    (C : AATGAGACommonFiniteData M) :
+    Ideal (Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff) :=
+  C.commonAmbient.leftLawIdeal
+
+/-- The actual right chart ideal indexed by the common ambient. -/
+abbrev ambientRightIdeal
+    {M : MeasurementProfile.{u, v}} [Field M.Coeff]
+    (C : AATGAGACommonFiniteData M) :
+    Ideal (Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff) :=
+  C.commonAmbient.rightLawIdeal
+
+/-- The left ideal selected by the common ambient is definitionally the
+actual left equation ideal. -/
+theorem commonAmbient_leftLawIdeal
+    {M : MeasurementProfile.{u, v}} [Field M.Coeff]
+    (C : AATGAGACommonFiniteData M) :
+    C.ambientLeftIdeal =
+        C.leftIdeal :=
   rfl
+
+/-- The right ideal selected by the common ambient is definitionally the
+actual right equation ideal. -/
+theorem commonAmbient_rightLawIdeal
+    {M : MeasurementProfile.{u, v}} [Field M.Coeff]
+    (C : AATGAGACommonFiniteData M) :
+    C.ambientRightIdeal =
+        C.rightIdeal :=
+  rfl
+
+/-- Both ideal sheaves live on `Spec` of the shared-witness chart ring. -/
+theorem commonAmbient_selectedScheme
+    {M : MeasurementProfile.{u, v}} [Field M.Coeff]
+    (C : AATGAGACommonFiniteData M) :
+    C.ambientIdealSheafPair.scheme =
+      AlgebraicGeometry.Scheme.Spec.obj
+        (Opposite.op
+          (CommRingCat.of
+            (Derived.Counterexample.SharedWitnessCoord.ChartRing
+              M.Coeff))) :=
+  rfl
+
+/-- The selected affine scheme carries Mathlib's ring-valued structure
+sheaf. -/
+theorem commonAmbient_schemeSheaf
+    {M : MeasurementProfile.{u, v}} [Field M.Coeff]
+    (C : AATGAGACommonFiniteData M) :
+    C.ambientIdealSheafPair.scheme.sheaf =
+      AlgebraicGeometry.Spec.structureSheaf
+        (CommRingCat.of
+          (Derived.Counterexample.SharedWitnessCoord.ChartRing
+            M.Coeff)) :=
+  rfl
+
+/-- The left selected ideal sheaf is induced from the actual left equation
+ideal. -/
+theorem commonAmbient_leftIdealSheaf
+    {M : MeasurementProfile.{u, v}} [Field M.Coeff]
+    (C : AATGAGACommonFiniteData M) :
+    C.ambientIdealSheafPair.leftIdealSheaf =
+      AlgebraicGeometry.Scheme.IdealSheafData.ofIdealTop
+        (Ideal.map
+          ((AlgebraicGeometry.Scheme.ΓSpecIso
+            (CommRingCat.of
+              (Derived.Counterexample.SharedWitnessCoord.ChartRing
+                M.Coeff))).commRingCatIsoToRingEquiv).symm.toRingHom
+          C.leftIdeal) :=
+  rfl
+
+/-- The right selected ideal sheaf is induced from the actual right equation
+ideal. -/
+theorem commonAmbient_rightIdealSheaf
+    {M : MeasurementProfile.{u, v}} [Field M.Coeff]
+    (C : AATGAGACommonFiniteData M) :
+    C.ambientIdealSheafPair.rightIdealSheaf =
+      AlgebraicGeometry.Scheme.IdealSheafData.ofIdealTop
+        (Ideal.map
+          ((AlgebraicGeometry.Scheme.ΓSpecIso
+            (CommRingCat.of
+              (Derived.Counterexample.SharedWitnessCoord.ChartRing
+                M.Coeff))).commRingCatIsoToRingEquiv).symm.toRingHom
+          C.rightIdeal) :=
+  rfl
+
+/-- The two ideal-sheaf top components recover exactly the equation ideals
+used by the selected Tor bridge. -/
+theorem commonAmbient_globalSectionsIdeals
+    {M : MeasurementProfile.{u, v}} [Field M.Coeff]
+    (C : AATGAGACommonFiniteData M) :
+    let e :=
+      (AlgebraicGeometry.Scheme.ΓSpecIso
+        (CommRingCat.of
+          (Derived.Counterexample.SharedWitnessCoord.ChartRing
+            M.Coeff))).commRingCatIsoToRingEquiv
+    let pair := C.ambientIdealSheafPair
+    let _ : IsAffine pair.scheme := pair.schemeIsAffine
+    Ideal.map e.toRingHom
+        (pair.leftIdealSheaf.ideal
+          ⟨⊤, isAffineOpen_top pair.scheme⟩) =
+          C.leftIdeal ∧
+      Ideal.map e.toRingHom
+        (pair.rightIdealSheaf.ideal
+          ⟨⊤, isAffineOpen_top pair.scheme⟩) =
+          C.rightIdeal :=
+  C.commonAmbient.lawIdealsInCommonAmbient_cert
+
+/-- The ambient-selected ideals are the two canonical shared-witness
+principal ideals. -/
+theorem commonAmbient_ideals_eq_sharedWitness
+    {M : MeasurementProfile.{u, v}} [Field M.Coeff]
+    (C : AATGAGACommonFiniteData M) :
+    C.ambientLeftIdeal =
+        Derived.Counterexample.SharedWitnessCoord.idealU M.Coeff ∧
+      C.ambientRightIdeal =
+          Derived.Counterexample.SharedWitnessCoord.idealV M.Coeff :=
+  ⟨C.commonAmbient_leftLawIdeal.trans C.leftIdeal_eq_sharedWitness,
+    C.commonAmbient_rightLawIdeal.trans C.rightIdeal_eq_sharedWitness⟩
 
 /-- The degree-one LawConflict object of the canonical selected Tor bridge. -/
 abbrev lawConflict {M : MeasurementProfile.{u, v}} [Field M.Coeff]
     (C : AATGAGACommonFiniteData M) :=
   (Derived.Intersection.canonicalSelectedTorBridge
     (Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff)
-    C.leftIdeal C.rightIdeal).LawConflict 1
+    C.ambientLeftIdeal C.ambientRightIdeal).LawConflict 1
 
 /-- The canonical degree-one LawConflict/Mathlib Tor linear equivalence. -/
 noncomputable def lawConflictLinearEquivMathlibTor {M : MeasurementProfile.{u, v}} [Field M.Coeff]
@@ -1349,10 +1512,11 @@ noncomputable def lawConflictLinearEquivMathlibTor {M : MeasurementProfile.{u, v
     C.lawConflict ≃ₗ[Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff]
       Derived.Intersection.mathlibTor
         (Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff)
-        C.leftIdeal C.rightIdeal 1 :=
+        C.ambientLeftIdeal C.ambientRightIdeal 1 :=
   (Derived.Intersection.canonicalSelectedTorBridge
     (Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff)
-    C.leftIdeal C.rightIdeal).lawConflictLinearEquivMathlibTor 1
+    C.ambientLeftIdeal
+    C.ambientRightIdeal).lawConflictLinearEquivMathlibTor 1
 
 /-- Derive the selected LawConflict/Tor reading from its canonical bridge. -/
 theorem lawConflictTorReading_holds {M : MeasurementProfile.{u, v}} [Field M.Coeff]
@@ -1361,7 +1525,7 @@ theorem lawConflictTorReading_holds {M : MeasurementProfile.{u, v}} [Field M.Coe
       (C.lawConflict ≃ₗ[Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff]
         Derived.Intersection.mathlibTor
           (Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff)
-          C.leftIdeal C.rightIdeal 1) :=
+          C.ambientLeftIdeal C.ambientRightIdeal 1) :=
   ⟨C.lawConflictLinearEquivMathlibTor⟩
 
 /-- The generated ideals are the shared-witness ideals and satisfy the fixed
@@ -1434,10 +1598,11 @@ structure AATGAGANonConclusionData (M : MeasurementProfile.{u, v}) where
   noExternalProcedureCorrectness : Prop
   /-- Witness for the recorded external-procedure silence. -/
   noExternalProcedureCorrectness_cert : noExternalProcedureCorrectness
-  /-- Recorded silence: no comparison claim over arbitrary law universes. -/
-  noArbitraryLawUniverseComparison : Prop
-  /-- Witness for the recorded law-universe silence. -/
-  noArbitraryLawUniverseComparison_cert : noArbitraryLawUniverseComparison
+  /-- Recorded silence: no comparison claim over arbitrary equation handles. -/
+  noArbitraryEquationHandleComparison : Prop
+  /-- Witness for the recorded equation-handle comparison silence. -/
+  noArbitraryEquationHandleComparison_cert :
+    noArbitraryEquationHandleComparison
   /-- Recorded silence: candidate-dependent fields carry no certified conclusion. -/
   candidateDependentFieldsNotCertified : Prop
   /-- Witness for the recorded candidate-dependence silence. -/
@@ -1473,7 +1638,7 @@ def aatGAGACertifiedComparisonStatement {M : MeasurementProfile.{u, v}} [Field M
                   Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff]
                   Derived.Intersection.mathlibTor
                     (Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff)
-                    C.leftIdeal C.rightIdeal 1) ∧
+                    C.ambientLeftIdeal C.ambientRightIdeal 1) ∧
                 C.hilbertSeriesConflictStatement
 
 /-- Derive every certified comparison conjunct from the selected finite data. -/

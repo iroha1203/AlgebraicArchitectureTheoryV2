@@ -66,13 +66,13 @@ theorem site_equation_required (index : site.equationSystem.Index) :
   cases index
   rfl
 
-/-- Residual vanishing on the generated ringed-site equation is NoCycle. -/
-@[simp] theorem site_equationHolds_iff_noCycleLaw
+/-- Residual vanishing on the generated ringed-site equation is absence of the cycle. -/
+@[simp] theorem site_equationHolds_iff_noCycle
     (A : ArchitectureObject carrier) :
-    site.equationSystem.EquationHolds PUnit.unit A ↔ noCycleLaw.holds A := by
+    site.equationSystem.EquationHolds PUnit.unit A ↔ ¬ hasDependencyCycle A := by
   change (equationSystem twoPatchContextPreorder).EquationHolds PUnit.unit A ↔
-    noCycleLaw.holds A
-  exact equationHolds_iff_noCycleLaw twoPatchContextPreorder A
+    ¬ hasDependencyCycle A
+  exact equationHolds_iff_noCycle twoPatchContextPreorder A
 
 /-- R6: the concrete base object. -/
 def base : site.category :=
@@ -308,10 +308,13 @@ theorem detector_sound :
       (corePackage.algebra.object corePackage.baseObject) :=
   generatedCycleCircuit_sound
 
-/-- A distinct law reading has a nonempty circuit fiber on the same generated object. -/
+/-- A distinct equation reading has a nonempty circuit fiber on the same object. -/
 theorem second_circuit_fiber_nonempty :
-    Nonempty (completeCircuitReading.Circuit corePackage.object PUnit.unit) :=
-  completeCircuitReading_nonvacuous.2
+    Nonempty
+      ((componentAPresentEquationCircuitReading twoPatchContextPreorder).Circuit
+        corePackage.object PUnit.unit) :=
+  (componentAPresentEquationCircuitReading_nonvacuous
+    twoPatchContextPreorder).2
 
 /-- The actual configuration morphism sends one selected atom to a distinct atom. -/
 theorem operation_atomMap_nonidentity :

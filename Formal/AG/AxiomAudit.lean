@@ -12,10 +12,8 @@ import Formal.AG.LawAlgebra.AffineChart
 import Formal.AG.LawAlgebra.FiniteExamples
 import Formal.AG.LawAlgebra.RawPresheafFiniteExample
 import Formal.AG.LawAlgebra.RingedSiteFiniteExample
-import Formal.AG.LawAlgebra.RingedSiteFiniteExampleLegacy
 import Formal.AG.LawAlgebra.StandardSchemeFiniteExample
 import Formal.AG.LawAlgebra.ClosedEquationalGeometry
-import Formal.AG.LawAlgebra.ClosedEquationalGeometryFiniteExample
 import Formal.AG.ReadingFunctoriality
 import Formal.AG.ReadingFunctoriality.InfiniteProductCechFiring
 import Formal.AG.ReadingFunctoriality.ModTwoTorFiring
@@ -38,6 +36,10 @@ Every declaration in the `AAT.AG.AxiomAudit` namespace is audited by the
 entry to the namespace is sufficient to place it under the kernel axiom
 allowlist check (standard mathlib axioms only). Per-entry `#guard_msgs in
 #print axioms` blocks are no longer needed.
+
+Compatibility leaves excluded from the standard `Formal.AG` aggregate run
+the same command at the end of their own source files. This active entrypoint
+therefore imports only modules available after a cold standard aggregate build.
 
 The command must remain the last non-empty line of this file; declarations
 added after it would escape the audit, and CI checks the tail position
@@ -193,17 +195,14 @@ def finiteAATComputabilityCosetNormalizerCanonical :=
 def finiteAATComputabilityCommonRepresentativeCorrect :=
   @Measurement.CechComputationProcedure.quotientRepresentative_correct
 
-def finiteAATComputabilityProfileObstructionObjectRealizes :=
-  @Measurement.FiniteAATProfileRealization.obstructionObject_realizes
-
 def finiteAATComputabilityProfileObstructionIdealRealizes :=
-  @Measurement.FiniteAATProfileRealization.obstructionIdeal_realizes
+  @Measurement.profileRequiredEquationIdeal_eq_map_obstructionIdeal
 
-def finiteAATComputabilityProfileLeftLawRealizes :=
-  @Measurement.FiniteAATProfileRealization.leftLaw_realizes
+def finiteAATComputabilityProfileLeftEquationIdealRealizes :=
+  @Measurement.FiniteAATProfileRealization.leftIdeal_eq_span_range
 
-def finiteAATComputabilityProfileRightLawRealizes :=
-  @Measurement.FiniteAATProfileRealization.rightLaw_realizes
+def finiteAATComputabilityProfileRightEquationIdealRealizes :=
+  @Measurement.FiniteAATProfileRealization.rightIdeal_eq_span_range
 
 def finiteAATComputabilityGenericZeroClassHasEmptySupport :=
   @Measurement.FiniteAATComputationData.classSupportOf_eq_empty_of_class_eq_zero
@@ -224,7 +223,7 @@ def finiteAATComputabilityActualLawConflictPackage :=
   @Measurement.finiteAATConflictComputability
 
 def finiteAATComputabilitySelectedSupportReading :=
-  @Measurement.FiniteAATConflictRealization.selectedClassSupportReading_holds
+  @Measurement.FiniteAATConflictRealization.selectedSupport_holds
 
 def finiteAATComputabilityActualSupportZero :=
   @Measurement.FiniteAATConflictRealization.supportRelation_zero
@@ -239,10 +238,10 @@ def finiteAATComputabilityEffectiveRepresentativeFixture :=
   @Measurement.finiteComputabilityExample_genericRepresentative_correct
 
 def finiteAATComputabilityActualConflictFixture :=
-  @Measurement.finiteComputabilityConflictPackage_nonzero_and_supportReading
+  @Measurement.finiteComputabilityConflictPackage_nonzero_and_computedSupport
 
 def finiteAATComputabilityProperDegreeOneConflictFixture :=
-  @Measurement.finiteComputabilityConflictPackage_proper_degree_one_nonzero_and_supportReading
+  @Measurement.finiteComputabilityConflictPackage_proper_degree_one_nonzero_and_computedSupport
 
 def finiteAATComputabilityZeroConflictSupportFixture :=
   @Measurement.finiteComputabilityConflictPackage_zero_support
@@ -1667,37 +1666,55 @@ theorem presentedArchitectureRelatorIffActualAttachingLoop :
       @SingularityMonodromyStack.PresentedArchitectureFundamentalGroup.relator_iff_actual_attaching_loop :=
   ⟨_, rfl⟩
 
-theorem concreteThreeReadingAgreementRequiredLaw {U : AtomCarrier}
-    (A : ArchitectureObject U) (LU : LawUniverse U) :
-    (SemanticLawful A LU ↔
-        NoRequiredObstruction A (requiredLawWitnessFamily LU)) ∧
-      (NoRequiredObstruction A (requiredLawWitnessFamily LU) ↔
-        RequiredSignatureAxesZero A (requiredLawSignatureAxes LU)) ∧
-        (SemanticLawful A LU ↔
-          RequiredSignatureAxesZero A (requiredLawSignatureAxes LU)) :=
-  AAT.AG.concreteThreeReadingAgreement A LU
+theorem concreteThreeReadingAgreementEquation
+    {U : AtomCarrier} {A₀ : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A₀}
+    {E : ArchitecturalEquationSystem C} {S : SignatureAxes U}
+    (R : EquationCircuitReading E) (hSound : R.Sound)
+    (hComplete : R.RequiredComplete)
+    (comparison : EquationSignatureComparison E S)
+    (A : ArchitectureObject U) :
+    (E.EquationLawful A ↔ NoRequiredEquationCircuit R A) ∧
+      (NoRequiredEquationCircuit R A ↔
+        RequiredSignatureAxesZero A S) ∧
+      (E.EquationLawful A ↔ RequiredSignatureAxesZero A S) :=
+  AAT.AG.concreteThreeReadingAgreement
+    R hSound hComplete comparison A
 
-theorem finiteAcyclicConcreteThreeReadingAgreement :
-    (SemanticLawful FiniteModel.acyclicObject FiniteModel.lawUniverse ↔
-        NoRequiredObstruction FiniteModel.acyclicObject
-          FiniteModel.concreteNoCycleWitnessFamily) ∧
-      (NoRequiredObstruction FiniteModel.acyclicObject
-          FiniteModel.concreteNoCycleWitnessFamily ↔
-        RequiredSignatureAxesZero FiniteModel.acyclicObject
-          FiniteModel.concreteNoCycleSignatureAxes) ∧
-        (SemanticLawful FiniteModel.acyclicObject FiniteModel.lawUniverse ↔
-          RequiredSignatureAxesZero FiniteModel.acyclicObject
-            FiniteModel.concreteNoCycleSignatureAxes) :=
-  FiniteModel.acyclic_concreteThreeReadingAgreement
+theorem finiteComponentAConcreteThreeReadingAgreement :
+    let C := Site.contextMorphismPreorderCategory FiniteModel.object
+    ((FiniteModel.componentAAbsentEquationSystem C).EquationLawful
+          FiniteModel.corePackage.object ↔
+        NoRequiredEquationCircuit
+          (FiniteModel.componentAPresentEquationCircuitReading C)
+          FiniteModel.corePackage.object) ∧
+      (NoRequiredEquationCircuit
+          (FiniteModel.componentAPresentEquationCircuitReading C)
+          FiniteModel.corePackage.object ↔
+        RequiredSignatureAxesZero FiniteModel.corePackage.object
+          (equationResidualSignatureAxes
+            (FiniteModel.componentAAbsentEquationSystem C))) ∧
+      ((FiniteModel.componentAAbsentEquationSystem C).EquationLawful
+          FiniteModel.corePackage.object ↔
+        RequiredSignatureAxesZero FiniteModel.corePackage.object
+          (equationResidualSignatureAxes
+            (FiniteModel.componentAAbsentEquationSystem C))) :=
+  FiniteModel.componentAAbsent_concreteThreeReadingAgreement
+    (Site.contextMorphismPreorderCategory FiniteModel.object)
 
-theorem finiteCyclicConcreteThreeReadingFires :
-    (¬ SemanticLawful FiniteModel.object FiniteModel.lawUniverse) ∧
-      (∃ witness : FiniteModel.concreteNoCycleWitnessFamily.Witness,
-        FiniteModel.concreteNoCycleWitnessFamily.badWitness FiniteModel.object
-          witness) ∧
-        ¬ RequiredSignatureAxesZero FiniteModel.object
-          FiniteModel.concreteNoCycleSignatureAxes :=
-  FiniteModel.object_concreteThreeReadingAgreement_fires
+theorem finiteAcyclicEquationLawful :
+    (FiniteModel.equationSystem
+      (Site.contextMorphismPreorderCategory FiniteModel.object)).EquationLawful
+        FiniteModel.acyclicObject :=
+  FiniteModel.acyclic_equationLawful
+    (Site.contextMorphismPreorderCategory FiniteModel.object)
+
+theorem finiteCyclicEquationLawfulFails :
+    ¬ (FiniteModel.equationSystem
+      (Site.contextMorphismPreorderCategory FiniteModel.object)).EquationLawful
+        FiniteModel.object :=
+  FiniteModel.object_equationLawful_fails
+    (Site.contextMorphismPreorderCategory FiniteModel.object)
 
 theorem finiteCoreGeneratedFamilyAtomizes :
     FiniteModel.coreReading.doctrine.Atomizes
@@ -1773,10 +1790,10 @@ def sd1CompositionReadingConstructor := @CompositionReading.mk
 def sd1ObjectReadingConstructor := @ObjectReading.mk
 /-- SD1 index entry for the finite circuit-datum constructor fixed by the ledger. -/
 def sd1FiniteCircuitDatumConstructor := @FiniteCircuitDatum.mk
-/-- SD1 index entry for the circuit-reading constructor fixed by the ledger. -/
-def sd1CircuitReadingConstructor := @CircuitReading.mk
-/-- SD1 index entry for the law-reading constructor fixed by the ledger. -/
-def sd1LawReadingConstructor := @LawReading.mk
+/-- SD1 index entry for the equation-circuit-reading constructor fixed by the ledger. -/
+def sd1EquationCircuitReadingConstructor := @EquationCircuitReading.mk
+/-- SD1 index entry for the core equation-reading constructor fixed by the ledger. -/
+def sd1EquationReadingConstructor := @EquationReading.mk
 /-- SD1 index entry for the configuration-hom constructor fixed by the ledger. -/
 def sd1ConfigurationHomConstructor := @ConfigurationHom.mk
 /-- SD1 index entry for the architecture-operation constructor fixed by the ledger. -/
@@ -1807,12 +1824,14 @@ def sd1CircuitQueryHolds := @CircuitQuery.Holds
 def sd1FiniteCircuitDatumMatches := @FiniteCircuitDatum.Matches
 /-- SD1 index entry for evaluation of the finite detector grammar. -/
 noncomputable def sd1CircuitDetectorCodeEval := @CircuitDetectorCode.eval
-/-- SD1 index entry for Boolean acceptance by the selected circuit reading. -/
-noncomputable def sd1CircuitReadingAccepts := @CircuitReading.accepts
-/-- SD1 index entry for the object- and law-indexed circuit fiber. -/
-def sd1CircuitReadingCircuit := @CircuitReading.Circuit
-/-- SD1 index entry for the required-circuit completeness predicate. -/
-def sd1CircuitReadingRequiredComplete := @CircuitReading.RequiredComplete
+/-- SD1 index entry for Boolean acceptance by the selected equation circuit reading. -/
+noncomputable def sd1EquationCircuitReadingAccepts :=
+  @EquationCircuitReading.accepts
+/-- SD1 index entry for the object- and equation-indexed circuit fiber. -/
+def sd1EquationCircuitReadingCircuit := @EquationCircuitReading.Circuit
+/-- SD1 index entry for the required-equation circuit completeness predicate. -/
+def sd1EquationCircuitReadingRequiredComplete :=
+  @EquationCircuitReading.RequiredComplete
 /-- SD1 index entry for identity on an actual Atom configuration. -/
 def sd1ConfigurationHomIdentity := @ConfigurationHom.id
 /-- SD1 index entry for composition of actual configuration homomorphisms. -/
@@ -1837,8 +1856,8 @@ def sd1CoreObject := @AATCorePackage.object
 def sd1CoreAlgebra := @AATCorePackage.algebra
 /-- SD1 index entry for the distinguished generated algebra object. -/
 def sd1CoreBaseObject := @AATCorePackage.baseObject
-/-- SD1 index entry for semantic law failure on an architecture object. -/
-def sd1SemanticObstruction := @SemanticObstruction
+/-- SD1 index entry for semantic equation failure on an architecture object. -/
+def sd1EquationSemanticObstruction := @EquationSemanticObstruction
 
 def sd1AtomFamilyExt := @AtomFamily.ext
 def sd1AtomConfigurationExt := @AtomConfiguration.ext
@@ -1887,10 +1906,10 @@ def sd1ObjectAlgebraCircuitNonempty := @ObjectAlgebra.circuit_nonempty_iff
 
 def sd1FiniteCircuitDatumExt := @FiniteCircuitDatum.ext
 def sd1FiniteCircuitHoldsIff := @FiniteCircuitDatum.holds_iff_of_matches
-def sd1CircuitReadingExt := @CircuitReading.ext
-def sd1CircuitAcceptsEqEval := @CircuitReading.accepts_eq_eval
-def sd1CircuitSound := @CircuitReading.circuit_sound
-def sd1LawReadingExt := @LawReading.ext
+def sd1EquationCircuitReadingExt := @EquationCircuitReading.ext
+def sd1EquationCircuitAcceptsEqEval := @EquationCircuitReading.accepts_eq_eval
+def sd1EquationCircuitSound := @EquationCircuitReading.circuit_sound
+def sd1EquationReadingCircuitSound := @EquationReading.circuitSound
 
 def sd1ObservationCanonicalFamilyUnique := @A9Example.canonical_family_unique
 
@@ -1920,11 +1939,11 @@ def sd1FiniteOperationFires := FiniteModel.nonidentity_reachable_operation_fires
 def sd1FiniteDatumMatches := FiniteModel.cycleQueryDatum_matches_core
 def sd1FiniteDatumNotMatches := FiniteModel.componentAAbsentDatum_not_matches_core
 def sd1FiniteRequiredCompleteNegative :=
-  FiniteModel.rejectingCircuitReading_not_requiredComplete
+  FiniteModel.rejectingEquationCircuitReading_not_requiredComplete
 def sd1FiniteRequiredCompletePositive :=
-  FiniteModel.completeCircuitReading_requiredComplete
+  FiniteModel.componentAPresentEquationCircuitReading_requiredComplete
 def sd1FiniteRequiredCompleteNonvacuous :=
-  @FiniteModel.completeCircuitReading_nonvacuous
+  @FiniteModel.componentAPresentEquationCircuitReading_nonvacuous
 def sd1FiniteDatumAccepted := FiniteModel.cycleQueryDatum_accepted
 def sd1FiniteDatumRejected := FiniteModel.emptyQueryDatum_rejected
 def sd1FiniteGeneratedCircuitSound := FiniteModel.generatedCycleCircuit_sound
@@ -1933,17 +1952,21 @@ def sd1FiniteGeneratedCircuitSound := FiniteModel.generatedCycleCircuit_sound
 def sd1ExtractsIff := @ExtractionDoctrine.extracts_iff
 def sd1AtomizeMemIff := @ExtractionDoctrine.atomize_mem_iff
 def sd1AtomizesMemIff := @ExtractionDoctrine.mem_iff_extracts_of_atomizes
-def sd1SemanticObstructionIff := @SemanticObstruction.iff_not_holds
+def sd1EquationSemanticObstructionIff :=
+  @EquationSemanticObstruction.iff_not_equationHolds
 def sd1AtomPresentHoldsIff := @CircuitQuery.atomPresent_holds_iff
 def sd1RelationPresentHoldsIff := @CircuitQuery.relationPresent_holds_iff
 def sd1IdentificationPresentHoldsIff := @CircuitQuery.identificationPresent_holds_iff
 def sd1DetectorReject := @CircuitDetectorCode.eval_reject
 def sd1DetectorExact := @CircuitDetectorCode.eval_exact_eq_true_iff
 def sd1DetectorAny := @CircuitDetectorCode.eval_any_eq_true_iff
-def sd1CircuitAcceptsEval := @CircuitReading.accepts_eq_true_iff_eval
-def sd1CircuitAcceptsReject := @CircuitReading.accepts_eq_false_of_code_reject
-def sd1CircuitAcceptsExact := @CircuitReading.accepts_eq_true_iff_of_code_exact
-def sd1CircuitAcceptsAny := @CircuitReading.accepts_eq_true_iff_of_code_any
+def sd1EquationCircuitAcceptsEval := @EquationCircuitReading.accepts_eq_eval
+def sd1EquationCircuitAcceptsReject :=
+  @EquationCircuitReading.accepts_eq_false_of_code_reject
+def sd1EquationCircuitAcceptsExact :=
+  @EquationCircuitReading.accepts_eq_true_iff_of_code_exact
+def sd1EquationCircuitAcceptsAny :=
+  @EquationCircuitReading.accepts_eq_true_iff_of_code_any
 def sd1CoreFamilyMemIff := @AATCorePackage.family_mem_iff_extracts
 def sd1CoreConfigurationEqCompose := @AATCorePackage.configuration_eq_compose
 def sd1CoreConfigurationFamilyMemIff :=
@@ -1955,8 +1978,10 @@ def sd1CoreObjectFamilyMemIff := @AATCorePackage.object_family_mem_iff_extracts
 def sd1CoreAlgebraCircuitReadingEq := @AATCorePackage.algebra_circuitReading_eq
 def sd1CoreAlgebraDetectorCodeEq := @AATCorePackage.algebra_detectorCode_eq
 def sd1CoreAlgebraAcceptsEq := @AATCorePackage.algebra_accepts_eq_detector_eval
-def sd1FiniteSemanticObstruction := FiniteModel.object_semanticObstruction
-def sd1FiniteNoSemanticObstruction := FiniteModel.acyclicObject_not_semanticObstruction
+def sd1FiniteEquationSemanticObstruction :=
+  FiniteModel.object_equationSemanticObstruction
+def sd1FiniteNoEquationSemanticObstruction :=
+  FiniteModel.acyclicObject_not_equationSemanticObstruction
 def sd1FiniteAtomPresentHolds := FiniteModel.componentA_atomPresent_holds_core
 def sd1FiniteAtomPresentNotHolds := FiniteModel.componentC_atomPresent_not_holds_core
 def sd1FiniteExtractsIffSelected := FiniteModel.extractionDoctrine_extracts_iff_selected
@@ -1964,14 +1989,16 @@ def sd1FiniteConfigurationRelationIff := FiniteModel.corePackage_configuration_r
 def sd1FiniteObjectRelationIff := FiniteModel.corePackage_object_relation_iff
 def sd1FiniteReachableFamilyNonempty := @FiniteModel.reachable_object_family_nonempty
 def sd1FiniteUnreachableObject := FiniteModel.unreachableEmptyObject_not_reachable
-def sd1FiniteRejectingCode := FiniteModel.rejectingCircuitReading_code
-def sd1FiniteComponentAAbsentLawful :=
-  FiniteModel.componentAAbsentLaw_holds_unreachableEmptyObject
+def sd1FiniteRejectingCode :=
+  FiniteModel.rejectingEquationCircuitReading_code
+def sd1FiniteComponentAAbsentEquation :=
+  @FiniteModel.componentAAbsentEquationHolds_iff
 def sd1FiniteComponentAAbsentFailure :=
-  FiniteModel.componentAAbsentLaw_failure_core
+  @FiniteModel.componentAPresentEquationCircuitReading_nonvacuous
 def sd1FiniteComponentAPresentDatumMatches :=
   @FiniteModel.componentAPresentDatum_matches_iff
-def sd1FiniteCompleteCode := FiniteModel.completeCircuitReading_code
+def sd1FiniteCompleteCode :=
+  FiniteModel.componentAPresentEquationCircuitReading_code
 def sd1FiniteCoreDetectorCode := FiniteModel.coreReading_circuit_code
 
 /- SD2 selected geometry and generated topology declarations. -/
@@ -1991,7 +2018,6 @@ def sd2SiteSignature := @Site.SelectedGeometryReading.toAATSite_signature
 def sd2SiteRequirements := @Site.SelectedGeometryReading.toAATSite_requirements
 def sd2SiteOverlap := @Site.SelectedGeometryReading.toAATSite_overlap
 def sd2TopologyGenerated := @Site.SelectedGeometryReading.topology_eq_generated
-def sd2FiniteLawUniverse := FiniteModel.site_lawUniverse_eq_core
 def sd2FiniteSignature := FiniteModel.site_signature_eq_core
 def sd2FiniteTopologyGenerated := FiniteModel.site_topology_eq_generated
 def sd2FiniteSingletonTopologyCover := FiniteModel.siteSingletonCover_topologyCover
@@ -5211,17 +5237,9 @@ def closedEquationalGeometryFullCorrespondence :=
 def closedEquationalGeometrySemanticIffObjectLawfulness :=
   @LawAlgebra.semanticLawfulAlong_iff_lawfulness
 
-/-- Audit alias for section lawfulness versus omega vanishing. -/
-def closedEquationalGeometrySemanticIffOmegaZero :=
-  @LawAlgebra.semanticLawfulAlong_iff_omegaU_zero
-
 /-- Audit alias for section lawfulness versus signature-axis vanishing. -/
 def closedEquationalGeometrySemanticIffSignatureAxesZero :=
   @LawAlgebra.semanticLawfulAlong_iff_requiredSignatureAxesZero
-
-/-- Audit alias for factorization versus omega vanishing. -/
-def closedEquationalGeometryFactorsIffOmegaZero :=
-  @LawAlgebra.factorsThroughLawfulClosedSubscheme_iff_omegaU_zero
 
 /-- Audit alias for factorization versus signature-axis vanishing. -/
 def closedEquationalGeometryFactorsIffSignatureAxesZero :=
@@ -5292,485 +5310,6 @@ def closedEquationalGeometryAllLawfulMapId :=
 /-- Audit alias for composition of all-law subscheme maps. -/
 def closedEquationalGeometryAllLawfulMapComp :=
   @LawAlgebra.allLawfulClosedSubschemeMap_comp
-
-/-!
-### Finite closed-equational geometry theorem index: SD9
-
-These aliases register every public theorem in the finite
-closed-equational geometry module.
--/
-
-/-- Audit alias for finite `weakSchemeBridge_valid`. -/
-def finiteClosedEquationalGeometry_weakSchemeBridge_valid :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakSchemeBridge_valid
-
-/-- Audit alias for finite `strongSchemeBridge_valid`. -/
-def finiteClosedEquationalGeometry_strongSchemeBridge_valid :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongSchemeBridge_valid
-
-/-- Audit alias for finite `weakSchemeBridge_presentationStable`. -/
-def finiteClosedEquationalGeometry_weakSchemeBridge_presentationStable :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakSchemeBridge_presentationStable
-
-/-- Audit alias for finite `weakSchemeBridge_toSheafifiedSection_bijective`. -/
-def finiteClosedEquationalGeometry_weakSchemeBridge_toSheafifiedSection_bijective :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakSchemeBridge_toSheafifiedSection_bijective
-
-/-- Audit alias for finite `weakCore_witnessIdeal_reflected`. -/
-def finiteClosedEquationalGeometry_weakCore_witnessIdeal_reflected :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakCore_witnessIdeal_reflected
-
-/-- Audit alias for finite `weakCore_componentA_equation`. -/
-def finiteClosedEquationalGeometry_weakCore_componentA_equation :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakCore_componentA_equation
-
-/-- Audit alias for finite `weakCore_other_equation`. -/
-def finiteClosedEquationalGeometry_weakCore_other_equation :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakCore_other_equation
-
-/-- Audit alias for finite `strongCore_componentA_equation`. -/
-def finiteClosedEquationalGeometry_strongCore_componentA_equation :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongCore_componentA_equation
-
-/-- Audit alias for finite `strongCore_componentB_equation`. -/
-def finiteClosedEquationalGeometry_strongCore_componentB_equation :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongCore_componentB_equation
-
-/-- Audit alias for finite `strongCore_other_equation`. -/
-def finiteClosedEquationalGeometry_strongCore_other_equation :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongCore_other_equation
-
-/-- Audit alias for finite `weakCore_leftChart_provenance_fires`. -/
-def finiteClosedEquationalGeometry_weakCore_leftChart_provenance_fires :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakCore_leftChart_provenance_fires
-
-/-- Audit alias for finite `weakCore_leftChart_witnessIdeal_realization_fires`. -/
-def finiteClosedEquationalGeometry_weakCore_leftChart_witnessIdeal_realization_fires :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakCore_leftChart_witnessIdeal_realization_fires
-
-/-- Audit alias for finite `weakReading_holdsOn_iff`. -/
-def finiteClosedEquationalGeometry_weakReading_holdsOn_iff :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakReading_holdsOn_iff
-
-/-- Audit alias for finite `strongReading_holdsOn_iff`. -/
-def finiteClosedEquationalGeometry_strongReading_holdsOn_iff :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongReading_holdsOn_iff
-
-/-- Audit alias for finite `weakReading_witness_eq_ofSemanticCore`. -/
-def finiteClosedEquationalGeometry_weakReading_witness_eq_ofSemanticCore :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakReading_witness_eq_ofSemanticCore
-
-/-- Audit alias for finite `strongReading_witness_eq_ofSemanticCore`. -/
-def finiteClosedEquationalGeometry_strongReading_witness_eq_ofSemanticCore :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongReading_witness_eq_ofSemanticCore
-
-/-- Audit alias for finite `weakGeometricReading_valid`. -/
-def finiteClosedEquationalGeometry_weakGeometricReading_valid :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakGeometricReading_valid
-
-/-- Audit alias for finite `strongGeometricReading_valid`. -/
-def finiteClosedEquationalGeometry_strongGeometricReading_valid :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongGeometricReading_valid
-
-/-- Audit alias for finite `weakReading_witnessCompatible`. -/
-def finiteClosedEquationalGeometry_weakReading_witnessCompatible :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakReading_witnessCompatible
-
-/-- Audit alias for finite `strongReading_witnessCompatible`. -/
-def finiteClosedEquationalGeometry_strongReading_witnessCompatible :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongReading_witnessCompatible
-
-/-- Audit alias for finite `weakReading_valid`. -/
-def finiteClosedEquationalGeometry_weakReading_valid :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakReading_valid
-
-/-- Audit alias for finite `strongReading_valid`. -/
-def finiteClosedEquationalGeometry_strongReading_valid :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongReading_valid
-
-/-- Audit alias for finite `weakReading_closed_unit`. -/
-def finiteClosedEquationalGeometry_weakReading_closed_unit :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakReading_closed_unit
-
-/-- Audit alias for finite `weakReading_selected`. -/
-def finiteClosedEquationalGeometry_weakReading_selected :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakReading_selected
-
-/-- Audit alias for finite `strongReading_selected`. -/
-def finiteClosedEquationalGeometry_strongReading_selected :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongReading_selected
-
-/-- Audit alias for finite `weakCore_leftChart_idealSheaf_realization_fires`. -/
-def finiteClosedEquationalGeometry_weakCore_leftChart_idealSheaf_realization_fires :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakCore_leftChart_idealSheaf_realization_fires
-
-/-- Audit alias for finite `weakWitness_valid`. -/
-def finiteClosedEquationalGeometry_weakWitness_valid :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakWitness_valid
-
-/-- Audit alias for finite `weakReading_requiredClosed`. -/
-def finiteClosedEquationalGeometry_weakReading_requiredClosed :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakReading_requiredClosed
-
-/-- Audit alias for finite `strongReading_requiredClosed`. -/
-def finiteClosedEquationalGeometry_strongReading_requiredClosed :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongReading_requiredClosed
-
-/-- Audit alias for finite `weakReading_allLawsSelected`. -/
-def finiteClosedEquationalGeometry_weakReading_allLawsSelected :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakReading_allLawsSelected
-
-/-- Audit alias for finite `strongReading_allLawsSelected`. -/
-def finiteClosedEquationalGeometry_strongReading_allLawsSelected :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongReading_allLawsSelected
-
-/-- Audit alias for finite `weakReading_requiredLawIdealExact`. -/
-def finiteClosedEquationalGeometry_weakReading_requiredLawIdealExact :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakReading_requiredLawIdealExact
-
-/-- Audit alias for finite `strongReading_requiredLawIdealExact`. -/
-def finiteClosedEquationalGeometry_strongReading_requiredLawIdealExact :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongReading_requiredLawIdealExact
-
-/-- Audit alias for finite `weakReading_lawIdealSound`. -/
-def finiteClosedEquationalGeometry_weakReading_lawIdealSound :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakReading_lawIdealSound
-
-/-- Audit alias for finite `weakReading_lawIdealComplete`. -/
-def finiteClosedEquationalGeometry_weakReading_lawIdealComplete :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakReading_lawIdealComplete
-
-/-- Audit alias for finite `weakReading_lawIdealExact`. -/
-def finiteClosedEquationalGeometry_weakReading_lawIdealExact :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakReading_lawIdealExact
-
-/-- Audit alias for finite `weakReading_allLawIdealExact`. -/
-def finiteClosedEquationalGeometry_weakReading_allLawIdealExact :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakReading_allLawIdealExact
-
-/-- Audit alias for finite `strongReading_allLawIdealExact`. -/
-def finiteClosedEquationalGeometry_strongReading_allLawIdealExact :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongReading_allLawIdealExact
-
-/-- Audit alias for finite `weakToStrong_valid`. -/
-def finiteClosedEquationalGeometry_weakToStrong_valid :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakToStrong_valid
-
-/-- Audit alias for finite `weak_ideal_lt_strong`. -/
-def finiteClosedEquationalGeometry_weak_ideal_lt_strong :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weak_ideal_lt_strong
-
-/-- Audit alias for finite `weakSubscheme_nonempty`. -/
-def finiteClosedEquationalGeometry_weakSubscheme_nonempty :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakSubscheme_nonempty
-
-/-- Audit alias for finite `strongSubscheme_nonempty`. -/
-def finiteClosedEquationalGeometry_strongSubscheme_nonempty :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongSubscheme_nonempty
-
-/-- Audit alias for finite `weakImmersion_not_isIso`. -/
-def finiteClosedEquationalGeometry_weakImmersion_not_isIso :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakImmersion_not_isIso
-
-/-- Audit alias for finite `strongImmersion_not_isIso`. -/
-def finiteClosedEquationalGeometry_strongImmersion_not_isIso :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strongImmersion_not_isIso
-
-/-- Audit alias for finite `weakToStrongMap_not_isIso`. -/
-def finiteClosedEquationalGeometry_weakToStrongMap_not_isIso :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakToStrongMap_not_isIso
-
-/-- Audit alias for finite `weakToStrongAllMap_not_isIso`. -/
-def finiteClosedEquationalGeometry_weakToStrongAllMap_not_isIso :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weakToStrongAllMap_not_isIso
-
-/-- Audit alias for finite `requiredAllLawUniverse_required_iff`. -/
-def finiteClosedEquationalGeometry_requiredAllLawUniverse_required_iff :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.requiredAllLawUniverse_required_iff
-
-/-- Audit alias for finite `requiredAllLawUniverse_optional_strengthening`. -/
-def finiteClosedEquationalGeometry_requiredAllLawUniverse_optional_strengthening :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.requiredAllLawUniverse_optional_strengthening
-
-/-- Audit alias for finite `requiredAllSite_lawUniverse`. -/
-def finiteClosedEquationalGeometry_requiredAllSite_lawUniverse :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.requiredAllSite_lawUniverse
-
-/-- Audit alias for finite `requiredAllReferenceModel_underlying`. -/
-def finiteClosedEquationalGeometry_requiredAllReferenceModel_underlying :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.requiredAllReferenceModel_underlying
-
-/-- Audit alias for finite `requiredAllSchemeBridge_valid`. -/
-def finiteClosedEquationalGeometry_requiredAllSchemeBridge_valid :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.requiredAllSchemeBridge_valid
-
-/-- Audit alias for finite `requiredLaw_componentA_equation`. -/
-def finiteClosedEquationalGeometry_requiredLaw_componentA_equation :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.requiredLaw_componentA_equation
-
-/-- Audit alias for finite `strengtheningLaw_componentB_equation`. -/
-def finiteClosedEquationalGeometry_strengtheningLaw_componentB_equation :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.strengtheningLaw_componentB_equation
-
-/-- Audit alias for finite `requiredAllReading_witnessCompatible`. -/
-def finiteClosedEquationalGeometry_requiredAllReading_witnessCompatible :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.requiredAllReading_witnessCompatible
-
-/-- Audit alias for finite `requiredAllReading_valid`. -/
-def finiteClosedEquationalGeometry_requiredAllReading_valid :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.requiredAllReading_valid
-
-/-- Audit alias for finite `requiredAllReading_requiredClosed`. -/
-def finiteClosedEquationalGeometry_requiredAllReading_requiredClosed :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.requiredAllReading_requiredClosed
-
-/-- Audit alias for finite `requiredAllReading_allLawsSelected`. -/
-def finiteClosedEquationalGeometry_requiredAllReading_allLawsSelected :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.requiredAllReading_allLawsSelected
-
-/-- Audit alias for finite `required_indices_ssubset_closed`. -/
-def finiteClosedEquationalGeometry_required_indices_ssubset_closed :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.required_indices_ssubset_closed
-
-/-- Audit alias for finite `requiredAllReading_selected`. -/
-def finiteClosedEquationalGeometry_requiredAllReading_selected :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.requiredAllReading_selected
-
-/-- Audit alias for finite `required_indices_ssubset_selected`. -/
-def finiteClosedEquationalGeometry_required_indices_ssubset_selected :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.required_indices_ssubset_selected
-
-/-- Audit alias for finite `required_ideal_lt_all_ideal`. -/
-def finiteClosedEquationalGeometry_required_ideal_lt_all_ideal :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.required_ideal_lt_all_ideal
-
-/-- Audit alias for finite `fullToRequiredLawfulMap_not_isIso`. -/
-def finiteClosedEquationalGeometry_fullToRequiredLawfulMap_not_isIso :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.fullToRequiredLawfulMap_not_isIso
-
-/-- Audit alias for finite `selected_point_factors_required`. -/
-def finiteClosedEquationalGeometry_selected_point_factors_required :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.selected_point_factors_required
-
-/-- Audit alias for finite `selected_point_not_factors_all`. -/
-def finiteClosedEquationalGeometry_selected_point_not_factors_all :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.selected_point_not_factors_all
-
-/-- Audit alias for finite `selected_modTwo_point_factors_all`. -/
-def finiteClosedEquationalGeometry_selected_modTwo_point_factors_all :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.selected_modTwo_point_factors_all
-
-/-- Audit alias for finite `integerPoint_objectComparison`. -/
-def finiteClosedEquationalGeometry_integerPoint_objectComparison :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_objectComparison
-
-/-- Audit alias for finite `integerPoint_objectComparison_fails_for_cyclic`. -/
-def finiteClosedEquationalGeometry_integerPoint_objectComparison_fails_for_cyclic :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_objectComparison_fails_for_cyclic
-
-/-- Audit alias for finite `integerPoint_omega_fires`. -/
-def finiteClosedEquationalGeometry_integerPoint_omega_fires :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_omega_fires
-
-/-- Audit alias for finite `integerPoint_axis_fires`. -/
-def finiteClosedEquationalGeometry_integerPoint_axis_fires :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_axis_fires
-
-/-- Audit alias for finite `integerPoint_globalEquationsVanish_weak`. -/
-def finiteClosedEquationalGeometry_integerPoint_globalEquationsVanish_weak :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_globalEquationsVanish_weak
-
-/-- Audit alias for finite `integerPoint_not_globalEquationsVanish_strong`. -/
-def finiteClosedEquationalGeometry_integerPoint_not_globalEquationsVanish_strong :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_not_globalEquationsVanish_strong
-
-/-- Audit alias for finite `integerPoint_semanticLawful_weak`. -/
-def finiteClosedEquationalGeometry_integerPoint_semanticLawful_weak :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_semanticLawful_weak
-
-/-- Audit alias for finite `integerPoint_not_semanticLawful_strong`. -/
-def finiteClosedEquationalGeometry_integerPoint_not_semanticLawful_strong :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_not_semanticLawful_strong
-
-/-- Audit alias for finite `integerPoint_fullySemanticLawful_weak`. -/
-def finiteClosedEquationalGeometry_integerPoint_fullySemanticLawful_weak :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_fullySemanticLawful_weak
-
-/-- Audit alias for finite `integerPoint_not_fullySemanticLawful_strong`. -/
-def finiteClosedEquationalGeometry_integerPoint_not_fullySemanticLawful_strong :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_not_fullySemanticLawful_strong
-
-/-- Audit alias for finite `integerPoint_witnessVanishes_weak`. -/
-def finiteClosedEquationalGeometry_integerPoint_witnessVanishes_weak :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_witnessVanishes_weak
-
-/-- Audit alias for finite `integerPoint_not_witnessVanishes_strong`. -/
-def finiteClosedEquationalGeometry_integerPoint_not_witnessVanishes_strong :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_not_witnessVanishes_strong
-
-/-- Audit alias for finite `integerPoint_idealLawful_weak`. -/
-def finiteClosedEquationalGeometry_integerPoint_idealLawful_weak :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_idealLawful_weak
-
-/-- Audit alias for finite `integerPoint_not_idealLawful_strong`. -/
-def finiteClosedEquationalGeometry_integerPoint_not_idealLawful_strong :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_not_idealLawful_strong
-
-/-- Audit alias for finite `integerPoint_fullIdealLawful_weak`. -/
-def finiteClosedEquationalGeometry_integerPoint_fullIdealLawful_weak :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_fullIdealLawful_weak
-
-/-- Audit alias for finite `integerPoint_not_fullIdealLawful_strong`. -/
-def finiteClosedEquationalGeometry_integerPoint_not_fullIdealLawful_strong :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_not_fullIdealLawful_strong
-
-/-- Audit alias for finite `integerPoint_factors_weak`. -/
-def finiteClosedEquationalGeometry_integerPoint_factors_weak :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_factors_weak
-
-/-- Audit alias for finite `integerPoint_not_factors_strong`. -/
-def finiteClosedEquationalGeometry_integerPoint_not_factors_strong :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_not_factors_strong
-
-/-- Audit alias for finite `modTwoPoint_factors_weak`. -/
-def finiteClosedEquationalGeometry_modTwoPoint_factors_weak :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.modTwoPoint_factors_weak
-
-/-- Audit alias for finite `modTwoPoint_factors_strong`. -/
-def finiteClosedEquationalGeometry_modTwoPoint_factors_strong :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.modTwoPoint_factors_strong
-
-/-- Audit alias for finite `integerPoint_factorsAll_weak`. -/
-def finiteClosedEquationalGeometry_integerPoint_factorsAll_weak :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_factorsAll_weak
-
-/-- Audit alias for finite `integerPoint_not_factorsAll_strong`. -/
-def finiteClosedEquationalGeometry_integerPoint_not_factorsAll_strong :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.integerPoint_not_factorsAll_strong
-
-/-- Audit alias for finite `weak_correspondence_fires`. -/
-def finiteClosedEquationalGeometry_weak_correspondence_fires :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weak_correspondence_fires
-
-/-- Audit alias for finite `weak_semanticCore_correspondence_fires`. -/
-def finiteClosedEquationalGeometry_weak_semanticCore_correspondence_fires :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weak_semanticCore_correspondence_fires
-
-/-- Audit alias for finite `weak_full_correspondence_fires`. -/
-def finiteClosedEquationalGeometry_weak_full_correspondence_fires :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.weak_full_correspondence_fires
-
-/-- Audit alias for finite `restrictionBrokenSchemeBridge_not_valid`. -/
-def finiteClosedEquationalGeometry_restrictionBrokenSchemeBridge_not_valid :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.restrictionBrokenSchemeBridge_not_valid
-
-/-- Audit alias for finite `restrictionBrokenSchemeBridge_not_realized`. -/
-def finiteClosedEquationalGeometry_restrictionBrokenSchemeBridge_not_realized :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.restrictionBrokenSchemeBridge_not_realized
-
-/-- Audit alias for finite `baseChangeBrokenGeometricReading_not_valid`. -/
-def finiteClosedEquationalGeometry_baseChangeBrokenGeometricReading_not_valid :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.baseChangeBrokenGeometricReading_not_valid
-
-/-- Audit alias for finite `baseChangeBrokenReading_witnessCompatible`. -/
-def finiteClosedEquationalGeometry_baseChangeBrokenReading_witnessCompatible :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.baseChangeBrokenReading_witnessCompatible
-
-/-- Audit alias for finite `baseChangeBrokenReading_not_valid`. -/
-def finiteClosedEquationalGeometry_baseChangeBrokenReading_not_valid :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.baseChangeBrokenReading_not_valid
-
-/-- Audit alias for finite `missingRequiredReading_valid`. -/
-def finiteClosedEquationalGeometry_missingRequiredReading_valid :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.missingRequiredReading_valid
-
-/-- Audit alias for finite `missingRequiredReading_not_requiredClosed`. -/
-def finiteClosedEquationalGeometry_missingRequiredReading_not_requiredClosed :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.missingRequiredReading_not_requiredClosed
-
-/-- Audit alias for finite `missingRequiredReading_not_allLawsSelected`. -/
-def finiteClosedEquationalGeometry_missingRequiredReading_not_allLawsSelected :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.missingRequiredReading_not_allLawsSelected
-
-/-- Audit alias for finite `restrictionBrokenSelectionReading_not_valid`. -/
-def finiteClosedEquationalGeometry_restrictionBrokenSelectionReading_not_valid :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.restrictionBrokenSelectionReading_not_valid
-
-/-- Audit alias for finite `missingRequiredSelectionReading_valid`. -/
-def finiteClosedEquationalGeometry_missingRequiredSelectionReading_valid :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.missingRequiredSelectionReading_valid
-
-/-- Audit alias for finite `missingRequiredSelectionReading_not_requiredClosed`. -/
-def finiteClosedEquationalGeometry_missingRequiredSelectionReading_not_requiredClosed :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.missingRequiredSelectionReading_not_requiredClosed
-
-/-- Audit alias for finite `semanticMismatchReading_valid`. -/
-def finiteClosedEquationalGeometry_semanticMismatchReading_valid :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.semanticMismatchReading_valid
-
-/-- Audit alias for finite `semanticMismatchReading_witnessCompatible`. -/
-def finiteClosedEquationalGeometry_semanticMismatchReading_witnessCompatible :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.semanticMismatchReading_witnessCompatible
-
-/-- Audit alias for finite `semanticMismatchReading_requiredClosed`. -/
-def finiteClosedEquationalGeometry_semanticMismatchReading_requiredClosed :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.semanticMismatchReading_requiredClosed
-
-/-- Audit alias for finite `semanticMismatchReading_allLawsSelected`. -/
-def finiteClosedEquationalGeometry_semanticMismatchReading_allLawsSelected :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.semanticMismatchReading_allLawsSelected
-
-/-- Audit alias for finite `semanticMismatchReading_not_exact`. -/
-def finiteClosedEquationalGeometry_semanticMismatchReading_not_exact :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.semanticMismatchReading_not_exact
-
-/-- Audit alias for finite `semanticMismatchReading_not_lawIdealExact`. -/
-def finiteClosedEquationalGeometry_semanticMismatchReading_not_lawIdealExact :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.semanticMismatchReading_not_lawIdealExact
-
-/-- Audit alias for finite `semanticMismatchReading_not_complete`. -/
-def finiteClosedEquationalGeometry_semanticMismatchReading_not_complete :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.semanticMismatchReading_not_complete
-
-/-- Audit alias for finite `semanticMismatchReading_not_allLawIdealExact`. -/
-def finiteClosedEquationalGeometry_semanticMismatchReading_not_allLawIdealExact :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.semanticMismatchReading_not_allLawIdealExact
-
-/-- Audit alias for finite `semanticMismatch_full_correspondence_fails`. -/
-def finiteClosedEquationalGeometry_semanticMismatch_full_correspondence_fails :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.semanticMismatch_full_correspondence_fails
-
-/-- Audit alias for finite `semanticOverclaimReading_valid`. -/
-def finiteClosedEquationalGeometry_semanticOverclaimReading_valid :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.semanticOverclaimReading_valid
-
-/-- Audit alias for finite `semanticOverclaimReading_witnessCompatible`. -/
-def finiteClosedEquationalGeometry_semanticOverclaimReading_witnessCompatible :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.semanticOverclaimReading_witnessCompatible
-
-/-- Audit alias for finite `semanticOverclaimReading_requiredClosed`. -/
-def finiteClosedEquationalGeometry_semanticOverclaimReading_requiredClosed :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.semanticOverclaimReading_requiredClosed
-
-/-- Audit alias for finite `semanticOverclaimReading_not_sound`. -/
-def finiteClosedEquationalGeometry_semanticOverclaimReading_not_sound :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.semanticOverclaimReading_not_sound
-
-/-- Audit alias for finite `restrictionBrokenWitness_not_valid`. -/
-def finiteClosedEquationalGeometry_restrictionBrokenWitness_not_valid :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.restrictionBrokenWitness_not_valid
-
-/-- Audit alias for finite `restrictionBrokenReading_not_witnessCompatible`. -/
-def finiteClosedEquationalGeometry_restrictionBrokenReading_not_witnessCompatible :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.restrictionBrokenReading_not_witnessCompatible
-
-/-- Audit alias for finite `restrictionBrokenReading_not_valid`. -/
-def finiteClosedEquationalGeometry_restrictionBrokenReading_not_valid :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.restrictionBrokenReading_not_valid
-
-/-- Audit alias for finite `coordinateBrokenInclusion_not_valid`. -/
-def finiteClosedEquationalGeometry_coordinateBrokenInclusion_not_valid :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.coordinateBrokenInclusion_not_valid
 
 /-! Part 4 R1: reading-core functoriality. -/
 
@@ -7447,8 +6986,8 @@ noncomputable def readingFunctoriality_positiveCoreChange :=
   AAT.AG.ReadingFunctorialityFinite.positiveCoreChange
 
 /-- Audit alias for the selected positive law. -/
-noncomputable def readingFunctoriality_positiveLawIndex :=
-  AAT.AG.ReadingFunctorialityFinite.positiveLawIndex
+noncomputable def readingFunctoriality_positiveEquationIndex :=
+  AAT.AG.ReadingFunctorialityFinite.positiveEquationIndex
 
 /-- Audit alias for the accepted positive circuit. -/
 noncomputable def readingFunctoriality_positiveCircuit :=
@@ -9351,8 +8890,8 @@ def legacyConsolidationAudit_AAT_AG_LawAlgebra_Correspondence_localObstructionId
 def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_acyclicLocalSection_lawful_from_witnessIdeals := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicLocalSection_lawful_from_witnessIdeals
 def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_acyclicSectionData_eq_1 := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicSectionData.eq_1
 def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_acyclic_cycleWitnessIdeal_le_ker := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclic_cycleWitnessIdeal_le_ker
-def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_acyclic_lawfulness := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclic_lawfulness
-def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_acyclic_noCycleLaw_holds := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclic_noCycleLaw_holds
+def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_acyclic_equationLawful := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclic_equationLawful
+def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_acyclic_noCycleEquationHolds := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclic_noCycleEquationHolds
 def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_acyclic_pulledObstructionIdeal_eq_bot := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclic_pulledObstructionIdeal_eq_bot
 def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_acyclic_pulled_lawful_locus_has_point := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclic_pulled_lawful_locus_has_point
 def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_acyclic_sectionPrimeMap_mem_localLawfulLocus := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclic_sectionPrimeMap_mem_localLawfulLocus
@@ -9361,11 +8900,11 @@ def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenc
 def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_cycleIdeal_eq_1 := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.cycleIdeal.eq_1
 def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_cyclicSectionData_eq_1 := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.cyclicSectionData.eq_1
 def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_cyclicSection_not_lawful := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.cyclicSection_not_lawful
-def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_cyclic_lawfulness_fails := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.cyclic_lawfulness_fails
-def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_cyclic_noCycleLaw_fails := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.cyclic_noCycleLaw_fails
+def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_cyclic_equationLawful_fails := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.cyclic_equationLawful_fails
+def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_cyclic_noCycleEquation_fails := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.cyclic_noCycleEquation_fails
 def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_cyclic_pulledObstructionIdeal_eq_top := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.cyclic_pulledObstructionIdeal_eq_top
 def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_cyclic_pulled_lawful_locus_no_point := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.cyclic_pulled_lawful_locus_no_point
-def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_lawfulness_iff_signatureAxesZero := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.lawfulness_iff_signatureAxesZero
+def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_equationLawful_iff_signatureAxesZero := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.equationLawful_iff_signatureAxesZero
 def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_localObstructionIdeal_eq_cycleIdeal := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.localObstructionIdeal_eq_cycleIdeal
 def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_oneEval_eq_1 := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.oneEval.eq_1
 def legacyConsolidationAudit_AAT_AG_LawAlgebra_FiniteExamples_CycleCorrespondenceExample_zeroEval_eq_1 := @AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.zeroEval.eq_1
@@ -9521,15 +9060,15 @@ def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureAxisComparis
 def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureLawfulFactorizationContext_curvature_zero_iff_factorsThroughLawfulClosedSubscheme := @AAT.AG.RepresentationAnalysis.CurvatureLawfulFactorizationContext.curvature_zero_iff_factorsThroughLawfulClosedSubscheme
 def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureLawfulFactorizationContext_curvature_zero_of_factorsThroughLawfulClosedSubscheme := @AAT.AG.RepresentationAnalysis.CurvatureLawfulFactorizationContext.curvature_zero_of_factorsThroughLawfulClosedSubscheme
 def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureLawfulFactorizationContext_factorsThroughLawfulClosedSubscheme_of_curvature_zero := @AAT.AG.RepresentationAnalysis.CurvatureLawfulFactorizationContext.factorsThroughLawfulClosedSubscheme_of_curvature_zero
-def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureReadingContext_curvature_zero_iff_omegaU_zero := @AAT.AG.RepresentationAnalysis.CurvatureReadingContext.curvature_zero_iff_omegaU_zero
+def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureReadingContext_curvature_zero_iff_omegaE_zero := @AAT.AG.RepresentationAnalysis.CurvatureReadingContext.curvature_zero_iff_omegaE_zero
 def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureReadingContext_curvature_zero_iff_requiredObstructionValuesZero := @AAT.AG.RepresentationAnalysis.CurvatureReadingContext.curvature_zero_iff_requiredObstructionValuesZero
-def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureReadingProfile_curvatureReading_eq_omegaU := @AAT.AG.RepresentationAnalysis.CurvatureReadingProfile.curvatureReading_eq_omegaU
-def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureReadingProfile_curvatureZero_iff_omegaU_zero := @AAT.AG.RepresentationAnalysis.CurvatureReadingProfile.curvatureZero_iff_omegaU_zero
+def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureReadingProfile_curvatureReading_eq_omegaE := @AAT.AG.RepresentationAnalysis.CurvatureReadingProfile.curvatureReading_eq_omegaE
+def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureReadingProfile_curvatureZero_iff_omegaE_zero := @AAT.AG.RepresentationAnalysis.CurvatureReadingProfile.curvatureZero_iff_omegaE_zero
 def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureReadingProfile_curvatureZero_iff_requiredObstructionValuesZero := @AAT.AG.RepresentationAnalysis.CurvatureReadingProfile.curvatureZero_iff_requiredObstructionValuesZero
 def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureReadingProfile_mk_inj := @AAT.AG.RepresentationAnalysis.CurvatureReadingProfile.mk.inj
 def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureReadingProfile_mk_injEq := @AAT.AG.RepresentationAnalysis.CurvatureReadingProfile.mk.injEq
 def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureReadingProfile_mk_sizeOf_spec := @AAT.AG.RepresentationAnalysis.CurvatureReadingProfile.mk.sizeOf_spec
-def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureReadingProfile_ofOmegaU__proof_1 := @AAT.AG.RepresentationAnalysis.CurvatureReadingProfile.ofOmegaU._proof_1
+def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_CurvatureReadingProfile_ofOmegaE := @AAT.AG.RepresentationAnalysis.CurvatureReadingProfile.ofOmegaE
 def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_DependencyAcyclicityProfile_acyclicityPreservation := @AAT.AG.RepresentationAnalysis.DependencyAcyclicityProfile.acyclicityPreservation
 def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_DependencyAcyclicityProfile_graphCycle_yields_obstructionWitness := @AAT.AG.RepresentationAnalysis.DependencyAcyclicityProfile.graphCycle_yields_obstructionWitness
 def legacyConsolidationAudit_AAT_AG_RepresentationAnalysis_DependencyAcyclicityProfile_mk_inj := @AAT.AG.RepresentationAnalysis.DependencyAcyclicityProfile.mk.inj
@@ -10409,12 +9948,8 @@ def selectedGeometryToAATSiteEquationSystem :=
   @Site.SelectedGeometryReading.toAATSite_equationSystem
 
 /-- Kernel-audit alias for the finite residual/NoCycle equivalence. -/
-def finiteCoreEquationHoldsIffNoCycleLaw :=
-  @FiniteModel.equationHolds_iff_noCycleLaw
-
-/-- Kernel-audit alias for the equation-generated NoCycle legacy display. -/
-def finiteCoreEquationSystemLegacyLawEqNoCycleLaw :=
-  @FiniteModel.equationSystem_legacy_law_eq_noCycleLaw
+def finiteCoreEquationHoldsIffNoCycle :=
+  @FiniteModel.equationHolds_iff_noCycle
 
 /-- Kernel-audit alias for the concrete NoCycle detector-soundness proof. -/
 def finiteCoreEquationCircuitReadingSound :=
@@ -10453,20 +9988,12 @@ def finiteRingedSiteEquationRequired :=
   @LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site_equation_required
 
 /-- Kernel-audit alias for the ringed-site residual/NoCycle equivalence. -/
-def finiteRingedSiteEquationHoldsIffNoCycleLaw :=
-  @LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site_equationHolds_iff_noCycleLaw
-
-/-- Kernel-audit alias for the ringed-site generated NoCycle legacy display. -/
-def finiteRingedSiteLawEqNoCycleLaw :=
-  @LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site_law_eq_noCycleLaw
+def finiteRingedSiteEquationHoldsIffNoCycle :=
+  @LawAlgebra.FiniteExamples.RingedSite.FiniteModel.site_equationHolds_iff_noCycle
 
 /-- Kernel-audit alias for the finite site's residual/NoCycle equivalence. -/
-def finiteSiteEquationHoldsIffNoCycleLaw :=
-  @FiniteModel.site_equationHolds_iff_noCycleLaw
-
-/-- Kernel-audit alias for the finite generated site law display. -/
-def finiteSiteLawHoldsIffNoCycleLaw :=
-  @FiniteModel.site_law_holds_iff_noCycleLaw
+def finiteSiteEquationHoldsIffNoCycle :=
+  @FiniteModel.site_equationHolds_iff_noCycle
 
 /-- Kernel-audit alias for required coordinates on admissible covers. -/
 def admissibleCoverEquationCoordinate :=
@@ -10483,18 +10010,6 @@ def uAdequateCoverEquationCoordinate :=
 /-- Kernel-audit alias for the reference site's required equation. -/
 def standardGeometryReferenceSiteEquationRequired :=
   @Examples.StandardGeometryReferenceModels.referenceSite_equation_required
-
-/-- Kernel-audit alias for the required role in the two-equation fixture. -/
-def closedEquationalRequiredAllEquationSystemRequiredIff :=
-  @LawAlgebra.FiniteExamples.ClosedEquationalGeometry.requiredAllEquationSystem_required_iff
-
-/-- Kernel-audit alias for legacy valuation of equation lawfulness. -/
-def closedEquationalSemanticLawfulAlongIffOmegaUZero :=
-  @LawAlgebra.semanticLawfulAlong_iff_omegaU_zero
-
-/-- Kernel-audit alias for legacy valuation of lawful factorization. -/
-def closedEquationalFactorsThroughLawfulIffOmegaUZero :=
-  @LawAlgebra.factorsThroughLawfulClosedSubscheme_iff_omegaU_zero
 
 /-- Kernel-audit alias for the fixture's three distinct equation roles. -/
 def architecturalEquationSystemFiniteRoleSelectorSeparates :=
@@ -10527,6 +10042,371 @@ def architecturalEquationSystemFiniteNegativeNotFullyEquationLawful :=
 /-- Kernel-audit alias for the positive/negative finite separation theorem. -/
 def architecturalEquationSystemFiniteLawfulnessSeparates :=
   Examples.ArchitecturalEquationSystemFiniteExample.lawfulness_separates
+
+/-! Issue #3735 equation-system consumer and exact-transport audit aliases. -/
+
+def issue3735EquationHoldsIffOmegaZero :=
+  @AAT.AG.equationHolds_iff_omega_zero
+
+def issue3735EquationLawfulIffOmegaEZero :=
+  @AAT.AG.equationLawful_iff_omegaE_zero
+
+def issue3735OperationReflectsObstructionFailure :=
+  @AAT.AG.Operation.reflectsObstruction_failure
+
+def issue3735OperationRepairsObstructionApply :=
+  @AAT.AG.Operation.repairsObstruction_apply
+
+def issue3735OperationSynthesizesLawfulObjectApply :=
+  @AAT.AG.Operation.synthesizesLawfulObject_apply
+
+def issue3735OmegaEZeroIffRequired :=
+  @AAT.AG.omegaE_zero_iff_required
+
+def issue3735EquationLawfulIffNoRequiredEquationCircuit :=
+  @AAT.AG.equationLawful_iff_noRequiredEquationCircuit
+
+def issue3735EquationLawfulIffRequiredSignatureAxesZero :=
+  @AAT.AG.equationLawful_iff_requiredSignatureAxesZero
+
+def issue3735ConcreteThreeReadingAgreement :=
+  @AAT.AG.concreteThreeReadingAgreement
+
+def issue3735SubstitutionEquationHoldsIff :=
+  @AAT.AG.FiniteModel.substitutionEquationHolds_iff
+
+def issue3735AcyclicSubstitutionEquationHolds :=
+  @AAT.AG.FiniteModel.acyclic_substitutionEquationHolds
+
+def issue3735ObjectSubstitutionEquationFails :=
+  @AAT.AG.FiniteModel.object_substitutionEquation_fails
+
+def issue3735AcyclicNoCycleEquationHolds :=
+  @AAT.AG.FiniteModel.acyclic_noCycleEquationHolds
+
+def issue3735ObjectNoCycleEquationFails :=
+  @AAT.AG.FiniteModel.object_noCycleEquation_fails
+
+def issue3735AcyclicEquationLawful :=
+  @AAT.AG.FiniteModel.acyclic_equationLawful
+
+def issue3735ObjectEquationLawfulFails :=
+  @AAT.AG.FiniteModel.object_equationLawful_fails
+
+def issue3735NoCycleEquationSound :=
+  @AAT.AG.FiniteModel.noCycleEquationSound
+
+def issue3735NoCycleEquationComplete :=
+  @AAT.AG.FiniteModel.noCycleEquationComplete
+
+def issue3735FiniteEquationLawfulIffOmegaZero :=
+  @AAT.AG.FiniteModel.finite_equationLawful_iff_omega_zero
+
+def issue3735AlwaysOneEquationValuationNotSound :=
+  @AAT.AG.FiniteModel.alwaysOneEquationValuation_not_sound
+
+def issue3735AlwaysZeroEquationValuationNotComplete :=
+  @AAT.AG.FiniteModel.alwaysZeroEquationValuation_not_complete
+
+def issue3735ComponentAAbsentThreeReadingAgreement :=
+  @AAT.AG.FiniteModel.componentAAbsent_concreteThreeReadingAgreement
+
+def issue3735ComponentAAbsentSignatureAxesZeroUnreachable :=
+  @AAT.AG.FiniteModel.componentAAbsent_signatureAxesZero_unreachableEmptyObject
+
+def issue3735ComponentAAbsentSignatureAxesZeroFails :=
+  @AAT.AG.FiniteModel.componentAAbsent_signatureAxesZero_fails_core
+
+def issue3735SemanticRepairLawfulObjectNoCycle :=
+  @AAT.AG.Examples.SemanticRepairPart10.lawfulObject_noCycle
+
+def issue3735SemanticRepairEquationHoldsIffNoCycle :=
+  @AAT.AG.Examples.SemanticRepairPart10.lawEquationSystem_equationHolds_iff_noCycle
+
+def issue3735SemanticRepairNonlawfulObjectHasCycle :=
+  @AAT.AG.Examples.SemanticRepairPart10.nonlawfulObject_hasDependencyCycle
+
+def issue3735CircuitQueryTransportTrans :=
+  @AAT.AG.CircuitQuery.transport_trans
+
+def issue3735FiniteCircuitDatumTransportTrans :=
+  @AAT.AG.FiniteCircuitDatum.transport_trans
+
+def issue3735CircuitQueryTransportRefl :=
+  @AAT.AG.CircuitQuery.transport_refl
+
+def issue3735FiniteCircuitDatumTransportRefl :=
+  @AAT.AG.FiniteCircuitDatum.transport_refl
+
+def issue3735FiniteCircuitDatumTransportInjective :=
+  @AAT.AG.FiniteCircuitDatum.transport_injective
+
+def issue3735CircuitDetectorCodeTransportTrans :=
+  @AAT.AG.CircuitDetectorCode.transport_trans
+
+def issue3735CircuitDetectorCodeTransportRefl :=
+  @AAT.AG.CircuitDetectorCode.transport_refl
+
+def issue3735CircuitDetectorCodeEvalTransport :=
+  @AAT.AG.CircuitDetectorCode.eval_transport
+
+def issue3735CircuitQueryTransportHoldsIff :=
+  @AAT.AG.CircuitQuery.transport_holds_iff
+
+def issue3735FiniteCircuitDatumTransportMatchesIff :=
+  @AAT.AG.FiniteCircuitDatum.transport_matches_iff
+
+def issue3735ExactTransportRequiredIff :=
+  @AAT.AG.EquationSystemExactTransport.required_iff
+
+def issue3735ExactTransportOptionalIff :=
+  @AAT.AG.EquationSystemExactTransport.optional_iff
+
+def issue3735ExactTransportDerivedIff :=
+  @AAT.AG.EquationSystemExactTransport.derived_iff
+
+def issue3735ExactTransportEquationHoldsIff :=
+  @AAT.AG.EquationSystemExactTransport.equationHolds_iff
+
+def issue3735ExactTransportEquationLawfulIff :=
+  @AAT.AG.EquationSystemExactTransport.equationLawful_iff
+
+def issue3735ExactTransportFullyEquationLawfulIff :=
+  @AAT.AG.EquationSystemExactTransport.fullyEquationLawful_iff
+
+def issue3735SignedExactRequiredIff :=
+  @AAT.AG.SignedExactCoreReadingHom.required_iff
+
+def issue3735SignedExactOptionalIff :=
+  @AAT.AG.SignedExactCoreReadingHom.optional_iff
+
+def issue3735SignedExactDerivedIff :=
+  @AAT.AG.SignedExactCoreReadingHom.derived_iff
+
+def issue3735SignedExactEquationHoldsIff :=
+  @AAT.AG.SignedExactCoreReadingHom.equation_holds_iff
+
+def issue3735SignedExactEquationLawfulIff :=
+  @AAT.AG.SignedExactCoreReadingHom.equation_lawful_iff
+
+def issue3735SignedExactFullyEquationLawfulIff :=
+  @AAT.AG.SignedExactCoreReadingHom.fully_equation_lawful_iff
+
+def issue3735SignedExactMatchesIff :=
+  @AAT.AG.SignedExactCoreReadingHom.matches_iff
+
+def issue3735SignedExactAcceptsIff :=
+  @AAT.AG.SignedExactCoreReadingHom.accepts_iff
+
+def issue3735NonidentityExactOptionalRole :=
+  @AAT.AG.ReadingFunctorialityFinite.nonidentityExactCoreChange_optional_role
+
+def issue3735NonidentityExactDerivedRole :=
+  @AAT.AG.ReadingFunctorialityFinite.nonidentityExactCoreChange_derived_role
+
+def issue3735ProfileEquationIdealMapWitness :=
+  @AAT.AG.Measurement.profileEquationIdeal_eq_map_witnessIdeal
+
+def issue3735ProfileRequiredIdealMapObstruction :=
+  @AAT.AG.Measurement.profileRequiredEquationIdeal_eq_map_obstructionIdeal
+
+def issue3735ProfileEquationIdealSpanRange :=
+  @AAT.AG.Measurement.profileEquationIdeal_eq_span_range
+
+def issue3735ProfileRequiredIdealISup :=
+  @AAT.AG.Measurement.profileRequiredEquationIdeal_eq_iSup
+
+def issue3735ProfileRequiredIdealSpan :=
+  @AAT.AG.Measurement.profileRequiredEquationIdeal_eq_span
+
+def issue3735ComputationCanonicalLeftIdeal :=
+  @AAT.AG.Measurement.FiniteAATProfileRealization.leftIdeal_eq_span_range
+
+def issue3735ComputationCanonicalRightIdeal :=
+  @AAT.AG.Measurement.FiniteAATProfileRealization.rightIdeal_eq_span_range
+
+def issue3735ComputationProfileLeftSquareFree :=
+  @AAT.AG.Measurement.FiniteAATComputationData.leftIdeal_eq_squareFree
+
+def issue3735ComputationProfileRightSquareFree :=
+  @AAT.AG.Measurement.FiniteAATComputationData.rightIdeal_eq_squareFree
+
+def issue3735AffineIdealSheafPairLeftTop :=
+  @AAT.AG.Measurement.AffineIdealSheafPair.ofSpec_leftIdealSheaf_top
+
+def issue3735AffineIdealSheafPairRightTop :=
+  @AAT.AG.Measurement.AffineIdealSheafPair.ofSpec_rightIdealSheaf_top
+
+def issue3735AffineCommonAmbientSelectedScheme :=
+  @AAT.AG.Measurement.CommonAmbientPair.ofAffineSpec_selectedScheme
+
+def issue3735AffineCommonAmbientLeftIdealSheaf :=
+  @AAT.AG.Measurement.CommonAmbientPair.ofAffineSpec_leftIdealSheaf
+
+def issue3735AffineCommonAmbientRightIdealSheaf :=
+  @AAT.AG.Measurement.CommonAmbientPair.ofAffineSpec_rightIdealSheaf
+
+def issue3735AffineCommonAmbientGlobalSectionsIdeals :=
+  @AAT.AG.Measurement.CommonAmbientPair.ofAffineSpec_globalSectionsIdeals
+
+def issue3735IndexedCommonAmbientGlobalSectionsIdeals :=
+  @AAT.AG.Measurement.CommonAmbientPair.lawIdealsInCommonAmbient_cert
+
+noncomputable def issue3735AffineCanonicalTorMeasurement :=
+  @AAT.AG.Measurement.LawConflictMeasurement.ofAffineSpecCanonicalTor
+
+def issue3735AffineCanonicalTorLeftIdeal :=
+  @AAT.AG.Measurement.LawConflictMeasurement.ofAffineSpecCanonicalTor_leftIdeal
+
+def issue3735AffineCanonicalTorRightIdeal :=
+  @AAT.AG.Measurement.LawConflictMeasurement.ofAffineSpecCanonicalTor_rightIdeal
+
+def issue3735IndexedCanonicalTorReading :=
+  @AAT.AG.Measurement.LawConflictMeasurement.lawConflictTorReading_holds
+
+def issue3735ComputedSelectedSupport :=
+  @AAT.AG.Measurement.FiniteAATConflictRealization.selectedSupport_holds
+
+def issue3735ComputedSupportIntersection :=
+  @AAT.AG.Measurement.transferRepairPath_direction_intersects
+
+def issue3735ComputedSelectedSupportNonempty :=
+  @AAT.AG.Measurement.finiteComputabilityConflictRealization_selectedSupport_ne_empty
+
+def issue3735SupportLocalizedTransfer :=
+  @AAT.AG.Measurement.supportTransferExample_nontrivialTransferredResidue
+
+def issue3735SelectedTransferResiduePairingValue :=
+  @AAT.AG.Measurement.TransferMeasurementPairing.SelectedTransferResidue.residue_eq_selectedResidue
+
+def issue3735SupportLocalizedTransferConstructor :=
+  @AAT.AG.Measurement.supportLocalizedTransferPackage
+
+def issue3735SupportLocalizedTransferPackage :=
+  @AAT.AG.Measurement.supportTransferExamplePackage
+
+def issue3735SupportSensitiveTransferUnselectedDirection :=
+  @AAT.AG.Measurement.transferPairing_unselectedDirection_zero
+
+def issue3735SupportSensitiveTransferZeroConflict :=
+  @AAT.AG.Measurement.transferPairing_zeroConflict_zero
+
+def issue3735SupportLocalizedTransferZeroPairingNegative :=
+  @AAT.AG.Measurement.transferZeroPairing_not_supportLocalizedTransfer
+
+def issue3735ConflictComputedLeftIdealAmbient :=
+  @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_leftLawIdeal
+
+def issue3735ConflictComputedRightIdealAmbient :=
+  @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_rightLawIdeal
+
+def issue3735ConflictAmbientSelectedSite :=
+  @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_selectedScheme
+
+def issue3735ConflictAmbientStructureSheafType :=
+  @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_structureSheaf
+
+def issue3735ConflictAmbientSelectedStructureSheaf :=
+  @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_selectedStructureSheaf
+
+def issue3735ConflictAmbientSchemeSheaf :=
+  @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_schemeSheaf
+
+def issue3735ConflictAmbientLeftIdealSheaf :=
+  @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_leftIdealSheaf
+
+def issue3735ConflictAmbientRightIdealSheaf :=
+  @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_rightIdealSheaf
+
+def issue3735ConflictAmbientGlobalSectionsIdeals :=
+  @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_globalSectionsIdeals
+
+def issue3735ConflictAmbientLawIdealCarrier :=
+  @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_lawIdeal
+
+def issue3735ConflictAmbientActualSheaf :=
+  @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_commonRingedSite
+
+def issue3735ConflictAmbientGeneratedIdeals :=
+  @AAT.AG.Measurement.FiniteAATConflictRealization.commonAmbient_ideals_eq_span_range
+
+def issue3735ConflictMeasurementAmbientShape :=
+  @AAT.AG.Measurement.FiniteAATConflictRealization.lawConflictMeasurement_commonAmbientRequired_shape
+
+def issue3735ConflictMeasurementTorShape :=
+  @AAT.AG.Measurement.FiniteAATConflictRealization.lawConflictMeasurement_torReading_shape
+
+def issue3735FiniteConflictMeasurementAmbientShape :=
+  AAT.AG.Measurement.finiteComputabilityConflictPackage_commonAmbientRequired_shape
+
+def issue3735FiniteConflictAmbientActualSheaf :=
+  AAT.AG.Measurement.finiteComputabilityCommonAmbient_commonRingedSite
+
+def issue3735FiniteConflictAmbientSelectedStructureSheaf :=
+  AAT.AG.Measurement.finiteComputabilityCommonAmbient_selectedStructureSheaf
+
+def issue3735FiniteConflictAmbientGeneratedIdeals :=
+  AAT.AG.Measurement.finiteComputabilityConflictRealization_ideals_eq_span_range
+
+def issue3735FiniteF2Sheaf :=
+  @AAT.AG.Measurement.finiteComputabilityF2_isSheaf
+
+def issue3735FiniteMatrixSheaf :=
+  @AAT.AG.Measurement.finiteDimensionalMatrix_isSheaf
+
+def issue3735FiniteTopologyCover :=
+  @AAT.AG.Measurement.finiteComputabilityCover_topologyCover
+
+def issue3735FiniteUAdequateCover :=
+  @AAT.AG.Measurement.finiteComputabilityCover_uAdequate
+
+def issue3735FiniteLeftEquationIdealRealizes :=
+  @AAT.AG.Measurement.finiteMeasurement_leftEquationIdeal_realizes
+
+def issue3735FiniteRightEquationIdealRealizes :=
+  @AAT.AG.Measurement.finiteMeasurement_rightEquationIdeal_realizes
+
+def issue3735FiniteRequiredEquationIdealRealizes :=
+  @AAT.AG.Measurement.finiteMeasurement_requiredEquationIdeal_realizes
+
+def issue3735GAGACommonLeftIdeal :=
+  @AAT.AG.Measurement.AATGAGACommonFiniteData.leftIdeal_eq_sharedWitness
+
+def issue3735GAGACommonRightIdeal :=
+  @AAT.AG.Measurement.AATGAGACommonFiniteData.rightIdeal_eq_sharedWitness
+
+def issue3735GAGAAmbientLeftIdeal :=
+  @AAT.AG.Measurement.AATGAGACommonFiniteData.commonAmbient_leftLawIdeal
+
+def issue3735GAGAAmbientRightIdeal :=
+  @AAT.AG.Measurement.AATGAGACommonFiniteData.commonAmbient_rightLawIdeal
+
+def issue3735GAGAAmbientSelectedScheme :=
+  @AAT.AG.Measurement.AATGAGACommonFiniteData.commonAmbient_selectedScheme
+
+def issue3735GAGAAmbientSchemeSheaf :=
+  @AAT.AG.Measurement.AATGAGACommonFiniteData.commonAmbient_schemeSheaf
+
+def issue3735GAGAAmbientLeftIdealSheaf :=
+  @AAT.AG.Measurement.AATGAGACommonFiniteData.commonAmbient_leftIdealSheaf
+
+def issue3735GAGAAmbientRightIdealSheaf :=
+  @AAT.AG.Measurement.AATGAGACommonFiniteData.commonAmbient_rightIdealSheaf
+
+def issue3735GAGAAmbientGlobalSectionsIdeals :=
+  @AAT.AG.Measurement.AATGAGACommonFiniteData.commonAmbient_globalSectionsIdeals
+
+def issue3735GAGAAmbientSharedWitnessIdeals :=
+  @AAT.AG.Measurement.AATGAGACommonFiniteData.commonAmbient_ideals_eq_sharedWitness
+
+def issue3735GAGAPrincipalCoordinatePresentation :=
+  @AAT.AG.Measurement.PrincipalCoordinatePresentation.span_range_eq_span_singleton
+
+def issue3735GAGARealPresheafMap :=
+  @AAT.AG.Measurement.gagaRealPresheaf_map_apply
+
+def issue3735GAGARealSheaf :=
+  @AAT.AG.Measurement.gagaReal_isSheaf
 
 /-- Kernel-audit alias for selected-state finiteness in the stopping package. -/
 def finiteDissipationStoppingFiniteSelectedStates :=

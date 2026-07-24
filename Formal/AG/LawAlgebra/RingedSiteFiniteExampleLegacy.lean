@@ -1,5 +1,6 @@
 import Formal.AG.LawAlgebra.RingedSiteFiniteExample
 import Formal.AG.Examples.FiniteModelLegacy
+import Formal.Util.AssertStandardAxioms
 
 noncomputable section
 
@@ -19,3 +20,5 @@ open AAT.AG.FiniteModel
 end FiniteModel
 
 end AAT.AG.LawAlgebra.FiniteExamples.RingedSite
+
+#assert_standard_axioms_only AAT.AG.LawAlgebra.FiniteExamples.RingedSite

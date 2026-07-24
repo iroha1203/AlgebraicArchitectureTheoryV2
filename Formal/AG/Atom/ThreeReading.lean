@@ -1,156 +1,160 @@
-import Formal.AG.Atom.Law
+import Formal.AG.Atom.Obstruction
+import Formal.AG.Atom.Signature
+
+/-!
+# Equation lawfulness, finite circuits, and signature axes
+
+This module formalizes the three readings following Part I, Theorem 9.3:
+required residual vanishing, emptiness of required finite-circuit fibers, and
+zero on the required equation signature axes.
+
+Implementation notes: the circuit equivalence uses both detector soundness and
+required completeness.  Signature comparison is supplied by residual-level
+axis coverage and comparison data; no lawfulness equivalence is stored in a
+certificate field.
+-/
 
 namespace AAT.AG
 
 universe u
 
-/--
-peer-review hardening I-1: canonical witness family indexed by the required laws of a selected
-law universe. A bad witness is no longer an arbitrary token: it is exactly a
-selected required law that fails on the architecture object.
--/
-def requiredLawWitnessFamily {U : AtomCarrier.{u}} (LU : LawUniverse U) :
-    LawWitnessFamily U where
-  Witness := { index : LU.Index // LU.Required index }
-  badWitness A index := ¬ (LU.law index.1).holds A
+/-- Every required equation-indexed finite-circuit fiber is empty. -/
+def NoRequiredEquationCircuit
+    {U : AtomCarrier.{u}} {A₀ : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A₀}
+    {E : ArchitecturalEquationSystem C}
+    (R : EquationCircuitReading E) (A : ArchitectureObject U) : Prop :=
+  ∀ index : E.Index, E.Required index -> IsEmpty (R.Circuit A index)
 
 /--
-peer-review hardening I-1: canonical signature axes indexed by required laws. A selected axis
-reads zero exactly when the corresponding required law holds.
+Required equation lawfulness is equivalent to emptiness of required circuit
+fibers when the selected detector is sound and required-complete.
+
+The material premises are exactly `R.Sound` and `R.RequiredComplete` from Part I,
+Definitions 8.2 and 8.2B.
 -/
-def requiredLawSignatureAxes {U : AtomCarrier.{u}} (LU : LawUniverse U) :
-    SignatureAxes U where
-  Axis := { index : LU.Index // LU.Required index }
+theorem equationLawful_iff_noRequiredEquationCircuit
+    {U : AtomCarrier.{u}} {A₀ : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A₀}
+    {E : ArchitecturalEquationSystem C}
+    (R : EquationCircuitReading E) (hSound : R.Sound)
+    (hComplete : R.RequiredComplete) (A : ArchitectureObject U) :
+    E.EquationLawful A ↔ NoRequiredEquationCircuit R A := by
+  constructor
+  · intro hlawful index hrequired
+    exact ⟨fun circuit =>
+      (R.circuit_sound hSound A index circuit) (hlawful index hrequired)⟩
+  · intro hnocircuit index hrequired
+    exact Classical.byContradiction (fun hfailure => by
+      obtain ⟨circuit⟩ := hComplete A index hrequired hfailure
+      exact (hnocircuit index hrequired).false circuit)
+
+/-- A required equation residual coordinate selected by equation, context, and Atom. -/
+structure EquationResidualAxis
+    {U : AtomCarrier.{u}} {A₀ : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A₀}
+    (E : ArchitecturalEquationSystem C) where
+  equation : E.RequiredIndex
+  atom : U.Atom
+
+/-- Residual-coordinate signature axes generated from an equation system. -/
+def equationResidualSignatureAxes
+    {U : AtomCarrier.{u}} {A₀ : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A₀}
+    (E : ArchitecturalEquationSystem C) : SignatureAxes U where
+  Axis := EquationResidualAxis E
   selected _ := True
-  zero A index := (LU.law index.1).holds A
+  zero A axis :=
+    ∀ W : Site.ContextCategoryObject C,
+      E.equationResidual W A axis.equation.1 axis.atom = 0
 
 /--
-peer-review hardening I-1: semantic lawfulness agrees with absence of canonical required-law
-bad witnesses. This is an actual theorem about `Lawfulness`, not a projection
-from an assumption package.
--/
-theorem semanticLawful_iff_noRequiredObstruction_requiredLawWitness
-    {U : AtomCarrier.{u}} (A : ArchitectureObject U) (LU : LawUniverse U) :
-    SemanticLawful A LU ↔
-      NoRequiredObstruction A (requiredLawWitnessFamily LU) := by
-  constructor
-  · intro h index hbad
-    exact hbad (h index.1 index.2)
-  · intro h index hrequired
-    exact Classical.byContradiction (fun hfail =>
-      h ⟨index, hrequired⟩ hfail)
-
-/--
-peer-review hardening I-1: semantic lawfulness agrees with zero on the canonical required-law
+Residual-level comparison between a required equation family and selected
 signature axes.
+
+`axisOf` and `selected_axis_covered` give coordinate coverage in both
+directions.  `residual_zero_iff_axis_zero` compares one actual residual
+coordinate with one selected signature reading; it does not contain the global
+lawfulness conclusion.
 -/
-theorem semanticLawful_iff_requiredSignatureAxesZero_requiredLawAxes
-    {U : AtomCarrier.{u}} (A : ArchitectureObject U) (LU : LawUniverse U) :
-    SemanticLawful A LU ↔
-      RequiredSignatureAxesZero A (requiredLawSignatureAxes LU) := by
+structure EquationSignatureComparison
+    {U : AtomCarrier.{u}} {A₀ : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A₀}
+    (E : ArchitecturalEquationSystem C) (S : SignatureAxes U) where
+  axisOf :
+    E.RequiredIndex → U.Atom → S.Axis
+  axis_selected :
+    ∀ i atom, S.selected (axisOf i atom)
+  selected_axis_covered :
+    ∀ axis, S.selected axis →
+      ∃ (i : E.RequiredIndex) (atom : U.Atom), axis = axisOf i atom
+  residual_zero_iff_axis_zero :
+    ∀ (A : ArchitectureObject U) (i : E.RequiredIndex) (atom : U.Atom),
+      (∀ W : Site.ContextCategoryObject C,
+        E.equationResidual W A i.1 atom = 0) ↔
+        S.zero A (axisOf i atom)
+
+/-- Canonical residual-coordinate comparison generated by an equation system. -/
+def equationResidualSignatureComparison
+    {U : AtomCarrier.{u}} {A₀ : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A₀}
+    (E : ArchitecturalEquationSystem C) :
+    EquationSignatureComparison E (equationResidualSignatureAxes E) where
+  axisOf i atom := {
+    equation := i
+    atom := atom
+  }
+  axis_selected := by intros; trivial
+  selected_axis_covered := by
+    intro axis _
+    exact ⟨axis.equation, axis.atom, rfl⟩
+  residual_zero_iff_axis_zero := by intros; rfl
+
+/--
+Equation lawfulness is equivalent to zero on selected signature axes when
+residual comparison and coordinate coverage are supplied.
+-/
+theorem equationLawful_iff_requiredSignatureAxesZero
+    {U : AtomCarrier.{u}} {A₀ : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A₀}
+    {E : ArchitecturalEquationSystem C} {S : SignatureAxes U}
+    (comparison : EquationSignatureComparison E S)
+    (A : ArchitectureObject U) :
+    E.EquationLawful A ↔ RequiredSignatureAxesZero A S := by
   constructor
-  · intro h axis _hselected
-    exact h axis.1 axis.2
-  · intro h index hrequired
-    exact h ⟨index, hrequired⟩ trivial
+  · intro hlawful axis hselected
+    obtain ⟨i, atom, rfl⟩ :=
+      comparison.selected_axis_covered axis hselected
+    exact (comparison.residual_zero_iff_axis_zero A i atom).mp
+      (fun W => hlawful i.1 i.2 W atom)
+  · intro hzero index hrequired
+    intro W atom
+    let i : E.RequiredIndex := ⟨index, hrequired⟩
+    exact (comparison.residual_zero_iff_axis_zero A i atom).mpr
+      (hzero (comparison.axisOf i atom)
+        (comparison.axis_selected i atom)) W
 
 /--
-peer-review hardening I-1: the two canonical concrete readings agree. Both sides are tied to
-the selected required law predicates, so the theorem cannot be satisfied by
-choosing `badWitness := True`.
+Part I, Theorem 9.3 continuation: the equation, finite-circuit, and selected
+signature readings agree under detector soundness, required completeness,
+residual comparison, and coordinate coverage.
 -/
-theorem noRequiredObstruction_iff_requiredSignatureAxesZero_requiredLaw
-    {U : AtomCarrier.{u}} (A : ArchitectureObject U) (LU : LawUniverse U) :
-    NoRequiredObstruction A (requiredLawWitnessFamily LU) ↔
-      RequiredSignatureAxesZero A (requiredLawSignatureAxes LU) :=
-  (semanticLawful_iff_noRequiredObstruction_requiredLawWitness A LU).symm.trans
-    (semanticLawful_iff_requiredSignatureAxesZero_requiredLawAxes A LU)
-
-/-- peer-review hardening I-1: concrete three-reading agreement for required-law readings. -/
-theorem concreteThreeReadingAgreement {U : AtomCarrier.{u}}
-    (A : ArchitectureObject U) (LU : LawUniverse U) :
-    (SemanticLawful A LU ↔
-        NoRequiredObstruction A (requiredLawWitnessFamily LU)) ∧
-      (NoRequiredObstruction A (requiredLawWitnessFamily LU) ↔
-        RequiredSignatureAxesZero A (requiredLawSignatureAxes LU)) ∧
-        (SemanticLawful A LU ↔
-          RequiredSignatureAxesZero A (requiredLawSignatureAxes LU)) :=
-  ⟨semanticLawful_iff_noRequiredObstruction_requiredLawWitness A LU,
-    noRequiredObstruction_iff_requiredSignatureAxesZero_requiredLaw A LU,
-    semanticLawful_iff_requiredSignatureAxesZero_requiredLawAxes A LU⟩
-
-/--
-I.定理9.3 後段: explicit assumptions under which the semantic, witness, and
-signature-axis readings agree.
--/
-structure ThreeReadingAgreementAssumptions {U : AtomCarrier.{u}}
-    (A : ArchitectureObject U) (LU : LawUniverse U)
-    (W : LawWitnessFamily U) (S : SignatureAxes U) where
-  witnessCompleteness : Prop
-  axisExactness : Prop
-  coverage : Prop
-  selectedReadingExactness : Prop
-  witnessCompleteness_holds : witnessCompleteness
-  axisExactness_holds : axisExactness
-  coverage_holds : coverage
-  selectedReadingExactness_holds : selectedReadingExactness
-  semantic_noObstruction :
-    witnessCompleteness -> coverage -> selectedReadingExactness ->
-      (SemanticLawful A LU ↔ NoRequiredObstruction A W)
-  noObstruction_axesZero :
-    axisExactness -> coverage -> selectedReadingExactness ->
-      (NoRequiredObstruction A W ↔ RequiredSignatureAxesZero A S)
-
-namespace ThreeReadingAgreementAssumptions
-
-/--
-I.定理9.3 後段: semantic lawfulness agrees with no required obstruction under
-explicit witness-completeness, coverage, and selected-reading exactness.
--/
-theorem semanticLawful_iff_noRequiredObstruction {U : AtomCarrier.{u}}
-    {A : ArchitectureObject U} {LU : LawUniverse U}
-    {W : LawWitnessFamily U} {S : SignatureAxes U}
-    (h : ThreeReadingAgreementAssumptions A LU W S) :
-    SemanticLawful A LU ↔ NoRequiredObstruction A W :=
-  h.semantic_noObstruction h.witnessCompleteness_holds h.coverage_holds
-    h.selectedReadingExactness_holds
-
-/--
-I.定理9.3 後段: no required obstruction agrees with selected signature axes
-zero under explicit axis-exactness, coverage, and selected-reading exactness.
--/
-theorem noRequiredObstruction_iff_requiredSignatureAxesZero
-    {U : AtomCarrier.{u}} {A : ArchitectureObject U} {LU : LawUniverse U}
-    {W : LawWitnessFamily U} {S : SignatureAxes U}
-    (h : ThreeReadingAgreementAssumptions A LU W S) :
-    NoRequiredObstruction A W ↔ RequiredSignatureAxesZero A S :=
-  h.noObstruction_axesZero h.axisExactness_holds h.coverage_holds
-    h.selectedReadingExactness_holds
-
-/--
-I.定理9.3 後段: semantic lawfulness agrees directly with selected signature axes
-zero under the explicit three-reading assumptions.
--/
-theorem semanticLawful_iff_requiredSignatureAxesZero {U : AtomCarrier.{u}}
-    {A : ArchitectureObject U} {LU : LawUniverse U}
-    {W : LawWitnessFamily U} {S : SignatureAxes U}
-    (h : ThreeReadingAgreementAssumptions A LU W S) :
-    SemanticLawful A LU ↔ RequiredSignatureAxesZero A S :=
-  (semanticLawful_iff_noRequiredObstruction h).trans
-    (noRequiredObstruction_iff_requiredSignatureAxesZero h)
-
-/-- I.定理9.3 後段: the three readings agree as a chain. -/
-theorem threeReadingAgreement {U : AtomCarrier.{u}}
-    {A : ArchitectureObject U} {LU : LawUniverse U}
-    {W : LawWitnessFamily U} {S : SignatureAxes U}
-    (h : ThreeReadingAgreementAssumptions A LU W S) :
-    (SemanticLawful A LU ↔ NoRequiredObstruction A W) ∧
-      (NoRequiredObstruction A W ↔ RequiredSignatureAxesZero A S) ∧
-        (SemanticLawful A LU ↔ RequiredSignatureAxesZero A S) :=
-  ⟨semanticLawful_iff_noRequiredObstruction h,
-    noRequiredObstruction_iff_requiredSignatureAxesZero h,
-    semanticLawful_iff_requiredSignatureAxesZero h⟩
-
-end ThreeReadingAgreementAssumptions
+theorem concreteThreeReadingAgreement
+    {U : AtomCarrier.{u}} {A₀ : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A₀}
+    {E : ArchitecturalEquationSystem C} {S : SignatureAxes U}
+    (R : EquationCircuitReading E) (hSound : R.Sound)
+    (hComplete : R.RequiredComplete)
+    (comparison : EquationSignatureComparison E S)
+    (A : ArchitectureObject U) :
+    (E.EquationLawful A ↔ NoRequiredEquationCircuit R A) ∧
+      (NoRequiredEquationCircuit R A ↔
+        RequiredSignatureAxesZero A S) ∧
+        (E.EquationLawful A ↔ RequiredSignatureAxesZero A S) := by
+  have hcircuit :=
+    equationLawful_iff_noRequiredEquationCircuit R hSound hComplete A
+  have hsignature :=
+    equationLawful_iff_requiredSignatureAxesZero comparison A
+  exact ⟨hcircuit, hcircuit.symm.trans hsignature, hsignature⟩
 
 end AAT.AG

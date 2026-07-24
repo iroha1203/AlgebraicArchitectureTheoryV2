@@ -36,7 +36,7 @@ example {M : MeasurementProfile.{u, v}} [Field M.Coeff]
                     Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff]
                     Derived.Intersection.mathlibTor
                       (Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff)
-                      C.leftIdeal C.rightIdeal 1) ∧
+                      C.ambientLeftIdeal C.ambientRightIdeal 1) ∧
                 C.hilbertSeriesConflictStatement :=
   aatGAGACertifiedComparisonStatement_holds F
 

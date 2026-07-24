@@ -213,46 +213,15 @@ def hasDependencyCycle (A : ArchitectureObject carrier) : Prop :=
     A.configuration.relation FiniteAtom.dependsBC FiniteAtom.dependsCA ∧
       A.configuration.relation FiniteAtom.dependsCA FiniteAtom.dependsAB
 
-/-- R10 / example 7.4: selected NoCycle law on the finite model. -/
-def noCycleLaw : Law carrier where
-  holds A := ¬ hasDependencyCycle A
-
 /-- The concrete substitution conflict detected by the finite fixture. -/
 def hasSubstitutionConflict (A : ArchitectureObject carrier) : Prop :=
   A.configuration.relation FiniteAtom.contractImpl FiniteAtom.contractBase ∧
     A.configuration.relation FiniteAtom.substitutesImplBase FiniteAtom.contractBase
 
-/-- R10 / example 8.4: selected substitution compatibility law. -/
-def substitutionLaw : Law carrier where
-  holds A := ¬ hasSubstitutionConflict A
-
 /-- R10: singleton invariant family used by the finite core package. -/
 def invariantFamily : InvariantFamily carrier where
   Index := PUnit
   invariant _ := Invariant.predicate { holds := fun _ => True }
-
-/-- R10: singleton required law universe for theorem 9.3 example. -/
-def lawUniverse : LawUniverse carrier where
-  Index := PUnit
-  law _ := noCycleLaw
-  role _ := LawRole.required
-  witnessFamily := { Witness := PUnit, badWitness := fun _ _ => True }
-  SelectedReading := PUnit
-  selectedReading := PUnit.unit
-
-/-- R10: every law in the finite universe is required. -/
-theorem lawUniverse_required (index : lawUniverse.Index) :
-    lawUniverse.Required index := by
-  cases index
-  rfl
-
-/-- peer-review hardening I-1: canonical required-law witness family for the finite NoCycle universe. -/
-def concreteNoCycleWitnessFamily : LawWitnessFamily carrier :=
-  requiredLawWitnessFamily lawUniverse
-
-/-- peer-review hardening I-1: canonical required-law signature axes for the finite NoCycle universe. -/
-def concreteNoCycleSignatureAxes : SignatureAxes carrier :=
-  requiredLawSignatureAxes lawUniverse
 
 /-- R10: finite architecture signature with a singleton selected axis. -/
 def signature : ArchitectureSignature carrier where
@@ -308,17 +277,17 @@ noncomputable def equationSystem (C : Site.ContextPreorderCategory object) :
   equationResidual := fun _ A _ _ => noCycleResidual A
   equationResidual_restrict := by intros; rfl
 
-/-- Residual vanishing in the finite equation system is exactly the NoCycle reading. -/
-theorem equationHolds_iff_noCycleLaw
+/-- Residual vanishing is exactly absence of the selected dependency cycle. -/
+theorem equationHolds_iff_noCycle
     (C : Site.ContextPreorderCategory object) (A : ArchitectureObject carrier) :
-    (equationSystem C).EquationHolds PUnit.unit A ↔ noCycleLaw.holds A := by
+    (equationSystem C).EquationHolds PUnit.unit A ↔ ¬ hasDependencyCycle A := by
   constructor
   · intro h hcycle
     have hzero := h (Site.ContextCategoryObject.of C equationProbeContext)
       FiniteAtom.componentA
     simp [equationSystem, noCycleResidual, hcycle] at hzero
   · intro h W atom
-    simp [equationSystem, noCycleResidual, hasDependencyCycle, noCycleLaw] at h ⊢
+    simp [equationSystem, noCycleResidual, hasDependencyCycle] at h ⊢
     exact h
 
 /-- Equation-indexed finite detector reading used by every finite-core context choice. -/
@@ -355,7 +324,7 @@ theorem equationCircuitReading_sound
       (.relationPresent FiniteAtom.dependsCA FiniteAtom.dependsAB) true
       (by simp [cycleQueryDatum])).mpr rfl).2.2
   intro hequation
-  exact (equationHolds_iff_noCycleLaw C A).mp hequation ⟨hab, hbc, hca⟩
+  exact (equationHolds_iff_noCycle C A).mp hequation ⟨hab, hbc, hca⟩
 
 /-- Context, equation, and circuit reading used by the generated finite core. -/
 noncomputable def equationReading (C : Site.ContextPreorderCategory object) :
@@ -364,38 +333,6 @@ noncomputable def equationReading (C : Site.ContextPreorderCategory object) :
   equationSystem := equationSystem C
   circuits := equationCircuitReading C
   circuitSound := equationCircuitReading_sound C
-
-/-- R10: the finite-template circuit reading for the required NoCycle law. -/
-noncomputable def circuitReading : CircuitReading lawUniverse where
-  code _ := .exact cycleQueryDatum
-  sound := by
-    intro i A Q hmatches haccepts
-    cases i
-    have hdatum : cycleQueryDatum = Q :=
-      (CircuitDetectorCode.eval_exact_eq_true_iff cycleQueryDatum Q).mp haccepts
-    subst Q
-    have hab :
-        A.configuration.relation FiniteAtom.dependsAB FiniteAtom.dependsBC :=
-      ((hmatches
-        (.relationPresent FiniteAtom.dependsAB FiniteAtom.dependsBC) true
-        (by simp [cycleQueryDatum])).mpr rfl).2.2
-    have hbc :
-        A.configuration.relation FiniteAtom.dependsBC FiniteAtom.dependsCA :=
-      ((hmatches
-        (.relationPresent FiniteAtom.dependsBC FiniteAtom.dependsCA) true
-        (by simp [cycleQueryDatum])).mpr rfl).2.2
-    have hca :
-        A.configuration.relation FiniteAtom.dependsCA FiniteAtom.dependsAB :=
-      ((hmatches
-        (.relationPresent FiniteAtom.dependsCA FiniteAtom.dependsAB) true
-        (by simp [cycleQueryDatum])).mpr rfl).2.2
-    intro hLaw
-    exact hLaw ⟨hab, hbc, hca⟩
-
-/-- R10: law and circuit semantics used by the generated core. -/
-noncomputable def lawReading : LawReading carrier where
-  lawUniverse := lawUniverse
-  circuits := circuitReading
 
 /-- R10: all actual configuration homomorphisms form the operation reading. -/
 def operationReading : OperationReading carrier where
@@ -453,42 +390,6 @@ theorem cycle_dependsCA_AB :
     cycleRelation FiniteAtom.dependsCA FiniteAtom.dependsAB :=
   trivial
 
-/-- R10 / example 8.3: three selected depends atoms form a NoCycle obstruction circuit. -/
-def cycleObstructionCircuit : ObstructionCircuit noCycleLaw object where
-  family := allFamily
-  relation := cycleRelation
-  relation_supported := by
-    intro a b hrelation
-    constructor
-    · apply allFamily_mem
-      intro ha
-      subst a
-      simp [cycleRelation] at hrelation
-    · apply allFamily_mem
-      intro hb
-      subst b
-      simp [cycleRelation] at hrelation
-  finite := ∀ atom : carrier.Atom, atom ∈ FiniteAtom.all
-  finite_holds := FiniteAtom.mem_all
-  law_failure := by
-    intro h
-    exact h ⟨⟨Or.inl cycle_dependsAB_BC, allFamily_mem _ (by simp),
-      allFamily_mem _ (by simp)⟩,
-      ⟨Or.inl cycle_dependsBC_CA, allFamily_mem _ (by simp),
-        allFamily_mem _ (by simp)⟩,
-      ⟨Or.inl cycle_dependsCA_AB, allFamily_mem _ (by simp),
-        allFamily_mem _ (by simp)⟩⟩
-
-/-- peer-review hardening I-3: the cycle obstruction circuit has explicit finite support. -/
-theorem cycleObstructionCircuit_listFinite :
-    cycleObstructionCircuit.ListFinite :=
-  allFamily_listFinite
-
-/-- R10 / example 8.3: the cycle circuit records NoCycle law failure. -/
-theorem cycle_obstruction_law_failure :
-    ¬ noCycleLaw.holds object :=
-  cycleObstructionCircuit.law_failure_holds
-
 /-- R10 / example 8.4: substitution evidence links implementation to base contract. -/
 theorem substitution_impl_base :
     substitutionRelation FiniteAtom.substitutesImplBase FiniteAtom.contractBase :=
@@ -499,35 +400,56 @@ theorem substitution_contract_impl_base :
     substitutionRelation FiniteAtom.contractImpl FiniteAtom.contractBase :=
   trivial
 
-/-- R10 / example 8.4: nullable implementation versus non-null base is an obstruction circuit. -/
-def substitutionObstructionCircuit :
-    ObstructionCircuit substitutionLaw object where
-  family := allFamily
-  relation := substitutionRelation
-  relation_supported := by
-    intro a b hrelation
-    constructor
-    · apply allFamily_mem
-      intro ha
-      subst a
-      simp [substitutionRelation] at hrelation
-    · apply allFamily_mem
-      intro hb
-      subst b
-      simp [substitutionRelation] at hrelation
-  finite := ∀ atom : carrier.Atom, atom ∈ FiniteAtom.all
-  finite_holds := FiniteAtom.mem_all
-  law_failure := by
-    intro h
-    exact h ⟨⟨Or.inr substitution_contract_impl_base,
+/-- The substitution equation residual: compatible objects read `0`, conflicts read `1`. -/
+noncomputable def substitutionResidual (A : ArchitectureObject carrier) : Int := by
+  classical
+  exact if hasSubstitutionConflict A then 1 else 0
+
+/-- An explicit equation system for the finite substitution-compatibility reading. -/
+noncomputable def substitutionEquationSystem
+    (C : Site.ContextPreorderCategory object) :
+    ArchitecturalEquationSystem C where
+  Index := PUnit
+  role _ := EquationRole.required
+  Observable := fun _ => Int
+  observableCommRing := fun _ => inferInstance
+  restrict := fun _ => RingHom.id Int
+  restrict_id := by intros; rfl
+  restrict_comp := by intros; rfl
+  violationCoordinate := fun _ _ _ => 3
+  violationCoordinate_restrict := by intros; rfl
+  equationResidual := fun _ A _ _ => substitutionResidual A
+  equationResidual_restrict := by intros; rfl
+
+/-- Substitution-equation fulfillment is exactly absence of the selected conflict. -/
+theorem substitutionEquationHolds_iff
+    (C : Site.ContextPreorderCategory object) (A : ArchitectureObject carrier) :
+    (substitutionEquationSystem C).EquationHolds PUnit.unit A ↔
+      ¬ hasSubstitutionConflict A := by
+  constructor
+  · intro h hconflict
+    have hzero := h (Site.ContextCategoryObject.of C equationProbeContext)
+      FiniteAtom.componentA
+    simp [substitutionEquationSystem, substitutionResidual, hconflict] at hzero
+  · intro hconflict W atom
+    simp [substitutionEquationSystem, substitutionResidual, hconflict]
+
+/-- The relation-free object fulfills the substitution equation. -/
+theorem acyclic_substitutionEquationHolds
+    (C : Site.ContextPreorderCategory object) :
+    (substitutionEquationSystem C).EquationHolds PUnit.unit acyclicObject :=
+  (substitutionEquationHolds_iff C acyclicObject).mpr (fun h => h.1)
+
+/-- The selected implementation/base mismatch violates the substitution equation. -/
+theorem object_substitutionEquation_fails
+    (C : Site.ContextPreorderCategory object) :
+    ¬ (substitutionEquationSystem C).EquationHolds PUnit.unit object := by
+  intro hequation
+  exact (substitutionEquationHolds_iff C object).mp hequation
+    ⟨⟨Or.inr substitution_contract_impl_base,
       allFamily_mem _ (by simp), allFamily_mem _ (by simp)⟩,
       ⟨Or.inr substitution_impl_base, allFamily_mem _ (by simp),
         allFamily_mem _ (by simp)⟩⟩
-
-/-- peer-review hardening I-3: the substitution obstruction circuit has explicit finite support. -/
-theorem substitutionObstructionCircuit_listFinite :
-    substitutionObstructionCircuit.ListFinite :=
-  allFamily_listFinite
 
 /-- R10: the selected object visibly carries the 3-cycle witness. -/
 def hasCycleWitness (A : ArchitectureObject carrier) : Prop :=
@@ -544,100 +466,69 @@ theorem object_hasCycleWitness : hasCycleWitness object :=
     ⟨Or.inl cycle_dependsCA_AB, allFamily_mem _ (by simp),
       allFamily_mem _ (by simp)⟩⟩
 
-/-- peer-review hardening I-1: the acyclic finite object satisfies the selected NoCycle law. -/
-theorem acyclic_noCycleLaw_holds :
-    noCycleLaw.holds acyclicObject := by
-  intro hcycle
-  exact hcycle.1
+/-- The acyclic object fulfills the selected NoCycle equation. -/
+theorem acyclic_noCycleEquationHolds
+    (C : Site.ContextPreorderCategory object) :
+    (equationSystem C).EquationHolds PUnit.unit acyclicObject :=
+  (equationHolds_iff_noCycle C acyclicObject).mpr (fun hcycle => hcycle.1)
 
-/-- R10: the cyclic finite object has a nonempty semantic obstruction. -/
-theorem object_semanticObstruction :
-    SemanticObstruction noCycleLaw object :=
-  (SemanticObstruction.iff_not_holds noCycleLaw object).mpr
-    cycle_obstruction_law_failure
+/-- The cyclic object violates the selected NoCycle equation. -/
+theorem object_noCycleEquation_fails
+    (C : Site.ContextPreorderCategory object) :
+    ¬ (equationSystem C).EquationHolds PUnit.unit object := by
+  intro hequation
+  exact (equationHolds_iff_noCycle C object).mp hequation
+    (by simpa [hasCycleWitness] using object_hasCycleWitness)
 
-/-- R10: the lawful acyclic finite object has no semantic obstruction. -/
-theorem acyclicObject_not_semanticObstruction :
-    ¬ SemanticObstruction noCycleLaw acyclicObject := by
+/-- The cyclic object has a semantic obstruction for the NoCycle equation. -/
+theorem object_equationSemanticObstruction
+    (C : Site.ContextPreorderCategory object) :
+    EquationSemanticObstruction (equationSystem C) PUnit.unit object :=
+  (EquationSemanticObstruction.iff_not_equationHolds
+    (equationSystem C) PUnit.unit object).mpr (object_noCycleEquation_fails C)
+
+/-- The acyclic object has no semantic obstruction for the NoCycle equation. -/
+theorem acyclicObject_not_equationSemanticObstruction
+    (C : Site.ContextPreorderCategory object) :
+    ¬ EquationSemanticObstruction (equationSystem C) PUnit.unit acyclicObject := by
   intro hobstruction
-  exact (SemanticObstruction.iff_not_holds noCycleLaw acyclicObject).mp
-    hobstruction acyclic_noCycleLaw_holds
+  exact (EquationSemanticObstruction.iff_not_equationHolds
+    (equationSystem C) PUnit.unit acyclicObject).mp hobstruction
+      (acyclic_noCycleEquationHolds C)
 
-/-- peer-review hardening I-1: the acyclic finite object is semantically lawful. -/
-theorem acyclic_lawfulness :
-    Lawfulness acyclicObject lawUniverse := by
+/-- The acyclic object is lawful for all required equations in the finite system. -/
+theorem acyclic_equationLawful
+    (C : Site.ContextPreorderCategory object) :
+    (equationSystem C).EquationLawful acyclicObject := by
   intro index _hrequired
   cases index
-  exact acyclic_noCycleLaw_holds
+  exact acyclic_noCycleEquationHolds C
 
-/-- peer-review hardening I-1: the cyclic finite object is not semantically lawful. -/
-theorem object_lawfulness_fails :
-    ¬ Lawfulness object lawUniverse := by
-  intro h
-  exact cycle_obstruction_law_failure (h PUnit.unit rfl)
+/-- The cyclic object is not lawful for the required finite equation. -/
+theorem object_equationLawful_fails
+    (C : Site.ContextPreorderCategory object) :
+    ¬ (equationSystem C).EquationLawful object := by
+  intro hlawful
+  exact object_noCycleEquation_fails C (hlawful PUnit.unit rfl)
 
-/-- peer-review hardening I-1: the concrete witness family is nondegenerate on the cyclic object. -/
-theorem object_hasConcreteNoCycleBadWitness :
-    ∃ witness : concreteNoCycleWitnessFamily.Witness,
-      concreteNoCycleWitnessFamily.badWitness object witness :=
-  ⟨⟨PUnit.unit, rfl⟩, cycle_obstruction_law_failure⟩
-
-/-- peer-review hardening I-1: the acyclic object has no concrete required-law bad witness. -/
-theorem acyclic_noConcreteNoCycleBadWitness :
-    NoRequiredObstruction acyclicObject concreteNoCycleWitnessFamily :=
-  (semanticLawful_iff_noRequiredObstruction_requiredLawWitness
-    acyclicObject lawUniverse).mp acyclic_lawfulness
-
-/-- peer-review hardening I-1: the acyclic object has zero on the concrete required-law axis. -/
-theorem acyclic_requiredLawAxesZero :
-    RequiredSignatureAxesZero acyclicObject concreteNoCycleSignatureAxes :=
-  (semanticLawful_iff_requiredSignatureAxesZero_requiredLawAxes
-    acyclicObject lawUniverse).mp acyclic_lawfulness
-
-/-- peer-review hardening I-1: the cyclic object has a nonzero concrete required-law axis. -/
-theorem object_requiredLawAxesZero_fails :
-    ¬ RequiredSignatureAxesZero object concreteNoCycleSignatureAxes := by
-  intro hzero
-  exact cycle_obstruction_law_failure (hzero ⟨PUnit.unit, rfl⟩ trivial)
-
-/-- peer-review hardening I-1: concrete three-reading agreement fires on the acyclic finite object. -/
-theorem acyclic_concreteThreeReadingAgreement :
-    (SemanticLawful acyclicObject lawUniverse ↔
-        NoRequiredObstruction acyclicObject concreteNoCycleWitnessFamily) ∧
-      (NoRequiredObstruction acyclicObject concreteNoCycleWitnessFamily ↔
-        RequiredSignatureAxesZero acyclicObject concreteNoCycleSignatureAxes) ∧
-        (SemanticLawful acyclicObject lawUniverse ↔
-          RequiredSignatureAxesZero acyclicObject concreteNoCycleSignatureAxes) :=
-  concreteThreeReadingAgreement acyclicObject lawUniverse
-
-/-- peer-review hardening I-1: concrete three-reading agreement also detects the cyclic failure. -/
-theorem object_concreteThreeReadingAgreement_fires :
-    (¬ SemanticLawful object lawUniverse) ∧
-      (∃ witness : concreteNoCycleWitnessFamily.Witness,
-        concreteNoCycleWitnessFamily.badWitness object witness) ∧
-        ¬ RequiredSignatureAxesZero object concreteNoCycleSignatureAxes :=
-  ⟨object_lawfulness_fails, object_hasConcreteNoCycleBadWitness,
-    object_requiredLawAxesZero_fails⟩
-
-/-- R10 / example 8.4: the substitution circuit records compatibility law failure. -/
-theorem substitution_obstruction_law_failure :
-    ¬ substitutionLaw.holds object :=
-  substitutionObstructionCircuit.law_failure_holds
-
-/-- R10: count-valued obstruction reading for the finite NoCycle example. -/
-noncomputable def noCycleOmega (_L : Law carrier)
+/-- Count-valued obstruction reading for the finite NoCycle equation. -/
+noncomputable def noCycleEquationOmega (_index : PUnit)
     (A : ArchitectureObject carrier) : Nat := by
   classical
   exact if hasCycleWitness A then 1 else 0
 
-/-- R10: count-valued obstruction valuation for the finite NoCycle example. -/
-noncomputable def noCycleValuation : ObstructionValuation carrier Nat where
+/-- Equation-indexed obstruction valuation for the finite NoCycle example. -/
+noncomputable def noCycleEquationValuation
+    (C : Site.ContextPreorderCategory object) :
+    EquationObstructionValuation (equationSystem C) Nat where
   domain := ObstructionValueDomain.nat
-  omega := noCycleOmega
+  omega := noCycleEquationOmega
 
-/-- R10: zero-reflecting aggregation for the singleton required law universe. -/
-def singletonRequiredAggregation :
-    ZeroReflectingAggregation Nat noCycleValuation.domain lawUniverse.RequiredIndex where
+/-- Zero-reflecting aggregation for the singleton required equation family. -/
+def singletonRequiredEquationAggregation
+    (C : Site.ContextPreorderCategory object) :
+    ZeroReflectingAggregation Nat (noCycleEquationValuation C).domain
+      (equationSystem C).RequiredIndex where
   aggregate values := values ⟨PUnit.unit, rfl⟩
   zero_reflecting values := by
     constructor
@@ -649,41 +540,81 @@ def singletonRequiredAggregation :
     · intro h
       exact h ⟨PUnit.unit, rfl⟩
 
-/-- R10: soundness reads absence of the selected cycle witness as zero valuation. -/
-theorem noCycleSound :
-    ObstructionSound noCycleValuation noCycleLaw := by
-  intro A h
+/-- Soundness reads equation fulfillment as zero cycle valuation. -/
+theorem noCycleEquationSound
+    (C : Site.ContextPreorderCategory object) :
+    EquationObstructionSound (noCycleEquationValuation C) PUnit.unit := by
+  intro A hequation
   classical
-  have hnot : ¬ hasCycleWitness A := h
-  simp [noCycleValuation, noCycleOmega, ObstructionValueDomain.nat, hnot]
+  have hnot : ¬ hasCycleWitness A := by
+    simpa [hasCycleWitness, hasDependencyCycle] using
+      (equationHolds_iff_noCycle C A).mp hequation
+  simp [noCycleEquationValuation, noCycleEquationOmega,
+    ObstructionValueDomain.nat, hnot]
 
-/-- R10: completeness reads NoCycle failure as a positive valuation. -/
-theorem noCycleComplete :
-    ObstructionComplete noCycleValuation noCycleLaw := by
-  intro A _h
+/-- Completeness reads equation failure as a positive cycle valuation. -/
+theorem noCycleEquationComplete
+    (C : Site.ContextPreorderCategory object) :
+    EquationObstructionComplete (noCycleEquationValuation C) PUnit.unit := by
+  intro A hfailure
   classical
   have hcycle : hasCycleWitness A := by
-    exact Classical.byContradiction (fun hnot => _h hnot)
-  simp [noCycleValuation, noCycleOmega, ObstructionValueDomain.nat, hcycle]
+    exact Classical.byContradiction (fun hnot =>
+      hfailure ((equationHolds_iff_noCycle C A).mpr (by
+        simpa [hasCycleWitness, hasDependencyCycle] using hnot)))
+  simp [noCycleEquationValuation, noCycleEquationOmega,
+    ObstructionValueDomain.nat, hcycle]
 
-/-- R10: theorem 9.3 instantiated on the finite NoCycle model. -/
-theorem finite_lawfulness_iff_omega_zero :
-    Lawfulness object lawUniverse ↔
-      omegaU noCycleValuation lawUniverse singletonRequiredAggregation object =
-        noCycleValuation.domain.zero :=
-  lawfulness_iff_omegaU_zero noCycleValuation lawUniverse
-    singletonRequiredAggregation
+/-- Theorem 9.3 instantiated on the finite NoCycle equation system. -/
+theorem finite_equationLawful_iff_omega_zero
+    (C : Site.ContextPreorderCategory object) :
+    (equationSystem C).EquationLawful object ↔
+      omegaE (noCycleEquationValuation C)
+          (singletonRequiredEquationAggregation C) object =
+        (noCycleEquationValuation C).domain.zero :=
+  equationLawful_iff_omegaE_zero (noCycleEquationValuation C)
+    (singletonRequiredEquationAggregation C)
     (fun index => by
       cases index with
       | mk index hrequired =>
           cases index
-          exact noCycleSound)
+          exact noCycleEquationSound C)
     (fun index => by
       cases index with
       | mk index hrequired =>
           cases index
-          exact noCycleComplete)
+          exact noCycleEquationComplete C)
     object
+
+/-- Constant-one valuation used to refute automatic equation soundness. -/
+def alwaysOneEquationValuation
+    (C : Site.ContextPreorderCategory object) :
+    EquationObstructionValuation (equationSystem C) Nat where
+  domain := ObstructionValueDomain.nat
+  omega _ _ := 1
+
+/-- The constant-one valuation is not sound on the lawful acyclic object. -/
+theorem alwaysOneEquationValuation_not_sound
+    (C : Site.ContextPreorderCategory object) :
+    ¬ EquationObstructionSound (alwaysOneEquationValuation C) PUnit.unit := by
+  intro hsound
+  have hzero := hsound acyclicObject (acyclic_noCycleEquationHolds C)
+  simp [alwaysOneEquationValuation, ObstructionValueDomain.nat] at hzero
+
+/-- Constant-zero valuation used to refute automatic equation completeness. -/
+def alwaysZeroEquationValuation
+    (C : Site.ContextPreorderCategory object) :
+    EquationObstructionValuation (equationSystem C) Nat where
+  domain := ObstructionValueDomain.nat
+  omega _ _ := 0
+
+/-- The constant-zero valuation is not complete on the cyclic object. -/
+theorem alwaysZeroEquationValuation_not_complete
+    (C : Site.ContextPreorderCategory object) :
+    ¬ EquationObstructionComplete (alwaysZeroEquationValuation C) PUnit.unit := by
+  intro hcomplete
+  have hpositive := hcomplete object (object_noCycleEquation_fails C)
+  simp [alwaysZeroEquationValuation, ObstructionValueDomain.nat] at hpositive
 
 /-- Generate the same finite object with equations on a selected context preorder. -/
 noncomputable def corePackageFor (C : Site.ContextPreorderCategory object) :
@@ -978,71 +909,6 @@ theorem componentAAbsentDatum_not_matches_core :
     (by simp [componentAAbsentDatum])
   exact Bool.noConfusion (hiff.mp componentA_atomPresent_holds_core)
 
-/--
-R10: the reject-only detector is not required-complete.
-
-A positive `RequiredComplete` instance is intentionally not asserted for the
-unrestricted `ArchitectureObject` quantifier: a law failure alone does not
-imply the family-support hypotheses needed by relation queries.  Completeness
-therefore remains the explicit additional condition fixed by SD1.
--/
-noncomputable def rejectingCircuitReading : CircuitReading lawUniverse where
-  code _ := .reject
-  sound := by
-    intro i A Q _hmatches haccepts
-    have hfalse : false = true :=
-      (CircuitDetectorCode.eval_reject Q).symm.trans haccepts
-    exact False.elim (Bool.noConfusion hfalse)
-
-/-- R10: the reject-only detector selects the public reject code at every index. -/
-theorem rejectingCircuitReading_code (i : lawUniverse.Index) :
-    rejectingCircuitReading.code i = .reject := by
-  cases i
-  rfl
-
-/-- R10: the reject-only detector misses the concrete required-law failure. -/
-theorem rejectingCircuitReading_not_requiredComplete :
-    ¬ rejectingCircuitReading.RequiredComplete := by
-  intro hcomplete
-  have hfailure :
-      ¬ (lawUniverse.law PUnit.unit).holds corePackage.object := by
-    intro hLaw
-    exact hLaw ⟨corePackage_cycle_relation, corePackage_cycle_relation_two,
-      corePackage_cycle_relation_three⟩
-  obtain ⟨circuit⟩ := hcomplete corePackage.object PUnit.unit rfl
-    hfailure
-  have hreject :
-      rejectingCircuitReading.accepts PUnit.unit circuit.1 = false :=
-    CircuitReading.accepts_eq_false_of_code_reject
-      rejectingCircuitReading PUnit.unit circuit.1
-      (rejectingCircuitReading_code PUnit.unit)
-  have hfalse : false = true := hreject.symm.trans circuit.2.2
-  exact Bool.noConfusion hfalse
-
-/-- R10: the selected law holds exactly when component A is absent. -/
-def componentAAbsentLaw : Law carrier where
-  holds A := ¬ A.configuration.family.mem FiniteAtom.componentA
-
-/-- R10: a singleton required-law universe for the complete detector example. -/
-def componentAAbsentLawUniverse : LawUniverse carrier where
-  Index := PUnit
-  law _ := componentAAbsentLaw
-  role _ := LawRole.required
-  witnessFamily := { Witness := PUnit, badWitness := fun _ _ => True }
-  SelectedReading := PUnit
-  selectedReading := PUnit.unit
-
-/-- R10: the component-A absence law holds on the concrete empty-family object. -/
-theorem componentAAbsentLaw_holds_unreachableEmptyObject :
-    (componentAAbsentLawUniverse.law PUnit.unit).holds unreachableEmptyObject := by
-  intro hmem
-  exact hmem
-
-/-- R10: the component-A absence law fails on the generated core object. -/
-theorem componentAAbsentLaw_failure_core :
-    ¬ (componentAAbsentLawUniverse.law PUnit.unit).holds corePackage.object :=
-  fun habsent => habsent corePackage_componentA_mem
-
 /-- R10: the positive component-A query used by the complete exact detector. -/
 def componentAPresentDatum : FiniteCircuitDatum carrier where
   queries := [(.atomPresent FiniteAtom.componentA, true)]
@@ -1116,6 +982,15 @@ noncomputable def componentAPresentEquationCircuitReading
     EquationCircuitReading (componentAAbsentEquationSystem C) where
   code _ := .exact componentAPresentDatum
 
+/-- The component-A equation detector selects the exact positive datum. -/
+theorem componentAPresentEquationCircuitReading_code
+    (C : Site.ContextPreorderCategory object)
+    (index : (componentAAbsentEquationSystem C).Index) :
+    (componentAPresentEquationCircuitReading C).code index =
+      .exact componentAPresentDatum := by
+  cases index
+  rfl
+
 /--
 The positive-query detector is sound by the direct residual characterization.
 -/
@@ -1153,6 +1028,14 @@ noncomputable def rejectingEquationCircuitReading
     (C : Site.ContextPreorderCategory object) :
     EquationCircuitReading (componentAAbsentEquationSystem C) where
   code _ := .reject
+
+/-- The negative completeness fixture selects reject at every equation index. -/
+theorem rejectingEquationCircuitReading_code
+    (C : Site.ContextPreorderCategory object)
+    (index : (componentAAbsentEquationSystem C).Index) :
+    (rejectingEquationCircuitReading C).code index = .reject := by
+  cases index
+  rfl
 
 /--
 The reject-only equation detector is not required-complete on the generated
@@ -1210,51 +1093,90 @@ theorem unsoundEquationCircuitReading_not_sound
       (componentAAbsentEquationSystem C).EquationHolds PUnit.unit
         unreachableEmptyObject :=
     (componentAAbsentEquationHolds_iff C unreachableEmptyObject).mpr
-      componentAAbsentLaw_holds_unreachableEmptyObject
+      (by
+        simp [unreachableEmptyObject, objectOfConfiguration,
+          unreachableEmptyConfiguration, emptyFamily])
   exact hSound PUnit.unit unreachableEmptyObject componentAAbsentDatum
     componentAAbsentDatum_matches_unreachableEmptyObject haccepts hholds
 
-/-- R10: an exact positive-query detector for the component-A absence law. -/
-noncomputable def completeCircuitReading :
-    CircuitReading componentAAbsentLawUniverse where
-  code _ := .exact componentAPresentDatum
-  sound := by
-    intro i A Q hmatches haccepts
-    cases i
-    have hdatum : componentAPresentDatum = Q :=
-      (CircuitDetectorCode.eval_exact_eq_true_iff componentAPresentDatum Q).mp haccepts
-    subst Q
-    exact fun habsent => habsent ((componentAPresentDatum_matches_iff A).mp hmatches)
+/--
+The component-A detector witnesses a concrete failed required equation and a
+nonempty accepted circuit fiber on the generated object.
+-/
+theorem componentAPresentEquationCircuitReading_nonvacuous
+    (C : Site.ContextPreorderCategory object) :
+    ¬ (componentAAbsentEquationSystem C).EquationHolds PUnit.unit
+        corePackage.object ∧
+      Nonempty
+        ((componentAPresentEquationCircuitReading C).Circuit
+          corePackage.object PUnit.unit) := by
+  have hfailure :
+      ¬ (componentAAbsentEquationSystem C).EquationHolds PUnit.unit
+        corePackage.object := by
+    intro hequation
+    exact (componentAAbsentEquationHolds_iff C corePackage.object).mp hequation
+      corePackage_componentA_mem
+  exact ⟨hfailure,
+    componentAPresentEquationCircuitReading_requiredComplete C
+      corePackage.object PUnit.unit rfl hfailure⟩
 
-/-- R10: the complete detector selects the positive component-A datum. -/
-theorem completeCircuitReading_code (i : componentAAbsentLawUniverse.Index) :
-    completeCircuitReading.code i = .exact componentAPresentDatum := by
-  cases i
-  rfl
+/--
+The generated component-A fixture realizes the three equation, circuit, and
+signature readings on a concrete positive object.
+-/
+theorem componentAAbsent_concreteThreeReadingAgreement
+    (C : Site.ContextPreorderCategory object) :
+    ((componentAAbsentEquationSystem C).EquationLawful corePackage.object ↔
+        NoRequiredEquationCircuit
+          (componentAPresentEquationCircuitReading C) corePackage.object) ∧
+      (NoRequiredEquationCircuit
+          (componentAPresentEquationCircuitReading C) corePackage.object ↔
+        RequiredSignatureAxesZero corePackage.object
+          (equationResidualSignatureAxes
+            (componentAAbsentEquationSystem C))) ∧
+      ((componentAAbsentEquationSystem C).EquationLawful corePackage.object ↔
+        RequiredSignatureAxesZero corePackage.object
+          (equationResidualSignatureAxes
+            (componentAAbsentEquationSystem C))) :=
+  concreteThreeReadingAgreement
+    (componentAPresentEquationCircuitReading C)
+    (componentAPresentEquationCircuitReading_sound C)
+    (componentAPresentEquationCircuitReading_requiredComplete C)
+    (equationResidualSignatureComparison
+      (componentAAbsentEquationSystem C))
+    corePackage.object
 
-/-- R10: every actual failure has the accepted matching component-A datum. -/
-theorem completeCircuitReading_requiredComplete :
-    completeCircuitReading.RequiredComplete := by
-  intro A i _hrequired hfailure
-  cases i
-  have hmem : A.configuration.family.mem FiniteAtom.componentA := by
-    by_contra habsent
-    exact hfailure habsent
-  exact ⟨⟨componentAPresentDatum, (componentAPresentDatum_matches_iff A).mpr hmem,
-    (CircuitReading.accepts_eq_true_iff_of_code_exact
-      completeCircuitReading PUnit.unit componentAPresentDatum componentAPresentDatum
-      (completeCircuitReading_code PUnit.unit)).mpr rfl⟩⟩
+/-- The residual-coordinate signature vanishes on the component-A-absent object. -/
+theorem componentAAbsent_signatureAxesZero_unreachableEmptyObject
+    (C : Site.ContextPreorderCategory object) :
+    RequiredSignatureAxesZero unreachableEmptyObject
+      (equationResidualSignatureAxes (componentAAbsentEquationSystem C)) := by
+  apply (equationLawful_iff_requiredSignatureAxesZero
+    (equationResidualSignatureComparison
+      (componentAAbsentEquationSystem C)) unreachableEmptyObject).mp
+  intro index _hrequired
+  cases index
+  exact (componentAAbsentEquationHolds_iff C unreachableEmptyObject).mpr
+    (by
+      simp [unreachableEmptyObject, objectOfConfiguration,
+        unreachableEmptyConfiguration, emptyFamily])
 
-/-- R10: required completeness fires on the generated component-A object. -/
-theorem completeCircuitReading_nonvacuous :
-    ¬ (componentAAbsentLawUniverse.law PUnit.unit).holds corePackage.object ∧
-      Nonempty (completeCircuitReading.Circuit corePackage.object PUnit.unit) :=
-  ⟨componentAAbsentLaw_failure_core,
-    completeCircuitReading_requiredComplete corePackage.object PUnit.unit rfl
-      componentAAbsentLaw_failure_core⟩
+/-- The same residual-coordinate signature is nonzero on the generated core object. -/
+theorem componentAAbsent_signatureAxesZero_fails_core
+    (C : Site.ContextPreorderCategory object) :
+    ¬ RequiredSignatureAxesZero corePackage.object
+      (equationResidualSignatureAxes (componentAAbsentEquationSystem C)) := by
+  intro hzero
+  have hlawful :=
+    (equationLawful_iff_requiredSignatureAxesZero
+      (equationResidualSignatureComparison
+        (componentAAbsentEquationSystem C)) corePackage.object).mpr hzero
+  exact (componentAAbsentEquationHolds_iff C corePackage.object).mp
+    (hlawful PUnit.unit rfl) corePackage_componentA_mem
 
 /-- R10: the main core reading selects the exact cycle detector template. -/
-theorem coreReading_circuit_code (i : lawUniverse.Index) :
+theorem coreReading_circuit_code
+    (i : coreReading.equationReading.equationSystem.Index) :
     coreReading.equationReading.circuits.code i =
       .exact cycleQueryDatum := by
   cases i
@@ -1737,13 +1659,13 @@ theorem site_equation_required (index : site.equationSystem.Index) :
   cases index
   rfl
 
-/-- The generated site law display is exactly the finite NoCycle equation. -/
-@[simp] theorem site_equationHolds_iff_noCycleLaw
+/-- The generated site equation is exactly absence of the selected cycle. -/
+@[simp] theorem site_equationHolds_iff_noCycle
     (A : ArchitectureObject carrier) :
-    site.equationSystem.EquationHolds PUnit.unit A ↔ noCycleLaw.holds A := by
+    site.equationSystem.EquationHolds PUnit.unit A ↔ ¬ hasDependencyCycle A := by
   change (equationSystem siteContextPreorder).EquationHolds PUnit.unit A ↔
-    noCycleLaw.holds A
-  exact equationHolds_iff_noCycleLaw siteContextPreorder A
+    ¬ hasDependencyCycle A
+  exact equationHolds_iff_noCycle siteContextPreorder A
 
 /-- SD2: the finite site retains the generated core signature reading. -/
 theorem site_signature_eq_core :

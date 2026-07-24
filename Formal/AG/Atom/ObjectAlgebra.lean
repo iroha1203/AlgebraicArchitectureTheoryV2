@@ -138,25 +138,33 @@ def PreservesPredicateInvariant {U : AtomCarrier.{u}} (op : Operation U)
     (P : PredicateInvariant U) : Prop :=
   Invariant.PredicatePreserved P op.source op.target
 
-/-- I.命題10.4: reflection reading as target-side selected obstruction exposure. -/
-def ReflectsObstruction {U : AtomCarrier.{u}} (op : Operation U)
-    (W : LawWitnessFamily U) : Prop :=
-  ∃ witness : W.Witness, W.badWitness op.target witness
+/-- I.命題10.4: reflection as target-side failure of a selected equation. -/
+def ReflectsObstruction
+    {U : AtomCarrier.{u}} {A₀ : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A₀}
+    (op : Operation U) (E : ArchitecturalEquationSystem C)
+    (index : E.Index) : Prop :=
+  EquationSemanticObstruction E index op.target
 
 /-- I.命題10.4: repair reading as a selected obstruction valuation decrease. -/
-def RepairsObstruction {U : AtomCarrier.{u}} {Value : Type u}
-    (op : Operation U) (valuation : ObstructionValuation U Value)
-    (L : Law U) (decreases : Value -> Value -> Prop) : Prop :=
-  decreases (valuation.omega L op.target) (valuation.omega L op.source)
+def RepairsObstruction
+    {U : AtomCarrier.{u}} {A₀ : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A₀}
+    {E : ArchitecturalEquationSystem C} {Value : Type u}
+    (op : Operation U) (valuation : EquationObstructionValuation E Value)
+    (index : E.Index) (decreases : Value -> Value -> Prop) : Prop :=
+  decreases (valuation.omega index op.target) (valuation.omega index op.source)
 
 /-- I.命題10.4: extension reading as growth of the underlying Atom family. -/
 def ExtendsAtomFamily {U : AtomCarrier.{u}} (op : Operation U) : Prop :=
   op.source.configuration.family.Subset op.target.configuration.family
 
-/-- I.命題10.4: synthesis reading as construction of a selected lawful target. -/
-def SynthesizesLawfulObject {U : AtomCarrier.{u}} (op : Operation U)
-    (LU : LawUniverse U) : Prop :=
-  Lawfulness op.target LU
+/-- I.命題10.4: synthesis as construction of an equation-lawful target. -/
+def SynthesizesLawfulObject
+    {U : AtomCarrier.{u}} {A₀ : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A₀}
+    (op : Operation U) (E : ArchitecturalEquationSystem C) : Prop :=
+  E.EquationLawful op.target
 
 /-- I.命題10.4: translation reading as selected object equivalence evidence. -/
 def TranslatesRepresentation {U : AtomCarrier.{u}} (op : Operation U) :
@@ -177,19 +185,26 @@ theorem preservesPredicateInvariant_apply {U : AtomCarrier.{u}}
     P.holds op.target :=
   h hsource
 
-/-- I.命題10.4: reflection provides a target-side obstruction witness. -/
-theorem reflectsObstruction_witness {U : AtomCarrier.{u}}
-    {op : Operation U} {W : LawWitnessFamily U}
-    (h : ReflectsObstruction op W) :
-    ∃ witness : W.Witness, W.badWitness op.target witness :=
+/-- I.命題10.4: reflection exposes target-side equation failure. -/
+theorem reflectsObstruction_failure
+    {U : AtomCarrier.{u}} {A₀ : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A₀}
+    {E : ArchitecturalEquationSystem C}
+    {op : Operation U} {index : E.Index}
+    (h : ReflectsObstruction op E index) :
+    ¬ E.EquationHolds index op.target :=
   h
 
 /-- I.命題10.4: repair is exactly the selected decrease comparison. -/
-theorem repairsObstruction_apply {U : AtomCarrier.{u}} {Value : Type u}
-    {op : Operation U} {valuation : ObstructionValuation U Value}
-    {L : Law U} {decreases : Value -> Value -> Prop}
-    (h : RepairsObstruction op valuation L decreases) :
-    decreases (valuation.omega L op.target) (valuation.omega L op.source) :=
+theorem repairsObstruction_apply
+    {U : AtomCarrier.{u}} {A₀ : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A₀}
+    {E : ArchitecturalEquationSystem C} {Value : Type u}
+    {op : Operation U} {valuation : EquationObstructionValuation E Value}
+    {index : E.Index} {decreases : Value -> Value -> Prop}
+    (h : RepairsObstruction op valuation index decreases) :
+    decreases (valuation.omega index op.target)
+      (valuation.omega index op.source) :=
   h
 
 /-- I.命題10.4: extension exposes source-family inclusion in the target. -/
@@ -198,11 +213,13 @@ theorem extendsAtomFamily_apply {U : AtomCarrier.{u}}
     op.source.configuration.family.Subset op.target.configuration.family :=
   h
 
-/-- I.命題10.4: synthesis exposes lawfulness of the constructed target. -/
-theorem synthesizesLawfulObject_apply {U : AtomCarrier.{u}}
-    {op : Operation U} {LU : LawUniverse U}
-    (h : SynthesizesLawfulObject op LU) :
-    Lawfulness op.target LU :=
+/-- I.命題10.4: synthesis exposes equation lawfulness of the target. -/
+theorem synthesizesLawfulObject_apply
+    {U : AtomCarrier.{u}} {A₀ : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A₀}
+    {op : Operation U} {E : ArchitecturalEquationSystem C}
+    (h : SynthesizesLawfulObject op E) :
+    E.EquationLawful op.target :=
   h
 
 /-- I.命題10.4: translation provides selected object-equivalence evidence. -/

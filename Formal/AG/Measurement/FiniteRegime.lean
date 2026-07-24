@@ -26,20 +26,16 @@ quotient comparison is accepted from the caller.
 
 /-- VIII.Definition 4.1: geometric input for a finite measurement regime. -/
 structure FiniteMeasurementGeometry (M : MeasurementProfile.{u, v}) where
-  /-- Atom carrier supporting the selected AAT site. -/
-  U : AtomCarrier.{u}
-  /-- Architecture object supporting the selected AAT site. -/
-  A : ArchitectureObject U
-  /-- Selected AAT site. -/
-  site : Site.AATSite A
   /-- Finite-poset site and adequate cover data. -/
-  coverGeometry : Site.FinitePosetCoverGeometry site
+  coverGeometry :
+    Site.FinitePosetCoverGeometry M.equationGeometry.site
   /-- Canonical tuple nerve generated from the selected cover. -/
   tupleGeometry : Site.FinitePosetCanonicalTupleCoverGeometry coverGeometry
   /-- Module-valued coefficient ring. -/
   [coeffCommRing : CommRing M.Coeff]
   /-- Selected obstruction coefficient sheaf. -/
-  obstructionSheaf : Cohomology.ObstructionSheaf site
+  obstructionSheaf :
+    Cohomology.ObstructionSheaf M.equationGeometry.site
   /-- Every selected obstruction section is a module over the profile ring. -/
   sectionModule :
     ∀ (n : Nat)
@@ -111,6 +107,20 @@ structure FiniteMeasurementGeometry (M : MeasurementProfile.{u, v}) where
 namespace FiniteMeasurementGeometry
 
 variable {M : MeasurementProfile.{u, v}}
+
+/-- Atom carrier fixed by the measurement profile. -/
+abbrev U (_G : FiniteMeasurementGeometry M) : AtomCarrier.{u} :=
+  M.equationGeometry.U
+
+/-- Architecture object fixed by the measurement profile. -/
+abbrev A (_G : FiniteMeasurementGeometry M) :
+    ArchitectureObject M.equationGeometry.U :=
+  M.equationGeometry.A
+
+/-- Equation-generated AAT site fixed by the measurement profile. -/
+abbrev site (_G : FiniteMeasurementGeometry M) :
+    Site.AATSite M.equationGeometry.A :=
+  M.equationGeometry.site
 
 /-- Coefficient regime generated from the selected cover and obstruction sheaf. -/
 abbrev coefficientRegime (G : FiniteMeasurementGeometry M) :=

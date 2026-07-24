@@ -5,7 +5,7 @@ noncomputable section
 namespace AAT.AG
 namespace Measurement
 
-universe u v
+universe u v w
 
 /-!
 Part VIII R8 / AC18-AC20 support-localized transfer measurement and finite
@@ -20,41 +20,74 @@ interfaces with explicit finite data.
 VIII.Definition 10.1: support-localized repair path / direction.
 
 The reading is relative to a selected LawConflict class and its support. It
-records intersection with the selected conflict support, not global repair
-coverage.
+stores the path image, direction support, and selected conflict-support
+function as concrete sets. Intersection and localization are derived
+predicates rather than freely supplied truth fields.
 -/
-structure SupportLocalizedRepairPath {M : MeasurementProfile.{u, v}}
-    {A : CommonAmbientPair M} (L : LawConflictMeasurement A) where
+structure SupportLocalizedRepairPath
+    {M : MeasurementProfile.{u, v}}
+    {R : Type w} [CommRing R]
+    {I_U I_V : Ideal R}
+    {A : CommonAmbientPair M R I_U I_V}
+    (L : LawConflictMeasurement A) where
   RepairPath : Type u
   RepairDirection : Type u
-  DirectionSupport : Type u
   selectedRepairPath : RepairPath
   selectedRepairDirection : RepairDirection
-  directionSupport : RepairDirection -> DirectionSupport
-  directionHitsConflictSupport : RepairDirection -> L.ConflictClass -> Prop
-  selectedConflictClass : L.ConflictClass
-  selectedClass_eq_lawConflictClass :
-    selectedConflictClass = L.selectedConflictClass
-  pathImageIntersectsSupport : Prop
-  pathImageIntersectsSupport_cert : pathImageIntersectsSupport
-  directionSupportIntersectsConflict : Prop
-  directionSupportIntersectsConflict_cert : directionSupportIntersectsConflict
-  supportLocalizedOnly : Prop
-  supportLocalizedOnly_cert : supportLocalizedOnly
+  pathImage : RepairPath -> Set A.SupportCarrier
+  directionSupport : RepairDirection -> Set A.SupportCarrier
+  conflictSupport : L.ConflictClass -> Set A.SupportCarrier
 
 namespace SupportLocalizedRepairPath
 
-/-- VIII.Definition 10.1: expose selected path / support intersection. -/
-theorem pathImageIntersectsSupport_holds {M : MeasurementProfile.{u, v}}
-    {A : CommonAmbientPair M} {L : LawConflictMeasurement A}
-    (S : SupportLocalizedRepairPath L) : S.pathImageIntersectsSupport :=
-  S.pathImageIntersectsSupport_cert
+/-- VIII.Definition 10.1: the selected path image meets the computed support of
+the selected conflict class. -/
+def pathImageIntersectsSupport {M : MeasurementProfile.{u, v}}
+    {R : Type w} [CommRing R] {I_U I_V : Ideal R}
+    {A : CommonAmbientPair M R I_U I_V}
+    {L : LawConflictMeasurement A}
+    (S : SupportLocalizedRepairPath L) : Prop :=
+  (S.pathImage S.selectedRepairPath ∩
+    S.conflictSupport L.selectedConflictClass).Nonempty
 
-/-- VIII.Definition 10.1: expose selected direction / conflict-support intersection. -/
-theorem directionSupportIntersectsConflict_holds {M : MeasurementProfile.{u, v}}
-    {A : CommonAmbientPair M} {L : LawConflictMeasurement A}
-    (S : SupportLocalizedRepairPath L) : S.directionSupportIntersectsConflict :=
-  S.directionSupportIntersectsConflict_cert
+/-- VIII.Definition 10.1: the selected first-order direction meets the computed
+support of the selected conflict class. -/
+def directionSupportIntersectsConflict {M : MeasurementProfile.{u, v}}
+    {R : Type w} [CommRing R] {I_U I_V : Ideal R}
+    {A : CommonAmbientPair M R I_U I_V}
+    {L : LawConflictMeasurement A}
+    (S : SupportLocalizedRepairPath L) : Prop :=
+  (S.directionSupport S.selectedRepairDirection ∩
+    S.conflictSupport L.selectedConflictClass).Nonempty
+
+/-- VIII.Definition 10.1: localization is witnessed by the selected path or
+the selected first-order direction. -/
+def SupportLocalized {M : MeasurementProfile.{u, v}}
+    {R : Type w} [CommRing R] {I_U I_V : Ideal R}
+    {A : CommonAmbientPair M R I_U I_V}
+    {L : LawConflictMeasurement A}
+    (S : SupportLocalizedRepairPath L) : Prop :=
+  S.pathImageIntersectsSupport ∨ S.directionSupportIntersectsConflict
+
+/-- A path-support intersection supplies support localization. -/
+theorem supportLocalized_of_path {M : MeasurementProfile.{u, v}}
+    {R : Type w} [CommRing R] {I_U I_V : Ideal R}
+    {A : CommonAmbientPair M R I_U I_V}
+    {L : LawConflictMeasurement A}
+    (S : SupportLocalizedRepairPath L)
+    (h : S.pathImageIntersectsSupport) :
+    S.SupportLocalized :=
+  Or.inl h
+
+/-- A direction-support intersection supplies support localization. -/
+theorem supportLocalized_of_direction {M : MeasurementProfile.{u, v}}
+    {R : Type w} [CommRing R] {I_U I_V : Ideal R}
+    {A : CommonAmbientPair M R I_U I_V}
+    {L : LawConflictMeasurement A}
+    (S : SupportLocalizedRepairPath L)
+    (h : S.directionSupportIntersectsConflict) :
+    S.SupportLocalized :=
+  Or.inr h
 
 end SupportLocalizedRepairPath
 
@@ -62,91 +95,187 @@ end SupportLocalizedRepairPath
 VIII.Definition 10.2: transfer measurement pairing.
 
 The pairing maps a selected repair direction and selected LawConflict class
-into a transfer-residue target with explicit zero / nontrivial predicates.
+into a transfer-residue target. The selected residue is derived by evaluating
+the pairing; nontriviality is the fixed predicate on that derived value.
 -/
-structure TransferMeasurementPairing {M : MeasurementProfile.{u, v}}
-    {A : CommonAmbientPair M} {L : LawConflictMeasurement A}
+structure TransferMeasurementPairing
+    {M : MeasurementProfile.{u, v}}
+    {R : Type w} [CommRing R] {I_U I_V : Ideal R}
+    {A : CommonAmbientPair M R I_U I_V}
+    {L : LawConflictMeasurement A}
     (S : SupportLocalizedRepairPath L) where
   TransferResidue : Type v
   NormValue : Type v
   zeroResidue : TransferResidue
-  ZeroResidue : TransferResidue -> Prop
   NontrivialResidue : TransferResidue -> Prop
   norm : TransferResidue -> NormValue
   pairing : S.RepairDirection -> L.ConflictClass -> TransferResidue
-  selectedResidue : TransferResidue
-  selectedResidue_eq_pairing :
-    selectedResidue = pairing S.selectedRepairDirection S.selectedConflictClass
-  selectedDirectionNontrivialResidue : Prop
-  selectedDirectionNontrivialResidue_cert :
-    selectedDirectionNontrivialResidue
-  nontrivialPairingSufficient : Prop
-  nontrivialPairingSufficient_shape :
-    nontrivialPairingSufficient =
-      (NontrivialResidue (pairing S.selectedRepairDirection S.selectedConflictClass) ->
-        selectedDirectionNontrivialResidue)
-  nontrivialPairingSufficient_cert : nontrivialPairingSufficient
-  detectingPairingRequiredForNecessity : Prop
-  detectingPairingRequiredForNecessity_cert : detectingPairingRequiredForNecessity
 
 namespace TransferMeasurementPairing
 
-/-- VIII.Definition 10.2: expose the selected pairing residue equation. -/
-theorem selectedResidue_eq_pairing_holds {M : MeasurementProfile.{u, v}}
-    {A : CommonAmbientPair M} {L : LawConflictMeasurement A}
-    {S : SupportLocalizedRepairPath L} (P : TransferMeasurementPairing S) :
-    P.selectedResidue = P.pairing S.selectedRepairDirection S.selectedConflictClass :=
-  P.selectedResidue_eq_pairing
+/-- The selected transfer residue is the pairing evaluated on the selected
+direction and the measurement's selected conflict class. -/
+def selectedResidue {M : MeasurementProfile.{u, v}}
+    {R : Type w} [CommRing R] {I_U I_V : Ideal R}
+    {A : CommonAmbientPair M R I_U I_V}
+    {L : LawConflictMeasurement A}
+    {S : SupportLocalizedRepairPath L}
+    (P : TransferMeasurementPairing S) :
+    P.TransferResidue :=
+  P.pairing S.selectedRepairDirection L.selectedConflictClass
 
-/-- VIII.Definition 10.2: record that necessity requires an extra detecting assumption. -/
-theorem detectingPairingRequiredForNecessity_holds {M : MeasurementProfile.{u, v}}
-    {A : CommonAmbientPair M} {L : LawConflictMeasurement A}
-    {S : SupportLocalizedRepairPath L} (P : TransferMeasurementPairing S) :
-    P.detectingPairingRequiredForNecessity :=
-  P.detectingPairingRequiredForNecessity_cert
+/-- The zero predicate is equality with the distinguished zero residue. -/
+def ZeroResidue {M : MeasurementProfile.{u, v}}
+    {R : Type w} [CommRing R] {I_U I_V : Ideal R}
+    {A : CommonAmbientPair M R I_U I_V}
+    {L : LawConflictMeasurement A}
+    {S : SupportLocalizedRepairPath L}
+    (P : TransferMeasurementPairing S) :
+    P.TransferResidue -> Prop :=
+  fun residue => residue = P.zeroResidue
+
+/--
+VIII.Theorem 10.3 result data for the selected support-localized transfer.
+
+The result retains an actual support point shared by the selected repair
+source and selected conflict support, together with the residue computed by
+the selected pairing. Nontriviality is deliberately not stored here; it is
+the separate theorem conclusion.
+
+Implementation notes: the support point prevents the transfer result from
+being reconstructed from a residue alone, while `residue_eq_pairing` connects
+the result to Definition 10.2 rather than accepting an unrelated residue.
+-/
+structure SelectedTransferResidue
+    {M : MeasurementProfile.{u, v}}
+    {R : Type w} [CommRing R] {I_U I_V : Ideal R}
+    {A : CommonAmbientPair M R I_U I_V}
+    {L : LawConflictMeasurement A}
+    {S : SupportLocalizedRepairPath L}
+    (P : TransferMeasurementPairing S) where
+  supportPoint : A.SupportCarrier
+  supportPointOnSelectedRepair :
+    supportPoint ∈ S.pathImage S.selectedRepairPath ∨
+      supportPoint ∈ S.directionSupport S.selectedRepairDirection
+  supportPointInSelectedConflict :
+    supportPoint ∈ S.conflictSupport L.selectedConflictClass
+  residue : P.TransferResidue
+  residue_eq_pairing :
+    residue =
+      P.pairing S.selectedRepairDirection L.selectedConflictClass
+
+/-- The selected direction has a nontrivial transferred residue when an
+actual support-localized result has been constructed and its computed residue
+satisfies the fixed nontriviality predicate. -/
+def selectedDirectionNontrivialResidue {M : MeasurementProfile.{u, v}}
+    {R : Type w} [CommRing R] {I_U I_V : Ideal R}
+    {A : CommonAmbientPair M R I_U I_V}
+    {L : LawConflictMeasurement A}
+    {S : SupportLocalizedRepairPath L}
+    (P : TransferMeasurementPairing S) : Prop :=
+  ∃ result : SelectedTransferResidue P,
+    P.NontrivialResidue result.residue
+
+/-- Every selected transfer result records the actual selected pairing value. -/
+theorem SelectedTransferResidue.residue_eq_selectedResidue
+    {M : MeasurementProfile.{u, v}}
+    {R : Type w} [CommRing R] {I_U I_V : Ideal R}
+    {A : CommonAmbientPair M R I_U I_V}
+    {L : LawConflictMeasurement A}
+    {S : SupportLocalizedRepairPath L}
+    {P : TransferMeasurementPairing S}
+    (result : SelectedTransferResidue P) :
+    result.residue = P.selectedResidue := by
+  simpa [selectedResidue] using result.residue_eq_pairing
+
+/-- The selected residue equation follows from its definition. -/
+theorem selectedResidue_eq_pairing {M : MeasurementProfile.{u, v}}
+    {R : Type w} [CommRing R] {I_U I_V : Ideal R}
+    {A : CommonAmbientPair M R I_U I_V}
+    {L : LawConflictMeasurement A}
+    {S : SupportLocalizedRepairPath L}
+    (P : TransferMeasurementPairing S) :
+    P.selectedResidue =
+      P.pairing S.selectedRepairDirection L.selectedConflictClass :=
+  rfl
 
 end TransferMeasurementPairing
 
 /--
 VIII.Theorem 10.3: support-localized transfer theorem package.
 
-The theorem is one-way: a nontrivial selected pairing residue is sufficient to
-mark the selected repair direction as having a nontrivial transferred residue.
+The proposition records the existence of a support-localized result whose
+actual pairing value is nontrivial. The construction theorem below consumes
+both the support intersection and the computed pairing nontriviality.
 -/
-structure SupportLocalizedTransfer {M : MeasurementProfile.{u, v}}
-    {A : CommonAmbientPair M} {L : LawConflictMeasurement A}
-    {S : SupportLocalizedRepairPath L} (P : TransferMeasurementPairing S) where
-  nontrivial_pairing_implies_transferred_residue :
-    P.NontrivialResidue (P.pairing S.selectedRepairDirection S.selectedConflictClass) ->
-      P.selectedDirectionNontrivialResidue
+def SupportLocalizedTransfer
+    {M : MeasurementProfile.{u, v}}
+    {R : Type w} [CommRing R] {I_U I_V : Ideal R}
+    {A : CommonAmbientPair M R I_U I_V}
+    {L : LawConflictMeasurement A}
+    {S : SupportLocalizedRepairPath L}
+    (P : TransferMeasurementPairing S) : Prop :=
+  P.selectedDirectionNontrivialResidue
 
 namespace SupportLocalizedTransfer
 
-/-- VIII.Theorem 10.3: expose the sufficient-condition transfer implication. -/
+/-- VIII.Theorem 10.3: expose the nontrivial residue obtained from the
+support-localized pairing. -/
 theorem nontrivial_transferred_residue_of_pairing {M : MeasurementProfile.{u, v}}
-    {A : CommonAmbientPair M} {L : LawConflictMeasurement A}
+    {R : Type w} [CommRing R] {I_U I_V : Ideal R}
+    {A : CommonAmbientPair M R I_U I_V}
+    {L : LawConflictMeasurement A}
     {S : SupportLocalizedRepairPath L} {P : TransferMeasurementPairing S}
-    (T : SupportLocalizedTransfer P)
-    (h : P.NontrivialResidue (P.pairing S.selectedRepairDirection S.selectedConflictClass)) :
+    (T : SupportLocalizedTransfer P) :
     P.selectedDirectionNontrivialResidue :=
-  T.nontrivial_pairing_implies_transferred_residue h
+  T
 
 end SupportLocalizedTransfer
 
-/-- VIII.Theorem 10.3: construct the selected transfer theorem package. -/
-def supportLocalizedTransferPackage {M : MeasurementProfile.{u, v}}
-    {A : CommonAmbientPair M} {L : LawConflictMeasurement A}
-    {S : SupportLocalizedRepairPath L} (P : TransferMeasurementPairing S) :
-    SupportLocalizedTransfer P where
-  nontrivial_pairing_implies_transferred_residue :=
-    P.nontrivialPairingSufficient_shape.mp P.nontrivialPairingSufficient_cert
+/-- VIII.Theorem 10.3: construct the selected transfer conclusion from the
+actual support intersection and computed pairing value. -/
+theorem supportLocalizedTransferPackage {M : MeasurementProfile.{u, v}}
+    {R : Type w} [CommRing R] {I_U I_V : Ideal R}
+    {A : CommonAmbientPair M R I_U I_V}
+    {L : LawConflictMeasurement A}
+    {S : SupportLocalizedRepairPath L}
+    (P : TransferMeasurementPairing S)
+    (hLocalized : S.SupportLocalized)
+    (hNontrivial : P.NontrivialResidue P.selectedResidue) :
+    SupportLocalizedTransfer P := by
+  unfold SupportLocalizedTransfer
+  rcases hLocalized with hPath | hDirection
+  · rcases hPath with ⟨supportPoint, hPath, hConflict⟩
+    refine ⟨{
+      supportPoint := supportPoint
+      supportPointOnSelectedRepair := Or.inl hPath
+      supportPointInSelectedConflict := hConflict
+      residue := P.selectedResidue
+      residue_eq_pairing := rfl
+    }, ?_⟩
+    exact hNontrivial
+  · rcases hDirection with ⟨supportPoint, hDirection, hConflict⟩
+    refine ⟨{
+      supportPoint := supportPoint
+      supportPointOnSelectedRepair := Or.inr hDirection
+      supportPointInSelectedConflict := hConflict
+      residue := P.selectedResidue
+      residue_eq_pairing := rfl
+    }, ?_⟩
+    exact hNontrivial
 
-/-- VIII.Theorem 10.3: selected support-localized transfer exists under explicit data. -/
+/-- VIII.Theorem 10.3: direct form of the support-localized transfer
+inference. -/
 theorem supportLocalizedTransfer {M : MeasurementProfile.{u, v}}
-    {A : CommonAmbientPair M} {L : LawConflictMeasurement A}
-    {S : SupportLocalizedRepairPath L} (P : TransferMeasurementPairing S) :
-    Nonempty (SupportLocalizedTransfer P) :=
-  ⟨supportLocalizedTransferPackage P⟩
+    {R : Type w} [CommRing R] {I_U I_V : Ideal R}
+    {A : CommonAmbientPair M R I_U I_V}
+    {L : LawConflictMeasurement A}
+    {S : SupportLocalizedRepairPath L}
+    (P : TransferMeasurementPairing S)
+    (hLocalized : S.SupportLocalized)
+    (hNontrivial : P.NontrivialResidue P.selectedResidue) :
+    SupportLocalizedTransfer P :=
+  supportLocalizedTransferPackage P hLocalized hNontrivial
 
 /--
 VIII.Theorem candidate 10.4: transfer lower-bound statement-only interface.
@@ -154,8 +283,11 @@ VIII.Theorem candidate 10.4: transfer lower-bound statement-only interface.
 The lower-bound claim is not proved here; it is guarded by explicit
 nondegeneracy, support-weight, projection-norm, and constant assumptions.
 -/
-structure TransferLowerBoundCandidate {M : MeasurementProfile.{u, v}}
-    {A : CommonAmbientPair M} {L : LawConflictMeasurement A}
+structure TransferLowerBoundCandidate
+    {M : MeasurementProfile.{u, v}}
+    {R : Type w} [CommRing R] {I_U I_V : Ideal R}
+    {A : CommonAmbientPair M R I_U I_V}
+    {L : LawConflictMeasurement A}
     {S : SupportLocalizedRepairPath L} (P : TransferMeasurementPairing S) where
   SupportWeight : Type v
   ProjectionNorm : Type v

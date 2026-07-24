@@ -1,5 +1,6 @@
 import ResearchLean.AG.QualitySurface.SemanticRepairLawEquationGroundedPacket
 import ResearchLean.AG.QualitySurface.SemanticRepairLawEquationWitnessInstance
+import Formal.AG.Examples.FiniteModelLegacy
 
 /-!
 G-06 law-equation layer: degree-zero boundary theorems and the concrete
@@ -241,7 +242,7 @@ def finiteModelLawfulObject :
 /-- The NoCycle law holds on the relation-free finite-model object. -/
 theorem noCycleLaw_holds_finiteModelLawfulObject :
     AAT.AG.FiniteModel.noCycleLaw.holds finiteModelLawfulObject :=
-  fun h => h.1
+  (AAT.AG.FiniteModel.noCycleLaw_holds_iff _).mpr (fun h => h.1)
 
 /--
 The source-section-free skeleton of the finite-model law-equation stack:
@@ -307,9 +308,10 @@ theorem finiteModelLawEquationDefectSource_displayedRequiredLawsHoldOn :
   intro _i equationIndex _hmem _hrequired
   cases equationIndex
   exact
-    (AAT.AG.FiniteModel.site_equationHolds_iff_noCycleLaw
+    (AAT.AG.FiniteModel.site_equationHolds_iff_noCycle
       finiteModelLawfulObject).mpr
-      noCycleLaw_holds_finiteModelLawfulObject
+      ((AAT.AG.FiniteModel.noCycleLaw_holds_iff _).mp
+        noCycleLaw_holds_finiteModelLawfulObject)
 
 /-- The singleton semantic repair cover over the finite-model semantic site. -/
 def finiteModelSemanticCover :

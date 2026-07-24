@@ -1,4 +1,5 @@
 import Formal.AG.Derived
+import Formal.AG.Atom.Signature
 import Formal.AG.LawAlgebra.StandardScheme
 import Formal.AG.Site.Topology
 

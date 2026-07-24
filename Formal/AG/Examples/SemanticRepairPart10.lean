@@ -586,9 +586,9 @@ def lawfulConfiguration : AtomConfiguration FiniteModel.carrier where
 def lawfulObject : ArchitectureObject FiniteModel.carrier :=
   FiniteModel.objectOfConfiguration lawfulConfiguration
 
-/-- X.例9.1: the selected local object satisfies the required NoCycle law. -/
-theorem lawfulObject_noCycleLaw :
-    FiniteModel.noCycleLaw.holds lawfulObject := by
+/-- X.例9.1: the selected local object has no dependency cycle. -/
+theorem lawfulObject_noCycle :
+    ¬ FiniteModel.hasDependencyCycle lawfulObject := by
   intro hcycle
   exact hcycle.1
 
@@ -629,7 +629,7 @@ def lawEquationSystem :
     (atom : FiniteModel.carrier.Atom) :
     lawEquationSystem.equationResidual W lawfulObject equationIndex atom = 0 := by
   have hacyclic : ¬ FiniteModel.hasDependencyCycle lawfulObject :=
-    lawfulObject_noCycleLaw
+    lawfulObject_noCycle
   simp [lawEquationSystem, FiniteModel.noCycleResidual, hacyclic]
 
 /--
@@ -729,10 +729,10 @@ theorem lawEquationSiteGeneratedQuotientIsSheaf :
 The `ZMod 4` equation holds exactly when the selected finite NoCycle equation
 holds: the site residual is `0` or `1`, and its cast preserves that distinction.
 -/
-theorem lawEquationSystem_equationHolds_iff_noCycleLaw
+theorem lawEquationSystem_equationHolds_iff_noCycle
     (A : ArchitectureObject FiniteModel.carrier) :
     lawEquationSystem.EquationHolds PUnit.unit A ↔
-      FiniteModel.noCycleLaw.holds A := by
+      ¬ FiniteModel.hasDependencyCycle A := by
   constructor
   · intro h hcycle
     have hzero :=
@@ -744,7 +744,7 @@ theorem lawEquationSystem_equationHolds_iff_noCycleLaw
   · intro h W atom
     have hzero : FiniteModel.noCycleResidual A = 0 := by
       simpa [FiniteModel.equationSystem] using
-        (FiniteModel.site_equationHolds_iff_noCycleLaw A).mpr h W atom
+        (FiniteModel.site_equationHolds_iff_noCycle A).mpr h W atom
     change (FiniteModel.noCycleResidual A : ZMod 4) = 0
     simp [hzero]
 
@@ -859,8 +859,8 @@ def defectSource :
 theorem displayedRequiredLawsHoldOn :
     defectSource.DisplayedRequiredLawsHoldOn := by
   intro i
-  exact (lawEquationSystem_equationHolds_iff_noCycleLaw lawfulObject).mpr
-    lawfulObject_noCycleLaw
+  exact (lawEquationSystem_equationHolds_iff_noCycle lawfulObject).mpr
+    lawfulObject_noCycle
 
 /-!
 The following source is a negative witness for the displayed realization
@@ -878,11 +878,9 @@ def nonlawfulConfiguration : AtomConfiguration FiniteModel.carrier where
 def nonlawfulObject : ArchitectureObject FiniteModel.carrier :=
   FiniteModel.objectOfConfiguration nonlawfulConfiguration
 
-theorem nonlawfulObject_not_noCycleLaw :
-    ¬ FiniteModel.noCycleLaw.holds nonlawfulObject := by
-  intro hholds
-  apply hholds
-  exact ⟨trivial, trivial, trivial⟩
+theorem nonlawfulObject_hasDependencyCycle :
+    FiniteModel.hasDependencyCycle nonlawfulObject :=
+  ⟨trivial, trivial, trivial⟩
 
 /-- The displayed residual generated from the cyclic fixture is one. -/
 @[simp] theorem lawEquationSystem_equationResidual_nonlawfulObject
@@ -2117,8 +2115,8 @@ def integerLawFiniteFreeDefectSource :
 theorem integerLawFiniteFreeDisplayedRequiredLawsHoldOn :
     integerLawFiniteFreeDefectSource.DisplayedRequiredLawsHoldOn := by
   intro _
-  exact (FiniteModel.site_equationHolds_iff_noCycleLaw lawfulObject).mpr
-    lawfulObject_noCycleLaw
+  exact (FiniteModel.site_equationHolds_iff_noCycle lawfulObject).mpr
+    lawfulObject_noCycle
 
 /--
 X.例9.1 / Part X R9(b): the finite-site integer equation system, coordinate
@@ -2258,16 +2256,16 @@ theorem generatedLawFiniteFreeNonlawfulDefectSource_defect_notMem_obstructionIde
 theorem generatedLawFiniteFreeDisplayedRequiredLawsHoldOn :
     generatedLawFiniteFreeDefectSource.DisplayedRequiredLawsHoldOn := by
   intro _
-  exact (lawEquationSystem_equationHolds_iff_noCycleLaw lawfulObject).mpr
-    lawfulObject_noCycleLaw
+  exact (lawEquationSystem_equationHolds_iff_noCycle lawfulObject).mpr
+    lawfulObject_noCycle
 
 /-- The concrete nonlawful source does not satisfy the displayed equation. -/
 theorem generatedLawFiniteFreeNonlawfulDefectSource_not_displayedRequiredLawsHoldOn :
     ¬ generatedLawFiniteFreeNonlawfulDefectSource.DisplayedRequiredLawsHoldOn := by
   intro hholds
   have hfailure := hholds PUnit.unit
-  exact nonlawfulObject_not_noCycleLaw
-    ((lawEquationSystem_equationHolds_iff_noCycleLaw nonlawfulObject).mp hfailure)
+  exact (lawEquationSystem_equationHolds_iff_noCycle nonlawfulObject).mp hfailure
+    nonlawfulObject_hasDependencyCycle
 
 /-- The nonlawful finite-poset source has a nonzero generated interpretation. -/
 theorem generatedLawFiniteFreeNonlawfulDefectSource_interpret_ne_zero :
@@ -2476,13 +2474,13 @@ theorem mixedBodySource_has_displayedRequiredLawRestrictionEvaluator :
   · simp [mixedBodySource, mixedDefectSource,
       LawAlgebra.LawEquationDefectSource.interpret]
   · exact False.elim
-      (nonlawfulObject_not_noCycleLaw
-        ((lawEquationSystem_equationHolds_iff_noCycleLaw nonlawfulObject).mp
-          (by simpa [mixedDefectSource] using hholdsTau)))
+      ((lawEquationSystem_equationHolds_iff_noCycle nonlawfulObject).mp
+        (by simpa [mixedDefectSource] using hholdsTau)
+        nonlawfulObject_hasDependencyCycle)
   · exact False.elim
-      (nonlawfulObject_not_noCycleLaw
-        ((lawEquationSystem_equationHolds_iff_noCycleLaw nonlawfulObject).mp
-          (by simpa [mixedDefectSource] using hholdsSigma)))
+      ((lawEquationSystem_equationHolds_iff_noCycle nonlawfulObject).mp
+        (by simpa [mixedDefectSource] using hholdsSigma)
+        nonlawfulObject_hasDependencyCycle)
   · have heq : gSigma = gTau := Subsingleton.elim _ _
     subst gTau
     rfl
