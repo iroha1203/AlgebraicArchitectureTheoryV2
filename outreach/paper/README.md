@@ -10,7 +10,11 @@
 数学本文、Lean 実装、tooling 仕様、研究の進行状態は、それぞれの canonical source で管理する。
 このディレクトリに置く論文中の各 claim は、canonical source と固定された一次証拠へ対応させる。
 
-## FOSE 2026
+## Zenodo SAGA paper
 
-SAGA と ArchSig の FOSE 向け論文要件は [fose2026.md](fose2026.md) で整理する。
-論文の主張、評価設計、必要 artifact を合意してから論文原稿を追加する。
+SAGA の数学、Lean 形式化、ArchSig による実コード診断を統合する長編論文の要件は
+[zenodo_saga.md](zenodo_saga.md) で整理する。論文は、一つの SAGA 比較定理が数学的構成、
+機械検証、有限 measurement を通って実在 software の一セントへ到達した研究成果として構成する。
+
+Related Work の原典調査、必須文献、比較軸、本文候補は
+[zenodo_saga_related_work.md](zenodo_saga_related_work.md) に整理する。
