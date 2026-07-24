@@ -23,8 +23,8 @@
     {
       "basisId": "policy-basis:layering",
       "kind": "repo-document",
-      "path": "docs/aat/algebraic_geometric_theory/README.md",
-      "revision": "aat-ag-current"
+      "path": "tools/archsig/tests/cli.rs",
+      "revision": "test-fixture"
     }
   ]
 }

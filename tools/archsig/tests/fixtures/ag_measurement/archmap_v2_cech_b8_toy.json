@@ -3,24 +3,24 @@
   "id": "ag-measurement-cech-b8-toy-fixture",
   "sources": {
     "src:b8": {
-      "kind": "policy",
-      "path": "docs/aat/algebraic_geometric_theory/appendix.md",
-      "section": "B.8"
+      "kind": "test-fixture",
+      "path": "tools/archsig/tests/cli.rs",
+      "symbol": "run_analyze_fixture_lock"
     },
     "ctx:W_dep": {
-      "kind": "policy",
-      "path": "docs/aat/algebraic_geometric_theory/appendix.md",
-      "section": "B.8.1"
+      "kind": "test-fixture",
+      "path": "tools/archsig/tests/cli.rs",
+      "symbol": "run_analyze_fixture_lock"
     },
     "ctx:W_state": {
-      "kind": "policy",
-      "path": "docs/aat/algebraic_geometric_theory/appendix.md",
-      "section": "B.8.1"
+      "kind": "test-fixture",
+      "path": "tools/archsig/tests/cli.rs",
+      "symbol": "run_analyze_fixture_lock"
     },
     "ctx:W_effect": {
-      "kind": "policy",
-      "path": "docs/aat/algebraic_geometric_theory/appendix.md",
-      "section": "B.8.1"
+      "kind": "test-fixture",
+      "path": "tools/archsig/tests/cli.rs",
+      "symbol": "run_analyze_fixture_lock"
     }
   },
   "atoms": [

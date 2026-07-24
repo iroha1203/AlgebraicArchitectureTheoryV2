@@ -1,5 +1,5 @@
 {
- "schema": "archsig-gate-policy/v0.5.3",
+ "schema": "archsig-gate-policy/v0.5.4",
  "policyId": "gate-policy:train-ticket-money-saga@1",
  "rules": [
   {

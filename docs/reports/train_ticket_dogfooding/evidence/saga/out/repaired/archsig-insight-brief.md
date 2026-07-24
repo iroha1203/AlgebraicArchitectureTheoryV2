@@ -17,7 +17,7 @@ Next action:
 Inspect measurement boundary
 
 Boundary:
-Profile-relative. 12 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.
+Profile-relative. 11 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.
 
 ## Top insights
 - No measured H^1 glue mismatch under profile: No selected-cover H^1 glue mismatch was measured under this profile.
@@ -45,9 +45,9 @@ Profile-relative. 12 assumptions declared. 0 supports unmeasured. 0 unknown. 0 n
 - No measured repair candidate was promoted by this packet.
 
 ## Measurement boundary
-Profile-relative. 12 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.
+Profile-relative. 11 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.
 - checked: 5
-- assumed: 12
+- assumed: 11
 - blocking: 0
 - omitted detail counts:
   - omittedAtoms: 0
@@ -80,7 +80,7 @@ Top insights:
 - Checked, assumed, unmeasured, unknown, and not_computed states are preserved for review.
 
 Boundary:
-Profile-relative. 12 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.
+Profile-relative. 11 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.
 
 Source refs:
 - src:ts-admin-basic-info-service/src/main/java/adminbasic/AdminBasicInfoApplication.java

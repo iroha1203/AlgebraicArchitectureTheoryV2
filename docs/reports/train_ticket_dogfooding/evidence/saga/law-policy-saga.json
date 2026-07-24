@@ -1,8 +1,8 @@
 {
- "schema": "law-policy/v0.5.3",
+ "schema": "law-policy/v0.5.4",
  "id": "train-ticket-money-saga-policy",
- "lawSurfaceRef": "law-surface:train-ticket-money-saga-v053",
- "measurementProfileRef": "profile:train-ticket-money-saga@1",
+ "lawSurfaceRef": "law-surface:train-ticket-money-saga-v054",
+ "measurementProfileRef": "profile:train-ticket-money-saga@2",
  "policies": [
   {
    "law": "surface:cech-surface-v052",
@@ -54,8 +54,8 @@
   {
    "basisId": "policy-basis:shared-convention-consistency",
    "kind": "repo-document",
-   "path": "docs/aat/algebraic_geometric_theory/README.md",
-   "revision": "aat-ag-current"
+   "path": "docs/reports/train_ticket_dogfooding/evidence/saga/build_saga_artifacts.py",
+   "revision": "train-ticket-313886e9"
   }
  ]
 }

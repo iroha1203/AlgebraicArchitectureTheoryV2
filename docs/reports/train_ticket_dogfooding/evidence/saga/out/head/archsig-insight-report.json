@@ -48,57 +48,57 @@
   "boundaryDigest": {
     "assumed": [
       {
-        "assumedBy": "measurement-profile:profile:train-ticket-money-saga@1",
+        "assumedBy": "measurement-profile:profile:train-ticket-money-saga@2",
         "assumption": "U-adequate cover",
         "checkedBy": null,
         "status": "assumed",
         "theoremRef": "part8/4.2"
       },
       {
-        "assumedBy": "measurement-profile:profile:train-ticket-money-saga@1",
+        "assumedBy": "measurement-profile:profile:train-ticket-money-saga@2",
         "assumption": "Leray / acyclicity comparison to sheaf cohomology",
         "checkedBy": null,
         "status": "assumed",
         "theoremRef": "part8/B.8.2"
       },
       {
-        "assumedBy": "measurement-profile:profile:train-ticket-money-saga@1",
+        "assumedBy": "measurement-profile:profile:train-ticket-money-saga@2",
         "assumption": "local lawful sections form an effective Ob_U-torsor",
         "checkedBy": null,
         "status": "assumed",
         "theoremRef": "part4/11.1"
       },
       {
-        "assumedBy": "measurement-profile:profile:train-ticket-money-saga@1",
+        "assumedBy": "measurement-profile:profile:train-ticket-money-saga@2",
         "assumption": "local adjustment action is fixed and effective",
         "checkedBy": null,
         "status": "assumed",
         "theoremRef": "part4/11.1"
       },
       {
-        "assumedBy": "measurement-profile:profile:train-ticket-money-saga@1",
+        "assumedBy": "measurement-profile:profile:train-ticket-money-saga@2",
         "assumption": "coefficient object satisfies descent",
         "checkedBy": null,
         "status": "assumed",
         "theoremRef": "part4/11.1"
       },
       {
-        "assumedBy": "measurement-profile:profile:train-ticket-money-saga@1",
+        "assumedBy": "measurement-profile:profile:train-ticket-money-saga@2",
         "assumption": "restriction maps are surjective",
         "checkedBy": null,
         "status": "assumed",
         "theoremRef": "part4/12.4"
       },
       {
-        "assumedBy": "measurement-profile:profile:train-ticket-money-saga@1",
+        "assumedBy": "measurement-profile:profile:train-ticket-money-saga@2",
         "assumption": "selected Cech nerve is a forest with no triple-overlap faces",
         "checkedBy": null,
         "status": "assumed",
         "theoremRef": "part4/12.4"
       },
       {
-        "assumedBy": "law-surface:law-surface:train-ticket-money-saga-v053",
-        "assumption": "selected quotient sheaf condition for law-surface:train-ticket-money-saga-v053",
+        "assumedBy": "law-surface:law-surface:train-ticket-money-saga-v054",
+        "assumption": "selected quotient sheaf condition for law-surface:train-ticket-money-saga-v054",
         "checkedBy": null,
         "status": "assumed",
         "theoremRef": "part10/7.3"
@@ -111,18 +111,11 @@
         "theoremRef": "part10/3.1"
       },
       {
-        "assumedBy": "comparison author",
-        "assumption": "comparison target complex enumeration completeness for repair-plan:train-ticket-money-head",
-        "checkedBy": null,
-        "status": "assumed",
-        "theoremRef": "part10/6.2"
-      },
-      {
         "assumedBy": "trueSheafCertificate author",
         "assumption": "global sheaf condition for repair-plan:train-ticket-money-head",
         "checkedBy": null,
         "status": "assumed",
-        "theoremRef": "part4/4.7"
+        "theoremRef": "part10/8.1"
       },
       {
         "assumedBy": "RepairPlan author",
@@ -132,7 +125,7 @@
         "theoremRef": "part4/4.6"
       }
     ],
-    "assumedCount": 12,
+    "assumedCount": 11,
     "blocking": [],
     "blockingCount": 0,
     "checked": [
@@ -146,21 +139,21 @@
       {
         "assumedBy": null,
         "assumption": "F2 finite coefficient field",
-        "checkedBy": "measurement-profile:profile:train-ticket-money-saga@1.coefficient=F2",
+        "checkedBy": "measurement-profile:profile:train-ticket-money-saga@2.coefficient=F2",
         "status": "checked",
         "theoremRef": "part8/B.8.2"
       },
       {
         "assumedBy": null,
         "assumption": "cover-relative Cech reading",
-        "checkedBy": "measurement-profile:profile:train-ticket-money-saga@1.coverRef",
+        "checkedBy": "measurement-profile:profile:train-ticket-money-saga@2.coverRef",
         "status": "checked",
         "theoremRef": "part8/B.8.2"
       },
       {
         "assumedBy": null,
         "assumption": "constant coefficient nerve b1 comparison",
-        "checkedBy": "measurement-profile:profile:train-ticket-money-saga@1.coefficient=F2",
+        "checkedBy": "measurement-profile:profile:train-ticket-money-saga@2.coefficient=F2",
         "status": "checked",
         "theoremRef": "part4/12.3"
       },
@@ -180,8 +173,8 @@
       "Unmeasured, unknown, and not_computed are not measured zero."
     ],
     "notComputedCount": 0,
-    "profileRef": "profile:train-ticket-money-saga@1",
-    "shortText": "Profile-relative. 12 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
+    "profileRef": "profile:train-ticket-money-saga@2",
+    "shortText": "Profile-relative. 11 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
     "unknownCount": 0,
     "unmeasuredCount": 0,
     "violatedCount": 0
@@ -196,13 +189,13 @@
     "theoremCandidatePromotionForbidden": true
   },
   "componentFingerprints": {
-    "lawPolicy": "sha256:c0ad1a54d53d4729df4f6275b95a04c26627f33b9669dd0c6764c8e70b8fe703",
-    "lawSurface": "sha256:a777170547b52f2aa4889f964f7a67b6f36a9f84b062c7406a5b41d020363061",
-    "measurementProfile": "sha256:1e79f93e5e37e4e8486091e76dbbcba5ed5e6efcf21172ff16844c85b0fe6434"
+    "lawPolicy": "sha256:e5e91078749ec26ae327ecd1cf41d6d2f7dd035c81a1c66bc0e0476b10e6900c",
+    "lawSurface": "sha256:15b78313f591c424245c79fdc32ab6aee799d3c53197b331d569556ac3670471",
+    "measurementProfile": "sha256:c073650c8bcd053d48d78bb1a29811b80917ffbdec81e1789dd15d68908b0753"
   },
   "copyBlocks": {
     "llmHandoff": {
-      "boundary": "Profile-relative. 12 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
+      "boundary": "Profile-relative. 11 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
       "instruction": "Use the following ArchSig result as bounded evidence. Do not infer beyond the listed claims and boundaries.",
       "topInsights": [
         "Local checks do not explain the whole selected cover; ArchSig measured a cross-context H^1 mismatch.",
@@ -253,7 +246,7 @@
       "periodPairingOverlays": [],
       "projectionBoundary": "This bundle projects existing packet analytic readings and computed invariants into the viewer; it creates no structural verdict and never promotes analytic values to measured_zero.",
       "rawOverlayCount": 0,
-      "schema": "archsig-analytic-overlay-bundle/v0.5.3",
+      "schema": "archsig-analytic-overlay-bundle/v0.5.4",
       "singularityConcentrationOverlays": [],
       "spectralGapOverlays": [],
       "transferCostOverlays": []
@@ -13268,6 +13261,90 @@
         "valence": 1
       },
       {
+        "atomRef": "atom:contract:intersection-cancel-insidepay",
+        "carrier": "ctx:intersection:cancel-insidepay",
+        "carrierColorRole": "carrier_color:ctx-intersection-cancel-insidepay",
+        "colorRole": "source_evidence",
+        "fiber": "contract",
+        "fiberShapeRole": "fiber_shape:contract",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:contract:intersection-cancel-order",
+        "carrier": "ctx:intersection:cancel-order",
+        "carrierColorRole": "carrier_color:ctx-intersection-cancel-order",
+        "colorRole": "source_evidence",
+        "fiber": "contract",
+        "fiberShapeRole": "fiber_shape:contract",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:contract:intersection-consign-consignprice",
+        "carrier": "ctx:intersection:consign-consignprice",
+        "carrierColorRole": "carrier_color:ctx-intersection-consign-consignprice",
+        "colorRole": "source_evidence",
+        "fiber": "contract",
+        "fiberShapeRole": "fiber_shape:contract",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:contract:intersection-consign-fee-region",
+        "carrier": "ctx:intersection:consign-fee-region",
+        "carrierColorRole": "carrier_color:ctx-intersection-consign-fee-region",
+        "colorRole": "source_evidence",
+        "fiber": "contract",
+        "fiberShapeRole": "fiber_shape:contract",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:contract:intersection-insidepay-order",
+        "carrier": "ctx:intersection:insidepay-order",
+        "carrierColorRole": "carrier_color:ctx-intersection-insidepay-order",
+        "colorRole": "source_evidence",
+        "fiber": "contract",
+        "fiberShapeRole": "fiber_shape:contract",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:contract:intersection-preserve-consign",
+        "carrier": "ctx:intersection:preserve-consign",
+        "carrierColorRole": "carrier_color:ctx-intersection-preserve-consign",
+        "colorRole": "source_evidence",
+        "fiber": "contract",
+        "fiberShapeRole": "fiber_shape:contract",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:contract:intersection-preserve-consignprice",
+        "carrier": "ctx:intersection:preserve-consignprice",
+        "carrierColorRole": "carrier_color:ctx-intersection-preserve-consignprice",
+        "colorRole": "source_evidence",
+        "fiber": "contract",
+        "fiberShapeRole": "fiber_shape:contract",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
         "atomRef": "atom:contract:order.entity.orderalterinfo:shaped-as-alter-request",
         "carrier": "ts-order-service.OrderAlterInfo",
         "carrierColorRole": "carrier_color:ts-order-service-OrderAlterInfo",
@@ -13367,6 +13444,78 @@
         "atomRef": "atom:contract:rebook.rebookserviceimpl:ticketprice-shapedas",
         "carrier": "ts-rebook-service.RebookServiceImpl",
         "carrierColorRole": "carrier_color:ts-rebook-service-RebookServiceImpl",
+        "colorRole": "source_evidence",
+        "fiber": "contract",
+        "fiberShapeRole": "fiber_shape:contract",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:contract:repair-cancel-surface",
+        "carrier": "ctx:repair-cancel-surface",
+        "carrierColorRole": "carrier_color:ctx-repair-cancel-surface",
+        "colorRole": "source_evidence",
+        "fiber": "contract",
+        "fiberShapeRole": "fiber_shape:contract",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:contract:repair-consign-price-surface",
+        "carrier": "ctx:repair-consign-price-surface",
+        "carrierColorRole": "carrier_color:ctx-repair-consign-price-surface",
+        "colorRole": "source_evidence",
+        "fiber": "contract",
+        "fiberShapeRole": "fiber_shape:contract",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:contract:repair-consign-surface",
+        "carrier": "ctx:repair-consign-surface",
+        "carrierColorRole": "carrier_color:ctx-repair-consign-surface",
+        "colorRole": "source_evidence",
+        "fiber": "contract",
+        "fiberShapeRole": "fiber_shape:contract",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:contract:repair-inside-payment-surface",
+        "carrier": "ctx:repair-inside-payment-surface",
+        "carrierColorRole": "carrier_color:ctx-repair-inside-payment-surface",
+        "colorRole": "source_evidence",
+        "fiber": "contract",
+        "fiberShapeRole": "fiber_shape:contract",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:contract:repair-order-surface",
+        "carrier": "ctx:repair-order-surface",
+        "carrierColorRole": "carrier_color:ctx-repair-order-surface",
+        "colorRole": "source_evidence",
+        "fiber": "contract",
+        "fiberShapeRole": "fiber_shape:contract",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:contract:repair-preserve-surface",
+        "carrier": "ctx:repair-preserve-surface",
+        "carrierColorRole": "carrier_color:ctx-repair-preserve-surface",
         "colorRole": "source_evidence",
         "fiber": "contract",
         "fiberShapeRole": "fiber_shape:contract",
@@ -24102,162 +24251,6 @@
         "shapeRole": "structured_atom_glyph",
         "sizeRole": "valence",
         "valence": 1
-      },
-      {
-        "atomRef": "atom:semantic:ts-travel-service-travelserviceimpl:meansinuse-basicservice-status0-empty-branch",
-        "carrier": "ts-travel-service.TravelServiceImpl",
-        "carrierColorRole": "carrier_color:ts-travel-service-TravelServiceImpl",
-        "colorRole": "source_evidence",
-        "fiber": "semantic",
-        "fiberShapeRole": "fiber_shape:semantic",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:semantic:ts-travel-service-travelserviceimpl:meansinuse-hardcoded-service-urls-not-yml-injected",
-        "carrier": "ts-travel-service.TravelServiceImpl",
-        "carrierColorRole": "carrier_color:ts-travel-service-TravelServiceImpl",
-        "colorRole": "source_evidence",
-        "fiber": "semantic",
-        "fiberShapeRole": "fiber_shape:semantic",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:semantic:ts-travel-service-travelserviceimpl:statusgates-branch-result-or-notfound",
-        "carrier": "ts-travel-service.TravelServiceImpl",
-        "carrierColorRole": "carrier_color:ts-travel-service-TravelServiceImpl",
-        "colorRole": "source_evidence",
-        "fiber": "semantic",
-        "fiberShapeRole": "fiber_shape:semantic",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:semantic:ts-travel-service-travelserviceimpl:statusgates-create-branch",
-        "carrier": "ts-travel-service.TravelServiceImpl",
-        "carrierColorRole": "carrier_color:ts-travel-service-TravelServiceImpl",
-        "colorRole": "source_evidence",
-        "fiber": "semantic",
-        "fiberShapeRole": "fiber_shape:semantic",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:semantic:ts-travel-service-travelserviceimpl:statusgates-update-branch",
-        "carrier": "ts-travel-service.TravelServiceImpl",
-        "carrierColorRole": "carrier_color:ts-travel-service-TravelServiceImpl",
-        "colorRole": "source_evidence",
-        "fiber": "semantic",
-        "fiberShapeRole": "fiber_shape:semantic",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:semantic:ts-travel-service-trip:identifiedby-lowercased-station-names",
-        "carrier": "ts-travel-service.Trip",
-        "carrierColorRole": "carrier_color:ts-travel-service-Trip",
-        "colorRole": "source_evidence",
-        "fiber": "semantic",
-        "fiberShapeRole": "fiber_shape:semantic",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:semantic:ts-travel2-service-application-yml:default-mysql-credentials-when-env-unset",
-        "carrier": "ts-travel2-service.application-yml",
-        "carrierColorRole": "carrier_color:ts-travel2-service-application-yml",
-        "colorRole": "source_evidence",
-        "fiber": "semantic",
-        "fiberShapeRole": "fiber_shape:semantic",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:semantic:ts-travel2-service-application-yml:jpa-ddl-auto-update-schema-behavior",
-        "carrier": "ts-travel2-service.application-yml",
-        "carrierColorRole": "carrier_color:ts-travel2-service-application-yml",
-        "colorRole": "source_evidence",
-        "fiber": "semantic",
-        "fiberShapeRole": "fiber_shape:semantic",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:semantic:ts-travel2-service-initdata:seeds-fixed-trip-catalog-on-startup",
-        "carrier": "ts-travel2-service.InitData",
-        "carrierColorRole": "carrier_color:ts-travel2-service-InitData",
-        "colorRole": "source_evidence",
-        "fiber": "semantic",
-        "fiberShapeRole": "fiber_shape:semantic",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:semantic:ts-travel2-service-initdata:time-string-format",
-        "carrier": "ts-travel2-service.InitData",
-        "carrierColorRole": "carrier_color:ts-travel2-service-InitData",
-        "colorRole": "source_evidence",
-        "fiber": "semantic",
-        "fiberShapeRole": "fiber_shape:semantic",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:semantic:ts-travel2-service-travel2controller:query-left-tickets-empty-branch",
-        "carrier": "ts-travel2-service.Travel2Controller",
-        "carrierColorRole": "carrier_color:ts-travel2-service-Travel2Controller",
-        "colorRole": "source_evidence",
-        "fiber": "semantic",
-        "fiberShapeRole": "fiber_shape:semantic",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:semantic:ts-travel2-service-travelserviceimpl:downstream-basic-service-status-zero-selects-empty-branch",
-        "carrier": "ts-travel2-service.TravelServiceImpl",
-        "carrierColorRole": "carrier_color:ts-travel2-service-TravelServiceImpl",
-        "colorRole": "source_evidence",
-        "fiber": "semantic",
-        "fiberShapeRole": "fiber_shape:semantic",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:semantic:ts-travel2-service-travelserviceimpl:price-looked-up-by-class-name-key",
-        "carrier": "ts-travel2-service.TravelServiceImpl",
-        "carrierColorRole": "carrier_color:ts-travel2-service-TravelServiceImpl",
-        "colorRole": "source_evidence",
-        "fiber": "semantic",
-        "fiberShapeRole": "fiber_shape:semantic",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
       }
     ],
     "cocycleRibbon": {
@@ -24396,10 +24389,14 @@
       ],
       "h2CoherenceVisualized": false,
       "sourceRefs": [
-        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java",
-        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java"
+        "src:ts-cancel-service/src/main/java/cancel/CancelApplication.java",
+        "src:ts-consign-price-service/src/main/java/consignprice/ConsignPriceApplication.java",
+        "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/InsidePaymentApplication.java",
+        "src:ts-order-service/src/main/java/order/OrderApplication.java",
+        "src:ts-preserve-service/src/main/java/preserve/PreserveApplication.java"
       ],
-      "triangleSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v0.5.3; not inferred by the viewer",
+      "triangleSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v0.5.4; not inferred by the viewer",
       "triangles": [],
       "vertices": [
         {
@@ -24591,7 +24588,7 @@
     ],
     "omittedGeometryCounts": {
       "analyticOverlays": 0,
-      "atomGlyphs": 112,
+      "atomGlyphs": 125,
       "blockedRegions": 0,
       "cocycleSupportEdges": 0,
       "curvatureFieldRows": 0,
@@ -24615,7 +24612,7 @@
       ],
       "projectionBoundary": "This projection renders M9 Stokes audit values in the viewer; it does not create or modify structural verdict rows.",
       "rawMeterCount": 0,
-      "schema": "archsig-period-stokes-meter/v0.5.3",
+      "schema": "archsig-period-stokes-meter/v0.5.4",
       "sourceAnalyticReadingKind": "strict-period-pairing@1",
       "sourceEvaluator": "ag.period-stokes-audit"
     },
@@ -24633,7 +24630,7 @@
       "spectrumCells": 64
     },
     "repairMorphs": [],
-    "schema": "archsig-viewer-gluing-geometry/v0.5.3",
+    "schema": "archsig-viewer-gluing-geometry/v0.5.4",
     "sourceInsightReportRef": "archsig-insight-report.json",
     "sourcePacketRef": "archsig-measurement-packet.json",
     "spectrumLandscape": {
@@ -24643,7 +24640,7 @@
       "measurementStatus": "not_projected",
       "projectionBoundary": "No M10 graph-laplacian-hodge-proxy reading is present; viewer remains silent and creates no structural verdict.",
       "rawCellCount": 0,
-      "schema": "archsig-spectrum-landscape/v0.5.3",
+      "schema": "archsig-spectrum-landscape/v0.5.4",
       "status": "silent"
     },
     "visualEncodingLegend": [
@@ -25034,33 +25031,37 @@
   "inputDigests": {
     "archmap": {
       "path": "input:archmap-saga-head.json",
-      "sha256": "add27eecaedffdd2cd07b3c0534c1024f93040c23e7ea460ac7cb5fa7972c327"
+      "sha256": "bdca8b9c6b04a377ec41e64ee0f17186c1ce6ad0a267b5fc2c0a574a375c1010"
     },
     "lawPolicy": {
       "path": "input:law-policy-saga.json",
-      "sha256": "c0ad1a54d53d4729df4f6275b95a04c26627f33b9669dd0c6764c8e70b8fe703"
+      "sha256": "e5e91078749ec26ae327ecd1cf41d6d2f7dd035c81a1c66bc0e0476b10e6900c"
     },
     "lawSurface": {
       "path": "input:law-surface-saga.json",
-      "sha256": "a777170547b52f2aa4889f964f7a67b6f36a9f84b062c7406a5b41d020363061"
+      "sha256": "15b78313f591c424245c79fdc32ab6aee799d3c53197b331d569556ac3670471"
     },
     "measurementProfile": {
       "path": "input:measurement-profile-saga.json",
-      "sha256": "1e79f93e5e37e4e8486091e76dbbcba5ed5e6efcf21172ff16844c85b0fe6434"
+      "sha256": "c073650c8bcd053d48d78bb1a29811b80917ffbdec81e1789dd15d68908b0753"
     },
     "measurementProfiles": [
       {
         "path": "input:measurement-profile-saga.json",
-        "sha256": "1e79f93e5e37e4e8486091e76dbbcba5ed5e6efcf21172ff16844c85b0fe6434"
+        "sha256": "c073650c8bcd053d48d78bb1a29811b80917ffbdec81e1789dd15d68908b0753"
       }
     ],
     "profileFingerprint": {
       "basis": "archmap shape + LawPolicy measurementProfileRef + external MeasurementProfile artifact",
-      "sha256": "6b279c52cfdc78171dbd8e78e171055947b22f7ad84ee9846f012a90138415ce"
+      "sha256": "8e4053eff87c553fe934c71ee9f8a7fbefdc084d0aa3f1dbaea8a59726486326"
+    },
+    "repairPlan": {
+      "path": "input:repair-plan-head.json",
+      "sha256": "610ba78dc116be2a29f0cd043809fa7b53a226e73e0fbd606b8c0cbd59014e6c"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
-      "sha256": "c75cd524da051ad25472f1faad2d3fc44456db4fe6f0a1f90851d76e7b069b1a",
+      "sha256": "c05d1537d9126e4f0e2b59bf37ef90826adf8a22ff49e89625ff0e8f2d243868",
       "status": "computed"
     }
   },
@@ -25070,14 +25071,13 @@
         "analyticReadingRefs": [],
         "assumptionRefs": [
           "part10/3.1",
-          "part10/6.2",
           "part10/7.3",
+          "part10/8.1",
           "part3/11.3",
           "part4/11.1",
           "part4/12.3",
           "part4/12.4",
           "part4/4.6",
-          "part4/4.7",
           "part8/4.2",
           "part8/B.8.2"
         ],
@@ -25096,8 +25096,8 @@
           "atom:authority:ts-consign-price-service-security-config:requires-role"
         ],
         "computedInvariantRefs": [
-          "cech-cohomology:profile:train-ticket-money-saga@1",
-          "topological-debt-capacity:profile:train-ticket-money-saga@1"
+          "cech-cohomology:profile:train-ticket-money-saga@2",
+          "topological-debt-capacity:profile:train-ticket-money-saga@2"
         ],
         "contextRefs": [
           "ctx:cancel-surface",
@@ -25248,14 +25248,13 @@
         ],
         "assumptionRefs": [
           "part10/3.1",
-          "part10/6.2",
           "part10/7.3",
+          "part10/8.1",
           "part3/11.3",
           "part4/11.1",
           "part4/12.3",
           "part4/12.4",
           "part4/4.6",
-          "part4/4.7",
           "part8/4.2",
           "part8/B.8.2"
         ],
@@ -25271,8 +25270,8 @@
         ],
         "computedInvariantRefs": [
           "finite-poset-site-shape",
-          "cech-cohomology:profile:train-ticket-money-saga@1",
-          "topological-debt-capacity:profile:train-ticket-money-saga@1",
+          "cech-cohomology:profile:train-ticket-money-saga@2",
+          "topological-debt-capacity:profile:train-ticket-money-saga@2",
           "saga-generated-end-to-end-packet",
           "saga-descent:boundary-membership",
           "saga-descent:closure-diagnostics",
@@ -25416,7 +25415,7 @@
     }
   ],
   "nonConclusions": [
-    "Insight report is a projection of archsig-measurement-packet/v0.5.3 and does not generate new measurement claims.",
+    "Insight report is a projection of archsig-measurement-packet/v0.5.4 and does not generate new measurement claims.",
     "Repair candidates are next inspection cues, not automatic fixes.",
     "Viewer scenes are visual projections, not structural verdict derivations."
   ],
@@ -25450,20 +25449,19 @@
     "measured_zero confirmation"
   ],
   "readThisFirst": {
-    "boundary": "Profile-relative. 12 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
+    "boundary": "Profile-relative. 11 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
     "conclusion": "MEASURED_NONGLUING_RESIDUAL_CLASS",
     "details": {
       "analyticReadingRefs": [],
       "assumptionRefs": [
         "part10/3.1",
-        "part10/6.2",
         "part10/7.3",
+        "part10/8.1",
         "part3/11.3",
         "part4/11.1",
         "part4/12.3",
         "part4/12.4",
         "part4/4.6",
-        "part4/4.7",
         "part8/4.2",
         "part8/B.8.2"
       ],
@@ -25482,8 +25480,8 @@
         "atom:authority:ts-consign-price-service-security-config:requires-role"
       ],
       "computedInvariantRefs": [
-        "cech-cohomology:profile:train-ticket-money-saga@1",
-        "topological-debt-capacity:profile:train-ticket-money-saga@1"
+        "cech-cohomology:profile:train-ticket-money-saga@2",
+        "topological-debt-capacity:profile:train-ticket-money-saga@2"
       ],
       "contextRefs": [
         "ctx:cancel-surface",
@@ -25524,11 +25522,11 @@
       "src:ts-preserve-service/src/main/java/preserve/controller/PreserveController.java"
     ]
   },
-  "reportId": "insight:measurement:train-ticket-money-saga-head/v0.5.3",
-  "runId": "run:7a94d68ac5d7",
-  "schema": "archsig-insight-report/v0.5.3",
+  "reportId": "insight:measurement:train-ticket-money-saga-head/v0.5.4",
+  "runId": "run:8d4b5849eb52",
+  "schema": "archsig-insight-report/v0.5.4",
   "sourcePacketRef": "archsig-measurement-packet.json",
-  "toolVersion": "0.5.3",
+  "toolVersion": "0.5.4",
   "viewerVisualScenes": [
     {
       "axisMapping": {
@@ -25694,7 +25692,7 @@
           "src:ts-preserve-service/src/main/java/preserve/controller/PreserveController.java"
         ]
       },
-      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.3 and archsig-insight-report/v0.5.3; it does not create a new structural verdict.",
+      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.4 and archsig-insight-report/v0.5.4; it does not create a new structural verdict.",
       "sceneId": "overview",
       "sceneStatus": "active",
       "title": "Overview",
@@ -25928,7 +25926,7 @@
           "src:ts-preserve-service/src/main/java/preserve/controller/PreserveController.java"
         ]
       },
-      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.3 and archsig-insight-report/v0.5.3; it does not create a new structural verdict.",
+      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.4 and archsig-insight-report/v0.5.4; it does not create a new structural verdict.",
       "sceneId": "site-cover",
       "sceneStatus": "active",
       "title": "Site / Cover",
@@ -26104,7 +26102,7 @@
           "src:ts-preserve-service/src/main/java/preserve/controller/PreserveController.java"
         ]
       },
-      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.3 and archsig-insight-report/v0.5.3; it does not create a new structural verdict.",
+      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.4 and archsig-insight-report/v0.5.4; it does not create a new structural verdict.",
       "sceneId": "cech-gluing",
       "sceneStatus": "active",
       "title": "Cover & Gluing",
@@ -26282,7 +26280,7 @@
           "src:ts-preserve-service/src/main/java/preserve/controller/PreserveController.java"
         ]
       },
-      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.3 and archsig-insight-report/v0.5.3; it does not create a new structural verdict.",
+      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.4 and archsig-insight-report/v0.5.4; it does not create a new structural verdict.",
       "sceneId": "cech-h1-mismatch",
       "sceneStatus": "active",
       "title": "H1 Mismatch",
@@ -26399,7 +26397,7 @@
         "insightRefs": [],
         "sourceRefs": []
       },
-      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.3 and archsig-insight-report/v0.5.3; it does not create a new structural verdict.",
+      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.4 and archsig-insight-report/v0.5.4; it does not create a new structural verdict.",
       "sceneId": "obstruction",
       "sceneStatus": "not_active_for_packet",
       "title": "Obstruction",
@@ -26521,7 +26519,7 @@
         "insightRefs": [],
         "sourceRefs": []
       },
-      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.3 and archsig-insight-report/v0.5.3; it does not create a new structural verdict.",
+      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.4 and archsig-insight-report/v0.5.4; it does not create a new structural verdict.",
       "sceneId": "repair-dual",
       "sceneStatus": "not_active_for_packet",
       "title": "Repair",
@@ -26634,7 +26632,7 @@
         "insightRefs": [],
         "sourceRefs": []
       },
-      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.3 and archsig-insight-report/v0.5.3; it does not create a new structural verdict.",
+      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.4 and archsig-insight-report/v0.5.4; it does not create a new structural verdict.",
       "sceneId": "law-conflict-tor",
       "sceneStatus": "not_active_for_packet",
       "title": "Law Conflict",
@@ -26755,7 +26753,7 @@
         "insightRefs": [],
         "sourceRefs": []
       },
-      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.3 and archsig-insight-report/v0.5.3; it does not create a new structural verdict.",
+      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.4 and archsig-insight-report/v0.5.4; it does not create a new structural verdict.",
       "sceneId": "hodge-debt-field",
       "sceneStatus": "not_active_for_packet",
       "title": "Hodge Debt Field",
@@ -26879,7 +26877,7 @@
         "overlayRefs": [],
         "sourceRefs": []
       },
-      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.3 and archsig-insight-report/v0.5.3; it does not create a new structural verdict.",
+      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.4 and archsig-insight-report/v0.5.4; it does not create a new structural verdict.",
       "sceneId": "analytic-overlay",
       "sceneStatus": "not_active_for_packet",
       "title": "Analytic Overlay",
@@ -27001,7 +26999,7 @@
         "sourceRefs": [],
         "structuralVerdictRefs": []
       },
-      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.3 and archsig-insight-report/v0.5.3; it does not create a new structural verdict.",
+      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.4 and archsig-insight-report/v0.5.4; it does not create a new structural verdict.",
       "sceneId": "period-stokes",
       "sceneStatus": "not_active_for_packet",
       "title": "Period Stokes Meter",
@@ -27445,7 +27443,7 @@
           "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java"
         ]
       },
-      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.3 and archsig-insight-report/v0.5.3; it does not create a new structural verdict.",
+      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.4 and archsig-insight-report/v0.5.4; it does not create a new structural verdict.",
       "sceneId": "boundary-assumption",
       "sceneStatus": "active",
       "title": "Boundary",
@@ -27715,7 +27713,7 @@
           "src:ts-preserve-service/src/main/java/preserve/controller/PreserveController.java"
         ]
       },
-      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.3 and archsig-insight-report/v0.5.3; it does not create a new structural verdict.",
+      "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.4 and archsig-insight-report/v0.5.4; it does not create a new structural verdict.",
       "sceneId": "source-evidence",
       "sceneStatus": "active",
       "title": "Source Evidence",

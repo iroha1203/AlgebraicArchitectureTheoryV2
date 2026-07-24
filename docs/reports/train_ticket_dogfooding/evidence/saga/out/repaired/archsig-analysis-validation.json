@@ -8,12 +8,12 @@
     {
       "id": "measurement-packet-schema052-schema",
       "result": "pass",
-      "title": "measurement packet uses archsig-measurement-packet/v0.5.3"
+      "title": "measurement packet uses archsig-measurement-packet/v0.5.4"
     },
     {
       "id": "measurement-packet-schema052-five-verdict-values",
       "result": "pass",
-      "title": "structural verdicts are limited to the five v0.5.3 values"
+      "title": "structural verdicts are limited to the five v0.5.4 values"
     },
     {
       "id": "measurement-packet-schema052-structural-verdict-evaluators",
@@ -34,6 +34,11 @@
       "id": "measurement-packet-schema052-computed-invariants-typed",
       "result": "pass",
       "title": "computed invariants expose invariantId, kind, value, and representation"
+    },
+    {
+      "id": "measurement-packet-schema052-saga-presentation-generated-evidence",
+      "result": "pass",
+      "title": "presentation-generated SAGA evidence is typed, complete, and consistent with its transfer"
     },
     {
       "id": "measurement-packet-schema052-theorem-candidate-analytic-only",
@@ -57,50 +62,54 @@
     }
   ],
   "componentFingerprints": {
-    "lawPolicy": "sha256:c0ad1a54d53d4729df4f6275b95a04c26627f33b9669dd0c6764c8e70b8fe703",
-    "lawSurface": "sha256:a777170547b52f2aa4889f964f7a67b6f36a9f84b062c7406a5b41d020363061",
-    "measurementProfile": "sha256:1e79f93e5e37e4e8486091e76dbbcba5ed5e6efcf21172ff16844c85b0fe6434"
+    "lawPolicy": "sha256:e5e91078749ec26ae327ecd1cf41d6d2f7dd035c81a1c66bc0e0476b10e6900c",
+    "lawSurface": "sha256:15b78313f591c424245c79fdc32ab6aee799d3c53197b331d569556ac3670471",
+    "measurementProfile": "sha256:c073650c8bcd053d48d78bb1a29811b80917ffbdec81e1789dd15d68908b0753"
   },
   "inputDigests": {
     "archmap": {
       "path": "input:archmap-saga-repaired.json",
-      "sha256": "176f0dbebf81e469b5e3c4893dcc522cbd597ac466018dc0d67b61ea225f2b00"
+      "sha256": "0ea545f516e24a78e252391bf8ec24224ec8630d8dbd6b1698af04a28ea7a585"
     },
     "lawPolicy": {
       "path": "input:law-policy-saga.json",
-      "sha256": "c0ad1a54d53d4729df4f6275b95a04c26627f33b9669dd0c6764c8e70b8fe703"
+      "sha256": "e5e91078749ec26ae327ecd1cf41d6d2f7dd035c81a1c66bc0e0476b10e6900c"
     },
     "lawSurface": {
       "path": "input:law-surface-saga.json",
-      "sha256": "a777170547b52f2aa4889f964f7a67b6f36a9f84b062c7406a5b41d020363061"
+      "sha256": "15b78313f591c424245c79fdc32ab6aee799d3c53197b331d569556ac3670471"
     },
     "measurementProfile": {
       "path": "input:measurement-profile-saga.json",
-      "sha256": "1e79f93e5e37e4e8486091e76dbbcba5ed5e6efcf21172ff16844c85b0fe6434"
+      "sha256": "c073650c8bcd053d48d78bb1a29811b80917ffbdec81e1789dd15d68908b0753"
     },
     "measurementProfiles": [
       {
         "path": "input:measurement-profile-saga.json",
-        "sha256": "1e79f93e5e37e4e8486091e76dbbcba5ed5e6efcf21172ff16844c85b0fe6434"
+        "sha256": "c073650c8bcd053d48d78bb1a29811b80917ffbdec81e1789dd15d68908b0753"
       }
     ],
     "profileFingerprint": {
       "basis": "archmap shape + LawPolicy measurementProfileRef + external MeasurementProfile artifact",
-      "sha256": "6b279c52cfdc78171dbd8e78e171055947b22f7ad84ee9846f012a90138415ce"
+      "sha256": "8e4053eff87c553fe934c71ee9f8a7fbefdc084d0aa3f1dbaea8a59726486326"
+    },
+    "repairPlan": {
+      "path": "input:repair-plan-repaired.json",
+      "sha256": "1fd4af049eea134d062e81b02c42669437856364201ed9adad7a82dc5233c652"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
-      "sha256": "c75cd524da051ad25472f1faad2d3fc44456db4fe6f0a1f90851d76e7b069b1a",
+      "sha256": "c05d1537d9126e4f0e2b59bf37ef90826adf8a22ff49e89625ff0e8f2d243868",
       "status": "computed"
     }
   },
-  "packetSchema": "archsig-measurement-packet/v0.5.3",
-  "runId": "run:1f657023d7e8",
-  "schema": "archsig-measurement-packet-validation-report/v0.5.3",
+  "packetSchema": "archsig-measurement-packet/v0.5.4",
+  "runId": "run:503e65b25714",
+  "schema": "archsig-measurement-packet-validation-report/v0.5.4",
   "summary": {
     "failedCheckCount": 0,
     "result": "pass",
     "warningCheckCount": 0
   },
-  "toolVersion": "0.5.3"
+  "toolVersion": "0.5.4"
 }
