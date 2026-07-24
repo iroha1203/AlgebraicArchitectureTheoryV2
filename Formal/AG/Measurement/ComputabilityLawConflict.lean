@@ -25,11 +25,11 @@ structure FiniteAATConflictRealization
   equationToAmbient : M.EquationHandle -> commonAmbient.LawIdeal
   /-- The selected left equation gives the common ambient's left ideal. -/
   leftLaw_ambient :
-    equationToAmbient D.profileRealization.selectedLeftEquation =
+    equationToAmbient D.profileRealization.selectedLeftEquation.1 =
       commonAmbient.leftLawIdeal
   /-- The selected right equation gives the common ambient's right ideal. -/
   rightLaw_ambient :
-    equationToAmbient D.profileRealization.selectedRightEquation =
+    equationToAmbient D.profileRealization.selectedRightEquation.1 =
       commonAmbient.rightLawIdeal
   /-- Local identification of computed witness supports with the existing
   measurement support carrier. -/

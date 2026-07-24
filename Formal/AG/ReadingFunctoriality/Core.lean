@@ -715,48 +715,33 @@ structure EquationSystemExactTransport
     (F : ArchitecturalEquationSystem D)
     (atomEquiv : U.Atom ≃ U.Atom)
     (objectMap : ArchitectureObject U → ArchitectureObject U) where
-  /-- Forward object map of the context-category equivalence. -/
-  contextForward :
-    Site.ContextCategoryObject C → Site.ContextCategoryObject D
-  /-- Inverse object map of the context-category equivalence. -/
-  contextBackward :
-    Site.ContextCategoryObject D → Site.ContextCategoryObject C
-  /-- Forward map on readable context morphisms. -/
-  contextForward_map :
-    ∀ {W V}, (W ⟶ V) → (contextForward W ⟶ contextForward V)
-  /-- Inverse map on readable context morphisms. -/
-  contextBackward_map :
-    ∀ {W V}, (W ⟶ V) → (contextBackward W ⟶ contextBackward V)
-  /-- Forward after inverse is strictly the selected target context. -/
-  contextForward_backward :
-    ∀ W, contextForward (contextBackward W) = W
-  /-- Inverse after forward is strictly the selected source context. -/
-  contextBackward_forward :
-    ∀ W, contextBackward (contextForward W) = W
-  /-- Map between equation indices. -/
-  equationMap : E.Index → F.Index
+  /-- Equivalence of the selected context categories, with its unit and counit. -/
+  contextEquivalence :
+    (Site.ContextCategoryObject C) ≌ (Site.ContextCategoryObject D)
+  /-- Exact equivalence between the complete equation-index families. -/
+  equationEquiv : E.Index ≃ F.Index
   /-- Required, optional, and derived roles are all preserved exactly. -/
-  role_eq : ∀ i, F.role (equationMap i) = E.role i
+  role_eq : ∀ i, F.role (equationEquiv i) = E.role i
   /-- Observable-ring equivalence at every source context. -/
   observableEquiv :
-    ∀ W, E.Observable W ≃+* F.Observable (contextForward W)
+    ∀ W, E.Observable W ≃+* F.Observable (contextEquivalence.functor.obj W)
   /-- Observable-ring equivalences commute with restriction. -/
   observable_naturality :
     ∀ {W V} (f : W ⟶ V) (x : E.Observable V),
       observableEquiv W (E.restrict f x) =
-        F.restrict (contextForward_map f) (observableEquiv V x)
+        F.restrict (contextEquivalence.functor.map f) (observableEquiv V x)
   /-- Symbolic violation generators commute with exact transport. -/
   violationCoordinate_eq :
     ∀ W i atom,
       observableEquiv W (E.violationCoordinate W i atom) =
-        F.violationCoordinate (contextForward W) (equationMap i)
+        F.violationCoordinate (contextEquivalence.functor.obj W) (equationEquiv i)
           (atomEquiv atom)
   /-- Object-dependent residual generators commute with exact transport. -/
   equationResidual_eq :
     ∀ W A i atom,
       observableEquiv W (E.equationResidual W A i atom) =
-        F.equationResidual (contextForward W) (objectMap A)
-          (equationMap i) (atomEquiv atom)
+        F.equationResidual (contextEquivalence.functor.obj W) (objectMap A)
+          (equationEquiv i) (atomEquiv atom)
 
 namespace EquationSystemExactTransport
 
@@ -769,35 +754,49 @@ variable
     {atomEquiv : U.Atom ≃ U.Atom}
     {objectMap : ArchitectureObject U → ArchitectureObject U}
 
-/-- The forward context data define an actual functor. -/
-def contextFunctor
+/-- Forward functor of the selected context equivalence. -/
+abbrev contextFunctor
     (T : EquationSystemExactTransport E F atomEquiv objectMap) :
-    (Site.ContextCategoryObject C) ⥤ (Site.ContextCategoryObject D) where
-  obj := T.contextForward
-  map := T.contextForward_map
-  map_id _ := Subsingleton.elim _ _
-  map_comp _ _ := Subsingleton.elim _ _
+    (Site.ContextCategoryObject C) ⥤ (Site.ContextCategoryObject D) :=
+  T.contextEquivalence.functor
 
-/-- The inverse context data define an actual functor. -/
-def contextInverse
+/-- Inverse functor of the selected context equivalence. -/
+abbrev contextInverse
     (T : EquationSystemExactTransport E F atomEquiv objectMap) :
-    (Site.ContextCategoryObject D) ⥤ (Site.ContextCategoryObject C) where
-  obj := T.contextBackward
-  map := T.contextBackward_map
-  map_id _ := Subsingleton.elim _ _
-  map_comp _ _ := Subsingleton.elim _ _
+    (Site.ContextCategoryObject D) ⥤ (Site.ContextCategoryObject C) :=
+  T.contextEquivalence.inverse
 
-/-- The two strict context maps determine a category equivalence. -/
-noncomputable def contextEquivalence
+/-- Forward image of a source context. -/
+abbrev contextForward
     (T : EquationSystemExactTransport E F atomEquiv objectMap) :
-    (Site.ContextCategoryObject C) ≌ (Site.ContextCategoryObject D) where
-  functor := T.contextFunctor
-  inverse := T.contextInverse
-  unitIso := NatIso.ofComponents fun W =>
-    eqToIso (T.contextBackward_forward W).symm
-  counitIso := NatIso.ofComponents fun W =>
-    eqToIso (T.contextForward_backward W)
-  functor_unitIso_comp _ := Subsingleton.elim _ _
+    Site.ContextCategoryObject C → Site.ContextCategoryObject D :=
+  T.contextFunctor.obj
+
+/-- Inverse image of a target context. -/
+abbrev contextBackward
+    (T : EquationSystemExactTransport E F atomEquiv objectMap) :
+    Site.ContextCategoryObject D → Site.ContextCategoryObject C :=
+  T.contextInverse.obj
+
+/-- Forward map on readable context morphisms. -/
+abbrev contextForward_map
+    (T : EquationSystemExactTransport E F atomEquiv objectMap)
+    {W V : Site.ContextCategoryObject C} :
+    (W ⟶ V) → (T.contextForward W ⟶ T.contextForward V) :=
+  T.contextFunctor.map
+
+/-- Inverse map on readable context morphisms. -/
+abbrev contextBackward_map
+    (T : EquationSystemExactTransport E F atomEquiv objectMap)
+    {W V : Site.ContextCategoryObject D} :
+    (W ⟶ V) → (T.contextBackward W ⟶ T.contextBackward V) :=
+  T.contextInverse.map
+
+/-- Underlying map of the equation-index equivalence. -/
+abbrev equationMap
+    (T : EquationSystemExactTransport E F atomEquiv objectMap) :
+    E.Index → F.Index :=
+  T.equationEquiv
 
 /--
 The observable-ring components and restriction compatibility assemble into a
@@ -823,6 +822,22 @@ theorem required_iff
   unfold ArchitecturalEquationSystem.Required
   rw [T.role_eq]
 
+/-- Full role equality yields optional-role preservation and reflection. -/
+theorem optional_iff
+    (T : EquationSystemExactTransport E F atomEquiv objectMap)
+    (i : E.Index) :
+    E.Optional i ↔ F.Optional (T.equationMap i) := by
+  unfold ArchitecturalEquationSystem.Optional
+  rw [T.role_eq]
+
+/-- Full role equality yields derived-role preservation and reflection. -/
+theorem derived_iff
+    (T : EquationSystemExactTransport E F atomEquiv objectMap)
+    (i : E.Index) :
+    E.Derived i ↔ F.Derived (T.equationMap i) := by
+  unfold ArchitecturalEquationSystem.Derived
+  rw [T.role_eq]
+
 /--
 Equation fulfillment is derived from context equivalence, observable-ring
 equivalence, and residual-generator compatibility.
@@ -844,12 +859,53 @@ theorem equationHolds_iff
       exact map_zero _
     rw [T.equationResidual_eq] at hmapped
     dsimp [sourceContext, sourceAtom] at hmapped
-    rw [T.contextForward_backward W] at hmapped
-    simpa using hmapped
+    have hmapped' :
+        F.equationResidual
+            (T.contextEquivalence.functor.obj (T.contextBackward W))
+            (objectMap A) (T.equationMap i) atom = 0 := by
+      simpa using hmapped
+    have hrestricted := congrArg
+      (F.restrict (T.contextEquivalence.counitIso.inv.app W)) hmapped'
+    rw [map_zero] at hrestricted
+    exact
+      (F.equationResidual_restrict
+        (T.contextEquivalence.counitIso.inv.app W)
+        (objectMap A) (T.equationMap i) atom).symm.trans hrestricted
   · intro htarget W atom
     apply (T.observableEquiv W).injective
     rw [T.equationResidual_eq]
     simpa using htarget (T.contextForward W) (atomEquiv atom)
+
+/-- Exact equation transport preserves and reflects required lawfulness. -/
+theorem equationLawful_iff
+    (T : EquationSystemExactTransport E F atomEquiv objectMap)
+    (A : ArchitectureObject U) :
+    E.EquationLawful A ↔ F.EquationLawful (objectMap A) := by
+  constructor
+  · intro hsource j hj
+    let i := T.equationEquiv.symm j
+    have hj' : F.Required (T.equationMap i) := by
+      simpa [i] using hj
+    have hi : E.Required i := (T.required_iff i).mpr hj'
+    have hholds :=
+      (T.equationHolds_iff i A).mp (hsource i hi)
+    simpa [i] using hholds
+  · intro htarget i hi
+    apply (T.equationHolds_iff i A).mpr
+    exact htarget (T.equationMap i) ((T.required_iff i).mp hi)
+
+/-- Exact equation transport preserves and reflects fulfillment of all roles. -/
+theorem fullyEquationLawful_iff
+    (T : EquationSystemExactTransport E F atomEquiv objectMap)
+    (A : ArchitectureObject U) :
+    E.FullyEquationLawful A ↔ F.FullyEquationLawful (objectMap A) := by
+  constructor
+  · intro hsource j
+    let i := T.equationEquiv.symm j
+    have hholds := (T.equationHolds_iff i A).mp (hsource i)
+    simpa [i] using hholds
+  · intro htarget i
+    exact (T.equationHolds_iff i A).mpr (htarget (T.equationMap i))
 
 /-- Identity transport of an equation system. -/
 def refl
@@ -857,13 +913,8 @@ def refl
     {C : Site.ContextPreorderCategory A₀}
     (E : ArchitecturalEquationSystem C) :
     EquationSystemExactTransport E E (Equiv.refl U.Atom) _root_.id where
-  contextForward := _root_.id
-  contextBackward := _root_.id
-  contextForward_map := _root_.id
-  contextBackward_map := _root_.id
-  contextForward_backward _ := rfl
-  contextBackward_forward _ := rfl
-  equationMap := _root_.id
+  contextEquivalence := CategoryTheory.Equivalence.refl
+  equationEquiv := Equiv.refl _
   role_eq _ := rfl
   observableEquiv _ := RingEquiv.refl _
   observable_naturality := by intros; rfl
@@ -885,19 +936,8 @@ def comp
     (S : EquationSystemExactTransport F H atomEquiv₂ objectMap₂) :
     EquationSystemExactTransport E H (atomEquiv₁.trans atomEquiv₂)
       (objectMap₂ ∘ objectMap₁) where
-  contextForward := S.contextForward ∘ T.contextForward
-  contextBackward := T.contextBackward ∘ S.contextBackward
-  contextForward_map f := S.contextForward_map (T.contextForward_map f)
-  contextBackward_map f := T.contextBackward_map (S.contextBackward_map f)
-  contextForward_backward W := by
-    change S.contextForward
-        (T.contextForward (T.contextBackward (S.contextBackward W))) = W
-    rw [T.contextForward_backward, S.contextForward_backward]
-  contextBackward_forward W := by
-    change T.contextBackward
-        (S.contextBackward (S.contextForward (T.contextForward W))) = W
-    rw [S.contextBackward_forward, T.contextBackward_forward]
-  equationMap := S.equationMap ∘ T.equationMap
+  contextEquivalence := T.contextEquivalence.trans S.contextEquivalence
+  equationEquiv := T.equationEquiv.trans S.equationEquiv
   role_eq i := by
     change H.role (S.equationMap (T.equationMap i)) = E.role i
     exact (S.role_eq (T.equationMap i)).trans (T.role_eq i)
@@ -1072,6 +1112,14 @@ def equationMap
       Q.algebra.equationSystem.Index :=
   f.equationTransport.equationMap
 
+/-- Exact equivalence of the complete source and target equation families. -/
+def equationEquiv
+    {P Q : AATCorePackage U}
+    (f : SignedExactCoreReadingHom P Q) :
+    P.algebra.equationSystem.Index ≃
+      Q.algebra.equationSystem.Index :=
+  f.equationTransport.equationEquiv
+
 /-- Canonical signed-query transport induced by the Atom equivalence. -/
 def queryMap
     {P Q : AATCorePackage U}
@@ -1088,6 +1136,24 @@ theorem required_iff
       Q.algebra.equationSystem.Required (f.equationMap i) :=
   f.equationTransport.required_iff i
 
+/-- Optional-role preservation is derived from the complete index equivalence. -/
+theorem optional_iff
+    {P Q : AATCorePackage U}
+    (f : SignedExactCoreReadingHom P Q)
+    (i : P.algebra.equationSystem.Index) :
+    P.algebra.equationSystem.Optional i ↔
+      Q.algebra.equationSystem.Optional (f.equationMap i) :=
+  f.equationTransport.optional_iff i
+
+/-- Derived-role preservation is derived from the complete index equivalence. -/
+theorem derived_iff
+    {P Q : AATCorePackage U}
+    (f : SignedExactCoreReadingHom P Q)
+    (i : P.algebra.equationSystem.Index) :
+    P.algebra.equationSystem.Derived i ↔
+      Q.algebra.equationSystem.Derived (f.equationMap i) :=
+  f.equationTransport.derived_iff i
+
 /--
 Equation fulfillment is derived from context, observable, and residual
 transport.
@@ -1101,6 +1167,24 @@ theorem equation_holds_iff
       Q.algebra.equationSystem.EquationHolds
         (f.equationMap i) (f.objectMap A) :=
   f.equationTransport.equationHolds_iff i A
+
+/-- Required equation lawfulness is invariant under an exact core change. -/
+theorem equation_lawful_iff
+    {P Q : AATCorePackage U}
+    (f : SignedExactCoreReadingHom P Q)
+    (A : ArchitectureObject U) :
+    P.algebra.equationSystem.EquationLawful A ↔
+      Q.algebra.equationSystem.EquationLawful (f.objectMap A) :=
+  f.equationTransport.equationLawful_iff A
+
+/-- Fulfillment of every equation role is invariant under an exact core change. -/
+theorem fully_equation_lawful_iff
+    {P Q : AATCorePackage U}
+    (f : SignedExactCoreReadingHom P Q)
+    (A : ArchitectureObject U) :
+    P.algebra.equationSystem.FullyEquationLawful A ↔
+      Q.algebra.equationSystem.FullyEquationLawful (f.objectMap A) :=
+  f.equationTransport.fullyEquationLawful_iff A
 
 /-- Signed query matching is derived componentwise from configuration transport. -/
 theorem matches_iff
@@ -1187,7 +1271,10 @@ def refl (P : AATCorePackage U) :
   equationTransport :=
     EquationSystemExactTransport.refl P.algebra.equationSystem
   detectorCode_eq i := by
-    simp [EquationSystemExactTransport.refl]
+    simpa [EquationSystemExactTransport.refl,
+      EquationSystemExactTransport.equationMap] using
+        (CircuitDetectorCode.transport_refl
+          (P.algebra.circuits.code i)).symm
   operationMap := _root_.id
   operation_naturality _ := by
     apply ConfigurationHom.ext

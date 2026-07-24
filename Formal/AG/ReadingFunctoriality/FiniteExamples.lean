@@ -2651,13 +2651,8 @@ noncomputable def nonidentityExactCoreChange :
   configurationMap_atomMap := by intros; rfl
   configuration_eq := by intros; rfl
   equationTransport := {
-    contextForward := id
-    contextBackward := id
-    contextForward_map := id
-    contextBackward_map := id
-    contextForward_backward := by intros; rfl
-    contextBackward_forward := by intros; rfl
-    equationMap := id
+    contextEquivalence := CategoryTheory.Equivalence.refl
+    equationEquiv := Equiv.refl EquationRole
     role_eq := by intro i; rfl
     observableEquiv := fun _ => RingEquiv.refl Int
     observable_naturality := by intros; rfl

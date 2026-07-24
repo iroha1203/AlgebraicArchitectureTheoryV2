@@ -194,13 +194,13 @@ def finiteAATComputabilityCommonRepresentativeCorrect :=
   @Measurement.CechComputationProcedure.quotientRepresentative_correct
 
 def finiteAATComputabilityProfileObstructionIdealRealizes :=
-  @Measurement.FiniteAATProfileRealization.obstructionIdeal_realizes
+  @Measurement.profileRequiredEquationIdeal_eq_map_obstructionIdeal
 
 def finiteAATComputabilityProfileLeftEquationIdealRealizes :=
-  @Measurement.FiniteAATProfileRealization.leftEquationIdeal_realizes
+  @Measurement.FiniteAATComputationData.canonicalLeftIdeal_eq
 
 def finiteAATComputabilityProfileRightEquationIdealRealizes :=
-  @Measurement.FiniteAATProfileRealization.rightEquationIdeal_realizes
+  @Measurement.FiniteAATComputationData.canonicalRightIdeal_eq
 
 def finiteAATComputabilityGenericZeroClassHasEmptySupport :=
   @Measurement.FiniteAATComputationData.classSupportOf_eq_empty_of_class_eq_zero
@@ -9817,6 +9817,230 @@ def architecturalEquationSystemFiniteNegativeNotFullyEquationLawful :=
 /-- Kernel-audit alias for the positive/negative finite separation theorem. -/
 def architecturalEquationSystemFiniteLawfulnessSeparates :=
   Examples.ArchitecturalEquationSystemFiniteExample.lawfulness_separates
+
+/-! Issue #3735 equation-system consumer and exact-transport audit aliases. -/
+
+def issue3735EquationHoldsIffOmegaZero :=
+  @AAT.AG.equationHolds_iff_omega_zero
+
+def issue3735EquationLawfulIffOmegaEZero :=
+  @AAT.AG.equationLawful_iff_omegaE_zero
+
+def issue3735OperationReflectsObstructionFailure :=
+  @AAT.AG.Operation.reflectsObstruction_failure
+
+def issue3735OperationRepairsObstructionApply :=
+  @AAT.AG.Operation.repairsObstruction_apply
+
+def issue3735OperationSynthesizesLawfulObjectApply :=
+  @AAT.AG.Operation.synthesizesLawfulObject_apply
+
+def issue3735OmegaEZeroIffRequired :=
+  @AAT.AG.omegaE_zero_iff_required
+
+def issue3735EquationLawfulIffNoRequiredEquationCircuit :=
+  @AAT.AG.equationLawful_iff_noRequiredEquationCircuit
+
+def issue3735EquationLawfulIffRequiredSignatureAxesZero :=
+  @AAT.AG.equationLawful_iff_requiredSignatureAxesZero
+
+def issue3735ConcreteThreeReadingAgreement :=
+  @AAT.AG.concreteThreeReadingAgreement
+
+def issue3735SubstitutionEquationHoldsIff :=
+  @AAT.AG.FiniteModel.substitutionEquationHolds_iff
+
+def issue3735AcyclicSubstitutionEquationHolds :=
+  @AAT.AG.FiniteModel.acyclic_substitutionEquationHolds
+
+def issue3735ObjectSubstitutionEquationFails :=
+  @AAT.AG.FiniteModel.object_substitutionEquation_fails
+
+def issue3735AcyclicNoCycleEquationHolds :=
+  @AAT.AG.FiniteModel.acyclic_noCycleEquationHolds
+
+def issue3735ObjectNoCycleEquationFails :=
+  @AAT.AG.FiniteModel.object_noCycleEquation_fails
+
+def issue3735AcyclicEquationLawful :=
+  @AAT.AG.FiniteModel.acyclic_equationLawful
+
+def issue3735ObjectEquationLawfulFails :=
+  @AAT.AG.FiniteModel.object_equationLawful_fails
+
+def issue3735NoCycleEquationSound :=
+  @AAT.AG.FiniteModel.noCycleEquationSound
+
+def issue3735NoCycleEquationComplete :=
+  @AAT.AG.FiniteModel.noCycleEquationComplete
+
+def issue3735FiniteEquationLawfulIffOmegaZero :=
+  @AAT.AG.FiniteModel.finite_equationLawful_iff_omega_zero
+
+def issue3735AlwaysOneEquationValuationNotSound :=
+  @AAT.AG.FiniteModel.alwaysOneEquationValuation_not_sound
+
+def issue3735AlwaysZeroEquationValuationNotComplete :=
+  @AAT.AG.FiniteModel.alwaysZeroEquationValuation_not_complete
+
+def issue3735ComponentAAbsentThreeReadingAgreement :=
+  @AAT.AG.FiniteModel.componentAAbsent_concreteThreeReadingAgreement
+
+def issue3735ComponentAAbsentSignatureAxesZeroUnreachable :=
+  @AAT.AG.FiniteModel.componentAAbsent_signatureAxesZero_unreachableEmptyObject
+
+def issue3735ComponentAAbsentSignatureAxesZeroFails :=
+  @AAT.AG.FiniteModel.componentAAbsent_signatureAxesZero_fails_core
+
+def issue3735NoCycleLawHoldsIff :=
+  @AAT.AG.FiniteModel.noCycleLaw_holds_iff
+
+def issue3735SemanticRepairLawfulObjectNoCycle :=
+  @AAT.AG.Examples.SemanticRepairPart10.lawfulObject_noCycle
+
+def issue3735SemanticRepairEquationHoldsIffNoCycle :=
+  @AAT.AG.Examples.SemanticRepairPart10.lawEquationSystem_equationHolds_iff_noCycle
+
+def issue3735SemanticRepairNonlawfulObjectHasCycle :=
+  @AAT.AG.Examples.SemanticRepairPart10.nonlawfulObject_hasDependencyCycle
+
+def issue3735CircuitQueryTransportTrans :=
+  @AAT.AG.CircuitQuery.transport_trans
+
+def issue3735FiniteCircuitDatumTransportTrans :=
+  @AAT.AG.FiniteCircuitDatum.transport_trans
+
+def issue3735CircuitQueryTransportRefl :=
+  @AAT.AG.CircuitQuery.transport_refl
+
+def issue3735FiniteCircuitDatumTransportRefl :=
+  @AAT.AG.FiniteCircuitDatum.transport_refl
+
+def issue3735FiniteCircuitDatumTransportInjective :=
+  @AAT.AG.FiniteCircuitDatum.transport_injective
+
+def issue3735CircuitDetectorCodeTransportTrans :=
+  @AAT.AG.CircuitDetectorCode.transport_trans
+
+def issue3735CircuitDetectorCodeTransportRefl :=
+  @AAT.AG.CircuitDetectorCode.transport_refl
+
+def issue3735CircuitDetectorCodeEvalTransport :=
+  @AAT.AG.CircuitDetectorCode.eval_transport
+
+def issue3735CircuitQueryTransportHoldsIff :=
+  @AAT.AG.CircuitQuery.transport_holds_iff
+
+def issue3735FiniteCircuitDatumTransportMatchesIff :=
+  @AAT.AG.FiniteCircuitDatum.transport_matches_iff
+
+def issue3735ExactTransportRequiredIff :=
+  @AAT.AG.EquationSystemExactTransport.required_iff
+
+def issue3735ExactTransportOptionalIff :=
+  @AAT.AG.EquationSystemExactTransport.optional_iff
+
+def issue3735ExactTransportDerivedIff :=
+  @AAT.AG.EquationSystemExactTransport.derived_iff
+
+def issue3735ExactTransportEquationHoldsIff :=
+  @AAT.AG.EquationSystemExactTransport.equationHolds_iff
+
+def issue3735ExactTransportEquationLawfulIff :=
+  @AAT.AG.EquationSystemExactTransport.equationLawful_iff
+
+def issue3735ExactTransportFullyEquationLawfulIff :=
+  @AAT.AG.EquationSystemExactTransport.fullyEquationLawful_iff
+
+def issue3735SignedExactRequiredIff :=
+  @AAT.AG.SignedExactCoreReadingHom.required_iff
+
+def issue3735SignedExactOptionalIff :=
+  @AAT.AG.SignedExactCoreReadingHom.optional_iff
+
+def issue3735SignedExactDerivedIff :=
+  @AAT.AG.SignedExactCoreReadingHom.derived_iff
+
+def issue3735SignedExactEquationHoldsIff :=
+  @AAT.AG.SignedExactCoreReadingHom.equation_holds_iff
+
+def issue3735SignedExactEquationLawfulIff :=
+  @AAT.AG.SignedExactCoreReadingHom.equation_lawful_iff
+
+def issue3735SignedExactFullyEquationLawfulIff :=
+  @AAT.AG.SignedExactCoreReadingHom.fully_equation_lawful_iff
+
+def issue3735SignedExactMatchesIff :=
+  @AAT.AG.SignedExactCoreReadingHom.matches_iff
+
+def issue3735SignedExactAcceptsIff :=
+  @AAT.AG.SignedExactCoreReadingHom.accepts_iff
+
+def issue3735NonidentityExactOptionalRole :=
+  @AAT.AG.ReadingFunctorialityFinite.nonidentityExactCoreChange_optional_role
+
+def issue3735NonidentityExactDerivedRole :=
+  @AAT.AG.ReadingFunctorialityFinite.nonidentityExactCoreChange_derived_role
+
+def issue3735ProfileEquationIdealMapWitness :=
+  @AAT.AG.Measurement.profileEquationIdeal_eq_map_witnessIdeal
+
+def issue3735ProfileRequiredIdealMapObstruction :=
+  @AAT.AG.Measurement.profileRequiredEquationIdeal_eq_map_obstructionIdeal
+
+def issue3735ProfileEquationIdealSpanRange :=
+  @AAT.AG.Measurement.profileEquationIdeal_eq_span_range
+
+def issue3735ProfileRequiredIdealISup :=
+  @AAT.AG.Measurement.profileRequiredEquationIdeal_eq_iSup
+
+def issue3735ProfileRequiredIdealSpan :=
+  @AAT.AG.Measurement.profileRequiredEquationIdeal_eq_span
+
+def issue3735ComputationCanonicalLeftIdeal :=
+  @AAT.AG.Measurement.FiniteAATComputationData.canonicalLeftIdeal_eq
+
+def issue3735ComputationCanonicalRightIdeal :=
+  @AAT.AG.Measurement.FiniteAATComputationData.canonicalRightIdeal_eq
+
+def issue3735ComputationProfileLeftSquareFree :=
+  @AAT.AG.Measurement.FiniteAATComputationData.profileLeftIdeal_eq_squareFree
+
+def issue3735ComputationProfileRightSquareFree :=
+  @AAT.AG.Measurement.FiniteAATComputationData.profileRightIdeal_eq_squareFree
+
+def issue3735FiniteF2Sheaf :=
+  @AAT.AG.Measurement.finiteComputabilityF2_isSheaf
+
+def issue3735FiniteMatrixSheaf :=
+  @AAT.AG.Measurement.finiteDimensionalMatrix_isSheaf
+
+def issue3735FiniteTopologyCover :=
+  @AAT.AG.Measurement.finiteComputabilityCover_topologyCover
+
+def issue3735FiniteUAdequateCover :=
+  @AAT.AG.Measurement.finiteComputabilityCover_uAdequate
+
+def issue3735FiniteLeftEquationIdealRealizes :=
+  @AAT.AG.Measurement.finiteMeasurement_leftEquationIdeal_realizes
+
+def issue3735FiniteRightEquationIdealRealizes :=
+  @AAT.AG.Measurement.finiteMeasurement_rightEquationIdeal_realizes
+
+def issue3735FiniteRequiredEquationIdealRealizes :=
+  @AAT.AG.Measurement.finiteMeasurement_requiredEquationIdeal_realizes
+
+def issue3735GAGACommonLeftIdeal :=
+  @AAT.AG.Measurement.AATGAGACommonFiniteData.leftIdeal_eq_sharedWitness
+
+def issue3735GAGACommonRightIdeal :=
+  @AAT.AG.Measurement.AATGAGACommonFiniteData.rightIdeal_eq_sharedWitness
+
+def issue3735GAGARealPresheafMap :=
+  @AAT.AG.Measurement.gagaRealPresheaf_map_apply
+
+def issue3735GAGARealSheaf :=
+  @AAT.AG.Measurement.gagaReal_isSheaf
 
 /-- Kernel-audit alias for selected-state finiteness in the stopping package. -/
 def finiteDissipationStoppingFiniteSelectedStates :=

@@ -456,7 +456,8 @@ theorem factorsThroughLawfulClosedSubscheme_of_requiredSignatureReadingZero
       raw X R hR hclosed s) :=
   (LawAlgebra.factorsThroughLawfulClosedSubscheme_iff_requiredSignatureAxesZero
     raw X R hR hclosed hexact s Obj Sig C.pointComparison
-      C.signatureComparison).mpr
+      (equationLawful_iff_requiredSignatureAxesZero
+        C.signatureComparison Obj)).mpr
       ((C.signatureProfile.requiredSignatureReadingZero_iff_requiredSignatureAxesZero
         Obj).mp hsig)
 

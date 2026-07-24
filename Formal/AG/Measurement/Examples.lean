@@ -1363,8 +1363,8 @@ theorem finiteMeasurement_leftEquationIdeal_realizes :
         FiniteEquationHandle.left =
       finiteDimensionalMatrixLeftSquareFree.obstructionIdeal (ZMod 2) := by
   rw [← finiteDimensionalMatrixLeftIdeal_eq_squareFree]
-  unfold profileEquationIdeal finiteDimensionalMatrixLeftIdeal
-    MvPolynomial.idealOfVars
+  rw [profileEquationIdeal_eq_span_range]
+  unfold finiteDimensionalMatrixLeftIdeal MvPolynomial.idealOfVars
   apply le_antisymm
   · apply Ideal.span_le.mpr
     rintro polynomial ⟨atom, rfl⟩
@@ -1395,7 +1395,8 @@ theorem finiteMeasurement_rightEquationIdeal_realizes :
         FiniteEquationHandle.right =
       finiteDimensionalMatrixRightSquareFree.obstructionIdeal (ZMod 2) := by
   rw [← finiteDimensionalMatrixRightIdeal_eq_squareFree]
-  unfold profileEquationIdeal finiteDimensionalMatrixRightIdeal
+  rw [profileEquationIdeal_eq_span_range]
+  unfold finiteDimensionalMatrixRightIdeal
   apply le_antisymm
   · apply Ideal.span_le.mpr
     rintro polynomial ⟨atom, rfl⟩
@@ -1403,7 +1404,8 @@ theorem finiteMeasurement_rightEquationIdeal_realizes :
       finiteEquationObservableMapZMod2
           (finiteDimensionalMatrixProfile.equationGeometry.site.equationSystem.violationCoordinate
             finiteMeasurementSiteBase .right atom) ∈
-        finiteDimensionalMatrixRightIdeal
+        Ideal.span ({MvPolynomial.X SquareFreeSupportVertex.p} :
+          Set (MvPolynomial SquareFreeSupportVertex (ZMod 2)))
     rw [finiteMeasurement_rightEquationCoordinate_zmod2]
     split_ifs
     · exact Ideal.subset_span (by rfl)
@@ -1426,8 +1428,8 @@ theorem finiteMeasurement_requiredEquationIdeal_realizes :
       finiteDimensionalMatrixLeftSquareFree.obstructionIdeal (ZMod 2)
     := by
   rw [← finiteDimensionalMatrixLeftIdeal_eq_squareFree]
-  unfold profileRequiredEquationIdeal finiteDimensionalMatrixLeftIdeal
-    MvPolynomial.idealOfVars
+  rw [profileRequiredEquationIdeal_eq_span]
+  unfold finiteDimensionalMatrixLeftIdeal MvPolynomial.idealOfVars
   apply le_antisymm
   · apply Ideal.span_le.mpr
     rintro polynomial ⟨equation, atom, rfl⟩
@@ -1480,22 +1482,32 @@ def finiteDimensionalMatrixObstructionSquareFree :
 obstruction sheaf and the generated monomial ideals. -/
 noncomputable def finiteDimensionalMatrixProfileRealization :
     FiniteAATProfileRealization finiteDimensionalMatrixProfile
-      finiteDimensionalMatrixRegime finiteDimensionalMatrixObstructionSquareFree
-      finiteDimensionalMatrixLeftSquareFree
-      finiteDimensionalMatrixRightSquareFree where
+      finiteDimensionalMatrixRegime where
   equationContext := finiteMeasurementSiteBase
   equationObservableMap := finiteEquationObservableMapZMod2
-  selectedLeftEquation := .left
-  selectedRightEquation := .right
-  selectedLeft_required := rfl
-  selectedRight_required := rfl
-  obstructionIdeal_realizes := by
-    simpa [finiteDimensionalMatrixObstructionSquareFree] using
-      finiteMeasurement_requiredEquationIdeal_realizes
-  leftEquationIdeal_realizes :=
-    finiteMeasurement_leftEquationIdeal_realizes
-  rightEquationIdeal_realizes :=
-    finiteMeasurement_rightEquationIdeal_realizes
+  selectedLeftEquation := ⟨.left, rfl⟩
+  selectedRightEquation := ⟨.right, rfl⟩
+
+/-- The canonical required profile ideal is the concrete obstruction ideal. -/
+theorem finiteDimensionalMatrixProfileRealization_obstructionIdeal :
+    finiteDimensionalMatrixProfileRealization.obstructionIdeal =
+      finiteDimensionalMatrixLeftIdeal := by
+  exact finiteMeasurement_requiredEquationIdeal_realizes.trans
+    finiteDimensionalMatrixLeftIdeal_eq_squareFree.symm
+
+/-- The canonical selected left profile ideal is the concrete left ideal. -/
+theorem finiteDimensionalMatrixProfileRealization_leftIdeal :
+    finiteDimensionalMatrixProfileRealization.leftIdeal =
+      finiteDimensionalMatrixLeftIdeal := by
+  exact finiteMeasurement_leftEquationIdeal_realizes.trans
+    finiteDimensionalMatrixLeftIdeal_eq_squareFree.symm
+
+/-- The canonical selected right profile ideal is the concrete right ideal. -/
+theorem finiteDimensionalMatrixProfileRealization_rightIdeal :
+    finiteDimensionalMatrixProfileRealization.rightIdeal =
+      finiteDimensionalMatrixRightIdeal := by
+  exact finiteMeasurement_rightEquationIdeal_realizes.trans
+    finiteDimensionalMatrixRightIdeal_eq_squareFree.symm
 
 /-- R11(c): selected length-one finite-free resolution on the finite-field right ideal. -/
 def finiteDimensionalMatrixRightResolution :
@@ -1678,10 +1690,19 @@ noncomputable def finiteDimensionalMatrixComputationData :
   leftSquareFree := finiteDimensionalMatrixLeftSquareFree
   rightSquareFree := finiteDimensionalMatrixRightSquareFree
   profileRealization := finiteDimensionalMatrixProfileRealization
+  profileObstructionIdeal_eq_squareFree :=
+    finiteDimensionalMatrixProfileRealization_obstructionIdeal.trans
+      finiteDimensionalMatrixLeftIdeal_eq_squareFree
   leftIdeal := finiteDimensionalMatrixLeftIdeal
-  leftIdeal_eq_squareFree := finiteDimensionalMatrixLeftIdeal_eq_squareFree
+  profileLeftIdeal_eq_presentation :=
+    finiteDimensionalMatrixProfileRealization_leftIdeal
+  leftPresentation_eq_squareFree :=
+    finiteDimensionalMatrixLeftIdeal_eq_squareFree
   rightIdeal := finiteDimensionalMatrixRightIdeal
-  rightIdeal_eq_squareFree := finiteDimensionalMatrixRightIdeal_eq_squareFree
+  profileRightIdeal_eq_presentation :=
+    finiteDimensionalMatrixProfileRealization_rightIdeal
+  rightPresentation_eq_squareFree :=
+    finiteDimensionalMatrixRightIdeal_eq_squareFree
   rightResolution := finiteDimensionalMatrixRightResolution
   tensorMatrixAlgorithm := finiteDimensionalMatrixTensorAlgorithm
   torDegree := 1
@@ -1977,30 +1998,35 @@ theorem tinyLeftSquareFree_normalForm_identifies_distinct_lifts :
 /-- Effective-route provenance for the selected nontrivial profile handles. -/
 noncomputable def finiteComputabilityProfileRealization :
     FiniteAATProfileRealization finiteComputabilityMeasurementProfile
-      computabilityFiniteMeasurementRegime tinyObstructionSquareFreeData
-      tinyLeftSquareFreeData tinyRightSquareFreeData where
+      computabilityFiniteMeasurementRegime where
   equationContext := finiteMeasurementSiteBase
   equationObservableMap := finiteEquationObservableMapZMod2
-  selectedLeftEquation := .left
-  selectedRightEquation := .right
-  selectedLeft_required := rfl
-  selectedRight_required := rfl
-  obstructionIdeal_realizes := by
-    simpa [finiteComputabilityMeasurementProfile,
-      finiteDimensionalMatrixProfile, tinyObstructionSquareFreeData,
-      tinyLeftSquareFreeData, finiteDimensionalMatrixObstructionSquareFree,
-      finiteDimensionalMatrixLeftSquareFree] using
-        finiteMeasurement_requiredEquationIdeal_realizes
-  leftEquationIdeal_realizes := by
-    simpa [finiteComputabilityMeasurementProfile,
-      finiteDimensionalMatrixProfile, tinyLeftSquareFreeData,
-      finiteDimensionalMatrixLeftSquareFree] using
-        finiteMeasurement_leftEquationIdeal_realizes
-  rightEquationIdeal_realizes := by
-    simpa [finiteComputabilityMeasurementProfile,
-      finiteDimensionalMatrixProfile, tinyRightSquareFreeData,
-      finiteDimensionalMatrixRightSquareFree] using
-        finiteMeasurement_rightEquationIdeal_realizes
+  selectedLeftEquation := ⟨.left, rfl⟩
+  selectedRightEquation := ⟨.right, rfl⟩
+
+/-- The effective route's canonical required ideal is its concrete obstruction ideal. -/
+theorem finiteComputabilityProfileRealization_obstructionIdeal :
+    finiteComputabilityProfileRealization.obstructionIdeal =
+      finiteDimensionalMatrixLeftIdeal := by
+  simpa [finiteComputabilityProfileRealization,
+    finiteComputabilityMeasurementProfile, finiteDimensionalMatrixProfile] using
+      finiteDimensionalMatrixProfileRealization_obstructionIdeal
+
+/-- The effective route's canonical selected left ideal is its concrete left ideal. -/
+theorem finiteComputabilityProfileRealization_leftIdeal :
+    finiteComputabilityProfileRealization.leftIdeal =
+      finiteDimensionalMatrixLeftIdeal := by
+  simpa [finiteComputabilityProfileRealization,
+    finiteComputabilityMeasurementProfile, finiteDimensionalMatrixProfile] using
+      finiteDimensionalMatrixProfileRealization_leftIdeal
+
+/-- The effective route's canonical selected right ideal is its concrete right ideal. -/
+theorem finiteComputabilityProfileRealization_rightIdeal :
+    finiteComputabilityProfileRealization.rightIdeal =
+      finiteDimensionalMatrixRightIdeal := by
+  simpa [finiteComputabilityProfileRealization,
+    finiteComputabilityMeasurementProfile, finiteDimensionalMatrixProfile] using
+      finiteDimensionalMatrixProfileRealization_rightIdeal
 
 /-- R11(c): all theorem 4.2 inputs are selected from actual nonzero finite
 chain data. -/
@@ -2011,10 +2037,17 @@ noncomputable def finiteComputabilityExampleData :
   leftSquareFree := tinyLeftSquareFreeData
   rightSquareFree := tinyRightSquareFreeData
   profileRealization := finiteComputabilityProfileRealization
+  profileObstructionIdeal_eq_squareFree :=
+    finiteComputabilityProfileRealization_obstructionIdeal.trans
+      tinyLeftIdeal_eq_squareFree
   leftIdeal := finiteDimensionalMatrixLeftIdeal
-  leftIdeal_eq_squareFree := tinyLeftIdeal_eq_squareFree
+  profileLeftIdeal_eq_presentation :=
+    finiteComputabilityProfileRealization_leftIdeal
+  leftPresentation_eq_squareFree := tinyLeftIdeal_eq_squareFree
   rightIdeal := finiteDimensionalMatrixRightIdeal
-  rightIdeal_eq_squareFree := tinyRightIdeal_eq_squareFree
+  profileRightIdeal_eq_presentation :=
+    finiteComputabilityProfileRealization_rightIdeal
+  rightPresentation_eq_squareFree := tinyRightIdeal_eq_squareFree
   rightResolution := finiteDimensionalMatrixRightResolution
   tensorMatrixAlgorithm := finiteDimensionalMatrixTensorAlgorithm
   torDegree := 1
@@ -4081,13 +4114,74 @@ theorem gagaGeneratedLawIdeal_xz :
     gagaGeneratedLawIdeal .xz = Derived.Counterexample.SharedWitnessCoord.idealV ℝ :=
   rfl
 
-/-- Read each selected profile equation handle into the common-ambient monomial
-carrier used by the GAGA comparison. -/
-def gagaProfileEquationToAmbient :
-    gagaRealMeasurementProfile.EquationHandle → GAGADerivedLawIdeal
-  | .left => .xy
-  | .right => .xz
-  | .alternate => .xy
+/-- Actual observable-ring map realizing the selected left equation in the
+shared-witness chart. -/
+def gagaLeftEquationObservableMap :
+    finiteMeasurementEquationSite.equationSystem.Observable
+        finiteMeasurementSiteBase →+*
+      Derived.Counterexample.SharedWitnessCoord.ChartRing ℝ :=
+  MvPolynomial.eval₂Hom
+    (Int.castRingHom
+      (Derived.Counterexample.SharedWitnessCoord.ChartRing ℝ)) fun
+    | .p => Derived.Counterexample.SharedWitnessCoord.xy ℝ
+    | .q | .r => 0
+
+/-- Actual observable-ring map realizing the selected right equation in the
+shared-witness chart. -/
+def gagaRightEquationObservableMap :
+    finiteMeasurementEquationSite.equationSystem.Observable
+        finiteMeasurementSiteBase →+*
+      Derived.Counterexample.SharedWitnessCoord.ChartRing ℝ :=
+  MvPolynomial.eval₂Hom
+    (Int.castRingHom
+      (Derived.Counterexample.SharedWitnessCoord.ChartRing ℝ)) fun
+    | .p => Derived.Counterexample.SharedWitnessCoord.xz ℝ
+    | .q | .r => 0
+
+theorem gagaLeftEquationCoordinate
+    (atom : FiniteModel.FiniteAtom) :
+    gagaLeftEquationObservableMap
+        (finiteMeasurementEquationSite.equationSystem.violationCoordinate
+          finiteMeasurementSiteBase .left atom) =
+      if finiteAtomWitnessVariable atom = SquareFreeSupportVertex.p then
+        Derived.Counterexample.SharedWitnessCoord.xy ℝ else 0 := by
+  cases atom <;>
+    simp [gagaLeftEquationObservableMap, finiteMeasurementEquationSite,
+      finiteMeasurementEquationSystem, finiteEquationViolation,
+      finiteAtomWitnessVariable]
+
+theorem gagaRightEquationCoordinate
+    (atom : FiniteModel.FiniteAtom) :
+    gagaRightEquationObservableMap
+        (finiteMeasurementEquationSite.equationSystem.violationCoordinate
+          finiteMeasurementSiteBase .right atom) =
+      if atom = FiniteModel.FiniteAtom.componentA then
+        Derived.Counterexample.SharedWitnessCoord.xz ℝ else 0 := by
+  cases atom <;>
+    simp [gagaRightEquationObservableMap, finiteMeasurementEquationSite,
+      finiteMeasurementEquationSystem, finiteEquationViolation]
+
+theorem gagaLeftEquationCoordinate_mem
+    (atom : FiniteModel.FiniteAtom) :
+    gagaLeftEquationObservableMap
+        (finiteMeasurementEquationSite.equationSystem.violationCoordinate
+          finiteMeasurementSiteBase .left atom) ∈
+      Derived.Counterexample.SharedWitnessCoord.idealU ℝ := by
+  rw [gagaLeftEquationCoordinate]
+  split_ifs
+  · exact Ideal.subset_span (by rfl)
+  · exact Ideal.zero_mem _
+
+theorem gagaRightEquationCoordinate_mem
+    (atom : FiniteModel.FiniteAtom) :
+    gagaRightEquationObservableMap
+        (finiteMeasurementEquationSite.equationSystem.violationCoordinate
+          finiteMeasurementSiteBase .right atom) ∈
+      Derived.Counterexample.SharedWitnessCoord.idealV ℝ := by
+  rw [gagaRightEquationCoordinate]
+  split_ifs
+  · exact Ideal.subset_span (by rfl)
+  · exact Ideal.zero_mem _
 
 /-- R11(g): the common ambient for the generated real finite-profile fixture. -/
 def gagaRealCommonAmbient :
@@ -4170,16 +4264,19 @@ noncomputable def gagaCommonFiniteData :
     certificate := ()
   }
   commonAmbient := gagaRealCommonAmbient
-  profileEquationToAmbient := gagaProfileEquationToAmbient
-  selectedLeftProfileEquation := .left
-  selectedRightProfileEquation := .right
-  selectedLeftProfileEquation_required := rfl
-  selectedRightProfileEquation_required := rfl
-  ambientLeftLaw_eq_equationProfile := rfl
-  ambientRightLaw_eq_equationProfile := rfl
-  ambientLawGenerator := gagaDerivedLawGenerator
-  selectedLeftEquationGenerator_eq_xy := rfl
-  selectedRightEquationGenerator_eq_xz := rfl
+  equationContext := finiteMeasurementSiteBase
+  leftEquationObservableMap := gagaLeftEquationObservableMap
+  rightEquationObservableMap := gagaRightEquationObservableMap
+  selectedLeftProfileEquation := ⟨.left, rfl⟩
+  selectedRightProfileEquation := ⟨.right, rfl⟩
+  leftEquationCoordinate_mem := gagaLeftEquationCoordinate_mem
+  leftGeneratorAtom := .componentA
+  leftEquationGenerator_eq_xy := by
+    simpa using gagaLeftEquationCoordinate FiniteModel.FiniteAtom.componentA
+  rightEquationCoordinate_mem := gagaRightEquationCoordinate_mem
+  rightGeneratorAtom := .componentA
+  rightEquationGenerator_eq_xz := by
+    simpa using gagaRightEquationCoordinate FiniteModel.FiniteAtom.componentA
   ambientAtomType_eq_source := rfl
   ambientStructureSheafFromProfile := id
   selectedObstructionObject := .selected

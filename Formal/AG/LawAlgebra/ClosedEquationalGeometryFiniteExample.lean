@@ -769,7 +769,7 @@ theorem weakLawEquationCore_equationHolds_iff_noCycleLaw
 Residual-coordinate comparison from the weak raw equation to the standard
 finite NoCycle signature axes.
 -/
-noncomputable def weakLawSignatureComparison :
+private noncomputable def weakLawSignatureComparison :
     EquationSignatureComparison weakLawEquationCore
       AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.signatureAxes where
   axisOf _ atom := {
@@ -2967,7 +2967,10 @@ theorem integerPoint_axis_fires :
     twoChartReferenceModel weakReading integerPoint
     AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicObject
     AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.signatureAxes
-    integerPoint_objectComparison weakLawSignatureComparison
+    integerPoint_objectComparison
+    (equationLawful_iff_requiredSignatureAxesZero
+      weakLawSignatureComparison
+      AAT.AG.LawAlgebra.FiniteExamples.CycleCorrespondenceExample.acyclicObject)
 
 /-- Shows that the weak global equation vanishes at the integral point. -/
 theorem integerPoint_globalEquationsVanish_weak :

@@ -1,5 +1,6 @@
 import Formal.AG.Cohomology.PeriodStokes
 import Formal.AG.Examples.DerivedPart5
+import Formal.AG.Measurement.Computability
 import Formal.AG.Measurement.FiniteRegime
 import Formal.AG.Measurement.Packet
 
@@ -1095,40 +1096,49 @@ structure AATGAGACommonFiniteData (M : MeasurementProfile.{u, v}) [Field M.Coeff
   measuredSelection : M.Measured_M selectedMeasurement
   /-- The common ambient used for the selected law-ideal reading. -/
   commonAmbient : CommonAmbientPair M
-  /-- Read each profile equation handle into the common ambient ideal carrier. -/
-  profileEquationToAmbient : M.EquationHandle → commonAmbient.LawIdeal
-  /-- The selected left profile equation used in the common ambient. -/
-  selectedLeftProfileEquation : M.EquationHandle
-  /-- The selected right profile equation used in the common ambient. -/
-  selectedRightProfileEquation : M.EquationHandle
-  /-- The selected left profile equation belongs to the required family. -/
-  selectedLeftProfileEquation_required :
-    M.equationGeometry.site.equationSystem.Required
-      selectedLeftProfileEquation
-  /-- The selected right profile equation belongs to the required family. -/
-  selectedRightProfileEquation_required :
-    M.equationGeometry.site.equationSystem.Required
-      selectedRightProfileEquation
-  /-- The left common-ambient ideal is read from the selected profile equation. -/
-  ambientLeftLaw_eq_equationProfile :
-    commonAmbient.leftLawIdeal =
-      profileEquationToAmbient selectedLeftProfileEquation
-  /-- The right common-ambient ideal is read from the selected profile equation. -/
-  ambientRightLaw_eq_equationProfile :
-    commonAmbient.rightLawIdeal =
-      profileEquationToAmbient selectedRightProfileEquation
-  /-- Evaluate each common-ambient law as a monomial in the shared-witness chart. -/
-  ambientLawGenerator : commonAmbient.LawIdeal →
-    Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff
-  /-- The selected left profile equation reads as the fixed `xy` monomial. -/
-  selectedLeftEquationGenerator_eq_xy :
-    ambientLawGenerator
-      (profileEquationToAmbient selectedLeftProfileEquation) =
+  /-- Context at which the actual equation coordinates enter the shared chart. -/
+  equationContext : M.equationGeometry.site.category
+  /-- Actual observable-ring map used for the selected left equation. -/
+  leftEquationObservableMap :
+    M.equationGeometry.site.equationSystem.Observable equationContext →+*
+      Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff
+  /-- Actual observable-ring map used for the selected right equation. -/
+  rightEquationObservableMap :
+    M.equationGeometry.site.equationSystem.Observable equationContext →+*
+      Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff
+  /-- The selected left required equation used in the common chart. -/
+  selectedLeftProfileEquation :
+    M.equationGeometry.site.equationSystem.RequiredIndex
+  /-- The selected right required equation used in the common chart. -/
+  selectedRightProfileEquation :
+    M.equationGeometry.site.equationSystem.RequiredIndex
+  /-- Every mapped left coordinate lies in the principal `xy` ideal. -/
+  leftEquationCoordinate_mem :
+    ∀ atom,
+      leftEquationObservableMap
+          (M.equationGeometry.site.equationSystem.violationCoordinate
+            equationContext selectedLeftProfileEquation.1 atom) ∈
+        Derived.Counterexample.SharedWitnessCoord.idealU M.Coeff
+  /-- One actual left equation coordinate realizes the `xy` generator. -/
+  leftGeneratorAtom : M.equationGeometry.U.Atom
+  leftEquationGenerator_eq_xy :
+    leftEquationObservableMap
+        (M.equationGeometry.site.equationSystem.violationCoordinate
+          equationContext selectedLeftProfileEquation.1 leftGeneratorAtom) =
       Derived.Counterexample.SharedWitnessCoord.xy M.Coeff
-  /-- The selected right profile equation reads as the fixed `xz` monomial. -/
-  selectedRightEquationGenerator_eq_xz :
-    ambientLawGenerator
-      (profileEquationToAmbient selectedRightProfileEquation) =
+  /-- Every mapped right coordinate lies in the principal `xz` ideal. -/
+  rightEquationCoordinate_mem :
+    ∀ atom,
+      rightEquationObservableMap
+          (M.equationGeometry.site.equationSystem.violationCoordinate
+            equationContext selectedRightProfileEquation.1 atom) ∈
+        Derived.Counterexample.SharedWitnessCoord.idealV M.Coeff
+  /-- One actual right equation coordinate realizes the `xz` generator. -/
+  rightGeneratorAtom : M.equationGeometry.U.Atom
+  rightEquationGenerator_eq_xz :
+    rightEquationObservableMap
+        (M.equationGeometry.site.equationSystem.violationCoordinate
+          equationContext selectedRightProfileEquation.1 rightGeneratorAtom) =
       Derived.Counterexample.SharedWitnessCoord.xz M.Coeff
   /-- The common ambient has the atom carrier selected by the Čech source. -/
   ambientAtomType_eq_source : commonAmbient.AmbientSpace = finiteCechSource.geometry.U.Atom
@@ -1308,45 +1318,61 @@ theorem topologicalCapacityStatement_holds {M : MeasurementProfile.{u, v}} [Fiel
 
 end SelectedTopologicalDebtTheoremPackage
 
-/-- VIII.Theorem 12.3: evaluate a common-ambient selected law as the principal
-chart ideal generated by its actual monomial reading. -/
-def AATGAGACommonFiniteData.generatedLawIdeal {M : MeasurementProfile.{u, v}}
-    [Field M.Coeff] (C : AATGAGACommonFiniteData M) (L : C.commonAmbient.LawIdeal) :
-    Ideal (Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff) :=
-  Ideal.span ({C.ambientLawGenerator L} : Set
-    (Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff))
-
 namespace AATGAGACommonFiniteData
 
-/-- The left chart ideal is generated from the profile-selected left law. -/
+/-- The left chart ideal is the image of the selected canonical witness ideal. -/
 def leftIdeal {M : MeasurementProfile.{u, v}} [Field M.Coeff]
     (C : AATGAGACommonFiniteData M) :
     Ideal (Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff) :=
-  C.generatedLawIdeal C.commonAmbient.leftLawIdeal
+  profileEquationIdeal M C.equationContext C.leftEquationObservableMap
+    C.selectedLeftProfileEquation.1
 
-/-- The right chart ideal is generated from the profile-selected right law. -/
+/-- The right chart ideal is the image of the selected canonical witness ideal. -/
 def rightIdeal {M : MeasurementProfile.{u, v}} [Field M.Coeff]
     (C : AATGAGACommonFiniteData M) :
     Ideal (Derived.Counterexample.SharedWitnessCoord.ChartRing M.Coeff) :=
-  C.generatedLawIdeal C.commonAmbient.rightLawIdeal
+  profileEquationIdeal M C.equationContext C.rightEquationObservableMap
+    C.selectedRightProfileEquation.1
 
-/-- The profile-to-ambient monomial path derives the selected left principal
-ideal without accepting an ideal-equality certificate. -/
+/-- Actual mapped equation coordinates derive the selected left principal ideal. -/
 theorem leftIdeal_eq_sharedWitness {M : MeasurementProfile.{u, v}} [Field M.Coeff]
     (C : AATGAGACommonFiniteData M) :
     C.leftIdeal = Derived.Counterexample.SharedWitnessCoord.idealU M.Coeff := by
-  rw [leftIdeal, generatedLawIdeal, C.ambientLeftLaw_eq_equationProfile,
-    C.selectedLeftEquationGenerator_eq_xy]
-  rfl
+  rw [leftIdeal, profileEquationIdeal_eq_span_range]
+  apply le_antisymm
+  · apply Ideal.span_le.mpr
+    rintro polynomial ⟨atom, rfl⟩
+    exact C.leftEquationCoordinate_mem atom
+  · unfold Derived.Counterexample.SharedWitnessCoord.idealU
+    apply Ideal.span_le.mpr
+    intro polynomial hpolynomial
+    have hgenerator :
+        polynomial =
+          Derived.Counterexample.SharedWitnessCoord.xy M.Coeff := by
+      simpa using hpolynomial
+    subst polynomial
+    apply Ideal.subset_span
+    exact ⟨C.leftGeneratorAtom, C.leftEquationGenerator_eq_xy⟩
 
-/-- The profile-to-ambient monomial path derives the selected right principal
-ideal without accepting an ideal-equality certificate. -/
+/-- Actual mapped equation coordinates derive the selected right principal ideal. -/
 theorem rightIdeal_eq_sharedWitness {M : MeasurementProfile.{u, v}} [Field M.Coeff]
     (C : AATGAGACommonFiniteData M) :
     C.rightIdeal = Derived.Counterexample.SharedWitnessCoord.idealV M.Coeff := by
-  rw [rightIdeal, generatedLawIdeal, C.ambientRightLaw_eq_equationProfile,
-    C.selectedRightEquationGenerator_eq_xz]
-  rfl
+  rw [rightIdeal, profileEquationIdeal_eq_span_range]
+  apply le_antisymm
+  · apply Ideal.span_le.mpr
+    rintro polynomial ⟨atom, rfl⟩
+    exact C.rightEquationCoordinate_mem atom
+  · unfold Derived.Counterexample.SharedWitnessCoord.idealV
+    apply Ideal.span_le.mpr
+    intro polynomial hpolynomial
+    have hgenerator :
+        polynomial =
+          Derived.Counterexample.SharedWitnessCoord.xz M.Coeff := by
+      simpa using hpolynomial
+    subst polynomial
+    apply Ideal.subset_span
+    exact ⟨C.rightGeneratorAtom, C.rightEquationGenerator_eq_xz⟩
 
 /-- The degree-one LawConflict object of the canonical selected Tor bridge. -/
 abbrev lawConflict {M : MeasurementProfile.{u, v}} [Field M.Coeff]
