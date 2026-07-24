@@ -17,7 +17,7 @@ source of truth: `docs/aat/algebraic_geometric_theory/part_10_semantic_repair_de
 ## 問い
 
 定理1.1 の8入力と monomorphic AAT cover を、どの Lean structure 群へ固定すれば、
-C1–C8 が本文 §9 依存図と同型の import / proof 依存で構成でき、かつ
+C1–C8 が本文 §9 依存図に整合する import / proof 依存(§2 の線形化)で構成でき、かつ
 縮小禁止リスト(同値・逆写像・微分可換性・cocycle 性・`H¹` 同値の certificate field 化禁止)を
 構造的に満たせるか。
 
