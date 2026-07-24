@@ -87,10 +87,10 @@
             { "chartRef": "ctx:circle", "coefficients": [0] }
           ],
           "transitionDifferences": [
-            { "overlapRef": "overlap:01", "coefficients": [0] },
+            { "overlapRef": "overlap:01", "coefficients": [1] },
             { "overlapRef": "overlap:12", "coefficients": [0] },
             { "overlapRef": "overlap:23", "coefficients": [0] },
-            { "overlapRef": "overlap:30", "coefficients": [1] }
+            { "overlapRef": "overlap:30", "coefficients": [0] }
           ]
         }
       }

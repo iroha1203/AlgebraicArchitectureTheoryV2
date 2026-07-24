@@ -20,6 +20,7 @@ impl AnalyzeRunContract {
         law_surface: Option<&Path>,
         measurement_profiles: &[&Path],
         residual_packet: Option<&Path>,
+        repair_plan: Option<&Path>,
         profile_fingerprint: Value,
         site_cover_digest: Value,
         component_fingerprints: Option<Value>,
@@ -42,6 +43,7 @@ impl AnalyzeRunContract {
         let residual_packet_digest = residual_packet
             .map(canonical_json_file_digest)
             .transpose()?;
+        let repair_plan_digest = repair_plan.map(canonical_json_file_digest).transpose()?;
         let run_seed = match (
             law_surface_digest.as_deref(),
             residual_packet_digest.as_deref(),
@@ -63,6 +65,10 @@ impl AnalyzeRunContract {
                 measurement_profile_digests.join("|")
             ),
         };
+        let run_seed = repair_plan_digest
+            .as_deref()
+            .map(|digest| format!("{run_seed}|repairPlan:{digest}"))
+            .unwrap_or(run_seed);
         let run_hash = sha256_hex(run_seed.as_bytes());
         let mut run_id = format!("run:{}", &run_hash[..12]);
         if stamp {
@@ -103,6 +109,12 @@ impl AnalyzeRunContract {
             input_digests["residualPacket"] = serde_json::json!({
                 "path": artifact_input_ref(residual_packet.expect("residual packet path is present")),
                 "sha256": residual_packet_digest
+            });
+        }
+        if let (Some(path), Some(digest)) = (repair_plan, repair_plan_digest) {
+            input_digests["repairPlan"] = serde_json::json!({
+                "path": artifact_input_ref(path),
+                "sha256": digest
             });
         }
         Ok(Self {

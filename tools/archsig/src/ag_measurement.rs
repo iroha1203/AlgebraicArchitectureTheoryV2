@@ -2,8 +2,11 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use serde::Deserialize;
 use serde_json::{Value, json};
+use sha2::{Digest, Sha256};
 
 use crate::law_execution::{LawExecutionPlanV1, build_law_execution_plan};
+use crate::policy_bundle::canonical_json_bytes;
+use crate::repair_plan::recompute_presentation_generated_h1_output;
 use crate::saga::{evaluate_saga_descent_v1, evaluate_saga_grounded_v1};
 use crate::validation::{generic_validation_example, validation_check};
 use crate::{
@@ -98,6 +101,7 @@ const BOUNDARY_STATEMENT_KINDS: [&str; 6] = [
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct SagaPresentationGeneratedEvidenceV1 {
     kind: String,
+    comparison_input: SagaPresentationGeneratedInputEvidenceV1,
     presentation_exactness: bool,
     generator_completeness: bool,
     generated_cochain_map: SagaGeneratedCochainMapEvidenceV1,
@@ -105,6 +109,13 @@ struct SagaPresentationGeneratedEvidenceV1 {
     semantic_residual: SagaSemanticResidualEvidenceV1,
     residual_witness: Option<SagaResidualWitnessEvidenceV1>,
     restriction_naturality: bool,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct SagaPresentationGeneratedInputEvidenceV1 {
+    kind: String,
+    repair_plan: RepairPlanDocumentV1,
 }
 
 #[derive(Deserialize)]
@@ -14463,10 +14474,30 @@ fn check_saga_presentation_generated_evidence_value(packet_value: &Value) -> Val
             let Some(presentation) = parsed_presentation.as_ref() else {
                 continue;
             };
+            check_saga_presentation_generated_recomputation(
+                packet_value,
+                presentation,
+                invariant
+                    .get("presentationGenerated")
+                    .expect("parsed presentation retains its source value"),
+                &prefix,
+                &mut examples,
+            );
             check_saga_presentation_generated_established_consistency(
                 invariant,
                 &prefix,
                 presentation,
+                &mut examples,
+            );
+        } else if let (Some(presentation), Some(raw_presentation)) = (
+            parsed_presentation.as_ref(),
+            invariant.get("presentationGenerated"),
+        ) {
+            check_saga_presentation_generated_recomputation(
+                packet_value,
+                presentation,
+                raw_presentation,
+                &prefix,
                 &mut examples,
             );
         } else if invariant
@@ -14487,6 +14518,75 @@ fn check_saga_presentation_generated_evidence_value(packet_value: &Value) -> Val
     )
 }
 
+fn check_saga_presentation_generated_recomputation(
+    packet_value: &Value,
+    presentation: &SagaPresentationGeneratedEvidenceV1,
+    raw_presentation: &Value,
+    prefix: &str,
+    examples: &mut Vec<ValidationExample>,
+) {
+    let input_path = format!("{prefix}.presentationGenerated.comparisonInput");
+    if presentation.comparison_input.kind != "canonical-presentation-repair-plan" {
+        examples.push(generic_validation_example(
+            &format!("{input_path}.kind"),
+            "canonical-presentation-repair-plan",
+            "presentation-generated evidence must retain the canonical RepairPlan comparison input",
+        ));
+        return;
+    }
+
+    let Some(expected) = recompute_presentation_generated_h1_output(
+        &presentation.comparison_input.repair_plan,
+    ) else {
+        examples.push(generic_validation_example(
+            &format!("{input_path}.repairPlan"),
+            "presentation-generated-h1-input",
+            "comparisonInput.repairPlan must contain a recomputable presentation-generated H1 comparison",
+        ));
+        return;
+    };
+    if expected != *raw_presentation {
+        examples.push(generic_validation_example(
+            &format!("{prefix}.presentationGenerated"),
+            "recomputed-output",
+            "presentation-generated evidence must exactly equal the output recomputed from comparisonInput.repairPlan",
+        ));
+    }
+
+    let repair_plan_value = match serde_json::to_value(&presentation.comparison_input.repair_plan) {
+        Ok(value) => value,
+        Err(error) => {
+            examples.push(generic_validation_example(
+                &format!("{input_path}.repairPlan"),
+                "canonical-json",
+                &format!("comparisonInput.repairPlan must serialize canonically: {error}"),
+            ));
+            return;
+        }
+    };
+    let repair_plan_digest = match canonical_json_bytes(&repair_plan_value) {
+        Ok(bytes) => format!("{:x}", Sha256::digest(bytes)),
+        Err(error) => {
+            examples.push(generic_validation_example(
+                &format!("{input_path}.repairPlan"),
+                "canonical-json",
+                &format!("comparisonInput.repairPlan must have a canonical digest: {error}"),
+            ));
+            return;
+        }
+    };
+    let recorded_digest = packet_value
+        .pointer("/inputDigests/repairPlan/sha256")
+        .and_then(Value::as_str);
+    if recorded_digest != Some(repair_plan_digest.as_str()) {
+        examples.push(generic_validation_example(
+            "inputDigests.repairPlan.sha256",
+            "comparisonInput.repairPlan",
+            "presentation-generated comparison input must match the analyzed RepairPlan digest",
+        ));
+    }
+}
+
 fn check_saga_presentation_generated_evidence_shape(
     value: &Value,
     path: &str,
@@ -14494,6 +14594,7 @@ fn check_saga_presentation_generated_evidence_shape(
 ) {
     let fields = [
         "kind",
+        "comparisonInput",
         "presentationExactness",
         "generatorCompleteness",
         "generatedCochainMap",
@@ -14505,6 +14606,12 @@ fn check_saga_presentation_generated_evidence_shape(
     if !check_required_object_keys(value, path, &fields, examples) {
         return;
     }
+    check_required_object_keys(
+        &value["comparisonInput"],
+        &format!("{path}.comparisonInput"),
+        &["kind", "repairPlan"],
+        examples,
+    );
     check_required_object_keys(
         &value["generatedCochainMap"],
         &format!("{path}.generatedCochainMap"),

@@ -2461,6 +2461,14 @@ fn cli_analyze_saga_comparison_generates_transfer_from_presentations() {
         true
     );
     assert_eq!(
+        comparison["presentationGenerated"]["comparisonInput"]["kind"],
+        "canonical-presentation-repair-plan"
+    );
+    assert_eq!(
+        packet["inputDigests"]["repairPlan"]["path"],
+        "input:repair_plan.json"
+    );
+    assert_eq!(
         comparison["presentationGenerated"]["generatedCochainMap"]["degreeZeroCommutative"],
         true
     );
@@ -2520,21 +2528,69 @@ fn cli_presentation_generated_packet_validator_rejects_tampered_evidence() {
         "presentationGenerated.residualWitness.h"
     ));
 
-    let mut forged_class = packet.clone();
-    invariant_by_id_mut(&mut forged_class, "saga-comparison:h1-transfer")["presentationGenerated"]
-        ["semanticResidual"]["sourceClassNonZero"] = json!(false);
+    let mut coordinated_class_forgery = packet.clone();
+    let comparison = invariant_by_id_mut(&mut coordinated_class_forgery, "saga-comparison:h1-transfer");
+    comparison["presentationGenerated"]["semanticResidual"]["sourceClassNonZero"] = json!(false);
+    comparison["presentationGenerated"]["equationResidual"]["targetClassNonZero"] = json!(false);
+    comparison["generatedQuotientTransfer"]["sourceClassNonZero"] = json!(false);
+    comparison["generatedQuotientTransfer"]["targetClassNonZero"] = json!(false);
     assert!(validator_failure(
-        &forged_class,
-        "generatedQuotientTransfer"
+        &coordinated_class_forgery,
+        "presentationGenerated"
     ));
 
-    let mut non_f2_witness = packet.clone();
-    invariant_by_id_mut(&mut non_f2_witness, "saga-comparison:h1-transfer")["presentationGenerated"]
-        ["residualWitness"]["h"][0]["coefficients"] = json!([2]);
+    let mut empty_derived_evidence = packet.clone();
+    let generated = &mut invariant_by_id_mut(
+        &mut empty_derived_evidence,
+        "saga-comparison:h1-transfer",
+    )["presentationGenerated"];
+    generated["generatedCochainMap"]["degreeZero"] = json!([]);
+    generated["generatedCochainMap"]["degreeOne"] = json!([]);
+    generated["generatedCochainMap"]["degreeTwo"] = json!([]);
+    generated["residualWitness"]["sourceImage"] = json!([]);
+    generated["residualWitness"]["equationResidual"] = json!([]);
+    generated["residualWitness"]["h"] = json!([]);
     assert!(validator_failure(
-        &non_f2_witness,
-        "presentationGenerated.residualWitness.h"
+        &empty_derived_evidence,
+        "presentationGenerated"
     ));
+
+    let mut altered_comparison_input = packet.clone();
+    invariant_by_id_mut(&mut altered_comparison_input, "saga-comparison:h1-transfer")
+        ["presentationGenerated"]["comparisonInput"]["repairPlan"]["id"] =
+        json!("repair-plan:forged-input");
+    assert!(validator_failure(
+        &altered_comparison_input,
+        "inputDigests.repairPlan.sha256"
+    ));
+}
+
+#[test]
+fn cli_presentation_generated_packet_validator_rejects_valid_f2_witness_forgery() {
+    let root = ag_measurement_root();
+    let plan = read_json(&root.join("repair_plan_presentation_generated_circle.json"));
+    let archmap = presentation_generated_circle_archmap(&root);
+    let out_dir = run_saga_fixture_lock_with_archmap(
+        "ag-saga-presentation-generated-circle-packet-validator",
+        plan,
+        archmap,
+    );
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let mut forged = packet.clone();
+    invariant_by_id_mut(&mut forged, "saga-comparison:h1-transfer")["presentationGenerated"]
+        ["residualWitness"]["h"][0]["coefficients"] = json!([1]);
+    assert!(validate_measurement_packet_value_v1(&forged)
+        .iter()
+        .any(|check| {
+            check.id == "measurement-packet-schema052-saga-presentation-generated-evidence"
+                && check.result == "fail"
+                && check.examples.iter().any(|example| {
+                    example
+                        .source
+                        .as_deref()
+                        .is_some_and(|source| source.contains("presentationGenerated"))
+                })
+        }));
 }
 
 #[test]
@@ -2563,6 +2619,42 @@ fn cli_analyze_presentation_generated_circle_establishes_independent_h1_transfer
         comparison["presentationGenerated"]["equationResidual"]["targetClassNonZero"],
         true
     );
+}
+
+#[test]
+fn cli_compare_rejects_runs_with_different_repair_plan_provenance() {
+    let root = ag_measurement_root();
+    let base_plan = presentation_generated_saga_plan(&root, true);
+    let mut changed_atlas_plan = base_plan.clone();
+    changed_atlas_plan["comparison"]["h1ComparisonData"]["presentation"]
+        ["equationLiftAtlas"]["localLifts"][0]["coefficients"] = json!([1]);
+
+    let base_run = run_saga_fixture_lock("ag-saga-compare-repair-plan-base", base_plan);
+    let head_run = run_saga_fixture_lock(
+        "ag-saga-compare-repair-plan-changed-atlas",
+        changed_atlas_plan,
+    );
+    let base_manifest = read_json(&base_run.join("archsig-run-manifest.json"));
+    let head_manifest = read_json(&head_run.join("archsig-run-manifest.json"));
+    assert_ne!(
+        base_manifest["inputDigests"]["repairPlan"]["sha256"],
+        head_manifest["inputDigests"]["repairPlan"]["sha256"]
+    );
+    assert_ne!(base_manifest["runId"], head_manifest["runId"]);
+
+    let compare_out = temp_dir("ag-saga-compare-repair-plan-provenance");
+    run_sig0(&[
+        "compare",
+        "--base-run",
+        base_run.to_str().expect("base run path is utf-8"),
+        "--head-run",
+        head_run.to_str().expect("head run path is utf-8"),
+        "--out-dir",
+        compare_out.to_str().expect("comparison output path is utf-8"),
+    ]);
+    let report = read_json(&compare_out.join("archsig-comparison-report.json"));
+    assert_eq!(report["comparability"]["level"], "not-comparable");
+    assert_eq!(report["comparability"]["sameRepairPlanDigest"], false);
 }
 
 #[test]
@@ -11783,7 +11875,7 @@ fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_diges
 
     let manifest = read_json(&first_out.join("archsig-run-manifest.json"));
     assert_eq!(manifest["toolVersion"], "0.5.4");
-    assert_eq!(manifest["runId"], "run:9fcdae261214");
+    assert_eq!(manifest["runId"], "run:492434adf066");
     assert_eq!(
         manifest["inputDigests"]["archmap"]["sha256"],
         "653037e1812bad367d211b926b976065d69842ec6d26cb5d4f82bdb9ac5f46e3"
@@ -11813,6 +11905,10 @@ fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_diges
     assert_eq!(
         manifest["inputDigests"]["siteCoverDigest"]["basis"],
         "normalized contexts + covers + derived finite cover nerve"
+    );
+    assert_eq!(
+        manifest["inputDigests"]["repairPlan"]["sha256"],
+        "705954f81878a1d164734aebd24ba7fa10fa2f7b605e835f6ec2a1726865435e"
     );
 }
 
@@ -11989,7 +12085,7 @@ fn cli_analyze_stamp_appends_opt_in_run_id_suffix() {
     assert!(
         manifest["runId"]
             .as_str()
-            .is_some_and(|run_id| run_id.starts_with("run:9fcdae261214-stamp:")),
+            .is_some_and(|run_id| run_id.starts_with("run:492434adf066-stamp:")),
         "stamp opt-in should append a wall-clock suffix to the deterministic input-derived prefix"
     );
 }

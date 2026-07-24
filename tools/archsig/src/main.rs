@@ -1141,6 +1141,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                     .map(PathBuf::as_path)
                     .collect::<Vec<_>>(),
                 residual_packet.as_deref(),
+                repair_plan.as_deref(),
                 contract_profile_fingerprint(
                     &law_policy_contract_input,
                     &measurement_profile_contract_inputs,
@@ -1352,7 +1353,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 Some(normalized_archmap_path),
                 &with_run_contract(&normalized_archmap, &run_contract)?,
             )?;
-            let packet_value = serde_json::to_value(&measurement_packet)?;
+            let packet_value = with_run_contract(&measurement_packet, &run_contract)?;
             let packet_validation = validate_measurement_packet_value_v1(&packet_value);
             let packet_failed = packet_validation.iter().any(|check| check.result == "fail");
             let packet_failed_check_count = packet_validation
@@ -1365,7 +1366,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 .count();
             write_json(
                 Some(measurement_packet_path.clone()),
-                &with_run_contract(&measurement_packet, &run_contract)?,
+                &packet_value,
             )?;
             let measurement_summary = build_measurement_summary_v1(&measurement_packet);
             let insight_report = build_insight_report_v1(

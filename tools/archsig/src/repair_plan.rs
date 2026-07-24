@@ -356,7 +356,48 @@ mod tests {
                 .expect("computed chart witness")
                 .iter()
                 .flat_map(|row| row["coefficients"].as_array().into_iter().flatten())
-                .any(|entry| entry.as_u64() == Some(1))
+                .all(|entry| entry.as_u64() == Some(0))
+        );
+        assert_eq!(
+            output["residualWitness"]["sourceImage"],
+            output["residualWitness"]["equationResidual"],
+            "Example 10.2 has r_E = kappa^1(r_sem) with zero local coordinate witness"
+        );
+    }
+
+    #[test]
+    fn presentation_generated_circle_derives_nonzero_cohomologous_atlas_witness() {
+        let mut plan: RepairPlanDocumentV1 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/repair_plan_presentation_generated_circle.json"
+        ))
+        .expect("presentation-generated circle fixture parses");
+        let transitions = plan.comparison.as_mut().expect("comparison is supplied")
+            ["h1ComparisonData"]["presentation"]["equationLiftAtlas"]["transitionDifferences"]
+            .as_array_mut()
+            .expect("equation lift atlas transitions are an array");
+        transitions
+            .iter_mut()
+            .find(|transition| transition["overlapRef"] == "overlap:01")
+            .expect("overlap:01 transition")["coefficients"] = json!([0]);
+        transitions
+            .iter_mut()
+            .find(|transition| transition["overlapRef"] == "overlap:30")
+            .expect("overlap:30 transition")["coefficients"] = json!([1]);
+        let comparison = plan.comparison.as_ref().expect("comparison is supplied");
+        let h1 = comparison["h1ComparisonData"]
+            .as_object()
+            .expect("H1 comparison data is an object");
+        let checks = presentation_generated_h1_checks(&plan, &plan.complex, h1);
+        assert!(checks.all_pass());
+        let output = presentation_generated_h1_output(&plan, &plan.complex, h1, &checks);
+        assert!(
+            output["residualWitness"]["h"]
+                .as_array()
+                .expect("computed chart witness")
+                .iter()
+                .flat_map(|row| row["coefficients"].as_array().into_iter().flatten())
+                .any(|entry| entry.as_u64() == Some(1)),
+            "a distinct cohomologous atlas input must retain the nonzero local-coordinate witness path"
         );
     }
 
@@ -398,7 +439,7 @@ mod tests {
             .as_object()
             .expect("H1 comparison data is an object")
             .clone();
-        residual_mismatch["presentation"]["equationLiftAtlas"]["transitionDifferences"][3]["coefficients"] =
+        residual_mismatch["presentation"]["equationLiftAtlas"]["transitionDifferences"][0]["coefficients"] =
             serde_json::json!([0]);
         let residual_checks =
             presentation_generated_h1_checks(&plan, &plan.complex, &residual_mismatch);
@@ -1340,6 +1381,10 @@ pub(crate) fn presentation_generated_h1_output(
     });
     json!({
         "kind": "presentation-generated",
+        "comparisonInput": {
+            "kind": "canonical-presentation-repair-plan",
+            "repairPlan": plan
+        },
         "presentationExactness": checks.presentation_exactness,
         "generatorCompleteness": checks.generator_completeness,
         "generatedCochainMap": {
@@ -1363,6 +1408,24 @@ pub(crate) fn presentation_generated_h1_output(
         "residualWitness": residual_witness,
         "restrictionNaturality": checks.restriction_naturality
     })
+}
+
+pub(crate) fn recompute_presentation_generated_h1_output(
+    plan: &RepairPlanDocumentV1,
+) -> Option<Value> {
+    let comparison = plan.comparison.as_ref()?;
+    let h1 = comparison.get("h1ComparisonData")?.as_object()?;
+    if h1.get("kind").and_then(Value::as_str) != Some("presentation-generated") {
+        return None;
+    }
+    let target_complex = comparison_target_complex(plan, comparison)?;
+    let checks = presentation_generated_h1_checks(plan, &target_complex, h1);
+    Some(presentation_generated_h1_output(
+        plan,
+        &target_complex,
+        h1,
+        &checks,
+    ))
 }
 
 fn presentation_cell_refs(plan: &RepairPlanDocumentV1) -> BTreeSet<String> {

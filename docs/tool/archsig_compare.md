@@ -22,6 +22,8 @@ ArchSig はそこから `r_E` を導出する。`κ¹(r_sem)=r_E+δ⁰h` は equ
 target `Z¹/B¹` class を再計算する。semantic presentation 側でも `r_sem` の cocycle と
 `Z¹/B¹` class を計算するため、nonempty triple がない selected `C²=0` complex でも、有限presentation
 そのものから source / target H¹ transfer を確立できる。
+出力の `presentationGenerated.comparisonInput` には canonical RepairPlan を保持し、packet validator は
+その入力から generated evidence 全体を再計算して `inputDigests.repairPlan.sha256` と照合する。
 どちらの kind でも適合条件を満たす場合だけ analyze の転送 invariant が立つ。
 compare の run-pair 記録はこの run 内写像を自動生成しない。
 
@@ -66,9 +68,9 @@ Outputs:
 ## Comparability
 
 `identical` requires matching ArchMap digest, LawPolicy, law-surface, and
-MeasurementProfile component fingerprints, plus tool version.
+MeasurementProfile component fingerprints, optional RepairPlan digest, plus tool version.
 `verdict-row` requires matching LawPolicy, law-surface, and MeasurementProfile component fingerprints, site cover
-digest, and tool version. A policy-bundle component change is therefore
+digest, optional RepairPlan digest, and tool version. A policy-bundle component change is therefore
 explicitly recorded as `not-comparable`.
 Other pairs are `not-comparable`; the report records both independent run conclusions and emits a typed boundary.
 

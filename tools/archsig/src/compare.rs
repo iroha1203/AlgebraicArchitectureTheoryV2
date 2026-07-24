@@ -278,6 +278,7 @@ fn comparability(base: &Value, head: &Value) -> Value {
     let same_profile =
         digest_at(base, "profileFingerprint") == digest_at(head, "profileFingerprint");
     let same_cover = digest_at(base, "siteCoverDigest") == digest_at(head, "siteCoverDigest");
+    let same_repair_plan = digest_at(base, "repairPlan") == digest_at(head, "repairPlan");
     let same_component_fingerprints = component_fingerprints_at(base)
         .zip(component_fingerprints_at(head))
         .is_some_and(|(base, head)| base == head);
@@ -290,6 +291,7 @@ fn comparability(base: &Value, head: &Value) -> Value {
         && same_law_policy
         && same_profile
         && same_component_fingerprints
+        && same_repair_plan
     {
         "identical"
     } else if same_tool
@@ -297,6 +299,7 @@ fn comparability(base: &Value, head: &Value) -> Value {
         && same_cover
         && same_law_surface
         && same_component_fingerprints
+        && same_repair_plan
     {
         "verdict-row"
     } else {
@@ -311,7 +314,8 @@ fn comparability(base: &Value, head: &Value) -> Value {
         "sameComponentFingerprints": same_component_fingerprints,
         "sameLawSurfaceFingerprint": same_law_surface,
         "sameSiteCoverDigest": same_cover,
-        "basis": "identical requires archmap, LawPolicy, law-surface, and MeasurementProfile component fingerprints plus tool version equality; verdict-row requires all three LawPolicy, law-surface, and MeasurementProfile component fingerprints, site cover digest, and tool version equality"
+        "sameRepairPlanDigest": same_repair_plan,
+        "basis": "identical requires archmap, LawPolicy, law-surface, MeasurementProfile, and optional RepairPlan input digests plus tool version equality; verdict-row requires all three LawPolicy, law-surface, and MeasurementProfile component fingerprints, site cover digest, optional RepairPlan input digest, and tool version equality"
     })
 }
 
@@ -625,6 +629,7 @@ fn run_digest(run: &Path, manifest: &Value) -> Value {
         "profileFingerprint": manifest["inputDigests"]["profileFingerprint"],
         "componentFingerprints": manifest["componentFingerprints"],
         "siteCoverDigest": manifest["inputDigests"]["siteCoverDigest"],
+        "repairPlan": manifest["inputDigests"]["repairPlan"],
         "measurementPacket": {
             "path": artifact_ref(run, "archsig-measurement-packet.json"),
             "sha256": canonical_json_file_digest(&run.join("archsig-measurement-packet.json")).unwrap_or_default()
@@ -718,6 +723,17 @@ mod tests {
     }
 
     #[test]
+    fn repair_plan_digest_change_blocks_comparability() {
+        let mut base = manifest("sha256:surface-a");
+        let mut head = manifest("sha256:surface-a");
+        base["inputDigests"]["repairPlan"] = json!({"sha256": "repair-plan-a"});
+        head["inputDigests"]["repairPlan"] = json!({"sha256": "repair-plan-b"});
+        let result = comparability(&base, &head);
+        assert_eq!(result["level"], "not-comparable");
+        assert_eq!(result["sameRepairPlanDigest"], false);
+    }
+
+    #[test]
     fn malformed_component_fingerprints_are_rejected() {
         let mut value = manifest("sha256:surface-a");
         value["componentFingerprints"] = json!({});
@@ -790,6 +806,7 @@ fn validate_component_fingerprints(manifest: &Value, label: &str) -> Result<(), 
         "measurementProfile",
         "measurementProfiles",
         "profileFingerprint",
+        "repairPlan",
         "residualPacket",
         "siteCoverDigest",
     ]);
