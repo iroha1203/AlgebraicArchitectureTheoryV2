@@ -39,6 +39,28 @@ cancel–inside-payment–order の実呼び出し三角形上で、金額規約
   head の `drift:refund-rounding` は三角形3辺、repaired は零 cochain として計測する
 - repaired 変種: 三角形3チャートを BigDecimal scale-2 HALF_EVEN 統一規約に置換した仮修理 ArchMap
 
+## 条件種別と comparison cochain map の来歴
+
+`presentation packet` は有限データとして実施者が author する入力である。ここでいう
+`generated` / `computed` / `checked` は、その入力を越えた結論を供給したという意味ではなく、
+入力を受け取った ArchSig が下表の有限計算・検査を行ったことを表す。head / repaired の両 packet
+で同じ区別を記録した。
+
+| 条件種別 | one-cent packet の対象 | packet 上の確認箇所・扱い |
+| --- | --- | --- |
+| `supplied` | source-grounded presentation cells、semantic / equation generators、relation 行列、generator map、restriction、equation lift atlas、residual cochain、`trueSheafCertificate`、`gluingData` | RepairPlan の authored 入力。たとえば residual と各 overlap support は `kind: supplied` であり、ArchSig が source から自動発見したものとは扱わない |
+| `assumed` | selected quotient sheaf condition と true sheaf global condition | packet `assumptions`、および `trueSheafCertificate.globalCondition: assumed`。この仮定を結論や generated data と取り違えない |
+| `computed` | presentation からの `χ / Φ / κ`、semantic / equation residual、quotient-level H¹ transfer、target support | `generatedCochainMap` の各 local `Φ` は generator map を relation で割った有限計算から導出。`generatedQuotientTransfer` は source / target class の零判定を記録する |
+| `checked` | presentation exactness、generator completeness、restriction naturality、degree 0/1 cochain 可換性、degree 2 cell の finite atlas、comparison contract、component cocycle、canonical input digest | `presentationExactness: true`、`generatorCompleteness: true`、`restrictionNaturality: true`、`degreeZeroCommutative: true`、`degreeOneCommutative: true`、`contractChecked: true` と input digest の一致で固定する |
+
+comparison cochain map は外部から matrix を `supplied` する経路ではない。互換性上
+`suppliedCochainMap` と名付けられた出力欄も、今回の値は `kind: presentation-generated` であり、
+実体は `generatedCochainMap` が presentation から導出した local `Φ` である。したがって
+comparison の来歴は **supplied cochain matrix → presentation-generated / checked cochain map** に移った。
+この移行の確定条件は、有限 presentation の exactness・generator completeness・restriction
+naturality・degree 0/1 可換性と degree 2 atlas を検査したうえで、head の
+`SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS` と `contractChecked: true` を出力することである。
+
 ## 結果(診断階段)
 
 | 幕 | 結果 |
