@@ -193,9 +193,6 @@ def finiteAATComputabilityCosetNormalizerCanonical :=
 def finiteAATComputabilityCommonRepresentativeCorrect :=
   @Measurement.CechComputationProcedure.quotientRepresentative_correct
 
-def finiteAATComputabilityProfileObstructionObjectRealizes :=
-  @Measurement.FiniteAATProfileRealization.obstructionObject_realizes
-
 def finiteAATComputabilityProfileObstructionIdealRealizes :=
   @Measurement.FiniteAATProfileRealization.obstructionIdeal_realizes
 
