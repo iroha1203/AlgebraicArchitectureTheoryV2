@@ -531,45 +531,6 @@ theorem rigidReading_requiredClosed :
   ClosedEquationalLawReading.ofSemanticCore_requiredClosed
     referenceRaw referenceScheme rigidLawEquationCore rigidSchemeBridge
 
-/--
-The global equation obtained from the equation system selected by
-`referenceSite`.
-
-The site coordinate is sent through the canonical `Int`-algebra map into the
-raw algebra at the decorated context and then through the existing
-sheafification and interpretation maps.  Thus this equation has no separately
-supplied coordinate family.
--/
-noncomputable def referenceSiteGlobalEquation
-    (i : referenceSite.equationSystem.Index)
-    (a : AAT.AG.FiniteModel.carrier.Atom) :
-    Γ(referenceScheme.underlying, ⊤) :=
-  siteEquationGlobalEquation
-    baseContext referenceRaw referenceScheme rfl i a
-
-/--
-The closed-equational reading generated from the equation system owned by
-`referenceSite`.
--/
-noncomputable def referenceSiteReading :
-    ClosedEquationalLawReading referenceRaw referenceScheme
-      referenceSite.equationSystem :=
-  ClosedEquationalLawReading.ofSiteEquationSystem
-    baseContext referenceRaw referenceScheme rfl
-
-/-- The site-generated reading satisfies the closed-equational recognition laws. -/
-theorem referenceSiteReading_valid :
-    IsClosedEquationalLawReading referenceRaw referenceScheme
-      referenceSiteReading :=
-  ClosedEquationalLawReading.ofSiteEquationSystem_valid
-    baseContext referenceRaw referenceScheme rfl
-
-/-- Every required site equation is closed and selected by the site-generated reading. -/
-theorem referenceSiteReading_requiredClosed :
-    RequiredClosed referenceRaw referenceScheme referenceSiteReading :=
-  ClosedEquationalLawReading.ofSiteEquationSystem_requiredClosed
-    baseContext referenceRaw referenceScheme rfl
-
 private theorem referenceCore_lawIdealExact
     (G : ArchitecturalEquationSystem referenceSite.contextPreorder)
     (B : SemanticLawEquationSchemeBridge referenceRaw G)
@@ -599,34 +560,6 @@ private theorem referenceCore_lawIdealExact
   exact globalEquationsVanishAlong_iff_ofIdealTop_span_comap_eq_bot
     referenceRaw referenceScheme
     (semanticCoreGlobalEquation referenceRaw referenceScheme G B i) s
-
-/--
-The semantic predicate of the site-generated reading is exactly the vanishing
-of its generated law ideal.
--/
-theorem referenceSiteReading_requiredLawIdealExact :
-    RequiredLawIdealExact referenceRaw referenceScheme
-      referenceSiteReading referenceSiteReading_valid
-      referenceSiteReading_requiredClosed := by
-  exact
-    ClosedEquationalLawReading.ofSiteEquationSystem_requiredLawIdealExact
-      baseContext referenceRaw referenceScheme rfl
-
-/--
-The ideal sheaf of the reference site reading is generated directly from the
-site-owned obstruction ideal.
--/
-theorem referenceSiteGeneratedIdealSheaf_eq_obstructionIdeal :
-    siteEquationGeneratedIdealSheaf
-        baseContext referenceRaw referenceScheme rfl =
-      Scheme.IdealSheafData.ofIdealTop
-        (X := referenceScheme.underlying)
-        (Ideal.map
-          (referenceScheme.decoration.siteEquationGlobalSectionMap
-            baseContext referenceRaw rfl)
-          (referenceSite.equationSystem.obstructionIdeal baseContext)) :=
-  siteEquationGeneratedIdealSheaf_eq_ofIdealTop_map_obstructionIdeal
-    baseContext referenceRaw referenceScheme rfl
 
 /--
 SD2-SD3 standard-geometry reference-model declaration.
@@ -926,64 +859,141 @@ private theorem ambientGlobalSectionsIso_unit
         simpa only [CommRingCat.comp_apply, Category.id_comp] using hcancel]
 
 /--
-The global equation used by `referenceSiteReading` is the canonical image of
-the coordinate selected by `referenceSite.equationSystem`.
+The reference equation system is realized by the canonical integer
+coefficient inclusion into the global sections of `Spec ℤ[x]`.
 -/
-theorem referenceSiteGlobalEquation_image
+noncomputable def referenceEquationObservableRealization :
+    EquationObservableRealization
+      referenceRaw referenceScheme referenceSite.equationSystem where
+  sectionMap := fun _ =>
+    ambientGlobalSectionsIso.inv.hom.comp
+      (algebraMap Int AmbientRing)
+  naturality := by
+    intro source target f x
+    rfl
+
+/-- One symbolic equation section in the generated reference realization. -/
+noncomputable def referenceSiteGlobalEquation
+    (W : referenceSite.category)
     (i : referenceSite.equationSystem.Index)
     (a : AAT.AG.FiniteModel.carrier.Atom) :
-    ambientGlobalSectionsIso.hom (referenceSiteGlobalEquation i a) =
+    Γ(referenceScheme.underlying, ⊤) :=
+  referenceEquationObservableRealization.violationSection W i a
+
+/-- One actual object-residual section in the generated reference realization. -/
+noncomputable def referenceSiteResidualSection
+    (Obj : ArchitectureObject AAT.AG.FiniteModel.carrier)
+    (W : referenceSite.category)
+    (i : referenceSite.equationSystem.Index)
+    (a : AAT.AG.FiniteModel.carrier.Atom) :
+    Γ(referenceScheme.underlying, ⊤) :=
+  referenceEquationObservableRealization.residualSection Obj W i a
+
+/-- The symbolic section is the canonical image of the selected coordinate. -/
+theorem referenceSiteGlobalEquation_image
+    (W : referenceSite.category)
+    (i : referenceSite.equationSystem.Index)
+    (a : AAT.AG.FiniteModel.carrier.Atom) :
+    ambientGlobalSectionsIso.hom (referenceSiteGlobalEquation W i a) =
       algebraMap Int AmbientRing
-        (referenceSite.equationSystem.violationCoordinate baseContext i a) := by
-  change ambientGlobalSectionsIso.hom
-      (ambientDecoration.interpretation
-        (sheafifiedRestriction referenceRaw (eqToHom rfl)
-          ((sheafifiedSectionAlgebraMap referenceRaw baseContext)
-            (referenceSite.equationSystem.violationCoordinate
-              baseContext i a)))) = _
-  rw [show eqToHom rfl = 𝟙 baseContext by rfl]
-  have hrestriction :
-      sheafifiedRestriction referenceRaw (𝟙 baseContext)
-          ((sheafifiedSectionAlgebraMap referenceRaw baseContext)
-            (referenceSite.equationSystem.violationCoordinate
-              baseContext i a)) =
-        (sheafifiedSectionAlgebraMap referenceRaw baseContext)
-          (referenceSite.equationSystem.violationCoordinate
-            baseContext i a) := by
-    rw [sheafifiedRestriction_id]
-    rfl
-  calc
-    _ = ambientGlobalSectionsIso.hom
-        (ambientDecoration.interpretation
-          ((sheafifiedSectionAlgebraMap referenceRaw baseContext)
-            (referenceSite.equationSystem.violationCoordinate
-              baseContext i a))) :=
-      congrArg
-        (fun z => ambientGlobalSectionsIso.hom
-          (ambientDecoration.interpretation z))
-        hrestriction
-    _ = ambientGlobalSectionsIso.hom
-        (ambientDecoration.interpretation
-          ((sheafificationUnitAlgHom referenceRaw baseContext)
-            (algebraMap Int (referenceRaw.rawAlgebra baseContext)
-              (referenceSite.equationSystem.violationCoordinate
-                baseContext i a)))) := by
-      exact congrArg
-        (fun z => ambientGlobalSectionsIso.hom
-          (ambientDecoration.interpretation z))
-        ((sheafificationUnitAlgHom referenceRaw baseContext).commutes
-          (referenceSite.equationSystem.violationCoordinate
-            baseContext i a)).symm
-    _ = baseRawAlgebraIso.hom
-        (algebraMap Int (referenceRaw.rawAlgebra baseContext)
-          (referenceSite.equationSystem.violationCoordinate
-            baseContext i a)) :=
-      ambientGlobalSectionsIso_unit _
-    _ = algebraMap Int AmbientRing
-        (referenceSite.equationSystem.violationCoordinate
-          baseContext i a) := by
-      simpa using map_intCast baseRawAlgebraIso.hom
-        (referenceSite.equationSystem.violationCoordinate baseContext i a)
+        (referenceSite.equationSystem.violationCoordinate W i a) := by
+  simp only [referenceSiteGlobalEquation,
+    EquationObservableRealization.violationSection,
+    referenceEquationObservableRealization, RingHom.comp_apply]
+  exact ambientGlobalSectionsIso.commRingCatIsoToRingEquiv.apply_symm_apply _
+
+/-- The residual section is the canonical image of the actual residual. -/
+theorem referenceSiteResidualSection_image
+    (Obj : ArchitectureObject AAT.AG.FiniteModel.carrier)
+    (W : referenceSite.category)
+    (i : referenceSite.equationSystem.Index)
+    (a : AAT.AG.FiniteModel.carrier.Atom) :
+    ambientGlobalSectionsIso.hom
+        (referenceSiteResidualSection Obj W i a) =
+      algebraMap Int AmbientRing
+        (referenceSite.equationSystem.equationResidual W Obj i a) := by
+  simp only [referenceSiteResidualSection,
+    EquationObservableRealization.residualSection,
+    referenceEquationObservableRealization, RingHom.comp_apply]
+  exact ambientGlobalSectionsIso.commRingCatIsoToRingEquiv.apply_symm_apply _
+
+/--
+The required generated ideal sheaf is the pullback of the site equation
+system's contextual obstruction ideal sheaf.
+-/
+theorem referenceSiteGeneratedIdealSheaf_eq_obstructionIdeal :
+    referenceEquationObservableRealization.generatedIdealSheaf
+        AAT.AG.FiniteModel.acyclicObject =
+      referenceEquationObservableRealization.globalObstructionIdealSheaf.comap
+        (referenceEquationObservableRealization.realizationImmersion
+          AAT.AG.FiniteModel.acyclicObject) :=
+  EquationObservableRealization.generatedIdealSheaf_eq_globalObstructionIdealSheaf
+    referenceEquationObservableRealization
+    AAT.AG.FiniteModel.acyclicObject
+
+/--
+Compatibility adapter for synthesis packages that still consume the generic
+`ClosedEquationalLawReading` record.  The Issue 3733 standard route uses
+`referenceEquationObservableRealization` and its actual residual predicates.
+-/
+noncomputable def referenceLegacySiteReading :
+    ClosedEquationalLawReading referenceRaw referenceScheme
+      referenceSite.equationSystem where
+  geometric := {
+    HoldsOn := fun s i =>
+      GlobalEquationsVanishAlong referenceRaw referenceScheme
+        (referenceSiteGlobalEquation baseContext i) s
+  }
+  closed := Set.univ
+  selected := fun _ => Set.univ
+  witness := fun i _ =>
+    ClosedEquationalLawWitness.ofGlobalSections
+      referenceRaw referenceScheme i
+      (referenceSiteGlobalEquation baseContext i)
+
+/-- The synthesis compatibility adapter satisfies the generic recognition laws. -/
+theorem referenceLegacySiteReading_valid :
+    IsClosedEquationalLawReading referenceRaw referenceScheme
+      referenceLegacySiteReading where
+  geometric_stable := by
+    intro T T' s f i hs a
+    rw [Scheme.Hom.comp_appTop, CommRingCat.comp_apply, hs a, map_zero]
+  witness_compatible := by
+    intro i _
+    exact ClosedEquationalLawWitness.ofGlobalSections_valid
+      referenceRaw referenceScheme i _
+  selected_closed := fun _ i _ => Set.mem_univ i
+  selected_basicOpen := fun _ _ i =>
+    iff_of_true (Set.mem_univ i) (Set.mem_univ i)
+
+/-- Every required equation is selected by the synthesis compatibility adapter. -/
+theorem referenceLegacySiteReading_requiredClosed :
+    RequiredClosed referenceRaw referenceScheme
+      referenceLegacySiteReading where
+  closed := fun i _ => Set.mem_univ i
+  selected := fun _ i _ => Set.mem_univ i
+
+/-- The compatibility adapter's semantic predicate is exactly its witness ideal. -/
+theorem referenceLegacySiteReading_requiredLawIdealExact :
+    RequiredLawIdealExact referenceRaw referenceScheme
+      referenceLegacySiteReading referenceLegacySiteReading_valid
+      referenceLegacySiteReading_requiredClosed := by
+  intro i _ T s
+  change
+    GlobalEquationsVanishAlong referenceRaw referenceScheme
+        (referenceSiteGlobalEquation baseContext i) s ↔
+      (lawWitnessIdealSheaf referenceRaw referenceScheme
+        referenceLegacySiteReading
+        referenceLegacySiteReading_valid.witness_compatible
+        i (Set.mem_univ i)).comap s = ⊥
+  rw [lawWitnessIdealSheaf_ofGlobalSections
+    referenceRaw referenceScheme referenceLegacySiteReading
+    referenceLegacySiteReading_valid.witness_compatible
+    i (Set.mem_univ i)
+    (referenceSiteGlobalEquation baseContext i) rfl]
+  exact globalEquationsVanishAlong_iff_ofIdealTop_span_comap_eq_bot
+    referenceRaw referenceScheme
+    (referenceSiteGlobalEquation baseContext i) s
 
 private theorem weakGlobalEquation_image
     (a : AAT.AG.FiniteModel.carrier.Atom) :
@@ -2129,13 +2139,131 @@ private theorem siteEquationModTwoPoint_normalized_apply
   simpa only [CommRingCat.comp_apply] using congrArg
     (fun q => q x) siteEquationModTwoPoint_normalized_appTop
 
-/-- The mod-two point satisfies every required equation of the site-generated reading. -/
-theorem siteEquationModTwoPoint_semantic :
-    SemanticLawfulAlong referenceRaw referenceScheme referenceSiteReading
-      siteEquationModTwoPoint := by
+/-- The acyclic fixture has zero actual residual in every context and Atom. -/
+theorem referenceSite_acyclic_residual_zero
+    (W : referenceSite.category)
+    (i : referenceSite.equationSystem.Index)
+    (a : AAT.AG.FiniteModel.carrier.Atom) :
+    referenceSite.equationSystem.equationResidual W
+      AAT.AG.FiniteModel.acyclicObject i a = 0 := by
+  cases i
+  simp [Site.SelectedGeometryReading.toAATSite,
+    referenceCorePackage, AAT.AG.FiniteModel.corePackageFor,
+    AATCorePackage.generate, AATCorePackage.equationSystem,
+    AATCorePackage.algebra, ObjectAlgebra.equationSystem,
+    AAT.AG.FiniteModel.coreReadingFor,
+    AAT.AG.FiniteModel.equationReading,
+    AAT.AG.FiniteModel.equationSystem,
+    AAT.AG.FiniteModel.noCycleResidual,
+    AAT.AG.FiniteModel.hasDependencyCycle,
+    AAT.AG.FiniteModel.acyclicObject,
+    AAT.AG.FiniteModel.acyclicConfiguration]
+
+/-- The mod-two point kills every symbolic-residual equalizer relation. -/
+theorem siteEquationModTwoPoint_realizationRelations
+    (g : EquationObservableRealization.GeneratorIndex
+      referenceSite.equationSystem) :
+    siteEquationModTwoPoint.appTop
+      (referenceEquationObservableRealization.realizationRelation
+        AAT.AG.FiniteModel.acyclicObject g) = 0 := by
+  rcases g with ⟨W, i, a⟩
+  apply (ConcreteCategory.bijective_of_isIso
+    (AlgebraicGeometry.Scheme.ΓSpecIso (CommRingCat.of (ZMod 2))).hom).1
+  rw [map_zero, siteEquationModTwoPoint_normalized_apply]
+  change siteEquationModTwoRingHom
+    (ambientGlobalSectionsIso.hom
+      (referenceSiteGlobalEquation W i a -
+        referenceSiteResidualSection
+          AAT.AG.FiniteModel.acyclicObject W i a)) = 0
+  rw [map_sub, referenceSiteGlobalEquation_image,
+    referenceSiteResidualSection_image,
+    referenceSite_violationCoordinate,
+    referenceSite_acyclic_residual_zero, map_zero, sub_zero]
+  change siteEquationModTwoRingHom (2 : AmbientRing) = 0
+  rw [map_ofNat]
+  decide
+
+/-- The mod-two point factors through the generated symbolic-residual equalizer. -/
+theorem siteEquationModTwoPoint_realizes :
+    Nonempty
+      (referenceEquationObservableRealization.FactorsThroughRealization
+        AAT.AG.FiniteModel.acyclicObject siteEquationModTwoPoint) := by
+  apply
+    (referenceEquationObservableRealization.realizationIdeal_iff_nonempty_factorsThrough
+        AAT.AG.FiniteModel.acyclicObject siteEquationModTwoPoint).mp
+  apply
+    (referenceEquationObservableRealization.realizationRelationsVanishAlong_iff_ideal
+        AAT.AG.FiniteModel.acyclicObject siteEquationModTwoPoint).mp
+  exact siteEquationModTwoPoint_realizationRelations
+
+/-- The mod-two point as a point of the generated realization scheme. -/
+noncomputable def siteEquationModTwoRealizationPoint :
+    AlgebraicGeometry.Spec (CommRingCat.of (ZMod 2)) ⟶
+      referenceEquationObservableRealization.realizationScheme
+        AAT.AG.FiniteModel.acyclicObject :=
+  (Classical.choice siteEquationModTwoPoint_realizes).1
+
+/-- The generated realization point maps to the original mod-two point. -/
+@[reassoc] theorem siteEquationModTwoRealizationPoint_immersion :
+    siteEquationModTwoRealizationPoint ≫
+        referenceEquationObservableRealization.realizationImmersion
+          AAT.AG.FiniteModel.acyclicObject =
+      siteEquationModTwoPoint :=
+  (Classical.choice siteEquationModTwoPoint_realizes).2
+
+/-- Residual representability fires on the nontrivial mod-two realization. -/
+theorem siteEquationModTwoPoint_residualRepresentable
+    (W : referenceSite.category)
+    (i : referenceSite.equationSystem.Index)
+    (a : AAT.AG.FiniteModel.carrier.Atom) :
+    (siteEquationModTwoRealizationPoint ≫
+      referenceEquationObservableRealization.realizationImmersion
+        AAT.AG.FiniteModel.acyclicObject).appTop
+        (referenceEquationObservableRealization.violationSection W i a) =
+      (siteEquationModTwoRealizationPoint ≫
+        referenceEquationObservableRealization.realizationImmersion
+          AAT.AG.FiniteModel.acyclicObject).appTop
+        (referenceEquationObservableRealization.residualSection
+          AAT.AG.FiniteModel.acyclicObject W i a) :=
+  referenceEquationObservableRealization.residualRepresentable
+    AAT.AG.FiniteModel.acyclicObject
+      siteEquationModTwoRealizationPoint W i a
+
+/-- The realization point satisfies every required actual residual equation. -/
+theorem siteEquationModTwoPoint_equationLawful :
+    referenceEquationObservableRealization.EquationLawfulAlong
+      AAT.AG.FiniteModel.acyclicObject
+      siteEquationModTwoRealizationPoint := by
+  apply
+    referenceEquationObservableRealization.equationLawfulAlong_of_equationLawful
+        AAT.AG.FiniteModel.acyclicObject
+        siteEquationModTwoRealizationPoint
+  intro i _ W a
+  exact referenceSite_acyclic_residual_zero W i a
+
+/--
+The mod-two realization point factors through the lawful closed subscheme
+generated from the site-owned witness ideals.
+-/
+theorem siteEquationModTwoPoint_factors_generated :
+    Nonempty
+      (referenceEquationObservableRealization.FactorsThroughLawfulClosedSubscheme
+          AAT.AG.FiniteModel.acyclicObject
+          siteEquationModTwoRealizationPoint) := by
+  have h :=
+    Correspondence.siteEquationLawfulnessIdealFactorizationCorrespondence
+      referenceEquationObservableRealization
+      AAT.AG.FiniteModel.acyclicObject
+      siteEquationModTwoRealizationPoint
+  exact h.2.mp (h.1.mp siteEquationModTwoPoint_equationLawful)
+
+/-- The ambient mod-two point satisfies the synthesis compatibility adapter. -/
+theorem siteEquationModTwoPoint_legacySemantic :
+    SemanticLawfulAlong referenceRaw referenceScheme
+      referenceLegacySiteReading siteEquationModTwoPoint := by
   intro i _
   change ∀ a, siteEquationModTwoPoint.appTop
-    (referenceSiteGlobalEquation i a) = 0
+    (referenceSiteGlobalEquation baseContext i a) = 0
   intro a
   apply (ConcreteCategory.bijective_of_isIso
     (AlgebraicGeometry.Scheme.ΓSpecIso (CommRingCat.of (ZMod 2))).hom).1
@@ -2146,29 +2274,32 @@ theorem siteEquationModTwoPoint_semantic :
   decide
 
 /--
-The mod-two point factors through the closed subscheme generated directly
-from the site-owned equation system.
+The ambient mod-two point factors through the lawful closed subscheme owned
+by the synthesis compatibility adapter.
 -/
-theorem siteEquationModTwoPoint_factors_generated :
-    Nonempty
-      {t : (AlgebraicGeometry.Spec (CommRingCat.of (ZMod 2)) ⟶
-          siteEquationLawfulClosedSubscheme
-            baseContext referenceRaw referenceScheme rfl) //
-        t ≫ siteEquationLawfulClosedImmersion
-          baseContext referenceRaw referenceScheme rfl =
-            siteEquationModTwoPoint} := by
-  have h :=
-    Correspondence.siteEquationLawfulnessIdealFactorizationCorrespondence
-      baseContext referenceRaw referenceScheme rfl siteEquationModTwoPoint
-  exact h.2.mp (h.1.mp siteEquationModTwoPoint_semantic)
-
-/-- The mod-two point factors through the site-generated lawful closed subscheme. -/
-theorem siteEquationModTwoPoint_factors :
+theorem siteEquationModTwoPoint_factors_legacy :
     Nonempty (FactorsThroughLawfulClosedSubscheme
-      referenceRaw referenceScheme referenceSiteReading
-      referenceSiteReading_valid referenceSiteReading_requiredClosed
+      referenceRaw referenceScheme referenceLegacySiteReading
+      referenceLegacySiteReading_valid
+      referenceLegacySiteReading_requiredClosed
       siteEquationModTwoPoint) := by
-  exact siteEquationModTwoPoint_factors_generated
+  apply (idealLawfulAlong_iff_nonempty_factorsThrough
+    referenceRaw referenceScheme referenceLegacySiteReading
+    referenceLegacySiteReading_valid
+    referenceLegacySiteReading_requiredClosed
+    siteEquationModTwoPoint).mp
+  apply (witnessVanishes_iff_idealLawfulAlong
+    referenceRaw referenceScheme referenceLegacySiteReading
+    referenceLegacySiteReading_valid
+    referenceLegacySiteReading_requiredClosed
+    siteEquationModTwoPoint).mp
+  apply (semanticLawfulAlong_iff_witnessVanishes
+    referenceRaw referenceScheme referenceLegacySiteReading
+    referenceLegacySiteReading_valid
+    referenceLegacySiteReading_requiredClosed
+    referenceLegacySiteReading_requiredLawIdealExact
+    siteEquationModTwoPoint).mp
+  exact siteEquationModTwoPoint_legacySemantic
 
 /--
 SD2-SD3 standard-geometry reference-model declaration.

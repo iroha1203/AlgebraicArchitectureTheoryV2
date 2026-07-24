@@ -438,31 +438,6 @@ noncomputable def coefficientMap
   D.interpretation.hom.comp
     (sheafifiedSectionAlgebraMap raw D.context)
 
-/--
-The canonical global-section realization of the equation system selected by
-the ambient AAT site.
-
-Implementation notes: the selected context's observable ring is used as the
-coefficient ring of `raw`.  The realization therefore follows the canonical
-coefficient map, sheafification, context identification, and the decoration's
-interpretation.  It accepts neither a second equation system nor an
-independently supplied coordinate family.
--/
-noncomputable def siteEquationGlobalSectionMap
-    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {S : Site.AATSite A}
-    (W : S.category)
-    (raw : RawAmbientRestrictionSystem S (S.equationSystem.Observable W))
-    [CategoryTheory.HasSheafify S.topology
-      (AATCommAlgCat (S.equationSystem.Observable W))]
-    {X : AlgebraicGeometry.Scheme}
-    (D : AATReadingDecoration raw X)
-    (hcontext : D.context = W) :
-    S.equationSystem.Observable W →+* Γ(X, ⊤) :=
-  D.interpretation.hom.comp
-    ((sheafifiedRestriction raw (eqToHom hcontext)).hom.comp
-      (sheafifiedSectionAlgebraMap raw W))
-
 /-- The global section represented by a selected typed coordinate. -/
 noncomputable def coordinateSection
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
@@ -561,24 +536,6 @@ def Preserves
     D.coefficientMap raw =
       D.interpretation.hom.comp
         (sheafifiedSectionAlgebraMap raw D.context) :=
-  rfl
-
-/-- The site-equation realization follows the canonical coefficient and decoration maps. -/
-theorem siteEquationGlobalSectionMap_apply
-    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
-    {S : Site.AATSite A}
-    (W : S.category)
-    (raw : RawAmbientRestrictionSystem S (S.equationSystem.Observable W))
-    [CategoryTheory.HasSheafify S.topology
-      (AATCommAlgCat (S.equationSystem.Observable W))]
-    {X : AlgebraicGeometry.Scheme}
-    (D : AATReadingDecoration raw X)
-    (hcontext : D.context = W)
-    (x : S.equationSystem.Observable W) :
-    D.siteEquationGlobalSectionMap W raw hcontext x =
-      D.interpretation
-        (sheafifiedRestriction raw (eqToHom hcontext)
-          ((sheafifiedSectionAlgebraMap raw W) x)) :=
   rfl
 
 /-- Coordinate sections expose the variable, quotient, unit, and interpretation route. -/
@@ -1813,6 +1770,51 @@ structure StandardArchitectureScheme
   overlaps : ArchitectureOverlapPresentation raw atlas
   /-- Compatibility of each comparison with the actual pullback projections. -/
   overlapsValid : IsArchitectureOverlapPresentation raw overlaps
+
+/--
+A natural global-section realization of an architectural equation system on a
+standard architecture scheme.
+
+Each component maps the observable ring owned by `E` at one context into the
+same scheme's global sections.  Naturality identifies the component after the
+equation system's own restriction map.  The structure carries neither a second
+coordinate family nor a fulfillment/ideal comparison: both symbolic
+coordinates and object residuals are read through `sectionMap`.
+-/
+structure EquationObservableRealization
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    (raw : RawAmbientRestrictionSystem S k)
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    (X : StandardArchitectureScheme raw)
+    (E : ArchitecturalEquationSystem S.contextPreorder) where
+  /-- The contextwise map from the equation system's observable ring. -/
+  sectionMap :
+    ∀ W : S.category, E.Observable W →+* Γ(X.underlying, ⊤)
+  /-- Observable restriction and the global-section realization commute. -/
+  naturality :
+    ∀ {source target : S.category} (f : source ⟶ target)
+      (x : E.Observable target),
+      sectionMap source (E.restrict f x) = sectionMap target x
+
+namespace EquationObservableRealization
+
+/-- Realizations agree when all context components agree. -/
+@[ext] theorem ext
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : StandardArchitectureScheme raw}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (R Q : EquationObservableRealization raw X E)
+    (h : R.sectionMap = Q.sectionMap) : R = Q := by
+  cases R
+  cases Q
+  cases h
+  rfl
+
+end EquationObservableRealization
 
 namespace StandardArchitectureScheme
 
