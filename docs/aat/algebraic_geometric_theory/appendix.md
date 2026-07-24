@@ -608,6 +608,7 @@ algebraic architecture stack と呼ぶのは、diagonal representability、atlas
 | `axis exactness` | selected signature axes の zero と selected obstruction reading の一致を仮定する。 |
 | `witness coverage` | 必要な witness が chosen cover / reading に現れることを仮定する。 |
 | `E-adequate cover` | `(R,Ov)` 固定後の `(E,R,Ov)`-adequate cover の略記。required Atom support、equation coordinates、witnesses、axes と、`Ov` が実現する typed interaction-overlap requests を覆い、selected supports を restriction の下で保つ。`nu` / `epsilon` の値の compatibility は `E` の構造法則である。 |
+| `monomorphic AAT cover` | 各 cover leg が monomorphism である AAT cover。self-overlap の二つの projection が一致し、empty-overlap normalization と合わせて increasing-index Čech model から全 ordered overlap の descent data を復元できる。 |
 | `effective Ob_U-torsor` | local adjustment の差が abelian coefficient sheaf `Ob_U` の torsor class として `H^1(X,Ob_U)` に入ること。 |
 | `U-smooth` | selected deformation tests のすべてで lift / fill predicate が成立し、obstruction class が消えること。 |
 | `U-singular` | selected deformation test の中に非零 obstruction class が現れること。 |
@@ -658,13 +659,13 @@ algebraic architecture stack と呼ぶのは、diagonal representability、atlas
 | `affine semantic repair system` | semantic repair words が local repair states に作用し、relation soundness、stabilizer completeness、local transitivity から `M_sem`-torsor structure を導く system。 |
 | `semantic residual r_sem` | selected local semantic repairs の pairwise difference として一意に生成される `M_sem`-valued Čech 1-cocycle。 |
 | `semantic repair additive H^1` | `M_sem` と AAT cover から作る `Z^1/B^1`。semantic residual class は local repair atlas の選択に依存しない。 |
-| `Grounded Global Gluing` | true semantic repair sheaf の下で、semantic residual class の零性と actual global repair の存在を同値にし、corrected matching family を sheaf amalgamation で global section へ貼り合わせる定理。 |
+| `Grounded Global Gluing` | monomorphic AAT cover、empty-overlap normalization、true semantic repair sheaf の下で、semantic residual class の零性と actual global repair の存在を同値にし、corrected matching family を sheaf amalgamation で global section へ貼り合わせる定理。 |
 | `Displayed Equation Source` | architectural equation system `E` に対し、各 chart の local context、architecture object、required equation index、support Atom を一つの dependent datum で選ぶ。cover-indexed 形では source の index と chart index を一致させ、別 skeleton を置かない。displayed defect は `epsilon` から定義される(第III部 定義 11.3)。 |
 | `Generated Obstruction Quotient and Restriction Evaluator` | `nu` から obstruction quotient presheaf を、`epsilon` から displayed interpretation を構成する。`epsilon` の restriction compatibility から residual restriction naturality を、fulfillment から zero restriction evaluator を導く(第III部 定理 11.4)。 |
 | `residual nondegeneracy` | `d_q not in I_Ob^E(W_q)` により `[d_q] != 0` を得る。equation non-fulfillment だけからは置かず、具体例または定理仮定で示す。 |
 | `SAGA presentation exactness` | supported semantic generators の equation interpretation について、repair relation と kernel の一致、および image と `Q_E` の一致を要求する generator/relation 条件。 |
 | `Coefficient Presentation Theorem` | 任意の target coefficient `Q` に対する SAGA presentation exactness から `M_sem ≃ Q` を構成する comparison core。inverse や degreewise complex equivalence は入力にしない。 |
-| `Equation Coefficient Comparison` | displayed equation source と residual restriction naturality から target を `Q_E` に instantiate し、Coefficient Presentation Theorem により `M_sem ≃ Q_E` を構成する。 |
+| `Equation Coefficient Comparison` | displayed equation source と residual restriction naturality から target を `Q_E` に instantiate する。affine local-state data と `β` が soundness を与え、repair-relation completeness と equation-generator completeness の下で Coefficient Presentation Theorem が `M_sem ≃ Q_E` を構成する。 |
 | `SAGA comparison` | 独立に構成した `C_sem^bullet(U)` と `C_E^bullet(U)` の間で、coefficient isomorphism から cochain map を構成し、微分可換性、`H^1` 同型、`[r_sem]` と `[r_E]` の対応を証明する定理。 |
 | `degree-zero equation contribution` | displayed equation fulfillment が displayed interpretation class を pointwise に零へ送る第III部の主張。SAGA presentation exactness や selected residual `H^1` class の零性とは別に判定する。 |
 
@@ -1029,7 +1030,8 @@ base context `W`、四つの chart `W_0,W_1,W_2,W_3`、四つの nonempty pullba
 W_{01}, W_{12}, W_{23}, W_{30}
 ```
 
-を持つ有限 context category を取る。non-adjacent overlap と triple overlap は空 context とする。
+を持つ有限 context category を取り、各 `W_j→W` は monomorphism とする。
+non-adjacent overlap と triple overlap は空 context とする。
 cover `𝒰={W_j→W}_{j=0}^3` と coverage package `(E,R,Ov)` はこの四つの overlap を生成する。
 以下では第X部 §1 の規約に従い、ambient context category から nonempty pullback だけを
 対象とする `Int_{\le2}(𝒰)` を取り出す。したがって non-adjacent overlap、triple overlap、
