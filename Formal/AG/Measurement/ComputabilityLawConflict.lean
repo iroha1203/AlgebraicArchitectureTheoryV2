@@ -291,12 +291,13 @@ structure FiniteAATConflictComputability
     Type (max (u + 1) (v + 1)) where
   /-- The complete finite Čech, square-free, and Tor computation package. -/
   computation : FiniteAATComputability R D
-  /-- Existing measurement semantics instantiated by the computed support
-  relation and the actual transported conflict class. -/
+  /-- Canonical selected Tor measurement on the realized common ambient and
+  actual transported conflict class. The finite support summary remains in
+  `computation`; it is not an input to this measurement. -/
   lawConflictMeasurement :
     LawConflictMeasurement C.commonAmbient
   /-- The exposed measurement is exactly the one constructed from the
-  canonical selected Tor bridge and `ComputedConflictSupport`. -/
+  canonical selected Tor bridge. -/
   lawConflictMeasurement_eq_computed :
     lawConflictMeasurement = C.lawConflictMeasurement
 

@@ -222,11 +222,11 @@ def finiteAATComputabilityComputedConflictSupportZero :=
 def finiteAATComputabilityActualLawConflictPackage :=
   @Measurement.finiteAATConflictComputability
 
-def finiteAATComputabilitySelectedSupportReading :=
-  @Measurement.FiniteAATComputationData.computedConflictSupport_selected
+def finiteAATComputabilitySelectedActualSupportNonempty :=
+  @Measurement.FiniteAATConflictRealization.selectedConflictSupport_nonempty
 
 def finiteAATComputabilityActualSupportZero :=
-  @Measurement.FiniteAATComputationData.computedConflictSupport_zero
+  @Measurement.LawConflictMeasurement.conflictClassSupport_zero
 
 def finiteAATComputabilityDistinctLiftFixture :=
   @Measurement.tinyLeftSquareFree_normalForm_identifies_distinct_lifts
