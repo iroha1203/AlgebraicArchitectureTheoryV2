@@ -1,6 +1,6 @@
 {
- "schema": "measurement-profile/v0.5.3",
- "profileId": "profile:train-ticket-money-saga@1",
+ "schema": "measurement-profile/v0.5.4",
+ "profileId": "profile:train-ticket-money-saga@2",
  "siteRef": "archmap:/contexts",
  "coverRef": "cover:money-settlement-loop",
  "coefficient": "F2",

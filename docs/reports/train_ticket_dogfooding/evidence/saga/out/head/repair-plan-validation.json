@@ -2,7 +2,7 @@
   "assumptionLedger": [
     {
       "assumedBy": "repair-plan author",
-      "assumption": "repair-plan complex enumeration completeness",
+      "assumption": "external semantic completeness beyond the declared ArchMap cover/incidence",
       "source": "complex.enumerationComplete",
       "status": "assumed",
       "theoremRef": "part10/3.1"
@@ -12,7 +12,7 @@
     {
       "id": "repair-plan-schema052-schema",
       "result": "pass",
-      "title": "RepairPlan uses the v0.5.3 schema discriminator"
+      "title": "RepairPlan uses the v0.5.4 schema discriminator"
     },
     {
       "count": 0,
@@ -36,7 +36,7 @@
       "count": 0,
       "id": "repair-plan-schema052-archmap-bindings",
       "result": "pass",
-      "title": "RepairPlan charts and semantic projection resolve against the supplied ArchMap"
+      "title": "RepairPlan charts, declared finite-complex mappings, and semantic projection resolve against the supplied ArchMap"
     },
     {
       "count": 0,
@@ -76,61 +76,65 @@
     },
     {
       "id": "repair-plan-schema052-enumeration-assumption",
-      "reason": "complex.enumerationComplete=true is recorded in the assumption ledger with assumed_by=repair-plan author",
+      "reason": "complex.enumerationComplete=true records the author assumption about external semantic completeness; mapped declared cover/incidence is checked by repair-plan-schema052-archmap-bindings",
       "result": "warn",
-      "title": "Enumeration completeness is recorded as an author assumption, not verified"
+      "title": "External semantic completeness remains an author assumption; declared ArchMap cover/incidence is checked separately"
     }
   ],
   "componentFingerprints": {
-    "lawPolicy": "sha256:c0ad1a54d53d4729df4f6275b95a04c26627f33b9669dd0c6764c8e70b8fe703",
-    "lawSurface": "sha256:a777170547b52f2aa4889f964f7a67b6f36a9f84b062c7406a5b41d020363061",
-    "measurementProfile": "sha256:1e79f93e5e37e4e8486091e76dbbcba5ed5e6efcf21172ff16844c85b0fe6434"
+    "lawPolicy": "sha256:e5e91078749ec26ae327ecd1cf41d6d2f7dd035c81a1c66bc0e0476b10e6900c",
+    "lawSurface": "sha256:15b78313f591c424245c79fdc32ab6aee799d3c53197b331d569556ac3670471",
+    "measurementProfile": "sha256:c073650c8bcd053d48d78bb1a29811b80917ffbdec81e1789dd15d68908b0753"
   },
   "input": {
-    "archmapRef": "train-ticket-money-saga-head/v0.5.3",
+    "archmapRef": "train-ticket-money-saga-head/v0.5.4",
     "id": "repair-plan:train-ticket-money-head",
     "path": "input:repair-plan-head.json",
-    "schema": "archsig-repair-plan/v0.5.3"
+    "schema": "archsig-repair-plan/v0.5.4"
   },
   "inputDigests": {
     "archmap": {
       "path": "input:archmap-saga-head.json",
-      "sha256": "add27eecaedffdd2cd07b3c0534c1024f93040c23e7ea460ac7cb5fa7972c327"
+      "sha256": "bdca8b9c6b04a377ec41e64ee0f17186c1ce6ad0a267b5fc2c0a574a375c1010"
     },
     "lawPolicy": {
       "path": "input:law-policy-saga.json",
-      "sha256": "c0ad1a54d53d4729df4f6275b95a04c26627f33b9669dd0c6764c8e70b8fe703"
+      "sha256": "e5e91078749ec26ae327ecd1cf41d6d2f7dd035c81a1c66bc0e0476b10e6900c"
     },
     "lawSurface": {
       "path": "input:law-surface-saga.json",
-      "sha256": "a777170547b52f2aa4889f964f7a67b6f36a9f84b062c7406a5b41d020363061"
+      "sha256": "15b78313f591c424245c79fdc32ab6aee799d3c53197b331d569556ac3670471"
     },
     "measurementProfile": {
       "path": "input:measurement-profile-saga.json",
-      "sha256": "1e79f93e5e37e4e8486091e76dbbcba5ed5e6efcf21172ff16844c85b0fe6434"
+      "sha256": "c073650c8bcd053d48d78bb1a29811b80917ffbdec81e1789dd15d68908b0753"
     },
     "measurementProfiles": [
       {
         "path": "input:measurement-profile-saga.json",
-        "sha256": "1e79f93e5e37e4e8486091e76dbbcba5ed5e6efcf21172ff16844c85b0fe6434"
+        "sha256": "c073650c8bcd053d48d78bb1a29811b80917ffbdec81e1789dd15d68908b0753"
       }
     ],
     "profileFingerprint": {
       "basis": "archmap shape + LawPolicy measurementProfileRef + external MeasurementProfile artifact",
-      "sha256": "6b279c52cfdc78171dbd8e78e171055947b22f7ad84ee9846f012a90138415ce"
+      "sha256": "8e4053eff87c553fe934c71ee9f8a7fbefdc084d0aa3f1dbaea8a59726486326"
+    },
+    "repairPlan": {
+      "path": "input:repair-plan-head.json",
+      "sha256": "610ba78dc116be2a29f0cd043809fa7b53a226e73e0fbd606b8c0cbd59014e6c"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
-      "sha256": "c75cd524da051ad25472f1faad2d3fc44456db4fe6f0a1f90851d76e7b069b1a",
+      "sha256": "c05d1537d9126e4f0e2b59bf37ef90826adf8a22ff49e89625ff0e8f2d243868",
       "status": "computed"
     }
   },
-  "runId": "run:7a94d68ac5d7",
-  "schema": "archsig-repair-plan-validation-report/v0.5.3",
+  "runId": "run:8d4b5849eb52",
+  "schema": "archsig-repair-plan-validation-report/v0.5.4",
   "summary": {
     "failedCheckCount": 0,
     "result": "warn",
     "warningCheckCount": 1
   },
-  "toolVersion": "0.5.3"
+  "toolVersion": "0.5.4"
 }

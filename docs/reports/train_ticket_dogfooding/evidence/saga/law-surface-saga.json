@@ -1,6 +1,6 @@
 {
- "schema": "law-equation-surface/v0.5.3",
- "id": "law-surface:train-ticket-money-saga-v053",
+ "schema": "law-equation-surface/v0.5.4",
+ "id": "law-surface:train-ticket-money-saga-v054",
  "laws": [
   {
    "lawId": "surface:cech-surface-v052",

@@ -16,12 +16,15 @@ import hashlib
 import json
 import os
 
-FB = "<SCRATCHPAD>/fullbuild"
 OUT = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.normpath(os.path.join(OUT, "..", "..", "..", "..", ".."))
+FB = os.path.join(REPO_ROOT, "docs", "reports", "train_ticket_dogfooding", "evidence", "fullbuild")
 
-SURFACE_ID = "law-surface:train-ticket-money-saga-v053"
-PROFILE_ID = "profile:train-ticket-money-saga@1"
-COVER_ID = "cover:money-settlement-loop"
+SURFACE_ID = "law-surface:train-ticket-money-saga-v054"
+PROFILE_ID = "profile:train-ticket-money-saga@2"
+COVER_ID = "cover:money-settlement-complex"
+LAW_COVER_ID = "cover:money-settlement-loop"
+DIAGNOSTIC_COVER_ID = "cover:money-settlement-diagnostic"
 DRIFT = "drift:refund-rounding"
 WITNESS_ATOM = "atom:refund-drift-witness"
 
@@ -50,6 +53,21 @@ OVERLAPS = TRIANGLE + CONSIGN_FEE
 TRIPLES = [
     ("triple:consign-fee-region", [oid for oid, _, _ in CONSIGN_FEE]),
 ]
+REPAIR_CHARTS = ["ctx:repair-" + chart.removeprefix("ctx:") for chart in CHARTS]
+REPAIR_CHART_CONTEXTS = dict(zip(CHARTS, REPAIR_CHARTS))
+DIAGNOSTIC_CHARTS = [
+    REPAIR_CHART_CONTEXTS[chart]
+    for chart in ["ctx:cancel-surface", "ctx:inside-payment-surface", "ctx:order-surface"]
+]
+DIAGNOSTIC_OVERLAPS = [overlap for overlap in OVERLAPS if overlap in TRIANGLE]
+OVERLAP_CONTEXTS = {
+    overlap_id: "ctx:intersection:" + overlap_id.removeprefix("overlap:")
+    for overlap_id, _, _ in OVERLAPS
+}
+TRIPLE_CONTEXTS = {
+    triple_id: "ctx:intersection:" + triple_id.removeprefix("triple:")
+    for triple_id, _ in TRIPLES
+}
 EDGE_VARS = [
     ("e_cancel_insidepay", "ctx:cancel-surface", "ctx:inside-payment-surface"),
     ("e_insidepay_order", "ctx:inside-payment-surface", "ctx:order-surface"),
@@ -66,10 +84,24 @@ REPAIRED_LABELS = {
 
 def complex_dict():
     return {
-        "charts": list(CHARTS),
-        "overlaps": [{"id": i, "left": l, "right": r} for i, l, r in OVERLAPS],
+        "charts": list(REPAIR_CHARTS),
+        "archmapCoverRef": COVER_ID,
+        "overlaps": [
+            {
+                "id": overlap_id,
+                "left": REPAIR_CHART_CONTEXTS[left],
+                "right": REPAIR_CHART_CONTEXTS[right],
+                "archmapContextRef": OVERLAP_CONTEXTS[overlap_id],
+            }
+            for overlap_id, left, right in OVERLAPS
+        ],
         "tripleOverlaps": [
-            {"id": tid, "overlapRefs": list(refs)} for tid, refs in TRIPLES
+            {
+                "id": triple_id,
+                "overlapRefs": list(overlap_refs),
+                "archmapContextRef": TRIPLE_CONTEXTS[triple_id],
+            }
+            for triple_id, overlap_refs in TRIPLES
         ],
         "enumerationComplete": True,
     }
@@ -86,20 +118,124 @@ def write(name, obj):
     print("wrote", name)
 
 
+def unique(items):
+    return list(dict.fromkeys(items))
+
+
+def source_refs_for(contexts, context_ids):
+    refs = []
+    for context_id in context_ids:
+        context = contexts[context_id]
+        if not context["refs"]:
+            raise ValueError(f"{context_id} has no source refs")
+        refs.append(context["refs"][0])
+    return unique(refs)
+
+
+def intersection_atom_id(context_id):
+    return "atom:contract:" + context_id.removeprefix("ctx:").replace(":", "-")
+
+
+def add_intersection_atom(archmap, context_id, refs):
+    atom_id = intersection_atom_id(context_id)
+    archmap["atoms"].append({
+        "id": atom_id,
+        "kind": "contract",
+        "subject": context_id,
+        "object": "source-grounded finite intersection selected for the settlement presentation",
+        "axis": "static",
+        "predicate": "component",
+        "refs": refs,
+    })
+    return atom_id
+
+
+def add_presentation_complex(archmap):
+    contexts = {context["id"]: context for context in archmap["contexts"]}
+    for chart in CHARTS:
+        if chart not in contexts:
+            raise ValueError(f"missing chart context: {chart}")
+
+    repair_contexts = {}
+    for chart in CHARTS:
+        context_id = REPAIR_CHART_CONTEXTS[chart]
+        refs = source_refs_for(contexts, [chart])
+        context = {
+            "id": context_id,
+            "atoms": [add_intersection_atom(archmap, context_id, refs)],
+            "refs": refs,
+            "restrictsTo": [],
+        }
+        archmap["contexts"].append(context)
+        contexts[context_id] = context
+        repair_contexts[chart] = context
+
+    overlap_contexts = {}
+    for overlap_id, left, right in OVERLAPS:
+        context_id = OVERLAP_CONTEXTS[overlap_id]
+        if context_id in contexts:
+            raise ValueError(f"duplicate intersection context: {context_id}")
+        repair_contexts[left]["restrictsTo"].append(context_id)
+        repair_contexts[right]["restrictsTo"].append(context_id)
+        refs = source_refs_for(contexts, [left, right])
+        context = {
+            "id": context_id,
+            "atoms": [add_intersection_atom(archmap, context_id, refs)],
+            "refs": refs,
+            "restrictsTo": [],
+        }
+        archmap["contexts"].append(context)
+        contexts[context_id] = context
+        overlap_contexts[overlap_id] = context
+
+    triple_context_ids = []
+    for triple_id, overlap_refs in TRIPLES:
+        context_id = TRIPLE_CONTEXTS[triple_id]
+        if context_id in contexts:
+            raise ValueError(f"duplicate triple intersection context: {context_id}")
+        for overlap_id in overlap_refs:
+            overlap_contexts[overlap_id]["restrictsTo"].append(context_id)
+        refs = unique(
+            ref
+            for overlap_id in overlap_refs
+            for ref in overlap_contexts[overlap_id]["refs"]
+        )
+        context = {
+            "id": context_id,
+            "atoms": [add_intersection_atom(archmap, context_id, refs)],
+            "refs": refs,
+        }
+        archmap["contexts"].append(context)
+        contexts[context_id] = context
+        triple_context_ids.append(context_id)
+
+    complex_contexts = list(REPAIR_CHARTS) + list(OVERLAP_CONTEXTS.values()) + triple_context_ids
+    archmap["covers"].append({
+        "id": COVER_ID,
+        "contexts": complex_contexts,
+        "refs": source_refs_for(contexts, CHARTS),
+        "label": "Source-grounded finite settlement complex with explicit pair and triple intersections",
+    })
+    archmap["covers"].append({
+        "id": DIAGNOSTIC_COVER_ID,
+        "contexts": list(DIAGNOSTIC_CHARTS),
+        "refs": source_refs_for(contexts, ["ctx:cancel-surface", "ctx:inside-payment-surface", "ctx:order-surface"]),
+        "label": "Refund settlement diagnostic component",
+    })
+    archmap["covers"].append({
+        "id": LAW_COVER_ID,
+        "contexts": list(CHARTS),
+        "refs": source_refs_for(contexts, CHARTS),
+        "label": "Observed settlement surface for law evaluation",
+    })
+
+
 # ---- archmap variants -------------------------------------------------------
 base = json.load(open(os.path.join(FB, "archmap-money-variant.json")))
 
 head = copy.deepcopy(base)
-head["id"] = "train-ticket-money-saga-head/v0.5.3"
-head["covers"].append({
-    "id": COVER_ID,
-    "contexts": list(CHARTS),
-    "refs": [
-        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java",
-        "src:ts-inside-payment-service/src/main/java/inside_payment/service/InsidePaymentServiceImpl.java",
-    ],
-    "label": "Refund settlement loop cancel/inside-payment/order plus the preserve/consign/consign-price fee region as glued reference",
-})
+head["schema"] = "archmap/v0.5.4"
+head["id"] = "train-ticket-money-saga-head/v0.5.4"
 head["atoms"].append({
     "id": WITNESS_ATOM,
     "kind": "semantic",
@@ -112,10 +248,11 @@ head["atoms"].append({
     ],
     "label": "CancelServiceImpl.calculateRefund rounds 0.8*price to two decimals; no chart books the sub-cent remainder",
 })
+add_presentation_complex(head)
 write("archmap-saga-head.json", head)
 
 repaired = copy.deepcopy(head)
-repaired["id"] = "train-ticket-money-saga-repaired/v0.5.3"
+repaired["id"] = "train-ticket-money-saga-repaired/v0.5.4"
 repaired["atoms"] = [a for a in repaired["atoms"] if a["id"] != WITNESS_ATOM]
 for a in repaired["atoms"]:
     if a.get("axis") == "cech" and a.get("predicate") == "sectionValue" and a["subject"] in REPAIRED_LABELS:
@@ -131,7 +268,7 @@ def edge_witnesses():
     ]
 
 surface = {
-    "schema": "law-equation-surface/v0.5.3",
+    "schema": "law-equation-surface/v0.5.4",
     "id": SURFACE_ID,
     "laws": [
         {
@@ -163,7 +300,7 @@ surface = {
     "defectSources": [
         {
             "lawId": "law:money-settlement-convention",
-            "coverRef": COVER_ID,
+            "coverRef": LAW_COVER_ID,
             "chartDefects": [
                 {"chart": c, "defectObservable": {"axis": "square-free", "predicate": "support"}}
                 for c in CHARTS
@@ -177,7 +314,7 @@ write("law-surface-saga.json", surface)
 
 # ---- law policy / profile / gate -------------------------------------------
 policy = {
-    "schema": "law-policy/v0.5.3",
+    "schema": "law-policy/v0.5.4",
     "id": "train-ticket-money-saga-policy",
     "lawSurfaceRef": SURFACE_ID,
     "measurementProfileRef": PROFILE_ID,
@@ -205,18 +342,18 @@ policy = {
         {
             "basisId": "policy-basis:shared-convention-consistency",
             "kind": "repo-document",
-            "path": "docs/aat/algebraic_geometric_theory/README.md",
-            "revision": "aat-ag-current",
+            "path": "docs/reports/train_ticket_dogfooding/evidence/saga/build_saga_artifacts.py",
+            "revision": "train-ticket-313886e9",
         }
     ],
 }
 write("law-policy-saga.json", policy)
 
 profile = {
-    "schema": "measurement-profile/v0.5.3",
+    "schema": "measurement-profile/v0.5.4",
     "profileId": PROFILE_ID,
     "siteRef": "archmap:/contexts",
-    "coverRef": COVER_ID,
+    "coverRef": LAW_COVER_ID,
     "coefficient": "F2",
     "effCoeff": "finite-linear-algebra@1",
     "resolutionSelector": "taylor@1",
@@ -238,7 +375,7 @@ profile = {
 write("measurement-profile-saga.json", profile)
 
 gate = {
-    "schema": "archsig-gate-policy/v0.5.3",
+    "schema": "archsig-gate-policy/v0.5.4",
     "policyId": "gate-policy:train-ticket-money-saga@1",
     "rules": [
         {
@@ -270,6 +407,54 @@ gate = {
 write("gate-policy-saga.json", gate)
 
 # ---- repair plans -----------------------------------------------------------
+def presentation(drifted):
+    cell_refs = list(REPAIR_CHARTS) + [overlap_id for overlap_id, _, _ in OVERLAPS] + [
+        triple_id for triple_id, _ in TRIPLES
+    ]
+    restrictions = [
+        {"fromRef": chart, "toRef": overlap_id, "semanticMatrix": [[1]], "equationMatrix": [[1]]}
+        for overlap_id, left, right in OVERLAPS
+        for chart in [REPAIR_CHART_CONTEXTS[left], REPAIR_CHART_CONTEXTS[right]]
+    ]
+    restrictions.extend(
+        {
+            "fromRef": overlap_id,
+            "toRef": triple_id,
+            "semanticMatrix": [[1]],
+            "equationMatrix": [[1]],
+        }
+        for triple_id, overlap_refs in TRIPLES
+        for overlap_id in overlap_refs
+    )
+    return {
+        "cells": [
+            {
+                "cellRef": cell_ref,
+                "semanticGenerators": [DRIFT],
+                "repairRelationMatrix": [],
+                "equationGenerators": ["equation:" + cell_ref],
+                "equationRelationMatrix": [],
+                "generatorMap": [[1]],
+            }
+            for cell_ref in cell_refs
+        ],
+        "restrictions": restrictions,
+        "equationLiftAtlas": {
+            "localLifts": [
+                {"chartRef": chart, "coefficients": [0]}
+                for chart in REPAIR_CHARTS
+            ],
+            "transitionDifferences": [
+                {
+                    "overlapRef": overlap_id,
+                    "coefficients": [int(drifted and (overlap_id, left, right) in TRIANGLE)],
+                }
+                for overlap_id, left, right in OVERLAPS
+            ],
+        },
+    }
+
+
 def repair_plan(drifted):
     cx = complex_dict()
     fp = fingerprint(cx)
@@ -277,7 +462,7 @@ def repair_plan(drifted):
     vmap = [{"source": DRIFT, "target": DRIFT}] if drifted else []
     triangle_ids = {i for i, _, _ in TRIANGLE}
     plan = {
-        "schema": "archsig-repair-plan/v0.5.3",
+        "schema": "archsig-repair-plan/v0.5.4",
         "id": "repair-plan:train-ticket-money-" + ("head" if drifted else "repaired"),
         "residual": {"kind": "supplied"},
         "complex": cx,
@@ -302,7 +487,11 @@ def repair_plan(drifted):
         "faithfulness": {
             "mode": "supplied",
             "supplied": {
-                "zeroPrimitiveRef": "primitive:consign-consignprice",
+                "zeroPrimitiveRef": (
+                    "primitive:consign-consignprice"
+                    if drifted
+                    else "primitive:cancel-insidepay"
+                ),
                 "residualSupportPredicate": {
                     "kind": "finite-support",
                     "supportVariables": list(var),
@@ -314,16 +503,19 @@ def repair_plan(drifted):
         "coefficient": "f2-additive",
         "trueSheafCertificate": {
             "kind": "true-sheaf-certificate",
-            "coverRef": COVER_ID,
-            "memberCharts": list(CHARTS),
+            "coverRef": DIAGNOSTIC_COVER_ID,
+            "memberCharts": list(DIAGNOSTIC_CHARTS),
             "globalCondition": "assumed",
         },
         "gluingData": {
             "kind": "gluing-data",
-            "overlapRefs": [oid for oid, _, _ in OVERLAPS],
+            "overlapRefs": [overlap_id for overlap_id, _, _ in DIAGNOSTIC_OVERLAPS],
             "sectionRefs": [
-                {"overlapRef": oid, "sectionRef": "section:money-" + oid.removeprefix("overlap:")}
-                for oid, _, _ in OVERLAPS
+                {
+                    "overlapRef": overlap_id,
+                    "sectionRef": "section:" + overlap_id.removeprefix("overlap:"),
+                }
+                for overlap_id, _, _ in DIAGNOSTIC_OVERLAPS
             ],
         },
         "grounding": {
@@ -334,41 +526,16 @@ def repair_plan(drifted):
         "comparison": {
             "kind": "saga-comparison",
             "incidenceBridge": {
-                "kind": "explicit",
-                "sourceComplexRef": "complex:repair",
-                "targetComplexRef": "complex:cech",
-                "targetComplex": complex_dict(),
+                "kind": "chart-indexed",
+                "repairChartRefs": list(REPAIR_CHARTS),
+                "cechChartRefs": list(REPAIR_CHARTS),
             },
             "h1ComparisonData": {
-                "schema": "h1-comparison-data/v0.5.3",
-                "kind": "explicit",
-                "cochainMapRef": "comparison:cochain-map",
+                "schema": "h1-comparison-data/v0.5.4",
+                "kind": "presentation-generated",
                 "sourceComplexFingerprint": fp,
                 "targetComplexFingerprint": fp,
-                "targetCochainSupport": [
-                    {
-                        "overlapRef": oid,
-                        "support": list(var) if oid in triangle_ids else [],
-                    }
-                    for oid, _, _ in OVERLAPS
-                ],
-                "cochainMap": {
-                    "degreeZero": [
-                        {"sourceChartRef": c, "targetChartRef": c, "variableMap": list(vmap)}
-                        for c in CHARTS
-                    ],
-                    "degreeOne": [
-                        {"sourceOverlapRef": oid, "targetOverlapRef": oid, "variableMap": list(vmap)}
-                        for oid, _, _ in OVERLAPS
-                    ],
-                    "degreeTwo": {
-                        "basisMap": [
-                            {"sourceTripleRef": tid, "targetTripleRef": tid}
-                            for tid, _ in TRIPLES
-                        ],
-                        "zeroImage": [],
-                    },
-                },
+                "presentation": presentation(drifted),
             },
         },
     }

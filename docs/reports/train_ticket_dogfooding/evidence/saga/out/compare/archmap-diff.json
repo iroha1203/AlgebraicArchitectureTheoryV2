@@ -134,7 +134,7 @@
       }
     ]
   },
-  "basis": "deterministic JSON comparison of normalized-archmap/v0.5.3 sources, atoms, contexts, and covers",
+  "basis": "deterministic JSON comparison of normalized-archmap/v0.5.4 sources, atoms, contexts, and covers",
   "contexts": {
     "added": [],
     "modified": [],
@@ -148,22 +148,22 @@
   "inputDigests": {
     "baseNormalizedArchmap": {
       "path": "head/normalized-archmap.json",
-      "sha256": "ef24490a3be760e3a7b975a1f513a82a09aff601055b34f46940a4c38c0065cf"
+      "sha256": "67afe0f8f5fbc10ebc3906a9f0da4dea2659ff9c646914d8ae185b70a0d01858"
     },
     "headNormalizedArchmap": {
       "path": "repaired/normalized-archmap.json",
-      "sha256": "9aaf23e5e5ecf5894918eef29eea8541b9a8fa32cfb7d4cc0bab48063dd6e1b8"
+      "sha256": "eb973803151f4225cd4a281ac66b56cd1eca82c5e7ca9f5ab7a0162e680831b2"
     }
   },
   "nonConclusions": [
     "ArchMap diff is computed from normalized artifacts; it is not an observation artifact.",
     "Diff operations are mechanical record intersections, not causal claims."
   ],
-  "schema": "archmap-diff/v0.5.3",
+  "schema": "archmap-diff/v0.5.4",
   "sources": {
     "added": [],
     "modified": [],
     "removed": []
   },
-  "toolVersion": "0.5.3"
+  "toolVersion": "0.5.4"
 }

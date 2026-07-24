@@ -25,7 +25,7 @@
       "theoremRef": "part8/4.2"
     },
     {
-      "assumedBy": "measurement-profile:profile:train-ticket-money-saga@1",
+      "assumedBy": "measurement-profile:profile:train-ticket-money-saga@2",
       "assumption": "U-adequate cover",
       "assumptionId": "assumption:part8-4-2:U-adequate-cover",
       "scopeRefs": [
@@ -37,7 +37,7 @@
     {
       "assumption": "F2 finite coefficient field",
       "assumptionId": "assumption:part8-B-8-2:F2-finite-coefficient-field",
-      "checkedBy": "measurement-profile:profile:train-ticket-money-saga@1.coefficient=F2",
+      "checkedBy": "measurement-profile:profile:train-ticket-money-saga@2.coefficient=F2",
       "scopeRefs": [
         "part8/B.8.2"
       ],
@@ -47,7 +47,7 @@
     {
       "assumption": "cover-relative Cech reading",
       "assumptionId": "assumption:part8-B-8-2:cover-relative-Cech-reading",
-      "checkedBy": "measurement-profile:profile:train-ticket-money-saga@1.coverRef",
+      "checkedBy": "measurement-profile:profile:train-ticket-money-saga@2.coverRef",
       "scopeRefs": [
         "part8/B.8.2"
       ],
@@ -55,7 +55,7 @@
       "theoremRef": "part8/B.8.2"
     },
     {
-      "assumedBy": "measurement-profile:profile:train-ticket-money-saga@1",
+      "assumedBy": "measurement-profile:profile:train-ticket-money-saga@2",
       "assumption": "Leray / acyclicity comparison to sheaf cohomology",
       "assumptionId": "assumption:part8-B-8-2:Leray---acyclicity-comparison-to-sheaf-cohomology",
       "scopeRefs": [
@@ -67,7 +67,7 @@
     {
       "assumption": "constant coefficient nerve b1 comparison",
       "assumptionId": "assumption:part4-12-3:constant-coefficient-nerve-b1-comparison",
-      "checkedBy": "measurement-profile:profile:train-ticket-money-saga@1.coefficient=F2",
+      "checkedBy": "measurement-profile:profile:train-ticket-money-saga@2.coefficient=F2",
       "scopeRefs": [
         "part4/12.3"
       ],
@@ -75,7 +75,7 @@
       "theoremRef": "part4/12.3"
     },
     {
-      "assumedBy": "measurement-profile:profile:train-ticket-money-saga@1",
+      "assumedBy": "measurement-profile:profile:train-ticket-money-saga@2",
       "assumption": "local lawful sections form an effective Ob_U-torsor",
       "assumptionId": "assumption:part4-11-1:local-lawful-sections-form-an-effective-Ob-U-torsor",
       "scopeRefs": [
@@ -85,7 +85,7 @@
       "theoremRef": "part4/11.1"
     },
     {
-      "assumedBy": "measurement-profile:profile:train-ticket-money-saga@1",
+      "assumedBy": "measurement-profile:profile:train-ticket-money-saga@2",
       "assumption": "local adjustment action is fixed and effective",
       "assumptionId": "assumption:part4-11-1:local-adjustment-action-is-fixed-and-effective",
       "scopeRefs": [
@@ -95,7 +95,7 @@
       "theoremRef": "part4/11.1"
     },
     {
-      "assumedBy": "measurement-profile:profile:train-ticket-money-saga@1",
+      "assumedBy": "measurement-profile:profile:train-ticket-money-saga@2",
       "assumption": "coefficient object satisfies descent",
       "assumptionId": "assumption:part4-11-1:coefficient-object-satisfies-descent",
       "scopeRefs": [
@@ -105,7 +105,7 @@
       "theoremRef": "part4/11.1"
     },
     {
-      "assumedBy": "measurement-profile:profile:train-ticket-money-saga@1",
+      "assumedBy": "measurement-profile:profile:train-ticket-money-saga@2",
       "assumption": "restriction maps are surjective",
       "assumptionId": "assumption:part4-12-4:restriction-maps-are-surjective",
       "scopeRefs": [
@@ -115,7 +115,7 @@
       "theoremRef": "part4/12.4"
     },
     {
-      "assumedBy": "measurement-profile:profile:train-ticket-money-saga@1",
+      "assumedBy": "measurement-profile:profile:train-ticket-money-saga@2",
       "assumption": "selected Cech nerve is a forest with no triple-overlap faces",
       "assumptionId": "assumption:part4-12-4:selected-Cech-nerve-is-a-forest-with-no-triple-overlap-faces",
       "scopeRefs": [
@@ -135,9 +135,9 @@
       "theoremRef": "part3/11.3"
     },
     {
-      "assumedBy": "law-surface:law-surface:train-ticket-money-saga-v053",
-      "assumption": "selected quotient sheaf condition for law-surface:train-ticket-money-saga-v053",
-      "assumptionId": "assumption:part10-7-3:selected-quotient-sheaf-condition-for-law-surface-train-ticket-money-saga-v053",
+      "assumedBy": "law-surface:law-surface:train-ticket-money-saga-v054",
+      "assumption": "selected quotient sheaf condition for law-surface:train-ticket-money-saga-v054",
+      "assumptionId": "assumption:part10-7-3:selected-quotient-sheaf-condition-for-law-surface-train-ticket-money-saga-v054",
       "scopeRefs": [
         "part10/7.3"
       ],
@@ -155,24 +155,14 @@
       "theoremRef": "part10/3.1"
     },
     {
-      "assumedBy": "comparison author",
-      "assumption": "comparison target complex enumeration completeness for repair-plan:train-ticket-money-head",
-      "assumptionId": "assumption:part10-6-2:comparison-target-complex-enumeration-completeness-for-repair-plan-train-ticket-money-head",
-      "scopeRefs": [
-        "part10/6.2"
-      ],
-      "status": "assumed",
-      "theoremRef": "part10/6.2"
-    },
-    {
       "assumedBy": "trueSheafCertificate author",
       "assumption": "global sheaf condition for repair-plan:train-ticket-money-head",
-      "assumptionId": "assumption:part4-4-7:global-sheaf-condition-for-repair-plan-train-ticket-money-head",
+      "assumptionId": "assumption:part10-8-1:global-sheaf-condition-for-repair-plan-train-ticket-money-head",
       "scopeRefs": [
-        "part4/4.7"
+        "part10/8.1"
       ],
       "status": "assumed",
-      "theoremRef": "part4/4.7"
+      "theoremRef": "part10/8.1"
     },
     {
       "assumedBy": "RepairPlan author",
@@ -191,16 +181,16 @@
       "kind": "silence_by_design",
       "reason": "compat_non_conclusion",
       "scopeRefs": [
-        "measurement:train-ticket-money-saga-head/v0.5.3"
+        "measurement:train-ticket-money-saga-head/v0.5.4"
       ],
-      "text": "ArchSig v0.5.3 foundation packet is computed from input:archmap-saga-head.json and input:law-policy-saga.json; it is not a Lean proof object."
+      "text": "ArchSig v0.5.4 foundation packet is computed from input:archmap-saga-head.json and input:law-policy-saga.json; it is not a Lean proof object."
     },
     {
       "id": "boundary:silence-by-design:1",
       "kind": "silence_by_design",
       "reason": "compat_non_conclusion",
       "scopeRefs": [
-        "measurement:train-ticket-money-saga-head/v0.5.3"
+        "measurement:train-ticket-money-saga-head/v0.5.4"
       ],
       "text": "Unmeasured AG evaluator rows are schema handoff rows, not measured zero."
     },
@@ -209,7 +199,7 @@
       "kind": "silence_by_design",
       "reason": "compat_non_conclusion",
       "scopeRefs": [
-        "measurement:train-ticket-money-saga-head/v0.5.3"
+        "measurement:train-ticket-money-saga-head/v0.5.4"
       ],
       "text": "Theorem-candidate readings are analytic-only and cannot generate structural verdicts."
     },
@@ -218,7 +208,7 @@
       "kind": "silence_by_design",
       "reason": "higher_hn_n_ge_3_part_iv_scope_boundary",
       "scopeRefs": [
-        "measurement:train-ticket-money-saga-head/v0.5.3"
+        "measurement:train-ticket-money-saga-head/v0.5.4"
       ],
       "text": "Cohomological readings in degrees n>=3 are silent by design in this finite AG measurement packet: they are a Part IV scope boundary, not a measured zero result or a remaining task."
     },
@@ -227,7 +217,7 @@
       "kind": "out_of_selected_vocabulary",
       "reason": "non_abelian_stack_gerbe_outside_abelian_f2_vocabulary",
       "scopeRefs": [
-        "measurement:train-ticket-money-saga-head/v0.5.3"
+        "measurement:train-ticket-money-saga-head/v0.5.4"
       ],
       "text": "Non-abelian stack/gerbe degree-2 descent data is outside the selected banded abelian F2 vocabulary; banding-violated inputs remain outside this measurement lens."
     },
@@ -236,7 +226,7 @@
       "kind": "unmeasured_support",
       "reason": "higher_tor_i_ge_2_unmeasured_support",
       "scopeRefs": [
-        "measurement:train-ticket-money-saga-head/v0.5.3"
+        "measurement:train-ticket-money-saga-head/v0.5.4"
       ],
       "text": "Higher Tor_i for i>=2 remains unmeasured support: degree-1 Tor_1 readings do not discharge derived transversality or all higher Tor vanishing."
     },
@@ -251,25 +241,25 @@
     }
   ],
   "componentFingerprints": {
-    "lawPolicy": "sha256:c0ad1a54d53d4729df4f6275b95a04c26627f33b9669dd0c6764c8e70b8fe703",
-    "lawSurface": "sha256:a777170547b52f2aa4889f964f7a67b6f36a9f84b062c7406a5b41d020363061",
-    "measurementProfile": "sha256:1e79f93e5e37e4e8486091e76dbbcba5ed5e6efcf21172ff16844c85b0fe6434"
+    "lawPolicy": "sha256:e5e91078749ec26ae327ecd1cf41d6d2f7dd035c81a1c66bc0e0476b10e6900c",
+    "lawSurface": "sha256:15b78313f591c424245c79fdc32ab6aee799d3c53197b331d569556ac3670471",
+    "measurementProfile": "sha256:c073650c8bcd053d48d78bb1a29811b80917ffbdec81e1789dd15d68908b0753"
   },
   "computedInvariants": [
     {
       "archmapRef": "input:archmap-saga-head.json",
-      "atomCount": 2112,
-      "contextCount": 43,
-      "coverCount": 4,
+      "atomCount": 2125,
+      "contextCount": 56,
+      "coverCount": 6,
       "doctrineFingerprint": "sha256:aat-canonical-doctrine-schema052",
       "evaluator": "ag.foundation",
       "invariantId": "finite-poset-site-shape",
       "kind": "measurement-invariant",
       "representation": {
         "archmapRef": "input:archmap-saga-head.json",
-        "atomCount": 2112,
-        "contextCount": 43,
-        "coverCount": 4,
+        "atomCount": 2125,
+        "contextCount": 56,
+        "coverCount": 6,
         "doctrineFingerprint": "sha256:aat-canonical-doctrine-schema052",
         "invariantId": "finite-poset-site-shape"
       },
@@ -346,7 +336,7 @@
             "value": 1
           }
         ],
-        "faceSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v0.5.3; not inferred by the viewer",
+        "faceSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v0.5.4; not inferred by the viewer",
         "faces": [],
         "h2CoherenceVisualized": false,
         "vertices": [
@@ -537,7 +527,7 @@
         "H1": 1
       },
       "evaluator": "ag.cech-obstruction",
-      "invariantId": "cech-cohomology:profile:train-ticket-money-saga@1",
+      "invariantId": "cech-cohomology:profile:train-ticket-money-saga@2",
       "kind": "cech-h1-rank",
       "method": "finite-f2-incidence-graph-cochain@1",
       "methodStatus": "finite_f2_cech_computed",
@@ -662,7 +652,7 @@
               "value": 1
             }
           ],
-          "faceSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v0.5.3; not inferred by the viewer",
+          "faceSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v0.5.4; not inferred by the viewer",
           "faces": [],
           "h2CoherenceVisualized": false,
           "vertices": [
@@ -853,7 +843,7 @@
           "H1": 1
         },
         "evaluator": "ag.cech-obstruction",
-        "invariantId": "cech-cohomology:profile:train-ticket-money-saga@1",
+        "invariantId": "cech-cohomology:profile:train-ticket-money-saga@2",
         "method": "finite-f2-incidence-graph-cochain@1",
         "methodStatus": "finite_f2_cech_computed",
         "nerveShape": {
@@ -996,10 +986,10 @@
       "eulerCharacteristic": 2,
       "eulerFormula": "dimC0 - dimC1 + dimC2",
       "evaluator": "ag.cech-obstruction",
-      "invariantId": "topological-debt-capacity:profile:train-ticket-money-saga@1",
+      "invariantId": "topological-debt-capacity:profile:train-ticket-money-saga@2",
       "kind": "cech-h1-rank",
       "measuredCechVerdictEcho": {
-        "certRef": "computedInvariants/cech-cohomology:profile:train-ticket-money-saga@1",
+        "certRef": "computedInvariants/cech-cohomology:profile:train-ticket-money-saga@2",
         "evaluator": "ag.cech-obstruction",
         "h1ClassNonzero": true,
         "note": "This is an echo of the separate Cech structural verdict, not a capacity-derived class claim."
@@ -1027,9 +1017,9 @@
         "eulerCharacteristic": 2,
         "eulerFormula": "dimC0 - dimC1 + dimC2",
         "evaluator": "ag.cech-obstruction",
-        "invariantId": "topological-debt-capacity:profile:train-ticket-money-saga@1",
+        "invariantId": "topological-debt-capacity:profile:train-ticket-money-saga@2",
         "measuredCechVerdictEcho": {
-          "certRef": "computedInvariants/cech-cohomology:profile:train-ticket-money-saga@1",
+          "certRef": "computedInvariants/cech-cohomology:profile:train-ticket-money-saga@2",
           "evaluator": "ag.cech-obstruction",
           "h1ClassNonzero": true,
           "note": "This is an echo of the separate Cech structural verdict, not a capacity-derived class claim."
@@ -1119,7 +1109,7 @@
           "support": []
         }
       },
-      "groundedSurfaceRef": "law-surface:train-ticket-money-saga-v053",
+      "groundedSurfaceRef": "law-surface:train-ticket-money-saga-v054",
       "invariantId": "saga-generated-end-to-end-packet",
       "kind": "saga-grounded-conclusions",
       "lawDependent": {
@@ -1153,7 +1143,7 @@
               },
               "defectValueRef": "input:archmap-saga-head.json#ctx:cancel-surface",
               "holds": true,
-              "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v053#defectSources/law:money-settlement-convention/holdsCriterion",
+              "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion",
               "law": "law:money-settlement-convention",
               "rawAtomRefs": [],
               "supportVariables": []
@@ -1166,7 +1156,7 @@
               },
               "defectValueRef": "input:archmap-saga-head.json#ctx:inside-payment-surface",
               "holds": true,
-              "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v053#defectSources/law:money-settlement-convention/holdsCriterion",
+              "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion",
               "law": "law:money-settlement-convention",
               "rawAtomRefs": [],
               "supportVariables": []
@@ -1179,7 +1169,7 @@
               },
               "defectValueRef": "input:archmap-saga-head.json#ctx:order-surface",
               "holds": true,
-              "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v053#defectSources/law:money-settlement-convention/holdsCriterion",
+              "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion",
               "law": "law:money-settlement-convention",
               "rawAtomRefs": [],
               "supportVariables": []
@@ -1192,7 +1182,7 @@
               },
               "defectValueRef": "input:archmap-saga-head.json#ctx:consign-surface",
               "holds": true,
-              "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v053#defectSources/law:money-settlement-convention/holdsCriterion",
+              "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion",
               "law": "law:money-settlement-convention",
               "rawAtomRefs": [],
               "supportVariables": []
@@ -1205,7 +1195,7 @@
               },
               "defectValueRef": "input:archmap-saga-head.json#ctx:consign-price-surface",
               "holds": true,
-              "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v053#defectSources/law:money-settlement-convention/holdsCriterion",
+              "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion",
               "law": "law:money-settlement-convention",
               "rawAtomRefs": [],
               "supportVariables": []
@@ -1218,7 +1208,7 @@
               },
               "defectValueRef": "input:archmap-saga-head.json#ctx:preserve-surface",
               "holds": true,
-              "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v053#defectSources/law:money-settlement-convention/holdsCriterion",
+              "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion",
               "law": "law:money-settlement-convention",
               "rawAtomRefs": [],
               "supportVariables": []
@@ -1339,7 +1329,7 @@
             "support": []
           }
         },
-        "groundedSurfaceRef": "law-surface:train-ticket-money-saga-v053",
+        "groundedSurfaceRef": "law-surface:train-ticket-money-saga-v054",
         "invariantId": "saga-generated-end-to-end-packet",
         "kind": "saga-grounded-conclusions",
         "lawDependent": {
@@ -1373,7 +1363,7 @@
                 },
                 "defectValueRef": "input:archmap-saga-head.json#ctx:cancel-surface",
                 "holds": true,
-                "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v053#defectSources/law:money-settlement-convention/holdsCriterion",
+                "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion",
                 "law": "law:money-settlement-convention",
                 "rawAtomRefs": [],
                 "supportVariables": []
@@ -1386,7 +1376,7 @@
                 },
                 "defectValueRef": "input:archmap-saga-head.json#ctx:inside-payment-surface",
                 "holds": true,
-                "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v053#defectSources/law:money-settlement-convention/holdsCriterion",
+                "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion",
                 "law": "law:money-settlement-convention",
                 "rawAtomRefs": [],
                 "supportVariables": []
@@ -1399,7 +1389,7 @@
                 },
                 "defectValueRef": "input:archmap-saga-head.json#ctx:order-surface",
                 "holds": true,
-                "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v053#defectSources/law:money-settlement-convention/holdsCriterion",
+                "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion",
                 "law": "law:money-settlement-convention",
                 "rawAtomRefs": [],
                 "supportVariables": []
@@ -1412,7 +1402,7 @@
                 },
                 "defectValueRef": "input:archmap-saga-head.json#ctx:consign-surface",
                 "holds": true,
-                "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v053#defectSources/law:money-settlement-convention/holdsCriterion",
+                "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion",
                 "law": "law:money-settlement-convention",
                 "rawAtomRefs": [],
                 "supportVariables": []
@@ -1425,7 +1415,7 @@
                 },
                 "defectValueRef": "input:archmap-saga-head.json#ctx:consign-price-surface",
                 "holds": true,
-                "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v053#defectSources/law:money-settlement-convention/holdsCriterion",
+                "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion",
                 "law": "law:money-settlement-convention",
                 "rawAtomRefs": [],
                 "supportVariables": []
@@ -1438,7 +1428,7 @@
                 },
                 "defectValueRef": "input:archmap-saga-head.json#ctx:preserve-surface",
                 "holds": true,
-                "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v053#defectSources/law:money-settlement-convention/holdsCriterion",
+                "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion",
                 "law": "law:money-settlement-convention",
                 "rawAtomRefs": [],
                 "supportVariables": []
@@ -1485,10 +1475,10 @@
           },
           "note": "以下は law の充足を仮定せずに従う(定理8.2)。law 充足の証拠として読まない。"
         },
-        "schema": "archsig-saga-conclusions/v0.5.3",
+        "schema": "archsig-saga-conclusions/v0.5.4",
         "theoremRef": "part10/7.5"
       },
-      "schema": "archsig-saga-conclusions/v0.5.3",
+      "schema": "archsig-saga-conclusions/v0.5.4",
       "theoremRef": "part10/7.5",
       "value": {}
     },
@@ -1649,17 +1639,21 @@
         "residualClassSupport": {
           "basis": "Z1/B1",
           "cocycle": {
+            "certificateKind": "automatic-c2-zero",
             "checked": true,
             "deltaOne": "zero",
-            "tripleOverlapRefs": [
-              {
-                "overlapRefs": [
-                  "overlap:consign-consignprice",
-                  "overlap:preserve-consign",
-                  "overlap:preserve-consignprice"
-                ],
-                "tripleRef": "triple:consign-fee-region"
-              }
+            "tripleOverlapRefs": []
+          },
+          "component": {
+            "chartRefs": [
+              "ctx:repair-cancel-surface",
+              "ctx:repair-inside-payment-surface",
+              "ctx:repair-order-surface"
+            ],
+            "overlapRefs": [
+              "overlap:cancel-insidepay",
+              "overlap:cancel-order",
+              "overlap:insidepay-order"
             ]
           },
           "nonZero": true,
@@ -1695,10 +1689,43 @@
               "overlapRef": "overlap:preserve-consignprice",
               "support": []
             }
-          ]
+          ],
+          "suppliedData": {
+            "gluingData": {
+              "overlapRefs": [
+                "overlap:cancel-insidepay",
+                "overlap:cancel-order",
+                "overlap:insidepay-order"
+              ],
+              "sectionRefs": [
+                {
+                  "overlapRef": "overlap:cancel-insidepay",
+                  "sectionRef": "section:cancel-insidepay"
+                },
+                {
+                  "overlapRef": "overlap:cancel-order",
+                  "sectionRef": "section:cancel-order"
+                },
+                {
+                  "overlapRef": "overlap:insidepay-order",
+                  "sectionRef": "section:insidepay-order"
+                }
+              ]
+            },
+            "trueSheafCertificate": {
+              "coverRef": "cover:money-settlement-diagnostic",
+              "globalCondition": "assumed",
+              "memberChartRefs": [
+                "ctx:repair-cancel-surface",
+                "ctx:repair-inside-payment-surface",
+                "ctx:repair-order-surface"
+              ]
+            }
+          }
         },
         "suppliedSlots": [
-          "complex.tripleOverlaps",
+          "complex.charts",
+          "complex.overlaps",
           "coefficient",
           "trueSheafCertificate",
           "gluingData"
@@ -1707,17 +1734,21 @@
       "residualClassSupport": {
         "basis": "Z1/B1",
         "cocycle": {
+          "certificateKind": "automatic-c2-zero",
           "checked": true,
           "deltaOne": "zero",
-          "tripleOverlapRefs": [
-            {
-              "overlapRefs": [
-                "overlap:consign-consignprice",
-                "overlap:preserve-consign",
-                "overlap:preserve-consignprice"
-              ],
-              "tripleRef": "triple:consign-fee-region"
-            }
+          "tripleOverlapRefs": []
+        },
+        "component": {
+          "chartRefs": [
+            "ctx:repair-cancel-surface",
+            "ctx:repair-inside-payment-surface",
+            "ctx:repair-order-surface"
+          ],
+          "overlapRefs": [
+            "overlap:cancel-insidepay",
+            "overlap:cancel-order",
+            "overlap:insidepay-order"
           ]
         },
         "nonZero": true,
@@ -1753,10 +1784,43 @@
             "overlapRef": "overlap:preserve-consignprice",
             "support": []
           }
-        ]
+        ],
+        "suppliedData": {
+          "gluingData": {
+            "overlapRefs": [
+              "overlap:cancel-insidepay",
+              "overlap:cancel-order",
+              "overlap:insidepay-order"
+            ],
+            "sectionRefs": [
+              {
+                "overlapRef": "overlap:cancel-insidepay",
+                "sectionRef": "section:cancel-insidepay"
+              },
+              {
+                "overlapRef": "overlap:cancel-order",
+                "sectionRef": "section:cancel-order"
+              },
+              {
+                "overlapRef": "overlap:insidepay-order",
+                "sectionRef": "section:insidepay-order"
+              }
+            ]
+          },
+          "trueSheafCertificate": {
+            "coverRef": "cover:money-settlement-diagnostic",
+            "globalCondition": "assumed",
+            "memberChartRefs": [
+              "ctx:repair-cancel-surface",
+              "ctx:repair-inside-payment-surface",
+              "ctx:repair-order-surface"
+            ]
+          }
+        }
       },
       "suppliedSlots": [
-        "complex.tripleOverlaps",
+        "complex.charts",
+        "complex.overlaps",
         "coefficient",
         "trueSheafCertificate",
         "gluingData"
@@ -1764,23 +1828,23 @@
       "value": {}
     },
     {
-      "conclusionCode": "SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA",
+      "conclusionCode": "SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS",
       "contract": {
         "classPrerequisite": true,
         "contractChecked": true,
-        "h1ComparisonDataKind": "explicit",
-        "incidenceBridgeKind": "explicit",
-        "normalizedComplexFingerprint": "66727f00f5552a62f31d4f899089f8c5d7ee2de0121114733e1bab611a112cc5",
+        "h1ComparisonDataKind": "presentation-generated",
+        "incidenceBridgeKind": "chart-indexed",
+        "normalizedComplexFingerprint": "bfd9a71337b532578f6283b14e43c2966146cea8e3844987f95baa58a039409a",
         "targetClassComputed": true
       },
       "evaluator": "ag.saga-comparison",
       "failureCode": null,
       "generatedQuotientTransfer": {
-        "kind": "Z1/B1-class-transfer",
+        "kind": "presentation-derived-Z1/B1-class-transfer",
         "level": "quotient",
         "preservesZeroPredicate": true,
         "sourceClassNonZero": true,
-        "sourceInvariant": "saga-descent:residual-class",
+        "sourceInvariant": "presentation-generated:semantic-h1-class",
         "targetClassNonZero": true,
         "targetInvariant": "saga-comparison:h1-transfer"
       },
@@ -1790,24 +1854,1017 @@
         "Supplied cochain data and generated quotient-level transfer are separate structures.",
         "The transfer reading is relative to the supplied finite comparison contract."
       ],
+      "presentationGenerated": {
+        "comparisonInput": {
+          "kind": "canonical-presentation-repair-plan",
+          "repairPlan": {
+            "coefficient": "f2-additive",
+            "comparison": {
+              "h1ComparisonData": {
+                "kind": "presentation-generated",
+                "presentation": {
+                  "cells": [
+                    {
+                      "cellRef": "ctx:repair-cancel-surface",
+                      "equationGenerators": [
+                        "equation:ctx:repair-cancel-surface"
+                      ],
+                      "equationRelationMatrix": [],
+                      "generatorMap": [
+                        [
+                          1
+                        ]
+                      ],
+                      "repairRelationMatrix": [],
+                      "semanticGenerators": [
+                        "drift:refund-rounding"
+                      ]
+                    },
+                    {
+                      "cellRef": "ctx:repair-inside-payment-surface",
+                      "equationGenerators": [
+                        "equation:ctx:repair-inside-payment-surface"
+                      ],
+                      "equationRelationMatrix": [],
+                      "generatorMap": [
+                        [
+                          1
+                        ]
+                      ],
+                      "repairRelationMatrix": [],
+                      "semanticGenerators": [
+                        "drift:refund-rounding"
+                      ]
+                    },
+                    {
+                      "cellRef": "ctx:repair-order-surface",
+                      "equationGenerators": [
+                        "equation:ctx:repair-order-surface"
+                      ],
+                      "equationRelationMatrix": [],
+                      "generatorMap": [
+                        [
+                          1
+                        ]
+                      ],
+                      "repairRelationMatrix": [],
+                      "semanticGenerators": [
+                        "drift:refund-rounding"
+                      ]
+                    },
+                    {
+                      "cellRef": "ctx:repair-consign-surface",
+                      "equationGenerators": [
+                        "equation:ctx:repair-consign-surface"
+                      ],
+                      "equationRelationMatrix": [],
+                      "generatorMap": [
+                        [
+                          1
+                        ]
+                      ],
+                      "repairRelationMatrix": [],
+                      "semanticGenerators": [
+                        "drift:refund-rounding"
+                      ]
+                    },
+                    {
+                      "cellRef": "ctx:repair-consign-price-surface",
+                      "equationGenerators": [
+                        "equation:ctx:repair-consign-price-surface"
+                      ],
+                      "equationRelationMatrix": [],
+                      "generatorMap": [
+                        [
+                          1
+                        ]
+                      ],
+                      "repairRelationMatrix": [],
+                      "semanticGenerators": [
+                        "drift:refund-rounding"
+                      ]
+                    },
+                    {
+                      "cellRef": "ctx:repair-preserve-surface",
+                      "equationGenerators": [
+                        "equation:ctx:repair-preserve-surface"
+                      ],
+                      "equationRelationMatrix": [],
+                      "generatorMap": [
+                        [
+                          1
+                        ]
+                      ],
+                      "repairRelationMatrix": [],
+                      "semanticGenerators": [
+                        "drift:refund-rounding"
+                      ]
+                    },
+                    {
+                      "cellRef": "overlap:cancel-insidepay",
+                      "equationGenerators": [
+                        "equation:overlap:cancel-insidepay"
+                      ],
+                      "equationRelationMatrix": [],
+                      "generatorMap": [
+                        [
+                          1
+                        ]
+                      ],
+                      "repairRelationMatrix": [],
+                      "semanticGenerators": [
+                        "drift:refund-rounding"
+                      ]
+                    },
+                    {
+                      "cellRef": "overlap:insidepay-order",
+                      "equationGenerators": [
+                        "equation:overlap:insidepay-order"
+                      ],
+                      "equationRelationMatrix": [],
+                      "generatorMap": [
+                        [
+                          1
+                        ]
+                      ],
+                      "repairRelationMatrix": [],
+                      "semanticGenerators": [
+                        "drift:refund-rounding"
+                      ]
+                    },
+                    {
+                      "cellRef": "overlap:cancel-order",
+                      "equationGenerators": [
+                        "equation:overlap:cancel-order"
+                      ],
+                      "equationRelationMatrix": [],
+                      "generatorMap": [
+                        [
+                          1
+                        ]
+                      ],
+                      "repairRelationMatrix": [],
+                      "semanticGenerators": [
+                        "drift:refund-rounding"
+                      ]
+                    },
+                    {
+                      "cellRef": "overlap:consign-consignprice",
+                      "equationGenerators": [
+                        "equation:overlap:consign-consignprice"
+                      ],
+                      "equationRelationMatrix": [],
+                      "generatorMap": [
+                        [
+                          1
+                        ]
+                      ],
+                      "repairRelationMatrix": [],
+                      "semanticGenerators": [
+                        "drift:refund-rounding"
+                      ]
+                    },
+                    {
+                      "cellRef": "overlap:preserve-consign",
+                      "equationGenerators": [
+                        "equation:overlap:preserve-consign"
+                      ],
+                      "equationRelationMatrix": [],
+                      "generatorMap": [
+                        [
+                          1
+                        ]
+                      ],
+                      "repairRelationMatrix": [],
+                      "semanticGenerators": [
+                        "drift:refund-rounding"
+                      ]
+                    },
+                    {
+                      "cellRef": "overlap:preserve-consignprice",
+                      "equationGenerators": [
+                        "equation:overlap:preserve-consignprice"
+                      ],
+                      "equationRelationMatrix": [],
+                      "generatorMap": [
+                        [
+                          1
+                        ]
+                      ],
+                      "repairRelationMatrix": [],
+                      "semanticGenerators": [
+                        "drift:refund-rounding"
+                      ]
+                    },
+                    {
+                      "cellRef": "triple:consign-fee-region",
+                      "equationGenerators": [
+                        "equation:triple:consign-fee-region"
+                      ],
+                      "equationRelationMatrix": [],
+                      "generatorMap": [
+                        [
+                          1
+                        ]
+                      ],
+                      "repairRelationMatrix": [],
+                      "semanticGenerators": [
+                        "drift:refund-rounding"
+                      ]
+                    }
+                  ],
+                  "equationLiftAtlas": {
+                    "localLifts": [
+                      {
+                        "chartRef": "ctx:repair-cancel-surface",
+                        "coefficients": [
+                          0
+                        ]
+                      },
+                      {
+                        "chartRef": "ctx:repair-inside-payment-surface",
+                        "coefficients": [
+                          0
+                        ]
+                      },
+                      {
+                        "chartRef": "ctx:repair-order-surface",
+                        "coefficients": [
+                          0
+                        ]
+                      },
+                      {
+                        "chartRef": "ctx:repair-consign-surface",
+                        "coefficients": [
+                          0
+                        ]
+                      },
+                      {
+                        "chartRef": "ctx:repair-consign-price-surface",
+                        "coefficients": [
+                          0
+                        ]
+                      },
+                      {
+                        "chartRef": "ctx:repair-preserve-surface",
+                        "coefficients": [
+                          0
+                        ]
+                      }
+                    ],
+                    "transitionDifferences": [
+                      {
+                        "coefficients": [
+                          1
+                        ],
+                        "overlapRef": "overlap:cancel-insidepay"
+                      },
+                      {
+                        "coefficients": [
+                          1
+                        ],
+                        "overlapRef": "overlap:insidepay-order"
+                      },
+                      {
+                        "coefficients": [
+                          1
+                        ],
+                        "overlapRef": "overlap:cancel-order"
+                      },
+                      {
+                        "coefficients": [
+                          0
+                        ],
+                        "overlapRef": "overlap:consign-consignprice"
+                      },
+                      {
+                        "coefficients": [
+                          0
+                        ],
+                        "overlapRef": "overlap:preserve-consign"
+                      },
+                      {
+                        "coefficients": [
+                          0
+                        ],
+                        "overlapRef": "overlap:preserve-consignprice"
+                      }
+                    ]
+                  },
+                  "restrictions": [
+                    {
+                      "equationMatrix": [
+                        [
+                          1
+                        ]
+                      ],
+                      "fromRef": "ctx:repair-cancel-surface",
+                      "semanticMatrix": [
+                        [
+                          1
+                        ]
+                      ],
+                      "toRef": "overlap:cancel-insidepay"
+                    },
+                    {
+                      "equationMatrix": [
+                        [
+                          1
+                        ]
+                      ],
+                      "fromRef": "ctx:repair-inside-payment-surface",
+                      "semanticMatrix": [
+                        [
+                          1
+                        ]
+                      ],
+                      "toRef": "overlap:cancel-insidepay"
+                    },
+                    {
+                      "equationMatrix": [
+                        [
+                          1
+                        ]
+                      ],
+                      "fromRef": "ctx:repair-inside-payment-surface",
+                      "semanticMatrix": [
+                        [
+                          1
+                        ]
+                      ],
+                      "toRef": "overlap:insidepay-order"
+                    },
+                    {
+                      "equationMatrix": [
+                        [
+                          1
+                        ]
+                      ],
+                      "fromRef": "ctx:repair-order-surface",
+                      "semanticMatrix": [
+                        [
+                          1
+                        ]
+                      ],
+                      "toRef": "overlap:insidepay-order"
+                    },
+                    {
+                      "equationMatrix": [
+                        [
+                          1
+                        ]
+                      ],
+                      "fromRef": "ctx:repair-cancel-surface",
+                      "semanticMatrix": [
+                        [
+                          1
+                        ]
+                      ],
+                      "toRef": "overlap:cancel-order"
+                    },
+                    {
+                      "equationMatrix": [
+                        [
+                          1
+                        ]
+                      ],
+                      "fromRef": "ctx:repair-order-surface",
+                      "semanticMatrix": [
+                        [
+                          1
+                        ]
+                      ],
+                      "toRef": "overlap:cancel-order"
+                    },
+                    {
+                      "equationMatrix": [
+                        [
+                          1
+                        ]
+                      ],
+                      "fromRef": "ctx:repair-consign-surface",
+                      "semanticMatrix": [
+                        [
+                          1
+                        ]
+                      ],
+                      "toRef": "overlap:consign-consignprice"
+                    },
+                    {
+                      "equationMatrix": [
+                        [
+                          1
+                        ]
+                      ],
+                      "fromRef": "ctx:repair-consign-price-surface",
+                      "semanticMatrix": [
+                        [
+                          1
+                        ]
+                      ],
+                      "toRef": "overlap:consign-consignprice"
+                    },
+                    {
+                      "equationMatrix": [
+                        [
+                          1
+                        ]
+                      ],
+                      "fromRef": "ctx:repair-preserve-surface",
+                      "semanticMatrix": [
+                        [
+                          1
+                        ]
+                      ],
+                      "toRef": "overlap:preserve-consign"
+                    },
+                    {
+                      "equationMatrix": [
+                        [
+                          1
+                        ]
+                      ],
+                      "fromRef": "ctx:repair-consign-surface",
+                      "semanticMatrix": [
+                        [
+                          1
+                        ]
+                      ],
+                      "toRef": "overlap:preserve-consign"
+                    },
+                    {
+                      "equationMatrix": [
+                        [
+                          1
+                        ]
+                      ],
+                      "fromRef": "ctx:repair-preserve-surface",
+                      "semanticMatrix": [
+                        [
+                          1
+                        ]
+                      ],
+                      "toRef": "overlap:preserve-consignprice"
+                    },
+                    {
+                      "equationMatrix": [
+                        [
+                          1
+                        ]
+                      ],
+                      "fromRef": "ctx:repair-consign-price-surface",
+                      "semanticMatrix": [
+                        [
+                          1
+                        ]
+                      ],
+                      "toRef": "overlap:preserve-consignprice"
+                    },
+                    {
+                      "equationMatrix": [
+                        [
+                          1
+                        ]
+                      ],
+                      "fromRef": "overlap:consign-consignprice",
+                      "semanticMatrix": [
+                        [
+                          1
+                        ]
+                      ],
+                      "toRef": "triple:consign-fee-region"
+                    },
+                    {
+                      "equationMatrix": [
+                        [
+                          1
+                        ]
+                      ],
+                      "fromRef": "overlap:preserve-consign",
+                      "semanticMatrix": [
+                        [
+                          1
+                        ]
+                      ],
+                      "toRef": "triple:consign-fee-region"
+                    },
+                    {
+                      "equationMatrix": [
+                        [
+                          1
+                        ]
+                      ],
+                      "fromRef": "overlap:preserve-consignprice",
+                      "semanticMatrix": [
+                        [
+                          1
+                        ]
+                      ],
+                      "toRef": "triple:consign-fee-region"
+                    }
+                  ]
+                },
+                "schema": "h1-comparison-data/v0.5.4",
+                "sourceComplexFingerprint": "bfd9a71337b532578f6283b14e43c2966146cea8e3844987f95baa58a039409a",
+                "targetComplexFingerprint": "bfd9a71337b532578f6283b14e43c2966146cea8e3844987f95baa58a039409a"
+              },
+              "incidenceBridge": {
+                "cechChartRefs": [
+                  "ctx:repair-cancel-surface",
+                  "ctx:repair-inside-payment-surface",
+                  "ctx:repair-order-surface",
+                  "ctx:repair-consign-surface",
+                  "ctx:repair-consign-price-surface",
+                  "ctx:repair-preserve-surface"
+                ],
+                "kind": "chart-indexed",
+                "repairChartRefs": [
+                  "ctx:repair-cancel-surface",
+                  "ctx:repair-inside-payment-surface",
+                  "ctx:repair-order-surface",
+                  "ctx:repair-consign-surface",
+                  "ctx:repair-consign-price-surface",
+                  "ctx:repair-preserve-surface"
+                ]
+              },
+              "kind": "saga-comparison"
+            },
+            "complex": {
+              "archmapCoverRef": "cover:money-settlement-complex",
+              "charts": [
+                "ctx:repair-cancel-surface",
+                "ctx:repair-inside-payment-surface",
+                "ctx:repair-order-surface",
+                "ctx:repair-consign-surface",
+                "ctx:repair-consign-price-surface",
+                "ctx:repair-preserve-surface"
+              ],
+              "enumerationComplete": true,
+              "overlaps": [
+                {
+                  "archmapContextRef": "ctx:intersection:cancel-insidepay",
+                  "id": "overlap:cancel-insidepay",
+                  "left": "ctx:repair-cancel-surface",
+                  "right": "ctx:repair-inside-payment-surface"
+                },
+                {
+                  "archmapContextRef": "ctx:intersection:insidepay-order",
+                  "id": "overlap:insidepay-order",
+                  "left": "ctx:repair-inside-payment-surface",
+                  "right": "ctx:repair-order-surface"
+                },
+                {
+                  "archmapContextRef": "ctx:intersection:cancel-order",
+                  "id": "overlap:cancel-order",
+                  "left": "ctx:repair-cancel-surface",
+                  "right": "ctx:repair-order-surface"
+                },
+                {
+                  "archmapContextRef": "ctx:intersection:consign-consignprice",
+                  "id": "overlap:consign-consignprice",
+                  "left": "ctx:repair-consign-surface",
+                  "right": "ctx:repair-consign-price-surface"
+                },
+                {
+                  "archmapContextRef": "ctx:intersection:preserve-consign",
+                  "id": "overlap:preserve-consign",
+                  "left": "ctx:repair-preserve-surface",
+                  "right": "ctx:repair-consign-surface"
+                },
+                {
+                  "archmapContextRef": "ctx:intersection:preserve-consignprice",
+                  "id": "overlap:preserve-consignprice",
+                  "left": "ctx:repair-preserve-surface",
+                  "right": "ctx:repair-consign-price-surface"
+                }
+              ],
+              "tripleOverlaps": [
+                {
+                  "archmapContextRef": "ctx:intersection:consign-fee-region",
+                  "id": "triple:consign-fee-region",
+                  "overlapRefs": [
+                    "overlap:consign-consignprice",
+                    "overlap:preserve-consign",
+                    "overlap:preserve-consignprice"
+                  ]
+                }
+              ]
+            },
+            "faithfulness": {
+              "mode": "supplied",
+              "supplied": {
+                "faithfulnessLaw": "the refund rounding witness projects one-to-one onto the cancel-service reconciliation observation",
+                "residualSupportPredicate": {
+                  "kind": "finite-support",
+                  "supportVariables": [
+                    "drift:refund-rounding"
+                  ],
+                  "zeroOnZeroPrimitive": true
+                },
+                "zeroPrimitiveRef": "primitive:consign-consignprice"
+              }
+            },
+            "gluingData": {
+              "kind": "gluing-data",
+              "overlapRefs": [
+                "overlap:cancel-insidepay",
+                "overlap:insidepay-order",
+                "overlap:cancel-order"
+              ],
+              "sectionRefs": [
+                {
+                  "overlapRef": "overlap:cancel-insidepay",
+                  "sectionRef": "section:cancel-insidepay"
+                },
+                {
+                  "overlapRef": "overlap:insidepay-order",
+                  "sectionRef": "section:insidepay-order"
+                },
+                {
+                  "overlapRef": "overlap:cancel-order",
+                  "sectionRef": "section:cancel-order"
+                }
+              ]
+            },
+            "grounding": {
+              "kind": "saga-grounding",
+              "profileRef": "profile:train-ticket-money-saga@2",
+              "surfaceRef": "law-surface:train-ticket-money-saga-v054"
+            },
+            "id": "repair-plan:train-ticket-money-head",
+            "primitives": [
+              {
+                "id": "primitive:cancel-insidepay",
+                "overlapRef": "overlap:cancel-insidepay",
+                "resL": [
+                  "drift:refund-rounding"
+                ],
+                "resR": [],
+                "support": {
+                  "kind": "supplied",
+                  "variables": [
+                    "drift:refund-rounding"
+                  ]
+                }
+              },
+              {
+                "id": "primitive:insidepay-order",
+                "overlapRef": "overlap:insidepay-order",
+                "resL": [
+                  "drift:refund-rounding"
+                ],
+                "resR": [],
+                "support": {
+                  "kind": "supplied",
+                  "variables": [
+                    "drift:refund-rounding"
+                  ]
+                }
+              },
+              {
+                "id": "primitive:cancel-order",
+                "overlapRef": "overlap:cancel-order",
+                "resL": [
+                  "drift:refund-rounding"
+                ],
+                "resR": [],
+                "support": {
+                  "kind": "supplied",
+                  "variables": [
+                    "drift:refund-rounding"
+                  ]
+                }
+              },
+              {
+                "id": "primitive:consign-consignprice",
+                "overlapRef": "overlap:consign-consignprice",
+                "resL": [],
+                "resR": [],
+                "support": {
+                  "kind": "supplied",
+                  "variables": []
+                }
+              },
+              {
+                "id": "primitive:preserve-consign",
+                "overlapRef": "overlap:preserve-consign",
+                "resL": [],
+                "resR": [],
+                "support": {
+                  "kind": "supplied",
+                  "variables": []
+                }
+              },
+              {
+                "id": "primitive:preserve-consignprice",
+                "overlapRef": "overlap:preserve-consignprice",
+                "resL": [],
+                "resR": [],
+                "support": {
+                  "kind": "supplied",
+                  "variables": []
+                }
+              }
+            ],
+            "residual": {
+              "kind": "supplied"
+            },
+            "schema": "archsig-repair-plan/v0.5.4",
+            "semanticProjection": {
+              "k": [
+                "drift:refund-rounding"
+              ],
+              "lambda": [
+                "atom:refund-drift-witness"
+              ],
+              "pi": [
+                {
+                  "atomRef": "atom:refund-drift-witness",
+                  "subject": "drift:refund-rounding"
+                }
+              ]
+            },
+            "trueSheafCertificate": {
+              "coverRef": "cover:money-settlement-diagnostic",
+              "globalCondition": "assumed",
+              "kind": "true-sheaf-certificate",
+              "memberCharts": [
+                "ctx:repair-cancel-surface",
+                "ctx:repair-inside-payment-surface",
+                "ctx:repair-order-surface"
+              ]
+            }
+          }
+        },
+        "equationResidual": {
+          "kind": "derived-from-independent-equation-lift-atlas",
+          "targetClassNonZero": true,
+          "targetCocycle": true
+        },
+        "generatedCochainMap": {
+          "degreeOne": [
+            {
+              "cellRef": "overlap:cancel-insidepay",
+              "localPhiDerivedFrom": "generatorMap modulo repair/equation relations"
+            },
+            {
+              "cellRef": "overlap:cancel-order",
+              "localPhiDerivedFrom": "generatorMap modulo repair/equation relations"
+            },
+            {
+              "cellRef": "overlap:consign-consignprice",
+              "localPhiDerivedFrom": "generatorMap modulo repair/equation relations"
+            },
+            {
+              "cellRef": "overlap:insidepay-order",
+              "localPhiDerivedFrom": "generatorMap modulo repair/equation relations"
+            },
+            {
+              "cellRef": "overlap:preserve-consign",
+              "localPhiDerivedFrom": "generatorMap modulo repair/equation relations"
+            },
+            {
+              "cellRef": "overlap:preserve-consignprice",
+              "localPhiDerivedFrom": "generatorMap modulo repair/equation relations"
+            }
+          ],
+          "degreeOneCommutative": true,
+          "degreeTwo": [
+            {
+              "cellRef": "triple:consign-fee-region",
+              "localPhiDerivedFrom": "generatorMap modulo repair/equation relations"
+            }
+          ],
+          "degreeZero": [
+            {
+              "cellRef": "ctx:repair-cancel-surface",
+              "localPhiDerivedFrom": "generatorMap modulo repair/equation relations"
+            },
+            {
+              "cellRef": "ctx:repair-consign-price-surface",
+              "localPhiDerivedFrom": "generatorMap modulo repair/equation relations"
+            },
+            {
+              "cellRef": "ctx:repair-consign-surface",
+              "localPhiDerivedFrom": "generatorMap modulo repair/equation relations"
+            },
+            {
+              "cellRef": "ctx:repair-inside-payment-surface",
+              "localPhiDerivedFrom": "generatorMap modulo repair/equation relations"
+            },
+            {
+              "cellRef": "ctx:repair-order-surface",
+              "localPhiDerivedFrom": "generatorMap modulo repair/equation relations"
+            },
+            {
+              "cellRef": "ctx:repair-preserve-surface",
+              "localPhiDerivedFrom": "generatorMap modulo repair/equation relations"
+            }
+          ],
+          "degreeZeroCommutative": true,
+          "kind": "derived-from-local-phi"
+        },
+        "generatorCompleteness": true,
+        "kind": "presentation-generated",
+        "presentationExactness": true,
+        "residualWitness": {
+          "differenceIsDeltaZero": true,
+          "equation": "kappa1(r_sem) = r_E + delta0(h)",
+          "equationResidual": [
+            {
+              "coefficients": [
+                1
+              ],
+              "equationGenerators": [
+                "equation:overlap:cancel-insidepay"
+              ],
+              "overlapRef": "overlap:cancel-insidepay"
+            },
+            {
+              "coefficients": [
+                1
+              ],
+              "equationGenerators": [
+                "equation:overlap:insidepay-order"
+              ],
+              "overlapRef": "overlap:insidepay-order"
+            },
+            {
+              "coefficients": [
+                1
+              ],
+              "equationGenerators": [
+                "equation:overlap:cancel-order"
+              ],
+              "overlapRef": "overlap:cancel-order"
+            },
+            {
+              "coefficients": [
+                0
+              ],
+              "equationGenerators": [
+                "equation:overlap:consign-consignprice"
+              ],
+              "overlapRef": "overlap:consign-consignprice"
+            },
+            {
+              "coefficients": [
+                0
+              ],
+              "equationGenerators": [
+                "equation:overlap:preserve-consign"
+              ],
+              "overlapRef": "overlap:preserve-consign"
+            },
+            {
+              "coefficients": [
+                0
+              ],
+              "equationGenerators": [
+                "equation:overlap:preserve-consignprice"
+              ],
+              "overlapRef": "overlap:preserve-consignprice"
+            }
+          ],
+          "h": [
+            {
+              "chartRef": "ctx:repair-cancel-surface",
+              "coefficients": [
+                0
+              ],
+              "equationGenerators": [
+                "equation:ctx:repair-cancel-surface"
+              ]
+            },
+            {
+              "chartRef": "ctx:repair-inside-payment-surface",
+              "coefficients": [
+                0
+              ],
+              "equationGenerators": [
+                "equation:ctx:repair-inside-payment-surface"
+              ]
+            },
+            {
+              "chartRef": "ctx:repair-order-surface",
+              "coefficients": [
+                0
+              ],
+              "equationGenerators": [
+                "equation:ctx:repair-order-surface"
+              ]
+            },
+            {
+              "chartRef": "ctx:repair-consign-surface",
+              "coefficients": [
+                0
+              ],
+              "equationGenerators": [
+                "equation:ctx:repair-consign-surface"
+              ]
+            },
+            {
+              "chartRef": "ctx:repair-consign-price-surface",
+              "coefficients": [
+                0
+              ],
+              "equationGenerators": [
+                "equation:ctx:repair-consign-price-surface"
+              ]
+            },
+            {
+              "chartRef": "ctx:repair-preserve-surface",
+              "coefficients": [
+                0
+              ],
+              "equationGenerators": [
+                "equation:ctx:repair-preserve-surface"
+              ]
+            }
+          ],
+          "kind": "computed-quotient-atlas-witness",
+          "sourceImage": [
+            {
+              "coefficients": [
+                1
+              ],
+              "equationGenerators": [
+                "equation:overlap:cancel-insidepay"
+              ],
+              "overlapRef": "overlap:cancel-insidepay"
+            },
+            {
+              "coefficients": [
+                1
+              ],
+              "equationGenerators": [
+                "equation:overlap:insidepay-order"
+              ],
+              "overlapRef": "overlap:insidepay-order"
+            },
+            {
+              "coefficients": [
+                1
+              ],
+              "equationGenerators": [
+                "equation:overlap:cancel-order"
+              ],
+              "overlapRef": "overlap:cancel-order"
+            },
+            {
+              "coefficients": [
+                0
+              ],
+              "equationGenerators": [
+                "equation:overlap:consign-consignprice"
+              ],
+              "overlapRef": "overlap:consign-consignprice"
+            },
+            {
+              "coefficients": [
+                0
+              ],
+              "equationGenerators": [
+                "equation:overlap:preserve-consign"
+              ],
+              "overlapRef": "overlap:preserve-consign"
+            },
+            {
+              "coefficients": [
+                0
+              ],
+              "equationGenerators": [
+                "equation:overlap:preserve-consignprice"
+              ],
+              "overlapRef": "overlap:preserve-consignprice"
+            }
+          ]
+        },
+        "restrictionNaturality": true,
+        "semanticResidual": {
+          "kind": "derived-from-semantic-repair-presentation",
+          "sourceClassNonZero": true,
+          "sourceCocycle": true
+        }
+      },
       "representation": {
-        "conclusionCode": "SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA",
+        "conclusionCode": "SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS",
         "contract": {
           "classPrerequisite": true,
           "contractChecked": true,
-          "h1ComparisonDataKind": "explicit",
-          "incidenceBridgeKind": "explicit",
-          "normalizedComplexFingerprint": "66727f00f5552a62f31d4f899089f8c5d7ee2de0121114733e1bab611a112cc5",
+          "h1ComparisonDataKind": "presentation-generated",
+          "incidenceBridgeKind": "chart-indexed",
+          "normalizedComplexFingerprint": "bfd9a71337b532578f6283b14e43c2966146cea8e3844987f95baa58a039409a",
           "targetClassComputed": true
         },
         "evaluator": "ag.saga-comparison",
         "failureCode": null,
         "generatedQuotientTransfer": {
-          "kind": "Z1/B1-class-transfer",
+          "kind": "presentation-derived-Z1/B1-class-transfer",
           "level": "quotient",
           "preservesZeroPredicate": true,
           "sourceClassNonZero": true,
-          "sourceInvariant": "saga-descent:residual-class",
+          "sourceInvariant": "presentation-generated:semantic-h1-class",
           "targetClassNonZero": true,
           "targetInvariant": "saga-comparison:h1-transfer"
         },
@@ -1817,32 +2874,1013 @@
           "Supplied cochain data and generated quotient-level transfer are separate structures.",
           "The transfer reading is relative to the supplied finite comparison contract."
         ],
+        "presentationGenerated": {
+          "comparisonInput": {
+            "kind": "canonical-presentation-repair-plan",
+            "repairPlan": {
+              "coefficient": "f2-additive",
+              "comparison": {
+                "h1ComparisonData": {
+                  "kind": "presentation-generated",
+                  "presentation": {
+                    "cells": [
+                      {
+                        "cellRef": "ctx:repair-cancel-surface",
+                        "equationGenerators": [
+                          "equation:ctx:repair-cancel-surface"
+                        ],
+                        "equationRelationMatrix": [],
+                        "generatorMap": [
+                          [
+                            1
+                          ]
+                        ],
+                        "repairRelationMatrix": [],
+                        "semanticGenerators": [
+                          "drift:refund-rounding"
+                        ]
+                      },
+                      {
+                        "cellRef": "ctx:repair-inside-payment-surface",
+                        "equationGenerators": [
+                          "equation:ctx:repair-inside-payment-surface"
+                        ],
+                        "equationRelationMatrix": [],
+                        "generatorMap": [
+                          [
+                            1
+                          ]
+                        ],
+                        "repairRelationMatrix": [],
+                        "semanticGenerators": [
+                          "drift:refund-rounding"
+                        ]
+                      },
+                      {
+                        "cellRef": "ctx:repair-order-surface",
+                        "equationGenerators": [
+                          "equation:ctx:repair-order-surface"
+                        ],
+                        "equationRelationMatrix": [],
+                        "generatorMap": [
+                          [
+                            1
+                          ]
+                        ],
+                        "repairRelationMatrix": [],
+                        "semanticGenerators": [
+                          "drift:refund-rounding"
+                        ]
+                      },
+                      {
+                        "cellRef": "ctx:repair-consign-surface",
+                        "equationGenerators": [
+                          "equation:ctx:repair-consign-surface"
+                        ],
+                        "equationRelationMatrix": [],
+                        "generatorMap": [
+                          [
+                            1
+                          ]
+                        ],
+                        "repairRelationMatrix": [],
+                        "semanticGenerators": [
+                          "drift:refund-rounding"
+                        ]
+                      },
+                      {
+                        "cellRef": "ctx:repair-consign-price-surface",
+                        "equationGenerators": [
+                          "equation:ctx:repair-consign-price-surface"
+                        ],
+                        "equationRelationMatrix": [],
+                        "generatorMap": [
+                          [
+                            1
+                          ]
+                        ],
+                        "repairRelationMatrix": [],
+                        "semanticGenerators": [
+                          "drift:refund-rounding"
+                        ]
+                      },
+                      {
+                        "cellRef": "ctx:repair-preserve-surface",
+                        "equationGenerators": [
+                          "equation:ctx:repair-preserve-surface"
+                        ],
+                        "equationRelationMatrix": [],
+                        "generatorMap": [
+                          [
+                            1
+                          ]
+                        ],
+                        "repairRelationMatrix": [],
+                        "semanticGenerators": [
+                          "drift:refund-rounding"
+                        ]
+                      },
+                      {
+                        "cellRef": "overlap:cancel-insidepay",
+                        "equationGenerators": [
+                          "equation:overlap:cancel-insidepay"
+                        ],
+                        "equationRelationMatrix": [],
+                        "generatorMap": [
+                          [
+                            1
+                          ]
+                        ],
+                        "repairRelationMatrix": [],
+                        "semanticGenerators": [
+                          "drift:refund-rounding"
+                        ]
+                      },
+                      {
+                        "cellRef": "overlap:insidepay-order",
+                        "equationGenerators": [
+                          "equation:overlap:insidepay-order"
+                        ],
+                        "equationRelationMatrix": [],
+                        "generatorMap": [
+                          [
+                            1
+                          ]
+                        ],
+                        "repairRelationMatrix": [],
+                        "semanticGenerators": [
+                          "drift:refund-rounding"
+                        ]
+                      },
+                      {
+                        "cellRef": "overlap:cancel-order",
+                        "equationGenerators": [
+                          "equation:overlap:cancel-order"
+                        ],
+                        "equationRelationMatrix": [],
+                        "generatorMap": [
+                          [
+                            1
+                          ]
+                        ],
+                        "repairRelationMatrix": [],
+                        "semanticGenerators": [
+                          "drift:refund-rounding"
+                        ]
+                      },
+                      {
+                        "cellRef": "overlap:consign-consignprice",
+                        "equationGenerators": [
+                          "equation:overlap:consign-consignprice"
+                        ],
+                        "equationRelationMatrix": [],
+                        "generatorMap": [
+                          [
+                            1
+                          ]
+                        ],
+                        "repairRelationMatrix": [],
+                        "semanticGenerators": [
+                          "drift:refund-rounding"
+                        ]
+                      },
+                      {
+                        "cellRef": "overlap:preserve-consign",
+                        "equationGenerators": [
+                          "equation:overlap:preserve-consign"
+                        ],
+                        "equationRelationMatrix": [],
+                        "generatorMap": [
+                          [
+                            1
+                          ]
+                        ],
+                        "repairRelationMatrix": [],
+                        "semanticGenerators": [
+                          "drift:refund-rounding"
+                        ]
+                      },
+                      {
+                        "cellRef": "overlap:preserve-consignprice",
+                        "equationGenerators": [
+                          "equation:overlap:preserve-consignprice"
+                        ],
+                        "equationRelationMatrix": [],
+                        "generatorMap": [
+                          [
+                            1
+                          ]
+                        ],
+                        "repairRelationMatrix": [],
+                        "semanticGenerators": [
+                          "drift:refund-rounding"
+                        ]
+                      },
+                      {
+                        "cellRef": "triple:consign-fee-region",
+                        "equationGenerators": [
+                          "equation:triple:consign-fee-region"
+                        ],
+                        "equationRelationMatrix": [],
+                        "generatorMap": [
+                          [
+                            1
+                          ]
+                        ],
+                        "repairRelationMatrix": [],
+                        "semanticGenerators": [
+                          "drift:refund-rounding"
+                        ]
+                      }
+                    ],
+                    "equationLiftAtlas": {
+                      "localLifts": [
+                        {
+                          "chartRef": "ctx:repair-cancel-surface",
+                          "coefficients": [
+                            0
+                          ]
+                        },
+                        {
+                          "chartRef": "ctx:repair-inside-payment-surface",
+                          "coefficients": [
+                            0
+                          ]
+                        },
+                        {
+                          "chartRef": "ctx:repair-order-surface",
+                          "coefficients": [
+                            0
+                          ]
+                        },
+                        {
+                          "chartRef": "ctx:repair-consign-surface",
+                          "coefficients": [
+                            0
+                          ]
+                        },
+                        {
+                          "chartRef": "ctx:repair-consign-price-surface",
+                          "coefficients": [
+                            0
+                          ]
+                        },
+                        {
+                          "chartRef": "ctx:repair-preserve-surface",
+                          "coefficients": [
+                            0
+                          ]
+                        }
+                      ],
+                      "transitionDifferences": [
+                        {
+                          "coefficients": [
+                            1
+                          ],
+                          "overlapRef": "overlap:cancel-insidepay"
+                        },
+                        {
+                          "coefficients": [
+                            1
+                          ],
+                          "overlapRef": "overlap:insidepay-order"
+                        },
+                        {
+                          "coefficients": [
+                            1
+                          ],
+                          "overlapRef": "overlap:cancel-order"
+                        },
+                        {
+                          "coefficients": [
+                            0
+                          ],
+                          "overlapRef": "overlap:consign-consignprice"
+                        },
+                        {
+                          "coefficients": [
+                            0
+                          ],
+                          "overlapRef": "overlap:preserve-consign"
+                        },
+                        {
+                          "coefficients": [
+                            0
+                          ],
+                          "overlapRef": "overlap:preserve-consignprice"
+                        }
+                      ]
+                    },
+                    "restrictions": [
+                      {
+                        "equationMatrix": [
+                          [
+                            1
+                          ]
+                        ],
+                        "fromRef": "ctx:repair-cancel-surface",
+                        "semanticMatrix": [
+                          [
+                            1
+                          ]
+                        ],
+                        "toRef": "overlap:cancel-insidepay"
+                      },
+                      {
+                        "equationMatrix": [
+                          [
+                            1
+                          ]
+                        ],
+                        "fromRef": "ctx:repair-inside-payment-surface",
+                        "semanticMatrix": [
+                          [
+                            1
+                          ]
+                        ],
+                        "toRef": "overlap:cancel-insidepay"
+                      },
+                      {
+                        "equationMatrix": [
+                          [
+                            1
+                          ]
+                        ],
+                        "fromRef": "ctx:repair-inside-payment-surface",
+                        "semanticMatrix": [
+                          [
+                            1
+                          ]
+                        ],
+                        "toRef": "overlap:insidepay-order"
+                      },
+                      {
+                        "equationMatrix": [
+                          [
+                            1
+                          ]
+                        ],
+                        "fromRef": "ctx:repair-order-surface",
+                        "semanticMatrix": [
+                          [
+                            1
+                          ]
+                        ],
+                        "toRef": "overlap:insidepay-order"
+                      },
+                      {
+                        "equationMatrix": [
+                          [
+                            1
+                          ]
+                        ],
+                        "fromRef": "ctx:repair-cancel-surface",
+                        "semanticMatrix": [
+                          [
+                            1
+                          ]
+                        ],
+                        "toRef": "overlap:cancel-order"
+                      },
+                      {
+                        "equationMatrix": [
+                          [
+                            1
+                          ]
+                        ],
+                        "fromRef": "ctx:repair-order-surface",
+                        "semanticMatrix": [
+                          [
+                            1
+                          ]
+                        ],
+                        "toRef": "overlap:cancel-order"
+                      },
+                      {
+                        "equationMatrix": [
+                          [
+                            1
+                          ]
+                        ],
+                        "fromRef": "ctx:repair-consign-surface",
+                        "semanticMatrix": [
+                          [
+                            1
+                          ]
+                        ],
+                        "toRef": "overlap:consign-consignprice"
+                      },
+                      {
+                        "equationMatrix": [
+                          [
+                            1
+                          ]
+                        ],
+                        "fromRef": "ctx:repair-consign-price-surface",
+                        "semanticMatrix": [
+                          [
+                            1
+                          ]
+                        ],
+                        "toRef": "overlap:consign-consignprice"
+                      },
+                      {
+                        "equationMatrix": [
+                          [
+                            1
+                          ]
+                        ],
+                        "fromRef": "ctx:repair-preserve-surface",
+                        "semanticMatrix": [
+                          [
+                            1
+                          ]
+                        ],
+                        "toRef": "overlap:preserve-consign"
+                      },
+                      {
+                        "equationMatrix": [
+                          [
+                            1
+                          ]
+                        ],
+                        "fromRef": "ctx:repair-consign-surface",
+                        "semanticMatrix": [
+                          [
+                            1
+                          ]
+                        ],
+                        "toRef": "overlap:preserve-consign"
+                      },
+                      {
+                        "equationMatrix": [
+                          [
+                            1
+                          ]
+                        ],
+                        "fromRef": "ctx:repair-preserve-surface",
+                        "semanticMatrix": [
+                          [
+                            1
+                          ]
+                        ],
+                        "toRef": "overlap:preserve-consignprice"
+                      },
+                      {
+                        "equationMatrix": [
+                          [
+                            1
+                          ]
+                        ],
+                        "fromRef": "ctx:repair-consign-price-surface",
+                        "semanticMatrix": [
+                          [
+                            1
+                          ]
+                        ],
+                        "toRef": "overlap:preserve-consignprice"
+                      },
+                      {
+                        "equationMatrix": [
+                          [
+                            1
+                          ]
+                        ],
+                        "fromRef": "overlap:consign-consignprice",
+                        "semanticMatrix": [
+                          [
+                            1
+                          ]
+                        ],
+                        "toRef": "triple:consign-fee-region"
+                      },
+                      {
+                        "equationMatrix": [
+                          [
+                            1
+                          ]
+                        ],
+                        "fromRef": "overlap:preserve-consign",
+                        "semanticMatrix": [
+                          [
+                            1
+                          ]
+                        ],
+                        "toRef": "triple:consign-fee-region"
+                      },
+                      {
+                        "equationMatrix": [
+                          [
+                            1
+                          ]
+                        ],
+                        "fromRef": "overlap:preserve-consignprice",
+                        "semanticMatrix": [
+                          [
+                            1
+                          ]
+                        ],
+                        "toRef": "triple:consign-fee-region"
+                      }
+                    ]
+                  },
+                  "schema": "h1-comparison-data/v0.5.4",
+                  "sourceComplexFingerprint": "bfd9a71337b532578f6283b14e43c2966146cea8e3844987f95baa58a039409a",
+                  "targetComplexFingerprint": "bfd9a71337b532578f6283b14e43c2966146cea8e3844987f95baa58a039409a"
+                },
+                "incidenceBridge": {
+                  "cechChartRefs": [
+                    "ctx:repair-cancel-surface",
+                    "ctx:repair-inside-payment-surface",
+                    "ctx:repair-order-surface",
+                    "ctx:repair-consign-surface",
+                    "ctx:repair-consign-price-surface",
+                    "ctx:repair-preserve-surface"
+                  ],
+                  "kind": "chart-indexed",
+                  "repairChartRefs": [
+                    "ctx:repair-cancel-surface",
+                    "ctx:repair-inside-payment-surface",
+                    "ctx:repair-order-surface",
+                    "ctx:repair-consign-surface",
+                    "ctx:repair-consign-price-surface",
+                    "ctx:repair-preserve-surface"
+                  ]
+                },
+                "kind": "saga-comparison"
+              },
+              "complex": {
+                "archmapCoverRef": "cover:money-settlement-complex",
+                "charts": [
+                  "ctx:repair-cancel-surface",
+                  "ctx:repair-inside-payment-surface",
+                  "ctx:repair-order-surface",
+                  "ctx:repair-consign-surface",
+                  "ctx:repair-consign-price-surface",
+                  "ctx:repair-preserve-surface"
+                ],
+                "enumerationComplete": true,
+                "overlaps": [
+                  {
+                    "archmapContextRef": "ctx:intersection:cancel-insidepay",
+                    "id": "overlap:cancel-insidepay",
+                    "left": "ctx:repair-cancel-surface",
+                    "right": "ctx:repair-inside-payment-surface"
+                  },
+                  {
+                    "archmapContextRef": "ctx:intersection:insidepay-order",
+                    "id": "overlap:insidepay-order",
+                    "left": "ctx:repair-inside-payment-surface",
+                    "right": "ctx:repair-order-surface"
+                  },
+                  {
+                    "archmapContextRef": "ctx:intersection:cancel-order",
+                    "id": "overlap:cancel-order",
+                    "left": "ctx:repair-cancel-surface",
+                    "right": "ctx:repair-order-surface"
+                  },
+                  {
+                    "archmapContextRef": "ctx:intersection:consign-consignprice",
+                    "id": "overlap:consign-consignprice",
+                    "left": "ctx:repair-consign-surface",
+                    "right": "ctx:repair-consign-price-surface"
+                  },
+                  {
+                    "archmapContextRef": "ctx:intersection:preserve-consign",
+                    "id": "overlap:preserve-consign",
+                    "left": "ctx:repair-preserve-surface",
+                    "right": "ctx:repair-consign-surface"
+                  },
+                  {
+                    "archmapContextRef": "ctx:intersection:preserve-consignprice",
+                    "id": "overlap:preserve-consignprice",
+                    "left": "ctx:repair-preserve-surface",
+                    "right": "ctx:repair-consign-price-surface"
+                  }
+                ],
+                "tripleOverlaps": [
+                  {
+                    "archmapContextRef": "ctx:intersection:consign-fee-region",
+                    "id": "triple:consign-fee-region",
+                    "overlapRefs": [
+                      "overlap:consign-consignprice",
+                      "overlap:preserve-consign",
+                      "overlap:preserve-consignprice"
+                    ]
+                  }
+                ]
+              },
+              "faithfulness": {
+                "mode": "supplied",
+                "supplied": {
+                  "faithfulnessLaw": "the refund rounding witness projects one-to-one onto the cancel-service reconciliation observation",
+                  "residualSupportPredicate": {
+                    "kind": "finite-support",
+                    "supportVariables": [
+                      "drift:refund-rounding"
+                    ],
+                    "zeroOnZeroPrimitive": true
+                  },
+                  "zeroPrimitiveRef": "primitive:consign-consignprice"
+                }
+              },
+              "gluingData": {
+                "kind": "gluing-data",
+                "overlapRefs": [
+                  "overlap:cancel-insidepay",
+                  "overlap:insidepay-order",
+                  "overlap:cancel-order"
+                ],
+                "sectionRefs": [
+                  {
+                    "overlapRef": "overlap:cancel-insidepay",
+                    "sectionRef": "section:cancel-insidepay"
+                  },
+                  {
+                    "overlapRef": "overlap:insidepay-order",
+                    "sectionRef": "section:insidepay-order"
+                  },
+                  {
+                    "overlapRef": "overlap:cancel-order",
+                    "sectionRef": "section:cancel-order"
+                  }
+                ]
+              },
+              "grounding": {
+                "kind": "saga-grounding",
+                "profileRef": "profile:train-ticket-money-saga@2",
+                "surfaceRef": "law-surface:train-ticket-money-saga-v054"
+              },
+              "id": "repair-plan:train-ticket-money-head",
+              "primitives": [
+                {
+                  "id": "primitive:cancel-insidepay",
+                  "overlapRef": "overlap:cancel-insidepay",
+                  "resL": [
+                    "drift:refund-rounding"
+                  ],
+                  "resR": [],
+                  "support": {
+                    "kind": "supplied",
+                    "variables": [
+                      "drift:refund-rounding"
+                    ]
+                  }
+                },
+                {
+                  "id": "primitive:insidepay-order",
+                  "overlapRef": "overlap:insidepay-order",
+                  "resL": [
+                    "drift:refund-rounding"
+                  ],
+                  "resR": [],
+                  "support": {
+                    "kind": "supplied",
+                    "variables": [
+                      "drift:refund-rounding"
+                    ]
+                  }
+                },
+                {
+                  "id": "primitive:cancel-order",
+                  "overlapRef": "overlap:cancel-order",
+                  "resL": [
+                    "drift:refund-rounding"
+                  ],
+                  "resR": [],
+                  "support": {
+                    "kind": "supplied",
+                    "variables": [
+                      "drift:refund-rounding"
+                    ]
+                  }
+                },
+                {
+                  "id": "primitive:consign-consignprice",
+                  "overlapRef": "overlap:consign-consignprice",
+                  "resL": [],
+                  "resR": [],
+                  "support": {
+                    "kind": "supplied",
+                    "variables": []
+                  }
+                },
+                {
+                  "id": "primitive:preserve-consign",
+                  "overlapRef": "overlap:preserve-consign",
+                  "resL": [],
+                  "resR": [],
+                  "support": {
+                    "kind": "supplied",
+                    "variables": []
+                  }
+                },
+                {
+                  "id": "primitive:preserve-consignprice",
+                  "overlapRef": "overlap:preserve-consignprice",
+                  "resL": [],
+                  "resR": [],
+                  "support": {
+                    "kind": "supplied",
+                    "variables": []
+                  }
+                }
+              ],
+              "residual": {
+                "kind": "supplied"
+              },
+              "schema": "archsig-repair-plan/v0.5.4",
+              "semanticProjection": {
+                "k": [
+                  "drift:refund-rounding"
+                ],
+                "lambda": [
+                  "atom:refund-drift-witness"
+                ],
+                "pi": [
+                  {
+                    "atomRef": "atom:refund-drift-witness",
+                    "subject": "drift:refund-rounding"
+                  }
+                ]
+              },
+              "trueSheafCertificate": {
+                "coverRef": "cover:money-settlement-diagnostic",
+                "globalCondition": "assumed",
+                "kind": "true-sheaf-certificate",
+                "memberCharts": [
+                  "ctx:repair-cancel-surface",
+                  "ctx:repair-inside-payment-surface",
+                  "ctx:repair-order-surface"
+                ]
+              }
+            }
+          },
+          "equationResidual": {
+            "kind": "derived-from-independent-equation-lift-atlas",
+            "targetClassNonZero": true,
+            "targetCocycle": true
+          },
+          "generatedCochainMap": {
+            "degreeOne": [
+              {
+                "cellRef": "overlap:cancel-insidepay",
+                "localPhiDerivedFrom": "generatorMap modulo repair/equation relations"
+              },
+              {
+                "cellRef": "overlap:cancel-order",
+                "localPhiDerivedFrom": "generatorMap modulo repair/equation relations"
+              },
+              {
+                "cellRef": "overlap:consign-consignprice",
+                "localPhiDerivedFrom": "generatorMap modulo repair/equation relations"
+              },
+              {
+                "cellRef": "overlap:insidepay-order",
+                "localPhiDerivedFrom": "generatorMap modulo repair/equation relations"
+              },
+              {
+                "cellRef": "overlap:preserve-consign",
+                "localPhiDerivedFrom": "generatorMap modulo repair/equation relations"
+              },
+              {
+                "cellRef": "overlap:preserve-consignprice",
+                "localPhiDerivedFrom": "generatorMap modulo repair/equation relations"
+              }
+            ],
+            "degreeOneCommutative": true,
+            "degreeTwo": [
+              {
+                "cellRef": "triple:consign-fee-region",
+                "localPhiDerivedFrom": "generatorMap modulo repair/equation relations"
+              }
+            ],
+            "degreeZero": [
+              {
+                "cellRef": "ctx:repair-cancel-surface",
+                "localPhiDerivedFrom": "generatorMap modulo repair/equation relations"
+              },
+              {
+                "cellRef": "ctx:repair-consign-price-surface",
+                "localPhiDerivedFrom": "generatorMap modulo repair/equation relations"
+              },
+              {
+                "cellRef": "ctx:repair-consign-surface",
+                "localPhiDerivedFrom": "generatorMap modulo repair/equation relations"
+              },
+              {
+                "cellRef": "ctx:repair-inside-payment-surface",
+                "localPhiDerivedFrom": "generatorMap modulo repair/equation relations"
+              },
+              {
+                "cellRef": "ctx:repair-order-surface",
+                "localPhiDerivedFrom": "generatorMap modulo repair/equation relations"
+              },
+              {
+                "cellRef": "ctx:repair-preserve-surface",
+                "localPhiDerivedFrom": "generatorMap modulo repair/equation relations"
+              }
+            ],
+            "degreeZeroCommutative": true,
+            "kind": "derived-from-local-phi"
+          },
+          "generatorCompleteness": true,
+          "kind": "presentation-generated",
+          "presentationExactness": true,
+          "residualWitness": {
+            "differenceIsDeltaZero": true,
+            "equation": "kappa1(r_sem) = r_E + delta0(h)",
+            "equationResidual": [
+              {
+                "coefficients": [
+                  1
+                ],
+                "equationGenerators": [
+                  "equation:overlap:cancel-insidepay"
+                ],
+                "overlapRef": "overlap:cancel-insidepay"
+              },
+              {
+                "coefficients": [
+                  1
+                ],
+                "equationGenerators": [
+                  "equation:overlap:insidepay-order"
+                ],
+                "overlapRef": "overlap:insidepay-order"
+              },
+              {
+                "coefficients": [
+                  1
+                ],
+                "equationGenerators": [
+                  "equation:overlap:cancel-order"
+                ],
+                "overlapRef": "overlap:cancel-order"
+              },
+              {
+                "coefficients": [
+                  0
+                ],
+                "equationGenerators": [
+                  "equation:overlap:consign-consignprice"
+                ],
+                "overlapRef": "overlap:consign-consignprice"
+              },
+              {
+                "coefficients": [
+                  0
+                ],
+                "equationGenerators": [
+                  "equation:overlap:preserve-consign"
+                ],
+                "overlapRef": "overlap:preserve-consign"
+              },
+              {
+                "coefficients": [
+                  0
+                ],
+                "equationGenerators": [
+                  "equation:overlap:preserve-consignprice"
+                ],
+                "overlapRef": "overlap:preserve-consignprice"
+              }
+            ],
+            "h": [
+              {
+                "chartRef": "ctx:repair-cancel-surface",
+                "coefficients": [
+                  0
+                ],
+                "equationGenerators": [
+                  "equation:ctx:repair-cancel-surface"
+                ]
+              },
+              {
+                "chartRef": "ctx:repair-inside-payment-surface",
+                "coefficients": [
+                  0
+                ],
+                "equationGenerators": [
+                  "equation:ctx:repair-inside-payment-surface"
+                ]
+              },
+              {
+                "chartRef": "ctx:repair-order-surface",
+                "coefficients": [
+                  0
+                ],
+                "equationGenerators": [
+                  "equation:ctx:repair-order-surface"
+                ]
+              },
+              {
+                "chartRef": "ctx:repair-consign-surface",
+                "coefficients": [
+                  0
+                ],
+                "equationGenerators": [
+                  "equation:ctx:repair-consign-surface"
+                ]
+              },
+              {
+                "chartRef": "ctx:repair-consign-price-surface",
+                "coefficients": [
+                  0
+                ],
+                "equationGenerators": [
+                  "equation:ctx:repair-consign-price-surface"
+                ]
+              },
+              {
+                "chartRef": "ctx:repair-preserve-surface",
+                "coefficients": [
+                  0
+                ],
+                "equationGenerators": [
+                  "equation:ctx:repair-preserve-surface"
+                ]
+              }
+            ],
+            "kind": "computed-quotient-atlas-witness",
+            "sourceImage": [
+              {
+                "coefficients": [
+                  1
+                ],
+                "equationGenerators": [
+                  "equation:overlap:cancel-insidepay"
+                ],
+                "overlapRef": "overlap:cancel-insidepay"
+              },
+              {
+                "coefficients": [
+                  1
+                ],
+                "equationGenerators": [
+                  "equation:overlap:insidepay-order"
+                ],
+                "overlapRef": "overlap:insidepay-order"
+              },
+              {
+                "coefficients": [
+                  1
+                ],
+                "equationGenerators": [
+                  "equation:overlap:cancel-order"
+                ],
+                "overlapRef": "overlap:cancel-order"
+              },
+              {
+                "coefficients": [
+                  0
+                ],
+                "equationGenerators": [
+                  "equation:overlap:consign-consignprice"
+                ],
+                "overlapRef": "overlap:consign-consignprice"
+              },
+              {
+                "coefficients": [
+                  0
+                ],
+                "equationGenerators": [
+                  "equation:overlap:preserve-consign"
+                ],
+                "overlapRef": "overlap:preserve-consign"
+              },
+              {
+                "coefficients": [
+                  0
+                ],
+                "equationGenerators": [
+                  "equation:overlap:preserve-consignprice"
+                ],
+                "overlapRef": "overlap:preserve-consignprice"
+              }
+            ]
+          },
+          "restrictionNaturality": true,
+          "semanticResidual": {
+            "kind": "derived-from-semantic-repair-presentation",
+            "sourceClassNonZero": true,
+            "sourceCocycle": true
+          }
+        },
         "status": "established",
         "suppliedCochainMap": {
-          "checkedProperties": {
-            "degreeOneLeftInverse": true,
-            "degreeOneRightInverse": true,
-            "degreeTwoZeroPreserving": true,
-            "differencePreserving": true,
-            "differentialCommutative": true
-          },
-          "contractChecked": true,
-          "kind": "explicit",
+          "checkedProperties": null,
+          "contractChecked": null,
+          "kind": "presentation-generated",
           "level": "cochain",
           "targetSupportComputed": true
         }
       },
       "status": "established",
       "suppliedCochainMap": {
-        "checkedProperties": {
-          "degreeOneLeftInverse": true,
-          "degreeOneRightInverse": true,
-          "degreeTwoZeroPreserving": true,
-          "differencePreserving": true,
-          "differentialCommutative": true
-        },
-        "contractChecked": true,
-        "kind": "explicit",
+        "checkedProperties": null,
+        "contractChecked": null,
+        "kind": "presentation-generated",
         "level": "cochain",
         "targetSupportComputed": true
       },
@@ -1852,42 +3890,46 @@
   "inputDigests": {
     "archmap": {
       "path": "input:archmap-saga-head.json",
-      "sha256": "add27eecaedffdd2cd07b3c0534c1024f93040c23e7ea460ac7cb5fa7972c327"
+      "sha256": "bdca8b9c6b04a377ec41e64ee0f17186c1ce6ad0a267b5fc2c0a574a375c1010"
     },
     "lawPolicy": {
       "path": "input:law-policy-saga.json",
-      "sha256": "c0ad1a54d53d4729df4f6275b95a04c26627f33b9669dd0c6764c8e70b8fe703"
+      "sha256": "e5e91078749ec26ae327ecd1cf41d6d2f7dd035c81a1c66bc0e0476b10e6900c"
     },
     "lawSurface": {
       "path": "input:law-surface-saga.json",
-      "sha256": "a777170547b52f2aa4889f964f7a67b6f36a9f84b062c7406a5b41d020363061"
+      "sha256": "15b78313f591c424245c79fdc32ab6aee799d3c53197b331d569556ac3670471"
     },
     "measurementProfile": {
       "path": "input:measurement-profile-saga.json",
-      "sha256": "1e79f93e5e37e4e8486091e76dbbcba5ed5e6efcf21172ff16844c85b0fe6434"
+      "sha256": "c073650c8bcd053d48d78bb1a29811b80917ffbdec81e1789dd15d68908b0753"
     },
     "measurementProfiles": [
       {
         "path": "input:measurement-profile-saga.json",
-        "sha256": "1e79f93e5e37e4e8486091e76dbbcba5ed5e6efcf21172ff16844c85b0fe6434"
+        "sha256": "c073650c8bcd053d48d78bb1a29811b80917ffbdec81e1789dd15d68908b0753"
       }
     ],
     "profileFingerprint": {
       "basis": "archmap shape + LawPolicy measurementProfileRef + external MeasurementProfile artifact",
-      "sha256": "6b279c52cfdc78171dbd8e78e171055947b22f7ad84ee9846f012a90138415ce"
+      "sha256": "8e4053eff87c553fe934c71ee9f8a7fbefdc084d0aa3f1dbaea8a59726486326"
+    },
+    "repairPlan": {
+      "path": "input:repair-plan-head.json",
+      "sha256": "610ba78dc116be2a29f0cd043809fa7b53a226e73e0fbd606b8c0cbd59014e6c"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
-      "sha256": "c75cd524da051ad25472f1faad2d3fc44456db4fe6f0a1f90851d76e7b069b1a",
+      "sha256": "c05d1537d9126e4f0e2b59bf37ef90826adf8a22ff49e89625ff0e8f2d243868",
       "status": "computed"
     }
   },
   "nonConclusions": [
-    "ArchSig v0.5.3 foundation packet is computed from input:archmap-saga-head.json and input:law-policy-saga.json; it is not a Lean proof object.",
+    "ArchSig v0.5.4 foundation packet is computed from input:archmap-saga-head.json and input:law-policy-saga.json; it is not a Lean proof object.",
     "Unmeasured AG evaluator rows are schema handoff rows, not measured zero.",
     "Theorem-candidate readings are analytic-only and cannot generate structural verdicts."
   ],
-  "packetId": "measurement:train-ticket-money-saga-head/v0.5.3",
+  "packetId": "measurement:train-ticket-money-saga-head/v0.5.4",
   "profile": {
     "certSelector": "finite-certificate@1",
     "coefficient": "F2",
@@ -1904,15 +3946,15 @@
       "maxTransferTargets": 16
     },
     "nonZeroPredicate": "rank-positive@1",
-    "profileId": "profile:train-ticket-money-saga@1",
+    "profileId": "profile:train-ticket-money-saga@2",
     "resolutionSelector": "taylor@1",
-    "schema": "measurement-profile/v0.5.3",
+    "schema": "measurement-profile/v0.5.4",
     "siteRef": "archmap:/contexts",
     "verdictDiscipline": "five-valued-structural-verdict@1",
     "zeroPredicate": "rank-zero@1"
   },
-  "runId": "run:7a94d68ac5d7",
-  "schema": "archsig-measurement-packet/v0.5.3",
+  "runId": "run:8d4b5849eb52",
+  "schema": "archsig-measurement-packet/v0.5.4",
   "structuralVerdict": [
     {
       "dependsOnAssumptions": [
@@ -1929,14 +3971,14 @@
       "evaluator": "ag.cech-obstruction",
       "evidence": {
         "computedInvariantRefs": [
-          "cech-cohomology:profile:train-ticket-money-saga@1"
+          "cech-cohomology:profile:train-ticket-money-saga@2"
         ],
         "sourceRefs": []
       },
       "law": "surface:cech-surface-v052",
       "reason": "finite F2 Cech 1-cocycle is not a coboundary on the selected cover",
       "target": {
-        "classRef": "computedInvariants/cech-cohomology:profile:train-ticket-money-saga@1",
+        "classRef": "computedInvariants/cech-cohomology:profile:train-ticket-money-saga@2",
         "coefficient": "F2",
         "coverRef": "cover:money-settlement-loop",
         "kind": "cover-relative-cech-h1-class",
@@ -1948,7 +3990,7 @@
       },
       "verdict": "measured_nonzero",
       "verdictData": {
-        "certRef": "computedInvariants/cech-cohomology:profile:train-ticket-money-saga@1",
+        "certRef": "computedInvariants/cech-cohomology:profile:train-ticket-money-saga@2",
         "inScope": true,
         "methodStatus": "finite_f2_cech_computed",
         "nonZero": true,
@@ -1959,7 +4001,7 @@
     {
       "dependsOnAssumptions": [
         "assumption:part3-11-3:displayedRequiredLawsHold-is-operationalized-only-by-the-declared-holdsCriterion-raw-value-check",
-        "assumption:part10-7-3:selected-quotient-sheaf-condition-for-law-surface-train-ticket-money-saga-v053"
+        "assumption:part10-7-3:selected-quotient-sheaf-condition-for-law-surface-train-ticket-money-saga-v054"
       ],
       "evaluator": "ag.saga-grounded",
       "evidence": {
@@ -1994,7 +4036,6 @@
     {
       "dependsOnAssumptions": [
         "assumption:part10-3-1:repair-plan-complex-enumeration-completeness-for-repair-plan-train-ticket-money-head",
-        "assumption:part10-6-2:comparison-target-complex-enumeration-completeness-for-repair-plan-train-ticket-money-head",
         "assumption:part4-4-6:faithfulness-law-supplied-for-repair-plan-train-ticket-money-head"
       ],
       "evaluator": "ag.saga-descent",
@@ -2030,7 +4071,6 @@
     {
       "dependsOnAssumptions": [
         "assumption:part10-3-1:repair-plan-complex-enumeration-completeness-for-repair-plan-train-ticket-money-head",
-        "assumption:part10-6-2:comparison-target-complex-enumeration-completeness-for-repair-plan-train-ticket-money-head",
         "assumption:part4-4-6:faithfulness-law-supplied-for-repair-plan-train-ticket-money-head"
       ],
       "evaluator": "ag.saga-descent",
@@ -2066,8 +4106,8 @@
     {
       "dependsOnAssumptions": [
         "assumption:part10-3-1:repair-plan-complex-enumeration-completeness-for-repair-plan-train-ticket-money-head",
-        "assumption:part10-6-2:comparison-target-complex-enumeration-completeness-for-repair-plan-train-ticket-money-head",
-        "assumption:part4-4-6:faithfulness-law-supplied-for-repair-plan-train-ticket-money-head"
+        "assumption:part4-4-6:faithfulness-law-supplied-for-repair-plan-train-ticket-money-head",
+        "assumption:part10-8-1:global-sheaf-condition-for-repair-plan-train-ticket-money-head"
       ],
       "evaluator": "ag.saga-descent",
       "evidence": {
@@ -2104,7 +4144,7 @@
     {
       "conformance": {
         "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim",
-        "checkRef": "archmap/v0.5.3-validation",
+        "checkRef": "archmap/v0.5.4-validation",
         "status": "validated"
       },
       "kind": "archmap",
@@ -2114,7 +4154,7 @@
     {
       "conformance": {
         "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim",
-        "checkRef": "law-policy/v0.5.3-validation",
+        "checkRef": "law-policy/v0.5.4-validation",
         "status": "validated"
       },
       "kind": "law-policy",
@@ -2124,7 +4164,7 @@
     {
       "conformance": {
         "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim",
-        "checkRef": "measurement-profile/v0.5.3-validation",
+        "checkRef": "measurement-profile/v0.5.4-validation",
         "status": "validated"
       },
       "kind": "measurement-profile",
@@ -2134,7 +4174,7 @@
     {
       "conformance": {
         "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim",
-        "checkRef": "law-equation-surface/v0.5.3-validation",
+        "checkRef": "law-equation-surface/v0.5.4-validation",
         "status": "validated"
       },
       "kind": "law-equation-surface",
@@ -2144,7 +4184,7 @@
     {
       "conformance": {
         "boundary": "validated CLI input artifact; semantic content beyond the selected contract remains outside the packet claim",
-        "checkRef": "repair-plan/v0.5.3-validation",
+        "checkRef": "repair-plan/v0.5.4-validation",
         "status": "validated"
       },
       "kind": "repair-plan",
@@ -2152,5 +4192,5 @@
       "suppliedId": "supplied:repair-plan"
     }
   ],
-  "toolVersion": "0.5.3"
+  "toolVersion": "0.5.4"
 }
