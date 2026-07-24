@@ -151,6 +151,9 @@ def restrictCochain1 : OrdCochain1 F 𝒰 →+ Cochain1 (F.onIntersections 𝒰)
 def restrictCochain2 : OrdCochain2 F 𝒰 →+ Cochain2 (F.onIntersections 𝒰) :=
   AddMonoidHom.mk' (fun c t => c (t.fst, t.snd, t.trd)) (fun _ _ => rfl)
 
+/-- 補題2.1A(`B̃¹ ≅ B¹`、restriction 方向): 増加 restriction は tuple
+coboundary を増加 coboundary へ on the nose で送る。拡張方向は
+`extend1_delta0`。 -/
 theorem restrictCochain1_ordDelta0 (a : Cochain0 (F.onIntersections 𝒰)) :
     restrictCochain1 F (ordDelta0 F a) = delta0 (F.onIntersections 𝒰) a :=
   rfl
@@ -488,7 +491,9 @@ theorem extend1_cocycle
     rw [e₁, e₂, e₃]
     exact h
 
-/-- 拡張は増加 coboundary を tuple coboundary に送る。 -/
+/-- 補題2.1A(`B̃¹ ≅ B¹`、拡張方向): 反対称拡張は増加 coboundary を
+tuple coboundary に送る。restriction 方向は `restrictCochain1_ordDelta0`。
+両方向で `B̃¹` と `B¹` が対応する。 -/
 theorem extend1_delta0
     (hpair : ∀ i j, 𝒰.omittedPair i j ->
       ∀ v : F.carrier (𝒰.pairCtx i j), v = 0)
