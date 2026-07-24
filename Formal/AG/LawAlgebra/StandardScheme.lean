@@ -1772,23 +1772,83 @@ structure StandardArchitectureScheme
   overlapsValid : IsArchitectureOverlapPresentation raw overlaps
 
 /--
-Data of a selected representable scheme regime for an architectural equation
-system.
+Part III, Definition 5.2B's source functor of architecture-evaluation points.
 
-Implementation notes: Part III, Definition 5.2B first represents architecture
-evaluation points and then proves regularity of the object-dependent residual
-functions.  `sectionMap` is the universal observable evaluation,
-`architectureAt s` is the section-dependent reading `A_s`, and
-`residualSection` is the regular function representing the residual.  The
-naturality, base-change, and evaluation equations are deliberately separated
-into `IsEquationObservableRealization`; this data structure contains no
-fulfillment, ideal-vanishing, or factorization conclusion.
+Implementation notes: a selected representable regime may use one joint point
+functor for all contexts.  Keeping the point type opaque permits concrete
+representable subfunctors, while the only observable operations exposed from
+it are the architecture reading and the `E`-owned evaluations below.  An
+independent section map or residual family is deliberately not stored.
 
-An ambient standard scheme alone cannot manufacture these data because
-`ArchitecturalEquationSystem.equationResidual` is allowed to be an arbitrary
-function of `ArchitectureObject`.  The selected representable regime is the
-explicit premise of Definition 5.2B; the closed equalizer and its producer
-theorems are constructed from a valid value of this type downstream.
+The point type is fixed before a representing scheme is selected.  A point
+provides its architecture reading and the equation system's observable
+evaluation on every context.  Pullback, architecture stability, section
+evaluation, and context naturality are verified separately by
+`IsEquationArchitecturePointSource`.
+-/
+structure EquationArchitecturePointSource
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    (E : ArchitecturalEquationSystem S.contextPreorder) where
+  /-- Architecture-evaluation points on a test scheme. -/
+  Point : AlgebraicGeometry.Scheme.{max u v} → Type (max u v)
+  /-- Pullback of a point along a test-scheme morphism. -/
+  pullback :
+    ∀ {T T' : AlgebraicGeometry.Scheme.{max u v}},
+      (T' ⟶ T) → Point T → Point T'
+  /-- Architecture reading carried by a source point. -/
+  architecture :
+    ∀ {T : AlgebraicGeometry.Scheme.{max u v}},
+      Point T → ArchitectureObject U
+  /-- Evaluation of every context-owned observable at a source point. -/
+  evaluation :
+    ∀ {T : AlgebraicGeometry.Scheme.{max u v}},
+      Point T → ∀ W : S.category, E.Observable W →+* Γ(T, ⊤)
+
+/-- Functoriality and context compatibility of architecture-evaluation points. -/
+structure IsEquationArchitecturePointSource
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (P : EquationArchitecturePointSource.{u, v} E) : Prop where
+  /-- Point pullback preserves identities. -/
+  pullback_id :
+    ∀ {T : AlgebraicGeometry.Scheme.{max u v}} (p : P.Point T),
+      P.pullback (𝟙 T) p = p
+  /-- Point pullback preserves composition. -/
+  pullback_comp :
+    ∀ {T T' T'' : AlgebraicGeometry.Scheme.{max u v}}
+      (f : T' ⟶ T) (g : T'' ⟶ T') (p : P.Point T),
+      P.pullback (g ≫ f) p = P.pullback g (P.pullback f p)
+  /-- Architecture readings are stable under point pullback. -/
+  architecture_pullback :
+    ∀ {T T' : AlgebraicGeometry.Scheme.{max u v}}
+      (f : T' ⟶ T) (p : P.Point T),
+      P.architecture (P.pullback f p) = P.architecture p
+  /-- Observable evaluation is pulled back through `Scheme.Hom.appTop`. -/
+  evaluation_pullback :
+    ∀ {T T' : AlgebraicGeometry.Scheme.{max u v}}
+      (f : T' ⟶ T) (p : P.Point T) (W : S.category)
+      (x : E.Observable W),
+      P.evaluation (P.pullback f p) W x =
+        f.appTop (P.evaluation p W x)
+  /-- Observable restriction is evaluated by the same global section. -/
+  evaluation_natural :
+    ∀ {T : AlgebraicGeometry.Scheme.{max u v}} (p : P.Point T)
+      {source target : S.category} (f : source ⟶ target)
+      (x : E.Observable target),
+      P.evaluation p source (E.restrict f x) =
+        P.evaluation p target x
+
+/--
+Selected representable equation-point regime.
+
+Implementation notes: this is the selected-representability input of
+Definition 5.2B, not a truth certificate.  It stores only the `E`-indexed
+source functor and its representing equivalence.  A presentation containing
+caller-supplied section maps, architecture readings, or residual functions was
+rejected: the universal observable maps, section reading `A_s`, and regular
+residual sections are instead derived from the universal represented point.
 -/
 structure EquationObservableRealization
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
@@ -1797,58 +1857,66 @@ structure EquationObservableRealization
     [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
     (X : StandardArchitectureScheme raw)
     (E : ArchitecturalEquationSystem S.contextPreorder) where
-  /-- The universal observable evaluation on each canonical context chart. -/
-  sectionMap :
-    ∀ W : S.category, E.Observable W →+* SheafifiedSectionRing raw W
-  /-- The architecture reading selected by a test-scheme section. -/
-  architectureAt :
-    ∀ {T : AlgebraicGeometry.Scheme},
-      (T ⟶ X.underlying) → ArchitectureObject U
-  /-- The regular chart section representing one object residual function. -/
-  residualSection :
-    ∀ W : S.category, E.Index → U.Atom →
-      SheafifiedSectionRing raw W
+  /-- The architecture-evaluation point source defined before representation. -/
+  source : EquationArchitecturePointSource.{u, v} E
+  /-- The scheme represents the source point functor on every test scheme. -/
+  representingEquiv :
+    ∀ T : AlgebraicGeometry.Scheme.{max u v},
+      (T ⟶ X.underlying) ≃ source.Point T
 
 namespace EquationObservableRealization
 
-/-- Presentation data agree when their three data-bearing components agree. -/
-@[ext] theorem ext
+/--
+The named selected-regime constructor from a source functor and its
+representing equivalence.  All scheme sections and residual functions are
+derived accessors below.
+-/
+noncomputable def ofRepresentingEquiv
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
     {raw : RawAmbientRestrictionSystem S k}
     [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
     {X : StandardArchitectureScheme raw}
     {E : ArchitecturalEquationSystem S.contextPreorder}
-    (R Q : EquationObservableRealization raw X E)
-    (hsectionMap : R.sectionMap = Q.sectionMap)
-    (harchitectureAt : @R.architectureAt = @Q.architectureAt)
-    (hresidualSection : R.residualSection = Q.residualSection) : R = Q := by
-  cases R
-  cases Q
-  cases hsectionMap
-  cases harchitectureAt
-  cases hresidualSection
+    (P : EquationArchitecturePointSource.{u, v} E)
+    (e : ∀ T : AlgebraicGeometry.Scheme.{max u v},
+      (T ⟶ X.underlying) ≃ P.Point T) :
+    EquationObservableRealization raw X E where
+  source := P
+  representingEquiv := e
+
+/-- The named constructor retains exactly the selected source functor. -/
+@[simp] theorem ofRepresentingEquiv_source
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : StandardArchitectureScheme raw}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (P : EquationArchitecturePointSource.{u, v} E)
+    (e : ∀ T : AlgebraicGeometry.Scheme.{max u v},
+      (T ⟶ X.underlying) ≃ P.Point T) :
+    (ofRepresentingEquiv P e :
+      EquationObservableRealization raw X E).source = P :=
   rfl
 
-/--
-The pullback chart `T ×_X X_j` on which a test section is evaluated.
--/
-noncomputable def chartPullback
+/-- The named constructor retains exactly the representing equivalence. -/
+@[simp] theorem ofRepresentingEquiv_representingEquiv
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
     {raw : RawAmbientRestrictionSystem S k}
     [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
     {X : StandardArchitectureScheme raw}
     {E : ArchitecturalEquationSystem S.contextPreorder}
-    (_R : EquationObservableRealization raw X E)
-    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
-    (j : X.atlas.Index) : AlgebraicGeometry.Scheme :=
-  pullback s (X.atlas.chart j).map
+    (P : EquationArchitecturePointSource.{u, v} E)
+    (e : ∀ T : AlgebraicGeometry.Scheme.{max u v},
+      (T ⟶ X.underlying) ≃ P.Point T) :
+    (ofRepresentingEquiv P e :
+      EquationObservableRealization raw X E).representingEquiv = e :=
+  rfl
 
-/--
-Evaluation of a canonical chart section on `T ×_X X_j`.
--/
-noncomputable def chartEvaluation
+/-- The source point represented by a scheme morphism. -/
+noncomputable def pointAt
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
     {raw : RawAmbientRestrictionSystem S k}
@@ -1856,25 +1924,66 @@ noncomputable def chartEvaluation
     {X : StandardArchitectureScheme raw}
     {E : ArchitecturalEquationSystem S.contextPreorder}
     (R : EquationObservableRealization raw X E)
-    {T : AlgebraicGeometry.Scheme} (s : T ⟶ X.underlying)
-    (j : X.atlas.Index) :
-    SheafifiedSectionRing raw (X.atlas.chart j).context →+*
-      Γ(R.chartPullback s j, ⊤) :=
-  (pullback.snd s (X.atlas.chart j).map).appTop.hom.comp
-    (AlgebraicGeometry.Scheme.ΓSpecIso
-      (SheafifiedSectionRing raw (X.atlas.chart j).context)).inv.hom
+    {T : AlgebraicGeometry.Scheme.{max u v}}
+    (s : T ⟶ X.underlying) : R.source.Point T :=
+  R.representingEquiv T s
+
+/-- The architecture reading derived from the represented point. -/
+noncomputable def architectureAt
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : StandardArchitectureScheme raw}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (R : EquationObservableRealization raw X E)
+    {T : AlgebraicGeometry.Scheme.{max u v}}
+    (s : T ⟶ X.underlying) : ArchitectureObject U :=
+  R.source.architecture (R.pointAt s)
+
+/-- Evaluation derived from the represented point, with no independent map. -/
+noncomputable def evaluation
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : StandardArchitectureScheme raw}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (R : EquationObservableRealization raw X E)
+    {T : AlgebraicGeometry.Scheme.{max u v}}
+    (s : T ⟶ X.underlying) (W : S.category) :
+    E.Observable W →+* Γ(T, ⊤) :=
+  R.source.evaluation (R.pointAt s) W
+
+/-- The universal section map derived by evaluating the represented identity. -/
+noncomputable def sectionMap
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : StandardArchitectureScheme raw}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (R : EquationObservableRealization raw X E)
+    (W : S.category) : E.Observable W →+* Γ(X.underlying, ⊤) :=
+  R.evaluation (𝟙 X.underlying) W
+
+/-- The universal residual section is generated from `E.equationResidual`. -/
+noncomputable def residualSection
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : StandardArchitectureScheme raw}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (R : EquationObservableRealization raw X E)
+    (W : S.category) (i : E.Index) (a : U.Atom) :
+    Γ(X.underlying, ⊤) :=
+  R.sectionMap W
+    (E.equationResidual W (R.architectureAt (𝟙 X.underlying)) i a)
 
 end EquationObservableRealization
 
-/--
-Recognition property for the selected representable scheme regime of Part III,
-Definition 5.2B.
-
-The three clauses are the material premises stated in the mathematical source:
-the universal evaluation is natural in contexts, `A_s` is stable under test
-scheme base change, and each actual residual evaluation is represented by the
-stored regular section.  They are not lawfulness or zero-locus conclusions.
--/
+/-- Recognition property for a represented architecture-evaluation source. -/
 structure IsEquationObservableRealization
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {S : Site.AATSite A} {k : Type v} [CommRing k]
@@ -1883,47 +1992,42 @@ structure IsEquationObservableRealization
     {X : StandardArchitectureScheme raw}
     {E : ArchitecturalEquationSystem S.contextPreorder}
     (R : EquationObservableRealization raw X E) : Prop where
-  /-- Observable restriction commutes with the universal evaluation. -/
-  sectionMap_natural :
-    ∀ {source target : S.category} (f : source ⟶ target)
-      (x : E.Observable target),
-      R.sectionMap source (E.restrict f x) =
-        sheafifiedRestriction raw f (R.sectionMap target x)
-  /-- Regular residual sections commute with context restriction. -/
-  residualSection_natural :
-    ∀ {source target : S.category} (f : source ⟶ target)
-      (i : E.Index) (a : U.Atom),
-      R.residualSection source i a =
-        sheafifiedRestriction raw f (R.residualSection target i a)
-  /-- The selected architecture reading is stable under test-scheme base change. -/
-  architectureAt_comp :
-    ∀ {T T' : AlgebraicGeometry.Scheme}
+  /-- The represented source is a genuine contravariant point functor. -/
+  source_valid : IsEquationArchitecturePointSource R.source
+  /-- The representing equivalence commutes with test-scheme pullback. -/
+  representingEquiv_natural :
+    ∀ {T T' : AlgebraicGeometry.Scheme.{max u v}}
       (s : T ⟶ X.underlying) (f : T' ⟶ T),
-      R.architectureAt (f ≫ s) = R.architectureAt s
-  /-- The global base-chart residual evaluates to the residual of `A_s`. -/
-  residualSection_evaluates :
-    ∀ {T : AlgebraicGeometry.Scheme}
-      (s : T ⟶ X.underlying)
-      (i : E.Index) (a : U.Atom),
-      s.appTop
-          (X.decoration.interpretation
-            (R.residualSection X.decoration.context i a)) =
-        s.appTop
-          (X.decoration.interpretation
-            (R.sectionMap X.decoration.context
-              (E.equationResidual X.decoration.context
-                (R.architectureAt s) i a)))
-  /-- The same regular residual equation holds on every selected atlas chart. -/
-  residualSection_evaluates_on_chart :
-    ∀ {T : AlgebraicGeometry.Scheme}
-      (s : T ⟶ X.underlying) (j : X.atlas.Index)
-      (i : E.Index) (a : U.Atom),
-      R.chartEvaluation s j
-          (R.residualSection (X.atlas.chart j).context i a) =
-        R.chartEvaluation s j
-          (R.sectionMap (X.atlas.chart j).context
-            (E.equationResidual (X.atlas.chart j).context
-              (R.architectureAt s) i a))
+      R.pointAt (f ≫ s) = R.source.pullback f (R.pointAt s)
+
+namespace EquationObservableRealization
+
+/--
+The named constructor discharges realization validity from source
+functoriality and naturality of the representing equivalence.
+-/
+theorem ofRepresentingEquiv_valid
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {S : Site.AATSite A} {k : Type v} [CommRing k]
+    {raw : RawAmbientRestrictionSystem S k}
+    [CategoryTheory.HasSheafify S.topology (AATCommAlgCat k)]
+    {X : StandardArchitectureScheme raw}
+    {E : ArchitecturalEquationSystem S.contextPreorder}
+    (P : EquationArchitecturePointSource.{u, v} E)
+    (e : ∀ T : AlgebraicGeometry.Scheme.{max u v},
+      (T ⟶ X.underlying) ≃ P.Point T)
+    (hP : IsEquationArchitecturePointSource P)
+    (he :
+      ∀ {T T' : AlgebraicGeometry.Scheme.{max u v}}
+        (s : T ⟶ X.underlying) (f : T' ⟶ T),
+        e T' (f ≫ s) = P.pullback f (e T s)) :
+    IsEquationObservableRealization
+      (ofRepresentingEquiv P e :
+        EquationObservableRealization raw X E) where
+  source_valid := hP
+  representingEquiv_natural := he
+
+end EquationObservableRealization
 
 namespace StandardArchitectureScheme
 

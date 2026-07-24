@@ -3536,53 +3536,101 @@ def standardSchemeReadingSignature :=
 noncomputable def standardSchemeReadingCoefficientMap :=
   @LawAlgebra.AATReadingDecoration.coefficientMap
 
-/-- Audit alias for natural equation-observable realizations on standard schemes. -/
+/-- Audit alias for architecture-evaluation point sources. -/
+def standardSchemeEquationArchitecturePointSource :=
+  @LawAlgebra.EquationArchitecturePointSource
+
+/-- Audit alias for source point types. -/
+def standardSchemeEquationArchitecturePointSourcePoint :=
+  @LawAlgebra.EquationArchitecturePointSource.Point
+
+/-- Audit alias for source point pullback. -/
+def standardSchemeEquationArchitecturePointSourcePullback :=
+  @LawAlgebra.EquationArchitecturePointSource.pullback
+
+/-- Audit alias for source architecture readings. -/
+def standardSchemeEquationArchitecturePointSourceArchitecture :=
+  @LawAlgebra.EquationArchitecturePointSource.architecture
+
+/-- Audit alias for source observable evaluation. -/
+def standardSchemeEquationArchitecturePointSourceEvaluation :=
+  @LawAlgebra.EquationArchitecturePointSource.evaluation
+
+/-- Audit alias for recognition of valid architecture-point sources. -/
+def standardSchemeIsEquationArchitecturePointSource :=
+  @LawAlgebra.IsEquationArchitecturePointSource
+
+/-- Audit alias for identity preservation of source pullback. -/
+def standardSchemeIsEquationArchitecturePointSourcePullbackId :=
+  @LawAlgebra.IsEquationArchitecturePointSource.pullback_id
+
+/-- Audit alias for composition preservation of source pullback. -/
+def standardSchemeIsEquationArchitecturePointSourcePullbackComp :=
+  @LawAlgebra.IsEquationArchitecturePointSource.pullback_comp
+
+/-- Audit alias for architecture stability under source pullback. -/
+def standardSchemeIsEquationArchitecturePointSourceArchitecturePullback :=
+  @LawAlgebra.IsEquationArchitecturePointSource.architecture_pullback
+
+/-- Audit alias for source evaluation under test-scheme pullback. -/
+def standardSchemeIsEquationArchitecturePointSourceEvaluationPullback :=
+  @LawAlgebra.IsEquationArchitecturePointSource.evaluation_pullback
+
+/-- Audit alias for context naturality of source evaluation. -/
+def standardSchemeIsEquationArchitecturePointSourceEvaluationNatural :=
+  @LawAlgebra.IsEquationArchitecturePointSource.evaluation_natural
+
+/-- Audit alias for represented equation-observable sources. -/
 def standardSchemeEquationObservableRealization :=
   @LawAlgebra.EquationObservableRealization
 
-/-- Audit alias for contextwise observable maps into sheafified sections. -/
-def standardSchemeEquationObservableRealizationSectionMap :=
-  @LawAlgebra.EquationObservableRealization.sectionMap
+/-- Audit alias for the named representing-equivalence constructor. -/
+noncomputable def standardSchemeEquationObservableRealizationOfRepresentingEquiv :=
+  @LawAlgebra.EquationObservableRealization.ofRepresentingEquiv
+
+/-- Audit alias for the constructor's source equation. -/
+def standardSchemeEquationObservableRealizationOfRepresentingEquivSource :=
+  @LawAlgebra.EquationObservableRealization.ofRepresentingEquiv_source
+
+/-- Audit alias for the constructor's representing-equivalence equation. -/
+def standardSchemeEquationObservableRealizationOfRepresentingEquivRepresentingEquiv :=
+  @LawAlgebra.EquationObservableRealization.ofRepresentingEquiv_representingEquiv
+
+/-- Audit alias for represented source points. -/
+noncomputable def standardSchemeEquationObservableRealizationPointAt :=
+  @LawAlgebra.EquationObservableRealization.pointAt
 
 /-- Audit alias for section-dependent architecture readings. -/
-def standardSchemeEquationObservableRealizationArchitectureAt :=
+noncomputable def standardSchemeEquationObservableRealizationArchitectureAt :=
   @LawAlgebra.EquationObservableRealization.architectureAt
 
-/-- Audit alias for regular residual sections. -/
-def standardSchemeEquationObservableRealizationResidualSection :=
+/-- Audit alias for observable evaluation at represented points. -/
+noncomputable def standardSchemeEquationObservableRealizationEvaluation :=
+  @LawAlgebra.EquationObservableRealization.evaluation
+
+/-- Audit alias for universal contextwise observable maps. -/
+noncomputable def standardSchemeEquationObservableRealizationSectionMap :=
+  @LawAlgebra.EquationObservableRealization.sectionMap
+
+/-- Audit alias for generated regular residual sections. -/
+noncomputable def standardSchemeEquationObservableRealizationResidualSection :=
   @LawAlgebra.EquationObservableRealization.residualSection
 
-/-- Audit alias for pulled-back test charts. -/
-noncomputable def standardSchemeEquationObservableRealizationChartPullback :=
-  @LawAlgebra.EquationObservableRealization.chartPullback
-
-/-- Audit alias for evaluation on pulled-back test charts. -/
-noncomputable def standardSchemeEquationObservableRealizationChartEvaluation :=
-  @LawAlgebra.EquationObservableRealization.chartEvaluation
-
-/-- Audit alias for recognition of selected equation-observable realizations. -/
+/-- Audit alias for recognition of represented equation-observable sources. -/
 def standardSchemeIsEquationObservableRealization :=
   @LawAlgebra.IsEquationObservableRealization
 
-/-- Audit alias for naturality of contextwise observable maps. -/
-def standardSchemeIsEquationObservableRealizationSectionMapNatural :=
-  @LawAlgebra.IsEquationObservableRealization.sectionMap_natural
+/-- Audit alias for validity of the represented point source. -/
+def standardSchemeIsEquationObservableRealizationSourceValid :=
+  @LawAlgebra.IsEquationObservableRealization.source_valid
 
-/-- Audit alias for naturality of regular residual sections. -/
-def standardSchemeIsEquationObservableRealizationResidualSectionNatural :=
-  @LawAlgebra.IsEquationObservableRealization.residualSection_natural
+/-- Audit alias for naturality of the representing equivalence. -/
+def standardSchemeIsEquationObservableRealizationRepresentingEquivNatural :=
+  @LawAlgebra.IsEquationObservableRealization.representingEquiv_natural
 
-/-- Audit alias for base-change stability of section architecture readings. -/
-def standardSchemeIsEquationObservableRealizationArchitectureAtComp :=
-  @LawAlgebra.IsEquationObservableRealization.architectureAt_comp
-
-/-- Audit alias for regular representation of actual residual evaluations. -/
-def standardSchemeIsEquationObservableRealizationResidualSectionEvaluates :=
-  @LawAlgebra.IsEquationObservableRealization.residualSection_evaluates
-
-/-- Audit alias for chartwise residual evaluation. -/
-def standardSchemeIsEquationObservableRealizationResidualSectionEvaluatesOnChart :=
-  @LawAlgebra.IsEquationObservableRealization.residualSection_evaluates_on_chart
+/-- Audit alias for validity generated by the named constructor. -/
+def standardSchemeEquationObservableRealizationOfRepresentingEquivValid :=
+  @LawAlgebra.EquationObservableRealization.ofRepresentingEquiv_valid
 
 /-- Audit alias for canonical coordinate sections. -/
 noncomputable def standardSchemeReadingCoordinateSection :=
@@ -3615,10 +3663,6 @@ def standardSchemeReadingSignatureEq :=
 /-- Audit alias for the coefficient-map characterization. -/
 def standardSchemeReadingCoefficientMapEq :=
   @LawAlgebra.AATReadingDecoration.coefficientMap_eq
-
-/-- Audit alias for extensionality of equation-observable realizations. -/
-def standardSchemeEquationObservableRealizationExt :=
-  @LawAlgebra.EquationObservableRealization.ext
 
 /-- Audit alias for coordinate-section evaluation. -/
 def standardSchemeReadingCoordinateSectionApply :=
@@ -4660,20 +4704,32 @@ def closedEquationalGeometryOfIdealTopISup :=
 def closedEquationalGeometryEquationGeneratorIndex :=
   @LawAlgebra.EquationObservableRealization.GeneratorIndex
 
+def closedEquationalGeometryEquationWitnessIndex :=
+  @LawAlgebra.EquationObservableRealization.WitnessIndex
+
+def closedEquationalGeometryEquationPointAtComp :=
+  @LawAlgebra.EquationObservableRealization.pointAt_comp
+
+def closedEquationalGeometryEquationArchitectureAtComp :=
+  @LawAlgebra.EquationObservableRealization.architectureAt_comp
+
+def closedEquationalGeometryEquationArchitectureAtEqUniversal :=
+  @LawAlgebra.EquationObservableRealization.architectureAt_eq_universal
+
+def closedEquationalGeometryEquationEvaluationEqPullback :=
+  @LawAlgebra.EquationObservableRealization.evaluation_eq_pullback
+
+def closedEquationalGeometryEquationSectionMapNatural :=
+  @LawAlgebra.EquationObservableRealization.sectionMap_natural
+
 noncomputable def closedEquationalGeometryEquationViolationSection :=
   @LawAlgebra.EquationObservableRealization.violationSection
-
-noncomputable def closedEquationalGeometryEquationBaseSectionMap :=
-  @LawAlgebra.EquationObservableRealization.baseSectionMap
 
 noncomputable def closedEquationalGeometryEquationAmbientResidualSection :=
   @LawAlgebra.EquationObservableRealization.ambientResidualSection
 
-def closedEquationalGeometryEquationViolationSectionOnChart :=
-  @LawAlgebra.EquationObservableRealization.violationSection_on_chart
-
-def closedEquationalGeometryEquationAmbientResidualSectionOnChart :=
-  @LawAlgebra.EquationObservableRealization.ambientResidualSection_on_chart
+def closedEquationalGeometryEquationViolationSectionNatural :=
+  @LawAlgebra.EquationObservableRealization.violationSection_natural
 
 noncomputable def closedEquationalGeometryEquationRealizationRelation :=
   @LawAlgebra.EquationObservableRealization.realizationRelation
@@ -4705,29 +4761,11 @@ noncomputable def closedEquationalGeometryEquationSectionArchitecture :=
 noncomputable def closedEquationalGeometryEquationResidualValue :=
   @LawAlgebra.EquationObservableRealization.residualValue
 
-noncomputable def closedEquationalGeometryEquationChartResidualValue :=
-  @LawAlgebra.EquationObservableRealization.chartResidualValue
-
-noncomputable def closedEquationalGeometryEquationChartViolationValue :=
-  @LawAlgebra.EquationObservableRealization.chartViolationValue
-
-def closedEquationalGeometryEquationResidualRepresentable :=
-  @LawAlgebra.EquationObservableRealization.ResidualRepresentable
-
 def closedEquationalGeometryEquationResidualRegular :=
   @LawAlgebra.EquationObservableRealization.residualRegular
 
-def closedEquationalGeometryEquationResidualRegularOnChart :=
-  @LawAlgebra.EquationObservableRealization.residualRegularOnChart
-
-def closedEquationalGeometryEquationChartEvaluationOfGlobal :=
-  @LawAlgebra.EquationObservableRealization.chartEvaluation_of_global
-
 def closedEquationalGeometryEquationResidualRepresentableTheorem :=
   @LawAlgebra.EquationObservableRealization.residualRepresentable
-
-def closedEquationalGeometryEquationResidualRepresentableGlobal :=
-  @LawAlgebra.EquationObservableRealization.residualRepresentableGlobal
 
 noncomputable def closedEquationalGeometryEquationContextWitnessIdeal :=
   @LawAlgebra.EquationObservableRealization.contextWitnessIdeal
@@ -4735,14 +4773,17 @@ noncomputable def closedEquationalGeometryEquationContextWitnessIdeal :=
 def closedEquationalGeometryEquationContextWitnessIdealEqSpan :=
   @LawAlgebra.EquationObservableRealization.contextWitnessIdeal_eq_span
 
+def closedEquationalGeometryEquationContextWitnessIdealEqOfHom :=
+  @LawAlgebra.EquationObservableRealization.contextWitnessIdeal_eq_of_hom
+
 noncomputable def closedEquationalGeometryEquationGlobalWitnessIdeal :=
   @LawAlgebra.EquationObservableRealization.globalWitnessIdeal
 
-def closedEquationalGeometryEquationWitnessIdealLocalizes :=
+noncomputable def closedEquationalGeometryEquationWitnessIdealLocalizes :=
   @LawAlgebra.EquationObservableRealization.witnessIdealLocalizes
 
-def closedEquationalGeometryEquationGlobalWitnessIdealOnChart :=
-  @LawAlgebra.EquationObservableRealization.globalWitnessIdeal_on_chart
+noncomputable def closedEquationalGeometryEquationWitnessIdealLocalizationEquiv :=
+  @LawAlgebra.EquationObservableRealization.witnessIdealLocalizationEquiv
 
 def closedEquationalGeometryEquationOfIdealTopComapOfIsOpenImmersion :=
   @LawAlgebra.EquationObservableRealization.ofIdealTop_comap_of_isOpenImmersion
@@ -4782,9 +4823,6 @@ def closedEquationalGeometryEquationHoldsAlong :=
 
 def closedEquationalGeometryEquationLawfulAlong :=
   @LawAlgebra.EquationObservableRealization.EquationLawfulAlong
-
-def closedEquationalGeometryEquationHoldsAlongOfGlobalResidual :=
-  @LawAlgebra.EquationObservableRealization.equationHoldsAlong_of_globalResidual
 
 def closedEquationalGeometryEquationHoldsAlongOfEquationHolds :=
   @LawAlgebra.EquationObservableRealization.equationHoldsAlong_of_equationHolds
@@ -6708,14 +6746,11 @@ noncomputable def readingFunctoriality_equationRealizationBaseChange :=
 def readingFunctoriality_equationBaseSectionMapBaseChange :=
   @AAT.AG.LawAlgebra.EquationObservableRealization.baseSectionMap_baseChange
 
-noncomputable def readingFunctoriality_equationChartPullbackBaseChangeMap :=
-  @AAT.AG.LawAlgebra.EquationObservableRealization.chartPullbackBaseChangeMap
-
-def readingFunctoriality_equationChartEvaluationBaseChange :=
-  @AAT.AG.LawAlgebra.EquationObservableRealization.chartEvaluation_baseChange
-
 def readingFunctoriality_equationRealizationBaseChangeValid :=
   @AAT.AG.LawAlgebra.EquationObservableRealization.baseChange_valid
+
+def readingFunctoriality_equationRealizationBaseChangeSectionMapEq :=
+  @AAT.AG.LawAlgebra.EquationObservableRealization.baseChange_sectionMap_eq
 
 def readingFunctoriality_equationRealizationBaseChangeSectionMap :=
   @AAT.AG.LawAlgebra.EquationObservableRealization.baseChange_sectionMap
@@ -8046,11 +8081,41 @@ def standardGeometry_rigidReading_requiredClosed :=
 def standardGeometry_referenceSite_violationCoordinate :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.referenceSite_violationCoordinate
 
+noncomputable def standardGeometry_referenceEquationArchitecturePointSource :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceEquationArchitecturePointSource
+
+def standardGeometry_referenceEquationArchitecturePointSource_valid :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceEquationArchitecturePointSource_valid
+
+noncomputable def standardGeometry_referenceEquationRepresentingEquiv :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceEquationRepresentingEquiv
+
+def standardGeometry_referenceEquationRepresentingEquiv_natural :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceEquationRepresentingEquiv_natural
+
 noncomputable def standardGeometry_referenceEquationObservableRealization :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.referenceEquationObservableRealization
 
 def standardGeometry_referenceEquationObservableRealization_valid :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.referenceEquationObservableRealization_valid
+
+noncomputable def standardGeometry_zeroPullbackEquationArchitecturePointSource :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.zeroPullbackEquationArchitecturePointSource
+
+def standardGeometry_zeroPullbackEquationArchitecturePointSource_not_valid :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.zeroPullbackEquationArchitecturePointSource_not_valid
+
+noncomputable def standardGeometry_zeroPullbackEquationObservableRealization :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.zeroPullbackEquationObservableRealization
+
+def standardGeometry_zeroPullbackEquationObservableRealization_not_valid :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.zeroPullbackEquationObservableRealization_not_valid
+
+def standardGeometry_referenceSiteViolationSection_image :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceSiteViolationSection_image
+
+def standardGeometry_referenceSiteAmbientResidualSection_image :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceSiteAmbientResidualSection_image
 
 def standardGeometry_referenceSiteGlobalEquation_image :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.referenceSiteGlobalEquation_image
@@ -8099,6 +8164,12 @@ def standardGeometry_siteEquationModTwoPoint_factors_generated :=
 
 noncomputable def standardGeometry_cyclicUnitEquationSystem :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.cyclicUnitEquationSystem
+
+noncomputable def standardGeometry_cyclicUnitEquationArchitecturePointSource :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.cyclicUnitEquationArchitecturePointSource
+
+def standardGeometry_cyclicUnitEquationArchitecturePointSource_valid :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.cyclicUnitEquationArchitecturePointSource_valid
 
 noncomputable def standardGeometry_cyclicUnitEquationObservableRealization :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.cyclicUnitEquationObservableRealization
