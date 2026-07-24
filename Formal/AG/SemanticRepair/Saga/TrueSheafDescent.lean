@@ -10,9 +10,11 @@ import Formal.AG.SemanticRepair.Saga.KappaComparison
   universe, as the Part IV coefficient surface already does).
 * `TrueSemanticRepairSheaf` (Definition 8.1): the sheaf condition for all
   covers of the selected topology, plus the omitted-intersection subsingleton
-  clause.  Conditions (2) and (3) of the text are carried by the
-  `AffineSemanticRepairSystem` fields and by `TopologicalMonomorphicCover`
-  respectively; no per-cover amalgamation map is taken as data.
+  clause.  Condition (2) of the text is carried by the
+  `AffineSemanticRepairSystem` fields; condition (3) is taken by each theorem
+  as an explicit `hmem` hypothesis (the same proposition as
+  `TopologicalMonomorphicCover.mem_topology`); no per-cover amalgamation map
+  is taken as data.
 * `exists_unique_glue`: the sheaf condition is **used** — a family matching
   on all ordered pairwise overlaps amalgamates to a unique global section
   (`Presieve.isSheafFor_arrows_iff` on the generated cover sieve).
@@ -81,9 +83,9 @@ end AffineSemanticRepairSystem
 X.定義8.1: true semantic repair sheaf。条件(1)が `isSheaf`(topology の全 cover
 に対する sheaf condition)、条件(4)が omitted subsingleton 条項。条件(2)
 (`M_sem` 作用の restriction 可換・局所 free/transitive)は
-`AffineSemanticRepairSystem` の field が、条件(3)(`𝒰` の topology 所属)は
-`TopologicalMonomorphicCover.mem_topology` が担う。per-cover amalgamation map
-を別データとして置かない。
+`AffineSemanticRepairSystem` の field が担い、条件(3)(`𝒰` の topology 所属)は
+各定理が明示仮説 `hmem` として受け取る(`TopologicalMonomorphicCover.mem_topology`
+と同一命題)。per-cover amalgamation map を別データとして置かない。
 -/
 structure TrueSemanticRepairSheaf {P : SemanticRepairPresentation.{u, v} S R}
     (𝒰 : MonomorphicOrderedCover S)
