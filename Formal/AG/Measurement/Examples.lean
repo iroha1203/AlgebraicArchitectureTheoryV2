@@ -2276,7 +2276,7 @@ noncomputable def finiteComputabilityCommonAmbient :
     CommonAmbientPair finiteComputabilityMeasurementProfile where
   AmbientSpace := Unit
   StructureSheaf := Unit
-  LawIdeal := FiniteEquationHandle
+  LawIdeal := Ideal (MvPolynomial SquareFreeSupportVertex (ZMod 2))
   CoefficientObject := Unit
   WitnessPair := Unit
   ComparisonProfile := Unit
@@ -2285,8 +2285,8 @@ noncomputable def finiteComputabilityCommonAmbient :
   rightDomain := finiteComputabilitySeedGeometry.zeroClass 1
   selectedAmbient := ()
   selectedStructureSheaf := ()
-  leftLawIdeal := .left
-  rightLawIdeal := .right
+  leftLawIdeal := finiteComputabilityExampleData.leftIdeal
+  rightLawIdeal := finiteComputabilityExampleData.rightIdeal
   leftCoefficient := ()
   rightCoefficient := ()
   selectedWitnessPair := ()
@@ -2309,9 +2309,11 @@ in the selected common ambient. -/
 noncomputable def finiteComputabilityConflictRealization :
     FiniteAATConflictRealization finiteComputabilityExampleData where
   commonAmbient := finiteComputabilityCommonAmbient
-  equationToAmbient := id
-  leftLaw_ambient := rfl
-  rightLaw_ambient := rfl
+  idealToAmbient := id
+  leftEquationIdeal_ambient :=
+    finiteComputabilityExampleData.canonicalLeftIdeal_eq
+  rightEquationIdeal_ambient :=
+    finiteComputabilityExampleData.canonicalRightIdeal_eq
   supportEquiv := Equiv.refl _
 
 /-- Final theorem 4.2 fixture including the actual relation-valued
@@ -2321,6 +2323,24 @@ noncomputable def finiteComputabilityConflictPackage :
       finiteComputabilityExampleData finiteComputabilityConflictRealization :=
   finiteAATConflictComputabilityPackage computabilityFiniteMeasurementRegime
     finiteComputabilityExampleData finiteComputabilityConflictRealization
+
+/-- The final measurement's ambient obligation records the concrete left and
+right ideals obtained from the selected actual equation coordinates. -/
+theorem finiteComputabilityConflictPackage_commonAmbientRequired_shape :
+    finiteComputabilityConflictPackage.lawConflictMeasurement.commonAmbientRequired =
+      (finiteComputabilityCommonAmbient.commonRingedSite ∧
+        finiteComputabilityCommonAmbient.lawIdealsInCommonAmbient ∧
+          finiteComputabilityConflictRealization.idealToAmbient
+              finiteComputabilityExampleData.leftIdeal =
+            finiteComputabilityCommonAmbient.leftLawIdeal ∧
+          finiteComputabilityConflictRealization.idealToAmbient
+              finiteComputabilityExampleData.rightIdeal =
+            finiteComputabilityCommonAmbient.rightLawIdeal) := by
+  change
+    (finiteComputabilityConflictRealization.lawConflictMeasurement).commonAmbientRequired = _
+  exact
+    FiniteAATConflictRealization.lawConflictMeasurement_commonAmbientRequired_shape
+      finiteComputabilityConflictRealization
 
 /-- The proper degree-one nonzero conflict class and its computed support
 reading both survive in the final measurement package. -/

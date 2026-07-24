@@ -172,11 +172,16 @@ def ofDerivedLawConflictPackage {M : MeasurementProfile.{u, v}}
 VIII.Definition 9.1 / R7: build a measurement reading directly from an
 existing selected Tor bridge.  This constructor is used when the finite chain
 computation already targets that bridge, without requiring a second chart
-intersection package solely to recover the same Tor equivalence.
+intersection package solely to recover the same Tor equivalence.  The selected
+ideals are also interpreted in the common ambient, so the ambient certificate
+records the actual ideals used by the Tor bridge.
 -/
 def ofSelectedTorBridge {M : MeasurementProfile.{u, v}}
     (A : CommonAmbientPair M)
     {R : Type (max u v)} [CommRing R] {I_U I_V : Ideal R}
+    (idealToAmbient : Ideal R → A.LawIdeal)
+    (leftIdeal_ambient : idealToAmbient I_U = A.leftLawIdeal)
+    (rightIdeal_ambient : idealToAmbient I_V = A.rightLawIdeal)
     (B : Derived.Intersection.SelectedTorBridge.{max u v} R I_U I_V)
     (degree : Nat)
     (selectedClass : B.LawConflict degree)
@@ -201,9 +206,13 @@ def ofSelectedTorBridge {M : MeasurementProfile.{u, v}}
   lawConflictTorReading_cert := ⟨B.lawConflictLinearEquivMathlibTor degree⟩
   selectedClassSupportReading := conflictSupport selectedClass selectedSupport
   selectedClassSupportReading_cert := selectedClassSupport
-  commonAmbientRequired := A.commonRingedSite ∧ A.lawIdealsInCommonAmbient
+  commonAmbientRequired :=
+    A.commonRingedSite ∧ A.lawIdealsInCommonAmbient ∧
+      idealToAmbient I_U = A.leftLawIdeal ∧
+        idealToAmbient I_V = A.rightLawIdeal
   commonAmbientRequired_cert :=
-    ⟨A.commonRingedSite_cert, A.lawIdealsInCommonAmbient_cert⟩
+    ⟨A.commonRingedSite_cert, A.lawIdealsInCommonAmbient_cert,
+      leftIdeal_ambient, rightIdeal_ambient⟩
   coefficientCompatibilityUsed := A.coefficientsCompatible
   coefficientCompatibilityUsed_cert := A.coefficientsCompatible_cert
   topologyAndCoefficientBoundary := A.noComparisonWithoutCommonAmbient

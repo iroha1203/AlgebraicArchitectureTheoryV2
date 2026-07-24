@@ -10009,6 +10009,21 @@ def issue3735ComputationProfileLeftSquareFree :=
 def issue3735ComputationProfileRightSquareFree :=
   @AAT.AG.Measurement.FiniteAATComputationData.profileRightIdeal_eq_squareFree
 
+def issue3735SelectedTorBridgeUsesAmbientIdeals :=
+  @AAT.AG.Measurement.LawConflictMeasurement.ofSelectedTorBridge
+
+def issue3735ConflictComputedLeftIdealAmbient :=
+  @AAT.AG.Measurement.FiniteAATConflictRealization.computedLeftIdeal_ambient
+
+def issue3735ConflictComputedRightIdealAmbient :=
+  @AAT.AG.Measurement.FiniteAATConflictRealization.computedRightIdeal_ambient
+
+def issue3735ConflictMeasurementAmbientShape :=
+  @AAT.AG.Measurement.FiniteAATConflictRealization.lawConflictMeasurement_commonAmbientRequired_shape
+
+def issue3735FiniteConflictMeasurementAmbientShape :=
+  AAT.AG.Measurement.finiteComputabilityConflictPackage_commonAmbientRequired_shape
+
 def issue3735FiniteF2Sheaf :=
   @AAT.AG.Measurement.finiteComputabilityF2_isSheaf
 
