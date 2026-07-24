@@ -44,7 +44,7 @@ ArchViewのArchitecture modeやproduct identityを定義しない。
 | `classSupport.classNonzero` | 同 `representation.observedCocycle.classNonzero` |
 | `classSupport.representativeEdgeRefs / supportAtomRefs` | 同 `representation.classSupport.edgeRefs / supportAtomRefs` |
 | `classSupport.b1 / isForest` | 同 `representation.nerveShape.b1 / isForest` |
-| `classSupport.residualClass.*` | invariant `saga-descent:residual-class` の `representation.residualClassSupport` の `nonZero / basis / representative / cocycle.tripleOverlapRefs` |
+| `classSupport.residualClass.*` | invariant `saga-descent:residual-class` の `representation.residualClassSupport` の `nonZero / basis / representative / component.chartRefs / component.overlapRefs / cocycle.certificateKind / cocycle.tripleOverlapRefs`。`automatic-c2-zero` は、その residual component に triple overlap cell が無く、C²=0 により cocycle 条件が自動成立した認証を表す。 |
 | `classSupport.boundaryMembership.*` | invariant `saga-descent:boundary-membership` の `value`(無ければ representation)の `inB1 / residualSupport` |
 | `harmonicFlow` | 常に null(調和代表元の per-edge 値は現行 packet に記録されない。合成しない) |
 | `scalarFields[]`(harmonic 系) | invariant `harmonic-debt:*` の `representation.harmonicDebtNorm / essentialRepairLowerBound / lowerBoundStatus / invariantId` |

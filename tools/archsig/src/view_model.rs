@@ -173,6 +173,8 @@ fn class_support_section(packet: &Value) -> Value {
             "nonZero": residual_rep["residualClassSupport"]["nonZero"],
             "basis": residual_rep["residualClassSupport"]["basis"],
             "representative": residual_rep["residualClassSupport"]["representative"],
+            "component": residual_rep["residualClassSupport"]["component"],
+            "cocycleCertificateKind": residual_rep["residualClassSupport"]["cocycle"]["certificateKind"],
             "tripleOverlapRefs": residual_rep["residualClassSupport"]["cocycle"]["tripleOverlapRefs"],
         });
     }

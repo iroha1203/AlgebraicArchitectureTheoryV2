@@ -2329,6 +2329,40 @@ fn presentation_generated_triple_archmap(root: &Path) -> Value {
     read_json(&root.join("archmap_v2_presentation_generated_triple.json"))
 }
 
+fn component_aware_one_cent_saga_plan(root: &Path) -> Value {
+    read_json(&root.join("repair_plan_component_aware_one_cent.json"))
+}
+
+fn component_aware_one_cent_archmap(root: &Path) -> Value {
+    let mut archmap = read_json(&root.join("archmap_v2.json"));
+    let contexts = archmap["contexts"]
+        .as_array_mut()
+        .expect("ArchMap contexts are an array");
+    for (source_context, component_context) in [
+        ("ctx:order", "ctx:cancel"),
+        ("ctx:inventory", "ctx:inside-payment"),
+        ("ctx:shared", "ctx:consign"),
+        ("ctx:inventory", "ctx:parcel"),
+        ("ctx:shared", "ctx:shipping"),
+    ] {
+        let mut context = contexts
+            .iter()
+            .find(|context| context["id"] == source_context)
+            .cloned()
+            .expect("source context exists for component fixture");
+        context["id"] = json!(component_context);
+        contexts.push(context);
+    }
+    archmap["covers"]
+        .as_array_mut()
+        .expect("ArchMap covers are an array")
+        .iter_mut()
+        .find(|cover| cover["id"] == "cover:order-inventory")
+        .expect("fixture cover exists")["contexts"] =
+        json!(["ctx:cancel", "ctx:inside-payment", "ctx:order"]);
+    archmap
+}
+
 #[test]
 fn cli_repair_plan_rejects_presentation_generated_archmap_mapping_bypasses() {
     let root = ag_measurement_root();
@@ -2456,6 +2490,14 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
         invariant["residualClassSupport"]["cocycle"]["deltaOne"],
         "zero"
     );
+    assert_eq!(
+        invariant["residualClassSupport"]["cocycle"]["certificateKind"],
+        "checked-triple-cocycle-zero"
+    );
+    assert_eq!(
+        invariant["residualClassSupport"]["component"]["chartRefs"],
+        json!(["ctx:inventory", "ctx:order", "ctx:shared"])
+    );
     let comparison = packet["computedInvariants"]
         .as_array()
         .unwrap()
@@ -2523,6 +2565,88 @@ fn cli_analyze_saga_descent_supplied_triple_and_gluing_measure_residual_class() 
         summary["translationRule"]["principalText"]
             .as_str()
             .is_some_and(|text| text.contains("Z1/B1"))
+    );
+}
+
+#[test]
+fn cli_analyze_saga_descent_certifies_the_one_cent_component_without_other_triples() {
+    let root = ag_measurement_root();
+    let plan = component_aware_one_cent_saga_plan(&root);
+    let archmap = component_aware_one_cent_archmap(&root);
+    let with_disconnected_triple = run_saga_fixture_lock_with_archmap(
+        "ag-saga-component-aware-one-cent-with-disconnected-triple",
+        plan.clone(),
+        archmap.clone(),
+    );
+    let mut without_disconnected_triple_plan = plan;
+    without_disconnected_triple_plan["complex"]["tripleOverlaps"] = json!([]);
+    let without_disconnected_triple = run_saga_fixture_lock_with_archmap(
+        "ag-saga-component-aware-one-cent-without-disconnected-triple",
+        without_disconnected_triple_plan,
+        archmap,
+    );
+
+    for packet_path in [
+        with_disconnected_triple.join("archsig-measurement-packet.json"),
+        without_disconnected_triple.join("archsig-measurement-packet.json"),
+    ] {
+        let packet = read_json(&packet_path);
+        assert_eq!(
+            saga_row(&packet, "saga.residual-class")["verdict"],
+            "measured_nonzero"
+        );
+        let invariant = invariant_by_id(&packet, "saga-descent:residual-class");
+        let support = &invariant["residualClassSupport"];
+        assert_eq!(
+            support["component"]["chartRefs"],
+            json!(["ctx:cancel", "ctx:inside-payment", "ctx:order"])
+        );
+        assert_eq!(
+            support["component"]["overlapRefs"],
+            json!([
+                "overlap:cancel-inside-payment",
+                "overlap:cancel-order",
+                "overlap:inside-payment-order"
+            ])
+        );
+        assert_eq!(
+            support["cocycle"]["certificateKind"],
+            "automatic-c2-zero"
+        );
+        assert_eq!(support["cocycle"]["tripleOverlapRefs"], json!([]));
+    }
+}
+
+#[test]
+fn cli_analyze_saga_descent_rejects_a_class_certificate_spanning_components() {
+    let root = ag_measurement_root();
+    let mut plan = component_aware_one_cent_saga_plan(&root);
+    for primitive_id in ["primitive:consign-parcel", "primitive:parcel-shipping"] {
+        let primitive = plan["primitives"]
+            .as_array_mut()
+            .expect("primitives are an array")
+            .iter_mut()
+            .find(|primitive| primitive["id"] == primitive_id)
+            .expect("component primitive exists");
+        primitive["resL"] = json!(["drift:other-component"]);
+        primitive["support"]["variables"] = json!(["drift:other-component"]);
+    }
+    plan["faithfulness"]["supplied"]["residualSupportPredicate"]["supportVariables"] =
+        json!(["drift:one-cent", "drift:other-component"]);
+
+    let out_dir = run_saga_fixture_lock_with_archmap(
+        "ag-saga-component-aware-cross-component-certificate",
+        plan,
+        component_aware_one_cent_archmap(&root),
+    );
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert!(
+        packet["structuralVerdict"]
+            .as_array()
+            .expect("structural verdict is an array")
+            .iter()
+            .all(|row| row["law"] != "saga.residual-class"),
+        "a residual support that spans components must not receive a single component certificate"
     );
 }
 
