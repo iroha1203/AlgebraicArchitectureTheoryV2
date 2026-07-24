@@ -1202,6 +1202,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                         "toolVersion": run_contract.tool_version.clone(),
                         "runId": run_contract.run_id.clone(),
                         "inputDigests": run_contract.input_digests.clone(),
+                        "artifactDigests": {},
                         "componentFingerprints": run_contract.component_fingerprints.clone(),
                         "commandName": "analyze",
                         "mode": "validation-failure",
@@ -1305,6 +1306,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                             "toolVersion": run_contract.tool_version.clone(),
                             "runId": run_contract.run_id.clone(),
                             "inputDigests": run_contract.input_digests.clone(),
+                            "artifactDigests": {},
                             "componentFingerprints": run_contract.component_fingerprints.clone(),
                             "commandName": "analyze",
                             "mode": "analysis-failure",
@@ -1433,6 +1435,12 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                     "toolVersion": run_contract.tool_version.clone(),
                     "runId": run_contract.run_id.clone(),
                     "inputDigests": run_contract.input_digests.clone(),
+                    "artifactDigests": {
+                        "measurementPacket": {
+                            "path": "archsig-measurement-packet.json",
+                            "sha256": canonical_json_file_digest(&measurement_packet_path)?
+                        }
+                    },
                     "componentFingerprints": run_contract.component_fingerprints.clone(),
                     "commandName": "analyze",
                     "mode": "measurement",

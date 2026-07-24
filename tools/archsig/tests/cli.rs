@@ -2622,7 +2622,7 @@ fn cli_analyze_presentation_generated_circle_establishes_independent_h1_transfer
 }
 
 #[test]
-fn cli_compare_rejects_runs_with_different_repair_plan_provenance() {
+fn cli_compare_records_repair_plan_provenance_without_suppressing_verdict_rows() {
     let root = ag_measurement_root();
     let base_plan = presentation_generated_saga_plan(&root, true);
     let mut changed_atlas_plan = base_plan.clone();
@@ -2653,8 +2653,80 @@ fn cli_compare_rejects_runs_with_different_repair_plan_provenance() {
         compare_out.to_str().expect("comparison output path is utf-8"),
     ]);
     let report = read_json(&compare_out.join("archsig-comparison-report.json"));
-    assert_eq!(report["comparability"]["level"], "not-comparable");
+    assert_eq!(report["comparability"]["level"], "verdict-row");
     assert_eq!(report["comparability"]["sameRepairPlanDigest"], false);
+    assert!(report["boundaryStatements"]
+        .as_array()
+        .expect("comparison boundaries are an array")
+        .iter()
+        .any(|boundary| boundary["kind"] == "repair_plan_changed_between_runs"));
+}
+
+#[test]
+fn cli_compare_rejects_measurement_packet_and_manifest_provenance_mismatches() {
+    let root = ag_measurement_root();
+    let base_plan = presentation_generated_saga_plan(&root, true);
+    let mut changed_plan = base_plan.clone();
+    changed_plan["comparison"]["h1ComparisonData"]["presentation"]["equationLiftAtlas"]
+        ["localLifts"][0]["coefficients"] = json!([1]);
+    let base_run = run_saga_fixture_lock("ag-saga-compare-manifest-binding-base", base_plan);
+    let packet_mismatch_run = run_saga_fixture_lock(
+        "ag-saga-compare-manifest-binding-packet-mismatch",
+        changed_plan.clone(),
+    );
+    fs::copy(
+        base_run.join("archsig-measurement-packet.json"),
+        packet_mismatch_run.join("archsig-measurement-packet.json"),
+    )
+    .expect("different-run packet can be substituted for negative test");
+    let packet_mismatch_out = temp_dir("ag-saga-compare-manifest-binding-packet-output");
+    run_sig0_expect_code(
+        &[
+            "compare",
+            "--base-run",
+            base_run.to_str().expect("base run path is utf-8"),
+            "--head-run",
+            packet_mismatch_run
+                .to_str()
+                .expect("packet mismatch run path is utf-8"),
+            "--out-dir",
+            packet_mismatch_out
+                .to_str()
+                .expect("packet mismatch output path is utf-8"),
+        ],
+        2,
+    );
+
+    let digest_mismatch_run = run_saga_fixture_lock(
+        "ag-saga-compare-manifest-binding-digest-mismatch",
+        changed_plan,
+    );
+    let manifest_path = digest_mismatch_run.join("archsig-run-manifest.json");
+    let mut manifest = read_json(&manifest_path);
+    manifest["artifactDigests"]["measurementPacket"]["sha256"] =
+        json!("0000000000000000000000000000000000000000000000000000000000000000");
+    fs::write(
+        &manifest_path,
+        serde_json::to_vec_pretty(&manifest).expect("manifest serializes"),
+    )
+    .expect("tampered manifest writes");
+    let digest_mismatch_out = temp_dir("ag-saga-compare-manifest-binding-digest-output");
+    run_sig0_expect_code(
+        &[
+            "compare",
+            "--base-run",
+            base_run.to_str().expect("base run path is utf-8"),
+            "--head-run",
+            digest_mismatch_run
+                .to_str()
+                .expect("digest mismatch run path is utf-8"),
+            "--out-dir",
+            digest_mismatch_out
+                .to_str()
+                .expect("digest mismatch output path is utf-8"),
+        ],
+        2,
+    );
 }
 
 #[test]
@@ -13948,6 +14020,7 @@ fn cli_compare_asserts_identical_and_verdict_row_transitions() {
             serde_json::to_vec_pretty(&packet).expect("transition packet serializes"),
         )
         .expect("transition packet writes");
+        refresh_run_measurement_packet_digest(run);
     };
     let set_measured_nonzero = |run: &Path| {
         let packet_path = run.join("archsig-measurement-packet.json");
@@ -13964,6 +14037,7 @@ fn cli_compare_asserts_identical_and_verdict_row_transitions() {
             serde_json::to_vec_pretty(&packet).expect("transition packet serializes"),
         )
         .expect("transition packet writes");
+        refresh_run_measurement_packet_digest(run);
     };
 
     let new_base = clone_run("new-base");
@@ -14954,6 +15028,26 @@ fn removed_commands() -> &'static [&'static str] {
 fn read_json(path: &Path) -> Value {
     serde_json::from_slice(&fs::read(path).expect("json fixture can be read"))
         .expect("json fixture parses")
+}
+
+fn refresh_run_measurement_packet_digest(run: &Path) {
+    let packet_path = run.join("archsig-measurement-packet.json");
+    let packet = read_json(&packet_path);
+    let digest = format!(
+        "{:x}",
+        Sha256::digest(serde_json::to_vec(&packet).expect("measurement packet canonicalizes")),
+    );
+    let manifest_path = run.join("archsig-run-manifest.json");
+    let mut manifest = read_json(&manifest_path);
+    manifest["artifactDigests"]["measurementPacket"] = json!({
+        "path": "archsig-measurement-packet.json",
+        "sha256": digest,
+    });
+    fs::write(
+        manifest_path,
+        serde_json::to_vec_pretty(&manifest).expect("manifest serializes"),
+    )
+    .expect("manifest writes");
 }
 
 fn sidecar_measurement_profile_path(policy_path: &Path) -> PathBuf {

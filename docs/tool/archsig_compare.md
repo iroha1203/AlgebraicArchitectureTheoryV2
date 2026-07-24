@@ -70,9 +70,15 @@ Outputs:
 `identical` requires matching ArchMap digest, LawPolicy, law-surface, and
 MeasurementProfile component fingerprints, optional RepairPlan digest, plus tool version.
 `verdict-row` requires matching LawPolicy, law-surface, and MeasurementProfile component fingerprints, site cover
-digest, optional RepairPlan digest, and tool version. A policy-bundle component change is therefore
-explicitly recorded as `not-comparable`.
+digest, and tool version. RepairPlan digest differences are emitted as
+`sameRepairPlanDigest: false` with a `repair_plan_changed_between_runs` record, while preserving
+the record-level comparison. A policy-bundle component change is therefore explicitly recorded as
+`not-comparable`.
 Other pairs are `not-comparable`; the report records both independent run conclusions and emits a typed boundary.
+
+Each measurement run manifest records the canonical digest of its measurement packet. `compare` verifies that
+digest and that the packet's run contract (`runId`, tool version, input digests, component fingerprints) matches
+the manifest before any verdict transition is computed.
 
 When a checked refinement artifact binds both run site-cover fingerprints, `classTransport.recordComparability`
 may remain `not-comparable` while the separate refinement reading is established.

@@ -75,8 +75,18 @@ pub fn build_comparison_artifacts_with_refinement_v1(
         ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA,
         "head measurement packet",
     )?;
-    validate_compare_packet(&base_packet, "base measurement packet")?;
-    validate_compare_packet(&head_packet, "head measurement packet")?;
+    validate_compare_packet(
+        &base_packet,
+        &base_manifest,
+        base_run,
+        "base measurement packet",
+    )?;
+    validate_compare_packet(
+        &head_packet,
+        &head_manifest,
+        head_run,
+        "head measurement packet",
+    )?;
 
     let archmap_diff = build_archmap_diff(base_run, head_run, &base_normalized, &head_normalized)?;
     let comparability = comparability(&base_manifest, &head_manifest);
@@ -299,7 +309,6 @@ fn comparability(base: &Value, head: &Value) -> Value {
         && same_cover
         && same_law_surface
         && same_component_fingerprints
-        && same_repair_plan
     {
         "verdict-row"
     } else {
@@ -315,7 +324,7 @@ fn comparability(base: &Value, head: &Value) -> Value {
         "sameLawSurfaceFingerprint": same_law_surface,
         "sameSiteCoverDigest": same_cover,
         "sameRepairPlanDigest": same_repair_plan,
-        "basis": "identical requires archmap, LawPolicy, law-surface, MeasurementProfile, and optional RepairPlan input digests plus tool version equality; verdict-row requires all three LawPolicy, law-surface, and MeasurementProfile component fingerprints, site cover digest, optional RepairPlan input digest, and tool version equality"
+        "basis": "identical requires archmap, LawPolicy, law-surface, MeasurementProfile, and optional RepairPlan input digests plus tool version equality; verdict-row requires all three LawPolicy, law-surface, and MeasurementProfile component fingerprints, site cover digest, and tool version equality, while recording whether the optional RepairPlan digest changed"
     })
 }
 
@@ -407,21 +416,31 @@ fn conclusion_code(comparability: &Value, transitions: &[Value]) -> &'static str
 }
 
 fn comparison_boundaries(comparability: &Value, cover_or_context_changed: bool) -> Vec<Value> {
-    if comparability["level"].as_str() != Some("not-comparable") && !cover_or_context_changed {
-        return Vec::new();
+    let mut boundaries = Vec::new();
+    if comparability["level"].as_str() == Some("not-comparable") || cover_or_context_changed {
+        let kind = if cover_or_context_changed {
+            "cover_changed_between_runs"
+        } else {
+            "runs_not_comparable_without_comparison_data"
+        };
+        boundaries.push(json!({
+            "id": format!("boundary:comparison:{kind}"),
+            "kind": kind,
+            "reason": "record-level comparison data does not support class identity or causal transition claims outside classTransport's checked refinement contract",
+            "scopeRefs": ["comparison:run-pair"],
+            "text": "Record transitions remain side by side; any class-zero reading is limited to classTransport's checked coarse-to-fine refinement contract."
+        }));
     }
-    let kind = if cover_or_context_changed {
-        "cover_changed_between_runs"
-    } else {
-        "runs_not_comparable_without_comparison_data"
-    };
-    vec![json!({
-        "id": format!("boundary:comparison:{kind}"),
-        "kind": kind,
-        "reason": "record-level comparison data does not support class identity or causal transition claims outside classTransport's checked refinement contract",
-        "scopeRefs": ["comparison:run-pair"],
-        "text": "Record transitions remain side by side; any class-zero reading is limited to classTransport's checked coarse-to-fine refinement contract."
-    })]
+    if comparability["sameRepairPlanDigest"] == Value::Bool(false) {
+        boundaries.push(json!({
+            "id": "boundary:comparison:repair-plan-changed-between-runs",
+            "kind": "repair_plan_changed_between_runs",
+            "reason": "the compared runs bind different RepairPlan input digests",
+            "scopeRefs": ["comparison:run-pair"],
+            "text": "Record-level verdict rows remain comparable under the shared policy, law-surface, profile, and site-cover contract; the RepairPlan change is recorded and does not establish causal repair."
+        }));
+    }
+    boundaries
 }
 
 fn diff_sources(base: &Value, head: &Value) -> Value {
@@ -527,7 +546,12 @@ fn verdict_row_map(packet: &Value) -> BTreeMap<String, Value> {
         .collect()
 }
 
-fn validate_compare_packet(packet: &Value, label: &str) -> Result<(), Box<dyn Error>> {
+fn validate_compare_packet(
+    packet: &Value,
+    manifest: &Value,
+    run: &Path,
+    label: &str,
+) -> Result<(), Box<dyn Error>> {
     serde_json::from_value::<ArchSigMeasurementPacketV1>(packet.clone())
         .map_err(|error| format!("{label} shape is invalid: {error}"))?;
     let failed = validate_measurement_packet_value_v1(packet)
@@ -541,6 +565,24 @@ fn validate_compare_packet(packet: &Value, label: &str) -> Result<(), Box<dyn Er
         .is_none_or(|rows| rows.is_empty())
     {
         return Err(format!("{label} must contain at least one structuralVerdict row").into());
+    }
+    for field in ["toolVersion", "runId", "inputDigests", "componentFingerprints"] {
+        if packet.get(field) != manifest.get(field) {
+            return Err(format!(
+                "{label} {field} must match its run manifest provenance"
+            )
+            .into());
+        }
+    }
+    let expected_digest = manifest["artifactDigests"]["measurementPacket"]["sha256"]
+        .as_str()
+        .ok_or_else(|| format!("{label} run manifest requires artifactDigests.measurementPacket.sha256"))?;
+    let actual_digest = canonical_json_file_digest(&run.join("archsig-measurement-packet.json"))?;
+    if expected_digest != actual_digest {
+        return Err(format!(
+            "{label} digest does not match its run manifest artifactDigests.measurementPacket.sha256"
+        )
+        .into());
     }
     Ok(())
 }
@@ -630,10 +672,7 @@ fn run_digest(run: &Path, manifest: &Value) -> Value {
         "componentFingerprints": manifest["componentFingerprints"],
         "siteCoverDigest": manifest["inputDigests"]["siteCoverDigest"],
         "repairPlan": manifest["inputDigests"]["repairPlan"],
-        "measurementPacket": {
-            "path": artifact_ref(run, "archsig-measurement-packet.json"),
-            "sha256": canonical_json_file_digest(&run.join("archsig-measurement-packet.json")).unwrap_or_default()
-        }
+        "measurementPacket": manifest["artifactDigests"]["measurementPacket"]
     })
 }
 
@@ -723,13 +762,13 @@ mod tests {
     }
 
     #[test]
-    fn repair_plan_digest_change_blocks_comparability() {
+    fn repair_plan_digest_change_excludes_identical_but_keeps_verdict_row_comparability() {
         let mut base = manifest("sha256:surface-a");
         let mut head = manifest("sha256:surface-a");
         base["inputDigests"]["repairPlan"] = json!({"sha256": "repair-plan-a"});
         head["inputDigests"]["repairPlan"] = json!({"sha256": "repair-plan-b"});
         let result = comparability(&base, &head);
-        assert_eq!(result["level"], "not-comparable");
+        assert_eq!(result["level"], "verdict-row");
         assert_eq!(result["sameRepairPlanDigest"], false);
     }
 
@@ -903,6 +942,31 @@ fn validate_component_fingerprints(manifest: &Value, label: &str) -> Result<(), 
             }
         }
     }
+    let repair_plan_input = manifest.get("repairPlanInputPath");
+    let repair_plan_path = repair_plan_input.and_then(Value::as_str);
+    let repair_plan_digest = input_digests.get("repairPlan");
+    match (repair_plan_path, repair_plan_digest) {
+        (Some(path), Some(digest)) if digest["path"].as_str() == Some(path) => {}
+        (Some(_), Some(_)) => {
+            return Err(format!(
+                "{label} inputDigests.repairPlan.path must match repairPlanInputPath"
+            )
+            .into());
+        }
+        (Some(_), None) => {
+            return Err(format!(
+                "{label} requires inputDigests.repairPlan when repairPlanInputPath is present"
+            )
+            .into());
+        }
+        (None, Some(_)) => {
+            return Err(format!(
+                "{label} must not contain inputDigests.repairPlan without repairPlanInputPath"
+            )
+            .into());
+        }
+        (None, None) => {}
+    }
     for (component, digest_key) in [
         ("lawPolicy", "lawPolicy"),
         ("lawSurface", "lawSurface"),
@@ -942,6 +1006,7 @@ fn validate_run_manifest_shape(manifest: &Value, label: &str) -> Result<(), Box<
         "toolVersion",
         "runId",
         "inputDigests",
+        "artifactDigests",
         "componentFingerprints",
         "commandName",
         "mode",
@@ -966,6 +1031,7 @@ fn validate_run_manifest_shape(manifest: &Value, label: &str) -> Result<(), Box<
         "toolVersion",
         "runId",
         "inputDigests",
+        "artifactDigests",
         "componentFingerprints",
         "commandName",
         "mode",
@@ -986,6 +1052,46 @@ fn validate_run_manifest_shape(manifest: &Value, label: &str) -> Result<(), Box<
     }
     if required.difference(&actual).next().is_some() {
         return Err(format!("{label} is missing required top-level manifest fields").into());
+    }
+    let artifact_digests = manifest
+        .get("artifactDigests")
+        .and_then(Value::as_object)
+        .ok_or_else(|| format!("{label} artifactDigests must be an object"))?;
+    let expected_artifacts = if manifest["mode"].as_str() == Some("measurement") {
+        BTreeSet::from(["measurementPacket"])
+    } else {
+        BTreeSet::new()
+    };
+    let actual_artifacts = artifact_digests
+        .keys()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    if actual_artifacts != expected_artifacts {
+        return Err(format!(
+            "{label} artifactDigests must match artifacts emitted by its run mode"
+        )
+        .into());
+    }
+    if let Some(measurement_packet) = artifact_digests.get("measurementPacket") {
+        let object = measurement_packet
+            .as_object()
+            .ok_or_else(|| format!("{label} artifactDigests.measurementPacket must be an object"))?;
+        if object.keys().map(String::as_str).collect::<BTreeSet<_>>()
+            != BTreeSet::from(["path", "sha256"])
+            || object.get("path").and_then(Value::as_str)
+                != Some("archsig-measurement-packet.json")
+            || !object
+                .get("sha256")
+                .and_then(Value::as_str)
+                .is_some_and(|digest| {
+                    digest.len() == 64 && digest.bytes().all(|byte| byte.is_ascii_hexdigit())
+                })
+        {
+            return Err(format!(
+                "{label} artifactDigests.measurementPacket must contain the packet path and sha256 digest"
+            )
+            .into());
+        }
     }
     Ok(())
 }
