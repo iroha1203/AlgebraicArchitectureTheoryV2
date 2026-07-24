@@ -1,6 +1,4 @@
 import Formal.AG
-import Formal.AG.Atom.ObstructionLegacy
-import Formal.AG.Atom.LawfulnessZeroLegacy
 import Formal.AG.Equation.FiniteExample
 import Formal.AG.SemanticRepair.AdditiveH1
 import Formal.AG.SemanticRepair.Examples
@@ -1793,10 +1791,10 @@ def sd1CompositionReadingConstructor := @CompositionReading.mk
 def sd1ObjectReadingConstructor := @ObjectReading.mk
 /-- SD1 index entry for the finite circuit-datum constructor fixed by the ledger. -/
 def sd1FiniteCircuitDatumConstructor := @FiniteCircuitDatum.mk
-/-- SD1 index entry for the circuit-reading constructor fixed by the ledger. -/
-def sd1CircuitReadingConstructor := @CircuitReading.mk
-/-- SD1 index entry for the law-reading constructor fixed by the ledger. -/
-def sd1LawReadingConstructor := @LawReading.mk
+/-- SD1 index entry for the equation-circuit-reading constructor fixed by the ledger. -/
+def sd1EquationCircuitReadingConstructor := @EquationCircuitReading.mk
+/-- SD1 index entry for the core equation-reading constructor fixed by the ledger. -/
+def sd1EquationReadingConstructor := @EquationReading.mk
 /-- SD1 index entry for the configuration-hom constructor fixed by the ledger. -/
 def sd1ConfigurationHomConstructor := @ConfigurationHom.mk
 /-- SD1 index entry for the architecture-operation constructor fixed by the ledger. -/
@@ -1827,12 +1825,14 @@ def sd1CircuitQueryHolds := @CircuitQuery.Holds
 def sd1FiniteCircuitDatumMatches := @FiniteCircuitDatum.Matches
 /-- SD1 index entry for evaluation of the finite detector grammar. -/
 noncomputable def sd1CircuitDetectorCodeEval := @CircuitDetectorCode.eval
-/-- SD1 index entry for Boolean acceptance by the selected circuit reading. -/
-noncomputable def sd1CircuitReadingAccepts := @CircuitReading.accepts
-/-- SD1 index entry for the object- and law-indexed circuit fiber. -/
-def sd1CircuitReadingCircuit := @CircuitReading.Circuit
-/-- SD1 index entry for the required-circuit completeness predicate. -/
-def sd1CircuitReadingRequiredComplete := @CircuitReading.RequiredComplete
+/-- SD1 index entry for Boolean acceptance by the selected equation circuit reading. -/
+noncomputable def sd1EquationCircuitReadingAccepts :=
+  @EquationCircuitReading.accepts
+/-- SD1 index entry for the object- and equation-indexed circuit fiber. -/
+def sd1EquationCircuitReadingCircuit := @EquationCircuitReading.Circuit
+/-- SD1 index entry for the required-equation circuit completeness predicate. -/
+def sd1EquationCircuitReadingRequiredComplete :=
+  @EquationCircuitReading.RequiredComplete
 /-- SD1 index entry for identity on an actual Atom configuration. -/
 def sd1ConfigurationHomIdentity := @ConfigurationHom.id
 /-- SD1 index entry for composition of actual configuration homomorphisms. -/
@@ -1857,8 +1857,8 @@ def sd1CoreObject := @AATCorePackage.object
 def sd1CoreAlgebra := @AATCorePackage.algebra
 /-- SD1 index entry for the distinguished generated algebra object. -/
 def sd1CoreBaseObject := @AATCorePackage.baseObject
-/-- SD1 index entry for semantic law failure on an architecture object. -/
-def sd1SemanticObstruction := @SemanticObstruction
+/-- SD1 index entry for semantic equation failure on an architecture object. -/
+def sd1EquationSemanticObstruction := @EquationSemanticObstruction
 
 def sd1AtomFamilyExt := @AtomFamily.ext
 def sd1AtomConfigurationExt := @AtomConfiguration.ext
@@ -1907,10 +1907,10 @@ def sd1ObjectAlgebraCircuitNonempty := @ObjectAlgebra.circuit_nonempty_iff
 
 def sd1FiniteCircuitDatumExt := @FiniteCircuitDatum.ext
 def sd1FiniteCircuitHoldsIff := @FiniteCircuitDatum.holds_iff_of_matches
-def sd1CircuitReadingExt := @CircuitReading.ext
-def sd1CircuitAcceptsEqEval := @CircuitReading.accepts_eq_eval
-def sd1CircuitSound := @CircuitReading.circuit_sound
-def sd1LawReadingExt := @LawReading.ext
+def sd1EquationCircuitReadingExt := @EquationCircuitReading.ext
+def sd1EquationCircuitAcceptsEqEval := @EquationCircuitReading.accepts_eq_eval
+def sd1EquationCircuitSound := @EquationCircuitReading.circuit_sound
+def sd1EquationReadingCircuitSound := @EquationReading.circuitSound
 
 def sd1ObservationCanonicalFamilyUnique := @A9Example.canonical_family_unique
 
