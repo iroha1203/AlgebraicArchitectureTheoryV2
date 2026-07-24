@@ -2451,6 +2451,28 @@ noncomputable def exactSourceCore : AATCorePackage FiniteModel.carrier :=
 noncomputable def exactTargetCore : AATCorePackage FiniteModel.carrier :=
   AATCorePackage.generate FiniteModel.axiomSystem exactCoreReading
 
+/-- Equation system on the same selected contexts whose three source roles
+are incorrectly collapsed to `required`. -/
+private noncomputable def requiredOnlyExactEquationSystem :
+    ArchitecturalEquationSystem exactSourceCore.algebra.contextPreorder :=
+  { exactSourceCore.algebra.equationSystem with
+    role := fun _ => EquationRole.required }
+
+/-- A complete equation-index equivalence cannot preserve an optional source
+role into the required-only target, providing the negative instance for
+`EquationSystemExactTransport`. -/
+theorem requiredOnly_not_equationSystemExactTransport :
+    ¬ Nonempty
+      (EquationSystemExactTransport
+        exactSourceCore.algebra.equationSystem
+        requiredOnlyExactEquationSystem
+        (Equiv.refl FiniteModel.carrier.Atom)
+        id) := by
+  rintro ⟨transport⟩
+  have hrole := transport.role_eq EquationRole.optional
+  change EquationRole.required = EquationRole.optional at hrole
+  exact EquationRole.noConfusion hrole
+
 private theorem exactSourceCore_family_mem
     (atom : FiniteModel.carrier.Atom) : exactSourceCore.family.mem atom := by
   rw [exactSourceCore.family_mem_iff_extracts]

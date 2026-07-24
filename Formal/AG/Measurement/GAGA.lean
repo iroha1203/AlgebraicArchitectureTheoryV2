@@ -1134,6 +1134,16 @@ theorem span_range_eq_span_singleton
     refine ⟨P.generatorIndex, ?_⟩
     rw [P.coordinate_eq P.generatorIndex, P.generatorIndex_active]
 
+/-- An empty coordinate index cannot present a principal generator, providing
+the negative instance for the proof-bearing presentation structure. -/
+theorem emptyIndex_not_principalCoordinatePresentation
+    {R : Type v} [CommRing R] (generator : R) :
+    ¬ Nonempty
+      (PrincipalCoordinatePresentation
+        (fun index : Empty => nomatch index) generator) := by
+  rintro ⟨presentation⟩
+  exact isEmptyElim presentation.generatorIndex
+
 end PrincipalCoordinatePresentation
 
 /-- VIII.Theorem 12.3: finite data shared by every certified comparison. -/
@@ -1368,7 +1378,6 @@ noncomputable def commonAmbient {M : MeasurementProfile.{u, v}} [Field M.Coeff]
     (ULift.{u, 0} Derived.Counterexample.SharedWitnessCoord)
     (M.equationGeometry.site.equationSystem.RequiredIndex ×
       M.equationGeometry.site.equationSystem.RequiredIndex)
-    M.WitnessVariables
     (ULift.up .x)
     (C.selectedLeftProfileEquation, C.selectedRightProfileEquation)
 

@@ -223,10 +223,10 @@ def finiteAATComputabilityActualLawConflictPackage :=
   @Measurement.finiteAATConflictComputability
 
 def finiteAATComputabilitySelectedSupportReading :=
-  @Measurement.FiniteAATConflictRealization.selectedSupport_holds
+  @Measurement.FiniteAATComputationData.computedConflictSupport_selected
 
 def finiteAATComputabilityActualSupportZero :=
-  @Measurement.FiniteAATConflictRealization.supportRelation_zero
+  @Measurement.FiniteAATComputationData.computedConflictSupport_zero
 
 def finiteAATComputabilityDistinctLiftFixture :=
   @Measurement.tinyLeftSquareFree_normalForm_identifies_distinct_lifts
@@ -10117,6 +10117,9 @@ def issue3735ComponentAAbsentSignatureAxesZeroUnreachable :=
 def issue3735ComponentAAbsentSignatureAxesZeroFails :=
   @AAT.AG.FiniteModel.componentAAbsent_signatureAxesZero_fails_core
 
+def issue3735EquationSignatureComparisonNegative :=
+  @AAT.AG.FiniteModel.componentAAbsent_not_alwaysZeroSignatureComparison
+
 def issue3735SemanticRepairLawfulObjectNoCycle :=
   @AAT.AG.Examples.SemanticRepairPart10.lawfulObject_noCycle
 
@@ -10173,6 +10176,9 @@ def issue3735ExactTransportEquationLawfulIff :=
 
 def issue3735ExactTransportFullyEquationLawfulIff :=
   @AAT.AG.EquationSystemExactTransport.fullyEquationLawful_iff
+
+def issue3735EquationSystemExactTransportNegative :=
+  @AAT.AG.ReadingFunctorialityFinite.requiredOnly_not_equationSystemExactTransport
 
 def issue3735SignedExactRequiredIff :=
   @AAT.AG.SignedExactCoreReadingHom.required_iff
@@ -10231,6 +10237,9 @@ def issue3735ComputationProfileLeftSquareFree :=
 def issue3735ComputationProfileRightSquareFree :=
   @AAT.AG.Measurement.FiniteAATComputationData.rightIdeal_eq_squareFree
 
+def issue3735SquareFreeCoordinatePresentationNegative :=
+  @AAT.AG.Measurement.zeroCoordinate_not_squareFreeCoordinatePresentation
+
 def issue3735AffineIdealSheafPairLeftTop :=
   @AAT.AG.Measurement.AffineIdealSheafPair.ofSpec_leftIdealSheaf_top
 
@@ -10264,20 +10273,41 @@ def issue3735AffineCanonicalTorRightIdeal :=
 def issue3735IndexedCanonicalTorReading :=
   @AAT.AG.Measurement.LawConflictMeasurement.lawConflictTorReading_holds
 
+def issue3735SupportCarrierSelectedScheme :=
+  @AAT.AG.Measurement.CommonAmbientPair.supportCarrier_eq_selectedSchemeCarrier
+
+def issue3735ConflictClassSupportZero :=
+  @AAT.AG.Measurement.LawConflictMeasurement.conflictClassSupport_zero
+
+def issue3735ConflictClassSupportNonemptyIff :=
+  @AAT.AG.Measurement.LawConflictMeasurement.conflictClassSupport_nonempty_iff
+
 def issue3735ComputedSelectedSupport :=
-  @AAT.AG.Measurement.FiniteAATConflictRealization.selectedSupport_holds
+  @AAT.AG.Measurement.FiniteAATComputationData.computedConflictSupport_selected
 
 def issue3735ComputedSupportIntersection :=
   @AAT.AG.Measurement.transferRepairPath_direction_intersects
 
 def issue3735ComputedSelectedSupportNonempty :=
-  @AAT.AG.Measurement.finiteComputabilityConflictRealization_selectedSupport_ne_empty
+  @AAT.AG.Measurement.finiteComputabilitySelectedClassSupport_ne_empty
+
+def issue3735SelectedActualConflictSupportNonempty :=
+  @AAT.AG.Measurement.finiteComputabilitySelectedConflictSupport_nonempty
+
+def issue3735SelectedActualConflictSupportPoint :=
+  @AAT.AG.Measurement.finiteComputabilitySelectedConflictSupportPoint_mem
 
 def issue3735SupportLocalizedTransfer :=
   @AAT.AG.Measurement.supportTransferExample_nontrivialTransferredResidue
 
 def issue3735SelectedTransferResiduePairingValue :=
   @AAT.AG.Measurement.TransferMeasurementPairing.SelectedTransferResidue.residue_eq_selectedResidue
+
+def issue3735SelectedTransferResiduePositive :=
+  @AAT.AG.Measurement.transferPairing_selectedTransferResidue_nonempty
+
+def issue3735SelectedTransferResidueNegative :=
+  @AAT.AG.Measurement.transferEmptySupportPairing_no_selectedTransferResidue
 
 def issue3735SupportLocalizedTransferConstructor :=
   @AAT.AG.Measurement.supportLocalizedTransferPackage
@@ -10401,6 +10431,9 @@ def issue3735GAGAAmbientSharedWitnessIdeals :=
 
 def issue3735GAGAPrincipalCoordinatePresentation :=
   @AAT.AG.Measurement.PrincipalCoordinatePresentation.span_range_eq_span_singleton
+
+def issue3735PrincipalCoordinatePresentationNegative :=
+  @AAT.AG.Measurement.PrincipalCoordinatePresentation.emptyIndex_not_principalCoordinatePresentation
 
 def issue3735GAGARealPresheafMap :=
   @AAT.AG.Measurement.gagaRealPresheaf_map_apply

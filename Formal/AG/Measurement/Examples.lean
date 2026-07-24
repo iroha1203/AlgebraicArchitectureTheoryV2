@@ -2153,6 +2153,38 @@ def tinyRightSquareFreeData :
     FiniteSquareFreeComputationData computabilityFiniteMeasurementRegime where
   forbiddenSupports := {forbiddenSupportPFinset}
 
+/-- Constant-zero coordinate family used to refute an incorrect nonzero
+square-free presentation. -/
+private def zeroSquareFreeCoordinate
+    (_index : PUnit) :
+    MvPolynomial SquareFreeSupportVertex (ZMod 2) :=
+  0
+
+/-- The nonzero singleton support cannot be presented by a constant-zero
+coordinate family, providing the negative instance for
+`SquareFreeCoordinatePresentation`. -/
+theorem zeroCoordinate_not_squareFreeCoordinatePresentation :
+    ¬ Nonempty
+      (SquareFreeCoordinatePresentation
+        computabilityFiniteMeasurementRegime
+        zeroSquareFreeCoordinate tinyRightSquareFreeData) := by
+  rintro ⟨presentation⟩
+  letI := computabilityFiniteMeasurementRegime.geometry.coeffCommRing
+  letI := computabilityFiniteMeasurementRegime.witnessDecidableEq
+  have hforbidden :
+      forbiddenSupportPFinset ∈ tinyRightSquareFreeData.forbiddenSupports := by
+    simp [tinyRightSquareFreeData]
+  obtain ⟨index, hsupport⟩ :=
+    (presentation.support_exact forbiddenSupportPFinset).mp hforbidden
+  have hcoordinate := presentation.coordinate_eq index
+  rw [hsupport] at hcoordinate
+  have hzeroX :
+      (0 : MvPolynomial SquareFreeSupportVertex (ZMod 2)) =
+        MvPolynomial.X SquareFreeSupportVertex.p := by
+    simpa [zeroSquareFreeCoordinate, forbiddenSupportPFinset,
+      LawAlgebra.StanleyReisner.squareFreeMonomial] using hcoordinate
+  exact MvPolynomial.X_ne_zero SquareFreeSupportVertex.p hzeroX.symm
+
 theorem tinyRightIdeal_eq_squareFree :
     finiteDimensionalMatrixRightIdeal =
       tinyRightSquareFreeData.obstructionIdeal (ZMod 2) := by
@@ -2817,13 +2849,13 @@ theorem finiteComputabilityConflictRealization_selectedIdeals_shape :
 computed from the finite regime. -/
 theorem finiteComputabilityConflictPackage_nonzero_and_computedSupport :
     finiteComputabilityExampleData.selectedConflictClass ≠ 0 ∧
-      finiteComputabilityConflictRealization.supportRelation
+      finiteComputabilityExampleData.ComputedConflictSupport
         finiteComputabilityExampleData.selectedConflictClass
-        finiteComputabilityConflictRealization.selectedSupport := by
+        finiteComputabilityExampleData.selectedClassSupport := by
   constructor
   · change finiteComputabilityExampleData.selectedConflictClass ≠ 0
     exact finiteComputabilityExampleFullRoute_nonzero.2.2.2.2
-  · exact finiteComputabilityConflictRealization.selectedSupport_holds
+  · exact finiteComputabilityExampleData.computedConflictSupport_selected
 
 /-- The final conflict fixture has proper selected ideals, degree one, a
 nonzero actual conflict class, and its support computed by the finite regime. -/
@@ -2832,9 +2864,9 @@ theorem finiteComputabilityConflictPackage_proper_degree_one_nonzero_and_compute
       finiteComputabilityExampleData.rightIdeal ≠ ⊤ ∧
       finiteComputabilityExampleData.torDegree = 1 ∧
       finiteComputabilityExampleData.selectedConflictClass ≠ 0 ∧
-      finiteComputabilityConflictRealization.supportRelation
+      finiteComputabilityExampleData.ComputedConflictSupport
         finiteComputabilityExampleData.selectedConflictClass
-        finiteComputabilityConflictRealization.selectedSupport := by
+        finiteComputabilityExampleData.selectedClassSupport := by
   have hleft : finiteComputabilityExampleData.leftIdeal ≠ ⊤ := by
     rw [Ideal.ne_top_iff_one]
     intro hone
@@ -2870,11 +2902,10 @@ noncomputable def finiteComputabilityMeasuredZeroConflict :
 to every reading of the zero conflict class. -/
 theorem finiteComputabilityConflictPackage_zero_support
     {support : Finset SquareFreeSupportVertex}
-    (h : finiteComputabilityConflictRealization.supportRelation
+    (h : finiteComputabilityExampleData.ComputedConflictSupport
       finiteComputabilityMeasuredZeroConflict support) :
     support = ∅ := by
-  have hzero := finiteComputabilityConflictRealization.supportRelation_zero h
-  simpa [finiteComputabilityConflictRealization] using hzero
+  exact finiteComputabilityExampleData.computedConflictSupport_zero h
 
 /-- R11(c): the selected finite resolution computes the Mathlib Tor object. -/
 theorem finiteComputabilityExample_torRoute :
@@ -4068,8 +4099,28 @@ theorem cellularHodgeExample_harmonicDebtMinimal :
     cellularHodgeFiniteExample.harmonicDebtMinimal :=
   cellularHodgeFiniteExample.harmonicDebtMinimal_cert
 
-/-- R11(f): selected repair path through the degree-one conflict support
-computed by the finite equation regime. -/
+/-- R11(f): the nonzero selected Tor class has a point in its actual affine
+support. -/
+theorem finiteComputabilitySelectedConflictSupport_nonempty :
+    (finiteComputabilityConflictPackage.lawConflictMeasurement.selectedConflictSupport).Nonempty := by
+  apply finiteComputabilityConflictRealization.selectedConflictSupport_nonempty
+  exact finiteComputabilityExampleFullRoute_nonzero.2.2.2.2
+
+/-- R11(f): one actual point of `Spec` in the support of the selected Tor
+class. -/
+noncomputable def finiteComputabilitySelectedConflictSupportPoint :
+    finiteComputabilityConflictRealization.commonAmbient.SupportCarrier :=
+  Classical.choose finiteComputabilitySelectedConflictSupport_nonempty
+
+/-- R11(f): the selected point belongs to the Mathlib support of the cyclic
+submodule generated by the actual Tor class. -/
+theorem finiteComputabilitySelectedConflictSupportPoint_mem :
+    finiteComputabilitySelectedConflictSupportPoint ∈
+      finiteComputabilityConflictPackage.lawConflictMeasurement.selectedConflictSupport :=
+  Classical.choose_spec finiteComputabilitySelectedConflictSupport_nonempty
+
+/-- R11(f): selected repair direction through the actual affine support of
+the degree-one conflict class. -/
 noncomputable def transferRepairPath :
     SupportLocalizedRepairPath
       finiteComputabilityConflictPackage.lawConflictMeasurement where
@@ -4079,25 +4130,17 @@ noncomputable def transferRepairPath :
   selectedRepairDirection := true
   pathImage := fun _ => ∅
   directionSupport
-    | true => {finiteComputabilityConflictRealization.selectedSupport}
+    | true => {finiteComputabilitySelectedConflictSupportPoint}
     | false => ∅
-  conflictSupport := fun conflictClass =>
-    {support |
-      finiteComputabilityConflictRealization.supportRelation
-        conflictClass support}
 
-/-- R11(f): the selected direction meets the support computed from the actual
-nonzero degree-one conflict class. -/
+/-- R11(f): the selected direction meets the actual affine support of the
+nonzero degree-one Tor class. -/
 theorem transferRepairPath_direction_intersects :
     transferRepairPath.directionSupportIntersectsConflict := by
-  refine ⟨finiteComputabilityConflictRealization.selectedSupport, ?_⟩
+  refine ⟨finiteComputabilitySelectedConflictSupportPoint, ?_⟩
   constructor
   · simp [transferRepairPath]
-  · change
-      finiteComputabilityConflictRealization.supportRelation
-        finiteComputabilityExampleData.selectedConflictClass
-        finiteComputabilityConflictRealization.selectedSupport
-    exact finiteComputabilityConflictRealization.selectedSupport_holds
+  · exact finiteComputabilitySelectedConflictSupportPoint_mem
 
 /-- R11(f): the concrete direction-support intersection supplies the
 support-localized premise. -/
@@ -4106,9 +4149,9 @@ theorem transferRepairPath_supportLocalized :
   transferRepairPath.supportLocalized_of_direction
     transferRepairPath_direction_intersects
 
-/-- R11(f): the actual selected conflict support is nonempty. -/
-theorem finiteComputabilityConflictRealization_selectedSupport_ne_empty :
-    finiteComputabilityConflictRealization.selectedSupport ≠
+/-- R11(f): the selected finite representative-support summary is nonempty. -/
+theorem finiteComputabilitySelectedClassSupport_ne_empty :
+    finiteComputabilityExampleData.selectedClassSupport ≠
       (∅ : Finset SquareFreeSupportVertex) := by
   letI := computabilityFiniteMeasurementRegime.witnessDecidableEq
   letI := computabilityFiniteMeasurementRegime.geometry.coeffCommRing
@@ -4118,7 +4161,7 @@ theorem finiteComputabilityConflictRealization_selectedSupport_ne_empty :
   simp [forbiddenSupportPFinset]
 
 /-- R11(f): finite pairing selected by direction membership and the actual
-computed support relation of the supplied conflict class. -/
+affine support of the supplied Tor class. -/
 noncomputable def transferPairing :
     TransferMeasurementPairing transferRepairPath := by
   classical
@@ -4130,10 +4173,11 @@ noncomputable def transferPairing :
       residue = TransferResidueFlag.nontrivial
     norm := fun _ => ()
     pairing := fun direction conflictClass =>
-      if finiteComputabilityConflictRealization.selectedSupport ∈
+      if finiteComputabilitySelectedConflictSupportPoint ∈
             transferRepairPath.directionSupport direction ∧
-          finiteComputabilityConflictRealization.supportRelation
-            conflictClass finiteComputabilityConflictRealization.selectedSupport then
+          finiteComputabilitySelectedConflictSupportPoint ∈
+            finiteComputabilityConflictPackage.lawConflictMeasurement.conflictClassSupport
+              conflictClass then
         TransferResidueFlag.nontrivial
       else
         TransferResidueFlag.zero
@@ -4147,11 +4191,7 @@ theorem transferPairing_selected_nontrivial :
     classical
     simp [TransferMeasurementPairing.selectedResidue, transferPairing,
       transferRepairPath]
-    change
-      finiteComputabilityConflictRealization.supportRelation
-        finiteComputabilityExampleData.selectedConflictClass
-        finiteComputabilityConflictRealization.selectedSupport
-    exact finiteComputabilityConflictRealization.selectedSupport_holds
+    exact finiteComputabilitySelectedConflictSupportPoint_mem
 
 /-- R11(f): the unselected repair direction has zero transfer residue. -/
 theorem transferPairing_unselectedDirection_zero :
@@ -4168,12 +4208,11 @@ theorem transferPairing_zeroConflict_zero :
       TransferResidueFlag.zero := by
   classical
   have hnot :
-      ¬ finiteComputabilityConflictRealization.supportRelation
-        finiteComputabilityMeasuredZeroConflict
-        finiteComputabilityConflictRealization.selectedSupport := by
-    intro h
-    exact finiteComputabilityConflictRealization_selectedSupport_ne_empty
-      (finiteComputabilityConflictRealization.supportRelation_zero h)
+      finiteComputabilitySelectedConflictSupportPoint ∉
+        finiteComputabilityConflictPackage.lawConflictMeasurement.conflictClassSupport
+          finiteComputabilityMeasuredZeroConflict := by
+    simpa [finiteComputabilityMeasuredZeroConflict] using
+      Set.not_mem_empty finiteComputabilitySelectedConflictSupportPoint
   simp [transferPairing, transferRepairPath, hnot]
 
 /-- R11(f): theorem 10.3 instantiated on the finite transfer fixture. -/
@@ -4189,6 +4228,49 @@ theorem supportTransferExample_nontrivialTransferredResidue :
     transferPairing.selectedDirectionNontrivialResidue :=
   SupportLocalizedTransfer.nontrivial_transferred_residue_of_pairing
     supportTransferExamplePackage
+
+/-- R11(f): the positive fixture constructs the proof-free result data
+required by `SelectedTransferResidue`. -/
+theorem transferPairing_selectedTransferResidue_nonempty :
+    Nonempty
+      (TransferMeasurementPairing.SelectedTransferResidue transferPairing) := by
+  rcases supportTransferExample_nontrivialTransferredResidue with
+    ⟨result, _hNontrivial⟩
+  exact ⟨result⟩
+
+/-- R11(f): repair data whose path image and direction support are both
+empty subsets of the selected affine spectrum. -/
+noncomputable def transferEmptySupportRepairPath :
+    SupportLocalizedRepairPath
+      finiteComputabilityConflictPackage.lawConflictMeasurement where
+  RepairPath := Unit
+  RepairDirection := Unit
+  selectedRepairPath := ()
+  selectedRepairDirection := ()
+  pathImage := fun _ => ∅
+  directionSupport := fun _ => ∅
+
+/-- R11(f): pairing over the empty-support repair data. -/
+noncomputable def transferEmptySupportPairing :
+    TransferMeasurementPairing transferEmptySupportRepairPath where
+  TransferResidue := TransferResidueFlag
+  NormValue := Unit
+  zeroResidue := TransferResidueFlag.zero
+  NontrivialResidue := fun residue =>
+    residue = TransferResidueFlag.nontrivial
+  norm := fun _ => ()
+  pairing := fun _ _ => TransferResidueFlag.zero
+
+/-- R11(f): empty repair support cannot construct selected transfer-result
+data, providing the negative instance for `SelectedTransferResidue`. -/
+theorem transferEmptySupportPairing_no_selectedTransferResidue :
+    ¬ Nonempty
+      (TransferMeasurementPairing.SelectedTransferResidue
+        transferEmptySupportPairing) := by
+  rintro ⟨result⟩
+  rcases result.supportPointOnSelectedRepair with hPath | hDirection
+  · simpa [transferEmptySupportRepairPath] using hPath
+  · simpa [transferEmptySupportRepairPath] using hDirection
 
 /-- R11(f): zero pairing on the same localized repair data. -/
 noncomputable def transferZeroPairing :
@@ -4226,8 +4308,8 @@ theorem transferZeroPairing_not_supportLocalizedTransfer :
   simpa [SupportLocalizedTransfer] using
     transferZeroPairing_not_nontrivialTransferredResidue
 
-/-- R11(f): data-only snapshot of the actual selected support, direction, and
-computed pairing residue used by the finite transfer fixture. -/
+/-- R11(f): data-only snapshot of the computed finite support summary,
+selected direction, and actual pairing residue used by the transfer fixture. -/
 structure SupportLocalizedTransferFiniteExample where
   selectedSupport : Finset SquareFreeSupportVertex
   selectedDirection : Bool
@@ -4237,14 +4319,15 @@ structure SupportLocalizedTransferFiniteExample where
 construction; theorem evidence remains in separate declarations. -/
 noncomputable def supportLocalizedTransferFiniteExample :
     SupportLocalizedTransferFiniteExample where
-  selectedSupport := finiteComputabilityConflictRealization.selectedSupport
+  selectedSupport := finiteComputabilityExampleData.selectedClassSupport
   selectedDirection := transferRepairPath.selectedRepairDirection
   selectedResidue := transferPairing.selectedResidue
 
-/-- R11(f): the snapshot uses the support computed from the actual conflict. -/
+/-- R11(f): the snapshot uses the finite support summary computed from the
+selected conflict representative. -/
 theorem supportTransferExample_selectedSupport_eq_computed :
     supportLocalizedTransferFiniteExample.selectedSupport =
-      finiteComputabilityConflictRealization.selectedSupport :=
+      finiteComputabilityExampleData.selectedClassSupport :=
   rfl
 
 /-- R11(f): the snapshot uses the actual selected repair direction. -/
@@ -5235,7 +5318,7 @@ def PartVIIIFiniteExampleSuite.CoversR11 (S : PartVIIIFiniteExampleSuite) : Prop
                         S.cellularHodge.harmonicDebtMinimal ∧
                           transferRepairPath.SupportLocalized ∧
                             S.supportTransfer.selectedSupport =
-                              finiteComputabilityConflictRealization.selectedSupport ∧
+                              finiteComputabilityExampleData.selectedClassSupport ∧
                               S.supportTransfer.selectedDirection =
                                 transferRepairPath.selectedRepairDirection ∧
                                 S.supportTransfer.selectedResidue =

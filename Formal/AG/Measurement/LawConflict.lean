@@ -1,5 +1,6 @@
 import Formal.AG.Measurement.Hodge
 import Formal.AG.Derived.Intersection
+import Mathlib.RingTheory.Support
 import Mathlib.AlgebraicGeometry.IdealSheaf.Basic
 
 noncomputable section
@@ -212,8 +213,13 @@ interface; it does not assert general Tor base-change.
 VIII.Definition 9.1: selected common ambient pair for two law ideals.
 
 The ring and two ideal indices determine the affine scheme and ideal sheaves.
-The record fixes the coefficient, witness pair, comparison profile, and
-support carrier needed before LawConflict measurements may be compared.
+The record fixes the coefficient, witness pair, and comparison profile needed
+before LawConflict measurements may be compared; its point and support
+carriers are derived from the indexed affine scheme.
+
+Implementation notes: the support carrier is not stored as independent data.
+It is the carrier of `Spec R`, because an unrelated carrier would not place a
+conflict class and its repair direction on the same affine scheme.
 -/
 structure CommonAmbientPair
     (M : MeasurementProfile.{u, v})
@@ -221,7 +227,6 @@ structure CommonAmbientPair
     (I_U I_V : Ideal R) where
   WitnessPair : Type u
   ComparisonProfile : Type u
-  SupportCarrier : Type u
   leftDomain : M.Domain
   rightDomain : M.Domain
   selectedCoefficient : M.Coeff
@@ -230,13 +235,21 @@ structure CommonAmbientPair
 
 namespace CommonAmbientPair
 
-/-- The selected ambient carrier is the one-point selector for `Spec R`. -/
+/-- The point carrier of the selected affine ambient `Spec R`. -/
 abbrev AmbientSpace
     {M : MeasurementProfile.{u, v}}
     {R : Type w} [CommRing R]
     {I_U I_V : Ideal R}
     (_A : CommonAmbientPair M R I_U I_V) :=
-  ULift.{u, 0} Unit
+  PrimeSpectrum R
+
+/-- Support points are actual points of the selected affine spectrum. -/
+abbrev SupportCarrier
+    {M : MeasurementProfile.{u, v}}
+    {R : Type w} [CommRing R]
+    {I_U I_V : Ideal R}
+    (_A : CommonAmbientPair M R I_U I_V) :=
+  PrimeSpectrum R
 
 /-- The selected structure datum is the canonical pair of ideal sheaves on
 `Spec R`. -/
@@ -255,15 +268,6 @@ abbrev CoefficientObject
     (_A : CommonAmbientPair M R I_U I_V) :=
   M.Coeff
 
-/-- The selected affine ambient. -/
-abbrev selectedAmbient
-    {M : MeasurementProfile.{u, v}}
-    {R : Type w} [CommRing R]
-    {I_U I_V : Ideal R}
-    (_A : CommonAmbientPair M R I_U I_V) :
-    ULift.{u, 0} Unit :=
-  ULift.up ()
-
 /-- The actual affine scheme and its two ideal sheaves. -/
 noncomputable abbrev selectedStructureSheaf
     {M : MeasurementProfile.{u, v}}
@@ -272,6 +276,26 @@ noncomputable abbrev selectedStructureSheaf
     (_A : CommonAmbientPair M R I_U I_V) :
     AffineIdealSheafPair.{w} :=
   AffineIdealSheafPair.ofSpec I_U I_V
+
+/-- The selected affine ambient is the Mathlib affine scheme carrying both
+ideal sheaves. -/
+noncomputable abbrev selectedAmbient
+    {M : MeasurementProfile.{u, v}}
+    {R : Type w} [CommRing R]
+    {I_U I_V : Ideal R}
+    (A : CommonAmbientPair M R I_U I_V) :
+    AlgebraicGeometry.Scheme :=
+  A.selectedStructureSheaf.scheme
+
+/-- The support carrier is definitionally the point carrier of the selected
+Mathlib affine scheme. -/
+theorem supportCarrier_eq_selectedSchemeCarrier
+    {M : MeasurementProfile.{u, v}}
+    {R : Type w} [CommRing R]
+    {I_U I_V : Ideal R}
+    (A : CommonAmbientPair M R I_U I_V) :
+    A.SupportCarrier = A.selectedStructureSheaf.scheme.carrier :=
+  rfl
 
 /-- The left coefficient object fixed by the selected profile value. -/
 abbrev leftCoefficient
@@ -452,13 +476,12 @@ noncomputable def ofAffineSpec
     (leftIdeal rightIdeal : Ideal R)
     (leftDomain rightDomain : M.Domain)
     (selectedCoefficient : M.Coeff)
-    (WitnessPair ComparisonProfile SupportCarrier : Type u)
+    (WitnessPair ComparisonProfile : Type u)
     (selectedWitnessPair : WitnessPair)
     (selectedComparisonProfile : ComparisonProfile) :
     CommonAmbientPair M R leftIdeal rightIdeal where
   WitnessPair := WitnessPair
   ComparisonProfile := ComparisonProfile
-  SupportCarrier := SupportCarrier
   leftDomain := leftDomain
   rightDomain := rightDomain
   selectedCoefficient := selectedCoefficient
@@ -473,11 +496,11 @@ theorem ofAffineSpec_selectedStructureSheaf
     (leftIdeal rightIdeal : Ideal R)
     (leftDomain rightDomain : M.Domain)
     (selectedCoefficient : M.Coeff)
-    (WitnessPair ComparisonProfile SupportCarrier : Type u)
+    (WitnessPair ComparisonProfile : Type u)
     (selectedWitnessPair : WitnessPair)
     (selectedComparisonProfile : ComparisonProfile) :
     (ofAffineSpec leftIdeal rightIdeal leftDomain rightDomain
-      selectedCoefficient WitnessPair ComparisonProfile SupportCarrier
+      selectedCoefficient WitnessPair ComparisonProfile
       selectedWitnessPair selectedComparisonProfile).selectedStructureSheaf =
         AffineIdealSheafPair.ofSpec leftIdeal rightIdeal :=
   rfl
@@ -489,11 +512,11 @@ theorem ofAffineSpec_selectedScheme
     (leftIdeal rightIdeal : Ideal R)
     (leftDomain rightDomain : M.Domain)
     (selectedCoefficient : M.Coeff)
-    (WitnessPair ComparisonProfile SupportCarrier : Type u)
+    (WitnessPair ComparisonProfile : Type u)
     (selectedWitnessPair : WitnessPair)
     (selectedComparisonProfile : ComparisonProfile) :
     (ofAffineSpec leftIdeal rightIdeal leftDomain rightDomain
-      selectedCoefficient WitnessPair ComparisonProfile SupportCarrier
+      selectedCoefficient WitnessPair ComparisonProfile
       selectedWitnessPair
       selectedComparisonProfile).selectedStructureSheaf.scheme =
         AlgebraicGeometry.Scheme.Spec.obj (op (CommRingCat.of R)) :=
@@ -506,11 +529,11 @@ theorem ofAffineSpec_leftIdealSheaf
     (leftIdeal rightIdeal : Ideal R)
     (leftDomain rightDomain : M.Domain)
     (selectedCoefficient : M.Coeff)
-    (WitnessPair ComparisonProfile SupportCarrier : Type u)
+    (WitnessPair ComparisonProfile : Type u)
     (selectedWitnessPair : WitnessPair)
     (selectedComparisonProfile : ComparisonProfile) :
     (ofAffineSpec leftIdeal rightIdeal leftDomain rightDomain
-      selectedCoefficient WitnessPair ComparisonProfile SupportCarrier
+      selectedCoefficient WitnessPair ComparisonProfile
       selectedWitnessPair
       selectedComparisonProfile).selectedStructureSheaf.leftIdealSheaf =
         AlgebraicGeometry.Scheme.IdealSheafData.ofIdealTop
@@ -527,11 +550,11 @@ theorem ofAffineSpec_rightIdealSheaf
     (leftIdeal rightIdeal : Ideal R)
     (leftDomain rightDomain : M.Domain)
     (selectedCoefficient : M.Coeff)
-    (WitnessPair ComparisonProfile SupportCarrier : Type u)
+    (WitnessPair ComparisonProfile : Type u)
     (selectedWitnessPair : WitnessPair)
     (selectedComparisonProfile : ComparisonProfile) :
     (ofAffineSpec leftIdeal rightIdeal leftDomain rightDomain
-      selectedCoefficient WitnessPair ComparisonProfile SupportCarrier
+      selectedCoefficient WitnessPair ComparisonProfile
       selectedWitnessPair
       selectedComparisonProfile).selectedStructureSheaf.rightIdealSheaf =
         AlgebraicGeometry.Scheme.IdealSheafData.ofIdealTop
@@ -548,11 +571,11 @@ theorem ofAffineSpec_leftLawIdeal
     (leftIdeal rightIdeal : Ideal R)
     (leftDomain rightDomain : M.Domain)
     (selectedCoefficient : M.Coeff)
-    (WitnessPair ComparisonProfile SupportCarrier : Type u)
+    (WitnessPair ComparisonProfile : Type u)
     (selectedWitnessPair : WitnessPair)
     (selectedComparisonProfile : ComparisonProfile) :
     (ofAffineSpec leftIdeal rightIdeal leftDomain rightDomain
-      selectedCoefficient WitnessPair ComparisonProfile SupportCarrier
+      selectedCoefficient WitnessPair ComparisonProfile
       selectedWitnessPair selectedComparisonProfile).leftLawIdeal =
         leftIdeal :=
   rfl
@@ -564,11 +587,11 @@ theorem ofAffineSpec_rightLawIdeal
     (leftIdeal rightIdeal : Ideal R)
     (leftDomain rightDomain : M.Domain)
     (selectedCoefficient : M.Coeff)
-    (WitnessPair ComparisonProfile SupportCarrier : Type u)
+    (WitnessPair ComparisonProfile : Type u)
     (selectedWitnessPair : WitnessPair)
     (selectedComparisonProfile : ComparisonProfile) :
     (ofAffineSpec leftIdeal rightIdeal leftDomain rightDomain
-      selectedCoefficient WitnessPair ComparisonProfile SupportCarrier
+      selectedCoefficient WitnessPair ComparisonProfile
       selectedWitnessPair selectedComparisonProfile).rightLawIdeal =
         rightIdeal :=
   rfl
@@ -581,14 +604,14 @@ theorem ofAffineSpec_globalSectionsIdeals
     (leftIdeal rightIdeal : Ideal R)
     (leftDomain rightDomain : M.Domain)
     (selectedCoefficient : M.Coeff)
-    (WitnessPair ComparisonProfile SupportCarrier : Type u)
+    (WitnessPair ComparisonProfile : Type u)
     (selectedWitnessPair : WitnessPair)
     (selectedComparisonProfile : ComparisonProfile) :
     (ofAffineSpec leftIdeal rightIdeal leftDomain rightDomain
-      selectedCoefficient WitnessPair ComparisonProfile SupportCarrier
+      selectedCoefficient WitnessPair ComparisonProfile
       selectedWitnessPair selectedComparisonProfile).lawIdealsInCommonAmbient :=
   (ofAffineSpec leftIdeal rightIdeal leftDomain rightDomain
-    selectedCoefficient WitnessPair ComparisonProfile SupportCarrier
+    selectedCoefficient WitnessPair ComparisonProfile
     selectedWitnessPair selectedComparisonProfile).lawIdealsInCommonAmbient_cert
 
 /-- VIII.Definition 9.1: expose the selected common ringed-site certificate. -/
@@ -715,6 +738,65 @@ def NontrivialConflict
     L.ConflictClass -> Prop :=
   fun x => x ≠ 0
 
+/--
+Support of an actual conflict class on the selected affine spectrum.
+
+This is the Mathlib module support of the cyclic submodule generated by the
+selected Tor class.  Hence every support point is a prime of the same
+coordinate ring that defines the common ambient and its two ideal sheaves.
+
+Implementation notes: using `Module.support` retains Mathlib localization
+semantics and makes support depend on the actual class. An independently
+supplied relation or finite witness summary was rejected because either could
+name points unrelated to the selected affine scheme or Tor object.
+-/
+def conflictClassSupport
+    {M : MeasurementProfile.{u, v}}
+    {R : Type w} [CommRing R]
+    {I_U I_V : Ideal R}
+    {A : CommonAmbientPair M R I_U I_V}
+    (L : LawConflictMeasurement A)
+    (conflictClass : L.ConflictClass) :
+    Set A.SupportCarrier :=
+  Module.support R (R ∙ conflictClass)
+
+/-- The selected conflict support is computed from the selected actual Tor
+class rather than supplied as an independent relation. -/
+def selectedConflictSupport
+    {M : MeasurementProfile.{u, v}}
+    {R : Type w} [CommRing R]
+    {I_U I_V : Ideal R}
+    {A : CommonAmbientPair M R I_U I_V}
+    (L : LawConflictMeasurement A) :
+    Set A.SupportCarrier :=
+  L.conflictClassSupport L.selectedConflictClass
+
+/-- A zero conflict class has empty affine support. -/
+@[simp]
+theorem conflictClassSupport_zero
+    {M : MeasurementProfile.{u, v}}
+    {R : Type w} [CommRing R]
+    {I_U I_V : Ideal R}
+    {A : CommonAmbientPair M R I_U I_V}
+    (L : LawConflictMeasurement A) :
+    L.conflictClassSupport 0 = ∅ := by
+  rw [conflictClassSupport, Module.support_eq_empty_iff,
+    Submodule.subsingleton_iff_eq_bot, Submodule.span_singleton_eq_bot]
+
+/-- An actual conflict class has nonempty affine support exactly when it is
+nonzero. -/
+theorem conflictClassSupport_nonempty_iff
+    {M : MeasurementProfile.{u, v}}
+    {R : Type w} [CommRing R]
+    {I_U I_V : Ideal R}
+    {A : CommonAmbientPair M R I_U I_V}
+    (L : LawConflictMeasurement A)
+    (conflictClass : L.ConflictClass) :
+    (L.conflictClassSupport conflictClass).Nonempty ↔ conflictClass ≠ 0 := by
+  rw [conflictClassSupport, Module.nonempty_support_iff,
+    Submodule.nontrivial_iff_ne_bot]
+  exact not_congr Submodule.span_singleton_eq_bot
+
 /-- The canonical selected Tor object is linearly equivalent to Mathlib Tor. -/
 def lawConflictTorReading
     {M : MeasurementProfile.{u, v}}
@@ -790,7 +872,7 @@ noncomputable def ofAffineSpecCanonicalTor
     (I_U I_V : Ideal R)
     (leftDomain rightDomain : M.Domain)
     (selectedCoefficient : M.Coeff)
-    (WitnessPair ComparisonProfile SupportCarrier : Type u)
+    (WitnessPair ComparisonProfile : Type u)
     (selectedWitnessPair : WitnessPair)
     (selectedComparisonProfile : ComparisonProfile)
     (degree : Nat)
@@ -800,7 +882,7 @@ noncomputable def ofAffineSpecCanonicalTor
     LawConflictMeasurement
       (CommonAmbientPair.ofAffineSpec
         I_U I_V leftDomain rightDomain selectedCoefficient
-        WitnessPair ComparisonProfile SupportCarrier
+        WitnessPair ComparisonProfile
         selectedWitnessPair selectedComparisonProfile) where
   selectedDegree := degree
   selectedConflictClass := selectedClass
@@ -813,12 +895,12 @@ theorem ofAffineSpecCanonicalTor_leftIdeal
     (I_U I_V : Ideal R)
     (leftDomain rightDomain : M.Domain)
     (selectedCoefficient : M.Coeff)
-    (WitnessPair ComparisonProfile SupportCarrier : Type u)
+    (WitnessPair ComparisonProfile : Type u)
     (selectedWitnessPair : WitnessPair)
     (selectedComparisonProfile : ComparisonProfile) :
     (CommonAmbientPair.ofAffineSpec
       I_U I_V leftDomain rightDomain selectedCoefficient
-      WitnessPair ComparisonProfile SupportCarrier
+      WitnessPair ComparisonProfile
       selectedWitnessPair selectedComparisonProfile).leftLawIdeal =
         I_U :=
   rfl
@@ -831,12 +913,12 @@ theorem ofAffineSpecCanonicalTor_rightIdeal
     (I_U I_V : Ideal R)
     (leftDomain rightDomain : M.Domain)
     (selectedCoefficient : M.Coeff)
-    (WitnessPair ComparisonProfile SupportCarrier : Type u)
+    (WitnessPair ComparisonProfile : Type u)
     (selectedWitnessPair : WitnessPair)
     (selectedComparisonProfile : ComparisonProfile) :
     (CommonAmbientPair.ofAffineSpec
       I_U I_V leftDomain rightDomain selectedCoefficient
-      WitnessPair ComparisonProfile SupportCarrier
+      WitnessPair ComparisonProfile
       selectedWitnessPair selectedComparisonProfile).rightLawIdeal =
         I_V :=
   rfl

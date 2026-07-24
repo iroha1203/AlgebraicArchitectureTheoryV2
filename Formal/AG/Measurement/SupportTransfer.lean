@@ -20,9 +20,11 @@ interfaces with explicit finite data.
 VIII.Definition 10.1: support-localized repair path / direction.
 
 The reading is relative to a selected LawConflict class and its support. It
-stores the path image, direction support, and selected conflict-support
-function as concrete sets. Intersection and localization are derived
-predicates rather than freely supplied truth fields.
+stores the path image and direction support as concrete subsets of the
+selected affine spectrum. The selected conflict support is derived from the
+actual Tor class by `LawConflictMeasurement.conflictClassSupport`.
+Intersection and localization are derived predicates rather than freely
+supplied truth fields.
 -/
 structure SupportLocalizedRepairPath
     {M : MeasurementProfile.{u, v}}
@@ -36,7 +38,6 @@ structure SupportLocalizedRepairPath
   selectedRepairDirection : RepairDirection
   pathImage : RepairPath -> Set A.SupportCarrier
   directionSupport : RepairDirection -> Set A.SupportCarrier
-  conflictSupport : L.ConflictClass -> Set A.SupportCarrier
 
 namespace SupportLocalizedRepairPath
 
@@ -46,9 +47,9 @@ def pathImageIntersectsSupport {M : MeasurementProfile.{u, v}}
     {R : Type w} [CommRing R] {I_U I_V : Ideal R}
     {A : CommonAmbientPair M R I_U I_V}
     {L : LawConflictMeasurement A}
-    (S : SupportLocalizedRepairPath L) : Prop :=
+  (S : SupportLocalizedRepairPath L) : Prop :=
   (S.pathImage S.selectedRepairPath ∩
-    S.conflictSupport L.selectedConflictClass).Nonempty
+    L.selectedConflictSupport).Nonempty
 
 /-- VIII.Definition 10.1: the selected first-order direction meets the computed
 support of the selected conflict class. -/
@@ -56,9 +57,9 @@ def directionSupportIntersectsConflict {M : MeasurementProfile.{u, v}}
     {R : Type w} [CommRing R] {I_U I_V : Ideal R}
     {A : CommonAmbientPair M R I_U I_V}
     {L : LawConflictMeasurement A}
-    (S : SupportLocalizedRepairPath L) : Prop :=
+  (S : SupportLocalizedRepairPath L) : Prop :=
   (S.directionSupport S.selectedRepairDirection ∩
-    S.conflictSupport L.selectedConflictClass).Nonempty
+    L.selectedConflictSupport).Nonempty
 
 /-- VIII.Definition 10.1: localization is witnessed by the selected path or
 the selected first-order direction. -/
@@ -158,7 +159,7 @@ structure SelectedTransferResidue
     supportPoint ∈ S.pathImage S.selectedRepairPath ∨
       supportPoint ∈ S.directionSupport S.selectedRepairDirection
   supportPointInSelectedConflict :
-    supportPoint ∈ S.conflictSupport L.selectedConflictClass
+    supportPoint ∈ L.selectedConflictSupport
   residue : P.TransferResidue
   residue_eq_pairing :
     residue =
