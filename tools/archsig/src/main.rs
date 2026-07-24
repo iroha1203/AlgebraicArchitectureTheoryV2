@@ -1352,7 +1352,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 }
             };
             write_json(
-                Some(normalized_archmap_path),
+                Some(normalized_archmap_path.clone()),
                 &with_run_contract(&normalized_archmap, &run_contract)?,
             )?;
             let packet_value = with_run_contract(&measurement_packet, &run_contract)?;
@@ -1436,6 +1436,10 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                     "runId": run_contract.run_id.clone(),
                     "inputDigests": run_contract.input_digests.clone(),
                     "artifactDigests": {
+                        "normalizedArchmap": {
+                            "path": "normalized-archmap.json",
+                            "sha256": canonical_json_file_digest(&normalized_archmap_path)?
+                        },
                         "measurementPacket": {
                             "path": "archsig-measurement-packet.json",
                             "sha256": canonical_json_file_digest(&measurement_packet_path)?

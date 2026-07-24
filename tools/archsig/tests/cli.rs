@@ -2663,7 +2663,7 @@ fn cli_compare_records_repair_plan_provenance_without_suppressing_verdict_rows()
 }
 
 #[test]
-fn cli_compare_rejects_measurement_packet_and_manifest_provenance_mismatches() {
+fn cli_compare_rejects_artifact_and_manifest_provenance_mismatches() {
     let root = ag_measurement_root();
     let base_plan = presentation_generated_saga_plan(&root, true);
     let mut changed_plan = base_plan.clone();
@@ -2693,6 +2693,36 @@ fn cli_compare_rejects_measurement_packet_and_manifest_provenance_mismatches() {
             packet_mismatch_out
                 .to_str()
                 .expect("packet mismatch output path is utf-8"),
+        ],
+        2,
+    );
+
+    let normalized_mismatch_run = run_saga_fixture_lock(
+        "ag-saga-compare-manifest-binding-normalized-mismatch",
+        changed_plan.clone(),
+    );
+    let normalized_path = normalized_mismatch_run.join("normalized-archmap.json");
+    let mut normalized = read_json(&normalized_path);
+    normalized["atoms"][0]["object"] = json!("tampered-normalized-archmap-object");
+    fs::write(
+        &normalized_path,
+        serde_json::to_vec_pretty(&normalized).expect("normalized archmap serializes"),
+    )
+    .expect("tampered normalized archmap writes");
+    let normalized_mismatch_out = temp_dir("ag-saga-compare-manifest-binding-normalized-output");
+    run_sig0_expect_code(
+        &[
+            "compare",
+            "--base-run",
+            base_run.to_str().expect("base run path is utf-8"),
+            "--head-run",
+            normalized_mismatch_run
+                .to_str()
+                .expect("normalized mismatch run path is utf-8"),
+            "--out-dir",
+            normalized_mismatch_out
+                .to_str()
+                .expect("normalized mismatch output path is utf-8"),
         ],
         2,
     );
@@ -11788,6 +11818,15 @@ fn practical_rust_service_example_runs_current_analyze() {
             .is_some_and(|run_id| run_id.starts_with("run:") && run_id.len() == 16)
     );
     assert!(manifest["inputDigests"]["profileFingerprint"]["sha256"].is_string());
+    for (artifact_key, artifact_path) in [
+        ("normalizedArchmap", "normalized-archmap.json"),
+        ("measurementPacket", "archsig-measurement-packet.json"),
+    ] {
+        assert_eq!(manifest["artifactDigests"][artifact_key]["path"], artifact_path);
+        assert!(manifest["artifactDigests"][artifact_key]["sha256"]
+            .as_str()
+            .is_some_and(|digest| digest.len() == 64));
+    }
     assert!(
         manifest["generatedArtifacts"]
             .as_array()

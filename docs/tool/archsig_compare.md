@@ -76,9 +76,9 @@ the record-level comparison. A policy-bundle component change is therefore expli
 `not-comparable`.
 Other pairs are `not-comparable`; the report records both independent run conclusions and emits a typed boundary.
 
-Each measurement run manifest records the canonical digest of its measurement packet. `compare` verifies that
-digest and that the packet's run contract (`runId`, tool version, input digests, component fingerprints) matches
-the manifest before any verdict transition is computed.
+Each measurement run manifest records the canonical digests of its normalized ArchMap and measurement packet.
+`compare` verifies both digests and each artifact's run contract (`runId`, tool version, input digests,
+component fingerprints) against the manifest before computing an ArchMap diff or verdict transition.
 
 When a checked refinement artifact binds both run site-cover fingerprints, `classTransport.recordComparability`
 may remain `not-comparable` while the separate refinement reading is established.
