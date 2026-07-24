@@ -61,6 +61,27 @@ comparison の来歴は **supplied cochain matrix → presentation-generated / c
 naturality・degree 0/1 可換性と degree 2 atlas を検査したうえで、head の
 `SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS` と `contractChecked: true` を出力することである。
 
+### #3781 §7 用 condition matrix
+
+次表は #3781 が §7 の本文へ転記するための行別の正本である。`supplied` は authored input、
+`assumed` は packet が外部から受け取る数学的前提、`computed` は入力からの有限計算、
+`checked` は ArchSig が有限 artifact に対して検査した条件を表す。特に input にある
+`enumerationComplete: true` は列挙の完全性そのものを証明する flag ではなく、author の
+`assumed` condition として扱う。
+
+| Condition | Kind | Status | Evidence |
+| --- | --- | --- | --- |
+| finite cover | finite artifact property | `checked` | head / repaired packet の `finite site` は `checked`、`siteCoverDigest` は normalized contexts・covers・derived finite cover nerve から `computed` |
+| residual support | authored finite cochain | `supplied` | RepairPlan `residual.kind: supplied` と各 overlap support。head は `drift:refund-rounding` を診断3辺へ与える |
+| repair-plan complex enumeration completeness | author assertion | `assumed` | RepairPlan `complex.enumerationComplete: true` に対し、packet は `repair-plan complex enumeration completeness` を `assumed` と記録する |
+| target quotient presentation enumeration completeness | repair-plan と同じ authored presentation cell 集合 | `assumed` for cell enumeration; `checked` for generation | target は別の supplied complex ではない。同じ cells から組み立て、cell 列挙は上行の author assertion に依存する一方、`generatorCompleteness: true` がその列挙から target quotient が生成されることを検査する |
+| faithfulness law | authored mathematical assumption | `supplied` / `assumed` | RepairPlan `faithfulness.mode: supplied`。packet は `faithfulness law supplied` を `assumed` として依存関係へ残す |
+| global sheaf condition | mathematical assumption | `assumed` | `trueSheafCertificate.globalCondition: assumed` と packet の `global sheaf condition` assumption |
+| comparison cochain map | presentation-derived finite map | `computed` / `checked` | `generatedCochainMap` の local `Φ`、exactness・generation・naturality・degree 0/1 可換性、head の `SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS` と `contractChecked: true` |
+| boundary membership / residual class | finite quotient calculation | `computed` | head は `saga-descent:boundary-membership.inB1: false` と `MEASURED_NONGLUING_RESIDUAL_CLASS`、repaired は零類・`REPAIR_GLUES_WITHIN_SELECTED_COMPLEX` |
+| repaired ArchMap | hypothetical repair input | `supplied` / hypothetical | `archmap-saga-repaired.json` は BigDecimal scale-2 HALF_EVEN 統一を表す仮説 variant。`PASS_WITHIN_GATE_POLICY` は実装済み修理を示さない |
+| runtime monetary magnitude | empirical measurement | unmeasured | harmonic-debt を供給せず沈黙。頻度・金額を結論に含めない |
+
 ## 結果(診断階段)
 
 | 幕 | 結果 |
