@@ -1383,13 +1383,16 @@ production constructor の生成物が realization 層で実際に非定数に�
 値の差で固定する(`variantWitnessRealization_archReading_ne`)。
 
 boundary(この witness が主張しないこと):
-(1) circle の `equationResidual` は定数 `1` なので、archReading の差は
-χ^E の値には現れない(χ^E 層の非定数性は主張外)。
-(2) この thin fixture では restriction が Bool 成分を定義的に保存するため、
-fixture 固有の naturality 証明は `rfl` でも書ける。witness の主張は
-「production constructor が任意の(非定数)選択に対して naturality を生成し、
-その生成物が非退化(非定数)でありうる」ことであり、naturality 証明の
-必然性(rfl 不可能性)ではない。任意選択に対する成立は
+(1) `circleEquationSystem.equationResidual` は定数 `1` なので、archReading の
+差は χ^E の値には現れない(χ^E 層の非定数性は主張外)。
+(2) **realization 層の** naturality 2 field(`lawIndex_natural` /
+`archReading_natural`)は、この thin fixture では restriction が Bool 成分を
+定義的に保存するため fixture 固有の証明としては `rfl` でも書ける。witness の
+主張は「production constructor が任意の(非定数)選択に対して naturality を
+生成し、その生成物が非退化(非定数)でありうる」ことであり、naturality
+証明の必然性(rfl 不可能性)ではない。なお presentation 層の
+`twoAtomSemanticAtomData.projection_natural` 自体は `occurrence_ext` +
+`occRestrict_atom` による実質証明である。任意選択に対する成立は
 `SupportAtomEquationSelection.realization` の generic 証明
 (`projection_natural` + `occRestrict_atom`)が担う。
 (3) この presentation は witness 専用であり、B.9 の `M_sem` 計算・packet
@@ -1465,6 +1468,17 @@ theorem variantWitnessRealization_archReading_ne
     variantWitnessRealization.archReading σ ⟨(⟨h⟩, false), trivial⟩ ≠
       variantWitnessRealization.archReading σ ⟨(⟨h⟩, true), trivial⟩ :=
   acyclicObject_ne_object
+
+/--
+Issue #3734 査読対応: 発火 corollary。chart intersection での無条件 instance
+(`Recognized` 前提を `chart_recognized` で放電済み)。
+-/
+theorem variantWitnessRealization_archReading_ne_chart (i : Fin 4) :
+    variantWitnessRealization.archReading (.chart i)
+        ⟨(⟨chart_recognized i⟩, false), trivial⟩ ≠
+      variantWitnessRealization.archReading (.chart i)
+        ⟨(⟨chart_recognized i⟩, true), trivial⟩ :=
+  variantWitnessRealization_archReading_ne (.chart i) (chart_recognized i)
 
 /-- B.9.4: the identity-carrier primary state correspondence `β`. -/
 noncomputable def stateCorrespondence :

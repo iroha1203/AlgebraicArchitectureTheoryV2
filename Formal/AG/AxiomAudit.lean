@@ -11546,7 +11546,7 @@ def sagaProductionChiEZeroOfWitnessMem :=
 
 /-- Kernel-audit alias for the fulfillment vanishing route. -/
 def sagaProductionChiEZeroOfEquationHolds :=
-  @SemanticRepair.Saga.SupportAtomEquationSelection.equationHolds_realization_chiE_eq_zero
+  @SemanticRepair.Saga.SupportAtomEquationSelection.realization_chiE_eq_zero_of_equationHolds
 
 /-- Kernel-audit alias for the Definition 5.3 lift system over the generated `Q_E`. -/
 noncomputable def sagaProductionEquationLiftSystem :=
@@ -11647,6 +11647,10 @@ def sagaProductionChartRecognized :=
 /-- Kernel-audit alias for the realization-level non-constancy witness. -/
 def sagaProductionVariantWitnessArchReadingNe :=
   @SemanticRepair.Saga.CircleWitness.variantWitnessRealization_archReading_ne
+
+/-- Kernel-audit alias for the unconditional chart-level firing corollary. -/
+def sagaProductionVariantWitnessArchReadingNeChart :=
+  @SemanticRepair.Saga.CircleWitness.variantWitnessRealization_archReading_ne_chart
 
 end AAT.AG.AxiomAudit
 

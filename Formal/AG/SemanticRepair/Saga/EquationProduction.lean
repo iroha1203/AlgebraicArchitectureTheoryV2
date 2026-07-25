@@ -16,8 +16,9 @@ import Formal.AG.SemanticRepair.Saga.EquationRealization
   `EquationSemanticRealization` が担い、本 constructor はそれを置き換えない
   (すべての realization がこの形で得られるとは主張しない)。
 * `SupportAtomEquationSelection.displayedSource`: produced realization が読む
-  displayed Atom/equation coordinate 族を III.定義11.3 の displayed equation
-  source として束ねた生成物。defect は field ではなく生成される(#3733)。
+  displayed Atom/equation coordinate 族を**含む、より広い chart 族**を
+  III.定義11.3 の Lean 実体の instance として束ねた生成物。defect は field
+  ではなく生成される(#3733)。
 * `realization_chiE_eq_interpret` と派生 vanishing 補題: produced `χ^E` の値は
   III.定理11.4 の generated interpretation(X.定義5.1 の `int_E`)と定義的に
   一致する。したがって #3732/#3733 の生成 chain(`witnessIdeal` →
@@ -62,8 +63,10 @@ Implementation notes(`lean_quality_standard.md` §2.5 申告):
 一致する chart 添字)。III.定義11.3 本文との差は3点あり、いずれも申告する:
 (i) 本文は添字集合を有限に取るが、Lean 側 `DisplayedEquationSource`(#3733)は
 有限性 field を持たず(既存設計)、本構成の `Chart` は一般に無限。
-(ii) 本文の cover-indexed 形は `D := I`(cover chart 添字)を指定するが、
-本構成は intersection × Atom の直積添字である。
+(ii) 本文の cover-indexed 形は `D := I`(cover chart 添字)を指定し「別の
+skeleton を置かない」とするが、本構成は intersection × Atom の直積添字の
+別 skeleton である(equation choice は `sel` 一つから導出され、「二つ目の
+chart-indexed equation choice」は置いていない)。
 (iii) 本文の cover-indexed 形は local context を cover chart に取るが、
 本構成は intersection context を取る。
 再利用する III.定理11.4 の結論(generated interpretation、membership 同値、
@@ -264,7 +267,7 @@ theorem realization_chiE_eq_zero_of_defect_mem_witnessIdeal
 III.定理11.4(#3733 の fulfillment 経路の再利用): selected equation の
 fulfillment は produced `χ^E` の値を零にする。
 -/
-theorem equationHolds_realization_chiE_eq_zero
+theorem realization_chiE_eq_zero_of_equationHolds
     (σ : IntersectionIndex 𝒰) (l : P.atomData.SupportedAtom σ.ctx)
     (hholds : S.equationSystem.EquationHolds
       (sel.equationIndex (P.atomData.projection σ.ctx l.1).atom).1
@@ -424,7 +427,7 @@ namespace SagaEquationPacket
 /--
 R0 §4.9: 定理1.1 入力束を production route から組み立てる。equation 側は
 `SupportAtomEquationSelection`(入力3(R0 §4.3)の correspondence の生成源への
-selected 入力)と selected lift-fiber datum(入力6、R0 §4.6)から
+selected 入力)と selected lift-fiber datum(入力6a の生成源、R0 §4.6)から
 `realization` / `equationLiftSystem` で生成し、semantic 側入力(入力1・5、
 R0 §4.1・§4.5)、`β`(入力7、R0 §4.7)、normalization(入力8、R0 §4.8)は
 X.§1 の三分類のとおり selected のまま受け取る。completeness 対(入力4、
