@@ -1519,10 +1519,13 @@ It is formally weaker than the caller-side identity used by the earlier route,
 which demanded `res_W (violationSection V) = η_W(ν)` for *every* pair `(W, V)`;
 by `violationSection_const_of_chartAgreement` that identity forces the
 universal sections to be context independent, whereas this field constrains
-them only on chart overlaps.  Strictness is witnessed: the SD8 fixture
-`AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing` satisfies
-this field through `ofRefinement` while its universal sections take two
-different values, so `ofContextIndependentSections` does not apply to it.
+them only on chart overlaps.  Strictness is witnessed: on the SD8 fixture
+`AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing` this field
+holds through `ofRefinement` while the caller-side identity fails
+(`chartAgreement_fails`) and the universal sections take two different values,
+so `ofContextIndependentSections` does not apply either.  There the pairwise
+overlaps of distinct contexts are empty, so what that fixture witnesses is the
+weakness of this field, not the reach of Čech refinement.
 It does not, and need not, deny that each local
 coordinate is the restriction of the context's own global section: in this
 regime `contextChartOpenViolation_eq_restrict` shows it always is.
@@ -1707,7 +1710,7 @@ the universal sections are context independent it is one of them, by
 on the SD8 fixture
 `AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing`, whose
 universal sections are context dependent, the glued section is none of the
-sections it glues.
+sections it glues (`gluedViolationSection_ne_violationSection`).
 -/
 noncomputable def gluedViolationSection
     (C : EquationContextCharts (X := X))
