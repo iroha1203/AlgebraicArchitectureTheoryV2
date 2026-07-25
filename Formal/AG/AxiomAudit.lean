@@ -8370,7 +8370,7 @@ def standardGeometry_referenceProperLawfulnessIdealFactorizationChartCorresponde
 def standardGeometry_referenceProperGeneratedIdealSheaf_eq_obstruction :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.referenceProperGeneratedIdealSheaf_eq_obstruction
 
-/-! SD8: the separating gluing instance on a disconnected represented Scheme. -/
+/-! The separating gluing instance on a disconnected represented Scheme. -/
 
 def standardGeometry_disconnected_componentAContext :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.componentAContext

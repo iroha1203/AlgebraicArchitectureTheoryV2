@@ -1519,7 +1519,7 @@ It is formally weaker than the caller-side identity used by the earlier route,
 which demanded `res_W (violationSection V) = η_W(ν)` for *every* pair `(W, V)`;
 by `violationSection_const_of_chartAgreement` that identity forces the
 universal sections to be context independent, whereas this field constrains
-them only on chart overlaps.  Strictness is witnessed: on the SD8 fixture
+them only on chart overlaps.  Strictness is witnessed: on the separating fixture
 `AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing` this field
 holds through `ofRefinement` while the caller-side identity fails
 (`chartAgreement_fails`) and the universal sections take two different values,
@@ -1707,7 +1707,7 @@ already the restriction of a global section (`contextChartOpenViolation_eq_restr
 so this picks out the unique global section restricting to all of them.  When
 the universal sections are context independent it is one of them, by
 `gluedViolationSection_eq_violationSection`.  That hypothesis is doing work:
-on the SD8 fixture
+on the separating fixture
 `AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing`, whose
 universal sections are context dependent, the glued section is none of the
 sections it glues (`gluedViolationSection_ne_violationSection`).
