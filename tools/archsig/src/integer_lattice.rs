@@ -16,6 +16,8 @@ pub(crate) struct Lattice {
     basis: Vec<Vec<i128>>,
     /// `basis[k]` の pivot 行。
     pivots: Vec<usize>,
+    /// 生成元列 `G` に対し `G * transform = [basis | 0]` を満たす単模行列(列優先)。
+    transform: Vec<Vec<i128>>,
 }
 
 impl Lattice {
@@ -76,6 +78,25 @@ impl Lattice {
     pub(crate) fn contains(&self, target: &[i128]) -> Option<bool> {
         Some(self.solve(target)?.is_some())
     }
+
+    /// 元の生成元列での係数を返す。`generators * x = target` の整数解。
+    pub(crate) fn solve_generators(&self, target: &[i128]) -> Option<Option<Vec<i128>>> {
+        let Some(basis_coefficients) = self.solve(target)? else {
+            return Some(None);
+        };
+        let generator_count = self.transform.len();
+        let mut solution = vec![0i128; generator_count];
+        for (index, coefficient) in basis_coefficients.iter().enumerate() {
+            if *coefficient == 0 {
+                continue;
+            }
+            for row in 0..generator_count {
+                let scaled = coefficient.checked_mul(self.transform[index][row])?;
+                solution[row] = solution[row].checked_add(scaled)?;
+            }
+        }
+        Some(Some(solution))
+    }
 }
 
 /// 列の集合から部分格子を作る。`rows` は各列の長さ。
@@ -83,11 +104,13 @@ pub(crate) fn lattice_from_columns(columns: &[Vec<i128>], rows: usize) -> Option
     if columns.iter().any(|column| column.len() != rows) {
         return None;
     }
-    let (basis, pivots, _) = column_hnf(columns.to_vec(), rows, None)?;
+    let mut transform = identity(columns.len());
+    let (basis, pivots, _) = column_hnf(columns.to_vec(), rows, Some(&mut transform))?;
     Some(Lattice {
         rows,
         basis,
         pivots,
+        transform,
     })
 }
 
@@ -344,5 +367,25 @@ mod tests {
         .expect("reconstruction");
         assert_eq!(reconstructed, vec![4, 10]);
         assert_eq!(lattice.solve(&[1, 0]).expect("decidable"), None);
+    }
+
+    /// 元の生成元での解を返す。冗長な生成系でも復元できる。
+    #[test]
+    fn solve_generators_returns_coefficients_of_the_supplied_columns() {
+        let generators = vec![vec![2, 0], vec![0, 3], vec![2, 3]];
+        let lattice = lattice_from_columns(&generators, 2).expect("lattice");
+        let solution = lattice
+            .solve_generators(&[4, 6])
+            .expect("decidable")
+            .expect("solution exists");
+        assert_eq!(solution.len(), generators.len());
+        let mut reconstructed = vec![0i128; 2];
+        for (column, coefficient) in generators.iter().zip(&solution) {
+            for (row, value) in column.iter().enumerate() {
+                reconstructed[row] += value * coefficient;
+            }
+        }
+        assert_eq!(reconstructed, vec![4, 6]);
+        assert_eq!(lattice.solve_generators(&[1, 0]).expect("decidable"), None);
     }
 }
