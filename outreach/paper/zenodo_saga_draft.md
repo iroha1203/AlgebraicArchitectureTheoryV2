@@ -423,7 +423,10 @@ U_{ij}=U_i\times_W U_j,\qquad
 U_{ijk}=U_i\times_W U_j\times_W U_k
 ```
 
-と書く。空の pullback は intersection の対象から除き、その値は
+と書く。chart `U_i` とこれらの pairwise / triple intersection を合わせて
+**cover intersection diagram** と呼ぶ。非空な `U_{ijk}` の三つの pairwise
+intersection は、`U_{ijk}` からの射影を受けるため非空である。空の pullback は
+intersection の対象から除き、その値は
 empty-overlap normalization(第5章 定理 5.1 の条件 8)で固定する。
 比較 core 自体に有限性は不要だが、有限 cover は中心定理、finite witness、
 実行可能な realization を同じ記号で扱うために固定する。第3.3節の
@@ -505,7 +508,8 @@ M_{\mathrm{sem}}(V)=F_{\mathrm{sem}}(V)/R_{\mathrm{rep}}(V)
 
 **Affine semantic repair system。** `P_sem` を `S_X` 上の semantic local repair
 state の presheaf とする。各 `V` で `F_sem(V)` が `P_sem(V)` に作用し、
-restriction は作用と可換し、次の三条件を満たす。
+restriction は作用と可換し、cover intersection diagram 上の各 `V` で
+次の三条件を満たす。
 
 ```text
 action soundness:
@@ -588,7 +592,8 @@ monomorphic AAT cover `𝒰` 上で次を固定する。
    repair system `P_sem` と、その selected local repair atlas。
 6. `Q_E` が作用する equation-lift system `P_E` と、その selected local lift atlas。
 7. semantic local states を equation local lifts へ送る restriction-natural かつ
-   generator-equivariant な一次写像 `β:P_sem→P_E`。
+   generator-equivariant な一次写像 `β:P_sem→P_E`
+   (cover intersection ごとに確認する)。
 8. 積から除いた各 empty cover intersection `V` に対する
    `M_sem(V)=Q_E(V)=0` と、`P_sem(V)`、`P_E(V)` の subsingleton 性
    (empty-overlap normalization)。
@@ -697,9 +702,12 @@ local-state data(仮定 5–7)と local-state interpretation `β` が soundness 
 comparison core(§5.3〜§5.5)が使うのは、cover intersection、二つの係数
 presheaf、generator/relation exactness、restriction naturality である。
 global sheaf condition、cover の有限列挙、displayed equation fulfillment は
-comparison core の仮定に含まれない。§5.6 の actual gluing で働くのは、cover の
-monomorphism 性と、仮定 8 のうち `P_sem(V)` の subsingleton 条項である
-(補題 5.2A。証明が消費するのは pairwise overlap の分に限られる)。仮定 8 の残り、
+comparison core の仮定に含まれない。§5.6 の actual gluing が定理 5.1 の設定から
+使うのは、cover の monomorphism 性と、仮定 8 のうち `P_sem(V)` の subsingleton
+条項である(補題 5.2A。証明が消費するのは pairwise overlap の分に限られる)。
+これに加えて actual gluing は (iii) の true sheaf 条件(sheaf condition と
+topology 所属)を使い、`P_sem(V)` subsingleton はその条件(4)と同一の命題として
+供給される。仮定 8 の残り、
 すなわち `P_E(V)` の subsingleton 条項と係数消失条項 `M_sem(V)=Q_E(V)=0` は、
 本論文のどの証明でも消費されない。複体は §4.1 で nonempty intersection 上のみを
 走り、equation 側の global 化(§5.6 末尾)が empty overlap の処理に使うのも
@@ -987,10 +995,11 @@ transformation として与えられ(比較 core が使うのは intersection di
 topology 上の sheaf であるとする。各 chart と nonempty overlap 上では、`Φ_V`-equivariant な
 `β_V:P_sem(V)→P_E(V)` が全単射である(単射性は semantic torsor の
 transitivity、target torsor の freeness、`Φ_V` の単射性から、全射性は target torsor
-の transitivity と `Φ_V` の全射性から出る)。この局所全単射性が両側の
+の transitivity と `Φ_V` の全射性から出る)。この局所全単射性が
 sheaf condition(compatible family の amalgamation と、局所一致から大域一致が
-従う separatedness)を経て global の `β_W:P_sem(W)→P_E(W)` の全単射性へ持ち上がり
-(`P_sem` 側の amalgamation では補題 5.2A を再び用いる)、
+従う separatedness)を経て global の `β_W:P_sem(W)→P_E(W)` の全単射性へ持ち上がる。
+ここで使うのは `P_sem` 側の amalgamation と separatedness(amalgamation では
+補題 5.2A を再び用いる)、および `P_E` 側の separatedness のみである。こうして
 
 ```math
 \mathrm{Nonempty}\,P_E(W)\iff[r_E]=0
@@ -1010,12 +1019,14 @@ additive `H^1` comparison からこれらの結論は導かない。
 には、refinement invariance または Leray 型 acyclicity の追加条件を要し、
 本論文はこれを主張しない。
 
-さらに、本定理の Lean 形式化(第6章)は context category が thin な site 上で
+さらに、本定理の Lean 形式化は context category が thin な site 上で
 行われている(第3.3節の finite-meet poset model はその代表例である)。thin 性、
 すなわち平行射の一致から、この model ではすべての射が自動的に monomorphism で
-あり(§3.7)、補題 5.2A の self-overlap と逆順 overlap の処理も平行射の一致で
+あり、補題 5.2A の self-overlap と逆順 overlap の処理も平行射の一致で
 放電される。したがって補題 5.2A の形式化対応物
-`SiteStateData.matchingFamily_iff` は monomorphism を明示仮説として消費しない。
+`SiteStateData.matchingFamily_iff` は、選択された pairwise overlap とその
+lift データは消費するが、monomorphism を明示仮説として消費しない
+(pullback の可換性と一意性は thin 性が放電する)。
 一般の `ArchCtx(X)` 上では、補題 5.2A を含む §5.6 の gluing 論証は
 monomorphism と pullback の普遍性を使うが、その形式化は行っていない。
 
@@ -1818,7 +1829,7 @@ canonical 側は追随改名しない(2026-07-24 裁定)。名称の相違はこ
 | §5.4 | 定義 7.1、定理 7.2、系 7.3、定理 7.4 | cochain 可換と `H¹` 同型 |
 | §5.5 | 定理 7.5、定理 7.6 | residual 対応と統合 |
 | 定理 5.2(§5.6) | 定義 8.1、系 4.5、補題 2.1A、定理 8.2、系 8.3 | Grounded Global Gluing |
-| 補題 5.2A(§5.6) | 補題 2.1A | ordered matching completion |
+| 補題 5.2A(§5.6) | 補題 2.1A(matching family clause のみ) | ordered matching completion |
 | §5.7 | 原則 8.4 | additive/torsor/higher の分離 |
 | 例 5.3(§5.8) | 例 10.2 | 非零類の有限 witness |
 
@@ -1827,3 +1838,6 @@ canonical 側は追随改名しない(2026-07-24 裁定)。名称の相違はこ
 旧条件(5)と `P_sem^𝒰` 定義域分離を除去して統一)。Lean 側は担体
 (`AffineSemanticRepairSystem.State`)が最初から site 全域である一方、torsor
 三条件は `IsIntersectionCtx` ガードにより cover intersection 上でのみ仮定される。
+`P_E` 側も同構造(`AffineCoefficientLiftSystem`、作用は intersection 上)。
+仮定 7 の `β` の Lean 対応物は intersection diagram 上の成分と base 水準の
+`betaW`(chart 整合仮説つき)に分かれる。
