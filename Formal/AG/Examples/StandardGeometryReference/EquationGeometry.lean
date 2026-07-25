@@ -1335,6 +1335,77 @@ theorem referenceCechGluedWitnessIdeal_on_contextChart
   referenceEquationObservableRealization.gluedWitnessIdeal_on_contextChart
     referenceCechContextCharts referenceCechContextChartProducer W i
 
+/-- The image open of a Čech chart is the open that context owns. -/
+theorem cechChartImage_eq (W : referenceSite.category) :
+    (referenceContextChartOpen W).ι ''ᵁ ⊤ = referenceContextChartOpen W :=
+  AlgebraicGeometry.Scheme.Opens.ι_image_top _
+
+/-- The generator of the source chart, read on the target chart. -/
+noncomputable def cechTransitionGenerator
+    {source target : referenceSite.category} (_f : source ⟶ target) :
+    Γ(referenceScheme.underlying,
+      (referenceContextChartOpen target).ι ''ᵁ ⊤) :=
+  referenceScheme.underlying.presheaf.map
+    (homOfLE (le_top :
+      (referenceContextChartOpen target).ι ''ᵁ ⊤ ≤ ⊤)).op
+    (contextChartGenerator source)
+
+/-- Its basic open is the target chart met with the source chart. -/
+theorem cechTransitionGenerator_basicOpen
+    {source target : referenceSite.category} (f : source ⟶ target) :
+    referenceScheme.underlying.basicOpen (cechTransitionGenerator f) =
+      (referenceContextChartOpen target).ι ''ᵁ ⊤ ⊓
+        referenceContextChartOpen source :=
+  referenceScheme.underlying.basicOpen_res (contextChartGenerator source) _
+
+/-- Hence the source chart is exactly that basic open. -/
+theorem cechTransitionGenerator_basicOpen_eq
+    {source target : referenceSite.category} (f : source ⟶ target) :
+    (referenceContextChartOpen source).ι ''ᵁ ⊤ =
+      referenceScheme.underlying.basicOpen (cechTransitionGenerator f) := by
+  rw [cechChartImage_eq, cechTransitionGenerator_basicOpen f, cechChartImage_eq]
+  exact (inf_eq_right.mpr (referenceContextChartOpen_mono f)).symm
+
+/--
+SD5: the context-transition localization of the Čech cover.
+
+These transitions are genuine principal localizations.  For `overlap ⟶ left`
+the inverted element is the image of `x(1-x)` on `D(x)`, so
+`Γ(D(x)) → Γ(D(x(1-x)))` inverts a non-unit; the whole-Scheme cover and the
+SD6 cover can only offer `Submonoid.powers 1`.
+-/
+noncomputable def referenceCechContextChartLocalization :
+    EquationObservableRealization.EquationContextChartLocalization
+      referenceCechContextCharts where
+  submonoid f := Submonoid.powers (cechTransitionGenerator f)
+  isLocalization := by
+    intro source target f
+    have haffine :
+        AlgebraicGeometry.IsAffineOpen
+          ((referenceContextChartOpen target).ι ''ᵁ ⊤) := by
+      rw [cechChartImage_eq]
+      exact referenceContextChartOpen_isAffineOpen target
+    show @IsLocalization _ _ (Submonoid.powers (cechTransitionGenerator f))
+      Γ(referenceScheme.underlying,
+        (referenceContextChartOpen source).ι ''ᵁ ⊤) _
+      (RingHom.toAlgebra
+        (referenceScheme.underlying.homOfLE
+          (referenceContextChartOpen_mono f)).appTop.hom)
+    rw [congrArg CommRingCat.Hom.hom
+      (AlgebraicGeometry.Scheme.homOfLE_appTop
+        (referenceContextChartOpen_mono f))]
+    exact haffine.isLocalization_of_eq_basicOpen
+      (cechTransitionGenerator f) _
+      (cechTransitionGenerator_basicOpen_eq f)
+
+/-- SD5: the complete chart producer on the Čech cover. -/
+noncomputable def referenceCechSchemeChartProducer :
+    EquationObservableRealization.EquationSchemeChartProducer
+      referenceEquationObservableRealization
+      referenceCechContextCharts where
+  coordinate := referenceCechContextChartProducer
+  localization := referenceCechContextChartLocalization
+
 /-! ### SD6: a context cover owning only proper opens
 
 The SD5 cover is Čech but its base context still owns the whole Scheme, so the
@@ -4788,6 +4859,58 @@ theorem referenceSiteEquation_leftRightLocalization_used
   exact
     ((referenceSiteEquationLawfulnessIdealFactorizationChartCorrespondence
       s).2 i).2.2.1 leftIndex rightIndex
+
+/--
+SD5: Part III, Theorem 5.2C fires on the Čech cover, whose context transitions
+are genuine principal localizations rather than identities.
+-/
+theorem referenceCechLawfulnessIdealFactorizationChartCorrespondence
+    {T : AlgebraicGeometry.Scheme}
+    (s : T ⟶ referenceEquationObservableRealization.realizationScheme) :
+    ((referenceEquationObservableRealization.EquationLawfulAlong
+          referenceCechContextCharts s ↔
+        (referenceEquationObservableRealization.equationGeneratedIdealSheaf
+          referenceCechContextCharts
+          referenceCechContextChartProducer).comap s = ⊥) ∧
+      ((referenceEquationObservableRealization.equationGeneratedIdealSheaf
+          referenceCechContextCharts
+          referenceCechContextChartProducer).comap s = ⊥ ↔
+        Nonempty
+          (referenceEquationObservableRealization.FactorsThroughEquationGeneratedLawfulClosedSubscheme
+            referenceCechContextCharts
+            referenceCechContextChartProducer
+            s))) ∧
+      ∀ i : referenceSite.equationSystem.RequiredIndex,
+        referenceEquationObservableRealization.EquationContextWitnessChartRealized
+          referenceCechContextCharts
+          referenceCechContextChartProducer
+          i.1 :=
+  referenceEquationObservableRealization.lawfulnessIdealFactorizationChartCorrespondence
+    referenceEquationObservableRealization_valid
+    referenceCechContextCharts
+    referenceCechSchemeChartProducer
+    referenceEquationAmbientChartLocalization
+    s
+
+/--
+SD5: the full correspondence consumes the context-transition localization.
+
+This is Definition 5.2B's `witnessIdealLocalizes_E`, discharged on transitions
+that are not identities: for `overlap ⟶ left` the inverted element is the image
+of `x(1-x)` on `D(x)`.
+-/
+theorem referenceCechEquation_contextLocalization_used
+    (i : referenceSite.equationSystem.RequiredIndex)
+    {source target : referenceSite.category} (f : source ⟶ target) :
+    letI := (referenceCechContextCharts.transition f).appTop.hom.toAlgebra
+    IsBaseChange Γ(referenceCechContextCharts.chart source, ⊤)
+      (referenceEquationObservableRealization.contextChartWitnessIdealComparison
+        referenceCechContextCharts f i.1) := by
+  let s : referenceEquationObservableRealization.realizationScheme ⟶
+      referenceEquationObservableRealization.realizationScheme :=
+    𝟙 _
+  exact
+    ((referenceCechLawfulnessIdealFactorizationChartCorrespondence s).2 i).2.1 f
 
 /--
 SD6: Part III, Theorem 5.2C fires on a cover none of whose charts is the whole

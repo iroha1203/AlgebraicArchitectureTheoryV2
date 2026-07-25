@@ -8714,6 +8714,30 @@ def standardSchemeEquationContextChartCoverOfMonotoneOpensChart :=
 def standardSchemeEquationContextChartCoverOfMonotoneOpensChartMap :=
   @LawAlgebra.EquationContextChartCover.ofMonotoneOpens_chartMap
 
+def standardGeometry_cechChartImage_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.cechChartImage_eq
+
+noncomputable def standardGeometry_cechTransitionGenerator :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.cechTransitionGenerator
+
+def standardGeometry_cechTransitionGenerator_basicOpen :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.cechTransitionGenerator_basicOpen
+
+def standardGeometry_cechTransitionGenerator_basicOpen_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.cechTransitionGenerator_basicOpen_eq
+
+noncomputable def standardGeometry_referenceCechContextChartLocalization :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceCechContextChartLocalization
+
+noncomputable def standardGeometry_referenceCechSchemeChartProducer :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceCechSchemeChartProducer
+
+def standardGeometry_referenceCechLawfulnessIdealFactorizationChartCorrespondence :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceCechLawfulnessIdealFactorizationChartCorrespondence
+
+def standardGeometry_referenceCechEquation_contextLocalization_used :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceCechEquation_contextLocalization_used
+
 def standardGeometry_probeContext :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.probeContext
 
