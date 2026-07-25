@@ -423,7 +423,10 @@ U_{ij}=U_i\times_W U_j,\qquad
 U_{ijk}=U_i\times_W U_j\times_W U_k
 ```
 
-と書く。空の pullback は intersection の対象から除き、その値は
+と書く。chart `U_i` とこれらの pairwise / triple intersection を合わせて
+**cover intersection diagram** と呼ぶ。非空な `U_{ijk}` の三つの pairwise
+intersection は、`U_{ijk}` からの射影を受けるため非空である。空の pullback は
+intersection の対象から除き、その値は
 empty-overlap normalization(第5章 定理 5.1 の条件 8)で固定する。
 比較 core 自体に有限性は不要だが、有限 cover は中心定理、finite witness、
 実行可能な realization を同じ記号で扱うために固定する。第3.3節の
@@ -480,7 +483,7 @@ C^2(\mathcal U,F)=\prod_{i<j<k}F(U_{ijk})
 
 ### 4.2 Semantic 側の構成
 
-**Semantic repair presentation。** 各 nonempty cover intersection `V` に、
+**Semantic repair presentation。** `S_X` の各 context `V` に、
 supported semantic atom の集合 `S(V)` と restriction 写像 `S(V)→S(V')` を与える。
 `S(V)` 上の free abelian group を `F_sem(V)` と書き、その元(supported atom の
 形式的有限和)を **repair word** と呼ぶ。各 `V` で restriction-stable な部分群
@@ -490,6 +493,8 @@ R_{\mathrm{rep}}(V)\subset F_{\mathrm{sem}}(V)
 ```
 
 (**局所 repair relation**)を選ぶ。ここまでが semantic 側の一次データである。
+comparison core(§5.3〜§5.5)では、これらを cover intersection diagram へ
+制限して使う。
 
 **Semantic coefficient。** 商
 
@@ -498,11 +503,13 @@ M_{\mathrm{sem}}(V)=F_{\mathrm{sem}}(V)/R_{\mathrm{rep}}(V)
 ```
 
 には restriction-stability により restriction が誘導され、`V↦M_sem(V)` は
-可換群値 presheaf をなす。`M_sem` を係数とする §4.1 の複体
+`S_X` 上の可換群値 presheaf をなす。`M_sem` を係数とする §4.1 の複体
 `C^•_sem(𝒰):=C^•(𝒰,M_sem)` が semantic 側の複体である。
 
-**Affine semantic repair system。** `P_sem` は、各 `V` で `F_sem(V)` が作用する
-局所状態系であり、restriction は作用と可換し、次の三条件を満たす。
+**Affine semantic repair system。** `P_sem` を `S_X` 上の semantic local repair
+state の presheaf とする。各 `V` で `F_sem(V)` が `P_sem(V)` に作用し、
+restriction は作用と可換し、cover intersection diagram 上の各 `V` で
+次の三条件を満たす。
 
 ```text
 action soundness:
@@ -517,7 +524,8 @@ local transitivity:
 
 soundness により作用は `M_sem(V)` の作用へ降り、completeness により
 この作用は free、transitivity により非空の `P_sem(V)` 上で transitive である。
-したがって非空な `P_sem(V)` は `M_sem(V)`-torsor(affine space)になる。
+したがって、cover intersection diagram 上の各 `V` で、非空な `P_sem(V)` は
+`M_sem(V)`-torsor(affine space)になる。
 
 **Semantic residual。** selected local repair atlas `{p_i}` を選ぶと、
 各 nonempty overlap 上の torsor の差として一意な
@@ -539,9 +547,10 @@ independence**): 別の atlas `p'_i=a_i+p_i` に対し同じ torsor 計算が
 ### 4.3 Equation 側の構成
 
 equation 側は、定理 3.10 の `Q_E` を係数とする **geometric Čech complex**
-`C^•_E(𝒰):=C^•(𝒰,Q_E)` を構成する。**equation-lift system** `P_E` は、各 `V` で
-`Q_E(V)` が free かつ transitive に作用し、restriction が作用と可換する
-局所状態系である。selected local lift atlas `{e_i}` から、overlap 上の差として
+`C^•_E(𝒰):=C^•(𝒰,Q_E)` を構成する。**equation-lift system** `P_E` は
+`S_X` 上の presheaf であり、各 intersection `V` で、非空な `P_E(V)` には
+`Q_E(V)` が free かつ transitive に作用し、restriction は作用と可換する。
+selected local lift atlas `{e_i}` から、overlap 上の差として
 幾何側 residual
 
 ```math
@@ -583,7 +592,8 @@ monomorphic AAT cover `𝒰` 上で次を固定する。
    repair system `P_sem` と、その selected local repair atlas。
 6. `Q_E` が作用する equation-lift system `P_E` と、その selected local lift atlas。
 7. semantic local states を equation local lifts へ送る restriction-natural かつ
-   generator-equivariant な一次写像 `β:P_sem→P_E`。
+   generator-equivariant な一次写像 `β:P_sem→P_E`
+   (cover intersection ごとに確認する)。
 8. 積から除いた各 empty cover intersection `V` に対する
    `M_sem(V)=Q_E(V)=0` と、`P_sem(V)`、`P_E(V)` の subsingleton 性
    (empty-overlap normalization)。
@@ -643,9 +653,8 @@ residual の対応は、二つの local atlas を一次対応そのもので選�
 cochain 水準で `κ¹(r_sem)=r_E` として成立する。独立に選んだ場合にも、
 両 cochain の差は明示的な `δ⁰`-像であり、class の等式が成立する。
 
-**(iii) Grounded Global Gluing。** さらに、仮定 5 の affine system が site 全体の
-presheaf `P_sem` へ延長されて true semantic repair sheaf(定義は §5.6)であり、
-`𝒰` がその topology の cover ならば、
+**(iii) Grounded Global Gluing。** さらに、仮定 5 の `P_sem` が
+true semantic repair sheaf(定義は §5.6)ならば、
 
 ```math
 \mathrm{Nonempty}\,P_{\mathrm{sem}}(W)
@@ -693,8 +702,18 @@ local-state data(仮定 5–7)と local-state interpretation `β` が soundness 
 comparison core(§5.3〜§5.5)が使うのは、cover intersection、二つの係数
 presheaf、generator/relation exactness、restriction naturality である。
 global sheaf condition、cover の有限列挙、displayed equation fulfillment は
-comparison core の仮定に含まれない。monomorphism と empty-overlap normalization は
-§5.6 の actual gluing で使用する。
+comparison core の仮定に含まれない。§5.6 の actual gluing が定理 5.1 の設定から
+使うのは、cover の monomorphism 性と、仮定 8 のうち `P_sem(V)` の subsingleton
+条項である(補題 5.2A。証明が消費するのは pairwise overlap の分に限られる)。
+これに加えて actual gluing は (iii) の true sheaf 条件(sheaf condition と
+topology 所属)を使い、`P_sem(V)` subsingleton はその条件(4)と同一の命題として
+供給される。仮定 8 の残り、
+すなわち `P_E(V)` の subsingleton 条項と係数消失条項 `M_sem(V)=Q_E(V)=0` は、
+本論文のどの証明でも消費されない。複体は §4.1 で nonempty intersection 上のみを
+走り、equation 側の global 化(§5.6 末尾)が empty overlap の処理に使うのも
+`P_sem` 側の subsingleton 条項(補題 5.2A)である。これらの未消費条項は、
+入力面(仮定 8)を ordered Čech model との同一視(本論文の scope 外)まで含む形で
+固定するために保持する。
 
 ### 5.3 係数同型: soundness の生成と presentation comparison
 
@@ -895,27 +914,16 @@ r_E=\kappa^1(r_{\mathrm{sem}})+\delta_E^0h.
 
 ### 5.6 Global repair: Grounded Global Gluing
 
-**定義域の区別。** 比較 core(§5.3〜§5.5)が使った affine system は cover
-intersection diagram 上の data であり、これを本節では `P_sem^𝒰` と書いて
-site 全体の対象と区別する。本節の global gluing が使うのは `S_X` 上の
-presheaf / sheaf `P_sem` であり、両者の関係は
-
-```text
-P_sem^𝒰 ≅ P_sem を cover intersection diagram へ restriction したもの
-```
-
-である。仮定 7 の `β` も同様に区別する: 比較 core が使うのは intersection
-diagram 上の成分だけであり、本節末尾の equation 側 globalization では site 全体の
-natural transformation としての `β` を仮定する。
-
 **定義(true semantic repair sheaf)。** `S_X` 上の presheaf `P_sem` が次を
 満たすとき **true semantic repair sheaf** と呼ぶ。(1) `P_sem` は選ばれた AAT
 topology のすべての cover に対して sheaf condition を満たす。(2) `M_sem` の作用は
 restriction と可換し、局所的に free かつ transitive である。(3) `𝒰` はその
 topology に属する monomorphic AAT cover である。(4) 積から除いた empty
-intersection 上で `P_sem` は subsingleton である。(5) その cover intersection
-diagram への restriction は、比較 core が使った affine system `P_sem^𝒰` と
-同型である。
+intersection 上で `P_sem` は subsingleton である。この四条件から `𝒰` に対する
+sheaf condition が導かれ、per-cover の amalgamation map を別データとしては
+置かない。比較 core(§5.3〜§5.5)が使ったのは `P_sem` の cover intersection
+diagram 上の成分だけであり、site 全体の sheaf condition を使うのは本節の
+gluing だけである。
 
 **補題 5.2A(ordered matching completion)。** cover の各射が monomorphism で
 あり、積から除いた empty overlap 上で `P_sem` が subsingleton であるとする
@@ -957,9 +965,10 @@ p_i^{\mathrm{corr}}=(-a_i)+p_i
 corrected family `p_i^corr=(-a_i)+p_i` の residual は choice independence
 (§4.2)により `r_sem-δ⁰a=0` であり、corrected family は全 nonempty
 `i<j` overlap 上で一致する。補題 5.2A により、corrected family は全 ordered
-overlap 上の matching family である。定理 5.1 の仮定のうち
-monomorphism と empty-overlap normalization(仮定 8)が実際に働くのはこの
-箇所である。`𝒰` が topology の cover で `P_sem` がその topology 上の sheaf
+overlap 上の matching family である。定理 5.1 の設定のうち cover の
+monomorphism 性と仮定 8 の `P_sem(V)` subsingleton 条項が実際に働くのは、
+この補題 5.2A である(§5.2 末尾の帰属)。補題は本証明のこの箇所と、equation 側の
+global 化(本節末尾)での貼り合わせとで用いる。`𝒰` が topology の cover で `P_sem` がその topology 上の sheaf
 なので、sheaf amalgamation により一意な `p∈P_sem(W)` が存在して
 `p|_{U_i}=p_i^corr` を満たす。
 
@@ -981,13 +990,16 @@ r_{\mathrm{sem}}=\delta^0_{\mathrm{sem}}a
 
 **Equation 側。** 同じ結論が equation 側にも降りる。SAGA presentation exactness
 が `S_X` の全 context 上で成立し、仮定 7 の `β` が site 全体の natural
-transformation として与えられ(本節冒頭の定義域の区別)、`P_E` も選ばれた
+transformation として与えられ(比較 core が使うのは intersection diagram 上の
+成分だけであり、この global 化は追加の仮定である)、`P_E` も選ばれた
 topology 上の sheaf であるとする。各 chart と nonempty overlap 上では、`Φ_V`-equivariant な
 `β_V:P_sem(V)→P_E(V)` が全単射である(単射性は semantic torsor の
 transitivity、target torsor の freeness、`Φ_V` の単射性から、全射性は target torsor
-の transitivity と `Φ_V` の全射性から出る)。この局所全単射性が両側の
+の transitivity と `Φ_V` の全射性から出る)。この局所全単射性が
 sheaf condition(compatible family の amalgamation と、局所一致から大域一致が
-従う separatedness)を経て global の `β_W:P_sem(W)→P_E(W)` の全単射性へ持ち上がり、
+従う separatedness)を経て global の `β_W:P_sem(W)→P_E(W)` の全単射性へ持ち上がる。
+ここで使うのは `P_sem` 側の amalgamation と separatedness(amalgamation では
+補題 5.2A を再び用いる)、および `P_E` 側の separatedness のみである。こうして
 
 ```math
 \mathrm{Nonempty}\,P_E(W)\iff[r_E]=0
@@ -1006,6 +1018,17 @@ additive `H^1` comparison からこれらの結論は導かない。
 Čech `H^1(𝒰,-)` である。cover の選択に依存しない sheaf cohomology との同一視
 には、refinement invariance または Leray 型 acyclicity の追加条件を要し、
 本論文はこれを主張しない。
+
+さらに、本定理の Lean 形式化は context category が thin な site 上で
+行われている(第3.3節の finite-meet poset model はその代表例である)。thin 性、
+すなわち平行射の一致から、この model ではすべての射が自動的に monomorphism で
+あり、補題 5.2A の self-overlap と逆順 overlap の処理も平行射の一致で
+放電される。したがって補題 5.2A の形式化対応物
+`SiteStateData.matchingFamily_iff` は、選択された pairwise overlap とその
+lift データは消費するが、monomorphism を明示仮説として消費しない
+(pullback の可換性と一意性は thin 性が放電する)。
+一般の `ArchCtx(X)` 上では、補題 5.2A を含む §5.6 の gluing 論証は
+monomorphism と pullback の普遍性を使うが、その形式化は行っていない。
 
 ### 5.8 有限 witness: independently generated circle comparison
 
@@ -1806,6 +1829,15 @@ canonical 側は追随改名しない(2026-07-24 裁定)。名称の相違はこ
 | §5.4 | 定義 7.1、定理 7.2、系 7.3、定理 7.4 | cochain 可換と `H¹` 同型 |
 | §5.5 | 定理 7.5、定理 7.6 | residual 対応と統合 |
 | 定理 5.2(§5.6) | 定義 8.1、系 4.5、補題 2.1A、定理 8.2、系 8.3 | Grounded Global Gluing |
-| 補題 5.2A(§5.6) | 補題 2.1A | ordered matching completion |
+| 補題 5.2A(§5.6) | 補題 2.1A(matching family clause のみ) | ordered matching completion |
 | §5.7 | 原則 8.4 | additive/torsor/higher の分離 |
 | 例 5.3(§5.8) | 例 10.2 | 非零類の有限 witness |
+
+注: 論文 §5.6 の true semantic repair sheaf 定義は canonical 定義 8.1 と同一の
+4条件である(2026-07-26 の記述整合対応 #3814 で、canonical に対応物のない
+旧条件(5)と `P_sem^𝒰` 定義域分離を除去して統一)。Lean 側は担体
+(`AffineSemanticRepairSystem.State`)が最初から site 全域である一方、torsor
+三条件は `IsIntersectionCtx` ガードにより cover intersection 上でのみ仮定される。
+`P_E` 側も同構造(`AffineCoefficientLiftSystem`、作用は intersection 上)。
+仮定 7 の `β` の Lean 対応物は intersection diagram 上の成分と base 水準の
+`betaW`(chart 整合仮説つき)に分かれる。
