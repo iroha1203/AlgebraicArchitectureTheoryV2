@@ -11564,6 +11564,66 @@ noncomputable def sagaProductionCircleSelection :=
 def sagaProductionCircleRealizationEq :=
   @SemanticRepair.Saga.CircleWitness.realization_eq_production
 
+/-- Kernel-audit alias for the produced lawIndex unfolding lemma. -/
+def sagaProductionRealizationLawIndex :=
+  @SemanticRepair.Saga.SupportAtomEquationSelection.realization_lawIndex
+
+/-- Kernel-audit alias for the produced archReading unfolding lemma. -/
+def sagaProductionRealizationArchReading :=
+  @SemanticRepair.Saga.SupportAtomEquationSelection.realization_archReading
+
+/-- Kernel-audit alias for the lift-system specialization identity. -/
+def sagaProductionEquationLiftSystemEq :=
+  @SemanticRepair.Saga.LiftFiberData.equationLiftSystem_eq_liftSystem
+
+/-- Kernel-audit alias for the produced-packet realization field lemma. -/
+def sagaProductionPacketRealization :=
+  @SemanticRepair.Saga.SagaEquationPacket.ofProduction_realization
+
+/-- Kernel-audit alias for the produced-packet lift-system field lemma. -/
+def sagaProductionPacketLiftSystem :=
+  @SemanticRepair.Saga.SagaEquationPacket.ofProduction_liftSystem
+
+/-- Kernel-audit alias for the displayed-defect restriction face. -/
+def sagaProductionDefectRestrict :=
+  @SemanticRepair.Saga.SupportAtomEquationSelection.displayedSource_defect_restrict
+
+/-- Kernel-audit alias for the χ^E restriction / defect-class identity. -/
+def sagaProductionChiERestrictEqDefectClass :=
+  @SemanticRepair.Saga.SupportAtomEquationSelection.realization_chiE_restrict_eq_defect_class
+
+/-- Kernel-audit alias for the vanishing site-wide presheaf. -/
+noncomputable def sagaProductionZeroSitePresheaf :=
+  @SemanticRepair.Saga.zeroSitePresheaf
+
+/-- Kernel-audit alias for the generated self-lift fiber over `Q_E`. -/
+noncomputable def sagaProductionSelfLiftFiber :=
+  @SemanticRepair.Saga.equationSelfLiftFiber
+
+/-- Kernel-audit alias for the zero local lift atlas of the self-lift fiber. -/
+noncomputable def sagaProductionSelfLiftAtlas :=
+  @SemanticRepair.Saga.equationSelfLiftAtlas
+
+/-- Kernel-audit alias for the vanishing generated residual of the self-lift atlas. -/
+def sagaProductionSelfLiftAtlasResidual :=
+  @SemanticRepair.Saga.equationSelfLiftAtlas_residual
+
+/-- Kernel-audit alias for the acyclic/cyclic finite-object distinction. -/
+def sagaProductionAcyclicObjectNeObject :=
+  @SemanticRepair.Saga.CircleWitness.acyclicObject_ne_object
+
+/-- Kernel-audit alias for the non-constant circle-witness selection. -/
+noncomputable def sagaProductionVariantSelection :=
+  @SemanticRepair.Saga.CircleWitness.variantSelection
+
+/-- Kernel-audit alias for the non-constancy of the variant selection. -/
+def sagaProductionVariantSelectionNeConstant :=
+  @SemanticRepair.Saga.CircleWitness.variantSelection_archReading_ne_constant
+
+/-- Kernel-audit alias for the non-constant produced realization. -/
+noncomputable def sagaProductionVariantRealization :=
+  @SemanticRepair.Saga.CircleWitness.variantRealization
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit

@@ -1327,12 +1327,62 @@ noncomputable def productionSelection : SupportAtomEquationSelection site where
 /--
 Issue #3734: B.9.3 の定数 realization は support-Atom production route の
 生成物と一致する。これにより `circle_nonzero_class_transfer` の非自明
-instance が production constructor 経由でも到達可能である(production route の
-非退化発火 witness)。
+instance が production constructor 経由でも**到達可能**である(到達可能性
+witness。B.9.3 は本文どおり selected 対応を diagram 全体で同じ singleton に
+取るため、ここでの選択は定数形である。選択の非定数性が効く発火は
+`variantRealization` を見よ)。
 -/
 theorem realization_eq_production :
     realization = productionSelection.realization presentation circleCover :=
   rfl
+
+/--
+Issue #3734 査読対応: acyclic 有限 object は cyclic 有限 object と異なる
+(dependency cycle の有無で区別される)。`variantSelection` の非定数性の根拠。
+-/
+theorem acyclicObject_ne_object :
+    FiniteModel.acyclicObject ≠ FiniteModel.object := by
+  intro h
+  have hcycle : FiniteModel.hasDependencyCycle FiniteModel.object :=
+    ⟨⟨Or.inl trivial, FiniteModel.allFamily_mem _ (fun h => nomatch h),
+        FiniteModel.allFamily_mem _ (fun h => nomatch h)⟩,
+      ⟨Or.inl trivial, FiniteModel.allFamily_mem _ (fun h => nomatch h),
+        FiniteModel.allFamily_mem _ (fun h => nomatch h)⟩,
+      ⟨Or.inl trivial, FiniteModel.allFamily_mem _ (fun h => nomatch h),
+        FiniteModel.allFamily_mem _ (fun h => nomatch h)⟩⟩
+  rw [← h] at hcycle
+  exact hcycle.1
+
+/--
+Issue #3734 査読対応: Atom に**非定数**に依存する selected 対応。
+`componentA` には acyclic reading、他の Atom には B.9 の cyclic reading を
+割り当てる(equation index は circle system の唯一の required equation)。
+-/
+noncomputable def variantSelection : SupportAtomEquationSelection site where
+  equationIndex _ := ⟨PUnit.unit, rfl⟩
+  archReading a :=
+    match a with
+    | FiniteModel.FiniteAtom.componentA => FiniteModel.acyclicObject
+    | _ => FiniteModel.object
+
+/-- 変種選択は Atom carrier 上で実際に非定数である。 -/
+theorem variantSelection_archReading_ne_constant :
+    variantSelection.archReading FiniteModel.FiniteAtom.componentA ≠
+      variantSelection.archReading FiniteModel.FiniteAtom.componentB :=
+  acyclicObject_ne_object
+
+/--
+Issue #3734 査読対応: 非定数選択から production constructor が生成する
+realization(命題6.1A の restriction 可換性放電の非退化発火 witness)。
+定数選択と異なり naturality の証明には Atom 引数の同定が必要で、
+`projection_natural` + `occRestrict_atom`(台 Atom 保存)の production 証明が
+実際に働く。circle presentation が occurrence projection で読む Atom は
+一部に限られるが、選択関数自体は 9-Atom carrier 上で非定数である
+(`variantSelection_archReading_ne_constant`)。
+-/
+noncomputable def variantRealization :
+    EquationSemanticRealization presentation circleCover :=
+  variantSelection.realization presentation circleCover
 
 /-- B.9.4: the identity-carrier primary state correspondence `β`. -/
 noncomputable def stateCorrespondence :

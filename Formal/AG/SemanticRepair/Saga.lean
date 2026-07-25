@@ -26,9 +26,13 @@ Issue #3734 adds the equation-system production route
 (`Saga.EquationProduction`): the Proposition 6.1A restriction-compatibility of
 the selected assignment is discharged by proof for support-Atom factored
 selections, the produced `χ^E` value is definitionally the Theorem 11.4
-generated interpretation of the displayed defect, and the Definition 5.3
-geometric input discipline is fixed over the generated `Q_E`
-(`LiftFiberData.equationLiftSystem`, `SagaEquationPacket.ofProduction`).
+generated interpretation of the displayed defect (with the restriction face
+traced through `restrict_defect` / `obstructionQuotientRestrict_mk`), the
+Definition 5.3 typical-example route is instantiated over the generated `Q_E`
+(`LiftFiberData.equationLiftSystem`, fired by the generated self-lift fiber
+`equationSelfLiftFiber`), and `SagaEquationPacket.ofProduction` assembles the
+Theorem 1.1 input bundle from these products.  `P_E` itself and the remaining
+inputs stay selected, per the §1 classification.
 
 C7 (#3768) adds the 例10.2/付録B.9 independently generated circle comparison
 witness (`Saga.CircleWitness`): a monomorphic 4-cycle cover on which the

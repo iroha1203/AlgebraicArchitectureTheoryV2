@@ -22,12 +22,24 @@ import Formal.AG.SemanticRepair.Saga.EquationRealization
   一致する。したがって #3732/#3733 の生成 chain(`witnessIdeal` →
   `obstructionIdeal` → quotient zero、fulfillment 経路)がそのまま適用され、
   再証明しない。
+* `displayedSource_defect_restrict` / `realization_chiE_restrict_eq_defect_class`:
+  restriction 面の #3732/#3733 接続。face に沿った defect の restriction は
+  #3733 の `restrict_defect`、`χ^E` の restriction は #3732 の
+  `obstructionQuotientRestrict_mk` で宣言名追跡できる。
 * `LiftFiberData.equationLiftSystem`: X.定義5.3 の幾何側入力規律
   「equation system は coefficient `Q_E` を生成し、base reading と local lifts
-  は解こうとする局所 equation-lift problem を選ぶ」の Lean 実体。生成される
-  のは `equationSitePresheaf`(生成 `Q_E`)上への C2 `liftSystem` engine の
-  適用だけであり、lift-fiber datum(short exact sequence と base reading)は
-  X.§1 入力6 のとおり selected のまま。
+  は解こうとする局所 equation-lift problem を選ぶ」のうち、本文が「典型例」と
+  呼ぶ short exact sequence 経路を生成 `Q_E` に固定する型特殊化
+  (`equationLiftSystem_eq_liftSystem` が `rfl` であるとおり、C2 `liftSystem`
+  engine の再適用であり新規の証明内容はない)。lift-fiber datum
+  (short exact sequence と base reading)は X.§1 入力6(R0 §4.6)のとおり
+  selected のまま。定義5.3 の一般面(任意の `Q_E`-affine local-state system)
+  は従来どおり `AffineCoefficientLiftSystem` が担う。
+* `equationSelfLiftFiber` / `equationSelfLiftAtlas`: X.定義5.3 典型例の生成
+  instance。short exact sequence `0 → Q_E → Q_E → 0 → 0` と零 base reading の
+  self-lift fiber は equation system の生成物 `Q_E` だけから構成でき、
+  `equationLiftSystem` と C2 residual engine を実際に発火させる
+  (`equationSelfLiftAtlas_residual`)。
 * `SagaEquationPacket.ofProduction`: 定理1.1 入力束を production route から
   組み立てる束ね constructor。旧 `Law.holds`、manual equation core、
   membership certificate、結論相当 field は入力に取らない。
@@ -35,7 +47,23 @@ import Formal.AG.SemanticRepair.Saga.EquationRealization
 Claim boundary: `P_E` 本体と local lift atlas、semantic 側入力(`P_sem` /
 repair atlas)、state correspondence `β`、empty-overlap normalization は
 X.§1 の selected/generated/proved 三分類のとおり selected のまま受け取る。
+`equationSelfLiftFiber` は「P_E が生成できる」ことを主張しない: 生成できるのは
+この特定の self-lift instance だけであり、どの lift problem を解くかの選択は
+本文どおり selected のままである。
 凍結 G-06 route(`LawEquationGeneratedPair` / `SagaComparison`)には依存しない。
+
+Implementation notes(`lean_quality_standard.md` §2.5 申告):
+`displayedSource` の定義形(`Chart := IntersectionIndex 𝒰 × U.Atom`、
+`chart q := q.1.ctx`、`LocalInput := PUnit`)は、`realization_chiE_eq_interpret`
+が `rfl` で成立するように選んである(interpret の値式と `chiE` の値式が字面
+一致する chart 添字)。III.定義11.3 の本文は displayed source の添字集合を
+有限に取るが、Lean 側 `DisplayedEquationSource`(#3733)は有限性 field を
+持たず(既存設計)、本構成の `Chart` は一般に無限である。再利用する
+III.定理11.4 の結論(generated interpretation、membership 同値、fulfillment
+零化、residual restriction)はすべて chart 単位の主張で有限性を使わないため、
+この差は再利用結果を弱めない。また `LocalInput := PUnit` は local-input
+presentation 層を退化させた instance であり、`Chart` は produced realization
+が実際に読む coordinate 族(occurrence projection の像)より広い。
 -/
 
 noncomputable section
@@ -56,9 +84,13 @@ variable {𝒰 : MonomorphicOrderedCover S}
 
 /--
 X.命題6.1A の selected 対応 `λ ↦ (i_λ, A_λ)` を、X.定義5.1 / III.定義11.3 の
-displayed Atom/equation coordinate `(A_a, i_a, a)` の形、すなわち support Atom
-単位の選択として受ける selected datum。required 性は `RequiredIndex` subtype
-で選択と同時に固定する(#3733 と同じ規約)。
+displayed Atom/equation coordinate 語彙 `(A, i, a)` を **support Atom を通じて
+factor する特殊形に制限して**受ける selected datum。本文の定義形そのもの
+ではない: III.定義11.3 / X.定義5.1 の coordinate は chart 添字 `q` ごとに
+独立選択され、Atom の関数として factor するという条件は本文にない。この制限は
+命題6.1A の restriction 可換性を証明で放電するための Lean 側の十分条件である
+(`realization` を見よ)。required 性は `RequiredIndex` subtype で選択と同時に
+固定する(#3733 と同じ規約)。
 -/
 structure SupportAtomEquationSelection (S : Site.AATSite A) : Type (u + 1) where
   /-- 各 Atom に selected required equation index `i_a` を対応させる。 -/
@@ -77,6 +109,11 @@ selected 対応から `EquationSemanticRealization` を生成する。命題6.1A
 「これらが restriction と可換する」は field として供給せず、
 `projection_natural`(定義3.1 の occurrence projection の naturality)と
 `occRestrict_atom`(restriction が台 Atom を保存すること)から証明する。
+
+support Atom factoring は restriction 可換性の**十分条件**であり、命題6.1A の
+一般面(factoring しない restriction-compatible な選択)は従来どおり
+`EquationSemanticRealization` を直接構成して受ける。すべての realization が
+本 constructor 経由で得られるとは主張しない。
 -/
 def realization (P : SemanticRepairPresentation.{u, v} S R)
     (𝒰 : MonomorphicOrderedCover S) :
@@ -98,14 +135,16 @@ def realization (P : SemanticRepairPresentation.{u, v} S R)
       sel.archReading (P.atomData.projection τ.ctx l.1).atom
     rw [P.atomData.projection_natural f.hom l.1, R.occRestrict_atom]
 
-/-- Produced realization の selected equation index は Atom 単位選択の読み出し。 -/
+/-- Produced realization の selected equation index は Atom 単位選択の読み出し。
+simp normal form: 左辺(生成物の field)を右辺(選択の読み出し)へ展開する。 -/
 @[simp] theorem realization_lawIndex (σ : IntersectionIndex 𝒰)
     (l : P.atomData.SupportedAtom σ.ctx) :
     (sel.realization P 𝒰).lawIndex σ l =
       (sel.equationIndex (P.atomData.projection σ.ctx l.1).atom).1 :=
   rfl
 
-/-- Produced realization の architecture reading は Atom 単位選択の読み出し。 -/
+/-- Produced realization の architecture reading は Atom 単位選択の読み出し。
+simp normal form: 左辺(生成物の field)を右辺(選択の読み出し)へ展開する。 -/
 @[simp] theorem realization_archReading (σ : IntersectionIndex 𝒰)
     (l : P.atomData.SupportedAtom σ.ctx) :
     (sel.realization P 𝒰).archReading σ l =
@@ -132,9 +171,15 @@ theorem realization_chiE_apply (σ : IntersectionIndex 𝒰)
 -/
 
 /--
-III.定義11.3: produced realization が読む displayed Atom/equation coordinate
-族を displayed equation source として束ねた生成物。chart index は
+III.定義11.3 の Lean 実体 `DisplayedEquationSource`(#3733)の instance として、
+selected 対応の displayed coordinate 族を束ねた生成物。chart index は
 intersection × Atom、defect は #3733 のとおり field ではなく生成される。
+
+module header の Implementation notes を見よ: 定義形は
+`realization_chiE_eq_interpret` が `rfl` で成立するよう target-fitting して
+あり、`Chart` は一般に無限(本文の有限添字 `D` より広い)、`LocalInput` は
+`PUnit` へ退化、`Chart` は produced realization が実際に読む coordinate 族
+(occurrence projection の像)より広い。
 -/
 def displayedSource (sel : SupportAtomEquationSelection S)
     (𝒰 : MonomorphicOrderedCover S) :
@@ -205,6 +250,41 @@ theorem equationHolds_realization_chiE_eq_zero
     (sel.displayedSource 𝒰) (σ, (P.atomData.projection σ.ctx l.1).atom)
     PUnit.unit hholds
 
+/--
+III.定理11.4(#3733 の `restrict_defect` の再利用): displayed defect の
+restriction 面。face に沿った equation-system restriction は displayed defect
+を chart を移した displayed defect へ送る。
+-/
+theorem displayedSource_defect_restrict
+    (σ τ : IntersectionIndex 𝒰) (f : Face 𝒰 σ τ) (a : U.Atom) :
+    S.equationSystem.restrict f.hom
+        ((sel.displayedSource 𝒰).defect (τ, a) PUnit.unit) =
+      (sel.displayedSource 𝒰).defect (σ, a) PUnit.unit :=
+  (sel.displayedSource 𝒰).restrict_defect (τ, a) PUnit.unit f.hom
+
+/--
+III.定理11.4(#3732 の `obstructionQuotientRestrict_mk` の再利用): produced
+`χ^E` の restriction は restrict した displayed defect の class。生成 chain の
+restriction 面が #3732/#3733 の宣言(`obstructionQuotientRestrict_mk` /
+`restrict_defect`)で宣言名追跡できることを固定する。
+-/
+theorem realization_chiE_restrict_eq_defect_class
+    (σ τ : IntersectionIndex 𝒰) (f : Face 𝒰 σ τ)
+    (l : P.atomData.SupportedAtom τ.ctx) :
+    (equationCoefficient S 𝒰).restrict f ((sel.realization P 𝒰).chiE.chi τ l) =
+      Ideal.Quotient.mk (S.equationSystem.obstructionIdeal σ.ctx)
+        (S.equationSystem.restrict f.hom
+          ((sel.displayedSource 𝒰).defect
+            (τ, (P.atomData.projection τ.ctx l.1).atom) PUnit.unit)) := by
+  show S.equationSystem.obstructionQuotientRestrict f.hom
+      (Ideal.Quotient.mk (S.equationSystem.obstructionIdeal τ.ctx)
+        (S.equationSystem.equationResidual τ.ctx
+          (sel.archReading (P.atomData.projection τ.ctx l.1).atom)
+          (sel.equationIndex (P.atomData.projection τ.ctx l.1).atom).1
+          (P.atomData.projection τ.ctx l.1).atom)) = _
+  rw [S.equationSystem.obstructionQuotientRestrict_mk]
+  rfl
+
 end SupportAtomEquationSelection
 
 /-!
@@ -215,11 +295,14 @@ namespace LiftFiberData
 
 /--
 X.定義5.3: 「equation system は coefficient `Q_E` を生成し、base reading と
-local lifts は解こうとする局所 equation-lift problem を選ぶ」の Lean 実体。
-selected lift-fiber datum(short exact sequence と base reading)を生成
+local lifts は解こうとする局所 equation-lift problem を選ぶ」のうち、本文の
+「典型例」(short exact sequence の lift fiber)経路を生成
 `Q_E = equationSitePresheaf`(X.定義5.1、#3732 の `ObstructionQuotient` 再利用)
-の上で C2 `liftSystem` engine に通した affine system。lift problem 自体は
-X.§1 入力6 のとおり selected のまま。
+に固定する型特殊化。**C2 `liftSystem` engine の再適用であり、新規の証明内容は
+ない**(`equationLiftSystem_eq_liftSystem` が `rfl`)。lift problem 自体は
+X.§1 入力6(R0 §4.6)のとおり selected のまま。定義5.3 の一般面(任意の
+`Q_E`-affine local-state system)は `AffineCoefficientLiftSystem` が担う。
+生成 data だけから作れる実 instance は `equationSelfLiftFiber` を見よ。
 -/
 def equationLiftSystem {L B : SitePresheafData.{u, u} S}
     (D : LiftFiberData (equationSitePresheaf S) L B)
@@ -227,8 +310,10 @@ def equationLiftSystem {L B : SitePresheafData.{u, u} S}
     AffineCoefficientLiftSystem.{u, u, u} (equationCoefficient S 𝒰) :=
   D.liftSystem 𝒰
 
-/-- `equationLiftSystem` は C2 `liftSystem` engine の適用そのもの(再実装しない)。 -/
-@[simp] theorem equationLiftSystem_eq_liftSystem
+/-- `equationLiftSystem` は C2 `liftSystem` engine の適用そのもの(再実装しない
+ことの証拠)。simp には載せない: production route の normal form は
+`equationLiftSystem` 側に保つ。 -/
+theorem equationLiftSystem_eq_liftSystem
     {L B : SitePresheafData.{u, u} S}
     (D : LiftFiberData (equationSitePresheaf S) L B)
     (𝒰 : MonomorphicOrderedCover S) :
@@ -238,6 +323,66 @@ def equationLiftSystem {L B : SitePresheafData.{u, u} S}
 end LiftFiberData
 
 /-!
+## X.定義5.3 典型例の生成 instance: 生成 `Q_E` の self-lift fiber
+-/
+
+/-- 恒等的に消える site 全域 presheaf(X.定義5.3 典型例の `B_E = 0` 読み)。 -/
+def zeroSitePresheaf (S : Site.AATSite A) : SitePresheafData.{u, u} S where
+  carrier _ := PUnit
+  addCommGroup _ := inferInstance
+  restrict _ := 0
+  restrict_id _ _ := rfl
+  restrict_comp _ _ _ := rfl
+
+/--
+X.定義5.3 典型例の生成 instance: short exact sequence `0 → Q_E → Q_E → 0 → 0`
+と零 base reading による self-lift fiber。equation system が生成する `Q_E`
+(#3732 の `ObstructionQuotient`)だけから構成され、追加の selected data を
+取らない。`equationLiftSystem` を発火させる実 instance を与える。
+
+これは「`P_E` が生成できる」ことを意味しない: 生成できるのはこの特定の
+self-lift instance だけであり、どの lift problem を解くかの選択は X.§1
+入力6 のとおり selected のままである(module header の claim boundary)。
+-/
+def equationSelfLiftFiber (S : Site.AATSite A) :
+    LiftFiberData (equationSitePresheaf S) (equationSitePresheaf S)
+      (zeroSitePresheaf S) where
+  incl _ := AddMonoidHom.id _
+  incl_natural _ _ := rfl
+  proj _ := 0
+  proj_natural _ _ := rfl
+  incl_injective _ _ h := h
+  exact_at_middle _ l := ⟨fun _ => ⟨l, rfl⟩, fun _ => rfl⟩
+  base _ := 0
+  base_natural _ := rfl
+
+/-- Self-lift fiber の零 local lift atlas(X.§1 入力6b の selected 選択を
+零 lift に取った instance)。 -/
+def equationSelfLiftAtlas (S : Site.AATSite A) (𝒰 : MonomorphicOrderedCover S) :
+    CoefficientLiftAtlas ((equationSelfLiftFiber S).equationLiftSystem 𝒰) where
+  localLift _ := ⟨0, rfl⟩
+
+/--
+X.補題5.4 面の発火: self-lift fiber の零 atlas から C2 residual engine
+(`leftOn` / `rightOn` / `diffAt`)が生成する `r_E` は零 cochain。production
+route の産物の上で residual 生成が実際に走ることを固定する。
+-/
+theorem equationSelfLiftAtlas_residual (S : Site.AATSite A)
+    (𝒰 : MonomorphicOrderedCover S) (p : KeptPair 𝒰) :
+    (equationSelfLiftAtlas S 𝒰).residual p = 0 := by
+  have h : (equationSelfLiftAtlas S 𝒰).rightOn p =
+      (equationSelfLiftAtlas S 𝒰).leftOn p := by
+    apply Subtype.ext
+    show (equationSitePresheaf S).restrict (𝒰.pairSnd p.fst p.snd) 0 =
+      (equationSitePresheaf S).restrict (𝒰.pairFst p.fst p.snd) 0
+    rw [map_zero, map_zero]
+  show ((equationSelfLiftFiber S).equationLiftSystem 𝒰).diffAt (.pair p)
+      ((equationSelfLiftAtlas S 𝒰).leftOn p)
+      ((equationSelfLiftAtlas S 𝒰).rightOn p) = 0
+  rw [h]
+  exact ((equationSelfLiftFiber S).equationLiftSystem 𝒰).diffAt_self _ _
+
+/-!
 ## R0 §4.9: 定理1.1 入力束の production 組み立て
 -/
 
@@ -245,11 +390,18 @@ namespace SagaEquationPacket
 
 /--
 R0 §4.9: 定理1.1 入力束を production route から組み立てる。equation 側は
-`SupportAtomEquationSelection`(入力3 の selected 対応)と selected lift-fiber
-datum(入力6)から `realization` / `equationLiftSystem` で生成し、semantic 側
-入力(入力1・5)、`β`(入力7)、normalization(入力8)は X.§1 の三分類の
-とおり selected のまま受け取る。completeness 対(入力4)は従来どおり bundle に
-入れず定理仮定として受ける。
+`SupportAtomEquationSelection`(入力3(R0 §4.3)の correspondence の生成源への
+selected 入力)と selected lift-fiber datum(入力6、R0 §4.6)から
+`realization` / `equationLiftSystem` で生成し、semantic 側入力(入力1・5、
+R0 §4.1・§4.5)、`β`(入力7、R0 §4.7)、normalization(入力8、R0 §4.8)は
+X.§1 の三分類のとおり selected のまま受け取る。completeness 対(入力4、
+R0 §4.4)は従来どおり bundle に入れず定理仮定として受ける。
+
+universe 境界: `equationSitePresheaf S : SitePresheafData.{u, u}` と
+`LiftFiberData` の同一 universe 制約により、本 constructor が組める packet は
+`SagaEquationPacket.{u, v, x, u}`(lift state universe `y := u`)に限られる。
+R0 §1 が `y` の instantiation として想定する `Type (u+1)` の lift state には
+この経路では届かない(一般 packet は従来どおり直接構成で受ける)。
 -/
 def ofProduction
     (R : AtomOccurrenceReading S) (𝒰 : MonomorphicOrderedCover S)
@@ -291,14 +443,17 @@ variable (R : AtomOccurrenceReading S) (𝒰 : MonomorphicOrderedCover S)
   (normalization :
     EmptyOverlapNormalization P 𝒰 Psem (fiber.equationLiftSystem 𝒰))
 
-/-- 組み立てた packet の realization は production constructor の生成物。 -/
+/-- 組み立てた packet の realization は production constructor の生成物。
+simp normal form: 左辺(packet field)を右辺(生成物)へ展開する。 -/
 @[simp] theorem ofProduction_realization :
     (ofProduction R 𝒰 P sel Psem repairAtlas fiber liftAtlas
         stateCorrespondence normalization).realization =
       sel.realization P 𝒰 :=
   rfl
 
-/-- 組み立てた packet の lift system は生成 `Q_E` 上の典型例 instantiation。 -/
+/-- 組み立てた packet の lift system は生成 `Q_E` 上の典型例 instantiation。
+simp normal form: 左辺(packet field)を右辺(`equationLiftSystem` 適用)へ
+展開する(`equationLiftSystem_eq_liftSystem` は simp 非登録なのでここで安定)。 -/
 @[simp] theorem ofProduction_liftSystem :
     (ofProduction R 𝒰 P sel Psem repairAtlas fiber liftAtlas
         stateCorrespondence normalization).liftSystem =
