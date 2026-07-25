@@ -100,10 +100,10 @@ pub struct H1ComparisonCochainMapV052 {
 pub struct H1PresentationCellV052 {
     pub cell_ref: String,
     pub semantic_generators: Vec<String>,
-    pub repair_relation_matrix: Vec<Vec<u8>>,
+    pub repair_relation_matrix: Vec<Vec<i64>>,
     pub equation_generators: Vec<String>,
-    pub equation_relation_matrix: Vec<Vec<u8>>,
-    pub generator_map: Vec<Vec<u8>>,
+    pub equation_relation_matrix: Vec<Vec<i64>>,
+    pub generator_map: Vec<Vec<i64>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -111,22 +111,22 @@ pub struct H1PresentationCellV052 {
 pub struct H1PresentationRestrictionV052 {
     pub from_ref: String,
     pub to_ref: String,
-    pub semantic_matrix: Vec<Vec<u8>>,
-    pub equation_matrix: Vec<Vec<u8>>,
+    pub semantic_matrix: Vec<Vec<i64>>,
+    pub equation_matrix: Vec<Vec<i64>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct H1PresentationEquationLiftV052 {
     pub chart_ref: String,
-    pub coefficients: Vec<u8>,
+    pub coefficients: Vec<i64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct H1PresentationEquationTransitionV052 {
     pub overlap_ref: String,
-    pub coefficients: Vec<u8>,
+    pub coefficients: Vec<i64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -139,6 +139,9 @@ pub struct H1PresentationEquationLiftAtlasV052 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct H1PresentationDataV052 {
+    /// `"f2"`(既定)または `"integers"`。第X部 定義 10.1 の有限生成可換群版は後者を要する。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub coefficient_ring: Option<String>,
     pub cells: Vec<H1PresentationCellV052>,
     pub restrictions: Vec<H1PresentationRestrictionV052>,
     pub equation_lift_atlas: H1PresentationEquationLiftAtlasV052,

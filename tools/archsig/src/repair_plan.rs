@@ -93,9 +93,9 @@ impl PresentationGeneratedH1Checks {
 
 #[derive(Debug, Clone)]
 struct PresentationResidualWitness {
-    source_image: BTreeMap<String, Vec<u8>>,
-    equation_residual: BTreeMap<String, Vec<u8>>,
-    h: BTreeMap<String, Vec<u8>>,
+    source_image: BTreeMap<String, Vec<i64>>,
+    equation_residual: BTreeMap<String, Vec<i64>>,
+    h: BTreeMap<String, Vec<i64>>,
 }
 
 #[derive(Debug, Clone)]
@@ -2001,7 +2001,7 @@ fn generated_semantic_residual(
     plan: &RepairPlanDocumentV1,
     target_complex: &RepairPlanComplexV1,
     cells: &BTreeMap<&str, &H1PresentationCellV052>,
-) -> Option<BTreeMap<String, Vec<u8>>> {
+) -> Option<BTreeMap<String, Vec<i64>>> {
     let primitives = plan
         .primitives
         .iter()
@@ -2048,8 +2048,8 @@ fn generated_semantic_residual(
 fn generated_source_image(
     target_complex: &RepairPlanComplexV1,
     cells: &BTreeMap<&str, &H1PresentationCellV052>,
-    semantic_residual: &BTreeMap<String, Vec<u8>>,
-) -> Option<BTreeMap<String, Vec<u8>>> {
+    semantic_residual: &BTreeMap<String, Vec<i64>>,
+) -> Option<BTreeMap<String, Vec<i64>>> {
     target_complex
         .overlaps
         .iter()
@@ -2114,7 +2114,7 @@ fn equation_residual_from_lift_atlas(
     presentation: &H1PresentationDataV052,
     cells: &BTreeMap<&str, &H1PresentationCellV052>,
     restrictions: &BTreeMap<(&str, &str), &H1PresentationRestrictionV052>,
-) -> Option<BTreeMap<String, Vec<u8>>> {
+) -> Option<BTreeMap<String, Vec<i64>>> {
     let mut lifts = BTreeMap::new();
     for lift in &presentation.equation_lift_atlas.local_lifts {
         let cell = cells.get(lift.chart_ref.as_str())?;
@@ -2180,7 +2180,7 @@ fn equation_cochain_is_cocycle(
     target_complex: &RepairPlanComplexV1,
     cells: &BTreeMap<&str, &H1PresentationCellV052>,
     restrictions: &BTreeMap<(&str, &str), &H1PresentationRestrictionV052>,
-    cochain: &BTreeMap<String, Vec<u8>>,
+    cochain: &BTreeMap<String, Vec<i64>>,
 ) -> Option<bool> {
     for triple in &target_complex.triple_overlaps {
         let target = cells.get(triple.id.as_str())?;
@@ -2211,7 +2211,7 @@ fn semantic_cochain_is_cocycle(
     target_complex: &RepairPlanComplexV1,
     cells: &BTreeMap<&str, &H1PresentationCellV052>,
     restrictions: &BTreeMap<(&str, &str), &H1PresentationRestrictionV052>,
-    cochain: &BTreeMap<String, Vec<u8>>,
+    cochain: &BTreeMap<String, Vec<i64>>,
 ) -> Option<bool> {
     for triple in &target_complex.triple_overlaps {
         let target = cells.get(triple.id.as_str())?;
@@ -2241,9 +2241,9 @@ fn semantic_cochain_is_cocycle(
 fn cochain_sum(
     target_complex: &RepairPlanComplexV1,
     cells: &BTreeMap<&str, &H1PresentationCellV052>,
-    left: &BTreeMap<String, Vec<u8>>,
-    right: &BTreeMap<String, Vec<u8>>,
-) -> Option<BTreeMap<String, Vec<u8>>> {
+    left: &BTreeMap<String, Vec<i64>>,
+    right: &BTreeMap<String, Vec<i64>>,
+) -> Option<BTreeMap<String, Vec<i64>>> {
     target_complex
         .overlaps
         .iter()
@@ -2268,8 +2268,8 @@ fn equation_delta_zero_solution(
     target_complex: &RepairPlanComplexV1,
     cells: &BTreeMap<&str, &H1PresentationCellV052>,
     restrictions: &BTreeMap<(&str, &str), &H1PresentationRestrictionV052>,
-    cochain: &BTreeMap<String, Vec<u8>>,
-) -> Option<BTreeMap<String, Vec<u8>>> {
+    cochain: &BTreeMap<String, Vec<i64>>,
+) -> Option<BTreeMap<String, Vec<i64>>> {
     let mut chart_offsets = BTreeMap::new();
     let mut unknown_count = 0;
     for chart in &target_complex.charts {
@@ -2327,8 +2327,8 @@ fn semantic_delta_zero_solution(
     target_complex: &RepairPlanComplexV1,
     cells: &BTreeMap<&str, &H1PresentationCellV052>,
     restrictions: &BTreeMap<(&str, &str), &H1PresentationRestrictionV052>,
-    cochain: &BTreeMap<String, Vec<u8>>,
-) -> Option<BTreeMap<String, Vec<u8>>> {
+    cochain: &BTreeMap<String, Vec<i64>>,
+) -> Option<BTreeMap<String, Vec<i64>>> {
     let mut chart_offsets = BTreeMap::new();
     let mut unknown_count = 0;
     for chart in &target_complex.charts {
@@ -2382,7 +2382,7 @@ fn semantic_delta_zero_solution(
 fn equation_cochain_json(
     target_complex: &RepairPlanComplexV1,
     cells: &BTreeMap<&str, &H1PresentationCellV052>,
-    cochain: &BTreeMap<String, Vec<u8>>,
+    cochain: &BTreeMap<String, Vec<i64>>,
 ) -> Option<Vec<Value>> {
     target_complex
         .overlaps
@@ -2404,7 +2404,7 @@ fn equation_cochain_json(
 fn equation_chart_assignment_json(
     target_complex: &RepairPlanComplexV1,
     cells: &BTreeMap<&str, &H1PresentationCellV052>,
-    assignment: &BTreeMap<String, Vec<u8>>,
+    assignment: &BTreeMap<String, Vec<i64>>,
 ) -> Option<Vec<Value>> {
     target_complex
         .charts
@@ -2423,14 +2423,14 @@ fn equation_chart_assignment_json(
         .collect()
 }
 
-fn binary_vector(vector: &[u8], width: usize) -> bool {
-    vector.len() == width && vector.iter().all(|value| *value <= 1)
+fn binary_vector(vector: &[i64], width: usize) -> bool {
+    vector.len() == width && vector.iter().all(|value| (0..=1).contains(value))
 }
 
-fn f2_solve(mut rows: Vec<Vec<u8>>, unknown_count: usize) -> Option<Vec<u8>> {
+fn f2_solve(mut rows: Vec<Vec<i64>>, unknown_count: usize) -> Option<Vec<i64>> {
     if rows
         .iter()
-        .any(|row| row.len() != unknown_count + 1 || row.iter().any(|value| *value > 1))
+        .any(|row| row.len() != unknown_count + 1 || row.iter().any(|value| !(0..=1).contains(value)))
     {
         return None;
     }
@@ -2465,16 +2465,16 @@ fn f2_solve(mut rows: Vec<Vec<u8>>, unknown_count: usize) -> Option<Vec<u8>> {
     Some(solution)
 }
 
-fn binary_matrix(rows: &[Vec<u8>], width: usize) -> bool {
+fn binary_matrix(rows: &[Vec<i64>], width: usize) -> bool {
     rows.iter()
-        .all(|row| row.len() == width && row.iter().all(|value| *value <= 1))
+        .all(|row| row.len() == width && row.iter().all(|value| (0..=1).contains(value)))
 }
 
-fn binary_matrix_with_shape(rows: &[Vec<u8>], height: usize, width: usize) -> bool {
+fn binary_matrix_with_shape(rows: &[Vec<i64>], height: usize, width: usize) -> bool {
     rows.len() == height && binary_matrix(rows, width)
 }
 
-fn f2_rank(rows: &[Vec<u8>], width: usize) -> Option<usize> {
+fn f2_rank(rows: &[Vec<i64>], width: usize) -> Option<usize> {
     if !binary_matrix(rows, width) {
         return None;
     }
@@ -2498,13 +2498,13 @@ fn f2_rank(rows: &[Vec<u8>], width: usize) -> Option<usize> {
     Some(rank)
 }
 
-fn matrix_columns(matrix: &[Vec<u8>], width: usize) -> Vec<Vec<u8>> {
+fn matrix_columns(matrix: &[Vec<i64>], width: usize) -> Vec<Vec<i64>> {
     (0..width)
         .map(|column| matrix.iter().map(|row| row[column]).collect())
         .collect()
 }
 
-fn f2_matrix_vector(matrix: &[Vec<u8>], vector: &[u8]) -> Vec<u8> {
+fn f2_matrix_vector(matrix: &[Vec<i64>], vector: &[i64]) -> Vec<i64> {
     matrix
         .iter()
         .map(|row| {
@@ -2515,8 +2515,8 @@ fn f2_matrix_vector(matrix: &[Vec<u8>], vector: &[u8]) -> Vec<u8> {
         .collect()
 }
 
-fn f2_vector_in_span(rows: &[Vec<u8>], width: usize, vector: &[u8]) -> Option<bool> {
-    if vector.len() != width || vector.iter().any(|value| *value > 1) {
+fn f2_vector_in_span(rows: &[Vec<i64>], width: usize, vector: &[i64]) -> Option<bool> {
+    if vector.len() != width || vector.iter().any(|value| !(0..=1).contains(value)) {
         return None;
     }
     let rank = f2_rank(rows, width)?;
