@@ -10963,6 +10963,47 @@ def conormalFirstOrderDescentPackage :=
 def conormalH1ZeroNonzeroPair :=
   @SemanticRepair.Conormal.LawGeneratedBooleanCircleConormalH1Pair.conormalH1_zero_nonzero_pair
 
+/-! ## Part X 例10.2/付録B.9 circle witness (Issue #3757, C7 #3768) -/
+
+/-- Kernel-audit alias for the complete circle SAGA input bundle. -/
+noncomputable def sagaCircleWitnessPacket :=
+  @SemanticRepair.Saga.CircleWitness.packet
+
+/-- Kernel-audit alias for the exactness-generated non-identity `Φ`. -/
+noncomputable def sagaCircleWitnessPhi :=
+  @SemanticRepair.Saga.CircleWitness.circlePhi
+
+/-- Kernel-audit alias for the circle repair-relation completeness discharge. -/
+def sagaCircleWitnessRelationComplete :=
+  @SemanticRepair.Saga.CircleWitness.relationComplete
+
+/-- Kernel-audit alias for the circle generator completeness discharge. -/
+def sagaCircleWitnessGeneratorComplete :=
+  @SemanticRepair.Saga.CircleWitness.generatorComplete
+
+/-- Kernel-audit alias for the B.9.5 edge-sum value `1` of `r_sem`. -/
+def sagaCircleWitnessEdgeSumResidual :=
+  @SemanticRepair.Saga.CircleWitness.edgeSum_semanticResidual
+
+/-- Kernel-audit alias for the nonzero semantic residual class. -/
+def sagaCircleWitnessSemanticResidualNeZero :=
+  @SemanticRepair.Saga.CircleWitness.semanticResidualClass_ne_zero
+
+/-- Kernel-audit alias for injectivity of the `M_sem ≅ F₂` reading. -/
+def sagaCircleWitnessMSemToZModInjective :=
+  @SemanticRepair.Saga.CircleWitness.mSemToZMod_injective
+
+/-- Kernel-audit alias for surjectivity of the `M_sem ≅ F₂` reading. -/
+def sagaCircleWitnessMSemToZModSurjective :=
+  @SemanticRepair.Saga.CircleWitness.mSemToZMod_surjective
+
+/-- Kernel-audit alias for the audited-`Φ`/transfer-`Φ` identity. -/
+def sagaCircleWitnessPhiEqPhiFamily :=
+  @SemanticRepair.Saga.CircleWitness.circlePhi_eq_phiFamily
+
+/-- Kernel-audit alias for the 例10.2 nonzero class transfer through `κ_*`. -/
+def sagaCircleWitnessNonzeroClassTransfer :=
+  @SemanticRepair.Saga.CircleWitness.circle_nonzero_class_transfer
 
 end AAT.AG.AxiomAudit
 
