@@ -462,7 +462,7 @@
        ]
       ],
       "equationGenerators": [
-       "edge:money-preserve-consign"
+       "unbound-equation:overlap:preserve-consign"
       ],
       "equationRelationMatrix": [
        [
@@ -486,7 +486,7 @@
        ]
       ],
       "equationGenerators": [
-       "edge:money-preserve-consignprice"
+       "unbound-equation:overlap:preserve-consignprice"
       ],
       "equationRelationMatrix": [
        [
@@ -510,7 +510,7 @@
        ]
       ],
       "equationGenerators": [
-       "triple:money-consign-fee-region"
+       "unbound-equation:triple:consign-fee-region"
       ],
       "equationRelationMatrix": [
        [

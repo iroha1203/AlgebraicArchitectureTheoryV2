@@ -3,11 +3,11 @@
   "artifactDigests": {
     "measurementPacket": {
       "path": "archsig-measurement-packet.json",
-      "sha256": "b0cc39974a3da134151666a472b658e0e08b197254cac1d669df42767778ef7f"
+      "sha256": "a81f92b8d54650727789f8cbe26c916e697194130295c9bc81b73a63185e5e20"
     },
     "normalizedArchmap": {
       "path": "normalized-archmap.json",
-      "sha256": "8c3ae3e3218243c033f19f63e075e355cfafd76b0b5ea7912a8941bfd52e4dd9"
+      "sha256": "dcf6b78efe2ec09c32455ecb1aaf746e76991d23298938ae5eda596198d6924f"
     }
   },
   "artifactLinks": {
@@ -21,7 +21,7 @@
   "commandName": "analyze",
   "componentFingerprints": {
     "lawPolicy": "sha256:e5e91078749ec26ae327ecd1cf41d6d2f7dd035c81a1c66bc0e0476b10e6900c",
-    "lawSurface": "sha256:e223d3a0bbca6dab524e83b675e8733a05622f4d7f83ff3f11865d862213797f",
+    "lawSurface": "sha256:15b78313f591c424245c79fdc32ab6aee799d3c53197b331d569556ac3670471",
     "measurementProfile": "sha256:c073650c8bcd053d48d78bb1a29811b80917ffbdec81e1789dd15d68908b0753"
   },
   "conclusionCode": null,
@@ -51,7 +51,7 @@
     },
     "lawSurface": {
       "path": "input:law-surface-saga.json",
-      "sha256": "e223d3a0bbca6dab524e83b675e8733a05622f4d7f83ff3f11865d862213797f"
+      "sha256": "15b78313f591c424245c79fdc32ab6aee799d3c53197b331d569556ac3670471"
     },
     "measurementProfile": {
       "path": "input:measurement-profile-saga.json",
@@ -69,7 +69,7 @@
     },
     "repairPlan": {
       "path": "input:repair-plan-head.json",
-      "sha256": "fb25fd345468984ec9f3276d1d9c48ed5c9e963ace860eb20b47b2a789916202"
+      "sha256": "c02b93b0559ce8df40d1cec2aec5919abac778e5821089a514621378ee9eb6a9"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
@@ -92,7 +92,7 @@
   "rawArtifactPaths": null,
   "rawArtifactRetention": "omitted",
   "repairPlanInputPath": "input:repair-plan-head.json",
-  "runId": "run:12bbf63146e4",
+  "runId": "run:07154e725bfd",
   "schema": "archsig-run-manifest/v0.5.4",
   "toolVersion": "0.5.4",
   "validationReports": {

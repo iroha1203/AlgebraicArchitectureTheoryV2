@@ -2256,7 +2256,7 @@ fn presentation_generated_saga_plan(root: &Path, nonzero_class: bool) -> Value {
                 "cellRef": cell_ref,
                 "semanticGenerators": ["repair:cycle"],
                 "repairRelationMatrix": [],
-                "equationGenerators": ["equation:cycle"],
+                "equationGenerators": ["unbound-equation:cycle"],
                 "equationRelationMatrix": [],
                 "generatorMap": [[1]]
             })
@@ -2950,6 +2950,34 @@ fn cli_analyze_saga_descent_names_the_supply_that_failed_the_component_match() {
         invariant["suppliedSlots"],
         json!(["trueSheafCertificate", "gluingData"]),
         "the run records which slots were supplied at all"
+    );
+}
+
+/// equation generator は法曲面が宣言する名前へ解決しなければならない。名前を差し替えても
+/// 結論が動かないなら、その束縛は表示だけで検査されていないことになる。
+#[test]
+fn cli_analyze_presentation_generated_requires_law_surface_bound_equation_generators() {
+    let root = ag_measurement_root();
+    let mut plan = presentation_generated_saga_plan(&root, true);
+    for cell in plan["comparison"]["h1ComparisonData"]["presentation"]["cells"]
+        .as_array_mut()
+        .expect("presentation cells")
+    {
+        cell["equationGenerators"] = json!(["unrelated:not-declared-by-the-law-surface"]);
+    }
+    let out_dir = run_presentation_generated_saga_fixture_lock(
+        "ag-saga-presentation-unbound-equation-generators",
+        plan,
+    );
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let comparison = invariant_by_id(&packet, "saga-comparison:h1-transfer");
+    assert_eq!(comparison["contract"]["equationGeneratorsResolved"], false);
+    assert_ne!(comparison["status"], "established");
+    assert!(
+        comparison["contract"]["unresolvedEquationGenerators"]
+            .as_array()
+            .is_some_and(|names| !names.is_empty()),
+        "the unresolved generator names are reported, not just a boolean"
     );
 }
 

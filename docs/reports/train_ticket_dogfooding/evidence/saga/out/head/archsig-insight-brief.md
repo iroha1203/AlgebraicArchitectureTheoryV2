@@ -17,13 +17,11 @@ Next action:
 Inspect mismatch support
 
 Boundary:
-Profile-relative. 10 assumptions declared. 0 supports unmeasured. 0 unknown. 1 not_computed.
+Profile-relative. 11 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.
 
 ## Top insights
 - Global glue mismatch measured: Local checks do not explain the whole selected cover; ArchSig measured a cross-context H^1 mismatch.
   Why this matters: This highlights architecture drift that can be invisible as a local law violation and gives reviewers a first seam to inspect.
-- Measurement blocked by reason code: ag.saga-grounded did not compute because grounded_skeleton_not_aligned.
-  Why this matters: The blocked reason belongs in the Decision Bar so reviewers do not mistake an empty scene for absence of conflict.
 - Measurement boundary recorded: Checked, assumed, unmeasured, unknown, and not_computed states are preserved for review.
   Why this matters: This tells reviewers exactly where the conclusion is profile-relative and where it is blocked or unmeasured.
 
@@ -41,17 +39,16 @@ Profile-relative. 10 assumptions declared. 0 supports unmeasured. 0 unknown. 1 n
 
 ## Suggested next inspections
 - Inspect mismatch support: Local checks do not explain the whole selected cover; ArchSig measured a cross-context H^1 mismatch.
-- Inspect blocking reason: ag.saga-grounded did not compute because grounded_skeleton_not_aligned.
 - Inspect measurement boundary: Checked, assumed, unmeasured, unknown, and not_computed states are preserved for review.
 
 ## Repair candidates
 - No measured repair candidate was promoted by this packet.
 
 ## Measurement boundary
-Profile-relative. 10 assumptions declared. 0 supports unmeasured. 0 unknown. 1 not_computed.
-- checked: 4
-- assumed: 10
-- blocking: 1
+Profile-relative. 11 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.
+- checked: 5
+- assumed: 11
+- blocking: 0
 - omitted detail counts:
   - omittedAtoms: 0
   - omittedEdges: 0
@@ -80,11 +77,10 @@ MEASURED_NONGLUING_RESIDUAL_CLASS
 
 Top insights:
 - Local checks do not explain the whole selected cover; ArchSig measured a cross-context H^1 mismatch.
-- ag.saga-grounded did not compute because grounded_skeleton_not_aligned.
 - Checked, assumed, unmeasured, unknown, and not_computed states are preserved for review.
 
 Boundary:
-Profile-relative. 10 assumptions declared. 0 supports unmeasured. 0 unknown. 1 not_computed.
+Profile-relative. 11 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.
 
 Source refs:
 - src:ts-admin-basic-info-service/src/main/java/adminbasic/AdminBasicInfoApplication.java

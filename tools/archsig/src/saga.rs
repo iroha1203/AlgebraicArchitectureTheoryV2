@@ -14,6 +14,7 @@ use crate::{
     ARCHSIG_SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA,
     ARCHSIG_SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS, ARCHSIG_SAGA_CONCLUSIONS_V1_SCHEMA,
     AgAssumptionLedgerEntryV1, AgStructuralVerdictV1, AgVerdictDataV1, ArchMapDocumentV2,
+    H1ComparisonDataV052, LawEquationSurfaceV1,
     MeasurementProfileV1, NormalizedArchMapV2, RepairPlanComplexV1, RepairPlanDocumentV1,
     assumption_id_for_schema,
 };
@@ -463,6 +464,7 @@ fn grounded_not_computed(
 pub(crate) fn evaluate_saga_descent_v1(
     archmap: &ArchMapDocumentV2,
     plan: &RepairPlanDocumentV1,
+    law_surface: Option<&LawEquationSurfaceV1>,
 ) -> SagaDescentMeasurementV1 {
     let boundary = solve_boundary_membership(plan);
     let closure = closure_diagnostics(archmap, plan);
@@ -740,7 +742,11 @@ pub(crate) fn evaluate_saga_descent_v1(
             ]
         }));
     }
-    computed_invariants.push(evaluate_saga_comparison_v1(plan, &structural_verdict));
+    computed_invariants.push(evaluate_saga_comparison_v1(
+        plan,
+        &structural_verdict,
+        law_surface,
+    ));
     let mut assumptions = vec![enumeration_assumption];
     if let Some(comparison_target_enumeration_assumption) = comparison_target_enumeration_assumption
     {
@@ -759,9 +765,53 @@ pub(crate) fn evaluate_saga_descent_v1(
     }
 }
 
+/// 法曲面が宣言する名前の集合。witness variable と skeleton simplex。
+fn law_surface_declared_names(law_surface: &LawEquationSurfaceV1) -> BTreeSet<String> {
+    let mut names = BTreeSet::new();
+    for law in &law_surface.laws {
+        for variable in &law.witness_variables {
+            names.insert(variable.variable.clone());
+        }
+    }
+    for simplex in law_surface.skeleton.iter().flatten() {
+        names.insert(simplex.simplex.clone());
+    }
+    names
+}
+
+/// presentation の equation generator が法曲面の宣言へ解決するか。
+/// `unbound-equation:` 接頭辞は「この法曲面に対応物が無い」という author の明示宣言として
+/// 受理する。それ以外の未解決名は契約違反であり、名前を差し替えれば結論が変わる。
+fn unresolved_equation_generators(
+    plan: &RepairPlanDocumentV1,
+    law_surface: Option<&LawEquationSurfaceV1>,
+) -> Option<Vec<String>> {
+    let law_surface = law_surface?;
+    let comparison = plan.comparison.as_ref()?;
+    let h1 = comparison.get("h1ComparisonData")?.as_object()?;
+    if h1.get("kind").and_then(Value::as_str) != Some("presentation-generated") {
+        return None;
+    }
+    let typed: H1ComparisonDataV052 =
+        serde_json::from_value(Value::Object(h1.clone())).ok()?;
+    let presentation = typed.presentation.as_ref()?;
+    let declared = law_surface_declared_names(law_surface);
+    let mut unresolved = BTreeSet::new();
+    for cell in &presentation.cells {
+        for generator in &cell.equation_generators {
+            if generator.starts_with("unbound-equation:") || declared.contains(generator) {
+                continue;
+            }
+            unresolved.insert(generator.clone());
+        }
+    }
+    Some(unresolved.into_iter().collect())
+}
+
 fn evaluate_saga_comparison_v1(
     plan: &RepairPlanDocumentV1,
     structural_verdict: &[AgStructuralVerdictV1],
+    law_surface: Option<&LawEquationSurfaceV1>,
 ) -> Value {
     let Some(comparison) = plan.comparison.as_ref() else {
         return json!({
@@ -835,12 +885,17 @@ fn evaluate_saga_comparison_v1(
     } else {
         None
     };
+    let unresolved_generators = unresolved_equation_generators(plan, law_surface);
+    let equation_generators_resolved = unresolved_generators
+        .as_ref()
+        .map(|unresolved| unresolved.is_empty());
     let contract_checked = if h1_kind == "explicit" {
         explicit_checks.is_some_and(|checks| checks.all_pass())
     } else if h1_kind == "presentation-generated" {
         presentation_checks
             .as_ref()
             .is_some_and(|checks| checks.all_pass())
+            && equation_generators_resolved.unwrap_or(true)
     } else {
         true
     };
@@ -953,7 +1008,9 @@ fn evaluate_saga_comparison_v1(
             "classPrerequisite": class_available,
             "targetClassComputed": target_class_nonzero.is_some(),
             "contractChecked": contract_checked,
-            "measuredClassAgreement": measured_class_agreement
+            "measuredClassAgreement": measured_class_agreement,
+            "equationGeneratorsResolved": equation_generators_resolved,
+            "unresolvedEquationGenerators": unresolved_generators
         },
         "suppliedCochainMap": {
             "level": "cochain",
@@ -1778,7 +1835,7 @@ mod tests {
     #[test]
     fn comparison_silence_precedes_contract_failure_when_class_is_missing() {
         let plan = comparison_fixture();
-        let result = evaluate_saga_comparison_v1(&plan, &[]);
+        let result = evaluate_saga_comparison_v1(&plan, &[], None);
         assert_eq!(result["status"], "silence_by_design");
         assert_eq!(result["reason"], "residual_class_prerequisite_not_measured");
         assert!(result.get("failureCode").is_none());
@@ -1793,7 +1850,7 @@ mod tests {
         plan.comparison.as_mut().expect("comparison exists")["h1ComparisonData"]["presentation"] =
             serde_json::json!({});
 
-        let result = evaluate_saga_comparison_v1(&plan, &[]);
+        let result = evaluate_saga_comparison_v1(&plan, &[], None);
         assert_eq!(result["status"], "silence_by_design");
         assert_eq!(
             result["reason"],
@@ -1815,7 +1872,7 @@ mod tests {
     #[test]
     fn comparison_class_predicate_mismatch_emits_contract_failure() {
         let plan = comparison_fixture();
-        let result = evaluate_saga_comparison_v1(&plan, &[measured_class_verdict()]);
+        let result = evaluate_saga_comparison_v1(&plan, &[measured_class_verdict()], None);
         assert_eq!(result["status"], "not_computed");
         assert_eq!(
             result["failureCode"],

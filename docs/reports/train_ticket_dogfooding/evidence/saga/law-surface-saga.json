@@ -170,21 +170,6 @@
    "simplex": "vertex:money-preserve",
    "supportAtomRef": "atom:semantic:preserve-surface:cech-section-money-amount",
    "requiredLawId": "law:money-settlement-convention"
-  },
-  {
-   "simplex": "edge:money-preserve-consign",
-   "supportAtomRef": "atom:semantic:preserve-surface:cech-section-money-amount",
-   "requiredLawId": "law:money-settlement-convention"
-  },
-  {
-   "simplex": "edge:money-preserve-consignprice",
-   "supportAtomRef": "atom:semantic:preserve-surface:cech-section-money-amount",
-   "requiredLawId": "law:money-settlement-convention"
-  },
-  {
-   "simplex": "triple:money-consign-fee-region",
-   "supportAtomRef": "atom:semantic:consign-surface:cech-section-money-amount",
-   "requiredLawId": "law:money-settlement-convention"
   }
  ],
  "defectSources": [

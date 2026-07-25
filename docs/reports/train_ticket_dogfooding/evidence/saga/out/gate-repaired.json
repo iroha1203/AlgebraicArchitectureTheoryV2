@@ -3,7 +3,7 @@
   "inputDigests": {
     "comparisonReport": {
       "path": "input:archsig-comparison-report.json",
-      "sha256": "2b9b90f560a37d73f4bf62c58b2e5227b08aab45fc2e39f39dc1ee9106f29229"
+      "sha256": "39708661bbeaf1350b4d07ebf4fb076b10df391cb6199192b1e049c6c669f284"
     },
     "gatePolicy": {
       "path": "input:gate-policy-saga.json",
@@ -11,7 +11,7 @@
     },
     "measurementPacket": {
       "path": "input:archsig-measurement-packet.json",
-      "sha256": "07769ec2aaab40e621fc74ac184c6c0725bc115fbf77288abdc1a28a27cecc9b"
+      "sha256": "0fef5690c8d8c6824b0d219a8848432e0d85fa1c873a03395153f40982e21173"
     }
   },
   "nonConclusions": [
@@ -283,11 +283,11 @@
           "verdict": "measured_zero"
         },
         {
-          "action": "pass_with_boundary",
+          "action": "pass",
           "boundaryOverrideApplied": false,
-          "mappingKey": "not_computed",
-          "rowRef": "structuralVerdict/ag-saga-grounded/law-money-settlement-convention/grounded-skeleton-not-aligned",
-          "verdict": "not_computed"
+          "mappingKey": "measured_zero",
+          "rowRef": "structuralVerdict/ag-saga-grounded/law-money-settlement-convention/holds-criterion-raw-value-zero",
+          "verdict": "measured_zero"
         },
         {
           "action": "pass",
@@ -359,12 +359,12 @@
         },
         {
           "action": "pass_with_boundary",
-          "baseRowRef": "structuralVerdict/ag-saga-grounded/law-money-settlement-convention/grounded-skeleton-not-aligned",
+          "baseRowRef": "structuralVerdict/ag-saga-grounded/law-money-settlement-convention/holds-criterion-raw-value-zero",
           "boundaryOverrideApplied": false,
           "deltaRefs": [],
-          "headRowRef": "structuralVerdict/ag-saga-grounded/law-money-settlement-convention/grounded-skeleton-not-aligned",
+          "headRowRef": "structuralVerdict/ag-saga-grounded/law-money-settlement-convention/holds-criterion-raw-value-zero",
           "mappingKey": "preexisting",
-          "rowKey": "ag.saga-grounded|law:money-settlement-convention|{\"coefficient\":\"F2\",\"coverRef\":\"cover:money-settlement-loop\",\"kind\":\"profile-relative-structural-verdict\",\"scopeSize\":{\"contexts\":0,\"edges\":0,\"triangles\":0}}",
+          "rowKey": "ag.saga-grounded|law:money-settlement-convention|{\"coefficient\":\"F2\",\"coverRef\":\"cover:money-settlement-loop\",\"kind\":\"profile-relative-structural-verdict\",\"scopeSize\":{\"contexts\":1,\"edges\":0,\"triangles\":0}}",
           "transition": "preexisting_recorded_row"
         }
       ],

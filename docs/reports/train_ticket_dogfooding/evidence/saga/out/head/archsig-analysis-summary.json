@@ -1,12 +1,12 @@
 {
   "assumptionSummary": {
-    "assumedCount": 10,
-    "checkedCount": 4,
+    "assumedCount": 11,
+    "checkedCount": 5,
     "violatedCount": 0
   },
   "componentFingerprints": {
     "lawPolicy": "sha256:e5e91078749ec26ae327ecd1cf41d6d2f7dd035c81a1c66bc0e0476b10e6900c",
-    "lawSurface": "sha256:e223d3a0bbca6dab524e83b675e8733a05622f4d7f83ff3f11865d862213797f",
+    "lawSurface": "sha256:15b78313f591c424245c79fdc32ab6aee799d3c53197b331d569556ac3670471",
     "measurementProfile": "sha256:c073650c8bcd053d48d78bb1a29811b80917ffbdec81e1789dd15d68908b0753"
   },
   "conclusion": "MEASURED_NONGLUING_RESIDUAL_CLASS",
@@ -21,7 +21,7 @@
     },
     "lawSurface": {
       "path": "input:law-surface-saga.json",
-      "sha256": "e223d3a0bbca6dab524e83b675e8733a05622f4d7f83ff3f11865d862213797f"
+      "sha256": "15b78313f591c424245c79fdc32ab6aee799d3c53197b331d569556ac3670471"
     },
     "measurementProfile": {
       "path": "input:measurement-profile-saga.json",
@@ -39,7 +39,7 @@
     },
     "repairPlan": {
       "path": "input:repair-plan-head.json",
-      "sha256": "fb25fd345468984ec9f3276d1d9c48ed5c9e963ace860eb20b47b2a789916202"
+      "sha256": "c02b93b0559ce8df40d1cec2aec5919abac778e5821089a514621378ee9eb6a9"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
@@ -59,18 +59,18 @@
   ],
   "profileRef": "profile:train-ticket-money-saga@2",
   "readThisFirst": {
-    "boundary": "Profile-relative. 10 assumptions declared. 1 non-terminal rows.",
+    "boundary": "Profile-relative. 11 assumptions declared. 0 non-terminal rows.",
     "conclusion": "MEASURED_NONGLUING_RESIDUAL_CLASS",
     "heading": "Read this first",
     "nextAction": "Open archsig-insight-brief.md or the viewer Insight Queue.",
     "whatItMeans": "Local rules are not enough to explain the selected cover; ArchSig measured a cross-context glue mismatch.",
     "whereToLookFirst": "See archsig-insight-report.json#/insightCards/0/evidence"
   },
-  "runId": "run:12bbf63146e4",
+  "runId": "run:07154e725bfd",
   "schema": "archsig-analysis-summary/v0.5.4",
   "structuralVerdictSummary": {
     "measuredNonzeroCount": 4,
-    "nonTerminalCount": 1,
+    "nonTerminalCount": 0,
     "rowCount": 5,
     "unmeasuredCount": 0
   },

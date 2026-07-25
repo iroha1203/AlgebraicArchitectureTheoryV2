@@ -1246,7 +1246,7 @@ pub fn build_foundation_measurement_packet_v1(
             assumptions.extend(measurement.assumptions);
         } else if evaluator == "ag.saga-descent" {
             if let Some(plan) = repair_plan {
-                let measurement = evaluate_saga_descent_v1(archmap, plan);
+                let measurement = evaluate_saga_descent_v1(archmap, plan, Some(law_surface));
                 computed_invariants.extend(measurement.computed_invariants);
                 assumptions.extend(measurement.assumptions);
                 structural_verdict.extend(measurement.structural_verdict);
@@ -13566,6 +13566,8 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
                         "targetClassComputed",
                         "contractChecked",
                         "measuredClassAgreement",
+                        "equationGeneratorsResolved",
+                        "unresolvedEquationGenerators",
                     ],
                     &mut examples,
                 );

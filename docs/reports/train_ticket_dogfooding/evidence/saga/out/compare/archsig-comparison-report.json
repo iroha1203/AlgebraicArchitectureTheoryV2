@@ -38,19 +38,18 @@
     "base": {
       "conclusionCode": null,
       "mode": "measurement",
-      "runId": "run:12bbf63146e4",
+      "runId": "run:07154e725bfd",
       "structuralVerdictCounts": {
         "measured_nonzero": 4,
-        "not_computed": 1
+        "measured_zero": 1
       }
     },
     "head": {
       "conclusionCode": null,
       "mode": "measurement",
-      "runId": "run:3087fb5359d3",
+      "runId": "run:cf07b535e9bc",
       "structuralVerdictCounts": {
-        "measured_zero": 4,
-        "not_computed": 1
+        "measured_zero": 5
       }
     }
   },
@@ -62,7 +61,7 @@
       },
       "componentFingerprints": {
         "lawPolicy": "sha256:e5e91078749ec26ae327ecd1cf41d6d2f7dd035c81a1c66bc0e0476b10e6900c",
-        "lawSurface": "sha256:e223d3a0bbca6dab524e83b675e8733a05622f4d7f83ff3f11865d862213797f",
+        "lawSurface": "sha256:15b78313f591c424245c79fdc32ab6aee799d3c53197b331d569556ac3670471",
         "measurementProfile": "sha256:c073650c8bcd053d48d78bb1a29811b80917ffbdec81e1789dd15d68908b0753"
       },
       "lawPolicy": {
@@ -71,11 +70,11 @@
       },
       "measurementPacket": {
         "path": "archsig-measurement-packet.json",
-        "sha256": "b0cc39974a3da134151666a472b658e0e08b197254cac1d669df42767778ef7f"
+        "sha256": "a81f92b8d54650727789f8cbe26c916e697194130295c9bc81b73a63185e5e20"
       },
       "normalizedArchmap": {
         "path": "normalized-archmap.json",
-        "sha256": "8c3ae3e3218243c033f19f63e075e355cfafd76b0b5ea7912a8941bfd52e4dd9"
+        "sha256": "dcf6b78efe2ec09c32455ecb1aaf746e76991d23298938ae5eda596198d6924f"
       },
       "path": "head/archsig-run-manifest.json",
       "profileFingerprint": {
@@ -84,9 +83,9 @@
       },
       "repairPlan": {
         "path": "input:repair-plan-head.json",
-        "sha256": "fb25fd345468984ec9f3276d1d9c48ed5c9e963ace860eb20b47b2a789916202"
+        "sha256": "c02b93b0559ce8df40d1cec2aec5919abac778e5821089a514621378ee9eb6a9"
       },
-      "runId": "run:12bbf63146e4",
+      "runId": "run:07154e725bfd",
       "siteCoverDigest": {
         "basis": "normalized contexts + covers + derived finite cover nerve",
         "sha256": "c05d1537d9126e4f0e2b59bf37ef90826adf8a22ff49e89625ff0e8f2d243868",
@@ -101,7 +100,7 @@
       },
       "componentFingerprints": {
         "lawPolicy": "sha256:e5e91078749ec26ae327ecd1cf41d6d2f7dd035c81a1c66bc0e0476b10e6900c",
-        "lawSurface": "sha256:e223d3a0bbca6dab524e83b675e8733a05622f4d7f83ff3f11865d862213797f",
+        "lawSurface": "sha256:15b78313f591c424245c79fdc32ab6aee799d3c53197b331d569556ac3670471",
         "measurementProfile": "sha256:c073650c8bcd053d48d78bb1a29811b80917ffbdec81e1789dd15d68908b0753"
       },
       "lawPolicy": {
@@ -110,11 +109,11 @@
       },
       "measurementPacket": {
         "path": "archsig-measurement-packet.json",
-        "sha256": "07769ec2aaab40e621fc74ac184c6c0725bc115fbf77288abdc1a28a27cecc9b"
+        "sha256": "0fef5690c8d8c6824b0d219a8848432e0d85fa1c873a03395153f40982e21173"
       },
       "normalizedArchmap": {
         "path": "normalized-archmap.json",
-        "sha256": "b2c1303669bafeab206abb474ac29c7808980d55e39b512598f9c74e29d6f723"
+        "sha256": "1eb642c75994d5bd3da701cbd94801ef0fa787461b1ae536fce8bed1beb1dcb8"
       },
       "path": "repaired/archsig-run-manifest.json",
       "profileFingerprint": {
@@ -123,9 +122,9 @@
       },
       "repairPlan": {
         "path": "input:repair-plan-repaired.json",
-        "sha256": "aea97aaaab6ab94bc0b86063010d7ace09ce3e6fd6aefc9b2b91228d32ddf317"
+        "sha256": "a0f2e4e57b5fa919e24abc3540a4b7ff18116468bd2867077a9efc136a450343"
       },
-      "runId": "run:3087fb5359d3",
+      "runId": "run:cf07b535e9bc",
       "siteCoverDigest": {
         "basis": "normalized contexts + covers + derived finite cover nerve",
         "sha256": "c05d1537d9126e4f0e2b59bf37ef90826adf8a22ff49e89625ff0e8f2d243868",
@@ -188,14 +187,14 @@
       "transition": "measured_obstruction_no_longer_recorded"
     },
     {
-      "baseRowRef": "structuralVerdict/ag-saga-grounded/law-money-settlement-convention/grounded-skeleton-not-aligned",
-      "baseVerdict": "not_computed",
+      "baseRowRef": "structuralVerdict/ag-saga-grounded/law-money-settlement-convention/holds-criterion-raw-value-zero",
+      "baseVerdict": "measured_zero",
       "deltaRefs": [],
       "discipline": "Comparison is a record-level juxtaposition of two ArchSig runs. It does not claim causal repair, semantic equivalence, or preserved obstruction identity; a class-zero reading is available only under a checked coarse-to-fine refinement contract.",
-      "headRowRef": "structuralVerdict/ag-saga-grounded/law-money-settlement-convention/grounded-skeleton-not-aligned",
-      "headVerdict": "not_computed",
+      "headRowRef": "structuralVerdict/ag-saga-grounded/law-money-settlement-convention/holds-criterion-raw-value-zero",
+      "headVerdict": "measured_zero",
       "introducedByChangeCategory": "preexisting",
-      "rowKey": "ag.saga-grounded|law:money-settlement-convention|{\"coefficient\":\"F2\",\"coverRef\":\"cover:money-settlement-loop\",\"kind\":\"profile-relative-structural-verdict\",\"scopeSize\":{\"contexts\":0,\"edges\":0,\"triangles\":0}}",
+      "rowKey": "ag.saga-grounded|law:money-settlement-convention|{\"coefficient\":\"F2\",\"coverRef\":\"cover:money-settlement-loop\",\"kind\":\"profile-relative-structural-verdict\",\"scopeSize\":{\"contexts\":1,\"edges\":0,\"triangles\":0}}",
       "transition": "preexisting_recorded_row"
     }
   ]

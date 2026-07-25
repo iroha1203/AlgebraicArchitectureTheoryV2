@@ -81,15 +81,17 @@ EDGE_VAR_BY_OVERLAP = {
     for oid, left, right in OVERLAPS
 }
 # cech law の witness edge に入らない overlap は、同じ法曲面の skeleton simplex へ束縛する。
-EDGE_SIMPLEX = {
-    oid: "edge:money-" + oid.removeprefix("overlap:")
+# cech law の witness edge に入らない overlap と triple には、この法曲面が宣言する
+# 対応物が無い。束縛を騙らず、供給側で採番したことが分かる名前にする。
+UNBOUND_CELL = {
+    oid: "unbound-equation:" + oid
     for oid, var in EDGE_VAR_BY_OVERLAP.items()
     if var is None
 }
+UNBOUND_CELL["triple:consign-fee-region"] = "unbound-equation:triple:consign-fee-region"
 CHART_SIMPLEX = {
     c: f"vertex:money-{c.removeprefix('ctx:').removesuffix('-surface')}" for c in CHARTS
 }
-TRIPLE_SIMPLEX = {"triple:consign-fee-region": "triple:money-consign-fee-region"}
 # 0.8 x price は 4p/5 なので、丸め剰余は 1/5 セント単位に住む。全セントしか記帳できない
 # チャートはこれを表現できない。したがって semantic 側の局所関係は 5 sigma = 0、
 # equation 側の obstruction ideal は (5) であり、Q_E(V) = Z/(5) となる。
@@ -316,22 +318,6 @@ surface = {
             "requiredLawId": "law:money-settlement-convention",
         }
         for c in CHARTS
-    ]
-    + [
-        {
-            "simplex": simplex,
-            "supportAtomRef": f"atom:semantic:{left.removeprefix('ctx:')}:cech-section-money-amount",
-            "requiredLawId": "law:money-settlement-convention",
-        }
-        for oid, simplex in EDGE_SIMPLEX.items()
-        for left in [next(l for i, l, _ in OVERLAPS if i == oid)]
-    ]
-    + [
-        {
-            "simplex": TRIPLE_SIMPLEX["triple:consign-fee-region"],
-            "supportAtomRef": "atom:semantic:consign-surface:cech-section-money-amount",
-            "requiredLawId": "law:money-settlement-convention",
-        }
     ],
     "defectSources": [
         {
@@ -463,10 +449,12 @@ def presentation(drifted):
         for overlap_id in overlap_refs
     )
     def equation_generator(cell_ref):
-        if cell_ref in TRIPLE_SIMPLEX:
-            return TRIPLE_SIMPLEX[cell_ref]
+        # chart は法曲面 skeleton の vertex simplex、witness edge を持つ overlap は
+        # その witness variable。どちらも法曲面が元から宣言しているものを使う。
+        if cell_ref in UNBOUND_CELL:
+            return UNBOUND_CELL[cell_ref]
         if cell_ref in EDGE_VAR_BY_OVERLAP:
-            return EDGE_VAR_BY_OVERLAP[cell_ref] or EDGE_SIMPLEX[cell_ref]
+            return EDGE_VAR_BY_OVERLAP[cell_ref]
         source_chart = next(c for c, r in REPAIR_CHART_CONTEXTS.items() if r == cell_ref)
         return CHART_SIMPLEX[source_chart]
 

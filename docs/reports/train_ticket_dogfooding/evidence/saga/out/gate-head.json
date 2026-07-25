@@ -8,7 +8,7 @@
     },
     "measurementPacket": {
       "path": "input:archsig-measurement-packet.json",
-      "sha256": "b0cc39974a3da134151666a472b658e0e08b197254cac1d669df42767778ef7f"
+      "sha256": "a81f92b8d54650727789f8cbe26c916e697194130295c9bc81b73a63185e5e20"
     }
   },
   "nonConclusions": [
@@ -280,11 +280,11 @@
           "verdict": "measured_nonzero"
         },
         {
-          "action": "pass_with_boundary",
+          "action": "pass",
           "boundaryOverrideApplied": false,
-          "mappingKey": "not_computed",
-          "rowRef": "structuralVerdict/ag-saga-grounded/law-money-settlement-convention/grounded-skeleton-not-aligned",
-          "verdict": "not_computed"
+          "mappingKey": "measured_zero",
+          "rowRef": "structuralVerdict/ag-saga-grounded/law-money-settlement-convention/holds-criterion-raw-value-zero",
+          "verdict": "measured_zero"
         },
         {
           "action": "block",
