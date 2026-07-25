@@ -60,7 +60,7 @@ Implementation notes(`lean_quality_standard.md` §2.5 申告):
 `displayedSource` の定義形(`Chart := IntersectionIndex 𝒰 × U.Atom`、
 `chart q := q.1.ctx`、`LocalInput := PUnit`)は、`realization_chiE_eq_interpret`
 が `rfl` で成立するように選んである(interpret の値式と `chiE` の値式が字面
-一致する chart 添字)。III.定義11.3 本文との差は3点あり、いずれも申告する:
+一致する chart 添字)。III.定義11.3 本文との差は4点あり、いずれも申告する:
 (i) 本文は添字集合を有限に取るが、Lean 側 `DisplayedEquationSource`(#3733)は
 有限性 field を持たず(既存設計)、本構成の `Chart` は一般に無限。
 (ii) 本文の cover-indexed 形は `D := I`(cover chart 添字)を指定し「別の
