@@ -7,6 +7,7 @@ import Formal.AG.SemanticRepair.Saga.EquationLift
 import Formal.AG.SemanticRepair.Saga.RepairTorsor
 import Formal.AG.SemanticRepair.Saga.Exactness
 import Formal.AG.SemanticRepair.Saga.EquationRealization
+import Formal.AG.SemanticRepair.Saga.EquationProduction
 import Formal.AG.SemanticRepair.Saga.KappaComparison
 import Formal.AG.SemanticRepair.Saga.TrueSheafDescent
 import Formal.AG.SemanticRepair.Saga.CircleWitness
@@ -20,6 +21,22 @@ Lemma 2.2 and Definition 2.3 `H¹`, semantic repair presentation and `M_sem`
 (§3, Proposition 3.3, Definition 3.4), and the Lemma 2.1A comparison with the
 Part IV ordered-tuple model, including the connection to
 `Cohomology.CoverRelativeCechComplex`.
+
+Issue #3734 adds the equation-system production route
+(`Saga.EquationProduction`): the Proposition 6.1A restriction-compatibility of
+the selected assignment is discharged by proof for support-Atom factored
+selections, the produced `χ^E` value is definitionally the Part III
+Theorem 11.4 generated interpretation of the displayed defect (with the
+restriction face traced through `restrict_defect` /
+`obstructionQuotientRestrict_mk`), the
+Definition 5.3 typical-example route is named over the generated `Q_E`
+(`LiftFiberData.equationLiftSystem`, an alias of the C2 engine, exercised by
+the degenerate generated self-lift fiber `equationSelfLiftFiber`), and
+`SagaEquationPacket.ofProduction` fixes the Theorem 1.1 bundle assembly
+surface (no concrete packet instance goes through it yet — see its claim
+boundary).  `P_E` and its local lift atlas stay selected, per the §1
+Theorem 1.1 input 6 and the Definition 5.3 closing classification, as do the
+remaining selected inputs.
 
 C7 (#3768) adds the 例10.2/付録B.9 independently generated circle comparison
 witness (`Saga.CircleWitness`): a monomorphic 4-cycle cover on which the

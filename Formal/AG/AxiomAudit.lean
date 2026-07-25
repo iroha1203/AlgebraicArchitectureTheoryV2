@@ -11518,6 +11518,140 @@ def sagaCircleWitnessPhiEqPhiFamily :=
 def sagaCircleWitnessNonzeroClassTransfer :=
   @SemanticRepair.Saga.CircleWitness.circle_nonzero_class_transfer
 
+/-! ## Part X SAGA equation-system production route (Issue #3734) -/
+
+/-- Kernel-audit alias for the support-Atom factored selected assignment. -/
+noncomputable def sagaProductionRealization :=
+  @SemanticRepair.Saga.SupportAtomEquationSelection.realization
+
+/-- Kernel-audit alias for the produced χ^E value formula. -/
+def sagaProductionChiEApply :=
+  @SemanticRepair.Saga.SupportAtomEquationSelection.realization_chiE_apply
+
+/-- Kernel-audit alias for the displayed source read by the produced realization. -/
+noncomputable def sagaProductionDisplayedSource :=
+  @SemanticRepair.Saga.SupportAtomEquationSelection.displayedSource
+
+/-- Kernel-audit alias for the χ^E = generated-interpretation identity. -/
+def sagaProductionChiEEqInterpret :=
+  @SemanticRepair.Saga.SupportAtomEquationSelection.realization_chiE_eq_interpret
+
+/-- Kernel-audit alias for the χ^E vanishing ↔ obstruction-ideal membership. -/
+def sagaProductionChiEZeroIffDefectMem :=
+  @SemanticRepair.Saga.SupportAtomEquationSelection.realization_chiE_eq_zero_iff_defect_mem_obstructionIdeal
+
+/-- Kernel-audit alias for the witness-ideal membership vanishing route. -/
+def sagaProductionChiEZeroOfWitnessMem :=
+  @SemanticRepair.Saga.SupportAtomEquationSelection.realization_chiE_eq_zero_of_defect_mem_witnessIdeal
+
+/-- Kernel-audit alias for the fulfillment vanishing route. -/
+def sagaProductionChiEZeroOfEquationHolds :=
+  @SemanticRepair.Saga.SupportAtomEquationSelection.realization_chiE_eq_zero_of_equationHolds
+
+/-- Kernel-audit alias for the Definition 5.3 lift system over the generated `Q_E`. -/
+noncomputable def sagaProductionEquationLiftSystem :=
+  @SemanticRepair.Saga.LiftFiberData.equationLiftSystem
+
+/-- Kernel-audit alias for the Theorem 1.1 production input bundle. -/
+noncomputable def sagaProductionPacket :=
+  @SemanticRepair.Saga.SagaEquationPacket.ofProduction
+
+/-- Kernel-audit alias for the circle-witness production selection. -/
+noncomputable def sagaProductionCircleSelection :=
+  @SemanticRepair.Saga.CircleWitness.productionSelection
+
+/-- Kernel-audit alias for the circle-witness production firing identity. -/
+def sagaProductionCircleRealizationEq :=
+  @SemanticRepair.Saga.CircleWitness.realization_eq_production
+
+/-- Kernel-audit alias for the produced lawIndex unfolding lemma. -/
+def sagaProductionRealizationLawIndex :=
+  @SemanticRepair.Saga.SupportAtomEquationSelection.realization_lawIndex
+
+/-- Kernel-audit alias for the produced archReading unfolding lemma. -/
+def sagaProductionRealizationArchReading :=
+  @SemanticRepair.Saga.SupportAtomEquationSelection.realization_archReading
+
+/-- Kernel-audit alias for the lift-system specialization identity. -/
+def sagaProductionEquationLiftSystemEq :=
+  @SemanticRepair.Saga.LiftFiberData.equationLiftSystem_eq_liftSystem
+
+/-- Kernel-audit alias for the produced-packet realization field lemma. -/
+def sagaProductionPacketRealization :=
+  @SemanticRepair.Saga.SagaEquationPacket.ofProduction_realization
+
+/-- Kernel-audit alias for the produced-packet lift-system field lemma. -/
+def sagaProductionPacketLiftSystem :=
+  @SemanticRepair.Saga.SagaEquationPacket.ofProduction_liftSystem
+
+/-- Kernel-audit alias for the displayed-defect restriction face. -/
+def sagaProductionDefectRestrict :=
+  @SemanticRepair.Saga.SupportAtomEquationSelection.displayedSource_defect_restrict
+
+/-- Kernel-audit alias for the χ^E restriction / defect-class identity. -/
+def sagaProductionChiERestrictEqDefectClass :=
+  @SemanticRepair.Saga.SupportAtomEquationSelection.realization_chiE_restrict_eq_defect_class
+
+/-- Kernel-audit alias for the vanishing site-wide presheaf. -/
+noncomputable def sagaProductionZeroSitePresheaf :=
+  @SemanticRepair.Saga.zeroSitePresheaf
+
+/-- Kernel-audit alias for the generated self-lift fiber over `Q_E`. -/
+noncomputable def sagaProductionSelfLiftFiber :=
+  @SemanticRepair.Saga.equationSelfLiftFiber
+
+/-- Kernel-audit alias for the zero local lift atlas of the self-lift fiber. -/
+noncomputable def sagaProductionSelfLiftAtlas :=
+  @SemanticRepair.Saga.equationSelfLiftAtlas
+
+/-- Kernel-audit alias for the vanishing generated residual of the self-lift atlas. -/
+def sagaProductionSelfLiftAtlasResidual :=
+  @SemanticRepair.Saga.equationSelfLiftAtlas_residual
+
+/-- Kernel-audit alias for the acyclic/cyclic finite-object distinction. -/
+def sagaProductionAcyclicObjectNeObject :=
+  @SemanticRepair.Saga.CircleWitness.acyclicObject_ne_object
+
+/-- Kernel-audit alias for the non-constant circle-witness selection. -/
+noncomputable def sagaProductionVariantSelection :=
+  @SemanticRepair.Saga.CircleWitness.variantSelection
+
+/-- Kernel-audit alias for the non-constancy of the variant selection. -/
+def sagaProductionVariantSelectionNeConstant :=
+  @SemanticRepair.Saga.CircleWitness.variantSelection_archReading_ne_constant
+
+/-- Kernel-audit alias for the two-Atom witness reading function. -/
+def sagaProductionWitnessAtom :=
+  @SemanticRepair.Saga.CircleWitness.witnessAtom
+
+/-- Kernel-audit alias for vocabulary membership of the witness Atoms. -/
+def sagaProductionWitnessAtomNeComponentC :=
+  @SemanticRepair.Saga.CircleWitness.witnessAtom_ne_componentC
+
+/-- Kernel-audit alias for the two-Atom witness semantic atom data. -/
+noncomputable def sagaProductionTwoAtomSemanticAtomData :=
+  @SemanticRepair.Saga.CircleWitness.twoAtomSemanticAtomData
+
+/-- Kernel-audit alias for the two-Atom witness presentation. -/
+noncomputable def sagaProductionTwoAtomPresentation :=
+  @SemanticRepair.Saga.CircleWitness.twoAtomPresentation
+
+/-- Kernel-audit alias for the produced realization on the two-Atom witness. -/
+noncomputable def sagaProductionVariantWitnessRealization :=
+  @SemanticRepair.Saga.CircleWitness.variantWitnessRealization
+
+/-- Kernel-audit alias for recognizedness of the circle chart contexts. -/
+def sagaProductionChartRecognized :=
+  @SemanticRepair.Saga.CircleWitness.chart_recognized
+
+/-- Kernel-audit alias for the realization-level non-constancy witness. -/
+def sagaProductionVariantWitnessArchReadingNe :=
+  @SemanticRepair.Saga.CircleWitness.variantWitnessRealization_archReading_ne
+
+/-- Kernel-audit alias for the unconditional chart-level firing corollary. -/
+def sagaProductionVariantWitnessArchReadingNeChart :=
+  @SemanticRepair.Saga.CircleWitness.variantWitnessRealization_archReading_ne_chart
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit
