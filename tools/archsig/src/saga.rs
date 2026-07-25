@@ -336,13 +336,16 @@ pub(crate) fn evaluate_saga_grounded_v1(
     let law_independent = json!({
         "note": "以下は law の充足を仮定せずに従う(定理8.2)。law 充足の証拠として読まない。",
         "conclusions": {
-            "groundedGlobalGluingPackage": {"status": "established", "theoremRef": "part10/7.3"},
-            "sheafConditionForSelectedCover": {"status": "established", "theoremRef": "part10/7.3"},
-            "descent": {"status": "established", "theoremRef": "part10/6.6", "note": "sheaf 条件 + cover membership から導出。独立 certificate は受け取らない"},
-            "uniqueGlobalSection": {"status": "established", "theoremRef": "part10/7.3"},
+            "groundedGlobalGluingPackage": {"status": "established", "theoremRef": "part10/8.2"},
+            "sheafConditionForSelectedCover": {"status": "established", "theoremRef": "part10/8.1"},
+            "descent": {"status": "established", "theoremRef": "part10/8.2", "note": "sheaf 条件 + cover membership から導出。独立 certificate は受け取らない"},
+            "uniqueGlobalSection": {"status": "established", "theoremRef": "part10/8.2"},
             "globalCoherentIffCoverRelativeH1Zero": {"status": "established", "theoremRef": "part10/8.2", "instanceReading": {"coverRelativeH1Zero": true}},
-            "boundedAdditiveH1ZeroIffCoverRelativeH1Zero": {"status": "established", "theoremRef": "part10/8.2"},
-            "higherObstructionsVanish": {"status": "established", "theoremRef": "part10/4.8", "note": "additive regime で自明に成立。外部仮定として供給されない(定理4.8 結論5)"}
+            "boundedAdditiveH1ZeroIffCoverRelativeH1Zero": {"status": "established", "theoremRef": "part10/8.2"}
+        },
+        "separatedStatements": {
+            "note": "原則 8.4 により、additive H¹ comparison から nonabelian torsor・higher coherence(2-cocycle / gerbe / H² 以後)・stack descent の結論は導かない。これらは独立の statement を要する",
+            "theoremRef": "part10/8.4"
         }
     });
     let invariant = json!({
@@ -376,7 +379,7 @@ pub(crate) fn evaluate_saga_grounded_v1(
         .is_some_and(|condition| condition.mode == "assumed")
     {
         assumptions.push(AgAssumptionLedgerEntryV1 {
-            theorem_ref: "part10/7.3".to_string(),
+            theorem_ref: "part10/8.3".to_string(),
             assumption: format!(
                 "selected quotient sheaf condition for {}",
                 execution_plan.surface_id

@@ -2006,7 +2006,7 @@ fn cli_analyze_saga_descent_complete_support_measures_boundary_membership() {
         summary["translationRule"]["conclusionCode"],
         ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX
     );
-    assert_eq!(summary["translationRule"]["theoremRef"], "part10/3.5");
+    assert_eq!(summary["translationRule"]["theoremRef"], "part10/4.5");
     assert_eq!(
         summary["translationRule"]["emitsLawSatisfiedWithoutLawCheck"],
         false
@@ -4095,7 +4095,7 @@ fn cli_analyze_contract_fixture_locks_are_byte_deterministic() {
     let positive_summary = read_json(&saga_positive_a.join("archsig-analysis-summary.json"));
     assert_eq!(
         positive_summary["translationRule"]["theoremRef"],
-        "part10/3.5"
+        "part10/4.5"
     );
     assert_eq!(
         positive_summary["translationRule"]["concreteSupportRefs"],
@@ -12022,7 +12022,17 @@ fn cli_analyze_v2_saga_grounded_emits_split_packet_and_detector() {
             .as_object()
             .unwrap()
             .len(),
-        7
+        6
+    );
+    // 原則8.4 は additive H¹ comparison から higher coherence の結論を導くことを禁じている。
+    // 「higher obstruction は消えた」を established として出さない。
+    assert!(
+        grounded["lawIndependent"]["conclusions"]["higherObstructionsVanish"].is_null(),
+        "higher coherence conclusions are separated, not established"
+    );
+    assert_eq!(
+        grounded["lawIndependent"]["separatedStatements"]["theoremRef"],
+        "part10/8.4"
     );
     assert_eq!(
         grounded["generatedQuotient"]["interpretation"]["class"],

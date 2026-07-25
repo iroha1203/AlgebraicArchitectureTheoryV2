@@ -101,7 +101,7 @@
         "assumption": "selected quotient sheaf condition for law-surface:train-ticket-money-saga-v054",
         "checkedBy": null,
         "status": "assumed",
-        "theoremRef": "part10/7.3"
+        "theoremRef": "part10/8.3"
       },
       {
         "assumedBy": "repair-plan author",
@@ -25054,8 +25054,8 @@
         "analyticReadingRefs": [],
         "assumptionRefs": [
           "part10/3.1",
-          "part10/7.3",
           "part10/8.1",
+          "part10/8.3",
           "part3/11.3",
           "part4/11.1",
           "part4/12.3",
@@ -25230,8 +25230,8 @@
         ],
         "assumptionRefs": [
           "part10/3.1",
-          "part10/7.3",
           "part10/8.1",
+          "part10/8.3",
           "part3/11.3",
           "part4/11.1",
           "part4/12.3",
@@ -25437,8 +25437,8 @@
       "analyticReadingRefs": [],
       "assumptionRefs": [
         "part10/3.1",
-        "part10/7.3",
         "part10/8.1",
+        "part10/8.3",
         "part3/11.3",
         "part4/11.1",
         "part4/12.3",

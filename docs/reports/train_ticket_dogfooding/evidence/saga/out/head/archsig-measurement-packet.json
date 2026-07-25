@@ -137,12 +137,12 @@
     {
       "assumedBy": "law-surface:law-surface:train-ticket-money-saga-v054",
       "assumption": "selected quotient sheaf condition for law-surface:train-ticket-money-saga-v054",
-      "assumptionId": "assumption:part10-7-3:selected-quotient-sheaf-condition-for-law-surface-train-ticket-money-saga-v054",
+      "assumptionId": "assumption:part10-8-3:selected-quotient-sheaf-condition-for-law-surface-train-ticket-money-saga-v054",
       "scopeRefs": [
-        "part10/7.3"
+        "part10/8.3"
       ],
       "status": "assumed",
-      "theoremRef": "part10/7.3"
+      "theoremRef": "part10/8.3"
     },
     {
       "assumedBy": "repair-plan author",
@@ -1226,7 +1226,7 @@
           "descent": {
             "note": "sheaf 条件 + cover membership から導出。独立 certificate は受け取らない",
             "status": "established",
-            "theoremRef": "part10/6.6"
+            "theoremRef": "part10/8.2"
           },
           "globalCoherentIffCoverRelativeH1Zero": {
             "instanceReading": {
@@ -1237,23 +1237,22 @@
           },
           "groundedGlobalGluingPackage": {
             "status": "established",
-            "theoremRef": "part10/7.3"
-          },
-          "higherObstructionsVanish": {
-            "note": "additive regime で自明に成立。外部仮定として供給されない(定理4.8 結論5)",
-            "status": "established",
-            "theoremRef": "part10/4.8"
+            "theoremRef": "part10/8.2"
           },
           "sheafConditionForSelectedCover": {
             "status": "established",
-            "theoremRef": "part10/7.3"
+            "theoremRef": "part10/8.1"
           },
           "uniqueGlobalSection": {
             "status": "established",
-            "theoremRef": "part10/7.3"
+            "theoremRef": "part10/8.2"
           }
         },
-        "note": "以下は law の充足を仮定せずに従う(定理8.2)。law 充足の証拠として読まない。"
+        "note": "以下は law の充足を仮定せずに従う(定理8.2)。law 充足の証拠として読まない。",
+        "separatedStatements": {
+          "note": "原則 8.4 により、additive H¹ comparison から nonabelian torsor・higher coherence(2-cocycle / gerbe / H² 以後)・stack descent の結論は導かない。これらは独立の statement を要する",
+          "theoremRef": "part10/8.4"
+        }
       },
       "representation": {
         "degreeZeroLawContribution": {
@@ -1446,7 +1445,7 @@
             "descent": {
               "note": "sheaf 条件 + cover membership から導出。独立 certificate は受け取らない",
               "status": "established",
-              "theoremRef": "part10/6.6"
+              "theoremRef": "part10/8.2"
             },
             "globalCoherentIffCoverRelativeH1Zero": {
               "instanceReading": {
@@ -1457,23 +1456,22 @@
             },
             "groundedGlobalGluingPackage": {
               "status": "established",
-              "theoremRef": "part10/7.3"
-            },
-            "higherObstructionsVanish": {
-              "note": "additive regime で自明に成立。外部仮定として供給されない(定理4.8 結論5)",
-              "status": "established",
-              "theoremRef": "part10/4.8"
+              "theoremRef": "part10/8.2"
             },
             "sheafConditionForSelectedCover": {
               "status": "established",
-              "theoremRef": "part10/7.3"
+              "theoremRef": "part10/8.1"
             },
             "uniqueGlobalSection": {
               "status": "established",
-              "theoremRef": "part10/7.3"
+              "theoremRef": "part10/8.2"
             }
           },
-          "note": "以下は law の充足を仮定せずに従う(定理8.2)。law 充足の証拠として読まない。"
+          "note": "以下は law の充足を仮定せずに従う(定理8.2)。law 充足の証拠として読まない。",
+          "separatedStatements": {
+            "note": "原則 8.4 により、additive H¹ comparison から nonabelian torsor・higher coherence(2-cocycle / gerbe / H² 以後)・stack descent の結論は導かない。これらは独立の statement を要する",
+            "theoremRef": "part10/8.4"
+          }
         },
         "schema": "archsig-saga-conclusions/v0.5.4",
         "theoremRef": "part10/7.5"
@@ -4005,7 +4003,7 @@
     {
       "dependsOnAssumptions": [
         "assumption:part3-11-3:displayedRequiredLawsHold-is-operationalized-only-by-the-declared-holdsCriterion-raw-value-check",
-        "assumption:part10-7-3:selected-quotient-sheaf-condition-for-law-surface-train-ticket-money-saga-v054"
+        "assumption:part10-8-3:selected-quotient-sheaf-condition-for-law-surface-train-ticket-money-saga-v054"
       ],
       "evaluator": "ag.saga-grounded",
       "evidence": {

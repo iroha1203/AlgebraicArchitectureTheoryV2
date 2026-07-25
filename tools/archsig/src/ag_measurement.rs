@@ -214,7 +214,7 @@ fn summary_translation_rule(conclusion: &str) -> SummaryTranslationRule {
         },
         ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX => SummaryTranslationRule {
             conclusion_code: ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
-            theorem_ref: Some("part10/3.5"),
+            theorem_ref: Some("part10/4.5"),
             principal_text: "The selected SAGA residual is measured inside B1 and the selected residual component is covered and faithful.",
             boundary: "Supply Stage 2 law surface and comparison artifacts before claiming global semantic repair.",
             generated_discipline: "generated complete-support boundary-membership detection",
@@ -15036,7 +15036,6 @@ fn validate_saga_grounded_packet_shape(
                 "uniqueGlobalSection",
                 "globalCoherentIffCoverRelativeH1Zero",
                 "boundedAdditiveH1ZeroIffCoverRelativeH1Zero",
-                "higherObstructionsVanish",
             ]
             .as_slice(),
         ),

@@ -3,7 +3,7 @@
   "inputDigests": {
     "comparisonReport": {
       "path": "input:archsig-comparison-report.json",
-      "sha256": "ed5debeaf0416c74416738933c4d8fb96d2988effb45a986538e8d1582d01e66"
+      "sha256": "c2bd2ae7cccc4d337e2ee085958a34798bbbc6c444659b4cbec1a37131c8bf71"
     },
     "gatePolicy": {
       "path": "input:gate-policy-saga.json",
@@ -11,7 +11,7 @@
     },
     "measurementPacket": {
       "path": "input:archsig-measurement-packet.json",
-      "sha256": "f481e260c506d0516f2b057058664f56a602997ec301e204427be6f5c2f67d49"
+      "sha256": "565b0c44092dc25d0d842fb003ca26c0cf806361df39b7157bfccf54ad9850fa"
     }
   },
   "nonConclusions": [
