@@ -88,7 +88,7 @@ architectural fact を言葉にする
 
 - **AAT** は、software architecture を Atom と Law から立ち上がる代数幾何として構成する。
 - **Lean** は、AAT と SFT の定義、仮定、定理、比較写像、有限実例を形式的に検査する。
-- **ArchMap / ArchSig** は、観測と法・方程式の有限 instance を計測可能な artifact にする。
+- **ArchMap / ArchSig** は、選択された観測と法・方程式の有限 instance を計測可能な artifact にする。
 - **SFT** は、AAT geometry の上に変更、分岐、合流、力、安定性、観測、制御の力学を構成する。
 - **AI、review、CI、運用 feedback** は、開発系に作用する力と制御として SFT の研究対象になる。
 

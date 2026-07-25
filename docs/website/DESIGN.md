@@ -164,8 +164,8 @@ Definition
 | `/archsig/reference/` | `tools/archsig/docs/commands.md`, `archsig --help`(全 subcommand), `main.rs`(exit codes) | command / schema / exit code reference。 |
 | `/archsig/archview/` | `tools/archview/README.md` | ArchView 解説+live demo。 |
 
-ArchSig reference pages では次の境界を可視に保つ:
-archsig は Lean 証明器ではない / tool output は Lean theorem ではない /
+ArchSig reference pages では、観測と法・方程式の二系統から計算する計測層という
+肯定形 identity を先に置き、結論の近くで次の誤読だけを塞ぐ:
 measured zero と unmeasured は異なる / policy pass は architecture lawfulness を意味しない。
 
 ## 本文成熟度

@@ -34,10 +34,10 @@
   reachable future をどう変えるかを扱う。AAT が構造の幾何を扱い、SFT が実践と進化の場を扱う。
 - SFT の強みは、個別の artifact や workflow を、software evolution の reachable future を変える
   場の操作として統一的に読める点にある。
-- ArchMap は、選ばれた Atom vocabulary の中で観測した atom を記録する有限 artifact である。
-  観測に由来しない判定・証明・証書は記録しない。
-- LawPolicy / MeasurementProfile は、law reading、cover、witness、measurement regime を固定する
-  contract である。
+- ArchMap は、選ばれた Atom vocabulary の中で観測した atom を、その根拠(source ref)とともに
+  記録する有限 artifact である。観測に由来しない判定・証明・証書は記録しない。
+- LawPolicy は、law reading、cover、witness、measurement regime を固定する contract である。
+  law-equation-surface / MeasurementProfile は LawPolicy 側の法・方程式 artifact として扱う。
 - ArchSig は ArchMap と LawPolicy から bounded diagnostic / analysis packet を計算する tooling である。
 - ArchSig の強みは、AAT の強力な幾何的理論を tooling 上で活かし、ArchMap と LawPolicy から
   lawful locus、obstruction、coverage、witness を読む高度な architecture analysis を計算できる点にある。
@@ -70,12 +70,24 @@
 - 入力トライアド(hard rule): ArchMap は観測した atom を書く場、
   LawPolicy(law-equation-surface / MeasurementProfile を含む法・方程式側 artifact)は
   ルールと制約を書く場であり、ArchSig はこの二系統の入力から計算して結果を出力する。
-  第三の入力カテゴリは存在しない。観測にも法・方程式にも帰属しない authored データ
-  (証明、証書、presentation、結論相当の supplied 判定)を、新しい入力、CLI flag、
-  schema field、供給 slot として受け取らない。台帳・ledger への収載、validator の存在、
-  結論の相対化表記は、いずれも帰属の代替にならない。二系統から計算できない語彙は、
-  供給で解禁せず沈黙として扱う。導入済みの供給 slot はこの規律に対する既存の負債として
-  各台帳側で管理し、負債の存在を新規追加の先例として引用しない。
+  第三の入力カテゴリは存在しない(供給 contract を第三の入力として読み替えた過去の
+  誤読を塞ぐための明示である)。
+- 帰属は名前ではなく内容で決める。法・方程式側に帰属するのは、特定の ArchMap instance に
+  依存しない規則・制約・係数・被覆・評価計画だけである。特定 instance の値(section、
+  cocycle、class の零性、写像の存在)を運ぶ供給は、名称にかかわらず法側ではない。
+  観測側に帰属する行は source への解決可能な ref を持つ。RepairPlan のうち作者が提案する
+  修理そのもの(修理後状態と repair cochain の対象)は提案された観測として観測側に
+  帰属するが、ArchSig が計算すべき結論を先渡しする slot はどちらにも帰属しない。
+- どちらにも帰属しない authored データ(証明、証書、presentation、結論相当の
+  supplied 判定)を、新しい入力、CLI flag、schema field、供給 slot として受け取らない。
+  既存 field への同種データの追加・意味拡張・解禁語彙の追加も同じ禁止に含む。
+  台帳への収載、validator の存在、結論の相対化表記、assumption ledger 記録、
+  未供給時に沈黙する設計、fixture / golden lock、schema 登録や version bump は、
+  いずれも帰属の代替にならない(列挙は例示であり、帰属それ自体を示さない装置は
+  すべて同様)。二系統から計算できない語彙は、供給で解禁せず沈黙として扱う。
+- 二系統に帰属しない導入済みの入力面は、台帳収載の有無にかかわらずこの規律に対する
+  既存の負債である。返済は供給 slot 台帳(入口は docs/tool/README.md)で管理し、
+  負債の存在も返済作業も新規追加の先例として引用しない。
 - ウィトゲンシュタイン的責務範囲を守る。選ばれた vocabulary と policy から
   語れることだけを語る。語れない領域は、失敗や残タスクではなく沈黙として扱う。
 - AAT / Lean theorem の説明・レビューでは、定理が語る選択済み vocabulary、仮定、対象だけを
@@ -83,7 +95,8 @@
   「この定理は実コードベース全体を対象としません」のような外側の否定 claim を付け足さない。
   外側は補足 caveat ではなく沈黙で扱う。
 - Tooling の identity も同じ規律で書く。ArchSig の定義は
-  「ArchMap + LawPolicy + MeasurementProfile から bounded verdict を計算する計測層」という
+  「観測(ArchMap)と法・方程式(LawPolicy / law-equation-surface / MeasurementProfile)の
+  二系統から bounded verdict を計算する計測層」という
   肯定形であり、結論の相対性はこの入力契約に由来する帰結として述べる。
   「theorem prover ではない」「global truth ではない」のような否定形免責を
   identity 文へ習慣的に併記しない。否定を書くのは、読者の実在する誤推論を塞ぐ場合だけ、

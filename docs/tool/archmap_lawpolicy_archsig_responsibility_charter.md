@@ -100,8 +100,7 @@ LawPolicy が書かないもの: witness predicate の手書き、signature axis
 
 ## ArchSig は何か —— 計算層
 
-ArchSig は、`ArchMap + LawPolicy + supplied law-equation-surface + MeasurementProfile` の入力検証が通った `analyze` run で `archsig-measurement-packet/v0.5.4` を作る AG measurement layer である。
-**Lean 証明器ではない。** 神の視点も持たない。
+ArchSig は、観測(ArchMap)と法・方程式(LawPolicy / law-equation-surface / MeasurementProfile)の二系統の入力検証が通った `analyze` run で `archsig-measurement-packet/v0.5.4` を作る AG measurement layer である。
 
 判定はすべてここで生まれる。cech defect の比較、minimal forbidden support の enumeration、obstruction ideal、
 H^n / Tor / rank / representative の計算、そして `structuralVerdict`。
@@ -125,7 +124,7 @@ source extraction の健全性、semantic の正しさ、global lawfulness、未
 `compare` は analyze run の比較記録を作り、`gate` は必須の measurement packet と任意の比較記録に対して gate policy を適用し、CI判断へ写像する。
 `refactor-morphism/v0.5.4` は既存 verdict の declared transport compatibility を供給し、
 `refinement-comparison/v0.5.4` は coarse-to-fine の class-zero preservation data を供給する。
-いずれも conclusion 相当の値を supplied block に入れず、validator 通過時だけ対応する analytic reading を解放する。
+これらの供給 slot は AGENTS.md「責務範囲」の入力トライアドに対する既存の負債であり、返済は供給 slot 台帳の負債告知が管理する。validator 通過は帰属の代替にならない。
 RepairPlan の explicit H¹ comparison は、次数0/1/2の有限基底写像表、次数2の `zeroImage`、
 および変数対応を供給し、ArchSig が差保存・零保存・微分可換性を再計算する。適合条件の宣言booleanは入力として採用しない。
 

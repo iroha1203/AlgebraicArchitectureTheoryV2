@@ -1,7 +1,7 @@
 # 共有反証チェックリスト(refutation checklist)
 
 全レビュー SKILL が読む横断 reference。scope資格、帰属、機械scan、
-findingゼロ資格を扱う。Lean固有のstatement・空虚化・移植監査は
+ArchSig入力トライアド、findingゼロ資格、identity記述を扱う。Lean固有のstatement・空虚化・移植監査は
 `lean-refutation-checklist.md`、実行契約は`review-protocol.md`を正本とする。
 各SKILLは項目を複製せず参照する。
 
@@ -74,22 +74,30 @@ hard fail(レーン裁量なし)。差分と無関係な既存ヒット(main 由
 理由を明記した場合のみ**。件数を先に固定しない。被覆根拠のないfindingゼロ
 報告は、レビュー未実施として扱う(統合判定で棄却)。
 
-## 8. ArchSig 入力トライアド(新規入力・slot の資格条件)
+## 8. ArchSig 入力トライアド(入力・slot の資格条件)
 
 AGENTS.md「責務範囲」の入力トライアド(ArchMap=観測 / LawPolicy=法・方程式 /
-ArchSig=計算)を hard gate として適用する。ArchSig への新しい入力、CLI flag、
+ArchSig=計算)を hard gate として適用する。ArchSig への入力、CLI flag、
 schema field、供給 slot を導入・拡張する差分では:
 
 1. その入力が観測(ArchMap 側)か法・方程式(LawPolicy / law-equation-surface /
-   MeasurementProfile 側)のどちらに帰属するかが一文で書かれているか。
+   MeasurementProfile 側)のどちらに帰属するかが一文で書かれ、その帰属が
+   §5「名前だけ repackage」に従い名前ではなく中身で成立しているか。
+   法側の資格は、特定の ArchMap instance に依存しない規則・制約・係数・被覆・
+   評価計画であること。instance の値(section、cocycle、class の零性、写像の存在)を
+   運ぶ供給は、名称にかかわらず法側ではない。
 2. どちらにも帰属しない authored データ(証明、証書、presentation、
-   結論相当の supplied 判定)を受け取っていないか。台帳・ledger への収載、
-   validator の存在、結論の相対化表記は、いずれも帰属の代替にならない。
-3. その入力が解禁する結論語彙は二系統から計算できるか。計算できない語彙を
-   供給で解禁していないか(語れないものは沈黙)。
+   結論相当の supplied 判定)を受け取っていないか。台帳収載、validator の存在、
+   相対化表記、assumption ledger 記録、未供給時の沈黙設計、fixture / golden lock、
+   schema 登録は、いずれも帰属の代替にならない(列挙は例示)。
+3. その入力が解禁する結論語彙を、ArchSig が実際に観測と法から計算しているか。
+   供給値をそのまま結論へ写していないか。供給 artifact 自身を「二系統の一方」と
+   数えて本条件を満たしたとする論法は認めない。
 
-いずれかを満たさない入力追加は major finding とする。既存負債(台帳収載の
-供給 slot 群)を新規追加の先例として引用した正当化も finding とする。
+いずれかを満たさない入力追加・拡張は major finding とする。既存負債(台帳収載の
+供給 slot 群)を先例として引用した正当化も finding とする。既存 slot の削除・
+導出化・沈黙化、および供給面を純増させない法側への書き直しは違反ではないが、
+返済を名乗る差分でも新 field・新 slot・新しい解禁語彙の追加は本ゲートの対象とする。
 
 ## 9. identity 記述の因果順(肯定形の正本)
 

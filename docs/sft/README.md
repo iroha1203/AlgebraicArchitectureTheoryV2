@@ -81,7 +81,7 @@ AAT:
   AAT site、sheaf、law algebra、lawful locus へ持ち上げる代数幾何。
 
 ArchSig:
-  ArchMap(観測)+ LawPolicy(法・方程式)から選ばれた architecture evidence を測定し、
+  ArchMap(観測) + LawPolicy(法・方程式)から選ばれた architecture evidence を測定し、
   bounded diagnostic artifact に写す tooling 層。
 
 SFT:
