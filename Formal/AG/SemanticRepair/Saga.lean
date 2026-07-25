@@ -11,6 +11,7 @@ import Formal.AG.SemanticRepair.Saga.EquationProduction
 import Formal.AG.SemanticRepair.Saga.KappaComparison
 import Formal.AG.SemanticRepair.Saga.TrueSheafDescent
 import Formal.AG.SemanticRepair.Saga.CircleWitness
+import Formal.AG.SemanticRepair.Saga.DescentWitness
 
 /-!
 Part X SAGA route (Issue #3757 tree, C1 #3762).
@@ -45,4 +46,16 @@ presentation-generated `M_sem ≅ F₂` and the obstruction-quotient-generated
 classes nonzero; the comparison `Φ` runs between carriers of distinct type
 formers, so it is not a same-carrier identity (a meta-level carrier
 condition — the #3718 negative condition).
+
+C7.5 (#3803) adds the zero-class descent witness (`Saga.DescentWitness`),
+the dual of C7 on the same 4-cycle context lattice: coverage requirements
+under which the 4-chart cover is admissible give a constructed
+`TopologicalMonomorphicCover` and a classified topology, the untwisted state
+systems satisfy the sheaf condition, the residual cochains generated from the
+`(1,0,0,0)` atlases are not identically zero while both classes vanish, and
+Theorem 8.2 / Corollary 8.3 / Theorem 1.1 fire on an actual global repair.
+The packet is assembled through `SagaEquationPacket.ofProduction` (its first
+concrete instance) with the nonzero-base-reading `LiftFiberData`
+(`B_E = F₂`, `b ≡ 1`), so the Definition 5.3 typical-example route fires
+nondegenerately.
 -/
