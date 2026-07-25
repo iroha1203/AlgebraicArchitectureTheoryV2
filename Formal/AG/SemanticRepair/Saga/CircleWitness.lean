@@ -41,7 +41,13 @@ Claim boundary: this witness fires the comparison core (Theorems 6.3, 7.2,
 7.4-7.6 through `sagaCentralTheorem_comparison` and the named instance
 statements below); it does not construct a `TopologicalMonomorphicCover`
 (`circleRequirements` is trivial) and does not fire Theorem 8.2 / Corollary
-8.3 true sheaf descent, which is C5's separate surface.
+8.3 true sheaf descent, which is C5's separate surface.  The reason is now a
+named fact (C7.5, #3803): under the trivial requirements the empty family is
+admissible, the bottom sieve covers every object, and no two-valued presheaf
+can satisfy the Definition 8.1 sheaf condition
+(`DescentWitness.circle_constant_not_sheafCondition`, with the general
+section collapse in `DescentWitness.circle_sheafCondition_subsingleton`);
+the C7.5 zero-class witness therefore selects its own coverage requirements.
 -/
 
 noncomputable section
