@@ -252,6 +252,32 @@ theorem kappaH1To_zero_iff (h : IncH1 Q1) :
     rw [Cohomology.AdditiveThreeTermComplex.H1IsZero, hh]
     exact kappaH1To_zero ψ hψ
 
+include hψ in
+/-- X.定理7.4(#3811): `κ_*` は加法的である。 -/
+theorem kappaH1To_add (h₁ h₂ : IncH1 Q1) :
+    kappaH1To ψ hψ (h₁ + h₂) = kappaH1To ψ hψ h₁ + kappaH1To ψ hψ h₂ :=
+  Quotient.inductionOn₂ h₁ h₂ fun x y =>
+    congrArg (Quotient.mk (incComplex Q2).H1CoboundarySetoid)
+      (Subtype.ext (map_add (kappa1 ψ) x.1 y.1))
+
+include hψ in
+/--
+X.定理7.4(#3811): `κ_* : Ȟ¹(𝒰, Q1) ≃+ Ȟ¹(𝒰, Q2)`(可換群同型)。
+underlying 写像は既存の `kappaH1To`、逆写像は `kappaH1From`、加法性は
+`kappaH1To_add` — すべて cochain 水準の `ψ` から生成され、supplied ではない。
+-/
+def kappaH1AddEquiv : IncH1 Q1 ≃+ IncH1 Q2 where
+  toFun := kappaH1To ψ hψ
+  invFun := kappaH1From ψ hψ
+  left_inv := kappaH1_from_to ψ hψ
+  right_inv := kappaH1_to_from ψ hψ
+  map_add' := kappaH1To_add ψ hψ
+
+@[simp]
+theorem kappaH1AddEquiv_apply (h : IncH1 Q1) :
+    kappaH1AddEquiv ψ hψ h = kappaH1To ψ hψ h :=
+  rfl
+
 end Kappa
 
 /-! ## X.定理7.4–7.6: packet 面の SAGA 比較 -/
@@ -308,6 +334,38 @@ theorem kappaStar_rightInverse
     (h : IncH1 (equationCoefficient S packet.cover)) :
     packet.kappaStar hcomplete hgen (packet.kappaStarInv hcomplete hgen h) = h :=
   kappaH1_to_from _ _ h
+
+/--
+X.定理7.4(#3811): `κ_* : H¹_sem(𝒰) ≃+ Ȟ¹(𝒰, Q_E)`(可換群同型)。
+本文・要旨が主張する「可換群同型」の statement 面。underlying 写像は既存の
+`kappaStar` に一致し(`kappaStarAddEquiv_coe`)、群構造は
+`AdditiveThreeTermComplex.instH1AddCommGroup` の生成 instance、加法性は
+`kappaH1To_add` から得る。supplied な同型・逆写像・加法性はない。
+-/
+noncomputable def kappaStarAddEquiv :
+    packet.presentation.SemanticH1 packet.cover ≃+
+      IncH1 (equationCoefficient S packet.cover) :=
+  kappaH1AddEquiv (packet.phiFamily hcomplete hgen)
+    (fun f q => packet.phiFamily_natural hcomplete hgen f q)
+
+/-- X.定理7.4(#3811): `kappaStarAddEquiv` の underlying 写像は `kappaStar`。 -/
+theorem kappaStarAddEquiv_coe :
+    ⇑(packet.kappaStarAddEquiv hcomplete hgen) =
+      packet.kappaStar hcomplete hgen :=
+  rfl
+
+/-- X.定理7.4(#3811): `kappaStarAddEquiv` の逆写像は `kappaStarInv`。 -/
+theorem kappaStarAddEquiv_symm_coe :
+    ⇑(packet.kappaStarAddEquiv hcomplete hgen).symm =
+      packet.kappaStarInv hcomplete hgen :=
+  rfl
+
+/-- X.定理7.4(#3811): `κ_*` の加法性(packet 面の named 事実)。 -/
+theorem kappaStar_add (h₁ h₂ : packet.presentation.SemanticH1 packet.cover) :
+    packet.kappaStar hcomplete hgen (h₁ + h₂) =
+      packet.kappaStar hcomplete hgen h₁ +
+        packet.kappaStar hcomplete hgen h₂ :=
+  map_add (packet.kappaStarAddEquiv hcomplete hgen) h₁ h₂
 
 /-- X.定理7.5 の gauge `h`: 独立 atlas 間の chart ごとの torsor 差(生成)。 -/
 def betaGauge : Cochain0 (equationCoefficient S packet.cover) :=

@@ -11658,6 +11658,66 @@ def sagaKappaH1ToZeroIff :=
 noncomputable def sagaKappaStar :=
   @SemanticRepair.Saga.SagaEquationPacket.kappaStar
 
+/-- Kernel-audit alias for the packet-level κ_* inverse. -/
+noncomputable def sagaKappaStarInv :=
+  @SemanticRepair.Saga.SagaEquationPacket.kappaStarInv
+
+/-- Kernel-audit alias for the packet-level κ_* left-inverse law. -/
+def sagaKappaStarLeftInverse :=
+  @SemanticRepair.Saga.SagaEquationPacket.kappaStar_leftInverse
+
+/-- Kernel-audit alias for the packet-level κ_* right-inverse law. -/
+def sagaKappaStarRightInverse :=
+  @SemanticRepair.Saga.SagaEquationPacket.kappaStar_rightInverse
+
+/-- Kernel-audit alias for the Corollary 6.7 degreewise equivalence family. -/
+noncomputable def sagaPhiFamily :=
+  @SemanticRepair.Saga.SagaEquationPacket.phiFamily
+
+/-- Kernel-audit alias for the Theorem 7.5 generated gauge. -/
+noncomputable def sagaBetaGauge :=
+  @SemanticRepair.Saga.SagaEquationPacket.betaGauge
+
+/-- Kernel-audit alias for the (#3811) degree-one cocycle subgroup. -/
+noncomputable def sagaH1CocycleAddSubgroup :=
+  @Cohomology.AdditiveThreeTermComplex.H1CocycleAddSubgroup
+
+/-- Kernel-audit alias for the (#3811) H¹ additive commutative group instance. -/
+noncomputable def sagaH1AddCommGroup :=
+  @Cohomology.AdditiveThreeTermComplex.instH1AddCommGroup
+
+/-- Kernel-audit alias for the (#3811) H¹ zero class = group identity. -/
+def sagaH1ZeroClassEqZero :=
+  @Cohomology.AdditiveThreeTermComplex.H1ZeroClass_eq_zero
+
+/-- Kernel-audit alias for the (#3811) generic H¹ additive transport. -/
+noncomputable def sagaKappaH1AddEquiv :=
+  @SemanticRepair.Saga.kappaH1AddEquiv
+
+/-- Kernel-audit alias for the (#3811) κ_* additivity law. -/
+def sagaKappaH1ToAdd :=
+  @SemanticRepair.Saga.kappaH1To_add
+
+/-- Kernel-audit alias for the (#3811) packet-level κ_* additive isomorphism. -/
+noncomputable def sagaKappaStarAddEquiv :=
+  @SemanticRepair.Saga.SagaEquationPacket.kappaStarAddEquiv
+
+/-- Kernel-audit alias for the (#3811) κ_* additive-isomorphism coincidence. -/
+def sagaKappaStarAddEquivCoe :=
+  @SemanticRepair.Saga.SagaEquationPacket.kappaStarAddEquiv_coe
+
+/-- Kernel-audit alias for the (#3811) packet-level κ_* additivity. -/
+def sagaKappaStarAdd :=
+  @SemanticRepair.Saga.SagaEquationPacket.kappaStar_add
+
+/-- Kernel-audit alias for the (#3811) semantic H¹ zero class = identity. -/
+def sagaSemanticH1ZeroClassEqZero :=
+  @SemanticRepair.Saga.SemanticRepairPresentation.semanticH1_zeroClass_eq_zero
+
+/-- Kernel-audit alias for the (#3811) cover-relative H¹ zero class = identity. -/
+def sagaIncH1ZeroClassEqZero :=
+  @SemanticRepair.Saga.incH1_zeroClass_eq_zero
+
 /-- Kernel-audit alias for the Theorem 7.5 cochain-level residual formula. -/
 def sagaResidualCorrespondenceCochain :=
   @SemanticRepair.Saga.SagaEquationPacket.residual_correspondence_cochain

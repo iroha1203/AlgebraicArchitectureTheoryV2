@@ -240,6 +240,20 @@ def semanticComplex (𝒰 : MonomorphicOrderedCover S) :
 abbrev SemanticH1 (𝒰 : MonomorphicOrderedCover S) : Type (max u v) :=
   (P.semanticComplex 𝒰).H1
 
+/--
+X.定義3.4(#3811): `H¹_sem(𝒰)` の零類は生成群構造
+(`AdditiveThreeTermComplex.instH1AddCommGroup`)の単位元に一致する。
+-/
+@[simp]
+theorem semanticH1_zeroClass_eq_zero (𝒰 : MonomorphicOrderedCover S) :
+    (P.semanticComplex 𝒰).H1ZeroClass = (0 : P.SemanticH1 𝒰) :=
+  rfl
+
+/-- X.定義3.4(#3811): 零類述語は群単位元との等式である。 -/
+theorem semanticH1_isZero_iff_eq_zero (𝒰 : MonomorphicOrderedCover S)
+    (h : P.SemanticH1 𝒰) : (P.semanticComplex 𝒰).H1IsZero h ↔ h = 0 :=
+  Iff.rfl
+
 end SemanticRepairPresentation
 
 end Saga
