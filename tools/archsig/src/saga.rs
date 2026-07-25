@@ -33,11 +33,187 @@ pub(crate) struct SagaGroundedMeasurementV1 {
     pub assumptions: Vec<AgAssumptionLedgerEntryV1>,
 }
 
+/// 観測(選択 cover の cech sectionValue)と法曲面(witness variable の edge 束縛)から
+/// 導出した residual。overlap ごとの support は、その edge の観測 mismatch が非零のとき
+/// 共有導出変数の単元集合、零のとき空集合になる。
+pub(crate) const DERIVED_RESIDUAL_VARIABLE: &str = "cech:section-mismatch";
+
+#[derive(Debug, Clone)]
+pub(crate) struct DerivedResidualV1 {
+    pub supports: BTreeMap<String, Vec<String>>,
+    pub edges: Vec<Value>,
+    pub law_surface_ref: String,
+    pub cover_ref: String,
+}
+
+fn selected_cover_context_ids(
+    normalized: &NormalizedArchMapV2,
+    profile: &MeasurementProfileV1,
+) -> Vec<String> {
+    normalized
+        .covers
+        .iter()
+        .find(|cover| {
+            cover.normalized_cover_id == profile.cover_ref
+                || cover.source_cover_id == profile.cover_ref
+        })
+        .map(|cover| cover.context_ids.clone())
+        .unwrap_or_default()
+}
+
+/// 法曲面の全 law を走査し、cech edge 束縛つき witness variable の
+/// sorted context pair -> variable 対応を作る。同じ edge に別名の witness を
+/// 宣言する法曲面は fail-closed に拒否する。
+fn cech_edge_witness_bindings(
+    law_surface: &LawEquationSurfaceV1,
+) -> Result<BTreeMap<[String; 2], BTreeSet<String>>, String> {
+    let mut bindings: BTreeMap<[String; 2], BTreeSet<String>> = BTreeMap::new();
+    for law in &law_surface.laws {
+        for witness in &law.witness_variables {
+            if witness.binding.axis.as_deref() != Some("cech") {
+                continue;
+            }
+            let Some(edge) = witness.binding.edge.as_ref() else {
+                continue;
+            };
+            if edge.len() != 2 {
+                return Err(format!(
+                    "law {} cech witness {} edge binding must contain two context refs",
+                    law.law_id, witness.variable
+                ));
+            }
+            let mut pair = [edge[0].clone(), edge[1].clone()];
+            pair.sort();
+            bindings.entry(pair).or_default().insert(witness.variable.clone());
+        }
+    }
+    Ok(bindings)
+}
+
+fn observed_section_values(
+    normalized: &NormalizedArchMapV2,
+    context_id: &str,
+) -> BTreeSet<String> {
+    normalized
+        .atoms
+        .iter()
+        .filter(|atom| {
+            atom.axis == "cech" && atom.predicate == "sectionValue" && atom.subject == context_id
+        })
+        .filter_map(|atom| atom.object.as_deref())
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .map(str::to_string)
+        .collect()
+}
+
+fn section_support_atom_refs(normalized: &NormalizedArchMapV2, context_id: &str) -> Vec<String> {
+    normalized
+        .atoms
+        .iter()
+        .filter(|atom| {
+            atom.axis == "cech" && atom.predicate == "sectionValue" && atom.subject == context_id
+        })
+        .map(|atom| atom.normalized_atom_id.clone())
+        .collect()
+}
+
+pub(crate) fn derive_residual(
+    normalized: &NormalizedArchMapV2,
+    profile: &MeasurementProfileV1,
+    plan: &RepairPlanDocumentV1,
+    law_surface: &LawEquationSurfaceV1,
+) -> Result<DerivedResidualV1, String> {
+    if profile.coefficient != "F2" {
+        return Err(format!(
+            "selected profile coefficient {} is outside the F2 saga-descent vocabulary",
+            profile.coefficient
+        ));
+    }
+    let selected = selected_cover_context_ids(normalized, profile);
+    if selected.is_empty() {
+        return Err(format!(
+            "selected cover {} does not resolve to a normalized cover",
+            profile.cover_ref
+        ));
+    }
+    let selected_set = selected.iter().map(String::as_str).collect::<BTreeSet<_>>();
+    for chart in &plan.complex.charts {
+        if !selected_set.contains(chart.as_str()) {
+            return Err(format!(
+                "repair-plan chart {chart} is outside the selected cover {}",
+                profile.cover_ref
+            ));
+        }
+    }
+    let bindings = cech_edge_witness_bindings(law_surface)?;
+    let mut supports = BTreeMap::new();
+    let mut edges = Vec::new();
+    for overlap in &plan.complex.overlaps {
+        let restriction_observed = normalized.contexts.iter().any(|context| {
+            (context.normalized_context_id == overlap.left
+                && context.restricts_to.contains(&overlap.right))
+                || (context.normalized_context_id == overlap.right
+                    && context.restricts_to.contains(&overlap.left))
+        });
+        if !restriction_observed {
+            return Err(format!(
+                "overlap {} has no observed restriction between {} and {}",
+                overlap.id, overlap.left, overlap.right
+            ));
+        }
+        let left_sections = observed_section_values(normalized, &overlap.left);
+        let right_sections = observed_section_values(normalized, &overlap.right);
+        if left_sections.is_empty() || right_sections.is_empty() {
+            return Err(format!(
+                "overlap {} has an unobserved cech section on {} or {}",
+                overlap.id, overlap.left, overlap.right
+            ));
+        }
+        let value = u8::from(left_sections != right_sections);
+        let mut pair = [overlap.left.clone(), overlap.right.clone()];
+        pair.sort();
+        let witness = bindings.get(&pair).cloned().unwrap_or_default();
+        if value == 1 && witness.is_empty() {
+            return Err(format!(
+                "measured section mismatch on overlap {} has no law-surface witness variable bound to edge {} / {}",
+                overlap.id, pair[0], pair[1]
+            ));
+        }
+        // Čech の係数はスカラーであり、mismatch した全 edge は同じ selected section family の
+        // 1-cochain を成す。共有変数がその結合を表し、edge ごとの witness variable は
+        // provenance として derivation record に残る。
+        let support = if value == 1 {
+            vec![DERIVED_RESIDUAL_VARIABLE.to_string()]
+        } else {
+            Vec::new()
+        };
+        let mut support_atom_refs = section_support_atom_refs(normalized, &overlap.left);
+        support_atom_refs.extend(section_support_atom_refs(normalized, &overlap.right));
+        edges.push(json!({
+            "overlapRef": overlap.id,
+            "leftContextRef": overlap.left,
+            "rightContextRef": overlap.right,
+            "value": value,
+            "witnessVariables": witness,
+            "supportAtomRefs": support_atom_refs
+        }));
+        supports.insert(overlap.id.clone(), support);
+    }
+    Ok(DerivedResidualV1 {
+        supports,
+        edges,
+        law_surface_ref: law_surface.id.clone(),
+        cover_ref: profile.cover_ref.clone(),
+    })
+}
+
 pub(crate) fn evaluate_saga_grounded_v1(
     archmap: &ArchMapDocumentV2,
     normalized: &NormalizedArchMapV2,
     profile: &MeasurementProfileV1,
     plan: &RepairPlanDocumentV1,
+    law_surface: &LawEquationSurfaceV1,
     execution_plan: &LawExecutionPlanV1,
 ) -> SagaGroundedMeasurementV1 {
     let grounding = plan.grounding.as_ref().and_then(Value::as_object);
@@ -93,15 +269,9 @@ pub(crate) fn evaluate_saga_grounded_v1(
                             .any(|atom| atom.normalized_atom_id == simplex.support_atom_ref)
                 })
         });
-    let coefficient_is_f2 = profile.coefficient == "F2"
-        && (plan.coefficient.is_f2_additive()
-            || plan.coefficient.supplied().is_some_and(|coefficient| {
-                coefficient.kind == "f2-additive"
-                    && coefficient.characteristic == 2
-                    && coefficient.additive
-                    && coefficient.delta_one_after_delta_zero
-                    && coefficient.zero_maps_to_zero
-            }));
+    let coefficient_is_f2 = profile.coefficient == "F2";
+    let class_supply_ok = derive_residual(normalized, profile, plan, law_surface)
+        .is_ok_and(|derived| class_supply_is_checked(archmap, plan, &derived.supports).is_ok());
     let defect_support_size = source
         .chart_defects
         .iter()
@@ -121,7 +291,7 @@ pub(crate) fn evaluate_saga_grounded_v1(
         || plan.faithfulness.mode != "supplied"
         || plan.faithfulness.supplied.is_none()
         || plan.comparison.is_none()
-        || class_supply_is_checked(archmap, plan).is_err()
+        || !class_supply_ok
         || grounded_variable_aliases.is_none()
         || grounded_forbidden_supports.is_none()
         || grounded_witness_variables.is_empty()
@@ -146,7 +316,7 @@ pub(crate) fn evaluate_saga_grounded_v1(
             } else if plan.faithfulness.mode != "supplied"
                 || plan.faithfulness.supplied.is_none()
                 || plan.comparison.is_none()
-                || class_supply_is_checked(archmap, plan).is_err()
+                || !class_supply_ok
             {
                 "grounded_layer_d_not_supplied"
             } else if source.cover_ref != profile.cover_ref {
@@ -461,13 +631,58 @@ fn grounded_not_computed(
     }
 }
 
+fn descent_not_computed(plan: &RepairPlanDocumentV1, fault: String) -> SagaDescentMeasurementV1 {
+    let verdict_row = |law: &str| AgStructuralVerdictV1 {
+        evaluator: "ag.saga-descent".to_string(),
+        law: law.to_string(),
+        verdict: "not_computed".to_string(),
+        verdict_data: AgVerdictDataV1 {
+            in_scope: true,
+            zero: false,
+            non_zero: false,
+            method_status: "residual_derivation_fault".to_string(),
+            cert_ref: Some("computedInvariants/saga-descent:residual-derivation".to_string()),
+        },
+        depends_on_assumptions: Vec::new(),
+        reason: Some(fault.clone()),
+    };
+    SagaDescentMeasurementV1 {
+        structural_verdict: vec![
+            verdict_row("saga.residual-boundary-membership"),
+            verdict_row("saga.global-coherence"),
+        ],
+        computed_invariants: vec![json!({
+            "invariantId": "saga-descent:residual-derivation",
+            "evaluator": "ag.saga-descent",
+            "residualDerivation": {
+                "derived": false,
+                "fault": fault,
+                "edges": [],
+                "planRef": plan.id
+            }
+        })],
+        assumptions: Vec::new(),
+    }
+}
+
 pub(crate) fn evaluate_saga_descent_v1(
     archmap: &ArchMapDocumentV2,
+    normalized: &NormalizedArchMapV2,
+    profile: &MeasurementProfileV1,
     plan: &RepairPlanDocumentV1,
     law_surface: Option<&LawEquationSurfaceV1>,
 ) -> SagaDescentMeasurementV1 {
-    let boundary = solve_boundary_membership(plan);
-    let closure = closure_diagnostics(archmap, plan);
+    let derived = match law_surface {
+        None => Err(
+            "saga-descent requires a supplied law surface for residual derivation".to_string(),
+        ),
+        Some(surface) => derive_residual(normalized, profile, plan, surface),
+    };
+    let derived = match derived {
+        Err(fault) => return descent_not_computed(plan, fault),
+        Ok(derived) => derived,
+    };
+    let boundary = solve_boundary_membership(plan, &derived.supports);
     let enumeration_assumption = AgAssumptionLedgerEntryV1 {
         theorem_ref: "part10/3.1".to_string(),
         assumption: format!(
@@ -557,9 +772,9 @@ pub(crate) fn evaluate_saga_descent_v1(
         },
         depends_on_assumptions: evaluator_assumption_ids.clone(),
         reason: Some(if boundary.in_b1 {
-            "supplied residual lies in B1 for the selected RepairPlan complex".to_string()
+            "derived residual lies in B1 for the selected RepairPlan complex".to_string()
         } else {
-            "supplied residual is not in B1 for the selected RepairPlan complex".to_string()
+            "derived residual is not in B1 for the selected RepairPlan complex".to_string()
         }),
     });
 
@@ -580,10 +795,7 @@ pub(crate) fn evaluate_saga_descent_v1(
                 "complete-support declaration or Stage 2 faithfulness data is required before global coherence can be stated".to_string(),
             ),
         });
-    } else if boundary.in_b1
-        && closure.residual_component_covered
-        && closure.residual_component_faithful
-    {
+    } else if boundary.in_b1 {
         structural_verdict.push(AgStructuralVerdictV1 {
             evaluator: "ag.saga-descent".to_string(),
             law: "saga.global-coherence".to_string(),
@@ -592,30 +804,13 @@ pub(crate) fn evaluate_saga_descent_v1(
                 in_scope: true,
                 zero: true,
                 non_zero: false,
-                method_status: "complete_support_global_coherent".to_string(),
-                cert_ref: Some("computedInvariants/saga-descent:closure-diagnostics".to_string()),
+                method_status: "derived_residual_global_coherent".to_string(),
+                cert_ref: Some("computedInvariants/saga-descent:residual-derivation".to_string()),
             },
             depends_on_assumptions: evaluator_assumption_ids.clone(),
             reason: Some(
-                "residual is a B1 boundary inside the complete-support RepairPlan regime"
+                "derived residual is a B1 boundary for the selected RepairPlan complex"
                     .to_string(),
-            ),
-        });
-    } else if boundary.in_b1 && !closure.residual_component_covered {
-        structural_verdict.push(AgStructuralVerdictV1 {
-            evaluator: "ag.saga-descent".to_string(),
-            law: "saga.global-coherence".to_string(),
-            verdict: "unmeasured".to_string(),
-            verdict_data: AgVerdictDataV1 {
-                in_scope: true,
-                zero: false,
-                non_zero: false,
-                method_status: "residual_not_covered".to_string(),
-                cert_ref: Some("computedInvariants/saga-descent:closure-diagnostics".to_string()),
-            },
-            depends_on_assumptions: evaluator_assumption_ids.clone(),
-            reason: Some(
-                "residual is a B1 boundary, but semantic projection does not cover every residual component for the selected RepairPlan complex".to_string(),
             ),
         });
     } else {
@@ -627,20 +822,14 @@ pub(crate) fn evaluate_saga_descent_v1(
                 in_scope: true,
                 zero: false,
                 non_zero: true,
-                method_status: if boundary.in_b1 {
-                    "alias_not_faithful"
-                } else {
-                    "residual_not_in_b1"
-                }
-                .to_string(),
-                cert_ref: Some("computedInvariants/saga-descent:closure-diagnostics".to_string()),
+                method_status: "residual_not_in_b1".to_string(),
+                cert_ref: Some("computedInvariants/saga-descent:residual-derivation".to_string()),
             },
             depends_on_assumptions: evaluator_assumption_ids.clone(),
-            reason: Some(if boundary.in_b1 {
-                "residual is covered, but semantic projection is not faithful for the selected RepairPlan complex".to_string()
-            } else {
-                "global coherence is blocked because the supplied residual is not a B1 boundary".to_string()
-            }),
+            reason: Some(
+                "global coherence is blocked because the derived residual is not a B1 boundary"
+                    .to_string(),
+            ),
         });
     }
 
@@ -655,21 +844,22 @@ pub(crate) fn evaluate_saga_descent_v1(
             }
         }),
         json!({
-            "invariantId": "saga-descent:closure-diagnostics",
+            "invariantId": "saga-descent:residual-derivation",
             "evaluator": "ag.saga-descent",
-            "closureDiagnostics": {
-                "residualComponentCovered": closure.residual_component_covered,
-                "residualComponentFaithful": closure.residual_component_faithful,
-                "aliasWitnesses": closure.alias_witnesses
+            "residualDerivation": {
+                "derived": true,
+                "fault": Value::Null,
+                "coverRef": derived.cover_ref,
+                "lawSurfaceRef": derived.law_surface_ref,
+                "edges": derived.edges
             },
             "faithfulnessBasis": {
                 "mode": plan.faithfulness.mode,
-                "basis": if plan.faithfulness.mode == "supplied" { "supplied-data" } else { "complete-support" },
-                "completeSupportPrimitiveCount": plan.primitives.iter().filter(|primitive| primitive.support.kind == "complete").count()
+                "basis": if plan.faithfulness.mode == "supplied" { "supplied-data" } else { "complete-support" }
             }
         }),
     ];
-    let class_supply = class_supply_is_checked(archmap, plan);
+    let class_supply = class_supply_is_checked(archmap, plan, &derived.supports);
     if let Err(reason) = class_supply.as_ref()
         && let Some(rejection) = class_supply_rejection_invariant(plan, reason)
     {
@@ -696,9 +886,9 @@ pub(crate) fn evaluate_saga_descent_v1(
             },
             depends_on_assumptions: class_assumption_ids.clone(),
             reason: Some(if class_nonzero {
-                format!("{ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS}: supplied Z1 representative is not in B1")
+                format!("{ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS}: derived Z1 representative is not in B1")
             } else {
-                "supplied Z1 representative is zero in Z1/B1".to_string()
+                "derived Z1 representative is zero in Z1/B1".to_string()
             }),
         });
         computed_invariants.push(json!({
@@ -736,7 +926,6 @@ pub(crate) fn evaluate_saga_descent_v1(
             "suppliedSlots": [
                 "complex.charts",
                 "complex.overlaps",
-                "coefficient",
                 "trueSheafCertificate",
                 "gluingData"
             ]
@@ -744,6 +933,7 @@ pub(crate) fn evaluate_saga_descent_v1(
     }
     computed_invariants.push(evaluate_saga_comparison_v1(
         plan,
+        &derived.supports,
         &structural_verdict,
         law_surface,
     ));
@@ -810,6 +1000,7 @@ fn unresolved_equation_generators(
 
 fn evaluate_saga_comparison_v1(
     plan: &RepairPlanDocumentV1,
+    supports: &BTreeMap<String, Vec<String>>,
     structural_verdict: &[AgStructuralVerdictV1],
     law_surface: Option<&LawEquationSurfaceV1>,
 ) -> Value {
@@ -856,7 +1047,7 @@ fn evaluate_saga_comparison_v1(
             comparison
                 .get("h1ComparisonData")
                 .and_then(Value::as_object)
-                .map(|h1| explicit_h1_comparison_checks(plan, &target_complex, h1))
+                .map(|h1| explicit_h1_comparison_checks(plan, supports, &target_complex, h1))
         })
     } else {
         None
@@ -866,7 +1057,7 @@ fn evaluate_saga_comparison_v1(
             comparison
                 .get("h1ComparisonData")
                 .and_then(Value::as_object)
-                .map(|h1| presentation_generated_h1_checks(plan, &target_complex, h1))
+                .map(|h1| presentation_generated_h1_checks(plan, supports, &target_complex, h1))
         })
     } else {
         None
@@ -1109,14 +1300,24 @@ fn comparison_target_class_nonzero(
     }
     let mut target_plan = plan.clone();
     target_plan.complex = target_complex;
-    for primitive in &mut target_plan.primitives {
-        primitive.support.variables = support_by_overlap
-            .get(primitive.overlap_ref.as_str())?
-            .iter()
-            .map(|variable| (*variable).to_string())
-            .collect();
-    }
-    Some(!solve_boundary_membership(&target_plan).in_b1)
+    let target_supports = target_plan
+        .complex
+        .overlaps
+        .iter()
+        .map(|overlap| {
+            let variables = support_by_overlap
+                .get(overlap.id.as_str())
+                .map(|variables| {
+                    variables
+                        .iter()
+                        .map(|variable| (*variable).to_string())
+                        .collect::<Vec<_>>()
+                })
+                .unwrap_or_default();
+            (overlap.id.clone(), variables)
+        })
+        .collect::<BTreeMap<_, _>>();
+    Some(!solve_boundary_membership(&target_plan, &target_supports).in_b1)
 }
 
 #[derive(Debug, Clone)]
@@ -1182,13 +1383,11 @@ impl SagaClassSupplyCertificate {
 fn class_supply_is_checked(
     archmap: &ArchMapDocumentV2,
     plan: &RepairPlanDocumentV1,
+    supports: &BTreeMap<String, Vec<String>>,
 ) -> Result<SagaClassSupplyCertificate, &'static str> {
-    let Some(cocycle) = component_cocycle_certificate(plan) else {
+    let Some(cocycle) = component_cocycle_certificate(plan, supports) else {
         return Err("component_cocycle_certificate_not_established");
     };
-    if !coefficient_is_f2_additive(plan) {
-        return Err("coefficient_is_not_f2_additive");
-    }
     let Some((true_sheaf_cover_ref, true_sheaf_member_chart_refs, true_sheaf_global_condition)) =
         component_true_sheaf_certificate(archmap, plan, &cocycle.component)
     else {
@@ -1331,19 +1530,9 @@ fn component_gluing_data(
     Some(section_refs)
 }
 
-fn coefficient_is_f2_additive(plan: &RepairPlanDocumentV1) -> bool {
-    plan.coefficient.is_f2_additive()
-        || plan.coefficient.supplied().is_some_and(|coefficient| {
-            coefficient.kind == "f2-additive"
-                && coefficient.characteristic == 2
-                && coefficient.additive
-                && coefficient.delta_one_after_delta_zero
-                && coefficient.zero_maps_to_zero
-        })
-}
-
 fn component_cocycle_certificate(
     plan: &RepairPlanDocumentV1,
+    supports: &BTreeMap<String, Vec<String>>,
 ) -> Option<SagaComponentCocycleCertificate> {
     if !plan.complex.enumeration_complete {
         return None;
@@ -1359,7 +1548,7 @@ fn component_cocycle_certificate(
     {
         return None;
     }
-    let component = residual_support_component(plan)?;
+    let component = residual_support_component(plan, supports)?;
     let component_overlap_refs = component
         .overlap_refs
         .iter()
@@ -1403,7 +1592,7 @@ fn component_cocycle_certificate(
         if triple.overlap_refs.len() != 3
             || refs.len() != 3
             || !refs.is_subset(&component_overlap_refs)
-            || !triple_cocycle_is_zero(plan, &triple.overlap_refs)
+            || !triple_cocycle_is_zero(supports, &triple.overlap_refs)
         {
             return None;
         }
@@ -1422,7 +1611,10 @@ fn component_cocycle_certificate(
     })
 }
 
-fn residual_support_component(plan: &RepairPlanDocumentV1) -> Option<RepairComplexComponent> {
+fn residual_support_component(
+    plan: &RepairPlanDocumentV1,
+    supports: &BTreeMap<String, Vec<String>>,
+) -> Option<RepairComplexComponent> {
     let components = repair_complex_components(plan)?;
     let mut component_by_overlap = BTreeMap::new();
     for (component_index, component) in components.iter().enumerate() {
@@ -1430,11 +1622,10 @@ fn residual_support_component(plan: &RepairPlanDocumentV1) -> Option<RepairCompl
             component_by_overlap.insert(overlap_ref.as_str(), component_index);
         }
     }
-    let mut residual_overlap_refs = plan
-        .primitives
+    let mut residual_overlap_refs = supports
         .iter()
-        .filter(|primitive| !primitive.support.variables.is_empty())
-        .map(|primitive| primitive.overlap_ref.as_str())
+        .filter(|(_, variables)| !variables.is_empty())
+        .map(|(overlap_ref, _)| overlap_ref.as_str())
         .collect::<BTreeSet<_>>();
     if residual_overlap_refs.is_empty() {
         let zero_primitive_ref = plan.faithfulness.supplied.as_ref()?.zero_primitive_ref.as_str();
@@ -1442,7 +1633,10 @@ fn residual_support_component(plan: &RepairPlanDocumentV1) -> Option<RepairCompl
             .primitives
             .iter()
             .find(|primitive| primitive.id == zero_primitive_ref)?;
-        if !zero_primitive.support.variables.is_empty() {
+        if supports
+            .get(&zero_primitive.overlap_ref)
+            .is_some_and(|variables| !variables.is_empty())
+        {
             return None;
         }
         residual_overlap_refs.insert(zero_primitive.overlap_ref.as_str());
@@ -1526,18 +1720,16 @@ fn repair_complex_components(plan: &RepairPlanDocumentV1) -> Option<Vec<RepairCo
     Some(components)
 }
 
-fn triple_cocycle_is_zero(plan: &RepairPlanDocumentV1, overlap_refs: &[String]) -> bool {
-    let primitives = plan
-        .primitives
-        .iter()
-        .map(|primitive| (primitive.overlap_ref.as_str(), primitive))
-        .collect::<BTreeMap<_, _>>();
+fn triple_cocycle_is_zero(
+    supports: &BTreeMap<String, Vec<String>>,
+    overlap_refs: &[String],
+) -> bool {
     let mut parity = BTreeMap::<&str, usize>::new();
     for overlap_ref in overlap_refs {
-        let Some(primitive) = primitives.get(overlap_ref.as_str()) else {
+        let Some(variables) = supports.get(overlap_ref.as_str()) else {
             return false;
         };
-        for variable in &primitive.support.variables {
+        for variable in variables {
             *parity.entry(variable.as_str()).or_default() += 1;
         }
     }
@@ -1551,21 +1743,17 @@ struct BoundaryMembershipResult {
     residual_support: Vec<Value>,
 }
 
-#[derive(Debug, Clone)]
-struct ClosureDiagnostics {
-    residual_component_covered: bool,
-    residual_component_faithful: bool,
-    alias_witnesses: Vec<Value>,
-}
-
-fn solve_boundary_membership(plan: &RepairPlanDocumentV1) -> BoundaryMembershipResult {
+fn solve_boundary_membership(
+    plan: &RepairPlanDocumentV1,
+    supports: &BTreeMap<String, Vec<String>>,
+) -> BoundaryMembershipResult {
     let charts = plan.complex.charts.clone();
     let chart_index = charts
         .iter()
         .enumerate()
         .map(|(index, chart)| (chart.as_str(), index))
         .collect::<BTreeMap<_, _>>();
-    let variables = residual_variables(plan);
+    let variables = residual_variables(supports);
     let variable_index = variables
         .iter()
         .enumerate()
@@ -1576,18 +1764,9 @@ fn solve_boundary_membership(plan: &RepairPlanDocumentV1) -> BoundaryMembershipR
     for overlap in &plan.complex.overlaps {
         let left_index = chart_index[overlap.left.as_str()];
         let right_index = chart_index[overlap.right.as_str()];
-        let support = plan
-            .primitives
-            .iter()
-            .find(|primitive| primitive.overlap_ref == overlap.id)
-            .map(|primitive| {
-                primitive
-                    .support
-                    .variables
-                    .iter()
-                    .map(String::as_str)
-                    .collect::<BTreeSet<_>>()
-            })
+        let support = supports
+            .get(overlap.id.as_str())
+            .map(|variables| variables.iter().map(String::as_str).collect::<BTreeSet<_>>())
             .unwrap_or_default();
         for variable in &variables {
             let mut row = vec![0; unknown_count + 1];
@@ -1604,26 +1783,30 @@ fn solve_boundary_membership(plan: &RepairPlanDocumentV1) -> BoundaryMembershipR
         witness_chart_assignment: solution
             .map(|solution| chart_assignment_json(&charts, &variables, &solution))
             .unwrap_or_default(),
-        residual_support: residual_support_json(plan),
+        residual_support: residual_support_json(plan, supports),
     }
 }
 
-fn residual_variables(plan: &RepairPlanDocumentV1) -> Vec<String> {
-    plan.primitives
-        .iter()
-        .flat_map(|primitive| primitive.support.variables.iter().cloned())
+fn residual_variables(supports: &BTreeMap<String, Vec<String>>) -> Vec<String> {
+    supports
+        .values()
+        .flat_map(|variables| variables.iter().cloned())
         .collect::<BTreeSet<_>>()
         .into_iter()
         .collect()
 }
 
-fn residual_support_json(plan: &RepairPlanDocumentV1) -> Vec<Value> {
-    plan.primitives
+fn residual_support_json(
+    plan: &RepairPlanDocumentV1,
+    supports: &BTreeMap<String, Vec<String>>,
+) -> Vec<Value> {
+    plan.complex
+        .overlaps
         .iter()
-        .map(|primitive| {
+        .map(|overlap| {
             json!({
-                "overlapRef": primitive.overlap_ref,
-                "support": primitive.support.variables
+                "overlapRef": overlap.id,
+                "support": supports.get(overlap.id.as_str()).cloned().unwrap_or_default()
             })
         })
         .collect()
@@ -1682,60 +1865,14 @@ fn solve_f2(mut rows: Vec<Vec<u8>>, unknown_count: usize) -> Option<Vec<u8>> {
     Some(solution)
 }
 
-fn closure_diagnostics(
-    archmap: &ArchMapDocumentV2,
-    plan: &RepairPlanDocumentV1,
-) -> ClosureDiagnostics {
-    let k = plan
-        .semantic_projection
-        .k
-        .iter()
-        .map(String::as_str)
-        .collect::<BTreeSet<_>>();
-    let residual_variables = residual_variables(plan);
-    let residual_variable_set = residual_variables
-        .iter()
-        .map(String::as_str)
-        .collect::<BTreeSet<_>>();
-    let residual_component_covered = residual_variables
-        .iter()
-        .all(|variable| k.contains(variable.as_str()));
-    let mut by_subject = BTreeMap::<&str, Vec<&str>>::new();
-    for row in &plan.semantic_projection.pi {
-        if !residual_variable_set.contains(row.subject.as_str()) {
-            continue;
-        }
-        by_subject
-            .entry(row.subject.as_str())
-            .or_default()
-            .push(row.atom_ref.as_str());
-    }
-    let atom_subjects = archmap
-        .atoms
-        .iter()
-        .map(|atom| (atom.id.as_str(), atom.subject.as_str()))
-        .collect::<BTreeMap<_, _>>();
-    let alias_witnesses = by_subject
-        .into_iter()
-        .filter(|(_, atom_refs)| atom_refs.len() > 1)
-        .map(|(subject, atom_refs)| {
-            json!({
-                "subject": subject,
-                "atomRefs": atom_refs,
-                "archmapSubjects": atom_refs.iter().filter_map(|atom_ref| atom_subjects.get(atom_ref).copied()).collect::<Vec<_>>()
-            })
-        })
-        .collect::<Vec<_>>();
-    ClosureDiagnostics {
-        residual_component_covered,
-        residual_component_faithful: alias_witnesses.is_empty(),
-        alias_witnesses,
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::repair_plan::declared_restriction_difference_supports;
+
+    fn declared_supports(plan: &RepairPlanDocumentV1) -> BTreeMap<String, Vec<String>> {
+        declared_restriction_difference_supports(plan)
+    }
 
     fn comparison_fixture() -> RepairPlanDocumentV1 {
         serde_json::from_str(include_str!(
@@ -1764,8 +1901,6 @@ mod tests {
 
         let mut nontriangular = component_aware_one_cent_fixture();
         nontriangular["primitives"][1]["resL"] = serde_json::json!(["drift:one-cent"]);
-        nontriangular["primitives"][1]["support"]["variables"] =
-            serde_json::json!(["drift:one-cent"]);
         nontriangular["complex"]["overlaps"][2]["right"] =
             serde_json::json!("ctx:inside-payment");
         nontriangular["complex"]["tripleOverlaps"]
@@ -1775,14 +1910,12 @@ mod tests {
         let nontriangular: RepairPlanDocumentV1 =
             serde_json::from_value(nontriangular).expect("nontriangular fixture still parses");
         assert!(
-            component_cocycle_certificate(&nontriangular).is_none(),
+            component_cocycle_certificate(&nontriangular, &declared_supports(&nontriangular)).is_none(),
             "a three-edge list that is not a three-chart triangle must not certify C2"
         );
 
         let mut duplicate_id = component_aware_one_cent_fixture();
         duplicate_id["primitives"][1]["resL"] = serde_json::json!(["drift:one-cent"]);
-        duplicate_id["primitives"][1]["support"]["variables"] =
-            serde_json::json!(["drift:one-cent"]);
         let triples = duplicate_id["complex"]["tripleOverlaps"]
             .as_array_mut()
             .expect("triple overlaps are an array");
@@ -1791,14 +1924,12 @@ mod tests {
         let duplicate_id: RepairPlanDocumentV1 =
             serde_json::from_value(duplicate_id).expect("duplicate-ID fixture still parses");
         assert!(
-            component_cocycle_certificate(&duplicate_id).is_none(),
+            component_cocycle_certificate(&duplicate_id, &declared_supports(&duplicate_id)).is_none(),
             "duplicate selected triple IDs must not certify C2"
         );
 
         let mut cross_component_duplicate = component_aware_one_cent_fixture();
         cross_component_duplicate["primitives"][1]["resL"] = serde_json::json!(["drift:one-cent"]);
-        cross_component_duplicate["primitives"][1]["support"]["variables"] =
-            serde_json::json!(["drift:one-cent"]);
         let mut duplicate_remote_id = local_triple;
         duplicate_remote_id["id"] = serde_json::json!("triple:consign-parcel-shipping");
         cross_component_duplicate["complex"]["tripleOverlaps"]
@@ -1810,7 +1941,7 @@ mod tests {
         )
         .expect("cross-component duplicate-ID fixture still parses");
         assert!(
-            component_cocycle_certificate(&cross_component_duplicate).is_none(),
+            component_cocycle_certificate(&cross_component_duplicate, &declared_supports(&cross_component_duplicate)).is_none(),
             "duplicate triple IDs outside the selected component must not certify C2"
         );
     }
@@ -1835,7 +1966,7 @@ mod tests {
     #[test]
     fn comparison_silence_precedes_contract_failure_when_class_is_missing() {
         let plan = comparison_fixture();
-        let result = evaluate_saga_comparison_v1(&plan, &[], None);
+        let result = evaluate_saga_comparison_v1(&plan, &declared_supports(&plan), &[], None);
         assert_eq!(result["status"], "silence_by_design");
         assert_eq!(result["reason"], "residual_class_prerequisite_not_measured");
         assert!(result.get("failureCode").is_none());
@@ -1850,7 +1981,7 @@ mod tests {
         plan.comparison.as_mut().expect("comparison exists")["h1ComparisonData"]["presentation"] =
             serde_json::json!({});
 
-        let result = evaluate_saga_comparison_v1(&plan, &[], None);
+        let result = evaluate_saga_comparison_v1(&plan, &declared_supports(&plan), &[], None);
         assert_eq!(result["status"], "silence_by_design");
         assert_eq!(
             result["reason"],
@@ -1872,7 +2003,7 @@ mod tests {
     #[test]
     fn comparison_class_predicate_mismatch_emits_contract_failure() {
         let plan = comparison_fixture();
-        let result = evaluate_saga_comparison_v1(&plan, &[measured_class_verdict()], None);
+        let result = evaluate_saga_comparison_v1(&plan, &declared_supports(&plan), &[measured_class_verdict()], None);
         assert_eq!(result["status"], "not_computed");
         assert_eq!(
             result["failureCode"],

@@ -224,8 +224,6 @@ enum Command {
         repair_plan: PathBuf,
 
         /// Optional residual measurement packet JSON path for measured residual binding.
-        #[arg(long = "residual-packet")]
-        residual_packet: Option<PathBuf>,
 
         /// Output RepairPlan validation report JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
@@ -267,8 +265,6 @@ enum Command {
         repair_plan: Option<PathBuf>,
 
         /// Optional residual packet path used by measured RepairPlan residuals.
-        #[arg(long = "residual-packet")]
-        residual_packet: Option<PathBuf>,
 
         /// Optional refactor-morphism/v0.5.4 artifact enabling declared verdict transport.
         #[arg(long = "refactor-morphism")]
@@ -643,18 +639,14 @@ fn validate_law_surface_command_input(
 fn validate_repair_plan_command_input(
     input: &PathBuf,
     archmap: &ArchMapDocumentV2,
-    residual_packet: Option<&PathBuf>,
 ) -> Result<(serde_json::Value, RepairPlanDocumentV1, bool), Box<dyn Error>> {
     let raw: serde_json::Value = read_json(input)?;
     require_schema(&raw, ARCHSIG_REPAIR_PLAN_V1_SCHEMA, "--repair-plan")?;
     let plan: RepairPlanDocumentV1 = serde_json::from_value(raw)?;
-    let residual_packet_json: Option<serde_json::Value> =
-        residual_packet.map(read_json).transpose()?;
     let report = build_repair_plan_validation_report_v1(
         &plan,
         archmap,
         &stable_input_ref(input),
-        residual_packet_json.as_ref(),
     );
     let failed = report["summary"]["result"] == "fail";
     Ok((report, plan, failed))
@@ -863,7 +855,6 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
         Some(Command::RepairPlan {
             archmap,
             repair_plan,
-            residual_packet,
             out,
         }) => {
             let (_, archmap_failed) =
@@ -873,11 +864,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             }
             let archmap_document: ArchMapDocumentV2 = read_json(&archmap)?;
             let (report, _, failed) =
-                validate_repair_plan_command_input(
-                    &repair_plan,
-                    &archmap_document,
-                    residual_packet.as_ref(),
-                )?;
+                validate_repair_plan_command_input(&repair_plan, &archmap_document)?;
             write_json(out, &report)?;
             Ok(if failed {
                 ExitCode::from(1)
@@ -971,7 +958,6 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             measurement_profiles,
             policy_bundle,
             repair_plan,
-            residual_packet,
             refactor_morphism,
             out_dir,
             stamp,
@@ -1057,13 +1043,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let law_policy_preflight = serde_json::to_value(law_policy_report)?;
             let repair_plan_preflight = repair_plan
                 .as_ref()
-                .map(|path| {
-                    validate_repair_plan_command_input(
-                        path,
-                        &archmap_document,
-                        residual_packet.as_ref(),
-                    )
-                })
+                .map(|path| validate_repair_plan_command_input(path, &archmap_document))
                 .transpose()?;
             let repair_plan_document = repair_plan_preflight
                 .as_ref()
@@ -1092,8 +1072,6 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 .map(|path| artifact_input_ref(path))
                 .collect::<Vec<_>>();
             let repair_plan_input_ref = repair_plan.as_ref().map(|path| artifact_input_ref(path));
-            let residual_packet_input_ref =
-                residual_packet.as_ref().map(|path| artifact_input_ref(path));
             let archmap_contract_input: Value = read_json(&archmap)?;
             let law_policy_contract_input: Value = read_json(&law_policy)?;
             let measurement_profile_contract_inputs = measurement_profile_paths
@@ -1140,7 +1118,6 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                     .iter()
                     .map(PathBuf::as_path)
                     .collect::<Vec<_>>(),
-                residual_packet.as_deref(),
                 repair_plan.as_deref(),
                 contract_profile_fingerprint(
                     &law_policy_contract_input,
@@ -1270,7 +1247,6 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 law_surface_input_ref.as_deref(),
                 &measurement_profile_input_ref,
                 repair_plan_input_ref.as_deref(),
-                residual_packet_input_ref.as_deref(),
                 refactor_morphism_value.as_ref(),
             )
             {

@@ -127,8 +127,7 @@ pub use schema::{
     NORMALIZED_ARCHMAP_V2_SCHEMA, NormalizedArchMapSummaryV2, NormalizedArchMapV2,
     NormalizedAtomV2, NormalizedContextV2, NormalizedCoverV2, RepairPlanComplexV1,
     RepairPlanDocumentV1, RepairPlanFaithfulnessV1, RepairPlanOverlapV1, RepairPlanPrimitiveV1,
-    RepairPlanProjectionRowV1, RepairPlanResidualV1, RepairPlanSemanticProjectionV1,
-    RepairPlanSupportV1, RepairPlanTripleOverlapV1, SCHEMA_VERSION_CATALOG_SCHEMA_VERSION,
+    RepairPlanTripleOverlapV1, SCHEMA_VERSION_CATALOG_SCHEMA_VERSION,
     SchemaVersionCatalogV0,
 };
 pub use schema_catalog::static_schema_version_catalog;

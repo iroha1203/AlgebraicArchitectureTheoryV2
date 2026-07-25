@@ -1,9 +1,6 @@
 {
   "schema": "archsig-repair-plan/v0.5.4",
   "id": "repair-plan:component-aware-one-cent",
-  "residual": {
-    "kind": "supplied"
-  },
   "complex": {
     "charts": [
       "ctx:cancel",
@@ -62,99 +59,62 @@
       "id": "primitive:cancel-inside-payment",
       "overlapRef": "overlap:cancel-inside-payment",
       "resL": [
-        "drift:one-cent"
+        "cech:section-mismatch"
       ],
-      "resR": [],
-      "support": {
-        "kind": "supplied",
-        "variables": [
-          "drift:one-cent"
-        ]
-      }
+      "resR": []
     },
     {
       "id": "primitive:inside-payment-order",
       "overlapRef": "overlap:inside-payment-order",
-      "resL": [],
-      "resR": [],
-      "support": {
-        "kind": "supplied",
-        "variables": []
-      }
+      "resL": [
+        "cech:section-mismatch"
+      ],
+      "resR": []
     },
     {
       "id": "primitive:cancel-order",
       "overlapRef": "overlap:cancel-order",
-      "resL": [],
-      "resR": [],
-      "support": {
-        "kind": "supplied",
-        "variables": []
-      }
+      "resL": [
+        "cech:section-mismatch"
+      ],
+      "resR": []
     },
     {
       "id": "primitive:consign-parcel",
       "overlapRef": "overlap:consign-parcel",
       "resL": [],
-      "resR": [],
-      "support": {
-        "kind": "supplied",
-        "variables": []
-      }
+      "resR": []
     },
     {
       "id": "primitive:parcel-shipping",
       "overlapRef": "overlap:parcel-shipping",
       "resL": [],
-      "resR": [],
-      "support": {
-        "kind": "supplied",
-        "variables": []
-      }
+      "resR": []
     },
     {
       "id": "primitive:consign-shipping",
       "overlapRef": "overlap:consign-shipping",
       "resL": [],
-      "resR": [],
-      "support": {
-        "kind": "supplied",
-        "variables": []
-      }
+      "resR": []
     }
   ],
-  "semanticProjection": {
-    "lambda": [
-      "atom:order"
-    ],
-    "k": [
-      "src:order"
-    ],
-    "pi": [
-      {
-        "atomRef": "atom:order",
-        "subject": "src:order"
-      }
-    ]
-  },
   "faithfulness": {
     "mode": "supplied",
     "supplied": {
-      "zeroPrimitiveRef": "primitive:inside-payment-order",
+      "zeroPrimitiveRef": "primitive:consign-shipping",
       "residualSupportPredicate": {
         "kind": "finite-support",
         "supportVariables": [
-          "drift:one-cent"
+          "cech:section-mismatch"
         ],
         "zeroOnZeroPrimitive": true
       },
       "faithfulnessLaw": "the one-cent residual support is faithful on the diagnostic component"
     }
   },
-  "coefficient": "f2-additive",
   "trueSheafCertificate": {
     "kind": "true-sheaf-certificate",
-    "coverRef": "cover:order-inventory",
+    "coverRef": "cover:saga-component",
     "memberCharts": [
       "ctx:cancel",
       "ctx:inside-payment",

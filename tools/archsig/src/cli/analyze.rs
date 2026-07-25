@@ -19,7 +19,6 @@ impl AnalyzeRunContract {
         law_policy: &Path,
         law_surface: Option<&Path>,
         measurement_profiles: &[&Path],
-        residual_packet: Option<&Path>,
         repair_plan: Option<&Path>,
         profile_fingerprint: Value,
         site_cover_digest: Value,
@@ -40,27 +39,13 @@ impl AnalyzeRunContract {
             .cloned()
             .ok_or("at least one measurement profile input is required")?;
         let tool_version = env!("CARGO_PKG_VERSION").to_string();
-        let residual_packet_digest = residual_packet
-            .map(canonical_json_file_digest)
-            .transpose()?;
         let repair_plan_digest = repair_plan.map(canonical_json_file_digest).transpose()?;
-        let run_seed = match (
-            law_surface_digest.as_deref(),
-            residual_packet_digest.as_deref(),
-        ) {
-            (Some(law_surface_digest), Some(residual_packet_digest)) => format!(
-                "{archmap_digest}|{law_policy_digest}|{law_surface_digest}|{}|{residual_packet_digest}|{tool_version}",
-                measurement_profile_digests.join("|")
-            ),
-            (Some(law_surface_digest), None) => format!(
+        let run_seed = match law_surface_digest.as_deref() {
+            Some(law_surface_digest) => format!(
                 "{archmap_digest}|{law_policy_digest}|{law_surface_digest}|{}|{tool_version}",
                 measurement_profile_digests.join("|")
             ),
-            (None, Some(residual_packet_digest)) => format!(
-                "{archmap_digest}|{law_policy_digest}|{}|{residual_packet_digest}|{tool_version}",
-                measurement_profile_digests.join("|")
-            ),
-            (None, None) => format!(
+            None => format!(
                 "{archmap_digest}|{law_policy_digest}|{}|{tool_version}",
                 measurement_profile_digests.join("|")
             ),
@@ -103,12 +88,6 @@ impl AnalyzeRunContract {
             input_digests["lawSurface"] = serde_json::json!({
                 "path": artifact_input_ref(path),
                 "sha256": digest
-            });
-        }
-        if let Some(residual_packet_digest) = residual_packet_digest {
-            input_digests["residualPacket"] = serde_json::json!({
-                "path": artifact_input_ref(residual_packet.expect("residual packet path is present")),
-                "sha256": residual_packet_digest
             });
         }
         if let (Some(path), Some(digest)) = (repair_plan, repair_plan_digest) {

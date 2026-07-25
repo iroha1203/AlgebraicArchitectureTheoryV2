@@ -314,7 +314,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "RepairPlan v0.5.4 supplies the checked SAGA descent input side: residual refs, finite complex with its declared ArchMap cover and per-overlap/per-triple context bindings, primitive restriction differences, semantic projection, faithfulness regime, F2-additive coefficient, optional trueSheafCertificate and gluingData, and an optional presentation block carrying per-cell semantic/equation generators, relation matrices, generator maps, restriction matrices, and an equation lift atlas.",
+        "fieldMappingPolicy": "RepairPlan v0.5.4 supplies the checked SAGA descent input side: a finite complex with its declared ArchMap cover and per-overlap/per-triple context bindings, primitive restriction readings, faithfulness regime, optional trueSheafCertificate and gluingData, and an optional presentation block carrying per-cell semantic/equation generators, relation matrices, generator maps, restriction matrices, and an equation lift atlas. The residual itself is derived by analyze from the selected cover sections and law-surface witness bindings; the coefficient is the selected MeasurementProfile coefficient.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",

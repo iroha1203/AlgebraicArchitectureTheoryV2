@@ -1,9 +1,6 @@
 {
   "schema": "archsig-repair-plan/v0.5.4",
   "id": "repair-plan:one-cent-head",
-  "residual": {
-    "kind": "supplied"
-  },
   "complex": {
     "charts": [
       "ctx:domain",
@@ -79,119 +76,63 @@
       "id": "primitive:application-settlement",
       "overlapRef": "overlap:application-settlement",
       "resL": [
-        "drift:one-cent"
+        "cech:section-mismatch"
       ],
-      "resR": [],
-      "support": {
-        "kind": "supplied",
-        "variables": [
-          "drift:one-cent"
-        ]
-      }
+      "resR": []
     },
     {
       "id": "primitive:application-ports",
       "overlapRef": "overlap:application-ports",
       "resL": [],
-      "resR": [],
-      "support": {
-        "kind": "supplied",
-        "variables": []
-      }
+      "resR": []
     },
     {
       "id": "primitive:infrastructure-ports",
       "overlapRef": "overlap:infrastructure-ports",
       "resL": [
-        "drift:one-cent"
+        "cech:section-mismatch"
       ],
-      "resR": [],
-      "support": {
-        "kind": "supplied",
-        "variables": [
-          "drift:one-cent"
-        ]
-      }
+      "resR": []
     },
     {
       "id": "primitive:infrastructure-settlement",
       "overlapRef": "overlap:infrastructure-settlement",
       "resL": [
-        "drift:one-cent"
+        "cech:section-mismatch"
       ],
-      "resR": [],
-      "support": {
-        "kind": "supplied",
-        "variables": [
-          "drift:one-cent"
-        ]
-      }
+      "resR": []
     },
     {
       "id": "primitive:application-domain",
       "overlapRef": "overlap:application-domain",
       "resL": [],
-      "resR": [],
-      "support": {
-        "kind": "supplied",
-        "variables": []
-      }
+      "resR": []
     },
     {
       "id": "primitive:application-shared",
       "overlapRef": "overlap:application-shared",
       "resL": [],
-      "resR": [],
-      "support": {
-        "kind": "supplied",
-        "variables": []
-      }
+      "resR": []
     },
     {
       "id": "primitive:domain-shared",
       "overlapRef": "overlap:domain-shared",
       "resL": [],
-      "resR": [],
-      "support": {
-        "kind": "supplied",
-        "variables": []
-      }
+      "resR": []
     },
     {
       "id": "primitive:policy-shared",
       "overlapRef": "overlap:policy-shared",
       "resL": [],
-      "resR": [],
-      "support": {
-        "kind": "supplied",
-        "variables": []
-      }
+      "resR": []
     },
     {
       "id": "primitive:runtime-application",
       "overlapRef": "overlap:runtime-application",
       "resL": [],
-      "resR": [],
-      "support": {
-        "kind": "supplied",
-        "variables": []
-      }
+      "resR": []
     }
   ],
-  "semanticProjection": {
-    "lambda": [
-      "atom:settlement-drift-witness"
-    ],
-    "k": [
-      "drift:one-cent"
-    ],
-    "pi": [
-      {
-        "atomRef": "atom:settlement-drift-witness",
-        "subject": "drift:one-cent"
-      }
-    ]
-  },
   "faithfulness": {
     "mode": "supplied",
     "supplied": {
@@ -199,14 +140,13 @@
       "residualSupportPredicate": {
         "kind": "finite-support",
         "supportVariables": [
-          "drift:one-cent"
+          "cech:section-mismatch"
         ],
         "zeroOnZeroPrimitive": true
       },
       "faithfulnessLaw": "the reconciliation drift witness projects one-to-one onto the settlement observation"
     }
   },
-  "coefficient": "f2-additive",
   "trueSheafCertificate": {
     "kind": "true-sheaf-certificate",
     "coverRef": "cover:commerce-fulfillment",
@@ -366,7 +306,7 @@
         {
           "overlapRef": "overlap:application-settlement",
           "support": [
-            "drift:one-cent"
+            "cech:section-mismatch"
           ]
         },
         {
@@ -376,13 +316,13 @@
         {
           "overlapRef": "overlap:infrastructure-ports",
           "support": [
-            "drift:one-cent"
+            "cech:section-mismatch"
           ]
         },
         {
           "overlapRef": "overlap:infrastructure-settlement",
           "support": [
-            "drift:one-cent"
+            "cech:section-mismatch"
           ]
         },
         {
@@ -413,8 +353,8 @@
             "targetChartRef": "ctx:domain",
             "variableMap": [
               {
-                "source": "drift:one-cent",
-                "target": "drift:one-cent"
+                "source": "cech:section-mismatch",
+                "target": "cech:section-mismatch"
               }
             ]
           },
@@ -423,8 +363,8 @@
             "targetChartRef": "ctx:ports",
             "variableMap": [
               {
-                "source": "drift:one-cent",
-                "target": "drift:one-cent"
+                "source": "cech:section-mismatch",
+                "target": "cech:section-mismatch"
               }
             ]
           },
@@ -433,8 +373,8 @@
             "targetChartRef": "ctx:application",
             "variableMap": [
               {
-                "source": "drift:one-cent",
-                "target": "drift:one-cent"
+                "source": "cech:section-mismatch",
+                "target": "cech:section-mismatch"
               }
             ]
           },
@@ -443,8 +383,8 @@
             "targetChartRef": "ctx:infrastructure",
             "variableMap": [
               {
-                "source": "drift:one-cent",
-                "target": "drift:one-cent"
+                "source": "cech:section-mismatch",
+                "target": "cech:section-mismatch"
               }
             ]
           },
@@ -453,8 +393,8 @@
             "targetChartRef": "ctx:policy",
             "variableMap": [
               {
-                "source": "drift:one-cent",
-                "target": "drift:one-cent"
+                "source": "cech:section-mismatch",
+                "target": "cech:section-mismatch"
               }
             ]
           },
@@ -463,8 +403,8 @@
             "targetChartRef": "ctx:runtime",
             "variableMap": [
               {
-                "source": "drift:one-cent",
-                "target": "drift:one-cent"
+                "source": "cech:section-mismatch",
+                "target": "cech:section-mismatch"
               }
             ]
           },
@@ -473,8 +413,8 @@
             "targetChartRef": "ctx:shared",
             "variableMap": [
               {
-                "source": "drift:one-cent",
-                "target": "drift:one-cent"
+                "source": "cech:section-mismatch",
+                "target": "cech:section-mismatch"
               }
             ]
           },
@@ -483,8 +423,8 @@
             "targetChartRef": "ctx:settlement",
             "variableMap": [
               {
-                "source": "drift:one-cent",
-                "target": "drift:one-cent"
+                "source": "cech:section-mismatch",
+                "target": "cech:section-mismatch"
               }
             ]
           }
@@ -495,8 +435,8 @@
             "targetOverlapRef": "overlap:application-settlement",
             "variableMap": [
               {
-                "source": "drift:one-cent",
-                "target": "drift:one-cent"
+                "source": "cech:section-mismatch",
+                "target": "cech:section-mismatch"
               }
             ]
           },
@@ -505,8 +445,8 @@
             "targetOverlapRef": "overlap:application-ports",
             "variableMap": [
               {
-                "source": "drift:one-cent",
-                "target": "drift:one-cent"
+                "source": "cech:section-mismatch",
+                "target": "cech:section-mismatch"
               }
             ]
           },
@@ -515,8 +455,8 @@
             "targetOverlapRef": "overlap:infrastructure-ports",
             "variableMap": [
               {
-                "source": "drift:one-cent",
-                "target": "drift:one-cent"
+                "source": "cech:section-mismatch",
+                "target": "cech:section-mismatch"
               }
             ]
           },
@@ -525,8 +465,8 @@
             "targetOverlapRef": "overlap:infrastructure-settlement",
             "variableMap": [
               {
-                "source": "drift:one-cent",
-                "target": "drift:one-cent"
+                "source": "cech:section-mismatch",
+                "target": "cech:section-mismatch"
               }
             ]
           },
@@ -535,8 +475,8 @@
             "targetOverlapRef": "overlap:application-domain",
             "variableMap": [
               {
-                "source": "drift:one-cent",
-                "target": "drift:one-cent"
+                "source": "cech:section-mismatch",
+                "target": "cech:section-mismatch"
               }
             ]
           },
@@ -545,8 +485,8 @@
             "targetOverlapRef": "overlap:application-shared",
             "variableMap": [
               {
-                "source": "drift:one-cent",
-                "target": "drift:one-cent"
+                "source": "cech:section-mismatch",
+                "target": "cech:section-mismatch"
               }
             ]
           },
@@ -555,8 +495,8 @@
             "targetOverlapRef": "overlap:domain-shared",
             "variableMap": [
               {
-                "source": "drift:one-cent",
-                "target": "drift:one-cent"
+                "source": "cech:section-mismatch",
+                "target": "cech:section-mismatch"
               }
             ]
           },
@@ -565,8 +505,8 @@
             "targetOverlapRef": "overlap:policy-shared",
             "variableMap": [
               {
-                "source": "drift:one-cent",
-                "target": "drift:one-cent"
+                "source": "cech:section-mismatch",
+                "target": "cech:section-mismatch"
               }
             ]
           },
@@ -575,8 +515,8 @@
             "targetOverlapRef": "overlap:runtime-application",
             "variableMap": [
               {
-                "source": "drift:one-cent",
-                "target": "drift:one-cent"
+                "source": "cech:section-mismatch",
+                "target": "cech:section-mismatch"
               }
             ]
           }

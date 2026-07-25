@@ -890,7 +890,6 @@ fn validate_component_fingerprints(manifest: &Value, label: &str) -> Result<(), 
         "measurementProfiles",
         "profileFingerprint",
         "repairPlan",
-        "residualPacket",
         "siteCoverDigest",
     ]);
     let actual_digest_keys = input_digests

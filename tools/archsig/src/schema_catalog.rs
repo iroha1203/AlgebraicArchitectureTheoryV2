@@ -178,7 +178,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "primary",
                 "ArchSig v0.5.4 SAGA Stage 1",
                 vec!["archsig-contract:saga-stage1-v0.5.4"],
-                    "RepairPlan v0.5.4 supplies the checked SAGA descent input side: residual refs, finite complex with its declared ArchMap cover and per-overlap/per-triple context bindings, primitive restriction differences, semantic projection, faithfulness regime, F2-additive coefficient, optional trueSheafCertificate and gluingData, and an optional presentation block carrying per-cell semantic/equation generators, relation matrices, generator maps, restriction matrices, and an equation lift atlas.",
+                    "RepairPlan v0.5.4 supplies the checked SAGA descent input side: a finite complex with its declared ArchMap cover and per-overlap/per-triple context bindings, primitive restriction readings, faithfulness regime, optional trueSheafCertificate and gluingData, and an optional presentation block carrying per-cell semantic/equation generators, relation matrices, generator maps, restriction matrices, and an equation lift atlas. The residual itself is derived by analyze from the selected cover sections and law-surface witness bindings; the coefficient is the selected MeasurementProfile coefficient.",
                 vec![
                     "RepairPlan validation checks supplied premises before use; it does not compute boundary membership or global coherence.",
                     "RepairPlan input cannot supply generated conclusion tokens such as glues, verdict, h1Zero, or globalCoherent.",

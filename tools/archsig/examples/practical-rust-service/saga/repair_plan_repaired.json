@@ -1,9 +1,6 @@
 {
   "schema": "archsig-repair-plan/v0.5.4",
   "id": "repair-plan:one-cent-repaired",
-  "residual": {
-    "kind": "supplied"
-  },
   "complex": {
     "charts": [
       "ctx:domain",
@@ -79,98 +76,57 @@
       "id": "primitive:application-settlement",
       "overlapRef": "overlap:application-settlement",
       "resL": [],
-      "resR": [],
-      "support": {
-        "kind": "supplied",
-        "variables": []
-      }
+      "resR": []
     },
     {
       "id": "primitive:application-ports",
       "overlapRef": "overlap:application-ports",
       "resL": [],
-      "resR": [],
-      "support": {
-        "kind": "supplied",
-        "variables": []
-      }
+      "resR": []
     },
     {
       "id": "primitive:infrastructure-ports",
       "overlapRef": "overlap:infrastructure-ports",
       "resL": [],
-      "resR": [],
-      "support": {
-        "kind": "supplied",
-        "variables": []
-      }
+      "resR": []
     },
     {
       "id": "primitive:infrastructure-settlement",
       "overlapRef": "overlap:infrastructure-settlement",
       "resL": [],
-      "resR": [],
-      "support": {
-        "kind": "supplied",
-        "variables": []
-      }
+      "resR": []
     },
     {
       "id": "primitive:application-domain",
       "overlapRef": "overlap:application-domain",
       "resL": [],
-      "resR": [],
-      "support": {
-        "kind": "supplied",
-        "variables": []
-      }
+      "resR": []
     },
     {
       "id": "primitive:application-shared",
       "overlapRef": "overlap:application-shared",
       "resL": [],
-      "resR": [],
-      "support": {
-        "kind": "supplied",
-        "variables": []
-      }
+      "resR": []
     },
     {
       "id": "primitive:domain-shared",
       "overlapRef": "overlap:domain-shared",
       "resL": [],
-      "resR": [],
-      "support": {
-        "kind": "supplied",
-        "variables": []
-      }
+      "resR": []
     },
     {
       "id": "primitive:policy-shared",
       "overlapRef": "overlap:policy-shared",
       "resL": [],
-      "resR": [],
-      "support": {
-        "kind": "supplied",
-        "variables": []
-      }
+      "resR": []
     },
     {
       "id": "primitive:runtime-application",
       "overlapRef": "overlap:runtime-application",
       "resL": [],
-      "resR": [],
-      "support": {
-        "kind": "supplied",
-        "variables": []
-      }
+      "resR": []
     }
   ],
-  "semanticProjection": {
-    "lambda": [],
-    "k": [],
-    "pi": []
-  },
   "faithfulness": {
     "mode": "supplied",
     "supplied": {
@@ -183,7 +139,6 @@
       "faithfulnessLaw": "the reconciliation drift witness projects one-to-one onto the settlement observation"
     }
   },
-  "coefficient": "f2-additive",
   "trueSheafCertificate": {
     "kind": "true-sheaf-certificate",
     "coverRef": "cover:commerce-fulfillment",

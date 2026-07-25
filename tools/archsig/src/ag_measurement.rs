@@ -214,22 +214,22 @@ fn summary_translation_rule(conclusion: &str) -> SummaryTranslationRule {
         ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL => SummaryTranslationRule {
             conclusion_code: ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL,
             theorem_ref: Some("part10/3.4"),
-            principal_text: "The selected SAGA residual is measured outside B1 with concrete residual support; complete-support faithfulness is reported separately.",
+            principal_text: "The derived SAGA residual is measured outside B1 with concrete residual support.",
             boundary: "Supply a different complete-support residual or Stage 2 comparison data before claiming repair gluing.",
             generated_discipline: "generated complete-support boundary-membership detection",
         },
         ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX => SummaryTranslationRule {
             conclusion_code: ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
             theorem_ref: Some("part10/4.5"),
-            principal_text: "The selected SAGA residual is measured inside B1 and the selected residual component is covered and faithful.",
+            principal_text: "The derived SAGA residual is measured inside B1 for the selected RepairPlan complex.",
             boundary: "Supply Stage 2 law surface and comparison artifacts before claiming global semantic repair.",
             generated_discipline: "generated complete-support boundary-membership detection",
         },
         ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS => SummaryTranslationRule {
             conclusion_code: ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS,
             theorem_ref: Some("part10/4.5"),
-            principal_text: "The selected supplied finite complex contains a measured non-gluing residual class in Z1/B1.",
-            boundary: "The class reading is relative to the supplied triple overlaps, additive coefficient, sheaf certificate, and gluing data.",
+            principal_text: "The selected finite complex contains a measured non-gluing derived residual class in Z1/B1.",
+            boundary: "The class reading is relative to the selected cover, law-surface witness bindings, supplied sheaf certificate, and gluing data.",
             generated_discipline: "generated supplied class representative detection",
         },
         ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION => SummaryTranslationRule {
@@ -842,7 +842,6 @@ pub fn build_foundation_measurement_packet_v1(
     law_surface_ref: Option<&str>,
     measurement_profile_ref: &str,
     repair_plan_ref: Option<&str>,
-    residual_packet_ref: Option<&str>,
     refactor_morphism: Option<&Value>,
 ) -> Result<ArchSigMeasurementPacketV1, String> {
     if policy.policies.iter().any(|entry| entry.pack.is_some()) {
@@ -1252,7 +1251,8 @@ pub fn build_foundation_measurement_packet_v1(
             assumptions.extend(measurement.assumptions);
         } else if evaluator == "ag.saga-descent" {
             if let Some(plan) = repair_plan {
-                let measurement = evaluate_saga_descent_v1(archmap, plan, Some(law_surface));
+                let measurement =
+                    evaluate_saga_descent_v1(archmap, normalized, &profile, plan, Some(law_surface));
                 computed_invariants.extend(measurement.computed_invariants);
                 assumptions.extend(measurement.assumptions);
                 structural_verdict.extend(measurement.structural_verdict);
@@ -1292,6 +1292,7 @@ pub fn build_foundation_measurement_packet_v1(
                         normalized,
                         &profile,
                         plan,
+                        law_surface,
                         execution_plan,
                     );
                     computed_invariants.extend(measurement.computed_invariants);
@@ -1417,7 +1418,6 @@ pub fn build_foundation_measurement_packet_v1(
             law_surface_ref,
             measurement_profile_ref,
             repair_plan_ref,
-            residual_packet_ref,
         ),
         boundary_statements: Vec::new(),
         non_conclusions,
@@ -1433,7 +1433,6 @@ fn supplied_data_ledger(
     law_surface_ref: Option<&str>,
     measurement_profile_ref: &str,
     repair_plan_ref: Option<&str>,
-    residual_packet_ref: Option<&str>,
 ) -> Vec<SuppliedDataLedgerEntryV1> {
     let mut entries = vec![
         supplied_data_entry(
@@ -1473,15 +1472,6 @@ fn supplied_data_ledger(
             "repair-plan",
             repair_plan_ref,
             "repair-plan/v0.5.4-validation",
-            "validated",
-        ));
-    }
-    if let Some(residual_packet_ref) = residual_packet_ref {
-        entries.push(supplied_data_entry(
-            "supplied:residual-packet",
-            "residual-packet",
-            residual_packet_ref,
-            "residual-packet/v0.5.4-validation",
             "validated",
         ));
     }
@@ -12595,7 +12585,7 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
         } else if invariant["evaluator"].as_str() == Some("ag.saga-descent")
             && (invariant_id == "saga-descent:residual-class"
                 || invariant_id == "saga-descent:boundary-membership"
-                || invariant_id == "saga-descent:closure-diagnostics")
+                || invariant_id == "saga-descent:residual-derivation")
         {
             let measurement_index = measurement_rows.len();
             let mut row = serde_json::Map::new();
@@ -12614,7 +12604,7 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
             for (output_field, source_path) in [
                 ("residualClass", "residualClassSupport"),
                 ("boundaryMembership", "boundaryMembership"),
-                ("closureDiagnostics", "closureDiagnostics"),
+                ("residualDerivation", "residualDerivation"),
                 ("faithfulnessBasis", "faithfulnessBasis"),
             ] {
                 if let Some(value) = invariant.get(source_path) {
@@ -13436,7 +13426,6 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
         "assumptionBoundary",
         "boundarySection",
         "cellRefs",
-        "closureDiagnostics",
         "cocycleGate",
         "coherenceWitnesses",
         "cohomologyQuotient",
@@ -13473,6 +13462,7 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
         "repairPlanRef",
         "representative",
         "residualClassSupport",
+        "residualDerivation",
         "suppliedSlots",
         "suppliedCochainMap",
         "presentationGenerated",
@@ -15470,7 +15460,6 @@ fn check_supplied_data_shape(packet: &ArchSigMeasurementPacketV1) -> ValidationC
                     | "law-equation-surface"
                     | "measurement-profile"
                     | "repair-plan"
-                    | "residual-packet"
             ) {
                 examples.push(generic_validation_example(
                     &label,

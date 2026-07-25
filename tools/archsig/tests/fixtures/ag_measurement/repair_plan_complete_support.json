@@ -1,9 +1,6 @@
 {
   "schema": "archsig-repair-plan/v0.5.4",
   "id": "repair-plan:complete-support-demo",
-  "residual": {
-    "kind": "supplied"
-  },
   "complex": {
     "charts": [
       "ctx:order",
@@ -48,14 +45,7 @@
       ],
       "resR": [
         "src:inventory"
-      ],
-      "support": {
-        "kind": "complete",
-        "variables": [
-          "src:inventory",
-          "src:order"
-        ]
-      }
+      ]
     },
     {
       "id": "primitive:inventory-shared",
@@ -65,11 +55,7 @@
       ],
       "resR": [
         "src:inventory"
-      ],
-      "support": {
-        "kind": "complete",
-        "variables": []
-      }
+      ]
     },
     {
       "id": "primitive:order-shared",
@@ -79,38 +65,10 @@
       ],
       "resR": [
         "src:inventory"
-      ],
-      "support": {
-        "kind": "complete",
-        "variables": [
-          "src:inventory",
-          "src:order"
-        ]
-      }
+      ]
     }
   ],
-  "semanticProjection": {
-    "lambda": [
-      "atom:order",
-      "atom:inventory"
-    ],
-    "k": [
-      "src:order",
-      "src:inventory"
-    ],
-    "pi": [
-      {
-        "atomRef": "atom:order",
-        "subject": "src:order"
-      },
-      {
-        "atomRef": "atom:inventory",
-        "subject": "src:inventory"
-      }
-    ]
-  },
   "faithfulness": {
     "mode": "complete-support"
-  },
-  "coefficient": "f2-additive"
+  }
 }
