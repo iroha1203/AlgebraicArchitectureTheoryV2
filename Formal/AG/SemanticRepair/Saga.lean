@@ -24,6 +24,8 @@ Part IV ordered-tuple model, including the connection to
 C7 (#3768) adds the 例10.2/付録B.9 independently generated circle comparison
 witness (`Saga.CircleWitness`): a monomorphic 4-cycle cover on which the
 presentation-generated `M_sem ≅ F₂` and the obstruction-quotient-generated
-`Q_E = ℤ/(2)` fire Theorem 6.3/7.6 through a non-identity `Φ` with
-`κ_*([r_sem]) = [r_E]` and both classes nonzero.
+`Q_E = ℤ/(2)` fire Theorem 6.3/7.6 with `κ_*([r_sem]) = [r_E]` and both
+classes nonzero; the comparison `Φ` runs between carriers of distinct type
+formers, so it is not a same-carrier identity (a meta-level carrier
+condition — the #3718 negative condition).
 -/

@@ -10989,10 +10989,21 @@ def sagaCircleWitnessEdgeSumResidual :=
 def sagaCircleWitnessSemanticResidualNeZero :=
   @SemanticRepair.Saga.CircleWitness.semanticResidualClass_ne_zero
 
+/-- Kernel-audit alias for injectivity of the `M_sem ≅ F₂` reading. -/
+def sagaCircleWitnessMSemToZModInjective :=
+  @SemanticRepair.Saga.CircleWitness.mSemToZMod_injective
+
+/-- Kernel-audit alias for surjectivity of the `M_sem ≅ F₂` reading. -/
+def sagaCircleWitnessMSemToZModSurjective :=
+  @SemanticRepair.Saga.CircleWitness.mSemToZMod_surjective
+
+/-- Kernel-audit alias for the audited-`Φ`/transfer-`Φ` identity. -/
+def sagaCircleWitnessPhiEqPhiFamily :=
+  @SemanticRepair.Saga.CircleWitness.circlePhi_eq_phiFamily
+
 /-- Kernel-audit alias for the 例10.2 nonzero class transfer through `κ_*`. -/
 def sagaCircleWitnessNonzeroClassTransfer :=
   @SemanticRepair.Saga.CircleWitness.circle_nonzero_class_transfer
-
 
 end AAT.AG.AxiomAudit
 
