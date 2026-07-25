@@ -40,7 +40,7 @@ The ambient is replaced, not the theory.  The selected structural relation is
 the selected two-patch family own those two principal opens and every remaining
 context owns `D(0) = ⊥`.  The two owning contexts are isolated in
 `referenceContextPreorder`, so the equation system may — and does — give them
-different symbolic coordinates: `0` on one and `1` on the other.
+different symbolic coordinates: `0` on one and `2` on the other.
 
 The selected coverage requirements differ from the reference ones in exactly
 two clauses: the signature axis is readable only on the base patch and the
@@ -52,12 +52,14 @@ introduced.
 
 ## Implementation notes
 
-* The atlas is the one-chart identity atlas of the base context.  A two-chart
-  atlas with disjoint images was rejected: `ArchitectureOverlapPresentation`
-  compares `architectureChartSpec` of the selected pair context with the actual
-  pullback, and for disjoint charts that pullback is empty while the pair
-  context's Spec is not.  Disconnectedness therefore has to live in the section
-  ring, not in the atlas.
+* The atlas is the one-chart identity atlas of the base context, taken from the
+  existing `StandardArchitectureScheme.singleAffine`.  A two-chart atlas with
+  disjoint images was rejected: `ArchitectureOverlapPresentation` compares
+  `architectureChartSpec` of the selected pair context with the actual pullback
+  of the two chart maps, and for disjoint charts that pullback is empty while
+  the pair context's Spec, for the raw system selected here, is not.  That is a
+  statement about this raw system, not a general no-go; with it, the
+  disconnectedness is placed in the section ring rather than in the atlas.
 * Every context restriction of the selected raw system is the identity
   polynomial map.  A nonidentity restriction was not needed: what this fixture
   separates is compatibility production, and the sign twist of the existing
@@ -85,6 +87,13 @@ introduced.
   this fixture exercises no admissible cover, no sheaf condition and no
   sheafification content of the AAT site.  Those are carried by SD0--SD6, whose
   site has a genuine two-patch cover of its base.
+* Of Theorem 5.2C, what this fixture exercises is the chart-realization
+  conjunct.  Its first equivalence is not discriminating here: the equation
+  system has vanishing residuals, so `EquationLawfulAlong` holds along every
+  section, and the generated ideal pulls back to `⊥` along every section, so
+  both sides hold identically.  `realizationIdeal_ne_top` only records that the
+  realization is not cut out by the unit ideal.  Sections that separate the two
+  sides are carried by SD5 and SD6.
 -/
 
 noncomputable section
@@ -162,7 +171,9 @@ def componentA : referenceSite.category :=
 def componentB : referenceSite.category :=
   Site.ContextCategoryObject.of referenceContextPreorder componentBContext
 
-/-- The first owning object is none of the four selected two-patch objects. -/
+/-- The first owning object is none of the four selected two-patch objects.
+
+API lemma for `componentA`, paired with `componentB_ne_context`. -/
 theorem componentA_ne_context
     (i : AAT.AG.FiniteModel.TwoPatchContextIndex) :
     componentA ≠ context i := fun h =>
@@ -205,11 +216,13 @@ theorem eq_of_hom_component
 /-! ## The equation system carrying two symbolic values -/
 
 /--
-The symbolic value owned by a context: `1` on the second component and `0`
+The symbolic value owned by a context: `2` on the second component and `0`
 everywhere else.
 
 The two owning contexts are isolated, so this assignment is compatible with
-every context restriction while still taking two values.
+every context restriction while still taking two values.  The nonzero value is
+a non-unit on purpose; see the note on `symbolicValue_componentB` and
+`realizationIdeal_ne_top`.
 -/
 noncomputable def symbolicValue (W : referenceSite.category) : Int :=
   if W = componentB then 2 else 0
@@ -492,7 +505,10 @@ def disconnectedRaw : RawAmbientRestrictionSystem disconnectedSite Int where
     exact (RingHom.id_comp _).symm
 
 /-- Every descended context restriction of the selected raw system is the
-identity. -/
+identity.
+
+API lemma characterizing `disconnectedRaw`'s restriction on raw classes; it is
+the objectwise form of `disconnectedCoordinateRestriction_polynomialMap`. -/
 theorem disconnectedRaw_quotientDesc
     {X Y : disconnectedSite.category} (f : X ⟶ Y)
     (p : FreeTypedCommAlg (disconnectedCoordFamily Y) Int) :
@@ -530,11 +546,11 @@ theorem canonical_component_isIso (W : disconnectedSite.category) :
 /-- SD8: the represented Scheme, `Spec (ℤ[e]/(e² - e))`.
 
 This is the existing single-chart constructor at the base context.  A two-chart
-atlas with disjoint images cannot be used instead: `ArchitectureOverlapPresentation`
+atlas with disjoint images is not usable here: `ArchitectureOverlapPresentation`
 compares `architectureChartSpec` of the selected pair context with the actual
 pullback of the two chart maps, and that pullback is empty for disjoint charts
-while the pair context's Spec is not.  Disconnectedness therefore lives in the
-section ring, not in the atlas. -/
+while the pair context's Spec, for this raw system, is not.  Disconnectedness
+is therefore placed in the section ring rather than in the atlas. -/
 noncomputable def disconnectedScheme :
     StandardArchitectureScheme disconnectedRaw :=
   StandardArchitectureScheme.singleAffine disconnectedRaw baseObject
@@ -737,12 +753,14 @@ right-hand concrete expression. -/
       ((disconnectedRaw.toRingedSite.canonical.app (op baseObject)).right))
   simpa only [CommRingCat.comp_apply, CommRingCat.id_apply] using hcancel
 
-/-- Evaluation of a global section at the first component. -/
+/-- Evaluation of a global section where the idempotent takes the value `0`,
+that is, on the component owned by `componentB`. -/
 noncomputable def globalEvalZero :
     Γ(disconnectedScheme.underlying, ⊤) →+* Int :=
   quotientEvalZero.comp globalToRaw
 
-/-- Evaluation of a global section at the second component. -/
+/-- Evaluation of a global section where the idempotent takes the value `1`,
+that is, on the component owned by `componentA`. -/
 noncomputable def globalEvalOne :
     Γ(disconnectedScheme.underlying, ⊤) →+* Int :=
   quotientEvalOne.comp globalToRaw
@@ -757,7 +775,7 @@ theorem idempotentSection_mul_self :
     idempotentSection * idempotentSection = idempotentSection := by
   rw [idempotentSection, ← map_mul, rawIdempotent_mul_self]
 
-/-- The selected global section is neither `0` nor `1`. -/
+/-- The selected global section is not `0`. -/
 theorem idempotentSection_ne_zero : idempotentSection ≠ 0 := by
   intro h
   apply rawIdempotent_ne_zero
@@ -765,7 +783,7 @@ theorem idempotentSection_ne_zero : idempotentSection ≠ 0 := by
   rw [map_zero]
   exact h
 
-/-- The complement of the selected global section is nontrivial too. -/
+/-- The selected global section is not `1`. -/
 theorem idempotentSection_ne_one : idempotentSection ≠ 1 := by
   intro h
   apply rawIdempotent_ne_one
@@ -773,7 +791,7 @@ theorem idempotentSection_ne_one : idempotentSection ≠ 1 := by
   rw [map_one]
   exact h
 
-/-- The first component evaluates the idempotent to `0`.
+/-- The evaluation at `e = 0` sends the idempotent to `0`.
 
 As a simp rule, it normalizes the left-hand fixture expression to the
 right-hand concrete expression. -/
@@ -782,7 +800,7 @@ right-hand concrete expression. -/
   show quotientEvalZero (globalToRaw (rawToGlobal rawIdempotent)) = 0
   rw [globalToRaw_rawToGlobal, quotientEvalZero_rawIdempotent]
 
-/-- The second component evaluates the idempotent to `1`.
+/-- The evaluation at `e = 1` sends the idempotent to `1`.
 
 As a simp rule, it normalizes the left-hand fixture expression to the
 right-hand concrete expression. -/
@@ -1105,7 +1123,10 @@ private theorem resChart_zero (W : disconnectedSite.category) :
     resChart W 0 = 0 :=
   map_zero _
 
-/-- Restriction to an owned open preserves `1`. -/
+/-- Restriction to an owned open preserves `1`.
+
+Kept alongside `resChart_zero` and `resChart_two` as the unit case of the same
+small API; the proofs below currently use only the other two. -/
 private theorem resChart_one (W : disconnectedSite.category) :
     resChart W 1 = 1 :=
   map_one _
@@ -1374,10 +1395,14 @@ theorem globalParity_realizationRelation
 /--
 SD8: the generated realization ideal is a proper ideal.
 
-This is what keeps the section side of Theorem 5.2C from being vacuous.  A
-symbolic value that is a unit — `1`, say — would put a unit in the generated
-ideal and collapse the equation-generated realization; the selected value `2`
-does not.
+A symbolic value that is a unit — `1`, say — would put a unit in the generated
+ideal and cut the equation-generated realization out by the unit ideal; the
+selected value `2` does not.  This fixes the quantification domain of the
+section side of Theorem 5.2C only.  It does not make that side discriminating:
+the residuals of this equation system vanish, so `EquationLawfulAlong` holds
+for every section and the generated ideal pulls back to `⊥` for every section,
+as recorded in the module notes.  Neither `Nonempty` of the realization nor a
+concrete test point is claimed here.
 -/
 theorem realizationIdeal_ne_top :
     disconnectedRealization.realizationIdeal ≠ ⊤ := by
@@ -1452,8 +1477,10 @@ theorem transitionGenerator_basicOpen_eq
 /-- SD8: the context-transition localization of the separating cover.
 
 Every transition is the inclusion of one principal open into another, so the
-affine basic-open criterion applies uniformly; no transition is assumed
-invertible. -/
+affine basic-open criterion applies uniformly and no transition is assumed
+invertible.  On this fixture the transitions that occur are identities or maps
+of zero rings, so the criterion is not exercised on a nontrivial localization;
+SD5 carries that. -/
 noncomputable def disconnectedContextChartLocalization :
     EquationObservableRealization.EquationContextChartLocalization
       disconnectedContextCharts where
@@ -1551,8 +1578,11 @@ theorem disconnectedEquationContextWitnessChartRealized
 /--
 SD8: Part III, Theorem 5.2C fires on the separating cover.
 
-The same statement as SD5 and SD6, on the cover whose compatibility comes from
-the Čech route while the universal sections are context dependent.
+The statement is the one SD5 and SD6 instantiate, here on the cover whose
+compatibility comes from the Čech route while the universal sections are
+context dependent.  On this fixture the first equivalence relates two
+conditions that both hold identically (see the module notes); the conjunct that
+carries content here is the chart realization.
 -/
 theorem disconnectedLawfulnessIdealFactorizationChartCorrespondence
     {T : AlgebraicGeometry.Scheme}

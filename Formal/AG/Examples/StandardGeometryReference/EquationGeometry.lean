@@ -1111,9 +1111,11 @@ independent, so `ofRefinement` returns here exactly what
 witness ideals: every equation system in this fixture family has a constant
 `violationCoordinate`, so the ideal being localized is a constant ideal and
 `contextChartWitnessIdeal_isBaseChange` fires on it as a general theorem about
-any ideal.  A separating instance is SD8 (`DisconnectedGluing`): its
-`violationCoordinate` is not constant, and it uses a disconnected ambient
-rather than this one.
+any ideal.  SD8 (`DisconnectedGluing`) does not close this caveat either: its
+`violationCoordinate` is not constant, but the contexts carrying the two values
+are isolated, so every context transition there is an identity or a map of zero
+rings and the base change is again taken on a constant ideal.  What SD8
+separates is the hypothesis of the two compatibility producers, not this.
 
 `referenceEquationContextCharts` repeats the whole affine Scheme at every
 equation context, so its gluing step is degenerate.  The cover built here is
