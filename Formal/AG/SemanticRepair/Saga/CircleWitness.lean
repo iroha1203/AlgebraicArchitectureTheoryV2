@@ -1,4 +1,5 @@
 import Formal.AG.SemanticRepair.Saga.KappaComparison
+import Formal.AG.SemanticRepair.Saga.EquationProduction
 import Formal.AG.Examples.FiniteModel
 import Formal.Util.AssertStandardAxioms
 import Mathlib.Data.ZMod.Basic
@@ -1314,6 +1315,24 @@ noncomputable def realization :
   lawIndex_natural _ _ := rfl
   archReading _ _ := FiniteModel.object
   archReading_natural _ _ := rfl
+
+/--
+Issue #3734: B.9.3 の selected 対応を support-Atom 単位選択として読んだもの
+(定数選択: 唯一の required equation と B.9 の有限 model reading)。
+-/
+noncomputable def productionSelection : SupportAtomEquationSelection site where
+  equationIndex _ := ⟨PUnit.unit, rfl⟩
+  archReading _ := FiniteModel.object
+
+/--
+Issue #3734: B.9.3 の定数 realization は support-Atom production route の
+生成物と一致する。これにより `circle_nonzero_class_transfer` の非自明
+instance が production constructor 経由でも到達可能である(production route の
+非退化発火 witness)。
+-/
+theorem realization_eq_production :
+    realization = productionSelection.realization presentation circleCover :=
+  rfl
 
 /-- B.9.4: the identity-carrier primary state correspondence `β`. -/
 noncomputable def stateCorrespondence :

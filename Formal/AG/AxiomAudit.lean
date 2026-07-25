@@ -11518,6 +11518,52 @@ def sagaCircleWitnessPhiEqPhiFamily :=
 def sagaCircleWitnessNonzeroClassTransfer :=
   @SemanticRepair.Saga.CircleWitness.circle_nonzero_class_transfer
 
+/-! ## Part X SAGA equation-system production route (Issue #3734) -/
+
+/-- Kernel-audit alias for the support-Atom factored selected assignment. -/
+noncomputable def sagaProductionRealization :=
+  @SemanticRepair.Saga.SupportAtomEquationSelection.realization
+
+/-- Kernel-audit alias for the produced χ^E value formula. -/
+def sagaProductionChiEApply :=
+  @SemanticRepair.Saga.SupportAtomEquationSelection.realization_chiE_apply
+
+/-- Kernel-audit alias for the displayed source read by the produced realization. -/
+noncomputable def sagaProductionDisplayedSource :=
+  @SemanticRepair.Saga.SupportAtomEquationSelection.displayedSource
+
+/-- Kernel-audit alias for the χ^E = generated-interpretation identity. -/
+def sagaProductionChiEEqInterpret :=
+  @SemanticRepair.Saga.SupportAtomEquationSelection.realization_chiE_eq_interpret
+
+/-- Kernel-audit alias for the χ^E vanishing ↔ obstruction-ideal membership. -/
+def sagaProductionChiEZeroIffDefectMem :=
+  @SemanticRepair.Saga.SupportAtomEquationSelection.realization_chiE_eq_zero_iff_defect_mem_obstructionIdeal
+
+/-- Kernel-audit alias for the witness-ideal membership vanishing route. -/
+def sagaProductionChiEZeroOfWitnessMem :=
+  @SemanticRepair.Saga.SupportAtomEquationSelection.realization_chiE_eq_zero_of_defect_mem_witnessIdeal
+
+/-- Kernel-audit alias for the fulfillment vanishing route. -/
+def sagaProductionChiEZeroOfEquationHolds :=
+  @SemanticRepair.Saga.SupportAtomEquationSelection.equationHolds_realization_chiE_eq_zero
+
+/-- Kernel-audit alias for the Definition 5.3 lift system over the generated `Q_E`. -/
+noncomputable def sagaProductionEquationLiftSystem :=
+  @SemanticRepair.Saga.LiftFiberData.equationLiftSystem
+
+/-- Kernel-audit alias for the Theorem 1.1 production input bundle. -/
+noncomputable def sagaProductionPacket :=
+  @SemanticRepair.Saga.SagaEquationPacket.ofProduction
+
+/-- Kernel-audit alias for the circle-witness production selection. -/
+noncomputable def sagaProductionCircleSelection :=
+  @SemanticRepair.Saga.CircleWitness.productionSelection
+
+/-- Kernel-audit alias for the circle-witness production firing identity. -/
+def sagaProductionCircleRealizationEq :=
+  @SemanticRepair.Saga.CircleWitness.realization_eq_production
+
 end AAT.AG.AxiomAudit
 
 #assert_standard_axioms_only AAT.AG.AxiomAudit

@@ -7,6 +7,7 @@ import Formal.AG.SemanticRepair.Saga.EquationLift
 import Formal.AG.SemanticRepair.Saga.RepairTorsor
 import Formal.AG.SemanticRepair.Saga.Exactness
 import Formal.AG.SemanticRepair.Saga.EquationRealization
+import Formal.AG.SemanticRepair.Saga.EquationProduction
 import Formal.AG.SemanticRepair.Saga.KappaComparison
 import Formal.AG.SemanticRepair.Saga.TrueSheafDescent
 import Formal.AG.SemanticRepair.Saga.CircleWitness
@@ -20,6 +21,14 @@ Lemma 2.2 and Definition 2.3 `H¹`, semantic repair presentation and `M_sem`
 (§3, Proposition 3.3, Definition 3.4), and the Lemma 2.1A comparison with the
 Part IV ordered-tuple model, including the connection to
 `Cohomology.CoverRelativeCechComplex`.
+
+Issue #3734 adds the equation-system production route
+(`Saga.EquationProduction`): the Proposition 6.1A restriction-compatibility of
+the selected assignment is discharged by proof for support-Atom factored
+selections, the produced `χ^E` value is definitionally the Theorem 11.4
+generated interpretation of the displayed defect, and the Definition 5.3
+geometric input discipline is fixed over the generated `Q_E`
+(`LiftFiberData.equationLiftSystem`, `SagaEquationPacket.ofProduction`).
 
 C7 (#3768) adds the 例10.2/付録B.9 independently generated circle comparison
 witness (`Saga.CircleWitness`): a monomorphic 4-cycle cover on which the
