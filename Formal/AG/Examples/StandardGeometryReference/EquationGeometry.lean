@@ -1065,7 +1065,7 @@ theorem referenceSiteViolationSection_image
   exact map_intCast ambientGlobalSectionsIso.hom.hom _
 
 /-- Reference symbolic sections are independent of the selected context. -/
-private theorem referenceViolationSection_context_eq
+theorem referenceViolationSection_context_eq
     (W V : referenceSite.category)
     (i : referenceSite.equationSystem.Index)
     (a : AAT.AG.FiniteModel.carrier.Atom) :
@@ -1342,16 +1342,26 @@ gluing step there is determined by that one chart.  The cover built here owns
 only proper opens: the four selected two-patch contexts own the left atlas
 patch, one context outside that family owns the right atlas patch, and every
 remaining context owns the empty open.  Both owned patches are proper
-(`atlasPatch_left_ne_top`, `atlasPatch_right_ne_top`), so no single chart
-determines the glued section.
+(`atlasPatch_left_ne_top`, `atlasPatch_right_ne_top`).
+
+Properness of the charts is a statement about the cover, not about the gluing.
+It does not make the gluing non-degenerate: `Γ(X, ⊤) = ℤ[x]` injects into
+`Γ(X, D(x)) = ℤ[x]_x`, and the universal sections here are context independent,
+so `gluedViolationSection_eq_violationSection` already identifies the glued
+section with one of them.  What this cover shows is that Theorem 5.2C fires
+without any chart being the whole represented Scheme.
 
 Compatibility cannot be produced by the Čech route on this cover: the two owned
 patches meet, and contexts of different components of `referenceSite.category`
-have no common refinement.  It is produced instead from context independence
-of the realization's own universal sections.  A cover that is simultaneously
-free of a whole-Scheme chart and Čech-refinable would need pairwise disjoint
-patches, hence a disconnected represented Scheme; that is outside the present
-fixture.
+have no common refinement.  It is produced instead from context independence of
+the realization's own universal sections.
+
+The obstruction to combining this cover with the Čech route is specific to
+`referenceSite`, not general: `TwoPatchContextIndex.base` dominates `left` and
+`right`, so monotonicity forces the base chart to contain
+`D(x) ⊔ D(1-x) = ⊤`.  A context category carrying a meet but no top — three
+objects `a`, `b`, `a ⊓ b` owning `D(x)`, `D(1-x)`, `D(x(1-x))` — would satisfy
+both conditions on a connected Scheme.
 -/
 
 /-- A context outside the selected two-patch family. -/
@@ -2947,7 +2957,7 @@ theorem cyclicUnitEquationObservableRealization_valid :
     cyclicUnitEquationRepresentingEquiv_natural
 
 /-- The cyclic unit symbolic section is the same unit in every context. -/
-private theorem cyclicUnitViolationSection_context_eq
+theorem cyclicUnitViolationSection_context_eq
     (W V : referenceSite.category)
     (i : cyclicUnitEquationSystem.Index)
     (a : AAT.AG.FiniteModel.carrier.Atom) :
@@ -3499,6 +3509,31 @@ theorem cyclicUnitSitePoint_not_factors_generated :
     ((cyclicUnitEquationObservableRealization.equationGeneratedIdeal_iff_nonempty_factorsThrough
       referenceEquationContextCharts
       cyclicUnitEquationContextChartProducer
+      cyclicUnitSiteRealizationPoint).mpr hfactor)
+
+/--
+The same negative discharge against the intrinsic ambient locus.
+
+The cyclic realization's universal sections are context independent, so the
+cover-relative generated ideal sheaf is the ambient one and the non-vanishing
+is a statement about `generatedIdealSheaf` itself.
+-/
+theorem cyclicUnitSitePoint_ambientGeneratedIdeal_comap_ne_bot :
+    cyclicUnitEquationObservableRealization.generatedIdealSheaf.comap
+        cyclicUnitSiteRealizationPoint ≠ ⊥ := by
+  rw [← cyclicUnitEquationObservableRealization.equationGeneratedIdealSheaf_eq_generatedIdealSheaf
+    referenceEquationContextCharts cyclicUnitEquationContextChartProducer
+    cyclicUnitViolationSection_context_eq baseContext]
+  exact cyclicUnitSitePoint_generatedIdeal_comap_ne_bot
+
+/-- The cyclic negative point does not factor through the intrinsic lawful locus. -/
+theorem cyclicUnitSitePoint_not_factors_ambientLawful :
+    ¬ Nonempty
+      (cyclicUnitEquationObservableRealization.FactorsThroughLawfulClosedSubscheme
+        cyclicUnitSiteRealizationPoint) := by
+  intro hfactor
+  exact cyclicUnitSitePoint_ambientGeneratedIdeal_comap_ne_bot
+    ((cyclicUnitEquationObservableRealization.generatedIdeal_iff_nonempty_factorsThrough
       cyclicUnitSiteRealizationPoint).mpr hfactor)
 
 /--
@@ -4798,6 +4833,26 @@ theorem siteEquationModTwoPoint_generatedLawfulLocus :
   (referenceSiteEquationLawfulnessIdealFactorizationCorrespondence
     siteEquationModTwoRealizationPoint).1.mp
       siteEquationModTwoPoint_equationLawful
+
+/--
+The same positive discharge against the intrinsic ambient locus.
+-/
+theorem siteEquationModTwoPoint_ambientGeneratedLawfulLocus :
+    referenceEquationObservableRealization.generatedIdealSheaf.comap
+        siteEquationModTwoRealizationPoint = ⊥ := by
+  rw [← referenceEquationObservableRealization.equationGeneratedIdealSheaf_eq_generatedIdealSheaf
+    referenceEquationContextCharts referenceEquationContextChartProducer
+    referenceViolationSection_context_eq baseContext]
+  exact siteEquationModTwoPoint_generatedLawfulLocus
+
+/-- The mod-two point factors through the intrinsic lawful closed subscheme. -/
+theorem siteEquationModTwoPoint_factors_ambientLawful :
+    Nonempty
+      (referenceEquationObservableRealization.FactorsThroughLawfulClosedSubscheme
+        siteEquationModTwoRealizationPoint) :=
+  (referenceEquationObservableRealization.generatedIdeal_iff_nonempty_factorsThrough
+    siteEquationModTwoRealizationPoint).mp
+      siteEquationModTwoPoint_ambientGeneratedLawfulLocus
 
 private theorem reference_ofIdealTop_comap_open
     {Y Z : Scheme} [IsAffine Y]

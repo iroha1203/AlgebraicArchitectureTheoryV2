@@ -5022,6 +5022,9 @@ def closedEquationalGeometryEquationGeneratedLawfulClosedImmersionIsClosedImmers
 def closedEquationalGeometryEquationGeneratedLawfulClosedImmersionKer :=
   @LawAlgebra.EquationObservableRealization.equationGeneratedLawfulClosedImmersion_ker
 
+def closedEquationalGeometryViolationSectionConstOfChartAgreement :=
+  @LawAlgebra.EquationObservableRealization.violationSection_const_of_chartAgreement
+
 def closedEquationalGeometryGluedViolationSectionEqViolationSection :=
   @LawAlgebra.EquationObservableRealization.gluedViolationSection_eq_violationSection
 
@@ -8686,6 +8689,30 @@ def standardGeometry_referenceCechContextChartProducer :=
 
 def standardGeometry_referenceCechGluedViolationSection_on_chart :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.referenceCechGluedViolationSection_on_chart
+
+def standardGeometry_referenceViolationSection_context_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceViolationSection_context_eq
+
+def standardGeometry_cyclicUnitViolationSection_context_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.cyclicUnitViolationSection_context_eq
+
+def standardGeometry_cyclicUnitSitePoint_ambientGeneratedIdeal_comap_ne_bot :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.cyclicUnitSitePoint_ambientGeneratedIdeal_comap_ne_bot
+
+def standardGeometry_cyclicUnitSitePoint_not_factors_ambientLawful :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.cyclicUnitSitePoint_not_factors_ambientLawful
+
+def standardGeometry_siteEquationModTwoPoint_ambientGeneratedLawfulLocus :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.siteEquationModTwoPoint_ambientGeneratedLawfulLocus
+
+def standardGeometry_siteEquationModTwoPoint_factors_ambientLawful :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.siteEquationModTwoPoint_factors_ambientLawful
+
+def standardSchemeEquationContextChartCoverOfMonotoneOpensChart :=
+  @LawAlgebra.EquationContextChartCover.ofMonotoneOpens_chart
+
+def standardSchemeEquationContextChartCoverOfMonotoneOpensChartMap :=
+  @LawAlgebra.EquationContextChartCover.ofMonotoneOpens_chartMap
 
 def standardGeometry_probeContext :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.probeContext

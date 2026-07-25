@@ -25,11 +25,20 @@ equivalence followed by the canonical sheafification unit, so presentation prove
 restriction naturality remain explicit proof obligations.
 
 The equation-system standard route is the represented specialization of
-Definition 5.2B.  The represented universal point induces the local maps
-`η_W : E.Observable W → Γ(X_W)` on an actual context-indexed affine cover.
-Pairwise compatible `η_W(ν)` sections are glued by the structure sheaf and
-then generate the ambient ideal sheaf; being restrictions of an independently
-supplied global family is only a convenience constructor, not a premise.
+Definition 5.2B, and the specialization is strict.  `EquationArchitecturePoint`
+carries `evaluation : ∀ W, E.Observable W →+* Γ(T, ⊤)`, so in this regime the
+universal point already lands in global sections at every context; the chart
+maps `η_W : E.Observable W → Γ(X_W)` are its restrictions, and
+`contextChartOpenViolation_eq_restrict` proves exactly that, with no producer
+hypothesis.  Definition 5.2A's chart-local `η_W`, and Definition 5.2B's regime
+of chartwise representing charts glued along context transitions, are outside
+this model; what is formalized here is the chart-relative witness ideal of a
+globally represented point.  Accordingly the gluing step below does not create
+globality: it selects one section of an already global compatible family, and
+on a connected context category it returns a section that already existed.
+What the producer does drop, relative to the earlier route, is the caller-side
+identity `∀ W V, res_W (violationSection V) = η_W(ν)`; only overlap
+compatibility is now required.
 Residual regularity comes from the universal represented point and residual
 representability from the generated equalizer.  The context transitions and
 the selected ambient atlas supply actual localization maps.  Their tensor
@@ -1417,9 +1426,11 @@ def contextChartOpen
 /--
 The symbolic violation coordinate as a section of the selected image open.
 
-This is Definition 5.2A's local `η_W(ν_{W,i,a})`: it is obtained from the
-represented chart evaluation and the canonical open-immersion section
-isomorphism, rather than from a pre-existing global section.
+This is Definition 5.2A's local `η_W(ν_{W,i,a})` read in the globally
+represented regime: it is the represented chart evaluation transported by the
+canonical open-immersion section isomorphism.  In this regime it coincides with
+the restriction of the context's own global section `R.violationSection W i a`;
+`contextChartOpenViolation_eq_restrict` proves this unconditionally.
 -/
 noncomputable def contextChartOpenViolation
     (C : EquationContextCharts (X := X))
@@ -1495,9 +1506,16 @@ Generator-level provenance for a context-indexed chart cover.
 
 For each equation and Atom, the locally represented symbolic coordinates
 agree on pairwise chart intersections.  This is precisely the compatibility
-needed to glue Definition 5.2A's local `η_W(ν)` sections.  It does not assert
-that a local coordinate was already the restriction of a supplied global
-section, and it contains no residual-vanishing or factorization conclusion.
+needed to glue Definition 5.2A's local `η_W(ν)` sections, and it contains no
+residual-vanishing or factorization conclusion.
+
+It is strictly weaker than the caller-side identity used by the earlier route,
+which demanded `res_W (violationSection V) = η_W(ν)` for *every* pair `(W, V)`;
+by `violationSection_const_of_chartAgreement` that identity forces the
+universal sections to be context independent, whereas this field constrains
+them only on chart overlaps.  It does not, and need not, deny that each local
+coordinate is the restriction of the context's own global section: in this
+regime `contextChartOpenViolation_eq_restrict` shows it always is.
 -/
 structure EquationContextChartProducer
     (C : EquationContextCharts (X := X)) : Prop where
@@ -1506,6 +1524,45 @@ structure EquationContextChartProducer
       TopCat.Presheaf.IsCompatible X.underlying.presheaf
         (contextChartOpen C)
         (fun W => R.contextChartOpenViolation C W i a)
+
+/--
+The caller-side chart identity of the earlier route forces context
+independence of the universal sections.
+
+If every context's universal section restricts on every chart to that chart's
+own represented coordinate, then the charts jointly cover and the structure
+sheaf is separated, so the sections agree globally.  This is the bridge from
+the pre-equation-system producer data to `hconst`, and hence to the intrinsic
+statements recovered at the end of this namespace.
+-/
+theorem violationSection_const_of_chartAgreement
+    (C : EquationContextCharts (X := X))
+    (h : ∀ (W V : S.category) (i : E.Index) (a : U.Atom),
+      (C.chartMap W).appTop (R.violationSection V i a) =
+        R.contextChartEvaluation C W (E.violationCoordinate W i a))
+    (W V : S.category) (i : E.Index) (a : U.Atom) :
+    R.violationSection W i a = R.violationSection V i a := by
+  refine TopCat.Sheaf.eq_of_locally_eq' X.underlying.sheaf
+    (contextChartOpen C) ⊤ (fun _ => homOfLE le_top)
+    (contextChartOpen_cover C) _ _ ?_
+  intro Z
+  dsimp only
+  have key : ∀ s : Γ(X.underlying, ⊤),
+      (IsOpenImmersion.ΓIso (C.chartMap Z) ⊤).hom
+          ((C.chartMap Z).app ⊤ s) =
+        X.underlying.presheaf.map
+          (homOfLE (le_top : contextChartOpen C Z ≤ ⊤)).op s := by
+    intro s
+    simpa [contextChartOpen] using
+      IsOpenImmersion.app_ΓIso_hom_apply (C.chartMap Z) ⊤ s
+  show X.underlying.presheaf.map
+        (homOfLE (le_top : contextChartOpen C Z ≤ ⊤)).op
+        (R.violationSection W i a) =
+      X.underlying.presheaf.map
+        (homOfLE (le_top : contextChartOpen C Z ≤ ⊤)).op
+        (R.violationSection V i a)
+  rw [← key (R.violationSection W i a), ← key (R.violationSection V i a)]
+  exact congrArg _ ((h Z W i a).trans (h Z V i a).symm)
 
 /--
 Čech-level refinement datum for a context-indexed chart cover.
@@ -1630,7 +1687,14 @@ theorem contextChartWitnessIdeal_eq_span
 
 /--
 The local symbolic coordinates glue uniquely to a section of the represented
-Scheme.  Globality is an output of the structure-sheaf gluing theorem.
+Scheme.
+
+The gluing theorem supplies uniqueness, not globality: each local coordinate is
+already the restriction of a global section (`contextChartOpenViolation_eq_restrict`),
+so this picks out the unique global section restricting to all of them.  When
+the universal sections are context independent it is one of them, by
+`gluedViolationSection_eq_violationSection`.  A context category with several
+components can make the result differ from every `R.violationSection W i a`.
 -/
 noncomputable def gluedViolationSection
     (C : EquationContextCharts (X := X))
@@ -1929,14 +1993,14 @@ comparison for every actual context transition.
 -/
 noncomputable def equationSchemeWitnessIdealLocalizes
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (L : EquationContextChartLocalization C)
     {source target : S.category} (f : source ⟶ target)
     (i : E.Index) :
     letI := (C.transition f).appTop.hom.toAlgebra
     Γ(C.chart source, ⊤) ⊗[Γ(C.chart target, ⊤)]
         (R.contextChartWitnessIdeal C target i) ≃ₗ[Γ(C.chart source, ⊤)]
       (R.contextChartWitnessIdeal C source i) :=
-  R.contextWitnessIdealLocalizes C P.localization f i
+  R.contextWitnessIdealLocalizes C L f i
 
 /--
 The selected context-transition localization discharges the base-change
@@ -1944,7 +2008,7 @@ comparison for every actual context restriction.
 -/
 theorem contextChartWitnessIdeal_isBaseChange
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (L : EquationContextChartLocalization C)
     {source target : S.category} (f : source ⟶ target)
     (i : E.Index) :
     letI := (C.transition f).appTop.hom.toAlgebra
@@ -1952,25 +2016,25 @@ theorem contextChartWitnessIdeal_isBaseChange
       (R.contextChartWitnessIdealComparison C f i) := by
   classical
   letI := (C.transition f).appTop.hom.toAlgebra
-  letI : IsLocalization (P.localization.submonoid f)
+  letI : IsLocalization (L.submonoid f)
       Γ(C.chart source, ⊤) :=
-    P.localization.isLocalization f
+    L.isLocalization f
   have hmap :
       Submodule.localized' Γ(C.chart source, ⊤)
-          (P.localization.submonoid f)
+          (L.submonoid f)
           (Algebra.linearMap Γ(C.chart target, ⊤) Γ(C.chart source, ⊤))
           (R.contextChartWitnessIdeal C target i) =
         R.contextChartWitnessIdeal C source i := by
     refine Eq.trans ?_ (R.contextChartWitnessIdeal_map_transition C f i)
     simpa only [RingHom.algebraMap_toAlgebra] using
       Ideal.localized'_eq_map Γ(C.chart source, ⊤)
-        (P.localization.submonoid f)
+        (L.submonoid f)
         (R.contextChartWitnessIdeal C target i)
   set e :=
     (LinearEquiv.ofEq _ _ hmap).restrictScalars Γ(C.chart target, ⊤)
   set g :=
     Submodule.toLocalized' Γ(C.chart source, ⊤)
-      (P.localization.submonoid f)
+      (L.submonoid f)
       (Algebra.linearMap Γ(C.chart target, ⊤) Γ(C.chart source, ⊤))
       (R.contextChartWitnessIdeal C target i)
   have hcomp :
@@ -1979,12 +2043,12 @@ theorem contextChartWitnessIdeal_isBaseChange
     ext m
     rfl
   rw [hcomp]
-  haveI : IsLocalizedModule (P.localization.submonoid f) g :=
+  haveI : IsLocalizedModule (L.submonoid f) g :=
     Submodule.isLocalizedModule _ _ _ _
-  haveI : IsLocalizedModule (P.localization.submonoid f)
+  haveI : IsLocalizedModule (L.submonoid f)
       (e.toLinearMap ∘ₗ g) :=
-    IsLocalizedModule.of_linearEquiv (P.localization.submonoid f) g e
-  exact IsLocalizedModule.isBaseChange (P.localization.submonoid f)
+    IsLocalizedModule.of_linearEquiv (L.submonoid f) g e
+  exact IsLocalizedModule.isBaseChange (L.submonoid f)
     Γ(C.chart source, ⊤) _
 
 /--
@@ -2543,13 +2607,21 @@ theorem gluedWitnessIdealSheaf_on_atlasChart
 Definition 5.2B's chart clauses for one equation on the actual context cover
 and ambient atlas.
 
-Only the first two conjuncts are producer obligations in Definition 5.2B's
-sense: the context-chart generation identity, and the base-change property of
-the canonical context-transition comparison.  The last two are derived
-identities that the glued construction satisfies definitionally — the atlas
-comparison is the pushforward of the same global ideal along the two
-projections of one Scheme pullback — and are recorded here only so that the
-package states the whole chart picture in one place.
+Role of each conjunct, stated against what actually discharges it.
+
+* (1) context-chart generation: a theorem of `(C, P)` alone
+  (`contextWitnessIdealChart`).  Not an obligation.
+* (2) context-transition base change: discharged only by an
+  `EquationContextChartLocalization`.  This is Definition 5.2B's
+  `witnessIdealLocalizes_E`.
+* (3) atlas-overlap base change: discharged only by an
+  `EquationAmbientChartLocalization`.  This is an *additional* requirement of
+  the Lean atlas presentation with no counterpart in Definition 5.2B.
+* (4) atlas-chart generation and (5) overlap agreement: theorems of `(C, P)`
+  alone, true definitionally — both sides are the pushforward of one global
+  ideal, in (5) along the two projections of a single Scheme pullback.  In
+  particular (5) does **not** check Definition 5.2B's overlap cocycle
+  condition for chartwise-defined `J_i^E`.
 
 Mathlib's affine-basic-open localization criterion is deliberately *not* a
 conjunct: `Scheme.IdealSheafData` carries it as a structure field, so every
@@ -2597,7 +2669,7 @@ theorem equationContextWitnessChartRealized
   refine ⟨fun W => R.contextWitnessIdealChart C P.coordinate W i,
     ?_, ?_, ?_, ?_⟩
   · intro source target f
-    exact R.contextChartWitnessIdeal_isBaseChange C P f i
+    exact R.contextChartWitnessIdeal_isBaseChange C P.localization f i
   · intro j l
     exact R.gluedOverlapWitnessIdeal_isBaseChange C P.coordinate L j l i
   · intro j
