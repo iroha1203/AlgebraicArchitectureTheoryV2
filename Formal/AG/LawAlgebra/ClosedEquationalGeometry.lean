@@ -3669,8 +3669,23 @@ theorem lawfulnessIdealFactorizationCorrespondence
 
 The generated objects above are relative to the selected context cover.  When
 the realization's universal sections do not depend on the equation context they
-agree with the chart-independent ambient objects, so every statement that was
-available before the equation-system route is recovered unchanged.
+agree with the chart-independent ambient objects.
+
+What is recovered here is the sheaf-level and correspondence-level statements:
+`witnessIdealSheaf`, `generatedIdealSheaf`, and the two factorization
+equivalences.  The chart-level identity of the earlier route,
+`Ideal.map (C.chartMap W).appTop.hom (R.globalWitnessIdeal i) =
+R.contextChartWitnessIdeal C W i`, has no named counterpart here; it follows
+from `gluedWitnessIdeal_eq_globalWitnessIdeal` and
+`gluedWitnessIdeal_on_contextChart` but is not stated.  Likewise
+`contextWitnessIdealChart` now targets `gluedWitnessIdealSheaf` rather than
+`globalWitnessIdealSheaf`.
+
+The recovery also takes a representative context `base : S.category` as a
+premise, used for the reverse inclusion in `gluedWitnessIdeal_eq_globalWitnessIdeal`.
+This is not a further hypothesis on the realization — an `ArchCtx` is always
+constructible — but it does exclude the degenerate regime of an empty context
+category.
 -/
 
 /-- The locally generated witness ideal sheaf is the ambient one. -/
