@@ -16,7 +16,7 @@
 - ArchSig への入力は観測(ArchMap)と法・方程式(LawPolicy / law-equation-surface / MeasurementProfile)の
   二系統に限る(正本は AGENTS.md「責務範囲」の入力トライアド)。この二系統に帰属しない
   authored 証明・証書・presentation を、新しい CLI 入力や schema slot として追加しない。
-  既存の RepairPlan 供給 slot 群はこの規律に対する負債であり、返済は Issue #3817 が管理する。
+  既存の RepairPlan 供給 slot 群はこの規律に対する負債であり、返済は供給 slot 台帳の負債告知が管理する。
 - ArchSig の `analyze` は観測(ArchMap)と、選ばれた LawPolicy、law-equation-surface、MeasurementProfile の中で
   structural verdict と analytic reading を出す。`compare` は二つの analyze run を記録レベルで比較し、
   `gate` は gate policy に従って measurement packet と比較記録をCI判断へ写像する。
