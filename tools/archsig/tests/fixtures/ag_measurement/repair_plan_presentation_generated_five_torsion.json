@@ -65,13 +65,11 @@
   "faithfulness": {
     "mode": "supplied",
     "supplied": {
-      "zeroOverlapRef": "overlap:consign-consignprice",
       "residualSupportPredicate": {
         "kind": "finite-support",
         "supportVariables": [
           "drift:refund-rounding"
-        ],
-        "zeroOnZeroPrimitive": true
+        ]
       },
       "faithfulnessLaw": "the refund rounding witness projects one-to-one onto the cancel-service reconciliation observation"
     }

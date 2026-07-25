@@ -213,13 +213,13 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Validate a standalone RepairPlan v0.5.4 artifact.
+    /// Validate a standalone RepairPlan v0.5.6 artifact.
     RepairPlan {
         /// Input ArchMap observation artifact path used to resolve RepairPlan chart and semantic refs.
         #[arg(long)]
         archmap: PathBuf,
 
-        /// Input RepairPlan v0.5.5 JSON path.
+        /// Input RepairPlan v0.5.6 JSON path.
         #[arg(long = "repair-plan")]
         repair_plan: PathBuf,
 

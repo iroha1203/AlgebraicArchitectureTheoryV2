@@ -1,11 +1,11 @@
 ---
 name: repair-plan-creater
-description: Create archsig-repair-plan/v0.5.5 artifacts for ArchSig SAGA descent runs with derived residuals.
+description: Create archsig-repair-plan/v0.5.6 artifacts for ArchSig SAGA descent runs with derived residuals.
 ---
 
 # RepairPlan Creater
 
-Use this skill to author `archsig-repair-plan/v0.5.5` artifacts for Stage 1
+Use this skill to author `archsig-repair-plan/v0.5.6` artifacts for Stage 1
 `ag.saga-descent` and Stage 2/3 supplied-data SAGA runs.
 
 > Debt notice: the supplied slots this skill authors (faithfulness,

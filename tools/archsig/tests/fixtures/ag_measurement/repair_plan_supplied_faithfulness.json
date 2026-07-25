@@ -39,14 +39,12 @@
   "faithfulness": {
     "mode": "supplied",
     "supplied": {
-      "zeroOverlapRef": "overlap:inventory-shared",
       "residualSupportPredicate": {
         "kind": "finite-support",
         "supportVariables": [
           "src:order",
           "src:inventory"
-        ],
-        "zeroOnZeroPrimitive": true
+        ]
       },
       "faithfulnessLaw": "residual support is faithful on the selected complete-support complex"
     }

@@ -13,7 +13,7 @@ pub const ARCHSIG_SAGA_CONCLUSIONS_V1_SCHEMA: &str = "archsig-saga-conclusions/v
 pub const ARCHSIG_GATE_POLICY_V1_SCHEMA: &str = "archsig-gate-policy/v0.5.4";
 pub const ARCHSIG_GATE_REPORT_V1_SCHEMA: &str = "archsig-gate-report/v0.5.4";
 pub const ARCHSIG_ARCHMAP_DIFF_V1_SCHEMA: &str = "archmap-diff/v0.5.4";
-pub const ARCHSIG_COMPARISON_REPORT_V1_SCHEMA: &str = "archsig-comparison-report/v0.5.4";
+pub const ARCHSIG_COMPARISON_REPORT_V1_SCHEMA: &str = "archsig-comparison-report/v0.5.5";
 pub const ARCHSIG_COMPARISON_NO_NEW_MEASURED_OBSTRUCTION_RECORDED: &str =
     "NO_NEW_MEASURED_OBSTRUCTION_RECORDED";
 pub const ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE: &str =

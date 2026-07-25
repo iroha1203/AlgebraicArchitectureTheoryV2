@@ -842,6 +842,7 @@ pub(crate) fn evaluate_saga_descent_v1(
                 "coverRef": derived.cover_ref,
                 "mappedCoverRef": plan.complex.archmap_cover_ref.clone(),
                 "lawSurfaceRef": derived.law_surface_ref,
+                "charts": plan.complex.charts,
                 "edges": derived.edges
             },
             "faithfulnessBasis": {
@@ -1118,6 +1119,30 @@ fn evaluate_saga_comparison_v1(
         && target_class_nonzero.is_some()
         && (!contract_checked || !preserves_zero_predicate);
     if !class_available {
+        if let Some(fault) = presentation_checks
+            .as_ref()
+            .and_then(|checks| checks.structural_fault.as_deref())
+        {
+            return json!({
+                "invariantId": "saga-comparison:h1-transfer",
+                "evaluator": "ag.saga-comparison",
+                "kind": "h1-comparison-transfer",
+                "status": "not_computed",
+                "failureCode": ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION,
+                "reason": "presentation_structural_fault",
+                "structuralFault": fault,
+                "whatNext": "repair the named presentation structural fault before evaluating transfer",
+                "contract": {
+                    "incidenceBridgeKind": comparison["incidenceBridge"]["kind"].as_str().unwrap_or("unknown"),
+                    "h1ComparisonDataKind": h1_kind,
+                    "normalizedComplexFingerprint": comparison_complex_fingerprint(plan),
+                    "classPrerequisite": false,
+                    "targetClassComputed": false,
+                    "contractChecked": false,
+                    "measuredClassAgreement": Value::Null
+                }
+            });
+        }
         let (reason, what_next, non_conclusions) = if h1_kind == "presentation-generated" {
             (
                 "presentation_source_class_prerequisite_not_computed",
@@ -1632,25 +1657,32 @@ fn residual_support_component(
             component_by_overlap.insert(overlap_ref.as_str(), component_index);
         }
     }
-    let mut residual_overlap_refs = supports
+    let residual_overlap_refs = supports
         .iter()
         .filter(|(_, variables)| !variables.is_empty())
         .map(|(overlap_ref, _)| overlap_ref.as_str())
         .collect::<BTreeSet<_>>();
     if residual_overlap_refs.is_empty() {
-        let zero_overlap_ref = plan.faithfulness.supplied.as_ref()?.zero_overlap_ref.as_str();
-        let zero_overlap = plan
-            .complex
-            .overlaps
+        // 零 residual では supported overlap が無いので、trueSheafCertificate の memberCharts が
+        // 指す component を認証対象に取る(供給 slot が指す先を導出 residual が空認する形)。
+        let member_charts = plan
+            .true_sheaf_certificate
+            .as_ref()
+            .and_then(Value::as_object)
+            .and_then(|certificate| certificate.get("memberCharts"))
+            .and_then(Value::as_array)?
             .iter()
-            .find(|overlap| overlap.id == zero_overlap_ref)?;
-        if supports
-            .get(&zero_overlap.id)
-            .is_some_and(|variables| !variables.is_empty())
-        {
-            return None;
-        }
-        residual_overlap_refs.insert(zero_overlap.id.as_str());
+            .filter_map(Value::as_str)
+            .collect::<BTreeSet<_>>();
+        let component_index = components.iter().position(|component| {
+            component
+                .chart_refs
+                .iter()
+                .map(String::as_str)
+                .collect::<BTreeSet<_>>()
+                == member_charts
+        })?;
+        return components.get(component_index).cloned();
     }
     let mut selected_component = None;
     for overlap_ref in residual_overlap_refs {
@@ -2043,7 +2075,7 @@ mod tests {
     }
 
     #[test]
-    fn presentation_generated_silence_names_its_computed_source_class_prerequisite() {
+    fn presentation_generated_structural_fault_is_named_not_silent() {
         let mut plan: RepairPlanDocumentV1 = serde_json::from_str(include_str!(
             "../tests/fixtures/ag_measurement/repair_plan_presentation_generated_circle.json"
         ))
@@ -2052,22 +2084,13 @@ mod tests {
             serde_json::json!({});
 
         let result = evaluate_saga_comparison_v1(&plan, &declared_supports(&plan), &[], None);
-        assert_eq!(result["status"], "silence_by_design");
+        assert_eq!(result["status"], "not_computed");
+        assert_eq!(result["reason"], "presentation_structural_fault");
+        assert!(result["structuralFault"].as_str().is_some_and(|fault| !fault.is_empty()));
         assert_eq!(
-            result["reason"],
-            "presentation_source_class_prerequisite_not_computed"
+            result["failureCode"],
+            ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION
         );
-        assert!(result["whatNext"]
-            .as_str()
-            .is_some_and(|text| text.contains("semantic presentation")));
-        assert!(result["nonConclusions"]
-            .as_array()
-            .is_some_and(|entries| entries.iter().all(|entry| {
-                entry
-                    .as_str()
-                    .is_some_and(|text| text.contains("source presentation H1 class"))
-            })));
-        assert!(result.get("failureCode").is_none());
     }
 
     #[test]

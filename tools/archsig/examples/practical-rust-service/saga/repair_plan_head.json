@@ -74,13 +74,11 @@
   "faithfulness": {
     "mode": "supplied",
     "supplied": {
-      "zeroOverlapRef": "overlap:application-ports",
       "residualSupportPredicate": {
         "kind": "finite-support",
         "supportVariables": [
           "cech:section-mismatch"
-        ],
-        "zeroOnZeroPrimitive": true
+        ]
       },
       "faithfulnessLaw": "the reconciliation drift witness projects one-to-one onto the settlement observation"
     }

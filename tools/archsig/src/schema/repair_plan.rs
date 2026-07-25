@@ -180,7 +180,6 @@ pub struct RepairPlanFaithfulnessV1 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RepairPlanSuppliedFaithfulnessV1 {
-    pub zero_overlap_ref: String,
     pub residual_support_predicate: RepairPlanSuppliedPredicateV1,
     pub faithfulness_law: String,
 }
@@ -191,5 +190,4 @@ pub struct RepairPlanSuppliedPredicateV1 {
     pub kind: String,
     #[serde(default)]
     pub support_variables: Vec<String>,
-    pub zero_on_zero_primitive: bool,
 }

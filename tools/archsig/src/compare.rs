@@ -160,7 +160,7 @@ pub fn build_comparison_artifacts_with_refinement_v1(
         "verdictTransitions": verdict_transitions,
         "boundaryStatements": boundary_statements,
         "classTransport": class_transport,
-        "repairCochain": derived_repair_cochain(&base_packet, &head_packet),
+        "residualClassAgreement": derived_residual_class_agreement(&base_packet, &head_packet, &comparability),
         "profileConclusionCode": profile_conclusion_code,
         "nonConclusions": [
             "Comparison report records run-local verdict rows and deterministic ArchMap diff intersections.",
@@ -172,20 +172,25 @@ pub fn build_comparison_artifacts_with_refinement_v1(
 }
 
 
-/// head / repaired の 2 つの測定記録から repair cochain h を導出する。
-/// 両 packet の saga-descent:residual-derivation の edge 値の XOR が delta であり、
-/// スカラー系 delta0(h) = delta を解いた h(chart ごとの F2 値)が修理の witness になる。
-fn packet_residual_derivation_edges(
-    packet: &Value,
-) -> Option<Vec<(String, String, String, u8)>> {
-    let invariants = packet.get("computedInvariants")?.as_array()?;
-    let derivation = invariants.iter().find(|invariant| {
-        invariant.get("invariantId").and_then(Value::as_str)
-            == Some("saga-descent:residual-derivation")
-            && invariant["residualDerivation"]["derived"] == Value::Bool(true)
-    })?;
-    let edges = derivation["residualDerivation"]["edges"].as_array()?;
-    edges
+/// 同一複体上の 2 run の導出 residual が delta0(h) で結ばれるか(cohomologous か)を
+/// 記録する。第X部 定義3.4 の C^0_sem 上の定理4.4(r' = r + delta0(a))の有限検査であり、
+/// 修理成功の判定ではない。修理の成立は head run 自身の residual 測定が語る。
+fn packet_residual_derivation(packet: &Value) -> Option<&Value> {
+    packet
+        .get("computedInvariants")?
+        .as_array()?
+        .iter()
+        .find(|invariant| {
+            invariant.get("invariantId").and_then(Value::as_str)
+                == Some("saga-descent:residual-derivation")
+                && invariant["residualDerivation"]["derived"] == Value::Bool(true)
+        })
+        .map(|invariant| &invariant["residualDerivation"])
+}
+
+fn derivation_edges(derivation: &Value) -> Option<Vec<(String, String, String, u8)>> {
+    derivation["edges"]
+        .as_array()?
         .iter()
         .map(|edge| {
             Some((
@@ -198,15 +203,54 @@ fn packet_residual_derivation_edges(
         .collect()
 }
 
-fn derived_repair_cochain(base_packet: &Value, head_packet: &Value) -> Value {
-    let (Some(base_edges), Some(head_edges)) = (
-        packet_residual_derivation_edges(base_packet),
-        packet_residual_derivation_edges(head_packet),
+fn derived_residual_class_agreement(
+    base_packet: &Value,
+    head_packet: &Value,
+    comparability: &Value,
+) -> Value {
+    const THEOREM_REF: &str = "part10/3.4+4.4";
+    if !matches!(
+        comparability["level"].as_str(),
+        Some("identical") | Some("verdict-row")
+    ) {
+        return json!({
+            "status": "silence_by_design",
+            "reason": "runs_not_comparable",
+            "theoremRef": THEOREM_REF,
+            "nonConclusion": "residual class agreement is read only for comparable runs; a not-comparable pair shares no checked complex"
+        });
+    }
+    let (Some(base_derivation), Some(head_derivation)) = (
+        packet_residual_derivation(base_packet),
+        packet_residual_derivation(head_packet),
     ) else {
         return json!({
             "status": "silence_by_design",
             "reason": "residual_derivation_not_recorded",
-            "nonConclusion": "repair cochain derivation requires both runs to record a derived saga-descent residual"
+            "theoremRef": THEOREM_REF,
+            "nonConclusion": "residual class agreement requires both runs to record a derived saga-descent residual"
+        });
+    };
+    for provenance_key in ["coverRef", "mappedCoverRef", "lawSurfaceRef", "charts"] {
+        if base_derivation[provenance_key] != head_derivation[provenance_key] {
+            return json!({
+                "status": "not_computed",
+                "reason": "residual_derivation_provenance_mismatch",
+                "theoremRef": THEOREM_REF,
+                "mismatchedField": provenance_key,
+                "nonConclusion": "residual class agreement is fail-closed when the two runs derive residuals under different covers, law surfaces, or chart sets"
+            });
+        }
+    }
+    let (Some(base_edges), Some(head_edges)) = (
+        derivation_edges(base_derivation),
+        derivation_edges(head_derivation),
+    ) else {
+        return json!({
+            "status": "silence_by_design",
+            "reason": "residual_derivation_not_recorded",
+            "theoremRef": THEOREM_REF,
+            "nonConclusion": "residual class agreement requires both runs to record a derived saga-descent residual"
         });
     };
     let base_map = base_edges
@@ -221,9 +265,21 @@ fn derived_repair_cochain(base_packet: &Value, head_packet: &Value) -> Value {
         return json!({
             "status": "not_computed",
             "reason": "residual_complexes_do_not_match",
-            "nonConclusion": "repair cochain derivation is fail-closed when the two runs derive residuals over different overlap complexes"
+            "theoremRef": THEOREM_REF,
+            "nonConclusion": "residual class agreement is fail-closed when the two runs derive residuals over different overlap complexes"
         });
     }
+    let overlap_refs = base_map
+        .keys()
+        .map(|(overlap, _, _)| overlap.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let provenance = json!({
+        "coverRef": base_derivation["coverRef"],
+        "lawSurfaceRef": base_derivation["lawSurfaceRef"],
+        "overlapComplex": { "overlapRefs": overlap_refs }
+    });
     let mut charts = BTreeSet::new();
     for (_, left, right, _) in &base_edges {
         charts.insert(left.clone());
@@ -249,11 +305,21 @@ fn derived_repair_cochain(base_packet: &Value, head_packet: &Value) -> Value {
         row[charts.len()] = delta;
         rows.push(row);
     }
+    if delta_support.is_empty() {
+        return json!({
+            "status": "no_residual_change",
+            "derived": true,
+            "theoremRef": THEOREM_REF,
+            "deltaSupport": [],
+            "provenance": provenance
+        });
+    }
     match crate::saga::solve_f2(rows, charts.len()) {
         Some(solution) => json!({
-            "status": "established",
+            "status": "cohomologous",
             "derived": true,
             "equation": "delta0(h) = r_base XOR r_head",
+            "theoremRef": THEOREM_REF,
             "inB1": true,
             "deltaSupport": delta_support,
             "witnessChartAssignment": charts
@@ -264,15 +330,19 @@ fn derived_repair_cochain(base_packet: &Value, head_packet: &Value) -> Value {
                     "parity": solution[index]
                 }))
                 .collect::<Vec<_>>(),
-            "reading": "the change between the two runs is explained by a derived C0 repair cochain on the shared overlap complex"
+            "provenance": provenance,
+            "reading": "the two runs' derived residuals differ by delta0(h) on the shared overlap complex; this records residual class agreement, not a repair-success verdict — repair success is read from the head run's own residual measurements"
         }),
         None => json!({
-            "status": "not-established",
+            "status": "not_cohomologous",
             "derived": true,
+            "equation": "delta0(h) = r_base XOR r_head",
+            "theoremRef": THEOREM_REF,
             "reason": "delta_not_a_boundary_within_selected_complex",
             "inB1": false,
             "deltaSupport": delta_support,
-            "nonConclusion": "the residual change between the two runs is not a coboundary on the shared complex, so no repair cochain explains it"
+            "provenance": provenance,
+            "nonConclusion": "the residual change between the two runs is not a coboundary on the shared complex; the two runs' residual classes differ"
         }),
     }
 }

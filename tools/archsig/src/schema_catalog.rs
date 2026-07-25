@@ -179,7 +179,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "primary",
                 "ArchSig v0.5.4 SAGA Stage 1",
                 vec!["archsig-contract:saga-stage1-v0.5.4"],
-                    "RepairPlan v0.5.6 supplies the checked SAGA descent input side: a finite complex with its declared ArchMap cover and per-overlap/per-triple context bindings, faithfulness regime, optional trueSheafCertificate and gluingData, and an optional presentation block carrying per-cell semantic/equation generators, relation matrices, generator maps, restriction matrices, and an equation lift atlas. The residual is derived by analyze from the selected cover sections and law-surface witness bindings; the repair cochain is derived by compare from the head/repaired residual derivations; the coefficient is the selected MeasurementProfile coefficient.",
+                    "RepairPlan v0.5.6 supplies the SAGA descent input side: a finite complex with its declared ArchMap cover and per-overlap/per-triple context bindings, faithfulness regime, optional trueSheafCertificate and gluingData, and an optional presentation block carrying per-cell semantic/equation generators, relation matrices, generator maps, restriction matrices, and an equation lift atlas. The residual is derived by analyze from the selected cover sections and law-surface witness bindings; the residual class agreement (with its coboundary witness when cohomologous) is derived by compare from the two runs' residual derivations under a comparability gate; the coefficient is the selected MeasurementProfile coefficient.",
                 vec![
                     "RepairPlan validation checks supplied premises before use; it does not compute boundary membership or global coherence.",
                     "RepairPlan input cannot supply generated conclusion tokens such as glues, verdict, h1Zero, or globalCoherent.",
@@ -196,7 +196,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 vec!["archsig-contract:saga-stage2-v0.5.4"],
                 "H1 comparison data v0.5.4 accepts either an explicitly typed finite cochain map over degree-zero charts, degree-one overlaps, and degree-two triple-overlap bases, or a presentation-generated contract with semantic/equation matrices, restriction maps, a separately supplied equation lift atlas, and a complete ArchMap cover/incidence mapping. The validator recomputes explicit-map properties, or checks presentation exactness, generator completeness, restriction naturality, derived cochain commutativity, semantic/equation residual construction, source/target quotient-level cocycle/class calculation, the residual witness, the resolution of equation generators against the supplied law surface, and the declared finite complex against the supplied ArchMap. The presentation declares its coefficient ring: f2 by default, or integers for the finitely generated abelian group form, where subgroup equality and full generation are decided by column Hermite normal form.",
                 vec![
-                    "Explicit cochain data remains supplied and is validated as such; presentation-generated data derives local Phi, cochain map, semantic/equation residuals, and quotient-level witnesses after matrix exactness and naturality checks pass.",
+                    "Explicit cochain data remains supplied and is validated as such; presentation-generated data derives local Phi, cochain map, semantic/equation residuals, and quotient-level witnesses after matrix exactness and naturality checks pass, and reports structuralFault / presentationCellsCoverComplex when a named structural fault blocks the derivation.",
                     "H1 transfer is generated only after the applicable computed source-class prerequisite and target class computation are available.",
                 ],
             ),
@@ -348,14 +348,14 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ],
             ),
             artifact(
-                "archsig-comparison-report/v0.5.4",
-                "ArchSig comparison report v0.5.4",
+                "archsig-comparison-report/v0.5.5",
+                "ArchSig comparison report v0.5.5",
                 ARCHSIG_COMPARISON_REPORT_V1_SCHEMA,
                 "primary",
                 "ArchSig Output / CI workflow",
                 vec!["archsig-contract:artifact-ci-v0.5.4"],
                 &format!(
-                    "Comparison report v0.5.4 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions, archmap-diff intersections, and comparability of the two runs' repair-plan digests. With a validated refinement-comparison/v0.5.4 artifact it can also record class-zero preservation. Registered conclusionCode values are {}.",
+                    "Comparison report v0.5.5 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions, archmap-diff intersections, comparability of the two runs' repair-plan digests, and — for comparable runs whose residual derivations share cover, law surface, and chart set — the residualClassAgreement block (cohomologous / not_cohomologous / no_residual_change) with its coboundary witness when cohomologous (part10/3.4+4.4). With a validated refinement-comparison/v0.5.4 artifact it can also record class-zero preservation. Registered conclusionCode values are {}.",
                     registry_sentence(&ARCHSIG_COMPARISON_CONCLUSION_CODES),
                 ),
                 vec![
@@ -593,7 +593,7 @@ mod tests {
                 "archsig-gate-policy/v0.5.4",
                 "archsig-gate-report/v0.5.4",
                 "archmap-diff/v0.5.4",
-                "archsig-comparison-report/v0.5.4",
+                "archsig-comparison-report/v0.5.5",
                 "archsig-run-manifest/v0.5.4",
                 "archsig-atom-viewer-data/v0.5.4",
                 "archsig-measurement-view-model/v0.5.4",

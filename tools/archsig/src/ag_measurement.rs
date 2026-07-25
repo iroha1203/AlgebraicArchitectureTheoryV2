@@ -99,6 +99,7 @@ const BOUNDARY_STATEMENT_KINDS: [&str; 6] = [
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[allow(dead_code)]
 struct SagaPresentationGeneratedEvidenceV1 {
     kind: String,
     comparison_input: SagaPresentationGeneratedInputEvidenceV1,
@@ -133,6 +134,7 @@ struct SagaGeneratedCochainMapEvidenceV1 {
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[allow(dead_code)]
 struct SagaDerivedCellEvidenceV1 {
     cell_ref: String,
     local_phi_derived_from: String,
@@ -13523,7 +13525,6 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
         "suppliedCochainMap",
         "presentationGenerated",
         "measuredClassDivergence",
-        "declaredResidualDivergence",
         "generatedQuotientTransfer",
         "resolutionSelector",
         "restrictionMatrix",

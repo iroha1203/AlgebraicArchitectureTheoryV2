@@ -1275,25 +1275,16 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
 
     for (case, field, expected) in [
         (
-            "zero-overlap-unknown",
-            "zeroOverlapRef",
-            "zeroOverlapRef must resolve to a declared overlap",
+            "predicate-empty-variable",
+            "supportVariables",
+            "supplied faithfulness requires residualSupportPredicate and faithfulnessLaw",
         ),
-        (
-            "predicate-not-zero",
-            "zeroOnZeroPrimitive",
-            "faithfulness requires Q(r)=0 on the supplied zero primitive",
-        ),
-
     ] {
         let mut candidate = read_json(&supplied_path);
-        if field == "zeroOverlapRef" {
-            candidate["faithfulness"]["supplied"][field] = json!("overlap:does-not-exist");
-        } else if field == "zeroOnZeroPrimitive" {
-            candidate["faithfulness"]["supplied"]["residualSupportPredicate"][field] = json!(false);
-        } else {
-            candidate["faithfulness"]["supplied"]["residualSupportPredicate"][field] =
-                json!(["forged-variable"]);
+        {
+            let _ = field;
+            candidate["faithfulness"]["supplied"]["residualSupportPredicate"]["supportVariables"] =
+                json!([""]);
         }
         let path = out_dir.join(format!("repair_plan_{case}.json"));
         fs::write(
@@ -1832,6 +1823,26 @@ fn cli_analyze_saga_descent_complete_support_measures_boundary_membership() {
     );
 }
 
+fn supplied_triple_pentagon_complex_plan(root: &Path) -> Value {
+    // 五角形+弦の complex だけを持つ最小 plan(certificate / comparison なし)。
+    // residual class agreement の両側非零 fixture が使う。
+    let mut plan = read_json(&root.join("repair_plan_complete_support.json"));
+    plan["id"] = json!("repair-plan:agreement-pentagon");
+    plan["complex"]["charts"] = json!([
+        "ctx:order", "ctx:inventory", "ctx:shared", "ctx:route", "ctx:ledger"
+    ]);
+    plan["complex"]["overlaps"] = json!([
+        {"id": "overlap:order-inventory", "left": "ctx:order", "right": "ctx:inventory"},
+        {"id": "overlap:inventory-shared", "left": "ctx:inventory", "right": "ctx:shared"},
+        {"id": "overlap:order-shared", "left": "ctx:order", "right": "ctx:shared"},
+        {"id": "overlap:shared-route", "left": "ctx:shared", "right": "ctx:route"},
+        {"id": "overlap:route-ledger", "left": "ctx:route", "right": "ctx:ledger"},
+        {"id": "overlap:ledger-order", "left": "ctx:ledger", "right": "ctx:order"}
+    ]);
+    plan["complex"]["tripleOverlaps"] = json!([]);
+    plan
+}
+
 fn supplied_triple_saga_plan(root: &Path, nonzero_class: bool) -> Value {
     let mut plan = read_json(&root.join("repair_plan_complete_support.json"));
     // 五角形 order-inventory-shared-route-ledger(奇サイクル)+弦 order-shared(一致)。
@@ -1892,11 +1903,9 @@ fn supplied_triple_saga_plan(root: &Path, nonzero_class: bool) -> Value {
     plan["faithfulness"] = json!({
         "mode": "supplied",
         "supplied": {
-            "zeroOverlapRef": "overlap:order-shared",
             "residualSupportPredicate": {
                 "kind": "finite-support",
                 "supportVariables": support_variables,
-                "zeroOnZeroPrimitive": true
             },
             "faithfulnessLaw": "Q is faithful on the derived residual support"
         }
@@ -3122,11 +3131,19 @@ fn cli_compare_derives_repair_cochain_when_residual_change_is_a_boundary() {
         compare_out.to_str().expect("comparison output path is utf-8"),
     ]);
     let report = read_json(&compare_out.join("archsig-comparison-report.json"));
-    let cochain = &report["repairCochain"];
-    assert_eq!(cochain["status"], "established");
+    let cochain = &report["residualClassAgreement"];
+    assert_eq!(cochain["status"], "cohomologous");
     assert_eq!(cochain["derived"], true);
     assert_eq!(cochain["inB1"], true);
     assert_eq!(cochain["equation"], "delta0(h) = r_base XOR r_head");
+    assert_eq!(cochain["theoremRef"], "part10/3.4+4.4");
+    assert!(cochain["provenance"]["coverRef"].is_string());
+    assert!(
+        cochain["reading"]
+            .as_str()
+            .is_some_and(|text| text.contains("not a repair-success verdict")),
+        "agreement reading must disclaim repair-success semantics"
+    );
     let delta = cochain["deltaSupport"].as_array().expect("delta support");
     assert_eq!(delta.len(), 2, "the two-cut mismatch pair is the delta support");
     // 2 mismatch 辺のカットは {ctx:order} の指示関数で説明される。
@@ -3170,10 +3187,10 @@ fn cli_compare_repair_cochain_is_not_established_for_a_full_relabel() {
         compare_out.to_str().expect("comparison output path is utf-8"),
     ]);
     let report = read_json(&compare_out.join("archsig-comparison-report.json"));
-    let cochain = &report["repairCochain"];
-    // 三角形 3 辺の全ラベル張り替えは奇サイクルであり、F2 の C0 修理では説明できない。
-    // 修理そのものは repaired 側 analyze の零 residual として成立しており、両読みは矛盾しない。
-    assert_eq!(cochain["status"], "not-established");
+    let cochain = &report["residualClassAgreement"];
+    // 三角形 3 辺の全ラベル張り替えは奇サイクルであり、F2 の C0 では結ばれない。
+    // 修理そのものは head 側 analyze の零 residual として成立しており、両読みは矛盾しない。
+    assert_eq!(cochain["status"], "not_cohomologous");
     assert_eq!(
         cochain["reason"],
         "delta_not_a_boundary_within_selected_complex"
@@ -3183,19 +3200,48 @@ fn cli_compare_repair_cochain_is_not_established_for_a_full_relabel() {
         cochain["deltaSupport"].as_array().map(Vec::len),
         Some(3)
     );
+    let head_summary = read_json(&head_run.join("archsig-analysis-summary.json"));
+    assert_eq!(
+        head_summary["conclusion"], ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
+        "repair success is read from the head run itself and coexists with not_cohomologous"
+    );
 }
 
 #[test]
 fn cli_compare_repair_cochain_fails_closed_on_mismatched_complexes() {
     let root = ag_measurement_root();
-    let base_run = run_saga_fixture_lock(
+    let base_plan = component_aware_one_cent_saga_plan(&root);
+    // 同一の観測・同一の法曲面束縛(edge は不変)のまま、head の overlap id だけを
+    // 付け替える。複体の鍵集合が食い違い、comparability は保たれる構成。
+    let mut head_plan = base_plan.clone();
+    for overlap in head_plan["complex"]["overlaps"]
+        .as_array_mut()
+        .expect("overlaps are an array")
+    {
+        if overlap["id"] == "overlap:consign-shipping" {
+            overlap["id"] = json!("overlap:consign-shipping-renamed");
+        }
+    }
+    for triple in head_plan["complex"]["tripleOverlaps"]
+        .as_array_mut()
+        .expect("triples are an array")
+    {
+        for overlap_ref in triple["overlapRefs"].as_array_mut().expect("overlap refs") {
+            if *overlap_ref == json!("overlap:consign-shipping") {
+                *overlap_ref = json!("overlap:consign-shipping-renamed");
+            }
+        }
+    }
+    let archmap = component_aware_one_cent_archmap(&root);
+    let base_run = run_saga_fixture_lock_with_archmap(
         "ag-saga-compare-cochain-mismatch-base",
-        read_json(&root.join("repair_plan_complete_support.json")),
+        base_plan,
+        archmap.clone(),
     );
     let head_run = run_saga_fixture_lock_with_archmap(
         "ag-saga-compare-cochain-mismatch-head",
-        component_aware_one_cent_saga_plan(&root),
-        component_aware_one_cent_archmap(&root),
+        head_plan,
+        archmap,
     );
     let compare_out = temp_dir("ag-saga-compare-cochain-mismatch-report");
     run_sig0(&[
@@ -3208,10 +3254,193 @@ fn cli_compare_repair_cochain_fails_closed_on_mismatched_complexes() {
         compare_out.to_str().expect("comparison output path is utf-8"),
     ]);
     let report = read_json(&compare_out.join("archsig-comparison-report.json"));
-    assert_eq!(report["repairCochain"]["status"], "not_computed");
+    assert_eq!(report["residualClassAgreement"]["status"], "not_computed");
     assert_eq!(
-        report["repairCochain"]["reason"],
+        report["residualClassAgreement"]["reason"],
         "residual_complexes_do_not_match"
+    );
+}
+
+#[test]
+fn cli_compare_agreement_joins_two_nonzero_residuals_by_a_coboundary() {
+    // 五角形+弦の上で、両 run とも非零 residual(奇サイクル 3 mismatch)を持ち、
+    // 差 delta = {shared-route, ledger-order} が {route, ledger} のカットで結ばれる構成。
+    // XOR そのものを判別する(head を無視すると delta が base に退化して witness が変わる)。
+    let root = ag_measurement_root();
+    let plan = supplied_triple_pentagon_complex_plan(&root);
+    let base_flagged = [
+        "overlap:inventory-shared",
+        "overlap:route-ledger",
+        "overlap:ledger-order",
+        "overlap:order-shared",
+    ]
+    .into_iter()
+    .map(str::to_string)
+    .collect::<BTreeSet<_>>();
+    let head_flagged = [
+        "overlap:inventory-shared",
+        "overlap:shared-route",
+        "overlap:route-ledger",
+        "overlap:order-shared",
+    ]
+    .into_iter()
+    .map(str::to_string)
+    .collect::<BTreeSet<_>>();
+    let archmap = read_json(&root.join("archmap_v2.json"));
+    let base_out = temp_dir("ag-saga-agreement-nonzero-base");
+    let base_output = run_saga_fixture_output_with_archmap_flagged(
+        &base_out,
+        plan.clone(),
+        archmap.clone(),
+        Some(&base_flagged),
+    );
+    assert!(base_output.status.success());
+    let head_out = temp_dir("ag-saga-agreement-nonzero-head");
+    let head_output = run_saga_fixture_output_with_archmap_flagged(
+        &head_out,
+        plan,
+        archmap,
+        Some(&head_flagged),
+    );
+    assert!(head_output.status.success());
+    for out in [&base_out, &head_out] {
+        let packet = read_json(&out.join("archsig-measurement-packet.json"));
+        let membership = saga_row(&packet, "saga.residual-boundary-membership");
+        assert_eq!(
+            membership["verdict"], "measured_nonzero",
+            "both runs must carry a nonzero residual for this fixture to be informative"
+        );
+    }
+    let compare_out = temp_dir("ag-saga-agreement-nonzero-report");
+    run_sig0(&[
+        "compare",
+        "--base-run",
+        base_out.to_str().expect("path is utf-8"),
+        "--head-run",
+        head_out.to_str().expect("path is utf-8"),
+        "--out-dir",
+        compare_out.to_str().expect("path is utf-8"),
+    ]);
+    let report = read_json(&compare_out.join("archsig-comparison-report.json"));
+    let agreement = &report["residualClassAgreement"];
+    assert_eq!(agreement["status"], "cohomologous");
+    let delta = agreement["deltaSupport"]
+        .as_array()
+        .expect("delta support")
+        .iter()
+        .map(|value| value.as_str().expect("overlap ref").to_string())
+        .collect::<BTreeSet<_>>();
+    assert_eq!(
+        delta,
+        ["overlap:shared-route", "overlap:ledger-order"]
+            .into_iter()
+            .map(str::to_string)
+            .collect::<BTreeSet<_>>(),
+        "delta must be the XOR of the two nonzero residuals, not the base residual"
+    );
+    let flipped = agreement["witnessChartAssignment"]
+        .as_array()
+        .expect("witness")
+        .iter()
+        .filter(|entry| entry["parity"] == 1)
+        .map(|entry| entry["chartRef"].as_str().expect("chart").to_string())
+        .collect::<BTreeSet<_>>();
+    assert_eq!(
+        flipped,
+        ["ctx:route", "ctx:ledger"]
+            .into_iter()
+            .map(str::to_string)
+            .collect::<BTreeSet<_>>()
+    );
+}
+
+#[test]
+fn cli_analyze_explicit_comparison_names_broken_difference_preservation() {
+    let root = ag_measurement_root();
+    let mut plan = supplied_triple_saga_plan(&root, true);
+    let supports = plan["comparison"]["h1ComparisonData"]["targetCochainSupport"]
+        .as_array_mut()
+        .expect("target cochain support");
+    let flipped = supports
+        .iter_mut()
+        .find(|entry| !entry["support"].as_array().is_none_or(Vec::is_empty))
+        .expect("a flagged overlap exists");
+    flipped["support"] = json!([]);
+    let out_dir = run_saga_fixture_lock("ag-saga-explicit-broken-difference", plan);
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let comparison = packet["computedInvariants"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|row| row["invariantId"] == "saga-comparison:h1-transfer")
+        .expect("comparison invariant");
+    assert_ne!(comparison["status"], "established");
+    assert_eq!(
+        comparison["failureCode"],
+        "COMPARISON_DATA_CONTRACT_VIOLATION"
+    );
+    assert_eq!(
+        comparison["suppliedCochainMap"]["checkedProperties"]["differencePreserving"],
+        false,
+        "a support flip must be caught by difference preservation at evaluation time"
+    );
+}
+
+#[test]
+fn cli_analyze_explicit_comparison_names_broken_zero_image() {
+    let root = ag_measurement_root();
+    let mut plan = supplied_triple_saga_plan(&root, true);
+    plan["comparison"]["h1ComparisonData"]["cochainMap"]["degreeTwo"]["zeroImage"] =
+        json!(["triple:order-inventory-shared"]);
+    let out_dir = run_saga_fixture_lock("ag-saga-explicit-broken-zero-image", plan);
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let comparison = packet["computedInvariants"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|row| row["invariantId"] == "saga-comparison:h1-transfer")
+        .expect("comparison invariant");
+    assert_ne!(comparison["status"], "established");
+    assert_eq!(
+        comparison["failureCode"],
+        "COMPARISON_DATA_CONTRACT_VIOLATION"
+    );
+    assert_eq!(
+        comparison["suppliedCochainMap"]["checkedProperties"]["degreeTwoZeroPreserving"],
+        false,
+        "a nonempty zeroImage must be caught by degree-two zero preservation at evaluation time"
+    );
+}
+
+#[test]
+fn cli_repair_plan_rejects_v056_plan_that_still_carries_primitives() {
+    let root = ag_measurement_root();
+    let out_dir = temp_dir("ag-repair-plan-v056-primitives-residue");
+    let mut plan = read_json(&root.join("repair_plan_complete_support.json"));
+    plan["primitives"] = json!([
+        {"id": "primitive:legacy", "overlapRef": "overlap:order-inventory", "resL": [], "resR": []}
+    ]);
+    let plan_path = out_dir.join("repair_plan_with_primitives.json");
+    fs::write(
+        &plan_path,
+        serde_json::to_vec_pretty(&plan).expect("plan serializes"),
+    )
+    .expect("plan writes");
+    let output = run_sig0_output(&[
+        "repair-plan",
+        "--archmap",
+        root.join("archmap_v2.json").to_str().expect("path is utf-8"),
+        "--repair-plan",
+        plan_path.to_str().expect("path is utf-8"),
+    ]);
+    assert!(
+        !output.status.success(),
+        "a v0.5.6 plan that still carries primitives must fail loudly"
+    );
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("primitives"),
+        "the rejection must name the retired field: {stderr}"
     );
 }
 
@@ -12274,7 +12503,7 @@ fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_diges
 
     let manifest = read_json(&first_out.join("archsig-run-manifest.json"));
     assert_eq!(manifest["toolVersion"], "0.5.4");
-    assert_eq!(manifest["runId"], "run:6590dd613c5c");
+    assert_eq!(manifest["runId"], "run:ccd5a3a019c6");
     assert_eq!(
         manifest["inputDigests"]["archmap"]["sha256"],
         "653037e1812bad367d211b926b976065d69842ec6d26cb5d4f82bdb9ac5f46e3"
@@ -12307,7 +12536,7 @@ fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_diges
     );
     assert_eq!(
         manifest["inputDigests"]["repairPlan"]["sha256"],
-        "fdf16ae7dd346a3b9e3f419fc9860e348ca2dd84eb8147da114f09ad04a8c8ef"
+        "0a5ccdabc0c3f9b39f406dce1adfc6fd11fbd27df469c2b0924a554485e378c0"
     );
 }
 
@@ -12484,7 +12713,7 @@ fn cli_analyze_stamp_appends_opt_in_run_id_suffix() {
     assert!(
         manifest["runId"]
             .as_str()
-            .is_some_and(|run_id| run_id.starts_with("run:6590dd613c5c-stamp:")),
+            .is_some_and(|run_id| run_id.starts_with("run:ccd5a3a019c6-stamp:")),
         "stamp opt-in should append a wall-clock suffix to the deterministic input-derived prefix"
     );
 }
@@ -12687,7 +12916,7 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
             "archsig-gate-policy/v0.5.4",
             "archsig-gate-report/v0.5.4",
             "archmap-diff/v0.5.4",
-            "archsig-comparison-report/v0.5.4",
+            "archsig-comparison-report/v0.5.5",
             "archsig-run-manifest/v0.5.4",
             "archsig-atom-viewer-data/v0.5.4",
             "archsig-measurement-view-model/v0.5.4",
@@ -12800,7 +13029,7 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
     );
     assert!(
         artifacts.iter().any(|entry| {
-            entry["artifactId"] == "archsig-comparison-report/v0.5.4"
+            entry["artifactId"] == "archsig-comparison-report/v0.5.5"
                 && entry["compatibilityBoundary"]["fieldMappingPolicy"]
                     .as_str()
                     .is_some_and(|description| {
@@ -13996,7 +14225,7 @@ fn cli_gate_not_evaluable_for_malformed_packet_or_unsupported_comparison() {
     fs::write(
         &empty_comparison_path,
         serde_json::to_vec_pretty(&json!({
-            "schema": "archsig-comparison-report/v0.5.4",
+            "schema": "archsig-comparison-report/v0.5.5",
             "conclusionCode": "NO_NEW_MEASURED_OBSTRUCTION_RECORDED",
             "comparability": { "level": "identical" },
             "verdictTransitions": []
@@ -14028,7 +14257,7 @@ fn cli_gate_not_evaluable_for_malformed_packet_or_unsupported_comparison() {
     fs::write(
         &unknown_category_comparison_path,
         serde_json::to_vec_pretty(&json!({
-            "schema": "archsig-comparison-report/v0.5.4",
+            "schema": "archsig-comparison-report/v0.5.5",
             "conclusionCode": "NO_NEW_MEASURED_OBSTRUCTION_RECORDED",
             "comparability": { "level": "identical" },
             "verdictTransitions": [{
@@ -14528,7 +14757,7 @@ fn cli_compare_records_cover_change_without_transport_and_feeds_gate_other_trans
         ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE,
         ARCHSIG_COMPARISON_RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA,
     ]);
-    assert_eq!(comparison["schema"], "archsig-comparison-report/v0.5.4");
+    assert_eq!(comparison["schema"], "archsig-comparison-report/v0.5.5");
     assert_eq!(
         comparison["discipline"],
         "Comparison is a record-level juxtaposition of two ArchSig runs. It does not claim causal repair, semantic equivalence, or preserved obstruction identity; a class-zero reading is available only under a checked coarse-to-fine refinement contract."
@@ -14777,11 +15006,9 @@ fn cli_compare_refinement_binds_fingerprints_and_transports_only_zero() {
     nonzero_plan["faithfulness"] = json!({
         "mode": "supplied",
         "supplied": {
-            "zeroOverlapRef": "overlap:shared-audit",
             "residualSupportPredicate": {
                 "kind": "finite-support",
                 "supportVariables": ["cech:section-mismatch"],
-                "zeroOnZeroPrimitive": true
             },
             "faithfulnessLaw": "Q is faithful on the derived residual support"
         }
@@ -15901,6 +16128,15 @@ fn run_saga_fixture_output_with_archmap(
     repair_plan: Value,
     archmap: Value,
 ) -> std::process::Output {
+    run_saga_fixture_output_with_archmap_flagged(out_dir, repair_plan, archmap, None)
+}
+
+fn run_saga_fixture_output_with_archmap_flagged(
+    out_dir: &Path,
+    repair_plan: Value,
+    archmap: Value,
+    flagged: Option<&BTreeSet<String>>,
+) -> std::process::Output {
     let root = ag_measurement_root();
     let (mut policy, profile) = read_fixture_policy_profile(&root.join("law_policy_ag.json"));
     policy["policies"] = json!([{
@@ -15916,7 +16152,7 @@ fn run_saga_fixture_output_with_archmap(
     let repair_plan_path = out_dir.join("repair_plan.json");
     let archmap_path = out_dir.join("archmap.json");
     let mut archmap = archmap;
-    prepare_saga_derivation_inputs(&policy_path, &mut archmap, &repair_plan, None);
+    prepare_saga_derivation_inputs(&policy_path, &mut archmap, &repair_plan, flagged);
     fs::write(
         &archmap_path,
         serde_json::to_vec_pretty(&archmap).expect("ArchMap serializes"),
@@ -17859,7 +18095,7 @@ fn cli_repair_plan_rejects_dropped_observed_chart_edge_from_mapped_cover() {
 }
 
 #[test]
-fn cli_repair_plan_rejects_retired_v054_schema_discriminator() {
+fn cli_repair_plan_rejects_retired_schema_discriminators() {
     let out_dir = temp_dir("ag-repair-plan-retired-v054-schema");
     let root = ag_measurement_root();
     let mut plan = read_json(&root.join("repair_plan_complete_support.json"));

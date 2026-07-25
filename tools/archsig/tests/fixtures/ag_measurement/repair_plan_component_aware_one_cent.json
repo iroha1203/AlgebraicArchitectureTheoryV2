@@ -57,13 +57,11 @@
   "faithfulness": {
     "mode": "supplied",
     "supplied": {
-      "zeroOverlapRef": "overlap:consign-shipping",
       "residualSupportPredicate": {
         "kind": "finite-support",
         "supportVariables": [
           "cech:section-mismatch"
-        ],
-        "zeroOnZeroPrimitive": true
+        ]
       },
       "faithfulnessLaw": "the one-cent residual support is faithful on the diagnostic component"
     }

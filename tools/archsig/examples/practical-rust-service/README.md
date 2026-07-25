@@ -85,7 +85,7 @@ base — so the base run shows what typed silence looks like:
 | Supplied artifact | Where in this demo | Vocabulary it unlocks |
 | --- | --- | --- |
 | Observation (atoms / contexts / covers) | `archmap/archmap*.json` | raw section values, Čech H¹, **derived residual** |
-| Repair complex (`complex` only; the residual and the repair cochain are derived) | `saga/repair_plan_*.json` | residual boundary membership (residual derived from observation + law bindings; repair cochain derived by `compare`) |
+| Repair complex (`complex` only; the residual and the repair cochain are derived) | `saga/repair_plan_*.json` | residual boundary membership (residual derived from observation + law bindings; residual class agreement (with its coboundary witness when cohomologous) derived by `compare`) |
 | Faithfulness data (`faithfulness.supplied`) | same RepairPlan | global coherence |
 | Triple + true-sheaf certificate + gluing data (coefficient is the profile declaration) | same RepairPlan | **residual class in `Z1/B1`** |
 | Comparison data (incidence bridge + checked cochain map) | same RepairPlan | class transport to the Čech side |
@@ -118,6 +118,7 @@ The script walks five acts and prints one conclusion per step:
 [harmonic debt repaired] 0.0                   (residue booked explicitly)
 [analyze repaired]       REPAIR_GLUES_WITHIN_SELECTED_COMPLEX
 [compare head->repaired] MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE
+[residual class agreement head->repaired] not_cohomologous  (the two residual classes differ; repair success is the repaired run's own zero residual)
 [gate repaired]          PASS_WITHIN_GATE_POLICY
 ```
 

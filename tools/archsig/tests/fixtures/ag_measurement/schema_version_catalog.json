@@ -314,7 +314,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "RepairPlan v0.5.6 supplies the checked SAGA descent input side: a finite complex with its declared ArchMap cover and per-overlap/per-triple context bindings, faithfulness regime, optional trueSheafCertificate and gluingData, and an optional presentation block carrying per-cell semantic/equation generators, relation matrices, generator maps, restriction matrices, and an equation lift atlas. The residual is derived by analyze from the selected cover sections and law-surface witness bindings; the repair cochain is derived by compare from the head/repaired residual derivations; the coefficient is the selected MeasurementProfile coefficient.",
+        "fieldMappingPolicy": "RepairPlan v0.5.6 supplies the SAGA descent input side: a finite complex with its declared ArchMap cover and per-overlap/per-triple context bindings, faithfulness regime, optional trueSheafCertificate and gluingData, and an optional presentation block carrying per-cell semantic/equation generators, relation matrices, generator maps, restriction matrices, and an equation lift atlas. The residual is derived by analyze from the selected cover sections and law-surface witness bindings; the residual class agreement (with its coboundary witness when cohomologous) is derived by compare from the two runs' residual derivations under a comparability gate; the coefficient is the selected MeasurementProfile coefficient.",
         "deprecatedFields": [
           "residual (retired at v0.5.5; the residual is derived by analyze from observed sections and law-surface witness bindings)",
           "coefficient (retired at v0.5.5; the coefficient is the selected MeasurementProfile declaration)",
@@ -360,7 +360,7 @@
           "Coverage and exactness are artifact-local and do not imply semantic completeness."
         ],
         "nonConclusions": [
-          "Explicit cochain data remains supplied and is validated as such; presentation-generated data derives local Phi, cochain map, semantic/equation residuals, and quotient-level witnesses after matrix exactness and naturality checks pass.",
+          "Explicit cochain data remains supplied and is validated as such; presentation-generated data derives local Phi, cochain map, semantic/equation residuals, and quotient-level witnesses after matrix exactness and naturality checks pass, and reports structuralFault / presentationCellsCoverComplex when a named structural fault blocks the derivation.",
           "H1 transfer is generated only after the applicable computed source-class prerequisite and target class computation are available."
         ]
       }
@@ -642,9 +642,9 @@
       }
     },
     {
-      "artifactId": "archsig-comparison-report/v0.5.4",
-      "artifactName": "ArchSig comparison report v0.5.4",
-      "schemaName": "archsig-comparison-report/v0.5.4",
+      "artifactId": "archsig-comparison-report/v0.5.5",
+      "artifactName": "ArchSig comparison report v0.5.5",
+      "schemaName": "archsig-comparison-report/v0.5.5",
       "artifactRole": "primary",
       "ownerPhase": "ArchSig Output / CI workflow",
       "status": "implemented",
@@ -653,7 +653,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Comparison report v0.5.4 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions, archmap-diff intersections, and comparability of the two runs' repair-plan digests. With a validated refinement-comparison/v0.5.4 artifact it can also record class-zero preservation. Registered conclusionCode values are NO_NEW_MEASURED_OBSTRUCTION_RECORDED, MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE, MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE, and RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA.",
+        "fieldMappingPolicy": "Comparison report v0.5.5 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions, archmap-diff intersections, comparability of the two runs' repair-plan digests, and — for comparable runs whose residual derivations share cover, law surface, and chart set — the residualClassAgreement block (cohomologous / not_cohomologous / no_residual_change) with its coboundary witness when cohomologous (part10/3.4+4.4). With a validated refinement-comparison/v0.5.4 artifact it can also record class-zero preservation. Registered conclusionCode values are NO_NEW_MEASURED_OBSTRUCTION_RECORDED, MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE, MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE, and RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",

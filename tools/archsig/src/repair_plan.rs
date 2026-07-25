@@ -294,48 +294,38 @@ mod tests {
     use super::*;
 
     fn all_mismatch_supports(plan: &RepairPlanDocumentV1) -> BTreeMap<String, Vec<String>> {
-        let flagged: &[&str] = match plan.id.as_str() {
-            "repair-plan:train-ticket-money-head" => {
-                // 整数経路 unit fixture は歴史的語彙 drift:refund-rounding を保つ(CLI 非到達)。
-                return plan
-                    .complex
-                    .overlaps
-                    .iter()
-                    .map(|overlap| {
-                        let support = if matches!(
-                            overlap.id.as_str(),
-                            "overlap:cancel-insidepay"
-                                | "overlap:insidepay-order"
-                                | "overlap:cancel-order"
-                        ) {
-                            vec!["drift:refund-rounding".to_string()]
-                        } else {
-                            Vec::new()
-                        };
-                        (overlap.id.clone(), support)
-                    })
-                    .collect();
+        // 観測シナリオ表(fail-loud)。fixture の id を知らない場合は panic して
+        // 黙って別シナリオへ落ちない。integer unit fixture だけが歴史的語彙を保つ。
+        let (variable, flagged): (&str, Option<&[&str]>) = match plan.id.as_str() {
+            "repair-plan:train-ticket-money-head" => (
+                "drift:refund-rounding",
+                Some(&[
+                    "overlap:cancel-insidepay",
+                    "overlap:insidepay-order",
+                    "overlap:cancel-order",
+                ]),
+            ),
+            "repair-plan:presentation-generated-circle"
+            | "repair-plan:presentation-generated-circle-integers"
+            | "repair-plan:comparison-demo"
+            | "repair-plan:complete-support-demo"
+            | "repair-plan:supplied-faithfulness-demo"
+            | "repair-plan:true-sheaf-demo"
+            | "repair-plan:gluing-data-demo"
+            | "repair-plan:component-aware-one-cent" => {
+                (crate::saga::DERIVED_RESIDUAL_VARIABLE, None)
             }
-            _ => {
-                return plan
-                    .complex
-                    .overlaps
-                    .iter()
-                    .map(|overlap| {
-                        (
-                            overlap.id.clone(),
-                            vec![crate::saga::DERIVED_RESIDUAL_VARIABLE.to_string()],
-                        )
-                    })
-                    .collect();
-            }
+            unknown => panic!("all_mismatch_supports has no observation scenario for {unknown}"),
         };
         plan.complex
             .overlaps
             .iter()
             .map(|overlap| {
-                let support = if flagged.contains(&overlap.id.as_str()) {
-                    vec![crate::saga::DERIVED_RESIDUAL_VARIABLE.to_string()]
+                let active = flagged
+                    .map(|flagged| flagged.contains(&overlap.id.as_str()))
+                    .unwrap_or(true);
+                let support = if active {
+                    vec![variable.to_string()]
                 } else {
                     Vec::new()
                 };
@@ -343,6 +333,7 @@ mod tests {
             })
             .collect()
     }
+
     use crate::schema::{RepairPlanOverlapV1, RepairPlanTripleOverlapV1};
 
     fn complex_with_edges(edges: [(&str, &str, &str); 3]) -> RepairPlanComplexV1 {
@@ -1047,9 +1038,7 @@ fn check_supplied_slots(
     if plan.faithfulness.mode == "supplied" {
         match &plan.faithfulness.supplied {
             Some(supplied)
-                if !supplied.zero_overlap_ref.is_empty()
-                    && supplied.residual_support_predicate.kind == "finite-support"
-                    && supplied.residual_support_predicate.zero_on_zero_primitive
+                if supplied.residual_support_predicate.kind == "finite-support"
                     && supplied.residual_support_predicate
                         .support_variables
                         .iter()
@@ -1058,27 +1047,13 @@ fn check_supplied_slots(
             Some(_) => examples.push(generic_validation_example(
                 "faithfulness.supplied",
                 "incomplete",
-                "supplied faithfulness requires zeroOverlapRef, residualSupportPredicate, and faithfulnessLaw",
+                "supplied faithfulness requires residualSupportPredicate and faithfulnessLaw; Q(r) is checked against the derived residual at evaluation time",
             )),
             None => examples.push(generic_validation_example(
                 "faithfulness.supplied",
                 "missing",
-                "faithfulness.mode=supplied requires the three definition 4.6 data points",
+                "faithfulness.mode=supplied requires the definition 4.6 data points",
             )),
-        }
-        if let Some(supplied) = &plan.faithfulness.supplied {
-            let overlap_exists = plan
-                .complex
-                .overlaps
-                .iter()
-                .any(|overlap| overlap.id == supplied.zero_overlap_ref);
-            if !overlap_exists {
-                examples.push(generic_validation_example(
-                    "faithfulness.supplied.zeroOverlapRef",
-                    &supplied.zero_overlap_ref,
-                    "zeroOverlapRef must resolve to a declared overlap; the derived residual is checked to vanish there at evaluation time",
-                ));
-            }
         }
     } else if plan.faithfulness.supplied.is_some() {
         examples.push(generic_validation_example(
@@ -3653,7 +3628,7 @@ fn check_references(plan: &RepairPlanDocumentV1) -> ValidationCheck {
     }
     examples_check(
         "repair-plan-schema052-reference-resolution",
-        "RepairPlan chart, overlap, primitive, triple, and comparison references resolve",
+        "RepairPlan chart, overlap, triple, and comparison references resolve",
         examples,
     )
 }
