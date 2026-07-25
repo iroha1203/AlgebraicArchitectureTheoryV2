@@ -11620,9 +11620,33 @@ noncomputable def sagaProductionVariantSelection :=
 def sagaProductionVariantSelectionNeConstant :=
   @SemanticRepair.Saga.CircleWitness.variantSelection_archReading_ne_constant
 
-/-- Kernel-audit alias for the non-constant produced realization. -/
-noncomputable def sagaProductionVariantRealization :=
-  @SemanticRepair.Saga.CircleWitness.variantRealization
+/-- Kernel-audit alias for the two-Atom witness reading function. -/
+def sagaProductionWitnessAtom :=
+  @SemanticRepair.Saga.CircleWitness.witnessAtom
+
+/-- Kernel-audit alias for vocabulary membership of the witness Atoms. -/
+def sagaProductionWitnessAtomNeComponentC :=
+  @SemanticRepair.Saga.CircleWitness.witnessAtom_ne_componentC
+
+/-- Kernel-audit alias for the two-Atom witness semantic atom data. -/
+noncomputable def sagaProductionTwoAtomSemanticAtomData :=
+  @SemanticRepair.Saga.CircleWitness.twoAtomSemanticAtomData
+
+/-- Kernel-audit alias for the two-Atom witness presentation. -/
+noncomputable def sagaProductionTwoAtomPresentation :=
+  @SemanticRepair.Saga.CircleWitness.twoAtomPresentation
+
+/-- Kernel-audit alias for the produced realization on the two-Atom witness. -/
+noncomputable def sagaProductionVariantWitnessRealization :=
+  @SemanticRepair.Saga.CircleWitness.variantWitnessRealization
+
+/-- Kernel-audit alias for recognizedness of the circle chart contexts. -/
+def sagaProductionChartRecognized :=
+  @SemanticRepair.Saga.CircleWitness.chart_recognized
+
+/-- Kernel-audit alias for the realization-level non-constancy witness. -/
+def sagaProductionVariantWitnessArchReadingNe :=
+  @SemanticRepair.Saga.CircleWitness.variantWitnessRealization_archReading_ne
 
 end AAT.AG.AxiomAudit
 

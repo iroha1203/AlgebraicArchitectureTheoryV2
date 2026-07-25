@@ -1329,8 +1329,8 @@ Issue #3734: B.9.3 の定数 realization は support-Atom production route の
 生成物と一致する。これにより `circle_nonzero_class_transfer` の非自明
 instance が production constructor 経由でも**到達可能**である(到達可能性
 witness。B.9.3 は本文どおり selected 対応を diagram 全体で同じ singleton に
-取るため、ここでの選択は定数形である。選択の非定数性が効く発火は
-`variantRealization` を見よ)。
+取るため、ここでの選択は定数形である。realization 層の非定数発火は
+`variantWitnessRealization` を見よ)。
 -/
 theorem realization_eq_production :
     realization = productionSelection.realization presentation circleCover :=
@@ -1338,18 +1338,15 @@ theorem realization_eq_production :
 
 /--
 Issue #3734 査読対応: acyclic 有限 object は cyclic 有限 object と異なる
-(dependency cycle の有無で区別される)。`variantSelection` の非定数性の根拠。
+(dependency cycle の有無で区別される。cycle 側は既存
+`FiniteModel.object_hasCycleWitness` を再利用)。`variantSelection` の
+非定数性の根拠。
 -/
 theorem acyclicObject_ne_object :
     FiniteModel.acyclicObject ≠ FiniteModel.object := by
   intro h
   have hcycle : FiniteModel.hasDependencyCycle FiniteModel.object :=
-    ⟨⟨Or.inl trivial, FiniteModel.allFamily_mem _ (fun h => nomatch h),
-        FiniteModel.allFamily_mem _ (fun h => nomatch h)⟩,
-      ⟨Or.inl trivial, FiniteModel.allFamily_mem _ (fun h => nomatch h),
-        FiniteModel.allFamily_mem _ (fun h => nomatch h)⟩,
-      ⟨Or.inl trivial, FiniteModel.allFamily_mem _ (fun h => nomatch h),
-        FiniteModel.allFamily_mem _ (fun h => nomatch h)⟩⟩
+    FiniteModel.object_hasCycleWitness
   rw [← h] at hcycle
   exact hcycle.1
 
@@ -1357,6 +1354,12 @@ theorem acyclicObject_ne_object :
 Issue #3734 査読対応: Atom に**非定数**に依存する selected 対応。
 `componentA` には acyclic reading、他の Atom には B.9 の cyclic reading を
 割り当てる(equation index は circle system の唯一の required equation)。
+
+boundary: B.9.2 の presentation は occurrence projection が恒等的に
+`componentA` を読むため、その上では本選択から生成した realization は定数に
+潰れる(選択の非定数性は realization 層に現れない)。realization 層まで
+非定数性が届く witness は 2-Atom presentation 上の
+`variantWitnessRealization` を見よ。
 -/
 noncomputable def variantSelection : SupportAtomEquationSelection site where
   equationIndex _ := ⟨PUnit.unit, rfl⟩
@@ -1371,18 +1374,97 @@ theorem variantSelection_archReading_ne_constant :
       variantSelection.archReading FiniteModel.FiniteAtom.componentB :=
   acyclicObject_ne_object
 
-/--
-Issue #3734 査読対応: 非定数選択から production constructor が生成する
-realization(命題6.1A の restriction 可換性放電の非退化発火 witness)。
-定数選択と異なり naturality の証明には Atom 引数の同定が必要で、
-`projection_natural` + `occRestrict_atom`(台 Atom 保存)の production 証明が
-実際に働く。circle presentation が occurrence projection で読む Atom は
-一部に限られるが、選択関数自体は 9-Atom carrier 上で非定数である
-(`variantSelection_archReading_ne_constant`)。
+/-! ### Issue #3734 査読対応: 2-Atom witness presentation
+
+B.9.2 の presentation は occurrence projection が単一 Atom `componentA` を
+読む。ここでは projection が supported atom に応じて `componentA` /
+`componentB` を読む最小の presentation を witness 専用に用意し、
+production constructor の生成物が realization 層で実際に非定数になることを
+値の差で固定する(`variantWitnessRealization_archReading_ne`)。
+
+boundary(この witness が主張しないこと):
+(1) circle の `equationResidual` は定数 `1` なので、archReading の差は
+χ^E の値には現れない(χ^E 層の非定数性は主張外)。
+(2) この thin fixture では restriction が Bool 成分を定義的に保存するため、
+fixture 固有の naturality 証明は `rfl` でも書ける。witness の主張は
+「production constructor が任意の(非定数)選択に対して naturality を生成し、
+その生成物が非退化(非定数)でありうる」ことであり、naturality 証明の
+必然性(rfl 不可能性)ではない。任意選択に対する成立は
+`SupportAtomEquationSelection.realization` の generic 証明
+(`projection_natural` + `occRestrict_atom`)が担う。
+(3) この presentation は witness 専用であり、B.9 の `M_sem` 計算・packet
+には接続しない。
 -/
-noncomputable def variantRealization :
-    EquationSemanticRealization presentation circleCover :=
-  variantSelection.realization presentation circleCover
+
+/-- 2-Atom witness の読む Atom(`false ↦ componentA`、`true ↦ componentB`)。 -/
+def witnessAtom : Bool -> FiniteModel.carrier.Atom
+  | false => FiniteModel.FiniteAtom.componentA
+  | true => FiniteModel.FiniteAtom.componentB
+
+/-- witness Atom は選択語彙(componentC 除外)に属する。 -/
+theorem witnessAtom_ne_componentC (b : Bool) :
+    witnessAtom b ≠ FiniteModel.FiniteAtom.componentC := by
+  cases b <;> exact fun h => nomatch h
+
+/--
+2-Atom semantic atom data: 各 recognized context に2つの semantic atom を
+置き、occurrence projection は `witnessAtom` を読む。projection の
+naturality は B.9.2 と同型に `occurrence_ext` + `occRestrict_atom` で
+証明される。
+-/
+noncomputable def twoAtomSemanticAtomData :
+    SemanticAtomData site occurrenceReading where
+  SemanticAtom V := PLift (Recognized V.ctx) × Bool
+  restrictAtom {V' V} f l :=
+    (⟨recognized_of_le_recognized (leOfHom f) l.1.down⟩, l.2)
+  restrictAtom_id _ _ := rfl
+  restrictAtom_comp _ _ _ := rfl
+  projection V l :=
+    canonicalOccurrence V l.1.down (witnessAtom l.2)
+      (FiniteModel.allFamily_mem _ (witnessAtom_ne_componentC l.2))
+  projection_natural {V' V} f l := by
+    refine occurrence_ext
+      (recognized_of_le_recognized (leOfHom f) l.1.down) ?_
+    show witnessAtom l.2 = (occurrenceReading.occRestrict f _).atom
+    rw [occurrenceReading.occRestrict_atom]
+    rfl
+  supported _ _ := True
+  supported_restrict _ _ _ := trivial
+
+/-- 2-Atom witness presentation(relation は空)。 -/
+noncomputable def twoAtomPresentation :
+    SemanticRepairPresentation site occurrenceReading where
+  atomData := twoAtomSemanticAtomData
+  rel _ := ∅
+  rel_restrict {V' V} f := by
+    rintro w ⟨w₀, hw₀, rfl⟩
+    exact hw₀.elim
+
+/--
+Issue #3734 査読対応: 非定数選択 + 2-Atom presentation から production
+constructor が生成する realization。非退化性の実体は
+`variantWitnessRealization_archReading_ne`(realization 層の値の差)。
+-/
+noncomputable def variantWitnessRealization :
+    EquationSemanticRealization twoAtomPresentation circleCover :=
+  variantSelection.realization twoAtomPresentation circleCover
+
+/-- chart context は recognized(witness の非空性)。 -/
+theorem chart_recognized (i : Fin 4) :
+    Recognized (circleCover.chart i).ctx :=
+  recognized_context {i}
+
+/--
+Issue #3734 査読対応: 同一 intersection 上の2つの supported atom で
+produced realization の architecture reading が実際に異なる。production
+route の生成物が realization 層で非定数になりうることの witness
+(`chart_recognized` により前提 `h` は全 chart で具体化できる)。
+-/
+theorem variantWitnessRealization_archReading_ne
+    (σ : IntersectionIndex circleCover) (h : Recognized σ.ctx.ctx) :
+    variantWitnessRealization.archReading σ ⟨(⟨h⟩, false), trivial⟩ ≠
+      variantWitnessRealization.archReading σ ⟨(⟨h⟩, true), trivial⟩ :=
+  acyclicObject_ne_object
 
 /-- B.9.4: the identity-carrier primary state correspondence `β`. -/
 noncomputable def stateCorrespondence :
