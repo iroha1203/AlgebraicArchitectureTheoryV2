@@ -22,7 +22,7 @@ repair relation 行列、equation quotient presentation、`generatorMap` と res
 F₂ 上で `im(R)=ker(χ̃)`、`im(χ̃)=Q_E`、restriction naturality を検査する。これにより
 local `Φ` と `κ⁰ / κ¹ / κ²` を導出する。`κ¹D_sem⁰=D_E⁰κ⁰` と `κ²D_sem¹=D_E¹κ¹` は
 restriction naturality から従うので、出力の `degreeZeroCommutative` / `degreeOneCommutative` は
-その帰結の記録であり、独立した第2・第3の検査ではない。presentation は independently authored な
+その帰結の記録であり、独立した第2・第3の検査ではない。presentation は別入力の
 `equationLiftAtlas`（chart ごとの local lift と overlap ごとの transition difference）も持ち、
 ArchSig はそこから `r_E` を導出する。`κ¹(r_sem)=r_E+δ⁰h` は equation relation を含む商上で
 解き、解があるときだけ computed quotient-atlas witness `h` を出力する。同じ商上で target cocycle と

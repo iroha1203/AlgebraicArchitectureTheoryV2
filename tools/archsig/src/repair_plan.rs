@@ -6,7 +6,8 @@ use sha2::{Digest, Sha256};
 
 use crate::schema::{
     H1ComparisonDataV052, H1PresentationCellV052, H1PresentationDataV052,
-    H1PresentationRestrictionV052, RepairPlanComplexV1,
+    H1PresentationRestrictionV052, RepairPlanComplexV1, RepairPlanOverlapV1,
+    RepairPlanTripleOverlapV1,
 };
 use crate::validation::{generic_validation_example, validation_check};
 use crate::{
@@ -411,7 +412,7 @@ mod tests {
     }
 
     #[test]
-    fn presentation_generated_circle_derives_exact_local_maps_and_independent_atlas_witness() {
+    fn presentation_generated_circle_derives_exact_local_maps_and_atlas_witness() {
         let plan: RepairPlanDocumentV1 = serde_json::from_str(include_str!(
             "../tests/fixtures/ag_measurement/repair_plan_presentation_generated_circle.json"
         ))
@@ -1633,16 +1634,6 @@ pub(crate) fn presentation_generated_h1_checks(
             false,
         );
     }
-    // 整数係数で triple cell を持つ complex は、向き付き δ¹ に必要な順序付き triple data を
-    // RepairPlan schema が運ばないため語らない。
-    if ring == "integers" && !plan.complex.triple_overlaps.is_empty() {
-        return PresentationGeneratedH1Checks::structural_fault(
-            "integer-coefficient-presentation-requires-a-triple-free-selected-complex",
-            equation_lift_atlas_present,
-            false,
-        );
-    }
-
     let expected_cells = presentation_cell_refs(plan);
     let mut cells = BTreeMap::new();
     for cell in &presentation.cells {
@@ -1865,7 +1856,7 @@ pub(crate) fn presentation_generated_h1_output(
             "degreeOneCommutative": checks.degree_one_commutative
         },
         "equationResidual": {
-            "kind": "derived-from-independent-equation-lift-atlas",
+            "kind": "derived-from-supplied-equation-lift-atlas",
             "targetCocycle": checks.target_cocycle,
             "targetClassNonZero": checks.target_class_nonzero
         },
@@ -2135,6 +2126,117 @@ fn presentation_restriction_commutes_integers(
     Some(true)
 }
 
+/// triple 上の向き付き `δ¹`。順序は triple の三 chart を正準順に並べて決める。
+/// 各 overlap の `left` / `right` が保存の向きを与えるので、推測せずに符号を導出できる。
+/// `(δ¹c)_{ijk} = c_{jk} - c_{ik} + c_{ij}`。
+fn integer_triple_differential(
+    triple: &RepairPlanTripleOverlapV1,
+    complex_overlaps: &BTreeMap<&str, &RepairPlanOverlapV1>,
+    cells: &BTreeMap<&str, &H1PresentationCellV052>,
+    restrictions: &BTreeMap<(&str, &str), &H1PresentationRestrictionV052>,
+    cochain: &BTreeMap<String, Vec<i64>>,
+    semantic: bool,
+) -> Option<Vec<i128>> {
+    let target = cells.get(triple.id.as_str())?;
+    let width = if semantic {
+        target.semantic_generators.len()
+    } else {
+        target.equation_generators.len()
+    };
+    let mut charts = BTreeSet::new();
+    for overlap_ref in &triple.overlap_refs {
+        let overlap = complex_overlaps.get(overlap_ref.as_str())?;
+        charts.insert(overlap.left.as_str());
+        charts.insert(overlap.right.as_str());
+    }
+    let charts = charts.into_iter().collect::<Vec<_>>();
+    if charts.len() != 3 || triple.overlap_refs.len() != 3 {
+        return None;
+    }
+    let position = |chart: &str| charts.iter().position(|value| *value == chart);
+    let mut differential = vec![0i128; width];
+    let mut covered = BTreeSet::new();
+    for overlap_ref in &triple.overlap_refs {
+        let overlap = complex_overlaps.get(overlap_ref.as_str())?;
+        let left = position(overlap.left.as_str())?;
+        let right = position(overlap.right.as_str())?;
+        let (low, high, stored_sign) = if left < right {
+            (left, right, 1i128)
+        } else {
+            (right, left, -1i128)
+        };
+        if !covered.insert((low, high)) {
+            return None;
+        }
+        // 交代和の係数: (0,1) と (1,2) は +1、(0,2) は -1。
+        let alternating = match (low, high) {
+            (0, 1) | (1, 2) => 1i128,
+            (0, 2) => -1i128,
+            _ => return None,
+        };
+        let restriction = restrictions.get(&(overlap_ref.as_str(), triple.id.as_str()))?;
+        let matrix = if semantic {
+            &restriction.semantic_matrix
+        } else {
+            &restriction.equation_matrix
+        };
+        let restricted = integer_lattice::matrix_vector(
+            &wide(matrix),
+            &wide_vector(cochain.get(overlap_ref.as_str())?),
+        )?;
+        if restricted.len() != width {
+            return None;
+        }
+        let sign = alternating.checked_mul(stored_sign)?;
+        for (entry, value) in differential.iter_mut().zip(restricted) {
+            *entry = entry.checked_add(sign.checked_mul(value)?)?;
+        }
+    }
+    Some(differential)
+}
+
+/// 整数係数の cocycle 判定。`δ¹c` が各 triple cell の関係格子に入るか。
+fn integer_cochain_is_cocycle(
+    target_complex: &RepairPlanComplexV1,
+    cells: &BTreeMap<&str, &H1PresentationCellV052>,
+    restrictions: &BTreeMap<(&str, &str), &H1PresentationRestrictionV052>,
+    cochain: &BTreeMap<String, Vec<i64>>,
+    semantic: bool,
+) -> Option<bool> {
+    let complex_overlaps = target_complex
+        .overlaps
+        .iter()
+        .map(|overlap| (overlap.id.as_str(), overlap))
+        .collect::<BTreeMap<_, _>>();
+    for triple in &target_complex.triple_overlaps {
+        let target = cells.get(triple.id.as_str())?;
+        let differential = integer_triple_differential(
+            triple,
+            &complex_overlaps,
+            cells,
+            restrictions,
+            cochain,
+            semantic,
+        )?;
+        let (matrix, width) = if semantic {
+            (
+                &target.repair_relation_matrix,
+                target.semantic_generators.len(),
+            )
+        } else {
+            (
+                &target.equation_relation_matrix,
+                target.equation_generators.len(),
+            )
+        };
+        let lattice = integer_lattice::lattice_from_rows(&wide(matrix), width)?;
+        if !lattice.contains(&differential)? {
+            return Some(false);
+        }
+    }
+    Some(true)
+}
+
 /// 整数係数での `δ⁰` 可解性。`cochain = δ⁰a`(各 cell の関係を法とする)を解き、
 /// 解があれば chart ごとの `a` を返す。`semantic=false` なら equation 側を解く。
 fn integer_delta_zero_solution(
@@ -2262,21 +2364,47 @@ fn presentation_residual_analysis_integers(
         })
         .collect::<Option<BTreeMap<String, Vec<i64>>>>()?;
 
-    // triple が無い complex に限る。orientated δ¹ に必要な順序付き triple data を
-    // RepairPlan schema が運ばないため、ここは語らない。
-    let source_class_nonzero = Some(
+    let source_cocycle = integer_cochain_is_cocycle(
+        target_complex,
+        cells,
+        restrictions,
+        &semantic_residual,
+        true,
+    )?;
+    let source_class_nonzero = source_cocycle.then(|| {
         integer_delta_zero_solution(
             target_complex,
             cells,
             restrictions,
             &semantic_residual,
             true,
-        )?
-        .is_none(),
-    );
+        )
+        .map(|solution| solution.is_none())
+    });
+    let source_class_nonzero = match source_class_nonzero {
+        Some(None) => return None,
+        Some(Some(value)) => Some(value),
+        None => None,
+    };
 
     let equation_residual =
         equation_residual_from_lift_atlas_integers(target_complex, presentation, cells, restrictions)?;
+    let target_cocycle = integer_cochain_is_cocycle(
+        target_complex,
+        cells,
+        restrictions,
+        &equation_residual,
+        false,
+    )?;
+    if !source_cocycle || !target_cocycle {
+        return Some(PresentationResidualAnalysis {
+            source_cocycle,
+            source_class_nonzero,
+            target_cocycle,
+            target_class_nonzero: None,
+            witness: None,
+        });
+    }
     let target_class_nonzero = Some(
         integer_delta_zero_solution(
             target_complex,
@@ -2317,9 +2445,9 @@ fn presentation_residual_analysis_integers(
     });
 
     Some(PresentationResidualAnalysis {
-        source_cocycle: true,
+        source_cocycle,
         source_class_nonzero,
-        target_cocycle: true,
+        target_cocycle,
         target_class_nonzero,
         witness,
     })

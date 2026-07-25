@@ -14745,7 +14745,7 @@ fn check_saga_presentation_generated_established_consistency(
         || presentation.generated_cochain_map.kind != "derived-from-local-phi"
         || !presentation.generated_cochain_map.degree_zero_commutative
         || !presentation.generated_cochain_map.degree_one_commutative
-        || presentation.equation_residual.kind != "derived-from-independent-equation-lift-atlas"
+        || presentation.equation_residual.kind != "derived-from-supplied-equation-lift-atlas"
         || !presentation.equation_residual.target_cocycle
         || presentation.semantic_residual.kind != "derived-from-semantic-repair-presentation"
         || !presentation.semantic_residual.source_cocycle

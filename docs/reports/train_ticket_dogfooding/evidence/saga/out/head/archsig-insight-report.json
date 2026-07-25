@@ -36,6 +36,19 @@
       "id": "action:next_inspection:2",
       "kind": "next_inspection",
       "nonClaims": [
+        "This is not a measured zero result."
+      ],
+      "reason": "ag.saga-grounded did not compute because grounded_skeleton_not_aligned.",
+      "targetRefs": [
+        "structuralVerdict/ag-saga-grounded/law-money-settlement-convention/grounded-skeleton-not-aligned"
+      ],
+      "title": "Inspect blocking reason"
+    },
+    {
+      "expectedUserOutcome": "Decide which measured support, boundary, or source ref to inspect next.",
+      "id": "action:next_inspection:3",
+      "kind": "next_inspection",
+      "nonClaims": [
         "Boundary visibility is not a negative conclusion by itself."
       ],
       "reason": "Checked, assumed, unmeasured, unknown, and not_computed states are preserved for review.",
@@ -97,13 +110,6 @@
         "theoremRef": "part4/12.4"
       },
       {
-        "assumedBy": "law-surface:law-surface:train-ticket-money-saga-v054",
-        "assumption": "selected quotient sheaf condition for law-surface:train-ticket-money-saga-v054",
-        "checkedBy": null,
-        "status": "assumed",
-        "theoremRef": "part10/8.3"
-      },
-      {
         "assumedBy": "repair-plan author",
         "assumption": "repair-plan complex enumeration completeness for repair-plan:train-ticket-money-head",
         "checkedBy": null,
@@ -125,9 +131,16 @@
         "theoremRef": "part4/4.6"
       }
     ],
-    "assumedCount": 11,
-    "blocking": [],
-    "blockingCount": 0,
+    "assumedCount": 10,
+    "blocking": [
+      {
+        "evaluator": "ag.saga-grounded",
+        "kind": "not_computed",
+        "reason": "ag.saga-grounded is silent by design: grounded_skeleton_not_aligned",
+        "reasonCode": "grounded_skeleton_not_aligned"
+      }
+    ],
+    "blockingCount": 1,
     "checked": [
       {
         "assumedBy": null,
@@ -156,25 +169,18 @@
         "checkedBy": "measurement-profile:profile:train-ticket-money-saga@2.coefficient=F2",
         "status": "checked",
         "theoremRef": "part4/12.3"
-      },
-      {
-        "assumedBy": null,
-        "assumption": "displayedRequiredLawsHold is operationalized only by the declared holdsCriterion raw-value check",
-        "checkedBy": "DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS",
-        "status": "checked",
-        "theoremRef": "part3/11.3"
       }
     ],
-    "checkedCount": 5,
+    "checkedCount": 4,
     "conclusionRef": "MEASURED_NONGLUING_RESIDUAL_CLASS",
     "id": "boundary-digest:main",
     "nonClaims": [
       "Boundary digest qualifies where the conclusion applies; it does not add a new negative conclusion.",
       "Unmeasured, unknown, and not_computed are not measured zero."
     ],
-    "notComputedCount": 0,
+    "notComputedCount": 1,
     "profileRef": "profile:train-ticket-money-saga@2",
-    "shortText": "Profile-relative. 11 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
+    "shortText": "Profile-relative. 10 assumptions declared. 0 supports unmeasured. 0 unknown. 1 not_computed.",
     "unknownCount": 0,
     "unmeasuredCount": 0,
     "violatedCount": 0
@@ -190,15 +196,16 @@
   },
   "componentFingerprints": {
     "lawPolicy": "sha256:e5e91078749ec26ae327ecd1cf41d6d2f7dd035c81a1c66bc0e0476b10e6900c",
-    "lawSurface": "sha256:15b78313f591c424245c79fdc32ab6aee799d3c53197b331d569556ac3670471",
+    "lawSurface": "sha256:e223d3a0bbca6dab524e83b675e8733a05622f4d7f83ff3f11865d862213797f",
     "measurementProfile": "sha256:c073650c8bcd053d48d78bb1a29811b80917ffbdec81e1789dd15d68908b0753"
   },
   "copyBlocks": {
     "llmHandoff": {
-      "boundary": "Profile-relative. 11 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
+      "boundary": "Profile-relative. 10 assumptions declared. 0 supports unmeasured. 0 unknown. 1 not_computed.",
       "instruction": "Use the following ArchSig result as bounded evidence. Do not infer beyond the listed claims and boundaries.",
       "topInsights": [
         "Local checks do not explain the whole selected cover; ArchSig measured a cross-context H^1 mismatch.",
+        "ag.saga-grounded did not compute because grounded_skeleton_not_aligned.",
         "Checked, assumed, unmeasured, unknown, and not_computed states are preserved for review."
       ]
     },
@@ -24323,16 +24330,16 @@
     },
     "forbiddenCages": [],
     "locusField": {
-      "blockedRegions": [],
-      "fieldRows": [],
-      "measuredZeroRegions": [
+      "blockedRegions": [
         {
-          "regionId": "measured-zero-region:ag.saga-grounded",
-          "shapeRole": "smooth_measured_zero_patch",
-          "source": "selected-support zero packet verdict",
-          "status": "measured_zero"
+          "regionId": "blocked-region:ag.saga-grounded",
+          "shapeRole": "blocked_unmeasured_region",
+          "source": "non-terminal packet verdict",
+          "status": "not_computed"
         }
-      ]
+      ],
+      "fieldRows": [],
+      "measuredZeroRegions": []
     },
     "nerve": {
       "coverRef": "cover:money-settlement-loop",
@@ -24850,6 +24857,51 @@
     },
     {
       "insightRefs": [
+        "insight:not-computed:ag-saga-grounded"
+      ],
+      "steps": [
+        {
+          "caption": "These contexts form the selected cover.",
+          "highlightRefs": {
+            "atomRefs": [],
+            "contextRefs": [],
+            "sourceRefs": []
+          },
+          "sceneId": "site-cover"
+        },
+        {
+          "caption": "This scene highlights the measured support or blocker.",
+          "highlightRefs": {
+            "atomRefs": [],
+            "contextRefs": [],
+            "sourceRefs": []
+          },
+          "sceneId": "boundary-assumption"
+        },
+        {
+          "caption": "These source refs ground the insight.",
+          "highlightRefs": {
+            "atomRefs": [],
+            "contextRefs": [],
+            "sourceRefs": []
+          },
+          "sceneId": "source-evidence"
+        },
+        {
+          "caption": "This boundary explains what is checked, assumed, unknown, unmeasured, or not_computed.",
+          "highlightRefs": {
+            "atomRefs": [],
+            "contextRefs": [],
+            "sourceRefs": []
+          },
+          "sceneId": "boundary-assumption"
+        }
+      ],
+      "title": "Measurement blocked by reason code",
+      "tourId": "tour:not-computed:ag-saga-grounded"
+    },
+    {
+      "insightRefs": [
         "insight:measurement-boundary:001"
       ],
       "steps": [
@@ -25039,7 +25091,7 @@
     },
     "lawSurface": {
       "path": "input:law-surface-saga.json",
-      "sha256": "15b78313f591c424245c79fdc32ab6aee799d3c53197b331d569556ac3670471"
+      "sha256": "e223d3a0bbca6dab524e83b675e8733a05622f4d7f83ff3f11865d862213797f"
     },
     "measurementProfile": {
       "path": "input:measurement-profile-saga.json",
@@ -25057,7 +25109,7 @@
     },
     "repairPlan": {
       "path": "input:repair-plan-head.json",
-      "sha256": "610ba78dc116be2a29f0cd043809fa7b53a226e73e0fbd606b8c0cbd59014e6c"
+      "sha256": "fb25fd345468984ec9f3276d1d9c48ed5c9e963ace860eb20b47b2a789916202"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
@@ -25072,8 +25124,6 @@
         "assumptionRefs": [
           "part10/3.1",
           "part10/8.1",
-          "part10/8.3",
-          "part3/11.3",
           "part4/11.1",
           "part4/12.3",
           "part4/12.4",
@@ -25249,8 +25299,107 @@
         "assumptionRefs": [
           "part10/3.1",
           "part10/8.1",
-          "part10/8.3",
-          "part3/11.3",
+          "part4/11.1",
+          "part4/12.3",
+          "part4/12.4",
+          "part4/4.6",
+          "part8/4.2",
+          "part8/B.8.2"
+        ],
+        "atomRefs": [],
+        "computedInvariantRefs": [
+          "saga-generated-end-to-end-packet"
+        ],
+        "contextRefs": [],
+        "coverRefs": [
+          "cover:money-settlement-loop"
+        ],
+        "evaluatorRefs": [
+          "ag.saga-grounded"
+        ],
+        "evidenceResolutionStatus": "boundary_only",
+        "sourceRefs": [],
+        "structuralVerdictRefs": [
+          "structuralVerdict/ag-saga-grounded/law-money-settlement-convention/grounded-skeleton-not-aligned"
+        ]
+      },
+      "id": "insight:not-computed:ag-saga-grounded",
+      "kind": "not_computed_blocker",
+      "nextAction": {
+        "kind": "next_inspection",
+        "label": "Inspect blocking reason",
+        "targetRefs": [
+          "structuralVerdict/ag-saga-grounded/law-money-settlement-convention/grounded-skeleton-not-aligned"
+        ]
+      },
+      "nonClaims": [
+        "This is not a measured zero result."
+      ],
+      "oneLine": "ag.saga-grounded did not compute because grounded_skeleton_not_aligned.",
+      "rankingBasis": [
+        "not_computed due to reason code",
+        "grounded_skeleton_not_aligned"
+      ],
+      "sampleRefs": {
+        "atomRefs": [
+          "atom:authority:admintravel-admintravelcontroller:allows-cross-origin-get-all-travels",
+          "atom:authority:admintravel-securityconfig:allows-cross-origin",
+          "atom:authority:admintravel-securityconfig:permits-unauthenticated",
+          "atom:authority:admintravel-securityconfig:requires-role",
+          "atom:authority:adminuser-adminusercontroller:allows-cross-origin-get-all-users",
+          "atom:authority:adminuser-adminuserserviceimpl:forwards-authorization-header",
+          "atom:authority:adminuser-securityconfig:allows-cross-origin",
+          "atom:authority:adminuser-securityconfig:permits-unauthenticated"
+        ],
+        "contextRefs": [
+          "ctx:admin-basic-info-surface",
+          "ctx:admin-order-surface",
+          "ctx:admin-route-surface",
+          "ctx:admin-travel-surface",
+          "ctx:admin-user-surface",
+          "ctx:assurance-surface",
+          "ctx:auth-surface",
+          "ctx:basic-surface"
+        ],
+        "note": "Sample refs support orientation only; measured insight evidence is listed under evidence.",
+        "sourceRefs": [
+          "src:ts-admin-basic-info-service/src/main/java/adminbasic/AdminBasicInfoApplication.java",
+          "src:ts-admin-basic-info-service/src/main/java/adminbasic/config/SecurityConfig.java",
+          "src:ts-admin-basic-info-service/src/main/java/adminbasic/controller/AdminBasicInfoController.java",
+          "src:ts-admin-basic-info-service/src/main/java/adminbasic/entity/PriceInfo.java",
+          "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoService.java",
+          "src:ts-admin-basic-info-service/src/main/java/adminbasic/service/AdminBasicInfoServiceImpl.java",
+          "src:ts-admin-basic-info-service/src/main/resources/application.yml",
+          "src:ts-admin-order-service/src/main/java/adminorder/AdminOrderApplication.java",
+          "src:ts-admin-order-service/src/main/java/adminorder/config/SecurityConfig.java",
+          "src:ts-admin-order-service/src/main/java/adminorder/controller/AdminOrderController.java",
+          "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderService.java",
+          "src:ts-admin-order-service/src/main/java/adminorder/service/AdminOrderServiceImpl.java"
+        ]
+      },
+      "severity": "high",
+      "title": "Measurement blocked by reason code",
+      "tourRefs": [
+        "tour:not-computed:ag-saga-grounded"
+      ],
+      "viewerNavigation": {
+        "highlightRefs": {
+          "atomRefs": [],
+          "contextRefs": [],
+          "sourceRefs": []
+        },
+        "sceneId": "boundary-assumption"
+      },
+      "whyItMatters": "The blocked reason belongs in the Decision Bar so reviewers do not mistake an empty scene for absence of conflict."
+    },
+    {
+      "evidence": {
+        "analyticReadingRefs": [
+          "candidate-regime:stability-placeholder"
+        ],
+        "assumptionRefs": [
+          "part10/3.1",
+          "part10/8.1",
           "part4/11.1",
           "part4/12.3",
           "part4/12.4",
@@ -25449,15 +25598,13 @@
     "measured_zero confirmation"
   ],
   "readThisFirst": {
-    "boundary": "Profile-relative. 11 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
+    "boundary": "Profile-relative. 10 assumptions declared. 0 supports unmeasured. 0 unknown. 1 not_computed.",
     "conclusion": "MEASURED_NONGLUING_RESIDUAL_CLASS",
     "details": {
       "analyticReadingRefs": [],
       "assumptionRefs": [
         "part10/3.1",
         "part10/8.1",
-        "part10/8.3",
-        "part3/11.3",
         "part4/11.1",
         "part4/12.3",
         "part4/12.4",
@@ -25523,7 +25670,7 @@
     ]
   },
   "reportId": "insight:measurement:train-ticket-money-saga-head/v0.5.4",
-  "runId": "run:8d4b5849eb52",
+  "runId": "run:12bbf63146e4",
   "schema": "archsig-insight-report/v0.5.4",
   "sourcePacketRef": "archsig-measurement-packet.json",
   "toolVersion": "0.5.4",
@@ -25600,6 +25747,7 @@
             ],
             "insightRefs": [
               "insight:h1-glue-mismatch:001",
+              "insight:not-computed:ag-saga-grounded",
               "insight:measurement-boundary:001"
             ],
             "sourceRefs": [
@@ -25669,6 +25817,7 @@
         ],
         "insightRefs": [
           "insight:h1-glue-mismatch:001",
+          "insight:not-computed:ag-saga-grounded",
           "insight:measurement-boundary:001"
         ],
         "sourceRefs": [
@@ -25834,6 +25983,7 @@
             ],
             "insightRefs": [
               "insight:h1-glue-mismatch:001",
+              "insight:not-computed:ag-saga-grounded",
               "insight:measurement-boundary:001"
             ],
             "sourceRefs": [
@@ -25903,6 +26053,7 @@
         ],
         "insightRefs": [
           "insight:h1-glue-mismatch:001",
+          "insight:not-computed:ag-saga-grounded",
           "insight:measurement-boundary:001"
         ],
         "sourceRefs": [
@@ -26605,20 +26756,22 @@
       "kind": "law_conflict",
       "layers": [
         {
-          "animationPurpose": "orientation",
+          "animationPurpose": "navigation",
           "clickTargetKind": "lawConflictBridge",
           "encodingRef": "encoding:law-conflict-tor:main",
           "geometryRole": "bridge",
           "kind": "law_conflict_bridge",
           "layerId": "layer:law-conflict-tor:law_conflict_bridge",
-          "omissionPolicy": "omittable_background",
+          "omissionPolicy": "preserve_for_top_insight",
           "refs": {
             "atomRefs": [],
             "contextRefs": [],
             "coverRefs": [
               "cover:money-settlement-loop"
             ],
-            "insightRefs": [],
+            "insightRefs": [
+              "insight:not-computed:ag-saga-grounded"
+            ],
             "sourceRefs": []
           }
         }
@@ -26629,12 +26782,14 @@
         "coverRefs": [
           "cover:money-settlement-loop"
         ],
-        "insightRefs": [],
+        "insightRefs": [
+          "insight:not-computed:ag-saga-grounded"
+        ],
         "sourceRefs": []
       },
       "projectionBoundary": "Scene geometry is a bounded projection of archsig-measurement-packet/v0.5.4 and archsig-insight-report/v0.5.4; it does not create a new structural verdict.",
       "sceneId": "law-conflict-tor",
-      "sceneStatus": "not_active_for_packet",
+      "sceneStatus": "active",
       "title": "Law Conflict",
       "userQuestion": "Which law universe conflict is loaded on which witness?",
       "visualEncodingLegend": [
@@ -26689,11 +26844,11 @@
       ],
       "visualEncodings": [
         {
-          "colorRole": "not_applicable",
+          "colorRole": "not_computed",
           "encodingId": "encoding:law-conflict-tor:main",
           "lineRole": "broken_line",
           "shapeRole": "wall",
-          "textRole": "not active for this packet: common ambient conflict witness"
+          "textRole": "no_common_ambient blocker or not_computed reason code"
         }
       ]
     },
@@ -26814,7 +26969,7 @@
           "encodingId": "encoding:hodge-debt-field:main",
           "lineRole": "contour",
           "shapeRole": "heat",
-          "textRole": "not active for this packet: harmonic mass analytic reading"
+          "textRole": "curvature support field; blocked/unmeasured remains visibly separate from measured-zero"
         }
       ]
     },

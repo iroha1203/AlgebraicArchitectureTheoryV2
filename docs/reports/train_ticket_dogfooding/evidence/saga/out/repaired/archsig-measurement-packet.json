@@ -125,26 +125,6 @@
       "theoremRef": "part4/12.4"
     },
     {
-      "assumption": "displayedRequiredLawsHold is operationalized only by the declared holdsCriterion raw-value check",
-      "assumptionId": "assumption:part3-11-3:displayedRequiredLawsHold-is-operationalized-only-by-the-declared-holdsCriterion-raw-value-check",
-      "checkedBy": "DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS",
-      "scopeRefs": [
-        "part3/11.3"
-      ],
-      "status": "checked",
-      "theoremRef": "part3/11.3"
-    },
-    {
-      "assumedBy": "law-surface:law-surface:train-ticket-money-saga-v054",
-      "assumption": "selected quotient sheaf condition for law-surface:train-ticket-money-saga-v054",
-      "assumptionId": "assumption:part10-8-3:selected-quotient-sheaf-condition-for-law-surface-train-ticket-money-saga-v054",
-      "scopeRefs": [
-        "part10/8.3"
-      ],
-      "status": "assumed",
-      "theoremRef": "part10/8.3"
-    },
-    {
       "assumedBy": "repair-plan author",
       "assumption": "repair-plan complex enumeration completeness for repair-plan:train-ticket-money-repaired",
       "assumptionId": "assumption:part10-3-1:repair-plan-complex-enumeration-completeness-for-repair-plan-train-ticket-money-repaired",
@@ -231,6 +211,15 @@
       "text": "Higher Tor_i for i>=2 remains unmeasured support: degree-1 Tor_1 readings do not discharge derived transversality or all higher Tor vanishing."
     },
     {
+      "id": "boundary:blocked-method:1",
+      "kind": "blocked_method",
+      "reason": "grounded_skeleton_not_aligned",
+      "scopeRefs": [
+        "structuralVerdict/ag-saga-grounded/law-money-settlement-convention/grounded-skeleton-not-aligned"
+      ],
+      "text": "ag.saga-grounded is silent by design: grounded_skeleton_not_aligned"
+    },
+    {
       "id": "boundary:not-applicable:0",
       "kind": "not_applicable",
       "reason": "analytic_only",
@@ -242,7 +231,7 @@
   ],
   "componentFingerprints": {
     "lawPolicy": "sha256:e5e91078749ec26ae327ecd1cf41d6d2f7dd035c81a1c66bc0e0476b10e6900c",
-    "lawSurface": "sha256:15b78313f591c424245c79fdc32ab6aee799d3c53197b331d569556ac3670471",
+    "lawSurface": "sha256:e223d3a0bbca6dab524e83b675e8733a05622f4d7f83ff3f11865d862213797f",
     "measurementProfile": "sha256:c073650c8bcd053d48d78bb1a29811b80917ffbdec81e1789dd15d68908b0753"
   },
   "computedInvariants": [
@@ -932,448 +921,22 @@
       "value": {}
     },
     {
-      "degreeZeroLawContribution": {
-        "generatedC0PointwiseZero": true,
-        "reading": "law 意味論が Čech 複体に到達する地点は正確に次数0。H^1 の内容は cover の幾何から来る(意味8.3)",
-        "theoremRef": "part10/8.1"
-      },
-      "detectorCount": 0,
-      "detectorFindings": [],
       "evaluator": "ag.saga-grounded",
-      "generatedQuotient": {
-        "ambient": {
-          "basis": [
-            "e_cancel_insidepay",
-            "e_cancel_order",
-            "e_consign_consignprice",
-            "e_insidepay_order"
-          ],
-          "relations": [
-            "e_i^2=e_i",
-            "2e_i=0"
-          ]
-        },
-        "coefficient": "F2",
-        "construction": "finite Boolean quotient of the declared chart-defect observation space",
-        "finiteBound": 12,
-        "finiteBoundChecked": true,
-        "interpretation": {
-          "class": "zero",
-          "map": [
-            {
-              "image": "[e_cancel_insidepay]",
-              "observed": false,
-              "variable": "e_cancel_insidepay"
-            },
-            {
-              "image": "[e_cancel_order]",
-              "observed": false,
-              "variable": "e_cancel_order"
-            },
-            {
-              "image": "[e_consign_consignprice]",
-              "observed": false,
-              "variable": "e_consign_consignprice"
-            },
-            {
-              "image": "[e_insidepay_order]",
-              "observed": false,
-              "variable": "e_insidepay_order"
-            }
-          ],
-          "representative": []
-        },
-        "obstructionIdeal": {
-          "generators": [
-            {
-              "generatorId": "grounded-forbidden-0",
-              "support": [
-                "e_cancel_insidepay",
-                "e_insidepay_order",
-                "e_cancel_order",
-                "e_consign_consignprice"
-              ],
-              "supportAtomRefs": []
-            }
-          ],
-          "kind": "finite-f2-boolean-obstruction-ideal",
-          "source": "law-equation-surface.forbiddenSupportGenerators"
-        },
-        "representative": {
-          "normalForm": [],
-          "reduction": "modulo the generated finite obstruction ideal",
-          "support": []
-        }
-      },
       "groundedSurfaceRef": "law-surface:train-ticket-money-saga-v054",
       "invariantId": "saga-generated-end-to-end-packet",
       "kind": "saga-grounded-conclusions",
-      "lawDependent": {
-        "conclusions": {
-          "generatedInterpretationZero": {
-            "instanceReading": {
-              "class": "zero"
-            },
-            "status": "established",
-            "theoremRef": "part10/7.5.1"
-          },
-          "generatedRestrictionEvaluator": {
-            "status": "established",
-            "theoremRef": "part3/11.4"
-          },
-          "nonzeroInterpretationDetectsDisplayedLawFailure": {
-            "status": "established",
-            "theoremRef": "part10/7.5.3"
-          }
-        },
-        "detectorFindings": [],
-        "premise": {
-          "checkKind": "holds-criterion-raw-value",
-          "name": "displayedRequiredLawsHold",
-          "perChart": [
-            {
-              "chart": "ctx:cancel-surface",
-              "defectObservable": {
-                "axis": "square-free",
-                "predicate": "support"
-              },
-              "defectValueRef": "input:archmap-saga-repaired.json#ctx:cancel-surface",
-              "holds": true,
-              "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion",
-              "law": "law:money-settlement-convention",
-              "rawAtomRefs": [],
-              "supportVariables": []
-            },
-            {
-              "chart": "ctx:inside-payment-surface",
-              "defectObservable": {
-                "axis": "square-free",
-                "predicate": "support"
-              },
-              "defectValueRef": "input:archmap-saga-repaired.json#ctx:inside-payment-surface",
-              "holds": true,
-              "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion",
-              "law": "law:money-settlement-convention",
-              "rawAtomRefs": [],
-              "supportVariables": []
-            },
-            {
-              "chart": "ctx:order-surface",
-              "defectObservable": {
-                "axis": "square-free",
-                "predicate": "support"
-              },
-              "defectValueRef": "input:archmap-saga-repaired.json#ctx:order-surface",
-              "holds": true,
-              "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion",
-              "law": "law:money-settlement-convention",
-              "rawAtomRefs": [],
-              "supportVariables": []
-            },
-            {
-              "chart": "ctx:consign-surface",
-              "defectObservable": {
-                "axis": "square-free",
-                "predicate": "support"
-              },
-              "defectValueRef": "input:archmap-saga-repaired.json#ctx:consign-surface",
-              "holds": true,
-              "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion",
-              "law": "law:money-settlement-convention",
-              "rawAtomRefs": [],
-              "supportVariables": []
-            },
-            {
-              "chart": "ctx:consign-price-surface",
-              "defectObservable": {
-                "axis": "square-free",
-                "predicate": "support"
-              },
-              "defectValueRef": "input:archmap-saga-repaired.json#ctx:consign-price-surface",
-              "holds": true,
-              "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion",
-              "law": "law:money-settlement-convention",
-              "rawAtomRefs": [],
-              "supportVariables": []
-            },
-            {
-              "chart": "ctx:preserve-surface",
-              "defectObservable": {
-                "axis": "square-free",
-                "predicate": "support"
-              },
-              "defectValueRef": "input:archmap-saga-repaired.json#ctx:preserve-surface",
-              "holds": true,
-              "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion",
-              "law": "law:money-settlement-convention",
-              "rawAtomRefs": [],
-              "supportVariables": []
-            }
-          ],
-          "status": "holds"
-        }
-      },
-      "lawIndependent": {
-        "conclusions": {
-          "boundedAdditiveH1ZeroIffCoverRelativeH1Zero": {
-            "status": "established",
-            "theoremRef": "part10/8.2"
-          },
-          "descent": {
-            "note": "sheaf 条件 + cover membership から導出。独立 certificate は受け取らない",
-            "status": "established",
-            "theoremRef": "part10/8.2"
-          },
-          "globalCoherentIffCoverRelativeH1Zero": {
-            "instanceReading": {
-              "coverRelativeH1Zero": true
-            },
-            "status": "established",
-            "theoremRef": "part10/8.2"
-          },
-          "groundedGlobalGluingPackage": {
-            "status": "established",
-            "theoremRef": "part10/8.2"
-          },
-          "sheafConditionForSelectedCover": {
-            "status": "established",
-            "theoremRef": "part10/8.1"
-          },
-          "uniqueGlobalSection": {
-            "status": "established",
-            "theoremRef": "part10/8.2"
-          }
-        },
-        "note": "以下は law の充足を仮定せずに従う(定理8.2)。law 充足の証拠として読まない。",
-        "separatedStatements": {
-          "note": "原則 8.4 により、additive H¹ comparison から nonabelian torsor・higher coherence(2-cocycle / gerbe / H² 以後)・stack descent の結論は導かない。これらは独立の statement を要する",
-          "theoremRef": "part10/8.4"
-        }
-      },
+      "methodStatus": "grounded_skeleton_not_aligned",
       "representation": {
-        "degreeZeroLawContribution": {
-          "generatedC0PointwiseZero": true,
-          "reading": "law 意味論が Čech 複体に到達する地点は正確に次数0。H^1 の内容は cover の幾何から来る(意味8.3)",
-          "theoremRef": "part10/8.1"
-        },
-        "detectorCount": 0,
-        "detectorFindings": [],
         "evaluator": "ag.saga-grounded",
-        "generatedQuotient": {
-          "ambient": {
-            "basis": [
-              "e_cancel_insidepay",
-              "e_cancel_order",
-              "e_consign_consignprice",
-              "e_insidepay_order"
-            ],
-            "relations": [
-              "e_i^2=e_i",
-              "2e_i=0"
-            ]
-          },
-          "coefficient": "F2",
-          "construction": "finite Boolean quotient of the declared chart-defect observation space",
-          "finiteBound": 12,
-          "finiteBoundChecked": true,
-          "interpretation": {
-            "class": "zero",
-            "map": [
-              {
-                "image": "[e_cancel_insidepay]",
-                "observed": false,
-                "variable": "e_cancel_insidepay"
-              },
-              {
-                "image": "[e_cancel_order]",
-                "observed": false,
-                "variable": "e_cancel_order"
-              },
-              {
-                "image": "[e_consign_consignprice]",
-                "observed": false,
-                "variable": "e_consign_consignprice"
-              },
-              {
-                "image": "[e_insidepay_order]",
-                "observed": false,
-                "variable": "e_insidepay_order"
-              }
-            ],
-            "representative": []
-          },
-          "obstructionIdeal": {
-            "generators": [
-              {
-                "generatorId": "grounded-forbidden-0",
-                "support": [
-                  "e_cancel_insidepay",
-                  "e_insidepay_order",
-                  "e_cancel_order",
-                  "e_consign_consignprice"
-                ],
-                "supportAtomRefs": []
-              }
-            ],
-            "kind": "finite-f2-boolean-obstruction-ideal",
-            "source": "law-equation-surface.forbiddenSupportGenerators"
-          },
-          "representative": {
-            "normalForm": [],
-            "reduction": "modulo the generated finite obstruction ideal",
-            "support": []
-          }
-        },
         "groundedSurfaceRef": "law-surface:train-ticket-money-saga-v054",
         "invariantId": "saga-generated-end-to-end-packet",
         "kind": "saga-grounded-conclusions",
-        "lawDependent": {
-          "conclusions": {
-            "generatedInterpretationZero": {
-              "instanceReading": {
-                "class": "zero"
-              },
-              "status": "established",
-              "theoremRef": "part10/7.5.1"
-            },
-            "generatedRestrictionEvaluator": {
-              "status": "established",
-              "theoremRef": "part3/11.4"
-            },
-            "nonzeroInterpretationDetectsDisplayedLawFailure": {
-              "status": "established",
-              "theoremRef": "part10/7.5.3"
-            }
-          },
-          "detectorFindings": [],
-          "premise": {
-            "checkKind": "holds-criterion-raw-value",
-            "name": "displayedRequiredLawsHold",
-            "perChart": [
-              {
-                "chart": "ctx:cancel-surface",
-                "defectObservable": {
-                  "axis": "square-free",
-                  "predicate": "support"
-                },
-                "defectValueRef": "input:archmap-saga-repaired.json#ctx:cancel-surface",
-                "holds": true,
-                "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion",
-                "law": "law:money-settlement-convention",
-                "rawAtomRefs": [],
-                "supportVariables": []
-              },
-              {
-                "chart": "ctx:inside-payment-surface",
-                "defectObservable": {
-                  "axis": "square-free",
-                  "predicate": "support"
-                },
-                "defectValueRef": "input:archmap-saga-repaired.json#ctx:inside-payment-surface",
-                "holds": true,
-                "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion",
-                "law": "law:money-settlement-convention",
-                "rawAtomRefs": [],
-                "supportVariables": []
-              },
-              {
-                "chart": "ctx:order-surface",
-                "defectObservable": {
-                  "axis": "square-free",
-                  "predicate": "support"
-                },
-                "defectValueRef": "input:archmap-saga-repaired.json#ctx:order-surface",
-                "holds": true,
-                "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion",
-                "law": "law:money-settlement-convention",
-                "rawAtomRefs": [],
-                "supportVariables": []
-              },
-              {
-                "chart": "ctx:consign-surface",
-                "defectObservable": {
-                  "axis": "square-free",
-                  "predicate": "support"
-                },
-                "defectValueRef": "input:archmap-saga-repaired.json#ctx:consign-surface",
-                "holds": true,
-                "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion",
-                "law": "law:money-settlement-convention",
-                "rawAtomRefs": [],
-                "supportVariables": []
-              },
-              {
-                "chart": "ctx:consign-price-surface",
-                "defectObservable": {
-                  "axis": "square-free",
-                  "predicate": "support"
-                },
-                "defectValueRef": "input:archmap-saga-repaired.json#ctx:consign-price-surface",
-                "holds": true,
-                "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion",
-                "law": "law:money-settlement-convention",
-                "rawAtomRefs": [],
-                "supportVariables": []
-              },
-              {
-                "chart": "ctx:preserve-surface",
-                "defectObservable": {
-                  "axis": "square-free",
-                  "predicate": "support"
-                },
-                "defectValueRef": "input:archmap-saga-repaired.json#ctx:preserve-surface",
-                "holds": true,
-                "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion",
-                "law": "law:money-settlement-convention",
-                "rawAtomRefs": [],
-                "supportVariables": []
-              }
-            ],
-            "status": "holds"
-          }
-        },
-        "lawIndependent": {
-          "conclusions": {
-            "boundedAdditiveH1ZeroIffCoverRelativeH1Zero": {
-              "status": "established",
-              "theoremRef": "part10/8.2"
-            },
-            "descent": {
-              "note": "sheaf 条件 + cover membership から導出。独立 certificate は受け取らない",
-              "status": "established",
-              "theoremRef": "part10/8.2"
-            },
-            "globalCoherentIffCoverRelativeH1Zero": {
-              "instanceReading": {
-                "coverRelativeH1Zero": true
-              },
-              "status": "established",
-              "theoremRef": "part10/8.2"
-            },
-            "groundedGlobalGluingPackage": {
-              "status": "established",
-              "theoremRef": "part10/8.2"
-            },
-            "sheafConditionForSelectedCover": {
-              "status": "established",
-              "theoremRef": "part10/8.1"
-            },
-            "uniqueGlobalSection": {
-              "status": "established",
-              "theoremRef": "part10/8.2"
-            }
-          },
-          "note": "以下は law の充足を仮定せずに従う(定理8.2)。law 充足の証拠として読まない。",
-          "separatedStatements": {
-            "note": "原則 8.4 により、additive H¹ comparison から nonabelian torsor・higher coherence(2-cocycle / gerbe / H² 以後)・stack descent の結論は導かない。これらは独立の statement を要する",
-            "theoremRef": "part10/8.4"
-          }
-        },
+        "methodStatus": "grounded_skeleton_not_aligned",
         "schema": "archsig-saga-conclusions/v0.5.4",
-        "theoremRef": "part10/7.5"
+        "status": "not_computed"
       },
       "schema": "archsig-saga-conclusions/v0.5.4",
-      "theoremRef": "part10/7.5",
+      "status": "not_computed",
       "value": {}
     },
     {
@@ -1808,15 +1371,23 @@
                     {
                       "cellRef": "ctx:repair-cancel-surface",
                       "equationGenerators": [
-                        "equation:ctx:repair-cancel-surface"
+                        "vertex:money-cancel"
                       ],
-                      "equationRelationMatrix": [],
+                      "equationRelationMatrix": [
+                        [
+                          5
+                        ]
+                      ],
                       "generatorMap": [
                         [
                           1
                         ]
                       ],
-                      "repairRelationMatrix": [],
+                      "repairRelationMatrix": [
+                        [
+                          5
+                        ]
+                      ],
                       "semanticGenerators": [
                         "drift:refund-rounding"
                       ]
@@ -1824,15 +1395,23 @@
                     {
                       "cellRef": "ctx:repair-inside-payment-surface",
                       "equationGenerators": [
-                        "equation:ctx:repair-inside-payment-surface"
+                        "vertex:money-inside-payment"
                       ],
-                      "equationRelationMatrix": [],
+                      "equationRelationMatrix": [
+                        [
+                          5
+                        ]
+                      ],
                       "generatorMap": [
                         [
                           1
                         ]
                       ],
-                      "repairRelationMatrix": [],
+                      "repairRelationMatrix": [
+                        [
+                          5
+                        ]
+                      ],
                       "semanticGenerators": [
                         "drift:refund-rounding"
                       ]
@@ -1840,15 +1419,23 @@
                     {
                       "cellRef": "ctx:repair-order-surface",
                       "equationGenerators": [
-                        "equation:ctx:repair-order-surface"
+                        "vertex:money-order"
                       ],
-                      "equationRelationMatrix": [],
+                      "equationRelationMatrix": [
+                        [
+                          5
+                        ]
+                      ],
                       "generatorMap": [
                         [
                           1
                         ]
                       ],
-                      "repairRelationMatrix": [],
+                      "repairRelationMatrix": [
+                        [
+                          5
+                        ]
+                      ],
                       "semanticGenerators": [
                         "drift:refund-rounding"
                       ]
@@ -1856,15 +1443,23 @@
                     {
                       "cellRef": "ctx:repair-consign-surface",
                       "equationGenerators": [
-                        "equation:ctx:repair-consign-surface"
+                        "vertex:money-consign"
                       ],
-                      "equationRelationMatrix": [],
+                      "equationRelationMatrix": [
+                        [
+                          5
+                        ]
+                      ],
                       "generatorMap": [
                         [
                           1
                         ]
                       ],
-                      "repairRelationMatrix": [],
+                      "repairRelationMatrix": [
+                        [
+                          5
+                        ]
+                      ],
                       "semanticGenerators": [
                         "drift:refund-rounding"
                       ]
@@ -1872,15 +1467,23 @@
                     {
                       "cellRef": "ctx:repair-consign-price-surface",
                       "equationGenerators": [
-                        "equation:ctx:repair-consign-price-surface"
+                        "vertex:money-consign-price"
                       ],
-                      "equationRelationMatrix": [],
+                      "equationRelationMatrix": [
+                        [
+                          5
+                        ]
+                      ],
                       "generatorMap": [
                         [
                           1
                         ]
                       ],
-                      "repairRelationMatrix": [],
+                      "repairRelationMatrix": [
+                        [
+                          5
+                        ]
+                      ],
                       "semanticGenerators": [
                         "drift:refund-rounding"
                       ]
@@ -1888,15 +1491,23 @@
                     {
                       "cellRef": "ctx:repair-preserve-surface",
                       "equationGenerators": [
-                        "equation:ctx:repair-preserve-surface"
+                        "vertex:money-preserve"
                       ],
-                      "equationRelationMatrix": [],
+                      "equationRelationMatrix": [
+                        [
+                          5
+                        ]
+                      ],
                       "generatorMap": [
                         [
                           1
                         ]
                       ],
-                      "repairRelationMatrix": [],
+                      "repairRelationMatrix": [
+                        [
+                          5
+                        ]
+                      ],
                       "semanticGenerators": [
                         "drift:refund-rounding"
                       ]
@@ -1904,15 +1515,23 @@
                     {
                       "cellRef": "overlap:cancel-insidepay",
                       "equationGenerators": [
-                        "equation:overlap:cancel-insidepay"
+                        "e_cancel_insidepay"
                       ],
-                      "equationRelationMatrix": [],
+                      "equationRelationMatrix": [
+                        [
+                          5
+                        ]
+                      ],
                       "generatorMap": [
                         [
                           1
                         ]
                       ],
-                      "repairRelationMatrix": [],
+                      "repairRelationMatrix": [
+                        [
+                          5
+                        ]
+                      ],
                       "semanticGenerators": [
                         "drift:refund-rounding"
                       ]
@@ -1920,15 +1539,23 @@
                     {
                       "cellRef": "overlap:insidepay-order",
                       "equationGenerators": [
-                        "equation:overlap:insidepay-order"
+                        "e_insidepay_order"
                       ],
-                      "equationRelationMatrix": [],
+                      "equationRelationMatrix": [
+                        [
+                          5
+                        ]
+                      ],
                       "generatorMap": [
                         [
                           1
                         ]
                       ],
-                      "repairRelationMatrix": [],
+                      "repairRelationMatrix": [
+                        [
+                          5
+                        ]
+                      ],
                       "semanticGenerators": [
                         "drift:refund-rounding"
                       ]
@@ -1936,15 +1563,23 @@
                     {
                       "cellRef": "overlap:cancel-order",
                       "equationGenerators": [
-                        "equation:overlap:cancel-order"
+                        "e_cancel_order"
                       ],
-                      "equationRelationMatrix": [],
+                      "equationRelationMatrix": [
+                        [
+                          5
+                        ]
+                      ],
                       "generatorMap": [
                         [
                           1
                         ]
                       ],
-                      "repairRelationMatrix": [],
+                      "repairRelationMatrix": [
+                        [
+                          5
+                        ]
+                      ],
                       "semanticGenerators": [
                         "drift:refund-rounding"
                       ]
@@ -1952,15 +1587,23 @@
                     {
                       "cellRef": "overlap:consign-consignprice",
                       "equationGenerators": [
-                        "equation:overlap:consign-consignprice"
+                        "e_consign_consignprice"
                       ],
-                      "equationRelationMatrix": [],
+                      "equationRelationMatrix": [
+                        [
+                          5
+                        ]
+                      ],
                       "generatorMap": [
                         [
                           1
                         ]
                       ],
-                      "repairRelationMatrix": [],
+                      "repairRelationMatrix": [
+                        [
+                          5
+                        ]
+                      ],
                       "semanticGenerators": [
                         "drift:refund-rounding"
                       ]
@@ -1968,15 +1611,23 @@
                     {
                       "cellRef": "overlap:preserve-consign",
                       "equationGenerators": [
-                        "equation:overlap:preserve-consign"
+                        "edge:money-preserve-consign"
                       ],
-                      "equationRelationMatrix": [],
+                      "equationRelationMatrix": [
+                        [
+                          5
+                        ]
+                      ],
                       "generatorMap": [
                         [
                           1
                         ]
                       ],
-                      "repairRelationMatrix": [],
+                      "repairRelationMatrix": [
+                        [
+                          5
+                        ]
+                      ],
                       "semanticGenerators": [
                         "drift:refund-rounding"
                       ]
@@ -1984,15 +1635,23 @@
                     {
                       "cellRef": "overlap:preserve-consignprice",
                       "equationGenerators": [
-                        "equation:overlap:preserve-consignprice"
+                        "edge:money-preserve-consignprice"
                       ],
-                      "equationRelationMatrix": [],
+                      "equationRelationMatrix": [
+                        [
+                          5
+                        ]
+                      ],
                       "generatorMap": [
                         [
                           1
                         ]
                       ],
-                      "repairRelationMatrix": [],
+                      "repairRelationMatrix": [
+                        [
+                          5
+                        ]
+                      ],
                       "semanticGenerators": [
                         "drift:refund-rounding"
                       ]
@@ -2000,20 +1659,29 @@
                     {
                       "cellRef": "triple:consign-fee-region",
                       "equationGenerators": [
-                        "equation:triple:consign-fee-region"
+                        "triple:money-consign-fee-region"
                       ],
-                      "equationRelationMatrix": [],
+                      "equationRelationMatrix": [
+                        [
+                          5
+                        ]
+                      ],
                       "generatorMap": [
                         [
                           1
                         ]
                       ],
-                      "repairRelationMatrix": [],
+                      "repairRelationMatrix": [
+                        [
+                          5
+                        ]
+                      ],
                       "semanticGenerators": [
                         "drift:refund-rounding"
                       ]
                     }
                   ],
+                  "coefficientRing": "integers",
                   "equationLiftAtlas": {
                     "localLifts": [
                       {
@@ -2515,7 +2183,7 @@
           }
         },
         "equationResidual": {
-          "kind": "derived-from-independent-equation-lift-atlas",
+          "kind": "derived-from-supplied-equation-lift-atlas",
           "targetClassNonZero": false,
           "targetCocycle": true
         },
@@ -2594,7 +2262,7 @@
                 0
               ],
               "equationGenerators": [
-                "equation:overlap:cancel-insidepay"
+                "e_cancel_insidepay"
               ],
               "overlapRef": "overlap:cancel-insidepay"
             },
@@ -2603,7 +2271,7 @@
                 0
               ],
               "equationGenerators": [
-                "equation:overlap:insidepay-order"
+                "e_insidepay_order"
               ],
               "overlapRef": "overlap:insidepay-order"
             },
@@ -2612,7 +2280,7 @@
                 0
               ],
               "equationGenerators": [
-                "equation:overlap:cancel-order"
+                "e_cancel_order"
               ],
               "overlapRef": "overlap:cancel-order"
             },
@@ -2621,7 +2289,7 @@
                 0
               ],
               "equationGenerators": [
-                "equation:overlap:consign-consignprice"
+                "e_consign_consignprice"
               ],
               "overlapRef": "overlap:consign-consignprice"
             },
@@ -2630,7 +2298,7 @@
                 0
               ],
               "equationGenerators": [
-                "equation:overlap:preserve-consign"
+                "edge:money-preserve-consign"
               ],
               "overlapRef": "overlap:preserve-consign"
             },
@@ -2639,7 +2307,7 @@
                 0
               ],
               "equationGenerators": [
-                "equation:overlap:preserve-consignprice"
+                "edge:money-preserve-consignprice"
               ],
               "overlapRef": "overlap:preserve-consignprice"
             }
@@ -2651,7 +2319,7 @@
                 0
               ],
               "equationGenerators": [
-                "equation:ctx:repair-cancel-surface"
+                "vertex:money-cancel"
               ]
             },
             {
@@ -2660,7 +2328,7 @@
                 0
               ],
               "equationGenerators": [
-                "equation:ctx:repair-inside-payment-surface"
+                "vertex:money-inside-payment"
               ]
             },
             {
@@ -2669,7 +2337,7 @@
                 0
               ],
               "equationGenerators": [
-                "equation:ctx:repair-order-surface"
+                "vertex:money-order"
               ]
             },
             {
@@ -2678,7 +2346,7 @@
                 0
               ],
               "equationGenerators": [
-                "equation:ctx:repair-consign-surface"
+                "vertex:money-consign"
               ]
             },
             {
@@ -2687,7 +2355,7 @@
                 0
               ],
               "equationGenerators": [
-                "equation:ctx:repair-consign-price-surface"
+                "vertex:money-consign-price"
               ]
             },
             {
@@ -2696,7 +2364,7 @@
                 0
               ],
               "equationGenerators": [
-                "equation:ctx:repair-preserve-surface"
+                "vertex:money-preserve"
               ]
             }
           ],
@@ -2707,7 +2375,7 @@
                 0
               ],
               "equationGenerators": [
-                "equation:overlap:cancel-insidepay"
+                "e_cancel_insidepay"
               ],
               "overlapRef": "overlap:cancel-insidepay"
             },
@@ -2716,7 +2384,7 @@
                 0
               ],
               "equationGenerators": [
-                "equation:overlap:insidepay-order"
+                "e_insidepay_order"
               ],
               "overlapRef": "overlap:insidepay-order"
             },
@@ -2725,7 +2393,7 @@
                 0
               ],
               "equationGenerators": [
-                "equation:overlap:cancel-order"
+                "e_cancel_order"
               ],
               "overlapRef": "overlap:cancel-order"
             },
@@ -2734,7 +2402,7 @@
                 0
               ],
               "equationGenerators": [
-                "equation:overlap:consign-consignprice"
+                "e_consign_consignprice"
               ],
               "overlapRef": "overlap:consign-consignprice"
             },
@@ -2743,7 +2411,7 @@
                 0
               ],
               "equationGenerators": [
-                "equation:overlap:preserve-consign"
+                "edge:money-preserve-consign"
               ],
               "overlapRef": "overlap:preserve-consign"
             },
@@ -2752,7 +2420,7 @@
                 0
               ],
               "equationGenerators": [
-                "equation:overlap:preserve-consignprice"
+                "edge:money-preserve-consignprice"
               ],
               "overlapRef": "overlap:preserve-consignprice"
             }
@@ -2807,15 +2475,23 @@
                       {
                         "cellRef": "ctx:repair-cancel-surface",
                         "equationGenerators": [
-                          "equation:ctx:repair-cancel-surface"
+                          "vertex:money-cancel"
                         ],
-                        "equationRelationMatrix": [],
+                        "equationRelationMatrix": [
+                          [
+                            5
+                          ]
+                        ],
                         "generatorMap": [
                           [
                             1
                           ]
                         ],
-                        "repairRelationMatrix": [],
+                        "repairRelationMatrix": [
+                          [
+                            5
+                          ]
+                        ],
                         "semanticGenerators": [
                           "drift:refund-rounding"
                         ]
@@ -2823,15 +2499,23 @@
                       {
                         "cellRef": "ctx:repair-inside-payment-surface",
                         "equationGenerators": [
-                          "equation:ctx:repair-inside-payment-surface"
+                          "vertex:money-inside-payment"
                         ],
-                        "equationRelationMatrix": [],
+                        "equationRelationMatrix": [
+                          [
+                            5
+                          ]
+                        ],
                         "generatorMap": [
                           [
                             1
                           ]
                         ],
-                        "repairRelationMatrix": [],
+                        "repairRelationMatrix": [
+                          [
+                            5
+                          ]
+                        ],
                         "semanticGenerators": [
                           "drift:refund-rounding"
                         ]
@@ -2839,15 +2523,23 @@
                       {
                         "cellRef": "ctx:repair-order-surface",
                         "equationGenerators": [
-                          "equation:ctx:repair-order-surface"
+                          "vertex:money-order"
                         ],
-                        "equationRelationMatrix": [],
+                        "equationRelationMatrix": [
+                          [
+                            5
+                          ]
+                        ],
                         "generatorMap": [
                           [
                             1
                           ]
                         ],
-                        "repairRelationMatrix": [],
+                        "repairRelationMatrix": [
+                          [
+                            5
+                          ]
+                        ],
                         "semanticGenerators": [
                           "drift:refund-rounding"
                         ]
@@ -2855,15 +2547,23 @@
                       {
                         "cellRef": "ctx:repair-consign-surface",
                         "equationGenerators": [
-                          "equation:ctx:repair-consign-surface"
+                          "vertex:money-consign"
                         ],
-                        "equationRelationMatrix": [],
+                        "equationRelationMatrix": [
+                          [
+                            5
+                          ]
+                        ],
                         "generatorMap": [
                           [
                             1
                           ]
                         ],
-                        "repairRelationMatrix": [],
+                        "repairRelationMatrix": [
+                          [
+                            5
+                          ]
+                        ],
                         "semanticGenerators": [
                           "drift:refund-rounding"
                         ]
@@ -2871,15 +2571,23 @@
                       {
                         "cellRef": "ctx:repair-consign-price-surface",
                         "equationGenerators": [
-                          "equation:ctx:repair-consign-price-surface"
+                          "vertex:money-consign-price"
                         ],
-                        "equationRelationMatrix": [],
+                        "equationRelationMatrix": [
+                          [
+                            5
+                          ]
+                        ],
                         "generatorMap": [
                           [
                             1
                           ]
                         ],
-                        "repairRelationMatrix": [],
+                        "repairRelationMatrix": [
+                          [
+                            5
+                          ]
+                        ],
                         "semanticGenerators": [
                           "drift:refund-rounding"
                         ]
@@ -2887,15 +2595,23 @@
                       {
                         "cellRef": "ctx:repair-preserve-surface",
                         "equationGenerators": [
-                          "equation:ctx:repair-preserve-surface"
+                          "vertex:money-preserve"
                         ],
-                        "equationRelationMatrix": [],
+                        "equationRelationMatrix": [
+                          [
+                            5
+                          ]
+                        ],
                         "generatorMap": [
                           [
                             1
                           ]
                         ],
-                        "repairRelationMatrix": [],
+                        "repairRelationMatrix": [
+                          [
+                            5
+                          ]
+                        ],
                         "semanticGenerators": [
                           "drift:refund-rounding"
                         ]
@@ -2903,15 +2619,23 @@
                       {
                         "cellRef": "overlap:cancel-insidepay",
                         "equationGenerators": [
-                          "equation:overlap:cancel-insidepay"
+                          "e_cancel_insidepay"
                         ],
-                        "equationRelationMatrix": [],
+                        "equationRelationMatrix": [
+                          [
+                            5
+                          ]
+                        ],
                         "generatorMap": [
                           [
                             1
                           ]
                         ],
-                        "repairRelationMatrix": [],
+                        "repairRelationMatrix": [
+                          [
+                            5
+                          ]
+                        ],
                         "semanticGenerators": [
                           "drift:refund-rounding"
                         ]
@@ -2919,15 +2643,23 @@
                       {
                         "cellRef": "overlap:insidepay-order",
                         "equationGenerators": [
-                          "equation:overlap:insidepay-order"
+                          "e_insidepay_order"
                         ],
-                        "equationRelationMatrix": [],
+                        "equationRelationMatrix": [
+                          [
+                            5
+                          ]
+                        ],
                         "generatorMap": [
                           [
                             1
                           ]
                         ],
-                        "repairRelationMatrix": [],
+                        "repairRelationMatrix": [
+                          [
+                            5
+                          ]
+                        ],
                         "semanticGenerators": [
                           "drift:refund-rounding"
                         ]
@@ -2935,15 +2667,23 @@
                       {
                         "cellRef": "overlap:cancel-order",
                         "equationGenerators": [
-                          "equation:overlap:cancel-order"
+                          "e_cancel_order"
                         ],
-                        "equationRelationMatrix": [],
+                        "equationRelationMatrix": [
+                          [
+                            5
+                          ]
+                        ],
                         "generatorMap": [
                           [
                             1
                           ]
                         ],
-                        "repairRelationMatrix": [],
+                        "repairRelationMatrix": [
+                          [
+                            5
+                          ]
+                        ],
                         "semanticGenerators": [
                           "drift:refund-rounding"
                         ]
@@ -2951,15 +2691,23 @@
                       {
                         "cellRef": "overlap:consign-consignprice",
                         "equationGenerators": [
-                          "equation:overlap:consign-consignprice"
+                          "e_consign_consignprice"
                         ],
-                        "equationRelationMatrix": [],
+                        "equationRelationMatrix": [
+                          [
+                            5
+                          ]
+                        ],
                         "generatorMap": [
                           [
                             1
                           ]
                         ],
-                        "repairRelationMatrix": [],
+                        "repairRelationMatrix": [
+                          [
+                            5
+                          ]
+                        ],
                         "semanticGenerators": [
                           "drift:refund-rounding"
                         ]
@@ -2967,15 +2715,23 @@
                       {
                         "cellRef": "overlap:preserve-consign",
                         "equationGenerators": [
-                          "equation:overlap:preserve-consign"
+                          "edge:money-preserve-consign"
                         ],
-                        "equationRelationMatrix": [],
+                        "equationRelationMatrix": [
+                          [
+                            5
+                          ]
+                        ],
                         "generatorMap": [
                           [
                             1
                           ]
                         ],
-                        "repairRelationMatrix": [],
+                        "repairRelationMatrix": [
+                          [
+                            5
+                          ]
+                        ],
                         "semanticGenerators": [
                           "drift:refund-rounding"
                         ]
@@ -2983,15 +2739,23 @@
                       {
                         "cellRef": "overlap:preserve-consignprice",
                         "equationGenerators": [
-                          "equation:overlap:preserve-consignprice"
+                          "edge:money-preserve-consignprice"
                         ],
-                        "equationRelationMatrix": [],
+                        "equationRelationMatrix": [
+                          [
+                            5
+                          ]
+                        ],
                         "generatorMap": [
                           [
                             1
                           ]
                         ],
-                        "repairRelationMatrix": [],
+                        "repairRelationMatrix": [
+                          [
+                            5
+                          ]
+                        ],
                         "semanticGenerators": [
                           "drift:refund-rounding"
                         ]
@@ -2999,20 +2763,29 @@
                       {
                         "cellRef": "triple:consign-fee-region",
                         "equationGenerators": [
-                          "equation:triple:consign-fee-region"
+                          "triple:money-consign-fee-region"
                         ],
-                        "equationRelationMatrix": [],
+                        "equationRelationMatrix": [
+                          [
+                            5
+                          ]
+                        ],
                         "generatorMap": [
                           [
                             1
                           ]
                         ],
-                        "repairRelationMatrix": [],
+                        "repairRelationMatrix": [
+                          [
+                            5
+                          ]
+                        ],
                         "semanticGenerators": [
                           "drift:refund-rounding"
                         ]
                       }
                     ],
+                    "coefficientRing": "integers",
                     "equationLiftAtlas": {
                       "localLifts": [
                         {
@@ -3514,7 +3287,7 @@
             }
           },
           "equationResidual": {
-            "kind": "derived-from-independent-equation-lift-atlas",
+            "kind": "derived-from-supplied-equation-lift-atlas",
             "targetClassNonZero": false,
             "targetCocycle": true
           },
@@ -3593,7 +3366,7 @@
                   0
                 ],
                 "equationGenerators": [
-                  "equation:overlap:cancel-insidepay"
+                  "e_cancel_insidepay"
                 ],
                 "overlapRef": "overlap:cancel-insidepay"
               },
@@ -3602,7 +3375,7 @@
                   0
                 ],
                 "equationGenerators": [
-                  "equation:overlap:insidepay-order"
+                  "e_insidepay_order"
                 ],
                 "overlapRef": "overlap:insidepay-order"
               },
@@ -3611,7 +3384,7 @@
                   0
                 ],
                 "equationGenerators": [
-                  "equation:overlap:cancel-order"
+                  "e_cancel_order"
                 ],
                 "overlapRef": "overlap:cancel-order"
               },
@@ -3620,7 +3393,7 @@
                   0
                 ],
                 "equationGenerators": [
-                  "equation:overlap:consign-consignprice"
+                  "e_consign_consignprice"
                 ],
                 "overlapRef": "overlap:consign-consignprice"
               },
@@ -3629,7 +3402,7 @@
                   0
                 ],
                 "equationGenerators": [
-                  "equation:overlap:preserve-consign"
+                  "edge:money-preserve-consign"
                 ],
                 "overlapRef": "overlap:preserve-consign"
               },
@@ -3638,7 +3411,7 @@
                   0
                 ],
                 "equationGenerators": [
-                  "equation:overlap:preserve-consignprice"
+                  "edge:money-preserve-consignprice"
                 ],
                 "overlapRef": "overlap:preserve-consignprice"
               }
@@ -3650,7 +3423,7 @@
                   0
                 ],
                 "equationGenerators": [
-                  "equation:ctx:repair-cancel-surface"
+                  "vertex:money-cancel"
                 ]
               },
               {
@@ -3659,7 +3432,7 @@
                   0
                 ],
                 "equationGenerators": [
-                  "equation:ctx:repair-inside-payment-surface"
+                  "vertex:money-inside-payment"
                 ]
               },
               {
@@ -3668,7 +3441,7 @@
                   0
                 ],
                 "equationGenerators": [
-                  "equation:ctx:repair-order-surface"
+                  "vertex:money-order"
                 ]
               },
               {
@@ -3677,7 +3450,7 @@
                   0
                 ],
                 "equationGenerators": [
-                  "equation:ctx:repair-consign-surface"
+                  "vertex:money-consign"
                 ]
               },
               {
@@ -3686,7 +3459,7 @@
                   0
                 ],
                 "equationGenerators": [
-                  "equation:ctx:repair-consign-price-surface"
+                  "vertex:money-consign-price"
                 ]
               },
               {
@@ -3695,7 +3468,7 @@
                   0
                 ],
                 "equationGenerators": [
-                  "equation:ctx:repair-preserve-surface"
+                  "vertex:money-preserve"
                 ]
               }
             ],
@@ -3706,7 +3479,7 @@
                   0
                 ],
                 "equationGenerators": [
-                  "equation:overlap:cancel-insidepay"
+                  "e_cancel_insidepay"
                 ],
                 "overlapRef": "overlap:cancel-insidepay"
               },
@@ -3715,7 +3488,7 @@
                   0
                 ],
                 "equationGenerators": [
-                  "equation:overlap:insidepay-order"
+                  "e_insidepay_order"
                 ],
                 "overlapRef": "overlap:insidepay-order"
               },
@@ -3724,7 +3497,7 @@
                   0
                 ],
                 "equationGenerators": [
-                  "equation:overlap:cancel-order"
+                  "e_cancel_order"
                 ],
                 "overlapRef": "overlap:cancel-order"
               },
@@ -3733,7 +3506,7 @@
                   0
                 ],
                 "equationGenerators": [
-                  "equation:overlap:consign-consignprice"
+                  "e_consign_consignprice"
                 ],
                 "overlapRef": "overlap:consign-consignprice"
               },
@@ -3742,7 +3515,7 @@
                   0
                 ],
                 "equationGenerators": [
-                  "equation:overlap:preserve-consign"
+                  "edge:money-preserve-consign"
                 ],
                 "overlapRef": "overlap:preserve-consign"
               },
@@ -3751,7 +3524,7 @@
                   0
                 ],
                 "equationGenerators": [
-                  "equation:overlap:preserve-consignprice"
+                  "edge:money-preserve-consignprice"
                 ],
                 "overlapRef": "overlap:preserve-consignprice"
               }
@@ -3795,7 +3568,7 @@
     },
     "lawSurface": {
       "path": "input:law-surface-saga.json",
-      "sha256": "15b78313f591c424245c79fdc32ab6aee799d3c53197b331d569556ac3670471"
+      "sha256": "e223d3a0bbca6dab524e83b675e8733a05622f4d7f83ff3f11865d862213797f"
     },
     "measurementProfile": {
       "path": "input:measurement-profile-saga.json",
@@ -3813,7 +3586,7 @@
     },
     "repairPlan": {
       "path": "input:repair-plan-repaired.json",
-      "sha256": "1fd4af049eea134d062e81b02c42669437856364201ed9adad7a82dc5233c652"
+      "sha256": "aea97aaaab6ab94bc0b86063010d7ace09ce3e6fd6aefc9b2b91228d32ddf317"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
@@ -3850,7 +3623,7 @@
     "verdictDiscipline": "five-valued-structural-verdict@1",
     "zeroPredicate": "rank-zero@1"
   },
-  "runId": "run:503e65b25714",
+  "runId": "run:3087fb5359d3",
   "schema": "archsig-measurement-packet/v0.5.4",
   "structuralVerdict": [
     {
@@ -3896,39 +3669,32 @@
       "verdictRef": "structuralVerdict/ag-cech-obstruction/surface-cech-surface-v052/finite-f2-cech-computed"
     },
     {
-      "dependsOnAssumptions": [
-        "assumption:part3-11-3:displayedRequiredLawsHold-is-operationalized-only-by-the-declared-holdsCriterion-raw-value-check",
-        "assumption:part10-8-3:selected-quotient-sheaf-condition-for-law-surface-train-ticket-money-saga-v054"
-      ],
       "evaluator": "ag.saga-grounded",
       "evidence": {
-        "computedInvariantRefs": [
-          "saga-generated-end-to-end-packet"
-        ],
+        "computedInvariantRefs": [],
         "sourceRefs": []
       },
       "law": "law:money-settlement-convention",
-      "reason": "DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS",
+      "reason": "ag.saga-grounded is silent by design: grounded_skeleton_not_aligned",
       "target": {
-        "classRef": "computedInvariants/saga-generated-end-to-end-packet",
+        "classRef": "structuralVerdict/ag-saga-grounded/law-money-settlement-convention/grounded-skeleton-not-aligned",
         "coefficient": "F2",
         "coverRef": "cover:money-settlement-loop",
         "kind": "profile-relative-structural-verdict",
         "scopeSize": {
-          "contexts": 1,
+          "contexts": 0,
           "edges": 0,
           "triangles": 0
         }
       },
-      "verdict": "measured_zero",
+      "verdict": "not_computed",
       "verdictData": {
-        "certRef": "computedInvariants/saga-generated-end-to-end-packet",
         "inScope": true,
-        "methodStatus": "holds_criterion_raw_value_zero",
+        "methodStatus": "grounded_skeleton_not_aligned",
         "nonZero": false,
-        "zero": true
+        "zero": false
       },
-      "verdictRef": "structuralVerdict/ag-saga-grounded/law-money-settlement-convention/holds-criterion-raw-value-zero"
+      "verdictRef": "structuralVerdict/ag-saga-grounded/law-money-settlement-convention/grounded-skeleton-not-aligned"
     },
     {
       "dependsOnAssumptions": [

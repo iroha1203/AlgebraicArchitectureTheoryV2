@@ -63,7 +63,7 @@
   ],
   "componentFingerprints": {
     "lawPolicy": "sha256:e5e91078749ec26ae327ecd1cf41d6d2f7dd035c81a1c66bc0e0476b10e6900c",
-    "lawSurface": "sha256:15b78313f591c424245c79fdc32ab6aee799d3c53197b331d569556ac3670471",
+    "lawSurface": "sha256:e223d3a0bbca6dab524e83b675e8733a05622f4d7f83ff3f11865d862213797f",
     "measurementProfile": "sha256:c073650c8bcd053d48d78bb1a29811b80917ffbdec81e1789dd15d68908b0753"
   },
   "inputDigests": {
@@ -77,7 +77,7 @@
     },
     "lawSurface": {
       "path": "input:law-surface-saga.json",
-      "sha256": "15b78313f591c424245c79fdc32ab6aee799d3c53197b331d569556ac3670471"
+      "sha256": "e223d3a0bbca6dab524e83b675e8733a05622f4d7f83ff3f11865d862213797f"
     },
     "measurementProfile": {
       "path": "input:measurement-profile-saga.json",
@@ -95,7 +95,7 @@
     },
     "repairPlan": {
       "path": "input:repair-plan-head.json",
-      "sha256": "610ba78dc116be2a29f0cd043809fa7b53a226e73e0fbd606b8c0cbd59014e6c"
+      "sha256": "fb25fd345468984ec9f3276d1d9c48ed5c9e963ace860eb20b47b2a789916202"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
@@ -104,7 +104,7 @@
     }
   },
   "packetSchema": "archsig-measurement-packet/v0.5.4",
-  "runId": "run:8d4b5849eb52",
+  "runId": "run:12bbf63146e4",
   "schema": "archsig-measurement-packet-validation-report/v0.5.4",
   "summary": {
     "failedCheckCount": 0,
