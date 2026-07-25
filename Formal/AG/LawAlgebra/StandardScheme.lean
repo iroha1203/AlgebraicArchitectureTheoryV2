@@ -1874,6 +1874,82 @@ noncomputable def whole
     intro W₀ W₁ W₂ f g
     simp
 
+/--
+Context-chart cover selected by a monotone family of affine opens.
+
+Each equation context selects one open of the represented Scheme, a context
+restriction shrinks the selected open, and the selected opens jointly cover.
+The transitions are the canonical open inclusions, so the functoriality clauses
+are consequences rather than supplied data, and distinct contexts may select
+genuinely distinct proper opens.
+-/
+noncomputable def ofMonotoneOpens
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    (S : Site.AATSite A)
+    (Y : AlgebraicGeometry.Scheme.{max u v})
+    (chartOpen : S.category → Y.Opens)
+    (chartOpen_mono :
+      ∀ {source target : S.category}, (source ⟶ target) →
+        chartOpen source ≤ chartOpen target)
+    (chartOpen_affine :
+      ∀ W : S.category, AlgebraicGeometry.IsAffineOpen (chartOpen W))
+    (chartOpen_cover : ⨆ W : S.category, chartOpen W = ⊤) :
+    EquationContextChartCover.{u, v} S Y where
+  cover :=
+    AlgebraicGeometry.Scheme.Cover.mkOfCovers
+      S.category (fun W => ↑(chartOpen W)) (fun W => (chartOpen W).ι)
+      (fun x => by
+        have hx : x ∈ (⨆ W : S.category, chartOpen W) := by
+          rw [chartOpen_cover]
+          trivial
+        obtain ⟨W, hW⟩ := TopologicalSpace.Opens.mem_iSup.mp hx
+        exact ⟨W, ⟨x, hW⟩, rfl⟩)
+  contextIndex := Equiv.refl S.category
+  chartAffine := fun W => chartOpen_affine W
+  transition := fun f => Y.homOfLE (chartOpen_mono f)
+  transition_to_base := fun f => Y.homOfLE_ι _
+  transition_id := by
+    intro W
+    refine (cancel_mono (chartOpen W).ι).mp ?_
+    simpa using Y.homOfLE_ι (chartOpen_mono (𝟙 W))
+  transition_comp := by
+    intro W₀ W₁ W₂ f g
+    exact (Y.homOfLE_homOfLE (chartOpen_mono f) (chartOpen_mono g)).symm
+
+/-- The chart selected by a monotone-opens cover is the selected open. -/
+@[simp] theorem ofMonotoneOpens_chart
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    (S : Site.AATSite A)
+    (Y : AlgebraicGeometry.Scheme.{max u v})
+    (chartOpen : S.category → Y.Opens)
+    (chartOpen_mono :
+      ∀ {source target : S.category}, (source ⟶ target) →
+        chartOpen source ≤ chartOpen target)
+    (chartOpen_affine :
+      ∀ W : S.category, AlgebraicGeometry.IsAffineOpen (chartOpen W))
+    (chartOpen_cover : ⨆ W : S.category, chartOpen W = ⊤)
+    (W : S.category) :
+    (ofMonotoneOpens.{u, v} S Y chartOpen chartOpen_mono chartOpen_affine
+        chartOpen_cover).chart W = ↑(chartOpen W) :=
+  rfl
+
+/-- Its chart map is the canonical open immersion of the selected open. -/
+@[simp] theorem ofMonotoneOpens_chartMap
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    (S : Site.AATSite A)
+    (Y : AlgebraicGeometry.Scheme.{max u v})
+    (chartOpen : S.category → Y.Opens)
+    (chartOpen_mono :
+      ∀ {source target : S.category}, (source ⟶ target) →
+        chartOpen source ≤ chartOpen target)
+    (chartOpen_affine :
+      ∀ W : S.category, AlgebraicGeometry.IsAffineOpen (chartOpen W))
+    (chartOpen_cover : ⨆ W : S.category, chartOpen W = ⊤)
+    (W : S.category) :
+    (ofMonotoneOpens.{u, v} S Y chartOpen chartOpen_mono chartOpen_affine
+        chartOpen_cover).chartMap W = (chartOpen W).ι :=
+  rfl
+
 end EquationContextChartCover
 
 /--
