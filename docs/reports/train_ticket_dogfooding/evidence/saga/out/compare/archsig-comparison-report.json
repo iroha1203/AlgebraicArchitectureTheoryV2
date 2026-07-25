@@ -70,7 +70,7 @@
       },
       "measurementPacket": {
         "path": "archsig-measurement-packet.json",
-        "sha256": "a81f92b8d54650727789f8cbe26c916e697194130295c9bc81b73a63185e5e20"
+        "sha256": "8e7a0e54bd512627b41a1919c0376e26c479573c6204eb490346a3f8fb37eb25"
       },
       "normalizedArchmap": {
         "path": "normalized-archmap.json",
@@ -109,7 +109,7 @@
       },
       "measurementPacket": {
         "path": "archsig-measurement-packet.json",
-        "sha256": "0fef5690c8d8c6824b0d219a8848432e0d85fa1c873a03395153f40982e21173"
+        "sha256": "e14e1d4f9a0a88c4cc68baf83bde4130e369c0abc0b895ee06c136a086be7a26"
       },
       "normalizedArchmap": {
         "path": "normalized-archmap.json",

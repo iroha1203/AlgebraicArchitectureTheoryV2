@@ -134,6 +134,12 @@ struct SagaGeneratedCochainMapEvidenceV1 {
 struct SagaDerivedCellEvidenceV1 {
     cell_ref: String,
     local_phi_derived_from: String,
+    /// 導出した local Phi の有限表示。監査者が packet だけで Phi を再構成できるように出す。
+    semantic_generators: Vec<String>,
+    equation_generators: Vec<String>,
+    matrix: Vec<Vec<i64>>,
+    source_relations: Vec<Vec<i64>>,
+    target_relations: Vec<Vec<i64>>,
 }
 
 #[derive(Deserialize)]
@@ -14685,7 +14691,15 @@ fn check_saga_presentation_generated_evidence_shape(
             check_required_object_keys(
                 row,
                 &format!("{path}.generatedCochainMap.{degree}[{index}]"),
-                &["cellRef", "localPhiDerivedFrom"],
+                &[
+                    "cellRef",
+                    "localPhiDerivedFrom",
+                    "semanticGenerators",
+                    "equationGenerators",
+                    "matrix",
+                    "sourceRelations",
+                    "targetRelations",
+                ],
                 examples,
             );
         }

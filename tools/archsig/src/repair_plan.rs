@@ -1868,7 +1868,14 @@ pub(crate) fn presentation_generated_h1_output(
             .map(|(_, cell)| {
                 json!({
                     "cellRef": cell.cell_ref,
-                    "localPhiDerivedFrom": "generatorMap modulo repair/equation relations"
+                    "localPhiDerivedFrom": "generatorMap modulo repair/equation relations",
+                    // 導出した local Phi の有限表示そのもの。監査者が packet だけで
+                    // Phi を再構成できるように、生成元・行列を出力へ含める。
+                    "semanticGenerators": cell.semantic_generators,
+                    "equationGenerators": cell.equation_generators,
+                    "matrix": cell.generator_map,
+                    "sourceRelations": cell.repair_relation_matrix,
+                    "targetRelations": cell.equation_relation_matrix
                 })
             })
             .collect::<Vec<_>>()

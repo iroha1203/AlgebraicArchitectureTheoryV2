@@ -455,7 +455,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "The grounded SAGA conclusions packet v0.5.4 records the generated finite Boolean quotient, lawDependent 3-conclusion section, lawIndependent 7-conclusion section, degree-zero contribution, and chart detector findings.",
+        "fieldMappingPolicy": "The grounded SAGA conclusions packet v0.5.4 records the generated finite Boolean quotient, lawDependent 3-conclusion section, lawIndependent 6-conclusion section with the Principle 8.4 separated-statements record, degree-zero contribution, and chart detector findings.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",

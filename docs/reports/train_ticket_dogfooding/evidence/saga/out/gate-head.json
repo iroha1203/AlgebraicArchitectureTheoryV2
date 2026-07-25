@@ -8,7 +8,7 @@
     },
     "measurementPacket": {
       "path": "input:archsig-measurement-packet.json",
-      "sha256": "a81f92b8d54650727789f8cbe26c916e697194130295c9bc81b73a63185e5e20"
+      "sha256": "8e7a0e54bd512627b41a1919c0376e26c479573c6204eb490346a3f8fb37eb25"
     }
   },
   "nonConclusions": [

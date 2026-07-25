@@ -254,7 +254,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "primary",
                 "ArchSig v0.5.4 Algebraic Geometry Measurement",
                 vec!["archsig-contract:v0.5.4-ag-measurement"],
-                "The grounded SAGA conclusions packet v0.5.4 records the generated finite Boolean quotient, lawDependent 3-conclusion section, lawIndependent 7-conclusion section, degree-zero contribution, and chart detector findings.",
+                "The grounded SAGA conclusions packet v0.5.4 records the generated finite Boolean quotient, lawDependent 3-conclusion section, lawIndependent 6-conclusion section with the Principle 8.4 separated-statements record, degree-zero contribution, and chart detector findings.",
                 vec![
                     "The packet is a bounded supplied-data computation contract; its theoremRef fields identify the mathematical reading without turning the packet into a Lean proof object.",
                     "lawIndependent conclusions are not evidence that displayed laws hold.",
