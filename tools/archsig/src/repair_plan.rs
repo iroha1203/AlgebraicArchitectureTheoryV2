@@ -50,11 +50,29 @@ pub(crate) struct PresentationGeneratedH1Checks {
     pub equation_lift_atlas_present: bool,
     pub residual_witness_computed: bool,
     pub target_class_nonzero: Option<bool>,
+    /// 構造的に検査へ進めなかったときの原因。検査 boolean が一律 false になる理由を
+    /// 数学的性質(cocycle 等)のせいに見せないため、入力側の欠陥を名指しする。
+    pub structural_fault: Option<&'static str>,
     residual_witness: Option<PresentationResidualWitness>,
     map_complete: bool,
 }
 
 impl PresentationGeneratedH1Checks {
+    fn structural_fault(
+        fault: &'static str,
+        equation_lift_atlas_present: bool,
+    ) -> PresentationGeneratedH1Checks {
+        PresentationGeneratedH1Checks {
+            equation_lift_atlas_present,
+            structural_fault: Some(fault),
+            ..PresentationGeneratedH1Checks::default()
+        }
+    }
+
+    pub(crate) fn presentation_cells_cover_complex(&self) -> bool {
+        self.map_complete
+    }
+
     pub(crate) fn all_pass(&self) -> bool {
         self.map_complete
             && self.presentation_exactness
@@ -653,6 +671,76 @@ mod tests {
         );
     }
 
+    /// atlas の供給欠陥は、名指しの structural fault として出す。名指ししないと
+    /// `targetCocycle=false` だけが残り、入力の欠落が数学的性質の失敗に見える。
+    #[test]
+    fn presentation_generated_supply_faults_are_named_not_blamed_on_the_target_cocycle() {
+        let plan: RepairPlanDocumentV1 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/repair_plan_presentation_generated_circle.json"
+        ))
+        .expect("presentation-generated circle fixture parses");
+        let comparison = plan.comparison.as_ref().expect("comparison is supplied");
+        let h1 = || {
+            comparison["h1ComparisonData"]
+                .as_object()
+                .expect("H1 comparison data is an object")
+                .clone()
+        };
+
+        let mut missing_lift = h1();
+        missing_lift["presentation"]["equationLiftAtlas"]["localLifts"]
+            .as_array_mut()
+            .expect("local lifts are an array")
+            .pop();
+        let missing_lift_checks = presentation_generated_h1_checks(&plan, &plan.complex, &missing_lift);
+        assert_eq!(
+            missing_lift_checks.structural_fault,
+            Some("equation-lift-atlas-does-not-cover-the-charts-exactly")
+        );
+        assert!(!missing_lift_checks.all_pass());
+
+        let mut duplicate_transition = h1();
+        let transitions = duplicate_transition["presentation"]["equationLiftAtlas"]
+            ["transitionDifferences"]
+            .as_array_mut()
+            .expect("transition differences are an array");
+        let first = transitions[0].clone();
+        transitions.push(first);
+        let duplicate_checks =
+            presentation_generated_h1_checks(&plan, &plan.complex, &duplicate_transition);
+        assert_eq!(
+            duplicate_checks.structural_fault,
+            Some("equation-lift-atlas-transition-duplicated")
+        );
+
+        let mut unknown_chart = h1();
+        unknown_chart["presentation"]["equationLiftAtlas"]["localLifts"]
+            .as_array_mut()
+            .expect("local lifts are an array")[0]["chartRef"] =
+            serde_json::json!("ctx:not-in-the-complex");
+        let unknown_chart_checks =
+            presentation_generated_h1_checks(&plan, &plan.complex, &unknown_chart);
+        assert_eq!(
+            unknown_chart_checks.structural_fault,
+            Some("equation-lift-atlas-names-an-unknown-chart")
+        );
+
+        let mut duplicate_cell = h1();
+        let cells = duplicate_cell["presentation"]["cells"]
+            .as_array_mut()
+            .expect("presentation cells are an array");
+        let first_cell = cells[0].clone();
+        cells.push(first_cell);
+        let duplicate_cell_checks =
+            presentation_generated_h1_checks(&plan, &plan.complex, &duplicate_cell);
+        assert_eq!(
+            duplicate_cell_checks.structural_fault,
+            Some("presentation-cell-duplicated")
+        );
+        // 入力に atlas は在る。構造的欠陥を理由に「atlas が無い」と報告しない。
+        assert!(duplicate_cell_checks.equation_lift_atlas_present);
+    }
+
     #[test]
     fn presentation_generated_circle_rejects_kernel_mismatch_and_missing_generation() {
         let plan: RepairPlanDocumentV1 = serde_json::from_str(include_str!(
@@ -1211,12 +1299,15 @@ fn check_supplied_slots(
                             .or_else(|| {
                                 presentation_checks.map(|checks| {
                                     format!(
-                                        "COMPARISON_DATA_CONTRACT_VIOLATION: presentationExactness={} generatorCompleteness={} restrictionNaturality={} degreeZeroCommutative={} degreeOneCommutative={} targetCocycle={} equationLiftAtlasPresent={} residualWitnessComputed={}",
+                                        "COMPARISON_DATA_CONTRACT_VIOLATION: structuralFault={} presentationCellsCoverComplex={} presentationExactness={} generatorCompleteness={} restrictionNaturality={} degreeZeroCommutative={} degreeOneCommutative={} sourceCocycle={} targetCocycle={} equationLiftAtlasPresent={} residualWitnessComputed={}",
+                                        checks.structural_fault.unwrap_or("none"),
+                                        checks.presentation_cells_cover_complex(),
                                         checks.presentation_exactness,
                                         checks.generator_completeness,
                                         checks.restriction_naturality,
                                         checks.degree_zero_commutative,
                                         checks.degree_one_commutative,
+                                        checks.source_cocycle,
                                         checks.target_cocycle,
                                         checks.equation_lift_atlas_present,
                                         checks.residual_witness_computed,
@@ -1455,31 +1546,43 @@ pub(crate) fn presentation_generated_h1_checks(
         .is_some_and(|presentation| presentation.get("equationLiftAtlas").is_some());
     let Ok(typed) = serde_json::from_value::<H1ComparisonDataV052>(Value::Object(h1.clone()))
     else {
-        return PresentationGeneratedH1Checks {
+        return PresentationGeneratedH1Checks::structural_fault(
+            "comparison-data-not-parseable",
             equation_lift_atlas_present,
-            ..PresentationGeneratedH1Checks::default()
-        };
+        );
     };
     if typed.schema != crate::H1_COMPARISON_DATA_V052_SCHEMA
         || typed.kind != "presentation-generated"
     {
-        return PresentationGeneratedH1Checks::default();
+        return PresentationGeneratedH1Checks::structural_fault(
+            "comparison-data-schema-or-kind-mismatch",
+            equation_lift_atlas_present,
+        );
     }
     let Some(presentation) = typed.presentation.as_ref() else {
-        return PresentationGeneratedH1Checks::default();
+        return PresentationGeneratedH1Checks::structural_fault(
+            "presentation-block-missing",
+            equation_lift_atlas_present,
+        );
     };
 
     let expected_cells = presentation_cell_refs(plan);
     let mut cells = BTreeMap::new();
     for cell in &presentation.cells {
         if cells.insert(cell.cell_ref.as_str(), cell).is_some() {
-            return PresentationGeneratedH1Checks::default();
+            return PresentationGeneratedH1Checks::structural_fault(
+                "presentation-cell-duplicated",
+                equation_lift_atlas_present,
+            );
         }
     }
     let map_complete = cells.keys().copied().collect::<BTreeSet<_>>()
         == expected_cells.iter().map(String::as_str).collect();
     if !map_complete {
-        return PresentationGeneratedH1Checks::default();
+        return PresentationGeneratedH1Checks::structural_fault(
+            "presentation-cells-do-not-cover-the-complex-exactly",
+            equation_lift_atlas_present,
+        );
     }
 
     let cell_checks = cells
@@ -1487,7 +1590,10 @@ pub(crate) fn presentation_generated_h1_checks(
         .map(|cell| presentation_cell_checks(cell))
         .collect::<Option<Vec<_>>>();
     let Some(cell_checks) = cell_checks else {
-        return PresentationGeneratedH1Checks::default();
+        return PresentationGeneratedH1Checks::structural_fault(
+            "presentation-cell-generators-or-matrices-malformed",
+            equation_lift_atlas_present,
+        );
     };
 
     let expected_restrictions = presentation_restriction_refs(plan);
@@ -1500,7 +1606,10 @@ pub(crate) fn presentation_generated_h1_checks(
             )
             .is_some()
         {
-            return PresentationGeneratedH1Checks::default();
+            return PresentationGeneratedH1Checks::structural_fault(
+                "presentation-restriction-duplicated",
+                equation_lift_atlas_present,
+            );
         }
     }
     let restriction_complete = restrictions.keys().copied().collect::<BTreeSet<_>>()
@@ -1528,17 +1637,21 @@ pub(crate) fn presentation_generated_h1_checks(
                 restrictions.contains_key(&(overlap_ref.as_str(), triple.id.as_str()))
             })
         });
-    let analysis = (restriction_naturality && degree_zero_commutative && degree_one_commutative)
-        .then(|| {
-            presentation_residual_analysis(
-                plan,
-                target_complex,
-                presentation,
-                &cells,
-                &restrictions,
-            )
-        })
-        .flatten();
+    let atlas_fault = equation_lift_atlas_fault(target_complex, presentation, &cells);
+    let analysis = (restriction_naturality
+        && degree_zero_commutative
+        && degree_one_commutative
+        && atlas_fault.is_none())
+    .then(|| {
+        presentation_residual_analysis(
+            plan,
+            target_complex,
+            presentation,
+            &cells,
+            &restrictions,
+        )
+    })
+    .flatten();
     let source_cocycle = analysis
         .as_ref()
         .is_some_and(|analysis| analysis.source_cocycle);
@@ -1566,6 +1679,7 @@ pub(crate) fn presentation_generated_h1_checks(
         equation_lift_atlas_present,
         residual_witness_computed,
         target_class_nonzero,
+        structural_fault: atlas_fault,
         residual_witness,
         map_complete,
     }
@@ -1937,6 +2051,49 @@ fn generated_source_image(
             })
         })
         .collect()
+}
+
+/// equation lift atlas の供給欠陥を名指しする。ここで弾かないと、atlas の欠落・重複・
+/// 未知 chart 参照がすべて `targetCocycle=false` として数学的性質の失敗に見える。
+fn equation_lift_atlas_fault(
+    target_complex: &RepairPlanComplexV1,
+    presentation: &H1PresentationDataV052,
+    cells: &BTreeMap<&str, &H1PresentationCellV052>,
+) -> Option<&'static str> {
+    let mut lifts = BTreeSet::new();
+    for lift in &presentation.equation_lift_atlas.local_lifts {
+        let Some(cell) = cells.get(lift.chart_ref.as_str()) else {
+            return Some("equation-lift-atlas-names-an-unknown-chart");
+        };
+        if !binary_vector(&lift.coefficients, cell.equation_generators.len()) {
+            return Some("equation-lift-atlas-local-lift-shape-mismatch");
+        }
+        if !lifts.insert(lift.chart_ref.as_str()) {
+            return Some("equation-lift-atlas-local-lift-duplicated");
+        }
+    }
+    if lifts != target_complex.charts.iter().map(String::as_str).collect() {
+        return Some("equation-lift-atlas-does-not-cover-the-charts-exactly");
+    }
+    let mut transitions = BTreeSet::new();
+    for transition in &presentation.equation_lift_atlas.transition_differences {
+        let Some(cell) = cells.get(transition.overlap_ref.as_str()) else {
+            return Some("equation-lift-atlas-names-an-unknown-overlap");
+        };
+        if !binary_vector(&transition.coefficients, cell.equation_generators.len()) {
+            return Some("equation-lift-atlas-transition-shape-mismatch");
+        }
+        if !transitions.insert(transition.overlap_ref.as_str()) {
+            return Some("equation-lift-atlas-transition-duplicated");
+        }
+    }
+    (transitions
+        != target_complex
+            .overlaps
+            .iter()
+            .map(|overlap| overlap.id.as_str())
+            .collect())
+    .then_some("equation-lift-atlas-does-not-cover-the-overlaps-exactly")
 }
 
 fn equation_residual_from_lift_atlas(

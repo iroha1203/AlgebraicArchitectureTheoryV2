@@ -178,11 +178,12 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "primary",
                 "ArchSig v0.5.4 SAGA Stage 1",
                 vec!["archsig-contract:saga-stage1-v0.5.4"],
-                    "RepairPlan v0.5.4 supplies the checked SAGA descent input side: residual refs, finite complex, primitive restriction differences, semantic projection, faithfulness regime, and F2-additive coefficient.",
+                    "RepairPlan v0.5.4 supplies the checked SAGA descent input side: residual refs, finite complex with its declared ArchMap cover and per-overlap/per-triple context bindings, primitive restriction differences, semantic projection, faithfulness regime, F2-additive coefficient, optional trueSheafCertificate and gluingData, and an optional presentation block carrying per-cell semantic/equation generators, relation matrices, generator maps, restriction matrices, and an equation lift atlas.",
                 vec![
                     "RepairPlan validation checks supplied premises before use; it does not compute boundary membership or global coherence.",
                     "RepairPlan input cannot supply generated conclusion tokens such as glues, verdict, h1Zero, or globalCoherent.",
                     "External semantic completeness remains an author assumption; declared ArchMap cover/incidence is mechanically checked when the RepairPlan supplies the mapping.",
+                    "Residual class certification is component-local: trueSheafCertificate and gluingData must match the residual support component exactly. sectionRef is an authored opaque label that ArchSig does not resolve.",
                 ],
             ),
             artifact(
@@ -353,7 +354,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "ArchSig Output / CI workflow",
                 vec!["archsig-contract:artifact-ci-v0.5.4"],
                 &format!(
-                    "Comparison report v0.5.4 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions and archmap-diff intersections. With a validated refinement-comparison/v0.5.4 artifact it can also record class-zero preservation. Registered conclusionCode values are {}.",
+                    "Comparison report v0.5.4 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions, archmap-diff intersections, and comparability of the two runs' repair-plan digests. With a validated refinement-comparison/v0.5.4 artifact it can also record class-zero preservation. Registered conclusionCode values are {}.",
                     registry_sentence(&ARCHSIG_COMPARISON_CONCLUSION_CODES),
                 ),
                 vec![
@@ -373,7 +374,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     "archsig-contract:command-guide",
                 ],
                 &format!(
-                    "Run manifest records the analyze command name, deterministic runId, toolVersion, input digests, mode, conclusion code, generated artifact list, artifact links, validation report paths, and validation result summary for one ArchSig analyze run. Registered analyze conclusionCode values are {}.",
+                    "Run manifest records the analyze command name, deterministic runId, toolVersion, input digests, canonical artifactDigests for the normalized ArchMap and the measurement packet, mode, conclusion code, generated artifact list, artifact links, validation report paths, and validation result summary for one ArchSig analyze run. Registered analyze conclusionCode values are {}.",
                     registry_sentence(&ARCHSIG_ANALYSIS_CONCLUSION_CODES),
                 ),
                 vec![

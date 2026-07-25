@@ -1593,7 +1593,7 @@
           "basis": "Z1/B1",
           "cocycle": {
             "certificateKind": "automatic-c2-zero",
-            "checked": true,
+            "checked": false,
             "deltaOne": "zero",
             "tripleOverlapRefs": []
           },
@@ -1682,7 +1682,7 @@
         "basis": "Z1/B1",
         "cocycle": {
           "certificateKind": "automatic-c2-zero",
-          "checked": true,
+          "checked": false,
           "deltaOne": "zero",
           "tripleOverlapRefs": []
         },
@@ -1775,6 +1775,7 @@
         "contractChecked": true,
         "h1ComparisonDataKind": "presentation-generated",
         "incidenceBridgeKind": "chart-indexed",
+        "measuredClassAgreement": true,
         "normalizedComplexFingerprint": "bfd9a71337b532578f6283b14e43c2966146cea8e3844987f95baa58a039409a",
         "targetClassComputed": true
       },
@@ -1791,8 +1792,9 @@
       },
       "invariantId": "saga-comparison:h1-transfer",
       "kind": "h1-comparison-transfer",
+      "measuredClassDivergence": null,
       "nonConclusions": [
-        "Supplied cochain data and generated quotient-level transfer are separate structures.",
+        "The presentation packet is authored input; the derived comparison maps and the exactness checks are what this run computed.",
         "The transfer reading is relative to the supplied finite comparison contract."
       ],
       "presentationGenerated": {
@@ -2772,6 +2774,7 @@
           "contractChecked": true,
           "h1ComparisonDataKind": "presentation-generated",
           "incidenceBridgeKind": "chart-indexed",
+          "measuredClassAgreement": true,
           "normalizedComplexFingerprint": "bfd9a71337b532578f6283b14e43c2966146cea8e3844987f95baa58a039409a",
           "targetClassComputed": true
         },
@@ -2788,8 +2791,9 @@
         },
         "invariantId": "saga-comparison:h1-transfer",
         "kind": "h1-comparison-transfer",
+        "measuredClassDivergence": null,
         "nonConclusions": [
-          "Supplied cochain data and generated quotient-level transfer are separate structures.",
+          "The presentation packet is authored input; the derived comparison maps and the exactness checks are what this run computed.",
           "The transfer reading is relative to the supplied finite comparison contract."
         ],
         "presentationGenerated": {

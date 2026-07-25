@@ -41,10 +41,11 @@ cocycle 認証、同じ component に完全一致する `trueSheafCertificate` �
 `complex.enumerationComplete=true` かつ triple overlap cell が無い `C²=0` の
 `automatic-c2-zero` である。`trueSheafCertificate` の
 `memberCharts` / `coverRef` / `globalCondition=assumed` と
-`gluingData.overlapRefs` は residual component の overlap 集合に完全一致し、各
-`sectionRefs[].sectionRef` は対応する `overlapRef` から得られるcanonical
-`section:<overlap suffix>` でなければならない。別 component の supplied row や任意の section
-参照は residual class 認証に使えない。class row はこの global condition の assumptionId を
+`gluingData.overlapRefs` は residual component の overlap 集合に完全一致し、
+`sectionRefs` は各 `overlapRef` に非空かつ相異なる `sectionRef` を一対一で与える。
+`sectionRef` は author が付ける不透明なラベルであり、ArchSig はこれを ArchMap 側の
+どの entity にも解決しない。component 帰属は `overlapRefs` の完全一致だけが担保する。
+別 component の overlap 集合を宣言した supplied row は residual class 認証に使えない。class row はこの global condition の assumptionId を
 `dependsOnAssumptions` に記録する。この前提未供給は比較違反として扱わない。source class が計測済みの場合だけ、有限 map の適合検査または target class の zero predicate の検査へ進む。
 
 `kind: "presentation-generated"` では `saga.residual-class` を入力前提にせず、上記の

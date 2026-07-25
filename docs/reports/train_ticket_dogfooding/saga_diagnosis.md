@@ -51,15 +51,17 @@ cancel–inside-payment–order の実呼び出し三角形上で、金額規約
 | `supplied` | source-grounded presentation cells、semantic / equation generators、relation 行列、generator map、restriction、equation lift atlas、residual cochain、`trueSheafCertificate`、`gluingData` | RepairPlan の authored 入力。たとえば residual と各 overlap support は `kind: supplied` であり、ArchSig が source から自動発見したものとは扱わない |
 | `assumed` | selected quotient sheaf condition と true sheaf global condition | packet `assumptions`、および `trueSheafCertificate.globalCondition: assumed`。この仮定を結論や generated data と取り違えない |
 | `computed` | presentation からの `χ / Φ / κ`、semantic / equation residual、quotient-level H¹ transfer、target support | `generatedCochainMap` の各 local `Φ` は generator map を relation で割った有限計算から導出。`generatedQuotientTransfer` は source / target class の零判定を記録する |
-| `checked` | presentation exactness、generator completeness、restriction naturality、degree 0/1 cochain 可換性、degree 2 cell の finite atlas、comparison contract、component cocycle、canonical input digest | `presentationExactness: true`、`generatorCompleteness: true`、`restrictionNaturality: true`、`degreeZeroCommutative: true`、`degreeOneCommutative: true`、`contractChecked: true` と input digest の一致で固定する |
+| `checked` | presentation exactness、generator completeness、restriction naturality、degree 2 cell の finite atlas、comparison contract、canonical input digest | `presentationExactness: true`、`generatorCompleteness: true`、`restrictionNaturality: true`、`contractChecked: true` と input digest の一致で固定する。`degreeZeroCommutative` / `degreeOneCommutative` は restriction naturality から従う出力であり、独立した第2・第3の検査ではない |
+| `automatic` | diagnostic component の cocycle 条件 | 診断三角形には triple cell が無く selected `C²=0` なので cocycle 条件は自動成立する。`cocycle.certificateKind: automatic-c2-zero` かつ `cocycle.checked: false`(検査が走らないため)。これを検査済みと数えない |
 
 comparison cochain map は外部から matrix を `supplied` する経路ではない。互換性上
 `suppliedCochainMap` と名付けられた出力欄も、今回の値は `kind: presentation-generated` であり、
 実体は `generatedCochainMap` が presentation から導出した local `Φ` である。したがって
 comparison の来歴は **supplied cochain matrix → presentation-generated / checked cochain map** に移った。
 この移行の確定条件は、有限 presentation の exactness・generator completeness・restriction
-naturality・degree 0/1 可換性と degree 2 atlas を検査したうえで、head の
-`SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS` と `contractChecked: true` を出力することである。
+naturality と degree 2 atlas を検査したうえで、head の
+`SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS` と `contractChecked: true` を出力することである
+(degree 0/1 の cochain 可換性は restriction naturality から従う)。
 
 ### #3781 §7 用 condition matrix
 
@@ -77,7 +79,9 @@ naturality・degree 0/1 可換性と degree 2 atlas を検査したうえで、h
 | target quotient presentation enumeration completeness | repair-plan と同じ authored presentation cell 集合 | `assumed` for cell enumeration; `checked` for generation | target は別の supplied complex ではない。同じ cells から組み立て、cell 列挙は上行の author assertion に依存する一方、`generatorCompleteness: true` がその列挙から target quotient が生成されることを検査する |
 | faithfulness law | authored mathematical assumption | `supplied` / `assumed` | RepairPlan `faithfulness.mode: supplied`。packet は `faithfulness law supplied` を `assumed` として依存関係へ残す |
 | global sheaf condition | mathematical assumption | `assumed` | `trueSheafCertificate.globalCondition: assumed` と packet の `global sheaf condition` assumption |
-| comparison cochain map | presentation-derived finite map | `computed` / `checked` | `generatedCochainMap` の local `Φ`、exactness・generation・naturality・degree 0/1 可換性、head の `SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS` と `contractChecked: true` |
+| comparison cochain map | presentation-derived finite map | `computed` / `checked` | `generatedCochainMap` の local `Φ`、exactness・generation・naturality、head の `SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS` と `contractChecked: true` |
+| diagnostic component の cocycle 条件 | selected `C²=0` による自動成立 | `automatic` | `cocycle.certificateKind: automatic-c2-zero` / `cocycle.checked: false`。triple cell が無いので検査は走らない |
+| presentation source class と計測 residual class の一致 | 2つの読みの突合 | `checked` | comparison `contract.measuredClassAgreement: true`。両者が割れる packet では `measuredClassDivergence` が何が違うかを名指しする |
 | boundary membership / residual class | finite quotient calculation | `computed` | head は `saga-descent:boundary-membership.inB1: false` と `MEASURED_NONGLUING_RESIDUAL_CLASS`、repaired は零類・`REPAIR_GLUES_WITHIN_SELECTED_COMPLEX` |
 | repaired ArchMap | hypothetical repair input | `supplied` / hypothetical | `archmap-saga-repaired.json` は BigDecimal scale-2 HALF_EVEN 統一を表す仮説 variant。`PASS_WITHIN_GATE_POLICY` は実装済み修理を示さない |
 | runtime monetary magnitude | empirical measurement | unmeasured | harmonic-debt を供給せず沈黙。頻度・金額を結論に含めない |
@@ -89,7 +93,7 @@ naturality・degree 0/1 可換性と degree 2 atlas を検査したうえで、h
 | head analyze | `MEASURED_NONGLUING_RESIDUAL_CLASS`(`run:8d4b5849eb52`) |
 | └ grounding | `measured_zero` — 各チャートは自分の法を守っている(それが罠) |
 | └ descent 残差類 | `measured_nonzero`(diagnostic component、`automatic-c2-zero`、三角形3辺 support) |
-| └ comparison h1-transfer | `SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS`（exactness / generation / naturality / `κ` / atlas witness を検査） |
+| └ comparison h1-transfer | `SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS`（exactness / generation / naturality / `κ` / atlas witness を検査、`measuredClassAgreement: true`） |
 | gate head | `BLOCKED_BY_GATE_POLICY` |
 | repaired analyze | `REPAIR_GLUES_WITHIN_SELECTED_COMPLEX`(`run:503e65b25714`) |
 | compare head→repaired | `MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE` |
@@ -148,7 +152,10 @@ harmonic-debt は runtime 実測数値が無いため供給せず、沈黙(供�
   gate policy、repair-plan(head / repaired)、builder(`build_saga_artifacts.py`)。
   すべて一次出力の `inputDigests` と canonical digest 一致を検証済み
 - 一次出力: `evidence/saga/out/`(head / repaired の analyze 出力、compare、gate ×2)
-- 再現(2026-07-25 に runId・comparison code・gate 判定一致まで確認済み):
+- 再現(2026-07-25 に一次出力の byte 一致まで確認済み)。**run ディレクトリの basename は
+  compare 出力の `inputDigests[].path` に記録され、gate-repaired の comparison digest まで伝播する。
+  committed artifact を byte 一致で再現するには下記の `head` / `repaired` / `compare` をそのまま使う**。
+  `gate` は BLOCKED のとき非零 exit code を返すので、`set -e` 下では途中停止する:
 
 ```bash
 EV=docs/reports/train_ticket_dogfooding/evidence
@@ -159,25 +166,25 @@ cargo run --manifest-path $C -- analyze \
   --law-surface $EV/saga/law-surface-saga.json \
   --measurement-profile $EV/saga/measurement-profile-saga.json \
   --repair-plan $EV/saga/repair-plan-head.json \
-  --out-dir .tmp/reports-repro/saga-head
+  --out-dir .tmp/reports-repro/head
 cargo run --manifest-path $C -- analyze \
   --archmap $EV/saga/archmap-saga-repaired.json \
   --law-policy $EV/saga/law-policy-saga.json \
   --law-surface $EV/saga/law-surface-saga.json \
   --measurement-profile $EV/saga/measurement-profile-saga.json \
   --repair-plan $EV/saga/repair-plan-repaired.json \
-  --out-dir .tmp/reports-repro/saga-repaired
+  --out-dir .tmp/reports-repro/repaired
 cargo run --manifest-path $C -- compare \
-  --base-run .tmp/reports-repro/saga-head \
-  --head-run .tmp/reports-repro/saga-repaired \
-  --out-dir .tmp/reports-repro/saga-compare
+  --base-run .tmp/reports-repro/head \
+  --head-run .tmp/reports-repro/repaired \
+  --out-dir .tmp/reports-repro/compare
 cargo run --manifest-path $C -- gate \
-  --packet .tmp/reports-repro/saga-head/archsig-measurement-packet.json \
+  --packet .tmp/reports-repro/head/archsig-measurement-packet.json \
   --policy $EV/saga/gate-policy-saga.json \
   --out .tmp/reports-repro/gate-head.json
 cargo run --manifest-path $C -- gate \
-  --packet .tmp/reports-repro/saga-repaired/archsig-measurement-packet.json \
+  --packet .tmp/reports-repro/repaired/archsig-measurement-packet.json \
   --policy $EV/saga/gate-policy-saga.json \
-  --comparison .tmp/reports-repro/saga-compare/archsig-comparison-report.json \
+  --comparison .tmp/reports-repro/compare/archsig-comparison-report.json \
   --out .tmp/reports-repro/gate-repaired.json
 ```

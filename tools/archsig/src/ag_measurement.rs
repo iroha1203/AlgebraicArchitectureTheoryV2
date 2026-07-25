@@ -13470,6 +13470,7 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
         "suppliedSlots",
         "suppliedCochainMap",
         "presentationGenerated",
+        "measuredClassDivergence",
         "generatedQuotientTransfer",
         "resolutionSelector",
         "restrictionMatrix",
@@ -13564,6 +13565,7 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
                         "classPrerequisite",
                         "targetClassComputed",
                         "contractChecked",
+                        "measuredClassAgreement",
                     ],
                     &mut examples,
                 );
@@ -13589,6 +13591,13 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
                         contract["targetClassComputed"].is_boolean(),
                     ),
                     ("contractChecked", contract["contractChecked"].is_boolean()),
+                    (
+                        "measuredClassAgreement",
+                        // presentation-generated かつ descent 側の計測 class が居るときだけ
+                        // 一致判定が立つ。それ以外は判定対象が無いので null。
+                        contract["measuredClassAgreement"].is_boolean()
+                            || contract["measuredClassAgreement"].is_null(),
+                    ),
                 ] {
                     if !valid {
                         examples.push(generic_validation_example(
@@ -14321,6 +14330,25 @@ fn check_computed_invariant_shape_value(packet_value: &Value) -> ValidationCheck
                 "value/representation",
                 "computed invariant must carry typed value and representation",
             ));
+        }
+        // `representation` は invariant 本体のミラーであり、viewer はミラーがあれば
+        // そちらを優先する。両方に在る key が食い違うと、本体を再計算する validator を
+        // 素通りしたまま表示だけ別の結論になる。共通 key の一致を要求する。
+        if let (Some(invariant_object), Some(representation)) = (
+            invariant.as_object(),
+            invariant["representation"].as_object(),
+        ) {
+            for (key, mirrored) in representation {
+                if let Some(actual) = invariant_object.get(key)
+                    && actual != mirrored
+                {
+                    examples.push(generic_validation_example(
+                        &format!("{label}.representation.{key}"),
+                        "mirror-divergence",
+                        "computed invariant representation must agree with the invariant it mirrors",
+                    ));
+                }
+            }
         }
         if invariant["evaluator"].as_str() == Some("ag.square-free-repair")
             && invariant.get("obstructionIdeal").is_some()

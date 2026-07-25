@@ -43,7 +43,9 @@ ArchSig v0.5.3 の履歴証拠、SAGA 診断階段は ArchSig v0.5.4 の現行�
 未保存物: 試運転の gate policy は実体が保存されておらず、
 `evidence/trial/analyze/archsig-gate-report.json` の `inputDigests.gatePolicy` に digest のみ残る。
 フルビルドの gate policy は repo 内 fixture
-`tools/archsig/tests/fixtures/ag_measurement/gate_policy_conservative.json` そのもの(canonical digest 一致)。
+`tools/archsig/tests/fixtures/ag_measurement/gate_policy_conservative.json` を使った。ただし当該 fixture は
+その後 `dd760366`(v0.5.4 版数一斉更新)で更新されており、現在の repo 内 fixture の canonical digest は
+フルビルド run 時点の値と一致しない。フルビルドの gate 結果は当時の fixture に相対的な記録である。
 
 ### digest 整合の機械検査
 
@@ -52,7 +54,8 @@ python3 docs/reports/train_ticket_dogfooding/evidence/verify_digests.py
 ```
 
 コミット済みの各 analyze summary / gate report の `inputDigests` と、コミット済み入力 artifact の
-canonical JSON digest の一致を検査する(2026-07-19 時点で全 33 検査 OK)。
+canonical JSON digest の一致を検査する。2026-07-25 時点で 33 検査中 31 OK。残り 2 件は上記の
+フルビルド gate policy fixture の更新によるもので、SAGA 証拠束の 8 検査はすべて OK。
 
 ### 再現コマンド
 

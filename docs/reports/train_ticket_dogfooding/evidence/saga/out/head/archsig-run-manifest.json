@@ -3,7 +3,7 @@
   "artifactDigests": {
     "measurementPacket": {
       "path": "archsig-measurement-packet.json",
-      "sha256": "8d0ac6d0240bd072200e81b482e1c73cac32ae109becd193074877c42d4b7957"
+      "sha256": "fd41736c4472e7f6c927cdc8d97504c6c2488412f95af851119385daea73a260"
     },
     "normalizedArchmap": {
       "path": "normalized-archmap.json",
