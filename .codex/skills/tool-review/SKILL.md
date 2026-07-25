@@ -18,17 +18,17 @@ ArchSig / FieldSig tooling の差分を敵対的にレビューする。分野�
 ## 基本方針
 
 - AAT / Lean / ArchSig / FieldSig / Website の責務を混同しない。
-  ArchSig は Lean 証明器ではなく、`ArchMap + LawPolicy + evidence contract`
-  に相対化された肯定的 diagnostic conclusion を出す。
+  ArchSig は観測(ArchMap)と法・方程式(LawPolicy / law-equation-surface /
+  MeasurementProfile)の二系統から、選ばれた語彙内の肯定的 diagnostic conclusion を計算する。
 
 ## 4観点(サブエージェント必須)
 
 4観点を4つの独立したsubagentに分け、共有契約どおり利用可能枠まで並行する。
 
-1. **evidence contract scope**
-   - ArchSig が `ArchMap + LawPolicy + evidence contract` に相対化されて
-     いるか、判定語・doctrine 的断定が evaluator と evidence path に
-     支えられているかを反証的に検査する。
+1. **入力トライアド帰属と結論 scope**
+   - ArchSig の入力が観測と法・方程式の二系統に帰属しているか
+     (checklist §8 が正本)、判定語・doctrine 的断定が evaluator と
+     evidence path に支えられているかを反証的に検査する。
    - `SAFE_WITHIN_POLICY` 等の肯定的結論が中心で、未観測領域の
      non-conclusion 一覧が主役化していないかを疑う。
    - FieldSig が workflow evidence / governance input として読まれ、

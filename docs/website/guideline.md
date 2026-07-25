@@ -8,8 +8,8 @@
 - `docs/website/` は公開 artifact に含めない内部運用メモである。
 - website は docs の複製ではない。AAT / SFT / ArchSig を公開向けに読むための web-native publication surface として扱う。
 - AAT / SFT の公開ページは宣伝文ではなく、web-native preprint / monograph として、定義、前提、定理境界、例、反例、Lean status、non-conclusion を保つ。
-- 公開 surface では、AAT は Atom を公理とする純粋数学理論、ArchSig は Lean 証明器ではなく
-  `ArchMap + LawPolicy + evidence contract` を読む Rust tool、として分けて説明する。
+- 公開 surface では、AAT は Atom を公理とする純粋数学理論、ArchSig は観測(ArchMap)と
+  法・方程式(LawPolicy)を読んで計算する Rust tool、として分けて説明する。
 
 ## 編集方針
 

@@ -104,7 +104,7 @@ AAT は代数幾何的数学本文を source of truth とする。
 ArchMap がどの source artifact をどう観測し、どの evidence を記録するかは AAT の内部 claim ではない。
 
 ウィトゲンシュタイン的責務境界では、ArchSig は与えられた
-`ArchMap + LawPolicy + evidence contract` から語れることだけを語り、
+`ArchMap + LawPolicy` から語れることだけを語り、
 語れないことには沈黙する。selected universe の妥当性は
 ArchMap author と LawPolicy author の責務であり、AAT / Lean はその選ばれた範囲内で
 成立する theorem boundary / measurement boundary を与える。

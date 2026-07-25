@@ -1,6 +1,21 @@
 # ArchSig v0.5.2 supplied slot 台帳
 
-この台帳は ArchSig v0.5.2 R1 の受け入れ表である。supplied はこの表の artifact を入力として読み、対応する validator が pass した場合に限り、右端の語彙を解禁する。global な列挙完全性や sheaf 条件のように有限検査で放電できないものは、assumption ledger に記録する。
+> **負債告知(2026-07-26)**: 本台帳のうち RepairPlan 系 slot(repair primitives、
+> faithfulness data、component-local cocycle、true sheaf certificate、gluing data、
+> comparison data、presentation packet、saga-grounding packet)と refactor morphism・
+> refinement data の行は、AGENTS.md「責務範囲」の入力トライアド(ArchMap=観測 /
+> LawPolicy=法・方程式 / ArchSig=計算)に帰属しない第三入力チャネルであり、
+> 入力トライアド規律に対する負債である。観測行と law equation grounded surface /
+> diagnostic ceiling / cost model の行は二系統に帰属する正規入力であり、本告知の
+> 対象ではない。本台帳は v0.5.2 以降 v0.5.4 現在の供給 slot を現行実装の記述として
+> 収載するものであり、供給と引き換えに結論語彙を解禁してよいという規範ではない。
+> 本台帳を新規 slot 追加の根拠として引用してはならず、台帳に無い供給入力面も負債で
+> ないことを意味しない。返済(導出化 / 法側帰属 / 沈黙化)は Issue #3817 で管理する。
+> 法側帰属による返済は、instance 非依存の規則・制約として書き直され、供給値自身が
+> 結論語彙を解禁しなくなった場合に限る。名称変更・移設だけでは返済にならず、
+> 供給面の純増を伴う差分は返済と呼ばない。
+
+この台帳は ArchSig v0.5.2 R1 で受け入れた供給 slot の記述表である。現行実装では、supplied はこの表の artifact を入力として読み、対応する validator が pass した場合に限り、右端の語彙を解禁する。global な列挙完全性や sheaf 条件のように有限検査で放電できないものは、assumption ledger に記録する。
 
 ## R13 witness 帰属
 

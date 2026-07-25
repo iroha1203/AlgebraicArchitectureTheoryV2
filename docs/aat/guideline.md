@@ -64,7 +64,7 @@
 - `ComponentUniverse` は proof-carrying measurement universe として扱う。source extraction の成否は
   AAT の定理ではなく、ArchMap / tooling 側の入力生成 contract として扱う。
 - ArchSig や Rust tooling の有用性を Lean との対応で正当化しない。Lean 側は AAT の語れる命題を支える
-  形式化であり、ArchSig は別に `ArchMap + LawPolicy + evidence contract` から診断結論を出す tool である。
+  形式化であり、ArchSig は別に観測(ArchMap)と法・方程式(LawPolicy)から診断結論を出す tool である。
 
 ## Lean status discipline
 

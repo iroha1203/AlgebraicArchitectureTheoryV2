@@ -81,7 +81,7 @@ AAT:
   AAT site、sheaf、law algebra、lawful locus へ持ち上げる代数幾何。
 
 ArchSig:
-  ArchMap + LawPolicy + evidence contract から選ばれた architecture evidence を測定し、
+  ArchMap(観測) + LawPolicy(法・方程式)から選ばれた architecture evidence を測定し、
   bounded diagnostic artifact に写す tooling 層。
 
 SFT:
@@ -90,7 +90,7 @@ SFT:
 ```
 
 ウィトゲンシュタイン的責務境界では、ArchSig は与えられた
-`ArchMap + LawPolicy + evidence contract` から語れることだけを語り、
+`ArchMap + LawPolicy` から語れることだけを語り、
 語れないことには沈黙する。ArchMap の観測・Atom mapping・evidence の正しさは
 ArchMap author の責務であり、law / axis / witness / coverage の選択は
 LawPolicy author の責務である。SFT は ArchSig output を、その入力 contract に相対化された

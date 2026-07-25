@@ -32,7 +32,7 @@
   単一subagentで確認する。全観点・全laneや`review-pr`を再起動しない。直接対応の資格条件は
   分野別に次とする。資格条件を1つでも満たさない修正、および資格の判定が不能な修正は、
   実装を完了し直して最終スナップショットを固定し、正式レビューを再実行する(資格喪失)。
-  - Tool / Docs / Website: 公開契約・schema・公開API・evidence contract・claim scope・
+  - Tool / Docs / Website: 公開契約・schema・公開API・入力契約(観測 / 法・方程式)・claim scope・
     source of truth・責務・新しいsurfaceのいずれも変えない修正。
   - Math / Lean: proof内部または台帳・docs記載の修正であり、theorem / defのstatement
     (signature)の変更、defやinstanceの本体・値の変更、宣言(theorem / def / instance /
