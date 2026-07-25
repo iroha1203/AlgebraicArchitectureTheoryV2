@@ -39,7 +39,7 @@
     },
     "repairPlan": {
       "path": "input:repair-plan-head.json",
-      "sha256": "610ba78dc116be2a29f0cd043809fa7b53a226e73e0fbd606b8c0cbd59014e6c"
+      "sha256": "c02b93b0559ce8df40d1cec2aec5919abac778e5821089a514621378ee9eb6a9"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
@@ -66,7 +66,7 @@
     "whatItMeans": "Local rules are not enough to explain the selected cover; ArchSig measured a cross-context glue mismatch.",
     "whereToLookFirst": "See archsig-insight-report.json#/insightCards/0/evidence"
   },
-  "runId": "run:8d4b5849eb52",
+  "runId": "run:07154e725bfd",
   "schema": "archsig-analysis-summary/v0.5.4",
   "structuralVerdictSummary": {
     "measuredNonzeroCount": 4,
@@ -121,7 +121,7 @@
       "generatedDiscipline": "generated complete-support boundary-membership detection",
       "principalText": "The selected SAGA residual is measured inside B1 and the selected residual component is covered and faithful.",
       "supportDiscipline": "nonzero conclusions must name concrete selected support in active translationRule.concreteSupportRefs",
-      "theoremRef": "part10/3.5"
+      "theoremRef": "part10/4.5"
     },
     {
       "boundary": "Supply non-abelian torsor, stacky descent, or gerbe data before speaking outside the selected abelian coefficient sheaf.",

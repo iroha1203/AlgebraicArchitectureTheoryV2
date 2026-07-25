@@ -101,7 +101,7 @@
         "assumption": "selected quotient sheaf condition for law-surface:train-ticket-money-saga-v054",
         "checkedBy": null,
         "status": "assumed",
-        "theoremRef": "part10/7.3"
+        "theoremRef": "part10/8.3"
       },
       {
         "assumedBy": "repair-plan author",
@@ -25057,7 +25057,7 @@
     },
     "repairPlan": {
       "path": "input:repair-plan-head.json",
-      "sha256": "610ba78dc116be2a29f0cd043809fa7b53a226e73e0fbd606b8c0cbd59014e6c"
+      "sha256": "c02b93b0559ce8df40d1cec2aec5919abac778e5821089a514621378ee9eb6a9"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
@@ -25071,8 +25071,8 @@
         "analyticReadingRefs": [],
         "assumptionRefs": [
           "part10/3.1",
-          "part10/7.3",
           "part10/8.1",
+          "part10/8.3",
           "part3/11.3",
           "part4/11.1",
           "part4/12.3",
@@ -25248,8 +25248,8 @@
         ],
         "assumptionRefs": [
           "part10/3.1",
-          "part10/7.3",
           "part10/8.1",
+          "part10/8.3",
           "part3/11.3",
           "part4/11.1",
           "part4/12.3",
@@ -25455,8 +25455,8 @@
       "analyticReadingRefs": [],
       "assumptionRefs": [
         "part10/3.1",
-        "part10/7.3",
         "part10/8.1",
+        "part10/8.3",
         "part3/11.3",
         "part4/11.1",
         "part4/12.3",
@@ -25523,7 +25523,7 @@
     ]
   },
   "reportId": "insight:measurement:train-ticket-money-saga-head/v0.5.4",
-  "runId": "run:8d4b5849eb52",
+  "runId": "run:07154e725bfd",
   "schema": "archsig-insight-report/v0.5.4",
   "sourcePacketRef": "archsig-measurement-packet.json",
   "toolVersion": "0.5.4",

@@ -1,6 +1,6 @@
 {
   "schema": "archsig-repair-plan/v0.5.4",
-  "id": "repair-plan:presentation-generated-circle",
+  "id": "repair-plan:presentation-generated-circle-integers",
   "residual": {
     "kind": "supplied"
   },
@@ -119,17 +119,26 @@
       "sourceComplexFingerprint": "2a6477405aecad1eacd7edbcb0876f058c556cc53695c5f57970564b5e85ccb9",
       "targetComplexFingerprint": "2a6477405aecad1eacd7edbcb0876f058c556cc53695c5f57970564b5e85ccb9",
       "presentation": {
+        "coefficientRing": "integers",
         "cells": [
           {
             "cellRef": "ctx:order",
             "semanticGenerators": [
               "sigma"
             ],
-            "repairRelationMatrix": [],
+            "repairRelationMatrix": [
+              [
+                2
+              ]
+            ],
             "equationGenerators": [
               "unbound-equation:q"
             ],
-            "equationRelationMatrix": [],
+            "equationRelationMatrix": [
+              [
+                2
+              ]
+            ],
             "generatorMap": [
               [
                 1
@@ -141,11 +150,19 @@
             "semanticGenerators": [
               "sigma"
             ],
-            "repairRelationMatrix": [],
+            "repairRelationMatrix": [
+              [
+                2
+              ]
+            ],
             "equationGenerators": [
               "unbound-equation:q"
             ],
-            "equationRelationMatrix": [],
+            "equationRelationMatrix": [
+              [
+                2
+              ]
+            ],
             "generatorMap": [
               [
                 1
@@ -157,11 +174,19 @@
             "semanticGenerators": [
               "sigma"
             ],
-            "repairRelationMatrix": [],
+            "repairRelationMatrix": [
+              [
+                2
+              ]
+            ],
             "equationGenerators": [
               "unbound-equation:q"
             ],
-            "equationRelationMatrix": [],
+            "equationRelationMatrix": [
+              [
+                2
+              ]
+            ],
             "generatorMap": [
               [
                 1
@@ -173,11 +198,19 @@
             "semanticGenerators": [
               "sigma"
             ],
-            "repairRelationMatrix": [],
+            "repairRelationMatrix": [
+              [
+                2
+              ]
+            ],
             "equationGenerators": [
               "unbound-equation:q"
             ],
-            "equationRelationMatrix": [],
+            "equationRelationMatrix": [
+              [
+                2
+              ]
+            ],
             "generatorMap": [
               [
                 1
@@ -189,11 +222,19 @@
             "semanticGenerators": [
               "sigma"
             ],
-            "repairRelationMatrix": [],
+            "repairRelationMatrix": [
+              [
+                2
+              ]
+            ],
             "equationGenerators": [
               "unbound-equation:q"
             ],
-            "equationRelationMatrix": [],
+            "equationRelationMatrix": [
+              [
+                2
+              ]
+            ],
             "generatorMap": [
               [
                 1
@@ -205,11 +246,19 @@
             "semanticGenerators": [
               "sigma"
             ],
-            "repairRelationMatrix": [],
+            "repairRelationMatrix": [
+              [
+                2
+              ]
+            ],
             "equationGenerators": [
               "unbound-equation:q"
             ],
-            "equationRelationMatrix": [],
+            "equationRelationMatrix": [
+              [
+                2
+              ]
+            ],
             "generatorMap": [
               [
                 1
@@ -221,11 +270,19 @@
             "semanticGenerators": [
               "sigma"
             ],
-            "repairRelationMatrix": [],
+            "repairRelationMatrix": [
+              [
+                2
+              ]
+            ],
             "equationGenerators": [
               "unbound-equation:q"
             ],
-            "equationRelationMatrix": [],
+            "equationRelationMatrix": [
+              [
+                2
+              ]
+            ],
             "generatorMap": [
               [
                 1
@@ -237,11 +294,19 @@
             "semanticGenerators": [
               "sigma"
             ],
-            "repairRelationMatrix": [],
+            "repairRelationMatrix": [
+              [
+                2
+              ]
+            ],
             "equationGenerators": [
               "unbound-equation:q"
             ],
-            "equationRelationMatrix": [],
+            "equationRelationMatrix": [
+              [
+                2
+              ]
+            ],
             "generatorMap": [
               [
                 1

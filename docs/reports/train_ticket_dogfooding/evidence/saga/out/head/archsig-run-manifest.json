@@ -3,11 +3,11 @@
   "artifactDigests": {
     "measurementPacket": {
       "path": "archsig-measurement-packet.json",
-      "sha256": "fd41736c4472e7f6c927cdc8d97504c6c2488412f95af851119385daea73a260"
+      "sha256": "8e7a0e54bd512627b41a1919c0376e26c479573c6204eb490346a3f8fb37eb25"
     },
     "normalizedArchmap": {
       "path": "normalized-archmap.json",
-      "sha256": "67afe0f8f5fbc10ebc3906a9f0da4dea2659ff9c646914d8ae185b70a0d01858"
+      "sha256": "dcf6b78efe2ec09c32455ecb1aaf746e76991d23298938ae5eda596198d6924f"
     }
   },
   "artifactLinks": {
@@ -69,7 +69,7 @@
     },
     "repairPlan": {
       "path": "input:repair-plan-head.json",
-      "sha256": "610ba78dc116be2a29f0cd043809fa7b53a226e73e0fbd606b8c0cbd59014e6c"
+      "sha256": "c02b93b0559ce8df40d1cec2aec5919abac778e5821089a514621378ee9eb6a9"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
@@ -92,7 +92,7 @@
   "rawArtifactPaths": null,
   "rawArtifactRetention": "omitted",
   "repairPlanInputPath": "input:repair-plan-head.json",
-  "runId": "run:8d4b5849eb52",
+  "runId": "run:07154e725bfd",
   "schema": "archsig-run-manifest/v0.5.4",
   "toolVersion": "0.5.4",
   "validationReports": {

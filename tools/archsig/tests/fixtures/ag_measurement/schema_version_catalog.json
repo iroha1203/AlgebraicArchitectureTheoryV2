@@ -343,7 +343,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "H1 comparison data v0.5.4 accepts either an explicitly typed finite cochain map over degree-zero charts, degree-one overlaps, and degree-two triple-overlap bases, or a presentation-generated contract with semantic/equation matrices, restriction maps, an independently supplied equation lift atlas, and a complete ArchMap cover/incidence mapping. The validator recomputes explicit-map properties, or checks F2 presentation exactness, generator completeness, restriction naturality, derived cochain commutativity, semantic/equation residual construction, source/target quotient-level cocycle/class calculation, the residual witness, and the declared finite complex against the supplied ArchMap.",
+        "fieldMappingPolicy": "H1 comparison data v0.5.4 accepts either an explicitly typed finite cochain map over degree-zero charts, degree-one overlaps, and degree-two triple-overlap bases, or a presentation-generated contract with semantic/equation matrices, restriction maps, a separately supplied equation lift atlas, and a complete ArchMap cover/incidence mapping. The validator recomputes explicit-map properties, or checks presentation exactness, generator completeness, restriction naturality, derived cochain commutativity, semantic/equation residual construction, source/target quotient-level cocycle/class calculation, the residual witness, the resolution of equation generators against the supplied law surface, and the declared finite complex against the supplied ArchMap. The presentation declares its coefficient ring: f2 by default, or integers for the finitely generated abelian group form, where subgroup equality and full generation are decided by column Hermite normal form.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -455,7 +455,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "The grounded SAGA conclusions packet v0.5.4 records the generated finite Boolean quotient, lawDependent 3-conclusion section, lawIndependent 7-conclusion section, degree-zero contribution, and chart detector findings.",
+        "fieldMappingPolicy": "The grounded SAGA conclusions packet v0.5.4 records the generated finite Boolean quotient, lawDependent 3-conclusion section, lawIndependent 6-conclusion section with the Principle 8.4 separated-statements record, degree-zero contribution, and chart detector findings.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",

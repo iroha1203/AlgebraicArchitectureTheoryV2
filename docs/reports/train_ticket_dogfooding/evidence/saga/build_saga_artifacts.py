@@ -74,6 +74,28 @@ EDGE_VARS = [
     ("e_cancel_order", "ctx:cancel-surface", "ctx:order-surface"),
     ("e_consign_consignprice", "ctx:consign-surface", "ctx:consign-price-surface"),
 ]
+# 各 overlap / chart / triple の equation generator は、法曲面が実際に宣言している
+# witness variable と skeleton simplex そのものである。合成した名前は使わない。
+EDGE_VAR_BY_OVERLAP = {
+    oid: next((v for v, l, r in EDGE_VARS if {l, r} == {left, right}), None)
+    for oid, left, right in OVERLAPS
+}
+# cech law の witness edge に入らない overlap は、同じ法曲面の skeleton simplex へ束縛する。
+# cech law の witness edge に入らない overlap と triple には、この法曲面が宣言する
+# 対応物が無い。束縛を騙らず、供給側で採番したことが分かる名前にする。
+UNBOUND_CELL = {
+    oid: "unbound-equation:" + oid
+    for oid, var in EDGE_VAR_BY_OVERLAP.items()
+    if var is None
+}
+UNBOUND_CELL["triple:consign-fee-region"] = "unbound-equation:triple:consign-fee-region"
+CHART_SIMPLEX = {
+    c: f"vertex:money-{c.removeprefix('ctx:').removesuffix('-surface')}" for c in CHARTS
+}
+# 0.8 x price は 4p/5 なので、丸め剰余は 1/5 セント単位に住む。全セントしか記帳できない
+# チャートはこれを表現できない。したがって semantic 側の局所関係は 5 sigma = 0、
+# equation 側の obstruction ideal は (5) であり、Q_E(V) = Z/(5) となる。
+SUBCENT_UNITS_PER_CENT = 5
 REPAIRED_SECTION = "section=money-amount:bigdecimal-scale2-half-even-shared"
 REPAIRED_LABELS = {
     "ctx:cancel-surface": "Refund path computes 80% in BigDecimal at scale 2 HALF_EVEN and books the remainder explicitly",
@@ -426,14 +448,26 @@ def presentation(drifted):
         for triple_id, overlap_refs in TRIPLES
         for overlap_id in overlap_refs
     )
+    def equation_generator(cell_ref):
+        # chart は法曲面 skeleton の vertex simplex、witness edge を持つ overlap は
+        # その witness variable。どちらも法曲面が元から宣言しているものを使う。
+        if cell_ref in UNBOUND_CELL:
+            return UNBOUND_CELL[cell_ref]
+        if cell_ref in EDGE_VAR_BY_OVERLAP:
+            return EDGE_VAR_BY_OVERLAP[cell_ref]
+        source_chart = next(c for c, r in REPAIR_CHART_CONTEXTS.items() if r == cell_ref)
+        return CHART_SIMPLEX[source_chart]
+
+    unit = SUBCENT_UNITS_PER_CENT
     return {
+        "coefficientRing": "integers",
         "cells": [
             {
                 "cellRef": cell_ref,
                 "semanticGenerators": [DRIFT],
-                "repairRelationMatrix": [],
-                "equationGenerators": ["equation:" + cell_ref],
-                "equationRelationMatrix": [],
+                "repairRelationMatrix": [[unit]],
+                "equationGenerators": [equation_generator(cell_ref)],
+                "equationRelationMatrix": [[unit]],
                 "generatorMap": [[1]],
             }
             for cell_ref in cell_refs

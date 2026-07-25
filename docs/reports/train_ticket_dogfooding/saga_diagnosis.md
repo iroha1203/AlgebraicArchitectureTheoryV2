@@ -4,7 +4,7 @@
 
 - **対象**: フルビルド成果物(money 変種 ArchMap)を土台に、law を SAGA フルスタックへ拡張し、
   train-ticket(commit `313886e99bef`)の実データで診断階段を一周した
-- **再計測日**: 2026-07-25(JST)
+- **再計測日**: 2026-07-26(JST、整数係数 presentation へ改訂)
 - **実施主体・モデル**: Claude 直接(Fable)。典拠確認には同一 commit の shallow 再取得を使用
 - **対応 Issue**: #3785（presentation-generated comparison は #3783、component-aware class 認証は #3784 を前提にする）
 
@@ -34,9 +34,25 @@ cancel–inside-payment–order の実呼び出し三角形上で、金額規約
   diagnostic component は cancel–inside-payment–order の3 chart・3 overlap であり、
   `C²=0` の `automatic-c2-zero` をその component 自身の認証として出力する。
   `trueSheafCertificate` と `gluingData` も同じ component にだけ対応付ける
-- comparison: 各 cell の semantic generator、repair/equation relation 行列、generator map、
-  restriction、equation lift atlas から `χ / Φ / κ` を有限検査で生成する。
-  head の `drift:refund-rounding` は三角形3辺、repaired は零 cochain として計測する
+- comparison: 係数環は **整数**(`coefficientRing: "integers"`)。`0.8 × price = 4p/5` なので
+  丸め剰余は 1/5 セント単位に住み、全セントしか記帳できないチャートはこれを表現できない。
+  したがって各 cell の局所関係は `5σ_V = 0`、equation 側の obstruction ideal は `(5)` であり
+
+  ```text
+  M_sem(V) = Z[σ_V]/(5σ_V) ≅ Z/5,   Q_E(V) = Z/(5),   χ_V(σ_V) = [1]
+  ```
+
+  となる。exactness は `im(R_V) = 5Z = ker(Z → Z/5)`、generation は `[1]` が `Z/5` を
+  生成することとして**零でない関係格子の上で発火する**(rank は 1 のままである)。
+  equation generator は、法曲面が実際に宣言している名前へ束縛できる cell だけを束縛する。
+  chart 6件は skeleton の `vertex:money-*`、cech law の witness edge を持つ overlap 4件は
+  その witness variable(`e_cancel_insidepay` / `e_insidepay_order` / `e_cancel_order` /
+  `e_consign_consignprice`)。残る preserve 側 2 overlap と triple 1件には**この法曲面が
+  対応物を宣言していない**ため、`unbound-equation:` 接頭辞で供給側採番であることを明示する。
+  ArchSig はこの解決を検査し、束縛できるはずの名前が解決しなければ
+  `equationGeneratorsResolved: false` として comparison を established にしない。
+  head の `drift:refund-rounding` は三角形3辺、repaired は零 cochain として計測する。
+  三角形一周の向き付き和は `1 + 1 − 1 = 1 ≠ 0 (mod 5)` なので非零類が立つ
 - repaired 変種: 三角形3チャートを BigDecimal scale-2 HALF_EVEN 統一規約に置換した仮修理 ArchMap
 
 ## 条件種別と comparison cochain map の来歴
@@ -90,12 +106,12 @@ naturality と degree 2 atlas を検査したうえで、head の
 
 | 幕 | 結果 |
 | --- | --- |
-| head analyze | `MEASURED_NONGLUING_RESIDUAL_CLASS`(`run:8d4b5849eb52`) |
+| head analyze | `MEASURED_NONGLUING_RESIDUAL_CLASS`(`run:07154e725bfd`) |
 | └ grounding | `measured_zero` — 各チャートは自分の法を守っている(それが罠) |
 | └ descent 残差類 | `measured_nonzero`(diagnostic component、`automatic-c2-zero`、三角形3辺 support) |
 | └ comparison h1-transfer | `SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS`（exactness / generation / naturality / `κ` / atlas witness を検査、`measuredClassAgreement: true`） |
 | gate head | `BLOCKED_BY_GATE_POLICY` |
-| repaired analyze | `REPAIR_GLUES_WITHIN_SELECTED_COMPLEX`(`run:503e65b25714`) |
+| repaired analyze | `REPAIR_GLUES_WITHIN_SELECTED_COMPLEX`(`run:cf07b535e9bc`) |
 | compare head→repaired | `MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE` |
 | gate repaired | `PASS_WITHIN_GATE_POLICY` |
 
@@ -135,7 +151,17 @@ harmonic-debt は runtime 実測数値が無いため供給せず、沈黙(供�
 4. **presentation packet は authored input である。** source-grounded finite cell、relation 行列、
    generator map、restriction、equation lift atlas は実施者が供給した。generated なのは、
    それらからの `χ / Φ / κ`、exactness と quotient-level witness の導出である。
-5. **供給 UX は未整備。** presentation cell を含む RepairPlan の authoring は builder を直接読む必要がある。
+5. **equation generator の束縛は全 cell では成立していない。** 13 cell のうち法曲面が
+   対応物を宣言しているのは 10 件(chart 6 + witness edge 4)であり、preserve 側 2 overlap と
+   triple 1件は `unbound-equation:` として供給側で採番した。この法曲面は当該辺・面に
+   witness variable を宣言していない。
+6. **equation lift atlas の独立性は検査していない。** atlas は semantic 側と別の入力欄として
+   供給されるが、ArchSig はそれが独立に作られたかを判定できない。本実験の builder は
+   drift の有無という同一の author 判断から semantic support と transition difference の
+   両方を書いている。検査されているのは `r_E` がこの供給 atlas から導出されることと、
+   `κ¹(r_sem) = r_E + δ⁰h` の witness `h` が商上で解けることであって、
+   両側が独立に構成されたことではない。
+7. **供給 UX は未整備。** presentation cell を含む RepairPlan の authoring は builder を直接読む必要がある。
    ArchMap 供給における archmap-creater と同水準の抽象化(repair 対象のループを指せば
    artifact 一式が組み上がる SKILL)は未着手であり、本実験の builder スクリプトと供給所見2件が
    その設計素材になる。

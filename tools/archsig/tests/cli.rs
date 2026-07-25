@@ -2006,7 +2006,7 @@ fn cli_analyze_saga_descent_complete_support_measures_boundary_membership() {
         summary["translationRule"]["conclusionCode"],
         ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX
     );
-    assert_eq!(summary["translationRule"]["theoremRef"], "part10/3.5");
+    assert_eq!(summary["translationRule"]["theoremRef"], "part10/4.5");
     assert_eq!(
         summary["translationRule"]["emitsLawSatisfiedWithoutLawCheck"],
         false
@@ -2256,7 +2256,7 @@ fn presentation_generated_saga_plan(root: &Path, nonzero_class: bool) -> Value {
                 "cellRef": cell_ref,
                 "semanticGenerators": ["repair:cycle"],
                 "repairRelationMatrix": [],
-                "equationGenerators": ["equation:cycle"],
+                "equationGenerators": ["unbound-equation:cycle"],
                 "equationRelationMatrix": [],
                 "generatorMap": [[1]]
             })
@@ -2950,6 +2950,34 @@ fn cli_analyze_saga_descent_names_the_supply_that_failed_the_component_match() {
         invariant["suppliedSlots"],
         json!(["trueSheafCertificate", "gluingData"]),
         "the run records which slots were supplied at all"
+    );
+}
+
+/// equation generator は法曲面が宣言する名前へ解決しなければならない。名前を差し替えても
+/// 結論が動かないなら、その束縛は表示だけで検査されていないことになる。
+#[test]
+fn cli_analyze_presentation_generated_requires_law_surface_bound_equation_generators() {
+    let root = ag_measurement_root();
+    let mut plan = presentation_generated_saga_plan(&root, true);
+    for cell in plan["comparison"]["h1ComparisonData"]["presentation"]["cells"]
+        .as_array_mut()
+        .expect("presentation cells")
+    {
+        cell["equationGenerators"] = json!(["unrelated:not-declared-by-the-law-surface"]);
+    }
+    let out_dir = run_presentation_generated_saga_fixture_lock(
+        "ag-saga-presentation-unbound-equation-generators",
+        plan,
+    );
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let comparison = invariant_by_id(&packet, "saga-comparison:h1-transfer");
+    assert_eq!(comparison["contract"]["equationGeneratorsResolved"], false);
+    assert_ne!(comparison["status"], "established");
+    assert!(
+        comparison["contract"]["unresolvedEquationGenerators"]
+            .as_array()
+            .is_some_and(|names| !names.is_empty()),
+        "the unresolved generator names are reported, not just a boolean"
     );
 }
 
@@ -4095,7 +4123,7 @@ fn cli_analyze_contract_fixture_locks_are_byte_deterministic() {
     let positive_summary = read_json(&saga_positive_a.join("archsig-analysis-summary.json"));
     assert_eq!(
         positive_summary["translationRule"]["theoremRef"],
-        "part10/3.5"
+        "part10/4.5"
     );
     assert_eq!(
         positive_summary["translationRule"]["concreteSupportRefs"],
@@ -12022,7 +12050,17 @@ fn cli_analyze_v2_saga_grounded_emits_split_packet_and_detector() {
             .as_object()
             .unwrap()
             .len(),
-        7
+        6
+    );
+    // 原則8.4 は additive H¹ comparison から higher coherence の結論を導くことを禁じている。
+    // 「higher obstruction は消えた」を established として出さない。
+    assert!(
+        grounded["lawIndependent"]["conclusions"]["higherObstructionsVanish"].is_null(),
+        "higher coherence conclusions are separated, not established"
+    );
+    assert_eq!(
+        grounded["lawIndependent"]["separatedStatements"]["theoremRef"],
+        "part10/8.4"
     );
     assert_eq!(
         grounded["generatedQuotient"]["interpretation"]["class"],

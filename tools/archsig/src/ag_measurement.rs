@@ -134,6 +134,12 @@ struct SagaGeneratedCochainMapEvidenceV1 {
 struct SagaDerivedCellEvidenceV1 {
     cell_ref: String,
     local_phi_derived_from: String,
+    /// 導出した local Phi の有限表示。監査者が packet だけで Phi を再構成できるように出す。
+    semantic_generators: Vec<String>,
+    equation_generators: Vec<String>,
+    matrix: Vec<Vec<i64>>,
+    source_relations: Vec<Vec<i64>>,
+    target_relations: Vec<Vec<i64>>,
 }
 
 #[derive(Deserialize)]
@@ -214,7 +220,7 @@ fn summary_translation_rule(conclusion: &str) -> SummaryTranslationRule {
         },
         ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX => SummaryTranslationRule {
             conclusion_code: ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
-            theorem_ref: Some("part10/3.5"),
+            theorem_ref: Some("part10/4.5"),
             principal_text: "The selected SAGA residual is measured inside B1 and the selected residual component is covered and faithful.",
             boundary: "Supply Stage 2 law surface and comparison artifacts before claiming global semantic repair.",
             generated_discipline: "generated complete-support boundary-membership detection",
@@ -1246,7 +1252,7 @@ pub fn build_foundation_measurement_packet_v1(
             assumptions.extend(measurement.assumptions);
         } else if evaluator == "ag.saga-descent" {
             if let Some(plan) = repair_plan {
-                let measurement = evaluate_saga_descent_v1(archmap, plan);
+                let measurement = evaluate_saga_descent_v1(archmap, plan, Some(law_surface));
                 computed_invariants.extend(measurement.computed_invariants);
                 assumptions.extend(measurement.assumptions);
                 structural_verdict.extend(measurement.structural_verdict);
@@ -13566,6 +13572,8 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
                         "targetClassComputed",
                         "contractChecked",
                         "measuredClassAgreement",
+                        "equationGeneratorsResolved",
+                        "unresolvedEquationGenerators",
                     ],
                     &mut examples,
                 );
@@ -14683,7 +14691,15 @@ fn check_saga_presentation_generated_evidence_shape(
             check_required_object_keys(
                 row,
                 &format!("{path}.generatedCochainMap.{degree}[{index}]"),
-                &["cellRef", "localPhiDerivedFrom"],
+                &[
+                    "cellRef",
+                    "localPhiDerivedFrom",
+                    "semanticGenerators",
+                    "equationGenerators",
+                    "matrix",
+                    "sourceRelations",
+                    "targetRelations",
+                ],
                 examples,
             );
         }
@@ -14745,7 +14761,7 @@ fn check_saga_presentation_generated_established_consistency(
         || presentation.generated_cochain_map.kind != "derived-from-local-phi"
         || !presentation.generated_cochain_map.degree_zero_commutative
         || !presentation.generated_cochain_map.degree_one_commutative
-        || presentation.equation_residual.kind != "derived-from-independent-equation-lift-atlas"
+        || presentation.equation_residual.kind != "derived-from-supplied-equation-lift-atlas"
         || !presentation.equation_residual.target_cocycle
         || presentation.semantic_residual.kind != "derived-from-semantic-repair-presentation"
         || !presentation.semantic_residual.source_cocycle
@@ -15036,7 +15052,6 @@ fn validate_saga_grounded_packet_shape(
                 "uniqueGlobalSection",
                 "globalCoherentIffCoverRelativeH1Zero",
                 "boundedAdditiveH1ZeroIffCoverRelativeH1Zero",
-                "higherObstructionsVanish",
             ]
             .as_slice(),
         ),

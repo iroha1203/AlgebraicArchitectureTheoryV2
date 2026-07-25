@@ -127,7 +127,7 @@ fn ag_saga_grounded_manifest() -> LawEvaluatorManifestV1 {
                 .to_string(),
         typed_result_schema: "archsig-saga-conclusions/v0.5.4".to_string(),
         distance_contribution:
-            "grounded 10-conclusion packet keeps law-dependent and law-independent structures separate and records generated quotient provenance"
+            "grounded conclusions packet keeps law-dependent and law-independent structures separate, records generated quotient provenance, and separates the higher-coherence statements that Part X Principle 8.4 forbids concluding from an additive H1 comparison"
                 .to_string(),
         summary_output_refs: vec!["/structuralVerdict".to_string()],
         detail_output_refs: vec![

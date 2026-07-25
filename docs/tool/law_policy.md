@@ -83,7 +83,9 @@ SAGA の H¹ comparison は LawPolicy の selector ではなく RepairPlan 側�
 `kind: "explicit"` は `h1ComparisonData.cochainMap` の次数0/1/2有限写像表と次数2の
 `zeroImage` を入力し、ArchSig が差保存・零保存・微分可換性を再計算する。
 `kind: "presentation-generated"` は semantic / equation presentation と restriction 行列を入力し、
-independently authored な equation local-lift atlas も入力する。ArchSig は exactness、local `Φ`、
+別入力として equation local-lift atlas も供給する。ArchSig はこの atlas が semantic 側と
+独立に作られたかを検査できない。検査するのは、`r_E` がこの供給 atlas から導出されること、
+および `κ¹(r_sem)=r_E+δ⁰h` の witness `h` が商上で解けることである。ArchSig は exactness、local `Φ`、
 cochain map、semantic / equation residual、各商上の residual witness と source / target class を導出する。
 適合条件を宣言するbooleanは採用しない。
 

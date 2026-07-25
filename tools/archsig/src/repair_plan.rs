@@ -1,3 +1,4 @@
+use crate::integer_lattice;
 use std::collections::{BTreeMap, BTreeSet};
 
 use serde_json::{Value, json};
@@ -5,7 +6,8 @@ use sha2::{Digest, Sha256};
 
 use crate::schema::{
     H1ComparisonDataV052, H1PresentationCellV052, H1PresentationDataV052,
-    H1PresentationRestrictionV052, RepairPlanComplexV1,
+    H1PresentationRestrictionV052, RepairPlanComplexV1, RepairPlanOverlapV1,
+    RepairPlanTripleOverlapV1,
 };
 use crate::validation::{generic_validation_example, validation_check};
 use crate::{
@@ -93,9 +95,9 @@ impl PresentationGeneratedH1Checks {
 
 #[derive(Debug, Clone)]
 struct PresentationResidualWitness {
-    source_image: BTreeMap<String, Vec<u8>>,
-    equation_residual: BTreeMap<String, Vec<u8>>,
-    h: BTreeMap<String, Vec<u8>>,
+    source_image: BTreeMap<String, Vec<i64>>,
+    equation_residual: BTreeMap<String, Vec<i64>>,
+    h: BTreeMap<String, Vec<i64>>,
 }
 
 #[derive(Debug, Clone)]
@@ -410,7 +412,7 @@ mod tests {
     }
 
     #[test]
-    fn presentation_generated_circle_derives_exact_local_maps_and_independent_atlas_witness() {
+    fn presentation_generated_circle_derives_exact_local_maps_and_atlas_witness() {
         let plan: RepairPlanDocumentV1 = serde_json::from_str(include_str!(
             "../tests/fixtures/ag_measurement/repair_plan_presentation_generated_circle.json"
         ))
@@ -677,6 +679,101 @@ mod tests {
 
     /// atlas の供給欠陥は、名指しの structural fault として出す。名指ししないと
     /// `targetCocycle=false` だけが残り、入力の欠落が数学的性質の失敗に見える。
+    /// 5-torsion + 三角形 + triple を持つ整数 presentation。2-torsion の circle fixture では
+    /// `+1 ≡ -1` なので `δ⁰` の向きも `δ¹` の交代符号も判別できない。奇数 torsion の
+    /// この fixture が、符号を壊す変異を落とす役目を持つ。
+    #[test]
+    fn five_torsion_integer_presentation_discriminates_the_differential_signs() {
+        let plan: RepairPlanDocumentV1 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/repair_plan_presentation_generated_five_torsion.json"
+        ))
+        .expect("five-torsion fixture parses");
+        let comparison = plan.comparison.as_ref().expect("comparison is supplied");
+        let h1 = comparison["h1ComparisonData"]
+            .as_object()
+            .expect("H1 comparison data is an object")
+            .clone();
+        let checks = presentation_generated_h1_checks(&plan, &plan.complex, &h1);
+        assert_eq!(checks.structural_fault, None);
+        assert!(checks.presentation_exactness);
+        assert!(checks.generator_completeness);
+        assert!(checks.all_pass());
+        assert!(!plan.complex.triple_overlaps.is_empty(), "triple が無いと δ¹ 符号を判別できない");
+
+        // 三角形一周の向き付き和は 1 + 1 - 1 = 1 != 0 (mod 5)。δ⁰ を right + left にすると
+        // この判定が反転する。
+        assert_eq!(
+            checks.source_class_nonzero,
+            Some(true),
+            "oriented cycle sum 1 + 1 - 1 = 1 is not zero in Z/5"
+        );
+        assert_eq!(checks.target_class_nonzero, Some(true));
+        assert!(checks.source_cocycle && checks.target_cocycle);
+    }
+
+    /// 第X部 例 10.2 を整数係数で実現する。`M_sem(V)=Z[σ]/(2σ)`、`Q_E(V)=Z/(2)`、`χ(σ)=[1]`。
+    /// F₂ では `2σ=0` が零関係になりこの算術が消えるため、非退化に発火するのは整数側だけである。
+    #[test]
+    fn example_10_2_integer_presentation_fires_exactness_at_a_nontrivial_rank() {
+        let plan: RepairPlanDocumentV1 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/repair_plan_presentation_generated_circle_integers.json"
+        ))
+        .expect("integer circle fixture parses");
+        let comparison = plan.comparison.as_ref().expect("comparison is supplied");
+        let h1 = comparison["h1ComparisonData"]
+            .as_object()
+            .expect("H1 comparison data is an object")
+            .clone();
+        let checks = presentation_generated_h1_checks(&plan, &plan.complex, &h1);
+        assert_eq!(checks.structural_fault, None);
+        assert!(checks.presentation_exactness, "im(R)=ker(chi tilde) over Z");
+        assert!(checks.generator_completeness, "[1] generates Z/(2)");
+        assert!(checks.restriction_naturality);
+        assert!(checks.all_pass());
+        assert_eq!(checks.source_class_nonzero, Some(true));
+        assert_eq!(checks.target_class_nonzero, Some(true));
+
+        // 関係が空だと `ker(chi tilde)=2Z` を覆えないので completeness が落ちる。
+        // F₂ ではこの配置が「成立」してしまう(退化)。
+        let mut empty_relations = h1.clone();
+        for cell in empty_relations["presentation"]["cells"]
+            .as_array_mut()
+            .expect("cells are an array")
+        {
+            cell["repairRelationMatrix"] = serde_json::json!([]);
+        }
+        let empty_checks = presentation_generated_h1_checks(&plan, &plan.complex, &empty_relations);
+        assert!(!empty_checks.presentation_exactness);
+
+        // `chi(σ)=[2]` は像が `2Z/(2)=0` になり生成しない。
+        let mut weak_generation = h1.clone();
+        weak_generation["presentation"]["cells"]
+            .as_array_mut()
+            .expect("cells are an array")[0]["generatorMap"] = serde_json::json!([[2]]);
+        let weak_checks = presentation_generated_h1_checks(&plan, &plan.complex, &weak_generation);
+        assert!(!weak_checks.generator_completeness);
+
+        // 関係を `4σ=0` にすると soundness は成立し rank も 1 のまま一致するが、
+        // `im(R)=4Z` は `ker(chi tilde)=2Z` と別の格子なので exactness が落ちる。
+        // exactness を rank 比較へ弱める実装はこれを通してしまう。
+        let mut equal_rank_wrong_lattice = h1.clone();
+        equal_rank_wrong_lattice["presentation"]["cells"]
+            .as_array_mut()
+            .expect("cells are an array")[0]["repairRelationMatrix"] = serde_json::json!([[4]]);
+        let equal_rank_checks =
+            presentation_generated_h1_checks(&plan, &plan.complex, &equal_rank_wrong_lattice);
+        assert!(!equal_rank_checks.presentation_exactness);
+        assert!(equal_rank_checks.generator_completeness);
+
+        // 関係を `3σ=0` にすると `ker(chi tilde)=2Z` と食い違い exactness が落ちる。
+        let mut wrong_relation = h1;
+        wrong_relation["presentation"]["cells"]
+            .as_array_mut()
+            .expect("cells are an array")[0]["repairRelationMatrix"] = serde_json::json!([[3]]);
+        let wrong_checks = presentation_generated_h1_checks(&plan, &plan.complex, &wrong_relation);
+        assert!(!wrong_checks.presentation_exactness);
+    }
+
     #[test]
     fn presentation_generated_supply_faults_are_named_not_blamed_on_the_target_cocycle() {
         let plan: RepairPlanDocumentV1 = serde_json::from_str(include_str!(
@@ -1573,6 +1670,14 @@ pub(crate) fn presentation_generated_h1_checks(
         );
     };
 
+    let ring = presentation.coefficient_ring.as_deref().unwrap_or("f2");
+    if !matches!(ring, "f2" | "integers") {
+        return PresentationGeneratedH1Checks::structural_fault(
+            "presentation-coefficient-ring-is-not-supported",
+            equation_lift_atlas_present,
+            false,
+        );
+    }
     let expected_cells = presentation_cell_refs(plan);
     let mut cells = BTreeMap::new();
     for cell in &presentation.cells {
@@ -1596,7 +1701,13 @@ pub(crate) fn presentation_generated_h1_checks(
 
     let cell_checks = cells
         .values()
-        .map(|cell| presentation_cell_checks(cell))
+        .map(|cell| {
+            if ring == "integers" {
+                presentation_cell_checks_integers(cell)
+            } else {
+                presentation_cell_checks(cell)
+            }
+        })
         .collect::<Option<Vec<_>>>();
     let Some(cell_checks) = cell_checks else {
         return PresentationGeneratedH1Checks::structural_fault(
@@ -1634,7 +1745,12 @@ pub(crate) fn presentation_generated_h1_checks(
                 .get(from)
                 .zip(cells.get(to))
                 .is_some_and(|(source, target)| {
-                    presentation_restriction_commutes(source, target, restriction)
+                    if ring == "integers" {
+                        presentation_restriction_commutes_integers(source, target, restriction)
+                            .unwrap_or(false)
+                    } else {
+                        presentation_restriction_commutes(source, target, restriction)
+                    }
                 })
         });
     let degree_zero_commutative = restriction_naturality
@@ -1654,13 +1770,23 @@ pub(crate) fn presentation_generated_h1_checks(
         && degree_one_commutative
         && atlas_fault.is_none())
     .then(|| {
-        presentation_residual_analysis(
-            plan,
-            target_complex,
-            presentation,
-            &cells,
-            &restrictions,
-        )
+        if ring == "integers" {
+            presentation_residual_analysis_integers(
+                plan,
+                target_complex,
+                presentation,
+                &cells,
+                &restrictions,
+            )
+        } else {
+            presentation_residual_analysis(
+                plan,
+                target_complex,
+                presentation,
+                &cells,
+                &restrictions,
+            )
+        }
     })
     .flatten();
     let source_cocycle = analysis
@@ -1742,7 +1868,14 @@ pub(crate) fn presentation_generated_h1_output(
             .map(|(_, cell)| {
                 json!({
                     "cellRef": cell.cell_ref,
-                    "localPhiDerivedFrom": "generatorMap modulo repair/equation relations"
+                    "localPhiDerivedFrom": "generatorMap modulo repair/equation relations",
+                    // 導出した local Phi の有限表示そのもの。監査者が packet だけで
+                    // Phi を再構成できるように、生成元・行列を出力へ含める。
+                    "semanticGenerators": cell.semantic_generators,
+                    "equationGenerators": cell.equation_generators,
+                    "matrix": cell.generator_map,
+                    "sourceRelations": cell.repair_relation_matrix,
+                    "targetRelations": cell.equation_relation_matrix
                 })
             })
             .collect::<Vec<_>>()
@@ -1774,7 +1907,7 @@ pub(crate) fn presentation_generated_h1_output(
             "degreeOneCommutative": checks.degree_one_commutative
         },
         "equationResidual": {
-            "kind": "derived-from-independent-equation-lift-atlas",
+            "kind": "derived-from-supplied-equation-lift-atlas",
             "targetCocycle": checks.target_cocycle,
             "targetClassNonZero": checks.target_class_nonzero
         },
@@ -1882,6 +2015,559 @@ fn presentation_cell_checks(cell: &H1PresentationCellV052) -> Option<(bool, bool
         soundness && relation_rank == kernel_dimension,
         quotient_generator_rank == equation_count,
     ))
+}
+
+// ---- 整数係数(有限生成可換群)版の presentation 検査 ----
+//
+// 第X部 定義 10.1 の一般形。F₂ 経路は別に保つ。F₂ では `2σ=0` が零関係になり、
+// 例 10.2 の `Z[σ]/(2σ) ≃ Z/(2)` のような presentation が退化するため、
+// exactness と generation を非自明な rank で発火させるにはこちらが要る。
+
+fn wide(matrix: &[Vec<i64>]) -> Vec<Vec<i128>> {
+    matrix
+        .iter()
+        .map(|row| row.iter().map(|value| i128::from(*value)).collect())
+        .collect()
+}
+
+fn wide_vector(vector: &[i64]) -> Vec<i128> {
+    vector.iter().map(|value| i128::from(*value)).collect()
+}
+
+fn narrow_vector(vector: &[i128]) -> Option<Vec<i64>> {
+    vector
+        .iter()
+        .map(|value| i64::try_from(*value).ok())
+        .collect()
+}
+
+fn integer_shape_is_valid(cell: &H1PresentationCellV052) -> bool {
+    let semantic_count = cell.semantic_generators.len();
+    let equation_count = cell.equation_generators.len();
+    semantic_count > 0
+        && equation_count > 0
+        && cell
+            .semantic_generators
+            .iter()
+            .collect::<BTreeSet<_>>()
+            .len()
+            == semantic_count
+        && cell
+            .equation_generators
+            .iter()
+            .collect::<BTreeSet<_>>()
+            .len()
+            == equation_count
+        && cell
+            .repair_relation_matrix
+            .iter()
+            .all(|row| row.len() == semantic_count)
+        && cell
+            .equation_relation_matrix
+            .iter()
+            .all(|row| row.len() == equation_count)
+        && cell.generator_map.len() == equation_count
+        && cell
+            .generator_map
+            .iter()
+            .all(|row| row.len() == semantic_count)
+}
+
+/// `im(R_V)=ker(χ̃_V)` と `im(χ̃_V)=Q_E(V)` を有限生成可換群として決定する。
+fn presentation_cell_checks_integers(cell: &H1PresentationCellV052) -> Option<(bool, bool)> {
+    if !integer_shape_is_valid(cell) {
+        return None;
+    }
+    let semantic_count = cell.semantic_generators.len();
+    let equation_count = cell.equation_generators.len();
+    let equation_relations =
+        integer_lattice::lattice_from_rows(&wide(&cell.equation_relation_matrix), equation_count)?;
+    let chi = wide(&cell.generator_map);
+
+    // soundness: 各 repair relation が χ で equation 関係の中へ落ちる。
+    let mut soundness = true;
+    for relation in &cell.repair_relation_matrix {
+        let image = integer_lattice::matrix_vector(&chi, &wide_vector(relation))?;
+        if !equation_relations.contains(&image)? {
+            soundness = false;
+            break;
+        }
+    }
+
+    // completeness: ker(χ̃) が im(R) と一致する。
+    let chi_columns = integer_lattice::columns_of(&chi, semantic_count);
+    let kernel_columns =
+        integer_lattice::preimage_kernel_columns(&chi_columns, equation_count, &equation_relations)?;
+    let kernel = integer_lattice::lattice_from_columns(&kernel_columns, semantic_count)?;
+    let repair_relations =
+        integer_lattice::lattice_from_rows(&wide(&cell.repair_relation_matrix), semantic_count)?;
+    let exactness = soundness && repair_relations.equals(&kernel);
+
+    // generation: equation 関係と χ の像で Z^m 全体を張る。
+    let mut spanning = wide(&cell.equation_relation_matrix);
+    spanning.extend(chi_columns);
+    let generation = integer_lattice::lattice_from_columns(&spanning, equation_count)?.is_full();
+    Some((exactness, generation))
+}
+
+/// restriction が両側の関係を保ち、χ と商の上で可換になるか。
+fn presentation_restriction_commutes_integers(
+    source: &H1PresentationCellV052,
+    target: &H1PresentationCellV052,
+    restriction: &H1PresentationRestrictionV052,
+) -> Option<bool> {
+    let source_semantic = source.semantic_generators.len();
+    let source_equation = source.equation_generators.len();
+    let target_semantic = target.semantic_generators.len();
+    let target_equation = target.equation_generators.len();
+    if restriction.semantic_matrix.len() != target_semantic
+        || restriction
+            .semantic_matrix
+            .iter()
+            .any(|row| row.len() != source_semantic)
+        || restriction.equation_matrix.len() != target_equation
+        || restriction
+            .equation_matrix
+            .iter()
+            .any(|row| row.len() != source_equation)
+    {
+        return None;
+    }
+    let semantic_rho = wide(&restriction.semantic_matrix);
+    let equation_rho = wide(&restriction.equation_matrix);
+    let target_repair =
+        integer_lattice::lattice_from_rows(&wide(&target.repair_relation_matrix), target_semantic)?;
+    let target_equation_relations = integer_lattice::lattice_from_rows(
+        &wide(&target.equation_relation_matrix),
+        target_equation,
+    )?;
+    for relation in &source.repair_relation_matrix {
+        let image = integer_lattice::matrix_vector(&semantic_rho, &wide_vector(relation))?;
+        if !target_repair.contains(&image)? {
+            return Some(false);
+        }
+    }
+    for relation in &source.equation_relation_matrix {
+        let image = integer_lattice::matrix_vector(&equation_rho, &wide_vector(relation))?;
+        if !target_equation_relations.contains(&image)? {
+            return Some(false);
+        }
+    }
+    let source_chi = wide(&source.generator_map);
+    let target_chi = wide(&target.generator_map);
+    for index in 0..source_semantic {
+        let mut basis = vec![0i128; source_semantic];
+        basis[index] = 1;
+        let through_semantic = integer_lattice::matrix_vector(
+            &target_chi,
+            &integer_lattice::matrix_vector(&semantic_rho, &basis)?,
+        )?;
+        let through_equation = integer_lattice::matrix_vector(
+            &equation_rho,
+            &integer_lattice::matrix_vector(&source_chi, &basis)?,
+        )?;
+        let mut difference = Vec::with_capacity(target_equation);
+        for (left, right) in through_semantic.iter().zip(&through_equation) {
+            difference.push(left.checked_sub(*right)?);
+        }
+        if !target_equation_relations.contains(&difference)? {
+            return Some(false);
+        }
+    }
+    Some(true)
+}
+
+/// triple 上の向き付き `δ¹`。順序は triple の三 chart を正準順に並べて決める。
+/// 各 overlap の `left` / `right` が保存の向きを与えるので、推測せずに符号を導出できる。
+/// `(δ¹c)_{ijk} = c_{jk} - c_{ik} + c_{ij}`。
+fn integer_triple_differential(
+    triple: &RepairPlanTripleOverlapV1,
+    complex_overlaps: &BTreeMap<&str, &RepairPlanOverlapV1>,
+    cells: &BTreeMap<&str, &H1PresentationCellV052>,
+    restrictions: &BTreeMap<(&str, &str), &H1PresentationRestrictionV052>,
+    cochain: &BTreeMap<String, Vec<i64>>,
+    semantic: bool,
+) -> Option<Vec<i128>> {
+    let target = cells.get(triple.id.as_str())?;
+    let width = if semantic {
+        target.semantic_generators.len()
+    } else {
+        target.equation_generators.len()
+    };
+    let mut charts = BTreeSet::new();
+    for overlap_ref in &triple.overlap_refs {
+        let overlap = complex_overlaps.get(overlap_ref.as_str())?;
+        charts.insert(overlap.left.as_str());
+        charts.insert(overlap.right.as_str());
+    }
+    let charts = charts.into_iter().collect::<Vec<_>>();
+    if charts.len() != 3 || triple.overlap_refs.len() != 3 {
+        return None;
+    }
+    let position = |chart: &str| charts.iter().position(|value| *value == chart);
+    let mut differential = vec![0i128; width];
+    let mut covered = BTreeSet::new();
+    for overlap_ref in &triple.overlap_refs {
+        let overlap = complex_overlaps.get(overlap_ref.as_str())?;
+        let left = position(overlap.left.as_str())?;
+        let right = position(overlap.right.as_str())?;
+        let (low, high, stored_sign) = if left < right {
+            (left, right, 1i128)
+        } else {
+            (right, left, -1i128)
+        };
+        if !covered.insert((low, high)) {
+            return None;
+        }
+        // 交代和の係数: (0,1) と (1,2) は +1、(0,2) は -1。
+        let alternating = match (low, high) {
+            (0, 1) | (1, 2) => 1i128,
+            (0, 2) => -1i128,
+            _ => return None,
+        };
+        let restriction = restrictions.get(&(overlap_ref.as_str(), triple.id.as_str()))?;
+        let matrix = if semantic {
+            &restriction.semantic_matrix
+        } else {
+            &restriction.equation_matrix
+        };
+        let restricted = integer_lattice::matrix_vector(
+            &wide(matrix),
+            &wide_vector(cochain.get(overlap_ref.as_str())?),
+        )?;
+        if restricted.len() != width {
+            return None;
+        }
+        let sign = alternating.checked_mul(stored_sign)?;
+        for (entry, value) in differential.iter_mut().zip(restricted) {
+            *entry = entry.checked_add(sign.checked_mul(value)?)?;
+        }
+    }
+    Some(differential)
+}
+
+/// 整数係数の cocycle 判定。`δ¹c` が各 triple cell の関係格子に入るか。
+fn integer_cochain_is_cocycle(
+    target_complex: &RepairPlanComplexV1,
+    cells: &BTreeMap<&str, &H1PresentationCellV052>,
+    restrictions: &BTreeMap<(&str, &str), &H1PresentationRestrictionV052>,
+    cochain: &BTreeMap<String, Vec<i64>>,
+    semantic: bool,
+) -> Option<bool> {
+    let complex_overlaps = target_complex
+        .overlaps
+        .iter()
+        .map(|overlap| (overlap.id.as_str(), overlap))
+        .collect::<BTreeMap<_, _>>();
+    for triple in &target_complex.triple_overlaps {
+        let target = cells.get(triple.id.as_str())?;
+        let differential = integer_triple_differential(
+            triple,
+            &complex_overlaps,
+            cells,
+            restrictions,
+            cochain,
+            semantic,
+        )?;
+        let (matrix, width) = if semantic {
+            (
+                &target.repair_relation_matrix,
+                target.semantic_generators.len(),
+            )
+        } else {
+            (
+                &target.equation_relation_matrix,
+                target.equation_generators.len(),
+            )
+        };
+        let lattice = integer_lattice::lattice_from_rows(&wide(matrix), width)?;
+        if !lattice.contains(&differential)? {
+            return Some(false);
+        }
+    }
+    Some(true)
+}
+
+/// 整数係数での `δ⁰` 可解性。`cochain = δ⁰a`(各 cell の関係を法とする)を解き、
+/// 解があれば chart ごとの `a` を返す。`semantic=false` なら equation 側を解く。
+fn integer_delta_zero_solution(
+    target_complex: &RepairPlanComplexV1,
+    cells: &BTreeMap<&str, &H1PresentationCellV052>,
+    restrictions: &BTreeMap<(&str, &str), &H1PresentationRestrictionV052>,
+    cochain: &BTreeMap<String, Vec<i64>>,
+    semantic: bool,
+) -> Option<Option<BTreeMap<String, Vec<i64>>>> {
+    let width = |cell: &H1PresentationCellV052| {
+        if semantic {
+            cell.semantic_generators.len()
+        } else {
+            cell.equation_generators.len()
+        }
+    };
+    fn relations(cell: &H1PresentationCellV052, semantic: bool) -> &Vec<Vec<i64>> {
+        if semantic {
+            &cell.repair_relation_matrix
+        } else {
+            &cell.equation_relation_matrix
+        }
+    }
+    fn rho(restriction: &H1PresentationRestrictionV052, semantic: bool) -> &Vec<Vec<i64>> {
+        if semantic {
+            &restriction.semantic_matrix
+        } else {
+            &restriction.equation_matrix
+        }
+    }
+
+    // 行は overlap ごとの成分を縦に並べたもの。
+    let mut row_offsets = BTreeMap::new();
+    let mut total_rows = 0usize;
+    for overlap in &target_complex.overlaps {
+        row_offsets.insert(overlap.id.as_str(), total_rows);
+        total_rows += width(cells.get(overlap.id.as_str())?);
+    }
+
+    let mut columns: Vec<Vec<i128>> = Vec::new();
+    let mut chart_column_ranges = BTreeMap::new();
+    for chart in &target_complex.charts {
+        let chart_width = width(cells.get(chart.as_str())?);
+        chart_column_ranges.insert(chart.as_str(), (columns.len(), chart_width));
+        for index in 0..chart_width {
+            let mut column = vec![0i128; total_rows];
+            for overlap in &target_complex.overlaps {
+                // δ⁰a は right 側から left 側を引く。向きは overlap の left / right が与える。
+                let sign = if overlap.right.as_str() == chart.as_str() {
+                    1i128
+                } else if overlap.left.as_str() == chart.as_str() {
+                    -1i128
+                } else {
+                    continue;
+                };
+                let restriction = restrictions.get(&(chart.as_str(), overlap.id.as_str()))?;
+                let matrix = rho(restriction, semantic);
+                let offset = row_offsets[overlap.id.as_str()];
+                for (coordinate, matrix_row) in matrix.iter().enumerate() {
+                    let entry = *matrix_row.get(index)?;
+                    column[offset + coordinate] = column[offset + coordinate]
+                        .checked_add(sign.checked_mul(i128::from(entry))?)?;
+                }
+            }
+            columns.push(column);
+        }
+    }
+    // 各 cell の関係は自由な滑りとして列に足す。
+    for overlap in &target_complex.overlaps {
+        let cell = cells.get(overlap.id.as_str())?;
+        let offset = row_offsets[overlap.id.as_str()];
+        for relation in relations(cell, semantic) {
+            let mut column = vec![0i128; total_rows];
+            for (coordinate, value) in relation.iter().enumerate() {
+                column[offset + coordinate] = i128::from(*value);
+            }
+            columns.push(column);
+        }
+    }
+
+    let mut target = vec![0i128; total_rows];
+    for overlap in &target_complex.overlaps {
+        let cell = cells.get(overlap.id.as_str())?;
+        let value = cochain.get(&overlap.id)?;
+        if value.len() != width(cell) {
+            return None;
+        }
+        let offset = row_offsets[overlap.id.as_str()];
+        for (coordinate, entry) in value.iter().enumerate() {
+            target[offset + coordinate] = i128::from(*entry);
+        }
+    }
+
+    let lattice = integer_lattice::lattice_from_columns(&columns, total_rows)?;
+    let Some(solution) = lattice.solve_generators(&target)? else {
+        return Some(None);
+    };
+    let mut sections = BTreeMap::new();
+    for chart in &target_complex.charts {
+        let (start, chart_width) = chart_column_ranges[chart.as_str()];
+        let slice = solution.get(start..start + chart_width)?;
+        sections.insert(chart.clone(), narrow_vector(slice)?);
+    }
+    Some(Some(sections))
+}
+
+/// 整数係数版の residual 解析。
+fn presentation_residual_analysis_integers(
+    plan: &RepairPlanDocumentV1,
+    target_complex: &RepairPlanComplexV1,
+    presentation: &H1PresentationDataV052,
+    cells: &BTreeMap<&str, &H1PresentationCellV052>,
+    restrictions: &BTreeMap<(&str, &str), &H1PresentationRestrictionV052>,
+) -> Option<PresentationResidualAnalysis> {
+    let semantic_residual = generated_semantic_residual(plan, target_complex, cells)?;
+    let source_image = target_complex
+        .overlaps
+        .iter()
+        .map(|overlap| {
+            let cell = cells.get(overlap.id.as_str())?;
+            let residual = semantic_residual.get(&overlap.id)?;
+            let image =
+                integer_lattice::matrix_vector(&wide(&cell.generator_map), &wide_vector(residual))?;
+            Some((overlap.id.clone(), narrow_vector(&image)?))
+        })
+        .collect::<Option<BTreeMap<String, Vec<i64>>>>()?;
+
+    let source_cocycle = integer_cochain_is_cocycle(
+        target_complex,
+        cells,
+        restrictions,
+        &semantic_residual,
+        true,
+    )?;
+    let source_class_nonzero = source_cocycle.then(|| {
+        integer_delta_zero_solution(
+            target_complex,
+            cells,
+            restrictions,
+            &semantic_residual,
+            true,
+        )
+        .map(|solution| solution.is_none())
+    });
+    let source_class_nonzero = match source_class_nonzero {
+        Some(None) => return None,
+        Some(Some(value)) => Some(value),
+        None => None,
+    };
+
+    let equation_residual =
+        equation_residual_from_lift_atlas_integers(target_complex, presentation, cells, restrictions)?;
+    let target_cocycle = integer_cochain_is_cocycle(
+        target_complex,
+        cells,
+        restrictions,
+        &equation_residual,
+        false,
+    )?;
+    if !source_cocycle || !target_cocycle {
+        return Some(PresentationResidualAnalysis {
+            source_cocycle,
+            source_class_nonzero,
+            target_cocycle,
+            target_class_nonzero: None,
+            witness: None,
+        });
+    }
+    let target_class_nonzero = Some(
+        integer_delta_zero_solution(
+            target_complex,
+            cells,
+            restrictions,
+            &equation_residual,
+            false,
+        )?
+        .is_none(),
+    );
+
+    let mut difference = BTreeMap::new();
+    for overlap in &target_complex.overlaps {
+        let left = source_image.get(&overlap.id)?;
+        let right = equation_residual.get(&overlap.id)?;
+        if left.len() != right.len() {
+            return None;
+        }
+        difference.insert(
+            overlap.id.clone(),
+            left.iter()
+                .zip(right)
+                .map(|(a, b)| a.checked_sub(*b))
+                .collect::<Option<Vec<_>>>()?,
+        );
+    }
+    let witness = integer_delta_zero_solution(
+        target_complex,
+        cells,
+        restrictions,
+        &difference,
+        false,
+    )?
+    .map(|sections| PresentationResidualWitness {
+        source_image,
+        equation_residual,
+        h: sections,
+    });
+
+    Some(PresentationResidualAnalysis {
+        source_cocycle,
+        source_class_nonzero,
+        target_cocycle,
+        target_class_nonzero,
+        witness,
+    })
+}
+
+fn equation_residual_from_lift_atlas_integers(
+    target_complex: &RepairPlanComplexV1,
+    presentation: &H1PresentationDataV052,
+    cells: &BTreeMap<&str, &H1PresentationCellV052>,
+    restrictions: &BTreeMap<(&str, &str), &H1PresentationRestrictionV052>,
+) -> Option<BTreeMap<String, Vec<i64>>> {
+    let mut lifts = BTreeMap::new();
+    for lift in &presentation.equation_lift_atlas.local_lifts {
+        let cell = cells.get(lift.chart_ref.as_str())?;
+        if lift.coefficients.len() != cell.equation_generators.len()
+            || lifts
+                .insert(lift.chart_ref.as_str(), lift.coefficients.as_slice())
+                .is_some()
+        {
+            return None;
+        }
+    }
+    if lifts.keys().copied().collect::<BTreeSet<_>>()
+        != target_complex.charts.iter().map(String::as_str).collect()
+    {
+        return None;
+    }
+    let mut transitions = BTreeMap::new();
+    for transition in &presentation.equation_lift_atlas.transition_differences {
+        let cell = cells.get(transition.overlap_ref.as_str())?;
+        if transition.coefficients.len() != cell.equation_generators.len()
+            || transitions
+                .insert(
+                    transition.overlap_ref.as_str(),
+                    transition.coefficients.as_slice(),
+                )
+                .is_some()
+        {
+            return None;
+        }
+    }
+    if transitions.keys().copied().collect::<BTreeSet<_>>()
+        != target_complex
+            .overlaps
+            .iter()
+            .map(|overlap| overlap.id.as_str())
+            .collect()
+    {
+        return None;
+    }
+    let mut residual = BTreeMap::new();
+    for overlap in &target_complex.overlaps {
+        let mut value = wide_vector(transitions.get(overlap.id.as_str())?);
+        for (chart, sign) in [(&overlap.right, 1i128), (&overlap.left, -1i128)] {
+            let restriction = restrictions.get(&(chart.as_str(), overlap.id.as_str()))?;
+            let restricted = integer_lattice::matrix_vector(
+                &wide(&restriction.equation_matrix),
+                &wide_vector(lifts.get(chart.as_str())?),
+            )?;
+            if restricted.len() != value.len() {
+                return None;
+            }
+            for (entry, lift) in value.iter_mut().zip(restricted) {
+                *entry = entry.checked_add(sign.checked_mul(lift)?)?;
+            }
+        }
+        residual.insert(overlap.id.clone(), narrow_vector(&value)?);
+    }
+    Some(residual)
 }
 
 fn presentation_restriction_commutes(
@@ -2001,7 +2687,7 @@ fn generated_semantic_residual(
     plan: &RepairPlanDocumentV1,
     target_complex: &RepairPlanComplexV1,
     cells: &BTreeMap<&str, &H1PresentationCellV052>,
-) -> Option<BTreeMap<String, Vec<u8>>> {
+) -> Option<BTreeMap<String, Vec<i64>>> {
     let primitives = plan
         .primitives
         .iter()
@@ -2048,8 +2734,8 @@ fn generated_semantic_residual(
 fn generated_source_image(
     target_complex: &RepairPlanComplexV1,
     cells: &BTreeMap<&str, &H1PresentationCellV052>,
-    semantic_residual: &BTreeMap<String, Vec<u8>>,
-) -> Option<BTreeMap<String, Vec<u8>>> {
+    semantic_residual: &BTreeMap<String, Vec<i64>>,
+) -> Option<BTreeMap<String, Vec<i64>>> {
     target_complex
         .overlaps
         .iter()
@@ -2114,7 +2800,7 @@ fn equation_residual_from_lift_atlas(
     presentation: &H1PresentationDataV052,
     cells: &BTreeMap<&str, &H1PresentationCellV052>,
     restrictions: &BTreeMap<(&str, &str), &H1PresentationRestrictionV052>,
-) -> Option<BTreeMap<String, Vec<u8>>> {
+) -> Option<BTreeMap<String, Vec<i64>>> {
     let mut lifts = BTreeMap::new();
     for lift in &presentation.equation_lift_atlas.local_lifts {
         let cell = cells.get(lift.chart_ref.as_str())?;
@@ -2180,7 +2866,7 @@ fn equation_cochain_is_cocycle(
     target_complex: &RepairPlanComplexV1,
     cells: &BTreeMap<&str, &H1PresentationCellV052>,
     restrictions: &BTreeMap<(&str, &str), &H1PresentationRestrictionV052>,
-    cochain: &BTreeMap<String, Vec<u8>>,
+    cochain: &BTreeMap<String, Vec<i64>>,
 ) -> Option<bool> {
     for triple in &target_complex.triple_overlaps {
         let target = cells.get(triple.id.as_str())?;
@@ -2211,7 +2897,7 @@ fn semantic_cochain_is_cocycle(
     target_complex: &RepairPlanComplexV1,
     cells: &BTreeMap<&str, &H1PresentationCellV052>,
     restrictions: &BTreeMap<(&str, &str), &H1PresentationRestrictionV052>,
-    cochain: &BTreeMap<String, Vec<u8>>,
+    cochain: &BTreeMap<String, Vec<i64>>,
 ) -> Option<bool> {
     for triple in &target_complex.triple_overlaps {
         let target = cells.get(triple.id.as_str())?;
@@ -2241,9 +2927,9 @@ fn semantic_cochain_is_cocycle(
 fn cochain_sum(
     target_complex: &RepairPlanComplexV1,
     cells: &BTreeMap<&str, &H1PresentationCellV052>,
-    left: &BTreeMap<String, Vec<u8>>,
-    right: &BTreeMap<String, Vec<u8>>,
-) -> Option<BTreeMap<String, Vec<u8>>> {
+    left: &BTreeMap<String, Vec<i64>>,
+    right: &BTreeMap<String, Vec<i64>>,
+) -> Option<BTreeMap<String, Vec<i64>>> {
     target_complex
         .overlaps
         .iter()
@@ -2268,8 +2954,8 @@ fn equation_delta_zero_solution(
     target_complex: &RepairPlanComplexV1,
     cells: &BTreeMap<&str, &H1PresentationCellV052>,
     restrictions: &BTreeMap<(&str, &str), &H1PresentationRestrictionV052>,
-    cochain: &BTreeMap<String, Vec<u8>>,
-) -> Option<BTreeMap<String, Vec<u8>>> {
+    cochain: &BTreeMap<String, Vec<i64>>,
+) -> Option<BTreeMap<String, Vec<i64>>> {
     let mut chart_offsets = BTreeMap::new();
     let mut unknown_count = 0;
     for chart in &target_complex.charts {
@@ -2327,8 +3013,8 @@ fn semantic_delta_zero_solution(
     target_complex: &RepairPlanComplexV1,
     cells: &BTreeMap<&str, &H1PresentationCellV052>,
     restrictions: &BTreeMap<(&str, &str), &H1PresentationRestrictionV052>,
-    cochain: &BTreeMap<String, Vec<u8>>,
-) -> Option<BTreeMap<String, Vec<u8>>> {
+    cochain: &BTreeMap<String, Vec<i64>>,
+) -> Option<BTreeMap<String, Vec<i64>>> {
     let mut chart_offsets = BTreeMap::new();
     let mut unknown_count = 0;
     for chart in &target_complex.charts {
@@ -2382,7 +3068,7 @@ fn semantic_delta_zero_solution(
 fn equation_cochain_json(
     target_complex: &RepairPlanComplexV1,
     cells: &BTreeMap<&str, &H1PresentationCellV052>,
-    cochain: &BTreeMap<String, Vec<u8>>,
+    cochain: &BTreeMap<String, Vec<i64>>,
 ) -> Option<Vec<Value>> {
     target_complex
         .overlaps
@@ -2404,7 +3090,7 @@ fn equation_cochain_json(
 fn equation_chart_assignment_json(
     target_complex: &RepairPlanComplexV1,
     cells: &BTreeMap<&str, &H1PresentationCellV052>,
-    assignment: &BTreeMap<String, Vec<u8>>,
+    assignment: &BTreeMap<String, Vec<i64>>,
 ) -> Option<Vec<Value>> {
     target_complex
         .charts
@@ -2423,14 +3109,14 @@ fn equation_chart_assignment_json(
         .collect()
 }
 
-fn binary_vector(vector: &[u8], width: usize) -> bool {
-    vector.len() == width && vector.iter().all(|value| *value <= 1)
+fn binary_vector(vector: &[i64], width: usize) -> bool {
+    vector.len() == width && vector.iter().all(|value| (0..=1).contains(value))
 }
 
-fn f2_solve(mut rows: Vec<Vec<u8>>, unknown_count: usize) -> Option<Vec<u8>> {
+fn f2_solve(mut rows: Vec<Vec<i64>>, unknown_count: usize) -> Option<Vec<i64>> {
     if rows
         .iter()
-        .any(|row| row.len() != unknown_count + 1 || row.iter().any(|value| *value > 1))
+        .any(|row| row.len() != unknown_count + 1 || row.iter().any(|value| !(0..=1).contains(value)))
     {
         return None;
     }
@@ -2465,16 +3151,16 @@ fn f2_solve(mut rows: Vec<Vec<u8>>, unknown_count: usize) -> Option<Vec<u8>> {
     Some(solution)
 }
 
-fn binary_matrix(rows: &[Vec<u8>], width: usize) -> bool {
+fn binary_matrix(rows: &[Vec<i64>], width: usize) -> bool {
     rows.iter()
-        .all(|row| row.len() == width && row.iter().all(|value| *value <= 1))
+        .all(|row| row.len() == width && row.iter().all(|value| (0..=1).contains(value)))
 }
 
-fn binary_matrix_with_shape(rows: &[Vec<u8>], height: usize, width: usize) -> bool {
+fn binary_matrix_with_shape(rows: &[Vec<i64>], height: usize, width: usize) -> bool {
     rows.len() == height && binary_matrix(rows, width)
 }
 
-fn f2_rank(rows: &[Vec<u8>], width: usize) -> Option<usize> {
+fn f2_rank(rows: &[Vec<i64>], width: usize) -> Option<usize> {
     if !binary_matrix(rows, width) {
         return None;
     }
@@ -2498,13 +3184,13 @@ fn f2_rank(rows: &[Vec<u8>], width: usize) -> Option<usize> {
     Some(rank)
 }
 
-fn matrix_columns(matrix: &[Vec<u8>], width: usize) -> Vec<Vec<u8>> {
+fn matrix_columns(matrix: &[Vec<i64>], width: usize) -> Vec<Vec<i64>> {
     (0..width)
         .map(|column| matrix.iter().map(|row| row[column]).collect())
         .collect()
 }
 
-fn f2_matrix_vector(matrix: &[Vec<u8>], vector: &[u8]) -> Vec<u8> {
+fn f2_matrix_vector(matrix: &[Vec<i64>], vector: &[i64]) -> Vec<i64> {
     matrix
         .iter()
         .map(|row| {
@@ -2515,8 +3201,8 @@ fn f2_matrix_vector(matrix: &[Vec<u8>], vector: &[u8]) -> Vec<u8> {
         .collect()
 }
 
-fn f2_vector_in_span(rows: &[Vec<u8>], width: usize, vector: &[u8]) -> Option<bool> {
-    if vector.len() != width || vector.iter().any(|value| *value > 1) {
+fn f2_vector_in_span(rows: &[Vec<i64>], width: usize, vector: &[i64]) -> Option<bool> {
+    if vector.len() != width || vector.iter().any(|value| !(0..=1).contains(value)) {
         return None;
     }
     let rank = f2_rank(rows, width)?;
