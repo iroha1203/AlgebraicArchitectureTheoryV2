@@ -1373,7 +1373,8 @@ right-hand concrete expression. -/
   show disconnectedRealization.sectionMap W 0 = 0
   exact map_zero _
 
-/-- The parity of a global section read at the first component. -/
+/-- The parity of a global section read where the idempotent takes the value
+`0`, that is, on the component owned by `componentB`. -/
 noncomputable def globalParity :
     Γ(disconnectedScheme.underlying, ⊤) →+* ZMod 2 :=
   (Int.castRingHom (ZMod 2)).comp globalEvalZero
