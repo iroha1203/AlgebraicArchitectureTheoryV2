@@ -868,11 +868,11 @@ noncomputable def flatBaseChangeGluedViolationSection
       (f.coefficientExtension :
         AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (P : EquationContextChartProducer R C)
     (i : E.Index) (a : U.Atom) :
     Γ((X.baseChange raw f).underlying, ⊤) :=
   (X.baseChangeMap raw f).appTop
-    (R.gluedViolationSection C P.coordinate i a)
+    (R.gluedViolationSection C P i a)
 
 /-- The transported ideal generated from the glued local equation family. -/
 noncomputable def flatBaseChangeGluedWitnessIdeal
@@ -882,7 +882,7 @@ noncomputable def flatBaseChangeGluedWitnessIdeal
       (f.coefficientExtension :
         AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (P : EquationContextChartProducer R C)
     (i : E.Index) :
     Ideal Γ((X.baseChange raw f).underlying, ⊤) :=
   Ideal.span (Set.range
@@ -896,17 +896,17 @@ theorem flatBaseChangeGluedWitnessIdeal_eq
       (f.coefficientExtension :
         AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (P : EquationContextChartProducer R C)
     (i : E.Index) :
     R.flatBaseChangeGluedWitnessIdeal f C P i =
       Ideal.map (X.baseChangeMap raw f).appTop.hom
-        (R.gluedWitnessIdeal C P.coordinate i) := by
+        (R.gluedWitnessIdeal C P i) := by
   rw [flatBaseChangeGluedWitnessIdeal, gluedWitnessIdeal, Ideal.map_span]
   congr 1
   ext z
   constructor
   · rintro ⟨a, rfl⟩
-    exact ⟨R.gluedViolationSection C P.coordinate i a,
+    exact ⟨R.gluedViolationSection C P i a,
       ⟨a, rfl⟩, rfl⟩
   · rintro ⟨_, ⟨a, rfl⟩, rfl⟩
     exact ⟨a, rfl⟩
@@ -1317,7 +1317,7 @@ noncomputable def flatBaseChangeGluedWitnessIdealSheaf
       (f.coefficientExtension :
         AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (P : EquationContextChartProducer R C)
     (i : E.Index) :
     (X.baseChange raw f).underlying.IdealSheafData :=
   Scheme.IdealSheafData.ofIdealTop
@@ -1331,9 +1331,9 @@ theorem gluedWitnessIdealSheaf_flatBaseChange
       (f.coefficientExtension :
         AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (P : EquationContextChartProducer R C)
     (i : E.Index) :
-    (R.gluedWitnessIdealSheaf C P.coordinate i).comap
+    (R.gluedWitnessIdealSheaf C P i).comap
         (X.baseChangeMap raw f) =
       R.flatBaseChangeGluedWitnessIdealSheaf f C P i := by
   rw [gluedWitnessIdealSheaf, flatBaseChangeGluedWitnessIdealSheaf,
@@ -1377,7 +1377,7 @@ noncomputable def flatBaseChangeEquationWitnessIdealSheaf
       (f.coefficientExtension :
         AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (P : EquationContextChartProducer R C)
     (i : E.Index) :
     (R.flatBaseChangeRealizationScheme f).IdealSheafData :=
   (R.flatBaseChangeGluedWitnessIdealSheaf f C P i).comap
@@ -1394,7 +1394,7 @@ theorem equationWitnessIdealSheaf_flatBaseChange
       (f.coefficientExtension :
         AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (P : EquationContextChartProducer R C)
     (i : E.Index) :
     (R.equationWitnessIdealSheaf C P i).comap
         (R.flatRealizationBaseChangeMap f) =
@@ -1414,7 +1414,7 @@ noncomputable def flatBaseChangeEquationGeneratedIdealSheaf
       (f.coefficientExtension :
         AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C) :
+    (P : EquationContextChartProducer R C) :
     (R.flatBaseChangeRealizationScheme f).IdealSheafData :=
   ⨆ i : E.RequiredIndex,
     R.flatBaseChangeEquationWitnessIdealSheaf f C P i.1
@@ -1427,7 +1427,7 @@ theorem equationGeneratedIdealSheaf_flatBaseChange
       (f.coefficientExtension :
         AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C) :
+    (P : EquationContextChartProducer R C) :
     (R.equationGeneratedIdealSheaf C P).comap
         (R.flatRealizationBaseChangeMap f) =
       R.flatBaseChangeEquationGeneratedIdealSheaf f C P := by
@@ -1447,7 +1447,7 @@ noncomputable def flatBaseChangeEquationLawfulClosedSubscheme
       (f.coefficientExtension :
         AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C) :
+    (P : EquationContextChartProducer R C) :
     AlgebraicGeometry.Scheme :=
   (R.flatBaseChangeEquationGeneratedIdealSheaf f C P).subscheme
 
@@ -1459,7 +1459,7 @@ noncomputable def flatBaseChangeEquationLawfulClosedImmersion
       (f.coefficientExtension :
         AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C) :
+    (P : EquationContextChartProducer R C) :
     R.flatBaseChangeEquationLawfulClosedSubscheme f C P ⟶
       R.flatBaseChangeRealizationScheme f :=
   (R.flatBaseChangeEquationGeneratedIdealSheaf f C P).subschemeι
@@ -1472,7 +1472,7 @@ theorem flatBaseChangeEquationLawfulClosedImmersion_isClosedImmersion
       (f.coefficientExtension :
         AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C) :
+    (P : EquationContextChartProducer R C) :
     IsClosedImmersion
       (R.flatBaseChangeEquationLawfulClosedImmersion f C P) := by
   change IsClosedImmersion
@@ -1487,7 +1487,7 @@ noncomputable def flatEquationLawfulClosedSubschemeBaseChangeMap
       (f.coefficientExtension :
         AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C) :
+    (P : EquationContextChartProducer R C) :
     R.flatBaseChangeEquationLawfulClosedSubscheme f C P ⟶
       R.equationGeneratedLawfulClosedSubscheme C P :=
   Scheme.IdealSheafData.subschemeMap
@@ -1506,7 +1506,7 @@ noncomputable def flatEquationLawfulClosedSubschemeBaseChangeMap
       (f.coefficientExtension :
         AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C) :
+    (P : EquationContextChartProducer R C) :
     R.flatEquationLawfulClosedSubschemeBaseChangeMap f C P ≫
         R.equationGeneratedLawfulClosedImmersion C P =
       R.flatBaseChangeEquationLawfulClosedImmersion f C P ≫
@@ -1525,7 +1525,7 @@ theorem flatBaseChangeEquationGeometry_realized
       (f.coefficientExtension :
         AATCommAlgCat.{u, v} k ⥤ AATCommAlgCat.{u, v} k')]
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C) :
+    (P : EquationContextChartProducer R C) :
     R.realizationIdealSheaf.comap (X.baseChangeMap raw f) =
         R.flatBaseChangeRealizationIdealSheaf f ∧
       (∀ i : E.Index,

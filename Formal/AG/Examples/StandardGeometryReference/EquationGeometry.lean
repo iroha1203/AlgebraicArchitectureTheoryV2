@@ -1082,22 +1082,14 @@ private theorem referenceViolationSection_context_eq
 The reference universal sections generate the symbolic coordinate on every
 actual context chart.
 -/
-noncomputable def referenceEquationContextChartProducer :
+theorem referenceEquationContextChartProducer :
     EquationObservableRealization.EquationContextChartProducer
       referenceEquationObservableRealization
       referenceEquationContextCharts :=
-  EquationObservableRealization.EquationContextChartProducer.ofGlobalSections
+  EquationObservableRealization.EquationContextChartProducer.ofContextIndependentSections
     referenceEquationObservableRealization
     referenceEquationContextCharts
-    (fun i a =>
-      referenceEquationObservableRealization.violationSection
-        baseContext i a)
-    (by
-      intro W i a
-      simpa [EquationObservableRealization.contextChartEvaluation,
-        EquationObservableRealization.violationSection] using
-          congrArg (referenceEquationContextCharts.chartMap W).appTop
-            (referenceViolationSection_context_eq baseContext W i a))
+    referenceViolationSection_context_eq
 
 /-- Complete actual-chart producer for the site-owned equation realization. -/
 noncomputable def referenceEquationSchemeChartProducer :
@@ -1106,6 +1098,477 @@ noncomputable def referenceEquationSchemeChartProducer :
       referenceEquationContextCharts where
   coordinate := referenceEquationContextChartProducer
   localization := referenceEquationContextChartLocalization
+
+/-! ### SD5: a Čech context-chart cover that is not the whole cover
+
+`referenceEquationContextCharts` repeats the whole affine Scheme at every
+equation context, so its gluing step is degenerate.  The cover built here is
+not that one: the four selected two-patch contexts own the distinct principal
+opens `D(x)`, `D(1-x)`, `D(x(1-x))`, and `D(1)`, every remaining context owns
+`D(0)`, and generator compatibility is produced by the Čech refinement route of
+Definition 5.2A instead of by context-independence of the universal sections.
+-/
+
+/-- The principal generator owned by each selected two-patch context. -/
+def twoPatchChartGenerator :
+    AAT.AG.FiniteModel.TwoPatchContextIndex → AmbientRing
+  | AAT.AG.FiniteModel.TwoPatchContextIndex.overlap => overlapGenerator
+  | AAT.AG.FiniteModel.TwoPatchContextIndex.left => leftGenerator
+  | AAT.AG.FiniteModel.TwoPatchContextIndex.right => rightGenerator
+  | AAT.AG.FiniteModel.TwoPatchContextIndex.base => 1
+
+private theorem context_inj
+    {i j : AAT.AG.FiniteModel.TwoPatchContextIndex}
+    (h : context i = context j) : i = j :=
+  AAT.AG.FiniteModel.twoPatchContextIndexLe_antisymm
+    ((context_hom_iff i j).mp ⟨eqToHom h⟩)
+    ((context_hom_iff j i).mp ⟨eqToHom h.symm⟩)
+
+/-- The principal generator owned by an arbitrary equation context. -/
+noncomputable def contextChartGenerator (W : referenceSite.category) :
+    Γ(referenceScheme.underlying, ⊤) :=
+  ambientGlobalSectionsIso.inv
+    (if h : ∃ i, W = context i then twoPatchChartGenerator h.choose else 0)
+
+/-- On a selected two-patch context the generator is the selected polynomial. -/
+@[simp] theorem contextChartGenerator_context
+    (i : AAT.AG.FiniteModel.TwoPatchContextIndex) :
+    contextChartGenerator (context i) =
+      ambientGlobalSectionsIso.inv (twoPatchChartGenerator i) := by
+  have h : ∃ j, context i = context j := ⟨i, rfl⟩
+  rw [contextChartGenerator, dif_pos h,
+    show h.choose = i from (context_inj h.choose_spec).symm]
+
+/-- Outside the selected two-patch contexts the generator vanishes. -/
+theorem contextChartGenerator_of_not_context
+    {W : referenceSite.category} (h : ¬ ∃ i, W = context i) :
+    contextChartGenerator W = 0 := by
+  rw [contextChartGenerator, dif_neg h, map_zero]
+
+/-- The chart open owned by each equation context. -/
+noncomputable def referenceContextChartOpen (W : referenceSite.category) :
+    referenceScheme.underlying.Opens :=
+  referenceScheme.underlying.basicOpen (contextChartGenerator W)
+
+/-- The base context owns the whole represented Scheme. -/
+@[simp] theorem referenceContextChartOpen_base :
+    referenceContextChartOpen
+        (context AAT.AG.FiniteModel.TwoPatchContextIndex.base) = ⊤ := by
+  rw [referenceContextChartOpen, contextChartGenerator_context,
+    twoPatchChartGenerator, map_one]
+  exact referenceScheme.underlying.basicOpen_one
+
+/-- The overlap context owns exactly the intersection of the two patches. -/
+theorem referenceContextChartOpen_overlap :
+    referenceContextChartOpen
+        (context AAT.AG.FiniteModel.TwoPatchContextIndex.overlap) =
+      referenceContextChartOpen
+          (context AAT.AG.FiniteModel.TwoPatchContextIndex.left) ⊓
+        referenceContextChartOpen
+          (context AAT.AG.FiniteModel.TwoPatchContextIndex.right) := by
+  rw [referenceContextChartOpen, referenceContextChartOpen,
+    referenceContextChartOpen, contextChartGenerator_context,
+    contextChartGenerator_context, contextChartGenerator_context]
+  show referenceScheme.underlying.basicOpen
+      (ambientGlobalSectionsIso.inv (leftGenerator * rightGenerator)) = _
+  rw [map_mul]
+  exact referenceScheme.underlying.basicOpen_mul _ _
+
+/-- Every unselected context owns the empty open. -/
+theorem referenceContextChartOpen_eq_bot
+    {W : referenceSite.category} (h : ¬ ∃ i, W = context i) :
+    referenceContextChartOpen W = ⊥ := by
+  rw [referenceContextChartOpen, contextChartGenerator_of_not_context h]
+  exact referenceScheme.underlying.basicOpen_zero ⊤
+
+/-- Refinement of selected contexts shrinks the owned open. -/
+theorem referenceContextChartOpen_index_mono
+    {i j : AAT.AG.FiniteModel.TwoPatchContextIndex}
+    (hij : AAT.AG.FiniteModel.twoPatchContextIndexLe i j) :
+    referenceContextChartOpen (context i) ≤
+      referenceContextChartOpen (context j) := by
+  cases i <;> cases j <;>
+    first
+      | exact hij.elim
+      | exact le_rfl
+      | (rw [referenceContextChartOpen_base]; exact le_top)
+      | (rw [referenceContextChartOpen_overlap]; exact inf_le_left)
+      | (rw [referenceContextChartOpen_overlap]; exact inf_le_right)
+
+private theorem contextHom_cases
+    {source target : referenceSite.category} (f : source ⟶ target) :
+    source = target ∨
+      ∃ i j : AAT.AG.FiniteModel.TwoPatchContextIndex,
+        source = context i ∧ target = context j ∧
+          AAT.AG.FiniteModel.twoPatchContextIndexLe i j := by
+  have h : referenceContextPreorder.le source.ctx target.ctx :=
+    CategoryTheory.leOfHom f
+  rcases (referenceContextPreorder_le_iff source.ctx target.ctx).mp h with
+    heq | ⟨i, j, hi, hj, hij⟩
+  · left
+    cases source
+    cases target
+    exact congrArg (fun c => (⟨c⟩ : referenceSite.category)) heq
+  · right
+    refine ⟨i, j, ?_, ?_, hij⟩
+    · cases source
+      exact congrArg (fun c => (⟨c⟩ : referenceSite.category)) hi
+    · cases target
+      exact congrArg (fun c => (⟨c⟩ : referenceSite.category)) hj
+
+/-- Every context restriction shrinks the owned open. -/
+theorem referenceContextChartOpen_mono
+    {source target : referenceSite.category} (f : source ⟶ target) :
+    referenceContextChartOpen source ≤ referenceContextChartOpen target := by
+  rcases contextHom_cases f with rfl | ⟨i, j, rfl, rfl, hij⟩
+  · exact le_rfl
+  · exact referenceContextChartOpen_index_mono hij
+
+/-- Every owned open is a principal open of an affine Scheme. -/
+theorem referenceContextChartOpen_isAffineOpen (W : referenceSite.category) :
+    AlgebraicGeometry.IsAffineOpen (referenceContextChartOpen W) := by
+  letI : IsAffine referenceScheme.underlying := by
+    rw [referenceScheme_underlying, ambientScheme_eq]
+    infer_instance
+  exact (isAffineOpen_top referenceScheme.underlying).basicOpen _
+
+/-- The owned opens jointly cover the represented Scheme. -/
+theorem referenceContextChartOpen_iSup :
+    (⨆ W : referenceSite.category, referenceContextChartOpen W) = ⊤ :=
+  le_antisymm le_top
+    (le_iSup_of_le (context AAT.AG.FiniteModel.TwoPatchContextIndex.base)
+      (le_of_eq referenceContextChartOpen_base.symm))
+
+/-- SD5: the Čech context-chart cover of the reference scheme. -/
+noncomputable def referenceCechContextCharts :
+    EquationObservableRealization.EquationContextCharts
+      (X := referenceScheme) :=
+  EquationContextChartCover.ofMonotoneOpens referenceSite
+    referenceScheme.underlying referenceContextChartOpen
+    (fun f => referenceContextChartOpen_mono f)
+    referenceContextChartOpen_isAffineOpen
+    referenceContextChartOpen_iSup
+
+/-- The image open of a Čech context chart is the open it owns. -/
+@[simp] theorem contextChartOpen_referenceCech (W : referenceSite.category) :
+    EquationObservableRealization.contextChartOpen
+        referenceCechContextCharts W =
+      referenceContextChartOpen W := by
+  have h : EquationObservableRealization.contextChartOpen
+        referenceCechContextCharts W =
+      AlgebraicGeometry.Scheme.Hom.opensRange
+        (referenceContextChartOpen W).ι ⊓ ⊤ := rfl
+  rw [h, AlgebraicGeometry.Scheme.Opens.opensRange_ι, inf_top_eq]
+
+/-- Pairwise overlaps of selected charts are owned by the meet context. -/
+theorem referenceContextChartOpen_inf_le_meet
+    (i j : AAT.AG.FiniteModel.TwoPatchContextIndex) :
+    referenceContextChartOpen (context i) ⊓
+        referenceContextChartOpen (context j) ≤
+      referenceContextChartOpen
+        (context (AAT.AG.FiniteModel.twoPatchContextMeet i j)) := by
+  cases i <;> cases j <;>
+    first
+      | exact inf_le_left
+      | exact inf_le_right
+      | exact le_of_eq referenceContextChartOpen_overlap.symm
+      | (rw [inf_comm]; exact le_of_eq referenceContextChartOpen_overlap.symm)
+
+/-- SD5: every pairwise chart overlap is covered by refining contexts. -/
+theorem referenceCechContextChartRefinement :
+    EquationObservableRealization.EquationContextChartRefinement
+      (X := referenceScheme) referenceCechContextCharts := by
+  constructor
+  intro W V
+  simp only [contextChartOpen_referenceCech]
+  by_cases hW : ∃ i, W = context i
+  · by_cases hV : ∃ j, V = context j
+    · obtain ⟨i, rfl⟩ := hW
+      obtain ⟨j, rfl⟩ := hV
+      refine le_trans (referenceContextChartOpen_inf_le_meet i j) ?_
+      refine le_iSup_of_le
+        ⟨context (AAT.AG.FiniteModel.twoPatchContextMeet i j),
+          ⟨⟨((context_hom_iff _ _).mpr
+              (AAT.AG.FiniteModel.twoPatchContextMeet_le_left i j)).some,
+            ((context_hom_iff _ _).mpr
+              (AAT.AG.FiniteModel.twoPatchContextMeet_le_right i j)).some⟩⟩⟩ ?_
+      exact le_rfl
+    · rw [referenceContextChartOpen_eq_bot hV, inf_bot_eq]
+      exact bot_le
+  · rw [referenceContextChartOpen_eq_bot hW, bot_inf_eq]
+    exact bot_le
+
+/-- SD5: generator compatibility produced by the Čech refinement route. -/
+theorem referenceCechContextChartProducer :
+    EquationObservableRealization.EquationContextChartProducer
+      referenceEquationObservableRealization referenceCechContextCharts :=
+  EquationObservableRealization.EquationContextChartProducer.ofRefinement
+    referenceEquationObservableRealization referenceCechContextCharts
+    referenceCechContextChartRefinement
+
+/--
+SD5: the section glued from the local `η_W(ν)` data restricts on every Čech
+context chart to that context's own represented coordinate.
+-/
+theorem referenceCechGluedViolationSection_on_chart
+    (W : referenceSite.category)
+    (i : referenceSite.equationSystem.Index)
+    (a : AAT.AG.FiniteModel.carrier.Atom) :
+    (referenceCechContextCharts.chartMap W).appTop
+        (referenceEquationObservableRealization.gluedViolationSection
+          referenceCechContextCharts referenceCechContextChartProducer i a) =
+      referenceEquationObservableRealization.contextChartEvaluation
+        referenceCechContextCharts W
+        (referenceSite.equationSystem.violationCoordinate W i a) :=
+  referenceEquationObservableRealization.gluedViolationSection_on_chart
+    referenceCechContextCharts referenceCechContextChartProducer i a W
+
+/-- SD5: the glued generators generate the ideal of every Čech context chart. -/
+theorem referenceCechGluedWitnessIdeal_on_contextChart
+    (W : referenceSite.category)
+    (i : referenceSite.equationSystem.Index) :
+    Ideal.map (referenceCechContextCharts.chartMap W).appTop.hom
+        (referenceEquationObservableRealization.gluedWitnessIdeal
+          referenceCechContextCharts referenceCechContextChartProducer i) =
+      referenceEquationObservableRealization.contextChartWitnessIdeal
+        referenceCechContextCharts W i :=
+  referenceEquationObservableRealization.gluedWitnessIdeal_on_contextChart
+    referenceCechContextCharts referenceCechContextChartProducer W i
+
+/-! ### SD6: a context cover owning only proper opens
+
+The SD5 cover is Čech but its base context still owns the whole Scheme, so the
+gluing step there is determined by that one chart.  The cover built here owns
+only proper opens: the four selected two-patch contexts own the left atlas
+patch, one context outside that family owns the right atlas patch, and every
+remaining context owns the empty open.  Both owned patches are proper
+(`atlasPatch_left_ne_top`, `atlasPatch_right_ne_top`), so no single chart
+determines the glued section.
+
+Compatibility cannot be produced by the Čech route on this cover: the two owned
+patches meet, and contexts of different components of `referenceSite.category`
+admit no common refinement.  It is produced instead from context independence
+of the realization's own universal sections.  A cover that is simultaneously
+free of a whole-Scheme chart and Čech-refinable would need pairwise disjoint
+patches, hence a disconnected represented Scheme; that is outside the present
+fixture.
+-/
+
+/-- A context outside the selected two-patch family. -/
+def probeContext : Site.ArchCtx AAT.AG.FiniteModel.object where
+  minimal :=
+    (AAT.AG.FiniteModel.twoPatchContext
+      AAT.AG.FiniteModel.TwoPatchContextIndex.base).minimal
+  Extension := Unit
+  extension := ()
+
+/-- The probe context is none of the four selected two-patch contexts. -/
+theorem probeContext_ne_twoPatchContext
+    (i : AAT.AG.FiniteModel.TwoPatchContextIndex) :
+    probeContext ≠ AAT.AG.FiniteModel.twoPatchContext i := by
+  intro h
+  have he : Unit = AAT.AG.FiniteModel.TwoPatchContextIndex :=
+    congrArg Site.ArchitectureContext.Extension h
+  have hcard := Fintype.card_congr (Equiv.cast he)
+  simp only [Fintype.card_unit] at hcard
+  have hfour :
+      Fintype.card AAT.AG.FiniteModel.TwoPatchContextIndex = 4 := by decide
+  omega
+
+/-- The context-category object carried by the probe context. -/
+def probeObject : referenceSite.category :=
+  Site.ContextCategoryObject.of referenceContextPreorder probeContext
+
+/-- The probe object is none of the four selected two-patch objects. -/
+theorem probeObject_ne_context
+    (i : AAT.AG.FiniteModel.TwoPatchContextIndex) :
+    probeObject ≠ context i := fun h =>
+  probeContext_ne_twoPatchContext i
+    (congrArg Site.ContextCategoryObject.ctx h)
+
+/-- The image open of a selected atlas chart. -/
+noncomputable def atlasPatch (i : referenceScheme.atlas.Index) :
+    referenceScheme.underlying.Opens :=
+  ((referenceScheme.affineOpenCover referenceRaw).f i).opensRange
+
+/-- Every atlas patch is an affine open. -/
+theorem atlasPatch_isAffineOpen (i : referenceScheme.atlas.Index) :
+    AlgebraicGeometry.IsAffineOpen (atlasPatch i) :=
+  isAffineOpen_opensRange ((referenceScheme.affineOpenCover referenceRaw).f i)
+
+/-- The atlas patches jointly cover the represented Scheme. -/
+theorem atlasPatch_iSup :
+    (⨆ i : referenceScheme.atlas.Index, atlasPatch i) = ⊤ :=
+  twoChart_jointlyCovers
+
+/-- The left atlas patch is a proper open. -/
+theorem atlasPatch_left_ne_top : atlasPatch leftIndex ≠ ⊤ := fun h =>
+  left_chart_not_isIso
+    (isIso_of_isOpenImmersion_of_opensRange_eq_top
+      ((referenceScheme.affineOpenCover referenceRaw).f leftIndex) h)
+
+/-- The right atlas patch is a proper open. -/
+theorem atlasPatch_right_ne_top : atlasPatch rightIndex ≠ ⊤ := fun h =>
+  right_chart_not_isIso
+    (isIso_of_isOpenImmersion_of_opensRange_eq_top
+      ((referenceScheme.affineOpenCover referenceRaw).f rightIndex) h)
+
+/-- The proper open owned by each equation context. -/
+noncomputable def properChartOpen (W : referenceSite.category) :
+    referenceScheme.underlying.Opens :=
+  if (∃ i, W = context i) then atlasPatch leftIndex
+  else if W = probeObject then atlasPatch rightIndex
+  else ⊥
+
+@[simp] theorem properChartOpen_context
+    (i : AAT.AG.FiniteModel.TwoPatchContextIndex) :
+    properChartOpen (context i) = atlasPatch leftIndex := by
+  rw [properChartOpen, if_pos ⟨i, rfl⟩]
+
+@[simp] theorem properChartOpen_probe :
+    properChartOpen probeObject = atlasPatch rightIndex := by
+  rw [properChartOpen, if_neg (by rintro ⟨i, hi⟩; exact probeObject_ne_context i hi),
+    if_pos rfl]
+
+/-- Every unselected context owns the empty open. -/
+theorem properChartOpen_eq_bot
+    {W : referenceSite.category} (h : ¬ ∃ i, W = context i)
+    (h' : W ≠ probeObject) : properChartOpen W = ⊥ := by
+  rw [properChartOpen, if_neg h, if_neg h']
+
+/-- Every context restriction shrinks the owned proper open. -/
+theorem properChartOpen_mono
+    {source target : referenceSite.category} (f : source ⟶ target) :
+    properChartOpen source ≤ properChartOpen target := by
+  rcases contextHom_cases f with rfl | ⟨i, j, rfl, rfl, _⟩
+  · exact le_rfl
+  · simp
+
+/-- Every owned proper open is affine. -/
+theorem properChartOpen_isAffineOpen (W : referenceSite.category) :
+    AlgebraicGeometry.IsAffineOpen (properChartOpen W) := by
+  by_cases h : ∃ i, W = context i
+  · obtain ⟨i, rfl⟩ := h
+    rw [properChartOpen_context]
+    exact atlasPatch_isAffineOpen leftIndex
+  · by_cases h' : W = probeObject
+    · subst h'
+      rw [properChartOpen_probe]
+      exact atlasPatch_isAffineOpen rightIndex
+    · rw [properChartOpen_eq_bot h h']
+      exact AlgebraicGeometry.isAffineOpen_bot _
+
+/-- The owned proper opens jointly cover the represented Scheme. -/
+theorem properChartOpen_iSup :
+    (⨆ W : referenceSite.category, properChartOpen W) = ⊤ := by
+  refine le_antisymm le_top ?_
+  rw [← atlasPatch_iSup]
+  refine iSup_le fun i => ?_
+  rcases index_cases i with rfl | rfl
+  · exact le_iSup_of_le
+      (context AAT.AG.FiniteModel.TwoPatchContextIndex.base)
+      (le_of_eq (properChartOpen_context _).symm)
+  · exact le_iSup_of_le probeObject (le_of_eq properChartOpen_probe.symm)
+
+/-- SD6: the context-chart cover owning only proper opens. -/
+noncomputable def referenceProperContextCharts :
+    EquationObservableRealization.EquationContextCharts
+      (X := referenceScheme) :=
+  EquationContextChartCover.ofMonotoneOpens referenceSite
+    referenceScheme.underlying properChartOpen
+    (fun f => properChartOpen_mono f)
+    properChartOpen_isAffineOpen
+    properChartOpen_iSup
+
+/-- No context of the SD6 cover owns the whole represented Scheme. -/
+theorem referenceProperContextCharts_no_top_chart
+    (W : referenceSite.category) :
+    EquationObservableRealization.contextChartOpen
+        referenceProperContextCharts W ≠ ⊤ := by
+  have h : EquationObservableRealization.contextChartOpen
+        referenceProperContextCharts W =
+      AlgebraicGeometry.Scheme.Hom.opensRange
+        (properChartOpen W).ι ⊓ ⊤ := rfl
+  rw [h, AlgebraicGeometry.Scheme.Opens.opensRange_ι, inf_top_eq]
+  by_cases hc : ∃ i, W = context i
+  · obtain ⟨i, rfl⟩ := hc
+    rw [properChartOpen_context]
+    exact atlasPatch_left_ne_top
+  · by_cases h' : W = probeObject
+    · subst h'
+      rw [properChartOpen_probe]
+      exact atlasPatch_right_ne_top
+    · rw [properChartOpen_eq_bot hc h']
+      intro htop
+      exact atlasPatch_left_ne_top (top_le_iff.mp (htop ▸ bot_le))
+
+/-- SD6: generator compatibility from context independence. -/
+theorem referenceProperContextChartProducer :
+    EquationObservableRealization.EquationContextChartProducer
+      referenceEquationObservableRealization referenceProperContextCharts :=
+  EquationObservableRealization.EquationContextChartProducer.ofContextIndependentSections
+    referenceEquationObservableRealization referenceProperContextCharts
+    referenceViolationSection_context_eq
+
+/-- Contexts linked by a restriction own the same proper open. -/
+theorem properChartOpen_eq_of_hom
+    {source target : referenceSite.category} (f : source ⟶ target) :
+    properChartOpen source = properChartOpen target := by
+  rcases contextHom_cases f with rfl | ⟨i, j, rfl, rfl, _⟩
+  · rfl
+  · simp
+
+/--
+Every transition of the SD6 cover is an isomorphism: contexts of one component
+own the same patch, and contexts of different components admit no restriction.
+-/
+theorem referenceProperTransition_isIso
+    {source target : referenceSite.category} (f : source ⟶ target) :
+    IsIso (referenceProperContextCharts.transition f) := by
+  have hmap : referenceProperContextCharts.transition f =
+      referenceScheme.underlying.homOfLE (properChartOpen_mono f) := rfl
+  rw [hmap]
+  refine isIso_of_isOpenImmersion_of_opensRange_eq_top _ ?_
+  rw [AlgebraicGeometry.Scheme.opensRange_homOfLE, properChartOpen_eq_of_hom f]
+  exact AlgebraicGeometry.Scheme.Opens.ι_preimage_self _
+
+/-- SD6: the induced context-transition localization. -/
+noncomputable def referenceProperContextChartLocalization :
+    EquationObservableRealization.EquationContextChartLocalization
+      referenceProperContextCharts where
+  submonoid _ := Submonoid.powers 1
+  isLocalization := by
+    intro source target f
+    letI : Algebra
+        Γ(referenceProperContextCharts.chart target, ⊤)
+        Γ(referenceProperContextCharts.chart source, ⊤) :=
+      (referenceProperContextCharts.transition f).appTop.hom.toAlgebra
+    haveI := referenceProperTransition_isIso f
+    exact IsLocalization.away_of_isUnit_of_bijective _ isUnit_one
+      (ConcreteCategory.bijective_of_isIso
+        (referenceProperContextCharts.transition f).appTop)
+
+/-- SD6: the complete chart producer on the proper-open cover. -/
+noncomputable def referenceProperSchemeChartProducer :
+    EquationObservableRealization.EquationSchemeChartProducer
+      referenceEquationObservableRealization
+      referenceProperContextCharts where
+  coordinate := referenceProperContextChartProducer
+  localization := referenceProperContextChartLocalization
+
+/--
+SD6: on the proper-open cover the locally generated required locus is still the
+equation system's own obstruction ideal.
+-/
+theorem referenceProperGeneratedIdealSheaf_eq_obstruction :
+    referenceEquationObservableRealization.equationGeneratedIdealSheaf
+        referenceProperContextCharts
+        referenceProperContextChartProducer =
+      referenceEquationObservableRealization.globalObstructionIdealSheaf.comap
+        referenceEquationObservableRealization.realizationImmersion :=
+  referenceEquationObservableRealization.equationGeneratedIdealSheaf_eq_globalObstructionIdealSheaf
+    referenceProperContextCharts referenceProperContextChartProducer
+    referenceViolationSection_context_eq baseContext
 
 /-- Every contextual residual section is the corresponding integer constant. -/
 theorem referenceSiteAmbientResidualSection_image
@@ -2500,22 +2963,14 @@ private theorem cyclicUnitViolationSection_context_eq
     cyclicUnitEquationSystem]
 
 /-- Generator provenance for the cyclic unit actual context charts. -/
-noncomputable def cyclicUnitEquationContextChartProducer :
+theorem cyclicUnitEquationContextChartProducer :
     EquationObservableRealization.EquationContextChartProducer
       cyclicUnitEquationObservableRealization
       referenceEquationContextCharts :=
-  EquationObservableRealization.EquationContextChartProducer.ofGlobalSections
+  EquationObservableRealization.EquationContextChartProducer.ofContextIndependentSections
     cyclicUnitEquationObservableRealization
     referenceEquationContextCharts
-    (fun i a =>
-      cyclicUnitEquationObservableRealization.violationSection
-        baseContext i a)
-    (by
-      intro W i a
-      simpa [EquationObservableRealization.contextChartEvaluation,
-        EquationObservableRealization.violationSection] using
-          congrArg (referenceEquationContextCharts.chartMap W).appTop
-            (cyclicUnitViolationSection_context_eq baseContext W i a))
+    cyclicUnitViolationSection_context_eq
 
 /-- Complete actual-chart producer for the cyclic negative fixture. -/
 noncomputable def cyclicUnitEquationSchemeChartProducer :
@@ -2834,18 +3289,18 @@ theorem siteEquationModTwoPoint_factors_generated :
     Nonempty
       (referenceEquationObservableRealization.FactorsThroughEquationGeneratedLawfulClosedSubscheme
           referenceEquationContextCharts
-          referenceEquationSchemeChartProducer
+          referenceEquationContextChartProducer
           siteEquationModTwoRealizationPoint) := by
   apply
     (referenceEquationObservableRealization.equationGeneratedIdeal_iff_nonempty_factorsThrough
         referenceEquationContextCharts
-        referenceEquationSchemeChartProducer
+        referenceEquationContextChartProducer
         siteEquationModTwoRealizationPoint).mp
   exact
     (referenceEquationObservableRealization.equationLawfulAlong_iff_generatedIdeal
       referenceEquationObservableRealization_valid
       referenceEquationContextCharts
-      referenceEquationSchemeChartProducer
+      referenceEquationContextChartProducer
       siteEquationModTwoRealizationPoint).mp
         siteEquationModTwoPoint_equationLawful
 
@@ -2859,13 +3314,13 @@ theorem siteEquationModTwoPoint_factors_equation
     Nonempty
       (referenceEquationObservableRealization.FactorsThroughEquationGeneratedClosedSubscheme
           referenceEquationContextCharts
-          referenceEquationSchemeChartProducer
+          referenceEquationContextChartProducer
           i siteEquationModTwoRealizationPoint) := by
   have h :=
     referenceEquationObservableRealization.equationHoldsAlong_iff_nonempty_factorsThrough
       referenceEquationObservableRealization_valid
       referenceEquationContextCharts
-      referenceEquationSchemeChartProducer
+      referenceEquationContextChartProducer
       siteEquationModTwoRealizationPoint i
   exact h.mp (siteEquationModTwoPoint_equationLawful i hi)
 
@@ -3020,7 +3475,7 @@ so the lawful closed subscheme is proper relative to this realization point.
 theorem cyclicUnitSitePoint_generatedIdeal_comap_ne_bot :
     (cyclicUnitEquationObservableRealization.equationGeneratedIdealSheaf
       referenceEquationContextCharts
-      cyclicUnitEquationSchemeChartProducer).comap
+      cyclicUnitEquationContextChartProducer).comap
         cyclicUnitSiteRealizationPoint ≠ ⊥ := by
   intro h
   exact cyclicUnitSitePoint_not_equationLawful
@@ -3028,7 +3483,7 @@ theorem cyclicUnitSitePoint_generatedIdeal_comap_ne_bot :
       cyclicUnitEquationObservableRealization
       cyclicUnitEquationObservableRealization_valid
       referenceEquationContextCharts
-      cyclicUnitEquationSchemeChartProducer
+      cyclicUnitEquationContextChartProducer
       cyclicUnitSiteRealizationPoint).mpr h)
 
 /-- The cyclic realization point cannot factor through the lawful subscheme. -/
@@ -3036,13 +3491,13 @@ theorem cyclicUnitSitePoint_not_factors_generated :
     ¬ Nonempty
       (cyclicUnitEquationObservableRealization.FactorsThroughEquationGeneratedLawfulClosedSubscheme
           referenceEquationContextCharts
-          cyclicUnitEquationSchemeChartProducer
+          cyclicUnitEquationContextChartProducer
           cyclicUnitSiteRealizationPoint) := by
   intro hfactor
   exact cyclicUnitSitePoint_generatedIdeal_comap_ne_bot
     ((cyclicUnitEquationObservableRealization.equationGeneratedIdeal_iff_nonempty_factorsThrough
       referenceEquationContextCharts
-      cyclicUnitEquationSchemeChartProducer
+      cyclicUnitEquationContextChartProducer
       cyclicUnitSiteRealizationPoint).mpr hfactor)
 
 /--
@@ -3053,14 +3508,14 @@ theorem cyclicUnitSitePoint_not_factors_equation :
     ¬ Nonempty
       (cyclicUnitEquationObservableRealization.FactorsThroughEquationGeneratedClosedSubscheme
           referenceEquationContextCharts
-          cyclicUnitEquationSchemeChartProducer
+          cyclicUnitEquationContextChartProducer
           PUnit.unit cyclicUnitSiteRealizationPoint) := by
   intro hfactor
   have h :=
     cyclicUnitEquationObservableRealization.equationHoldsAlong_iff_nonempty_factorsThrough
       cyclicUnitEquationObservableRealization_valid
       referenceEquationContextCharts
-      cyclicUnitEquationSchemeChartProducer
+      cyclicUnitEquationContextChartProducer
       cyclicUnitSiteRealizationPoint PUnit.unit
   exact cyclicUnitSitePoint_not_equationHoldsAlong (h.mpr hfactor)
 
@@ -4232,20 +4687,19 @@ theorem referenceSiteEquationLawfulnessIdealFactorizationChartCorrespondence
           referenceEquationContextCharts s ↔
         (referenceEquationObservableRealization.equationGeneratedIdealSheaf
           referenceEquationContextCharts
-          referenceEquationSchemeChartProducer).comap s = ⊥) ∧
+          referenceEquationContextChartProducer).comap s = ⊥) ∧
       ((referenceEquationObservableRealization.equationGeneratedIdealSheaf
           referenceEquationContextCharts
-          referenceEquationSchemeChartProducer).comap s = ⊥ ↔
+          referenceEquationContextChartProducer).comap s = ⊥ ↔
         Nonempty
           (referenceEquationObservableRealization.FactorsThroughEquationGeneratedLawfulClosedSubscheme
             referenceEquationContextCharts
-            referenceEquationSchemeChartProducer
+            referenceEquationContextChartProducer
             s))) ∧
       ∀ i : referenceSite.equationSystem.RequiredIndex,
         referenceEquationObservableRealization.EquationContextWitnessChartRealized
           referenceEquationContextCharts
-          referenceEquationSchemeChartProducer
-          referenceEquationAmbientChartLocalization
+          referenceEquationContextChartProducer
           i.1 :=
   Correspondence.siteEquationLawfulnessIdealFactorizationChartCorrespondence
     referenceEquationObservableRealization
@@ -4263,35 +4717,73 @@ theorem referenceSiteEquationLawfulnessIdealFactorizationCorrespondence
         referenceEquationContextCharts s ↔
       (referenceEquationObservableRealization.equationGeneratedIdealSheaf
         referenceEquationContextCharts
-        referenceEquationSchemeChartProducer).comap s = ⊥) ∧
+        referenceEquationContextChartProducer).comap s = ⊥) ∧
     ((referenceEquationObservableRealization.equationGeneratedIdealSheaf
         referenceEquationContextCharts
-        referenceEquationSchemeChartProducer).comap s = ⊥ ↔
+        referenceEquationContextChartProducer).comap s = ⊥ ↔
       Nonempty
         (referenceEquationObservableRealization.FactorsThroughEquationGeneratedLawfulClosedSubscheme
           referenceEquationContextCharts
-          referenceEquationSchemeChartProducer
+          referenceEquationContextChartProducer
           s)) :=
   (referenceSiteEquationLawfulnessIdealFactorizationChartCorrespondence s).1
 
 /--
 The full correspondence consumes the left/right principal-open localization
 on the actual atlas overlap.
+
+The conclusion names only the canonical restriction comparison; the selected
+localization is what discharges its base-change property.
 -/
 theorem referenceSiteEquation_leftRightLocalization_used
     (i : referenceSite.equationSystem.RequiredIndex) :
-    Function.Bijective
-      (referenceEquationObservableRealization.gluedWitnessIdealLocalizes
+    letI := (referenceEquationObservableRealization.overlapToLeft
+      leftIndex rightIndex).appTop.hom.toAlgebra
+    IsBaseChange
+      Γ(referenceEquationObservableRealization.overlapChart
+        leftIndex rightIndex, ⊤)
+      (referenceEquationObservableRealization.gluedOverlapWitnessIdealComparison
         referenceEquationContextCharts
-        referenceEquationSchemeChartProducer
-        referenceEquationAmbientChartLocalization
+        referenceEquationContextChartProducer
         leftIndex rightIndex i.1) := by
   let s : referenceEquationObservableRealization.realizationScheme ⟶
       referenceEquationObservableRealization.realizationScheme :=
     𝟙 _
   exact
     ((referenceSiteEquationLawfulnessIdealFactorizationChartCorrespondence
-      s).2 i).2.2.2.1 leftIndex rightIndex
+      s).2 i).2.2.1 leftIndex rightIndex
+
+/--
+SD6: Part III, Theorem 5.2C fires on a cover none of whose charts is the whole
+represented Scheme.
+-/
+theorem referenceProperLawfulnessIdealFactorizationChartCorrespondence
+    {T : AlgebraicGeometry.Scheme}
+    (s : T ⟶ referenceEquationObservableRealization.realizationScheme) :
+    ((referenceEquationObservableRealization.EquationLawfulAlong
+          referenceProperContextCharts s ↔
+        (referenceEquationObservableRealization.equationGeneratedIdealSheaf
+          referenceProperContextCharts
+          referenceProperContextChartProducer).comap s = ⊥) ∧
+      ((referenceEquationObservableRealization.equationGeneratedIdealSheaf
+          referenceProperContextCharts
+          referenceProperContextChartProducer).comap s = ⊥ ↔
+        Nonempty
+          (referenceEquationObservableRealization.FactorsThroughEquationGeneratedLawfulClosedSubscheme
+            referenceProperContextCharts
+            referenceProperContextChartProducer
+            s))) ∧
+      ∀ i : referenceSite.equationSystem.RequiredIndex,
+        referenceEquationObservableRealization.EquationContextWitnessChartRealized
+          referenceProperContextCharts
+          referenceProperContextChartProducer
+          i.1 :=
+  referenceEquationObservableRealization.lawfulnessIdealFactorizationChartCorrespondence
+    referenceEquationObservableRealization_valid
+    referenceProperContextCharts
+    referenceProperSchemeChartProducer
+    referenceEquationAmbientChartLocalization
+    s
 
 /--
 The nontrivial mod-two realization satisfies the generated lawful-locus
@@ -4300,7 +4792,7 @@ condition through the actual context-chart producer.
 theorem siteEquationModTwoPoint_generatedLawfulLocus :
     (referenceEquationObservableRealization.equationGeneratedIdealSheaf
       referenceEquationContextCharts
-      referenceEquationSchemeChartProducer).comap
+      referenceEquationContextChartProducer).comap
         siteEquationModTwoRealizationPoint = ⊥ :=
   (referenceSiteEquationLawfulnessIdealFactorizationCorrespondence
     siteEquationModTwoRealizationPoint).1.mp

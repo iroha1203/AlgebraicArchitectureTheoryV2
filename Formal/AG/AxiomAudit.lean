@@ -4944,8 +4944,26 @@ def closedEquationalGeometryEquationContextResidualRepresentable :=
 def closedEquationalGeometryEquationContextChartProducer :=
   @LawAlgebra.EquationObservableRealization.EquationContextChartProducer
 
-noncomputable def closedEquationalGeometryEquationContextChartProducerOfGlobalSections :=
-  @LawAlgebra.EquationObservableRealization.EquationContextChartProducer.ofGlobalSections
+def closedEquationalGeometryEquationContextChartRefinement :=
+  @LawAlgebra.EquationObservableRealization.EquationContextChartRefinement
+
+def closedEquationalGeometryEquationContextChartOpenLeOfHom :=
+  @LawAlgebra.EquationObservableRealization.contextChartOpen_le_of_hom
+
+def closedEquationalGeometryEquationContextChartOpenViolationEqRestrict :=
+  @LawAlgebra.EquationObservableRealization.contextChartOpenViolation_eq_restrict
+
+def closedEquationalGeometryEquationViolationCompatibleOfRefinement :=
+  @LawAlgebra.EquationObservableRealization.violation_compatible_of_refinement
+
+def closedEquationalGeometryEquationViolationCompatibleOfContextIndependent :=
+  @LawAlgebra.EquationObservableRealization.violation_compatible_of_contextIndependent
+
+def closedEquationalGeometryEquationContextChartProducerOfRefinement :=
+  @LawAlgebra.EquationObservableRealization.EquationContextChartProducer.ofRefinement
+
+def closedEquationalGeometryEquationContextChartProducerOfContextIndependent :=
+  @LawAlgebra.EquationObservableRealization.EquationContextChartProducer.ofContextIndependentSections
 
 def closedEquationalGeometryEquationContextChartLocalization :=
   @LawAlgebra.EquationObservableRealization.EquationContextChartLocalization
@@ -4956,8 +4974,86 @@ def closedEquationalGeometryEquationSchemeChartProducer :=
 def closedEquationalGeometryEquationAmbientChartLocalization :=
   @LawAlgebra.EquationObservableRealization.EquationAmbientChartLocalization
 
+def closedEquationalGeometryEquationContextChartOpen :=
+  @LawAlgebra.EquationObservableRealization.contextChartOpen
+
 noncomputable def closedEquationalGeometryEquationContextChartOpenViolation :=
   @LawAlgebra.EquationObservableRealization.contextChartOpenViolation
+
+def closedEquationalGeometryEquationGluedViolationSectionOnOpen :=
+  @LawAlgebra.EquationObservableRealization.gluedViolationSection_on_open
+
+noncomputable def closedEquationalGeometryEquationGluedOverlapWitnessIdealLeft :=
+  @LawAlgebra.EquationObservableRealization.gluedOverlapWitnessIdealLeft
+
+noncomputable def closedEquationalGeometryEquationGluedOverlapWitnessIdealRight :=
+  @LawAlgebra.EquationObservableRealization.gluedOverlapWitnessIdealRight
+
+noncomputable def closedEquationalGeometryEquationGluedOverlapWitnessIdealComparison :=
+  @LawAlgebra.EquationObservableRealization.gluedOverlapWitnessIdealComparison
+
+def closedEquationalGeometryEquationGluedOverlapWitnessIdealIsBaseChange :=
+  @LawAlgebra.EquationObservableRealization.gluedOverlapWitnessIdeal_isBaseChange
+
+noncomputable def closedEquationalGeometryEquationContextChartWitnessIdealComparison :=
+  @LawAlgebra.EquationObservableRealization.contextChartWitnessIdealComparison
+
+def closedEquationalGeometryEquationContextChartWitnessIdealIsBaseChange :=
+  @LawAlgebra.EquationObservableRealization.contextChartWitnessIdeal_isBaseChange
+
+noncomputable def closedEquationalGeometryEquationGeneratedClosedImmersion :=
+  @LawAlgebra.EquationObservableRealization.equationGeneratedClosedImmersion
+
+def closedEquationalGeometryEquationGeneratedClosedImmersionIsClosedImmersion :=
+  @LawAlgebra.EquationObservableRealization.equationGeneratedClosedImmersion_isClosedImmersion
+
+def closedEquationalGeometryEquationGeneratedClosedImmersionKer :=
+  @LawAlgebra.EquationObservableRealization.equationGeneratedClosedImmersion_ker
+
+def closedEquationalGeometryFactorsThroughEquationGeneratedClosedSubscheme :=
+  @LawAlgebra.EquationObservableRealization.FactorsThroughEquationGeneratedClosedSubscheme
+
+noncomputable def closedEquationalGeometryEquationGeneratedLawfulClosedImmersion :=
+  @LawAlgebra.EquationObservableRealization.equationGeneratedLawfulClosedImmersion
+
+def closedEquationalGeometryEquationGeneratedLawfulClosedImmersionIsClosedImmersion :=
+  @LawAlgebra.EquationObservableRealization.equationGeneratedLawfulClosedImmersion_isClosedImmersion
+
+def closedEquationalGeometryEquationGeneratedLawfulClosedImmersionKer :=
+  @LawAlgebra.EquationObservableRealization.equationGeneratedLawfulClosedImmersion_ker
+
+def closedEquationalGeometryGluedViolationSectionEqViolationSection :=
+  @LawAlgebra.EquationObservableRealization.gluedViolationSection_eq_violationSection
+
+def closedEquationalGeometryGluedWitnessIdealEqGlobalWitnessIdeal :=
+  @LawAlgebra.EquationObservableRealization.gluedWitnessIdeal_eq_globalWitnessIdeal
+
+def closedEquationalGeometryEquationWitnessIdealSheafEqWitnessIdealSheaf :=
+  @LawAlgebra.EquationObservableRealization.equationWitnessIdealSheaf_eq_witnessIdealSheaf
+
+def closedEquationalGeometryEquationGeneratedIdealSheafEqGeneratedIdealSheaf :=
+  @LawAlgebra.EquationObservableRealization.equationGeneratedIdealSheaf_eq_generatedIdealSheaf
+
+def closedEquationalGeometryEquationGeneratedIdealSheafEqGlobalObstructionIdealSheaf :=
+  @LawAlgebra.EquationObservableRealization.equationGeneratedIdealSheaf_eq_globalObstructionIdealSheaf
+
+def closedEquationalGeometryEquationHoldsAlongIffAmbientWitnessIdeal :=
+  @LawAlgebra.EquationObservableRealization.equationHoldsAlong_iff_ambientWitnessIdeal
+
+def closedEquationalGeometryEquationHoldsAlongIffNonemptyFactorsThroughAmbient :=
+  @LawAlgebra.EquationObservableRealization.equationHoldsAlong_iff_nonempty_factorsThroughAmbient
+
+def closedEquationalGeometryEquationLawfulAlongIffAmbientGeneratedIdeal :=
+  @LawAlgebra.EquationObservableRealization.equationLawfulAlong_iff_ambientGeneratedIdeal
+
+def closedEquationalGeometryEquationLawfulAlongIffNonemptyFactorsThroughLawful :=
+  @LawAlgebra.EquationObservableRealization.equationLawfulAlong_iff_nonempty_factorsThroughLawful
+
+def closedEquationalGeometryFactorsThroughEquationGeneratedLawfulClosedSubscheme :=
+  @LawAlgebra.EquationObservableRealization.FactorsThroughEquationGeneratedLawfulClosedSubscheme
+
+noncomputable def standardSchemeEquationContextChartCoverOfMonotoneOpens :=
+  @LawAlgebra.EquationContextChartCover.ofMonotoneOpens
 
 def closedEquationalGeometryEquationContextChartOpenCover :=
   @LawAlgebra.EquationObservableRealization.contextChartOpen_cover
@@ -7103,6 +7199,66 @@ noncomputable def readingFunctoriality_equationFlatBaseChangeGluedWitnessIdeal :
 def readingFunctoriality_equationFlatBaseChangeGluedWitnessIdealEq :=
   @AAT.AG.LawAlgebra.EquationObservableRealization.flatBaseChangeGluedWitnessIdeal_eq
 
+noncomputable def readingFunctoriality_equationFlatBaseChangeArchitecture :=
+  @AAT.AG.LawAlgebra.EquationObservableRealization.flatBaseChangeArchitecture
+
+noncomputable def readingFunctoriality_equationFlatBaseChangeViolationSection :=
+  @AAT.AG.LawAlgebra.EquationObservableRealization.flatBaseChangeViolationSection
+
+noncomputable def readingFunctoriality_equationFlatBaseChangeRealizationRelation :=
+  @AAT.AG.LawAlgebra.EquationObservableRealization.flatBaseChangeRealizationRelation
+
+def readingFunctoriality_equationFlatBaseChangeRealizationRelationEq :=
+  @AAT.AG.LawAlgebra.EquationObservableRealization.flatBaseChangeRealizationRelation_eq
+
+noncomputable def readingFunctoriality_equationFlatBaseChangeGlobalWitnessIdeal :=
+  @AAT.AG.LawAlgebra.EquationObservableRealization.flatBaseChangeGlobalWitnessIdeal
+
+def readingFunctoriality_equationFlatBaseChangeGlobalWitnessIdealEq :=
+  @AAT.AG.LawAlgebra.EquationObservableRealization.flatBaseChangeGlobalWitnessIdeal_eq
+
+noncomputable def readingFunctoriality_equationFlatBaseChangeGlobalObstructionIdeal :=
+  @AAT.AG.LawAlgebra.EquationObservableRealization.flatBaseChangeGlobalObstructionIdeal
+
+def readingFunctoriality_equationFlatBaseChangeGlobalObstructionIdealEq :=
+  @AAT.AG.LawAlgebra.EquationObservableRealization.flatBaseChangeGlobalObstructionIdeal_eq
+
+noncomputable def readingFunctoriality_equationFlatBaseChangeGluedViolationSection :=
+  @AAT.AG.LawAlgebra.EquationObservableRealization.flatBaseChangeGluedViolationSection
+
+noncomputable def readingFunctoriality_equationFlatBaseChangeRealizationImmersion :=
+  @AAT.AG.LawAlgebra.EquationObservableRealization.flatBaseChangeRealizationImmersion
+
+noncomputable def readingFunctoriality_equationFlatBaseChangeGlobalWitnessIdealSheaf :=
+  @AAT.AG.LawAlgebra.EquationObservableRealization.flatBaseChangeGlobalWitnessIdealSheaf
+
+def readingFunctoriality_equationGlobalWitnessIdealSheafFlatBaseChange :=
+  @AAT.AG.LawAlgebra.EquationObservableRealization.globalWitnessIdealSheaf_flatBaseChange
+
+noncomputable def readingFunctoriality_equationFlatBaseChangeGlobalObstructionIdealSheaf :=
+  @AAT.AG.LawAlgebra.EquationObservableRealization.flatBaseChangeGlobalObstructionIdealSheaf
+
+def readingFunctoriality_equationGlobalObstructionIdealSheafFlatBaseChange :=
+  @AAT.AG.LawAlgebra.EquationObservableRealization.globalObstructionIdealSheaf_flatBaseChange
+
+noncomputable def readingFunctoriality_equationFlatBaseChangeGluedWitnessIdealSheaf :=
+  @AAT.AG.LawAlgebra.EquationObservableRealization.flatBaseChangeGluedWitnessIdealSheaf
+
+def readingFunctoriality_equationGluedWitnessIdealSheafFlatBaseChange :=
+  @AAT.AG.LawAlgebra.EquationObservableRealization.gluedWitnessIdealSheaf_flatBaseChange
+
+noncomputable def readingFunctoriality_equationFlatBaseChangeWitnessIdealSheaf :=
+  @AAT.AG.LawAlgebra.EquationObservableRealization.flatBaseChangeWitnessIdealSheaf
+
+def readingFunctoriality_equationWitnessIdealSheafFlatBaseChangeGeneral :=
+  @AAT.AG.LawAlgebra.EquationObservableRealization.witnessIdealSheaf_flatBaseChange
+
+noncomputable def readingFunctoriality_equationFlatBaseChangeEquationLawfulClosedImmersion :=
+  @AAT.AG.LawAlgebra.EquationObservableRealization.flatBaseChangeEquationLawfulClosedImmersion
+
+def readingFunctoriality_equationFlatBaseChangeEquationLawfulClosedImmersionIsClosedImmersion :=
+  @AAT.AG.LawAlgebra.EquationObservableRealization.flatBaseChangeEquationLawfulClosedImmersion_isClosedImmersion
+
 noncomputable def readingFunctoriality_equationFlatBaseChangeRealizationIdealSheaf :=
   @AAT.AG.LawAlgebra.EquationObservableRealization.flatBaseChangeRealizationIdealSheaf
 
@@ -8480,11 +8636,128 @@ noncomputable def standardGeometry_referenceEquationContextCharts :=
 noncomputable def standardGeometry_referenceEquationContextChartLocalization :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.referenceEquationContextChartLocalization
 
-noncomputable def standardGeometry_referenceEquationContextChartProducer :=
+def standardGeometry_referenceEquationContextChartProducer :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.referenceEquationContextChartProducer
 
 noncomputable def standardGeometry_referenceEquationSchemeChartProducer :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.referenceEquationSchemeChartProducer
+
+noncomputable def standardGeometry_twoPatchChartGenerator :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.twoPatchChartGenerator
+
+noncomputable def standardGeometry_contextChartGenerator :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.contextChartGenerator
+
+def standardGeometry_contextChartGenerator_of_not_context :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.contextChartGenerator_of_not_context
+
+noncomputable def standardGeometry_referenceContextChartOpen :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceContextChartOpen
+
+def standardGeometry_referenceContextChartOpen_overlap :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceContextChartOpen_overlap
+
+def standardGeometry_referenceContextChartOpen_eq_bot :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceContextChartOpen_eq_bot
+
+def standardGeometry_referenceContextChartOpen_index_mono :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceContextChartOpen_index_mono
+
+def standardGeometry_referenceContextChartOpen_mono :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceContextChartOpen_mono
+
+def standardGeometry_referenceContextChartOpen_isAffineOpen :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceContextChartOpen_isAffineOpen
+
+def standardGeometry_referenceContextChartOpen_iSup :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceContextChartOpen_iSup
+
+noncomputable def standardGeometry_referenceCechContextCharts :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceCechContextCharts
+
+def standardGeometry_referenceContextChartOpen_inf_le_meet :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceContextChartOpen_inf_le_meet
+
+def standardGeometry_referenceCechContextChartRefinement :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceCechContextChartRefinement
+
+def standardGeometry_referenceCechContextChartProducer :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceCechContextChartProducer
+
+def standardGeometry_referenceCechGluedViolationSection_on_chart :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceCechGluedViolationSection_on_chart
+
+def standardGeometry_probeContext :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.probeContext
+
+def standardGeometry_probeContext_ne_twoPatchContext :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.probeContext_ne_twoPatchContext
+
+def standardGeometry_probeObject :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.probeObject
+
+def standardGeometry_probeObject_ne_context :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.probeObject_ne_context
+
+noncomputable def standardGeometry_atlasPatch :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.atlasPatch
+
+def standardGeometry_atlasPatch_isAffineOpen :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.atlasPatch_isAffineOpen
+
+def standardGeometry_atlasPatch_iSup :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.atlasPatch_iSup
+
+def standardGeometry_atlasPatch_left_ne_top :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.atlasPatch_left_ne_top
+
+def standardGeometry_atlasPatch_right_ne_top :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.atlasPatch_right_ne_top
+
+noncomputable def standardGeometry_properChartOpen :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.properChartOpen
+
+def standardGeometry_properChartOpen_eq_bot :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.properChartOpen_eq_bot
+
+def standardGeometry_properChartOpen_mono :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.properChartOpen_mono
+
+def standardGeometry_properChartOpen_eq_of_hom :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.properChartOpen_eq_of_hom
+
+def standardGeometry_properChartOpen_isAffineOpen :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.properChartOpen_isAffineOpen
+
+def standardGeometry_properChartOpen_iSup :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.properChartOpen_iSup
+
+noncomputable def standardGeometry_referenceProperContextCharts :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceProperContextCharts
+
+def standardGeometry_referenceProperContextCharts_no_top_chart :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceProperContextCharts_no_top_chart
+
+def standardGeometry_referenceProperContextChartProducer :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceProperContextChartProducer
+
+def standardGeometry_referenceProperTransition_isIso :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceProperTransition_isIso
+
+noncomputable def standardGeometry_referenceProperContextChartLocalization :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceProperContextChartLocalization
+
+noncomputable def standardGeometry_referenceProperSchemeChartProducer :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceProperSchemeChartProducer
+
+def standardGeometry_referenceProperLawfulnessIdealFactorizationChartCorrespondence :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceProperLawfulnessIdealFactorizationChartCorrespondence
+
+def standardGeometry_referenceProperGeneratedIdealSheaf_eq_obstruction :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceProperGeneratedIdealSheaf_eq_obstruction
+
+def standardGeometry_referenceCechGluedWitnessIdeal_on_contextChart :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceCechGluedWitnessIdeal_on_contextChart
 
 def standardGeometry_referenceSiteViolationSection_image :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.referenceSiteViolationSection_image
@@ -8576,7 +8849,7 @@ noncomputable def standardGeometry_cyclicUnitEquationObservableRealization :=
 def standardGeometry_cyclicUnitEquationObservableRealization_valid :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.cyclicUnitEquationObservableRealization_valid
 
-noncomputable def standardGeometry_cyclicUnitEquationContextChartProducer :=
+def standardGeometry_cyclicUnitEquationContextChartProducer :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.cyclicUnitEquationContextChartProducer
 
 noncomputable def standardGeometry_cyclicUnitEquationSchemeChartProducer :=

@@ -95,15 +95,16 @@ theorem siteEquationLawfulnessIdealFactorizationChartCorrespondence
     {T : AlgebraicGeometry.Scheme}
     (s : T ⟶ R.realizationScheme) :
     ((R.EquationLawfulAlong C s ↔
-        (R.equationGeneratedIdealSheaf C P).comap s = ⊥) ∧
-      ((R.equationGeneratedIdealSheaf C P).comap s = ⊥ ↔
+        (R.equationGeneratedIdealSheaf C P.coordinate).comap s = ⊥) ∧
+      ((R.equationGeneratedIdealSheaf C P.coordinate).comap s = ⊥ ↔
         Nonempty
-          (R.FactorsThroughEquationGeneratedLawfulClosedSubscheme C P s))) ∧
+          (R.FactorsThroughEquationGeneratedLawfulClosedSubscheme
+            C P.coordinate s))) ∧
       ∀ i : S.equationSystem.RequiredIndex,
-        R.EquationContextWitnessChartRealized C P L i.1 :=
+        R.EquationContextWitnessChartRealized C P.coordinate i.1 :=
   R.lawfulnessIdealFactorizationChartCorrespondence hR C P L s
 
-/-- The ideal/factorization pair projected from the full chart theorem. -/
+/-- The required-law ideal/factorization pair for the site-owned system. -/
 theorem siteEquationLawfulnessIdealFactorizationCorrespondence
     {A : ArchitectureObject U} {S : Site.AATSite A}
     {k : Type v} [CommRing k]
@@ -113,9 +114,7 @@ theorem siteEquationLawfulnessIdealFactorizationCorrespondence
     (R : EquationObservableRealization raw X S.equationSystem)
     (hR : IsEquationObservableRealization R)
     (C : EquationObservableRealization.EquationContextCharts (X := X))
-    (P : EquationObservableRealization.EquationSchemeChartProducer R C)
-    (L : EquationObservableRealization.EquationAmbientChartLocalization
-      (raw := raw) (X := X))
+    (P : EquationObservableRealization.EquationContextChartProducer R C)
     {T : AlgebraicGeometry.Scheme}
     (s : T ⟶ R.realizationScheme) :
     (R.EquationLawfulAlong C s ↔
@@ -123,8 +122,7 @@ theorem siteEquationLawfulnessIdealFactorizationCorrespondence
     ((R.equationGeneratedIdealSheaf C P).comap s = ⊥ ↔
       Nonempty
         (R.FactorsThroughEquationGeneratedLawfulClosedSubscheme C P s)) :=
-  (siteEquationLawfulnessIdealFactorizationChartCorrespondence
-    R hR C P L s).1
+  R.lawfulnessIdealFactorizationCorrespondence hR C P s
 
 /--
 Part III, Theorem 5.2C for the site-owned equation system: fulfillment of one
@@ -147,14 +145,15 @@ theorem siteEquationIdealFactorizationChartCorrespondence
     (s : T ⟶ R.realizationScheme)
     (i : S.equationSystem.Index) :
     ((R.EquationHoldsAlong C s i ↔
-        (R.equationWitnessIdealSheaf C P i).comap s = ⊥) ∧
-      ((R.equationWitnessIdealSheaf C P i).comap s = ⊥ ↔
+        (R.equationWitnessIdealSheaf C P.coordinate i).comap s = ⊥) ∧
+      ((R.equationWitnessIdealSheaf C P.coordinate i).comap s = ⊥ ↔
         Nonempty
-          (R.FactorsThroughEquationGeneratedClosedSubscheme C P i s))) ∧
-      R.EquationContextWitnessChartRealized C P L i :=
+          (R.FactorsThroughEquationGeneratedClosedSubscheme
+            C P.coordinate i s))) ∧
+      R.EquationContextWitnessChartRealized C P.coordinate i :=
   R.equationIdealFactorizationChartCorrespondence hR C P L s i
 
-/-- The single-equation pair projected from the full chart theorem. -/
+/-- The single-equation ideal/factorization pair for the site-owned system. -/
 theorem siteEquationIdealFactorizationCorrespondence
     {A : ArchitectureObject U} {S : Site.AATSite A}
     {k : Type v} [CommRing k]
@@ -164,9 +163,7 @@ theorem siteEquationIdealFactorizationCorrespondence
     (R : EquationObservableRealization raw X S.equationSystem)
     (hR : IsEquationObservableRealization R)
     (C : EquationObservableRealization.EquationContextCharts (X := X))
-    (P : EquationObservableRealization.EquationSchemeChartProducer R C)
-    (L : EquationObservableRealization.EquationAmbientChartLocalization
-      (raw := raw) (X := X))
+    (P : EquationObservableRealization.EquationContextChartProducer R C)
     {T : AlgebraicGeometry.Scheme}
     (s : T ⟶ R.realizationScheme)
     (i : S.equationSystem.Index) :
@@ -175,8 +172,7 @@ theorem siteEquationIdealFactorizationCorrespondence
     ((R.equationWitnessIdealSheaf C P i).comap s = ⊥ ↔
       Nonempty
         (R.FactorsThroughEquationGeneratedClosedSubscheme C P i s)) :=
-  (siteEquationIdealFactorizationChartCorrespondence
-    R hR C P L s i).1
+  R.equationIdealFactorizationCorrespondence hR C P s i
 
 /--
 III.定理11.1 / III.定理11.4 bridge: displayed required laws force the displayed

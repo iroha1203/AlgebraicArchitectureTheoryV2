@@ -1447,6 +1447,50 @@ theorem contextChartOpen_cover
     simp)
 
 /--
+A context restriction shrinks the selected chart image open.
+
+This is the geometric shadow of the selected transition data: the transition
+factors the source chart through the target chart over the represented Scheme.
+-/
+theorem contextChartOpen_le_of_hom
+    (C : EquationContextCharts (X := X))
+    {source target : S.category} (f : source ⟶ target) :
+    contextChartOpen C source ≤ contextChartOpen C target := by
+  have hmap : C.transition f ≫ C.chartMap target = C.chartMap source :=
+    C.transition_to_base f
+  refine inf_le_inf_right _ ?_
+  intro x hx
+  obtain ⟨y, rfl⟩ := AlgebraicGeometry.Scheme.Hom.mem_opensRange.mp hx
+  refine AlgebraicGeometry.Scheme.Hom.mem_opensRange.mpr
+    ⟨(C.transition f).base y, ?_⟩
+  have hbase := congrArg
+    (fun g : C.chart source ⟶ X.underlying => g.base y) hmap
+  simpa using hbase
+
+/--
+Chart identification: the local symbolic coordinate owned by a context is the
+restriction of that context's own universal section.
+
+Definition 5.2A's `η_W(ν_{W,i,a})` is therefore not independent data; it is
+`R.violationSection W i a` read on the selected chart image open.
+-/
+theorem contextChartOpenViolation_eq_restrict
+    (C : EquationContextCharts (X := X))
+    (W : S.category) (i : E.Index) (a : U.Atom) :
+    R.contextChartOpenViolation C W i a =
+      X.underlying.presheaf.map (homOfLE le_top).op
+        (R.violationSection W i a) := by
+  have happ :=
+    IsOpenImmersion.app_ΓIso_hom_apply
+      (C.chartMap W) ⊤ (R.violationSection W i a)
+  have hz :
+      (C.chartMap W).app ⊤ (R.violationSection W i a) =
+        R.contextChartEvaluation C W
+          (E.violationCoordinate W i a) := rfl
+  rw [hz] at happ
+  simpa [contextChartOpenViolation, contextChartOpen] using happ
+
+/--
 Generator-level provenance for a context-indexed chart cover.
 
 For each equation and Atom, the locally represented symbolic coordinates
@@ -1463,52 +1507,100 @@ structure EquationContextChartProducer
         (contextChartOpen C)
         (fun W => R.contextChartOpenViolation C W i a)
 
-namespace EquationContextChartProducer
+/--
+Čech-level refinement datum for a context-indexed chart cover.
+
+Every pairwise chart overlap is covered by the charts of contexts that restrict
+to both.  This is a condition on the selected cover alone: it carries no
+section, no compatibility, and no vanishing or factorization conclusion.  Where
+two charts do not meet, the empty family already satisfies it.
+-/
+structure EquationContextChartRefinement
+    (C : EquationContextCharts (X := X)) : Prop where
+  overlap_covered :
+    ∀ W V : S.category,
+      contextChartOpen C W ⊓ contextChartOpen C V ≤
+        ⨆ Z : {Z : S.category // Nonempty ((Z ⟶ W) × (Z ⟶ V))},
+          contextChartOpen C Z.1
 
 /--
-Compatibility producer when the local coordinates are already known to be
-the restrictions of a common section.  This is a convenience constructor;
-the primary structure above only asks for pairwise local compatibility.
+Standard compatibility producer, Čech route.
+
+Compatibility is derived from `E`'s restriction law (through
+`violationSection_natural`), the chart identification
+`contextChartOpenViolation_eq_restrict`, and the selected transition data
+(through `contextChartOpen_le_of_hom`), using only the structure sheaf's
+locality.  Nothing is supplied by the caller beyond the cover condition.
 -/
-noncomputable def ofGlobalSections
+theorem violation_compatible_of_refinement
     (C : EquationContextCharts (X := X))
-    (globalSection : E.Index → U.Atom → Γ(X.underlying, ⊤))
-    (section_on_chart :
-      ∀ (W : S.category) (i : E.Index) (a : U.Atom),
-        (C.chartMap W).appTop (globalSection i a) =
-          R.contextChartEvaluation C W
-            (E.violationCoordinate W i a)) :
+    (D : EquationContextChartRefinement (X := X) C)
+    (i : E.Index) (a : U.Atom) :
+    TopCat.Presheaf.IsCompatible X.underlying.presheaf
+      (contextChartOpen C)
+      (fun W => R.contextChartOpenViolation C W i a) := by
+  classical
+  intro W V
+  refine TopCat.Sheaf.eq_of_locally_eq' X.underlying.sheaf
+    (fun Z : {Z : S.category // Nonempty ((Z ⟶ W) × (Z ⟶ V))} =>
+      contextChartOpen C Z.1)
+    (contextChartOpen C W ⊓ contextChartOpen C V)
+    (fun Z => homOfLE (le_inf
+      (contextChartOpen_le_of_hom C Z.2.some.1)
+      (contextChartOpen_le_of_hom C Z.2.some.2)))
+    (D.overlap_covered W V) _ _ ?_
+  intro Z
+  dsimp only
+  have hWV : R.violationSection W i a = R.violationSection V i a := by
+    rw [← R.violationSection_natural Z.2.some.1 i a,
+      R.violationSection_natural Z.2.some.2 i a]
+  rw [R.contextChartOpenViolation_eq_restrict C W i a,
+    R.contextChartOpenViolation_eq_restrict C V i a, hWV]
+  simp only [← ConcreteCategory.comp_apply, ← Functor.map_comp]
+  rfl
+
+/--
+Standard compatibility producer, context-independent route.
+
+Here the hypothesis is a property of the realization's own universal sections,
+not a global section invented by the caller: when `R.violationSection` does not
+depend on the equation context, the local coordinates are restrictions of one
+and the same section.
+-/
+theorem violation_compatible_of_contextIndependent
+    (C : EquationContextCharts (X := X))
+    (hconst :
+      ∀ (W V : S.category) (i : E.Index) (a : U.Atom),
+        R.violationSection W i a = R.violationSection V i a)
+    (i : E.Index) (a : U.Atom) :
+    TopCat.Presheaf.IsCompatible X.underlying.presheaf
+      (contextChartOpen C)
+      (fun W => R.contextChartOpenViolation C W i a) := by
+  intro W V
+  dsimp only
+  rw [R.contextChartOpenViolation_eq_restrict C W i a,
+    R.contextChartOpenViolation_eq_restrict C V i a, hconst W V i a]
+  simp only [← ConcreteCategory.comp_apply, ← Functor.map_comp]
+  rfl
+
+namespace EquationContextChartProducer
+
+/-- The Čech-route producer generated by a cover refinement datum. -/
+theorem ofRefinement
+    (C : EquationContextCharts (X := X))
+    (D : EquationContextChartRefinement (X := X) C) :
     EquationContextChartProducer R C where
-  violation_compatible := by
-    intro i a W V
-    have hlocal :
-        ∀ Z : S.category,
-          R.contextChartOpenViolation C Z i a =
-            X.underlying.presheaf.map (homOfLE le_top).op
-              (globalSection i a) := by
-      intro Z
-      have happ :=
-        IsOpenImmersion.app_ΓIso_hom_apply
-          (C.chartMap Z) ⊤ (globalSection i a)
-      have hz := section_on_chart Z i a
-      change
-        (C.chartMap Z).app ⊤ (globalSection i a) =
-          R.contextChartEvaluation C Z
-            (E.violationCoordinate Z i a) at hz
-      rw [hz] at happ
-      simpa [contextChartOpenViolation, contextChartOpen] using happ
-    change
-      X.underlying.presheaf.map
-          (TopologicalSpace.Opens.infLELeft
-            (contextChartOpen C W) (contextChartOpen C V)).op
-          (R.contextChartOpenViolation C W i a) =
-        X.underlying.presheaf.map
-          (TopologicalSpace.Opens.infLERight
-            (contextChartOpen C W) (contextChartOpen C V)).op
-          (R.contextChartOpenViolation C V i a)
-    rw [hlocal W, hlocal V]
-    simp only [← ConcreteCategory.comp_apply, ← Functor.map_comp]
-    rfl
+  violation_compatible := R.violation_compatible_of_refinement C D
+
+/-- The producer generated by context-independence of the universal sections. -/
+theorem ofContextIndependentSections
+    (C : EquationContextCharts (X := X))
+    (hconst :
+      ∀ (W V : S.category) (i : E.Index) (a : U.Atom),
+        R.violationSection W i a = R.violationSection V i a) :
+    EquationContextChartProducer R C where
+  violation_compatible :=
+    R.violation_compatible_of_contextIndependent C hconst
 
 end EquationContextChartProducer
 
@@ -1638,6 +1730,60 @@ theorem gluedWitnessIdeal_on_contextChart
     exact ⟨R.gluedViolationSection C P i a, ⟨a, rfl⟩,
       R.gluedViolationSection_on_chart C P i a W⟩
 
+/--
+When the realization's universal sections do not depend on the equation
+context, the glued section is that common section.
+
+This identifies the locally generated route with the ambient route; it is the
+comparison that lets the pre-existing intrinsic statements be recovered from
+the chart-cover-relative ones.
+-/
+theorem gluedViolationSection_eq_violationSection
+    (C : EquationContextCharts (X := X))
+    (P : EquationContextChartProducer R C)
+    (hconst :
+      ∀ (W V : S.category) (i : E.Index) (a : U.Atom),
+        R.violationSection W i a = R.violationSection V i a)
+    (i : E.Index) (a : U.Atom) (base : S.category) :
+    R.gluedViolationSection C P i a = R.violationSection base i a := by
+  have hspec := Classical.choose_spec
+    (X.underlying.sheaf.existsUnique_gluing'
+      (contextChartOpen C)
+      ⊤
+      (fun _ => homOfLE le_top)
+      (contextChartOpen_cover C)
+      (fun V => R.contextChartOpenViolation C V i a)
+      (P.violation_compatible i a))
+  refine (hspec.2 (R.violationSection base i a) ?_).symm
+  intro W
+  dsimp only
+  rw [R.contextChartOpenViolation_eq_restrict C W i a, hconst W base i a]
+  rfl
+
+/--
+The locally generated witness ideal is the ambient witness ideal whenever the
+universal sections are context independent.
+-/
+theorem gluedWitnessIdeal_eq_globalWitnessIdeal
+    (C : EquationContextCharts (X := X))
+    (P : EquationContextChartProducer R C)
+    (hconst :
+      ∀ (W V : S.category) (i : E.Index) (a : U.Atom),
+        R.violationSection W i a = R.violationSection V i a)
+    (base : S.category) (i : E.Index) :
+    R.gluedWitnessIdeal C P i = R.globalWitnessIdeal i := by
+  rw [gluedWitnessIdeal, R.globalWitnessIdeal_eq_span i]
+  congr 1
+  ext x
+  constructor
+  · rintro ⟨a, rfl⟩
+    exact ⟨(base, a),
+      (R.gluedViolationSection_eq_violationSection C P hconst i a base).symm⟩
+  · rintro ⟨wa, rfl⟩
+    refine ⟨wa.2, ?_⟩
+    rw [R.gluedViolationSection_eq_violationSection C P hconst i wa.2 base]
+    exact (hconst wa.1 base i wa.2).symm
+
 /-- Context restriction carries the target chart ideal onto the source chart ideal. -/
 theorem contextChartWitnessIdeal_map_transition
     (C : EquationContextCharts (X := X))
@@ -1660,6 +1806,35 @@ theorem contextChartWitnessIdeal_map_transition
       (E.violationCoordinate target i a), ⟨a, rfl⟩, ?_⟩
     rw [R.contextChartEvaluation_natural C f,
       E.violationCoordinate_restrict f i a]
+
+/--
+The canonical comparison from the target context-chart ideal to the source
+context-chart ideal.
+
+Its underlying map is restriction along the selected context transition; it
+mentions no localization datum.
+-/
+noncomputable def contextChartWitnessIdealComparison
+    (C : EquationContextCharts (X := X))
+    {source target : S.category} (f : source ⟶ target)
+    (i : E.Index) :
+    letI := (C.transition f).appTop.hom.toAlgebra
+    (R.contextChartWitnessIdeal C target i) →ₗ[Γ(C.chart target, ⊤)]
+      (R.contextChartWitnessIdeal C source i) :=
+  letI := (C.transition f).appTop.hom.toAlgebra
+  { toFun := fun m =>
+      ⟨(C.transition f).appTop.hom m.1, by
+        rw [← R.contextChartWitnessIdeal_map_transition C f i]
+        exact Ideal.mem_map_of_mem _ m.2⟩
+    map_add' := by
+      intro x y
+      exact Subtype.ext (map_add _ _ _)
+    map_smul' := by
+      intro c x
+      apply Subtype.ext
+      change (C.transition f).appTop.hom (c * x.1) =
+        (C.transition f).appTop.hom c * (C.transition f).appTop.hom x.1
+      exact map_mul _ _ _ }
 
 /--
 The actual context transition ring maps are localizations.
@@ -1764,18 +1939,67 @@ noncomputable def equationSchemeWitnessIdealLocalizes
   R.contextWitnessIdealLocalizes C P.localization f i
 
 /--
+The selected context-transition localization discharges the base-change
+comparison for every actual context restriction.
+-/
+theorem contextChartWitnessIdeal_isBaseChange
+    (C : EquationContextCharts (X := X))
+    (P : EquationSchemeChartProducer R C)
+    {source target : S.category} (f : source ⟶ target)
+    (i : E.Index) :
+    letI := (C.transition f).appTop.hom.toAlgebra
+    IsBaseChange Γ(C.chart source, ⊤)
+      (R.contextChartWitnessIdealComparison C f i) := by
+  classical
+  letI := (C.transition f).appTop.hom.toAlgebra
+  letI : IsLocalization (P.localization.submonoid f)
+      Γ(C.chart source, ⊤) :=
+    P.localization.isLocalization f
+  have hmap :
+      Submodule.localized' Γ(C.chart source, ⊤)
+          (P.localization.submonoid f)
+          (Algebra.linearMap Γ(C.chart target, ⊤) Γ(C.chart source, ⊤))
+          (R.contextChartWitnessIdeal C target i) =
+        R.contextChartWitnessIdeal C source i := by
+    refine Eq.trans ?_ (R.contextChartWitnessIdeal_map_transition C f i)
+    simpa only [RingHom.algebraMap_toAlgebra] using
+      Ideal.localized'_eq_map Γ(C.chart source, ⊤)
+        (P.localization.submonoid f)
+        (R.contextChartWitnessIdeal C target i)
+  set e :=
+    (LinearEquiv.ofEq _ _ hmap).restrictScalars Γ(C.chart target, ⊤)
+  set g :=
+    Submodule.toLocalized' Γ(C.chart source, ⊤)
+      (P.localization.submonoid f)
+      (Algebra.linearMap Γ(C.chart target, ⊤) Γ(C.chart source, ⊤))
+      (R.contextChartWitnessIdeal C target i)
+  have hcomp :
+      R.contextChartWitnessIdealComparison C f i =
+        e.toLinearMap ∘ₗ g := by
+    ext m
+    rfl
+  rw [hcomp]
+  haveI : IsLocalizedModule (P.localization.submonoid f) g :=
+    Submodule.isLocalizedModule _ _ _ _
+  haveI : IsLocalizedModule (P.localization.submonoid f)
+      (e.toLinearMap ∘ₗ g) :=
+    IsLocalizedModule.of_linearEquiv (P.localization.submonoid f) g e
+  exact IsLocalizedModule.isBaseChange (P.localization.submonoid f)
+    Γ(C.chart source, ⊤) _
+
+/--
 Pulling a universal violation section to the actual test chart gives the
 represented coordinate owned by that chart context.
 -/
 theorem contextTest_violation_eq_evaluation
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (P : EquationContextChartProducer R C)
     {T : AlgebraicGeometry.Scheme}
     (s : T ⟶ R.realizationScheme)
     (W : S.category) (i : E.Index) (a : U.Atom) :
     (R.contextTestChartMap C s W).appTop
         ((s ≫ R.realizationImmersion).appTop
-          (R.gluedViolationSection C P.coordinate i a)) =
+          (R.gluedViolationSection C P i a)) =
       R.contextTestEvaluation C s W
         (E.violationCoordinate W i a) := by
   have hpath :
@@ -1791,15 +2015,15 @@ theorem contextTest_violation_eq_evaluation
   change
     (R.contextTestChartMap C s W).appTop
         ((s ≫ R.realizationImmersion).appTop
-          (R.gluedViolationSection C P.coordinate i a)) =
+          (R.gluedViolationSection C P i a)) =
       (R.contextTestToRealizationChart C s W).appTop
         ((R.contextRealizationToAmbientChart C W).appTop
           (R.contextChartEvaluation C W
             (E.violationCoordinate W i a)))
   rw [← R.gluedViolationSection_on_chart
-    C P.coordinate i a W]
+    C P i a W]
   exact congrArg
-    (fun q => q (R.gluedViolationSection C P.coordinate i a))
+    (fun q => q (R.gluedViolationSection C P i a))
     htop.symm
 
 /--
@@ -1873,16 +2097,16 @@ The ideal on an ambient atlas chart generated by the glued local
 -/
 noncomputable def gluedChartWitnessIdeal
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (P : EquationContextChartProducer R C)
     (j : X.atlas.Index) (i : E.Index) :
     Ideal Γ((X.atlas.chart j).domain, ⊤) :=
   Ideal.map (X.atlas.chart j).map.appTop.hom
-    (R.gluedWitnessIdeal C P.coordinate i)
+    (R.gluedWitnessIdeal C P i)
 
 /-- Its restriction along the left projection of an actual atlas overlap. -/
 noncomputable def gluedOverlapWitnessIdealLeft
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (P : EquationContextChartProducer R C)
     (j l : X.atlas.Index) (i : E.Index) :
     Ideal Γ(R.overlapChart j l, ⊤) :=
   Ideal.map (R.overlapToLeft j l).appTop.hom
@@ -1891,11 +2115,91 @@ noncomputable def gluedOverlapWitnessIdealLeft
 /-- Its restriction along the right projection of an actual atlas overlap. -/
 noncomputable def gluedOverlapWitnessIdealRight
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (P : EquationContextChartProducer R C)
     (j l : X.atlas.Index) (i : E.Index) :
     Ideal Γ(R.overlapChart j l, ⊤) :=
   Ideal.map (R.overlapToRight j l).appTop.hom
     (R.gluedChartWitnessIdeal C P l i)
+
+/--
+The canonical comparison from the ideal generated on an atlas chart to the
+ideal generated on an actual atlas overlap.
+
+Its underlying map is restriction along the actual left projection.  No
+localization datum enters the definition, so `IsBaseChange` for this map is a
+real condition on the selected atlas rather than a property of a chosen
+equivalence.
+-/
+noncomputable def gluedOverlapWitnessIdealComparison
+    (C : EquationContextCharts (X := X))
+    (P : EquationContextChartProducer R C)
+    (j l : X.atlas.Index) (i : E.Index) :
+    letI := (R.overlapToLeft j l).appTop.hom.toAlgebra
+    (R.gluedChartWitnessIdeal C P j i) →ₗ[
+        Γ((X.atlas.chart j).domain, ⊤)]
+      (R.gluedOverlapWitnessIdealLeft C P j l i) :=
+  letI := (R.overlapToLeft j l).appTop.hom.toAlgebra
+  { toFun := fun m =>
+      ⟨(R.overlapToLeft j l).appTop.hom m.1,
+        Ideal.mem_map_of_mem _ m.2⟩
+    map_add' := by
+      intro x y
+      exact Subtype.ext (map_add _ _ _)
+    map_smul' := by
+      intro c x
+      apply Subtype.ext
+      change (R.overlapToLeft j l).appTop.hom (c * x.1) =
+        (R.overlapToLeft j l).appTop.hom c *
+          (R.overlapToLeft j l).appTop.hom x.1
+      exact map_mul _ _ _ }
+
+/--
+The selected atlas localization discharges the base-change comparison for every
+actual atlas overlap.
+-/
+theorem gluedOverlapWitnessIdeal_isBaseChange
+    (C : EquationContextCharts (X := X))
+    (P : EquationContextChartProducer R C)
+    (L : EquationAmbientChartLocalization (raw := raw) (X := X))
+    (j l : X.atlas.Index) (i : E.Index) :
+    letI := (R.overlapToLeft j l).appTop.hom.toAlgebra
+    IsBaseChange Γ(R.overlapChart j l, ⊤)
+      (R.gluedOverlapWitnessIdealComparison C P j l i) := by
+  classical
+  letI := (R.overlapToLeft j l).appTop.hom.toAlgebra
+  letI : IsLocalization (L.submonoid j l) Γ(R.overlapChart j l, ⊤) :=
+    L.isLocalization j l
+  have hmap :
+      Submodule.localized' Γ(R.overlapChart j l, ⊤) (L.submonoid j l)
+          (Algebra.linearMap Γ((X.atlas.chart j).domain, ⊤)
+            Γ(R.overlapChart j l, ⊤))
+          (R.gluedChartWitnessIdeal C P j i) =
+        R.gluedOverlapWitnessIdealLeft C P j l i := by
+    simpa only [gluedOverlapWitnessIdealLeft,
+      RingHom.algebraMap_toAlgebra] using
+        Ideal.localized'_eq_map Γ(R.overlapChart j l, ⊤)
+          (L.submonoid j l) (R.gluedChartWitnessIdeal C P j i)
+  set e :=
+    (LinearEquiv.ofEq _ _ hmap).restrictScalars
+      Γ((X.atlas.chart j).domain, ⊤)
+  set f :=
+    Submodule.toLocalized' Γ(R.overlapChart j l, ⊤)
+      (L.submonoid j l)
+      (Algebra.linearMap Γ((X.atlas.chart j).domain, ⊤)
+        Γ(R.overlapChart j l, ⊤))
+      (R.gluedChartWitnessIdeal C P j i)
+  have hcomp :
+      R.gluedOverlapWitnessIdealComparison C P j l i =
+        e.toLinearMap ∘ₗ f := by
+    ext m
+    rfl
+  rw [hcomp]
+  haveI : IsLocalizedModule (L.submonoid j l) f :=
+    Submodule.isLocalizedModule _ _ _ _
+  haveI : IsLocalizedModule (L.submonoid j l) (e.toLinearMap ∘ₗ f) :=
+    IsLocalizedModule.of_linearEquiv (L.submonoid j l) f e
+  exact IsLocalizedModule.isBaseChange (L.submonoid j l)
+    Γ(R.overlapChart j l, ⊤) _
 
 /--
 The complete producer supplies the tensor comparison along every actual
@@ -1903,7 +2207,7 @@ atlas-overlap localization.
 -/
 noncomputable def gluedWitnessIdealLocalizes
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (P : EquationContextChartProducer R C)
     (L : EquationAmbientChartLocalization (raw := raw) (X := X))
     (j l : X.atlas.Index) (i : E.Index) :
     letI := (R.overlapToLeft j l).appTop.hom.toAlgebra
@@ -1943,7 +2247,7 @@ no overlap equality is accepted as producer data.
 -/
 theorem gluedOverlapWitnessIdeal_left_eq_right
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (P : EquationContextChartProducer R C)
     (j l : X.atlas.Index) (i : E.Index) :
     R.gluedOverlapWitnessIdealLeft C P j l i =
       R.gluedOverlapWitnessIdealRight C P j l i := by
@@ -1958,7 +2262,7 @@ theorem gluedOverlapWitnessIdeal_left_eq_right
   simp only [AlgebraicGeometry.Scheme.Hom.comp_appTop] at h
   exact congrArg
     (fun q : Γ(X.underlying, ⊤) →+* Γ(R.overlapChart j l, ⊤) =>
-      Ideal.map q (R.gluedWitnessIdeal C P.coordinate i))
+      Ideal.map q (R.gluedWitnessIdeal C P i))
     (congrArg CommRingCat.Hom.hom h)
 
 /--
@@ -2111,10 +2415,10 @@ Its ambient generators are first constructed from the compatible local
 -/
 noncomputable def equationWitnessIdealSheaf
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (P : EquationContextChartProducer R C)
     (i : E.Index) :
     R.realizationScheme.IdealSheafData :=
-  (R.gluedWitnessIdealSheaf C P.coordinate i).comap
+  (R.gluedWitnessIdealSheaf C P i).comap
     R.realizationImmersion
 
 /-- The required generated ideal sheaf on the realization scheme. -/
@@ -2125,7 +2429,7 @@ noncomputable def generatedIdealSheaf :
 /-- The required ideal sheaf generated through the local equation charts. -/
 noncomputable def equationGeneratedIdealSheaf
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C) :
+    (P : EquationContextChartProducer R C) :
     R.realizationScheme.IdealSheafData :=
   ⨆ i : E.RequiredIndex, R.equationWitnessIdealSheaf C P i.1
 
@@ -2202,9 +2506,9 @@ accepted as an ideal equality field.
 -/
 theorem contextWitnessIdealChart
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (P : EquationContextChartProducer R C)
     (W : S.category) (i : E.Index) :
-    (R.gluedWitnessIdealSheaf C P.coordinate i).comap (C.chartMap W) =
+    (R.gluedWitnessIdealSheaf C P i).comap (C.chartMap W) =
       Scheme.IdealSheafData.ofIdealTop
         (R.contextChartWitnessIdeal C W i) := by
   letI : IsOpenImmersion (C.chartMap W) :=
@@ -2213,7 +2517,7 @@ theorem contextWitnessIdealChart
   rw [gluedWitnessIdealSheaf,
     ofIdealTop_comap_of_isOpenImmersion]
   exact congrArg Scheme.IdealSheafData.ofIdealTop
-    (R.gluedWitnessIdeal_on_contextChart C P.coordinate W i)
+    (R.gluedWitnessIdeal_on_contextChart C P W i)
 
 /--
 The same glued ideal sheaf restricts to the generated ideal on every actual
@@ -2221,9 +2525,9 @@ ambient atlas chart.
 -/
 theorem gluedWitnessIdealSheaf_on_atlasChart
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (P : EquationContextChartProducer R C)
     (j : X.atlas.Index) (i : E.Index) :
-    (R.gluedWitnessIdealSheaf C P.coordinate i).comap
+    (R.gluedWitnessIdealSheaf C P i).comap
         (X.atlas.chart j).map =
       Scheme.IdealSheafData.ofIdealTop
         (R.gluedChartWitnessIdeal C P j i) := by
@@ -2236,62 +2540,70 @@ theorem gluedWitnessIdealSheaf_on_atlasChart
     gluedChartWitnessIdeal]
 
 /--
-All Definition 5.2B producer clauses for one equation on the actual context
-cover and ambient atlas: chart generation, transition localization,
-pairwise overlap agreement, and Mathlib's quasi-coherent ideal-sheaf
-condition.
+Definition 5.2B's chart clauses for one equation on the actual context cover
+and ambient atlas.
+
+Only the first two conjuncts are producer obligations in Definition 5.2B's
+sense: the context-chart generation identity, and the base-change property of
+the canonical context-transition comparison.  The last two are derived
+identities that the glued construction satisfies definitionally — the atlas
+comparison is the pushforward of the same global ideal along the two
+projections of one Scheme pullback — and are recorded here only so that the
+package states the whole chart picture in one place.
+
+Mathlib's affine-basic-open localization criterion is deliberately *not* a
+conjunct: `Scheme.IdealSheafData` carries it as a structure field, so every
+ideal sheaf satisfies it and asserting it here would add no information.
 -/
 def EquationContextWitnessChartRealized
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
-    (L : EquationAmbientChartLocalization (raw := raw) (X := X))
+    (P : EquationContextChartProducer R C)
     (i : E.Index) : Prop :=
   (∀ W : S.category,
-    (R.gluedWitnessIdealSheaf C P.coordinate i).comap
+    (R.gluedWitnessIdealSheaf C P i).comap
         (C.chartMap W) =
       Scheme.IdealSheafData.ofIdealTop
         (R.contextChartWitnessIdeal C W i)) ∧
   (∀ {source target : S.category} (f : source ⟶ target),
-    Function.Bijective
-      (R.equationSchemeWitnessIdealLocalizes C P f i)) ∧
+    letI := (C.transition f).appTop.hom.toAlgebra
+    IsBaseChange Γ(C.chart source, ⊤)
+      (R.contextChartWitnessIdealComparison C f i)) ∧
+  (∀ j l : X.atlas.Index,
+    letI := (R.overlapToLeft j l).appTop.hom.toAlgebra
+    IsBaseChange Γ(R.overlapChart j l, ⊤)
+      (R.gluedOverlapWitnessIdealComparison C P j l i)) ∧
   (∀ j : X.atlas.Index,
-    (R.gluedWitnessIdealSheaf C P.coordinate i).comap
+    (R.gluedWitnessIdealSheaf C P i).comap
         (X.atlas.chart j).map =
       Scheme.IdealSheafData.ofIdealTop
         (R.gluedChartWitnessIdeal C P j i)) ∧
-  (∀ j l : X.atlas.Index,
-    Function.Bijective
-      (R.gluedWitnessIdealLocalizes C P L j l i)) ∧
-  (∀ j l : X.atlas.Index,
+  ∀ j l : X.atlas.Index,
     R.gluedOverlapWitnessIdealLeft C P j l i =
-      R.gluedOverlapWitnessIdealRight C P j l i) ∧
-  ∀ (V : R.realizationScheme.affineOpens)
-    (g : Γ(R.realizationScheme, V)),
-    Ideal.map
-        (R.realizationScheme.presheaf.map
-          (homOfLE (R.realizationScheme.basicOpen_le g)).op).hom
-        ((R.equationWitnessIdealSheaf C P i).ideal V) =
-      (R.equationWitnessIdealSheaf C P i).ideal
-        (R.realizationScheme.affineBasicOpen g)
+      R.gluedOverlapWitnessIdealRight C P j l i
 
-/-- The complete chart producer constructs every chart-realization clause. -/
+/--
+The complete chart producer constructs every chart-realization clause.
+
+The context-transition localization is consumed by the second conjunct and the
+ambient atlas localization by the third; neither appears in the conclusion,
+which speaks only of canonical comparison maps.
+-/
 theorem equationContextWitnessChartRealized
     (C : EquationContextCharts (X := X))
     (P : EquationSchemeChartProducer R C)
     (L : EquationAmbientChartLocalization (raw := raw) (X := X))
     (i : E.Index) :
-    R.EquationContextWitnessChartRealized C P L i := by
-  refine ⟨fun W => R.contextWitnessIdealChart C P W i, ?_, ?_, ?_, ?_, ?_⟩
+    R.EquationContextWitnessChartRealized C P.coordinate i := by
+  refine ⟨fun W => R.contextWitnessIdealChart C P.coordinate W i,
+    ?_, ?_, ?_, ?_⟩
   · intro source target f
-    exact (R.equationSchemeWitnessIdealLocalizes C P f i).bijective
+    exact R.contextChartWitnessIdeal_isBaseChange C P f i
+  · intro j l
+    exact R.gluedOverlapWitnessIdeal_isBaseChange C P.coordinate L j l i
   · intro j
-    exact R.gluedWitnessIdealSheaf_on_atlasChart C P j i
+    exact R.gluedWitnessIdealSheaf_on_atlasChart C P.coordinate j i
   · intro j l
-    exact (R.gluedWitnessIdealLocalizes C P L j l i).bijective
-  · intro j l
-    exact R.gluedOverlapWitnessIdeal_left_eq_right C P j l i
-  · intro V g
-    exact (R.equationWitnessIdealSheaf C P i).map_ideal_basicOpen V g
+    exact R.gluedOverlapWitnessIdeal_left_eq_right C P.coordinate j l i
 
 /--
 The equalizer ideal sheaf restricts on every actual ambient chart to the
@@ -2786,18 +3098,18 @@ producer package.
 private theorem equationHoldsAlong_iff_violationVanishes
     (hR : IsEquationObservableRealization R)
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (P : EquationContextChartProducer R C)
     {T : AlgebraicGeometry.Scheme}
     (s : T ⟶ R.realizationScheme) (i : E.Index) :
     R.EquationHoldsAlong C s i ↔
       ∀ a : U.Atom,
         (s ≫ R.realizationImmersion).appTop
-          (R.gluedViolationSection C P.coordinate i a) = 0 := by
+          (R.gluedViolationSection C P i a) = 0 := by
   constructor
   · intro h a
     apply AlgebraicGeometry.Scheme.zero_of_zero_cover
       ((s ≫ R.realizationImmersion).appTop
-        (R.gluedViolationSection C P.coordinate i a))
+        (R.gluedViolationSection C P i a))
       (R.contextTestCover C s)
     intro W
     have hlocal :
@@ -2824,7 +3136,7 @@ predicates or manually supplied ideal equalities.
 theorem equationHoldsAlong_iff_witnessIdeal
     (hR : IsEquationObservableRealization R)
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (P : EquationContextChartProducer R C)
     {T : AlgebraicGeometry.Scheme}
     (s : T ⟶ R.realizationScheme) (i : E.Index) :
     R.EquationHoldsAlong C s i ↔
@@ -2832,13 +3144,13 @@ theorem equationHoldsAlong_iff_witnessIdeal
   have hviolation :
       (∀ a : U.Atom,
         (s ≫ R.realizationImmersion).appTop
-          (R.gluedViolationSection C P.coordinate i a) = 0) ↔
-        (R.gluedWitnessIdealSheaf C P.coordinate i).comap
+          (R.gluedViolationSection C P i a) = 0) ↔
+        (R.gluedWitnessIdealSheaf C P i).comap
           (s ≫ R.realizationImmersion) = ⊥ := by
     rw [gluedWitnessIdealSheaf, gluedWitnessIdeal]
     exact vanish_iff_ofIdealTop_span_comap_eq_bot
       (raw := raw) (X := X)
-      (R.gluedViolationSection C P.coordinate i)
+      (R.gluedViolationSection C P i)
       (s ≫ R.realizationImmersion)
   rw [R.equationHoldsAlong_iff_violationVanishes hR C P s i,
     equationWitnessIdealSheaf,
@@ -2849,7 +3161,7 @@ theorem equationHoldsAlong_iff_witnessIdeal
 theorem equationHoldsAlong_comp
     (hR : IsEquationObservableRealization R)
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (P : EquationContextChartProducer R C)
     {T T' : AlgebraicGeometry.Scheme}
     (s : T ⟶ R.realizationScheme) (f : T' ⟶ T)
     (i : E.Index) (h : R.EquationHoldsAlong C s i) :
@@ -2925,14 +3237,14 @@ theorem witnessIdeal_iff_nonempty_factorsThrough
 /-- The closed zero locus generated from the local equation-chart sections. -/
 noncomputable def equationGeneratedClosedSubscheme
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (P : EquationContextChartProducer R C)
     (i : E.Index) : AlgebraicGeometry.Scheme :=
   (R.equationWitnessIdealSheaf C P i).subscheme
 
 /-- The canonical immersion of the locally generated equation zero locus. -/
 noncomputable def equationGeneratedClosedImmersion
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (P : EquationContextChartProducer R C)
     (i : E.Index) :
     R.equationGeneratedClosedSubscheme C P i ⟶
       R.realizationScheme :=
@@ -2941,7 +3253,7 @@ noncomputable def equationGeneratedClosedImmersion
 /-- The locally generated equation zero locus is a closed subscheme. -/
 theorem equationGeneratedClosedImmersion_isClosedImmersion
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (P : EquationContextChartProducer R C)
     (i : E.Index) :
     IsClosedImmersion (R.equationGeneratedClosedImmersion C P i) := by
   change IsClosedImmersion
@@ -2951,7 +3263,7 @@ theorem equationGeneratedClosedImmersion_isClosedImmersion
 /-- Its immersion kernel is the sheaf generated from local `η_W(ν)` sections. -/
 @[simp] theorem equationGeneratedClosedImmersion_ker
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (P : EquationContextChartProducer R C)
     (i : E.Index) :
     (R.equationGeneratedClosedImmersion C P i).ker =
       R.equationWitnessIdealSheaf C P i := by
@@ -2962,7 +3274,7 @@ theorem equationGeneratedClosedImmersion_isClosedImmersion
 /-- Factorizations through the locally generated equation zero locus. -/
 def FactorsThroughEquationGeneratedClosedSubscheme
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (P : EquationContextChartProducer R C)
     (i : E.Index)
     {T : AlgebraicGeometry.Scheme}
     (s : T ⟶ R.realizationScheme) :=
@@ -2972,7 +3284,7 @@ def FactorsThroughEquationGeneratedClosedSubscheme
 /-- The locally generated witness ideal vanishes exactly on its zero locus. -/
 theorem equationWitnessIdeal_iff_nonempty_factorsThrough
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (P : EquationContextChartProducer R C)
     {T : AlgebraicGeometry.Scheme}
     (s : T ⟶ R.realizationScheme) (i : E.Index) :
     (R.equationWitnessIdealSheaf C P i).comap s = ⊥ ↔
@@ -3011,7 +3323,7 @@ through its generated closed zero locus.
 theorem equationHoldsAlong_iff_nonempty_factorsThrough
     (hR : IsEquationObservableRealization R)
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (P : EquationContextChartProducer R C)
     {T : AlgebraicGeometry.Scheme}
     (s : T ⟶ R.realizationScheme) (i : E.Index) :
     R.EquationHoldsAlong C s i ↔
@@ -3034,24 +3346,26 @@ theorem equationIdealFactorizationChartCorrespondence
     {T : AlgebraicGeometry.Scheme}
     (s : T ⟶ R.realizationScheme) (i : E.Index) :
     ((R.EquationHoldsAlong C s i ↔
-        (R.equationWitnessIdealSheaf C P i).comap s = ⊥) ∧
-      ((R.equationWitnessIdealSheaf C P i).comap s = ⊥ ↔
+        (R.equationWitnessIdealSheaf C P.coordinate i).comap s = ⊥) ∧
+      ((R.equationWitnessIdealSheaf C P.coordinate i).comap s = ⊥ ↔
         Nonempty
-          (R.FactorsThroughEquationGeneratedClosedSubscheme C P i s))) ∧
-      R.EquationContextWitnessChartRealized C P L i := by
-  exact
-    ⟨⟨R.equationHoldsAlong_iff_witnessIdeal hR C P s i,
-        R.equationWitnessIdeal_iff_nonempty_factorsThrough C P s i⟩,
-      R.equationContextWitnessChartRealized C P L i⟩
+          (R.FactorsThroughEquationGeneratedClosedSubscheme
+            C P.coordinate i s))) ∧
+      R.EquationContextWitnessChartRealized C P.coordinate i :=
+  ⟨⟨R.equationHoldsAlong_iff_witnessIdeal hR C P.coordinate s i,
+      R.equationWitnessIdeal_iff_nonempty_factorsThrough C P.coordinate s i⟩,
+    R.equationContextWitnessChartRealized C P L i⟩
 
 /--
-Part III, Theorem 5.2C, projected from the complete chart correspondence.
+Part III, Theorem 5.2C: the ideal/factorization pair for one equation.
+
+The statement needs the context-chart producer only; the ambient atlas
+localization belongs to the chart theorem above and is not a premise here.
 -/
 theorem equationIdealFactorizationCorrespondence
     (hR : IsEquationObservableRealization R)
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
-    (L : EquationAmbientChartLocalization (raw := raw) (X := X))
+    (P : EquationContextChartProducer R C)
     {T : AlgebraicGeometry.Scheme}
     (s : T ⟶ R.realizationScheme) (i : E.Index) :
     (R.EquationHoldsAlong C s i ↔
@@ -3059,13 +3373,14 @@ theorem equationIdealFactorizationCorrespondence
     ((R.equationWitnessIdealSheaf C P i).comap s = ⊥ ↔
       Nonempty
         (R.FactorsThroughEquationGeneratedClosedSubscheme C P i s)) :=
-  (R.equationIdealFactorizationChartCorrespondence hR C P L s i).1
+  ⟨R.equationHoldsAlong_iff_witnessIdeal hR C P s i,
+    R.equationWitnessIdeal_iff_nonempty_factorsThrough C P s i⟩
 
 /-- Required residual lawfulness is exactly generated-ideal vanishing. -/
 theorem equationLawfulAlong_iff_generatedIdeal
     (hR : IsEquationObservableRealization R)
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (P : EquationContextChartProducer R C)
     {T : AlgebraicGeometry.Scheme}
     (s : T ⟶ R.realizationScheme) :
     R.EquationLawfulAlong C s ↔
@@ -3143,14 +3458,14 @@ theorem generatedIdeal_iff_nonempty_factorsThrough
 /-- The required lawful zero locus generated from compatible local equations. -/
 noncomputable def equationGeneratedLawfulClosedSubscheme
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C) :
+    (P : EquationContextChartProducer R C) :
     AlgebraicGeometry.Scheme :=
   (R.equationGeneratedIdealSheaf C P).subscheme
 
 /-- The canonical immersion of the locally generated required lawful locus. -/
 noncomputable def equationGeneratedLawfulClosedImmersion
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C) :
+    (P : EquationContextChartProducer R C) :
     R.equationGeneratedLawfulClosedSubscheme C P ⟶
       R.realizationScheme :=
   (R.equationGeneratedIdealSheaf C P).subschemeι
@@ -3158,7 +3473,7 @@ noncomputable def equationGeneratedLawfulClosedImmersion
 /-- The locally generated required lawful map is a closed immersion. -/
 theorem equationGeneratedLawfulClosedImmersion_isClosedImmersion
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C) :
+    (P : EquationContextChartProducer R C) :
     IsClosedImmersion
       (R.equationGeneratedLawfulClosedImmersion C P) := by
   change IsClosedImmersion
@@ -3168,7 +3483,7 @@ theorem equationGeneratedLawfulClosedImmersion_isClosedImmersion
 /-- Its kernel is the required sum of locally generated witness ideals. -/
 @[simp] theorem equationGeneratedLawfulClosedImmersion_ker
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C) :
+    (P : EquationContextChartProducer R C) :
     (R.equationGeneratedLawfulClosedImmersion C P).ker =
       R.equationGeneratedIdealSheaf C P := by
   change (R.equationGeneratedIdealSheaf C P).subschemeι.ker =
@@ -3178,7 +3493,7 @@ theorem equationGeneratedLawfulClosedImmersion_isClosedImmersion
 /-- Factorizations through the locally generated required lawful locus. -/
 def FactorsThroughEquationGeneratedLawfulClosedSubscheme
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (P : EquationContextChartProducer R C)
     {T : AlgebraicGeometry.Scheme}
     (s : T ⟶ R.realizationScheme) :=
   {t : T ⟶ R.equationGeneratedLawfulClosedSubscheme C P //
@@ -3187,7 +3502,7 @@ def FactorsThroughEquationGeneratedLawfulClosedSubscheme
 /-- Required local-equation ideal vanishing is exactly actual factorization. -/
 theorem equationGeneratedIdeal_iff_nonempty_factorsThrough
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
+    (P : EquationContextChartProducer R C)
     {T : AlgebraicGeometry.Scheme}
     (s : T ⟶ R.realizationScheme) :
     (R.equationGeneratedIdealSheaf C P).comap s = ⊥ ↔
@@ -3232,26 +3547,27 @@ theorem lawfulnessIdealFactorizationChartCorrespondence
     {T : AlgebraicGeometry.Scheme}
     (s : T ⟶ R.realizationScheme) :
     ((R.EquationLawfulAlong C s ↔
-        (R.equationGeneratedIdealSheaf C P).comap s = ⊥) ∧
-      ((R.equationGeneratedIdealSheaf C P).comap s = ⊥ ↔
+        (R.equationGeneratedIdealSheaf C P.coordinate).comap s = ⊥) ∧
+      ((R.equationGeneratedIdealSheaf C P.coordinate).comap s = ⊥ ↔
         Nonempty
-          (R.FactorsThroughEquationGeneratedLawfulClosedSubscheme C P s))) ∧
+          (R.FactorsThroughEquationGeneratedLawfulClosedSubscheme
+            C P.coordinate s))) ∧
       ∀ i : E.RequiredIndex,
-        R.EquationContextWitnessChartRealized C P L i.1 := by
-  exact
-    ⟨⟨R.equationLawfulAlong_iff_generatedIdeal hR C P s,
-        R.equationGeneratedIdeal_iff_nonempty_factorsThrough C P s⟩,
-      fun i => R.equationContextWitnessChartRealized C P L i.1⟩
+        R.EquationContextWitnessChartRealized C P.coordinate i.1 :=
+  ⟨⟨R.equationLawfulAlong_iff_generatedIdeal hR C P.coordinate s,
+      R.equationGeneratedIdeal_iff_nonempty_factorsThrough C P.coordinate s⟩,
+    fun i => R.equationContextWitnessChartRealized C P L i.1⟩
 
 /--
-The required-law ideal/factorization correspondence, projected from the
-complete context-chart realization theorem.
+The required-law ideal/factorization correspondence.
+
+As above, only the context-chart producer is needed; the ambient atlas
+localization stays with the chart theorem.
 -/
 theorem lawfulnessIdealFactorizationCorrespondence
     (hR : IsEquationObservableRealization R)
     (C : EquationContextCharts (X := X))
-    (P : EquationSchemeChartProducer R C)
-    (L : EquationAmbientChartLocalization (raw := raw) (X := X))
+    (P : EquationContextChartProducer R C)
     {T : AlgebraicGeometry.Scheme}
     (s : T ⟶ R.realizationScheme) :
     (R.EquationLawfulAlong C s ↔
@@ -3259,7 +3575,121 @@ theorem lawfulnessIdealFactorizationCorrespondence
     ((R.equationGeneratedIdealSheaf C P).comap s = ⊥ ↔
       Nonempty
         (R.FactorsThroughEquationGeneratedLawfulClosedSubscheme C P s)) :=
-  (R.lawfulnessIdealFactorizationChartCorrespondence hR C P L s).1
+  ⟨R.equationLawfulAlong_iff_generatedIdeal hR C P s,
+    R.equationGeneratedIdeal_iff_nonempty_factorsThrough C P s⟩
+
+/-! ### Comparison with the intrinsic ambient route
+
+The generated objects above are relative to the selected context cover.  When
+the realization's universal sections do not depend on the equation context they
+agree with the chart-independent ambient objects, so every statement that was
+available before the equation-system route is recovered unchanged.
+-/
+
+/-- The locally generated witness ideal sheaf is the ambient one. -/
+theorem equationWitnessIdealSheaf_eq_witnessIdealSheaf
+    (C : EquationContextCharts (X := X))
+    (P : EquationContextChartProducer R C)
+    (hconst :
+      ∀ (W V : S.category) (i : E.Index) (a : U.Atom),
+        R.violationSection W i a = R.violationSection V i a)
+    (base : S.category) (i : E.Index) :
+    R.equationWitnessIdealSheaf C P i = R.witnessIdealSheaf i := by
+  rw [equationWitnessIdealSheaf, witnessIdealSheaf, gluedWitnessIdealSheaf,
+    globalWitnessIdealSheaf,
+    R.gluedWitnessIdeal_eq_globalWitnessIdeal C P hconst base i]
+
+/-- The required generated ideal sheaf is the ambient generated ideal sheaf. -/
+theorem equationGeneratedIdealSheaf_eq_generatedIdealSheaf
+    (C : EquationContextCharts (X := X))
+    (P : EquationContextChartProducer R C)
+    (hconst :
+      ∀ (W V : S.category) (i : E.Index) (a : U.Atom),
+        R.violationSection W i a = R.violationSection V i a)
+    (base : S.category) :
+    R.equationGeneratedIdealSheaf C P = R.generatedIdealSheaf := by
+  rw [equationGeneratedIdealSheaf, generatedIdealSheaf]
+  exact iSup_congr fun i =>
+    R.equationWitnessIdealSheaf_eq_witnessIdealSheaf C P hconst base i.1
+
+/--
+The required generated locus is the pullback of the equation system's own
+obstruction ideal, as in the ambient route.
+-/
+theorem equationGeneratedIdealSheaf_eq_globalObstructionIdealSheaf
+    (C : EquationContextCharts (X := X))
+    (P : EquationContextChartProducer R C)
+    (hconst :
+      ∀ (W V : S.category) (i : E.Index) (a : U.Atom),
+        R.violationSection W i a = R.violationSection V i a)
+    (base : S.category) :
+    R.equationGeneratedIdealSheaf C P =
+      R.globalObstructionIdealSheaf.comap R.realizationImmersion := by
+  rw [R.equationGeneratedIdealSheaf_eq_generatedIdealSheaf C P hconst base]
+  exact R.generatedIdealSheaf_eq_globalObstructionIdealSheaf
+
+/-- Part III, Theorem 5.2C against the intrinsic ambient witness ideal sheaf. -/
+theorem equationHoldsAlong_iff_ambientWitnessIdeal
+    (hR : IsEquationObservableRealization R)
+    (C : EquationContextCharts (X := X))
+    (P : EquationContextChartProducer R C)
+    (hconst :
+      ∀ (W V : S.category) (i : E.Index) (a : U.Atom),
+        R.violationSection W i a = R.violationSection V i a)
+    (base : S.category)
+    {T : AlgebraicGeometry.Scheme}
+    (s : T ⟶ R.realizationScheme) (i : E.Index) :
+    R.EquationHoldsAlong C s i ↔
+      (R.witnessIdealSheaf i).comap s = ⊥ := by
+  rw [← R.equationWitnessIdealSheaf_eq_witnessIdealSheaf C P hconst base i]
+  exact R.equationHoldsAlong_iff_witnessIdeal hR C P s i
+
+/-- Fulfillment is factorization through the intrinsic single-equation locus. -/
+theorem equationHoldsAlong_iff_nonempty_factorsThroughAmbient
+    (hR : IsEquationObservableRealization R)
+    (C : EquationContextCharts (X := X))
+    (P : EquationContextChartProducer R C)
+    (hconst :
+      ∀ (W V : S.category) (i : E.Index) (a : U.Atom),
+        R.violationSection W i a = R.violationSection V i a)
+    (base : S.category)
+    {T : AlgebraicGeometry.Scheme}
+    (s : T ⟶ R.realizationScheme) (i : E.Index) :
+    R.EquationHoldsAlong C s i ↔
+      Nonempty (R.FactorsThroughEquationClosedSubscheme i s) :=
+  (R.equationHoldsAlong_iff_ambientWitnessIdeal hR C P hconst base s i).trans
+    (R.witnessIdeal_iff_nonempty_factorsThrough s i)
+
+/-- Required lawfulness against the intrinsic ambient generated ideal sheaf. -/
+theorem equationLawfulAlong_iff_ambientGeneratedIdeal
+    (hR : IsEquationObservableRealization R)
+    (C : EquationContextCharts (X := X))
+    (P : EquationContextChartProducer R C)
+    (hconst :
+      ∀ (W V : S.category) (i : E.Index) (a : U.Atom),
+        R.violationSection W i a = R.violationSection V i a)
+    (base : S.category)
+    {T : AlgebraicGeometry.Scheme}
+    (s : T ⟶ R.realizationScheme) :
+    R.EquationLawfulAlong C s ↔ R.generatedIdealSheaf.comap s = ⊥ := by
+  rw [← R.equationGeneratedIdealSheaf_eq_generatedIdealSheaf C P hconst base]
+  exact R.equationLawfulAlong_iff_generatedIdeal hR C P s
+
+/-- Required lawfulness is factorization through the intrinsic lawful locus. -/
+theorem equationLawfulAlong_iff_nonempty_factorsThroughLawful
+    (hR : IsEquationObservableRealization R)
+    (C : EquationContextCharts (X := X))
+    (P : EquationContextChartProducer R C)
+    (hconst :
+      ∀ (W V : S.category) (i : E.Index) (a : U.Atom),
+        R.violationSection W i a = R.violationSection V i a)
+    (base : S.category)
+    {T : AlgebraicGeometry.Scheme}
+    (s : T ⟶ R.realizationScheme) :
+    R.EquationLawfulAlong C s ↔
+      Nonempty (R.FactorsThroughLawfulClosedSubscheme s) :=
+  (R.equationLawfulAlong_iff_ambientGeneratedIdeal hR C P hconst base s).trans
+    (R.generatedIdeal_iff_nonempty_factorsThrough s)
 
 end EquationObservableRealization
 

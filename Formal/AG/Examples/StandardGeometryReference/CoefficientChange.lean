@@ -135,23 +135,23 @@ theorem coefficientChange_equationGeometry_realized :
       (∀ i : referenceSite.equationSystem.Index,
         (referenceEquationObservableRealization.equationWitnessIdealSheaf
             referenceEquationContextCharts
-            referenceEquationSchemeChartProducer i).comap
+            referenceEquationContextChartProducer i).comap
               (referenceEquationObservableRealization.flatRealizationBaseChangeMap
                 coefficientChange) =
           referenceEquationObservableRealization.flatBaseChangeEquationWitnessIdealSheaf
             coefficientChange referenceEquationContextCharts
-            referenceEquationSchemeChartProducer i) ∧
+            referenceEquationContextChartProducer i) ∧
       (referenceEquationObservableRealization.equationGeneratedIdealSheaf
           referenceEquationContextCharts
-          referenceEquationSchemeChartProducer).comap
+          referenceEquationContextChartProducer).comap
             (referenceEquationObservableRealization.flatRealizationBaseChangeMap
               coefficientChange) =
         referenceEquationObservableRealization.flatBaseChangeEquationGeneratedIdealSheaf
           coefficientChange referenceEquationContextCharts
-          referenceEquationSchemeChartProducer :=
+          referenceEquationContextChartProducer :=
   referenceEquationObservableRealization.flatBaseChangeEquationGeometry_realized
     coefficientChange referenceEquationContextCharts
-    referenceEquationSchemeChartProducer
+    referenceEquationContextChartProducer
 
 /-- The weak reading transported by the generic semantic-core coefficient construction.
 
