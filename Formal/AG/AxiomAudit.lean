@@ -12099,6 +12099,15 @@ def sagaDescentWitnessLiftFiberStateNonempty :=
 def sagaDescentWitnessEquationGlobalLiftNonempty :=
   @SemanticRepair.Saga.DescentWitness.descent_equationGlobalLift_nonempty
 
+/-- Kernel-audit alias for nontriviality of the descent `H¹`. -/
+def sagaDescentWitnessSemanticH1Nontrivial :=
+  @SemanticRepair.Saga.DescentWitness.descent_semanticH1_nontrivial
+
+/-- Kernel-audit alias for unsatisfiability of the sheaf condition under the
+all-`False` C7 requirements (the reason the descent requirements exist). -/
+def sagaDescentWitnessCircleTwoValuedNotSheaf :=
+  @SemanticRepair.Saga.DescentWitness.circle_constant_not_sheafCondition
+
 /-- Kernel-audit alias for the closing zero-class repair bundle. -/
 def sagaDescentWitnessZeroClassRepair :=
   @SemanticRepair.Saga.DescentWitness.descent_zero_class_repair

@@ -33,8 +33,9 @@ The three previously statement-only surfaces fired here (PR #3801 review):
 3. **Definition 5.3 typical-example nondegenerate firing**:
    `descentLiftFiber` carries the nonzero base reading `B_E = F₂`, `b ≡ 1`
    (`descentLiftFiber_base_ne_zero`), the selected base reading genuinely
-   constrains the state fiber — the zero section of `L_E` is not a state
-   (`descentLiftFiber_zero_not_in_fiber`) — and the generated equation
+   constrains the state fiber — the fiber is nonempty and the zero section
+   of `L_E` is not a state (`descentLiftFiber_state_nonempty`,
+   `descentLiftFiber_zero_not_in_fiber`) — and the generated equation
    residual cochain is not identically zero while its class is a coboundary
    (`descent_equationResidual_ne_zero`,
    `descent_equationResidualClass_isZero`).
@@ -57,7 +58,11 @@ required-support 条項は admissible family に4 chart patch を強制するこ
 topology 所属のためではない)。`supportVisibleOn` を context の**等号**で
 定義するのは、admissible family の patch 集合を分類可能にする
 target-fitting であり、`FiniteModel` の Atom support の観測とは独立の
-selected datum である。
+selected datum である。C7 requirements 側の観察は named 化してある:
+空 family の admissibility は `circleEmptyCoverageFamily`、底 sieve の
+covering 性は `circle_bot_mem_topology`、その帰結としての切断の
+subsingleton 強制と2値 presheaf の充足不能性は
+`circle_sheafCondition_subsingleton` / `circle_constant_not_sheafCondition`。
 
 (ii) **twist の移動**: C7 は restriction に twist `t = (1,0,0,0)` を置き
 atlas を零に取った(→ 非零 class)。本 witness は restriction を零 twist
@@ -66,16 +71,25 @@ atlas を零に取った(→ 非零 class)。本 witness は restriction を零 
 双対な selected data である。零 twist の帰結として、この状態系では
 **任意の** atlas の residual class が零になる
 (`descent_every_atlas_residualClass_isZero` — atlas 選択が買っているのは
-cochain の非零性だけ)。一方で複体の `H¹` 自体は 4-cycle の edge sum に
-より非自明であり、class 零は複体の自明性によるものではない。
+cochain の非零性だけ)。atlas 独立性の一般化を named するのは semantic 側
+のみで、equation 側は選択 atlas の class 零
+(`descent_equationResidualClass_isZero`)を named する。一方で複体の
+`H¹` 自体は 4-cycle の edge sum により非自明であり
+(named witness: `descent_semanticH1_nontrivial`)、class 零は複体の
+自明性によるものではない。
 
 (iii) **lift fiber の分裂性**: `descentLiftFiber` の short exact sequence
 `0 → Q_E → Q_E × B_E → B_E → 0` は**分裂積**であり(`incl = inl`,
 `proj = snd`)、exactness / injectivity は積の構造から自明に充足される。
 非零 base reading `b ≡ 1` は lift 状態を affine fiber
-`{(q, 1)}`(`Q_E`-torsor)へ制限し、lift problem の選択規律を発火させるが、
-residual の値は `Q_E` 成分だけが担い base reading は obstruction に寄与
-しない(X.定義5.3 典型例の一般的性質)。`descentLiftFiber_zero_not_in_fiber`
+`{(q, 1)}`(`Q_E`-torsor)へ制限し、lift problem の選択規律を発火させる。
+residual が `Q_E` 値であることは一般的性質(同じ base reading の2つの
+lift の差は `Q_E` に入る)だが、一般の定義5.3 典型例では `[r_E]` は
+まさに base reading の大域 lift 可能性の障害であり、base reading は
+obstruction が測る当のものである。**本 fixture では**拡大が分裂している
+ため base reading の obstruction への寄与が消える(`(0, b)` が大域切断を
+与える)— class 零の一部は分裂性の帰結である。
+`descentLiftFiber_zero_not_in_fiber`
 は `descentLiftFiber_base_ne_zero` と同内容(`(0 : F₂) ≠ 1`)の fiber 側の
 言い換えであり、独立の証拠ではない。非分裂拡大(例: `ℤ/4` 型)は生成
 `Q_E` の modulus 設計の全面改修を要し、定義5.3 典型例の発火に非分裂性は
@@ -417,6 +431,75 @@ theorem descent_topology_classify {X : descentSite.category} {Sv : Sieve X}
             ((show (chartObj i).ctx = context {i} from rfl).symm.trans habs)
           exact this
         exact absurd this (Finset.singleton_ne_empty i)
+
+/-! ## Why the all-`False` C7 requirements cannot serve §8
+
+Implementation notes (i) の観察の named 化(査読 Lean B lane 第2巡 N1):
+C7 requirements の下では空 family が admissible で、底 sieve が covering
+sieve になり、2値 presheaf は sheaf condition を満たし得ない。 -/
+
+/-- C7 の all-`False` requirements の下では空 family も admissible である
+(可視性条件はすべて空虚、boundary 条項は添字が空で空虚)。 -/
+noncomputable def circleEmptyCoverageFamily (X : CircleWitness.site.category) :
+    Site.AATCoverageFamily circleRequirements contextOverlap X where
+  Index := PEmpty
+  patch i := i.elim
+  inclusion i := i.elim
+  admissible := {
+    atomSupportCoverage := fun _ h => h.elim
+    equationCoordinateCoverage := fun _ h => h.elim
+    violationWitnessCoverage := fun _ h => h.elim
+    signatureAxisCoverage := fun _ h => h.elim
+    boundaryCoverage := fun i => i.elim
+    nonGeneration := fun i => i.elim }
+
+/-- 空 family の生成 sieve は底 sieve。 -/
+theorem circleEmpty_generate_eq_bot (X : CircleWitness.site.category) :
+    Sieve.generate (circleEmptyCoverageFamily X).presieve = ⊥ := by
+  ext Z f
+  constructor
+  · rintro ⟨W, g, hWX, hmem, _⟩
+    cases hmem with
+    | mk i => exact i.elim
+  · intro hf
+    exact hf.elim
+
+/-- C7 site では底 sieve が全対象の covering sieve である。 -/
+theorem circle_bot_mem_topology (X : CircleWitness.site.category) :
+    (⊥ : Sieve X) ∈ CircleWitness.site.topology X := by
+  have h := Site.AATGrothendieckTopology.generate_mem (circleEmptyCoverageFamily X)
+  rwa [circleEmpty_generate_eq_bot X] at h
+
+/-- 底 sieve が covering なら、C7 topology 上の sheaf の切断は全対象で
+subsingleton になる。 -/
+theorem circle_sheafCondition_subsingleton
+    (F : Site.AATPresheaf CircleWitness.site)
+    (h : Site.AATSheafCondition CircleWitness.site F)
+    (X : CircleWitness.site.category) :
+    Subsingleton (F.obj (op X)) := by
+  have hbot := h (⊥ : Sieve X) (circle_bot_mem_topology X)
+  rw [Site.AATSheafConditionFor] at hbot
+  obtain ⟨t, _, huniq⟩ := hbot
+    (by intro Y f hf; exact hf.elim)
+    (by intro Y₁ Y₂ Z g₁ g₂ f₁ f₂ h₁ h₂ hc; exact h₁.elim)
+  refine ⟨fun a b => ?_⟩
+  rw [huniq a (by intro Y f hf; exact hf.elim),
+    huniq b (by intro Y f hf; exact hf.elim)]
+
+/-- Implementation notes (i) の「2値状態 presheaf」の最小代表(定数 `F₂`)。 -/
+def circleConstantPresheaf : Site.AATPresheaf CircleWitness.site where
+  obj _ := ZMod 2
+  map _ := id
+
+/-- 査読対応(Lean B lane 第2巡 N1): C7 の all-`False` requirements の下では
+2値の presheaf は sheaf condition を満たし得ない — X.定義8.1 条件1 の
+充足不能性の named witness(`descentRequirements` 新設の根拠)。 -/
+theorem circle_constant_not_sheafCondition :
+    ¬ Site.AATSheafCondition CircleWitness.site circleConstantPresheaf := by
+  intro h
+  have hsub := circle_sheafCondition_subsingleton circleConstantPresheaf h base
+  have h01 : (0 : ZMod 2) = 1 := hsub.allEq (0 : ZMod 2) (1 : ZMod 2)
+  exact absurd h01 (by decide)
 
 /-! ## Presentation layer (term-level reuse of the C7 circle presentation) -/
 
@@ -813,8 +896,9 @@ semantic repair atlas の residual class が零になる。すなわち AC2 の
 `[r_sem] = 0` は atlas `(1,0,0,0)` の選択に依らない構造的帰結であり、atlas
 選択が買っているのは residual **cochain** の非零性
 (`descent_semanticResidual_ne_zero`)だけである。なお本 fixture の複体の
-`H¹` 自体は非自明である(4-cycle の edge sum が coboundary を消す)ため、
-この零化は複体の自明性によるものではない。
+`H¹` 自体は非自明である(`descent_semanticH1_nontrivial` — 4-cycle の
+edge sum が coboundary を消す)ため、この零化は複体の自明性によるもので
+はない。
 -/
 theorem descent_every_atlas_residualClass_isZero
     (A : SemanticRepairAtlas descentRepairSystem) :
@@ -845,6 +929,167 @@ theorem descent_every_atlas_residualClass_isZero
         descentPresentation.mSemRestrict (Face.pairLeft p).hom
           (descentGaugeOf A p.fst))
   rw [map_sub, hR, hL]
+
+/-! ## The 4-cycle edge sum and nontriviality of the descent `H¹` -/
+
+/-- 4-cycle の残りの隣接辺 `(1,2)`。 -/
+def descentEdge12 : descentCover.KeptPair :=
+  ⟨(1 : Fin 4), (2 : Fin 4), by decide, fun h => h (by decide)⟩
+
+/-- 4-cycle の残りの隣接辺 `(2,3)`。 -/
+def descentEdge23 : descentCover.KeptPair :=
+  ⟨(2 : Fin 4), (3 : Fin 4), by decide, fun h => h (by decide)⟩
+
+/-- 4-cycle の残りの隣接辺 `(0,3)`。 -/
+def descentEdge03 : descentCover.KeptPair :=
+  ⟨(0 : Fin 4), (3 : Fin 4), by decide, fun h => h (by decide)⟩
+
+/-- descent 1-cochain の `F₂` 辺読み。 -/
+noncomputable def descentEdgeRead (p : descentCover.KeptPair)
+    (c : Cochain1 (descentPresentation.mSemPresheaf.onIntersections
+      descentCover)) : ZMod 2 :=
+  mSemToZMod (descentCover.pairCtx p.fst p.snd) (descent_pairCtx_keptCtx p)
+    (c p)
+
+/-- B.9.5 と同形の向き付き辺和(descent 複体版)。 -/
+noncomputable def descentEdgeSum :
+    Cochain1 (descentPresentation.mSemPresheaf.onIntersections descentCover) →+
+      ZMod 2 :=
+  AddMonoidHom.mk'
+    (fun c => descentEdgeRead descentEdge01 c + descentEdgeRead descentEdge12 c +
+      descentEdgeRead descentEdge23 c + descentEdgeRead descentEdge03 c)
+    (by
+      intro c d
+      simp only [descentEdgeRead]
+      have hadd : ∀ p : descentCover.KeptPair,
+          mSemToZMod (descentCover.pairCtx p.fst p.snd)
+            (descent_pairCtx_keptCtx p) ((c + d) p) =
+          mSemToZMod (descentCover.pairCtx p.fst p.snd)
+              (descent_pairCtx_keptCtx p) (c p) +
+            mSemToZMod (descentCover.pairCtx p.fst p.snd)
+              (descent_pairCtx_keptCtx p) (d p) := by
+        intro p
+        exact map_add (mSemToZMod (descentCover.pairCtx p.fst p.snd)
+          (descent_pairCtx_keptCtx p)) (c p) (d p)
+      rw [hadd descentEdge01, hadd descentEdge12, hadd descentEdge23,
+        hadd descentEdge03]
+      ring)
+
+/-- 辺和は coboundary を消す(`F₂` の符号退化による 4-cycle 相殺)。 -/
+theorem descentEdgeSum_delta0
+    (b : Cochain0 (descentPresentation.mSemPresheaf.onIntersections
+      descentCover)) :
+    descentEdgeSum (delta0
+      (descentPresentation.mSemPresheaf.onIntersections descentCover) b) = 0 := by
+  have hread : ∀ p : descentCover.KeptPair,
+      descentEdgeRead p (delta0
+        (descentPresentation.mSemPresheaf.onIntersections descentCover) b) =
+      mSemToZMod (descentCover.chart p.snd) (chartObj_keptCtx p.snd) (b p.snd) -
+        mSemToZMod (descentCover.chart p.fst) (chartObj_keptCtx p.fst)
+          (b p.fst) := by
+    intro p
+    have hR : mSemToZMod _ (descent_pairCtx_keptCtx p)
+        (descentPresentation.mSemRestrict (Face.pairRight p).hom (b p.snd)) =
+        mSemToZMod (descentCover.chart p.snd) (chartObj_keptCtx p.snd)
+          (b p.snd) :=
+      mSemToZMod_restrict (Face.pairRight p).hom (descent_pairCtx_keptCtx p)
+        (chartObj_keptCtx p.snd) (b p.snd)
+    have hL : mSemToZMod _ (descent_pairCtx_keptCtx p)
+        (descentPresentation.mSemRestrict (Face.pairLeft p).hom (b p.fst)) =
+        mSemToZMod (descentCover.chart p.fst) (chartObj_keptCtx p.fst)
+          (b p.fst) :=
+      mSemToZMod_restrict (Face.pairLeft p).hom (descent_pairCtx_keptCtx p)
+        (chartObj_keptCtx p.fst) (b p.fst)
+    show mSemToZMod _ (descent_pairCtx_keptCtx p)
+      (descentPresentation.mSemRestrict (Face.pairRight p).hom (b p.snd) -
+        descentPresentation.mSemRestrict (Face.pairLeft p).hom (b p.fst)) = _
+    rw [map_sub, hR, hL]
+  show descentEdgeRead descentEdge01 _ + descentEdgeRead descentEdge12 _ +
+    descentEdgeRead descentEdge23 _ + descentEdgeRead descentEdge03 _ = 0
+  rw [hread descentEdge01, hread descentEdge12, hread descentEdge23,
+    hread descentEdge03]
+  have hcycle : ∀ x y z w : ZMod 2,
+      (y - x) + (z - y) + (w - z) + (w - x) = 0 := by decide
+  exact hcycle _ _ _ _
+
+/-- 辺 `(0,1)` にのみ台を持つ単位 1-cochain。kept triple が空なので
+すべての 1-cochain は cocycle である。 -/
+noncomputable def descentUnitCochain :
+    Cochain1 (descentPresentation.mSemPresheaf.onIntersections descentCover) :=
+  fun p =>
+    if @Eq (Fin 4) p.fst 0 ∧ @Eq (Fin 4) p.snd 1 then
+      descentPresentation.mSemMk (descentCover.pairCtx p.fst p.snd)
+        (Finsupp.single (sigma _ (descent_pairCtx_keptCtx p).1) 1)
+    else 0
+
+/-- descent cover は kept triple を持たない(`C² = 0`)。 -/
+theorem descent_keptTriple_isEmpty : IsEmpty descentCover.KeptTriple :=
+  ⟨fun t => t.kept (by
+    rcases exists_omitted_pair_of_triple t.fst t.snd t.trd t.lt₁ t.lt₂ with
+      h | h | h
+    · exact Or.inl h
+    · exact Or.inr (Or.inl h)
+    · exact Or.inr (Or.inr (Or.inl h)))⟩
+
+/-- 単位 1-cochain の descent `H¹` class。 -/
+noncomputable def descentUnitClass :
+    descentPresentation.SemanticH1 descentCover :=
+  Quotient.mk (incComplex
+      (descentPresentation.mSemPresheaf.onIntersections
+        descentCover)).H1CoboundarySetoid
+    ⟨descentUnitCochain, by
+      funext t
+      exact (descent_keptTriple_isEmpty.false t).elim⟩
+
+/-- 単位 1-cochain の辺和は `1`。 -/
+theorem descentEdgeSum_unitCochain : descentEdgeSum descentUnitCochain = 1 := by
+  have h01 : descentEdgeRead descentEdge01 descentUnitCochain = 1 := by
+    show mSemToZMod _ (descent_pairCtx_keptCtx descentEdge01)
+      (descentUnitCochain descentEdge01) = 1
+    rw [show descentUnitCochain descentEdge01 =
+        descentPresentation.mSemMk
+          (descentCover.pairCtx descentEdge01.fst descentEdge01.snd)
+          (Finsupp.single
+            (sigma _ (descent_pairCtx_keptCtx descentEdge01).1) 1) from by
+      simp only [descentUnitCochain]
+      rw [if_pos (by decide)]]
+    rw [descentPresentation_mSemMk_eq, mSemToZMod_mk, evalWord_single]
+    decide
+  have hz : ∀ p : descentCover.KeptPair,
+      ¬ (@Eq (Fin 4) p.fst 0 ∧ @Eq (Fin 4) p.snd 1) ->
+      descentEdgeRead p descentUnitCochain = 0 := by
+    intro p hp
+    show mSemToZMod _ (descent_pairCtx_keptCtx p) (descentUnitCochain p) = 0
+    rw [show descentUnitCochain p = 0 from by
+      simp only [descentUnitCochain]
+      rw [if_neg hp], map_zero]
+  show descentEdgeRead descentEdge01 _ + descentEdgeRead descentEdge12 _ +
+    descentEdgeRead descentEdge23 _ + descentEdgeRead descentEdge03 _ = 1
+  rw [h01, hz descentEdge12 (by decide), hz descentEdge23 (by decide),
+    hz descentEdge03 (by decide)]
+  decide
+
+/--
+査読対応(数学B lane 第2巡 N1 の (a) 案): descent 複体の `H¹` は非自明で
+ある — 4-cycle の辺和は coboundary を消すが、辺 `(0,1)` の単位 cochain の
+辺和は `1`。`descent_every_atlas_residualClass_isZero` の零化が複体の
+自明性によるものではないことの named witness。
+-/
+theorem descent_semanticH1_nontrivial :
+    ¬ (descentPresentation.semanticComplex descentCover).H1IsZero
+      descentUnitClass := by
+  intro hzero
+  obtain ⟨b, hb⟩ := Quotient.exact hzero
+  have hcob : descentUnitCochain =
+      delta0 (descentPresentation.mSemPresheaf.onIntersections descentCover)
+        b := by
+    have hsub : descentUnitCochain - 0 =
+        delta0 (descentPresentation.mSemPresheaf.onIntersections descentCover)
+          b := hb
+    rwa [sub_zero] at hsub
+  have hone := descentEdgeSum_unitCochain
+  rw [hcob, descentEdgeSum_delta0 b] at hone
+  exact absurd hone (by decide)
 
 /-! ## Sheaf condition engine over the classified topology -/
 
@@ -1076,8 +1321,10 @@ def descentTotalPresheaf : SitePresheafData descentSite where
 (申告: Implementation notes (iii)。非分裂性は主張しない)。
 `equationSelfLiftFiber`(`B_E = 0` の退化 instance)と異なり、恒等的に `1`
 の selected base reading が lift 状態を affine fiber `{(q, 1)}` へ制限し、
-解くべき局所 equation-lift problem の選択が実際に行われる。base reading は
-fiber の選択だけを担い、residual の値は `Q_E` 成分が担う。 -/
+解くべき局所 equation-lift problem の選択が実際に行われる。residual の値は
+`Q_E` 成分が担い、本 fixture では分裂性により base reading の obstruction
+への寄与は消える(一般の典型例では base reading こそが obstruction の
+測る対象である — Implementation notes (iii))。 -/
 noncomputable def descentLiftFiber :
     LiftFiberData (equationSitePresheaf descentSite) descentTotalPresheaf
       descentBaseReadingPresheaf where
