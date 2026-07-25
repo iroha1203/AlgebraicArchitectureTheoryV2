@@ -364,9 +364,10 @@ I_{\mathrm{Ob}}^E(W)=\sum_{i\in K_E,\ \mathrm{role}_E(i)=\mathrm{required}} I_i^
 subpresheaf をなす。
 
 **定理 3.10(generated obstruction quotient)。**
-equation system `E` と displayed equation source(各 chart に対する local
-context、architecture object、required index `i_q`、support Atom `a_q` の選択)を
-固定する。このとき次が成立する。
+equation system `E` と displayed equation source(有限個の local context
+`W_q→W_base` に対する architecture object、required equation index `i_q`、
+support Atom `a_q` の選択。cover-indexed の場合は local context を各 chart に
+取る)を固定する。このとき次が成立する。
 
 1. **generated coefficient**: 商
 
@@ -463,7 +464,9 @@ selected は入力契約であり、proved はその契約の下での定理で�
 本章は、SAGA の二つの複体を独立に構成する。semantic 側は semantic atom と
 repair relation から、equation 側は equation system から、それぞれの一次データのみで
 係数、複体、residual を生成する。両者の比較は第5章の定理の結論であり、
-本章の構成には他方への参照が入らない。
+二つの複体の構成には他方への参照が入らない。両者を接続する唯一の写像
+`χ^E`(命題 4.1)は第5章の比較入力の構成であり、どちらの複体の構成にも
+使われない。
 
 ### 4.1 Cover-relative Čech complex
 
@@ -582,13 +585,15 @@ r_{E,ij}=e_j|_{U_{ij}}-e_i|_{U_{ij}}
 **命題 4.1(equation semantic realization: `χ^E` の構成)。**
 各 cover intersection `V` の supported semantic atom `λ∈S(V)` に、
 required equation index `i_λ` と local architecture reading `A_λ` を
-restriction と可換に対応させる(selected)。このとき
+restriction と可換に対応させる(selected。cover intersection diagram の
+face restriction `V'→V` について `i_{λ|_{V'}}=i_λ`、`A_{λ|_{V'}}=A_λ`)。
+このとき
 
 ```math
 \chi^E_V(\lambda):=[\epsilon_{V,A_\lambda,i_\lambda,\pi_V(\lambda)}]\in Q_E(V)
 ```
 
-は restriction-natural、すなわち
+は face restriction について restriction-natural、すなわち
 
 ```math
 \chi^E_{V'}(\lambda|_{V'})=\chi^E_V(\lambda)|_{V'}
@@ -1896,5 +1901,6 @@ canonical 定理 11.4 の同名条項に対応する(2026-07-26 #3813 で追補)
 注: 論文 §4.2 の projection `π_V:Λ(V)→At` は、canonical 定義 3.1 の
 occurrence 値 projection `π_V:Λ(V)→At(V)` を台 Atom へ圧縮した形である
 (2026-07-26 #3813)。Lean は occurrence 水準を保持する
-(`SemanticAtomData.projection` + `occRestrict_atom`)。命題 4.1 の Lean
+(`SemanticAtomData.projection` / `projection_natural` +
+`AtomOccurrenceReading.occRestrict_atom`)。命題 4.1 の Lean
 対応物は `EquationSemanticRealization.chiE` / `chiE_natural` である。
