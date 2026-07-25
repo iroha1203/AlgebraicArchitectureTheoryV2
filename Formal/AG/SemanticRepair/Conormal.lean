@@ -25,7 +25,12 @@ G-07 conormal first-order descent distillation (Issue #3757 tree, C6 #3767).
 Aggregator for the law-generated first-order conormal specialization distilled
 from `research/lean/ResearchLean/AG/QualitySurface/` (G-aat-quality-surface-07)
 into the mainline, restated and reproved in-body per the distillation
-discipline (`docs/aat/guideline.md` 移植 ≠ import):
+discipline (`docs/aat/guideline.md` 移植 ≠ import).  The distillation is a
+verbatim relocation: every module below is byte-identical to its Research
+original modulo the namespace root (`ResearchLean.AG.QualitySurface` →
+`AAT.AG.SemanticRepair.Conormal`) and the matching import-path rewrite, so
+statements, binders, premises, and proofs are preserved at identical strength
+(normalized diff = 0 against the originals).  The subtree covers:
 
 * ideal-power sequence and short exactness of the law-generated
   `0 → I/I² → O/I² → O/I → 0` (`LawGeneratedIdealPowerSequence`,
