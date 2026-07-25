@@ -19,7 +19,7 @@ assumptionとして記録する。
 `degreeTwo.zeroImage` の有限写像表を validator が再計算する。
 `kind: "presentation-generated"` では各 chart / overlap / triple cell の semantic generators、
 repair relation 行列、equation quotient presentation、`generatorMap` と restriction 行列を入力し、
-F₂ 上で `im(R)=ker(χ̃)`、`im(χ̃)=Q_E`、restriction naturality を検査する。これにより
+`coefficientRing`(既定 `f2`)が選ぶ係数環の上で `im(R)=ker(χ̃)`、`im(χ̃)=Q_E`、restriction naturality を検査する。`integers` では有限生成可換群として扱い、部分格子の相等と全生成を列 Hermite 正規形で決定する。これにより
 local `Φ` と `κ⁰ / κ¹ / κ²` を導出する。`κ¹D_sem⁰=D_E⁰κ⁰` と `κ²D_sem¹=D_E¹κ¹` は
 restriction naturality から従うので、出力の `degreeZeroCommutative` / `degreeOneCommutative` は
 その帰結の記録であり、独立した第2・第3の検査ではない。presentation は別入力の

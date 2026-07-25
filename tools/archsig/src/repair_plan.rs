@@ -679,6 +679,38 @@ mod tests {
 
     /// atlas の供給欠陥は、名指しの structural fault として出す。名指ししないと
     /// `targetCocycle=false` だけが残り、入力の欠落が数学的性質の失敗に見える。
+    /// 5-torsion + 三角形 + triple を持つ整数 presentation。2-torsion の circle fixture では
+    /// `+1 ≡ -1` なので `δ⁰` の向きも `δ¹` の交代符号も判別できない。奇数 torsion の
+    /// この fixture が、符号を壊す変異を落とす役目を持つ。
+    #[test]
+    fn five_torsion_integer_presentation_discriminates_the_differential_signs() {
+        let plan: RepairPlanDocumentV1 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/repair_plan_presentation_generated_five_torsion.json"
+        ))
+        .expect("five-torsion fixture parses");
+        let comparison = plan.comparison.as_ref().expect("comparison is supplied");
+        let h1 = comparison["h1ComparisonData"]
+            .as_object()
+            .expect("H1 comparison data is an object")
+            .clone();
+        let checks = presentation_generated_h1_checks(&plan, &plan.complex, &h1);
+        assert_eq!(checks.structural_fault, None);
+        assert!(checks.presentation_exactness);
+        assert!(checks.generator_completeness);
+        assert!(checks.all_pass());
+        assert!(!plan.complex.triple_overlaps.is_empty(), "triple が無いと δ¹ 符号を判別できない");
+
+        // 三角形一周の向き付き和は 1 + 1 - 1 = 1 != 0 (mod 5)。δ⁰ を right + left にすると
+        // この判定が反転する。
+        assert_eq!(
+            checks.source_class_nonzero,
+            Some(true),
+            "oriented cycle sum 1 + 1 - 1 = 1 is not zero in Z/5"
+        );
+        assert_eq!(checks.target_class_nonzero, Some(true));
+        assert!(checks.source_cocycle && checks.target_cocycle);
+    }
+
     /// 第X部 例 10.2 を整数係数で実現する。`M_sem(V)=Z[σ]/(2σ)`、`Q_E(V)=Z/(2)`、`χ(σ)=[1]`。
     /// F₂ では `2σ=0` が零関係になりこの算術が消えるため、非退化に発火するのは整数側だけである。
     #[test]
@@ -720,6 +752,18 @@ mod tests {
             .expect("cells are an array")[0]["generatorMap"] = serde_json::json!([[2]]);
         let weak_checks = presentation_generated_h1_checks(&plan, &plan.complex, &weak_generation);
         assert!(!weak_checks.generator_completeness);
+
+        // 関係を `4σ=0` にすると soundness は成立し rank も 1 のまま一致するが、
+        // `im(R)=4Z` は `ker(chi tilde)=2Z` と別の格子なので exactness が落ちる。
+        // exactness を rank 比較へ弱める実装はこれを通してしまう。
+        let mut equal_rank_wrong_lattice = h1.clone();
+        equal_rank_wrong_lattice["presentation"]["cells"]
+            .as_array_mut()
+            .expect("cells are an array")[0]["repairRelationMatrix"] = serde_json::json!([[4]]);
+        let equal_rank_checks =
+            presentation_generated_h1_checks(&plan, &plan.complex, &equal_rank_wrong_lattice);
+        assert!(!equal_rank_checks.presentation_exactness);
+        assert!(equal_rank_checks.generator_completeness);
 
         // 関係を `3σ=0` にすると `ker(chi tilde)=2Z` と食い違い exactness が落ちる。
         let mut wrong_relation = h1;

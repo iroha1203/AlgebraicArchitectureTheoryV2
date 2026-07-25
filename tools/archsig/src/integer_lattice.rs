@@ -21,6 +21,7 @@ pub(crate) struct Lattice {
 }
 
 impl Lattice {
+    #[cfg(test)]
     pub(crate) fn rank(&self) -> usize {
         self.basis.len()
     }
@@ -183,6 +184,14 @@ fn column_hnf(
             if nonzero.len() <= 1 {
                 break;
             }
+            // `i128::MIN.abs()` はラップして最小絶対値に化け、商が常に 0 になって
+            // ループが進まなくなる。判定不能として返す。
+            if nonzero
+                .iter()
+                .any(|index| matrix[*index][row] == i128::MIN)
+            {
+                return None;
+            }
             let smallest = *nonzero
                 .iter()
                 .min_by_key(|index| matrix[**index][row].abs())
@@ -340,6 +349,18 @@ mod tests {
         assert_eq!(kernel.contains(&[3, 0]), Some(true));
         assert_eq!(kernel.contains(&[0, 1]), Some(true));
         assert_eq!(kernel.contains(&[1, 0]), Some(false));
+    }
+
+    /// rank が一致しても格子が違えば相等ではない。exactness を rank 比較へ弱める変異は
+    /// これを通せない。
+    #[test]
+    fn equal_rank_does_not_imply_equal_lattice() {
+        let two = lattice_from_rows(&[vec![2]], 1).expect("2Z");
+        let four = lattice_from_rows(&[vec![4]], 1).expect("4Z");
+        assert_eq!(two.rank(), four.rank());
+        assert!(!two.equals(&four));
+        assert_eq!(two.contains(&[4]), Some(true));
+        assert_eq!(four.contains(&[2]), Some(false));
     }
 
     /// 部分格子の相等は生成元の取り方に依らない。
