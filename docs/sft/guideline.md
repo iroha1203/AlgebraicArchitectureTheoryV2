@@ -29,7 +29,7 @@
   dataset / operational artifact に相対化して扱う。
 - empirical dataset、operational feedback、calibration artifact は、相関・観測・仮説を因果 theorem と混同しない。
 - Lean theorem claim として読める範囲は AAT / Lean 側に置く。SFT docs で theorem claim に触れる場合は、AAT数学本文と対応する `Formal/` declaration を確認する。
-- ArchSig / FieldSig 由来の report は、選ばれた evidence contract の中で語れる肯定的な conclusion として読む。
+- ArchSig / FieldSig 由来の report は、選ばれた入力(観測と法・方程式)の中で語れる肯定的な conclusion として読む。
   語れない外側を一般的な non-conclusion や残タスクとして増幅しない。
 - レビューやタスク整理では、SFT 文書が定義した artifact、typed conclusion、accessor theorem、
   calibration step だけを完了条件にする。現実の未来全体や因果全体を、未完了タスクとして持ち出さない。

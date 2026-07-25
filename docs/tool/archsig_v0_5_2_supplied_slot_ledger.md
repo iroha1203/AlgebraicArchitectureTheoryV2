@@ -1,5 +1,10 @@
 # ArchSig v0.5.2 supplied slot 台帳
 
+> **負債告知(2026-07-26)**: 本台帳が制度化した供給 slot は、AGENTS.md「責務範囲」の
+> 入力トライアド(ArchMap=観測 / LawPolicy=法・方程式 / ArchSig=計算)に帰属しない
+> 第三入力チャネルであり、境界規律上の負債である。本台帳を新規 slot 追加の根拠として
+> 引用してはならない。返済(導出化 / 法側帰属 / 沈黙化)は Issue #3817 で管理する。
+
 この台帳は ArchSig v0.5.2 R1 の受け入れ表である。supplied はこの表の artifact を入力として読み、対応する validator が pass した場合に限り、右端の語彙を解禁する。global な列挙完全性や sheaf 条件のように有限検査で放電できないものは、assumption ledger に記録する。
 
 ## R13 witness 帰属

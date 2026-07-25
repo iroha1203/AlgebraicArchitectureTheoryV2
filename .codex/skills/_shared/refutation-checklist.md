@@ -74,7 +74,24 @@ hard fail(レーン裁量なし)。差分と無関係な既存ヒット(main 由
 理由を明記した場合のみ**。件数を先に固定しない。被覆根拠のないfindingゼロ
 報告は、レビュー未実施として扱う(統合判定で棄却)。
 
-## 8. identity 記述の因果順(肯定形の正本)
+## 8. ArchSig 入力トライアド(新規入力・slot の資格条件)
+
+AGENTS.md「責務範囲」の入力トライアド(ArchMap=観測 / LawPolicy=法・方程式 /
+ArchSig=計算)を hard gate として適用する。ArchSig への新しい入力、CLI flag、
+schema field、供給 slot を導入・拡張する差分では:
+
+1. その入力が観測(ArchMap 側)か法・方程式(LawPolicy / law-equation-surface /
+   MeasurementProfile 側)のどちらに帰属するかが一文で書かれているか。
+2. どちらにも帰属しない authored データ(証明、証書、presentation、
+   結論相当の supplied 判定)を受け取っていないか。台帳・ledger への収載、
+   validator の存在、結論の相対化表記は、いずれも帰属の代替にならない。
+3. その入力が解禁する結論語彙は二系統から計算できるか。計算できない語彙を
+   供給で解禁していないか(語れないものは沈黙)。
+
+いずれかを満たさない入力追加は major finding とする。既存負債(v0.5.2〜v0.5.4
+供給 slot 群、Issue #3817)を新規追加の先例として引用した正当化も finding とする。
+
+## 9. identity 記述の因果順(肯定形の正本)
 
 - ツール・artifact・定理の identity 文は「どの入力から何を計算する /
   何を主張する」の肯定形を正とする(AGENTS.md「責務範囲」)。結論の相対性は

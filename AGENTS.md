@@ -34,8 +34,8 @@
   reachable future をどう変えるかを扱う。AAT が構造の幾何を扱い、SFT が実践と進化の場を扱う。
 - SFT の強みは、個別の artifact や workflow を、software evolution の reachable future を変える
   場の操作として統一的に読める点にある。
-- ArchMap は、選ばれた Atom vocabulary と evidence contract の中で architecture evidence を記録する
-  有限 artifact である。
+- ArchMap は、選ばれた Atom vocabulary の中で観測した atom を記録する有限 artifact である。
+  観測に由来しない判定・証明・証書は記録しない。
 - LawPolicy / MeasurementProfile は、law reading、cover、witness、measurement regime を固定する
   contract である。
 - ArchSig は ArchMap と LawPolicy から bounded diagnostic / analysis packet を計算する tooling である。
@@ -66,9 +66,18 @@
 ## 責務範囲
 
 - AAT は Atom と law から立つ純粋理論である。ArchSig は ArchMap と LawPolicy から
-  bounded diagnostic を計算する。観測者責務範囲は ArchMap author と evidence contract の責務として
-  一括して扱う。
-- ウィトゲンシュタイン的責務範囲を守る。選ばれた vocabulary、policy、evidence contract から
+  bounded diagnostic を計算する。観測の正しさは ArchMap author の責務として扱う。
+- 入力トライアド(hard rule): ArchMap は観測した atom を書く場、
+  LawPolicy(law-equation-surface / MeasurementProfile を含む法・方程式側 artifact)は
+  ルールと制約を書く場であり、ArchSig はこの二系統の入力から計算して結果を出力する。
+  第三の入力カテゴリは存在しない。観測にも法・方程式にも帰属しない authored データ
+  (証明、証書、presentation、結論相当の supplied 判定)を、新しい入力、CLI flag、
+  schema field、供給 slot として受け取らない。台帳・ledger への収載、validator の存在、
+  結論の相対化表記は、いずれも帰属の代替にならない。二系統から計算できない語彙は、
+  供給で解禁せず沈黙として扱う。v0.5.2〜v0.5.4 で導入済みの供給 slot 群はこの規律に
+  対する既存の負債であり、返済は Issue #3817 で管理する。負債の存在を新規追加の
+  先例として引用しない。
+- ウィトゲンシュタイン的責務範囲を守る。選ばれた vocabulary と policy から
   語れることだけを語る。語れない領域は、失敗や残タスクではなく沈黙として扱う。
 - AAT / Lean theorem の説明・レビューでは、定理が語る選択済み vocabulary、仮定、対象だけを
   肯定形で述べる。ユーザーや対象 artifact が明示していない限り、

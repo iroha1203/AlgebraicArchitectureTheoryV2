@@ -13,7 +13,11 @@
 - ArchSig v0.5.4 は、ArchMap + LawPolicy + supplied law-equation-surface + MeasurementProfile の入力検証が通った `analyze` run で `archsig-measurement-packet/v0.5.4` を作る AG measurement layer である。Rust と Lean の対応を tooling contract として要求しない。
   再現可能な run では `policy-bundle` が三つの選択済み policy component と canonical fingerprint を固定し、個別 flag は同じ入力を直接渡す形である。
 - ArchView は supplied ArchMap の Atom / Context / Cover を直接読む Atom-native な可視化レイヤーである。ArchMap 単独で architecture understanding を成立させ、その同じ geometry 上へ既存 ArchSig run artifact の measurement、finding、comparison、gate、明示された repair target を optional overlay として重ねる。ArchView は新しい structural verdict、source relation、repair recommendation を作らず、すべての描画と source landing を supplied artifact へ追跡可能にする。再構築前の `tools/archview/archview.html` が `archsig-atom-viewer-data.json` / `archview-sequence/v0.5.4` を読むことは現行実装上の制約であり、ArchView の恒久的な product identity ではない。
-- ArchSig の `analyze` は選ばれた LawPolicy、law-equation-surface、MeasurementProfile、evidence contract の中で
+- ArchSig への入力は観測(ArchMap)と法・方程式(LawPolicy / law-equation-surface / MeasurementProfile)の
+  二系統に限る(正本は AGENTS.md「責務範囲」の入力トライアド)。この二系統に帰属しない
+  authored 証明・証書・presentation を、新しい CLI 入力や schema slot として追加しない。
+  既存の RepairPlan 供給 slot 群はこの規律に対する負債であり、返済は Issue #3817 が管理する。
+- ArchSig の `analyze` は観測(ArchMap)と、選ばれた LawPolicy、law-equation-surface、MeasurementProfile の中で
   structural verdict と analytic reading を出す。`compare` は二つの analyze run を記録レベルで比較し、
   `gate` は gate policy に従って measurement packet と比較記録をCI判断へ写像する。
 - ArchSig は、未観測 runtime 全体や global semantic safety のように選ばれた evidence language の外にあるものを、
@@ -39,7 +43,7 @@
 - CLI surface を追加・変更する場合は、必要に応じて `tools/archsig/README.md`、`tools/archsig/docs/commands.md`、`tools/fieldsig/README.md`、`tools/fieldsig/docs/commands.md` を更新する。
 - Rust 型共有を ArchSig / FieldSig 間の cross-tool contract として扱わない。serialized JSON artifact boundary を重視する。
 - Rust source では不用意な `unwrap`, `expect`, `panic!`、placeholder 実装、claim boundary を曖昧にする fallback を避ける。
-- Report / schema / CLI wording は「これは結論ではない」を主文にしない。結論、根拠、選ばれた evidence contract を
+- Report / schema / CLI wording は「これは結論ではない」を主文にしない。結論、根拠、選ばれた入力 contract を
   先に出し、語らない領域は必要な場合だけ短い boundary として添える。
 
 ## テスト責務と実行経路
