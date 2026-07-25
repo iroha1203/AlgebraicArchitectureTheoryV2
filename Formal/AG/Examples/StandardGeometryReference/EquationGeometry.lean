@@ -1101,6 +1101,18 @@ noncomputable def referenceEquationSchemeChartProducer :
 
 /-! ### SD5: a Čech context-chart cover that is not the whole cover
 
+What this cover does and does not witness.  It witnesses the Čech route
+(`ofRefinement`) and a context transition whose localization inverts a
+non-unit.  It does **not** witness a non-degenerate gluing: the base context
+still owns `D(1) = ⊤`, so the unique glued section is already determined by
+that one chart, and the universal sections of this realization are context
+independent, so `ofRefinement` returns here exactly what
+`ofContextIndependentSections` would.  Nor does the non-triviality reach the
+witness ideals: every equation system in this fixture family has a constant
+`violationCoordinate`, so the ideal being localized is a constant ideal and
+`contextChartWitnessIdeal_isBaseChange` fires on it as a general theorem about
+any ideal.  Issue #3800 tracks the separating instance.
+
 `referenceEquationContextCharts` repeats the whole affine Scheme at every
 equation context, so its gluing step is degenerate.  The cover built here is
 not that one: the four selected two-patch contexts own the distinct principal
@@ -1370,9 +1382,13 @@ theorem cechTransitionGenerator_basicOpen_eq
 SD5: the context-transition localization of the Čech cover.
 
 These transitions are genuine principal localizations.  For `overlap ⟶ left`
-the inverted element is the image of `x(1-x)` on `D(x)`, so
-`Γ(D(x)) → Γ(D(x(1-x)))` inverts a non-unit; the whole-Scheme cover and the
-SD6 cover can only offer `Submonoid.powers 1`.
+the inverted element is the image of `x(1-x)` on `D(x)` and is not a unit
+(`cechTransitionGenerator_not_isUnit`), so the localization is not trivial.
+
+By contrast the whole-Scheme cover and the SD6 cover have identity, resp.
+isomorphic, transitions (`referenceProperTransition_isIso`), so on those covers
+*any* submonoid of units discharges `IsLocalization`; `Submonoid.powers 1` is
+the choice made there, not a forced one.
 -/
 noncomputable def referenceCechContextChartLocalization :
     EquationObservableRealization.EquationContextChartLocalization
@@ -1434,6 +1450,29 @@ theorem referenceContextChartOpen_overlap_ne_left :
   have hval := congrArg (MvPolynomial.eval (fun _ : Unit => (1 : Int))) hc
   simp [twoPatchChartGenerator, overlapGenerator, leftGenerator,
     rightGenerator, coordinate] at hval
+
+/--
+The transition generator is not a unit, so the Čech localization is not the
+trivial one.
+
+If it were a unit its basic open would be the whole target chart, forcing the
+overlap and left charts to coincide, which `referenceContextChartOpen_overlap_ne_left`
+refutes.
+-/
+theorem cechTransitionGenerator_not_isUnit
+    (f : context AAT.AG.FiniteModel.TwoPatchContextIndex.overlap ⟶
+      context AAT.AG.FiniteModel.TwoPatchContextIndex.left) :
+    ¬ IsUnit (cechTransitionGenerator f) := by
+  intro hunit
+  apply referenceContextChartOpen_overlap_ne_left
+  have hb := AlgebraicGeometry.Scheme.basicOpen_of_isUnit
+    referenceScheme.underlying hunit
+  rw [← cechTransitionGenerator_basicOpen_eq f] at hb
+  rw [← cechChartImage_eq
+      (context AAT.AG.FiniteModel.TwoPatchContextIndex.overlap),
+    ← cechChartImage_eq
+      (context AAT.AG.FiniteModel.TwoPatchContextIndex.left)]
+  exact hb
 
 /-- SD5: the complete chart producer on the Čech cover. -/
 noncomputable def referenceCechSchemeChartProducer :

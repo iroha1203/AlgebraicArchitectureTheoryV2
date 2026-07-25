@@ -35,15 +35,20 @@ of chartwise representing charts glued along context transitions, are outside
 this model; what is formalized here is the chart-relative witness ideal of a
 globally represented point.  Accordingly the gluing step below does not create
 globality: it selects one section of an already global compatible family, and
-on a connected context category it returns a section that already existed.
+whenever the universal sections are context independent it returns one of them
+(`gluedViolationSection_eq_violationSection`).  No lemma here derives that
+independence from connectedness of the context category; the hypothesis used
+throughout is the independence itself.
 What the producer does drop, relative to the earlier route, is the caller-side
 identity `∀ W V, res_W (violationSection V) = η_W(ν)`; only overlap
 compatibility is now required.
 Residual regularity comes from the universal represented point and residual
 representability from the generated equalizer.  The context transitions and
 the selected ambient atlas supply actual localization maps.  Their tensor
-comparisons, overlap equality, chart restrictions, and quasi-coherence are
-derived in the complete producer used by the final equation correspondence.
+comparisons, overlap equality, and chart restrictions are derived in the
+complete producer used by the final equation correspondence.  Mathlib's
+affine-basic-open criterion is deliberately not among them; see
+`EquationContextWitnessChartRealized`.
 Independently supplied residual functions, lawfulness predicates, ideal
 equalities, or conclusion certificates are not inputs.
 
@@ -1509,11 +1514,13 @@ agree on pairwise chart intersections.  This is precisely the compatibility
 needed to glue Definition 5.2A's local `η_W(ν)` sections, and it contains no
 residual-vanishing or factorization conclusion.
 
-It is strictly weaker than the caller-side identity used by the earlier route,
+It is formally weaker than the caller-side identity used by the earlier route,
 which demanded `res_W (violationSection V) = η_W(ν)` for *every* pair `(W, V)`;
 by `violationSection_const_of_chartAgreement` that identity forces the
 universal sections to be context independent, whereas this field constrains
-them only on chart overlaps.  It does not, and need not, deny that each local
+them only on chart overlaps.  Strictness is not witnessed here: no instance in
+this repository is compatible without being context independent, and Issue
+#3800 tracks what such an instance would require.  It does not, and need not, deny that each local
 coordinate is the restriction of the context's own global section: in this
 regime `contextChartOpenViolation_eq_restrict` shows it always is.
 -/
@@ -1693,8 +1700,9 @@ The gluing theorem supplies uniqueness, not globality: each local coordinate is
 already the restriction of a global section (`contextChartOpenViolation_eq_restrict`),
 so this picks out the unique global section restricting to all of them.  When
 the universal sections are context independent it is one of them, by
-`gluedViolationSection_eq_violationSection`.  A context category with several
-components can make the result differ from every `R.violationSection W i a`.
+`gluedViolationSection_eq_violationSection`.  Every realization in this
+repository is of that kind, so no instance here produces a genuinely new
+section; Issue #3800 tracks what a separating instance would require.
 -/
 noncomputable def gluedViolationSection
     (C : EquationContextCharts (X := X))
@@ -2618,8 +2626,10 @@ Role of each conjunct, stated against what actually discharges it.
   `EquationAmbientChartLocalization`.  This is an *additional* requirement of
   the Lean atlas presentation with no counterpart in Definition 5.2B.
 * (4) atlas-chart generation and (5) overlap agreement: theorems of `(C, P)`
-  alone, true definitionally — both sides are the pushforward of one global
-  ideal, in (5) along the two projections of a single Scheme pullback.  In
+  alone.  (5) follows from `pullback.condition` and `Ideal.map_map`: both sides
+  are the pushforward of one global ideal along the two projections of a single
+  Scheme pullback.  It is therefore not a `rfl`, but it does not depend on any
+  producer datum.  In
   particular (5) does **not** check Definition 5.2B's overlap cocycle
   condition for chartwise-defined `J_i^E`.
 
@@ -2780,7 +2790,11 @@ def EquationIdealChartCondition
     R.EquationWitnessChartRealized L i
 
 /--
-The legacy chart condition contains no additional truth certificate: once
+The legacy chart condition contains no truth certificate beyond the ideal
+equality `globalWitnessIdeal_restricts` already carried as a field of
+`EquationChartLocalization`.  That field is a supplied ideal identity, unlike
+`EquationAmbientChartLocalization`, which carries only a multiplicative set and
+an `IsLocalization` instance.  Once
 the localization producer is inhabited, all chart clauses are theorems and
 the condition is exactly ideal vanishing.
 -/
@@ -3201,9 +3215,10 @@ private theorem equationHoldsAlong_iff_violationVanishes
 Part III, Theorem 5.2C: actual context residual fulfillment is exactly
 vanishing of the generated witness-ideal sheaf.
 
-The theorem requires the complete chart producer, including actual transition
-localizations; callers cannot apply the correspondence from residual
-predicates or manually supplied ideal equalities.
+The premise is the context-chart producer alone: only overlap compatibility is
+needed, and no transition localization is consumed here (those are consumed by
+`equationContextWitnessChartRealized`).  Callers still cannot apply the
+correspondence from residual predicates or manually supplied ideal equalities.
 -/
 theorem equationHoldsAlong_iff_witnessIdeal
     (hR : IsEquationObservableRealization R)

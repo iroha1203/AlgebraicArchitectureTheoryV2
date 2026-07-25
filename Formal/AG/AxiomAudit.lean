@@ -8720,6 +8720,24 @@ def standardGeometry_referenceContextChartOpen_eq_primeSpectrum :=
 def standardGeometry_referenceContextChartOpen_overlap_ne_left :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.referenceContextChartOpen_overlap_ne_left
 
+def standardGeometry_contextChartGenerator_context :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.contextChartGenerator_context
+
+def standardGeometry_contextChartOpen_referenceCech :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.contextChartOpen_referenceCech
+
+def standardGeometry_properChartOpen_context :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.properChartOpen_context
+
+def standardGeometry_properChartOpen_probe :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.properChartOpen_probe
+
+def standardGeometry_referenceContextChartOpen_base :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceContextChartOpen_base
+
+def standardGeometry_cechTransitionGenerator_not_isUnit :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.cechTransitionGenerator_not_isUnit
+
 def standardGeometry_cechChartImage_eq :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.cechChartImage_eq
 
