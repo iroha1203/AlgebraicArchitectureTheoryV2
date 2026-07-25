@@ -1347,7 +1347,7 @@ determines the glued section.
 
 Compatibility cannot be produced by the Čech route on this cover: the two owned
 patches meet, and contexts of different components of `referenceSite.category`
-admit no common refinement.  It is produced instead from context independence
+have no common refinement.  It is produced instead from context independence
 of the realization's own universal sections.  A cover that is simultaneously
 free of a whole-Scheme chart and Čech-refinable would need pairwise disjoint
 patches, hence a disconnected represented Scheme; that is outside the present
@@ -1520,7 +1520,8 @@ theorem properChartOpen_eq_of_hom
 
 /--
 Every transition of the SD6 cover is an isomorphism: contexts of one component
-own the same patch, and contexts of different components admit no restriction.
+own the same patch, and contexts of different components have no restriction
+between them.
 -/
 theorem referenceProperTransition_isIso
     {source target : referenceSite.category} (f : source ⟶ target) :
