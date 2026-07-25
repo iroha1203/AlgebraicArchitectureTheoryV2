@@ -8714,6 +8714,12 @@ def standardSchemeEquationContextChartCoverOfMonotoneOpensChart :=
 def standardSchemeEquationContextChartCoverOfMonotoneOpensChartMap :=
   @LawAlgebra.EquationContextChartCover.ofMonotoneOpens_chartMap
 
+def standardGeometry_referenceContextChartOpen_eq_primeSpectrum :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceContextChartOpen_eq_primeSpectrum
+
+def standardGeometry_referenceContextChartOpen_overlap_ne_left :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.referenceContextChartOpen_overlap_ne_left
+
 def standardGeometry_cechChartImage_eq :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.cechChartImage_eq
 

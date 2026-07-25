@@ -1398,6 +1398,43 @@ noncomputable def referenceCechContextChartLocalization :
       (cechTransitionGenerator f) _
       (cechTransitionGenerator_basicOpen_eq f)
 
+/-- Each selected chart open is the principal open of its generator. -/
+theorem referenceContextChartOpen_eq_primeSpectrum
+    (i : AAT.AG.FiniteModel.TwoPatchContextIndex) :
+    referenceContextChartOpen (context i) =
+      PrimeSpectrum.basicOpen (twoPatchChartGenerator i) := by
+  rw [referenceContextChartOpen, contextChartGenerator_context]
+  exact basicOpen_eq_of_affine _
+
+/--
+The overlap patch is strictly smaller than the left patch.
+
+Hence the `overlap ⟶ left` transition of the Čech cover inverts a non-unit and
+its localization is not the trivial one.  If the two patches agreed then `x`
+would lie in the radical of `(x(1-x))`, so `x ^ n = c * (x * (1 - x))` for some
+`c` and `n`; evaluating at `x = 1` gives `1 = 0` in `ℤ`.
+-/
+theorem referenceContextChartOpen_overlap_ne_left :
+    referenceContextChartOpen
+        (context AAT.AG.FiniteModel.TwoPatchContextIndex.overlap) ≠
+      referenceContextChartOpen
+        (context AAT.AG.FiniteModel.TwoPatchContextIndex.left) := by
+  intro hEq
+  rw [referenceContextChartOpen_eq_primeSpectrum,
+    referenceContextChartOpen_eq_primeSpectrum] at hEq
+  have hle : PrimeSpectrum.basicOpen
+      (twoPatchChartGenerator AAT.AG.FiniteModel.TwoPatchContextIndex.left) ≤
+      PrimeSpectrum.basicOpen
+        (twoPatchChartGenerator
+          AAT.AG.FiniteModel.TwoPatchContextIndex.overlap) :=
+    le_of_eq hEq.symm
+  obtain ⟨n, hn⟩ :=
+    (PrimeSpectrum.basicOpen_le_basicOpen_iff _ _).mp hle
+  obtain ⟨c, hc⟩ := Ideal.mem_span_singleton.mp hn
+  have hval := congrArg (MvPolynomial.eval (fun _ : Unit => (1 : Int))) hc
+  simp [twoPatchChartGenerator, overlapGenerator, leftGenerator,
+    rightGenerator, coordinate] at hval
+
 /-- SD5: the complete chart producer on the Čech cover. -/
 noncomputable def referenceCechSchemeChartProducer :
     EquationObservableRealization.EquationSchemeChartProducer
