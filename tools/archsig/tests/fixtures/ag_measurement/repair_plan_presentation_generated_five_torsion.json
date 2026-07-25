@@ -1,5 +1,5 @@
 {
-  "schema": "archsig-repair-plan/v0.5.5",
+  "schema": "archsig-repair-plan/v0.5.6",
   "id": "repair-plan:train-ticket-money-head",
   "complex": {
     "charts": [
@@ -62,54 +62,10 @@
     ],
     "enumerationComplete": true
   },
-  "primitives": [
-    {
-      "id": "primitive:cancel-insidepay",
-      "overlapRef": "overlap:cancel-insidepay",
-      "resL": [
-        "drift:refund-rounding"
-      ],
-      "resR": []
-    },
-    {
-      "id": "primitive:insidepay-order",
-      "overlapRef": "overlap:insidepay-order",
-      "resL": [
-        "drift:refund-rounding"
-      ],
-      "resR": []
-    },
-    {
-      "id": "primitive:cancel-order",
-      "overlapRef": "overlap:cancel-order",
-      "resL": [
-        "drift:refund-rounding"
-      ],
-      "resR": []
-    },
-    {
-      "id": "primitive:consign-consignprice",
-      "overlapRef": "overlap:consign-consignprice",
-      "resL": [],
-      "resR": []
-    },
-    {
-      "id": "primitive:preserve-consign",
-      "overlapRef": "overlap:preserve-consign",
-      "resL": [],
-      "resR": []
-    },
-    {
-      "id": "primitive:preserve-consignprice",
-      "overlapRef": "overlap:preserve-consignprice",
-      "resL": [],
-      "resR": []
-    }
-  ],
   "faithfulness": {
     "mode": "supplied",
     "supplied": {
-      "zeroPrimitiveRef": "primitive:consign-consignprice",
+      "zeroOverlapRef": "overlap:consign-consignprice",
       "residualSupportPredicate": {
         "kind": "finite-support",
         "supportVariables": [

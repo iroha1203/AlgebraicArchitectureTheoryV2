@@ -303,9 +303,9 @@
       }
     },
     {
-      "artifactId": "archsig-repair-plan/v0.5.5",
-      "artifactName": "ArchSig RepairPlan v0.5.5 SAGA supplied input artifact",
-      "schemaName": "archsig-repair-plan/v0.5.5",
+      "artifactId": "archsig-repair-plan/v0.5.6",
+      "artifactName": "ArchSig RepairPlan v0.5.6 SAGA supplied input artifact",
+      "schemaName": "archsig-repair-plan/v0.5.6",
       "artifactRole": "primary",
       "ownerPhase": "ArchSig v0.5.4 SAGA Stage 1",
       "status": "implemented",
@@ -314,12 +314,14 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "RepairPlan v0.5.5 supplies the checked SAGA descent input side: a finite complex with its declared ArchMap cover and per-overlap/per-triple context bindings, primitive restriction readings, faithfulness regime, optional trueSheafCertificate and gluingData, and an optional presentation block carrying per-cell semantic/equation generators, relation matrices, generator maps, restriction matrices, and an equation lift atlas. The residual itself is derived by analyze from the selected cover sections and law-surface witness bindings; the coefficient is the selected MeasurementProfile coefficient.",
+        "fieldMappingPolicy": "RepairPlan v0.5.6 supplies the checked SAGA descent input side: a finite complex with its declared ArchMap cover and per-overlap/per-triple context bindings, faithfulness regime, optional trueSheafCertificate and gluingData, and an optional presentation block carrying per-cell semantic/equation generators, relation matrices, generator maps, restriction matrices, and an equation lift atlas. The residual is derived by analyze from the selected cover sections and law-surface witness bindings; the repair cochain is derived by compare from the head/repaired residual derivations; the coefficient is the selected MeasurementProfile coefficient.",
         "deprecatedFields": [
           "residual (retired at v0.5.5; the residual is derived by analyze from observed sections and law-surface witness bindings)",
           "coefficient (retired at v0.5.5; the coefficient is the selected MeasurementProfile declaration)",
           "semanticProjection (retired at v0.5.5 together with the supplied-residual closure diagnostics)",
-          "primitives[].support (retired at v0.5.5; per-overlap residual support is derived)"
+          "primitives[].support (retired at v0.5.5; per-overlap residual support is derived)",
+          "primitives (retired at v0.5.6; the repair cochain is derived by compare from the head/repaired residual derivations)",
+          "faithfulness.supplied.zeroPrimitiveRef (renamed at v0.5.6 to zeroOverlapRef)"
         ],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",

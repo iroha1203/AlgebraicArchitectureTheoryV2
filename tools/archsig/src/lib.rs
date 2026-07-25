@@ -126,7 +126,7 @@ pub use schema::{
     MeasurementProfileFiniteBoundsV1, MeasurementProfileV1, MeasurementProfileWitnessV1,
     NORMALIZED_ARCHMAP_V2_SCHEMA, NormalizedArchMapSummaryV2, NormalizedArchMapV2,
     NormalizedAtomV2, NormalizedContextV2, NormalizedCoverV2, RepairPlanComplexV1,
-    RepairPlanDocumentV1, RepairPlanFaithfulnessV1, RepairPlanOverlapV1, RepairPlanPrimitiveV1,
+    RepairPlanDocumentV1, RepairPlanFaithfulnessV1, RepairPlanOverlapV1,
     RepairPlanTripleOverlapV1, SCHEMA_VERSION_CATALOG_SCHEMA_VERSION,
     SchemaVersionCatalogV0,
 };

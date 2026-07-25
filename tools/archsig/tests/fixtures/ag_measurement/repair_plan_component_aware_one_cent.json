@@ -1,5 +1,5 @@
 {
-  "schema": "archsig-repair-plan/v0.5.5",
+  "schema": "archsig-repair-plan/v0.5.6",
   "id": "repair-plan:component-aware-one-cent",
   "complex": {
     "charts": [
@@ -54,54 +54,10 @@
     ],
     "enumerationComplete": true
   },
-  "primitives": [
-    {
-      "id": "primitive:cancel-inside-payment",
-      "overlapRef": "overlap:cancel-inside-payment",
-      "resL": [
-        "cech:section-mismatch"
-      ],
-      "resR": []
-    },
-    {
-      "id": "primitive:inside-payment-order",
-      "overlapRef": "overlap:inside-payment-order",
-      "resL": [
-        "cech:section-mismatch"
-      ],
-      "resR": []
-    },
-    {
-      "id": "primitive:cancel-order",
-      "overlapRef": "overlap:cancel-order",
-      "resL": [
-        "cech:section-mismatch"
-      ],
-      "resR": []
-    },
-    {
-      "id": "primitive:consign-parcel",
-      "overlapRef": "overlap:consign-parcel",
-      "resL": [],
-      "resR": []
-    },
-    {
-      "id": "primitive:parcel-shipping",
-      "overlapRef": "overlap:parcel-shipping",
-      "resL": [],
-      "resR": []
-    },
-    {
-      "id": "primitive:consign-shipping",
-      "overlapRef": "overlap:consign-shipping",
-      "resL": [],
-      "resR": []
-    }
-  ],
   "faithfulness": {
     "mode": "supplied",
     "supplied": {
-      "zeroPrimitiveRef": "primitive:consign-shipping",
+      "zeroOverlapRef": "overlap:consign-shipping",
       "residualSupportPredicate": {
         "kind": "finite-support",
         "supportVariables": [

@@ -134,7 +134,6 @@ pub fn validate_repair_plan_v1_checks(
         check_references(plan),
         check_archmap_bindings(plan, archmap),
         check_faithfulness_mode_vocabulary(plan),
-        check_overlap_primitive_bijection(plan),
         check_enumeration_assumption(plan),
     ]
 }
@@ -293,6 +292,57 @@ pub(crate) fn complex_has_valid_finite_incidence(complex: &RepairPlanComplexV1) 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn all_mismatch_supports(plan: &RepairPlanDocumentV1) -> BTreeMap<String, Vec<String>> {
+        let flagged: &[&str] = match plan.id.as_str() {
+            "repair-plan:train-ticket-money-head" => {
+                // 整数経路 unit fixture は歴史的語彙 drift:refund-rounding を保つ(CLI 非到達)。
+                return plan
+                    .complex
+                    .overlaps
+                    .iter()
+                    .map(|overlap| {
+                        let support = if matches!(
+                            overlap.id.as_str(),
+                            "overlap:cancel-insidepay"
+                                | "overlap:insidepay-order"
+                                | "overlap:cancel-order"
+                        ) {
+                            vec!["drift:refund-rounding".to_string()]
+                        } else {
+                            Vec::new()
+                        };
+                        (overlap.id.clone(), support)
+                    })
+                    .collect();
+            }
+            _ => {
+                return plan
+                    .complex
+                    .overlaps
+                    .iter()
+                    .map(|overlap| {
+                        (
+                            overlap.id.clone(),
+                            vec![crate::saga::DERIVED_RESIDUAL_VARIABLE.to_string()],
+                        )
+                    })
+                    .collect();
+            }
+        };
+        plan.complex
+            .overlaps
+            .iter()
+            .map(|overlap| {
+                let support = if flagged.contains(&overlap.id.as_str()) {
+                    vec![crate::saga::DERIVED_RESIDUAL_VARIABLE.to_string()]
+                } else {
+                    Vec::new()
+                };
+                (overlap.id.clone(), support)
+            })
+            .collect()
+    }
     use crate::schema::{RepairPlanOverlapV1, RepairPlanTripleOverlapV1};
 
     fn complex_with_edges(edges: [(&str, &str, &str); 3]) -> RepairPlanComplexV1 {
@@ -419,7 +469,7 @@ mod tests {
             h1["sourceComplexFingerprint"],
             comparison_complex_fingerprint(&plan)
         );
-        let checks = presentation_generated_h1_checks(&plan, &declared_restriction_difference_supports(&plan), &plan.complex, h1);
+        let checks = presentation_generated_h1_checks(&plan, &all_mismatch_supports(&plan), &plan.complex, h1);
         assert!(checks.all_pass());
         assert_eq!(checks.source_class_nonzero, Some(true));
         assert_eq!(checks.target_class_nonzero, Some(true));
@@ -670,7 +720,7 @@ mod tests {
         let h1 = comparison["h1ComparisonData"]
             .as_object()
             .expect("H1 comparison data is an object");
-        let checks = presentation_generated_h1_checks(&plan, &declared_restriction_difference_supports(&plan), &plan.complex, h1);
+        let checks = presentation_generated_h1_checks(&plan, &all_mismatch_supports(&plan), &plan.complex, h1);
         assert!(checks.all_pass());
         let output = presentation_generated_h1_output(&plan, &plan.complex, h1, &checks);
         assert!(
@@ -700,7 +750,7 @@ mod tests {
             .as_object()
             .expect("H1 comparison data is an object")
             .clone();
-        let checks = presentation_generated_h1_checks(&plan, &declared_restriction_difference_supports(&plan), &plan.complex, &h1);
+        let checks = presentation_generated_h1_checks(&plan, &all_mismatch_supports(&plan), &plan.complex, &h1);
         assert_eq!(checks.structural_fault, None);
         assert!(checks.presentation_exactness);
         assert!(checks.generator_completeness);
@@ -731,7 +781,7 @@ mod tests {
             .as_object()
             .expect("H1 comparison data is an object")
             .clone();
-        let checks = presentation_generated_h1_checks(&plan, &declared_restriction_difference_supports(&plan), &plan.complex, &h1);
+        let checks = presentation_generated_h1_checks(&plan, &all_mismatch_supports(&plan), &plan.complex, &h1);
         assert_eq!(checks.structural_fault, None);
         assert!(checks.presentation_exactness, "im(R)=ker(chi tilde) over Z");
         assert!(checks.generator_completeness, "[1] generates Z/(2)");
@@ -749,7 +799,7 @@ mod tests {
         {
             cell["repairRelationMatrix"] = serde_json::json!([]);
         }
-        let empty_checks = presentation_generated_h1_checks(&plan, &declared_restriction_difference_supports(&plan), &plan.complex, &empty_relations);
+        let empty_checks = presentation_generated_h1_checks(&plan, &all_mismatch_supports(&plan), &plan.complex, &empty_relations);
         assert!(!empty_checks.presentation_exactness);
 
         // `chi(σ)=[2]` は像が `2Z/(2)=0` になり生成しない。
@@ -757,7 +807,7 @@ mod tests {
         weak_generation["presentation"]["cells"]
             .as_array_mut()
             .expect("cells are an array")[0]["generatorMap"] = serde_json::json!([[2]]);
-        let weak_checks = presentation_generated_h1_checks(&plan, &declared_restriction_difference_supports(&plan), &plan.complex, &weak_generation);
+        let weak_checks = presentation_generated_h1_checks(&plan, &all_mismatch_supports(&plan), &plan.complex, &weak_generation);
         assert!(!weak_checks.generator_completeness);
 
         // 関係を `4σ=0` にすると soundness は成立し rank も 1 のまま一致するが、
@@ -768,7 +818,7 @@ mod tests {
             .as_array_mut()
             .expect("cells are an array")[0]["repairRelationMatrix"] = serde_json::json!([[4]]);
         let equal_rank_checks =
-            presentation_generated_h1_checks(&plan, &declared_restriction_difference_supports(&plan), &plan.complex, &equal_rank_wrong_lattice);
+            presentation_generated_h1_checks(&plan, &all_mismatch_supports(&plan), &plan.complex, &equal_rank_wrong_lattice);
         assert!(!equal_rank_checks.presentation_exactness);
         assert!(equal_rank_checks.generator_completeness);
 
@@ -777,7 +827,7 @@ mod tests {
         wrong_relation["presentation"]["cells"]
             .as_array_mut()
             .expect("cells are an array")[0]["repairRelationMatrix"] = serde_json::json!([[3]]);
-        let wrong_checks = presentation_generated_h1_checks(&plan, &declared_restriction_difference_supports(&plan), &plan.complex, &wrong_relation);
+        let wrong_checks = presentation_generated_h1_checks(&plan, &all_mismatch_supports(&plan), &plan.complex, &wrong_relation);
         assert!(!wrong_checks.presentation_exactness);
     }
 
@@ -800,7 +850,7 @@ mod tests {
             .as_array_mut()
             .expect("local lifts are an array")
             .pop();
-        let missing_lift_checks = presentation_generated_h1_checks(&plan, &declared_restriction_difference_supports(&plan), &plan.complex, &missing_lift);
+        let missing_lift_checks = presentation_generated_h1_checks(&plan, &all_mismatch_supports(&plan), &plan.complex, &missing_lift);
         assert_eq!(
             missing_lift_checks.structural_fault,
             Some("equation-lift-atlas-does-not-cover-the-charts-exactly")
@@ -815,7 +865,7 @@ mod tests {
         let first = transitions[0].clone();
         transitions.push(first);
         let duplicate_checks =
-            presentation_generated_h1_checks(&plan, &declared_restriction_difference_supports(&plan), &plan.complex, &duplicate_transition);
+            presentation_generated_h1_checks(&plan, &all_mismatch_supports(&plan), &plan.complex, &duplicate_transition);
         assert_eq!(
             duplicate_checks.structural_fault,
             Some("equation-lift-atlas-transition-duplicated")
@@ -827,7 +877,7 @@ mod tests {
             .expect("local lifts are an array")[0]["chartRef"] =
             serde_json::json!("ctx:not-in-the-complex");
         let unknown_chart_checks =
-            presentation_generated_h1_checks(&plan, &declared_restriction_difference_supports(&plan), &plan.complex, &unknown_chart);
+            presentation_generated_h1_checks(&plan, &all_mismatch_supports(&plan), &plan.complex, &unknown_chart);
         assert_eq!(
             unknown_chart_checks.structural_fault,
             Some("equation-lift-atlas-names-an-unknown-chart")
@@ -840,7 +890,7 @@ mod tests {
         let first_cell = cells[0].clone();
         cells.push(first_cell);
         let duplicate_cell_checks =
-            presentation_generated_h1_checks(&plan, &declared_restriction_difference_supports(&plan), &plan.complex, &duplicate_cell);
+            presentation_generated_h1_checks(&plan, &all_mismatch_supports(&plan), &plan.complex, &duplicate_cell);
         assert_eq!(
             duplicate_cell_checks.structural_fault,
             Some("presentation-cell-duplicated")
@@ -865,7 +915,7 @@ mod tests {
             .expect("presentation cells are an array")[0]["repairRelationMatrix"] =
             serde_json::json!([[1]]);
         let kernel_checks =
-            presentation_generated_h1_checks(&plan, &declared_restriction_difference_supports(&plan), &plan.complex, &kernel_mismatch);
+            presentation_generated_h1_checks(&plan, &all_mismatch_supports(&plan), &plan.complex, &kernel_mismatch);
         assert!(!kernel_checks.presentation_exactness);
         assert!(!kernel_checks.all_pass());
 
@@ -879,7 +929,7 @@ mod tests {
         cell["equationGenerators"] = serde_json::json!(["q", "q2"]);
         cell["generatorMap"] = serde_json::json!([[1], [0]]);
         let generation_checks =
-            presentation_generated_h1_checks(&plan, &declared_restriction_difference_supports(&plan), &plan.complex, &generation_missing);
+            presentation_generated_h1_checks(&plan, &all_mismatch_supports(&plan), &plan.complex, &generation_missing);
         assert!(!generation_checks.generator_completeness);
         assert!(!generation_checks.all_pass());
 
@@ -890,7 +940,7 @@ mod tests {
         residual_mismatch["presentation"]["equationLiftAtlas"]["transitionDifferences"][0]["coefficients"] =
             serde_json::json!([0]);
         let residual_checks =
-            presentation_generated_h1_checks(&plan, &declared_restriction_difference_supports(&plan), &plan.complex, &residual_mismatch);
+            presentation_generated_h1_checks(&plan, &all_mismatch_supports(&plan), &plan.complex, &residual_mismatch);
         assert!(!residual_checks.residual_witness_computed);
         assert!(!residual_checks.all_pass());
 
@@ -907,32 +957,38 @@ mod tests {
             .expect("presentation cells are an array")[0]["equationRelationMatrix"] =
             serde_json::json!([[1]]);
         let relation_checks =
-            presentation_generated_h1_checks(&plan, &declared_restriction_difference_supports(&plan), &plan.complex, &relation_not_stable);
+            presentation_generated_h1_checks(&plan, &all_mismatch_supports(&plan), &plan.complex, &relation_not_stable);
         assert!(relation_checks.presentation_exactness);
         assert!(!relation_checks.restriction_naturality);
         assert!(!relation_checks.all_pass());
 
+        // validation は shape のみ(#3821)。kernel mismatch は評価時に導出 residual で落ちる。
+        let kernel_checks = presentation_generated_h1_checks(
+            &plan,
+            &all_mismatch_supports(&plan),
+            &plan.complex,
+            &kernel_mismatch,
+        );
+        assert!(!kernel_checks.presentation_exactness);
+        assert!(!kernel_checks.all_pass());
+        let archmap: ArchMapDocumentV2 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/archmap_v2.json"
+        ))
+        .expect("ArchMap fixture parses");
         let mut invalid_plan = plan.clone();
         invalid_plan
             .comparison
             .as_mut()
             .expect("comparison is supplied")["h1ComparisonData"] = Value::Object(kernel_mismatch);
-        let archmap: ArchMapDocumentV2 = serde_json::from_str(include_str!(
-            "../tests/fixtures/ag_measurement/archmap_v2.json"
-        ))
-        .expect("ArchMap fixture parses");
         let validation = validate_repair_plan_v1_checks(&invalid_plan, &archmap);
         let supplied_slots = validation
             .iter()
             .find(|check| check.id == "repair-plan-schema052-supplied-slots")
             .expect("supplied slot validation exists");
-        assert_eq!(supplied_slots.result, "fail");
-        assert!(supplied_slots.examples.iter().any(|example| {
-            example
-                .evidence
-                .as_deref()
-                .is_some_and(|target| target.contains("presentationExactness=false"))
-        }));
+        assert_eq!(
+            supplied_slots.result, "pass",
+            "shape-only validation must not fail on value-level kernel mismatch"
+        );
 
         let mut missing_atlas = comparison["h1ComparisonData"]
             .as_object()
@@ -942,7 +998,7 @@ mod tests {
             .as_object_mut()
             .expect("presentation is an object")
             .remove("equationLiftAtlas");
-        let missing_checks = presentation_generated_h1_checks(&plan, &declared_restriction_difference_supports(&plan), &plan.complex, &missing_atlas);
+        let missing_checks = presentation_generated_h1_checks(&plan, &all_mismatch_supports(&plan), &plan.complex, &missing_atlas);
         assert!(!missing_checks.equation_lift_atlas_present);
         assert!(!missing_checks.all_pass());
 
@@ -957,12 +1013,10 @@ mod tests {
             .iter()
             .find(|check| check.id == "repair-plan-schema052-supplied-slots")
             .expect("supplied slot validation exists");
-        assert!(missing_slots.examples.iter().any(|example| {
-            example
-                .evidence
-                .as_deref()
-                .is_some_and(|target| target.contains("equationLiftAtlasPresent=false"))
-        }));
+        assert_eq!(
+            missing_slots.result, "pass",
+            "shape-only validation must not fail on a missing equation lift atlas"
+        );
     }
 }
 
@@ -993,7 +1047,7 @@ fn check_supplied_slots(
     if plan.faithfulness.mode == "supplied" {
         match &plan.faithfulness.supplied {
             Some(supplied)
-                if !supplied.zero_primitive_ref.is_empty()
+                if !supplied.zero_overlap_ref.is_empty()
                     && supplied.residual_support_predicate.kind == "finite-support"
                     && supplied.residual_support_predicate.zero_on_zero_primitive
                     && supplied.residual_support_predicate
@@ -1004,7 +1058,7 @@ fn check_supplied_slots(
             Some(_) => examples.push(generic_validation_example(
                 "faithfulness.supplied",
                 "incomplete",
-                "supplied faithfulness requires zeroPrimitiveRef, residualSupportPredicate, and faithfulnessLaw",
+                "supplied faithfulness requires zeroOverlapRef, residualSupportPredicate, and faithfulnessLaw",
             )),
             None => examples.push(generic_validation_example(
                 "faithfulness.supplied",
@@ -1013,39 +1067,16 @@ fn check_supplied_slots(
             )),
         }
         if let Some(supplied) = &plan.faithfulness.supplied {
-            let declared = declared_restriction_difference_supports(plan);
-            let primitive = plan
-                .primitives
+            let overlap_exists = plan
+                .complex
+                .overlaps
                 .iter()
-                .find(|primitive| primitive.id == supplied.zero_primitive_ref);
-            if primitive.is_none()
-                || primitive.is_some_and(|primitive| {
-                    declared
-                        .get(&primitive.overlap_ref)
-                        .is_some_and(|variables| !variables.is_empty())
-                })
-            {
+                .any(|overlap| overlap.id == supplied.zero_overlap_ref);
+            if !overlap_exists {
                 examples.push(generic_validation_example(
-                    "faithfulness.supplied.zeroPrimitiveRef",
-                    &supplied.zero_primitive_ref,
-                    "zeroPrimitiveRef must resolve to a primitive with empty support",
-                ));
-            }
-            let actual_support = declared
-                .values()
-                .flat_map(|variables| variables.iter().cloned())
-                .collect::<BTreeSet<_>>();
-            let declared_support = supplied
-                .residual_support_predicate
-                .support_variables
-                .iter()
-                .cloned()
-                .collect::<BTreeSet<_>>();
-            if declared_support != actual_support {
-                examples.push(generic_validation_example(
-                    "faithfulness.supplied.residualSupportPredicate.supportVariables",
-                    &format!("declared={declared_support:?}, actual={actual_support:?}"),
-                    "Q(r) must match the finite residual support generated by the supplied primitives",
+                    "faithfulness.supplied.zeroOverlapRef",
+                    &supplied.zero_overlap_ref,
+                    "zeroOverlapRef must resolve to a declared overlap; the derived residual is checked to vanish there at evaluation time",
                 ));
             }
         }
@@ -1341,8 +1372,6 @@ fn check_supplied_slots(
                                 _ => false,
                             }
                         });
-                    let mut explicit_checks = None;
-                    let mut presentation_checks = None;
                     let h1_ok = !nested_unknown
                         && h1.is_some_and(|h1| {
                             let source_complex_fingerprint = comparison_complex_fingerprint(plan);
@@ -1373,14 +1402,9 @@ fn check_supplied_slots(
                                         && h1.get("cochainMapRef").and_then(Value::as_str)
                                             == Some(COMPARISON_COCHAIN_MAP_REF)
                                         && target_complex.as_ref().is_some_and(|complex| {
-                                            let declared =
-                                                declared_restriction_difference_supports(plan);
-                                            let checks = explicit_h1_comparison_checks(
-                                                plan, &declared, complex, h1,
-                                            );
-                                            explicit_checks = Some(checks);
+                                            // 値の検査(左右逆・差保存・微分可換)は評価時に導出 residual で
+                                            // 行う。validation は shape(schema・fingerprints・target support 形)のみ。
                                             comparison_target_cochain_support_matches(complex, h1)
-                                                && checks.all_pass()
                                         })
                                 }
                                 Some("presentation-generated") => {
@@ -1389,52 +1413,31 @@ fn check_supplied_slots(
                                         && fingerprints_ok
                                         && target_fingerprint.as_deref()
                                             == Some(source_complex_fingerprint.as_str())
-                                        && target_complex.as_ref().is_some_and(|complex| {
-                                            let checks =
-                                                presentation_generated_h1_checks(
-                                                    plan,
-                                                    &declared_restriction_difference_supports(plan),
-                                                    complex,
-                                                    h1,
-                                                );
-                                            presentation_checks = Some(checks.clone());
-                                            checks.all_pass()
-                                        })
+                                        && target_complex.as_ref().is_some() && {
+                                            // 値の検査(exactness / generation / naturality / witness)は
+                                            // 評価時に導出 residual で行う。validation は cell 被覆の shape のみ。
+                                            let expected = presentation_cell_refs(plan);
+                                            h1.get("presentation")
+                                                .and_then(Value::as_object)
+                                                .and_then(|presentation| presentation.get("cells"))
+                                                .and_then(Value::as_array)
+                                                .is_some_and(|cells| {
+                                                    cells
+                                                        .iter()
+                                                        .filter_map(|cell| {
+                                                            cell.get("cellRef").and_then(Value::as_str)
+                                                        })
+                                                        .map(str::to_string)
+                                                        .collect::<BTreeSet<_>>()
+                                                        == expected
+                                                })
+                                        }
                                 }
                                 _ => false,
                             }
                         });
                     if !bridge_ok || !h1_ok {
-                        let reason = explicit_checks
-                            .map(|checks| {
-                                format!(
-                                    "COMPARISON_DATA_CONTRACT_VIOLATION: checkedProperties degreeOneLeftInverse={} degreeOneRightInverse={} differencePreserving={} degreeTwoZeroPreserving={} differentialCommutative={}",
-                                    checks.degree_one_left_inverse,
-                                    checks.degree_one_right_inverse,
-                                    checks.difference_preserving,
-                                    checks.degree_two_zero_preserving,
-                                    checks.differential_commutative,
-                                )
-                            })
-                            .or_else(|| {
-                                presentation_checks.map(|checks| {
-                                    format!(
-                                        "COMPARISON_DATA_CONTRACT_VIOLATION: structuralFault={} presentationCellsCoverComplex={} presentationExactness={} generatorCompleteness={} restrictionNaturality={} degreeZeroCommutative={} degreeOneCommutative={} sourceCocycle={} targetCocycle={} equationLiftAtlasPresent={} residualWitnessComputed={}",
-                                        checks.structural_fault.unwrap_or("none"),
-                                        checks.presentation_cells_cover_complex(),
-                                        checks.presentation_exactness,
-                                        checks.generator_completeness,
-                                        checks.restriction_naturality,
-                                        checks.degree_zero_commutative,
-                                        checks.degree_one_commutative,
-                                        checks.source_cocycle,
-                                        checks.target_cocycle,
-                                        checks.equation_lift_atlas_present,
-                                        checks.residual_witness_computed,
-                                    )
-                                })
-                            })
-                            .unwrap_or_else(|| "COMPARISON_DATA_CONTRACT_VIOLATION: comparison requires a chart-indexed or explicit incidence bridge and a validated identity or explicit finite H1 comparison contract".to_string());
+                        let reason = "COMPARISON_DATA_CONTRACT_VIOLATION: comparison requires a chart-indexed or explicit incidence bridge and a shape-valid H1 comparison contract; value checks run at evaluation time against the derived residual".to_string();
                         examples.push(generic_validation_example(
                             path,
                             "comparison-contract-invalid",
@@ -1952,12 +1955,15 @@ pub(crate) fn presentation_generated_h1_output(
             "sourceClassNonZero": checks.source_class_nonzero
         },
         "residualWitness": residual_witness,
-        "restrictionNaturality": checks.restriction_naturality
+        "restrictionNaturality": checks.restriction_naturality,
+        "structuralFault": checks.structural_fault,
+        "presentationCellsCoverComplex": checks.presentation_cells_cover_complex()
     })
 }
 
 pub(crate) fn recompute_presentation_generated_h1_output(
     plan: &RepairPlanDocumentV1,
+    supports: &BTreeMap<String, Vec<String>>,
 ) -> Option<Value> {
     let comparison = plan.comparison.as_ref()?;
     let h1 = comparison.get("h1ComparisonData")?.as_object()?;
@@ -1965,12 +1971,7 @@ pub(crate) fn recompute_presentation_generated_h1_output(
         return None;
     }
     let target_complex = comparison_target_complex(plan, comparison)?;
-    let checks = presentation_generated_h1_checks(
-        plan,
-        &declared_restriction_difference_supports(plan),
-        &target_complex,
-        h1,
-    );
+    let checks = presentation_generated_h1_checks(plan, supports, &target_complex, h1);
     Some(presentation_generated_h1_output(
         plan,
         &target_complex,
@@ -3595,15 +3596,6 @@ fn check_references(plan: &RepairPlanDocumentV1) -> ValidationCheck {
             }
         }
     }
-    for primitive in &plan.primitives {
-        if !overlaps.contains(primitive.overlap_ref.as_str()) {
-            examples.push(generic_validation_example(
-                &format!("primitives[{}].overlapRef", primitive.id),
-                &primitive.overlap_ref,
-                "primitive overlapRef must resolve to complex.overlaps",
-            ));
-        }
-    }
     for triple in &plan.complex.triple_overlaps {
         if !triple_ids.insert(triple.id.as_str()) {
             examples.push(generic_validation_example(
@@ -3986,52 +3978,6 @@ fn check_faithfulness_mode_vocabulary(plan: &RepairPlanDocumentV1) -> Validation
     )
 }
 
-fn check_overlap_primitive_bijection(plan: &RepairPlanDocumentV1) -> ValidationCheck {
-    let overlap_ids = plan
-        .complex
-        .overlaps
-        .iter()
-        .map(|overlap| overlap.id.as_str())
-        .collect::<BTreeSet<_>>();
-    let mut primitive_refs = BTreeMap::<&str, Vec<&str>>::new();
-    for primitive in &plan.primitives {
-        primitive_refs
-            .entry(primitive.overlap_ref.as_str())
-            .or_default()
-            .push(primitive.id.as_str());
-    }
-    let mut examples = Vec::new();
-    for overlap_id in &overlap_ids {
-        match primitive_refs.get(overlap_id).map(Vec::as_slice) {
-            Some([_]) => {}
-            Some(ids) => examples.push(generic_validation_example(
-                &format!("complex.overlaps[{overlap_id}]"),
-                &format!("{ids:?}"),
-                "each overlap must have exactly one primitive",
-            )),
-            None => examples.push(generic_validation_example(
-                &format!("complex.overlaps[{overlap_id}]"),
-                "missing",
-                "each overlap must have exactly one primitive",
-            )),
-        }
-    }
-    for primitive in &plan.primitives {
-        if !overlap_ids.contains(primitive.overlap_ref.as_str()) {
-            examples.push(generic_validation_example(
-                &format!("primitives[{}].overlapRef", primitive.id),
-                &primitive.overlap_ref,
-                "primitive overlapRef must resolve to complex.overlaps[].id",
-            ));
-        }
-    }
-    examples_check(
-        "repair-plan-schema052-overlap-primitive-bijection",
-        "Every complex overlap is represented by exactly one primitive before SAGA evaluation",
-        examples,
-    )
-}
-
 fn check_enumeration_assumption(plan: &RepairPlanDocumentV1) -> ValidationCheck {
     let mut check = validation_check(
         "repair-plan-schema052-enumeration-assumption",
@@ -4068,33 +4014,6 @@ fn collect_conclusion_tokens(value: &Value, path: &str, hits: &mut Vec<String>) 
 }
 
 
-/// Validation-time stand-in for the derived residual: the declared repair readings'
-/// F2 restriction difference per overlap. Evaluation reads the derived residual instead.
-pub(crate) fn declared_restriction_difference_supports(
-    plan: &RepairPlanDocumentV1,
-) -> BTreeMap<String, Vec<String>> {
-    plan.primitives
-        .iter()
-        .map(|primitive| {
-            (
-                primitive.overlap_ref.clone(),
-                symmetric_difference(&primitive.res_l, &primitive.res_r)
-                    .into_iter()
-                    .collect::<Vec<_>>(),
-            )
-        })
-        .collect()
-}
-
-fn symmetric_difference(left: &[String], right: &[String]) -> BTreeSet<String> {
-    let left = sorted_set(left);
-    let right = sorted_set(right);
-    left.symmetric_difference(&right).cloned().collect()
-}
-
-fn sorted_set(values: &[String]) -> BTreeSet<String> {
-    values.iter().cloned().collect()
-}
 
 fn examples_check(
     id: &str,

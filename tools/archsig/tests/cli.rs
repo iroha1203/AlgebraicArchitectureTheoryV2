@@ -16,7 +16,7 @@ use archsig::{
     ARCHSIG_SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS, ARCHSIG_SAGA_CONCLUSION_CODES,
     ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL,
     ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, ArchMapDocumentV2, ArchSigRunManifestV1,
-    RepairPlanDocumentV1, RepairPlanPrimitiveV1, compare_archmap_v2_doctrine, validate_measurement_packet_value_v1,
+    RepairPlanDocumentV1, compare_archmap_v2_doctrine, validate_measurement_packet_value_v1,
     validate_refactor_morphism_v1, validate_refinement_comparison_v1,
 };
 use serde_json::{Value, json};
@@ -982,10 +982,6 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
     let valid = read_json(&valid_report);
     assert_eq!(valid["summary"]["result"], "warn");
     assert_eq!(
-        check_by_id(&valid, "repair-plan-schema052-overlap-primitive-bijection")["result"],
-        "pass"
-    );
-    assert_eq!(
         valid["assumptionLedger"][0]["assumedBy"], "repair-plan author",
         "enumerationComplete is recorded as author assumption, not verified"
     );
@@ -1028,27 +1024,26 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
                 .expect("explicit comparison complex serializes")
         )
     );
-    let declared_support = |primitive: &RepairPlanPrimitiveV1| {
-        let left = primitive.res_l.iter().cloned().collect::<BTreeSet<_>>();
-        let right = primitive.res_r.iter().cloned().collect::<BTreeSet<_>>();
-        left.symmetric_difference(&right)
-            .cloned()
-            .collect::<Vec<_>>()
-    };
+    let explicit_flagged = saga_plan_flagged_overlaps(&explicit_comparison);
     let explicit_target_support = typed_explicit
-        .primitives
+        .complex
+        .overlaps
         .iter()
-        .map(|primitive| {
+        .map(|overlap| {
+            let support: Vec<&str> = if explicit_flagged.contains(&overlap.id) {
+                vec!["cech:section-mismatch"]
+            } else {
+                Vec::new()
+            };
             json!({
-                "overlapRef": primitive.overlap_ref,
-                "support": declared_support(primitive)
+                "overlapRef": overlap.id,
+                "support": support
             })
         })
         .collect::<Vec<_>>();
-    let explicit_variables = typed_explicit
-        .primitives
-        .iter()
-        .flat_map(declared_support)
+    let explicit_variables = (!explicit_flagged.is_empty())
+        .then(|| "cech:section-mismatch".to_string())
+        .into_iter()
         .collect::<BTreeSet<_>>();
     let explicit_variable_map = explicit_variables
         .iter()
@@ -1206,6 +1201,12 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
             serde_json::to_vec_pretty(&invalid).expect("invalid comparison serializes"),
         )
         .expect("invalid comparison writes");
+        // 値レベルの検査(差保存・零像保存)は #3821 で評価時(導出 residual)に一本化した。
+        // validation は shape のみを守る。値レベル case は validation を通過することを固定する。
+        let value_level = matches!(
+            case,
+            "comparison-explicit-map-difference" | "comparison-explicit-zero-image"
+        );
         let report = out_dir.join(format!("{case}.report.json"));
         run_sig0_expect_code(
             &[
@@ -1219,9 +1220,17 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
                 "--out",
                 report.to_str().expect("path is utf-8"),
             ],
-            1,
+            if value_level { 0 } else { 1 },
         );
         let report_json = read_json(&report);
+        if value_level {
+            assert_eq!(
+                check_by_id(&report_json, "repair-plan-schema052-supplied-slots")["result"],
+                "pass",
+                "value-level comparison case {case} must pass shape-only validation"
+            );
+            continue;
+        }
         assert_eq!(
             check_by_id(&report_json, "repair-plan-schema052-supplied-slots")["result"],
             "fail",
@@ -1232,18 +1241,6 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
                 check_by_id(&report_json, "repair-plan-schema052-reference-resolution")["result"],
                 "fail",
                 "unresolved comparison references must fail the reference-resolution check"
-            );
-        }
-        if case == "comparison-explicit-map-difference" {
-            assert!(
-                json_contains_substring(&report_json, "differencePreserving=false"),
-                "difference-breaking map must report differencePreserving=false"
-            );
-        }
-        if case == "comparison-explicit-zero-image" {
-            assert!(
-                json_contains_substring(&report_json, "degreeTwoZeroPreserving=false"),
-                "nonzero zeroImage must report degreeTwoZeroPreserving=false"
             );
         }
         assert!(
@@ -1278,24 +1275,20 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
 
     for (case, field, expected) in [
         (
-            "zero-primitive-not-empty",
-            "zeroPrimitiveRef",
-            "zeroPrimitiveRef must resolve to a primitive with empty support",
+            "zero-overlap-unknown",
+            "zeroOverlapRef",
+            "zeroOverlapRef must resolve to a declared overlap",
         ),
         (
             "predicate-not-zero",
             "zeroOnZeroPrimitive",
             "faithfulness requires Q(r)=0 on the supplied zero primitive",
         ),
-        (
-            "predicate-forged-support",
-            "supportVariables",
-            "Q(r) must match the finite residual support generated by the supplied primitives",
-        ),
+
     ] {
         let mut candidate = read_json(&supplied_path);
-        if field == "zeroPrimitiveRef" {
-            candidate["faithfulness"]["supplied"][field] = json!("primitive:order-inventory");
+        if field == "zeroOverlapRef" {
+            candidate["faithfulness"]["supplied"][field] = json!("overlap:does-not-exist");
         } else if field == "zeroOnZeroPrimitive" {
             candidate["faithfulness"]["supplied"]["residualSupportPredicate"][field] = json!(false);
         } else {
@@ -1443,78 +1436,6 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
         "fail"
     );
 
-    let mut missing_primitive = read_json(&repair_plan_path);
-    missing_primitive["primitives"]
-        .as_array_mut()
-        .expect("primitives array")
-        .pop();
-    let missing_primitive_path = out_dir.join("repair_plan_missing_primitive.json");
-    fs::write(
-        &missing_primitive_path,
-        serde_json::to_vec_pretty(&missing_primitive).expect("repair plan serializes"),
-    )
-    .expect("missing primitive repair plan writes");
-    let missing_primitive_report = out_dir.join("repair-plan-missing-primitive.json");
-    run_sig0_expect_code(
-        &[
-            "repair-plan",
-            "--archmap",
-            root.join("archmap_v2.json")
-                .to_str()
-                .expect("path is utf-8"),
-            "--repair-plan",
-            missing_primitive_path.to_str().expect("path is utf-8"),
-            "--out",
-            missing_primitive_report.to_str().expect("path is utf-8"),
-        ],
-        1,
-    );
-    let missing_primitive_json = read_json(&missing_primitive_report);
-    assert_eq!(
-        check_by_id(
-            &missing_primitive_json,
-            "repair-plan-schema052-overlap-primitive-bijection"
-        )["result"],
-        "fail"
-    );
-
-    let mut duplicate_primitive = read_json(&repair_plan_path);
-    let first_primitive = duplicate_primitive["primitives"][0].clone();
-    duplicate_primitive["primitives"]
-        .as_array_mut()
-        .expect("primitives array")
-        .push(first_primitive);
-    duplicate_primitive["primitives"][3]["id"] = json!("primitive:duplicate-overlap");
-    let duplicate_primitive_path = out_dir.join("repair_plan_duplicate_primitive.json");
-    fs::write(
-        &duplicate_primitive_path,
-        serde_json::to_vec_pretty(&duplicate_primitive).expect("repair plan serializes"),
-    )
-    .expect("duplicate primitive repair plan writes");
-    let duplicate_primitive_report = out_dir.join("repair-plan-duplicate-primitive.json");
-    run_sig0_expect_code(
-        &[
-            "repair-plan",
-            "--archmap",
-            root.join("archmap_v2.json")
-                .to_str()
-                .expect("path is utf-8"),
-            "--repair-plan",
-            duplicate_primitive_path.to_str().expect("path is utf-8"),
-            "--out",
-            duplicate_primitive_report.to_str().expect("path is utf-8"),
-        ],
-        1,
-    );
-    let duplicate_primitive_json = read_json(&duplicate_primitive_report);
-    assert_eq!(
-        check_by_id(
-            &duplicate_primitive_json,
-            "repair-plan-schema052-overlap-primitive-bijection"
-        )["result"],
-        "fail"
-    );
-
     let mut reserved = read_json(&repair_plan_path);
     reserved["trueSheafCertificate"] = json!({"claim": "future"});
     reserved["faithfulness"]["mode"] = json!("supplied");
@@ -1634,7 +1555,7 @@ fn cli_repair_plan_stage1_validates_supplied_input_boundary() {
     assert!(String::from_utf8_lossy(&unknown_field_output.stderr).contains("unknown field"));
 
     let mut conclusion_token = read_json(&repair_plan_path);
-    conclusion_token["primitives"][0]["resL"][0] = json!("glues");
+    conclusion_token["id"] = json!("glues");
     let conclusion_path = out_dir.join("repair_plan_conclusion_token.json");
     fs::write(
         &conclusion_path,
@@ -1931,19 +1852,13 @@ fn supplied_triple_saga_plan(root: &Path, nonzero_class: bool) -> Value {
         "overlap:inventory-shared",
         "overlap:order-shared"
     ]}]);
-    let residual = if nonzero_class {
-        json!(["cech:section-mismatch"])
+    // residual 供給と repair 宣言は撤去済み(#3820 / #3821)。観測シナリオは
+    // saga_plan_flagged_overlaps の id 表で引く(pentagon 5 辺 mismatch / 全一致)。
+    plan["id"] = if nonzero_class {
+        json!("repair-plan:supplied-triple-pentagon")
     } else {
-        json!([])
+        json!("repair-plan:supplied-triple-pentagon-zero")
     };
-    plan["primitives"] = json!([
-        {"id": "primitive:order-inventory", "overlapRef": "overlap:order-inventory", "resL": residual, "resR": []},
-        {"id": "primitive:inventory-shared", "overlapRef": "overlap:inventory-shared", "resL": residual, "resR": []},
-        {"id": "primitive:order-shared", "overlapRef": "overlap:order-shared", "resL": [], "resR": []},
-        {"id": "primitive:shared-route", "overlapRef": "overlap:shared-route", "resL": residual, "resR": []},
-        {"id": "primitive:route-ledger", "overlapRef": "overlap:route-ledger", "resL": residual, "resR": []},
-        {"id": "primitive:ledger-order", "overlapRef": "overlap:ledger-order", "resL": residual, "resR": []}
-    ]);
     plan["trueSheafCertificate"] = json!({
         "kind": "true-sheaf-certificate",
         "coverRef": "cover:order-inventory",
@@ -1977,7 +1892,7 @@ fn supplied_triple_saga_plan(root: &Path, nonzero_class: bool) -> Value {
     plan["faithfulness"] = json!({
         "mode": "supplied",
         "supplied": {
-            "zeroPrimitiveRef": "primitive:order-shared",
+            "zeroOverlapRef": "overlap:order-shared",
             "residualSupportPredicate": {
                 "kind": "finite-support",
                 "supportVariables": support_variables,
@@ -1994,20 +1909,10 @@ fn supplied_triple_saga_plan(root: &Path, nonzero_class: bool) -> Value {
             serde_json::to_vec(&typed_plan.complex).expect("comparison complex serializes")
         )
     );
-    let declared_support = |primitive: &RepairPlanPrimitiveV1| {
-        let left = primitive.res_l.iter().cloned().collect::<BTreeSet<_>>();
-        let right = primitive.res_r.iter().cloned().collect::<BTreeSet<_>>();
-        left.symmetric_difference(&right)
-            .cloned()
-            .collect::<Vec<_>>()
-    };
-    let saga_variable_map = typed_plan
-        .primitives
-        .iter()
-        .flat_map(|primitive| declared_support(primitive))
-        .collect::<BTreeSet<_>>()
-        .iter()
-        .map(|variable| json!({"source": variable, "target": variable}))
+    let plan_flagged = saga_plan_flagged_overlaps(&plan);
+    let saga_variable_map = (!plan_flagged.is_empty())
+        .then(|| json!({"source": "cech:section-mismatch", "target": "cech:section-mismatch"}))
+        .into_iter()
         .collect::<Vec<_>>();
     let saga_cochain_map = json!({
         "degreeZero": typed_plan.complex.charts.iter().map(|chart| json!({
@@ -2044,12 +1949,18 @@ fn supplied_triple_saga_plan(root: &Path, nonzero_class: bool) -> Value {
             "sourceComplexFingerprint": complex_fingerprint,
             "targetComplexFingerprint": complex_fingerprint,
             "targetCochainSupport": typed_plan
-                .primitives
+                .complex
+                .overlaps
                 .iter()
-                .map(|primitive| {
+                .map(|overlap| {
+                    let support: Vec<&str> = if plan_flagged.contains(&overlap.id) {
+                        vec!["cech:section-mismatch"]
+                    } else {
+                        Vec::new()
+                    };
                     json!({
-                        "overlapRef": primitive.overlap_ref,
-                        "support": declared_support(primitive)
+                        "overlapRef": overlap.id,
+                        "support": support
                     })
                 })
                 .collect::<Vec<_>>(),
@@ -2061,6 +1972,7 @@ fn supplied_triple_saga_plan(root: &Path, nonzero_class: bool) -> Value {
 
 fn presentation_generated_saga_plan(root: &Path, nonzero_class: bool) -> Value {
     let mut plan = supplied_triple_saga_plan(root, nonzero_class);
+    let plan_flagged = saga_plan_flagged_overlaps(&plan);
     plan["complex"]["archmapCoverRef"] = json!("cover:presentation-generated-triple");
     for (overlap_index, context_ref) in [
         "ctx:overlap-order-inventory",
@@ -2150,11 +2062,7 @@ fn presentation_generated_saga_plan(root: &Path, nonzero_class: bool) -> Value {
                         "coefficients": [0]
                     })).collect::<Vec<_>>(),
                     "transitionDifferences": typed_plan.complex.overlaps.iter().map(|overlap| {
-                        let active = typed_plan.primitives.iter().find(|primitive| {
-                            primitive.overlap_ref == overlap.id
-                        }).is_some_and(|primitive| {
-                            primitive.res_l.iter().chain(primitive.res_r.iter()).any(|variable| variable == "cech:section-mismatch")
-                        });
+                        let active = plan_flagged.contains(&overlap.id);
                         json!({
                             "overlapRef": overlap.id,
                             "coefficients": [u8::from(active)]
@@ -2662,17 +2570,9 @@ fn cli_analyze_saga_descent_requires_complete_enumeration_for_automatic_c2_zero(
 fn cli_analyze_saga_descent_rejects_a_class_certificate_spanning_components() {
     let root = ag_measurement_root();
     let mut plan = component_aware_one_cent_saga_plan(&root);
-    for primitive_id in ["primitive:consign-parcel", "primitive:parcel-shipping"] {
-        let primitive = plan["primitives"]
-            .as_array_mut()
-            .expect("primitives are an array")
-            .iter_mut()
-            .find(|primitive| primitive["id"] == primitive_id)
-            .expect("component primitive exists");
-        primitive["resL"] = json!(["drift:other-component"]);
-    }
-    plan["faithfulness"]["supplied"]["residualSupportPredicate"]["supportVariables"] =
-        json!(["cech:section-mismatch", "drift:other-component"]);
+    // 観測 mismatch が第二成分(consign 系)にも立つシナリオ。導出 residual が
+    // 2 成分に跨がるため class 認証は成立してはならない。
+    plan["id"] = json!("repair-plan:component-aware-cross-component");
 
     let out_dir = run_saga_fixture_lock_with_archmap(
         "ag-saga-component-aware-cross-component-certificate",
@@ -3203,6 +3103,119 @@ fn cli_compare_records_repair_plan_provenance_without_suppressing_verdict_rows()
 }
 
 #[test]
+fn cli_compare_derives_repair_cochain_when_residual_change_is_a_boundary() {
+    let root = ag_measurement_root();
+    let base_plan = read_json(&root.join("repair_plan_complete_support.json"));
+    let mut head_plan = base_plan.clone();
+    head_plan["id"] = json!("repair-plan:complete-support-zero");
+
+    let base_run = run_saga_fixture_lock("ag-saga-compare-cochain-base", base_plan);
+    let head_run = run_saga_fixture_lock("ag-saga-compare-cochain-head", head_plan);
+    let compare_out = temp_dir("ag-saga-compare-cochain-report");
+    run_sig0(&[
+        "compare",
+        "--base-run",
+        base_run.to_str().expect("base run path is utf-8"),
+        "--head-run",
+        head_run.to_str().expect("head run path is utf-8"),
+        "--out-dir",
+        compare_out.to_str().expect("comparison output path is utf-8"),
+    ]);
+    let report = read_json(&compare_out.join("archsig-comparison-report.json"));
+    let cochain = &report["repairCochain"];
+    assert_eq!(cochain["status"], "established");
+    assert_eq!(cochain["derived"], true);
+    assert_eq!(cochain["inB1"], true);
+    assert_eq!(cochain["equation"], "delta0(h) = r_base XOR r_head");
+    let delta = cochain["deltaSupport"].as_array().expect("delta support");
+    assert_eq!(delta.len(), 2, "the two-cut mismatch pair is the delta support");
+    // 2 mismatch 辺のカットは {ctx:order} の指示関数で説明される。
+    let assignment = cochain["witnessChartAssignment"]
+        .as_array()
+        .expect("witness chart assignment");
+    let flipped = assignment
+        .iter()
+        .filter(|entry| entry["parity"] == 1)
+        .map(|entry| entry["chartRef"].as_str().expect("chart ref").to_string())
+        .collect::<Vec<_>>();
+    assert_eq!(flipped, vec!["ctx:order".to_string()]);
+}
+
+#[test]
+fn cli_compare_repair_cochain_is_not_established_for_a_full_relabel() {
+    let root = ag_measurement_root();
+    let base_plan = component_aware_one_cent_saga_plan(&root);
+    let mut head_plan = base_plan.clone();
+    head_plan["id"] = json!("repair-plan:component-aware-zero");
+    let archmap = component_aware_one_cent_archmap(&root);
+
+    let base_run = run_saga_fixture_lock_with_archmap(
+        "ag-saga-compare-cochain-relabel-base",
+        base_plan,
+        archmap.clone(),
+    );
+    let head_run = run_saga_fixture_lock_with_archmap(
+        "ag-saga-compare-cochain-relabel-head",
+        head_plan,
+        archmap,
+    );
+    let compare_out = temp_dir("ag-saga-compare-cochain-relabel-report");
+    run_sig0(&[
+        "compare",
+        "--base-run",
+        base_run.to_str().expect("base run path is utf-8"),
+        "--head-run",
+        head_run.to_str().expect("head run path is utf-8"),
+        "--out-dir",
+        compare_out.to_str().expect("comparison output path is utf-8"),
+    ]);
+    let report = read_json(&compare_out.join("archsig-comparison-report.json"));
+    let cochain = &report["repairCochain"];
+    // 三角形 3 辺の全ラベル張り替えは奇サイクルであり、F2 の C0 修理では説明できない。
+    // 修理そのものは repaired 側 analyze の零 residual として成立しており、両読みは矛盾しない。
+    assert_eq!(cochain["status"], "not-established");
+    assert_eq!(
+        cochain["reason"],
+        "delta_not_a_boundary_within_selected_complex"
+    );
+    assert_eq!(cochain["inB1"], false);
+    assert_eq!(
+        cochain["deltaSupport"].as_array().map(Vec::len),
+        Some(3)
+    );
+}
+
+#[test]
+fn cli_compare_repair_cochain_fails_closed_on_mismatched_complexes() {
+    let root = ag_measurement_root();
+    let base_run = run_saga_fixture_lock(
+        "ag-saga-compare-cochain-mismatch-base",
+        read_json(&root.join("repair_plan_complete_support.json")),
+    );
+    let head_run = run_saga_fixture_lock_with_archmap(
+        "ag-saga-compare-cochain-mismatch-head",
+        component_aware_one_cent_saga_plan(&root),
+        component_aware_one_cent_archmap(&root),
+    );
+    let compare_out = temp_dir("ag-saga-compare-cochain-mismatch-report");
+    run_sig0(&[
+        "compare",
+        "--base-run",
+        base_run.to_str().expect("base run path is utf-8"),
+        "--head-run",
+        head_run.to_str().expect("head run path is utf-8"),
+        "--out-dir",
+        compare_out.to_str().expect("comparison output path is utf-8"),
+    ]);
+    let report = read_json(&compare_out.join("archsig-comparison-report.json"));
+    assert_eq!(report["repairCochain"]["status"], "not_computed");
+    assert_eq!(
+        report["repairCochain"]["reason"],
+        "residual_complexes_do_not_match"
+    );
+}
+
+#[test]
 fn cli_compare_rejects_artifact_and_manifest_provenance_mismatches() {
     let root = ag_measurement_root();
     let base_plan = presentation_generated_saga_plan(&root, true);
@@ -3481,10 +3494,7 @@ fn cli_analyze_saga_descent_mode_none_with_nonboundary_residual_stays_silent() {
     let mut repair_plan = read_json(&root.join("repair_plan_complete_support.json"));
     repair_plan["faithfulness"]["mode"] = json!("none");
     repair_plan["complex"]["tripleOverlaps"] = json!([]);
-    for primitive in repair_plan["primitives"].as_array_mut().unwrap() {
-        primitive["resL"] = json!(["repair:cycle"]);
-        primitive["resR"] = json!([]);
-    }
+    repair_plan["id"] = json!("repair-plan:nonboundary-cycle");
     let out_dir = run_saga_fixture_lock("ag-saga-descent-mode-none-nonboundary", repair_plan);
     let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
     assert_eq!(
@@ -3707,10 +3717,7 @@ fn cli_analyze_saga_descent_nonboundary_residual_is_unconditional_negative() {
     write_test_policy_and_profile(&policy_path, policy, profile);
     let mut repair_plan = read_json(&root.join("repair_plan_complete_support.json"));
     repair_plan["complex"]["tripleOverlaps"] = json!([]);
-    for primitive in repair_plan["primitives"].as_array_mut().unwrap() {
-        primitive["resL"] = json!(["repair:cycle"]);
-        primitive["resR"] = json!([]);
-    }
+    repair_plan["id"] = json!("repair-plan:nonboundary-cycle");
     let repair_plan_path = out_dir.join("repair_plan_nonboundary.json");
     fs::write(
         &repair_plan_path,
@@ -3818,10 +3825,7 @@ fn cli_analyze_contract_fixture_locks_are_byte_deterministic() {
 
     let mut nonboundary_repair = read_json(&root.join("repair_plan_complete_support.json"));
     nonboundary_repair["complex"]["tripleOverlaps"] = json!([]);
-    for primitive in nonboundary_repair["primitives"].as_array_mut().unwrap() {
-        primitive["resL"] = json!(["repair:cycle"]);
-        primitive["resR"] = json!([]);
-    }
+    nonboundary_repair["id"] = json!("repair-plan:nonboundary-cycle");
     let saga_negative_a = run_saga_fixture_lock(
         "saga-contract-boundary-negative-a",
         nonboundary_repair.clone(),
@@ -11654,7 +11658,7 @@ fn cli_analyze_v2_saga_grounded_emits_split_packet_and_detector() {
     });
     fs::write(&plan_path, serde_json::to_vec_pretty(&plan).unwrap()).unwrap();
     let mut archmap = read_json(&root.join("archmap_v2.json"));
-    prepare_saga_derivation_inputs(&policy_path, &mut archmap, &plan);
+    prepare_saga_derivation_inputs(&policy_path, &mut archmap, &plan, None);
     let prepared_archmap = archmap.clone();
     let archmap_path = write_archmap_variant(&out_dir, archmap, "archmap_saga.json");
 
@@ -12270,7 +12274,7 @@ fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_diges
 
     let manifest = read_json(&first_out.join("archsig-run-manifest.json"));
     assert_eq!(manifest["toolVersion"], "0.5.4");
-    assert_eq!(manifest["runId"], "run:9dc0f9d0ca2d");
+    assert_eq!(manifest["runId"], "run:6590dd613c5c");
     assert_eq!(
         manifest["inputDigests"]["archmap"]["sha256"],
         "653037e1812bad367d211b926b976065d69842ec6d26cb5d4f82bdb9ac5f46e3"
@@ -12303,7 +12307,7 @@ fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_diges
     );
     assert_eq!(
         manifest["inputDigests"]["repairPlan"]["sha256"],
-        "3f77b8be01c039583984fc65e8096ce1c51d44ab13c1fb56f5d98ddc07311a10"
+        "fdf16ae7dd346a3b9e3f419fc9860e348ca2dd84eb8147da114f09ad04a8c8ef"
     );
 }
 
@@ -12480,7 +12484,7 @@ fn cli_analyze_stamp_appends_opt_in_run_id_suffix() {
     assert!(
         manifest["runId"]
             .as_str()
-            .is_some_and(|run_id| run_id.starts_with("run:9dc0f9d0ca2d-stamp:")),
+            .is_some_and(|run_id| run_id.starts_with("run:6590dd613c5c-stamp:")),
         "stamp opt-in should append a wall-clock suffix to the deterministic input-derived prefix"
     );
 }
@@ -12671,7 +12675,7 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
             "law-policy/v0.5.4",
             "archsig-policy-bundle/v0.5.4",
             "measurement-profile/v0.5.4",
-            "archsig-repair-plan/v0.5.5",
+            "archsig-repair-plan/v0.5.6",
             "h1-comparison-data/v0.5.4",
             "law-evaluator-registry/v0.5.4",
             "normalized-archmap-current",
@@ -14769,28 +14773,11 @@ fn cli_compare_refinement_binds_fingerprints_and_transports_only_zero() {
             "left": "ctx:shared",
             "right": "ctx:audit"
         }));
-    nonzero_plan["primitives"]
-        .as_array_mut()
-        .expect("nonzero primitives are array")
-        .push(json!({
-            "id": "primitive:shared-audit",
-            "overlapRef": "overlap:shared-audit",
-            "resL": [],
-            "resR": []
-        }));
-    for primitive in nonzero_plan["primitives"]
-        .as_array_mut()
-        .unwrap()
-        .iter_mut()
-        .take(3)
-    {
-        primitive["resL"] = json!(["cech:section-mismatch"]);
-        primitive["resR"] = json!([]);
-    }
+    nonzero_plan["id"] = json!("repair-plan:nonzero-audit-tail");
     nonzero_plan["faithfulness"] = json!({
         "mode": "supplied",
         "supplied": {
-            "zeroPrimitiveRef": "primitive:shared-audit",
+            "zeroOverlapRef": "overlap:shared-audit",
             "residualSupportPredicate": {
                 "kind": "finite-support",
                 "supportVariables": ["cech:section-mismatch"],
@@ -15593,7 +15580,7 @@ fn run_saga_compare_fixture(case_id: &str, archmap: Value, repair_plan: Value) -
     let policy_path = out_dir.join("law_policy.json");
     write_test_policy_and_profile(&policy_path, policy, profile);
     let mut archmap = archmap;
-    prepare_saga_derivation_inputs(&policy_path, &mut archmap, &repair_plan);
+    prepare_saga_derivation_inputs(&policy_path, &mut archmap, &repair_plan, None);
     let archmap_path = out_dir.join("archmap.json");
     fs::write(
         &archmap_path,
@@ -15681,17 +15668,16 @@ fn run_saga_fixture_lock_with_archmap(
     out_dir
 }
 
-/// plan の宣言 residual(resL/resR の対称差)を再現する section 割り当てを解く。
+/// 指定された mismatch overlap 集合を再現する section 割り当てを解く。
 /// 非フラグ辺で結ばれた context を同値類に束ね、フラグ辺が同値類を跨ぐことを検査し、
 /// 同値類ごとに相異なる section 値を割り当てる。
-fn solve_saga_section_assignment(plan: &Value) -> Vec<(String, String)> {
+fn solve_saga_section_assignment(plan: &Value, flagged: &BTreeSet<String>) -> Vec<(String, String)> {
     let charts = plan["complex"]["charts"]
         .as_array()
         .expect("charts array")
         .iter()
         .map(|chart| chart.as_str().expect("chart is a string").to_string())
         .collect::<Vec<_>>();
-    let flagged = saga_plan_flagged_overlaps(plan);
     let mut parent: BTreeMap<String, String> = charts
         .iter()
         .map(|chart| (chart.clone(), chart.clone()))
@@ -15721,7 +15707,7 @@ fn solve_saga_section_assignment(plan: &Value) -> Vec<(String, String)> {
             let right = find(&mut parent, overlap["right"].as_str().expect("right"));
             assert_ne!(
                 left, right,
-                "declared residual on overlap {id} is not realizable by a section assignment"
+                "requested mismatch on overlap {id} is not realizable by a section assignment"
             );
         }
     }
@@ -15738,36 +15724,72 @@ fn solve_saga_section_assignment(plan: &Value) -> Vec<(String, String)> {
 }
 
 fn saga_plan_flagged_overlaps(plan: &Value) -> BTreeSet<String> {
-    plan["primitives"]
-        .as_array()
-        .expect("primitives array")
-        .iter()
-        .filter(|primitive| {
-            let collect = |field: &str| {
-                primitive[field]
-                    .as_array()
-                    .map(|values| {
-                        values
-                            .iter()
-                            .filter_map(Value::as_str)
-                            .map(str::to_string)
-                            .collect::<BTreeSet<_>>()
-                    })
-                    .unwrap_or_default()
-            };
-            let left = collect("resL");
-            let right = collect("resR");
-            left.symmetric_difference(&right).count() > 0
-        })
-        .filter_map(|primitive| primitive["overlapRef"].as_str().map(str::to_string))
-        .collect()
+    // residual は #3820 で導出化、repair 宣言(resL/resR)は #3821 で退役したため、
+    // 各 fixture の観測シナリオ(どの overlap を mismatch にするか)はテスト所有の表で引く。
+    let id = plan["id"].as_str().expect("plan id");
+    let flagged: &[&str] = match id {
+        "repair-plan:comparison-demo"
+        | "repair-plan:complete-support-demo"
+        | "repair-plan:gluing-data-demo"
+        | "repair-plan:supplied-faithfulness-demo"
+        | "repair-plan:true-sheaf-demo" => &["overlap:order-inventory", "overlap:order-shared"],
+        "repair-plan:component-aware-one-cent" => &[
+            "overlap:cancel-inside-payment",
+            "overlap:inside-payment-order",
+            "overlap:cancel-order",
+        ],
+        "repair-plan:presentation-generated-circle"
+        | "repair-plan:presentation-generated-circle-integers" => {
+            &["overlap:01", "overlap:12", "overlap:20"]
+        }
+        "repair-plan:train-ticket-money-head" => &[
+            "overlap:cancel-insidepay",
+            "overlap:insidepay-order",
+            "overlap:cancel-order",
+        ],
+        "repair-plan:supplied-triple-pentagon" => &[
+            "overlap:order-inventory",
+            "overlap:inventory-shared",
+            "overlap:shared-route",
+            "overlap:route-ledger",
+            "overlap:ledger-order",
+        ],
+        "repair-plan:supplied-triple-pentagon-zero" => &[],
+        "repair-plan:nonzero-audit-tail" => &[
+            "overlap:order-inventory",
+            "overlap:inventory-shared",
+            "overlap:order-shared",
+        ],
+        "repair-plan:complete-support-zero" | "repair-plan:component-aware-zero" => &[],
+        "repair-plan:nonboundary-cycle" => &[
+            "overlap:order-inventory",
+            "overlap:inventory-shared",
+            "overlap:order-shared",
+        ],
+        "repair-plan:component-aware-cross-component" => &[
+            "overlap:cancel-inside-payment",
+            "overlap:inside-payment-order",
+            "overlap:cancel-order",
+            "overlap:consign-parcel",
+            "overlap:parcel-shipping",
+        ],
+        other => panic!(
+            "register the observation scenario for {other} in saga_plan_flagged_overlaps or pass an explicit set"
+        ),
+    };
+    flagged.iter().map(|overlap| (*overlap).to_string()).collect()
 }
 
 fn prepare_saga_derivation_inputs(
     policy_path: &Path,
     archmap: &mut Value,
     repair_plan: &Value,
+    flagged: Option<&BTreeSet<String>>,
 ) {
+    let flagged = flagged
+        .cloned()
+        .unwrap_or_else(|| saga_plan_flagged_overlaps(repair_plan));
+    let flagged = &flagged;
     let existing_contexts = (*archmap)["contexts"]
         .as_array()
         .expect("contexts array")
@@ -15844,7 +15866,7 @@ fn prepare_saga_derivation_inputs(
             .map(|(left, right)| (left.as_str(), right.as_str()))
             .collect::<Vec<_>>(),
     );
-    let sections = solve_saga_section_assignment(&repair_plan);
+    let sections = solve_saga_section_assignment(&repair_plan, flagged);
     set_cech_sections(
         archmap,
         &sections
@@ -15894,7 +15916,7 @@ fn run_saga_fixture_output_with_archmap(
     let repair_plan_path = out_dir.join("repair_plan.json");
     let archmap_path = out_dir.join("archmap.json");
     let mut archmap = archmap;
-    prepare_saga_derivation_inputs(&policy_path, &mut archmap, &repair_plan);
+    prepare_saga_derivation_inputs(&policy_path, &mut archmap, &repair_plan, None);
     fs::write(
         &archmap_path,
         serde_json::to_vec_pretty(&archmap).expect("ArchMap serializes"),
@@ -17809,10 +17831,6 @@ fn cli_repair_plan_rejects_dropped_observed_chart_edge_from_mapped_cover() {
         .as_array_mut()
         .expect("overlaps")
         .retain(|overlap| overlap["id"] != "overlap:order-shared");
-    plan["primitives"]
-        .as_array_mut()
-        .expect("primitives")
-        .retain(|primitive| primitive["overlapRef"] != "overlap:order-shared");
     let plan_path = out_dir.join("repair_plan.json");
     fs::write(
         &plan_path,
@@ -17862,8 +17880,29 @@ fn cli_repair_plan_rejects_retired_v054_schema_discriminator() {
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
-        stderr.contains("archsig-repair-plan/v0.5.5"),
+        stderr.contains("archsig-repair-plan/v0.5.6"),
         "retired v0.5.4 discriminator must fail loudly naming the expected schema: {stderr}"
+    );
+
+    let mut v055_plan = read_json(&root.join("repair_plan_complete_support.json"));
+    v055_plan["schema"] = json!("archsig-repair-plan/v0.5.5");
+    let v055_path = out_dir.join("repair_plan_v055.json");
+    fs::write(
+        &v055_path,
+        serde_json::to_vec_pretty(&v055_plan).expect("plan serializes"),
+    )
+    .expect("plan writes");
+    let v055_output = run_sig0_raw_output(&[
+        "repair-plan",
+        "--archmap",
+        root.join("archmap_v2.json").to_str().expect("path is utf-8"),
+        "--repair-plan",
+        v055_path.to_str().expect("path is utf-8"),
+    ]);
+    assert!(!v055_output.status.success());
+    assert!(
+        String::from_utf8_lossy(&v055_output.stderr).contains("archsig-repair-plan/v0.5.6"),
+        "retired v0.5.5 discriminator must fail loudly naming the expected schema"
     );
 }
 
@@ -17876,14 +17915,6 @@ fn cli_analyze_saga_descent_rejects_bogus_supplied_support_predicate() {
         .remove("comparison");
     plan["faithfulness"]["supplied"]["residualSupportPredicate"]["supportVariables"] =
         json!(["drift:BOGUS"]);
-    for primitive in plan["primitives"].as_array_mut().expect("primitives") {
-        let left = primitive["resL"].as_array().cloned().unwrap_or_default();
-        let right = primitive["resR"].as_array().cloned().unwrap_or_default();
-        if left != right {
-            primitive["resL"] = json!(["drift:BOGUS"]);
-            primitive["resR"] = json!([]);
-        }
-    }
     let out_dir = run_saga_fixture_lock(
         "ag-saga-derivation-bogus-supplied-predicate",
         plan,
@@ -17936,7 +17967,7 @@ fn cli_analyze_saga_descent_observation_first_committed_fixture() {
         ],
     );
     let plan = json!({
-        "schema": "archsig-repair-plan/v0.5.5",
+        "schema": "archsig-repair-plan/v0.5.6",
         "id": "repair-plan:observed-money-triangle",
         "complex": {
             "charts": ["ctx:pay-a", "ctx:pay-b", "ctx:pay-c"],
@@ -17948,11 +17979,6 @@ fn cli_analyze_saga_descent_observation_first_committed_fixture() {
             "tripleOverlaps": [],
             "enumerationComplete": true
         },
-        "primitives": [
-            {"id": "primitive:pay-ab", "overlapRef": "overlap:pay-ab", "resL": ["cech:section-mismatch"], "resR": []},
-            {"id": "primitive:pay-bc", "overlapRef": "overlap:pay-bc", "resL": ["cech:section-mismatch"], "resR": []},
-            {"id": "primitive:pay-ac", "overlapRef": "overlap:pay-ac", "resL": ["cech:section-mismatch"], "resR": []}
-        ],
         "faithfulness": {"mode": "complete-support"}
     });
     let plan_path = out_dir.join("repair_plan.json");
@@ -17998,7 +18024,6 @@ fn cli_analyze_saga_descent_observation_first_committed_fixture() {
         .iter()
         .find(|row| row["invariantId"] == "saga-descent:residual-derivation")
         .expect("derivation invariant");
-    assert_eq!(derivation["residualDerivation"]["agreesWithDeclared"], true);
     let edges = derivation["residualDerivation"]["edges"]
         .as_array()
         .expect("edges");
@@ -18010,93 +18035,4 @@ fn cli_analyze_saga_descent_observation_first_committed_fixture() {
             .is_some_and(|refs| refs.len() == 2)),
         "each mismatch edge must cite the two observed section atoms"
     );
-}
-
-#[test]
-fn cli_analyze_saga_descent_names_declared_derivation_divergence() {
-    let root = ag_measurement_root();
-    let mut plan = read_json(&root.join("repair_plan_comparison.json"));
-    let out_dir = temp_dir("ag-saga-declared-derivation-divergence");
-    let output = {
-        // prepare 済み観測(宣言どおりの mismatch)を作った後、宣言だけを空へ倒す。
-        // 観測と comparison 契約は元の宣言に合わせて残るため、導出は元パターンを
-        // 再現し、宣言との不一致だけが立つ。
-        let mut archmap = read_json(&root.join("archmap_v2.json"));
-        let prepared_plan = plan.clone();
-        let policy_root = out_dir.clone();
-        fs::create_dir_all(&policy_root).expect("out dir exists");
-        let (mut policy, profile) =
-            read_fixture_policy_profile(&root.join("law_policy_ag.json"));
-        policy["policies"] = json!([{
-            "law": "ag.saga-descent",
-            "evaluator": "ag.saga-descent",
-            "basis": ["policy-basis:layering"],
-            "scope": ["src/"],
-            "severity": "high"
-        }]);
-        let policy_path = policy_root.join("law_policy_saga_descent.json");
-        write_test_policy_and_profile(&policy_path, policy, profile);
-        prepare_saga_derivation_inputs(&policy_path, &mut archmap, &prepared_plan);
-        // 宣言と comparison 契約はそのまま、観測だけを全一致へ倒す。導出は零 residual を
-        // 返し、宣言(非零)との不一致が立つ。
-        set_cech_sections(
-            &mut archmap,
-            &[
-                ("ctx:order", "section=uniform"),
-                ("ctx:inventory", "section=uniform"),
-                ("ctx:shared", "section=uniform"),
-            ],
-        );
-        let plan_path = policy_root.join("repair_plan.json");
-        fs::write(
-            &plan_path,
-            serde_json::to_vec_pretty(&plan).expect("plan serializes"),
-        )
-        .expect("plan writes");
-        let archmap_path = write_archmap_variant(&policy_root, archmap, "archmap_saga.json");
-        run_sig0_raw_output(&[
-            "analyze",
-            "--archmap",
-            archmap_path.to_str().expect("path is utf-8"),
-            "--law-policy",
-            policy_path.to_str().expect("path is utf-8"),
-            "--measurement-profile",
-            test_measurement_profile_path(Path::new(
-                policy_path.to_str().expect("path is utf-8"),
-            ))
-            .to_str()
-            .expect("path is utf-8"),
-            "--repair-plan",
-            plan_path.to_str().expect("path is utf-8"),
-            "--law-surface",
-            policy_path
-                .with_file_name("law_surface.json")
-                .to_str()
-                .expect("path is utf-8"),
-            "--out-dir",
-            policy_root.to_str().expect("path is utf-8"),
-        ])
-    };
-    let _ = output;
-    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
-    let derivation = packet["computedInvariants"]
-        .as_array()
-        .expect("invariants")
-        .iter()
-        .find(|row| row["invariantId"] == "saga-descent:residual-derivation")
-        .expect("derivation invariant");
-    assert_eq!(derivation["residualDerivation"]["agreesWithDeclared"], false);
-    let comparison = packet["computedInvariants"]
-        .as_array()
-        .expect("invariants")
-        .iter()
-        .find(|row| row["invariantId"] == "saga-comparison:h1-transfer")
-        .expect("comparison invariant");
-    if comparison["failureCode"] == json!("COMPARISON_DATA_CONTRACT_VIOLATION") {
-        assert_eq!(
-            comparison["declaredResidualDivergence"]["reason"],
-            "declared_residual_disagrees_with_derivation",
-            "contract violation under declared/derived divergence must name the divergence"
-        );
-    }
 }

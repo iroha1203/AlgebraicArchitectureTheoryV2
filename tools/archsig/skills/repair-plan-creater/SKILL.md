@@ -18,11 +18,12 @@ Use this skill to author `archsig-repair-plan/v0.5.5` artifacts for Stage 1
 ## Scope
 
 - The plan declares only the finite complex (charts / overlaps / triples) and
-  the proposed repair readings (`resL` / `resR`). The residual itself is
-  derived by `analyze` from the observed cover sections and the law-surface
-  witness bindings; the coefficient is the selected MeasurementProfile
-  declaration. Do not author residual, support, coefficient, or
-  semanticProjection fields — they were retired at v0.5.5.
+  the faithfulness regime. The residual is derived by `analyze` from the
+  observed cover sections and the law-surface witness bindings; the repair
+  cochain is derived by `compare` from the head / repaired residual
+  derivations; the coefficient is the selected MeasurementProfile declaration.
+  Do not author residual, support, coefficient, semanticProjection, or
+  primitives fields — they were retired at v0.5.5 / v0.5.6.
 - Derivation prerequisites the plan relies on: every chart must belong to the
   profile-selected ArchMap cover, every overlap pair must be an observed
   restriction edge, every chart must carry exactly one observed
@@ -40,10 +41,12 @@ Use this skill to author `archsig-repair-plan/v0.5.5` artifacts for Stage 1
 1. Read the selected ArchMap evidence and identify only explicit atom refs,
    contexts, overlap refs, and repair variables already present in the input
    evidence.
-2. Emit a minimal `archsig-repair-plan/v0.5.5` document with:
-   - One primitive per overlap carrying only `resL` / `resR` repair readings.
+2. Emit a minimal `archsig-repair-plan/v0.5.6` document with:
+   - The finite complex (charts / overlaps / triples) only; there is no
+     primitives array.
    - `faithfulness.mode = complete-support` (or `none` / `supplied`; these are
-     the only accepted mode values).
+     the only accepted mode values). Supplied mode references overlaps via
+     `zeroOverlapRef`.
 3. Validate first:
    - `archsig repair-plan --repair-plan <plan> --archmap <archmap> --out <report>`
 4. Run the analyzer only after validation passes:

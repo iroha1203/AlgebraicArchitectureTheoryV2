@@ -13,9 +13,10 @@ and the staircase names each step of its failure precisely:
 
 1. **Grounding** — every module satisfies its own displayed money law
    (`DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS`). The defect is not in any chart.
-2. **Descent** — the supplied repair primitives leave a residual whose class
-   in `Z1/B1` is **nonzero**: no assignment of per-module fixes reconciles
-   the loop (`MEASURED_NONGLUING_RESIDUAL_CLASS`).
+2. **Descent** — the residual derived from the observed sections and the
+   law-surface witness bindings has a **nonzero** class in `Z1/B1`: no
+   assignment of per-module fixes reconciles the loop
+   (`MEASURED_NONGLUING_RESIDUAL_CLASS`).
 3. **Comparison** — a supplied, contract-checked cochain map transports the
    class to the Čech side (`SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA`).
 4. **Gate** — CI blocks the PR; after the repair, the residual glues
@@ -84,7 +85,7 @@ base — so the base run shows what typed silence looks like:
 | Supplied artifact | Where in this demo | Vocabulary it unlocks |
 | --- | --- | --- |
 | Observation (atoms / contexts / covers) | `archmap/archmap*.json` | raw section values, Čech H¹, **derived residual** |
-| Repair complex (`complex` + `primitives` repair readings) | `saga/repair_plan_*.json` | residual boundary membership (residual derived from observation + law bindings) |
+| Repair complex (`complex` only; the residual and the repair cochain are derived) | `saga/repair_plan_*.json` | residual boundary membership (residual derived from observation + law bindings; repair cochain derived by `compare`) |
 | Faithfulness data (`faithfulness.supplied`) | same RepairPlan | global coherence |
 | Triple + true-sheaf certificate + gluing data (coefficient is the profile declaration) | same RepairPlan | **residual class in `Z1/B1`** |
 | Comparison data (incidence bridge + checked cochain map) | same RepairPlan | class transport to the Čech side |
@@ -244,9 +245,9 @@ law_policy/
   measurement_profile_drift.json# R, analytic inner product + Lipschitz cost model
   gate_policy.json              # CI mapping: measured_nonzero -> block
 saga/
-  repair_plan_head.json      # supplied complex, primitives, faithfulness, triple/coefficient,
+  repair_plan_head.json      # supplied complex, faithfulness, triple,
                              # true-sheaf certificate, gluing data, comparison, grounding
-  repair_plan_repaired.json  # same complex, empty residual support
+  repair_plan_repaired.json  # same complex; the repaired observation derives a zero residual
 runtime/
   place_order_trace.json
   concurrent_reservation_trace.json

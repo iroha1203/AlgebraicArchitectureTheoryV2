@@ -1,5 +1,5 @@
 {
-  "schema": "archsig-repair-plan/v0.5.5",
+  "schema": "archsig-repair-plan/v0.5.6",
   "id": "repair-plan:comparison-demo",
   "complex": {
     "charts": [
@@ -36,42 +36,10 @@
     ],
     "enumerationComplete": true
   },
-  "primitives": [
-    {
-      "id": "primitive:order-inventory",
-      "overlapRef": "overlap:order-inventory",
-      "resL": [
-        "src:order"
-      ],
-      "resR": [
-        "src:inventory"
-      ]
-    },
-    {
-      "id": "primitive:inventory-shared",
-      "overlapRef": "overlap:inventory-shared",
-      "resL": [
-        "src:inventory"
-      ],
-      "resR": [
-        "src:inventory"
-      ]
-    },
-    {
-      "id": "primitive:order-shared",
-      "overlapRef": "overlap:order-shared",
-      "resL": [
-        "src:order"
-      ],
-      "resR": [
-        "src:inventory"
-      ]
-    }
-  ],
   "faithfulness": {
     "mode": "supplied",
     "supplied": {
-      "zeroPrimitiveRef": "primitive:inventory-shared",
+      "zeroOverlapRef": "overlap:inventory-shared",
       "residualSupportPredicate": {
         "kind": "finite-support",
         "supportVariables": [

@@ -160,6 +160,7 @@ pub fn build_comparison_artifacts_with_refinement_v1(
         "verdictTransitions": verdict_transitions,
         "boundaryStatements": boundary_statements,
         "classTransport": class_transport,
+        "repairCochain": derived_repair_cochain(&base_packet, &head_packet),
         "profileConclusionCode": profile_conclusion_code,
         "nonConclusions": [
             "Comparison report records run-local verdict rows and deterministic ArchMap diff intersections.",
@@ -168,6 +169,112 @@ pub fn build_comparison_artifacts_with_refinement_v1(
         ]
     });
     Ok((archmap_diff, report))
+}
+
+
+/// head / repaired の 2 つの測定記録から repair cochain h を導出する。
+/// 両 packet の saga-descent:residual-derivation の edge 値の XOR が delta であり、
+/// スカラー系 delta0(h) = delta を解いた h(chart ごとの F2 値)が修理の witness になる。
+fn packet_residual_derivation_edges(
+    packet: &Value,
+) -> Option<Vec<(String, String, String, u8)>> {
+    let invariants = packet.get("computedInvariants")?.as_array()?;
+    let derivation = invariants.iter().find(|invariant| {
+        invariant.get("invariantId").and_then(Value::as_str)
+            == Some("saga-descent:residual-derivation")
+            && invariant["residualDerivation"]["derived"] == Value::Bool(true)
+    })?;
+    let edges = derivation["residualDerivation"]["edges"].as_array()?;
+    edges
+        .iter()
+        .map(|edge| {
+            Some((
+                edge.get("overlapRef")?.as_str()?.to_string(),
+                edge.get("leftContextRef")?.as_str()?.to_string(),
+                edge.get("rightContextRef")?.as_str()?.to_string(),
+                u8::try_from(edge.get("value")?.as_u64()?).ok()?,
+            ))
+        })
+        .collect()
+}
+
+fn derived_repair_cochain(base_packet: &Value, head_packet: &Value) -> Value {
+    let (Some(base_edges), Some(head_edges)) = (
+        packet_residual_derivation_edges(base_packet),
+        packet_residual_derivation_edges(head_packet),
+    ) else {
+        return json!({
+            "status": "silence_by_design",
+            "reason": "residual_derivation_not_recorded",
+            "nonConclusion": "repair cochain derivation requires both runs to record a derived saga-descent residual"
+        });
+    };
+    let base_map = base_edges
+        .iter()
+        .map(|(overlap, left, right, value)| ((overlap.clone(), left.clone(), right.clone()), *value))
+        .collect::<BTreeMap<_, _>>();
+    let head_map = head_edges
+        .iter()
+        .map(|(overlap, left, right, value)| ((overlap.clone(), left.clone(), right.clone()), *value))
+        .collect::<BTreeMap<_, _>>();
+    if base_map.keys().collect::<BTreeSet<_>>() != head_map.keys().collect::<BTreeSet<_>>() {
+        return json!({
+            "status": "not_computed",
+            "reason": "residual_complexes_do_not_match",
+            "nonConclusion": "repair cochain derivation is fail-closed when the two runs derive residuals over different overlap complexes"
+        });
+    }
+    let mut charts = BTreeSet::new();
+    for (_, left, right, _) in &base_edges {
+        charts.insert(left.clone());
+        charts.insert(right.clone());
+    }
+    let charts = charts.into_iter().collect::<Vec<_>>();
+    let chart_index = charts
+        .iter()
+        .enumerate()
+        .map(|(index, chart)| (chart.as_str(), index))
+        .collect::<BTreeMap<_, _>>();
+    let mut rows = Vec::new();
+    let mut delta_support = Vec::new();
+    for (key, base_value) in &base_map {
+        let (overlap, left, right) = key;
+        let delta = base_value ^ head_map[key];
+        if delta == 1 {
+            delta_support.push(overlap.clone());
+        }
+        let mut row = vec![0u8; charts.len() + 1];
+        row[chart_index[left.as_str()]] ^= 1;
+        row[chart_index[right.as_str()]] ^= 1;
+        row[charts.len()] = delta;
+        rows.push(row);
+    }
+    match crate::saga::solve_f2(rows, charts.len()) {
+        Some(solution) => json!({
+            "status": "established",
+            "derived": true,
+            "equation": "delta0(h) = r_base XOR r_head",
+            "inB1": true,
+            "deltaSupport": delta_support,
+            "witnessChartAssignment": charts
+                .iter()
+                .enumerate()
+                .map(|(index, chart)| json!({
+                    "chartRef": chart,
+                    "parity": solution[index]
+                }))
+                .collect::<Vec<_>>(),
+            "reading": "the change between the two runs is explained by a derived C0 repair cochain on the shared overlap complex"
+        }),
+        None => json!({
+            "status": "not-established",
+            "derived": true,
+            "reason": "delta_not_a_boundary_within_selected_complex",
+            "inB1": false,
+            "deltaSupport": delta_support,
+            "nonConclusion": "the residual change between the two runs is not a coboundary on the shared complex, so no repair cochain explains it"
+        }),
+    }
 }
 
 fn class_transport(

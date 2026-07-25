@@ -669,17 +669,6 @@ pub(crate) fn evaluate_saga_descent_v1(
         Err(fault) => return descent_not_computed(plan, fault),
         Ok(derived) => derived,
     };
-    let declared_supports = crate::repair_plan::declared_restriction_difference_supports(plan);
-    let agrees_with_declared = plan.complex.overlaps.iter().all(|overlap| {
-        let declared_nonzero = declared_supports
-            .get(overlap.id.as_str())
-            .is_some_and(|variables| !variables.is_empty());
-        let derived_nonzero = derived
-            .supports
-            .get(overlap.id.as_str())
-            .is_some_and(|variables| !variables.is_empty());
-        declared_nonzero == derived_nonzero
-    });
     let boundary = solve_boundary_membership(plan, &derived.supports);
     let enumeration_assumption = AgAssumptionLedgerEntryV1 {
         theorem_ref: "part10/3.1".to_string(),
@@ -853,12 +842,7 @@ pub(crate) fn evaluate_saga_descent_v1(
                 "coverRef": derived.cover_ref,
                 "mappedCoverRef": plan.complex.archmap_cover_ref.clone(),
                 "lawSurfaceRef": derived.law_surface_ref,
-                "edges": derived.edges,
-                "declaredSupports": plan.complex.overlaps.iter().map(|overlap| json!({
-                    "overlapRef": overlap.id,
-                    "support": declared_supports.get(overlap.id.as_str()).cloned().unwrap_or_default()
-                })).collect::<Vec<_>>(),
-                "agreesWithDeclared": agrees_with_declared
+                "edges": derived.edges
             },
             "faithfulnessBasis": {
                 "mode": plan.faithfulness.mode,
@@ -945,7 +929,6 @@ pub(crate) fn evaluate_saga_descent_v1(
     computed_invariants.push(evaluate_saga_comparison_v1(
         plan,
         &derived.supports,
-        agrees_with_declared,
         &structural_verdict,
         law_surface,
     ));
@@ -1013,7 +996,6 @@ fn unresolved_equation_generators(
 fn evaluate_saga_comparison_v1(
     plan: &RepairPlanDocumentV1,
     supports: &BTreeMap<String, Vec<String>>,
-    agrees_with_declared: bool,
     structural_verdict: &[AgStructuralVerdictV1],
     law_surface: Option<&LawEquationSurfaceV1>,
 ) -> Value {
@@ -1261,15 +1243,6 @@ fn evaluate_saga_comparison_v1(
         },
         "failureCode": if comparison_contract_violation {
             json!(ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION)
-        } else {
-            Value::Null
-        },
-        "declaredResidualDivergence": if comparison_contract_violation && !agrees_with_declared {
-            json!({
-                "reason": "declared_residual_disagrees_with_derivation",
-                "reading": "the repair-plan declared residual (resL/resR restriction difference) and the derived residual disagree on which overlaps carry a nonzero residual; the comparison contract was authored against the declaration",
-                "whatNext": "re-author the repair plan and comparison contract against the derived residual recorded in saga-descent:residual-derivation"
-            })
         } else {
             Value::Null
         },
@@ -1665,18 +1638,19 @@ fn residual_support_component(
         .map(|(overlap_ref, _)| overlap_ref.as_str())
         .collect::<BTreeSet<_>>();
     if residual_overlap_refs.is_empty() {
-        let zero_primitive_ref = plan.faithfulness.supplied.as_ref()?.zero_primitive_ref.as_str();
-        let zero_primitive = plan
-            .primitives
+        let zero_overlap_ref = plan.faithfulness.supplied.as_ref()?.zero_overlap_ref.as_str();
+        let zero_overlap = plan
+            .complex
+            .overlaps
             .iter()
-            .find(|primitive| primitive.id == zero_primitive_ref)?;
+            .find(|overlap| overlap.id == zero_overlap_ref)?;
         if supports
-            .get(&zero_primitive.overlap_ref)
+            .get(&zero_overlap.id)
             .is_some_and(|variables| !variables.is_empty())
         {
             return None;
         }
-        residual_overlap_refs.insert(zero_primitive.overlap_ref.as_str());
+        residual_overlap_refs.insert(zero_overlap.id.as_str());
     }
     let mut selected_component = None;
     for overlap_ref in residual_overlap_refs {
@@ -1870,7 +1844,7 @@ fn chart_assignment_json(charts: &[String], variables: &[String], solution: &[u8
         .collect()
 }
 
-fn solve_f2(mut rows: Vec<Vec<u8>>, unknown_count: usize) -> Option<Vec<u8>> {
+pub(crate) fn solve_f2(mut rows: Vec<Vec<u8>>, unknown_count: usize) -> Option<Vec<u8>> {
     let mut pivot_row = 0;
     let mut pivots = Vec::<(usize, usize)>::new();
     for column in 0..unknown_count {
@@ -1905,7 +1879,33 @@ fn solve_f2(mut rows: Vec<Vec<u8>>, unknown_count: usize) -> Option<Vec<u8>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::repair_plan::declared_restriction_difference_supports;
+
+    fn declared_supports(plan: &RepairPlanDocumentV1) -> BTreeMap<String, Vec<String>> {
+        let flagged: &[&str] = match plan.id.as_str() {
+            "repair-plan:comparison-demo" => &["overlap:order-inventory", "overlap:order-shared"],
+            "repair-plan:component-aware-one-cent" => &[
+                "overlap:cancel-inside-payment",
+                "overlap:inside-payment-order",
+                "overlap:cancel-order",
+            ],
+            "repair-plan:presentation-generated-circle" => {
+                &["overlap:01", "overlap:12", "overlap:20"]
+            }
+            other => panic!("register the observation scenario for {other}"),
+        };
+        plan.complex
+            .overlaps
+            .iter()
+            .map(|overlap| {
+                let support = if flagged.contains(&overlap.id.as_str()) {
+                    vec![DERIVED_RESIDUAL_VARIABLE.to_string()]
+                } else {
+                    Vec::new()
+                };
+                (overlap.id.clone(), support)
+            })
+            .collect()
+    }
     use crate::normalizer::normalize_archmap_v2;
 
     fn derivation_test_inputs() -> (
@@ -1947,10 +1947,6 @@ mod tests {
     }
 
 
-    fn declared_supports(plan: &RepairPlanDocumentV1) -> BTreeMap<String, Vec<String>> {
-        declared_restriction_difference_supports(plan)
-    }
-
     fn comparison_fixture() -> RepairPlanDocumentV1 {
         serde_json::from_str(include_str!(
             "../tests/fixtures/ag_measurement/repair_plan_comparison.json"
@@ -1977,7 +1973,6 @@ mod tests {
         });
 
         let mut nontriangular = component_aware_one_cent_fixture();
-        nontriangular["primitives"][1]["resL"] = serde_json::json!(["drift:one-cent"]);
         nontriangular["complex"]["overlaps"][2]["right"] =
             serde_json::json!("ctx:inside-payment");
         nontriangular["complex"]["tripleOverlaps"]
@@ -1992,7 +1987,6 @@ mod tests {
         );
 
         let mut duplicate_id = component_aware_one_cent_fixture();
-        duplicate_id["primitives"][1]["resL"] = serde_json::json!(["drift:one-cent"]);
         let triples = duplicate_id["complex"]["tripleOverlaps"]
             .as_array_mut()
             .expect("triple overlaps are an array");
@@ -2006,7 +2000,6 @@ mod tests {
         );
 
         let mut cross_component_duplicate = component_aware_one_cent_fixture();
-        cross_component_duplicate["primitives"][1]["resL"] = serde_json::json!(["drift:one-cent"]);
         let mut duplicate_remote_id = local_triple;
         duplicate_remote_id["id"] = serde_json::json!("triple:consign-parcel-shipping");
         cross_component_duplicate["complex"]["tripleOverlaps"]
@@ -2043,7 +2036,7 @@ mod tests {
     #[test]
     fn comparison_silence_precedes_contract_failure_when_class_is_missing() {
         let plan = comparison_fixture();
-        let result = evaluate_saga_comparison_v1(&plan, &declared_supports(&plan), true, &[], None);
+        let result = evaluate_saga_comparison_v1(&plan, &declared_supports(&plan), &[], None);
         assert_eq!(result["status"], "silence_by_design");
         assert_eq!(result["reason"], "residual_class_prerequisite_not_measured");
         assert!(result.get("failureCode").is_none());
@@ -2058,7 +2051,7 @@ mod tests {
         plan.comparison.as_mut().expect("comparison exists")["h1ComparisonData"]["presentation"] =
             serde_json::json!({});
 
-        let result = evaluate_saga_comparison_v1(&plan, &declared_supports(&plan), true, &[], None);
+        let result = evaluate_saga_comparison_v1(&plan, &declared_supports(&plan), &[], None);
         assert_eq!(result["status"], "silence_by_design");
         assert_eq!(
             result["reason"],
@@ -2080,7 +2073,7 @@ mod tests {
     #[test]
     fn comparison_class_predicate_mismatch_emits_contract_failure() {
         let plan = comparison_fixture();
-        let result = evaluate_saga_comparison_v1(&plan, &declared_supports(&plan), true, &[measured_class_verdict()], None);
+        let result = evaluate_saga_comparison_v1(&plan, &declared_supports(&plan), &[measured_class_verdict()], None);
         assert_eq!(result["status"], "not_computed");
         assert_eq!(
             result["failureCode"],

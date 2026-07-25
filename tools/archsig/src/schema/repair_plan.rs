@@ -6,7 +6,6 @@ pub struct RepairPlanDocumentV1 {
     pub schema: String,
     pub id: String,
     pub complex: RepairPlanComplexV1,
-    pub primitives: Vec<RepairPlanPrimitiveV1>,
     pub faithfulness: RepairPlanFaithfulnessV1,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub true_sheaf_certificate: Option<serde_json::Value>,
@@ -172,15 +171,6 @@ pub struct RepairPlanTripleOverlapV1 {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct RepairPlanPrimitiveV1 {
-    pub id: String,
-    pub overlap_ref: String,
-    pub res_l: Vec<String>,
-    pub res_r: Vec<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RepairPlanFaithfulnessV1 {
     pub mode: String,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -190,7 +180,7 @@ pub struct RepairPlanFaithfulnessV1 {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RepairPlanSuppliedFaithfulnessV1 {
-    pub zero_primitive_ref: String,
+    pub zero_overlap_ref: String,
     pub residual_support_predicate: RepairPlanSuppliedPredicateV1,
     pub faithfulness_law: String,
 }

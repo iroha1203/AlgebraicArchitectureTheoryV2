@@ -1,5 +1,5 @@
 {
-  "schema": "archsig-repair-plan/v0.5.5",
+  "schema": "archsig-repair-plan/v0.5.6",
   "id": "repair-plan:presentation-generated-circle",
   "complex": {
     "charts": [
@@ -31,32 +31,6 @@
     "tripleOverlaps": [],
     "enumerationComplete": true
   },
-  "primitives": [
-    {
-      "id": "primitive:01",
-      "overlapRef": "overlap:01",
-      "resL": [
-        "cech:section-mismatch"
-      ],
-      "resR": []
-    },
-    {
-      "id": "primitive:12",
-      "overlapRef": "overlap:12",
-      "resL": [
-        "cech:section-mismatch"
-      ],
-      "resR": []
-    },
-    {
-      "id": "primitive:20",
-      "overlapRef": "overlap:20",
-      "resL": [
-        "cech:section-mismatch"
-      ],
-      "resR": []
-    }
-  ],
   "faithfulness": {
     "mode": "complete-support"
   },

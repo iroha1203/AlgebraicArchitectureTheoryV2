@@ -109,6 +109,8 @@ struct SagaPresentationGeneratedEvidenceV1 {
     semantic_residual: SagaSemanticResidualEvidenceV1,
     residual_witness: Option<SagaResidualWitnessEvidenceV1>,
     restriction_naturality: bool,
+    structural_fault: Option<String>,
+    presentation_cells_cover_complex: bool,
 }
 
 #[derive(Deserialize)]
@@ -14603,6 +14605,30 @@ fn check_saga_presentation_generated_evidence_value(packet_value: &Value) -> Val
     )
 }
 
+fn packet_derived_residual_supports(
+    packet_value: &Value,
+) -> Option<std::collections::BTreeMap<String, Vec<String>>> {
+    let invariants = packet_value.get("computedInvariants")?.as_array()?;
+    let derivation = invariants.iter().find(|invariant| {
+        invariant.get("invariantId").and_then(Value::as_str)
+            == Some("saga-descent:residual-derivation")
+            && invariant["residualDerivation"]["derived"] == Value::Bool(true)
+    })?;
+    let edges = derivation["residualDerivation"]["edges"].as_array()?;
+    let mut supports = std::collections::BTreeMap::new();
+    for edge in edges {
+        let overlap_ref = edge.get("overlapRef").and_then(Value::as_str)?;
+        let value = edge.get("value").and_then(Value::as_u64)?;
+        let support = if value == 1 {
+            vec![crate::saga::DERIVED_RESIDUAL_VARIABLE.to_string()]
+        } else {
+            Vec::new()
+        };
+        supports.insert(overlap_ref.to_string(), support);
+    }
+    Some(supports)
+}
+
 fn check_saga_presentation_generated_recomputation(
     packet_value: &Value,
     presentation: &SagaPresentationGeneratedEvidenceV1,
@@ -14620,8 +14646,17 @@ fn check_saga_presentation_generated_recomputation(
         return;
     }
 
+    let Some(supports) = packet_derived_residual_supports(packet_value) else {
+        examples.push(generic_validation_example(
+            &format!("{prefix}.presentationGenerated"),
+            "derived-residual-supports",
+            "presentation-generated evidence requires the packet's saga-descent:residual-derivation invariant for recomputation",
+        ));
+        return;
+    };
     let Some(expected) = recompute_presentation_generated_h1_output(
         &presentation.comparison_input.repair_plan,
+        &supports,
     ) else {
         examples.push(generic_validation_example(
             &format!("{input_path}.repairPlan"),
@@ -14687,6 +14722,8 @@ fn check_saga_presentation_generated_evidence_shape(
         "semanticResidual",
         "residualWitness",
         "restrictionNaturality",
+        "structuralFault",
+        "presentationCellsCoverComplex",
     ];
     if !check_required_object_keys(value, path, &fields, examples) {
         return;
