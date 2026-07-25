@@ -34,8 +34,8 @@ Definition 5.3 typical-example route is named over the generated `Q_E`
 (`LiftFiberData.equationLiftSystem`, an alias of the C2 engine, exercised by
 the degenerate generated self-lift fiber `equationSelfLiftFiber`), and
 `SagaEquationPacket.ofProduction` fixes the Theorem 1.1 bundle assembly
-surface (no concrete packet instance goes through it yet — see its claim
-boundary).  `P_E` and its local lift atlas stay selected, per the §1
+surface (its first concrete instance is the C7.5 descent packet below — see
+its claim boundary).  `P_E` and its local lift atlas stay selected, per the §1
 Theorem 1.1 input 6 and the Definition 5.3 closing classification, as do the
 remaining selected inputs.
 

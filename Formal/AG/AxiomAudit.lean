@@ -12000,8 +12000,10 @@ def sagaDescentWitnessSheafEngine :=
 def sagaDescentWitnessTrueSheaf :=
   @SemanticRepair.Saga.DescentWitness.descentTrueSheaf
 
-/-- Kernel-audit alias for the non-vanishing semantic residual cochain. -/
-def sagaDescentWitnessSemanticResidualNeZero :=
+/-- Kernel-audit alias for the non-vanishing semantic residual cochain
+(cochain level — the class vanishes, unlike the C7 class-level alias
+`sagaCircleWitnessSemanticResidualNeZero`). -/
+def sagaDescentWitnessSemanticResidualCochainNeZero :=
   @SemanticRepair.Saga.DescentWitness.descent_semanticResidual_ne_zero
 
 /-- Kernel-audit alias for the vanishing semantic residual class. -/
@@ -12020,8 +12022,9 @@ def sagaDescentWitnessBaseNeZero :=
 def sagaDescentWitnessZeroNotInFiber :=
   @SemanticRepair.Saga.DescentWitness.descentLiftFiber_zero_not_in_fiber
 
-/-- Kernel-audit alias for the non-vanishing equation residual cochain. -/
-def sagaDescentWitnessEquationResidualNeZero :=
+/-- Kernel-audit alias for the non-vanishing equation residual cochain
+(cochain level — the class vanishes). -/
+def sagaDescentWitnessEquationResidualCochainNeZero :=
   @SemanticRepair.Saga.DescentWitness.descent_equationResidual_ne_zero
 
 /-- Kernel-audit alias for the vanishing equation residual class. -/
@@ -12055,6 +12058,46 @@ def sagaDescentWitnessEquationGlobalLift :=
 /-- Kernel-audit alias for the Theorem 1.1 central-theorem firing. -/
 def sagaDescentWitnessCentralTheorem :=
   @SemanticRepair.Saga.DescentWitness.descent_sagaCentralTheorem
+
+/-- Kernel-audit alias for the constructed cover-sieve topology membership. -/
+def sagaDescentWitnessMemTopology :=
+  @SemanticRepair.Saga.DescentWitness.descentCover_mem_topology
+
+/-- Kernel-audit alias for the `P_sem` state-presheaf sheaf condition. -/
+def sagaDescentWitnessStateSheaf :=
+  @SemanticRepair.Saga.DescentWitness.descent_stateSheaf
+
+/-- Kernel-audit alias for the `P_E` state-presheaf sheaf condition. -/
+def sagaDescentWitnessEquationStateSheaf :=
+  @SemanticRepair.Saga.DescentWitness.descent_equationStateSheaf
+
+/-- Kernel-audit alias for the semantic residual coboundary computation. -/
+def sagaDescentWitnessSemanticResidualCoboundary :=
+  @SemanticRepair.Saga.DescentWitness.descent_semanticResidual_coboundary
+
+/-- Kernel-audit alias for the equation residual coboundary computation. -/
+def sagaDescentWitnessEquationResidualCoboundary :=
+  @SemanticRepair.Saga.DescentWitness.descent_equationResidual_coboundary
+
+/-- Kernel-audit alias for the Theorem 8.2 forward corrected-family gluing. -/
+def sagaDescentWitnessGlobalRepairOfH1IsZero :=
+  @SemanticRepair.Saga.DescentWitness.descent_globalRepair_of_h1IsZero
+
+/-- Kernel-audit alias for the Corollary 8.3 base-level `β_W` bijectivity. -/
+def sagaDescentWitnessBetaBaseBijective :=
+  @SemanticRepair.Saga.DescentWitness.descent_betaBase_bijective
+
+/-- Kernel-audit alias for the atlas-independent vanishing of the class. -/
+def sagaDescentWitnessEveryAtlasClassIsZero :=
+  @SemanticRepair.Saga.DescentWitness.descent_every_atlas_residualClass_isZero
+
+/-- Kernel-audit alias for nonemptiness of the selected lift fiber. -/
+def sagaDescentWitnessLiftFiberStateNonempty :=
+  @SemanticRepair.Saga.DescentWitness.descentLiftFiber_state_nonempty
+
+/-- Kernel-audit alias for the equation-side global lift existence. -/
+def sagaDescentWitnessEquationGlobalLiftNonempty :=
+  @SemanticRepair.Saga.DescentWitness.descent_equationGlobalLift_nonempty
 
 /-- Kernel-audit alias for the closing zero-class repair bundle. -/
 def sagaDescentWitnessZeroClassRepair :=

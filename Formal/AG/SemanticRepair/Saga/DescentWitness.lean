@@ -12,33 +12,89 @@ are not identically zero while their classes vanish, and the §8 true-sheaf
 descent conclusions fire on an actual global repair.
 
 Role separation against C7 (`CircleWitness`): C7 fixes the nonzero-class side
-(`[r_sem] ≠ 0`, obstruction transfer, no `TopologicalMonomorphicCover`); this
-file fixes the zero-class side (`[r_sem] = 0`, actual descent) and does not
-re-implement the C7 non-identity comparison instance or negative conditions.
+(`[r_sem] ≠ 0`, obstruction transfer; it does not construct a
+`TopologicalMonomorphicCover`); this file fixes the zero-class side
+(`[r_sem] = 0`, actual descent) and does not re-implement the C7 non-identity
+comparison instance or negative conditions.
 
 The three previously statement-only surfaces fired here (PR #3801 review):
 
 1. **Theorem 8.2 / Corollary 8.3 nonvacuity**: `descentSite` selects coverage
-   requirements under which the 4-chart cover is an admissible family, so
-   `mem_topology` is constructed (`descentTopologicalCover`), the generated
-   topology is classified (`descent_topology_classify`), and the sheaf
-   condition for both state presheaves is proved on the whole topology.
+   requirements whose required-support clause rules out the empty admissible
+   family, so the generated topology is classifiable
+   (`descent_topology_classify`) and the Definition 8.1 sheaf condition
+   becomes satisfiable and is proved on the whole topology for both state
+   presheaves; the 4-chart cover is realized as an admissible family and
+   `mem_topology` is constructed (`descentTopologicalCover`).
 2. **`SagaEquationPacket.ofProduction` concrete instance**: `descentPacket`
    is assembled through the production constructor; its equation-side fields
    are `SupportAtomEquationSelection.realization` and
    `LiftFiberData.equationLiftSystem` applied to concrete data (#3734 route).
 3. **Definition 5.3 typical-example nondegenerate firing**:
    `descentLiftFiber` carries the nonzero base reading `B_E = F₂`, `b ≡ 1`
-   (`descentLiftFiber_base_ne_zero`), the selected lift problem genuinely
-   constrains the state fiber (`descentLiftFiber_zero_not_in_fiber`), and the
-   generated equation residual cochain is not identically zero while its
-   class is a coboundary (`descent_equationResidual_ne_zero`,
+   (`descentLiftFiber_base_ne_zero`), the selected base reading genuinely
+   constrains the state fiber — the zero section of `L_E` is not a state
+   (`descentLiftFiber_zero_not_in_fiber`) — and the generated equation
+   residual cochain is not identically zero while its class is a coboundary
+   (`descent_equationResidual_ne_zero`,
    `descent_equationResidualClass_isZero`).
 
 Context-lattice, equation-system, occurrence and coefficient computations are
 reused term-level from `CircleWitness` (they are site-independent or
 definitionally transferable); only the coverage requirements, the untwisted
 state systems, the production fiber, and the descent theorems are new.
+
+Implementation notes (`lean_quality_standard.md` §2.5 申告):
+
+(i) **coverage requirements の役割**: C7 の all-`False` requirements の下でも
+任意の family は admissible であり(可視性条件はすべて空虚、
+`boundaryVisibleOn` は `True`)、4-chart cover sieve 自体は C7 site の
+topology にも入る。しかし **空 family も admissible** になるため底 sieve が
+全対象の covering sieve となり、2値の状態 presheaf に対する X.定義8.1 条件1
+(sheaf condition)が原理的に充足不能になる。`descentRequirements` の
+required-support 条項は admissible family に4 chart patch を強制することで
+空 family を排除し、条件1を成立可能にするためのものである(条件3 の
+topology 所属のためではない)。`supportVisibleOn` を context の**等号**で
+定義するのは、admissible family の patch 集合を分類可能にする
+target-fitting であり、`FiniteModel` の Atom support の観測とは独立の
+selected datum である。
+
+(ii) **twist の移動**: C7 は restriction に twist `t = (1,0,0,0)` を置き
+atlas を零に取った(→ 非零 class)。本 witness は restriction を零 twist
+(kept 上で値恒等)にし、同じ `(1,0,0,0)` を atlas 値 `atlasVal` へ移した
+(→ residual は非恒等零だが構成的に coboundary)。両者は同じ 4-cycle 上の
+双対な selected data である。零 twist の帰結として、この状態系では
+**任意の** atlas の residual class が零になる
+(`descent_every_atlas_residualClass_isZero` — atlas 選択が買っているのは
+cochain の非零性だけ)。一方で複体の `H¹` 自体は 4-cycle の edge sum に
+より非自明であり、class 零は複体の自明性によるものではない。
+
+(iii) **lift fiber の分裂性**: `descentLiftFiber` の short exact sequence
+`0 → Q_E → Q_E × B_E → B_E → 0` は**分裂積**であり(`incl = inl`,
+`proj = snd`)、exactness / injectivity は積の構造から自明に充足される。
+非零 base reading `b ≡ 1` は lift 状態を affine fiber
+`{(q, 1)}`(`Q_E`-torsor)へ制限し、lift problem の選択規律を発火させるが、
+residual の値は `Q_E` 成分だけが担い base reading は obstruction に寄与
+しない(X.定義5.3 典型例の一般的性質)。`descentLiftFiber_zero_not_in_fiber`
+は `descentLiftFiber_base_ne_zero` と同内容(`(0 : F₂) ≠ 1`)の fiber 側の
+言い換えであり、独立の証拠ではない。非分裂拡大(例: `ℤ/4` 型)は生成
+`Q_E` の modulus 設計の全面改修を要し、定義5.3 典型例の発火に非分裂性は
+要求されないため退けた。**非分裂性は主張しない**。
+
+(iv) **`Nonempty P_sem(W)` の自明性**: `descentSpec` は全 context に零状態
+`⟨0⟩` を与えるため、`Nonempty (GlobalRepair …)` は descent 論証と独立に
+構成から真である(零 class fixture では定理8.2 により大域状態の存在自体は
+必然)。したがって「修復の実在」の非自明な内容は bare な `Nonempty` では
+なく、系4.5 correction による corrected family の**一意な** amalgamation
+(`descent_globalRepair_of_h1IsZero`)と零 class 同値
+(`descent_globalRepair_nonempty_iff`)が担う。総括
+`descent_zero_class_repair` はこの構成的形を成分に取る。
+
+(v) **cover 補題の再証明**: `descentCover` は `circleCover` と同一引数の
+`ofOverlapPackage` 適用だが、`MonomorphicOrderedCover` の site parameter が
+異なり(`descentSite` と `CircleWitness.site` は requirements field が
+異なるため defeq でない)、C7 の cover 水準補題は型不一致で `exact` 再利用
+できない。そのため同形の証明を descent 側で再演している。
 -/
 
 noncomputable section
@@ -69,9 +125,15 @@ theorem chartAtom_injective : Function.Injective chartAtom := by
 /--
 C7.5: descent witness の coverage requirements。required support は4つの
 chart marker atom で、その可視性は対応する chart context でのみ成立する。
-これにより admissible family は4 chart をすべて patch に含むことを強制され、
-生成 topology は `descent_topology_classify` の形に分類できる(C7 の
-all-`False` requirements とは異なり、cover sieve が実際に topology に入る)。
+これにより admissible family は4 chart をすべて patch に含むことを強制され
+(特に**空 family が admissible でなくなり**、底 sieve が covering sieve に
+なることを防ぐ)、生成 topology は `descent_topology_classify` の形に分類
+できて2値状態 presheaf の sheaf condition が成立可能になる。C7 の
+all-`False` requirements では任意の family(空 family を含む)が admissible
+であり、底 sieve が全対象を覆うため X.定義8.1 条件1 が充足不能だった —
+requirements 新設の役割は条件1の成立可能化であって、cover sieve の
+topology 所属(条件3)自体は C7 site でも成立する(module header の
+Implementation notes (i) を見よ)。
 -/
 def descentRequirements :
     Site.CoverageRequirements FiniteModel.object circleEquationSystem
@@ -136,13 +198,13 @@ theorem descentCover_keptPair_mem (p : descentCover.KeptPair) :
   exact p.kept h
 
 /-- chart context は kept。 -/
-theorem chartObjKept (i : Fin 4) : KeptCtx (chartObj i).ctx := by
+theorem chartObj_keptCtx (i : Fin 4) : KeptCtx (chartObj i).ctx := by
   refine ⟨recognized_context _, ?_⟩
   rw [show (chartObj i).ctx = context {i} from rfl, indexOf_context]
   exact singleton_mem_keptSets i
 
 /-- base context は kept(空 index は keptSets に属する)。 -/
-theorem baseKept : KeptCtx base.ctx := by
+theorem base_keptCtx : KeptCtx base.ctx := by
   refine ⟨recognized_context _, ?_⟩
   rw [show base.ctx = context ∅ from rfl, indexOf_context]
   decide
@@ -151,7 +213,7 @@ theorem baseKept : KeptCtx base.ctx := by
 theorem descent_keptCtx_of_intersection (σ : IntersectionIndex descentCover) :
     KeptCtx σ.ctx.ctx := by
   cases σ with
-  | chart i => exact chartObjKept i
+  | chart i => exact chartObj_keptCtx i
   | pair p =>
     show KeptCtx (descentCover.pairCtx p.fst p.snd).ctx
     rw [descentCover_pairCtx_ctx]
@@ -223,7 +285,7 @@ noncomputable def descentTopologicalCover : TopologicalMonomorphicCover descentS
 /-! ## Classification of the generated descent topology -/
 
 /-- thin category: 同じ context を持つ対象は等しい。 -/
-theorem obj_ext {X Y : descentSite.category} (h : X.ctx = Y.ctx) : X = Y := by
+theorem descent_obj_ext {X Y : descentSite.category} (h : X.ctx = Y.ctx) : X = Y := by
   cases X
   cases Y
   cases h
@@ -306,7 +368,7 @@ theorem descent_topology_classify {X : descentSite.category} {Sv : Sieve X}
   | pullback X S hS Y f ih =>
     rcases ih with rfl | ⟨hX, hcharts⟩
     · exact Or.inl Sieve.pullback_top
-    · have hXbase : X = base := obj_ext hX
+    · have hXbase : X = base := descent_obj_ext hX
       subst hXbase
       have hY : Recognized Y.ctx := by
         rcases leOfHom f with hf | ⟨s, t, hs, ht, hts⟩
@@ -336,7 +398,7 @@ theorem descent_topology_classify {X : descentSite.category} {Sv : Sieve X}
     · have hid : (⊤ : Sieve X) (𝟙 X) := trivial
       have := ihR hid
       rwa [Sieve.pullback_id] at this
-    · have hXbase : X = base := obj_ext hX
+    · have hXbase : X = base := descent_obj_ext hX
       subst hXbase
       refine Or.inr ⟨hX, ?_⟩
       intro i f
@@ -391,7 +453,12 @@ noncomputable def descentPresentation :
 
 /-- C7.5: descent 状態の membership。kept context では `F₂` 全域(base を
 含む)、それ以外では零のみ。C7 の `stateSpec` と異なり base 状態は空でない
-(大域 repair の実在が本 witness の主張であるため)。 -/
+(零 class fixture では定理8.2 により大域状態の存在が必然のため)。この
+構成の帰結として**任意の context で零状態 `⟨0⟩` が存在し、
+`Nonempty (GlobalRepair …)` は descent 論証と独立に真**である — 修復の
+実在の非自明な内容は corrected family の一意 amalgamation
+(`descent_globalRepair_of_h1IsZero`)が担う(module header の
+Implementation notes (iv))。 -/
 def descentSpec (W : Site.ArchCtx FiniteModel.object) (x : ZMod 2) : Prop :=
   KeptCtx W ∨ x = 0
 
@@ -554,7 +621,7 @@ def atlasVal (i : Fin 4) : ZMod 2 :=
 
 /-- C7.5: 非一様 local repair atlas `p_i = a_i`。 -/
 noncomputable def descentRepairAtlas : SemanticRepairAtlas descentRepairSystem where
-  localRepair i := ⟨atlasVal i, Or.inl (chartObjKept i)⟩
+  localRepair i := ⟨atlasVal i, Or.inl (chartObj_keptCtx i)⟩
 
 /-- descent presentation の class 写像は circle presentation の class 写像と
 定義的に一致する(relation 層を共有しているため)。 -/
@@ -590,14 +657,14 @@ theorem descent_mact_val (σ : IntersectionIndex descentCover)
   rfl
 
 /-- kept pair の pair context は kept。 -/
-theorem descentPairKept (p : descentCover.KeptPair) :
+theorem descent_pairCtx_keptCtx (p : descentCover.KeptPair) :
     KeptCtx (descentCover.pairCtx p.fst p.snd).ctx :=
   descent_keptCtx_of_intersection (.pair p)
 
 /-- C7.5: 生成 semantic residual の `F₂` 値は atlas 値の差
 `a_{p.snd} - a_{p.fst}`(零 twist なので twist 項は現れない)。 -/
 theorem descent_semanticResidual_val (p : descentCover.KeptPair) :
-    mSemToZMod (descentCover.pairCtx p.fst p.snd) (descentPairKept p)
+    mSemToZMod (descentCover.pairCtx p.fst p.snd) (descent_pairCtx_keptCtx p)
       (descentRepairAtlas.semanticResidual p) =
     atlasVal p.snd - atlasVal p.fst := by
   have hact := AffineCoefficientLiftSystem.act_diffAt
@@ -606,7 +673,7 @@ theorem descent_semanticResidual_val (p : descentCover.KeptPair) :
     (descentRepairAtlas.toLiftAtlas.rightOn p)
   have h1 : (descentRepairAtlas.toLiftAtlas.rightOn p).1 =
       (descentRepairAtlas.toLiftAtlas.leftOn p).1 +
-        mSemToZMod (descentCover.pairCtx p.fst p.snd) (descentPairKept p)
+        mSemToZMod (descentCover.pairCtx p.fst p.snd) (descent_pairCtx_keptCtx p)
           (descentRepairAtlas.semanticResidual p) := by
     conv_lhs => rw [← hact]
     exact descent_mact_val (.pair p) (descentRepairAtlas.semanticResidual p)
@@ -614,14 +681,14 @@ theorem descent_semanticResidual_val (p : descentCover.KeptPair) :
   have hleft : (descentRepairAtlas.toLiftAtlas.leftOn p).1 = atlasVal p.fst := by
     show (descentRestrict (descentCover.pairFst p.fst p.snd)
         (descentRepairAtlas.localRepair p.fst)).1 = _
-    rw [descentRestrict_val_of_kept _ _ (descentPairKept p)]
+    rw [descentRestrict_val_of_kept _ _ (descent_pairCtx_keptCtx p)]
     rfl
   have hright : (descentRepairAtlas.toLiftAtlas.rightOn p).1 = atlasVal p.snd := by
     show (descentRestrict (descentCover.pairSnd p.fst p.snd)
         (descentRepairAtlas.localRepair p.snd)).1 = _
-    rw [descentRestrict_val_of_kept _ _ (descentPairKept p)]
+    rw [descentRestrict_val_of_kept _ _ (descent_pairCtx_keptCtx p)]
     rfl
-  rw [show mSemToZMod (descentCover.pairCtx p.fst p.snd) (descentPairKept p)
+  rw [show mSemToZMod (descentCover.pairCtx p.fst p.snd) (descent_pairCtx_keptCtx p)
       (descentRepairAtlas.semanticResidual p) =
     (descentRepairAtlas.toLiftAtlas.rightOn p).1 -
       (descentRepairAtlas.toLiftAtlas.leftOn p).1 from by rw [h1]; ring]
@@ -637,7 +704,7 @@ theorem descent_semanticResidual_ne_zero :
     descentRepairAtlas.semanticResidual ≠ 0 := by
   intro h
   have hv := congrArg
-    (mSemToZMod _ (descentPairKept descentEdge01)) (congrFun h descentEdge01)
+    (mSemToZMod _ (descent_pairCtx_keptCtx descentEdge01)) (congrFun h descentEdge01)
   rw [descent_semanticResidual_val] at hv
   simp only [Pi.zero_apply, map_zero] at hv
   exact absurd hv (by decide)
@@ -647,13 +714,13 @@ theorem descent_semanticResidual_ne_zero :
 noncomputable def descentGauge :
     Cochain0 (descentPresentation.mSemPresheaf.onIntersections descentCover) :=
   fun i => descentPresentation.mSemMk (descentCover.chart i)
-    (Finsupp.single (sigma (descentCover.chart i) (chartObjKept i).1)
+    (Finsupp.single (sigma (descentCover.chart i) (chartObj_keptCtx i).1)
       (((atlasVal i).val : ℕ) : ℤ))
 
 theorem descentGauge_val (i : Fin 4) :
-    mSemToZMod (descentCover.chart i) (chartObjKept i) (descentGauge i) =
+    mSemToZMod (descentCover.chart i) (chartObj_keptCtx i) (descentGauge i) =
       atlasVal i := by
-  show mSemToZMod (descentCover.chart i) (chartObjKept i)
+  show mSemToZMod (descentCover.chart i) (chartObj_keptCtx i)
     (descentPresentation.mSemMk (descentCover.chart i) _) = _
   rw [descentPresentation_mSemMk_eq, mSemToZMod_mk, evalWord_single,
     zmod_two_cast_val]
@@ -665,19 +732,19 @@ theorem descent_semanticResidual_coboundary :
       delta0 (descentPresentation.mSemPresheaf.onIntersections descentCover)
         descentGauge := by
   funext p
-  have hkept := descentPairKept p
+  have hkept := descent_pairCtx_keptCtx p
   apply mSemToZMod_injective _ hkept
   rw [descent_semanticResidual_val]
   have hR : mSemToZMod _ hkept
       (descentPresentation.mSemRestrict (Face.pairRight p).hom
         (descentGauge p.snd)) = atlasVal p.snd :=
     (mSemToZMod_restrict (Face.pairRight p).hom hkept
-      (chartObjKept p.snd) (descentGauge p.snd)).trans (descentGauge_val p.snd)
+      (chartObj_keptCtx p.snd) (descentGauge p.snd)).trans (descentGauge_val p.snd)
   have hL : mSemToZMod _ hkept
       (descentPresentation.mSemRestrict (Face.pairLeft p).hom
         (descentGauge p.fst)) = atlasVal p.fst :=
     (mSemToZMod_restrict (Face.pairLeft p).hom hkept
-      (chartObjKept p.fst) (descentGauge p.fst)).trans (descentGauge_val p.fst)
+      (chartObj_keptCtx p.fst) (descentGauge p.fst)).trans (descentGauge_val p.fst)
   show atlasVal p.snd - atlasVal p.fst =
     mSemToZMod _ hkept
       (descentPresentation.mSemRestrict (Face.pairRight p).hom
@@ -693,6 +760,92 @@ theorem descent_semanticResidualClass_isZero :
   (descentRepairAtlas.semanticResidualClass_isZero_iff_coboundary).mpr
     ⟨descentGauge, descent_semanticResidual_coboundary⟩
 
+/-- 零 twist の帰結(査読 Lean A lane の指摘による named 化): 任意の
+semantic repair atlas の生成 residual の `F₂` 値は atlas 読みの差。 -/
+theorem descent_semanticResidual_val_of_atlas
+    (A : SemanticRepairAtlas descentRepairSystem) (p : descentCover.KeptPair) :
+    mSemToZMod (descentCover.pairCtx p.fst p.snd) (descent_pairCtx_keptCtx p)
+      (A.semanticResidual p) =
+    (A.localRepair p.snd).1 - (A.localRepair p.fst).1 := by
+  have hact := AffineCoefficientLiftSystem.act_diffAt
+    (L := descentRepairSystem.toLiftSystem) (.pair p)
+    (A.toLiftAtlas.leftOn p) (A.toLiftAtlas.rightOn p)
+  have h1 : (A.toLiftAtlas.rightOn p).1 =
+      (A.toLiftAtlas.leftOn p).1 +
+        mSemToZMod (descentCover.pairCtx p.fst p.snd)
+          (descent_pairCtx_keptCtx p) (A.semanticResidual p) := by
+    conv_lhs => rw [← hact]
+    exact descent_mact_val (.pair p) (A.semanticResidual p)
+      (A.toLiftAtlas.leftOn p)
+  have hleft : (A.toLiftAtlas.leftOn p).1 = (A.localRepair p.fst).1 := by
+    show (descentRestrict (descentCover.pairFst p.fst p.snd)
+        (A.localRepair p.fst)).1 = _
+    rw [descentRestrict_val_of_kept _ _ (descent_pairCtx_keptCtx p)]
+  have hright : (A.toLiftAtlas.rightOn p).1 = (A.localRepair p.snd).1 := by
+    show (descentRestrict (descentCover.pairSnd p.fst p.snd)
+        (A.localRepair p.snd)).1 = _
+    rw [descentRestrict_val_of_kept _ _ (descent_pairCtx_keptCtx p)]
+  rw [show mSemToZMod (descentCover.pairCtx p.fst p.snd)
+      (descent_pairCtx_keptCtx p) (A.semanticResidual p) =
+    (A.toLiftAtlas.rightOn p).1 - (A.toLiftAtlas.leftOn p).1 from by
+    rw [h1]; ring]
+  rw [hleft, hright]
+
+/-- 任意の atlas の atlas 読み gauge。 -/
+noncomputable def descentGaugeOf (A : SemanticRepairAtlas descentRepairSystem) :
+    Cochain0 (descentPresentation.mSemPresheaf.onIntersections descentCover) :=
+  fun i => descentPresentation.mSemMk (descentCover.chart i)
+    (Finsupp.single (sigma (descentCover.chart i) (chartObj_keptCtx i).1)
+      ((((A.localRepair i).1).val : ℕ) : ℤ))
+
+theorem descentGaugeOf_val (A : SemanticRepairAtlas descentRepairSystem)
+    (i : Fin 4) :
+    mSemToZMod (descentCover.chart i) (chartObj_keptCtx i)
+      (descentGaugeOf A i) = (A.localRepair i).1 := by
+  show mSemToZMod (descentCover.chart i) (chartObj_keptCtx i)
+    (descentPresentation.mSemMk (descentCover.chart i) _) = _
+  rw [descentPresentation_mSemMk_eq, mSemToZMod_mk, evalWord_single,
+    zmod_two_cast_val]
+
+/--
+C7.5(査読 Lean A lane の指摘による named 化): 零 twist の下では**任意の**
+semantic repair atlas の residual class が零になる。すなわち AC2 の
+`[r_sem] = 0` は atlas `(1,0,0,0)` の選択に依らない構造的帰結であり、atlas
+選択が買っているのは residual **cochain** の非零性
+(`descent_semanticResidual_ne_zero`)だけである。なお本 fixture の複体の
+`H¹` 自体は非自明である(4-cycle の edge sum が coboundary を消す)ため、
+この零化は複体の自明性によるものではない。
+-/
+theorem descent_every_atlas_residualClass_isZero
+    (A : SemanticRepairAtlas descentRepairSystem) :
+    (descentPresentation.semanticComplex descentCover).H1IsZero
+      A.semanticResidualClass := by
+  refine (A.semanticResidualClass_isZero_iff_coboundary).mpr
+    ⟨descentGaugeOf A, ?_⟩
+  funext p
+  have hkept := descent_pairCtx_keptCtx p
+  apply mSemToZMod_injective _ hkept
+  rw [descent_semanticResidual_val_of_atlas]
+  have hR : mSemToZMod _ hkept
+      (descentPresentation.mSemRestrict (Face.pairRight p).hom
+        (descentGaugeOf A p.snd)) = (A.localRepair p.snd).1 :=
+    (mSemToZMod_restrict (Face.pairRight p).hom hkept
+      (chartObj_keptCtx p.snd) (descentGaugeOf A p.snd)).trans
+      (descentGaugeOf_val A p.snd)
+  have hL : mSemToZMod _ hkept
+      (descentPresentation.mSemRestrict (Face.pairLeft p).hom
+        (descentGaugeOf A p.fst)) = (A.localRepair p.fst).1 :=
+    (mSemToZMod_restrict (Face.pairLeft p).hom hkept
+      (chartObj_keptCtx p.fst) (descentGaugeOf A p.fst)).trans
+      (descentGaugeOf_val A p.fst)
+  show (A.localRepair p.snd).1 - (A.localRepair p.fst).1 =
+    mSemToZMod _ hkept
+      (descentPresentation.mSemRestrict (Face.pairRight p).hom
+          (descentGaugeOf A p.snd) -
+        descentPresentation.mSemRestrict (Face.pairLeft p).hom
+          (descentGaugeOf A p.fst))
+  rw [map_sub, hR, hL]
+
 /-! ## Sheaf condition engine over the classified topology -/
 
 /--
@@ -700,6 +853,11 @@ C7.5: 分類済み descent topology 上の sheaf condition engine。kept context
 `F₂` への値写像が単射・全射・restriction 不変で、kept でない context の値が
 subsingleton な Type 値 presheaf は sheaf condition を満たす。`P_sem` と
 `P_E` の両 state presheaf をこの engine で放電する。
+
+分類の帰結として、base 以外の対象上の covering sieve は `⊤` に限られ
+`Presieve.isSheafFor_top` で放電されるため、実質的な amalgamation 論証は
+base 上の(4 chart arrow を含む)sieve のケースに集中する — これは選んだ
+幾何の帰結であり、sheaf condition の量化域は topology の全 cover である。
 -/
 theorem descent_sheafCondition (F : Site.AATPresheaf descentSite)
     (val : ∀ (V : descentSite.category), KeptCtx V.ctx -> F.obj (op V) -> ZMod 2)
@@ -715,14 +873,14 @@ theorem descent_sheafCondition (F : Site.AATPresheaf descentSite)
   rcases descent_topology_classify hcover with rfl | ⟨hX, hcharts⟩
   · rw [Site.AATSheafConditionFor]
     exact Presieve.isSheafFor_top F
-  · have hXbase : X = base := obj_ext hX
+  · have hXbase : X = base := descent_obj_ext hX
     subst hXbase
     rw [Site.AATSheafConditionFor]
     intro x hx
     set xi : ∀ i : Fin 4, F.obj (op (chartObj i)) :=
       fun i => x (chartInclusion i) (hcharts i (chartInclusion i)) with hxi
     have hadj : ∀ i j : Fin 4, ({i, j} : ContextIndex) ∈ keptSets ->
-        val _ (chartObjKept i) (xi i) = val _ (chartObjKept j) (xi j) := by
+        val _ (chartObj_keptCtx i) (xi i) = val _ (chartObj_keptCtx j) (xi j) := by
       intro i j hkeptij
       have hPk : KeptCtx (Site.ContextCategoryObject.of
           CircleWitness.contextPreorder (context ({i} ∪ {j}))).ctx := by
@@ -739,14 +897,14 @@ theorem descent_sheafCondition (F : Site.AATPresheaf descentSite)
         homOfLE (Or.inr ⟨{i} ∪ {j}, {j}, rfl, rfl, Finset.subset_union_right⟩)
       have hcompat := hx g₁ g₂ (hcharts i (chartInclusion i))
         (hcharts j (chartInclusion j)) (Subsingleton.elim _ _)
-      calc val _ (chartObjKept i) (xi i)
+      calc val _ (chartObj_keptCtx i) (xi i)
           = val _ hPk (F.map g₁.op (xi i)) :=
-            (hrestrict g₁ hPk (chartObjKept i) (xi i)).symm
+            (hrestrict g₁ hPk (chartObj_keptCtx i) (xi i)).symm
         _ = val _ hPk (F.map g₂.op (xi j)) := congrArg _ hcompat
-        _ = val _ (chartObjKept j) (xi j) :=
-            hrestrict g₂ hPk (chartObjKept j) (xi j)
-    set v := val _ (chartObjKept 0) (xi 0) with hv
-    have hvi : ∀ i : Fin 4, val _ (chartObjKept i) (xi i) = v := by
+        _ = val _ (chartObj_keptCtx j) (xi j) :=
+            hrestrict g₂ hPk (chartObj_keptCtx j) (xi j)
+    set v := val _ (chartObj_keptCtx 0) (xi 0) with hv
+    have hvi : ∀ i : Fin 4, val _ (chartObj_keptCtx i) (xi i) = v := by
       have hval01 := hadj 0 1 (by decide)
       have hval12 := hadj 1 2 (by decide)
       have hval23 := hadj 2 3 (by decide)
@@ -756,12 +914,12 @@ theorem descent_sheafCondition (F : Site.AATPresheaf descentSite)
       · exact hval01.symm
       · exact (hval01.trans hval12).symm
       · exact ((hval01.trans hval12).trans hval23).symm
-    obtain ⟨t, ht⟩ := hsurj base baseKept v
+    obtain ⟨t, ht⟩ := hsurj base base_keptCtx v
     refine ⟨t, ?_, ?_⟩
     · intro Y f hf
       by_cases hK : KeptCtx Y.ctx
       · apply hinj Y hK
-        rw [hrestrict f hK baseKept t, ht]
+        rw [hrestrict f hK base_keptCtx t, ht]
         by_cases hYe : indexOf Y.ctx = ∅
         · have hle : contextLe (context {0}) Y.ctx := by
             rw [context_indexOf hK.1, hYe]
@@ -769,8 +927,8 @@ theorem descent_sheafCondition (F : Site.AATPresheaf descentSite)
           have g : chartObj 0 ⟶ Y := homOfLE hle
           have hcompat := hx g (𝟙 (chartObj 0)) hf
             (hcharts 0 (chartInclusion 0)) (Subsingleton.elim _ _)
-          have hthis := congrArg (val (chartObj 0) (chartObjKept 0)) hcompat
-          rw [hrestrict g (chartObjKept 0) hK (x f hf)] at hthis
+          have hthis := congrArg (val (chartObj 0) (chartObj_keptCtx 0)) hcompat
+          rw [hrestrict g (chartObj_keptCtx 0) hK (x f hf)] at hthis
           simp only [op_id, F.map_id, types_id_apply] at hthis
           exact hv.trans hthis.symm
         · obtain ⟨i, hi⟩ := Finset.nonempty_iff_ne_empty.mpr hYe
@@ -782,17 +940,17 @@ theorem descent_sheafCondition (F : Site.AATPresheaf descentSite)
           have hcompat := hx (𝟙 Y) g hf (hcharts i (chartInclusion i))
             (Subsingleton.elim _ _)
           have hthis := congrArg (val Y hK) hcompat
-          rw [hrestrict g hK (chartObjKept i) (xi i)] at hthis
+          rw [hrestrict g hK (chartObj_keptCtx i) (xi i)] at hthis
           simp only [op_id, F.map_id, types_id_apply] at hthis
           rw [hvi i] at hthis
           exact hthis.symm
       · haveI := hsub Y hK
         exact Subsingleton.elim _ _
     · intro t' ht'
-      apply hinj base baseKept
+      apply hinj base base_keptCtx
       have h0 := ht' (chartInclusion 0) (hcharts 0 (chartInclusion 0))
-      have hthis := congrArg (val (chartObj 0) (chartObjKept 0)) h0
-      rw [hrestrict (chartInclusion 0) (chartObjKept 0) baseKept t'] at hthis
+      have hthis := congrArg (val (chartObj 0) (chartObj_keptCtx 0)) h0
+      rw [hrestrict (chartInclusion 0) (chartObj_keptCtx 0) base_keptCtx t'] at hthis
       rw [hthis, ht]
 
 /-- C7.5 AC1: `P_sem` の state presheaf は descent topology 上の sheaf。 -/
@@ -913,9 +1071,13 @@ def descentTotalPresheaf : SitePresheafData descentSite where
     Prod.ext ((equationSitePresheaf descentSite).restrict_comp f g x.1) rfl
 
 /-- C7.5 AC4: 非零 base reading の lift-fiber datum。short exact sequence
-`0 → Q_E → Q_E × B_E → B_E → 0` と、恒等的に `1` の selected base reading。
-`equationSelfLiftFiber`(`B_E = 0` の退化 instance)と異なり、解くべき局所
-equation-lift problem の選択が実際に行われる。 -/
+`0 → Q_E → Q_E × B_E → B_E → 0` は**分裂積**であり(`incl = inl`,
+`proj = snd`)、exactness / injectivity は積の構造から自明に充足される
+(申告: Implementation notes (iii)。非分裂性は主張しない)。
+`equationSelfLiftFiber`(`B_E = 0` の退化 instance)と異なり、恒等的に `1`
+の selected base reading が lift 状態を affine fiber `{(q, 1)}` へ制限し、
+解くべき局所 equation-lift problem の選択が実際に行われる。base reading は
+fiber の選択だけを担い、residual の値は `Q_E` 成分が担う。 -/
 noncomputable def descentLiftFiber :
     LiftFiberData (equationSitePresheaf descentSite) descentTotalPresheaf
       descentBaseReadingPresheaf where
@@ -943,11 +1105,20 @@ theorem descentLiftFiber_base_ne_zero (V : descentSite.category) :
 
 /-- C7.5 AC4: 非零 base reading は lift problem を実際に制約する — `L_E` の
 零切断は fiber 状態に入らない(退化 self-lift では零切断が常に状態になる
-のと対照的)。 -/
+のと対照的)。内容は `descentLiftFiber_base_ne_zero` と同じ事実
+(`(0 : F₂) ≠ 1`)の fiber 側の言い換えであり、独立の証拠ではない
+(Implementation notes (iii))。 -/
 theorem descentLiftFiber_zero_not_in_fiber (V : descentSite.category) :
     descentLiftFiber.proj V 0 ≠ descentLiftFiber.base V := by
   show (0 : ZMod 2) ≠ 1
   decide
+
+/-- companion(査読 Lean A lane の指摘による named 化): fiber は非空である。
+`descentLiftFiber_zero_not_in_fiber` と併せて、選ばれた base reading が
+`L_E` の切断の**非空な真部分集合**を切り出していることを固定する。 -/
+theorem descentLiftFiber_state_nonempty (V : descentSite.category) :
+    Nonempty ((descentLiftFiber.equationLiftSystem descentCover).State V) :=
+  ⟨⟨(0, 1), rfl⟩⟩
 
 /-- C7.5 AC3/AC4: production 経由の equation-side lift system(X.定義5.3
 典型例経路 `equationLiftSystem` の非退化適用)。 -/
@@ -1015,32 +1186,32 @@ theorem liftStateVal_act (σ : IntersectionIndex descentCover)
 /-- C7.5: 生成 equation residual の `F₂` 値は atlas 値の差
 `a_{p.snd} - a_{p.fst}`。 -/
 theorem descent_equationResidual_val (p : descentCover.KeptPair) :
-    qEToZMod (descentCover.pairCtx p.fst p.snd) (descentPairKept p)
+    qEToZMod (descentCover.pairCtx p.fst p.snd) (descent_pairCtx_keptCtx p)
       (descentLiftAtlas.residual p) =
     atlasVal p.snd - atlasVal p.fst := by
   have hact := descentLiftSystem.act_diffAt (.pair p)
     (descentLiftAtlas.leftOn p) (descentLiftAtlas.rightOn p)
-  have h1 : liftStateVal _ (descentPairKept p) (descentLiftAtlas.rightOn p) =
-      liftStateVal _ (descentPairKept p) (descentLiftAtlas.leftOn p) +
-        qEToZMod _ (descentPairKept p) (descentLiftAtlas.residual p) := by
+  have h1 : liftStateVal _ (descent_pairCtx_keptCtx p) (descentLiftAtlas.rightOn p) =
+      liftStateVal _ (descent_pairCtx_keptCtx p) (descentLiftAtlas.leftOn p) +
+        qEToZMod _ (descent_pairCtx_keptCtx p) (descentLiftAtlas.residual p) := by
     conv_lhs => rw [← hact]
     exact liftStateVal_act (.pair p) _ _
-  have hleft : liftStateVal _ (descentPairKept p) (descentLiftAtlas.leftOn p) =
+  have hleft : liftStateVal _ (descent_pairCtx_keptCtx p) (descentLiftAtlas.leftOn p) =
       atlasVal p.fst :=
     (liftStateVal_restrict (descentCover.pairFst p.fst p.snd)
-        (descentPairKept p) (chartObjKept p.fst)
+        (descent_pairCtx_keptCtx p) (chartObj_keptCtx p.fst)
         (descentLiftAtlas.localLift p.fst)).trans
-      (qEToZMod_qOfVal _ (chartObjKept p.fst) (atlasVal p.fst))
-  have hright : liftStateVal _ (descentPairKept p) (descentLiftAtlas.rightOn p) =
+      (qEToZMod_qOfVal _ (chartObj_keptCtx p.fst) (atlasVal p.fst))
+  have hright : liftStateVal _ (descent_pairCtx_keptCtx p) (descentLiftAtlas.rightOn p) =
       atlasVal p.snd :=
     (liftStateVal_restrict (descentCover.pairSnd p.fst p.snd)
-        (descentPairKept p) (chartObjKept p.snd)
+        (descent_pairCtx_keptCtx p) (chartObj_keptCtx p.snd)
         (descentLiftAtlas.localLift p.snd)).trans
-      (qEToZMod_qOfVal _ (chartObjKept p.snd) (atlasVal p.snd))
-  rw [show qEToZMod (descentCover.pairCtx p.fst p.snd) (descentPairKept p)
+      (qEToZMod_qOfVal _ (chartObj_keptCtx p.snd) (atlasVal p.snd))
+  rw [show qEToZMod (descentCover.pairCtx p.fst p.snd) (descent_pairCtx_keptCtx p)
       (descentLiftAtlas.residual p) =
-    liftStateVal _ (descentPairKept p) (descentLiftAtlas.rightOn p) -
-      liftStateVal _ (descentPairKept p) (descentLiftAtlas.leftOn p) from by
+    liftStateVal _ (descent_pairCtx_keptCtx p) (descentLiftAtlas.rightOn p) -
+      liftStateVal _ (descent_pairCtx_keptCtx p) (descentLiftAtlas.leftOn p) from by
     rw [h1]; ring]
   rw [hleft, hright]
 
@@ -1048,7 +1219,7 @@ theorem descent_equationResidual_val (p : descentCover.KeptPair) :
 (辺 `(0,1)` で値 `1`)。 -/
 theorem descent_equationResidual_ne_zero : descentLiftAtlas.residual ≠ 0 := by
   intro h
-  have hv := congrArg (qEToZMod _ (descentPairKept descentEdge01))
+  have hv := congrArg (qEToZMod _ (descent_pairCtx_keptCtx descentEdge01))
     (congrFun h descentEdge01)
   rw [descent_equationResidual_val] at hv
   simp only [Pi.zero_apply, map_zero] at hv
@@ -1066,21 +1237,21 @@ theorem descent_equationResidual_coboundary :
       delta0 (equationCoefficient descentSite descentCover)
         descentEquationGauge := by
   funext p
-  have hkept := descentPairKept p
+  have hkept := descent_pairCtx_keptCtx p
   apply qEToZMod_injective _ hkept
   rw [descent_equationResidual_val]
   have hR : qEToZMod _ hkept
       ((equationCoefficient descentSite descentCover).restrict
         (Face.pairRight p) (descentEquationGauge p.snd)) = atlasVal p.snd :=
-    (qEToZMod_restrict (Face.pairRight p).hom hkept (chartObjKept p.snd)
+    (qEToZMod_restrict (Face.pairRight p).hom hkept (chartObj_keptCtx p.snd)
       (descentEquationGauge p.snd)).trans
-      (qEToZMod_qOfVal _ (chartObjKept p.snd) (atlasVal p.snd))
+      (qEToZMod_qOfVal _ (chartObj_keptCtx p.snd) (atlasVal p.snd))
   have hL : qEToZMod _ hkept
       ((equationCoefficient descentSite descentCover).restrict
         (Face.pairLeft p) (descentEquationGauge p.fst)) = atlasVal p.fst :=
-    (qEToZMod_restrict (Face.pairLeft p).hom hkept (chartObjKept p.fst)
+    (qEToZMod_restrict (Face.pairLeft p).hom hkept (chartObj_keptCtx p.fst)
       (descentEquationGauge p.fst)).trans
-      (qEToZMod_qOfVal _ (chartObjKept p.fst) (atlasVal p.fst))
+      (qEToZMod_qOfVal _ (chartObj_keptCtx p.fst) (atlasVal p.fst))
   show atlasVal p.snd - atlasVal p.fst =
     qEToZMod _ hkept
       ((equationCoefficient descentSite descentCover).restrict
@@ -1206,8 +1377,12 @@ theorem descent_globalRepair_nonempty_iff :
   descentPacket.globalRepair_nonempty_iff descentPacket_mem_topology
     descentPacket_trueSheaf
 
-/-- C7.5 / X.定理8.2 発火: `[r_sem] = 0` から実際の大域 repair が存在する
-(descent 結論の nonvacuity)。 -/
+/-- C7.5 / X.定理8.2 発火(sanity corollary): `[r_sem] = 0` から
+`Nonempty P_sem(W)`。**この `Nonempty` 自体は状態担体の構成から自明に真**
+(`⟨0, Or.inr rfl⟩`)であり、本定理の内容は同値
+`descent_globalRepair_nonempty_iff` の実適用の記録にある。定理8.2 の
+非自明な構成面は `descent_globalRepair_of_h1IsZero` を見よ(module header
+の Implementation notes (iv))。 -/
 theorem descent_globalRepair_nonempty :
     Nonempty (GlobalRepair descentPacket.cover descentPacket.repairSystem) :=
   descent_globalRepair_nonempty_iff.mpr descent_semanticResidualClass_isZero
@@ -1265,25 +1440,32 @@ theorem descentBetaBase_compat (i : descentPacket.cover.Index)
           (descentPacket.cover.inclusion i) p) := by
   apply Subtype.ext
   apply Prod.ext
-  · apply qEToZMod_injective _ (chartObjKept i)
-    have hLHS : qEToZMod _ (chartObjKept i)
+  · apply qEToZMod_injective _ (chartObj_keptCtx i)
+    have hLHS : qEToZMod _ (chartObj_keptCtx i)
         (circleEquationSystem.obstructionQuotientRestrict
           (descentPacket.cover.inclusion i) (qOfVal base p.1)) = p.1 :=
       (qEToZMod_restrict (descentPacket.cover.inclusion i)
-        (chartObjKept i) baseKept (qOfVal base p.1)).trans
-        (qEToZMod_qOfVal base baseKept p.1)
-    have hRHS : qEToZMod _ (chartObjKept i)
+        (chartObj_keptCtx i) base_keptCtx (qOfVal base p.1)).trans
+        (qEToZMod_qOfVal base base_keptCtx p.1)
+    have hRHS : qEToZMod _ (chartObj_keptCtx i)
         (qOfVal _ (descentRestrict (descentPacket.cover.inclusion i) p).1) =
           p.1 := by
       rw [qEToZMod_qOfVal,
-        descentRestrict_val_of_kept _ p (chartObjKept i)]
+        descentRestrict_val_of_kept _ p (chartObj_keptCtx i)]
     exact hLHS.trans hRHS.symm
   · rfl
 
+/-- C7.5 / X.系8.3 発火: `β_W` は全単射である(sitewide 拡張前提を
+すべて放電した実適用)。 -/
+theorem descent_betaBase_bijective : Function.Bijective descentBetaBase :=
+  descentPacket.betaBase_bijective descentPacket_mem_topology
+    descentPacket_trueSheaf descentRelationComplete descentGeneratorComplete
+    descentBetaBase descentBetaBase_compat descent_equationStateSheaf
+
 /-- C7.5 / X.系8.3 発火:
 `Nonempty P_sem(W) ⟺ Nonempty P_E(W) ⟺ [r_E] = 0`(sitewide 拡張前提込みの
-実適用。大域 equation lift の実在は `descent_globalRepair_nonempty` と併せて
-従う)。 -/
+実適用。大域 equation lift の実在は `descent_equationGlobalLift_nonempty` が
+named theorem として固定する)。 -/
 theorem descent_sagaEquationGlobalLift :
     (Nonempty (GlobalRepair descentPacket.cover descentPacket.repairSystem) ↔
       Nonempty (descentPacket.liftSystem.State descentPacket.cover.base)) ∧
@@ -1294,6 +1476,14 @@ theorem descent_sagaEquationGlobalLift :
   descentPacket.sagaEquationGlobalLift descentPacket_mem_topology
     descentPacket_trueSheaf descentRelationComplete descentGeneratorComplete
     descentBetaBase descentBetaBase_compat descent_equationStateSheaf
+
+/-- C7.5 / X.系8.3 発火(sanity corollary、査読 Lean A lane の指摘による
+named 化): 大域 equation lift が存在する。`Nonempty P_E(W)` 自体は状態担体
+の構成から自明に真であり(`⟨(0, 1)⟩`)、本定理の内容は系8.3 の同値の実適用
+の記録にある(Implementation notes (iv) と同じ注意)。 -/
+theorem descent_equationGlobalLift_nonempty :
+    Nonempty (descentPacket.liftSystem.State descentPacket.cover.base) :=
+  descent_sagaEquationGlobalLift.1.mp descent_globalRepair_nonempty
 
 /-- C7.5 / X.定理1.1 発火: descent packet 上の SAGA 中心定理(結論束)。 -/
 theorem descent_sagaCentralTheorem :
@@ -1306,7 +1496,11 @@ theorem descent_sagaCentralTheorem :
 /--
 C7.5 総括(C7 `circle_nonzero_class_transfer` の零 class 双対): descent
 fixture 上で `κ_*[r_sem] = [r_E]`、両 residual cochain は恒等的には零で
-ないが両 class は零であり、実際の大域 repair が存在する(修復の実在)。
+ないが両 class は零であり、系4.5 correction による corrected family の
+**一意な** amalgamation として大域 repair が構成的に得られる(修復の
+実在)。bare な `Nonempty P_sem(W)` は状態担体の構成から自明なため
+(Implementation notes (iv))、最終成分は定理8.2 順方向の構成的な形で
+主張する。
 -/
 theorem descent_zero_class_repair :
     (descentPacket.kappaStar descentRelationComplete descentGeneratorComplete
@@ -1319,11 +1513,16 @@ theorem descent_zero_class_repair :
     (incComplex (equationCoefficient descentSite
       descentPacket.cover)).H1IsZero
       descentPacket.liftAtlas.residualClass ∧
-    Nonempty (GlobalRepair descentPacket.cover descentPacket.repairSystem) :=
+    ∃ b : Cochain0 (descentPacket.presentation.mSemPresheaf.onIntersections
+        descentPacket.cover),
+      ∃! t : GlobalRepair descentPacket.cover descentPacket.repairSystem,
+        ∀ i, descentPacket.repairSystem.restrictState
+            (descentPacket.cover.inclusion i) t =
+          (descentPacket.repairAtlas.toLiftAtlas.corrected b).localLift i :=
   ⟨descent_sagaCentralTheorem.residual_transfer,
     descent_semanticResidual_ne_zero, descent_equationResidual_ne_zero,
     descent_semanticResidualClass_isZero, descent_equationResidualClass_isZero,
-    descent_globalRepair_nonempty⟩
+    descent_globalRepair_of_h1IsZero⟩
 
 end DescentWitness
 end Saga
