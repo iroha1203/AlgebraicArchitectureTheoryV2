@@ -9,10 +9,11 @@ Use this skill to author `archsig-repair-plan/v0.5.4` artifacts for Stage 1
 `ag.saga-descent` and Stage 2/3 supplied-data SAGA runs.
 
 > Debt notice: the supplied slots this skill authors (faithfulness,
-> trueSheafCertificate, gluingData, comparison, presentation) are existing debt
-> against the input-triad rule (AGENTS.md 責務範囲). Do not cite this skill as
-> precedent for adding new slots or fields; repayment is tracked by the supplied
-> slot ledger's debt notice.
+> trueSheafCertificate, gluingData, comparison, presentation, saga-grounding —
+> the list is illustrative, not exhaustive) are existing debt against the
+> input-triad rule (AGENTS.md 責務範囲). Do not cite this skill as precedent for
+> adding new slots or fields; repayment is tracked by the supplied slot ledger's
+> debt notice.
 
 ## Scope
 
