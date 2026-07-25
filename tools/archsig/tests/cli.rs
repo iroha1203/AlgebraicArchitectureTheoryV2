@@ -2610,6 +2610,10 @@ fn cli_analyze_saga_descent_certifies_the_one_cent_component_without_other_tripl
             support["cocycle"]["certificateKind"],
             "automatic-c2-zero"
         );
+        assert_eq!(
+            support["cocycle"]["checked"], false,
+            "triple 不在の component では cocycle 検査が走らない。自動成立を checked と混ぜない"
+        );
         assert_eq!(support["cocycle"]["tripleOverlapRefs"], json!([]));
         assert_eq!(
             support["suppliedData"]["trueSheafCertificate"]["coverRef"],
@@ -2701,13 +2705,14 @@ fn cli_analyze_saga_descent_requires_complete_enumeration_for_automatic_c2_zero(
             .all(|row| row["law"] != "saga.residual-class"),
         "automatic C2=0 must not certify a component whose triple enumeration is incomplete"
     );
-    assert!(
-        packet["computedInvariants"]
-            .as_array()
-            .expect("computed invariants are an array")
-            .iter()
-            .all(|row| row["invariantId"] != "saga-descent:residual-class"),
-        "an incomplete complex must not emit a residual-class invariant"
+    let invariant = invariant_by_id(&packet, "saga-descent:residual-class");
+    assert_eq!(
+        invariant["status"], "silence_by_design",
+        "an incomplete complex yields no certification, but the supply that was offered is not ignored in silence"
+    );
+    assert_eq!(
+        invariant["reason"],
+        "component_cocycle_certificate_not_established"
     );
 }
 
@@ -2766,27 +2771,6 @@ fn cli_analyze_saga_descent_rejects_supplied_data_from_another_component() {
         remote_certificate_archmap,
     );
 
-    let mut remote_section_plan = local_plan.clone();
-    remote_section_plan["gluingData"]["sectionRefs"] = json!([
-        {
-            "overlapRef": "overlap:cancel-inside-payment",
-            "sectionRef": "section:consign-parcel"
-        },
-        {
-            "overlapRef": "overlap:inside-payment-order",
-            "sectionRef": "section:parcel-shipping"
-        },
-        {
-            "overlapRef": "overlap:cancel-order",
-            "sectionRef": "section:consign-shipping"
-        }
-    ]);
-    let remote_section_out = run_saga_fixture_lock_with_archmap(
-        "ag-saga-component-aware-remote-section-refs",
-        remote_section_plan,
-        component_aware_one_cent_archmap(&root),
-    );
-
     let mut remote_gluing_plan = local_plan;
     remote_gluing_plan["gluingData"]["overlapRefs"] = json!([
         "overlap:consign-parcel",
@@ -2815,7 +2799,6 @@ fn cli_analyze_saga_descent_rejects_supplied_data_from_another_component() {
 
     for packet_path in [
         remote_certificate_out.join("archsig-measurement-packet.json"),
-        remote_section_out.join("archsig-measurement-packet.json"),
         remote_gluing_out.join("archsig-measurement-packet.json"),
     ] {
         let packet = read_json(&packet_path);
@@ -2828,6 +2811,146 @@ fn cli_analyze_saga_descent_rejects_supplied_data_from_another_component() {
             "a residual class must not receive a certificate from another component's supplied data"
         );
     }
+}
+
+/// `sectionRef` は author が付ける不透明なラベルであり、ArchSig はこれを ArchMap 側の
+/// 何にも解決しない。component 帰属は `gluingData.overlapRefs` が component の overlap 集合と
+/// 完全一致することで担保される。命名規約を認証条件に混ぜると、規約を知らない既存 RepairPlan が
+/// validation を通ったまま結論だけ静かに降格する。
+#[test]
+fn cli_analyze_saga_descent_accepts_component_exact_gluing_data_under_any_section_naming() {
+    let root = ag_measurement_root();
+    let mut plan = component_aware_one_cent_saga_plan(&root);
+    plan["gluingData"]["sectionRefs"] = json!([
+        {
+            "overlapRef": "overlap:cancel-inside-payment",
+            "sectionRef": "sec/money-refund-handoff"
+        },
+        {
+            "overlapRef": "overlap:inside-payment-order",
+            "sectionRef": "sec/money-settlement-basis"
+        },
+        {
+            "overlapRef": "overlap:cancel-order",
+            "sectionRef": "sec/money-refund-basis"
+        }
+    ]);
+    let out_dir = run_saga_fixture_lock_with_archmap(
+        "ag-saga-component-aware-noncanonical-section-refs",
+        plan,
+        component_aware_one_cent_archmap(&root),
+    );
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let class_row = packet["structuralVerdict"]
+        .as_array()
+        .expect("structural verdict is an array")
+        .iter()
+        .find(|row| row["law"] == "saga.residual-class")
+        .expect("component-exact gluing data must still certify the residual class");
+    assert_eq!(class_row["verdict"], "measured_nonzero");
+
+    let invariant = invariant_by_id(&packet, "saga-descent:residual-class");
+    assert_eq!(
+        invariant["residualClassSupport"]["suppliedData"]["gluingData"]["sectionRefs"][0]
+            ["sectionRef"],
+        "sec/money-refund-handoff",
+        "the authored section label is reported as supplied, not rewritten to a canonical form"
+    );
+}
+
+/// canonical 命名を撤回した後に残る `sectionRefs` の契約は「各 overlapRef へ非空かつ
+/// 相異なるラベルを一対一で与える」だけである。その契約に負例が無いと、規約変更で
+/// 既存入力が沈黙降格するクラスの再発を検知できない。
+#[test]
+fn cli_analyze_saga_descent_rejects_empty_or_duplicated_section_labels() {
+    let root = ag_measurement_root();
+    let base_plan = component_aware_one_cent_saga_plan(&root);
+
+    let mut empty_label = base_plan.clone();
+    empty_label["gluingData"]["sectionRefs"][1]["sectionRef"] = json!("");
+
+    let mut duplicated_label = base_plan;
+    duplicated_label["gluingData"]["sectionRefs"][1]["sectionRef"] =
+        duplicated_label["gluingData"]["sectionRefs"][0]["sectionRef"].clone();
+
+    for (case_id, plan) in [
+        ("ag-saga-component-aware-empty-section-label", empty_label),
+        (
+            "ag-saga-component-aware-duplicated-section-label",
+            duplicated_label,
+        ),
+    ] {
+        let out_dir = temp_dir(case_id);
+        let output = run_saga_fixture_output_with_archmap(
+            &out_dir,
+            plan,
+            component_aware_one_cent_archmap(&root),
+        );
+        assert_eq!(
+            output.status.code(),
+            Some(2),
+            "a malformed sectionRefs supply must fail loudly before measurement"
+        );
+        let validation = read_json(&out_dir.join("repair-plan-validation.json"));
+        assert!(
+            json_contains_substring(&validation, "overlap-section-membership-invalid"),
+            "the failure names the gluing data supply slot"
+        );
+    }
+}
+
+/// 供給が置かれているのに component へ合わなかったときは、class 行を無言で消さずに
+/// 何が合わなかったかを出す。#3804 B1 の症状(validation 全 pass・exit 0・結論だけ降格)を固定する。
+#[test]
+fn cli_analyze_saga_descent_names_the_supply_that_failed_the_component_match() {
+    let root = ag_measurement_root();
+    let mut plan = component_aware_one_cent_saga_plan(&root);
+    plan["gluingData"]["overlapRefs"] = json!([
+        "overlap:cancel-inside-payment",
+        "overlap:cancel-order",
+        "overlap:inside-payment-order",
+        "overlap:consign-parcel"
+    ]);
+    plan["gluingData"]["sectionRefs"] = json!([
+        {"overlapRef": "overlap:cancel-inside-payment", "sectionRef": "section:a"},
+        {"overlapRef": "overlap:cancel-order", "sectionRef": "section:b"},
+        {"overlapRef": "overlap:inside-payment-order", "sectionRef": "section:c"},
+        {"overlapRef": "overlap:consign-parcel", "sectionRef": "section:d"}
+    ]);
+    let out_dir = run_saga_fixture_lock_with_archmap(
+        "ag-saga-component-aware-oversupplied-gluing",
+        plan,
+        component_aware_one_cent_archmap(&root),
+    );
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert!(
+        packet["structuralVerdict"]
+            .as_array()
+            .expect("structural verdict is an array")
+            .iter()
+            .all(|row| row["law"] != "saga.residual-class"),
+        "supplied data that spans another component does not certify the class"
+    );
+    let invariant = invariant_by_id(&packet, "saga-descent:residual-class");
+    assert_eq!(invariant["status"], "silence_by_design");
+    assert_eq!(
+        invariant["reason"],
+        "gluing_data_does_not_match_the_residual_component",
+        "the rejected supply slot is named instead of vanishing"
+    );
+    assert!(
+        invariant["whatNext"]
+            .as_str()
+            .is_some_and(|next| next.contains("gluingData")),
+        "the output says what to supply next"
+    );
+    assert_eq!(
+        invariant["suppliedSlots"],
+        json!(["trueSheafCertificate", "gluingData"]),
+        "the run records which slots were supplied at all"
+    );
 }
 
 #[test]
@@ -2961,6 +3084,53 @@ fn cli_presentation_generated_packet_validator_rejects_tampered_evidence() {
         &altered_comparison_input,
         "inputDigests.repairPlan.sha256"
     ));
+}
+
+/// viewer は `representation` があればそちらを読む。本体を再計算する validator を
+/// 素通りしてミラーだけ差し替える経路を塞ぐ。
+#[test]
+fn cli_presentation_generated_packet_validator_rejects_representation_mirror_forgery() {
+    let root = ag_measurement_root();
+    let plan = presentation_generated_saga_plan(&root, true);
+    let out_dir = run_presentation_generated_saga_fixture_lock(
+        "ag-saga-presentation-generated-mirror-forgery",
+        plan,
+    );
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let mirror_divergence = |candidate: &Value| {
+        validate_measurement_packet_value_v1(candidate)
+            .iter()
+            .any(|check| {
+                check.result == "fail"
+                    && check.examples.iter().any(|example| {
+                        example.target.as_deref() == Some("mirror-divergence")
+                    })
+            })
+    };
+    assert!(
+        !mirror_divergence(&packet),
+        "an untampered packet mirrors its invariants exactly"
+    );
+
+    let mut forged_conclusion = packet.clone();
+    invariant_by_id_mut(&mut forged_conclusion, "saga-comparison:h1-transfer")["representation"]
+        ["conclusionCode"] = json!("SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA");
+    assert!(mirror_divergence(&forged_conclusion));
+
+    let mut forged_transfer = packet.clone();
+    invariant_by_id_mut(&mut forged_transfer, "saga-comparison:h1-transfer")["representation"]
+        ["generatedQuotientTransfer"]["targetClassNonZero"] = json!(false);
+    assert!(mirror_divergence(&forged_transfer));
+
+    let mut forged_witness = packet.clone();
+    invariant_by_id_mut(&mut forged_witness, "saga-comparison:h1-transfer")["representation"]
+        ["presentationGenerated"]["residualWitness"]["h"] = json!([]);
+    assert!(mirror_divergence(&forged_witness));
+
+    let mut forged_class_row = packet.clone();
+    invariant_by_id_mut(&mut forged_class_row, "saga-descent:residual-class")["representation"]
+        ["residualClassSupport"]["nonZero"] = json!(false);
+    assert!(mirror_divergence(&forged_class_row));
 }
 
 #[test]
@@ -3193,6 +3363,17 @@ fn cli_presentation_generated_transfer_uses_equation_quotient_for_target_h1() {
     );
     assert_eq!(
         comparison["generatedQuotientTransfer"]["targetClassNonZero"],
+        false
+    );
+    // 商が零になる presentation では、descent 側の生の残差類と読みが割れる。
+    // 割れたこと自体は矛盾ではないが、黙って併存させない。
+    assert_eq!(comparison["contract"]["measuredClassAgreement"], false);
+    assert_eq!(
+        comparison["measuredClassDivergence"]["measuredResidualClassNonZero"],
+        true
+    );
+    assert_eq!(
+        comparison["measuredClassDivergence"]["presentationSourceClassNonZero"],
         false
     );
 }
@@ -12393,7 +12574,7 @@ fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_diges
 
     let manifest = read_json(&first_out.join("archsig-run-manifest.json"));
     assert_eq!(manifest["toolVersion"], "0.5.4");
-    assert_eq!(manifest["runId"], "run:edf063ef116e");
+    assert_eq!(manifest["runId"], "run:492434adf066");
     assert_eq!(
         manifest["inputDigests"]["archmap"]["sha256"],
         "653037e1812bad367d211b926b976065d69842ec6d26cb5d4f82bdb9ac5f46e3"
@@ -12426,7 +12607,7 @@ fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_diges
     );
     assert_eq!(
         manifest["inputDigests"]["repairPlan"]["sha256"],
-        "3a4d961908002609421e28830fd36bd7e0c47c92223a82d1ce1875fea4766f69"
+        "705954f81878a1d164734aebd24ba7fa10fa2f7b605e835f6ec2a1726865435e"
     );
 }
 
@@ -12603,7 +12784,7 @@ fn cli_analyze_stamp_appends_opt_in_run_id_suffix() {
     assert!(
         manifest["runId"]
             .as_str()
-            .is_some_and(|run_id| run_id.starts_with("run:edf063ef116e-stamp:")),
+            .is_some_and(|run_id| run_id.starts_with("run:492434adf066-stamp:")),
         "stamp opt-in should append a wall-clock suffix to the deterministic input-derived prefix"
     );
 }
@@ -15784,8 +15965,22 @@ fn run_saga_fixture_lock_with_archmap(
     repair_plan: Value,
     archmap: Value,
 ) -> PathBuf {
-    let root = ag_measurement_root();
     let out_dir = temp_dir(case_id);
+    let output = run_saga_fixture_output_with_archmap(&out_dir, repair_plan, archmap);
+    assert!(
+        output.status.success(),
+        "saga fixture analyze failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    out_dir
+}
+
+fn run_saga_fixture_output_with_archmap(
+    out_dir: &Path,
+    repair_plan: Value,
+    archmap: Value,
+) -> std::process::Output {
+    let root = ag_measurement_root();
     let (mut policy, profile) = read_fixture_policy_profile(&root.join("law_policy_ag.json"));
     policy["policies"] = json!([{
         "law": "ag.saga-descent",
@@ -15809,7 +16004,7 @@ fn run_saga_fixture_lock_with_archmap(
         serde_json::to_vec_pretty(&repair_plan).expect("repair plan serializes"),
     )
     .expect("repair plan writes");
-    run_sig0(&[
+    run_sig0_output(&[
         "analyze",
         "--archmap",
         archmap_path.to_str().expect("path is utf-8"),
@@ -15825,8 +16020,7 @@ fn run_saga_fixture_lock_with_archmap(
         repair_plan_path.to_str().expect("path is utf-8"),
         "--out-dir",
         out_dir.to_str().expect("path is utf-8"),
-    ]);
-    out_dir
+    ])
 }
 
 fn run_analyze_fixture_lock(

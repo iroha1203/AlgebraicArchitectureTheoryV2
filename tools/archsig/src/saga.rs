@@ -120,7 +120,7 @@ pub(crate) fn evaluate_saga_grounded_v1(
         || plan.faithfulness.mode != "supplied"
         || plan.faithfulness.supplied.is_none()
         || plan.comparison.is_none()
-        || class_supply_is_checked(archmap, plan).is_none()
+        || class_supply_is_checked(archmap, plan).is_err()
         || grounded_variable_aliases.is_none()
         || grounded_forbidden_supports.is_none()
         || grounded_witness_variables.is_empty()
@@ -145,7 +145,7 @@ pub(crate) fn evaluate_saga_grounded_v1(
             } else if plan.faithfulness.mode != "supplied"
                 || plan.faithfulness.supplied.is_none()
                 || plan.comparison.is_none()
-                || class_supply_is_checked(archmap, plan).is_none()
+                || class_supply_is_checked(archmap, plan).is_err()
             {
                 "grounded_layer_d_not_supplied"
             } else if source.cover_ref != profile.cover_ref {
@@ -664,7 +664,13 @@ pub(crate) fn evaluate_saga_descent_v1(
             }
         }),
     ];
-    if let Some(class_certificate) = class_supply_is_checked(archmap, plan) {
+    let class_supply = class_supply_is_checked(archmap, plan);
+    if let Err(reason) = class_supply.as_ref()
+        && let Some(rejection) = class_supply_rejection_invariant(plan, reason)
+    {
+        computed_invariants.push(rejection);
+    }
+    if let Ok(class_certificate) = class_supply.as_ref() {
         let class_nonzero = !boundary.in_b1;
         structural_verdict.push(AgStructuralVerdictV1 {
             evaluator: "ag.saga-descent".to_string(),
@@ -703,7 +709,9 @@ pub(crate) fn evaluate_saga_descent_v1(
                     "overlapRefs": &class_certificate.cocycle.component.overlap_refs
                 },
                 "cocycle": {
-                    "checked": true,
+                    // triple を持つ component だけが実際に検査を走らせる。triple 不在の component は
+                    // selected C^2 が零なので cocycle 条件が自動成立する。両者を checked で混ぜない。
+                    "checked": class_certificate.cocycle.certificate_kind == "checked-triple-cocycle-zero",
                     "deltaOne": "zero",
                     "certificateKind": class_certificate.cocycle.certificate_kind,
                     "tripleOverlapRefs": class_certificate.cocycle.triple_overlap_refs_json()
@@ -766,7 +774,8 @@ fn evaluate_saga_comparison_v1(
                 "normalizedComplexFingerprint": comparison_complex_fingerprint(plan),
                 "classPrerequisite": false,
                 "targetClassComputed": false,
-                "contractChecked": false
+                "contractChecked": false,
+                "measuredClassAgreement": Value::Null
             }
         });
     };
@@ -806,6 +815,20 @@ fn evaluate_saga_comparison_v1(
                 .and_then(Value::as_object)
                 .map(|h1| presentation_generated_h1_checks(plan, &target_complex, h1))
         })
+    } else {
+        None
+    };
+    // presentation-generated では source class を presentation から計算するため、同じ packet の
+    // descent 側 `saga.residual-class` とは別の対象を読んでいる。descent は生の Z1/B1、
+    // presentation は repair relation で割った商の H1 であり、両者が食い違うこと自体は
+    // 矛盾ではない。ただし読者が片方をもう片方の裏づけと取り違えないよう、一致・不一致を
+    // 常に出力し、不一致なら何が違うのかを名指しする。
+    let measured_class_agreement = if h1_kind == "presentation-generated" && measured_class_available
+    {
+        presentation_checks
+            .as_ref()
+            .and_then(|checks| checks.source_class_nonzero)
+            .map(|source_class_nonzero| source_class_nonzero == measured_class_nonzero)
     } else {
         None
     };
@@ -883,7 +906,8 @@ fn evaluate_saga_comparison_v1(
                 "normalizedComplexFingerprint": comparison_complex_fingerprint(plan),
                 "classPrerequisite": false,
                 "targetClassComputed": target_class_nonzero.is_some(),
-                "contractChecked": contract_checked
+                "contractChecked": contract_checked,
+                "measuredClassAgreement": measured_class_agreement
             },
             "nonConclusions": non_conclusions
         });
@@ -925,7 +949,8 @@ fn evaluate_saga_comparison_v1(
             "normalizedComplexFingerprint": comparison_complex_fingerprint(plan),
             "classPrerequisite": class_available,
             "targetClassComputed": target_class_nonzero.is_some(),
-            "contractChecked": contract_checked
+            "contractChecked": contract_checked,
+            "measuredClassAgreement": measured_class_agreement
         },
         "suppliedCochainMap": {
             "level": "cochain",
@@ -941,6 +966,18 @@ fn evaluate_saga_comparison_v1(
             "targetSupportComputed": target_class_nonzero.is_some()
         },
         "presentationGenerated": presentation_generated,
+        "measuredClassDivergence": if measured_class_agreement == Some(false) {
+            json!({
+                "sourceInvariant": source_invariant,
+                "presentationSourceClassNonZero": class_nonzero,
+                "measuredInvariant": "saga-descent:residual-class",
+                "measuredResidualClassNonZero": measured_class_nonzero,
+                "reading": "the presentation source class is read in the repair-relation quotient; the measured residual class is read in raw Z1/B1 on the same complex",
+                "whatNext": "read the transfer conclusion against the presentation quotient only; it does not corroborate or replace the measured residual class row"
+            })
+        } else {
+            Value::Null
+        },
         "generatedQuotientTransfer": if established {
             json!({
                 "level": "quotient",
@@ -963,10 +1000,17 @@ fn evaluate_saga_comparison_v1(
         } else {
             Value::Null
         },
-        "nonConclusions": [
-            "Supplied cochain data and generated quotient-level transfer are separate structures.",
-            "The transfer reading is relative to the supplied finite comparison contract."
-        ]
+        "nonConclusions": if h1_kind == "presentation-generated" {
+            json!([
+                "The presentation packet is authored input; the derived comparison maps and the exactness checks are what this run computed.",
+                "The transfer reading is relative to the supplied finite comparison contract."
+            ])
+        } else {
+            json!([
+                "Supplied cochain data and generated quotient-level transfer are separate structures.",
+                "The transfer reading is relative to the supplied finite comparison contract."
+            ])
+        }
     })
 }
 
@@ -1072,22 +1116,60 @@ impl SagaClassSupplyCertificate {
     }
 }
 
+/// class 認証が成立しなかったとき、どの供給が component に合わなかったのかを名指しする。
+/// 認証を無言で落とすと、既存 RepairPlan が validation を通ったまま結論だけ降格し、
+/// 利用者に検知手段が残らない。
 fn class_supply_is_checked(
     archmap: &ArchMapDocumentV2,
     plan: &RepairPlanDocumentV1,
-) -> Option<SagaClassSupplyCertificate> {
-    let cocycle = component_cocycle_certificate(plan)?;
-    let coefficient_ok = coefficient_is_f2_additive(plan);
-    let (true_sheaf_cover_ref, true_sheaf_member_chart_refs, true_sheaf_global_condition) =
-        component_true_sheaf_certificate(archmap, plan, &cocycle.component)?;
-    let gluing_section_refs = component_gluing_data(plan, &cocycle.component)?;
-    coefficient_ok.then_some(SagaClassSupplyCertificate {
+) -> Result<SagaClassSupplyCertificate, &'static str> {
+    let Some(cocycle) = component_cocycle_certificate(plan) else {
+        return Err("component_cocycle_certificate_not_established");
+    };
+    if !coefficient_is_f2_additive(plan) {
+        return Err("coefficient_is_not_f2_additive");
+    }
+    let Some((true_sheaf_cover_ref, true_sheaf_member_chart_refs, true_sheaf_global_condition)) =
+        component_true_sheaf_certificate(archmap, plan, &cocycle.component)
+    else {
+        return Err("true_sheaf_certificate_does_not_match_the_residual_component");
+    };
+    let Some(gluing_section_refs) = component_gluing_data(plan, &cocycle.component) else {
+        return Err("gluing_data_does_not_match_the_residual_component");
+    };
+    Ok(SagaClassSupplyCertificate {
         cocycle,
         true_sheaf_cover_ref,
         true_sheaf_member_chart_refs,
         true_sheaf_global_condition,
         gluing_section_refs,
     })
+}
+
+/// 供給が実際に置かれているのに認証へ進めなかった場合だけ、沈黙の代わりに理由を出す。
+/// 供給そのものが無い場合は従来どおり何も言わない(語れないことには沈黙する)。
+fn class_supply_rejection_invariant(plan: &RepairPlanDocumentV1, reason: &str) -> Option<Value> {
+    let supplied_certificate = plan.true_sheaf_certificate.is_some();
+    let supplied_gluing = plan.gluing_data.is_some();
+    if !supplied_certificate && !supplied_gluing {
+        return None;
+    }
+    let supplied_slots = [
+        supplied_certificate.then_some("trueSheafCertificate"),
+        supplied_gluing.then_some("gluingData"),
+    ]
+    .into_iter()
+    .flatten()
+    .collect::<Vec<_>>();
+    Some(json!({
+        "invariantId": "saga-descent:residual-class",
+        "evaluator": "ag.saga-descent",
+        "kind": "residual-class-support",
+        "status": "silence_by_design",
+        "reason": reason,
+        "whatNext": "supply a trueSheafCertificate whose coverRef / memberCharts and a gluingData whose overlapRefs each match the residual support component exactly, together with an F2-additive coefficient and a valid component cocycle certificate",
+        "suppliedSlots": supplied_slots
+    }))
 }
 
 fn component_true_sheaf_certificate(
@@ -1164,8 +1246,7 @@ fn component_gluing_data(
             let item = item.as_object()?;
             let overlap_ref = item.get("overlapRef")?.as_str()?;
             let section_ref = item.get("sectionRef")?.as_str()?;
-            (canonical_section_ref(overlap_ref).as_deref() == Some(section_ref))
-                .then_some((overlap_ref, section_ref))
+            (!section_ref.is_empty()).then_some((overlap_ref, section_ref))
         })
         .collect::<Option<Vec<_>>>()?;
     let supplied_overlaps = section_refs
@@ -1188,13 +1269,6 @@ fn component_gluing_data(
         .collect::<Vec<_>>();
     section_refs.sort_by(|left, right| left.0.cmp(&right.0));
     Some(section_refs)
-}
-
-fn canonical_section_ref(overlap_ref: &str) -> Option<String> {
-    overlap_ref
-        .strip_prefix("overlap:")
-        .filter(|suffix| !suffix.is_empty())
-        .map(|suffix| format!("section:{suffix}"))
 }
 
 fn coefficient_is_f2_additive(plan: &RepairPlanDocumentV1) -> bool {

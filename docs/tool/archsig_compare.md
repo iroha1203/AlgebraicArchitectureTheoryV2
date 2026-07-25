@@ -20,8 +20,9 @@ assumptionとして記録する。
 `kind: "presentation-generated"` では各 chart / overlap / triple cell の semantic generators、
 repair relation 行列、equation quotient presentation、`generatorMap` と restriction 行列を入力し、
 F₂ 上で `im(R)=ker(χ̃)`、`im(χ̃)=Q_E`、restriction naturality を検査する。これにより
-local `Φ` と `κ⁰ / κ¹ / κ²` を導出し、`κ¹D_sem⁰=D_E⁰κ⁰` と
-`κ²D_sem¹=D_E¹κ¹` を有限 cell incidence で確認する。presentation は independently authored な
+local `Φ` と `κ⁰ / κ¹ / κ²` を導出する。`κ¹D_sem⁰=D_E⁰κ⁰` と `κ²D_sem¹=D_E¹κ¹` は
+restriction naturality から従うので、出力の `degreeZeroCommutative` / `degreeOneCommutative` は
+その帰結の記録であり、独立した第2・第3の検査ではない。presentation は independently authored な
 `equationLiftAtlas`（chart ごとの local lift と overlap ごとの transition difference）も持ち、
 ArchSig はそこから `r_E` を導出する。`κ¹(r_sem)=r_E+δ⁰h` は equation relation を含む商上で
 解き、解があるときだけ computed quotient-atlas witness `h` を出力する。同じ商上で target cocycle と
@@ -41,10 +42,11 @@ cocycle 認証、同じ component に完全一致する `trueSheafCertificate` �
 `complex.enumerationComplete=true` かつ triple overlap cell が無い `C²=0` の
 `automatic-c2-zero` である。`trueSheafCertificate` の
 `memberCharts` / `coverRef` / `globalCondition=assumed` と
-`gluingData.overlapRefs` は residual component の overlap 集合に完全一致し、各
-`sectionRefs[].sectionRef` は対応する `overlapRef` から得られるcanonical
-`section:<overlap suffix>` でなければならない。別 component の supplied row や任意の section
-参照は residual class 認証に使えない。class row はこの global condition の assumptionId を
+`gluingData.overlapRefs` は residual component の overlap 集合に完全一致し、
+`sectionRefs` は各 `overlapRef` に非空かつ相異なる `sectionRef` を一対一で与える。
+`sectionRef` は author が付ける不透明なラベルであり、ArchSig はこれを ArchMap 側の
+どの entity にも解決しない。component 帰属は `overlapRefs` の完全一致だけが担保する。
+別 component の overlap 集合を宣言した supplied row は residual class 認証に使えない。class row はこの global condition の assumptionId を
 `dependsOnAssumptions` に記録する。この前提未供給は比較違反として扱わない。source class が計測済みの場合だけ、有限 map の適合検査または target class の zero predicate の検査へ進む。
 
 `kind: "presentation-generated"` では `saga.residual-class` を入力前提にせず、上記の
@@ -55,7 +57,7 @@ finite presentation 検査から semantic presentation の source `Z¹/B¹` clas
 selected `C²=0` で triple overlap が空でも、presentation による source / target class と
 quotient-atlas witness が計算できれば、この経路は `established` になりうる。
 
-`h1-comparison-transfer` は `ag.saga-comparison` evaluator が所有する computed invariant であり、`contract` を必須とする。contract は `incidenceBridgeKind`、`h1ComparisonDataKind`、`normalizedComplexFingerprint`（文字列）と、`classPrerequisite`、`targetClassComputed`、`contractChecked`（真偽値）の6フィールドを持ち、未知フィールドや別 evaluator への付け替えは受理しない。presentation-generated 経路が established のときは `SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS` を出力し、explicit 経路の `SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA` と区別する。
+`h1-comparison-transfer` は `ag.saga-comparison` evaluator が所有する computed invariant であり、`contract` を必須とする。contract は `incidenceBridgeKind`、`h1ComparisonDataKind`、`normalizedComplexFingerprint`（文字列）と、`classPrerequisite`、`targetClassComputed`、`contractChecked`（真偽値）、`measuredClassAgreement`（計測された残差類の行が同じ packet に在るときだけ真偽値、無ければ null）の7フィールドを持ち、未知フィールドや別 evaluator への付け替えは受理しない。`measuredClassAgreement` が false のときは、invariant に `measuredClassDivergence` が付き、presentation 側の source class と descent 側の計測残差類のどちらが何を読んでいるかを名指しする。両者は同じ複体の別の対象(repair relation で割った商の `H¹` と生の `Z¹/B¹`)なので、食い違い自体は contract 違反として扱わない。presentation-generated 経路が established のときは `SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS` を出力し、explicit 経路の `SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA` と区別する。
 不一致になった場合だけ `COMPARISON_DATA_CONTRACT_VIOLATION` を記録する。
 
 ## Inputs and outputs
