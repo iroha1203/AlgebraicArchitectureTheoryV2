@@ -186,7 +186,7 @@ The two owning objects are isolated from each other and from the selected
 two-patch family: a context morphism out of or into either of them exists only
 as its identity.
 -/
-theorem hom_eq_of_component
+theorem eq_of_hom_component
     {W V : referenceSite.category} (f : W ⟶ V)
     (h : W = componentA ∨ W = componentB ∨ V = componentA ∨ V = componentB) :
     W = V := by
@@ -266,9 +266,11 @@ theorem symbolicValue_hom {source target : referenceSite.category}
 SD8: the equation system whose symbolic coordinate depends on the context.
 
 One required equation, integer observables, identity restriction, and the
-two-valued symbolic coordinate.  Object-dependent residuals are zero: what the
-separating instance needs is the symbolic coordinate, and a nonzero residual
-would only add an unrelated equation-fulfilment claim.
+two-valued symbolic coordinate.  Object-dependent residuals are zero, so each
+generated equalizer relation is the universal section itself; this is why the
+symbolic value has to be a non-unit for `realizationIdeal` to stay proper
+(`realizationIdeal_ne_top`).  A nonzero residual would only shift the same
+constraint onto the difference.
 -/
 noncomputable def disconnectedEquationSystem :
     ArchitecturalEquationSystem referenceSite.contextPreorder where
@@ -511,7 +513,7 @@ def baseObject : disconnectedSite.category :=
 
 /-- SD8: bottom-topology sheafification is invertible at every context, so the
 canonical section ring is the raw quotient. -/
-theorem canonicalComponentIsIso (W : disconnectedSite.category) :
+theorem canonical_component_isIso (W : disconnectedSite.category) :
     IsIso (disconnectedRaw.toRingedSite.canonical.app (op W)) := by
   have hsheaf : Presheaf.IsSheaf disconnectedSite.topology
       disconnectedRaw.toPresheaf := by
@@ -655,7 +657,7 @@ noncomputable def canonicalBaseHom :
 
 /-- The canonical component at the base context is injective. -/
 theorem canonicalBaseHom_injective : Function.Injective canonicalBaseHom := by
-  letI := canonicalComponentIsIso baseObject
+  letI := canonical_component_isIso baseObject
   intro x y h
   have hx := congrArg (fun q => q.right x)
     (IsIso.hom_inv_id (disconnectedRaw.toRingedSite.canonical.app (op baseObject)))
@@ -700,7 +702,7 @@ theorem rawToGlobal_injective : Function.Injective rawToGlobal := by
 /-- The canonical section ring map at the base context is invertible. -/
 instance canonicalBaseRight_isIso :
     IsIso ((disconnectedRaw.toRingedSite.canonical.app (op baseObject)).right) := by
-  letI := canonicalComponentIsIso baseObject
+  letI := canonical_component_isIso baseObject
   exact inferInstanceAs (IsIso ((Under.forget _).map
     (disconnectedRaw.toRingedSite.canonical.app (op baseObject))))
 
@@ -1010,17 +1012,17 @@ theorem chartOpen_mono
   · rw [hst]
   · have hsA : source ≠ componentA := by
       intro h
-      exact hst (hom_eq_of_component f (Or.inl h))
+      exact hst (eq_of_hom_component f (Or.inl h))
     have hsB : source ≠ componentB := by
       intro h
-      exact hst (hom_eq_of_component f (Or.inr (Or.inl h)))
+      exact hst (eq_of_hom_component f (Or.inr (Or.inl h)))
     rw [chartOpen, chartGenerator_eq_zero hsA hsB,
       disconnectedScheme.underlying.basicOpen_zero ⊤]
     exact bot_le
 
 /-- The two components jointly cover the ambient: in every stalk the idempotent
 is a unit or its complement is. -/
-theorem chartOpen_iSup :
+theorem chartOpen_iSup_eq_top :
     (⨆ W : disconnectedSite.category, chartOpen W) = ⊤ := by
   refine le_antisymm le_top ?_
   intro x _
@@ -1045,7 +1047,7 @@ noncomputable def disconnectedContextCharts :
   EquationContextChartCover.ofMonotoneOpens disconnectedSite
     disconnectedScheme.underlying chartOpen
     (fun f => chartOpen_mono f)
-    chartOpen_isAffineOpen chartOpen_iSup
+    chartOpen_isAffineOpen chartOpen_iSup_eq_top
 
 /-- The image open of a selected chart is the open its context owns.
 
@@ -1225,7 +1227,7 @@ theorem gluedViolationSection_eq_complement
       2 * (1 - idempotentSection) := by
   refine TopCat.Sheaf.eq_of_locally_eq'
     disconnectedScheme.underlying.sheaf chartOpen ⊤
-    (fun _ => homOfLE le_top) (le_of_eq chartOpen_iSup.symm) _ _ ?_
+    (fun _ => homOfLE le_top) (le_of_eq chartOpen_iSup_eq_top.symm) _ _ ?_
   intro W
   have hglued := disconnectedRealization.gluedViolationSection_on_open
     disconnectedContextCharts disconnectedContextChartProducer i a W
@@ -1268,10 +1270,10 @@ theorem gluedViolationSection_ne_violationSection
     omega
 
 /-- The two owned components jointly exhaust the ambient. -/
-theorem chartOpen_sup :
+theorem chartOpen_sup_eq_top :
     chartOpen componentA ⊔ chartOpen componentB = ⊤ := by
   refine le_antisymm le_top ?_
-  rw [← chartOpen_iSup]
+  rw [← chartOpen_iSup_eq_top]
   refine iSup_le fun W => ?_
   by_cases hA : W = componentA
   · subst hA
@@ -1311,7 +1313,7 @@ gluing would then return that component's own universal section, contradicting
 theorem chartOpen_componentA_ne_bot : chartOpen componentA ≠ ⊥ := by
   intro hbot
   have htop : chartOpen componentB = ⊤ := by
-    rw [← chartOpen_sup, hbot, bot_sup_eq]
+    rw [← chartOpen_sup_eq_top, hbot, bot_sup_eq]
   exact gluedViolationSection_ne_violationSection componentB PUnit.unit
     AAT.AG.FiniteModel.FiniteAtom.componentA
     (glued_eq_violationSection_of_chartOpen_eq_top htop _ _)
@@ -1320,7 +1322,7 @@ theorem chartOpen_componentA_ne_bot : chartOpen componentA ≠ ⊥ := by
 theorem chartOpen_componentB_ne_bot : chartOpen componentB ≠ ⊥ := by
   intro hbot
   have htop : chartOpen componentA = ⊤ := by
-    rw [← chartOpen_sup, hbot, sup_bot_eq]
+    rw [← chartOpen_sup_eq_top, hbot, sup_bot_eq]
   exact gluedViolationSection_ne_violationSection componentA PUnit.unit
     AAT.AG.FiniteModel.FiniteAtom.componentA
     (glued_eq_violationSection_of_chartOpen_eq_top htop _ _)
@@ -1334,7 +1336,7 @@ theorem ambient_disconnected :
       chartOpen componentA ⊓ chartOpen componentB = ⊥ ∧
       chartOpen componentA ⊔ chartOpen componentB = ⊤ :=
   ⟨chartOpen_componentA_ne_bot, chartOpen_componentB_ne_bot,
-    chartOpen_disjoint componentA_ne_componentB, chartOpen_sup⟩
+    chartOpen_disjoint componentA_ne_componentB, chartOpen_sup_eq_top⟩
 
 /-! ## The generated realization is not the empty one -/
 

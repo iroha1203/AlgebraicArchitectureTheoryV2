@@ -8405,8 +8405,8 @@ def standardGeometry_disconnected_componentB_ne_context :=
 def standardGeometry_disconnected_componentA_ne_componentB :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.componentA_ne_componentB
 
-def standardGeometry_disconnected_hom_eq_of_component :=
-  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.hom_eq_of_component
+def standardGeometry_disconnected_eq_of_hom_component :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.eq_of_hom_component
 
 noncomputable def standardGeometry_disconnected_symbolicValue :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.symbolicValue
@@ -8474,8 +8474,8 @@ def standardGeometry_disconnected_disconnectedRaw_quotientDesc :=
 def standardGeometry_disconnected_baseObject :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.baseObject
 
-def standardGeometry_disconnected_canonicalComponentIsIso :=
-  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.canonicalComponentIsIso
+def standardGeometry_disconnected_canonical_component_isIso :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.canonical_component_isIso
 
 noncomputable def standardGeometry_disconnected_disconnectedScheme :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedScheme
@@ -8618,8 +8618,8 @@ def standardGeometry_disconnected_chartOpen_disjoint :=
 def standardGeometry_disconnected_chartOpen_mono :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.chartOpen_mono
 
-def standardGeometry_disconnected_chartOpen_iSup :=
-  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.chartOpen_iSup
+def standardGeometry_disconnected_chartOpen_iSup_eq_top :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.chartOpen_iSup_eq_top
 
 noncomputable def standardGeometry_disconnected_disconnectedContextCharts :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedContextCharts
@@ -8642,8 +8642,8 @@ def standardGeometry_disconnected_gluedViolationSection_eq_complement :=
 def standardGeometry_disconnected_gluedViolationSection_ne_violationSection :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.gluedViolationSection_ne_violationSection
 
-def standardGeometry_disconnected_chartOpen_sup :=
-  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.chartOpen_sup
+def standardGeometry_disconnected_chartOpen_sup_eq_top :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.chartOpen_sup_eq_top
 
 def standardGeometry_disconnected_chartOpen_componentA_ne_bot :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.chartOpen_componentA_ne_bot
