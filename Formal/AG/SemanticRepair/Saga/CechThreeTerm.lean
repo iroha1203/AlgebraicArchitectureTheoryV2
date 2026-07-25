@@ -182,6 +182,20 @@ def incComplex (Q : IntersectionCoefficientData.{u, w} 𝒰) :
 abbrev IncH1 (Q : IntersectionCoefficientData.{u, w} 𝒰) : Type (max u w) :=
   (incComplex Q).H1
 
+/--
+X.定義2.3(#3811): `Ȟ¹(𝒰, Q)` の零類は生成群構造
+(`AdditiveThreeTermComplex.instH1AddCommGroup`)の単位元に一致する。
+-/
+@[simp]
+theorem incH1_zeroClass_eq_zero (Q : IntersectionCoefficientData.{u, w} 𝒰) :
+    (incComplex Q).H1ZeroClass = (0 : IncH1 Q) :=
+  rfl
+
+/-- X.定義2.3(#3811): 零類述語は群単位元との等式である。 -/
+theorem incH1_isZero_iff_eq_zero (Q : IntersectionCoefficientData.{u, w} 𝒰)
+    (h : IncH1 Q) : (incComplex Q).H1IsZero h ↔ h = 0 :=
+  Iff.rfl
+
 end Saga
 end SemanticRepair
 end AAT.AG

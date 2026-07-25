@@ -67,6 +67,121 @@ def H1IsZero (K : AdditiveThreeTermComplex C0 C1 C2) (h : K.H1) : Prop :=
   h = K.H1ZeroClass
 
 /--
+X.定理7.4(#3811): degree-one cocycles `Z¹ = ker d¹` as an additive subgroup
+of `C1`.
+-/
+def H1CocycleAddSubgroup (K : AdditiveThreeTermComplex C0 C1 C2) :
+    AddSubgroup C1 where
+  carrier := {c | K.d1 c = 0}
+  zero_mem' := by simp
+  add_mem' := by
+    intro a b ha hb
+    simp only [Set.mem_setOf_eq] at ha hb ⊢
+    simp [map_add, ha, hb]
+  neg_mem' := by
+    intro a ha
+    simp only [Set.mem_setOf_eq] at ha ⊢
+    simp [map_neg, ha]
+
+/--
+X.定理7.4(#3811): degree-one cocycles carry the additive commutative group
+structure induced from `C1` (the subtype cut out by `ker d¹`).
+-/
+instance instH1CocycleAddCommGroup (K : AdditiveThreeTermComplex C0 C1 C2) :
+    AddCommGroup K.H1Cocycle :=
+  inferInstanceAs (AddCommGroup K.H1CocycleAddSubgroup)
+
+@[simp]
+theorem H1Cocycle_add_val (K : AdditiveThreeTermComplex C0 C1 C2)
+    (x y : K.H1Cocycle) : (x + y).1 = x.1 + y.1 :=
+  rfl
+
+@[simp]
+theorem H1Cocycle_zero_val (K : AdditiveThreeTermComplex C0 C1 C2) :
+    (0 : K.H1Cocycle).1 = 0 :=
+  rfl
+
+@[simp]
+theorem H1Cocycle_neg_val (K : AdditiveThreeTermComplex C0 C1 C2)
+    (x : K.H1Cocycle) : (-x).1 = -x.1 :=
+  rfl
+
+/-- X.定理7.4(#3811): addition on `H^1` classes (coboundary congruence). -/
+instance instH1Add (K : AdditiveThreeTermComplex C0 C1 C2) : Add K.H1 :=
+  ⟨Quotient.map₂ (· + ·)
+    (by
+      intro x x' hx y y' hy
+      rcases hx with ⟨bx, hbx⟩
+      rcases hy with ⟨by', hby⟩
+      refine ⟨bx + by', ?_⟩
+      show x.1 + y.1 - (x'.1 + y'.1) = K.d0 (bx + by')
+      rw [map_add, ← hbx, ← hby]
+      abel)⟩
+
+/-- X.定理7.4(#3811): the zero class as the zero of `H^1`. -/
+instance instH1Zero (K : AdditiveThreeTermComplex C0 C1 C2) : Zero K.H1 :=
+  ⟨K.H1ZeroClass⟩
+
+/-- X.定理7.4(#3811): negation on `H^1` classes. -/
+instance instH1Neg (K : AdditiveThreeTermComplex C0 C1 C2) : Neg K.H1 :=
+  ⟨Quotient.map Neg.neg
+    (by
+      intro x y hxy
+      rcases hxy with ⟨b, hb⟩
+      refine ⟨-b, ?_⟩
+      show -x.1 - -y.1 = K.d0 (-b)
+      rw [map_neg, ← hb]
+      abel)⟩
+
+/--
+X.定理7.4(#3811): the coboundary relation is a congruence for addition, so
+`H^1` carries the quotient additive commutative group structure.  The zero of
+this group is definitionally `H1ZeroClass`, so the existing zero-class API is
+unchanged.
+-/
+instance instH1AddCommGroup (K : AdditiveThreeTermComplex C0 C1 C2) :
+    AddCommGroup K.H1 where
+  add := (· + ·)
+  add_assoc a b c :=
+    Quotient.inductionOn₃ a b c fun x y z =>
+      congrArg (Quotient.mk K.H1CoboundarySetoid) (add_assoc x y z)
+  zero := 0
+  zero_add a :=
+    Quotient.inductionOn a fun x =>
+      congrArg (Quotient.mk K.H1CoboundarySetoid) (zero_add x)
+  add_zero a :=
+    Quotient.inductionOn a fun x =>
+      congrArg (Quotient.mk K.H1CoboundarySetoid) (add_zero x)
+  nsmul := nsmulRec
+  neg := Neg.neg
+  zsmul := zsmulRec
+  neg_add_cancel a :=
+    Quotient.inductionOn a fun x =>
+      congrArg (Quotient.mk K.H1CoboundarySetoid) (neg_add_cancel x)
+  add_comm a b :=
+    Quotient.inductionOn₂ a b fun x y =>
+      congrArg (Quotient.mk K.H1CoboundarySetoid) (add_comm x y)
+
+/-- X.定理7.4(#3811): the zero class is the group identity of `H^1`. -/
+@[simp]
+theorem H1ZeroClass_eq_zero (K : AdditiveThreeTermComplex C0 C1 C2) :
+    K.H1ZeroClass = (0 : K.H1) :=
+  rfl
+
+/-- X.定理7.4(#3811): the zero predicate is equality with the group identity. -/
+theorem H1IsZero_iff_eq_zero (K : AdditiveThreeTermComplex C0 C1 C2)
+    (h : K.H1) : K.H1IsZero h ↔ h = 0 :=
+  Iff.rfl
+
+@[simp]
+theorem H1_mk_add_mk (K : AdditiveThreeTermComplex C0 C1 C2)
+    (x y : K.H1Cocycle) :
+    (Quotient.mk K.H1CoboundarySetoid x + Quotient.mk K.H1CoboundarySetoid y :
+        K.H1) =
+      Quotient.mk K.H1CoboundarySetoid (x + y) :=
+  rfl
+
+/--
 X.R1(c): cochain-level equivalence of three-term complexes.
 
 The fields are deliberately cochain-level: degree-wise additive maps, inverse
@@ -201,6 +316,31 @@ theorem fromH1_zero_iff (E : Equivalence K L) (h : L.H1) :
     rw [H1IsZero] at hh
     rw [hh]
     exact E.fromH1_zero
+
+/-- X.定理7.4(#3811): the generated forward `H^1` map is additive. -/
+theorem toH1_add (E : Equivalence K L) (h₁ h₂ : K.H1) :
+    E.toH1 (h₁ + h₂) = E.toH1 h₁ + E.toH1 h₂ :=
+  Quotient.inductionOn₂ h₁ h₂ fun x y =>
+    congrArg (Quotient.mk L.H1CoboundarySetoid)
+      (Subtype.ext (map_add E.to1 x.1 y.1))
+
+/--
+X.定理7.4(#3811): the generated `H^1` transport of a cochain-level
+equivalence, upgraded to an additive group isomorphism.  The underlying
+function is the existing `toH1`; nothing is supplied beyond the cochain-level
+fields.
+-/
+def toH1AddEquiv (E : Equivalence K L) : K.H1 ≃+ L.H1 where
+  toFun := E.toH1
+  invFun := E.fromH1
+  left_inv := E.from_to_H1
+  right_inv := E.to_from_H1
+  map_add' := E.toH1_add
+
+@[simp]
+theorem toH1AddEquiv_apply (E : Equivalence K L) (h : K.H1) :
+    E.toH1AddEquiv h = E.toH1 h :=
+  rfl
 
 end Equivalence
 
