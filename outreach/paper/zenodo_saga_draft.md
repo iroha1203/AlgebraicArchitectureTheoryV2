@@ -544,8 +544,9 @@ independence**): 別の atlas `p'_i=a_i+p_i` に対し同じ torsor 計算が
 
 equation 側は、定理 3.10 の `Q_E` を係数とする **geometric Čech complex**
 `C^•_E(𝒰):=C^•(𝒰,Q_E)` を構成する。**equation-lift system** `P_E` は
-`S_X` 上の presheaf であり、各 `V` で `Q_E(V)` が free かつ transitive に作用し、
-restriction は作用と可換する。selected local lift atlas `{e_i}` から、overlap 上の差として
+`S_X` 上の presheaf であり、各 intersection `V` で、非空な `P_E(V)` には
+`Q_E(V)` が free かつ transitive に作用し、restriction は作用と可換する。
+selected local lift atlas `{e_i}` から、overlap 上の差として
 幾何側 residual
 
 ```math
