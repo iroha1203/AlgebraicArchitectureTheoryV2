@@ -69,6 +69,9 @@ skeleton を置かない」とするが、本構成は intersection × Atom の�
 chart-indexed equation choice」は置いていない)。
 (iii) 本文の cover-indexed 形は local context を cover chart に取るが、
 本構成は intersection context を取る。
+(iv) 本文は base context `W_base` と各 local context の構造射
+`W_q → W_base` を固定するが、Lean 側 `DisplayedEquationSource`(#3733、
+既存設計)は共通 base も構造射も field に持たず、本構成もそれを継承する。
 再利用する III.定理11.4 の結論(generated interpretation、membership 同値、
 fulfillment 零化、residual restriction)はすべて chart 単位の主張で有限性も
 cover-indexing も使わないため、これらの差は再利用結果を弱めない。また
@@ -389,8 +392,8 @@ def equationSelfLiftFiber (S : Site.AATSite A) :
   base _ := 0
   base_natural _ := rfl
 
-/-- Self-lift fiber の零 local lift atlas(X.§1 入力6b の selected 選択を
-零 lift に取った instance)。 -/
+/-- Self-lift fiber の零 local lift atlas(X.§1 入力6 の selected local lift
+atlas(R0 §4.9 の入力6b)を零 lift に取った instance)。 -/
 def equationSelfLiftAtlas (S : Site.AATSite A) (𝒰 : MonomorphicOrderedCover S) :
     CoefficientLiftAtlas ((equationSelfLiftFiber S).equationLiftSystem 𝒰) where
   localLift _ := ⟨0, rfl⟩
@@ -429,7 +432,8 @@ R0 §4.9: 定理1.1 入力束を production route から組み立てる。equati
 `SupportAtomEquationSelection`(入力3(R0 §4.3)の correspondence の生成源への
 selected 入力)と selected lift-fiber datum(入力6a の生成源、R0 §4.6)から
 `realization` / `equationLiftSystem` で生成し、semantic 側入力(入力1・5、
-R0 §4.1・§4.5)、`β`(入力7、R0 §4.7)、normalization(入力8、R0 §4.8)は
+R0 §4.1・§4.5)、lift atlas(入力6 の selected local lift atlas、R0 §4.9 の
+入力6b)、`β`(入力7、R0 §4.7)、normalization(入力8、R0 §4.8)は
 X.§1 の三分類のとおり selected のまま受け取る。completeness 対(入力4、
 R0 §4.4)は従来どおり bundle に入れず定理仮定として受ける。
 
