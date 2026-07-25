@@ -364,9 +364,10 @@ I_{\mathrm{Ob}}^E(W)=\sum_{i\in K_E,\ \mathrm{role}_E(i)=\mathrm{required}} I_i^
 subpresheaf をなす。
 
 **定理 3.10(generated obstruction quotient)。**
-equation system `E` と displayed equation source(各 chart に対する local
-context、architecture object、required index `i_q`、support Atom `a_q` の選択)を
-固定する。このとき次が成立する。
+equation system `E` と displayed equation source(有限個の local context
+`W_q→W_base` に対する architecture object、required equation index `i_q`、
+support Atom `a_q` の選択。cover-indexed の場合は local context を各 chart に
+取る)を固定する。このとき次が成立する。
 
 1. **generated coefficient**: 商
 
@@ -380,16 +381,26 @@ context、architecture object、required index `i_q`、support Atom `a_q` の選
    residual の商 class `interpret(q)=[d_q]∈Q_E(W_q)`、
    `d_q:=ε_{W_q,A_q,i_q,a_q}` として構成される。interpretation は自由な
    データではなく、構成される。
-3. **vanishing**: displayed equations が充足されるならば、すべての `q` で
+3. **residual restriction naturality**: context morphism `g:Z→W_q` に対し
+   `d_{q|Z}:=ε_{Z,A_q,i_q,a_q}` と置くと、
+
+   ```math
+   \mathrm{res}_g([d_q])=[\mathrm{res}_g(d_q)]=[d_{q|Z}]
+   ```
+
+   が成り立つ。residual class の restriction は、同じ architecture reading、
+   equation index、support Atom で評価した residual の class である。
+4. **vanishing**: displayed equations が充足されるならば、すべての `q` で
    `[d_q]=0`。
-4. **quotient zero criterion**: `[d_q]=0 ⟺ d_q∈I_Ob^E(W_q)`。
+5. **quotient zero criterion**: `[d_q]=0 ⟺ d_q∈I_Ob^E(W_q)`。
    したがって `d_q∉I_Ob^E(W_q)` ならば `[d_q]≠0`。
 
 証明は商と ideal の一般論による。(1) は定義 3.9 の ideal subpresheaf 性と商の
-普遍性、(2) は構成、(3) は equation fulfillment の定義(`ε=0`)、(4) は商に
+普遍性、(2) は構成、(3) は `ε` の restriction 可換性(定義 3.6)と商の
+代表元計算、(4) は equation fulfillment の定義(`ε=0`)、(5) は商に
 おける零の定義そのものである。
 
-条項 4 は quotient における零判定であり、それ以上ではない。semantic failure と
+条項 5 は quotient における零判定であり、それ以上ではない。semantic failure と
 class の対応まで含む主張として読まない。displayed failure から非零類へ至る推論
 
 ```math
@@ -398,7 +409,7 @@ class の対応まで含む主張として読まない。displayed failure か�
 \;\Rightarrow\; [d_q]\ne0
 ```
 
-のうち条項 4 が担うのは後半だけである。前半 — 意味論上の failure が ideal に
+のうち条項 5 が担うのは後半だけである。前半 — 意味論上の failure が ideal に
 属さない residual として顕在化すること(**semantic faithfulness**)— は商係数の
 性質ではなく、displayed source の選択と supply に属する別条件である。第7章の case study では、この
 前半は closed-equational surface の計測と authored supply が担う。
@@ -453,7 +464,9 @@ selected は入力契約であり、proved はその契約の下での定理で�
 本章は、SAGA の二つの複体を独立に構成する。semantic 側は semantic atom と
 repair relation から、equation 側は equation system から、それぞれの一次データのみで
 係数、複体、residual を生成する。両者の比較は第5章の定理の結論であり、
-本章の構成には他方への参照が入らない。
+二つの複体の構成には他方への参照が入らない。両者を接続する唯一の写像
+`χ^E`(命題 4.1)は第5章の比較入力の構成であり、どちらの複体の構成にも
+使われない。
 
 ### 4.1 Cover-relative Čech complex
 
@@ -483,8 +496,17 @@ C^2(\mathcal U,F)=\prod_{i<j<k}F(U_{ijk})
 
 ### 4.2 Semantic 側の構成
 
-**Semantic repair presentation。** `S_X` の各 context `V` に、
-supported semantic atom の集合 `S(V)` と restriction 写像 `S(V)→S(V')` を与える。
+**Semantic repair presentation。** `S_X` の各 context `V` に、`V` 上で区別する
+semantic atom の集合 `Λ(V)`、semantic atom の台 Atom を与える projection
+`π_V:Λ(V)→At`、および repair に使用できる **supported semantic atom** の
+部分集合 `S(V)⊆Λ(V)` を与える。各 context morphism `V'→V` に対して
+functorial な restriction 写像 `Λ(V)→Λ(V')` があり、support を保ち
+(`λ∈S(V)` なら `λ|_{V'}∈S(V')`)、projection は台 Atom を保つ:
+
+```math
+\pi_{V'}(\lambda|_{V'})=\pi_V(\lambda).
+```
+
 `S(V)` 上の free abelian group を `F_sem(V)` と書き、その元(supported atom の
 形式的有限和)を **repair word** と呼ぶ。各 `V` で restriction-stable な部分群
 
@@ -559,6 +581,36 @@ r_{E,ij}=e_j|_{U_{ij}}-e_i|_{U_{ij}}
 
 が生成される。§4.2 と同じ torsor 論法により、`r_E` は cocycle であり、
 その class は atlas の選択に依存しない。
+
+**命題 4.1(equation semantic realization: `χ^E` の構成)。**
+各 cover intersection `V` の supported semantic atom `λ∈S(V)` に、
+required equation index `i_λ` と local architecture reading `A_λ` を
+restriction と可換に対応させる(selected。cover intersection diagram の
+face restriction `V'→V` について `i_{λ|_{V'}}=i_λ`、`A_{λ|_{V'}}=A_λ`)。
+このとき
+
+```math
+\chi^E_V(\lambda):=[\epsilon_{V,A_\lambda,i_\lambda,\pi_V(\lambda)}]\in Q_E(V)
+```
+
+は face restriction について restriction-natural、すなわち
+
+```math
+\chi^E_{V'}(\lambda|_{V'})=\chi^E_V(\lambda)|_{V'}
+```
+
+を満たす。
+
+**証明。** `i_λ`、`A_λ` は restriction と可換に選ばれ、`π` は台 Atom を保つ
+(§4.2)。したがって `λ|_{V'}` での residual は同じ reading・index・support Atom
+で `V'` 上評価した `ε` であり、定理 3.10 の residual restriction naturality に
+より、その class は `χ^E_V(λ)` の restriction に一致する。∎
+
+`χ^E` は、第5章 定理 5.1 の仮定 3 が要求する restriction-natural な一次写像を、
+equation system と displayed reading から**構成**する。仮定 3 自体はこの構成に
+限定されない selected 入力だが、`χ^E` はその canonical な実例であり、semantic
+atom の側から与えた「どの equation のどの読みに対する failure か」だけを材料に
+比較写像の始点が生成されることを示す。
 
 ### 4.4 二つの構成の独立性
 
@@ -669,7 +721,7 @@ true semantic repair sheaf(定義は §5.6)ならば、
 固有の内容に属する。
 本定理の固有の内容は (i)、(iii)、および residual の対応に集中する: semantic
 repair presentation と equation-generated quotient presentation を独立に構成した
-こと(第4章)、generator map `χ` の構成、local-state interpretation `β` から
+こと(第4章)、generator map `χ` の構成(命題 4.1)、local-state interpretation `β` から
 relation soundness を導出すること(§5.3)、completeness / generation を
 architecture data に相対化した条件として置いたこと、そして residual class の
 意味論的対応(§5.5)である。
@@ -724,7 +776,8 @@ atom を equation coefficient へ送る restriction-natural な対応
 \chi_V:S(V)\longrightarrow Q_E(V)
 ```
 
-である。`F_sem(V)` は `S(V)` 上の free abelian group なので(§4.2)、普遍性により
+である(命題 4.1 の `χ^E` はこの入力の構成された実例である)。
+`F_sem(V)` は `S(V)` 上の free abelian group なので(§4.2)、普遍性により
 `χ_V` は一意な準同型 `χ̃_V:F_sem(V)→Q_E(V)` へ延長される。構成すべき `Φ` は
 `χ̃` を repair relation で割った商上の写像であり、その well-definedness、単射性、
 全射性は soundness、completeness、generation という三つの異なる条件が担う。
@@ -1812,10 +1865,12 @@ paper とリポジトリ内 canonical 数学本文(日本語)の対応を検証�
 | 定義 3.9 | 第III部 定義 5.2、6.1、6.2 | witness ideal、obstruction ideal |
 | 定理 3.10 | 第III部 定義 11.3、定理 11.4 | displayed source、generated `Q_E` |
 
-注: 論文 定理 3.10 条項4の名称は quotient zero criterion(#3781 項目8で改名)。
-canonical 定理 11.4 の対応 clause は faithfulness / nondegeneracy のままであり、
-canonical 側は追随改名しない(2026-07-24 裁定)。名称の相違はこの注記が
-恒久的に対応づける。
+注: 論文 定理 3.10 条項5(旧条項4、2026-07-26 #3813 の residual restriction
+naturality 条項挿入で繰り下げ)の名称は quotient zero criterion(#3781 項目8で
+改名)。canonical 定理 11.4 の対応 clause は faithfulness / nondegeneracy の
+ままであり、canonical 側は追随改名しない(2026-07-24 裁定)。名称の相違は
+この注記が恒久的に対応づける。条項3(residual restriction naturality)は
+canonical 定理 11.4 の同名条項に対応する(2026-07-26 #3813 で追補)。
 
 構成と定理(第4〜5章):
 
@@ -1824,6 +1879,7 @@ canonical 側は追随改名しない(2026-07-24 裁定)。名称の相違はこ
 | §4.1 | 定義 2.1、補題 2.2、定義 2.3、補題 2.1A | cover-relative Čech complex |
 | §4.2 | 定義 3.1〜3.4、定義 4.1、4.2、補題 4.3、定理 4.4、系 4.5 | semantic 側の構成 |
 | §4.3 | 定義 5.1〜5.3、補題 5.4 | equation 側の構成 |
+| 命題 4.1(§4.3) | 定義 6.1、命題 6.1A | equation semantic realization(`χ^E` の構成) |
 | 定理 5.1 | 定理 1.1 | SAGA 中心定理 |
 | §5.3 | 補題 6.2A、定理 6.3、系 6.7、例 6.6 | 係数同型 `Φ` |
 | §5.4 | 定義 7.1、定理 7.2、系 7.3、定理 7.4 | cochain 可換と `H¹` 同型 |
@@ -1841,3 +1897,10 @@ canonical 側は追随改名しない(2026-07-24 裁定)。名称の相違はこ
 `P_E` 側も同構造(`AffineCoefficientLiftSystem`、作用は intersection 上)。
 仮定 7 の `β` の Lean 対応物は intersection diagram 上の成分と base 水準の
 `betaW`(chart 整合仮説つき)に分かれる。
+
+注: 論文 §4.2 の projection `π_V:Λ(V)→At` は、canonical 定義 3.1 の
+occurrence 値 projection `π_V:Λ(V)→At(V)` を台 Atom へ圧縮した形である
+(2026-07-26 #3813)。Lean は occurrence 水準を保持する
+(`SemanticAtomData.projection` / `projection_natural` +
+`AtomOccurrenceReading.occRestrict_atom`)。命題 4.1 の Lean
+対応物は `EquationSemanticRealization.chiE` / `chiE_natural` である。
