@@ -8370,6 +8370,296 @@ def standardGeometry_referenceProperLawfulnessIdealFactorizationChartCorresponde
 def standardGeometry_referenceProperGeneratedIdealSheaf_eq_obstruction :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.referenceProperGeneratedIdealSheaf_eq_obstruction
 
+/-! SD8: the separating gluing instance on a disconnected represented Scheme. -/
+
+def standardGeometry_disconnected_componentAContext :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.componentAContext
+
+def standardGeometry_disconnected_componentBContext :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.componentBContext
+
+def standardGeometry_disconnected_componentContext_ne_twoPatchContext :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.componentContext_ne_twoPatchContext
+
+def standardGeometry_disconnected_componentAContext_ne_twoPatchContext :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.componentAContext_ne_twoPatchContext
+
+def standardGeometry_disconnected_componentBContext_ne_twoPatchContext :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.componentBContext_ne_twoPatchContext
+
+def standardGeometry_disconnected_componentAContext_ne_componentBContext :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.componentAContext_ne_componentBContext
+
+def standardGeometry_disconnected_componentA :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.componentA
+
+def standardGeometry_disconnected_componentB :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.componentB
+
+def standardGeometry_disconnected_componentA_ne_context :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.componentA_ne_context
+
+def standardGeometry_disconnected_componentB_ne_context :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.componentB_ne_context
+
+def standardGeometry_disconnected_componentA_ne_componentB :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.componentA_ne_componentB
+
+def standardGeometry_disconnected_hom_eq_of_component :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.hom_eq_of_component
+
+noncomputable def standardGeometry_disconnected_symbolicValue :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.symbolicValue
+
+def standardGeometry_disconnected_symbolicValue_componentB :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.symbolicValue_componentB
+
+def standardGeometry_disconnected_symbolicValue_componentA :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.symbolicValue_componentA
+
+def standardGeometry_disconnected_symbolicValue_context :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.symbolicValue_context
+
+def standardGeometry_disconnected_symbolicValue_hom :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.symbolicValue_hom
+
+noncomputable def standardGeometry_disconnected_disconnectedEquationSystem :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedEquationSystem
+
+def standardGeometry_disconnected_disconnectedEquationSystem_required :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedEquationSystem_required
+
+def standardGeometry_disconnected_disconnectedCoverageRequirements :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedCoverageRequirements
+
+noncomputable def standardGeometry_disconnected_disconnectedSite :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedSite
+
+def standardGeometry_disconnected_disconnectedSite_contextPreorder :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedSite_contextPreorder
+
+def standardGeometry_disconnected_disconnectedSite_overlap :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedSite_overlap
+
+def standardGeometry_disconnected_disconnectedSite_equationSystem :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedSite_equationSystem
+
+def standardGeometry_disconnected_disconnectedSite_topology_eq_bot :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedSite_topology_eq_bot
+
+noncomputable def standardGeometry_disconnected_disconnectedHasSheafify :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedHasSheafify
+
+def standardGeometry_disconnected_disconnectedCoordFamily :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedCoordFamily
+
+noncomputable def standardGeometry_disconnected_disconnectedRelationFamily :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedRelationFamily
+
+noncomputable def standardGeometry_disconnected_disconnectedCoordinateRestriction :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedCoordinateRestriction
+
+def standardGeometry_disconnected_disconnectedCoordinateRestriction_polynomialMap :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedCoordinateRestriction_polynomialMap
+
+noncomputable def standardGeometry_disconnected_disconnectedRestrictionStable :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedRestrictionStable
+
+noncomputable def standardGeometry_disconnected_disconnectedRaw :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedRaw
+
+def standardGeometry_disconnected_disconnectedRaw_quotientDesc :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedRaw_quotientDesc
+
+def standardGeometry_disconnected_baseObject :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.baseObject
+
+def standardGeometry_disconnected_canonicalComponentIsIso :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.canonicalComponentIsIso
+
+noncomputable def standardGeometry_disconnected_disconnectedAtlas :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedAtlas
+
+def standardGeometry_disconnected_disconnectedAtlas_valid :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedAtlas_valid
+
+noncomputable def standardGeometry_disconnected_disconnectedAtlasPresentation :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedAtlasPresentation
+
+def standardGeometry_disconnected_disconnectedAtlasPresentation_valid :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedAtlasPresentation_valid
+
+noncomputable def standardGeometry_disconnected_disconnectedScheme :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedScheme
+
+def standardGeometry_disconnected_disconnectedScheme_underlying :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedScheme_underlying
+
+def standardGeometry_disconnected_disconnectedScheme_isAffine :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedScheme_isAffine
+
+noncomputable def standardGeometry_disconnected_rawIdempotent :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.rawIdempotent
+
+def standardGeometry_disconnected_rawIdempotent_mul_self :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.rawIdempotent_mul_self
+
+noncomputable def standardGeometry_disconnected_rawEvalZero :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.rawEvalZero
+
+noncomputable def standardGeometry_disconnected_rawEvalOne :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.rawEvalOne
+
+noncomputable def standardGeometry_disconnected_quotientEvalZero :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.quotientEvalZero
+
+noncomputable def standardGeometry_disconnected_quotientEvalOne :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.quotientEvalOne
+
+def standardGeometry_disconnected_quotientEvalZero_rawIdempotent :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.quotientEvalZero_rawIdempotent
+
+def standardGeometry_disconnected_quotientEvalOne_rawIdempotent :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.quotientEvalOne_rawIdempotent
+
+def standardGeometry_disconnected_rawIdempotent_ne_zero :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.rawIdempotent_ne_zero
+
+def standardGeometry_disconnected_rawIdempotent_ne_one :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.rawIdempotent_ne_one
+
+noncomputable def standardGeometry_disconnected_canonicalBaseHom :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.canonicalBaseHom
+
+def standardGeometry_disconnected_canonicalBaseHom_injective :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.canonicalBaseHom_injective
+
+noncomputable def standardGeometry_disconnected_rawToGlobal :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.rawToGlobal
+
+def standardGeometry_disconnected_rawToGlobal_injective :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.rawToGlobal_injective
+
+noncomputable def standardGeometry_disconnected_idempotentSection :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.idempotentSection
+
+def standardGeometry_disconnected_idempotentSection_mul_self :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.idempotentSection_mul_self
+
+def standardGeometry_disconnected_idempotentSection_ne_zero :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.idempotentSection_ne_zero
+
+def standardGeometry_disconnected_idempotentSection_ne_one :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.idempotentSection_ne_one
+
+def standardGeometry_disconnected_globalSections_nontrivial :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.globalSections_nontrivial
+
+noncomputable def standardGeometry_disconnected_disconnectedReading :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedReading
+
+noncomputable def standardGeometry_disconnected_disconnectedRepresentingEquiv :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedRepresentingEquiv
+
+def standardGeometry_disconnected_disconnectedRepresentingEquiv_natural :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedRepresentingEquiv_natural
+
+noncomputable def standardGeometry_disconnected_disconnectedRealization :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedRealization
+
+def standardGeometry_disconnected_disconnectedRealization_valid :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedRealization_valid
+
+def standardGeometry_disconnected_violationSection_eq_symbolicValue :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.violationSection_eq_symbolicValue
+
+def standardGeometry_disconnected_violationSection_componentA :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.violationSection_componentA
+
+def standardGeometry_disconnected_violationSection_componentB :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.violationSection_componentB
+
+def standardGeometry_disconnected_violationSection_not_context_independent :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.violationSection_not_context_independent
+
+noncomputable def standardGeometry_disconnected_chartGenerator :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.chartGenerator
+
+def standardGeometry_disconnected_chartGenerator_componentA :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.chartGenerator_componentA
+
+def standardGeometry_disconnected_chartGenerator_componentB :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.chartGenerator_componentB
+
+def standardGeometry_disconnected_chartGenerator_eq_zero :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.chartGenerator_eq_zero
+
+def standardGeometry_disconnected_chartGenerator_mul_eq_zero :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.chartGenerator_mul_eq_zero
+
+noncomputable def standardGeometry_disconnected_chartOpen :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.chartOpen
+
+def standardGeometry_disconnected_chartOpen_isAffineOpen :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.chartOpen_isAffineOpen
+
+def standardGeometry_disconnected_chartOpen_disjoint :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.chartOpen_disjoint
+
+def standardGeometry_disconnected_chartOpen_mono :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.chartOpen_mono
+
+def standardGeometry_disconnected_chartOpen_iSup :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.chartOpen_iSup
+
+noncomputable def standardGeometry_disconnected_disconnectedContextCharts :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedContextCharts
+
+def standardGeometry_disconnected_contextChartOpen_disconnected :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.contextChartOpen_disconnected
+
+def standardGeometry_disconnected_disconnectedContextChartRefinement :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedContextChartRefinement
+
+def standardGeometry_disconnected_disconnectedContextChartProducer :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedContextChartProducer
+
+def standardGeometry_disconnected_violationSection_eq_zero_of_ne :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.violationSection_eq_zero_of_ne
+
+def standardGeometry_disconnected_gluedViolationSection_eq_complement :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.gluedViolationSection_eq_complement
+
+def standardGeometry_disconnected_gluedViolationSection_ne_violationSection :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.gluedViolationSection_ne_violationSection
+
+def standardGeometry_disconnected_chartImage_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.chartImage_eq
+
+noncomputable def standardGeometry_disconnected_transitionGenerator :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.transitionGenerator
+
+def standardGeometry_disconnected_transitionGenerator_basicOpen_eq :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.transitionGenerator_basicOpen_eq
+
+noncomputable def standardGeometry_disconnected_disconnectedContextChartLocalization :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedContextChartLocalization
+
+noncomputable def standardGeometry_disconnected_disconnectedSchemeChartProducer :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedSchemeChartProducer
+
+def standardGeometry_disconnected_atlasOverlap_fst_isIso :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.atlasOverlap_fst_isIso
+
+noncomputable def standardGeometry_disconnected_disconnectedAmbientChartLocalization :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedAmbientChartLocalization
+
+def standardGeometry_disconnected_disconnectedEquationContextWitnessChartRealized :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedEquationContextWitnessChartRealized
+
+def standardGeometry_disconnected_disconnectedLawfulnessIdealFactorizationChartCorrespondence :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.DisconnectedGluing.disconnectedLawfulnessIdealFactorizationChartCorrespondence
+
 def standardGeometry_referenceCechGluedWitnessIdeal_on_contextChart :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.referenceCechGluedWitnessIdeal_on_contextChart
 
