@@ -2,6 +2,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use serde_json::{Value, json};
 
+use crate::ag_measurement::observe_cech_edge;
 use crate::law_execution::LawExecutionPlanV1;
 use crate::repair_plan::{
     comparison_complex_fingerprint, comparison_target_complex, complex_has_valid_finite_incidence,
@@ -62,8 +63,8 @@ fn selected_cover_context_ids(
 }
 
 /// 法曲面の全 law を走査し、cech edge 束縛つき witness variable の
-/// sorted context pair -> variable 対応を作る。同じ edge に別名の witness を
-/// 宣言する法曲面は fail-closed に拒否する。
+/// sorted context pair -> witness 集合対応を作る。同じ edge へ複数 law が witness を
+/// 宣言する場合は union し、全束縛を provenance として derivation record に残す。
 fn cech_edge_witness_bindings(
     law_surface: &LawEquationSurfaceV1,
 ) -> Result<BTreeMap<[String; 2], BTreeSet<String>>, String> {
@@ -88,34 +89,6 @@ fn cech_edge_witness_bindings(
         }
     }
     Ok(bindings)
-}
-
-fn observed_section_values(
-    normalized: &NormalizedArchMapV2,
-    context_id: &str,
-) -> BTreeSet<String> {
-    normalized
-        .atoms
-        .iter()
-        .filter(|atom| {
-            atom.axis == "cech" && atom.predicate == "sectionValue" && atom.subject == context_id
-        })
-        .filter_map(|atom| atom.object.as_deref())
-        .map(str::trim)
-        .filter(|value| !value.is_empty())
-        .map(str::to_string)
-        .collect()
-}
-
-fn section_support_atom_refs(normalized: &NormalizedArchMapV2, context_id: &str) -> Vec<String> {
-    normalized
-        .atoms
-        .iter()
-        .filter(|atom| {
-            atom.axis == "cech" && atom.predicate == "sectionValue" && atom.subject == context_id
-        })
-        .map(|atom| atom.normalized_atom_id.clone())
-        .collect()
 }
 
 pub(crate) fn derive_residual(
@@ -146,10 +119,23 @@ pub(crate) fn derive_residual(
             ));
         }
     }
+    let chart_set = plan
+        .complex
+        .charts
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
     let bindings = cech_edge_witness_bindings(law_surface)?;
     let mut supports = BTreeMap::new();
     let mut edges = Vec::new();
     for overlap in &plan.complex.overlaps {
+        if !chart_set.contains(overlap.left.as_str()) || !chart_set.contains(overlap.right.as_str())
+        {
+            return Err(format!(
+                "overlap {} endpoints {} / {} must be declared in complex.charts",
+                overlap.id, overlap.left, overlap.right
+            ));
+        }
         let restriction_observed = normalized.contexts.iter().any(|context| {
             (context.normalized_context_id == overlap.left
                 && context.restricts_to.contains(&overlap.right))
@@ -162,15 +148,14 @@ pub(crate) fn derive_residual(
                 overlap.id, overlap.left, overlap.right
             ));
         }
-        let left_sections = observed_section_values(normalized, &overlap.left);
-        let right_sections = observed_section_values(normalized, &overlap.right);
-        if left_sections.is_empty() || right_sections.is_empty() {
+        let observation = observe_cech_edge(normalized, &overlap.left, &overlap.right);
+        if !observation.observed {
             return Err(format!(
                 "overlap {} has an unobserved cech section on {} or {}",
                 overlap.id, overlap.left, overlap.right
             ));
         }
-        let value = u8::from(left_sections != right_sections);
+        let value = observation.value;
         let mut pair = [overlap.left.clone(), overlap.right.clone()];
         pair.sort();
         let witness = bindings.get(&pair).cloned().unwrap_or_default();
@@ -188,15 +173,13 @@ pub(crate) fn derive_residual(
         } else {
             Vec::new()
         };
-        let mut support_atom_refs = section_support_atom_refs(normalized, &overlap.left);
-        support_atom_refs.extend(section_support_atom_refs(normalized, &overlap.right));
         edges.push(json!({
             "overlapRef": overlap.id,
             "leftContextRef": overlap.left,
             "rightContextRef": overlap.right,
             "value": value,
             "witnessVariables": witness,
-            "supportAtomRefs": support_atom_refs
+            "supportAtomRefs": observation.support_atom_refs
         }));
         supports.insert(overlap.id.clone(), support);
     }
@@ -270,7 +253,9 @@ pub(crate) fn evaluate_saga_grounded_v1(
                 })
         });
     let coefficient_is_f2 = profile.coefficient == "F2";
-    let class_supply_ok = derive_residual(normalized, profile, plan, law_surface)
+    let derived_for_gate = derive_residual(normalized, profile, plan, law_surface);
+    let residual_derivation_fault = derived_for_gate.is_err();
+    let class_supply_ok = derived_for_gate
         .is_ok_and(|derived| class_supply_is_checked(archmap, plan, &derived.supports).is_ok());
     let defect_support_size = source
         .chart_defects
@@ -313,6 +298,8 @@ pub(crate) fn evaluate_saga_grounded_v1(
                 "grounded_skeleton_not_aligned"
             } else if !coefficient_is_f2 {
                 "grounded_coefficient_not_f2_additive"
+            } else if residual_derivation_fault {
+                "grounded_residual_derivation_fault"
             } else if plan.faithfulness.mode != "supplied"
                 || plan.faithfulness.supplied.is_none()
                 || plan.comparison.is_none()
@@ -682,6 +669,17 @@ pub(crate) fn evaluate_saga_descent_v1(
         Err(fault) => return descent_not_computed(plan, fault),
         Ok(derived) => derived,
     };
+    let declared_supports = crate::repair_plan::declared_restriction_difference_supports(plan);
+    let agrees_with_declared = plan.complex.overlaps.iter().all(|overlap| {
+        let declared_nonzero = declared_supports
+            .get(overlap.id.as_str())
+            .is_some_and(|variables| !variables.is_empty());
+        let derived_nonzero = derived
+            .supports
+            .get(overlap.id.as_str())
+            .is_some_and(|variables| !variables.is_empty());
+        declared_nonzero == derived_nonzero
+    });
     let boundary = solve_boundary_membership(plan, &derived.supports);
     let enumeration_assumption = AgAssumptionLedgerEntryV1 {
         theorem_ref: "part10/3.1".to_string(),
@@ -778,7 +776,10 @@ pub(crate) fn evaluate_saga_descent_v1(
         }),
     });
 
-    if plan.faithfulness.mode == "none" {
+    if !matches!(
+        plan.faithfulness.mode.as_str(),
+        "complete-support" | "supplied"
+    ) {
         structural_verdict.push(AgStructuralVerdictV1 {
             evaluator: "ag.saga-descent".to_string(),
             law: "saga.global-coherence".to_string(),
@@ -850,12 +851,22 @@ pub(crate) fn evaluate_saga_descent_v1(
                 "derived": true,
                 "fault": Value::Null,
                 "coverRef": derived.cover_ref,
+                "mappedCoverRef": plan.complex.archmap_cover_ref.clone(),
                 "lawSurfaceRef": derived.law_surface_ref,
-                "edges": derived.edges
+                "edges": derived.edges,
+                "declaredSupports": plan.complex.overlaps.iter().map(|overlap| json!({
+                    "overlapRef": overlap.id,
+                    "support": declared_supports.get(overlap.id.as_str()).cloned().unwrap_or_default()
+                })).collect::<Vec<_>>(),
+                "agreesWithDeclared": agrees_with_declared
             },
             "faithfulnessBasis": {
                 "mode": plan.faithfulness.mode,
-                "basis": if plan.faithfulness.mode == "supplied" { "supplied-data" } else { "complete-support" }
+                "basis": match plan.faithfulness.mode.as_str() {
+                    "supplied" => "supplied-data",
+                    "complete-support" => "complete-support",
+                    other => other,
+                }
             }
         }),
     ];
@@ -934,6 +945,7 @@ pub(crate) fn evaluate_saga_descent_v1(
     computed_invariants.push(evaluate_saga_comparison_v1(
         plan,
         &derived.supports,
+        agrees_with_declared,
         &structural_verdict,
         law_surface,
     ));
@@ -1001,6 +1013,7 @@ fn unresolved_equation_generators(
 fn evaluate_saga_comparison_v1(
     plan: &RepairPlanDocumentV1,
     supports: &BTreeMap<String, Vec<String>>,
+    agrees_with_declared: bool,
     structural_verdict: &[AgStructuralVerdictV1],
     law_surface: Option<&LawEquationSurfaceV1>,
 ) -> Value {
@@ -1135,7 +1148,7 @@ fn evaluate_saga_comparison_v1(
         } else {
             (
                 "residual_class_prerequisite_not_measured",
-                "supply an F2 coefficient, a valid cocycle certificate for the residual component, and trueSheafCertificate plus gluingData that each match that component exactly so the source residual class can be measured before evaluating H1 comparison transfer",
+                "select an F2 MeasurementProfile coefficient and supply a valid cocycle certificate for the residual component plus trueSheafCertificate and gluingData that each match that component exactly, so the source residual class can be measured before evaluating H1 comparison transfer",
                 [
                     "The comparison contract is not a replacement for the measured source residual class.",
                     "No comparison failure code is emitted until the residual-class prerequisite is measured.",
@@ -1248,6 +1261,15 @@ fn evaluate_saga_comparison_v1(
         },
         "failureCode": if comparison_contract_violation {
             json!(ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION)
+        } else {
+            Value::Null
+        },
+        "declaredResidualDivergence": if comparison_contract_violation && !agrees_with_declared {
+            json!({
+                "reason": "declared_residual_disagrees_with_derivation",
+                "reading": "the repair-plan declared residual (resL/resR restriction difference) and the derived residual disagree on which overlaps carry a nonzero residual; the comparison contract was authored against the declaration",
+                "whatNext": "re-author the repair plan and comparison contract against the derived residual recorded in saga-descent:residual-derivation"
+            })
         } else {
             Value::Null
         },
@@ -1388,6 +1410,21 @@ fn class_supply_is_checked(
     let Some(cocycle) = component_cocycle_certificate(plan, supports) else {
         return Err("component_cocycle_certificate_not_established");
     };
+    if let Some(supplied) = plan.faithfulness.supplied.as_ref() {
+        let declared = supplied
+            .residual_support_predicate
+            .support_variables
+            .iter()
+            .cloned()
+            .collect::<BTreeSet<_>>();
+        let derived_variables = supports
+            .values()
+            .flat_map(|variables| variables.iter().cloned())
+            .collect::<BTreeSet<_>>();
+        if declared != derived_variables {
+            return Err("supplied_residual_support_predicate_disagrees_with_derived_residual");
+        }
+    }
     let Some((true_sheaf_cover_ref, true_sheaf_member_chart_refs, true_sheaf_global_condition)) =
         component_true_sheaf_certificate(archmap, plan, &cocycle.component)
     else {
@@ -1426,7 +1463,7 @@ fn class_supply_rejection_invariant(plan: &RepairPlanDocumentV1, reason: &str) -
         "kind": "residual-class-support",
         "status": "silence_by_design",
         "reason": reason,
-        "whatNext": "supply a trueSheafCertificate whose coverRef / memberCharts and a gluingData whose overlapRefs each match the residual support component exactly, together with an F2-additive coefficient and a valid component cocycle certificate",
+        "whatNext": "supply a trueSheafCertificate whose coverRef / memberCharts and a gluingData whose overlapRefs each match the residual support component exactly, under an F2 MeasurementProfile coefficient and a valid component cocycle certificate",
         "suppliedSlots": supplied_slots
     }))
 }
@@ -1869,6 +1906,46 @@ fn solve_f2(mut rows: Vec<Vec<u8>>, unknown_count: usize) -> Option<Vec<u8>> {
 mod tests {
     use super::*;
     use crate::repair_plan::declared_restriction_difference_supports;
+    use crate::normalizer::normalize_archmap_v2;
+
+    fn derivation_test_inputs() -> (
+        crate::NormalizedArchMapV2,
+        crate::MeasurementProfileV1,
+        RepairPlanDocumentV1,
+        LawEquationSurfaceV1,
+    ) {
+        let archmap: ArchMapDocumentV2 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/archmap_v2.json"
+        ))
+        .expect("archmap fixture parses");
+        let normalized = normalize_archmap_v2(&archmap, "fixture:archmap_v2");
+        let profile: crate::MeasurementProfileV1 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/measurement_profile_ag.json"
+        ))
+        .expect("profile fixture parses");
+        let plan: RepairPlanDocumentV1 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/repair_plan_complete_support.json"
+        ))
+        .expect("plan fixture parses");
+        let law_surface: LawEquationSurfaceV1 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/law_surface_ag_v052.json"
+        ))
+        .expect("law surface fixture parses");
+        (normalized, profile, plan, law_surface)
+    }
+
+    #[test]
+    fn derive_residual_faults_on_overlap_endpoint_outside_charts() {
+        let (normalized, profile, mut plan, law_surface) = derivation_test_inputs();
+        plan.complex.charts.retain(|chart| chart != "ctx:order");
+        let fault = derive_residual(&normalized, &profile, &plan, &law_surface)
+            .expect_err("overlap endpoint outside charts must fail closed, not panic");
+        assert!(
+            fault.contains("must be declared in complex.charts"),
+            "fault must name the missing chart declaration: {fault}"
+        );
+    }
+
 
     fn declared_supports(plan: &RepairPlanDocumentV1) -> BTreeMap<String, Vec<String>> {
         declared_restriction_difference_supports(plan)
@@ -1966,7 +2043,7 @@ mod tests {
     #[test]
     fn comparison_silence_precedes_contract_failure_when_class_is_missing() {
         let plan = comparison_fixture();
-        let result = evaluate_saga_comparison_v1(&plan, &declared_supports(&plan), &[], None);
+        let result = evaluate_saga_comparison_v1(&plan, &declared_supports(&plan), true, &[], None);
         assert_eq!(result["status"], "silence_by_design");
         assert_eq!(result["reason"], "residual_class_prerequisite_not_measured");
         assert!(result.get("failureCode").is_none());
@@ -1981,7 +2058,7 @@ mod tests {
         plan.comparison.as_mut().expect("comparison exists")["h1ComparisonData"]["presentation"] =
             serde_json::json!({});
 
-        let result = evaluate_saga_comparison_v1(&plan, &declared_supports(&plan), &[], None);
+        let result = evaluate_saga_comparison_v1(&plan, &declared_supports(&plan), true, &[], None);
         assert_eq!(result["status"], "silence_by_design");
         assert_eq!(
             result["reason"],
@@ -2003,7 +2080,7 @@ mod tests {
     #[test]
     fn comparison_class_predicate_mismatch_emits_contract_failure() {
         let plan = comparison_fixture();
-        let result = evaluate_saga_comparison_v1(&plan, &declared_supports(&plan), &[measured_class_verdict()], None);
+        let result = evaluate_saga_comparison_v1(&plan, &declared_supports(&plan), true, &[measured_class_verdict()], None);
         assert_eq!(result["status"], "not_computed");
         assert_eq!(
             result["failureCode"],

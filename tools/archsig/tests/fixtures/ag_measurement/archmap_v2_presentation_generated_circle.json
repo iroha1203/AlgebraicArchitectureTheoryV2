@@ -108,7 +108,8 @@
       ],
       "restrictsTo": [
         "ctx:overlap-01",
-        "ctx:overlap-20"
+        "ctx:overlap-20",
+        "ctx:shared"
       ],
       "refs": [
         "src:order"
@@ -121,7 +122,9 @@
       ],
       "restrictsTo": [
         "ctx:overlap-01",
-        "ctx:overlap-12"
+        "ctx:overlap-12",
+        "ctx:order",
+        "ctx:shared"
       ],
       "refs": [
         "src:inventory"

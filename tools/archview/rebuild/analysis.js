@@ -563,7 +563,6 @@ export async function validateAnalysisBundle(documents, architectureIndex) {
     documents.manifest.inputDigests.lawPolicy.sha256,
     documents.manifest.inputDigests.lawSurface.sha256,
     ...documents.manifest.inputDigests.measurementProfiles.map((entry) => entry.sha256),
-    ...(documents.manifest.inputDigests.residualPacket?.sha256 ? [documents.manifest.inputDigests.residualPacket.sha256] : []),
     documents.manifest.toolVersion,
   ].join("|");
   const expectedRunId = `run:${(await sha256Hex(runSeed)).slice(0, 12)}`;

@@ -219,11 +219,9 @@ enum Command {
         #[arg(long)]
         archmap: PathBuf,
 
-        /// Input RepairPlan v0.5.4 JSON path.
+        /// Input RepairPlan v0.5.5 JSON path.
         #[arg(long = "repair-plan")]
         repair_plan: PathBuf,
-
-        /// Optional residual measurement packet JSON path for measured residual binding.
 
         /// Output RepairPlan validation report JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
@@ -263,8 +261,6 @@ enum Command {
         /// Optional SAGA RepairPlan artifact path.
         #[arg(long = "repair-plan")]
         repair_plan: Option<PathBuf>,
-
-        /// Optional residual packet path used by measured RepairPlan residuals.
 
         /// Optional refactor-morphism/v0.5.4 artifact enabling declared verdict transport.
         #[arg(long = "refactor-morphism")]

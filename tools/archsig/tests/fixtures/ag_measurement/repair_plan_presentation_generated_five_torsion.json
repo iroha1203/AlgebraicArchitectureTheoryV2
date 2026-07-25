@@ -1,5 +1,5 @@
 {
-  "schema": "archsig-repair-plan/v0.5.4",
+  "schema": "archsig-repair-plan/v0.5.5",
   "id": "repair-plan:train-ticket-money-head",
   "complex": {
     "charts": [

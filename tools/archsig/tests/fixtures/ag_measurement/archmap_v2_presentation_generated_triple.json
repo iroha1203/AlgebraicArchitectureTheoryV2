@@ -215,7 +215,8 @@
         "ctx:overlap-order-inventory",
         "ctx:overlap-order-shared",
         "ctx:overlap-ledger-order",
-        "ctx:overlap-order-inventory-alt"
+        "ctx:overlap-order-inventory-alt",
+        "ctx:shared"
       ],
       "refs": [
         "src:order"
@@ -229,7 +230,9 @@
       "restrictsTo": [
         "ctx:overlap-order-inventory",
         "ctx:overlap-inventory-shared",
-        "ctx:overlap-order-inventory-alt"
+        "ctx:overlap-order-inventory-alt",
+        "ctx:order",
+        "ctx:shared"
       ],
       "refs": [
         "src:inventory"
@@ -256,7 +259,8 @@
       ],
       "restrictsTo": [
         "ctx:overlap-shared-route",
-        "ctx:overlap-route-ledger"
+        "ctx:overlap-route-ledger",
+        "ctx:shared"
       ],
       "refs": [
         "src:route"
@@ -269,7 +273,9 @@
       ],
       "restrictsTo": [
         "ctx:overlap-route-ledger",
-        "ctx:overlap-ledger-order"
+        "ctx:overlap-ledger-order",
+        "ctx:route",
+        "ctx:order"
       ],
       "refs": [
         "src:ledger"

@@ -2,6 +2,12 @@
 
 ## 実験概要
 
+> **版固定注記(2026-07-26)**: 本証拠束の repair plan と一次出力は `archsig-repair-plan/v0.5.4`
+> (residual 供給時代)の形式で固定されている。Issue #3820 で residual は導出化され
+> schema は v0.5.5 になったため、現行 binary では本節の再現コマンドはそのままでは通らない
+> (再現には当時の tool 版を要する)。導出化後の入力面での再計測は #3822 で実施する。
+
+
 - **対象**: フルビルド成果物(money 変種 ArchMap)を土台に、law を SAGA フルスタックへ拡張し、
   train-ticket(commit `313886e99bef`)の実データで診断階段を一周した
 - **再計測日**: 2026-07-26(JST、整数係数 presentation へ改訂)

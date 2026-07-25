@@ -215,22 +215,22 @@ fn summary_translation_rule(conclusion: &str) -> SummaryTranslationRule {
             conclusion_code: ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL,
             theorem_ref: Some("part10/3.4"),
             principal_text: "The derived SAGA residual is measured outside B1 with concrete residual support.",
-            boundary: "Supply a different complete-support residual or Stage 2 comparison data before claiming repair gluing.",
-            generated_discipline: "generated complete-support boundary-membership detection",
+            boundary: "Revise the observed sections or the repair plan complex and re-run analyze before claiming repair gluing.",
+            generated_discipline: "generated derived-residual boundary-membership detection",
         },
         ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX => SummaryTranslationRule {
             conclusion_code: ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
             theorem_ref: Some("part10/4.5"),
             principal_text: "The derived SAGA residual is measured inside B1 for the selected RepairPlan complex.",
             boundary: "Supply Stage 2 law surface and comparison artifacts before claiming global semantic repair.",
-            generated_discipline: "generated complete-support boundary-membership detection",
+            generated_discipline: "generated derived-residual boundary-membership detection",
         },
         ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS => SummaryTranslationRule {
             conclusion_code: ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS,
             theorem_ref: Some("part10/4.5"),
             principal_text: "The selected finite complex contains a measured non-gluing derived residual class in Z1/B1.",
             boundary: "The class reading is relative to the selected cover, law-surface witness bindings, supplied sheaf certificate, and gluing data.",
-            generated_discipline: "generated supplied class representative detection",
+            generated_discipline: "generated derived class representative detection",
         },
         ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION => SummaryTranslationRule {
             conclusion_code: ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION,
@@ -492,6 +492,22 @@ fn boundary_statements_for_measurement_packet(
 
     for (index, row) in packet.structural_verdict.iter().enumerate() {
         let scope_ref = structural_verdict_ref(row);
+        if row.verdict == "not_computed"
+            && row.evaluator == "ag.saga-descent"
+            && row.law == "saga.residual-boundary-membership"
+            && row.verdict_data.method_status == "residual_derivation_fault"
+        {
+            statements.push(BoundaryStatementV1 {
+                id: format!("boundary:residual-derivation-fault:{index}"),
+                kind: "blocked_method".to_string(),
+                scope_refs: vec![scope_ref.clone()],
+                reason: "residual_derivation_fault".to_string(),
+                text: format!(
+                    "SAGA residual derivation failed closed and no descent conclusion was computed: {}",
+                    row.reason.as_deref().unwrap_or("unnamed derivation fault")
+                ),
+            });
+        }
         if row.verdict == "unmeasured"
             && row.evaluator == "ag.saga-descent"
             && row.law == "saga.global-coherence"
@@ -11475,18 +11491,101 @@ fn is_subset(left: &[String], right: &[String]) -> bool {
     left.iter().all(|item| right.contains(item))
 }
 
+/// 1 本の cech edge の観測値。cech evaluator と saga descent の両方が同じ規則で読む:
+/// `cech/cocycleValue` atom があればそれを優先し、無ければ両端 `cech/sectionValue` の集合比較。
+#[derive(Debug, Clone)]
+pub(crate) struct CechEdgeObservationV1 {
+    pub value: u8,
+    pub support_atom_refs: Vec<String>,
+    pub observed: bool,
+}
+
+pub(crate) fn observe_cech_edge(
+    normalized: &NormalizedArchMapV2,
+    left: &str,
+    right: &str,
+) -> CechEdgeObservationV1 {
+    let left_atoms = normalized
+        .atoms
+        .iter()
+        .filter(|atom| {
+            atom.axis == "cech" && atom.predicate == "sectionValue" && atom.subject == left
+        })
+        .collect::<Vec<_>>();
+    let right_atoms = normalized
+        .atoms
+        .iter()
+        .filter(|atom| {
+            atom.axis == "cech" && atom.predicate == "sectionValue" && atom.subject == right
+        })
+        .collect::<Vec<_>>();
+    let forward_edge_id = format!("{left}->{right}");
+    let reverse_edge_id = format!("{right}->{left}");
+    let explicit_support = normalized
+        .atoms
+        .iter()
+        .filter(|atom| {
+            atom.axis == "cech"
+                && atom.predicate == "cocycleValue"
+                && (atom.subject == forward_edge_id || atom.subject == reverse_edge_id)
+        })
+        .collect::<Vec<_>>();
+    if !explicit_support.is_empty() {
+        let value = explicit_support.iter().any(|atom| {
+            atom.object
+                .as_deref()
+                .is_some_and(|object| matches!(object.trim(), "1" | "true" | "nonzero"))
+        });
+        let support_atom_refs = if value {
+            explicit_support
+                .iter()
+                .map(|atom| atom.normalized_atom_id.clone())
+                .collect::<Vec<_>>()
+        } else {
+            Vec::new()
+        };
+        return CechEdgeObservationV1 {
+            value: u8::from(value),
+            support_atom_refs,
+            observed: true,
+        };
+    }
+    let section_values = |atoms: &[&NormalizedAtomV2]| {
+        atoms
+            .iter()
+            .filter_map(|atom| atom.object.as_deref())
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(str::to_string)
+            .collect::<BTreeSet<_>>()
+    };
+    let source_values = section_values(&left_atoms);
+    let target_values = section_values(&right_atoms);
+    let observed = !source_values.is_empty() && !target_values.is_empty();
+    let mismatch = observed && source_values != target_values;
+    let support_atom_refs = if mismatch {
+        normalized
+            .atoms
+            .iter()
+            .filter(|atom| {
+                atom.axis == "cech"
+                    && atom.predicate == "sectionValue"
+                    && (atom.subject == left || atom.subject == right)
+            })
+            .map(|atom| atom.normalized_atom_id.clone())
+            .collect::<Vec<_>>()
+    } else {
+        Vec::new()
+    };
+    CechEdgeObservationV1 {
+        value: u8::from(mismatch),
+        support_atom_refs,
+        observed,
+    }
+}
+
 fn cech_edges(normalized: &NormalizedArchMapV2, selected_contexts: &[String]) -> Vec<CechEdgeV1> {
     let selected = selected_contexts.iter().cloned().collect::<BTreeSet<_>>();
-    let section_value_atoms = normalized
-        .atoms
-        .iter()
-        .filter(|atom| atom.axis == "cech" && atom.predicate == "sectionValue")
-        .collect::<Vec<_>>();
-    let explicit_mismatch_atoms = normalized
-        .atoms
-        .iter()
-        .filter(|atom| atom.axis == "cech" && atom.predicate == "cocycleValue")
-        .collect::<Vec<_>>();
     let mut seen_edges = BTreeSet::new();
     let mut edges = Vec::new();
     for context in &normalized.contexts {
@@ -11517,49 +11616,14 @@ fn cech_edges(normalized: &NormalizedArchMapV2, selected_contexts: &[String]) ->
                 continue;
             }
             let edge_id = format!("{}->{}", edge_key.2, edge_key.3);
-            let reverse_edge_id = format!("{}->{}", edge_key.3, edge_key.2);
-            let explicit_support = explicit_mismatch_atoms
-                .iter()
-                .filter(|atom| atom.subject == edge_id || atom.subject == reverse_edge_id)
-                .collect::<Vec<_>>();
-            let (value, support_atom_refs, observed) = if explicit_support.is_empty() {
-                let source_values = cech_section_values(&section_value_atoms, &edge_key.2);
-                let target_values = cech_section_values(&section_value_atoms, &edge_key.3);
-                let observed = !source_values.is_empty() && !target_values.is_empty();
-                let mismatch = observed && source_values != target_values;
-                let support_atom_refs = if mismatch {
-                    section_value_atoms
-                        .iter()
-                        .filter(|atom| atom.subject == edge_key.2 || atom.subject == edge_key.3)
-                        .map(|atom| atom.normalized_atom_id.clone())
-                        .collect::<Vec<_>>()
-                } else {
-                    Vec::new()
-                };
-                (u8::from(mismatch), support_atom_refs, observed)
-            } else {
-                let value = explicit_support.iter().any(|atom| {
-                    atom.object
-                        .as_deref()
-                        .is_some_and(|object| matches!(object.trim(), "1" | "true" | "nonzero"))
-                });
-                let support_atom_refs = if value {
-                    explicit_support
-                        .iter()
-                        .map(|atom| atom.normalized_atom_id.clone())
-                        .collect::<Vec<_>>()
-                } else {
-                    Vec::new()
-                };
-                (u8::from(value), support_atom_refs, true)
-            };
+            let observation = observe_cech_edge(normalized, &edge_key.2, &edge_key.3);
             edges.push(CechEdgeV1 {
                 edge_id,
                 source_context: edge_key.2,
                 target_context: edge_key.3,
-                value,
-                support_atom_refs,
-                observed,
+                value: observation.value,
+                support_atom_refs: observation.support_atom_refs,
+                observed: observation.observed,
             });
         }
     }
@@ -11567,16 +11631,6 @@ fn cech_edges(normalized: &NormalizedArchMapV2, selected_contexts: &[String]) ->
     edges
 }
 
-fn cech_section_values(atoms: &[&NormalizedAtomV2], context_id: &str) -> BTreeSet<String> {
-    atoms
-        .iter()
-        .filter(|atom| atom.subject == context_id)
-        .filter_map(|atom| atom.object.as_deref())
-        .map(str::trim)
-        .filter(|value| !value.is_empty())
-        .map(str::to_string)
-        .collect()
-}
 
 fn coherence_faces(
     normalized: &NormalizedArchMapV2,
@@ -12876,7 +12930,7 @@ fn projected_stage_status(groups: &[&[Value]]) -> &'static str {
     if statuses.iter().all(|status| {
         matches!(
             *status,
-            "measured_zero" | "zero" | "established" | "complete_support_global_coherent"
+            "measured_zero" | "zero" | "established" | "derived_residual_global_coherent"
         )
     }) {
         return "measured_zero";
@@ -13467,6 +13521,7 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
         "suppliedCochainMap",
         "presentationGenerated",
         "measuredClassDivergence",
+        "declaredResidualDivergence",
         "generatedQuotientTransfer",
         "resolutionSelector",
         "restrictionMatrix",

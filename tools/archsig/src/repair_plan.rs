@@ -133,6 +133,7 @@ pub fn validate_repair_plan_v1_checks(
         check_conclusion_tokens(plan),
         check_references(plan),
         check_archmap_bindings(plan, archmap),
+        check_faithfulness_mode_vocabulary(plan),
         check_overlap_primitive_bijection(plan),
         check_enumeration_assumption(plan),
     ]
@@ -1784,7 +1785,21 @@ pub(crate) fn presentation_generated_h1_checks(
                 restrictions.contains_key(&(overlap_ref.as_str(), triple.id.as_str()))
             })
         });
-    let atlas_fault = equation_lift_atlas_fault(target_complex, presentation, &cells);
+    let missing_residual_generator = target_complex.overlaps.iter().any(|overlap| {
+        let Some(cell) = cells.get(overlap.id.as_str()) else {
+            return false;
+        };
+        supports.get(overlap.id.as_str()).is_some_and(|variables| {
+            variables
+                .iter()
+                .any(|variable| !cell.semantic_generators.contains(variable))
+        })
+    });
+    let atlas_fault = if missing_residual_generator {
+        Some("presentation-semantic-generators-missing-derived-residual-variable")
+    } else {
+        equation_lift_atlas_fault(target_complex, presentation, &cells)
+    };
     let analysis = (restriction_naturality
         && degree_zero_commutative
         && degree_one_commutative
@@ -3888,13 +3903,21 @@ fn check_archmap_bindings(
                                 .into_iter()
                         }))
                         .collect::<BTreeSet<_>>();
-                    // chart どうしの restriction は観測 1-skeleton(residual 導出の入力面)であり、
-                    // 写像された complex の chart→overlapCtx / overlapCtx→tripleCtx 集合とは別勘定にする。
-                    let chart_set = plan
-                        .complex
-                        .charts
-                        .iter()
-                        .map(String::as_str)
+                    // chart どうしの restriction(観測 1-skeleton、residual 導出の入力面)も
+                    // expected 側に含める: plan.complex.overlaps の各対を観測の向きへ正規化する。
+                    let expected_direct_restrictions = expected_direct_restrictions
+                        .into_iter()
+                        .chain(plan.complex.overlaps.iter().map(|overlap| {
+                            let forward = archmap.contexts.iter().any(|context| {
+                                context.id == overlap.left
+                                    && context.restricts_to.contains(&overlap.right)
+                            });
+                            if forward {
+                                (overlap.left.as_str(), overlap.right.as_str())
+                            } else {
+                                (overlap.right.as_str(), overlap.left.as_str())
+                            }
+                        }))
                         .collect::<BTreeSet<_>>();
                     let actual_direct_restrictions = archmap
                         .contexts
@@ -3906,9 +3929,6 @@ fn check_archmap_bindings(
                                 .iter()
                                 .filter(|target| actual_contexts.contains(target.as_str()))
                                 .map(move |target| (context.id.as_str(), target.as_str()))
-                        })
-                        .filter(|(source, target)| {
-                            !(chart_set.contains(source) && chart_set.contains(target))
                         })
                         .collect::<BTreeSet<_>>();
                     let membership_valid = if plan.complex.enumeration_complete {
@@ -3943,6 +3963,25 @@ fn check_archmap_bindings(
     examples_check(
         "repair-plan-schema052-archmap-bindings",
         "RepairPlan charts and declared finite-complex mappings resolve against the supplied ArchMap",
+        examples,
+    )
+}
+
+fn check_faithfulness_mode_vocabulary(plan: &RepairPlanDocumentV1) -> ValidationCheck {
+    let mut examples = Vec::new();
+    if !matches!(
+        plan.faithfulness.mode.as_str(),
+        "complete-support" | "none" | "supplied"
+    ) {
+        examples.push(generic_validation_example(
+            "faithfulness.mode",
+            &plan.faithfulness.mode,
+            "faithfulness.mode must be complete-support, none, or supplied",
+        ));
+    }
+    examples_check(
+        "repair-plan-schema052-faithfulness-mode",
+        "faithfulness.mode stays inside the declared vocabulary",
         examples,
     )
 }
@@ -4000,7 +4039,7 @@ fn check_enumeration_assumption(plan: &RepairPlanDocumentV1) -> ValidationCheck 
         "warn",
     );
     check.reason = Some(format!(
-        "complex.enumerationComplete={} records the author assumption about external semantic completeness; mapped declared cover/incidence is checked by repair-plan-schema052-archmap-bindings",
+        "complex.enumerationComplete={} records the author assumption about external semantic completeness; when complex.archmapCoverRef is mapped, cover membership and direct restrictions (chart-chart observation edges included) are checked by repair-plan-schema052-archmap-bindings",
         plan.complex.enumeration_complete
     ));
     check
