@@ -280,7 +280,7 @@ theorem symbolicValue_hom {source target : referenceSite.category}
     rw [hs, ht, symbolicValue_context, symbolicValue_context]
 
 /--
-the equation system whose symbolic coordinate depends on the context.
+The equation system whose symbolic coordinate depends on the context.
 
 One required equation, integer observables, identity restriction, and the
 two-valued symbolic coordinate.  Object-dependent residuals are zero, so each
@@ -313,7 +313,7 @@ theorem disconnectedEquationSystem_required
 /-! ## The selected site and its bottom topology -/
 
 /--
-coverage requirements that read the signature axis only on the base patch.
+Coverage requirements that read the signature axis only on the base patch.
 
 The atom-support clauses are the reference ones.  The axis and boundary clauses
 are the only changes: together they force every admissible family to be based
@@ -342,7 +342,7 @@ def disconnectedCoverageRequirements :
     base = AAT.AG.FiniteModel.twoPatchContext
       AAT.AG.FiniteModel.TwoPatchContextIndex.base
 
-/-- the selected site, differing from `referenceSite` only in its equation
+/-- The selected site, differing from `referenceSite` only in its equation
 system and coverage requirements. -/
 noncomputable def disconnectedSite :
     Site.AATSite referenceCorePackage.object :=
@@ -416,7 +416,7 @@ private theorem admissible_generate_eq_top
   Sieve.generate_of_contains_isSplitEpi (𝟙 X)
     (admissible_presieve_identity F)
 
-/-- every admissible family contains its identity, so the generated
+/-- Every admissible family contains its identity, so the generated
 topology is bottom. -/
 theorem disconnectedSite_topology_eq_bot : disconnectedSite.topology = ⊥ := by
   rw [Site.AATSite.topology_eq, Site.AATGrothendieckTopology,
@@ -429,7 +429,7 @@ theorem disconnectedSite_topology_eq_bot : disconnectedSite.topology = ⊥ := by
     exact admissible_generate_eq_top F
   · exact bot_le
 
-/-- bottom-topology sheafification on the selected site. -/
+/-- Bottom-topology sheafification on the selected site. -/
 noncomputable instance disconnectedHasSheafify :
     HasSheafify disconnectedSite.topology (AATCommAlgCat Int) := by
   rw [disconnectedSite_topology_eq_bot]
@@ -438,21 +438,21 @@ noncomputable instance disconnectedHasSheafify :
 
 /-! ## The raw system whose quotient is `ℤ[e]/(e² - e)` -/
 
-/-- one semantic coordinate on every context. -/
+/-- One semantic coordinate on every context. -/
 def disconnectedCoordFamily (W : disconnectedSite.category) :
     CoordinateFamily W.ctx where
   Coord := Unit
   label := fun _ => CoordinateLabel.semantic
   LocalData := fun _ => Unit
 
-/-- the selected structural equation `X² - X`, whose quotient is generated
+/-- The selected structural equation `X² - X`, whose quotient is generated
 by an idempotent. -/
 def disconnectedRelationFamily (W : disconnectedSite.category) :
     StructuralRelationFamily (disconnectedCoordFamily W) Int where
   Relation := Unit
   polynomial := fun _ => MvPolynomial.X () ^ 2 - MvPolynomial.X ()
 
-/-- every context restriction keeps the selected coordinate. -/
+/-- Every context restriction keeps the selected coordinate. -/
 def disconnectedCoordinateRestriction
     {X Y : disconnectedSite.category} (f : X ⟶ Y) :
     TypedCoordinateRestriction
@@ -474,7 +474,7 @@ theorem disconnectedCoordinateRestriction_polynomialMap
     rw [TypedCoordinateRestriction.polynomialMap_X]
     rfl
 
-/-- the structural ideal is preserved because the restriction is the
+/-- The structural ideal is preserved because the restriction is the
 identity. -/
 def disconnectedRestrictionStable
     {X Y : disconnectedSite.category} (f : X ⟶ Y) :
@@ -491,7 +491,7 @@ def disconnectedRestrictionStable
     rw [hid]
     exact hp
 
-/-- the selected raw restriction system with the idempotent relation. -/
+/-- The selected raw restriction system with the idempotent relation. -/
 def disconnectedRaw : RawAmbientRestrictionSystem disconnectedSite Int where
   coordFamily := disconnectedCoordFamily
   relationFamily := disconnectedRelationFamily
@@ -531,7 +531,7 @@ theorem disconnectedRaw_quotientDesc
 def baseObject : disconnectedSite.category :=
   context AAT.AG.FiniteModel.TwoPatchContextIndex.base
 
-/-- bottom-topology sheafification is invertible at every context, so the
+/-- Bottom-topology sheafification is invertible at every context, so the
 canonical section ring is the raw quotient. -/
 theorem canonical_component_isIso (W : disconnectedSite.category) :
     IsIso (disconnectedRaw.toRingedSite.canonical.app (op W)) := by
@@ -547,7 +547,7 @@ theorem canonical_component_isIso (W : disconnectedSite.category) :
     disconnectedRaw.toPresheaf).app (op W))
   infer_instance
 
-/-- the represented Scheme, `Spec (ℤ[e]/(e² - e))`.
+/-- The represented Scheme, `Spec (ℤ[e]/(e² - e))`.
 
 This is the existing single-chart constructor at the base context.  A two-chart
 atlas with disjoint images is not usable here: `ArchitectureOverlapPresentation`
@@ -769,7 +769,7 @@ noncomputable def globalEvalOne :
     Γ(disconnectedScheme.underlying, ⊤) →+* Int :=
   quotientEvalOne.comp globalToRaw
 
-/-- the idempotent global section whose two principal opens are the
+/-- The idempotent global section whose two principal opens are the
 components of the ambient. -/
 noncomputable def idempotentSection : Γ(disconnectedScheme.underlying, ⊤) :=
   rawToGlobal rawIdempotent
@@ -827,7 +827,7 @@ instance globalSections_nontrivial :
 /-! ## The realization -/
 
 /--
-the selected architecture reading over the disconnected ambient.
+The selected architecture reading over the disconnected ambient.
 
 Its readings over a test scheme are the actual morphisms into the represented
 Scheme.  This choice is deliberate and is not where the content of this
@@ -888,7 +888,7 @@ theorem disconnectedRepresentingEquiv_natural
     (RingHom.ext_int (Int.castRingHom Γ(T', ⊤))
       (f.appTop.hom.comp (Int.castRingHom Γ(T, ⊤))))
 
-/-- the equation-observable realization on the disconnected ambient. -/
+/-- The equation-observable realization on the disconnected ambient. -/
 noncomputable def disconnectedRealization :
     EquationObservableRealization disconnectedRaw disconnectedScheme
       disconnectedSite.equationSystem :=
@@ -1064,7 +1064,7 @@ theorem chartOpen_iSup_eq_top :
       x hxtop).mpr ?_
     rwa [map_sub, map_one]
 
-/-- the context-indexed chart cover of the disconnected ambient. -/
+/-- The context-indexed chart cover of the disconnected ambient. -/
 noncomputable def disconnectedContextCharts :
     EquationObservableRealization.EquationContextCharts
       (X := disconnectedScheme) :=
@@ -1107,7 +1107,7 @@ theorem disconnectedContextChartRefinement :
       chartOpen_disjoint hWV]
     exact bot_le
 
-/-- the compatibility producer obtained by the Čech route. -/
+/-- The compatibility producer obtained by the Čech route. -/
 theorem disconnectedContextChartProducer :
     EquationObservableRealization.EquationContextChartProducer
       disconnectedRealization disconnectedContextCharts :=
@@ -1332,7 +1332,7 @@ private theorem glued_eq_violationSection_of_chartOpen_eq_top
     disconnectedContextCharts W i a] at hglued
   exact resChart_of_contextChart hglued
 
-/-- the first component is a nonempty open.
+/-- The first component is a nonempty open.
 
 If it were empty the second component would own the whole ambient, and the
 gluing would then return that component's own universal section, contradicting
@@ -1345,7 +1345,7 @@ theorem chartOpen_componentA_ne_bot : chartOpen componentA ≠ ⊥ := by
     AAT.AG.FiniteModel.FiniteAtom.componentA
     (glued_eq_violationSection_of_chartOpen_eq_top htop _ _)
 
-/-- the second component is a nonempty open. -/
+/-- The second component is a nonempty open. -/
 theorem chartOpen_componentB_ne_bot : chartOpen componentB ≠ ⊥ := by
   intro hbot
   have htop : chartOpen componentA = ⊤ := by
@@ -1355,7 +1355,7 @@ theorem chartOpen_componentB_ne_bot : chartOpen componentB ≠ ⊥ := by
     (glued_eq_violationSection_of_chartOpen_eq_top htop _ _)
 
 /--
-the represented Scheme is disconnected in the sense the fixture needs: the
+The represented Scheme is disconnected in the sense the fixture needs: the
 two owned opens are nonempty, disjoint, and jointly the whole ambient.
 -/
 theorem ambient_disconnected :
@@ -1400,7 +1400,7 @@ theorem globalParity_realizationRelation
   · rw [violationSection_eq_zero_of_ne hB, map_zero]
 
 /--
-the generated realization ideal is a proper ideal.
+The generated realization ideal is a proper ideal.
 
 A symbolic value that is a unit — `1`, say — would put a unit in the generated
 ideal and cut the equation-generated realization out by the unit ideal; the
@@ -1430,7 +1430,7 @@ theorem realizationIdeal_ne_top :
   exact one_ne_zero this
 
 /--
-the caller-side chart identity of the pre-equation-system route fails on
+The caller-side chart identity of the pre-equation-system route fails on
 this fixture.
 
 This is the strictness witness for `EquationContextChartProducer`: the producer
@@ -1481,7 +1481,7 @@ theorem transitionGenerator_basicOpen_eq
     chartImage_eq]
   exact (inf_eq_right.mpr (chartOpen_mono f)).symm
 
-/-- the context-transition localization of the separating cover.
+/-- The context-transition localization of the separating cover.
 
 Every transition is the inclusion of one principal open into another, so the
 affine basic-open criterion applies uniformly and no transition is assumed
@@ -1508,7 +1508,7 @@ noncomputable def disconnectedContextChartLocalization :
     exact haffine.isLocalization_of_eq_basicOpen
       (transitionGenerator f) _ (transitionGenerator_basicOpen_eq f)
 
-/-- the complete chart producer on the separating cover. -/
+/-- The complete chart producer on the separating cover. -/
 noncomputable def disconnectedSchemeChartProducer :
     EquationObservableRealization.EquationSchemeChartProducer
       disconnectedRealization disconnectedContextCharts where
@@ -1545,7 +1545,7 @@ theorem atlasOverlap_fst_isIso
       (𝟙 (architectureChartSpec disconnectedRaw baseObject))
       (𝟙 (architectureChartSpec disconnectedRaw baseObject)))
 
-/-- the atlas-overlap localization, discharged by invertibility of the
+/-- The atlas-overlap localization, discharged by invertibility of the
 projections of the one-chart atlas. -/
 noncomputable def disconnectedAmbientChartLocalization :
     EquationObservableRealization.EquationAmbientChartLocalization
