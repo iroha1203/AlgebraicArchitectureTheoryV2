@@ -1,6 +1,7 @@
 # ArchSig v0.5.2 supplied slot 台帳
 
 > **負債告知(2026-07-26)**: 本台帳のうち RepairPlan 系 slot(repair primitives、
+> ※residual 供給(supp)は Issue #3820 で導出化済み、
 > faithfulness data、component-local cocycle、true sheaf certificate、gluing data、
 > comparison data、presentation packet、saga-grounding packet)と refactor morphism・
 > refinement data の行は、AGENTS.md「責務範囲」の入力トライアド(ArchMap=観測 /
@@ -25,7 +26,7 @@
 | supplied 成分 | 理論典拠 | artifact の置き場 | validator | fixture | 解禁される語彙 | 実装段 |
 | --- | --- | --- | --- | --- | --- | --- |
 | 観測(atoms / contexts / covers) | Current tooling contract / 第X部 (A) | `archmap/v0.5.2` | ArchMap R1-R3 | `tests/fixtures/ag_measurement/archmap_v2.json` | 層 B の生値 | PR-1済 |
-| repair primitives(C⁰ / δ⁰ / supp) | Current tooling contract / 定義3.1 (B) | `archsig-repair-plan/v0.5.2` | restriction-difference / overlap bijection | `tests/fixtures/ag_measurement/repair_plan_complete_support.json` | 境界所属 | PR-1済 |
+| repair primitives(C⁰ / δ⁰。supp は Issue #3820 で導出化し撤去済み: residual は選択 cover の cech sectionValue 比較と法曲面 witness 束縛から ArchSig が導出する) | Current tooling contract / 定義3.1 (B) | `archsig-repair-plan/v0.5.4` | overlap bijection(supp の供給検査は撤去) | `tests/fixtures/ag_measurement/repair_plan_complete_support.json` | 境界所属 | supp 導出化済(#3820)、C⁰/δ⁰ は #3821 で返済予定 |
 | faithfulness data(zero primitive / Q / faithfulness law) | Current tooling contract / 定義4.6 | RepairPlan `faithfulness.mode=supplied` | 3点参照整合 + finite support Q(r) 集合整合 | `tests/fixtures/ag_measurement/repair_plan_supplied_faithfulness.json` | complete-support 以外の肯定的大域整合 | PR-1済 |
 | component-local cocycle + additive 係数 | Current tooling contract / 第X部 定義4.2 / 補題4.3 | residual support component の `complex.tripleOverlaps` + `coefficient` | additive / δ¹∘δ⁰=0 / δ¹(0)=0。triple は一意IDを持つ三 chart・三 edge の実 triangle として検査する。`complex.enumerationComplete=true` の component に triple が無い場合だけ `automatic-c2-zero` 認証を出力し、この行の `cocycle.checked` は false になる(検査が走らないため) | `tests/fixtures/ag_measurement/repair_plan_component_aware_one_cent.json` | 層 C の class 語彙 | #3784 |
 | true sheaf certificate | Current tooling contract / 第X部 定義8.1 | RepairPlan `trueSheafCertificate` | cover membership + `globalCondition=assumed` の assumption 記録。residual class 認証では certificate の cover / memberCharts が residual support component と完全一致し、class row の `dependsOnAssumptions` がこの assumptionId を参照する | `tests/fixtures/ag_measurement/repair_plan_component_aware_one_cent.json` | 第X部 定理8.2のactual global gluing 読み | #3784でcomponent帰属を固定 |
