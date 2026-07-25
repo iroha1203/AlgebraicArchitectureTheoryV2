@@ -2705,13 +2705,14 @@ fn cli_analyze_saga_descent_requires_complete_enumeration_for_automatic_c2_zero(
             .all(|row| row["law"] != "saga.residual-class"),
         "automatic C2=0 must not certify a component whose triple enumeration is incomplete"
     );
-    assert!(
-        packet["computedInvariants"]
-            .as_array()
-            .expect("computed invariants are an array")
-            .iter()
-            .all(|row| row["invariantId"] != "saga-descent:residual-class"),
-        "an incomplete complex must not emit a residual-class invariant"
+    let invariant = invariant_by_id(&packet, "saga-descent:residual-class");
+    assert_eq!(
+        invariant["status"], "silence_by_design",
+        "an incomplete complex yields no certification, but the supply that was offered is not ignored in silence"
+    );
+    assert_eq!(
+        invariant["reason"],
+        "component_cocycle_certificate_not_established"
     );
 }
 
@@ -2855,6 +2856,100 @@ fn cli_analyze_saga_descent_accepts_component_exact_gluing_data_under_any_sectio
             ["sectionRef"],
         "sec/money-refund-handoff",
         "the authored section label is reported as supplied, not rewritten to a canonical form"
+    );
+}
+
+/// canonical 命名を撤回した後に残る `sectionRefs` の契約は「各 overlapRef へ非空かつ
+/// 相異なるラベルを一対一で与える」だけである。その契約に負例が無いと、規約変更で
+/// 既存入力が沈黙降格するクラスの再発を検知できない。
+#[test]
+fn cli_analyze_saga_descent_rejects_empty_or_duplicated_section_labels() {
+    let root = ag_measurement_root();
+    let base_plan = component_aware_one_cent_saga_plan(&root);
+
+    let mut empty_label = base_plan.clone();
+    empty_label["gluingData"]["sectionRefs"][1]["sectionRef"] = json!("");
+
+    let mut duplicated_label = base_plan;
+    duplicated_label["gluingData"]["sectionRefs"][1]["sectionRef"] =
+        duplicated_label["gluingData"]["sectionRefs"][0]["sectionRef"].clone();
+
+    for (case_id, plan) in [
+        ("ag-saga-component-aware-empty-section-label", empty_label),
+        (
+            "ag-saga-component-aware-duplicated-section-label",
+            duplicated_label,
+        ),
+    ] {
+        let out_dir = temp_dir(case_id);
+        let output = run_saga_fixture_output_with_archmap(
+            &out_dir,
+            plan,
+            component_aware_one_cent_archmap(&root),
+        );
+        assert_eq!(
+            output.status.code(),
+            Some(2),
+            "a malformed sectionRefs supply must fail loudly before measurement"
+        );
+        let validation = read_json(&out_dir.join("repair-plan-validation.json"));
+        assert!(
+            json_contains_substring(&validation, "overlap-section-membership-invalid"),
+            "the failure names the gluing data supply slot"
+        );
+    }
+}
+
+/// 供給が置かれているのに component へ合わなかったときは、class 行を無言で消さずに
+/// 何が合わなかったかを出す。#3804 B1 の症状(validation 全 pass・exit 0・結論だけ降格)を固定する。
+#[test]
+fn cli_analyze_saga_descent_names_the_supply_that_failed_the_component_match() {
+    let root = ag_measurement_root();
+    let mut plan = component_aware_one_cent_saga_plan(&root);
+    plan["gluingData"]["overlapRefs"] = json!([
+        "overlap:cancel-inside-payment",
+        "overlap:cancel-order",
+        "overlap:inside-payment-order",
+        "overlap:consign-parcel"
+    ]);
+    plan["gluingData"]["sectionRefs"] = json!([
+        {"overlapRef": "overlap:cancel-inside-payment", "sectionRef": "section:a"},
+        {"overlapRef": "overlap:cancel-order", "sectionRef": "section:b"},
+        {"overlapRef": "overlap:inside-payment-order", "sectionRef": "section:c"},
+        {"overlapRef": "overlap:consign-parcel", "sectionRef": "section:d"}
+    ]);
+    let out_dir = run_saga_fixture_lock_with_archmap(
+        "ag-saga-component-aware-oversupplied-gluing",
+        plan,
+        component_aware_one_cent_archmap(&root),
+    );
+
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    assert!(
+        packet["structuralVerdict"]
+            .as_array()
+            .expect("structural verdict is an array")
+            .iter()
+            .all(|row| row["law"] != "saga.residual-class"),
+        "supplied data that spans another component does not certify the class"
+    );
+    let invariant = invariant_by_id(&packet, "saga-descent:residual-class");
+    assert_eq!(invariant["status"], "silence_by_design");
+    assert_eq!(
+        invariant["reason"],
+        "gluing_data_does_not_match_the_residual_component",
+        "the rejected supply slot is named instead of vanishing"
+    );
+    assert!(
+        invariant["whatNext"]
+            .as_str()
+            .is_some_and(|next| next.contains("gluingData")),
+        "the output says what to supply next"
+    );
+    assert_eq!(
+        invariant["suppliedSlots"],
+        json!(["trueSheafCertificate", "gluingData"]),
+        "the run records which slots were supplied at all"
     );
 }
 
@@ -15870,8 +15965,22 @@ fn run_saga_fixture_lock_with_archmap(
     repair_plan: Value,
     archmap: Value,
 ) -> PathBuf {
-    let root = ag_measurement_root();
     let out_dir = temp_dir(case_id);
+    let output = run_saga_fixture_output_with_archmap(&out_dir, repair_plan, archmap);
+    assert!(
+        output.status.success(),
+        "saga fixture analyze failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    out_dir
+}
+
+fn run_saga_fixture_output_with_archmap(
+    out_dir: &Path,
+    repair_plan: Value,
+    archmap: Value,
+) -> std::process::Output {
+    let root = ag_measurement_root();
     let (mut policy, profile) = read_fixture_policy_profile(&root.join("law_policy_ag.json"));
     policy["policies"] = json!([{
         "law": "ag.saga-descent",
@@ -15895,7 +16004,7 @@ fn run_saga_fixture_lock_with_archmap(
         serde_json::to_vec_pretty(&repair_plan).expect("repair plan serializes"),
     )
     .expect("repair plan writes");
-    run_sig0(&[
+    run_sig0_output(&[
         "analyze",
         "--archmap",
         archmap_path.to_str().expect("path is utf-8"),
@@ -15911,8 +16020,7 @@ fn run_saga_fixture_lock_with_archmap(
         repair_plan_path.to_str().expect("path is utf-8"),
         "--out-dir",
         out_dir.to_str().expect("path is utf-8"),
-    ]);
-    out_dir
+    ])
 }
 
 fn run_analyze_fixture_lock(

@@ -120,7 +120,7 @@ pub(crate) fn evaluate_saga_grounded_v1(
         || plan.faithfulness.mode != "supplied"
         || plan.faithfulness.supplied.is_none()
         || plan.comparison.is_none()
-        || class_supply_is_checked(archmap, plan).is_none()
+        || class_supply_is_checked(archmap, plan).is_err()
         || grounded_variable_aliases.is_none()
         || grounded_forbidden_supports.is_none()
         || grounded_witness_variables.is_empty()
@@ -145,7 +145,7 @@ pub(crate) fn evaluate_saga_grounded_v1(
             } else if plan.faithfulness.mode != "supplied"
                 || plan.faithfulness.supplied.is_none()
                 || plan.comparison.is_none()
-                || class_supply_is_checked(archmap, plan).is_none()
+                || class_supply_is_checked(archmap, plan).is_err()
             {
                 "grounded_layer_d_not_supplied"
             } else if source.cover_ref != profile.cover_ref {
@@ -664,7 +664,13 @@ pub(crate) fn evaluate_saga_descent_v1(
             }
         }),
     ];
-    if let Some(class_certificate) = class_supply_is_checked(archmap, plan) {
+    let class_supply = class_supply_is_checked(archmap, plan);
+    if let Err(reason) = class_supply.as_ref()
+        && let Some(rejection) = class_supply_rejection_invariant(plan, reason)
+    {
+        computed_invariants.push(rejection);
+    }
+    if let Ok(class_certificate) = class_supply.as_ref() {
         let class_nonzero = !boundary.in_b1;
         structural_verdict.push(AgStructuralVerdictV1 {
             evaluator: "ag.saga-descent".to_string(),
@@ -768,7 +774,8 @@ fn evaluate_saga_comparison_v1(
                 "normalizedComplexFingerprint": comparison_complex_fingerprint(plan),
                 "classPrerequisite": false,
                 "targetClassComputed": false,
-                "contractChecked": false
+                "contractChecked": false,
+                "measuredClassAgreement": Value::Null
             }
         });
     };
@@ -1109,22 +1116,60 @@ impl SagaClassSupplyCertificate {
     }
 }
 
+/// class 認証が成立しなかったとき、どの供給が component に合わなかったのかを名指しする。
+/// 認証を無言で落とすと、既存 RepairPlan が validation を通ったまま結論だけ降格し、
+/// 利用者に検知手段が残らない。
 fn class_supply_is_checked(
     archmap: &ArchMapDocumentV2,
     plan: &RepairPlanDocumentV1,
-) -> Option<SagaClassSupplyCertificate> {
-    let cocycle = component_cocycle_certificate(plan)?;
-    let coefficient_ok = coefficient_is_f2_additive(plan);
-    let (true_sheaf_cover_ref, true_sheaf_member_chart_refs, true_sheaf_global_condition) =
-        component_true_sheaf_certificate(archmap, plan, &cocycle.component)?;
-    let gluing_section_refs = component_gluing_data(plan, &cocycle.component)?;
-    coefficient_ok.then_some(SagaClassSupplyCertificate {
+) -> Result<SagaClassSupplyCertificate, &'static str> {
+    let Some(cocycle) = component_cocycle_certificate(plan) else {
+        return Err("component_cocycle_certificate_not_established");
+    };
+    if !coefficient_is_f2_additive(plan) {
+        return Err("coefficient_is_not_f2_additive");
+    }
+    let Some((true_sheaf_cover_ref, true_sheaf_member_chart_refs, true_sheaf_global_condition)) =
+        component_true_sheaf_certificate(archmap, plan, &cocycle.component)
+    else {
+        return Err("true_sheaf_certificate_does_not_match_the_residual_component");
+    };
+    let Some(gluing_section_refs) = component_gluing_data(plan, &cocycle.component) else {
+        return Err("gluing_data_does_not_match_the_residual_component");
+    };
+    Ok(SagaClassSupplyCertificate {
         cocycle,
         true_sheaf_cover_ref,
         true_sheaf_member_chart_refs,
         true_sheaf_global_condition,
         gluing_section_refs,
     })
+}
+
+/// 供給が実際に置かれているのに認証へ進めなかった場合だけ、沈黙の代わりに理由を出す。
+/// 供給そのものが無い場合は従来どおり何も言わない(語れないことには沈黙する)。
+fn class_supply_rejection_invariant(plan: &RepairPlanDocumentV1, reason: &str) -> Option<Value> {
+    let supplied_certificate = plan.true_sheaf_certificate.is_some();
+    let supplied_gluing = plan.gluing_data.is_some();
+    if !supplied_certificate && !supplied_gluing {
+        return None;
+    }
+    let supplied_slots = [
+        supplied_certificate.then_some("trueSheafCertificate"),
+        supplied_gluing.then_some("gluingData"),
+    ]
+    .into_iter()
+    .flatten()
+    .collect::<Vec<_>>();
+    Some(json!({
+        "invariantId": "saga-descent:residual-class",
+        "evaluator": "ag.saga-descent",
+        "kind": "residual-class-support",
+        "status": "silence_by_design",
+        "reason": reason,
+        "whatNext": "supply a trueSheafCertificate whose coverRef / memberCharts and a gluingData whose overlapRefs each match the residual support component exactly, together with an F2-additive coefficient and a valid component cocycle certificate",
+        "suppliedSlots": supplied_slots
+    }))
 }
 
 fn component_true_sheaf_certificate(

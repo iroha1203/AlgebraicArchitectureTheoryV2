@@ -14338,6 +14338,10 @@ fn check_computed_invariant_shape_value(packet_value: &Value) -> ValidationCheck
             invariant.as_object(),
             invariant["representation"].as_object(),
         ) {
+            // 共有欄の食い違いだけを咎める。ミラー側にしか無い欄を違反にすると、summary 形式の
+            // representation を持つ authored packet を巻き込む。欄ごと削除する改竄や、本体と
+            // ミラーを同じ値に揃える改竄はこの検査では捕まらない。完全性の錨は run manifest の
+            // digest 連鎖であり、この検査はその手前で不整合な改竄を落とすためのもの。
             for (key, mirrored) in representation {
                 if let Some(actual) = invariant_object.get(key)
                     && actual != mirrored

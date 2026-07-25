@@ -55,7 +55,9 @@ python3 docs/reports/train_ticket_dogfooding/evidence/verify_digests.py
 
 コミット済みの各 analyze summary / gate report の `inputDigests` と、コミット済み入力 artifact の
 canonical JSON digest の一致を検査する。2026-07-25 時点で 33 検査中 31 OK。残り 2 件は上記の
-フルビルド gate policy fixture の更新によるもので、SAGA 証拠束の 8 検査はすべて OK。
+フルビルド gate policy fixture の更新によるもので、SAGA 証拠束の 12 検査はすべて OK。
+なおこの script は analyze の `inputDigests` のうち archmap / lawPolicy / lawSurface / measurementProfile と
+gate の 2 入力だけを見ており、`repairPlan` は検査対象に入っていない。
 
 ### 再現コマンド
 

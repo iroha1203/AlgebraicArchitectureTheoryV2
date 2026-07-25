@@ -58,13 +58,17 @@ pub(crate) struct PresentationGeneratedH1Checks {
 }
 
 impl PresentationGeneratedH1Checks {
+    /// `cells_cover_complex` は、この fault が立った時点で cell 被覆の検査を通過済みかどうか。
+    /// 一律 false にすると、被覆とは無関係な fault でも「cell が複体を覆っていない」と嘘をつく。
     fn structural_fault(
         fault: &'static str,
         equation_lift_atlas_present: bool,
+        cells_cover_complex: bool,
     ) -> PresentationGeneratedH1Checks {
         PresentationGeneratedH1Checks {
             equation_lift_atlas_present,
             structural_fault: Some(fault),
+            map_complete: cells_cover_complex,
             ..PresentationGeneratedH1Checks::default()
         }
     }
@@ -1549,6 +1553,7 @@ pub(crate) fn presentation_generated_h1_checks(
         return PresentationGeneratedH1Checks::structural_fault(
             "comparison-data-not-parseable",
             equation_lift_atlas_present,
+            false,
         );
     };
     if typed.schema != crate::H1_COMPARISON_DATA_V052_SCHEMA
@@ -1557,12 +1562,14 @@ pub(crate) fn presentation_generated_h1_checks(
         return PresentationGeneratedH1Checks::structural_fault(
             "comparison-data-schema-or-kind-mismatch",
             equation_lift_atlas_present,
+            false,
         );
     }
     let Some(presentation) = typed.presentation.as_ref() else {
         return PresentationGeneratedH1Checks::structural_fault(
             "presentation-block-missing",
             equation_lift_atlas_present,
+            false,
         );
     };
 
@@ -1573,6 +1580,7 @@ pub(crate) fn presentation_generated_h1_checks(
             return PresentationGeneratedH1Checks::structural_fault(
                 "presentation-cell-duplicated",
                 equation_lift_atlas_present,
+                false,
             );
         }
     }
@@ -1582,6 +1590,7 @@ pub(crate) fn presentation_generated_h1_checks(
         return PresentationGeneratedH1Checks::structural_fault(
             "presentation-cells-do-not-cover-the-complex-exactly",
             equation_lift_atlas_present,
+            false,
         );
     }
 
@@ -1593,6 +1602,7 @@ pub(crate) fn presentation_generated_h1_checks(
         return PresentationGeneratedH1Checks::structural_fault(
             "presentation-cell-generators-or-matrices-malformed",
             equation_lift_atlas_present,
+            true,
         );
     };
 
@@ -1609,6 +1619,7 @@ pub(crate) fn presentation_generated_h1_checks(
             return PresentationGeneratedH1Checks::structural_fault(
                 "presentation-restriction-duplicated",
                 equation_lift_atlas_present,
+                true,
             );
         }
     }
@@ -1956,10 +1967,12 @@ fn presentation_residual_analysis(
     let target_cocycle =
         equation_cochain_is_cocycle(target_complex, cells, restrictions, &equation_residual)?;
     if !source_cocycle || !target_cocycle {
+        // 計算済みの target_cocycle をそのまま返す。false 固定にすると、source 側だけが
+        // cocycle を破った入力まで target 側の失敗として報告される。
         return Some(PresentationResidualAnalysis {
             source_cocycle,
             source_class_nonzero,
-            target_cocycle: false,
+            target_cocycle,
             target_class_nonzero: None,
             witness: None,
         });
