@@ -443,11 +443,11 @@ universe 境界: `equationSitePresheaf S : SitePresheafData.{u, u}` と
 R0 §1 が `y` の instantiation として想定する `Type (u+1)` の lift state には
 この経路では届かない(一般 packet は従来どおり直接構成で受ける)。
 
-claim boundary: 本 PR 時点で本 constructor を具体 site へ適用した packet
-instance は存在しない(唯一の具体 packet である circle witness の
-`liftSystem` は `LiftFiberData` 形でないため流せない)。本宣言が固定するのは
-定理1.1 入力束の production 組み立て**面**(型)であり、具体 instance の
-到達可能性ではない。
+claim boundary: 本宣言が固定するのは定理1.1 入力束の production 組み立て
+**面**(型)である。導入時点(#3734)では本 constructor を具体 site へ
+適用した packet instance は存在しなかった(circle witness の `liftSystem`
+は `LiftFiberData` 形でないため流せない — この事実は不変)。初の具体
+instance は C7.5(#3803)の `DescentWitness.descentPacket` が与える。
 -/
 def ofProduction
     (R : AtomOccurrenceReading S) (𝒰 : MonomorphicOrderedCover S)
