@@ -23,8 +23,10 @@ import Formal.AG.SemanticRepair.Saga.Exactness
   the only supplied hypotheses.
 * `EmptyOverlapNormalization` (Theorem 1.1 input 8, R0 §4.8): the selected
   triviality of `M_sem` / `Q_E` and subsingleton property of `P_sem` / `P_E`
-  on omitted intersections, with the derivation lemmas that later children
-  (C4/C5) consume as the Lemma 2.1A hypotheses.
+  on omitted intersections, with the derivation lemmas supplying the
+  Lemma 2.1A `hpair` / `htriple` hypotheses.  Per X.§7 it is not a
+  comparison-core assumption, hence not a `SagaEquationPacket` field;
+  consumers take it as an explicit hypothesis.
 * `SagaEquationPacket` (R0 §4.9): the Theorem 1.1 input bundle for the
   equation realization, with the named equation-side residual surface
   (`equationResidualCochain`, Lemma 5.4 wrappers).
@@ -198,8 +200,10 @@ end Corollary67
 /--
 X.§1 入力8(R0 §4.8): 積から除いた empty intersection 上の値の固定。
 `M_sem` / `Q_E` の零化と `P_sem` / `P_E` の subsingleton 性の4条件を
-selected datum として持つ。消費先は補題2.1A の instantiation(C4)と
-定理8.2 の matching family 化(C5)。
+selected datum として持つ。X.§7 のとおり comparison core の仮定には
+含まれないため `SagaEquationPacket` の field ではなく、消費先
+(補題2.1A cohomology 節の `hpair` / `htriple` instantiation)が
+明示仮説として受ける。派生補題4本(`msem_hpair` 等)がその導出面を固定する。
 -/
 structure EmptyOverlapNormalization
     (P : SemanticRepairPresentation.{u, v} S R)
@@ -266,6 +270,9 @@ end EmptyOverlapNormalization
 R0 §4.9: 系6.7 / 定理7.6 用の packet。coefficient と correspondence は
 選択せず、`E` と realization から生成する(`equationCoefficient` /
 `chiE`)。入力4(completeness 対)は bundle に入れず定理仮定として受け取る。
+入力8(empty-overlap normalization)も field に持たない: X.§7 のとおり
+comparison core は入力8 を消費しないため、必要とする側が
+`EmptyOverlapNormalization` を明示仮説として受ける。
 -/
 structure SagaEquationPacket (S : Site.AATSite A) where
   occurrenceReading : AtomOccurrenceReading S
@@ -278,8 +285,6 @@ structure SagaEquationPacket (S : Site.AATSite A) where
   liftAtlas : CoefficientLiftAtlas liftSystem
   stateCorrespondence :
     PrimaryStateCorrespondence realization.chiE repairSystem liftSystem
-  normalization :
-    EmptyOverlapNormalization presentation cover repairSystem liftSystem
 
 namespace SagaEquationPacket
 

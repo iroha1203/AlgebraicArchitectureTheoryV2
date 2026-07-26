@@ -1551,7 +1551,10 @@ theorem circle_tripleCtx_not_kept {i j k : Fin 4}
   · exact hp hjk
   · exact hfalse
 
-/-- X.§1 入力8: the empty-overlap normalization on the omitted overlaps. -/
+/-- X.§1 入力8: the empty-overlap normalization on the omitted overlaps.
+Named input-8 witness for the circle model; per X.§7 it is not a
+comparison-core assumption (not a `SagaEquationPacket` field), and is kept
+for consumers that take it as an explicit hypothesis. -/
 theorem normalization :
     EmptyOverlapNormalization presentation circleCover repairSystem
       liftSystem where
@@ -1589,7 +1592,6 @@ noncomputable def packet : SagaEquationPacket site where
   liftSystem := liftSystem
   liftAtlas := liftAtlas
   stateCorrespondence := stateCorrespondence
-  normalization := normalization
 
 /-- The circle correspondence sends the generator to `[1]`. -/
 theorem chiE_chi_eq (σ : IntersectionIndex circleCover)

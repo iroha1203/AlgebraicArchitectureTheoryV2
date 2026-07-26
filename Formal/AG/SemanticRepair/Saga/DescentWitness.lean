@@ -1559,7 +1559,10 @@ noncomputable def descentBeta :
         map_one]
     · rfl
 
-/-- X.§1 入力8: omitted overlap 上の empty-overlap normalization。 -/
+/-- X.§1 入力8: omitted overlap 上の empty-overlap normalization。
+descent model に対する named input-8 witness。X.§7 のとおり comparison core
+の仮定ではない(`SagaEquationPacket` の field ではない)ため packet には
+束ねず、明示仮説として受ける消費先のために保持する。 -/
 theorem descentNormalization :
     EmptyOverlapNormalization descentPresentation descentCover
       descentRepairSystem descentLiftSystem where
@@ -1587,7 +1590,7 @@ theorem descentNormalization :
 noncomputable def descentPacket : SagaEquationPacket descentSite :=
   SagaEquationPacket.ofProduction descentOccurrenceReading descentCover
     descentPresentation descentSelection descentRepairSystem descentRepairAtlas
-    descentLiftFiber descentLiftAtlas descentBeta descentNormalization
+    descentLiftFiber descentLiftAtlas descentBeta
 
 /-- packet の realization は production selection の生成物(AC3 の宣言面)。 -/
 theorem descentPacket_realization_eq :
