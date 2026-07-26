@@ -1309,6 +1309,17 @@ residual は入力ではない。`analyze` が、選択 cover 上の観測 secti
 比較と law surface の witness 束縛から residual を導出し、辺ごとの値・witness・
 観測 atom 参照の provenance を measurement packet に記録する(§7.3)。
 
+この契約の下で、本論文の measurement claim は次の一文に立つ。
+**SAGA 診断の結論 — residual、boundary membership、gate 判定 — は、Atom 観測と
+選択された方程式系から決定論的に導出される。実施者が書けるのは観測の範囲、
+選択複体、witness 束縛という選択であって、結論を運ぶ入力はこの契約に存在
+しない。** この分離は fail-closed 検査が執行する: 選択 cover 外の chart、
+観測された restriction を持たない overlap、未観測の section、witness 束縛の
+ない mismatch は、いずれも結論を生成せずに計算を停止させる。したがって、
+選択によって障害を沈黙させることはできるが(列挙完全性は §7.7 の assumption
+として開示される)、観測が一致している辺の上に非零 residual を立てることは
+できない。
+
 ArchSig は与えられた入力 contract から語れる diagnostic conclusion を計算する。
 結論の相対性は入力契約に由来する帰結である。
 
