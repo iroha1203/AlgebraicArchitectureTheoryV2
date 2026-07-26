@@ -48,8 +48,10 @@ import Formal.AG.SemanticRepair.Saga.EquationRealization
   membership certificate、結論相当 field は入力に取らない。
 
 Claim boundary: `P_E` 本体と local lift atlas、semantic 側入力(`P_sem` /
-repair atlas)、state correspondence `β`、empty-overlap normalization は
-X.§1 の selected/generated/proved 三分類のとおり selected のまま受け取る。
+repair atlas)、state correspondence `β` は X.§1 の
+selected/generated/proved 三分類のとおり selected のまま受け取る。
+empty-overlap normalization(入力8)は X.§7 のとおり comparison core の
+仮定に含まれないため packet に束ねない。
 `equationSelfLiftFiber` は「P_E が生成できる」ことを主張しない: 生成できるのは
 この特定の self-lift instance だけであり、どの lift problem を解くかの選択は
 本文どおり selected のままである。
@@ -433,9 +435,11 @@ R0 §4.9: 定理1.1 入力束を production route から組み立てる。equati
 selected 入力)と selected lift-fiber datum(入力6a の生成源、R0 §4.6)から
 `realization` / `equationLiftSystem` で生成し、semantic 側入力(入力1・5、
 R0 §4.1・§4.5)、lift atlas(入力6 の selected local lift atlas、R0 §4.9 の
-入力6b)、`β`(入力7、R0 §4.7)、normalization(入力8、R0 §4.8)は
-X.§1 の三分類のとおり selected のまま受け取る。completeness 対(入力4、
-R0 §4.4)は従来どおり bundle に入れず定理仮定として受ける。
+入力6b)、`β`(入力7、R0 §4.7)は X.§1 の三分類のとおり selected のまま
+受け取る。completeness 対(入力4、R0 §4.4)は従来どおり bundle に入れず
+定理仮定として受ける。normalization(入力8、R0 §4.8)は X.§7 のとおり
+comparison core の仮定に含まれないため packet に束ねず、本 constructor も
+受け取らない。
 
 universe 境界: `equationSitePresheaf S : SitePresheafData.{u, u}` と
 `LiftFiberData` の同一 universe 制約により、本 constructor が組める packet は
@@ -460,9 +464,7 @@ def ofProduction
     (liftAtlas : CoefficientLiftAtlas (fiber.equationLiftSystem 𝒰))
     (stateCorrespondence :
       PrimaryStateCorrespondence (sel.realization P 𝒰).chiE Psem
-        (fiber.equationLiftSystem 𝒰))
-    (normalization :
-      EmptyOverlapNormalization P 𝒰 Psem (fiber.equationLiftSystem 𝒰)) :
+        (fiber.equationLiftSystem 𝒰)) :
     SagaEquationPacket.{u, v, x, u} S where
   occurrenceReading := R
   cover := 𝒰
@@ -473,7 +475,6 @@ def ofProduction
   liftSystem := fiber.equationLiftSystem 𝒰
   liftAtlas := liftAtlas
   stateCorrespondence := stateCorrespondence
-  normalization := normalization
 
 variable (R : AtomOccurrenceReading S) (𝒰 : MonomorphicOrderedCover S)
   (P : SemanticRepairPresentation.{u, v} S R)
@@ -486,14 +487,12 @@ variable (R : AtomOccurrenceReading S) (𝒰 : MonomorphicOrderedCover S)
   (stateCorrespondence :
     PrimaryStateCorrespondence (sel.realization P 𝒰).chiE Psem
       (fiber.equationLiftSystem 𝒰))
-  (normalization :
-    EmptyOverlapNormalization P 𝒰 Psem (fiber.equationLiftSystem 𝒰))
 
 /-- 組み立てた packet の realization は production constructor の生成物。
 simp normal form: 左辺(packet field)を右辺(生成物)へ展開する。 -/
 @[simp] theorem ofProduction_realization :
     (ofProduction R 𝒰 P sel Psem repairAtlas fiber liftAtlas
-        stateCorrespondence normalization).realization =
+        stateCorrespondence).realization =
       sel.realization P 𝒰 :=
   rfl
 
@@ -502,7 +501,7 @@ simp normal form: 左辺(packet field)を右辺(`equationLiftSystem` 適用)へ
 展開する(`equationLiftSystem_eq_liftSystem` は simp 非登録なのでここで安定)。 -/
 @[simp] theorem ofProduction_liftSystem :
     (ofProduction R 𝒰 P sel Psem repairAtlas fiber liftAtlas
-        stateCorrespondence normalization).liftSystem =
+        stateCorrespondence).liftSystem =
       fiber.equationLiftSystem 𝒰 :=
   rfl
 
