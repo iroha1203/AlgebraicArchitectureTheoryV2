@@ -230,7 +230,35 @@ fn check_references(plan: &RepairPlanDocumentV1) -> ValidationCheck {
         .collect::<BTreeSet<_>>();
     let mut examples = Vec::new();
     let mut triple_ids = BTreeSet::new();
+    let mut chart_ids = BTreeSet::new();
+    for chart in &plan.complex.charts {
+        if !chart_ids.insert(chart.as_str()) {
+            examples.push(generic_validation_example(
+                &format!("complex.charts[{chart}]"),
+                chart,
+                "chart IDs must be unique across the RepairPlan complex",
+            ));
+        }
+    }
+    let mut overlap_ids = BTreeSet::new();
+    let mut overlap_pairs = BTreeSet::new();
     for overlap in &plan.complex.overlaps {
+        if !overlap_ids.insert(overlap.id.as_str()) {
+            examples.push(generic_validation_example(
+                &format!("complex.overlaps[{}].id", overlap.id),
+                &overlap.id,
+                "overlap IDs must be unique across the RepairPlan complex",
+            ));
+        }
+        let mut pair = [overlap.left.as_str(), overlap.right.as_str()];
+        pair.sort_unstable();
+        if !overlap_pairs.insert((pair[0].to_string(), pair[1].to_string())) {
+            examples.push(generic_validation_example(
+                &format!("complex.overlaps[{}]", overlap.id),
+                &format!("{} / {}", pair[0], pair[1]),
+                "each unordered chart pair must appear at most once in complex.overlaps",
+            ));
+        }
         for (field, chart) in [("left", &overlap.left), ("right", &overlap.right)] {
             if !charts.contains(chart) {
                 examples.push(generic_validation_example(
