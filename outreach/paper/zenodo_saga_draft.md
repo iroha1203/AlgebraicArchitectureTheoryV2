@@ -1221,8 +1221,9 @@ SAGA theorem chain は `Formal/AG/SemanticRepair/Saga/` 以下に、第5章の�
   `TrueSheafDescent.lean`
 - 有限 witness(非零の 4-cycle circle witness、零類の descent witness):
   `CircleWitness.lean`、`DescentWitness.lean`
-- 第3.3節の finite-meet poset model・ordered-tuple model との比較 bridge:
-  `OrderedComparison.lean`、`PartIVBridge.lean`
+- 第3.3節の finite-meet poset model 上の site 実現と、ordered Čech model との
+  比較 bridge(補題 5.2A の形式化対応物を含む): `OrderedComparison.lean`、
+  `PartIVBridge.lean`
 
 Lean source の docstring は数学本文側の番号系列(`X.定理1.1` など)を label に
 用いており、本論文の定理番号とは系列が異なる。次節の表が両者の対応を
@@ -1309,7 +1310,7 @@ residual は入力ではない。`analyze` が、選択 cover 上の観測 secti
 比較と law surface の witness 束縛から residual を導出し、辺ごとの値・witness・
 観測 atom 参照の provenance を measurement packet に記録する(§7.3)。
 
-この契約の下で、本論文の measurement claim は次の一文に立つ。
+この契約の下で、本論文の measurement claim は次の主張に立つ。
 **SAGA 診断の結論 — residual、boundary membership、gate 判定 — は、Atom 観測と
 選択された方程式系から決定論的に導出される。実施者が書けるのは観測の範囲、
 選択複体、witness 束縛という選択であって、結論を運ぶ入力はこの契約に存在
@@ -1362,8 +1363,10 @@ SKILL は次の規律で観測の provenance を固定する。
 
 ArchSig の `analyze` は次を計算し、measurement packet として出力する。
 
-- chart ごとの **grounding**: 各 chart が selected defect observable と宣言された
-  判定基準による displayed-equation check を満たすかどうか。
+- chart ごとの **grounding**: 各 chart が displayed-equation check を満たすか
+  どうか。check の対象は law surface が選んだ defect 座標(displayed equation の
+  residual、§3.4 の `ε` の有限実現)と宣言された判定基準であり、
+  「chart 上の全方程式の完全な充足」ではない。
 - overlap ごとの **residual 導出**: 選択 cover の両端 chart が観測した
   section value 集合の比較から `F2` 値を導出し、law surface の witness 束縛と
   観測 atom 参照を provenance として記録する。witness 束縛のない mismatch は
@@ -1478,7 +1481,7 @@ preserve–order)、triple overlap は宣言しない。3サービスの金額�
 ### 7.6 計測が示したこと
 
 **局所整合・大域非貼合の実在。** grounding の `measured_zero` は、各 chart が
-自分の局所方程式を満たしていること — 正確には、selected defect observable と
+自分の局所方程式を満たしていること — 正確には、選ばれた defect 座標と
 宣言された判定基準による displayed-equation check が零であること(§7.3)— を
 計測として言う。cancel は cancel の丸め規約に、
 inside-payment は正確算術に、order は素通し保管に、それぞれ忠実である。
@@ -1520,7 +1523,7 @@ ledger に記録する前提、`unmeasured` は供給せず沈黙した軸を表
 | 選択複体の列挙完全性 | author assertion | `assumed` | repair plan の enumeration assertion を assumption ledger 行として記録 |
 | triple 不在 / class 語彙 | author assertion | `assumed`(class 語彙は不解禁) | 選択複体は triple を宣言しない。「三者同時照合サイトの不在」はツールが観測できない assertion であり、読みは 1-骨格の boundary membership に留まり、named boundary statement が境界を明示する |
 | boundary membership | 有限 `F2` 計算 | `computed` | head は `inB1: false`、repaired は `inB1: true` |
-| U-adequacy、Leray 型比較 | profile 供給の前提 | `assumed` | assumption ledger 行として開示。cover 非依存の sheaf cohomology との比較は主張しない(§5.7) |
+| U-adequacy(選択 cover が対象の読みに十分という前提)、Leray 型比較 | profile 供給の前提 | `assumed` | assumption ledger 行として開示。cover 非依存の sheaf cohomology との比較は主張しない(§5.7) |
 | torsor 性・作用の固定性・係数 descent | profile 供給の前提 | `assumed` | assumption ledger の 3 行 |
 | restriction surjectivity | profile 供給の前提 | `assumed` | assumption ledger 行 |
 | forest nerve | profile 供給の前提 | `assumed`(本 packet では不成立) | ledger は forest 前提を記録するが、同じ packet の nerve 計算は閉路 1 を `computed` で示す。開示された不成立前提であり、head の非零読みはこの行に依存しない |
@@ -1661,10 +1664,10 @@ local data に対する global obstruction class と repair comparison を提供
 
 Lean 4 [de Moura–Ullrich 2021] と Mathlib [mathlib Community 2020] は形式化環境の
 出典として引用する。SAGA の formalization contribution は Lean の利用自体ではなく、
-semantic repair descent、additive `H^1`、cover-relative Čech complex、
-cochain realization、quotient-level `H^1` comparison、零・非零の有限 witness、
-equation-generated realization を一つの machine-checked theorem chain として
-構成した点にある。Young と Gibson の形式化との比較は、theorem chain の範囲と
+semantic repair presentation、cover-relative Čech complex、係数同型と
+cochain 比較、true sheaf descent、零・非零の有限 witness を、中心定理の
+結論束に至る一つの machine-checked theorem chain として構成した点にある
+(第6章)。Young と Gibson の形式化との比較は、theorem chain の範囲と
 executable measurement への接続で行う。
 
 ### 8.5 Synthesis
@@ -1840,7 +1843,7 @@ family、sheaf amalgamation を経て global section が構成される。
 払い戻し三角形上で、3つの金額規約の衝突と triple overlap の不在が立てる
 非零 residual を観測から導出・計測し、gate による blocking、修理案の事前検証、
 repair 後の障害消滅、gate PASS までを一つの再現可能な計算として一周した。
-各 chart は自分の局所方程式を完全に満たしていた。障害は、どの局所にも帰属しない
+各 chart は自分の局所方程式を満たしていた。障害は、どの局所にも帰属しない
 1セント未満のドリフトとして、ループを一周したときにだけ現れた。
 
 抽象的な比較定理から出発した航路が、機械検証を経て、実在コードの
