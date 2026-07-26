@@ -1,0 +1,169 @@
+\appendix
+
+\section{Attribution of Assumptions (Which Proof Consumes What)}\label{app:A}
+
+This appendix tabulates where the proofs in the text consume inputs
+1--8 of Theorem~\ref{thm:central}. The content of the claims is
+governed by the corresponding sections of the text; this appendix is an
+index of attribution.
+
+\subsection{Comparison core (\S\ref{sec:53}--\S\ref{sec:55})}\label{app:A1}
+
+\begin{itemize}
+\item Consumed: the cover intersection diagram; the two coefficient
+presheaves (assumptions 1--2); the generator map and the two
+completeness conditions (assumptions 3--4); the local-state data
+(assumptions 5--7, used in the derivation of soundness).
+\item Not used: the global sheaf condition, the finite enumeration of
+the cover, displayed equation fulfillment.
+\end{itemize}
+
+\subsection{Actual gluing (\S\ref{sec:56})}\label{app:A2}
+
+\begin{itemize}
+\item What Lemma~5.2A consumes is the monomorphism property of the
+cover and, of assumption~8, the subsingleton clause for $\Psem(V)$
+(the proof consumes only the pairwise-overlap part). The lemma is used
+in the completion of the corrected family in the forward proof and in
+the gluing step of the equation-side globalization.
+\item In addition, actual gluing uses the true sheaf condition of
+(iii) (the sheaf condition and membership in the topology). The
+$\Psem(V)$ subsingleton clause is supplied as the same proposition as
+condition~(4) of the true sheaf condition.
+\end{itemize}
+
+\subsection{Unconsumed clauses}\label{app:A3}
+
+Of assumption~8, the subsingleton clause for $\PE(V)$ and the
+coefficient-vanishing clause $\Msem(V)=\QE(V)=0$ are consumed by no
+proof in this paper. The complexes run over nonempty intersections
+only (\S\ref{sec:41}), and what the equation-side globalization (end
+of \S\ref{sec:56}) uses for empty overlaps is also the
+$\Psem$-side subsingleton clause (Lemma~5.2A). These unconsumed
+clauses are retained in order to fix the input side (assumption~8) in
+a form that includes the full identification with the ordered
+\v{C}ech complex of \S\ref{sec:41} (outside the scope of this paper).
+
+\subsection{Consumption in the Lean formalization (thin sites)}\label{app:A4}
+
+The Lean formalization is carried out over a site whose context
+category is thin (\S\ref{sec:57}). By thinness --- the agreement of
+parallel morphisms --- every morphism in this model is automatically a
+monomorphism, and the treatment of self-overlaps and reversed overlaps
+in Lemma~5.2A is also settled automatically by the agreement of
+parallel morphisms. Consequently the formalized counterpart of
+Lemma~5.2A, \code{SiteStateData.matchingFamily\_iff}, consumes the
+selected pairwise overlaps and their lift data, but does not consume
+the monomorphism property as an explicit hypothesis (the commutativity and uniqueness
+of pullbacks follow from thinness). The gluing argument over general
+$\ArchCtx(X)$ is \code{unported} (Section~\ref{sec:6}).
+
+\section{Lean Source Correspondence (Declarations, Labels, Source Files)}\label{app:B}
+
+This appendix fixes the organization, within the release tag, of the
+Lean sources that are the primary evidence for the status of
+Section~\ref{sec:6}. The SAGA theorem chain is located under
+\code{Formal/AG/SemanticRepair/Saga/}. The kernel axiom audit is
+implemented by
+\code{\#assert\_}\allowbreak\code{standard\_}\allowbreak\code{axioms\_only}
+in \code{Formal/AG/}\allowbreak\code{AxiomAudit.lean} (an allowlist
+check of all registered declarations), which the release CI executes as
+\code{lake env lean} \code{Formal/AG/}\allowbreak\code{AxiomAudit.lean}.
+
+The docstrings of the Lean sources use labels from a numbering series
+distinct from this paper, originating in internal organization during
+development (\code{X.Theorem 1.1} and so on). The theorem
+correspondence with this paper is given completely by the status table
+of Section~\ref{sec:6}; the labels serve for cross-checking when
+browsing the Lean sources. The correspondence with the declarations of
+Section~\ref{sec:6} is given in Table~\ref{tab:leandecl} (declarations
+without labels are marked ``---''; source files are relative to
+\code{Saga/}).
+
+\begin{table}[htbp]
+\centering
+\scriptsize
+\begin{tabular}{@{}p{0.46\textwidth}p{0.22\textwidth}p{0.24\textwidth}@{}}
+\toprule
+Lean declaration & Lean-side label & Source file \\
+\midrule
+\code{SagaEquationPacket.sagaCentralTheorem} & X.Theorem 1.1 &
+\code{TrueSheafDescent.lean} \\
+\addlinespace
+\code{PrimaryStateCorrespondence.}\allowbreak\code{relationSound\_of\_stateCorrespondence} &
+--- & \code{Exactness.lean} \\
+\addlinespace
+\code{SagaEquationPacket.phiEquiv} (generic version:
+\code{PrimaryCoefficientCorrespondence.phiEquiv}, X.Theorem 6.3 /
+Corollary 6.7) & as listed & \code{EquationRealization.lean},
+\code{Exactness.lean} \\
+\addlinespace
+\code{ExactnessFixtures.soundness\_failure} /
+\code{completeness\_failure} / \code{generation\_failure} &
+X.Example 6.6 & \code{Exactness.lean} \\
+\addlinespace
+\code{kappa1\_delta0}, \code{kappa2\_delta1} & X.Theorem 7.2 &
+\code{KappaComparison.lean} \\
+\addlinespace
+\code{SagaEquationPacket.kappaStarAddEquiv} (generic version:
+\code{kappaH1AddEquiv}, X.Theorem 7.4) & as listed &
+\code{KappaComparison.lean} \\
+\addlinespace
+\code{SagaEquationPacket.residual\_correspondence\_class},
+\code{betaAligned\_residual} & X.Theorem 7.5 &
+\code{KappaComparison.lean} \\
+\addlinespace
+\code{SagaEquationPacket.globalRepair\_nonempty\_iff},
+\code{sagaGroundedGluing} & X.Theorem 8.2 &
+\code{TrueSheafDescent.lean} \\
+\addlinespace
+\code{SiteStateData.matchingFamily\_iff} & --- &
+\code{OrderedComparison.lean} \\
+\addlinespace
+\code{CircleWitness.semanticResidualClass\_ne\_zero},
+\code{circle\_nonzero\_class\_transfer} & X.Example 10.2 / Appendix
+B.9 & \code{CircleWitness.lean} \\
+\addlinespace
+\code{DescentWitness.descentTrueSheaf},
+\code{descent\_sagaGroundedGluing} & --- &
+\code{DescentWitness.lean} \\
+\bottomrule
+\end{tabular}
+\caption{Correspondence between declarations, Lean-side labels, and
+source files.}
+\label{tab:leandecl}
+\end{table}
+
+Table~\ref{tab:leanfiles} gives the correspondence between the building
+blocks of \S\ref{sec:61} and the source files.
+
+\begin{table}[htbp]
+\centering
+\scriptsize
+\begin{tabular}{@{}p{0.55\textwidth}p{0.36\textwidth}@{}}
+\toprule
+Building block (\S\ref{sec:61}) & Source file \\
+\midrule
+cover, intersection diagram, three-term \v{C}ech complex &
+\code{Cover.lean}, \code{CechThreeTerm.lean} \\
+semantic repair presentation and $\Msem$ & \code{Presentation.lean} \\
+affine repair system, selected atlases, residuals &
+\code{RepairTorsor.lean}, \code{EquationLift.lean} \\
+soundness derivation, exactness, coefficient isomorphism, finite
+counterexamples & \code{Exactness.lean} \\
+equation-side realization / production &
+\code{EquationRealization.lean}, \code{EquationProduction.lean} \\
+cochain comparison $\kappa$, $H^1$ isomorphism, residual
+correspondence & \code{KappaComparison.lean} \\
+true sheaf descent, final bundling of the central theorem &
+\code{TrueSheafDescent.lean} \\
+finite witnesses of the zero and nonzero cases &
+\code{CircleWitness.lean}, \code{DescentWitness.lean} \\
+poset site realization, ordered \v{C}ech model comparison bridge &
+\code{OrderedComparison.lean}, \code{PartIVBridge.lean} \\
+\bottomrule
+\end{tabular}
+\caption{Correspondence between the building blocks of
+\S\ref{sec:61} and source files.}
+\label{tab:leanfiles}
+\end{table}

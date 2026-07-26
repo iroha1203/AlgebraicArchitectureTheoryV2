@@ -1999,7 +1999,7 @@ table が完結して与え、label は Lean source を閲覧する際の照合�
 - [x] 第8章: Young artifact 確認と定理番号確定(related_work.md §2.7 に記録)
 - [x] References 節と BibTeX 固定(`zenodo_saga_references.bib`、P0 11点+P1 使用分+Serre/Grothendieck/Garcia-Molina–Salem)
 - [ ] 第8章: 投稿時点で 2026 年文献の最新版と publication status を再確認
-- [ ] 英語版への翻訳(最終投稿言語=英語、2026-07-24 決定。References は英語で作成済み)
+- [x] 英語版への翻訳(最終投稿言語=英語、2026-07-24 決定。英語正本=LaTeX を `en/` に新設、2026-07-26。以後の本文変更は英語正本とセットで行う)
 - [ ] 全章: claim-to-evidence matrix の構築と各 claim の一次証拠への対応
 - [x] SAGA comparison の可換図と one-cent の計算図の作成(2026-07-26。`zenodo_saga_figure1_comparison.png` を §5.2 末尾へ、`zenodo_saga_figure2_one_cent.png` を §7.2 末尾へ挿入。図内ラベルは英語のため英訳版へそのまま流用可。deposit 時は画像も bundle に同梱)
 - [x] 著者情報の固定(author block: Hiroyuki Nakahata / Independent Researcher / ORCID 0009-0008-5928-0234。所属企業名と contact は記載しない(2026-07-26 決定)。Acknowledgments に AI 協働開示、2026-07-24)

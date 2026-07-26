@@ -1,0 +1,79 @@
+\section{Introduction}\label{sec:1}
+
+\subsection{The local-to-global architecture problem}\label{sec:11}
+
+Each constituent of a software architecture is designed to be consistent
+within its own local context. A service keeps its own data conventions, and
+each individual handoff between modules satisfies its own contract.
+Nevertheless, the system as a whole can exhibit semantic inconsistency. The
+heart of this phenomenon is that the sum of local correctness does not
+constitute global correctness.
+
+This structure has the same shape as a classical problem type in
+mathematics. Given a family of local data, where each local piece is
+consistent and adjacent pieces are mutually consistent, does a global datum exist
+that glues the whole together? Sheaf theory formalizes this question as the
+sheaf condition, and cohomology measures the obstruction to gluing as a
+class in $H^1$. This paper realizes this problem type on software
+architecture and proves, as a comparison theorem, that the obstruction to
+semantic repair and the obstruction of the geometry generated from the
+architecture's simultaneous equation system coincide as the same
+cohomology class.
+
+\subsection{The SAGA research problem}\label{sec:12}
+
+The research problem of SAGA (S\'emantique Architecturale, G\'eom\'etrie
+Alg\'ebrique) is to set up the construction in the language of
+\emph{repair} and the construction in the language of \emph{equations and
+geometry} independently, and then to prove a comparison theorem connecting
+their $H^1$ groups and residual classes (the two constructions are given in
+Section~\ref{sec:4}). Once the comparison holds, semantic diagnoses
+translate into geometric computations, and geometric computations translate
+into semantic readings, in both directions.
+
+Throughout this paper, the cohomology under discussion is the additive
+\v{C}ech $H^1(\cU,-)$ relative to a selected monomorphic AAT cover $\cU$.
+Identification with cover-independent sheaf cohomology is not among the
+claims of this paper (\S\ref{sec:57}).
+
+A remark on the name. The SAGA of this paper is unrelated to the Saga
+pattern of compensating sequences known from distributed transactions
+\citep{garciamolina1987sagas}. The name is an homage to Serre's GAGA
+comparison theorem \citep{serre1956gaga}, which established the
+correspondence between two geometries (\S\ref{sec:92}).
+
+\subsection{The three layers of the result and the organization of the paper}\label{sec:13}
+
+This paper presents the result in three layers. The mathematical layer is
+the principal contribution of the paper: we construct the comparison
+between semantic repair cohomology and equation-generated AAT \v{C}ech
+cohomology, and prove the $H^1$ isomorphism, the residual class
+correspondence, and the equivalence with global repair under the true
+sheaf condition (Section~\ref{sec:5}). The Lean layer is the status at
+release time: it records the formalized definitions, theorems, witnesses,
+and proof chain at declaration granularity, fixing the correspondence with
+the theorems of this paper and the axiom status (Section~\ref{sec:6}). The
+ArchSig layer is a finite case study: ArchSig is a Rust command-line tool
+that computes diagnoses from observations of the code and a selected
+equation system; on a fixed microservice architecture, it shows in a
+reproducible form how the mathematical objects are computed from finite
+architecture evidence and how they change before and after repair
+(Section~\ref{sec:7}).
+
+In this paper, the \textbf{release identity} is the triple consisting of
+the release tag of the Lean sources, the version of ArchSig, and the
+digests of the input artifacts. The Lean sources and the ArchSig sources
+are available in the public repository
+\begin{center}
+\href{https://github.com/iroha1203/AlgebraicArchitectureTheoryV2}{\nolinkurl{github.com/iroha1203/AlgebraicArchitectureTheoryV2}}.
+\end{center}
+The formalization status of Section~\ref{sec:6} and the reproduction
+procedure of Section~\ref{sec:7} are stated against this fixed identifier.
+
+The rest of the paper is organized as follows. Section~\ref{sec:2} presents
+the AAT approach; Section~\ref{sec:3} the mathematical foundations needed
+for SAGA; Section~\ref{sec:4} the independent construction of the two
+complexes; Section~\ref{sec:5} the comparison theorem; Section~\ref{sec:6}
+the Lean status; Section~\ref{sec:7} the ArchSig diagnosis of real code;
+Section~\ref{sec:8} related work; Section~\ref{sec:9} the research
+outlook; and Section~\ref{sec:10} the conclusion.

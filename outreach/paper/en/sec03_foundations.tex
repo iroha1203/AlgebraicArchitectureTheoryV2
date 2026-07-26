@@ -1,0 +1,322 @@
+\section{AAT Foundations for SAGA}\label{sec:3}
+
+This section defines, in a form self-contained within the paper, the
+mathematical objects needed to read the statement and proof of SAGA. The
+arguments of the following sections presuppose only the definitions of
+this section.
+
+\subsection{Atoms and Atom families}\label{sec:31}
+
+\begin{definition}[Atom]\label{def:atom}
+An \emph{Atom} is a typed fact of the form
+\begin{verbatim}
+a = (kind, axis, subject, predicate, payload)
+\end{verbatim}
+where \code{kind} is the sort of the Atom (\code{component},
+\code{relation}, \code{state}, \code{contract}, \code{semantic}, and so
+on), \code{axis} is the signature / equation axis under which the Atom is
+read, \code{subject} is the subject of the statement, \code{predicate} is
+a single atomic statement made about the \code{subject}, and
+\code{payload} is the content data of the statement. An Atom is a
+primitive architectural fact belonging to no particular language or
+framework, and inside AAT it is treated as a generator. The schema of the
+core family includes \code{component(c)}, \code{relation\_r(c,d)},
+\code{state(c,x)}, \code{contract(m,p)}, \code{semantic(t,s)},
+\code{runtime\_interaction(u,v,h)}, among others. For instance,
+\code{semantic(t,s)} is the semantic Atom whose subject is the
+representation \code{t}, whose predicate is ``\code{t} obeys the semantic
+convention \code{s}'', and whose payload is the description of \code{s}.
+\end{definition}
+
+We give one correspondence with real code. Suppose the service that
+issues orders assembles an order number as
+\begin{verbatim}
+orderId = "ORD-" + zeroPad(seq.next(), 8)
+\end{verbatim}
+Then from this single site the following Atoms can be read:
+\begin{verbatim}
+component(orders)        -- the service this code belongs to
+state(orders, orderId)   -- the local state "issued order numbers"
+semantic(orderId, s)     -- s = the notation convention
+                         --     "prefix ORD- + 8-digit zero-padded sequence"
+\end{verbatim}
+Observing the implementation type (\code{string}) alone does not yield
+the last semantic Atom; reading the expression and how it is used is
+required. Where Atoms come from --- extraction from real code --- belongs
+to the observation process outside AAT, and its reproducible fixing is
+described in \S\ref{sec:75}. Inside AAT, Atoms are the given generators.
+
+\begin{definition}[Atom family and support]\label{def:atomfamily}
+Write $\At$ for the Atom universe. An \emph{Atom family} $F$ is a subset
+of $\At$, and $\operatorname{support}(F)$ is the set of subjects occurring
+in $F$. The family $F$ may contain component, relation, state, contract,
+effect, and semantic Atoms in combination. This mixing is not excluded; the
+question is which equations the mixed primitive facts satisfy and which
+obstructions they generate.
+\end{definition}
+
+\subsection{Architecture objects}\label{sec:32}
+
+\begin{definition}[architecture object]\label{def:archobject}
+An \emph{architecture object} is a tuple
+\[
+A = (C, S, Q)
+\]
+obtained by equipping an Atom configuration $C=(F,\mathit{Rel},\mathit{Pl})$
+(an Atom family $F$, relational data $\mathit{Rel}$, and placement
+$\mathit{Pl}$) with structure maps $S$ (structural maps to graphs,
+categories, algebras, state transitions, and so on) and selected
+quantities $Q$ (invariants, measures, signature axes). We write
+$F \Rightarrow A$ when $A$ is obtained from the Atom family $F$. Every
+architecture object is generated from an Atom family (the
+\emph{Atom-origin} principle). In this paper the fixed architecture
+object is written $X$.
+\end{definition}
+
+\subsection{Architecture contexts and the context category}\label{sec:33}
+
+\begin{definition}[architecture context]\label{def:archcontext}
+An \emph{architecture context} $W$ for an architecture object is a local
+reading of it. In the minimal model it is read as
+\[
+W = (\operatorname{Supp}(W), \operatorname{Ax}(W), \operatorname{Obs}(W)),
+\]
+where $\operatorname{Supp}(W)$ is the Atom support read in $W$,
+$\operatorname{Ax}(W)$ is the selected signature / equation axis, and
+$\operatorname{Obs}(W)$ is the family of coordinates, witnesses, and
+semantic data readable in $W$. Component-local views, feature views,
+semantic contract slices, and runtime trace slices are representative
+contexts.
+\end{definition}
+
+\begin{definition}[context category]\label{def:contextcategory}
+Write $\ArchCtx(X)$ for the category whose objects are contexts and whose
+morphisms are reinterpretations $i:W'\to W$ (restriction, projection,
+refinement, embedding, base change). Morphisms point from local contexts
+to global contexts. The overlap of a cover is constructed as the pullback
+\[
+U_i\times_W U_j
+\]
+(the context overlap).
+\end{definition}
+
+\paragraph{Minimal poset model.}
+When supports, axes, and observable families have finite meets, and under
+the equivalence quotient in which there is at most one reinterpretation
+morphism between any two contexts, $\ArchCtx_{\min}(X)$ becomes a
+finite-meet poset category, and overlaps are computed as meets. In this
+model every morphism is a monomorphism (\S\ref{sec:37} connects this fact
+to the cover assumption). The finite computations of Section~\ref{sec:7}
+are the executable form of this regime; the range of applicability of the
+theorem over general $\ArchCtx(X)$ and the status of the formalization
+are summarized in \S\ref{sec:57}.
+
+\subsection{Atom-indexed architectural equation systems}\label{sec:34}
+
+\begin{definition}[equation system]\label{def:equationsystem}
+Fix the Atom universe $\At$, a family of architecture objects, and a
+small category of local contexts. An \emph{Atom-indexed architectural
+equation system} $E$ consists of the following data:
+\begin{itemize}
+\item $K_E$: the type of equation indices;
+\item $\mathrm{role}_E : K_E \to \{\mathrm{required}, \mathrm{optional},
+      \mathrm{derived}\}$: the role of each equation;
+\item $\ObsE : \ArchCtx(X)^{\mathrm{op}} \to \mathbf{CommRing}$: a
+      presheaf assigning to each context $W$ an observable ring
+      $\ObsE(W)$;
+\item $\nu_{W,i,a} \in \ObsE(W)$: the symbolic violation coordinate for
+      $i \in K_E$ and $a \in \At$;
+\item $\epsilon_{W,A,i,a} \in \ObsE(W)$: the object-dependent equation
+      residual, evaluating equation $i$ on the architecture object $A$.
+\end{itemize}
+\end{definition}
+
+The two coordinate families commute with restriction. The $\nu$ are the
+symbolic coordinates generating the witness ideals, and the $\epsilon$
+are the residual coordinates judging equation fulfillment. An equation
+index $i$ \emph{holds} on $A$ when $\epsilon_{W,A,i,a}=0$ for all
+contexts and Atoms. The simultaneous fulfillment of the required
+equations is the basic condition for the consistency of the architecture.
+
+Natural-language expressions of design principles and conventions are
+derived from $E$ as readings of equation indices and their coordinate
+families; they carry no independent truth predicate. The primary
+mathematical object is $E$.
+
+\subsection{AAT sites, presheaves, and the sheaf condition}\label{sec:35}
+
+\begin{definition}[AAT site]\label{def:aatsite}
+Fix an architecture object $X$, an equation system $E$, a signature
+$\mathit{Sig}$ (the family of selected signature axes; in this paper it
+is treated as part of the fixed package and not expanded further),
+coverage requirements $R$, and a context-overlap package $\mathit{Ov}$.
+A coverage family $\{W_i\to W\}$ is \emph{$(E,R,\mathit{Ov})$-admissible}
+when all the data that $R$ requires to be readable on $W$ --- the support
+of the target Atoms, the support of the coordinates of $E$ ($\nu$,
+$\epsilon$), the selected witnesses and signature axes, and the
+interaction overlaps between contexts --- are readable across the cover
+through restriction to the $\{W_i\}$. Write $J_{E,R,\mathit{Ov}}$ for the
+Grothendieck topology generated by the admissible families. The
+\emph{AAT site} is the package
+\[
+\mathrm{Site}_{\mathrm{AAT}}(X,E,\mathit{Sig},R,\mathit{Ov})
+=(\ArchCtx(X), E, \mathit{Sig}, R, \mathit{Ov}, J_{E,R,\mathit{Ov}}).
+\]
+In this paper we abbreviate the underlying site with this package fixed
+as $S_X$, and write $W$ for its contexts. Covers do not generate Atoms
+(non-generation). What the proofs of this paper consume from this
+topology is only that $\cU$ belongs to the topology and the sheaf
+condition (Theorem~\ref{thm:gluing}); the internal structure of
+admissibility is used in no proof. The regime of finite execution is the
+finite-meet poset model of \S\ref{sec:33}.
+\end{definition}
+
+\begin{definition}[presheaf and sheaf condition]\label{def:presheaf}
+A presheaf on $S_X$ is a functor $F:\ArchCtx(X)^{\mathrm{op}}\to
+\mathbf{Set}$. $F$ is a \emph{sheaf} when, for every cover
+$\{W_i\to W\}$, compatible local sections agreeing on overlaps glue to a
+unique global section. The true semantic repair sheaf condition of
+Section~\ref{sec:5} is an instance of this sheaf condition.
+\end{definition}
+
+\subsection{Witness ideals, the obstruction ideal, and the equation-generated coefficient}\label{sec:36}
+
+\begin{definition}[witness ideal and obstruction ideal]\label{def:witnessideal}
+The local witness ideal of an equation index $i$ is the ideal generated
+by the symbolic violation coordinates,
+\[
+I_i^E(W)=\langle \nu_{W,i,a}\mid a\in \At\rangle\subset \ObsE(W).
+\]
+The sum of the witness ideals of the required equations,
+\[
+\IOb(W)=\sum_{i\in K_E,\ \mathrm{role}_E(i)=\mathrm{required}} I_i^E(W),
+\]
+is called the \emph{local obstruction ideal}. From the restriction
+compatibility of $\nu$ it follows that, for every context morphism
+$g:W'\to W$, $\mathrm{res}_g(\IOb(W))\subset \IOb(W')$, so the
+context-wise ideals form an ideal subpresheaf.
+\end{definition}
+
+\begin{theorem}[generated obstruction quotient]\label{thm:quotient}
+Fix an equation system $E$ and a displayed equation source (a choice, for
+finitely many local contexts $W_q\to W_{\mathrm{base}}$, of an
+architecture object $A_q$, a required equation index $i_q$, and a support Atom
+$a_q$; in the cover-indexed case the local contexts are taken at the
+charts). Then the following hold.
+\begin{enumerate}
+\item \textbf{generated coefficient}: the quotient
+\[
+\QE(W)=\ObsE(W)/\IOb(W)
+\]
+carries a restriction induced by the universal property of quotients,
+and $W\mapsto \QE(W)$ is an abelian-group-valued presheaf.
+\item \textbf{generated interpretation}: the interpretation of a
+displayed source $q$ is constructed as the quotient class of the
+residual, $\mathrm{interpret}(q)=[d_q]\in \QE(W_q)$ with
+$d_q:=\epsilon_{W_q,A_q,i_q,a_q}$. The interpretation is not free data;
+it is constructed.
+\item \textbf{residual restriction naturality}: for a context morphism
+$g:Z\to W_q$, setting $d_{q|Z}:=\epsilon_{Z,A_q,i_q,a_q}$,
+\[
+\mathrm{res}_g([d_q])=[\mathrm{res}_g(d_q)]=[d_{q|Z}].
+\]
+The restriction of a residual class is the class of the residual
+evaluated with the same architecture reading, equation index, and
+support Atom.
+\item \textbf{vanishing}: if the displayed equations are fulfilled, then
+$[d_q]=0$ for every $q$.
+\item \textbf{quotient zero criterion}: $[d_q]=0 \iff d_q\in\IOb(W_q)$.
+Hence if $d_q\notin\IOb(W_q)$ then $[d_q]\neq0$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+By the general theory of quotients and ideals. (1) is the ideal
+subpresheaf property of Definition~\ref{def:witnessideal} and the
+universal property of quotients; (2) is a construction; (3) follows from
+the restriction compatibility of $\epsilon$
+(Definition~\ref{def:equationsystem}) and computation with
+representatives in the quotient; (4) is the definition of equation
+fulfillment ($\epsilon=0$); (5) is the very definition of zero in a
+quotient.
+\end{proof}
+
+What clause~5 provides is the zero test in the quotient. To pass from a
+displayed failure to a nonzero class $[d_q]\neq0$, one separately needs
+the semantic failure to materialize as a residual not belonging to the
+ideal (\textbf{semantic faithfulness}). This is not a property of the
+quotient coefficient but a condition belonging to the selection and
+supply of the displayed source. Its bearer in actual measurement is
+described in Section~\ref{sec:7} (\S\ref{sec:74}).
+
+This $\QE$ is the coefficient of the geometric \v{C}ech complex of SAGA.
+Intuitively, $\QE$ views the observables coarsely, exactly up to the
+obstruction ideal: two observables have the same class precisely when
+their difference is a finite $\ObsE$-combination of violation
+coordinates. That the obstruction is ideal-theoretic --- that failure is
+measured not as a label but as a class in a quotient --- is the
+foundation of every construction from Section~\ref{sec:4} onward.
+
+\subsection{Monomorphic AAT covers}\label{sec:37}
+
+Fix a finite index set $I$ and an AAT cover
+\[
+\mathcal U=\{u_i:U_i\to W\}_{i\in I},
+\]
+and assume each $u_i$ is a monomorphism. Such a cover is called a
+\textbf{monomorphic AAT cover}. Choose a total order on the indices and
+write, for $i<j<k$,
+\[
+U_{ij}=U_i\times_W U_j,\qquad
+U_{ijk}=U_i\times_W U_j\times_W U_k.
+\]
+The charts $U_i$ together with these pairwise / triple intersections are
+called the \textbf{cover intersection diagram}. The three pairwise
+intersections of a nonempty $U_{ijk}$ are nonempty, since they receive
+projections from $U_{ijk}$. Empty pullbacks are excluded from the
+objects of the intersection diagram, and their values are fixed by the
+empty-overlap normalization (input~8 of Theorem~\ref{thm:central} in
+Section~\ref{sec:5}). Finiteness is not needed for the comparison core
+itself, but a finite cover is fixed so that the central theorem, the
+finite witnesses, and the executable realization can be treated in the
+same notation. In the finite-meet poset model of \S\ref{sec:33} every
+morphism is a monomorphism, so the assumption is automatic; over general
+$\ArchCtx(X)$ it is an explicit hypothesis of the theorem.
+
+\subsection{Selected, generated, proved}\label{sec:38}
+
+In SAGA, inputs, constructions, and consequences are strictly
+distinguished.
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.17\linewidth}p{0.76\linewidth}@{}}
+\toprule
+Kind & Content \\
+\midrule
+selected &
+the stage of the comparison (the monomorphic AAT cover, the
+empty-overlap normalization); the primary data of the semantic side (the
+semantic atom system, the local repair relation, the local repair
+atlas); the primary data of the equation side (the equation system $E$,
+the local equation-lift atlas); the correspondence between the two
+(Atom/equation interpretation, the local-state interpretation $\beta$);
+the two completeness conditions; the true sheaf condition used for
+global gluing. Fixed as inputs 1--8 of Theorem~\ref{thm:central} \\
+\addlinespace
+generated &
+$\Msem$, $\QE$, the two \v{C}ech complexes, $\rsem$, $\rE$, the
+coefficient map $\Phi$, the cochain map $\kappa$ \\
+\addlinespace
+proved &
+repair-relation soundness, SAGA presentation exactness, the isomorphism
+property of $\Phi$, commutation with the differentials, preservation of cocycles /
+coboundaries, the $H^1$ isomorphism, the residual class correspondence,
+the equivalence of the zero class with an actual global repair \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+This distinction fixes the provenance of the conclusions while
+preserving mathematical relativity: \emph{selected} is the input
+contract, and \emph{proved} is the theorem under that contract.

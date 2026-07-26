@@ -1,0 +1,168 @@
+\section{Semantic Repair and Equation-Generated Geometry}\label{sec:4}
+
+This section constructs the two complexes of SAGA independently. The
+semantic side is generated from semantic atoms and a repair relation, the
+equation side from an equation system; each produces its coefficient,
+complex, and residual from its own primary data alone. Neither
+construction refers to the other, and the comparison of
+Section~\ref{sec:5} --- the existence of the map, the fact that it is an
+isomorphism, the correspondence of residual classes --- is the conclusion of a theorem,
+not a repetition of the constructions. The single map connecting the two,
+$\chi^E$ (Proposition~\ref{prop:chiE}), is a construction of a comparison
+input for Section~\ref{sec:5} and is used in the construction of neither
+complex.
+
+\subsection{The cover-relative \v{C}ech complex}\label{sec:41}
+
+Let $F$ be an abelian-group-valued presheaf on $S_X$. Define the
+three-term cochain complex relative to $\cU$ by
+\[
+C^0(\mathcal U,F)=\prod_iF(U_i),\qquad
+C^1(\mathcal U,F)=\prod_{i<j}F(U_{ij}),\qquad
+C^2(\mathcal U,F)=\prod_{i<j<k}F(U_{ijk})
+\]
+(the products run over nonempty intersections), with the differentials on
+ordered indices
+\[
+(\delta^0a)_{ij}=a_j|_{U_{ij}}-a_i|_{U_{ij}},
+\qquad
+(\delta^1c)_{ijk}=c_{jk}|_{U_{ijk}}-c_{ik}|_{U_{ijk}}+c_{ij}|_{U_{ijk}}.
+\]
+A direct computation gives $\delta^1\delta^0=0$, so the cover-relative
+$H^1$ is defined by
+\[
+\check H^1(\mathcal U,F)=\ker\delta^1/\operatorname{im}\delta^0.
+\]
+
+\subsection{The semantic-side construction}\label{sec:42}
+
+\paragraph{Semantic repair presentation.}
+To each context $V$ of $S_X$, assign the set $\Lambda(V)$ of semantic
+atoms distinguished on $V$, a projection $\pi_V:\Lambda(V)\to\At$ giving
+the underlying Atom of each semantic atom, and a subset
+$S(V)\subseteq\Lambda(V)$ of \textbf{supported semantic atoms} available
+for repair. For each context morphism $V'\to V$ there is a functorial
+restriction map $\Lambda(V)\to\Lambda(V')$ that preserves support (if
+$\lambda\in S(V)$ then $\lambda|_{V'}\in S(V')$), and the projection
+preserves the underlying Atom:
+\[
+\pi_{V'}(\lambda|_{V'})=\pi_V(\lambda).
+\]
+Write $\Fsem(V)$ for the free abelian group on $S(V)$; its elements
+(formal finite sums of supported atoms) are called \textbf{repair
+words}. On each $V$, select a restriction-stable subgroup
+\[
+\Rrep(V)\subset \Fsem(V)
+\]
+(the \textbf{local repair relation}). This is all of the primary data of
+the semantic side. The comparison core
+(\S\ref{sec:53}--\S\ref{sec:55}) uses these data restricted to the cover
+intersection diagram.
+
+\paragraph{Semantic coefficient.}
+The quotient
+\[
+\Msem(V)=\Fsem(V)/\Rrep(V)
+\]
+carries a restriction induced by restriction-stability, and
+$V\mapsto \Msem(V)$ is an abelian-group-valued presheaf on $S_X$. The
+complex of \S\ref{sec:41} with coefficients $\Msem$,
+$C^\bullet_{\mathrm{sem}}(\cU):=C^\bullet(\cU,\Msem)$, is the semantic
+complex.
+
+\paragraph{Affine semantic repair system.}
+Let $\Psem$ be a presheaf of semantic local repair states on $S_X$. On
+each $V$, $\Fsem(V)$ acts on $\Psem(V)$, restriction commutes with the
+action, and on each $V$ of the cover intersection diagram the following
+three conditions hold:
+\begin{itemize}
+\item \textbf{action soundness}: words in $\Rrep(V)$ act as the
+identity;
+\item \textbf{stabilizer completeness}: if $\Psem(V)$ is nonempty, every
+word acting as the identity belongs to $\Rrep(V)$;
+\item \textbf{local transitivity}: any two states are carried to each
+other by the action of some word.
+\end{itemize}
+By soundness the action descends to an action of $\Msem(V)$; by
+completeness this action is free; by transitivity it is transitive on
+nonempty $\Psem(V)$. Therefore, on each $V$ of the cover intersection
+diagram, a nonempty $\Psem(V)$ is an $\Msem(V)$-torsor (an affine
+space). A torsor is a space without a distinguished origin in which,
+instead, the difference of any two states is measured uniquely as an
+element of the coefficient group. The construction of residuals below
+uses only this difference, never the states themselves.
+
+\paragraph{Semantic residual.}
+Choosing a selected local repair atlas $\{p_i\}$, the torsor difference
+on each nonempty overlap determines a unique
+\[
+r_{\mathrm{sem},ij}=p_j|_{U_{ij}}-p_i|_{U_{ij}}\in \Msem(U_{ij}),
+\]
+giving the \textbf{semantic residual} $\rsem\in C^1_{\mathrm{sem}}(\cU)$.
+The residual $\rsem$ is a cocycle: on $U_{ijk}$, abbreviating
+$r_{ij}=r_{\mathrm{sem},ij}$, we have
+$p_k=r_{jk}+p_j=r_{jk}+r_{ij}+p_i$ and $p_k=r_{ik}+p_i$, and freeness of
+the action gives $r_{jk}-r_{ik}+r_{ij}=0$.
+
+The class $[\rsem]\in
+H^1_{\mathrm{sem}}(\cU):=\check H^1(\cU,\Msem)$ does not depend on the
+choice of atlas (\textbf{choice independence}): for another atlas
+$p'_i=a_i+p_i$ the same torsor computation gives
+$r'_{\mathrm{sem}}=\rsem+\delta^0a$. Consequently, the vanishing
+$[\rsem]=0$ is equivalent to the existence of a correction
+$a\in C^0_{\mathrm{sem}}(\cU)$ such that the corrected atlas
+$(-a_i)+p_i$ agrees on all pairwise overlaps (the existence of a
+\textbf{matching correction}). This paraphrase provides the intuition
+for coboundaries: a coboundary $\delta^0a$ is the difference produced by
+merely changing the reference (the atlas) within each chart. A zero
+class is an inconsistency that can be removed by per-chart changes of
+reference; a nonzero class is an inconsistency that no combination of
+local reference changes removes, and that remains on a closed loop.
+
+\subsection{The equation-side construction}\label{sec:43}
+
+The equation side constructs the \textbf{geometric \v{C}ech complex}
+$C^\bullet_E(\cU):=C^\bullet(\cU,\QE)$ with coefficients in the $\QE$ of
+Theorem~\ref{thm:quotient}. The \textbf{equation-lift system} $\PE$ is a
+presheaf on $S_X$ such that on each intersection $V$, the nonempty
+$\PE(V)$ carries a free and transitive action of $\QE(V)$, and
+restriction commutes with the action. From a selected local lift atlas
+$\{e_i\}$, the difference on overlaps generates the geometric-side
+residual
+\[
+r_{E,ij}=e_j|_{U_{ij}}-e_i|_{U_{ij}}.
+\]
+By the same torsor argument as in \S\ref{sec:42}, $\rE$ is a cocycle and
+its class does not depend on the choice of atlas.
+
+\begin{proposition}[equation semantic realization: construction of $\chi^E$]\label{prop:chiE}
+To each supported semantic atom $\lambda\in S(V)$ on each cover
+intersection $V$, assign a required equation index $i_\lambda$ and a
+local architecture reading $A_\lambda$, compatibly with restriction
+(selected; for a face restriction $V'\to V$ of the cover intersection
+diagram, $i_{\lambda|_{V'}}=i_\lambda$ and
+$A_{\lambda|_{V'}}=A_\lambda$). Then
+\[
+\chi^E_V(\lambda):=[\epsilon_{V,A_\lambda,i_\lambda,\pi_V(\lambda)}]\in \QE(V)
+\]
+is restriction-natural with respect to face restrictions, i.e.
+\[
+\chi^E_{V'}(\lambda|_{V'})=\chi^E_V(\lambda)|_{V'}.
+\]
+\end{proposition}
+
+\begin{proof}
+The indices $i_\lambda$ and readings $A_\lambda$ are chosen compatibly
+with restriction, and $\pi$ preserves the underlying Atom
+(\S\ref{sec:42}). Hence the residual at $\lambda|_{V'}$ is the
+$\epsilon$ evaluated on $V'$ with the same reading, index, and support
+Atom, and by the residual restriction naturality of
+Theorem~\ref{thm:quotient} its class coincides with the restriction of
+$\chi^E_V(\lambda)$.
+\end{proof}
+
+$\chi^E$ is the canonical instance, constructed from the equation system
+and displayed readings, of the restriction-natural map that assumption~3
+of Theorem~\ref{thm:central} requires; it shows that the starting point
+of the comparison map is generated from nothing more than ``which
+failure, of which reading of which equation''.
