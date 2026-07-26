@@ -14,53 +14,29 @@ ORCID: [0009-0008-5928-0234](https://orcid.org/0009-0008-5928-0234)
 
 ## 要旨
 
-software architecture では、各部分が局所的に正しくても、全体では意味の不整合が
-生じうる。個々の service は自身の規約を守り、隣接する service 間の受け渡しも
-それぞれ成立しているのに、システムを一周したときにだけ現れる不整合が残る。
-局所的な正しさの総和が大域的な正しさに届かないというこの構造的な隔たりが、
-本論文の主題である。
+software architecture では、個々の service が自身の規約を守り、隣接する
+service 間の受け渡しもそれぞれ成立しているのに、システムを一周したときにだけ
+現れる意味の不整合が残ることがある。本論文は、この局所的な正しさと大域的な
+正しさの隔たりを測る二つのコホモロジーを独立に構成し、両者の一致を証明する。
+第一は「修理」の言葉による構成で、各局所文脈で許される意味的修理の選択肢と
+その同値関係から係数 `M_sem` を作る。第二は「方程式」の言葉による構成で、
+architecture の制約を連立方程式系として組織し、その obstruction ideal による
+商係数 `Q_E` を作る。software architecture を代数幾何として構成する理論
+Algebraic Architecture Theory (AAT) の選ばれた有限 cover `𝒰` 上、局所データを
+対応させる有限個の選択条件の下で、comparison map は同型
+`H^1_sem(𝒰) ≅ Ȟ^1(𝒰, Q_E)` と residual class の対応を誘導する。これを
+SAGA 比較定理と呼ぶ。修理の言葉で測った障害と方程式の言葉で測った障害は
+同じコホモロジー類であり、意味論的な診断と幾何的な計算は双方向に翻訳できる。
+さらに修理状態の族が sheaf 条件を満たすとき、global repair の実在は両側の
+障害類の消滅と同値である。
 
-本論文は、この隔たりを測る二つのコホモロジーを独立に構成し、両者の一致を
-証明する。第一の構成は「修理」の言葉によるもので、各局所文脈で許される
-意味的修理の選択肢とその同値関係から、修理の障害を測る係数 `M_sem` と
-Čech complex を作る。第二の構成は「方程式」の言葉によるもので、architecture の
-制約を連立方程式系 `E` として組織し、その obstruction ideal による商係数
-`Q_E` と Čech complex を作る。software architecture を代数幾何として構成する
-理論 Algebraic Architecture Theory (AAT) の選ばれた有限 cover `𝒰` 上で、
-両者の局所データを対応させる有限個の選択条件の下で、comparison map は同型
-
-```math
-H^1_{\mathrm{sem}}(\mathcal U)
-\cong
-\check H^1(\mathcal U,Q_E)
-```
-
-と residual class の対応 `κ_*([r_sem])=[r_E]` を誘導する。これを SAGA 比較定理と呼ぶ。
-すなわち、修理の言葉で測った障害と方程式の言葉で測った障害は、同じ
-コホモロジー類である。この一致により、意味論的な診断は幾何的な計算へ、
-幾何的な計算は意味論的な読みへ、双方向に翻訳できる。さらに、修理状態の族が貼り合わせ可能である
-(sheaf 条件を満たす)ならば、global repair は三項同値
-
-```math
-\mathrm{Nonempty}\,P_{\mathrm{sem}}(W)
-\iff
-[r_{\mathrm{sem}}]=0
-\iff
-[r_E]=0
-```
-
-で特徴づけられる。障害の類が消えることと、全体を貼り合わせる修理が実在する
-ことは同値である。
-
-本論文は、この数学的成果を三層で提示する。第一層は SAGA 数学であり、
-比較定理と residual class 対応の証明を与える(第3〜5章)。第二層は
-release 時点の Lean 形式化 status であり、定義、定理、有限 witness、
-proof chain を declaration 単位で本論文の定理と対応させる(第6章)。第三層は Rust 製 CLI の measurement tool である ArchSig による
-実行可能な診断であり、実在するオープンソース microservice システムの払い戻し
-処理に対して、観測から導出した障害の非零計測、gate による blocking、
-repair 案の事前検証、repair 後の障害消滅の記録までを再現可能な一つの計算として
-一周する(第7章)。数学、Lean、計測は同じ release identity を参照し、
-各主張から一次証拠へ到達できる。
+本論文はこの成果を、比較定理の数学的証明(第3〜5章)、release 時点の
+Lean 形式化 status(第6章)、実在の open source microservice システムに対して
+measurement tool ArchSig が非零障害の計測から repair 後の消滅までを再現可能に
+一周する診断(第7章)の三層で提示する。三層は同じ release identity を参照し、
+各主張から一次証拠へ到達できる。これにより、service 単位の検証では捉えられない
+一周不整合に対して、証明された数学、機械検証の status、再現可能な計測が連結した
+診断の経路が得られる。
 
 ---
 
@@ -76,25 +52,17 @@ software architecture の各構成要素は、それぞれの局所的な文脈�
 この構造は数学の古典的な問題型と同じ形をしている。局所データの族が与えられ、
 各局所は整合的で、隣接する局所同士も整合的であるとき、全体を貼り合わせる
 大域データは存在するか。層の理論はこの問いを sheaf condition として定式化し、
-コホモロジーは貼り合わせの障害を `H^1` の類として測る。
-
-本論文は、software architecture のこの問題に対して比較定理を証明する。
-すなわち、意味論的な修理の障害と、architecture の連立方程式系から生成される
-幾何の障害が、同じコホモロジー類として一致することを示す。
+コホモロジーは貼り合わせの障害を `H^1` の類として測る。本論文はこの問題型を
+software architecture の上で実現し、意味論的な修理の障害と、architecture の
+連立方程式系から生成される幾何の障害が同じコホモロジー類として一致することを、
+比較定理として証明する。
 
 ### 1.2 SAGA の研究課題
 
-architecture の意味不整合を「修理」の言葉で語る立場と、「方程式と幾何」の言葉で
-語る立場は、それぞれ独立に定式化できる。
-
-- **semantic repair の立場**: 各局所文脈での意味的修理の選択肢と、修理同士の
-  同値関係から、修理の障害を測る係数と複体を作る。
-- **equation geometry の立場**: architecture の制約を Atom-indexed な連立方程式系
-  として組織し、その obstruction ideal による商から係数と複体を作る。
-
 SAGA (Sémantique Architecturale, Géométrie Algébrique) の研究課題は、
-この二つの構成を独立に立てた上で、両者の `H^1` と residual class を結ぶ
-比較定理を証明することである。比較が成立すれば、意味論的な診断は幾何的な計算へ、
+「修理」の言葉による構成と「方程式と幾何」の言葉による構成を独立に立てた上で、
+両者の `H^1` と residual class を結ぶ比較定理を証明することである
+(二つの構成は第4章)。比較が成立すれば、意味論的な診断は幾何的な計算へ、
 幾何的な計算は意味論的な読みへ、双方向に翻訳できる。
 
 本論文で扱う cohomology は、一貫して、選ばれた monomorphic AAT cover `𝒰` に
@@ -106,44 +74,27 @@ cohomology との同一視は本論文の主張に含まれない(§5.7)。
 二つの幾何の対応を確立した Serre の GAGA 比較定理 [Serre 1956] への
 オマージュである(§9.2)。
 
-### 1.3 成果の三層
+### 1.3 成果の三層と論文の構成
 
-本論文は、次の三層を一つの研究成果として提示する。
-
-| 層 | 役割 |
-| --- | --- |
-| 数学 | プレプリントの主成果。SAGA 比較定理と residual class 対応の証明 |
-| Lean | 数学成果に対する release 時点の機械形式化 status |
-| ArchSig | 実在コード事例の上で SAGA 診断を実行する Rust 製 CLI(有限かつ実行可能な realization) |
-
-数学面は本論文の主成果である。semantic repair cohomology と equation-generated AAT Čech
-cohomology の比較を構成し、`H^1` 同型、residual class 対応、true sheaf 条件下の
-global repair 同値を証明する(第5章)。
-
-Lean 面は release 時点の status である。形式化済みの定義、定理、witness、
-proof chain を declaration 単位で示し、本論文の定理との対応と axiom 状況を固定する(第6章)。
-
-ArchSig 面は有限 case study である。ArchSig は、コードの観測と選ばれた
-方程式系から診断を計算する Rust 製の CLI tool である。固定した microservice
-architecture を対象に、
-数学的対象が有限 architecture evidence からどのように計算され、repair 前後で
-どのように変化するかを再現可能な形で示す(第7章)。
+本論文は、この成果を三層で提示する。数学面は本論文の主成果である。
+semantic repair cohomology と equation-generated AAT Čech cohomology の比較を
+構成し、`H^1` 同型、residual class 対応、true sheaf 条件下の global repair
+同値を証明する(第5章)。Lean 面は release 時点の status である。形式化済みの
+定義、定理、witness、proof chain を declaration 単位で示し、本論文の定理との
+対応と axiom 状況を固定する(第6章)。ArchSig 面は有限 case study である。
+ArchSig は、コードの観測と選ばれた方程式系から診断を計算する Rust 製の
+CLI tool であり、固定した microservice architecture を対象に、数学的対象が
+有限 architecture evidence からどのように計算され、repair 前後でどのように
+変化するかを再現可能な形で示す(第7章)。
 
 本論文で **release identity** とは、Lean source の release tag、ArchSig の
-version、入力 artifact の digest の組をいう。第6章の形式化 status と第7章の
+version、入力 artifact の digest の組をいう。Lean source と ArchSig の source は
+公開リポジトリ
+[github.com/iroha1203/AlgebraicArchitectureTheoryV2](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2)
+にある。第6章の形式化 status と第7章の
 再現手順は、この固定した同定子に対して記述される。
 
-### 1.4 論文全体を貫く読み
-
-```text
-SAGA 数学の比較定理
-  -> release 時点の Lean 形式化
-  -> ArchSig による実コード事例の有限計算
-  -> repair 前後の比較
-```
-
-本論文は、数学的比較定理が形式化と有限 measurement へ降り、実在 software
-architecture の semantic repair を読めることを示す。第2章は AAT アプローチを、
+以降の構成は次のとおりである。第2章は AAT アプローチを、
 第3章は SAGA に必要な数学的基礎を、第4章は二つの複体の独立な構成を、
 第5章は比較定理を、第6章は Lean status を、第7章は ArchSig による実コード診断を、
 第8章は関連研究を、第9章は研究展望を、第10章は結論を述べる。
@@ -153,66 +104,42 @@ architecture の semantic repair を読めることを示す。第2章は AAT �
 ## 2. The AAT Approach
 
 Algebraic Architecture Theory (AAT) は、software architecture を代数幾何として
-構成する数学理論である。本章はこのアプローチの構成法と、それが開く分析能力を
-説明する。SAGA の statement と proof に必要な数学的対象の定義は第3章が担当する。
+構成する数学理論である。本章はこのアプローチの独自性と構成の骨格を短く述べる。
+SAGA の statement と proof に必要な数学的対象の定義はすべて第3章が与える。
 
-### 2.1 Atom による公理化
+構成は三段からなる。第一に、AAT は primitive architectural fact を **Atom**
+として公理化する。Atom は特定のプログラミング言語、framework、serialization
+形式に属さないため、複数の言語、service、storage representation にまたがる
+fact を同じ architecture object の上で扱える。実装型が一致していても意味規約が
+異なるという不整合を語るには、型システムより上の抽象度で architecture を構成する
+必要があり、この言語独立性が本論文の主題を語る前提となる。第二に、複数の
+architecture condition を **Atom-indexed architectural equation system** `E`
+として組織する。`E` からは residual、obstruction ideal、そして required
+equations が同時に成立する零点 locus が構成され、制約が満たされる場所は
+方程式系の零点集合の類似物として幾何的対象になる。第三に、局所 context、
+cover、restriction、overlap を **AAT site** として組織する。これにより
+local-to-global problem は sheaf と cohomology の言葉で扱えるようになり、
+局所条件の族が大域的に貼り合うかは global section の存在問題、貼り合わせの
+障害は Čech cohomology の類となる。
 
-AAT は、primitive architectural fact を **Atom** として公理化する。Atom は
-特定のプログラミング言語、framework、serialization 形式に属さない。
-複数の言語、service、storage representation にまたがる architectural fact を、
-同じ architecture object の上で扱える。この言語独立性が、後の章で意味を持つ。
-実装型が一致していても意味規約が異なる、という不整合を語るには、
-型システムより上の抽象度で architecture を構成する必要があるからである。
-
-### 2.2 連立方程式としての architecture condition
-
-複数の architecture condition は、**Atom-indexed architectural equation system**
-として組織される。equation system からは residual、obstruction ideal、
-そして required equations が同時に成立する零点 locus が構成される。
-architecture の制約が満たされる場所は、方程式系の零点集合の類似物として
-幾何的対象になる。設計原則の自然言語表現は equation index の読みとして
-`E` から導かれる表示であり、数学上の一次対象は `E` である。
-
-### 2.3 AAT site と local-to-global problem
-
-局所 context、cover、restriction、overlap は **AAT site** として組織される。
-これにより、local-to-global problem は sheaf と cohomology の言葉で扱える。
-局所的に成立する条件の族が大域的に貼り合うかは global section の存在問題となり、
-貼り合わせの障害は Čech cohomology の類として測られる。
-
-### 2.4 failure の構造化
-
-AAT では、architecture の failure は residual、ideal、cohomology class、
-さらに Tor conflict や singularity として構造化される。本論文が使うのは
-前三者である。diagnosis と repair は、
-同じ幾何対象の変化として読める。修理とは類を消す操作であり、
-修理の成否は類の零性として判定される。
-
-### 2.5 ringed geometry と道具の接続
-
-architecture 上に ringed geometry を構成することで、scheme、derived intersection、
-deformation、monodromy、stack、base change といった代数幾何の道具が
-architecture 上で働く。本論文の SAGA はこの一部、すなわち Čech `H^1` と
-descent を使う。より深い道具の使用は第9章の研究展望で述べる。
-
-SAGA の代数幾何性は構成の側にある: observable ring `O_E`、witness ideal と
+この構成の下で、architecture の failure は residual、ideal、cohomology class
+として構造化され、diagnosis と repair は同じ幾何対象の変化として読める。
+修理とは類を消す操作であり、修理の成否は類の零性として判定される。さらに
+architecture 上の ringed geometry は scheme、derived intersection、deformation、
+monodromy といった代数幾何の道具への接続を開くが、本論文の SAGA が使うのは
+Čech `H^1` と descent であり、より深い道具は第9章の研究展望で述べる。SAGA の
+代数幾何性は構成の側にある: observable ring `O_E`、witness ideal と
 obstruction ideal、商係数 `Q_E=O_E/I_Ob`、AAT site、そして零類を global repair
 として読む descent interpretation である(第3〜5章。固有性の帰属は §5.1)。
 
-### 2.6 相対性と provenance
-
 AAT の幾何は、vocabulary、equation system、coverage、coefficient を固定した
-**相対的な幾何**である。すべての claim は、選ばれた入力データに相対的であり、
-その入力から結論までの provenance を追跡できる。この相対性は制約であると同時に、
-claim と証拠を対応させる規律の源である。第7章の measurement は
-この規律の実行形である。
-
-### 2.7 SAGA によるアプローチの具体化
+**相対的な幾何**である。すべての claim は選ばれた入力データに相対的であり、
+入力から結論までの provenance を追跡できる。この相対性は制約であると同時に
+claim と証拠を対応させる規律の源であり、第7章の measurement はその実行形である。
 
 SAGA は、semantic repair obstruction と equation-generated Čech obstruction を
-比較することで、AAT アプローチの local-to-global 能力を具体化する。
-本章で述べた AAT アプローチは、次の一文に要約される。
+比較することで、このアプローチの local-to-global 能力を具体化する。本章の
+アプローチは次の一文に要約される。
 
 > AAT constructs software architecture as a relative algebraic geometry generated
 > from primitive architectural facts and simultaneous architectural equations,
@@ -493,8 +420,9 @@ selected は入力契約であり、proved はその契約の下での定理で�
 
 本章は、SAGA の二つの複体を独立に構成する。semantic 側は semantic atom と
 repair relation から、equation 側は equation system から、それぞれの一次データのみで
-係数、複体、residual を生成する。両者の比較は第5章の定理の結論であり、
-二つの複体の構成には他方への参照が入らない。両者を接続する唯一の写像
+係数、複体、residual を生成する。二つの複体の構成には他方への参照が入らず、
+第5章の比較 — 写像の存在、同型性、residual class の対応 — は構成の反復では
+なく定理の結論である。両者を接続する唯一の写像
 `χ^E`(命題 4.1)は第5章の比較入力の構成であり、どちらの複体の構成にも
 使われない。
 
@@ -645,14 +573,6 @@ face restriction `V'→V` について `i_{λ|_{V'}}=i_λ`、`A_{λ|_{V'}}=A_λ`
 equation system と displayed reading から構成する canonical な実例であり、
 「どの equation のどの読みに対する failure か」だけを材料に比較写像の始点が
 生成されることを示す。
-
-### 4.4 二つの構成の独立性
-
-semantic 側の `M_sem`、`C_sem`、`r_sem` は semantic presentation のみから、
-equation 側の `Q_E`、`C_E`、`r_E` は equation system のみから構成された。
-二つの複体は同じ AAT cover 上に置かれるが、係数、local state、residual は
-それぞれの一次データに由来する。したがって、次章の比較写像の存在、同型性、
-微分可換性、residual class の対応は、構成の反復ではなく定理の結論である。
 
 ---
 
@@ -1224,7 +1144,10 @@ focused check である(source の構成と監査の実体は Appendix B)。本�
 ### 6.1 形式化の範囲
 
 SAGA theorem chain は、第5章の定理の入力構造(定理 5.1 の入力 1–8)をそのまま
-Lean structure として固定する形で形式化されている。構成部品は次のとおりである
+Lean structure として固定する形で形式化されている。したがって各 declaration が
+証明するのは、本論文の定理そのものではなく、selected 入力を Lean の structure
+として固定した上での結論である(paper claim との対応と各行の仮定は §6.2 の
+表が固定する)。構成部品は次のとおりである
 (source file との対応は Appendix B)。
 
 - monomorphic ordered cover、intersection diagram、three-term Čech complex と
@@ -1246,10 +1169,7 @@ Lean source の docstring は、本論文の定理番号とは別系列の番号
 
 ### 6.2 Status table
 
-status は次の語彙で記述する: `proved`(Lean で証明済み)、`defined only`
-(定義のみ形式化)、`future proof obligation`(証明義務として明示済み・未証明)、
-`empirical hypothesis`(経験的仮説であり証明対象でない)、`unported`
-(紙上の証明は存在するが Lean へ未移植)。
+本表の status はすべて `proved`(Lean で証明済み)である。
 
 | Paper claim | Lean declaration | Status | Assumptions |
 | --- | --- | --- | --- |
@@ -1268,10 +1188,12 @@ status は次の語彙で記述する: `proved`(Lean で証明済み)、`defined
 表の全行は kernel axiom 監査に登録済みであり、kernel axiom は standard mathlib
 axioms に限られる。`sorry` や追加公理を含む行はない。
 
-本論文の数学(第3〜5章)に対して残るものは次のとおりである。
+本論文の数学(第3〜5章)に対して残るものは次のとおりである
+(第9章の研究展望とは区別する)。
 
 - 一般(thin でない)context category 上の §5.6 gluing 論証
-  (monomorphism と pullback の普遍性を明示に消費する形): `unported`(§5.7)。
+  (monomorphism と pullback の普遍性を明示に消費する形): `unported`
+  (紙上の証明は存在するが Lean へ未移植。§5.7)。
 - refinement invariance / Leray 型 acyclicity による sheaf cohomology との
   同一視、nonabelian `H^1`、gerbe、stack descent: 本論文は主張しないため、
   証明義務に含めない(§5.7)。
@@ -1282,14 +1204,6 @@ axioms に限られる。`sorry` や追加公理を含む行はない。
 
 **TODO:** release tag 確定後に、対象 commit hash と release CI run の参照を
 本章に固定する(付録 A で管理)。
-
-### 6.3 形式化の到達地点の読み方
-
-Lean claim は、statement の強さと proof-use によって記述する。
-declaration が形式化しているのは、本論文の定理そのものではなく、
-その定理の selected 入力を Lean の structure として固定した上での結論である。
-本論文の数学に対して残る未証明、未接続、未移植は前節の一覧が示すとおりであり、
-第9章の研究展望とは区別される。
 
 ---
 
@@ -1305,8 +1219,9 @@ SAGA フル診断を一つの計算として示し(§7.1〜§7.3)、その診断
 
 ### 7.1 実コード事例: one-cent obstruction
 
-ここで本論文の case study を明かす。対象は、microservice benchmark として広く
-使われるオープンソースの列車予約システム train-ticket
+本論文の case study の対象は、microservice benchmark として広く
+使われるオープンソースの列車予約システム
+[train-ticket](https://github.com/FudanSELab/train-ticket)
 (commit `313886e99bef`、42 services)である。
 
 このシステムの cancel–inside-payment–order の実呼び出し三角形上で、
@@ -1346,8 +1261,8 @@ triple overlap を宣言しないという形で診断へ反映される。同�
 `analyze` が各辺の観測 section value の比較から導出する(§7.4)。
 三辺はいずれも、同一の semantic quantity — この注文の払い戻し金額 — の
 restriction を比較しており、mismatch の自由度は「その量を通貨値としてどの丸め・
-scale 規約で確定するか」という一つの向きに乗る。witness 束縛は、その向きを
-辺ごとに選ぶ law 側の宣言であり、instance の値は運ばない。
+scale 規約で確定するか」という一つの向きに乗る。witness 束縛(§7.4)は、
+その向きを辺ごとに選ぶ law 側の宣言である。
 
 **有限 witness。** 頻度や総損失の評価(runtime 実測を要する。§7.7)とは分離し、
 source expression で確認済みの各規約を同一の払い戻し量へ適用した正規化計算と
@@ -1367,8 +1282,7 @@ cancel の丸め規約に、inside-payment は正確算術に忠実である —
 の値の差として残る。
 
 この数値 witness は実施者による source 水準の検算であり、ArchSig の計算には
-価格、`0.8`、丸め、`0.004` のいずれも現れない。ArchSig の residual は金額規約の
-観測表現である section value の集合比較から導出される(§7.4)。
+価格、`0.8`、丸め、`0.004` のいずれも現れない。
 
 ### 7.2 診断階段
 
