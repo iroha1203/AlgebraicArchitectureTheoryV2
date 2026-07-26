@@ -73,6 +73,16 @@ EDGE_VARS = [
     ("e_insidepay_order", "ctx:inside-payment-surface", "ctx:order-surface"),
     ("e_cancel_order", "ctx:cancel-surface", "ctx:order-surface"),
     ("e_consign_consignprice", "ctx:consign-surface", "ctx:consign-price-surface"),
+    ("e_preserve_consign", "ctx:preserve-surface", "ctx:consign-surface"),
+    ("e_preserve_order", "ctx:preserve-surface", "ctx:order-surface"),
+]
+# v0.5.7: the plan declares only the observed 1-skeleton of the selected loop cover.
+# The residual is derived by analyze from the observed sections under the witness
+# bindings above; nothing about the residual is authored here any more.
+PLAN_OVERLAPS = TRIANGLE + [
+    ("overlap:consign-consignprice", "ctx:consign-surface", "ctx:consign-price-surface"),
+    ("overlap:preserve-consign", "ctx:preserve-surface", "ctx:consign-surface"),
+    ("overlap:preserve-order", "ctx:preserve-surface", "ctx:order-surface"),
 ]
 # 各 overlap / chart / triple の equation generator は、法曲面が実際に宣言している
 # witness variable と skeleton simplex そのものである。合成した名前は使わない。
@@ -429,152 +439,21 @@ gate = {
 write("gate-policy-saga.json", gate)
 
 # ---- repair plans -----------------------------------------------------------
-def presentation(drifted):
-    cell_refs = list(REPAIR_CHARTS) + [overlap_id for overlap_id, _, _ in OVERLAPS] + [
-        triple_id for triple_id, _ in TRIPLES
-    ]
-    restrictions = [
-        {"fromRef": chart, "toRef": overlap_id, "semanticMatrix": [[1]], "equationMatrix": [[1]]}
-        for overlap_id, left, right in OVERLAPS
-        for chart in [REPAIR_CHART_CONTEXTS[left], REPAIR_CHART_CONTEXTS[right]]
-    ]
-    restrictions.extend(
-        {
-            "fromRef": overlap_id,
-            "toRef": triple_id,
-            "semanticMatrix": [[1]],
-            "equationMatrix": [[1]],
-        }
-        for triple_id, overlap_refs in TRIPLES
-        for overlap_id in overlap_refs
-    )
-    def equation_generator(cell_ref):
-        # chart は法曲面 skeleton の vertex simplex、witness edge を持つ overlap は
-        # その witness variable。どちらも法曲面が元から宣言しているものを使う。
-        if cell_ref in UNBOUND_CELL:
-            return UNBOUND_CELL[cell_ref]
-        if cell_ref in EDGE_VAR_BY_OVERLAP:
-            return EDGE_VAR_BY_OVERLAP[cell_ref]
-        source_chart = next(c for c, r in REPAIR_CHART_CONTEXTS.items() if r == cell_ref)
-        return CHART_SIMPLEX[source_chart]
-
-    unit = SUBCENT_UNITS_PER_CENT
-    return {
-        "coefficientRing": "integers",
-        "cells": [
-            {
-                "cellRef": cell_ref,
-                "semanticGenerators": [DRIFT],
-                "repairRelationMatrix": [[unit]],
-                "equationGenerators": [equation_generator(cell_ref)],
-                "equationRelationMatrix": [[unit]],
-                "generatorMap": [[1]],
-            }
-            for cell_ref in cell_refs
-        ],
-        "restrictions": restrictions,
-        "equationLiftAtlas": {
-            "localLifts": [
-                {"chartRef": chart, "coefficients": [0]}
-                for chart in REPAIR_CHARTS
-            ],
-            "transitionDifferences": [
-                {
-                    "overlapRef": overlap_id,
-                    "coefficients": [int(drifted and (overlap_id, left, right) in TRIANGLE)],
-                }
-                for overlap_id, left, right in OVERLAPS
-            ],
-        },
-    }
-
-
 def repair_plan(drifted):
-    cx = complex_dict()
-    fp = fingerprint(cx)
-    var = [DRIFT] if drifted else []
-    vmap = [{"source": DRIFT, "target": DRIFT}] if drifted else []
-    triangle_ids = {i for i, _, _ in TRIANGLE}
-    plan = {
-        "schema": "archsig-repair-plan/v0.5.4",
+    return {
+        "schema": "archsig-repair-plan/v0.5.7",
         "id": "repair-plan:train-ticket-money-" + ("head" if drifted else "repaired"),
-        "residual": {"kind": "supplied"},
-        "complex": cx,
-        "primitives": [
-            {
-                "id": "primitive:" + oid.removeprefix("overlap:"),
-                "overlapRef": oid,
-                "resL": list(var) if oid in triangle_ids else [],
-                "resR": [],
-                "support": {
-                    "kind": "supplied",
-                    "variables": list(var) if oid in triangle_ids else [],
-                },
-            }
-            for oid, _, _ in OVERLAPS
-        ],
-        "semanticProjection": {
-            "lambda": [WITNESS_ATOM] if drifted else [],
-            "k": list(var),
-            "pi": [{"atomRef": WITNESS_ATOM, "subject": DRIFT}] if drifted else [],
-        },
-        "faithfulness": {
-            "mode": "supplied",
-            "supplied": {
-                "zeroPrimitiveRef": (
-                    "primitive:consign-consignprice"
-                    if drifted
-                    else "primitive:cancel-insidepay"
-                ),
-                "residualSupportPredicate": {
-                    "kind": "finite-support",
-                    "supportVariables": list(var),
-                    "zeroOnZeroPrimitive": True,
-                },
-                "faithfulnessLaw": "the refund rounding witness projects one-to-one onto the cancel-service reconciliation observation",
-            },
-        },
-        "coefficient": "f2-additive",
-        "trueSheafCertificate": {
-            "kind": "true-sheaf-certificate",
-            "coverRef": DIAGNOSTIC_COVER_ID,
-            "memberCharts": list(DIAGNOSTIC_CHARTS),
-            "globalCondition": "assumed",
-        },
-        "gluingData": {
-            "kind": "gluing-data",
-            "overlapRefs": [overlap_id for overlap_id, _, _ in DIAGNOSTIC_OVERLAPS],
-            "sectionRefs": [
-                {
-                    "overlapRef": overlap_id,
-                    "sectionRef": "section:" + overlap_id.removeprefix("overlap:"),
-                }
-                for overlap_id, _, _ in DIAGNOSTIC_OVERLAPS
+        "complex": {
+            "charts": list(CHARTS),
+            "overlaps": [
+                {"id": oid, "left": left, "right": right}
+                for oid, left, right in PLAN_OVERLAPS
             ],
-        },
-        "grounding": {
-            "kind": "saga-grounding",
-            "surfaceRef": SURFACE_ID,
-            "profileRef": PROFILE_ID,
-        },
-        "comparison": {
-            "kind": "saga-comparison",
-            "incidenceBridge": {
-                "kind": "chart-indexed",
-                "repairChartRefs": list(REPAIR_CHARTS),
-                "cechChartRefs": list(REPAIR_CHARTS),
-            },
-            "h1ComparisonData": {
-                "schema": "h1-comparison-data/v0.5.4",
-                "kind": "presentation-generated",
-                "sourceComplexFingerprint": fp,
-                "targetComplexFingerprint": fp,
-                "presentation": presentation(drifted),
-            },
+            "tripleOverlaps": [],
+            "enumerationComplete": True,
         },
     }
-    return plan
+
 
 write("repair-plan-head.json", repair_plan(True))
 write("repair-plan-repaired.json", repair_plan(False))
-print("complex fingerprint:", fingerprint(complex_dict()))

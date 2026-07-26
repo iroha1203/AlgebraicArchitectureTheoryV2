@@ -1,5 +1,5 @@
 {
-  "schema": "archsig-repair-plan/v0.5.6",
+  "schema": "archsig-repair-plan/v0.5.7",
   "id": "repair-plan:true-sheaf-demo",
   "complex": {
     "charts": [
@@ -35,18 +35,5 @@
       }
     ],
     "enumerationComplete": true
-  },
-  "faithfulness": {
-    "mode": "complete-support"
-  },
-  "trueSheafCertificate": {
-    "kind": "true-sheaf-certificate",
-    "coverRef": "cover:order-inventory",
-    "memberCharts": [
-      "ctx:order",
-      "ctx:inventory",
-      "ctx:shared"
-    ],
-    "globalCondition": "assumed"
   }
 }

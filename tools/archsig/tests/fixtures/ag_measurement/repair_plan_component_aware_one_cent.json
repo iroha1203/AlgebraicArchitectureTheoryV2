@@ -1,5 +1,5 @@
 {
-  "schema": "archsig-repair-plan/v0.5.6",
+  "schema": "archsig-repair-plan/v0.5.7",
   "id": "repair-plan:component-aware-one-cent",
   "complex": {
     "charts": [
@@ -53,49 +53,5 @@
       }
     ],
     "enumerationComplete": true
-  },
-  "faithfulness": {
-    "mode": "supplied",
-    "supplied": {
-      "residualSupportPredicate": {
-        "kind": "finite-support",
-        "supportVariables": [
-          "cech:section-mismatch"
-        ]
-      },
-      "faithfulnessLaw": "the one-cent residual support is faithful on the diagnostic component"
-    }
-  },
-  "trueSheafCertificate": {
-    "kind": "true-sheaf-certificate",
-    "coverRef": "cover:saga-component",
-    "memberCharts": [
-      "ctx:cancel",
-      "ctx:inside-payment",
-      "ctx:order"
-    ],
-    "globalCondition": "assumed"
-  },
-  "gluingData": {
-    "kind": "gluing-data",
-    "overlapRefs": [
-      "overlap:cancel-inside-payment",
-      "overlap:inside-payment-order",
-      "overlap:cancel-order"
-    ],
-    "sectionRefs": [
-      {
-        "overlapRef": "overlap:cancel-inside-payment",
-        "sectionRef": "section:cancel-inside-payment"
-      },
-      {
-        "overlapRef": "overlap:inside-payment-order",
-        "sectionRef": "section:inside-payment-order"
-      },
-      {
-        "overlapRef": "overlap:cancel-order",
-        "sectionRef": "section:cancel-order"
-      }
-    ]
   }
 }

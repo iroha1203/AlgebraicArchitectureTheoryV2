@@ -1,5 +1,5 @@
 {
-  "schema": "archsig-repair-plan/v0.5.6",
+  "schema": "archsig-repair-plan/v0.5.7",
   "id": "repair-plan:gluing-data-demo",
   "complex": {
     "charts": [
@@ -35,30 +35,5 @@
       }
     ],
     "enumerationComplete": true
-  },
-  "faithfulness": {
-    "mode": "complete-support"
-  },
-  "gluingData": {
-    "kind": "gluing-data",
-    "overlapRefs": [
-      "overlap:order-inventory",
-      "overlap:inventory-shared",
-      "overlap:order-shared"
-    ],
-    "sectionRefs": [
-      {
-        "overlapRef": "overlap:order-inventory",
-        "sectionRef": "section:order-inventory"
-      },
-      {
-        "overlapRef": "overlap:inventory-shared",
-        "sectionRef": "section:inventory-shared"
-      },
-      {
-        "overlapRef": "overlap:order-shared",
-        "sectionRef": "section:order-shared"
-      }
-    ]
   }
 }

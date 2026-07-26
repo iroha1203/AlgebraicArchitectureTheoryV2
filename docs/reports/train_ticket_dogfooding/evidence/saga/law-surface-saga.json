@@ -49,6 +49,28 @@
       "axis": "cech",
       "predicate": "sectionValue"
      }
+    },
+    {
+     "variable": "e_preserve_consign",
+     "binding": {
+      "edge": [
+       "ctx:preserve-surface",
+       "ctx:consign-surface"
+      ],
+      "axis": "cech",
+      "predicate": "sectionValue"
+     }
+    },
+    {
+     "variable": "e_preserve_order",
+     "binding": {
+      "edge": [
+       "ctx:preserve-surface",
+       "ctx:order-surface"
+      ],
+      "axis": "cech",
+      "predicate": "sectionValue"
+     }
     }
    ],
    "forbiddenSupportGenerators": [
@@ -70,6 +92,16 @@
     {
      "support": [
       "e_consign_consignprice"
+     ]
+    },
+    {
+     "support": [
+      "e_preserve_consign"
+     ]
+    },
+    {
+     "support": [
+      "e_preserve_order"
      ]
     }
    ]
@@ -121,6 +153,28 @@
       "axis": "cech",
       "predicate": "sectionValue"
      }
+    },
+    {
+     "variable": "e_preserve_consign",
+     "binding": {
+      "edge": [
+       "ctx:preserve-surface",
+       "ctx:consign-surface"
+      ],
+      "axis": "cech",
+      "predicate": "sectionValue"
+     }
+    },
+    {
+     "variable": "e_preserve_order",
+     "binding": {
+      "edge": [
+       "ctx:preserve-surface",
+       "ctx:order-surface"
+      ],
+      "axis": "cech",
+      "predicate": "sectionValue"
+     }
     }
    ],
    "forbiddenSupportGenerators": [
@@ -129,7 +183,9 @@
       "e_cancel_insidepay",
       "e_insidepay_order",
       "e_cancel_order",
-      "e_consign_consignprice"
+      "e_consign_consignprice",
+      "e_preserve_consign",
+      "e_preserve_order"
      ]
     }
    ]

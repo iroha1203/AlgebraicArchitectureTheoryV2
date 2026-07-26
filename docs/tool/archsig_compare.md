@@ -8,57 +8,23 @@
 不一致は `COMPARISON_DATA_CONTRACT_VIOLATION` で fail-closed とする。
 fingerprint 不一致かつ refinement 不在の場合は `profileConclusionCode: TWO_PROFILES_REPORTED_SEPARATELY` を記録する。
 
-SAGA の run 内 H¹ comparison は `RepairPlan.comparison.h1ComparisonData` が所有する。
-`kind: "presentation-generated"` のRepairPlanは `complex.archmapCoverRef` と全overlap / tripleの
-`archmapContextRef` を必須とする。validator は指定coverのcontext集合と、各intersectionの直接restriction
-predecessor集合を照合する。`enumerationComplete: true` の場合、そのcoverは列挙されたchartとintersection
-context、および宣言されたchart→overlap / overlap→tripleの直接restrictionだけから成らなければならない。
-この照合は宣言された有限入力の一致を検査するものであり、外部意味論上の完全性はRepairPlan authorの
-assumptionとして記録する。
-`kind: "explicit"` では `cochainMap.degreeZero` / `degreeOne` / `degreeTwo.basisMap` と
-`degreeTwo.zeroImage` の有限写像表を validator が再計算する。
-`kind: "presentation-generated"` では各 chart / overlap / triple cell の semantic generators、
-repair relation 行列、equation quotient presentation、`generatorMap` と restriction 行列を入力し、
-`coefficientRing`(既定 `f2`)が選ぶ係数環の上で `im(R)=ker(χ̃)`、`im(χ̃)=Q_E`、restriction naturality を検査する。`integers` では有限生成可換群として扱い、部分格子の相等と全生成を列 Hermite 正規形で決定する。これにより
-local `Φ` と `κ⁰ / κ¹ / κ²` を導出する。`κ¹D_sem⁰=D_E⁰κ⁰` と `κ²D_sem¹=D_E¹κ¹` は
-restriction naturality から従うので、出力の `degreeZeroCommutative` / `degreeOneCommutative` は
-その帰結の記録であり、独立した第2・第3の検査ではない。presentation は別入力の
-`equationLiftAtlas`（chart ごとの local lift と overlap ごとの transition difference）も持ち、
-ArchSig はそこから `r_E` を導出する。`κ¹(r_sem)=r_E+δ⁰h` は equation relation を含む商上で
-解き、解があるときだけ computed quotient-atlas witness `h` を出力する。同じ商上で target cocycle と
-target `Z¹/B¹` class を再計算する。semantic presentation 側でも `r_sem` の cocycle と
-`Z¹/B¹` class を計算するため、nonempty triple がない selected `C²=0` complex でも、有限presentation
-そのものから source / target H¹ transfer を確立できる。
-出力の `presentationGenerated.comparisonInput` には canonical RepairPlan を保持し、packet validator は
-その入力から generated evidence 全体を再計算して `inputDigests.repairPlan.sha256` と照合する。
-どちらの kind でも適合条件を満たす場合だけ analyze の転送 invariant が立つ。
-compare の run-pair 記録はこの run 内写像を自動生成しない。
+SAGA の run 対の読みは、supplied comparison data ではなく **導出 residualClassAgreement** が担う
+(#3822 で `RepairPlan.comparison` slot と `saga-comparison:h1-transfer` invariant は沈黙した)。
+`compare` は base / head 両 run の `saga-descent:residual-derivation`(観測 sectionValue 比較から
+導出された overlap ごとの F₂ 値と provenance)を読み、comparability ゲート
+(level が identical / verdict-row、両 derivation の coverRef / mappedCoverRef / lawSurfaceRef /
+charts 相等、overlap 鍵集合一致)の下で delta = value_base XOR value_head を作り、
+スカラー系 δ⁰h = delta の可解性を計算して `residualClassAgreement` block を出力する:
 
-SAGA の run 内 comparison で `kind: "explicit"` を選ぶ場合は、source の
-`saga.residual-class` が未計測なら `silence_by_design`、reason
-`residual_class_prerequisite_not_measured` と、不足している F₂ coefficient、residual component の
-cocycle 認証、同じ component に完全一致する `trueSheafCertificate` と `gluingData` を案内する `whatNext` を記録する。cocycle 認証は、
-その component の一意な triple ID を持つ三 chart・三 edge の triple cocycle-zero 検査、または
-`complex.enumerationComplete=true` かつ triple overlap cell が無い `C²=0` の
-`automatic-c2-zero` である。`trueSheafCertificate` の
-`memberCharts` / `coverRef` / `globalCondition=assumed` と
-`gluingData.overlapRefs` は residual component の overlap 集合に完全一致し、
-`sectionRefs` は各 `overlapRef` に非空かつ相異なる `sectionRef` を一対一で与える。
-`sectionRef` は author が付ける不透明なラベルであり、ArchSig はこれを ArchMap 側の
-どの entity にも解決しない。component 帰属は `overlapRefs` の完全一致だけが担保する。
-別 component の overlap 集合を宣言した supplied row は residual class 認証に使えない。class row はこの global condition の assumptionId を
-`dependsOnAssumptions` に記録する。この前提未供給は比較違反として扱わない。source class が計測済みの場合だけ、有限 map の適合検査または target class の zero predicate の検査へ進む。
+- `status: cohomologous` — 2 run の導出 residual は同一 H¹ 類(witnessChartAssignment に
+  coboundary witness `h` を記録)
+- `status: not_cohomologous` — 類が異なる(類を非零→零へ変える修理は常にこちら)
+- `status: no_residual_change` — delta が空
+- `status: not_computed` / `silence_by_design` — 複体・provenance 不一致、または derivation 未記録
 
-`kind: "presentation-generated"` では `saga.residual-class` を入力前提にせず、上記の
-finite presentation 検査から semantic presentation の source `Z¹/B¹` class を計算する。
-その計算に必要な presentation、restriction maps、または `equationLiftAtlas` が不成立なら
-`silence_by_design` と reason `presentation_source_class_prerequisite_not_computed` を記録し、
-それらの補充を `whatNext` に示す。4-cycle のように
-selected `C²=0` で triple overlap が空でも、presentation による source / target class と
-quotient-atlas witness が計算できれば、この経路は `established` になりうる。
-
-`h1-comparison-transfer` は `ag.saga-comparison` evaluator が所有する computed invariant であり、`contract` を必須とする。contract は `incidenceBridgeKind`、`h1ComparisonDataKind`、`normalizedComplexFingerprint`（文字列）と、`classPrerequisite`、`targetClassComputed`、`contractChecked`（真偽値）、`measuredClassAgreement`（計測された残差類の行が同じ packet に在るときだけ真偽値、無ければ null）、`equationGeneratorsResolved` と `unresolvedEquationGenerators`（presentation-generated かつ law surface が供給されたときだけ埋まる。equation generator は法曲面が宣言する witness variable か skeleton simplex へ解決しなければならず、`unbound-equation:` 接頭辞だけが「この法曲面に対応物が無い」という author の明示宣言として受理される）の9フィールドを持ち、未知フィールドや別 evaluator への付け替えは受理しない。`measuredClassAgreement` が false のときは、invariant に `measuredClassDivergence` が付き、presentation 側の source class と descent 側の計測残差類のどちらが何を読んでいるかを名指しする。両者は同じ複体の別の対象(repair relation で割った商の `H¹` と生の `Z¹/B¹`)なので、食い違い自体は contract 違反として扱わない。presentation-generated 経路が established のときは `SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS` を出力し、explicit 経路の `SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA` と区別する。
-不一致になった場合だけ `COMPARISON_DATA_CONTRACT_VIOLATION` を記録する。
+この block は「2 run の残差類一致の記録」であり、修理成功の判定ではない
+(theoremRef: part10/3.4+4.4)。修理成功の読みは、repaired 側 run の零 residual
+(`REPAIR_GLUES_WITHIN_SELECTED_COMPLEX`)と gate が担う。
 
 ## Inputs and outputs
 

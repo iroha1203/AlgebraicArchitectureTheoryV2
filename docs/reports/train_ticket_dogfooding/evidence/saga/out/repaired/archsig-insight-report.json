@@ -97,35 +97,14 @@
         "theoremRef": "part4/12.4"
       },
       {
-        "assumedBy": "law-surface:law-surface:train-ticket-money-saga-v054",
-        "assumption": "selected quotient sheaf condition for law-surface:train-ticket-money-saga-v054",
-        "checkedBy": null,
-        "status": "assumed",
-        "theoremRef": "part10/8.3"
-      },
-      {
         "assumedBy": "repair-plan author",
         "assumption": "repair-plan complex enumeration completeness for repair-plan:train-ticket-money-repaired",
         "checkedBy": null,
         "status": "assumed",
         "theoremRef": "part10/3.1"
-      },
-      {
-        "assumedBy": "trueSheafCertificate author",
-        "assumption": "global sheaf condition for repair-plan:train-ticket-money-repaired",
-        "checkedBy": null,
-        "status": "assumed",
-        "theoremRef": "part10/8.1"
-      },
-      {
-        "assumedBy": "RepairPlan author",
-        "assumption": "faithfulness law supplied for repair-plan:train-ticket-money-repaired",
-        "checkedBy": null,
-        "status": "assumed",
-        "theoremRef": "part4/4.6"
       }
     ],
-    "assumedCount": 11,
+    "assumedCount": 8,
     "blocking": [],
     "blockingCount": 0,
     "checked": [
@@ -174,7 +153,7 @@
     ],
     "notComputedCount": 0,
     "profileRef": "profile:train-ticket-money-saga@2",
-    "shortText": "Profile-relative. 11 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
+    "shortText": "Profile-relative. 8 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
     "unknownCount": 0,
     "unmeasuredCount": 0,
     "violatedCount": 0
@@ -190,12 +169,12 @@
   },
   "componentFingerprints": {
     "lawPolicy": "sha256:e5e91078749ec26ae327ecd1cf41d6d2f7dd035c81a1c66bc0e0476b10e6900c",
-    "lawSurface": "sha256:15b78313f591c424245c79fdc32ab6aee799d3c53197b331d569556ac3670471",
+    "lawSurface": "sha256:62d8863d01500c61fd9027a4be468ffc6e2ed23bd9ea919f2e7fd45041d19190",
     "measurementProfile": "sha256:c073650c8bcd053d48d78bb1a29811b80917ffbdec81e1789dd15d68908b0753"
   },
   "copyBlocks": {
     "llmHandoff": {
-      "boundary": "Profile-relative. 11 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
+      "boundary": "Profile-relative. 8 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
       "instruction": "Use the following ArchSig result as bounded evidence. Do not infer beyond the listed claims and boundaries.",
       "topInsights": [
         "No selected-cover H^1 glue mismatch was measured under this profile.",
@@ -24368,6 +24347,32 @@
           "supportAtomRefs": [],
           "targetContextRef": "ctx:order-surface",
           "value": 0
+        },
+        {
+          "edgeId": "ctx:preserve-surface->ctx:consign-surface",
+          "objectKind": "nerveEdge",
+          "sectionObservation": "observed",
+          "source": "selected cover restriction edge",
+          "sourceContextRef": "ctx:preserve-surface",
+          "supportAtomRefs": [
+            "atom:semantic:consign-surface:cech-section-money-amount",
+            "atom:semantic:preserve-surface:cech-section-money-amount"
+          ],
+          "targetContextRef": "ctx:consign-surface",
+          "value": 1
+        },
+        {
+          "edgeId": "ctx:preserve-surface->ctx:order-surface",
+          "objectKind": "nerveEdge",
+          "sectionObservation": "observed",
+          "source": "selected cover restriction edge",
+          "sourceContextRef": "ctx:preserve-surface",
+          "supportAtomRefs": [
+            "atom:semantic:order-surface:cech-section-money-amount",
+            "atom:semantic:preserve-surface:cech-section-money-amount"
+          ],
+          "targetContextRef": "ctx:order-surface",
+          "value": 1
         }
       ],
       "h2CoherenceVisualized": false,
@@ -25022,7 +25027,7 @@
     },
     "lawSurface": {
       "path": "input:law-surface-saga.json",
-      "sha256": "15b78313f591c424245c79fdc32ab6aee799d3c53197b331d569556ac3670471"
+      "sha256": "62d8863d01500c61fd9027a4be468ffc6e2ed23bd9ea919f2e7fd45041d19190"
     },
     "measurementProfile": {
       "path": "input:measurement-profile-saga.json",
@@ -25040,7 +25045,7 @@
     },
     "repairPlan": {
       "path": "input:repair-plan-repaired.json",
-      "sha256": "a0f2e4e57b5fa919e24abc3540a4b7ff18116468bd2867077a9efc136a450343"
+      "sha256": "d3a2ec111beac56f943db9e4636287320cf93d6dc26a7f8e2962ab18028091a7"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
@@ -25054,13 +25059,10 @@
         "analyticReadingRefs": [],
         "assumptionRefs": [
           "part10/3.1",
-          "part10/8.1",
-          "part10/8.3",
           "part3/11.3",
           "part4/11.1",
           "part4/12.3",
           "part4/12.4",
-          "part4/4.6",
           "part8/4.2",
           "part8/B.8.2"
         ],
@@ -25230,13 +25232,10 @@
         ],
         "assumptionRefs": [
           "part10/3.1",
-          "part10/8.1",
-          "part10/8.3",
           "part3/11.3",
           "part4/11.1",
           "part4/12.3",
           "part4/12.4",
-          "part4/4.6",
           "part8/4.2",
           "part8/B.8.2"
         ],
@@ -25254,11 +25253,10 @@
           "finite-poset-site-shape",
           "cech-cohomology:profile:train-ticket-money-saga@2",
           "topological-debt-capacity:profile:train-ticket-money-saga@2",
-          "saga-generated-end-to-end-packet",
+          "saga-grounded:defect-quotient",
           "saga-descent:boundary-membership",
-          "saga-descent:closure-diagnostics",
-          "saga-descent:residual-class",
-          "saga-comparison:h1-transfer"
+          "saga-descent:residual-derivation",
+          "saga-descent:residual-class"
         ],
         "contextRefs": [
           "ctx:admin-basic-info-surface",
@@ -25431,19 +25429,16 @@
     "measured_zero confirmation"
   ],
   "readThisFirst": {
-    "boundary": "Profile-relative. 11 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
+    "boundary": "Profile-relative. 8 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
     "conclusion": "REPAIR_GLUES_WITHIN_SELECTED_COMPLEX",
     "details": {
       "analyticReadingRefs": [],
       "assumptionRefs": [
         "part10/3.1",
-        "part10/8.1",
-        "part10/8.3",
         "part3/11.3",
         "part4/11.1",
         "part4/12.3",
         "part4/12.4",
-        "part4/4.6",
         "part8/4.2",
         "part8/B.8.2"
       ],
@@ -25505,7 +25500,7 @@
     ]
   },
   "reportId": "insight:measurement:train-ticket-money-saga-repaired/v0.5.4",
-  "runId": "run:cf07b535e9bc",
+  "runId": "run:f9666ddb2aca",
   "schema": "archsig-insight-report/v0.5.4",
   "sourcePacketRef": "archsig-measurement-packet.json",
   "toolVersion": "0.5.4",

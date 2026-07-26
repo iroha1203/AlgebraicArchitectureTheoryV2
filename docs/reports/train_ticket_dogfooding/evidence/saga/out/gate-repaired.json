@@ -3,7 +3,7 @@
   "inputDigests": {
     "comparisonReport": {
       "path": "input:archsig-comparison-report.json",
-      "sha256": "935670a47d571ebc49c554eed5acf1218a834048e09397a804bf934c23485959"
+      "sha256": "924fe4a323d89ef5dd0f39259b2f6de42bb51d2a1b328527b3250b97da27bfa8"
     },
     "gatePolicy": {
       "path": "input:gate-policy-saga.json",
@@ -11,7 +11,7 @@
     },
     "measurementPacket": {
       "path": "input:archsig-measurement-packet.json",
-      "sha256": "e14e1d4f9a0a88c4cc68baf83bde4130e369c0abc0b895ee06c136a086be7a26"
+      "sha256": "28c9a20a0ae7bdeaff757ba9ff93ce7a845b42ba23d833641e7263817f0b126a"
     }
   },
   "nonConclusions": [
@@ -300,7 +300,7 @@
           "action": "pass",
           "boundaryOverrideApplied": false,
           "mappingKey": "measured_zero",
-          "rowRef": "structuralVerdict/ag-saga-descent/saga-global-coherence/complete-support-global-coherent",
+          "rowRef": "structuralVerdict/ag-saga-descent/saga-global-coherence/derived-residual-global-coherent",
           "verdict": "measured_zero"
         },
         {
@@ -332,7 +332,7 @@
           "baseRowRef": "structuralVerdict/ag-saga-descent/saga-global-coherence/residual-not-in-b1",
           "boundaryOverrideApplied": false,
           "deltaRefs": [],
-          "headRowRef": "structuralVerdict/ag-saga-descent/saga-global-coherence/complete-support-global-coherent",
+          "headRowRef": "structuralVerdict/ag-saga-descent/saga-global-coherence/derived-residual-global-coherent",
           "mappingKey": "cleared",
           "rowKey": "ag.saga-descent|saga.global-coherence|{\"coefficient\":\"F2\",\"coverRef\":\"cover:money-settlement-loop\",\"kind\":\"saga-residual-boundary-membership\",\"scopeSize\":{\"contexts\":1,\"edges\":0,\"triangles\":0}}",
           "transition": "measured_obstruction_no_longer_recorded"
