@@ -51,13 +51,12 @@ const ARCHSIG_COMPUTED_INVARIANT_KINDS: [&str; 17] = [
     "h1-comparison-transfer",
 ];
 
-const ARCHSIG_SUPPLIED_DATA_KINDS: [&str; 6] = [
+const ARCHSIG_SUPPLIED_DATA_KINDS: [&str; 5] = [
     "archmap",
     "law-policy",
     "measurement-profile",
     "law-equation-surface",
     "repair-plan",
-    "residual-packet",
 ];
 
 pub struct ArchMapSourceInventoryInput<'a> {

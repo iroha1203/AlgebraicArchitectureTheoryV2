@@ -24,7 +24,8 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
         catalog_id: "archsig-llm-atom-schema-version-catalog".to_string(),
         catalog_version: "llm-atom-archmap/v0.5.4".to_string(),
         phase: "LLM Atom ArchMap primary workflow".to_string(),
-        artifacts: vec![
+        artifacts: {
+            let mut artifacts = vec![
             artifact(
                 "archmap-current",
                 "ArchMap current input artifact",
@@ -172,13 +173,13 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ],
             ),
             artifact(
-                "archsig-repair-plan/v0.5.4",
-                "ArchSig RepairPlan v0.5.4 SAGA supplied input artifact",
+                "archsig-repair-plan/v0.5.5",
+                "ArchSig RepairPlan v0.5.5 SAGA supplied input artifact",
                 ARCHSIG_REPAIR_PLAN_V1_SCHEMA,
                 "primary",
                 "ArchSig v0.5.4 SAGA Stage 1",
                 vec!["archsig-contract:saga-stage1-v0.5.4"],
-                    "RepairPlan v0.5.4 supplies the checked SAGA descent input side: residual refs, finite complex with its declared ArchMap cover and per-overlap/per-triple context bindings, primitive restriction differences, semantic projection, faithfulness regime, F2-additive coefficient, optional trueSheafCertificate and gluingData, and an optional presentation block carrying per-cell semantic/equation generators, relation matrices, generator maps, restriction matrices, and an equation lift atlas.",
+                    "RepairPlan v0.5.5 supplies the checked SAGA descent input side: a finite complex with its declared ArchMap cover and per-overlap/per-triple context bindings, primitive restriction readings, faithfulness regime, optional trueSheafCertificate and gluingData, and an optional presentation block carrying per-cell semantic/equation generators, relation matrices, generator maps, restriction matrices, and an equation lift atlas. The residual itself is derived by analyze from the selected cover sections and law-surface witness bindings; the coefficient is the selected MeasurementProfile coefficient.",
                 vec![
                     "RepairPlan validation checks supplied premises before use; it does not compute boundary membership or global coherence.",
                     "RepairPlan input cannot supply generated conclusion tokens such as glues, verdict, h1Zero, or globalCoherent.",
@@ -416,7 +417,20 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     "F2 class support carries no orientation; consumers must not derive direction, rotation, or magnitude from it.",
                 ],
             ),
-        ],
+            ];
+            if let Some(entry) = artifacts
+                .iter_mut()
+                .find(|entry| entry.artifact_id == "archsig-repair-plan/v0.5.5")
+            {
+                entry.compatibility_boundary.deprecated_fields = vec![
+                    "residual (retired at v0.5.5; the residual is derived by analyze from observed sections and law-surface witness bindings)".to_string(),
+                    "coefficient (retired at v0.5.5; the coefficient is the selected MeasurementProfile declaration)".to_string(),
+                    "semanticProjection (retired at v0.5.5 together with the supplied-residual closure diagnostics)".to_string(),
+                    "primitives[].support (retired at v0.5.5; per-overlap residual support is derived)".to_string(),
+                ];
+            }
+            artifacts
+        },
         compatibility_policy: SchemaCompatibilityPolicyV0 {
             schema_version: SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION.to_string(),
             policy_id: "archsig-llm-atom-schema-compatibility-policy".to_string(),
@@ -566,7 +580,7 @@ mod tests {
                 "archsig-policy-bundle/v0.5.4",
                 "law-evaluator-registry/v0.5.4",
                 "measurement-profile/v0.5.4",
-                "archsig-repair-plan/v0.5.4",
+                "archsig-repair-plan/v0.5.5",
                 "h1-comparison-data/v0.5.4",
                 "normalized-archmap-current",
                 "archsig-measurement-packet/v0.5.4",

@@ -1,11 +1,11 @@
 ---
 name: repair-plan-creater
-description: Create archsig-repair-plan/v0.5.4 artifacts for ArchSig complete-support SAGA descent runs.
+description: Create archsig-repair-plan/v0.5.5 artifacts for ArchSig SAGA descent runs with derived residuals.
 ---
 
 # RepairPlan Creater
 
-Use this skill to author `archsig-repair-plan/v0.5.4` artifacts for Stage 1
+Use this skill to author `archsig-repair-plan/v0.5.5` artifacts for Stage 1
 `ag.saga-descent` and Stage 2/3 supplied-data SAGA runs.
 
 > Debt notice: the supplied slots this skill authors (faithfulness,
@@ -17,11 +17,21 @@ Use this skill to author `archsig-repair-plan/v0.5.4` artifacts for Stage 1
 
 ## Scope
 
+- The plan declares only the finite complex (charts / overlaps / triples) and
+  the proposed repair readings (`resL` / `resR`). The residual itself is
+  derived by `analyze` from the observed cover sections and the law-surface
+  witness bindings; the coefficient is the selected MeasurementProfile
+  declaration. Do not author residual, support, coefficient, or
+  semanticProjection fields — they were retired at v0.5.5.
+- Derivation prerequisites the plan relies on: every chart must belong to the
+  profile-selected ArchMap cover, every overlap pair must be an observed
+  restriction edge, every chart must carry exactly one observed
+  `cech/sectionValue` atom, and every potentially mismatching edge must have a
+  law-surface witness variable bound to it (`binding.edge`). Missing
+  prerequisites make `analyze` fail closed with a named derivation fault.
 - Prefer `complete-support`; use `faithfulness.mode = supplied` only when the
-  supplied faithfulness, coefficient, true-sheaf, gluing, and comparison
-  evidence is explicit and independently checkable.
-- Inputs are existing ArchMap evidence, LawPolicy basis refs, and a selected
-  MeasurementProfile.
+  supplied faithfulness, true-sheaf, gluing, and comparison evidence is
+  explicit and independently checkable.
 - Output is a repair-plan artifact that can be mechanically validated and then
   supplied to `archsig analyze`.
 
@@ -30,11 +40,10 @@ Use this skill to author `archsig-repair-plan/v0.5.4` artifacts for Stage 1
 1. Read the selected ArchMap evidence and identify only explicit atom refs,
    contexts, overlap refs, and repair variables already present in the input
    evidence.
-2. Emit a minimal `archsig-repair-plan/v0.5.4` document with:
-   - `support.kind = complete` for every primitive.
-   - Complete residual support variables for the chosen finite complex.
-   - `faithfulness.mode = complete-support` when the complete-support alias
-     witness surface is intentionally supplied by the plan.
+2. Emit a minimal `archsig-repair-plan/v0.5.5` document with:
+   - One primitive per overlap carrying only `resL` / `resR` repair readings.
+   - `faithfulness.mode = complete-support` (or `none` / `supplied`; these are
+     the only accepted mode values).
 3. Validate first:
    - `archsig repair-plan --repair-plan <plan> --archmap <archmap> --out <report>`
 4. Run the analyzer only after validation passes:
@@ -66,5 +75,6 @@ difference, zero, and differential conditions from these tables. Do not add
 - Do not author lawSurfaceRef or Stage 2/3 law-equation fields in the RepairPlan.
 - Do not place conclusion tokens such as
   `REPAIR_GLUES_WITHIN_SELECTED_COMPLEX` inside the repair-plan input.
-- Do not infer missing support. If complete support cannot be read from
-  evidence, stop and report the missing supply instead of weakening the plan.
+- Do not attempt to author the residual. If the observed sections or the
+  law-surface witness bindings required for derivation are missing, stop and
+  report the missing observation or binding instead of weakening the plan.

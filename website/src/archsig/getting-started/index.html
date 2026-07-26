@@ -109,7 +109,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
   "boundary": "Profile-relative. 14 assumptions declared. 0 non-terminal rows."
 }</code></pre>
               </figure>
-              <p>The word <em>class</em> is earned, not decorative: it only appears because the RepairPlan supplied and passed validation for the triple overlap, the F₂ coefficient, the true-sheaf certificate, and the gluing data. Remove the <code>--repair-plan</code> flag and the same command still runs — but every SAGA row degrades to <code>not_computed</code> with a <code>silence_by_design</code> boundary, exactly like the base act.</p>
+              <p>The word <em>class</em> is earned, not decorative: it only appears because the residual was derived from the observed cover sections under the profile's F₂ coefficient, and the RepairPlan supplied and passed validation for the triple overlap, the true-sheaf certificate, and the gluing data. Remove the <code>--repair-plan</code> flag and the same command still runs — but every SAGA row degrades to <code>not_computed</code> with a <code>silence_by_design</code> boundary, exactly like the base act.</p>
               <figure class="code-panel">
                 <figcaption>2. Gate it, the way CI would</figcaption>
                 <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- gate \

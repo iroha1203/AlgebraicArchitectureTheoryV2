@@ -1,15 +1,11 @@
 {
-  "schema": "archsig-repair-plan/v0.5.4",
+  "schema": "archsig-repair-plan/v0.5.5",
   "id": "repair-plan:presentation-generated-circle",
-  "residual": {
-    "kind": "supplied"
-  },
   "complex": {
     "charts": [
       "ctx:order",
       "ctx:inventory",
-      "ctx:shared",
-      "ctx:circle"
+      "ctx:shared"
     ],
     "archmapCoverRef": "cover:order-inventory",
     "overlaps": [
@@ -26,16 +22,10 @@
         "archmapContextRef": "ctx:overlap-12"
       },
       {
-        "id": "overlap:23",
+        "id": "overlap:20",
         "left": "ctx:shared",
-        "right": "ctx:circle",
-        "archmapContextRef": "ctx:overlap-23"
-      },
-      {
-        "id": "overlap:30",
-        "left": "ctx:circle",
         "right": "ctx:order",
-        "archmapContextRef": "ctx:overlap-30"
+        "archmapContextRef": "ctx:overlap-20"
       }
     ],
     "tripleOverlaps": [],
@@ -46,56 +36,30 @@
       "id": "primitive:01",
       "overlapRef": "overlap:01",
       "resL": [
-        "sigma"
+        "cech:section-mismatch"
       ],
-      "resR": [],
-      "support": {
-        "kind": "complete",
-        "variables": [
-          "sigma"
-        ]
-      }
+      "resR": []
     },
     {
       "id": "primitive:12",
       "overlapRef": "overlap:12",
-      "resL": [],
-      "resR": [],
-      "support": {
-        "kind": "complete",
-        "variables": []
-      }
+      "resL": [
+        "cech:section-mismatch"
+      ],
+      "resR": []
     },
     {
-      "id": "primitive:23",
-      "overlapRef": "overlap:23",
-      "resL": [],
-      "resR": [],
-      "support": {
-        "kind": "complete",
-        "variables": []
-      }
-    },
-    {
-      "id": "primitive:30",
-      "overlapRef": "overlap:30",
-      "resL": [],
-      "resR": [],
-      "support": {
-        "kind": "complete",
-        "variables": []
-      }
+      "id": "primitive:20",
+      "overlapRef": "overlap:20",
+      "resL": [
+        "cech:section-mismatch"
+      ],
+      "resR": []
     }
   ],
-  "semanticProjection": {
-    "lambda": [],
-    "k": [],
-    "pi": []
-  },
   "faithfulness": {
     "mode": "complete-support"
   },
-  "coefficient": "f2-additive",
   "comparison": {
     "kind": "saga-comparison",
     "incidenceBridge": {
@@ -103,27 +67,25 @@
       "repairChartRefs": [
         "ctx:order",
         "ctx:inventory",
-        "ctx:shared",
-        "ctx:circle"
+        "ctx:shared"
       ],
       "cechChartRefs": [
         "ctx:order",
         "ctx:inventory",
-        "ctx:shared",
-        "ctx:circle"
+        "ctx:shared"
       ]
     },
     "h1ComparisonData": {
       "schema": "h1-comparison-data/v0.5.4",
       "kind": "presentation-generated",
-      "sourceComplexFingerprint": "2a6477405aecad1eacd7edbcb0876f058c556cc53695c5f57970564b5e85ccb9",
-      "targetComplexFingerprint": "2a6477405aecad1eacd7edbcb0876f058c556cc53695c5f57970564b5e85ccb9",
+      "sourceComplexFingerprint": "bc2ec2d383be03bc57e47412dd8a0fe621d89cd838b421918fd6dc390218d005",
+      "targetComplexFingerprint": "bc2ec2d383be03bc57e47412dd8a0fe621d89cd838b421918fd6dc390218d005",
       "presentation": {
         "cells": [
           {
             "cellRef": "ctx:order",
             "semanticGenerators": [
-              "sigma"
+              "cech:section-mismatch"
             ],
             "repairRelationMatrix": [],
             "equationGenerators": [
@@ -139,7 +101,7 @@
           {
             "cellRef": "ctx:inventory",
             "semanticGenerators": [
-              "sigma"
+              "cech:section-mismatch"
             ],
             "repairRelationMatrix": [],
             "equationGenerators": [
@@ -155,23 +117,7 @@
           {
             "cellRef": "ctx:shared",
             "semanticGenerators": [
-              "sigma"
-            ],
-            "repairRelationMatrix": [],
-            "equationGenerators": [
-              "unbound-equation:q"
-            ],
-            "equationRelationMatrix": [],
-            "generatorMap": [
-              [
-                1
-              ]
-            ]
-          },
-          {
-            "cellRef": "ctx:circle",
-            "semanticGenerators": [
-              "sigma"
+              "cech:section-mismatch"
             ],
             "repairRelationMatrix": [],
             "equationGenerators": [
@@ -187,7 +133,7 @@
           {
             "cellRef": "overlap:01",
             "semanticGenerators": [
-              "sigma"
+              "cech:section-mismatch"
             ],
             "repairRelationMatrix": [],
             "equationGenerators": [
@@ -203,7 +149,7 @@
           {
             "cellRef": "overlap:12",
             "semanticGenerators": [
-              "sigma"
+              "cech:section-mismatch"
             ],
             "repairRelationMatrix": [],
             "equationGenerators": [
@@ -217,25 +163,9 @@
             ]
           },
           {
-            "cellRef": "overlap:23",
+            "cellRef": "overlap:20",
             "semanticGenerators": [
-              "sigma"
-            ],
-            "repairRelationMatrix": [],
-            "equationGenerators": [
-              "unbound-equation:q"
-            ],
-            "equationRelationMatrix": [],
-            "generatorMap": [
-              [
-                1
-              ]
-            ]
-          },
-          {
-            "cellRef": "overlap:30",
-            "semanticGenerators": [
-              "sigma"
+              "cech:section-mismatch"
             ],
             "repairRelationMatrix": [],
             "equationGenerators": [
@@ -308,35 +238,7 @@
           },
           {
             "fromRef": "ctx:shared",
-            "toRef": "overlap:23",
-            "semanticMatrix": [
-              [
-                1
-              ]
-            ],
-            "equationMatrix": [
-              [
-                1
-              ]
-            ]
-          },
-          {
-            "fromRef": "ctx:circle",
-            "toRef": "overlap:23",
-            "semanticMatrix": [
-              [
-                1
-              ]
-            ],
-            "equationMatrix": [
-              [
-                1
-              ]
-            ]
-          },
-          {
-            "fromRef": "ctx:circle",
-            "toRef": "overlap:30",
+            "toRef": "overlap:20",
             "semanticMatrix": [
               [
                 1
@@ -350,7 +252,7 @@
           },
           {
             "fromRef": "ctx:order",
-            "toRef": "overlap:30",
+            "toRef": "overlap:20",
             "semanticMatrix": [
               [
                 1
@@ -382,12 +284,6 @@
               "coefficients": [
                 0
               ]
-            },
-            {
-              "chartRef": "ctx:circle",
-              "coefficients": [
-                0
-              ]
             }
           ],
           "transitionDifferences": [
@@ -400,19 +296,13 @@
             {
               "overlapRef": "overlap:12",
               "coefficients": [
-                0
+                1
               ]
             },
             {
-              "overlapRef": "overlap:23",
+              "overlapRef": "overlap:20",
               "coefficients": [
-                0
-              ]
-            },
-            {
-              "overlapRef": "overlap:30",
-              "coefficients": [
-                0
+                1
               ]
             }
           ]

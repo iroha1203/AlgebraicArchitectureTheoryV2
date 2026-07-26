@@ -84,10 +84,10 @@ fn ag_saga_descent_manifest() -> LawEvaluatorManifestV1 {
             "missing RepairPlan is not_computed with silence_by_design; invalid RepairPlan fails validation before measurement"
                 .to_string(),
         pass_criteria:
-            "supplied residual is a B1 boundary and complete-support faithfulness is satisfied inside the selected RepairPlan complex"
+            "derived residual is a B1 boundary for the selected RepairPlan complex"
                 .to_string(),
         violation_criteria:
-            "supplied residual is not a B1 boundary, or complete-support semantic projection exposes an alias witness"
+            "derived residual is not a B1 boundary for the selected RepairPlan complex"
                 .to_string(),
         typed_result_schema: "archsig-measurement-packet/v0.5.4".to_string(),
         distance_contribution:

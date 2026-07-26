@@ -83,10 +83,10 @@ base — so the base run shows what typed silence looks like:
 
 | Supplied artifact | Where in this demo | Vocabulary it unlocks |
 | --- | --- | --- |
-| Observation (atoms / contexts / covers) | `archmap/archmap*.json` | raw section values, Čech H¹ |
-| Repair primitives (`complex` + `primitives`) | `saga/repair_plan_*.json` | residual boundary membership |
+| Observation (atoms / contexts / covers) | `archmap/archmap*.json` | raw section values, Čech H¹, **derived residual** |
+| Repair complex (`complex` + `primitives` repair readings) | `saga/repair_plan_*.json` | residual boundary membership (residual derived from observation + law bindings) |
 | Faithfulness data (`faithfulness.supplied`) | same RepairPlan | global coherence |
-| Triple + F₂ coefficient + true-sheaf certificate + gluing data | same RepairPlan | **residual class in `Z1/B1`** |
+| Triple + true-sheaf certificate + gluing data (coefficient is the profile declaration) | same RepairPlan | **residual class in `Z1/B1`** |
 | Comparison data (incidence bridge + checked cochain map) | same RepairPlan | class transport to the Čech side |
 | Grounded law surface (`skeleton` / `defectSources` / `holdsCriterion`) | `law_policy/law_surface*.json` | law-grounded conclusions, per-chart law defect detector |
 | Cost model (`analytic.costModel`) | `law_policy/measurement_profile_drift.json` | `essentialRepairLowerBound` |
@@ -166,13 +166,16 @@ empty-witness-set check passes chart by chart and the grounded packet fires
 over the eight contexts: the money loop
 `ctx:application – ctx:settlement – ctx:infrastructure – ctx:ports`, one
 triangle (`application/domain/shared`) as the supplied triple overlap, and
-the policy/runtime edges. The reconciliation residual assigns the observed
-drift witness (`drift:one-cent`, an ArchMap atom recorded by the settlement
-reconciliation) to the three convention boundaries of the loop. Odd parity
-around a closed loop is not a coboundary: boundary membership fails, and —
-because triple, coefficient, true-sheaf certificate, and gluing data are all
-supplied and checked — ArchSig is allowed to say **class**, not just
-"mismatch": `saga-descent:residual-class` is `measured_nonzero`.
+the policy/runtime edges. The residual is **derived, not supplied**: ArchSig
+compares the observed `cech/sectionValue` atoms across each overlap of the
+loop and finds three mismatching convention boundaries, each bound to a
+law-surface witness variable; the derivation record
+(`saga-descent:residual-derivation`) names the observed atoms and witnesses.
+Odd parity around a closed loop is not a coboundary: boundary membership
+fails, and — because triple, true-sheaf certificate, and gluing data are
+supplied and checked under the profile's F₂ coefficient — ArchSig is allowed
+to say **class**, not just "mismatch": `saga-descent:residual-class` is
+`measured_nonzero`.
 
 **Comparison.** The RepairPlan supplies an explicit incidence bridge and a
 degree-0/1/2 cochain map onto the Čech side of the same finite complex.

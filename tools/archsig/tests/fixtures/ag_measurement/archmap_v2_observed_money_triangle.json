@@ -1,0 +1,96 @@
+{
+  "schema": "archmap/v0.5.4",
+  "id": "archmap:observed-money-triangle",
+  "sources": {
+    "src:observed-triangle": {
+      "kind": "test-fixture",
+      "path": "tools/archsig/tests/cli.rs",
+      "symbol": "cli_analyze_saga_descent_observation_first_committed_fixture"
+    }
+  },
+  "atoms": [
+    {
+      "id": "atom:pay-a-money-section",
+      "kind": "semantic",
+      "subject": "ctx:pay-a",
+      "object": "section=money:grand-total-half-up",
+      "axis": "cech",
+      "predicate": "sectionValue",
+      "refs": [
+        "src:observed-triangle"
+      ]
+    },
+    {
+      "id": "atom:pay-b-money-section",
+      "kind": "semantic",
+      "subject": "ctx:pay-b",
+      "object": "section=money:per-line-half-even",
+      "axis": "cech",
+      "predicate": "sectionValue",
+      "refs": [
+        "src:observed-triangle"
+      ]
+    },
+    {
+      "id": "atom:pay-c-money-section",
+      "kind": "semantic",
+      "subject": "ctx:pay-c",
+      "object": "section=money:string-passthrough",
+      "axis": "cech",
+      "predicate": "sectionValue",
+      "refs": [
+        "src:observed-triangle"
+      ]
+    }
+  ],
+  "contexts": [
+    {
+      "id": "ctx:pay-a",
+      "atoms": [
+        "atom:pay-a-money-section"
+      ],
+      "restrictsTo": [
+        "ctx:pay-b",
+        "ctx:pay-c"
+      ],
+      "refs": [
+        "src:observed-triangle"
+      ]
+    },
+    {
+      "id": "ctx:pay-b",
+      "atoms": [
+        "atom:pay-b-money-section"
+      ],
+      "restrictsTo": [
+        "ctx:pay-c"
+      ],
+      "refs": [
+        "src:observed-triangle"
+      ]
+    },
+    {
+      "id": "ctx:pay-c",
+      "atoms": [
+        "atom:pay-c-money-section"
+      ],
+      "restrictsTo": [],
+      "refs": [
+        "src:observed-triangle"
+      ]
+    }
+  ],
+  "covers": [
+    {
+      "id": "cover:observed-money-triangle",
+      "contexts": [
+        "ctx:pay-a",
+        "ctx:pay-b",
+        "ctx:pay-c"
+      ],
+      "refs": [
+        "src:observed-triangle"
+      ]
+    }
+  ]
+}
