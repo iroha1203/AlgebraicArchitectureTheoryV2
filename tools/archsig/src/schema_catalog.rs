@@ -9,8 +9,7 @@ use crate::{
     ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_MEASUREMENT_VIEW_MODEL_SCHEMA_VERSION,
     ARCHSIG_POLICY_BUNDLE_V1_SCHEMA,
     ARCHSIG_REFINEMENT_CONCLUSION_CODES, ARCHSIG_REPAIR_PLAN_V1_SCHEMA,
-    ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION, ARCHSIG_SAGA_CONCLUSION_CODES,
-    ARCHSIG_SAGA_CONCLUSIONS_V1_SCHEMA, LAW_EQUATION_SURFACE_V1_SCHEMA, LAW_POLICY_V1_SCHEMA,
+    ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION, ARCHSIG_SAGA_CONCLUSION_CODES, LAW_EQUATION_SURFACE_V1_SCHEMA, LAW_POLICY_V1_SCHEMA,
     LAW_SURFACE_BINDING_VOCABULARY_SCHEMA, MEASUREMENT_PROFILE_V1_SCHEMA,
     NORMALIZED_ARCHMAP_V2_SCHEMA, SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION,
     SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaCompatibilityBoundaryV0,
@@ -173,31 +172,17 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ],
             ),
             artifact(
-                "archsig-repair-plan/v0.5.6",
-                "ArchSig RepairPlan v0.5.6 SAGA supplied input artifact",
+                "archsig-repair-plan/v0.5.7",
+                "ArchSig RepairPlan v0.5.7 SAGA selected-complex artifact",
                 ARCHSIG_REPAIR_PLAN_V1_SCHEMA,
                 "primary",
                 "ArchSig v0.5.4 SAGA Stage 1",
                 vec!["archsig-contract:saga-stage1-v0.5.4"],
-                    "RepairPlan v0.5.6 supplies the SAGA descent input side: a finite complex with its declared ArchMap cover and per-overlap/per-triple context bindings, faithfulness regime, optional trueSheafCertificate and gluingData, and an optional presentation block carrying per-cell semantic/equation generators, relation matrices, generator maps, restriction matrices, and an equation lift atlas. The residual is derived by analyze from the selected cover sections and law-surface witness bindings; the residual class agreement (with its coboundary witness when cohomologous) is derived by compare from the two runs' residual derivations under a comparability gate; the coefficient is the selected MeasurementProfile coefficient.",
+                "RepairPlan v0.5.7 declares only the selected finite complex: charts, overlaps, optional triple overlaps, the declared ArchMap cover binding, and the enumeration-completeness declaration. The residual is derived by analyze from the selected cover sections and law-surface witness bindings; the residual class is read on the derived residual support component with the triple-cocycle check; the residual class agreement (with its coboundary witness when cohomologous) is derived by compare from the two runs' residual derivations under a comparability gate; the coefficient is the selected MeasurementProfile coefficient.",
                 vec![
-                    "RepairPlan validation checks supplied premises before use; it does not compute boundary membership or global coherence.",
+                    "RepairPlan validation checks the declared complex before use; it does not compute boundary membership or global coherence.",
                     "RepairPlan input cannot supply generated conclusion tokens such as glues, verdict, h1Zero, or globalCoherent.",
                     "External semantic completeness remains an author assumption; declared ArchMap cover/incidence is mechanically checked when the RepairPlan supplies the mapping.",
-                    "Residual class certification is component-local: trueSheafCertificate and gluingData must match the residual support component exactly. sectionRef is an authored opaque label that ArchSig does not resolve.",
-                ],
-            ),
-            artifact(
-                "h1-comparison-data/v0.5.4",
-                "ArchSig H1 comparison data v0.5.4",
-                "h1-comparison-data/v0.5.4",
-                "primary",
-                "ArchSig v0.5.4 Algebraic Geometry Measurement",
-                vec!["archsig-contract:saga-stage2-v0.5.4"],
-                "H1 comparison data v0.5.4 accepts either an explicitly typed finite cochain map over degree-zero charts, degree-one overlaps, and degree-two triple-overlap bases, or a presentation-generated contract with semantic/equation matrices, restriction maps, a separately supplied equation lift atlas, and a complete ArchMap cover/incidence mapping. The validator recomputes explicit-map properties, or checks presentation exactness, generator completeness, restriction naturality, derived cochain commutativity, semantic/equation residual construction, source/target quotient-level cocycle/class calculation, the residual witness, the resolution of equation generators against the supplied law surface, and the declared finite complex against the supplied ArchMap. The presentation declares its coefficient ring: f2 by default, or integers for the finitely generated abelian group form, where subgroup equality and full generation are decided by column Hermite normal form.",
-                vec![
-                    "Explicit cochain data remains supplied and is validated as such; presentation-generated data derives local Phi, cochain map, semantic/equation residuals, and quotient-level witnesses after matrix exactness and naturality checks pass, and reports structuralFault / presentationCellsCoverComplex when a named structural fault blocks the derivation.",
-                    "H1 transfer is generated only after the applicable computed source-class prerequisite and target class computation are available.",
                 ],
             ),
             artifact(
@@ -246,19 +231,6 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     "Analytic readings do not generate structural verdicts unless a certified evaluator explicitly emits one.",
                     "BoundaryStatements are typed scoped qualifiers; nonConclusions remains a string compatibility view.",
                     "Theorem-candidate readings are analytic-only.",
-                ],
-            ),
-            artifact(
-                "archsig-saga-conclusions/v0.5.4",
-                "ArchSig grounded SAGA conclusions packet v0.5.4",
-                ARCHSIG_SAGA_CONCLUSIONS_V1_SCHEMA,
-                "primary",
-                "ArchSig v0.5.4 Algebraic Geometry Measurement",
-                vec!["archsig-contract:v0.5.4-ag-measurement"],
-                "The grounded SAGA conclusions packet v0.5.4 records the generated finite Boolean quotient, lawDependent 3-conclusion section, lawIndependent 6-conclusion section with the Principle 8.4 separated-statements record, degree-zero contribution, and chart detector findings.",
-                vec![
-                    "The packet is a bounded supplied-data computation contract; its theoremRef fields identify the mathematical reading without turning the packet into a Lean proof object.",
-                    "lawIndependent conclusions are not evidence that displayed laws hold.",
                 ],
             ),
             artifact(
@@ -420,7 +392,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
             ];
             if let Some(entry) = artifacts
                 .iter_mut()
-                .find(|entry| entry.artifact_id == "archsig-repair-plan/v0.5.6")
+                .find(|entry| entry.artifact_id == "archsig-repair-plan/v0.5.7")
             {
                 entry.compatibility_boundary.deprecated_fields = vec![
                     "residual (retired at v0.5.5; the residual is derived by analyze from observed sections and law-surface witness bindings)".to_string(),
@@ -429,6 +401,11 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     "primitives[].support (retired at v0.5.5; per-overlap residual support is derived)".to_string(),
                     "primitives (retired at v0.5.6; the repair cochain is derived by compare from the head/repaired residual derivations)".to_string(),
                     "faithfulness.supplied.zeroPrimitiveRef (renamed at v0.5.6 to zeroOverlapRef)".to_string(),
+                    "faithfulness (retired at v0.5.7; the SAGA faithfulness regime was a supplied slot with no derived counterpart)".to_string(),
+                    "trueSheafCertificate (retired at v0.5.7; the class reading is component-local on the derived residual and carries no global-sheaf certification)".to_string(),
+                    "gluingData (retired at v0.5.7)".to_string(),
+                    "comparison (retired at v0.5.7; the run-pair reading is the derived residualClassAgreement in the comparison report)".to_string(),
+                    "grounding (retired at v0.5.7; ag.saga-grounded reads the law surface and observations directly)".to_string(),
                 ];
             }
             artifacts
@@ -582,11 +559,9 @@ mod tests {
                 "archsig-policy-bundle/v0.5.4",
                 "law-evaluator-registry/v0.5.4",
                 "measurement-profile/v0.5.4",
-                "archsig-repair-plan/v0.5.6",
-                "h1-comparison-data/v0.5.4",
+                "archsig-repair-plan/v0.5.7",
                 "normalized-archmap-current",
                 "archsig-measurement-packet/v0.5.4",
-                "archsig-saga-conclusions/v0.5.4",
                 "archsig-boundary-statement/v0.5.4",
                 "refactor-morphism/v0.5.4",
                 "refinement-comparison/v0.5.4",

@@ -75,7 +75,7 @@ fn ag_saga_descent_manifest() -> LawEvaluatorManifestV1 {
         required_atom_constructors: Vec::new(),
         required_predicates: Vec::new(),
         required_molecule_condition:
-            "archmap/v0.5.4 selected finite cover plus a checked archsig-repair-plan/v0.5.4 artifact"
+            "archmap/v0.5.4 selected finite cover plus an archsig-repair-plan/v0.5.7 selected-complex declaration; the residual is derived from observed sections under law-surface witness bindings"
                 .to_string(),
         scope_filtering_rule:
             "selected finite cover from MeasurementProfile and supplied RepairPlan complex"
@@ -111,13 +111,13 @@ fn ag_saga_grounded_manifest() -> LawEvaluatorManifestV1 {
         required_atom_constructors: Vec::new(),
         required_predicates: Vec::new(),
         required_molecule_condition:
-            "law-equation-surface/v0.5.4 Stage 3 fields plus a checked saga-grounding RepairPlan slot"
+            "law-equation-surface/v0.5.4 Stage 3 fields (defect source, witness variables, forbidden supports, skeleton, quotient condition)"
                 .to_string(),
         scope_filtering_rule:
             "selected finite cover, chart-local defect observables, and the selected policy-row profile"
                 .to_string(),
         missing_blocker_rule:
-            "missing grounding, Stage 3 defect source, witnessVariables/forbiddenSupportGenerators, Layer D supplied data, aligned skeleton, selected quotient condition, or finite witness bound is not_computed with silence_by_design"
+            "missing Stage 3 defect source, witnessVariables/forbiddenSupportGenerators, aligned skeleton, selected quotient condition, or finite witness bound is not_computed with silence_by_design"
                 .to_string(),
         pass_criteria:
             "grounded witnessVariables and forbiddenSupportGenerators generate the finite F2 Boolean quotient; holdsCriterion raw-value checks derive the displayed law premise, interpretation class, and law-dependent packet"
@@ -125,7 +125,7 @@ fn ag_saga_grounded_manifest() -> LawEvaluatorManifestV1 {
         violation_criteria:
             "a non-empty chart-local defect observable emits MEASURED_LAW_DEFECT_AT_CHART and not_established law-dependent conclusions"
                 .to_string(),
-        typed_result_schema: "archsig-saga-conclusions/v0.5.4".to_string(),
+        typed_result_schema: "archsig-measurement-packet/v0.5.4".to_string(),
         distance_contribution:
             "grounded conclusions packet keeps law-dependent and law-independent structures separate, records generated quotient provenance, and separates the higher-coherence statements that Part X Principle 8.4 forbids concluding from an additive H1 comparison"
                 .to_string(),

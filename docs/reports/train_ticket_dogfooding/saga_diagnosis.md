@@ -1,18 +1,16 @@
-# SAGA フル診断階段: presentation-generated one-cent 類 → BLOCKED → repair 事前検証 → PASS
+# SAGA フル診断階段: 導出 residual の one-cent 類 → BLOCKED → repair 事前検証 → PASS
 
 ## 実験概要
 
-> **版固定注記(2026-07-26)**: 本証拠束の repair plan と一次出力は `archsig-repair-plan/v0.5.4`
-> (residual 供給時代)の形式で固定されている。Issue #3820 で residual は導出化され
-> schema は v0.5.5 になったため、現行 binary では本節の再現コマンドはそのままでは通らない
-> (再現には当時の tool 版を要する)。導出化後の入力面での再計測は #3822 で実施する。
-
-
 - **対象**: フルビルド成果物(money 変種 ArchMap)を土台に、law を SAGA フルスタックへ拡張し、
   train-ticket(commit `313886e99bef`)の実データで診断階段を一周した
-- **再計測日**: 2026-07-26(JST、整数係数 presentation へ改訂)
+- **再計測日**: 2026-07-26(JST、供給 slot の沈黙化後、導出 residual の入力面で再計測)
 - **実施主体・モデル**: Claude 直接(Fable)。典拠確認には同一 commit の shallow 再取得を使用
-- **対応 Issue**: #3785（presentation-generated comparison は #3783、component-aware class 認証は #3784 を前提にする）
+- **対応 Issue**: #3822(residual 導出は #3820、repair cochain 導出は #3821 を前提にする)
+- **入力面**: RepairPlan v0.5.7 は選択複体(charts / overlaps / enumerationComplete)だけを宣言する。
+  residual は analyze が観測(選択 cover の cech sectionValue 比較)と法曲面の witness 束縛から導出し、
+  provenance を `saga-descent:residual-derivation` に記録する。residual・係数・faithfulness・
+  certificate・comparison・grounding の供給 slot はすべて退役した(#3817 返済系列)
 
 ## 発見: one-cent 構造が train-ticket に実在する
 
@@ -33,78 +31,50 @@ cancel–inside-payment–order の実呼び出し三角形上で、金額規約
 
 - law cover `cover:money-settlement-loop`(6チャート): 三角形 {cancel, inside-payment, order} +
   託送料金領域 {preserve, consign, consign-price}
-- law surface 3本: `surface:cech-surface-v052`(closed-equational、witness 4辺)/
+- law surface 3本: `surface:cech-surface-v052`(closed-equational、witness 6辺)/
   `law:money-settlement-convention`(ag.saga-grounded、skeleton 6頂点 + defectSources)/
   `law:money-repair-descent`(descent、ag.saga-descent)
-- repair-plan: source-grounded repair cover に chart / overlap / triple の有限 presentation cell を置く。
-  diagnostic component は cancel–inside-payment–order の3 chart・3 overlap であり、
-  `C²=0` の `automatic-c2-zero` をその component 自身の認証として出力する。
-  `trueSheafCertificate` と `gluingData` も同じ component にだけ対応付ける
-- comparison: 係数環は **整数**(`coefficientRing: "integers"`)。`0.8 × price = 4p/5` なので
-  丸め剰余は 1/5 セント単位に住み、全セントしか記帳できないチャートはこれを表現できない。
-  したがって各 cell の局所関係は `5σ_V = 0`、equation 側の obstruction ideal は `(5)` であり
+- repair-plan(v0.5.7): 選択複体だけを宣言する。charts は観測 cover の 6 チャートそのもの、
+  overlaps は観測された restriction 6 辺(三角形 3 + consign–consign-price +
+  preserve–consign + preserve–order)、triple-overlap は宣言しない(三者同時照合サイトの不在は観測から読めない author assertion — 実証していないこと5)
+- 導出 residual(head): 三角形 3 辺と preserve 2 辺で sectionValue が不一致、
+  consign–consign-price は一致。三角形一周の奇パリティは δ⁰ で解けず、類が非零に立つ
+- repaired 変種: 三角形3チャートを BigDecimal scale-2 HALF_EVEN 統一規約に置換した仮修理 ArchMap。
+  残る preserve 残差は δ⁰(preserve のみ反転)で解けるため類は零
 
-  ```text
-  M_sem(V) = Z[σ_V]/(5σ_V) ≅ Z/5,   Q_E(V) = Z/(5),   χ_V(σ_V) = [1]
-  ```
+## 条件種別と residual の来歴
 
-  となる。exactness は `im(R_V) = 5Z = ker(Z → Z/5)`、generation は `[1]` が `Z/5` を
-  生成することとして**零でない関係格子の上で発火する**(rank は 1 のままである)。
-  equation generator は、法曲面が実際に宣言している名前へ束縛できる cell だけを束縛する。
-  chart 6件は skeleton の `vertex:money-*`、cech law の witness edge を持つ overlap 4件は
-  その witness variable(`e_cancel_insidepay` / `e_insidepay_order` / `e_cancel_order` /
-  `e_consign_consignprice`)。残る preserve 側 2 overlap と triple 1件には**この法曲面が
-  対応物を宣言していない**ため、`unbound-equation:` 接頭辞で供給側採番であることを明示する。
-  ArchSig はこの解決を検査し、束縛できるはずの名前が解決しなければ
-  `equationGeneratorsResolved: false` として comparison を established にしない。
-  head の `drift:refund-rounding` は三角形3辺、repaired は零 cochain として計測する。
-  三角形一周の向き付き和は `1 + 1 − 1 = 1 ≠ 0 (mod 5)` なので非零類が立つ
-- repaired 変種: 三角形3チャートを BigDecimal scale-2 HALF_EVEN 統一規約に置換した仮修理 ArchMap
-
-## 条件種別と comparison cochain map の来歴
-
-`presentation packet` は有限データとして実施者が author する入力である。ここでいう
-`generated` / `computed` / `checked` は、その入力を越えた結論を供給したという意味ではなく、
-入力を受け取った ArchSig が下表の有限計算・検査を行ったことを表す。head / repaired の両 packet
-で同じ区別を記録した。
-
-| 条件種別 | one-cent packet の対象 | packet 上の確認箇所・扱い |
-| --- | --- | --- |
-| `supplied` | source-grounded presentation cells、semantic / equation generators、relation 行列、generator map、restriction、equation lift atlas、residual cochain、`trueSheafCertificate`、`gluingData` | RepairPlan の authored 入力。たとえば residual と各 overlap support は `kind: supplied` であり、ArchSig が source から自動発見したものとは扱わない |
-| `assumed` | selected quotient sheaf condition と true sheaf global condition | packet `assumptions`、および `trueSheafCertificate.globalCondition: assumed`。この仮定を結論や generated data と取り違えない |
-| `computed` | presentation からの `χ / Φ / κ`、semantic / equation residual、quotient-level H¹ transfer、target support | `generatedCochainMap` の各 local `Φ` は generator map を relation で割った有限計算から導出。`generatedQuotientTransfer` は source / target class の零判定を記録する |
-| `checked` | presentation exactness、generator completeness、restriction naturality、degree 2 cell の finite atlas、comparison contract、canonical input digest | `presentationExactness: true`、`generatorCompleteness: true`、`restrictionNaturality: true`、`contractChecked: true` と input digest の一致で固定する。`degreeZeroCommutative` / `degreeOneCommutative` は restriction naturality から従う出力であり、独立した第2・第3の検査ではない |
-| `automatic` | diagnostic component の cocycle 条件 | 診断三角形には triple cell が無く selected `C²=0` なので cocycle 条件は自動成立する。`cocycle.certificateKind: automatic-c2-zero` かつ `cocycle.checked: false`(検査が走らないため)。これを検査済みと数えない |
-
-comparison cochain map は外部から matrix を `supplied` する経路ではない。互換性上
-`suppliedCochainMap` と名付けられた出力欄も、今回の値は `kind: presentation-generated` であり、
-実体は `generatedCochainMap` が presentation から導出した local `Φ` である。したがって
-comparison の来歴は **supplied cochain matrix → presentation-generated / checked cochain map** に移った。
-この移行の確定条件は、有限 presentation の exactness・generator completeness・restriction
-naturality と degree 2 atlas を検査したうえで、head の
-`SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS` と `contractChecked: true` を出力することである
-(degree 0/1 の cochain 可換性は restriction naturality から従う)。
+residual は author が書く入力ではない。analyze が観測(選択 cover の cech sectionValue 比較)と
+法曲面の witness 束縛から導出し、`saga-descent:residual-derivation` に辺ごとの値・witness・
+観測 atom refs の provenance を記録する。ここでいう `computed` / `checked` / `assumed` /
+`automatic` は、その導出と検査の種別を表す。head / repaired の両 packet で同じ区別を記録した。
 
 ### #3781 §7 用 condition matrix
 
-次表は #3781 が §7 の本文へ転記するための行別の正本である。`supplied` は authored input、
-`assumed` は packet が外部から受け取る数学的前提、`computed` は入力からの有限計算、
-`checked` は ArchSig が有限 artifact に対して検査した条件を表す。特に input にある
-`enumerationComplete: true` は列挙の完全性そのものを証明する flag ではなく、author の
-`assumed` condition として扱う。
+次表は #3781 が §7 の本文へ転記するための行別の正本である。`assumed` は author が宣言し
+packet が assumption ledger に記録する前提、`computed` は入力からの有限計算、`checked` は
+ArchSig が有限 artifact に対して検査した条件、`automatic` は selected complex の形から
+自動成立する条件を表す。供給時代に `supplied` だった行(residual support、faithfulness law、
+global sheaf condition、comparison cochain map、presentation packet)は、#3820–#3822 の返済で
+導出化されるか、slot ごと沈黙した。沈黙した語彙は行ごと消えており、assumption ledger による
+代替も置いていない。
 
 | Condition | Kind | Status | Evidence |
 | --- | --- | --- | --- |
 | finite cover | finite artifact property | `checked` | head / repaired packet の `finite site` は `checked`、`siteCoverDigest` は normalized contexts・covers・derived finite cover nerve から `computed` |
-| residual support | authored finite cochain | `supplied` | RepairPlan `residual.kind: supplied` と各 overlap support。head は `drift:refund-rounding` を診断3辺へ与える |
-| repair-plan complex enumeration completeness | author assertion | `assumed` | RepairPlan `complex.enumerationComplete: true` に対し、packet は `repair-plan complex enumeration completeness` を `assumed` と記録する |
-| target quotient presentation enumeration completeness | repair-plan と同じ authored presentation cell 集合 | `assumed` for cell enumeration; `checked` for generation | target は別の supplied complex ではない。同じ cells から組み立て、cell 列挙は上行の author assertion に依存する一方、`generatorCompleteness: true` がその列挙から target quotient が生成されることを検査する |
-| faithfulness law | authored mathematical assumption | `supplied` / `assumed` | RepairPlan `faithfulness.mode: supplied`。packet は `faithfulness law supplied` を `assumed` として依存関係へ残す |
-| global sheaf condition | mathematical assumption | `assumed` | `trueSheafCertificate.globalCondition: assumed` と packet の `global sheaf condition` assumption |
-| comparison cochain map | presentation-derived finite map | `computed` / `checked` | `generatedCochainMap` の local `Φ`、exactness・generation・naturality、head の `SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS` と `contractChecked: true` |
-| diagnostic component の cocycle 条件 | selected `C²=0` による自動成立 | `automatic` | `cocycle.certificateKind: automatic-c2-zero` / `cocycle.checked: false`。triple cell が無いので検査は走らない |
-| presentation source class と計測 residual class の一致 | 2つの読みの突合 | `checked` | comparison `contract.measuredClassAgreement: true`。両者が割れる packet では `measuredClassDivergence` が何が違うかを名指しする |
-| boundary membership / residual class | finite quotient calculation | `computed` | head は `saga-descent:boundary-membership.inB1: false` と `MEASURED_NONGLUING_RESIDUAL_CLASS`、repaired は零類・`REPAIR_GLUES_WITHIN_SELECTED_COMPLEX` |
+| residual derivation | observed section comparison | `computed` | `saga-descent:residual-derivation` が overlap ごとに両端 chart の観測 sectionValue 集合を比較した F₂ 値と、法曲面 witness 束縛(`e_cancel_insidepay` 等)・観測 atom refs の provenance を記録する。head は三角形 3 辺+preserve 2 辺が mismatch |
+| witness binding | law-surface declaration | `checked` | mismatch 辺は法曲面の witness variable 束縛を要求する(未束縛 mismatch は fail-closed で `not_computed`)。束縛は instance の値を運ばない edge 選択の宣言 |
+| coefficient | law-side selection | `checked` | 係数は選択 MeasurementProfile の `coefficient: F2`。RepairPlan は係数を運ばない |
+| repair-plan complex enumeration completeness(part10/3.1) | author assertion | `assumed` | RepairPlan `complex.enumerationComplete: true` に対し、packet は `repair-plan complex enumeration completeness` を `assumed` と記録する |
+| triple absence / class 語彙(part10/4.5) | author assertion | `assumed`(class 語彙は不解禁) | 選択複体は triple-overlap を宣言しない。「三者同時照合サイトの不在」はツールが観測できない author assertion であり、ArchSig は class 語彙を解禁せず(`saga-descent:class-vocabulary-boundary`、named boundary statement)、読みを 1-骨格の boundary membership に留める |
+| boundary membership | finite F₂ calculation(part10/3.4) | `computed` | head は `saga-descent:boundary-membership.inB1: false` と `MEASURED_NONGLUING_RESIDUAL`、repaired は `inB1: true`・`REPAIR_GLUES_WITHIN_SELECTED_COMPLEX` |
+| U-adequate cover(part8/4.2) | profile-supplied assumption | `assumed` | 選択 cover の U-adequacy は profile 由来の assumption ledger 行 |
+| Leray / acyclicity comparison(part8/B.8.2) | profile-supplied assumption | `assumed` | cover 相対の Čech 読みを層係数コホモロジーと比較するための前提。ledger 行として開示され、本 report はこの比較を主張しない |
+| torsor / adjustment / coefficient descent(part4/11.1 ×3) | profile-supplied assumption | `assumed` | ledger の 3 行。局所法 section の Ob_U-torsor 性・作用の固定性・係数の descent |
+| restriction surjectivity(part4/12.4) | profile-supplied assumption | `assumed` | ledger 行 |
+| forest nerve(part4/12.4) | profile-supplied assumption | `assumed`(**本 packet では不成立**) | ledger は `selected Cech nerve is a forest with no triple-overlap faces` を assumed と記録するが、同じ packet の nerve 計算は forest ではない(閉路 1)ことを computed で示す。この profile 由来行は当 run では成立していない前提の開示であり、head の非零読みはこの行に依存しない |
+| quotient sheaf condition(part10/8.3) | law-surface declaration | `assumed` | law surface の `quotientSheafCondition: assumed` を ledger 行として開示 |
+| residual class agreement(head↔repaired) | derived run-pair reading | `computed` | compare の `residualClassAgreement` は両 run の導出 residual の差 δ⁰h 可解性を comparability ゲート下で計算する。本対は `not_cohomologous`(修理は類を非零→零に変える)。修理成功の読みは repaired 側の零 residual と gate が担う |
 | repaired ArchMap | hypothetical repair input | `supplied` / hypothetical | `archmap-saga-repaired.json` は BigDecimal scale-2 HALF_EVEN 統一を表す仮説 variant。`PASS_WITHIN_GATE_POLICY` は実装済み修理を示さない |
 | runtime monetary magnitude | empirical measurement | unmeasured | harmonic-debt を供給せず沈黙。頻度・金額を結論に含めない |
 
@@ -112,13 +82,13 @@ naturality と degree 2 atlas を検査したうえで、head の
 
 | 幕 | 結果 |
 | --- | --- |
-| head analyze | `MEASURED_NONGLUING_RESIDUAL_CLASS`(`run:07154e725bfd`) |
+| head analyze | `MEASURED_NONGLUING_RESIDUAL`(`run:78c31d6a3172`) |
 | └ grounding | `measured_zero` — 各チャートは自分の法を守っている(それが罠) |
-| └ descent 残差類 | `measured_nonzero`(diagnostic component、`automatic-c2-zero`、三角形3辺 support) |
-| └ comparison h1-transfer | `SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS`（exactness / generation / naturality / `κ` / atlas witness を検査、`measuredClassAgreement: true`） |
+| └ residual derivation | 三角形 3 辺+preserve 2 辺で mismatch、consign–consign-price は一致(全て観測から導出) |
+| └ descent boundary membership | `measured_nonzero`(単一連結成分。triple 宣言不在のため class 語彙は不解禁 — named boundary statement で明示) |
 | gate head | `BLOCKED_BY_GATE_POLICY` |
-| repaired analyze | `REPAIR_GLUES_WITHIN_SELECTED_COMPLEX`(`run:cf07b535e9bc`) |
-| compare head→repaired | `MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE` |
+| repaired analyze | `REPAIR_GLUES_WITHIN_SELECTED_COMPLEX`(`run:6685bab8db21`。preserve 残差は B¹ 内) |
+| compare head→repaired | `MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE`、`residualClassAgreement: not_cohomologous` |
 | gate repaired | `PASS_WITHIN_GATE_POLICY` |
 
 harmonic-debt は runtime 実測数値が無いため供給せず、沈黙(供給する場合は実走の払い戻し照合が必要)。
@@ -128,14 +98,16 @@ harmonic-debt は runtime 実測数値が無いため供給せず、沈黙(供�
 1. **AAT 中心主張の実データ着地**: 非零類の成立条件が「3流儀の衝突」だけでなく
    「三者同時照合サイトの不在」だったこと。各チャート単独は完全に筋の通った金額の扱いをしており
    (grounding = `measured_zero` が計測でそれを言う)、ペアごとの受け渡しも各々は成立している。
-   障害はループを一周したときだけ現れ、それを埋める面(triple)がコードに存在しないから類として残る。
+   障害はループを一周したときだけ現れ、それを埋める面(triple)がコードに存在しない。
+   ツールの読みは選択 1-骨格上の boundary membership(非境界 residual)であり、
+   類語彙は triple 宣言不在のため解禁されない(実証していないこと5)。
    「局所的には合法、大域的に貼り合わない」という構造が、こちらが仕込んだのではない実在 OSS で
    観測された。デモは「この構造なら H¹ が立つ」の実演だったが、本実験は
    「この構造は現実に生じる」の証拠である。
-2. **診断階段の全段が実データで機能**: presentation の exactness / generator completeness /
-   restriction naturality / cochain 可換性 / atlas witness を検査して導出した H¹ transfer と、
-   component-aware class 認証を含め、非零類の計測 → gate BLOCKED → 修理計画の事前検証 →
-   compare による障害消滅の記録 → gate PASS まで一周した。
+2. **診断階段の全段が二系統入力だけで機能**: 観測(ArchMap)と法・方程式(law surface /
+   profile)から導出した residual による非零類の計測 → gate BLOCKED → 修理計画(repaired
+   ArchMap)の事前検証 → compare による障害消滅の記録と residual class agreement → gate PASS
+   まで、authored な residual・証書・比較データを一切供給せずに一周した。
 3. **数学的規律の拒否が正しく働いた**: ドリフトの立つ三角形自体を triple として申告すると
    cocycle 条件で拒否される(数学的に正当)。典拠の無い residual ref は fail した
    (初回 run は未解決 ref で正しく失敗)。実データで負荷をかけて規律が守られた。
@@ -143,40 +115,34 @@ harmonic-debt は runtime 実測数値が無いため供給せず、沈黙(供�
 
 ## 実証していないこと
 
-1. **検出の新規性は cech 段にある。** SAGA residual 供給(三角形3辺への `drift:refund-rounding`)は
-   実施者が書いた authored model であり、計測が発見したものではない。規約 mismatch の検出自体は
-   フルビルドの cech law が既に行っていた。SAGA 段が足したのは、grounding の罠の明示・
-   修理計画の事前検証・h1-transfer・gate の一貫した診断であって、
-   「SAGA が新しい障害を発見した」という主張は過大である。
+1. **検出の新規性は cech 段にある。** 規約 mismatch の検出自体はフルビルドの cech law が
+   既に行っていた。導出化後の SAGA 段が足したのは、同じ観測を選択 1-骨格上の boundary
+   membership として読む descent 読解、grounding の罠の明示、修理計画の事前検証、run 対の
+   residual class agreement、gate の一貫した診断であって、「SAGA が新しい障害を発見した」
+   という主張は過大である。
 2. **repaired は仮修理。** section を書き換えた仮説状態の ArchMap であり、
    `PASS_WITHIN_GATE_POLICY` が示すのは「この修理案なら貼り合う」という事前検証の機構である。
    修理が train-ticket に実装可能であること・実装されたことは実証していない。
+   また repaired 側にも preserve 系の実 mismatch が残る(B¹ 内なので類は零)。
 3. **残差の実害規模は未計量。** 「丸め剰余が記帳されない」は静的に確実だが、実際に非零になるのは
    0.8×価格が2桁で割り切れない場合だけで、頻度・金額は測っていない(harmonic-debt を
    沈黙させたのはこのため)。
-4. **presentation packet は authored input である。** source-grounded finite cell、relation 行列、
-   generator map、restriction、equation lift atlas は実施者が供給した。generated なのは、
-   それらからの `χ / Φ / κ`、exactness と quotient-level witness の導出である。
-5. **equation generator の束縛は全 cell では成立していない。** 13 cell のうち法曲面が
-   対応物を宣言しているのは 10 件(chart 6 + witness edge 4)であり、preserve 側 2 overlap と
-   triple 1件は `unbound-equation:` として供給側で採番した。この法曲面は当該辺・面に
-   witness variable を宣言していない。
-6. **equation lift atlas の独立性は検査していない。** atlas は semantic 側と別の入力欄として
-   供給されるが、ArchSig はそれが独立に作られたかを判定できない。本実験の builder は
-   drift の有無という同一の author 判断から semantic support と transition difference の
-   両方を書いている。検査されているのは `r_E` がこの供給 atlas から導出されることと、
-   `κ¹(r_sem) = r_E + δ⁰h` の witness `h` が商上で解けることであって、
-   両側が独立に構成されたことではない。
-7. **供給 UX は未整備。** presentation cell を含む RepairPlan の authoring は builder を直接読む必要がある。
-   ArchMap 供給における archmap-creater と同水準の抽象化(repair 対象のループを指せば
-   artifact 一式が組み上がる SKILL)は未着手であり、本実験の builder スクリプトと供給所見2件が
-   その設計素材になる。
+4. **定理5.1 の有限 instantiation は本証拠束の対象外である。** presentation packet /
+   comparison slot は #3822 で沈黙し、有限 instantiation の家は Lean(`Formal/`)である。
+   供給時代の presentation 検査(#3805 の整数係数 exactness / generation 負例)は
+   git 履歴と当時の報告に記録が残る。
+5. **class 語彙は解禁していない。** 「三者同時照合サイトの不在」(`U_ijk` 空)はツールが
+   観測できない author assertion である。成分 1-骨格に三角形が存在する本ケースでは、
+   ArchSig は class 語彙を出さず(named boundary statement で明示)、読みを boundary
+   membership に留めた。class 語彙が立つのは triple を宣言して cocycle パリティ検査が
+   実際に走る場合だけである(condition matrix の該当行を参照)。
 
-## 体験所見(供給契約)
+## 体験所見(導出契約)
 
-1. residual-class 認証は residual component ごとに行う。diagnostic triangle は triple cell を持たないため
-   `C²=0` を明示した `automatic-c2-zero` を出力し、非連結な triple や supplied data に依存しない。
-2. residual atom の refs は sources 解決必須。静的観測しか無い場合は src ファイル参照のみが正直な形。
+1. residual-class の読みは residual support component ごとに行う。導出 residual が
+   preserve 辺で複数成分を接続したため、本再計測では選択複体全体が単一成分になった。
+2. mismatch 辺の witness 束縛は法曲面の宣言であり、束縛が無い mismatch は fail-closed に
+   `not_computed` へ落ちる。観測を広げるときは法曲面の witness も同時に広げる。
 
 ## 証拠束と再現
 
@@ -184,10 +150,9 @@ harmonic-debt は runtime 実測数値が無いため供給せず、沈黙(供�
   gate policy、repair-plan(head / repaired)、builder(`build_saga_artifacts.py`)。
   すべて一次出力の `inputDigests` と canonical digest 一致を検証済み
 - 一次出力: `evidence/saga/out/`(head / repaired の analyze 出力、compare、gate ×2)
-- 再現(2026-07-25 に一次出力の byte 一致まで確認済み)。**run ディレクトリの basename は
-  compare 出力の `inputDigests[].path` に記録され、gate-repaired の comparison digest まで伝播する。
-  committed artifact を byte 一致で再現するには下記の `head` / `repaired` / `compare` をそのまま使う**。
-  `gate` は BLOCKED のとき非零 exit code を返すので、`set -e` 下では途中停止する:
+- 再現(2026-07-26 に head 一次出力の byte 一致を確認済み。`inputDigests` は `input:` 安定 ref を
+  使うため out-dir の場所に依存しない)。`gate` は BLOCKED のとき非零 exit code を返すので、
+  `set -e` 下では途中停止する:
 
 ```bash
 EV=docs/reports/train_ticket_dogfooding/evidence

@@ -36,7 +36,7 @@ ArchViewのArchitecture modeやproduct identityを定義しない。
 | `observationCoverage[].boundaryKinds` | `packet.boundaryStatements[]` のうち `scopeRefs` が当該 context を含む行の `kind` |
 | `localObservations.evaluator` | 固定値 `ag.saga-grounded`(行の存在は下記 premise の存在に従属) |
 | `localObservations.verdict / reason` | `packet.structuralVerdict[]` の `evaluator == "ag.saga-grounded"` 行の `verdict / reason` |
-| `localObservations.perChart[]` | invariant `saga-generated-end-to-end-packet` の `lawDependent.premise.perChart[]`(旧配置 `premise.perChart` を後方互換で受理)の `chart / law / holds / holdsCriterionRef / defectValueRef` |
+| `localObservations.perChart[]` | invariant `saga-grounded:defect-quotient` の `displayedRequiredLawsHold.perChart[]` の `chart / law / holds / holdsCriterionRef / defectValueRef` |
 | `edgeMismatch[].edgeRef / supportAtomRefs` | `coverNerveProjection.edges[]` の `edgeId / supportAtomRefs` |
 | `edgeMismatch[].status` | 同 edges[] の `sectionObservation` と `value` の3値射影: not observed → `witness_not_supplied` / value=1 → `mismatch_observed` / value=0 → `agreement_observed` |
 | `classSupport.coefficient` | cech invariant `representation.coefficient`。cech invariant が無い SAGA-only run では null。 |
@@ -44,7 +44,7 @@ ArchViewのArchitecture modeやproduct identityを定義しない。
 | `classSupport.classNonzero` | cech invariant `representation.observedCocycle.classNonzero`。cech invariant が無い SAGA-only run では null。 |
 | `classSupport.representativeEdgeRefs / supportAtomRefs` | cech invariant `representation.classSupport.edgeRefs / supportAtomRefs`。cech invariant が無い SAGA-only run では null。 |
 | `classSupport.b1 / isForest` | cech invariant `representation.nerveShape.b1 / isForest`。cech invariant が無い SAGA-only run では null。 |
-| `classSupport.residualClass.*` | invariant `saga-descent:residual-class` の `representation.residualClassSupport` の `nonZero / basis / representative / component.chartRefs / component.overlapRefs / cocycle.certificateKind / cocycle.tripleOverlapRefs / suppliedData.trueSheafCertificate.coverRef / suppliedData.trueSheafCertificate.memberChartRefs / suppliedData.trueSheafCertificate.globalCondition / suppliedData.gluingData.overlapRefs / suppliedData.gluingData.sectionRefs[].overlapRef / suppliedData.gluingData.sectionRefs[].sectionRef`。cech invariant が無い SAGA-only run でも、このSAGA residual classが記録されていれば `classSupport` をnullにせず投影する。`automatic-c2-zero` は `complex.enumerationComplete=true` の residual component に triple overlap cell が無く、C²=0 により cocycle 条件が自動成立した認証を表す。suppliedData は class 認証に使った同一 component の certificate / gluing 帰属を記録する。`sectionRef` は author の不透明ラベルであり、ArchSig は解決も書き換えもしない。 |
+| `classSupport.residualClass.*` | invariant `saga-descent:residual-class` の `residualClassSupport`(class 語彙は宣言 triple の cocycle パリティ検査が実際に走った `checked-triple-cocycle-zero` のときだけ出力される)の `nonZero / basis / representative / component.chartRefs / component.overlapRefs / cocycle.certificateKind / cocycle.tripleOverlapRefs`。cech invariant が無い SAGA-only run でも、この residual class が記録されていれば `classSupport` を null にせず投影する。triple 宣言不在(automatic-c2-zero)の run では class invariant 自体が出力されず、`saga-descent:class-vocabulary-boundary` invariant と named boundary statement が代わりに出る |
 | `classSupport.boundaryMembership.*` | invariant `saga-descent:boundary-membership` の `value`(無ければ representation)の `inB1 / residualSupport` |
 | `harmonicFlow` | 常に null(調和代表元の per-edge 値は現行 packet に記録されない。合成しない) |
 | `scalarFields[]`(harmonic 系) | invariant `harmonic-debt:*` の `representation.harmonicDebtNorm / essentialRepairLowerBound / lowerBoundStatus / invariantId` |

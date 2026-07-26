@@ -3,7 +3,7 @@
   "inputDigests": {
     "comparisonReport": {
       "path": "input:archsig-comparison-report.json",
-      "sha256": "935670a47d571ebc49c554eed5acf1218a834048e09397a804bf934c23485959"
+      "sha256": "851044407555265810b31cb1001d8d0569f3864a070626901e81503b04c972ef"
     },
     "gatePolicy": {
       "path": "input:gate-policy-saga.json",
@@ -11,7 +11,7 @@
     },
     "measurementPacket": {
       "path": "input:archsig-measurement-packet.json",
-      "sha256": "e14e1d4f9a0a88c4cc68baf83bde4130e369c0abc0b895ee06c136a086be7a26"
+      "sha256": "3c64da992e8ccca6bc87d5c32c58832436259f5eced3f5cd75ae77ad64f150b3"
     }
   },
   "nonConclusions": [
@@ -295,20 +295,6 @@
           "mappingKey": "measured_zero",
           "rowRef": "structuralVerdict/ag-saga-descent/saga-residual-boundary-membership/residual-in-b1",
           "verdict": "measured_zero"
-        },
-        {
-          "action": "pass",
-          "boundaryOverrideApplied": false,
-          "mappingKey": "measured_zero",
-          "rowRef": "structuralVerdict/ag-saga-descent/saga-global-coherence/complete-support-global-coherent",
-          "verdict": "measured_zero"
-        },
-        {
-          "action": "pass",
-          "boundaryOverrideApplied": false,
-          "mappingKey": "measured_zero",
-          "rowRef": "structuralVerdict/ag-saga-descent/saga-residual-class/zero-class-representative",
-          "verdict": "measured_zero"
         }
       ],
       "ruleId": "absolute-verdict-discipline",
@@ -329,32 +315,12 @@
         },
         {
           "action": "pass",
-          "baseRowRef": "structuralVerdict/ag-saga-descent/saga-global-coherence/residual-not-in-b1",
-          "boundaryOverrideApplied": false,
-          "deltaRefs": [],
-          "headRowRef": "structuralVerdict/ag-saga-descent/saga-global-coherence/complete-support-global-coherent",
-          "mappingKey": "cleared",
-          "rowKey": "ag.saga-descent|saga.global-coherence|{\"coefficient\":\"F2\",\"coverRef\":\"cover:money-settlement-loop\",\"kind\":\"saga-residual-boundary-membership\",\"scopeSize\":{\"contexts\":1,\"edges\":0,\"triangles\":0}}",
-          "transition": "measured_obstruction_no_longer_recorded"
-        },
-        {
-          "action": "pass",
           "baseRowRef": "structuralVerdict/ag-saga-descent/saga-residual-boundary-membership/residual-not-in-b1",
           "boundaryOverrideApplied": false,
           "deltaRefs": [],
           "headRowRef": "structuralVerdict/ag-saga-descent/saga-residual-boundary-membership/residual-in-b1",
           "mappingKey": "cleared",
           "rowKey": "ag.saga-descent|saga.residual-boundary-membership|{\"coefficient\":\"F2\",\"coverRef\":\"cover:money-settlement-loop\",\"kind\":\"saga-residual-boundary-membership\",\"scopeSize\":{\"contexts\":1,\"edges\":0,\"triangles\":0}}",
-          "transition": "measured_obstruction_no_longer_recorded"
-        },
-        {
-          "action": "pass",
-          "baseRowRef": "structuralVerdict/ag-saga-descent/saga-residual-class/nonzero-class-representative",
-          "boundaryOverrideApplied": false,
-          "deltaRefs": [],
-          "headRowRef": "structuralVerdict/ag-saga-descent/saga-residual-class/zero-class-representative",
-          "mappingKey": "cleared",
-          "rowKey": "ag.saga-descent|saga.residual-class|{\"coefficient\":\"F2\",\"coverRef\":\"cover:money-settlement-loop\",\"kind\":\"saga-residual-class\",\"scopeSize\":{\"contexts\":1,\"edges\":0,\"triangles\":0}}",
           "transition": "measured_obstruction_no_longer_recorded"
         },
         {

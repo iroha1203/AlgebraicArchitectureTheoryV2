@@ -4,18 +4,12 @@ use serde_json::{Value, json};
 
 use crate::ag_measurement::observe_cech_edge;
 use crate::law_execution::LawExecutionPlanV1;
-use crate::repair_plan::{
-    comparison_complex_fingerprint, comparison_target_complex, complex_has_valid_finite_incidence,
-    explicit_h1_comparison_checks, presentation_generated_h1_checks,
-    presentation_generated_h1_output,
-};
+use crate::repair_plan::complex_has_valid_finite_incidence;
 use crate::{
-    ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION, ARCHSIG_DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS,
+    ARCHSIG_DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS,
     ARCHSIG_MEASURED_LAW_DEFECT_AT_CHART, ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS,
-    ARCHSIG_SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA,
-    ARCHSIG_SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS, ARCHSIG_SAGA_CONCLUSIONS_V1_SCHEMA,
-    AgAssumptionLedgerEntryV1, AgStructuralVerdictV1, AgVerdictDataV1, ArchMapDocumentV2,
-    H1ComparisonDataV052, LawEquationSurfaceV1,
+    AgAssumptionLedgerEntryV1, AgStructuralVerdictV1, AgVerdictDataV1,
+    LawEquationSurfaceV1,
     MeasurementProfileV1, NormalizedArchMapV2, RepairPlanComplexV1, RepairPlanDocumentV1,
     assumption_id_for_schema,
 };
@@ -192,19 +186,13 @@ pub(crate) fn derive_residual(
 }
 
 pub(crate) fn evaluate_saga_grounded_v1(
-    archmap: &ArchMapDocumentV2,
     normalized: &NormalizedArchMapV2,
     profile: &MeasurementProfileV1,
     plan: &RepairPlanDocumentV1,
     law_surface: &LawEquationSurfaceV1,
     execution_plan: &LawExecutionPlanV1,
 ) -> SagaGroundedMeasurementV1 {
-    let grounding = plan.grounding.as_ref().and_then(Value::as_object);
-    let grounding_ref = grounding
-        .and_then(|grounding| grounding.get("surfaceRef"))
-        .and_then(Value::as_str)
-        .map(str::to_string)
-        .unwrap_or_else(|| format!("repair-plan:{}#grounding", plan.id));
+    let grounding_ref = format!("law-surface:{}", execution_plan.surface_id);
     let criterion = execution_plan.stage3_defect_source.as_ref().map(|source| {
         format!(
             "law-surface:{}#defectSources/{}/holdsCriterion",
@@ -225,13 +213,6 @@ pub(crate) fn evaluate_saga_grounded_v1(
         .flat_map(|aliases| aliases.values())
         .cloned()
         .collect::<BTreeSet<_>>();
-    let grounding_is_aligned = grounding.is_some_and(|grounding| {
-        grounding.get("kind").and_then(Value::as_str) == Some("saga-grounding")
-            && grounding.get("profileRef").and_then(Value::as_str)
-                == Some(profile.profile_id.as_str())
-            && grounding.get("surfaceRef").and_then(Value::as_str)
-                == Some(execution_plan.surface_id.as_str())
-    });
     let skeleton_is_aligned = execution_plan
         .stage3_skeleton
         .as_ref()
@@ -253,10 +234,7 @@ pub(crate) fn evaluate_saga_grounded_v1(
                 })
         });
     let coefficient_is_f2 = profile.coefficient == "F2";
-    let derived_for_gate = derive_residual(normalized, profile, plan, law_surface);
-    let residual_derivation_fault = derived_for_gate.is_err();
-    let class_supply_ok = derived_for_gate
-        .is_ok_and(|derived| class_supply_is_checked(archmap, plan, &derived.supports).is_ok());
+    let residual_derivation_fault = derive_residual(normalized, profile, plan, law_surface).is_err();
     let defect_support_size = source
         .chart_defects
         .iter()
@@ -270,13 +248,9 @@ pub(crate) fn evaluate_saga_grounded_v1(
             })
         })
         .count();
-    if !grounding_is_aligned
-        || !skeleton_is_aligned
+    if !skeleton_is_aligned
         || !coefficient_is_f2
-        || plan.faithfulness.mode != "supplied"
-        || plan.faithfulness.supplied.is_none()
-        || plan.comparison.is_none()
-        || !class_supply_ok
+        || residual_derivation_fault
         || grounded_variable_aliases.is_none()
         || grounded_forbidden_supports.is_none()
         || grounded_witness_variables.is_empty()
@@ -292,20 +266,12 @@ pub(crate) fn evaluate_saga_grounded_v1(
             .is_some_and(|condition| condition.mode == "not-selected")
     {
         return grounded_not_computed(
-            if !grounding_is_aligned {
-                "grounding_reference_mismatch"
-            } else if !skeleton_is_aligned {
+            if !skeleton_is_aligned {
                 "grounded_skeleton_not_aligned"
             } else if !coefficient_is_f2 {
                 "grounded_coefficient_not_f2_additive"
             } else if residual_derivation_fault {
                 "grounded_residual_derivation_fault"
-            } else if plan.faithfulness.mode != "supplied"
-                || plan.faithfulness.supplied.is_none()
-                || plan.comparison.is_none()
-                || !class_supply_ok
-            {
-                "grounded_layer_d_not_supplied"
             } else if source.cover_ref != profile.cover_ref {
                 "grounded_cover_profile_mismatch"
             } else if grounded_variable_aliases.is_none()
@@ -466,59 +432,15 @@ pub(crate) fn evaluate_saga_grounded_v1(
             })
         })
         .collect::<Vec<_>>();
-    let status = if laws_hold {
-        "established"
-    } else {
-        "not_established"
-    };
-    let conclusion_status =
-        |theorem_ref: &str| json!({"status": status, "theoremRef": theorem_ref});
-    let law_dependent = json!({
-        "premise": {
-            "name": "displayedRequiredLawsHold",
+    let invariant = json!({
+        "invariantId": "saga-grounded:defect-quotient",
+        "kind": "saga-grounded-defect-quotient",
+        "evaluator": "ag.saga-grounded",
+        "groundedSurfaceRef": grounding_ref,
+        "displayedRequiredLawsHold": {
             "status": if laws_hold { "holds" } else { "fails" },
             "checkKind": "holds-criterion-raw-value",
             "perChart": per_chart
-        },
-        "conclusions": {
-            "generatedInterpretationZero": {
-                "status": if interpretation_zero { status } else { "not_established" },
-                "theoremRef": "part10/7.5.1",
-                "instanceReading": {"class": if interpretation_zero { "zero" } else { "nonzero" }}
-            },
-            "generatedRestrictionEvaluator": conclusion_status("part3/11.4"),
-            "nonzeroInterpretationDetectsDisplayedLawFailure": conclusion_status("part10/7.5.3")
-        },
-        "detectorFindings": nonzero_charts
-    });
-    let law_independent = json!({
-        "note": "以下は law の充足を仮定せずに従う(定理8.2)。law 充足の証拠として読まない。",
-        "conclusions": {
-            "groundedGlobalGluingPackage": {"status": "established", "theoremRef": "part10/8.2"},
-            "sheafConditionForSelectedCover": {"status": "established", "theoremRef": "part10/8.1"},
-            "descent": {"status": "established", "theoremRef": "part10/8.2", "note": "sheaf 条件 + cover membership から導出。独立 certificate は受け取らない"},
-            "uniqueGlobalSection": {"status": "established", "theoremRef": "part10/8.2"},
-            "globalCoherentIffCoverRelativeH1Zero": {"status": "established", "theoremRef": "part10/8.2", "instanceReading": {"coverRelativeH1Zero": true}},
-            "boundedAdditiveH1ZeroIffCoverRelativeH1Zero": {"status": "established", "theoremRef": "part10/8.2"}
-        },
-        "separatedStatements": {
-            "note": "原則 8.4 により、additive H¹ comparison から nonabelian torsor・higher coherence(2-cocycle / gerbe / H² 以後)・stack descent の結論は導かない。これらは独立の statement を要する",
-            "theoremRef": "part10/8.4"
-        }
-    });
-    let invariant = json!({
-        "invariantId": "saga-generated-end-to-end-packet",
-        "kind": "saga-grounded-conclusions",
-        "evaluator": "ag.saga-grounded",
-        "schema": ARCHSIG_SAGA_CONCLUSIONS_V1_SCHEMA,
-        "groundedSurfaceRef": grounding_ref,
-        "theoremRef": "part10/7.5",
-        "lawDependent": law_dependent,
-        "lawIndependent": law_independent,
-        "degreeZeroLawContribution": {
-            "theoremRef": "part10/8.1",
-            "generatedC0PointwiseZero": true,
-            "reading": "law 意味論が Čech 複体に到達する地点は正確に次数0。H^1 の内容は cover の幾何から来る(意味8.3)"
         },
         "generatedQuotient": generated_quotient,
         "detectorFindings": nonzero_charts,
@@ -571,7 +493,7 @@ pub(crate) fn evaluate_saga_grounded_v1(
                     "law_defect_detected"
                 }
                 .to_string(),
-                cert_ref: Some("computedInvariants/saga-generated-end-to-end-packet".to_string()),
+                cert_ref: Some("computedInvariants/saga-grounded:defect-quotient".to_string()),
             },
             depends_on_assumptions: assumption_ids,
             reason: Some(if laws_hold {
@@ -606,10 +528,9 @@ fn grounded_not_computed(
             reason: Some(format!("ag.saga-grounded is silent by design: {reason}")),
         }],
         computed_invariants: vec![json!({
-            "invariantId": "saga-generated-end-to-end-packet",
-            "kind": "saga-grounded-conclusions",
+            "invariantId": "saga-grounded:defect-quotient",
+            "kind": "saga-grounded-defect-quotient",
             "evaluator": "ag.saga-grounded",
-            "schema": ARCHSIG_SAGA_CONCLUSIONS_V1_SCHEMA,
             "groundedSurfaceRef": grounding_ref,
             "status": "not_computed",
             "methodStatus": reason
@@ -634,13 +555,14 @@ fn descent_not_computed(plan: &RepairPlanDocumentV1, fault: String) -> SagaDesce
         reason: Some(fault.clone()),
     };
     SagaDescentMeasurementV1 {
-        structural_verdict: vec![
-            verdict_row("saga.residual-boundary-membership"),
-            verdict_row("saga.global-coherence"),
-        ],
+        structural_verdict: vec![verdict_row("saga.residual-boundary-membership")],
         computed_invariants: vec![json!({
             "invariantId": "saga-descent:residual-derivation",
             "evaluator": "ag.saga-descent",
+            "representation": {
+                "invariantId": "saga-descent:residual-derivation",
+                "evaluator": "ag.saga-descent"
+            },
             "residualDerivation": {
                 "derived": false,
                 "fault": fault,
@@ -653,7 +575,6 @@ fn descent_not_computed(plan: &RepairPlanDocumentV1, fault: String) -> SagaDesce
 }
 
 pub(crate) fn evaluate_saga_descent_v1(
-    archmap: &ArchMapDocumentV2,
     normalized: &NormalizedArchMapV2,
     profile: &MeasurementProfileV1,
     plan: &RepairPlanDocumentV1,
@@ -681,60 +602,8 @@ pub(crate) fn evaluate_saga_descent_v1(
         assumed_by: Some("repair-plan author".to_string()),
     };
     let enumeration_assumption_id = assumption_id_for_schema(&enumeration_assumption);
-    let comparison_target_enumeration_assumption = plan
-        .comparison
-        .as_ref()
-        .filter(|comparison| {
-            comparison
-                .get("incidenceBridge")
-                .and_then(|bridge| bridge.get("kind"))
-                .and_then(Value::as_str)
-                == Some("explicit")
-        })
-        .and_then(|comparison| comparison_target_complex(plan, comparison))
-        .map(|_| AgAssumptionLedgerEntryV1 {
-            theorem_ref: "part10/6.2".to_string(),
-            assumption: format!(
-                "comparison target complex enumeration completeness for {}",
-                plan.id
-            ),
-            status: "assumed".to_string(),
-            checked_by: None,
-            assumed_by: Some("comparison author".to_string()),
-        });
-    let sheaf_assumption =
-        plan.true_sheaf_certificate
-            .as_ref()
-            .and_then(Value::as_object)
-            .and_then(|certificate| {
-                (certificate.get("globalCondition").and_then(Value::as_str) == Some("assumed"))
-                    .then(|| AgAssumptionLedgerEntryV1 {
-                        theorem_ref: "part10/8.1".to_string(),
-                        assumption: format!("global sheaf condition for {}", plan.id),
-                        status: "assumed".to_string(),
-                        checked_by: None,
-                        assumed_by: Some("trueSheafCertificate author".to_string()),
-                    })
-            });
-    let faithfulness_assumption =
-        (plan.faithfulness.mode == "supplied").then(|| AgAssumptionLedgerEntryV1 {
-            theorem_ref: "part4/4.6".to_string(),
-            assumption: format!("faithfulness law supplied for {}", plan.id),
-            status: "assumed".to_string(),
-            checked_by: None,
-            assumed_by: Some("RepairPlan author".to_string()),
-        });
-    let mut evaluator_assumption_ids = vec![enumeration_assumption_id.clone()];
-    if let Some(assumption) = comparison_target_enumeration_assumption.as_ref() {
-        evaluator_assumption_ids.push(assumption_id_for_schema(assumption));
-    }
-    if let Some(assumption) = faithfulness_assumption.as_ref() {
-        evaluator_assumption_ids.push(assumption_id_for_schema(assumption));
-    }
-    let mut class_assumption_ids = evaluator_assumption_ids.clone();
-    if let Some(assumption) = sheaf_assumption.as_ref() {
-        class_assumption_ids.push(assumption_id_for_schema(assumption));
-    }
+    let evaluator_assumption_ids = vec![enumeration_assumption_id.clone()];
+    let class_assumption_ids = evaluator_assumption_ids.clone();
     let mut structural_verdict = Vec::new();
     let boundary_verdict = if boundary.in_b1 {
         "measured_zero"
@@ -765,64 +634,6 @@ pub(crate) fn evaluate_saga_descent_v1(
         }),
     });
 
-    if !matches!(
-        plan.faithfulness.mode.as_str(),
-        "complete-support" | "supplied"
-    ) {
-        structural_verdict.push(AgStructuralVerdictV1 {
-            evaluator: "ag.saga-descent".to_string(),
-            law: "saga.global-coherence".to_string(),
-            verdict: "unmeasured".to_string(),
-            verdict_data: AgVerdictDataV1 {
-                in_scope: true,
-                zero: false,
-                non_zero: false,
-                method_status: "complete_support_not_declared".to_string(),
-                cert_ref: None,
-            },
-            depends_on_assumptions: Vec::new(),
-            reason: Some(
-                "complete-support declaration or Stage 2 faithfulness data is required before global coherence can be stated".to_string(),
-            ),
-        });
-    } else if boundary.in_b1 {
-        structural_verdict.push(AgStructuralVerdictV1 {
-            evaluator: "ag.saga-descent".to_string(),
-            law: "saga.global-coherence".to_string(),
-            verdict: "measured_zero".to_string(),
-            verdict_data: AgVerdictDataV1 {
-                in_scope: true,
-                zero: true,
-                non_zero: false,
-                method_status: "derived_residual_global_coherent".to_string(),
-                cert_ref: Some("computedInvariants/saga-descent:residual-derivation".to_string()),
-            },
-            depends_on_assumptions: evaluator_assumption_ids.clone(),
-            reason: Some(
-                "derived residual is a B1 boundary for the selected RepairPlan complex"
-                    .to_string(),
-            ),
-        });
-    } else {
-        structural_verdict.push(AgStructuralVerdictV1 {
-            evaluator: "ag.saga-descent".to_string(),
-            law: "saga.global-coherence".to_string(),
-            verdict: "measured_nonzero".to_string(),
-            verdict_data: AgVerdictDataV1 {
-                in_scope: true,
-                zero: false,
-                non_zero: true,
-                method_status: "residual_not_in_b1".to_string(),
-                cert_ref: Some("computedInvariants/saga-descent:residual-derivation".to_string()),
-            },
-            depends_on_assumptions: evaluator_assumption_ids.clone(),
-            reason: Some(
-                "global coherence is blocked because the derived residual is not a B1 boundary"
-                    .to_string(),
-            ),
-        });
-    }
-
     let mut computed_invariants = vec![
         json!({
             "invariantId": "saga-descent:boundary-membership",
@@ -836,6 +647,10 @@ pub(crate) fn evaluate_saga_descent_v1(
         json!({
             "invariantId": "saga-descent:residual-derivation",
             "evaluator": "ag.saga-descent",
+            "representation": {
+                "invariantId": "saga-descent:residual-derivation",
+                "evaluator": "ag.saga-descent"
+            },
             "residualDerivation": {
                 "derived": true,
                 "fault": Value::Null,
@@ -844,24 +659,17 @@ pub(crate) fn evaluate_saga_descent_v1(
                 "lawSurfaceRef": derived.law_surface_ref,
                 "charts": plan.complex.charts,
                 "edges": derived.edges
-            },
-            "faithfulnessBasis": {
-                "mode": plan.faithfulness.mode,
-                "basis": match plan.faithfulness.mode.as_str() {
-                    "supplied" => "supplied-data",
-                    "complete-support" => "complete-support",
-                    other => other,
-                }
             }
         }),
     ];
-    let class_supply = class_supply_is_checked(archmap, plan, &derived.supports);
-    if let Err(reason) = class_supply.as_ref()
-        && let Some(rejection) = class_supply_rejection_invariant(plan, reason)
+    let class_certificate = component_cocycle_certificate(plan, &derived.supports);
+    // class 語彙は宣言 triple の cocycle パリティを実際に検査した場合だけ解禁する。
+    // triple 不在(automatic-c2-zero)は author assertion であり、読みは 1-骨格の
+    // 境界所属(boundary 語彙)に留める。
+    if let Some(class_certificate) = class_certificate
+        .as_ref()
+        .filter(|certificate| certificate.certificate_kind == "checked-triple-cocycle-zero")
     {
-        computed_invariants.push(rejection);
-    }
-    if let Ok(class_certificate) = class_supply.as_ref() {
         let class_nonzero = !boundary.in_b1;
         structural_verdict.push(AgStructuralVerdictV1 {
             evaluator: "ag.saga-descent".to_string(),
@@ -896,54 +704,43 @@ pub(crate) fn evaluate_saga_descent_v1(
                 "nonZero": class_nonzero,
                 "quotient": "Z1/B1",
                 "component": {
-                    "chartRefs": &class_certificate.cocycle.component.chart_refs,
-                    "overlapRefs": &class_certificate.cocycle.component.overlap_refs
+                    "chartRefs": &class_certificate.component.chart_refs,
+                    "overlapRefs": &class_certificate.component.overlap_refs
                 },
                 "cocycle": {
                     // triple を持つ component だけが実際に検査を走らせる。triple 不在の component は
                     // selected C^2 が零なので cocycle 条件が自動成立する。両者を checked で混ぜない。
-                    "checked": class_certificate.cocycle.certificate_kind == "checked-triple-cocycle-zero",
+                    "checked": class_certificate.certificate_kind == "checked-triple-cocycle-zero",
                     "deltaOne": "zero",
-                    "certificateKind": class_certificate.cocycle.certificate_kind,
-                    "tripleOverlapRefs": class_certificate.cocycle.triple_overlap_refs_json()
-                },
-                "suppliedData": {
-                    "trueSheafCertificate": {
-                        "coverRef": &class_certificate.true_sheaf_cover_ref,
-                        "memberChartRefs": &class_certificate.true_sheaf_member_chart_refs,
-                        "globalCondition": &class_certificate.true_sheaf_global_condition
-                    },
-                    "gluingData": {
-                        "overlapRefs": class_certificate.gluing_overlap_refs(),
-                        "sectionRefs": class_certificate.gluing_section_refs_json()
-                    }
+                    "certificateKind": class_certificate.certificate_kind,
+                    "tripleOverlapRefs": class_certificate.triple_overlap_refs_json()
                 }
             },
             "suppliedSlots": [
                 "complex.charts",
-                "complex.overlaps",
-                "trueSheafCertificate",
-                "gluingData"
+                "complex.overlaps"
             ]
         }));
     }
-    computed_invariants.push(evaluate_saga_comparison_v1(
-        plan,
-        &derived.supports,
-        &structural_verdict,
-        law_surface,
-    ));
-    let mut assumptions = vec![enumeration_assumption];
-    if let Some(comparison_target_enumeration_assumption) = comparison_target_enumeration_assumption
+    if let Some(class_certificate) = class_certificate
+        .as_ref()
+        .filter(|certificate| certificate.certificate_kind == "automatic-c2-zero")
     {
-        assumptions.push(comparison_target_enumeration_assumption);
+        computed_invariants.push(json!({
+            "invariantId": "saga-descent:class-vocabulary-boundary",
+            "evaluator": "ag.saga-descent",
+            "classVocabulary": {
+                "unlocked": false,
+                "certificateKind": "automatic-c2-zero",
+                "reason": "residual-component-declares-no-triple-overlaps",
+                "component": {
+                    "chartRefs": &class_certificate.component.chart_refs,
+                    "overlapRefs": &class_certificate.component.overlap_refs
+                }
+            }
+        }));
     }
-    if let Some(sheaf_assumption) = sheaf_assumption {
-        assumptions.push(sheaf_assumption);
-    }
-    if let Some(faithfulness_assumption) = faithfulness_assumption {
-        assumptions.push(faithfulness_assumption);
-    }
+    let assumptions = vec![enumeration_assumption];
     SagaDescentMeasurementV1 {
         structural_verdict,
         computed_invariants,
@@ -952,394 +749,6 @@ pub(crate) fn evaluate_saga_descent_v1(
 }
 
 /// 法曲面が宣言する名前の集合。witness variable と skeleton simplex。
-fn law_surface_declared_names(law_surface: &LawEquationSurfaceV1) -> BTreeSet<String> {
-    let mut names = BTreeSet::new();
-    for law in &law_surface.laws {
-        for variable in &law.witness_variables {
-            names.insert(variable.variable.clone());
-        }
-    }
-    for simplex in law_surface.skeleton.iter().flatten() {
-        names.insert(simplex.simplex.clone());
-    }
-    names
-}
-
-/// presentation の equation generator が法曲面の宣言へ解決するか。
-/// `unbound-equation:` 接頭辞は「この法曲面に対応物が無い」という author の明示宣言として
-/// 受理する。それ以外の未解決名は契約違反であり、名前を差し替えれば結論が変わる。
-fn unresolved_equation_generators(
-    plan: &RepairPlanDocumentV1,
-    law_surface: Option<&LawEquationSurfaceV1>,
-) -> Option<Vec<String>> {
-    let law_surface = law_surface?;
-    let comparison = plan.comparison.as_ref()?;
-    let h1 = comparison.get("h1ComparisonData")?.as_object()?;
-    if h1.get("kind").and_then(Value::as_str) != Some("presentation-generated") {
-        return None;
-    }
-    let typed: H1ComparisonDataV052 =
-        serde_json::from_value(Value::Object(h1.clone())).ok()?;
-    let presentation = typed.presentation.as_ref()?;
-    let declared = law_surface_declared_names(law_surface);
-    let mut unresolved = BTreeSet::new();
-    for cell in &presentation.cells {
-        for generator in &cell.equation_generators {
-            if generator.starts_with("unbound-equation:") || declared.contains(generator) {
-                continue;
-            }
-            unresolved.insert(generator.clone());
-        }
-    }
-    Some(unresolved.into_iter().collect())
-}
-
-fn evaluate_saga_comparison_v1(
-    plan: &RepairPlanDocumentV1,
-    supports: &BTreeMap<String, Vec<String>>,
-    structural_verdict: &[AgStructuralVerdictV1],
-    law_surface: Option<&LawEquationSurfaceV1>,
-) -> Value {
-    let Some(comparison) = plan.comparison.as_ref() else {
-        return json!({
-            "invariantId": "saga-comparison:h1-transfer",
-            "evaluator": "ag.saga-comparison",
-            "kind": "h1-comparison-transfer",
-            "status": "silence_by_design",
-            "reason": "comparison_data_not_supplied",
-            "whatNext": "supply a validated incidence bridge and H1 comparison contract before evaluating transfer",
-            "contract": {
-                "incidenceBridgeKind": "not_supplied",
-                "h1ComparisonDataKind": "not_supplied",
-                "normalizedComplexFingerprint": comparison_complex_fingerprint(plan),
-                "classPrerequisite": false,
-                "targetClassComputed": false,
-                "contractChecked": false,
-                "measuredClassAgreement": Value::Null
-            }
-        });
-    };
-    let measured_class_available = structural_verdict.iter().any(|verdict| {
-        verdict.evaluator == "ag.saga-descent"
-            && verdict.law == "saga.residual-class"
-            && matches!(
-                verdict.verdict.as_str(),
-                "measured_zero" | "measured_nonzero"
-            )
-    });
-    let measured_class_nonzero = structural_verdict.iter().any(|verdict| {
-        verdict.evaluator == "ag.saga-descent"
-            && verdict.law == "saga.residual-class"
-            && verdict.verdict == "measured_nonzero"
-    });
-    let bridge_kind = comparison["incidenceBridge"]["kind"]
-        .as_str()
-        .unwrap_or("unknown");
-    let h1_kind = comparison["h1ComparisonData"]["kind"]
-        .as_str()
-        .unwrap_or("unknown");
-    let explicit_checks = if h1_kind == "explicit" {
-        comparison_target_complex(plan, comparison).and_then(|target_complex| {
-            comparison
-                .get("h1ComparisonData")
-                .and_then(Value::as_object)
-                .map(|h1| explicit_h1_comparison_checks(plan, supports, &target_complex, h1))
-        })
-    } else {
-        None
-    };
-    let presentation_checks = if h1_kind == "presentation-generated" {
-        comparison_target_complex(plan, comparison).and_then(|target_complex| {
-            comparison
-                .get("h1ComparisonData")
-                .and_then(Value::as_object)
-                .map(|h1| presentation_generated_h1_checks(plan, supports, &target_complex, h1))
-        })
-    } else {
-        None
-    };
-    // presentation-generated では source class を presentation から計算するため、同じ packet の
-    // descent 側 `saga.residual-class` とは別の対象を読んでいる。descent は生の Z1/B1、
-    // presentation は repair relation で割った商の H1 であり、両者が食い違うこと自体は
-    // 矛盾ではない。ただし読者が片方をもう片方の裏づけと取り違えないよう、一致・不一致を
-    // 常に出力し、不一致なら何が違うのかを名指しする。
-    let measured_class_agreement = if h1_kind == "presentation-generated" && measured_class_available
-    {
-        presentation_checks
-            .as_ref()
-            .and_then(|checks| checks.source_class_nonzero)
-            .map(|source_class_nonzero| source_class_nonzero == measured_class_nonzero)
-    } else {
-        None
-    };
-    let unresolved_generators = unresolved_equation_generators(plan, law_surface);
-    let equation_generators_resolved = unresolved_generators
-        .as_ref()
-        .map(|unresolved| unresolved.is_empty());
-    let contract_checked = if h1_kind == "explicit" {
-        explicit_checks.is_some_and(|checks| checks.all_pass())
-    } else if h1_kind == "presentation-generated" {
-        presentation_checks
-            .as_ref()
-            .is_some_and(|checks| checks.all_pass())
-            && equation_generators_resolved.unwrap_or(true)
-    } else {
-        true
-    };
-    let (class_available, class_nonzero, source_invariant) = if h1_kind == "presentation-generated"
-    {
-        presentation_checks
-            .as_ref()
-            .and_then(|checks| checks.source_class_nonzero)
-            .map(|source_class_nonzero| {
-                (
-                    true,
-                    source_class_nonzero,
-                    "presentation-generated:semantic-h1-class",
-                )
-            })
-            .unwrap_or((false, false, "presentation-generated:semantic-h1-class"))
-    } else {
-        (
-            measured_class_available,
-            measured_class_nonzero,
-            "saga-descent:residual-class",
-        )
-    };
-    let target_class_nonzero = if h1_kind == "presentation-generated" {
-        presentation_checks
-            .as_ref()
-            .and_then(|checks| checks.target_class_nonzero)
-    } else {
-        comparison_target_class_nonzero(plan, comparison)
-    };
-    let preserves_zero_predicate =
-        target_class_nonzero.is_some_and(|target| target == class_nonzero);
-    let comparison_contract_violation = class_available
-        && target_class_nonzero.is_some()
-        && (!contract_checked || !preserves_zero_predicate);
-    if !class_available {
-        if let Some(fault) = presentation_checks
-            .as_ref()
-            .and_then(|checks| checks.structural_fault.as_deref())
-        {
-            return json!({
-                "invariantId": "saga-comparison:h1-transfer",
-                "evaluator": "ag.saga-comparison",
-                "kind": "h1-comparison-transfer",
-                "status": "not_computed",
-                "failureCode": ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION,
-                "reason": "presentation_structural_fault",
-                "structuralFault": fault,
-                "whatNext": "repair the named presentation structural fault before evaluating transfer",
-                "contract": {
-                    "incidenceBridgeKind": comparison["incidenceBridge"]["kind"].as_str().unwrap_or("unknown"),
-                    "h1ComparisonDataKind": h1_kind,
-                    "normalizedComplexFingerprint": comparison_complex_fingerprint(plan),
-                    "classPrerequisite": false,
-                    "targetClassComputed": false,
-                    "contractChecked": false,
-                    "measuredClassAgreement": Value::Null
-                }
-            });
-        }
-        let (reason, what_next, non_conclusions) = if h1_kind == "presentation-generated" {
-            (
-                "presentation_source_class_prerequisite_not_computed",
-                "supply a valid semantic presentation, restriction maps, and equation lift atlas so the source presentation H1 class can be computed before evaluating transfer",
-                [
-                    "The comparison contract is not a replacement for the computed source presentation H1 class.",
-                    "No comparison failure code is emitted until the source presentation H1 class is computed.",
-                ],
-            )
-        } else {
-            (
-                "residual_class_prerequisite_not_measured",
-                "select an F2 MeasurementProfile coefficient and supply a valid cocycle certificate for the residual component plus trueSheafCertificate and gluingData that each match that component exactly, so the source residual class can be measured before evaluating H1 comparison transfer",
-                [
-                    "The comparison contract is not a replacement for the measured source residual class.",
-                    "No comparison failure code is emitted until the residual-class prerequisite is measured.",
-                ],
-            )
-        };
-        return json!({
-            "invariantId": "saga-comparison:h1-transfer",
-            "evaluator": "ag.saga-comparison",
-            "kind": "h1-comparison-transfer",
-            "status": "silence_by_design",
-            "reason": reason,
-            "whatNext": what_next,
-            "contract": {
-                "incidenceBridgeKind": bridge_kind,
-                "h1ComparisonDataKind": h1_kind,
-                "normalizedComplexFingerprint": comparison_complex_fingerprint(plan),
-                "classPrerequisite": false,
-                "targetClassComputed": target_class_nonzero.is_some(),
-                "contractChecked": contract_checked,
-                "measuredClassAgreement": measured_class_agreement
-            },
-            "nonConclusions": non_conclusions
-        });
-    }
-    let established = contract_checked && class_available && preserves_zero_predicate;
-    let conclusion_code = if established {
-        if h1_kind == "presentation-generated" {
-            Some(ARCHSIG_SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS)
-        } else {
-            Some(ARCHSIG_SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA)
-        }
-    } else {
-        None
-    };
-    let presentation_generated = if h1_kind == "presentation-generated" {
-        comparison_target_complex(plan, comparison)
-            .zip(
-                comparison
-                    .get("h1ComparisonData")
-                    .and_then(Value::as_object),
-            )
-            .zip(presentation_checks.as_ref())
-            .map(|((target_complex, h1), checks)| {
-                presentation_generated_h1_output(plan, &target_complex, h1, checks)
-            })
-            .unwrap_or(Value::Null)
-    } else {
-        Value::Null
-    };
-    json!({
-        "invariantId": "saga-comparison:h1-transfer",
-        "evaluator": "ag.saga-comparison",
-        "kind": "h1-comparison-transfer",
-        "status": if established { "established" } else { "not_computed" },
-        "conclusionCode": conclusion_code,
-        "contract": {
-            "incidenceBridgeKind": bridge_kind,
-            "h1ComparisonDataKind": h1_kind,
-            "normalizedComplexFingerprint": comparison_complex_fingerprint(plan),
-            "classPrerequisite": class_available,
-            "targetClassComputed": target_class_nonzero.is_some(),
-            "contractChecked": contract_checked,
-            "measuredClassAgreement": measured_class_agreement,
-            "equationGeneratorsResolved": equation_generators_resolved,
-            "unresolvedEquationGenerators": unresolved_generators
-        },
-        "suppliedCochainMap": {
-            "level": "cochain",
-            "kind": h1_kind,
-            "contractChecked": (h1_kind == "explicit").then_some(contract_checked),
-            "checkedProperties": explicit_checks.map(|checks| json!({
-                "degreeOneLeftInverse": checks.degree_one_left_inverse,
-                "degreeOneRightInverse": checks.degree_one_right_inverse,
-                "differencePreserving": checks.difference_preserving,
-                "degreeTwoZeroPreserving": checks.degree_two_zero_preserving,
-                "differentialCommutative": checks.differential_commutative
-            })),
-            "targetSupportComputed": target_class_nonzero.is_some()
-        },
-        "presentationGenerated": presentation_generated,
-        "measuredClassDivergence": if measured_class_agreement == Some(false) {
-            json!({
-                "sourceInvariant": source_invariant,
-                "presentationSourceClassNonZero": class_nonzero,
-                "measuredInvariant": "saga-descent:residual-class",
-                "measuredResidualClassNonZero": measured_class_nonzero,
-                "reading": "the presentation source class is read in the repair-relation quotient; the measured residual class is read in raw Z1/B1 on the same complex",
-                "whatNext": "read the transfer conclusion against the presentation quotient only; it does not corroborate or replace the measured residual class row"
-            })
-        } else {
-            Value::Null
-        },
-        "generatedQuotientTransfer": if established {
-            json!({
-                "level": "quotient",
-                "kind": if h1_kind == "presentation-generated" {
-                    "presentation-derived-Z1/B1-class-transfer"
-                } else {
-                    "Z1/B1-class-transfer"
-                },
-                "preservesZeroPredicate": preserves_zero_predicate,
-                "sourceClassNonZero": class_nonzero,
-                "targetClassNonZero": target_class_nonzero,
-                "sourceInvariant": source_invariant,
-                "targetInvariant": "saga-comparison:h1-transfer"
-            })
-        } else {
-            Value::Null
-        },
-        "failureCode": if comparison_contract_violation {
-            json!(ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION)
-        } else {
-            Value::Null
-        },
-        "nonConclusions": if h1_kind == "presentation-generated" {
-            json!([
-                "The presentation packet is authored input; the derived comparison maps and the exactness checks are what this run computed.",
-                "The transfer reading is relative to the supplied finite comparison contract."
-            ])
-        } else {
-            json!([
-                "Supplied cochain data and generated quotient-level transfer are separate structures.",
-                "The transfer reading is relative to the supplied finite comparison contract."
-            ])
-        }
-    })
-}
-
-fn comparison_target_class_nonzero(
-    plan: &RepairPlanDocumentV1,
-    comparison: &Value,
-) -> Option<bool> {
-    let target_complex = comparison_target_complex(plan, comparison)?;
-    let h1 = comparison.get("h1ComparisonData")?.as_object()?;
-    let items = h1.get("targetCochainSupport")?.as_array()?;
-    let mut support_by_overlap = BTreeMap::<&str, BTreeSet<&str>>::new();
-    for item in items {
-        let object = item.as_object()?;
-        let overlap_ref = object.get("overlapRef")?.as_str()?;
-        let support = object.get("support")?.as_array()?;
-        let variables = support
-            .iter()
-            .map(Value::as_str)
-            .collect::<Option<Vec<_>>>()?;
-        let variable_set = variables.iter().copied().collect::<BTreeSet<_>>();
-        if variables.len() != variable_set.len()
-            || support_by_overlap
-                .insert(overlap_ref, variable_set)
-                .is_some()
-        {
-            return None;
-        }
-    }
-    if support_by_overlap.len() != target_complex.overlaps.len()
-        || target_complex
-            .overlaps
-            .iter()
-            .any(|overlap| !support_by_overlap.contains_key(overlap.id.as_str()))
-    {
-        return None;
-    }
-    let mut target_plan = plan.clone();
-    target_plan.complex = target_complex;
-    let target_supports = target_plan
-        .complex
-        .overlaps
-        .iter()
-        .map(|overlap| {
-            let variables = support_by_overlap
-                .get(overlap.id.as_str())
-                .map(|variables| {
-                    variables
-                        .iter()
-                        .map(|variable| (*variable).to_string())
-                        .collect::<Vec<_>>()
-                })
-                .unwrap_or_default();
-            (overlap.id.clone(), variables)
-        })
-        .collect::<BTreeMap<_, _>>();
-    Some(!solve_boundary_membership(&target_plan, &target_supports).in_b1)
-}
-
 #[derive(Debug, Clone)]
 struct RepairComplexComponent {
     chart_refs: Vec<String>,
@@ -1357,212 +766,11 @@ impl SagaComponentCocycleCertificate {
     fn triple_overlap_refs_json(&self) -> Vec<Value> {
         self.triple_overlaps
             .iter()
-            .map(|(triple_ref, overlap_refs)| {
-                json!({
-                    "tripleRef": triple_ref,
-                    "overlapRefs": overlap_refs
-                })
+            .map(|(id, overlap_refs)| {
+                json!({"tripleRef": id, "overlapRefs": overlap_refs})
             })
             .collect()
     }
-}
-
-#[derive(Debug, Clone)]
-struct SagaClassSupplyCertificate {
-    cocycle: SagaComponentCocycleCertificate,
-    true_sheaf_cover_ref: String,
-    true_sheaf_member_chart_refs: Vec<String>,
-    true_sheaf_global_condition: String,
-    gluing_section_refs: Vec<(String, String)>,
-}
-
-impl SagaClassSupplyCertificate {
-    fn gluing_overlap_refs(&self) -> Vec<&str> {
-        self.gluing_section_refs
-            .iter()
-            .map(|(overlap_ref, _)| overlap_ref.as_str())
-            .collect()
-    }
-
-    fn gluing_section_refs_json(&self) -> Vec<Value> {
-        self.gluing_section_refs
-            .iter()
-            .map(|(overlap_ref, section_ref)| {
-                json!({
-                    "overlapRef": overlap_ref,
-                    "sectionRef": section_ref
-                })
-            })
-            .collect()
-    }
-}
-
-/// class 認証が成立しなかったとき、どの供給が component に合わなかったのかを名指しする。
-/// 認証を無言で落とすと、既存 RepairPlan が validation を通ったまま結論だけ降格し、
-/// 利用者に検知手段が残らない。
-fn class_supply_is_checked(
-    archmap: &ArchMapDocumentV2,
-    plan: &RepairPlanDocumentV1,
-    supports: &BTreeMap<String, Vec<String>>,
-) -> Result<SagaClassSupplyCertificate, &'static str> {
-    let Some(cocycle) = component_cocycle_certificate(plan, supports) else {
-        return Err("component_cocycle_certificate_not_established");
-    };
-    if let Some(supplied) = plan.faithfulness.supplied.as_ref() {
-        let declared = supplied
-            .residual_support_predicate
-            .support_variables
-            .iter()
-            .cloned()
-            .collect::<BTreeSet<_>>();
-        let derived_variables = supports
-            .values()
-            .flat_map(|variables| variables.iter().cloned())
-            .collect::<BTreeSet<_>>();
-        if declared != derived_variables {
-            return Err("supplied_residual_support_predicate_disagrees_with_derived_residual");
-        }
-    }
-    let Some((true_sheaf_cover_ref, true_sheaf_member_chart_refs, true_sheaf_global_condition)) =
-        component_true_sheaf_certificate(archmap, plan, &cocycle.component)
-    else {
-        return Err("true_sheaf_certificate_does_not_match_the_residual_component");
-    };
-    let Some(gluing_section_refs) = component_gluing_data(plan, &cocycle.component) else {
-        return Err("gluing_data_does_not_match_the_residual_component");
-    };
-    Ok(SagaClassSupplyCertificate {
-        cocycle,
-        true_sheaf_cover_ref,
-        true_sheaf_member_chart_refs,
-        true_sheaf_global_condition,
-        gluing_section_refs,
-    })
-}
-
-/// 供給が実際に置かれているのに認証へ進めなかった場合だけ、沈黙の代わりに理由を出す。
-/// 供給そのものが無い場合は従来どおり何も言わない(語れないことには沈黙する)。
-fn class_supply_rejection_invariant(plan: &RepairPlanDocumentV1, reason: &str) -> Option<Value> {
-    let supplied_certificate = plan.true_sheaf_certificate.is_some();
-    let supplied_gluing = plan.gluing_data.is_some();
-    if !supplied_certificate && !supplied_gluing {
-        return None;
-    }
-    let supplied_slots = [
-        supplied_certificate.then_some("trueSheafCertificate"),
-        supplied_gluing.then_some("gluingData"),
-    ]
-    .into_iter()
-    .flatten()
-    .collect::<Vec<_>>();
-    Some(json!({
-        "invariantId": "saga-descent:residual-class",
-        "evaluator": "ag.saga-descent",
-        "kind": "residual-class-support",
-        "status": "silence_by_design",
-        "reason": reason,
-        "whatNext": "supply a trueSheafCertificate whose coverRef / memberCharts and a gluingData whose overlapRefs each match the residual support component exactly, under an F2 MeasurementProfile coefficient and a valid component cocycle certificate",
-        "suppliedSlots": supplied_slots
-    }))
-}
-
-fn component_true_sheaf_certificate(
-    archmap: &ArchMapDocumentV2,
-    plan: &RepairPlanDocumentV1,
-    component: &RepairComplexComponent,
-) -> Option<(String, Vec<String>, String)> {
-    let certificate = plan.true_sheaf_certificate.as_ref()?.as_object()?;
-    let global_condition = certificate.get("globalCondition").and_then(Value::as_str)?;
-    if certificate.get("kind").and_then(Value::as_str) != Some("true-sheaf-certificate")
-        || global_condition != "assumed"
-    {
-        return None;
-    }
-    let cover_ref = certificate.get("coverRef")?.as_str()?;
-    let cover = archmap.covers.iter().find(|cover| cover.id == cover_ref)?;
-    let component_chart_refs = component
-        .chart_refs
-        .iter()
-        .map(String::as_str)
-        .collect::<BTreeSet<_>>();
-    let member_charts = certificate
-        .get("memberCharts")?
-        .as_array()?
-        .iter()
-        .map(Value::as_str)
-        .collect::<Option<Vec<_>>>()?;
-    let cover_charts = cover
-        .contexts
-        .iter()
-        .map(String::as_str)
-        .collect::<Vec<_>>();
-    let has_exact_component_charts = |charts: &[&str]| {
-        charts.len() == component_chart_refs.len()
-            && charts.iter().copied().collect::<BTreeSet<_>>() == component_chart_refs
-    };
-    (has_exact_component_charts(&member_charts) && has_exact_component_charts(&cover_charts))
-        .then_some((
-            cover_ref.to_string(),
-            component.chart_refs.clone(),
-            global_condition.to_string(),
-        ))
-}
-
-fn component_gluing_data(
-    plan: &RepairPlanDocumentV1,
-    component: &RepairComplexComponent,
-) -> Option<Vec<(String, String)>> {
-    let gluing = plan.gluing_data.as_ref()?.as_object()?;
-    if gluing.get("kind").and_then(Value::as_str) != Some("gluing-data") {
-        return None;
-    }
-    let component_overlap_refs = component
-        .overlap_refs
-        .iter()
-        .map(String::as_str)
-        .collect::<BTreeSet<_>>();
-    let overlap_refs = gluing
-        .get("overlapRefs")?
-        .as_array()?
-        .iter()
-        .map(Value::as_str)
-        .collect::<Option<Vec<_>>>()?;
-    if overlap_refs.len() != component_overlap_refs.len()
-        || overlap_refs.iter().copied().collect::<BTreeSet<_>>() != component_overlap_refs
-    {
-        return None;
-    }
-    let section_refs = gluing
-        .get("sectionRefs")?
-        .as_array()?
-        .iter()
-        .map(|item| {
-            let item = item.as_object()?;
-            let overlap_ref = item.get("overlapRef")?.as_str()?;
-            let section_ref = item.get("sectionRef")?.as_str()?;
-            (!section_ref.is_empty()).then_some((overlap_ref, section_ref))
-        })
-        .collect::<Option<Vec<_>>>()?;
-    let supplied_overlaps = section_refs
-        .iter()
-        .map(|(overlap_ref, _)| *overlap_ref)
-        .collect::<BTreeSet<_>>();
-    let supplied_sections = section_refs
-        .iter()
-        .map(|(_, section_ref)| *section_ref)
-        .collect::<BTreeSet<_>>();
-    if section_refs.len() != component_overlap_refs.len()
-        || supplied_overlaps != component_overlap_refs
-        || supplied_sections.len() != component_overlap_refs.len()
-    {
-        return None;
-    }
-    let mut section_refs = section_refs
-        .into_iter()
-        .map(|(overlap_ref, section_ref)| (overlap_ref.to_string(), section_ref.to_string()))
-        .collect::<Vec<_>>();
-    section_refs.sort_by(|left, right| left.0.cmp(&right.0));
-    Some(section_refs)
 }
 
 fn component_cocycle_certificate(
@@ -1663,26 +871,17 @@ fn residual_support_component(
         .map(|(overlap_ref, _)| overlap_ref.as_str())
         .collect::<BTreeSet<_>>();
     if residual_overlap_refs.is_empty() {
-        // 零 residual では supported overlap が無いので、trueSheafCertificate の memberCharts が
-        // 指す component を認証対象に取る(供給 slot が指す先を導出 residual が空認する形)。
-        let member_charts = plan
-            .true_sheaf_certificate
-            .as_ref()
-            .and_then(Value::as_object)
-            .and_then(|certificate| certificate.get("memberCharts"))
-            .and_then(Value::as_array)?
-            .iter()
-            .filter_map(Value::as_str)
-            .collect::<BTreeSet<_>>();
-        let component_index = components.iter().position(|component| {
-            component
-                .chart_refs
+        // 零 residual は selected complex 全体で B1 の零境界。class の認証対象は
+        // 選択複体そのもの(全 chart / 全 overlap)を単一 scope として取る。
+        return Some(RepairComplexComponent {
+            chart_refs: plan.complex.charts.clone(),
+            overlap_refs: plan
+                .complex
+                .overlaps
                 .iter()
-                .map(String::as_str)
-                .collect::<BTreeSet<_>>()
-                == member_charts
-        })?;
-        return components.get(component_index).cloned();
+                .map(|overlap| overlap.id.clone())
+                .collect(),
+        });
     }
     let mut selected_component = None;
     for overlap_ref in residual_overlap_refs {
@@ -1911,6 +1110,7 @@ pub(crate) fn solve_f2(mut rows: Vec<Vec<u8>>, unknown_count: usize) -> Option<V
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ArchMapDocumentV2;
 
     fn declared_supports(plan: &RepairPlanDocumentV1) -> BTreeMap<String, Vec<String>> {
         let flagged: &[&str] = match plan.id.as_str() {
@@ -1979,13 +1179,6 @@ mod tests {
     }
 
 
-    fn comparison_fixture() -> RepairPlanDocumentV1 {
-        serde_json::from_str(include_str!(
-            "../tests/fixtures/ag_measurement/repair_plan_comparison.json"
-        ))
-        .expect("comparison fixture parses as RepairPlanDocumentV1")
-    }
-
     fn component_aware_one_cent_fixture() -> Value {
         serde_json::from_str(include_str!(
             "../tests/fixtures/ag_measurement/repair_plan_component_aware_one_cent.json"
@@ -2046,63 +1239,5 @@ mod tests {
             component_cocycle_certificate(&cross_component_duplicate, &declared_supports(&cross_component_duplicate)).is_none(),
             "duplicate triple IDs outside the selected component must not certify C2"
         );
-    }
-
-    fn measured_class_verdict() -> AgStructuralVerdictV1 {
-        AgStructuralVerdictV1 {
-            evaluator: "ag.saga-descent".to_string(),
-            law: "saga.residual-class".to_string(),
-            verdict: "measured_nonzero".to_string(),
-            verdict_data: AgVerdictDataV1 {
-                in_scope: true,
-                zero: false,
-                non_zero: true,
-                method_status: "nonzero_class_representative".to_string(),
-                cert_ref: Some("computedInvariants/saga-descent:residual-class".to_string()),
-            },
-            depends_on_assumptions: Vec::new(),
-            reason: None,
-        }
-    }
-
-    #[test]
-    fn comparison_silence_precedes_contract_failure_when_class_is_missing() {
-        let plan = comparison_fixture();
-        let result = evaluate_saga_comparison_v1(&plan, &declared_supports(&plan), &[], None);
-        assert_eq!(result["status"], "silence_by_design");
-        assert_eq!(result["reason"], "residual_class_prerequisite_not_measured");
-        assert!(result.get("failureCode").is_none());
-    }
-
-    #[test]
-    fn presentation_generated_structural_fault_is_named_not_silent() {
-        let mut plan: RepairPlanDocumentV1 = serde_json::from_str(include_str!(
-            "../tests/fixtures/ag_measurement/repair_plan_presentation_generated_circle.json"
-        ))
-        .expect("presentation-generated fixture parses");
-        plan.comparison.as_mut().expect("comparison exists")["h1ComparisonData"]["presentation"] =
-            serde_json::json!({});
-
-        let result = evaluate_saga_comparison_v1(&plan, &declared_supports(&plan), &[], None);
-        assert_eq!(result["status"], "not_computed");
-        assert_eq!(result["reason"], "presentation_structural_fault");
-        assert!(result["structuralFault"].as_str().is_some_and(|fault| !fault.is_empty()));
-        assert_eq!(
-            result["failureCode"],
-            ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION
-        );
-    }
-
-    #[test]
-    fn comparison_class_predicate_mismatch_emits_contract_failure() {
-        let plan = comparison_fixture();
-        let result = evaluate_saga_comparison_v1(&plan, &declared_supports(&plan), &[measured_class_verdict()], None);
-        assert_eq!(result["status"], "not_computed");
-        assert_eq!(
-            result["failureCode"],
-            ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION
-        );
-        assert_eq!(result["contract"]["classPrerequisite"], true);
-        assert_eq!(result["contract"]["targetClassComputed"], true);
     }
 }

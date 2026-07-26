@@ -1,42 +1,59 @@
 {
-  "assumptionLedger": [
-    {
-      "assumedBy": "repair-plan author",
-      "assumption": "external semantic completeness beyond the declared ArchMap cover/incidence",
-      "source": "complex.enumerationComplete",
-      "status": "assumed",
-      "theoremRef": "part10/3.1"
-    }
-  ],
   "checks": [
     {
-      "id": "repair-plan-schema052-schema",
+      "id": "law-equation-surface-v052-schema",
       "result": "pass",
-      "title": "RepairPlan uses the v0.5.4 schema discriminator"
+      "title": "law-equation-surface uses the v0.5.4 schema discriminator"
     },
     {
-      "count": 0,
-      "id": "repair-plan-schema052-no-conclusion-tokens",
+      "id": "law-equation-surface-v052-identity",
       "result": "pass",
-      "title": "RepairPlan input does not supply theorem conclusion tokens"
+      "title": "surface identity and law declarations are present"
     },
     {
-      "count": 0,
-      "id": "repair-plan-schema052-reference-resolution",
+      "id": "law-equation-surface-v052-law-ids",
       "result": "pass",
-      "title": "RepairPlan chart, overlap, and triple references resolve"
+      "title": "law identifiers are non-empty and unique"
     },
     {
-      "count": 0,
-      "id": "repair-plan-schema052-archmap-bindings",
+      "id": "law-equation-surface-v052-condition-types",
       "result": "pass",
-      "title": "RepairPlan charts and declared finite-complex mappings resolve against the supplied ArchMap"
+      "title": "conditionType uses the six declared law condition types"
     },
     {
-      "id": "repair-plan-schema052-enumeration-assumption",
-      "reason": "complex.enumerationComplete=true records the author assumption about external semantic completeness; when complex.archmapCoverRef is mapped, cover membership and direct restrictions (chart-chart observation edges included) are checked by repair-plan-schema052-archmap-bindings",
-      "result": "warn",
-      "title": "External semantic completeness remains an author assumption; declared ArchMap cover/incidence is checked separately"
+      "id": "law-equation-surface-v052-evaluator-refs",
+      "result": "pass",
+      "title": "non-closed evaluator references resolve through the law evaluator registry"
+    },
+    {
+      "id": "law-equation-surface-v052-shape-rules",
+      "result": "pass",
+      "title": "conditionType controls equation-surface fields"
+    },
+    {
+      "id": "law-equation-surface-v052-bindings",
+      "result": "pass",
+      "title": "binding declarations resolve through the shared vocabulary manifest"
+    },
+    {
+      "id": "law-equation-surface-v052-support-generators",
+      "result": "pass",
+      "title": "forbidden support generators are square-free declarations over witness variables"
+    },
+    {
+      "id": "law-equation-surface-v052-stage3-contract",
+      "result": "pass",
+      "title": "Stage 3 law surface fields satisfy the v0.5.4 supplied contract"
+    },
+    {
+      "id": "law-equation-surface-v052-no-conclusion-shortcuts",
+      "result": "pass",
+      "title": "law identifiers and witness variable names contain no conclusion shortcuts"
+    },
+    {
+      "id": "law-equation-surface-v052-binding-vocabulary",
+      "result": "pass",
+      "title": "law surface and authoring use a non-empty versioned binding vocabulary"
     }
   ],
   "componentFingerprints": {
@@ -45,10 +62,9 @@
     "measurementProfile": "sha256:c073650c8bcd053d48d78bb1a29811b80917ffbdec81e1789dd15d68908b0753"
   },
   "input": {
-    "archmapRef": "train-ticket-money-saga-head/v0.5.4",
-    "id": "repair-plan:train-ticket-money-head",
-    "path": "input:repair-plan-head.json",
-    "schema": "archsig-repair-plan/v0.5.7"
+    "id": "law-surface:train-ticket-money-saga-v054",
+    "path": "input:law-surface-saga.json",
+    "schema": "law-equation-surface/v0.5.4"
   },
   "inputDigests": {
     "archmap": {
@@ -88,11 +104,12 @@
     }
   },
   "runId": "run:78c31d6a3172",
-  "schema": "archsig-repair-plan-validation-report/v0.5.4",
+  "schema": "law-equation-surface-validation-report/v0.5.4",
   "summary": {
     "failedCheckCount": 0,
-    "result": "warn",
-    "warningCheckCount": 1
+    "lawCount": 3,
+    "result": "pass",
+    "warningCheckCount": 0
   },
   "toolVersion": "0.5.4"
 }

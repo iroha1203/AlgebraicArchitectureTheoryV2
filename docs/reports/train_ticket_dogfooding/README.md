@@ -25,7 +25,7 @@ ArchSig v0.5.3 の履歴証拠、SAGA 診断階段は ArchSig v0.5.4 の現行�
 | `evidence/fullbuild/` | scope-manifest、統合 ArchMap(2,118 atoms)+ money/status 変種、調停・整合性・正準化記録、coverage ledger、供給指示書、ArchView スクリーンショット |
 | `evidence/fullbuild/law/` | money / status 各系列の LawPolicy・law surface・measurement profile・policy bundle |
 | `evidence/fullbuild/analyze-money/`, `analyze-status/` | analyze / gate 一次出力(summary・packet・gate report・insight report/brief・run manifest・validation 一式) |
-| `evidence/saga/` | SAGA 用 ArchMap 変種(head / repaired)、law surface・policy・profile・gate policy、presentation-generated repair-plan(head / repaired)、builder スクリプト |
+| `evidence/saga/` | SAGA 用 ArchMap 変種(head / repaired)、law surface・policy・profile・gate policy、v0.5.7 repair-plan(選択複体のみ、head / repaired)、builder スクリプト |
 | `evidence/saga/out/` | head / repaired の analyze 一次出力、compare 出力、gate report(head / repaired) |
 
 ### 除外物と再生成

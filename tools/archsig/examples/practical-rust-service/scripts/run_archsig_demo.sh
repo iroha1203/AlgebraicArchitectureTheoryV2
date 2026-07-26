@@ -92,7 +92,6 @@ head_packet="$OUT/head/archsig-measurement-packet.json"
 expect "grounding head" "$(saga_verdict "$head_packet" "law:money-convention")" "measured_zero"
 echo "    (every chart satisfies its own displayed money law — that is the trap)"
 expect "descent head" "$(saga_verdict "$head_packet" "saga.residual-class")" "measured_nonzero"
-expect "comparison head" "$(invariant_value "$head_packet" "saga-comparison:h1-transfer" "status")" "established"
 expect "harmonic debt head" "$(invariant_value "$head_packet" "harmonic-debt:profile:money-drift@1" "essentialRepairLowerBound")" "0.353553"
 expect_value "$OUT/head/archsig-analysis-summary.json" "analyze head" conclusion "MEASURED_NONGLUING_RESIDUAL_CLASS"
 
@@ -122,7 +121,7 @@ mkdir -p "$OUT/repaired"
   --repair-plan "$EXAMPLE/saga/repair_plan_repaired.json" \
   --out-dir "$OUT/repaired" >/dev/null
 repaired_packet="$OUT/repaired/archsig-measurement-packet.json"
-expect "descent repaired" "$(saga_verdict "$repaired_packet" "saga.global-coherence")" "measured_zero"
+expect "descent repaired" "$(saga_verdict "$repaired_packet" "saga.residual-boundary-membership")" "measured_zero"
 expect "harmonic debt repaired" "$(invariant_value "$repaired_packet" "harmonic-debt:profile:money-drift@1" "essentialRepairLowerBound")" "0.0"
 expect_value "$OUT/repaired/archsig-analysis-summary.json" "analyze repaired" conclusion "REPAIR_GLUES_WITHIN_SELECTED_COMPLEX"
 "${ARCHSIG[@]}" compare \

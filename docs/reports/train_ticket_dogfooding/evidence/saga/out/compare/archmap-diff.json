@@ -148,11 +148,11 @@
   "inputDigests": {
     "baseNormalizedArchmap": {
       "path": "head/normalized-archmap.json",
-      "sha256": "dcf6b78efe2ec09c32455ecb1aaf746e76991d23298938ae5eda596198d6924f"
+      "sha256": "0c43575d34d61834211b6d06d782c2f3138293f00b00c43f7a55f90677e910bb"
     },
     "headNormalizedArchmap": {
       "path": "repaired/normalized-archmap.json",
-      "sha256": "1eb642c75994d5bd3da701cbd94801ef0fa787461b1ae536fce8bed1beb1dcb8"
+      "sha256": "5bca5aea695f1e6edc2519379868ff9b7050a503c007c883176ea6fe9c3d5fab"
     }
   },
   "nonConclusions": [

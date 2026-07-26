@@ -194,7 +194,6 @@ fn class_support_section(packet: &Value) -> Value {
             "component": residual_rep["residualClassSupport"]["component"],
             "cocycleCertificateKind": residual_rep["residualClassSupport"]["cocycle"]["certificateKind"],
             "tripleOverlapRefs": residual_rep["residualClassSupport"]["cocycle"]["tripleOverlapRefs"],
-            "suppliedData": residual_rep["residualClassSupport"]["suppliedData"],
         });
     }
     if let Some(membership) = membership {
@@ -214,13 +213,13 @@ fn class_support_section(packet: &Value) -> Value {
 /// Per-chart grounding rows, present only when a saga-grounded premise was
 /// actually evaluated in this run.
 fn local_observations_section(packet: &Value) -> Value {
-    let Some(grounded) = invariant_with_id_prefix(packet, "saga-generated-end-to-end-packet")
+    let Some(grounded) = invariant_with_id_prefix(packet, "saga-grounded:defect-quotient")
     else {
         return Value::Null;
     };
     let rep = representation(grounded);
-    let per_chart_value = if rep["lawDependent"]["premise"]["perChart"].is_array() {
-        &rep["lawDependent"]["premise"]["perChart"]
+    let per_chart_value = if rep["displayedRequiredLawsHold"]["perChart"].is_array() {
+        &rep["displayedRequiredLawsHold"]["perChart"]
     } else {
         &rep["premise"]["perChart"]
     };

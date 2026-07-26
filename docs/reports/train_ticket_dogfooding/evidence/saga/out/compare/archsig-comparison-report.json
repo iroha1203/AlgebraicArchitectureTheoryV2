@@ -38,18 +38,18 @@
     "base": {
       "conclusionCode": null,
       "mode": "measurement",
-      "runId": "run:07154e725bfd",
+      "runId": "run:78c31d6a3172",
       "structuralVerdictCounts": {
-        "measured_nonzero": 4,
+        "measured_nonzero": 2,
         "measured_zero": 1
       }
     },
     "head": {
       "conclusionCode": null,
       "mode": "measurement",
-      "runId": "run:cf07b535e9bc",
+      "runId": "run:6685bab8db21",
       "structuralVerdictCounts": {
-        "measured_zero": 5
+        "measured_zero": 3
       }
     }
   },
@@ -57,11 +57,11 @@
     "baseRun": {
       "archmap": {
         "path": "input:archmap-saga-head.json",
-        "sha256": "bdca8b9c6b04a377ec41e64ee0f17186c1ce6ad0a267b5fc2c0a574a375c1010"
+        "sha256": "6f8a2f6265234010587cc30dd23188c0f7b8030d39d385289a1c8c1320c9ec22"
       },
       "componentFingerprints": {
         "lawPolicy": "sha256:e5e91078749ec26ae327ecd1cf41d6d2f7dd035c81a1c66bc0e0476b10e6900c",
-        "lawSurface": "sha256:15b78313f591c424245c79fdc32ab6aee799d3c53197b331d569556ac3670471",
+        "lawSurface": "sha256:62d8863d01500c61fd9027a4be468ffc6e2ed23bd9ea919f2e7fd45041d19190",
         "measurementProfile": "sha256:c073650c8bcd053d48d78bb1a29811b80917ffbdec81e1789dd15d68908b0753"
       },
       "lawPolicy": {
@@ -70,11 +70,11 @@
       },
       "measurementPacket": {
         "path": "archsig-measurement-packet.json",
-        "sha256": "8e7a0e54bd512627b41a1919c0376e26c479573c6204eb490346a3f8fb37eb25"
+        "sha256": "1899703f940e33df158ad760be3ea66052375e2c4e796e5c0cb37f844b8ee0b6"
       },
       "normalizedArchmap": {
         "path": "normalized-archmap.json",
-        "sha256": "dcf6b78efe2ec09c32455ecb1aaf746e76991d23298938ae5eda596198d6924f"
+        "sha256": "0c43575d34d61834211b6d06d782c2f3138293f00b00c43f7a55f90677e910bb"
       },
       "path": "head/archsig-run-manifest.json",
       "profileFingerprint": {
@@ -83,12 +83,12 @@
       },
       "repairPlan": {
         "path": "input:repair-plan-head.json",
-        "sha256": "c02b93b0559ce8df40d1cec2aec5919abac778e5821089a514621378ee9eb6a9"
+        "sha256": "140987077e2c3ff3167ab5e4f8ceae5326db6b5c9530ac5100b5d6da4cb4a163"
       },
-      "runId": "run:07154e725bfd",
+      "runId": "run:78c31d6a3172",
       "siteCoverDigest": {
         "basis": "normalized contexts + covers + derived finite cover nerve",
-        "sha256": "c05d1537d9126e4f0e2b59bf37ef90826adf8a22ff49e89625ff0e8f2d243868",
+        "sha256": "c75cd524da051ad25472f1faad2d3fc44456db4fe6f0a1f90851d76e7b069b1a",
         "status": "computed"
       },
       "toolVersion": "0.5.4"
@@ -96,11 +96,11 @@
     "headRun": {
       "archmap": {
         "path": "input:archmap-saga-repaired.json",
-        "sha256": "0ea545f516e24a78e252391bf8ec24224ec8630d8dbd6b1698af04a28ea7a585"
+        "sha256": "9a7baaa8b1adc73b5c5ff0fc3d56da0986402aecfe4902a0aa7e63ca3d449417"
       },
       "componentFingerprints": {
         "lawPolicy": "sha256:e5e91078749ec26ae327ecd1cf41d6d2f7dd035c81a1c66bc0e0476b10e6900c",
-        "lawSurface": "sha256:15b78313f591c424245c79fdc32ab6aee799d3c53197b331d569556ac3670471",
+        "lawSurface": "sha256:62d8863d01500c61fd9027a4be468ffc6e2ed23bd9ea919f2e7fd45041d19190",
         "measurementProfile": "sha256:c073650c8bcd053d48d78bb1a29811b80917ffbdec81e1789dd15d68908b0753"
       },
       "lawPolicy": {
@@ -109,11 +109,11 @@
       },
       "measurementPacket": {
         "path": "archsig-measurement-packet.json",
-        "sha256": "e14e1d4f9a0a88c4cc68baf83bde4130e369c0abc0b895ee06c136a086be7a26"
+        "sha256": "3c64da992e8ccca6bc87d5c32c58832436259f5eced3f5cd75ae77ad64f150b3"
       },
       "normalizedArchmap": {
         "path": "normalized-archmap.json",
-        "sha256": "1eb642c75994d5bd3da701cbd94801ef0fa787461b1ae536fce8bed1beb1dcb8"
+        "sha256": "5bca5aea695f1e6edc2519379868ff9b7050a503c007c883176ea6fe9c3d5fab"
       },
       "path": "repaired/archsig-run-manifest.json",
       "profileFingerprint": {
@@ -122,12 +122,12 @@
       },
       "repairPlan": {
         "path": "input:repair-plan-repaired.json",
-        "sha256": "a0f2e4e57b5fa919e24abc3540a4b7ff18116468bd2867077a9efc136a450343"
+        "sha256": "5a6a8919bb8dd6d894130b6cd500898af38b5bd6f1a682501e9d57cf59cda2f9"
       },
-      "runId": "run:cf07b535e9bc",
+      "runId": "run:6685bab8db21",
       "siteCoverDigest": {
         "basis": "normalized contexts + covers + derived finite cover nerve",
-        "sha256": "c05d1537d9126e4f0e2b59bf37ef90826adf8a22ff49e89625ff0e8f2d243868",
+        "sha256": "c75cd524da051ad25472f1faad2d3fc44456db4fe6f0a1f90851d76e7b069b1a",
         "status": "computed"
       },
       "toolVersion": "0.5.4"
@@ -139,7 +139,35 @@
     "Cover or context changes are boundary data and map to other_transition for gate policy evaluation."
   ],
   "profileConclusionCode": null,
-  "schema": "archsig-comparison-report/v0.5.4",
+  "residualClassAgreement": {
+    "deltaSupport": [
+      "overlap:cancel-insidepay",
+      "overlap:cancel-order",
+      "overlap:insidepay-order"
+    ],
+    "derived": true,
+    "equation": "delta0(h) = r_base XOR r_head",
+    "inB1": false,
+    "nonConclusion": "the residual change between the two runs is not a coboundary on the shared complex; the two runs' residual classes differ",
+    "provenance": {
+      "coverRef": "cover:money-settlement-loop",
+      "lawSurfaceRef": "law-surface:train-ticket-money-saga-v054",
+      "overlapComplex": {
+        "overlapRefs": [
+          "overlap:cancel-insidepay",
+          "overlap:cancel-order",
+          "overlap:consign-consignprice",
+          "overlap:insidepay-order",
+          "overlap:preserve-consign",
+          "overlap:preserve-order"
+        ]
+      }
+    },
+    "reason": "delta_not_a_boundary_within_selected_complex",
+    "status": "not_cohomologous",
+    "theoremRef": "part10/3.4+4.4"
+  },
+  "schema": "archsig-comparison-report/v0.5.5",
   "toolVersion": "0.5.4",
   "verdictTransitions": [
     {
@@ -154,17 +182,6 @@
       "transition": "measured_obstruction_no_longer_recorded"
     },
     {
-      "baseRowRef": "structuralVerdict/ag-saga-descent/saga-global-coherence/residual-not-in-b1",
-      "baseVerdict": "measured_nonzero",
-      "deltaRefs": [],
-      "discipline": "Comparison is a record-level juxtaposition of two ArchSig runs. It does not claim causal repair, semantic equivalence, or preserved obstruction identity; a class-zero reading is available only under a checked coarse-to-fine refinement contract.",
-      "headRowRef": "structuralVerdict/ag-saga-descent/saga-global-coherence/complete-support-global-coherent",
-      "headVerdict": "measured_zero",
-      "introducedByChangeCategory": "cleared",
-      "rowKey": "ag.saga-descent|saga.global-coherence|{\"coefficient\":\"F2\",\"coverRef\":\"cover:money-settlement-loop\",\"kind\":\"saga-residual-boundary-membership\",\"scopeSize\":{\"contexts\":1,\"edges\":0,\"triangles\":0}}",
-      "transition": "measured_obstruction_no_longer_recorded"
-    },
-    {
       "baseRowRef": "structuralVerdict/ag-saga-descent/saga-residual-boundary-membership/residual-not-in-b1",
       "baseVerdict": "measured_nonzero",
       "deltaRefs": [],
@@ -173,17 +190,6 @@
       "headVerdict": "measured_zero",
       "introducedByChangeCategory": "cleared",
       "rowKey": "ag.saga-descent|saga.residual-boundary-membership|{\"coefficient\":\"F2\",\"coverRef\":\"cover:money-settlement-loop\",\"kind\":\"saga-residual-boundary-membership\",\"scopeSize\":{\"contexts\":1,\"edges\":0,\"triangles\":0}}",
-      "transition": "measured_obstruction_no_longer_recorded"
-    },
-    {
-      "baseRowRef": "structuralVerdict/ag-saga-descent/saga-residual-class/nonzero-class-representative",
-      "baseVerdict": "measured_nonzero",
-      "deltaRefs": [],
-      "discipline": "Comparison is a record-level juxtaposition of two ArchSig runs. It does not claim causal repair, semantic equivalence, or preserved obstruction identity; a class-zero reading is available only under a checked coarse-to-fine refinement contract.",
-      "headRowRef": "structuralVerdict/ag-saga-descent/saga-residual-class/zero-class-representative",
-      "headVerdict": "measured_zero",
-      "introducedByChangeCategory": "cleared",
-      "rowKey": "ag.saga-descent|saga.residual-class|{\"coefficient\":\"F2\",\"coverRef\":\"cover:money-settlement-loop\",\"kind\":\"saga-residual-class\",\"scopeSize\":{\"contexts\":1,\"edges\":0,\"triangles\":0}}",
       "transition": "measured_obstruction_no_longer_recorded"
     },
     {
