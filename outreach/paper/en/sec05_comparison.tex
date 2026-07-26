@@ -1,0 +1,625 @@
+\section{The SAGA Comparison Theorem}\label{sec:5}
+
+This section states and proves the central theorem of SAGA. Routine
+verifications (such as componentwise checks of restriction naturality)
+are compressed in the text, but every main argument that makes the
+comparison theorem hold can be followed continuously within this
+section.
+
+\subsection{The central theorem}\label{sec:51}
+
+Before the formal statement, we describe the shape of the claim in
+plain terms. The stage is a selected monomorphic AAT cover, on which
+stand the two complexes constructed independently in
+Section~\ref{sec:4} --- the semantic side in the language of repair and
+the equation side in the language of equations. The theorem asserts
+that, under finitely many selection conditions matching the local data
+of the two sides, (i) the two coefficient presheaves become naturally
+isomorphic; (ii) this isomorphism identifies the two $H^1$ groups and
+sends the obstruction class of the repair side to the obstruction class
+of the equation side; and (iii) if moreover the family of repair states
+satisfies the gluing condition (the true sheaf condition), then the
+existence of a global repair is equivalent to the vanishing of the
+obstruction class --- three stages in all. The inputs 1--8 below can be
+read in four groups: inputs 1--2 are the two coefficients; inputs 3--4
+are the correspondence connecting the coefficients and its
+completeness; inputs 5--7 are the local state systems generating the
+residuals and their correspondence; input 8 is the normalization of
+empty overlaps.
+
+\begin{theorem}[SAGA central theorem]\label{thm:central}
+On a monomorphic AAT cover $\cU$, fix the following:
+\begin{enumerate}
+\item the abelian-group-valued presheaf $\Msem$ generated from
+supported semantic atoms and a restriction-stable local repair relation
+(\S\ref{sec:42});
+\item the abelian-group-valued presheaf $\QE$ generated from an
+architectural equation system $E$;
+\item a restriction-natural map sending supported semantic atoms to
+displayed Atom/equation residual classes;
+\item completeness of the local repair relation with respect to that
+map, and equation generator completeness (checked on each cover
+intersection);
+\item an affine semantic repair system $\Psem$ deriving an additive
+torsor structure from the action of repair words, together with its
+selected local repair atlas;
+\item an equation-lift system $\PE$ acted on by $\QE$, together with
+its selected local lift atlas;
+\item a restriction-natural, generator-equivariant map
+$\beta:\Psem\to\PE$ sending semantic local states to equation local
+lifts (checked on each cover intersection);
+\item for each empty cover intersection $V$ excluded from the products,
+$\Msem(V)=\QE(V)=0$ and the subsingleton property of $\Psem(V)$ and
+$\PE(V)$ (empty-overlap normalization).
+\end{enumerate}
+Then the following three stages hold.
+
+\textbf{(i) SAGA Presentation Theorem.} The free extension
+$\widetilde\chi_V:\Fsem(V)\to \QE(V)$ of the map of assumption~3
+(\S\ref{sec:53}) satisfies, on each nonempty cover intersection $V$,
+\[
+\ker \widetilde\chi_V=\Rrep(V),
+\qquad
+\operatorname{im}\widetilde\chi_V=\QE(V).
+\]
+Of the kernel equality, the inclusion
+$\Rrep(V)\subseteq\ker\widetilde\chi_V$ (repair-relation soundness) is
+not an assumption: it is derived from the local-state data
+(assumptions~5--7) in \S\ref{sec:53}. The reverse inclusion
+$\ker\widetilde\chi_V\subseteq\Rrep(V)$ is repair-relation
+completeness, and the image equality is equation-generator
+completeness; both are assumption~4. By this exactness, the map induces
+a natural isomorphism on the cover intersection diagram
+\[
+\Phi:\Msem\xrightarrow{\ \sim\ }\QE.
+\]
+
+\textbf{(ii) \v{C}ech comparison.} $\Phi$ induces a degreewise cochain
+isomorphism between the \v{C}ech complexes built separately from
+$\Msem$ and $\QE$,
+\[
+\kappa^\bullet:
+C^\bullet_{\mathrm{sem}}(\mathcal U)
+\xrightarrow{\ \sim\ }
+C^\bullet_E(\mathcal U),
+\]
+and $\kappa$ commutes with the differentials. Hence an isomorphism
+\[
+\kappa_*:
+H^1_{\mathrm{sem}}(\mathcal U)
+\xrightarrow{\ \sim\ }
+\check H^1(\mathcal U,\QE)
+\]
+is induced. For the residual $\rsem$ generated from the semantic local
+repair atlas and the residual $\rE$ generated from the equation
+local-lift atlas,
+\[
+\kappa_*([\rsem])=[\rE].
+\]
+Restricting the selected local atlases to each nonempty intersection
+makes the local-state system on each intersection used by this
+construction nonempty. The correspondence of residuals holds at the
+cochain level, $\kappa^1(\rsem)=\rE$, when the two local atlases are
+chosen aligned via $\beta$; when they are chosen independently, the
+difference of the two cochains is an explicit $\delta^0$-image, and the
+equality of classes holds.
+
+\textbf{(iii) Grounded Global Gluing.} If moreover the $\Psem$ of
+assumption~5 is a true semantic repair sheaf (defined in
+\S\ref{sec:56}), then
+\[
+\mathrm{Nonempty}\,\Psem(W)
+\iff
+[\rsem]=0
+\iff
+[\rE]=0.
+\]
+\end{theorem}
+
+\paragraph{The character of the three stages.}
+In (ii), the cochain isomorphism and the induced $H^1$ isomorphism are
+the general mechanism of \v{C}ech complexes that follows from a natural
+isomorphism of coefficient presheaves. The latter half of (ii), the
+residual correspondence, belongs to the proper content. The proper
+content of this theorem is concentrated in (i), (iii), and the residual
+correspondence: the independent construction of the semantic repair
+presentation and the equation-generated quotient presentation
+(Section~\ref{sec:4}); the construction of the generator map $\chi$
+(Proposition~\ref{prop:chiE}); the derivation of relation soundness
+from the local-state interpretation $\beta$ (\S\ref{sec:53}); the
+placement of completeness / generation as conditions relativized to
+architecture data; and the semantic correspondence of residual classes
+(\S\ref{sec:55}).
+
+\subsection{The structure of the proof}\label{sec:52}
+
+The proof is organized in four stages, and
+\S\ref{sec:53}--\S\ref{sec:56} give the arguments in this order:
+\begin{center}
+\small
+\begin{tabular}{ll}
+generator map $\chi$ $\to$ coefficient isomorphism
+$\Phi : \Msem \simeq \QE$ & (\S\ref{sec:53})\\
+$\to$ cochain isomorphism $\kappa$, $\kappa\delta=\delta\kappa$ &
+(\S\ref{sec:54})\\
+$\to$ $H^1$ isomorphism $\kappa_*$ & (\S\ref{sec:54})\\
+$\to$ residual correspondence $\kappa_*([\rsem])=[\rE]$ &
+(\S\ref{sec:55})\\
+$\to$ grounded global gluing & (\S\ref{sec:56})\\
+\end{tabular}
+\end{center}
+
+That soundness is a consequence rather than an assumption is the
+structural crux of the theorem; its derivation opens \S\ref{sec:53}.
+
+The comparison core (\S\ref{sec:53}--\S\ref{sec:55}) uses only local
+data on cover intersections; the global sheaf condition does not appear
+until the gluing of \S\ref{sec:56}. Which proof consumes which
+assumption of Theorem~\ref{thm:central} is fixed as a table in
+Appendix~\ref{app:A}.
+
+The overall structure of the proof is shown in
+Figure~\ref{fig:comparison}.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.92\linewidth]{../zenodo_saga_figure1_comparison.png}
+\caption{The structure of the SAGA comparison theorem
+(Theorem~\ref{thm:central}). The semantic side (upper left) and the
+equation side (upper right), constructed independently in
+Section~\ref{sec:4}, pass through the coefficient isomorphism $\Phi$
+(i) and the cochain isomorphism $\kappa$ commuting with the
+differentials (ii) to the $H^1$ isomorphism $\kappa_*$ and the residual
+class correspondence $\kappa_*([\rsem])=[\rE]$; under the true sheaf
+condition the three-way equivalence for global repair (iii) holds.}
+\label{fig:comparison}
+\end{figure}
+
+\subsection{Coefficient isomorphism: generation of soundness and presentation comparison}\label{sec:53}
+
+The map of assumption~3 is a restriction-natural correspondence
+\[
+\chi_V:S(V)\longrightarrow \QE(V)
+\]
+sending supported semantic atoms to equation coefficients on each
+nonempty cover intersection $V$ (the $\chi^E$ of
+Proposition~\ref{prop:chiE} is a constructed instance of this input).
+Since $\Fsem(V)$ is the free abelian group on $S(V)$ (\S\ref{sec:42}),
+by the universal property $\chi_V$ extends to a unique homomorphism
+$\widetilde\chi_V:\Fsem(V)\to \QE(V)$. The $\Phi$ to be constructed is
+the map induced by $\widetilde\chi$ on the quotient by the repair
+relation, and its well-definedness, injectivity, and surjectivity are
+carried by three distinct conditions: soundness, completeness, and
+generation. The joint validity of these three conditions is called
+\textbf{SAGA presentation exactness}.
+
+\paragraph{Generation of soundness.}
+Take $x\in\Rrep(V)$ and $p\in\Psem(V)$ (under
+Theorem~\ref{thm:central}, $\Psem(V)$ is nonempty by restriction of the
+selected local atlas). By the action soundness of \S\ref{sec:42}, the
+semantic action gives $x+p=p$. The generator-level equivariance of
+$\beta$ extends to finite sums and additive inverses in the free group,
+so
+\[
+\beta(p)=\beta(x+p)=\widetilde\chi(x)+\beta(p).
+\]
+Since the action of $\QE(V)$ on $\PE(V)$ is free, $\widetilde\chi(x)=0$.
+Therefore
+\[
+\Rrep(V)\subset\ker\widetilde\chi_V.
+\]
+Deriving soundness from the local-state data instead of assuming it is
+exactly this three-line argument.
+
+The definition of $\beta$ in assumption~7 does not mention $\Rrep$;
+all that is required is restriction naturality and generator-level
+equivariance, so the derivation is not circular. That $\beta$ can be
+constructed independently of soundness is shown by the concrete map in
+the finite example of \S\ref{sec:58}.
+
+\paragraph{Descent to the quotient.}
+Since $\Rrep(V)\subset\ker\widetilde\chi_V$, the map
+$\widetilde\chi_V$ factors through the quotient, inducing a unique
+homomorphism
+\[
+\Phi_V:
+\Msem(V)=\Fsem(V)/\Rrep(V)
+\longrightarrow \QE(V).
+\]
+
+\paragraph{Injectivity.}
+If $\Phi_V([x])=0$ then $x\in\ker\widetilde\chi_V$, and by
+repair-relation completeness (assumption~4) $x\in\Rrep(V)$, hence
+$[x]=0$.
+
+\paragraph{Surjectivity.}
+For any $q\in \QE(V)$, equation-generator completeness (assumption~4)
+provides $x\in\Fsem(V)$ with $\widetilde\chi_V(x)=q$, and
+$\Phi_V([x])=q$.
+
+\paragraph{Naturality.}
+On generators,
+\[
+\Phi_{V'}([\lambda|_{V'}])
+  =\chi_{V'}(\lambda|_{V'})
+  =\chi_V(\lambda)|_{V'}
+  =\Phi_V([\lambda])|_{V'},
+\]
+where the second equality is the restriction naturality of $\chi$
+(assumption~3). Since the generators generate $\Msem(V)$, $\Phi$
+commutes with restriction on all elements.
+
+Thus $\Phi:\Msem\simeq \QE$ is a natural isomorphism of presheaves on
+the cover intersection diagram. This isomorphism is not a transport of
+one complex from the other but a presentation comparison between the
+semantic presentation and the equation quotient. The three conditions
+carry three different mathematical jobs --- existence, injectivity, and
+surjectivity of the map --- and removing any one of them destroys the
+isomorphism, as counterexamples over the free group on one generator
+$F=\Zint$ confirm:
+\begin{itemize}
+\item \emph{dropping soundness}: $R=2\Zint$, $Q=\Zint$, $\chi(n)=n$.
+The relation $2=0$ does not become zero in $Q$, and the map does not
+descend to the quotient.
+\item \emph{dropping completeness}: $R=0$, $Q=\Zint/(2)$,
+$\chi(n)=[n]$. The map descends and is surjective, but $2$ remains in
+the kernel and the map is not injective.
+\item \emph{dropping generation}: $R=2\Zint$, $Q=\Zint/(4)$,
+$\chi(n)=[2n]$. The kernel coincides with $R$, but the image is
+$\{0,[2]\}$ and the map is not surjective.
+\end{itemize}
+
+\subsection{Cochain commutation and the $H^1$ isomorphism}\label{sec:54}
+
+\paragraph{Construction of the degreewise map.}
+For each degree $n=0,1,2$, define
+\[
+\kappa^n:C^n_{\mathrm{sem}}(\mathcal U)\longrightarrow C^n_E(\mathcal U)
+\]
+by applying $\Phi$ to each intersection component:
+\[
+(\kappa^0a)_i=\Phi_{U_i}(a_i),\qquad
+(\kappa^1c)_{ij}=\Phi_{U_{ij}}(c_{ij}),\qquad
+(\kappa^2z)_{ijk}=\Phi_{U_{ijk}}(z_{ijk}).
+\]
+Since each $\Phi_V$ is an isomorphism, $\kappa^n$ is an isomorphism on
+the product.
+
+\paragraph{Commutation with the differentials.}
+What must be shown is the commutativity of the diagram
+\[
+\begin{array}{ccccc}
+C^0_{\mathrm{sem}}(\mathcal U)
+&\xrightarrow{\ \delta^0_{\mathrm{sem}}\ }&
+C^1_{\mathrm{sem}}(\mathcal U)
+&\xrightarrow{\ \delta^1_{\mathrm{sem}}\ }&
+C^2_{\mathrm{sem}}(\mathcal U)\\[2pt]
+\big\downarrow{\scriptstyle\kappa^0}&&\big\downarrow{\scriptstyle\kappa^1}&&\big\downarrow{\scriptstyle\kappa^2}\\[2pt]
+C^0_E(\mathcal U)
+&\xrightarrow{\ \delta^0_E\ }&
+C^1_E(\mathcal U)
+&\xrightarrow{\ \delta^1_E\ }&
+C^2_E(\mathcal U)
+\end{array}
+\]
+For $a\in C^0_{\mathrm{sem}}(\cU)$ and $i<j$,
+\[
+\begin{aligned}
+(\kappa^1\delta^0_{\mathrm{sem}}a)_{ij}
+&=\Phi_{U_{ij}}(a_j|-a_i|)\\
+&=\Phi_{U_j}(a_j)|-\Phi_{U_i}(a_i)|\\
+&=(\delta_E^0\kappa^0a)_{ij},
+\end{aligned}
+\]
+where the second line is the additivity and restriction naturality of
+$\Phi$. Applying the same computation to the $(i,j,k)$ component of
+$c\in C^1_{\mathrm{sem}}(\cU)$ (the alternating three-term sum) yields
+$\kappa^2\delta^1_{\mathrm{sem}}=\delta^1_E\kappa^1$. Only the
+homomorphy and naturality of $\Phi$ proved in \S\ref{sec:53} are used;
+no new assumption enters here.
+
+\paragraph{$H^1$ isomorphism.}
+Since $\kappa$ is a degreewise isomorphism commuting with the
+differentials, it preserves and reflects cocycles and coboundaries.
+Hence
+\[
+\kappa_*:
+H^1_{\mathrm{sem}}(\mathcal U)
+\longrightarrow
+\check H^1(\mathcal U,\QE),
+\qquad
+[c]\longmapsto[\kappa^1c]
+\]
+is well defined: replacing a representative by
+$c+\delta^0_{\mathrm{sem}}a$ gives
+$\kappa^1(c+\delta^0a)=\kappa^1c+\delta^0_E(\kappa^0a)$, and the class
+does not change. The inverse map is induced in the same form by the
+degreewise inverse $(\kappa^1)^{-1}$, and $\kappa_*$ is an isomorphism
+of abelian groups.
+
+\subsection{Residual correspondence}\label{sec:55}
+
+Choose the semantic atlas $\{p_i\}$ and the equation atlas $\{e_i\}$
+independently. On each chart, $\beta(p_i)$ and $e_i$ are elements of
+the same $\QE(U_i)$-torsor $\PE(U_i)$, so there is a unique
+$h_i\in \QE(U_i)$ with $e_i=h_i+\beta(p_i)$. On $U_{ij}$, using the
+naturality and equivariance of $\beta$ (assumption~7),
+\[
+\begin{aligned}
+e_j
+&=h_j+\beta(p_j)\\
+&=h_j+\beta(r_{\mathrm{sem},ij}+p_i)\\
+&=h_j+\Phi(r_{\mathrm{sem},ij})+\beta(p_i)\\
+&=(\Phi(r_{\mathrm{sem},ij})+h_j-h_i)+e_i.
+\end{aligned}
+\]
+By uniqueness of differences in the equation torsor,
+\[
+r_{E,ij}=\Phi(r_{\mathrm{sem},ij})+h_j-h_i,
+\qquad\text{that is,}\qquad
+\rE=\kappa^1(\rsem)+\delta_E^0h.
+\]
+When the two atlases are chosen aligned via $\beta$, i.e.\ when
+$e_i=\beta(p_i)$, we have $h=0$ and the cochain-level equality
+$\kappa^1(\rsem)=\rE$ holds. When they are chosen independently, the
+difference of the two cochains is the explicit coboundary
+$\delta^0_Eh$, so the equality of classes
+\[
+\kappa_*([\rsem])=[\rE]
+\]
+holds. Since $\kappa_*$ is an isomorphism and preserves and reflects
+zero, the equivalences $[\rsem]=0\iff[\rE]=0$ and
+$[\rsem]\neq0\iff[\rE]\neq0$ follow as well.
+
+This proves parts (i) and (ii) of Theorem~\ref{thm:central}
+(\S\ref{sec:53}--\S\ref{sec:55}). The remaining three-way equivalence
+(iii) is proved in the next subsection.
+
+\subsection{Global repair: Grounded Global Gluing}\label{sec:56}
+
+\begin{definitionstar}[true semantic repair sheaf]
+A presheaf $\Psem$ on $S_X$ is called a \textbf{true semantic repair
+sheaf} when: (1) $\Psem$ satisfies the sheaf condition for all covers
+of the selected AAT topology; (2) the action of $\Msem$ commutes with
+restriction and is locally free and transitive; (3) $\cU$ is a
+monomorphic AAT cover belonging to that topology; (4) on the empty
+intersections excluded from the products, $\Psem$ is subsingleton.
+From these four conditions the sheaf condition for $\cU$ is derived,
+and no per-cover amalgamation map is posited as separate data.
+\end{definitionstar}
+
+\begin{lemmafiveA}[ordered matching completion]
+Suppose each morphism of the cover is a monomorphism and $\Psem$ is
+subsingleton on the empty overlaps excluded from the products
+(empty-overlap normalization). If a family $(q_i)$,
+$q_i\in\Psem(U_i)$, agrees on all nonempty $i<j$ overlaps, then
+$(q_i)$ is a matching family on all ordered overlaps.
+\end{lemmafiveA}
+
+\begin{proof}
+Three kinds of overlap remain. On a self-overlap $U_{ii}$: since $u_i$
+is a monomorphism, the diagonal $U_i\to U_i\times_W U_i$ is an
+isomorphism, and under this canonical isomorphism the two projections
+become the same morphism; hence the two restrictions of $q_i$ agree.
+On a reversed overlap $U_{ji}$ ($i<j$): the pullback symmetry
+$U_j\times_W U_i\cong U_i\times_W U_j$ is a canonical isomorphism
+interchanging the two projections; restrictions are compatible along
+this canonical isomorphism, so agreement on $U_{ji}$ is equivalent to
+agreement on $U_{ij}$. On the empty overlaps excluded from the
+products, $\Psem$ is subsingleton, so agreement is automatic.
+\end{proof}
+
+\begin{theorem}[Grounded Global Gluing]\label{thm:gluing}
+In the setting of Theorem~\ref{thm:central}, if in addition $\Psem$ is
+a true semantic repair sheaf, then the three-way equivalence
+\[
+\mathrm{Nonempty}\,\Psem(W)
+\iff
+[\rsem]=0
+\iff
+[\rE]=0
+\]
+holds. Moreover, for the correction $a$ obtained from a proof of
+$[\rsem]=0$, there exists a unique global section whose restrictions
+are the corrected family
+\[
+p_i^{\mathrm{corr}}=(-a_i)+p_i.
+\]
+\end{theorem}
+
+\begin{proof}[Proof (forward)]
+Suppose $[\rsem]=0$. Since the zero class is equivalent to the
+existence of a matching correction (\S\ref{sec:42}), there is
+$a\in C^0_{\mathrm{sem}}(\cU)$ with $\rsem=\delta^0_{\mathrm{sem}}a$.
+The residual of the corrected family $p_i^{\mathrm{corr}}=(-a_i)+p_i$
+is $\rsem-\delta^0a=0$ by choice independence (\S\ref{sec:42}), so the
+corrected family agrees on all nonempty $i<j$ overlaps. By
+Lemma~5.2A, the corrected family is a matching family on all ordered
+overlaps. Since $\cU$ is a cover of the topology and $\Psem$ is a sheaf
+for that topology, sheaf amalgamation provides a unique
+$p\in\Psem(W)$ with $p|_{U_i}=p_i^{\mathrm{corr}}$.
+\end{proof}
+
+\begin{proof}[Proof (reverse)]
+Conversely, suppose some $p\in\Psem(W)$ exists. On each chart, by
+transitivity and freeness of the torsor there is a unique
+$a_i\in\Msem(U_i)$ with $p_i=a_i+p|_{U_i}$. Taking differences on
+overlaps,
+\[
+r_{\mathrm{sem},ij}=a_j-a_i,
+\qquad\text{that is,}\qquad
+\rsem=\delta^0_{\mathrm{sem}}a,
+\]
+so $[\rsem]=0$. The final equivalence of the three,
+$[\rsem]=0\iff[\rE]=0$, is the residual class correspondence of
+\S\ref{sec:55}.
+\end{proof}
+
+What is unique here is the amalgamation of the fixed corrected
+matching family, not uniqueness of $\Psem(W)$ as a whole; the
+difference between distinct global repairs is carried by degree-zero
+data.
+
+\paragraph{The equation side.}
+The same conclusion descends to the equation side. Three additional
+assumptions are made: SAGA presentation exactness holds on all
+contexts of $S_X$; the $\beta$ of assumption~7 is given as a natural
+transformation on the whole site (the comparison core uses only its
+components on the intersection diagram, so this globalization is an
+additional assumption); and $\PE$ is also a sheaf for the selected
+topology. On each chart and nonempty overlap, the
+$\Phi_V$-equivariant $\beta_V:\Psem(V)\to\PE(V)$ is a bijection:
+injectivity follows from the transitivity of the semantic torsor, the
+freeness of the target torsor, and the injectivity of $\Phi_V$;
+surjectivity from the transitivity of the target torsor and the
+surjectivity of $\Phi_V$. This local bijectivity lifts to the global
+level in three steps. Injectivity: if $\beta_W(p)=\beta_W(p')$, then
+on each chart the injectivity of $\beta_{U_i}$ gives
+$p|_{U_i}=p'|_{U_i}$, and the separatedness of $\Psem$ gives $p=p'$.
+Surjectivity: for $q\in\PE(W)$, set
+$p_i:=\beta_{U_i}^{-1}(q|_{U_i})$ on each chart; by the naturality of
+$\beta$ and injectivity on overlaps, the family $(p_i)$ agrees on all
+nonempty $i<j$ overlaps, and by Lemma~5.2A and the amalgamation of
+$\Psem$ it glues to a unique $p\in\Psem(W)$. Finally, $\beta_W(p)$
+and $q$ have equal restrictions to each chart, so the separatedness
+of $\PE$ gives $\beta_W(p)=q$. Thus
+\[
+\mathrm{Nonempty}\,\PE(W)\iff[\rE]=0
+\]
+follows.
+
+\subsection{Scope of the theorem}\label{sec:57}
+
+This comparison theorem is an additive theorem for
+abelian-group-valued presheaves. The pointed-set-valued $H^1$ of
+nonabelian torsors, higher coherence via 2-cocycles and gerbes, and
+stack descent each require independent statements. None of these
+conclusions is derived from the additive $H^1$ comparison.
+
+Moreover, the $H^1$ treated by this theorem is the \v{C}ech
+$H^1(\cU,-)$ relative to the selected monomorphic AAT cover $\cU$.
+Identification with cover-independent sheaf cohomology requires the
+additional conditions of refinement invariance or Leray-type
+acyclicity, and this paper does not claim it.
+
+Furthermore, the Lean formalization of this theorem is carried out
+over a site whose context category is thin (the finite-meet poset
+model of \S\ref{sec:33} is the representative example). Over general
+$\ArchCtx(X)$, the gluing argument of \S\ref{sec:56}, including
+Lemma~5.2A, uses monomorphisms and the universal property of
+pullbacks, but that version has not been formalized (the details of
+the hypotheses that thinness renders unnecessary are in
+Appendix~\ref{app:A4}).
+
+\subsection{Finite witness: independently generated circle comparison}\label{sec:58}
+
+\begin{example}\label{ex:circle}
+Take a monomorphic 4-cycle cover with four charts and four nonempty
+overlaps $U_{01}, U_{12}, U_{23}, U_{03}$, and no nondegenerate triple
+overlap.
+
+\paragraph{Comparison of coefficients.}
+On each nonempty intersection $V$, take the semantic support to be a
+single generator $\sigma_V$ and the local repair relation to be
+$2\sigma_V=0$ (writing $\Zint[\sigma_V]$ for the free abelian group on
+the generator $\sigma_V$); the semantic side independently generates
+\[
+\Msem(V)=\Zint[\sigma_V]/(2\sigma_V)\cong\Ftwo.
+\]
+On the equation side, $\ObsE(V)=\Zint$ and $\IOb(V)=(2)$ give
+$\QE(V)=\Zint/(2)$. For the interpretation $\chi_V(\sigma_V)=[1]$,
+the three conditions of \S\ref{sec:53} can be checked directly:
+\begin{center}
+\small
+\begin{tabular}{ll}
+soundness: & $2\sigma_V \mapsto [2] = 0$\\
+completeness: & $\ker(\Zint \to \Zint/(2)) = 2\Zint$\\
+generation: & $[1]$ generates $\Zint/(2)$\\
+\end{tabular}
+\end{center}
+Hence the construction of \S\ref{sec:53} gives $\Msem\simeq \QE$.
+This is not a transport of one complex but a presentation comparison
+between the semantic presentation $\Zint[\sigma]/(2\sigma)$ and the
+equation quotient $\Zint/(2)$.
+
+\paragraph{Local state system and affine transitions.}
+On each chart and each nonempty overlap put $\Psem=\Ftwo$, with
+$\Msem(V)\cong\Ftwo$ acting by addition. For an oriented edge $e$
+(source chart $\to$ target chart), take the two restrictions to the
+overlap to be
+\[
+\rho^{\mathrm{src}}_e(x)=x,
+\qquad
+\rho^{\mathrm{tgt}}_e(x)=x+t_e,
+\]
+where the transitions are
+\[
+(t_{01},t_{12},t_{23},t_{30})=(1,0,0,0).
+\]
+The last edge is $U_{03}$ oriented $3\to0$; in $\Ftwo$ the sign under
+orientation reversal does not change anything. Since there is no
+triple overlap, no additional functoriality condition constrains
+these restrictions.
+
+\paragraph{Computation of the residual.}
+On each chart choose the local state $p_i=0$. On the overlap of an
+edge $e$, the same $0$ is restricted from the source chart and from
+the target chart, but the two restrictions are different maps. By the
+definition of the residual in \S\ref{sec:42} (the difference of the
+two restrictions on the overlap),
+\[
+r_{\mathrm{sem},e}
+=\rho^{\mathrm{tgt}}_e(0)-\rho^{\mathrm{src}}_e(0)
+=t_e.
+\]
+Even with all local states equal to $0$, the residual does not
+vanish: what carries the mismatch is not the values of the states but
+the difference of the two restrictions carrying the same $0$ to the
+overlap --- the affine transition. Therefore
+\[
+\rsem=(1,0,0,0)\in\Ftwo^4.
+\]
+
+\paragraph{The equation side and the independent construction of $\beta$.}
+Put $\PE=\Ftwo$ and give the affine transitions on oriented edges
+independently by the same numbers $(1,0,0,0)$. The local-state
+interpretation $\beta$ is the identity map on the $\Ftwo$ coordinates
+on each chart and each nonempty overlap. This definition mentions
+neither $\Phi$ nor the repair relation. Equivariance on generators
+is, under $\chi(\sigma)=[1]$, the direct $\Ftwo$ computation
+$\beta(\sigma+x)=x+1=\chi(\sigma)+\beta(x)$, and commutation with
+restriction is a componentwise computation from the fact that the
+transitions on both sides are given by the same numbers. Thus the
+data of assumptions~5--7 are assembled independently of $\Rrep$, and
+the derivation of \S\ref{sec:53} yields soundness
+$\widetilde\chi(2\sigma)=[2]=0$ --- agreeing with the soundness row
+checked directly in the coefficient comparison above. Choosing
+$e_i=0$ on each chart --- which is the aligned choice
+$e_i=\beta(p_i)$ of \S\ref{sec:55} --- gives, at the cochain level,
+\[
+\rE=\kappa^1(\rsem)=(1,0,0,0).
+\]
+
+\paragraph{Cocycle property and non-coboundary property.}
+Since there is no nondegenerate triple overlap, $C^2(\cU)=0$ and
+$\delta^1\rsem=0$ holds automatically. On the other hand, for any
+$a\in C^0(\cU)$ the components of $\delta^0a$ are the
+$a_j|-a_i|$ on the overlaps, and taking the edge sum around the
+4-cycle, each chart's component appears exactly twice, so in $\Ftwo$
+the sum is zero. The edge sum of $\rsem$ is $1+0+0+0=1$, so $\rsem$
+is not a $\delta^0$-image. Therefore
+\[
+[\rsem]\ne0,\qquad
+[\rE]\ne0,\qquad
+\kappa_*([\rsem])=[\rE].
+\]
+
+\paragraph{Relation to real code.}
+This example is a finite witness that the SAGA comparison preserves
+not only zero classes but also nonzero classes. What erects the
+nonzero class is not the number of charts but the
+\textbf{cycle-without-a-face mechanism}: odd parity on a closed loop
+plus the absence of a face (triple overlap) filling that loop. The
+one-cent obstruction of Section~\ref{sec:7} is an instance of this
+mechanism appearing in a real architecture (\S\ref{sec:71}).
+\end{example}

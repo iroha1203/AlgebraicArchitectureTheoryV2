@@ -21,3 +21,7 @@ Related Work の原典調査、必須文献、比較軸、本文候補は
 
 論文本文の初稿下書きは [zenodo_saga_draft.md](zenodo_saga_draft.md) に置く。
 本文中の `TODO:` は release identity 確定時に固定する箇所を示す。
+
+投稿言語は英語であり、英語正本(LaTeX)は [en/](en/) に置く。
+日本語原稿は執筆原本・草稿管理面として維持し、本文内容の変更は英語正本とセットで行う。
+ビルド手順と規約は [en/README.md](en/README.md) を正とする。

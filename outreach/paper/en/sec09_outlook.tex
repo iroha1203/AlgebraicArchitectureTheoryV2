@@ -1,0 +1,182 @@
+\section{Discussion and Research Outlook}\label{sec:9}
+
+The SAGA comparison theorem is the first theorem about the
+local-to-global capability of AAT to reach a full proof, and it is
+also the first traversal of a larger research program. This section
+discusses what the theorem has settled (\S\ref{sec:91}) and the
+research directions it opens (\S\ref{sec:92}--\S\ref{sec:96}).
+Everything from \S\ref{sec:92} onward is research outlook, not to be
+confused with proved results; the development of theorems,
+implementations, and tooling in each direction is outside the scope of
+this paper.
+
+\subsection{What SAGA has settled}\label{sec:91}
+
+The first consequence of the comparison theorem is
+\textbf{translatability}. A diagnosis posed in the language of
+semantic repair and a computation posed in the language of equation
+geometry agree at the level of $H^1$ and residual classes. Subsequent
+theory development can proceed on either side and be translated to the
+other: structure discovered on the semantic side can be computed with
+geometric tools, and theorems proved on the geometric side can be read
+in the language of repair.
+
+The second consequence is the \textbf{grounding of counterfactuals}.
+The sentence ``without this fix, the whole would not have glued'' used
+to be a counterfactual with no place to stand within the vocabulary of
+testing and observation, because a failure that did not occur cannot
+be observed. The three-way equivalence of Theorem~\ref{thm:gluing}
+gives this sentence a mathematical status. Since the zero class is
+equivalent to the existence of a global repair, ``it glued because the
+correction killed the class'' is a consequence, not a heuristic. The
+before/after-repair comparison of Section~\ref{sec:7} is the first
+working diagnostic example of how this consequence operates in an
+engineering process (the division of labor between the scope of the
+measurement checks and the Lean witnesses of Section~\ref{sec:6} is in
+\S\ref{sec:77}).
+
+\subsection{The Rising Sea as method}\label{sec:92}
+
+The method of this research program follows what Grothendieck called
+\emph{la mer qui monte} --- the rising sea \citep{grothendieck2022recoltes}.
+Instead of prying open a hard problem with ad hoc tools, one raises
+the water level of abstraction of the theory until the problem
+dissolves naturally at the higher level.
+
+The engineering problem ``locally correct but globally broken'' has,
+at the level where one works directly with code and modules, remained
+a target attacked with the local tools of testing, contracts, and CI.
+Because the problem itself lives in the overlaps of parts, local
+tools cannot reach it in principle. Rising to the level of Atoms,
+sites, sheaves, covers, and cohomology, the same problem becomes an
+ordinary object with coordinates: an end-to-end failure is a class in
+$H^1$; classes can be computed; and what can be computed becomes the
+work of tools.
+
+This raising of the water level has two proper features. First,
+\textbf{abstraction is portability}. Because Atoms are placed at a
+level independent of language and framework, neither the theory nor
+the measurement depends on a particular technology stack, and a
+multi-language system can be treated as a single architecture
+geometry. Second, \textbf{the water level is maintained by Lean}.
+Grothendieck's sea settled in thousands of pages of prose; the sea of
+this program is maintained as a tower of machine-verified theorems,
+and as long as the theorems are formally verified, the water does not
+recede. That the name SAGA is an homage to Serre's GAGA
+\citep{serre1956gaga} --- the comparison theorem that established the
+correspondence of two geometries --- reflects this configuration.
+
+\subsection{The next mathematical peaks}\label{sec:93}
+
+From the SAGA mathematics proved in this paper, the following theory
+developments can be formulated naturally.
+\begin{itemize}
+\item \textbf{Characterization of the descent condition}: the
+three-way equivalence of Theorem~\ref{thm:gluing} holds under the
+selected true sheaf condition. The next peak is to characterize the
+validity of this condition itself from architecture data and lower it
+to checkable assumptions. Once realized, ``this architecture satisfies
+the descent assumptions, so passing local verification implies global
+consistency'' becomes a checkable measurement item, and the theory can
+point to the places where the assumptions break as exactly the places
+where integration verification should concentrate.
+\item \textbf{Higher coherence}: developing as independent statements
+what this paper deliberately separated (\S\ref{sec:57}): the
+pointed-set-valued $H^1$ of nonabelian torsors, 2-cocycles and gerbes,
+obstructions in $H^2$ and beyond, stack descent.
+\item \textbf{Architecture schemes and morphism theory}: treating the
+zero locus of the required equations as a scheme, and proving theorems
+about morphisms, base change, and fibers between architectures.
+\item \textbf{Moduli of repairs and derived deformation}: treating the
+space of repairs itself as a geometric object, speaking of
+deformations, degenerations, and singularities of repairs.
+\item \textbf{First-order conormal specialization}: the specialization
+of the conormal geometry given by the first-order approximation of the
+obstruction ideal.
+\item \textbf{Deepening the Atom foundations}: refinement of the Atom
+axiom system and extension of the correspondence theory between
+semantic atoms and equation Atoms.
+\end{itemize}
+
+\subsection{From statics to dynamics: Software Field Theory}\label{sec:94}
+
+AAT is a statics: it treats the consistency of an architecture at a
+point in time. Software Field Theory (SFT) is the research program
+that constructs the dynamics of software evolution on top of that
+geometry: organizing development traces as a site, treating changes,
+branches, and merges in geometric language, and formulating review,
+CI, and operational feedback as forces acting on the development
+system.
+
+The central viewpoint of SFT is a change in the role of architecture:
+an architecture is not only the present shape of the code but the
+\textbf{shape of the reachable futures}. A good architecture is a
+field configuration in which desirable futures are reachable and
+undesirable futures are hard to reach. Under this view, SFT aims at
+central propositions of the following form:
+
+\begin{quote}
+A software architecture is modular exactly when its future evolution
+satisfies descent.
+\end{quote}
+
+A merge in version control is a gluing of local changes, and SFT reads
+it as descent theory. The static comparison proved by SAGA is the
+ground this dynamics stands on at each instant. Where the static
+$H^1$ measures ``does not glue now'', SFT aims to measure ``can this
+sequence of changes reach a future that glues''.
+
+\subsection{The future of measurement: a fixed point in the age of generation}\label{sec:95}
+
+As research outlook, we also record one configuration on the
+measurement side.
+
+In development where code is generated faster than humans can
+understand it, the code, the tests, the reviews, and the fix proposals
+all sway on the same probabilistic generative ground. Within that, a
+deterministic measurement grounded in theorems becomes a point of a
+different nature: its verdict is not someone's opinion but the
+consequence, on a selected contract, of a machine-verified theorem.
+
+In this configuration, ArchSig's design principle of ``staying silent
+about what cannot be spoken'' works as a safety device. Agents read
+outputs literally and act on them literally, so a checker that warns
+without grounds makes the generative loop diverge. Only a checker that
+speaks exactly what can be spoken from the given contract can be
+placed as a gate of a generative system. Economically as well, the
+computational cost of deterministic verification is small compared to
+probabilistic generation, and the faster generation becomes, the
+higher the value of computation that rejects mistakes before
+execution.
+
+Human work does not disappear in this configuration; it moves. Which
+vocabulary is admitted, which equations are required, what counts as
+PASS --- the selection of the LawPolicy remains on the human side as
+the decision of what deserves protection, and is indeed purified into
+it. The diagnosis staircase of Section~\ref{sec:7} (nonzero residual
+$\to$ BLOCKED $\to$ prior verification of the repair $\to$ PASS) is
+the minimal working example of this configuration.
+
+\subsection{The Rising Sea research program}\label{sec:96}
+
+The research program as a whole is the following chain:
+\begin{center}
+\small
+put architectural facts into words
+$\to$ construct AAT geometry from Atoms and equation systems
+$\to$ formalize the mathematical claims in Lean
+$\to$ measure selected finite instances
+$\to$ SFT connects the geometry to evolution dynamics
+$\to$ compute trajectories, reachable futures, feedback, governance
+\end{center}
+
+SAGA is the first instance traversing the first three stages of this
+chain --- mathematics, formalization, measurement --- in a single
+theorem. The provenance discipline this paper has fixed (classifying
+the kinds of claims and connecting each claim to primary evidence)
+will be used in the same form on all subsequent peaks. When the water
+level of the theory has risen high enough, users see only the surface.
+An engineer, having learned neither categories nor sheaves nor
+cohomology, says ``analyze this'', receives only the word
+\emph{obstruction}, fixes it, and moves on. That quietness is the goal
+of this program.

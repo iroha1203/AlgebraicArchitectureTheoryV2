@@ -1,0 +1,63 @@
+\section{The AAT Approach}\label{sec:2}
+
+Algebraic Architecture Theory (AAT) is a mathematical theory that
+constructs software architecture as algebraic geometry. This section
+briefly describes what is distinctive about the approach and the skeleton
+of the construction. All definitions of the mathematical objects needed
+for the statement and proof of SAGA are given in Section~\ref{sec:3}.
+
+The construction proceeds in three stages. First, AAT axiomatizes
+primitive architectural facts as \textbf{Atoms}. An Atom does not belong
+to any particular programming language, framework, or serialization
+format, so facts spanning multiple languages, services, and storage
+representations can be treated on the same architecture object. To speak
+about inconsistencies where the implementation types agree but the
+semantic conventions differ, the architecture must be constructed at a
+level of abstraction above the type system, and this language independence
+is the prerequisite for the subject of this paper. Second, multiple
+architecture conditions are organized as an \textbf{Atom-indexed
+architectural equation system} $E$. From $E$ one constructs residuals,
+the obstruction ideal, and the locus of points where the required
+equations hold simultaneously; the place where the constraints are
+satisfied becomes a geometric object, the analogue of the zero set of a
+system of equations. Third, local contexts, covers, restrictions, and
+overlaps are organized as an \textbf{AAT site}. The local-to-global
+problem thereby becomes expressible in the language of sheaves and
+cohomology: whether a family of local conditions glues globally is a
+question about the existence of a global section, and the obstruction to
+gluing is a class in \v{C}ech cohomology.
+
+Under this construction, architectural failures are structured as
+residuals, ideals, and cohomology classes, and diagnosis and repair can be
+read as changes of the same geometric objects. A repair is an operation
+that kills a class, and the success of a repair is judged by the vanishing
+of the class. Furthermore, ringed geometry over an architecture opens
+connections to the tools of algebraic geometry --- schemes, derived
+intersections, deformations, monodromy --- but what SAGA uses in this
+paper is \v{C}ech $H^1$ and descent; the deeper tools are discussed in the
+research outlook of Section~\ref{sec:9}. The algebraic-geometric character
+of SAGA lies on the side of the construction: the observable ring
+$\ObsE$, the witness ideals and the obstruction ideal, the quotient
+coefficient $\QE=\ObsE/\IOb$, the AAT site, and the descent
+interpretation that reads the zero class as a global repair
+(Sections~\ref{sec:3}--\ref{sec:5}; the attribution of what is proper to
+SAGA is in \S\ref{sec:51}).
+
+The geometry of AAT is a \textbf{relative geometry} with the vocabulary,
+the equation system, the coverage, and the coefficients held fixed. Every
+claim is relative to the selected input data, and the provenance from
+inputs to conclusions can be traced. This relativity is a constraint, but
+it is also the source of the discipline that matches claims with
+evidence; the measurement of Section~\ref{sec:7} is its executable form.
+
+SAGA concretizes the local-to-global capability of this approach by
+comparing the semantic repair obstruction with the equation-generated
+\v{C}ech obstruction. The approach of this section is summarized in one
+sentence:
+
+\begin{quote}
+AAT constructs software architecture as a relative algebraic geometry
+generated from primitive architectural facts and simultaneous
+architectural equations, so that local consistency, global obstruction,
+and repair become geometric objects.
+\end{quote}
