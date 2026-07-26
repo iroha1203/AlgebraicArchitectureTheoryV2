@@ -3,7 +3,7 @@
   "inputDigests": {
     "comparisonReport": {
       "path": "input:archsig-comparison-report.json",
-      "sha256": "851044407555265810b31cb1001d8d0569f3864a070626901e81503b04c972ef"
+      "sha256": "e44061443d8d0356f1469c948278b155c958be9ea5b86e42a23ee874d528dc70"
     },
     "gatePolicy": {
       "path": "input:gate-policy-saga.json",

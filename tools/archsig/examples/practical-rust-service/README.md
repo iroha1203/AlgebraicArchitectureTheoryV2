@@ -17,10 +17,9 @@ and the staircase names each step of its failure precisely:
    law-surface witness bindings has a **nonzero** class in `Z1/B1`: no
    assignment of per-module fixes reconciles the loop
    (`MEASURED_NONGLUING_RESIDUAL_CLASS`).
-3. **Comparison** — `compare` derives the residual class agreement between the
-   head and repaired runs from their residual derivations alone
-   (`residualClassAgreement`; here `not_cohomologous`, because the repair moves
-   the class from nonzero to zero).
+3. **Comparison** — `compare` derives the difference of the head and repaired
+   residuals and tests its membership in `B1`
+   (`residualDifferenceReading`; here `difference_not_in_B1`).
 4. **Gate** — CI blocks the PR; after the repair, the residual glues
    (`REPAIR_GLUES_WITHIN_SELECTED_COMPLEX`) and the gate passes.
 
@@ -89,7 +88,7 @@ the base act omits it, so the base run shows what typed silence looks like:
 | Observation (atoms / contexts / covers) | `archmap/archmap*.json` | raw section values, Čech H¹, **derived residual** |
 | Selected complex (`complex` only) | `saga/repair_plan_*.json` | residual boundary membership on the selected 1-skeleton |
 | Declared triple overlaps (checked cocycle parity) | same RepairPlan `complex.tripleOverlaps` | **residual class in `Z1/B1`** (withheld as a named boundary statement when no triple is declared) |
-| Run pair of measurement records | two `analyze` out-dirs | `residualClassAgreement` (with its coboundary witness when cohomologous) derived by `compare` |
+| Run pair of measurement records | two `analyze` out-dirs | `residualDifferenceReading` (with its `δ⁰` witness when the difference is in `B1`) derived by `compare` |
 | Grounded law surface (`skeleton` / `defectSources` / `holdsCriterion`) | `law_policy/law_surface*.json` | law-grounded defect quotient, per-chart law defect detector |
 | Cost model (`analytic.costModel`) | `law_policy/measurement_profile_drift.json` | `essentialRepairLowerBound` |
 
@@ -119,7 +118,7 @@ The script walks five acts and prints one conclusion per step:
 [harmonic debt repaired] 0.0                   (residue booked explicitly)
 [analyze repaired]       REPAIR_GLUES_WITHIN_SELECTED_COMPLEX
 [compare head->repaired] MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE
-[residual class agreement head->repaired] not_cohomologous  (the two residual classes differ; repair success is the repaired run's own zero residual)
+[residual difference reading head->repaired] difference_not_in_B1  (repair success is the repaired run's own zero residual)
 [gate repaired]          PASS_WITHIN_GATE_POLICY
 ```
 
@@ -183,11 +182,10 @@ withheld as a named boundary statement.)
 
 **Comparison.** `compare` reads the two measurement records (head and
 repaired) and derives the run-pair reading itself: the residual delta on the
-shared overlap complex and, when the pair is comparable and the delta is a
-coboundary, its C⁰ witness (`residualClassAgreement`). Here the repair moves
-a nonzero class to zero, so the pair is honestly `not_cohomologous` — the
-repair reading is carried by the repaired run's zero residual and the gate,
-not by a cochain identity between the two runs.
+shared overlap complex and, when the pair is comparable and the delta is in
+`B1`, its C⁰ witness (`residualDifferenceReading`). Here the delta is
+`difference_not_in_B1`; the repair reading is carried by the repaired run's
+zero residual and the gate.
 
 **Harmonic debt.** A second measurement profile
 (`measurement_profile_drift.json`, coefficient `R`, selected by the

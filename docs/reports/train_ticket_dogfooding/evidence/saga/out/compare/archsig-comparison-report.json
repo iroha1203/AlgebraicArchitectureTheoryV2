@@ -139,7 +139,7 @@
     "Cover or context changes are boundary data and map to other_transition for gate policy evaluation."
   ],
   "profileConclusionCode": null,
-  "residualClassAgreement": {
+  "residualDifferenceReading": {
     "deltaSupport": [
       "overlap:cancel-insidepay",
       "overlap:cancel-order",
@@ -148,7 +148,7 @@
     "derived": true,
     "equation": "delta0(h) = r_base XOR r_head",
     "inB1": false,
-    "nonConclusion": "the residual change between the two runs is not a coboundary on the shared complex; the two runs' residual classes differ",
+    "nonConclusion": "the difference of the two runs' derived residuals is not in B1 on the shared overlap complex",
     "provenance": {
       "coverRef": "cover:money-settlement-loop",
       "lawSurfaceRef": "law-surface:train-ticket-money-saga-v054",
@@ -164,10 +164,10 @@
       }
     },
     "reason": "delta_not_a_boundary_within_selected_complex",
-    "status": "not_cohomologous",
+    "status": "difference_not_in_B1",
     "theoremRef": "part10/3.4+4.4"
   },
-  "schema": "archsig-comparison-report/v0.5.5",
+  "schema": "archsig-comparison-report/v0.5.6",
   "toolVersion": "0.5.4",
   "verdictTransitions": [
     {

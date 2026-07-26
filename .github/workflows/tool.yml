@@ -104,7 +104,7 @@ jobs:
             --out-dir "$archsig_measurement_dir/compare-smoke"
 
           jq -e '
-            .schema == "archsig-comparison-report/v0.5.5"
+            .schema == "archsig-comparison-report/v0.5.6"
             and .conclusionCode == "NO_NEW_MEASURED_OBSTRUCTION_RECORDED"
             and .comparability.level == "identical"
             and ([.verdictTransitions[]? | select(.introducedByChangeCategory == "preexisting")] | length >= 1)

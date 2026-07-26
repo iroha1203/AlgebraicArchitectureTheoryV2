@@ -74,7 +74,7 @@ global sheaf condition、comparison cochain map、presentation packet)は、#382
 | restriction surjectivity(part4/12.4) | profile-supplied assumption | `assumed` | ledger 行 |
 | forest nerve(part4/12.4) | profile-supplied assumption | `assumed`(**本 packet では不成立**) | ledger は `selected Cech nerve is a forest with no triple-overlap faces` を assumed と記録するが、同じ packet の nerve 計算は forest ではない(閉路 1)ことを computed で示す。この profile 由来行は当 run では成立していない前提の開示であり、head の非零読みはこの行に依存しない |
 | quotient sheaf condition(part10/8.3) | law-surface declaration | `assumed` | law surface の `quotientSheafCondition: assumed` を ledger 行として開示 |
-| residual class agreement(head↔repaired) | derived run-pair reading | `computed` | compare の `residualClassAgreement` は両 run の導出 residual の差 δ⁰h 可解性を comparability ゲート下で計算する。本対は `not_cohomologous`(field 語彙であり class 語彙の解禁ではない。読みは run 対の residual 差の δ⁰ 非可解)。修理成功の読みは repaired 側の `inB1: true` と gate が担う |
+| residual difference reading(head↔repaired) | derived run-pair reading | `computed` | compare の `residualDifferenceReading` は両 run の導出 residual の差 δ⁰h 可解性を comparability ゲート下で計算する。本対は `difference_not_in_B1`。修理成功の読みは repaired 側の `inB1: true` と gate が担う |
 | repaired ArchMap | hypothetical repair input | `supplied` / hypothetical | `archmap-saga-repaired.json` は BigDecimal scale-2 HALF_EVEN 統一を表す仮説 variant。`PASS_WITHIN_GATE_POLICY` は実装済み修理を示さない |
 | runtime monetary magnitude | empirical measurement | unmeasured | harmonic-debt を供給せず沈黙。頻度・金額を結論に含めない |
 
@@ -88,7 +88,7 @@ global sheaf condition、comparison cochain map、presentation packet)は、#382
 | └ descent boundary membership | `measured_nonzero`(単一連結成分。triple 宣言不在のため class 語彙は不解禁 — named boundary statement で明示) |
 | gate head | `BLOCKED_BY_GATE_POLICY` |
 | repaired analyze | `REPAIR_GLUES_WITHIN_SELECTED_COMPLEX`(`run:6685bab8db21`。preserve 残差は B¹ 内) |
-| compare head→repaired | `MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE`、`residualClassAgreement: not_cohomologous` |
+| compare head→repaired | `MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE`、`residualDifferenceReading: difference_not_in_B1` |
 | gate repaired | `PASS_WITHIN_GATE_POLICY` |
 
 harmonic-debt は runtime 実測数値が無いため供給せず、沈黙(供給する場合は実走の払い戻し照合が必要)。
@@ -106,7 +106,7 @@ harmonic-debt は runtime 実測数値が無いため供給せず、沈黙(供�
    「この構造は現実に生じる」の証拠である。
 2. **診断階段の全段が二系統入力だけで機能**: 観測(ArchMap)と法・方程式(law surface /
    profile)から導出した residual による非零類の計測 → gate BLOCKED → 修理計画(repaired
-   ArchMap)の事前検証 → compare による障害消滅の記録と residual class agreement → gate PASS
+   ArchMap)の事前検証 → compare による障害消滅の記録と residual difference reading → gate PASS
    まで、authored な residual・証書・比較データを一切供給せずに一周した。
 3. **数学的規律の拒否が正しく働いた**: ドリフトの立つ三角形自体を triple として申告すると
    cocycle 条件で拒否される(数学的に正当)。典拠の無い residual ref は fail した
@@ -150,6 +150,9 @@ harmonic-debt は runtime 実測数値が無いため供給せず、沈黙(供�
   gate policy、repair-plan(head / repaired)、builder(`build_saga_artifacts.py`)。
   すべて一次出力の `inputDigests` と canonical digest 一致を検証済み
 - 一次出力: `evidence/saga/out/`(head / repaired の analyze 出力、compare、gate ×2)
+- #3830 の comparison report v0.5.6 更新では、既存 head / repaired run を入力に compare と
+  repaired gate を再計測した。`archmap-diff.json`、run-local analyze 出力、head gate は不変で、
+  compare の field / status / schema と repaired gate の comparison digest だけが更新された。
 - 再現(2026-07-26 に head 一次出力の byte 一致を確認済み。`inputDigests` は `input:` 安定 ref を
   使うため out-dir の場所に依存しない)。`gate` は BLOCKED のとき非零 exit code を返すので、
   `set -e` 下では途中停止する:

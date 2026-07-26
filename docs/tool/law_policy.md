@@ -80,8 +80,8 @@ compareのR8契約では、contextsまたはcoversに差分がある場合、pro
 「差分があるprofile行」という要件は、この保守的なrun全体分類を許す注記として読む。
 
 SAGA の run 間読みは LawPolicy の selector ではなく、二つの analyze 測定記録から `compare` が
-導出する `residualClassAgreement` である(comparability と derivation provenance の相等を
-ゲートに、residual delta の coboundary witness を計算する)。供給型の H¹ comparison slot
+導出する `residualDifferenceReading` である(comparability と derivation provenance の相等を
+ゲートに、residual delta の `B¹` 所属と `δ⁰` witness を計算する)。供給型の H¹ comparison slot
 (`h1ComparisonData` の explicit / presentation-generated)は #3822 で沈黙した。
 
 R8 の class-zero reading は、`--refinement` で
