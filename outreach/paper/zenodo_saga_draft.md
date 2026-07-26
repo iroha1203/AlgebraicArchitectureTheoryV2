@@ -248,18 +248,21 @@ a = (kind, axis, subject, predicate, payload)
 規約 `s` に従う」を predicate に、`s` の記述を payload に取る semantic Atom で
 ある。
 
-実コードとの対応を一つ示す。第7章の case study の cancel service は、払い戻し
-額を `Double.parseDouble(order.getPrice()) * 0.8` の丸めで計算する(§7.2)。
-この一箇所からは、たとえば次の Atom が読める。
+実コードとの対応を一つ示す。たとえば、注文を発行する service が注文番号を
 
 ```text
-component(cancel)          -- このコードが属する service
-state(cancel, drawback)    -- 払い戻し額という局所状態
-semantic(drawback, s)      -- s = 「0.8 × price を scale-2 で丸めた通貨文字列」
-                              という意味規約
+orderId = "ORD-" + zeroPad(seq.next(), 8)
 ```
 
-実装型(`String`)の観測だけでは最後の semantic Atom は得られず、式と
+の形で組み立てるとき、この一箇所からは次の Atom が読める。
+
+```text
+component(orders)        -- このコードが属する service
+state(orders, orderId)   -- 発行済み注文番号という局所状態
+semantic(orderId, s)     -- s = 「接頭辞 ORD- + 8桁ゼロ詰め連番」という表記規約
+```
+
+実装型(`string`)の観測だけでは最後の semantic Atom は得られず、式と
 使われ方の読解が要る。Atom がどこから来るか — 実コードからの抽出 — は
 AAT の外の観測工程に属し、その再現可能な固定方法は §7.5 が述べる。
 AAT の内部では、Atom は与えられた生成元である。
