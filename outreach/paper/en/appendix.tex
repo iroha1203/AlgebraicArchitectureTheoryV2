@@ -167,3 +167,261 @@ poset site realization, ordered \v{C}ech model comparison bridge &
 \S\ref{sec:61} and source files.}
 \label{tab:leanfiles}
 \end{table}
+
+\section{Measurement Contract and Audit Surface of the ArchSig Case Study}\label{app:C}
+
+This appendix fixes the input contract, the definition of the
+computation, the supply process for observation, the kinds of
+conditions behind the conclusions, and the reproduction procedure on
+which the diagnosis of Section~\ref{sec:7} stands. The boundary of the
+claims is stated in \S\ref{sec:75}.
+
+\subsection{Input contract and computation}\label{app:C1}
+
+This subsection fixes the input contract and the computation on
+which the diagnosis of Section~\ref{sec:7} stands. The inputs of ArchSig are the following
+artifacts.
+\begin{itemize}
+\item \textbf{ArchMap}: the Atom observation of the target system.
+Records charts (local contexts), section values, and the
+correspondence of overlaps.
+\item \textbf{LawPolicy} (artifact name): fixes the Atom vocabulary in
+use and the selected equation reading.
+\item \textbf{law surface} (artifact name): the family of equation
+surfaces used by the diagnosis (closed-equational, SAGA-grounded,
+descent). The descent surface includes the declarations of witness
+variables bound to mismatch edges.
+\item \textbf{MeasurementProfile}: fixes the conditions of
+measurement, including the coefficient (in this case study,
+\code{F2}).
+\item \textbf{repair plan}: declares only the selected complex
+(charts, overlaps, optional triple overlaps, enumeration assertion)
+and a reference to the target cover. It carries no residuals, no
+coefficients, no comparison data.
+\end{itemize}
+
+The charts and overlaps of the repair plan are references into the
+observation; declarations that do not resolve to an observed cover and
+observed restrictions are not accepted. The remaining enumeration
+assertion and the presence or absence of triple-overlap declarations
+are author assertions: they accompany the conclusions as disclosure
+rows of the assumption ledger, not as material from which conclusions
+are derived (\S\ref{app:C3}). Thus the only thing the repair plan adds
+of its own is disclosed assumptions.
+
+ArchSig's \code{analyze} computes the following and emits them as a
+measurement packet.
+\begin{itemize}
+\item Per-chart \textbf{grounding}: whether each chart passes the
+displayed-equation check. The check targets the defect coordinates
+selected by the law surface (the residuals of displayed equations, the
+finite realization of the $\epsilon$ of \S\ref{sec:34}) and the
+declared criteria --- not ``complete fulfillment of all equations on
+the chart''.
+\item Per-overlap \textbf{residual derivation}: derives an \code{F2}
+value from the comparison of the section-value sets observed by the
+two end charts of each edge of the selected cover, recording per edge
+the provenance of the law surface's witness binding and the observed
+atom references. A witness binding is a per-edge declaration
+connecting a mismatch to a law-side violation coordinate (the finite
+realization of the $\nu$ of \S\ref{sec:34}); it carries no instance
+values. A mismatch without a binding has no law-side coordinate on
+which the derived residual could stand, so it falls fail-closed to
+non-computability.
+\item \textbf{Boundary membership} on the selected 1-skeleton: the
+finite \code{F2} computation of whether the derived residual belongs
+to the $\delta^0$-image ($B^1$). The vocabulary of residual classes is
+unlocked only when a triple overlap is declared on the connected
+component where the residual stands and the cocycle check actually
+runs. On components without triple declarations the selected $C^2$ is
+zero and the cocycle condition holds automatically, so ArchSig emits
+no class vocabulary and makes that boundary explicit in the packet as
+a named boundary statement.
+\end{itemize}
+
+\code{compare} confronts the packets of two runs and records the
+change in the obstruction together with the reading of the run pair.
+The reading of the run pair is the finite \code{F2} decision of
+whether the difference of the derived residuals of the two runs
+belongs to $\operatorname{im}\delta^0$ on the selected $C^1$.
+\code{gate} returns the verdict \code{PASS\_WITHIN\_GATE\_POLICY} or
+\code{BLOCKED\_BY\_GATE\_POLICY} from a packet and a gate policy.
+
+We fix the correspondence between the three law surfaces and the
+outputs. The closed-equational surface declares the per-edge equations
+of convention agreement and carries the detection of mismatches (the
+\code{cech} stage). The SAGA-grounded surface declares the per-chart defect
+coordinates and criteria and carries grounding. The descent surface
+declares the witness bindings on mismatch edges and carries residual
+derivation and boundary membership (the \code{saga-descent} stage). The
+``stages'' mentioned by the condition matrix of \S\ref{app:C3} and its
+note~1 refer to this correspondence.
+
+\subsection{Supplying the inputs: authoring of observation and reproducibility}\label{app:C2}
+
+Supplying an ArchMap involves semantic reading of how the sources are
+used. This reading is a probabilistic process and cannot be replaced
+by a deterministic computation. This work does not hide that stage; it
+fixes it as a process. That is, the creation of the ArchMap is defined
+as a fixed procedure executed by an AI agent --- hereafter the
+\textbf{authoring SKILL} --- turning the probabilistic reading into a
+traceable artifact.
+
+The SKILL fixes the provenance of observation by the following
+discipline.
+\begin{itemize}
+\item \textbf{Separation of the mechanical layer and the reading
+layer}: the mechanical layer performs only file enumeration, content
+hashing, literal comparison of normalized keys, and referential
+integrity checks. Generation of Atoms, semantic choices, adoption or
+rejection of candidates, and similarity-based merging are not
+permitted in the mechanical layer; they remain as recorded judgments
+of the reading layer.
+\item \textbf{Approval record of scope}: the revision of the target
+repository, the include / exclude globs, and the approved scope
+manifest are fixed as artifacts. Observation claims are bounded by the
+recorded revision and the selected scope; extraction of all evidence
+is not claimed.
+\item \textbf{Independent two-pass reading and adjudication}: the
+standard mode (full-dual) reads the same worklist twice independently,
+takes an extraction diff, and adjudicates discrepancies by re-reading
+the sources. Adoption decisions are recorded with counts and grounds.
+\item \textbf{Authoring audit}: the integrated ArchMap becomes a
+measurement input only after passing mechanical checks (referential
+integrity, coverage ledger, and so on).
+\item \textbf{Run records and explicit models}: each authoring run
+records the model used. The ArchMap of all 42 services underlying this
+case study (2{,}118 atoms / 43 contexts / 440 sources) was created by
+a run whose extraction and adjudication subagents were pinned to a
+lightweight model. The fact that observation supply does not demand an
+expensive frontier model has thus been measured as a practical
+condition of this measurement system.
+\end{itemize}
+
+Under this process design, reproducibility splits into two layers.
+ArchSig's computation is deterministic: the same input artifacts
+return the same outputs (verified by digests). The generation of the
+ArchMap is probabilistic, but since scope, grounds, procedure,
+adjudication, and audit are fixed in artifacts, a third party can
+re-execute the observation under the same discipline and confront the
+results. Chaining the probabilistic semantic reading and the
+deterministic measurement in series is the design principle of this
+supply pipeline.
+
+\subsection{Conditions and input kinds: the condition matrix}\label{app:C3}
+
+Table~\ref{tab:conditionmatrix} fixes, for each conclusion of the
+diagnosis staircase, under which kind of condition it stands. \code{computed}
+denotes a finite computation from the inputs; \code{checked} a
+condition checked by ArchSig against finite artifacts; \code{assumed}
+a premise declared by the author or the profile and recorded by the
+packet in the assumption ledger; \code{unmeasured} an axis not
+supplied and kept silent. The head and repaired packets record the
+same distinctions.
+
+\begin{table}[htbp]
+\centering
+\scriptsize
+\begin{tabular}{@{}p{0.20\textwidth}p{0.17\textwidth}p{0.13\textwidth}p{0.42\textwidth}@{}}
+\toprule
+Condition & Kind & Status & Record \\
+\midrule
+finite cover & property of finite artifacts & \code{checked} & site
+cover digest computed and recorded from normalized contexts, covers,
+and the derived nerve \\
+\addlinespace
+residual derivation & comparison of observed sections &
+\code{computed} & per-edge \code{F2} values, witness bindings, and
+provenance of observed atom references; in head, the 3 triangle edges
++ 2 preserve edges mismatch \\
+\addlinespace
+witness bindings & law surface declaration & \code{checked} & mismatch
+edges require witness variable bindings; unbound mismatches fall
+fail-closed to non-computability \\
+\addlinespace
+coefficient (\code{F2}) & law-side selection & \code{checked} &
+declaration of the selected MeasurementProfile; the repair plan
+carries no coefficients \\
+\addlinespace
+enumeration completeness of the selected complex & author assertion &
+\code{assumed} & the repair plan's enumeration assertion recorded as
+an assumption ledger row \\
+\addlinespace
+triple absence / class vocabulary & author assertion & \code{assumed}
+(class vocabulary not unlocked) & the selected complex declares no
+triples (\S\ref{sec:71}); the reading stays at 1-skeleton boundary
+membership, and a named boundary statement makes the boundary explicit \\
+\addlinespace
+boundary membership & finite \code{F2} computation & \code{computed} &
+head: \code{inB1: false}; repaired: \code{inB1: true} \\
+\addlinespace
+U-adequacy, Leray-type comparison & profile-supplied premises &
+\code{assumed} & U-adequacy is the premise that the selected cover
+suffices for the target reading; Leray-type comparison is the premise
+needed to compare the cover-relative reading with cover-independent
+sheaf cohomology. Both are disclosed as ledger rows, and the latter
+comparison is not claimed (\S\ref{sec:57}) \\
+\addlinespace
+torsor property, fixedness of the action, coefficient descent &
+profile-supplied premises & \code{assumed} & the three premises for
+reading local sections as torsors of the coefficient (torsor property
+of local sections, fixedness of the action, descent of the
+coefficient); 3 ledger rows \\
+\addlinespace
+restriction surjectivity & profile-supplied premise & \code{assumed} &
+the premise that restriction maps are surjective onto overlaps; ledger
+row \\
+\addlinespace
+forest nerve & profile-supplied premise & \code{assumed} (not
+satisfied in this packet) & the ledger records the forest premise, and
+the nerve computation of the same packet shows 1 cycle as
+\code{computed} (note~1) \\
+\addlinespace
+quotient sheaf condition & law surface declaration & \code{assumed} &
+the law-surface-side declaration that the coefficient system playing
+the role of the quotient coefficient satisfies the sheaf condition;
+disclosed as a ledger row \\
+\addlinespace
+residual difference of the run pair (head$\leftrightarrow$repaired) &
+derived reading on the run pair & \code{computed} & $\delta^0$
+solvability of the difference of the derived residuals of the two runs
+(\S\ref{app:C1}); for this pair the difference is not solvable by
+$\delta^0$ \\
+\addlinespace
+repaired ArchMap & hypothetical repair input & supplied /
+hypothetical & a hypothesis variant expressing the unified convention;
+\code{PASS\_WITHIN\_GATE\_POLICY} does not indicate an implemented
+repair \\
+\addlinespace
+runtime monetary magnitude & empirical measurement & \code{unmeasured}
+& \code{harmonic-debt} not supplied; silence. Frequency and amounts
+are not included in the conclusions \\
+\bottomrule
+\end{tabular}
+\caption{Condition matrix: each conclusion of the diagnosis staircase
+and the kind of condition under which it stands.}
+\label{tab:conditionmatrix}
+\end{table}
+
+Note 1: the forest nerve is a disclosed unsatisfied premise. The
+nonzero reading of the \code{saga-descent} stage in head (the $B^1$
+membership decision) does not depend on this row. The verdict of the
+\code{cech} stage separately declares its dependence on this assumption.
+
+\subsection{Reproduction}\label{app:C4}
+
+All input artifacts, primary outputs, builder scripts, and the
+authoring SKILL itself are included in the reproduction bundle. The
+schema versions of the artifacts (for the repair plan,
+\code{archsig-repair-plan/v0.5.7}) are fixed by the bundle manifest.
+The \code{inputDigests} of the primary outputs have been verified to
+agree with the canonical digests. Reproduction consists of executing
+\code{analyze} (head / repaired), \code{compare}, and \code{gate}
+$\times2$ from the fixed ArchSig version and inputs, and confirming
+agreement of the runIds and the gate verdicts.
+
+\textbf{TODO:} fix the relative paths within the deposit, the ArchSig
+version, the full set of execution commands, and the expected outputs
+once the release identity is finalized. (The current canonical
+reproduction procedure is
+\code{docs/reports/train\_ticket\_dogfooding/saga\_diagnosis.md}.)

@@ -187,7 +187,7 @@ semantic(orderId, s)     -- s = 「接頭辞 ORD- + 8桁ゼロ詰め連番」と
 
 実装型(`string`)の観測だけでは最後の semantic Atom は得られず、式と
 使われ方の読解が要る。Atom がどこから来るか — 実コードからの抽出 — は
-AAT の外の観測工程に属し、その再現可能な固定方法は §7.5 が述べる。
+AAT の外の観測工程に属し、その再現可能な固定方法は付録C.2 が述べる。
 AAT の内部では、Atom は与えられた生成元である。
 
 **定義 3.2(Atom family と support)。** Atom universe を `At` と書く。
@@ -1199,8 +1199,8 @@ axioms に限られる。`sorry` や追加公理を含む行はない。
   証明義務に含めない(§5.7)。
 - 第7章の measurement run を Lean へ移送すること(実測 packet からの
   定理 5.1 instantiation の生成): 行っていない。定理 5.1 の有限 instantiation は
-  本表の witness 行(例 5.3)が担い、第7章の packet は §7.6 の condition matrix が
-  示す有限検査を担う。両者の分業は §7.7 に明記する。
+  本表の witness 行(例 5.3)が担い、第7章の packet は付録C.3 の condition matrix が
+  示す有限検査を担う。両者の分業は §7.5 に明記する。
 
 **TODO:** release tag 確定後に、対象 commit hash と release CI run の参照を
 本章に固定する(付録 A で管理)。
@@ -1213,9 +1213,9 @@ ArchSig は、観測(ArchMap)と法・方程式(LawPolicy、law surface、
 MeasurementProfile)の二系統の入力から、grounding、導出 residual、
 boundary membership、run 対の比較、gate 判定を計算する measurement system
 (Rust 製 CLI)である。本章はまず実在 microservice architecture に対する
-SAGA フル診断を一つの計算として示し(§7.1〜§7.3)、その診断が立つ入力契約と
-計算の定義を後から固定する(§7.4)。観測の供給工程は §7.5、結論の条件種別は
-§7.6、claim の境界は §7.7、再現手順は §7.8 が固定する。
+SAGA フル診断を一つの計算として示し(§7.1〜§7.3)、その診断が立つ入力契約の
+要点(§7.4)と claim の境界(§7.5)を固定する。artifact 別の入力契約と計算の
+定義、観測の供給工程、結論の条件種別、再現手順という監査面は付録C が固定する。
 
 ### 7.1 実コード事例: one-cent obstruction
 
@@ -1240,7 +1240,7 @@ ArchMap の section value として観測された。
 金額を同時に照合する箇所は見つからなかった。この調査所見は、選択複体に
 triple overlap を宣言しないという形で診断へ反映される。同時照合サイトの不在
 そのものは、観測 artifact が示す事実ではなく実施者の assertion として扱う
-(§7.2、§7.6)。
+(§7.2、付録C.3)。
 
 この構図は、例 5.3 と同じ **cycle-without-a-face 機構**の 3-cycle instance と
 して読める。複体そのものは同一ではない — 例 5.3 は 4-cycle、本 case は 3-cycle
@@ -1258,13 +1258,13 @@ triple overlap を宣言しないという形で診断へ反映される。同�
 | cancel–order | 払い戻し比率の適用 | 丸め済み `0.8 × price` | 記載額 `price` | 通貨値(scale-2) | 払い戻し額が記載額の 0.8 倍として一意に確定 | `e_cancel_order` |
 
 この表が固定するのは意味論的根拠の側であり、residual の値そのものは
-`analyze` が各辺の観測 section value の比較から導出する(§7.4)。
+`analyze` が各辺の観測 section value の比較から導出する(付録C.1)。
 三辺はいずれも、同一の semantic quantity — この注文の払い戻し金額 — の
 restriction を比較しており、mismatch の自由度は「その量を通貨値としてどの丸め・
-scale 規約で確定するか」という一つの向きに乗る。witness 束縛(§7.4)は、
+scale 規約で確定するか」という一つの向きに乗る。witness 束縛(付録C.1)は、
 その向きを辺ごとに選ぶ law 側の宣言である。
 
-**有限 witness。** 頻度や総損失の評価(runtime 実測を要する。§7.7)とは分離し、
+**有限 witness。** 頻度や総損失の評価(runtime 実測を要する。§7.5)とは分離し、
 source expression で確認済みの各規約を同一の払い戻し量へ適用した正規化計算と
 して、入力価格を一つ固定した witness を示す。
 
@@ -1286,8 +1286,8 @@ cancel の丸め規約に、inside-payment は正確算術に忠実である —
 
 ### 7.2 診断階段
 
-measurement の入力構成は次のとおりである(各 artifact の入力契約と計算の
-定義は §7.4)。
+measurement の入力構成は次のとおりである(artifact 別の入力契約と計算の
+定義は付録C.1)。
 
 - **cover**: 6 chart。診断三角形 {cancel, inside-payment, order} と、託送料金
   領域 {preserve, consign, consign-price}。後者は三角形の外側の観測領域であり、
@@ -1298,7 +1298,7 @@ measurement の入力構成は次のとおりである(各 artifact の入力契
 - **repair plan**: 選択複体だけを宣言する。chart は観測 cover の 6 chart
   そのもの、overlap は観測された restriction 6 辺(三角形 3 +
   consign–consign-price + preserve–consign + preserve–order)、triple overlap は
-  宣言しない(§7.1 の調査所見の反映。assertion としての身分は §7.6)。
+  宣言しない(§7.1 の調査所見の反映。assertion としての身分は付録C.3)。
 - **repaired 変種**: 三角形の 3 chart を BigDecimal scale-2 HALF_EVEN 統一規約に
   置換した仮修理 ArchMap。
 
@@ -1316,7 +1316,7 @@ measurement の入力構成は次のとおりである(各 artifact の入力契
 | └ boundary membership | `measured_nonzero`(`inB1: false`。triple 宣言不在のため class 語彙は不解禁 — named boundary statement で明示) |
 | gate head | `BLOCKED_BY_GATE_POLICY` |
 | repaired analyze | `REPAIR_GLUES_WITHIN_SELECTED_COMPLEX`(`run:6685bab8db21`。残る preserve 残差は `B^1` 内) |
-| compare head→repaired | `MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE`。run 対の読みは「両 run の residual の差は `δ⁰` で解けない」であり、head 非境界 → repaired 境界内の変化と整合する(§7.4) |
+| compare head→repaired | `MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE`。run 対の読みは「両 run の residual の差は `δ⁰` で解けない」であり、head 非境界 → repaired 境界内の変化と整合する(付録C.1) |
 | gate repaired | `PASS_WITHIN_GATE_POLICY` |
 
 repair 前後の複体と判定の対比を図2に示す。
@@ -1334,7 +1334,7 @@ residual は `B^1` 内に収まる。下段の数値 witness は実施者によ�
 ### 7.3 計測が示したこと
 
 **局所整合・大域非貼合の実在。** grounding の `measured_zero` は、各 chart が
-自分の局所方程式を満たしていること(§7.4 の displayed-equation check の意味で)を
+自分の局所方程式を満たしていること(付録C.1 の displayed-equation check の意味で)を
 計測として言う。cancel は cancel の丸め規約に、
 inside-payment は正確算術に、order は素通し保管に、それぞれ忠実である。
 ペアごとの受け渡しも各々は成立している。計測として観測されたのは、規約
@@ -1360,181 +1360,64 @@ mismatch と典拠のない参照は fail-closed に落ちた。実データで�
 複体で class 語彙を出さないことも同じ規律の実行であり、ArchSig はその境界を
 named boundary statement として結論の近くに最小限の形で記録した。
 
-### 7.4 入力契約と計算
+### 7.4 入力契約の要点
 
-ここまでの診断が立つ入力契約と計算を固定する。ArchSig の入力は次の artifact である。
+ArchSig の入力は、観測(ArchMap)と、法・方程式側の宣言(LawPolicy、
+law surface、MeasurementProfile)、そして選択複体だけを宣言する repair plan
+である。artifact ごとの入力契約と、grounding・residual 導出・boundary
+membership・`compare`・`gate` の計算の定義は付録C.1 が固定する。
 
-- **ArchMap**: 対象システムの Atom 観測。chart(局所文脈)、section value、
-  overlap の対応を記録する。
-- **LawPolicy**(artifact 名): 使用する Atom vocabulary と selected equation
-  reading を固定する。
-- **law surface**(artifact 名): 診断に用いる equation surface の族
-  (closed-equational、SAGA-grounded、descent)。descent surface は
-  mismatch 辺に束縛される witness variable の宣言を含む。
-- **MeasurementProfile**: 係数(本 case study では `F2`)を含む measurement の
-  条件を固定する。
-- **repair plan**: 選択複体(charts、overlaps、任意の triple overlap、
-  enumeration assertion)と対象 cover への参照だけを宣言する。residual、係数、
-  比較データは運ばない。
-
-repair plan の charts と overlaps は観測への参照であり、観測された cover と
-restriction に解決できない宣言は受理されない。残る enumeration assertion と
-triple overlap 宣言の有無は author assertion であり、結論を導出する材料として
-ではなく、assumption ledger の開示行として結論に随伴する(§7.6)。したがって
-repair plan が独自に加えるものは開示された assumption だけである。
-
-residual は入力ではない。ArchSig の `analyze` は次を計算し、measurement packet
-として出力する。
-
-- chart ごとの **grounding**: 各 chart が displayed-equation check を満たすか
-  どうか。check の対象は law surface が選んだ defect 座標(displayed equation の
-  residual、§3.4 の `ε` の有限実現)と宣言された判定基準であり、
-  「chart 上の全方程式の完全な充足」ではない。
-- overlap ごとの **residual 導出**: 選択 cover の両端 chart が観測した
-  section value 集合の比較から `F2` 値を導出し、law surface の witness 束縛と
-  観測 atom 参照の provenance を辺ごとに記録する。witness 束縛とは、mismatch を
-  法側の violation 座標(§3.4 の `ν` の有限実現)へ接続する辺ごとの宣言であり、
-  instance の値は運ばない。束縛のない mismatch は、導出 residual の立つ法側の
-  座標を持たないため、fail-closed に計算不能へ落ちる。
-- 選択 1-骨格上の **boundary membership**: 導出 residual が `δ⁰`-像(`B^1`)に
-  属するかの有限 `F2` 計算。residual class の語彙は、residual の立つ連結成分に
-  triple overlap が宣言され cocycle 検査が実際に走る場合に限って解禁される。
-  triple 宣言のない成分では selected `C^2` が零で cocycle 条件が自動成立する
-  ため、ArchSig は class 語彙を出さず、その境界を named boundary statement
-  として packet に明示する。
-
-`compare` は二つの run の packet を突き合わせ、障害の変化と、run 対の読みを
-記録する。run 対の読みとは、両 run の導出 residual の差が選択 `C^1` 上で
-`im δ⁰` に属するかの有限 `F2` 判定である。`gate` は packet と gate policy から
-`PASS_WITHIN_GATE_POLICY` / `BLOCKED_BY_GATE_POLICY` の判定を返す。
-
-三本の law surface と出力の対応を固定する。closed-equational surface は
-辺ごとの規約一致の等式を宣言し、mismatch の検出(cech 段)を担う。
-SAGA-grounded surface は chart ごとの defect 座標と判定基準を宣言し、
-grounding を担う。descent surface は mismatch 辺への witness 束縛を宣言し、
-residual 導出と boundary membership(saga-descent 段)を担う。§7.6 の
-condition matrix と注1が言う「段」は、この対応を指す。
+residual は入力ではない。この契約の下で、本論文の measurement claim は次の
+主張に立つ。**SAGA 診断の結論 — residual、boundary membership、gate 判定 — は、
+Atom 観測と選択された方程式系から決定論的に導出される。実施者が書けるのは
+観測の範囲、選択複体、witness 束縛という選択であって、結論を運ぶ入力は
+この契約に存在しない。** この分離は fail-closed 検査が執行する: 選択 cover 外の
+chart、観測された restriction を持たない overlap、重複した overlap 宣言、
+未観測の section、witness 束縛のない mismatch は、いずれも結論を生成せずに
+計算を停止させる。したがって、選択によって障害を沈黙させることはできるが
+(列挙完全性は付録C.3 の assumption として開示される)、観測が一致している
+辺の上に非零 residual を立てることはできない。
 
 この計算が実行するのは、第4章の複体語彙の有限断片である: selected 1-骨格上の
 residual 導出、`B^1` 所属、run 対の residual 差が、有限 `F2` 線形代数に落ちる。
 定理 5.1 の比較(`χ`、`Φ`、`κ`、presentation exactness)の有限 instantiation は
-この計算の範囲に含まれず、第6章の Lean witness が担う(§7.7)。
+この計算の範囲に含まれず、第6章の Lean witness が担う(§7.5)。
 
-この契約の下で、本論文の measurement claim は次の主張に立つ。
-**SAGA 診断の結論 — residual、boundary membership、gate 判定 — は、Atom 観測と
-選択された方程式系から決定論的に導出される。実施者が書けるのは観測の範囲、
-選択複体、witness 束縛という選択であって、結論を運ぶ入力はこの契約に存在
-しない。** この分離は fail-closed 検査が執行する: 選択 cover 外の chart、
-観測された restriction を持たない overlap、重複した overlap 宣言、未観測の
-section、witness 束縛のない mismatch は、いずれも結論を生成せずに計算を
-停止させる。したがって、選択によって障害を沈黙させることはできるが
-(列挙完全性は §7.6 の assumption として開示される)、観測が一致している辺の
-上に非零 residual を立てることはできない。
+供給側では、ArchMap の供給は source の使われ方を読む意味読解 — 確率的で、
+決定論的な計算では置き換えられない工程 — を含む。本研究はこの工程を隠さず、
+AI agent が実行する固定手順書(authoring SKILL)として工程化し、確率的な
+意味読解と決定論的な計測を直列に分業させる。工程の規律と再現性の二層構造は
+付録C.2 が固定する。結論の条件種別(computed / checked / assumed /
+unmeasured)は付録C.3 の condition matrix が行別に固定し、再現手順は
+付録C.4 が固定する。
 
-### 7.5 入力の供給: 観測の authoring と再現性
-
-ArchMap の供給は、source の使われ方を読む意味読解を含む。この読解は
-確率的な過程であり、決定論的な計算では置き換えられない。本研究は、
-この段を隠さずに工程として固定する。すなわち、ArchMap の作成を
-AI agent が実行する固定手順書 — 以下 **authoring SKILL** — として定義し、
-確率的な読解を追跡可能な artifact へ変換する。
-
-SKILL は次の規律で観測の provenance を固定する。
-
-- **機械層と読解層の分離**: 機械層はファイル列挙、content hash、正規化キーの
-  literal 比較、参照整合の検査だけを行う。Atom の生成、意味の選択、候補の採否、
-  類似度による merge は機械層に許さず、読解層の記録された判断として残す。
-- **scope の承認記録**: 対象 repository の revision、include / exclude glob、
-  承認された scope manifest を artifact として固定する。observation claim は
-  記録された revision と選択された scope に有界であり、全 evidence の抽出は
-  主張しない。
-- **独立2パス読解と調停**: 標準 mode(full-dual)は同じ worklist を独立に
-  2回読み、extraction-diff を取り、相違を source 再読で調停する。調停の
-  採否は件数と根拠つきで記録される。
-- **authoring audit**: 統合後の ArchMap は機械検査(参照整合、coverage ledger
-  など)を通過して初めて measurement の入力になる。
-- **run 記録とモデルの明記**: 各 authoring run は使用モデルを記録する。
-  本 case study の土台となった全42サービスの ArchMap(2,118 atoms / 43
-  contexts / 440 sources)は、抽出・調停の subagent を軽量モデルに固定した
-  run で作成された。観測供給が高価な frontier model を要求しないことは、
-  この measurement 系の実用条件として実測されている。
-
-この工程設計の下で、再現性は二層に分かれる。ArchSig の計算は決定論的であり、
-同じ入力 artifact から同じ出力を返す(digest で検証される)。ArchMap の生成は
-確率的だが、scope、根拠、手順、調停、audit が artifact に固定されるため、
-第三者は同じ規律で観測を再実行し、結果を突き合わせられる。確率的な意味読解と
-決定論的な計測を直列に分業させることが、この供給 pipeline の設計原理である。
-
-### 7.6 条件と入力種別: condition matrix
-
-診断階段の各結論が、どの種別の条件の下で立っているかを一表に固定する。
-`computed` は入力からの有限計算、`checked` は ArchSig が有限 artifact に対して
-検査した条件、`assumed` は author または profile が宣言し packet が assumption
-ledger に記録する前提、`unmeasured` は供給せず沈黙した軸を表す。head / repaired
-の両 packet が同じ区別を記録している。
-
-| Condition | 種別 | Status | 記録 |
-| --- | --- | --- | --- |
-| finite cover | 有限 artifact の性質 | `checked` | site cover digest を正規化した contexts・covers・導出 nerve から算出して記録 |
-| residual 導出 | 観測 section の比較 | `computed` | 辺ごとの `F2` 値・witness 束縛・観測 atom 参照の provenance。head は三角形 3 辺 + preserve 2 辺が mismatch |
-| witness 束縛 | law surface の宣言 | `checked` | mismatch 辺は witness 変数の束縛を要求する。未束縛の mismatch は fail-closed に計算不能へ落ちる |
-| 係数(`F2`) | 法側の選択 | `checked` | 選択 MeasurementProfile の宣言。repair plan は係数を運ばない |
-| 選択複体の列挙完全性 | author assertion | `assumed` | repair plan の enumeration assertion を assumption ledger 行として記録 |
-| triple 不在 / class 語彙 | author assertion | `assumed`(class 語彙は不解禁) | 選択複体は triple を宣言しない(§7.1)。読みは 1-骨格の boundary membership に留まり、named boundary statement が境界を明示する |
-| boundary membership | 有限 `F2` 計算 | `computed` | head は `inB1: false`、repaired は `inB1: true` |
-| U-adequacy、Leray 型比較 | profile 供給の前提 | `assumed` | U-adequacy は選択 cover が対象の読みに十分という前提、Leray 型比較は cover 相対の読みを cover 非依存の sheaf cohomology と比較するための前提。いずれも ledger 行として開示し、後者の比較は主張しない(§5.7) |
-| torsor 性・作用の固定性・係数 descent | profile 供給の前提 | `assumed` | 局所 section を係数の torsor として読むための3前提(局所 section の torsor 性、作用の固定性、係数の descent)。ledger の 3 行 |
-| restriction surjectivity | profile 供給の前提 | `assumed` | restriction 写像が overlap 上へ全射であるという前提。ledger 行 |
-| forest nerve | profile 供給の前提 | `assumed`(本 packet では不成立) | ledger は forest 前提を記録し、同じ packet の nerve 計算は閉路 1 を `computed` で示す(注1) |
-| quotient sheaf condition | law surface の宣言 | `assumed` | 商係数にあたる係数系が sheaf condition を満たすという law surface 側の宣言。ledger 行として開示 |
-| run 対の residual 差(head↔repaired) | run 対の導出読み | `computed` | 両 run の導出 residual の差の `δ⁰` 可解性(§7.4)。本対では差は `δ⁰` で解けない |
-| repaired ArchMap | 仮修理入力 | supplied / hypothetical | 統一規約を表す仮説 variant。`PASS_WITHIN_GATE_POLICY` は実装済み修理を示さない |
-| runtime の金額規模 | 経験的計測 | `unmeasured` | `harmonic-debt` を供給せず沈黙。頻度・金額を結論に含めない |
-
-注1: forest nerve は開示された不成立前提である。head の saga-descent 段の
-非零読み(`B^1` 所属判定)はこの行に依存しない。cech 段の verdict は別途この
-assumption への依存を宣言している。
-
-### 7.7 主張の境界
+### 7.5 主張の境界
 
 本 case study の claim は次の範囲に限る。規約 mismatch の検出自体は
 closed-equational surface の段が担った。SAGA 段が加えたのは、同じ観測を
 選択 1-骨格上の boundary membership として読む descent 読解、grounding の読みの
-限定(§7.3)の明示、修理計画の事前検証、run 対の residual 差の読み(§7.4)、gate の一貫した
+限定(§7.3)の明示、修理計画の事前検証、run 対の residual 差の読み(付録C.1)、gate の一貫した
 診断であり、「SAGA が新しい障害を発見した」という主張は行わない。
 
 authored なのは選択である。選択複体(repair plan)、witness 束縛(law surface)、
 repaired 変種は実施者が書いた宣言であり、residual の値はどれも運ばない。
 class 語彙は解禁していない: 三角形を含む成分に triple が宣言されない本 packet
-で、ArchSig の読みは boundary membership に留まる(§7.6)。repaired は section を
+で、ArchSig の読みは boundary membership に留まる(付録C.3)。repaired は section を
 書き換えた仮修理 ArchMap であり、`PASS_WITHIN_GATE_POLICY` が示すのは
 「この修理案なら貼り合う」という事前検証の機構である。ドリフトの発生頻度と
 金額規模は runtime 実測を要するため本論文では計測していない。広い benchmark
 評価と一般的な検出性能は、別の実証研究として扱う。
 
 定理 5.1 の有限 instantiation は本 case study の対象外である。その担い手は第6章の
-Lean witness(例 5.3 の circle witness)であり、本章の packet が担うのは §7.6 の
+Lean witness(例 5.3 の circle witness)であり、本章の packet が担うのは付録C.3 の
 condition matrix が示す有限検査である。measurement run を Lean へ移送する対応は
 要求しない。
 
-供給工程の SKILL 化の適用範囲も明示する。§7.5 の authoring SKILL が覆うのは
+供給工程の SKILL 化の適用範囲も明示する。付録C.2 の authoring SKILL が覆うのは
 ArchMap の供給であり、選択複体(repair plan)にも同種の authoring SKILL が
 整備されている。law surface と repaired 変種は、本実験時点では builder script と
 authored 宣言として供給された。本実験の builder script と供給所見は、
 その設計素材として記録されている。
-
-### 7.8 再現
-
-すべての入力 artifact、一次出力、builder script、authoring SKILL 本体は
-再現 bundle に収録する。artifact の schema version(repair plan は
-`archsig-repair-plan/v0.5.7`)は bundle の manifest が固定する。
-一次出力の `inputDigests` は canonical digest と一致することを検証済みである。
-再現は、固定した ArchSig version と入力から `analyze`(head / repaired)、
-`compare`、`gate` ×2 を実行し、runId と gate 判定の一致で確認する。
-
-**TODO:** deposit 内の相対 path、ArchSig version、実行 command 一式、
-expected output を release identity 確定後に固定する(現行の再現手順は
-`docs/reports/train_ticket_dogfooding/saga_diagnosis.md` が正本)。
 
 ---
 
@@ -1669,7 +1552,7 @@ tooling の計画は本論文の範囲外である。
 定理 5.2 の三項同値は、この文に数学的な身分を与える。零類と global repair の
 存在が同値である以上、「correction が類を消したから貼り合った」は経験則ではなく
 帰結である。第7章の repair 前後比較は、この帰結が工学の工程でどう働くかを示す
-最初の診断実働例である(計測の検査範囲と第6章 Lean witness との分業は §7.7)。
+最初の診断実働例である(計測の検査範囲と第6章 Lean witness との分業は §7.5)。
 
 ### 9.2 方法としての Rising Sea
 
@@ -1798,7 +1681,7 @@ family、sheaf amalgamation を経て global section が構成される。
 
 第三に、**one-cent realization** である。実在の microservice システムの
 払い戻し三角形上で、3つの金額規約の衝突が立てる非境界 residual を観測から
-導出・計測し(選択複体上、§7.6)、gate による blocking、
+導出・計測し(選択複体上、付録C.3)、gate による blocking、
 修理案の事前検証、repair 後の障害消滅、gate PASS までを一つの再現可能な
 計算として一周した。
 各 chart は自分の局所方程式を満たしていた。障害は、どの局所にも帰属しない
@@ -1817,7 +1700,7 @@ Rising Sea — への航路が、この比較定理によって開かれてい�
 
 本研究の理論構築、Lean 形式化、tooling 実装、および本論文の執筆は、著者の指揮の
 下で LLM agent(Claude、Codex)との協働により行われた。数学的主張の正しさは
-Lean による機械検証が、観測供給の確率的工程は §7.5 の規律が、それぞれ artifact
+Lean による機械検証が、観測供給の確率的工程は付録C.2 の規律が、それぞれ artifact
 として固定する。AI agent は本論文の著者ではなく、すべての結論に対する責任は
 著者が負う。
 
@@ -1983,6 +1866,144 @@ table が完結して与え、label は Lean source を閲覧する際の照合�
 
 ---
 
+## Appendix C. ArchSig case study の測定契約と監査面
+
+本付録は、第7章の診断が立つ入力契約・計算の定義・観測の供給工程・
+結論の条件種別・再現手順を固定する。claim の境界は §7.5 が正本である。
+
+### C.1 入力契約と計算
+
+第7章の診断が立つ入力契約と計算を固定する。ArchSig の入力は次の artifact である。
+
+- **ArchMap**: 対象システムの Atom 観測。chart(局所文脈)、section value、
+  overlap の対応を記録する。
+- **LawPolicy**(artifact 名): 使用する Atom vocabulary と selected equation
+  reading を固定する。
+- **law surface**(artifact 名): 診断に用いる equation surface の族
+  (closed-equational、SAGA-grounded、descent)。descent surface は
+  mismatch 辺に束縛される witness variable の宣言を含む。
+- **MeasurementProfile**: 係数(本 case study では `F2`)を含む measurement の
+  条件を固定する。
+- **repair plan**: 選択複体(charts、overlaps、任意の triple overlap、
+  enumeration assertion)と対象 cover への参照だけを宣言する。residual、係数、
+  比較データは運ばない。
+
+repair plan の charts と overlaps は観測への参照であり、観測された cover と
+restriction に解決できない宣言は受理されない。残る enumeration assertion と
+triple overlap 宣言の有無は author assertion であり、結論を導出する材料として
+ではなく、assumption ledger の開示行として結論に随伴する(C.3)。したがって
+repair plan が独自に加えるものは開示された assumption だけである。
+
+ArchSig の `analyze` は次を計算し、measurement packet として出力する。
+
+- chart ごとの **grounding**: 各 chart が displayed-equation check を満たすか
+  どうか。check の対象は law surface が選んだ defect 座標(displayed equation の
+  residual、§3.4 の `ε` の有限実現)と宣言された判定基準であり、
+  「chart 上の全方程式の完全な充足」ではない。
+- overlap ごとの **residual 導出**: 選択 cover の両端 chart が観測した
+  section value 集合の比較から `F2` 値を導出し、law surface の witness 束縛と
+  観測 atom 参照の provenance を辺ごとに記録する。witness 束縛とは、mismatch を
+  法側の violation 座標(§3.4 の `ν` の有限実現)へ接続する辺ごとの宣言であり、
+  instance の値は運ばない。束縛のない mismatch は、導出 residual の立つ法側の
+  座標を持たないため、fail-closed に計算不能へ落ちる。
+- 選択 1-骨格上の **boundary membership**: 導出 residual が `δ⁰`-像(`B^1`)に
+  属するかの有限 `F2` 計算。residual class の語彙は、residual の立つ連結成分に
+  triple overlap が宣言され cocycle 検査が実際に走る場合に限って解禁される。
+  triple 宣言のない成分では selected `C^2` が零で cocycle 条件が自動成立する
+  ため、ArchSig は class 語彙を出さず、その境界を named boundary statement
+  として packet に明示する。
+
+`compare` は二つの run の packet を突き合わせ、障害の変化と、run 対の読みを
+記録する。run 対の読みとは、両 run の導出 residual の差が選択 `C^1` 上で
+`im δ⁰` に属するかの有限 `F2` 判定である。`gate` は packet と gate policy から
+`PASS_WITHIN_GATE_POLICY` / `BLOCKED_BY_GATE_POLICY` の判定を返す。
+
+三本の law surface と出力の対応を固定する。closed-equational surface は
+辺ごとの規約一致の等式を宣言し、mismatch の検出(cech 段)を担う。
+SAGA-grounded surface は chart ごとの defect 座標と判定基準を宣言し、
+grounding を担う。descent surface は mismatch 辺への witness 束縛を宣言し、
+residual 導出と boundary membership(saga-descent 段)を担う。C.3 の
+condition matrix と注1が言う「段」は、この対応を指す。
+
+### C.2 入力の供給: 観測の authoring と再現性
+
+ArchMap の供給は、source の使われ方を読む意味読解を含む。この読解は
+確率的な過程であり、決定論的な計算では置き換えられない。本研究は、
+この段を隠さずに工程として固定する。すなわち、ArchMap の作成を
+AI agent が実行する固定手順書 — 以下 **authoring SKILL** — として定義し、
+確率的な読解を追跡可能な artifact へ変換する。
+
+SKILL は次の規律で観測の provenance を固定する。
+
+- **機械層と読解層の分離**: 機械層はファイル列挙、content hash、正規化キーの
+  literal 比較、参照整合の検査だけを行う。Atom の生成、意味の選択、候補の採否、
+  類似度による merge は機械層に許さず、読解層の記録された判断として残す。
+- **scope の承認記録**: 対象 repository の revision、include / exclude glob、
+  承認された scope manifest を artifact として固定する。observation claim は
+  記録された revision と選択された scope に有界であり、全 evidence の抽出は
+  主張しない。
+- **独立2パス読解と調停**: 標準 mode(full-dual)は同じ worklist を独立に
+  2回読み、extraction-diff を取り、相違を source 再読で調停する。調停の
+  採否は件数と根拠つきで記録される。
+- **authoring audit**: 統合後の ArchMap は機械検査(参照整合、coverage ledger
+  など)を通過して初めて measurement の入力になる。
+- **run 記録とモデルの明記**: 各 authoring run は使用モデルを記録する。
+  本 case study の土台となった全42サービスの ArchMap(2,118 atoms / 43
+  contexts / 440 sources)は、抽出・調停の subagent を軽量モデルに固定した
+  run で作成された。観測供給が高価な frontier model を要求しないことは、
+  この measurement 系の実用条件として実測されている。
+
+この工程設計の下で、再現性は二層に分かれる。ArchSig の計算は決定論的であり、
+同じ入力 artifact から同じ出力を返す(digest で検証される)。ArchMap の生成は
+確率的だが、scope、根拠、手順、調停、audit が artifact に固定されるため、
+第三者は同じ規律で観測を再実行し、結果を突き合わせられる。確率的な意味読解と
+決定論的な計測を直列に分業させることが、この供給 pipeline の設計原理である。
+
+### C.3 条件と入力種別: condition matrix
+
+診断階段の各結論が、どの種別の条件の下で立っているかを一表に固定する。
+`computed` は入力からの有限計算、`checked` は ArchSig が有限 artifact に対して
+検査した条件、`assumed` は author または profile が宣言し packet が assumption
+ledger に記録する前提、`unmeasured` は供給せず沈黙した軸を表す。head / repaired
+の両 packet が同じ区別を記録している。
+
+| Condition | 種別 | Status | 記録 |
+| --- | --- | --- | --- |
+| finite cover | 有限 artifact の性質 | `checked` | site cover digest を正規化した contexts・covers・導出 nerve から算出して記録 |
+| residual 導出 | 観測 section の比較 | `computed` | 辺ごとの `F2` 値・witness 束縛・観測 atom 参照の provenance。head は三角形 3 辺 + preserve 2 辺が mismatch |
+| witness 束縛 | law surface の宣言 | `checked` | mismatch 辺は witness 変数の束縛を要求する。未束縛の mismatch は fail-closed に計算不能へ落ちる |
+| 係数(`F2`) | 法側の選択 | `checked` | 選択 MeasurementProfile の宣言。repair plan は係数を運ばない |
+| 選択複体の列挙完全性 | author assertion | `assumed` | repair plan の enumeration assertion を assumption ledger 行として記録 |
+| triple 不在 / class 語彙 | author assertion | `assumed`(class 語彙は不解禁) | 選択複体は triple を宣言しない(§7.1)。読みは 1-骨格の boundary membership に留まり、named boundary statement が境界を明示する |
+| boundary membership | 有限 `F2` 計算 | `computed` | head は `inB1: false`、repaired は `inB1: true` |
+| U-adequacy、Leray 型比較 | profile 供給の前提 | `assumed` | U-adequacy は選択 cover が対象の読みに十分という前提、Leray 型比較は cover 相対の読みを cover 非依存の sheaf cohomology と比較するための前提。いずれも ledger 行として開示し、後者の比較は主張しない(§5.7) |
+| torsor 性・作用の固定性・係数 descent | profile 供給の前提 | `assumed` | 局所 section を係数の torsor として読むための3前提(局所 section の torsor 性、作用の固定性、係数の descent)。ledger の 3 行 |
+| restriction surjectivity | profile 供給の前提 | `assumed` | restriction 写像が overlap 上へ全射であるという前提。ledger 行 |
+| forest nerve | profile 供給の前提 | `assumed`(本 packet では不成立) | ledger は forest 前提を記録し、同じ packet の nerve 計算は閉路 1 を `computed` で示す(注1) |
+| quotient sheaf condition | law surface の宣言 | `assumed` | 商係数にあたる係数系が sheaf condition を満たすという law surface 側の宣言。ledger 行として開示 |
+| run 対の residual 差(head↔repaired) | run 対の導出読み | `computed` | 両 run の導出 residual の差の `δ⁰` 可解性(付録C.1)。本対では差は `δ⁰` で解けない |
+| repaired ArchMap | 仮修理入力 | supplied / hypothetical | 統一規約を表す仮説 variant。`PASS_WITHIN_GATE_POLICY` は実装済み修理を示さない |
+| runtime の金額規模 | 経験的計測 | `unmeasured` | `harmonic-debt` を供給せず沈黙。頻度・金額を結論に含めない |
+
+注1: forest nerve は開示された不成立前提である。head の saga-descent 段の
+非零読み(`B^1` 所属判定)はこの行に依存しない。cech 段の verdict は別途この
+assumption への依存を宣言している。
+
+### C.4 再現
+
+すべての入力 artifact、一次出力、builder script、authoring SKILL 本体は
+再現 bundle に収録する。artifact の schema version(repair plan は
+`archsig-repair-plan/v0.5.7`)は bundle の manifest が固定する。
+一次出力の `inputDigests` は canonical digest と一致することを検証済みである。
+再現は、固定した ArchSig version と入力から `analyze`(head / repaired)、
+`compare`、`gate` ×2 を実行し、runId と gate 判定の一致で確認する。
+
+**TODO:** deposit 内の相対 path、ArchSig version、実行 command 一式、
+expected output を release identity 確定後に固定する(現行の再現手順は
+`docs/reports/train_ticket_dogfooding/saga_diagnosis.md` が正本)。
+
+---
+
 ## 付録(草稿管理)
 
 ### A. 執筆残作業(release identity 確定と連動)
@@ -1993,8 +2014,8 @@ table が完結して与え、label は Lean source を閲覧する際の照合�
 - [ ] release 時: 冒頭 draft note と本付録(草稿管理)全体を除去する
 - [x] 第6章: status table 確定(2026-07-26、#3757 完了後の Part X route で対応・status・assumptions を固定。axiom 監査は `AxiomAudit.lean` の allowlist 検査)。残: release tag の commit hash と CI run 参照の固定
 - [x] 第6章: 未証明・未接続・未移植一覧の正確な記録(2026-07-26、§6.2 末尾)
-- [x] 第7章: 導出 residual 契約(#3820–#3822)への本文同期と condition matrix 転記(2026-07-26。現節番号では §7.4/7.2/7.6)
-- [ ] 第7章: deposit 相対 path、ArchSig version、実行 command、expected output の固定
+- [x] 第7章: 導出 residual 契約(#3820–#3822)への本文同期と condition matrix 転記(2026-07-26。§7 再構成後の配置は 付録C.1/§7.2/付録C.3)
+- [ ] 付録C.4(旧 §7.8): deposit 相対 path、ArchSig version、実行 command、expected output の固定
 - [x] 第8章: Young artifact 確認と定理番号確定(related_work.md §2.7 に記録)
 - [x] References 節と BibTeX 固定(`zenodo_saga_references.bib`、P0 11点+P1 使用分+Serre/Grothendieck/Garcia-Molina–Salem)
 - [x] 第8章: 2026 年文献の最新版と publication status を再確認(2026-07-26 arXiv 実査: Young 2603.27015=v1 のまま・journal ref なし、Gibson 2605.08609=v1 のまま・journal ref なし、Felber 2503.02556=**v2**(2025-08-27 改版)・journal ref なし。引用は version 非依存(task sheaf の一般言及)のため bib・本文とも変更不要。本文 TODO は除去済み)
@@ -2013,7 +2034,7 @@ table が完結して与え、label は Lean source を閲覧する際の照合�
 | Lean | 第6章 | declaration、source、focused check、axiom audit | 対応表確定、release tag / CI run 固定 TODO |
 | Measurement | 第7.2節 | packet、manifest、digest | 正本 report あり、deposit path TODO |
 | Empirical | 第7.1節 | repository、commit `313886e99bef`、source reference、input | 正本 report あり |
-| Empirical(供給工程) | 第7.5節 | archmap-creater SKILL、scope manifest、調停記録、audit、run のモデル記録 | 正本 report あり、deposit 同梱範囲 TODO |
+| Empirical(供給工程) | 付録C.2 | archmap-creater SKILL、scope manifest、調停記録、audit、run のモデル記録 | 正本 report あり、deposit 同梱範囲 TODO |
 
 ### C. Canonical 対応表(内部監査用。release 時に本付録ごと除去)
 
