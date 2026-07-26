@@ -2020,21 +2020,19 @@ expected output を release identity 確定後に固定する(現行の再現手
 - [x] References 節と BibTeX 固定(`zenodo_saga_references.bib`、P0 11点+P1 使用分+Serre/Grothendieck/Garcia-Molina–Salem)
 - [x] 第8章: 2026 年文献の最新版と publication status を再確認(2026-07-26 arXiv 実査: Young 2603.27015=v1 のまま・journal ref なし、Gibson 2605.08609=v1 のまま・journal ref なし、Felber 2503.02556=**v2**(2025-08-27 改版)・journal ref なし。引用は version 非依存(task sheaf の一般言及)のため bib・本文とも変更不要。本文 TODO は除去済み)
 - [x] 英語版への翻訳(最終投稿言語=英語、2026-07-24 決定。英語正本=LaTeX を `en/` に新設、2026-07-26。以後の本文変更は英語正本とセットで行う)
-- [ ] 全章: claim-to-evidence matrix の構築と各 claim の一次証拠への対応
+- [x] 全章: claim-to-evidence matrix の構築と各 claim の一次証拠への対応(2026-07-26、正本=`zenodo_claim_evidence_matrix.md`。残=TODO(tag) 3行のみ)
 - [x] SAGA comparison の可換図と one-cent の計算図の作成(2026-07-26。`zenodo_saga_figure1_comparison.png` を §5.2 末尾へ、`zenodo_saga_figure2_one_cent.png` を §7.2 末尾へ挿入。図内ラベルは英語のため英訳版へそのまま流用可。deposit 時は画像も bundle に同梱)
 - [x] 著者情報の固定(author block: Hiroyuki Nakahata / Independent Researcher / ORCID 0009-0008-5928-0234。所属企業名と contact は記載しない(2026-07-26 決定)。Acknowledgments に AI 協働開示、2026-07-24)
 - [ ] Zenodo metadata: license と DOI の固定。creators は author block と一致させる(deposit 転記用ドラフト=`zenodo_metadata.md`。**license=CC BY 4.0 決定済み**(2026-07-26)。DOI は workflow 確定済み — 残作業は deposit 時の version DOI 予約と転記のみ)
 - [x] Zenodo metadata: abstract の platform 変種を作成する(2026-07-26、`zenodo_metadata.md` §2/§3。citation guide 込み)。Zenodo description は HTML whitelist のみで MathJax 不可のため、display 数式2本を Unicode inline 形(`H¹_sem(𝒰) ≅ Ȟ¹(𝒰,Q_E)` / `Nonempty P_sem(W) ⟺ [r_sem]=0 ⟺ [r_E]=0`)へ落とす。arXiv 併用時は inline `$...$` 形(標準 LaTeX/AMS マクロのみ)
 
-### B. Claim-to-evidence matrix(skeleton)
+### B. Claim-to-evidence matrix
 
-| Claim type | 論文の箇所 | 必要な一次証拠 | 状態 |
-| --- | --- | --- | --- |
-| Mathematics | 第4〜5章 | canonical math source(第X部)、theorem map(付録C) | 対応表あり、notation 表 TODO |
-| Lean | 第6章 | declaration、source、focused check、axiom audit | 対応表確定、release tag / CI run 固定 TODO |
-| Measurement | 第7.2節 | packet、manifest、digest | 正本 report あり、deposit path TODO |
-| Empirical | 第7.1節 | repository、commit `313886e99bef`、source reference、input | 正本 report あり |
-| Empirical(供給工程) | 付録C.2 | archmap-creater SKILL、scope manifest、調停記録、audit、run のモデル記録 | 正本 report あり、deposit 同梱範囲 TODO |
+正本 = [`zenodo_claim_evidence_matrix.md`](zenodo_claim_evidence_matrix.md)
+(2026-07-26 構築。30行: 照合済み26+TODO(tag)3+非対象1)。P0-6 final review は
+同表を照合基準として実行する。残 TODO は L5(第6章 tag/CI run)・E10(付録C.4
+deposit path)・S2(release identity 相互参照)の3行で、いずれも release tag
+確定後の同一作業で消化する。
 
 ### C. Canonical 対応表(内部監査用。release 時に本付録ごと除去)
 
