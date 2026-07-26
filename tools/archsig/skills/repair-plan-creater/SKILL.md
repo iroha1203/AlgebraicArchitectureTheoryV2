@@ -20,7 +20,7 @@ notice records the retirements.
   residual is derived by `analyze` from the observed cover sections and the
   law-surface witness bindings; the repair reading between two runs is derived
   by `compare` from the head / repaired residual derivations
-  (`residualClassAgreement`); the coefficient is the selected
+  (`residualDifferenceReading`); the coefficient is the selected
   MeasurementProfile declaration.
 - Derivation prerequisites the plan relies on: every chart must belong to the
   profile-selected ArchMap cover, every overlap pair must be an observed

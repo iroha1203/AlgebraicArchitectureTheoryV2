@@ -185,3 +185,19 @@ cargo run --manifest-path $C -- gate \
   --comparison .tmp/reports-repro/compare/archsig-comparison-report.json \
   --out .tmp/reports-repro/gate-repaired.json
 ```
+
+## 訂正(2026-07-26、Issue #3830)
+
+本文はマージ時点の記録として凍結し、次を訂正する。
+
+- triple overlap が宣言されていないため、本証拠束が計測した head の結果は、選択 1-骨格における
+  `MEASURED_NONGLUING_RESIDUAL` と `saga-descent:boundary-membership.inB1: false` である。
+  本文中の「非零 F₂ 残差類」「H¹」「非零類」「類は零」「residual-class」および同趣旨の表現は、
+  本証拠束から導出された class / cohomology claim として読まない。
+- v0.5.6 の run 対 artifact は `residualDifferenceReading` を用いる。本対の status は
+  `difference_not_in_B1` であり、両 run の導出 residual の差が共有 overlap complex の
+  `B¹` に入らないことだけを記録する。本文中の `residualClassAgreement`、
+  `not_cohomologous`、`residual class agreement` はこの読みへ置き換える。
+- #3830 では既存 head / repaired run を入力に compare と repaired gate を再計測した。
+  `archmap-diff.json`、run-local analyze 出力、head gate は不変で、compare の field / status /
+  schema / theoremRef と repaired gate の comparison digest だけを更新した。

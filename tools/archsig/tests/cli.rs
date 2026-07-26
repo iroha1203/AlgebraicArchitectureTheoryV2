@@ -1263,7 +1263,7 @@ fn cli_analyze_saga_descent_complete_support_measures_boundary_membership() {
 
 fn supplied_triple_pentagon_complex_plan(root: &Path) -> Value {
     // 五角形+弦の complex だけを持つ最小 plan(certificate / comparison なし)。
-    // residual class agreement の両側非零 fixture が使う。
+    // residual difference reading の両側非零 fixture が使う。
     let mut plan = read_json(&root.join("repair_plan_complete_support.json"));
     plan["id"] = json!("repair-plan:agreement-pentagon");
     plan["complex"]["charts"] = json!([
@@ -1623,18 +1623,18 @@ fn cli_compare_derives_repair_cochain_when_residual_change_is_a_boundary() {
         compare_out.to_str().expect("comparison output path is utf-8"),
     ]);
     let report = read_json(&compare_out.join("archsig-comparison-report.json"));
-    let cochain = &report["residualClassAgreement"];
-    assert_eq!(cochain["status"], "cohomologous");
+    let cochain = &report["residualDifferenceReading"];
+    assert_eq!(cochain["status"], "difference_in_B1");
     assert_eq!(cochain["derived"], true);
     assert_eq!(cochain["inB1"], true);
     assert_eq!(cochain["equation"], "delta0(h) = r_base XOR r_head");
-    assert_eq!(cochain["theoremRef"], "part10/3.4+4.4");
+    assert_eq!(cochain["theoremRef"], "part10/2.3");
     assert!(cochain["provenance"]["coverRef"].is_string());
     assert!(
         cochain["reading"]
             .as_str()
-            .is_some_and(|text| text.contains("not a repair-success verdict")),
-        "agreement reading must disclaim repair-success semantics"
+            .is_some_and(|text| text.contains("repair success is read from the head run")),
+        "difference reading must assign repair-success semantics to the head run"
     );
     let delta = cochain["deltaSupport"].as_array().expect("delta support");
     assert_eq!(delta.len(), 2, "the two-cut mismatch pair is the delta support");
@@ -1679,10 +1679,10 @@ fn cli_compare_repair_cochain_is_not_established_for_a_full_relabel() {
         compare_out.to_str().expect("comparison output path is utf-8"),
     ]);
     let report = read_json(&compare_out.join("archsig-comparison-report.json"));
-    let cochain = &report["residualClassAgreement"];
+    let cochain = &report["residualDifferenceReading"];
     // 三角形 3 辺の全ラベル張り替えは奇サイクルであり、F2 の C0 では結ばれない。
     // 修理そのものは head 側 analyze の零 residual として成立しており、両読みは矛盾しない。
-    assert_eq!(cochain["status"], "not_cohomologous");
+    assert_eq!(cochain["status"], "difference_not_in_B1");
     assert_eq!(
         cochain["reason"],
         "delta_not_a_boundary_within_selected_complex"
@@ -1695,7 +1695,7 @@ fn cli_compare_repair_cochain_is_not_established_for_a_full_relabel() {
     let head_summary = read_json(&head_run.join("archsig-analysis-summary.json"));
     assert_eq!(
         head_summary["conclusion"], ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
-        "repair success is read from the head run itself and coexists with not_cohomologous"
+        "repair success is read from the head run itself and coexists with difference_not_in_B1"
     );
 }
 
@@ -1746,15 +1746,15 @@ fn cli_compare_repair_cochain_fails_closed_on_mismatched_complexes() {
         compare_out.to_str().expect("comparison output path is utf-8"),
     ]);
     let report = read_json(&compare_out.join("archsig-comparison-report.json"));
-    assert_eq!(report["residualClassAgreement"]["status"], "not_computed");
+    assert_eq!(report["residualDifferenceReading"]["status"], "not_computed");
     assert_eq!(
-        report["residualClassAgreement"]["reason"],
+        report["residualDifferenceReading"]["reason"],
         "residual_complexes_do_not_match"
     );
 }
 
 #[test]
-fn cli_compare_agreement_joins_two_nonzero_residuals_by_a_coboundary() {
+fn cli_compare_difference_in_b1_joins_two_nonzero_residuals() {
     // 五角形+弦の上で、両 run とも非零 residual(奇サイクル 3 mismatch)を持ち、
     // 差 delta = {shared-route, ledger-order} が {route, ledger} のカットで結ばれる構成。
     // XOR そのものを判別する(head を無視すると delta が base に退化して witness が変わる)。
@@ -1814,8 +1814,20 @@ fn cli_compare_agreement_joins_two_nonzero_residuals_by_a_coboundary() {
         compare_out.to_str().expect("path is utf-8"),
     ]);
     let report = read_json(&compare_out.join("archsig-comparison-report.json"));
-    let agreement = &report["residualClassAgreement"];
-    assert_eq!(agreement["status"], "cohomologous");
+    let agreement = &report["residualDifferenceReading"];
+    assert_eq!(agreement["status"], "difference_in_B1");
+    let serialized_report = serde_json::to_string(&report).expect("comparison report serializes");
+    for retired_vocabulary in [
+        "residualClassAgreement",
+        "cohomologous",
+        "not_cohomologous",
+        "residual classes",
+    ] {
+        assert!(
+            !serialized_report.contains(retired_vocabulary),
+            "triple-undeclared comparison report must not contain retired vocabulary: {retired_vocabulary}"
+        );
+    }
     let delta = agreement["deltaSupport"]
         .as_array()
         .expect("delta support")
@@ -10790,7 +10802,7 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
             "archsig-gate-policy/v0.5.4",
             "archsig-gate-report/v0.5.4",
             "archmap-diff/v0.5.4",
-            "archsig-comparison-report/v0.5.5",
+            "archsig-comparison-report/v0.5.6",
             "archsig-run-manifest/v0.5.4",
             "archsig-atom-viewer-data/v0.5.4",
             "archsig-measurement-view-model/v0.5.4",
@@ -10903,7 +10915,7 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
     );
     assert!(
         artifacts.iter().any(|entry| {
-            entry["artifactId"] == "archsig-comparison-report/v0.5.5"
+            entry["artifactId"] == "archsig-comparison-report/v0.5.6"
                 && entry["compatibilityBoundary"]["fieldMappingPolicy"]
                     .as_str()
                     .is_some_and(|description| {
@@ -12095,11 +12107,120 @@ fn cli_gate_not_evaluable_for_malformed_packet_or_unsupported_comparison() {
         "comparison report schema validation failed"
     );
 
+    let retired_vocabulary_path = out_dir.join("retired-vocabulary-comparison.json");
+    let retired_vocabulary = json!({
+        "schema": "archsig-comparison-report/v0.5.6",
+        "conclusionCode": "NO_NEW_MEASURED_OBSTRUCTION_RECORDED",
+        "comparability": { "level": "identical" },
+        "inputDigests": {
+            "baseRun": {
+                "runId": "run:base",
+                "toolVersion": "0.5.4",
+                "archmap": { "sha256": "base-archmap" },
+                "lawPolicy": { "sha256": "base-policy" },
+                "profileFingerprint": { "sha256": "base-profile" },
+                "siteCoverDigest": { "sha256": "base-cover" },
+                "measurementPacket": { "sha256": "base-packet" }
+            },
+            "headRun": {
+                "runId": "run:head",
+                "toolVersion": "0.5.4",
+                "archmap": { "sha256": "head-archmap" },
+                "lawPolicy": { "sha256": "head-policy" },
+                "profileFingerprint": { "sha256": "head-profile" },
+                "siteCoverDigest": { "sha256": "head-cover" },
+                "measurementPacket": { "sha256": "head-packet" }
+            }
+        },
+        "verdictTransitions": [{
+            "rowKey": "ag.cech-obstruction|ag.cech-obstruction|finite_f2_cech_computed",
+            "baseRowRef": "structuralVerdict/ag.cech-obstruction/ag.cech-obstruction/finite_f2_cech_computed",
+            "headRowRef": "structuralVerdict/ag.cech-obstruction/ag.cech-obstruction/finite_f2_cech_computed",
+            "transition": "preexisting_recorded_row",
+            "introducedByChangeCategory": "preexisting",
+            "deltaRefs": []
+        }],
+        "residualClassAgreement": {
+            "status": "cohomologous",
+            "theoremRef": "part10/3.4+4.4"
+        },
+        "residualDifferenceReading": {
+            "status": "silence_by_design",
+            "reason": "residual_derivation_not_recorded",
+            "theoremRef": "part10/2.3"
+        }
+    });
+    fs::write(
+        &retired_vocabulary_path,
+        serde_json::to_vec_pretty(&retired_vocabulary)
+            .expect("retired-vocabulary comparison serializes"),
+    )
+    .expect("retired-vocabulary comparison can be written");
+    let retired_vocabulary_report = out_dir.join("retired-vocabulary-gate-report.json");
+    run_sig0_expect_code(
+        &[
+            "gate",
+            "--packet",
+            packet_path.to_str().expect("path is utf-8"),
+            "--policy",
+            policy_path.to_str().expect("path is utf-8"),
+            "--comparison",
+            retired_vocabulary_path.to_str().expect("path is utf-8"),
+            "--out",
+            retired_vocabulary_report.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+    let retired_vocabulary_gate = read_json(&retired_vocabulary_report);
+    assert_eq!(retired_vocabulary_gate["decision"], "NOT_EVALUABLE");
+    assert_eq!(
+        retired_vocabulary_gate["reason"],
+        "comparison report schema validation failed"
+    );
+
+    let unknown_status_path = out_dir.join("unknown-residual-status-comparison.json");
+    let mut unknown_status = retired_vocabulary.clone();
+    unknown_status
+        .as_object_mut()
+        .expect("comparison fixture is an object")
+        .remove("residualClassAgreement");
+    unknown_status["residualDifferenceReading"] = json!({
+        "status": "cohomologous",
+        "theoremRef": "part10/2.3"
+    });
+    fs::write(
+        &unknown_status_path,
+        serde_json::to_vec_pretty(&unknown_status)
+            .expect("unknown-status comparison serializes"),
+    )
+    .expect("unknown-status comparison can be written");
+    let unknown_status_report = out_dir.join("unknown-residual-status-gate-report.json");
+    run_sig0_expect_code(
+        &[
+            "gate",
+            "--packet",
+            packet_path.to_str().expect("path is utf-8"),
+            "--policy",
+            policy_path.to_str().expect("path is utf-8"),
+            "--comparison",
+            unknown_status_path.to_str().expect("path is utf-8"),
+            "--out",
+            unknown_status_report.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+    let unknown_status_gate = read_json(&unknown_status_report);
+    assert_eq!(unknown_status_gate["decision"], "NOT_EVALUABLE");
+    assert_eq!(
+        unknown_status_gate["reason"],
+        "comparison report schema validation failed"
+    );
+
     let empty_comparison_path = out_dir.join("empty-comparison.json");
     fs::write(
         &empty_comparison_path,
         serde_json::to_vec_pretty(&json!({
-            "schema": "archsig-comparison-report/v0.5.5",
+            "schema": "archsig-comparison-report/v0.5.6",
             "conclusionCode": "NO_NEW_MEASURED_OBSTRUCTION_RECORDED",
             "comparability": { "level": "identical" },
             "verdictTransitions": []
@@ -12131,7 +12252,7 @@ fn cli_gate_not_evaluable_for_malformed_packet_or_unsupported_comparison() {
     fs::write(
         &unknown_category_comparison_path,
         serde_json::to_vec_pretty(&json!({
-            "schema": "archsig-comparison-report/v0.5.5",
+            "schema": "archsig-comparison-report/v0.5.6",
             "conclusionCode": "NO_NEW_MEASURED_OBSTRUCTION_RECORDED",
             "comparability": { "level": "identical" },
             "verdictTransitions": [{
@@ -12631,7 +12752,7 @@ fn cli_compare_records_cover_change_without_transport_and_feeds_gate_other_trans
         ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE,
         ARCHSIG_COMPARISON_RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA,
     ]);
-    assert_eq!(comparison["schema"], "archsig-comparison-report/v0.5.5");
+    assert_eq!(comparison["schema"], "archsig-comparison-report/v0.5.6");
     assert_eq!(
         comparison["discipline"],
         "Comparison is a record-level juxtaposition of two ArchSig runs. It does not claim causal repair, semantic equivalence, or preserved obstruction identity; a class-zero reading is available only under a checked coarse-to-fine refinement contract."
@@ -12859,8 +12980,8 @@ fn cli_compare_refinement_binds_fingerprints_and_transports_only_zero() {
     );
     assert_eq!(positive["classTransport"]["boundaryStatement"], Value::Null);
     assert_eq!(
-        positive["residualClassAgreement"]["status"], "silence_by_design",
-        "a not-comparable run pair must not unlock the residual class agreement vocabulary"
+        positive["residualDifferenceReading"]["status"], "silence_by_design",
+        "a not-comparable run pair must not compute residual difference membership in B1"
     );
 
     // class 語彙は checked triple が必要になった(#3822 是正)。奇サイクルと

@@ -128,7 +128,7 @@ expect_value "$OUT/repaired/archsig-analysis-summary.json" "analyze repaired" co
   --base-run "$OUT/head" --head-run "$OUT/repaired" \
   --out-dir "$OUT/compare-repaired" >/dev/null
 expect_value "$OUT/compare-repaired/archsig-comparison-report.json" "compare head->repaired" conclusionCode "MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE"
-expect "residual class agreement head->repaired" "$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['residualClassAgreement']['status'])" "$OUT/compare-repaired/archsig-comparison-report.json")" "not_cohomologous"
+expect "residual difference reading head->repaired" "$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['residualDifferenceReading']['status'])" "$OUT/compare-repaired/archsig-comparison-report.json")" "difference_not_in_B1"
 "${ARCHSIG[@]}" gate \
   --packet "$repaired_packet" \
   --policy "$EXAMPLE/law_policy/gate_policy.json" \

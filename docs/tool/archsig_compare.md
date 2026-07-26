@@ -8,23 +8,25 @@
 不一致は `COMPARISON_DATA_CONTRACT_VIOLATION` で fail-closed とする。
 fingerprint 不一致かつ refinement 不在の場合は `profileConclusionCode: TWO_PROFILES_REPORTED_SEPARATELY` を記録する。
 
-SAGA の run 対の読みは、supplied comparison data ではなく **導出 residualClassAgreement** が担う
+SAGA の run 対の読みは、supplied comparison data ではなく **導出 residualDifferenceReading** が担う
 (#3822 で `RepairPlan.comparison` slot と `saga-comparison:h1-transfer` invariant は沈黙した)。
 `compare` は base / head 両 run の `saga-descent:residual-derivation`(観測 sectionValue 比較から
 導出された overlap ごとの F₂ 値と provenance)を読み、comparability ゲート
 (level が identical / verdict-row、両 derivation の coverRef / mappedCoverRef / lawSurfaceRef /
 charts 相等、overlap 鍵集合一致)の下で delta = value_base XOR value_head を作り、
-スカラー系 δ⁰h = delta の可解性を計算して `residualClassAgreement` block を出力する:
+スカラー系 δ⁰h = delta の可解性を計算して `residualDifferenceReading` block を出力する:
 
-- `status: cohomologous` — 2 run の導出 residual は同一 H¹ 類(witnessChartAssignment に
-  coboundary witness `h` を記録)
-- `status: not_cohomologous` — 類が異なる(類を非零→零へ変える修理は常にこちら)
+- `status: difference_in_B1` — residual の差が `B¹` に入り、`witnessChartAssignment` に
+  `δ⁰h = delta` の witness `h` を記録
+- `status: difference_not_in_B1` — residual の差が選択複体の `B¹` に入らない
 - `status: no_residual_change` — delta が空
 - `status: not_computed` / `silence_by_design` — 複体・provenance 不一致、または derivation 未記録
 
-この block は「2 run の残差類一致の記録」であり、修理成功の判定ではない
-(theoremRef: part10/3.4+4.4)。修理成功の読みは、repaired 側 run の零 residual
-(`REPAIR_GLUES_WITHIN_SELECTED_COMPLEX`)と gate が担う。
+この block は 2 run の residual 差に対する `B¹` 所属の有限計算である
+(theoremRef: part10/2.3)。修理成功の読みは、repaired 側 run の零 residual
+(`REPAIR_GLUES_WITHIN_SELECTED_COMPLEX`)と gate が担う。v0.5.6 はこの一系統の語彙を
+triple 宣言の有無にかかわらず使う。入力は両 run に記録済みの導出 residual であり、
+新しい authored data や供給 slot は追加しない。
 
 ## Inputs and outputs
 
@@ -46,7 +48,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- compare \
 Outputs:
 
 - `archmap-diff.json` with schema `archmap-diff/v0.5.4`
-- `archsig-comparison-report.json` with schema `archsig-comparison-report/v0.5.4`
+- `archsig-comparison-report.json` with schema `archsig-comparison-report/v0.5.6`
 
 ## Comparability
 

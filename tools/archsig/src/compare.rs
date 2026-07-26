@@ -160,7 +160,11 @@ pub fn build_comparison_artifacts_with_refinement_v1(
         "verdictTransitions": verdict_transitions,
         "boundaryStatements": boundary_statements,
         "classTransport": class_transport,
-        "residualClassAgreement": derived_residual_class_agreement(&base_packet, &head_packet, &comparability),
+        "residualDifferenceReading": derived_residual_difference_reading(
+            &base_packet,
+            &head_packet,
+            &comparability,
+        ),
         "profileConclusionCode": profile_conclusion_code,
         "nonConclusions": [
             "Comparison report records run-local verdict rows and deterministic ArchMap diff intersections.",
@@ -172,8 +176,8 @@ pub fn build_comparison_artifacts_with_refinement_v1(
 }
 
 
-/// 同一複体上の 2 run の導出 residual が delta0(h) で結ばれるか(cohomologous か)を
-/// 記録する。第X部 定義3.4 の C^0_sem 上の定理4.4(r' = r + delta0(a))の有限検査であり、
+/// 同一複体上の 2 run の導出 residual の差が delta0(h) の像に入るかを記録する。
+/// 第X部 定義2.3 の B^1=im(delta0)を選択複体上で有限検査し、
 /// 修理成功の判定ではない。修理の成立は head run 自身の residual 測定が語る。
 fn packet_residual_derivation(packet: &Value) -> Option<&Value> {
     packet
@@ -203,12 +207,12 @@ fn derivation_edges(derivation: &Value) -> Option<Vec<(String, String, String, u
         .collect()
 }
 
-fn derived_residual_class_agreement(
+fn derived_residual_difference_reading(
     base_packet: &Value,
     head_packet: &Value,
     comparability: &Value,
 ) -> Value {
-    const THEOREM_REF: &str = "part10/3.4+4.4";
+    const THEOREM_REF: &str = "part10/2.3";
     if !matches!(
         comparability["level"].as_str(),
         Some("identical") | Some("verdict-row")
@@ -217,7 +221,7 @@ fn derived_residual_class_agreement(
             "status": "silence_by_design",
             "reason": "runs_not_comparable",
             "theoremRef": THEOREM_REF,
-            "nonConclusion": "residual class agreement is read only for comparable runs; a not-comparable pair shares no checked complex"
+            "nonConclusion": "residual difference membership in B1 is read only for comparable runs; a not-comparable pair shares no checked complex"
         });
     }
     let (Some(base_derivation), Some(head_derivation)) = (
@@ -228,7 +232,7 @@ fn derived_residual_class_agreement(
             "status": "silence_by_design",
             "reason": "residual_derivation_not_recorded",
             "theoremRef": THEOREM_REF,
-            "nonConclusion": "residual class agreement requires both runs to record a derived saga-descent residual"
+            "nonConclusion": "residual difference membership in B1 requires both runs to record a derived saga-descent residual"
         });
     };
     for provenance_key in ["coverRef", "mappedCoverRef", "lawSurfaceRef", "charts"] {
@@ -238,7 +242,7 @@ fn derived_residual_class_agreement(
                 "reason": "residual_derivation_provenance_mismatch",
                 "theoremRef": THEOREM_REF,
                 "mismatchedField": provenance_key,
-                "nonConclusion": "residual class agreement is fail-closed when the two runs derive residuals under different covers, law surfaces, or chart sets"
+                "nonConclusion": "residual difference membership in B1 is fail-closed when the two runs derive residuals under different covers, law surfaces, or chart sets"
             });
         }
     }
@@ -250,7 +254,7 @@ fn derived_residual_class_agreement(
             "status": "silence_by_design",
             "reason": "residual_derivation_not_recorded",
             "theoremRef": THEOREM_REF,
-            "nonConclusion": "residual class agreement requires both runs to record a derived saga-descent residual"
+            "nonConclusion": "residual difference membership in B1 requires both runs to record a derived saga-descent residual"
         });
     };
     let base_map = base_edges
@@ -266,7 +270,7 @@ fn derived_residual_class_agreement(
             "status": "not_computed",
             "reason": "residual_complexes_do_not_match",
             "theoremRef": THEOREM_REF,
-            "nonConclusion": "residual class agreement is fail-closed when the two runs derive residuals over different overlap complexes"
+            "nonConclusion": "residual difference membership in B1 is fail-closed when the two runs derive residuals over different overlap complexes"
         });
     }
     let overlap_refs = base_map
@@ -316,7 +320,7 @@ fn derived_residual_class_agreement(
     }
     match crate::saga::solve_f2(rows, charts.len()) {
         Some(solution) => json!({
-            "status": "cohomologous",
+            "status": "difference_in_B1",
             "derived": true,
             "equation": "delta0(h) = r_base XOR r_head",
             "theoremRef": THEOREM_REF,
@@ -331,10 +335,10 @@ fn derived_residual_class_agreement(
                 }))
                 .collect::<Vec<_>>(),
             "provenance": provenance,
-            "reading": "the two runs' derived residuals differ by delta0(h) on the shared overlap complex; this records residual class agreement, not a repair-success verdict — repair success is read from the head run's own residual measurements"
+            "reading": "the difference of the two runs' derived residuals is delta0(h) on the shared overlap complex; this records membership in B1, while repair success is read from the head run's own residual measurements"
         }),
         None => json!({
-            "status": "not_cohomologous",
+            "status": "difference_not_in_B1",
             "derived": true,
             "equation": "delta0(h) = r_base XOR r_head",
             "theoremRef": THEOREM_REF,
@@ -342,7 +346,7 @@ fn derived_residual_class_agreement(
             "inB1": false,
             "deltaSupport": delta_support,
             "provenance": provenance,
-            "nonConclusion": "the residual change between the two runs is not a coboundary on the shared complex; the two runs' residual classes differ"
+            "nonConclusion": "the difference of the two runs' derived residuals is not in B1 on the shared overlap complex"
         }),
     }
 }

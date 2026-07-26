@@ -178,7 +178,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "primary",
                 "ArchSig v0.5.4 SAGA Stage 1",
                 vec!["archsig-contract:saga-stage1-v0.5.4"],
-                "RepairPlan v0.5.7 declares only the selected finite complex: charts, overlaps, optional triple overlaps, the declared ArchMap cover binding, and the enumeration-completeness declaration. The residual is derived by analyze from the selected cover sections and law-surface witness bindings; the residual class is read on the derived residual support component with the triple-cocycle check; the residual class agreement (with its coboundary witness when cohomologous) is derived by compare from the two runs' residual derivations under a comparability gate; the coefficient is the selected MeasurementProfile coefficient.",
+                "RepairPlan v0.5.7 declares only the selected finite complex: charts, overlaps, optional triple overlaps, the declared ArchMap cover binding, and the enumeration-completeness declaration. The residual is derived by analyze from the selected cover sections and law-surface witness bindings; the residual class is read on the derived residual support component with the triple-cocycle check; residualDifferenceReading is derived by compare from the two runs' residual derivations under a comparability gate and records whether their difference is in B1; the coefficient is the selected MeasurementProfile coefficient.",
                 vec![
                     "RepairPlan validation checks the declared complex before use; it does not compute boundary membership or global coherence.",
                     "RepairPlan input cannot supply generated conclusion tokens such as glues, verdict, h1Zero, or globalCoherent.",
@@ -320,14 +320,14 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ],
             ),
             artifact(
-                "archsig-comparison-report/v0.5.5",
-                "ArchSig comparison report v0.5.5",
+                "archsig-comparison-report/v0.5.6",
+                "ArchSig comparison report v0.5.6",
                 ARCHSIG_COMPARISON_REPORT_V1_SCHEMA,
                 "primary",
                 "ArchSig Output / CI workflow",
                 vec!["archsig-contract:artifact-ci-v0.5.4"],
                 &format!(
-                    "Comparison report v0.5.5 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions, archmap-diff intersections, comparability of the two runs' repair-plan digests, and — for comparable runs whose residual derivations share cover, law surface, and chart set — the residualClassAgreement block (cohomologous / not_cohomologous / no_residual_change) with its coboundary witness when cohomologous (part10/3.4+4.4). With a validated refinement-comparison/v0.5.4 artifact it can also record class-zero preservation. Registered conclusionCode values are {}.",
+                    "Comparison report v0.5.6 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions, archmap-diff intersections, comparability of the two runs' repair-plan digests, and — for comparable runs whose residual derivations share cover, law surface, and chart set — the residualDifferenceReading block (difference_in_B1 / difference_not_in_B1 / no_residual_change) with its delta0 witness when the difference is in B1 (part10/2.3). With a validated refinement-comparison/v0.5.4 artifact it can also record class-zero preservation. Registered conclusionCode values are {}.",
                     registry_sentence(&ARCHSIG_COMPARISON_CONCLUSION_CODES),
                 ),
                 vec![
@@ -404,7 +404,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     "faithfulness (retired at v0.5.7; the SAGA faithfulness regime was a supplied slot with no derived counterpart)".to_string(),
                     "trueSheafCertificate (retired at v0.5.7; the class reading is component-local on the derived residual and carries no global-sheaf certification)".to_string(),
                     "gluingData (retired at v0.5.7)".to_string(),
-                    "comparison (retired at v0.5.7; the run-pair reading is the derived residualClassAgreement in the comparison report)".to_string(),
+                    "comparison (retired at v0.5.7; the run-pair reading is the derived residualDifferenceReading in the comparison report)".to_string(),
                     "grounding (retired at v0.5.7; ag.saga-grounded reads the law surface and observations directly)".to_string(),
                 ];
             }
@@ -568,7 +568,7 @@ mod tests {
                 "archsig-gate-policy/v0.5.4",
                 "archsig-gate-report/v0.5.4",
                 "archmap-diff/v0.5.4",
-                "archsig-comparison-report/v0.5.5",
+                "archsig-comparison-report/v0.5.6",
                 "archsig-run-manifest/v0.5.4",
                 "archsig-atom-viewer-data/v0.5.4",
                 "archsig-measurement-view-model/v0.5.4",

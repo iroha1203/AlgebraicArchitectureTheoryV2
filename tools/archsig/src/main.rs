@@ -285,7 +285,7 @@ enum Command {
         #[arg(long)]
         policy: PathBuf,
 
-        /// Optional archsig-comparison-report/v0.5.4 JSON path for introduced-by-change rules.
+        /// Optional archsig-comparison-report/v0.5.6 JSON path for introduced-by-change rules.
         #[arg(long)]
         comparison: Option<PathBuf>,
 
