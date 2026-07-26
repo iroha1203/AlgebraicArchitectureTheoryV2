@@ -5,10 +5,11 @@
 **Hiroyuki Nakahata** — Independent Researcher
 ORCID: [0009-0008-5928-0234](https://orcid.org/0009-0008-5928-0234)
 
-> **draft note**: 本ファイルは Zenodo プレプリントの初稿下書きである。要件と完了条件は
-> [zenodo_saga.md](zenodo_saga.md)、Related Work の原典調査は
-> [zenodo_saga_related_work.md](zenodo_saga_related_work.md) を正とする。
-> 本文中の `TODO:` は release identity 確定時に固定する箇所を示す。
+Version 1.0.0 — July 2026
+DOI: [10.5281/zenodo.21603762](https://doi.org/10.5281/zenodo.21603762) — Licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
+
+> 本ファイルは英語正本([`en/main.tex`](en/) 一式)の日本語正本である。
+> 本文変更は両正本セットで行う(`en/README.md` の規律)。
 
 ---
 
@@ -1202,8 +1203,10 @@ axioms に限られる。`sorry` や追加公理を含む行はない。
   本表の witness 行(例 5.3)が担い、第7章の packet は付録C.3 の condition matrix が
   示す有限検査を担う。両者の分業は §7.5 に明記する。
 
-**TODO:** release tag 確定後に、対象 commit hash と release CI run の参照を
-本章に固定する(付録 A で管理)。
+本章の release snapshot は release tag `saga-paper-v1.0.0` 時点の repository
+状態である。axiom 監査を含む Lean フルビルドは tagged commit 上の CI で実行され、
+commit hash とその CI run への参照は、本論文と release identity を共有する
+deposit bundle の `MANIFEST.json` に記録される(付録C.4)。
 
 ---
 
@@ -1998,98 +2001,35 @@ assumption への依存を宣言している。
 再現は、固定した ArchSig version と入力から `analyze`(head / repaired)、
 `compare`、`gate` ×2 を実行し、runId と gate 判定の一致で確認する。
 
-**TODO:** deposit 内の相対 path、ArchSig version、実行 command 一式、
-expected output を release identity 確定後に固定する(現行の再現手順は
-`docs/reports/train_ticket_dogfooding/saga_diagnosis.md` が正本)。
+**Release identity。** release tag `saga-paper-v1.0.0`、version DOI
+[10.5281/zenodo.21603762](https://doi.org/10.5281/zenodo.21603762)、
+ArchSig tool version `0.5.4`、artifact schema は `archsig-repair-plan/v0.5.7`
+と `archsig-run-manifest/v0.5.4`。tagged commit hash と release CI run への
+参照は `MANIFEST.json` に記録される。
+
+**Deposit 構成。** deposit bundle `saga-zenodo-bundle/` は次を含む:
+`paper/`(本 PDF、LaTeX / BibTeX source、図2点)、`evidence/`(case study の
+入力 artifact と一次出力: ArchMap head / repaired 変種、law policy、
+law surface、measurement profile、repair plan、gate policy、builder script、
+`analyze`×2 / `compare` / `gate`×2 の出力)、`report/`(condition matrix の
+source を含む正本診断 report)、`reproduction/`(実行 command、expected
+output、authoring SKILL)、`audit/`(claim-to-evidence matrix)、
+`MANIFEST.json`(全 bundle ファイルの SHA-256 checksum+release identity)、
+`CITATION.md`。
+
+**再現。** repository を release tag で取得し
+(`git clone --branch saga-paper-v1.0.0`)、repository root から `$EV` を
+bundle の `evidence/` に向けて(checksum が保証するとおり repository 内の
+コピーと byte 一致)、head 入力への `analyze`、repaired 入力への `analyze`、
+両 run ディレクトリへの `compare`、各 measurement packet と gate policy への
+`gate` — 計5回の ArchSig CLI 実行を行う(verbatim の command 一覧は
+`reproduction/README.md`)。expected output は: head `analyze` が
+`MEASURED_NONGLUING_RESIDUAL`(runId `run:78c31d6a3172`)、repaired
+`analyze` が `REPAIR_GLUES_WITHIN_SELECTED_COMPLEX`(runId
+`run:6685bab8db21`)、`compare` が
+`MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE`、`gate` が head で
+`BLOCKED_BY_GATE_POLICY`(非零 exit code)、repaired で
+`PASS_WITHIN_GATE_POLICY`。一次出力の `inputDigests` は場所非依存の安定参照を
+使うため、一致確認は出力ディレクトリではなく runId と verdict で行う。
 
 ---
-
-## 付録(草稿管理)
-
-### A. 執筆残作業(release identity 確定と連動)
-
-- [x] 第3章: canonical 第I〜III部からの基礎定義の自足化
-- [x] 本文からの repo 参照・canonical 番号参照の撤去(Lean status 章の source path は例外。対応表は付録C=内部監査用へ退避)
-- [ ] 付録C: notation 対応表(paper 記号 ↔ canonical 記号、内部監査用)の追補
-- [ ] release 時: 冒頭 draft note と本付録(草稿管理)全体を除去する
-- [x] 第6章: status table 確定(2026-07-26、#3757 完了後の Part X route で対応・status・assumptions を固定。axiom 監査は `AxiomAudit.lean` の allowlist 検査)。残: release tag の commit hash と CI run 参照の固定
-- [x] 第6章: 未証明・未接続・未移植一覧の正確な記録(2026-07-26、§6.2 末尾)
-- [x] 第7章: 導出 residual 契約(#3820–#3822)への本文同期と condition matrix 転記(2026-07-26。§7 再構成後の配置は 付録C.1/§7.2/付録C.3)
-- [ ] 付録C.4(旧 §7.8): deposit 相対 path、ArchSig version、実行 command、expected output の固定
-- [x] 第8章: Young artifact 確認と定理番号確定(related_work.md §2.7 に記録)
-- [x] References 節と BibTeX 固定(`zenodo_saga_references.bib`、P0 11点+P1 使用分+Serre/Grothendieck/Garcia-Molina–Salem)
-- [x] 第8章: 2026 年文献の最新版と publication status を再確認(2026-07-26 arXiv 実査: Young 2603.27015=v1 のまま・journal ref なし、Gibson 2605.08609=v1 のまま・journal ref なし、Felber 2503.02556=**v2**(2025-08-27 改版)・journal ref なし。引用は version 非依存(task sheaf の一般言及)のため bib・本文とも変更不要。本文 TODO は除去済み)
-- [x] 英語版への翻訳(最終投稿言語=英語、2026-07-24 決定。英語正本=LaTeX を `en/` に新設、2026-07-26。以後の本文変更は英語正本とセットで行う)
-- [x] 全章: claim-to-evidence matrix の構築と各 claim の一次証拠への対応(2026-07-26、正本=`zenodo_claim_evidence_matrix.md`。残=TODO(tag) 3行のみ)
-- [x] SAGA comparison の可換図と one-cent の計算図の作成(2026-07-26。`zenodo_saga_figure1_comparison.png` を §5.2 末尾へ、`zenodo_saga_figure2_one_cent.png` を §7.2 末尾へ挿入。図内ラベルは英語のため英訳版へそのまま流用可。deposit 時は画像も bundle に同梱)
-- [x] 著者情報の固定(author block: Hiroyuki Nakahata / Independent Researcher / ORCID 0009-0008-5928-0234。所属企業名と contact は記載しない(2026-07-26 決定)。Acknowledgments に AI 協働開示、2026-07-24)
-- [ ] Zenodo metadata: license と DOI の固定。creators は author block と一致させる(deposit 転記用ドラフト=`zenodo_metadata.md`。**license=CC BY 4.0 決定済み**(2026-07-26)。DOI は workflow 確定済み — 残作業は deposit 時の version DOI 予約と転記のみ)
-- [x] Zenodo metadata: abstract の platform 変種を作成する(2026-07-26、`zenodo_metadata.md` §2/§3。citation guide 込み)。Zenodo description は HTML whitelist のみで MathJax 不可のため、display 数式2本を Unicode inline 形(`H¹_sem(𝒰) ≅ Ȟ¹(𝒰,Q_E)` / `Nonempty P_sem(W) ⟺ [r_sem]=0 ⟺ [r_E]=0`)へ落とす。arXiv 併用時は inline `$...$` 形(標準 LaTeX/AMS マクロのみ)
-
-### B. Claim-to-evidence matrix
-
-正本 = [`zenodo_claim_evidence_matrix.md`](zenodo_claim_evidence_matrix.md)
-(2026-07-26 構築。30行: 照合済み26+TODO(tag)3+非対象1)。P0-6 final review は
-同表を照合基準として実行する。残 TODO は L5(第6章 tag/CI run)・E10(付録C.4
-deposit path)・S2(release identity 相互参照)の3行で、いずれも release tag
-確定後の同一作業で消化する。
-
-### C. Canonical 対応表(内部監査用。release 時に本付録ごと除去)
-
-本文は self-contained であり、読者はこの表を必要としない。以下は執筆・監査時に
-paper とリポジトリ内 canonical 数学本文(日本語)の対応を検証するための内部資料である。
-
-基礎定義(第3章):
-
-| paper | canonical | 内容 |
-| --- | --- | --- |
-| 定義 3.1 | 第I部 定義 1.1 | Atom |
-| 定義 3.2 | 第I部 定義 3.1、3.2 | Atom family、support |
-| 定義 3.3 | 第I部 定義 4.1、5.1、命題 5.3 | configuration、architecture object、Atom-origin |
-| 定義 3.4 | 第II部 定義 3.1 | architecture context |
-| 定義 3.5 | 第II部 定義 4.1、仮定 4.3、命題 4.2 | context category、overlap、finite-meet poset model |
-| 定義 3.6 | 第I部 定義 7.1〜7.3 | equation system、fulfillment |
-| 定義 3.7 | 第II部 定義 6.1、7.1、8.1 | coverage、AAT topology、AAT site |
-| 定義 3.8 | 第II部 定義 9.1、10.1 | presheaf、sheaf condition |
-| 定義 3.9 | 第III部 定義 5.2、6.1、6.2 | witness ideal、obstruction ideal |
-| 定理 3.10 | 第III部 定義 11.3、定理 11.4 | displayed source、generated `Q_E` |
-
-注: 論文 定理 3.10 条項5(旧条項4、2026-07-26 #3813 の residual restriction
-naturality 条項挿入で繰り下げ)の名称は quotient zero criterion(#3781 項目8で
-改名)。canonical 定理 11.4 の対応 clause は faithfulness / nondegeneracy の
-ままであり、canonical 側は追随改名しない(2026-07-24 裁定)。名称の相違は
-この注記が恒久的に対応づける。条項3(residual restriction naturality)は
-canonical 定理 11.4 の同名条項に対応する(2026-07-26 #3813 で追補)。
-
-構成と定理(第4〜5章):
-
-| paper | canonical(第X部) | 内容 |
-| --- | --- | --- |
-| §4.1 | 定義 2.1、補題 2.2、定義 2.3、補題 2.1A | cover-relative Čech complex |
-| §4.2 | 定義 3.1〜3.4、定義 4.1、4.2、補題 4.3、定理 4.4、系 4.5 | semantic 側の構成 |
-| §4.3 | 定義 5.1〜5.3、補題 5.4 | equation 側の構成 |
-| 命題 4.1(§4.3) | 定義 6.1、命題 6.1A | equation semantic realization(`χ^E` の構成) |
-| 定理 5.1 | 定理 1.1 | SAGA 中心定理 |
-| §5.3 | 補題 6.2A、定理 6.3、系 6.7、例 6.6 | 係数同型 `Φ` |
-| §5.4 | 定義 7.1、定理 7.2、系 7.3、定理 7.4 | cochain 可換と `H¹` 同型 |
-| §5.5 | 定理 7.5、定理 7.6 | residual 対応と統合 |
-| 定理 5.2(§5.6) | 定義 8.1、系 4.5、補題 2.1A、定理 8.2、系 8.3 | Grounded Global Gluing |
-| 補題 5.2A(§5.6) | 補題 2.1A(matching family clause のみ) | ordered matching completion |
-| §5.7 | 原則 8.4 | additive/torsor/higher の分離 |
-| 例 5.3(§5.8) | 例 10.2 | 非零類の有限 witness |
-
-注: 論文 §5.6 の true semantic repair sheaf 定義は canonical 定義 8.1 と同一の
-4条件である(2026-07-26 の記述整合対応 #3814 で、canonical に対応物のない
-旧条件(5)と `P_sem^𝒰` 定義域分離を除去して統一)。Lean 側は担体
-(`AffineSemanticRepairSystem.State`)が最初から site 全域である一方、torsor
-三条件は `IsIntersectionCtx` ガードにより cover intersection 上でのみ仮定される。
-`P_E` 側も同構造(`AffineCoefficientLiftSystem`、作用は intersection 上)。
-仮定 7 の `β` の Lean 対応物は intersection diagram 上の成分と base 水準の
-`betaW`(chart 整合仮説つき)に分かれる。
-
-注: 論文 §4.2 の projection `π_V:Λ(V)→At` は、canonical 定義 3.1 の
-occurrence 値 projection `π_V:Λ(V)→At(V)` を台 Atom へ圧縮した形である
-(2026-07-26 #3813)。Lean は occurrence 水準を保持する
-(`SemanticAtomData.projection` / `projection_natural` +
-`AtomOccurrenceReading.occRestrict_atom`)。命題 4.1 の Lean
-対応物は `EquationSemanticRealization.chiE` / `chiE_natural` である。

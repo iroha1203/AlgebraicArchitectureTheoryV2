@@ -2,13 +2,14 @@
 
 > 論文(正本=`en/main.tex` 一式、日本語草稿=`zenodo_saga_draft.md`)の各 claim を
 > 一次証拠へ対応させる監査表。P0-6 final review はこの表を照合基準として実行する。
-> 「状態」列が `TODO(tag)` の行は release identity(release tag・CI run・deposit path)
-> 確定時に埋める。それ以外の行は 2026-07-26 時点で照合済み。
-> deposit bundle への同梱は deposit 時に裁定する(同梱する場合は TODO 消化後の版)。
+> release identity(tag `saga-paper-v1.0.0`・DOI `10.5281/zenodo.21603762`)は
+> 本文へ固定済み。tag 押下後の残検証は「状態集計」参照。
+> deposit bundle には `audit/claim_evidence_matrix.md` として同梱される。
 
 ## A. Mathematics(第3〜5章)
 
-検証方法の正本: 草稿管理付録C の canonical 対応表(paper 番号 ↔ 第X部ほか)。
+検証方法の正本: [`zenodo_canonical_map.md`](zenodo_canonical_map.md) の
+canonical 対応表(paper 番号 ↔ 第X部ほか)。
 canonical 数学本文 = `docs/aat/algebraic_geometric_theory/`(第X部 =
 `part_10_semantic_repair_descent_saga.md`)。レビュー履歴 = PR #3828(Codex 2巡)、
 PR #3832/#3836(検算含む多レーン)、PR #3845(移設時の claim 不変監査)。
@@ -34,7 +35,7 @@ PR #3832/#3836(検算含む多レーン)、PR #3845(移設時の claim 不変監
 | L2 | §6.2 表 | axiom 健全性(標準3公理のみ) | `Formal/AG/AxiomAudit.lean`(4311宣言 standard axioms only、CI 強制)+ 中心チェーン13宣言の `#print axioms` 独立実行(2026-07-26) | 照合済み |
 | L3 | §6.2 表・仮定列 | 各行の仮定(selected packet、completeness 対、Fintype、thin、true sheaf 条件)が Lean statement と一致 | Lean statement 実読(PR #3828 F6)+ PR #3843 の入力8 field 除去(packet 面と §5.2 の整合) | 照合済み |
 | L4 | §6.2 末尾 | 未移植は非 thin site gluing のみ | §6.2 末尾の明示記録+`unported` 台帳 | 照合済み |
-| L5 | §6 冒頭 | release snapshot の同定(対象 commit hash・release CI run) | release tag と tag 上の CI run | **TODO(tag)** |
+| L5 | §6.2 末尾 | release snapshot = tag `saga-paper-v1.0.0` 時点、CI が tagged commit 上で走る | release tag `saga-paper-v1.0.0`+tag 上の CI run(hash・run 参照は bundle `MANIFEST.json` に記録) | 本文固定済み。**tag 押下後**: CI green 確認+MANIFEST 記録 |
 
 ## C. Measurement / Empirical(第7章+付録C)
 
@@ -53,7 +54,7 @@ RepairPlan schema v0.5.7)。
 | E7 | §7.4 | 定理5.1 の有限 instantiation は計測の範囲外(第6章 Lean が担う) | 契約の範囲定義そのもの+condition matrix(E8)に比較段が無いこと | 照合済み |
 | E8 | 付録C.3 | condition matrix 各行(computed / checked / assumed / unmeasured)の種別と記録 | 正本 = `saga_diagnosis.md` condition matrix(#3829 で canonical anchor 再帰属済み)↔ packet assumption ledger・validation reports | 照合済み |
 | E9 | 付録C.2 | 供給工程: 機械層/読解層分離、scope 承認、2パス調停、audit、モデル記録(2,118 atoms / 42 services を軽量モデル run で作成) | authoring SKILL 本体+scope manifest+調停記録+run のモデル記録(fullbuild report) | 照合済み |
-| E10 | 付録C.4 | 再現: 固定入力からの `analyze`×2 / `compare` / `gate`×2 で runId・gate 判定一致、`inputDigests` は canonical digest と一致 | `saga_diagnosis.md` 再現節+builder script。**deposit 相対 path・command 一式・expected output** | **TODO(tag)** |
+| E10 | 付録C.4 | 再現: 固定入力からの `analyze`×2 / `compare` / `gate`×2 で runId・gate 判定一致、`inputDigests` は canonical digest と一致 | 付録C.4 に deposit 構成・command・expected output を固定済み(2026-07-26)。verbatim command=bundle `reproduction/README.md`、正本=`saga_diagnosis.md` 再現節 | 固定済み。**deposit 時**: clean checkout 再現確認(P0-5) |
 
 ## D. Related Work / novelty(第8章)
 
@@ -68,11 +69,11 @@ RepairPlan schema v0.5.7)。
 | ID | 論文の箇所 | Claim | 一次証拠 | 状態 |
 | --- | --- | --- | --- | --- |
 | S1 | 要旨・§1・§10 | 中心2式(`H¹_sem(𝒰) ≅ Ȟ¹(𝒰,Q_E)`、三項同値)と「証明・機械検証 status・再現計測の三層」 | M5/M6(数学)、L1〜L4(Lean)、E4〜E6(計測) | 照合済み |
-| S2 | 要旨・§1.3 | 三層が同一 release identity を参照する | release tag・version DOI・bundle manifest の相互参照 | **TODO(tag)** |
+| S2 | 要旨・§1.3 | 三層が同一 release identity を参照する | tag `saga-paper-v1.0.0`+version DOI `10.5281/zenodo.21603762`(title page・§6・付録C.4 に印字)+bundle `MANIFEST.json` | 本文固定済み。**tag 押下後**: MANIFEST 生成で相互参照が閉じる |
 | S3 | 第9章 | 展望(Rising Sea、SFT、反実仮想等)は vision であり evidence を要する claim ではない(本文中で明示) | — (非対象) | 非対象 |
 
 ## 状態集計
 
-- 照合済み: 26 行
-- **TODO(tag)**: 3 行 — L5(第6章 tag/CI run)、E10(付録C.4 deposit path)、S2(release identity 相互参照)。いずれも release tag 確定後の同一作業で消化する
+- 照合済み・本文固定済み: 29 行(2026-07-26。release identity=tag `saga-paper-v1.0.0`・DOI `10.5281/zenodo.21603762` の本文印字まで完了)
 - 非対象: 1 行(S3、vision 節)
+- **tag 押下後の残検証**(行状態は固定済み): L5=tag 上の CI green 確認、E10=clean checkout 再現、S2=`MANIFEST.json` 生成。P0-6 final review で本表を照合基準として消化する

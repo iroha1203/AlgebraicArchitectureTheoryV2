@@ -420,8 +420,46 @@ agree with the canonical digests. Reproduction consists of executing
 $\times2$ from the fixed ArchSig version and inputs, and confirming
 agreement of the runIds and the gate verdicts.
 
-\textbf{TODO:} fix the relative paths within the deposit, the ArchSig
-version, the full set of execution commands, and the expected outputs
-once the release identity is finalized. (The current canonical
-reproduction procedure is
-\code{docs/reports/train\_ticket\_dogfooding/saga\_diagnosis.md}.)
+\paragraph{Release identity.}
+Release tag \code{saga-paper-v1.0.0}; version DOI
+\href{https://doi.org/10.5281/zenodo.21603762}{10.5281/zenodo.21603762};
+ArchSig tool version \code{0.5.4}; artifact schema versions
+\code{archsig-repair-plan/v0.5.7} and
+\code{archsig-run-manifest/v0.5.4}. The tagged commit hash and the
+reference to the release CI run are recorded in \code{MANIFEST.json}.
+
+\paragraph{Deposit layout.}
+The deposit bundle \code{saga-zenodo-bundle/} contains:
+\code{paper/} (this PDF, the \LaTeX{} / BibTeX sources, and the two
+figures); \code{evidence/} (the input artifacts and the primary
+outputs of the case study: ArchMap head / repaired variants, law
+policy, law surfaces, measurement profile, repair plans, gate policy,
+the builder script, and the \code{analyze} $\times2$ / \code{compare}
+/ \code{gate} $\times2$ outputs); \code{report/} (the canonical
+diagnosis report, including the condition-matrix source);
+\code{reproduction/} (the execution commands, the expected outputs,
+and the authoring SKILL); \code{audit/} (the claim-to-evidence
+matrix); \code{MANIFEST.json} (SHA-256 checksums of every bundle file
+together with the release identity); and \code{CITATION.md}.
+
+\paragraph{Reproduction.}
+Obtain the repository at the release tag
+(\code{git clone --branch saga-paper-v1.0.0}) and run, from the
+repository root with \code{\$EV} pointing at the bundle's
+\code{evidence/} directory (byte-identical to the repository's own
+copy, as certified by the checksums):
+\code{analyze} on the head inputs, \code{analyze} on the repaired
+inputs, \code{compare} on the two run directories, and \code{gate} on
+each measurement packet with the gate policy --- five invocations of
+the ArchSig command-line tool, listed verbatim in
+\code{reproduction/README.md}. The expected outputs are: head
+\code{analyze} concludes \code{MEASURED\_NONGLUING\_RESIDUAL} with
+runId \code{run:78c31d6a3172}; repaired \code{analyze} concludes
+\code{REPAIR\_GLUES\_WITHIN\_SELECTED\_COMPLEX} with runId
+\code{run:6685bab8db21}; \code{compare} records
+\code{MEASURED\_OBSTRUCTION\_NO\_LONGER\_RECORDED\_AFTER\_CHANGE};
+\code{gate} returns \code{BLOCKED\_BY\_GATE\_POLICY} for head (with a
+nonzero exit code) and \code{PASS\_WITHIN\_GATE\_POLICY} for
+repaired. The \code{inputDigests} of the primary outputs use
+location-independent stable references, so agreement is checked by
+runId and verdict rather than by output directory.
