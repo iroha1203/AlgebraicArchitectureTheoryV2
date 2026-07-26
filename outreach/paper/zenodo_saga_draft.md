@@ -190,10 +190,9 @@ deformation、monodromy、stack、base change といった代数幾何の道具�
 architecture 上で働く。本論文の SAGA はこの一部、すなわち Čech `H^1` と
 descent を使う。より深い道具の使用は第9章の研究展望で述べる。
 
-SAGA の代数幾何性は、係数 presheaf の自然同型から cochain 同型が従うという
-比較証明の一般形式にあるのではない。それは構成の側にある: observable ring
-`O_E`、witness ideal と obstruction ideal、商係数 `Q_E=O_E/I_Ob`、AAT site、
-そして零類を global repair として読む descent interpretation である(第3〜5章)。
+SAGA の代数幾何性は構成の側にある: observable ring `O_E`、witness ideal と
+obstruction ideal、商係数 `Q_E=O_E/I_Ob`、AAT site、そして零類を global repair
+として読む descent interpretation である(第3〜5章。固有性の帰属は §5.1)。
 
 ### 2.6 相対性と provenance
 
@@ -400,20 +399,12 @@ support Atom `a_q` の選択。cover-indexed の場合は local context を各 c
 代表元計算、(4) は equation fulfillment の定義(`ε=0`)、(5) は商に
 おける零の定義そのものである。
 
-条項 5 は quotient における零判定であり、それ以上ではない。semantic failure と
-class の対応まで含む主張として読まない。displayed failure から非零類へ至る推論
-
-```math
-\text{displayed failure}
-\;\Rightarrow\; d_q\notin I_{\mathrm{Ob}}^E(W_q)
-\;\Rightarrow\; [d_q]\ne0
-```
-
-のうち条項 5 が担うのは後半だけである。前半 — 意味論上の failure が ideal に
-属さない residual として顕在化すること(**semantic faithfulness**)— は商係数の
-性質ではなく、displayed source の選択と supply に属する別条件である。第7章の case study では、この
-前半は closed-equational surface の計測と、law surface の witness 束縛という
-authored 宣言が担う。
+条項 5 が与えるのは quotient における零判定である。displayed failure から
+非零類 `[d_q]≠0` へ至るには、意味論上の failure が ideal に属さない residual
+として顕在化すること(**semantic faithfulness**)が別に要る。これは商係数の
+性質ではなく displayed source の選択と supply に属する条件であり、第7章の
+case study では closed-equational surface の計測と law surface の witness 束縛が
+担う。
 
 この `Q_E` が SAGA の幾何側 Čech complex の係数である。obstruction が
 ideal-theoretic であること、すなわち failure が label ではなく商の class として
@@ -607,11 +598,10 @@ face restriction `V'→V` について `i_{λ|_{V'}}=i_λ`、`A_{λ|_{V'}}=A_λ`
 で `V'` 上評価した `ε` であり、定理 3.10 の residual restriction naturality に
 より、その class は `χ^E_V(λ)` の restriction に一致する。∎
 
-`χ^E` は、第5章 定理 5.1 の仮定 3 が要求する restriction-natural な一次写像を、
-equation system と displayed reading から**構成**する。仮定 3 自体はこの構成に
-限定されない selected 入力だが、`χ^E` はその canonical な実例であり、semantic
-atom の側から与えた「どの equation のどの読みに対する failure か」だけを材料に
-比較写像の始点が生成されることを示す。
+`χ^E` は、第5章 定理 5.1 の仮定 3 が要求する restriction-natural な一次写像を
+equation system と displayed reading から構成する canonical な実例であり、
+「どの equation のどの読みに対する failure か」だけを材料に比較写像の始点が
+生成されることを示す。
 
 ### 4.4 二つの構成の独立性
 
@@ -803,12 +793,9 @@ R_{\mathrm{rep}}(V)\subset\ker\widetilde\chi_V
 である。soundness を仮定として置かず local-state data から
 導出するのは、この3行の議論である。
 
-この導出は循環ではない。仮定 7 の `β` は局所状態系の間の写像として選ばれる
-データであり、その定義は `R_rep` に言及しない。要求されるのは restriction
-naturality と generator-level equivariance だけである。`β` が soundness を
-暗黙に前提せず独立に構成できることは、§5.8 の有限例で確かめられる: そこでは
-`β` は局所座標上の具体写像として与えられ、equivariance は generator 上の
-直接計算で検査され、soundness はその帰結として得られる。
+仮定 7 の `β` の定義は `R_rep` に言及せず、要求されるのは restriction
+naturality と generator-level equivariance だけなので、この導出は循環しない。
+`β` を soundness と独立に構成できることは、§5.8 の有限例が具体写像で示す。
 
 **商への降下。** `R_rep(V)⊂ker χ̃_V` により `χ̃_V` は商を通り、一意な準同型
 
@@ -1311,15 +1298,11 @@ residual は入力ではない。`analyze` が、選択 cover 上の観測 secti
 比較と law surface の witness 束縛から residual を導出し、辺ごとの値・witness・
 観測 atom 参照の provenance を measurement packet に記録する(§7.3)。
 
-repair plan の内容は、系統別に次へ分解される。charts と overlaps は観測への
-参照であり、観測された cover と restriction に解決できない宣言は受理されない。
-この部分が結論の計算に寄与する内容は、観測系統がすでに持っている内容の
-部分選択である。残る二つ — enumeration assertion と triple overlap 宣言の有無 —
-は、観測からも instance-independent な法・方程式からも導かれない author
-assertion であり、結論を導出する材料としてではなく、assumption ledger の
-開示行として結論に随伴する(§7.7)。したがって、結論を導出する材料は観測と
-法・方程式の二系統であり、repair plan が独自に加えるものは開示された
-assumption だけである。
+repair plan の charts と overlaps は観測への参照であり、観測された cover と
+restriction に解決できない宣言は受理されない。残る enumeration assertion と
+triple overlap 宣言の有無は author assertion であり、結論を導出する材料として
+ではなく、assumption ledger の開示行として結論に随伴する(§7.7)。したがって
+repair plan が独自に加えるものは開示された assumption だけである。
 
 この契約の下で、本論文の measurement claim は次の主張に立つ。
 **SAGA 診断の結論 — residual、boundary membership、gate 判定 — は、Atom 観測と
@@ -1439,10 +1422,9 @@ assertion に立つ。
 | inside-payment–order | 払い戻しの基準額 | `BigDecimal(order.getPrice())` の正確値 | `String price` の素通し記載額 | 通貨値(scale-2) | 決済が用いる基準額が記載額と同一規約で確定 | `e_insidepay_order` |
 | cancel–order | 払い戻し比率の適用 | 丸め済み `0.8 × price` | 記載額 `price` | 通貨値(scale-2) | 払い戻し額が記載額の 0.8 倍として一意に確定 | `e_cancel_order` |
 
-residual はこの表から supply されるのではない。law surface が各辺に witness
-変数を束縛し(最終列)、residual の値そのものは `analyze` が各辺の観測
-section value の比較から導出する(§7.3)。表が固定するのは意味論的根拠の側で
-ある: 三辺はいずれも、同一の semantic quantity — この注文の払い戻し金額 — の
+この表が固定するのは意味論的根拠の側であり、residual の値そのものは
+`analyze` が各辺の観測 section value の比較から導出する(§7.3)。
+三辺はいずれも、同一の semantic quantity — この注文の払い戻し金額 — の
 restriction を比較しており、mismatch の自由度は「その量を通貨値としてどの丸め・
 scale 規約で確定するか」という一つの向きに乗る。witness 束縛は、その向きを
 辺ごとに選ぶ law 側の宣言であり、instance の値は運ばない。
@@ -1464,13 +1446,10 @@ cancel 側の乗算は二進浮動小数点で行われるが、この入力で�
 cancel の丸め規約に、inside-payment は正確算術に忠実である — が、二つの chart
 の値の差として残る。
 
-この数値 witness の身分を固定する。これは実施者による source 水準の検算であり、
-ArchSig の計算対象ではない。packet のどの計算にも価格、`0.8`、丸め、`0.004` は
-現れない。ArchSig の residual が導出されるのは、金額規約の観測表現である
-section value の集合比較(§7.3)からであり、§7.5 の計測が非境界 residual と
-して立てるのは、その規約 mismatch が閉ループを一周しても `δ⁰` で解けない
-ことである。数値としてのドリフトの実在量は runtime 計測に属し、本論文では
-沈黙する(§7.7)。
+この数値 witness は実施者による source 水準の検算であり、ArchSig の計算には
+価格、`0.8`、丸め、`0.004` のいずれも現れない。ArchSig の residual は金額規約の
+観測表現である section value の集合比較から導出され(§7.3)、数値としての
+ドリフトの実在量は runtime 計測に属し、本論文では沈黙する(§7.7)。
 
 ### 7.5 診断階段
 
@@ -1480,9 +1459,8 @@ law surface は closed-equational、SAGA-grounded、descent の3本(descent surf
 は観測された 6 辺すべてに witness 変数を束縛する)、repair plan は選択複体だけ
 を宣言する: chart は観測 cover の 6 chart そのもの、overlap は観測された
 restriction 6 辺(三角形 3 + consign–consign-price + preserve–consign +
-preserve–order)、triple overlap は宣言しない。3サービスの金額を同時に照合する
-サイトの不在は、ツールが観測から読める事実ではなく実施者の assertion であり、
-宣言しないことがこの契約での正直な記述である。repaired 変種は、三角形の
+preserve–order)、triple overlap は宣言しない(§7.4 の調査所見の反映。
+assertion としての身分は §7.7)。repaired 変種は、三角形の
 3 chart を BigDecimal scale-2 HALF_EVEN 統一規約に置換した仮修理 ArchMap である。
 
 導出 residual(head)は、三角形 3 辺と preserve 系 2 辺で section value が
@@ -1511,10 +1489,9 @@ preserve–order)、triple overlap は宣言しない。3サービスの金額�
 inside-payment は正確算術に、order は素通し保管に、それぞれ忠実である。
 ペアごとの受け渡しも各々は成立している。計測として観測されたのは、規約
 mismatch の奇パリティが閉ループ上で `δ⁰` により解けないこと(`inB1: false`)で
-ある。そのループを埋める面(triple)の不在は実施者の assertion であり(§7.4、
-§7.7)、その宣言の下でこの計測は「局所的には整合、大域的に貼り合わない」と
-いう SAGA の中心構造の、作為的に仕込んだのではない実在 OSS 上の instance に
-なる。
+ある。ループを埋める面(triple)の不在の assertion(§7.4)の下で、この計測は
+「局所的には整合、大域的に貼り合わない」という SAGA の中心構造の、作為的に
+仕込んだのではない実在 OSS 上の instance になる。
 
 **診断階段の全段が導出 residual だけで機能。** 観測(ArchMap)と法・方程式
 (law surface、MeasurementProfile)から導出した residual による非境界の計測、
@@ -1646,13 +1623,9 @@ architecture へ貼り合うかである。
 | domain-specific construction | program-semantic presheaf 上の直接計算 | 独立な二 presentation(semantic repair / equation quotient)、`χ/Φ/κ` の構成、architecture 相対の exactness 条件 |
 | discharged obligation | cohomology 計算の program-analysis claims への接続 | soundness の導出、`ker`/`im` 条件の検査、residual class の意味論的対応の証明 |
 
-新規性の軸は、係数 presheaf の自然同型から Čech cohomology の同型が従うという
-一般論には置かない。それは定理 5.1 (ii) の一般的機構である(§5.1)。SAGA が
-比較の新規性として主張するのは、domain-specific construction とそこで放電された
-義務である: semantic repair presentation と equation-generated quotient
-presentation の独立構成、architecture data に相対化した exactness 条件
-(soundness の導出、`ker`/`im` の検査可能な条件化)、residual class の意味論的
-解釈、selected evidence contract、そして repair 前後の有限比較である。
+SAGA が比較の新規性として主張するのは、表の最終二行 — domain-specific
+construction とそこで放電された義務 — であり、係数同型から cochain 同型が従う
+一般的機構ではない(固有性の帰属は §5.1)。
 
 global-section obstruction の系譜として、sheaf-theoretic contextuality
 [Abramsky–Brandenburger 2011] と、その Čech cohomology による非消滅障害
@@ -1703,9 +1676,7 @@ executable measurement への接続で行う。
 obstruction として、formal architecture model を conformance 分析の基盤として
 確立してきた。SAGA はこれらの系譜に、software architecture のための
 equation-generated AAT Čech complex を構成し、その first cohomology が独立に
-定義された semantic-repair obstruction と一致することの証明を加える。この証明の
-重心は、同型が存在するという一般形式ではなく、二つの presentation の独立構成と、
-architecture 相対の exactness 条件の放電にある。
+定義された semantic-repair obstruction と一致することの証明を加える。
 Lean が比較を検証し、ArchSig がその有限 architectural instance を評価する。
 
 Young の Lean 形式化(1,259 lines)、375 benchmarks、evaluation 数値は、
@@ -1872,7 +1843,7 @@ family、sheaf amalgamation を経て global section が構成される。
 
 第三に、**one-cent realization** である。実在の microservice システムの
 払い戻し三角形上で、3つの金額規約の衝突が立てる非境界 residual を観測から
-導出・計測し(triple を宣言しない選択複体上。§7.7)、gate による blocking、
+導出・計測し(選択複体上、§7.7)、gate による blocking、
 修理案の事前検証、repair 後の障害消滅、gate PASS までを一つの再現可能な
 計算として一周した。
 各 chart は自分の局所方程式を満たしていた。障害は、どの局所にも帰属しない
