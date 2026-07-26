@@ -19,9 +19,16 @@ SAGA の数学、Lean 形式化、ArchSig による実コード診断を統合�
 Related Work の原典調査、必須文献、比較軸、本文候補は
 [zenodo_saga_related_work.md](zenodo_saga_related_work.md) に整理する。
 
-論文本文の初稿下書きは [zenodo_saga_draft.md](zenodo_saga_draft.md) に置く。
-本文中の `TODO:` は release identity 確定時に固定する箇所を示す。
+論文の日本語正本は [zenodo_saga_draft.md](zenodo_saga_draft.md) に置く。
+release identity は確定済み: release tag `saga-paper-v1.0.0`、version DOI
+`10.5281/zenodo.21603762`、license CC BY 4.0。
 
 投稿言語は英語であり、英語正本(LaTeX)は [en/](en/) に置く。
-日本語原稿は執筆原本・草稿管理面として維持し、本文内容の変更は英語正本とセットで行う。
-ビルド手順と規約は [en/README.md](en/README.md) を正とする。
+本文内容の変更は両正本セットで行う。ビルド手順と規約は
+[en/README.md](en/README.md) を正とする。
+
+Release 監査面: claim-to-evidence 対応は
+[zenodo_claim_evidence_matrix.md](zenodo_claim_evidence_matrix.md)、
+canonical 対応表(内部監査用)は [zenodo_canonical_map.md](zenodo_canonical_map.md)、
+deposit metadata は [zenodo_metadata.md](zenodo_metadata.md)、
+deposit bundle の組成は [bundle/build_bundle.py](bundle/build_bundle.py) が固定する。

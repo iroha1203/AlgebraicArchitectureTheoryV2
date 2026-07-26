@@ -15,7 +15,7 @@
 | Language | English |
 | Version | 1.0.0 |
 | License | **CC BY 4.0**(2026-07-26 決定。単一レコード全体 — PDF・tex/bib source・証拠束 — に適用。PDF 本体への license 表記は任意だが、release 時に title page 脚注へ「CC BY 4.0」を一行入れると deposit と自己記述が一致する) |
-| DOI | TBD。**workflow 確定(2026-07-26)**: Zenodo は publish 時に version DOI + concept DOI を自動付与する。draft(未公開 deposit)の「Get a DOI now」で **version DOI のみ事前予約可**。publish 後は bundle ファイルを差し替えられないため、**draft 作成 → version DOI 予約 → PDF・citation guide へ転記 → publish** の順で行う。concept DOI は publish 時まで不明のため bundle 内には書かず「Zenodo record ページ参照」とする |
+| DOI | **version DOI 予約済み(2026-07-26): `10.5281/zenodo.21603762`**。title page・§6・付録C.4・CITATION.md へ印字済み。concept DOI は publish 時に自動付与されるため bundle 内には書かず「Zenodo record ページ参照」とする |
 | Related identifiers | `https://github.com/iroha1203/AlgebraicArchitectureTheoryV2`(isSupplementTo / release tag TBD を付す)、FudanSELab/train-ticket commit `313886e99bef`(isDerivedFrom、対象 case study) |
 | Keywords | software architecture; Čech cohomology; algebraic geometry; sheaf; descent; Lean; formal verification; microservices; architecture analysis |
 
