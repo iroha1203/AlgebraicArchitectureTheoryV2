@@ -17,8 +17,10 @@ and the staircase names each step of its failure precisely:
    law-surface witness bindings has a **nonzero** class in `Z1/B1`: no
    assignment of per-module fixes reconciles the loop
    (`MEASURED_NONGLUING_RESIDUAL_CLASS`).
-3. **Comparison** — a supplied, contract-checked cochain map transports the
-   class to the Čech side (`SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA`).
+3. **Comparison** — `compare` derives the residual class agreement between the
+   head and repaired runs from their residual derivations alone
+   (`residualClassAgreement`; here `not_cohomologous`, because the repair moves
+   the class from nonzero to zero).
 4. **Gate** — CI blocks the PR; after the repair, the residual glues
    (`REPAIR_GLUES_WITHIN_SELECTED_COMPLEX`) and the gate passes.
 
