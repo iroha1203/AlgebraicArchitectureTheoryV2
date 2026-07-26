@@ -2002,7 +2002,7 @@ table が完結して与え、label は Lean source を閲覧する際の照合�
 - [ ] 全章: claim-to-evidence matrix の構築と各 claim の一次証拠への対応
 - [x] SAGA comparison の可換図と one-cent の計算図の作成(2026-07-26。`zenodo_saga_figure1_comparison.png` を §5.2 末尾へ、`zenodo_saga_figure2_one_cent.png` を §7.2 末尾へ挿入。図内ラベルは英語のため英訳版へそのまま流用可。deposit 時は画像も bundle に同梱)
 - [x] 著者情報の固定(author block: Hiroyuki Nakahata / Independent Researcher / ORCID 0009-0008-5928-0234。所属企業名と contact は記載しない(2026-07-26 決定)。Acknowledgments に AI 協働開示、2026-07-24)
-- [ ] Zenodo metadata: license(CC BY 4.0 想定、要決定)と DOI の固定。creators は author block と一致させる(deposit 転記用ドラフト=`zenodo_metadata.md`、2026-07-26 作成。license と DOI が TBD)
+- [ ] Zenodo metadata: license と DOI の固定。creators は author block と一致させる(deposit 転記用ドラフト=`zenodo_metadata.md`。**license=CC BY 4.0 決定済み**(2026-07-26)。DOI は workflow 確定済み — 残作業は deposit 時の version DOI 予約と転記のみ)
 - [x] Zenodo metadata: abstract の platform 変種を作成する(2026-07-26、`zenodo_metadata.md` §2/§3。citation guide 込み)。Zenodo description は HTML whitelist のみで MathJax 不可のため、display 数式2本を Unicode inline 形(`H¹_sem(𝒰) ≅ Ȟ¹(𝒰,Q_E)` / `Nonempty P_sem(W) ⟺ [r_sem]=0 ⟺ [r_E]=0`)へ落とす。arXiv 併用時は inline `$...$` 形(標準 LaTeX/AMS マクロのみ)
 
 ### B. Claim-to-evidence matrix(skeleton)
