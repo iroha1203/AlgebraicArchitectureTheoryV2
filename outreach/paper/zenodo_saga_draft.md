@@ -52,7 +52,7 @@ true semantic repair sheaf 条件の下では、global repair は三項同値
 
 本論文は、この数学的成果を三層で提示する。第一層は完成した SAGA 数学である。
 第二層は release 時点の Lean 形式化 status であり、定義、定理、有限 witness、
-proof chain を declaration 単位で数学本文と対応させる。第三層は measurement system
+proof chain を declaration 単位で本論文の定理と対応させる。第三層は measurement system
 ArchSig による実行可能な有限診断であり、実在するオープンソース microservice architecture 上で
 観測から導出した residual の非零計測、gate による blocking、repair 案の事前検証、
 repair 後の障害消滅の記録までを再現可能な一つの計算として示す。
@@ -118,7 +118,7 @@ cohomology の比較を構成し、`H^1` 同型、residual class 対応、true s
 global repair 同値を証明する(第5章)。
 
 Lean 面は release 時点の status である。形式化済みの定義、定理、witness、
-proof chain を declaration 単位で示し、数学本文との対応と axiom 状況を固定する(第6章)。
+proof chain を declaration 単位で示し、本論文の定理との対応と axiom 状況を固定する(第6章)。
 
 ArchSig 面は有限 case study である。固定した microservice architecture を対象に、
 数学的対象が有限 architecture evidence からどのように計算され、repair 前後で
@@ -1162,41 +1162,34 @@ cycle-without-a-face 機構である。第7章の one-cent obstruction は、こ
 
 Lean 形式化は、SAGA 数学の machine-checked definitions、theorems、witnesses、
 proof chain を記録する。本章は release 時点の形式化 status を declaration 単位で
-報告する。status の一次証拠は release tag の `Formal/AG/` source、
-`Formal/AG/AxiomAudit.lean` の kernel axiom 監査(登録 declaration 全件を
-standard mathlib axioms — `propext`、`Classical.choice`、`Quot.sound` — の
-allowlist で検査する `#assert_standard_axioms_only`。CI が
-`lake env lean Formal/AG/AxiomAudit.lean` として実行する)、release CI の
-focused check である。本章の表に載せる declaration はすべてこの監査に登録
-されている。
+報告する。status の一次証拠は、release tag で固定される Lean source と、
+登録 declaration 全件を standard mathlib axioms — `propext`、`Classical.choice`、
+`Quot.sound` — の allowlist で検査する kernel axiom 監査、および release CI の
+focused check である(source の構成と監査の実体は Appendix B)。本章の表に
+載せる declaration はすべてこの監査に登録されている。
 
 ### 6.1 形式化の範囲
 
-SAGA theorem chain は `Formal/AG/SemanticRepair/Saga/` 以下に、第5章の定理の
-入力構造(定理 5.1 の入力 1–8)をそのまま Lean structure として固定する形で
-形式化されている。構成は次のとおりである。
+SAGA theorem chain は、第5章の定理の入力構造(定理 5.1 の入力 1–8)をそのまま
+Lean structure として固定する形で形式化されている。構成部品は次のとおりである
+(source file との対応は Appendix B)。
 
 - monomorphic ordered cover、intersection diagram、three-term Čech complex と
-  cover-relative `H^1`: `Cover.lean`、`CechThreeTerm.lean`
-- semantic repair presentation と `M_sem` の presheaf 構成: `Presentation.lean`
-- affine semantic repair system、両側の selected atlas と residual:
-  `RepairTorsor.lean`、`EquationLift.lean`
+  cover-relative `H^1`
+- semantic repair presentation と `M_sem` の presheaf 構成
+- affine semantic repair system、両側の selected atlas と residual
 - soundness の導出、presentation exactness、係数同型 `Φ`、三条件の独立性を示す
-  有限反例: `Exactness.lean`
+  有限反例
 - equation 側の realization / production(equation system が生成する `Q_E` への
-  接続): `EquationRealization.lean`、`EquationProduction.lean`
-- cochain 比較 `κ`、`H^1` 同型、residual 対応: `KappaComparison.lean`
-- true sheaf descent、grounded global gluing、中心定理の最終束ね:
-  `TrueSheafDescent.lean`
-- 有限 witness(非零の 4-cycle circle witness、零類の descent witness):
-  `CircleWitness.lean`、`DescentWitness.lean`
+  接続)
+- cochain 比較 `κ`、`H^1` 同型、residual 対応
+- true sheaf descent、grounded global gluing、中心定理の最終束ね
+- 有限 witness(非零の 4-cycle circle witness、零類の descent witness)
 - 第3.3節の finite-meet poset model 上の site 実現と、ordered Čech model との
-  比較 bridge(補題 5.2A の形式化対応物を含む): `OrderedComparison.lean`、
-  `PartIVBridge.lean`
+  比較 bridge(補題 5.2A の形式化対応物を含む)
 
-Lean source の docstring は canonical 数学本文側の番号系列(`X.定理1.1` など)を
-label に用いており、本論文の定理番号とは系列が異なる。declaration と Lean 側
-label の対応は Appendix B が固定する。
+Lean source の docstring は、本論文の定理番号とは別系列の番号(`X.定理1.1`
+など)を label に用いる。declaration と label の対応も Appendix B が固定する。
 
 ### 6.2 Status table
 
@@ -1205,24 +1198,24 @@ status は次の語彙で記述する: `proved`(Lean で証明済み)、`defined
 `empirical hypothesis`(経験的仮説であり証明対象でない)、`unported`
 (紙上の証明は存在するが Lean へ未移植)。
 
-| Paper claim | Lean declaration | Status | Assumptions | Source |
-| --- | --- | --- | --- | --- |
-| 定理 5.1 の結論束(residual 対応・零/非零同値・grounded gluing) | `SagaEquationPacket.sagaCentralTheorem` | proved | selected packet(定理 5.1 の入力 1–8 を structure として固定)、completeness 二条件(入力 4)、cover 添字集合の `Fintype`。gluing 節はさらに cover の topology 所属と true sheaf 条件に条件付き | `Saga/TrueSheafDescent.lean` |
-| 定理 5.1(i): repair-relation soundness の導出 | `PrimaryStateCorrespondence.relationSound_of_stateCorrespondence` | proved | local-state correspondence(入力 5–7) | `Saga/Exactness.lean` |
-| 定理 5.1(i): 係数同型 `Φ` | `SagaEquationPacket.phiEquiv`(generic 版: `PrimaryCoefficientCorrespondence.phiEquiv`) | proved | soundness と completeness 二条件 | `Saga/EquationRealization.lean`、`Saga/Exactness.lean` |
-| 定理 5.1(i): 三条件それぞれを外す反例 | `ExactnessFixtures.soundness_failure` / `completeness_failure` / `generation_failure` | proved | なし(各 fixture は対象条件の failure を statement 化した有限反例であり、残り二条件の同時成立までは statement に含めない) | `Saga/Exactness.lean` |
-| 定理 5.1(ii): cochain 可換 `κδ=δκ` | `kappa1_delta0`、`kappa2_delta1` | proved | 係数 family の restriction-natural 同型 | `Saga/KappaComparison.lean` |
-| 定理 5.1(ii): `H^1` 同型 `κ_*` | `SagaEquationPacket.kappaStarAddEquiv`(packet 上の `≃+`。generic 版: `kappaH1AddEquiv`) | proved | completeness 二条件 | `Saga/KappaComparison.lean` |
-| 定理 5.1(ii): residual 対応 `κ_*([r_sem])=[r_E]` | `SagaEquationPacket.residual_correspondence_class`、整合 atlas 版 `betaAligned_residual` | proved | completeness 二条件 | `Saga/KappaComparison.lean` |
-| 定理 5.2 = 定理 5.1(iii): grounded global gluing | `SagaEquationPacket.globalRepair_nonempty_iff`(`P_sem` 側同値)、`sagaGroundedGluing`(equation 側同値まで統合) | proved | true sheaf 条件、cover の topology 所属。equation 側同値はさらに completeness 二条件 | `Saga/TrueSheafDescent.lean` |
-| 補題 5.2A(ordered matching completion) | `SiteStateData.matchingFamily_iff` | proved | thin な context category(§5.7、Appendix A.4)、省略 pair 上の state の subsingleton 仮定(empty-overlap normalization の形式化対応) | `Saga/OrderedComparison.lean` |
-| 例 5.3(4-cycle circle witness、非零類の transfer) | `CircleWitness.semanticResidualClass_ne_zero`、`circle_nonzero_class_transfer` | proved | なし(具体 4-cycle model 上の閉じた検証) | `Saga/CircleWitness.lean` |
-| 零類側の witness(定理 5.2 の非空発火) | `DescentWitness.descentTrueSheaf`、`descent_sagaGroundedGluing` | proved | なし(具体 model 上の閉じた検証) | `Saga/DescentWitness.lean` |
+| Paper claim | Lean declaration | Status | Assumptions |
+| --- | --- | --- | --- |
+| 定理 5.1 の結論束(residual 対応・零/非零同値・grounded gluing) | `SagaEquationPacket.sagaCentralTheorem` | proved | selected packet(定理 5.1 の入力 1–8 を structure として固定)、completeness 二条件(入力 4)、cover 添字集合の `Fintype`。gluing 節はさらに cover の topology 所属と true sheaf 条件に条件付き |
+| 定理 5.1(i): repair-relation soundness の導出 | `PrimaryStateCorrespondence.relationSound_of_stateCorrespondence` | proved | local-state correspondence(入力 5–7) |
+| 定理 5.1(i): 係数同型 `Φ` | `SagaEquationPacket.phiEquiv`(generic 版: `PrimaryCoefficientCorrespondence.phiEquiv`) | proved | soundness と completeness 二条件 |
+| 定理 5.1(i): 三条件それぞれを外す反例 | `ExactnessFixtures.soundness_failure` / `completeness_failure` / `generation_failure` | proved | なし(各 fixture は対象条件の failure を statement 化した有限反例であり、残り二条件の同時成立までは statement に含めない) |
+| 定理 5.1(ii): cochain 可換 `κδ=δκ` | `kappa1_delta0`、`kappa2_delta1` | proved | 係数 family の restriction-natural 同型 |
+| 定理 5.1(ii): `H^1` 同型 `κ_*` | `SagaEquationPacket.kappaStarAddEquiv`(packet 上の `≃+`。generic 版: `kappaH1AddEquiv`) | proved | completeness 二条件 |
+| 定理 5.1(ii): residual 対応 `κ_*([r_sem])=[r_E]` | `SagaEquationPacket.residual_correspondence_class`、整合 atlas 版 `betaAligned_residual` | proved | completeness 二条件 |
+| 定理 5.2 = 定理 5.1(iii): grounded global gluing | `SagaEquationPacket.globalRepair_nonempty_iff`(`P_sem` 側同値)、`sagaGroundedGluing`(equation 側同値まで統合) | proved | true sheaf 条件、cover の topology 所属。equation 側同値はさらに completeness 二条件 |
+| 補題 5.2A(ordered matching completion) | `SiteStateData.matchingFamily_iff` | proved | thin な context category(§5.7、Appendix A.4)、省略 pair 上の state の subsingleton 仮定(empty-overlap normalization の形式化対応) |
+| 例 5.3(4-cycle circle witness、非零類の transfer) | `CircleWitness.semanticResidualClass_ne_zero`、`circle_nonzero_class_transfer` | proved | なし(具体 4-cycle model 上の閉じた検証) |
+| 零類側の witness(定理 5.2 の非空発火) | `DescentWitness.descentTrueSheaf`、`descent_sagaGroundedGluing` | proved | なし(具体 model 上の閉じた検証) |
 
-表の全行は `Formal/AG/AxiomAudit.lean` に登録済みであり、kernel axiom は
-standard mathlib axioms に限られる。`sorry` や追加公理を含む行はない。
+表の全行は kernel axiom 監査に登録済みであり、kernel axiom は standard mathlib
+axioms に限られる。`sorry` や追加公理を含む行はない。
 
-数学本文に対して残るものは次のとおりである。
+本論文の数学(第3〜5章)に対して残るものは次のとおりである。
 
 - 一般(thin でない)context category 上の §5.6 gluing 論証
   (monomorphism と pullback の普遍性を明示に消費する形): `unported`(§5.7)。
@@ -1240,13 +1233,10 @@ standard mathlib axioms に限られる。`sorry` や追加公理を含む行は
 ### 6.3 形式化の到達地点の読み方
 
 Lean claim は、statement の強さと proof-use によって記述する。
-declaration が形式化しているのは、数学本文の定理そのものではなく、
+declaration が形式化しているのは、本論文の定理そのものではなく、
 その定理の selected 入力を Lean の structure として固定した上での結論である。
-paper claim と declaration の対応表は、読者が「何がどの強さで機械検証されているか」を
-数学本文と直接照合できる状態にするためにある。
-
-数学本文に対して残る未証明、未接続、未移植は本章の status table が一元管理する。
-それらは第9章の研究展望とは区別され、形式化の現在地として記録される。
+本論文の数学に対して残る未証明、未接続、未移植は前節の一覧が示すとおりであり、
+第9章の研究展望とは区別される。
 
 ---
 
@@ -1273,9 +1263,9 @@ ArchSig の入力は次の artifact である。
   mismatch 辺に束縛される witness variable の宣言を含む。
 - **MeasurementProfile**: 係数(本 case study では `F2`)を含む measurement の
   条件を固定する。
-- **repair plan**(schema `archsig-repair-plan/v0.5.7`): 選択複体(charts、
-  overlaps、任意の triple overlap、enumeration assertion)と対象 cover への
-  参照だけを宣言する。residual、係数、比較データは運ばない。
+- **repair plan**: 選択複体(charts、overlaps、任意の triple overlap、
+  enumeration assertion)と対象 cover への参照だけを宣言する。residual、係数、
+  比較データは運ばない。
 
 repair plan の charts と overlaps は観測への参照であり、観測された cover と
 restriction に解決できない宣言は受理されない。残る enumeration assertion と
@@ -1458,8 +1448,7 @@ named boundary statement として結論の近くに最小限の形で記録し�
 ArchMap の供給は、source の使われ方を読む意味読解を含む。この読解は
 確率的な過程であり、決定論的な計算では置き換えられない。本研究は、
 この段を隠さずに工程として固定する。すなわち、ArchMap の作成を
-AI agent が実行する固定手順書 — 以下 **authoring SKILL**(artifact 名
-`archmap-creater`)— として定義し、
+AI agent が実行する固定手順書 — 以下 **authoring SKILL** — として定義し、
 確率的な読解を追跡可能な artifact へ変換する。
 
 SKILL は次の規律で観測の provenance を固定する。
@@ -1548,7 +1537,9 @@ authored 宣言として供給された。本実験の builder script と供給�
 
 ### 7.8 再現
 
-すべての入力 artifact、一次出力、builder script は再現 bundle に収録する。
+すべての入力 artifact、一次出力、builder script、authoring SKILL 本体は
+再現 bundle に収録する。artifact の schema version(repair plan は
+`archsig-repair-plan/v0.5.7`)は bundle の manifest が固定する。
 一次出力の `inputDigests` は canonical digest と一致することを検証済みである。
 再現は、固定した ArchSig version と入力から `analyze`(head / repaired)、
 `compare`、`gate` ×2 を実行し、runId と gate 判定の一致で確認する。
@@ -1821,7 +1812,7 @@ family、sheaf amalgamation を経て global section が構成される。
 第二に、**Lean 形式化の到達状況**である。中心定理の結論束(residual 対応・
 零/非零同値・grounded gluing)、係数同型と cochain 比較の各段、
 零・非零の有限 witness を machine-checked theorem chain として記録し、
-数学本文との対応、仮定、axiom 状況を declaration 単位で固定した。
+本論文の定理との対応、仮定、axiom 状況を declaration 単位で固定した。
 
 第三に、**one-cent realization** である。実在の microservice システムの
 払い戻し三角形上で、3つの金額規約の衝突が立てる非境界 residual を観測から
@@ -1966,23 +1957,47 @@ monomorphism であり、補題 5.2A の self-overlap と逆順 overlap の処�
 可換性と一意性は thin 性が放電する)。一般の `ArchCtx(X)` 上の gluing 論証は
 `unported` である(第6章)。
 
-## Appendix B. Lean declaration と Lean source label の対応
+## Appendix B. Lean source 対応(declaration・label・source file)
 
-Lean source の docstring は canonical 数学本文の番号系列(`X.定理1.1` など)を
-label に用いており、本論文の定理番号とは系列が異なる。第6章 status table の
-declaration と Lean 側 label の対応は次のとおりである(label のない declaration
-は省く)。
+第6章の status の一次証拠である Lean source の、release tag 内での構成を固定
+する。SAGA theorem chain は `Formal/AG/SemanticRepair/Saga/` 以下に配置される。
+kernel axiom 監査の実体は `Formal/AG/AxiomAudit.lean` の
+`#assert_standard_axioms_only`(登録 declaration 全件の allowlist 検査)であり、
+release CI が `lake env lean Formal/AG/AxiomAudit.lean` として実行する。
 
-| Lean declaration | Lean 側 label |
+Lean source の docstring は、開発時の内部整理に由来する、本論文とは別系列の
+番号(`X.定理1.1` など)を label に用いる。本論文との定理対応は第6章 status
+table が完結して与え、label は Lean source を閲覧する際の照合用である。
+第6章の declaration との対応は次のとおりである(label のない declaration は
+「—」、source file は `Saga/` からの相対)。
+
+| Lean declaration | Lean 側 label | Source file |
+| --- | --- | --- |
+| `SagaEquationPacket.sagaCentralTheorem` | X.定理1.1 | `TrueSheafDescent.lean` |
+| `PrimaryStateCorrespondence.relationSound_of_stateCorrespondence` | — | `Exactness.lean` |
+| `SagaEquationPacket.phiEquiv`(generic 版: `PrimaryCoefficientCorrespondence.phiEquiv`、X.定理6.3/系6.7) | 左記 | `EquationRealization.lean`、`Exactness.lean` |
+| `ExactnessFixtures.soundness_failure` / `completeness_failure` / `generation_failure` | X.例6.6 | `Exactness.lean` |
+| `kappa1_delta0`、`kappa2_delta1` | X.定理7.2 | `KappaComparison.lean` |
+| `SagaEquationPacket.kappaStarAddEquiv`(generic 版: `kappaH1AddEquiv`、X.定理7.4) | 左記 | `KappaComparison.lean` |
+| `SagaEquationPacket.residual_correspondence_class`、`betaAligned_residual` | X.定理7.5 | `KappaComparison.lean` |
+| `SagaEquationPacket.globalRepair_nonempty_iff`、`sagaGroundedGluing` | X.定理8.2 | `TrueSheafDescent.lean` |
+| `SiteStateData.matchingFamily_iff` | — | `OrderedComparison.lean` |
+| `CircleWitness.semanticResidualClass_ne_zero`、`circle_nonzero_class_transfer` | X.例10.2/付録B.9 | `CircleWitness.lean` |
+| `DescentWitness.descentTrueSheaf`、`descent_sagaGroundedGluing` | — | `DescentWitness.lean` |
+
+§6.1 の構成部品と source file の対応:
+
+| 構成部品(§6.1) | Source file |
 | --- | --- |
-| `SagaEquationPacket.sagaCentralTheorem` | X.定理1.1 |
-| `PrimaryCoefficientCorrespondence.phiEquiv`(`SagaEquationPacket.phiEquiv` の generic 版) | X.定理6.3/系6.7 |
-| `ExactnessFixtures.soundness_failure` / `completeness_failure` / `generation_failure` | X.例6.6 |
-| `kappa1_delta0`、`kappa2_delta1` | X.定理7.2 |
-| `kappaH1AddEquiv`(`SagaEquationPacket.kappaStarAddEquiv` の generic 版) | X.定理7.4 |
-| `SagaEquationPacket.residual_correspondence_class`、`betaAligned_residual` | X.定理7.5 |
-| `sagaGroundedGluing` | X.定理8.2 |
-| `CircleWitness.semanticResidualClass_ne_zero`、`circle_nonzero_class_transfer` | X.例10.2/付録B.9 |
+| cover、intersection diagram、three-term Čech complex | `Cover.lean`、`CechThreeTerm.lean` |
+| semantic repair presentation と `M_sem` | `Presentation.lean` |
+| affine repair system、selected atlas、residual | `RepairTorsor.lean`、`EquationLift.lean` |
+| soundness 導出、exactness、係数同型、有限反例 | `Exactness.lean` |
+| equation 側 realization / production | `EquationRealization.lean`、`EquationProduction.lean` |
+| cochain 比較 `κ`、`H^1` 同型、residual 対応 | `KappaComparison.lean` |
+| true sheaf descent、中心定理の最終束ね | `TrueSheafDescent.lean` |
+| 零・非零の有限 witness | `CircleWitness.lean`、`DescentWitness.lean` |
+| poset site 実現、ordered Čech model 比較 bridge | `OrderedComparison.lean`、`PartIVBridge.lean` |
 
 ---
 
