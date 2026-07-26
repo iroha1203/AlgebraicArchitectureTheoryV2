@@ -5,7 +5,6 @@ mod archmap;
 pub mod authoring;
 mod compare;
 mod gate;
-mod integer_lattice;
 mod law_execution;
 mod law_policy;
 mod law_surface;
@@ -92,8 +91,7 @@ pub use schema::{
     ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE,
     ARCHSIG_REFINEMENT_CONCLUSION_CODES, ARCHSIG_REPAIR_PLAN_V1_SCHEMA,
     ARCHSIG_REPAIR_TARGETS_IDENTIFIED, ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION,
-    ARCHSIG_SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS, ARCHSIG_SAGA_CONCLUSION_CODES,
-    ARCHSIG_SAGA_CONCLUSIONS_V1_SCHEMA,
+    ARCHSIG_SAGA_CONCLUSION_CODES,
     ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL, ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
     ARCHSIG_VALIDATION_FAILED_BEFORE_MEASUREMENT, AatAtomVocabularyEntryV1, AatAtomVocabularyV1,
     AgAnalyticReadingV1, AgAssumptionLedgerEntryV1, AgStructuralVerdictV1, AgVerdictDataV1,
@@ -113,12 +111,7 @@ pub use schema::{
     ArchmapExtractionMatchedCandidateV1, ArchmapExtractionOnlyInCandidateV1,
     ArchmapScopeManifestExclusionV1, ArchmapScopeManifestRepositoryV1,
     ArchmapScopeManifestScopeSpecV1, ArchmapScopeManifestV1, ArchmapScopeManifestWorklistEntryV1,
-    BoundaryStatementV1, ExpandedLawPolicyEntryV1, H1_COMPARISON_DATA_V052_SCHEMA,
-    H1ComparisonChartMapRowV052, H1ComparisonCochainMapV052, H1ComparisonDataV052,
-    H1ComparisonDegreeTwoV052, H1ComparisonOverlapMapRowV052, H1ComparisonSupportV052,
-    H1ComparisonTripleMapRowV052, H1ComparisonVariableMapV052, H1PresentationCellV052,
-    H1PresentationDataV052, H1PresentationEquationLiftAtlasV052, H1PresentationEquationLiftV052,
-    H1PresentationEquationTransitionV052, H1PresentationRestrictionV052, LAW_POLICY_V1_SCHEMA,
+    BoundaryStatementV1, ExpandedLawPolicyEntryV1, LAW_POLICY_V1_SCHEMA,
     LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION, LawEvaluatorManifestV1, LawEvaluatorRegistryV1,
     LawPolicyBasisLedgerEntryV1, LawPolicyBasisManifestV1, LawPolicyDocumentV1, LawPolicyEntryV1,
     LawPolicyPackEntryV1, LawPolicyPackManifestV1, LawPolicyValidationInputV1,
@@ -126,7 +119,7 @@ pub use schema::{
     MeasurementProfileFiniteBoundsV1, MeasurementProfileV1, MeasurementProfileWitnessV1,
     NORMALIZED_ARCHMAP_V2_SCHEMA, NormalizedArchMapSummaryV2, NormalizedArchMapV2,
     NormalizedAtomV2, NormalizedContextV2, NormalizedCoverV2, RepairPlanComplexV1,
-    RepairPlanDocumentV1, RepairPlanFaithfulnessV1, RepairPlanOverlapV1, RepairPlanPrimitiveV1,
+    RepairPlanDocumentV1, RepairPlanOverlapV1,
     RepairPlanTripleOverlapV1, SCHEMA_VERSION_CATALOG_SCHEMA_VERSION,
     SchemaVersionCatalogV0,
 };

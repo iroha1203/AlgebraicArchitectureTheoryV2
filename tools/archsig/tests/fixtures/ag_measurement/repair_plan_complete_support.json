@@ -1,5 +1,5 @@
 {
-  "schema": "archsig-repair-plan/v0.5.5",
+  "schema": "archsig-repair-plan/v0.5.7",
   "id": "repair-plan:complete-support-demo",
   "complex": {
     "charts": [
@@ -35,40 +35,5 @@
       }
     ],
     "enumerationComplete": true
-  },
-  "primitives": [
-    {
-      "id": "primitive:order-inventory",
-      "overlapRef": "overlap:order-inventory",
-      "resL": [
-        "src:order"
-      ],
-      "resR": [
-        "src:inventory"
-      ]
-    },
-    {
-      "id": "primitive:inventory-shared",
-      "overlapRef": "overlap:inventory-shared",
-      "resL": [
-        "src:inventory"
-      ],
-      "resR": [
-        "src:inventory"
-      ]
-    },
-    {
-      "id": "primitive:order-shared",
-      "overlapRef": "overlap:order-shared",
-      "resL": [
-        "src:order"
-      ],
-      "resR": [
-        "src:inventory"
-      ]
-    }
-  ],
-  "faithfulness": {
-    "mode": "complete-support"
   }
 }

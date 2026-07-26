@@ -1,0 +1,525 @@
+{
+  "boundaryStatements": [
+    {
+      "id": "boundary:silence-by-design:0",
+      "kind": "silence_by_design",
+      "reason": "compat_non_conclusion",
+      "scopeRefs": [
+        "measurement:train-ticket-money-saga-repaired/v0.5.4"
+      ],
+      "text": "ArchSig v0.5.4 foundation packet is computed from input:archmap-saga-repaired.json and input:law-policy-saga.json; it is not a Lean proof object."
+    },
+    {
+      "id": "boundary:silence-by-design:1",
+      "kind": "silence_by_design",
+      "reason": "compat_non_conclusion",
+      "scopeRefs": [
+        "measurement:train-ticket-money-saga-repaired/v0.5.4"
+      ],
+      "text": "Unmeasured AG evaluator rows are schema handoff rows, not measured zero."
+    },
+    {
+      "id": "boundary:silence-by-design:2",
+      "kind": "silence_by_design",
+      "reason": "compat_non_conclusion",
+      "scopeRefs": [
+        "measurement:train-ticket-money-saga-repaired/v0.5.4"
+      ],
+      "text": "Theorem-candidate readings are analytic-only and cannot generate structural verdicts."
+    },
+    {
+      "id": "boundary:m8:higher-hn-silence",
+      "kind": "silence_by_design",
+      "reason": "higher_hn_n_ge_3_part_iv_scope_boundary",
+      "scopeRefs": [
+        "measurement:train-ticket-money-saga-repaired/v0.5.4"
+      ],
+      "text": "Cohomological readings in degrees n>=3 are silent by design in this finite AG measurement packet: they are a Part IV scope boundary, not a measured zero result or a remaining task."
+    },
+    {
+      "id": "boundary:m8:non-abelian-stack-gerbe-vocabulary",
+      "kind": "out_of_selected_vocabulary",
+      "reason": "non_abelian_stack_gerbe_outside_abelian_f2_vocabulary",
+      "scopeRefs": [
+        "measurement:train-ticket-money-saga-repaired/v0.5.4"
+      ],
+      "text": "Non-abelian stack/gerbe degree-2 descent data is outside the selected banded abelian F2 vocabulary; banding-violated inputs remain outside this measurement lens."
+    },
+    {
+      "id": "boundary:m8:higher-tor-unmeasured-support",
+      "kind": "unmeasured_support",
+      "reason": "higher_tor_i_ge_2_unmeasured_support",
+      "scopeRefs": [
+        "measurement:train-ticket-money-saga-repaired/v0.5.4"
+      ],
+      "text": "Higher Tor_i for i>=2 remains unmeasured support: degree-1 Tor_1 readings do not discharge derived transversality or all higher Tor vanishing."
+    },
+    {
+      "id": "boundary:silence-by-design:saga-class-vocabulary:6",
+      "kind": "silence_by_design",
+      "reason": "class_vocabulary_not_unlocked_without_declared_triples",
+      "scopeRefs": [
+        "measurement:train-ticket-money-saga-repaired/v0.5.4"
+      ],
+      "text": "The residual component declares no triple overlaps, so the cocycle condition is an author assertion (automatic-c2-zero); the reading stays at selected 1-skeleton boundary membership and the class vocabulary is not unlocked."
+    },
+    {
+      "id": "boundary:not-applicable:0",
+      "kind": "not_applicable",
+      "reason": "analytic_only",
+      "scopeRefs": [
+        "candidate-regime:stability-placeholder"
+      ],
+      "text": "Theorem-candidate reading is analytic-only and cannot generate a structural verdict."
+    }
+  ],
+  "classSupport": {
+    "b1": 1,
+    "boundaryMembership": {
+      "inB1": true,
+      "residualSupport": [
+        {
+          "overlapRef": "overlap:cancel-insidepay",
+          "support": []
+        },
+        {
+          "overlapRef": "overlap:insidepay-order",
+          "support": []
+        },
+        {
+          "overlapRef": "overlap:cancel-order",
+          "support": []
+        },
+        {
+          "overlapRef": "overlap:consign-consignprice",
+          "support": []
+        },
+        {
+          "overlapRef": "overlap:preserve-consign",
+          "support": [
+            "cech:section-mismatch"
+          ]
+        },
+        {
+          "overlapRef": "overlap:preserve-order",
+          "support": [
+            "cech:section-mismatch"
+          ]
+        }
+      ]
+    },
+    "classNonzero": false,
+    "coefficient": "F2",
+    "isForest": false,
+    "representativeEdgeRefs": [
+      "ctx:preserve-surface->ctx:consign-surface",
+      "ctx:preserve-surface->ctx:order-surface"
+    ],
+    "supportAtomRefs": [
+      "atom:semantic:consign-surface:cech-section-money-amount",
+      "atom:semantic:order-surface:cech-section-money-amount",
+      "atom:semantic:preserve-surface:cech-section-money-amount"
+    ],
+    "undirected": true
+  },
+  "complex": {
+    "coverRef": "cover:money-settlement-loop",
+    "edges": [
+      {
+        "edgeRef": "ctx:cancel-surface->ctx:inside-payment-surface",
+        "sourceContextRef": "ctx:cancel-surface",
+        "targetContextRef": "ctx:inside-payment-surface"
+      },
+      {
+        "edgeRef": "ctx:cancel-surface->ctx:order-surface",
+        "sourceContextRef": "ctx:cancel-surface",
+        "targetContextRef": "ctx:order-surface"
+      },
+      {
+        "edgeRef": "ctx:consign-surface->ctx:consign-price-surface",
+        "sourceContextRef": "ctx:consign-surface",
+        "targetContextRef": "ctx:consign-price-surface"
+      },
+      {
+        "edgeRef": "ctx:inside-payment-surface->ctx:order-surface",
+        "sourceContextRef": "ctx:inside-payment-surface",
+        "targetContextRef": "ctx:order-surface"
+      },
+      {
+        "edgeRef": "ctx:preserve-surface->ctx:consign-surface",
+        "sourceContextRef": "ctx:preserve-surface",
+        "targetContextRef": "ctx:consign-surface"
+      },
+      {
+        "edgeRef": "ctx:preserve-surface->ctx:order-surface",
+        "sourceContextRef": "ctx:preserve-surface",
+        "targetContextRef": "ctx:order-surface"
+      }
+    ],
+    "tripleSource": "selected cover triple-overlap sharedAtomRefs recorded in archsig-measurement-packet/v0.5.4; not inferred by the viewer",
+    "triples": [],
+    "vertices": [
+      {
+        "atomCount": 24,
+        "contextRef": "ctx:cancel-surface"
+      },
+      {
+        "atomCount": 24,
+        "contextRef": "ctx:consign-price-surface"
+      },
+      {
+        "atomCount": 24,
+        "contextRef": "ctx:consign-surface"
+      },
+      {
+        "atomCount": 24,
+        "contextRef": "ctx:inside-payment-surface"
+      },
+      {
+        "atomCount": 24,
+        "contextRef": "ctx:order-surface"
+      },
+      {
+        "atomCount": 24,
+        "contextRef": "ctx:preserve-surface"
+      }
+    ]
+  },
+  "componentFingerprints": {
+    "lawPolicy": "sha256:e5e91078749ec26ae327ecd1cf41d6d2f7dd035c81a1c66bc0e0476b10e6900c",
+    "lawSurface": "sha256:62d8863d01500c61fd9027a4be468ffc6e2ed23bd9ea919f2e7fd45041d19190",
+    "measurementProfile": "sha256:c073650c8bcd053d48d78bb1a29811b80917ffbdec81e1789dd15d68908b0753"
+  },
+  "conclusion": "REPAIR_GLUES_WITHIN_SELECTED_COMPLEX",
+  "edgeMismatch": [
+    {
+      "edgeRef": "ctx:cancel-surface->ctx:inside-payment-surface",
+      "status": "agreement_observed",
+      "supportAtomRefs": []
+    },
+    {
+      "edgeRef": "ctx:cancel-surface->ctx:order-surface",
+      "status": "agreement_observed",
+      "supportAtomRefs": []
+    },
+    {
+      "edgeRef": "ctx:consign-surface->ctx:consign-price-surface",
+      "status": "agreement_observed",
+      "supportAtomRefs": []
+    },
+    {
+      "edgeRef": "ctx:inside-payment-surface->ctx:order-surface",
+      "status": "agreement_observed",
+      "supportAtomRefs": []
+    },
+    {
+      "edgeRef": "ctx:preserve-surface->ctx:consign-surface",
+      "status": "mismatch_observed",
+      "supportAtomRefs": [
+        "atom:semantic:consign-surface:cech-section-money-amount",
+        "atom:semantic:preserve-surface:cech-section-money-amount"
+      ]
+    },
+    {
+      "edgeRef": "ctx:preserve-surface->ctx:order-surface",
+      "status": "mismatch_observed",
+      "supportAtomRefs": [
+        "atom:semantic:order-surface:cech-section-money-amount",
+        "atom:semantic:preserve-surface:cech-section-money-amount"
+      ]
+    }
+  ],
+  "harmonicFlow": null,
+  "inputDigests": {
+    "archmap": {
+      "path": "input:archmap-saga-repaired.json",
+      "sha256": "9a7baaa8b1adc73b5c5ff0fc3d56da0986402aecfe4902a0aa7e63ca3d449417"
+    },
+    "lawPolicy": {
+      "path": "input:law-policy-saga.json",
+      "sha256": "e5e91078749ec26ae327ecd1cf41d6d2f7dd035c81a1c66bc0e0476b10e6900c"
+    },
+    "lawSurface": {
+      "path": "input:law-surface-saga.json",
+      "sha256": "62d8863d01500c61fd9027a4be468ffc6e2ed23bd9ea919f2e7fd45041d19190"
+    },
+    "measurementPacket": {
+      "path": "input:archsig-measurement-packet.json",
+      "sha256": "3c64da992e8ccca6bc87d5c32c58832436259f5eced3f5cd75ae77ad64f150b3"
+    },
+    "measurementProfile": {
+      "path": "input:measurement-profile-saga.json",
+      "sha256": "c073650c8bcd053d48d78bb1a29811b80917ffbdec81e1789dd15d68908b0753"
+    },
+    "measurementProfiles": [
+      {
+        "path": "input:measurement-profile-saga.json",
+        "sha256": "c073650c8bcd053d48d78bb1a29811b80917ffbdec81e1789dd15d68908b0753"
+      }
+    ],
+    "profileFingerprint": {
+      "basis": "archmap shape + LawPolicy measurementProfileRef + external MeasurementProfile artifact",
+      "sha256": "8e4053eff87c553fe934c71ee9f8a7fbefdc084d0aa3f1dbaea8a59726486326"
+    },
+    "repairPlan": {
+      "path": "input:repair-plan-repaired.json",
+      "sha256": "5a6a8919bb8dd6d894130b6cd500898af38b5bd6f1a682501e9d57cf59cda2f9"
+    },
+    "siteCoverDigest": {
+      "basis": "normalized contexts + covers + derived finite cover nerve",
+      "sha256": "c75cd524da051ad25472f1faad2d3fc44456db4fe6f0a1f90851d76e7b069b1a",
+      "status": "computed"
+    }
+  },
+  "localObservations": {
+    "evaluator": "ag.saga-grounded",
+    "perChart": [
+      {
+        "chartRef": "ctx:cancel-surface",
+        "defectValueRef": "input:archmap-saga-repaired.json#ctx:cancel-surface",
+        "holds": true,
+        "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion",
+        "law": "law:money-settlement-convention"
+      },
+      {
+        "chartRef": "ctx:inside-payment-surface",
+        "defectValueRef": "input:archmap-saga-repaired.json#ctx:inside-payment-surface",
+        "holds": true,
+        "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion",
+        "law": "law:money-settlement-convention"
+      },
+      {
+        "chartRef": "ctx:order-surface",
+        "defectValueRef": "input:archmap-saga-repaired.json#ctx:order-surface",
+        "holds": true,
+        "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion",
+        "law": "law:money-settlement-convention"
+      },
+      {
+        "chartRef": "ctx:consign-surface",
+        "defectValueRef": "input:archmap-saga-repaired.json#ctx:consign-surface",
+        "holds": true,
+        "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion",
+        "law": "law:money-settlement-convention"
+      },
+      {
+        "chartRef": "ctx:consign-price-surface",
+        "defectValueRef": "input:archmap-saga-repaired.json#ctx:consign-price-surface",
+        "holds": true,
+        "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion",
+        "law": "law:money-settlement-convention"
+      },
+      {
+        "chartRef": "ctx:preserve-surface",
+        "defectValueRef": "input:archmap-saga-repaired.json#ctx:preserve-surface",
+        "holds": true,
+        "holdsCriterionRef": "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion",
+        "law": "law:money-settlement-convention"
+      }
+    ],
+    "reason": "DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS",
+    "verdict": "measured_zero"
+  },
+  "nonClaims": [
+    "The view model is a bounded projection of the measurement packet and the normalized ArchMap observation input; it computes no new invariant and renders no verdict.",
+    "Absent sections mean the corresponding measurement was not recorded in this run; absence is not zero.",
+    "F2 class support carries no orientation; direction, rotation, and magnitude must not be derived from it.",
+    "Coverage rows enumerate observed context x axis pairs only; consumers must not infer coverage beyond these rows."
+  ],
+  "observationCoverage": [
+    {
+      "boundaryKinds": [],
+      "contextRef": "ctx:cancel-surface",
+      "measurementAxis": "cech.sectionValue",
+      "profileRef": "profile:train-ticket-money-saga@2",
+      "sourceRefs": [
+        "src:ts-cancel-service/src/main/java/cancel/service/CancelServiceImpl.java"
+      ],
+      "status": "observed",
+      "supportRefs": [
+        "atom:semantic:cancel-surface:cech-section-money-amount"
+      ]
+    },
+    {
+      "boundaryKinds": [],
+      "conclusionCode": "DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS",
+      "contextRef": "ctx:cancel-surface",
+      "measurementAxis": "saga-grounded.holdsCriterion",
+      "profileRef": "profile:train-ticket-money-saga@2",
+      "sourceRefs": [
+        "input:archmap-saga-repaired.json#ctx:cancel-surface"
+      ],
+      "status": "measured_zero",
+      "supportRefs": [
+        "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion"
+      ]
+    },
+    {
+      "boundaryKinds": [],
+      "contextRef": "ctx:consign-price-surface",
+      "measurementAxis": "cech.sectionValue",
+      "profileRef": "profile:train-ticket-money-saga@2",
+      "sourceRefs": [
+        "src:ts-consign-price-service/src/main/java/consignprice/entity/ConsignPrice.java",
+        "src:ts-consign-price-service/src/main/java/consignprice/service/ConsignPriceServiceImpl.java"
+      ],
+      "status": "observed",
+      "supportRefs": [
+        "atom:semantic:consign-price-surface:cech-section-money-amount"
+      ]
+    },
+    {
+      "boundaryKinds": [],
+      "conclusionCode": "DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS",
+      "contextRef": "ctx:consign-price-surface",
+      "measurementAxis": "saga-grounded.holdsCriterion",
+      "profileRef": "profile:train-ticket-money-saga@2",
+      "sourceRefs": [
+        "input:archmap-saga-repaired.json#ctx:consign-price-surface"
+      ],
+      "status": "measured_zero",
+      "supportRefs": [
+        "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion"
+      ]
+    },
+    {
+      "boundaryKinds": [],
+      "contextRef": "ctx:consign-surface",
+      "measurementAxis": "cech.sectionValue",
+      "profileRef": "profile:train-ticket-money-saga@2",
+      "sourceRefs": [
+        "src:ts-consign-service/src/main/java/consign/entity/ConsignRecord.java",
+        "src:ts-consign-service/src/main/java/consign/service/ConsignServiceImpl.java"
+      ],
+      "status": "observed",
+      "supportRefs": [
+        "atom:semantic:consign-surface:cech-section-money-amount"
+      ]
+    },
+    {
+      "boundaryKinds": [],
+      "conclusionCode": "DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS",
+      "contextRef": "ctx:consign-surface",
+      "measurementAxis": "saga-grounded.holdsCriterion",
+      "profileRef": "profile:train-ticket-money-saga@2",
+      "sourceRefs": [
+        "input:archmap-saga-repaired.json#ctx:consign-surface"
+      ],
+      "status": "measured_zero",
+      "supportRefs": [
+        "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion"
+      ]
+    },
+    {
+      "boundaryKinds": [],
+      "contextRef": "ctx:inside-payment-surface",
+      "measurementAxis": "cech.sectionValue",
+      "profileRef": "profile:train-ticket-money-saga@2",
+      "sourceRefs": [
+        "src:ts-inside-payment-service/src/main/java/inside_payment/controller/InsidePaymentController.java",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/entity/AccountInfo.java",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Balance.java",
+        "src:ts-inside-payment-service/src/main/java/inside_payment/entity/Money.java"
+      ],
+      "status": "observed",
+      "supportRefs": [
+        "atom:semantic:inside-payment-surface:cech-section-money-amount"
+      ]
+    },
+    {
+      "boundaryKinds": [],
+      "conclusionCode": "DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS",
+      "contextRef": "ctx:inside-payment-surface",
+      "measurementAxis": "saga-grounded.holdsCriterion",
+      "profileRef": "profile:train-ticket-money-saga@2",
+      "sourceRefs": [
+        "input:archmap-saga-repaired.json#ctx:inside-payment-surface"
+      ],
+      "status": "measured_zero",
+      "supportRefs": [
+        "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion"
+      ]
+    },
+    {
+      "boundaryKinds": [],
+      "contextRef": "ctx:order-surface",
+      "measurementAxis": "cech.sectionValue",
+      "profileRef": "profile:train-ticket-money-saga@2",
+      "sourceRefs": [
+        "src:ts-order-service/src/main/java/order/entity/Order.java",
+        "src:ts-order-service/src/main/java/order/init/InitData.java",
+        "src:ts-order-service/src/main/java/order/service/OrderServiceImpl.java"
+      ],
+      "status": "observed",
+      "supportRefs": [
+        "atom:semantic:order-surface:cech-section-money-amount"
+      ]
+    },
+    {
+      "boundaryKinds": [],
+      "conclusionCode": "DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS",
+      "contextRef": "ctx:order-surface",
+      "measurementAxis": "saga-grounded.holdsCriterion",
+      "profileRef": "profile:train-ticket-money-saga@2",
+      "sourceRefs": [
+        "input:archmap-saga-repaired.json#ctx:order-surface"
+      ],
+      "status": "measured_zero",
+      "supportRefs": [
+        "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion"
+      ]
+    },
+    {
+      "boundaryKinds": [],
+      "contextRef": "ctx:preserve-surface",
+      "measurementAxis": "cech.sectionValue",
+      "profileRef": "profile:train-ticket-money-saga@2",
+      "sourceRefs": [
+        "src:ts-preserve-service/src/main/java/preserve/service/PreserveServiceImpl.java"
+      ],
+      "status": "observed",
+      "supportRefs": [
+        "atom:semantic:preserve-surface:cech-section-money-amount"
+      ]
+    },
+    {
+      "boundaryKinds": [],
+      "conclusionCode": "DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS",
+      "contextRef": "ctx:preserve-surface",
+      "measurementAxis": "saga-grounded.holdsCriterion",
+      "profileRef": "profile:train-ticket-money-saga@2",
+      "sourceRefs": [
+        "input:archmap-saga-repaired.json#ctx:preserve-surface"
+      ],
+      "status": "measured_zero",
+      "supportRefs": [
+        "law-surface:law-surface:train-ticket-money-saga-v054#defectSources/law:money-settlement-convention/holdsCriterion"
+      ]
+    }
+  ],
+  "profiles": [
+    {
+      "coefficient": "F2",
+      "coverRef": "cover:money-settlement-loop",
+      "domain": "finite-poset-site",
+      "profileRef": "profile:train-ticket-money-saga@2",
+      "siteRef": "archmap:/contexts"
+    }
+  ],
+  "runId": "run:6685bab8db21",
+  "scalarFields": [
+    {
+      "fieldId": "topological-debt-capacity-lower-bound",
+      "scope": "cover",
+      "sourceInvariantId": "topological-debt-capacity:profile:train-ticket-money-saga@2",
+      "value": 0
+    }
+  ],
+  "schema": "archsig-measurement-view-model/v0.5.4",
+  "sourceArtifactRefs": {
+    "measurementPacket": "archsig-measurement-packet.json",
+    "normalizedArchMap": "normalized-archmap.json",
+    "summary": "archsig-analysis-summary.json"
+  },
+  "toolVersion": "0.5.4"
+}

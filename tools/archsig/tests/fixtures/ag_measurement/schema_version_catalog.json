@@ -303,9 +303,9 @@
       }
     },
     {
-      "artifactId": "archsig-repair-plan/v0.5.5",
-      "artifactName": "ArchSig RepairPlan v0.5.5 SAGA supplied input artifact",
-      "schemaName": "archsig-repair-plan/v0.5.5",
+      "artifactId": "archsig-repair-plan/v0.5.7",
+      "artifactName": "ArchSig RepairPlan v0.5.7 SAGA selected-complex artifact",
+      "schemaName": "archsig-repair-plan/v0.5.7",
       "artifactRole": "primary",
       "ownerPhase": "ArchSig v0.5.4 SAGA Stage 1",
       "status": "implemented",
@@ -314,12 +314,19 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "RepairPlan v0.5.5 supplies the checked SAGA descent input side: a finite complex with its declared ArchMap cover and per-overlap/per-triple context bindings, primitive restriction readings, faithfulness regime, optional trueSheafCertificate and gluingData, and an optional presentation block carrying per-cell semantic/equation generators, relation matrices, generator maps, restriction matrices, and an equation lift atlas. The residual itself is derived by analyze from the selected cover sections and law-surface witness bindings; the coefficient is the selected MeasurementProfile coefficient.",
+        "fieldMappingPolicy": "RepairPlan v0.5.7 declares only the selected finite complex: charts, overlaps, optional triple overlaps, the declared ArchMap cover binding, and the enumeration-completeness declaration. The residual is derived by analyze from the selected cover sections and law-surface witness bindings; the residual class is read on the derived residual support component with the triple-cocycle check; the residual class agreement (with its coboundary witness when cohomologous) is derived by compare from the two runs' residual derivations under a comparability gate; the coefficient is the selected MeasurementProfile coefficient.",
         "deprecatedFields": [
           "residual (retired at v0.5.5; the residual is derived by analyze from observed sections and law-surface witness bindings)",
           "coefficient (retired at v0.5.5; the coefficient is the selected MeasurementProfile declaration)",
           "semanticProjection (retired at v0.5.5 together with the supplied-residual closure diagnostics)",
-          "primitives[].support (retired at v0.5.5; per-overlap residual support is derived)"
+          "primitives[].support (retired at v0.5.5; per-overlap residual support is derived)",
+          "primitives (retired at v0.5.6; the repair cochain is derived by compare from the head/repaired residual derivations)",
+          "faithfulness.supplied.zeroPrimitiveRef (renamed at v0.5.6 to zeroOverlapRef)",
+          "faithfulness (retired at v0.5.7; the SAGA faithfulness regime was a supplied slot with no derived counterpart)",
+          "trueSheafCertificate (retired at v0.5.7; the class reading is component-local on the derived residual and carries no global-sheaf certification)",
+          "gluingData (retired at v0.5.7)",
+          "comparison (retired at v0.5.7; the run-pair reading is the derived residualClassAgreement in the comparison report)",
+          "grounding (retired at v0.5.7; ag.saga-grounded reads the law surface and observations directly)"
         ],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -329,37 +336,9 @@
           "Coverage and exactness are artifact-local and do not imply semantic completeness."
         ],
         "nonConclusions": [
-          "RepairPlan validation checks supplied premises before use; it does not compute boundary membership or global coherence.",
+          "RepairPlan validation checks the declared complex before use; it does not compute boundary membership or global coherence.",
           "RepairPlan input cannot supply generated conclusion tokens such as glues, verdict, h1Zero, or globalCoherent.",
-          "External semantic completeness remains an author assumption; declared ArchMap cover/incidence is mechanically checked when the RepairPlan supplies the mapping.",
-          "Residual class certification is component-local: trueSheafCertificate and gluingData must match the residual support component exactly. sectionRef is an authored opaque label that ArchSig does not resolve."
-        ]
-      }
-    },
-    {
-      "artifactId": "h1-comparison-data/v0.5.4",
-      "artifactName": "ArchSig H1 comparison data v0.5.4",
-      "schemaName": "h1-comparison-data/v0.5.4",
-      "artifactRole": "primary",
-      "ownerPhase": "ArchSig v0.5.4 Algebraic Geometry Measurement",
-      "status": "implemented",
-      "primaryDocs": [
-        "archsig-contract:saga-stage2-v0.5.4"
-      ],
-      "downstreamIssues": [],
-      "compatibilityBoundary": {
-        "fieldMappingPolicy": "H1 comparison data v0.5.4 accepts either an explicitly typed finite cochain map over degree-zero charts, degree-one overlaps, and degree-two triple-overlap bases, or a presentation-generated contract with semantic/equation matrices, restriction maps, a separately supplied equation lift atlas, and a complete ArchMap cover/incidence mapping. The validator recomputes explicit-map properties, or checks presentation exactness, generator completeness, restriction naturality, derived cochain commutativity, semantic/equation residual construction, source/target quotient-level cocycle/class calculation, the residual witness, the resolution of equation generators against the supplied law surface, and the declared finite complex against the supplied ArchMap. The presentation declares its coefficient ring: f2 by default, or integers for the finitely generated abelian group form, where subgroup equality and full generation are decided by column Hermite normal form.",
-        "deprecatedFields": [],
-        "newRequiredAssumptions": [
-          "Required fields, observation families, law refs, or analysis axes change.",
-          "Evidence boundaries or non-conclusions are removed or weakened."
-        ],
-        "coverageExactnessBoundary": [
-          "Coverage and exactness are artifact-local and do not imply semantic completeness."
-        ],
-        "nonConclusions": [
-          "Explicit cochain data remains supplied and is validated as such; presentation-generated data derives local Phi, cochain map, semantic/equation residuals, and quotient-level witnesses after matrix exactness and naturality checks pass.",
-          "H1 transfer is generated only after the applicable computed source-class prerequisite and target class computation are available."
+          "External semantic completeness remains an author assumption; declared ArchMap cover/incidence is mechanically checked when the RepairPlan supplies the mapping."
         ]
       }
     },
@@ -430,7 +409,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "ArchSig measurement packet v0.5.4 carries profile, structuralVerdict with optional dependsOnAssumptions refs, computedInvariants, analyticReadings, assumptions, boundaryStatements, and legacy-compatible nonConclusions as the AG Definition 11.1-aligned output contract. The h1-comparison-transfer computed invariant is owned by ag.saga-comparison and carries a closed seven-field comparison contract: incidenceBridgeKind, h1ComparisonDataKind, and normalizedComplexFingerprint are strings; classPrerequisite, targetClassComputed, and contractChecked are booleans; measuredClassAgreement is a boolean when a measured residual class row is also present and null otherwise. When that agreement is false the invariant additionally carries measuredClassDivergence naming both readings. Registered SAGA conclusionCode values include REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, MEASURED_NONGLUING_RESIDUAL, MEASURED_NONGLUING_RESIDUAL_CLASS, SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA, SAGA_COMPARISON_GENERATED_FROM_PRESENTATIONS, COMPARISON_DATA_CONTRACT_VIOLATION, COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION, REPAIR_TARGETS_IDENTIFIED, MEASURED_LAW_DEFECT_AT_CHART, DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS, VERDICT_PRESERVED_UNDER_DECLARED_REFACTOR, and TWO_PROFILES_REPORTED_SEPARATELY.",
+        "fieldMappingPolicy": "ArchSig measurement packet v0.5.4 carries profile, structuralVerdict with optional dependsOnAssumptions refs, computedInvariants, analyticReadings, assumptions, boundaryStatements, and legacy-compatible nonConclusions as the AG Definition 11.1-aligned output contract. The h1-comparison-transfer computed invariant is owned by ag.saga-comparison and carries a closed seven-field comparison contract: incidenceBridgeKind, h1ComparisonDataKind, and normalizedComplexFingerprint are strings; classPrerequisite, targetClassComputed, and contractChecked are booleans; measuredClassAgreement is a boolean when a measured residual class row is also present and null otherwise. When that agreement is false the invariant additionally carries measuredClassDivergence naming both readings. Registered SAGA conclusionCode values include REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, MEASURED_NONGLUING_RESIDUAL, MEASURED_NONGLUING_RESIDUAL_CLASS, COMPARISON_DATA_CONTRACT_VIOLATION, COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION, REPAIR_TARGETS_IDENTIFIED, MEASURED_LAW_DEFECT_AT_CHART, DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS, VERDICT_PRESERVED_UNDER_DECLARED_REFACTOR, and TWO_PROFILES_REPORTED_SEPARATELY.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -445,33 +424,6 @@
           "Analytic readings do not generate structural verdicts unless a certified evaluator explicitly emits one.",
           "BoundaryStatements are typed scoped qualifiers; nonConclusions remains a string compatibility view.",
           "Theorem-candidate readings are analytic-only."
-        ]
-      }
-    },
-    {
-      "artifactId": "archsig-saga-conclusions/v0.5.4",
-      "artifactName": "ArchSig grounded SAGA conclusions packet v0.5.4",
-      "schemaName": "archsig-saga-conclusions/v0.5.4",
-      "artifactRole": "primary",
-      "ownerPhase": "ArchSig v0.5.4 Algebraic Geometry Measurement",
-      "status": "implemented",
-      "primaryDocs": [
-        "archsig-contract:v0.5.4-ag-measurement"
-      ],
-      "downstreamIssues": [],
-      "compatibilityBoundary": {
-        "fieldMappingPolicy": "The grounded SAGA conclusions packet v0.5.4 records the generated finite Boolean quotient, lawDependent 3-conclusion section, lawIndependent 6-conclusion section with the Principle 8.4 separated-statements record, degree-zero contribution, and chart detector findings.",
-        "deprecatedFields": [],
-        "newRequiredAssumptions": [
-          "Required fields, observation families, law refs, or analysis axes change.",
-          "Evidence boundaries or non-conclusions are removed or weakened."
-        ],
-        "coverageExactnessBoundary": [
-          "Coverage and exactness are artifact-local and do not imply semantic completeness."
-        ],
-        "nonConclusions": [
-          "The packet is a bounded supplied-data computation contract; its theoremRef fields identify the mathematical reading without turning the packet into a Lean proof object.",
-          "lawIndependent conclusions are not evidence that displayed laws hold."
         ]
       }
     },
@@ -640,9 +592,9 @@
       }
     },
     {
-      "artifactId": "archsig-comparison-report/v0.5.4",
-      "artifactName": "ArchSig comparison report v0.5.4",
-      "schemaName": "archsig-comparison-report/v0.5.4",
+      "artifactId": "archsig-comparison-report/v0.5.5",
+      "artifactName": "ArchSig comparison report v0.5.5",
+      "schemaName": "archsig-comparison-report/v0.5.5",
       "artifactRole": "primary",
       "ownerPhase": "ArchSig Output / CI workflow",
       "status": "implemented",
@@ -651,7 +603,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Comparison report v0.5.4 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions, archmap-diff intersections, and comparability of the two runs' repair-plan digests. With a validated refinement-comparison/v0.5.4 artifact it can also record class-zero preservation. Registered conclusionCode values are NO_NEW_MEASURED_OBSTRUCTION_RECORDED, MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE, MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE, and RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA.",
+        "fieldMappingPolicy": "Comparison report v0.5.5 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions, archmap-diff intersections, comparability of the two runs' repair-plan digests, and — for comparable runs whose residual derivations share cover, law surface, and chart set — the residualClassAgreement block (cohomologous / not_cohomologous / no_residual_change) with its coboundary witness when cohomologous (part10/3.4+4.4). With a validated refinement-comparison/v0.5.4 artifact it can also record class-zero preservation. Registered conclusionCode values are NO_NEW_MEASURED_OBSTRUCTION_RECORDED, MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE, MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE, and RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",

@@ -1,7 +1,7 @@
 # ArchSig Insight Brief
 
 ## Read this first
-Conclusion: MEASURED_NONGLUING_RESIDUAL_CLASS
+Conclusion: MEASURED_NONGLUING_RESIDUAL
 
 What it means:
 Local checks do not explain the whole selected cover; ArchSig measured a cross-context H^1 mismatch.
@@ -17,7 +17,7 @@ Next action:
 Inspect mismatch support
 
 Boundary:
-Profile-relative. 11 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.
+Profile-relative. 9 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.
 
 ## Top insights
 - Global glue mismatch measured: Local checks do not explain the whole selected cover; ArchSig measured a cross-context H^1 mismatch.
@@ -45,9 +45,9 @@ Profile-relative. 11 assumptions declared. 0 supports unmeasured. 0 unknown. 0 n
 - No measured repair candidate was promoted by this packet.
 
 ## Measurement boundary
-Profile-relative. 11 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.
+Profile-relative. 9 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.
 - checked: 5
-- assumed: 11
+- assumed: 9
 - blocking: 0
 - omitted detail counts:
   - omittedAtoms: 0
@@ -73,14 +73,14 @@ Use the following ArchSig result as bounded evidence.
 Do not infer beyond the listed claims and boundaries.
 
 Conclusion:
-MEASURED_NONGLUING_RESIDUAL_CLASS
+MEASURED_NONGLUING_RESIDUAL
 
 Top insights:
 - Local checks do not explain the whole selected cover; ArchSig measured a cross-context H^1 mismatch.
 - Checked, assumed, unmeasured, unknown, and not_computed states are preserved for review.
 
 Boundary:
-Profile-relative. 11 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.
+Profile-relative. 9 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.
 
 Source refs:
 - src:ts-admin-basic-info-service/src/main/java/adminbasic/AdminBasicInfoApplication.java

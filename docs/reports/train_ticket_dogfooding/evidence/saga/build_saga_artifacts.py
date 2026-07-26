@@ -22,9 +22,7 @@ FB = os.path.join(REPO_ROOT, "docs", "reports", "train_ticket_dogfooding", "evid
 
 SURFACE_ID = "law-surface:train-ticket-money-saga-v054"
 PROFILE_ID = "profile:train-ticket-money-saga@2"
-COVER_ID = "cover:money-settlement-complex"
 LAW_COVER_ID = "cover:money-settlement-loop"
-DIAGNOSTIC_COVER_ID = "cover:money-settlement-diagnostic"
 DRIFT = "drift:refund-rounding"
 WITNESS_ATOM = "atom:refund-drift-witness"
 
@@ -41,96 +39,28 @@ TRIANGLE = [
     ("overlap:insidepay-order", "ctx:inside-payment-surface", "ctx:order-surface"),
     ("overlap:cancel-order", "ctx:cancel-surface", "ctx:order-surface"),
 ]
-# Consign-fee region: preserve books a consignment, consign prices it via
-# consign-price and returns the fee; the same fee value is shared by all three
-# charts, with no refund-rounding residue on any of these overlaps.
-CONSIGN_FEE = [
-    ("overlap:consign-consignprice", "ctx:consign-surface", "ctx:consign-price-surface"),
-    ("overlap:preserve-consign", "ctx:preserve-surface", "ctx:consign-surface"),
-    ("overlap:preserve-consignprice", "ctx:preserve-surface", "ctx:consign-price-surface"),
-]
-OVERLAPS = TRIANGLE + CONSIGN_FEE
-TRIPLES = [
-    ("triple:consign-fee-region", [oid for oid, _, _ in CONSIGN_FEE]),
-]
-REPAIR_CHARTS = ["ctx:repair-" + chart.removeprefix("ctx:") for chart in CHARTS]
-REPAIR_CHART_CONTEXTS = dict(zip(CHARTS, REPAIR_CHARTS))
-DIAGNOSTIC_CHARTS = [
-    REPAIR_CHART_CONTEXTS[chart]
-    for chart in ["ctx:cancel-surface", "ctx:inside-payment-surface", "ctx:order-surface"]
-]
-DIAGNOSTIC_OVERLAPS = [overlap for overlap in OVERLAPS if overlap in TRIANGLE]
-OVERLAP_CONTEXTS = {
-    overlap_id: "ctx:intersection:" + overlap_id.removeprefix("overlap:")
-    for overlap_id, _, _ in OVERLAPS
-}
-TRIPLE_CONTEXTS = {
-    triple_id: "ctx:intersection:" + triple_id.removeprefix("triple:")
-    for triple_id, _ in TRIPLES
-}
 EDGE_VARS = [
     ("e_cancel_insidepay", "ctx:cancel-surface", "ctx:inside-payment-surface"),
     ("e_insidepay_order", "ctx:inside-payment-surface", "ctx:order-surface"),
     ("e_cancel_order", "ctx:cancel-surface", "ctx:order-surface"),
     ("e_consign_consignprice", "ctx:consign-surface", "ctx:consign-price-surface"),
+    ("e_preserve_consign", "ctx:preserve-surface", "ctx:consign-surface"),
+    ("e_preserve_order", "ctx:preserve-surface", "ctx:order-surface"),
 ]
-# 各 overlap / chart / triple の equation generator は、法曲面が実際に宣言している
-# witness variable と skeleton simplex そのものである。合成した名前は使わない。
-EDGE_VAR_BY_OVERLAP = {
-    oid: next((v for v, l, r in EDGE_VARS if {l, r} == {left, right}), None)
-    for oid, left, right in OVERLAPS
-}
-# cech law の witness edge に入らない overlap は、同じ法曲面の skeleton simplex へ束縛する。
-# cech law の witness edge に入らない overlap と triple には、この法曲面が宣言する
-# 対応物が無い。束縛を騙らず、供給側で採番したことが分かる名前にする。
-UNBOUND_CELL = {
-    oid: "unbound-equation:" + oid
-    for oid, var in EDGE_VAR_BY_OVERLAP.items()
-    if var is None
-}
-UNBOUND_CELL["triple:consign-fee-region"] = "unbound-equation:triple:consign-fee-region"
-CHART_SIMPLEX = {
-    c: f"vertex:money-{c.removeprefix('ctx:').removesuffix('-surface')}" for c in CHARTS
-}
-# 0.8 x price は 4p/5 なので、丸め剰余は 1/5 セント単位に住む。全セントしか記帳できない
-# チャートはこれを表現できない。したがって semantic 側の局所関係は 5 sigma = 0、
-# equation 側の obstruction ideal は (5) であり、Q_E(V) = Z/(5) となる。
-SUBCENT_UNITS_PER_CENT = 5
+# v0.5.7: the plan declares only the observed 1-skeleton of the selected loop cover.
+# The residual is derived by analyze from the observed sections under the witness
+# bindings above; nothing about the residual is authored here any more.
+PLAN_OVERLAPS = TRIANGLE + [
+    ("overlap:consign-consignprice", "ctx:consign-surface", "ctx:consign-price-surface"),
+    ("overlap:preserve-consign", "ctx:preserve-surface", "ctx:consign-surface"),
+    ("overlap:preserve-order", "ctx:preserve-surface", "ctx:order-surface"),
+]
 REPAIRED_SECTION = "section=money-amount:bigdecimal-scale2-half-even-shared"
 REPAIRED_LABELS = {
     "ctx:cancel-surface": "Refund path computes 80% in BigDecimal at scale 2 HALF_EVEN and books the remainder explicitly",
     "ctx:inside-payment-surface": "Inside-payment ledgers the shared scale-2 BigDecimal amount unchanged",
     "ctx:order-surface": "Order keeps the price string but the shared reading is exact scale-2 BigDecimal",
 }
-
-
-def complex_dict():
-    return {
-        "charts": list(REPAIR_CHARTS),
-        "archmapCoverRef": COVER_ID,
-        "overlaps": [
-            {
-                "id": overlap_id,
-                "left": REPAIR_CHART_CONTEXTS[left],
-                "right": REPAIR_CHART_CONTEXTS[right],
-                "archmapContextRef": OVERLAP_CONTEXTS[overlap_id],
-            }
-            for overlap_id, left, right in OVERLAPS
-        ],
-        "tripleOverlaps": [
-            {
-                "id": triple_id,
-                "overlapRefs": list(overlap_refs),
-                "archmapContextRef": TRIPLE_CONTEXTS[triple_id],
-            }
-            for triple_id, overlap_refs in TRIPLES
-        ],
-        "enumerationComplete": True,
-    }
-
-
-def fingerprint(cx):
-    return hashlib.sha256(json.dumps(cx, separators=(",", ":")).encode()).hexdigest()
 
 
 def write(name, obj):
@@ -154,96 +84,11 @@ def source_refs_for(contexts, context_ids):
     return unique(refs)
 
 
-def intersection_atom_id(context_id):
-    return "atom:contract:" + context_id.removeprefix("ctx:").replace(":", "-")
-
-
-def add_intersection_atom(archmap, context_id, refs):
-    atom_id = intersection_atom_id(context_id)
-    archmap["atoms"].append({
-        "id": atom_id,
-        "kind": "contract",
-        "subject": context_id,
-        "object": "source-grounded finite intersection selected for the settlement presentation",
-        "axis": "static",
-        "predicate": "component",
-        "refs": refs,
-    })
-    return atom_id
-
-
-def add_presentation_complex(archmap):
+def add_observed_cover(archmap):
     contexts = {context["id"]: context for context in archmap["contexts"]}
     for chart in CHARTS:
         if chart not in contexts:
             raise ValueError(f"missing chart context: {chart}")
-
-    repair_contexts = {}
-    for chart in CHARTS:
-        context_id = REPAIR_CHART_CONTEXTS[chart]
-        refs = source_refs_for(contexts, [chart])
-        context = {
-            "id": context_id,
-            "atoms": [add_intersection_atom(archmap, context_id, refs)],
-            "refs": refs,
-            "restrictsTo": [],
-        }
-        archmap["contexts"].append(context)
-        contexts[context_id] = context
-        repair_contexts[chart] = context
-
-    overlap_contexts = {}
-    for overlap_id, left, right in OVERLAPS:
-        context_id = OVERLAP_CONTEXTS[overlap_id]
-        if context_id in contexts:
-            raise ValueError(f"duplicate intersection context: {context_id}")
-        repair_contexts[left]["restrictsTo"].append(context_id)
-        repair_contexts[right]["restrictsTo"].append(context_id)
-        refs = source_refs_for(contexts, [left, right])
-        context = {
-            "id": context_id,
-            "atoms": [add_intersection_atom(archmap, context_id, refs)],
-            "refs": refs,
-            "restrictsTo": [],
-        }
-        archmap["contexts"].append(context)
-        contexts[context_id] = context
-        overlap_contexts[overlap_id] = context
-
-    triple_context_ids = []
-    for triple_id, overlap_refs in TRIPLES:
-        context_id = TRIPLE_CONTEXTS[triple_id]
-        if context_id in contexts:
-            raise ValueError(f"duplicate triple intersection context: {context_id}")
-        for overlap_id in overlap_refs:
-            overlap_contexts[overlap_id]["restrictsTo"].append(context_id)
-        refs = unique(
-            ref
-            for overlap_id in overlap_refs
-            for ref in overlap_contexts[overlap_id]["refs"]
-        )
-        context = {
-            "id": context_id,
-            "atoms": [add_intersection_atom(archmap, context_id, refs)],
-            "refs": refs,
-        }
-        archmap["contexts"].append(context)
-        contexts[context_id] = context
-        triple_context_ids.append(context_id)
-
-    complex_contexts = list(REPAIR_CHARTS) + list(OVERLAP_CONTEXTS.values()) + triple_context_ids
-    archmap["covers"].append({
-        "id": COVER_ID,
-        "contexts": complex_contexts,
-        "refs": source_refs_for(contexts, CHARTS),
-        "label": "Source-grounded finite settlement complex with explicit pair and triple intersections",
-    })
-    archmap["covers"].append({
-        "id": DIAGNOSTIC_COVER_ID,
-        "contexts": list(DIAGNOSTIC_CHARTS),
-        "refs": source_refs_for(contexts, ["ctx:cancel-surface", "ctx:inside-payment-surface", "ctx:order-surface"]),
-        "label": "Refund settlement diagnostic component",
-    })
     archmap["covers"].append({
         "id": LAW_COVER_ID,
         "contexts": list(CHARTS),
@@ -270,7 +115,7 @@ head["atoms"].append({
     ],
     "label": "CancelServiceImpl.calculateRefund rounds 0.8*price to two decimals; no chart books the sub-cent remainder",
 })
-add_presentation_complex(head)
+add_observed_cover(head)
 write("archmap-saga-head.json", head)
 
 repaired = copy.deepcopy(head)
@@ -429,152 +274,22 @@ gate = {
 write("gate-policy-saga.json", gate)
 
 # ---- repair plans -----------------------------------------------------------
-def presentation(drifted):
-    cell_refs = list(REPAIR_CHARTS) + [overlap_id for overlap_id, _, _ in OVERLAPS] + [
-        triple_id for triple_id, _ in TRIPLES
-    ]
-    restrictions = [
-        {"fromRef": chart, "toRef": overlap_id, "semanticMatrix": [[1]], "equationMatrix": [[1]]}
-        for overlap_id, left, right in OVERLAPS
-        for chart in [REPAIR_CHART_CONTEXTS[left], REPAIR_CHART_CONTEXTS[right]]
-    ]
-    restrictions.extend(
-        {
-            "fromRef": overlap_id,
-            "toRef": triple_id,
-            "semanticMatrix": [[1]],
-            "equationMatrix": [[1]],
-        }
-        for triple_id, overlap_refs in TRIPLES
-        for overlap_id in overlap_refs
-    )
-    def equation_generator(cell_ref):
-        # chart は法曲面 skeleton の vertex simplex、witness edge を持つ overlap は
-        # その witness variable。どちらも法曲面が元から宣言しているものを使う。
-        if cell_ref in UNBOUND_CELL:
-            return UNBOUND_CELL[cell_ref]
-        if cell_ref in EDGE_VAR_BY_OVERLAP:
-            return EDGE_VAR_BY_OVERLAP[cell_ref]
-        source_chart = next(c for c, r in REPAIR_CHART_CONTEXTS.items() if r == cell_ref)
-        return CHART_SIMPLEX[source_chart]
-
-    unit = SUBCENT_UNITS_PER_CENT
-    return {
-        "coefficientRing": "integers",
-        "cells": [
-            {
-                "cellRef": cell_ref,
-                "semanticGenerators": [DRIFT],
-                "repairRelationMatrix": [[unit]],
-                "equationGenerators": [equation_generator(cell_ref)],
-                "equationRelationMatrix": [[unit]],
-                "generatorMap": [[1]],
-            }
-            for cell_ref in cell_refs
-        ],
-        "restrictions": restrictions,
-        "equationLiftAtlas": {
-            "localLifts": [
-                {"chartRef": chart, "coefficients": [0]}
-                for chart in REPAIR_CHARTS
-            ],
-            "transitionDifferences": [
-                {
-                    "overlapRef": overlap_id,
-                    "coefficients": [int(drifted and (overlap_id, left, right) in TRIANGLE)],
-                }
-                for overlap_id, left, right in OVERLAPS
-            ],
-        },
-    }
-
-
 def repair_plan(drifted):
-    cx = complex_dict()
-    fp = fingerprint(cx)
-    var = [DRIFT] if drifted else []
-    vmap = [{"source": DRIFT, "target": DRIFT}] if drifted else []
-    triangle_ids = {i for i, _, _ in TRIANGLE}
-    plan = {
-        "schema": "archsig-repair-plan/v0.5.4",
+    return {
+        "schema": "archsig-repair-plan/v0.5.7",
         "id": "repair-plan:train-ticket-money-" + ("head" if drifted else "repaired"),
-        "residual": {"kind": "supplied"},
-        "complex": cx,
-        "primitives": [
-            {
-                "id": "primitive:" + oid.removeprefix("overlap:"),
-                "overlapRef": oid,
-                "resL": list(var) if oid in triangle_ids else [],
-                "resR": [],
-                "support": {
-                    "kind": "supplied",
-                    "variables": list(var) if oid in triangle_ids else [],
-                },
-            }
-            for oid, _, _ in OVERLAPS
-        ],
-        "semanticProjection": {
-            "lambda": [WITNESS_ATOM] if drifted else [],
-            "k": list(var),
-            "pi": [{"atomRef": WITNESS_ATOM, "subject": DRIFT}] if drifted else [],
-        },
-        "faithfulness": {
-            "mode": "supplied",
-            "supplied": {
-                "zeroPrimitiveRef": (
-                    "primitive:consign-consignprice"
-                    if drifted
-                    else "primitive:cancel-insidepay"
-                ),
-                "residualSupportPredicate": {
-                    "kind": "finite-support",
-                    "supportVariables": list(var),
-                    "zeroOnZeroPrimitive": True,
-                },
-                "faithfulnessLaw": "the refund rounding witness projects one-to-one onto the cancel-service reconciliation observation",
-            },
-        },
-        "coefficient": "f2-additive",
-        "trueSheafCertificate": {
-            "kind": "true-sheaf-certificate",
-            "coverRef": DIAGNOSTIC_COVER_ID,
-            "memberCharts": list(DIAGNOSTIC_CHARTS),
-            "globalCondition": "assumed",
-        },
-        "gluingData": {
-            "kind": "gluing-data",
-            "overlapRefs": [overlap_id for overlap_id, _, _ in DIAGNOSTIC_OVERLAPS],
-            "sectionRefs": [
-                {
-                    "overlapRef": overlap_id,
-                    "sectionRef": "section:" + overlap_id.removeprefix("overlap:"),
-                }
-                for overlap_id, _, _ in DIAGNOSTIC_OVERLAPS
+        "complex": {
+            "charts": list(CHARTS),
+            "archmapCoverRef": LAW_COVER_ID,
+            "overlaps": [
+                {"id": oid, "left": left, "right": right}
+                for oid, left, right in PLAN_OVERLAPS
             ],
-        },
-        "grounding": {
-            "kind": "saga-grounding",
-            "surfaceRef": SURFACE_ID,
-            "profileRef": PROFILE_ID,
-        },
-        "comparison": {
-            "kind": "saga-comparison",
-            "incidenceBridge": {
-                "kind": "chart-indexed",
-                "repairChartRefs": list(REPAIR_CHARTS),
-                "cechChartRefs": list(REPAIR_CHARTS),
-            },
-            "h1ComparisonData": {
-                "schema": "h1-comparison-data/v0.5.4",
-                "kind": "presentation-generated",
-                "sourceComplexFingerprint": fp,
-                "targetComplexFingerprint": fp,
-                "presentation": presentation(drifted),
-            },
+            "tripleOverlaps": [],
+            "enumerationComplete": True,
         },
     }
-    return plan
+
 
 write("repair-plan-head.json", repair_plan(True))
 write("repair-plan-repaired.json", repair_plan(False))
-print("complex fingerprint:", fingerprint(complex_dict()))

@@ -8,7 +8,7 @@
     },
     "measurementPacket": {
       "path": "input:archsig-measurement-packet.json",
-      "sha256": "8e7a0e54bd512627b41a1919c0376e26c479573c6204eb490346a3f8fb37eb25"
+      "sha256": "1899703f940e33df158ad760be3ea66052375e2c4e796e5c0cb37f844b8ee0b6"
     }
   },
   "nonConclusions": [
@@ -291,20 +291,6 @@
           "boundaryOverrideApplied": false,
           "mappingKey": "measured_nonzero",
           "rowRef": "structuralVerdict/ag-saga-descent/saga-residual-boundary-membership/residual-not-in-b1",
-          "verdict": "measured_nonzero"
-        },
-        {
-          "action": "block",
-          "boundaryOverrideApplied": false,
-          "mappingKey": "measured_nonzero",
-          "rowRef": "structuralVerdict/ag-saga-descent/saga-global-coherence/residual-not-in-b1",
-          "verdict": "measured_nonzero"
-        },
-        {
-          "action": "block",
-          "boundaryOverrideApplied": false,
-          "mappingKey": "measured_nonzero",
-          "rowRef": "structuralVerdict/ag-saga-descent/saga-residual-class/nonzero-class-representative",
           "verdict": "measured_nonzero"
         }
       ],
