@@ -3,11 +3,7 @@
 *From Semantic Repair Cohomology to Algebraic-Geometric Descent*
 
 **Hiroyuki Nakahata** — Independent Researcher
-ORCID: [0009-0008-5928-0234](https://orcid.org/0009-0008-5928-0234) ·
-contact: nakahata.theorem@gmail.com
-
-著者はファインディ株式会社(Findy Inc.)に所属する。本研究は個人研究として
-行われたものであり、同社の見解を代表しない。
+ORCID: [0009-0008-5928-0234](https://orcid.org/0009-0008-5928-0234)
 
 > **draft note**: 本ファイルは Zenodo プレプリントの初稿下書きである。要件と完了条件は
 > [zenodo_saga.md](zenodo_saga.md)、Related Work の原典調査は
@@ -41,7 +37,8 @@ H^1_{\mathrm{sem}}(\mathcal U)
 
 と residual class の対応 `κ_*([r_sem])=[r_E]` を誘導する。これを SAGA 比較定理と呼ぶ。
 すなわち、修理の言葉で測った障害と方程式の言葉で測った障害は、同じ
-コホモロジー類である。さらに、修理状態の族が貼り合わせ可能である
+コホモロジー類である。この一致により、意味論的な診断は幾何的な計算へ、
+幾何的な計算は意味論的な読みへ、双方向に翻訳できる。さらに、修理状態の族が貼り合わせ可能である
 (sheaf 条件を満たす)ならば、global repair は三項同値
 
 ```math
@@ -55,10 +52,10 @@ H^1_{\mathrm{sem}}(\mathcal U)
 で特徴づけられる。障害の類が消えることと、全体を貼り合わせる修理が実在する
 ことは同値である。
 
-本論文は、この数学的成果を三層で提示する。第一層は完成した SAGA 数学である
-(第3〜5章)。第二層は release 時点の Lean 形式化 status であり、定義、定理、
-有限 witness、proof chain を declaration 単位で本論文の定理と対応させる
-(第6章)。第三層は Rust 製 CLI の measurement tool である ArchSig による
+本論文は、この数学的成果を三層で提示する。第一層は SAGA 数学であり、
+比較定理と residual class 対応の証明を与える(第3〜5章)。第二層は
+release 時点の Lean 形式化 status であり、定義、定理、有限 witness、
+proof chain を declaration 単位で本論文の定理と対応させる(第6章)。第三層は Rust 製 CLI の measurement tool である ArchSig による
 実行可能な診断であり、実在するオープンソース microservice システムの払い戻し
 処理に対して、観測から導出した障害の非零計測、gate による blocking、
 repair 案の事前検証、repair 後の障害消滅の記録までを再現可能な一つの計算として
@@ -115,11 +112,11 @@ cohomology との同一視は本論文の主張に含まれない(§5.7)。
 
 | 層 | 役割 |
 | --- | --- |
-| 数学 | プレプリントの主成果。SAGA 比較定理と residual class 対応の完成した証明 |
+| 数学 | プレプリントの主成果。SAGA 比較定理と residual class 対応の証明 |
 | Lean | 数学成果に対する release 時点の機械形式化 status |
 | ArchSig | 実在コード事例の上で SAGA 診断を実行する Rust 製 CLI(有限かつ実行可能な realization) |
 
-数学面は完成版である。semantic repair cohomology と equation-generated AAT Čech
+数学面は本論文の主成果である。semantic repair cohomology と equation-generated AAT Čech
 cohomology の比較を構成し、`H^1` 同型、residual class 対応、true sheaf 条件下の
 global repair 同値を証明する(第5章)。
 
@@ -139,7 +136,7 @@ version、入力 artifact の digest の組をいう。第6章の形式化 statu
 ### 1.4 論文全体を貫く読み
 
 ```text
-完成した SAGA 数学
+SAGA 数学の比較定理
   -> release 時点の Lean 形式化
   -> ArchSig による実コード事例の有限計算
   -> repair 前後の比較
@@ -215,7 +212,7 @@ claim と証拠を対応させる規律の源である。第7章の measurement 
 
 SAGA は、semantic repair obstruction と equation-generated Čech obstruction を
 比較することで、AAT アプローチの local-to-global 能力を具体化する。
-本章の中心メッセージを次に固定する。
+本章で述べた AAT アプローチは、次の一文に要約される。
 
 > AAT constructs software architecture as a relative algebraic geometry generated
 > from primitive architectural facts and simultaneous architectural equations,
@@ -442,7 +439,7 @@ support Atom `a_q` の選択。cover-indexed の場合は local context を各 c
 非零類 `[d_q]≠0` へ至るには、意味論上の failure が ideal に属さない residual
 として顕在化すること(**semantic faithfulness**)が別に要る。これは商係数の
 性質ではなく displayed source の選択と supply に属する条件である。実測の上での
-担い手は第7章で述べる(§7.1)。
+担い手は第7章で述べる(§7.4)。
 
 この `Q_E` が SAGA の幾何側 Čech complex の係数である。直観的には、`Q_E` は
 observable を obstruction ideal の分だけ粗く見た係数であり、二つの observable が
@@ -471,7 +468,7 @@ U_{ijk}=U_i\times_W U_j\times_W U_k
 **cover intersection diagram** と呼ぶ。非空な `U_{ijk}` の三つの pairwise
 intersection は、`U_{ijk}` からの射影を受けるため非空である。空の pullback は
 intersection の対象から除き、その値は
-empty-overlap normalization(第5章 定理 5.1 の条件 8)で固定する。
+empty-overlap normalization(第5章 定理 5.1 の入力 8)で固定する。
 比較 core 自体に有限性は不要だが、有限 cover は中心定理、finite witness、
 実行可能な realization を同じ記号で扱うために固定する。第3.3節の
 finite-meet poset model ではすべての射が monomorphism なので、この仮定は
@@ -1104,7 +1101,7 @@ monomorphism と pullback の普遍性を使うが、その形式化は行って
 ### 5.8 有限 witness: independently generated circle comparison
 
 **例 5.3。** 四つの chart と四つの nonempty overlap
-`U_01, U_12, U_23, U_30` を持ち、nondegenerate triple overlap を持たない
+`U_01, U_12, U_23, U_03` を持ち、nondegenerate triple overlap を持たない
 monomorphic 4-cycle cover を取る。
 
 **係数の比較。** 各 nonempty intersection `V` で semantic support を一 generator
@@ -1201,7 +1198,7 @@ r_E=\kappa^1(r_{\mathrm{sem}})=(1,0,0,0)
 有限 witness である。非零類を立てているのは chart の個数ではなく、「閉ループ上の
 奇パリティ + そのループを埋める面(triple overlap)の不在」という
 **cycle-without-a-face 機構**である。第7章の one-cent obstruction は、
-この機構が実在 architecture に現れた事例である(§7.2)。
+この機構が実在 architecture に現れた事例である(§7.1)。
 
 ---
 
@@ -1292,14 +1289,145 @@ declaration が形式化しているのは、本論文の定理そのもので�
 ArchSig は、観測(ArchMap)と法・方程式(LawPolicy、law surface、
 MeasurementProfile)の二系統の入力から、grounding、導出 residual、
 boundary membership、run 対の比較、gate 判定を計算する measurement system
-(Rust 製 CLI)である。本章はまず入力契約と計算を定義し(§7.1)、実在
-microservice architecture に対する SAGA フル診断を一つの計算として示す
-(§7.2〜§7.4)。観測の供給工程は §7.5、結論の条件種別は §7.6、claim の境界は
-§7.7、再現手順は §7.8 が固定する。
+(Rust 製 CLI)である。本章はまず実在 microservice architecture に対する
+SAGA フル診断を一つの計算として示し(§7.1〜§7.3)、その診断が立つ入力契約と
+計算の定義を後から固定する(§7.4)。観測の供給工程は §7.5、結論の条件種別は
+§7.6、claim の境界は §7.7、再現手順は §7.8 が固定する。
 
-### 7.1 入力契約と計算
+### 7.1 実コード事例: one-cent obstruction
 
-ArchSig の入力は次の artifact である。
+ここで本論文の case study を明かす。対象は、microservice benchmark として広く
+使われるオープンソースの列車予約システム train-ticket
+(commit `313886e99bef`、42 services)である。
+
+このシステムの cancel–inside-payment–order の実呼び出し三角形上で、
+払い戻し金額の規約が3流儀とも異なる。いずれも実ソースで確認され、
+ArchMap の section value として観測された。
+
+- **cancel**: `Double.parseDouble(order.getPrice()) * 0.8` を
+  `DecimalFormat("0.00")` で丸めて文字列化(浮動小数点 + 丸め)
+- **inside-payment**: `new BigDecimal(order.getPrice())` の正確算術
+- **order**: `private String price` の素通し保管
+
+三つの service の金額表現は、実装上はいずれも `string` を介して受け渡される。
+型の一致は成立している。異なるのは、その `string` が表す金額の丸め、scale、
+計算、保存の**意味規約**である。さらに、実施者(measurement 工程の実行者。
+本論文では著者)の source 調査では、3サービスの
+金額を同時に照合する箇所は見つからなかった。この調査所見は、選択複体に
+triple overlap を宣言しないという形で診断へ反映される。同時照合サイトの不在
+そのものは、観測 artifact が示す事実ではなく実施者の assertion として扱う
+(§7.2、§7.6)。
+
+この構図は、例 5.3 と同じ **cycle-without-a-face 機構**の 3-cycle instance と
+して読める。複体そのものは同一ではない — 例 5.3 は 4-cycle、本 case は 3-cycle
+である — が、非零類を立てる機構は共通する: 閉ループ上の奇パリティ(3流儀の
+衝突)と、そのループを埋める面(triple overlap)の不在である。
+払い戻し計算 `0.8 × 価格` の丸め剰余 — **1セント未満のドリフト** — は、
+どの chart にも記帳されていない。この case study を **one-cent obstruction** と呼ぶ。
+
+**Semantic trace。** 三辺が比較する量と実装規約を固定する。
+
+| Edge | 比較する量 | 規約 L | 規約 R | 正規化 | 期待 equation | witness 変数 |
+| --- | --- | --- | --- | --- | --- | --- |
+| cancel–inside-payment | 払い戻し金額 | `0.8 × price` を `DecimalFormat("0.00")` で丸めた文字列 | `BigDecimal` の正確算術値 | 通貨値(scale-2) | 両 chart の払い戻し金額が同一の通貨値として確定 | `e_cancel_insidepay` |
+| inside-payment–order | 払い戻しの基準額 | `BigDecimal(order.getPrice())` の正確値 | `String price` の素通し記載額 | 通貨値(scale-2) | 決済が用いる基準額が記載額と同一規約で確定 | `e_insidepay_order` |
+| cancel–order | 払い戻し比率の適用 | 丸め済み `0.8 × price` | 記載額 `price` | 通貨値(scale-2) | 払い戻し額が記載額の 0.8 倍として一意に確定 | `e_cancel_order` |
+
+この表が固定するのは意味論的根拠の側であり、residual の値そのものは
+`analyze` が各辺の観測 section value の比較から導出する(§7.4)。
+三辺はいずれも、同一の semantic quantity — この注文の払い戻し金額 — の
+restriction を比較しており、mismatch の自由度は「その量を通貨値としてどの丸め・
+scale 規約で確定するか」という一つの向きに乗る。witness 束縛は、その向きを
+辺ごとに選ぶ law 側の宣言であり、instance の値は運ばない。
+
+**有限 witness。** 頻度や総損失の評価(runtime 実測を要する。§7.7)とは分離し、
+source expression で確認済みの各規約を同一の払い戻し量へ適用した正規化計算と
+して、入力価格を一つ固定した witness を示す。
+
+```text
+original price:        12.33
+cancel 規約:           0.8 × 12.33 = 9.864 → DecimalFormat("0.00") → "9.86"
+inside-payment 規約:   同じ払い戻し量を正確算術で確定 → 9.864
+通貨値としての正規化:  9.86(scale-2)対 9.864
+nonzero remainder:     0.004(1セント未満)
+```
+
+cancel 側の乗算は二進浮動小数点で行われるが、この入力では scale-2 丸めの結果に
+影響しない。remainder は、どの chart の局所方程式にも違反しない — cancel は
+cancel の丸め規約に、inside-payment は正確算術に忠実である — が、二つの chart
+の値の差として残る。
+
+この数値 witness は実施者による source 水準の検算であり、ArchSig の計算には
+価格、`0.8`、丸め、`0.004` のいずれも現れない。ArchSig の residual は金額規約の
+観測表現である section value の集合比較から導出される(§7.4)。
+
+### 7.2 診断階段
+
+measurement の入力構成は次のとおりである(各 artifact の入力契約と計算の
+定義は §7.4)。
+
+- **cover**: 6 chart。診断三角形 {cancel, inside-payment, order} と、託送料金
+  領域 {preserve, consign, consign-price}。後者は三角形の外側の観測領域であり、
+  一致する辺や repair 後に境界内(`B^1`)へ収まる mismatch を同じ packet 内に
+  持つ対照を与える。
+- **law surface**: closed-equational、SAGA-grounded、descent の3本。descent
+  surface は観測された 6 辺すべてに witness 変数を束縛する。
+- **repair plan**: 選択複体だけを宣言する。chart は観測 cover の 6 chart
+  そのもの、overlap は観測された restriction 6 辺(三角形 3 +
+  consign–consign-price + preserve–consign + preserve–order)、triple overlap は
+  宣言しない(§7.1 の調査所見の反映。assertion としての身分は §7.6)。
+- **repaired 変種**: 三角形の 3 chart を BigDecimal scale-2 HALF_EVEN 統一規約に
+  置換した仮修理 ArchMap。
+
+導出 residual(head)は、三角形 3 辺と preserve 系 2 辺で section value が
+不一致、consign–consign-price で一致となり、選択複体は単一の連結成分になる。
+三角形一周の奇パリティは `δ⁰` で解けず、residual は非境界に立つ。
+
+診断階段の結果は次である。
+
+| 幕 | 結果 |
+| --- | --- |
+| head analyze | `MEASURED_NONGLUING_RESIDUAL`(`run:78c31d6a3172`) |
+| └ grounding | `measured_zero` — 各 chart は自分の局所方程式を満たしている |
+| └ residual 導出 | 三角形 3 辺 + preserve 2 辺で mismatch、consign–consign-price は一致(すべて観測から導出) |
+| └ boundary membership | `measured_nonzero`(`inB1: false`。triple 宣言不在のため class 語彙は不解禁 — named boundary statement で明示) |
+| gate head | `BLOCKED_BY_GATE_POLICY` |
+| repaired analyze | `REPAIR_GLUES_WITHIN_SELECTED_COMPLEX`(`run:6685bab8db21`。残る preserve 残差は `B^1` 内) |
+| compare head→repaired | `MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE`。run 対の読みは「両 run の residual の差は `δ⁰` で解けない」であり、head 非境界 → repaired 境界内の変化と整合する(§7.4) |
+| gate repaired | `PASS_WITHIN_GATE_POLICY` |
+
+### 7.3 計測が示したこと
+
+**局所整合・大域非貼合の実在。** grounding の `measured_zero` は、各 chart が
+自分の局所方程式を満たしていること(§7.4 の displayed-equation check の意味で)を
+計測として言う。cancel は cancel の丸め規約に、
+inside-payment は正確算術に、order は素通し保管に、それぞれ忠実である。
+ペアごとの受け渡しも各々は成立している。計測として観測されたのは、規約
+mismatch の奇パリティが閉ループ上で `δ⁰` により解けないこと(`inB1: false`)で
+ある。ループを埋める面(triple)の不在の assertion(§7.1)の下で、この計測は
+「局所的には整合、大域的に貼り合わない」という SAGA の中心構造の、作為的に
+仕込んだのではない実在 OSS 上の instance になる。
+
+**診断階段の全段が導出 residual だけで機能。** 観測(ArchMap)と法・方程式
+(law surface、MeasurementProfile)から導出した residual による非境界の計測、
+gate による blocking、修理計画の事前検証、compare による障害消滅と run 対の
+residual 差の記録、gate PASS まで、authored な residual・証書・比較データを
+一切供給せずに一周した。実施者の宣言として残るのは選択複体(§7.4)と
+repaired 変種だけである。
+
+**数学的規律の実効。** ドリフトの立つ三角形自体を triple として申告すると
+cocycle 条件で拒否される。これは数学的に正当な拒否である。witness 束縛のない
+mismatch と典拠のない参照は fail-closed に落ちた。実データで負荷をかけて
+規律が守られた。
+
+**沈黙の実行。** runtime 実測数値を要する計測軸(axis 名 `harmonic-debt`)は、
+実測が無い状態では供給されず、沈黙として扱われた。また、triple 宣言のない
+複体で class 語彙を出さないことも同じ規律の実行であり、ArchSig はその境界を
+named boundary statement として結論の近くに最小限の形で記録した。
+
+### 7.4 入力契約と計算
+
+ここまでの診断が立つ入力契約と計算を固定する。ArchSig の入力は次の artifact である。
 
 - **ArchMap**: 対象システムの Atom 観測。chart(局所文脈)、section value、
   overlap の対応を記録する。
@@ -1368,135 +1496,6 @@ section、witness 束縛のない mismatch は、いずれも結論を生成せ�
 (列挙完全性は §7.6 の assumption として開示される)、観測が一致している辺の
 上に非零 residual を立てることはできない。
 
-### 7.2 実コード事例: one-cent obstruction
-
-ここで本論文の case study を明かす。対象は、microservice benchmark として広く
-使われるオープンソースの列車予約システム train-ticket
-(commit `313886e99bef`、42 services)である。
-
-このシステムの cancel–inside-payment–order の実呼び出し三角形上で、
-払い戻し金額の規約が3流儀とも異なる。いずれも実ソースで確認され、
-ArchMap の section value として観測された。
-
-- **cancel**: `Double.parseDouble(order.getPrice()) * 0.8` を
-  `DecimalFormat("0.00")` で丸めて文字列化(浮動小数点 + 丸め)
-- **inside-payment**: `new BigDecimal(order.getPrice())` の正確算術
-- **order**: `private String price` の素通し保管
-
-三つの service の金額表現は、実装上はいずれも `string` を介して受け渡される。
-型の一致は成立している。異なるのは、その `string` が表す金額の丸め、scale、
-計算、保存の**意味規約**である。さらに、実施者の source 調査では、3サービスの
-金額を同時に照合する箇所は見つからなかった。この調査所見は、選択複体に
-triple overlap を宣言しないという形で診断へ反映される。同時照合サイトの不在
-そのものは、観測 artifact が示す事実ではなく実施者の assertion として扱う
-(§7.3、§7.6)。
-
-この構図は、例 5.3 と同じ **cycle-without-a-face 機構**の 3-cycle instance と
-して読める。複体そのものは同一ではない — 例 5.3 は 4-cycle、本 case は 3-cycle
-である — が、非零類を立てる機構は共通する: 閉ループ上の奇パリティ(3流儀の
-衝突)と、そのループを埋める面(triple overlap)の不在である。
-払い戻し計算 `0.8 × 価格` の丸め剰余 — **1セント未満のドリフト** — は、
-どの chart にも記帳されていない。この case study を **one-cent obstruction** と呼ぶ。
-
-**Semantic trace。** 三辺が比較する量と実装規約を固定する。
-
-| Edge | 比較する量 | 規約 L | 規約 R | 正規化 | 期待 equation | witness 変数 |
-| --- | --- | --- | --- | --- | --- | --- |
-| cancel–inside-payment | 払い戻し金額 | `0.8 × price` を `DecimalFormat("0.00")` で丸めた文字列 | `BigDecimal` の正確算術値 | 通貨値(scale-2) | 両 chart の払い戻し金額が同一の通貨値として確定 | `e_cancel_insidepay` |
-| inside-payment–order | 払い戻しの基準額 | `BigDecimal(order.getPrice())` の正確値 | `String price` の素通し記載額 | 通貨値(scale-2) | 決済が用いる基準額が記載額と同一規約で確定 | `e_insidepay_order` |
-| cancel–order | 払い戻し比率の適用 | 丸め済み `0.8 × price` | 記載額 `price` | 通貨値(scale-2) | 払い戻し額が記載額の 0.8 倍として一意に確定 | `e_cancel_order` |
-
-この表が固定するのは意味論的根拠の側であり、residual の値そのものは
-`analyze` が各辺の観測 section value の比較から導出する(§7.1)。
-三辺はいずれも、同一の semantic quantity — この注文の払い戻し金額 — の
-restriction を比較しており、mismatch の自由度は「その量を通貨値としてどの丸め・
-scale 規約で確定するか」という一つの向きに乗る。witness 束縛は、その向きを
-辺ごとに選ぶ law 側の宣言であり、instance の値は運ばない。
-
-**有限 witness。** 頻度や総損失の評価(runtime 実測を要する。§7.7)とは分離し、
-source expression で確認済みの各規約を同一の払い戻し量へ適用した正規化計算と
-して、入力価格を一つ固定した witness を示す。
-
-```text
-original price:        12.33
-cancel 規約:           0.8 × 12.33 = 9.864 → DecimalFormat("0.00") → "9.86"
-inside-payment 規約:   同じ払い戻し量を正確算術で確定 → 9.864
-通貨値としての正規化:  9.86(scale-2)対 9.864
-nonzero remainder:     0.004(1セント未満)
-```
-
-cancel 側の乗算は二進浮動小数点で行われるが、この入力では scale-2 丸めの結果に
-影響しない。remainder は、どの chart の局所方程式にも違反しない — cancel は
-cancel の丸め規約に、inside-payment は正確算術に忠実である — が、二つの chart
-の値の差として残る。
-
-この数値 witness は実施者による source 水準の検算であり、ArchSig の計算には
-価格、`0.8`、丸め、`0.004` のいずれも現れない。ArchSig の residual は金額規約の
-観測表現である section value の集合比較から導出される(§7.1)。
-
-### 7.3 診断階段
-
-measurement の入力構成は次のとおりである。
-
-- **cover**: 6 chart。診断三角形 {cancel, inside-payment, order} と、託送料金
-  領域 {preserve, consign, consign-price}。後者は三角形の外側の観測領域であり、
-  一致する辺や repair 後に境界内(`B^1`)へ収まる mismatch を同じ packet 内に
-  持つ対照を与える。
-- **law surface**: closed-equational、SAGA-grounded、descent の3本。descent
-  surface は観測された 6 辺すべてに witness 変数を束縛する。
-- **repair plan**: 選択複体だけを宣言する。chart は観測 cover の 6 chart
-  そのもの、overlap は観測された restriction 6 辺(三角形 3 +
-  consign–consign-price + preserve–consign + preserve–order)、triple overlap は
-  宣言しない(§7.2 の調査所見の反映。assertion としての身分は §7.6)。
-- **repaired 変種**: 三角形の 3 chart を BigDecimal scale-2 HALF_EVEN 統一規約に
-  置換した仮修理 ArchMap。
-
-導出 residual(head)は、三角形 3 辺と preserve 系 2 辺で section value が
-不一致、consign–consign-price で一致となり、選択複体は単一の連結成分になる。
-三角形一周の奇パリティは `δ⁰` で解けず、residual は非境界に立つ。
-
-診断階段の結果は次である。
-
-| 幕 | 結果 |
-| --- | --- |
-| head analyze | `MEASURED_NONGLUING_RESIDUAL`(`run:78c31d6a3172`) |
-| └ grounding | `measured_zero` — 各 chart は自分の局所方程式を満たしている |
-| └ residual 導出 | 三角形 3 辺 + preserve 2 辺で mismatch、consign–consign-price は一致(すべて観測から導出) |
-| └ boundary membership | `measured_nonzero`(`inB1: false`。triple 宣言不在のため class 語彙は不解禁 — named boundary statement で明示) |
-| gate head | `BLOCKED_BY_GATE_POLICY` |
-| repaired analyze | `REPAIR_GLUES_WITHIN_SELECTED_COMPLEX`(`run:6685bab8db21`。残る preserve 残差は `B^1` 内) |
-| compare head→repaired | `MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE`。run 対の読みは「両 run の residual の差は `δ⁰` で解けない」であり、head 非境界 → repaired 境界内の変化と整合する(§7.1) |
-| gate repaired | `PASS_WITHIN_GATE_POLICY` |
-
-### 7.4 計測が示したこと
-
-**局所整合・大域非貼合の実在。** grounding の `measured_zero` は、各 chart が
-自分の局所方程式を満たしていること(§7.1 の displayed-equation check の意味で)を
-計測として言う。cancel は cancel の丸め規約に、
-inside-payment は正確算術に、order は素通し保管に、それぞれ忠実である。
-ペアごとの受け渡しも各々は成立している。計測として観測されたのは、規約
-mismatch の奇パリティが閉ループ上で `δ⁰` により解けないこと(`inB1: false`)で
-ある。ループを埋める面(triple)の不在の assertion(§7.2)の下で、この計測は
-「局所的には整合、大域的に貼り合わない」という SAGA の中心構造の、作為的に
-仕込んだのではない実在 OSS 上の instance になる。
-
-**診断階段の全段が導出 residual だけで機能。** 観測(ArchMap)と法・方程式
-(law surface、MeasurementProfile)から導出した residual による非境界の計測、
-gate による blocking、修理計画の事前検証、compare による障害消滅と run 対の
-residual 差の記録、gate PASS まで、authored な residual・証書・比較データを
-一切供給せずに一周した。実施者の宣言として残るのは選択複体(§7.1)と
-repaired 変種だけである。
-
-**数学的規律の実効。** ドリフトの立つ三角形自体を triple として申告すると
-cocycle 条件で拒否される。これは数学的に正当な拒否である。witness 束縛のない
-mismatch と典拠のない参照は fail-closed に落ちた。実データで負荷をかけて
-規律が守られた。
-
-**沈黙の実行。** runtime 実測数値を要する計測軸(axis 名 `harmonic-debt`)は、
-実測が無い状態では供給されず、沈黙として扱われた。また、triple 宣言のない
-複体で class 語彙を出さないことも同じ規律の実行であり、ArchSig はその境界を
-named boundary statement として結論の近くに最小限の形で記録した。
-
 ### 7.5 入力の供給: 観測の authoring と再現性
 
 ArchMap の供給は、source の使われ方を読む意味読解を含む。この読解は
@@ -1546,14 +1545,14 @@ ledger に記録する前提、`unmeasured` は供給せず沈黙した軸を表
 | witness 束縛 | law surface の宣言 | `checked` | mismatch 辺は witness 変数の束縛を要求する。未束縛の mismatch は fail-closed に計算不能へ落ちる |
 | 係数(`F2`) | 法側の選択 | `checked` | 選択 MeasurementProfile の宣言。repair plan は係数を運ばない |
 | 選択複体の列挙完全性 | author assertion | `assumed` | repair plan の enumeration assertion を assumption ledger 行として記録 |
-| triple 不在 / class 語彙 | author assertion | `assumed`(class 語彙は不解禁) | 選択複体は triple を宣言しない(§7.2)。読みは 1-骨格の boundary membership に留まり、named boundary statement が境界を明示する |
+| triple 不在 / class 語彙 | author assertion | `assumed`(class 語彙は不解禁) | 選択複体は triple を宣言しない(§7.1)。読みは 1-骨格の boundary membership に留まり、named boundary statement が境界を明示する |
 | boundary membership | 有限 `F2` 計算 | `computed` | head は `inB1: false`、repaired は `inB1: true` |
 | U-adequacy、Leray 型比較 | profile 供給の前提 | `assumed` | U-adequacy は選択 cover が対象の読みに十分という前提、Leray 型比較は cover 相対の読みを cover 非依存の sheaf cohomology と比較するための前提。いずれも ledger 行として開示し、後者の比較は主張しない(§5.7) |
 | torsor 性・作用の固定性・係数 descent | profile 供給の前提 | `assumed` | 局所 section を係数の torsor として読むための3前提(局所 section の torsor 性、作用の固定性、係数の descent)。ledger の 3 行 |
 | restriction surjectivity | profile 供給の前提 | `assumed` | restriction 写像が overlap 上へ全射であるという前提。ledger 行 |
 | forest nerve | profile 供給の前提 | `assumed`(本 packet では不成立) | ledger は forest 前提を記録し、同じ packet の nerve 計算は閉路 1 を `computed` で示す(注1) |
 | quotient sheaf condition | law surface の宣言 | `assumed` | 商係数にあたる係数系が sheaf condition を満たすという law surface 側の宣言。ledger 行として開示 |
-| run 対の residual 差(head↔repaired) | run 対の導出読み | `computed` | 両 run の導出 residual の差の `δ⁰` 可解性(§7.1)。本対では差は `δ⁰` で解けない |
+| run 対の residual 差(head↔repaired) | run 対の導出読み | `computed` | 両 run の導出 residual の差の `δ⁰` 可解性(§7.4)。本対では差は `δ⁰` で解けない |
 | repaired ArchMap | 仮修理入力 | supplied / hypothetical | 統一規約を表す仮説 variant。`PASS_WITHIN_GATE_POLICY` は実装済み修理を示さない |
 | runtime の金額規模 | 経験的計測 | `unmeasured` | `harmonic-debt` を供給せず沈黙。頻度・金額を結論に含めない |
 
@@ -1565,8 +1564,8 @@ assumption への依存を宣言している。
 
 本 case study の claim は次の範囲に限る。規約 mismatch の検出自体は
 closed-equational surface の段が担った。SAGA 段が加えたのは、同じ観測を
-選択 1-骨格上の boundary membership として読む descent 読解、grounding の罠
-(§7.4)の明示、修理計画の事前検証、run 対の residual 差の読み(§7.1)、gate の一貫した
+選択 1-骨格上の boundary membership として読む descent 読解、grounding の読みの
+限定(§7.3)の明示、修理計画の事前検証、run 対の residual 差の読み(§7.4)、gate の一貫した
 診断であり、「SAGA が新しい障害を発見した」という主張は行わない。
 
 authored なのは選択である。選択複体(repair plan)、witness 束縛(law surface)、
@@ -1578,7 +1577,7 @@ class 語彙は解禁していない: 三角形を含む成分に triple が宣�
 金額規模は runtime 実測を要するため本論文では計測していない。広い benchmark
 評価と一般的な検出性能は、別の実証研究として扱う。
 
-定理 5.1 の有限 instantiation は本 case study の対象外である。その家は第6章の
+定理 5.1 の有限 instantiation は本 case study の対象外である。その担い手は第6章の
 Lean witness(例 5.3 の circle witness)であり、本章の packet が担うのは §7.6 の
 condition matrix が示す有限検査である。measurement run を Lean へ移送する対応は
 要求しない。
@@ -1643,7 +1642,7 @@ architecture へ貼り合うかである。
 | 軸 | Young 2026 | SAGA |
 | --- | --- | --- |
 | primary object | Python program と observation sites | 言語独立な Atom family と architecture object |
-| coefficient | semantic presheaf、`F_2` realization | equation system が生成する `Q_E=O_E/I_Ob` |
+| coefficient | semantic presheaf、`𝔽₂` realization | equation system が生成する `Q_E=O_E/I_Ob` |
 | central theorem | Čech cohomology による program-analysis claims | `H^1_sem ≅ Čech H^1(𝒰,Q_E)` comparison |
 | repair reading | rank = independent fixes | residual class、boundary、repair gluing |
 | empirical unit | 375 program-analysis benchmarks | 実在 microservice architecture と repair 前後比較 |
@@ -1716,7 +1715,7 @@ Lean が比較を検証し、ArchSig がその有限 architectural instance を�
 
 ## 9. Discussion and Research Outlook
 
-SAGA 比較定理は、AAT の local-to-global 能力の最初の完成した定理であり、
+SAGA 比較定理は、AAT の local-to-global 能力について証明まで到達した最初の定理であり、
 より大きな研究 program の最初の縦断でもある。本章は、この定理が確定させたものを
 議論し(§9.1)、そこから開く研究方向を示す(§9.2〜9.6)。本章の §9.2 以降は
 研究展望であり、証明済みの成果と混同しない。各方向の定理開発、実装、
@@ -1761,7 +1760,7 @@ stack に依存せず、多言語 system が一つの architecture geometry と�
 
 ### 9.3 数学の次の峰
 
-完成した SAGA 数学から、次の理論開発が自然に定式化できる。
+本論文で証明した SAGA 数学から、次の理論開発が自然に定式化できる。
 
 - **descent 条件の特徴づけ**: 定理 5.2 の三項同値は selected true sheaf 条件の
   下で成立する。次の峰は、この条件の成立そのものを architecture data から
@@ -1837,7 +1836,7 @@ architectural fact を言葉にする
 ```
 
 SAGA は、この連鎖の最初の三段 — 数学、形式化、計測 — を一つの定理で縦断した
-最初の完成例である。本論文が固定した provenance の規律(claim の種類を分け、
+最初の実例である。本論文が固定した provenance の規律(claim の種類を分け、
 各 claim を一次証拠へ接続する)は、後続のすべての峰で同じ形で使われる。
 理論の水位が十分に上がったとき、使う側からは水面しか見えなくなる。
 engineer は圏も層も cohomology も学ばずに「分析して」と言い、obstruction と
@@ -1850,7 +1849,7 @@ engineer は圏も層も cohomology も学ばずに「分析して」と言い�
 
 本論文は三つの成果を提示した。
 
-第一に、**完成した数学**である。semantic repair presentation から `M_sem` と
+第一に、**SAGA 比較定理の証明**である。semantic repair presentation から `M_sem` と
 semantic Čech complex を、equation system から `Q_E` と幾何側 Čech complex を
 独立に構成し、SAGA presentation exactness の下で `Φ:M_sem≃Q_E`、
 cochain isomorphism `κ`、`H^1` 同型、residual class 対応
@@ -1904,13 +1903,13 @@ Lean による機械検証が、観測供給の確率的工程は §7.5 の規�
   Methodology* 6(3), 213–249, 1997. doi:10.1145/258077.258078.
 - [Curry 2014] Justin Curry. *Sheaves, Cosheaves and Applications.*
   PhD thesis, University of Pennsylvania, 2014. arXiv:1303.3255.
+- [de Moura–Ullrich 2021] Leonardo de Moura and Sebastian Ullrich. The Lean 4
+  theorem prover and programming language. In *Automated Deduction — CADE 28*,
+  LNCS 12699, 625–635, 2021. doi:10.1007/978-3-030-79876-5_37.
 - [De Silva–Balasubramaniam 2012] Lakshitha Ramesh De Silva and Dharini
   Balasubramaniam. Controlling software architecture erosion: a survey.
   *Journal of Systems and Software* 85(1), 132–151, 2012.
   doi:10.1016/j.jss.2011.07.036.
-- [de Moura–Ullrich 2021] Leonardo de Moura and Sebastian Ullrich. The Lean 4
-  theorem prover and programming language. In *Automated Deduction — CADE 28*,
-  LNCS 12699, 625–635, 2021. doi:10.1007/978-3-030-79876-5_37.
 - [Felber–Flores–Galeana 2025] Stephan Felber, Bernardo Hummes Flores, and
   Hugo Rincon Galeana. A sheaf-theoretic characterization of tasks in
   distributed systems. arXiv:2503.02556, 2025.
@@ -1946,7 +1945,7 @@ Lean による機械検証が、観測供給の確率的工程は §7.5 の規�
 - [Murphy–Notkin–Sullivan 1995] Gail C. Murphy, David Notkin, and Kevin
   Sullivan. Software reflexion models: bridging the gap between design and
   implementation. In *Proceedings of the 3rd ACM SIGSOFT Symposium on
-  Foundations of Software Engineering (FSE 1995)*, 1995.
+  Foundations of Software Engineering (FSE 1995)*, 18–28, 1995.
   doi:10.1145/222132.222136.
 - [Ó Conghaile 2022] Adam Ó Conghaile. Cohomology in constraint satisfaction
   and structure isomorphism. In *47th International Symposium on Mathematical
@@ -2060,7 +2059,7 @@ table が完結して与え、label は Lean source を閲覧する際の照合�
 - [ ] release 時: 冒頭 draft note と本付録(草稿管理)全体を除去する
 - [x] 第6章: status table 確定(2026-07-26、#3757 完了後の Part X route で対応・status・assumptions を固定。axiom 監査は `AxiomAudit.lean` の allowlist 検査)。残: release tag の commit hash と CI run 参照の固定
 - [x] 第6章: 未証明・未接続・未移植一覧の正確な記録(2026-07-26、§6.2 末尾)
-- [x] 第7章: 導出 residual 契約(#3820–#3822)への本文同期と condition matrix 転記(2026-07-26。現節番号では §7.1/7.3/7.6)
+- [x] 第7章: 導出 residual 契約(#3820–#3822)への本文同期と condition matrix 転記(2026-07-26。現節番号では §7.4/7.2/7.6)
 - [ ] 第7章: deposit 相対 path、ArchSig version、実行 command、expected output の固定
 - [x] 第8章: Young artifact 確認と定理番号確定(related_work.md §2.7 に記録)
 - [x] References 節と BibTeX 固定(`zenodo_saga_references.bib`、P0 11点+P1 使用分+Serre/Grothendieck/Garcia-Molina–Salem)
@@ -2068,7 +2067,7 @@ table が完結して与え、label は Lean source を閲覧する際の照合�
 - [ ] 英語版への翻訳(最終投稿言語=英語、2026-07-24 決定。References は英語で作成済み)
 - [ ] 全章: claim-to-evidence matrix の構築と各 claim の一次証拠への対応
 - [ ] SAGA comparison の可換図と one-cent の計算図の作成
-- [x] 著者情報の固定(author block: Hiroyuki Nakahata / Independent Researcher / ORCID 0009-0008-5928-0234、所属企業は disclaimer で開示。Acknowledgments に AI 協働開示、2026-07-24)
+- [x] 著者情報の固定(author block: Hiroyuki Nakahata / Independent Researcher / ORCID 0009-0008-5928-0234。所属企業名と contact は記載しない(2026-07-26 決定)。Acknowledgments に AI 協働開示、2026-07-24)
 - [ ] Zenodo metadata: license(CC BY 4.0 想定、要決定)と DOI の固定。creators は author block と一致させる
 - [ ] Zenodo metadata: abstract の platform 変種を作成する。Zenodo description は HTML whitelist のみで MathJax 不可のため、display 数式2本を Unicode inline 形(`H¹_sem(𝒰) ≅ Ȟ¹(𝒰,Q_E)` / `Nonempty P_sem(W) ⟺ [r_sem]=0 ⟺ [r_E]=0`)へ落とす。arXiv 併用時は inline `$...$` 形(標準 LaTeX/AMS マクロのみ)
 
@@ -2078,8 +2077,8 @@ table が完結して与え、label は Lean source を閲覧する際の照合�
 | --- | --- | --- | --- |
 | Mathematics | 第4〜5章 | canonical math source(第X部)、theorem map(付録C) | 対応表あり、notation 表 TODO |
 | Lean | 第6章 | declaration、source、focused check、axiom audit | 対応表確定、release tag / CI run 固定 TODO |
-| Measurement | 第7.3節 | packet、manifest、digest | 正本 report あり、deposit path TODO |
-| Empirical | 第7.2節 | repository、commit `313886e99bef`、source reference、input | 正本 report あり |
+| Measurement | 第7.2節 | packet、manifest、digest | 正本 report あり、deposit path TODO |
+| Empirical | 第7.1節 | repository、commit `313886e99bef`、source reference、input | 正本 report あり |
 | Empirical(供給工程) | 第7.5節 | archmap-creater SKILL、scope manifest、調停記録、audit、run のモデル記録 | 正本 report あり、deposit 同梱範囲 TODO |
 
 ### C. Canonical 対応表(内部監査用。release 時に本付録ごと除去)
