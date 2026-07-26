@@ -159,7 +159,7 @@ pub fn build_gate_report_v1(
         report["policyValidation"] = Value::Array(policy_checks);
         return Ok((report, 2));
     }
-    let comparison_report = if let Some(comparison_path) = comparison_path {
+    let (comparison_report, comparison_digest) = if let Some(comparison_path) = comparison_path {
         match read_json(comparison_path) {
             Ok(comparison) => {
                 if comparison.get("schema").and_then(Value::as_str)
@@ -186,7 +186,8 @@ pub fn build_gate_report_v1(
                     )?;
                     return Ok((report, 2));
                 }
-                Some(comparison)
+                let comparison_digest = canonical_json_file_digest(comparison_path)?;
+                (Some(comparison), Some(comparison_digest))
             }
             Err(_) => {
                 let report = not_evaluable_report(
@@ -199,7 +200,7 @@ pub fn build_gate_report_v1(
             }
         }
     } else {
-        None
+        (None, None)
     };
 
     let rules = policy["rules"]
@@ -330,9 +331,9 @@ pub fn build_gate_report_v1(
                 "path": artifact_input_ref(policy_path),
                 "sha256": canonical_json_file_digest(policy_path)?
             },
-            "comparisonReport": comparison_path.map(|path| json!({
+            "comparisonReport": comparison_path.zip(comparison_digest).map(|(path, digest)| json!({
                 "path": artifact_input_ref(path),
-                "sha256": canonical_json_file_digest(path).unwrap_or_default()
+                "sha256": digest
             })).unwrap_or(Value::Null)
         },
         "policyValidation": policy_checks,
@@ -549,6 +550,64 @@ fn validate_boundary_overrides(
 }
 
 fn comparison_report_shape_is_evaluable(comparison: &Value) -> bool {
+    if comparison.get("residualClassAgreement").is_some() {
+        return false;
+    }
+    let Some(residual_difference) = comparison
+        .get("residualDifferenceReading")
+        .and_then(Value::as_object)
+    else {
+        return false;
+    };
+    let Some(residual_status) = residual_difference.get("status").and_then(Value::as_str) else {
+        return false;
+    };
+    let residual_shape_valid = match residual_status {
+        "difference_in_B1" => {
+            residual_difference.get("derived").and_then(Value::as_bool) == Some(true)
+                && residual_difference.get("inB1").and_then(Value::as_bool) == Some(true)
+                && residual_difference.get("equation").and_then(Value::as_str)
+                    == Some("delta0(h) = r_base XOR r_head")
+                && residual_difference
+                    .get("deltaSupport")
+                    .and_then(Value::as_array)
+                    .is_some_and(|support| !support.is_empty())
+                && residual_difference
+                    .get("witnessChartAssignment")
+                    .and_then(Value::as_array)
+                    .is_some_and(|witness| !witness.is_empty())
+        }
+        "difference_not_in_B1" => {
+            residual_difference.get("derived").and_then(Value::as_bool) == Some(true)
+                && residual_difference.get("inB1").and_then(Value::as_bool) == Some(false)
+                && residual_difference.get("equation").and_then(Value::as_str)
+                    == Some("delta0(h) = r_base XOR r_head")
+                && residual_difference
+                    .get("deltaSupport")
+                    .and_then(Value::as_array)
+                    .is_some_and(|support| !support.is_empty())
+        }
+        "no_residual_change" => {
+            residual_difference.get("derived").and_then(Value::as_bool) == Some(true)
+                && residual_difference
+                    .get("deltaSupport")
+                    .and_then(Value::as_array)
+                    .is_some_and(Vec::is_empty)
+        }
+        "not_computed" | "silence_by_design" => residual_difference
+            .get("reason")
+            .and_then(Value::as_str)
+            .is_some_and(|reason| !reason.is_empty()),
+        _ => false,
+    };
+    if !residual_shape_valid
+        || residual_difference
+            .get("theoremRef")
+            .and_then(Value::as_str)
+            != Some("part10/2.3+3.4")
+    {
+        return false;
+    }
     if comparison
         .get("conclusionCode")
         .and_then(Value::as_str)

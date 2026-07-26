@@ -327,7 +327,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "ArchSig Output / CI workflow",
                 vec!["archsig-contract:artifact-ci-v0.5.4"],
                 &format!(
-                    "Comparison report v0.5.6 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions, archmap-diff intersections, comparability of the two runs' repair-plan digests, and — for comparable runs whose residual derivations share cover, law surface, and chart set — the residualDifferenceReading block (difference_in_B1 / difference_not_in_B1 / no_residual_change) with its delta0 witness when the difference is in B1 (part10/3.4+4.4). With a validated refinement-comparison/v0.5.4 artifact it can also record class-zero preservation. Registered conclusionCode values are {}.",
+                    "Comparison report v0.5.6 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions, archmap-diff intersections, comparability of the two runs' repair-plan digests, and — for comparable runs whose residual derivations share cover, law surface, and chart set — the residualDifferenceReading block (difference_in_B1 / difference_not_in_B1 / no_residual_change) with its delta0 witness when the difference is in B1 (part10/2.3+3.4). With a validated refinement-comparison/v0.5.4 artifact it can also record class-zero preservation. Registered conclusionCode values are {}.",
                     registry_sentence(&ARCHSIG_COMPARISON_CONCLUSION_CODES),
                 ),
                 vec![

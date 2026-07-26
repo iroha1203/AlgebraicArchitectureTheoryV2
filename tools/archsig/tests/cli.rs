@@ -1263,7 +1263,7 @@ fn cli_analyze_saga_descent_complete_support_measures_boundary_membership() {
 
 fn supplied_triple_pentagon_complex_plan(root: &Path) -> Value {
     // 五角形+弦の complex だけを持つ最小 plan(certificate / comparison なし)。
-    // residual class agreement の両側非零 fixture が使う。
+    // residual difference reading の両側非零 fixture が使う。
     let mut plan = read_json(&root.join("repair_plan_complete_support.json"));
     plan["id"] = json!("repair-plan:agreement-pentagon");
     plan["complex"]["charts"] = json!([
@@ -1628,7 +1628,7 @@ fn cli_compare_derives_repair_cochain_when_residual_change_is_a_boundary() {
     assert_eq!(cochain["derived"], true);
     assert_eq!(cochain["inB1"], true);
     assert_eq!(cochain["equation"], "delta0(h) = r_base XOR r_head");
-    assert_eq!(cochain["theoremRef"], "part10/3.4+4.4");
+    assert_eq!(cochain["theoremRef"], "part10/2.3+3.4");
     assert!(cochain["provenance"]["coverRef"].is_string());
     assert!(
         cochain["reading"]
@@ -12104,6 +12104,110 @@ fn cli_gate_not_evaluable_for_malformed_packet_or_unsupported_comparison() {
     assert_eq!(comparison_gate["decision"], "NOT_EVALUABLE");
     assert_eq!(
         comparison_gate["reason"],
+        "comparison report schema validation failed"
+    );
+
+    let retired_vocabulary_path = out_dir.join("retired-vocabulary-comparison.json");
+    let retired_vocabulary = json!({
+        "schema": "archsig-comparison-report/v0.5.6",
+        "conclusionCode": "NO_NEW_MEASURED_OBSTRUCTION_RECORDED",
+        "comparability": { "level": "identical" },
+        "inputDigests": {
+            "baseRun": {
+                "runId": "run:base",
+                "toolVersion": "0.5.4",
+                "archmap": { "sha256": "base-archmap" },
+                "lawPolicy": { "sha256": "base-policy" },
+                "profileFingerprint": { "sha256": "base-profile" },
+                "siteCoverDigest": { "sha256": "base-cover" },
+                "measurementPacket": { "sha256": "base-packet" }
+            },
+            "headRun": {
+                "runId": "run:head",
+                "toolVersion": "0.5.4",
+                "archmap": { "sha256": "head-archmap" },
+                "lawPolicy": { "sha256": "head-policy" },
+                "profileFingerprint": { "sha256": "head-profile" },
+                "siteCoverDigest": { "sha256": "head-cover" },
+                "measurementPacket": { "sha256": "head-packet" }
+            }
+        },
+        "verdictTransitions": [{
+            "rowKey": "ag.cech-obstruction|ag.cech-obstruction|finite_f2_cech_computed",
+            "baseRowRef": "structuralVerdict/ag.cech-obstruction/ag.cech-obstruction/finite_f2_cech_computed",
+            "headRowRef": "structuralVerdict/ag.cech-obstruction/ag.cech-obstruction/finite_f2_cech_computed",
+            "transition": "preexisting_recorded_row",
+            "introducedByChangeCategory": "preexisting",
+            "deltaRefs": []
+        }],
+        "residualClassAgreement": {
+            "status": "cohomologous",
+            "theoremRef": "part10/3.4+4.4"
+        }
+    });
+    fs::write(
+        &retired_vocabulary_path,
+        serde_json::to_vec_pretty(&retired_vocabulary)
+            .expect("retired-vocabulary comparison serializes"),
+    )
+    .expect("retired-vocabulary comparison can be written");
+    let retired_vocabulary_report = out_dir.join("retired-vocabulary-gate-report.json");
+    run_sig0_expect_code(
+        &[
+            "gate",
+            "--packet",
+            packet_path.to_str().expect("path is utf-8"),
+            "--policy",
+            policy_path.to_str().expect("path is utf-8"),
+            "--comparison",
+            retired_vocabulary_path.to_str().expect("path is utf-8"),
+            "--out",
+            retired_vocabulary_report.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+    let retired_vocabulary_gate = read_json(&retired_vocabulary_report);
+    assert_eq!(retired_vocabulary_gate["decision"], "NOT_EVALUABLE");
+    assert_eq!(
+        retired_vocabulary_gate["reason"],
+        "comparison report schema validation failed"
+    );
+
+    let unknown_status_path = out_dir.join("unknown-residual-status-comparison.json");
+    let mut unknown_status = retired_vocabulary.clone();
+    unknown_status
+        .as_object_mut()
+        .expect("comparison fixture is an object")
+        .remove("residualClassAgreement");
+    unknown_status["residualDifferenceReading"] = json!({
+        "status": "cohomologous",
+        "theoremRef": "part10/2.3+3.4"
+    });
+    fs::write(
+        &unknown_status_path,
+        serde_json::to_vec_pretty(&unknown_status)
+            .expect("unknown-status comparison serializes"),
+    )
+    .expect("unknown-status comparison can be written");
+    let unknown_status_report = out_dir.join("unknown-residual-status-gate-report.json");
+    run_sig0_expect_code(
+        &[
+            "gate",
+            "--packet",
+            packet_path.to_str().expect("path is utf-8"),
+            "--policy",
+            policy_path.to_str().expect("path is utf-8"),
+            "--comparison",
+            unknown_status_path.to_str().expect("path is utf-8"),
+            "--out",
+            unknown_status_report.to_str().expect("path is utf-8"),
+        ],
+        2,
+    );
+    let unknown_status_gate = read_json(&unknown_status_report);
+    assert_eq!(unknown_status_gate["decision"], "NOT_EVALUABLE");
+    assert_eq!(
+        unknown_status_gate["reason"],
         "comparison report schema validation failed"
     );
 
