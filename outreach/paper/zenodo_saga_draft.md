@@ -1311,12 +1311,15 @@ residual は入力ではない。`analyze` が、選択 cover 上の観測 secti
 比較と law surface の witness 束縛から residual を導出し、辺ごとの値・witness・
 観測 atom 参照の provenance を measurement packet に記録する(§7.3)。
 
-repair plan の系統上の位置も固定する。選択複体は、この診断がどの部分複体の
-上で語るかを決める measurement selection であり、法・方程式側の選択に属する。
-その charts と overlaps は観測された cover と restriction への参照に限られ、
-観測に典拠のない宣言は受理されない。観測へ還元されない宣言は triple overlap の
-有無だけであり、これは assumption ledger の author assertion として開示される
-(§7.7)。
+repair plan の内容は、系統別に次へ分解される。charts と overlaps は観測への
+参照であり、観測された cover と restriction に解決できない宣言は受理されない。
+この部分が結論の計算に寄与する内容は、観測系統がすでに持っている内容の
+部分選択である。残る二つ — enumeration assertion と triple overlap 宣言の有無 —
+は、観測からも instance-independent な法・方程式からも導かれない author
+assertion であり、結論を導出する材料としてではなく、assumption ledger の
+開示行として結論に随伴する(§7.7)。したがって、結論を導出する材料は観測と
+法・方程式の二系統であり、repair plan が独自に加えるものは開示された
+assumption だけである。
 
 この契約の下で、本論文の measurement claim は次の主張に立つ。
 **SAGA 診断の結論 — residual、boundary membership、gate 判定 — は、Atom 観測と
@@ -1386,11 +1389,9 @@ ArchSig の `analyze` は次を計算し、measurement packet として出力す
   ため、ArchSig は class 語彙を出さず、その境界を named boundary statement
   として packet に明示する。
 
-`compare` は二つの run の packet を突き合わせ、障害の変化と、両 run の導出
-residual の差の `δ⁰` 可解性を記録する。この読みの artifact field 名は
-`residualClassAgreement` だが、その語彙は field 名であって class 語彙の解禁では
-ない。記録される内容は「両 run の residual の差が選択 `C^1` 上で `im δ⁰` に
-属するか」という coboundary 判定である。`gate` は packet と gate policy から
+`compare` は二つの run の packet を突き合わせ、障害の変化と、run 対の読みを
+記録する。run 対の読みとは、両 run の導出 residual の差が選択 `C^1` 上で
+`im δ⁰` に属するかの有限 `F2` 判定である。`gate` は packet と gate policy から
 `PASS_WITHIN_GATE_POLICY` / `BLOCKED_BY_GATE_POLICY` の判定を返す。
 
 この計算が実行するのは、第4章の複体語彙の有限断片である: selected 1-骨格上の
@@ -1498,7 +1499,7 @@ preserve–order)、triple overlap は宣言しない。3サービスの金額�
 | └ boundary membership | `measured_nonzero`(`inB1: false`。triple 宣言不在のため class 語彙は不解禁 — named boundary statement で明示) |
 | gate head | `BLOCKED_BY_GATE_POLICY` |
 | repaired analyze | `REPAIR_GLUES_WITHIN_SELECTED_COMPLEX`(`run:6685bab8db21`。残る preserve 残差は `B^1` 内) |
-| compare head→repaired | `MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE`、`residualClassAgreement: not_cohomologous`(field 語彙。読みは「両 run の residual の差が `δ⁰` で解けない」であり、head 非境界 → repaired 境界内の変化と整合する。§7.3) |
+| compare head→repaired | `MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE`。run 対の読みは「両 run の residual の差は `δ⁰` で解けない」であり、head 非境界 → repaired 境界内の変化と整合する(§7.3) |
 | gate repaired | `PASS_WITHIN_GATE_POLICY` |
 
 ### 7.6 計測が示したこと
@@ -1554,7 +1555,7 @@ ledger に記録する前提、`unmeasured` は供給せず沈黙した軸を表
 | restriction surjectivity | profile 供給の前提 | `assumed` | assumption ledger 行 |
 | forest nerve | profile 供給の前提 | `assumed`(本 packet では不成立) | ledger は forest 前提を記録するが、同じ packet の nerve 計算は閉路 1 を `computed` で示す。開示された不成立前提であり、head の saga-descent 段の非零読み(`B^1` 所属)はこの行に依存しない。cech 段の verdict は別途この assumption への依存を宣言しており、その行はこの限定の対象外である |
 | quotient sheaf condition | law surface の宣言 | `assumed` | ledger 行として開示 |
-| run 対の residual 差(head↔repaired) | run 対の導出読み | `computed` | 両 run の導出 residual の差の `δ⁰` 可解性。本対は `not_cohomologous`(field 語彙。class 語彙の解禁ではない、§7.3) |
+| run 対の residual 差(head↔repaired) | run 対の導出読み | `computed` | 両 run の導出 residual の差の `δ⁰` 可解性(§7.3)。本対では差は `δ⁰` で解けない |
 | repaired ArchMap | 仮修理入力 | supplied / hypothetical | 統一規約を表す仮説 variant。`PASS_WITHIN_GATE_POLICY` は実装済み修理を示さない |
 | runtime の金額規模 | 経験的計測 | `unmeasured` | `harmonic-debt` を供給せず沈黙。頻度・金額を結論に含めない |
 
@@ -1736,8 +1737,11 @@ tooling の計画は本論文の範囲外である。
 反実仮想だった。起きなかった障害は観測できないからである。
 定理 5.2 の三項同値は、この文に数学的な身分を与える。零類と global repair の
 存在が同値である以上、「correction が類を消したから貼り合った」は経験則ではなく
-帰結である。第7章の repair 前後比較は、この帰結の選択複体上の最初の有限実例である
-(計測の読みが boundary membership に留まる範囲は §7.7 が固定する)。
+帰結である。第7章の repair 前後比較は、この帰結が工学の工程でどう働くかを示す
+最初の診断実働例である。ただしその計測が検査するのは選択 1-骨格上の boundary
+membership と run 対の residual 差までであり(§7.8)、true sheaf 条件や global
+repair の存在は検査しない。定理 5.2 の有限 instantiation は第6章の Lean witness が
+担い、第7章はその機構を工程に翻訳した診断である。
 selected な入力契約(cover、equation system、witness)への相対性は、この主張の制約であると
 同時に、主張の provenance を固定する規律でもある。
 
