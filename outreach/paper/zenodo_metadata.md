@@ -21,6 +21,13 @@
 
 Notes: AI 協働開示は論文本体の Acknowledgments が正本(metadata の追加開示は不要)。
 
+**Upload 規律(2026-07-27 教訓の成文化)**: Zenodo はディレクトリ構造を持たないため、
+deposit へは **`build_bundle.py` が生成する zip 単一アーカイブ+閲覧用の standalone
+`main.pdf` の2ファイルだけ**を upload する。bundle ツリーをそのまま upload すると
+flat 化で同名ファイル(`out/head/` vs `out/repaired/` の13対)が衝突し、片方が
+黙って欠落する(v1.0.0 初版で実際に発生。New version で修復)。publish 前の
+preview では **file 数と file 一覧を bundle と突合**する。
+
 ## 2. Description(Zenodo 用 abstract 変種)
 
 Zenodo description は HTML whitelist のみ(MathJax 不可)。数式は Unicode inline 形。
