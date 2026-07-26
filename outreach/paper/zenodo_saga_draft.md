@@ -2052,6 +2052,7 @@ table が完結して与え、label は Lean source を閲覧する際の照合�
 - [ ] SAGA comparison の可換図と one-cent の計算図の作成
 - [x] 著者情報の固定(author block: Hiroyuki Nakahata / Independent Researcher / ORCID 0009-0008-5928-0234、所属企業は disclaimer で開示。Acknowledgments に AI 協働開示、2026-07-24)
 - [ ] Zenodo metadata: license(CC BY 4.0 想定、要決定)と DOI の固定。creators は author block と一致させる
+- [ ] Zenodo metadata: abstract の platform 変種を作成する。Zenodo description は HTML whitelist のみで MathJax 不可のため、display 数式2本を Unicode inline 形(`H¹_sem(𝒰) ≅ Ȟ¹(𝒰,Q_E)` / `Nonempty P_sem(W) ⟺ [r_sem]=0 ⟺ [r_E]=0`)へ落とす。arXiv 併用時は inline `$...$` 形(標準 LaTeX/AMS マクロのみ)
 
 ### B. Claim-to-evidence matrix(skeleton)
 
