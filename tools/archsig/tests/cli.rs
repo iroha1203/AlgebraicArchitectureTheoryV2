@@ -1628,7 +1628,7 @@ fn cli_compare_derives_repair_cochain_when_residual_change_is_a_boundary() {
     assert_eq!(cochain["derived"], true);
     assert_eq!(cochain["inB1"], true);
     assert_eq!(cochain["equation"], "delta0(h) = r_base XOR r_head");
-    assert_eq!(cochain["theoremRef"], "part10/2.3+3.4");
+    assert_eq!(cochain["theoremRef"], "part10/2.3");
     assert!(cochain["provenance"]["coverRef"].is_string());
     assert!(
         cochain["reading"]
@@ -12143,6 +12143,11 @@ fn cli_gate_not_evaluable_for_malformed_packet_or_unsupported_comparison() {
         "residualClassAgreement": {
             "status": "cohomologous",
             "theoremRef": "part10/3.4+4.4"
+        },
+        "residualDifferenceReading": {
+            "status": "silence_by_design",
+            "reason": "residual_derivation_not_recorded",
+            "theoremRef": "part10/2.3"
         }
     });
     fs::write(
@@ -12181,7 +12186,7 @@ fn cli_gate_not_evaluable_for_malformed_packet_or_unsupported_comparison() {
         .remove("residualClassAgreement");
     unknown_status["residualDifferenceReading"] = json!({
         "status": "cohomologous",
-        "theoremRef": "part10/2.3+3.4"
+        "theoremRef": "part10/2.3"
     });
     fs::write(
         &unknown_status_path,

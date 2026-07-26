@@ -159,7 +159,7 @@ pub fn build_gate_report_v1(
         report["policyValidation"] = Value::Array(policy_checks);
         return Ok((report, 2));
     }
-    let (comparison_report, comparison_digest) = if let Some(comparison_path) = comparison_path {
+    let comparison_report = if let Some(comparison_path) = comparison_path {
         match read_json(comparison_path) {
             Ok(comparison) => {
                 if comparison.get("schema").and_then(Value::as_str)
@@ -186,8 +186,7 @@ pub fn build_gate_report_v1(
                     )?;
                     return Ok((report, 2));
                 }
-                let comparison_digest = canonical_json_file_digest(comparison_path)?;
-                (Some(comparison), Some(comparison_digest))
+                Some(comparison)
             }
             Err(_) => {
                 let report = not_evaluable_report(
@@ -200,7 +199,7 @@ pub fn build_gate_report_v1(
             }
         }
     } else {
-        (None, None)
+        None
     };
 
     let rules = policy["rules"]
@@ -331,9 +330,9 @@ pub fn build_gate_report_v1(
                 "path": artifact_input_ref(policy_path),
                 "sha256": canonical_json_file_digest(policy_path)?
             },
-            "comparisonReport": comparison_path.zip(comparison_digest).map(|(path, digest)| json!({
+            "comparisonReport": comparison_path.map(|path| json!({
                 "path": artifact_input_ref(path),
-                "sha256": digest
+                "sha256": canonical_json_file_digest(path).unwrap_or_default()
             })).unwrap_or(Value::Null)
         },
         "policyValidation": policy_checks,
@@ -604,7 +603,7 @@ fn comparison_report_shape_is_evaluable(comparison: &Value) -> bool {
         || residual_difference
             .get("theoremRef")
             .and_then(Value::as_str)
-            != Some("part10/2.3+3.4")
+            != Some("part10/2.3")
     {
         return false;
     }

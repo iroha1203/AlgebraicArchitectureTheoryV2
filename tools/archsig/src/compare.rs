@@ -177,7 +177,7 @@ pub fn build_comparison_artifacts_with_refinement_v1(
 
 
 /// 同一複体上の 2 run の導出 residual の差が delta0(h) の像に入るかを記録する。
-/// 第X部 定義2.3 の B^1=im(delta0)を定義3.4の semantic repair complex 上で有限検査し、
+/// 第X部 定義2.3 の B^1=im(delta0)を選択複体上で有限検査し、
 /// 修理成功の判定ではない。修理の成立は head run 自身の residual 測定が語る。
 fn packet_residual_derivation(packet: &Value) -> Option<&Value> {
     packet
@@ -212,7 +212,7 @@ fn derived_residual_difference_reading(
     head_packet: &Value,
     comparability: &Value,
 ) -> Value {
-    const THEOREM_REF: &str = "part10/2.3+3.4";
+    const THEOREM_REF: &str = "part10/2.3";
     if !matches!(
         comparability["level"].as_str(),
         Some("identical") | Some("verdict-row")

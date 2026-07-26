@@ -5,7 +5,7 @@
 - **対象**: フルビルド成果物(money 変種 ArchMap)を土台に、law を SAGA フルスタックへ拡張し、
   train-ticket(commit `313886e99bef`)の実データで診断階段を一周した
 - **再計測日**: 2026-07-26(JST、供給 slot の沈黙化後、導出 residual の入力面で再計測)
-- **再現証拠**: 対象 commit、入力 artifact、再現コマンド、canonical digest
+- **実施主体・モデル**: Claude 直接(Fable)。典拠確認には同一 commit の shallow 再取得を使用
 - **対応 Issue**: #3822(residual 導出は #3820、repair cochain 導出は #3821 を前提にする)
 - **入力面**: RepairPlan v0.5.7 は選択複体(charts / overlaps / enumerationComplete)だけを宣言する。
   residual は analyze が観測(選択 cover の cech sectionValue 比較)と法曲面の witness 束縛から導出し、
@@ -190,8 +190,6 @@ cargo run --manifest-path $C -- gate \
 
 本文はマージ時点の記録として凍結し、次を訂正する。
 
-- 旧「実施主体・モデル」行は再現条件ではない内部メタデータだったため、対象 commit、入力 artifact、
-  再現コマンド、canonical digest を示す「再現証拠」行へ置き換えた。
 - triple overlap が宣言されていないため、本証拠束が計測した head の結果は、選択 1-骨格における
   `MEASURED_NONGLUING_RESIDUAL` と `saga-descent:boundary-membership.inB1: false` である。
   本文中の「非零 F₂ 残差類」「H¹」「非零類」「類は零」「residual-class」および同趣旨の表現は、
