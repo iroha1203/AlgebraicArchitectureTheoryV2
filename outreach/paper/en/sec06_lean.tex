@@ -54,7 +54,7 @@ fixed in Appendix~\ref{app:B}.
 
 \subsection{Status table}\label{sec:62}
 
-Every status in this table is \code{proved} (proved in Lean).
+Every status in Table~\ref{tab:status} is \code{proved} (proved in Lean).
 
 \begin{table}[htbp]
 \centering
@@ -63,7 +63,7 @@ Every status in this table is \code{proved} (proved in Lean).
 \toprule
 Paper claim & Lean declaration & Status & Assumptions \\
 \midrule
-Conclusion bundle of Theorem~5.1 (residual correspondence, zero/nonzero
+Conclusion bundle of Theorem~\ref{thm:central} (residual correspondence, zero/nonzero
 equivalence, grounded gluing) &
 \code{SagaEquationPacket.}\allowbreak\code{sagaCentralTheorem} & proved &
 selected packet (\S\ref{sec:61}), the two completeness conditions
@@ -71,37 +71,38 @@ selected packet (\S\ref{sec:61}), the two completeness conditions
 additionally conditional on the cover belonging to the topology and the
 true sheaf condition \\
 \addlinespace
-Theorem~5.1(i): derivation of repair-relation soundness &
-\code{PrimaryStateCorrespondence.}\allowbreak\code{relationSound\_of\_stateCorrespondence} &
+Theorem~\ref{thm:central}(i): derivation of repair-relation soundness &
+\code{PrimaryStateCorrespondence.}\allowbreak\code{relationSound\_}\allowbreak\code{of\_stateCorrespondence} &
 proved & local-state correspondence (inputs 5--7) \\
 \addlinespace
-Theorem~5.1(i): coefficient isomorphism $\Phi$ &
+Theorem~\ref{thm:central}(i): coefficient isomorphism $\Phi$ &
 \code{SagaEquationPacket.phiEquiv} (generic version:
 \code{PrimaryCoefficientCorrespondence.}\allowbreak\code{phiEquiv}) & proved &
 soundness and the two completeness conditions \\
 \addlinespace
-Theorem~5.1(i): counterexamples removing each of the three conditions &
+Theorem~\ref{thm:central}(i): counterexamples removing each of the three conditions &
 \code{ExactnessFixtures.}\allowbreak\code{soundness\_failure} /
 \code{completeness\_failure} / \code{generation\_failure} & proved &
 none (each fixture is a finite counterexample stating the failure of
 the targeted condition; simultaneous validity of the remaining two
 conditions is not part of the statement) \\
 \addlinespace
-Theorem~5.1(ii): cochain commutation $\kappa\delta=\delta\kappa$ &
+Theorem~\ref{thm:central}(ii): cochain commutation $\kappa\delta=\delta\kappa$ &
 \code{kappa1\_delta0}, \code{kappa2\_delta1} & proved &
 restriction-natural isomorphism of the coefficient families \\
 \addlinespace
-Theorem~5.1(ii): $H^1$ isomorphism $\kappa_*$ &
-\code{SagaEquationPacket.}\allowbreak\code{kappaStarAddEquiv} ($\simeq_+$ on the
-packet; generic version: \code{kappaH1AddEquiv}) & proved & the two
+Theorem~\ref{thm:central}(ii): $H^1$ isomorphism $\kappa_*$ &
+\code{SagaEquationPacket.}\allowbreak\code{kappaStarAddEquiv} ($\simeq_+$,
+additive equivalence, on the packet; generic version:
+\code{kappaH1AddEquiv}) & proved & the two
 completeness conditions \\
 \addlinespace
-Theorem~5.1(ii): residual correspondence $\kappa_*([\rsem])=[\rE]$ &
+Theorem~\ref{thm:central}(ii): residual correspondence $\kappa_*([\rsem])=[\rE]$ &
 \code{SagaEquationPacket.}\allowbreak\code{residual\_correspondence\_class};
 aligned-atlas version \code{betaAligned\_residual} & proved & the two
 completeness conditions \\
 \addlinespace
-Theorem~5.2 = Theorem~5.1(iii): grounded global gluing &
+Theorem~\ref{thm:gluing} = Theorem~\ref{thm:central}(iii): grounded global gluing &
 \code{SagaEquationPacket.}\allowbreak\code{globalRepair\_nonempty\_iff}
 ($\Psem$-side equivalence); \code{sagaGroundedGluing} (integrated up to
 the equation-side equivalence) & proved & true sheaf condition, cover
@@ -114,17 +115,19 @@ category (\S\ref{sec:57}, Appendix~\ref{app:A4}); subsingleton
 assumption for states on the omitted pairs (the formalized counterpart
 of empty-overlap normalization) \\
 \addlinespace
-Example~5.3 (4-cycle circle witness, transfer of the nonzero class) &
+Example~\ref{ex:circle} (4-cycle circle witness, transfer of the nonzero class) &
 \code{CircleWitness.}\allowbreak\code{semanticResidualClass\_ne\_zero},
 \code{circle\_nonzero\_class\_transfer} & proved & none (closed
 verification on the concrete 4-cycle model) \\
 \addlinespace
-Zero-class witness (nonempty firing of Theorem~5.2) &
+Zero-class witness (nonempty firing of Theorem~\ref{thm:gluing}) &
 \code{DescentWitness.descentTrueSheaf},
 \code{descent\_sagaGroundedGluing} & proved & none (closed verification
 on a concrete model) \\
 \bottomrule
 \end{tabular}
+\caption{Formalization status at declaration granularity.}
+\label{tab:status}
 \end{table}
 
 All rows of the table are registered in the kernel axiom audit, and the

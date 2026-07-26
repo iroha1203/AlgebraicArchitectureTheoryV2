@@ -5,8 +5,8 @@ semantic side is generated from semantic atoms and a repair relation, the
 equation side from an equation system; each produces its coefficient,
 complex, and residual from its own primary data alone. Neither
 construction refers to the other, and the comparison of
-Section~\ref{sec:5} --- the existence of the map, its isomorphy, the
-correspondence of residual classes --- is the conclusion of a theorem,
+Section~\ref{sec:5} --- the existence of the map, the fact that it is an
+isomorphism, the correspondence of residual classes --- is the conclusion of a theorem,
 not a repetition of the constructions. The single map connecting the two,
 $\chi^E$ (Proposition~\ref{prop:chiE}), is a construction of a comparison
 input for Section~\ref{sec:5} and is used in the construction of neither
@@ -99,11 +99,13 @@ on each nonempty overlap determines a unique
 r_{\mathrm{sem},ij}=p_j|_{U_{ij}}-p_i|_{U_{ij}}\in \Msem(U_{ij}),
 \]
 giving the \textbf{semantic residual} $\rsem\in C^1_{\mathrm{sem}}(\cU)$.
-The residual $\rsem$ is a cocycle: on $U_{ijk}$ we have
+The residual $\rsem$ is a cocycle: on $U_{ijk}$, abbreviating
+$r_{ij}=r_{\mathrm{sem},ij}$, we have
 $p_k=r_{jk}+p_j=r_{jk}+r_{ij}+p_i$ and $p_k=r_{ik}+p_i$, and freeness of
 the action gives $r_{jk}-r_{ik}+r_{ij}=0$.
 
-The class $[\rsem]\in H^1_{\mathrm{sem}}(\cU)$ does not depend on the
+The class $[\rsem]\in
+H^1_{\mathrm{sem}}(\cU):=\check H^1(\cU,\Msem)$ does not depend on the
 choice of atlas (\textbf{choice independence}): for another atlas
 $p'_i=a_i+p_i$ the same torsor computation gives
 $r'_{\mathrm{sem}}=\rsem+\delta^0a$. Consequently, the vanishing

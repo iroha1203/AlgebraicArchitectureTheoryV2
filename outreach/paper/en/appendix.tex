@@ -54,7 +54,7 @@ in Lemma~5.2A is also settled automatically by the agreement of
 parallel morphisms. Consequently the formalized counterpart of
 Lemma~5.2A, \code{SiteStateData.matchingFamily\_iff}, consumes the
 selected pairwise overlaps and their lift data, but does not consume
-monomorphy as an explicit hypothesis (the commutativity and uniqueness
+the monomorphism property as an explicit hypothesis (the commutativity and uniqueness
 of pullbacks follow from thinness). The gluing argument over general
 $\ArchCtx(X)$ is \code{unported} (Section~\ref{sec:6}).
 
@@ -64,10 +64,11 @@ This appendix fixes the organization, within the release tag, of the
 Lean sources that are the primary evidence for the status of
 Section~\ref{sec:6}. The SAGA theorem chain is located under
 \code{Formal/AG/SemanticRepair/Saga/}. The kernel axiom audit is
-implemented by \code{\#assert\_standard\_axioms\_only} in
-\code{Formal/AG/AxiomAudit.lean} (an allowlist check of all registered
-declarations), which the release CI executes as
-\code{lake env lean Formal/AG/AxiomAudit.lean}.
+implemented by
+\code{\#assert\_}\allowbreak\code{standard\_}\allowbreak\code{axioms\_only}
+in \code{Formal/AG/}\allowbreak\code{AxiomAudit.lean} (an allowlist
+check of all registered declarations), which the release CI executes as
+\code{lake env lean} \code{Formal/AG/}\allowbreak\code{AxiomAudit.lean}.
 
 The docstrings of the Lean sources use labels from a numbering series
 distinct from this paper, originating in internal organization during
@@ -75,8 +76,9 @@ development (\code{X.Theorem 1.1} and so on). The theorem
 correspondence with this paper is given completely by the status table
 of Section~\ref{sec:6}; the labels serve for cross-checking when
 browsing the Lean sources. The correspondence with the declarations of
-Section~\ref{sec:6} is as follows (declarations without labels are
-marked ``---''; source files are relative to \code{Saga/}).
+Section~\ref{sec:6} is given in Table~\ref{tab:leandecl} (declarations
+without labels are marked ``---''; source files are relative to
+\code{Saga/}).
 
 \begin{table}[htbp]
 \centering
@@ -132,8 +134,8 @@ source files.}
 \label{tab:leandecl}
 \end{table}
 
-The correspondence between the building blocks of \S\ref{sec:61} and
-the source files:
+Table~\ref{tab:leanfiles} gives the correspondence between the building
+blocks of \S\ref{sec:61} and the source files.
 
 \begin{table}[htbp]
 \centering

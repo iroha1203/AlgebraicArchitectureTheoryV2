@@ -44,13 +44,13 @@ Observing the implementation type (\code{string}) alone does not yield
 the last semantic Atom; reading the expression and how it is used is
 required. Where Atoms come from --- extraction from real code --- belongs
 to the observation process outside AAT, and its reproducible fixing is
-described in \S\ref{sec:75}. Inside AAT, Atoms are given generators.
+described in \S\ref{sec:75}. Inside AAT, Atoms are the given generators.
 
 \begin{definition}[Atom family and support]\label{def:atomfamily}
 Write $\At$ for the Atom universe. An \emph{Atom family} $F$ is a subset
 of $\At$, and $\operatorname{support}(F)$ is the set of subjects occurring
 in $F$. The family $F$ may contain component, relation, state, contract,
-effect, and semantic Atoms in mixture. This mixture is not excluded; the
+effect, and semantic Atoms in combination. This mixing is not excluded; the
 question is which equations the mixed primitive facts satisfy and which
 obstructions they generate.
 \end{definition}
@@ -119,8 +119,8 @@ small category of local contexts. An \emph{Atom-indexed architectural
 equation system} $E$ consists of the following data:
 \begin{itemize}
 \item $K_E$: the type of equation indices;
-\item $\mathrm{role}_E : K_E \to \{\text{required}, \text{optional},
-      \text{derived}\}$: the role of each equation;
+\item $\mathrm{role}_E : K_E \to \{\mathrm{required}, \mathrm{optional},
+      \mathrm{derived}\}$: the role of each equation;
 \item $\ObsE : \ArchCtx(X)^{\mathrm{op}} \to \mathbf{CommRing}$: a
       presheaf assigning to each context $W$ an observable ring
       $\ObsE(W)$;
@@ -192,15 +192,15 @@ The sum of the witness ideals of the required equations,
 \IOb(W)=\sum_{i\in K_E,\ \mathrm{role}_E(i)=\mathrm{required}} I_i^E(W),
 \]
 is called the \emph{local obstruction ideal}. From the restriction
-compatibility of $\nu$ it follows that
-$\mathrm{res}_j(\IOb(W))\subset \IOb(W')$, so the context-wise ideals
-form an ideal subpresheaf.
+compatibility of $\nu$ it follows that, for every context morphism
+$g:W'\to W$, $\mathrm{res}_g(\IOb(W))\subset \IOb(W')$, so the
+context-wise ideals form an ideal subpresheaf.
 \end{definition}
 
 \begin{theorem}[generated obstruction quotient]\label{thm:quotient}
 Fix an equation system $E$ and a displayed equation source (a choice, for
 finitely many local contexts $W_q\to W_{\mathrm{base}}$, of an
-architecture object, a required equation index $i_q$, and a support Atom
+architecture object $A_q$, a required equation index $i_q$, and a support Atom
 $a_q$; in the cover-indexed case the local contexts are taken at the
 charts). Then the following hold.
 \begin{enumerate}
@@ -309,8 +309,8 @@ $\Msem$, $\QE$, the two \v{C}ech complexes, $\rsem$, $\rE$, the
 coefficient map $\Phi$, the cochain map $\kappa$ \\
 \addlinespace
 proved &
-repair-relation soundness, SAGA presentation exactness, the isomorphy of
-$\Phi$, commutation with the differentials, preservation of cocycles /
+repair-relation soundness, SAGA presentation exactness, the isomorphism
+property of $\Phi$, commutation with the differentials, preservation of cocycles /
 coboundaries, the $H^1$ isomorphism, the residual class correspondence,
 the equivalence of the zero class with an actual global repair \\
 \bottomrule

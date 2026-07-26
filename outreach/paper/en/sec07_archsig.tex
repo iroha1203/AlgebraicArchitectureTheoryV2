@@ -22,11 +22,12 @@ system
 microservice benchmark.
 
 On the real call triangle cancel--inside-payment--order of this
-system, the conventions for the refund amount differ in all three
-styles. All three were confirmed in the actual sources and observed as
+system, the three services follow three different conventions for the
+refund amount. All three were confirmed in the actual sources and observed as
 section values of the ArchMap:
+{\sloppy
 \begin{itemize}
-\item \textbf{cancel}: \code{Double.parseDouble(order.getPrice()) * 0.8}
+\item \textbf{cancel}: \code{Double.parseDouble(order.getPrice())}\allowbreak\code{ * 0.8}
 rounded by \code{DecimalFormat("0.00")} and rendered as a string
 (floating point + rounding);
 \item \textbf{inside-payment}: exact arithmetic on
@@ -34,6 +35,7 @@ rounded by \code{DecimalFormat("0.00")} and rendered as a string
 \item \textbf{order}: pass-through storage in
 \code{private String price}.
 \end{itemize}
+}
 
 The monetary representations of the three services are all passed as
 \code{string} at the implementation level: the types agree. What
@@ -60,19 +62,19 @@ booked in no chart. We call this case study the \textbf{one-cent
 obstruction}.
 
 \paragraph{Semantic trace.}
-The following table fixes the quantities compared by the three edges
-and the implementation conventions.
+Table~\ref{tab:semantictrace} fixes the quantities compared by the
+three edges and the implementation conventions.
 
 \begin{sidewaystable}[htbp]
 \centering
 \scriptsize
-\begin{tabular}{@{}p{0.12\linewidth}p{0.10\linewidth}p{0.16\linewidth}p{0.14\linewidth}p{0.09\linewidth}p{0.17\linewidth}p{0.10\linewidth}@{}}
+\begin{tabular}{@{}p{0.10\linewidth}p{0.09\linewidth}p{0.17\linewidth}p{0.13\linewidth}p{0.08\linewidth}p{0.15\linewidth}p{0.16\linewidth}@{}}
 \toprule
 Edge & Compared quantity & Convention L & Convention R & Normalization
 & Expected equation & Witness variable \\
 \midrule
 cancel--inside-payment & refund amount & the string obtained by
-rounding $0.8\times\text{price}$ with \code{DecimalFormat("0.00")} &
+rounding $0.8\times\text{price}$ with \code{DecimalFormat(}\allowbreak\code{"0.00")} &
 the exact arithmetic value via \code{BigDecimal} & currency value
 (scale-2) & the refund amounts of both charts are determined as the
 same currency value & \code{e\_cancel\_insidepay} \\
@@ -110,13 +112,14 @@ runtime measurement; \S\ref{sec:77}), we exhibit a witness with one
 fixed input price, as a normalization computation applying each
 source-confirmed convention to the same refund quantity:
 \begin{center}
-\small
+\footnotesize
 \begin{tabular}{@{}ll@{}}
 original price: & 12.33\\
-cancel convention: & $0.8 \times 12.33 = 9.864$
-$\to$ \code{DecimalFormat("0.00")} $\to$ ``9.86''\\
+cancel convention: & $0.8 \times 12.33 = 9.864$\\
+ & $\to$ \code{DecimalFormat("0.00")} $\to$ ``9.86''\\
 inside-payment convention: & the same refund quantity by exact
-arithmetic $\to$ 9.864\\
+arithmetic\\
+ & $\to$ 9.864\\
 normalized as currency values: & 9.86 (scale-2) vs.\ 9.864\\
 nonzero remainder: & 0.004 (below one cent)\\
 \end{tabular}
@@ -159,7 +162,7 @@ which the 3 charts of the triangle are replaced by a unified
 BigDecimal scale-2 \code{HALF\_EVEN} convention.
 \end{itemize}
 
-The derived residuals (head) show mismatching section values on the 3
+The derived residuals of the pre-repair run (\emph{head}) show mismatching section values on the 3
 triangle edges and the 2 preserve-family edges, and agreement on
 consign--consign-price; the selected complex forms a single connected
 component. The odd parity around the triangle is not solvable by
@@ -240,15 +243,15 @@ MeasurementProfile), through blocking by the gate, prior verification
 of the repair plan, the recording by compare of the disappearance of
 the obstruction and of the residual difference of the run pair, to
 gate PASS --- the full circle was walked without supplying any
-authored residuals, certificates, or comparison data. What remains as
-operator declarations are only the selected complex (\S\ref{sec:74})
+authored residuals, certificates, or comparison data. The only operator
+declarations that remain are the selected complex (\S\ref{sec:74})
 and the repaired variant.
 
 \paragraph{Effectiveness of the mathematical discipline.}
 Declaring the drift-bearing triangle itself as a triple is rejected by
 the cocycle condition --- a mathematically legitimate rejection.
 Mismatches without witness bindings and references without grounds
-fell to fail-closed. The discipline held under the load of real data.
+were rejected fail-closed. The discipline held under the load of real data.
 
 \paragraph{Executed silence.}
 The measurement axis requiring runtime measured values (axis name
@@ -326,16 +329,16 @@ change in the obstruction together with the reading of the run pair.
 The reading of the run pair is the finite \code{F2} decision of
 whether the difference of the derived residuals of the two runs
 belongs to $\operatorname{im}\delta^0$ on the selected $C^1$.
-\code{gate} returns the verdict \code{PASS\_WITHIN\_GATE\_POLICY} /
+\code{gate} returns the verdict \code{PASS\_WITHIN\_GATE\_POLICY} or
 \code{BLOCKED\_BY\_GATE\_POLICY} from a packet and a gate policy.
 
 We fix the correspondence between the three law surfaces and the
 outputs. The closed-equational surface declares the per-edge equations
 of convention agreement and carries the detection of mismatches (the
-cech stage). The SAGA-grounded surface declares the per-chart defect
+\code{cech} stage). The SAGA-grounded surface declares the per-chart defect
 coordinates and criteria and carries grounding. The descent surface
 declares the witness bindings on mismatch edges and carries residual
-derivation and boundary membership (the saga-descent stage). The
+derivation and boundary membership (the \code{saga-descent} stage). The
 ``stages'' mentioned by the condition matrix of \S\ref{sec:76} and its
 note~1 refer to this correspondence.
 
@@ -399,9 +402,9 @@ integrity, coverage ledger, and so on).
 records the model used. The ArchMap of all 42 services underlying this
 case study (2{,}118 atoms / 43 contexts / 440 sources) was created by
 a run whose extraction and adjudication subagents were pinned to a
-lightweight model. That observation supply does not demand an
-expensive frontier model has been measured as a practical condition
-of this measurement system.
+lightweight model. The fact that observation supply does not demand an
+expensive frontier model has thus been measured as a practical
+condition of this measurement system.
 \end{itemize}
 
 Under this process design, reproducibility splits into two layers.
@@ -416,8 +419,8 @@ supply pipeline.
 
 \subsection{Conditions and input kinds: the condition matrix}\label{sec:76}
 
-The following table fixes, for each conclusion of the diagnosis
-staircase, under which kind of condition it stands. \code{computed}
+Table~\ref{tab:conditionmatrix} fixes, for each conclusion of the
+diagnosis staircase, under which kind of condition it stands. \code{computed}
 denotes a finite computation from the inputs; \code{checked} a
 condition checked by ArchSig against finite artifacts; \code{assumed}
 a premise declared by the author or the profile and recorded by the
@@ -510,9 +513,9 @@ and the kind of condition under which it stands.}
 \end{table}
 
 Note 1: the forest nerve is a disclosed unsatisfied premise. The
-nonzero reading of the saga-descent stage in head (the $B^1$
+nonzero reading of the \code{saga-descent} stage in head (the $B^1$
 membership decision) does not depend on this row. The verdict of the
-cech stage separately declares its dependence on this assumption.
+\code{cech} stage separately declares its dependence on this assumption.
 
 \subsection{Boundary of the claims}\label{sec:77}
 
@@ -547,8 +550,7 @@ what the packet of this section carries are the finite checks shown by
 the condition matrix of \S\ref{sec:76}. No correspondence transporting
 the measurement run into Lean is required.
 
-We also make explicit the coverage of the SKILL-ification of the
-supply process. The authoring SKILL of \S\ref{sec:75} covers the
+We also make explicit the coverage of the SKILL-based supply process. The authoring SKILL of \S\ref{sec:75} covers the
 supply of the ArchMap, and an authoring SKILL of the same kind is in
 place for the selected complex (repair plan). The law surfaces and the
 repaired variant were supplied, at the time of this experiment, as
@@ -570,4 +572,6 @@ agreement of the runIds and the gate verdicts.
 
 \textbf{TODO:} fix the relative paths within the deposit, the ArchSig
 version, the full set of execution commands, and the expected outputs
-once the release identity is finalized.
+once the release identity is finalized. (The current canonical
+reproduction procedure is
+\code{docs/reports/train\_ticket\_dogfooding/saga\_diagnosis.md}.)

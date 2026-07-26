@@ -7,6 +7,7 @@
 
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage[margin=1.1in]{geometry}
+\setlength{\emergencystretch}{1.5em}
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{array}
@@ -76,8 +77,8 @@ metadata) is finalized. This note is removed at release.}}
 \begin{abstract}
 In a software architecture, each individual service can obey its own
 conventions and each handoff between adjacent services can hold, and yet a
-semantic inconsistency may remain that appears only when the system is
-traversed as a whole. This paper independently constructs two cohomologies
+semantic inconsistency may remain that appears only on a full traversal
+of the system. This paper independently constructs two cohomologies
 that measure this gap between local correctness and global correctness, and
 proves that they agree. The first construction speaks the language of
 \emph{repair}: from the semantic repair options admitted in each local
@@ -85,7 +86,7 @@ context and their equivalence relation, it generates the coefficient
 $\Msem$. The second speaks the language of \emph{equations}: it organizes
 the constraints of the architecture as a simultaneous equation system and
 generates the quotient coefficient $\QE$ by its obstruction ideal. Over a
-selected finite cover $\cU$ of Algebraic Architecture Theory (AAT) --- the
+selected finite cover $\cU$ in Algebraic Architecture Theory (AAT) --- the
 theory that constructs software architecture as algebraic geometry --- and
 under finitely many selection conditions matching the local data, the
 comparison map induces an isomorphism
