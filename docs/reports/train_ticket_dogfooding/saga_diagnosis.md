@@ -54,7 +54,11 @@ residual は author が書く入力ではない。analyze が観測(選択 cover
 次表は #3781 が §7 の本文へ転記するための行別の正本である。`assumed` は author が宣言し
 packet が assumption ledger に記録する前提、`computed` は入力からの有限計算、`checked` は
 ArchSig が有限 artifact に対して検査した条件、`automatic` は selected complex の形から
-自動成立する条件を表す。供給時代に `supplied` だった行(residual support、faithfulness law、
+自動成立する条件を表す。括弧書きの canonical anchor は本 report が Part X statement の
+実読で再検証した帰属である(#3829)。凍結証拠束内の `theoremRef` は tool v0.5.4 の
+記録値であり、enumeration completeness 行の記録値 `part10/3.1` は本表の裁定
+(canonical 対応物なし)と異なる。tool 側の theoremRef 改訂は #3842 で扱い、
+凍結済み artifact は変更しない。供給時代に `supplied` だった行(residual support、faithfulness law、
 global sheaf condition、comparison cochain map、presentation packet)は、#3820–#3822 の返済で
 導出化されるか、slot ごと沈黙した。沈黙した語彙は行ごと消えており、assumption ledger による
 代替も置いていない。
@@ -65,15 +69,15 @@ global sheaf condition、comparison cochain map、presentation packet)は、#382
 | residual derivation | observed section comparison | `computed` | `saga-descent:residual-derivation` が overlap ごとに両端 chart の観測 sectionValue 集合を比較した F₂ 値と、法曲面 witness 束縛(`e_cancel_insidepay` 等)・観測 atom refs の provenance を記録する。head は三角形 3 辺+preserve 2 辺が mismatch |
 | witness binding | law-surface declaration | `checked` | mismatch 辺は法曲面の witness variable 束縛を要求する(未束縛 mismatch は fail-closed で `not_computed`)。束縛は instance の値を運ばない edge 選択の宣言 |
 | coefficient | law-side selection | `checked` | 係数は選択 MeasurementProfile の `coefficient: F2`。RepairPlan は係数を運ばない |
-| repair-plan complex enumeration completeness(part10/3.1) | author assertion | `assumed` | RepairPlan `complex.enumerationComplete: true` に対し、packet は `repair-plan complex enumeration completeness` を `assumed` と記録する |
-| triple absence / class 語彙(part10/4.5) | author assertion | `assumed`(class 語彙は不解禁) | 選択複体は triple-overlap を宣言しない。「三者同時照合サイトの不在」はツールが観測できない author assertion であり、ArchSig は class 語彙を解禁せず(`saga-descent:class-vocabulary-boundary`、named boundary statement)、読みを 1-骨格の boundary membership に留める |
-| boundary membership | finite F₂ calculation(part10/3.4) | `computed` | head は `saga-descent:boundary-membership.inB1: false` と `MEASURED_NONGLUING_RESIDUAL`、repaired は `inB1: true`・`REPAIR_GLUES_WITHIN_SELECTED_COMPLEX` |
+| repair-plan complex enumeration completeness(canonical anchor なし — 選択複体の列挙完全性は measurement 契約条件であり Part X に対応 statement を持たない) | author assertion | `assumed` | RepairPlan `complex.enumerationComplete: true` に対し、packet は `repair-plan complex enumeration completeness` を `assumed` と記録する |
+| triple absence / class 語彙(part10/定義3.4 Semantic repair complex — `H¹_sem` は triple face を含む three-term complex 上で定義される) | author assertion | `assumed`(class 語彙は不解禁) | 選択複体は triple-overlap を宣言しない。「三者同時照合サイトの不在」はツールが観測できない author assertion であり、ArchSig は class 語彙を解禁せず(`saga-descent:class-vocabulary-boundary`、named boundary statement)、読みを 1-骨格の boundary membership に留める |
+| boundary membership | finite F₂ calculation(part10/系4.5 Zero class と matching correction の δ⁰-可解性条項) | `computed` | head は `saga-descent:boundary-membership.inB1: false` と `MEASURED_NONGLUING_RESIDUAL`、repaired は `inB1: true`・`REPAIR_GLUES_WITHIN_SELECTED_COMPLEX` |
 | U-adequate cover(part8/4.2) | profile-supplied assumption | `assumed` | 選択 cover の U-adequacy は profile 由来の assumption ledger 行 |
 | Leray / acyclicity comparison(part8/B.8.2) | profile-supplied assumption | `assumed` | cover 相対の Čech 読みを層係数コホモロジーと比較するための前提。ledger 行として開示され、本 report はこの比較を主張しない |
 | torsor / adjustment / coefficient descent(part4/11.1 ×3) | profile-supplied assumption | `assumed` | ledger の 3 行。局所法 section の Ob_U-torsor 性・作用の固定性・係数の descent |
 | restriction surjectivity(part4/12.4) | profile-supplied assumption | `assumed` | ledger 行 |
 | forest nerve(part4/12.4) | profile-supplied assumption | `assumed`(**本 packet では不成立**) | ledger は `selected Cech nerve is a forest with no triple-overlap faces` を assumed と記録するが、同じ packet の nerve 計算は forest ではない(閉路 1)ことを computed で示す。この profile 由来行は当 run では成立していない前提の開示であり、head の非零読みはこの行に依存しない |
-| quotient sheaf condition(part10/8.3) | law-surface declaration | `assumed` | law surface の `quotientSheafCondition: assumed` を ledger 行として開示 |
+| quotient sheaf condition(part10/系8.3 Equation-side global lift の仮定「`P_E` も選ばれた topology 上の sheaf」) | law-surface declaration | `assumed` | law surface の `quotientSheafCondition: assumed` を ledger 行として開示 |
 | residual class agreement(head↔repaired) | derived run-pair reading | `computed` | compare の `residualClassAgreement` は両 run の導出 residual の差 δ⁰h 可解性を comparability ゲート下で計算する。本対は `not_cohomologous`(field 語彙であり class 語彙の解禁ではない。読みは run 対の residual 差の δ⁰ 非可解)。修理成功の読みは repaired 側の `inB1: true` と gate が担う |
 | repaired ArchMap | hypothetical repair input | `supplied` / hypothetical | `archmap-saga-repaired.json` は BigDecimal scale-2 HALF_EVEN 統一を表す仮説 variant。`PASS_WITHIN_GATE_POLICY` は実装済み修理を示さない |
 | runtime monetary magnitude | empirical measurement | unmeasured | harmonic-debt を供給せず沈黙。頻度・金額を結論に含めない |
