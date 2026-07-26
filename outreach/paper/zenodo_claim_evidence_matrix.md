@@ -74,6 +74,13 @@ RepairPlan schema v0.5.7)。
 
 ## 状態集計
 
-- 照合済み・本文固定済み: 29 行(2026-07-26。release identity=tag `saga-paper-v1.0.0`・DOI `10.5281/zenodo.21603762` の本文印字まで完了)
+- 照合済み・本文固定済み: 29 行
 - 非対象: 1 行(S3、vision 節)
-- **tag 押下後の残検証**(行状態は固定済み): L5=tag 上の CI green 確認、E10=clean checkout 再現、S2=`MANIFEST.json` 生成。P0-6 final review で本表を照合基準として消化する
+
+## P0-6 final review 記録(2026-07-26、tag 押下後)
+
+tag `saga-paper-v1.0.0` = commit `5246d5326f01c0879f2305d9a7872d35e97c9380`。残検証3点を消化し、**全行 close**:
+
+- **L5**: tagged commit の CI green を確認 — Lean workflow(run 30205924257、フルビルド+AxiomAudit)success、Tool workflow(run 30205924264)success。release CI run は `MANIFEST.json` の `releaseCiRun` に記録
+- **E10**: clean checkout 再現(P0-5)を実施 — tag からの fresh clone 上で `analyze`×2 / `compare` / `gate`×2 を実行し、runId(`run:78c31d6a3172` / `run:6685bab8db21`)、conclusion(`MEASURED_NONGLUING_RESIDUAL` / `REPAIR_GLUES_WITHIN_SELECTED_COMPLEX` / `MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE`)、gate(BLOCKED exit 1 / PASS exit 0)の**全項目が付録C.4 の expected output と一致**
+- **S2**: `build_bundle.py --ci-run <Lean run URL>` で bundle 組成(69ファイル+`MANIFEST.json`、`tagPresentOnHead: true`)。bundle↔repo の evidence byte 一致を checksum spot check(3点)で確認、bundle 内 PDF は release identity 印字版と sha256 一致
