@@ -1644,7 +1644,6 @@ equation-generated AAT Čech complex を構成し、その first cohomology が�
 定義された semantic-repair obstruction と一致することの証明を加える。
 Lean が比較を検証し、ArchSig がその有限 architectural instance を評価する。
 
-**TODO:** 投稿時点で 2026 年文献の最新版と publication status を再確認する。
 
 ---
 
@@ -1998,13 +1997,13 @@ table が完結して与え、label は Lean source を閲覧する際の照合�
 - [ ] 第7章: deposit 相対 path、ArchSig version、実行 command、expected output の固定
 - [x] 第8章: Young artifact 確認と定理番号確定(related_work.md §2.7 に記録)
 - [x] References 節と BibTeX 固定(`zenodo_saga_references.bib`、P0 11点+P1 使用分+Serre/Grothendieck/Garcia-Molina–Salem)
-- [ ] 第8章: 投稿時点で 2026 年文献の最新版と publication status を再確認
+- [x] 第8章: 2026 年文献の最新版と publication status を再確認(2026-07-26 arXiv 実査: Young 2603.27015=v1 のまま・journal ref なし、Gibson 2605.08609=v1 のまま・journal ref なし、Felber 2503.02556=**v2**(2025-08-27 改版)・journal ref なし。引用は version 非依存(task sheaf の一般言及)のため bib・本文とも変更不要。本文 TODO は除去済み)
 - [x] 英語版への翻訳(最終投稿言語=英語、2026-07-24 決定。英語正本=LaTeX を `en/` に新設、2026-07-26。以後の本文変更は英語正本とセットで行う)
 - [ ] 全章: claim-to-evidence matrix の構築と各 claim の一次証拠への対応
 - [x] SAGA comparison の可換図と one-cent の計算図の作成(2026-07-26。`zenodo_saga_figure1_comparison.png` を §5.2 末尾へ、`zenodo_saga_figure2_one_cent.png` を §7.2 末尾へ挿入。図内ラベルは英語のため英訳版へそのまま流用可。deposit 時は画像も bundle に同梱)
 - [x] 著者情報の固定(author block: Hiroyuki Nakahata / Independent Researcher / ORCID 0009-0008-5928-0234。所属企業名と contact は記載しない(2026-07-26 決定)。Acknowledgments に AI 協働開示、2026-07-24)
-- [ ] Zenodo metadata: license(CC BY 4.0 想定、要決定)と DOI の固定。creators は author block と一致させる
-- [ ] Zenodo metadata: abstract の platform 変種を作成する。Zenodo description は HTML whitelist のみで MathJax 不可のため、display 数式2本を Unicode inline 形(`H¹_sem(𝒰) ≅ Ȟ¹(𝒰,Q_E)` / `Nonempty P_sem(W) ⟺ [r_sem]=0 ⟺ [r_E]=0`)へ落とす。arXiv 併用時は inline `$...$` 形(標準 LaTeX/AMS マクロのみ)
+- [ ] Zenodo metadata: license(CC BY 4.0 想定、要決定)と DOI の固定。creators は author block と一致させる(deposit 転記用ドラフト=`zenodo_metadata.md`、2026-07-26 作成。license と DOI が TBD)
+- [x] Zenodo metadata: abstract の platform 変種を作成する(2026-07-26、`zenodo_metadata.md` §2/§3。citation guide 込み)。Zenodo description は HTML whitelist のみで MathJax 不可のため、display 数式2本を Unicode inline 形(`H¹_sem(𝒰) ≅ Ȟ¹(𝒰,Q_E)` / `Nonempty P_sem(W) ⟺ [r_sem]=0 ⟺ [r_E]=0`)へ落とす。arXiv 併用時は inline `$...$` 形(標準 LaTeX/AMS マクロのみ)
 
 ### B. Claim-to-evidence matrix(skeleton)
 
