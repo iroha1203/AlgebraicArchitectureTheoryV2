@@ -135,6 +135,16 @@
       "theoremRef": "part3/11.3"
     },
     {
+      "assumedBy": "law-surface:law-surface:train-ticket-money-saga-v054",
+      "assumption": "selected quotient sheaf condition for law-surface:train-ticket-money-saga-v054",
+      "assumptionId": "assumption:part10-8-3:selected-quotient-sheaf-condition-for-law-surface-train-ticket-money-saga-v054",
+      "scopeRefs": [
+        "part10/8.3"
+      ],
+      "status": "assumed",
+      "theoremRef": "part10/8.3"
+    },
+    {
       "assumedBy": "repair-plan author",
       "assumption": "repair-plan complex enumeration completeness for repair-plan:train-ticket-money-head",
       "assumptionId": "assumption:part10-3-1:repair-plan-complex-enumeration-completeness-for-repair-plan-train-ticket-money-head",
@@ -201,6 +211,15 @@
       "text": "Higher Tor_i for i>=2 remains unmeasured support: degree-1 Tor_1 readings do not discharge derived transversality or all higher Tor vanishing."
     },
     {
+      "id": "boundary:silence-by-design:saga-class-vocabulary:6",
+      "kind": "silence_by_design",
+      "reason": "class_vocabulary_not_unlocked_without_declared_triples",
+      "scopeRefs": [
+        "measurement:train-ticket-money-saga-head/v0.5.4"
+      ],
+      "text": "The residual component declares no triple overlaps, so the cocycle condition is an author assertion (automatic-c2-zero); the reading stays at selected 1-skeleton boundary membership and the class vocabulary is not unlocked."
+    },
+    {
       "id": "boundary:not-applicable:0",
       "kind": "not_applicable",
       "reason": "analytic_only",
@@ -218,18 +237,18 @@
   "computedInvariants": [
     {
       "archmapRef": "input:archmap-saga-head.json",
-      "atomCount": 2125,
-      "contextCount": 56,
-      "coverCount": 6,
+      "atomCount": 2112,
+      "contextCount": 43,
+      "coverCount": 4,
       "doctrineFingerprint": "sha256:aat-canonical-doctrine-schema052",
       "evaluator": "ag.foundation",
       "invariantId": "finite-poset-site-shape",
       "kind": "measurement-invariant",
       "representation": {
         "archmapRef": "input:archmap-saga-head.json",
-        "atomCount": 2125,
-        "contextCount": 56,
-        "coverCount": 6,
+        "atomCount": 2112,
+        "contextCount": 43,
+        "coverCount": 4,
         "doctrineFingerprint": "sha256:aat-canonical-doctrine-schema052",
         "invariantId": "finite-poset-site-shape"
       },
@@ -1587,99 +1606,7 @@
       "kind": "residual-boundary-membership",
       "representation": {
         "evaluator": "ag.saga-descent",
-        "invariantId": "saga-descent:residual-derivation",
-        "residualDerivation": {
-          "charts": [
-            "ctx:cancel-surface",
-            "ctx:inside-payment-surface",
-            "ctx:order-surface",
-            "ctx:consign-surface",
-            "ctx:consign-price-surface",
-            "ctx:preserve-surface"
-          ],
-          "coverRef": "cover:money-settlement-loop",
-          "derived": true,
-          "edges": [
-            {
-              "leftContextRef": "ctx:cancel-surface",
-              "overlapRef": "overlap:cancel-insidepay",
-              "rightContextRef": "ctx:inside-payment-surface",
-              "supportAtomRefs": [
-                "atom:semantic:cancel-surface:cech-section-money-amount",
-                "atom:semantic:inside-payment-surface:cech-section-money-amount"
-              ],
-              "value": 1,
-              "witnessVariables": [
-                "e_cancel_insidepay"
-              ]
-            },
-            {
-              "leftContextRef": "ctx:inside-payment-surface",
-              "overlapRef": "overlap:insidepay-order",
-              "rightContextRef": "ctx:order-surface",
-              "supportAtomRefs": [
-                "atom:semantic:inside-payment-surface:cech-section-money-amount",
-                "atom:semantic:order-surface:cech-section-money-amount"
-              ],
-              "value": 1,
-              "witnessVariables": [
-                "e_insidepay_order"
-              ]
-            },
-            {
-              "leftContextRef": "ctx:cancel-surface",
-              "overlapRef": "overlap:cancel-order",
-              "rightContextRef": "ctx:order-surface",
-              "supportAtomRefs": [
-                "atom:semantic:cancel-surface:cech-section-money-amount",
-                "atom:semantic:order-surface:cech-section-money-amount"
-              ],
-              "value": 1,
-              "witnessVariables": [
-                "e_cancel_order"
-              ]
-            },
-            {
-              "leftContextRef": "ctx:consign-surface",
-              "overlapRef": "overlap:consign-consignprice",
-              "rightContextRef": "ctx:consign-price-surface",
-              "supportAtomRefs": [],
-              "value": 0,
-              "witnessVariables": [
-                "e_consign_consignprice"
-              ]
-            },
-            {
-              "leftContextRef": "ctx:preserve-surface",
-              "overlapRef": "overlap:preserve-consign",
-              "rightContextRef": "ctx:consign-surface",
-              "supportAtomRefs": [
-                "atom:semantic:consign-surface:cech-section-money-amount",
-                "atom:semantic:preserve-surface:cech-section-money-amount"
-              ],
-              "value": 1,
-              "witnessVariables": [
-                "e_preserve_consign"
-              ]
-            },
-            {
-              "leftContextRef": "ctx:preserve-surface",
-              "overlapRef": "overlap:preserve-order",
-              "rightContextRef": "ctx:order-surface",
-              "supportAtomRefs": [
-                "atom:semantic:order-surface:cech-section-money-amount",
-                "atom:semantic:preserve-surface:cech-section-money-amount"
-              ],
-              "value": 1,
-              "witnessVariables": [
-                "e_preserve_order"
-              ]
-            }
-          ],
-          "fault": null,
-          "lawSurfaceRef": "law-surface:train-ticket-money-saga-v054",
-          "mappedCoverRef": null
-        }
+        "invariantId": "saga-descent:residual-derivation"
       },
       "residualDerivation": {
         "charts": [
@@ -1771,95 +1698,13 @@
         ],
         "fault": null,
         "lawSurfaceRef": "law-surface:train-ticket-money-saga-v054",
-        "mappedCoverRef": null
+        "mappedCoverRef": "cover:money-settlement-loop"
       },
       "value": {}
     },
     {
-      "evaluator": "ag.saga-descent",
-      "invariantId": "saga-descent:residual-class",
-      "kind": "residual-class-support",
-      "representation": {
-        "evaluator": "ag.saga-descent",
-        "invariantId": "saga-descent:residual-class",
-        "residualClassSupport": {
-          "basis": "Z1/B1",
-          "cocycle": {
-            "certificateKind": "automatic-c2-zero",
-            "checked": false,
-            "deltaOne": "zero",
-            "tripleOverlapRefs": []
-          },
-          "component": {
-            "chartRefs": [
-              "ctx:cancel-surface",
-              "ctx:consign-price-surface",
-              "ctx:consign-surface",
-              "ctx:inside-payment-surface",
-              "ctx:order-surface",
-              "ctx:preserve-surface"
-            ],
-            "overlapRefs": [
-              "overlap:cancel-insidepay",
-              "overlap:cancel-order",
-              "overlap:consign-consignprice",
-              "overlap:insidepay-order",
-              "overlap:preserve-consign",
-              "overlap:preserve-order"
-            ]
-          },
-          "nonZero": true,
-          "quotient": "Z1/B1",
-          "representative": [
-            {
-              "overlapRef": "overlap:cancel-insidepay",
-              "support": [
-                "cech:section-mismatch"
-              ]
-            },
-            {
-              "overlapRef": "overlap:insidepay-order",
-              "support": [
-                "cech:section-mismatch"
-              ]
-            },
-            {
-              "overlapRef": "overlap:cancel-order",
-              "support": [
-                "cech:section-mismatch"
-              ]
-            },
-            {
-              "overlapRef": "overlap:consign-consignprice",
-              "support": []
-            },
-            {
-              "overlapRef": "overlap:preserve-consign",
-              "support": [
-                "cech:section-mismatch"
-              ]
-            },
-            {
-              "overlapRef": "overlap:preserve-order",
-              "support": [
-                "cech:section-mismatch"
-              ]
-            }
-          ]
-        },
-        "suppliedSlots": [
-          "complex.charts",
-          "complex.overlaps"
-        ]
-      },
-      "residualClassSupport": {
-        "basis": "Z1/B1",
-        "cocycle": {
-          "certificateKind": "automatic-c2-zero",
-          "checked": false,
-          "deltaOne": "zero",
-          "tripleOverlapRefs": []
-        },
+      "classVocabulary": {
+        "certificateKind": "automatic-c2-zero",
         "component": {
           "chartRefs": [
             "ctx:cancel-surface",
@@ -1878,56 +1723,46 @@
             "overlap:preserve-order"
           ]
         },
-        "nonZero": true,
-        "quotient": "Z1/B1",
-        "representative": [
-          {
-            "overlapRef": "overlap:cancel-insidepay",
-            "support": [
-              "cech:section-mismatch"
-            ]
-          },
-          {
-            "overlapRef": "overlap:insidepay-order",
-            "support": [
-              "cech:section-mismatch"
-            ]
-          },
-          {
-            "overlapRef": "overlap:cancel-order",
-            "support": [
-              "cech:section-mismatch"
-            ]
-          },
-          {
-            "overlapRef": "overlap:consign-consignprice",
-            "support": []
-          },
-          {
-            "overlapRef": "overlap:preserve-consign",
-            "support": [
-              "cech:section-mismatch"
-            ]
-          },
-          {
-            "overlapRef": "overlap:preserve-order",
-            "support": [
-              "cech:section-mismatch"
-            ]
-          }
-        ]
+        "reason": "residual-component-declares-no-triple-overlaps",
+        "unlocked": false
       },
-      "suppliedSlots": [
-        "complex.charts",
-        "complex.overlaps"
-      ],
+      "evaluator": "ag.saga-descent",
+      "invariantId": "saga-descent:class-vocabulary-boundary",
+      "kind": "residual-boundary-membership",
+      "representation": {
+        "classVocabulary": {
+          "certificateKind": "automatic-c2-zero",
+          "component": {
+            "chartRefs": [
+              "ctx:cancel-surface",
+              "ctx:consign-price-surface",
+              "ctx:consign-surface",
+              "ctx:inside-payment-surface",
+              "ctx:order-surface",
+              "ctx:preserve-surface"
+            ],
+            "overlapRefs": [
+              "overlap:cancel-insidepay",
+              "overlap:cancel-order",
+              "overlap:consign-consignprice",
+              "overlap:insidepay-order",
+              "overlap:preserve-consign",
+              "overlap:preserve-order"
+            ]
+          },
+          "reason": "residual-component-declares-no-triple-overlaps",
+          "unlocked": false
+        },
+        "evaluator": "ag.saga-descent",
+        "invariantId": "saga-descent:class-vocabulary-boundary"
+      },
       "value": {}
     }
   ],
   "inputDigests": {
     "archmap": {
       "path": "input:archmap-saga-head.json",
-      "sha256": "bdca8b9c6b04a377ec41e64ee0f17186c1ce6ad0a267b5fc2c0a574a375c1010"
+      "sha256": "6f8a2f6265234010587cc30dd23188c0f7b8030d39d385289a1c8c1320c9ec22"
     },
     "lawPolicy": {
       "path": "input:law-policy-saga.json",
@@ -1953,11 +1788,11 @@
     },
     "repairPlan": {
       "path": "input:repair-plan-head.json",
-      "sha256": "662b04ba0b3a91ca14ebe1b539484ed6017502a61af87603e9820d49851ef3e2"
+      "sha256": "140987077e2c3ff3167ab5e4f8ceae5326db6b5c9530ac5100b5d6da4cb4a163"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
-      "sha256": "c05d1537d9126e4f0e2b59bf37ef90826adf8a22ff49e89625ff0e8f2d243868",
+      "sha256": "c75cd524da051ad25472f1faad2d3fc44456db4fe6f0a1f90851d76e7b069b1a",
       "status": "computed"
     }
   },
@@ -1990,7 +1825,7 @@
     "verdictDiscipline": "five-valued-structural-verdict@1",
     "zeroPredicate": "rank-zero@1"
   },
-  "runId": "run:fd1b393a80e6",
+  "runId": "run:78c31d6a3172",
   "schema": "archsig-measurement-packet/v0.5.4",
   "structuralVerdict": [
     {
@@ -2037,7 +1872,8 @@
     },
     {
       "dependsOnAssumptions": [
-        "assumption:part3-11-3:displayedRequiredLawsHold-is-operationalized-only-by-the-declared-holdsCriterion-raw-value-check"
+        "assumption:part3-11-3:displayedRequiredLawsHold-is-operationalized-only-by-the-declared-holdsCriterion-raw-value-check",
+        "assumption:part10-8-3:selected-quotient-sheaf-condition-for-law-surface-train-ticket-money-saga-v054"
       ],
       "evaluator": "ag.saga-grounded",
       "evidence": {
@@ -2102,74 +1938,6 @@
         "zero": false
       },
       "verdictRef": "structuralVerdict/ag-saga-descent/saga-residual-boundary-membership/residual-not-in-b1"
-    },
-    {
-      "dependsOnAssumptions": [
-        "assumption:part10-3-1:repair-plan-complex-enumeration-completeness-for-repair-plan-train-ticket-money-head"
-      ],
-      "evaluator": "ag.saga-descent",
-      "evidence": {
-        "computedInvariantRefs": [
-          "saga-descent:residual-derivation"
-        ],
-        "sourceRefs": []
-      },
-      "law": "saga.global-coherence",
-      "reason": "global coherence is blocked because the derived residual is not a B1 boundary",
-      "target": {
-        "classRef": "computedInvariants/saga-descent:residual-derivation",
-        "coefficient": "F2",
-        "coverRef": "cover:money-settlement-loop",
-        "kind": "saga-residual-boundary-membership",
-        "scopeSize": {
-          "contexts": 1,
-          "edges": 0,
-          "triangles": 0
-        }
-      },
-      "verdict": "measured_nonzero",
-      "verdictData": {
-        "certRef": "computedInvariants/saga-descent:residual-derivation",
-        "inScope": true,
-        "methodStatus": "residual_not_in_b1",
-        "nonZero": true,
-        "zero": false
-      },
-      "verdictRef": "structuralVerdict/ag-saga-descent/saga-global-coherence/residual-not-in-b1"
-    },
-    {
-      "dependsOnAssumptions": [
-        "assumption:part10-3-1:repair-plan-complex-enumeration-completeness-for-repair-plan-train-ticket-money-head"
-      ],
-      "evaluator": "ag.saga-descent",
-      "evidence": {
-        "computedInvariantRefs": [
-          "saga-descent:residual-class"
-        ],
-        "sourceRefs": []
-      },
-      "law": "saga.residual-class",
-      "reason": "MEASURED_NONGLUING_RESIDUAL_CLASS: derived Z1 representative is not in B1",
-      "target": {
-        "classRef": "computedInvariants/saga-descent:residual-class",
-        "coefficient": "F2",
-        "coverRef": "cover:money-settlement-loop",
-        "kind": "saga-residual-class",
-        "scopeSize": {
-          "contexts": 1,
-          "edges": 0,
-          "triangles": 0
-        }
-      },
-      "verdict": "measured_nonzero",
-      "verdictData": {
-        "certRef": "computedInvariants/saga-descent:residual-class",
-        "inScope": true,
-        "methodStatus": "nonzero_class_representative",
-        "nonZero": true,
-        "zero": false
-      },
-      "verdictRef": "structuralVerdict/ag-saga-descent/saga-residual-class/nonzero-class-representative"
     }
   ],
   "suppliedData": [

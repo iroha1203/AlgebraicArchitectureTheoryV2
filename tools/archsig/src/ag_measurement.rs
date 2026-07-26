@@ -111,14 +111,14 @@ fn summary_translation_rule(conclusion: &str) -> SummaryTranslationRule {
             conclusion_code: ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
             theorem_ref: Some("part10/4.5"),
             principal_text: "The derived SAGA residual is measured inside B1 for the selected RepairPlan complex.",
-            boundary: "Supply Stage 2 law surface and comparison artifacts before claiming global semantic repair.",
+            boundary: "The gluing reading is relative to the selected RepairPlan complex and its declared triple overlaps; it does not claim global semantic repair.",
             generated_discipline: "generated derived-residual boundary-membership detection",
         },
         ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS => SummaryTranslationRule {
             conclusion_code: ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS,
             theorem_ref: Some("part10/4.5"),
             principal_text: "The selected finite complex contains a measured non-gluing derived residual class in Z1/B1.",
-            boundary: "The class reading is relative to the selected cover, law-surface witness bindings, supplied sheaf certificate, and gluing data.",
+            boundary: "The class reading is relative to the selected cover 1-skeleton, the declared triple overlaps whose cocycle parity was checked, and the law-surface witness bindings.",
             generated_discipline: "generated derived class representative detection",
         },
         ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION => SummaryTranslationRule {
@@ -396,21 +396,7 @@ fn boundary_statements_for_measurement_packet(
                 ),
             });
         }
-        if row.verdict == "unmeasured"
-            && row.evaluator == "ag.saga-descent"
-            && row.law == "saga.global-coherence"
-            && row.verdict_data.method_status == "complete_support_not_declared"
-        {
-            statements.push(BoundaryStatementV1 {
-                id: format!("boundary:silence-by-design:saga-global-coherence:{index}"),
-                kind: "silence_by_design".to_string(),
-                scope_refs: vec![scope_ref.clone()],
-                reason: row.verdict_data.method_status.clone(),
-                text: row.reason.clone().unwrap_or_else(|| {
-                    "complete-support declaration or Stage 2 faithfulness data is required before global coherence can be stated".to_string()
-                }),
-            });
-        } else if row.verdict == "unmeasured" {
+        if row.verdict == "unmeasured" {
             statements.push(BoundaryStatementV1 {
                 id: format!("boundary:unmeasured-support:{index}"),
                 kind: "unmeasured_support".to_string(),
@@ -572,6 +558,19 @@ fn boundary_statements_for_measurement_packet(
                 "The measured H1 class is restricted to observed edges; selected edges without section observations stay silent: {}. Supply sectionValue observations on both endpoint contexts (or an explicit cocycleValue) to include an edge.",
                 unobserved_edges.join(", ")
             ),
+        });
+    }
+
+    for (index, invariant) in packet.computed_invariants.iter().enumerate() {
+        if invariant["invariantId"] != "saga-descent:class-vocabulary-boundary" {
+            continue;
+        }
+        statements.push(BoundaryStatementV1 {
+            id: format!("boundary:silence-by-design:saga-class-vocabulary:{index}"),
+            kind: "silence_by_design".to_string(),
+            scope_refs: vec![packet.packet_id.clone()],
+            reason: "class_vocabulary_not_unlocked_without_declared_triples".to_string(),
+            text: "The residual component declares no triple overlaps, so the cocycle condition is an author assertion (automatic-c2-zero); the reading stays at selected 1-skeleton boundary membership and the class vocabulary is not unlocked.".to_string(),
         });
     }
 
@@ -4472,7 +4471,7 @@ pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Valu
     });
     let saga_glues = packet.structural_verdict.iter().any(|verdict| {
         verdict.evaluator == "ag.saga-descent"
-            && verdict.law == "saga.global-coherence"
+            && verdict.law == "saga.residual-boundary-membership"
             && verdict.verdict == "measured_zero"
     });
     let conclusion = if saga_class_nonzero {
@@ -13266,6 +13265,7 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
         "evaluator",
         "value",
         "representation",
+        "classVocabulary",
         "archmapRef",
         "atomCount",
         "contextCount",

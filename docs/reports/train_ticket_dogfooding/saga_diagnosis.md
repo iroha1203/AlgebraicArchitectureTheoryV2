@@ -36,7 +36,7 @@ cancel–inside-payment–order の実呼び出し三角形上で、金額規約
   `law:money-repair-descent`(descent、ag.saga-descent)
 - repair-plan(v0.5.7): 選択複体だけを宣言する。charts は観測 cover の 6 チャートそのもの、
   overlaps は観測された restriction 6 辺(三角形 3 + consign–consign-price +
-  preserve–consign + preserve–order)、triple-overlap は観測に存在しないので宣言しない
+  preserve–consign + preserve–order)、triple-overlap は宣言しない(三者同時照合サイトの不在は観測から読めない author assertion — 実証していないこと5)
 - 導出 residual(head): 三角形 3 辺と preserve 2 辺で sectionValue が不一致、
   consign–consign-price は一致。三角形一周の奇パリティは δ⁰ で解けず、類が非零に立つ
 - repaired 変種: 三角形3チャートを BigDecimal scale-2 HALF_EVEN 統一規約に置換した仮修理 ArchMap。
@@ -65,9 +65,15 @@ global sheaf condition、comparison cochain map、presentation packet)は、#382
 | residual derivation | observed section comparison | `computed` | `saga-descent:residual-derivation` が overlap ごとに両端 chart の観測 sectionValue 集合を比較した F₂ 値と、法曲面 witness 束縛(`e_cancel_insidepay` 等)・観測 atom refs の provenance を記録する。head は三角形 3 辺+preserve 2 辺が mismatch |
 | witness binding | law-surface declaration | `checked` | mismatch 辺は法曲面の witness variable 束縛を要求する(未束縛 mismatch は fail-closed で `not_computed`)。束縛は instance の値を運ばない edge 選択の宣言 |
 | coefficient | law-side selection | `checked` | 係数は選択 MeasurementProfile の `coefficient: F2`。RepairPlan は係数を運ばない |
-| repair-plan complex enumeration completeness | author assertion | `assumed` | RepairPlan `complex.enumerationComplete: true` に対し、packet は `repair-plan complex enumeration completeness` を `assumed` と記録する |
-| triple absence / cocycle 条件 | selected complex shape | `automatic` / `assumed` | 選択複体に triple-overlap が無いので selected `C²=0`、cocycle 条件は自動成立(`certificateKind: automatic-c2-zero` / `cocycle.checked: false`)。「三者同時照合サイトの不在」自体は観測事実だが、成分の 1-骨格にグラフ三角形が存在する場合でも triple 宣言不在なら自動認証となる点は author assertion(`U_ijk` 空)に依存する |
-| boundary membership / residual class | finite quotient calculation | `computed` | head は `saga-descent:boundary-membership.inB1: false` と `MEASURED_NONGLUING_RESIDUAL_CLASS`、repaired は零類・`REPAIR_GLUES_WITHIN_SELECTED_COMPLEX` |
+| repair-plan complex enumeration completeness(part10/3.1) | author assertion | `assumed` | RepairPlan `complex.enumerationComplete: true` に対し、packet は `repair-plan complex enumeration completeness` を `assumed` と記録する |
+| triple absence / class 語彙(part10/4.5) | author assertion | `assumed`(class 語彙は不解禁) | 選択複体は triple-overlap を宣言しない。「三者同時照合サイトの不在」はツールが観測できない author assertion であり、ArchSig は class 語彙を解禁せず(`saga-descent:class-vocabulary-boundary`、named boundary statement)、読みを 1-骨格の boundary membership に留める |
+| boundary membership | finite F₂ calculation(part10/3.4) | `computed` | head は `saga-descent:boundary-membership.inB1: false` と `MEASURED_NONGLUING_RESIDUAL`、repaired は `inB1: true`・`REPAIR_GLUES_WITHIN_SELECTED_COMPLEX` |
+| U-adequate cover(part8/4.2) | profile-supplied assumption | `assumed` | 選択 cover の U-adequacy は profile 由来の assumption ledger 行 |
+| Leray / acyclicity comparison(part8/B.8.2) | profile-supplied assumption | `assumed` | cover 相対の Čech 読みを層係数コホモロジーと比較するための前提。ledger 行として開示され、本 report はこの比較を主張しない |
+| torsor / adjustment / coefficient descent(part4/11.1 ×3) | profile-supplied assumption | `assumed` | ledger の 3 行。局所法 section の Ob_U-torsor 性・作用の固定性・係数の descent |
+| restriction surjectivity(part4/12.4) | profile-supplied assumption | `assumed` | ledger 行 |
+| forest nerve(part4/12.4) | profile-supplied assumption | `assumed`(**本 packet では不成立**) | ledger は `selected Cech nerve is a forest with no triple-overlap faces` を assumed と記録するが、同じ packet の nerve 計算は forest ではない(閉路 1)ことを computed で示す。この profile 由来行は当 run では成立していない前提の開示であり、head の非零読みはこの行に依存しない |
+| quotient sheaf condition(part10/8.3) | law-surface declaration | `assumed` | law surface の `quotientSheafCondition: assumed` を ledger 行として開示 |
 | residual class agreement(head↔repaired) | derived run-pair reading | `computed` | compare の `residualClassAgreement` は両 run の導出 residual の差 δ⁰h 可解性を comparability ゲート下で計算する。本対は `not_cohomologous`(修理は類を非零→零に変える)。修理成功の読みは repaired 側の零 residual と gate が担う |
 | repaired ArchMap | hypothetical repair input | `supplied` / hypothetical | `archmap-saga-repaired.json` は BigDecimal scale-2 HALF_EVEN 統一を表す仮説 variant。`PASS_WITHIN_GATE_POLICY` は実装済み修理を示さない |
 | runtime monetary magnitude | empirical measurement | unmeasured | harmonic-debt を供給せず沈黙。頻度・金額を結論に含めない |
@@ -76,12 +82,12 @@ global sheaf condition、comparison cochain map、presentation packet)は、#382
 
 | 幕 | 結果 |
 | --- | --- |
-| head analyze | `MEASURED_NONGLUING_RESIDUAL_CLASS`(`run:fd1b393a80e6`) |
+| head analyze | `MEASURED_NONGLUING_RESIDUAL`(`run:78c31d6a3172`) |
 | └ grounding | `measured_zero` — 各チャートは自分の法を守っている(それが罠) |
 | └ residual derivation | 三角形 3 辺+preserve 2 辺で mismatch、consign–consign-price は一致(全て観測から導出) |
-| └ descent 残差類 | `measured_nonzero`(単一連結成分、`automatic-c2-zero`) |
+| └ descent boundary membership | `measured_nonzero`(単一連結成分。triple 宣言不在のため class 語彙は不解禁 — named boundary statement で明示) |
 | gate head | `BLOCKED_BY_GATE_POLICY` |
-| repaired analyze | `REPAIR_GLUES_WITHIN_SELECTED_COMPLEX`(`run:f9666ddb2aca`。preserve 残差は B¹ 内) |
+| repaired analyze | `REPAIR_GLUES_WITHIN_SELECTED_COMPLEX`(`run:6685bab8db21`。preserve 残差は B¹ 内) |
 | compare head→repaired | `MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE`、`residualClassAgreement: not_cohomologous` |
 | gate repaired | `PASS_WITHIN_GATE_POLICY` |
 
@@ -92,7 +98,9 @@ harmonic-debt は runtime 実測数値が無いため供給せず、沈黙(供�
 1. **AAT 中心主張の実データ着地**: 非零類の成立条件が「3流儀の衝突」だけでなく
    「三者同時照合サイトの不在」だったこと。各チャート単独は完全に筋の通った金額の扱いをしており
    (grounding = `measured_zero` が計測でそれを言う)、ペアごとの受け渡しも各々は成立している。
-   障害はループを一周したときだけ現れ、それを埋める面(triple)がコードに存在しないから類として残る。
+   障害はループを一周したときだけ現れ、それを埋める面(triple)がコードに存在しない。
+   ツールの読みは選択 1-骨格上の boundary membership(非境界 residual)であり、
+   類語彙は triple 宣言不在のため解禁されない(実証していないこと5)。
    「局所的には合法、大域的に貼り合わない」という構造が、こちらが仕込んだのではない実在 OSS で
    観測された。デモは「この構造なら H¹ が立つ」の実演だったが、本実験は
    「この構造は現実に生じる」の証拠である。
@@ -108,9 +116,10 @@ harmonic-debt は runtime 実測数値が無いため供給せず、沈黙(供�
 ## 実証していないこと
 
 1. **検出の新規性は cech 段にある。** 規約 mismatch の検出自体はフルビルドの cech law が
-   既に行っていた。導出化後の SAGA 段が足したのは、同じ観測を選択複体上の residual class として
-   読む descent 読解、grounding の罠の明示、修理計画の事前検証、run 対の residual class
-   agreement、gate の一貫した診断であって、「SAGA が新しい障害を発見した」という主張は過大である。
+   既に行っていた。導出化後の SAGA 段が足したのは、同じ観測を選択 1-骨格上の boundary
+   membership として読む descent 読解、grounding の罠の明示、修理計画の事前検証、run 対の
+   residual class agreement、gate の一貫した診断であって、「SAGA が新しい障害を発見した」
+   という主張は過大である。
 2. **repaired は仮修理。** section を書き換えた仮説状態の ArchMap であり、
    `PASS_WITHIN_GATE_POLICY` が示すのは「この修理案なら貼り合う」という事前検証の機構である。
    修理が train-ticket に実装可能であること・実装されたことは実証していない。
@@ -122,10 +131,11 @@ harmonic-debt は runtime 実測数値が無いため供給せず、沈黙(供�
    comparison slot は #3822 で沈黙し、有限 instantiation の家は Lean(`Formal/`)である。
    供給時代の presentation 検査(#3805 の整数係数 exactness / generation 負例)は
    git 履歴と当時の報告に記録が残る。
-5. **automatic-c2-zero は triple 宣言不在に相対的である。** 「三者同時照合サイトの不在」は
-   観測事実だが、selected complex に triple を宣言しない限り cocycle 条件は自動成立として
-   扱われる。成分 1-骨格に三角形が存在する本ケースでは、この自動性は author の
-   `U_ijk` 空 assertion に依存する(condition matrix の該当行を参照)。
+5. **class 語彙は解禁していない。** 「三者同時照合サイトの不在」(`U_ijk` 空)はツールが
+   観測できない author assertion である。成分 1-骨格に三角形が存在する本ケースでは、
+   ArchSig は class 語彙を出さず(named boundary statement で明示)、読みを boundary
+   membership に留めた。class 語彙が立つのは triple を宣言して cocycle パリティ検査が
+   実際に走る場合だけである(condition matrix の該当行を参照)。
 
 ## 体験所見(導出契約)
 

@@ -446,13 +446,29 @@ pub(crate) fn evaluate_saga_grounded_v1(
         "detectorFindings": nonzero_charts,
         "detectorCount": nonzero_charts.len()
     });
-    let assumptions = vec![AgAssumptionLedgerEntryV1 {
+    let mut assumptions = vec![AgAssumptionLedgerEntryV1 {
         theorem_ref: "part3/11.3".to_string(),
         assumption: "displayedRequiredLawsHold is operationalized only by the declared holdsCriterion raw-value check".to_string(),
         status: "checked".to_string(),
         checked_by: Some(ARCHSIG_DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS.to_string()),
         assumed_by: None,
     }];
+    if execution_plan
+        .stage3_quotient_sheaf_condition
+        .as_ref()
+        .is_some_and(|condition| condition.mode == "assumed")
+    {
+        assumptions.push(AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part10/8.3".to_string(),
+            assumption: format!(
+                "selected quotient sheaf condition for {}",
+                execution_plan.surface_id
+            ),
+            status: "assumed".to_string(),
+            checked_by: None,
+            assumed_by: Some(format!("law-surface:{}", execution_plan.surface_id)),
+        });
+    }
     let assumption_ids = assumptions
         .iter()
         .map(assumption_id_for_schema)
@@ -539,13 +555,14 @@ fn descent_not_computed(plan: &RepairPlanDocumentV1, fault: String) -> SagaDesce
         reason: Some(fault.clone()),
     };
     SagaDescentMeasurementV1 {
-        structural_verdict: vec![
-            verdict_row("saga.residual-boundary-membership"),
-            verdict_row("saga.global-coherence"),
-        ],
+        structural_verdict: vec![verdict_row("saga.residual-boundary-membership")],
         computed_invariants: vec![json!({
             "invariantId": "saga-descent:residual-derivation",
             "evaluator": "ag.saga-descent",
+            "representation": {
+                "invariantId": "saga-descent:residual-derivation",
+                "evaluator": "ag.saga-descent"
+            },
             "residualDerivation": {
                 "derived": false,
                 "fault": fault,
@@ -617,44 +634,6 @@ pub(crate) fn evaluate_saga_descent_v1(
         }),
     });
 
-    if boundary.in_b1 {
-        structural_verdict.push(AgStructuralVerdictV1 {
-            evaluator: "ag.saga-descent".to_string(),
-            law: "saga.global-coherence".to_string(),
-            verdict: "measured_zero".to_string(),
-            verdict_data: AgVerdictDataV1 {
-                in_scope: true,
-                zero: true,
-                non_zero: false,
-                method_status: "derived_residual_global_coherent".to_string(),
-                cert_ref: Some("computedInvariants/saga-descent:residual-derivation".to_string()),
-            },
-            depends_on_assumptions: evaluator_assumption_ids.clone(),
-            reason: Some(
-                "derived residual is a B1 boundary for the selected RepairPlan complex"
-                    .to_string(),
-            ),
-        });
-    } else {
-        structural_verdict.push(AgStructuralVerdictV1 {
-            evaluator: "ag.saga-descent".to_string(),
-            law: "saga.global-coherence".to_string(),
-            verdict: "measured_nonzero".to_string(),
-            verdict_data: AgVerdictDataV1 {
-                in_scope: true,
-                zero: false,
-                non_zero: true,
-                method_status: "residual_not_in_b1".to_string(),
-                cert_ref: Some("computedInvariants/saga-descent:residual-derivation".to_string()),
-            },
-            depends_on_assumptions: evaluator_assumption_ids.clone(),
-            reason: Some(
-                "global coherence is blocked because the derived residual is not a B1 boundary"
-                    .to_string(),
-            ),
-        });
-    }
-
     let mut computed_invariants = vec![
         json!({
             "invariantId": "saga-descent:boundary-membership",
@@ -668,6 +647,10 @@ pub(crate) fn evaluate_saga_descent_v1(
         json!({
             "invariantId": "saga-descent:residual-derivation",
             "evaluator": "ag.saga-descent",
+            "representation": {
+                "invariantId": "saga-descent:residual-derivation",
+                "evaluator": "ag.saga-descent"
+            },
             "residualDerivation": {
                 "derived": true,
                 "fault": Value::Null,
@@ -680,7 +663,13 @@ pub(crate) fn evaluate_saga_descent_v1(
         }),
     ];
     let class_certificate = component_cocycle_certificate(plan, &derived.supports);
-    if let Some(class_certificate) = class_certificate.as_ref() {
+    // class 語彙は宣言 triple の cocycle パリティを実際に検査した場合だけ解禁する。
+    // triple 不在(automatic-c2-zero)は author assertion であり、読みは 1-骨格の
+    // 境界所属(boundary 語彙)に留める。
+    if let Some(class_certificate) = class_certificate
+        .as_ref()
+        .filter(|certificate| certificate.certificate_kind == "checked-triple-cocycle-zero")
+    {
         let class_nonzero = !boundary.in_b1;
         structural_verdict.push(AgStructuralVerdictV1 {
             evaluator: "ag.saga-descent".to_string(),
@@ -731,6 +720,24 @@ pub(crate) fn evaluate_saga_descent_v1(
                 "complex.charts",
                 "complex.overlaps"
             ]
+        }));
+    }
+    if let Some(class_certificate) = class_certificate
+        .as_ref()
+        .filter(|certificate| certificate.certificate_kind == "automatic-c2-zero")
+    {
+        computed_invariants.push(json!({
+            "invariantId": "saga-descent:class-vocabulary-boundary",
+            "evaluator": "ag.saga-descent",
+            "classVocabulary": {
+                "unlocked": false,
+                "certificateKind": "automatic-c2-zero",
+                "reason": "residual-component-declares-no-triple-overlaps",
+                "component": {
+                    "chartRefs": &class_certificate.component.chart_refs,
+                    "overlapRefs": &class_certificate.component.overlap_refs
+                }
+            }
         }));
     }
     let assumptions = vec![enumeration_assumption];

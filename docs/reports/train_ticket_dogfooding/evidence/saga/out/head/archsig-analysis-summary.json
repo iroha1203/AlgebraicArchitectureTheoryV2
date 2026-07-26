@@ -1,6 +1,6 @@
 {
   "assumptionSummary": {
-    "assumedCount": 8,
+    "assumedCount": 9,
     "checkedCount": 5,
     "violatedCount": 0
   },
@@ -9,11 +9,11 @@
     "lawSurface": "sha256:62d8863d01500c61fd9027a4be468ffc6e2ed23bd9ea919f2e7fd45041d19190",
     "measurementProfile": "sha256:c073650c8bcd053d48d78bb1a29811b80917ffbdec81e1789dd15d68908b0753"
   },
-  "conclusion": "MEASURED_NONGLUING_RESIDUAL_CLASS",
+  "conclusion": "MEASURED_NONGLUING_RESIDUAL",
   "inputDigests": {
     "archmap": {
       "path": "input:archmap-saga-head.json",
-      "sha256": "bdca8b9c6b04a377ec41e64ee0f17186c1ce6ad0a267b5fc2c0a574a375c1010"
+      "sha256": "6f8a2f6265234010587cc30dd23188c0f7b8030d39d385289a1c8c1320c9ec22"
     },
     "lawPolicy": {
       "path": "input:law-policy-saga.json",
@@ -39,11 +39,11 @@
     },
     "repairPlan": {
       "path": "input:repair-plan-head.json",
-      "sha256": "662b04ba0b3a91ca14ebe1b539484ed6017502a61af87603e9820d49851ef3e2"
+      "sha256": "140987077e2c3ff3167ab5e4f8ceae5326db6b5c9530ac5100b5d6da4cb4a163"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
-      "sha256": "c05d1537d9126e4f0e2b59bf37ef90826adf8a22ff49e89625ff0e8f2d243868",
+      "sha256": "c75cd524da051ad25472f1faad2d3fc44456db4fe6f0a1f90851d76e7b069b1a",
       "status": "computed"
     }
   },
@@ -59,25 +59,25 @@
   ],
   "profileRef": "profile:train-ticket-money-saga@2",
   "readThisFirst": {
-    "boundary": "Profile-relative. 8 assumptions declared. 0 non-terminal rows.",
-    "conclusion": "MEASURED_NONGLUING_RESIDUAL_CLASS",
+    "boundary": "Profile-relative. 9 assumptions declared. 0 non-terminal rows.",
+    "conclusion": "MEASURED_NONGLUING_RESIDUAL",
     "heading": "Read this first",
     "nextAction": "Open archsig-insight-brief.md or the viewer Insight Queue.",
     "whatItMeans": "Local rules are not enough to explain the selected cover; ArchSig measured a cross-context glue mismatch.",
     "whereToLookFirst": "See archsig-insight-report.json#/insightCards/0/evidence"
   },
-  "runId": "run:fd1b393a80e6",
+  "runId": "run:78c31d6a3172",
   "schema": "archsig-analysis-summary/v0.5.4",
   "structuralVerdictSummary": {
-    "measuredNonzeroCount": 4,
+    "measuredNonzeroCount": 2,
     "nonTerminalCount": 0,
-    "rowCount": 5,
+    "rowCount": 3,
     "unmeasuredCount": 0
   },
   "toolVersion": "0.5.4",
   "translationRule": {
-    "boundary": "The class reading is relative to the selected cover, law-surface witness bindings, supplied sheaf certificate, and gluing data.",
-    "conclusionCode": "MEASURED_NONGLUING_RESIDUAL_CLASS",
+    "boundary": "Revise the observed sections or the repair plan complex and re-run analyze before claiming repair gluing.",
+    "conclusionCode": "MEASURED_NONGLUING_RESIDUAL",
     "concreteSupportRefs": [
       "overlap:cancel-insidepay",
       "cech:section-mismatch",
@@ -92,10 +92,10 @@
       "cech:section-mismatch"
     ],
     "emitsLawSatisfiedWithoutLawCheck": false,
-    "generatedDiscipline": "generated derived class representative detection",
-    "principalText": "The selected finite complex contains a measured non-gluing derived residual class in Z1/B1.",
+    "generatedDiscipline": "generated derived-residual boundary-membership detection",
+    "principalText": "The derived SAGA residual is measured outside B1 with concrete residual support.",
     "supportDiscipline": "nonzero conclusions must name concrete selected support in active translationRule.concreteSupportRefs",
-    "theoremRef": "part10/4.5"
+    "theoremRef": "part10/3.4"
   },
   "translationRuleTable": [
     {
@@ -108,16 +108,7 @@
       "theoremRef": "part10/3.4"
     },
     {
-      "boundary": "The class reading is relative to the selected cover, law-surface witness bindings, supplied sheaf certificate, and gluing data.",
-      "conclusionCode": "MEASURED_NONGLUING_RESIDUAL_CLASS",
-      "emitsLawSatisfiedWithoutLawCheck": false,
-      "generatedDiscipline": "generated derived class representative detection",
-      "principalText": "The selected finite complex contains a measured non-gluing derived residual class in Z1/B1.",
-      "supportDiscipline": "nonzero conclusions must name concrete selected support in active translationRule.concreteSupportRefs",
-      "theoremRef": "part10/4.5"
-    },
-    {
-      "boundary": "Supply Stage 2 law surface and comparison artifacts before claiming global semantic repair.",
+      "boundary": "The gluing reading is relative to the selected RepairPlan complex and its declared triple overlaps; it does not claim global semantic repair.",
       "conclusionCode": "REPAIR_GLUES_WITHIN_SELECTED_COMPLEX",
       "emitsLawSatisfiedWithoutLawCheck": false,
       "generatedDiscipline": "generated derived-residual boundary-membership detection",

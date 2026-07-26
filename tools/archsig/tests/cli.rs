@@ -12,11 +12,11 @@ use archsig::{
     ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE,
     ARCHSIG_COMPARISON_NO_NEW_MEASURED_OBSTRUCTION_RECORDED,
     ARCHSIG_COMPARISON_RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA, ARCHSIG_GATE_REPORT_DECISIONS,
-    ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS, ARCHSIG_REPAIR_TARGETS_IDENTIFIED,
+    ARCHSIG_REPAIR_TARGETS_IDENTIFIED,
     ARCHSIG_SAGA_CONCLUSION_CODES,
     ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL,
     ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, ArchMapDocumentV2, ArchSigRunManifestV1,
-    RepairPlanDocumentV1, compare_archmap_v2_doctrine, validate_measurement_packet_value_v1,
+    compare_archmap_v2_doctrine,
     validate_refactor_morphism_v1, validate_refinement_comparison_v1,
 };
 use serde_json::{Value, json};
@@ -1151,11 +1151,13 @@ fn cli_analyze_saga_descent_complete_support_measures_boundary_membership() {
     let membership = saga_row(&packet, "saga.residual-boundary-membership");
     assert_eq!(membership["verdict"], "measured_zero");
     assert_eq!(membership["verdictData"]["methodStatus"], "residual_in_b1");
-    let global = saga_row(&packet, "saga.global-coherence");
-    assert_eq!(global["verdict"], "measured_zero");
-    assert_eq!(
-        global["verdictData"]["methodStatus"],
-        "derived_residual_global_coherent"
+    assert!(
+        packet["structuralVerdict"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|row| row["law"] != "saga.global-coherence"),
+        "the retired saga.global-coherence row must stay silent as deleted vocabulary"
     );
     assert!(
         packet["computedInvariants"]
@@ -1213,8 +1215,8 @@ fn cli_analyze_saga_descent_complete_support_measures_boundary_membership() {
     assert!(
         summary["translationRule"]["boundary"]
             .as_str()
-            .is_some_and(|text| text.contains("Supply Stage 2 law surface")),
-        "translation boundary must say what must be supplied next"
+            .is_some_and(|text| text.contains("selected RepairPlan complex")),
+        "translation boundary must stay relative to the selected complex"
     );
     assert!(
         summary["translationRuleTable"]
@@ -1306,52 +1308,12 @@ fn supplied_triple_saga_plan(root: &Path, nonzero_class: bool) -> Value {
     } else {
         json!("repair-plan:supplied-triple-pentagon-zero")
     };
-    let typed_plan: RepairPlanDocumentV1 =
-        serde_json::from_value(plan.clone()).expect("comparison plan matches RepairPlan schema");
-    let complex_fingerprint = format!(
-        "{:x}",
-        Sha256::digest(
-            serde_json::to_vec(&typed_plan.complex).expect("comparison complex serializes")
-        )
-    );
-    let plan_flagged = saga_plan_flagged_overlaps(&plan);
-    let saga_variable_map = (!plan_flagged.is_empty())
-        .then(|| json!({"source": "cech:section-mismatch", "target": "cech:section-mismatch"}))
-        .into_iter()
-        .collect::<Vec<_>>();
-    let saga_cochain_map = json!({
-        "degreeZero": typed_plan.complex.charts.iter().map(|chart| json!({
-            "sourceChartRef": chart,
-            "targetChartRef": chart,
-            "variableMap": saga_variable_map.clone()
-        })).collect::<Vec<_>>(),
-        "degreeOne": typed_plan.complex.overlaps.iter().map(|overlap| json!({
-            "sourceOverlapRef": overlap.id,
-            "targetOverlapRef": overlap.id,
-            "variableMap": saga_variable_map.clone()
-        })).collect::<Vec<_>>(),
-        "degreeTwo": {
-            "basisMap": typed_plan.complex.triple_overlaps.iter().map(|triple| json!({
-                "sourceTripleRef": triple.id,
-                "targetTripleRef": triple.id
-            })).collect::<Vec<_>>(),
-            "zeroImage": []
-        }
-    });
     plan
 }
 
-fn presentation_generated_saga_plan(root: &Path, nonzero_class: bool) -> Value {
-    // comparison / presentation slot は #3822 で沈黙化。プラン形は supplied_triple と同一。
-    supplied_triple_saga_plan(root, nonzero_class)
-}
 
-fn presentation_generated_circle_archmap(root: &Path) -> Value {
-    read_json(&root.join("archmap_v2_presentation_generated_circle.json"))
-}
-
-fn presentation_generated_triple_archmap(root: &Path) -> Value {
-    read_json(&root.join("archmap_v2_presentation_generated_triple.json"))
+fn pentagon_observation_archmap(root: &Path) -> Value {
+    read_json(&root.join("archmap_v2_pentagon_observation.json"))
 }
 
 fn component_aware_one_cent_saga_plan(root: &Path) -> Value {
@@ -1504,42 +1466,41 @@ fn cli_analyze_saga_descent_certifies_the_one_cent_component_without_other_tripl
 
     for out_dir in [with_disconnected_triple, without_disconnected_triple] {
         let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
-        assert_eq!(
-            saga_row(&packet, "saga.residual-class")["verdict"],
-            "measured_nonzero"
+        assert!(
+            packet["structuralVerdict"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .all(|row| row["law"] != "saga.residual-class"),
+            "triple 不在(automatic-c2-zero)の component は class 語彙を解禁しない"
         );
-        let invariant = invariant_by_id(&packet, "saga-descent:residual-class");
-        let support = &invariant["residualClassSupport"];
+        let boundary = invariant_by_id(&packet, "saga-descent:class-vocabulary-boundary");
+        let vocabulary = &boundary["classVocabulary"];
+        assert_eq!(vocabulary["unlocked"], false);
+        assert_eq!(vocabulary["certificateKind"], "automatic-c2-zero");
         assert_eq!(
-            support["component"]["chartRefs"],
+            vocabulary["reason"],
+            "residual-component-declares-no-triple-overlaps"
+        );
+        assert_eq!(
+            vocabulary["component"]["chartRefs"],
             json!(["ctx:cancel", "ctx:inside-payment", "ctx:order"])
         );
-        assert_eq!(
-            support["component"]["overlapRefs"],
-            json!([
-                "overlap:cancel-inside-payment",
-                "overlap:cancel-order",
-                "overlap:inside-payment-order"
-            ])
+        let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
+        assert_eq!(summary["conclusion"], ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL);
+        let statements = read_json(&out_dir.join("archsig-measurement-packet.json"))
+            ["boundaryStatements"]
+            .clone();
+        assert!(
+            statements.as_array().is_some_and(|rows| rows.iter().any(|row| {
+                row["reason"] == "class_vocabulary_not_unlocked_without_declared_triples"
+            })),
+            "automatic-c2-zero must surface as a named boundary statement"
         );
-        assert_eq!(
-            support["cocycle"]["certificateKind"],
-            "automatic-c2-zero"
-        );
-        assert_eq!(
-            support["cocycle"]["checked"], false,
-            "triple 不在の component では cocycle 検査が走らない。自動成立を checked と混ぜない"
-        );
-        assert_eq!(support["cocycle"]["tripleOverlapRefs"], json!([]));
         let view_model = read_json(&out_dir.join("archsig-measurement-view-model.json"));
-        let view_residual = &view_model["classSupport"]["residualClass"];
-        assert_eq!(
-            view_residual["component"]["chartRefs"],
-            json!(["ctx:cancel", "ctx:inside-payment", "ctx:order"])
-        );
-        assert_eq!(
-            view_residual["cocycleCertificateKind"],
-            "automatic-c2-zero"
+        assert!(
+            view_model["classSupport"]["residualClass"].is_null(),
+            "view model must not project a residual class when the vocabulary is not unlocked"
         );
         assert!(view_model["classSupport"]["classNonzero"].is_null());
     }
@@ -1602,15 +1563,15 @@ fn cli_analyze_saga_descent_rejects_a_class_certificate_spanning_components() {
 #[test]
 fn cli_compare_records_repair_plan_provenance_without_suppressing_verdict_rows() {
     let root = ag_measurement_root();
-    let base_plan = presentation_generated_saga_plan(&root, true);
+    let base_plan = supplied_triple_saga_plan(&root, true);
     let mut changed_atlas_plan = base_plan.clone();
     changed_atlas_plan["id"] = json!("repair-plan:supplied-triple-pentagon-changed");
 
-    let base_run = run_presentation_generated_saga_fixture_lock(
+    let base_run = run_pentagon_observation_fixture_lock(
         "ag-saga-compare-repair-plan-base",
         base_plan,
     );
-    let head_run = run_presentation_generated_saga_fixture_lock(
+    let head_run = run_pentagon_observation_fixture_lock(
         "ag-saga-compare-repair-plan-changed-atlas",
         changed_atlas_plan,
     );
@@ -1920,14 +1881,14 @@ fn cli_repair_plan_rejects_v056_plan_that_still_carries_primitives() {
 #[test]
 fn cli_compare_rejects_artifact_and_manifest_provenance_mismatches() {
     let root = ag_measurement_root();
-    let base_plan = presentation_generated_saga_plan(&root, true);
+    let base_plan = supplied_triple_saga_plan(&root, true);
     let mut changed_plan = base_plan.clone();
     changed_plan["id"] = json!("repair-plan:supplied-triple-pentagon-changed");
-    let base_run = run_presentation_generated_saga_fixture_lock(
+    let base_run = run_pentagon_observation_fixture_lock(
         "ag-saga-compare-manifest-binding-base",
         base_plan,
     );
-    let packet_mismatch_run = run_presentation_generated_saga_fixture_lock(
+    let packet_mismatch_run = run_pentagon_observation_fixture_lock(
         "ag-saga-compare-manifest-binding-packet-mismatch",
         changed_plan.clone(),
     );
@@ -1954,7 +1915,7 @@ fn cli_compare_rejects_artifact_and_manifest_provenance_mismatches() {
         2,
     );
 
-    let normalized_mismatch_run = run_presentation_generated_saga_fixture_lock(
+    let normalized_mismatch_run = run_pentagon_observation_fixture_lock(
         "ag-saga-compare-manifest-binding-normalized-mismatch",
         changed_plan.clone(),
     );
@@ -1984,7 +1945,7 @@ fn cli_compare_rejects_artifact_and_manifest_provenance_mismatches() {
         2,
     );
 
-    let digest_mismatch_run = run_presentation_generated_saga_fixture_lock(
+    let digest_mismatch_run = run_pentagon_observation_fixture_lock(
         "ag-saga-compare-manifest-binding-digest-mismatch",
         changed_plan,
     );
@@ -2201,8 +2162,16 @@ fn cli_analyze_saga_descent_nonboundary_residual_is_unconditional_negative() {
     let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
     assert_eq!(
         summary["conclusion"],
-        ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS,
-        "a derived non-boundary residual now reads as the class conclusion on the selected complex"
+        ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL,
+        "without checked triples the reading stays at 1-skeleton boundary membership"
+    );
+    assert!(
+        packet["boundaryStatements"]
+            .as_array()
+            .is_some_and(|rows| rows.iter().any(|row| {
+                row["reason"] == "class_vocabulary_not_unlocked_without_declared_triples"
+            })),
+        "the withheld class vocabulary must be a named boundary statement"
     );
 }
 
@@ -2224,9 +2193,13 @@ fn cli_analyze_contract_fixture_locks_are_byte_deterministic() {
         saga_row(&positive_packet, "saga.residual-boundary-membership")["verdict"],
         "measured_zero"
     );
-    assert_eq!(
-        saga_row(&positive_packet, "saga.global-coherence")["verdict"],
-        "measured_zero"
+    assert!(
+        positive_packet["structuralVerdict"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|row| row["law"] != "saga.global-coherence"),
+        "the retired saga.global-coherence row must stay silent as deleted vocabulary"
     );
     let positive_summary = read_json(&saga_positive_a.join("archsig-analysis-summary.json"));
     assert_eq!(
@@ -2265,8 +2238,8 @@ fn cli_analyze_contract_fixture_locks_are_byte_deterministic() {
     let negative_summary = read_json(&saga_negative_a.join("archsig-analysis-summary.json"));
     assert_eq!(
         negative_summary["translationRule"]["theoremRef"],
-        "part10/4.5",
-        "a derived non-boundary residual reads as the selected-complex class conclusion"
+        "part10/3.4",
+        "without checked triples the non-boundary residual reads as boundary membership"
     );
     assert!(
         negative_summary["translationRule"]["concreteSupportRefs"]
@@ -12885,25 +12858,14 @@ fn cli_compare_refinement_binds_fingerprints_and_transports_only_zero() {
         read_json(&fine_run.join("archsig-run-manifest.json"))["inputDigests"]["siteCoverDigest"]["sha256"]
     );
     assert_eq!(positive["classTransport"]["boundaryStatement"], Value::Null);
+    assert_eq!(
+        positive["residualClassAgreement"]["status"], "silence_by_design",
+        "a not-comparable run pair must not unlock the residual class agreement vocabulary"
+    );
 
-    let mut nonzero_plan = zero_plan_for_refinement_test(&root);
-    // 導出 residual で非零類を得るには奇サイクル(三角形全辺 mismatch)を使う。
-    // 三角形が triple で埋まっていると δ¹ が非零になるため triple は外し、
-    // zeroPrimitiveRef 用に pendant の一致 edge を足す。
-    nonzero_plan["complex"]["tripleOverlaps"] = json!([]);
-    nonzero_plan["complex"]["charts"]
-        .as_array_mut()
-        .expect("nonzero charts are array")
-        .push(json!("ctx:audit"));
-    nonzero_plan["complex"]["overlaps"]
-        .as_array_mut()
-        .expect("nonzero overlaps are array")
-        .push(json!({
-            "id": "overlap:shared-audit",
-            "left": "ctx:shared",
-            "right": "ctx:audit"
-        }));
-    nonzero_plan["id"] = json!("repair-plan:nonzero-audit-tail");
+    // class 語彙は checked triple が必要になった(#3822 是正)。奇サイクルと
+    // 偶パリティ検査三角形を両立する五角形+弦構成を使う。
+    let nonzero_plan = supplied_triple_saga_plan(&root, true);
     let nonzero_base = run_saga_compare_fixture(
         "refinement-coarse-nonzero",
         read_json(&root.join("archmap_v2.json")),
@@ -13744,12 +13706,12 @@ fn run_saga_fixture_lock(case_id: &str, repair_plan: Value) -> PathBuf {
     )
 }
 
-fn run_presentation_generated_saga_fixture_lock(case_id: &str, repair_plan: Value) -> PathBuf {
+fn run_pentagon_observation_fixture_lock(case_id: &str, repair_plan: Value) -> PathBuf {
     let root = ag_measurement_root();
     run_saga_fixture_lock_with_archmap(
         case_id,
         repair_plan,
-        presentation_generated_triple_archmap(&root),
+        pentagon_observation_archmap(&root),
     )
 }
 
@@ -13856,11 +13818,6 @@ fn saga_plan_flagged_overlaps(plan: &Value) -> BTreeSet<String> {
             "overlap:ledger-order",
         ],
         "repair-plan:supplied-triple-pentagon-zero" => &[],
-        "repair-plan:nonzero-audit-tail" => &[
-            "overlap:order-inventory",
-            "overlap:inventory-shared",
-            "overlap:order-shared",
-        ],
         "repair-plan:complete-support-zero" | "repair-plan:component-aware-zero" => &[],
         "repair-plan:nonboundary-cycle" => &[
             "overlap:order-inventory",
@@ -14236,14 +14193,6 @@ fn invariant_by_id<'a>(packet: &'a Value, invariant_id: &str) -> &'a Value {
         .unwrap_or_else(|| panic!("missing computed invariant {invariant_id}"))
 }
 
-fn invariant_by_id_mut<'a>(packet: &'a mut Value, invariant_id: &str) -> &'a mut Value {
-    packet["computedInvariants"]
-        .as_array_mut()
-        .expect("computedInvariants is array")
-        .iter_mut()
-        .find(|invariant| invariant["invariantId"] == invariant_id)
-        .unwrap_or_else(|| panic!("missing computed invariant {invariant_id}"))
-}
 
 fn coherence_row(packet: &Value) -> &Value {
     packet["structuralVerdict"]
@@ -15411,6 +15360,39 @@ fn context_json(id: &str, atoms: Vec<&str>, restricts_to: Vec<&str>) -> Value {
         context["restrictsTo"] = json!(restricts_to);
     }
     context
+}
+
+#[test]
+fn cli_analyze_practical_grounded_emits_defect_quotient_invariant() {
+    let out_dir = run_practical_saga_head_analyze("grounded-defect-quotient");
+    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
+    let invariant = packet["computedInvariants"]
+        .as_array()
+        .expect("computed invariants are an array")
+        .iter()
+        .find(|invariant| invariant["invariantId"] == "saga-grounded:defect-quotient")
+        .expect("grounded defect quotient invariant exists");
+    assert_eq!(invariant["evaluator"], "ag.saga-grounded");
+    let laws_hold = &invariant["displayedRequiredLawsHold"];
+    assert_eq!(laws_hold["checkKind"], "holds-criterion-raw-value");
+    assert!(
+        laws_hold["perChart"]
+            .as_array()
+            .is_some_and(|rows| !rows.is_empty()),
+        "per-chart holds readings are computed from observation and law surface"
+    );
+    assert!(
+        invariant["generatedQuotient"]["obstructionIdeal"]["source"]
+            .as_str()
+            .is_some_and(|source| source.contains("forbiddenSupportGenerators")),
+        "the generated quotient must name its law-surface provenance"
+    );
+    assert!(
+        packet["assumptions"]
+            .as_array()
+            .is_some_and(|rows| rows.iter().any(|row| row["theoremRef"] == "part10/8.3")),
+        "the law-side quotient sheaf condition must be disclosed as an assumption"
+    );
 }
 
 fn run_practical_saga_head_analyze(test_name: &str) -> PathBuf {

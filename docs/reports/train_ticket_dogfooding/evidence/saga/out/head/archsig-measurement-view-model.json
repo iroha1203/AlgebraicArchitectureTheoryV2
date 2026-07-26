@@ -55,6 +55,15 @@
       "text": "Higher Tor_i for i>=2 remains unmeasured support: degree-1 Tor_1 readings do not discharge derived transversality or all higher Tor vanishing."
     },
     {
+      "id": "boundary:silence-by-design:saga-class-vocabulary:6",
+      "kind": "silence_by_design",
+      "reason": "class_vocabulary_not_unlocked_without_declared_triples",
+      "scopeRefs": [
+        "measurement:train-ticket-money-saga-head/v0.5.4"
+      ],
+      "text": "The residual component declares no triple overlaps, so the cocycle condition is an author assertion (automatic-c2-zero); the reading stays at selected 1-skeleton boundary membership and the class vocabulary is not unlocked."
+    },
+    {
       "id": "boundary:not-applicable:0",
       "kind": "not_applicable",
       "reason": "analytic_only",
@@ -115,66 +124,6 @@
       "ctx:preserve-surface->ctx:consign-surface",
       "ctx:preserve-surface->ctx:order-surface"
     ],
-    "residualClass": {
-      "basis": "Z1/B1",
-      "cocycleCertificateKind": "automatic-c2-zero",
-      "component": {
-        "chartRefs": [
-          "ctx:cancel-surface",
-          "ctx:consign-price-surface",
-          "ctx:consign-surface",
-          "ctx:inside-payment-surface",
-          "ctx:order-surface",
-          "ctx:preserve-surface"
-        ],
-        "overlapRefs": [
-          "overlap:cancel-insidepay",
-          "overlap:cancel-order",
-          "overlap:consign-consignprice",
-          "overlap:insidepay-order",
-          "overlap:preserve-consign",
-          "overlap:preserve-order"
-        ]
-      },
-      "nonZero": true,
-      "representative": [
-        {
-          "overlapRef": "overlap:cancel-insidepay",
-          "support": [
-            "cech:section-mismatch"
-          ]
-        },
-        {
-          "overlapRef": "overlap:insidepay-order",
-          "support": [
-            "cech:section-mismatch"
-          ]
-        },
-        {
-          "overlapRef": "overlap:cancel-order",
-          "support": [
-            "cech:section-mismatch"
-          ]
-        },
-        {
-          "overlapRef": "overlap:consign-consignprice",
-          "support": []
-        },
-        {
-          "overlapRef": "overlap:preserve-consign",
-          "support": [
-            "cech:section-mismatch"
-          ]
-        },
-        {
-          "overlapRef": "overlap:preserve-order",
-          "support": [
-            "cech:section-mismatch"
-          ]
-        }
-      ],
-      "tripleOverlapRefs": []
-    },
     "supportAtomRefs": [
       "atom:semantic:cancel-surface:cech-section-money-amount",
       "atom:semantic:consign-surface:cech-section-money-amount",
@@ -252,7 +201,7 @@
     "lawSurface": "sha256:62d8863d01500c61fd9027a4be468ffc6e2ed23bd9ea919f2e7fd45041d19190",
     "measurementProfile": "sha256:c073650c8bcd053d48d78bb1a29811b80917ffbdec81e1789dd15d68908b0753"
   },
-  "conclusion": "MEASURED_NONGLUING_RESIDUAL_CLASS",
+  "conclusion": "MEASURED_NONGLUING_RESIDUAL",
   "edgeMismatch": [
     {
       "edgeRef": "ctx:cancel-surface->ctx:inside-payment-surface",
@@ -304,7 +253,7 @@
   "inputDigests": {
     "archmap": {
       "path": "input:archmap-saga-head.json",
-      "sha256": "bdca8b9c6b04a377ec41e64ee0f17186c1ce6ad0a267b5fc2c0a574a375c1010"
+      "sha256": "6f8a2f6265234010587cc30dd23188c0f7b8030d39d385289a1c8c1320c9ec22"
     },
     "lawPolicy": {
       "path": "input:law-policy-saga.json",
@@ -316,7 +265,7 @@
     },
     "measurementPacket": {
       "path": "input:archsig-measurement-packet.json",
-      "sha256": "0ce7dd3a9497e6616b8227703a26c1532ce7b9c7c6a94b2fcb11d9e11e35697c"
+      "sha256": "1899703f940e33df158ad760be3ea66052375e2c4e796e5c0cb37f844b8ee0b6"
     },
     "measurementProfile": {
       "path": "input:measurement-profile-saga.json",
@@ -334,11 +283,11 @@
     },
     "repairPlan": {
       "path": "input:repair-plan-head.json",
-      "sha256": "662b04ba0b3a91ca14ebe1b539484ed6017502a61af87603e9820d49851ef3e2"
+      "sha256": "140987077e2c3ff3167ab5e4f8ceae5326db6b5c9530ac5100b5d6da4cb4a163"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
-      "sha256": "c05d1537d9126e4f0e2b59bf37ef90826adf8a22ff49e89625ff0e8f2d243868",
+      "sha256": "c75cd524da051ad25472f1faad2d3fc44456db4fe6f0a1f90851d76e7b069b1a",
       "status": "computed"
     }
   },
@@ -577,7 +526,7 @@
       "siteRef": "archmap:/contexts"
     }
   ],
-  "runId": "run:fd1b393a80e6",
+  "runId": "run:78c31d6a3172",
   "scalarFields": [
     {
       "fieldId": "topological-debt-capacity-lower-bound",

@@ -126,46 +126,6 @@ pub(crate) fn complex_has_valid_finite_incidence(complex: &RepairPlanComplexV1) 
 mod tests {
     use super::*;
 
-    fn all_mismatch_supports(plan: &RepairPlanDocumentV1) -> BTreeMap<String, Vec<String>> {
-        // 観測シナリオ表(fail-loud)。fixture の id を知らない場合は panic して
-        // 黙って別シナリオへ落ちない。integer unit fixture だけが歴史的語彙を保つ。
-        let (variable, flagged): (&str, Option<&[&str]>) = match plan.id.as_str() {
-            "repair-plan:train-ticket-money-head" => (
-                "drift:refund-rounding",
-                Some(&[
-                    "overlap:cancel-insidepay",
-                    "overlap:insidepay-order",
-                    "overlap:cancel-order",
-                ]),
-            ),
-            "repair-plan:presentation-generated-circle"
-            | "repair-plan:presentation-generated-circle-integers"
-            | "repair-plan:comparison-demo"
-            | "repair-plan:complete-support-demo"
-            | "repair-plan:supplied-faithfulness-demo"
-            | "repair-plan:true-sheaf-demo"
-            | "repair-plan:gluing-data-demo"
-            | "repair-plan:component-aware-one-cent" => {
-                (crate::saga::DERIVED_RESIDUAL_VARIABLE, None)
-            }
-            unknown => panic!("all_mismatch_supports has no observation scenario for {unknown}"),
-        };
-        plan.complex
-            .overlaps
-            .iter()
-            .map(|overlap| {
-                let active = flagged
-                    .map(|flagged| flagged.contains(&overlap.id.as_str()))
-                    .unwrap_or(true);
-                let support = if active {
-                    vec![variable.to_string()]
-                } else {
-                    Vec::new()
-                };
-                (overlap.id.clone(), support)
-            })
-            .collect()
-    }
 
     use crate::schema::{RepairPlanOverlapV1, RepairPlanTripleOverlapV1};
 
@@ -370,11 +330,9 @@ fn check_archmap_bindings(
         for overlap in &plan.complex.overlaps {
             let path = format!("complex.overlaps[{}].archmapContextRef", overlap.id);
             let Some(context_ref) = overlap.archmap_context_ref.as_deref() else {
-                examples.push(generic_validation_example(
-                    &path,
-                    "missing",
-                    "an ArchMap complex mapping requires every overlap to declare archmapContextRef",
-                ));
+                // 導出時代の overlap は観測された chart↔chart restriction 辺そのものであり、
+                // intersection context を持たない。その辺の実在は下の
+                // expected_direct_restrictions(cover 完全一致検査)が観測側で検査する。
                 continue;
             };
             overlap_contexts.insert(overlap.id.as_str(), context_ref);
@@ -431,11 +389,8 @@ fn check_archmap_bindings(
         for triple in &plan.complex.triple_overlaps {
             let path = format!("complex.tripleOverlaps[{}].archmapContextRef", triple.id);
             let Some(context_ref) = triple.archmap_context_ref.as_deref() else {
-                examples.push(generic_validation_example(
-                    &path,
-                    "missing",
-                    "an ArchMap complex mapping requires every triple overlap to declare archmapContextRef",
-                ));
+                // 導出時代の triple 宣言は cocycle 検査の対象指定であり、intersection
+                // context を持たなくてよい。mapping を宣言した triple だけ強い検査を受ける。
                 continue;
             };
             if chart_ids.contains(context_ref) {

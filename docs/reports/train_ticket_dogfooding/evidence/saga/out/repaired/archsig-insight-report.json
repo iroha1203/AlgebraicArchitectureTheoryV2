@@ -97,6 +97,13 @@
         "theoremRef": "part4/12.4"
       },
       {
+        "assumedBy": "law-surface:law-surface:train-ticket-money-saga-v054",
+        "assumption": "selected quotient sheaf condition for law-surface:train-ticket-money-saga-v054",
+        "checkedBy": null,
+        "status": "assumed",
+        "theoremRef": "part10/8.3"
+      },
+      {
         "assumedBy": "repair-plan author",
         "assumption": "repair-plan complex enumeration completeness for repair-plan:train-ticket-money-repaired",
         "checkedBy": null,
@@ -104,7 +111,7 @@
         "theoremRef": "part10/3.1"
       }
     ],
-    "assumedCount": 8,
+    "assumedCount": 9,
     "blocking": [],
     "blockingCount": 0,
     "checked": [
@@ -153,7 +160,7 @@
     ],
     "notComputedCount": 0,
     "profileRef": "profile:train-ticket-money-saga@2",
-    "shortText": "Profile-relative. 8 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
+    "shortText": "Profile-relative. 9 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
     "unknownCount": 0,
     "unmeasuredCount": 0,
     "violatedCount": 0
@@ -174,7 +181,7 @@
   },
   "copyBlocks": {
     "llmHandoff": {
-      "boundary": "Profile-relative. 8 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
+      "boundary": "Profile-relative. 9 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
       "instruction": "Use the following ArchSig result as bounded evidence. Do not infer beyond the listed claims and boundaries.",
       "topInsights": [
         "No selected-cover H^1 glue mismatch was measured under this profile.",
@@ -13240,90 +13247,6 @@
         "valence": 1
       },
       {
-        "atomRef": "atom:contract:intersection-cancel-insidepay",
-        "carrier": "ctx:intersection:cancel-insidepay",
-        "carrierColorRole": "carrier_color:ctx-intersection-cancel-insidepay",
-        "colorRole": "source_evidence",
-        "fiber": "contract",
-        "fiberShapeRole": "fiber_shape:contract",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:contract:intersection-cancel-order",
-        "carrier": "ctx:intersection:cancel-order",
-        "carrierColorRole": "carrier_color:ctx-intersection-cancel-order",
-        "colorRole": "source_evidence",
-        "fiber": "contract",
-        "fiberShapeRole": "fiber_shape:contract",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:contract:intersection-consign-consignprice",
-        "carrier": "ctx:intersection:consign-consignprice",
-        "carrierColorRole": "carrier_color:ctx-intersection-consign-consignprice",
-        "colorRole": "source_evidence",
-        "fiber": "contract",
-        "fiberShapeRole": "fiber_shape:contract",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:contract:intersection-consign-fee-region",
-        "carrier": "ctx:intersection:consign-fee-region",
-        "carrierColorRole": "carrier_color:ctx-intersection-consign-fee-region",
-        "colorRole": "source_evidence",
-        "fiber": "contract",
-        "fiberShapeRole": "fiber_shape:contract",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:contract:intersection-insidepay-order",
-        "carrier": "ctx:intersection:insidepay-order",
-        "carrierColorRole": "carrier_color:ctx-intersection-insidepay-order",
-        "colorRole": "source_evidence",
-        "fiber": "contract",
-        "fiberShapeRole": "fiber_shape:contract",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:contract:intersection-preserve-consign",
-        "carrier": "ctx:intersection:preserve-consign",
-        "carrierColorRole": "carrier_color:ctx-intersection-preserve-consign",
-        "colorRole": "source_evidence",
-        "fiber": "contract",
-        "fiberShapeRole": "fiber_shape:contract",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:contract:intersection-preserve-consignprice",
-        "carrier": "ctx:intersection:preserve-consignprice",
-        "carrierColorRole": "carrier_color:ctx-intersection-preserve-consignprice",
-        "colorRole": "source_evidence",
-        "fiber": "contract",
-        "fiberShapeRole": "fiber_shape:contract",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
         "atomRef": "atom:contract:order.entity.orderalterinfo:shaped-as-alter-request",
         "carrier": "ts-order-service.OrderAlterInfo",
         "carrierColorRole": "carrier_color:ts-order-service-OrderAlterInfo",
@@ -13423,78 +13346,6 @@
         "atomRef": "atom:contract:rebook.rebookserviceimpl:ticketprice-shapedas",
         "carrier": "ts-rebook-service.RebookServiceImpl",
         "carrierColorRole": "carrier_color:ts-rebook-service-RebookServiceImpl",
-        "colorRole": "source_evidence",
-        "fiber": "contract",
-        "fiberShapeRole": "fiber_shape:contract",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:contract:repair-cancel-surface",
-        "carrier": "ctx:repair-cancel-surface",
-        "carrierColorRole": "carrier_color:ctx-repair-cancel-surface",
-        "colorRole": "source_evidence",
-        "fiber": "contract",
-        "fiberShapeRole": "fiber_shape:contract",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:contract:repair-consign-price-surface",
-        "carrier": "ctx:repair-consign-price-surface",
-        "carrierColorRole": "carrier_color:ctx-repair-consign-price-surface",
-        "colorRole": "source_evidence",
-        "fiber": "contract",
-        "fiberShapeRole": "fiber_shape:contract",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:contract:repair-consign-surface",
-        "carrier": "ctx:repair-consign-surface",
-        "carrierColorRole": "carrier_color:ctx-repair-consign-surface",
-        "colorRole": "source_evidence",
-        "fiber": "contract",
-        "fiberShapeRole": "fiber_shape:contract",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:contract:repair-inside-payment-surface",
-        "carrier": "ctx:repair-inside-payment-surface",
-        "carrierColorRole": "carrier_color:ctx-repair-inside-payment-surface",
-        "colorRole": "source_evidence",
-        "fiber": "contract",
-        "fiberShapeRole": "fiber_shape:contract",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:contract:repair-order-surface",
-        "carrier": "ctx:repair-order-surface",
-        "carrierColorRole": "carrier_color:ctx-repair-order-surface",
-        "colorRole": "source_evidence",
-        "fiber": "contract",
-        "fiberShapeRole": "fiber_shape:contract",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:contract:repair-preserve-surface",
-        "carrier": "ctx:repair-preserve-surface",
-        "carrierColorRole": "carrier_color:ctx-repair-preserve-surface",
         "colorRole": "source_evidence",
         "fiber": "contract",
         "fiberShapeRole": "fiber_shape:contract",
@@ -24230,6 +24081,162 @@
         "shapeRole": "structured_atom_glyph",
         "sizeRole": "valence",
         "valence": 1
+      },
+      {
+        "atomRef": "atom:semantic:ts-travel-service-travelserviceimpl:meansinuse-hardcoded-service-urls-not-yml-injected",
+        "carrier": "ts-travel-service.TravelServiceImpl",
+        "carrierColorRole": "carrier_color:ts-travel-service-TravelServiceImpl",
+        "colorRole": "source_evidence",
+        "fiber": "semantic",
+        "fiberShapeRole": "fiber_shape:semantic",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:semantic:ts-travel-service-travelserviceimpl:statusgates-branch-result-or-notfound",
+        "carrier": "ts-travel-service.TravelServiceImpl",
+        "carrierColorRole": "carrier_color:ts-travel-service-TravelServiceImpl",
+        "colorRole": "source_evidence",
+        "fiber": "semantic",
+        "fiberShapeRole": "fiber_shape:semantic",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:semantic:ts-travel-service-travelserviceimpl:statusgates-create-branch",
+        "carrier": "ts-travel-service.TravelServiceImpl",
+        "carrierColorRole": "carrier_color:ts-travel-service-TravelServiceImpl",
+        "colorRole": "source_evidence",
+        "fiber": "semantic",
+        "fiberShapeRole": "fiber_shape:semantic",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:semantic:ts-travel-service-travelserviceimpl:statusgates-update-branch",
+        "carrier": "ts-travel-service.TravelServiceImpl",
+        "carrierColorRole": "carrier_color:ts-travel-service-TravelServiceImpl",
+        "colorRole": "source_evidence",
+        "fiber": "semantic",
+        "fiberShapeRole": "fiber_shape:semantic",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:semantic:ts-travel-service-trip:identifiedby-lowercased-station-names",
+        "carrier": "ts-travel-service.Trip",
+        "carrierColorRole": "carrier_color:ts-travel-service-Trip",
+        "colorRole": "source_evidence",
+        "fiber": "semantic",
+        "fiberShapeRole": "fiber_shape:semantic",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:semantic:ts-travel2-service-application-yml:default-mysql-credentials-when-env-unset",
+        "carrier": "ts-travel2-service.application-yml",
+        "carrierColorRole": "carrier_color:ts-travel2-service-application-yml",
+        "colorRole": "source_evidence",
+        "fiber": "semantic",
+        "fiberShapeRole": "fiber_shape:semantic",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:semantic:ts-travel2-service-application-yml:jpa-ddl-auto-update-schema-behavior",
+        "carrier": "ts-travel2-service.application-yml",
+        "carrierColorRole": "carrier_color:ts-travel2-service-application-yml",
+        "colorRole": "source_evidence",
+        "fiber": "semantic",
+        "fiberShapeRole": "fiber_shape:semantic",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:semantic:ts-travel2-service-initdata:seeds-fixed-trip-catalog-on-startup",
+        "carrier": "ts-travel2-service.InitData",
+        "carrierColorRole": "carrier_color:ts-travel2-service-InitData",
+        "colorRole": "source_evidence",
+        "fiber": "semantic",
+        "fiberShapeRole": "fiber_shape:semantic",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:semantic:ts-travel2-service-initdata:time-string-format",
+        "carrier": "ts-travel2-service.InitData",
+        "carrierColorRole": "carrier_color:ts-travel2-service-InitData",
+        "colorRole": "source_evidence",
+        "fiber": "semantic",
+        "fiberShapeRole": "fiber_shape:semantic",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:semantic:ts-travel2-service-travel2controller:query-left-tickets-empty-branch",
+        "carrier": "ts-travel2-service.Travel2Controller",
+        "carrierColorRole": "carrier_color:ts-travel2-service-Travel2Controller",
+        "colorRole": "source_evidence",
+        "fiber": "semantic",
+        "fiberShapeRole": "fiber_shape:semantic",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:semantic:ts-travel2-service-travelserviceimpl:downstream-basic-service-status-zero-selects-empty-branch",
+        "carrier": "ts-travel2-service.TravelServiceImpl",
+        "carrierColorRole": "carrier_color:ts-travel2-service-TravelServiceImpl",
+        "colorRole": "source_evidence",
+        "fiber": "semantic",
+        "fiberShapeRole": "fiber_shape:semantic",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:semantic:ts-travel2-service-travelserviceimpl:price-looked-up-by-class-name-key",
+        "carrier": "ts-travel2-service.TravelServiceImpl",
+        "carrierColorRole": "carrier_color:ts-travel2-service-TravelServiceImpl",
+        "colorRole": "source_evidence",
+        "fiber": "semantic",
+        "fiberShapeRole": "fiber_shape:semantic",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:semantic:ts-travel2-service-travelserviceimpl:response-status-gates-branch",
+        "carrier": "ts-travel2-service.TravelServiceImpl",
+        "carrierColorRole": "carrier_color:ts-travel2-service-TravelServiceImpl",
+        "colorRole": "source_evidence",
+        "fiber": "semantic",
+        "fiberShapeRole": "fiber_shape:semantic",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
       }
     ],
     "cocycleRibbon": {
@@ -24281,18 +24288,6 @@
         },
         {
           "regionId": "measured-zero-region:ag.saga-grounded",
-          "shapeRole": "smooth_measured_zero_patch",
-          "source": "selected-support zero packet verdict",
-          "status": "measured_zero"
-        },
-        {
-          "regionId": "measured-zero-region:ag.saga-descent",
-          "shapeRole": "smooth_measured_zero_patch",
-          "source": "selected-support zero packet verdict",
-          "status": "measured_zero"
-        },
-        {
-          "regionId": "measured-zero-region:ag.saga-descent",
           "shapeRole": "smooth_measured_zero_patch",
           "source": "selected-support zero packet verdict",
           "status": "measured_zero"
@@ -24576,7 +24571,7 @@
     ],
     "omittedGeometryCounts": {
       "analyticOverlays": 0,
-      "atomGlyphs": 124,
+      "atomGlyphs": 111,
       "blockedRegions": 0,
       "cocycleSupportEdges": 0,
       "curvatureFieldRows": 0,
@@ -25019,7 +25014,7 @@
   "inputDigests": {
     "archmap": {
       "path": "input:archmap-saga-repaired.json",
-      "sha256": "0ea545f516e24a78e252391bf8ec24224ec8630d8dbd6b1698af04a28ea7a585"
+      "sha256": "9a7baaa8b1adc73b5c5ff0fc3d56da0986402aecfe4902a0aa7e63ca3d449417"
     },
     "lawPolicy": {
       "path": "input:law-policy-saga.json",
@@ -25045,11 +25040,11 @@
     },
     "repairPlan": {
       "path": "input:repair-plan-repaired.json",
-      "sha256": "d3a2ec111beac56f943db9e4636287320cf93d6dc26a7f8e2962ab18028091a7"
+      "sha256": "5a6a8919bb8dd6d894130b6cd500898af38b5bd6f1a682501e9d57cf59cda2f9"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
-      "sha256": "c05d1537d9126e4f0e2b59bf37ef90826adf8a22ff49e89625ff0e8f2d243868",
+      "sha256": "c75cd524da051ad25472f1faad2d3fc44456db4fe6f0a1f90851d76e7b069b1a",
       "status": "computed"
     }
   },
@@ -25059,6 +25054,7 @@
         "analyticReadingRefs": [],
         "assumptionRefs": [
           "part10/3.1",
+          "part10/8.3",
           "part3/11.3",
           "part4/11.1",
           "part4/12.3",
@@ -25232,6 +25228,7 @@
         ],
         "assumptionRefs": [
           "part10/3.1",
+          "part10/8.3",
           "part3/11.3",
           "part4/11.1",
           "part4/12.3",
@@ -25256,7 +25253,7 @@
           "saga-grounded:defect-quotient",
           "saga-descent:boundary-membership",
           "saga-descent:residual-derivation",
-          "saga-descent:residual-class"
+          "saga-descent:class-vocabulary-boundary"
         ],
         "contextRefs": [
           "ctx:admin-basic-info-surface",
@@ -25429,12 +25426,13 @@
     "measured_zero confirmation"
   ],
   "readThisFirst": {
-    "boundary": "Profile-relative. 8 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
+    "boundary": "Profile-relative. 9 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
     "conclusion": "REPAIR_GLUES_WITHIN_SELECTED_COMPLEX",
     "details": {
       "analyticReadingRefs": [],
       "assumptionRefs": [
         "part10/3.1",
+        "part10/8.3",
         "part3/11.3",
         "part4/11.1",
         "part4/12.3",
@@ -25500,7 +25498,7 @@
     ]
   },
   "reportId": "insight:measurement:train-ticket-money-saga-repaired/v0.5.4",
-  "runId": "run:f9666ddb2aca",
+  "runId": "run:6685bab8db21",
   "schema": "archsig-insight-report/v0.5.4",
   "sourcePacketRef": "archsig-measurement-packet.json",
   "toolVersion": "0.5.4",

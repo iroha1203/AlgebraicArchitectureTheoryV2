@@ -13036,90 +13036,6 @@
         "valence": 1
       },
       {
-        "atomRef": "atom:contract:intersection-cancel-insidepay",
-        "carrier": "ctx:intersection:cancel-insidepay",
-        "carrierColorRole": "carrier_color:ctx-intersection-cancel-insidepay",
-        "colorRole": "source_evidence",
-        "fiber": "contract",
-        "fiberShapeRole": "fiber_shape:contract",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:contract:intersection-cancel-order",
-        "carrier": "ctx:intersection:cancel-order",
-        "carrierColorRole": "carrier_color:ctx-intersection-cancel-order",
-        "colorRole": "source_evidence",
-        "fiber": "contract",
-        "fiberShapeRole": "fiber_shape:contract",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:contract:intersection-consign-consignprice",
-        "carrier": "ctx:intersection:consign-consignprice",
-        "carrierColorRole": "carrier_color:ctx-intersection-consign-consignprice",
-        "colorRole": "source_evidence",
-        "fiber": "contract",
-        "fiberShapeRole": "fiber_shape:contract",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:contract:intersection-consign-fee-region",
-        "carrier": "ctx:intersection:consign-fee-region",
-        "carrierColorRole": "carrier_color:ctx-intersection-consign-fee-region",
-        "colorRole": "source_evidence",
-        "fiber": "contract",
-        "fiberShapeRole": "fiber_shape:contract",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:contract:intersection-insidepay-order",
-        "carrier": "ctx:intersection:insidepay-order",
-        "carrierColorRole": "carrier_color:ctx-intersection-insidepay-order",
-        "colorRole": "source_evidence",
-        "fiber": "contract",
-        "fiberShapeRole": "fiber_shape:contract",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:contract:intersection-preserve-consign",
-        "carrier": "ctx:intersection:preserve-consign",
-        "carrierColorRole": "carrier_color:ctx-intersection-preserve-consign",
-        "colorRole": "source_evidence",
-        "fiber": "contract",
-        "fiberShapeRole": "fiber_shape:contract",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:contract:intersection-preserve-consignprice",
-        "carrier": "ctx:intersection:preserve-consignprice",
-        "carrierColorRole": "carrier_color:ctx-intersection-preserve-consignprice",
-        "colorRole": "source_evidence",
-        "fiber": "contract",
-        "fiberShapeRole": "fiber_shape:contract",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
         "atomRef": "atom:contract:order.entity.orderalterinfo:shaped-as-alter-request",
         "carrier": "ts-order-service.OrderAlterInfo",
         "carrierColorRole": "carrier_color:ts-order-service-OrderAlterInfo",
@@ -13219,78 +13135,6 @@
         "atomRef": "atom:contract:rebook.rebookserviceimpl:ticketprice-shapedas",
         "carrier": "ts-rebook-service.RebookServiceImpl",
         "carrierColorRole": "carrier_color:ts-rebook-service-RebookServiceImpl",
-        "colorRole": "source_evidence",
-        "fiber": "contract",
-        "fiberShapeRole": "fiber_shape:contract",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:contract:repair-cancel-surface",
-        "carrier": "ctx:repair-cancel-surface",
-        "carrierColorRole": "carrier_color:ctx-repair-cancel-surface",
-        "colorRole": "source_evidence",
-        "fiber": "contract",
-        "fiberShapeRole": "fiber_shape:contract",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:contract:repair-consign-price-surface",
-        "carrier": "ctx:repair-consign-price-surface",
-        "carrierColorRole": "carrier_color:ctx-repair-consign-price-surface",
-        "colorRole": "source_evidence",
-        "fiber": "contract",
-        "fiberShapeRole": "fiber_shape:contract",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:contract:repair-consign-surface",
-        "carrier": "ctx:repair-consign-surface",
-        "carrierColorRole": "carrier_color:ctx-repair-consign-surface",
-        "colorRole": "source_evidence",
-        "fiber": "contract",
-        "fiberShapeRole": "fiber_shape:contract",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:contract:repair-inside-payment-surface",
-        "carrier": "ctx:repair-inside-payment-surface",
-        "carrierColorRole": "carrier_color:ctx-repair-inside-payment-surface",
-        "colorRole": "source_evidence",
-        "fiber": "contract",
-        "fiberShapeRole": "fiber_shape:contract",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:contract:repair-order-surface",
-        "carrier": "ctx:repair-order-surface",
-        "carrierColorRole": "carrier_color:ctx-repair-order-surface",
-        "colorRole": "source_evidence",
-        "fiber": "contract",
-        "fiberShapeRole": "fiber_shape:contract",
-        "semanticAnchor": "source_backed",
-        "shapeRole": "structured_atom_glyph",
-        "sizeRole": "valence",
-        "valence": 1
-      },
-      {
-        "atomRef": "atom:contract:repair-preserve-surface",
-        "carrier": "ctx:repair-preserve-surface",
-        "carrierColorRole": "carrier_color:ctx-repair-preserve-surface",
         "colorRole": "source_evidence",
         "fiber": "contract",
         "fiberShapeRole": "fiber_shape:contract",
@@ -24019,6 +23863,162 @@
         "atomRef": "atom:semantic:ts-travel-plan-service-travelplanserviceimpl:statusgates-unconditional-success-transfersearch",
         "carrier": "ts-travel-plan-service.TravelPlanServiceImpl",
         "carrierColorRole": "carrier_color:ts-travel-plan-service-TravelPlanServiceImpl",
+        "colorRole": "source_evidence",
+        "fiber": "semantic",
+        "fiberShapeRole": "fiber_shape:semantic",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:semantic:ts-travel-service-travelserviceimpl:meansinuse-basicservice-status0-empty-branch",
+        "carrier": "ts-travel-service.TravelServiceImpl",
+        "carrierColorRole": "carrier_color:ts-travel-service-TravelServiceImpl",
+        "colorRole": "source_evidence",
+        "fiber": "semantic",
+        "fiberShapeRole": "fiber_shape:semantic",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:semantic:ts-travel-service-travelserviceimpl:meansinuse-hardcoded-service-urls-not-yml-injected",
+        "carrier": "ts-travel-service.TravelServiceImpl",
+        "carrierColorRole": "carrier_color:ts-travel-service-TravelServiceImpl",
+        "colorRole": "source_evidence",
+        "fiber": "semantic",
+        "fiberShapeRole": "fiber_shape:semantic",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:semantic:ts-travel-service-travelserviceimpl:statusgates-branch-result-or-notfound",
+        "carrier": "ts-travel-service.TravelServiceImpl",
+        "carrierColorRole": "carrier_color:ts-travel-service-TravelServiceImpl",
+        "colorRole": "source_evidence",
+        "fiber": "semantic",
+        "fiberShapeRole": "fiber_shape:semantic",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:semantic:ts-travel-service-travelserviceimpl:statusgates-create-branch",
+        "carrier": "ts-travel-service.TravelServiceImpl",
+        "carrierColorRole": "carrier_color:ts-travel-service-TravelServiceImpl",
+        "colorRole": "source_evidence",
+        "fiber": "semantic",
+        "fiberShapeRole": "fiber_shape:semantic",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:semantic:ts-travel-service-travelserviceimpl:statusgates-update-branch",
+        "carrier": "ts-travel-service.TravelServiceImpl",
+        "carrierColorRole": "carrier_color:ts-travel-service-TravelServiceImpl",
+        "colorRole": "source_evidence",
+        "fiber": "semantic",
+        "fiberShapeRole": "fiber_shape:semantic",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:semantic:ts-travel-service-trip:identifiedby-lowercased-station-names",
+        "carrier": "ts-travel-service.Trip",
+        "carrierColorRole": "carrier_color:ts-travel-service-Trip",
+        "colorRole": "source_evidence",
+        "fiber": "semantic",
+        "fiberShapeRole": "fiber_shape:semantic",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:semantic:ts-travel2-service-application-yml:default-mysql-credentials-when-env-unset",
+        "carrier": "ts-travel2-service.application-yml",
+        "carrierColorRole": "carrier_color:ts-travel2-service-application-yml",
+        "colorRole": "source_evidence",
+        "fiber": "semantic",
+        "fiberShapeRole": "fiber_shape:semantic",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:semantic:ts-travel2-service-application-yml:jpa-ddl-auto-update-schema-behavior",
+        "carrier": "ts-travel2-service.application-yml",
+        "carrierColorRole": "carrier_color:ts-travel2-service-application-yml",
+        "colorRole": "source_evidence",
+        "fiber": "semantic",
+        "fiberShapeRole": "fiber_shape:semantic",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:semantic:ts-travel2-service-initdata:seeds-fixed-trip-catalog-on-startup",
+        "carrier": "ts-travel2-service.InitData",
+        "carrierColorRole": "carrier_color:ts-travel2-service-InitData",
+        "colorRole": "source_evidence",
+        "fiber": "semantic",
+        "fiberShapeRole": "fiber_shape:semantic",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:semantic:ts-travel2-service-initdata:time-string-format",
+        "carrier": "ts-travel2-service.InitData",
+        "carrierColorRole": "carrier_color:ts-travel2-service-InitData",
+        "colorRole": "source_evidence",
+        "fiber": "semantic",
+        "fiberShapeRole": "fiber_shape:semantic",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:semantic:ts-travel2-service-travel2controller:query-left-tickets-empty-branch",
+        "carrier": "ts-travel2-service.Travel2Controller",
+        "carrierColorRole": "carrier_color:ts-travel2-service-Travel2Controller",
+        "colorRole": "source_evidence",
+        "fiber": "semantic",
+        "fiberShapeRole": "fiber_shape:semantic",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:semantic:ts-travel2-service-travelserviceimpl:downstream-basic-service-status-zero-selects-empty-branch",
+        "carrier": "ts-travel2-service.TravelServiceImpl",
+        "carrierColorRole": "carrier_color:ts-travel2-service-TravelServiceImpl",
+        "colorRole": "source_evidence",
+        "fiber": "semantic",
+        "fiberShapeRole": "fiber_shape:semantic",
+        "semanticAnchor": "source_backed",
+        "shapeRole": "structured_atom_glyph",
+        "sizeRole": "valence",
+        "valence": 1
+      },
+      {
+        "atomRef": "atom:semantic:ts-travel2-service-travelserviceimpl:price-looked-up-by-class-name-key",
+        "carrier": "ts-travel2-service.TravelServiceImpl",
+        "carrierColorRole": "carrier_color:ts-travel2-service-TravelServiceImpl",
         "colorRole": "source_evidence",
         "fiber": "semantic",
         "fiberShapeRole": "fiber_shape:semantic",
@@ -37135,90 +37135,6 @@
           "valence": 1
         },
         {
-          "atomRef": "atom:contract:intersection-cancel-insidepay",
-          "carrier": "ctx:intersection:cancel-insidepay",
-          "carrierColorRole": "carrier_color:ctx-intersection-cancel-insidepay",
-          "colorRole": "source_evidence",
-          "fiber": "contract",
-          "fiberShapeRole": "fiber_shape:contract",
-          "semanticAnchor": "source_backed",
-          "shapeRole": "structured_atom_glyph",
-          "sizeRole": "valence",
-          "valence": 1
-        },
-        {
-          "atomRef": "atom:contract:intersection-cancel-order",
-          "carrier": "ctx:intersection:cancel-order",
-          "carrierColorRole": "carrier_color:ctx-intersection-cancel-order",
-          "colorRole": "source_evidence",
-          "fiber": "contract",
-          "fiberShapeRole": "fiber_shape:contract",
-          "semanticAnchor": "source_backed",
-          "shapeRole": "structured_atom_glyph",
-          "sizeRole": "valence",
-          "valence": 1
-        },
-        {
-          "atomRef": "atom:contract:intersection-consign-consignprice",
-          "carrier": "ctx:intersection:consign-consignprice",
-          "carrierColorRole": "carrier_color:ctx-intersection-consign-consignprice",
-          "colorRole": "source_evidence",
-          "fiber": "contract",
-          "fiberShapeRole": "fiber_shape:contract",
-          "semanticAnchor": "source_backed",
-          "shapeRole": "structured_atom_glyph",
-          "sizeRole": "valence",
-          "valence": 1
-        },
-        {
-          "atomRef": "atom:contract:intersection-consign-fee-region",
-          "carrier": "ctx:intersection:consign-fee-region",
-          "carrierColorRole": "carrier_color:ctx-intersection-consign-fee-region",
-          "colorRole": "source_evidence",
-          "fiber": "contract",
-          "fiberShapeRole": "fiber_shape:contract",
-          "semanticAnchor": "source_backed",
-          "shapeRole": "structured_atom_glyph",
-          "sizeRole": "valence",
-          "valence": 1
-        },
-        {
-          "atomRef": "atom:contract:intersection-insidepay-order",
-          "carrier": "ctx:intersection:insidepay-order",
-          "carrierColorRole": "carrier_color:ctx-intersection-insidepay-order",
-          "colorRole": "source_evidence",
-          "fiber": "contract",
-          "fiberShapeRole": "fiber_shape:contract",
-          "semanticAnchor": "source_backed",
-          "shapeRole": "structured_atom_glyph",
-          "sizeRole": "valence",
-          "valence": 1
-        },
-        {
-          "atomRef": "atom:contract:intersection-preserve-consign",
-          "carrier": "ctx:intersection:preserve-consign",
-          "carrierColorRole": "carrier_color:ctx-intersection-preserve-consign",
-          "colorRole": "source_evidence",
-          "fiber": "contract",
-          "fiberShapeRole": "fiber_shape:contract",
-          "semanticAnchor": "source_backed",
-          "shapeRole": "structured_atom_glyph",
-          "sizeRole": "valence",
-          "valence": 1
-        },
-        {
-          "atomRef": "atom:contract:intersection-preserve-consignprice",
-          "carrier": "ctx:intersection:preserve-consignprice",
-          "carrierColorRole": "carrier_color:ctx-intersection-preserve-consignprice",
-          "colorRole": "source_evidence",
-          "fiber": "contract",
-          "fiberShapeRole": "fiber_shape:contract",
-          "semanticAnchor": "source_backed",
-          "shapeRole": "structured_atom_glyph",
-          "sizeRole": "valence",
-          "valence": 1
-        },
-        {
           "atomRef": "atom:contract:order.entity.orderalterinfo:shaped-as-alter-request",
           "carrier": "ts-order-service.OrderAlterInfo",
           "carrierColorRole": "carrier_color:ts-order-service-OrderAlterInfo",
@@ -37318,78 +37234,6 @@
           "atomRef": "atom:contract:rebook.rebookserviceimpl:ticketprice-shapedas",
           "carrier": "ts-rebook-service.RebookServiceImpl",
           "carrierColorRole": "carrier_color:ts-rebook-service-RebookServiceImpl",
-          "colorRole": "source_evidence",
-          "fiber": "contract",
-          "fiberShapeRole": "fiber_shape:contract",
-          "semanticAnchor": "source_backed",
-          "shapeRole": "structured_atom_glyph",
-          "sizeRole": "valence",
-          "valence": 1
-        },
-        {
-          "atomRef": "atom:contract:repair-cancel-surface",
-          "carrier": "ctx:repair-cancel-surface",
-          "carrierColorRole": "carrier_color:ctx-repair-cancel-surface",
-          "colorRole": "source_evidence",
-          "fiber": "contract",
-          "fiberShapeRole": "fiber_shape:contract",
-          "semanticAnchor": "source_backed",
-          "shapeRole": "structured_atom_glyph",
-          "sizeRole": "valence",
-          "valence": 1
-        },
-        {
-          "atomRef": "atom:contract:repair-consign-price-surface",
-          "carrier": "ctx:repair-consign-price-surface",
-          "carrierColorRole": "carrier_color:ctx-repair-consign-price-surface",
-          "colorRole": "source_evidence",
-          "fiber": "contract",
-          "fiberShapeRole": "fiber_shape:contract",
-          "semanticAnchor": "source_backed",
-          "shapeRole": "structured_atom_glyph",
-          "sizeRole": "valence",
-          "valence": 1
-        },
-        {
-          "atomRef": "atom:contract:repair-consign-surface",
-          "carrier": "ctx:repair-consign-surface",
-          "carrierColorRole": "carrier_color:ctx-repair-consign-surface",
-          "colorRole": "source_evidence",
-          "fiber": "contract",
-          "fiberShapeRole": "fiber_shape:contract",
-          "semanticAnchor": "source_backed",
-          "shapeRole": "structured_atom_glyph",
-          "sizeRole": "valence",
-          "valence": 1
-        },
-        {
-          "atomRef": "atom:contract:repair-inside-payment-surface",
-          "carrier": "ctx:repair-inside-payment-surface",
-          "carrierColorRole": "carrier_color:ctx-repair-inside-payment-surface",
-          "colorRole": "source_evidence",
-          "fiber": "contract",
-          "fiberShapeRole": "fiber_shape:contract",
-          "semanticAnchor": "source_backed",
-          "shapeRole": "structured_atom_glyph",
-          "sizeRole": "valence",
-          "valence": 1
-        },
-        {
-          "atomRef": "atom:contract:repair-order-surface",
-          "carrier": "ctx:repair-order-surface",
-          "carrierColorRole": "carrier_color:ctx-repair-order-surface",
-          "colorRole": "source_evidence",
-          "fiber": "contract",
-          "fiberShapeRole": "fiber_shape:contract",
-          "semanticAnchor": "source_backed",
-          "shapeRole": "structured_atom_glyph",
-          "sizeRole": "valence",
-          "valence": 1
-        },
-        {
-          "atomRef": "atom:contract:repair-preserve-surface",
-          "carrier": "ctx:repair-preserve-surface",
-          "carrierColorRole": "carrier_color:ctx-repair-preserve-surface",
           "colorRole": "source_evidence",
           "fiber": "contract",
           "fiberShapeRole": "fiber_shape:contract",
@@ -48125,6 +47969,162 @@
           "shapeRole": "structured_atom_glyph",
           "sizeRole": "valence",
           "valence": 1
+        },
+        {
+          "atomRef": "atom:semantic:ts-travel-service-travelserviceimpl:meansinuse-basicservice-status0-empty-branch",
+          "carrier": "ts-travel-service.TravelServiceImpl",
+          "carrierColorRole": "carrier_color:ts-travel-service-TravelServiceImpl",
+          "colorRole": "source_evidence",
+          "fiber": "semantic",
+          "fiberShapeRole": "fiber_shape:semantic",
+          "semanticAnchor": "source_backed",
+          "shapeRole": "structured_atom_glyph",
+          "sizeRole": "valence",
+          "valence": 1
+        },
+        {
+          "atomRef": "atom:semantic:ts-travel-service-travelserviceimpl:meansinuse-hardcoded-service-urls-not-yml-injected",
+          "carrier": "ts-travel-service.TravelServiceImpl",
+          "carrierColorRole": "carrier_color:ts-travel-service-TravelServiceImpl",
+          "colorRole": "source_evidence",
+          "fiber": "semantic",
+          "fiberShapeRole": "fiber_shape:semantic",
+          "semanticAnchor": "source_backed",
+          "shapeRole": "structured_atom_glyph",
+          "sizeRole": "valence",
+          "valence": 1
+        },
+        {
+          "atomRef": "atom:semantic:ts-travel-service-travelserviceimpl:statusgates-branch-result-or-notfound",
+          "carrier": "ts-travel-service.TravelServiceImpl",
+          "carrierColorRole": "carrier_color:ts-travel-service-TravelServiceImpl",
+          "colorRole": "source_evidence",
+          "fiber": "semantic",
+          "fiberShapeRole": "fiber_shape:semantic",
+          "semanticAnchor": "source_backed",
+          "shapeRole": "structured_atom_glyph",
+          "sizeRole": "valence",
+          "valence": 1
+        },
+        {
+          "atomRef": "atom:semantic:ts-travel-service-travelserviceimpl:statusgates-create-branch",
+          "carrier": "ts-travel-service.TravelServiceImpl",
+          "carrierColorRole": "carrier_color:ts-travel-service-TravelServiceImpl",
+          "colorRole": "source_evidence",
+          "fiber": "semantic",
+          "fiberShapeRole": "fiber_shape:semantic",
+          "semanticAnchor": "source_backed",
+          "shapeRole": "structured_atom_glyph",
+          "sizeRole": "valence",
+          "valence": 1
+        },
+        {
+          "atomRef": "atom:semantic:ts-travel-service-travelserviceimpl:statusgates-update-branch",
+          "carrier": "ts-travel-service.TravelServiceImpl",
+          "carrierColorRole": "carrier_color:ts-travel-service-TravelServiceImpl",
+          "colorRole": "source_evidence",
+          "fiber": "semantic",
+          "fiberShapeRole": "fiber_shape:semantic",
+          "semanticAnchor": "source_backed",
+          "shapeRole": "structured_atom_glyph",
+          "sizeRole": "valence",
+          "valence": 1
+        },
+        {
+          "atomRef": "atom:semantic:ts-travel-service-trip:identifiedby-lowercased-station-names",
+          "carrier": "ts-travel-service.Trip",
+          "carrierColorRole": "carrier_color:ts-travel-service-Trip",
+          "colorRole": "source_evidence",
+          "fiber": "semantic",
+          "fiberShapeRole": "fiber_shape:semantic",
+          "semanticAnchor": "source_backed",
+          "shapeRole": "structured_atom_glyph",
+          "sizeRole": "valence",
+          "valence": 1
+        },
+        {
+          "atomRef": "atom:semantic:ts-travel2-service-application-yml:default-mysql-credentials-when-env-unset",
+          "carrier": "ts-travel2-service.application-yml",
+          "carrierColorRole": "carrier_color:ts-travel2-service-application-yml",
+          "colorRole": "source_evidence",
+          "fiber": "semantic",
+          "fiberShapeRole": "fiber_shape:semantic",
+          "semanticAnchor": "source_backed",
+          "shapeRole": "structured_atom_glyph",
+          "sizeRole": "valence",
+          "valence": 1
+        },
+        {
+          "atomRef": "atom:semantic:ts-travel2-service-application-yml:jpa-ddl-auto-update-schema-behavior",
+          "carrier": "ts-travel2-service.application-yml",
+          "carrierColorRole": "carrier_color:ts-travel2-service-application-yml",
+          "colorRole": "source_evidence",
+          "fiber": "semantic",
+          "fiberShapeRole": "fiber_shape:semantic",
+          "semanticAnchor": "source_backed",
+          "shapeRole": "structured_atom_glyph",
+          "sizeRole": "valence",
+          "valence": 1
+        },
+        {
+          "atomRef": "atom:semantic:ts-travel2-service-initdata:seeds-fixed-trip-catalog-on-startup",
+          "carrier": "ts-travel2-service.InitData",
+          "carrierColorRole": "carrier_color:ts-travel2-service-InitData",
+          "colorRole": "source_evidence",
+          "fiber": "semantic",
+          "fiberShapeRole": "fiber_shape:semantic",
+          "semanticAnchor": "source_backed",
+          "shapeRole": "structured_atom_glyph",
+          "sizeRole": "valence",
+          "valence": 1
+        },
+        {
+          "atomRef": "atom:semantic:ts-travel2-service-initdata:time-string-format",
+          "carrier": "ts-travel2-service.InitData",
+          "carrierColorRole": "carrier_color:ts-travel2-service-InitData",
+          "colorRole": "source_evidence",
+          "fiber": "semantic",
+          "fiberShapeRole": "fiber_shape:semantic",
+          "semanticAnchor": "source_backed",
+          "shapeRole": "structured_atom_glyph",
+          "sizeRole": "valence",
+          "valence": 1
+        },
+        {
+          "atomRef": "atom:semantic:ts-travel2-service-travel2controller:query-left-tickets-empty-branch",
+          "carrier": "ts-travel2-service.Travel2Controller",
+          "carrierColorRole": "carrier_color:ts-travel2-service-Travel2Controller",
+          "colorRole": "source_evidence",
+          "fiber": "semantic",
+          "fiberShapeRole": "fiber_shape:semantic",
+          "semanticAnchor": "source_backed",
+          "shapeRole": "structured_atom_glyph",
+          "sizeRole": "valence",
+          "valence": 1
+        },
+        {
+          "atomRef": "atom:semantic:ts-travel2-service-travelserviceimpl:downstream-basic-service-status-zero-selects-empty-branch",
+          "carrier": "ts-travel2-service.TravelServiceImpl",
+          "carrierColorRole": "carrier_color:ts-travel2-service-TravelServiceImpl",
+          "colorRole": "source_evidence",
+          "fiber": "semantic",
+          "fiberShapeRole": "fiber_shape:semantic",
+          "semanticAnchor": "source_backed",
+          "shapeRole": "structured_atom_glyph",
+          "sizeRole": "valence",
+          "valence": 1
+        },
+        {
+          "atomRef": "atom:semantic:ts-travel2-service-travelserviceimpl:price-looked-up-by-class-name-key",
+          "carrier": "ts-travel2-service.TravelServiceImpl",
+          "carrierColorRole": "carrier_color:ts-travel2-service-TravelServiceImpl",
+          "colorRole": "source_evidence",
+          "fiber": "semantic",
+          "fiberShapeRole": "fiber_shape:semantic",
+          "semanticAnchor": "source_backed",
+          "shapeRole": "structured_atom_glyph",
+          "sizeRole": "valence",
+          "valence": 1
         }
       ],
       "cocycleRibbon": {
@@ -48488,7 +48488,7 @@
       ],
       "omittedGeometryCounts": {
         "analyticOverlays": 0,
-        "atomGlyphs": 125,
+        "atomGlyphs": 112,
         "blockedRegions": 0,
         "cocycleSupportEdges": 0,
         "curvatureFieldRows": 0,
@@ -48886,7 +48886,7 @@
     ],
     "omittedGeometryCounts": {
       "analyticOverlays": 0,
-      "atomGlyphs": 125,
+      "atomGlyphs": 112,
       "blockedRegions": 0,
       "cocycleSupportEdges": 0,
       "curvatureFieldRows": 0,
@@ -57230,24 +57230,6 @@
       "targetNodeRef": "atom:semantic:ts-gateway-service-gatewayconfiguration-blocked-response-code"
     },
     {
-      "edgeId": "edge:ctx:intersection:consign-consignprice->ctx:intersection:consign-fee-region",
-      "edgeKind": "contextRestriction",
-      "sourceNodeRef": "ctx:intersection:consign-consignprice",
-      "targetNodeRef": "ctx:intersection:consign-fee-region"
-    },
-    {
-      "edgeId": "edge:ctx:intersection:preserve-consign->ctx:intersection:consign-fee-region",
-      "edgeKind": "contextRestriction",
-      "sourceNodeRef": "ctx:intersection:preserve-consign",
-      "targetNodeRef": "ctx:intersection:consign-fee-region"
-    },
-    {
-      "edgeId": "edge:ctx:intersection:preserve-consignprice->ctx:intersection:consign-fee-region",
-      "edgeKind": "contextRestriction",
-      "sourceNodeRef": "ctx:intersection:preserve-consignprice",
-      "targetNodeRef": "ctx:intersection:consign-fee-region"
-    },
-    {
       "edgeId": "edge:ctx:notification-surface:atom:authority:ts-notification-service-securityconfig:allows-cross-origin-all-origins->atom:authority:ts-notification-service-securityconfig:checks-permission-authenticated-required",
       "edgeKind": "contextMembership",
       "sourceNodeRef": "atom:authority:ts-notification-service-securityconfig:allows-cross-origin-all-origins",
@@ -59100,78 +59082,6 @@
       "edgeKind": "contextMembership",
       "sourceNodeRef": "atom:semantic:rebook.rebookserviceimpl:tripid-prefix-selects-service",
       "targetNodeRef": "atom:state:rebook.rebookserviceimpl:transitionsto-order-status-change"
-    },
-    {
-      "edgeId": "edge:ctx:repair-cancel-surface->ctx:intersection:cancel-insidepay",
-      "edgeKind": "contextRestriction",
-      "sourceNodeRef": "ctx:repair-cancel-surface",
-      "targetNodeRef": "ctx:intersection:cancel-insidepay"
-    },
-    {
-      "edgeId": "edge:ctx:repair-cancel-surface->ctx:intersection:cancel-order",
-      "edgeKind": "contextRestriction",
-      "sourceNodeRef": "ctx:repair-cancel-surface",
-      "targetNodeRef": "ctx:intersection:cancel-order"
-    },
-    {
-      "edgeId": "edge:ctx:repair-consign-price-surface->ctx:intersection:consign-consignprice",
-      "edgeKind": "contextRestriction",
-      "sourceNodeRef": "ctx:repair-consign-price-surface",
-      "targetNodeRef": "ctx:intersection:consign-consignprice"
-    },
-    {
-      "edgeId": "edge:ctx:repair-consign-price-surface->ctx:intersection:preserve-consignprice",
-      "edgeKind": "contextRestriction",
-      "sourceNodeRef": "ctx:repair-consign-price-surface",
-      "targetNodeRef": "ctx:intersection:preserve-consignprice"
-    },
-    {
-      "edgeId": "edge:ctx:repair-consign-surface->ctx:intersection:consign-consignprice",
-      "edgeKind": "contextRestriction",
-      "sourceNodeRef": "ctx:repair-consign-surface",
-      "targetNodeRef": "ctx:intersection:consign-consignprice"
-    },
-    {
-      "edgeId": "edge:ctx:repair-consign-surface->ctx:intersection:preserve-consign",
-      "edgeKind": "contextRestriction",
-      "sourceNodeRef": "ctx:repair-consign-surface",
-      "targetNodeRef": "ctx:intersection:preserve-consign"
-    },
-    {
-      "edgeId": "edge:ctx:repair-inside-payment-surface->ctx:intersection:cancel-insidepay",
-      "edgeKind": "contextRestriction",
-      "sourceNodeRef": "ctx:repair-inside-payment-surface",
-      "targetNodeRef": "ctx:intersection:cancel-insidepay"
-    },
-    {
-      "edgeId": "edge:ctx:repair-inside-payment-surface->ctx:intersection:insidepay-order",
-      "edgeKind": "contextRestriction",
-      "sourceNodeRef": "ctx:repair-inside-payment-surface",
-      "targetNodeRef": "ctx:intersection:insidepay-order"
-    },
-    {
-      "edgeId": "edge:ctx:repair-order-surface->ctx:intersection:cancel-order",
-      "edgeKind": "contextRestriction",
-      "sourceNodeRef": "ctx:repair-order-surface",
-      "targetNodeRef": "ctx:intersection:cancel-order"
-    },
-    {
-      "edgeId": "edge:ctx:repair-order-surface->ctx:intersection:insidepay-order",
-      "edgeKind": "contextRestriction",
-      "sourceNodeRef": "ctx:repair-order-surface",
-      "targetNodeRef": "ctx:intersection:insidepay-order"
-    },
-    {
-      "edgeId": "edge:ctx:repair-preserve-surface->ctx:intersection:preserve-consign",
-      "edgeKind": "contextRestriction",
-      "sourceNodeRef": "ctx:repair-preserve-surface",
-      "targetNodeRef": "ctx:intersection:preserve-consign"
-    },
-    {
-      "edgeId": "edge:ctx:repair-preserve-surface->ctx:intersection:preserve-consignprice",
-      "edgeKind": "contextRestriction",
-      "sourceNodeRef": "ctx:repair-preserve-surface",
-      "targetNodeRef": "ctx:intersection:preserve-consignprice"
     },
     {
       "edgeId": "edge:ctx:route-plan-surface->ctx:route-surface",
@@ -98114,270 +98024,6 @@
     {
       "atomFamily": "contract",
       "atomKind": "contract",
-      "axis": "static",
-      "labels": [
-        "static",
-        "component"
-      ],
-      "moleculeMemberships": [
-        "ctx:intersection:cancel-insidepay"
-      ],
-      "nodeId": "atom:contract:intersection-cancel-insidepay",
-      "normalizationStatus": "normalized",
-      "objectRef": "source-grounded finite intersection selected for the settlement presentation",
-      "objectRefCount": 1,
-      "observationStatus": "normalized",
-      "predicate": "component",
-      "priorityScore": 10,
-      "projectionRefs": [
-        "ctx:intersection:cancel-insidepay"
-      ],
-      "sourceAtomId": "atom:contract:intersection-cancel-insidepay",
-      "sourceRefCount": 2,
-      "sourceRefSamples": [
-        {
-          "path": "ts-cancel-service/src/main/java/cancel/CancelApplication.java",
-          "ref": "src:ts-cancel-service/src/main/java/cancel/CancelApplication.java",
-          "sourceKind": "file"
-        },
-        {
-          "path": "ts-inside-payment-service/src/main/java/inside_payment/InsidePaymentApplication.java",
-          "ref": "src:ts-inside-payment-service/src/main/java/inside_payment/InsidePaymentApplication.java",
-          "sourceKind": "file"
-        }
-      ],
-      "subjectRef": "ctx:intersection:cancel-insidepay"
-    },
-    {
-      "atomFamily": "contract",
-      "atomKind": "contract",
-      "axis": "static",
-      "labels": [
-        "static",
-        "component"
-      ],
-      "moleculeMemberships": [
-        "ctx:intersection:cancel-order"
-      ],
-      "nodeId": "atom:contract:intersection-cancel-order",
-      "normalizationStatus": "normalized",
-      "objectRef": "source-grounded finite intersection selected for the settlement presentation",
-      "objectRefCount": 1,
-      "observationStatus": "normalized",
-      "predicate": "component",
-      "priorityScore": 10,
-      "projectionRefs": [
-        "ctx:intersection:cancel-order"
-      ],
-      "sourceAtomId": "atom:contract:intersection-cancel-order",
-      "sourceRefCount": 2,
-      "sourceRefSamples": [
-        {
-          "path": "ts-cancel-service/src/main/java/cancel/CancelApplication.java",
-          "ref": "src:ts-cancel-service/src/main/java/cancel/CancelApplication.java",
-          "sourceKind": "file"
-        },
-        {
-          "path": "ts-order-service/src/main/java/order/OrderApplication.java",
-          "ref": "src:ts-order-service/src/main/java/order/OrderApplication.java",
-          "sourceKind": "file"
-        }
-      ],
-      "subjectRef": "ctx:intersection:cancel-order"
-    },
-    {
-      "atomFamily": "contract",
-      "atomKind": "contract",
-      "axis": "static",
-      "labels": [
-        "static",
-        "component"
-      ],
-      "moleculeMemberships": [
-        "ctx:intersection:consign-consignprice"
-      ],
-      "nodeId": "atom:contract:intersection-consign-consignprice",
-      "normalizationStatus": "normalized",
-      "objectRef": "source-grounded finite intersection selected for the settlement presentation",
-      "objectRefCount": 1,
-      "observationStatus": "normalized",
-      "predicate": "component",
-      "priorityScore": 10,
-      "projectionRefs": [
-        "ctx:intersection:consign-consignprice"
-      ],
-      "sourceAtomId": "atom:contract:intersection-consign-consignprice",
-      "sourceRefCount": 2,
-      "sourceRefSamples": [
-        {
-          "path": "ts-consign-price-service/src/main/java/consignprice/ConsignPriceApplication.java",
-          "ref": "src:ts-consign-price-service/src/main/java/consignprice/ConsignPriceApplication.java",
-          "sourceKind": "file"
-        },
-        {
-          "path": "ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java",
-          "ref": "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java",
-          "sourceKind": "file"
-        }
-      ],
-      "subjectRef": "ctx:intersection:consign-consignprice"
-    },
-    {
-      "atomFamily": "contract",
-      "atomKind": "contract",
-      "axis": "static",
-      "labels": [
-        "static",
-        "component"
-      ],
-      "moleculeMemberships": [
-        "ctx:intersection:consign-fee-region"
-      ],
-      "nodeId": "atom:contract:intersection-consign-fee-region",
-      "normalizationStatus": "normalized",
-      "objectRef": "source-grounded finite intersection selected for the settlement presentation",
-      "objectRefCount": 1,
-      "observationStatus": "normalized",
-      "predicate": "component",
-      "priorityScore": 10,
-      "projectionRefs": [
-        "ctx:intersection:consign-fee-region"
-      ],
-      "sourceAtomId": "atom:contract:intersection-consign-fee-region",
-      "sourceRefCount": 3,
-      "sourceRefSamples": [
-        {
-          "path": "ts-consign-price-service/src/main/java/consignprice/ConsignPriceApplication.java",
-          "ref": "src:ts-consign-price-service/src/main/java/consignprice/ConsignPriceApplication.java",
-          "sourceKind": "file"
-        },
-        {
-          "path": "ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java",
-          "ref": "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java",
-          "sourceKind": "file"
-        },
-        {
-          "path": "ts-preserve-service/src/main/java/preserve/PreserveApplication.java",
-          "ref": "src:ts-preserve-service/src/main/java/preserve/PreserveApplication.java",
-          "sourceKind": "file"
-        }
-      ],
-      "subjectRef": "ctx:intersection:consign-fee-region"
-    },
-    {
-      "atomFamily": "contract",
-      "atomKind": "contract",
-      "axis": "static",
-      "labels": [
-        "static",
-        "component"
-      ],
-      "moleculeMemberships": [
-        "ctx:intersection:insidepay-order"
-      ],
-      "nodeId": "atom:contract:intersection-insidepay-order",
-      "normalizationStatus": "normalized",
-      "objectRef": "source-grounded finite intersection selected for the settlement presentation",
-      "objectRefCount": 1,
-      "observationStatus": "normalized",
-      "predicate": "component",
-      "priorityScore": 10,
-      "projectionRefs": [
-        "ctx:intersection:insidepay-order"
-      ],
-      "sourceAtomId": "atom:contract:intersection-insidepay-order",
-      "sourceRefCount": 2,
-      "sourceRefSamples": [
-        {
-          "path": "ts-inside-payment-service/src/main/java/inside_payment/InsidePaymentApplication.java",
-          "ref": "src:ts-inside-payment-service/src/main/java/inside_payment/InsidePaymentApplication.java",
-          "sourceKind": "file"
-        },
-        {
-          "path": "ts-order-service/src/main/java/order/OrderApplication.java",
-          "ref": "src:ts-order-service/src/main/java/order/OrderApplication.java",
-          "sourceKind": "file"
-        }
-      ],
-      "subjectRef": "ctx:intersection:insidepay-order"
-    },
-    {
-      "atomFamily": "contract",
-      "atomKind": "contract",
-      "axis": "static",
-      "labels": [
-        "static",
-        "component"
-      ],
-      "moleculeMemberships": [
-        "ctx:intersection:preserve-consign"
-      ],
-      "nodeId": "atom:contract:intersection-preserve-consign",
-      "normalizationStatus": "normalized",
-      "objectRef": "source-grounded finite intersection selected for the settlement presentation",
-      "objectRefCount": 1,
-      "observationStatus": "normalized",
-      "predicate": "component",
-      "priorityScore": 10,
-      "projectionRefs": [
-        "ctx:intersection:preserve-consign"
-      ],
-      "sourceAtomId": "atom:contract:intersection-preserve-consign",
-      "sourceRefCount": 2,
-      "sourceRefSamples": [
-        {
-          "path": "ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java",
-          "ref": "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java",
-          "sourceKind": "file"
-        },
-        {
-          "path": "ts-preserve-service/src/main/java/preserve/PreserveApplication.java",
-          "ref": "src:ts-preserve-service/src/main/java/preserve/PreserveApplication.java",
-          "sourceKind": "file"
-        }
-      ],
-      "subjectRef": "ctx:intersection:preserve-consign"
-    },
-    {
-      "atomFamily": "contract",
-      "atomKind": "contract",
-      "axis": "static",
-      "labels": [
-        "static",
-        "component"
-      ],
-      "moleculeMemberships": [
-        "ctx:intersection:preserve-consignprice"
-      ],
-      "nodeId": "atom:contract:intersection-preserve-consignprice",
-      "normalizationStatus": "normalized",
-      "objectRef": "source-grounded finite intersection selected for the settlement presentation",
-      "objectRefCount": 1,
-      "observationStatus": "normalized",
-      "predicate": "component",
-      "priorityScore": 10,
-      "projectionRefs": [
-        "ctx:intersection:preserve-consignprice"
-      ],
-      "sourceAtomId": "atom:contract:intersection-preserve-consignprice",
-      "sourceRefCount": 2,
-      "sourceRefSamples": [
-        {
-          "path": "ts-consign-price-service/src/main/java/consignprice/ConsignPriceApplication.java",
-          "ref": "src:ts-consign-price-service/src/main/java/consignprice/ConsignPriceApplication.java",
-          "sourceKind": "file"
-        },
-        {
-          "path": "ts-preserve-service/src/main/java/preserve/PreserveApplication.java",
-          "ref": "src:ts-preserve-service/src/main/java/preserve/PreserveApplication.java",
-          "sourceKind": "file"
-        }
-      ],
-      "subjectRef": "ctx:intersection:preserve-consignprice"
-    },
-    {
-      "atomFamily": "contract",
-      "atomKind": "contract",
       "axis": "specification",
       "labels": [
         "specification",
@@ -98667,198 +98313,6 @@
         }
       ],
       "subjectRef": "ts-rebook-service.RebookServiceImpl"
-    },
-    {
-      "atomFamily": "contract",
-      "atomKind": "contract",
-      "axis": "static",
-      "labels": [
-        "static",
-        "component"
-      ],
-      "moleculeMemberships": [
-        "ctx:repair-cancel-surface"
-      ],
-      "nodeId": "atom:contract:repair-cancel-surface",
-      "normalizationStatus": "normalized",
-      "objectRef": "source-grounded finite intersection selected for the settlement presentation",
-      "objectRefCount": 1,
-      "observationStatus": "normalized",
-      "predicate": "component",
-      "priorityScore": 10,
-      "projectionRefs": [
-        "ctx:repair-cancel-surface"
-      ],
-      "sourceAtomId": "atom:contract:repair-cancel-surface",
-      "sourceRefCount": 1,
-      "sourceRefSamples": [
-        {
-          "path": "ts-cancel-service/src/main/java/cancel/CancelApplication.java",
-          "ref": "src:ts-cancel-service/src/main/java/cancel/CancelApplication.java",
-          "sourceKind": "file"
-        }
-      ],
-      "subjectRef": "ctx:repair-cancel-surface"
-    },
-    {
-      "atomFamily": "contract",
-      "atomKind": "contract",
-      "axis": "static",
-      "labels": [
-        "static",
-        "component"
-      ],
-      "moleculeMemberships": [
-        "ctx:repair-consign-price-surface"
-      ],
-      "nodeId": "atom:contract:repair-consign-price-surface",
-      "normalizationStatus": "normalized",
-      "objectRef": "source-grounded finite intersection selected for the settlement presentation",
-      "objectRefCount": 1,
-      "observationStatus": "normalized",
-      "predicate": "component",
-      "priorityScore": 10,
-      "projectionRefs": [
-        "ctx:repair-consign-price-surface"
-      ],
-      "sourceAtomId": "atom:contract:repair-consign-price-surface",
-      "sourceRefCount": 1,
-      "sourceRefSamples": [
-        {
-          "path": "ts-consign-price-service/src/main/java/consignprice/ConsignPriceApplication.java",
-          "ref": "src:ts-consign-price-service/src/main/java/consignprice/ConsignPriceApplication.java",
-          "sourceKind": "file"
-        }
-      ],
-      "subjectRef": "ctx:repair-consign-price-surface"
-    },
-    {
-      "atomFamily": "contract",
-      "atomKind": "contract",
-      "axis": "static",
-      "labels": [
-        "static",
-        "component"
-      ],
-      "moleculeMemberships": [
-        "ctx:repair-consign-surface"
-      ],
-      "nodeId": "atom:contract:repair-consign-surface",
-      "normalizationStatus": "normalized",
-      "objectRef": "source-grounded finite intersection selected for the settlement presentation",
-      "objectRefCount": 1,
-      "observationStatus": "normalized",
-      "predicate": "component",
-      "priorityScore": 10,
-      "projectionRefs": [
-        "ctx:repair-consign-surface"
-      ],
-      "sourceAtomId": "atom:contract:repair-consign-surface",
-      "sourceRefCount": 1,
-      "sourceRefSamples": [
-        {
-          "path": "ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java",
-          "ref": "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java",
-          "sourceKind": "file"
-        }
-      ],
-      "subjectRef": "ctx:repair-consign-surface"
-    },
-    {
-      "atomFamily": "contract",
-      "atomKind": "contract",
-      "axis": "static",
-      "labels": [
-        "static",
-        "component"
-      ],
-      "moleculeMemberships": [
-        "ctx:repair-inside-payment-surface"
-      ],
-      "nodeId": "atom:contract:repair-inside-payment-surface",
-      "normalizationStatus": "normalized",
-      "objectRef": "source-grounded finite intersection selected for the settlement presentation",
-      "objectRefCount": 1,
-      "observationStatus": "normalized",
-      "predicate": "component",
-      "priorityScore": 10,
-      "projectionRefs": [
-        "ctx:repair-inside-payment-surface"
-      ],
-      "sourceAtomId": "atom:contract:repair-inside-payment-surface",
-      "sourceRefCount": 1,
-      "sourceRefSamples": [
-        {
-          "path": "ts-inside-payment-service/src/main/java/inside_payment/InsidePaymentApplication.java",
-          "ref": "src:ts-inside-payment-service/src/main/java/inside_payment/InsidePaymentApplication.java",
-          "sourceKind": "file"
-        }
-      ],
-      "subjectRef": "ctx:repair-inside-payment-surface"
-    },
-    {
-      "atomFamily": "contract",
-      "atomKind": "contract",
-      "axis": "static",
-      "labels": [
-        "static",
-        "component"
-      ],
-      "moleculeMemberships": [
-        "ctx:repair-order-surface"
-      ],
-      "nodeId": "atom:contract:repair-order-surface",
-      "normalizationStatus": "normalized",
-      "objectRef": "source-grounded finite intersection selected for the settlement presentation",
-      "objectRefCount": 1,
-      "observationStatus": "normalized",
-      "predicate": "component",
-      "priorityScore": 10,
-      "projectionRefs": [
-        "ctx:repair-order-surface"
-      ],
-      "sourceAtomId": "atom:contract:repair-order-surface",
-      "sourceRefCount": 1,
-      "sourceRefSamples": [
-        {
-          "path": "ts-order-service/src/main/java/order/OrderApplication.java",
-          "ref": "src:ts-order-service/src/main/java/order/OrderApplication.java",
-          "sourceKind": "file"
-        }
-      ],
-      "subjectRef": "ctx:repair-order-surface"
-    },
-    {
-      "atomFamily": "contract",
-      "atomKind": "contract",
-      "axis": "static",
-      "labels": [
-        "static",
-        "component"
-      ],
-      "moleculeMemberships": [
-        "ctx:repair-preserve-surface"
-      ],
-      "nodeId": "atom:contract:repair-preserve-surface",
-      "normalizationStatus": "normalized",
-      "objectRef": "source-grounded finite intersection selected for the settlement presentation",
-      "objectRefCount": 1,
-      "observationStatus": "normalized",
-      "predicate": "component",
-      "priorityScore": 10,
-      "projectionRefs": [
-        "ctx:repair-preserve-surface"
-      ],
-      "sourceAtomId": "atom:contract:repair-preserve-surface",
-      "sourceRefCount": 1,
-      "sourceRefSamples": [
-        {
-          "path": "ts-preserve-service/src/main/java/preserve/PreserveApplication.java",
-          "ref": "src:ts-preserve-service/src/main/java/preserve/PreserveApplication.java",
-          "sourceKind": "file"
-        }
-      ],
-      "subjectRef": "ctx:repair-preserve-surface"
     },
     {
       "atomFamily": "contract",
@@ -132087,7 +131541,7 @@
   },
   "copyBlocks": {
     "llmHandoff": {
-      "boundary": "Profile-relative. 8 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
+      "boundary": "Profile-relative. 9 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
       "instruction": "Use the following ArchSig result as bounded evidence. Do not infer beyond the listed claims and boundaries.",
       "topInsights": [
         "Local checks do not explain the whole selected cover; ArchSig measured a cross-context H^1 mismatch.",
@@ -132121,8 +131575,8 @@
       "summaryRef": "archsig-analysis-summary.json",
       "viewerDataRef": "archsig-atom-viewer-data.json"
     },
-    "boundaryDigest": "Profile-relative. 8 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
-    "conclusion": "MEASURED_NONGLUING_RESIDUAL_CLASS",
+    "boundaryDigest": "Profile-relative. 9 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
+    "conclusion": "MEASURED_NONGLUING_RESIDUAL",
     "validation": "see archsig-analysis-validation.json"
   },
   "finitePosetSite": {
@@ -149156,126 +148610,6 @@
       },
       {
         "atomKind": "contract",
-        "axis": "static",
-        "contextMemberships": [
-          "ctx:intersection:cancel-insidepay"
-        ],
-        "normalizationStatus": "normalized",
-        "normalizedAtomId": "atom:contract:intersection-cancel-insidepay",
-        "object": "source-grounded finite intersection selected for the settlement presentation",
-        "predicate": "component",
-        "sourceAtomId": "atom:contract:intersection-cancel-insidepay",
-        "sourceRefs": [
-          "src:ts-cancel-service/src/main/java/cancel/CancelApplication.java",
-          "src:ts-inside-payment-service/src/main/java/inside_payment/InsidePaymentApplication.java"
-        ],
-        "subject": "ctx:intersection:cancel-insidepay"
-      },
-      {
-        "atomKind": "contract",
-        "axis": "static",
-        "contextMemberships": [
-          "ctx:intersection:cancel-order"
-        ],
-        "normalizationStatus": "normalized",
-        "normalizedAtomId": "atom:contract:intersection-cancel-order",
-        "object": "source-grounded finite intersection selected for the settlement presentation",
-        "predicate": "component",
-        "sourceAtomId": "atom:contract:intersection-cancel-order",
-        "sourceRefs": [
-          "src:ts-cancel-service/src/main/java/cancel/CancelApplication.java",
-          "src:ts-order-service/src/main/java/order/OrderApplication.java"
-        ],
-        "subject": "ctx:intersection:cancel-order"
-      },
-      {
-        "atomKind": "contract",
-        "axis": "static",
-        "contextMemberships": [
-          "ctx:intersection:consign-consignprice"
-        ],
-        "normalizationStatus": "normalized",
-        "normalizedAtomId": "atom:contract:intersection-consign-consignprice",
-        "object": "source-grounded finite intersection selected for the settlement presentation",
-        "predicate": "component",
-        "sourceAtomId": "atom:contract:intersection-consign-consignprice",
-        "sourceRefs": [
-          "src:ts-consign-price-service/src/main/java/consignprice/ConsignPriceApplication.java",
-          "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java"
-        ],
-        "subject": "ctx:intersection:consign-consignprice"
-      },
-      {
-        "atomKind": "contract",
-        "axis": "static",
-        "contextMemberships": [
-          "ctx:intersection:consign-fee-region"
-        ],
-        "normalizationStatus": "normalized",
-        "normalizedAtomId": "atom:contract:intersection-consign-fee-region",
-        "object": "source-grounded finite intersection selected for the settlement presentation",
-        "predicate": "component",
-        "sourceAtomId": "atom:contract:intersection-consign-fee-region",
-        "sourceRefs": [
-          "src:ts-consign-price-service/src/main/java/consignprice/ConsignPriceApplication.java",
-          "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java",
-          "src:ts-preserve-service/src/main/java/preserve/PreserveApplication.java"
-        ],
-        "subject": "ctx:intersection:consign-fee-region"
-      },
-      {
-        "atomKind": "contract",
-        "axis": "static",
-        "contextMemberships": [
-          "ctx:intersection:insidepay-order"
-        ],
-        "normalizationStatus": "normalized",
-        "normalizedAtomId": "atom:contract:intersection-insidepay-order",
-        "object": "source-grounded finite intersection selected for the settlement presentation",
-        "predicate": "component",
-        "sourceAtomId": "atom:contract:intersection-insidepay-order",
-        "sourceRefs": [
-          "src:ts-inside-payment-service/src/main/java/inside_payment/InsidePaymentApplication.java",
-          "src:ts-order-service/src/main/java/order/OrderApplication.java"
-        ],
-        "subject": "ctx:intersection:insidepay-order"
-      },
-      {
-        "atomKind": "contract",
-        "axis": "static",
-        "contextMemberships": [
-          "ctx:intersection:preserve-consign"
-        ],
-        "normalizationStatus": "normalized",
-        "normalizedAtomId": "atom:contract:intersection-preserve-consign",
-        "object": "source-grounded finite intersection selected for the settlement presentation",
-        "predicate": "component",
-        "sourceAtomId": "atom:contract:intersection-preserve-consign",
-        "sourceRefs": [
-          "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java",
-          "src:ts-preserve-service/src/main/java/preserve/PreserveApplication.java"
-        ],
-        "subject": "ctx:intersection:preserve-consign"
-      },
-      {
-        "atomKind": "contract",
-        "axis": "static",
-        "contextMemberships": [
-          "ctx:intersection:preserve-consignprice"
-        ],
-        "normalizationStatus": "normalized",
-        "normalizedAtomId": "atom:contract:intersection-preserve-consignprice",
-        "object": "source-grounded finite intersection selected for the settlement presentation",
-        "predicate": "component",
-        "sourceAtomId": "atom:contract:intersection-preserve-consignprice",
-        "sourceRefs": [
-          "src:ts-consign-price-service/src/main/java/consignprice/ConsignPriceApplication.java",
-          "src:ts-preserve-service/src/main/java/preserve/PreserveApplication.java"
-        ],
-        "subject": "ctx:intersection:preserve-consignprice"
-      },
-      {
-        "atomKind": "contract",
         "axis": "specification",
         "contextMemberships": [
           "ctx:order-surface"
@@ -149418,102 +148752,6 @@
           "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java"
         ],
         "subject": "ts-rebook-service.RebookServiceImpl"
-      },
-      {
-        "atomKind": "contract",
-        "axis": "static",
-        "contextMemberships": [
-          "ctx:repair-cancel-surface"
-        ],
-        "normalizationStatus": "normalized",
-        "normalizedAtomId": "atom:contract:repair-cancel-surface",
-        "object": "source-grounded finite intersection selected for the settlement presentation",
-        "predicate": "component",
-        "sourceAtomId": "atom:contract:repair-cancel-surface",
-        "sourceRefs": [
-          "src:ts-cancel-service/src/main/java/cancel/CancelApplication.java"
-        ],
-        "subject": "ctx:repair-cancel-surface"
-      },
-      {
-        "atomKind": "contract",
-        "axis": "static",
-        "contextMemberships": [
-          "ctx:repair-consign-price-surface"
-        ],
-        "normalizationStatus": "normalized",
-        "normalizedAtomId": "atom:contract:repair-consign-price-surface",
-        "object": "source-grounded finite intersection selected for the settlement presentation",
-        "predicate": "component",
-        "sourceAtomId": "atom:contract:repair-consign-price-surface",
-        "sourceRefs": [
-          "src:ts-consign-price-service/src/main/java/consignprice/ConsignPriceApplication.java"
-        ],
-        "subject": "ctx:repair-consign-price-surface"
-      },
-      {
-        "atomKind": "contract",
-        "axis": "static",
-        "contextMemberships": [
-          "ctx:repair-consign-surface"
-        ],
-        "normalizationStatus": "normalized",
-        "normalizedAtomId": "atom:contract:repair-consign-surface",
-        "object": "source-grounded finite intersection selected for the settlement presentation",
-        "predicate": "component",
-        "sourceAtomId": "atom:contract:repair-consign-surface",
-        "sourceRefs": [
-          "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java"
-        ],
-        "subject": "ctx:repair-consign-surface"
-      },
-      {
-        "atomKind": "contract",
-        "axis": "static",
-        "contextMemberships": [
-          "ctx:repair-inside-payment-surface"
-        ],
-        "normalizationStatus": "normalized",
-        "normalizedAtomId": "atom:contract:repair-inside-payment-surface",
-        "object": "source-grounded finite intersection selected for the settlement presentation",
-        "predicate": "component",
-        "sourceAtomId": "atom:contract:repair-inside-payment-surface",
-        "sourceRefs": [
-          "src:ts-inside-payment-service/src/main/java/inside_payment/InsidePaymentApplication.java"
-        ],
-        "subject": "ctx:repair-inside-payment-surface"
-      },
-      {
-        "atomKind": "contract",
-        "axis": "static",
-        "contextMemberships": [
-          "ctx:repair-order-surface"
-        ],
-        "normalizationStatus": "normalized",
-        "normalizedAtomId": "atom:contract:repair-order-surface",
-        "object": "source-grounded finite intersection selected for the settlement presentation",
-        "predicate": "component",
-        "sourceAtomId": "atom:contract:repair-order-surface",
-        "sourceRefs": [
-          "src:ts-order-service/src/main/java/order/OrderApplication.java"
-        ],
-        "subject": "ctx:repair-order-surface"
-      },
-      {
-        "atomKind": "contract",
-        "axis": "static",
-        "contextMemberships": [
-          "ctx:repair-preserve-surface"
-        ],
-        "normalizationStatus": "normalized",
-        "normalizedAtomId": "atom:contract:repair-preserve-surface",
-        "object": "source-grounded finite intersection selected for the settlement presentation",
-        "predicate": "component",
-        "sourceAtomId": "atom:contract:repair-preserve-surface",
-        "sourceRefs": [
-          "src:ts-preserve-service/src/main/java/preserve/PreserveApplication.java"
-        ],
-        "subject": "ctx:repair-preserve-surface"
       },
       {
         "atomKind": "contract",
@@ -167919,104 +167157,6 @@
       },
       {
         "atomIds": [
-          "atom:contract:intersection-cancel-insidepay"
-        ],
-        "normalizedContextId": "ctx:intersection:cancel-insidepay",
-        "posetStatus": "finiteObserved",
-        "restrictsTo": [],
-        "sourceContextId": "ctx:intersection:cancel-insidepay",
-        "sourceRefs": [
-          "src:ts-cancel-service/src/main/java/cancel/CancelApplication.java",
-          "src:ts-inside-payment-service/src/main/java/inside_payment/InsidePaymentApplication.java"
-        ]
-      },
-      {
-        "atomIds": [
-          "atom:contract:intersection-cancel-order"
-        ],
-        "normalizedContextId": "ctx:intersection:cancel-order",
-        "posetStatus": "finiteObserved",
-        "restrictsTo": [],
-        "sourceContextId": "ctx:intersection:cancel-order",
-        "sourceRefs": [
-          "src:ts-cancel-service/src/main/java/cancel/CancelApplication.java",
-          "src:ts-order-service/src/main/java/order/OrderApplication.java"
-        ]
-      },
-      {
-        "atomIds": [
-          "atom:contract:intersection-consign-consignprice"
-        ],
-        "normalizedContextId": "ctx:intersection:consign-consignprice",
-        "posetStatus": "finiteObserved",
-        "restrictsTo": [
-          "ctx:intersection:consign-fee-region"
-        ],
-        "sourceContextId": "ctx:intersection:consign-consignprice",
-        "sourceRefs": [
-          "src:ts-consign-price-service/src/main/java/consignprice/ConsignPriceApplication.java",
-          "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java"
-        ]
-      },
-      {
-        "atomIds": [
-          "atom:contract:intersection-consign-fee-region"
-        ],
-        "normalizedContextId": "ctx:intersection:consign-fee-region",
-        "posetStatus": "finiteObserved",
-        "restrictsTo": [],
-        "sourceContextId": "ctx:intersection:consign-fee-region",
-        "sourceRefs": [
-          "src:ts-consign-price-service/src/main/java/consignprice/ConsignPriceApplication.java",
-          "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java",
-          "src:ts-preserve-service/src/main/java/preserve/PreserveApplication.java"
-        ]
-      },
-      {
-        "atomIds": [
-          "atom:contract:intersection-insidepay-order"
-        ],
-        "normalizedContextId": "ctx:intersection:insidepay-order",
-        "posetStatus": "finiteObserved",
-        "restrictsTo": [],
-        "sourceContextId": "ctx:intersection:insidepay-order",
-        "sourceRefs": [
-          "src:ts-inside-payment-service/src/main/java/inside_payment/InsidePaymentApplication.java",
-          "src:ts-order-service/src/main/java/order/OrderApplication.java"
-        ]
-      },
-      {
-        "atomIds": [
-          "atom:contract:intersection-preserve-consign"
-        ],
-        "normalizedContextId": "ctx:intersection:preserve-consign",
-        "posetStatus": "finiteObserved",
-        "restrictsTo": [
-          "ctx:intersection:consign-fee-region"
-        ],
-        "sourceContextId": "ctx:intersection:preserve-consign",
-        "sourceRefs": [
-          "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java",
-          "src:ts-preserve-service/src/main/java/preserve/PreserveApplication.java"
-        ]
-      },
-      {
-        "atomIds": [
-          "atom:contract:intersection-preserve-consignprice"
-        ],
-        "normalizedContextId": "ctx:intersection:preserve-consignprice",
-        "posetStatus": "finiteObserved",
-        "restrictsTo": [
-          "ctx:intersection:consign-fee-region"
-        ],
-        "sourceContextId": "ctx:intersection:preserve-consignprice",
-        "sourceRefs": [
-          "src:ts-consign-price-service/src/main/java/consignprice/ConsignPriceApplication.java",
-          "src:ts-preserve-service/src/main/java/preserve/PreserveApplication.java"
-        ]
-      },
-      {
-        "atomIds": [
           "atom:authority:ts-notification-service-securityconfig:allows-cross-origin-all-origins",
           "atom:authority:ts-notification-service-securityconfig:checks-permission-authenticated-required",
           "atom:authority:ts-notification-service-securityconfig:permits-unauthenticated-notifyservice-paths",
@@ -168452,96 +167592,6 @@
           "src:ts-rebook-service/src/main/java/rebook/entity/RebookInfo.java",
           "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java",
           "src:ts-rebook-service/src/main/resources/application.yml"
-        ]
-      },
-      {
-        "atomIds": [
-          "atom:contract:repair-cancel-surface"
-        ],
-        "normalizedContextId": "ctx:repair-cancel-surface",
-        "posetStatus": "finiteObserved",
-        "restrictsTo": [
-          "ctx:intersection:cancel-insidepay",
-          "ctx:intersection:cancel-order"
-        ],
-        "sourceContextId": "ctx:repair-cancel-surface",
-        "sourceRefs": [
-          "src:ts-cancel-service/src/main/java/cancel/CancelApplication.java"
-        ]
-      },
-      {
-        "atomIds": [
-          "atom:contract:repair-consign-price-surface"
-        ],
-        "normalizedContextId": "ctx:repair-consign-price-surface",
-        "posetStatus": "finiteObserved",
-        "restrictsTo": [
-          "ctx:intersection:consign-consignprice",
-          "ctx:intersection:preserve-consignprice"
-        ],
-        "sourceContextId": "ctx:repair-consign-price-surface",
-        "sourceRefs": [
-          "src:ts-consign-price-service/src/main/java/consignprice/ConsignPriceApplication.java"
-        ]
-      },
-      {
-        "atomIds": [
-          "atom:contract:repair-consign-surface"
-        ],
-        "normalizedContextId": "ctx:repair-consign-surface",
-        "posetStatus": "finiteObserved",
-        "restrictsTo": [
-          "ctx:intersection:consign-consignprice",
-          "ctx:intersection:preserve-consign"
-        ],
-        "sourceContextId": "ctx:repair-consign-surface",
-        "sourceRefs": [
-          "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java"
-        ]
-      },
-      {
-        "atomIds": [
-          "atom:contract:repair-inside-payment-surface"
-        ],
-        "normalizedContextId": "ctx:repair-inside-payment-surface",
-        "posetStatus": "finiteObserved",
-        "restrictsTo": [
-          "ctx:intersection:cancel-insidepay",
-          "ctx:intersection:insidepay-order"
-        ],
-        "sourceContextId": "ctx:repair-inside-payment-surface",
-        "sourceRefs": [
-          "src:ts-inside-payment-service/src/main/java/inside_payment/InsidePaymentApplication.java"
-        ]
-      },
-      {
-        "atomIds": [
-          "atom:contract:repair-order-surface"
-        ],
-        "normalizedContextId": "ctx:repair-order-surface",
-        "posetStatus": "finiteObserved",
-        "restrictsTo": [
-          "ctx:intersection:cancel-order",
-          "ctx:intersection:insidepay-order"
-        ],
-        "sourceContextId": "ctx:repair-order-surface",
-        "sourceRefs": [
-          "src:ts-order-service/src/main/java/order/OrderApplication.java"
-        ]
-      },
-      {
-        "atomIds": [
-          "atom:contract:repair-preserve-surface"
-        ],
-        "normalizedContextId": "ctx:repair-preserve-surface",
-        "posetStatus": "finiteObserved",
-        "restrictsTo": [
-          "ctx:intersection:preserve-consign",
-          "ctx:intersection:preserve-consignprice"
-        ],
-        "sourceContextId": "ctx:repair-preserve-surface",
-        "sourceRefs": [
-          "src:ts-preserve-service/src/main/java/preserve/PreserveApplication.java"
         ]
       },
       {
@@ -169529,49 +168579,6 @@
       },
       {
         "contextIds": [
-          "ctx:intersection:cancel-insidepay",
-          "ctx:intersection:cancel-order",
-          "ctx:intersection:consign-consignprice",
-          "ctx:intersection:consign-fee-region",
-          "ctx:intersection:insidepay-order",
-          "ctx:intersection:preserve-consign",
-          "ctx:intersection:preserve-consignprice",
-          "ctx:repair-cancel-surface",
-          "ctx:repair-consign-price-surface",
-          "ctx:repair-consign-surface",
-          "ctx:repair-inside-payment-surface",
-          "ctx:repair-order-surface",
-          "ctx:repair-preserve-surface"
-        ],
-        "coverageStatus": "selectedCandidate",
-        "normalizedCoverId": "cover:money-settlement-complex",
-        "sourceCoverId": "cover:money-settlement-complex",
-        "sourceRefs": [
-          "src:ts-cancel-service/src/main/java/cancel/CancelApplication.java",
-          "src:ts-consign-price-service/src/main/java/consignprice/ConsignPriceApplication.java",
-          "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java",
-          "src:ts-inside-payment-service/src/main/java/inside_payment/InsidePaymentApplication.java",
-          "src:ts-order-service/src/main/java/order/OrderApplication.java",
-          "src:ts-preserve-service/src/main/java/preserve/PreserveApplication.java"
-        ]
-      },
-      {
-        "contextIds": [
-          "ctx:repair-cancel-surface",
-          "ctx:repair-inside-payment-surface",
-          "ctx:repair-order-surface"
-        ],
-        "coverageStatus": "selectedCandidate",
-        "normalizedCoverId": "cover:money-settlement-diagnostic",
-        "sourceCoverId": "cover:money-settlement-diagnostic",
-        "sourceRefs": [
-          "src:ts-cancel-service/src/main/java/cancel/CancelApplication.java",
-          "src:ts-inside-payment-service/src/main/java/inside_payment/InsidePaymentApplication.java",
-          "src:ts-order-service/src/main/java/order/OrderApplication.java"
-        ]
-      },
-      {
-        "contextIds": [
           "ctx:cancel-surface",
           "ctx:consign-price-surface",
           "ctx:consign-surface",
@@ -169991,7 +168998,7 @@
   "inputDigests": {
     "archmap": {
       "path": "input:archmap-saga-head.json",
-      "sha256": "bdca8b9c6b04a377ec41e64ee0f17186c1ce6ad0a267b5fc2c0a574a375c1010"
+      "sha256": "6f8a2f6265234010587cc30dd23188c0f7b8030d39d385289a1c8c1320c9ec22"
     },
     "lawPolicy": {
       "path": "input:law-policy-saga.json",
@@ -170003,7 +169010,7 @@
     },
     "measurementPacket": {
       "path": "input:archsig-measurement-packet.json",
-      "sha256": "0ce7dd3a9497e6616b8227703a26c1532ce7b9c7c6a94b2fcb11d9e11e35697c"
+      "sha256": "1899703f940e33df158ad760be3ea66052375e2c4e796e5c0cb37f844b8ee0b6"
     },
     "measurementProfile": {
       "path": "input:measurement-profile-saga.json",
@@ -170021,11 +169028,11 @@
     },
     "repairPlan": {
       "path": "input:repair-plan-head.json",
-      "sha256": "662b04ba0b3a91ca14ebe1b539484ed6017502a61af87603e9820d49851ef3e2"
+      "sha256": "140987077e2c3ff3167ab5e4f8ceae5326db6b5c9530ac5100b5d6da4cb4a163"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
-      "sha256": "c05d1537d9126e4f0e2b59bf37ef90826adf8a22ff49e89625ff0e8f2d243868",
+      "sha256": "c75cd524da051ad25472f1faad2d3fc44456db4fe6f0a1f90851d76e7b069b1a",
       "status": "computed"
     }
   },
@@ -170035,6 +169042,7 @@
         "analyticReadingRefs": [],
         "assumptionRefs": [
           "part10/3.1",
+          "part10/8.3",
           "part3/11.3",
           "part4/11.1",
           "part4/12.3",
@@ -170209,6 +169217,7 @@
         ],
         "assumptionRefs": [
           "part10/3.1",
+          "part10/8.3",
           "part3/11.3",
           "part4/11.1",
           "part4/12.3",
@@ -170233,7 +169242,7 @@
           "saga-grounded:defect-quotient",
           "saga-descent:boundary-membership",
           "saga-descent:residual-derivation",
-          "saga-descent:residual-class"
+          "saga-descent:class-vocabulary-boundary"
         ],
         "contextRefs": [
           "ctx:admin-basic-info-surface",
@@ -173292,97 +172301,6 @@
     },
     {
       "atomIds": [
-        "atom:contract:intersection-cancel-insidepay"
-      ],
-      "atomObservationRefs": [
-        "atom:contract:intersection-cancel-insidepay"
-      ],
-      "compositionStatus": "finiteObserved",
-      "generatedMoleculeCandidateStatus": "finiteObserved",
-      "groupId": "ctx:intersection:cancel-insidepay",
-      "requiredPortStatus": "not_applicable",
-      "sourceMoleculeId": "ctx:intersection:cancel-insidepay"
-    },
-    {
-      "atomIds": [
-        "atom:contract:intersection-cancel-order"
-      ],
-      "atomObservationRefs": [
-        "atom:contract:intersection-cancel-order"
-      ],
-      "compositionStatus": "finiteObserved",
-      "generatedMoleculeCandidateStatus": "finiteObserved",
-      "groupId": "ctx:intersection:cancel-order",
-      "requiredPortStatus": "not_applicable",
-      "sourceMoleculeId": "ctx:intersection:cancel-order"
-    },
-    {
-      "atomIds": [
-        "atom:contract:intersection-consign-consignprice"
-      ],
-      "atomObservationRefs": [
-        "atom:contract:intersection-consign-consignprice"
-      ],
-      "compositionStatus": "finiteObserved",
-      "generatedMoleculeCandidateStatus": "finiteObserved",
-      "groupId": "ctx:intersection:consign-consignprice",
-      "requiredPortStatus": "not_applicable",
-      "sourceMoleculeId": "ctx:intersection:consign-consignprice"
-    },
-    {
-      "atomIds": [
-        "atom:contract:intersection-consign-fee-region"
-      ],
-      "atomObservationRefs": [
-        "atom:contract:intersection-consign-fee-region"
-      ],
-      "compositionStatus": "finiteObserved",
-      "generatedMoleculeCandidateStatus": "finiteObserved",
-      "groupId": "ctx:intersection:consign-fee-region",
-      "requiredPortStatus": "not_applicable",
-      "sourceMoleculeId": "ctx:intersection:consign-fee-region"
-    },
-    {
-      "atomIds": [
-        "atom:contract:intersection-insidepay-order"
-      ],
-      "atomObservationRefs": [
-        "atom:contract:intersection-insidepay-order"
-      ],
-      "compositionStatus": "finiteObserved",
-      "generatedMoleculeCandidateStatus": "finiteObserved",
-      "groupId": "ctx:intersection:insidepay-order",
-      "requiredPortStatus": "not_applicable",
-      "sourceMoleculeId": "ctx:intersection:insidepay-order"
-    },
-    {
-      "atomIds": [
-        "atom:contract:intersection-preserve-consign"
-      ],
-      "atomObservationRefs": [
-        "atom:contract:intersection-preserve-consign"
-      ],
-      "compositionStatus": "finiteObserved",
-      "generatedMoleculeCandidateStatus": "finiteObserved",
-      "groupId": "ctx:intersection:preserve-consign",
-      "requiredPortStatus": "not_applicable",
-      "sourceMoleculeId": "ctx:intersection:preserve-consign"
-    },
-    {
-      "atomIds": [
-        "atom:contract:intersection-preserve-consignprice"
-      ],
-      "atomObservationRefs": [
-        "atom:contract:intersection-preserve-consignprice"
-      ],
-      "compositionStatus": "finiteObserved",
-      "generatedMoleculeCandidateStatus": "finiteObserved",
-      "groupId": "ctx:intersection:preserve-consignprice",
-      "requiredPortStatus": "not_applicable",
-      "sourceMoleculeId": "ctx:intersection:preserve-consignprice"
-    },
-    {
-      "atomIds": [
         "atom:authority:ts-notification-service-securityconfig:allows-cross-origin-all-origins",
         "atom:authority:ts-notification-service-securityconfig:checks-permission-authenticated-required",
         "atom:authority:ts-notification-service-securityconfig:permits-unauthenticated-notifyservice-paths",
@@ -174036,84 +172954,6 @@
       "groupId": "ctx:rebook-surface",
       "requiredPortStatus": "not_applicable",
       "sourceMoleculeId": "ctx:rebook-surface"
-    },
-    {
-      "atomIds": [
-        "atom:contract:repair-cancel-surface"
-      ],
-      "atomObservationRefs": [
-        "atom:contract:repair-cancel-surface"
-      ],
-      "compositionStatus": "finiteObserved",
-      "generatedMoleculeCandidateStatus": "finiteObserved",
-      "groupId": "ctx:repair-cancel-surface",
-      "requiredPortStatus": "not_applicable",
-      "sourceMoleculeId": "ctx:repair-cancel-surface"
-    },
-    {
-      "atomIds": [
-        "atom:contract:repair-consign-price-surface"
-      ],
-      "atomObservationRefs": [
-        "atom:contract:repair-consign-price-surface"
-      ],
-      "compositionStatus": "finiteObserved",
-      "generatedMoleculeCandidateStatus": "finiteObserved",
-      "groupId": "ctx:repair-consign-price-surface",
-      "requiredPortStatus": "not_applicable",
-      "sourceMoleculeId": "ctx:repair-consign-price-surface"
-    },
-    {
-      "atomIds": [
-        "atom:contract:repair-consign-surface"
-      ],
-      "atomObservationRefs": [
-        "atom:contract:repair-consign-surface"
-      ],
-      "compositionStatus": "finiteObserved",
-      "generatedMoleculeCandidateStatus": "finiteObserved",
-      "groupId": "ctx:repair-consign-surface",
-      "requiredPortStatus": "not_applicable",
-      "sourceMoleculeId": "ctx:repair-consign-surface"
-    },
-    {
-      "atomIds": [
-        "atom:contract:repair-inside-payment-surface"
-      ],
-      "atomObservationRefs": [
-        "atom:contract:repair-inside-payment-surface"
-      ],
-      "compositionStatus": "finiteObserved",
-      "generatedMoleculeCandidateStatus": "finiteObserved",
-      "groupId": "ctx:repair-inside-payment-surface",
-      "requiredPortStatus": "not_applicable",
-      "sourceMoleculeId": "ctx:repair-inside-payment-surface"
-    },
-    {
-      "atomIds": [
-        "atom:contract:repair-order-surface"
-      ],
-      "atomObservationRefs": [
-        "atom:contract:repair-order-surface"
-      ],
-      "compositionStatus": "finiteObserved",
-      "generatedMoleculeCandidateStatus": "finiteObserved",
-      "groupId": "ctx:repair-order-surface",
-      "requiredPortStatus": "not_applicable",
-      "sourceMoleculeId": "ctx:repair-order-surface"
-    },
-    {
-      "atomIds": [
-        "atom:contract:repair-preserve-surface"
-      ],
-      "atomObservationRefs": [
-        "atom:contract:repair-preserve-surface"
-      ],
-      "compositionStatus": "finiteObserved",
-      "generatedMoleculeCandidateStatus": "finiteObserved",
-      "groupId": "ctx:repair-preserve-surface",
-      "requiredPortStatus": "not_applicable",
-      "sourceMoleculeId": "ctx:repair-preserve-surface"
     },
     {
       "atomIds": [
@@ -175629,7 +174469,7 @@
       "viewerDataRef": "archsig-atom-viewer-data.json"
     },
     "assumptionSummary": {
-      "assumedCount": 8,
+      "assumedCount": 9,
       "checkedCount": 5,
       "violatedCount": 0
     },
@@ -175685,6 +174525,13 @@
           "theoremRef": "part4/12.4"
         },
         {
+          "assumedBy": "law-surface:law-surface:train-ticket-money-saga-v054",
+          "assumption": "selected quotient sheaf condition for law-surface:train-ticket-money-saga-v054",
+          "checkedBy": null,
+          "status": "assumed",
+          "theoremRef": "part10/8.3"
+        },
+        {
           "assumedBy": "repair-plan author",
           "assumption": "repair-plan complex enumeration completeness for repair-plan:train-ticket-money-head",
           "checkedBy": null,
@@ -175692,7 +174539,7 @@
           "theoremRef": "part10/3.1"
         }
       ],
-      "assumedCount": 8,
+      "assumedCount": 9,
       "blocking": [],
       "blockingCount": 0,
       "checked": [
@@ -175733,7 +174580,7 @@
         }
       ],
       "checkedCount": 5,
-      "conclusionRef": "MEASURED_NONGLUING_RESIDUAL_CLASS",
+      "conclusionRef": "MEASURED_NONGLUING_RESIDUAL",
       "id": "boundary-digest:main",
       "nonClaims": [
         "Boundary digest qualifies where the conclusion applies; it does not add a new negative conclusion.",
@@ -175741,12 +174588,12 @@
       ],
       "notComputedCount": 0,
       "profileRef": "profile:train-ticket-money-saga@2",
-      "shortText": "Profile-relative. 8 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
+      "shortText": "Profile-relative. 9 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
       "unknownCount": 0,
       "unmeasuredCount": 0,
       "violatedCount": 0
     },
-    "conclusion": "MEASURED_NONGLUING_RESIDUAL_CLASS",
+    "conclusion": "MEASURED_NONGLUING_RESIDUAL",
     "evidenceDetailShape": [
       "What",
       "Why",
@@ -175761,6 +174608,7 @@
           "analyticReadingRefs": [],
           "assumptionRefs": [
             "part10/3.1",
+            "part10/8.3",
             "part3/11.3",
             "part4/11.1",
             "part4/12.3",
@@ -175935,6 +174783,7 @@
           ],
           "assumptionRefs": [
             "part10/3.1",
+            "part10/8.3",
             "part3/11.3",
             "part4/11.1",
             "part4/12.3",
@@ -175959,7 +174808,7 @@
             "saga-grounded:defect-quotient",
             "saga-descent:boundary-membership",
             "saga-descent:residual-derivation",
-            "saga-descent:residual-class"
+            "saga-descent:class-vocabulary-boundary"
           ],
           "contextRefs": [
             "ctx:admin-basic-info-surface",
@@ -176113,12 +174962,13 @@
     },
     "profileRef": "profile:train-ticket-money-saga@2",
     "readThisFirst": {
-      "boundary": "Profile-relative. 8 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
-      "conclusion": "MEASURED_NONGLUING_RESIDUAL_CLASS",
+      "boundary": "Profile-relative. 9 assumptions declared. 0 supports unmeasured. 0 unknown. 0 not_computed.",
+      "conclusion": "MEASURED_NONGLUING_RESIDUAL",
       "details": {
         "analyticReadingRefs": [],
         "assumptionRefs": [
           "part10/3.1",
+          "part10/8.3",
           "part3/11.3",
           "part4/11.1",
           "part4/12.3",
@@ -176184,13 +175034,13 @@
       ]
     },
     "structuralVerdictSummary": {
-      "measuredNonzeroCount": 4,
+      "measuredNonzeroCount": 2,
       "nonTerminalCount": 0,
-      "rowCount": 5,
+      "rowCount": 3,
       "unmeasuredCount": 0
     }
   },
-  "runId": "run:fd1b393a80e6",
+  "runId": "run:78c31d6a3172",
   "sagaDescent": {
     "leafFieldMap": [
       {
@@ -176234,6 +175084,10 @@
         "viewerPath": "stages[0].rows[0].dependsOnAssumptions[0]"
       },
       {
+        "packetPath": "/structuralVerdict/1/dependsOnAssumptions/1",
+        "viewerPath": "stages[0].rows[0].dependsOnAssumptions[1]"
+      },
+      {
         "packetPath": "/structuralVerdict/2/evaluator",
         "viewerPath": "stages[1].rows[0].evaluator"
       },
@@ -176272,86 +175126,6 @@
       {
         "packetPath": "/structuralVerdict/2/dependsOnAssumptions/0",
         "viewerPath": "stages[1].rows[0].dependsOnAssumptions[0]"
-      },
-      {
-        "packetPath": "/structuralVerdict/3/evaluator",
-        "viewerPath": "stages[1].rows[1].evaluator"
-      },
-      {
-        "packetPath": "/structuralVerdict/3/law",
-        "viewerPath": "stages[1].rows[1].law"
-      },
-      {
-        "packetPath": "/structuralVerdict/3/verdict",
-        "viewerPath": "stages[1].rows[1].verdict"
-      },
-      {
-        "packetPath": "/structuralVerdict/3/verdictData/inScope",
-        "viewerPath": "stages[1].rows[1].inScope"
-      },
-      {
-        "packetPath": "/structuralVerdict/3/verdictData/zero",
-        "viewerPath": "stages[1].rows[1].zero"
-      },
-      {
-        "packetPath": "/structuralVerdict/3/verdictData/nonZero",
-        "viewerPath": "stages[1].rows[1].nonZero"
-      },
-      {
-        "packetPath": "/structuralVerdict/3/verdictData/methodStatus",
-        "viewerPath": "stages[1].rows[1].methodStatus"
-      },
-      {
-        "packetPath": "/structuralVerdict/3/verdictData/certRef",
-        "viewerPath": "stages[1].rows[1].certRef"
-      },
-      {
-        "packetPath": "/structuralVerdict/3/reason",
-        "viewerPath": "stages[1].rows[1].reason"
-      },
-      {
-        "packetPath": "/structuralVerdict/3/dependsOnAssumptions/0",
-        "viewerPath": "stages[1].rows[1].dependsOnAssumptions[0]"
-      },
-      {
-        "packetPath": "/structuralVerdict/4/evaluator",
-        "viewerPath": "stages[1].rows[2].evaluator"
-      },
-      {
-        "packetPath": "/structuralVerdict/4/law",
-        "viewerPath": "stages[1].rows[2].law"
-      },
-      {
-        "packetPath": "/structuralVerdict/4/verdict",
-        "viewerPath": "stages[1].rows[2].verdict"
-      },
-      {
-        "packetPath": "/structuralVerdict/4/verdictData/inScope",
-        "viewerPath": "stages[1].rows[2].inScope"
-      },
-      {
-        "packetPath": "/structuralVerdict/4/verdictData/zero",
-        "viewerPath": "stages[1].rows[2].zero"
-      },
-      {
-        "packetPath": "/structuralVerdict/4/verdictData/nonZero",
-        "viewerPath": "stages[1].rows[2].nonZero"
-      },
-      {
-        "packetPath": "/structuralVerdict/4/verdictData/methodStatus",
-        "viewerPath": "stages[1].rows[2].methodStatus"
-      },
-      {
-        "packetPath": "/structuralVerdict/4/verdictData/certRef",
-        "viewerPath": "stages[1].rows[2].certRef"
-      },
-      {
-        "packetPath": "/structuralVerdict/4/reason",
-        "viewerPath": "stages[1].rows[2].reason"
-      },
-      {
-        "packetPath": "/structuralVerdict/4/dependsOnAssumptions/0",
-        "viewerPath": "stages[1].rows[2].dependsOnAssumptions[0]"
       },
       {
         "packetPath": "/computedInvariants/4/invariantId",
@@ -176620,130 +175394,6 @@
       {
         "packetPath": "/computedInvariants/5/residualDerivation/mappedCoverRef",
         "viewerPath": "stages[1].measurements[1].residualDerivation.mappedCoverRef"
-      },
-      {
-        "packetPath": "/computedInvariants/6/invariantId",
-        "viewerPath": "stages[1].measurements[2].invariantId"
-      },
-      {
-        "packetPath": "/computedInvariants/6/evaluator",
-        "viewerPath": "stages[1].measurements[2].evaluator"
-      },
-      {
-        "packetPath": "/computedInvariants/6/residualClassSupport/basis",
-        "viewerPath": "stages[1].measurements[2].residualClass.basis"
-      },
-      {
-        "packetPath": "/computedInvariants/6/residualClassSupport/cocycle/certificateKind",
-        "viewerPath": "stages[1].measurements[2].residualClass.cocycle.certificateKind"
-      },
-      {
-        "packetPath": "/computedInvariants/6/residualClassSupport/cocycle/checked",
-        "viewerPath": "stages[1].measurements[2].residualClass.cocycle.checked"
-      },
-      {
-        "packetPath": "/computedInvariants/6/residualClassSupport/cocycle/deltaOne",
-        "viewerPath": "stages[1].measurements[2].residualClass.cocycle.deltaOne"
-      },
-      {
-        "packetPath": "/computedInvariants/6/residualClassSupport/component/chartRefs/0",
-        "viewerPath": "stages[1].measurements[2].residualClass.component.chartRefs[0]"
-      },
-      {
-        "packetPath": "/computedInvariants/6/residualClassSupport/component/chartRefs/1",
-        "viewerPath": "stages[1].measurements[2].residualClass.component.chartRefs[1]"
-      },
-      {
-        "packetPath": "/computedInvariants/6/residualClassSupport/component/chartRefs/2",
-        "viewerPath": "stages[1].measurements[2].residualClass.component.chartRefs[2]"
-      },
-      {
-        "packetPath": "/computedInvariants/6/residualClassSupport/component/chartRefs/3",
-        "viewerPath": "stages[1].measurements[2].residualClass.component.chartRefs[3]"
-      },
-      {
-        "packetPath": "/computedInvariants/6/residualClassSupport/component/chartRefs/4",
-        "viewerPath": "stages[1].measurements[2].residualClass.component.chartRefs[4]"
-      },
-      {
-        "packetPath": "/computedInvariants/6/residualClassSupport/component/chartRefs/5",
-        "viewerPath": "stages[1].measurements[2].residualClass.component.chartRefs[5]"
-      },
-      {
-        "packetPath": "/computedInvariants/6/residualClassSupport/component/overlapRefs/0",
-        "viewerPath": "stages[1].measurements[2].residualClass.component.overlapRefs[0]"
-      },
-      {
-        "packetPath": "/computedInvariants/6/residualClassSupport/component/overlapRefs/1",
-        "viewerPath": "stages[1].measurements[2].residualClass.component.overlapRefs[1]"
-      },
-      {
-        "packetPath": "/computedInvariants/6/residualClassSupport/component/overlapRefs/2",
-        "viewerPath": "stages[1].measurements[2].residualClass.component.overlapRefs[2]"
-      },
-      {
-        "packetPath": "/computedInvariants/6/residualClassSupport/component/overlapRefs/3",
-        "viewerPath": "stages[1].measurements[2].residualClass.component.overlapRefs[3]"
-      },
-      {
-        "packetPath": "/computedInvariants/6/residualClassSupport/component/overlapRefs/4",
-        "viewerPath": "stages[1].measurements[2].residualClass.component.overlapRefs[4]"
-      },
-      {
-        "packetPath": "/computedInvariants/6/residualClassSupport/component/overlapRefs/5",
-        "viewerPath": "stages[1].measurements[2].residualClass.component.overlapRefs[5]"
-      },
-      {
-        "packetPath": "/computedInvariants/6/residualClassSupport/nonZero",
-        "viewerPath": "stages[1].measurements[2].residualClass.nonZero"
-      },
-      {
-        "packetPath": "/computedInvariants/6/residualClassSupport/quotient",
-        "viewerPath": "stages[1].measurements[2].residualClass.quotient"
-      },
-      {
-        "packetPath": "/computedInvariants/6/residualClassSupport/representative/0/overlapRef",
-        "viewerPath": "stages[1].measurements[2].residualClass.representative[0].overlapRef"
-      },
-      {
-        "packetPath": "/computedInvariants/6/residualClassSupport/representative/0/support/0",
-        "viewerPath": "stages[1].measurements[2].residualClass.representative[0].support[0]"
-      },
-      {
-        "packetPath": "/computedInvariants/6/residualClassSupport/representative/1/overlapRef",
-        "viewerPath": "stages[1].measurements[2].residualClass.representative[1].overlapRef"
-      },
-      {
-        "packetPath": "/computedInvariants/6/residualClassSupport/representative/1/support/0",
-        "viewerPath": "stages[1].measurements[2].residualClass.representative[1].support[0]"
-      },
-      {
-        "packetPath": "/computedInvariants/6/residualClassSupport/representative/2/overlapRef",
-        "viewerPath": "stages[1].measurements[2].residualClass.representative[2].overlapRef"
-      },
-      {
-        "packetPath": "/computedInvariants/6/residualClassSupport/representative/2/support/0",
-        "viewerPath": "stages[1].measurements[2].residualClass.representative[2].support[0]"
-      },
-      {
-        "packetPath": "/computedInvariants/6/residualClassSupport/representative/3/overlapRef",
-        "viewerPath": "stages[1].measurements[2].residualClass.representative[3].overlapRef"
-      },
-      {
-        "packetPath": "/computedInvariants/6/residualClassSupport/representative/4/overlapRef",
-        "viewerPath": "stages[1].measurements[2].residualClass.representative[4].overlapRef"
-      },
-      {
-        "packetPath": "/computedInvariants/6/residualClassSupport/representative/4/support/0",
-        "viewerPath": "stages[1].measurements[2].residualClass.representative[4].support[0]"
-      },
-      {
-        "packetPath": "/computedInvariants/6/residualClassSupport/representative/5/overlapRef",
-        "viewerPath": "stages[1].measurements[2].residualClass.representative[5].overlapRef"
-      },
-      {
-        "packetPath": "/computedInvariants/6/residualClassSupport/representative/5/support/0",
-        "viewerPath": "stages[1].measurements[2].residualClass.representative[5].support[0]"
       }
     ],
     "nonClaims": [
@@ -176761,7 +175411,8 @@
           {
             "certRef": "computedInvariants/saga-grounded:defect-quotient",
             "dependsOnAssumptions": [
-              "assumption:part3-11-3:displayedRequiredLawsHold-is-operationalized-only-by-the-declared-holdsCriterion-raw-value-check"
+              "assumption:part3-11-3:displayedRequiredLawsHold-is-operationalized-only-by-the-declared-holdsCriterion-raw-value-check",
+              "assumption:part10-8-3:selected-quotient-sheaf-condition-for-law-surface-train-ticket-money-saga-v054"
             ],
             "evaluator": "ag.saga-grounded",
             "inScope": true,
@@ -176917,76 +175568,7 @@
               ],
               "fault": null,
               "lawSurfaceRef": "law-surface:train-ticket-money-saga-v054",
-              "mappedCoverRef": null
-            }
-          },
-          {
-            "evaluator": "ag.saga-descent",
-            "invariantId": "saga-descent:residual-class",
-            "residualClass": {
-              "basis": "Z1/B1",
-              "cocycle": {
-                "certificateKind": "automatic-c2-zero",
-                "checked": false,
-                "deltaOne": "zero",
-                "tripleOverlapRefs": []
-              },
-              "component": {
-                "chartRefs": [
-                  "ctx:cancel-surface",
-                  "ctx:consign-price-surface",
-                  "ctx:consign-surface",
-                  "ctx:inside-payment-surface",
-                  "ctx:order-surface",
-                  "ctx:preserve-surface"
-                ],
-                "overlapRefs": [
-                  "overlap:cancel-insidepay",
-                  "overlap:cancel-order",
-                  "overlap:consign-consignprice",
-                  "overlap:insidepay-order",
-                  "overlap:preserve-consign",
-                  "overlap:preserve-order"
-                ]
-              },
-              "nonZero": true,
-              "quotient": "Z1/B1",
-              "representative": [
-                {
-                  "overlapRef": "overlap:cancel-insidepay",
-                  "support": [
-                    "cech:section-mismatch"
-                  ]
-                },
-                {
-                  "overlapRef": "overlap:insidepay-order",
-                  "support": [
-                    "cech:section-mismatch"
-                  ]
-                },
-                {
-                  "overlapRef": "overlap:cancel-order",
-                  "support": [
-                    "cech:section-mismatch"
-                  ]
-                },
-                {
-                  "overlapRef": "overlap:consign-consignprice",
-                  "support": []
-                },
-                {
-                  "overlapRef": "overlap:preserve-consign",
-                  "support": [
-                    "cech:section-mismatch"
-                  ]
-                },
-                {
-                  "overlapRef": "overlap:preserve-order",
-                  "support": [
-                    "cech:section-mismatch"
-                  ]
-                }
-              ]
+              "mappedCoverRef": "cover:money-settlement-loop"
             }
           }
         ],
@@ -177003,34 +175585,6 @@
             "methodStatus": "residual_not_in_b1",
             "nonZero": true,
             "reason": "derived residual is not in B1 for the selected RepairPlan complex",
-            "verdict": "measured_nonzero",
-            "zero": false
-          },
-          {
-            "certRef": "computedInvariants/saga-descent:residual-derivation",
-            "dependsOnAssumptions": [
-              "assumption:part10-3-1:repair-plan-complex-enumeration-completeness-for-repair-plan-train-ticket-money-head"
-            ],
-            "evaluator": "ag.saga-descent",
-            "inScope": true,
-            "law": "saga.global-coherence",
-            "methodStatus": "residual_not_in_b1",
-            "nonZero": true,
-            "reason": "global coherence is blocked because the derived residual is not a B1 boundary",
-            "verdict": "measured_nonzero",
-            "zero": false
-          },
-          {
-            "certRef": "computedInvariants/saga-descent:residual-class",
-            "dependsOnAssumptions": [
-              "assumption:part10-3-1:repair-plan-complex-enumeration-completeness-for-repair-plan-train-ticket-money-head"
-            ],
-            "evaluator": "ag.saga-descent",
-            "inScope": true,
-            "law": "saga.residual-class",
-            "methodStatus": "nonzero_class_representative",
-            "nonZero": true,
-            "reason": "MEASURED_NONGLUING_RESIDUAL_CLASS: derived Z1 representative is not in B1",
             "verdict": "measured_nonzero",
             "zero": false
           }

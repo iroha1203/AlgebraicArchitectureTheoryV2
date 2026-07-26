@@ -1,6 +1,6 @@
 {
   "assumptionSummary": {
-    "assumedCount": 8,
+    "assumedCount": 9,
     "checkedCount": 5,
     "violatedCount": 0
   },
@@ -13,7 +13,7 @@
   "inputDigests": {
     "archmap": {
       "path": "input:archmap-saga-repaired.json",
-      "sha256": "0ea545f516e24a78e252391bf8ec24224ec8630d8dbd6b1698af04a28ea7a585"
+      "sha256": "9a7baaa8b1adc73b5c5ff0fc3d56da0986402aecfe4902a0aa7e63ca3d449417"
     },
     "lawPolicy": {
       "path": "input:law-policy-saga.json",
@@ -39,11 +39,11 @@
     },
     "repairPlan": {
       "path": "input:repair-plan-repaired.json",
-      "sha256": "d3a2ec111beac56f943db9e4636287320cf93d6dc26a7f8e2962ab18028091a7"
+      "sha256": "5a6a8919bb8dd6d894130b6cd500898af38b5bd6f1a682501e9d57cf59cda2f9"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
-      "sha256": "c05d1537d9126e4f0e2b59bf37ef90826adf8a22ff49e89625ff0e8f2d243868",
+      "sha256": "c75cd524da051ad25472f1faad2d3fc44456db4fe6f0a1f90851d76e7b069b1a",
       "status": "computed"
     }
   },
@@ -59,24 +59,24 @@
   ],
   "profileRef": "profile:train-ticket-money-saga@2",
   "readThisFirst": {
-    "boundary": "Profile-relative. 8 assumptions declared. 0 non-terminal rows.",
+    "boundary": "Profile-relative. 9 assumptions declared. 0 non-terminal rows.",
     "conclusion": "REPAIR_GLUES_WITHIN_SELECTED_COMPLEX",
     "heading": "Read this first",
     "nextAction": "Open archsig-insight-brief.md or the viewer Insight Queue.",
     "whatItMeans": "No selected H1 glue mismatch was measured under the profile.",
     "whereToLookFirst": "See archsig-insight-report.json#/insightCards/0/evidence"
   },
-  "runId": "run:f9666ddb2aca",
+  "runId": "run:6685bab8db21",
   "schema": "archsig-analysis-summary/v0.5.4",
   "structuralVerdictSummary": {
     "measuredNonzeroCount": 0,
     "nonTerminalCount": 0,
-    "rowCount": 5,
+    "rowCount": 3,
     "unmeasuredCount": 0
   },
   "toolVersion": "0.5.4",
   "translationRule": {
-    "boundary": "Supply Stage 2 law surface and comparison artifacts before claiming global semantic repair.",
+    "boundary": "The gluing reading is relative to the selected RepairPlan complex and its declared triple overlaps; it does not claim global semantic repair.",
     "conclusionCode": "REPAIR_GLUES_WITHIN_SELECTED_COMPLEX",
     "concreteSupportRefs": [],
     "emitsLawSatisfiedWithoutLawCheck": false,
@@ -96,7 +96,7 @@
       "theoremRef": "part10/3.4"
     },
     {
-      "boundary": "Supply Stage 2 law surface and comparison artifacts before claiming global semantic repair.",
+      "boundary": "The gluing reading is relative to the selected RepairPlan complex and its declared triple overlaps; it does not claim global semantic repair.",
       "conclusionCode": "REPAIR_GLUES_WITHIN_SELECTED_COMPLEX",
       "emitsLawSatisfiedWithoutLawCheck": false,
       "generatedDiscipline": "generated derived-residual boundary-membership detection",

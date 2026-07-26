@@ -17029,126 +17029,6 @@
     },
     {
       "atomKind": "contract",
-      "axis": "static",
-      "contextMemberships": [
-        "ctx:intersection:cancel-insidepay"
-      ],
-      "normalizationStatus": "normalized",
-      "normalizedAtomId": "atom:contract:intersection-cancel-insidepay",
-      "object": "source-grounded finite intersection selected for the settlement presentation",
-      "predicate": "component",
-      "sourceAtomId": "atom:contract:intersection-cancel-insidepay",
-      "sourceRefs": [
-        "src:ts-cancel-service/src/main/java/cancel/CancelApplication.java",
-        "src:ts-inside-payment-service/src/main/java/inside_payment/InsidePaymentApplication.java"
-      ],
-      "subject": "ctx:intersection:cancel-insidepay"
-    },
-    {
-      "atomKind": "contract",
-      "axis": "static",
-      "contextMemberships": [
-        "ctx:intersection:cancel-order"
-      ],
-      "normalizationStatus": "normalized",
-      "normalizedAtomId": "atom:contract:intersection-cancel-order",
-      "object": "source-grounded finite intersection selected for the settlement presentation",
-      "predicate": "component",
-      "sourceAtomId": "atom:contract:intersection-cancel-order",
-      "sourceRefs": [
-        "src:ts-cancel-service/src/main/java/cancel/CancelApplication.java",
-        "src:ts-order-service/src/main/java/order/OrderApplication.java"
-      ],
-      "subject": "ctx:intersection:cancel-order"
-    },
-    {
-      "atomKind": "contract",
-      "axis": "static",
-      "contextMemberships": [
-        "ctx:intersection:consign-consignprice"
-      ],
-      "normalizationStatus": "normalized",
-      "normalizedAtomId": "atom:contract:intersection-consign-consignprice",
-      "object": "source-grounded finite intersection selected for the settlement presentation",
-      "predicate": "component",
-      "sourceAtomId": "atom:contract:intersection-consign-consignprice",
-      "sourceRefs": [
-        "src:ts-consign-price-service/src/main/java/consignprice/ConsignPriceApplication.java",
-        "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java"
-      ],
-      "subject": "ctx:intersection:consign-consignprice"
-    },
-    {
-      "atomKind": "contract",
-      "axis": "static",
-      "contextMemberships": [
-        "ctx:intersection:consign-fee-region"
-      ],
-      "normalizationStatus": "normalized",
-      "normalizedAtomId": "atom:contract:intersection-consign-fee-region",
-      "object": "source-grounded finite intersection selected for the settlement presentation",
-      "predicate": "component",
-      "sourceAtomId": "atom:contract:intersection-consign-fee-region",
-      "sourceRefs": [
-        "src:ts-consign-price-service/src/main/java/consignprice/ConsignPriceApplication.java",
-        "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java",
-        "src:ts-preserve-service/src/main/java/preserve/PreserveApplication.java"
-      ],
-      "subject": "ctx:intersection:consign-fee-region"
-    },
-    {
-      "atomKind": "contract",
-      "axis": "static",
-      "contextMemberships": [
-        "ctx:intersection:insidepay-order"
-      ],
-      "normalizationStatus": "normalized",
-      "normalizedAtomId": "atom:contract:intersection-insidepay-order",
-      "object": "source-grounded finite intersection selected for the settlement presentation",
-      "predicate": "component",
-      "sourceAtomId": "atom:contract:intersection-insidepay-order",
-      "sourceRefs": [
-        "src:ts-inside-payment-service/src/main/java/inside_payment/InsidePaymentApplication.java",
-        "src:ts-order-service/src/main/java/order/OrderApplication.java"
-      ],
-      "subject": "ctx:intersection:insidepay-order"
-    },
-    {
-      "atomKind": "contract",
-      "axis": "static",
-      "contextMemberships": [
-        "ctx:intersection:preserve-consign"
-      ],
-      "normalizationStatus": "normalized",
-      "normalizedAtomId": "atom:contract:intersection-preserve-consign",
-      "object": "source-grounded finite intersection selected for the settlement presentation",
-      "predicate": "component",
-      "sourceAtomId": "atom:contract:intersection-preserve-consign",
-      "sourceRefs": [
-        "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java",
-        "src:ts-preserve-service/src/main/java/preserve/PreserveApplication.java"
-      ],
-      "subject": "ctx:intersection:preserve-consign"
-    },
-    {
-      "atomKind": "contract",
-      "axis": "static",
-      "contextMemberships": [
-        "ctx:intersection:preserve-consignprice"
-      ],
-      "normalizationStatus": "normalized",
-      "normalizedAtomId": "atom:contract:intersection-preserve-consignprice",
-      "object": "source-grounded finite intersection selected for the settlement presentation",
-      "predicate": "component",
-      "sourceAtomId": "atom:contract:intersection-preserve-consignprice",
-      "sourceRefs": [
-        "src:ts-consign-price-service/src/main/java/consignprice/ConsignPriceApplication.java",
-        "src:ts-preserve-service/src/main/java/preserve/PreserveApplication.java"
-      ],
-      "subject": "ctx:intersection:preserve-consignprice"
-    },
-    {
-      "atomKind": "contract",
       "axis": "specification",
       "contextMemberships": [
         "ctx:order-surface"
@@ -17291,102 +17171,6 @@
         "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java"
       ],
       "subject": "ts-rebook-service.RebookServiceImpl"
-    },
-    {
-      "atomKind": "contract",
-      "axis": "static",
-      "contextMemberships": [
-        "ctx:repair-cancel-surface"
-      ],
-      "normalizationStatus": "normalized",
-      "normalizedAtomId": "atom:contract:repair-cancel-surface",
-      "object": "source-grounded finite intersection selected for the settlement presentation",
-      "predicate": "component",
-      "sourceAtomId": "atom:contract:repair-cancel-surface",
-      "sourceRefs": [
-        "src:ts-cancel-service/src/main/java/cancel/CancelApplication.java"
-      ],
-      "subject": "ctx:repair-cancel-surface"
-    },
-    {
-      "atomKind": "contract",
-      "axis": "static",
-      "contextMemberships": [
-        "ctx:repair-consign-price-surface"
-      ],
-      "normalizationStatus": "normalized",
-      "normalizedAtomId": "atom:contract:repair-consign-price-surface",
-      "object": "source-grounded finite intersection selected for the settlement presentation",
-      "predicate": "component",
-      "sourceAtomId": "atom:contract:repair-consign-price-surface",
-      "sourceRefs": [
-        "src:ts-consign-price-service/src/main/java/consignprice/ConsignPriceApplication.java"
-      ],
-      "subject": "ctx:repair-consign-price-surface"
-    },
-    {
-      "atomKind": "contract",
-      "axis": "static",
-      "contextMemberships": [
-        "ctx:repair-consign-surface"
-      ],
-      "normalizationStatus": "normalized",
-      "normalizedAtomId": "atom:contract:repair-consign-surface",
-      "object": "source-grounded finite intersection selected for the settlement presentation",
-      "predicate": "component",
-      "sourceAtomId": "atom:contract:repair-consign-surface",
-      "sourceRefs": [
-        "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java"
-      ],
-      "subject": "ctx:repair-consign-surface"
-    },
-    {
-      "atomKind": "contract",
-      "axis": "static",
-      "contextMemberships": [
-        "ctx:repair-inside-payment-surface"
-      ],
-      "normalizationStatus": "normalized",
-      "normalizedAtomId": "atom:contract:repair-inside-payment-surface",
-      "object": "source-grounded finite intersection selected for the settlement presentation",
-      "predicate": "component",
-      "sourceAtomId": "atom:contract:repair-inside-payment-surface",
-      "sourceRefs": [
-        "src:ts-inside-payment-service/src/main/java/inside_payment/InsidePaymentApplication.java"
-      ],
-      "subject": "ctx:repair-inside-payment-surface"
-    },
-    {
-      "atomKind": "contract",
-      "axis": "static",
-      "contextMemberships": [
-        "ctx:repair-order-surface"
-      ],
-      "normalizationStatus": "normalized",
-      "normalizedAtomId": "atom:contract:repair-order-surface",
-      "object": "source-grounded finite intersection selected for the settlement presentation",
-      "predicate": "component",
-      "sourceAtomId": "atom:contract:repair-order-surface",
-      "sourceRefs": [
-        "src:ts-order-service/src/main/java/order/OrderApplication.java"
-      ],
-      "subject": "ctx:repair-order-surface"
-    },
-    {
-      "atomKind": "contract",
-      "axis": "static",
-      "contextMemberships": [
-        "ctx:repair-preserve-surface"
-      ],
-      "normalizationStatus": "normalized",
-      "normalizedAtomId": "atom:contract:repair-preserve-surface",
-      "object": "source-grounded finite intersection selected for the settlement presentation",
-      "predicate": "component",
-      "sourceAtomId": "atom:contract:repair-preserve-surface",
-      "sourceRefs": [
-        "src:ts-preserve-service/src/main/java/preserve/PreserveApplication.java"
-      ],
-      "subject": "ctx:repair-preserve-surface"
     },
     {
       "atomKind": "contract",
@@ -35639,104 +35423,6 @@
     },
     {
       "atomIds": [
-        "atom:contract:intersection-cancel-insidepay"
-      ],
-      "normalizedContextId": "ctx:intersection:cancel-insidepay",
-      "posetStatus": "finiteObserved",
-      "restrictsTo": [],
-      "sourceContextId": "ctx:intersection:cancel-insidepay",
-      "sourceRefs": [
-        "src:ts-cancel-service/src/main/java/cancel/CancelApplication.java",
-        "src:ts-inside-payment-service/src/main/java/inside_payment/InsidePaymentApplication.java"
-      ]
-    },
-    {
-      "atomIds": [
-        "atom:contract:intersection-cancel-order"
-      ],
-      "normalizedContextId": "ctx:intersection:cancel-order",
-      "posetStatus": "finiteObserved",
-      "restrictsTo": [],
-      "sourceContextId": "ctx:intersection:cancel-order",
-      "sourceRefs": [
-        "src:ts-cancel-service/src/main/java/cancel/CancelApplication.java",
-        "src:ts-order-service/src/main/java/order/OrderApplication.java"
-      ]
-    },
-    {
-      "atomIds": [
-        "atom:contract:intersection-consign-consignprice"
-      ],
-      "normalizedContextId": "ctx:intersection:consign-consignprice",
-      "posetStatus": "finiteObserved",
-      "restrictsTo": [
-        "ctx:intersection:consign-fee-region"
-      ],
-      "sourceContextId": "ctx:intersection:consign-consignprice",
-      "sourceRefs": [
-        "src:ts-consign-price-service/src/main/java/consignprice/ConsignPriceApplication.java",
-        "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java"
-      ]
-    },
-    {
-      "atomIds": [
-        "atom:contract:intersection-consign-fee-region"
-      ],
-      "normalizedContextId": "ctx:intersection:consign-fee-region",
-      "posetStatus": "finiteObserved",
-      "restrictsTo": [],
-      "sourceContextId": "ctx:intersection:consign-fee-region",
-      "sourceRefs": [
-        "src:ts-consign-price-service/src/main/java/consignprice/ConsignPriceApplication.java",
-        "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java",
-        "src:ts-preserve-service/src/main/java/preserve/PreserveApplication.java"
-      ]
-    },
-    {
-      "atomIds": [
-        "atom:contract:intersection-insidepay-order"
-      ],
-      "normalizedContextId": "ctx:intersection:insidepay-order",
-      "posetStatus": "finiteObserved",
-      "restrictsTo": [],
-      "sourceContextId": "ctx:intersection:insidepay-order",
-      "sourceRefs": [
-        "src:ts-inside-payment-service/src/main/java/inside_payment/InsidePaymentApplication.java",
-        "src:ts-order-service/src/main/java/order/OrderApplication.java"
-      ]
-    },
-    {
-      "atomIds": [
-        "atom:contract:intersection-preserve-consign"
-      ],
-      "normalizedContextId": "ctx:intersection:preserve-consign",
-      "posetStatus": "finiteObserved",
-      "restrictsTo": [
-        "ctx:intersection:consign-fee-region"
-      ],
-      "sourceContextId": "ctx:intersection:preserve-consign",
-      "sourceRefs": [
-        "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java",
-        "src:ts-preserve-service/src/main/java/preserve/PreserveApplication.java"
-      ]
-    },
-    {
-      "atomIds": [
-        "atom:contract:intersection-preserve-consignprice"
-      ],
-      "normalizedContextId": "ctx:intersection:preserve-consignprice",
-      "posetStatus": "finiteObserved",
-      "restrictsTo": [
-        "ctx:intersection:consign-fee-region"
-      ],
-      "sourceContextId": "ctx:intersection:preserve-consignprice",
-      "sourceRefs": [
-        "src:ts-consign-price-service/src/main/java/consignprice/ConsignPriceApplication.java",
-        "src:ts-preserve-service/src/main/java/preserve/PreserveApplication.java"
-      ]
-    },
-    {
-      "atomIds": [
         "atom:authority:ts-notification-service-securityconfig:allows-cross-origin-all-origins",
         "atom:authority:ts-notification-service-securityconfig:checks-permission-authenticated-required",
         "atom:authority:ts-notification-service-securityconfig:permits-unauthenticated-notifyservice-paths",
@@ -36330,96 +36016,6 @@
         "src:ts-rebook-service/src/main/java/rebook/entity/RebookInfo.java",
         "src:ts-rebook-service/src/main/java/rebook/service/RebookServiceImpl.java",
         "src:ts-rebook-service/src/main/resources/application.yml"
-      ]
-    },
-    {
-      "atomIds": [
-        "atom:contract:repair-cancel-surface"
-      ],
-      "normalizedContextId": "ctx:repair-cancel-surface",
-      "posetStatus": "finiteObserved",
-      "restrictsTo": [
-        "ctx:intersection:cancel-insidepay",
-        "ctx:intersection:cancel-order"
-      ],
-      "sourceContextId": "ctx:repair-cancel-surface",
-      "sourceRefs": [
-        "src:ts-cancel-service/src/main/java/cancel/CancelApplication.java"
-      ]
-    },
-    {
-      "atomIds": [
-        "atom:contract:repair-consign-price-surface"
-      ],
-      "normalizedContextId": "ctx:repair-consign-price-surface",
-      "posetStatus": "finiteObserved",
-      "restrictsTo": [
-        "ctx:intersection:consign-consignprice",
-        "ctx:intersection:preserve-consignprice"
-      ],
-      "sourceContextId": "ctx:repair-consign-price-surface",
-      "sourceRefs": [
-        "src:ts-consign-price-service/src/main/java/consignprice/ConsignPriceApplication.java"
-      ]
-    },
-    {
-      "atomIds": [
-        "atom:contract:repair-consign-surface"
-      ],
-      "normalizedContextId": "ctx:repair-consign-surface",
-      "posetStatus": "finiteObserved",
-      "restrictsTo": [
-        "ctx:intersection:consign-consignprice",
-        "ctx:intersection:preserve-consign"
-      ],
-      "sourceContextId": "ctx:repair-consign-surface",
-      "sourceRefs": [
-        "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java"
-      ]
-    },
-    {
-      "atomIds": [
-        "atom:contract:repair-inside-payment-surface"
-      ],
-      "normalizedContextId": "ctx:repair-inside-payment-surface",
-      "posetStatus": "finiteObserved",
-      "restrictsTo": [
-        "ctx:intersection:cancel-insidepay",
-        "ctx:intersection:insidepay-order"
-      ],
-      "sourceContextId": "ctx:repair-inside-payment-surface",
-      "sourceRefs": [
-        "src:ts-inside-payment-service/src/main/java/inside_payment/InsidePaymentApplication.java"
-      ]
-    },
-    {
-      "atomIds": [
-        "atom:contract:repair-order-surface"
-      ],
-      "normalizedContextId": "ctx:repair-order-surface",
-      "posetStatus": "finiteObserved",
-      "restrictsTo": [
-        "ctx:intersection:cancel-order",
-        "ctx:intersection:insidepay-order"
-      ],
-      "sourceContextId": "ctx:repair-order-surface",
-      "sourceRefs": [
-        "src:ts-order-service/src/main/java/order/OrderApplication.java"
-      ]
-    },
-    {
-      "atomIds": [
-        "atom:contract:repair-preserve-surface"
-      ],
-      "normalizedContextId": "ctx:repair-preserve-surface",
-      "posetStatus": "finiteObserved",
-      "restrictsTo": [
-        "ctx:intersection:preserve-consign",
-        "ctx:intersection:preserve-consignprice"
-      ],
-      "sourceContextId": "ctx:repair-preserve-surface",
-      "sourceRefs": [
-        "src:ts-preserve-service/src/main/java/preserve/PreserveApplication.java"
       ]
     },
     {
@@ -37407,49 +37003,6 @@
     },
     {
       "contextIds": [
-        "ctx:intersection:cancel-insidepay",
-        "ctx:intersection:cancel-order",
-        "ctx:intersection:consign-consignprice",
-        "ctx:intersection:consign-fee-region",
-        "ctx:intersection:insidepay-order",
-        "ctx:intersection:preserve-consign",
-        "ctx:intersection:preserve-consignprice",
-        "ctx:repair-cancel-surface",
-        "ctx:repair-consign-price-surface",
-        "ctx:repair-consign-surface",
-        "ctx:repair-inside-payment-surface",
-        "ctx:repair-order-surface",
-        "ctx:repair-preserve-surface"
-      ],
-      "coverageStatus": "selectedCandidate",
-      "normalizedCoverId": "cover:money-settlement-complex",
-      "sourceCoverId": "cover:money-settlement-complex",
-      "sourceRefs": [
-        "src:ts-cancel-service/src/main/java/cancel/CancelApplication.java",
-        "src:ts-consign-price-service/src/main/java/consignprice/ConsignPriceApplication.java",
-        "src:ts-consign-price-service/src/main/java/consignprice/controller/ConsignPriceController.java",
-        "src:ts-inside-payment-service/src/main/java/inside_payment/InsidePaymentApplication.java",
-        "src:ts-order-service/src/main/java/order/OrderApplication.java",
-        "src:ts-preserve-service/src/main/java/preserve/PreserveApplication.java"
-      ]
-    },
-    {
-      "contextIds": [
-        "ctx:repair-cancel-surface",
-        "ctx:repair-inside-payment-surface",
-        "ctx:repair-order-surface"
-      ],
-      "coverageStatus": "selectedCandidate",
-      "normalizedCoverId": "cover:money-settlement-diagnostic",
-      "sourceCoverId": "cover:money-settlement-diagnostic",
-      "sourceRefs": [
-        "src:ts-cancel-service/src/main/java/cancel/CancelApplication.java",
-        "src:ts-inside-payment-service/src/main/java/inside_payment/InsidePaymentApplication.java",
-        "src:ts-order-service/src/main/java/order/OrderApplication.java"
-      ]
-    },
-    {
-      "contextIds": [
         "ctx:cancel-surface",
         "ctx:consign-price-surface",
         "ctx:consign-surface",
@@ -37556,7 +37109,7 @@
   "inputDigests": {
     "archmap": {
       "path": "input:archmap-saga-head.json",
-      "sha256": "bdca8b9c6b04a377ec41e64ee0f17186c1ce6ad0a267b5fc2c0a574a375c1010"
+      "sha256": "6f8a2f6265234010587cc30dd23188c0f7b8030d39d385289a1c8c1320c9ec22"
     },
     "lawPolicy": {
       "path": "input:law-policy-saga.json",
@@ -37582,11 +37135,11 @@
     },
     "repairPlan": {
       "path": "input:repair-plan-head.json",
-      "sha256": "662b04ba0b3a91ca14ebe1b539484ed6017502a61af87603e9820d49851ef3e2"
+      "sha256": "140987077e2c3ff3167ab5e4f8ceae5326db6b5c9530ac5100b5d6da4cb4a163"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
-      "sha256": "c05d1537d9126e4f0e2b59bf37ef90826adf8a22ff49e89625ff0e8f2d243868",
+      "sha256": "c75cd524da051ad25472f1faad2d3fc44456db4fe6f0a1f90851d76e7b069b1a",
       "status": "computed"
     }
   },
@@ -37595,16 +37148,16 @@
     "Contexts and covers are observation structure; measurement choices live in MeasurementProfile."
   ],
   "normalizerId": "archmap-schema052-finite-poset-site@1",
-  "runId": "run:fd1b393a80e6",
+  "runId": "run:78c31d6a3172",
   "schema": "normalized-archmap/v0.5.4",
   "sourceArchmapId": "train-ticket-money-saga-head/v0.5.4",
   "sourceArchmapRef": "input:archmap-saga-head.json",
   "summary": {
-    "atomCount": 2125,
-    "contextCount": 56,
-    "coverCount": 6,
+    "atomCount": 2112,
+    "contextCount": 43,
+    "coverCount": 4,
     "doctrineFingerprint": "sha256:aat-canonical-doctrine-schema052",
-    "normalizedAtomCount": 2125
+    "normalizedAtomCount": 2112
   },
   "toolVersion": "0.5.4"
 }

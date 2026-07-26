@@ -3,11 +3,11 @@
   "artifactDigests": {
     "measurementPacket": {
       "path": "archsig-measurement-packet.json",
-      "sha256": "0ce7dd3a9497e6616b8227703a26c1532ce7b9c7c6a94b2fcb11d9e11e35697c"
+      "sha256": "1899703f940e33df158ad760be3ea66052375e2c4e796e5c0cb37f844b8ee0b6"
     },
     "normalizedArchmap": {
       "path": "normalized-archmap.json",
-      "sha256": "421b0d34a354504bb1da992b962a61dede9acc0f50e25477420b6fe0b99c95f9"
+      "sha256": "0c43575d34d61834211b6d06d782c2f3138293f00b00c43f7a55f90677e910bb"
     }
   },
   "artifactLinks": {
@@ -43,7 +43,7 @@
   "inputDigests": {
     "archmap": {
       "path": "input:archmap-saga-head.json",
-      "sha256": "bdca8b9c6b04a377ec41e64ee0f17186c1ce6ad0a267b5fc2c0a574a375c1010"
+      "sha256": "6f8a2f6265234010587cc30dd23188c0f7b8030d39d385289a1c8c1320c9ec22"
     },
     "lawPolicy": {
       "path": "input:law-policy-saga.json",
@@ -69,11 +69,11 @@
     },
     "repairPlan": {
       "path": "input:repair-plan-head.json",
-      "sha256": "662b04ba0b3a91ca14ebe1b539484ed6017502a61af87603e9820d49851ef3e2"
+      "sha256": "140987077e2c3ff3167ab5e4f8ceae5326db6b5c9530ac5100b5d6da4cb4a163"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
-      "sha256": "c05d1537d9126e4f0e2b59bf37ef90826adf8a22ff49e89625ff0e8f2d243868",
+      "sha256": "c75cd524da051ad25472f1faad2d3fc44456db4fe6f0a1f90851d76e7b069b1a",
       "status": "computed"
     }
   },
@@ -92,7 +92,7 @@
   "rawArtifactPaths": null,
   "rawArtifactRetention": "omitted",
   "repairPlanInputPath": "input:repair-plan-head.json",
-  "runId": "run:fd1b393a80e6",
+  "runId": "run:78c31d6a3172",
   "schema": "archsig-run-manifest/v0.5.4",
   "toolVersion": "0.5.4",
   "validationReports": {

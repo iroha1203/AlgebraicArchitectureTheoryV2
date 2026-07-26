@@ -55,6 +55,15 @@
       "text": "Higher Tor_i for i>=2 remains unmeasured support: degree-1 Tor_1 readings do not discharge derived transversality or all higher Tor vanishing."
     },
     {
+      "id": "boundary:silence-by-design:saga-class-vocabulary:6",
+      "kind": "silence_by_design",
+      "reason": "class_vocabulary_not_unlocked_without_declared_triples",
+      "scopeRefs": [
+        "measurement:train-ticket-money-saga-repaired/v0.5.4"
+      ],
+      "text": "The residual component declares no triple overlaps, so the cocycle condition is an author assertion (automatic-c2-zero); the reading stays at selected 1-skeleton boundary membership and the class vocabulary is not unlocked."
+    },
+    {
       "id": "boundary:not-applicable:0",
       "kind": "not_applicable",
       "reason": "analytic_only",
@@ -106,60 +115,6 @@
       "ctx:preserve-surface->ctx:consign-surface",
       "ctx:preserve-surface->ctx:order-surface"
     ],
-    "residualClass": {
-      "basis": "Z1/B1",
-      "cocycleCertificateKind": "automatic-c2-zero",
-      "component": {
-        "chartRefs": [
-          "ctx:cancel-surface",
-          "ctx:consign-price-surface",
-          "ctx:consign-surface",
-          "ctx:inside-payment-surface",
-          "ctx:order-surface",
-          "ctx:preserve-surface"
-        ],
-        "overlapRefs": [
-          "overlap:cancel-insidepay",
-          "overlap:cancel-order",
-          "overlap:consign-consignprice",
-          "overlap:insidepay-order",
-          "overlap:preserve-consign",
-          "overlap:preserve-order"
-        ]
-      },
-      "nonZero": false,
-      "representative": [
-        {
-          "overlapRef": "overlap:cancel-insidepay",
-          "support": []
-        },
-        {
-          "overlapRef": "overlap:insidepay-order",
-          "support": []
-        },
-        {
-          "overlapRef": "overlap:cancel-order",
-          "support": []
-        },
-        {
-          "overlapRef": "overlap:consign-consignprice",
-          "support": []
-        },
-        {
-          "overlapRef": "overlap:preserve-consign",
-          "support": [
-            "cech:section-mismatch"
-          ]
-        },
-        {
-          "overlapRef": "overlap:preserve-order",
-          "support": [
-            "cech:section-mismatch"
-          ]
-        }
-      ],
-      "tripleOverlapRefs": []
-    },
     "supportAtomRefs": [
       "atom:semantic:consign-surface:cech-section-money-amount",
       "atom:semantic:order-surface:cech-section-money-amount",
@@ -278,7 +233,7 @@
   "inputDigests": {
     "archmap": {
       "path": "input:archmap-saga-repaired.json",
-      "sha256": "0ea545f516e24a78e252391bf8ec24224ec8630d8dbd6b1698af04a28ea7a585"
+      "sha256": "9a7baaa8b1adc73b5c5ff0fc3d56da0986402aecfe4902a0aa7e63ca3d449417"
     },
     "lawPolicy": {
       "path": "input:law-policy-saga.json",
@@ -290,7 +245,7 @@
     },
     "measurementPacket": {
       "path": "input:archsig-measurement-packet.json",
-      "sha256": "28c9a20a0ae7bdeaff757ba9ff93ce7a845b42ba23d833641e7263817f0b126a"
+      "sha256": "3c64da992e8ccca6bc87d5c32c58832436259f5eced3f5cd75ae77ad64f150b3"
     },
     "measurementProfile": {
       "path": "input:measurement-profile-saga.json",
@@ -308,11 +263,11 @@
     },
     "repairPlan": {
       "path": "input:repair-plan-repaired.json",
-      "sha256": "d3a2ec111beac56f943db9e4636287320cf93d6dc26a7f8e2962ab18028091a7"
+      "sha256": "5a6a8919bb8dd6d894130b6cd500898af38b5bd6f1a682501e9d57cf59cda2f9"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
-      "sha256": "c05d1537d9126e4f0e2b59bf37ef90826adf8a22ff49e89625ff0e8f2d243868",
+      "sha256": "c75cd524da051ad25472f1faad2d3fc44456db4fe6f0a1f90851d76e7b069b1a",
       "status": "computed"
     }
   },
@@ -551,7 +506,7 @@
       "siteRef": "archmap:/contexts"
     }
   ],
-  "runId": "run:f9666ddb2aca",
+  "runId": "run:6685bab8db21",
   "scalarFields": [
     {
       "fieldId": "topological-debt-capacity-lower-bound",

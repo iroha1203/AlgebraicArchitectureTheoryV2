@@ -121,7 +121,7 @@ mkdir -p "$OUT/repaired"
   --repair-plan "$EXAMPLE/saga/repair_plan_repaired.json" \
   --out-dir "$OUT/repaired" >/dev/null
 repaired_packet="$OUT/repaired/archsig-measurement-packet.json"
-expect "descent repaired" "$(saga_verdict "$repaired_packet" "saga.global-coherence")" "measured_zero"
+expect "descent repaired" "$(saga_verdict "$repaired_packet" "saga.residual-boundary-membership")" "measured_zero"
 expect "harmonic debt repaired" "$(invariant_value "$repaired_packet" "harmonic-debt:profile:money-drift@1" "essentialRepairLowerBound")" "0.0"
 expect_value "$OUT/repaired/archsig-analysis-summary.json" "analyze repaired" conclusion "REPAIR_GLUES_WITHIN_SELECTED_COMPLEX"
 "${ARCHSIG[@]}" compare \

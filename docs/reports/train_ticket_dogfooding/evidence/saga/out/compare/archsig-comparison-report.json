@@ -38,18 +38,18 @@
     "base": {
       "conclusionCode": null,
       "mode": "measurement",
-      "runId": "run:fd1b393a80e6",
+      "runId": "run:78c31d6a3172",
       "structuralVerdictCounts": {
-        "measured_nonzero": 4,
+        "measured_nonzero": 2,
         "measured_zero": 1
       }
     },
     "head": {
       "conclusionCode": null,
       "mode": "measurement",
-      "runId": "run:f9666ddb2aca",
+      "runId": "run:6685bab8db21",
       "structuralVerdictCounts": {
-        "measured_zero": 5
+        "measured_zero": 3
       }
     }
   },
@@ -57,7 +57,7 @@
     "baseRun": {
       "archmap": {
         "path": "input:archmap-saga-head.json",
-        "sha256": "bdca8b9c6b04a377ec41e64ee0f17186c1ce6ad0a267b5fc2c0a574a375c1010"
+        "sha256": "6f8a2f6265234010587cc30dd23188c0f7b8030d39d385289a1c8c1320c9ec22"
       },
       "componentFingerprints": {
         "lawPolicy": "sha256:e5e91078749ec26ae327ecd1cf41d6d2f7dd035c81a1c66bc0e0476b10e6900c",
@@ -70,11 +70,11 @@
       },
       "measurementPacket": {
         "path": "archsig-measurement-packet.json",
-        "sha256": "0ce7dd3a9497e6616b8227703a26c1532ce7b9c7c6a94b2fcb11d9e11e35697c"
+        "sha256": "1899703f940e33df158ad760be3ea66052375e2c4e796e5c0cb37f844b8ee0b6"
       },
       "normalizedArchmap": {
         "path": "normalized-archmap.json",
-        "sha256": "421b0d34a354504bb1da992b962a61dede9acc0f50e25477420b6fe0b99c95f9"
+        "sha256": "0c43575d34d61834211b6d06d782c2f3138293f00b00c43f7a55f90677e910bb"
       },
       "path": "head/archsig-run-manifest.json",
       "profileFingerprint": {
@@ -83,12 +83,12 @@
       },
       "repairPlan": {
         "path": "input:repair-plan-head.json",
-        "sha256": "662b04ba0b3a91ca14ebe1b539484ed6017502a61af87603e9820d49851ef3e2"
+        "sha256": "140987077e2c3ff3167ab5e4f8ceae5326db6b5c9530ac5100b5d6da4cb4a163"
       },
-      "runId": "run:fd1b393a80e6",
+      "runId": "run:78c31d6a3172",
       "siteCoverDigest": {
         "basis": "normalized contexts + covers + derived finite cover nerve",
-        "sha256": "c05d1537d9126e4f0e2b59bf37ef90826adf8a22ff49e89625ff0e8f2d243868",
+        "sha256": "c75cd524da051ad25472f1faad2d3fc44456db4fe6f0a1f90851d76e7b069b1a",
         "status": "computed"
       },
       "toolVersion": "0.5.4"
@@ -96,7 +96,7 @@
     "headRun": {
       "archmap": {
         "path": "input:archmap-saga-repaired.json",
-        "sha256": "0ea545f516e24a78e252391bf8ec24224ec8630d8dbd6b1698af04a28ea7a585"
+        "sha256": "9a7baaa8b1adc73b5c5ff0fc3d56da0986402aecfe4902a0aa7e63ca3d449417"
       },
       "componentFingerprints": {
         "lawPolicy": "sha256:e5e91078749ec26ae327ecd1cf41d6d2f7dd035c81a1c66bc0e0476b10e6900c",
@@ -109,11 +109,11 @@
       },
       "measurementPacket": {
         "path": "archsig-measurement-packet.json",
-        "sha256": "28c9a20a0ae7bdeaff757ba9ff93ce7a845b42ba23d833641e7263817f0b126a"
+        "sha256": "3c64da992e8ccca6bc87d5c32c58832436259f5eced3f5cd75ae77ad64f150b3"
       },
       "normalizedArchmap": {
         "path": "normalized-archmap.json",
-        "sha256": "e1f01a4535494aef0a4d5930d097bc37752d2589944e00d70f57a4a9da9f88b0"
+        "sha256": "5bca5aea695f1e6edc2519379868ff9b7050a503c007c883176ea6fe9c3d5fab"
       },
       "path": "repaired/archsig-run-manifest.json",
       "profileFingerprint": {
@@ -122,12 +122,12 @@
       },
       "repairPlan": {
         "path": "input:repair-plan-repaired.json",
-        "sha256": "d3a2ec111beac56f943db9e4636287320cf93d6dc26a7f8e2962ab18028091a7"
+        "sha256": "5a6a8919bb8dd6d894130b6cd500898af38b5bd6f1a682501e9d57cf59cda2f9"
       },
-      "runId": "run:f9666ddb2aca",
+      "runId": "run:6685bab8db21",
       "siteCoverDigest": {
         "basis": "normalized contexts + covers + derived finite cover nerve",
-        "sha256": "c05d1537d9126e4f0e2b59bf37ef90826adf8a22ff49e89625ff0e8f2d243868",
+        "sha256": "c75cd524da051ad25472f1faad2d3fc44456db4fe6f0a1f90851d76e7b069b1a",
         "status": "computed"
       },
       "toolVersion": "0.5.4"
@@ -182,17 +182,6 @@
       "transition": "measured_obstruction_no_longer_recorded"
     },
     {
-      "baseRowRef": "structuralVerdict/ag-saga-descent/saga-global-coherence/residual-not-in-b1",
-      "baseVerdict": "measured_nonzero",
-      "deltaRefs": [],
-      "discipline": "Comparison is a record-level juxtaposition of two ArchSig runs. It does not claim causal repair, semantic equivalence, or preserved obstruction identity; a class-zero reading is available only under a checked coarse-to-fine refinement contract.",
-      "headRowRef": "structuralVerdict/ag-saga-descent/saga-global-coherence/derived-residual-global-coherent",
-      "headVerdict": "measured_zero",
-      "introducedByChangeCategory": "cleared",
-      "rowKey": "ag.saga-descent|saga.global-coherence|{\"coefficient\":\"F2\",\"coverRef\":\"cover:money-settlement-loop\",\"kind\":\"saga-residual-boundary-membership\",\"scopeSize\":{\"contexts\":1,\"edges\":0,\"triangles\":0}}",
-      "transition": "measured_obstruction_no_longer_recorded"
-    },
-    {
       "baseRowRef": "structuralVerdict/ag-saga-descent/saga-residual-boundary-membership/residual-not-in-b1",
       "baseVerdict": "measured_nonzero",
       "deltaRefs": [],
@@ -201,17 +190,6 @@
       "headVerdict": "measured_zero",
       "introducedByChangeCategory": "cleared",
       "rowKey": "ag.saga-descent|saga.residual-boundary-membership|{\"coefficient\":\"F2\",\"coverRef\":\"cover:money-settlement-loop\",\"kind\":\"saga-residual-boundary-membership\",\"scopeSize\":{\"contexts\":1,\"edges\":0,\"triangles\":0}}",
-      "transition": "measured_obstruction_no_longer_recorded"
-    },
-    {
-      "baseRowRef": "structuralVerdict/ag-saga-descent/saga-residual-class/nonzero-class-representative",
-      "baseVerdict": "measured_nonzero",
-      "deltaRefs": [],
-      "discipline": "Comparison is a record-level juxtaposition of two ArchSig runs. It does not claim causal repair, semantic equivalence, or preserved obstruction identity; a class-zero reading is available only under a checked coarse-to-fine refinement contract.",
-      "headRowRef": "structuralVerdict/ag-saga-descent/saga-residual-class/zero-class-representative",
-      "headVerdict": "measured_zero",
-      "introducedByChangeCategory": "cleared",
-      "rowKey": "ag.saga-descent|saga.residual-class|{\"coefficient\":\"F2\",\"coverRef\":\"cover:money-settlement-loop\",\"kind\":\"saga-residual-class\",\"scopeSize\":{\"contexts\":1,\"edges\":0,\"triangles\":0}}",
       "transition": "measured_obstruction_no_longer_recorded"
     },
     {

@@ -77,21 +77,20 @@ RECONCILIATION MISMATCH: psp captured +1 cents against the displayed total
   residual carries odd drift parity around the money loop, so it is a
   1-cocycle that is not a coboundary, and its class in `Z1/B1` is nonzero.
 
-## The SAGA staircase: supplied data unlocks vocabulary
+## The SAGA staircase: observation and law unlock vocabulary
 
-ArchSig only speaks a diagnostic vocabulary after the artifact that grounds
-it has been supplied and validated. The demo supplies every slot of the
-staircase for head and repaired, and deliberately supplies none of them for
-base — so the base run shows what typed silence looks like:
+ArchSig only speaks a diagnostic vocabulary the two input families can carry:
+observation (ArchMap) and law / equations (LawPolicy, law surface,
+MeasurementProfile). The RepairPlan is a selected-complex declaration only;
+the base act omits it, so the base run shows what typed silence looks like:
 
-| Supplied artifact | Where in this demo | Vocabulary it unlocks |
+| Input | Where in this demo | Vocabulary it unlocks |
 | --- | --- | --- |
 | Observation (atoms / contexts / covers) | `archmap/archmap*.json` | raw section values, Čech H¹, **derived residual** |
-| Repair complex (`complex` only; the residual and the repair cochain are derived) | `saga/repair_plan_*.json` | residual boundary membership (residual derived from observation + law bindings; residual class agreement (with its coboundary witness when cohomologous) derived by `compare`) |
-| Faithfulness data (`faithfulness.supplied`) | same RepairPlan | global coherence |
-| Triple + true-sheaf certificate + gluing data (coefficient is the profile declaration) | same RepairPlan | **residual class in `Z1/B1`** |
-| Comparison data (incidence bridge + checked cochain map) | same RepairPlan | class transport to the Čech side |
-| Grounded law surface (`skeleton` / `defectSources` / `holdsCriterion`) | `law_policy/law_surface*.json` | law-grounded conclusions, per-chart law defect detector |
+| Selected complex (`complex` only) | `saga/repair_plan_*.json` | residual boundary membership on the selected 1-skeleton |
+| Declared triple overlaps (checked cocycle parity) | same RepairPlan `complex.tripleOverlaps` | **residual class in `Z1/B1`** (withheld as a named boundary statement when no triple is declared) |
+| Run pair of measurement records | two `analyze` out-dirs | `residualClassAgreement` (with its coboundary witness when cohomologous) derived by `compare` |
+| Grounded law surface (`skeleton` / `defectSources` / `holdsCriterion`) | `law_policy/law_surface*.json` | law-grounded defect quotient, per-chart law defect detector |
 | Cost model (`analytic.costModel`) | `law_policy/measurement_profile_drift.json` | `essentialRepairLowerBound` |
 
 Without a RepairPlan (the base act), the same LawPolicy rows produce
@@ -176,17 +175,19 @@ loop and finds three mismatching convention boundaries, each bound to a
 law-surface witness variable; the derivation record
 (`saga-descent:residual-derivation`) names the observed atoms and witnesses.
 Odd parity around a closed loop is not a coboundary: boundary membership
-fails, and — because triple, true-sheaf certificate, and gluing data are
-supplied and checked under the profile's F₂ coefficient — ArchSig is allowed
+fails, and — because the plan declares a triple overlap whose cocycle parity
+is actually checked under the profile's F₂ coefficient — ArchSig is allowed
 to say **class**, not just "mismatch": `saga-descent:residual-class` is
-`measured_nonzero`.
+`measured_nonzero`. (Without a declared triple the class vocabulary stays
+withheld as a named boundary statement.)
 
-**Comparison.** The RepairPlan supplies an explicit incidence bridge and a
-degree-0/1/2 cochain map onto the Čech side of the same finite complex.
-ArchSig recomputes both-sided invertibility, difference preservation, zero
-preservation in degree 2, and differential commutativity from the supplied
-finite tables — declared booleans are not accepted — then transports the
-class at quotient level.
+**Comparison.** `compare` reads the two measurement records (head and
+repaired) and derives the run-pair reading itself: the residual delta on the
+shared overlap complex and, when the pair is comparable and the delta is a
+coboundary, its C⁰ witness (`residualClassAgreement`). Here the repair moves
+a nonzero class to zero, so the pair is honestly `not_cohomologous` — the
+repair reading is carried by the repaired run's zero residual and the gate,
+not by a cochain identity between the two runs.
 
 **Harmonic debt.** A second measurement profile
 (`measurement_profile_drift.json`, coefficient `R`, selected by the
@@ -248,8 +249,7 @@ law_policy/
   measurement_profile_drift.json# R, analytic inner product + Lipschitz cost model
   gate_policy.json              # CI mapping: measured_nonzero -> block
 saga/
-  repair_plan_head.json      # supplied complex, faithfulness, triple,
-                             # true-sheaf certificate, gluing data, comparison, grounding
+  repair_plan_head.json      # selected complex (charts / overlaps / one declared triple)
   repair_plan_repaired.json  # same complex; the repaired observation derives a zero residual
 runtime/
   place_order_trace.json
@@ -288,13 +288,12 @@ LawPolicy, and measurement packet; it is not a new analyzer.
 
 ## Boundary
 
-Every conclusion above is relative to this `ArchMap + LawPolicy +
-MeasurementProfile + RepairPlan` evidence contract: the selected cover, the
-F₂ coefficient, the declared section values, and the author-supplied repair
-complex. Enumeration completeness of the repair complex, the global sheaf
-condition behind the true-sheaf certificate, and the supplied faithfulness
-law are recorded in the packet's assumption ledger as assumptions, not
-theorems. ArchSig does not extract conventions from Rust source by itself,
+Every conclusion above is relative to the two input families: observation
+(`archmap/v0.5.4`) and law / equations (`law-policy` + `law-equation-surface`
++ `measurement-profile`), together with the author-selected repair complex.
+Enumeration completeness of the selected complex and the law-surface quotient
+sheaf condition are recorded in the packet's assumption ledger as
+assumptions, not theorems. ArchSig does not extract conventions from Rust source by itself,
 does not claim the sample has no other defects, and does not prove
 production correctness. The harmonic-debt bound is relative to the declared
 inner product and cost model. The head/base comparison deliberately refuses

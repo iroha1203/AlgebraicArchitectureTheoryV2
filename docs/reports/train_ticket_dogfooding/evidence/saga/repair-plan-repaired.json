@@ -10,6 +10,7 @@
    "ctx:consign-price-surface",
    "ctx:preserve-surface"
   ],
+  "archmapCoverRef": "cover:money-settlement-loop",
   "overlaps": [
    {
     "id": "overlap:cancel-insidepay",
