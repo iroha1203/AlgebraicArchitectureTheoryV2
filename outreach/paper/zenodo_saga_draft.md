@@ -66,7 +66,7 @@ repair 後の障害消滅の記録までを再現可能な一つの計算とし�
 ### 1.1 Local-to-global architecture problem
 
 software architecture の各構成要素は、それぞれの局所的な文脈で整合的に設計される。
-一つの service は自身のデータ規約を守り、一つのモジュール間の受け渡しは
+一つの service は自身のデータ規約を守り、モジュール間の個々の受け渡しは
 それぞれの契約を満たす。それにもかかわらず、システム全体では意味の不整合が生じる。
 この現象の核心は、局所的な正しさの総和が大域的な正しさを構成しないことにある。
 
@@ -179,7 +179,8 @@ architecture の制約が満たされる場所は、方程式系の零点集合�
 ### 2.4 failure の構造化
 
 AAT では、architecture の failure は residual、ideal、cohomology class、
-Tor conflict、singularity として構造化される。diagnosis と repair は、
+さらに Tor conflict や singularity として構造化される。本論文が使うのは
+前三者である。diagnosis と repair は、
 同じ幾何対象の変化として読める。修理とは類を消す操作であり、
 修理の成否は類の零性として判定される。
 
@@ -241,8 +242,8 @@ primitive fact がどの equation を満たしどの obstruction を生むかが
 
 ### 3.2 Architecture object
 
-**定義 3.3(architecture object)。** Atom configuration `C=(F,R,E)`
-(Atom family、関係づけ、配置)に structure maps `S`(graph、category、
+**定義 3.3(architecture object)。** Atom configuration `C=(F, Rel, Pl)`
+(Atom family `F`、関係づけ `Rel`、配置 `Pl`)に structure maps `S`(graph、category、
 algebra、state transition などへの構造写像)と selected quantities `Q`
 (invariant、measure、signature axis)を与えた組
 
@@ -284,7 +285,8 @@ U_i\times_W U_j
 quotient の下で、`ArchCtx_min(X)` は finite-meet poset category になり、
 overlap は meet として計算される。この model の
 射はすべて monomorphism である(第3.7節がこの事実を cover 仮定へ接続する)。
-第7章の有限計算はこの regime の実行形である。
+第7章の有限計算はこの regime の実行形であり、一般の `ArchCtx(X)` 上での定理の
+適用範囲と形式化の身分は §5.7 でまとめて述べる。
 
 ### 3.4 Atom-indexed architectural equation system
 
@@ -402,9 +404,8 @@ support Atom `a_q` の選択。cover-indexed の場合は local context を各 c
 条項 5 が与えるのは quotient における零判定である。displayed failure から
 非零類 `[d_q]≠0` へ至るには、意味論上の failure が ideal に属さない residual
 として顕在化すること(**semantic faithfulness**)が別に要る。これは商係数の
-性質ではなく displayed source の選択と supply に属する条件であり、第7章の
-case study では closed-equational surface の計測と law surface の witness 束縛が
-担う。
+性質ではなく displayed source の選択と supply に属する条件である。実測の上での
+担い手は第7章で述べる(§7.1)。
 
 この `Q_E` が SAGA の幾何側 Čech complex の係数である。obstruction が
 ideal-theoretic であること、すなわち failure が label ではなく商の class として
@@ -598,7 +599,7 @@ face restriction `V'→V` について `i_{λ|_{V'}}=i_λ`、`A_{λ|_{V'}}=A_λ`
 で `V'` 上評価した `ε` であり、定理 3.10 の residual restriction naturality に
 より、その class は `χ^E_V(λ)` の restriction に一致する。∎
 
-`χ^E` は、第5章 定理 5.1 の仮定 3 が要求する restriction-natural な一次写像を
+`χ^E` は、第5章 定理 5.1 の仮定 3 が要求する restriction-natural な写像を
 equation system と displayed reading から構成する canonical な実例であり、
 「どの equation のどの読みに対する failure か」だけを材料に比較写像の始点が
 生成されることを示す。
@@ -628,14 +629,14 @@ monomorphic AAT cover `𝒰` 上で次を固定する。
    生成される可換群値 presheaf `M_sem`(§4.2)。
 2. architectural equation system `E` から生成される可換群値 presheaf `Q_E`。
 3. supported semantic atom を displayed Atom/equation residual class へ送る
-   restriction-natural な一次写像。
+   restriction-natural な写像。
 4. その写像についての局所 repair relation の completeness と
    equation generator completeness(cover intersection ごとに確認する)。
 5. repair words の作用から additive torsor structure を導く affine semantic
    repair system `P_sem` と、その selected local repair atlas。
 6. `Q_E` が作用する equation-lift system `P_E` と、その selected local lift atlas。
 7. semantic local states を equation local lifts へ送る restriction-natural かつ
-   generator-equivariant な一次写像 `β:P_sem→P_E`
+   generator-equivariant な写像 `β:P_sem→P_E`
    (cover intersection ごとに確認する)。
 8. 積から除いた各 empty cover intersection `V` に対する
    `M_sem(V)=Q_E(V)=0` と、`P_sem(V)`、`P_E(V)` の subsingleton 性
@@ -643,7 +644,7 @@ monomorphic AAT cover `𝒰` 上で次を固定する。
 
 このとき次の三段が成立する。
 
-**(i) SAGA Presentation Theorem。** 仮定 3 の一次写像の free 延長
+**(i) SAGA Presentation Theorem。** 仮定 3 の写像の free 延長
 `χ̃_V:F_sem(V)→Q_E(V)`(§5.3)は、各 nonempty cover intersection `V` で
 
 ```math
@@ -656,7 +657,7 @@ monomorphic AAT cover `𝒰` 上で次を固定する。
 soundness)は仮定ではなく、local-state data(仮定 5–7)から導出される(§5.3)。
 逆包含 `ker χ̃_V⊆R_rep(V)` は repair-relation completeness、image の等式は
 equation-generator completeness であり、いずれも仮定 4 である。この exactness
-により、一次写像は cover intersection diagram 上の自然同型
+により、この写像は cover intersection diagram 上の自然同型
 
 ```math
 \Phi:M_{\mathrm{sem}}\xrightarrow{\sim}Q_E
@@ -692,7 +693,7 @@ equation local-lift atlas から生成した `r_E` について
 
 である。selected local atlases を各 nonempty intersection へ restriction する
 ことで、この構成が使う各 intersection 上の local-state system は非空である。
-residual の対応は、二つの local atlas を一次対応そのもので選んだ場合には
+residual の対応は、二つの local atlas を `β` で整合させて選んだ場合には
 cochain 水準で `κ¹(r_sem)=r_E` として成立する。独立に選んだ場合にも、
 両 cochain の差は明示的な `δ⁰`-像であり、class の等式が成立する。
 
@@ -730,28 +731,16 @@ generator map χ
   → grounded global gluing                        (§5.6)
 ```
 
-| 段 | 内容 | 本文 |
-| --- | --- | --- |
-| 係数同型 | soundness の導出と `Φ:M_sem≃Q_E` | §5.3 |
-| cochain 可換と `H^1` 同型 | degreewise `κ`、`κδ=δκ`、`κ_*` の誘導 | §5.4 |
-| residual 対応 | `κ_*([r_sem])=[r_E]` と統合 | §5.5 |
-| global repair | true sheaf 条件下の三項同値と actual gluing | §5.6 |
+soundness が仮定ではなく帰結である点は本定理の構成上の要であり、
+その導出は §5.3 の冒頭で行う。
 
-soundness が仮定ではなく帰結である点は、この定理の構成上の要である。
-local-state data(仮定 5–7)と local-state interpretation `β` が soundness を
-生成し、それが SAGA presentation exactness(§5.3)を成立させる。
-この導出は §5.3 の冒頭で行う。
-
-comparison core(§5.3〜§5.5)が使うのは、cover intersection、二つの係数
-presheaf、generator/relation exactness、restriction naturality である。
-global sheaf condition、cover の有限列挙、displayed equation fulfillment は
-comparison core の仮定に含まれない。定理 5.1 の各仮定がどの証明で消費されるか
-(§5.6 の gluing が消費する分と、未消費のまま保持する条項の帰属を含む)は、
-Appendix A が一覧として固定する。
+comparison core(§5.3〜§5.5)は cover intersection 上の局所データだけを使い、
+global sheaf condition は §5.6 の gluing まで現れない。定理 5.1 の各仮定が
+どの証明で消費されるかは、Appendix A が一覧として固定する。
 
 ### 5.3 係数同型: soundness の生成と presentation comparison
 
-仮定 3 の一次写像は、各 nonempty cover intersection `V` で supported semantic
+仮定 3 の写像は、各 nonempty cover intersection `V` で supported semantic
 atom を equation coefficient へ送る restriction-natural な対応
 
 ```math
@@ -930,7 +919,7 @@ r_{E,ij}=\Phi(r_{\mathrm{sem},ij})+h_j-h_i,
 r_E=\kappa^1(r_{\mathrm{sem}})+\delta_E^0h.
 ```
 
-二つの atlas を一次対応そのもので選んだ場合、すなわち `e_i=β(p_i)` の場合は
+二つの atlas を `β` で整合させて選んだ場合、すなわち `e_i=β(p_i)` の場合は
 `h=0` であり、cochain 水準の等式 `κ¹(r_sem)=r_E` が成立する。独立に選んだ場合も
 両 cochain の差は明示的な coboundary `δ⁰_E h` なので、class の等式
 
@@ -953,9 +942,7 @@ restriction と可換し、局所的に free かつ transitive である。(3) `
 topology に属する monomorphic AAT cover である。(4) 積から除いた empty
 intersection 上で `P_sem` は subsingleton である。この四条件から `𝒰` に対する
 sheaf condition が導かれ、per-cover の amalgamation map を別データとしては
-置かない。比較 core(§5.3〜§5.5)が使ったのは `P_sem` の cover intersection
-diagram 上の成分だけであり、site 全体の sheaf condition を使うのは本節の
-gluing だけである。
+置かない。
 
 **補題 5.2A(ordered matching completion)。** cover の各射が monomorphism で
 あり、積から除いた empty overlap 上で `P_sem` が subsingleton であるとする
@@ -1051,7 +1038,7 @@ additive `H^1` comparison からこれらの結論は導かない。
 行われている(第3.3節の finite-meet poset model はその代表例である)。
 一般の `ArchCtx(X)` 上では、補題 5.2A を含む §5.6 の gluing 論証は
 monomorphism と pullback の普遍性を使うが、その形式化は行っていない
-(thin 性が放電する仮説の詳細は Appendix A.4)。
+(thin 性により不要になる仮説の詳細は Appendix A.4)。
 
 ### 5.8 有限 witness: independently generated circle comparison
 
@@ -1152,9 +1139,8 @@ r_E=\kappa^1(r_{\mathrm{sem}})=(1,0,0,0)
 **実コードとの関係。** この例は、SAGA 比較が零類だけでなく非零類も保存することの
 有限 witness である。非零類を立てているのは chart の個数ではなく、「閉ループ上の
 奇パリティ + そのループを埋める面(triple overlap)の不在」という
-cycle-without-a-face 機構である。第7章の one-cent obstruction は、この機構が
-実在 architecture に現れた事例であり、例 5.3 はその有限雛形である。cycle 長は
-4 と 3 で異なり、complex そのものは同一ではない。共有されるのは機構である。
+**cycle-without-a-face 機構**である。第7章の one-cent obstruction は、
+この機構が実在 architecture に現れた事例である(§7.2)。
 
 ---
 
@@ -1185,8 +1171,8 @@ Lean structure として固定する形で形式化されている。構成部�
 - cochain 比較 `κ`、`H^1` 同型、residual 対応
 - true sheaf descent、grounded global gluing、中心定理の最終束ね
 - 有限 witness(非零の 4-cycle circle witness、零類の descent witness)
-- 第3.3節の finite-meet poset model 上の site 実現と、ordered Čech model との
-  比較 bridge(補題 5.2A の形式化対応物を含む)
+- 第3.3節の finite-meet poset model 上の site 実現と、§4.1 の ordered Čech
+  complex との比較 bridge(補題 5.2A の形式化対応物を含む)
 
 Lean source の docstring は、本論文の定理番号とは別系列の番号(`X.定理1.1`
 など)を label に用いる。declaration と label の対応も Appendix B が固定する。
@@ -1200,7 +1186,7 @@ status は次の語彙で記述する: `proved`(Lean で証明済み)、`defined
 
 | Paper claim | Lean declaration | Status | Assumptions |
 | --- | --- | --- | --- |
-| 定理 5.1 の結論束(residual 対応・零/非零同値・grounded gluing) | `SagaEquationPacket.sagaCentralTheorem` | proved | selected packet(定理 5.1 の入力 1–8 を structure として固定)、completeness 二条件(入力 4)、cover 添字集合の `Fintype`。gluing 節はさらに cover の topology 所属と true sheaf 条件に条件付き |
+| 定理 5.1 の結論束(residual 対応・零/非零同値・grounded gluing) | `SagaEquationPacket.sagaCentralTheorem` | proved | selected packet(§6.1)、completeness 二条件(入力 4)、cover 添字集合の `Fintype`。gluing 節はさらに cover の topology 所属と true sheaf 条件に条件付き |
 | 定理 5.1(i): repair-relation soundness の導出 | `PrimaryStateCorrespondence.relationSound_of_stateCorrespondence` | proved | local-state correspondence(入力 5–7) |
 | 定理 5.1(i): 係数同型 `Φ` | `SagaEquationPacket.phiEquiv`(generic 版: `PrimaryCoefficientCorrespondence.phiEquiv`) | proved | soundness と completeness 二条件 |
 | 定理 5.1(i): 三条件それぞれを外す反例 | `ExactnessFixtures.soundness_failure` / `completeness_failure` / `generation_failure` | proved | なし(各 fixture は対象条件の failure を statement 化した有限反例であり、残り二条件の同時成立までは statement に含めない) |
@@ -1312,9 +1298,6 @@ section、witness 束縛のない mismatch は、いずれも結論を生成せ�
 (列挙完全性は §7.6 の assumption として開示される)、観測が一致している辺の
 上に非零 residual を立てることはできない。
 
-ArchSig は与えられた入力 contract から語れる diagnostic conclusion を計算する。
-結論の相対性は入力契約に由来する帰結である。
-
 ### 7.2 実コード事例: one-cent obstruction
 
 ここで本論文の case study を明かす。対象は、microservice benchmark として広く
@@ -1341,9 +1324,7 @@ triple overlap を宣言しないという形で診断へ反映される。同�
 この構図は、例 5.3 と同じ **cycle-without-a-face 機構**の 3-cycle instance と
 して読める。複体そのものは同一ではない — 例 5.3 は 4-cycle、本 case は 3-cycle
 である — が、非零類を立てる機構は共通する: 閉ループ上の奇パリティ(3流儀の
-衝突)と、そのループを埋める面(triple overlap)の不在である。この読みのうち
-計測が担うのは前者(mismatch の奇パリティと非境界性)であり、後者は上記の
-assertion に立つ。
+衝突)と、そのループを埋める面(triple overlap)の不在である。
 払い戻し計算 `0.8 × 価格` の丸め剰余 — **1セント未満のドリフト** — は、
 どの chart にも記帳されていない。この case study を **one-cent obstruction** と呼ぶ。
 
@@ -1381,20 +1362,24 @@ cancel の丸め規約に、inside-payment は正確算術に忠実である —
 
 この数値 witness は実施者による source 水準の検算であり、ArchSig の計算には
 価格、`0.8`、丸め、`0.004` のいずれも現れない。ArchSig の residual は金額規約の
-観測表現である section value の集合比較から導出され(§7.1)、数値としての
-ドリフトの実在量は runtime 計測に属し、本論文では沈黙する(§7.6)。
+観測表現である section value の集合比較から導出される(§7.1)。
 
 ### 7.3 診断階段
 
-measurement の入力構成は次のとおりである。cover は 6 chart(診断三角形 {cancel,
-inside-payment, order} + 託送料金領域 {preserve, consign, consign-price})、
-law surface は closed-equational、SAGA-grounded、descent の3本(descent surface
-は観測された 6 辺すべてに witness 変数を束縛する)、repair plan は選択複体だけ
-を宣言する: chart は観測 cover の 6 chart そのもの、overlap は観測された
-restriction 6 辺(三角形 3 + consign–consign-price + preserve–consign +
-preserve–order)、triple overlap は宣言しない(§7.2 の調査所見の反映。
-assertion としての身分は §7.6)。repaired 変種は、三角形の
-3 chart を BigDecimal scale-2 HALF_EVEN 統一規約に置換した仮修理 ArchMap である。
+measurement の入力構成は次のとおりである。
+
+- **cover**: 6 chart。診断三角形 {cancel, inside-payment, order} と、託送料金
+  領域 {preserve, consign, consign-price}。後者は三角形の外側の観測領域であり、
+  一致する辺や repair 後に境界内(`B^1`)へ収まる mismatch を同じ packet 内に
+  持つ対照を与える。
+- **law surface**: closed-equational、SAGA-grounded、descent の3本。descent
+  surface は観測された 6 辺すべてに witness 変数を束縛する。
+- **repair plan**: 選択複体だけを宣言する。chart は観測 cover の 6 chart
+  そのもの、overlap は観測された restriction 6 辺(三角形 3 +
+  consign–consign-price + preserve–consign + preserve–order)、triple overlap は
+  宣言しない(§7.2 の調査所見の反映。assertion としての身分は §7.6)。
+- **repaired 変種**: 三角形の 3 chart を BigDecimal scale-2 HALF_EVEN 統一規約に
+  置換した仮修理 ArchMap。
 
 導出 residual(head)は、三角形 3 辺と preserve 系 2 辺で section value が
 不一致、consign–consign-price で一致となり、選択複体は単一の連結成分になる。
@@ -1416,8 +1401,7 @@ assertion としての身分は §7.6)。repaired 変種は、三角形の
 ### 7.4 計測が示したこと
 
 **局所整合・大域非貼合の実在。** grounding の `measured_zero` は、各 chart が
-自分の局所方程式を満たしていること — 正確には、選ばれた defect 座標と
-宣言された判定基準による displayed-equation check が零であること(§7.1)— を
+自分の局所方程式を満たしていること(§7.1 の displayed-equation check の意味で)を
 計測として言う。cancel は cancel の丸め規約に、
 inside-payment は正確算術に、order は素通し保管に、それぞれ忠実である。
 ペアごとの受け渡しも各々は成立している。計測として観測されたのは、規約
@@ -1443,7 +1427,7 @@ mismatch と典拠のない参照は fail-closed に落ちた。実データで�
 複体で class 語彙を出さないことも同じ規律の実行であり、ArchSig はその境界を
 named boundary statement として結論の近くに最小限の形で記録した。
 
-### 7.5 入力の供給: agent SKILL による観測の再現性
+### 7.5 入力の供給: 観測の authoring と再現性
 
 ArchMap の供給は、source の使われ方を読む意味読解を含む。この読解は
 確率的な過程であり、決定論的な計算では置き換えられない。本研究は、
@@ -1487,7 +1471,7 @@ ledger に記録する前提、`unmeasured` は供給せず沈黙した軸を表
 
 | Condition | 種別 | Status | 記録 |
 | --- | --- | --- | --- |
-| finite cover | 有限 artifact の性質 | `checked` | site cover digest は正規化した contexts・covers・導出 nerve から `computed` |
+| finite cover | 有限 artifact の性質 | `checked` | site cover digest を正規化した contexts・covers・導出 nerve から算出して記録 |
 | residual 導出 | 観測 section の比較 | `computed` | 辺ごとの `F2` 値・witness 束縛・観測 atom 参照の provenance。head は三角形 3 辺 + preserve 2 辺が mismatch |
 | witness 束縛 | law surface の宣言 | `checked` | mismatch 辺は witness 変数の束縛を要求する。未束縛の mismatch は fail-closed に計算不能へ落ちる |
 | 係数(`F2`) | 法側の選択 | `checked` | 選択 MeasurementProfile の宣言。repair plan は係数を運ばない |
@@ -1504,15 +1488,15 @@ ledger に記録する前提、`unmeasured` は供給せず沈黙した軸を表
 | runtime の金額規模 | 経験的計測 | `unmeasured` | `harmonic-debt` を供給せず沈黙。頻度・金額を結論に含めない |
 
 注1: forest nerve は開示された不成立前提である。head の saga-descent 段の
-非零読み(`B^1` 所属)はこの行に依存しない。cech 段の verdict は別途この
+非零読み(`B^1` 所属判定)はこの行に依存しない。cech 段の verdict は別途この
 assumption への依存を宣言している。
 
 ### 7.7 主張の境界
 
 本 case study の claim は次の範囲に限る。規約 mismatch の検出自体は
 closed-equational surface の段が担った。SAGA 段が加えたのは、同じ観測を
-選択 1-骨格上の boundary membership として読む descent 読解、grounding の罠の
-明示、修理計画の事前検証、run 対の residual 差の読み(§7.1)、gate の一貫した
+選択 1-骨格上の boundary membership として読む descent 読解、grounding の罠
+(§7.4)の明示、修理計画の事前検証、run 対の residual 差の読み(§7.1)、gate の一貫した
 診断であり、「SAGA が新しい障害を発見した」という主張は行わない。
 
 authored なのは選択である。選択複体(repair plan)、witness 束縛(law surface)、
@@ -1597,8 +1581,12 @@ architecture へ貼り合うかである。
 | discharged obligation | cohomology 計算の program-analysis claims への接続 | soundness の導出、`ker`/`im` 条件の検査、residual class の意味論的対応の証明 |
 
 SAGA が比較の新規性として主張するのは、表の最終二行 — domain-specific
-construction とそこで放電された義務 — であり、係数同型から cochain 同型が従う
+construction とそこで果たされた証明義務 — であり、係数同型から cochain 同型が従う
 一般的機構ではない(固有性の帰属は §5.1)。
+
+Young の Lean 形式化(1,259 lines)、375 benchmarks、evaluation 数値は、
+同論文が報告する結果として引用する。同論文の analyzer の code artifact は
+公開リンクが確認できないため、source-level comparison は本論文の範囲外である。
 
 global-section obstruction の系譜として、sheaf-theoretic contextuality
 [Abramsky–Brandenburger 2011] と、その Čech cohomology による非消滅障害
@@ -1616,8 +1604,8 @@ SAGA は相補的な obstruction-theoretic 方向を開発する。すなわち�
 equation-generated realization の比較を証明する。
 
 歴史的出発点として、objects と interaction の sheaf semantics [Goguen 1992] を置く。
-cellular sheaf と有限計算の基礎 [Curry 2014; Robinson 2017; Hansen–Ghrist 2019] は
-一段落で参照し、software architecture 固有の比較は Young、Gibson、Felber へ集中させる。
+cellular sheaf と有限計算の基礎文献として
+[Curry 2014; Robinson 2017; Hansen–Ghrist 2019] を挙げる。
 
 ### 8.3 Architecture conformance and formal connection
 
@@ -1652,10 +1640,6 @@ equation-generated AAT Čech complex を構成し、その first cohomology が�
 定義された semantic-repair obstruction と一致することの証明を加える。
 Lean が比較を検証し、ArchSig がその有限 architectural instance を評価する。
 
-Young の Lean 形式化(1,259 lines)、375 benchmarks、evaluation 数値は、
-同論文が報告する結果として引用する。同論文の analyzer の code artifact は
-公開リンクが確認できないため、source-level comparison は本論文の範囲外である。
-
 **TODO:** 投稿時点で 2026 年文献の最新版と publication status を再確認する。
 
 ---
@@ -1682,12 +1666,7 @@ tooling の計画は本論文の範囲外である。
 定理 5.2 の三項同値は、この文に数学的な身分を与える。零類と global repair の
 存在が同値である以上、「correction が類を消したから貼り合った」は経験則ではなく
 帰結である。第7章の repair 前後比較は、この帰結が工学の工程でどう働くかを示す
-最初の診断実働例である。ただしその計測が検査するのは選択 1-骨格上の boundary
-membership と run 対の residual 差までであり(§7.7)、true sheaf 条件や global
-repair の存在は検査しない。定理 5.2 の有限 instantiation は第6章の Lean witness が
-担い、第7章はその機構を工程に翻訳した診断である。
-selected な入力契約(cover、equation system、witness)への相対性は、この主張の制約であると
-同時に、主張の provenance を固定する規律でもある。
+最初の診断実働例である(計測の検査範囲と第6章 Lean witness との分業は §7.7)。
 
 ### 9.2 方法としての Rising Sea
 
@@ -1943,18 +1922,18 @@ Lean による機械検証が、観測供給の確率的工程は §7.5 の規�
 `M_sem(V)=Q_E(V)=0` は、本論文のどの証明でも消費されない。複体は §4.1 で
 nonempty intersection 上のみを走り、equation 側の global 化(§5.6 末尾)が
 empty overlap の処理に使うのも `P_sem` 側の subsingleton 条項(補題 5.2A)で
-ある。これらの未消費条項は、入力面(仮定 8)を ordered Čech model との同一視
-(本論文の scope 外)まで含む形で固定するために保持する。
+ある。これらの未消費条項は、入力面(仮定 8)を §4.1 の ordered Čech complex との
+完全な同一視(本論文の scope 外)まで含む形で固定するために保持する。
 
 ### A.4 Lean 形式化における消費(thin site)
 
 Lean 形式化は context category が thin な site 上で行われている(§5.7)。
 thin 性、すなわち平行射の一致から、この model ではすべての射が自動的に
 monomorphism であり、補題 5.2A の self-overlap と逆順 overlap の処理も平行射の
-一致で放電される。したがって補題 5.2A の形式化対応物
+一致で自動的に済む。したがって補題 5.2A の形式化対応物
 `SiteStateData.matchingFamily_iff` は、選択された pairwise overlap とその lift
 データは消費するが、monomorphism を明示仮説として消費しない(pullback の
-可換性と一意性は thin 性が放電する)。一般の `ArchCtx(X)` 上の gluing 論証は
+可換性と一意性は thin 性から従う)。一般の `ArchCtx(X)` 上の gluing 論証は
 `unported` である(第6章)。
 
 ## Appendix B. Lean source 対応(declaration・label・source file)
