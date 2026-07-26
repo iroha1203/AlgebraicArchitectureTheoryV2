@@ -31,8 +31,7 @@ software architecture では、各部分が局所的に正しくても、全体�
 制約を連立方程式系 `E` として組織し、その obstruction ideal による商係数
 `Q_E` と Čech complex を作る。software architecture を代数幾何として構成する
 理論 Algebraic Architecture Theory (AAT) の選ばれた有限 cover `𝒰` 上で、
-両者の局所データを対応させる有限個の選択条件(定理 5.1 の入力 1–8)の下で、
-comparison map は同型
+両者の局所データを対応させる有限個の選択条件の下で、comparison map は同型
 
 ```math
 H^1_{\mathrm{sem}}(\mathcal U)
@@ -445,7 +444,10 @@ support Atom `a_q` の選択。cover-indexed の場合は local context を各 c
 性質ではなく displayed source の選択と supply に属する条件である。実測の上での
 担い手は第7章で述べる(§7.1)。
 
-この `Q_E` が SAGA の幾何側 Čech complex の係数である。obstruction が
+この `Q_E` が SAGA の幾何側 Čech complex の係数である。直観的には、`Q_E` は
+observable を obstruction ideal の分だけ粗く見た係数であり、二つの observable が
+同じ class を持つのは、その差が違反座標の `O_E`-係数の有限結合で書けるとき
+である。obstruction が
 ideal-theoretic であること、すなわち failure が label ではなく商の class として
 測られることが、第4章以降のすべての構成の土台になる。
 
@@ -578,7 +580,9 @@ local transitivity:
 soundness により作用は `M_sem(V)` の作用へ降り、completeness により
 この作用は free、transitivity により非空の `P_sem(V)` 上で transitive である。
 したがって、cover intersection diagram 上の各 `V` で、非空な `P_sem(V)` は
-`M_sem(V)`-torsor(affine space)になる。
+`M_sem(V)`-torsor(affine space)になる。torsor は、特別な原点を持たない
+代わりに、任意の二状態の差が係数群の元として一意に測れる空間である。
+以降の residual の構成が使うのは、状態そのものではなくこの差だけである。
 
 **Semantic residual。** selected local repair atlas `{p_i}` を選ぶと、
 各 nonempty overlap 上の torsor の差として一意な
@@ -595,7 +599,10 @@ class `[r_sem]∈H^1_sem(𝒰)` は atlas の選び方に依存しない(**choic
 independence**): 別の atlas `p'_i=a_i+p_i` に対し同じ torsor 計算が
 `r'_sem=r_sem+δ⁰a` を与える。したがって零類 `[r_sem]=0` は、ある correction
 `a∈C⁰_sem(𝒰)` について corrected atlas `(-a_i)+p_i` が全 pairwise overlap 上で
-一致すること(**matching correction** の存在)と同値である。
+一致すること(**matching correction** の存在)と同値である。この言い換えが
+coboundary の直観を与える: coboundary `δ⁰a` は、各 chart 内で基準(atlas)を
+取り替えるだけで生じる差である。零類とは chart ごとの基準変更で消せる不整合で
+あり、非零類とは、どの局所的な基準変更の組でも消せずに閉路上に残る不整合である。
 
 ### 4.3 Equation 側の構成
 
@@ -659,6 +666,17 @@ equation 側の `Q_E`、`C_E`、`r_E` は equation system のみから構成さ�
 本章内で連続して追える。
 
 ### 5.1 中心定理
+
+定理文に入る前に、主張の形を平文で述べる。舞台は選ばれた monomorphic AAT
+cover であり、その上に第4章で独立に構成した二つの複体 — 修理の言葉による
+semantic 側と、方程式の言葉による equation 側 — が立っている。定理が主張する
+のは、両者の局所データを対応させる有限個の選択条件の下で、(i) 二つの係数
+presheaf が自然同型になり、(ii) その同型が二つの `H^1` を同一視して修理側の
+障害類を方程式側の障害類へ送り、(iii) さらに修理状態の族が貼り合わせの条件
+(true sheaf 条件)を満たすならば、大域修理の実在と障害類の零性が同値になる、
+という三段である。以下の入力 1–8 は四群に読める: 入力 1–2 が二つの係数、
+入力 3–4 が係数を結ぶ対応とその completeness、入力 5–7 が residual を生成する
+局所状態系とその対応、入力 8 が空 overlap の正規化である。
 
 **定理 5.1(SAGA 中心定理)。**
 monomorphic AAT cover `𝒰` 上で次を固定する。
