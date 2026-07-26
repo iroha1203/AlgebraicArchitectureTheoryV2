@@ -14,6 +14,7 @@ import json
 import shutil
 import subprocess
 import sys
+import zipfile
 from pathlib import Path
 
 TAG = "saga-paper-v1.0.0"
@@ -202,8 +203,23 @@ License: CC BY 4.0.
     }
     (out / "MANIFEST.json").write_text(json.dumps(manifest, indent=2,
                                                   sort_keys=True) + "\n")
+    # deposit 用 zip(単一アーカイブ)。Zenodo 等はディレクトリ構造を持たないため、
+    # 構造付き bundle は必ず zip で upload する(flat upload は同名ファイルが衝突する)。
+    zip_path = out.parent / (out.name + ".zip")
+    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
+        for f in sorted(out.rglob("*")):
+            if f.is_file():
+                info = zipfile.ZipInfo(
+                    str(Path(out.name) / f.relative_to(out)),
+                    date_time=(2026, 7, 26, 0, 0, 0))
+                info.external_attr = 0o644 << 16
+                z.writestr(info, f.read_bytes())
+
     n = len(files)
     print(f"bundle built at {out} ({n} files + MANIFEST.json)")
+    print(f"deposit zip: {zip_path} sha256={sha256(zip_path)}")
+    print("upload to Zenodo: the zip above + the standalone paper/main.pdf "
+          "(never the unzipped tree — flat upload collides same-named files)")
     if TAG not in tag_at:
         print(f"WARNING: HEAD is not tagged {TAG} — rebuild after tagging")
     if not args.ci_run:
