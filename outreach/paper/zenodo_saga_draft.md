@@ -18,17 +18,20 @@ contact: nakahata.theorem@gmail.com
 
 ## 要旨
 
-software architecture の局所的な整合性と大域的な整合性の間には、構造的な隔たりがある。
-本論文は、この隔たりを測る二つのコホモロジーを独立に構成し、両者の一致を証明する。
+software architecture では、各部分が局所的に正しくても、全体では意味の不整合が
+生じうる。個々の service は自身の規約を守り、隣接する service 間の受け渡しも
+それぞれ成立しているのに、システムを一周したときにだけ現れる不整合が残る。
+局所的な正しさの総和が大域的な正しさに届かないというこの構造的な隔たりが、
+本論文の主題である。
 
-第一の構成は、supported semantic atom と局所 repair relation から
-semantic repair coefficient `M_sem` と semantic Čech complex を生成する。
-第二の構成は、Atom-indexed architectural equation system `E` から
-equation-generated coefficient `Q_E` と幾何側 Čech complex を生成する。
-Algebraic Architecture Theory (AAT) の monomorphic cover `𝒰` 上で、二つの affine local-state system、
-selected local atlases、empty-overlap normalization、
-repair-relation completeness、equation-generator completeness、
-restriction-natural かつ generator-equivariant な対応 `β` の下で、
+本論文は、この隔たりを測る二つのコホモロジーを独立に構成し、両者の一致を
+証明する。第一の構成は「修理」の言葉によるもので、各局所文脈で許される
+意味的修理の選択肢とその同値関係から、修理の障害を測る係数 `M_sem` と
+Čech complex を作る。第二の構成は「方程式」の言葉によるもので、architecture の
+制約を連立方程式系 `E` として組織し、その obstruction ideal による商係数
+`Q_E` と Čech complex を作る。software architecture を代数幾何として構成する
+理論 Algebraic Architecture Theory (AAT) の選ばれた有限 cover `𝒰` 上で、
+両者の局所データを対応させる有限個の選択条件(定理 5.1 の入力 1–8)の下で、
 comparison map は同型
 
 ```math
@@ -38,7 +41,9 @@ H^1_{\mathrm{sem}}(\mathcal U)
 ```
 
 と residual class の対応 `κ_*([r_sem])=[r_E]` を誘導する。これを SAGA 比較定理と呼ぶ。
-true semantic repair sheaf 条件の下では、global repair は三項同値
+すなわち、修理の言葉で測った障害と方程式の言葉で測った障害は、同じ
+コホモロジー類である。さらに、修理状態の族が貼り合わせ可能である
+(sheaf 条件を満たす)ならば、global repair は三項同値
 
 ```math
 \mathrm{Nonempty}\,P_{\mathrm{sem}}(W)
@@ -48,16 +53,18 @@ true semantic repair sheaf 条件の下では、global repair は三項同値
 [r_E]=0
 ```
 
-で特徴づけられる。
+で特徴づけられる。障害の類が消えることと、全体を貼り合わせる修理が実在する
+ことは同値である。
 
-本論文は、この数学的成果を三層で提示する。第一層は完成した SAGA 数学である。
-第二層は release 時点の Lean 形式化 status であり、定義、定理、有限 witness、
-proof chain を declaration 単位で本論文の定理と対応させる。第三層は measurement system
-ArchSig による実行可能な有限診断であり、実在するオープンソース microservice architecture 上で
-観測から導出した residual の非零計測、gate による blocking、repair 案の事前検証、
-repair 後の障害消滅の記録までを再現可能な一つの計算として示す。
-数学、Lean、measurement は同じ release identity を参照し、各 claim から一次証拠へ
-到達できる provenance を構成する。
+本論文は、この数学的成果を三層で提示する。第一層は完成した SAGA 数学である
+(第3〜5章)。第二層は release 時点の Lean 形式化 status であり、定義、定理、
+有限 witness、proof chain を declaration 単位で本論文の定理と対応させる
+(第6章)。第三層は Rust 製 CLI の measurement tool である ArchSig による
+実行可能な診断であり、実在するオープンソース microservice システムの払い戻し
+処理に対して、観測から導出した障害の非零計測、gate による blocking、
+repair 案の事前検証、repair 後の障害消滅の記録までを再現可能な一つの計算として
+一周する(第7章)。数学、Lean、計測は同じ release identity を参照し、
+各主張から一次証拠へ到達できる。
 
 ---
 
@@ -111,7 +118,7 @@ cohomology との同一視は本論文の主張に含まれない(§5.7)。
 | --- | --- |
 | 数学 | プレプリントの主成果。SAGA 比較定理と residual class 対応の完成した証明 |
 | Lean | 数学成果に対する release 時点の機械形式化 status |
-| ArchSig | 固定した実コード事例に対する有限かつ実行可能な realization |
+| ArchSig | 実在コード事例の上で SAGA 診断を実行する Rust 製 CLI(有限かつ実行可能な realization) |
 
 数学面は完成版である。semantic repair cohomology と equation-generated AAT Čech
 cohomology の比較を構成し、`H^1` 同型、residual class 対応、true sheaf 条件下の
@@ -120,7 +127,9 @@ global repair 同値を証明する(第5章)。
 Lean 面は release 時点の status である。形式化済みの定義、定理、witness、
 proof chain を declaration 単位で示し、本論文の定理との対応と axiom 状況を固定する(第6章)。
 
-ArchSig 面は有限 case study である。固定した microservice architecture を対象に、
+ArchSig 面は有限 case study である。ArchSig は、コードの観測と選ばれた
+方程式系から診断を計算する Rust 製の CLI tool である。固定した microservice
+architecture を対象に、
 数学的対象が有限 architecture evidence からどのように計算され、repair 前後で
 どのように変化するかを再現可能な形で示す(第7章)。
 
@@ -238,6 +247,25 @@ a = (kind, axis, subject, predicate, payload)
 などがある。たとえば `semantic(t,s)` は、表現 `t` を subject に、「`t` は意味
 規約 `s` に従う」を predicate に、`s` の記述を payload に取る semantic Atom で
 ある。
+
+実コードとの対応を一つ示す。たとえば、注文を発行する service が注文番号を
+
+```text
+orderId = "ORD-" + zeroPad(seq.next(), 8)
+```
+
+の形で組み立てるとき、この一箇所からは次の Atom が読める。
+
+```text
+component(orders)        -- このコードが属する service
+state(orders, orderId)   -- 発行済み注文番号という局所状態
+semantic(orderId, s)     -- s = 「接頭辞 ORD- + 8桁ゼロ詰め連番」という表記規約
+```
+
+実装型(`string`)の観測だけでは最後の semantic Atom は得られず、式と
+使われ方の読解が要る。Atom がどこから来るか — 実コードからの抽出 — は
+AAT の外の観測工程に属し、その再現可能な固定方法は §7.5 が述べる。
+AAT の内部では、Atom は与えられた生成元である。
 
 **定義 3.2(Atom family と support)。** Atom universe を `At` と書く。
 Atom family `F` は `At` の部分集合であり、`support(F)` は `F` に現れる
@@ -2024,6 +2052,7 @@ table が完結して与え、label は Lean source を閲覧する際の照合�
 - [ ] SAGA comparison の可換図と one-cent の計算図の作成
 - [x] 著者情報の固定(author block: Hiroyuki Nakahata / Independent Researcher / ORCID 0009-0008-5928-0234、所属企業は disclaimer で開示。Acknowledgments に AI 協働開示、2026-07-24)
 - [ ] Zenodo metadata: license(CC BY 4.0 想定、要決定)と DOI の固定。creators は author block と一致させる
+- [ ] Zenodo metadata: abstract の platform 変種を作成する。Zenodo description は HTML whitelist のみで MathJax 不可のため、display 数式2本を Unicode inline 形(`H¹_sem(𝒰) ≅ Ȟ¹(𝒰,Q_E)` / `Nonempty P_sem(W) ⟺ [r_sem]=0 ⟺ [r_E]=0`)へ落とす。arXiv 併用時は inline `$...$` 形(標準 LaTeX/AMS マクロのみ)
 
 ### B. Claim-to-evidence matrix(skeleton)
 
