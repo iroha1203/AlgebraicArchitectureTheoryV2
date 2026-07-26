@@ -15,7 +15,7 @@
 | Language | English |
 | Version | 1.0.0 |
 | License | TBD(CC BY 4.0 想定、ユーザー最終決定待ち) |
-| DOI | TBD(Zenodo reserved DOI を deposit 画面で予約し、論文 §1 の release identity と citation guide に反映) |
+| DOI | TBD。**workflow 確定(2026-07-26)**: Zenodo は publish 時に version DOI + concept DOI を自動付与する。draft(未公開 deposit)の「Get a DOI now」で **version DOI のみ事前予約可**。publish 後は bundle ファイルを差し替えられないため、**draft 作成 → version DOI 予約 → PDF・citation guide へ転記 → publish** の順で行う。concept DOI は publish 時まで不明のため bundle 内には書かず「Zenodo record ページ参照」とする |
 | Related identifiers | `https://github.com/iroha1203/AlgebraicArchitectureTheoryV2`(isSupplementTo / release tag TBD を付す)、FudanSELab/train-ticket commit `313886e99bef`(isDerivedFrom、対象 case study) |
 | Keywords | software architecture; Čech cohomology; algebraic geometry; sheaf; descent; Lean; formal verification; microservices; architecture analysis |
 
@@ -43,9 +43,11 @@ In a software architecture, each individual service can obey its own conventions
 Zenodo は record ごとに2種類の DOI を発行する。
 
 - **Concept DOI**: 全 version を束ねる DOI。常に最新 version へ解決される。
-  「SAGA 論文(最新版)」を指したい引用はこちら。
+  「SAGA 論文(最新版)」を指したい引用はこちら。**publish 時に自動付与**され、
+  それまで番号は不明 — bundle 内の文書には書かず、Zenodo record ページを参照先とする。
 - **Version DOI**: 各 version(v1.0.0 等)に固定される DOI。
   再現性の文脈(この証拠束・この Lean status を検証した)ではこちらを引用する。
+  draft の「Get a DOI now」で **publish 前に予約**し、PDF と本 guide へ転記する。
 
 推奨引用形(TBD を確定値で置換):
 
