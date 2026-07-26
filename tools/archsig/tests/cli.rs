@@ -15918,6 +15918,40 @@ fn cli_repair_plan_rejects_dropped_observed_chart_edge_from_mapped_cover() {
 }
 
 #[test]
+fn cli_repair_plan_rejects_duplicate_overlap_ids() {
+    let out_dir = temp_dir("ag-repair-plan-duplicate-overlap-id");
+    let root = ag_measurement_root();
+    let mut plan = read_json(&root.join("repair_plan_complete_support.json"));
+    plan["complex"]["tripleOverlaps"] = json!([]);
+    plan["complex"]["overlaps"][1]["id"] = json!("overlap:order-inventory");
+    let plan_path = out_dir.join("repair_plan.json");
+    fs::write(
+        &plan_path,
+        serde_json::to_vec_pretty(&plan).expect("plan serializes"),
+    )
+    .expect("plan writes");
+    let report_path = out_dir.join("report.json");
+    run_sig0_expect_code(
+        &[
+            "repair-plan",
+            "--archmap",
+            root.join("archmap_v2.json").to_str().expect("path is utf-8"),
+            "--repair-plan",
+            plan_path.to_str().expect("path is utf-8"),
+            "--out",
+            report_path.to_str().expect("path is utf-8"),
+        ],
+        1,
+    );
+    let report = read_json(&report_path);
+    assert_eq!(
+        check_by_id(&report, "repair-plan-schema052-reference-resolution")["result"],
+        "fail",
+        "a duplicate overlap ID must fail validation instead of silently overwriting a derived residual edge"
+    );
+}
+
+#[test]
 fn cli_repair_plan_rejects_retired_schema_discriminators() {
     let out_dir = temp_dir("ag-repair-plan-retired-v054-schema");
     let root = ag_measurement_root();

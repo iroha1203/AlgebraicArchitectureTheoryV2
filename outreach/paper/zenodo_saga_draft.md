@@ -53,7 +53,7 @@ true semantic repair sheaf 条件の下では、global repair は三項同値
 本論文は、この数学的成果を三層で提示する。第一層は完成した SAGA 数学である。
 第二層は release 時点の Lean 形式化 status であり、定義、定理、有限 witness、
 proof chain を declaration 単位で数学本文と対応させる。第三層は measurement system
-ArchSig による有限 realization であり、実在するオープンソース microservice architecture 上で
+ArchSig による実行可能な有限診断であり、実在するオープンソース microservice architecture 上で
 観測から導出した residual の非零計測、gate による blocking、repair 案の事前検証、
 repair 後の障害消滅の記録までを再現可能な一つの計算として示す。
 数学、Lean、measurement は同じ release identity を参照し、各 claim から一次証拠へ
@@ -1240,13 +1240,13 @@ status は次の語彙で記述する: `proved`(Lean で証明済み)、`defined
 | --- | --- | --- | --- | --- |
 | 定理 5.1 の結論束(residual 対応・零/非零同値・grounded gluing) | `SagaEquationPacket.sagaCentralTheorem`(X.定理1.1) | proved | selected packet(定理 5.1 の入力 1–8 を structure として固定)、completeness 二条件(入力 4)、cover 添字集合の `Fintype`。gluing 節はさらに cover の topology 所属と true sheaf 条件に条件付き | `Saga/TrueSheafDescent.lean` |
 | 定理 5.1(i): repair-relation soundness の導出 | `PrimaryStateCorrespondence.relationSound_of_stateCorrespondence` | proved | local-state correspondence(入力 5–7) | `Saga/Exactness.lean` |
-| 定理 5.1(i): 係数同型 `Φ` | `PrimaryCoefficientCorrespondence.phiEquiv`(X.定理6.3/系6.7) | proved | soundness と completeness 二条件 | `Saga/Exactness.lean` |
-| 定理 5.1(i): exactness 三条件の独立性 | `ExactnessFixtures.soundness_failure` / `completeness_failure` / `generation_failure`(X.例6.6) | proved | なし(有限反例) | `Saga/Exactness.lean` |
+| 定理 5.1(i): 係数同型 `Φ` | `SagaEquationPacket.phiEquiv`(equation-generated packet 上の直接対応。generic 版は `PrimaryCoefficientCorrespondence.phiEquiv`、X.定理6.3/系6.7) | proved | soundness と completeness 二条件 | `Saga/EquationRealization.lean`、`Saga/Exactness.lean` |
+| 定理 5.1(i): 三条件それぞれを外す反例 | `ExactnessFixtures.soundness_failure` / `completeness_failure` / `generation_failure`(X.例6.6) | proved | なし(各 fixture は対象条件の failure を statement 化した有限反例であり、残り二条件の同時成立までは statement に含めない) | `Saga/Exactness.lean` |
 | 定理 5.1(ii): cochain 可換 `κδ=δκ` | `kappa1_delta0`、`kappa2_delta1`(X.定理7.2) | proved | 係数 family の restriction-natural 同型 | `Saga/KappaComparison.lean` |
-| 定理 5.1(ii): `H^1` 同型 `κ_*` | `kappaH1AddEquiv`(`kappaStar`/`kappaStarInv` の両側逆、X.定理7.4) | proved | 同上 | `Saga/KappaComparison.lean` |
+| 定理 5.1(ii): `H^1` 同型 `κ_*` | `SagaEquationPacket.kappaStarAddEquiv`(packet 上の `≃+`、`kappaStar`/`kappaStarInv` の両側逆。generic 版は `kappaH1AddEquiv`、X.定理7.4) | proved | completeness 二条件 | `Saga/KappaComparison.lean` |
 | 定理 5.1(ii): residual 対応 `κ_*([r_sem])=[r_E]` | `SagaEquationPacket.residual_correspondence_class`、整合 atlas 版 `betaAligned_residual`(X.定理7.5) | proved | completeness 二条件 | `Saga/KappaComparison.lean` |
-| 定理 5.2 = 定理 5.1(iii): grounded global gluing | `SagaEquationPacket.sagaGroundedGluing`、`globalRepair_nonempty_iff`(X.定理8.2) | proved | true sheaf 条件、cover の topology 所属 | `Saga/TrueSheafDescent.lean` |
-| 補題 5.2A(ordered matching completion) | `SiteStateData.matchingFamily_iff` | proved | thin な context category(§5.7) | `Saga/OrderedComparison.lean` |
+| 定理 5.2 = 定理 5.1(iii): grounded global gluing | `SagaEquationPacket.globalRepair_nonempty_iff`(`P_sem` 側同値)、`sagaGroundedGluing`(equation 側同値まで統合、X.定理8.2) | proved | true sheaf 条件、cover の topology 所属。equation 側同値はさらに completeness 二条件(定理7.6 経由) | `Saga/TrueSheafDescent.lean` |
+| 補題 5.2A(ordered matching completion) | `SiteStateData.matchingFamily_iff` | proved | thin な context category(§5.7)、省略 pair 上の state の subsingleton 仮定(empty-overlap normalization の形式化対応) | `Saga/OrderedComparison.lean` |
 | 例 5.3(4-cycle circle witness、非零類の transfer) | `CircleWitness.semanticResidualClass_ne_zero`、`circle_nonzero_class_transfer`(X.例10.2/付録B.9) | proved | なし(具体 4-cycle model 上の閉じた検証) | `Saga/CircleWitness.lean` |
 | 零類側の witness(定理 5.2 の非空発火) | `DescentWitness.descentTrueSheaf`、`descent_sagaGroundedGluing` | proved | なし(具体 model 上の閉じた検証) | `Saga/DescentWitness.lean` |
 
@@ -1303,23 +1303,31 @@ ArchSig の入力は次の artifact である。
   mismatch 辺に束縛される witness variable の宣言を含む。
 - **MeasurementProfile**: 係数(本 case study では `F2`)を含む measurement の
   条件を固定する。
-- **repair plan**: 選択複体(charts、overlaps、任意の triple overlap、
-  enumeration assertion)だけを宣言する。residual、係数、比較データは運ばない。
+- **repair plan**(schema `archsig-repair-plan/v0.5.7`): 選択複体(charts、
+  overlaps、任意の triple overlap、enumeration assertion)と対象 cover への
+  参照だけを宣言する。residual、係数、比較データは運ばない。
 
 residual は入力ではない。`analyze` が、選択 cover 上の観測 section value の
 比較と law surface の witness 束縛から residual を導出し、辺ごとの値・witness・
 観測 atom 参照の provenance を measurement packet に記録する(§7.3)。
+
+repair plan の系統上の位置も固定する。選択複体は、この診断がどの部分複体の
+上で語るかを決める measurement selection であり、法・方程式側の選択に属する。
+その charts と overlaps は観測された cover と restriction への参照に限られ、
+観測に典拠のない宣言は受理されない。観測へ還元されない宣言は triple overlap の
+有無だけであり、これは assumption ledger の author assertion として開示される
+(§7.7)。
 
 この契約の下で、本論文の measurement claim は次の主張に立つ。
 **SAGA 診断の結論 — residual、boundary membership、gate 判定 — は、Atom 観測と
 選択された方程式系から決定論的に導出される。実施者が書けるのは観測の範囲、
 選択複体、witness 束縛という選択であって、結論を運ぶ入力はこの契約に存在
 しない。** この分離は fail-closed 検査が執行する: 選択 cover 外の chart、
-観測された restriction を持たない overlap、未観測の section、witness 束縛の
-ない mismatch は、いずれも結論を生成せずに計算を停止させる。したがって、
-選択によって障害を沈黙させることはできるが(列挙完全性は §7.7 の assumption
-として開示される)、観測が一致している辺の上に非零 residual を立てることは
-できない。
+観測された restriction を持たない overlap、重複した overlap 宣言、未観測の
+section、witness 束縛のない mismatch は、いずれも結論を生成せずに計算を
+停止させる。したがって、選択によって障害を沈黙させることはできるが
+(列挙完全性は §7.7 の assumption として開示される)、観測が一致している辺の
+上に非零 residual を立てることはできない。
 
 ArchSig は与えられた入力 contract から語れる diagnostic conclusion を計算する。
 結論の相対性は入力契約に由来する帰結である。
@@ -1379,13 +1387,16 @@ ArchSig の `analyze` は次を計算し、measurement packet として出力す
   として packet に明示する。
 
 `compare` は二つの run の packet を突き合わせ、障害の変化と、両 run の導出
-residual の差の `δ⁰` 可解性(residual class agreement)を記録する。`gate` は
-packet と gate policy から `PASS_WITHIN_GATE_POLICY` /
-`BLOCKED_BY_GATE_POLICY` の判定を返す。
+residual の差の `δ⁰` 可解性を記録する。この読みの artifact field 名は
+`residualClassAgreement` だが、その語彙は field 名であって class 語彙の解禁では
+ない。記録される内容は「両 run の residual の差が選択 `C^1` 上で `im δ⁰` に
+属するか」という coboundary 判定である。`gate` は packet と gate policy から
+`PASS_WITHIN_GATE_POLICY` / `BLOCKED_BY_GATE_POLICY` の判定を返す。
 
-この計算は第5章の数学の有限 realization である。有限 semantic vocabulary、
-有限 relation list、有限 cover の下で、grounding、residual 導出、
-boundary membership は行列計算に落ちる。
+この計算が実行するのは、第4章の複体語彙の有限断片である: selected 1-骨格上の
+residual 導出、`B^1` 所属、run 対の residual 差が、有限 `F2` 線形代数に落ちる。
+定理 5.1 の比較(`χ`、`Φ`、`κ`、presentation exactness)の有限 instantiation は
+この計算の範囲に含まれず、第6章の Lean witness が担う(§7.8)。
 
 ### 7.4 実コード事例: one-cent obstruction
 
@@ -1404,13 +1415,18 @@ ArchMap の section value として観測された。
 
 三つの service の金額表現は、実装上はいずれも `string` を介して受け渡される。
 型の一致は成立している。異なるのは、その `string` が表す金額の丸め、scale、
-計算、保存の**意味規約**である。さらに、3サービスの金額を同時に照合する箇所が
-コード上に存在しない。すなわち triple overlap が正直に空である。
+計算、保存の**意味規約**である。さらに、実施者の source 調査では、3サービスの
+金額を同時に照合する箇所は見つからなかった。この調査所見は、選択複体に
+triple overlap を宣言しないという形で診断へ反映される。同時照合サイトの不在
+そのものは、観測 artifact が示す事実ではなく実施者の assertion として扱う
+(§7.5、§7.7)。
 
-これは、例 5.3 と同じ **cycle-without-a-face 機構**の 3-cycle instance である。
-複体そのものは同一ではない — 例 5.3 は 4-cycle、本 case は 3-cycle である — が、
-非零類を立てる機構は共通する: 閉ループ上の奇パリティ(3流儀の衝突)と、その
-ループを埋める面(triple overlap)の不在である。
+この構図は、例 5.3 と同じ **cycle-without-a-face 機構**の 3-cycle instance と
+して読める。複体そのものは同一ではない — 例 5.3 は 4-cycle、本 case は 3-cycle
+である — が、非零類を立てる機構は共通する: 閉ループ上の奇パリティ(3流儀の
+衝突)と、そのループを埋める面(triple overlap)の不在である。この読みのうち
+計測が担うのは前者(mismatch の奇パリティと非境界性)であり、後者は上記の
+assertion に立つ。
 払い戻し計算 `0.8 × 価格` の丸め剰余 — **1セント未満のドリフト** — は、
 どの chart にも記帳されていない。この case study を **one-cent obstruction** と呼ぶ。
 
@@ -1445,8 +1461,15 @@ nonzero remainder:     0.004(1セント未満)
 cancel 側の乗算は二進浮動小数点で行われるが、この入力では scale-2 丸めの結果に
 影響しない。remainder は、どの chart の局所方程式にも違反しない — cancel は
 cancel の丸め規約に、inside-payment は正確算術に忠実である — が、二つの chart
-の値の差として残る。§7.5 の計測が非境界 residual として立てるのは、この差が
-閉ループを一周しても `δ⁰` で解けないことである。
+の値の差として残る。
+
+この数値 witness の身分を固定する。これは実施者による source 水準の検算であり、
+ArchSig の計算対象ではない。packet のどの計算にも価格、`0.8`、丸め、`0.004` は
+現れない。ArchSig の residual が導出されるのは、金額規約の観測表現である
+section value の集合比較(§7.3)からであり、§7.5 の計測が非境界 residual と
+して立てるのは、その規約 mismatch が閉ループを一周しても `δ⁰` で解けない
+ことである。数値としてのドリフトの実在量は runtime 計測に属し、本論文では
+沈黙する(§7.7)。
 
 ### 7.5 診断階段
 
@@ -1475,7 +1498,7 @@ preserve–order)、triple overlap は宣言しない。3サービスの金額�
 | └ boundary membership | `measured_nonzero`(`inB1: false`。triple 宣言不在のため class 語彙は不解禁 — named boundary statement で明示) |
 | gate head | `BLOCKED_BY_GATE_POLICY` |
 | repaired analyze | `REPAIR_GLUES_WITHIN_SELECTED_COMPLEX`(`run:6685bab8db21`。残る preserve 残差は `B^1` 内) |
-| compare head→repaired | `MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE`、residual class agreement は `not_cohomologous`(修理が residual を非境界から境界へ変えたことの run 対の読み) |
+| compare head→repaired | `MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE`、`residualClassAgreement: not_cohomologous`(field 語彙。読みは「両 run の residual の差が `δ⁰` で解けない」であり、head 非境界 → repaired 境界内の変化と整合する。§7.3) |
 | gate repaired | `PASS_WITHIN_GATE_POLICY` |
 
 ### 7.6 計測が示したこと
@@ -1485,16 +1508,19 @@ preserve–order)、triple overlap は宣言しない。3サービスの金額�
 宣言された判定基準による displayed-equation check が零であること(§7.3)— を
 計測として言う。cancel は cancel の丸め規約に、
 inside-payment は正確算術に、order は素通し保管に、それぞれ忠実である。
-ペアごとの受け渡しも各々は成立している。障害はループを一周したときだけ現れ、
-それを埋める面(triple)がコードに存在しないから、非境界 residual として残る。
-「局所的には整合、大域的に貼り合わない」という SAGA の中心構造が、
-作為的に仕込んだのではない実在 OSS 上で観測された。
+ペアごとの受け渡しも各々は成立している。計測として観測されたのは、規約
+mismatch の奇パリティが閉ループ上で `δ⁰` により解けないこと(`inB1: false`)で
+ある。そのループを埋める面(triple)の不在は実施者の assertion であり(§7.4、
+§7.7)、その宣言の下でこの計測は「局所的には整合、大域的に貼り合わない」と
+いう SAGA の中心構造の、作為的に仕込んだのではない実在 OSS 上の instance に
+なる。
 
-**診断階段の全段が二系統入力だけで機能。** 観測(ArchMap)と法・方程式
+**診断階段の全段が導出 residual だけで機能。** 観測(ArchMap)と法・方程式
 (law surface、MeasurementProfile)から導出した residual による非境界の計測、
-gate による blocking、修理計画の事前検証、compare による障害消滅の記録と
-residual class agreement、gate PASS まで、authored な residual・証書・比較データを
-一切供給せずに一周した。
+gate による blocking、修理計画の事前検証、compare による障害消滅と run 対の
+residual 差の記録、gate PASS まで、authored な residual・証書・比較データを
+一切供給せずに一周した。実施者の宣言として残るのは選択複体(§7.1)と
+repaired 変種だけである。
 
 **数学的規律の実効。** ドリフトの立つ三角形自体を triple として申告すると
 cocycle 条件で拒否される。これは数学的に正当な拒否である。witness 束縛のない
@@ -1526,9 +1552,9 @@ ledger に記録する前提、`unmeasured` は供給せず沈黙した軸を表
 | U-adequacy(選択 cover が対象の読みに十分という前提)、Leray 型比較 | profile 供給の前提 | `assumed` | assumption ledger 行として開示。cover 非依存の sheaf cohomology との比較は主張しない(§5.7) |
 | torsor 性・作用の固定性・係数 descent | profile 供給の前提 | `assumed` | assumption ledger の 3 行 |
 | restriction surjectivity | profile 供給の前提 | `assumed` | assumption ledger 行 |
-| forest nerve | profile 供給の前提 | `assumed`(本 packet では不成立) | ledger は forest 前提を記録するが、同じ packet の nerve 計算は閉路 1 を `computed` で示す。開示された不成立前提であり、head の非零読みはこの行に依存しない |
+| forest nerve | profile 供給の前提 | `assumed`(本 packet では不成立) | ledger は forest 前提を記録するが、同じ packet の nerve 計算は閉路 1 を `computed` で示す。開示された不成立前提であり、head の saga-descent 段の非零読み(`B^1` 所属)はこの行に依存しない。cech 段の verdict は別途この assumption への依存を宣言しており、その行はこの限定の対象外である |
 | quotient sheaf condition | law surface の宣言 | `assumed` | ledger 行として開示 |
-| residual class agreement(head↔repaired) | run 対の導出読み | `computed` | 両 run の導出 residual の差の `δ⁰` 可解性。本対は `not_cohomologous` |
+| run 対の residual 差(head↔repaired) | run 対の導出読み | `computed` | 両 run の導出 residual の差の `δ⁰` 可解性。本対は `not_cohomologous`(field 語彙。class 語彙の解禁ではない、§7.3) |
 | repaired ArchMap | 仮修理入力 | supplied / hypothetical | 統一規約を表す仮説 variant。`PASS_WITHIN_GATE_POLICY` は実装済み修理を示さない |
 | runtime の金額規模 | 経験的計測 | `unmeasured` | `harmonic-debt` を供給せず沈黙。頻度・金額を結論に含めない |
 
@@ -1537,7 +1563,7 @@ ledger に記録する前提、`unmeasured` は供給せず沈黙した軸を表
 本 case study の claim は次の範囲に限る。規約 mismatch の検出自体は
 closed-equational surface の段が担った。SAGA 段が加えたのは、同じ観測を
 選択 1-骨格上の boundary membership として読む descent 読解、grounding の罠の
-明示、修理計画の事前検証、run 対の residual class agreement、gate の一貫した
+明示、修理計画の事前検証、run 対の residual 差の読み(§7.3)、gate の一貫した
 診断であり、「SAGA が新しい障害を発見した」という主張は行わない。
 
 authored なのは選択である。選択複体(repair plan)、witness 束縛(law surface)、
@@ -1710,7 +1736,8 @@ tooling の計画は本論文の範囲外である。
 反実仮想だった。起きなかった障害は観測できないからである。
 定理 5.2 の三項同値は、この文に数学的な身分を与える。零類と global repair の
 存在が同値である以上、「correction が類を消したから貼り合った」は経験則ではなく
-帰結である。第7章の repair 前後比較は、この帰結の最初の有限実例である。
+帰結である。第7章の repair 前後比較は、この帰結の選択複体上の最初の有限実例である
+(計測の読みが boundary membership に留まる範囲は §7.7 が固定する)。
 selected な入力契約(cover、equation system、witness)への相対性は、この主張の制約であると
 同時に、主張の provenance を固定する規律でもある。
 
@@ -1840,9 +1867,10 @@ family、sheaf amalgamation を経て global section が構成される。
 数学本文との対応、仮定、axiom 状況を declaration 単位で固定した。
 
 第三に、**one-cent realization** である。実在の microservice システムの
-払い戻し三角形上で、3つの金額規約の衝突と triple overlap の不在が立てる
-非零 residual を観測から導出・計測し、gate による blocking、修理案の事前検証、
-repair 後の障害消滅、gate PASS までを一つの再現可能な計算として一周した。
+払い戻し三角形上で、3つの金額規約の衝突が立てる非境界 residual を観測から
+導出・計測し(triple を宣言しない選択複体上。§7.7)、gate による blocking、
+修理案の事前検証、repair 後の障害消滅、gate PASS までを一つの再現可能な
+計算として一周した。
 各 chart は自分の局所方程式を満たしていた。障害は、どの局所にも帰属しない
 1セント未満のドリフトとして、ループを一周したときにだけ現れた。
 

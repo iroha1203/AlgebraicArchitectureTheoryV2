@@ -119,6 +119,24 @@ pub(crate) fn derive_residual(
         .iter()
         .map(String::as_str)
         .collect::<BTreeSet<_>>();
+    let mut seen_overlap_ids = BTreeSet::new();
+    let mut seen_overlap_pairs = BTreeSet::new();
+    for overlap in &plan.complex.overlaps {
+        if !seen_overlap_ids.insert(overlap.id.as_str()) {
+            return Err(format!(
+                "duplicate overlap id {} in the repair-plan complex would overwrite a derived residual edge",
+                overlap.id
+            ));
+        }
+        let mut pair = [overlap.left.as_str(), overlap.right.as_str()];
+        pair.sort_unstable();
+        if !seen_overlap_pairs.insert((pair[0].to_string(), pair[1].to_string())) {
+            return Err(format!(
+                "unordered chart pair {} / {} appears more than once in the repair-plan complex",
+                pair[0], pair[1]
+            ));
+        }
+    }
     let bindings = cech_edge_witness_bindings(law_surface)?;
     let mut supports = BTreeMap::new();
     let mut edges = Vec::new();
@@ -1175,6 +1193,35 @@ mod tests {
         assert!(
             fault.contains("must be declared in complex.charts"),
             "fault must name the missing chart declaration: {fault}"
+        );
+    }
+
+    #[test]
+    fn derive_residual_faults_on_duplicate_overlap_id() {
+        let (normalized, profile, mut plan, law_surface) = derivation_test_inputs();
+        let duplicate_id = plan.complex.overlaps[0].id.clone();
+        plan.complex.overlaps[1].id = duplicate_id;
+        let fault = derive_residual(&normalized, &profile, &plan, &law_surface).expect_err(
+            "duplicate overlap ids must fail closed instead of overwriting residual edges",
+        );
+        assert!(
+            fault.contains("duplicate overlap id"),
+            "fault must name the duplicate overlap id: {fault}"
+        );
+    }
+
+    #[test]
+    fn derive_residual_faults_on_duplicate_unordered_pair() {
+        let (normalized, profile, mut plan, law_surface) = derivation_test_inputs();
+        let mut duplicate = plan.complex.overlaps[0].clone();
+        duplicate.id = "overlap:duplicate-pair".to_string();
+        std::mem::swap(&mut duplicate.left, &mut duplicate.right);
+        plan.complex.overlaps.push(duplicate);
+        let fault = derive_residual(&normalized, &profile, &plan, &law_surface)
+            .expect_err("duplicate unordered chart pairs must fail closed");
+        assert!(
+            fault.contains("appears more than once"),
+            "fault must name the duplicated pair: {fault}"
         );
     }
 
