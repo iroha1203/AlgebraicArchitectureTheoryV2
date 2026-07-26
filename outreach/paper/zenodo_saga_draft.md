@@ -228,11 +228,16 @@ SAGA は、semantic repair obstruction と equation-generated Čech obstruction 
 a = (kind, axis, subject, predicate, payload)
 ```
 
-`predicate` は `subject` に対して一つの atomic statement を与える。Atom は
-特定の言語や framework に属さない primitive architectural fact であり、
-AAT の内部では生成元として扱われる。core family の schema には
-`component(c)`、`relation_r(c,d)`、`state(c,x)`、`contract(m,p)`、
-`semantic(t,s)`、`runtime_interaction(u,v,h)` などがある。
+`kind` は Atom の種別(component、relation、state、contract、semantic など)、
+`axis` はその Atom が読まれる signature / equation 軸、`subject` は statement の
+主体、`predicate` は `subject` に対して立てる一つの atomic statement、
+`payload` は statement の内容データである。Atom は特定の言語や framework に
+属さない primitive architectural fact であり、AAT の内部では生成元として
+扱われる。core family の schema には `component(c)`、`relation_r(c,d)`、
+`state(c,x)`、`contract(m,p)`、`semantic(t,s)`、`runtime_interaction(u,v,h)`
+などがある。たとえば `semantic(t,s)` は、表現 `t` を subject に、「`t` は意味
+規約 `s` に従う」を predicate に、`s` の記述を payload に取る semantic Atom で
+ある。
 
 **定義 3.2(Atom family と support)。** Atom universe を `At` と書く。
 Atom family `F` は `At` の部分集合であり、`support(F)` は `F` に現れる
@@ -326,10 +331,12 @@ required equations の同時成立が、architecture の整合性の基礎条件
 
 **定義 3.7(AAT site)。** architecture object `X`、equation system `E`、
 signature `Sig`(選ばれた signature axes の族。本論文では固定 package の一部として
-扱い、以後展開しない)、coverage requirements `R`、context-overlap package `Ov` に対して、
-`(E,R,Ov)`-admissible な coverage family `{W_i→W}`(required Atom support、
-required equation-coordinate support、selected witness support、required axes、
-interaction overlap が cover 全体で読める族)が生成する Grothendieck topology を
+扱い、以後展開しない)、coverage requirements `R`、context-overlap package `Ov` を
+固定する。coverage family `{W_i→W}` が `(E,R,Ov)`-admissible であるとは、
+`W` 上で読まれるべきと `R` が要求するデータ — 対象 Atom の support、`E` の
+coordinate(`ν`、`ε`)の support、選ばれた witness と signature axis、context 間の
+interaction overlap — のすべてが、`{W_i}` への restriction を通じて cover 全体で
+読めることをいう。admissible family が生成する Grothendieck topology を
 `J_{E,R,Ov}` と書く。AAT site は package
 
 ```text
@@ -338,6 +345,9 @@ Site_AAT(X,E,Sig,R,Ov) = (ArchCtx(X), E, Sig, R, Ov, J_{E,R,Ov})
 
 である。本論文では、この package を固定した underlying site を `S_X` と略記し、
 `W` をその context とする。cover は Atom を生成しない(non-generation)。
+この topology から本論文の証明が消費するのは、`𝒰` が topology に属することと
+sheaf condition(定理 5.2)だけであり、admissibility の内部構造はどの証明でも
+使われない。有限実行の regime は第3.3節の finite-meet poset model である。
 
 **定義 3.8(presheaf と sheaf condition)。** `S_X` 上の presheaf は
 `F:ArchCtx(X)^op→Set` である。`F` が sheaf であるとは、任意の cover
@@ -1012,9 +1022,14 @@ SAGA presentation exactness が `S_X` の全 context 上で成立すること、
 overlap 上では、`Φ_V`-equivariant な `β_V:P_sem(V)→P_E(V)` が全単射である。
 単射性は semantic torsor の transitivity、target torsor の freeness、`Φ_V` の
 単射性から、全射性は target torsor の transitivity と `Φ_V` の全射性から出る。
-この局所全単射性は、`P_sem` 側の amalgamation(補題 5.2A を再び用いる)と
-separatedness、および `P_E` 側の separatedness を経て、global の
-`β_W:P_sem(W)→P_E(W)` の全単射性へ持ち上がる。こうして
+この局所全単射性は次の三段で global へ持ち上がる。単射性: `β_W(p)=β_W(p')`
+ならば各 chart 上で `β_{U_i}` の単射性から `p|_{U_i}=p'|_{U_i}` であり、
+`P_sem` の separatedness から `p=p'` である。全射性: `q∈P_E(W)` に対し各 chart で
+`p_i:=β_{U_i}^{-1}(q|_{U_i})` と置くと、`β` の naturality と overlap 上の単射性
+から `(p_i)` は全 nonempty `i<j` overlap 上で一致し、補題 5.2A と `P_sem` の
+amalgamation により一意な `p∈P_sem(W)` へ貼り合う。最後に `β_W(p)` と `q` は
+各 chart への restriction が一致するので、`P_E` の separatedness から
+`β_W(p)=q` である。こうして
 
 ```math
 \mathrm{Nonempty}\,P_E(W)\iff[r_E]=0
@@ -1268,8 +1283,10 @@ residual は入力ではない。ArchSig の `analyze` は次を計算し、meas
   「chart 上の全方程式の完全な充足」ではない。
 - overlap ごとの **residual 導出**: 選択 cover の両端 chart が観測した
   section value 集合の比較から `F2` 値を導出し、law surface の witness 束縛と
-  観測 atom 参照の provenance を辺ごとに記録する。witness 束縛のない mismatch は
-  fail-closed に計算不能へ落ちる。
+  観測 atom 参照の provenance を辺ごとに記録する。witness 束縛とは、mismatch を
+  法側の violation 座標(§3.4 の `ν` の有限実現)へ接続する辺ごとの宣言であり、
+  instance の値は運ばない。束縛のない mismatch は、導出 residual の立つ法側の
+  座標を持たないため、fail-closed に計算不能へ落ちる。
 - 選択 1-骨格上の **boundary membership**: 導出 residual が `δ⁰`-像(`B^1`)に
   属するかの有限 `F2` 計算。residual class の語彙は、residual の立つ連結成分に
   triple overlap が宣言され cocycle 検査が実際に走る場合に限って解禁される。
@@ -1281,6 +1298,13 @@ residual は入力ではない。ArchSig の `analyze` は次を計算し、meas
 記録する。run 対の読みとは、両 run の導出 residual の差が選択 `C^1` 上で
 `im δ⁰` に属するかの有限 `F2` 判定である。`gate` は packet と gate policy から
 `PASS_WITHIN_GATE_POLICY` / `BLOCKED_BY_GATE_POLICY` の判定を返す。
+
+三本の law surface と出力の対応を固定する。closed-equational surface は
+辺ごとの規約一致の等式を宣言し、mismatch の検出(cech 段)を担う。
+SAGA-grounded surface は chart ごとの defect 座標と判定基準を宣言し、
+grounding を担う。descent surface は mismatch 辺への witness 束縛を宣言し、
+residual 導出と boundary membership(saga-descent 段)を担う。§7.6 の
+condition matrix と注1が言う「段」は、この対応を指す。
 
 この計算が実行するのは、第4章の複体語彙の有限断片である: selected 1-骨格上の
 residual 導出、`B^1` 所属、run 対の residual 差が、有限 `F2` 線形代数に落ちる。
@@ -1478,11 +1502,11 @@ ledger に記録する前提、`unmeasured` は供給せず沈黙した軸を表
 | 選択複体の列挙完全性 | author assertion | `assumed` | repair plan の enumeration assertion を assumption ledger 行として記録 |
 | triple 不在 / class 語彙 | author assertion | `assumed`(class 語彙は不解禁) | 選択複体は triple を宣言しない(§7.2)。読みは 1-骨格の boundary membership に留まり、named boundary statement が境界を明示する |
 | boundary membership | 有限 `F2` 計算 | `computed` | head は `inB1: false`、repaired は `inB1: true` |
-| U-adequacy(選択 cover が対象の読みに十分という前提)、Leray 型比較 | profile 供給の前提 | `assumed` | assumption ledger 行として開示。cover 非依存の sheaf cohomology との比較は主張しない(§5.7) |
-| torsor 性・作用の固定性・係数 descent | profile 供給の前提 | `assumed` | assumption ledger の 3 行 |
-| restriction surjectivity | profile 供給の前提 | `assumed` | assumption ledger 行 |
+| U-adequacy、Leray 型比較 | profile 供給の前提 | `assumed` | U-adequacy は選択 cover が対象の読みに十分という前提、Leray 型比較は cover 相対の読みを cover 非依存の sheaf cohomology と比較するための前提。いずれも ledger 行として開示し、後者の比較は主張しない(§5.7) |
+| torsor 性・作用の固定性・係数 descent | profile 供給の前提 | `assumed` | 局所 section を係数の torsor として読むための3前提(局所 section の torsor 性、作用の固定性、係数の descent)。ledger の 3 行 |
+| restriction surjectivity | profile 供給の前提 | `assumed` | restriction 写像が overlap 上へ全射であるという前提。ledger 行 |
 | forest nerve | profile 供給の前提 | `assumed`(本 packet では不成立) | ledger は forest 前提を記録し、同じ packet の nerve 計算は閉路 1 を `computed` で示す(注1) |
-| quotient sheaf condition | law surface の宣言 | `assumed` | ledger 行として開示 |
+| quotient sheaf condition | law surface の宣言 | `assumed` | 商係数にあたる係数系が sheaf condition を満たすという law surface 側の宣言。ledger 行として開示 |
 | run 対の residual 差(head↔repaired) | run 対の導出読み | `computed` | 両 run の導出 residual の差の `δ⁰` 可解性(§7.1)。本対では差は `δ⁰` で解けない |
 | repaired ArchMap | 仮修理入力 | supplied / hypothetical | 統一規約を表す仮説 variant。`PASS_WITHIN_GATE_POLICY` は実装済み修理を示さない |
 | runtime の金額規模 | 経験的計測 | `unmeasured` | `harmonic-debt` を供給せず沈黙。頻度・金額を結論に含めない |
