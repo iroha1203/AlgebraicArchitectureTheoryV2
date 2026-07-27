@@ -870,16 +870,25 @@ of selected witnesses.</code></pre>
                 \(\delta \in \mathcal{I}_{\mathrm{Ob}}^U\).
               </p>
               <p id="definition-7-2" class="statement">
-                <a class="statement-anchor" href="#definition-7-2">Definition III.7.2 (Lawful Section).</a>
-                An architecture section \(s : T \to X\) is lawful for \(U\)
-                when it factors through the lawful locus; equivalently, when
+                <a class="statement-anchor" href="#definition-7-2">Definition III.7.2 (Ideal-Lawful Section).</a>
+                An architecture section \(s : T \to X\) is ideal-lawful for
+                \(U\) when it factors through the lawful locus;
+                equivalently, when
                 \(s^{*}\mathcal{I}_{\mathrm{Ob}}^U = 0\):
               </p>
               \[
-                \mathrm{Lawful}_U(s)
+                \mathrm{IdealLawful}_U(s)
                 \;\iff\;
                 s^{*}\mathcal{I}_{\mathrm{Ob}}^U = 0.
               \]
+              <p>
+                At this stage ideal-lawfulness is deliberately <em>not</em>
+                identified with \( \mathrm{EquationLawful}_E(s) \) — the
+                simultaneous vanishing of residuals is a different predicate,
+                and their equivalence is exactly what
+                <a href="#correspondence">Theorem III.11.1</a> proves under
+                the producer theorems of the \(E\)-generated realization.
+              </p>
               <p class="statement-status">
                 <span class="statement-status-label">Lean status</span>
                 <span>

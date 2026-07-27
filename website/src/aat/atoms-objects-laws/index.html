@@ -515,12 +515,12 @@ Atom reconstruction : an attempt to return from observed values to the canonical
                   <span class="status-badge status-badge-proved">defined / proved</span>
                 </div>
                 <dl>
-                  <dt>A0–A8 package</dt>
-                  <dd><code>AAT.AG.AtomAxiomSystem</code> bundles A0–A8 as structure fields, with proved accessors <code>primitive_exists</code>, <code>typing_total</code>, <code>configurationOf</code>, <code>operateFamily</code> — <em>defined only / proved</em>.</dd>
+                  <dt>A0–A3 primitive foundation package</dt>
+                  <dd><code>AAT.AG.AtomAxiomSystem</code> carries the primitive foundation as structure fields — A0 primitive existence and A3 five-coordinate predicate stability — with proved accessors <code>primitive_exists</code>, <code>typing_total</code> (A1 via the carrier projections) — <em>defined only / proved</em>. A4 composition is carried by the composition reading, A5–A7 non-generation and Atom-origin preservation are enforced structurally by the generation route (no context, law, or observation constructor creates atoms; <code>ConfigurationHom</code> transports Atom-origin), and A8 is the doctrine row below.</dd>
                   <dt>A3</dt>
                   <dd><code>AAT.AG.SameCoordinates</code>, <code>AtomAxiomSystem.eq_iff_sameCoordinates</code>, <code>AtomAxiomSystem.ext</code>: the equivalence of five-coordinate agreement and atom identity, with an ext lemma — <em>proved</em>.</dd>
                   <dt>A8</dt>
-                  <dd><code>AAT.AG.ExtractionDoctrine</code>, <code>ExtractionDoctrine.atomize_unique</code>, <code>AAT.AG.CoarseProjection</code>, <code>AtomAxiomSystem.doctrine_family_unique</code>: canonical-family uniqueness from <code>atomize</code> being a function — <em>defined only / proved</em>.</dd>
+                  <dd><code>AAT.AG.ExtractionDoctrine</code>, <code>ExtractionDoctrine.atomize_unique</code>, <code>AAT.AG.CoarseProjection</code>, and <code>AATCorePackage.generate_family_unique</code>: canonical-family uniqueness from <code>atomize</code> being a function — <em>defined only / proved</em>.</dd>
                   <dt>Proposition A9</dt>
                   <dd><code>AAT.AG.ObservationModel</code>, <code>ObservationModel.NonInjective</code>, <code>ObservationProjection</code>, <code>ReconstructionAttempt</code>, <code>no_exact_reconstruction_of_nonInjective</code>, and the <code>A9Example</code> finite model exhibiting non-injective observation, unobserved atoms, inexact reconstruction, and coexistence with A8 uniqueness — <em>defined only / proved</em>.</dd>
                 </dl>
@@ -1049,7 +1049,7 @@ no cancellation at zero</code></pre>
                   <dt>Lean names</dt>
                   <dd><code>AAT.AG.EquationSemanticObstruction</code>, <code>CircuitQuery</code>, <code>FiniteCircuitDatum</code> (signed queries with <code>Matches</code>), the detector-code layer with <code>EquationCircuitReading</code> (Boolean acceptance, <code>Sound</code>, <code>RequiredComplete</code>, <code>circuit_sound</code>), <code>ObstructionValueDomain</code> (zero / positive / dichotomy / no-cancellation), <code>EquationObstructionValuation</code>, <code>ZeroReflectingAggregation</code>, <code>ZeroReflectingListAggregation</code>, <code>omegaE</code>, <code>omegaE_zero_iff_required</code>, and the concrete instances <code>ObstructionAggregation.natSum</code>, <code>boolOr</code>, <code>weightSup</code> with their zero-reflecting theorems.</dd>
                   <dt>Boundary</dt>
-                  <dd>The aggregate valuation is relativized to the required equation index; this file does not claim Theorem I.9.3, which lives in Section 9's anchors. Examples I.8.3 and I.8.4 fire in the finite model (<code>FiniteModel.cycleObstructionCircuit</code>, <code>FiniteModel.substitutionObstructionCircuit</code>) — <em>defined only / proved</em>.</dd>
+                  <dd>The aggregate valuation is relativized to the required equation index; this file does not claim Theorem I.9.3, which lives in Section 9's anchors. Examples I.8.3 and I.8.4 fire in the finite model (<code>FiniteModel.cycleQueryDatum</code> with <code>cycleQueryDatum_matches_core</code> and the sound detector <code>equationCircuitReading</code>; <code>FiniteModel.substitutionRelation</code> with <code>substitutionResidual</code> / <code>substitutionEquationSystem</code>) — <em>defined only / proved</em>.</dd>
                 </dl>
               </article>
             </section>
