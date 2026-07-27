@@ -111,12 +111,12 @@
               <figure class="code-panel">
                 <figcaption>Relative architecture geometry</figcaption>
                 <pre><code>C : Codebase
-V : AtomVocabulary
-U : LawUniverse
-J : CoverageTopology
+V : AtomVocabulary (fixed by the core reading)
+E : ArchitecturalEquationSystem (produced by the equation reading)
+J : CoverageTopology (generated from the coverage package)
 k : coefficient ring
 
-X_C^{V,U,J,k} : AATGeometry
+X_C^{V,E,J,k} : AATGeometry
 
 architecture claim
   = site + sheaf of architectural data
@@ -252,7 +252,7 @@ architecture claim
               <p id="position-4-2" class="statement">
                 <a class="statement-anchor" href="#position-4-2">Position 4.2.</a>
                 A review finding becomes theorem-shaped when it names its
-                architecture geometry <code>X_C^{V,U,J,k}</code>, its cover,
+                architecture geometry <code>X_C^{V,E,J,k}</code>, its cover,
                 its witness sections, and its claim grade. The review still
                 supplies judgement and prioritization; AAT supplies the
                 geometric grammar in which the finding is stated and bounded.
@@ -275,7 +275,7 @@ architecture claim
                 The same codebase supports a graph reading, a sheaf reading, a
                 cohomological reading, and a period reading. AAT keeps these
                 readings aligned by deriving them from one geometry: each is
-                an analytic reading of <code>X_C^{V,U,J,k}</code>, and the
+                an analytic reading of <code>X_C^{V,E,J,k}</code>, and the
                 bridges between them are stated, not assumed.
               </p>
               <figure class="code-panel">

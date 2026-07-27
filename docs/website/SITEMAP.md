@@ -26,18 +26,18 @@ route の追加・削除は `website/src/**/index.html` の増減がそのまま
 | --- | --- | --- |
 | `/` | `website/src/index.html` | Top page、著者プロフィールの短い導入、AAT / SFT / ArchSig の入口、主要 article への導線。 |
 | `/vision/` | `website/src/vision/index.html` | Research Vision。研究全体目標(`docs/research_goal.md`)の公開版。Rising Sea、なぜ代数幾何か、Atom の純粋性・可搬性、AI 読解×決定論計測、研究計画の連鎖、AAT / SFT / ArchSig への導線。 |
-| `/aat/` | `website/src/aat/index.html` | AAT landing、Atom-first の読書順、章クラスタ、Lean status / formal anchors への入口。 |
-| `/aat/atoms/` | `website/src/aat/atoms/index.html` | AAT Part I. Foundations。Atom and primitive architectural facts。 |
-| `/aat/architecture-objects/` | `website/src/aat/architecture-objects/index.html` | AAT Part I. Foundations。Molecules、ArchitectureObject、selected presentation、finite universe。 |
-| `/aat/laws/` | `website/src/aat/laws/index.html` | AAT Part I. Foundations。DesignLaw、law universe、invariant family、lawfulness bridge。 |
-| `/aat/obstruction-circuits/` | `website/src/aat/obstruction-circuits/index.html` | AAT Part II. Key Concepts。ObstructionCircuit、minimal bad molecule、finite witness universe。 |
-| `/aat/zero-curvature/` | `website/src/aat/zero-curvature/index.html` | AAT Part II. Key Concepts。Flatness、ZeroCurvature、ZeroCurvaturePackage。 |
-| `/aat/architecture-signature/` | `website/src/aat/architecture-signature/index.html` | AAT Part II. Key Concepts。Architecture Signature、multi-axis diagnostic、AATCore bridge、ArchSig boundary。 |
-| `/aat/design-principle-layers/` | `website/src/aat/design-principle-layers/index.html` | AAT Part II. Key Concepts。SOLID、Layered / Clean Architecture、Event Sourcing、Saga、Circuit Breaker、Replicated Log as law packages。 |
-| `/aat/operations-and-calculus/` | `website/src/aat/operations-and-calculus/index.html` | AAT Part II. Key Concepts。ArchitectureOperation、operation laws、feature extension、selected repair、synthesis soundness。 |
-| `/aat/dynamics-and-geometry/` | `website/src/aat/dynamics-and-geometry/index.html` | AAT Part III. Geometry and Analytic Connections。ArchitecturePath、signature trajectory、PathHomotopy、DiagramFiller、selected monodromy / continuation。 |
-| `/aat/representations-and-effects/` | `website/src/aat/representations-and-effects/index.html` | AAT Part III. Geometry and Analytic Connections。Graph、thin category、walk / matrix、analytic representation、state-transition algebra、effect law surface。 |
-| `/aat/canonical-examples-and-readings/` | `website/src/aat/canonical-examples-and-readings/index.html` | AAT Part III. Geometry and Analytic Connections。Atom / molecule / law / circuit、coupon extension、static-flat semantic obstruction、repair transfer、SOLID counterexamples。 |
+| `/aat/` | `website/src/aat/index.html` | AAT landing、相対幾何の入力枠(core reading / equation system)、central chain、読書順、Lean status / formal anchors への入口。 |
+| `/aat/atoms-objects-laws/` | `website/src/aat/atoms-objects-laws/index.html` | AAT Part I。Atom 公理系、atom family、architecture object、atom-indexed architectural equation system と law reading、obstruction circuit、lawfulness-zero obstruction。 |
+| `/aat/sites-and-sheaves/` | `website/src/aat/sites-and-sheaves/index.html` | AAT Part II。architecture context category、coverage requirements / overlap package、AAT Grothendieck topology、E-adequate cover、sheaf、descent。 |
+| `/aat/law-algebra-lawful-locus/` | `website/src/aat/law-algebra-lawful-locus/index.html` | AAT Part III。law algebra sheaf、equation witness ideal、obstruction ideal sheaf、lawful locus、affine chart、architecture scheme、equation lawfulness-ideal correspondence。 |
+| `/aat/obstruction-cohomology/` | `website/src/aat/obstruction-cohomology/index.html` | AAT Part IV。cover-relative Čech complex、H^0/H^1/H^2 の読み、hidden coupling、boundary residue。 |
+| `/aat/derived-geometry-repair/` | `website/src/aat/derived-geometry-repair/index.html` | AAT Part V。共通 ambient 上の lawful loci、derived intersection、Tor law conflict、repair transfer、well-founded repair。 |
+| `/aat/singularity-monodromy-stack/` | `website/src/aat/singularity-monodromy-stack/index.html` | AAT Part VI。deformation / obstruction、singularity criterion、monodromy、decomposition stack / gerbe。 |
+| `/aat/representations-periods/` | `website/src/aat/representations-periods/index.html` | AAT Part VII。graph / matrix / analytic representation、period pairing、representation conservativity。 |
+| `/aat/measurement-theory/` | `website/src/aat/measurement-theory/index.html` | AAT Part VIII。measurement profile、finite measurement regime、verdict discipline、finite computability。 |
+| `/aat/evolution-geometry/` | `website/src/aat/evolution-geometry/index.html` | AAT Part IX。architecture evolution profile、trace category、state transition presheaf、temporal descent、dissipative policy。 |
+| `/aat/semantic-repair-saga/` | `website/src/aat/semantic-repair-saga/index.html` | AAT Part X。独立生成された semantic / equation 両側の H^1 比較(SAGA 比較定理)と true sheaf descent による actual global repair。 |
+| `/aat/appendix/` | `website/src/aat/appendix/index.html` | AAT 付録。mathematical ambient、glossary、有限 worked examples(circle SAGA instance 含む)。 |
 | `/aat/related-work/` | `website/src/aat/related-work/index.html` | AAT References。Related work and novelty claim。 |
 | `/aat/status/` | `website/src/aat/status/index.html` | AAT Lean sourceのstatusと、proved / defined only / future obligationの読み方。 |
 | `/aat/formal-anchors/` | `website/src/aat/formal-anchors/index.html` | AAT 章の public claims と代表 Lean declarations の audit index。 |

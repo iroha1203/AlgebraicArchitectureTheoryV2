@@ -38,7 +38,7 @@
               <h2 id="toc-title">On this page</h2>
               <ol>
                 <li><a href="#from-part8">1. From static to evolution geometry</a></li>
-                <li><a href="#trace-category">2. Trace category</a></li>
+                <li><a href="#trace-category">2. Evolution profile and trace category</a></li>
                 <li><a href="#state-transition-presheaf">3. State transition presheaf</a></li>
                 <li><a href="#temporal-descent">4. Temporal descent</a></li>
                 <li><a href="#dissipative-policy">5. Dissipative policy</a></li>
@@ -100,11 +100,26 @@ evolution geometry:
             </section>
 
             <section id="trace-category" class="article-section">
-              <h2>2. Trace category</h2>
+              <h2>2. Architecture evolution profile and trace category</h2>
               <p id="definition-2-1" class="statement">
-                <a class="statement-anchor" href="#definition-2-1">Definition IX.2.1 (Trace Category).</a>
-                For an architecture evolution profile <code>E</code>, the
-                trace category is written \( \mathrm{Tr}_E \). Its objects are
+                <a class="statement-anchor" href="#definition-2-1">Definition IX.2.1 (Architecture Evolution Profile).</a>
+                An architecture evolution profile \( P_{\mathrm{ev}} \) is a
+                dependent package owned by one finite measurement profile
+                \( M_{\mathrm{ev}} \): the architecture object, equation
+                system, signature, coverage requirements, overlap package, AAT
+                site
+                \( X_{\mathrm{ev}} = \mathrm{Site}_{\mathrm{AAT}}(A_{\mathrm{ev}}, E_{\mathrm{ev}}, \mathrm{Sig}_{\mathrm{ev}}, R_{\mathrm{ev}}, \mathrm{Ov}_{\mathrm{ev}}) \),
+                and adequate cover are all taken from the components of
+                \( M_{\mathrm{ev}} \), and the trace category, state
+                transition presheaf, temporal coefficient, transition family,
+                and evolution policy ride on top. A separate equation system
+                or site cannot be re-selected inside the profile; the
+                natural-language law display is \( U_{E_{\mathrm{ev}}} \).
+              </p>
+              <p id="definition-2-2" class="statement">
+                <a class="statement-anchor" href="#definition-2-2">Definition IX.2.2 (Trace Category).</a>
+                For a profile \( P_{\mathrm{ev}} \), the trace category is
+                written \( \mathrm{Tr}_{P_{\mathrm{ev}}} \). Its objects are
                 selected time points, operation stages, or abstract event
                 states; its morphisms represent selected transitions.
               </p>
@@ -120,8 +135,8 @@ compose transitions</code></pre>
                 Which transitions are adopted as objects and arrows is part of
                 the evolution profile.
               </p>
-              <p id="principle-2-2" class="statement">
-                <a class="statement-anchor" href="#principle-2-2">Principle IX.2.2 (Trace Relativity).</a>
+              <p id="principle-2-3" class="statement">
+                <a class="statement-anchor" href="#principle-2-3">Principle IX.2.3 (Trace Relativity).</a>
                 Temporal laws are relativized to the selected trace category:
               </p>
               <pre><code>different trace category
@@ -139,7 +154,7 @@ compose transitions</code></pre>
                 <div class="theorem-card-header">
                   <div>
                     <span class="theorem-card-label">Lean status</span>
-                    <h3>Definition IX.2.1 and Principle IX.2.2 in Lean</h3>
+                    <h3>Definitions IX.2.1–2.2 and Principle IX.2.3 in Lean</h3>
                   </div>
                   <span class="status-badge status-badge-defined">defined only</span>
                 </div>
@@ -303,7 +318,7 @@ global replay transition exists.</code></pre>
                     transition data with coboundary mismatch glues globally.
                   </dd>
                   <dt>Lean anchors</dt>
-                  <dd><code>ReplayDescentData</code> with <code>mismatch</code>, <code>localReplay</code>, <code>GlobalReplayTransition</code>, <code>zeroMismatchCocycle</code>, <code>zeroMismatchClass</code>; <code>ReplayMismatchCocycle</code> with <code>differential_zero_holds</code> and <code>toTemporalCocycle</code>; <code>EffectiveTemporalAdjustment</code> with the proved equation <code>m(adjust(c,r)) = m(r) - d c</code> (<code>mismatch_adjust_eq</code>); and <code>TemporalDescentCriterion</code> with <code>class_matches_mismatch</code>, <code>class_vanishes</code>, <code>adjusted_data_compatible</code>, and the theorem <code>temporal_descent_criterion</code> &mdash; a proved theorem package (IX.&sect;4 / R5).</dd>
+                  <dd><code>ReplayDescentData</code> with <code>mismatch</code>, <code>localReplay</code>, <code>GlobalReplayTransition</code>, <code>zeroMismatchCocycle</code>, <code>zeroMismatchClass</code>; <code>ReplayMismatchCocycle</code> with <code>differential_zero_holds</code> and <code>toTemporalCocycle</code>; <code>EffectiveTemporalAdjustment</code> with the proved equation <code>m(adjust(c,r)) = m(r) - d c</code> (<code>mismatch_adjust_eq</code>); and <code>TemporalDescentCriterion</code> with <code>class_matches_mismatch</code>, <code>class_vanishes</code>, <code>adjusted_data_compatible</code>, and the theorem <code>temporal_descent_section_criterion</code> &mdash; a proved theorem package (IX.&sect;4 / R5).</dd>
                   <dt>Claim boundary</dt>
                   <dd>
                     The Lean package proves the one-directional criterion: a

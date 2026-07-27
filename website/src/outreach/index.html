@@ -2,7 +2,7 @@
 {
   "layout": "base.njk",
   "title": "Outreach",
-  "description": "External articles and essays introducing AAT, SFT, ArchSig, and Attractor Engineering.",
+  "description": "The SAGA preprint on Zenodo and external articles and essays introducing AAT, SFT, ArchSig, and Attractor Engineering.",
   "order": 44,
   "llmsLabel": "Outreach",
   "navSection": "outreach"
@@ -16,10 +16,11 @@
             <span>Outreach</span>
           </nav>
           <p class="eyebrow">Outreach</p>
-          <h1>Articles and essays on AAT, SFT, and ArchSig.</h1>
+          <h1>The paper, articles, and essays on AAT, SFT, and ArchSig.</h1>
           <p class="lede">
-            Public introductions, essays, and platform articles for readers who
-            want the ideas before entering the full theory notes.
+            The citable preprint on Zenodo, and public introductions, essays,
+            and platform articles for readers who want the ideas before
+            entering the full theory notes.
           </p>
         </div>
       </section>
@@ -30,6 +31,7 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
+                <li><a href="#paper">Paper</a></li>
                 <li><a href="#featured">Featured</a></li>
                 <li><a href="#blogs">Blogs</a></li>
                 <li><a href="#japanese-articles">日本語記事</a></li>
@@ -38,36 +40,64 @@
             <div class="boundary-note">
               <h2>Platforms</h2>
               <ul>
+                <li>Zenodo: preprints with citable DOIs.</li>
                 <li>Blog: English long-form essays.</li>
                 <li>Zenn: Japanese technical articles.</li>
-                <li>This page lists public articles only.</li>
+                <li>This page lists public artifacts only.</li>
               </ul>
             </div>
           </aside>
 
           <div class="article-main">
+            <section id="paper" class="article-section">
+              <h2>Paper</h2>
+              <p>
+                The first paper of the research program: the mathematical
+                proof, the Lean 4 verification status, and a reproducible
+                measurement on a real microservice system, pinned to one
+                snapshot.
+              </p>
+              <ul class="chapter-list">
+                <li>
+                  <a href="https://doi.org/10.5281/zenodo.21603761" target="_blank" rel="noopener noreferrer">
+                    SAGA: A Comparison Theorem for Local-to-Global Software Architecture
+                  </a>
+                  <span>
+                    Preprint, Zenodo, 2026. CC BY 4.0.
+                    DOI: <code>10.5281/zenodo.21603761</code>.
+                    The obstruction measured in the language of repair and the
+                    obstruction measured in the language of equations are the
+                    same cohomology class &mdash; proved as a comparison
+                    theorem, machine-checked in Lean, and measured with
+                    ArchSig on train-ticket (42 services).
+                  </span>
+                </li>
+              </ul>
+            </section>
+
             <section id="featured" class="article-section">
               <h2>Featured</h2>
               <a
                 class="featured-article"
-                href="https://blog.iroha1203.dev/the-saga-theorem"
+                href="https://blog.iroha1203.dev/two-rulers-one-reading"
                target="_blank" rel="noopener noreferrer">
                 <img
-                  src="../assets/saga-cover.jpg"
+                  src="../assets/saga-two-rulers-cover.jpg"
                   alt=""
                   width="1600"
-                  height="900"
+                  height="840"
                 >
                 <span class="featured-article-copy">
                   <span class="featured-article-label">Hashnode</span>
                   <strong>
-                    The SAGA Theorem: The Day Software Architecture Became
-                    Genuine Algebraic Geometry
+                    The SAGA Comparison Theorem Preprint Is Out: Two Rulers,
+                    One Reading
                   </strong>
                   <span>
-                    The story of the SAGA comparison theorem: when local
-                    repairs glue to a global repair, and how the obstruction
-                    becomes a cohomology class.
+                    The paper explainer: build two ways of measuring
+                    brokenness &mdash; one from repairs, one from equations
+                    &mdash; without either referring to the other, and they
+                    turn out to carry the same scale.
                   </span>
                 </span>
               </a>
@@ -80,6 +110,45 @@
                 framing before entering the research pages.
               </p>
               <ul class="chapter-list">
+                <li>
+                  <a href="https://blog.iroha1203.dev/two-rulers-one-reading" target="_blank" rel="noopener noreferrer">
+                    The SAGA Comparison Theorem Preprint Is Out: Two Rulers, One Reading
+                  </a>
+                  <span>
+                    The explainer for the Zenodo preprint: the central theorem
+                    as the agreement of two independently built rulers, for
+                    working engineers.
+                  </span>
+                </li>
+                <li>
+                  <a href="https://blog.iroha1203.dev/saga-cape-of-good-hope" target="_blank" rel="noopener noreferrer">
+                    SAGA's Cape of Good Hope: The One Cent That Cohomology Caught
+                  </a>
+                  <span>
+                    A dogfooding report: measuring a real sub-cent drift in the
+                    train-ticket microservice system as a non-zero cohomology
+                    class, and walking the repair loop until the gate passes.
+                  </span>
+                </li>
+                <li>
+                  <a href="https://blog.iroha1203.dev/the-saga-theorem" target="_blank" rel="noopener noreferrer">
+                    The SAGA Theorem: The Day Software Architecture Became Genuine Algebraic Geometry
+                  </a>
+                  <span>
+                    The story of the SAGA comparison theorem: when local
+                    repairs glue to a global repair, and how the obstruction
+                    becomes a cohomology class.
+                  </span>
+                </li>
+                <li>
+                  <a href="https://blog.iroha1203.dev/the-rising-sea-of-software-engineering" target="_blank" rel="noopener noreferrer">
+                    The Rising Sea of Software Engineering &mdash; Rebuilding the Discipline on Algebraic Geometry
+                  </a>
+                  <span>
+                    Why algebraic geometry, and why now: Grothendieck's rising
+                    sea as the posture of the whole research program.
+                  </span>
+                </li>
                 <li>
                   <a href="https://blog.iroha1203.dev/atom-is-all-you-need" target="_blank" rel="noopener noreferrer">
                     Atom Is All You Need: Read a Codebase as an Atom Map, Not a Dependency Graph
@@ -136,6 +205,34 @@
                 実務寄りの視点から紹介しています。
               </p>
               <ul class="chapter-list">
+                <li>
+                  <a href="https://zenn.dev/iroha1203/articles/084d26f42dde32" target="_blank" rel="noopener noreferrer">
+                    [論文解説]SAGA比較定理の論文プレプリントを公開しました
+                  </a>
+                  <span>
+                    Zenodo で公開した SAGA 比較定理プレプリントの日本語解説。
+                    中心定理を「二つの測り方の一致」として噛み砕きます。
+                  </span>
+                </li>
+                <li>
+                  <a href="https://zenn.dev/iroha1203/articles/1cb68cbdc71734" target="_blank" rel="noopener noreferrer">
+                    SAGAの喜望峰 — コホモロジーが捉えた1セント
+                  </a>
+                  <span>
+                    実在のマイクロサービス train-ticket で 1 セント未満のずれを
+                    非零コホモロジー類として計測し、修理が gate を通るまでを
+                    一周したドッグフーディング報告です。
+                  </span>
+                </li>
+                <li>
+                  <a href="https://zenn.dev/iroha1203/articles/27d3d934b10fd5" target="_blank" rel="noopener noreferrer">
+                    ソフトウェア工学のRising Sea — 代数幾何でソフトウェア工学を作り直す
+                  </a>
+                  <span>
+                    なぜ代数幾何なのかを、グロタンディークの「上昇する海」の像から
+                    研究プログラム全体の姿勢として語る記事です。
+                  </span>
+                </li>
                 <li>
                   <a href="https://zenn.dev/iroha1203/articles/31b2683d4828fa" target="_blank" rel="noopener noreferrer">
                     SAGA定理 — ソフトウェアアーキテクチャが本物の代数幾何になった日

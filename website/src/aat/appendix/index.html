@@ -1,10 +1,10 @@
 ---json
 {
   "layout": "base.njk",
-  "title": "Appendix. Mathematical Ambient, Claim Status, and a Finite Worked Example",
-  "description": "The appendix of Algebraic Architecture Theory: ambient conventions, the embedding into standard algebraic geometry via decorated schemes, the claim status ledger, and finite worked examples running from Čech H1 through Stanley-Reisner ideals, Tor conflicts, and period pairings to the circle-nerve SAGA instance.",
+  "title": "Appendix. Mathematical Ambient, Glossary, and a Finite Worked Example",
+  "description": "The appendix of Algebraic Architecture Theory: ambient conventions, the embedding into standard algebraic geometry via decorated schemes, the mathematical glossary, and finite worked examples running from Čech H1 through Stanley-Reisner ideals, Tor conflicts, and period pairings to the independently generated circle SAGA instance.",
   "order": 12,
-  "llmsLabel": "AAT Appendix: Ambient, Claim Status, and Worked Example",
+  "llmsLabel": "AAT Appendix: Ambient, Glossary, and Worked Example",
   "navSection": "aat",
   "mathjax": true
 }
@@ -18,12 +18,12 @@
             <span>Appendix</span>
           </nav>
           <p class="eyebrow">Appendix</p>
-          <h1>Mathematical Ambient, Claim Status, and a Finite Worked Example</h1>
+          <h1>Mathematical Ambient, Glossary, and a Finite Worked Example</h1>
           <p class="lede">
             The appendix is the standardization layer of the monograph:
             the ambient conventions the main text works in, the precise
             embedding of AAT geometry into standard algebraic geometry,
-            the claim status ledger, and finite worked examples small
+            the mathematical glossary, and finite worked examples small
             enough to verify by hand. Its guiding statement: AAT geometry
             is ordinary algebraic geometry plus typed architectural
             decoration.
@@ -46,15 +46,15 @@
                 <li><a href="#a7-closed-equational-laws">A.7 Closed equational laws</a></li>
                 <li><a href="#a8-presentation">A.8 Presheaf and presentation conditions</a></li>
                 <li><a href="#a9-derived-stacky">A.9 Derived and stacky enhancements</a></li>
-                <li><a href="#b1-claim-status-ledger">B.1 Claim status ledger</a></li>
-                <li><a href="#b2-label-discipline">B.2 Label discipline</a></li>
+                <li><a href="#b1-claim-status-ledger">B.1 Mathematical glossary</a></li>
+                <li><a href="#b2-label-discipline">B.2 Reading conventions</a></li>
                 <li><a href="#b3-square-free-example">B.3 Finite square-free worked example</a></li>
                 <li><a href="#b4-obstruction-ideal">B.4 Square-free obstruction ideal</a></li>
                 <li><a href="#b5-tor-conflict">B.5 Monomial Tor conflict</a></li>
                 <li><a href="#b6-period-pairing">B.6 Period pairing</a></li>
                 <li><a href="#b7-summary">B.7 Worked example summary</a></li>
                 <li><a href="#b8-toy-reading">B.8 Atom-family-to-geometry toy reading</a></li>
-                <li><a href="#b9-circle-nerve">B.9 Law-equation coefficient and circle nerve</a></li>
+                <li><a href="#b9-circle-nerve">B.9 Independent presentations on the circle nerve</a></li>
               </ol>
             </nav>
 {% include "series-nav.njk" %}
@@ -94,27 +94,35 @@
             <section id="a2-relative-parameters" class="article-section">
               <h2>A.2 Relative parameters</h2>
               <p>
-                Algebro-geometric AAT is relativized to at least the following
-                choices:
+                Algebro-geometric AAT is relativized first to a source
+                \( s \) and a core reading of Part I:
               </p>
-              <pre><code>V : AtomVocabulary
-U : LawUniverse
-J : CoverageTopology
+              <pre><code>At : AtomUniverse
+S : AtomAxiomSystem(At)
+r : CoreRead(At)
+    (doctrine, vocabulary V_r, composition / object reading,
+     context reading and equation system E_r,
+     circuit / invariant / signature / operation readings)
+Sig_r : signature produced by r
+R_r : CoverageRequirements(A_s^r, E_r, Sig_r)
+Ov_r : ContextOverlapPullback realizing the overlap requests of R_r
+J_{E_r,R_r,Ov_r} : topology generated from the coverage package
 k : coefficient ring</code></pre>
               <p>
                 This tuple is sometimes written symbolically as
-                \( p = (V, U, J, k) \). Even when the same architecture object
-                is being read, changing \( V \), \( U \), \( J \), or \( k \)
-                in general yields a different geometry. The superscripted form
-              </p>
-              <p>\[ X^{V,U,J,k} \]</p>
-              <p>
-                is the structure that makes explicit which vocabulary, laws,
-                coverage, and coefficients a statement speaks within. When the
-                main text handles finer readings, the parameter <code>p</code>
-                may also include:
+                \( p = (r, \mathrm{Sig}, R, \mathrm{Ov}, J, k) \). Here
+                \( E_r \) and \( \mathrm{Sig}_r \) are the values of the
+                equation and signature readings of \( r \) — not inputs
+                selected independently of it. Changing any component in
+                general yields a different core or geometry; with the fixed
+                components suppressed, the display form \( X_C^{V,E,J,k} \)
+                names the geometry by its visible parameters. When the main
+                text handles finer readings, the parameter <code>p</code> may
+                also include:
               </p>
               <pre><code>selected witness family
+selected restriction-stable equation-indexed local circuit family
+selected natural ideal-to-coefficient morphism rho
 selected signature axes
 selected representation family
 selected profile / repair order</code></pre>
@@ -134,19 +142,25 @@ selected profile / repair order</code></pre>
                 coefficient base change are compatible.
               </p>
               <p>
-                <strong>Enlarging the law universe.</strong> When the law
-                universe grows, with
+                <strong>Enlarging the equation family.</strong> Fix an
+                architectural equation subsystem inclusion that preserves
+                required roles and coordinate restriction:
               </p>
-              <pre><code>U subset U'
-I_U subset I_{U'}</code></pre>
+              <pre><code>E subset E'
+I_E subset I_{E'}</code></pre>
               <p>
-                the lawful loci form a tower of closed immersions:
+                Then, in a scheme regime where the ideal sheaves define closed
+                subobjects, the lawful loci form a tower of closed immersions:
               </p>
-              <p>\[ \mathrm{Flat}_{U'}(X) \subset \mathrm{Flat}_U(X). \]</p>
+              <p>\[ \mathrm{Flat}_{E'}(X) \subset \mathrm{Flat}_E(X). \]</p>
               <p>
-                Whether earlier conclusions survive an enlarged vocabulary or
-                law universe is therefore read as a pullback and restriction
-                problem along this closed immersion.
+                For a map that may demote a required law to optional, the
+                ideal inclusion does not follow automatically. Whether earlier
+                conclusions survive an enlarged equation family is therefore
+                read as a pullback and restriction problem along this closed
+                immersion; vocabulary refinement is treated separately,
+                according to whether a signed-exact or positive core reading
+                homomorphism has been constructed.
               </p>
               <p>
                 <strong>Refining the coverage.</strong> When a refinement
@@ -337,7 +351,7 @@ Spec_AAT(Gamma(X,O_X), D_X)</code></pre>
               <dl class="term-list definition-list">
                 <div>
                   <dt>Closed equational law</dt>
-                  <dd>Represented by a closed subscheme \( V(I_L) \).</dd>
+                  <dd>Represented by residual vanishing and, under an \(E\)-generated scheme realization, the closed subscheme \( V(\mathcal{I}_i^E) \).</dd>
                 </div>
                 <div>
                   <dt>Open law</dt>
@@ -368,23 +382,45 @@ general law is a geometric condition.</code></pre>
             <section id="a7-closed-equational-laws" class="article-section">
               <h2>A.7 Closed equational laws</h2>
               <p>
-                A closed equational law <code>L</code> is represented by the
-                ideal generated from its selected witness family,
-                \( I_L \subset \mathcal{O}_X \), and its law locus is the
-                closed subscheme
+                An equation index \( i \) of the equation system \( E \)
+                carries, on each context \( W \), the ideal generated by its
+                symbolic violation coordinates over all atoms,
+                \( I_i^E(W) = \langle \nu_{W,i,a} \mid a \in At \rangle \subset \mathcal{O}_E(W) \),
+                while equation fulfillment is the simultaneous vanishing of
+                the object-dependent residuals. The selected violation-witness
+                support records finite circuits and cover visibility but does
+                not truncate this standard generator family.
               </p>
-              <p>\[ V(I_L) \subset X. \]</p>
               <p>
-                When the law universe <code>U</code> selects a family of closed
-                equational witnesses, the obstruction ideal is read as
+                Section evaluation is not a raw application of
+                \( s^\# \) to presheaf sections: it is
+                \( \mathrm{ev}_{s,W} = \Gamma(s_W^\#) \circ \eta_W \),
+                built from the sheafification unit and the chart pullback. The
+                standard equation-scheme constructor builds the chart data,
+                \( \eta \), and a base-change-stable section reading from
+                \( E \) and the generated witness ideals, and proves the
+                generator-level producer theorems
+                (<code>residualRegular_E</code>,
+                <code>residualRepresentable_E</code> — the equality
+                \( \mathrm{ev}_{s,W}(\nu_{W,i,a}) = \mathrm{ev}_{s,W}(\epsilon_{W,A_s,i,a}) \)
+                — with <code>witnessIdealLocalizes_E</code>,
+                <code>witnessIdealChart_E</code>,
+                <code>witnessIdealQuasiCoherent_E</code> supplying the
+                provenance of the closed subscheme). The vanishing equivalence
+                itself is never accepted as a premise field. From these,
               </p>
-              <p>\[ I_U = \sum_{L \in U_{\mathrm{closed}}} I_L, \]</p>
-              <p>and the lawful locus is</p>
-              <p>\[ \mathrm{Flat}_U(X) = V(I_U). \]</p>
+              <p>\[ \mathrm{EquationHolds}_E(i;s) \iff s^{*}_{\mathrm{ideal}} \mathcal{I}_i^E = 0, \qquad V(\mathcal{I}_i^E) \subset X_E, \]</p>
               <p>
-                Open, temporal, descent, and stacky laws are handled outside
-                \( \mathrm{Flat}_U(X) \), or as additional subfunctor and
-                substack conditions.
+                and for the required indices the context-wise obstruction
+                ideal \( I_{\mathrm{Ob}}^E(W) = \sum_{i \text{ required}} I_i^E(W) \)
+                sheafifies to \( \mathcal{I}_{\mathrm{Ob}}^E \), with the
+                ideal-theoretic lawful locus
+              </p>
+              <p>\[ \mathrm{Flat}_E(X_E) = V(\mathcal{I}_{\mathrm{Ob}}^E). \]</p>
+              <p>
+                Open, temporal, descent, and stacky laws are handled as
+                additional subfunctor and substack conditions on top of
+                \( \mathrm{Flat}_E(X_E) \).
               </p>
             </section>
 
@@ -400,7 +436,7 @@ general law is a geometric condition.</code></pre>
               <p>
                 holds, the restriction descends to the quotient algebras:
               </p>
-              <pre><code>O_raw^U(W) -> O_raw^U(W')</code></pre>
+              <pre><code>O_raw^E(W) -> O_raw^E(W')</code></pre>
               <p>
                 Furthermore, to read the sheafified sections
                 <code>O_X^U(W)</code> as the coordinate algebra of the same
@@ -415,9 +451,9 @@ general law is a geometric condition.</code></pre>
               <h2>A.9 Derived and stacky enhancements</h2>
               <p>
                 When the closed defect section takes values in a vector bundle
-                or perfect module \( E_U \),
+                or perfect module \( M_U \),
               </p>
-              <p>\[ \delta_U \in \Gamma(X, E_U^{\vee}), \]</p>
+              <p>\[ \delta_U \in \Gamma(X, M_U^{\vee}), \]</p>
               <p>
                 the lawful locus can be strengthened to a derived zero locus:
               </p>
@@ -443,14 +479,12 @@ Kosz(O_X; delta_U)</code></pre>
             </section>
 
             <section id="b1-claim-status-ledger" class="article-section">
-              <h2>B.1 Claim status ledger</h2>
+              <h2>B.1 Mathematical glossary</h2>
               <p>
-                The major predicates and theorem labels of the main text are
-                read with the statuses below. The ledger is an audit aid for
-                the reader; it does not replace the canonical statements in the
-                main parts. A <em>local theorem candidate</em> is not a central
-                Lean obligation; upon registration it moves to the proof
-                obligations ledger.
+                The major terms of the main text are read as below. The
+                glossary is an audit aid for the reader; it does not replace
+                the canonical statements in the main parts, and the canonical
+                appendix carries the complete table.
               </p>
               <div style="overflow-x: auto;">
                 <table>
@@ -462,12 +496,17 @@ Kosz(O_X; delta_U)</code></pre>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr><td><code>obstruction soundness</code></td><td>defined predicate</td><td>Read as \( L(A) \rightarrow \omega_L(A) = 0 \). The contrapositive form \( \omega_L(A) &gt; 0 \rightarrow \neg L(A) \) is read under the selected reading's zero/positive dichotomy.</td></tr>
-                    <tr><td><code>obstruction completeness</code></td><td>defined predicate</td><td>Read as \( \neg L(A) \rightarrow \omega_L(A) &gt; 0 \). The form \( \omega_L(A) = 0 \rightarrow L(A) \) is read under the selected reading's zero/positive dichotomy.</td></tr>
-                    <tr><td><code>zero-reflecting aggregation</code></td><td>defined predicate</td><td>The aggregation condition guaranteeing \( \omega_U(A) = 0 \iff \forall L \in U,\ \omega_L(A) = 0 \).</td></tr>
+                    <tr><td><code>ArchitecturalEquationSystem</code></td><td>defined object</td><td>Equation indices with required / optional / derived roles, an observable ring presheaf, and the restriction-compatible symbolic violation coordinates \( \nu \) and object-dependent residuals \( \epsilon \).</td></tr>
+                    <tr><td><code>EquationHolds_E / EquationLawful_E</code></td><td>defined predicate</td><td>Equation fulfillment and required lawfulness generated from the simultaneous vanishing of \( \epsilon \); natural-language lawfulness is this derived reading.</td></tr>
+                    <tr><td><code>E-generated scheme realization</code></td><td>defined output</td><td>The standard equation-scheme constructor's output: chartwise closed equalizers from the \( \nu\!-\!\epsilon \) difference coordinates, generated witness ideals, sheafification unit, section evaluation, and base-change-stable section reading, with the producer theorems (<code>residualRegular_E</code>, <code>residualRepresentable_E</code>, <code>witnessIdealLocalizes_E</code>, <code>witnessIdealChart_E</code>, <code>witnessIdealQuasiCoherent_E</code>) proved rather than assumed.</td></tr>
+                    <tr><td><code>monomorphic AAT cover</code></td><td>defined predicate</td><td>An AAT cover whose legs are monomorphisms; self-overlap projections agree, and with empty-overlap normalization the increasing-index &#268;ech model recovers the descent data of all ordered overlaps.</td></tr>
+                    <tr><td><code>architecture evolution profile</code></td><td>defined object</td><td>Takes the same \( A, E, \mathrm{Sig}, R, \mathrm{Ov} \), site, and adequate cover from one finite measurement profile and bundles the trace category, state transition presheaf, temporal coefficient, operation family, and policy on top.</td></tr>
+                    <tr><td><code>obstruction soundness</code></td><td>defined predicate</td><td>Read as \( \mathrm{EquationHolds}_E(i,A) \rightarrow \omega_{E,i}(A) = 0 \), with the contrapositive under the selected reading's zero/positive dichotomy.</td></tr>
+                    <tr><td><code>obstruction completeness</code></td><td>defined predicate</td><td>Read as \( \neg \mathrm{EquationHolds}_E(i,A) \rightarrow \omega_{E,i}(A) &gt; 0 \), with the converse form under the zero/positive dichotomy.</td></tr>
+                    <tr><td><code>zero-reflecting aggregation</code></td><td>defined predicate</td><td>The aggregation condition guaranteeing \( \omega_E(A) = 0 \iff \forall \text{required } i,\ \omega_{E,i}(A) = 0 \).</td></tr>
                     <tr><td><code>axis exactness</code></td><td>certified assumption</td><td>Assumes agreement between the zero of the selected signature axes and the selected obstruction reading.</td></tr>
                     <tr><td><code>witness coverage</code></td><td>certified assumption</td><td>Assumes the needed witnesses appear in the chosen cover and reading.</td></tr>
-                    <tr><td><code>U-adequate cover</code></td><td>defined predicate</td><td>A cover that also preserves required support, witnesses, axes, boundaries, and restriction-stable ideals.</td></tr>
+                    <tr><td><code>E-adequate cover</code></td><td>defined predicate</td><td>Abbreviation of \( (E,R,\mathrm{Ov}) \)-adequate with \( (R,\mathrm{Ov}) \) fixed: covers the required atom support, equation coordinates, witnesses, axes, and the typed interaction-overlap requests realized by \( \mathrm{Ov} \), keeping selected supports stable under restriction.</td></tr>
                     <tr><td><code>effective Ob_U-torsor</code></td><td>defined predicate</td><td>Differences of local adjustments land in \( H^1(X, \mathrm{Ob}_U) \) as torsor classes of the abelian coefficient sheaf \( \mathrm{Ob}_U \).</td></tr>
                     <tr><td><code>U-smooth</code></td><td>defined predicate</td><td>The lift / fill predicate holds for all selected deformation tests and the obstruction class vanishes.</td></tr>
                     <tr><td><code>U-singular</code></td><td>defined predicate</td><td>A nonzero obstruction class appears among the selected deformation tests.</td></tr>
@@ -476,9 +515,10 @@ Kosz(O_X; delta_U)</code></pre>
                     <tr><td><code>LawConflict_i(U,V)</code></td><td>defined object</td><td>The Tor object reading the derived non-transversality of lawful loci over a common ambient.</td></tr>
                     <tr><td><code>support-localized transfer predicate</code></td><td>defined predicate</td><td>The repair direction meets the support of the selected conflict class nontrivially, or the pairing is defined on that direction.</td></tr>
                     <tr><td><code>measurement verdict</code></td><td>defined predicate family</td><td>The reporting discipline distinguishing <code>measured_zero</code> / <code>measured_nonzero</code> / <code>unmeasured</code> / <code>unknown</code> / <code>not_computed</code> within the selected profile.</td></tr>
-                    <tr><td><code>finite measurement regime</code></td><td>certified assumption</td><td>The computable regime fixing a finite site, finite cover, effective coefficient data, finite witness variables, and selected finite resolutions.</td></tr>
+                    <tr><td><code>AAT measurement profile</code></td><td>defined object</td><td>Builds the finite AAT site, adequate cover, and standard obstruction ideal sheaf from the same \( A_M, E_M, \mathrm{Sig}_M, R_M, \mathrm{Ov}_M \), and bundles the auxiliary selected ideal sheaf \( I_M^{\mathrm{sel}} \) with the measurement data; identifying selected and standard ideals requires an equality proof or comparison hypothesis.</td></tr>
+                    <tr><td><code>finite measurement regime</code></td><td>certified assumption</td><td>The computable regime fixing a finite AAT site, adequate cover, effective coefficient data, finite selected coordinates, and selected finite resolutions.</td></tr>
                     <tr><td><code>Finite AAT Computability</code></td><td>certified bounded inference</td><td>Within the finite measurement regime and <code>EffCoeff_M</code>, reduces the selected invariants to finite linear algebra, finitely presented module computation, and finite combinatorics.</td></tr>
-                    <tr><td><code>Stanley-Reisner / Alexander Dual Repair Theorem</code></td><td>certified bounded inference</td><td>In the finite square-free witness regime, reads the obstruction ideal as a Stanley-Reisner ideal and the Alexander dual as repair hitting sets.</td></tr>
+                    <tr><td><code>Stanley-Reisner / Alexander Dual Repair Theorem</code></td><td>certified bounded inference</td><td>In the finite square-free witness regime, reads the selected measurement ideal \( I_M^{\mathrm{sel}} \) as a Stanley-Reisner ideal and the Alexander dual as repair hitting sets; transporting to the standard obstruction ideal requires the in-profile ideal comparison.</td></tr>
                     <tr><td><code>Cech stability</code></td><td>local theorem candidate</td><td>A stability claim connecting witness perturbation with persistence / zigzag stability distances in the finite square-free regime.</td></tr>
                     <tr><td><code>cellular sheaf Laplacian</code></td><td>analytic reading</td><td>A way of reading residual norm, spectrum, and distance-to-flatness on a finite cellular sheaf model; not structural lawfulness itself.</td></tr>
                     <tr><td><code>Refactor Invariance under Equivalence</code></td><td>certified bounded inference</td><td>Preservation of measurement verdicts when the selected finite sites, ringed ambient, coefficients, law ideals, and witness reading are preserved isomorphically.</td></tr>
@@ -511,22 +551,26 @@ Kosz(O_X; delta_U)</code></pre>
                     <tr><td><code>Force Integrability Obstruction</code></td><td>theorem candidate</td><td>The non-integrability criterion when a force's associated temporal mismatch class is defined and descent detection is fixed.</td></tr>
                     <tr><td><code>dissipative policy</code></td><td>certified bounded inference when finite</td><td>An operation family making the selected evolution functional non-increasing; not an unselected future state or external success condition.</td></tr>
                     <tr><td><code>witness exactness</code></td><td>certified assumption</td><td>The selected witness family is sound / complete for the selected obstruction reading.</td></tr>
-                    <tr><td><code>semantic repair-gluing complex</code></td><td>defined object</td><td>The finite complex of fully enumerated charts, overlaps, repair primitives, and residual cochains with the restriction-difference differential.</td></tr>
-                    <tr><td><code>semantic closure</code></td><td>defined predicate</td><td>The repair support contains all selected residual atoms; decomposes into residual component coverage and residual component faithfulness.</td></tr>
-                    <tr><td><code>Finite Semantic Repair-Gluing Descent</code></td><td>certified bounded inference</td><td>Under the finite complex and the semantic faithfulness hypothesis, reads the equivalence between global semantic repair coherence and boundary membership of the residual. The necessity direction holds without assumption.</td></tr>
-                    <tr><td><code>semantic repair additive H^1</code></td><td>defined object</td><td>The \( Z^1 / B^1 \) quotient of additive Čech-type coefficient data attached to the selected finite repair cover; reads the zeroness of the selected residual class.</td></tr>
-                    <tr><td><code>True Sheaf H^1 Semantic Repair-Gluing</code></td><td>certified bounded inference</td><td>Under cover membership, the global sheaf condition, boundary-relation faithfulness data, and the additive regime, reads the equivalence between global semantic repair coherence and a zero \( H^1 \) class.</td></tr>
-                    <tr><td><code>law equation realization</code></td><td>defined object</td><td>Supplied data presenting a law as an equation family: an observable presheaf, restriction-compatible violation coordinates, and a displayed reading with nonempty required law support, with the chart-local law-defect tie (Part III, Definition 11.3).</td></tr>
-                    <tr><td><code>Generated Obstruction Quotient and Restriction Evaluator</code></td><td>certified bounded inference</td><td>Constructs the obstruction quotient presheaf and restriction evaluator from a law equation realization (Part III, Theorem 11.4).</td></tr>
-                    <tr><td><code>SAGA comparison</code></td><td>certified bounded inference</td><td>Under explicit comparison data, reads the comparison equivalence and zero-predicate equivalence between semantic repair additive \( H^1 \) and cover-relative Čech \( H^1 \). No unconditional identification with full sheaf cohomology is claimed.</td></tr>
-                    <tr><td><code>degree-zero law contribution</code></td><td>certified bounded inference</td><td>Reads the contribution of displayed required law satisfaction to the Čech complex as pointwise vanishing in degree zero; the grounded route's \( H^1 \)-side conclusions do not depend on the law premise.</td></tr>
+                    <tr><td><code>semantic repair presentation</code></td><td>defined object</td><td>A presentation given by the free abelian group on each local context's supported semantic atoms with restriction-stable local repair relations.</td></tr>
+                    <tr><td><code>semantic repair coefficient M_sem</code></td><td>defined coefficient object</td><td>The abelian-group-valued presheaf obtained by quotienting the free group of the presentation by the subgroup generated by the local repair relations.</td></tr>
+                    <tr><td><code>affine semantic repair system</code></td><td>defined object</td><td>Semantic repair words acting on local repair states; relation soundness, stabilizer completeness, and local transitivity yield the \( M_{\mathrm{sem}} \)-torsor structure.</td></tr>
+                    <tr><td><code>semantic residual r_sem</code></td><td>defined object</td><td>The \( M_{\mathrm{sem}} \)-valued &#268;ech 1-cocycle generated uniquely as the pairwise difference of selected local semantic repairs.</td></tr>
+                    <tr><td><code>semantic repair additive H^1</code></td><td>defined object</td><td>The \( Z^1 / B^1 \) quotient built from \( M_{\mathrm{sem}} \) and the AAT cover; the semantic residual class does not depend on the choice of local repair atlas.</td></tr>
+                    <tr><td><code>Grounded Global Gluing</code></td><td>certified bounded inference</td><td>Under a monomorphic AAT cover, empty-overlap normalization, and a true semantic repair sheaf, the vanishing of the semantic residual class is equivalent to the existence of an actual global repair, glued from the corrected matching family by sheaf amalgamation.</td></tr>
+                    <tr><td><code>Displayed Equation Source</code></td><td>defined object</td><td>For \( E \), one dependent datum per chart selecting local context, architecture object, required equation index, and support atom; the displayed defect is defined from \( \epsilon \) (Part III, Definition 11.3).</td></tr>
+                    <tr><td><code>Generated Obstruction Quotient and Restriction Evaluator</code></td><td>certified bounded inference</td><td>Builds the obstruction quotient presheaf from \( \nu \) and the displayed interpretation from \( \epsilon \); restriction compatibility of \( \epsilon \) gives residual restriction naturality, fulfillment gives the zero restriction evaluator (Part III, Theorem 11.4).</td></tr>
+                    <tr><td><code>residual nondegeneracy</code></td><td>defined condition</td><td>\( d_q \notin I_{\mathrm{Ob}}^E(W_q) \) yields \( [d_q] \ne 0 \); exhibited in concrete examples or placed as a theorem hypothesis, never derived from non-fulfillment alone.</td></tr>
+                    <tr><td><code>SAGA presentation exactness</code></td><td>defined condition</td><td>Generator/relation conditions on the equation interpretation of supported semantic generators: repair relations match the kernel and the image matches \( Q_E \).</td></tr>
+                    <tr><td><code>Coefficient Presentation Theorem</code></td><td>certified bounded inference</td><td>From SAGA presentation exactness against any target coefficient \( Q \), constructs \( M_{\mathrm{sem}} \simeq Q \); no inverse and no degreewise complex equivalence is taken as input.</td></tr>
+                    <tr><td><code>SAGA comparison</code></td><td>certified bounded inference</td><td>Between the independently constructed complexes \( C_{\mathrm{sem}}^{\bullet}(\mathcal{U}) \) and \( C_E^{\bullet}(\mathcal{U}) \), builds the cochain map from the coefficient isomorphism and proves differential commutation, the \( H^1 \) isomorphism, and the correspondence of \( [r_{\mathrm{sem}}] \) and \( [r_E] \).</td></tr>
+                    <tr><td><code>degree-zero equation contribution</code></td><td>certified bounded inference</td><td>Displayed equation fulfillment sends the displayed interpretation classes pointwise to zero in degree zero; judged separately from SAGA presentation exactness and from the zeroness of the selected residual \( H^1 \) class.</td></tr>
                   </tbody>
                 </table>
               </div>
             </section>
 
             <section id="b2-label-discipline" class="article-section">
-              <h2>B.2 Label discipline</h2>
+              <h2>B.2 Mathematical reading conventions</h2>
               <p>The labels of the main text are read as follows.</p>
               <dl class="term-list definition-list">
                 <div>
@@ -535,7 +579,7 @@ Kosz(O_X; delta_U)</code></pre>
                 </div>
                 <div>
                   <dt>Theorem / Proposition / Lemma</dt>
-                  <dd>A mathematical proposition read under explicitly stated assumptions. Those assuming exactness, coverage, or adequacy are certified bounded inferences.</dd>
+                  <dd>A mathematical proposition read under explicitly stated assumptions; the selected regime and explicit assumptions are part of the statement. Those assuming exactness, coverage, or adequacy are certified bounded inferences.</dd>
                 </div>
                 <div>
                   <dt>Theorem candidate</dt>
@@ -554,11 +598,12 @@ Kosz(O_X; delta_U)</code></pre>
                 Thus, for example, <em>Lawfulness–Zero Obstruction</em> is a
                 certified bounded inference relativized to zero-reflecting
                 aggregation and soundness / completeness, not an absolute claim
-                about unselected law universes or metric aggregations.
+                about unselected equation systems or metric aggregations.
                 Likewise, the <em>SAGA comparison</em> is a certified bounded
-                inference relativized to the selected finite cover, coefficient
-                data, and comparison data — not an unconditional cohomology
-                identification.
+                inference relativized to the selected cover, the two
+                independently generated presentations, and the selected
+                primary correspondence with its exactness conditions — not an
+                unconditional cohomology identification.
               </p>
             </section>
 
@@ -862,126 +907,131 @@ I_V = &lt;q r&gt;</code></pre>
             </section>
 
             <section id="b9-circle-nerve" class="article-section">
-              <h2>B.9 Law-equation coefficient and circle nerve worked example</h2>
+              <h2>B.9 Independent presentations on the circle nerve</h2>
               <p>
                 This section fixes the minimal nonzero instance of the SAGA
-                comparison theorem (Part X, Theorem 7.2) on a finite model with
-                a single context, built in the vocabulary of Parts I and II.
+                comparison theorem (Part X, Theorem 7.6) by exhibiting three
+                things explicitly: an actual 4-chart AAT cover, an
+                independently generated semantic presentation, and an
+                independently generated equation quotient. All coefficient,
+                local-state, and comparison data live on the cover
+                intersection diagram \( \mathrm{Int}_{\le 2}(\mathcal{U}) \)
+                — charts, nonempty pairwise intersections, nonempty triple
+                intersections — which contains neither the base context nor
+                empty intersections.
               </p>
 
-              <h3 id="b9-1-coefficient">B.9.1 Generated coefficient</h3>
+              <h3 id="b9-1-coefficient">B.9.1 Circle AAT cover</h3>
               <p>
-                The finite model has exactly one context, written
-                <code>W</code>. Take the observable ring
-                \( O(W) = \mathbb{Z} \) with identity restriction, exactly one
-                required law, and violation coordinate \( 2 \) at every atom.
-                By the construction of Part III, Theorem 11.4,
+                Take a finite context category with base context
+                <code>W</code>, four charts \( W_0, \dots, W_3 \) mapping in
+                by monomorphisms, and four nonempty pullback overlaps
+                \( W_{01}, W_{12}, W_{23}, W_{30} \); non-adjacent and triple
+                overlaps are empty. The &#268;ech nerve is a 4-cycle:
               </p>
-              <pre><code>I_L(W) = I_Ob(W) = (2) subset Z
+              <pre><code>vertices: v_0, v_1, v_2, v_3
+edges:    e_01, e_12, e_23, e_30
+no nondegenerate simplices in degree >= 2</code></pre>
 
-Q(W) = Z/(2) ≅ F_2</code></pre>
-              <p>The non-degeneracy ledger is:</p>
-              <pre><code>[1] != 0    (1 not in (2))
-[2] = 0</code></pre>
+              <h3 id="b9-2-nerve">B.9.2 Semantic presentation</h3>
               <p>
-                The quotient genuinely separates the lawful reading from the
-                non-lawful reading.
+                Each object \( V \) of the intersection diagram carries one
+                supported semantic atom \( \sigma_V \), restricted to each
+                other identically, with local repair relation
+                \( 2\sigma_V = 0 \). The semantic coefficient is generated
+                from semantic atoms and relations alone:
               </p>
+              <pre><code>F_sem(V) = Z[sigma_V]
+R_rep(V) = 2 Z[sigma_V]
+M_sem(V) = Z[sigma_V] / 2 Z[sigma_V] ≅ F_2</code></pre>
 
-              <h3 id="b9-2-nerve">B.9.2 Circle nerve</h3>
+              <h3 id="b9-3-complex">B.9.3 Equation-generated presentation</h3>
               <p>
-                As the selected simplicial data (Part X, Definition 6.2), fix
-                the following circle nerve:
+                Independently, the equation system has observable ring
+                \( \mathcal{O}_E(V) = \mathbb{Z} \) with identity
+                restriction, one required index \( i \), and symbolic
+                violation coordinate \( \nu_{V,i,a} = 2 \). Part III,
+                Theorem 11.4 generates
               </p>
-              <pre><code>vertices: v_-, v_+
-
-edges:
-  e_+ : v_- -> v_+
-  e_- : v_+ -> v_-
-
-no simplices in degree >= 2</code></pre>
+              <pre><code>I_i^E(V) = I_Ob^E(V) = (2)
+Q_E(V) = Z/(2)</code></pre>
               <p>
-                Every chart and overlap is <code>W</code>. This nerve is not
-                generated from chart intersections; it is selected simplicial
-                data over the single-element cover.
-              </p>
-
-              <h3 id="b9-3-complex">B.9.3 Complex and residual</h3>
-              <pre><code>C^0 = Map({v_-, v_+}, F_2) ≅ F_2^2
-C^1 = Map({e_+, e_-}, F_2) ≅ F_2^2
-C^2 = 0
-
-(d^0 p)(e) = p(target e) - p(source e)
-d^1 = 0</code></pre>
-              <p>Place the residual as</p>
-              <pre><code>r(e_+) = [1]
-r(e_-) = 0</code></pre>
-              <p>
-                Then <code>r</code> is a 1-cocycle: the selected complex has no
-                simplices in degree 2, so the cocycle condition holds
-                trivially.
+                The equation interpretation of the semantic generator is
+                \( \chi_V(\sigma_V) = [1] \), generated from the residual
+                \( \epsilon_{V,A_1,i,a} = 1 \). SAGA presentation exactness
+                is a direct computation — soundness
+                \( \chi_V(2\sigma_V) = [2] = 0 \), completeness
+                \( \ker(\mathbb{Z}[\sigma_V] \to \mathbb{Z}/(2)) = 2\mathbb{Z}[\sigma_V] \),
+                generation \( [1] \) generates \( \mathbb{Z}/(2) \) — so
+                the Coefficient Presentation Theorem constructs
+                \( \Phi_V : M_{\mathrm{sem}}(V) \simeq Q_E(V) \). The two
+                coefficients are isomorphic but separately constructed: one as
+                a quotient of the free semantic presentation, the other as a
+                quotient by the equation obstruction ideal.
               </p>
 
-              <h3 id="b9-4-nonzero">B.9.4 Nonzero class and transfer</h3>
+              <h3 id="b9-4-nonzero">B.9.4 Two complexes and residuals</h3>
+              <pre><code>C_sem^0 ≅ F_2^4        C_E^0 ≅ F_2^4
+C_sem^1 ≅ F_2^4        C_E^1 ≅ F_2^4
+C_sem^2 = 0            C_E^2 = 0</code></pre>
               <p>
-                Suppose \( r = d^0 p \). The edge \( e_+ \) gives
-                \( p(v_+) - p(v_-) = [1] \), and the edge \( e_- \) gives
-                \( p(v_-) - p(v_+) = 0 \). The latter forces
-                \( p(v_-) = p(v_+) \); substituting into the former yields
-                \( [1] = 0 \), contradicting \( [1] \neq 0 \). Therefore
-                <code>r</code> is not a coboundary.
+                The two differentials are built separately from each
+                presheaf's restrictions; \( \kappa \) applies \( \Phi_V \)
+                on each chart and overlap, and Part X, Theorem 7.2 proves the
+                differentials commute. With local states \( \mathbb{F}_2 \)
+                on each object, target-restriction twists
+                \( (t_{01}, t_{12}, t_{23}, t_{30}) = (1,0,0,0) \), and the
+                zero local repair atlas on charts, the semantic residual is
+                \( r_{\mathrm{sem}}(e_{01}) = 1 \) and \( 0 \) on the
+                other edges. The equation side is constructed separately with
+                \( P_E = \mathbb{F}_2 \) and transitions
+                \( \Phi(t_e) \), yielding
+                \( r_E = \kappa^1(r_{\mathrm{sem}}) \); an independently
+                chosen equation atlas changes it only by an explicit
+                coboundary \( \delta_E^0 h \) (Part X, Theorem 7.5).
               </p>
-              <p>
-                Read as an invariant: under this orientation, the sum of the
-                two edge values of any coboundary is \( 0 \), while the sum of
-                the two edge values of <code>r</code> is \( [1] \neq 0 \). The
-                nonzeroness reduces to the arithmetic fact of the law-equation
-                quotient, \( 1 \notin (2) \).
-              </p>
-              <p>
-                Under the semantic coefficient data carried by this complex,
-                the additive regime data, and the identity comparison,
-              </p>
-              <pre><code>the residual class of semantic additive H^1 != 0
-the class of cover-relative Cech H^1 != 0
-the zero-predicate equivalence transfers nonzeroness in both directions</code></pre>
-              <p>hold (Part X, Theorem 7.4).</p>
 
-              <h3 id="b9-5-summary">B.9.5 Example data summary</h3>
+              <h3 id="b9-5-summary">B.9.5 Nonzero class</h3>
               <p>
-                The site of this example is the single-element context, and the
-                generated topology is trivial. Every presheaf therefore
-                satisfies the sheaf condition; the sheaf condition on the
-                quotient coefficient holds as a theorem and need not be
-                supplied as an assumption. The comparison is the identity map
-                on definitionally equal carriers.
+                With no triple overlaps, both residuals are 1-cocycles. If
+                \( r_{\mathrm{sem}} = \delta^0 p \), the edge sum around
+                the 4-cycle telescopes to \( 0 \); but the edge sum of
+                \( r_{\mathrm{sem}} \) is \( 1 \). Hence
               </p>
+              <pre><code>[r_sem] != 0 in H^1_sem(U)
+[r_E] != 0 in Cech H^1(U, Q_E)
+kappa_*([r_sem]) = [r_E]</code></pre>
               <p>
                 This worked example threads the following route through one
                 finite model:
               </p>
-              <pre><code>witness ideal (2) subset Z
-  -> generated quotient F_2
-  -> circle nerve residual
-  -> non-coboundary computation
-  -> nonzero class on both sides
-  -> transfer through the comparison</code></pre>
+              <pre><code>semantic atom sigma + relation 2 sigma = 0
+  -> independently generated M_sem = Z[sigma]/(2 sigma)
+
+equation coordinate 2
+  -> obstruction ideal (2)
+  -> independently generated Q_E = Z/(2)
+
+generator/relation exactness
+  -> Phi
+  -> cochain commutation
+  -> nonzero residual class comparison</code></pre>
 
               <article class="theorem-card lean-status-card">
                 <div class="theorem-card-header">
                   <div>
                     <span class="theorem-card-label">Lean status</span>
-                    <h3>Circle-nerve nonzero transfer instance in Lean</h3>
+                    <h3>Independently generated circle comparison in Lean</h3>
                   </div>
                   <span class="status-badge status-badge-proved">proved nonzero transfer instance</span>
                 </div>
                 <dl>
                   <dt>Lean names</dt>
-                  <dd><code>AAT.AG.Examples.SemanticRepairPart10</code>: <code>circleF2Presheaf</code>, <code>circleF2IsSheaf</code>, <code>circleResidual</code>, <code>circleResidual_not_coboundary</code>, <code>circleSemanticH1_nonzero</code>, <code>circleCoverRelativeH1_nonzero</code>, <code>circleH1Comparison</code>, <code>circleTransferredCoverRelativeH1_nonzero</code>, <code>CircleNerveNonzeroTransferPacket</code>, <code>circleNerve_nonzeroClassTransfer_packet</code> (AG index row <code>X.Example 9.2</code>).</dd>
+                  <dd><code>AAT.AG.SemanticRepair.Saga.CircleWitness</code>: the 4-chart <code>circleCover</code> with kept pairs equal to the four edges and empty kept triples, <code>semanticResidualClass_ne_zero</code>, the exactness-generated <code>circlePhi</code>, <code>circle_kappa_cochain_commutation</code>, <code>circleKappaStar_leftInverse</code> / <code>circleKappaStar_rightInverse</code>, and the finale <code>circle_nonzero_class_transfer</code> (AG index row <code>X.例10.2</code> / 付録 B.9).</dd>
                   <dt>Meaning</dt>
-                  <dd>The selected three-edge circle-nerve witness site with the \( Q \cong \mathbb{F}_2 \) coefficient sheaf: the degree-one residual class is nonzero on both the semantic additive side and the cover-relative Čech side, and the Theorem 7.2 identity comparison transfers the nonzeroness — the full route of this section, proved.</dd>
+                  <dd>An actual 4-chart cover with independently generated semantic and equation presentations, a non-identity \( \Phi \) discharged from presentation exactness, commuting cochain comparison, and the nonzero residual class carried across — the full route of this section, proved.</dd>
                   <dt>Boundary</dt>
-                  <dd>The example transfer uses the identity comparison over the degenerate singleton-context site; no unconditional generalization to arbitrary Grothendieck sites is claimed.</dd>
+                  <dd>The instance is relativized to this finite cover and coefficient selection; no unconditional generalization to arbitrary Grothendieck sites is claimed.</dd>
                 </dl>
               </article>
             </section>

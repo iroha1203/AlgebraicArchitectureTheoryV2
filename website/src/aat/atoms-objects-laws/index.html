@@ -2,7 +2,7 @@
 {
   "layout": "base.njk",
   "title": "Part I. Atoms, Objects, and Laws",
-  "description": "Part I of Algebraic Architecture Theory: the Atom axiom system, atom families, configurations, architecture objects, invariants, laws, obstruction circuits, and the lawfulness-zero-obstruction theorem.",
+  "description": "Part I of Algebraic Architecture Theory: the Atom axiom system, atom families, configurations, architecture objects, invariants, the atom-indexed architectural equation system with laws as its readings, obstruction circuits, and the lawfulness-zero-obstruction theorem.",
   "order": 2,
   "llmsLabel": "AAT Part I: Atoms, Objects, and Laws",
   "navSection": "aat",
@@ -23,9 +23,10 @@
             AAT begins with the Atom: a primitive typed architectural
             fact. Part I axiomatizes atoms, generates atom families,
             configurations, molecules, and architecture objects from them,
-            introduces invariants, laws, and obstruction circuits, and
-            proves that lawfulness and zero obstruction coincide under
-            explicitly selected assumptions &mdash; architecture as
+            introduces invariants, the atom-indexed architectural equation
+            system with laws as its readings, and obstruction circuits, and
+            proves that equation lawfulness and zero obstruction coincide
+            under explicitly selected assumptions &mdash; architecture as
             algebra.
           </p>
         </div>
@@ -43,7 +44,7 @@
                 <li><a href="#configurations-molecules">4. Configuration and molecule</a></li>
                 <li><a href="#architecture-objects">5. Architecture object</a></li>
                 <li><a href="#invariants">6. Invariant</a></li>
-                <li><a href="#laws">7. Law</a></li>
+                <li><a href="#laws">7. Equation system and law</a></li>
                 <li><a href="#obstruction-circuits">8. Obstruction circuit</a></li>
                 <li><a href="#lawfulness-zero">9. Lawfulness and zero obstruction</a></li>
                 <li><a href="#architecture-as-algebra">10. Architecture as algebra</a></li>
@@ -514,12 +515,12 @@ Atom reconstruction : an attempt to return from observed values to the canonical
                   <span class="status-badge status-badge-proved">defined / proved</span>
                 </div>
                 <dl>
-                  <dt>A0–A8 package</dt>
-                  <dd><code>AAT.AG.AtomAxiomSystem</code> bundles A0–A8 as structure fields, with proved accessors <code>primitive_exists</code>, <code>typing_total</code>, <code>configurationOf</code>, <code>operateFamily</code> — <em>defined only / proved</em>.</dd>
+                  <dt>A0–A3 primitive foundation package</dt>
+                  <dd><code>AAT.AG.AtomAxiomSystem</code> carries the primitive foundation as structure fields — A0 primitive existence and A3 five-coordinate predicate stability — with proved accessors <code>primitive_exists</code>, <code>typing_total</code> (A1 via the carrier projections) — <em>defined only / proved</em>. A4 composition is carried by the composition reading, A5–A7 non-generation and Atom-origin preservation are enforced structurally by the generation route (no context, law, or observation constructor creates atoms; <code>ConfigurationHom</code> transports Atom-origin), and A8 is the doctrine row below.</dd>
                   <dt>A3</dt>
                   <dd><code>AAT.AG.SameCoordinates</code>, <code>AtomAxiomSystem.eq_iff_sameCoordinates</code>, <code>AtomAxiomSystem.ext</code>: the equivalence of five-coordinate agreement and atom identity, with an ext lemma — <em>proved</em>.</dd>
                   <dt>A8</dt>
-                  <dd><code>AAT.AG.ExtractionDoctrine</code>, <code>ExtractionDoctrine.atomize_unique</code>, <code>AAT.AG.CoarseProjection</code>, <code>AtomAxiomSystem.doctrine_family_unique</code>: canonical-family uniqueness from <code>atomize</code> being a function — <em>defined only / proved</em>.</dd>
+                  <dd><code>AAT.AG.ExtractionDoctrine</code>, <code>ExtractionDoctrine.atomize_unique</code>, <code>AAT.AG.CoarseProjection</code>, and <code>AATCorePackage.generate_family_unique</code>: canonical-family uniqueness from <code>atomize</code> being a function — <em>defined only / proved</em>.</dd>
                   <dt>Proposition A9</dt>
                   <dd><code>AAT.AG.ObservationModel</code>, <code>ObservationModel.NonInjective</code>, <code>ObservationProjection</code>, <code>ReconstructionAttempt</code>, <code>no_exact_reconstruction_of_nonInjective</code>, and the <code>A9Example</code> finite model exhibiting non-injective observation, unobserved atoms, inexact reconstruction, and coexistence with A8 uniqueness — <em>defined only / proved</em>.</dd>
                 </dl>
@@ -854,65 +855,87 @@ semantic inconsistency count</code></pre>
             </section>
 
             <section id="laws" class="article-section">
-              <h2>7. Law</h2>
+              <h2>7. Architectural equation system and law</h2>
               <p>
-                A law expresses commutation, preservation, absence, and
-                coherence on architecture objects.
+                A law is a way of reading a selected family of equations of
+                the atom-indexed architectural equation system &mdash; as
+                commutation, preservation, absence, or coherence. The
+                equation system is the mathematical carrier; the law is its
+                natural-language display.
               </p>
               <p id="definition-7-1" class="statement">
-                <a class="statement-anchor" href="#definition-7-1">Definition I.7.1 (Law).</a>
-                A law <code>L</code> is a predicate on architecture objects,
-                <code>L : Obj -&gt; Prop</code>. Structurally, laws take the
-                forms:
+                <a class="statement-anchor" href="#definition-7-1">Definition I.7.1 (Atom-indexed architectural equation system).</a>
+                Fix an atom universe <code>At</code>, a family of architecture
+                objects <code>Obj</code>, and a small category of local
+                contexts <code>C</code>. An atom-indexed architectural
+                equation system <code>E</code> consists of:
               </p>
-              <pre><code>L(A) iff diagram(A) commutes
-L(A) iff forbidden(A) is empty
-L(A) iff projection(A) is sound
-L(A) iff substitution(A) preserves contract
-L(A) iff operation(A) preserves invariant</code></pre>
+              <pre><code>K_E                      equation index type
+role_E : K_E -&gt; { required, optional, derived }
+O_E : C^op -&gt; CommRing   observable ring presheaf
+res_j : O_E(W) -&gt; O_E(W')  restriction ring homomorphisms
+nu_{W,i,a}      in O_E(W)  symbolic violation coordinate
+epsilon_{W,A,i,a} in O_E(W)  object-dependent equation residual</code></pre>
+              <p>
+                Both coordinate families commute with restriction. The two
+                families carry different jobs: <code>nu</code> is the symbolic
+                coordinate that generates witness ideals in
+                <a href="../law-algebra-lawful-locus/">Part III</a>, while
+                <code>epsilon</code> decides equation fulfillment on
+                architecture objects. The class of <code>nu</code> itself
+                always dies in the quotient by the ideal it generates, so
+                failure detection through quotient classes uses the
+                object-dependent residual <code>epsilon</code>.
+              </p>
               <p id="definition-7-2" class="statement">
                 <a class="statement-anchor" href="#definition-7-2">Definition I.7.2 (Law universe).</a>
-                A law universe is the family of laws considered together,
-                <code>Law(A) = { L_i | i in K }</code>, further read through
-                its components:
+                The law universe of an equation system <code>E</code> is the
+                reading of its index family and roles,
+                <code>U_E = { L_i | i in K_E }</code>, with required, optional,
+                and derived laws given by <code>role_E</code> and
+                <code>K_E^req = { i | role_E(i) = required }</code>. The
+                natural-language law <code>L_i</code> is a display of the
+                equation index <code>i</code> and its coordinate family
+                &mdash; not an additional truth predicate and not a separate
+                mathematical field. Violation witnesses, observables, and
+                restriction all come from the data of <code>E</code>.
               </p>
-              <pre><code>required laws
-optional laws
-derived laws
-witness family
-selected reading
-coverage assumptions
-exactness assumptions</code></pre>
-              <p>
-                At the definition stage, lawfulness is not identified with
-                obstruction absence. AAT first places semantic lawfulness and
-                connects it through finite witness families and signature
-                axes:
-              </p>
-              <pre><code>SemanticLawful(A,U)
-  = A is semantically lawful for the selected law universe U
-
-NoRequiredObstruction(A,W)
-  = the selected witness family W contains no required bad witness
-
-RequiredSignatureAxesZero(A,S)
-  = the selected signature axes S are zero</code></pre>
               <p id="definition-7-3" class="statement">
-                <a class="statement-anchor" href="#definition-7-3">Definition I.7.3 (Lawfulness).</a>
-                An architecture object <code>A</code> is lawful for a law
-                universe <code>U</code> when every law in <code>U</code>
-                holds:
+                <a class="statement-anchor" href="#definition-7-3">Definition I.7.3 (Equation fulfillment and lawfulness).</a>
+                An equation index <code>i</code> holds on an architecture
+                object <code>A</code> when every residual vanishes:
               </p>
-              <p>\[ \mathrm{Lawful}_U(A) \iff \forall L \in U,\ L(A). \]</p>
+              <pre><code>EquationHolds_E(i,A)
+  iff  forall W in C, forall a in At, epsilon_{W,A,i,a} = 0
+
+EquationLawful_E(A)
+  iff  forall required i in K_E, EquationHolds_E(i,A)
+
+FullyEquationLawful_E(A)
+  iff  forall i in K_E, EquationHolds_E(i,A)</code></pre>
+              <p>
+                When the natural-language law universe is displayed, the
+                derived notations
+                \( \mathrm{Lawful}_{U_E}(A) := \mathrm{EquationLawful}_E(A) \)
+                and
+                \( \mathrm{FullyLawful}_{U_E}(A) := \mathrm{FullyEquationLawful}_E(A) \)
+                are used. Lawfulness is generated from the vanishing of
+                equation residuals and has no separate truth field. Closed
+                equational conditions generate ideals and zero loci through
+                this base route; open, constructible, descent, temporal, and
+                higher conditions add invertibility, finite combination,
+                gluing, trace, or stack data on top of it.
+              </p>
               <p id="example-7-4" class="statement">
-                <a class="statement-anchor" href="#example-7-4">Example I.7.4 (Representative laws).</a>
+                <a class="statement-anchor" href="#example-7-4">Example I.7.4 (Representative law readings).</a>
                 <code>NoCycle</code>, <code>ProjectionSound</code>,
                 <code>SubstitutionCompatible</code>,
                 <code>LayerRespecting</code>, <code>EffectReplayLawful</code>,
                 <code>StateTransitionCommutative</code>,
-                <code>SemanticInterpretationConsistent</code>. These laws are
-                not natural-language design principles themselves; they are
-                mathematical conditions on atom configurations.
+                <code>SemanticInterpretationConsistent</code>. These are not
+                natural-language design principles themselves; they are
+                mathematical equation readings given as the vanishing of
+                atom-indexed residuals.
               </p>
 
               <article class="theorem-card lean-status-card">
@@ -925,9 +948,9 @@ RequiredSignatureAxesZero(A,S)
                 </div>
                 <dl>
                   <dt>Lean names</dt>
-                  <dd><code>AAT.AG.Law</code>, <code>LawRole</code>, <code>LawWitnessFamily</code>, <code>SignatureAxes</code>, <code>LawUniverse</code> with <code>Required</code> / <code>Optional</code> / <code>Derived</code> roles, <code>Lawfulness</code>, and the three reading predicates <code>SemanticLawful</code>, <code>NoRequiredObstruction</code>, <code>RequiredSignatureAxesZero</code> with accessor lemmas.</dd>
+                  <dd><code>AAT.AG.ArchitecturalEquationSystem</code> with <code>EquationRole</code> (<code>required</code> / <code>optional</code> / <code>derived</code>), the two restriction-compatible coordinate families (<code>violationCoordinate</code>, <code>equationResidual</code>), the fulfillment predicates <code>EquationHolds</code>, <code>EquationLawful</code>, <code>FullyEquationLawful</code>, and the Mathlib-facing <code>observablePresheaf</code> into <code>CommRingCat</code>.</dd>
                   <dt>Boundary</dt>
-                  <dd>At this layer the equivalence of the three reading predicates is not claimed. Their agreement is proved downstream under the Theorem I.9.3 assumptions (see Section 9).</dd>
+                  <dd>The structure stores no ideal-membership, quotient-vanishing, cohomology, comparison, or descent conclusion; those are generated downstream (Parts III–IV). The earlier predicate-based <code>Law</code> / <code>LawUniverse</code> carriers remain as a legacy reading layer.</dd>
                 </dl>
               </article>
             </section>
@@ -935,21 +958,34 @@ RequiredSignatureAxesZero(A,S)
             <section id="obstruction-circuits" class="article-section">
               <h2>8. Obstruction circuit</h2>
               <p>
-                When a law fails, the failure is read as an obstruction.
+                When a selected equation reading fails, the failure is read as
+                an obstruction.
               </p>
               <p id="definition-8-1" class="statement">
                 <a class="statement-anchor" href="#definition-8-1">Definition I.8.1 (Obstruction).</a>
-                An obstruction for a law <code>L</code>, written
-                <code>Ob_L(A)</code>, is a structure witnessing that
-                <code>L(A)</code> fails.
+                A semantic obstruction for an equation index <code>i</code> of
+                <code>E</code> is the failure of the equation residuals to
+                vanish simultaneously &mdash; a structure witnessing that
+                <code>EquationHolds_E(i,A)</code> fails.
               </p>
               <p id="definition-8-2" class="statement">
                 <a class="statement-anchor" href="#definition-8-2">Definition I.8.2 (Obstruction circuit).</a>
-                An obstruction circuit is a finite arrangement of atoms and
-                relations that triggers a law failure:
-                <code>O = (F_O, R_O, L)</code> with
-                <code>F_O subset At</code>, <code>R_O</code> a relation on
-                <code>F_O</code>, and <code>not L(A)</code>.
+                An obstruction circuit is built from finite signed query data,
+                not from a stored failure proof. A finite circuit datum
+                <code>Q</code> is a finite list of atomic circuit queries
+                (<code>atomPresent</code>, <code>relationPresent</code>,
+                <code>identificationPresent</code>) each with an expected
+                polarity, so both presence patterns and absence patterns are
+                finite local conditions. Each equation index <code>i</code>
+                carries a detector code built only from
+                <code>reject</code> / <code>exact(Q_0)</code> /
+                <code>any(c_1,c_2)</code>, with Boolean acceptance
+                <code>Accepts_{E,i}(Q)</code> and a soundness theorem
+                <code>CircuitSound_E(i)</code>: a matched, accepted datum
+                implies <code>not EquationHolds_E(i,A)</code>. An obstruction
+                circuit for <code>i</code> is then
+                <code>O = (Q, h_match, h_detect)</code>; the equation failure
+                is derived by applying soundness, never stored as a field.
               </p>
               <p id="example-8-3" class="statement">
                 <a class="statement-anchor" href="#example-8-3">Example I.8.3 (Cycle obstruction).</a>
@@ -968,28 +1004,37 @@ substitutes(Impl, Base)</code></pre>
               <p id="definition-8-5" class="statement">
                 <a class="statement-anchor" href="#definition-8-5">Definition I.8.5 (Obstruction valuation).</a>
                 An obstruction valuation assigns a quantity of obstruction per
-                law, <code>omega_L(A) : Value</code> — typically a count, a
-                boolean, a weight, a rank, or an energy. To read zero
-                obstruction and lawfulness as equivalent, the value domain and
-                the aggregation are not arbitrary. The zero theorem is stated
-                only when the selected value domain <code>Value_U</code>
-                carries:
+                equation index, <code>omega_{E,i}(A) : Value</code> — typically
+                a count, a boolean, a weight, a rank, or an energy. To read
+                zero obstruction and lawfulness as equivalent, the value
+                domain and the aggregation are not arbitrary. The zero theorem
+                is stated only when the selected value domain
+                <code>Value_E</code> carries:
               </p>
-              <pre><code>0 in Value_U
+              <pre><code>0 in Value_E
 positive predicate (&gt; 0)
 zero/positive dichotomy for selected readings
 no cancellation at zero</code></pre>
               <p>
-                and the aggregation over the law universe,
-                <code>Agg_U : (forall L in U, Value_U) -&gt; Value_U</code>,
+                and the aggregation over a selected index support
+                <code>J subset K_E</code>,
+                <code>Agg_{E,J} : (forall i in J, Value_E) -&gt; Value_E</code>,
                 is assumed zero-reflecting:
               </p>
-              <p>\[ \mathrm{Agg}_U\big((v_L)_{L \in U}\big) = 0 \iff \forall L \in U,\ v_L = 0. \]</p>
+              <p>\[ \mathrm{Agg}_{E,J}\big((v_i)_{i \in J}\big) = 0 \iff \forall i \in J,\ v_i = 0. \]</p>
               <p>
                 This assumption excludes signed sums and cancellation-friendly
                 aggregations; sums of counts, disjunctions of booleans, sums
                 and suprema of nonnegative weights are the typical instances.
-                Write \( \omega_U(A) := \mathrm{Agg}_U\big((\omega_L(A))_{L \in U}\big) \).
+                Write
+                \( \omega_{E,J}(A) := \mathrm{Agg}_{E,J}\big((\omega_{E,i}(A))_{i \in J}\big) \),
+                with \( \omega_E(A) \) the valuation on the required support
+                and \( \omega_E^{\mathrm{all}}(A) \) the valuation on all of
+                \( K_E \). When an individual \( \omega_{E,i} \) is built from
+                a circuit family, circuit realization and the zero-reflection
+                of the measurement are supplied separately; the mere existence
+                of a finite circuit datum implies neither soundness nor
+                completeness of a numeric valuation.
               </p>
 
               <article class="theorem-card lean-status-card">
@@ -1002,9 +1047,9 @@ no cancellation at zero</code></pre>
                 </div>
                 <dl>
                   <dt>Lean names</dt>
-                  <dd><code>AAT.AG.Obstruction</code>, <code>ObstructionCircuit</code> (with finite marker and explicit list-finite support), <code>ObstructionValueDomain</code> (zero / positive / dichotomy / no-cancellation), <code>ObstructionValuation</code>, <code>ZeroReflectingAggregation</code>, <code>ZeroReflectingListAggregation</code>, <code>omegaU</code>, <code>omegaU_zero_iff_required</code>, and the concrete instances <code>ObstructionAggregation.natSum</code>, <code>boolOr</code>, <code>weightSup</code> with their zero-reflecting theorems.</dd>
+                  <dd><code>AAT.AG.EquationSemanticObstruction</code>, <code>CircuitQuery</code>, <code>FiniteCircuitDatum</code> (signed queries with <code>Matches</code>), the detector-code layer with <code>EquationCircuitReading</code> (Boolean acceptance, <code>Sound</code>, <code>RequiredComplete</code>, <code>circuit_sound</code>), <code>ObstructionValueDomain</code> (zero / positive / dichotomy / no-cancellation), <code>EquationObstructionValuation</code>, <code>ZeroReflectingAggregation</code>, <code>ZeroReflectingListAggregation</code>, <code>omegaE</code>, <code>omegaE_zero_iff_required</code>, and the concrete instances <code>ObstructionAggregation.natSum</code>, <code>boolOr</code>, <code>weightSup</code> with their zero-reflecting theorems.</dd>
                   <dt>Boundary</dt>
-                  <dd>The aggregate valuation is relativized to the required law index; this file does not claim Theorem I.9.3, which lives in Section 9's anchors. Examples I.8.3 and I.8.4 fire in the finite model (<code>FiniteModel.cycleObstructionCircuit</code>, <code>FiniteModel.substitutionObstructionCircuit</code>) — <em>defined only / proved</em>.</dd>
+                  <dd>The aggregate valuation is relativized to the required equation index; this file does not claim Theorem I.9.3, which lives in Section 9's anchors. Examples I.8.3 and I.8.4 fire in the finite model (<code>FiniteModel.cycleQueryDatum</code> with <code>cycleQueryDatum_matches_core</code> and the sound detector <code>equationCircuitReading</code>; <code>FiniteModel.substitutionRelation</code> with <code>substitutionResidual</code> / <code>substitutionEquationSystem</code>) — <em>defined only / proved</em>.</dd>
                 </dl>
               </article>
             </section>
@@ -1017,19 +1062,21 @@ no cancellation at zero</code></pre>
               </p>
               <p id="proposition-9-1" class="statement">
                 <a class="statement-anchor" href="#proposition-9-1">Proposition I.9.1 (Obstruction soundness).</a>
-                A valuation <code>omega_L</code> for law <code>L</code> is
-                sound when the law's holding forces the selected obstruction
-                to vanish: \( L(A) \rightarrow \omega_L(A) = 0 \).
+                A valuation <code>omega_{E,i}</code> for equation index
+                <code>i</code> is sound when the equation's holding forces the
+                selected obstruction to vanish:
+                \( \mathrm{EquationHolds}_E(i,A) \rightarrow \omega_{E,i}(A) = 0 \).
                 Equivalently, under the zero/positive dichotomy,
-                \( \omega_L(A) &gt; 0 \rightarrow \neg L(A) \).
+                \( \omega_{E,i}(A) &gt; 0 \rightarrow \neg \mathrm{EquationHolds}_E(i,A) \).
               </p>
               <p id="proposition-9-2" class="statement">
                 <a class="statement-anchor" href="#proposition-9-2">Proposition I.9.2 (Completeness).</a>
-                An obstruction family for <code>L</code> is complete when a
-                law failure is always detected as a selected obstruction:
-                \( \neg L(A) \rightarrow \omega_L(A) &gt; 0 \). Equivalently,
-                under the zero/positive dichotomy,
-                \( \omega_L(A) = 0 \rightarrow L(A) \).
+                An obstruction family for index <code>i</code> is complete
+                when an equation failure is always detected as a selected
+                obstruction:
+                \( \neg \mathrm{EquationHolds}_E(i,A) \rightarrow \omega_{E,i}(A) &gt; 0 \).
+                Equivalently, under the zero/positive dichotomy,
+                \( \omega_{E,i}(A) = 0 \rightarrow \mathrm{EquationHolds}_E(i,A) \).
               </p>
 
               <div id="theorem-9-3" class="theorem-card">
@@ -1040,28 +1087,32 @@ no cancellation at zero</code></pre>
                   </div>
                   <span class="status-badge status-badge-proved">Lean: proved</span>
                 </div>
-                <p>Assume, for a law universe \( U \):</p>
-                <pre><code>forall L in U, omega_L is sound.
-forall L in U, omega_L is complete.
-Agg_U is zero-reflecting.
-Lawful_U(A) iff forall L in U, L(A).</code></pre>
+                <p>Assume, for an equation system \( E \):</p>
+                <pre><code>forall required i in E, omega_{E,i} is sound.
+forall required i in E, omega_{E,i} is complete.
+Agg_{E,required(E)} is zero-reflecting.</code></pre>
                 <p>Then</p>
-                <p>\[ \mathrm{Lawful}_U(A) \iff \omega_U(A) = 0. \]</p>
+                <p>\[ \mathrm{EquationLawful}_E(A) \iff \omega_E(A) = 0. \]</p>
                 <dl>
                   <dt>Proof reading</dt>
                   <dd>
-                    \( \mathrm{Lawful}_U(A) \iff \forall L \in U,\ L(A)
-                    \iff \forall L \in U,\ \omega_L(A) = 0
-                    \iff \omega_U(A) = 0 \).
+                    \( \mathrm{EquationLawful}_E(A)
+                    \iff \forall \text{required } i,\ \mathrm{EquationHolds}_E(i,A)
+                    \iff \forall \text{required } i,\ \omega_{E,i}(A) = 0
+                    \iff \omega_E(A) = 0 \).
                     The second equivalence is soundness with completeness; the
-                    last is zero-reflecting aggregation.
+                    last is zero-reflecting aggregation. Under the same
+                    assumptions on all of \( K_E \), the full-locus form
+                    \( \mathrm{FullyEquationLawful}_E(A) \iff \omega_E^{\mathrm{all}}(A) = 0 \)
+                    follows, so an optional failure survives as a stronger
+                    full-locus invariant without erasing normative lawfulness.
                   </dd>
                   <dt>Lean anchors</dt>
-                  <dd><code>AAT.AG.ObstructionSound</code>, <code>ObstructionComplete</code>, <code>law_holds_iff_omega_zero</code>, <code>lawfulness_iff_omegaU_zero</code> — <em>defined only / proved</em>, relativized to the required law universe and a zero-reflecting aggregation.</dd>
+                  <dd><code>AAT.AG.EquationObstructionSound</code>, <code>EquationObstructionComplete</code>, <code>equationHolds_iff_omega_zero</code>, <code>equationLawful_iff_omegaE_zero</code> — <em>defined only / proved</em>, relativized to the required equation support and a zero-reflecting aggregation.</dd>
                   <dt>Claim boundary</dt>
                   <dd>
                     This theorem is a certified bounded inference relativized
-                    to the selected law universe, obstruction family, value
+                    to the selected equation system, obstruction family, value
                     domain, and aggregation. It issues no zero claim about
                     unselected laws, witnesses, axes, or metric aggregations
                     that are not zero-reflecting.
@@ -1070,13 +1121,13 @@ Lawful_U(A) iff forall L in U, L(A).</code></pre>
               </div>
 
               <p>
-                More structurally, for a law universe <code>U</code>, witness
-                family <code>W</code>, and signature axes <code>S</code>, when
-                witness completeness, axis exactness, coverage, and exactness
-                of the selected reading are all in place, the three readings
-                agree:
+                More structurally, for an equation system <code>E</code>,
+                witness family <code>W</code>, and signature axes
+                <code>S</code>, when witness completeness, axis exactness,
+                coordinate coverage, and residual comparison are all in place,
+                the three readings agree:
               </p>
-              <p>\[ \mathrm{SemanticLawful}(A,U) \iff \mathrm{NoRequiredObstruction}(A,W) \iff \mathrm{RequiredSignatureAxesZero}(A,S). \]</p>
+              <p>\[ \mathrm{EquationLawful}_E(A) \iff \mathrm{NoRequiredObstruction}(A,W) \iff \mathrm{RequiredSignatureAxesZero}(A,S). \]</p>
               <p>
                 The equivalence is relativized to the selected atom family,
                 selected witness family, and selected signature axes.
@@ -1088,13 +1139,13 @@ Lawful_U(A) iff forall L in U, L(A).</code></pre>
                     <span class="theorem-card-label">Lean status</span>
                     <h3>Theorem I.9.3, later part (three-reading agreement)</h3>
                   </div>
-                  <span class="status-badge status-badge-proved">proved / packaged</span>
+                  <span class="status-badge status-badge-proved">proved</span>
                 </div>
                 <dl>
                   <dt>Lean names</dt>
-                  <dd><code>AAT.AG.requiredLawWitnessFamily</code>, <code>requiredLawSignatureAxes</code>, <code>semanticLawful_iff_noRequiredObstruction_requiredLawWitness</code>, <code>semanticLawful_iff_requiredSignatureAxesZero_requiredLawAxes</code>, <code>noRequiredObstruction_iff_requiredSignatureAxesZero_requiredLaw</code>, <code>concreteThreeReadingAgreement</code>, and the <code>ThreeReadingAgreementAssumptions</code> surface.</dd>
+                  <dd><code>AAT.AG.NoRequiredEquationCircuit</code>, <code>equationLawful_iff_noRequiredEquationCircuit</code>, <code>EquationResidualAxis</code>, <code>equationResidualSignatureAxes</code>, <code>EquationSignatureComparison</code>, <code>equationLawful_iff_requiredSignatureAxesZero</code>, <code>concreteThreeReadingAgreement</code>.</dd>
                   <dt>Status</dt>
-                  <dd><em>proved</em> for the concrete route that builds the canonical witness family and signature axes from the required-law index and derives three-reading agreement from the actual <code>Lawfulness</code> predicate; the older <code>ThreeReadingAgreementAssumptions</code> surface remains as a Research-compatible <em>packaged (assumption-relative)</em> surface.</dd>
+                  <dd><em>proved</em> for the concrete route that builds the circuit reading and residual signature axes from the required equation index and derives three-reading agreement from the actual <code>EquationLawful</code> predicate, relativized to circuit soundness / required completeness and the selected signature comparison.</dd>
                 </dl>
               </article>
             </section>
@@ -1107,10 +1158,14 @@ Lawful_U(A) iff forall L in U, L(A).</code></pre>
               <p id="definition-10-1" class="statement">
                 <a class="statement-anchor" href="#definition-10-1">Definition I.10.1 (Object algebra).</a>
                 An object algebra consists of the data
-                <code>Obj</code>, <code>Op</code>, <code>Inv</code>,
-                <code>Law</code>, <code>Ob</code>, <code>Sig</code>:
-                architecture objects, operations, invariants, the law
-                universe, obstruction circuits, and signatures.
+                <code>Obj</code>, <code>Ctx</code>, <code>Eq</code>,
+                <code>Op(A,B)</code>, <code>Inv(A)</code>,
+                <code>Circ_E(A,i)</code>, <code>Sig(A)</code>: architecture
+                objects, the local context category, the architectural
+                equation system over it, operations, invariants,
+                equation-indexed obstruction circuits, and signatures. The
+                algebra holds type families of operations and circuits, not
+                selected elements of them.
               </p>
               <p id="definition-10-2" class="statement">
                 <a class="statement-anchor" href="#definition-10-2">Definition I.10.2 (Operation).</a>
@@ -1148,26 +1203,40 @@ translation       : changes the representation</code></pre>
                   <span class="status-badge status-badge-proved">Lean: proved / packaged</span>
                 </div>
                 <p>
-                  In any universe satisfying the atom axiom system, the
-                  following construction is possible:
+                  For any atom universe <code>At</code>, atom axiom system
+                  <code>S</code>, and admissible core reading
+                  <code>r in CoreRead(At)</code> (Definition I.10.4A: source,
+                  extraction doctrine, composition, and the object / context /
+                  equation / circuit / invariant / signature / operation
+                  readings), the following construction is possible:
                 </p>
-                <pre><code>Atom
-  -> AtomFamily
-  -> Configuration
-  -> ArchitectureObject
-  -> LawUniverse
-  -> ObstructionCircuit
-  -> ArchitectureSignature</code></pre>
+                <pre><code>(s,D)  -> AtomFamily F_r -> Configuration C_r
+       -> ArchitectureObject A_r
+       -> operation-closed object family Obj_r
+R_ctx  -> local context category Ctx_r
+R_eq   -> ArchitecturalEquationSystem E_r on Ctx_r
+       -> derived natural-language law universe U_{E_r}
+R_circ -> equation-indexed circuit family Circ_{E_r}(A,-)
+R_sig  -> ArchitectureSignature Sig_r(A)
+R_inv  -> invariant family Inv_r(A)
+R_op   -> operation family Op_r(A,B)
+--------------------------------
+Core_At(r) : ObjectAlgebra(At)</code></pre>
                 <p>
-                  AAT therefore stands as a pure theory over the atom axiom
-                  system, equipped with architecture objects, laws,
-                  obstructions, signatures, and operations.
+                  The relative core construction is the map
+                  <code>Core_At : CoreRead(At) -&gt; ObjectAlgebra(At)</code>;
+                  the theorem's input is fixed to <code>(At, S, r)</code> and
+                  it does not accept an already-built object algebra as a
+                  premise. AAT therefore stands as a pure theory over the atom
+                  axiom system and a core reading, equipped with architecture
+                  objects, architectural equations, obstruction families,
+                  signatures, and operations.
                 </p>
                 <dl>
                   <dt>Lean anchors</dt>
-                  <dd><code>AAT.AG.AATCorePackage</code>, <code>AATCorePackage.AtomTowerRealization</code>, <code>ofComponents</code>, <code>ofAxiomRealization</code>, <code>exists_ofComponents_noHEq</code>, <code>exists_ofAxiomRealization_noHEq</code>, and the coherence lemmas (<code>configuration_family</code>, <code>object_configuration</code>, <code>algebra_*</code>).</dd>
+                  <dd><code>AAT.AG.CoreReading</code> (doctrine, source, composition, object / equation / invariant / signature / operation readings), <code>AATCorePackage</code> (axioms + reading), and the derived definitions <code>AATCorePackage.family</code>, <code>configuration</code>, <code>object</code>, <code>algebra</code>, <code>equationSystem</code>, <code>circuitReading</code> with their coherence lemmas (<code>family_atomizes</code>, <code>configuration_eq_compose</code>, <code>object_configuration_eq</code>).</dd>
                   <dt>Status</dt>
-                  <dd><em>proved</em> for the HEq-free existence theorems and the <code>AtomTowerRealization</code> bridge reading the Part I tower from <code>S.configurationOf</code>; the older <code>exists_ofComponents</code> dependent obstruction equality remains a Research-compatible <em>packaged (assumption-relative)</em> surface.</dd>
+                  <dd><em>proved</em> for the generation route: a core stores only the atom axioms and the reading rules, and its family, configuration, architecture object, and operation-closed algebra are derived definitions. The earlier component-assembly package that accepted the conclusions as inputs was retired from the primary route.</dd>
                 </dl>
               </div>
 
@@ -1181,9 +1250,9 @@ translation       : changes the representation</code></pre>
                 </div>
                 <dl>
                   <dt>Object algebra layer</dt>
-                  <dd><code>AAT.AG.Operation</code>, <code>ArchitectureSignature</code>, <code>ObjectAlgebra</code>, <code>OperationRole</code>, the six role predicates (<code>PreservesFunctionInvariant</code>, <code>PreservesPredicateInvariant</code>, <code>ReflectsObstruction</code>, <code>RepairsObstruction</code>, <code>ExtendsAtomFamily</code>, <code>SynthesizesLawfulObject</code>, <code>TranslatesRepresentation</code>), and accessor lemmas — <em>defined only / proved</em>. Theorem I.10.5 is not claimed at this layer; it is carried by <code>AATCorePackage</code> above.</dd>
+                  <dd><code>AAT.AG.ConfigurationHom</code> (atom map with family / relation / identification transport), <code>Operation</code>, <code>OperationReading</code>, <code>ArchitectureSignature</code>, <code>ObjectAlgebra</code>, the role predicates (<code>PreservesFunctionInvariant</code>, <code>PreservesPredicateInvariant</code>, <code>ReflectsObstruction</code>, <code>RepairsObstruction</code>, <code>ExtendsAtomFamily</code>, <code>SynthesizesLawfulObject</code>, <code>TranslatesRepresentation</code>), and accessor lemmas — <em>defined only / proved</em>. Theorem I.10.5 is not claimed at this layer; it is carried by <code>AATCorePackage</code> above.</dd>
                   <dt>Finite model</dt>
-                  <dd><code>AAT.AG.FiniteModel</code>: a finite example universe with component / depends / contract / substitution atoms, the A0–A8 package, the NoCycle and substitution obstruction circuits of Examples I.8.3 / I.8.4, a Theorem I.9.3 instance on a singleton required law universe (<code>finite_lawfulness_iff_omega_zero</code>), concrete three-reading firing, and handoff into the AAT Core package (<code>FiniteModel.corePackage</code>) — <em>defined only / proved</em>.</dd>
+                  <dd><code>AAT.AG.FiniteModel</code>: a finite example universe with component / depends / contract / substitution atoms, the A0–A8 package, the NoCycle and substitution obstruction circuits of Examples I.8.3 / I.8.4, a Theorem I.9.3 instance on the required equation support (<code>finite_equationLawful_iff_omega_zero</code>), concrete three-reading firing, and handoff into the AAT Core package (<code>FiniteModel.corePackage</code>, <code>corePackage_object</code>) — <em>defined only / proved</em>.</dd>
                 </dl>
               </article>
             </section>
@@ -1196,12 +1265,16 @@ translation       : changes the representation</code></pre>
                 observations from generating them; atom families,
                 configurations, and molecules organize those facts; every
                 architecture object is generated from an atom family
-                (Proposition I.5.3); invariants, laws, and obstruction
-                circuits read structure over those objects; and under
-                soundness, completeness, and zero-reflecting aggregation,
+                (Proposition I.5.3); the atom-indexed architectural equation
+                system assigns violation coordinates and residuals whose
+                vanishing defines lawfulness, with laws as readings of its
+                indices; obstruction circuits detect equation failure through
+                finite signed query patterns; and under soundness,
+                completeness, and zero-reflecting aggregation, equation
                 lawfulness coincides with zero obstruction (Theorem I.9.3, a
-                certified bounded inference). Theorem I.10.5 packages the
-                whole tower — atom to signature — as an object algebra.
+                certified bounded inference). Theorem I.10.5 generates the
+                whole tower — atom to signature — from an admissible core
+                reading as an object algebra.
               </p>
               <p>
                 Part II takes this tower geometric: architecture context
@@ -1227,20 +1300,24 @@ translation       : changes the representation</code></pre>
                   <dd><code>A = (C, S, Q)</code>: a configuration with structure maps and selected quantities; always atom-generated.</dd>
                 </div>
                 <div>
+                  <dt>Architectural equation system</dt>
+                  <dd>The atom-indexed data <code>(K_E, role_E, O_E, nu, epsilon)</code>: an equation index family with roles, an observable ring presheaf, symbolic violation coordinates, and object-dependent residuals whose vanishing defines fulfillment.</dd>
+                </div>
+                <div>
                   <dt>Law universe</dt>
-                  <dd>The family of laws considered together, with required / optional / derived roles, witness families, and coverage and exactness assumptions.</dd>
+                  <dd><code>U_E</code>: the natural-language reading of the equation system's index family and roles — not an additional truth predicate or a separate input.</dd>
                 </div>
                 <div>
                   <dt>Obstruction circuit</dt>
-                  <dd>A finite atom-and-relation arrangement witnessing a law failure.</dd>
+                  <dd>A finite signed query datum matched on an object and accepted by an equation index's detector code; the equation failure is derived from circuit soundness.</dd>
                 </div>
                 <div>
                   <dt>Zero-reflecting aggregation</dt>
-                  <dd>An aggregation whose zero forces every per-law valuation to be zero; the hypothesis under which lawfulness and \( \omega_U(A) = 0 \) coincide.</dd>
+                  <dd>An aggregation whose zero forces every per-equation valuation to be zero; the hypothesis under which equation lawfulness and \( \omega_E(A) = 0 \) coincide.</dd>
                 </div>
                 <div>
                   <dt>Object algebra</dt>
-                  <dd>The data <code>Obj, Op, Inv, Law, Ob, Sig</code> in which AAT's constructions close.</dd>
+                  <dd>The data <code>Obj, Ctx, Eq, Op, Inv, Circ_E, Sig</code> in which AAT's constructions close.</dd>
                 </div>
               </dl>
             </section>
