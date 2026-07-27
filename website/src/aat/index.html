@@ -2,7 +2,7 @@
 {
   "layout": "base.njk",
   "title": "Algebraic Architecture Theory",
-  "description": "Algebraic Architecture Theory treats software architecture as a geometric object: generated from atoms, cut out by laws, and read from local to global through obstruction sheaves and cohomology.",
+  "description": "Algebraic Architecture Theory treats software architecture as a geometric object: generated from atoms, cut out by architectural equations, and read from local to global through obstruction sheaves and cohomology.",
   "order": 1,
   "llmsLabel": "AAT overview",
   "navSection": "aat",
@@ -20,10 +20,10 @@
           <h1>Algebraic Architecture Theory</h1>
           <p class="lede">
             AAT treats software architecture as a geometric object: generated
-            from atoms, cut out by laws, and read from local to global through
-            obstruction sheaves and cohomology. Local correctness that fails
-            to glue globally is not a mystery in this theory &mdash; it is a
-            cohomology class.
+            from atoms, cut out by architectural equations, and read from
+            local to global through obstruction sheaves and cohomology. Local
+            correctness that fails to glue globally is not a mystery in this
+            theory &mdash; it is a cohomology class.
           </p>
         </div>
       </section>
@@ -49,30 +49,41 @@
               <h2>The geometry AAT studies</h2>
               <p>
                 AAT does not study a bare codebase. It studies the relative
-                architecture geometry that appears once four choices are
-                fixed: an atom vocabulary, a law universe, a coverage
-                topology, and a coefficient ring. Atoms are axiomatized as
-                primitive architectural facts. Laws do not create atoms; they
-                impose relations, constraints, and vanishing conditions on
-                atom families. Obstructions witness law failure, and when
-                local witnesses fail to glue, the difference appears as a
-                cohomology class.
+                architecture geometry that appears once a core reading of the
+                source is fixed: an atom universe with its axiom system, and a
+                reading that selects extraction, composition, and the
+                object / context / equation / signature / operation readings
+                on that carrier. Atoms are axiomatized as primitive
+                architectural facts. The architectural equation system does
+                not create atoms; it assigns symbolic violation coordinates
+                and object-dependent residuals to atom families, and a law is
+                a reading of that equation family &mdash; not a separate
+                input. Obstructions witness equation failure, and when local
+                witnesses fail to glue, the difference appears as a cohomology
+                class.
               </p>
               <figure class="code-panel">
                 <figcaption>The relative geometry</figcaption>
                 <pre><code>C : Codebase
-V : AtomVocabulary
-U : LawUniverse
-J : CoverageTopology
+At : AtomUniverse
+S : AtomAxiomSystem(At)
+r : CoreRead(At), with source C
+E_r : architectural equation system   (the equation reading of r)
+Sig_r : architecture signature        (the signature reading of r)
+J : coverage topology generated from the selected coverage package
 k : coefficient ring
 
-X_C^{V,U,J,k} : AATGeometry</code></pre>
+X_C^{r,J,k} : AATGeometry</code></pre>
               </figure>
               <p>
                 Every statement in this edition is read relative to these
-                fixed parameters. When the coefficient ring is not displayed,
-                \( X_C^{V,U,J} \) abbreviates a geometry with \( k \) already
-                fixed.
+                fixed parameters. When the core reading is fixed and the atom
+                vocabulary \( V \) and equation system \( E \) are displayed,
+                \( X_C^{V,E,J,k} \) abbreviates the same geometry; the
+                natural-language law universe \( U_E \) is the reading of
+                \( E \)&rsquo;s index and roles, not an extra input. When the
+                coefficient ring is not displayed, \( X_C^{V,E,J} \)
+                abbreviates a geometry with \( k \) already fixed.
               </p>
             </section>
 
@@ -91,8 +102,11 @@ X_C^{V,U,J,k} : AATGeometry</code></pre>
                     once &mdash; layering, dependency direction, authority
                     boundaries, contracts &mdash; and they hold or fail
                     together. Algebraic geometry is the mathematics of
-                    simultaneous equations: law failure is collected into an
-                    obstruction ideal, the lawful locus is its common zero set
+                    simultaneous equations: the symbolic violation coordinates
+                    of the required equations generate an obstruction ideal,
+                    the simultaneous vanishing of their object-dependent
+                    residuals defines equation lawfulness, the
+                    ideal-theoretic lawful locus is the common zero set
                     \( \mathrm{Flat}_U(X) = V(\mathcal{I}_{\mathrm{Ob}}^U) \),
                     and interaction between laws becomes ideal arithmetic
                     rather than an informal checklist.
@@ -138,8 +152,9 @@ X_C^{V,U,J,k} : AATGeometry</code></pre>
                   <dd>
                     Since Grothendieck, algebraic geometry studies objects
                     relative to a base, not absolute ones. AAT&rsquo;s
-                    discipline &mdash; fix an atom vocabulary, a law universe,
-                    a coverage topology, a coefficient ring, and
+                    discipline &mdash; fix an atom vocabulary, an
+                    architectural equation system, coverage requirements, a
+                    coverage topology, a coefficient ring, and
                     <a href="#reading-claims">stay silent about what was not
                     selected</a> &mdash; is not a safety clause bolted onto
                     the theory. It is the standard working posture of the
@@ -184,13 +199,13 @@ X_C^{V,U,J,k} : AATGeometry</code></pre>
                   <g class="chain-group">
                     <rect x="20" y="10" width="640" height="86" rx="8"></rect>
                     <text class="chain-title" x="40" y="44">Foundations &mdash; Part I</text>
-                    <text class="chain-items" x="40" y="72">Atom &#8594; atom family &#8594; architecture context category</text>
+                    <text class="chain-items" x="40" y="72">Atom &#8594; atom family &#8594; architecture object &#8594; atom-indexed equation system</text>
                   </g>
                   <path class="chain-arrow" d="M340 96 v26"></path>
                   <g class="chain-group">
                     <rect x="20" y="122" width="640" height="86" rx="8"></rect>
                     <text class="chain-title" x="40" y="156">Ringed structure &mdash; Parts II&#8211;III</text>
-                    <text class="chain-items" x="40" y="184">AAT site &#8594; sheaves &#8594; ringed topos &#8594; law algebra &#8594; obstruction ideal</text>
+                    <text class="chain-items" x="40" y="184">coverage package &#8594; AAT site &#8594; sheaves &#8594; ringed topos &#8594; law algebra &#8594; obstruction ideal</text>
                   </g>
                   <path class="chain-arrow" d="M340 208 v26"></path>
                   <g class="chain-group">
@@ -235,9 +250,9 @@ X_C^{V,U,J,k} : AATGeometry</code></pre>
               <h2>How to read claims</h2>
               <p>
                 Every claim in this edition is relative to a fixed vocabulary,
-                law universe, coverage topology, coefficient sheaf, and
-                representation family. Three kinds of statements appear, and
-                they are never interchangeable.
+                architectural equation system, coverage topology, coefficient
+                sheaf, and representation family. Three kinds of statements
+                appear, and they are never interchangeable.
               </p>
               <dl class="definition-list">
                 <div>
@@ -295,11 +310,11 @@ X_C^{V,U,J,k} : AATGeometry</code></pre>
                   </div>
                   <div>
                     <dt><a href="semantic-repair-saga/">Part X</a></dt>
-                    <dd>Claims are relativized to the selected charts, overlaps, residual, coefficient, and comparison data, and are read only inside the fixed semantic repair geometry.</dd>
+                    <dd>Claims are relativized to the selected cover, the two independently generated presentations (semantic and equation-generated), and the selected primary correspondence with its exactness conditions; they are read only inside that fixed comparison setting.</dd>
                   </div>
                   <div>
                     <dt><a href="appendix/">Appendix</a></dt>
-                    <dd>The claim status ledger of Section B.1 is an audit aid: canonical statements live in the main parts, and the ledger points back to them rather than replacing them.</dd>
+                    <dd>Collects the ambient conventions, the mathematical glossary, and the finite worked examples; canonical statements live in the main parts, and the appendix points back to them rather than replacing them.</dd>
                   </div>
                 </dl>
               </details>
@@ -346,7 +361,7 @@ X_C^{V,U,J,k} : AATGeometry</code></pre>
                   <a href="semantic-repair-saga/">Part X. Semantic Repair Descent and the SAGA Comparison Theorem</a>
                 </li>
                 <li class="chapter-list-child">
-                  <a href="appendix/">Appendix. Mathematical Ambient, Claim Status, and a Finite Worked Example</a>
+                  <a href="appendix/">Appendix. Mathematical Ambient, Glossary, and a Finite Worked Example</a>
                 </li>
                 <li class="chapter-list-parent">References</li>
                 <li class="chapter-list-child">
@@ -360,11 +375,14 @@ X_C^{V,U,J,k} : AATGeometry</code></pre>
                 </li>
               </ol>
               <p>
-                Part X is where the theory closes its central loop: local
-                repairs may each succeed &mdash; the SAGA comparison theorem
-                states when they glue to a global repair, and reads the
-                obstruction as a semantic repair \( H^1 \) compared against a
-                cover-relative &#268;ech \( H^1 \).
+                Part X is where the theory closes its central loop: two
+                obstruction measures are generated independently &mdash; one
+                from semantic repair options, one from the architectural
+                equation system, neither referring to the other &mdash; and
+                the SAGA comparison theorem proves that they coincide as
+                cover-relative &#268;ech \( H^1 \) classes; under a true sheaf
+                condition, the zero class is equivalent to an actual global
+                repair.
               </p>
             </section>
 

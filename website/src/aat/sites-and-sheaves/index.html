@@ -44,7 +44,7 @@
                 <li><a href="#morphisms">Restriction, projection, refinement</a></li>
                 <li><a href="#coverage-family">Coverage families</a></li>
                 <li><a href="#grothendieck-topology">AAT Grothendieck topology</a></li>
-                <li><a href="#adequate-covers">U-adequate covers</a></li>
+                <li><a href="#adequate-covers">E-adequate covers</a></li>
                 <li><a href="#finite-poset-regime">Finite poset regime</a></li>
                 <li><a href="#aat-site">AAT site</a></li>
                 <li><a href="#presheaves">Presheaves</a></li>
@@ -106,24 +106,28 @@
                 feature-local views, semantic slices, runtime slices, boundary
                 slices — and these views overlap, restrict, project, and glue.
                 The object enriched with this local-global structure is the
-                architecture geometry \( X_S^{V,U,J} \), where \( U \) is a
-                law universe and \( J \) a coverage topology.
+                architecture geometry \( X_s^{r,J} \), where \( r \) is the
+                core reading and \( J \) the coverage topology generated from
+                the selected coverage package.
               </p>
               <figure class="code-panel">
                 <figcaption>Central diagram of Part II</figcaption>
-                <pre><code>source S
-  -> AtomFamily F_S^V
+                <pre><code>source s, core reading r
+  -> AtomFamily F_s^r
   -> AtomConfiguration
-  -> ArchitectureObject A_S^V
-  -> ArchitectureContextCategory ArchCtx(A_S^V)
-  -> AATSite(A_S^V, U, J)
-  -> ArchitectureGeometry X_S^{V,U,J}</code></pre>
+  -> ArchitectureObject A_s^r
+  -> ArchitectureContextCategory ArchCtx(A_s^r)
+  -> equation system E_r, signature Sig_r
+  -> coverage requirements R_r, overlap package Ov_r
+  -> AATSite(A_s^r, J_{E_r,R_r,Ov_r})
+  -> ArchitectureGeometry X_s^{r,J}</code></pre>
               </figure>
               <p>
-                \( X_S^{V,U,J} \) is a local-global architecture geometry
-                relativized to the atom vocabulary, the law universe, and the
-                coverage topology. Each stage of the diagram is constructed in
-                this chapter.
+                \( X_s^{r,J} \) is a local-global architecture geometry
+                relativized to the core reading, the equation system it
+                produces, and the coverage topology generated from the
+                selected coverage package. Each stage of the diagram is
+                constructed in this chapter.
               </p>
             </section>
 
@@ -131,29 +135,34 @@
               <h2>Architecture geometry</h2>
               <p id="definition-2-1" class="statement">
                 <a class="statement-anchor" href="#definition-2-1">Definition II.2.1 (Architecture Geometry).</a>
-                For a source \( S \), atom vocabulary \( V \), law universe
-                \( U \), and coverage topology \( J \), the architecture
-                geometry is the data
+                For a source \( s \), atom axiom system \( S \), core reading
+                \( r \), the equation system \( E_r \) and signature
+                \( \mathrm{Sig}_r \) it produces, coverage requirements
+                \( R_r \), and a typed context-overlap pullback package
+                \( \mathrm{Ov}_r \), the architecture geometry is the data
               </p>
               <p>
                 \[
-                  X_S^{V,U,J} = \bigl( A_S^V,\ \mathrm{ArchCtx}(A_S^V),\ J_U \bigr),
+                  X_s^{r,J} = \bigl( A_s^r,\ \mathrm{ArchCtx}(A_s^r),\ E_r,\ \mathrm{Sig}_r,\ R_r,\ \mathrm{Ov}_r,\ J_{E_r,R_r,\mathrm{Ov}_r} \bigr),
                 \]
               </p>
               <p>
-                where \( A_S^V \) is the architecture object generated from
-                the atom family \( F_S^V \), \( \mathrm{ArchCtx}(A_S^V) \) is
-                its category of local contexts, and \( J_U \) is the coverage
-                topology relativized to the law universe \( U \).
+                where \( A_s^r \) is the architecture object generated from
+                the atom family \( F_s^r \), \( \mathrm{ArchCtx}(A_s^r) \) is
+                its category of local contexts, \( E_r \) is the atom-indexed
+                architectural equation system on it, and
+                \( J_{E_r,R_r,\mathrm{Ov}_r} \) is the coverage topology
+                generated from the admissible covers of the selected coverage
+                package.
               </p>
               <p>
                 Later chapters install further structure on
-                \( X_S^{V,U,J} \):
+                \( X_s^{r,J} \):
               </p>
               <figure class="code-panel">
                 <figcaption>Structure received in later parts</figcaption>
                 <pre><code>At_X       : Atom sheaf
-Law_U      : Law sheaf
+Eq_E       : Equation coordinate / residual sheaf
 Sig_U      : Signature sheaf
 Ob_U       : Obstruction sheaf
 O_X^U      : Law algebra sheaf
@@ -167,18 +176,21 @@ Flat_U(X)  : lawful locus</code></pre>
               </p>
               <p id="principle-2-2" class="statement">
                 <a class="statement-anchor" href="#principle-2-2">Principle II.2.2 (Geometry Relativity).</a>
-                Architecture geometry is relativized to the source \( S \),
-                the atom vocabulary \( V \), the law universe \( U \), and the
-                coverage topology \( J \). Different choices give different
-                geometries over the same source:
+                Architecture geometry is relativized to the source \( s \),
+                the atom axiom system \( S \), the core reading \( r \), the
+                equation system \( E_r \), the signature
+                \( \mathrm{Sig}_r \), the coverage requirements \( R_r \),
+                the overlap package \( \mathrm{Ov}_r \), and the coverage
+                topology \( J_{E_r,R_r,\mathrm{Ov}_r} \). Different choices
+                give different geometries over the same source:
               </p>
-              <pre><code>X_S^{V,U,J} != X_S^{W,U,J}   in general
-X_S^{V,U,J} != X_S^{V,U',J}  in general
-X_S^{V,U,J} != X_S^{V,U,J'}  in general</code></pre>
+              <pre><code>X_s^{r,J} != X_s^{r',J}  in general
+X_s^{r,J} != X_s^{r,J'}  in general</code></pre>
               <p>
-                By making explicit which vocabulary generates the atoms, which
-                laws are selected, and which covers read locality, AAT speaks
-                exactly about what it can speak about.
+                By making explicit which doctrine and object reading generate
+                the atom-origin object, which equation family is selected, and
+                which covers read locality, AAT speaks exactly about what it
+                can speak about.
               </p>
             </section>
 
@@ -373,6 +385,25 @@ W_i x_W W_j</code></pre>
                 This pullback is the context overlap. The &#268;ech complex of
                 Part IV is defined against these overlaps.
               </p>
+              <p id="definition-4-3a" class="statement">
+                <a class="statement-anchor" href="#definition-4-3a">Definition II.4.3A (Context Overlap Pullback Package).</a>
+                A context-overlap package
+                \( \mathrm{Ov} : \mathrm{ContextOverlapPullback}(\mathrm{ArchCtx}(A)) \)
+                selects, for each cospan \( W_L \to W \leftarrow W_R \), an
+                overlap context \( W_L \times_W W_R \), its two projections,
+                the commuting square, and the pullback universal property of
+                that square. The selection is compatible with identities and
+                composition, and pulling back along a context restriction
+                agrees with the selected overlap of the restricted cospan up
+                to canonical isomorphism. An interaction-overlap request of a
+                coverage requirement is a typed request &mdash; a base
+                context, two legs, and the interaction support to be read on
+                their overlap &mdash; and \( \mathrm{Ov} \) realizes it when
+                the selected pullback exists for the two legs and the
+                requested support is readable on its restriction image. So
+                \( \mathrm{Ov} \) is typed data, not an untyped overlap
+                marker.
+              </p>
               <p id="principle-4-4" class="statement">
                 <a class="statement-anchor" href="#principle-4-4">Principle II.4.4 (Context Non-Generation).</a>
                 Contexts do not create atoms. Context morphisms, restrictions,
@@ -450,10 +481,25 @@ unmeasured  != zero</code></pre>
                 \]
               </p>
               <p>
-                expressing that the required support, law witnesses,
-                boundaries, and signature axes of \( W \) are read through the
-                local views \( W_i \). What counts as "covered" is
-                relativized to the law universe and the selected reading, per
+                expressing that the selected supports of \( W \) are read
+                through the local views \( W_i \). Fixing the equation system
+                \( E \) and signature \( \mathrm{Sig} \), a coverage
+                requirement package
+                \( R : \mathrm{CoverageRequirements}(A,E,\mathrm{Sig}) \)
+                assigns to each context the finite or locally finite data
+                \( \mathrm{Req}_R(W) \): the required atom support, the
+                required equation-coordinate support inside
+                \( K_E^{\mathrm{req}} \times At \), the selected
+                violation-witness support, the required signature axes, and
+                the selected interaction-overlap requests. An overlap package
+                \( \mathrm{Ov} \) is chosen to realize those requests, so the
+                dependency order is \( E \), \( \mathrm{Sig} \), \( R \),
+                \( \mathrm{Ov} \). A coverage family is
+                \( (E,R,\mathrm{Ov}) \)-admissible when each selected support
+                of \( \mathrm{Req}_R(W) \) is jointly covered on patches or
+                on the overlaps \( \mathrm{Ov} \) specifies, and the selected
+                supports are stable under those restrictions. What counts as
+                &ldquo;covered&rdquo; is relativized to this package, per
                 Principle II.7.3.
               </p>
               <p id="example-6-2" class="statement">
@@ -482,50 +528,62 @@ unmeasured  != zero</code></pre>
             <section id="grothendieck-topology" class="article-section">
               <h2>AAT Grothendieck topology</h2>
               <p>
-                For a law universe \( U \), AAT first defines admissible
-                covers on \( \mathrm{ArchCtx}(A) \), then takes the
-                Grothendieck topology they generate as the AAT coverage
-                topology \( J_U \).
+                For the package \( (E,\mathrm{Sig},R,\mathrm{Ov}) \), AAT
+                first defines admissible covers on
+                \( \mathrm{ArchCtx}(A) \), then takes the Grothendieck
+                topology they generate as the AAT coverage topology
+                \( J_{E,R,\mathrm{Ov}} \). After
+                \( (\mathrm{Sig},R,\mathrm{Ov}) \) is fixed, this is
+                abbreviated \( J_E \) &mdash; an abbreviation, not a claim
+                that the topology is determined by \( E \) alone.
               </p>
               <p id="definition-7-1" class="statement">
                 <a class="statement-anchor" href="#definition-7-1">Definition II.7.1 (AAT Grothendieck Topology).</a>
-                The assignment \( J_U^{\mathrm{adm}}(W) \) collects the
-                admissible coverage families of each context \( W \). A family
-                \( \{ W_i \to W \} \) is admissible when it satisfies at least
-                the five conditions:
+                The assignment \( J_{E,R,\mathrm{Ov}}^{\mathrm{adm}}(W) \)
+                collects the admissible coverage families of each context
+                \( W \). A family \( \{ W_i \to W \} \) is admissible when it
+                satisfies:
               </p>
               <figure class="code-panel">
                 <figcaption>Admissibility conditions</figcaption>
                 <pre><code>Atom support coverage:
-  the required atom support of W is covered by the W_i.
+  the required atom support of Req_R(W) is jointly covered by the W_i.
 
-Law witness coverage:
-  required law witnesses appear on some W_i
-  or on an overlap W_ij.
+Equation-coordinate coverage:
+  each pair (i,a) in Req_R(W).requiredEquationCoordinateSupport
+  is readable on a patch or a specified overlap.
+
+Violation-witness coverage:
+  Req_R(W).selectedViolationWitnessSupport appears
+  on patches or overlaps.
 
 Signature axis coverage:
-  required zero axes are read across the cover.
+  the required axes of Req_R(W) are read across the cover.
 
-Boundary coverage:
-  mixed-axis obstructions, feature/core boundaries,
-  semantic/runtime boundaries, authority/effect
-  boundaries are visible on overlaps.
+Interaction-overlap coverage:
+  the selected mixed-axis, feature/core, semantic/runtime,
+  authority/effect interaction requests are visible on the
+  pullback overlaps specified by Ov.
+
+Selected-support stability:
+  restriction images of selected coordinate / witness supports
+  land in the selected supports of the corresponding patch or overlap.
 
 Non-generation:
   the cover does not create atoms.</code></pre>
               </figure>
               <p>
-                These semantic coverage conditions do not by themselves imply
-                base-change stability or transitivity. The AAT coverage
+                These coordinate coverage conditions do not by themselves
+                imply base-change stability or transitivity. The AAT coverage
                 topology is therefore defined as the smallest Grothendieck
                 topology generated by the admissible covers:
               </p>
               <p>
                 \[
-                  J_U = \text{the Grothendieck topology generated by } J_U^{\mathrm{adm}}.
+                  J_{E,R,\mathrm{Ov}} = \text{the Grothendieck topology generated by } J_{E,R,\mathrm{Ov}}^{\mathrm{adm}}.
                 \]
               </p>
-              <p>In particular \( J_U \) contains:</p>
+              <p>In particular \( J_{E,R,\mathrm{Ov}} \) contains:</p>
               <pre><code>identity / isomorphism:
   identities and isomorphisms are covers.
 
@@ -536,34 +594,42 @@ transitivity:
   covers of covers are covers.</code></pre>
               <p>
                 This generation closes the site axioms on the topology side
-                even when law witness coverage or boundary coverage can be
+                even when coordinate visibility or witness visibility can be
                 lost after refinement. Where a required witness disappears in
                 a refined cover, that is not a failure of the cover; it
                 reappears as a failure of coverage or witness completeness in
                 the hypotheses of later theorems. All sheaves on the AAT site
-                are read against this generated topology \( J_U \).
+                are read against this generated topology
+                \( J_{E,R,\mathrm{Ov}} \).
               </p>
             </section>
 
             <section id="adequate-covers" class="article-section">
-              <h2>U-adequate covers and witness closure</h2>
+              <h2>E-adequate covers and equation closure</h2>
               <p id="definition-7-2" class="statement">
-                <a class="statement-anchor" href="#definition-7-2">Definition II.7.2 (U-Adequate Cover).</a>
-                Among the covers of the generated topology \( J_U \), a cover
-                \( \mathcal{U} = \{ W_i \to W \} \) is \( U \)-adequate when
-                it is a \( J_U \)-cover and, for the selected data a theorem
-                requires, satisfies:
+                <a class="statement-anchor" href="#definition-7-2">Definition II.7.2 (E-Adequate Cover).</a>
+                Among the covers of the generated topology
+                \( J_{E,R,\mathrm{Ov}} \), a cover
+                \( \mathcal{U} = \{ W_i \to W \} \) is
+                \( (E,R,\mathrm{Ov}) \)-adequate when it is a
+                \( J_{E,R,\mathrm{Ov}} \)-cover and, for the selected data a
+                theorem requires, satisfies:
               </p>
-              <pre><code>required atom support is covered.
-required law witnesses appear on patches or overlaps.
-required signature axes are readable on the cover.
-required boundary witnesses are visible on overlaps.
-restriction maps preserve the selected witness ideals.</code></pre>
+              <pre><code>Req_R(W).requiredAtomSupport is covered.
+every pair in Req_R(W).requiredEquationCoordinateSupport
+  is readable on patches or overlaps.
+Req_R(W).selectedViolationWitnessSupport appears on patches or overlaps.
+Req_R(W).requiredSignatureAxes are readable on the cover.
+Req_R(W).selectedInteractionOverlapRequests are visible
+  on the pullback overlaps selected by Ov.
+the selected supports are stable under the specified restrictions.</code></pre>
               <p>
-                \( J_U \) is the topology for sheaf theory; \( U \)-adequacy
-                is the additional predicate for reading laws, witnesses, and
-                axes. Theorems about lawfulness and cohomological flatness in
-                later parts quantify over \( U \)-adequate covers.
+                \( J_{E,R,\mathrm{Ov}} \) is the topology for sheaf theory;
+                \( (E,R,\mathrm{Ov}) \)-adequacy is the additional predicate
+                for reading the selected equations, witnesses, and axes.
+                Downstream theorems with \( (R,\mathrm{Ov}) \) fixed
+                abbreviate it as \( E \)-adequate and quantify over
+                \( E \)-adequate covers.
               </p>
 
               <div class="theorem-card-list">
@@ -571,7 +637,7 @@ restriction maps preserve the selected witness ideals.</code></pre>
                   <div class="theorem-card-header">
                     <div>
                       <span class="theorem-card-label">Lemma II.7.2A &middot; Certified bounded inference</span>
-                      <h3>Witness-Closure Cover</h3>
+                      <h3>Equation-Closure Cover</h3>
                     </div>
                     <span class="status-badge status-badge-proved">proved</span>
                   </div>
@@ -579,28 +645,34 @@ restriction maps preserve the selected witness ideals.</code></pre>
                     <div>
                       <dt>Statement</dt>
                       <dd>
-                        Suppose the required witness family is locally finite,
-                        each witness support is representable in the context
-                        category, and the needed finite intersections or
-                        overlaps exist. Suppose further, for the selected
-                        reading, that restriction maps preserve the selected
-                        witness ideals, required signature axes are readable on
-                        the closed cover, and required boundary witnesses
-                        remain visible on overlaps. Then the witness-closure
-                        cover — the cover closed up to contain the required
-                        witness supports and their boundary overlaps — is
-                        \( U \)-adequate.
+                        Suppose the required atom support, required
+                        equation-coordinate support, and selected witness
+                        support of \( \mathrm{Req}_R \) are locally finite,
+                        each support is representable in the context category,
+                        and the needed finite intersections or overlaps exist.
+                        Suppose further, for the selected reading, that the
+                        selected coordinate and witness supports are stable
+                        under the specified restrictions, the required
+                        signature axes are readable on the closed cover, and
+                        the selected interaction witnesses remain visible on
+                        the pullback overlaps selected by \( \mathrm{Ov} \).
+                        Then the equation-closure cover — the cover closed up
+                        to contain the required supports and the specified
+                        pullback overlaps — is \( (E,R,\mathrm{Ov}) \)-adequate.
                       </dd>
                     </div>
                     <div>
                       <dt>Proof idea</dt>
                       <dd>
                         Closing the cover over the finitely many required
-                        witness supports and their overlaps realizes support,
-                        witness, axis, and boundary coverage directly; the
-                        ideal-preservation, axis-readability, and
-                        boundary-visibility hypotheses supply the remaining
-                        adequacy clauses.
+                        supports and their overlaps realizes atom, coordinate,
+                        witness, axis, and interaction coverage directly; the
+                        stability, readability, and visibility hypotheses
+                        supply the remaining adequacy clauses. Restriction
+                        compatibility of the \( \nu \) / \( \epsilon \) values
+                        and the restriction inclusion of the standard witness
+                        ideal follow from Part I Definition 7.1 and Part III
+                        Definition 5.2 and are not extra hypotheses here.
                       </dd>
                     </div>
                     <div>
@@ -609,6 +681,8 @@ restriction maps preserve the selected witness ideals.</code></pre>
                         <code>AAT.AG.Site.witnessClosureCover_uAdequate</code>,
                         <code>WitnessClosureCover</code>,
                         <code>SeedWitnessClosureCover.uAdequate</code>
+                        (the Lean surface retains the earlier
+                        witness-closure naming)
                       </dd>
                     </div>
                     <div>
@@ -616,9 +690,9 @@ restriction maps preserve the selected witness ideals.</code></pre>
                       <dd>
                         A certified bounded inference: containing the supports
                         alone does not automatically preserve the selected
-                        ideals, axes, and boundary readings. Those
-                        preservations are hypotheses of this lemma and are
-                        passed forward to later theorems. The construction
+                        residuals, ideals, axes, and interaction readings.
+                        Those preservations are hypotheses of this lemma and
+                        are passed forward to later theorems. The construction
                         package is <em>packaged (assumption-relative)</em> in
                         Lean.
                       </dd>
@@ -629,10 +703,10 @@ restriction maps preserve the selected witness ideals.</code></pre>
 
               <p id="principle-7-3" class="statement">
                 <a class="statement-anchor" href="#principle-7-3">Principle II.7.3 (Coverage Relativity).</a>
-                Coverage is relativized to the law universe and the selected
-                reading: covered within \( U \), covered for the selected
-                witnesses, covered for the selected axes. About atoms and axes
-                outside the coverage, AAT asserts neither zero nor lawful.
+                Coverage is relativized to the selected package: covered for
+                \( (E,R,\mathrm{Ov}) \), covered for the selected witnesses,
+                covered for the selected axes. About atoms and axes outside
+                the coverage, AAT asserts neither zero nor lawful.
               </p>
             </section>
 
@@ -652,9 +726,10 @@ restriction maps preserve the selected witness ideals.</code></pre>
               </p>
               <pre><code>ArchCtx_min(A) is a finite poset category.
 finite meets give selected overlaps.
-J_U is generated by finite witness-closure covers.
+J_{E,R,Ov} is generated by finite equation-closure covers.
 selected coefficient sheaves are functors on this finite poset.
-restriction maps preserve selected witness ideals and axes.</code></pre>
+restriction maps preserve selected equation coordinates,
+  witness ideals, and axes.</code></pre>
               <p>
                 Cover nerves, overlaps, and restrictions are induced from atom
                 supports, axes, and observable families.
@@ -674,7 +749,7 @@ restriction maps preserve selected witness ideals and axes.</code></pre>
                       <dt>Statement</dt>
                       <dd>
                         In the finite poset regime, for a finite
-                        witness-closure cover
+                        equation-closure cover
                         \( \mathcal{U} = \{ W_i \to W \} \) and a coefficient
                         sheaf \( F \) &#268;ech-computable on it, the
                         cover-relative &#268;ech complex
@@ -733,21 +808,25 @@ restriction maps preserve selected witness ideals and axes.</code></pre>
               <h2>AAT site</h2>
               <p id="definition-8-1" class="statement">
                 <a class="statement-anchor" href="#definition-8-1">Definition II.8.1 (AAT Site).</a>
-                For an architecture object \( A_S^V \), a law universe
-                \( U \), and the coverage topology \( J_U \), the AAT site is
-                the pair
+                For an architecture object \( A_S^V \), an equation system
+                \( E \), a signature \( \mathrm{Sig} \), coverage requirements
+                \( R \), and an overlap package \( \mathrm{Ov} \) realizing
+                its interaction requests, the AAT site is the full package
               </p>
               <p>
                 \[
-                  \mathrm{Site}_{\mathrm{AAT}}(S,V,U,J)
-                  = \bigl( \mathrm{ArchCtx}(A_S^V),\ J_U \bigr),
+                  \mathrm{Site}_{\mathrm{AAT}}(S,V,E,\mathrm{Sig},R,\mathrm{Ov})
+                  = \bigl( \mathrm{ArchCtx}(A_S^V),\ E,\ \mathrm{Sig},\ R,\ \mathrm{Ov},\ J_{E,R,\mathrm{Ov}} \bigr).
                 \]
               </p>
               <p>
-                abbreviated \( \mathrm{Site}_{\mathrm{AAT}}(A,U,J) =
-                (\mathrm{ArchCtx}(A), J_U) \) when the architecture object is
-                fixed. Locality, coverage, projection, unmeasured axes, and
-                gluing in AAT are all controlled by this site.
+                The underlying site is
+                \( (\mathrm{ArchCtx}(A), J_{E,R,\mathrm{Ov}}) \), with
+                \( E \) as its AAT equation decoration; when
+                \( (\mathrm{Sig},R,\mathrm{Ov}) \) is fixed downstream, the
+                abbreviation \( \mathrm{Site}_{\mathrm{AAT}}(A,E,J) \) is
+                used. Locality, coverage, projection, unmeasured axes, and
+                gluing in AAT are all controlled by this full package.
               </p>
             </section>
 
@@ -924,8 +1003,8 @@ unmeasured axis</code></pre>
               </p>
               <p>
                 \[
-                  \mathrm{AATSh}(A,U,J)
-                  = \mathrm{Sh}\bigl( \mathrm{ArchCtx}(A),\ J_U \bigr).
+                  \mathrm{AATSh}(A,E,J)
+                  = \mathrm{Sh}\bigl( \mathrm{ArchCtx}(A),\ J_{E,R,\mathrm{Ov}} \bigr).
                 \]
               </p>
               <p>
@@ -936,10 +1015,10 @@ unmeasured axis</code></pre>
               </p>
               <figure class="code-panel">
                 <figcaption>Conclusion of Part II</figcaption>
-                <pre><code>ArchitectureObject A_S^V
-  -> ArchitectureGeometry X_S^{V,U,J}
-  -> AATSite(S,V,U,J)
-  -> AATSh(A_S^V,U,J)</code></pre>
+                <pre><code>ArchitectureObject A_s^r
+  -> ArchitectureGeometry X_s^{r,J}
+  -> AATSite(S,V,E,Sig,R,Ov)
+  -> AATSh(A_s^r,E,J)</code></pre>
               </figure>
               <p>
                 With this, AAT passes from an atom-generated algebra into a
@@ -1198,7 +1277,7 @@ Formal/AG/Examples/FiniteModel.lean  singleton and two-patch site examples</code
               <dl class="term-list definition-list">
                 <div>
                   <dt>Architecture geometry</dt>
-                  <dd>\( X_S^{V,U,J} = (A_S^V, \mathrm{ArchCtx}(A_S^V), J_U) \): the architecture object with its context category and coverage topology.</dd>
+                  <dd>\( X_s^{r,J} = (A_s^r, \mathrm{ArchCtx}(A_s^r), E_r, \mathrm{Sig}_r, R_r, \mathrm{Ov}_r, J_{E_r,R_r,\mathrm{Ov}_r}) \): the architecture object with its context category, equation system, signature, coverage package, and generated topology.</dd>
                 </div>
                 <div>
                   <dt>Architecture context</dt>
@@ -1209,20 +1288,24 @@ Formal/AG/Examples/FiniteModel.lean  singleton and two-patch site examples</code
                   <dd>\( \mathrm{ArchCtx}(A) \): contexts and readable re-readings; a finite-meet poset in the minimal quotient model.</dd>
                 </div>
                 <div>
+                  <dt>Coverage requirements / overlap package</dt>
+                  <dd>\( R : \mathrm{CoverageRequirements}(A,E,\mathrm{Sig}) \) assigns each context its required atom / equation-coordinate / witness / axis / interaction-request data; \( \mathrm{Ov} \) selects the typed pullback overlaps that realize the interaction requests.</dd>
+                </div>
+                <div>
                   <dt>Admissible cover</dt>
-                  <dd>A coverage family satisfying atom support, law witness, signature axis, boundary coverage, and non-generation.</dd>
+                  <dd>A coverage family satisfying atom support, equation-coordinate, violation-witness, signature axis, interaction-overlap coverage, selected-support stability, and non-generation.</dd>
                 </div>
                 <div>
                   <dt>AAT coverage topology</dt>
-                  <dd>\( J_U \): the smallest Grothendieck topology generated by the admissible covers.</dd>
+                  <dd>\( J_{E,R,\mathrm{Ov}} \): the smallest Grothendieck topology generated by the admissible covers.</dd>
                 </div>
                 <div>
-                  <dt>U-adequate cover</dt>
-                  <dd>A \( J_U \)-cover that additionally keeps the selected witnesses, axes, boundaries, and witness ideals readable.</dd>
+                  <dt>E-adequate cover</dt>
+                  <dd>A \( J_{E,R,\mathrm{Ov}} \)-cover that additionally keeps the selected equation coordinates, witnesses, axes, and interaction readings readable.</dd>
                 </div>
                 <div>
                   <dt>AAT site</dt>
-                  <dd>\( (\mathrm{ArchCtx}(A), J_U) \): the stage for all locality in AAT.</dd>
+                  <dd>\( (\mathrm{ArchCtx}(A), E, \mathrm{Sig}, R, \mathrm{Ov}, J_{E,R,\mathrm{Ov}}) \): the full package staging all locality in AAT, with underlying site \( (\mathrm{ArchCtx}(A), J_{E,R,\mathrm{Ov}}) \).</dd>
                 </div>
                 <div>
                   <dt>Descent</dt>
@@ -1234,7 +1317,7 @@ Formal/AG/Examples/FiniteModel.lean  singleton and two-patch site examples</code
                 </div>
                 <div>
                   <dt>AAT sheaf category</dt>
-                  <dd>\( \mathrm{AATSh}(A,U,J) = \mathrm{Sh}(\mathrm{ArchCtx}(A), J_U) \): the entry to the ringed AAT topos of Part III.</dd>
+                  <dd>\( \mathrm{AATSh}(A,E,J) = \mathrm{Sh}(\mathrm{ArchCtx}(A), J_{E,R,\mathrm{Ov}}) \): the entry to the ringed AAT topos of Part III.</dd>
                 </div>
               </dl>
             </section>

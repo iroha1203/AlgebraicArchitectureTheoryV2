@@ -134,7 +134,6 @@
                 <pre><code>concept page
   -&gt; status label
   -&gt; formal anchor
-  -&gt; Lean source in Formal/AG
   -&gt; Lean source in Formal/AG</code></pre>
               </figure>
             </section>
@@ -154,16 +153,20 @@
                 <code>Formal/AG/Examples/FiniteModel.lean</code>. Proved
                 anchors: <code>AAT.AG.ArchitectureObject.atom_origin</code>
                 (every architecture object is generated from an atom family),
-                <code>AAT.AG.lawfulness_iff_omegaU_zero</code> (lawfulness iff
-                zero aggregate obstruction, relative to a required law universe
-                and zero-reflecting aggregation), and
-                <code>AAT.AG.concreteThreeReadingAgreement</code> (the concrete
-                three-reading agreement built from the required-law index).
-                Theorem I.10.5 is carried by
-                <code>AAT.AG.AATCorePackage</code> with the HEq-free existence
-                theorems proved and the older
-                <code>ThreeReadingAgreementAssumptions</code> surface kept as
-                packaged (assumption-relative).
+                <code>AAT.AG.ArchitecturalEquationSystem</code> with the
+                fulfillment predicates (the Part I &sect;7 equation system:
+                restriction-compatible violation coordinates and residuals),
+                <code>AAT.AG.equationLawful_iff_omegaE_zero</code> (equation
+                lawfulness iff zero aggregate obstruction, relative to the
+                required equation support and zero-reflecting aggregation),
+                and <code>AAT.AG.concreteThreeReadingAgreement</code> (the
+                concrete three-reading agreement built from the required
+                equation index through the circuit and signature readings).
+                Theorem I.10.5 is carried by the generation route of
+                <code>AAT.AG.CoreReading</code> /
+                <code>AATCorePackage</code>: a core stores only the axioms and
+                reading rules, and its family, configuration, object, and
+                operation-closed algebra are derived definitions.
               </p>
 
               <h3>Part II &mdash; Architecture Geometry, Sites, and Sheaves</h3>
@@ -190,10 +193,19 @@
                 <code>AAT.AG.LawAlgebra.IdempotentCollapse.quotientAlgEquivPi</code>
                 (finite idempotent coordinate algebras collapse onto Boolean
                 point products, with higher-Tor and Kähler vanishing), and
-                <code>AAT.AG.LawAlgebra.lawfulnessIdealFactorizationCorrespondence</code>
-                (semantic lawfulness, witness vanishing, ideal-sheaf
-                vanishing, and actual closed-subscheme factorization under
-                <code>RequiredLawIdealExact</code>). The Architecture Nullstellensatz
+                <code>AAT.AG.equationHoldsAlong_iff_nonempty_factorsThrough</code>
+                and <code>equationIdealFactorizationCorrespondence</code>
+                (Theorem III.5.2C: equation fulfillment iff generated-ideal
+                vanishing iff factorization, proved through the standard
+                constructor's producer theorems), and
+                <code>lawfulnessIdealFactorizationCorrespondence</code>
+                (Theorem III.11.1 over the generated route). The
+                Part III &sect;11 generated route lives in
+                <code>Formal/AG/LawAlgebra/LawEquation.lean</code>
+                (<code>DisplayedEquationSource</code>,
+                <code>obstructionQuotientPresheaf</code>,
+                <code>equationHolds_defect_eq_zero</code>). The Architecture
+                Nullstellensatz
                 (<code>ArchitectureNullstellensatzCandidate</code>) is
                 statement-only.
               </p>
@@ -290,26 +302,39 @@
 
               <h3>Part X &mdash; Semantic Repair Descent and the SAGA Comparison Theorem</h3>
               <p>
-                <code>Formal/AG/SemanticRepair/</code>. Proved anchors:
-                <code>AAT.AG.SemanticRepair.globalRepairCoherent_iff_additiveH1Zero</code>
-                (global semantic repair coherence iff the additive Čech H1
-                vanishes),
-                <code>AAT.AG.SemanticRepair.semanticRepairAdditiveH1Zero_iff_coverRelativeH1Zero</code>
-                (the cochain-level comparison with cover-relative Čech H1),
-                and the unconditional nonzero-H1 witness
-                <code>AAT.AG.Examples.SemanticRepairPart10.circleSemanticH1_nonzero</code>
-                on the three-edge circle nerve. The SAGA comparison packet is
-                carried by the proved package theorems of §7, relative to the
-                selected cover, additive coefficients, and supplied
-                law-equation grounding.
+                <code>Formal/AG/SemanticRepair/Saga/</code>. Proved anchors for
+                the current independent-generation construction:
+                the exactness-discharged coefficient isomorphism and
+                cochain comparison
+                (<code>AAT.AG.SemanticRepair.Saga.KappaComparison</code>:
+                <code>kappaH1AddEquiv</code>, <code>kappaStar</code> with
+                both-sided inverses, <code>sagaComparison_zero_iff</code>),
+                true-sheaf descent (Theorem X.8.2 / Corollary X.8.3 in
+                <code>TrueSheafDescent</code>:
+                <code>exists_unique_glue</code>,
+                <code>globalRepair_of_h1IsZero</code>,
+                <code>h1IsZero_of_globalRepair</code>), the nonzero-class
+                circle witness
+                (<code>CircleWitness.circle_nonzero_class_transfer</code>),
+                and the zero-class descent witness
+                (<code>DescentWitness</code>, assembled through
+                <code>SagaEquationPacket.ofProduction</code>). The earlier
+                additive-H1 surface
+                (<code>globalRepairCoherent_iff_additiveH1Zero</code>,
+                <code>semanticRepairAdditiveH1Zero_iff_coverRelativeH1Zero</code>)
+                remains proved as the historical route. All claims are
+                relative to the selected cover, presentations, and exactness
+                data.
               </p>
 
-              <h3>Appendix &mdash; Status ledger of the canonical text</h3>
+              <h3>Appendix &mdash; Glossary and worked examples of the canonical text</h3>
               <p>
-                The appendix of the monograph is the canonical status ledger
-                for undefined terms, primitive predicates, and future design
-                obligations. It has no separate Lean tranche; its entries are
-                tracked through the per-part ledgers above.
+                The appendix of the monograph carries the ambient conventions,
+                the mathematical glossary, and the finite worked examples. It
+                has no separate Lean tranche; its worked examples are tracked
+                through the per-part tranches above (the circle instance in
+                <code>Saga/CircleWitness</code> and
+                <code>Saga/DescentWitness</code>).
               </p>
             </section>
 
@@ -346,40 +371,40 @@
               <h3>Canonical text</h3>
               <ul>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/bd3a1152a7b7ac067ac4862c1dac91e99db66861/docs/aat/algebraic_geometric_theory/README.md" target="_blank" rel="noopener noreferrer">Canonical overview (README)</a>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/324ad8620f5f0db00dfa982af7ded5f4124ceb4d/docs/aat/algebraic_geometric_theory/README.md" target="_blank" rel="noopener noreferrer">Canonical overview (README)</a>
                 </li>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/bd3a1152a7b7ac067ac4862c1dac91e99db66861/docs/aat/algebraic_geometric_theory/part_1_atoms_objects_laws.md" target="_blank" rel="noopener noreferrer">Part I &mdash; Atoms, Objects, and Laws</a>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/324ad8620f5f0db00dfa982af7ded5f4124ceb4d/docs/aat/algebraic_geometric_theory/part_1_atoms_objects_laws.md" target="_blank" rel="noopener noreferrer">Part I &mdash; Atoms, Objects, and Laws</a>
                 </li>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/bd3a1152a7b7ac067ac4862c1dac91e99db66861/docs/aat/algebraic_geometric_theory/part_2_architecture_geometry_sites_sheaves.md" target="_blank" rel="noopener noreferrer">Part II &mdash; Architecture Geometry, Sites, and Sheaves</a>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/324ad8620f5f0db00dfa982af7ded5f4124ceb4d/docs/aat/algebraic_geometric_theory/part_2_architecture_geometry_sites_sheaves.md" target="_blank" rel="noopener noreferrer">Part II &mdash; Architecture Geometry, Sites, and Sheaves</a>
                 </li>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/bd3a1152a7b7ac067ac4862c1dac91e99db66861/docs/aat/algebraic_geometric_theory/part_3_law_algebra_obstruction_ideal_lawful_locus.md" target="_blank" rel="noopener noreferrer">Part III &mdash; Law Algebra, Obstruction Ideal, and the Lawful Locus</a>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/324ad8620f5f0db00dfa982af7ded5f4124ceb4d/docs/aat/algebraic_geometric_theory/part_3_law_algebra_obstruction_ideal_lawful_locus.md" target="_blank" rel="noopener noreferrer">Part III &mdash; Law Algebra, Obstruction Ideal, and the Lawful Locus</a>
                 </li>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/bd3a1152a7b7ac067ac4862c1dac91e99db66861/docs/aat/algebraic_geometric_theory/part_4_obstruction_cohomology.md" target="_blank" rel="noopener noreferrer">Part IV &mdash; Obstruction Cohomology</a>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/324ad8620f5f0db00dfa982af7ded5f4124ceb4d/docs/aat/algebraic_geometric_theory/part_4_obstruction_cohomology.md" target="_blank" rel="noopener noreferrer">Part IV &mdash; Obstruction Cohomology</a>
                 </li>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/bd3a1152a7b7ac067ac4862c1dac91e99db66861/docs/aat/algebraic_geometric_theory/part_5_derived_law_geometry_repair.md" target="_blank" rel="noopener noreferrer">Part V &mdash; Derived Law Geometry and Repair</a>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/324ad8620f5f0db00dfa982af7ded5f4124ceb4d/docs/aat/algebraic_geometric_theory/part_5_derived_law_geometry_repair.md" target="_blank" rel="noopener noreferrer">Part V &mdash; Derived Law Geometry and Repair</a>
                 </li>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/bd3a1152a7b7ac067ac4862c1dac91e99db66861/docs/aat/algebraic_geometric_theory/part_6_singularity_monodromy_stack.md" target="_blank" rel="noopener noreferrer">Part VI &mdash; Singularity, Monodromy, and Stacks</a>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/324ad8620f5f0db00dfa982af7ded5f4124ceb4d/docs/aat/algebraic_geometric_theory/part_6_singularity_monodromy_stack.md" target="_blank" rel="noopener noreferrer">Part VI &mdash; Singularity, Monodromy, and Stacks</a>
                 </li>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/bd3a1152a7b7ac067ac4862c1dac91e99db66861/docs/aat/algebraic_geometric_theory/part_7_representation_periods_analysis.md" target="_blank" rel="noopener noreferrer">Part VII &mdash; Representation, Periods, and Analysis</a>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/324ad8620f5f0db00dfa982af7ded5f4124ceb4d/docs/aat/algebraic_geometric_theory/part_7_representation_periods_analysis.md" target="_blank" rel="noopener noreferrer">Part VII &mdash; Representation, Periods, and Analysis</a>
                 </li>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/bd3a1152a7b7ac067ac4862c1dac91e99db66861/docs/aat/algebraic_geometric_theory/part_8_measurement_theory.md" target="_blank" rel="noopener noreferrer">Part VIII &mdash; Measurement Theory</a>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/324ad8620f5f0db00dfa982af7ded5f4124ceb4d/docs/aat/algebraic_geometric_theory/part_8_measurement_theory.md" target="_blank" rel="noopener noreferrer">Part VIII &mdash; Measurement Theory</a>
                 </li>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/bd3a1152a7b7ac067ac4862c1dac91e99db66861/docs/aat/algebraic_geometric_theory/part_9_evolution_geometry.md" target="_blank" rel="noopener noreferrer">Part IX &mdash; Evolution Geometry</a>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/324ad8620f5f0db00dfa982af7ded5f4124ceb4d/docs/aat/algebraic_geometric_theory/part_9_evolution_geometry.md" target="_blank" rel="noopener noreferrer">Part IX &mdash; Evolution Geometry</a>
                 </li>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/bd3a1152a7b7ac067ac4862c1dac91e99db66861/docs/aat/algebraic_geometric_theory/part_10_semantic_repair_descent_saga.md" target="_blank" rel="noopener noreferrer">Part X &mdash; Semantic Repair Descent and the SAGA Comparison Theorem</a>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/324ad8620f5f0db00dfa982af7ded5f4124ceb4d/docs/aat/algebraic_geometric_theory/part_10_semantic_repair_descent_saga.md" target="_blank" rel="noopener noreferrer">Part X &mdash; Semantic Repair Descent and the SAGA Comparison Theorem</a>
                 </li>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/bd3a1152a7b7ac067ac4862c1dac91e99db66861/docs/aat/algebraic_geometric_theory/appendix.md" target="_blank" rel="noopener noreferrer">Appendix &mdash; Status ledger of the canonical text</a>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/324ad8620f5f0db00dfa982af7ded5f4124ceb4d/docs/aat/algebraic_geometric_theory/appendix.md" target="_blank" rel="noopener noreferrer">Appendix &mdash; Mathematical Ambient, Glossary, and Finite Worked Example</a>
                 </li>
               </ul>
             </section>

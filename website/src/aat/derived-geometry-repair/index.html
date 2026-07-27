@@ -129,19 +129,28 @@ law conflict is derived non-transversality.</code></pre>
             <section id="lawful-loci" class="article-section">
               <h2>2. Lawful loci</h2>
               <p id="definition-2-1" class="statement">
-                <a class="statement-anchor" href="#definition-2-1">Definition V.2.1 (Lawful locus for a law universe).</a>
-                For a law universe \( U \), write the obstruction ideal sheaf
-                as \( I_U \subset \mathcal{O}_X \), abbreviating the Part III
-                notation \( I_{\mathrm{Ob}}^U \). The lawful locus of
-                \( U \) is
-                \( \mathrm{Flat}_U(X) = V(I_U) \), and likewise
-                \( \mathrm{Flat}_V(X) = V(I_V) \) for a law universe
-                \( V \).
+                <a class="statement-anchor" href="#definition-2-1">Definition V.2.1 (Lawful locus in the common ambient).</a>
+                Part V fixes one common ambient equation system \( E_X \) on
+                the context category, with its ringed AAT site
+                \( (X, \mathcal{O}_X) \), and selects two equation-index
+                subfamilies \( K_U, K_V \subset \mathrm{Index}(E_X) \). The
+                subsystems \( \mathrm{Eq}_U, \mathrm{Eq}_V \) inherit the atom
+                family, observable presheaf, restrictions, and
+                \( \nu \) / \( \epsilon \) structure from \( E_X \); the law
+                universes are their readings, \( U := U_{\mathrm{Eq}_U} \) and
+                \( V := U_{\mathrm{Eq}_V} \). By the sheaf-image construction
+                of Part III, both obstruction ideal sheaves
+                \( I_U := \mathcal{I}_{\mathrm{Ob}}^{\mathrm{Eq}_U} \) and
+                \( I_V := \mathcal{I}_{\mathrm{Ob}}^{\mathrm{Eq}_V} \) live in
+                the same \( \mathcal{O}_X \), with lawful loci
+                \( \mathrm{Flat}_U(X) = V(I_U) \) and
+                \( \mathrm{Flat}_V(X) = V(I_V) \).
               </p>
               <p id="principle-2-2" class="statement">
-                <a class="statement-anchor" href="#principle-2-2">Principle V.2.2 (Law universes are distinct readings).</a>
+                <a class="statement-anchor" href="#principle-2-2">Principle V.2.2 (Law universes are distinct readings in one ambient).</a>
                 \( U \) and \( V \) are different law readings of the same
-                architecture geometry \( X \). Representative examples:
+                architecture geometry \( X \), selected as index subfamilies
+                of one ambient equation system. Representative examples:
               </p>
               <pre><code>U_cycle:
   dependency cycle law universe.
