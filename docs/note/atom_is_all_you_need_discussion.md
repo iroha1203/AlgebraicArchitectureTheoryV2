@@ -3,7 +3,7 @@
 2026-07-29 のディスカッションのまとめ。**完成された理論ではない**。
 AAT の次目標「Atom 基礎論の補強」に向けた最初の考察として、
 到達した見取り図・定理候補・適用範囲・NEXT ACTION を固定する。
-Codex・有識者との議論往復と敵対レビューを反映済み(経緯は §10)。
+Codex・有識者との議論往復と敵対レビューを反映済み(経緯は PR #3852)。
 
 第I部本文([part_1_atoms_objects_laws.md](../aat/algebraic_geometric_theory/part_1_atoms_objects_laws.md))は
 保護ファイルであり、本ノートは本文を改訂しない。本文への反映は
@@ -583,22 +583,3 @@ a–d までで塔の下層・lift・Agent constructor・canonical resolution �
    および幾何的読みの選択空間と条件付き canonical resolution
    (representability)を主結果とする)
 4. 固まった成果を3条件ゲート経由で第I部・第II部へ反映する
-
-## 10. 経緯
-
-2026-07-29 の一連のディスカッションを、往復ごとに改訂して固定した。
-
-1. ユーザー × Claude の初回議論: 相対性原理・二相 Atom・欠陥の相対性・
-   解像度の原理の骨格
-2. Codex 往復(PR #3852): 理論的内容の再定置(輸送)、依存 profile、
-   接地の factorization、反証器の差し替え、定理候補の条件付き化、
-   実験の叩き台
-3. 有識者コメント第1回: 二層化と lift、L-adequacy、grounding certificate、
-   gauge fixing
-4. ユーザー発の問い「Atom が先か方程式系が先か」→ §6 新設
-5. 有識者コメント第2回: reading の塔への段階化、partial certified
-   constructor、冪集合 polarity と principal extent、ambient joint-kernel
-   quotient と representability、実験スライス
-6. Claude 敵対レビュー(哲学面): 「立ち上がる」の再定義、客観性の
-   発生論 / 内容論の分業、因子化テーゼの明示、残余絶対性の所有、
-   二人のウィトゲンシュタインの調停、沈黙の明示化
