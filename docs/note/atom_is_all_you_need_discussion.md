@@ -7,7 +7,8 @@ AAT の次目標「Atom 基礎論の補強」に向けた最初の考察とし�
 接地の factorization、反証器の差し替え、定理候補の条件付き化、最初の実験4点)、
 および有識者コメント(`π : AATRead -> Doc` の二層化と lift、Agent SKILL =
 section、L-adequacy、grounding certificate、gauge fixing、実験の精密化)を
-反映して改訂した。
+反映して改訂した。続けて「Atom が先か方程式系が先か」の議論を
+§6(adequacy polarity)として追記した。
 
 第I部本文([part_1_atoms_objects_laws.md](../aat/algebraic_geometric_theory/part_1_atoms_objects_laws.md))は
 保護ファイルであり、本ノートは本文を改訂しない。本文への反映は
@@ -58,7 +59,7 @@ EGA 以降の代数幾何では対象は多様体 X ではなく射 X -> S で�
 これが比喩でなく数学になるのは、doctrine の変更に対して
 Atom family・site・係数・障害類が**どう輸送されるか**を構成できたときである。
 本目標の理論的内容は「Atom は相対的である」という宣言そのものではなく、
-**輸送の構成**にある(§3、§6)。
+**輸送の構成**にある(§3、§7)。
 
 相対性が相対主義(何でもあり)に堕ちない理由は二つある。
 
@@ -322,7 +323,55 @@ Agent の resolution 選択は「最小十分な読みを探す」という具�
 インスタンス設計者の仕事であり、これは「エンジニアは代数幾何を習得しなくて
 よい、SKILL が理論を抽象化する」という既定方針の理論的根拠になる。
 
-## 6. 定理候補(すべて未証明の仮説。反例探索を先行させる)
+## 6. Atom が先か方程式系が先か
+
+「Atom = 選択した方程式系に対する最小十分抽象」(§5)からは、Atom が先か
+方程式系が先かという問いが立つ。答えはレベルを分けると定まる。
+
+**対象レベル(doctrine 固定後)では Atom が先である。** A0(primitive
+existence)と A5(law non-generation)はそのまま立ち、law は Atom を
+選別するだけで生成しない。A5・A6 は、対象レベルを設計レベルから守る
+公理として読み直せる: doctrine が固定された後は、law も観測も Atom を
+生成しない。
+
+**設計レベル(`Doc` の中で doctrine を選ぶ)では、どちらも先ではない。**
+読み `q` に対して表現可能な law family 全体を `Expr(q)`、law family `L`
+に対する adequacy を二項関係 `Adequate(q, L)` として置くと、
+
+```text
+L ⊆ Expr(q)  ⟺  q は L-adequate  ⟺  res(L) ≤ q(res(L) が存在するとき)
+```
+
+は、読みの粗さ順序と law family の包含順序の間の Galois 接続
+(`res ⊣ Expr`)である。この言葉で次が言える。
+
+- **compatible triple(§5)とは、この接続の閉元(安定対)である**
+- 閉包 `res ∘ Expr` は、どの law からも見えない Atom を刈る操作になる。
+  「方程式が沈黙する深さの Atom はノイズ」という §5 の直観は、
+  閉包作用素の言葉で定理化できる
+- `res(L)` の存在は保証されないが、adequacy を二項関係として先に置けば
+  接続自体は常に立つ(formal concept analysis の polarity)。`res(L)` の
+  存在は representability の定理候補として正確な位置を得る(§7 候補6)
+
+Galois 接続の反復は収束する(閉包は冪等)ため、この循環は悪循環ではなく、
+**どちらの端から始めても同じ閉対に到達する反復**である。
+
+「どちらが先か」を随伴で解消するのは、代数幾何が既に通った道でもある
+(空間が先か環が先か — `Spec ⊣ Γ`、Gelfand 双対性)。言語ゲームにおいて
+語と規則が相互構成的であることとも整合する。実務にも両方の入口が実在する:
+
+```text
+グリーンフィールド設計 = 方程式系が先
+  (要求から必要な観測語彙を導出する。res(L) の計算)
+レガシー考古学 = Atom が先
+  (まず抽出し、その語彙で表現可能な law を発見する。Expr(q) の計算)
+```
+
+理論の答えは「どちらも正当な入口であり、反復すれば同じ閉対で出会う」。
+ArchSig の沈黙規律はここで運用上の検出器になる: **評価できない law に
+対する沈黙は、non-adequacy の実行時検出**である。
+
+## 7. 定理候補(すべて未証明の仮説。反例探索を先行させる)
 
 1. **Obstruction support(条件付き)**: 当初の「非零の障害類は必ず意味 Atom の
    上に support される」という無条件主張は採らない。大域的 canonical family の
@@ -356,16 +405,17 @@ Agent の resolution 選択は「最小十分な読みを探す」という具�
 5. **デスコープの押し出し**: 方程式系の弱化に沿う類の押し出しとしての
    仕様変更。repair(coboundary 放電)との数学的区別。弱化で類は消えるが
    repair cochain は存在しない例の構成を含む。
-6. **Law-relative canonical resolution**: `L`-adequate な読みの
-   factorization 順序における最粗元の存在・非存在の特徴づけ(§5)。
-   存在すれば解像度選択の普遍性が立ち、非存在ならそれ自体が
+6. **Law-relative canonical resolution(adequacy polarity の表現可能性)**:
+   adequacy polarity の閉対の特徴づけと、`L`-adequate な読みの
+   factorization 順序における最粗元 `res(L)` の存在・非存在の特徴づけ
+   (§5–6)。存在すれば解像度選択の普遍性が立ち、非存在ならそれ自体が
    「instance designer の選択が残る理由」の記述になる。
 
 検証は `Formal/AG/Atom/` の既存形式化(AtomCarrier / AtomAxiomSystem /
 Atomizes)と `AxiomAudit.lean` を足場に、疎結合 sandbox
 (`research/lean/ResearchLean/`)から積む。
 
-## 7. 範囲外・明示 scope
+## 8. 範囲外・明示 scope
 
 - **終対象な底は置かない。** 「究極の底」(ハードウェア、物理法則)の存在は
   仮定しない。絶対的な底の存在仮定は相対性原理と衝突する。
@@ -378,7 +428,7 @@ Atomizes)と `AxiomAudit.lean` を足場に、疎結合 sandbox
 - 本ノートの主張はすべて AAT の語彙内の主張であり、現実のソフトウェア全体・
   意味宇宙全体への無制限 claim を含まない。
 
-## 8. NEXT ACTION
+## 9. NEXT ACTION
 
 次の要件を同時に満たす Atom 基礎論を、Codex を交えて徹底的に詰め、
 **論文にする**。
