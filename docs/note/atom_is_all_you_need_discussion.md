@@ -8,7 +8,9 @@ AAT の次目標「Atom 基礎論の補強」に向けた最初の考察とし�
 および有識者コメント(`π : AATRead -> Doc` の二層化と lift、Agent SKILL =
 section、L-adequacy、grounding certificate、gauge fixing、実験の精密化)を
 反映して改訂した。続けて「Atom が先か方程式系が先か」の議論を
-§6(adequacy polarity)として追記した。
+§6(adequacy polarity)として追記し、有識者の追加コメント(reading の塔への
+段階化、partial certified constructor、冪集合 polarity と principal extent、
+ambient joint-kernel quotient と representability、実験スライス)を反映した。
 
 第I部本文([part_1_atoms_objects_laws.md](../aat/algebraic_geometric_theory/part_1_atoms_objects_laws.md))は
 保護ファイルであり、本ノートは本文を改訂しない。本文への反映は
@@ -173,47 +175,77 @@ doctrine のどの成分の変更で動くかを記録したものを a の依�
    (3) 一般の翻訳 / base change に沿った輸送
    ```
 
-この三つを語る前提として、**doctrine の圏 `Doc` を最初に構成する**。
-ただし `Doc` の射 `f : D -> D'` だけから site・係数・障害類の comparison が
+この三つを語る前提として、**doctrine の圏を最初に構成する**。
+ただし doctrine の射 `f : D -> D'` だけから site・係数・障害類の comparison が
 自動的に生えるわけではない。現行 Lean の構造では、`ExtractionDoctrine` が
 直接決めるのは `extracts` と canonical Atom family までであり、その先は
 `CoreReading`(composition / object / equation / invariant / signature /
 operation の読み)と `ReadingCore`(geometry・coefficient・raw restriction
 system)が別データとして載っている。したがって必要なのは、doctrine の変更を
 full reading の変更へ持ち上げる **lift のデータまたは定理**である。
-概念的には二層に分ける。
+
+しかも full reading を単一の圏に丸めない。段階の異なる reading を別々の
+圏にして、**射影の塔**として置く。
 
 ```text
-Doc     : extraction doctrine の圏
-AATRead : doctrine の上に composition / equations / geometry / coefficients
-          まで載せた full reading の圏
+Doct_U       : doctrine そのもの
+ExtInst_U    : pointed extraction instance (D : ExtractionDoctrine U, s : D.Source)
+CoreRead_U,S : 固定した U・AtomAxiomSystem S 上の AATCorePackage
+GeomRead_U   : ReadingCore(core + geometry + coefficient + raw)
+ObProblem(p) : local data から具体的 obstruction class を導く問題
 
-π : AATRead -> Doc
+ObProblem -> GeomRead -> CoreRead -> ExtInst -> Doct
 ```
 
-各 `D : Doc` の上には、同じ Atom family を出発点にしても異なる equation
-reading や geometry を選ぶ複数の full reading がありうる。`D -> D'` に沿って
-上の reading を運べるとは限らず、**運べる場合の lift が transport** である。
-上の三分類(同値・refinement・一般 base change)は、性質の異なる lift として
-整理する。射 `f` に対して固定すべき comparison は次の4つであり、
-これらは lift の構成要素である:
+塔の各段には現行実装上の根拠がある。
 
-- atomization の comparison
-- AAT site / topology の comparison
-- obstruction coefficient の comparison
-- concrete obstruction class の輸送
+- **`ExtInst` の分離**: canonical Atom family を決めるのは doctrine 単体では
+  なく doctrine と source の組である(`CoreReading` 自身が `doctrine` と
+  依存型の `source` を別々に持つ)。doctrine 単体を対象にすると
+  atomization comparison の段階で source の輸送が後付けになる。
+- **core 段の対象は `AATCorePackage`**: `CoreReading` は生成レシピであり、
+  既存の `SignedExactCoreReadingHom` / `PositiveCoreReadingHom` も
+  `AATCorePackage` の間の射として定義されている。
+- **class 構成は最上段 `ObProblem`**: `ReadingCore` は scheme・ideal・class を
+  意図的に後段へ残している(docstring に明記)。concrete class は local data
+  から構成し、naturality を上段で証明する。これは結論相当データの先渡し
+  (certificate escape)を避ける規律の圏論版でもある。
 
-実装上は、既存の `Formal/AG/ReadingFunctoriality/` がすでに上層
-(reading 間比較)を持っているため、`Doc` はそれを作り直すのではなく
-**Atom 抽出から既存 ReadingFunctoriality へ接続する下層**として置く。
-数学的には `Doc` 上の indexed category / fibration に近いが、最初から
-一般論を実装せず、固定した `AtomCarrier U` 上の `Doc_U` と具体的な lift
-から始める。**本目標の最優先構成対象は `Doc` と `π` の下層接続である。**
+各段の上には複数の選択がありえ、下の射に沿って上の対象を運べるとは限らず、
+**運べる場合の lift が transport** である。三分類(同値・refinement・一般
+base change)は性質の異なる lift として整理する。4つの comparison は
+一度に要求せず、塔の段ごとに分ける:
 
-この見方では Agent SKILL の位置も定まる。Agent は doctrine を選ぶだけでなく、
-**`π` の section**、すなわち doctrine から実用的な full reading
-(admissible lift)を構成する手続きである。「人間に代数幾何を選ばせず
-SKILL が理論を抽象化する」という既定の製品方針が、そのまま数学的対象になる。
+- `ExtInst -> Doct`: source と extraction の comparison
+- `CoreRead -> ExtInst`: composition・object・equation・invariant・
+  signature・operation の lift
+- `GeomRead -> CoreRead`: site・topology・coefficient・raw system の lift
+- `ObProblem -> GeomRead`: 構成された cocycle / class の naturality
+
+こうすると、lift がどの段で失敗したかを常に特定できる。実装上は、既存の
+`Formal/AG/ReadingFunctoriality/` がすでに上層(reading 間比較)を持って
+いるため、塔はそれを作り直すのではなく **Atom 抽出から既存
+ReadingFunctoriality へ接続する下層**として置く。最初から一般論
+(indexed category / fibration)を実装せず、固定した `AtomCarrier U` 上で
+具体的な lift から始める。**本目標の最優先構成対象は塔の下層
+(`ExtInst -> Doct` と `CoreRead -> ExtInst`)である。**
+
+この見方では Agent SKILL の位置も定まる。ただし「SKILL = section」と
+一足飛びには言わない。一回の SKILL 実行が行うのは、入力
+`(D, s, Law, evidence)` の上の fiber から admissible な object を一つ
+構成することであり、まずは admissible な入力部分圏上の
+**partial certified constructor** である。射に沿う transport を選ぶ段階は
+cleavage / lifting operation に近く、functoriality が証明できた時点で
+初めて section と呼べる。
+
+```text
+partial certified constructor -> cleavage -> section
+```
+
+この梯子の下で、section の非存在は「Agent が instance designer の判断を
+完全には消せない理由」として意味のある結果になる。「人間に代数幾何を
+選ばせず SKILL が理論を抽象化する」という既定の製品方針は、
+梯子のどこまで登れたかとして測定できる。
 
 読みに依存する結論は消すのではなく、依存することを明示 scope として
 結論の近くに書く(沈黙の規律の定理化)。
@@ -313,6 +345,9 @@ atomization を factorization で順序づけ、最も粗い adequate reading �
 Atom = 存在論的な最小物ではなく、選択した方程式系に対する最小十分抽象
 ```
 
+(この標語の正確な読みは §6 で与える — 最小十分抽象なのは Atom 個体では
+なく atomization reading である。)
+
 これで「方程式が沈黙する深さまで降りない」は標語ではなく普遍性で言え、
 Agent の resolution 選択は「最小十分な読みを探す」という具体的な仕事になる。
 最粗の adequate reading が常に存在するとは限らず、その非存在も
@@ -334,27 +369,60 @@ existence)と A5(law non-generation)はそのまま立ち、law は Atom を
 公理として読み直せる: doctrine が固定された後は、law も観測も Atom を
 生成しない。
 
-**設計レベル(`Doc` の中で doctrine を選ぶ)では、どちらも先ではない。**
-読み `q` に対して表現可能な law family 全体を `Expr(q)`、law family `L`
-に対する adequacy を二項関係 `Adequate(q, L)` として置くと、
+**設計レベル(doctrine を選ぶ)では、どちらも先ではない。** ただしここは
+二つのレベルを分けて定式化する。law family `L` に対する adequacy を
+二項関係 `Adequate(q, L)` として置くと、任意の二項関係が常に与えるのは
+readings と laws の**冪集合の間**の polarity(antitone Galois connection)
+である。formal concept は readings の集合と laws の集合の閉対であり、
+個々の compatible triple が自動的に閉対になるわけではない。一方、
+point-valued な随伴
 
 ```text
-L ⊆ Expr(q)  ⟺  q は L-adequate  ⟺  res(L) ≤ q(res(L) が存在するとき)
+res(L) ≤ q  ⟺  L ⊆ Expr(q)
 ```
 
-は、読みの粗さ順序と law family の包含順序の間の Galois 接続
-(`res ⊣ Expr`)である。この言葉で次が言える。
+が立つのは、`L` を adequate にする readings の集合(extent)が最小元
+`res(L)` を持つ、すなわち **extent が principal** な場合に限る。
+したがって順序は次のとおり。
 
-- **compatible triple(§5)とは、この接続の閉元(安定対)である**
-- 閉包 `res ∘ Expr` は、どの law からも見えない Atom を刈る操作になる。
-  「方程式が沈黙する深さの Atom はノイズ」という §5 の直観は、
-  閉包作用素の言葉で定理化できる
-- `res(L)` の存在は保証されないが、adequacy を二項関係として先に置けば
-  接続自体は常に立つ(formal concept analysis の polarity)。`res(L)` の
-  存在は representability の定理候補として正確な位置を得る(§7 候補6)
+```text
+1. 任意の adequacy relation から冪集合上の concept lattice を作る
+2. どの extent が principal かを特徴づける
+3. principal な場合だけ res(L) を reading として取り出す
+```
 
-Galois 接続の反復は収束する(閉包は冪等)ため、この循環は悪循環ではなく、
-**どちらの端から始めても同じ閉対に到達する反復**である。
+この言葉で、compatible triple(§5)は principal extent に対応する
+閉構造の点表現であり、閉包はどの law からも見えない Atom を刈る操作になる
+(「方程式が沈黙する深さの Atom はノイズ」の定理化)。なお閉包が冪等でも、
+**異なる初期値が同じ閉対へ到達するとは限らない**。二つの入口が同じ閉対で
+出会うかは、両者が同じ formal concept を生成する条件として別 theorem に
+立てる。
+
+さらに明快な**基準模型**がある。source 上の全 law evaluation が関数として
+与えられる ambient な Set の世界では、joint-kernel quotient
+
+```text
+x ~_L y  iff  すべての l ∈ L について eval_l(x) = eval_l(y)
+q_L : Source -> Source / ~_L
+```
+
+が常に最粗の `L`-adequate reading になる。つまり **ambient には canonical
+resolution が必ず存在し**、難しい問いは「その quotient が許容 doctrine・
+有限性・計算可能性・接地条件の中で表現可能か」である。`res(L)` の非存在は
+絶対的非存在ではなく、**選んだ admissible reading class における
+representability failure** として読む。この二段構え(ambient での存在+
+admissible class 相対の表現可能性)は論文の主結果になりうる。CS 側では
+minimal sufficient statistic や Myhill–Nerode 型の最小商(観測で分離する
+最粗の合同)との接続が見える。
+
+この観点では「最小十分抽象」なのは Atom 個体というより
+**`q_L` / atomization reading** である。個々の Atom は、`q_L` を選んだ後の
+対象レベルで primitive のままである。§5 の標語は正確にはこう読む。
+
+```text
+atomization reading = 選択した方程式系に対する最小十分抽象
+Atom = その reading の下での primitive
+```
 
 「どちらが先か」を随伴で解消するのは、代数幾何が既に通った道でもある
 (空間が先か環が先か — `Spec ⊣ Γ`、Gelfand 双対性)。言語ゲームにおいて
@@ -362,12 +430,11 @@ Galois 接続の反復は収束する(閉包は冪等)ため、この循環は�
 
 ```text
 グリーンフィールド設計 = 方程式系が先
-  (要求から必要な観測語彙を導出する。res(L) の計算)
+  (要求から必要な観測語彙を導出する。q_L の構成)
 レガシー考古学 = Atom が先
   (まず抽出し、その語彙で表現可能な law を発見する。Expr(q) の計算)
 ```
 
-理論の答えは「どちらも正当な入口であり、反復すれば同じ閉対で出会う」。
 ArchSig の沈黙規律はここで運用上の検出器になる: **評価できない law に
 対する沈黙は、non-adequacy の実行時検出**である。
 
@@ -395,21 +462,24 @@ ArchSig の沈黙規律はここで運用上の検出器になる: **評価で�
    gauge orbit 上の cost functional として置き、運用方針に相対的な
    gauge fixing で修正候補を選ぶ道がある(「canonical blame はない」を
    「何も選べない」にしない。ArchSig が修理候補の提示まで進む際に効く)。
-3. **輸送定理群(lift の存在と性質)**: `π : AATRead -> Doc` の下で、
-   `Doc` の射に沿った (1) doctrine 同値不変性 (2) refinement 保存・反映
-   (3) 一般の翻訳 / base change 輸送。それぞれ別の仮定と結論を持つ
-   三種の lift statement とし、lift が存在しない場合に transport へ
+3. **輸送定理群(lift の存在と性質)**: reading の塔(§3)の各段の射影の
+   下で、下層射に沿った (1) doctrine 同値不変性 (2) refinement 保存・反映
+   (3) 一般の翻訳 / base change 輸送。段ごと・種類ごとに別の仮定と結論を
+   持つ lift statement とし、lift が存在しない場合にその段の transport へ
    本当に必要な追加仮定を抽出することも成果と数える。
 4. **健全性**: 接地された doctrine の下で抽出は決定的・再現可能、
    診断は doctrine 同値で不変。
 5. **デスコープの押し出し**: 方程式系の弱化に沿う類の押し出しとしての
    仕様変更。repair(coboundary 放電)との数学的区別。弱化で類は消えるが
    repair cochain は存在しない例の構成を含む。
-6. **Law-relative canonical resolution(adequacy polarity の表現可能性)**:
-   adequacy polarity の閉対の特徴づけと、`L`-adequate な読みの
-   factorization 順序における最粗元 `res(L)` の存在・非存在の特徴づけ
-   (§5–6)。存在すれば解像度選択の普遍性が立ち、非存在ならそれ自体が
-   「instance designer の選択が残る理由」の記述になる。
+6. **Law-relative canonical resolution(representability)**:
+   (a) adequacy relation の concept lattice における principal extent の
+   特徴づけ。(b) ambient joint-kernel quotient `q_L` の、許容 doctrine・
+   有限性・計算可能性・接地条件の中での representability の特徴づけ
+   (§5–6)。representable なら解像度選択の普遍性が立ち、failure なら
+   それ自体が「instance designer の選択が残る理由」の記述になる。
+   (c) 二つの入口(方程式系先行 / Atom 先行)が同じ formal concept を
+   生成する合流条件。
 
 検証は `Formal/AG/Atom/` の既存形式化(AtomCarrier / AtomAxiomSystem /
 Atomizes)と `AxiomAudit.lean` を足場に、疎結合 sandbox
@@ -438,7 +508,8 @@ R1. 相対的だが、工学としての要件を満たす
     (接地・反証器・輸送定理群で「読み替え耐性」を定理化)
 R2. Agent SKILL で実用的な抽出が可能
     (軽量モデルで構造 Atom を機械抽出、意味 Atom は grounding certificate
-     つき調停。SKILL は π の section = admissible lift の構成手続き。
+     つき調停。SKILL は partial certified constructor から始め、
+     cleavage・functoriality の梯子で section へ昇格を測る。
      抽出経済の分割線が理論の分割線と一致することを製品条件として維持)
 R3. AAT の土台を支える
     (A0–A8 を壊さず、二相・接地・欠陥相対性・解像度原理を
@@ -450,32 +521,39 @@ R4. CS として自然
      が系として再現されることを自然さの論拠とする)
 ```
 
-**最初の詰め対象は `Doc` の対象と射、および `π : AATRead -> Doc` の
-下層接続**(§3)。lift の形が定まると、輸送・客観性・解像度・定理候補の
-statement を順に固定できる。
+**最初の詰め対象は reading の塔の下層(`ExtInst -> Doct` と
+`CoreRead -> ExtInst`)**(§3)。lift の形が定まると、輸送・客観性・解像度・
+定理候補の statement を順に固定できる。geometry・class までの lift は
+最初は要求しない(失敗した段の特定を優先する)。
 
-**最初の研究実験**(Codex・有識者との往復で合意した叩き台): 既存
-`FiniteModel` の固定 carrier と抽出足場を使い、同じ source に対する
-二つの doctrine `D0, D1` を作るところから始め、同じ有限モデル上で
+**最初の研究スライス**(Codex・有識者との往復で合意した叩き台): 既存
+`FiniteModel` の固定 carrier と抽出足場を使い、同じ有限モデル上で
 次を構成して二相・接地・blame・デスコープ・輸送を検査する。
 
 ```text
-0. D0, D1 を CoreReading へ持ち上げられる正例と、Atom family は
-   比較できるが full reading への lift が存在しない負例を一つずつ作る。
-   正例は既存 ReadingFunctoriality へ接続し、負例から transport に
-   本当に必要な追加仮定を抽出する
-1. 同じ source から二つの doctrine が異なる Atom family を出す最小例
-2. 構造 Atom だけでも descent が失敗する反例、
+a. pointed extraction instance (D, s) を対象にした下層圏を作り、
+   同じ source から二つの doctrine D0, D1 が異なる Atom family を出す
+   最小例を固定する
+b. exact / refinement の二種類の下層射を定義する
+c. AATCorePackage への lift の正例と負例を一つずつ作る。
+   正例は既存 SignedExactCoreReadingHom / PositiveCoreReadingHom へ
+   接続し、負例から core lift に本当に必要な追加仮定を抽出する
+d. ambient joint-kernel quotient q_L を構成し、admissible reading class
+   の中での representability を検査する
+e. 構造 Atom だけでも descent が失敗する反例、
    または失敗を排除する最小仮定
-3. 固定 doctrine 内の二つの blame 代表と、それらを結ぶ coboundary
-4. law の弱化で class は消えるが repair cochain は存在しない例
+f. 固定 doctrine 内の二つの blame 代表と、それらを結ぶ coboundary
+g. law の弱化で class は消えるが repair cochain は存在しない例
 ```
+
+a–d までで塔の下層・lift・Agent constructor・canonical resolution の核が
+同じ有限模型に乗り、`ReadingCore`(geometry 段)へ進む理由も明確になる。
 
 想定する進め方(未確定、着手時に PRD / 研究 GOAL 化して確定する):
 
 1. 本ノートを地図として研究 GOAL(例: G-aat-atom-foundation-01)または
-   PRD を起草し、問いと採否規律を固定する。`Doc` と `π` の下層接続、
-   および実験 0–4 を最初のスコープに置く
+   PRD を起草し、問いと採否規律を固定する。reading の塔の下層接続と
+   実験スライス a–g を最初のスコープに置く
 2. Codex の研究ループで定理候補 1–6 を探索・反証・Lean 検証にかける
 3. 生き残った骨格で論文を構成する(SAGA 論文の次の一本。
    「Atom Is All You Need」— 相対性原理と二相 Atom から代数幾何が
