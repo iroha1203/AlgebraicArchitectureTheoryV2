@@ -3,9 +3,11 @@
 2026-07-29 のディスカッションのまとめ。**完成された理論ではない**。
 AAT の次目標「Atom 基礎論の補強」に向けた最初の考察として、
 議論で到達した見取り図・定理候補・適用範囲・NEXT ACTION を固定する。
-同日、PR #3852 上の Codex との議論往復を反映して改訂した
-(理論的内容の再定置、依存 profile、接地の factorization、反証器の差し替え、
-定理候補の条件付き化、`Doc` 圏の最優先化、最初の実験4点)。
+同日、PR #3852 上の Codex との議論往復(理論的内容の再定置、依存 profile、
+接地の factorization、反証器の差し替え、定理候補の条件付き化、最初の実験4点)、
+および有識者コメント(`π : AATRead -> Doc` の二層化と lift、Agent SKILL =
+section、L-adequacy、grounding certificate、gauge fixing、実験の精密化)を
+反映して改訂した。
 
 第I部本文([part_1_atoms_objects_laws.md](../aat/algebraic_geometric_theory/part_1_atoms_objects_laws.md))は
 保護ファイルであり、本ノートは本文を改訂しない。本文への反映は
@@ -21,7 +23,10 @@ AAT の次目標「Atom 基礎論の補強」に向けた最初の考察とし�
   (H^0 visible defect / H^1 gluing obstruction / H^2 coherence obstruction の区分)
 - [第X部 Semantic Repair / Descent / SAGA](../aat/algebraic_geometric_theory/part_10_semantic_repair_descent_saga.md)
 - [one-cent ドリフト実例](../../tools/archsig/examples/practical-rust-service/README.md)
-- `Formal/AG/Atom/`(AtomCarrier / AtomAxiomSystem / Atomizes)、`Formal/AG/AxiomAudit.lean`
+- `Formal/AG/Atom/`(AtomCarrier / AtomAxiomSystem / Atomizes)、
+  `Formal/AG/Atom/AATCore.lean`(CoreReading / AATCorePackage)、
+  `Formal/AG/ReadingFunctoriality/`(ReadingCore と reading 間比較の上層)、
+  `Formal/AG/AxiomAudit.lean`
 
 ---
 
@@ -139,6 +144,18 @@ doctrine のどの成分の変更で動くかを記録したものを a の依�
    「無からの解釈」ではなく「証拠の読み規則の選択」に縛られ、
    二つの doctrine の差分は diff 可能な成果物になる。接地条件は Atom の
    公理には足さず、**doctrine の許容性条件**として置く(A0–A8 は無傷のまま)。
+
+   実装形としては、existential を data に強めた grounding certificate を採る。
+
+   ```text
+   Grounding_D(s,a) := Σ e, Observed_D(s,e) × Interprets_R(e,a)
+   ```
+
+   extractor は Atom と grounding certificate の組を返し、certificate を
+   忘却したものが canonical Atom family になる(A8 の family uniqueness は
+   忘却後にそのまま維持される)。これにより doctrine 間の差分は「Atom が
+   違う」だけでなく「同じ Atom をどの evidence と rule で採用したか」の
+   diff になり、counter-witness が実行可能になる。
 2. **反証可能性**: 接地された読みは反証されうる。ただし「現に動いている
    システムに対して大量の非零障害を出す読みは疑わしい」は数学的な反証条件に
    ならない(実際に不整合な系を正しく読めば大量に出てよい)。反証器には次を採る。
@@ -156,15 +173,46 @@ doctrine のどの成分の変更で動くかを記録したものを a の依�
    ```
 
 この三つを語る前提として、**doctrine の圏 `Doc` を最初に構成する**。
-射 `f : D -> D'` が誘導するものを固定する:
+ただし `Doc` の射 `f : D -> D'` だけから site・係数・障害類の comparison が
+自動的に生えるわけではない。現行 Lean の構造では、`ExtractionDoctrine` が
+直接決めるのは `extracts` と canonical Atom family までであり、その先は
+`CoreReading`(composition / object / equation / invariant / signature /
+operation の読み)と `ReadingCore`(geometry・coefficient・raw restriction
+system)が別データとして載っている。したがって必要なのは、doctrine の変更を
+full reading の変更へ持ち上げる **lift のデータまたは定理**である。
+概念的には二層に分ける。
+
+```text
+Doc     : extraction doctrine の圏
+AATRead : doctrine の上に composition / equations / geometry / coefficients
+          まで載せた full reading の圏
+
+π : AATRead -> Doc
+```
+
+各 `D : Doc` の上には、同じ Atom family を出発点にしても異なる equation
+reading や geometry を選ぶ複数の full reading がありうる。`D -> D'` に沿って
+上の reading を運べるとは限らず、**運べる場合の lift が transport** である。
+上の三分類(同値・refinement・一般 base change)は、性質の異なる lift として
+整理する。射 `f` に対して固定すべき comparison は次の4つであり、
+これらは lift の構成要素である:
 
 - atomization の comparison
 - AAT site / topology の comparison
 - obstruction coefficient の comparison
 - concrete obstruction class の輸送
 
-`Doc` の対象と射が定まれば、輸送・客観性・解像度・定理候補 1–5 の
-statement が連鎖的に決まる。**本目標の最優先構成対象は `Doc` である。**
+実装上は、既存の `Formal/AG/ReadingFunctoriality/` がすでに上層
+(reading 間比較)を持っているため、`Doc` はそれを作り直すのではなく
+**Atom 抽出から既存 ReadingFunctoriality へ接続する下層**として置く。
+数学的には `Doc` 上の indexed category / fibration に近いが、最初から
+一般論を実装せず、固定した `AtomCarrier U` 上の `Doc_U` と具体的な lift
+から始める。**本目標の最優先構成対象は `Doc` と `π` の下層接続である。**
+
+この見方では Agent SKILL の位置も定まる。Agent は doctrine を選ぶだけでなく、
+**`π` の section**、すなわち doctrine から実用的な full reading
+(admissible lift)を構成する手続きである。「人間に代数幾何を選ばせず
+SKILL が理論を抽象化する」という既定の製品方針が、そのまま数学的対象になる。
 
 読みに依存する結論は消すのではなく、依存することを明示 scope として
 結論の近くに書く(沈黙の規律の定理化)。
@@ -252,10 +300,22 @@ Atom の解像度は、語りたい方程式系が語れる解像度によって
 方程式が沈黙する深さまで降りない。
 ```
 
-定式化としては、`(V, ρ)` と方程式系を独立入力として置くのではなく、
-**「Law が表現可能」という条件で結ばれた compatible triple `(V, ρ, Law)`**
-として定義する。こうすると解像度原理は、理論と Agent SKILL の
-doctrine 選択規則をつなぐ実用的な主結果の候補になる。
+定式化は二段で強められる。第一段は、`(V, ρ)` と方程式系を独立入力として
+置くのではなく、**「Law が表現可能」という条件で結ばれた compatible triple
+`(V, ρ, Law)`** として定義すること。第二段は普遍性である。選択した law
+family `L` に対して、source の読み `q` が **`L`-adequate** であるとは、
+すべての law evaluation が `q` を通して factor すること。`L`-adequate な
+atomization を factorization で順序づけ、最も粗い adequate reading が
+存在するとき、それを **law-relative canonical resolution** と呼ぶ。
+
+```text
+Atom = 存在論的な最小物ではなく、選択した方程式系に対する最小十分抽象
+```
+
+これで「方程式が沈黙する深さまで降りない」は標語ではなく普遍性で言え、
+Agent の resolution 選択は「最小十分な読みを探す」という具体的な仕事になる。
+最粗の adequate reading が常に存在するとは限らず、その非存在も
+「なぜ instance designer の選択が残るのか」を説明する意味のある結果である。
 
 解像度の選択は、底の共有度(深いほど普遍的)と方程式の表現力(深いほど痩せる)
 のトレードオフの上の選択である。doctrine の選択は理論のユーザーの仕事ではなく
@@ -282,14 +342,24 @@ doctrine 選択規則をつなぐ実用的な主結果の候補になる。
    だけ動くこと(cohomology の statement)。(b) doctrine の変更で複体
    そのものが変わること(comparison map と naturality が必要)。
    blame の移動(a)と defect class の輸送(b)を混同しない。
-3. **輸送定理群**: `Doc` の射に沿った (1) doctrine 同値不変性
-   (2) refinement 保存・反映 (3) 一般の翻訳 / base change 輸送。
-   それぞれ別の仮定と結論を持つ三つの statement とする。
+   後段の拡張として、修正コスト・authority・ownership・risk の非対称性を
+   gauge orbit 上の cost functional として置き、運用方針に相対的な
+   gauge fixing で修正候補を選ぶ道がある(「canonical blame はない」を
+   「何も選べない」にしない。ArchSig が修理候補の提示まで進む際に効く)。
+3. **輸送定理群(lift の存在と性質)**: `π : AATRead -> Doc` の下で、
+   `Doc` の射に沿った (1) doctrine 同値不変性 (2) refinement 保存・反映
+   (3) 一般の翻訳 / base change 輸送。それぞれ別の仮定と結論を持つ
+   三種の lift statement とし、lift が存在しない場合に transport へ
+   本当に必要な追加仮定を抽出することも成果と数える。
 4. **健全性**: 接地された doctrine の下で抽出は決定的・再現可能、
    診断は doctrine 同値で不変。
 5. **デスコープの押し出し**: 方程式系の弱化に沿う類の押し出しとしての
    仕様変更。repair(coboundary 放電)との数学的区別。弱化で類は消えるが
    repair cochain は存在しない例の構成を含む。
+6. **Law-relative canonical resolution**: `L`-adequate な読みの
+   factorization 順序における最粗元の存在・非存在の特徴づけ(§5)。
+   存在すれば解像度選択の普遍性が立ち、非存在ならそれ自体が
+   「instance designer の選択が残る理由」の記述になる。
 
 検証は `Formal/AG/Atom/` の既存形式化(AtomCarrier / AtomAxiomSystem /
 Atomizes)と `AxiomAudit.lean` を足場に、疎結合 sandbox
@@ -317,7 +387,8 @@ Atomizes)と `AxiomAudit.lean` を足場に、疎結合 sandbox
 R1. 相対的だが、工学としての要件を満たす
     (接地・反証器・輸送定理群で「読み替え耐性」を定理化)
 R2. Agent SKILL で実用的な抽出が可能
-    (軽量モデルで構造 Atom を機械抽出、意味 Atom は接地条件つき調停。
+    (軽量モデルで構造 Atom を機械抽出、意味 Atom は grounding certificate
+     つき調停。SKILL は π の section = admissible lift の構成手続き。
      抽出経済の分割線が理論の分割線と一致することを製品条件として維持)
 R3. AAT の土台を支える
     (A0–A8 を壊さず、二相・接地・欠陥相対性・解像度原理を
@@ -329,13 +400,20 @@ R4. CS として自然
      が系として再現されることを自然さの論拠とする)
 ```
 
-**最初の詰め対象は `Doc` の対象と射の確定**(§3)。そこが定まると
-輸送・客観性・解像度・定理候補 1–5 の statement が連鎖的に決まる。
+**最初の詰め対象は `Doc` の対象と射、および `π : AATRead -> Doc` の
+下層接続**(§3)。lift の形が定まると、輸送・客観性・解像度・定理候補の
+statement を順に固定できる。
 
-**最初の研究実験**(Codex との往復で合意した叩き台): 同じ有限モデル上で
-次の4つを作り、二相・接地・blame・デスコープを同じ模型で検査する。
+**最初の研究実験**(Codex・有識者との往復で合意した叩き台): 既存
+`FiniteModel` の固定 carrier と抽出足場を使い、同じ source に対する
+二つの doctrine `D0, D1` を作るところから始め、同じ有限モデル上で
+次を構成して二相・接地・blame・デスコープ・輸送を検査する。
 
 ```text
+0. D0, D1 を CoreReading へ持ち上げられる正例と、Atom family は
+   比較できるが full reading への lift が存在しない負例を一つずつ作る。
+   正例は既存 ReadingFunctoriality へ接続し、負例から transport に
+   本当に必要な追加仮定を抽出する
 1. 同じ source から二つの doctrine が異なる Atom family を出す最小例
 2. 構造 Atom だけでも descent が失敗する反例、
    または失敗を排除する最小仮定
@@ -346,9 +424,9 @@ R4. CS として自然
 想定する進め方(未確定、着手時に PRD / 研究 GOAL 化して確定する):
 
 1. 本ノートを地図として研究 GOAL(例: G-aat-atom-foundation-01)または
-   PRD を起草し、問いと採否規律を固定する。`Doc` の構成と実験4点を
-   最初のスコープに置く
-2. Codex の研究ループで定理候補 1–5 を探索・反証・Lean 検証にかける
+   PRD を起草し、問いと採否規律を固定する。`Doc` と `π` の下層接続、
+   および実験 0–4 を最初のスコープに置く
+2. Codex の研究ループで定理候補 1–6 を探索・反証・Lean 検証にかける
 3. 生き残った骨格で論文を構成する(SAGA 論文の次の一本。
    「Atom Is All You Need」— 相対性原理と二相 Atom から代数幾何が
    立ち上がることを主結果とする)
