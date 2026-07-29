@@ -3,7 +3,8 @@
 2026-07-29 のディスカッションのまとめ。**完成された理論ではない**。
 AAT の次目標「Atom 基礎論の補強」に向けた最初の考察として、
 到達した見取り図・定理候補・適用範囲・NEXT ACTION を固定する。
-Codex・有識者との議論往復と敵対レビューを反映済み(経緯は PR #3852)。
+Codex・有識者・マルチエージェント探索との議論往復と敵対レビューを
+反映済み(経緯はコミットログと PR の記録)。
 
 第I部本文([part_1_atoms_objects_laws.md](../aat/algebraic_geometric_theory/part_1_atoms_objects_laws.md))は
 保護ファイルであり、本ノートは本文を改訂しない。本文への反映は
@@ -55,7 +56,10 @@ EGA 以降の代数幾何では対象は射 X -> S であり、性質(平坦・�
 ファイバーであり、Atom は**宣言された底の上の族**である。現段階の
 「Grothendieck 的」は比喩であり、doctrine の変更に対して Atom family・
 site・係数・障害類がどう輸送されるかを構成できたとき、はじめて数学になる。
-本目標の理論的内容はこの**輸送の構成**にある(§3、§7)。
+本目標の理論的内容はこの**輸送の構成**にある(§3、§8)。輸送の形式化
+仕様と達成階梯(Gr0–Gr4)は §3.5 に固定した: 現在 Gr1(statement 化)に
+到達済みであり、この比喩宣言の撤回条件は Gr2(§12 スライス a–c の
+Lean 構成)である。
 
 タイトル「Atom Is All You Need」のテーゼは、因子化として固定する。
 
@@ -66,7 +70,7 @@ Atom は、すべての読みが通る唯一のボトルネック・インター
 
 Atom は万物を導出する源泉ではなく、すべてが通る唯一の関門である。
 これは L-adequacy(§5)を結論一般へ広げた完全性テーゼであり、
-修辞ではなく検証対象である(§7 候補7)。
+修辞ではなく検証対象である(§8 候補7)。
 
 相対性が相対主義(何でもあり)に堕ちない支えは三つある。
 
@@ -259,7 +263,98 @@ functoriality が証明できた時点で、初めて section と呼ぶ。sectio
 結果になる。「人間に代数幾何を選ばせず SKILL が理論を抽象化する」という
 既定の製品方針は、この梯子のどこまで登れたかとして測定できる。
 
-### 3.5 沈黙の規律と系譜
+### 3.5 輸送の形式化仕様 — Gr1 から Gr2 へ
+
+グロタンディーク的相対性(§1)の償還条件を、現行 Lean シグネチャに
+対する仕様として固定する。鍵は次の事実である: **上層の輸送データ型は
+実装済みであり**(`SignedExactCoreReadingHom` の field 群)、未了なのは
+**底(doctrine の射)からのその構成**である。§1 の四成分は field に
+対応物を既に持つ。
+
+```text
+Atom family の輸送     ↔ extraction_eq
+                          (Q.family = P.family.transport atomEquiv)
+係数(方程式系)の輸送 ↔ equationTransport(EquationSystemExactTransport)
+障害検出データの輸送   ↔ detectorCode_eq(signed template の transport)
+site 側の素材          ↔ objectMap / configuration_eq
+                          (nerve への接続は候補9 が担う)
+```
+
+したがって「比喩ではなく数学」への正確な残作業は、これらの field を
+結論として導く底の射の圏と lift の構成に尽きる。以下を設計判断として
+固定する。
+
+**(1) Doct_U の射。** `ExtractionDoctrine U` の間の射 `σ : D -> D'` は
+次のデータ:
+
+```text
+sourceMap  : D.Source -> D'.Source
+atomMap    : U.Atom -> U.Atom(exact 版は U.Atom ≃ U.Atom)
+normalize 可換: sourceMap ∘ D.normalize = D'.normalize ∘ sourceMap
+admission 比較(二種):
+  exact 射     : D.extracts s a ⟺ D'.extracts (sourceMap s) (atomMap a)
+  refinement 射: D.extracts s a ⟹ D'.extracts (sourceMap s) (atomMap a)
+                 (反映は独立条件として分離)
+```
+
+スライス b の「exact / refinement の二種類の下層射」の正確な内容は
+この二つである。carrier `U` は第一次イテレーションでは固定する(§3.3)。
+
+**(2) ExtInst_U と射影。** 対象 `(D, s)`、射 `(D, s) -> (D', s')` は
+`σ : D -> D'` と `s' = σ.sourceMap s` の組。忘却 `ExtInst_U -> Doct_U`
+が塔の最下段の射影になる。
+
+**(3) 輸送の第一 statement。** exact 射に対する atomize の自然性:
+
+```text
+D'.atomize (σ.sourceMap s) = (D.atomize s).transport σ.atomEquiv
+```
+
+これは `SignedExactCoreReadingHom.extraction_eq` と同じ等式であり、
+**塔仕様と既存実装の握手点**である。refinement 射では等式が包含に
+弱まり、反映の失敗が「新しい Atom がどの family・composition に
+入るか」の追加データを要求する。
+
+**(4) 輸送 = opcartesian lift。** package の hom `F : P -> Q` が
+`σ` の上にあるとは、F の底への射影が σ に一致すること。F が
+opcartesian であるとは、σ を通して factor する任意の hom が F を
+通して一意に factor すること。**transport とは opcartesian lift の
+選択(op-cleavage)である。** 引き戻し側の cartesian lift も存在する
+とき射影は bifibration になり、§6 の polarity の随伴はその categorical
+形として回収される。「Grothendieck 的」の語はここで比喩から装置名に
+変わる — 塔の射影を Grothendieck (op)fibration として立てる、という
+文字通りの意味である。
+
+**(5) Gr2 の証明対象4点**(スライス a–c の形式仕様):
+
+```text
+(i)   transportAlong: exact σ と P から Q = P.transport(σ) を構成し、
+      tautological hom P -> Q が σ の上の opcartesian であることを示す
+(ii)  opcartesian lift の同型を除く一意性(FiniteModel 上)
+(iii) refinement 負例: exact lift が存在しない σ_ref を一つ構成し、
+      lift に本当に必要な追加仮定(新規 Atom の composition /
+      equation データの供給)を抽出する
+(iv)  四成分の輸送((3) 冒頭の field 対応)が (i) の一本の構成から
+      すべて導出されることの確認
+```
+
+**達成階梯**(§1 の比喩宣言の償還スケジュール):
+
+```text
+Gr0 比喩(本ノート初版の状態)
+Gr1 statement 化: 四成分すべてに定理候補+機構+検査計画(本節で到達)
+Gr2 構成された実例: 上記 (i)–(iv) が FiniteModel + Lean で立つ
+Gr3 擬関手的整合: 候補17 の 2-障害込みで輸送が段横断に合成する
+Gr4 base change 完備: doctrine 圏の fiber product(§10 ギャップ2)込みで
+    相対的視点の全操作が閉じる
+```
+
+Gr2 が立った時点で §1 の比喩宣言は撤回可能になり、Gr4 で EGA 的な
+意味の相対性に届く。descent 側(第X部・候補11・13)が先行して厚く、
+base change 側が最後に残るのは、代数幾何の歴史と同じ順序である。
+(記号 Gr は換金在庫の G1–G7(§9)との衝突を避けるための接頭辞である。)
+
+### 3.6 沈黙の規律と系譜
 
 読みに依存する結論は消さず、依存することを明示 scope として結論の近くに
 書く(沈黙の規律の定理化)。この沈黙は前期ウィトゲンシュタイン(語り得ぬ
@@ -449,22 +544,237 @@ statistic や Myhill–Nerode 型の最小商(観測で分離する最粗の合�
 ArchSig の沈黙規律はここで運用上の検出器になる: **評価できない law に
 対する沈黙は、non-adequacy の実行時検出**である。
 
-## 7. 定理候補(すべて未証明の仮説。反例探索を先行させる)
+## 7. 既存ソフトウェア意味論との接続
 
-1. **Obstruction support(条件付き)**: 目標とする形:
+Atom 基礎論は白地に立つのではない。§5–6 の adequacy / canonical
+resolution の構図は、既存のプログラミング言語意味論の中心問題と
+項ごとに対応する。Atom 基礎論は土台であり、それ自体の新規性は要求
+しない。土台は既知の枯れた構造だけで組まれているほど強く、接続の
+多さは脅威ではなく信頼性の証拠である。接続を明示することは三重に効く。
+
+1. **証明技術の輸入**: 定理候補に既存の証明技術と先例を輸入できる
+2. **自然さの証拠**: 既知の理論がインスタンスとして再現されることが、
+   既知の工学現象の再現(R4)と並ぶ自然さの論拠になる
+3. **仮定監査**: 各接続点の古典定理は既知の最小仮定を持つ
+   (Hennessy–Milner の image-finiteness、complete shell の Scott
+   連続性、Cook の expressiveness)。A0–A8+接地条件がそこへ正しく
+   特殊化するかの突合が「仮定が適切か」の実行可能な検査になる。
+   AAT の仮定が古典の最小仮定より強く出る箇所は、弱化すべき仮定か、
+   architecture スケールで本当に必要な追加仮定かの判定問題になり、
+   どちらに転んでも成果である
+
+### 7.1 full abstraction との対応(定理候補6の正体)
+
+§5 の L-adequacy と §6 の ambient joint-kernel quotient は、表示的
+意味論の adequacy / full abstraction と正確に対応する。
+
+```text
+law family L                   ↔ 観測文脈の族(contexts + observable)
+eval_l                         ↔ obs(C[−])
+L-adequate な読み q            ↔ 健全(adequate)な表示モデル:
+                                  ker q ⊆ ~_L(⟦M⟧=⟦N⟧ ⟹ M ≅_ctx N)
+最粗の adequate reading res(L) ↔ fully abstract モデル: ker ⟦−⟧ = ≅_ctx
+ambient q_L(常に存在)        ↔ Milner 1977 の項モデル商構成
+admissible class 内の          ↔ full abstraction 問題そのもの
+representability                  (その商を「良い圏」で表示できるか)
+```
+
+用語の向きも衝突しない(PL 意味論の adequacy は健全方向であり、
+本ノートの L-adequacy と同方向)。§6 の二段構え「ambient では常に存在、
+難しいのは admissible class 内の表現可能性」は PCF の歴史そのものである。
+
+- Milner 1977: fully abstract モデルは項の観測同値による商として常に
+  存在する(§6 の ambient 存在に対応)
+- Plotkin の parallel-or: Scott domain という admissible class では
+  その商が表現できない(representability failure の古典例)
+- ゲーム意味論(Abramsky–Jagadeesan–Malacaria / Hyland–Ong):
+  別の admissible class を発明して解決した。ただしゲーム意味論ですら
+  最後に extensional quotient を一度かける。商を構造的に表示すること
+  自体の本質的困難の証言である
+- Loader 2001: 有限 PCF の観測同値は決定不能。representability の
+  特徴づけが一般には決定不能でありうる先例であり、実験スライスを
+  有限モデルに絞る現行方針(§12)の防御材料になる
+
+この対応により定理候補6は認知された難問の系譜に着地し、logical
+relations や definability 論法といった証明技術を輸入できる。
+
+発展形として、コンパイラを言語間の翻訳と見る fully abstract
+compilation(文脈同値の保存・反映)と、それを trace property / safety /
+hyperproperty / relational hyperproperty のクラス別に成層した robust
+property preservation 階層(Abate 他)がある。full abstraction はその
+一点にすぎず、hyperproperty は一般に refinement-closed でないことも
+既知である。base change に沿った輸送(§8 候補3)を law class ごとに
+成層する先例になる。
+
+### 7.2 抽象解釈 — principal extent 失敗の実務先例
+
+§6 の polarity(antitone Galois connection)の同族である Galois 接続は
+抽象解釈(Cousot–Cousot)の土台である。効く先例は二つ。
+
+- 多面体ドメイン(Cousot–Halbwachs 1978)には Galois 接続がない。
+  円板に最小の外接多面体は存在しないからである。「principal extent が
+  立たない」ことの、実用中の抽象ドメインでの具体例
+- その実務的応答が widening 演算子である。canonical な選択がないとき
+  instance designer が非正準な選択を明示的に注入する装置であり、
+  「res(L) の非存在は instance designer の選択が残る理由」(§5–6)の
+  工学的裏づけになる
+
+さらに completeness 理論と repair の系譜が効く。
+
+- complete shell(Giacobazzi–Ranzato–Scozzari): 任意の抽象領域を
+  与えられた関数について complete にする最も抽象的な精細化が構成的に
+  存在する。固定した admissible class 内での canonical refinement の
+  構成的存在定理であり、候補6の中間問題(adequacy shell)の雛形になる
+- abstract interpretation repair: プログラムではなく抽象領域(読み)の
+  側を修理する系譜がすでにある。放電経路の三分法(§8 候補5)の先例
+
+抽象領域を「証明したい性質から選ぶ」ことは抽象解釈の実務ではすでに
+規範であり、§5 の解像度原理はその定理化として位置づく。
+
+### 7.3 観測同値の族 — concept lattice の既製インスタンス
+
+- van Glabbeek の linear-time / branching-time spectrum: 観測概念の族を
+  パラメータに、プロセス同値が束をなすことを網羅した仕事。§6 の
+  「adequacy relation から concept lattice を作る」の、プロセス代数で
+  完遂済みの実例
+- テスト意味論(De Nicola–Hennessy): may / must テストの選択で同値が
+  変わる。law family の取り替えで `~_L` が変わることの定理群
+- 双模倣は観測を尊重する最粗の合同であり、partition refinement
+  アルゴリズムは有限状態での `q_L` の実効的計算に相当する。
+  スライス d(§12)には既製のアルゴリズム系譜があることになる
+- Hennessy–Milner 定理: image-finite な遷移系では論理的同値と双模倣が
+  一致する。有限性仮定つき representability の古典形である。coalgebra
+  版では final coalgebra の存在と Hennessy–Milner 性を持つ論理の存在が
+  同値になる(Goldblatt)。「canonical な最小模型の存在 ⟺ law family
+  の表現力」という、候補6が目指す statement と同じ形の既存定理
+
+### 7.4 institution 理論 — 輸送 statement の最近傍先行研究
+
+Goguen–Burstall の institution は「truth is invariant under change of
+notation」を公理化した抽象モデル理論である。satisfaction condition
+
+```text
+M'|_σ ⊨ φ  ⟺  M' ⊨ σ(φ)
+```
+
+は §3.3 の輸送不変性 statement の直接の祖先であり、signature ↔ 語彙
+`V`、sentence ↔ law、model ↔ 読み、と対応する。Diaconescu の
+Grothendieck institution(institution の族への Grothendieck 構成)は
+reading の塔を fibration として扱う際の既製の道具立てであり、
+定理候補3(輸送定理群)の related work の正本はここになる。
+
+### 7.5 その他の接続
+
+- Hoare 論理の相対的完全性(Cook 1978): 完全性は表明言語の
+  expressiveness に相対的である。§5 の compatible triple「Law が
+  表現可能」条件の公理的意味論版
+- Gurevich の ASM テーゼ: あらゆるアルゴリズムは固有の抽象化水準で
+  忠実に捕捉できる(逐次版は公準から証明済み)。解像度の原理の従兄弟
+- domain theory in logical form(Abramsky): 観測可能性質と領域の
+  Stone 型双対。§6 の `Spec ⊣ Γ` 類比の、CS に内在する実例
+- ゲーム意味論と言語ゲーム: full abstraction を最終的に解いたのは
+  「意味は相互作用(使用)である」を文字通り数学化したゲーム意味論で
+  あり、本ノートの後期ウィトゲンシュタイン路線と full abstraction
+  路線は歴史的に同じ場所で合流している。論文の narrative として使える
+
+### 7.6 障害コホモロジーの先行適用
+
+貼り合わせ障害を Čech コホモロジーで測る手法自体には、CS 隣接領域に
+先行適用がある。AAT の位置づけはこれらとの対比で決まる(§7.7)。
+
+- 量子文脈依存性(Abramsky–Barbosa 他): 局所測定結果の presheaf に
+  対する Čech H^1 で大域切断の障害を特徴づける。関係データベースや
+  制約充足への展開も本人たちが行っている。重要な既知の限界として、
+  この障害の非零は十分条件どまりであり、類が零でも大域切断が存在
+  しない false negative がある。後続研究は係数を semi-module(半環
+  係数)へ一般化して解消した。アーベル群化で正値性情報が落ちることが
+  原因である(§8 候補8へ接続)
+- センサーデータ融合(Robinson): 観測の一貫性を層で測り、大域切断
+  からの距離 consistency radius という定量的障害を定義する
+- 分散計算: 分散タスクの可解性を task sheaf の大域切断として特徴づけ、
+  決定空間の障害をコホモロジーで記述する仕事がある
+- 並行計算の directed algebraic topology(Fajstrup–Goubault–Haucourt–
+  Mimram–Raussen): 実行空間のホモトピー / ホモロジーで並行系を分類する
+- 2026 年に入っても近接領域の論文が続いている(model-based systems
+  engineering の多視点一貫性、AI agent の theory shift 検出、component
+  ensemble の層意味論)。続出はこの種の土台への需要の証拠であり、
+  novelty 競争の脅威ではなく related work を丁寧にする理由として扱う
+
+### 7.7 AAT の差分と評価規準
+
+長い CS と数学の歴史の上に立ち、既知構造の再配置であることをむしろ
+積極的に示す。差分の特定は novelty の主張ではなく、新規性の主張を
+上層(SAGA・輸送定理群・tooling)へ正しく配置するための位置特定で
+ある。差分は四つ。
+
+1. **フレーム選択自体が対象。** 古典意味論は言語と観測を一度固定して
+   全プログラムを研究する。AAT は doctrine の圏と reading の塔を作り、
+   フレーム間輸送を主題化する。最近傍の institutions にも、抽出・接地・
+   障害層はない
+2. **コホモロジー層の置き場所。** 障害コホモロジーの使用自体は §7.6 の
+   とおり先行がある。AAT の差分は「何の上のコホモロジーか」にある:
+   site と被覆が law equation system と doctrine から立ち、係数が
+   観測商(Atom 層)の上に載り、全体が doctrine 相対で輸送定理群を
+   伴う。PL 意味論本体(§7.1–7.5)に限れば H^1 は現れない
+3. **抽出の主題化。** 意味論は構文を所与とする。AAT は source からの
+   抽出と grounding certificate を理論対象にする
+4. **合成性の軸の取り替え。** 表示的意味論の compositionality は
+   構文木上の準同型性、AAT の層条件は被覆上の貼り合わせである
+
+位置づけの規律: 各接続は自分から明記し引用する(候補6は full
+abstraction の一般化である、等)。その上で、土台の評価規準は新規性
+ではなく次の四つに置く。
+
+1. **自然さ**: 既知の工学現象(R4)と既知の理論(§7.1–7.6)が系・
+   インスタンスとして再現される
+2. **仮定の適切さ**: 仮定監査(§7 冒頭)に耐える
+3. **普遍性(条件付き)**: 宣言された底と law family を持つ任意の
+   ソフトウェアに適用でき、種別横断のインスタンスで例証される(R5)
+4. **fruitfulness**: 上層が現に建っている(SAGA 定理・ArchSig)。
+   土台の有効性を約束ではなく実績で示す
+
+## 8. 定理候補(すべて未証明の仮説。反例探索を先行させる)
+
+判定規律として **strip test** を置く: AAT 固有の構造(二相分解・接地・
+doctrine の塔・architecture site)を仮定から抜いたとき、古典定理に
+退化するか無意味になる statement だけを新規性の担い手と数える。
+退化しないものは古典理論の翻訳であり、土台の較正(§7)として扱う。
+新規性は個々の部品ではなく、古典的機構(長完全列・comparison map・
+定義可能性)を AAT 固有の構造が指定する場所で発火させる交差点に立つ。
+この規律の下で、候補1・4・5・7・8・9・10 が非自明性の担い手、
+候補2(a)・3・6 は土台の較正寄りである。
+
+候補11–19 は探索由来であり、strip test 通過を採録条件とした。候補1–10 が単一の読みの内部を垂直に掘る(二相・解像度・接地)のに
+対し、11 以降は別の鉱脈に立つ: 読みの複数性(11)、正当化の層(12)、
+被覆の適格性と取り替え(13・18)、二相軸の全次数化・族化(14・16)、
+law 族の方向(15)、二階の整合(17)、source 側の対称性(19)。
+候補20 は換金在庫(§9)からの昇格、候補21–29 は換金探索由来である。
+探索段階で比喩どまりの案(properness = 負債有界性、generic point =
+典型実行、flaky = 多重度、epsilon = 双対数)は換金テストで棄却済み。
+
+1. **二相長完全列と非輪状定理(obstruction support の鋭化)**: 層の
+   短完全列が立つ条件下で、長完全列から次を導く。
 
    ```text
    0 -> F_struct -> F_all -> F_sem -> 0
-   H^1(F_struct) = 0 または restriction の全射性を仮定するとき、
-   具体的 obstruction class の像が semantic quotient 側で検出される
+   H^1(F_struct) = 0 のとき H^1(F_all) ↪ H^1(F_sem)
    ```
 
-   無条件版(「非零の障害類は必ず意味 Atom の上に support される」)は
-   採らない。大域的 canonical family の存在だけでは flasque 性も descent
-   有効性も従わず、構造データ自体も build configuration・生成コード・
-   schema version などで貼り合わないことがあるからである。まず
-   「構造 Atom だけでも descent が失敗する反例」または「失敗を排除する
-   最小仮定」を探索する。
+   構造 nerve が木状(依存グラフに 1-サイクルなし)なら構造側 H^1 の
+   消滅条件が整い、「非輪状アーキテクチャでは結合バグはすべて意味的で
+   ある」が定理になる。対偶「構造サイクルはある種の結合欠陥の必要条件」
+   は one-cent が nerve の 1-サイクル上に立つ事実と整合し、「ループが
+   結合バグの住処」という folklore が系として導出される(R4 直結の
+   反証可能な予言)。無条件版(「非零の障害類は必ず意味 Atom の上に
+   support される」)は採らない。大域的 canonical family の存在だけでは
+   flasque 性も descent 有効性も従わず、構造データ自体も build
+   configuration・生成コード・schema version などで貼り合わないことが
+   あるからである。まず「構造 Atom だけでも descent が失敗する反例」
+   または「短完全列と消滅を成立させる最小仮定」を探索する。なお消滅
+   機構単体(forest + face なし + restriction 全射 ⟹ H^1 = 0)は
+   第IV部定理12.4 として既存であり、本候補の新規部分は二相分解との
+   積にある(研究ループでの再証明を避ける)。face が loop を埋める
+   regime では `H^1(F_struct) = 0` 条件にも系12.3 の face 補正が要る。
 2. **Blame gauge(二分)**: (a) 固定した複体の中で代表元が coboundary 分
    だけ動くこと(cohomology の statement)。(b) doctrine の変更で複体
    そのものが変わること(comparison map と naturality が必要)。
@@ -473,16 +783,40 @@ ArchSig の沈黙規律はここで運用上の検出器になる: **評価で�
    gauge orbit 上の cost functional として置き、運用方針に相対的な
    gauge fixing で修正候補を選ぶ道がある(「canonical blame はない」を
    「何も選べない」にしない。ArchSig が修理候補の提示まで進む際に効く)。
+   構成的インスタンス: 基点 chart(オーナー)を宣言すると各 divisor 類は
+   一意の q-reduced 代表を持ち、Dhar の burning algorithm で計算可能
+   (候補20 の系)。正準性はオーナー宣言に相対化され、宣言変更で正規形は
+   予測可能に変わる — オーナー宣言 = 入力 contract という ArchSig の
+   姿勢と同型。
 3. **輸送定理群(lift の存在と性質)**: reading の塔(§3)の各段の射影の
    下で、下層射に沿った (1) doctrine 同値不変性 (2) refinement 保存・反映
    (3) 一般の翻訳 / base change 輸送。段ごと・種類ごとに別の仮定と結論を
    持つ lift statement とし、lift が存在しない場合にその段の transport へ
-   本当に必要な追加仮定を抽出することも成果と数える。
-4. **健全性**: 接地された doctrine の下で抽出は決定的・再現可能、
-   診断は doctrine 同値で不変。
+   本当に必要な追加仮定を抽出することも成果と数える。輸送の強さが
+   law のクラスに依存することは最初から前提にする。robust property
+   preservation 階層と hyperproperty の refinement 非閉性(§7.1)が、
+   (2) の保存・反映が law class ごとに割れることの既知例である。
+4. **診断の解像度不変性**: 二つの L-adequate な読み `q ≤ q'` に対し、
+   law 由来の係数で計算した障害類が comparison map の下で canonical に
+   同型になる条件の特定。
+
+   ```text
+   adequate な範囲内では、解像度の選択は診断を変えない
+   ```
+
+   直観的根拠は「係数は law が生成し、law は潰された区別を見ない」だが、
+   被覆の像の振る舞いに条件が要り、そこが定理の中身になる。系:
+   必要以上に細かく測っても診断は増えない(過剰解像度の無益性)。
+   ArchSig の粒度選択が暗黙に依存する事実の定理化である。範囲外
+   (inadequate な粗化)での偽の類の発生・真の類の隠蔽の定量化を対に
+   する。接地された doctrine の下での抽出の決定性・再現可能性
+   (旧・健全性候補)は定義的基盤としてこの候補の前提に置く。
 5. **デスコープの押し出し**: 方程式系の弱化に沿う類の押し出しとしての
    仕様変更。repair(coboundary 放電)との数学的区別。弱化で類は消えるが
-   repair cochain は存在しない例の構成を含む。
+   repair cochain は存在しない例の構成を含む。この二つに、読みの修理
+   (doctrine の変更で類を消す輸送。抽象解釈の domain repair が先例。
+   §7.2)を加えた放電経路の三分法として扱う。第三の経路は複体そのものを
+   取り替えるため、候補2(b) の comparison map を要する。
 6. **Law-relative canonical resolution(representability)**:
    (a) adequacy relation の concept lattice における principal extent の
    特徴づけ。(b) ambient joint-kernel quotient `q_L` の、許容 doctrine・
@@ -490,17 +824,325 @@ ArchSig の沈黙規律はここで運用上の検出器になる: **評価で�
    (§5–6)。representable なら解像度選択の普遍性が立ち、failure なら
    それ自体が「instance designer の選択が残る理由」の記述になる。
    (c) 二つの入口(方程式系先行 / Atom 先行)が同じ formal concept を
-   生成する合流条件。
-7. **Atom-interface completeness(因子化テーゼ)**: AAT の語彙で述べられる
-   結論が Atom 層(atomization reading)を通して factor することの特徴づけ
-   (§1)。L-adequacy の law evaluation から結論一般への拡張。
-   Atom 層を迂回する結論の反例探索を先行させる。
+   生成する合流条件。本候補は full abstraction 問題の AAT 版である
+   (§7.1 の対応表)。(b) の一般的特徴づけは Loader 型の決定不能性に
+   阻まれうるため、まず有限モデル(§12 スライス d)で representability
+   の正例・負例を固定する。(b) の中間問題として、res(L) が
+   representable でない場合にも、与えられた読み q を含む最粗の
+   L-adequate 精細化(adequacy shell)の構成的存在を問える(complete
+   shell が先例。§7.2)。statement の雛形は「canonical resolution の
+   存在 ⟺ law family の expressivity」という Goldblatt 型の双条件
+   (§7.3)。
+7. **Beth 型因子化定理(Atom-interface completeness の精密化)**:
+   因子化テーゼ(§1)を invariance ⟹ definability の形に立てる。
+
+   ```text
+   doctrine 同値で不変な結論は、canonical Atom family を通して factor する
+   ```
+
+   古典論理の Beth definability(暗黙に定義可能なら明示的に定義可能)と
+   同型の statement であり、Craig interpolation 系の証明技術を輸入する。
+   Beth 性は論理によって成立したり破れたりするから、この定理は
+   doctrine の圏の性質に依存する実質的内容を持ち、成立条件の特徴づけ
+   自体が結果になる。Atom 層を迂回する結論の反例探索を先行させる。
+8. **係数忠実性(coefficient faithfulness)**: 係数構造の選択が、障害類の
+   どの effectivity failure を検出できるか(忠実性)を決めることの定式化。
+   contextuality のコホモロジーでは類が零でも貼り合わせ不能な false
+   negative が知られ、semi-module 係数への一般化で解消された(§7.6)。
+   AAT の nu/epsilon 二族についても (a) 類零だが貼り合わせ不能な例の
+   構成 (b) 忠実性が改善する係数一般化の特徴づけ、を問う。既存の
+   faithfulness 検証で観測された判別力の天井(判別が support 対で
+   止まる現象)の理論的説明を目標に含める。
+9. **構造被覆の底不変性**: 構造 Atom の定義(依存 profile が (Γ, R) に
+   不感)から、構造 Atom が張る nerve は語用論的 doctrine 変更で不変で
+   あり、意味的読みの取り替えで変わるのは係数だけであることを導く。
+
+   ```text
+   構造が空間を運び、意味が係数を運ぶ。
+   ゆえに異なる言語ゲームの障害類は同一複体上で比較可能。
+   ```
+
+   blame の doctrine 間比較(候補2(b))が well-defined になる前提条件で
+   あり、二相分解が単なる分類ではなく比較可能性の前提条件であることを
+   示す。§2 の幾何対応仮説の定理化。
+10. **接地による representability の分離**: 接地条件は admissible
+    reading への計算可能性・観測可能性制約であり、古典 full abstraction
+    に対応物がない。res(L) が ambient にも有限読みにも存在するのに、
+    どの接地された doctrine でも表現できない law family の存在を問う。
+    存在すれば証拠ベース抽出の原理的天井(Agent SKILL が到達できる
+    範囲の理論的限界、R2)を与える分離定理、不存在なら観測的に閉じた
+    evidence rule の下での grounding 設計の健全性定理。どちらに転んでも
+    AAT 固有の結果になる。
+11. **連合抽出の降下定理(federated extraction descent)**: 被覆の各
+    パッチに doctrine `D_i` を割り当て、重なり上に comparison 射
+    `φ_ij` を与えた連合読みに対して:
+
+    ```text
+    大域 canonical Atom family が存在する
+      ⟺ {φ_ij} が triple overlap で cocycle 条件を満たし、
+         対応する非可換 H^1 型障害が消える
+    ```
+
+    doctrine comparison の groupoid に値を取る Čech 機構(descent
+    ノートの ConDef_U torsor 機構が足場)。維持されている翻訳射の集合が
+    到達可能な大域結論の上界を与える — Conway の法則の語彙内再現
+    (現実組織への claim ではなく、パッチへの doctrine 割り当てという
+    語彙内構成)。単一 doctrine 前提だった候補群の水平方向の空白を埋める。
+12. **接地証明書の torsor 分類**: 固定した canonical Atom family を
+    接地する grounding certificate 系の同型類を、evidence 自己同型層
+    `Aut_E` 係数の H^1 で分類する。(a) Atom family・障害類が全一致でも
+    certificate 系が非同型な二つの読みの存在(忘却の非保存性)
+    (b) 「結論は合成できるが正当化が合成できない」状態の特徴づけ。
+    因子化テーゼ(候補7)の範囲を精密に確定させる: 結論は Atom 層を
+    通して factor するが、certificate は factor しない。「各サービスは
+    監査を通ったが全体の監査証跡が組み立たない」現象の定理化。
+13. **有効降下被覆の comonadicity 特徴づけ**: 制限・再貼り合わせの
+    随伴が comonadic(Beck 条件)であることと、その被覆上で descent が
+    有効であることの同値。SAGA(第X部)は被覆を固定した上での類の
+    消滅を語る — どの被覆が descent に適格かという被覆側の特徴づけが
+    欠落ピースである。系: 分割の失敗には二種類ある(類が非零/被覆
+    自体が降下に不適格)。後者は law 違反が一つもなくても分割が
+    貼り合わせデータを失う場合として区別される。
+14. **深度 filtration スペクトル系列**: 依存 profile(§2)の全次数が
+    係数層に底の塔の深さによる filtration を誘導し、そのスペクトル
+    系列が有限被覆・有限深度で収束する。候補1の二相完全列はこの
+    filtration の2段切断として再現される(§2「profile の全次数は注記に
+    留める」の定理版)。works on my machine は OS 深度の graded piece、
+    Hyrum の法則は深度間の漏出写像 d_1 に住む(R4 直結)。
+15. **law 拡大の単調性と宣言差の障害**: `L ⊆ L'` に沿って obstruction
+    ideal は単調に増大し、押し出しの下で類は消えない(候補5の弱化の
+    双対方向)。宣言族 L_decl と、別入力として宣言された利用側の族
+    L_use に対し、L_decl-無障害だが L_use-非零となる変更は差分
+    `L_use \ L_decl` の support で決まる。semantic versioning の
+    非対称性(minor は安全のはず/それでも壊れる)の定理化。
+16. **構造性の半連続性**: doctrine の連続的変形(底の弱化・use-context
+    の拡大)の族の上で、依存 profile の深度は上半連続 — 構造 Atom の
+    locus は開、意味 Atom への退化は閉 locus 上で起きる。逆方向の
+    ジャンプ(意味 → 構造)は底の強化(執行者の追加)なしには起きない。
+    API 契約の腐敗・deprecation が「構造性の喪失」として語彙に乗る。
+17. **transport 整合の 2-障害族**: 比較射の合成が閉じない障害は
+    2-cocycle 型の不変量をなす。三つの実現を同一機構(pseudofunctor
+    coherence)の現れとして統一的に立てる: (a) 塔の cleavage の段間
+    合成(段ごとに lift が在っても end-to-end で失敗しうる) (b)
+    doctrine 圏の菱形の二経路輸送の食い違い(dependency hell)
+    (c) 三つ以上の reading の pairwise 調停の非結合性(pairwise には
+    翻訳可能なのに三者整合の共通語彙が組めない)。(c) は ArchMap 調停
+    SKILL に pairwise 調停では原理的に足りない場合があることの根拠を
+    与える(R2 直結)。
+18. **漸進的移行の望遠鏡分解**: 同一 source 領域の二被覆 U_old, U_new の
+    間の無停止 migration 計画 = 各ステップの seam(新旧共存領域)の
+    comparison 類がその場で coboundary 放電可能な中間被覆の有限列。
+    その存在が、大域 comparison 類の局所 support 類への filtration
+    分解可能性と同値(anti-corruption layer = seam 上の comparison iso
+    を実装する cochain)。第IX部 temporal descent が固定被覆上の状態
+    遷移の貼り合わせを語るのに対し、これは被覆自体の取り替え列という
+    補完軸である。
+19. **L-gauge 群と診断不変性**: `q_L` を通して恒等へ降りる source 変形の
+    全体は群をなし(L-gauge 群)、その作用の下で障害類は不変。逆に、
+    admissible doctrine 族の全診断を不変にする変形は L-gauge に限る
+    (完全性方向)。第VI部の refactor groupoid `Ref_U(X)`(architecture
+    状態レベル、不変量保存が定義に入る)に対し、これは source 側から
+    群を内在的に定義して不変性を定理として導く下部構造である。
+    「テストが緑でも壊れる」は `L_use ⊋ L_decl` の場合として候補15へ
+    接続する。
+20. **修理予算の genus 税(graph Riemann–Roch)**: nerve の 1-骨格
+    (頂点 = chart、辺 = pairwise overlap の連結成分。第IV部 §12 の
+    多重グラフ読みが既定)への Baker–Norine 理論の移植(§9 G2 からの
+    昇格)。divisor `D` = 修理容量分布、
+    敵対側 `E` = H^0 可視欠陥の需要配置、genus `g` = b_1(1-骨格)
+    (系12.3)。確定形:
+
+    ```text
+    連結のとき r(D) ≥ deg(D) − g(無条件)
+    deg(D) ≥ 2g−1 のとき等式 r(D) = deg(D) − g
+    g = 0(木)のとき deg(D) ≥ 0 なら r(D) = deg(D): 予算は満額換金される
+    ```
+
+    サイクル1本が保証被覆力から正確に1単位を税として取る — 候補1の
+    量的対物。`K` は超過結合 divisor(接続数 − 2)と読む(「内在的
+    負債」の規範的読みは導出不能のため採らない)。chip-firing は
+    blame gauge(1-cochain への δf)と同じ δ の随伴の二面をなす
+    Laplacian δ*δ の 0-chain 側の影であり、coboundary 放電そのもの
+    ではない。regime 宣言: face を選ばない 1-骨格 regime(face が
+    loop を埋める場合は保守的上界)、非連結は成分ごと(r は min、
+    g は |E|−|V|+c)、Euler Accounting(系12.5)の等式への昇格は
+    stalk dimension 一定 regime に限る。数学は Baker–Norine の適用で
+    あり、AAT 固有性は辞書と regime 拡張に在る(非自明担い手と土台
+    較正の中間と申告する)。
+21. **再配分の有限障害群(sandpile Jacobian)**: deg 0 の予算再配分が
+    chip-firing で実現可能 ⟺ `Jac(G) = Div^0/Prin` における類が零。
+    `|Jac(G)|` = 全域木の個数(Kirchhoff)。予算中立でも局所移動では
+    届かない再配分が存在し、その障害は `H^1(N, Z) ≅ Z^g` とは別の
+    torsion 側に住む — H^1 に住まない新種の障害の導入。候補20 と同じ
+    1-骨格 regime 宣言を共有し、FiniteModel で全計算可能。
+22. **集約の忠実性定理(finite pushforward)**: 集約射 `ρ`(サービス群
+    → 粗い測定単位)に trace map 付き pushforward が定義できるとき、
+    `ρ_*` が障害類を忠実に運ぶ(`H^n(Y, ρ_* Ob) ≅ H^n(X, Ob)`)⟺
+    各集約単位の fiber が内部 obstruction-acyclic。Leray の有限退化。
+    第VIII部 §7 が「別途固定する」と宣言だけした pushforward の存在
+    条件の定理化であり、候補1の fiber ごと版がロールアップ測定の
+    健全性条件として再登場する。候補4(adequate 商方向)と直交する
+    射(集約)方向。
+23. **path 検査十分性(付値判定法の有限版)**: reading 射の separated /
+    proper を operation path 族(第VI部 §8)による判定十分性として
+    特徴づける: separated ⟺ 任意の path 上で一致する二つの診断切断は
+    大域一致、proper ⟺ 端点の欠けた検証 path が一意に完備化できる
+    (path の極限でだけ現れる振る舞いが存在しない)。宣言された path
+    族と law family に相対的な「有限個の one-parameter 検証(回帰
+    テスト系列)で大域性質が決まる条件」の型であり、無制限の「テストで
+    全部わかる」claim にはならない。第X部の presheaf separatedness
+    (層条件の分離性)とは別概念であることを明記して使う。
+24. **翻訳の分岐公式(Riemann–Hurwitz)**: reading 射 `f` の
+    ramification locus を `Ram(f) = supp Ω_{X/Y}`(law が見る区別を
+    `f` が潰す場所)と定義する。étale(flat + 不分岐)なら障害類の
+    輸送は忠実、一般には食い違いが `Ram(f)` 上に support される。
+    グラフの harmonic morphism に対する Riemann–Hurwitz(Baker–Norine
+    系で確立済み)により、genus の変化が分岐補正付き等式になる —
+    「分割はサイクルを増やす、ただし縫い目で潰した分だけ割引」。
+    候補11 の連合障害の由来分解(monodromy 由来 / 翻訳損失由来)を
+    与える。lossy adapter の損失箇所が locus として測れる。
+25. **組合せ的解消定理(blow-up = adapter 導入)**: 中心 = singular
+    stratum(第VI部の God object = law loci の非横断的交点)、
+    exceptional divisor = normal cone(第VI部 5.2)の射影化 = 合流して
+    いた law 方向ごとに一枚ずつ立つ interface の族。square-free regime
+    では blow-up は単体複体の stellar subdivision に一致し、許容中心の
+    有限列で全 stratum を U-smooth にできる(常に停止。Hironaka の
+    帰納が有限 regime で退化する)。解消列の最小長 = God object の
+    解体深度という新しい複雑度不変量。候補18(被覆の取り替え列)の
+    空間側対応物。
+26. **潜在欠陥と被約化不可視性**: square-free regime の外で
+    `I_Ob(W)` が radical でないとき、latent defect :=
+    `rad(I_Ob)/I_Ob` の非零元は pointwise evaluation では不可視
+    (`V(I) = V(rad I)`)だが、first-order deformation test(第VI部
+    DefTest の nilpotent thickening に沿う lifting。標準的には
+    `k[t]/(t²)` probe)は一般に区別する。定理形:
+    latent defect の存在 ⟺ 評価不可視・変形可視な差分の存在。
+    全チェックが緑なのに変更に抵抗する brittleness の定理化 — 潜在
+    欠陥は観測ではなく refactor 計画でだけ見える債務。square-free
+    regime は構成的に radical のため、どこで radical 性が切れるかという
+    regime の成立条件自体が定理の一部になる。なお epsilon 族の双対数
+    読みは本文不支持(§9 G1 の検証)。
+27. **law 干渉の局所交叉多重度(Serre 型)**: defect point `p` における
+    `mult_p(U,V) := Σ_{i≥0} (−1)^i length_p Tor_i(U,V)_p`(Tor_0 を
+    明示的に含める。`i ≥ 1` 部分が第V部の LawConflict_i)。有限
+    monomial regime・次元条件の下で well-defined・機械計算可能・非負で
+    あり、derived-transverse なら `mult_p = length_p Tor_0`、
+    `mult_p = 0` ⟺ 交叉が improper(次元条件の不足)。blame gauge に
+    不変。第V部定理7.3 の yes / no を点ごとの非負整数へ定量化し、
+    ArchSig の severity 集計に gauge 不変量を供給する。第V部 12.2
+    (大域 graded 級数の恒等式)とは別物(点局所の数+正値性+gauge
+    不変性)。
+28. **law system の syzygy と Hochster 対応**: 単一 law universe の
+    `I_Ob` の minimal free resolution の graded Betti 数 `β_{i,j}` を
+    law system の内部構造不変量として読む(`β_0` = 非冗長 generator
+    数、`β_1` = law 間 syzygy)。square-free regime では Hochster の
+    公式により witness complex の位相が冗長構造を完全に決める。
+    LawPolicy 冗長性監査の機械化(law-equation-surface の版数間 Betti
+    差分で law 追加の独立 / 派生を判定)。conflict Tor(二 universe 間)
+    に対する単一 universe 自己方向の空白を埋める。導来解禁(§9 G7)の
+    最初の換金であり、有限ホモロジー代数経由という経路条件に合致。
+29. **変形理論の表示不変性**: presented ambient law algebra の二つの
+    表示が同じ law algebra sheaf を与えるとき、tangent / obstruction
+    spaces(`L_{S/U}` 由来)は canonical に同型 — cotangent complex の
+    quasi-iso 不変性の doctrine 相対版。SKILL が law を書き下す順序・
+    冗長性が repair 障害判定を変えないという tooling の暗黙前提の
+    定理化。反例側: presentation-stability を落とすと `T^1` が表示
+    依存になる有限例の構成。strip test は本リスト中最弱であり、表示
+    クラスが doctrine 選択に紐づく点を statement に明示することが
+    非退化性の条件(自己申告として記録)。
 
 検証は `Formal/AG/Atom/` の既存形式化(AtomCarrier / AtomAxiomSystem /
 Atomizes)と `AxiomAudit.lean` を足場に、疎結合 sandbox
 (`research/lean/ResearchLean/`)から積む。
 
-## 8. 範囲外・明示 scope
+## 9. 代数幾何の換金在庫(機構の輸入候補)
+
+候補1–29 が個々の定理であるのに対し、本節は定理の族を生む機構の
+輸入候補を在庫として固定する。背景診断: AAT がこれまで換金したのは
+site の位相(被覆・nerve)と線形係数のコホモロジーであり、構造層の
+環構造(Spec・非被約性・多重度・正値性・双対性)は、第III部に代数側の
+素材があるのに幾何としてはほぼ未使用である。輸入の規律は strip test の
+鏡像として置く。
+
+```text
+換金テスト: AG の概念は
+(a) 定義構造にソフトウェアの指示対象があり
+(b) 層+H^1 では到達できない定理を生み
+(c) 有限 regime で検査可能
+のとき初めて輸入する。
+```
+
+- **G1 潜在欠陥の非被約構造**: 候補26 に換金済み。検証結果: 「radical
+  であれば」条件は第III部に既出、square-free regime は構成的に radical
+  のため非被約の内容は regime の外に住む。epsilon 族の双対数読みは
+  本文不支持(第III部定義5.1 に冪零性の公理なし)、無限小は第VI部の
+  nilpotent thickening(標準的には `k[t]/(t²)` probe)側から入る。
+  候補8(係数忠実性)と直結
+- **G2 グラフ Riemann–Roch**: 候補20・21 に換金済み(確定辞書:
+  D = 修理容量、E = 欠陥需要、K = 超過結合 divisor)
+- **G3 射の性質辞書**: 候補22–24 に換金済み(集約の忠実性 / path 検査
+  十分性 / 分岐公式)。第VIII部が測定 pushforward に「別途固定」と
+  宣言だけした finite map・properness 条件の定理化がその中核
+- **G4 blow-up と特異点解消**: 候補25 に換金済み。square-free regime
+  では stellar subdivision に一致して常に停止、という有限化が要点
+- **G5 豊富観測と消滅定理**: 再定式化の方針が確定。ample / Picard
+  twist に指示対象は見つからないが、第VIII部 §8 の sheaf Laplacian と
+  その非零最小固有値(spectral gap)が positivity の指示対象として既在。
+  「観測 witness の追加が spectral gap を単調に押し上げ、harmonic
+  debt(定理8.6)が減衰する」という Laplacian 版消滅定理として立てる
+  (ample の語は捨てる)。次波の換金候補
+- **G6 blame の moduli と stack の必要性**: 実現可能性高。gauge
+  自己同型の非自明性は有限条件(nerve の 1-サイクル+
+  非自明な大域単元)で保証でき、moduli 関手は候補16 の変形族が供給、
+  商の受け皿は第VI部 refactor groupoid が既在。次波の換金候補
+- **G7 導来方向(2026-07-29 解禁)**: 2026-07-05 の据え置き合意を解除。
+  経路条件は維持する: ∞-圏の正面からではなく有限ホモロジー代数
+  (鎖複体・Tor/Ext)経由で、第V部の Tor_0 表示を足場に入る。門の
+  順序の見立て: (1) 法則の導来交叉 = ポリシー冗長性診断 (2) 修理空間の
+  π_0 / π_1 = 移行手順の順序依存性 (3) 変形理論 = 第IX部の再基礎づけ。
+  最初の換金は候補27(局所交叉多重度。門(1) の交叉側)・候補28
+  (syzygy。門(1) の冗長性診断側)
+
+輸入しない側: 交叉理論・Bezout(第IV部 Euler Accounting との突合が
+先)、数論的方向(Frobenius 等。指示対象未同定で装飾リスク最大)。
+
+## 10. アーキテクチャスキームへの橋
+
+Atom 基礎論の論文群が完了した後の次理論(アーキテクチャスキーム)に
+対し、本ノートの成果がどこまで基礎になれているかを固定する。スキーム
+とは「環の Spec を局所モデルとし、貼り合わせで得られ、射の性質で
+語られる幾何対象」であり、各要求に対する供給は次のとおり。
+
+- 安定な底空間 ← 候補9(構造 nerve の底不変性)
+- 局所モデルの環 ← 第III部 Law Algebra+環側換金(候補26–28)
+- affine 性の理論 ← 候補6(`res(L)` の representability = affine
+  chart の存在判定と読める)
+- 貼り合わせ ← 候補11(連合降下)・13(comonadicity)・17(gluing
+  data の 2-整合)
+- 射の性質辞書 ← 候補22–24(proper・separated・étale・flat・分岐)
+- 相対的視点 ← §1・§3(底の塔・base change・輸送)
+- 非被約構造・特異点 ← 候補25–26
+
+残ギャップは五つ。いずれも土台の欠陥ではなく、スキーム理論自体の
+第一章とすべきものである。
+
+1. **Spec 関手の構成**と局所環付き site 構造の指定。Boolean regime は
+   零次元(生成点なし)のため、非自明な位相の供給源(deformation 側
+   `k[Coord]` か、site の被覆位相か)の設計判断を含む
+2. **doctrine 圏の極限構造と fiber product**(base change の心臓。
+   doctrine 圏の定義自体が先行課題として保留されている箇所)
+3. **affine 被覆の存在定理**: 「任意の読みは L-adequate affine chart で
+   被覆できるか」を定理とするか公理とするかの選択
+4. **定義流儀の選択**: 局所環付き site か functor of points か
+   (reading の塔は後者を示唆)
+5. **scheme で足りない可能性の織り込み**: representability failure
+   (候補6)と gauge 自己同型(§9 G6)は、scheme → algebraic space →
+   stack の階段が最初から必要になることを予言する。土台がこの予言を
+   出せること自体が、基礎として機能している証拠である
+
+Lean 側の種として `StandardScheme` と GAGA 契約が形式化の足場に既在。
+
+## 11. 範囲外・明示 scope
 
 - **終対象な底は置かない。** 「究極の底」(ハードウェア、物理法則)の存在は
   仮定しない。絶対的な底の存在仮定は相対性原理と衝突する。
@@ -521,7 +1163,7 @@ Atomizes)と `AxiomAudit.lean` を足場に、疎結合 sandbox
 - 本ノートの主張はすべて AAT の語彙内の主張であり、現実のソフトウェア全体・
   意味宇宙全体への無制限 claim を含まない。
 
-## 9. NEXT ACTION
+## 12. NEXT ACTION
 
 次の要件を同時に満たす Atom 基礎論を、Codex を交えて徹底的に詰め、
 **論文にする**。
@@ -542,6 +1184,11 @@ R4. CS として自然
     (既知の工学現象群 — 結合バグの局在不能性、blame 論争の非決着性、
      "not a bug" 論法、works on my machine、Docker、Hyrum の法則 —
      が系として再現されることを自然さの論拠とする)
+R5. 条件付き普遍性
+    (宣言された底と law family を持つ任意のソフトウェアに適用できる。
+     無制限 claim ではなく、種別横断のインスタンス — microservices の
+     one-cent、組込み / ISA 解析(§5)、データパイプライン等 — の
+     構成で例証する。仮定監査(§7 冒頭)を論文の作業項目に含める)
 ```
 
 **最初の詰め対象は reading の塔の下層(`ExtInst -> Doct` と
@@ -562,7 +1209,8 @@ c. AATCorePackage への lift の正例と負例を一つずつ作る。
    正例は既存 SignedExactCoreReadingHom / PositiveCoreReadingHom へ
    接続し、負例から core lift に本当に必要な追加仮定を抽出する
 d. ambient joint-kernel quotient q_L を構成し、admissible reading class
-   の中での representability を検査する
+   の中での representability を検査する(q_L の構成には bisimulation の
+   partition refinement 系アルゴリズムが流用できる。§7.3)
 e. 構造 Atom だけでも descent が失敗する反例、
    または失敗を排除する最小仮定
 f. 固定 doctrine 内の二つの blame 代表と、それらを結ぶ coboundary
@@ -571,15 +1219,48 @@ g. law の弱化で class は消えるが repair cochain は存在しない例
 
 a–d までで塔の下層・lift・Agent constructor・canonical resolution の核が
 同じ有限模型に乗り、`ReadingCore`(geometry 段)へ進む理由も明確になる。
+スライス a–c の形式仕様(Doct 射の二種・opcartesian lift・証明対象4点)は
+§3.5 に固定済みであり、a–c の完了が達成階梯 Gr2 = §1 の比喩宣言の撤回
+条件に一致する。
 
 想定する進め方(未確定、着手時に PRD / 研究 GOAL 化して確定する):
 
 1. 本ノートを地図として研究 GOAL(例: G-aat-atom-foundation-01)または
    PRD を起草し、問いと採否規律を固定する。reading の塔の下層接続と
    実験スライス a–g を最初のスコープに置く
-2. Codex の研究ループで定理候補 1–7 を探索・反証・Lean 検証にかける
-3. 生き残った骨格で論文を構成する(SAGA 論文の次の一本。
-   「Atom Is All You Need」— 相対性原理と二相 Atom の下での因子化テーゼ、
-   および幾何的読みの選択空間と条件付き canonical resolution
-   (representability)を主結果とする)
+2. Codex の研究ループで定理候補群(§8 の 1–29。まず非自明性の担い手
+   から)を探索・反証・Lean 検証にかける。§9 の換金在庫は機構単位で
+   別 GOAL に切る
+3. 生き残った骨格で論文を構成する(下記ロードマップの4本構成。
+   先頭は論文A「Atom Is All You Need」)
 4. 固まった成果を3条件ゲート経由で第I部・第II部へ反映する
+
+**論文ロードマップ(4本構成)**。各論文は研究ループの
+生存者だけで構成する(§8 は候補であって約束ではなく、収録リストは縮む
+前提)。執筆着手 gate: A は Gr2 達成(§3.5)、B–D は各核候補の正例が
+Lean で立つこと。全論文で §7.7 の評価規準と換金テスト / strip test を
+明記し、related work は自分から位置づける。推奨順序は **A → D → B → C**
+(A は全論文の依存先。D は確立済み組合せ定理の移植中心で生存率が高く、
+完了時に §10 の橋 = アーキテクチャスキーム理論の入口が開く。B は工学的
+共鳴が最強だが非可換 H^1 と 2-圏的整合の新規構成リスクが中、C は最も
+投機的なので最後尾で研究ループの蓄積を活かす)。
+
+- **A「Atom Is All You Need — 相対的 Atom の基礎論」**
+  問い: 相対的な Atom の上に、読み替えに耐える工学的結論は立つか。
+  §1–7 の土台本文+輸送の形式化(§3.5、Lean 成果物込み)。
+  収録候補: 1, 2, 3, 4, 5, 6, 7, 9, 10(非自明核は 1+4、候補7 が
+  完全性テーゼの精密形、候補6 は related work 側の較正)
+- **B「連合する読み — 複数読みの障害理論」**
+  問い: 読みが複数共存するとき、何が貼り合い、何が原理的に貼り合わ
+  ないか。収録候補: 11, 13, 15, 17, 18, 19, 24(Conway・dependency
+  hell・semver・strangler・lossy adapter が系として出る一本)
+- **C「診断の認識論 — 測定・正当化・忠実性」**
+  問い: 宣言された観測の下で、診断は何を主張でき、その正当化はどこ
+  まで合成できるか。収録候補: 8, 12, 14, 16, 22, 23(+G5 spectral
+  消滅を将来枠として言及)
+- **D「アーキテクチャの代数 — 欠陥の定量化とスキームへの前奏」**
+  問い: 欠陥・修理・複雑度は、law algebra の代数的量としてどこまで
+  測れるか。収録候補: 20, 21, 25, 26, 27, 28, 29(+G6)。§10 の橋を
+  outlook に置き、アーキテクチャスキーム理論への直接の入口とする
+
+割当は 9+7+6+7 = 29 で全候補に孤児なし。
