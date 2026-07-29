@@ -1264,3 +1264,20 @@ Lean で立つこと。全論文で §7.7 の評価規準と換金テスト / st
   outlook に置き、アーキテクチャスキーム理論への直接の入口とする
 
 割当は 9+7+6+7 = 29 で全候補に孤児なし。
+
+**論文Aの題と投稿戦略**。論文Aの題は「Relative Atoms: A Foundation
+for the Algebraic Geometry of Software Architecture」とする。
+「Atom Is All You Need」はプロジェクト名・アウトリーチ surface
+(website・登壇・解説記事)の名前として使い分け、ジャーナル原稿では
+標語として序文で一度だけ使う。その際、万能宣言ではないこと —
+必要性(因子化テーゼ、候補7)+生成性(最小限の宣言から豊かな理論が
+立ち上がる、§7.7 の fruitfulness)の二重読みであり、万能の読みは
+AAT 自身の境界規律が排除すること — を自分で相対化して示す。
+
+投稿戦略: 第一候補 JLAMP、次いで LMCS・MSCS、SE 寄りに架けるなら
+Formal Aspects of Computing。別経路として会議(CALCO / FoSSaCS、
+Lean 形式化を主役に切り出すなら ITP / CPP)→ジャーナル特集号。
+preprint + DOI(Zenodo / arXiv)を先行させる二段構えを取る。
+投稿判断の gate は執筆力ではなく証明であり、Gr2+候補1・4 の証明+
+one-cent 実例が揃った時点で JLAMP / LMCS 級が現実的射程になる。
+研究 GOAL の受け入れ規準はこの査読水準を目線に書く。
