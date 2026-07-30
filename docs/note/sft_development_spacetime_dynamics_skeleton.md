@@ -986,9 +986,7 @@ T0・T5・T7 は Model theorem として D6 を満たす形で書けるかが勝
 
 | 資産 | 現状 | 提案 |
 | --- | --- | --- |
-| `docs/sft/software_field_theory.md` | 旧本文 1551 行。**保護ファイル**(CLAUDE.md・sft guideline) | P1 で同 path を一括置換(第I–III部完全 + T0 最小版 + 残部は薄い予告)。旧本文は docs/archive へ退避。授権 = 2026-07-04 のユーザー指示と §12 決定 |
 | `docs/sft/aat_interface.md` | 古典語彙の対応表。**保護ファイル** | 全面書き換え(授権同上)。新しい借用表(第IV/V/VI/VII/VIII/IX/X部 anchor + 証明状態列)へ。現行の「非混同」「ArchSig bridge」「ArchSig/FieldSig claim 分離」の三節は新語彙で存置する |
-| `docs/sft/sft_theorem_roadmap_and_research_vision.md` | ForecastCone Descent を主定理とする定理ロードマップ | `docs/archive` へ退避(新旗艦 T0–T8 が後継)。P5 で `Formal/` sourceと本文の対応を確認し、v2 ladderへ移行する課題とlegacyとして閉じる課題を分別する |
 | `docs/sft/README.md`, `guideline.md` | 旧概念一覧 | 本文確定後に書き換え。P1 の時点で guideline に「SFT v2 改訂進行中(本ノート参照)」の暫定注記を入れ、旧語彙規律との規範的矛盾を防ぐ |
 | `Formal/Arch/Evolution/` 配下 39 ファイル | 旧 SFT の Lean 塔(`SFT*.lean` 27 本 + AttractorEngineering・SignatureDynamics・Chapter7–11 等 12 本)。Formal.lean が import 済みで root build に組み込まれている | **凍結**。operational 定義: (a) 凍結対象 = `Formal/Arch/Evolution/` 配下の全 39 ファイル(旧 SFT 理論 surface として)、(b) Formal.lean の import は維持(`lake build` の対象のまま)、(c) 変更は build 修復のみ許可、(d) 新規 import・新規定理参照を禁止、(e) 新塔が対応部を覆った時点で個別に削除判断(削除時に Formal.lean から import 行を落とす) |
 | `tools/fieldsig` | 旧 artifact(forecast-cone-skeleton 等)前提 | **凍結**。第I–III部確定後に再設計。v2 の一次 workflow 候補を先に命名しておく: **merge-residue probe**(H2 の曲率計器; merge queue の投機ビルドを利用)と**並列度アドバイザ**(T2 の台過大近似 + 衝突確率)。買い手は agent オーケストレーションのスケジューラ |
@@ -1044,11 +1042,11 @@ SAGA 改訂(設計 → 本文 → 台帳同期)と同じ流れを部単位で回
 | フェーズ | 内容 | 形 |
 | --- | --- | --- |
 | P0 | 本骨格の合意と敵対レビューによる磨き上げ | このノート(第2版; §13) |
-| P1 | 序(v2 contract)+ 第I・II・III部(完全)+ 第VI部 T0 追跡模型の最小版(Model A/B)+ 付録核(解釈境界・旧概念処遇・正準有限実例)+ 残部(IV/V/VII/VIII/IX/X)は「この理論が向かう先」として薄い予告 + H1–H4 の台帳先置き。旧本文は docs/archive へ退避 | Claude 直接執筆 + 敵対レビュー。**Lean L1–L3 を並行着手** |
+| P1 | 序(v2 contract)+ 第I・II・III部(完全)+ 第VI部 T0 追跡模型の最小版(Model A/B)+ 付録核(解釈境界・旧概念処遇・正準有限実例)+ 残部(IV/V/VII/VIII/IX/X)は「この理論が向かう先」として薄い予告 + H1–H4 の台帳先置き | Claude 直接執筆 + 敵対レビュー。**Lean L1–L3 を並行着手** |
 | P2 | 第IV部(組織)完全化 + 第VI部完全化(質量収支則・吸収域・ゲージ合同) | Claude 直接執筆 + 敵対レビュー |
 | P3 | 第IX部(観測と制御)+ 第X部(寿命)完全化 | Claude 直接執筆 + 敵対レビュー |
 | P4 | 第V部 Conway・第VII部 変形・第VIII部 統計力学の完全化(research loop の成果を取り込み次第) | Claude 直接執筆 + 敵対レビュー |
-| P5 | `aat_interface.md`・README・guideline 書き換え、roadmap archive + `Formal/` source参照更新 | Claude 直接執筆 |
+| P5 | `aat_interface.md`・README・guideline 書き換えと `Formal/` source参照更新 | Claude 直接執筆 |
 | 並行 | Conway 二位相・law 輸送・配置変形理論・確率模型の候補探索 | research loop GOAL(G-sft-*) |
 | 後続 | FieldSig 再設計(merge-residue probe / 並列度アドバイザ)、website 追随 | 別途(PRD 化して Codex も可) |
 

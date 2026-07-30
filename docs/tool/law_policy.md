@@ -93,6 +93,3 @@ refactor transport は
 
 The current handoff to FieldSig is the serialized measurement packet. FieldSig
 does not accept old raw analysis packets as the current boundary.
-
-Historical LawPolicy and packet forms are archived under
-`docs/archive/2026-07-05-archsig-v1-retirement/`.

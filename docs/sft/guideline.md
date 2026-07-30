@@ -6,7 +6,7 @@
 > (P3: 序・第I〜IV部・第VI部・第IX〜X部・付録が完全。第V/VII/VIII部は予告)であり、
 > `aat_interface.md`・本ガイドライン・README は P5 で v2 化する。
 > 以下の記述のうち ForecastCone / ConsequenceEnvelope 等の旧語彙に関する規律は、
-> v1 資産(archive、凍結された `Formal/Arch/Evolution/`、FieldSig)にのみ適用する。
+> v1 資産(凍結された `Formal/Arch/Evolution/`、FieldSig)にのみ適用する。
 
 ## 位置づけ
 

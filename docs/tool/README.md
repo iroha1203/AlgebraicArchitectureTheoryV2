@@ -59,5 +59,3 @@ PRDや設計ノートを恒久仕様として参照しない。実装済みcontr
 - [ArchSig supplied slot 台帳(負債告知)](archsig_v0_5_2_supplied_slot_ledger.md)
 - [ArchSig skills](../../tools/archsig/skills/)
 - [ArchView](../../tools/archview/README.md)
-
-過去の設計・退役contractは`docs/archive/`の履歴であり、現行source of truthとして扱わない。

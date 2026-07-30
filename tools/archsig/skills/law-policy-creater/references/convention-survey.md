@@ -59,7 +59,7 @@ Before drafting JSON, summarize:
 ## PRD-3 Residual-Zero Scope
 
 The PRD-3 residual-zero review must include the publication and authoring
-surfaces below, in addition to the runtime and archived-document checks:
+surfaces below, in addition to the runtime checks:
 
 - `website/src/archsig/reference/index.html`
 - `website/src/archsig/getting-started/index.html`
@@ -69,5 +69,4 @@ surfaces below, in addition to the runtime and archived-document checks:
 - `tools/archsig/skills/law-policy-creater/references/convention-survey.md`
 
 Run the same repository-root `rg` lint over all six paths after changing the
-current CLI, schema, or registry vocabulary. Historical material belongs under
-`docs/archive/` and is not a current claim.
+current CLI, schema, or registry vocabulary.

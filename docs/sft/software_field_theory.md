@@ -15,9 +15,6 @@ SFT はソフトウェアに時間を与える。
 - 予告部: 第V部(Conway 対応)、第VII部(変形と可能性)、第VIII部(開発の統計力学)
 - 設計の正典: [SFT v2 理論骨格ノート](../note/sft_development_spacetime_dynamics_skeleton.md)。
   本文と骨格が食い違う場合、完全部については本文を、予告部については骨格を正とする。
-- 旧本文(SFT v1, computational theory)は
-  [`docs/archive/2026-07-04-sft-v1-computational-theory/`](../archive/2026-07-04-sft-v1-computational-theory/software_field_theory.md)
-  に退避した。旧概念との対応は付録 F に置く。
 
 ## 序 The New Object(新しい対象)
 
@@ -2367,8 +2364,6 @@ Formal.lean の import は維持(build 対象のまま)、変更は build 修復
 
 ```text
 系譜:
-  SFT v1(computational theory; ForecastCone 核)
-    -> docs/archive/2026-07-04-sft-v1-computational-theory/
   Grothendieck–Derived AAT/SFT ポジションペーパー(docs/note/Grothendieck_Derived_AAT-SFT.md)
     — AAT 半分は AG 本文として実現済み。SFT 半分(§9)は本書が後継。
   SFT v2 理論骨格ノート(docs/note/sft_development_spacetime_dynamics_skeleton.md)
