@@ -988,7 +988,6 @@ T0・T5・T7 は Model theorem として D6 を満たす形で書けるかが勝
 | --- | --- | --- |
 | `docs/sft/aat_interface.md` | 古典語彙の対応表。**保護ファイル** | 全面書き換え(授権同上)。新しい借用表(第IV/V/VI/VII/VIII/IX/X部 anchor + 証明状態列)へ。現行の「非混同」「ArchSig bridge」「ArchSig/FieldSig claim 分離」の三節は新語彙で存置する |
 | `docs/sft/README.md`, `guideline.md` | 旧概念一覧 | 本文確定後に書き換え。P1 の時点で guideline に「SFT v2 改訂進行中(本ノート参照)」の暫定注記を入れ、旧語彙規律との規範的矛盾を防ぐ |
-| `Formal/Arch/Evolution/` 配下 39 ファイル | 旧 SFT の Lean 塔(`SFT*.lean` 27 本 + AttractorEngineering・SignatureDynamics・Chapter7–11 等 12 本)。Formal.lean が import 済みで root build に組み込まれている | **凍結**。operational 定義: (a) 凍結対象 = `Formal/Arch/Evolution/` 配下の全 39 ファイル(旧 SFT 理論 surface として)、(b) Formal.lean の import は維持(`lake build` の対象のまま)、(c) 変更は build 修復のみ許可、(d) 新規 import・新規定理参照を禁止、(e) 新塔が対応部を覆った時点で個別に削除判断(削除時に Formal.lean から import 行を落とす) |
 | `tools/fieldsig` | 旧 artifact(forecast-cone-skeleton 等)前提 | **凍結**。第I–III部確定後に再設計。v2 の一次 workflow 候補を先に命名しておく: **merge-residue probe**(H2 の曲率計器; merge queue の投機ビルドを利用)と**並列度アドバイザ**(T2 の台過大近似 + 衝突確率)。買い手は agent オーケストレーションのスケジューラ |
 | `website/sft/` 約 20 ページ | 旧構成(field-and-force / forecast-cone / workbench) | 現状維持 → 本文確定後に追随 |
 | `outreach/`・website の過去 outreach 記事 | 旧語彙(ForecastCone 等)を含む公開文書 | **残す**(歴史的文書としてそのまま保存。新本文からは参照しない) |
@@ -1018,8 +1017,7 @@ SFT v2 が AAT の外側で新たに要る数学。リスク順。「AAT にア�
 | 内生 cost + 需要過程の吸収類解析(Foster–Lyapunov、ρ_c) | VI, VIII | 中 | Model theorem 規律(D6)で本文候補 → 検証 |
 | 有限監督制御の安定化(仮定 5 点版 T8) | IX | 中 | AAT IX 散逸機械 + Ramadge–Wonham 型の有限構成 |
 
-Lean 最初の的(いずれも新塔。旧 `Formal/Arch/Evolution/` は触らない。
-配置は `research/lean/ResearchLean` sandbox → 本体化の既存運用に従う):
+Lean 最初の的は `research/lean/ResearchLean` sandbox → 本体化の既存運用に従う:
 
 ```text
 L1: 有限トレース site + 進化族 + 場の配置 + 生成子・挙動空間の record 群(第I部)

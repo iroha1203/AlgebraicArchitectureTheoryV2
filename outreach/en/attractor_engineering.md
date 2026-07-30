@@ -963,11 +963,11 @@ That is why ArchSig must distinguish `unmeasured` from `zero`. When something th
 
 ### About the Lean Formalization
 
-The structure above is not built only from metaphor. Some of the core vocabulary of AAT has been implemented as Lean definitions and theorems under `Formal/Arch`.
+The structure above is not built only from metaphor. The current algebraic-geometric AAT formalization lives under `Formal/AG`.
 
 The repository is [AlgebraicArchitectureTheoryV2](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2). The proved API lives in the Lean source under `Formal/`.
 
-The vocabulary used in the second half of this article mainly corresponds to `Formal/Arch/Evolution/SignatureDynamics.lean` and `Formal/Arch/Evolution/AttractorEngineering.lean`.
+The vocabulary used in the second half of this article was explored in an earlier Lean implementation retained in the repository's Git history.
 
 The role of Lean formalization is not to give this theory an aura of correctness. Its role is to record, with boundaries, what can be said under which universe, observation, coverage, and exactness assumptions.
 

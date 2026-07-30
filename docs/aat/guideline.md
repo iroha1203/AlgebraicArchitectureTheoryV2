@@ -1,6 +1,6 @@
 # AAT / Lean 編集ガイドライン
 
-この文書は `Formal/AG`、`Formal/Arch`、`docs/aat` を編集するときの作業方針をまとめる。
+この文書は `Formal/AG` と `docs/aat` を編集するときの作業方針をまとめる。
 
 ## Claim discipline
 
@@ -122,7 +122,7 @@ Lean 変更を含む場合、変更範囲に応じて focused check、対象modu
 単一ファイルを確認する場合は次の形を使う。
 
 ```bash
-lake env lean Formal/Arch/Core/Layering.lean
+lake env lean Formal/AG/Atom/Atom.lean
 ```
 
 PR 前には次も確認する。

@@ -9,8 +9,7 @@ universe u
 II.R0: Part I prerequisite package for the Part II site tower.
 
 The site formalization starts from the Part I `AATCorePackage`; it does not
-import `Formal/Arch` and it does not manufacture Atom, equation, obstruction,
-or object data on its own.
+manufacture Atom, equation, obstruction, or object data on its own.
 -/
 structure PartIPrerequisites where
   carrier : AtomCarrier.{u}

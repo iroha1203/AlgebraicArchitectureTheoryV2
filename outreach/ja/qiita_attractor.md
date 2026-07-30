@@ -976,11 +976,11 @@ refined observation:
 
 ### Lean 形式化について
 
-ここまでの整理は、比喩だけで組み立てているわけではありません。AAT の中核語彙の一部は、Lean の定義・定理として `Formal/Arch` 以下に実装されています。
+ここまでの整理は、比喩だけで組み立てているわけではありません。現行の代数幾何的 AAT 形式化は `Formal/AG` 以下にあります。
 
 リポジトリは [AlgebraicArchitectureTheoryV2](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2) にあります。証明済み API は `Formal/` 以下のLean sourceにあります。
 
-特にこの記事の後半で使った語彙は、主に `Formal/Arch/Evolution/SignatureDynamics.lean` と `Formal/Arch/Evolution/AttractorEngineering.lean` に対応しています。
+この記事の後半で使った語彙を扱った旧 Lean 実装は、repository の Git 履歴に保持されています。
 
 Lean 形式化の役割は、この理論を「正しそうな雰囲気」にすることではありません。どの universe、どの observation、どの coverage、どの exactness assumption のもとで何が言えるのかを、境界つきで記録することです。
 

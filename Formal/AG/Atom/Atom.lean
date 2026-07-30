@@ -22,8 +22,8 @@ structure AtomRecord
 I.定義1.1 Atom carrier.
 
 `AtomCarrier` keeps the universe-level atom type and its five coordinate
-projections together. It is intentionally independent of `Formal/Arch`, so the
-AG formalization can grow from the Part I text rather than from Classic AAT.
+projections together, so the AG formalization grows directly from the Part I
+text.
 -/
 structure AtomCarrier where
   AtomKind : Type u

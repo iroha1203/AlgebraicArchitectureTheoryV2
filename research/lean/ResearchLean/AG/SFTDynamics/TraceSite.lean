@@ -25,8 +25,7 @@ topology axioms are claimed here — the generated coverage with saturation
 (SFT 定義 7.3), transport data on edges (SFT 定義 8.3), frontier-typed
 generators, and the TraceRealization theorem (SFT 定理 9.4) are future Lean
 targets, not consequences of this file.  Nothing here asserts anything about
-real repositories, extraction completeness, or the old `Formal/Arch/Evolution`
-surface (which stays frozen).
+real repositories or extraction completeness.
 -/
 
 namespace ResearchLean.AG
