@@ -44,7 +44,6 @@ AAT は、他の理論のための補助概念ではなく、ソフトウェア�
    - mathlib 型 statement review 基準と target statement の一次仕様・直接査読の正本。
 
 現行の AAT 数学本文の正典は `algebraic_geometric_theory/` に置く。
-代数幾何版へ移行する前の先行ノートは `docs/archive` に退避した。
 力学・場・予測・制御の内容は [SFT](../sft/software_field_theory.md) 側で扱う。
 
 ## AAT の中心対象

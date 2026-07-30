@@ -236,7 +236,6 @@ carry the `archsig-` prefix.
 
 - [Command Guide](docs/commands.md)
 - [Artifacts And Boundaries](docs/artifacts-and-boundaries.md)
-- [Archived Sharded ArchMap Design](../../docs/archive/2026-07-05-archsig-v1-retirement/tools-archsig-docs/sharded-archmap.md)
 
 ## Test
 

@@ -4,7 +4,7 @@
 > interface のまま残っており、P5 で v2 化する。それまでの間、SFT 側の正は
 > [software_field_theory.md](software_field_theory.md)(v2)の序 §3 と付録 A・G であり、
 > 本文書の ForecastCone / ConsequenceEnvelope 等の記述は v1 資産
-> (archive、凍結された `Formal/Arch/Evolution/`、FieldSig)にのみ適用する。
+> (凍結された `Formal/Arch/Evolution/`、FieldSig)にのみ適用する。
 
 この文書は、SFT が AAT から何を借り、どう読み替えるかを定義する。
 AAT 側の数学理論は [代数幾何的 AAT 数学本文](../aat/algebraic_geometric_theory/README.md) に閉じており、
@@ -84,8 +84,7 @@ ArchMap observation ではなく `archsig-analysis-packet/v1` handoff artifact �
 bounded architecture-evidence state として読む。obstruction circuit、signature axis、
 repair candidate、coverage gap は
 SFT の forecast truth ではなく、`operation-support-estimate-v0` へ渡される bounded
-coordinate / unknown remainder である。旧 compatibility surface は #1307 で archive
-せず削除し、Lean source of truth は `AtomAxiomSystem` / `AATCore` /
+coordinate / unknown remainder である。Lean source of truth は `AtomAxiomSystem` / `AATCore` /
 `AATCoreTransition` に一本化する。
 
 ## 3. SFT 側で導入するもの

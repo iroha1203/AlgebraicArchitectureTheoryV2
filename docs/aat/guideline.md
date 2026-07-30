@@ -108,7 +108,7 @@
 - 語れることだけを確かに語る。AAT / Lean docs では、語れない外部領域を `non-conclusion` 一覧として
   主役化しない。必要な boundary は、定理や artifact の有効範囲を示すために最小限だけ置く。
 - theorem や定義を追加した場合は、数学本文、Lean source、対応するGOALまたはIssueを突合する。
-- `docs/archive` は歴史的参照として扱い、現行文書の更新時に同じ変更を反映しない。
+- 役目を終えた文書は削除する。
 - AATの恒久情報は現行数学本文に置き、Lean・作業状態はLean source、GOAL、Issue、PRDで管理する。
 - Architecture Signature は単一スコアではなく、多軸診断として扱う。
 - SOLID や Layered / Clean Architecture などの外部設計語彙は AAT の primitive ではない。

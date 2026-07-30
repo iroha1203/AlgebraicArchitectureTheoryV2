@@ -4,8 +4,7 @@
 - 対象: `website/`(iroha1203.dev、Cloudflare Pages 配信)
 - 位置づけ: リニューアル全体の設計文書。恒久的な設計・route・運用規律は
   `docs/website/DESIGN.md`、`SITEMAP.md`、`guideline.md` に反映する。
-- 関連: `docs/website/DESIGN.md`(現行設計)、
-  `docs/archive/2026-07-website-renewal-superseded/`(本ノートが更新・置換した前世代計画)
+- 関連: `docs/website/DESIGN.md`(現行設計)。
 
 ## 問い
 
@@ -449,7 +448,7 @@ website 本体と同時に、内部運用メモ `docs/website/` も本ノート�
 
 **`README.md`(docs/website/)— PR-W0 で小改訂**
 
-- 文書の分担一覧から退避済み計画書 3 本+方針メモを削除し、本ノート
+- 文書の分担一覧に本ノート
   (`docs/note/website_renewal_design_note.md`)への参照を追加。
 - stack 節(HTML / CSS / 小さな JavaScript / MathJax / Google Fonts)に
   Eleventy(authoring)を追記。
@@ -459,20 +458,6 @@ website 本体と同時に、内部運用メモ `docs/website/` も本ノート�
 - `CLAUDE.md` / `AGENTS.md` の「検証コマンド」節にある website preview
   (`python3 -m http.server 0 --directory website`)を Eleventy 基準
   (`cd website && npx @11ty/eleventy --serve`)へ更新する(PR-W0)。
-
-### 8.2 退避文書
-
-`docs/archive/2026-07-website-renewal-superseded/` へ退避済み。各ファイル冒頭に
-退避理由と後継文書(本ノート)を記録している。
-
-| 文書 | 退避時期 | 理由 |
-| --- | --- | --- |
-| `AAT_RENEWAL_PLAN.md` | PR-W1a | Atom refoundation 期の計画。AG 版 1:1 構成(§5)が後継 |
-| `SFT_REWRITE_PLAN.md` | PR-W0 | v1 三部構成前提。Wave 2(§6)が後継 |
-| `ARCHSIG_RENEWAL_PLAN.md` | PR-W1c | Skill-first 方針・Tone・分析カタログの素材を §5.3 / §7 と W1c 実装に吸収してから退避 |
-| `archsig_website_improvement_policy.md` | PR-W1c | 同上 |
-
-退避時に README / guideline / DESIGN の現役文書リンクを除去した。
 
 ## 9. 実装体制と作業分割(確定: Claude 直接実装)
 
@@ -485,14 +470,13 @@ PR-W0    基盤刷新: Eleventy 化 + Pages ビルド切替 + CSS 分割 + デ�
            + 既存 43 ページ移設
            (コンテンツ不変。見た目はタイポグラフィ・定理環境の刷新まで含む)
            docs 同期: guideline.md 改訂、SITEMAP.md 縮退、README.md 小改訂、
-           DESIGN.md 最小修正、SFT_REWRITE_PLAN.md 退避(§8)
+           DESIGN.md 最小修正
 PR-W1a   AAT リライト前半: landing + 第I〜IV部(+ 中心図式 SVG、_redirects)
-           docs 同期: DESIGN.md 全面改訂、AAT_RENEWAL_PLAN.md 退避(§8)
+           docs 同期: DESIGN.md 全面改訂
 PR-W1b   AAT リライト後半: 第V〜X部 + 付録 + status + related-work
            docs 同期: DESIGN.md / SITEMAP.md のルート表更新
 PR-W1c   ArchSig 先行増強: concepts / analyses / archview デモページ
-           docs 同期: DESIGN.md 参照元対応表更新、ARCHSIG_RENEWAL_PLAN.md と
-           archsig_website_improvement_policy.md を吸収後退避(§8)
+           docs 同期: DESIGN.md 参照元対応表更新
 Wave 2 / Wave 3   発火条件成立時に改めて計画(本ノート §6 §7 を骨格に、
            実装分担もその時点で判断)
 ```

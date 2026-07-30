@@ -23,13 +23,10 @@ source of truth として扱わない。
    - Tier 1に従って、領域ごとの編集規律・運用規律・現行基準を定める。
 3. **Tier 3: 作業用文書**
    - `docs/prd/` のPRD本文など（`docs/prd/guideline.md` はTier 2）
-   - 実装・検証のための一時的な作業契約であり、恒久仕様のsource of truthではない。完了後は `docs/archive/` に移す。
+   - 実装・検証のための一時的な作業契約であり、恒久仕様のsource of truthではない。役目を終えた文書は削除する。
 4. **Tier 4: メモ**
    - `docs/note/` など
    - 拘束力を持たないメモ書きであり、恒久仕様の根拠にはしない。
-5. **Tier 5: archive**
-   - `docs/archive/` など
-   - 過去資料の保管場所であり、現行source of truthとして扱わない。将来的に完全削除する。
 
 下位Tierの文書は上位Tierの内容に従う。Tier間の恒久的な参照は、下位Tierから上位Tierへの方向だけを許可する。
 上位Tierの文書が下位Tierの文書を参照してはならず、Tier 1の数学本文からTier 3のPRDを参照することも禁止する。
@@ -64,7 +61,7 @@ source of truth として扱わない。
 - [AAT / SFT Interface](sft/aat_interface.md): SFT が AAT から借りる概念と、片方向依存の interface を整理する。
 - [ソフトウェアの場の理論](sft/software_field_theory.md): PRD / Spec / Issue / PR / Review / CI / organization / AI / lifecycle を force, field, trajectory, control として整理する。
 - [Lean 形式化](../Formal/): 現在Leanに存在する定義・定理のsource。
-- [PRD](prd/): 実装・検証中の一時的なPRDを格納する。PRDの責務、参照禁止、完了後archiveの規律は [PRD guideline](prd/guideline.md) を正本とする。
+- [PRD](prd/): 実装・検証中の一時的なPRDを格納する。PRDの責務、参照禁止、完了後削除の規律は [PRD guideline](prd/guideline.md) を正本とする。
 - [AAT directory guide](aat/README.md): AAT 配下の補助文書の読み方。
 - [SFT directory guide](sft/README.md): SFT 配下の補助文書の読み方。
 - [Website operations](website/README.md): 公開されない website 運用メモ、route 索引、設計文書。
@@ -113,7 +110,7 @@ Lean で証明済みの構造的事実、定義のみの概念、将来の証明
 
 ## 編集ガイドライン
 
-- [PRD guideline](prd/guideline.md): PRDの責務、参照禁止、完了後archiveの規律。
+- [PRD guideline](prd/guideline.md): PRDの責務、参照禁止、完了後削除の規律。
 - [AAT / Lean guideline](aat/guideline.md): `Formal/AG` / `Formal/Arch`、AAT 数学本文、Lean status、proof obligation の編集方針。
 - [SFT guideline](sft/guideline.md): SFT 本文、AAT / SFT interface、forecast / governance claim boundary の編集方針。
 - [Tooling guideline](tool/guideline.md): ArchMap、LawPolicy、ArchSig、FieldSig、schema、CLI、fixture の編集方針。
