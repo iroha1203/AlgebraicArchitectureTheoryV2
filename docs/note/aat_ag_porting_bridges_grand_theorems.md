@@ -1,7 +1,7 @@
 # AAT代数幾何版 拡張考察: 先行ノートからの移植・他分野への橋・大定理候補
 
 - 対象: `docs/aat/algebraic_geometric_theory/`(第I〜VIII部+付録A/B、2026-06-12 時点)
-- 比較対象: `docs/aat/algebraic_geometric_theory/`、`docs/note/` の先行体系定理ノート4本、`Formal/Arch/` の先行体系 Lean 資産
+- 比較対象: `docs/aat/algebraic_geometric_theory/`、`docs/note/` の先行体系定理ノート4本
 - 実施日: 2026-06-12
 - 位置づけ: フルレビュー(`aat_algebraic_geometric_theory_full_review.md`、2026-06-11)とその反映(#1900 数学本文補強、#1901 計測理論=第VIII部追加)を前提に、次の三問に答える。
   1. 先行ノートから移植できる要素は何か

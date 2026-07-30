@@ -11,7 +11,6 @@ active threshold、current SCORE、proof state、サイクル履歴などの実�
 - [G-aat-quality-surface-01](G-aat-quality-surface-01.md)
 - [G-sft-conway-01](G-sft-conway-01.md)
 - [G-aat-quality-surface-04](G-aat-quality-surface-04.md)
-- [G-aat-quality-surface-08](G-aat-quality-surface-08.md)
 
 ## draft（人間の確認待ち）
 
