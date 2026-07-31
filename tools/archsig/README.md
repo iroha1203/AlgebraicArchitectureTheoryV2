@@ -21,11 +21,10 @@ For reproducible runs, `policy-bundle` fixes the three selected policy component
 FieldSig owns forecast, governance, calibration, and operational feedback under
 `tools/fieldsig`.
 
-ArchSig's current primary workflow is complete-first authoring followed by
+ArchSig's current primary workflow is supplied-input analysis through
 `analyze`:
 
-1. Build the fullest source-grounded ArchMap the selected source universe
-   supports, usually through `archmap-creater`.
+1. Supply the source-grounded ArchMap selected for the measurement.
 2. Select a project-specific LawPolicy / interpretation profile, usually
    through `law-policy-creater`.
 3. Run `analyze` through `archsig-reader` or directly through the CLI.
@@ -42,7 +41,7 @@ are not measured zeros.
 
 | Surface | Commands | Boundary |
 | --- | --- | --- |
-| ArchMap input | `analyze` | ArchSig consumes a source-grounded `archmap/v0.5.4` artifact together with the selected policy components. ArchMap authoring, standalone validation, scope manifests, extraction comparison, and supply metrics are provided by [`tools/archmap`](../archmap/README.md). |
+| ArchMap input | `analyze` | ArchSig validates and consumes a source-grounded `archmap/v0.5.4` artifact together with the selected policy components. |
 | Interpretation profile | `law-policy` | LawPolicy selects evaluator manifests, explicit law / lawPair entries, basis refs, measurement profiles, and non-conclusions. It is an evaluator selector, not AAT itself. |
 | Policy bundle | `policy-bundle` | Fixes LawPolicy, law-equation-surface, and MeasurementProfile references with canonical component fingerprints for one analyze run. |
 | MeasurementProfile validation | `measurement-profile` | Validates a standalone `measurement-profile/v0.5.4` artifact, including finite bounds against evaluator registry hard caps. |
@@ -179,18 +178,13 @@ The `tools/archsig/skills` directory is the primary ArchSig product surface for
 LLM agents. It is not an optional add-on. A released ArchSig bundle provides the
 ArchSig binary plus this skills directory; the skills do not require the AAT
 mathematical docs, test fixtures, Cargo project, or Git history at runtime.
-The `archmap-creater` skill additionally requires the separate `archmap` binary
-from `tools/archmap`: build it from a checkout or install it separately and set
-`ARCHMAP_BIN` when it is not already on `PATH`.
 
-Use the skills whenever the task is to create an ArchMap, create a LawPolicy,
-interpret a measurement run, or review a PR. The skills define the safe reading
-order and the translation from AAT structural output into source-level review
-language.
+Use the skills to create a LawPolicy, interpret a measurement run, or review a
+PR. The skills define the safe reading order and the translation from AAT
+structural output into source-level review language.
 
 | Skill | Purpose |
 | --- | --- |
-| `archmap-creater` | Create bounded `archmap/v0.5.4` artifacts from repository evidence. It keeps ArchMap as source-grounded Atom observations, not law-relative analysis or removed v0 helper fields. |
 | `law-policy-creater` | Create project-specific `law-policy/v0.5.4` profiles from repository coding conventions, architecture rules, and user decisions. If docs do not define the evaluator universe, ask the user before selecting laws. |
 | `archsig-reader` | Run an ArchMap with a selected policy bundle, read summary / viewer report / manifest first, compare high-priority readings with source evidence, and propose bounded improvements. It does not silently use a generic LawPolicy as project analysis. |
 | `archsig-pr-reviewer` | Use `analyze`, `compare`, and `gate`, then read the changed code and explain review focus in human code-review language. It stops if the base measurement context is missing. |
@@ -198,15 +192,14 @@ language.
 
 Typical use:
 
-1. Use `archmap-creater` to produce or refine the ArchMap.
-2. Use `law-policy-creater` to produce the selected LawPolicy for the target
+1. Use `law-policy-creater` to produce the selected LawPolicy for the target
    repository or subsystem.
-3. Run `analyze`.
-4. Use `archsig-reader` to interpret `archsig-analysis-summary.json`,
+2. Run `analyze` with the supplied ArchMap.
+3. Use `archsig-reader` to interpret `archsig-analysis-summary.json`,
    `archsig-atom-viewer-data.json`, and `archsig-run-manifest.json` first, then
    compare selected detail refs with source evidence before proposing
    improvements.
-5. When a measured obstruction needs a repair route, use `repair-plan-creater`
+4. When a measured obstruction needs a repair route, use `repair-plan-creater`
    to author `archsig-repair-plan/v0.5.7`, validate it with `repair-plan`, and
    re-run `analyze` with `--repair-plan`.
 

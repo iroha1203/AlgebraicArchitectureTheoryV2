@@ -113,8 +113,6 @@ def main() -> int:
     # reproduction/
     repro = out / "reproduction"
     repro.mkdir()
-    shutil.copytree(root / "tools/archsig/skills/archmap-creater",
-                    repro / "archmap-creater")
     expected_rows = "\n".join(
         f"| {step} | `{concl}` | {rid} |" for step, concl, rid in EXPECTED)
     (repro / "README.md").write_text(f"""# Reproduction
@@ -149,9 +147,8 @@ references):
 | --- | --- | --- |
 {expected_rows}
 
-The authoring process for the observation input (ArchMap) is documented
-in `archmap-creater/` (the authoring SKILL); the canonical diagnosis
-report with the condition matrix is `../report/saga_diagnosis.md`.
+The canonical diagnosis report with the condition matrix is
+`../report/saga_diagnosis.md`.
 """)
 
     # audit/

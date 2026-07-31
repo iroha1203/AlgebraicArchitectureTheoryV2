@@ -1031,7 +1031,7 @@ fn check_vocabulary(vocabulary: &LawSurfaceBindingVocabularyV1) -> ValidationChe
     }
     check_examples(
         "law-equation-surface-v052-binding-vocabulary",
-        "law surface and authoring use a non-empty versioned binding vocabulary",
+        "law surface validation uses a non-empty versioned binding vocabulary",
         examples,
     )
 }

@@ -52,9 +52,8 @@ RepairPlan schema v0.5.7)。
 | E5 | §7.2 | repaired 診断: `REPAIR_GLUES_WITHIN_SELECTED_COMPLEX`、`inB1: true`、`run:6685bab8db21`、gate BLOCKED→PASS | `evidence/saga/out/repaired/`・`out/compare/`+gate 出力 | 照合済み |
 | E6 | §7.4 | **中心 claim**: 結論(residual・boundary membership・gate)は観測+選択方程式系から決定論的に導出され、結論を運ぶ入力は契約に存在しない。fail-closed が執行 | ArchSig source+cargo test 233本(2026-07-26 全 pass。重複 overlap の fail-closed 回帰 #3804 系を含む)+RepairPlan v0.5.7 schema(選択複体のみ) | 照合済み |
 | E7 | §7.4 | 定理5.1 の有限 instantiation は計測の範囲外(第6章 Lean が担う) | 契約の範囲定義そのもの+condition matrix(E8)に比較段が無いこと | 照合済み |
-| E8 | 付録C.3 | condition matrix 各行(computed / checked / assumed / unmeasured)の種別と記録 | 正本 = `saga_diagnosis.md` condition matrix(#3829 で canonical anchor 再帰属済み)↔ packet assumption ledger・validation reports | 照合済み |
-| E9 | 付録C.2 | 供給工程: 機械層/読解層分離、scope 承認、2パス調停、audit、モデル記録(2,118 atoms / 42 services を軽量モデル run で作成) | authoring SKILL 本体+scope manifest+調停記録+run のモデル記録(fullbuild report) | 照合済み |
-| E10 | 付録C.4 | 再現: 固定入力からの `analyze`×2 / `compare` / `gate`×2 で runId・gate 判定一致、`inputDigests` は canonical digest と一致 | 付録C.4 に deposit 構成・command・expected output を固定済み(2026-07-26)。verbatim command=bundle `reproduction/README.md`、正本=`saga_diagnosis.md` 再現節 | 固定済み。**deposit 時**: clean checkout 再現確認(P0-5) |
+| E8 | 付録C.2 | condition matrix 各行(computed / checked / assumed / unmeasured)の種別と記録 | 正本 = `saga_diagnosis.md` condition matrix(#3829 で canonical anchor 再帰属済み)↔ packet assumption ledger・validation reports | 照合済み |
+| E9 | 付録C.3 | 再現: 固定入力からの `analyze`×2 / `compare` / `gate`×2 で runId・gate 判定一致、`inputDigests` は canonical digest と一致 | 付録C.3 に deposit 構成・command・expected output を固定済み(2026-07-26)。verbatim command=bundle `reproduction/README.md`、正本=`saga_diagnosis.md` 再現節 | 固定済み。**deposit 時**: clean checkout 再現確認(P0-5) |
 
 ## D. Related Work / novelty(第8章)
 
@@ -82,5 +81,5 @@ RepairPlan schema v0.5.7)。
 tag `saga-paper-v1.0.0` = commit `5246d5326f01c0879f2305d9a7872d35e97c9380`。残検証3点を消化し、**全行 close**:
 
 - **L5**: tagged commit の CI green を確認 — Lean workflow(run 30205924257、フルビルド+AxiomAudit)success、Tool workflow(run 30205924264)success。release CI run は `MANIFEST.json` の `releaseCiRun` に記録
-- **E10**: clean checkout 再現(P0-5)を実施 — tag からの fresh clone 上で `analyze`×2 / `compare` / `gate`×2 を実行し、runId(`run:78c31d6a3172` / `run:6685bab8db21`)、conclusion(`MEASURED_NONGLUING_RESIDUAL` / `REPAIR_GLUES_WITHIN_SELECTED_COMPLEX` / `MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE`)、gate(BLOCKED exit 1 / PASS exit 0)の**全項目が付録C.4 の expected output と一致**
+- **E9**: clean checkout 再現(P0-5)を実施 — tag からの fresh clone 上で `analyze`×2 / `compare` / `gate`×2 を実行し、runId(`run:78c31d6a3172` / `run:6685bab8db21`)、conclusion(`MEASURED_NONGLUING_RESIDUAL` / `REPAIR_GLUES_WITHIN_SELECTED_COMPLEX` / `MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE`)、gate(BLOCKED exit 1 / PASS exit 0)の**全項目が付録C.3 の expected output と一致**
 - **S2**: `build_bundle.py --ci-run <Lean run URL>` で bundle 組成(69ファイル+`MANIFEST.json`、`tagPresentOnHead: true`)。bundle↔repo の evidence byte 一致を checksum spot check(3点)で確認、bundle 内 PDF は release identity 印字版と sha256 一致

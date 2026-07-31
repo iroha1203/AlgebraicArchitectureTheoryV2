@@ -1,8 +1,8 @@
 # ArchSig Commands
 
-ArchMap authoring and standalone ArchMap validation are provided by the
-`tools/archmap` crate. See the [ArchMap command guide](../../archmap/docs/commands.md)
-for `archmap`, `scope-manifest`, `extraction-diff`, and `supply-bench`.
+ArchSig validates supplied ArchMap input as part of the current analysis
+workflow. The `analyze` and `repair-plan` commands use the canonical ArchMap
+schema, source references, and vocabulary checks in the ArchSig runtime.
 
 ## Analyze
 

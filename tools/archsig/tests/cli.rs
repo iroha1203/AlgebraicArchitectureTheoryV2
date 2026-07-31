@@ -10563,10 +10563,6 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
         vec![
             "archmap-current",
             "aat-atom-vocabulary/v0.5.4",
-            "archmap-scope-manifest/v0.5.4",
-            "archmap-candidate-packet/v0.5.4",
-            "archmap-extraction-consistency/v0.5.4",
-            "archmap-coverage-ledger/v0.5.4",
             "aat-atom-vocabulary-binding/v0.5.4",
             "law-equation-surface/v0.5.4",
             "law-policy/v0.5.4",
@@ -10589,11 +10585,7 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
     for entry in artifacts {
         let artifact_id = entry["artifactId"].as_str().expect("artifact id");
         let expected_role = match artifact_id {
-            "archmap-scope-manifest/v0.5.4"
-            | "archmap-candidate-packet/v0.5.4"
-            | "archmap-extraction-consistency/v0.5.4"
-            | "archmap-coverage-ledger/v0.5.4"
-            | "aat-atom-vocabulary-binding/v0.5.4" => "authoring",
+            "aat-atom-vocabulary-binding/v0.5.4" => "primary",
             _ => "primary",
         };
         assert_eq!(entry["artifactRole"].as_str(), Some(expected_role));

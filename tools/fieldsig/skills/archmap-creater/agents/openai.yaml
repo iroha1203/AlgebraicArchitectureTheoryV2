@@ -1,4 +1,0 @@
-interface:
-  display_name: "ArchMap Creater"
-  short_description: "Create and validate ArchMap artifacts"
-  default_prompt: "Use $archmap-creater to create an ArchMap observation artifact from repository evidence."

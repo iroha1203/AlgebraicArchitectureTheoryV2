@@ -28,7 +28,6 @@
 
 - [ ] CIで本体のフル `lake build` を確認
 - [ ] `cargo test --manifest-path tools/archsig/Cargo.toml`（ArchSig 変更時）
-- [ ] `cargo test --manifest-path tools/archmap/Cargo.toml`（ArchMap authoring / supply 変更時）
 - [ ] `cargo test --manifest-path tools/fieldsig/Cargo.toml`（FieldSig 変更時）
 - [ ] `git diff --check`
 - [ ] hidden / bidirectional Unicode scan

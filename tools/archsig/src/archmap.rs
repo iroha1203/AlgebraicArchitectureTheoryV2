@@ -128,7 +128,7 @@ pub fn static_aat_atom_vocabulary_v1() -> AatAtomVocabularyV1 {
         })
         .collect(),
         non_conclusions: vec![
-            "AAT atom vocabulary is an artifact-side authoring contract; it does not prove source extraction soundness or semantic correctness.".to_string(),
+            "AAT atom vocabulary is an ArchSig input contract; it does not prove source extraction soundness or semantic correctness.".to_string(),
             "Vocabulary lint checks token membership only and does not decide whether a new atom kind should be added to the doctrine.".to_string(),
         ],
     }
@@ -136,9 +136,9 @@ pub fn static_aat_atom_vocabulary_v1() -> AatAtomVocabularyV1 {
 
 pub fn static_aat_atom_binding_vocabulary_v1() -> LawSurfaceBindingVocabularyV1 {
     serde_json::from_str(include_str!(
-        "../skills/archmap-creater/references/aat-law-surface-binding-vocabulary.json"
+        "schema/aat-law-surface-binding-vocabulary.json"
     ))
-    .expect("checked-in AAT atom binding vocabulary must be valid JSON")
+    .expect("canonical AAT atom binding vocabulary must be valid JSON")
 }
 
 fn check_archmap_v2_binding_vocabulary() -> ValidationCheck {
@@ -174,7 +174,7 @@ fn check_archmap_v2_binding_vocabulary() -> ValidationCheck {
         examples.push(generic_validation_example(
             "aatAtomBindingVocabulary.schema",
             &vocabulary.schema,
-            "ArchMap authoring and law-surface validation use the v0.5.4 binding manifest",
+            "ArchSig ArchMap and law-surface validation use the v0.5.4 binding manifest",
         ));
     }
     for axis in required_axes {
@@ -268,7 +268,7 @@ fn check_archmap_v2_binding_vocabulary() -> ValidationCheck {
     }
     check_from_examples(
         "archmap-schema052-aat-binding-vocabulary",
-        "ArchMap authoring and law-surface validation resolve one versioned binding manifest",
+        "ArchSig ArchMap and law-surface validation resolve one versioned binding manifest",
         examples,
     )
 }
