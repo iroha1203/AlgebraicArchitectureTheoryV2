@@ -40,6 +40,24 @@ filesystem path と検証 command は、移動後に再利用できる同等手�
 Research Lean の配置と検証手順は、この README、`lean/README.md`、両 package の
 `lakefile.toml`、`.github/workflows/lean.yml` を現行 source of truth とする。
 
+## Lean 成果物の退役
+
+completed な GOAL の Lean 成果物は、証拠を固定した上で現役 tree から退役(削除)できる。
+退役の既定条件は蒸留完了(本体側の下限到達)である。未蒸留 conjunct が残る場合、
+本体が必要とする内容は unported 台帳(GitHub Issue)へ起票してから退役し、
+本体に不要と人間が裁定した内容は裁定を記録した上で退役してよい。
+
+手順は次の3段とする。
+
+1. report(または対応する proof record)へ、最終検証 head の commit hash と
+   退役する成果物一覧を追記して証拠を固定する。
+2. `research/lean/research-modules.txt` と `ResearchLean` の aggregate から除去する。
+3. ファイルを削除する。履歴は Git と report が担う。現行 docs に残る path 参照は
+   commit hash 付き参照へ置換する。
+
+ビルド対象から外すだけで tree にファイルを残す「凍結」は退役として認めない。
+検証されない Lean が現役 tree に残る状態を作らないためである。
+
 ## 状態の正本
 
 ループの進行状態の正本は、GOAL ごとに一本立てる GitHub の tracking Issue `Research Loop: <goal-id>` に置く。候補ごと、サイクルごとの tracking Issue は作らず、探索型 GOAL では active SCORE threshold、current SCORE、候補カード、PR、iteration comment をこの Issue に集約する。`goals/<goal-id>.md` は GOAL 定義、カードの frontmatter と検証結果のレポートは証拠 artifact であり、作業を中断してもこの Issue を読めば同じ地点から再開できる。`target-theorem` では候補カードを作らず、target theorem の statement と completion criteria は `goals/<goal-id>.md` が正本で、tracking Issue には proof state、完了 / 未完 proof obligation、blocker、PR、target_cycle_result、`$math-lean-review` の completion gate 結果を置く。
