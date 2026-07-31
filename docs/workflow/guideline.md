@@ -32,16 +32,22 @@
 - `.lake` は Lake の build / dependency cache 専用とし、一時出力は `.tmp/` または
   `/private/tmp` に置く。
 
-## 保護ファイル(3条件)
+## 公開面と公開資料の編集
+
+`website/**` は Cloudflare Pages で配信する公開面として、公開ページ、asset、route を管理する。
+`outreach/**` は外部公開用の資料として、記事、査読前論文、翻訳、公開前素材を管理する。
+
+`website/**` と `outreach/**` の編集は、対象パスと編集方針を明示した作業として進める。
+
+## 保護対象(3条件)
 
 `docs/aat/algebraic_geometric_theory/`、`docs/sft/software_field_theory.md`、
-`docs/sft/aat_interface.md` の更新は、次の3条件がすべて揃う場合に限る。
+`docs/sft/aat_interface.md`、`outreach/paper/**` の更新は、次の3条件がすべて揃う場合に限る。
 
-1. 人間の明示的な編集指示がある。対象文書と変更方針を特定した指示に限り、
-   曖昧な依頼や他作業からの派生判断を編集許可と読まない。
+1. 人間が対象文書と変更方針を明示する。
 2. 実装者以外の LLM がレビューする(Codex 実装なら Claude レビュー、
    Claude 実装なら Codex レビュー)。
-3. 人間が差分を確認して merge する。LLM はこれらのファイルを含む PR を merge しない。
+3. 人間が差分を確認して merge する。
 
 ## CI への恒久追加の禁止
 
