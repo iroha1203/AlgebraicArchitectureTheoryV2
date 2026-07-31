@@ -21,8 +21,10 @@ scope. Do not claim that all possible repository evidence was extracted.
 
 - A repository checkout and a user-approved scope: include globs, exclude globs,
   requested scope text, and any author-supplied evidence files.
-- An ArchMap binary. Resolve it in this order: `$ARCHMAP_BIN`, `archmap` on
-  `PATH`, a bundled binary near the skill, then the local checkout build.
+- An ArchMap binary. The ArchSig release bundle does not include this separate
+  binary: build `tools/archmap` from a repository checkout or install it
+  separately, then resolve it in this order: `$ARCHMAP_BIN`, `archmap` on
+  `PATH`, and the local checkout build.
 - A run-specific authoring directory, normally under `.tmp/archmap-authoring/`.
   Do not overwrite a previous run directory unless the user explicitly asks.
 - Optional: a LawPolicy and MeasurementProfile for a post-authoring

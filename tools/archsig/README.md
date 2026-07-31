@@ -176,9 +176,12 @@ scan-first path is no longer an ArchSig workflow.
 ## Skills
 
 The `tools/archsig/skills` directory is the primary ArchSig product surface for
-LLM agents. It is not an optional add-on. A released ArchSig bundle is expected
-to work with the binary plus the skills directory; the skills do not require the
-AAT mathematical docs, test fixtures, Cargo project, or Git history at runtime.
+LLM agents. It is not an optional add-on. A released ArchSig bundle provides the
+ArchSig binary plus this skills directory; the skills do not require the AAT
+mathematical docs, test fixtures, Cargo project, or Git history at runtime.
+The `archmap-creater` skill additionally requires the separate `archmap` binary
+from `tools/archmap`: build it from a checkout or install it separately and set
+`ARCHMAP_BIN` when it is not already on `PATH`.
 
 Use the skills whenever the task is to create an ArchMap, create a LawPolicy,
 interpret a measurement run, or review a PR. The skills define the safe reading

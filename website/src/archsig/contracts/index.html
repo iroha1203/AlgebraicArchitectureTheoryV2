@@ -32,7 +32,7 @@
                 <table>
                   <thead><tr><th scope="col">Artifact</th><th scope="col">Schema</th><th scope="col">Authored by</th><th scope="col">Validator</th></tr></thead>
                   <tbody>
-                    <tr><td>ArchMap</td><td><code>archmap/v0.5.4</code></td><td>Agent via <code>archmap-creater</code>, you approve scope</td><td><code>archmap archmap</code></td></tr>
+                    <tr><td>ArchMap</td><td><code>archmap/v0.5.4</code></td><td>Agent via <code>archmap-creater</code>, you approve scope</td><td><code>cargo run --manifest-path tools/archmap/Cargo.toml -- archmap</code></td></tr>
                     <tr><td>LawPolicy</td><td><code>law-policy/v0.5.4</code></td><td>Agent via <code>law-policy-creater</code></td><td><code>archsig law-policy</code></td></tr>
                     <tr><td>Law surface</td><td><code>law-equation-surface/v0.5.4</code></td><td>Agent via <code>law-policy-creater</code></td><td><code>archsig law-surface</code></td></tr>
                     <tr><td>MeasurementProfile</td><td><code>measurement-profile/v0.5.4</code></td><td>Agent via <code>law-policy-creater</code></td><td><code>archsig measurement-profile</code></td></tr>
@@ -49,14 +49,14 @@
               <p>The ArchMap records what is the case in your repository: components, relations, capabilities, declared section values, bounded contexts, restriction directions, and the selected cover — every entry grounded in source refs (path, symbol, line). It records <em>observations only</em>; evaluation vocabulary is a validation error (<a href="../concepts/#observation">why</a>).</p>
               <p>Authoring is the <code>archmap-creater</code> Skill's job, and it is a real survey, not a one-shot generation:</p>
               <ol class="numbered-status-list">
-                <li><strong>Scope manifest — you approve this step</strong><span>The agent runs <code>archmap scope-manifest</code> to build a deterministic worklist (repo-relative paths, content hashes, include/exclude globs) and presents exclusions for approval before reading any source.</span></li>
-                <li><strong>Two independent reading passes</strong><span>The worklist is surveyed twice without sharing candidate atoms between passes. <code>archmap extraction-diff</code> then compares the passes by literal match keys.</span></li>
+                <li><strong>Scope manifest — you approve this step</strong><span>The agent runs <code>cargo run --manifest-path tools/archmap/Cargo.toml -- scope-manifest</code> to build a deterministic worklist (repo-relative paths, content hashes, include/exclude globs) and presents exclusions for approval before reading any source.</span></li>
+                <li><strong>Two independent reading passes</strong><span>The worklist is surveyed twice without sharing candidate atoms between passes. <code>cargo run --manifest-path tools/archmap/Cargo.toml -- extraction-diff</code> then compares the passes by literal match keys.</span></li>
                 <li><strong>Human-rule adjudication</strong><span>Every candidate found by only one pass is re-read and explicitly adjudicated (<code>adopted</code> / <code>merged</code> / <code>not-adopted</code>). No similarity merging, no majority voting — the match rate is a record, not a pass/fail score.</span></li>
                 <li><strong>Coverage ledger</strong><span>A row-per-source ledger records what was surveyed and what was not, with procedural reasons only. Unread files stay visible instead of silently disappearing.</span></li>
               </ol>
               <figure class="code-panel">
                 <figcaption>Binary authoring validation (run by the Skill)</figcaption>
-                <pre><code>archmap archmap \
+                <pre><code>cargo run --manifest-path tools/archmap/Cargo.toml -- archmap \
   --input archmap.json \
   --scope-manifest &lt;run-dir&gt;/scope-manifest.json \
   --candidate-packets '&lt;run-dir&gt;/candidates/*.json' \
