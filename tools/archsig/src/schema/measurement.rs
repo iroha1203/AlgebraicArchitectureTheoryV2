@@ -21,6 +21,8 @@ pub struct ArchSigMeasurementPacketV1 {
     #[serde(default)]
     pub boundary_statements: Vec<BoundaryStatementV1>,
     pub non_conclusions: Vec<String>,
+    #[serde(skip)]
+    pub(crate) observation_source_refs: Vec<String>,
 }
 
 impl Serialize for ArchSigMeasurementPacketV1 {
@@ -43,7 +45,14 @@ impl Serialize for ArchSigMeasurementPacketV1 {
         let structural_verdict = self
             .structural_verdict
             .iter()
-            .map(|row| normalized_structural_verdict(row, &invariants, &self.profile))
+            .map(|row| {
+                normalized_structural_verdict(
+                    row,
+                    &invariants,
+                    &self.profile,
+                    &self.observation_source_refs,
+                )
+            })
             .collect::<Vec<_>>();
         state.serialize_field("structuralVerdict", &structural_verdict)?;
         state.serialize_field("computedInvariants", &invariants)?;
@@ -227,6 +236,7 @@ fn normalized_structural_verdict(
     row: &AgStructuralVerdictV1,
     invariants: &[Value],
     profile: &MeasurementProfileV1,
+    observation_source_refs: &[String],
 ) -> Value {
     let mut value = serde_json::to_value(row).unwrap_or_else(|_| Value::Object(Default::default()));
     let Some(object) = value.as_object_mut() else {
@@ -237,19 +247,41 @@ fn normalized_structural_verdict(
     } else {
         Vec::new()
     };
-    if object
-        .get("evidence")
-        .and_then(|evidence| evidence.get("computedInvariantRefs"))
-        .and_then(Value::as_array)
-        .is_none_or(Vec::is_empty)
-    {
-        object.insert(
-            "evidence".to_string(),
-            serde_json::json!({
-                "computedInvariantRefs": fallback_refs,
-                "sourceRefs": []
-            }),
-        );
+    let evidence = object
+        .entry("evidence".to_string())
+        .or_insert_with(|| serde_json::json!({}));
+    if let Some(evidence) = evidence.as_object_mut() {
+        if evidence
+            .get("computedInvariantRefs")
+            .and_then(Value::as_array)
+            .is_none_or(Vec::is_empty)
+        {
+            evidence.insert(
+                "computedInvariantRefs".to_string(),
+                Value::Array(
+                    fallback_refs
+                        .into_iter()
+                        .map(Value::String)
+                        .collect(),
+                ),
+            );
+        }
+        if evidence
+            .get("sourceRefs")
+            .and_then(Value::as_array)
+            .is_none_or(Vec::is_empty)
+        {
+            evidence.insert(
+                "sourceRefs".to_string(),
+                Value::Array(
+                    observation_source_refs
+                        .iter()
+                        .cloned()
+                        .map(Value::String)
+                        .collect(),
+                ),
+            );
+        }
     }
     if row.verdict == "measured_nonzero" {
         let computed_class_ref = object

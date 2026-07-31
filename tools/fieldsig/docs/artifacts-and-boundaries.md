@@ -11,7 +11,7 @@ non-conclusions を落とさない。
 
 | Surface | Artifact families | Boundary |
 | --- | --- | --- |
-| ArchSig handoff | `archsig-measurement-packet/v0.5.4` から生成する `operation-support-estimate/v0.5.0`。 | ArchSig measurement packet と三つの component fingerprint を current AG measurement state として読む。raw ArchMap observation、PR diff analysis、forecast truth、causal proof ではない。 |
+| ArchSig handoff | `archsig-measurement-packet/v0.5.4` から生成する `operation-support-estimate/v0.5.0`。 | ArchSig measurement packet と三つの component fingerprint を current AG measurement state として読む。PR diff analysis、forecast truth、causal proof ではない。 |
 | Adapter / review refs | Sig0、validation report、snapshot、signature diff、AIR、Feature Extension Report、AAT Observable Bundle。 | historical / bounded review refs として読めるが、FieldSig の現行 handoff source of truth ではない。 |
 | FieldSig SFT | ArtifactDescriptor、OperationSupportEstimate、ForecastConeSkeleton、ConsequenceEnvelope、ForecastCalibrationHook と validation report。 | bounded forecast report projection であり、point prediction、causal proof、forecast correctness ではない。 |
 | FieldSig Operational | PR history dataset、feature extension dataset、outcome linkage、daily ledger、calibration、threshold、ownership、repair adoption、incident correlation、hypothesis refresh。 | empirical / operational feedback であり、correlation を causal theorem にしない。 |
@@ -80,8 +80,6 @@ non-conclusions を落とさない。
 | ArtifactDescriptor validation report | `artifact-descriptor-validation-report/v0.5.0` | descriptor が theorem claim、ground truth architecture object、causal forecast に昇格していないことを検査する。 |
 | IntentMap | `intentmap/v0.5.0` | PRD / Epic / Spec の requirement、operation、workflow、state transition、acceptance、non-goal、ambiguity、missing decision を source refs と LLM provenance 付きで保持する。 |
 | IntentMap validation report | `intentmap-validation-report/v0.5.0` | source refs、claim classification、confidence boundary、missing decision / ambiguity / missing evidence、non-conclusions を検査する。 |
-| AlignmentMap | `intent-archmap-alignment/v0.5.0` | IntentMap item と ArchMap item の対応、preserves / forgets、unaligned / unsupported / ambiguous boundary、missing evidence を保持する。 |
-| AlignmentMap validation report | `intent-archmap-alignment-validation-report/v0.5.0` | IntentMap refs と ArchMap refs の dangling reference、alignment kind、measured zero への丸め、non-conclusions を検査する。 |
 | OperationSupportEstimate | `operation-support-estimate/v0.5.0` | descriptor refs、candidate operation families、ArchSig measurement refs、structural verdict / computed invariant / analytic reading refs、coverage gaps、policy constraints、support disposition、governance action refs、known forbidden support、unknown remainder、confidence / evidence boundary を保持する。 |
 | OperationSupportEstimate validation report | `operation-support-estimate-validation-report/v0.5.0` | unknown support と measured zero の混同、global policy safety / future trajectory safety への昇格を検査する。 |
 | ForecastConeSkeleton | `forecast-cone-skeleton/v0.5.0` | finite support refs、bounded horizon、path class candidates、gluing evidence、governance interventions、typed boundary failures、forecast boundary、unknown remainder を保持する。 |
@@ -93,7 +91,7 @@ non-conclusions を落とさない。
 | ForecastCalibrationHook | `forecast-calibration-hook/v0.5.0` | forecast item refs と observed PR / review / CI / outcome refs、B10 / B11 artifact boundary を対応付ける。 |
 | ForecastCalibrationHook validation report | `forecast-calibration-hook-validation-report/v0.5.0` | matched / unmatched / unavailable / private / notComparable を measured zero と混同していないことを検査する。 |
 | IntentCalibrationRecord | `intent-calibration-record/v0.5.0` | IntentMap item、forecast item、observed implementation artifact、missing decision status、forecast usefulness feedback を対応付ける。 |
-| PR Quality Analysis | `pr-quality-analysis-report/v0.5.0` | PR diff / repository evidence から作られた ArchMap 系 artifact を review cue として読む。merge approval ではない。 |
+| PR Quality Analysis | `pr-quality-analysis-report/v0.5.0` | PR diff / repository evidence から作られた ArchSig measurement artifact を review cue として読む。merge approval ではない。 |
 | AI Proposal Governance | `ai-proposal-governance/v0.5.0` | AI proposal の prompt / policy boundary、support taxonomy、shortcut witness、review / CI mediation、posterior field update を保持する。 |
 | AI Proposal Governance validation report | `ai-proposal-governance-validation-report/v0.5.0` | support category、shortcut witness、review / CI / posterior boundary、AI safety / forecast correctness / lawfulness non-conclusions を検査する。 |
 | Lifecycle Decision Report | planned `lifecycle-decision-report/v0.5.0` | repair / migration / contraction / deletion の selected inputs、field capacity impact、runtime / ownership boundary、non-conclusions を保持する将来候補。 |
@@ -111,14 +109,6 @@ forecast correctness、future outcome probability ではない。
 これらは probability、causal prediction、global safety、forecast correctness、Lean theorem
 claim を生成しない。missing evidence、unsupported constructs、forecast non-conclusions は
 後段 artifact に引き継ぐ境界として読む。
-
-FieldSig planning contract v3 の planning forecast では、PRD-only forecast を意味のある forecast として扱わず、
-`intentmap/v0.5.0` と `intent-archmap-alignment/v0.5.0` を先に作る。LLM は semantic extraction と
-artifact reading を担当し、ArchSig は schema validation と deterministic projection を担当する。
-`intent-forecast` は AlignmentMap から `operation-support-estimate/v0.5.0`、`forecast-cone-skeleton/v0.5.0`、
-`consequence-envelope-report/v0.5.0` を生成するが、implementation impact、forecast correctness、
-future outcome probability、quality ranking、incident causality を結論しない。missing decision、
-ambiguous intent、unaligned / unsupported intent、missing evidence は planning boundary として残す。
 
 `forecast-calibration-hook/v0.5.0` は `docs/tool/sft_calibration_benchmark.md` の protocol で読む。
 hook は forecast item refs と observed refs の対応を保存するだけであり、forecast quality を

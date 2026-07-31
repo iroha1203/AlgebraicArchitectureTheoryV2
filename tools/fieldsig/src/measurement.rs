@@ -108,12 +108,12 @@ pub fn static_software_field_measurement() -> SoftwareFieldMeasurementV0 {
             "ArchSig artifacts are consumed through JSON refs, not Rust type sharing".to_string(),
         ],
         archsig_artifact_refs: vec![artifact_ref(
-            "archsig:archmap:minimal",
-            "archmap",
-            "archmap/v0.5.0",
-            "tools/fieldsig/tests/fixtures/minimal/archmap.json",
+            "archsig:measurement-packet:minimal",
+            "archsig-measurement-packet",
+            "archsig-measurement-packet/v0.5.4",
+            "tools/fieldsig/tests/fixtures/minimal/archsig_measurement_packet.json",
             "archsig",
-            "AAT structural evidence ref; not architecture ground truth",
+            "current ArchSig measurement state ref",
         )],
         workflow_evidence_refs: vec![
             artifact_ref("workflow:prd:coupon", "prd", "markdown", "docs/example/coupon_prd.md", "human", "planning evidence"),

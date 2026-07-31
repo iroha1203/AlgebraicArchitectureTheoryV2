@@ -68,7 +68,7 @@ pub use architecture_field::{
 };
 pub use architecture_policy::{
     apply_architecture_policy_to_sig0, build_law_violation_report, read_architecture_policy,
-    srp_review_cue_from_archmap_item, validate_architecture_policy_report,
+    srp_review_cue_from_semantic_evidence, validate_architecture_policy_report,
 };
 pub use artifact_descriptor::{
     build_artifact_descriptor_from_ai_proposal_json,
@@ -98,10 +98,8 @@ pub use github::{
     build_pr_metadata_from_github_files, build_pr_metadata_from_github_values,
 };
 pub use intentmap::{
-    build_operation_support_estimate_from_intent_alignment, static_intent_archmap_alignment,
     static_intent_calibration_record, static_intent_map, static_pr_quality_analysis_report,
-    validate_intent_archmap_alignment, validate_intent_calibration_record, validate_intent_map,
-    validate_pr_quality_analysis_report,
+    validate_intent_calibration_record, validate_intent_map, validate_pr_quality_analysis_report,
 };
 pub use law_policy_template::{
     static_law_policy_template_registry, validate_law_policy_template_registry_report,

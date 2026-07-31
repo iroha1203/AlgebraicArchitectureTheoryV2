@@ -366,6 +366,9 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             law_surface,
             out,
         }) => {
+            reject_output_overwrite(&law_policy, &out)?;
+            reject_output_overwrite(&measurement_profile, &out)?;
+            reject_output_overwrite(&law_surface, &out)?;
             let (_, profile, profile_failed) =
                 validate_measurement_profile_command_input(&measurement_profile)?;
             let law_surface_raw = read_json(&law_surface)?;
@@ -399,6 +402,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             measurement_profile,
             out,
         }) => {
+            reject_output_overwrite(&measurement_profile, &out)?;
             let (report, _, failed) = validate_measurement_profile_command_input(&measurement_profile)?;
             write_json(out, &report)?;
             Ok(if failed {
@@ -412,6 +416,8 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             repair_plan,
             out,
         }) => {
+            reject_output_overwrite(&archmap, &out)?;
+            reject_output_overwrite(&repair_plan, &out)?;
             let (_, archmap_failed) =
                 validate_archmap_command_input(&archmap)?;
             if archmap_failed {
@@ -511,6 +517,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             out_dir,
             stamp,
         }) => {
+            let policy_bundle_input = policy_bundle.clone();
             let (law_policy, law_surface, measurement_profile_paths, bundle_fingerprints) =
                 if let Some(bundle_path) = policy_bundle {
                     let resolved = resolve_and_verify_policy_bundle(&bundle_path, None, None, None)?;
@@ -549,6 +556,31 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let analysis_validation_path = out_dir.join("archsig-analysis-validation.json");
             let repair_plan_validation_path = out_dir.join("repair-plan-validation.json");
             let law_surface_validation_path = out_dir.join("law-surface-validation.json");
+            let mut analyze_input_paths = vec![archmap.clone(), law_policy.clone()];
+            analyze_input_paths.extend(law_surface.iter().cloned());
+            analyze_input_paths.extend(measurement_profile_paths.iter().cloned());
+            analyze_input_paths.extend(repair_plan.iter().cloned());
+            analyze_input_paths.extend(policy_bundle_input);
+            let analyze_output_paths = vec![
+                archmap_validation_path.clone(),
+                law_policy_validation_path.clone(),
+                analysis_summary_path.clone(),
+                atom_viewer_data_path.clone(),
+                view_model_path.clone(),
+                run_manifest_path.clone(),
+                normalized_archmap_path.clone(),
+                measurement_packet_path.clone(),
+                insight_report_path.clone(),
+                insight_brief_path.clone(),
+                analysis_validation_path.clone(),
+                repair_plan_validation_path.clone(),
+                law_surface_validation_path.clone(),
+            ];
+            for input in &analyze_input_paths {
+                for output in &analyze_output_paths {
+                    reject_output_overwrite(input, &Some(output.clone()))?;
+                }
+            }
 
             let (archmap_preflight, archmap_failed) =
                 validate_archmap_command_input(&archmap)?;

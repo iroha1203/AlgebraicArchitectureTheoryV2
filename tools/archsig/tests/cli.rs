@@ -2528,6 +2528,35 @@ fn cli_analyze_rejects_measurement_profile_witness_family() {
 }
 
 #[test]
+fn cli_analyze_rejects_input_output_aliases() {
+    let out_dir = temp_dir("ag-measurement-input-output-alias");
+    let root = ag_measurement_root();
+    let archmap_path = out_dir.join("normalized-archmap.json");
+    fs::copy(root.join("archmap_v2.json"), &archmap_path).expect("archmap fixture copies");
+    let output = run_sig0_output(&[
+        "analyze",
+        "--archmap",
+        archmap_path.to_str().expect("archmap path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_ag.json")
+            .to_str()
+            .expect("policy path is utf-8"),
+        "--measurement-profile",
+        root.join("measurement_profile_ag.json")
+            .to_str()
+            .expect("profile path is utf-8"),
+        "--law-surface",
+        root.join("law_surface_ag_v052.json")
+            .to_str()
+            .expect("law surface path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("output directory is utf-8"),
+    ]);
+    assert!(!output.status.success());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("output path must differ from input path"));
+}
+
+#[test]
 fn cli_analyze_v2_writes_measurement_packet_foundation() {
     let out_dir = temp_dir("ag-measurement-analyze");
     let root = ag_measurement_root();
@@ -3187,7 +3216,17 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
             },
             "evidence": {
                 "computedInvariantRefs": ["cech-cohomology:profile:ag-default@1"],
-                "sourceRefs": []
+                "sourceRefs": [
+                    "ctx:bottom",
+                    "ctx:left",
+                    "ctx:right",
+                    "ctx:top",
+                    "src:bottom",
+                    "src:cover",
+                    "src:left",
+                    "src:right",
+                    "src:top"
+                ]
             },
             "reason": "finite F2 Cech 1-cocycle is not a coboundary on the selected cover"
         }),
@@ -12687,7 +12726,8 @@ fn cli_compare_derives_coarse_to_fine_class_zero_from_selected_archmaps() {
         .expect("base covers are an array")
         .push(json!({
             "id": "cover:unselected-observation",
-            "contexts": ["ctx:order"]
+            "contexts": ["ctx:order"],
+            "refs": ["src:cover"]
         }));
     let mut fine_archmap = derived_fine_archmap_for_test(&root);
     fine_archmap["covers"]
@@ -12695,7 +12735,8 @@ fn cli_compare_derives_coarse_to_fine_class_zero_from_selected_archmaps() {
         .expect("fine covers are an array")
         .push(json!({
             "id": "cover:unselected-observation",
-            "contexts": ["ctx:order"]
+            "contexts": ["ctx:order"],
+            "refs": ["src:cover"]
         }));
     let base_run = run_saga_compare_fixture(
         "derived-coarse-zero",

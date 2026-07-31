@@ -1,6 +1,6 @@
 ---
 name: intentmap-creater
-description: Create bounded IntentMap artifacts from Epic, PRD, Spec, Issue, or proposal text. Use when Codex is asked to draft, generate, update, or validate an intentmap/v0.5.0 JSON file, extract product or planning intent, record missing decisions or ambiguous intents, or prepare input for IntentMap x ArchMap planning forecast.
+description: Create bounded IntentMap artifacts from Epic, PRD, Spec, Issue, or proposal text. Use when Codex is asked to draft, generate, update, or validate an intentmap/v0.5.0 JSON file, extract product or planning intent, or record missing decisions or ambiguous intents.
 ---
 
 # IntentMap Creater
@@ -65,5 +65,3 @@ ${FIELDSIG_BIN:-fieldsig} intent-map \
 - Do not write implementation progress into PRDs. Use issues, roadmaps, or PRs for status.
 
 ## Handoff
-
-Use `$arch-intent-forecaster` after this skill when the user asks to align IntentMap with current ArchMap, generate forecast artifacts, or interpret planning consequences.

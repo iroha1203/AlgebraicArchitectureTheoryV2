@@ -20,21 +20,6 @@
       ]
     },
     {
-      "sourceRefId": "source:archmap:coupon",
-      "artifactKind": "archmap",
-      "schema": "archmap/v0.5.0",
-      "path": "tools/fieldsig/tests/fixtures/minimal/archmap.json",
-      "retainedFields": [
-        "sourceUniverse",
-        "mapItems",
-        "coverage",
-        "conflicts"
-      ],
-      "nonConclusions": [
-        "source ref does not prove artifact completeness"
-      ]
-    },
-    {
       "sourceRefId": "source:feature-report:coupon",
       "artifactKind": "feature-extension-report",
       "schema": "feature-extension-report/v0.5.0",
@@ -85,7 +70,7 @@
       "conceptId": "concept:architecture-object",
       "aatConcept": "ArchitectureObject / ComponentUniverse",
       "artifactRefs": [
-        "source:archmap:coupon",
+        "source:air:coupon",
         "source:air:coupon"
       ],
       "reportRefs": [

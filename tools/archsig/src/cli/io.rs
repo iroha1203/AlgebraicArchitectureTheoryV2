@@ -32,6 +32,9 @@ pub(crate) fn reject_output_overwrite(
     input: &PathBuf,
     output: &Option<PathBuf>,
 ) -> Result<(), Box<dyn Error>> {
+    if !input.exists() {
+        return Ok(());
+    }
     let Some(output) = output else {
         return Ok(());
     };

@@ -1297,10 +1297,34 @@ pub fn build_foundation_measurement_packet_v1(
         ),
         boundary_statements: Vec::new(),
         non_conclusions,
+        observation_source_refs: normalized_observation_source_refs(normalized),
     };
     apply_assumption_dependency_propagation(&mut packet);
     packet.boundary_statements = boundary_statements_for_measurement_packet(&packet);
     Ok(packet)
+}
+
+fn normalized_observation_source_refs(normalized: &NormalizedArchMapV2) -> Vec<String> {
+    normalized
+        .atoms
+        .iter()
+        .flat_map(|atom| atom.source_refs.iter())
+        .chain(
+            normalized
+                .contexts
+                .iter()
+                .flat_map(|context| context.source_refs.iter()),
+        )
+        .chain(
+            normalized
+                .covers
+                .iter()
+                .flat_map(|cover| cover.source_refs.iter()),
+        )
+        .map(|source_ref| sanitize_source_ref(source_ref))
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect()
 }
 
 fn supplied_data_ledger(
@@ -12905,7 +12929,7 @@ fn resolved_source_ref_sample(archmap_document: &ArchMapDocumentV2, reference: &
             .and_then(|parent| parent.path.clone())
     });
     if let Some(path) = path {
-        sample["path"] = json!(path);
+        sample["path"] = json!(sanitize_viewer_source_path(&path));
     }
     if let Some(symbol) = &entry.symbol {
         sample["symbol"] = json!(symbol);
@@ -12921,6 +12945,14 @@ fn resolved_source_ref_sample(archmap_document: &ArchMapDocumentV2, reference: &
         sample["section"] = json!(section);
     }
     sample
+}
+
+fn sanitize_viewer_source_path(path: &str) -> String {
+    if is_local_or_private_source_ref(path) {
+        "path:redacted-local-path".to_string()
+    } else {
+        path.to_string()
+    }
 }
 
 fn viewer_atom_nodes(

@@ -8,7 +8,7 @@ use clap::{Parser, Subcommand};
 use fieldsig::{
     AatObservableBundleV0, AatObservableBundleValidationReportV0, AiProposalGovernanceV0,
     AiProposalGovernanceValidationReportV0, AirDocumentInput, AirDocumentV0, AirValidationReport,
-    ArchMapDocumentV0, ArchitectureDynamicsMetricsReportV0,
+    ArchitectureDynamicsMetricsReportV0,
     ArchitectureDynamicsMetricsReportValidationReportV0, ArchitectureFieldSnapshotV0,
     ArchitectureFieldSnapshotValidationReportV0, ArchitecturePolicyV0,
     ArchitecturePolicyValidationReportV0, ArtifactDescriptorV0,
@@ -22,8 +22,7 @@ use fieldsig::{
     FieldSigRunManifestValidationReportV0, ForecastCalibrationHookV0,
     ForecastCalibrationHookValidationReportV0, ForecastConeSkeletonV0,
     ForecastConeSkeletonValidationReportV0, FrameworkAdapterEvidenceV0, HypothesisRefreshCycleV0,
-    IncidentCorrelationMonitorV0, IntentArchMapAlignmentV0,
-    IntentArchMapAlignmentValidationReportV0, IntentCalibrationRecordV0,
+    IncidentCorrelationMonitorV0, IntentCalibrationRecordV0,
     IntentCalibrationValidationReportV0, IntentMapV0, IntentMapValidationReportV0,
     LawPolicyTemplateRegistryV0, LawPolicyTemplateRegistryValidationReportV0, LawViolationReportV0,
     MeasurementUnitRegistryV0, MeasurementUnitRegistryValidationReportV0, NoSolutionCertificateV0,
@@ -50,7 +49,6 @@ use fieldsig::{
     build_feature_extension_report, build_forecast_cone_skeleton_from_operation_support,
     build_law_violation_report, build_operation_support_estimate_from_archsig_measurement_packet,
     build_operation_support_estimate_from_descriptor,
-    build_operation_support_estimate_from_intent_alignment,
     build_outcome_linkage_dataset_from_files, build_policy_decision_report,
     build_pr_history_dataset_from_github_files, build_pr_metadata_from_github_files,
     build_report_outcome_daily_ledger_from_files, build_schema_compatibility_check_report,
@@ -65,7 +63,7 @@ use fieldsig::{
     static_dynamics_measurement_contract, static_fieldsig_run_manifest,
     static_forecast_calibration_hook, static_forecast_cone_skeleton,
     static_hypothesis_refresh_cycle, static_incident_correlation_monitor,
-    static_intent_archmap_alignment, static_intent_calibration_record, static_intent_map,
+    static_intent_calibration_record, static_intent_map,
     static_law_policy_template_registry, static_measurement_unit_registry,
     static_no_solution_certificate, static_operation_proposal_log,
     static_operation_support_estimate, static_organization_policy,
@@ -81,7 +79,7 @@ use fieldsig::{
     validate_component_universe_report, validate_consequence_envelope_report,
     validate_custom_rule_plugin_registry_report, validate_dynamics_measurement_contract_report,
     validate_fieldsig_run_manifest, validate_forecast_calibration_hook,
-    validate_forecast_cone_skeleton, validate_intent_archmap_alignment,
+    validate_forecast_cone_skeleton,
     validate_intent_calibration_record, validate_intent_map,
     validate_law_policy_template_registry_report, validate_measurement_unit_registry_report,
     validate_no_solution_certificate_report, validate_operation_proposal_log,
@@ -817,59 +815,6 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Emit or validate an intent-archmap-alignment/v0.5.0 artifact.
-    IntentArchmapAlignment {
-        /// Optional AlignmentMap JSON path to validate.
-        #[arg(long)]
-        input: Option<PathBuf>,
-
-        /// IntentMap JSON path used for dangling reference validation.
-        #[arg(long = "intent-map")]
-        intent_map: Option<PathBuf>,
-
-        /// ArchMap JSON path used for dangling reference validation.
-        #[arg(long)]
-        archmap: Option<PathBuf>,
-
-        /// Emit the canonical minimal intent-archmap-alignment/v0.5.0 fixture.
-        #[arg(long)]
-        fixture: bool,
-
-        /// Output AlignmentMap or validation report JSON path. If omitted, JSON is written to stdout.
-        #[arg(long)]
-        out: Option<PathBuf>,
-    },
-
-    /// Build operation support from IntentMap x ArchMap alignment.
-    IntentForecast {
-        /// IntentMap JSON path.
-        #[arg(long = "intent-map")]
-        intent_map: PathBuf,
-
-        /// ArchMap JSON path.
-        #[arg(long)]
-        archmap: PathBuf,
-
-        /// AlignmentMap JSON path.
-        #[arg(long)]
-        alignment: PathBuf,
-
-        /// Output directory for operation support, ForecastCone, ConsequenceEnvelope, and validations.
-        #[arg(long = "out-dir")]
-        out_dir: PathBuf,
-
-        /// Bounded horizon step count for forecast-cone-skeleton/v0.5.0 generation.
-        #[arg(long = "horizon-steps", default_value_t = 3)]
-        horizon_steps: u32,
-
-        /// Human-readable horizon boundary for forecast-cone-skeleton/v0.5.0 generation.
-        #[arg(
-            long = "horizon-window",
-            default_value = "selected bounded intent forecast horizon"
-        )]
-        horizon_window: String,
-    },
-
     /// Emit or validate an operation-support-estimate/v0.5.0 artifact.
     OperationSupportEstimate {
         /// Optional OperationSupportEstimate JSON path to validate.
@@ -1498,6 +1443,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             measurement_packet,
             out,
         }) => {
+            reject_output_overwrite(&measurement_packet, out.as_deref())?;
             let packet: serde_json::Value = read_json(&measurement_packet)?;
             let estimate = build_operation_support_estimate_from_archsig_measurement_packet(
                 &packet,
@@ -2012,125 +1958,6 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 validate_intent_map(&intent_map, &input_path);
             let failed = validation.summary.result == "fail";
             write_json(out, &validation)?;
-            Ok(if failed {
-                ExitCode::from(1)
-            } else {
-                ExitCode::SUCCESS
-            })
-        }
-        Some(Command::IntentArchmapAlignment {
-            input,
-            intent_map,
-            archmap,
-            fixture,
-            out,
-        }) => {
-            if fixture {
-                let alignment: IntentArchMapAlignmentV0 = static_intent_archmap_alignment();
-                write_json(out, &alignment)?;
-                return Ok(ExitCode::SUCCESS);
-            }
-            let alignment: IntentArchMapAlignmentV0 = input
-                .as_ref()
-                .map(read_json)
-                .transpose()?
-                .unwrap_or_else(static_intent_archmap_alignment);
-            let intent_map_doc: Option<IntentMapV0> =
-                intent_map.as_ref().map(read_json).transpose()?;
-            let archmap_doc: Option<ArchMapDocumentV0> =
-                archmap.as_ref().map(read_json).transpose()?;
-            let input_path = input
-                .as_ref()
-                .map(|path| path.display().to_string())
-                .unwrap_or_else(|| "static-intent-archmap-alignment".to_string());
-            let validation: IntentArchMapAlignmentValidationReportV0 =
-                validate_intent_archmap_alignment(
-                    &alignment,
-                    intent_map_doc.as_ref(),
-                    archmap_doc.as_ref(),
-                    &input_path,
-                );
-            let failed = validation.summary.result == "fail";
-            write_json(out, &validation)?;
-            Ok(if failed {
-                ExitCode::from(1)
-            } else {
-                ExitCode::SUCCESS
-            })
-        }
-        Some(Command::IntentForecast {
-            intent_map,
-            archmap,
-            alignment,
-            out_dir,
-            horizon_steps,
-            horizon_window,
-        }) => {
-            std::fs::create_dir_all(&out_dir)?;
-            let intent_map_doc: IntentMapV0 = read_json(&intent_map)?;
-            let archmap_doc: ArchMapDocumentV0 = read_json(&archmap)?;
-            let alignment_doc: IntentArchMapAlignmentV0 = read_json(&alignment)?;
-
-            let intent_validation_path = out_dir.join("intentmap-validation.json");
-            let alignment_validation_path =
-                out_dir.join("intent-archmap-alignment-validation.json");
-            let estimate_path = out_dir.join("operation-support-estimate.json");
-            let estimate_validation_path =
-                out_dir.join("operation-support-estimate-validation.json");
-            let cone_path = out_dir.join("forecast-cone-skeleton.json");
-            let cone_validation_path = out_dir.join("forecast-cone-skeleton-validation.json");
-            let envelope_path = out_dir.join("consequence-envelope-report.json");
-            let envelope_validation_path = out_dir.join("consequence-envelope-validation.json");
-
-            let intent_validation: IntentMapValidationReportV0 =
-                validate_intent_map(&intent_map_doc, &intent_map.display().to_string());
-            let alignment_validation: IntentArchMapAlignmentValidationReportV0 =
-                validate_intent_archmap_alignment(
-                    &alignment_doc,
-                    Some(&intent_map_doc),
-                    Some(&archmap_doc),
-                    &alignment.display().to_string(),
-                );
-            let estimate: OperationSupportEstimateV0 =
-                build_operation_support_estimate_from_intent_alignment(
-                    &intent_map_doc,
-                    &archmap_doc,
-                    &alignment_doc,
-                );
-            let estimate_validation: OperationSupportEstimateValidationReportV0 =
-                validate_operation_support_estimate(
-                    &estimate,
-                    &estimate_path.display().to_string(),
-                );
-            let cone: ForecastConeSkeletonV0 = build_forecast_cone_skeleton_from_operation_support(
-                &estimate,
-                horizon_steps,
-                &horizon_window,
-            );
-            let cone_validation: ForecastConeSkeletonValidationReportV0 =
-                validate_forecast_cone_skeleton(&cone, &cone_path.display().to_string());
-            let envelope: ConsequenceEnvelopeReportV0 =
-                build_consequence_envelope_from_forecast_cone(&cone);
-            let envelope_validation: ConsequenceEnvelopeValidationReportV0 =
-                validate_consequence_envelope_report(
-                    &envelope,
-                    &envelope_path.display().to_string(),
-                );
-            let failed = intent_validation.summary.result == "fail"
-                || alignment_validation.summary.result == "fail"
-                || estimate_validation.summary.result == "fail"
-                || cone_validation.summary.result == "fail"
-                || envelope_validation.summary.result == "fail";
-
-            write_json(Some(intent_validation_path), &intent_validation)?;
-            write_json(Some(alignment_validation_path), &alignment_validation)?;
-            write_json(Some(estimate_path), &estimate)?;
-            write_json(Some(estimate_validation_path), &estimate_validation)?;
-            write_json(Some(cone_path), &cone)?;
-            write_json(Some(cone_validation_path), &cone_validation)?;
-            write_json(Some(envelope_path), &envelope)?;
-            write_json(Some(envelope_validation_path), &envelope_validation)?;
-
             Ok(if failed {
                 ExitCode::from(1)
             } else {
@@ -2793,6 +2620,43 @@ fn write_json<T: serde::Serialize>(out: Option<PathBuf>, value: &T) -> Result<()
             serde_json::to_writer_pretty(&mut handle, value)?;
             writeln!(handle)?;
         }
+    }
+    Ok(())
+}
+
+fn reject_output_overwrite(
+    input: &Path,
+    output: Option<&Path>,
+) -> Result<(), Box<dyn Error>> {
+    if !input.exists() {
+        return Ok(());
+    }
+    let Some(output) = output else {
+        return Ok(());
+    };
+    let input_path = std::fs::canonicalize(input)?;
+    let output_path = if output.exists() {
+        std::fs::canonicalize(output)?
+    } else if output.is_absolute() {
+        output.to_path_buf()
+    } else {
+        std::env::current_dir()?.join(output)
+    };
+    let same_path = input_path == output_path;
+    #[cfg(unix)]
+    let same_inode = if output.exists() {
+        use std::os::unix::fs::MetadataExt;
+        let input_metadata = std::fs::metadata(input)?;
+        let output_metadata = std::fs::metadata(output)?;
+        input_metadata.dev() == output_metadata.dev()
+            && input_metadata.ino() == output_metadata.ino()
+    } else {
+        false
+    };
+    #[cfg(not(unix))]
+    let same_inode = false;
+    if same_path || same_inode {
+        return Err("output path must differ from input path".into());
     }
     Ok(())
 }

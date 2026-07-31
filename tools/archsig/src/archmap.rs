@@ -60,6 +60,7 @@ pub fn validate_archmap_v2_report(
         check_archmap_v2_schema(&document.schema),
         check_archmap_v2_doctrine(document),
         check_archmap_v2_sources(document),
+        check_archmap_v2_collection_shape(document),
         check_archmap_v2_atom_ids(document),
         check_archmap_v2_no_diagnostic_shortcuts(document),
         check_archmap_v2_atom_kind_vocabulary(document),
@@ -414,6 +415,13 @@ fn check_archmap_v2_sources(document: &ArchMapDocumentV2) -> ValidationCheck {
         ));
     }
     for (source_id, source) in &document.sources {
+        if source_id.trim().is_empty() {
+            examples.push(generic_validation_example(
+                "sources",
+                "empty",
+                "source id must be non-empty",
+            ));
+        }
         if source.kind.trim().is_empty() {
             examples.push(generic_validation_example(
                 "sources",
@@ -434,6 +442,36 @@ fn check_archmap_v2_sources(document: &ArchMapDocumentV2) -> ValidationCheck {
     check_from_examples(
         "archmap-schema052-sources-resolve",
         "sources table is present and internally resolvable",
+        examples,
+    )
+}
+
+fn check_archmap_v2_collection_shape(document: &ArchMapDocumentV2) -> ValidationCheck {
+    let mut examples = Vec::new();
+    for (field, is_empty, requirement) in [
+        (
+            "atoms",
+            document.atoms.is_empty(),
+            "ArchMap v2 must contain at least one observed atom",
+        ),
+        (
+            "contexts",
+            document.contexts.is_empty(),
+            "ArchMap v2 must contain at least one observed context",
+        ),
+        (
+            "covers",
+            document.covers.is_empty(),
+            "ArchMap v2 must contain at least one observed cover",
+        ),
+    ] {
+        if is_empty {
+            examples.push(generic_validation_example(field, "empty", requirement));
+        }
+    }
+    check_from_examples(
+        "archmap-schema052-required-observation-collections",
+        "ArchMap v2 declares non-empty atom, context, and cover observations",
         examples,
     )
 }
@@ -501,6 +539,7 @@ fn diagnostic_shortcut_token(value: &str) -> Option<&'static str> {
             "risk" | "risky" => Some("risk"),
             "debt" => Some("debt"),
             "unsafe" => Some("unsafe"),
+            "safety" => Some("safety"),
             "lawful" => Some("lawful"),
             "nonzero" => Some("nonzero"),
             "failure" | "fail" | "failed" | "failing" => Some("failure"),
@@ -687,15 +726,13 @@ fn check_archmap_v2_atom_shapes(document: &ArchMapDocumentV2) -> ValidationCheck
                 "ArchMap v2 atom axis decoration is required",
             ));
         }
-        for source_ref in &atom.refs {
-            if !source_ref_resolves(document, source_ref) {
-                examples.push(generic_validation_example(
-                    &atom.id,
-                    source_ref,
-                    "atom refs[] entry must resolve to sources",
-                ));
-            }
-        }
+        append_source_ref_validation_examples(
+            &mut examples,
+            document,
+            &atom.id,
+            &atom.refs,
+            "atom refs[]",
+        );
     }
     check_from_examples(
         "archmap-schema052-atom-subject-axis-refs",
@@ -763,15 +800,13 @@ fn check_archmap_v2_contexts(document: &ArchMapDocumentV2) -> ValidationCheck {
                 ));
             }
         }
-        for source_ref in &context.refs {
-            if !source_ref_resolves(document, source_ref) {
-                examples.push(generic_validation_example(
-                    &context.id,
-                    source_ref,
-                    "context refs[] entry must resolve to sources",
-                ));
-            }
-        }
+        append_source_ref_validation_examples(
+            &mut examples,
+            document,
+            &context.id,
+            &context.refs,
+            "context refs[]",
+        );
     }
     let graph = document
         .contexts
@@ -852,21 +887,60 @@ fn check_archmap_v2_covers(document: &ArchMapDocumentV2) -> ValidationCheck {
                 ));
             }
         }
-        for source_ref in &cover.refs {
-            if !source_ref_resolves(document, source_ref) {
-                examples.push(generic_validation_example(
-                    &cover.id,
-                    source_ref,
-                    "cover refs[] entry must resolve to sources",
-                ));
-            }
-        }
+        append_source_ref_validation_examples(
+            &mut examples,
+            document,
+            &cover.id,
+            &cover.refs,
+            "cover refs[]",
+        );
     }
     check_from_examples(
         "archmap-schema052-cover-refs",
         "covers select finite source-grounded context families",
         examples,
     )
+}
+
+fn append_source_ref_validation_examples(
+    examples: &mut Vec<ValidationExample>,
+    document: &ArchMapDocumentV2,
+    owner: &str,
+    refs: &[String],
+    field: &str,
+) {
+    if refs.is_empty() {
+        examples.push(generic_validation_example(
+            owner,
+            field,
+            "observation rows must carry at least one source ref",
+        ));
+        return;
+    }
+    let mut seen = BTreeSet::new();
+    for source_ref in refs {
+        if source_ref.trim().is_empty() {
+            examples.push(generic_validation_example(
+                owner,
+                field,
+                "source refs must be non-empty strings",
+            ));
+        }
+        if !seen.insert(source_ref.as_str()) {
+            examples.push(generic_validation_example(
+                owner,
+                source_ref,
+                "source refs must be unique within an observation row",
+            ));
+        }
+        if !source_ref_resolves(document, source_ref) {
+            examples.push(generic_validation_example(
+                owner,
+                source_ref,
+                "source refs[] entry must resolve to sources",
+            ));
+        }
+    }
 }
 
 fn check_from_examples(id: &str, title: &str, examples: Vec<ValidationExample>) -> ValidationCheck {
@@ -1085,6 +1159,59 @@ mod tests {
                 .examples
                 .iter()
                 .any(|example| example.target.as_deref() == Some("unregistered-axis"))
+        );
+    }
+
+    #[test]
+    fn archmap_input_requires_source_grounded_observation_rows() {
+        let document: ArchMapDocumentV2 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/archmap_v2.json"
+        ))
+        .expect("canonical ArchMap fixture parses");
+
+        let mut invalid = document.clone();
+        invalid.atoms[0].refs.clear();
+        invalid.contexts[0].refs = vec!["src:checkout".to_string(), "src:checkout".to_string()];
+        invalid.covers[0].refs.clear();
+        let report = validate_archmap_v2_report(&invalid, "fixture:invalid-source-grounding.json");
+
+        for check_id in [
+            "archmap-schema052-atom-subject-axis-refs",
+            "archmap-schema052-context-poset-refs",
+            "archmap-schema052-cover-refs",
+        ] {
+            assert_eq!(
+                report
+                    .checks
+                    .iter()
+                    .find(|check| check.id == check_id)
+                    .expect("source-grounding check exists")
+                    .result,
+                "fail",
+                "{check_id} must reject absent or duplicate refs"
+            );
+        }
+    }
+
+    #[test]
+    fn non_ag_observation_predicates_cannot_pre_author_safety_conclusions() {
+        let document: ArchMapDocumentV2 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/archmap_v2.json"
+        ))
+        .expect("canonical ArchMap fixture parses");
+        let mut invalid = document;
+        invalid.atoms[0].axis = "runtime".to_string();
+        invalid.atoms[0].predicate = Some("globalSafety".to_string());
+        let report = validate_archmap_v2_report(&invalid, "fixture:invalid-safety-label.json");
+
+        assert_eq!(
+            report
+                .checks
+                .iter()
+                .find(|check| check.id == "archmap-schema052-no-diagnostic-shortcuts")
+                .expect("diagnostic shortcut check exists")
+                .result,
+            "fail"
         );
     }
 }

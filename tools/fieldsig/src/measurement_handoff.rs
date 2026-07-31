@@ -1,4 +1,5 @@
 use std::collections::BTreeSet;
+use std::path::Path;
 
 use crate::{
     ARTIFACT_DESCRIPTOR_SCHEMA_VERSION, ArchMapLeanPreservationVocabularyEntry,
@@ -237,6 +238,7 @@ fn validate_archsig_measurement_packet_handoff_shape(
                 .into(),
         );
     }
+    validate_handoff_top_level_fields(packet)?;
     let profile_id = profile
         .get("profileId")
         .and_then(|value| value.as_str())
@@ -271,6 +273,7 @@ fn validate_archsig_measurement_packet_structural_verdicts(
     packet: &serde_json::Value,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let invariant_ids = archsig_measurement_computed_invariant_ids(packet).collect::<BTreeSet<_>>();
+    let mut verdict_refs = BTreeSet::new();
     for (index, row) in packet
         .get("structuralVerdict")
         .and_then(|value| value.as_array())
@@ -278,6 +281,15 @@ fn validate_archsig_measurement_packet_structural_verdicts(
         .flatten()
         .enumerate()
     {
+        let verdict_ref = required_string(row, "verdictRef").map_err(|message| {
+            format!("FieldSig ArchSig measurement handoff structuralVerdict[{index}] {message}")
+        })?;
+        if !verdict_refs.insert(verdict_ref) {
+            return Err(format!(
+                "FieldSig ArchSig measurement handoff structuralVerdict[{index}] duplicates verdictRef {verdict_ref}"
+            )
+            .into());
+        }
         let evaluator = required_string(row, "evaluator").map_err(|message| {
             format!("FieldSig ArchSig measurement handoff structuralVerdict[{index}] {message}")
         })?;
@@ -376,7 +388,7 @@ fn validate_archsig_measurement_packet_structural_verdicts(
                 .into());
             }
         }
-        evidence
+        let source_refs = evidence
             .get("sourceRefs")
             .and_then(|value| value.as_array())
             .ok_or_else(|| {
@@ -384,6 +396,12 @@ fn validate_archsig_measurement_packet_structural_verdicts(
                     "FieldSig ArchSig measurement handoff structuralVerdict[{index}] evidence requires sourceRefs array"
                 )
             })?;
+        if matches!(verdict, "measured_zero" | "measured_nonzero") && source_refs.is_empty() {
+            return Err(format!(
+                "FieldSig ArchSig measurement handoff structuralVerdict[{index}] {verdict} requires non-empty evidence.sourceRefs"
+            )
+            .into());
+        }
         if zero && non_zero {
             return Err(format!(
                 "FieldSig ArchSig measurement handoff structuralVerdict[{index}] for {evaluator} marks both zero and nonZero"
@@ -476,6 +494,7 @@ fn validate_archsig_measurement_packet_structural_verdicts(
 fn validate_archsig_measurement_packet_computed_invariants(
     packet: &serde_json::Value,
 ) -> Result<(), Box<dyn std::error::Error>> {
+    let mut invariant_ids = BTreeSet::new();
     for (index, row) in packet
         .get("computedInvariants")
         .and_then(|value| value.as_array())
@@ -489,6 +508,13 @@ fn validate_archsig_measurement_packet_computed_invariants(
                     "FieldSig ArchSig measurement handoff computedInvariants[{index}] {message}"
                 )
             })?;
+        }
+        let invariant_id = row["invariantId"].as_str().unwrap_or_default();
+        if !invariant_ids.insert(invariant_id) {
+            return Err(format!(
+                "FieldSig ArchSig measurement handoff computedInvariants[{index}] duplicates invariantId {invariant_id}"
+            )
+            .into());
         }
         let kind = row["kind"].as_str().unwrap_or_default();
         if !ARCHSIG_COMPUTED_INVARIANT_KINDS.contains(&kind) {
@@ -763,13 +789,30 @@ fn validate_archsig_measurement_packet_supplied_data(
             "FieldSig ArchSig measurement handoff requires non-empty suppliedData ledger".into(),
         );
     }
+    let mut supplied_ids = BTreeSet::new();
+    let mut supplied_kinds = BTreeSet::new();
     for (index, row) in supplied.iter().enumerate() {
-        for field in ["suppliedId", "kind", "sourceArtifactRef"] {
-            required_string(row, field).map_err(|message| {
-                format!("FieldSig ArchSig measurement handoff suppliedData[{index}] {message}")
-            })?;
+        let supplied_id = required_string(row, "suppliedId").map_err(|message| {
+            format!("FieldSig ArchSig measurement handoff suppliedData[{index}] {message}")
+        })?;
+        if !supplied_ids.insert(supplied_id) {
+            return Err(format!(
+                "FieldSig ArchSig measurement handoff suppliedData[{index}] duplicates suppliedId {supplied_id}"
+            )
+            .into());
         }
-        let kind = row["kind"].as_str().unwrap_or_default();
+        let _source_artifact_ref = required_string(row, "sourceArtifactRef").map_err(|message| {
+            format!("FieldSig ArchSig measurement handoff suppliedData[{index}] {message}")
+        })?;
+        let kind = required_string(row, "kind").map_err(|message| {
+            format!("FieldSig ArchSig measurement handoff suppliedData[{index}] {message}")
+        })?;
+        if !supplied_kinds.insert(kind) {
+            return Err(format!(
+                "FieldSig ArchSig measurement handoff suppliedData[{index}] duplicates kind {kind}"
+            )
+            .into());
+        }
         if !ARCHSIG_SUPPLIED_DATA_KINDS.contains(&kind) {
             return Err(format!(
                 "FieldSig ArchSig measurement handoff suppliedData[{index}] has unsupported kind {kind}"
@@ -794,6 +837,49 @@ fn validate_archsig_measurement_packet_supplied_data(
             )
             .into());
         }
+    }
+    for required_kind in ["archmap", "law-policy", "measurement-profile"] {
+        if !supplied_kinds.contains(required_kind) {
+            return Err(format!(
+                "FieldSig ArchSig measurement handoff suppliedData is missing required kind {required_kind}"
+            )
+            .into());
+        }
+    }
+    Ok(())
+}
+
+fn validate_handoff_top_level_fields(
+    packet: &serde_json::Value,
+) -> Result<(), Box<dyn std::error::Error>> {
+    const ALLOWED_FIELDS: &[&str] = &[
+        "schema",
+        "packetId",
+        "profile",
+        "profiles",
+        "structuralVerdict",
+        "computedInvariants",
+        "analyticReadings",
+        "assumptions",
+        "suppliedData",
+        "boundaryStatements",
+        "nonConclusions",
+        "toolVersion",
+        "runId",
+        "inputDigests",
+        "componentFingerprints",
+    ];
+    let object = packet
+        .as_object()
+        .ok_or("FieldSig ArchSig measurement handoff requires a top-level object")?;
+    if let Some(unknown) = object
+        .keys()
+        .find(|key| !ALLOWED_FIELDS.contains(&key.as_str()))
+    {
+        return Err(format!(
+            "FieldSig ArchSig measurement handoff rejects unknown top-level field {unknown}"
+        )
+        .into());
     }
     Ok(())
 }
@@ -834,7 +920,10 @@ fn archsig_measurement_packet_sft_source_refs(
     packet: &serde_json::Value,
     input_path: &str,
 ) -> Vec<String> {
-    let mut refs = vec![format!("source:archsig-measurement-packet:{input_path}")];
+    let mut refs = vec![format!(
+        "source:archsig-measurement-packet:{}",
+        stable_input_ref(input_path)
+    )];
     if let Some(packet_id) = packet.get("packetId").and_then(|value| value.as_str()) {
         refs.push(format!("archsigMeasurementPacket:{packet_id}"));
     }
@@ -867,7 +956,12 @@ fn archsig_measurement_packet_sft_source_refs(
                 entry
                     .get("sourceArtifactRef")
                     .and_then(|value| value.as_str())
-                    .map(|source| format!("archsigMeasurementLawSurface:{source}"))
+                    .map(|source| {
+                        format!(
+                            "archsigMeasurementLawSurface:{}",
+                            sanitize_artifact_ref(source)
+                        )
+                    })
             }),
     );
     refs.extend(
@@ -971,6 +1065,38 @@ fn archsig_measurement_packet_sft_source_refs(
             }),
     );
     unique_strings(refs)
+}
+
+fn stable_input_ref(input_path: &str) -> String {
+    Path::new(input_path)
+        .file_name()
+        .and_then(|name| name.to_str())
+        .filter(|name| !name.is_empty())
+        .map(|name| format!("input:{name}"))
+        .unwrap_or_else(|| "input:archsig-measurement-packet.json".to_string())
+}
+
+fn sanitize_artifact_ref(reference: &str) -> String {
+    if is_local_or_private_ref(reference) {
+        "artifact-ref:redacted-local-path".to_string()
+    } else {
+        reference.to_string()
+    }
+}
+
+fn is_local_or_private_ref(reference: &str) -> bool {
+    reference.starts_with('/')
+        || reference.starts_with("~/")
+        || reference.starts_with("../")
+        || reference.contains("/../")
+        || reference.contains('\\')
+        || (reference.len() >= 3
+            && reference.as_bytes()[0].is_ascii_alphabetic()
+            && reference.as_bytes()[1] == b':'
+            && matches!(reference.as_bytes()[2], b'/' | b'\\'))
+        || reference
+            .split(['/', '\\'])
+            .any(|segment| segment.starts_with('.') && segment != "." && segment != "..")
 }
 
 fn archsig_measurement_packet_action_candidate_ids(packet: &serde_json::Value) -> Vec<String> {

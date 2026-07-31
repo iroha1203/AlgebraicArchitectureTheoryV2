@@ -64,48 +64,11 @@
       }
     },
     {
-      "artifactId": "archmap",
-      "artifactName": "ArchMap supplied JSON artifact",
-      "schemaName": "archmap/v0.5.0",
-      "artifactRole": "semantic-observation-input",
-      "ownerPhase": "ArchMap MVP",
-      "status": "implemented",
-      "primaryDocs": [
-        "docs/tool/README.md",
-        "tools/archsig/docs/artifacts-and-boundaries.md",
-        "tools/fieldsig/docs/artifacts-and-boundaries.md"
-      ],
-      "downstreamIssues": [
-        "#1032",
-        "#1033",
-        "#1035",
-        "#1228",
-        "#1246"
-      ],
-      "compatibilityBoundary": {
-        "fieldMappingPolicy": "Map source inventory, prompt/model provenance, atom candidates, molecule candidates, obstruction circuit candidates, observation gaps, AAT-facing and SFT-facing map items, coverage, conflicts, and non-conclusions by stable camelCase names.",
-        "deprecatedFields": [],
-        "newRequiredAssumptions": [
-          "New mapping kinds must preserve source refs, claim boundary, missing evidence, and non-conclusions.",
-          "New atomic observation fields must remain optional/default-compatible in archmap-schema050 unless schema is deliberately bumped.",
-          "SFT-facing mapping kinds must remain projection input and not forecast result claims."
-        ],
-        "coverageExactnessBoundary": [
-          "ArchMap is supplied JSON evidence, not architecture ground truth, certified ArchitectureAtom truth, or a Lean theorem claim."
-        ],
-        "nonConclusions": [
-          "field mapping does not prove semantic preservation",
-          "missing coverage is not measured zero",
-          "renamed fields do not discharge new required assumptions"
-        ]
-      }
-    },
-    {
       "artifactId": "architecture-policy",
       "artifactName": "Architecture policy artifact",
       "schemaName": "architecture-policy/v0.5.0",
       "artifactRole": "law-aware-review-policy",
-      "ownerPhase": "ArchMap law-aware review",
+      "ownerPhase": "ArchSig law-aware review",
       "status": "implemented",
       "primaryDocs": [
         "docs/tool/README.md",
@@ -136,7 +99,7 @@
       "artifactName": "Architecture policy validation report",
       "schemaName": "architecture-policy-validation-report/v0.5.0",
       "artifactRole": "validation-output",
-      "ownerPhase": "ArchMap law-aware review",
+      "ownerPhase": "ArchSig law-aware review",
       "status": "implemented",
       "primaryDocs": [
         "tools/archsig/docs/commands.md"
@@ -165,7 +128,7 @@
       "artifactName": "Law violation report",
       "schemaName": "law-violation-report/v0.5.0",
       "artifactRole": "review-output",
-      "ownerPhase": "ArchMap law-aware review",
+      "ownerPhase": "ArchSig law-aware review",
       "status": "implemented",
       "primaryDocs": [
         "tools/archsig/docs/commands.md",
@@ -214,39 +177,6 @@
         ],
         "coverageExactnessBoundary": [
           "IntentMap is LLM-authored planning evidence, not implementation truth, forecast correctness, or a complete plan."
-        ],
-        "nonConclusions": [
-          "field mapping does not prove semantic preservation",
-          "missing coverage is not measured zero",
-          "renamed fields do not discharge new required assumptions"
-        ]
-      }
-    },
-    {
-      "artifactId": "intent-archmap-alignment",
-      "artifactName": "IntentMap to ArchMap AlignmentMap",
-      "schemaName": "intent-archmap-alignment/v0.5.0",
-      "artifactRole": "planning-alignment-input",
-      "ownerPhase": "FieldSig planning contract v3",
-      "status": "implemented",
-      "primaryDocs": [
-        "tools/fieldsig/docs/artifacts-and-boundaries.md",
-        "tools/fieldsig/docs/commands.md"
-      ],
-      "downstreamIssues": [
-        "#1151",
-        "#1152",
-        "#1154",
-        "#1156"
-      ],
-      "compatibilityBoundary": {
-        "fieldMappingPolicy": "Map intent refs, ArchMap refs, alignment kind, preserves / forgets, confidence, unaligned / unsupported / ambiguous boundaries, missing evidence, and non-conclusions explicitly.",
-        "deprecatedFields": [],
-        "newRequiredAssumptions": [
-          "New alignment kinds must keep intentUnaligned / unsupported / ambiguous states distinct from measured zero."
-        ],
-        "coverageExactnessBoundary": [
-          "AlignmentMap validation does not prove semantic correctness, implementation impact, quality, causality, or future outcome."
         ],
         "nonConclusions": [
           "field mapping does not prove semantic preservation",
@@ -399,7 +329,7 @@
         "#1153"
       ],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Map ArchMap, AIR, theorem-check, feature-report, and policy-decision refs to reviewer-facing cues and missing evidence without automatic merge approval.",
+        "fieldMappingPolicy": "Map ArchSig measurement, AIR, theorem-check, feature-report, and policy-decision refs to reviewer-facing cues and missing evidence without automatic merge approval.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "New cue kinds must declare evidence boundary and avoid merge-decision or architecture-lawfulness claims."

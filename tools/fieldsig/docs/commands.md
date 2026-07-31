@@ -9,7 +9,7 @@ FieldSig owns SFT software evolution measurement and workflow-evidence artifacts
 
 ## Forecast and Intent
 
-Use `artifact-descriptor`, `intent-map`, `intent-archmap-alignment`, `intent-forecast`, `operation-support-estimate`, `forecast-cone-skeleton`, `consequence-envelope`, `sft-review-summary`, `forecast-calibration-hook`, `intent-calibration-record`, and `sft-forecast` for bounded SFT forecast artifacts. These commands preserve missing evidence and unknown remainder; they do not create probability or causal-correctness claims.
+Use `artifact-descriptor`, `intent-map`, `operation-support-estimate`, `forecast-cone-skeleton`, `consequence-envelope`, `sft-review-summary`, `forecast-calibration-hook`, `intent-calibration-record`, and `sft-forecast` for bounded SFT forecast artifacts. These commands preserve missing evidence and unknown remainder; they do not create probability or causal-correctness claims.
 
 ArchSig measurement packet handoff:
 
@@ -19,13 +19,12 @@ cargo run --manifest-path tools/fieldsig/Cargo.toml -- archsig-analysis-sft-inpu
   --out .fieldsig/operation-support-estimate.json
 ```
 
-This command rejects raw ArchMap JSON when it is supplied as the
-measurement-packet input. The accepted ArchSig handoff boundary is
+The accepted ArchSig handoff artifact is
 `archsig-measurement-packet/v0.5.4` with all three component fingerprints.
 
 The end-to-end command transcript is fixed in
 [`docs/tool/llm_native_e2e_workflow.md`](../../../docs/tool/llm_native_e2e_workflow.md).
-CI runs the same flow from ArchMap and LawPolicy through ArchSig measurement,
+CI runs the same flow from the ArchSig measurement inputs through ArchSig measurement,
 gate / compare checks, and FieldSig handoff.
 
 ## Operational and Governance

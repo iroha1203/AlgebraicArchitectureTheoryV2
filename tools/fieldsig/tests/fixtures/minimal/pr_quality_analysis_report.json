@@ -1,21 +1,16 @@
 {
   "schema": "pr-quality-analysis-report/v0.5.0",
   "reportId": "fixture-pr-quality-analysis/v0.5.0",
-  "archmapRef": {
-    "schema": "archmap/v0.5.0",
-    "mapId": "fixture-archmap/v0.5.0",
-    "path": "tools/fieldsig/tests/fixtures/minimal/archmap.json",
-    "mapItemIds": [
-      "object-route-users",
-      "policy-layered-route-service",
-      "runtime-unmeasured-boundary"
-    ],
+  "architectureRef": {
+    "artifactId": "artifact:archsig-measurement-packet",
+    "artifactKind": "archsig-measurement-packet",
+    "path": "tools/fieldsig/tests/fixtures/minimal/archsig_measurement_packet.json",
+    "schema": "archsig-measurement-packet/v0.5.4",
     "nonConclusions": [
-      "AlignmentMap does not prove implementation impact",
-      "AlignmentMap does not guarantee future outcome or quality",
-      "intentUnaligned is planning boundary, not measured zero",
-      "unsupported and ambiguous alignments remain review cues",
-      "validation pass does not prove semantic correctness of LLM-authored maps"
+      "PR quality analysis is reviewer-facing evidence, not merge approval",
+      "PR quality analysis does not prove architecture lawfulness",
+      "missing evidence remains review boundary",
+      "quality cues are not global rankings"
     ]
   },
   "airRef": {
@@ -121,17 +116,17 @@
       "boundaryId": "missing-evidence:pr-runtime",
       "boundaryKind": "missingEvidence",
       "intentItemRefs": [],
-      "archmapItemRefs": [
-        "runtime-unmeasured-boundary"
+      "sourceRefIds": [
+        "source:archsig-measurement-packet"
       ],
       "reason": "runtime evidence was not supplied to selected PR analysis",
       "treatment": "retain as review cue, not merge blocker by itself",
       "nonConclusions": [
-        "AlignmentMap does not prove implementation impact",
-        "AlignmentMap does not guarantee future outcome or quality",
-        "intentUnaligned is planning boundary, not measured zero",
-        "unsupported and ambiguous alignments remain review cues",
-        "validation pass does not prove semantic correctness of LLM-authored maps"
+        "IntentMap is an LLM-authored bounded semantic extraction, not implementation ground truth",
+        "IntentMap does not provide an implementation plan completeness guarantee",
+        "IntentMap confidence is review priority, not probability",
+        "IntentMap does not compute forecast cone results",
+        "missing decisions and ambiguous intents are retained, not filled by validation"
       ]
     }
   ],
@@ -140,7 +135,7 @@
     "cueCount": 3,
     "missingEvidenceCount": 1,
     "reviewerNotes": [
-      "ArchMap is the PR-side source; IntentMap planning flow is not required for PR quality analysis",
+      "current measurement refs are the PR-side source; IntentMap planning flow is not required for PR quality analysis",
       "report surfaces review cues and missing evidence without automatic merge decision"
     ],
     "nonConclusions": [

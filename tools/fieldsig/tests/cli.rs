@@ -14,11 +14,7 @@ fn cli_intentmap_alignment_forecast_and_calibration_workflow() {
     let root = fixture_root();
     let out_dir = temp_dir("intentmap-alignment-workflow");
     let intent_fixture = root.join("intentmap.json");
-    let alignment_fixture = root.join("intent_archmap_alignment.json");
-    let archmap_fixture = root.join("archmap.json");
     let intent_validation = out_dir.join("intentmap-validation.json");
-    let alignment_validation = out_dir.join("alignment-validation.json");
-    let forecast_dir = out_dir.join("forecast");
     let pr_quality_validation = out_dir.join("pr-quality-validation.json");
     let calibration_validation = out_dir.join("intent-calibration-validation.json");
 
@@ -51,85 +47,6 @@ fn cli_intentmap_alignment_forecast_and_calibration_workflow() {
             .any(|entry| {
                 entry == "IntentMap does not provide an implementation plan completeness guarantee"
             })
-    );
-
-    run_sig0(&[
-        "intent-archmap-alignment",
-        "--input",
-        alignment_fixture
-            .to_str()
-            .expect("alignment fixture path is utf-8"),
-        "--intent-map",
-        intent_fixture
-            .to_str()
-            .expect("intent fixture path is utf-8"),
-        "--archmap",
-        archmap_fixture
-            .to_str()
-            .expect("archmap fixture path is utf-8"),
-        "--out",
-        alignment_validation
-            .to_str()
-            .expect("alignment validation path is utf-8"),
-    ]);
-    let alignment_json = read_json(&alignment_validation);
-    assert_eq!(
-        alignment_json["schema"],
-        "intent-archmap-alignment-validation-report/v0.5.0"
-    );
-    assert_eq!(alignment_json["summary"]["result"], "pass");
-    assert!(
-        alignment_json["checks"]
-            .as_array()
-            .expect("checks are array")
-            .iter()
-            .any(|check| {
-                check["id"] == "intent-archmap-alignment-boundaries-not-measured-zero"
-            })
-    );
-
-    run_sig0(&[
-        "intent-forecast",
-        "--intent-map",
-        intent_fixture
-            .to_str()
-            .expect("intent fixture path is utf-8"),
-        "--archmap",
-        archmap_fixture
-            .to_str()
-            .expect("archmap fixture path is utf-8"),
-        "--alignment",
-        alignment_fixture
-            .to_str()
-            .expect("alignment fixture path is utf-8"),
-        "--out-dir",
-        forecast_dir.to_str().expect("forecast dir is utf-8"),
-    ]);
-    let estimate = read_json(&forecast_dir.join("operation-support-estimate.json"));
-    assert_eq!(estimate["schema"], "operation-support-estimate/v0.5.0");
-    assert_eq!(
-        estimate["descriptorRef"]["descriptorSchemaVersion"],
-        "intent-archmap-alignment/v0.5.0"
-    );
-    assert!(
-        estimate["unknownRemainder"][0]["unknownAxes"]
-            .as_array()
-            .expect("unknown axes are array")
-            .iter()
-            .any(|axis| {
-                axis.as_str()
-                    .expect("axis is string")
-                    .contains("coupons may stack")
-            })
-    );
-    let cone = read_json(&forecast_dir.join("forecast-cone-skeleton.json"));
-    assert_eq!(cone["schema"], "forecast-cone-skeleton/v0.5.0");
-    assert!(
-        cone["nonConclusions"]
-            .as_array()
-            .expect("forecast nonConclusions are array")
-            .iter()
-            .any(|entry| entry == "forecast cone skeleton does not assign probabilities")
     );
 
     run_sig0(&[
@@ -361,7 +278,7 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
             "dependsOnAssumptions": ["assumption:part8-4-2:finite-site"],
             "evidence": {
                 "computedInvariantRefs": ["cech-cohomology:profile:test-handoff"],
-                "sourceRefs": []
+                "sourceRefs": ["source:fixture:measurement"]
             }
         }, {
             "verdictRef": "structuralVerdict/ag-cech-obstruction/ag-cech-obstruction/certificate-missing",
@@ -757,7 +674,7 @@ fn cli_rejects_archsig_measurement_capacity_reading_as_cech_cert_fallback() {
             },
             "evidence": {
                 "computedInvariantRefs": [],
-                "sourceRefs": []
+                "sourceRefs": ["source:fixture:measurement"]
             }
         }],
         "computedInvariants": [{
@@ -832,6 +749,20 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
     )
     .expect("schema-only packet fixture is written");
 
+    let aliased = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        schema_only.to_str().expect("schema-only packet path is utf-8"),
+        "--out",
+        schema_only.to_str().expect("aliased output path is utf-8"),
+    ]);
+    assert!(!aliased.status.success());
+    assert!(
+        String::from_utf8_lossy(&aliased.stderr)
+            .contains("output path must differ from input path"),
+        "measurement-packet handoff must reject input/output aliases"
+    );
+
     let malformed = run_sig0_output(&[
         "archsig-analysis-sft-input",
         "--measurement-packet",
@@ -853,10 +784,10 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
     let rejected = run_sig0_output(&[
         "archsig-analysis-sft-input",
         "--measurement-packet",
-        fixture_root()
-            .join("archmap.json")
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../archsig/tests/fixtures/ag_measurement/archmap_v2.json")
             .to_str()
-            .expect("archmap path is utf-8"),
+            .expect("ArchSig ArchMap path is utf-8"),
         "--out",
         out_dir
             .join("rejected.json")
@@ -950,7 +881,7 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
             "dependsOnAssumptions": ["assumption:part3-7-2B:finite-certificate-verified"],
             "evidence": {
                 "computedInvariantRefs": ["square-free-repair:profile:semantic-validation"],
-                "sourceRefs": []
+                "sourceRefs": ["source:fixture:measurement"]
             }
         }],
         "computedInvariants": [{
@@ -990,6 +921,35 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
         "boundaryStatements": [],
         "nonConclusions": []
     });
+
+    let missing_source_refs_packet = out_dir.join("missing-source-refs-measurement-packet.json");
+    let mut missing_source_refs_json = valid_measurement_packet.clone();
+    missing_source_refs_json["structuralVerdict"][0]["evidence"]["sourceRefs"] =
+        serde_json::json!([]);
+    fs::write(
+        &missing_source_refs_packet,
+        serde_json::to_string_pretty(&missing_source_refs_json)
+            .expect("missing source refs packet serializes"),
+    )
+    .expect("missing source refs packet fixture is written");
+    let missing_source_refs = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        missing_source_refs_packet
+            .to_str()
+            .expect("missing source refs packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("missing-source-refs.json")
+            .to_str()
+            .expect("missing source refs output path is utf-8"),
+    ]);
+    assert!(!missing_source_refs.status.success());
+    assert!(
+        String::from_utf8_lossy(&missing_source_refs.stderr)
+            .contains("requires non-empty evidence.sourceRefs"),
+        "measurement-packet handoff must reject measured verdicts without observation provenance"
+    );
 
     let mismatched_evaluator_packet = out_dir.join("mismatched-evaluator-measurement-packet.json");
     let mut mismatched_evaluator_json = valid_measurement_packet.clone();

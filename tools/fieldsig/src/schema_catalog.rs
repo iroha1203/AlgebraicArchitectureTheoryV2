@@ -2,13 +2,13 @@ use crate::{
     AAT_OBSERVABLE_BUNDLE_SCHEMA_VERSION, AI_PROPOSAL_GOVERNANCE_SCHEMA_VERSION,
     AIR_SCHEMA_VERSION, ARCHITECTURE_DRIFT_LEDGER_SCHEMA_VERSION,
     ARCHITECTURE_DYNAMICS_METRICS_REPORT_SCHEMA_VERSION, ARCHITECTURE_POLICY_SCHEMA_VERSION,
-    ARCHITECTURE_POLICY_VALIDATION_REPORT_SCHEMA_VERSION, ARCHMAP_SCHEMA_VERSION,
+    ARCHITECTURE_POLICY_VALIDATION_REPORT_SCHEMA_VERSION,
     CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION,
     CONSEQUENCE_ENVELOPE_REPORT_SCHEMA_VERSION,
     DETECTABLE_VALUES_REPORTED_AXES_CATALOG_SCHEMA_VERSION,
     FEATURE_EXTENSION_REPORT_SCHEMA_VERSION, FORECAST_CONE_SKELETON_SCHEMA_VERSION,
     HYPOTHESIS_REFRESH_CYCLE_SCHEMA_VERSION, INCIDENT_CORRELATION_MONITOR_SCHEMA_VERSION,
-    INTENT_ARCHMAP_ALIGNMENT_SCHEMA_VERSION, INTENT_CALIBRATION_RECORD_SCHEMA_VERSION,
+    INTENT_CALIBRATION_RECORD_SCHEMA_VERSION,
     INTENTMAP_SCHEMA_VERSION, LAW_VIOLATION_REPORT_SCHEMA_VERSION,
     OBSTRUCTION_WITNESS_SCHEMA_VERSION, OPERATION_SUPPORT_ESTIMATE_SCHEMA_VERSION,
     OWNERSHIP_BOUNDARY_MONITOR_SCHEMA_VERSION, PR_FORCE_REPORT_SCHEMA_VERSION,
@@ -75,37 +75,11 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ),
             ),
             artifact(
-                "archmap",
-                "ArchMap supplied JSON artifact",
-                ARCHMAP_SCHEMA_VERSION,
-                "semantic-observation-input",
-                "ArchMap MVP",
-                "implemented",
-                vec![
-                    "docs/tool/README.md",
-                    "tools/archsig/docs/artifacts-and-boundaries.md",
-                    "tools/fieldsig/docs/artifacts-and-boundaries.md",
-                ],
-                vec!["#1032", "#1033", "#1035", "#1228", "#1246"],
-                compatibility_boundary(
-                    "Map source inventory, prompt/model provenance, atom candidates, molecule candidates, obstruction circuit candidates, observation gaps, AAT-facing and SFT-facing map items, coverage, conflicts, and non-conclusions by stable camelCase names.",
-                    vec![],
-                    vec![
-                        "New mapping kinds must preserve source refs, claim boundary, missing evidence, and non-conclusions.",
-                        "New atomic observation fields must remain optional/default-compatible in archmap-schema050 unless schema is deliberately bumped.",
-                        "SFT-facing mapping kinds must remain projection input and not forecast result claims.",
-                    ],
-                    vec![
-                        "ArchMap is supplied JSON evidence, not architecture ground truth, certified ArchitectureAtom truth, or a Lean theorem claim.",
-                    ],
-                ),
-            ),
-            artifact(
                 "architecture-policy",
                 "Architecture policy artifact",
                 ARCHITECTURE_POLICY_SCHEMA_VERSION,
                 "law-aware-review-policy",
-                "ArchMap law-aware review",
+                "ArchSig law-aware review",
                 "implemented",
                 vec![
                     "docs/tool/README.md",
@@ -129,7 +103,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "Architecture policy validation report",
                 ARCHITECTURE_POLICY_VALIDATION_REPORT_SCHEMA_VERSION,
                 "validation-output",
-                "ArchMap law-aware review",
+                "ArchSig law-aware review",
                 "implemented",
                 vec!["tools/archsig/docs/commands.md"],
                 vec!["#1162"],
@@ -147,7 +121,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "Law violation report",
                 LAW_VIOLATION_REPORT_SCHEMA_VERSION,
                 "review-output",
-                "ArchMap law-aware review",
+                "ArchSig law-aware review",
                 "implemented",
                 vec![
                     "tools/archsig/docs/commands.md",
@@ -182,29 +156,6 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     ],
                     vec![
                         "IntentMap is LLM-authored planning evidence, not implementation truth, forecast correctness, or a complete plan.",
-                    ],
-                ),
-            ),
-            artifact(
-                "intent-archmap-alignment",
-                "IntentMap to ArchMap AlignmentMap",
-                INTENT_ARCHMAP_ALIGNMENT_SCHEMA_VERSION,
-                "planning-alignment-input",
-                "FieldSig planning contract v3",
-                "implemented",
-                vec![
-                    "tools/fieldsig/docs/artifacts-and-boundaries.md",
-                    "tools/fieldsig/docs/commands.md",
-                ],
-                vec!["#1151", "#1152", "#1154", "#1156"],
-                compatibility_boundary(
-                    "Map intent refs, ArchMap refs, alignment kind, preserves / forgets, confidence, unaligned / unsupported / ambiguous boundaries, missing evidence, and non-conclusions explicitly.",
-                    vec![],
-                    vec![
-                        "New alignment kinds must keep intentUnaligned / unsupported / ambiguous states distinct from measured zero.",
-                    ],
-                    vec![
-                        "AlignmentMap validation does not prove semantic correctness, implementation impact, quality, causality, or future outcome.",
                     ],
                 ),
             ),
@@ -317,7 +268,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ],
                 vec!["#1153"],
                 compatibility_boundary(
-                    "Map ArchMap, AIR, theorem-check, feature-report, and policy-decision refs to reviewer-facing cues and missing evidence without automatic merge approval.",
+                    "Map ArchSig measurement, AIR, theorem-check, feature-report, and policy-decision refs to reviewer-facing cues and missing evidence without automatic merge approval.",
                     vec![],
                     vec![
                         "New cue kinds must declare evidence boundary and avoid merge-decision or architecture-lawfulness claims.",

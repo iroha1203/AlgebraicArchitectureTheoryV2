@@ -12,7 +12,6 @@ pub const SIGNATURE_SNAPSHOT_STORE_SCHEMA_VERSION: &str = "signature-snapshot-st
 pub const SIGNATURE_DIFF_REPORT_SCHEMA_VERSION: &str = "signature-diff-report/v0.5.0";
 pub const AIR_SCHEMA_VERSION: &str = "aat-air/v0.5.0";
 pub const AIR_VALIDATION_REPORT_SCHEMA_VERSION: &str = "aat-air-validation-report/v0.5.0";
-pub const ARCHMAP_SCHEMA_VERSION: &str = "archmap/v0.5.0";
 pub const FEATURE_EXTENSION_REPORT_SCHEMA_VERSION: &str = "feature-extension-report/v0.5.0";
 pub const OBSTRUCTION_WITNESS_SCHEMA_VERSION: &str = "obstruction-witness/v0.5.0";
 pub const ARCHITECTURE_DRIFT_LEDGER_SCHEMA_VERSION: &str = "architecture-drift-ledger/v0.5.0";
@@ -92,9 +91,6 @@ pub const ARTIFACT_DESCRIPTOR_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "artifact-descriptor-validation-report/v0.5.0";
 pub const INTENTMAP_SCHEMA_VERSION: &str = "intentmap/v0.5.0";
 pub const INTENTMAP_VALIDATION_REPORT_SCHEMA_VERSION: &str = "intentmap-validation-report/v0.5.0";
-pub const INTENT_ARCHMAP_ALIGNMENT_SCHEMA_VERSION: &str = "intent-archmap-alignment/v0.5.0";
-pub const INTENT_ARCHMAP_ALIGNMENT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
-    "intent-archmap-alignment-validation-report/v0.5.0";
 pub const OPERATION_SUPPORT_ESTIMATE_SCHEMA_VERSION: &str = "operation-support-estimate/v0.5.0";
 pub const OPERATION_SUPPORT_ESTIMATE_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "operation-support-estimate-validation-report/v0.5.0";
@@ -2129,285 +2125,6 @@ pub struct AirClaim {
 #[serde(rename_all = "camelCase")]
 pub struct AirOperationTrace {
     pub operations: Vec<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ArchMapDocumentV0 {
-    #[serde(rename = "schema")]
-    pub schema_version: String,
-    pub map_id: String,
-    pub architecture_id: String,
-    pub generated_at: String,
-    pub generator: ArchMapGenerator,
-    #[serde(default)]
-    pub prompt_refs: Vec<ArchMapArtifactRef>,
-    pub generation_boundary: ArchMapGenerationBoundary,
-    pub source_universe: ArchMapSourceUniverse,
-    pub target_universe: ArchMapTargetUniverse,
-    #[serde(default)]
-    pub atom_candidates: Vec<ArchMapAtomCandidateV0>,
-    #[serde(default)]
-    pub molecule_candidates: Vec<ArchMapMoleculeCandidateV0>,
-    #[serde(default)]
-    pub obstruction_circuit_candidates: Vec<ArchMapObstructionCircuitCandidateV0>,
-    #[serde(default)]
-    pub observation_gaps: Vec<ArchMapObservationGapV0>,
-    #[serde(default)]
-    pub map_items: Vec<ArchMapMapItem>,
-    #[serde(default)]
-    pub coverage: ArchMapCoverage,
-    #[serde(default)]
-    pub conflicts: Vec<ArchMapConflict>,
-    #[serde(default)]
-    pub non_conclusions: Vec<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ArchMapGenerator {
-    pub kind: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub tool: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub provider: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub model_id: Option<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ArchMapArtifactRef {
-    pub artifact_id: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub kind: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub path: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub content_hash: Option<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ArchMapGenerationBoundary {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub token_budget: Option<String>,
-    #[serde(default)]
-    pub scope: Vec<String>,
-    #[serde(default)]
-    pub excluded_refs: Vec<ArchMapSourceRef>,
-    #[serde(default)]
-    pub private_refs: Vec<ArchMapSourceRef>,
-    #[serde(default)]
-    pub unavailable_refs: Vec<ArchMapSourceRef>,
-    #[serde(default)]
-    pub non_conclusions: Vec<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ArchMapSourceUniverse {
-    pub root: String,
-    #[serde(default)]
-    pub included_refs: Vec<ArchMapSourceRef>,
-    #[serde(default)]
-    pub excluded_refs: Vec<ArchMapSourceRef>,
-    #[serde(default)]
-    pub unavailable_refs: Vec<ArchMapSourceRef>,
-    #[serde(default)]
-    pub private_refs: Vec<ArchMapSourceRef>,
-    #[serde(default)]
-    pub hashes: Vec<ArchMapArtifactRef>,
-    #[serde(default)]
-    pub known_blind_spots: Vec<String>,
-    pub selection_boundary: String,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ArchMapTargetUniverse {
-    #[serde(default)]
-    pub representation: String,
-    #[serde(default)]
-    pub selected_layers: Vec<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ArchMapSourceRef {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub artifact_id: Option<String>,
-    pub kind: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub path: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub symbol: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub line: Option<usize>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub section: Option<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ArchMapMapItem {
-    pub map_item_id: String,
-    pub mapping_kind: String,
-    #[serde(default)]
-    pub source_refs: Vec<ArchMapSourceRef>,
-    pub target_ref: ArchMapTargetRef,
-    #[serde(default)]
-    pub preserves: Vec<String>,
-    #[serde(default)]
-    pub forgets: Vec<String>,
-    pub claim_classification: String,
-    pub measurement_boundary: String,
-    pub confidence: String,
-    #[serde(default)]
-    pub evidence_refs: Vec<String>,
-    #[serde(default)]
-    pub theorem_refs: Vec<String>,
-    #[serde(default)]
-    pub required_assumptions: Vec<String>,
-    #[serde(default)]
-    pub missing_evidence: Vec<String>,
-    #[serde(default)]
-    pub non_conclusions: Vec<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub conflict_category: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub semantic_role: Option<String>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub responsibility_regions: Vec<String>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub reason_to_change: Vec<String>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub actor_refs: Vec<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub allowed_role: Option<String>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub law_refs: Vec<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ArchMapAtomCandidateV0 {
-    pub atom_candidate_id: String,
-    pub atom_family: String,
-    pub predicate: String,
-    pub subject_ref: String,
-    #[serde(default)]
-    pub object_refs: Vec<String>,
-    #[serde(default)]
-    pub source_refs: Vec<ArchMapSourceRef>,
-    pub observation_status: String,
-    pub measurement_boundary: String,
-    pub confidence: String,
-    #[serde(default)]
-    pub uncertainty: Vec<String>,
-    #[serde(default)]
-    pub non_conclusions: Vec<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ArchMapMoleculeCandidateV0 {
-    pub molecule_candidate_id: String,
-    pub molecule_kind: String,
-    pub role_name: String,
-    #[serde(default)]
-    pub atom_candidate_refs: Vec<String>,
-    #[serde(default)]
-    pub source_refs: Vec<ArchMapSourceRef>,
-    pub observation_status: String,
-    pub confidence: String,
-    #[serde(default)]
-    pub non_conclusions: Vec<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ArchMapObstructionCircuitCandidateV0 {
-    pub circuit_candidate_id: String,
-    pub circuit_kind: String,
-    pub law_ref: String,
-    #[serde(default)]
-    pub atom_candidate_refs: Vec<String>,
-    #[serde(default)]
-    pub molecule_candidate_refs: Vec<String>,
-    #[serde(default)]
-    pub source_refs: Vec<ArchMapSourceRef>,
-    pub observation_status: String,
-    pub measurement_boundary: String,
-    pub claim_boundary: String,
-    #[serde(default)]
-    pub non_conclusions: Vec<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ArchMapObservationGapV0 {
-    pub gap_id: String,
-    pub gap_kind: String,
-    pub subject_ref: String,
-    pub evidence_status: String,
-    pub reason: String,
-    #[serde(default)]
-    pub expected_atom_families: Vec<String>,
-    #[serde(default)]
-    pub source_refs: Vec<ArchMapSourceRef>,
-    #[serde(default)]
-    pub non_conclusions: Vec<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ArchMapTargetRef {
-    pub kind: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub layer: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub id: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub from: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub to: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub subject_ref: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub predicate: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub lhs_path_ref: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub rhs_path_ref: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub equivalence: Option<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ArchMapCoverage {
-    #[serde(default)]
-    pub measured_layers: Vec<String>,
-    #[serde(default)]
-    pub unmeasured_layers: Vec<String>,
-    #[serde(default)]
-    pub assumed_layers: Vec<String>,
-    #[serde(default)]
-    pub unsupported_constructs: Vec<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ArchMapConflict {
-    pub conflict_id: String,
-    pub category: String,
-    pub subject_ref: String,
-    pub description: String,
-    #[serde(default)]
-    pub source_refs: Vec<ArchMapSourceRef>,
-    #[serde(default)]
-    pub non_conclusions: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -4853,22 +4570,6 @@ pub struct AatObservableBundleValidationSummaryV0 {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct IntentArchMapAlignmentV0 {
-    #[serde(rename = "schema")]
-    pub schema_version: String,
-    pub alignment_map_id: String,
-    pub intent_map_ref: IntentMapArtifactRefV0,
-    pub archmap_ref: IntentArchMapArtifactRefV0,
-    pub alignments: Vec<IntentArchMapAlignmentItemV0>,
-    pub unaligned_intents: Vec<IntentAlignmentBoundaryItemV0>,
-    pub unsupported_intents: Vec<IntentAlignmentBoundaryItemV0>,
-    pub ambiguous_alignments: Vec<IntentAlignmentBoundaryItemV0>,
-    pub missing_evidence: Vec<IntentAlignmentBoundaryItemV0>,
-    pub non_conclusions: Vec<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct IntentMapArtifactRefV0 {
     #[serde(rename = "schema")]
     pub schema_version: String,
@@ -4876,79 +4577,6 @@ pub struct IntentMapArtifactRefV0 {
     pub path: String,
     pub intent_item_ids: Vec<String>,
     pub non_conclusions: Vec<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct IntentArchMapArtifactRefV0 {
-    #[serde(rename = "schema")]
-    pub schema_version: String,
-    pub map_id: String,
-    pub path: String,
-    pub map_item_ids: Vec<String>,
-    pub non_conclusions: Vec<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct IntentArchMapAlignmentItemV0 {
-    pub alignment_id: String,
-    pub alignment_kind: String,
-    pub intent_item_ref: String,
-    pub archmap_item_refs: Vec<String>,
-    pub preserves: Vec<String>,
-    pub forgets: Vec<String>,
-    pub confidence: String,
-    pub missing_decisions: Vec<String>,
-    pub missing_evidence: Vec<String>,
-    pub non_conclusions: Vec<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct IntentAlignmentBoundaryItemV0 {
-    pub boundary_id: String,
-    pub boundary_kind: String,
-    pub intent_item_refs: Vec<String>,
-    pub archmap_item_refs: Vec<String>,
-    pub reason: String,
-    pub treatment: String,
-    pub non_conclusions: Vec<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct IntentArchMapAlignmentValidationReportV0 {
-    #[serde(rename = "schema")]
-    pub schema_version: String,
-    pub input: IntentArchMapAlignmentValidationInput,
-    pub alignment_map: IntentArchMapAlignmentV0,
-    pub summary: IntentArchMapAlignmentValidationSummary,
-    pub checks: Vec<ValidationCheck>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct IntentArchMapAlignmentValidationInput {
-    #[serde(rename = "schema")]
-    pub schema_version: String,
-    pub path: String,
-    pub alignment_map_id: String,
-    pub intent_map_id: String,
-    pub archmap_id: String,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct IntentArchMapAlignmentValidationSummary {
-    pub result: String,
-    pub alignment_count: usize,
-    pub unaligned_intent_count: usize,
-    pub unsupported_intent_count: usize,
-    pub ambiguous_alignment_count: usize,
-    pub missing_evidence_count: usize,
-    pub failed_check_count: usize,
-    pub warning_check_count: usize,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -5649,13 +5277,13 @@ pub struct PrQualityAnalysisReportV0 {
     #[serde(rename = "schema")]
     pub schema_version: String,
     pub report_id: String,
-    pub archmap_ref: IntentArchMapArtifactRefV0,
+    pub architecture_ref: PrQualityArtifactRefV0,
     pub air_ref: Option<PrQualityArtifactRefV0>,
     pub theorem_check_ref: Option<PrQualityArtifactRefV0>,
     pub feature_report_ref: Option<PrQualityArtifactRefV0>,
     pub policy_decision_ref: Option<PrQualityArtifactRefV0>,
     pub cues: Vec<PrQualityCueV0>,
-    pub missing_evidence: Vec<IntentAlignmentBoundaryItemV0>,
+    pub missing_evidence: Vec<IntentBoundaryItemV0>,
     pub review_summary: PrQualityReviewSummaryV0,
     pub non_conclusions: Vec<String>,
 }
