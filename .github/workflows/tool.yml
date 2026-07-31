@@ -43,9 +43,9 @@ jobs:
           tools/archsig/examples/practical-rust-service/scripts/run_archsig_demo.sh
 
           out=".tmp/archsig-practical-rust-service"
-          jq -e '.conclusion == "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"' \
+          jq -e '.conclusion == "REPAIR_GLUES_WITHIN_SELECTED_COMPLEX"' \
             "$out/base/archsig-analysis-summary.json"
-          jq -e '.conclusion == "MEASURED_NONGLUING_RESIDUAL_CLASS"' \
+          jq -e '.conclusion == "MEASURED_NONGLUING_RESIDUAL"' \
             "$out/head/archsig-analysis-summary.json"
           jq -e '.decision == "BLOCKED_BY_GATE_POLICY"' "$out/gate-head.json"
           jq -e '.conclusion == "REPAIR_GLUES_WITHIN_SELECTED_COMPLEX"' \

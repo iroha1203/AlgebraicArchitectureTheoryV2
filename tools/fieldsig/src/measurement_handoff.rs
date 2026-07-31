@@ -1207,6 +1207,7 @@ fn validate_handoff_nested_fields(
         "edgeRefs",
         "faceRefs",
         "supportAtomRefs",
+        "pairingAtomRefs",
         "mismatchSupportRefs",
         "witnessSupportRefs",
         "minimalHittingSets",
