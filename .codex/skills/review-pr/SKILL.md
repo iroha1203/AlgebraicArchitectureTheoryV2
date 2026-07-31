@@ -59,7 +59,7 @@ fail-closed、反証試行、証拠資格、統合出力を適用する。
    | AAT / Lean / 数学claim | `Formal/`、数学本文、研究GOAL、一次仕様、数学claim、および Lean 実装変更に伴う `docs/aat/` 台帳整合 | `$math-lean-review` |
    | Tooling | `tools/`、`docs/tool/`、schema catalog | `$tool-review` |
    | Website | `website/`、`docs/website/` | `$website-review` |
-   | Docs / governance | docs-onlyの`docs/aat/`台帳、`docs/sft/`、非数学的な`docs/note/`、PRD、README、`AGENTS.md`、`.codex/skills/`、文章主体のIssue / PR template、cross-domain docs | `$docs-review`(レビューモード) |
+   | Docs / governance | docs-onlyの`docs/aat/`台帳、`docs/sft/`、非数学的な`docs/note/`、PRD、README、`AGENTS.md`、`docs/workflow/`、`.codex/skills/`、文章主体のIssue / PR template、cross-domain docs | `$docs-review`(レビューモード) |
 
    - **Lean 実装(`Formal/`)を触る PR は、差分の大きさを問わず(1行でも)
      `$math-lean-review` の正式判定を必須とする。** `$math-lean-review`
@@ -78,7 +78,8 @@ fail-closed、反証試行、証拠資格、統合出力を適用する。
    - Issue 受け入れ要件と diff の照合(条件文言と実体の対応)。
    - checklist §6 の横断機械 scan(hidden/bidi、privacy / local-path、
      `git diff --check`)。
-   - 必要なら変更範囲に応じた focused check / targeted build / cargo test を実行する。本体のroot全体のフル `lake build` はローカルで実行せず、PR作成後のCIで確認する。
+   - 必要なら変更範囲に応じた focused check / targeted build / cargo test を実行する
+     (Lean build の hard rule は `docs/aat/guideline.md`「Lean build 運用」)。
 
 5. 統合判定する。
    - **委譲先判定の写像(合格の定義)**:

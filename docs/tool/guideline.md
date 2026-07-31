@@ -145,9 +145,4 @@ cargo run --manifest-path tools/fieldsig/Cargo.toml -- archsig-analysis-sft-inpu
   --out .tmp/fieldsig/operation-support-estimate.json
 ```
 
-PR 前には次も確認する。
-
-```bash
-git diff --check
-rg -nP "[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}]" <changed-files>
-```
+PR 前の共通 scan は [workflow guideline](../workflow/guideline.md) の「PR 前の共通確認」に従う。

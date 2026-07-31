@@ -89,8 +89,8 @@ GitHub Issue を起点に、タスク選定から Pull Request 作成まで進�
      `unported (Research-proved)` を別statusへ置換して完了扱いしない。
    - Issue 番号や残る proof obligation を明確にする。
 7. 検証する。
-   - Lean 変更あり: 変更範囲に応じて focused check または targeted build を必要に応じて実行する。本体のroot全体のフル `lake build` はローカルで実行せず、PR作成後のCIで確認する。
-     サブエージェントに委譲しない。
+   - Lean 変更あり: `docs/aat/guideline.md`「Lean build 運用(hard rule)」に従い、
+     変更範囲に応じた focused check または targeted build を実行する。サブエージェントに委譲しない。
    - Rust tooling 変更あり: `cargo test --manifest-path tools/archsig/Cargo.toml`
    - website 変更あり: `python3 -m http.server 8000 --directory website` などで静的 preview を確認する。
    - Issue の`受け入れ要件`に示された検証証拠を優先する。
@@ -125,8 +125,8 @@ GitHub Issue を起点に、タスク選定から Pull Request 作成まで進�
 
 ## このリポジトリ固有の注意
 
-- Lean / AAT の定義・指標・universe の扱いは `docs/aat/guideline.md` の
-  「Lean 形式化方針」を正本として従う。
+- Lean / AAT の定義・指標・universe・status の扱いは `docs/aat/guideline.md` の
+  「Lean 形式化方針」と「Lean status discipline」を正本として従う。
 
 ## PR 本文テンプレート
 

@@ -21,7 +21,8 @@ Lean要件を含むPRDでは
 - **アウトカム判定を AC scoreboard から独立させる。** PRD 冒頭の「## 問い」に
   現状が答えているかを、AC の充足とは別の判定項目として出す。AC 全充足でも
   問いが未回答なら総合判定を `達成済み` にしない(ユーザー判断事項として報告する)。
-- PRD の達成条件を勝手に縮めない、広げない。現実コード全体、意味宇宙全体、未来予測全体のような無制限 claim を残タスク化しない。
+- PRD の達成条件を勝手に縮めない、広げない。無制限 claim を残タスク化しない
+  (`docs/workflow/guideline.md`「完了レビューの判定範囲」)。
 - AAT / Lean / ArchSig / FieldSig / Website / docs の責務を分ける。AAT の完了判定に source extraction や tooling validation の完全性を持ち込まない。
 - 判定は証拠ベースにする。該当ファイル、テスト、CI、Issue / PR、台帳、生成物が確認できない項目は `未確認` または `未達` として扱う。
 - 証拠には階層を置く。一次証拠は、コード・Lean 宣言の statement 実読、instance の実在確認、実行した検証、kernel 検査。二次証拠は、台帳、inventory、tracking Issue の checklist、Issue / PR 本文、iteration コメントなど、レビュー対象の作業自身が生成した記録。`満たした` 判定は一次証拠でのみ行う。二次証拠は主張の索引として使い、単独では判定根拠にしない。
@@ -113,8 +114,8 @@ Lean要件を含むPRDでは
 
 ## 検証の選び方
 
-- Lean 変更または Lean 達成条件: 本体のroot全体のフル `lake build` はPR作成後のCIで実行し、結果をreview laneへ渡す。ローカルでは変更範囲に応じた focused check または targeted build を扱う。
-  必要なら focused `lake env lean <file>` だけを追加する。
+- Lean 変更または Lean 達成条件: `docs/aat/guideline.md`「Lean build 運用(hard rule)」に従う
+  (フル `lake build` はCI結果をreview laneへ渡す。ローカルは focused check / targeted build のみ)。
 - ArchSig 変更または tooling 達成条件: `cargo test --manifest-path tools/archsig/Cargo.toml`
 - FieldSig 変更または measurement handoff 達成条件: `cargo test --manifest-path tools/fieldsig/Cargo.toml`
 - Website 達成条件: local static preview、link / asset / title / layout check

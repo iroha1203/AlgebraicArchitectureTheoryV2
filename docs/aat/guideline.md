@@ -42,9 +42,8 @@
   全 runtime、全 semantic universe、source extraction completeness、tooling validation completeness を
   AAT theorem package のスコープに入れない。
 - `docs/aat/algebraic_geometric_theory/` は現行 AAT 数学本文の正典である。Lean status、Issue 番号、実装済み API の進捗管理は本文に混ぜない。
-- `docs/aat/algebraic_geometric_theory/` は AAT の根幹文書である。更新は、人間の明示的な編集指示、
-  実装者以外の LLM によるレビュー、人間による差分確認と merge の3条件がすべて揃う場合に限る
-  (正本は [workflow guideline](../workflow/guideline.md) の「保護ファイル」)。
+- `docs/aat/algebraic_geometric_theory/` は AAT の根幹文書であり保護ファイルである。
+  更新条件は [workflow guideline](../workflow/guideline.md) の「保護ファイル(3条件)」を正とする。
 - Lean status とIssueとの対応は、Lean source、GOAL、GitHub Issues、PRDを直接確認する。
 
 ## Lean 形式化方針
@@ -196,10 +195,9 @@ Lean 変更を含む場合、変更範囲に応じて focused check、対象modu
 lake env lean Formal/AG/Atom/Atom.lean
 ```
 
-PR 前には次も確認する。
+PR 前の共通 scan は [workflow guideline](../workflow/guideline.md) の「PR 前の共通確認」に従う。
+AAT / Lean 変更では加えて次を確認する。
 
 ```bash
-git diff --check
-rg -nP "[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}]" <changed-files>
 rg -n "\b(axiom|admit|sorry|unsafe)\b" Formal docs
 ```

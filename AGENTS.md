@@ -22,9 +22,9 @@
   bounded diagnostic を計算する Rust tooling。入力はこの二系統に限る
   (正本は [Tool guideline](docs/tool/guideline.md) の「責務範囲(入力トライアドの正本)」)。
 - **ArchView**: ArchMap の Atom / Context / Cover を geometry として可視化し、ArchSig の
-  分析結果を overlay として重ねる。新しい structural verdict を作らない。
-- **FieldSig**: ArchSig の handoff artifact を SFT 側の evolution measurement /
-  governance input として読む。
+  分析結果を overlay として重ねて source landing へ接続する。新しい structural verdict を作らない。
+- **FieldSig**: ArchSig の handoff artifact と workflow evidence を SFT 側の
+  evolution measurement / governance input として読む。
 - **Lean 形式化**(`Formal/`): AAT の語彙で述べられる命題だけを形式化する。
   全知の検査器ではない。
 - **Website**: AAT / SFT / tooling を公開向けに読むための publication surface。
@@ -32,8 +32,7 @@
 ## モノレポの地図と guideline ルーティング
 
 作業前に、触る領域の guideline と [workflow guideline](docs/workflow/guideline.md)
-(横断規律: 言語・Issue 運用・ブランチ / PR・保護ファイル・CI・完了レビューの判定範囲・
-レビュー体制・PR 前の共通確認)を読む。
+(横断規律)を読む。
 
 | 領域 | 主な場所 | 正本 guideline |
 | --- | --- | --- |
@@ -67,6 +66,4 @@
   [Tool guideline](docs/tool/guideline.md) の「テスト責務と実行経路」。
 - PR 前の共通 scan(`git diff --check`、hidden / bidirectional Unicode)は
   [Workflow guideline](docs/workflow/guideline.md) の「PR 前の共通確認」。
-
-Codex から Playwright を実行する場合、macOS のブラウザ起動権限により通常の sandbox 内実行で
-Chromium が固まることがある。必要に応じて sandbox 外実行を使う。
+- Playwright の sandbox 注意は [Website guideline](docs/website/guideline.md) の検証節。

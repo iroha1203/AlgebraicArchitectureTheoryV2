@@ -162,7 +162,7 @@ RepairPlan の explicit H¹ comparison は、次数0/1/2の有限基底写像表
 | 計測出力契約と五値 verdict | 第VIII部 定義 11.1 |
 | verdict discipline(unknown ≠ nonzero ほか) | 第VIII部 measurement verdict discipline |
 | 計測は理論内部の reading、外部妥当性を主張しない | 第VIII部 原則2.2(Measurement Is Internal) |
-| ArchSig は contract 内だけ語り沈黙する | README.md / guideline.md「責務範囲」ウィトゲンシュタイン的責務範囲 |
+| ArchSig は contract 内だけ語り沈黙する | [guideline.md](guideline.md)「責務範囲(入力トライアドの正本)」ウィトゲンシュタイン的責務範囲 |
 
 ## 関連文書
 

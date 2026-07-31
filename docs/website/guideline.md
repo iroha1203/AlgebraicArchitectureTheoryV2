@@ -75,11 +75,6 @@ directory route や `sitemap.xml` / `robots.txt` を確認する場合は、直�
 
 Codex から Playwright を実行する場合、macOS のブラウザ起動権限により通常の sandbox 内実行で Chromium が固まることがある。必要に応じて sandbox 外実行を使う。
 
-PR 前には次を確認する。
-
-```bash
-git diff --check
-rg -nP "[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}]" <changed-files>
-```
+PR 前の共通 scan は [workflow guideline](../workflow/guideline.md) の「PR 前の共通確認」に従う。
 
 website 変更では、主要ページの title、link、asset path、layout、overflow を Playwright などで確認する。
