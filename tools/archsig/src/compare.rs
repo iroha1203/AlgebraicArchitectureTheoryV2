@@ -390,6 +390,7 @@ fn class_transport(
         "comparabilityBasis": "derived_from_normalized_archmap_context_restrictions_and_selected_covers",
         "runBinding": derived_refinement["runBinding"],
         "derivedRefinement": derived_refinement,
+        "reason": if zero_preserved { Value::Null } else { json!("derived_class_zero_predicate_not_preserved") },
         "sourceClassNonZero": base_nonzero,
         "targetClassNonZero": head_nonzero,
         "zeroPreserved": zero_preserved,
