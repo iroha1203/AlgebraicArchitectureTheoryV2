@@ -18,7 +18,16 @@
     "zeroPredicate": "rank-zero@1",
     "nonZeroPredicate": "rank-positive@1",
     "certSelector": "finite-certificate@1",
-    "verdictDiscipline": "five-valued-structural-verdict@1"
+    "verdictDiscipline": "five-valued-structural-verdict@1",
+    "finiteBounds": {
+      "maxSquareFreeWitnessVariables": 12,
+      "maxCoherenceContexts": 12,
+      "maxTorWitnessVariables": 12,
+      "maxBoundaryResidueVariables": 16,
+      "maxLaplacianCells": 16,
+      "maxPeriodCycles": 16,
+      "maxTransferTargets": 16
+    }
   },
   "structuralVerdict": [],
   "computedInvariants": [],

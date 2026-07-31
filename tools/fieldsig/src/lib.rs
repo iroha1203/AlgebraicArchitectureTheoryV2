@@ -111,12 +111,12 @@ pub use measurement::{
     static_fieldsig_run_manifest, static_software_field_measurement,
     validate_fieldsig_run_manifest, validate_software_field_measurement,
 };
-pub use measurement_unit::{
-    static_measurement_unit_registry, validate_measurement_unit_registry_report,
-};
 pub use measurement_handoff::{
     build_operation_support_estimate_from_archsig_measurement_packet,
     read_archsig_measurement_packet,
+};
+pub use measurement_unit::{
+    static_measurement_unit_registry, validate_measurement_unit_registry_report,
 };
 pub use no_solution_certificate::{
     static_no_solution_certificate, validate_no_solution_certificate_report,

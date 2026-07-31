@@ -26,13 +26,14 @@ const OPERATION_SUPPORT_EVIDENCE_BOUNDARY_NON_CONCLUSIONS: [&str; 3] = [
     "unsupported constructs remain forecast boundary items",
 ];
 
-const ARCHSIG_COMPUTED_INVARIANT_KINDS: [&str; 17] = [
+const ARCHSIG_COMPUTED_INVARIANT_KINDS: [&str; 18] = [
     "measurement-invariant",
     "cech-h1-rank",
     "minimal-forbidden-supports",
     "tor1-class-support",
     "boundary-residue-rank",
     "residual-boundary-membership",
+    "residual-class-support",
     "selected-cover-edge-support",
     "coherence-obstruction-count",
     "restriction-compatibility-rank",
@@ -46,12 +47,11 @@ const ARCHSIG_COMPUTED_INVARIANT_KINDS: [&str; 17] = [
     "h1-comparison-transfer",
 ];
 
-const ARCHSIG_SUPPLIED_DATA_KINDS: [&str; 5] = [
+const ARCHSIG_SUPPLIED_DATA_KINDS: [&str; 4] = [
     "archmap",
     "law-policy",
     "measurement-profile",
     "law-equation-surface",
-    "repair-plan",
 ];
 
 pub fn read_archsig_measurement_packet(
@@ -162,9 +162,7 @@ impl<'de> Visitor<'de> for NoDuplicateJsonVisitor {
         let mut object = serde_json::Map::new();
         while let Some(key) = access.next_key::<String>()? {
             if object.contains_key(&key) {
-                return Err(A::Error::custom(format!(
-                    "duplicate JSON object key {key}"
-                )));
+                return Err(A::Error::custom(format!("duplicate JSON object key {key}")));
             }
             let value = access.next_value_seed(NoDuplicateJsonSeed)?;
             object.insert(key, value);
@@ -362,6 +360,7 @@ fn validate_archsig_measurement_packet_handoff_shape(
     }
     validate_handoff_top_level_fields(packet)?;
     validate_handoff_nested_fields(packet)?;
+    validate_handoff_profile_bounds(packet)?;
     let profile_id = profile
         .get("profileId")
         .and_then(|value| value.as_str())
@@ -491,14 +490,21 @@ fn validate_archsig_measurement_packet_structural_verdicts(
         let computed_refs = required_unique_string_array(
             evidence,
             "computedInvariantRefs",
-            &format!(
-                "FieldSig ArchSig measurement handoff structuralVerdict[{index}] evidence"
-            ),
+            &format!("FieldSig ArchSig measurement handoff structuralVerdict[{index}] evidence"),
         )?;
         for computed_ref in &computed_refs {
             if !invariant_ids.contains(computed_ref) {
                 return Err(format!(
                     "FieldSig ArchSig measurement handoff structuralVerdict[{index}] evidence.computedInvariantRefs entry {computed_ref} does not resolve to computedInvariants[].invariantId"
+                )
+                .into());
+            }
+            if matches!(verdict, "measured_zero" | "measured_nonzero")
+                && archsig_measurement_computed_invariant_status(packet, computed_ref)
+                    != Some("computed")
+            {
+                return Err(format!(
+                    "FieldSig ArchSig measurement handoff structuralVerdict[{index}] evidence.computedInvariantRefs entry {computed_ref} must resolve to a computed invariant"
                 )
                 .into());
             }
@@ -515,9 +521,7 @@ fn validate_archsig_measurement_packet_structural_verdicts(
         let source_refs = required_unique_string_array(
             evidence,
             "sourceRefs",
-            &format!(
-                "FieldSig ArchSig measurement handoff structuralVerdict[{index}] evidence"
-            ),
+            &format!("FieldSig ArchSig measurement handoff structuralVerdict[{index}] evidence"),
         )?;
         if matches!(verdict, "measured_zero" | "measured_nonzero") && source_refs.is_empty() {
             return Err(format!(
@@ -585,6 +589,34 @@ fn validate_archsig_measurement_packet_structural_verdicts(
                 )
                 .into());
             }
+            if !computed_refs.iter().any(|reference| {
+                reference == &class_ref_id
+                    || reference
+                        .strip_prefix("computedInvariants/")
+                        .is_some_and(|id| id == class_ref_id)
+            }) && !data
+                .get("certRef")
+                .and_then(|value| value.as_str())
+                .is_some_and(|reference| {
+                    reference == class_ref
+                        || reference
+                            .strip_prefix("computedInvariants/")
+                            .is_some_and(|id| id == class_ref_id)
+                })
+            {
+                return Err(format!(
+                    "FieldSig ArchSig measurement handoff structuralVerdict[{index}] target.classRef {class_ref} must be included in evidence.computedInvariantRefs or verdictData.certRef"
+                )
+                .into());
+            }
+            if archsig_measurement_computed_invariant_status(packet, class_ref_id)
+                != Some("computed")
+            {
+                return Err(format!(
+                    "FieldSig ArchSig measurement handoff structuralVerdict[{index}] target.classRef {class_ref} must resolve to a computed invariant"
+                )
+                .into());
+            }
         }
         if matches!(verdict, "measured_zero" | "measured_nonzero") {
             if let Some(cert_ref) = data.get("certRef").and_then(|value| value.as_str()) {
@@ -597,6 +629,14 @@ fn validate_archsig_measurement_packet_structural_verdicts(
                 {
                     return Err(format!(
                         "FieldSig ArchSig measurement handoff structuralVerdict[{index}] certRef has evaluator {invariant_evaluator}, expected {evaluator}"
+                    )
+                    .into());
+                }
+                if archsig_measurement_computed_invariant_status(packet, cert_ref_id)
+                    != Some("computed")
+                {
+                    return Err(format!(
+                        "FieldSig ArchSig measurement handoff structuralVerdict[{index}] certRef {cert_ref} must resolve to a computed invariant"
                     )
                     .into());
                 }
@@ -625,7 +665,7 @@ fn validate_archsig_measurement_packet_computed_invariants(
         .flatten()
         .enumerate()
     {
-        for field in ["invariantId", "kind"] {
+        for field in ["invariantId", "kind", "evaluator"] {
             required_string(row, field).map_err(|message| {
                 format!(
                     "FieldSig ArchSig measurement handoff computedInvariants[{index}] {message}"
@@ -643,6 +683,13 @@ fn validate_archsig_measurement_packet_computed_invariants(
         if !ARCHSIG_COMPUTED_INVARIANT_KINDS.contains(&kind) {
             return Err(format!(
                 "FieldSig ArchSig measurement handoff computedInvariants[{index}] has unsupported kind {kind}"
+            )
+            .into());
+        }
+        let evaluator = row["evaluator"].as_str().unwrap_or_default();
+        if !computed_invariant_kind_matches_evaluator(kind, evaluator) {
+            return Err(format!(
+                "FieldSig ArchSig measurement handoff computedInvariants[{index}] kind {kind} does not match evaluator {evaluator}"
             )
             .into());
         }
@@ -724,7 +771,11 @@ fn archsig_measurement_verdict_has_evidence(
         }
         return cert_ref
             .strip_prefix("computedInvariants/")
-            .is_some_and(|invariant_id| invariant_ids.contains(invariant_id));
+            .is_some_and(|invariant_id| {
+                invariant_ids.contains(invariant_id)
+                    && archsig_measurement_computed_invariant_status(packet, invariant_id)
+                        == Some("computed")
+            });
     }
     let computed_refs = row["evidence"]["computedInvariantRefs"]
         .as_array()
@@ -733,7 +784,10 @@ fn archsig_measurement_verdict_has_evidence(
         .filter_map(|value| value.as_str())
         .collect::<Vec<_>>();
     if !computed_refs.is_empty() {
-        return computed_refs.iter().all(|id| invariant_ids.contains(id));
+        return computed_refs.iter().all(|id| {
+            invariant_ids.contains(id)
+                && archsig_measurement_computed_invariant_status(packet, id) == Some("computed")
+        });
     }
     let certificate_prefixes = archsig_measurement_certificate_invariant_prefixes(evaluator);
     packet
@@ -806,6 +860,28 @@ fn archsig_measurement_computed_invariant_evaluator(
         .and_then(|invariant| invariant.get("evaluator"))
         .and_then(|value| value.as_str())
         .map(ToOwned::to_owned)
+}
+
+fn archsig_measurement_computed_invariant_status<'a>(
+    packet: &'a serde_json::Value,
+    reference: &str,
+) -> Option<&'a str> {
+    let reference = reference
+        .strip_prefix("computedInvariants/")
+        .unwrap_or(reference);
+    packet
+        .get("computedInvariants")
+        .and_then(|value| value.as_array())
+        .into_iter()
+        .flatten()
+        .find(|invariant| {
+            invariant
+                .get("invariantId")
+                .and_then(|value| value.as_str())
+                .is_some_and(|value| value == reference)
+        })
+        .and_then(|invariant| invariant.get("status"))
+        .and_then(|value| value.as_str())
 }
 
 fn archsig_measurement_certificate_invariant_prefixes(
@@ -936,9 +1012,10 @@ fn validate_archsig_measurement_packet_supplied_data(
             )
             .into());
         }
-        let _source_artifact_ref = required_string(row, "sourceArtifactRef").map_err(|message| {
-            format!("FieldSig ArchSig measurement handoff suppliedData[{index}] {message}")
-        })?;
+        let _source_artifact_ref =
+            required_string(row, "sourceArtifactRef").map_err(|message| {
+                format!("FieldSig ArchSig measurement handoff suppliedData[{index}] {message}")
+            })?;
         let kind = required_string(row, "kind").map_err(|message| {
             format!("FieldSig ArchSig measurement handoff suppliedData[{index}] {message}")
         })?;
@@ -965,10 +1042,24 @@ fn validate_archsig_measurement_packet_supplied_data(
         let status = conformance
             .get("status")
             .and_then(|value| value.as_str())
-            .unwrap_or_default();
-        if status.trim().is_empty() {
+            .ok_or_else(|| {
+                format!(
+                    "FieldSig ArchSig measurement handoff suppliedData[{index}] requires conformance.status"
+                )
+            })?;
+        if !matches!(status, "validated" | "assumed" | "derived") {
             return Err(format!(
-                "FieldSig ArchSig measurement handoff suppliedData[{index}] requires conformance.status"
+                "FieldSig ArchSig measurement handoff suppliedData[{index}] has unsupported conformance.status {status}"
+            )
+            .into());
+        }
+        let check_ref = conformance
+            .get("checkRef")
+            .and_then(|value| value.as_str())
+            .unwrap_or_default();
+        if check_ref.trim().is_empty() {
+            return Err(format!(
+                "FieldSig ArchSig measurement handoff suppliedData[{index}] requires conformance.checkRef"
             )
             .into());
         }
@@ -1044,6 +1135,15 @@ fn validate_handoff_nested_fields(
         "analytic",
         "finiteBounds",
     ];
+    const FINITE_BOUND_FIELDS: &[&str] = &[
+        "maxSquareFreeWitnessVariables",
+        "maxCoherenceContexts",
+        "maxTorWitnessVariables",
+        "maxBoundaryResidueVariables",
+        "maxLaplacianCells",
+        "maxPeriodCycles",
+        "maxTransferTargets",
+    ];
     const STRUCTURAL_FIELDS: &[&str] = &[
         "verdictRef",
         "evaluator",
@@ -1055,22 +1155,110 @@ fn validate_handoff_nested_fields(
         "evidence",
         "reason",
     ];
-    const TARGET_FIELDS: &[&str] = &[
-        "kind",
-        "coverRef",
-        "coefficient",
-        "scopeSize",
-        "classRef",
-    ];
+    const TARGET_FIELDS: &[&str] = &["kind", "coverRef", "coefficient", "scopeSize", "classRef"];
     const SCOPE_FIELDS: &[&str] = &["contexts", "edges", "triangles"];
-    const VERDICT_DATA_FIELDS: &[&str] = &[
-        "inScope",
-        "zero",
-        "nonZero",
-        "methodStatus",
-        "certRef",
-    ];
+    const VERDICT_DATA_FIELDS: &[&str] = &["inScope", "zero", "nonZero", "methodStatus", "certRef"];
     const EVIDENCE_FIELDS: &[&str] = &["computedInvariantRefs", "sourceRefs"];
+    const COMPUTED_INVARIANT_FIELDS: &[&str] = &[
+        "invariantId",
+        "kind",
+        "evaluator",
+        "status",
+        "methodStatus",
+        "value",
+        "representation",
+        "structuralVerdictRef",
+        "selectedCoverRef",
+        "archmapRef",
+        "atomCount",
+        "contextCount",
+        "coverCount",
+        "restrictionEdgeCount",
+        "observedEdgeCount",
+        "coverNerveProjection",
+        "theorem12_4Discharge",
+        "classSupport",
+        "residualClassSupport",
+        "boundaryMembership",
+        "boundarySection",
+        "commonAmbient",
+        "lawConflicts",
+        "sourceRefs",
+        "sourceRef",
+        "reason",
+        "claimScope",
+        "b1NerveReading",
+        "capacityFormula",
+        "capacityLowerBound",
+        "dimensions",
+        "doctrineFingerprint",
+        "eulerCharacteristic",
+        "eulerFormula",
+        "method",
+        "nerveShape",
+        "observedCocycle",
+        "selectedH2",
+        "unobservedEdgeRefs",
+        "rankD0",
+        "finitePosetSite",
+        "atomRefs",
+        "contextRefs",
+        "coverRefs",
+        "edgeRefs",
+        "faceRefs",
+        "supportAtomRefs",
+        "mismatchSupportRefs",
+        "witnessSupportRefs",
+        "minimalHittingSets",
+        "alexanderDualRepair",
+        "residualClass",
+        "residualClassSupport",
+        "residualDerivation",
+        "derivedComplexRef",
+        "derivedFrom",
+        "certificate",
+        "certificateRef",
+        "certificateKind",
+        "assumptionRefs",
+        "assumptionLedger",
+        "assumptionSummary",
+        "boundaryNote",
+        "boundaryDigest",
+        "boundaryDigestRef",
+        "conclusion",
+        "conclusionCode",
+        "conclusionRef",
+        "computedInvariantRefs",
+        "analyticReadingRef",
+        "analyticReadingRefs",
+        "coefficient",
+        "coverRef",
+        "coverageStatus",
+        "dimension",
+        "edgeCount",
+        "faceCount",
+        "rank",
+        "class",
+        "classCount",
+        "classNonzero",
+        "cochain",
+        "cocycle",
+        "cohomologyQuotient",
+        "deltaOne",
+        "dimC0",
+        "dimC1",
+        "dimC2",
+        "d2RowCount",
+        "detectorCount",
+        "finiteBound",
+        "finiteBoundChecked",
+        "law",
+        "profileId",
+        "readingId",
+        "scopeRefs",
+        "support",
+        "transfer",
+    ];
     const READING_FIELDS: &[&str] = &[
         "readingId",
         "evaluator",
@@ -1089,22 +1277,42 @@ fn validate_handoff_nested_fields(
         "assumedBy",
         "scopeRefs",
     ];
-    const SUPPLIED_FIELDS: &[&str] = &[
-        "suppliedId",
-        "kind",
-        "sourceArtifactRef",
-        "conformance",
-    ];
+    const SUPPLIED_FIELDS: &[&str] = &["suppliedId", "kind", "sourceArtifactRef", "conformance"];
     const CONFORMANCE_FIELDS: &[&str] = &["status", "checkRef", "boundary"];
     const BOUNDARY_FIELDS: &[&str] = &["id", "kind", "scopeRefs", "reason", "text"];
 
     reject_unknown_object_fields(packet.get("profile"), "profile", PROFILE_FIELDS)?;
+    reject_unknown_object_fields(
+        packet
+            .get("profile")
+            .and_then(|profile| profile.get("finiteBounds")),
+        "profile.finiteBounds",
+        FINITE_BOUND_FIELDS,
+    )?;
+    for (index, invariant) in packet
+        .get("computedInvariants")
+        .and_then(|value| value.as_array())
+        .into_iter()
+        .flatten()
+        .enumerate()
+    {
+        reject_unknown_object_fields(
+            Some(invariant),
+            &format!("computedInvariants[{index}]"),
+            COMPUTED_INVARIANT_FIELDS,
+        )?;
+    }
     if let Some(profiles) = packet.get("profiles").and_then(|value| value.as_array()) {
         for (index, profile) in profiles.iter().enumerate() {
             reject_unknown_object_fields(
                 Some(profile),
                 &format!("profiles[{index}]"),
                 PROFILE_FIELDS,
+            )?;
+            reject_unknown_object_fields(
+                profile.get("finiteBounds"),
+                &format!("profiles[{index}].finiteBounds"),
+                FINITE_BOUND_FIELDS,
             )?;
         }
     }
@@ -1117,7 +1325,11 @@ fn validate_handoff_nested_fields(
     {
         let prefix = format!("structuralVerdict[{index}]");
         reject_unknown_object_fields(Some(row), &prefix, STRUCTURAL_FIELDS)?;
-        reject_unknown_object_fields(row.get("target"), &format!("{prefix}.target"), TARGET_FIELDS)?;
+        reject_unknown_object_fields(
+            row.get("target"),
+            &format!("{prefix}.target"),
+            TARGET_FIELDS,
+        )?;
         reject_unknown_object_fields(
             row.get("target").and_then(|target| target.get("scopeSize")),
             &format!("{prefix}.target.scopeSize"),
@@ -1192,6 +1404,126 @@ fn validate_handoff_nested_fields(
         )?;
     }
     Ok(())
+}
+
+fn validate_handoff_profile_bounds(
+    packet: &serde_json::Value,
+) -> Result<(), Box<dyn std::error::Error>> {
+    const BOUND_FIELDS: &[&str] = &[
+        "maxSquareFreeWitnessVariables",
+        "maxCoherenceContexts",
+        "maxTorWitnessVariables",
+        "maxBoundaryResidueVariables",
+        "maxLaplacianCells",
+        "maxPeriodCycles",
+        "maxTransferTargets",
+    ];
+    let mut profiles = vec![("profile".to_string(), packet.get("profile"))];
+    if let Some(value) = packet.get("profiles") {
+        let profile_values = value.as_array().ok_or(
+            "FieldSig ArchSig measurement handoff profiles must be an array when supplied",
+        )?;
+        if profile_values.is_empty() {
+            return Err(
+                "FieldSig ArchSig measurement handoff profiles must not be empty when supplied"
+                    .into(),
+            );
+        }
+        profiles.extend(
+            profile_values
+                .iter()
+                .enumerate()
+                .map(|(index, profile)| (format!("profiles[{index}]"), Some(profile))),
+        );
+    }
+    for (path, profile) in profiles {
+        validate_handoff_profile_shape(profile, &path)?;
+        let bounds = profile
+            .and_then(|value| value.as_object())
+            .and_then(|profile| profile.get("finiteBounds"))
+            .and_then(|value| value.as_object())
+            .ok_or_else(|| {
+                format!("FieldSig ArchSig measurement handoff {path}.finiteBounds is required")
+            })?;
+        for field in BOUND_FIELDS {
+            let value = bounds
+                .get(*field)
+                .and_then(|value| value.as_u64())
+                .ok_or_else(|| format!("FieldSig ArchSig measurement handoff {path}.finiteBounds.{field} must be a non-negative integer"))?;
+            if value == 0 {
+                return Err(format!(
+                    "FieldSig ArchSig measurement handoff {path}.finiteBounds.{field} must be positive"
+                )
+                .into());
+            }
+        }
+    }
+    Ok(())
+}
+
+fn validate_handoff_profile_shape(
+    profile: Option<&serde_json::Value>,
+    path: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let profile = profile
+        .and_then(|value| value.as_object())
+        .ok_or_else(|| format!("FieldSig ArchSig measurement handoff {path} must be an object"))?;
+    for field in [
+        "schema",
+        "profileId",
+        "siteRef",
+        "coverRef",
+        "coefficient",
+        "effCoeff",
+        "resolutionSelector",
+        "domain",
+        "zeroPredicate",
+        "nonZeroPredicate",
+        "certSelector",
+        "verdictDiscipline",
+    ] {
+        let value = profile.get(field).and_then(|value| value.as_str());
+        if value.is_none_or(|value| value.trim().is_empty()) {
+            return Err(format!(
+                "FieldSig ArchSig measurement handoff {path} requires non-empty {field}"
+            )
+            .into());
+        }
+    }
+    if profile.get("schema").and_then(|value| value.as_str()) != Some("measurement-profile/v0.5.4")
+    {
+        return Err(format!(
+            "FieldSig ArchSig measurement handoff {path}.schema must be measurement-profile/v0.5.4"
+        )
+        .into());
+    }
+    Ok(())
+}
+
+fn computed_invariant_kind_matches_evaluator(kind: &str, evaluator: &str) -> bool {
+    match kind {
+        "cech-h1-rank"
+        | "selected-cover-edge-support"
+        | "topological-debt-capacity"
+        | "coherence-obstruction-count" => {
+            evaluator == "ag.cech-obstruction" || evaluator == "ag.coherence-obstruction"
+        }
+        "minimal-forbidden-supports" => evaluator == "ag.square-free-repair",
+        "tor1-class-support" => evaluator == "ag.law-conflict-tor",
+        "boundary-residue-rank" => evaluator == "ag.boundary-residue",
+        "restriction-compatibility-rank" => evaluator == "ag.restriction-compatibility",
+        "section-factorization-rank" => evaluator == "ag.section-factorization",
+        "sheaf-laplacian-spectrum" => evaluator == "ag.sheaf-laplacian",
+        "period-stokes-pairing" => evaluator == "ag.period-stokes",
+        "period-stokes-audit" => evaluator == "ag.period-stokes-audit",
+        "support-transfer-rank" => evaluator == "ag.support-transfer",
+        "saga-grounded-conclusions" => evaluator == "ag.saga-grounded",
+        "residual-boundary-membership" => evaluator == "ag.saga-descent",
+        "residual-class-support" => evaluator == "ag.saga-descent",
+        "h1-comparison-transfer" => evaluator == "ag.saga-comparison",
+        "measurement-invariant" => evaluator.starts_with("ag."),
+        _ => false,
+    }
 }
 
 fn reject_unknown_object_fields(
@@ -1300,7 +1632,11 @@ fn archsig_measurement_packet_sft_source_refs(
             .and_then(|value| value.as_array())
             .into_iter()
             .flatten()
-            .filter_map(|entry| entry.get("sourceArtifactRef").and_then(|value| value.as_str()))
+            .filter_map(|entry| {
+                entry
+                    .get("sourceArtifactRef")
+                    .and_then(|value| value.as_str())
+            })
             .map(sanitize_artifact_ref),
     );
     refs.extend(
@@ -1321,7 +1657,7 @@ fn archsig_measurement_packet_sft_source_refs(
                             "archsigMeasurementLawSurface:{}",
                             sanitize_artifact_ref(source)
                         )
-            })
+                    })
             }),
     );
     refs.extend(
@@ -1464,11 +1800,25 @@ fn sanitize_artifact_ref(reference: &str) -> String {
 }
 
 fn is_local_or_private_ref(reference: &str) -> bool {
-    reference.starts_with('/')
+    reference.starts_with("file:")
+        || reference.starts_with('/')
         || reference.starts_with("~/")
         || reference.starts_with("../")
         || reference.contains("/../")
         || reference.contains('\\')
+        || [
+            "docs/",
+            "tools/",
+            "src/",
+            "tests/",
+            "research/",
+            "Formal/",
+            "paper/",
+            "website/",
+            "outreach/",
+        ]
+        .iter()
+        .any(|prefix| reference.starts_with(prefix))
         || (reference.len() >= 3
             && reference.as_bytes()[0].is_ascii_alphabetic()
             && reference.as_bytes()[1] == b':'
@@ -1686,13 +2036,18 @@ fn archsig_measurement_packet_unknown_remainders(
                 .and_then(|value| value.as_str())
                 .unwrap_or("structural verdict is outside the selected finite measurement boundary");
             let row_key = archsig_measurement_structural_row_key(index, row);
+            let row_source_refs = archsig_measurement_packet_row_source_refs(row, source_ref_ids);
+            let row_family_id = format!(
+                "family:archsig-measurement:{}",
+                stable_id(&row_key)
+            );
             Some(OperationSupportUnknownRemainderV0 {
                 remainder_id: format!(
                     "unknown:archsig-measurement:structural:{}",
                     stable_id(&row_key)
                 ),
-                    affected_family_ids: family_ids.to_vec(),
-                    source_ref_ids: source_ref_ids.to_vec(),
+                    affected_family_ids: vec![row_family_id],
+                    source_ref_ids: row_source_refs,
                     unknown_axes: vec![verdict.to_string()],
                     reason: format!("ArchSig measurement evaluator {evaluator} returned {verdict}: {reason}"),
                     treatment: "carry as unknown remainder; do not round to absence, zero-valued support, forecast truth, or repair safety".to_string(),

@@ -9,8 +9,8 @@ mod law_policy;
 mod law_surface;
 mod normalizer;
 mod policy_bundle;
-mod repair_plan;
 mod saga;
+mod saga_complex;
 mod view_model;
 
 mod schema;
@@ -35,13 +35,11 @@ pub use law_policy::{
 };
 pub use law_surface::{
     LAW_EQUATION_SURFACE_V1_SCHEMA, LAW_EQUATION_SURFACE_VALIDATION_REPORT_SCHEMA,
-    LAW_SURFACE_BINDING_VOCABULARY_SCHEMA, LawBindingV1, LawChartDefectV1, LawDefectObservableV1,
-    LawDefectSourceV1, LawEquationSurfaceV1, LawEquationV1, LawForbiddenSupportGeneratorV1,
-    LawHoldsCriterionV1, LawQuotientSheafConditionV1, LawSkeletonSimplexV1,
-    LawSurfaceBindingPairV1, LawSurfaceBindingVocabularyV1, LawSurfaceValidationInputV1,
-    LawSurfaceValidationReportV1, LawSurfaceValidationSummaryV1, LawWitnessVariableV1,
-    static_law_surface_binding_vocabulary_v1, validate_law_surface_stage3_against_archmap_v1,
-    validate_law_surface_v1_report,
+    LAW_SURFACE_BINDING_VOCABULARY_SCHEMA, LawBindingV1, LawEquationSurfaceV1, LawEquationV1,
+    LawForbiddenSupportGeneratorV1, LawQuotientSheafConditionV1, LawSurfaceBindingPairV1,
+    LawSurfaceBindingVocabularyV1, LawSurfaceValidationInputV1, LawSurfaceValidationReportV1,
+    LawSurfaceValidationSummaryV1, LawWitnessVariableV1, static_law_surface_binding_vocabulary_v1,
+    validate_law_surface_stage3_against_archmap_v1, validate_law_surface_v1_report,
 };
 pub use normalizer::normalize_archmap_v2;
 pub use policy_bundle::{
@@ -49,7 +47,6 @@ pub use policy_bundle::{
     ArchSigPolicyBundleV1, ComponentFingerprintsV1, build_policy_bundle, component_fingerprints,
     resolve_and_verify_policy_bundle,
 };
-pub use repair_plan::{build_repair_plan_validation_report_v1, validate_repair_plan_v1_checks};
 pub(crate) use schema::*;
 pub use schema::{
     AAT_ATOM_VOCABULARY_V1_SCHEMA, ARCHMAP_V2_SCHEMA, ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION,
@@ -68,9 +65,9 @@ pub use schema::{
     ARCHSIG_MEASURED_AG_OBSTRUCTION_UNDER_PROFILE, ARCHSIG_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE,
     ARCHSIG_MEASURED_LAW_DEFECT_AT_CHART, ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS,
     ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE,
-    ARCHSIG_REPAIR_PLAN_V1_SCHEMA, ARCHSIG_REPAIR_TARGETS_IDENTIFIED,
-    ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION, ARCHSIG_SAGA_CONCLUSION_CODES,
-    ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL, ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
+    ARCHSIG_REPAIR_TARGETS_IDENTIFIED, ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION,
+    ARCHSIG_SAGA_CONCLUSION_CODES, ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL,
+    ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
     ARCHSIG_VALIDATION_FAILED_BEFORE_MEASUREMENT, AatAtomVocabularyEntryV1,
     AatAtomVocabularyPairV1, AatAtomVocabularyV1, AgAnalyticReadingV1, AgAssumptionLedgerEntryV1,
     AgStructuralVerdictV1, AgVerdictDataV1, ArchMapAtomV2, ArchMapContextV2, ArchMapCoverV2,
@@ -89,8 +86,7 @@ pub use schema::{
     LawPolicyValidationReportV1, LawPolicyValidationSummaryV1, MEASUREMENT_PROFILE_V1_SCHEMA,
     MeasurementProfileFiniteBoundsV1, MeasurementProfileV1, MeasurementProfileWitnessV1,
     NORMALIZED_ARCHMAP_V2_SCHEMA, NormalizedArchMapSummaryV2, NormalizedArchMapV2,
-    NormalizedAtomV2, NormalizedContextV2, NormalizedCoverV2, RepairPlanComplexV1,
-    RepairPlanDocumentV1, RepairPlanOverlapV1, RepairPlanTripleOverlapV1,
+    NormalizedAtomV2, NormalizedContextV2, NormalizedCoverV2,
     SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaVersionCatalogV0, ValidationCheck,
     ValidationExample,
 };

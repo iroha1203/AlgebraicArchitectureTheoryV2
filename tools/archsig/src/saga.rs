@@ -4,14 +4,12 @@ use serde_json::{Value, json};
 
 use crate::ag_measurement::observe_cech_edge;
 use crate::law_execution::LawExecutionPlanV1;
-use crate::repair_plan::complex_has_valid_finite_incidence;
+use crate::saga_complex::saga_complex_has_valid_finite_incidence;
 use crate::{
-    ARCHSIG_DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS,
-    ARCHSIG_MEASURED_LAW_DEFECT_AT_CHART, ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS,
-    AgAssumptionLedgerEntryV1, AgStructuralVerdictV1, AgVerdictDataV1,
-    LawEquationSurfaceV1,
-    MeasurementProfileV1, NormalizedArchMapV2, RepairPlanComplexV1, RepairPlanDocumentV1,
-    assumption_id_for_schema,
+    ARCHSIG_DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS, ARCHSIG_MEASURED_LAW_DEFECT_AT_CHART,
+    ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS, AgAssumptionLedgerEntryV1, AgStructuralVerdictV1,
+    AgVerdictDataV1, DerivedSagaComplexDataV1, DerivedSagaComplexV1, LawEquationSurfaceV1,
+    MeasurementProfileV1, NormalizedArchMapV2, assumption_id_for_schema,
 };
 
 #[derive(Debug, Clone)]
@@ -28,7 +26,7 @@ pub(crate) struct SagaGroundedMeasurementV1 {
     pub assumptions: Vec<AgAssumptionLedgerEntryV1>,
 }
 
-/// 観測(選択 cover の cech sectionValue)と法曲面(witness variable の edge 束縛)から
+/// 観測(選択 cover の cech sectionValue)と法曲面(cech witness vocabulary)から
 /// 導出した residual。overlap ごとの support は、その edge の観測 mismatch が非零のとき
 /// 共有導出変数の単元集合、零のとき空集合になる。
 pub(crate) const DERIVED_RESIDUAL_VARIABLE: &str = "cech:section-mismatch";
@@ -56,39 +54,25 @@ fn selected_cover_context_ids(
         .unwrap_or_default()
 }
 
-/// 法曲面の全 law を走査し、cech edge 束縛つき witness variable の
-/// sorted context pair -> witness 集合対応を作る。同じ edge へ複数 law が witness を
-/// 宣言する場合は union し、全束縛を provenance として derivation record に残す。
-fn cech_edge_witness_bindings(
-    law_surface: &LawEquationSurfaceV1,
-) -> Result<BTreeMap<[String; 2], BTreeSet<String>>, String> {
-    let mut bindings: BTreeMap<[String; 2], BTreeSet<String>> = BTreeMap::new();
-    for law in &law_surface.laws {
-        for witness in &law.witness_variables {
-            if witness.binding.axis.as_deref() != Some("cech") {
-                continue;
-            }
-            let Some(edge) = witness.binding.edge.as_ref() else {
-                continue;
-            };
-            if edge.len() != 2 {
-                return Err(format!(
-                    "law {} cech witness {} edge binding must contain two context refs",
-                    law.law_id, witness.variable
-                ));
-            }
-            let mut pair = [edge[0].clone(), edge[1].clone()];
-            pair.sort();
-            bindings.entry(pair).or_default().insert(witness.variable.clone());
-        }
-    }
-    Ok(bindings)
+/// 法曲面の全 law を走査し、cech witness vocabularyを集める。context pairは
+/// ArchMapのselected cover/restrictionから導出し、法曲面はinstance-specificなedgeを持たない。
+fn cech_witness_variables(law_surface: &LawEquationSurfaceV1) -> BTreeSet<String> {
+    law_surface
+        .laws
+        .iter()
+        .flat_map(|law| law.witness_variables.iter())
+        .filter(|witness| {
+            witness.binding.axis.as_deref() == Some("cech")
+                && witness.binding.predicate.as_deref() == Some("sectionValue")
+        })
+        .map(|witness| witness.variable.clone())
+        .collect()
 }
 
 pub(crate) fn derive_residual(
     normalized: &NormalizedArchMapV2,
     profile: &MeasurementProfileV1,
-    plan: &RepairPlanDocumentV1,
+    plan: &DerivedSagaComplexV1,
     law_surface: &LawEquationSurfaceV1,
 ) -> Result<DerivedResidualV1, String> {
     if profile.coefficient != "F2" {
@@ -108,7 +92,7 @@ pub(crate) fn derive_residual(
     for chart in &plan.complex.charts {
         if !selected_set.contains(chart.as_str()) {
             return Err(format!(
-                "repair-plan chart {chart} is outside the selected cover {}",
+                "derived SAGA complex chart {chart} is outside the selected cover {}",
                 profile.cover_ref
             ));
         }
@@ -124,7 +108,7 @@ pub(crate) fn derive_residual(
     for overlap in &plan.complex.overlaps {
         if !seen_overlap_ids.insert(overlap.id.as_str()) {
             return Err(format!(
-                "duplicate overlap id {} in the repair-plan complex would overwrite a derived residual edge",
+                "duplicate overlap id {} in the derived SAGA complex would overwrite a derived residual edge",
                 overlap.id
             ));
         }
@@ -132,12 +116,12 @@ pub(crate) fn derive_residual(
         pair.sort_unstable();
         if !seen_overlap_pairs.insert((pair[0].to_string(), pair[1].to_string())) {
             return Err(format!(
-                "unordered chart pair {} / {} appears more than once in the repair-plan complex",
+                "unordered chart pair {} / {} appears more than once in the derived SAGA complex",
                 pair[0], pair[1]
             ));
         }
     }
-    let bindings = cech_edge_witness_bindings(law_surface)?;
+    let witness_variables = cech_witness_variables(law_surface);
     let mut supports = BTreeMap::new();
     let mut edges = Vec::new();
     for overlap in &plan.complex.overlaps {
@@ -168,13 +152,15 @@ pub(crate) fn derive_residual(
             ));
         }
         let value = observation.value;
-        let mut pair = [overlap.left.clone(), overlap.right.clone()];
-        pair.sort();
-        let witness = bindings.get(&pair).cloned().unwrap_or_default();
-        if value == 1 && witness.is_empty() {
+        let witness = if value == 1 {
+            witness_variables.iter().cloned().collect::<Vec<_>>()
+        } else {
+            Vec::new()
+        };
+        if value == 1 && witness_variables.is_empty() {
             return Err(format!(
-                "measured section mismatch on overlap {} has no law-surface witness variable bound to edge {} / {}",
-                overlap.id, pair[0], pair[1]
+                "measured section mismatch on overlap {} has no cech witness vocabulary in the law surface",
+                overlap.id
             ));
         }
         // Čech の係数はスカラーであり、mismatch した全 edge は同じ selected section family の
@@ -206,18 +192,21 @@ pub(crate) fn derive_residual(
 pub(crate) fn evaluate_saga_grounded_v1(
     normalized: &NormalizedArchMapV2,
     profile: &MeasurementProfileV1,
-    plan: &RepairPlanDocumentV1,
+    plan: &DerivedSagaComplexV1,
     law_surface: &LawEquationSurfaceV1,
     execution_plan: &LawExecutionPlanV1,
 ) -> SagaGroundedMeasurementV1 {
     let grounding_ref = format!("law-surface:{}", execution_plan.surface_id);
-    let criterion = execution_plan.stage3_defect_source.as_ref().map(|source| {
-        format!(
-            "law-surface:{}#defectSources/{}/holdsCriterion",
-            execution_plan.surface_id, source.law_id
-        )
-    });
-    let Some(source) = execution_plan.stage3_defect_source.as_ref() else {
+    let criterion = execution_plan
+        .grounded_defect_source
+        .as_ref()
+        .map(|source| {
+            format!(
+                "derived:archsig-grounding:{}#defectSource/{}/holdsCriterion",
+                profile.profile_id, source.law_id
+            )
+        });
+    let Some(source) = execution_plan.grounded_defect_source.as_ref() else {
         return grounded_not_computed(
             "grounded_surface_defect_source_missing",
             grounding_ref,
@@ -232,7 +221,7 @@ pub(crate) fn evaluate_saga_grounded_v1(
         .cloned()
         .collect::<BTreeSet<_>>();
     let skeleton_is_aligned = execution_plan
-        .stage3_skeleton
+        .grounded_skeleton
         .as_ref()
         .is_some_and(|skeleton| {
             !skeleton.is_empty()
@@ -252,7 +241,8 @@ pub(crate) fn evaluate_saga_grounded_v1(
                 })
         });
     let coefficient_is_f2 = profile.coefficient == "F2";
-    let residual_derivation_fault = derive_residual(normalized, profile, plan, law_surface).is_err();
+    let residual_derivation_fault =
+        derive_residual(normalized, profile, plan, law_surface).is_err();
     let defect_support_size = source
         .chart_defects
         .iter()
@@ -276,7 +266,7 @@ pub(crate) fn evaluate_saga_grounded_v1(
             > profile.finite_bounds.max_square_free_witness_variables
         || source.cover_ref != profile.cover_ref
         || defect_support_size > profile.finite_bounds.max_square_free_witness_variables
-        || execution_plan.stage3_skeleton.is_none()
+        || execution_plan.grounded_skeleton.is_none()
         || execution_plan.stage3_quotient_sheaf_condition.is_none()
         || execution_plan
             .stage3_quotient_sheaf_condition
@@ -557,7 +547,7 @@ fn grounded_not_computed(
     }
 }
 
-fn descent_not_computed(plan: &RepairPlanDocumentV1, fault: String) -> SagaDescentMeasurementV1 {
+fn descent_not_computed(plan: &DerivedSagaComplexV1, fault: String) -> SagaDescentMeasurementV1 {
     let verdict_row = |law: &str| AgStructuralVerdictV1 {
         evaluator: "ag.saga-descent".to_string(),
         law: law.to_string(),
@@ -585,7 +575,8 @@ fn descent_not_computed(plan: &RepairPlanDocumentV1, fault: String) -> SagaDesce
                 "derived": false,
                 "fault": fault,
                 "edges": [],
-                "planRef": plan.id
+                "derivedComplexRef": plan.id,
+                "derivedFrom": ["ArchMap.cover", "ArchMap.contexts.restrictsTo"]
             }
         })],
         assumptions: Vec::new(),
@@ -595,13 +586,13 @@ fn descent_not_computed(plan: &RepairPlanDocumentV1, fault: String) -> SagaDesce
 pub(crate) fn evaluate_saga_descent_v1(
     normalized: &NormalizedArchMapV2,
     profile: &MeasurementProfileV1,
-    plan: &RepairPlanDocumentV1,
+    plan: &DerivedSagaComplexV1,
     law_surface: Option<&LawEquationSurfaceV1>,
 ) -> SagaDescentMeasurementV1 {
     let derived = match law_surface {
-        None => Err(
-            "saga-descent requires a supplied law surface for residual derivation".to_string(),
-        ),
+        None => {
+            Err("saga-descent requires a supplied law surface for residual derivation".to_string())
+        }
         Some(surface) => derive_residual(normalized, profile, plan, surface),
     };
     let derived = match derived {
@@ -611,13 +602,10 @@ pub(crate) fn evaluate_saga_descent_v1(
     let boundary = solve_boundary_membership(plan, &derived.supports);
     let enumeration_assumption = AgAssumptionLedgerEntryV1 {
         theorem_ref: "part10/3.1".to_string(),
-        assumption: format!(
-            "repair-plan complex enumeration completeness for {}",
-            plan.id
-        ),
+        assumption: format!("ArchSig-derived finite complex enumeration for {}", plan.id),
         status: "assumed".to_string(),
         checked_by: None,
-        assumed_by: Some("repair-plan author".to_string()),
+        assumed_by: Some("ArchSig finite-complex derivation".to_string()),
     };
     let enumeration_assumption_id = assumption_id_for_schema(&enumeration_assumption);
     let evaluator_assumption_ids = vec![enumeration_assumption_id.clone()];
@@ -646,9 +634,9 @@ pub(crate) fn evaluate_saga_descent_v1(
         },
         depends_on_assumptions: evaluator_assumption_ids.clone(),
         reason: Some(if boundary.in_b1 {
-            "derived residual lies in B1 for the selected RepairPlan complex".to_string()
+            "derived residual lies in B1 for the finite complex derived from the selected ArchMap cover".to_string()
         } else {
-            "derived residual is not in B1 for the selected RepairPlan complex".to_string()
+            "derived residual is not in B1 for the finite complex derived from the selected ArchMap cover".to_string()
         }),
     });
 
@@ -674,6 +662,8 @@ pub(crate) fn evaluate_saga_descent_v1(
                 "fault": Value::Null,
                 "coverRef": derived.cover_ref,
                 "mappedCoverRef": plan.complex.archmap_cover_ref.clone(),
+                "derivedComplexRef": plan.id,
+                "derivedFrom": ["ArchMap.cover", "ArchMap.contexts.restrictsTo"],
                 "lawSurfaceRef": derived.law_surface_ref,
                 "charts": plan.complex.charts,
                 "edges": derived.edges
@@ -734,10 +724,8 @@ pub(crate) fn evaluate_saga_descent_v1(
                     "tripleOverlapRefs": class_certificate.triple_overlap_refs_json()
                 }
             },
-            "suppliedSlots": [
-                "complex.charts",
-                "complex.overlaps"
-            ]
+            "derivedComplexRef": plan.id,
+            "derivedFrom": ["ArchMap.cover", "ArchMap.contexts.restrictsTo"]
         }));
     }
     if let Some(class_certificate) = class_certificate
@@ -766,7 +754,7 @@ pub(crate) fn evaluate_saga_descent_v1(
     }
 }
 
-/// 法曲面が宣言する名前の集合。witness variable と skeleton simplex。
+/// 選択されたArchMapから導出されたSAGA複体の連結成分。
 #[derive(Debug, Clone)]
 struct RepairComplexComponent {
     chart_refs: Vec<String>,
@@ -784,15 +772,13 @@ impl SagaComponentCocycleCertificate {
     fn triple_overlap_refs_json(&self) -> Vec<Value> {
         self.triple_overlaps
             .iter()
-            .map(|(id, overlap_refs)| {
-                json!({"tripleRef": id, "overlapRefs": overlap_refs})
-            })
+            .map(|(id, overlap_refs)| json!({"tripleRef": id, "overlapRefs": overlap_refs}))
             .collect()
     }
 }
 
 fn component_cocycle_certificate(
-    plan: &RepairPlanDocumentV1,
+    plan: &DerivedSagaComplexV1,
     supports: &BTreeMap<String, Vec<String>>,
 ) -> Option<SagaComponentCocycleCertificate> {
     if !plan.complex.enumeration_complete {
@@ -827,7 +813,7 @@ fn component_cocycle_certificate(
         })
         .cloned()
         .collect::<Vec<_>>();
-    let component_complex = RepairPlanComplexV1 {
+    let component_complex = DerivedSagaComplexDataV1 {
         charts: component.chart_refs.clone(),
         overlaps: plan
             .complex
@@ -840,7 +826,7 @@ fn component_cocycle_certificate(
         archmap_cover_ref: plan.complex.archmap_cover_ref.clone(),
         enumeration_complete: true,
     };
-    if !complex_has_valid_finite_incidence(&component_complex) {
+    if !saga_complex_has_valid_finite_incidence(&component_complex) {
         return None;
     }
     let mut triple_overlaps = Vec::new();
@@ -873,7 +859,7 @@ fn component_cocycle_certificate(
 }
 
 fn residual_support_component(
-    plan: &RepairPlanDocumentV1,
+    plan: &DerivedSagaComplexV1,
     supports: &BTreeMap<String, Vec<String>>,
 ) -> Option<RepairComplexComponent> {
     let components = repair_complex_components(plan)?;
@@ -904,7 +890,9 @@ fn residual_support_component(
     let mut selected_component = None;
     for overlap_ref in residual_overlap_refs {
         let component_index = *component_by_overlap.get(overlap_ref)?;
-        if selected_component.replace(component_index).is_some_and(|previous| previous != component_index)
+        if selected_component
+            .replace(component_index)
+            .is_some_and(|previous| previous != component_index)
         {
             return None;
         }
@@ -912,13 +900,8 @@ fn residual_support_component(
     selected_component.and_then(|index| components.get(index).cloned())
 }
 
-fn repair_complex_components(plan: &RepairPlanDocumentV1) -> Option<Vec<RepairComplexComponent>> {
-    let chart_refs = plan
-        .complex
-        .charts
-        .iter()
-        .cloned()
-        .collect::<BTreeSet<_>>();
+fn repair_complex_components(plan: &DerivedSagaComplexV1) -> Option<Vec<RepairComplexComponent>> {
+    let chart_refs = plan.complex.charts.iter().cloned().collect::<BTreeSet<_>>();
     if chart_refs.len() != plan.complex.charts.len() {
         return None;
     }
@@ -1004,7 +987,7 @@ struct BoundaryMembershipResult {
 }
 
 fn solve_boundary_membership(
-    plan: &RepairPlanDocumentV1,
+    plan: &DerivedSagaComplexV1,
     supports: &BTreeMap<String, Vec<String>>,
 ) -> BoundaryMembershipResult {
     let charts = plan.complex.charts.clone();
@@ -1026,7 +1009,12 @@ fn solve_boundary_membership(
         let right_index = chart_index[overlap.right.as_str()];
         let support = supports
             .get(overlap.id.as_str())
-            .map(|variables| variables.iter().map(String::as_str).collect::<BTreeSet<_>>())
+            .map(|variables| {
+                variables
+                    .iter()
+                    .map(String::as_str)
+                    .collect::<BTreeSet<_>>()
+            })
             .unwrap_or_default();
         for variable in &variables {
             let mut row = vec![0; unknown_count + 1];
@@ -1057,7 +1045,7 @@ fn residual_variables(supports: &BTreeMap<String, Vec<String>>) -> Vec<String> {
 }
 
 fn residual_support_json(
-    plan: &RepairPlanDocumentV1,
+    plan: &DerivedSagaComplexV1,
     supports: &BTreeMap<String, Vec<String>>,
 ) -> Vec<Value> {
     plan.complex
@@ -1130,38 +1118,12 @@ mod tests {
     use super::*;
     use crate::ArchMapDocumentV2;
 
-    fn declared_supports(plan: &RepairPlanDocumentV1) -> BTreeMap<String, Vec<String>> {
-        let flagged: &[&str] = match plan.id.as_str() {
-            "repair-plan:comparison-demo" => &["overlap:order-inventory", "overlap:order-shared"],
-            "repair-plan:component-aware-one-cent" => &[
-                "overlap:cancel-inside-payment",
-                "overlap:inside-payment-order",
-                "overlap:cancel-order",
-            ],
-            "repair-plan:presentation-generated-circle" => {
-                &["overlap:01", "overlap:12", "overlap:20"]
-            }
-            other => panic!("register the observation scenario for {other}"),
-        };
-        plan.complex
-            .overlaps
-            .iter()
-            .map(|overlap| {
-                let support = if flagged.contains(&overlap.id.as_str()) {
-                    vec![DERIVED_RESIDUAL_VARIABLE.to_string()]
-                } else {
-                    Vec::new()
-                };
-                (overlap.id.clone(), support)
-            })
-            .collect()
-    }
     use crate::normalizer::normalize_archmap_v2;
 
     fn derivation_test_inputs() -> (
         crate::NormalizedArchMapV2,
         crate::MeasurementProfileV1,
-        RepairPlanDocumentV1,
+        DerivedSagaComplexV1,
         LawEquationSurfaceV1,
     ) {
         let archmap: ArchMapDocumentV2 = serde_json::from_str(include_str!(
@@ -1173,10 +1135,7 @@ mod tests {
             "../tests/fixtures/ag_measurement/measurement_profile_ag.json"
         ))
         .expect("profile fixture parses");
-        let plan: RepairPlanDocumentV1 = serde_json::from_str(include_str!(
-            "../tests/fixtures/ag_measurement/repair_plan_complete_support.json"
-        ))
-        .expect("plan fixture parses");
+        let plan = crate::saga_complex::derive_saga_complex_from_normalized(&normalized, &profile);
         let law_surface: LawEquationSurfaceV1 = serde_json::from_str(include_str!(
             "../tests/fixtures/ag_measurement/law_surface_ag_v052.json"
         ))
@@ -1222,69 +1181,6 @@ mod tests {
         assert!(
             fault.contains("appears more than once"),
             "fault must name the duplicated pair: {fault}"
-        );
-    }
-
-
-    fn component_aware_one_cent_fixture() -> Value {
-        serde_json::from_str(include_str!(
-            "../tests/fixtures/ag_measurement/repair_plan_component_aware_one_cent.json"
-        ))
-        .expect("component-aware fixture parses as JSON")
-    }
-
-    #[test]
-    fn component_cocycle_certificate_requires_unique_actual_triangles() {
-        let local_triple = serde_json::json!({
-            "id": "triple:diagnostic",
-            "overlapRefs": [
-                "overlap:cancel-inside-payment",
-                "overlap:inside-payment-order",
-                "overlap:cancel-order"
-            ]
-        });
-
-        let mut nontriangular = component_aware_one_cent_fixture();
-        nontriangular["complex"]["overlaps"][2]["right"] =
-            serde_json::json!("ctx:inside-payment");
-        nontriangular["complex"]["tripleOverlaps"]
-            .as_array_mut()
-            .expect("triple overlaps are an array")
-            .push(local_triple.clone());
-        let nontriangular: RepairPlanDocumentV1 =
-            serde_json::from_value(nontriangular).expect("nontriangular fixture still parses");
-        assert!(
-            component_cocycle_certificate(&nontriangular, &declared_supports(&nontriangular)).is_none(),
-            "a three-edge list that is not a three-chart triangle must not certify C2"
-        );
-
-        let mut duplicate_id = component_aware_one_cent_fixture();
-        let triples = duplicate_id["complex"]["tripleOverlaps"]
-            .as_array_mut()
-            .expect("triple overlaps are an array");
-        triples.push(local_triple.clone());
-        triples.push(local_triple.clone());
-        let duplicate_id: RepairPlanDocumentV1 =
-            serde_json::from_value(duplicate_id).expect("duplicate-ID fixture still parses");
-        assert!(
-            component_cocycle_certificate(&duplicate_id, &declared_supports(&duplicate_id)).is_none(),
-            "duplicate selected triple IDs must not certify C2"
-        );
-
-        let mut cross_component_duplicate = component_aware_one_cent_fixture();
-        let mut duplicate_remote_id = local_triple;
-        duplicate_remote_id["id"] = serde_json::json!("triple:consign-parcel-shipping");
-        cross_component_duplicate["complex"]["tripleOverlaps"]
-            .as_array_mut()
-            .expect("triple overlaps are an array")
-            .push(duplicate_remote_id);
-        let cross_component_duplicate: RepairPlanDocumentV1 = serde_json::from_value(
-            cross_component_duplicate,
-        )
-        .expect("cross-component duplicate-ID fixture still parses");
-        assert!(
-            component_cocycle_certificate(&cross_component_duplicate, &declared_supports(&cross_component_duplicate)).is_none(),
-            "duplicate triple IDs outside the selected component must not certify C2"
         );
     }
 }

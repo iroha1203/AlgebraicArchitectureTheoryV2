@@ -254,7 +254,16 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
             "zeroPredicate": "rank-zero@1",
             "nonZeroPredicate": "rank-positive@1",
             "certSelector": "finite-certificate@1",
-            "verdictDiscipline": "five-valued-structural-verdict@1"
+            "verdictDiscipline": "five-valued-structural-verdict@1",
+            "finiteBounds": {
+                "maxSquareFreeWitnessVariables": 12,
+                "maxCoherenceContexts": 12,
+                "maxTorWitnessVariables": 12,
+                "maxBoundaryResidueVariables": 16,
+                "maxLaplacianCells": 16,
+                "maxPeriodCycles": 16,
+                "maxTransferTargets": 16
+            }
         },
         "structuralVerdict": [{
             "verdictRef": "structuralVerdict/ag-cech-obstruction/ag-cech-obstruction/computed",
@@ -660,7 +669,16 @@ fn cli_rejects_archsig_measurement_capacity_reading_as_cech_cert_fallback() {
             "zeroPredicate": "rank-zero@1",
             "nonZeroPredicate": "rank-positive@1",
             "certSelector": "finite-certificate@1",
-            "verdictDiscipline": "five-valued-structural-verdict@1"
+            "verdictDiscipline": "five-valued-structural-verdict@1",
+            "finiteBounds": {
+                "maxSquareFreeWitnessVariables": 12,
+                "maxCoherenceContexts": 12,
+                "maxTorWitnessVariables": 12,
+                "maxBoundaryResidueVariables": 16,
+                "maxLaplacianCells": 16,
+                "maxPeriodCycles": 16,
+                "maxTransferTargets": 16
+            }
         },
         "structuralVerdict": [{
             "verdictRef": "structuralVerdict/ag-cech-obstruction/ag-cech-obstruction/finite-f2-cech-computed",
@@ -784,7 +802,9 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
     let aliased = run_sig0_output(&[
         "archsig-analysis-sft-input",
         "--measurement-packet",
-        schema_only.to_str().expect("schema-only packet path is utf-8"),
+        schema_only
+            .to_str()
+            .expect("schema-only packet path is utf-8"),
         "--out",
         schema_only.to_str().expect("aliased output path is utf-8"),
     ]);
@@ -889,7 +909,26 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
         },
         "profile": {
             "schema": "measurement-profile/v0.5.4",
-            "profileId": "profile:semantic-validation"
+            "profileId": "profile:semantic-validation",
+            "siteRef": "archmap:/contexts",
+            "coverRef": "cover:semantic-validation",
+            "coefficient": "F2",
+            "effCoeff": "finite-linear-algebra@1",
+            "resolutionSelector": "cech@1",
+            "domain": "finite-poset-site",
+            "zeroPredicate": "rank-zero@1",
+            "nonZeroPredicate": "rank-positive@1",
+            "certSelector": "finite-certificate@1",
+            "verdictDiscipline": "five-valued-structural-verdict@1",
+            "finiteBounds": {
+                "maxSquareFreeWitnessVariables": 12,
+                "maxCoherenceContexts": 12,
+                "maxTorWitnessVariables": 12,
+                "maxBoundaryResidueVariables": 16,
+                "maxLaplacianCells": 16,
+                "maxPeriodCycles": 16,
+                "maxTransferTargets": 16
+            }
         },
         "structuralVerdict": [{
             "verdictRef": "structuralVerdict/ag-square-free-repair/ag-square-free-repair/nsdepth-certificate-verified",
@@ -978,6 +1017,101 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
         "nonConclusions": []
     });
 
+    let mut residual_class_packet = valid_measurement_packet.clone();
+    residual_class_packet["computedInvariants"]
+        .as_array_mut()
+        .expect("computed invariants are an array")
+        .push(serde_json::json!({
+            "invariantId": "saga-descent:residual-class",
+            "kind": "residual-class-support",
+            "evaluator": "ag.saga-descent",
+            "value": {},
+            "representation": {},
+            "derivedComplexRef": "derived:saga-complex:profile:semantic-validation",
+            "derivedFrom": ["ArchMap.cover", "ArchMap.contexts.restrictsTo"]
+        }));
+    let residual_class_path = out_dir.join("residual-class-measurement-packet.json");
+    fs::write(
+        &residual_class_path,
+        serde_json::to_string_pretty(&residual_class_packet)
+            .expect("residual class packet serializes"),
+    )
+    .expect("residual class packet writes");
+    let residual_class_output = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        residual_class_path
+            .to_str()
+            .expect("residual class packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("residual-class.json")
+            .to_str()
+            .expect("residual class output path is utf-8"),
+    ]);
+    assert!(
+        residual_class_output.status.success(),
+        "residual-class-support is a current ArchSig handoff kind: {}",
+        String::from_utf8_lossy(&residual_class_output.stderr)
+    );
+
+    let mut malformed_profiles_packet = valid_measurement_packet.clone();
+    malformed_profiles_packet["profiles"] = serde_json::json!({});
+    let malformed_profiles_path = out_dir.join("malformed-profiles-measurement-packet.json");
+    fs::write(
+        &malformed_profiles_path,
+        serde_json::to_string_pretty(&malformed_profiles_packet)
+            .expect("malformed profiles packet serializes"),
+    )
+    .expect("malformed profiles packet writes");
+    let malformed_profiles_output = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        malformed_profiles_path
+            .to_str()
+            .expect("malformed profiles packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("malformed-profiles.json")
+            .to_str()
+            .expect("malformed profiles output path is utf-8"),
+    ]);
+    assert!(!malformed_profiles_output.status.success());
+    assert!(
+        String::from_utf8_lossy(&malformed_profiles_output.stderr)
+            .contains("profiles must be an array")
+    );
+
+    let mut incomplete_profiles_packet = valid_measurement_packet.clone();
+    incomplete_profiles_packet["profiles"] = serde_json::json!([{
+        "schema": "measurement-profile/v0.5.4",
+        "profileId": "profile:incomplete"
+    }]);
+    let incomplete_profiles_path = out_dir.join("incomplete-profiles-measurement-packet.json");
+    fs::write(
+        &incomplete_profiles_path,
+        serde_json::to_string_pretty(&incomplete_profiles_packet)
+            .expect("incomplete profiles packet serializes"),
+    )
+    .expect("incomplete profiles packet writes");
+    let incomplete_profiles_output = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        incomplete_profiles_path
+            .to_str()
+            .expect("incomplete profiles packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("incomplete-profiles.json")
+            .to_str()
+            .expect("incomplete profiles output path is utf-8"),
+    ]);
+    assert!(!incomplete_profiles_output.status.success());
+    assert!(
+        String::from_utf8_lossy(&incomplete_profiles_output.stderr)
+            .contains("profiles[0] requires non-empty siteRef")
+    );
+
     let duplicate_json_packet = out_dir.join("duplicate-json-key-measurement-packet.json");
     let valid_packet_source = serde_json::to_string_pretty(&valid_measurement_packet)
         .expect("valid measurement packet serializes");
@@ -1003,7 +1137,8 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
     ]);
     assert!(!duplicate_json.status.success());
     assert!(
-        String::from_utf8_lossy(&duplicate_json.stderr).contains("duplicate JSON object key packetId"),
+        String::from_utf8_lossy(&duplicate_json.stderr)
+            .contains("duplicate JSON object key packetId"),
         "measurement-packet handoff must reject duplicate JSON object keys"
     );
 
@@ -1066,7 +1201,8 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
         String::from_utf8_lossy(&invalid_source_refs.stderr)
     );
 
-    let duplicate_source_refs_packet = out_dir.join("duplicate-source-refs-measurement-packet.json");
+    let duplicate_source_refs_packet =
+        out_dir.join("duplicate-source-refs-measurement-packet.json");
     let mut duplicate_source_refs_json = valid_measurement_packet.clone();
     duplicate_source_refs_json["structuralVerdict"][0]["evidence"]["sourceRefs"] =
         serde_json::json!(["source:fixture:measurement", "source:fixture:measurement"]);
@@ -1097,8 +1233,7 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
 
     let unknown_nested_packet = out_dir.join("unknown-nested-measurement-packet.json");
     let mut unknown_nested_json = valid_measurement_packet.clone();
-    unknown_nested_json["structuralVerdict"][0]["evidence"]["extra"] =
-        serde_json::json!(true);
+    unknown_nested_json["structuralVerdict"][0]["evidence"]["extra"] = serde_json::json!(true);
     fs::write(
         &unknown_nested_packet,
         serde_json::to_string_pretty(&unknown_nested_json)
@@ -1404,7 +1539,7 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
     assert!(!opaque_cert_ref.status.success());
     assert!(
         String::from_utf8_lossy(&opaque_cert_ref.stderr)
-            .contains("requires certRef or matching computed invariant evidence"),
+            .contains("certRef opaque:non-computed-cert must resolve to a computed invariant"),
         "measurement-packet handoff must reject opaque certRef values that do not resolve to computedInvariants"
     );
 

@@ -4,8 +4,7 @@ use crate::validation::{count_checks, validation_check};
 use crate::{
     CalibrationObservedOutcomeRefV0, ConsequenceForecastConeRefV0, ForecastUsefulnessFeedbackV0,
     INTENT_CALIBRATION_RECORD_SCHEMA_VERSION, INTENT_CALIBRATION_VALIDATION_REPORT_SCHEMA_VERSION,
-    INTENTMAP_SCHEMA_VERSION, INTENTMAP_VALIDATION_REPORT_SCHEMA_VERSION,
-    IntentBoundaryItemV0,
+    INTENTMAP_SCHEMA_VERSION, INTENTMAP_VALIDATION_REPORT_SCHEMA_VERSION, IntentBoundaryItemV0,
     IntentCalibrationMatchV0, IntentCalibrationRecordV0, IntentCalibrationValidationInput,
     IntentCalibrationValidationReportV0, IntentCalibrationValidationSummary, IntentItemV0,
     IntentMapArtifactRefV0, IntentMapGeneratorV0, IntentMapV0, IntentMapValidationInput,
@@ -659,7 +658,8 @@ fn pr_quality_cue(
         source_refs: vec![source_ref.to_string()],
         severity: "review".to_string(),
         review_focus: review_focus.to_string(),
-        evidence_boundary: "selected ArchSig measurement/AIR/theorem-check artifacts only".to_string(),
+        evidence_boundary: "selected ArchSig measurement/AIR/theorem-check artifacts only"
+            .to_string(),
         non_conclusions: strings(&PR_QUALITY_NON_CONCLUSIONS),
     }
 }

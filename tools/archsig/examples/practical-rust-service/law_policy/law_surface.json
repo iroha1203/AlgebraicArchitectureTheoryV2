@@ -9,10 +9,6 @@
         {
           "variable": "e_domain_shared",
           "binding": {
-            "edge": [
-              "ctx:domain",
-              "ctx:shared"
-            ],
             "axis": "cech",
             "predicate": "sectionValue"
           }
@@ -20,10 +16,6 @@
         {
           "variable": "e_ports_shared",
           "binding": {
-            "edge": [
-              "ctx:ports",
-              "ctx:shared"
-            ],
             "axis": "cech",
             "predicate": "sectionValue"
           }
@@ -31,10 +23,6 @@
         {
           "variable": "e_application_ports",
           "binding": {
-            "edge": [
-              "ctx:application",
-              "ctx:ports"
-            ],
             "axis": "cech",
             "predicate": "sectionValue"
           }
@@ -42,10 +30,6 @@
         {
           "variable": "e_application_domain",
           "binding": {
-            "edge": [
-              "ctx:application",
-              "ctx:domain"
-            ],
             "axis": "cech",
             "predicate": "sectionValue"
           }
@@ -53,10 +37,6 @@
         {
           "variable": "e_application_settlement",
           "binding": {
-            "edge": [
-              "ctx:application",
-              "ctx:settlement"
-            ],
             "axis": "cech",
             "predicate": "sectionValue"
           }
@@ -64,10 +44,6 @@
         {
           "variable": "e_application_shared",
           "binding": {
-            "edge": [
-              "ctx:application",
-              "ctx:shared"
-            ],
             "axis": "cech",
             "predicate": "sectionValue"
           }
@@ -75,10 +51,6 @@
         {
           "variable": "e_infrastructure_ports",
           "binding": {
-            "edge": [
-              "ctx:infrastructure",
-              "ctx:ports"
-            ],
             "axis": "cech",
             "predicate": "sectionValue"
           }
@@ -86,10 +58,6 @@
         {
           "variable": "e_infrastructure_settlement",
           "binding": {
-            "edge": [
-              "ctx:infrastructure",
-              "ctx:settlement"
-            ],
             "axis": "cech",
             "predicate": "sectionValue"
           }
@@ -97,10 +65,6 @@
         {
           "variable": "e_infrastructure_shared",
           "binding": {
-            "edge": [
-              "ctx:infrastructure",
-              "ctx:shared"
-            ],
             "axis": "cech",
             "predicate": "sectionValue"
           }
@@ -108,10 +72,6 @@
         {
           "variable": "e_policy_shared",
           "binding": {
-            "edge": [
-              "ctx:policy",
-              "ctx:shared"
-            ],
             "axis": "cech",
             "predicate": "sectionValue"
           }
@@ -119,10 +79,6 @@
         {
           "variable": "e_runtime_application",
           "binding": {
-            "edge": [
-              "ctx:runtime",
-              "ctx:application"
-            ],
             "axis": "cech",
             "predicate": "sectionValue"
           }
@@ -130,10 +86,6 @@
         {
           "variable": "e_runtime_infrastructure",
           "binding": {
-            "edge": [
-              "ctx:runtime",
-              "ctx:infrastructure"
-            ],
             "axis": "cech",
             "predicate": "sectionValue"
           }
@@ -141,10 +93,6 @@
         {
           "variable": "e_runtime_shared",
           "binding": {
-            "edge": [
-              "ctx:runtime",
-              "ctx:shared"
-            ],
             "axis": "cech",
             "predicate": "sectionValue"
           }
@@ -152,10 +100,6 @@
         {
           "variable": "e_settlement_shared",
           "binding": {
-            "edge": [
-              "ctx:settlement",
-              "ctx:shared"
-            ],
             "axis": "cech",
             "predicate": "sectionValue"
           }
@@ -241,10 +185,6 @@
         {
           "variable": "e_application_settlement",
           "binding": {
-            "edge": [
-              "ctx:application",
-              "ctx:settlement"
-            ],
             "axis": "cech",
             "predicate": "sectionValue"
           }
@@ -252,10 +192,6 @@
         {
           "variable": "e_application_ports",
           "binding": {
-            "edge": [
-              "ctx:application",
-              "ctx:ports"
-            ],
             "axis": "cech",
             "predicate": "sectionValue"
           }
@@ -263,10 +199,6 @@
         {
           "variable": "e_infrastructure_ports",
           "binding": {
-            "edge": [
-              "ctx:infrastructure",
-              "ctx:ports"
-            ],
             "axis": "cech",
             "predicate": "sectionValue"
           }
@@ -274,10 +206,6 @@
         {
           "variable": "e_infrastructure_settlement",
           "binding": {
-            "edge": [
-              "ctx:infrastructure",
-              "ctx:settlement"
-            ],
             "axis": "cech",
             "predicate": "sectionValue"
           }
@@ -326,116 +254,6 @@
           ]
         }
       ]
-    }
-  ],
-  "skeleton": [
-    {
-      "simplex": "vertex:money-domain",
-      "supportAtomRef": "atom:cech-money-domain",
-      "requiredLawId": "law:money-convention"
-    },
-    {
-      "simplex": "vertex:money-ports",
-      "supportAtomRef": "atom:cech-money-ports",
-      "requiredLawId": "law:money-convention"
-    },
-    {
-      "simplex": "vertex:money-application",
-      "supportAtomRef": "atom:cech-money-application",
-      "requiredLawId": "law:money-convention"
-    },
-    {
-      "simplex": "vertex:money-infrastructure",
-      "supportAtomRef": "atom:cech-money-infrastructure",
-      "requiredLawId": "law:money-convention"
-    },
-    {
-      "simplex": "vertex:money-policy",
-      "supportAtomRef": "atom:cech-money-policy",
-      "requiredLawId": "law:money-convention"
-    },
-    {
-      "simplex": "vertex:money-runtime",
-      "supportAtomRef": "atom:cech-money-runtime",
-      "requiredLawId": "law:money-convention"
-    },
-    {
-      "simplex": "vertex:money-shared",
-      "supportAtomRef": "atom:cech-money-shared",
-      "requiredLawId": "law:money-convention"
-    },
-    {
-      "simplex": "vertex:money-settlement",
-      "supportAtomRef": "atom:cech-money-settlement",
-      "requiredLawId": "law:money-convention"
-    }
-  ],
-  "defectSources": [
-    {
-      "lawId": "law:money-convention",
-      "coverRef": "cover:commerce-fulfillment",
-      "chartDefects": [
-        {
-          "chart": "ctx:domain",
-          "defectObservable": {
-            "axis": "square-free",
-            "predicate": "support"
-          }
-        },
-        {
-          "chart": "ctx:ports",
-          "defectObservable": {
-            "axis": "square-free",
-            "predicate": "support"
-          }
-        },
-        {
-          "chart": "ctx:application",
-          "defectObservable": {
-            "axis": "square-free",
-            "predicate": "support"
-          }
-        },
-        {
-          "chart": "ctx:infrastructure",
-          "defectObservable": {
-            "axis": "square-free",
-            "predicate": "support"
-          }
-        },
-        {
-          "chart": "ctx:policy",
-          "defectObservable": {
-            "axis": "square-free",
-            "predicate": "support"
-          }
-        },
-        {
-          "chart": "ctx:runtime",
-          "defectObservable": {
-            "axis": "square-free",
-            "predicate": "support"
-          }
-        },
-        {
-          "chart": "ctx:shared",
-          "defectObservable": {
-            "axis": "square-free",
-            "predicate": "support"
-          }
-        },
-        {
-          "chart": "ctx:settlement",
-          "defectObservable": {
-            "axis": "square-free",
-            "predicate": "support"
-          }
-        }
-      ],
-      "holdsCriterion": {
-        "kind": "defect-raw-value-zero",
-        "zeroSense": "empty-witness-set"
-      }
     }
   ],
   "quotientSheafCondition": {

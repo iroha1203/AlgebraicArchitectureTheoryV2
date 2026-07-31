@@ -5,13 +5,13 @@ use crate::{
     ARCHSIG_COMPARISON_CONCLUSION_CODES, ARCHSIG_COMPARISON_REPORT_V1_SCHEMA,
     ARCHSIG_GATE_POLICY_V1_SCHEMA, ARCHSIG_GATE_REPORT_DECISIONS, ARCHSIG_GATE_REPORT_V1_SCHEMA,
     ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_MEASUREMENT_VIEW_MODEL_SCHEMA_VERSION,
-    ARCHSIG_POLICY_BUNDLE_V1_SCHEMA, ARCHSIG_REPAIR_PLAN_V1_SCHEMA,
-    ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION, ARCHSIG_SAGA_CONCLUSION_CODES,
-    LAW_EQUATION_SURFACE_V1_SCHEMA, LAW_POLICY_V1_SCHEMA, LAW_SURFACE_BINDING_VOCABULARY_SCHEMA,
-    MEASUREMENT_PROFILE_V1_SCHEMA, NORMALIZED_ARCHMAP_V2_SCHEMA,
-    SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION, SCHEMA_VERSION_CATALOG_SCHEMA_VERSION,
-    SchemaCompatibilityBoundaryV0, SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0,
-    SchemaVersionCatalogEntryV0, SchemaVersionCatalogV0,
+    ARCHSIG_POLICY_BUNDLE_V1_SCHEMA, ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION,
+    ARCHSIG_SAGA_CONCLUSION_CODES, LAW_EQUATION_SURFACE_V1_SCHEMA, LAW_POLICY_V1_SCHEMA,
+    LAW_SURFACE_BINDING_VOCABULARY_SCHEMA, MEASUREMENT_PROFILE_V1_SCHEMA,
+    NORMALIZED_ARCHMAP_V2_SCHEMA, SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION,
+    SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaCompatibilityBoundaryV0,
+    SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0, SchemaVersionCatalogEntryV0,
+    SchemaVersionCatalogV0,
 };
 
 pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
@@ -21,7 +21,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
         catalog_version: "llm-atom-archmap/v0.5.4".to_string(),
         phase: "LLM Atom ArchMap primary workflow".to_string(),
         artifacts: {
-            let mut artifacts = vec![
+            let artifacts = vec![
             artifact(
                 "archmap-current",
                 "ArchMap current input artifact",
@@ -74,7 +74,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "Law equation surface v0.5.4 records the authoring input contract for law identifiers, condition types, witness bindings, and closed-equational forbidden support generators. This stage's standalone command validates the declaration contract.",
                 vec![
                     "The surface does not supply verdicts, certificates, boundary membership, or global coherence conclusions.",
-                    "Stage 3 law-surface fields and diagnostic ceilings are validated under the supplied v0.5.4 contract.",
+                    "Law-equation fields and ArchMap-derived grounded observations are validated under the v0.5.4 contract.",
                 ],
             ),
             artifact(
@@ -114,20 +114,6 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 vec![
                     "MeasurementProfile selects a bounded measurement regime; it does not prove adequacy or theorem hypotheses.",
                     "Profile absence for AG evaluators is a validation error, not an unmeasured zero result.",
-                ],
-            ),
-            artifact(
-                "archsig-repair-plan/v0.5.7",
-                "ArchSig RepairPlan v0.5.7 SAGA selected-complex artifact",
-                ARCHSIG_REPAIR_PLAN_V1_SCHEMA,
-                "primary",
-                "ArchSig v0.5.4 SAGA Stage 1",
-                vec!["archsig-contract:saga-stage1-v0.5.4"],
-                "RepairPlan v0.5.7 declares only the selected finite complex: charts, overlaps, optional triple overlaps, the declared ArchMap cover binding, and the enumeration-completeness declaration. The residual is derived by analyze from the selected cover sections and law-surface witness bindings; the residual class is read on the derived residual support component with the triple-cocycle check; residualDifferenceReading is derived by compare from the two runs' residual derivations under a comparability gate and records whether their difference is in B1; the coefficient is the selected MeasurementProfile coefficient.",
-                vec![
-                    "RepairPlan validation checks the declared complex before use; it does not compute boundary membership or global coherence.",
-                    "RepairPlan input cannot supply generated conclusion tokens such as glues, verdict, h1Zero, or globalCoherent.",
-                    "External semantic completeness remains an author assumption; declared ArchMap cover/incidence is mechanically checked when the RepairPlan supplies the mapping.",
                 ],
             ),
             artifact(
@@ -243,7 +229,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "ArchSig Output / CI workflow",
                 vec!["archsig-contract:artifact-ci-v0.5.4"],
                 &format!(
-                    "Comparison report v0.5.7 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions, archmap-diff intersections, comparability of the two runs' repair-plan digests, and — for comparable runs whose residual derivations share cover, law surface, and chart set — the residualDifferenceReading block (difference_in_B1 / difference_not_in_B1 / no_residual_change) with its delta0 witness when the difference is in B1 (part10/2.3). It derives a MeasurementProfile-selected coarse-to-fine context relation from normalized ArchMap covers, records unique restrictionPath witnesses and run bindings, and validates the derived class certificate before recording the class-zero preservation reading. Registered record-level conclusionCode values are {}. Registered classTransport conclusionCode values are {} and its readingKind is derived-class-zero-preservation@1.",
+                    "Comparison report v0.5.7 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions, ArchMap-diff intersections, and — for comparable runs whose residual derivations share cover, law surface, and chart set — the residualDifferenceReading block (difference_in_B1 / difference_not_in_B1 / no_residual_change) with its delta0 witness when the difference is in B1 (part10/2.3). It derives a MeasurementProfile-selected coarse-to-fine context relation from normalized ArchMap covers, records unique restrictionPath witnesses and run bindings, and validates the derived class certificate before recording the class-zero preservation reading. Registered record-level conclusionCode values are {}. Registered classTransport conclusionCode values are {} and its readingKind is derived-class-zero-preservation@1.",
                     registry_sentence(&ARCHSIG_COMPARISON_CONCLUSION_CODES),
                     registry_sentence(&ARCHSIG_COMPARISON_CLASS_TRANSPORT_CONCLUSION_CODES),
                 ),
@@ -307,24 +293,6 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ],
             ),
             ];
-            if let Some(entry) = artifacts
-                .iter_mut()
-                .find(|entry| entry.artifact_id == "archsig-repair-plan/v0.5.7")
-            {
-                entry.compatibility_boundary.deprecated_fields = vec![
-                    "residual (retired at v0.5.5; the residual is derived by analyze from observed sections and law-surface witness bindings)".to_string(),
-                    "coefficient (retired at v0.5.5; the coefficient is the selected MeasurementProfile declaration)".to_string(),
-                    "semanticProjection (retired at v0.5.5 together with the supplied-residual closure diagnostics)".to_string(),
-                    "primitives[].support (retired at v0.5.5; per-overlap residual support is derived)".to_string(),
-                    "primitives (retired at v0.5.6; the repair cochain is derived by compare from the head/repaired residual derivations)".to_string(),
-                    "faithfulness.supplied.zeroPrimitiveRef (renamed at v0.5.6 to zeroOverlapRef)".to_string(),
-                    "faithfulness (retired at v0.5.7; the SAGA faithfulness regime was a supplied slot with no derived counterpart)".to_string(),
-                    "trueSheafCertificate (retired at v0.5.7; the class reading is component-local on the derived residual and carries no global-sheaf certification)".to_string(),
-                    "gluingData (retired at v0.5.7)".to_string(),
-                    "comparison (retired at v0.5.7; the run-pair reading is the derived residualDifferenceReading in the comparison report)".to_string(),
-                    "grounding (retired at v0.5.7; ag.saga-grounded reads the law surface and observations directly)".to_string(),
-                ];
-            }
             artifacts
         },
         compatibility_policy: SchemaCompatibilityPolicyV0 {
@@ -346,7 +314,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
             ],
             required_checks: vec![
                 "Run archsig schema-catalog and compare against the canonical fixture.".to_string(),
-                "Run the LLM-native workflow and FieldSig handoff checks.".to_string(),
+                "Run ArchSig schema-catalog, current analyze, and FieldSig handoff checks.".to_string(),
             ],
             non_conclusions: vec![
                 "schema catalog compatibility is not a semantic-preservation theorem".to_string(),
@@ -472,7 +440,6 @@ mod tests {
                 "archsig-policy-bundle/v0.5.4",
                 "law-evaluator-registry/v0.5.4",
                 "measurement-profile/v0.5.4",
-                "archsig-repair-plan/v0.5.7",
                 "normalized-archmap-current",
                 "archsig-measurement-packet/v0.5.4",
                 "archsig-boundary-statement/v0.5.4",

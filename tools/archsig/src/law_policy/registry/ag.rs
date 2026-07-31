@@ -45,19 +45,19 @@ fn ag_saga_descent_manifest() -> LawEvaluatorManifestV1 {
         required_atom_constructors: Vec::new(),
         required_predicates: Vec::new(),
         required_molecule_condition:
-            "archmap/v0.5.4 selected finite cover plus an archsig-repair-plan/v0.5.7 selected-complex declaration; the residual is derived from observed sections under law-surface witness bindings"
+            "archmap/v0.5.4 selected finite cover; ArchSig derives the finite SAGA complex from observed cover contexts and restriction relations, then derives the residual from observed sections under law-surface witness bindings"
                 .to_string(),
         scope_filtering_rule:
-            "selected finite cover from MeasurementProfile and supplied RepairPlan complex"
+            "selected finite cover from MeasurementProfile and the finite complex derived from ArchMap restriction observations"
                 .to_string(),
         missing_blocker_rule:
-            "missing RepairPlan is not_computed with silence_by_design; invalid RepairPlan fails validation before measurement"
+            "missing observed cover or restriction evidence is not_computed with silence_by_design; the finite complex is derived only from validated ArchMap observations"
                 .to_string(),
         pass_criteria:
-            "derived residual is a B1 boundary for the selected RepairPlan complex"
+            "derived residual is a B1 boundary for the finite complex derived from the selected ArchMap cover"
                 .to_string(),
         violation_criteria:
-            "derived residual is not a B1 boundary for the selected RepairPlan complex"
+            "derived residual is not a B1 boundary for the finite complex derived from the selected ArchMap cover"
                 .to_string(),
         typed_result_schema: "archsig-measurement-packet/v0.5.4".to_string(),
         distance_contribution:
@@ -81,13 +81,13 @@ fn ag_saga_grounded_manifest() -> LawEvaluatorManifestV1 {
         required_atom_constructors: Vec::new(),
         required_predicates: Vec::new(),
         required_molecule_condition:
-            "law-equation-surface/v0.5.4 Stage 3 fields (defect source, witness variables, forbidden supports, skeleton, quotient condition)"
+            "law-equation-surface/v0.5.4 witness variables and forbidden supports, with chart-local observations derived from the selected ArchMap cover"
                 .to_string(),
         scope_filtering_rule:
             "selected finite cover, chart-local defect observables, and the selected policy-row profile"
                 .to_string(),
         missing_blocker_rule:
-            "missing Stage 3 defect source, witnessVariables/forbiddenSupportGenerators, aligned skeleton, selected quotient condition, or finite witness bound is not_computed with silence_by_design"
+            "missing witnessVariables/forbiddenSupportGenerators, derived chart observations, selected quotient condition, or finite witness bound is not_computed with silence_by_design"
                 .to_string(),
         pass_criteria:
             "grounded witnessVariables and forbiddenSupportGenerators generate the finite F2 Boolean quotient; holdsCriterion raw-value checks derive the displayed law premise, interpretation class, and law-dependent packet"

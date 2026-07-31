@@ -63,13 +63,14 @@ bundle flag.
 measurementを読むという契約を固定する。`basisLedger[].path`や`siteRef` /
 `coverRef`の実体存在は、このvalidatorの宣言検査には含めない。
 
-## `analyze --out-dir` 再利用契約
+## `analyze --out-dir` 出力契約
 
-`--out-dir` は既存ディレクトリを再利用できる。入力JSONの読み込みとrun契約の
-組み立てまで到達したrunでは、ArchSigは既知の生成artifactを先に削除し、その後に
-validation reportまたはmeasurement artifactを書き出す。したがって、同じ出力先を
-validation成功・失敗の間で再利用しても、既知の前run成功artifactを今回runの成果として
-読み続けることはない。既知のartifact一覧外のファイルは削除しない。
+`--out-dir` はcurrent artifactが存在しない新しいディレクトリを指定する。ArchSigは
+既存のcurrent artifactを上書きせず、同じ出力先を再実行した場合は失敗する。これにより、
+異なるrunのvalidation reportやmeasurement artifactが同じ成果物として混在しない。
+
+退役済みartifactだけが残るディレクトリは、入力検証を開始したrunに限り整理して再利用できる。
+既知のartifact一覧外のファイルは削除しない。
 
 入力ファイルのopen / JSON parse / schema decodeがpreflight到達前に失敗した場合は、
 out-dirを変更せず、失敗manifestも出力しない。この場合、出力先に残る前run artifactは

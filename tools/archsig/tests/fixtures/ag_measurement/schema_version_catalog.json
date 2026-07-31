@@ -109,7 +109,7 @@
         ],
         "nonConclusions": [
           "The surface does not supply verdicts, certificates, boundary membership, or global coherence conclusions.",
-          "Stage 3 law-surface fields and diagnostic ceilings are validated under the supplied v0.5.4 contract."
+          "Law-equation fields and ArchMap-derived grounded observations are validated under the v0.5.4 contract."
         ]
       }
     },
@@ -191,46 +191,6 @@
         "nonConclusions": [
           "MeasurementProfile selects a bounded measurement regime; it does not prove adequacy or theorem hypotheses.",
           "Profile absence for AG evaluators is a validation error, not an unmeasured zero result."
-        ]
-      }
-    },
-    {
-      "artifactId": "archsig-repair-plan/v0.5.7",
-      "artifactName": "ArchSig RepairPlan v0.5.7 SAGA selected-complex artifact",
-      "schemaName": "archsig-repair-plan/v0.5.7",
-      "artifactRole": "primary",
-      "ownerPhase": "ArchSig v0.5.4 SAGA Stage 1",
-      "status": "implemented",
-      "primaryDocs": [
-        "archsig-contract:saga-stage1-v0.5.4"
-      ],
-      "downstreamIssues": [],
-      "compatibilityBoundary": {
-        "fieldMappingPolicy": "RepairPlan v0.5.7 declares only the selected finite complex: charts, overlaps, optional triple overlaps, the declared ArchMap cover binding, and the enumeration-completeness declaration. The residual is derived by analyze from the selected cover sections and law-surface witness bindings; the residual class is read on the derived residual support component with the triple-cocycle check; residualDifferenceReading is derived by compare from the two runs' residual derivations under a comparability gate and records whether their difference is in B1; the coefficient is the selected MeasurementProfile coefficient.",
-        "deprecatedFields": [
-          "residual (retired at v0.5.5; the residual is derived by analyze from observed sections and law-surface witness bindings)",
-          "coefficient (retired at v0.5.5; the coefficient is the selected MeasurementProfile declaration)",
-          "semanticProjection (retired at v0.5.5 together with the supplied-residual closure diagnostics)",
-          "primitives[].support (retired at v0.5.5; per-overlap residual support is derived)",
-          "primitives (retired at v0.5.6; the repair cochain is derived by compare from the head/repaired residual derivations)",
-          "faithfulness.supplied.zeroPrimitiveRef (renamed at v0.5.6 to zeroOverlapRef)",
-          "faithfulness (retired at v0.5.7; the SAGA faithfulness regime was a supplied slot with no derived counterpart)",
-          "trueSheafCertificate (retired at v0.5.7; the class reading is component-local on the derived residual and carries no global-sheaf certification)",
-          "gluingData (retired at v0.5.7)",
-          "comparison (retired at v0.5.7; the run-pair reading is the derived residualDifferenceReading in the comparison report)",
-          "grounding (retired at v0.5.7; ag.saga-grounded reads the law surface and observations directly)"
-        ],
-        "newRequiredAssumptions": [
-          "Required fields, observation families, law refs, or analysis axes change.",
-          "Evidence boundaries or non-conclusions are removed or weakened."
-        ],
-        "coverageExactnessBoundary": [
-          "Coverage and exactness are artifact-local and do not imply semantic completeness."
-        ],
-        "nonConclusions": [
-          "RepairPlan validation checks the declared complex before use; it does not compute boundary membership or global coherence.",
-          "RepairPlan input cannot supply generated conclusion tokens such as glues, verdict, h1Zero, or globalCoherent.",
-          "External semantic completeness remains an author assumption; declared ArchMap cover/incidence is mechanically checked when the RepairPlan supplies the mapping."
         ]
       }
     },
@@ -441,7 +401,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Comparison report v0.5.7 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions, archmap-diff intersections, comparability of the two runs' repair-plan digests, and — for comparable runs whose residual derivations share cover, law surface, and chart set — the residualDifferenceReading block (difference_in_B1 / difference_not_in_B1 / no_residual_change) with its delta0 witness when the difference is in B1 (part10/2.3). It derives a MeasurementProfile-selected coarse-to-fine context relation from normalized ArchMap covers, records unique restrictionPath witnesses and run bindings, and validates the derived class certificate before recording the class-zero preservation reading. Registered record-level conclusionCode values are NO_NEW_MEASURED_OBSTRUCTION_RECORDED, MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE, MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE, and RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA. Registered classTransport conclusionCode values are CLASS_ZERO_TRANSPORTED_UNDER_CHECKED_REFINEMENT and its readingKind is derived-class-zero-preservation@1.",
+        "fieldMappingPolicy": "Comparison report v0.5.7 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions, ArchMap-diff intersections, and — for comparable runs whose residual derivations share cover, law surface, and chart set — the residualDifferenceReading block (difference_in_B1 / difference_not_in_B1 / no_residual_change) with its delta0 witness when the difference is in B1 (part10/2.3). It derives a MeasurementProfile-selected coarse-to-fine context relation from normalized ArchMap covers, records unique restrictionPath witnesses and run bindings, and validates the derived class certificate before recording the class-zero preservation reading. Registered record-level conclusionCode values are NO_NEW_MEASURED_OBSTRUCTION_RECORDED, MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE, MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE, and RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA. Registered classTransport conclusionCode values are CLASS_ZERO_TRANSPORTED_UNDER_CHECKED_REFINEMENT and its readingKind is derived-class-zero-preservation@1.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -568,7 +528,7 @@
     ],
     "requiredChecks": [
       "Run archsig schema-catalog and compare against the canonical fixture.",
-      "Run the LLM-native workflow and FieldSig handoff checks."
+      "Run ArchSig schema-catalog, current analyze, and FieldSig handoff checks."
     ],
     "nonConclusions": [
       "schema catalog compatibility is not a semantic-preservation theorem",

@@ -27,10 +27,12 @@ archsig --help
 Representative workflow:
 
 ```bash
-archsig llm-native-workflow \
+archsig analyze \
   --archmap path/to/archmap.json \
   --law-policy path/to/law_policy.json \
-  --out-dir .archsig/llm-native
+  --measurement-profile path/to/measurement_profile.json \
+  --law-surface path/to/law_surface.json \
+  --out-dir .archsig/run
 ```
 
 ## Highlights

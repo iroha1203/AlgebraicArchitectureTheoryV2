@@ -19,7 +19,6 @@ impl AnalyzeRunContract {
         law_policy: &Path,
         law_surface: Option<&Path>,
         measurement_profiles: &[&Path],
-        repair_plan: Option<&Path>,
         profile_fingerprint: Value,
         site_cover_digest: Value,
         component_fingerprints: Option<Value>,
@@ -39,7 +38,6 @@ impl AnalyzeRunContract {
             .cloned()
             .ok_or("at least one measurement profile input is required")?;
         let tool_version = env!("CARGO_PKG_VERSION").to_string();
-        let repair_plan_digest = repair_plan.map(canonical_json_file_digest).transpose()?;
         let run_seed = match law_surface_digest.as_deref() {
             Some(law_surface_digest) => format!(
                 "{archmap_digest}|{law_policy_digest}|{law_surface_digest}|{}|{tool_version}",
@@ -50,10 +48,6 @@ impl AnalyzeRunContract {
                 measurement_profile_digests.join("|")
             ),
         };
-        let run_seed = repair_plan_digest
-            .as_deref()
-            .map(|digest| format!("{run_seed}|repairPlan:{digest}"))
-            .unwrap_or(run_seed);
         let run_hash = sha256_hex(run_seed.as_bytes());
         let mut run_id = format!("run:{}", &run_hash[..12]);
         if stamp {
@@ -86,12 +80,6 @@ impl AnalyzeRunContract {
         });
         if let (Some(path), Some(digest)) = (law_surface, law_surface_digest) {
             input_digests["lawSurface"] = serde_json::json!({
-                "path": artifact_input_ref(path),
-                "sha256": digest
-            });
-        }
-        if let (Some(path), Some(digest)) = (repair_plan, repair_plan_digest) {
-            input_digests["repairPlan"] = serde_json::json!({
                 "path": artifact_input_ref(path),
                 "sha256": digest
             });

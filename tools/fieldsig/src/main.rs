@@ -8,9 +8,8 @@ use clap::{Parser, Subcommand};
 use fieldsig::{
     AatObservableBundleV0, AatObservableBundleValidationReportV0, AiProposalGovernanceV0,
     AiProposalGovernanceValidationReportV0, AirDocumentInput, AirDocumentV0, AirValidationReport,
-    ArchitectureDynamicsMetricsReportV0,
-    ArchitectureDynamicsMetricsReportValidationReportV0, ArchitectureFieldSnapshotV0,
-    ArchitectureFieldSnapshotValidationReportV0, ArchitecturePolicyV0,
+    ArchitectureDynamicsMetricsReportV0, ArchitectureDynamicsMetricsReportValidationReportV0,
+    ArchitectureFieldSnapshotV0, ArchitectureFieldSnapshotValidationReportV0, ArchitecturePolicyV0,
     ArchitecturePolicyValidationReportV0, ArtifactDescriptorV0,
     ArtifactDescriptorValidationReportV0, CalibrationReviewRecordV0,
     ComponentUniverseValidationReport, ConsequenceEnvelopeReportV0,
@@ -22,10 +21,10 @@ use fieldsig::{
     FieldSigRunManifestValidationReportV0, ForecastCalibrationHookV0,
     ForecastCalibrationHookValidationReportV0, ForecastConeSkeletonV0,
     ForecastConeSkeletonValidationReportV0, FrameworkAdapterEvidenceV0, HypothesisRefreshCycleV0,
-    IncidentCorrelationMonitorV0, IntentCalibrationRecordV0,
-    IntentCalibrationValidationReportV0, IntentMapV0, IntentMapValidationReportV0,
-    LawPolicyTemplateRegistryV0, LawPolicyTemplateRegistryValidationReportV0, LawViolationReportV0,
-    MeasurementUnitRegistryV0, MeasurementUnitRegistryValidationReportV0, NoSolutionCertificateV0,
+    IncidentCorrelationMonitorV0, IntentCalibrationRecordV0, IntentCalibrationValidationReportV0,
+    IntentMapV0, IntentMapValidationReportV0, LawPolicyTemplateRegistryV0,
+    LawPolicyTemplateRegistryValidationReportV0, LawViolationReportV0, MeasurementUnitRegistryV0,
+    MeasurementUnitRegistryValidationReportV0, NoSolutionCertificateV0,
     NoSolutionCertificateValidationReportV0, OperationProposalLogV0,
     OperationProposalLogValidationReportV0, OperationSupportEstimateV0,
     OperationSupportEstimateValidationReportV0, OrganizationPolicyV0,
@@ -48,26 +47,24 @@ use fieldsig::{
     build_empirical_dataset, build_feature_extension_dataset_from_files,
     build_feature_extension_report, build_forecast_cone_skeleton_from_operation_support,
     build_law_violation_report, build_operation_support_estimate_from_archsig_measurement_packet,
-    build_operation_support_estimate_from_descriptor,
-    build_outcome_linkage_dataset_from_files, build_policy_decision_report,
-    build_pr_history_dataset_from_github_files, build_pr_metadata_from_github_files,
-    build_report_outcome_daily_ledger_from_files, build_schema_compatibility_check_report,
-    build_sft_review_summary_from_consequence_envelope, build_signature_diff_report,
-    build_signature_snapshot_record, build_theorem_precondition_check_report, extract_python_sig0,
+    build_operation_support_estimate_from_descriptor, build_outcome_linkage_dataset_from_files,
+    build_policy_decision_report, build_pr_history_dataset_from_github_files,
+    build_pr_metadata_from_github_files, build_report_outcome_daily_ledger_from_files,
+    build_schema_compatibility_check_report, build_sft_review_summary_from_consequence_envelope,
+    build_signature_diff_report, build_signature_snapshot_record,
+    build_theorem_precondition_check_report, extract_python_sig0,
     extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
     read_architecture_policy, read_archsig_measurement_packet, render_pr_comment_markdown,
-    static_aat_observable_bundle,
-    static_ai_proposal_governance, static_architecture_dynamics_metrics_report,
-    static_architecture_field_snapshot, static_artifact_descriptor,
-    static_calibration_review_record, static_consequence_envelope_report,
-    static_custom_rule_plugin_registry, static_detectable_values_reported_axes_catalog,
-    static_dynamics_measurement_contract, static_fieldsig_run_manifest,
-    static_forecast_calibration_hook, static_forecast_cone_skeleton,
+    static_aat_observable_bundle, static_ai_proposal_governance,
+    static_architecture_dynamics_metrics_report, static_architecture_field_snapshot,
+    static_artifact_descriptor, static_calibration_review_record,
+    static_consequence_envelope_report, static_custom_rule_plugin_registry,
+    static_detectable_values_reported_axes_catalog, static_dynamics_measurement_contract,
+    static_fieldsig_run_manifest, static_forecast_calibration_hook, static_forecast_cone_skeleton,
     static_hypothesis_refresh_cycle, static_incident_correlation_monitor,
-    static_intent_calibration_record, static_intent_map,
-    static_law_policy_template_registry, static_measurement_unit_registry,
-    static_no_solution_certificate, static_operation_proposal_log,
-    static_operation_support_estimate, static_organization_policy,
+    static_intent_calibration_record, static_intent_map, static_law_policy_template_registry,
+    static_measurement_unit_registry, static_no_solution_certificate,
+    static_operation_proposal_log, static_operation_support_estimate, static_organization_policy,
     static_ownership_boundary_monitor, static_pr_force_report, static_pr_quality_analysis_report,
     static_repair_adoption_record, static_repair_rule_registry,
     static_report_artifact_retention_manifest, static_schema_version_catalog,
@@ -76,11 +73,10 @@ use fieldsig::{
     static_team_threshold_policy, validate_aat_observable_bundle, validate_ai_proposal_governance,
     validate_air_document_report, validate_architecture_dynamics_metrics_report,
     validate_architecture_field_snapshot, validate_architecture_policy_report,
-    validate_artifact_descriptor_report,
-    validate_component_universe_report, validate_consequence_envelope_report,
-    validate_custom_rule_plugin_registry_report, validate_dynamics_measurement_contract_report,
-    validate_fieldsig_run_manifest, validate_forecast_calibration_hook,
-    validate_forecast_cone_skeleton,
+    validate_artifact_descriptor_report, validate_component_universe_report,
+    validate_consequence_envelope_report, validate_custom_rule_plugin_registry_report,
+    validate_dynamics_measurement_contract_report, validate_fieldsig_run_manifest,
+    validate_forecast_calibration_hook, validate_forecast_cone_skeleton,
     validate_intent_calibration_record, validate_intent_map,
     validate_law_policy_template_registry_report, validate_measurement_unit_registry_report,
     validate_no_solution_certificate_report, validate_operation_proposal_log,
@@ -1445,6 +1441,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             out,
         }) => {
             reject_output_overwrite(&measurement_packet, out.as_deref())?;
+            reject_existing_output(out.as_deref())?;
             let packet = read_archsig_measurement_packet(&measurement_packet)?;
             let estimate = build_operation_support_estimate_from_archsig_measurement_packet(
                 &packet,
@@ -2625,10 +2622,7 @@ fn write_json<T: serde::Serialize>(out: Option<PathBuf>, value: &T) -> Result<()
     Ok(())
 }
 
-fn reject_output_overwrite(
-    input: &Path,
-    output: Option<&Path>,
-) -> Result<(), Box<dyn Error>> {
+fn reject_output_overwrite(input: &Path, output: Option<&Path>) -> Result<(), Box<dyn Error>> {
     if !input.exists() {
         return Ok(());
     }
@@ -2658,6 +2652,19 @@ fn reject_output_overwrite(
     let same_inode = false;
     if same_path || same_inode {
         return Err("output path must differ from input path".into());
+    }
+    Ok(())
+}
+
+fn reject_existing_output(output: Option<&Path>) -> Result<(), Box<dyn Error>> {
+    if let Some(output) = output {
+        if output.exists() {
+            return Err(format!(
+                "output path already exists; choose a new path: {}",
+                output.display()
+            )
+            .into());
+        }
     }
     Ok(())
 }

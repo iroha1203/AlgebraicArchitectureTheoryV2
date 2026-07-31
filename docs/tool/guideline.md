@@ -14,10 +14,9 @@
 - 帰属は名前ではなく内容で決める。法・方程式側に帰属するのは、特定の ArchMap instance に
   依存しない規則・制約・係数・被覆・評価計画だけである。特定 instance の値(section、
   cocycle、class の零性、写像の存在)を運ぶ供給は、名称にかかわらず法側ではない。
-  観測側に帰属する行は source への解決可能な ref を持つ。RepairPlan のうち作者が提案する
-  修理そのもの(修理後状態と repair cochain の対象)は、この観測側の資格を満たす形で
-  書かれた場合に限り提案された観測として観測側に帰属する。ArchSig が計算すべき結論を
-  先渡しする slot はどちらにも帰属しない。
+  観測側に帰属する行は source への解決可能な ref を持つ。SAGA の有限複体と残差は、
+  選択された ArchMap cover と観測済みの restriction relation から ArchSig が導出する。
+  ArchSig が計算すべき結論を先渡しする slot はどちらにも帰属しない。
 - どちらにも帰属しない authored データ(証明、証書、presentation、結論相当の
   supplied 判定)を、新しい入力、CLI flag、schema field、供給 slot として受け取らない。
   既存 field への同種データの追加・意味拡張・解禁語彙の追加も同じ禁止に含む。
@@ -25,9 +24,8 @@
   未供給時に沈黙する設計、fixture / golden lock、schema 登録や version bump は、
   いずれも帰属の代替にならない(列挙は例示であり、帰属それ自体を示さない装置は
   すべて同様)。二系統から計算できない語彙は、供給で解禁せず沈黙として扱う。
-- 二系統に帰属しない導入済みの入力面は、台帳収載の有無にかかわらずこの規律に対する
-  既存の負債である。返済は供給 slot 台帳(入口は docs/tool/README.md)で管理し、
-  負債の存在も返済作業も新規追加の先例として引用しない。
+- 二系統に帰属しない入力面は導入しない。既存の供給負債は削除し、現行入力面へ
+  互換 stub や別名を残さない。
 - ウィトゲンシュタイン的責務範囲を守る。ArchSig は与えられた入力 contract から、
   選ばれた vocabulary と policy の中で語れることだけを語る。入力 contract を補完・推測・
   拡張しない。語れない領域は、失敗や残タスクではなく沈黙として扱い、必要な場合だけ
@@ -54,8 +52,8 @@
 - ArchSig への入力は観測(ArchMap)と法・方程式(LawPolicy / law-equation-surface / MeasurementProfile)の
   二系統に限る(正本は本 guideline の「責務範囲(入力トライアドの正本)」)。この二系統に帰属しない
   authored 証明・証書・presentation を、新しい CLI 入力や schema slot として追加しない。
-  既存の RepairPlan 系入力はこの規律に従って扱い、退役した refactor morphism / refinement data の
-  供給 slot は現行入力面に置かない。返済の記録は供給 slot 台帳の負債告知に残す。
+  SAGA の有限複体、residual、comparison reading は ArchMap と法・方程式側から導出し、
+  第三の authored input を受け取らない。
 - ArchSig の `analyze` は、観測(ArchMap)と選ばれた LawPolicy / law-equation-surface / MeasurementProfile の中で
   structural verdict と analytic reading を出す。`compare` は二つの analyze run を記録レベルで比較し、
   `gate` は gate policy に従って measurement packet と比較記録をCI判断へ写像する。

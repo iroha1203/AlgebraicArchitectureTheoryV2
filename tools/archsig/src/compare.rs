@@ -74,16 +74,8 @@ pub fn build_comparison_artifacts_v1(
         ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA,
         "head measurement packet",
     )?;
-    validate_compare_packet(
-        &base_packet,
-        &base_manifest,
-        "base measurement packet",
-    )?;
-    validate_compare_packet(
-        &head_packet,
-        &head_manifest,
-        "head measurement packet",
-    )?;
+    validate_compare_packet(&base_packet, &base_manifest, "base measurement packet")?;
+    validate_compare_packet(&head_packet, &head_manifest, "head measurement packet")?;
 
     let archmap_diff = build_archmap_diff(
         base_run,
@@ -159,7 +151,6 @@ pub fn build_comparison_artifacts_v1(
     });
     Ok((archmap_diff, report))
 }
-
 
 /// 同一複体上の 2 run の導出 residual の差が delta0(h) の像に入るかを記録する。
 /// 第X部 定義2.3 の B^1=im(delta0)を選択複体上で有限検査し、
@@ -244,11 +235,15 @@ fn derived_residual_difference_reading(
     };
     let base_map = base_edges
         .iter()
-        .map(|(overlap, left, right, value)| ((overlap.clone(), left.clone(), right.clone()), *value))
+        .map(|(overlap, left, right, value)| {
+            ((overlap.clone(), left.clone(), right.clone()), *value)
+        })
         .collect::<BTreeMap<_, _>>();
     let head_map = head_edges
         .iter()
-        .map(|(overlap, left, right, value)| ((overlap.clone(), left.clone(), right.clone()), *value))
+        .map(|(overlap, left, right, value)| {
+            ((overlap.clone(), left.clone(), right.clone()), *value)
+        })
         .collect::<BTreeMap<_, _>>();
     if base_map.keys().collect::<BTreeSet<_>>() != head_map.keys().collect::<BTreeSet<_>>() {
         return json!({
@@ -433,8 +428,10 @@ fn derived_class_nonzero(packet: &Value, side: &str) -> Result<bool, String> {
         .ok_or_else(|| format!("{side}_class_invariants_missing"))?;
     let class_invariants = invariants
         .iter()
-        .filter(|invariant| invariant.get("invariantId").and_then(Value::as_str)
-            == Some("saga-descent:residual-class"))
+        .filter(|invariant| {
+            invariant.get("invariantId").and_then(Value::as_str)
+                == Some("saga-descent:residual-class")
+        })
         .collect::<Vec<_>>();
     let [invariant] = class_invariants.as_slice() else {
         return Err(format!("{side}_class_certificate_missing_or_ambiguous"));
@@ -442,11 +439,17 @@ fn derived_class_nonzero(packet: &Value, side: &str) -> Result<bool, String> {
     if invariant.get("evaluator").and_then(Value::as_str) != Some("ag.saga-descent")
         || invariant.get("kind").and_then(Value::as_str) != Some("residual-class-support")
         || !invariant
-            .get("suppliedSlots")
+            .get("derivedComplexRef")
+            .and_then(Value::as_str)
+            .is_some_and(|reference| !reference.trim().is_empty())
+        || !invariant
+            .get("derivedFrom")
             .and_then(Value::as_array)
-            .is_some_and(|slots| {
-                slots.iter().any(|slot| slot == "complex.charts")
-                    && slots.iter().any(|slot| slot == "complex.overlaps")
+            .is_some_and(|sources| {
+                sources.iter().any(|source| source == "ArchMap.cover")
+                    && sources
+                        .iter()
+                        .any(|source| source == "ArchMap.contexts.restrictsTo")
             })
     {
         return Err(format!("{side}_class_certificate_owner_invalid"));
@@ -524,19 +527,25 @@ fn derived_class_nonzero(packet: &Value, side: &str) -> Result<bool, String> {
         return Err(format!("{side}_class_verdict_missing_or_ambiguous"));
     };
     if verdict["verdictData"]["inScope"].as_bool() != Some(true)
-        || verdict["verdictData"]["certRef"]
-            .as_str()
+        || verdict["verdictData"]["certRef"].as_str()
             != Some("computedInvariants/saga-descent:residual-class")
         || verdict["target"]["classRef"].as_str()
             != Some("computedInvariants/saga-descent:residual-class")
         || !verdict["evidence"]["computedInvariantRefs"]
             .as_array()
-            .is_some_and(|refs| refs.iter().any(|reference| reference == "saga-descent:residual-class"))
+            .is_some_and(|refs| {
+                refs.iter()
+                    .any(|reference| reference == "saga-descent:residual-class")
+            })
     {
         return Err(format!("{side}_class_certificate_provenance_invalid"));
     }
     let verdict_nonzero = verdict["verdictData"]["nonZero"].as_bool();
-    let expected_verdict = if nonzero { "measured_nonzero" } else { "measured_zero" };
+    let expected_verdict = if nonzero {
+        "measured_nonzero"
+    } else {
+        "measured_zero"
+    };
     if verdict["verdict"].as_str() != Some(expected_verdict)
         || verdict_nonzero != Some(nonzero)
         || verdict["verdictData"]["zero"].as_bool() != Some(!nonzero)
@@ -575,10 +584,16 @@ fn derive_refinement(
     let coarse_contexts = cover_contexts(coarse_cover);
     let fine_contexts = cover_contexts(fine_cover);
     if coarse_contexts.is_empty() {
-        return refinement_failure("coarse_selected_cover_empty", "coarse selected cover has no observed contexts");
+        return refinement_failure(
+            "coarse_selected_cover_empty",
+            "coarse selected cover has no observed contexts",
+        );
     }
     if fine_contexts.is_empty() {
-        return refinement_failure("fine_selected_cover_empty", "fine selected cover has no observed contexts");
+        return refinement_failure(
+            "fine_selected_cover_empty",
+            "fine selected cover has no observed contexts",
+        );
     }
     let mut context_rows = Vec::new();
     for fine_context in &fine_contexts {
@@ -661,13 +676,10 @@ fn selected_normalized_cover<'a>(
     packet: &Value,
     side: &str,
 ) -> Result<(String, String, &'a Value), (&'static str, String)> {
-    let profile = packet
-        .get("profile")
-        .and_then(Value::as_object)
-        .ok_or((
-            "measurement_profile_missing",
-            format!("{side} measurement packet has no profile object"),
-        ))?;
+    let profile = packet.get("profile").and_then(Value::as_object).ok_or((
+        "measurement_profile_missing",
+        format!("{side} measurement packet has no profile object"),
+    ))?;
     let site_ref = profile
         .get("siteRef")
         .and_then(Value::as_str)
@@ -697,7 +709,9 @@ fn selected_normalized_cover<'a>(
         if !site_resolves {
             return Err((
                 "measurement_profile_site_unresolved",
-                format!("{side} measurement profile siteRef {site_ref} does not resolve in normalized ArchMap"),
+                format!(
+                    "{side} measurement profile siteRef {site_ref} does not resolve in normalized ArchMap"
+                ),
             ));
         }
     }
@@ -709,8 +723,7 @@ fn selected_normalized_cover<'a>(
         .filter(|cover| {
             (cover.get("normalizedCoverId").and_then(Value::as_str) == Some(cover_ref)
                 || cover.get("sourceCoverId").and_then(Value::as_str) == Some(cover_ref))
-                && cover.get("coverageStatus").and_then(Value::as_str)
-                    == Some("selectedCandidate")
+                && cover.get("coverageStatus").and_then(Value::as_str) == Some("selectedCandidate")
         })
         .collect::<Vec<_>>();
     match matches.as_slice() {
@@ -722,11 +735,17 @@ fn selected_normalized_cover<'a>(
                     "selected_cover_id_missing",
                     format!("{side} selected cover lacks normalizedCoverId"),
                 ))?;
-            Ok((site_ref.to_string(), normalized_cover_ref.to_string(), *cover))
+            Ok((
+                site_ref.to_string(),
+                normalized_cover_ref.to_string(),
+                *cover,
+            ))
         }
         [] => Err((
             "measurement_profile_cover_unresolved",
-            format!("{side} measurement profile coverRef {cover_ref} does not resolve to a selectedCandidate cover"),
+            format!(
+                "{side} measurement profile coverRef {cover_ref} does not resolve to a selectedCandidate cover"
+            ),
         )),
         _ => Err((
             "measurement_profile_cover_ambiguous",
@@ -927,7 +946,6 @@ fn comparability(base: &Value, head: &Value) -> Value {
     let same_profile =
         digest_at(base, "profileFingerprint") == digest_at(head, "profileFingerprint");
     let same_cover = digest_at(base, "siteCoverDigest") == digest_at(head, "siteCoverDigest");
-    let same_repair_plan = digest_at(base, "repairPlan") == digest_at(head, "repairPlan");
     let same_component_fingerprints = component_fingerprints_at(base)
         .zip(component_fingerprints_at(head))
         .is_some_and(|(base, head)| base == head);
@@ -940,7 +958,6 @@ fn comparability(base: &Value, head: &Value) -> Value {
         && same_law_policy
         && same_profile
         && same_component_fingerprints
-        && same_repair_plan
     {
         "identical"
     } else if same_tool
@@ -962,8 +979,7 @@ fn comparability(base: &Value, head: &Value) -> Value {
         "sameComponentFingerprints": same_component_fingerprints,
         "sameLawSurfaceFingerprint": same_law_surface,
         "sameSiteCoverDigest": same_cover,
-        "sameRepairPlanDigest": same_repair_plan,
-        "basis": "identical requires archmap, LawPolicy, law-surface, MeasurementProfile, and optional RepairPlan input digests plus tool version equality; verdict-row requires all three LawPolicy, law-surface, and MeasurementProfile component fingerprints, site cover digest, and tool version equality, while recording whether the optional RepairPlan digest changed"
+        "basis": "identical requires archmap, LawPolicy, law-surface, MeasurementProfile, and tool version equality; verdict-row requires all three LawPolicy, law-surface, and MeasurementProfile component fingerprints, site cover digest, and tool version equality"
     })
 }
 
@@ -1068,15 +1084,6 @@ fn comparison_boundaries(comparability: &Value, cover_or_context_changed: bool) 
             "reason": "record-level comparison data does not support class identity or causal transition claims outside classTransport's derived coarse-to-fine relation",
             "scopeRefs": ["comparison:run-pair"],
             "text": "Record transitions remain side by side; any class-zero reading is limited to classTransport's derived coarse-to-fine relation."
-        }));
-    }
-    if comparability["sameRepairPlanDigest"] == Value::Bool(false) {
-        boundaries.push(json!({
-            "id": "boundary:comparison:repair-plan-changed-between-runs",
-            "kind": "repair_plan_changed_between_runs",
-            "reason": "the compared runs bind different RepairPlan input digests",
-            "scopeRefs": ["comparison:run-pair"],
-            "text": "Record-level verdict rows remain comparable under the shared policy, law-surface, profile, and site-cover contract; the RepairPlan change is recorded and does not establish causal repair."
         }));
     }
     boundaries
@@ -1221,14 +1228,22 @@ fn validate_compare_normalized_archmap(
     let mut source_context_ids = BTreeSet::new();
     for context in &normalized.contexts {
         if !source_context_ids.insert(context.source_context_id.as_str()) {
-            return Err(format!("{label} repeats source context {}", context.source_context_id).into());
+            return Err(format!(
+                "{label} repeats source context {}",
+                context.source_context_id
+            )
+            .into());
         }
     }
     let mut normalized_cover_ids = BTreeSet::new();
     let mut source_cover_ids = BTreeSet::new();
     for cover in &normalized.covers {
         if !normalized_cover_ids.insert(cover.normalized_cover_id.as_str()) {
-            return Err(format!("{label} repeats normalized cover {}", cover.normalized_cover_id).into());
+            return Err(format!(
+                "{label} repeats normalized cover {}",
+                cover.normalized_cover_id
+            )
+            .into());
         }
         if !source_cover_ids.insert(cover.source_cover_id.as_str()) {
             return Err(format!("{label} repeats source cover {}", cover.source_cover_id).into());
@@ -1252,12 +1267,14 @@ fn validate_compare_run_contract(
     manifest: &Value,
     label: &str,
 ) -> Result<(), Box<dyn Error>> {
-    for field in ["toolVersion", "runId", "inputDigests", "componentFingerprints"] {
+    for field in [
+        "toolVersion",
+        "runId",
+        "inputDigests",
+        "componentFingerprints",
+    ] {
         if artifact.get(field) != manifest.get(field) {
-            return Err(format!(
-                "{label} {field} must match its run manifest provenance"
-            )
-            .into());
+            return Err(format!("{label} {field} must match its run manifest provenance").into());
         }
     }
     Ok(())
@@ -1271,7 +1288,9 @@ fn validate_manifest_artifact_digest(
 ) -> Result<String, Box<dyn Error>> {
     let expected_digest = manifest["artifactDigests"][artifact_key]["sha256"]
         .as_str()
-        .ok_or_else(|| format!("{label} run manifest requires artifactDigests.{artifact_key}.sha256"))?;
+        .ok_or_else(|| {
+            format!("{label} run manifest requires artifactDigests.{artifact_key}.sha256")
+        })?;
     let actual_digest = canonical_json_value_digest(artifact)?;
     if expected_digest != actual_digest {
         return Err(format!(
@@ -1366,7 +1385,6 @@ fn run_digest(run: &Path, manifest: &Value) -> Value {
         "profileFingerprint": manifest["inputDigests"]["profileFingerprint"],
         "componentFingerprints": manifest["componentFingerprints"],
         "siteCoverDigest": manifest["inputDigests"]["siteCoverDigest"],
-        "repairPlan": manifest["inputDigests"]["repairPlan"],
         "normalizedArchmap": manifest["artifactDigests"]["normalizedArchmap"],
         "measurementPacket": manifest["artifactDigests"]["measurementPacket"]
     })
@@ -1418,7 +1436,9 @@ fn component_fingerprint_at<'a>(value: &'a Value, component: &str) -> Option<&'a
 mod tests {
     use std::collections::BTreeMap;
 
-    use super::{comparability, context_paths, validate_component_fingerprints, validated_context_map};
+    use super::{
+        comparability, context_paths, validate_component_fingerprints, validated_context_map,
+    };
     use serde_json::json;
 
     fn manifest(law_surface: &str) -> serde_json::Value {
@@ -1460,17 +1480,6 @@ mod tests {
     }
 
     #[test]
-    fn repair_plan_digest_change_excludes_identical_but_keeps_verdict_row_comparability() {
-        let mut base = manifest("sha256:surface-a");
-        let mut head = manifest("sha256:surface-a");
-        base["inputDigests"]["repairPlan"] = json!({"sha256": "repair-plan-a"});
-        head["inputDigests"]["repairPlan"] = json!({"sha256": "repair-plan-b"});
-        let result = comparability(&base, &head);
-        assert_eq!(result["level"], "verdict-row");
-        assert_eq!(result["sameRepairPlanDigest"], false);
-    }
-
-    #[test]
     fn malformed_component_fingerprints_are_rejected() {
         let mut value = manifest("sha256:surface-a");
         value["componentFingerprints"] = json!({});
@@ -1480,50 +1489,40 @@ mod tests {
     #[test]
     fn context_paths_records_a_unique_nontrivial_restriction_path() {
         let contexts = BTreeMap::from([
-            (
-                "coarse".to_string(),
-                json!({"restrictsTo": []}),
-            ),
-            (
-                "fine".to_string(),
-                json!({"restrictsTo": ["middle"]}),
-            ),
-            (
-                "middle".to_string(),
-                json!({"restrictsTo": ["coarse"]}),
-            ),
+            ("coarse".to_string(), json!({"restrictsTo": []})),
+            ("fine".to_string(), json!({"restrictsTo": ["middle"]})),
+            ("middle".to_string(), json!({"restrictsTo": ["coarse"]})),
         ]);
         assert_eq!(
             context_paths(&contexts, "fine", "coarse"),
-            vec![vec!["fine".to_string(), "middle".to_string(), "coarse".to_string()]]
+            vec![vec![
+                "fine".to_string(),
+                "middle".to_string(),
+                "coarse".to_string()
+            ]]
         );
     }
 
     #[test]
     fn context_paths_caps_ambiguous_paths_for_fail_closed_selection() {
         let contexts = BTreeMap::from([
-            (
-                "coarse".to_string(),
-                json!({"restrictsTo": []}),
-            ),
+            ("coarse".to_string(), json!({"restrictsTo": []})),
             (
                 "fine".to_string(),
                 json!({"restrictsTo": ["left", "right"]}),
             ),
-            (
-                "left".to_string(),
-                json!({"restrictsTo": ["coarse"]}),
-            ),
-            (
-                "right".to_string(),
-                json!({"restrictsTo": ["coarse"]}),
-            ),
+            ("left".to_string(), json!({"restrictsTo": ["coarse"]})),
+            ("right".to_string(), json!({"restrictsTo": ["coarse"]})),
         ]);
         assert_eq!(
             context_paths(&contexts, "fine", "coarse"),
             vec![
                 vec!["fine".to_string(), "left".to_string(), "coarse".to_string()],
-                vec!["fine".to_string(), "right".to_string(), "coarse".to_string()],
+                vec![
+                    "fine".to_string(),
+                    "right".to_string(),
+                    "coarse".to_string()
+                ],
             ]
         );
     }
@@ -1616,7 +1615,6 @@ fn validate_component_fingerprints(manifest: &Value, label: &str) -> Result<(), 
         "measurementProfile",
         "measurementProfiles",
         "profileFingerprint",
-        "repairPlan",
         "siteCoverDigest",
     ]);
     let actual_digest_keys = input_digests
@@ -1712,31 +1710,6 @@ fn validate_component_fingerprints(manifest: &Value, label: &str) -> Result<(), 
             }
         }
     }
-    let repair_plan_input = manifest.get("repairPlanInputPath");
-    let repair_plan_path = repair_plan_input.and_then(Value::as_str);
-    let repair_plan_digest = input_digests.get("repairPlan");
-    match (repair_plan_path, repair_plan_digest) {
-        (Some(path), Some(digest)) if digest["path"].as_str() == Some(path) => {}
-        (Some(_), Some(_)) => {
-            return Err(format!(
-                "{label} inputDigests.repairPlan.path must match repairPlanInputPath"
-            )
-            .into());
-        }
-        (Some(_), None) => {
-            return Err(format!(
-                "{label} requires inputDigests.repairPlan when repairPlanInputPath is present"
-            )
-            .into());
-        }
-        (None, Some(_)) => {
-            return Err(format!(
-                "{label} must not contain inputDigests.repairPlan without repairPlanInputPath"
-            )
-            .into());
-        }
-        (None, None) => {}
-    }
     for (component, digest_key) in [
         ("lawPolicy", "lawPolicy"),
         ("lawSurface", "lawSurface"),
@@ -1786,7 +1759,6 @@ fn validate_run_manifest_shape(manifest: &Value, label: &str) -> Result<(), Box<
         "lawSurfaceInputPath",
         "measurementProfileInputPath",
         "measurementProfileInputPaths",
-        "repairPlanInputPath",
         "rawArtifactRetention",
         "generatedArtifacts",
         "omittedArtifacts",
@@ -1854,8 +1826,7 @@ fn validate_run_manifest_shape(manifest: &Value, label: &str) -> Result<(), Box<
             .ok_or_else(|| format!("{label} artifactDigests.{artifact_key} must be an object"))?;
         if object.keys().map(String::as_str).collect::<BTreeSet<_>>()
             != BTreeSet::from(["path", "sha256"])
-            || object.get("path").and_then(Value::as_str)
-                != Some(artifact_path)
+            || object.get("path").and_then(Value::as_str) != Some(artifact_path)
             || !object
                 .get("sha256")
                 .and_then(Value::as_str)

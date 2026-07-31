@@ -51,11 +51,9 @@ Outputs:
 ## Comparability
 
 `identical` requires matching ArchMap digest, LawPolicy, law-surface, and
-MeasurementProfile component fingerprints, optional RepairPlan digest, plus tool version.
+MeasurementProfile component fingerprints, plus tool version.
 `verdict-row` requires matching LawPolicy, law-surface, and MeasurementProfile component fingerprints, site cover
-digest, and tool version. RepairPlan digest differences are emitted as
-`sameRepairPlanDigest: false` with a `repair_plan_changed_between_runs` record, while preserving
-the record-level comparison. A policy-bundle component change is therefore explicitly recorded as
+digest, and tool version. A policy-bundle component change is therefore explicitly recorded as
 `not-comparable`.
 Other pairs are `not-comparable`; the report records both independent run conclusions and emits a typed boundary.
 

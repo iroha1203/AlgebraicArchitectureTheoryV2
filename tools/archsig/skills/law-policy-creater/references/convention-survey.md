@@ -36,7 +36,7 @@ Then inspect likely config and architecture surfaces:
 | "Measure selected cover for Čech obstruction" | `law: "ag.cech-obstruction"`, `evaluator: "ag.cech-obstruction"`, plus `measurementProfileRef` |
 | "Measure square-free repair candidates" | `law: "ag.square-free-repair"`, `evaluator: "ag.square-free-repair"`, plus `measurementProfileRef` |
 | "Measure law-conflict Tor for a selected pair" | `lawPair: ["law:left", "law:right"]`, `evaluator: "ag.law-conflict-tor"`, plus `measurementProfileRef` |
-| "Check a supplied SAGA repair descent input" | `law: "ag.saga-descent"`, `evaluator: "ag.saga-descent"`, plus `measurementProfileRef` and a checked RepairPlan |
+| "Measure SAGA repair descent from observed cover data" | `law: "ag.saga-descent"`, `evaluator: "ag.saga-descent"`, plus `measurementProfileRef`; the finite complex is derived from ArchMap |
 | repeated but undocumented pattern | question to user, not policy yet |
 
 Do not translate evidence into witness rules, signature axes, coverage

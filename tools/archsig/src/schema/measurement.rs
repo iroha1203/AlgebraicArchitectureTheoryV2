@@ -343,12 +343,10 @@ fn supporting_invariant_refs(row: &AgStructuralVerdictV1, invariants: &[Value]) 
         .as_deref()
         .and_then(|cert_ref| cert_ref.strip_prefix("computedInvariants/"))
     {
-        if invariants.iter().any(|invariant| {
-            invariant
-                .get("invariantId")
-                .and_then(Value::as_str)
-                == Some(cert_ref)
-        }) {
+        if invariants
+            .iter()
+            .any(|invariant| invariant.get("invariantId").and_then(Value::as_str) == Some(cert_ref))
+        {
             return vec![cert_ref.to_string()];
         }
     }

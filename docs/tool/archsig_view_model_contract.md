@@ -63,7 +63,7 @@ ArchViewのArchitecture modeやproduct identityを定義しない。
 
 ## 境界
 
-- 区画が null の run(例: repair-plan 無しの cech-only run では residualClass が無い)は
+- 区画が null の run(例: 導出複体を持たない cech-only run では residualClass が無い)は
   正常であり、エラーでも欠陥でもない。
 - observationCoverage は「観測した組」の列挙であって、網羅性・完全性の主張ではない。
 - per-vertex / per-edge のスカラー場・調和代表元辺値は現行 packet に存在しないため

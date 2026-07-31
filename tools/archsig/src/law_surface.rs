@@ -75,49 +75,7 @@ pub struct LawEquationSurfaceV1 {
     #[serde(default)]
     pub laws: Vec<LawEquationV1>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub skeleton: Option<Vec<LawSkeletonSimplexV1>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub defect_sources: Option<Vec<LawDefectSourceV1>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub quotient_sheaf_condition: Option<LawQuotientSheafConditionV1>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct LawSkeletonSimplexV1 {
-    pub simplex: String,
-    pub support_atom_ref: String,
-    pub required_law_id: String,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct LawDefectSourceV1 {
-    pub law_id: String,
-    pub cover_ref: String,
-    pub chart_defects: Vec<LawChartDefectV1>,
-    pub holds_criterion: LawHoldsCriterionV1,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct LawChartDefectV1 {
-    pub chart: String,
-    pub defect_observable: LawDefectObservableV1,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct LawDefectObservableV1 {
-    pub axis: String,
-    pub predicate: String,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct LawHoldsCriterionV1 {
-    pub kind: String,
-    pub zero_sense: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -151,8 +109,6 @@ pub struct LawWitnessVariableV1 {
 pub struct LawBindingV1 {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub archmap_variable: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub edge: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub axis: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -441,7 +397,7 @@ fn check_bindings(
         let mut effective_archmap_variables = BTreeSet::new();
         for (variable_index, variable) in law.witness_variables.iter().enumerate() {
             let path = format!("laws[{law_index}].witnessVariables[{variable_index}].binding");
-            for field in ["archmapVariable", "edge", "axis", "predicate"] {
+            for field in ["archmapVariable", "axis", "predicate"] {
                 if raw_witness_field_is_null(raw, law_index, variable_index, field) {
                     examples.push(generic_validation_example(
                         &format!("{path}.{field}"),
@@ -515,49 +471,15 @@ fn check_bindings(
             }
             match axis {
                 "cech" => {
-                    if variable.binding.edge.is_none() {
-                        examples.push(generic_validation_example(
-                            &path,
-                            "missing-edge",
-                            "cech bindings require an edge declaration",
-                        ));
-                    }
-                    if let Some(edge) = &variable.binding.edge {
-                        if edge.len() != 2
-                            || edge.iter().any(|value| value.trim().is_empty())
-                            || edge[0] == edge[1]
-                        {
-                            examples.push(generic_validation_example(
-                                &format!("{path}.edge"),
-                                "invalid",
-                                "edge binding must contain two distinct non-empty context refs",
-                            ));
-                        }
-                    }
                     if variable.binding.archmap_variable.is_some() {
                         examples.push(generic_validation_example(
                             &format!("{path}.archmapVariable"),
                             "present",
-                            "cech bindings use edge declarations rather than name aliases",
+                            "cech bindings derive context edges from ArchMap and do not accept an ArchMap variable alias",
                         ));
                     }
                 }
-                "square-free" | "section-factorization" => {
-                    if let Some(edge) = &variable.binding.edge {
-                        examples.push(generic_validation_example(
-                            &format!("{path}.edge"),
-                            "present",
-                            "square-free and section-factorization bindings use variable names",
-                        ));
-                        if edge.len() != 2 || edge.iter().any(|value| value.trim().is_empty()) {
-                            examples.push(generic_validation_example(
-                                &format!("{path}.edge"),
-                                "invalid",
-                                "edge binding must contain exactly two non-empty context refs",
-                            ));
-                        }
-                    }
-                }
+                "square-free" | "section-factorization" => {}
                 _ => {}
             }
         }
@@ -638,102 +560,6 @@ fn check_forbidden_supports(surface: &LawEquationSurfaceV1) -> ValidationCheck {
 
 fn check_stage3_fields(surface: &LawEquationSurfaceV1, raw: &Value) -> ValidationCheck {
     let mut examples = Vec::new();
-    if raw.get("skeleton").is_some() {
-        if surface.skeleton.as_ref().is_none_or(Vec::is_empty) {
-            examples.push(generic_validation_example(
-                "skeleton",
-                "empty",
-                "Stage 3 skeleton must contain at least one simplex when supplied",
-            ));
-        }
-        let law_ids = surface
-            .laws
-            .iter()
-            .map(|law| law.law_id.as_str())
-            .collect::<BTreeSet<_>>();
-        let mut simplices = BTreeSet::new();
-        for (index, simplex) in surface.skeleton.iter().flatten().enumerate() {
-            if simplex.simplex.trim().is_empty()
-                || simplex.support_atom_ref.trim().is_empty()
-                || simplex.required_law_id.trim().is_empty()
-            {
-                examples.push(generic_validation_example(
-                    &format!("skeleton[{index}]"),
-                    "empty",
-                    "skeleton simplex, supportAtomRef, and requiredLawId must be non-empty",
-                ));
-            }
-            if !simplices.insert(&simplex.simplex) {
-                examples.push(generic_validation_example(
-                    &format!("skeleton[{index}].simplex"),
-                    &simplex.simplex,
-                    "skeleton simplex identifiers must be unique",
-                ));
-            }
-            if !law_ids.contains(simplex.required_law_id.as_str()) {
-                examples.push(generic_validation_example(
-                    &format!("skeleton[{index}].requiredLawId"),
-                    &simplex.required_law_id,
-                    "skeleton requiredLawId must resolve to laws[].lawId",
-                ));
-            }
-        }
-    }
-    if raw.get("defectSources").is_some() {
-        if surface.defect_sources.as_ref().is_none_or(Vec::is_empty) {
-            examples.push(generic_validation_example(
-                "defectSources",
-                "empty",
-                "defectSources must contain at least one law defect source when supplied",
-            ));
-        }
-        let law_ids = surface
-            .laws
-            .iter()
-            .map(|law| law.law_id.as_str())
-            .collect::<BTreeSet<_>>();
-        for (index, source) in surface.defect_sources.iter().flatten().enumerate() {
-            if !law_ids.contains(source.law_id.as_str()) {
-                examples.push(generic_validation_example(
-                    &format!("defectSources[{index}].lawId"),
-                    &source.law_id,
-                    "defect source lawId must resolve to laws[].lawId",
-                ));
-            }
-            if source.cover_ref.trim().is_empty() || source.chart_defects.is_empty() {
-                examples.push(generic_validation_example(
-                    &format!("defectSources[{index}]"),
-                    "incomplete",
-                    "defect source requires coverRef and at least one chartDefect",
-                ));
-            }
-            if source.holds_criterion.kind != "defect-raw-value-zero"
-                || source.holds_criterion.zero_sense != "empty-witness-set"
-            {
-                examples.push(generic_validation_example(
-                    &format!("defectSources[{index}].holdsCriterion"),
-                    "unsupported",
-                    "holdsCriterion must use defect-raw-value-zero / empty-witness-set",
-                ));
-            }
-            for (chart_index, chart) in source.chart_defects.iter().enumerate() {
-                if chart.chart.trim().is_empty()
-                    || !BINDING_AXES.contains(&chart.defect_observable.axis.as_str())
-                    || !BINDING_PREDICATES.contains(&chart.defect_observable.predicate.as_str())
-                    || !binding_pair_is_known(
-                        &chart.defect_observable.axis,
-                        &chart.defect_observable.predicate,
-                    )
-                {
-                    examples.push(generic_validation_example(
-                        &format!("defectSources[{index}].chartDefects[{chart_index}]"),
-                        "invalid",
-                        "chart defect must name a chart and a registered axis/predicate observable",
-                    ));
-                }
-            }
-        }
-    }
     if raw.get("quotientSheafCondition").is_some()
         && !matches!(
             surface
@@ -758,20 +584,8 @@ fn check_stage3_fields(surface: &LawEquationSurfaceV1, raw: &Value) -> Validatio
     }
     check_examples(
         "law-equation-surface-v052-stage3-contract",
-        "Stage 3 law surface fields satisfy the v0.5.4 supplied contract",
+        "law surface quotient condition uses the v0.5.4 contract",
         examples,
-    )
-}
-
-fn binding_pair_is_known(axis: &str, predicate: &str) -> bool {
-    matches!(
-        (axis, predicate),
-        ("cech", "support" | "sectionValue")
-            | ("square-free", "support")
-            | ("section-factorization", "support")
-            | ("laplacian", "cellularCochain")
-            | ("period", "periodIntegral")
-            | ("transfer", "transferPairing")
     )
 }
 
@@ -781,71 +595,6 @@ pub fn validate_law_surface_stage3_against_archmap_v1(
     normalized: &NormalizedArchMapV2,
 ) -> Vec<ValidationExample> {
     let mut examples = Vec::new();
-    let atom_ids = normalized
-        .atoms
-        .iter()
-        .flat_map(|atom| {
-            [
-                atom.source_atom_id.as_str(),
-                atom.normalized_atom_id.as_str(),
-            ]
-        })
-        .collect::<BTreeSet<_>>();
-    let context_ids = normalized
-        .contexts
-        .iter()
-        .flat_map(|context| {
-            [
-                context.source_context_id.as_str(),
-                context.normalized_context_id.as_str(),
-            ]
-        })
-        .collect::<BTreeSet<_>>();
-    if let Some(skeleton) = surface.skeleton.as_ref() {
-        for (index, simplex) in skeleton.iter().enumerate() {
-            if !atom_ids.contains(simplex.support_atom_ref.as_str()) {
-                examples.push(generic_validation_example(
-                    &format!("skeleton[{index}].supportAtomRef"),
-                    &simplex.support_atom_ref,
-                    "skeleton supportAtomRef must resolve to a normalized or source ArchMap atom id",
-                ));
-            }
-        }
-    }
-    if let Some(sources) = surface.defect_sources.as_ref() {
-        for (index, source) in sources.iter().enumerate() {
-            let Some(cover) = normalized.covers.iter().find(|cover| {
-                cover.normalized_cover_id == source.cover_ref
-                    || cover.source_cover_id == source.cover_ref
-            }) else {
-                examples.push(generic_validation_example(
-                    &format!("defectSources[{index}].coverRef"),
-                    &source.cover_ref,
-                    "defect source coverRef must resolve to the selected ArchMap cover",
-                ));
-                continue;
-            };
-            for (chart_index, chart) in source.chart_defects.iter().enumerate() {
-                if !context_ids.contains(chart.chart.as_str()) {
-                    examples.push(generic_validation_example(
-                        &format!("defectSources[{index}].chartDefects[{chart_index}].chart"),
-                        &chart.chart,
-                        "chart defect chart must resolve to an ArchMap context",
-                    ));
-                } else if !cover
-                    .context_ids
-                    .iter()
-                    .any(|context| context == &chart.chart)
-                {
-                    examples.push(generic_validation_example(
-                        &format!("defectSources[{index}].chartDefects[{chart_index}].chart"),
-                        &chart.chart,
-                        "chart defect chart must belong to the declared cover",
-                    ));
-                }
-            }
-        }
-    }
     if surface
         .quotient_sheaf_condition
         .as_ref()

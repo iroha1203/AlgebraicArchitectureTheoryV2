@@ -429,6 +429,13 @@ fn check_archmap_v2_sources(document: &ArchMapDocumentV2) -> ValidationCheck {
                 "source kind must be non-empty",
             ));
         }
+        if !source_has_locator(source) {
+            examples.push(generic_validation_example(
+                "sources",
+                source_id,
+                "source record must carry at least one non-empty locator: path, symbol, section, or traceId",
+            ));
+        }
         if let Some(parent) = source.source.as_deref() {
             if !document.sources.contains_key(parent) {
                 examples.push(generic_validation_example(
@@ -444,6 +451,18 @@ fn check_archmap_v2_sources(document: &ArchMapDocumentV2) -> ValidationCheck {
         "sources table is present and internally resolvable",
         examples,
     )
+}
+
+fn source_has_locator(source: &crate::ArchMapSource) -> bool {
+    [
+        source.path.as_deref(),
+        source.symbol.as_deref(),
+        source.section.as_deref(),
+        source.trace_id.as_deref(),
+    ]
+    .into_iter()
+    .flatten()
+    .any(|value| !value.trim().is_empty())
 }
 
 fn check_archmap_v2_collection_shape(document: &ArchMapDocumentV2) -> ValidationCheck {
@@ -1191,6 +1210,39 @@ mod tests {
                 "{check_id} must reject absent or duplicate refs"
             );
         }
+    }
+
+    #[test]
+    fn archmap_input_requires_a_source_locator_on_every_source_record() {
+        let document: ArchMapDocumentV2 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/archmap_v2.json"
+        ))
+        .expect("canonical ArchMap fixture parses");
+        let mut invalid = document;
+        let source = invalid
+            .sources
+            .get_mut("src:order")
+            .expect("fixture source exists");
+        source.path = None;
+        source.symbol = None;
+        source.section = None;
+        source.trace_id = None;
+
+        let report = validate_archmap_v2_report(&invalid, "fixture:invalid-source-locator.json");
+        let check = report
+            .checks
+            .iter()
+            .find(|check| check.id == "archmap-schema052-sources-resolve")
+            .expect("source check exists");
+        assert_eq!(check.result, "fail");
+        assert!(check.examples.iter().any(|example| {
+            example.source.as_deref() == Some("sources")
+                && example.target.as_deref() == Some("src:order")
+                && example
+                    .evidence
+                    .as_deref()
+                    .is_some_and(|reason| reason.contains("locator"))
+        }));
     }
 
     #[test]

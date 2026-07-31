@@ -6,7 +6,10 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../../.." && pwd)"
 EXAMPLE="$ROOT/tools/archsig/examples/practical-rust-service"
+mkdir -p "$ROOT/.tmp"
 OUT="$ROOT/.tmp/archsig-practical-rust-service"
+rm -rf -- "$OUT"
+mkdir -p "$OUT"
 ARCHSIG=(cargo run --quiet --manifest-path "$ROOT/tools/archsig/Cargo.toml" --)
 SAMPLE="$EXAMPLE/sample/Cargo.toml"
 
@@ -60,7 +63,7 @@ echo "--- repaired (--features settlement-authority): reconciled ---"
 cargo run --quiet --manifest-path "$SAMPLE" --features settlement-authority
 
 echo
-echo "=== Act 2: measure base — same questions, SAGA data not yet supplied ==="
+echo "=== Act 2: measure base — ArchMap-derived SAGA complex ==="
 mkdir -p "$OUT/base"
 base_policy="$OUT/base/law_policy.json"
 jq --arg ref "$(jq -r '.id' "$EXAMPLE/law_policy/law_surface_base.json")" \
@@ -73,9 +76,8 @@ jq --arg ref "$(jq -r '.id' "$EXAMPLE/law_policy/law_surface_base.json")" \
   --measurement-profile "$EXAMPLE/law_policy/measurement_profile_drift.json" \
   --law-surface "$EXAMPLE/law_policy/law_surface_base.json" \
   --out-dir "$OUT/base" >/dev/null
-expect_value "$OUT/base/archsig-analysis-summary.json" "analyze base" conclusion "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
-expect "saga base" "$(saga_verdict "$OUT/base/archsig-measurement-packet.json" "law:money-repair-descent")" "not_computed"
-echo "    (no RepairPlan supplied: every SAGA stage stays typed silence_by_design)"
+expect_value "$OUT/base/archsig-analysis-summary.json" "analyze base" conclusion "REPAIR_GLUES_WITHIN_SELECTED_COMPLEX"
+expect "saga base" "$(saga_verdict "$OUT/base/archsig-measurement-packet.json" "saga.residual-boundary-membership")" "measured_zero"
 
 echo
 echo "=== Act 3: measure head — the full SAGA staircase fires ==="
@@ -86,14 +88,13 @@ mkdir -p "$OUT/head"
   --measurement-profile "$EXAMPLE/law_policy/measurement_profile.json" \
   --measurement-profile "$EXAMPLE/law_policy/measurement_profile_drift.json" \
   --law-surface "$EXAMPLE/law_policy/law_surface.json" \
-  --repair-plan "$EXAMPLE/saga/repair_plan_head.json" \
   --out-dir "$OUT/head" >/dev/null
 head_packet="$OUT/head/archsig-measurement-packet.json"
 expect "grounding head" "$(saga_verdict "$head_packet" "law:money-convention")" "measured_zero"
 echo "    (every chart satisfies its own displayed money law — that is the trap)"
-expect "descent head" "$(saga_verdict "$head_packet" "saga.residual-class")" "measured_nonzero"
+expect "descent head" "$(saga_verdict "$head_packet" "saga.residual-boundary-membership")" "measured_nonzero"
 expect "harmonic debt head" "$(invariant_value "$head_packet" "harmonic-debt:profile:money-drift@1" "essentialRepairLowerBound")" "0.353553"
-expect_value "$OUT/head/archsig-analysis-summary.json" "analyze head" conclusion "MEASURED_NONGLUING_RESIDUAL_CLASS"
+expect_value "$OUT/head/archsig-analysis-summary.json" "analyze head" conclusion "MEASURED_NONGLUING_RESIDUAL"
 
 echo
 echo "=== Act 4: compare and gate the head run ==="
@@ -118,7 +119,6 @@ mkdir -p "$OUT/repaired"
   --measurement-profile "$EXAMPLE/law_policy/measurement_profile.json" \
   --measurement-profile "$EXAMPLE/law_policy/measurement_profile_drift.json" \
   --law-surface "$EXAMPLE/law_policy/law_surface.json" \
-  --repair-plan "$EXAMPLE/saga/repair_plan_repaired.json" \
   --out-dir "$OUT/repaired" >/dev/null
 repaired_packet="$OUT/repaired/archsig-measurement-packet.json"
 expect "descent repaired" "$(saga_verdict "$repaired_packet" "saga.residual-boundary-membership")" "measured_zero"
@@ -138,6 +138,6 @@ expect_value "$OUT/gate-repaired.json" "gate repaired" decision "PASS_WITHIN_GAT
 
 echo
 echo "ArchSig artifacts: $OUT"
-echo "Residual class support: $OUT/head/archsig-measurement-packet.json (computedInvariants -> saga-descent:residual-class)"
+echo "Derived residual support: $OUT/head/archsig-measurement-packet.json (computedInvariants -> saga-descent:residual-derivation)"
 echo "SAGA staircase (viewer): $OUT/head/archsig-atom-viewer-data.json (sagaDescent.stages)"
 echo "ArchView app: $ROOT/tools/archview/archview.html"

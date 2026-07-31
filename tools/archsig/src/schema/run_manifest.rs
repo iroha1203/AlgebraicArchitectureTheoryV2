@@ -22,8 +22,6 @@ pub struct ArchSigRunManifestV1 {
     pub measurement_profile_input_path: Option<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub measurement_profile_input_paths: Vec<String>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub repair_plan_input_path: Option<String>,
     pub raw_artifact_retention: String,
     pub generated_artifacts: Vec<String>,
     pub omitted_artifacts: Vec<String>,
@@ -42,8 +40,6 @@ pub struct ArchSigRunManifestValidationReportPathsV1 {
     pub law_policy: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub law_surface: Option<String>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub repair_plan: Option<String>,
     pub analysis: Option<String>,
 }
 
@@ -62,8 +58,6 @@ pub struct ArchSigRunManifestValidationResultSummaryV1 {
     pub law_policy: ArchSigArtifactValidationResultV1,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub law_surface: Option<ArchSigArtifactValidationResultV1>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub repair_plan: Option<ArchSigArtifactValidationResultV1>,
     pub analysis: ArchSigArtifactValidationResultV1,
 }
 
