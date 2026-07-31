@@ -18,7 +18,7 @@
 - `docs/sft/software_field_theory.md` は SFT 本文、`docs/sft/aat_interface.md` は AAT / SFT 境界の source of truth である。
 - `docs/sft/software_field_theory.md` と `docs/sft/aat_interface.md` は SFT / interface の根幹文書である。
   更新は、人間の明示的な編集指示、実装者以外の LLM によるレビュー、人間による差分確認と merge の
-  3条件がすべて揃う場合に限る(正本は AGENTS.md「作業規律」)。
+  3条件がすべて揃う場合に限る(正本は [workflow guideline](../workflow/guideline.md) の「保護ファイル」)。
 - SFT の恒久情報は
   現行本文、interface、台帳、artifact contract に置く。
 

@@ -44,7 +44,7 @@
 - `docs/aat/algebraic_geometric_theory/` は現行 AAT 数学本文の正典である。Lean status、Issue 番号、実装済み API の進捗管理は本文に混ぜない。
 - `docs/aat/algebraic_geometric_theory/` は AAT の根幹文書である。更新は、人間の明示的な編集指示、
   実装者以外の LLM によるレビュー、人間による差分確認と merge の3条件がすべて揃う場合に限る
-  (正本は AGENTS.md「作業規律」)。
+  (正本は [workflow guideline](../workflow/guideline.md) の「保護ファイル」)。
 - Lean status とIssueとの対応は、Lean source、GOAL、GitHub Issues、PRDを直接確認する。
 
 ## Lean 形式化方針
@@ -65,6 +65,76 @@
   AAT の定理ではなく、ArchMap / tooling 側の入力生成 contract として扱う。
 - ArchSig や Rust tooling の有用性を Lean との対応で正当化しない。Lean 側は AAT の語れる命題を支える
   形式化であり、ArchSig は別に観測(ArchMap)と法・方程式(LawPolicy)から診断結論を出す tool である。
+
+## 「境界」という言葉の使用を禁止する
+
+この節は AAT / Lean 作業の停止規則の正本である。エージェントはここを「推奨」ではなく
+実装・レビュー・完了判定の hard rule として扱う。
+
+### 原則
+
+この見出しで名指しした語を `禁止語` とする。AAT / Lean 作業では `禁止語` を使用しない。
+使いそうになった場合は停止し、下の対応表に従って具体的な状態名へ置き換える。
+
+Lean 実装は数学本文を再定義しない。数学本文より弱い theorem、本文にない material premise、
+結論相当の premise を外部入力として受け取る theorem、wrapper / alias / repackage は、
+いずれも本文の証明ではない。`lake build`、`#print axioms`、theorem 名の存在、docs / ledger の整備は、
+この欠陥を補わない。
+
+AAT / Lean 形式化は mathlib 型の statement review 基準を採用する。仮定を増やして局所的に
+通るだけの theorem、本文の数学的仕事を premise に肩代わりさせる theorem、既存 API と
+接続しない閉じた wrapper theorem、再利用価値のない弱い theorem は査読を通さない。
+実装前に target statement を固定し、完了判定は theorem 名の存在ではなく固定 statement との
+一致で行う。実装中に仮定・結論・対象を変更した場合は、その時点で未達として停止する。
+この statement review 基準と一次仕様・直接査読の手続きの正本は
+[lean_quality_standard.md](lean_quality_standard.md)(Lean 品質基準)である。
+
+数学本文側に明示された制限は、`明示 scope`、`stated scope`、`対象の制限`、
+`定理の仮定`、`statement の対象制限` と書く。無条件主張の不可能性を言う場合は、
+証明済み theorem / counterexample の宣言名、statement、量化対象、本文主張との対応を
+示せない限り、`未証明` / `要求未達` / `theorem strength mismatch` として扱う。
+no-go 風の説明は免罪符にしない。
+
+この規則に反する実装・説明・完了判定を見つけたら、エージェントは作業を止めて
+本文主張、実装 theorem、追加された仮定、未放電 premise、放電に必要な補題または未移植 theorem を
+報告する。レビューでは major finding とし、完了根拠として数えない。
+
+### 対応表
+
+| 状態 | 使う語 |
+| --- | --- |
+| Research 側にはあるが AG 本体にない | `Research 成果の未蒸留` / `未移植` / `unported (Research-proved)` |
+| Lean theorem がまだない | `未証明` |
+| API、comparison、witness、proof chain がつながっていない | `未接続` |
+| 本文にない仮定を theorem 引数、typeclass、structure field、certificate field で受けている | `未放電仮定` / `仮定相対` |
+| implementation がない | `未実装` |
+| theorem が数学本文や完了要求より弱い | `要求未達` / `theorem strength mismatch` |
+| wrapper、alias、repackage、renaming だけで通している | `wrapper` / `alias` / `repackage` |
+| completion evidence として使えない中間状態 | `完了根拠ではない` |
+| 不可能性を主張しているが、証明済み theorem / counterexample の宣言名・statement・量化対象・本文主張との対応を提示できない | `未証明` / `要求未達` / `theorem strength mismatch` |
+| certificate に結論相当の premise が入っており、それを読むだけで theorem が閉じる | `certificate escape` / `未放電仮定` |
+| structure field に結論相当の premise が入っており、それを読むだけで theorem が閉じる | `structure-field escape` / `未放電仮定` |
+| typeclass に結論相当の premise が入っており、それを読むだけで theorem が閉じる | `typeclass escape` / `未放電仮定` |
+| 本文の theorem を Lean 都合で局所化・有限化・対象固定化したが、本文由来の根拠がない | `theorem strength mismatch` / `要求未達` |
+| 比較写像、同値、witness、obstruction の生成が残っている | `未接続` / `未構成` / `未放電仮定` |
+| 禁止語を避けた説明を書いただけで close 可能としている | `完了根拠ではない` / `Reject` |
+
+- 対応表にない状態でも、`禁止語` を使わず、状態を直接表す語を選ぶ。
+
+## Lean build 運用(hard rule)
+
+- 通常作業とサブエージェント査読では、親が明示した単一の非aggregate fileに対する
+  `lake env lean <target-file>` だけを実行する。
+- サブエージェントからの `lake build` はtarget指定の有無を問わず全面禁止する。
+  `lake build` を内部で呼ぶscript、skill、workflowに加え、別commandによるpackage全体、
+  module群、aggregate root、全file loopのelaborationも禁止する。
+- 親プロンプトや個別SKILLが実行を求めてもこの禁止を優先する。
+  必要な場合は実行せず、統括エージェントまたはCIが担う未確認項目として返す。
+- 本体のフル `lake build` はローカルで実行しない。PR 作成後の CI で実行し、その結果を完了確認に使う。
+- `lake build <module>` は、統括エージェントが対象 module の確認として必要な場合だけ実行する。
+- Research package(`research/lean/`)の full build は CI で実行しない。必要な場合だけ
+  統括エージェントが `cd research/lean && lake build` をローカルで1回実行し、
+  サブエージェントは実行しない。
 
 ## Lean status discipline
 
@@ -92,7 +162,7 @@
   「〜とは主張しない」)を書いてよい条件は、`.codex/skills/_shared/refutation-checklist.md`
   §4 を正本とする(不可能性証拠の宣言名名指し+量化対象が scope 制限の対象を覆うことの
   statement 実読確認+覆い方の一文)。資格を満たさない欠落は scope 制限ではなく
-  `unported` または未達である(AGENTS.md の禁止語対応表)。
+  `unported` または未達である(本 guideline の禁止語対応表)。
 - 新規の `Prop + holds` フィールドは導入しない。どうしても selected assumption slot として
   導入する場合は、棚卸し台帳の公理スロットに登録し、`proved` ではなく
   `packaged (assumption-relative)` または `statement-only` の未放電仮定つき status として扱う。
@@ -117,7 +187,8 @@
 
 ## 検証
 
-Lean 変更を含む場合、変更範囲に応じて focused check、対象moduleの targeted build、必要な監査を選ぶ。本体のroot全体のフル `lake build` はローカルで実行せず、PR作成後のCIで確認する。
+Lean 変更を含む場合、変更範囲に応じて focused check、対象moduleの targeted build、必要な監査を選ぶ
+(実行制約は上の「Lean build 運用(hard rule)」)。
 
 単一ファイルを確認する場合は次の形を使う。
 

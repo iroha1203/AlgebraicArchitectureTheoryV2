@@ -9,7 +9,7 @@ ArchSig入力トライアド、findingゼロ資格、identity記述を扱う。L
 
 台帳・docs・PR 本文が scope 制限(selected input、no-go、沈黙、
 「〜とは主張しない」)を記載する場合、その資格を検証する
-(AGENTS.mdの禁止語対応表も参照):
+(`docs/aat/guideline.md`の禁止語対応表も参照):
 
 1. 不可能性の証拠(no-go 定理、反例)が**宣言名で名指し**されているか。
 2. その定理の statement を実読し、**量化対象(任意ペアか、生成・特定
@@ -76,7 +76,7 @@ hard fail(レーン裁量なし)。差分と無関係な既存ヒット(main 由
 
 ## 8. ArchSig 入力トライアド(入力・slot の資格条件)
 
-AGENTS.md「責務範囲」の入力トライアド(ArchMap=観測 / LawPolicy=法・方程式 /
+`docs/tool/guideline.md`「責務範囲(入力トライアドの正本)」の入力トライアド(ArchMap=観測 / LawPolicy=法・方程式 /
 ArchSig=計算)を hard gate として適用する。ArchSig への入力、CLI flag、
 schema field、供給 slot を導入・拡張する差分では:
 
@@ -102,7 +102,7 @@ schema field、供給 slot を導入・拡張する差分では:
 ## 9. identity 記述の因果順(肯定形の正本)
 
 - ツール・artifact・定理の identity 文は「どの入力から何を計算する /
-  何を主張する」の肯定形を正とする(AGENTS.md「責務範囲」)。結論の相対性は
+  何を主張する」の肯定形を正とする(`docs/tool/guideline.md`「責務範囲(入力トライアドの正本)」)。結論の相対性は
   入力契約に由来する帰結として書かれているかを確認する。
 - identity 文に否定形免責(「theorem prover ではない」「global truth では
   ない」等)が習慣的に併記されている場合、それが塞ぐ読者の具体的な誤推論を
