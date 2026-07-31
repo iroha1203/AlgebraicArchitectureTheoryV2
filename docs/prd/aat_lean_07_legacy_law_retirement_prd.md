@@ -56,10 +56,12 @@ Atom/ObstructionLegacy.lean
 
 ### 残債 3: research 側の bridge 依存(2 file)
 
-`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairLawEquationRealization.lean` と
-同 `SemanticRepairCechGrounding.lean` が、導出 bridge `toLegacyLawUniverse` の
-`Index` / `Required` 表示を参照している(計 11 箇所)。自由述語の直接構成ではないが、
-`LawUniverse` 型を削除するとこの 2 file が壊れる。処置は R1 の decision rule に従う。
+`research/lean/ResearchLean/AG/QualitySurface/SemanticRepairLawEquationRealization.lean`(6 箇所)と
+同 `SemanticRepairCechGrounding.lean`(246 箇所)が、導出 bridge `toLegacyLawUniverse` の
+`Index` / `Required` 表示を参照している。自由述語の直接構成ではないが、
+`LawUniverse` 型を削除するとこの 2 file が壊れる。特に CechGrounding は受理済み research
+成果の大規模 file であり、機械的置換でも statement 同一性の検証負荷が大きい。
+処置は R1 の decision rule に従う。
 
 ### 対象外と分類する語彙 residue(構造非依存)
 
@@ -86,8 +88,10 @@ N 群は対象外」に従い、rename は本 PRD の対象外とする(最終�
 - research 側 bridge 依存(残債 3)の decision rule: 既定は、当該 2 file の
   `toLegacyLawUniverse` 表示参照を equation system 直参照(`Index` / required selection)へ
   置換する同時移行とする。置換は量化対象・material premise・結論を変えない書き換えに限る。
-  この移行が Research integrity gate(R3 migration manifest 等)の変更を要する場合は
-  停止してユーザー裁定を仰ぐ(代替案 = 表示型の残置をユーザー承認の上で採る)。
+  次のいずれかに該当する場合は停止してユーザー裁定を仰ぐ(代替案 = 表示型の残置を
+  ユーザー承認の上で採る): (a) 移行が Research integrity gate(R3 migration manifest 等)の
+  変更を要する場合、(b) CechGrounding(246 箇所)の置換で statement 同一性を機械的に
+  保証できない箇所が見つかった場合。
 
 ### R2 — 暗黒コード処分(既定 = 削除)
 
