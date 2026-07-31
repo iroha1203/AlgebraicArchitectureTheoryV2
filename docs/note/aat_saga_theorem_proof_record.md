@@ -91,16 +91,19 @@ claim boundary が硬化され(cover refinement / naturality と full sheaf coho
 
 ## 6. 主要 Lean 成果物
 
-置き場所: `research/lean/ResearchLean/AG/QualitySurface/`
+この6成果物は 2026-08-01 に現行 tree から退役した。最終検証 source-bearing head は
+[`fb132e9eaa06004bd4f8e8f2a3eb316bbb0fd985`](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/commit/fb132e9eaa06004bd4f8e8f2a3eb316bbb0fd985)、
+退役前の置き場所は固定済みの
+[`research/lean/ResearchLean/AG/QualitySurface/`](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/fb132e9eaa06004bd4f8e8f2a3eb316bbb0fd985/research/lean/ResearchLean/AG/QualitySurface/) である。
 
-- `SemanticRepairCechGrounding.lean` — 352 サイクルの本体(site/topology bridge、comparison、zero-predicate equivalence、boundary theorems、no-go 定理群、一点圧縮の等価類)
-- `SemanticRepairLawEquationRealization.lean` — laws-as-equations 層(witness ideal、商係数生成、消滅定理、evaluator 定理化、detector soundness)
-- `SemanticRepairLawEquationWitnessInstance.lean` — 具体有限 instance(sheaf 条件放電、非退化 witness)
-- `SemanticRepairLawEquationGroundedPacket.lean` — end-to-end composition と gate 層 inhabit
-- `SemanticRepairLawEquationEndToEndInstance.lean` — degree-0 境界定理、FiniteModel 上の発火 instance
-- `SemanticRepairLawEquationNonzeroClassInstance.lean` — 円 nerve、非零 class 転送 packet
+- [`SemanticRepairCechGrounding.lean`](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/fb132e9eaa06004bd4f8e8f2a3eb316bbb0fd985/research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean) — 352 サイクルの本体(site/topology bridge、comparison、zero-predicate equivalence、boundary theorems、no-go 定理群、一点圧縮の等価類)
+- [`SemanticRepairLawEquationRealization.lean`](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/fb132e9eaa06004bd4f8e8f2a3eb316bbb0fd985/research/lean/ResearchLean/AG/QualitySurface/SemanticRepairLawEquationRealization.lean) — laws-as-equations 層(witness ideal、商係数生成、消滅定理、evaluator 定理化、detector soundness)
+- [`SemanticRepairLawEquationWitnessInstance.lean`](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/fb132e9eaa06004bd4f8e8f2a3eb316bbb0fd985/research/lean/ResearchLean/AG/QualitySurface/SemanticRepairLawEquationWitnessInstance.lean) — 具体有限 instance(sheaf 条件放電、非退化 witness)
+- [`SemanticRepairLawEquationGroundedPacket.lean`](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/fb132e9eaa06004bd4f8e8f2a3eb316bbb0fd985/research/lean/ResearchLean/AG/QualitySurface/SemanticRepairLawEquationGroundedPacket.lean) — end-to-end composition と gate 層 inhabit
+- [`SemanticRepairLawEquationEndToEndInstance.lean`](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/fb132e9eaa06004bd4f8e8f2a3eb316bbb0fd985/research/lean/ResearchLean/AG/QualitySurface/SemanticRepairLawEquationEndToEndInstance.lean) — degree-0 境界定理、FiniteModel 上の発火 instance
+- [`SemanticRepairLawEquationNonzeroClassInstance.lean`](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/fb132e9eaa06004bd4f8e8f2a3eb316bbb0fd985/research/lean/ResearchLean/AG/QualitySurface/SemanticRepairLawEquationNonzeroClassInstance.lean) — 円 nerve、非零 class 転送 packet
 
-全宣言は標準公理(`propext`, `Classical.choice`, `Quot.sound` の部分集合)のみに依存し、`sorryAx` なし。
+この固定 head 時点の全宣言は標準公理(`propext`, `Classical.choice`, `Quot.sound` の部分集合)のみに依存し、`sorryAx` なし。
 
 ## 7. 境界 — 語らないこと
 

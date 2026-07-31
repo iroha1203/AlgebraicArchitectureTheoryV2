@@ -30,6 +30,26 @@ artifacts, proof-obligation deltas, and discharge audits only.
   law-equation ambient rows) are the standing claim-boundary record; the
   optional hardening items listed there are not obligations of this GOAL.
 
+## Lean artifact retirement
+
+- date: 2026-08-01 JST
+- status: the completed G-06 Lean artifact cluster was retired from the active
+  `ResearchLean` tree under Issue #3736.
+- final verification head (last source-bearing commit):
+  [`fb132e9eaa06004bd4f8e8f2a3eb316bbb0fd985`](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/commit/fb132e9eaa06004bd4f8e8f2a3eb316bbb0fd985)
+- retired artifacts:
+  - [`ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean`](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/fb132e9eaa06004bd4f8e8f2a3eb316bbb0fd985/research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean)
+  - [`ResearchLean/AG/QualitySurface/SemanticRepairLawEquationRealization.lean`](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/fb132e9eaa06004bd4f8e8f2a3eb316bbb0fd985/research/lean/ResearchLean/AG/QualitySurface/SemanticRepairLawEquationRealization.lean)
+  - [`ResearchLean/AG/QualitySurface/SemanticRepairLawEquationWitnessInstance.lean`](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/fb132e9eaa06004bd4f8e8f2a3eb316bbb0fd985/research/lean/ResearchLean/AG/QualitySurface/SemanticRepairLawEquationWitnessInstance.lean)
+  - [`ResearchLean/AG/QualitySurface/SemanticRepairLawEquationGroundedPacket.lean`](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/fb132e9eaa06004bd4f8e8f2a3eb316bbb0fd985/research/lean/ResearchLean/AG/QualitySurface/SemanticRepairLawEquationGroundedPacket.lean)
+  - [`ResearchLean/AG/QualitySurface/SemanticRepairLawEquationEndToEndInstance.lean`](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/fb132e9eaa06004bd4f8e8f2a3eb316bbb0fd985/research/lean/ResearchLean/AG/QualitySurface/SemanticRepairLawEquationEndToEndInstance.lean)
+  - [`ResearchLean/AG/QualitySurface/SemanticRepairLawEquationNonzeroClassInstance.lean`](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/fb132e9eaa06004bd4f8e8f2a3eb316bbb0fd985/research/lean/ResearchLean/AG/QualitySurface/SemanticRepairLawEquationNonzeroClassInstance.lean)
+- References below to these six retired artifacts—their declaration names,
+  module-build commands, and source paths—are historical evidence at or before
+  the fixed source-bearing commit above; they are not live paths in the current
+  tree. References to other Formal and ResearchLean foundations retain their
+  ordinary current-tree meaning.
+
 ## Initial Scope
 
 G-06 is a mathematical-foundation GOAL created after G-05. Its purpose is not

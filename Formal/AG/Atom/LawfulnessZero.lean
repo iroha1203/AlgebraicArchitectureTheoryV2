@@ -6,9 +6,8 @@ import Formal.AG.Atom.Obstruction
 This module formalizes Part I, Propositions 9.1--9.2 and Theorem 9.3 directly
 for an `ArchitecturalEquationSystem`.
 
-Implementation notes: valuation indices and required roles come from the same
-equation system that defines residual vanishing.  The former predicate-valued
-law surface is retained only by `Atom.LawfulnessZeroLegacy`.
+Implementation notes: valuation indices, required roles, residual vanishing,
+and aggregate obstruction all use the same architectural equation system.
 -/
 
 namespace AAT.AG

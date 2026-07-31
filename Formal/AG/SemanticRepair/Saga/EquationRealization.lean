@@ -31,8 +31,8 @@ import Formal.AG.SemanticRepair.Saga.Exactness
   equation realization, with the named equation-side residual surface
   (`equationResidualCochain`, Lemma 5.4 wrappers).
 
-No `Law.holds`, manual witness-ideal core, supplied `Φ`, inverse, or cochain
-equivalence is taken as input.  The frozen G-06 route is untouched.
+The named residual surface and generated equation coefficient determine the
+equation-side realization used by the comparison construction above.
 -/
 
 noncomputable section

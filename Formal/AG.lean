@@ -6,7 +6,6 @@ import Formal.AG.Atom.Configuration
 import Formal.AG.Atom.ArchitectureObject
 import Formal.AG.Atom.Invariant
 import Formal.AG.Atom.Signature
-import Formal.AG.Atom.Law
 import Formal.AG.Equation
 import Formal.AG.Atom.Obstruction
 import Formal.AG.Atom.LawfulnessZero
