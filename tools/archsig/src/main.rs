@@ -5,29 +5,24 @@ use std::path::PathBuf;
 use std::process::ExitCode;
 
 use archsig::{
-    ARCHMAP_CANDIDATE_PACKET_V1_SCHEMA, ARCHMAP_COVERAGE_LEDGER_V1_SCHEMA,
-    ARCHMAP_EXTRACTION_CONSISTENCY_V1_SCHEMA, ARCHMAP_SCOPE_MANIFEST_V1_SCHEMA, ARCHMAP_V2_SCHEMA,
-    ARCHSIG_REPAIR_PLAN_V1_SCHEMA, ARCHSIG_VALIDATION_FAILED_BEFORE_MEASUREMENT, ArchMapDocumentV2,
-    ArchMapValidationReportV2, ArchmapCoverageLedgerV1, ArchmapExtractionConsistencyV1,
-    ArchmapScopeManifestV1, AuthoringAuditInputV1, ExtractionDiffOptions,
+    ARCHMAP_V2_SCHEMA, ARCHSIG_REPAIR_PLAN_V1_SCHEMA,
+    ARCHSIG_VALIDATION_FAILED_BEFORE_MEASUREMENT, ArchMapDocumentV2,
     LAW_EQUATION_SURFACE_V1_SCHEMA, LAW_POLICY_V1_SCHEMA, LawEquationSurfaceV1,
     LawPolicyDocumentV1, MEASUREMENT_PROFILE_V1_SCHEMA, MeasurementProfileV1, RepairPlanDocumentV1,
-    SchemaVersionCatalogV0, ScopeManifestOptions, archmap_authoring_audit_checks_v1,
-    build_comparison_artifacts_v1, build_extraction_consistency_v1,
+    SchemaVersionCatalogV0,
+    build_comparison_artifacts_v1,
     build_foundation_measurement_packet_v1, build_gate_report_v1, build_insight_brief_v1,
     build_insight_report_v1, build_measurement_summary_v1, build_measurement_view_model_v1,
     build_measurement_viewer_data_v1,
-    build_policy_bundle, build_repair_plan_validation_report_v1, build_scope_manifest_v1,
+    build_policy_bundle, build_repair_plan_validation_report_v1,
     component_fingerprints as build_component_fingerprints, normalize_archmap_v2,
-    parse_candidate_packet_value, resolve_and_verify_policy_bundle, static_schema_version_catalog,
-    validate_archmap_v2_report, validate_authoring_audit_input_v1, validate_law_policy_v1_report,
+    resolve_and_verify_policy_bundle, static_schema_version_catalog,
+    validate_archmap_v2_report, validate_law_policy_v1_report,
     validate_law_surface_v1_report, validate_measurement_packet_value_v1,
     validate_measurement_profile_v1_checks,
 };
 use clap::{Parser, Subcommand};
-use globset::{Glob, GlobSetBuilder};
 use serde_json::Value;
-use walkdir::WalkDir;
 
 mod cli;
 use cli::*;
@@ -44,134 +39,6 @@ struct Args {
 
 #[derive(Debug, Subcommand)]
 enum Command {
-    /// Validate a supplied ArchMap observation JSON artifact.
-    Archmap {
-        /// Input ArchMap JSON path.
-        #[arg(long)]
-        input: PathBuf,
-
-        /// Optional authoring scope manifest for survey traceability audit.
-        #[arg(long = "scope-manifest")]
-        scope_manifest: Option<PathBuf>,
-
-        /// Optional candidate packet path or glob for survey traceability audit. Repeat for multiple inputs.
-        #[arg(long = "candidate-packets")]
-        candidate_packets: Vec<String>,
-
-        /// Optional extraction consistency artifact path for adjudicated provenance closure. Repeat for multiple inputs.
-        #[arg(long = "extraction-consistency")]
-        extraction_consistency: Vec<PathBuf>,
-
-        /// Optional coverage ledger for survey traceability audit.
-        #[arg(long = "coverage-ledger")]
-        coverage_ledger: Option<PathBuf>,
-
-        /// Output ArchMap validation report JSON path. If omitted, JSON is written to stdout.
-        #[arg(long)]
-        out: Option<PathBuf>,
-    },
-
-    /// Build a deterministic authoring scope manifest worklist.
-    ScopeManifest {
-        /// Repository root to scan.
-        #[arg(long = "repo-root", default_value = ".")]
-        repo_root: PathBuf,
-
-        /// Include glob. Repeat for multiple patterns.
-        #[arg(long = "include", required = true)]
-        include: Vec<String>,
-
-        /// Exclude glob. Repeat for multiple patterns.
-        #[arg(long = "exclude")]
-        exclude: Vec<String>,
-
-        /// Author evidence file as <kind>:<name>=<repo-relative-path>.
-        #[arg(long = "add-evidence")]
-        add_evidence: Vec<String>,
-
-        /// Previous scope manifest. Emits only new or content-changed worklist rows.
-        #[arg(long)]
-        baseline: Option<PathBuf>,
-
-        /// Manifest id. Tests and reproducible runs should set this explicitly.
-        #[arg(long, default_value = "scope:archmap-authoring")]
-        id: String,
-
-        /// Requested scope text to record in scopeSpec.
-        #[arg(long = "requested-scope")]
-        requested_scope: Option<String>,
-
-        /// Scope approver to record in scopeSpec.
-        #[arg(long = "approved-by")]
-        approved_by: Option<String>,
-
-        /// Deterministic test override for repository.revision.
-        #[arg(long = "revision-override")]
-        revision_override: Option<String>,
-
-        /// Deterministic test override for repository.dirty.
-        #[arg(long = "dirty-override")]
-        dirty_override: Option<bool>,
-
-        /// Output scope manifest JSON path. If omitted, JSON is written to stdout.
-        #[arg(long)]
-        out: Option<PathBuf>,
-    },
-
-    /// Compare candidate packets by authoring atom-match-key without adjudicating adoption.
-    ExtractionDiff {
-        /// Pass A candidate packet JSON path. Repeat for multiple chunks.
-        #[arg(long = "pass-a", required = true)]
-        pass_a: Vec<PathBuf>,
-
-        /// Pass B candidate packet JSON path. Omit only for explicit single-pass degraded records.
-        #[arg(long = "pass-b")]
-        pass_b: Vec<PathBuf>,
-
-        /// Consistency artifact id.
-        #[arg(long, default_value = "consistency:archmap-authoring")]
-        id: String,
-
-        /// Scope manifest ref override. Defaults to the first pass A packet's scopeManifestRef.
-        #[arg(long = "scope-manifest-ref")]
-        scope_manifest_ref: Option<String>,
-
-        /// Output extraction consistency JSON path. If omitted, JSON is written to stdout.
-        #[arg(long)]
-        out: Option<PathBuf>,
-    },
-
-    /// Compute deterministic supply-bench metrics over run-pair consistency artifacts.
-    SupplyBench {
-        /// Run pair as <pair-id>=<extraction-consistency.json>. Repeat per pair.
-        #[arg(long = "pair", required = true)]
-        pair: Vec<String>,
-
-        /// Chunk class label as <pair-id>=<class> (e.g. tuned, prompt-literal-disjoint).
-        #[arg(long = "chunk-class")]
-        chunk_class: Vec<String>,
-
-        /// Reference alignment as <pair-id>=<reference-alignment.json>.
-        #[arg(long = "alignment")]
-        alignment: Vec<String>,
-
-        /// Reference slice JSON path (archmap-reference-slice/v1).
-        #[arg(long = "reference")]
-        reference: Option<PathBuf>,
-
-        /// Comparison-series key JSON recorded verbatim in the report.
-        #[arg(long = "series-key")]
-        series_key: Option<PathBuf>,
-
-        /// Report artifact id.
-        #[arg(long, default_value = "supply-bench:archmap-authoring")]
-        id: String,
-
-        /// Output report JSON path. If omitted, JSON is written to stdout.
-        #[arg(long)]
-        out: Option<PathBuf>,
-    },
-
     /// Validate a LawPolicy v0.5.4 selector artifact for ArchSig AAT analysis.
     LawPolicy {
         /// Input LawPolicy v0.5.4 JSON path.
@@ -352,22 +219,6 @@ fn main() -> ExitCode {
     }
 }
 
-fn parse_pair_assignments(
-    entries: &[String],
-    flag: &str,
-) -> Result<BTreeMap<String, String>, Box<dyn Error>> {
-    let mut map = BTreeMap::new();
-    for entry in entries {
-        let (pair_id, value) = entry
-            .split_once('=')
-            .ok_or_else(|| format!("{flag} must be <pair-id>=<value>, got {entry}"))?;
-        if map.insert(pair_id.to_string(), value.to_string()).is_some() {
-            return Err(format!("{flag} repeats pair id {pair_id}").into());
-        }
-    }
-    Ok(map)
-}
-
 fn is_internal_runtime_error(message: &str) -> bool {
     let lower = message.to_ascii_lowercase();
     [
@@ -384,186 +235,13 @@ fn is_internal_runtime_error(message: &str) -> bool {
 
 fn validate_archmap_command_input(
     input: &PathBuf,
-    scope_manifest: &Option<PathBuf>,
-    candidate_packets: &[String],
-    extraction_consistency: &[PathBuf],
-    coverage_ledger: &Option<PathBuf>,
 ) -> Result<(serde_json::Value, bool), Box<dyn Error>> {
     let raw: serde_json::Value = read_json(input)?;
-    match json_schema(&raw) {
-        Some(ARCHMAP_V2_SCHEMA) => {
-            let document: ArchMapDocumentV2 = serde_json::from_value(raw)?;
-            let mut report = validate_archmap_v2_report(&document, &stable_input_ref(input));
-            if authoring_audit_requested(
-                scope_manifest,
-                candidate_packets,
-                extraction_consistency,
-                coverage_ledger,
-            ) {
-                let audit_input = load_authoring_audit_input(
-                    scope_manifest,
-                    candidate_packets,
-                    extraction_consistency,
-                    coverage_ledger,
-                )?;
-                validate_authoring_audit_input_v1(&audit_input)
-                    .map_err(|errors| errors.join("; "))?;
-                report
-                    .checks
-                    .extend(archmap_authoring_audit_checks_v1(&document, &audit_input));
-                refresh_archmap_report_summary(&mut report);
-            }
-            let failed = report.summary.result == "fail";
-            Ok((serde_json::to_value(report)?, failed))
-        }
-        _ => {
-            require_schema(&raw, ARCHMAP_V2_SCHEMA, "--input")?;
-            unreachable!("require_schema returns on success for archmap/v0.5.4")
-        }
-    }
-}
-
-fn authoring_audit_requested(
-    scope_manifest: &Option<PathBuf>,
-    candidate_packets: &[String],
-    extraction_consistency: &[PathBuf],
-    coverage_ledger: &Option<PathBuf>,
-) -> bool {
-    scope_manifest.is_some()
-        || !candidate_packets.is_empty()
-        || !extraction_consistency.is_empty()
-        || coverage_ledger.is_some()
-}
-
-fn load_authoring_audit_input(
-    scope_manifest: &Option<PathBuf>,
-    candidate_packets: &[String],
-    extraction_consistency: &[PathBuf],
-    coverage_ledger: &Option<PathBuf>,
-) -> Result<AuthoringAuditInputV1, Box<dyn Error>> {
-    let scope_manifest_path = scope_manifest
-        .as_ref()
-        .ok_or("--scope-manifest is required when authoring audit flags are used")?;
-    let coverage_ledger_path = coverage_ledger
-        .as_ref()
-        .ok_or("--coverage-ledger is required when authoring audit flags are used")?;
-    if candidate_packets.is_empty() {
-        return Err("--candidate-packets is required when authoring audit flags are used".into());
-    }
-
-    let scope_manifest_raw: serde_json::Value = read_json(scope_manifest_path)?;
-    require_schema(
-        &scope_manifest_raw,
-        ARCHMAP_SCOPE_MANIFEST_V1_SCHEMA,
-        "--scope-manifest",
-    )?;
-    let coverage_ledger_raw: serde_json::Value = read_json(coverage_ledger_path)?;
-    require_schema(
-        &coverage_ledger_raw,
-        ARCHMAP_COVERAGE_LEDGER_V1_SCHEMA,
-        "--coverage-ledger",
-    )?;
-
-    let mut packet_paths = Vec::new();
-    for spec in candidate_packets {
-        packet_paths.extend(resolve_candidate_packet_spec(spec)?);
-    }
-    packet_paths.sort();
-    packet_paths.dedup();
-
-    let mut packets = Vec::new();
-    for path in packet_paths {
-        let raw: serde_json::Value = read_json(&path)?;
-        require_schema(
-            &raw,
-            ARCHMAP_CANDIDATE_PACKET_V1_SCHEMA,
-            "--candidate-packets",
-        )?;
-        packets.push(parse_candidate_packet_value(
-            raw,
-            &path.display().to_string(),
-        )?);
-    }
-
-    let mut consistency_reports = Vec::new();
-    for path in extraction_consistency {
-        let raw: serde_json::Value = read_json(path)?;
-        require_schema(
-            &raw,
-            ARCHMAP_EXTRACTION_CONSISTENCY_V1_SCHEMA,
-            "--extraction-consistency",
-        )?;
-        consistency_reports.push(serde_json::from_value::<ArchmapExtractionConsistencyV1>(
-            raw,
-        )?);
-    }
-
-    Ok(AuthoringAuditInputV1 {
-        scope_manifest: serde_json::from_value::<ArchmapScopeManifestV1>(scope_manifest_raw)?,
-        candidate_packets: packets,
-        extraction_consistency: consistency_reports,
-        coverage_ledger: serde_json::from_value::<ArchmapCoverageLedgerV1>(coverage_ledger_raw)?,
-    })
-}
-
-fn resolve_candidate_packet_spec(spec: &str) -> Result<Vec<PathBuf>, Box<dyn Error>> {
-    if !contains_glob_meta(spec) {
-        return Ok(vec![PathBuf::from(spec)]);
-    }
-    let glob = Glob::new(spec)?;
-    let mut builder = GlobSetBuilder::new();
-    builder.add(glob);
-    let set = builder.build()?;
-    let root = glob_search_root(spec);
-    let mut paths = Vec::new();
-    for entry in WalkDir::new(&root).follow_links(false).into_iter() {
-        let entry = entry?;
-        if entry.file_type().is_file() && set.is_match(entry.path()) {
-            paths.push(entry.path().to_path_buf());
-        }
-    }
-    if paths.is_empty() {
-        return Err(format!("--candidate-packets matched no files: {spec}").into());
-    }
-    Ok(paths)
-}
-
-fn contains_glob_meta(spec: &str) -> bool {
-    spec.chars()
-        .any(|character| matches!(character, '*' | '?' | '[' | '{'))
-}
-
-fn glob_search_root(spec: &str) -> PathBuf {
-    let first_meta = spec.find(['*', '?', '[', '{']).unwrap_or(spec.len());
-    let prefix = &spec[..first_meta];
-    let root = Path::new(prefix)
-        .parent()
-        .filter(|path| !path.as_os_str().is_empty())
-        .unwrap_or_else(|| Path::new("."));
-    root.to_path_buf()
-}
-
-fn refresh_archmap_report_summary(report: &mut ArchMapValidationReportV2) {
-    let failed_check_count = report
-        .checks
-        .iter()
-        .filter(|check| check.result == "fail")
-        .count();
-    let warning_check_count = report
-        .checks
-        .iter()
-        .filter(|check| check.result == "warn")
-        .count();
-    report.summary.failed_check_count = failed_check_count;
-    report.summary.warning_check_count = warning_check_count;
-    report.summary.result = if failed_check_count > 0 {
-        "fail"
-    } else if warning_check_count > 0 {
-        "warn"
-    } else {
-        "pass"
-    }
-    .to_string();
+    require_schema(&raw, ARCHMAP_V2_SCHEMA, "--archmap")?;
+    let document: ArchMapDocumentV2 = serde_json::from_value(raw)?;
+    let report = validate_archmap_v2_report(&document, &stable_input_ref(input));
+    let failed = report.summary.result == "fail";
+    Ok((serde_json::to_value(report)?, failed))
 }
 
 fn validate_law_policy_command_input(
@@ -641,10 +319,6 @@ fn validate_repair_plan_command_input(
     Ok((report, plan, failed))
 }
 
-fn json_schema(document: &serde_json::Value) -> Option<&str> {
-    document.get("schema").and_then(|value| value.as_str())
-}
-
 fn stable_input_ref(input: &Path) -> String {
     let file_name = input
         .file_name()
@@ -686,114 +360,6 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
     let args = Args::parse();
 
     match args.command {
-        Some(Command::Archmap {
-            input,
-            scope_manifest,
-            candidate_packets,
-            extraction_consistency,
-            coverage_ledger,
-            out,
-        }) => {
-            let (report, failed) = validate_archmap_command_input(
-                &input,
-                &scope_manifest,
-                &candidate_packets,
-                &extraction_consistency,
-                &coverage_ledger,
-            )?;
-            write_json(out, &report)?;
-            Ok(if failed {
-                ExitCode::from(1)
-            } else {
-                ExitCode::SUCCESS
-            })
-        }
-        Some(Command::ScopeManifest {
-            repo_root,
-            include,
-            exclude,
-            add_evidence,
-            baseline,
-            id,
-            requested_scope,
-            approved_by,
-            revision_override,
-            dirty_override,
-            out,
-        }) => {
-            let manifest = build_scope_manifest_v1(&ScopeManifestOptions {
-                repo_root,
-                include_globs: include,
-                exclude_globs: exclude,
-                added_evidence: add_evidence,
-                requested_scope,
-                approved_by,
-                id,
-                baseline,
-                revision_override,
-                dirty_override,
-            })?;
-            write_json(out, &manifest)?;
-            Ok(ExitCode::SUCCESS)
-        }
-        Some(Command::ExtractionDiff {
-            pass_a,
-            pass_b,
-            id,
-            scope_manifest_ref,
-            out,
-        }) => {
-            let report = build_extraction_consistency_v1(&ExtractionDiffOptions {
-                pass_a,
-                pass_b,
-                id,
-                scope_manifest_ref,
-            })?;
-            write_json(out, &report)?;
-            Ok(ExitCode::SUCCESS)
-        }
-        Some(Command::SupplyBench {
-            pair,
-            chunk_class,
-            alignment,
-            reference,
-            series_key,
-            id,
-            out,
-        }) => {
-            let chunk_classes = parse_pair_assignments(&chunk_class, "--chunk-class")?;
-            let alignments = parse_pair_assignments(&alignment, "--alignment")?;
-            let mut pairs = Vec::new();
-            let mut pair_ids = std::collections::BTreeSet::new();
-            for entry in &pair {
-                let (pair_id, path) = entry.split_once('=').ok_or_else(|| {
-                    format!("--pair must be <pair-id>=<path>, got {entry}")
-                })?;
-                pair_ids.insert(pair_id.to_string());
-                pairs.push(archsig::SupplyBenchPairInput {
-                    pair_id: pair_id.to_string(),
-                    chunk_class: chunk_classes.get(pair_id).cloned(),
-                    consistency: PathBuf::from(path),
-                    alignment: alignments.get(pair_id).map(PathBuf::from),
-                });
-            }
-            for key in chunk_classes.keys().chain(alignments.keys()) {
-                if !pair_ids.contains(key) {
-                    return Err(format!(
-                        "--chunk-class / --alignment references unknown pair id {key}"
-                    )
-                    .into());
-                }
-            }
-            let report = archsig::build_supply_bench_report_v1(&archsig::SupplyBenchOptions {
-                id,
-                pairs,
-                reference,
-                series_key,
-            })?;
-            write_json(out, &report)?;
-            Ok(ExitCode::SUCCESS)
-        }
         Some(Command::LawPolicy {
             law_policy,
             measurement_profile,
@@ -847,7 +413,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             out,
         }) => {
             let (_, archmap_failed) =
-                validate_archmap_command_input(&archmap, &None, &[], &[], &None)?;
+                validate_archmap_command_input(&archmap)?;
             if archmap_failed {
                 return Err("--archmap validation failed before repair-plan validation".into());
             }
@@ -985,7 +551,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let law_surface_validation_path = out_dir.join("law-surface-validation.json");
 
             let (archmap_preflight, archmap_failed) =
-                validate_archmap_command_input(&archmap, &None, &[], &[], &None)?;
+                validate_archmap_command_input(&archmap)?;
             let archmap_document: ArchMapDocumentV2 = read_json(&archmap)?;
             let mut measurement_profile_documents = Vec::new();
             let mut measurement_profile_failed = false;

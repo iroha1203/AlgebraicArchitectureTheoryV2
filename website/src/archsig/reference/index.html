@@ -27,7 +27,7 @@
           <div class="article-main">
             <section id="commands" class="article-section">
               <h2>Commands</h2>
-              <p>In a repository checkout, prefix each command with <code>cargo run --manifest-path tools/archsig/Cargo.toml --</code>; with the release bundle, call <code>bin/archsig</code> directly. <code>archsig &lt;command&gt; --help</code> prints the authoritative flag list.</p>
+              <p>In a repository checkout, prefix each ArchSig command with <code>cargo run --manifest-path tools/archsig/Cargo.toml --</code>; with the release bundle, call <code>bin/archsig</code> directly. ArchMap authoring commands are provided by the separate <code>tools/archmap</code> crate. Each binary's <code>&lt;command&gt; --help</code> output is authoritative.</p>
               <h3>The measurement workflow</h3>
               <div class="article-table">
                 <table>
@@ -44,7 +44,6 @@
                 <table>
                   <thead><tr><th scope="col">Command</th><th scope="col">Validates</th></tr></thead>
                   <tbody>
-                    <tr><td><code>archmap</code></td><td>An <code>archmap/v0.5.4</code> observation artifact; with <code>--scope-manifest</code> / <code>--candidate-packets</code> / <code>--extraction-consistency</code> / <code>--coverage-ledger</code>, also the authoring provenance (see <a href="../contracts/#archmap">Contracts</a>).</td></tr>
                     <tr><td><code>law-policy</code></td><td>A <code>law-policy/v0.5.4</code> selector against its measurement profile; single laws use <code>policies[].law</code>, while Tor uses an explicit two-item <code>policies[].lawPair</code>.</td></tr>
                     <tr><td><code>law-surface</code></td><td>A <code>law-equation-surface/v0.5.4</code> declaration of the selected law universe and witness variables.</td></tr>
                     <tr><td><code>measurement-profile</code></td><td>A standalone <code>measurement-profile/v0.5.4</code> artifact, including finite bounds against registry hard caps.</td></tr>
@@ -53,13 +52,12 @@
                   </tbody>
                 </table>
               </div>
-              <h3>Authoring support</h3>
+              <h3>ArchMap authoring</h3>
               <div class="article-table">
                 <table>
                   <thead><tr><th scope="col">Command</th><th scope="col">Does</th></tr></thead>
                   <tbody>
-                    <tr><td><code>scope-manifest</code></td><td>Builds the deterministic authoring worklist (paths, hashes, approved globs) that ArchMap surveys start from.</td></tr>
-                    <tr><td><code>extraction-diff</code></td><td>Compares two survey passes' candidate packets by literal match keys; leaves adjudication to the integrator, never auto-adopts.</td></tr>
+                    <tr><td><code>archmap</code></td><td>Use the separate <code>archmap</code> binary for ArchMap validation, scope manifests, extraction comparison, and supply metrics. The crate-local command guide is the authoritative flag reference.</td></tr>
                     <tr><td><code>schema-catalog</code></td><td>Prints the machine-readable catalog of every current artifact contract, with per-artifact boundaries and non-conclusions.</td></tr>
                   </tbody>
                 </table>

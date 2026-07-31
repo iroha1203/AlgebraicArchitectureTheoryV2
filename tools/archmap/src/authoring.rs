@@ -11,21 +11,17 @@ use sha2::{Digest, Sha256};
 use unicode_normalization::UnicodeNormalization;
 use walkdir::WalkDir;
 
-use crate::{
-    ArchMapAtomV2, ArchMapDocumentV2, ArchMapSource, ArchmapCandidatePacketV1,
-    ArchmapCoverageLedgerV1, ArchmapExtractionConsistencyV1, ArchmapExtractionContextDiffV1,
-    ArchmapExtractionKeyComparisonV1, ArchmapExtractionMatchCountV1,
-    ArchmapExtractionMatchedCandidateV1, ArchmapExtractionOnlyInCandidateV1,
-    ArchmapScopeManifestExclusionV1, ArchmapScopeManifestRepositoryV1,
-    ArchmapScopeManifestScopeSpecV1, ArchmapScopeManifestV1, ArchmapScopeManifestWorklistEntryV1,
-    ValidationCheck, ValidationExample,
+use archsig::{
+    ARCHMAP_CANDIDATE_PACKET_V1_SCHEMA, ARCHMAP_COVERAGE_LEDGER_CLAIM_BOUNDARY,
+    ARCHMAP_COVERAGE_LEDGER_V1_SCHEMA, ARCHMAP_EXTRACTION_CONSISTENCY_V1_SCHEMA,
+    ARCHMAP_SCOPE_MANIFEST_V1_SCHEMA, ArchMapAtomV2, ArchMapDocumentV2, ArchMapSource,
+    ArchmapCandidatePacketV1, ArchmapCoverageLedgerV1, ArchmapExtractionConsistencyV1,
+    ArchmapExtractionContextDiffV1, ArchmapExtractionKeyComparisonV1,
+    ArchmapExtractionMatchCountV1, ArchmapExtractionMatchedCandidateV1,
+    ArchmapExtractionOnlyInCandidateV1, ArchmapScopeManifestExclusionV1,
+    ArchmapScopeManifestRepositoryV1, ArchmapScopeManifestScopeSpecV1, ArchmapScopeManifestV1,
+    ArchmapScopeManifestWorklistEntryV1, ValidationCheck, ValidationExample,
 };
-
-pub const ARCHMAP_SCOPE_MANIFEST_V1_SCHEMA: &str = "archmap-scope-manifest/v0.5.4";
-pub const ARCHMAP_CANDIDATE_PACKET_V1_SCHEMA: &str = "archmap-candidate-packet/v0.5.4";
-pub const ARCHMAP_EXTRACTION_CONSISTENCY_V1_SCHEMA: &str = "archmap-extraction-consistency/v0.5.4";
-pub const ARCHMAP_COVERAGE_LEDGER_V1_SCHEMA: &str = "archmap-coverage-ledger/v0.5.4";
-pub const ARCHMAP_COVERAGE_LEDGER_CLAIM_BOUNDARY: &str = "Rows record the authoring survey of the selected scope at the recorded revision. They do not assert extraction completeness.";
 const EXCLUSION_REASONS: [&str; 5] = [
     "user-excluded",
     "private",
@@ -1233,7 +1229,7 @@ fn adopted_adjudication_keys(consistency: &[ArchmapExtractionConsistencyV1]) -> 
 fn citation_was_surveyed(source_ref: &str, input: &AuthoringAuditInputV1) -> bool {
     // A `src:<path>:<line>` citation is surveyed when its file-level source was
     // read; the line suffix narrows evidence without naming a new source.
-    let base_ref = crate::archmap::source_ref_line_base(source_ref).map(|(base, _)| base);
+    let base_ref = archsig::source_ref_line_base(source_ref).map(|(base, _)| base);
     input
         .candidate_packets
         .iter()
@@ -1511,7 +1507,7 @@ fn validate_candidate_reason(field: &str, reason: &str, errors: &mut Vec<String>
 }
 
 fn validate_self_review_gate(
-    self_review: &crate::ArchmapCandidatePacketSelfReviewV1,
+    self_review: &archsig::ArchmapCandidatePacketSelfReviewV1,
     errors: &mut Vec<String>,
 ) {
     for (field, passed) in [
@@ -1632,7 +1628,7 @@ mod tests {
     use std::collections::BTreeMap;
 
     use super::*;
-    use crate::{
+    use archsig::{
         ArchmapCandidatePacketSelfReviewV1, ArchmapCandidatePacketSurveyRowV1,
         ArchmapCoverageLedgerRowV1, ArchmapExtractionContextDiffV1, ArchmapExtractionMatchCountV1,
     };
@@ -1873,7 +1869,7 @@ mod tests {
                 only_in_pass_a: vec![],
                 only_in_pass_b: vec![],
             },
-            adjudications: vec![crate::ArchmapExtractionAdjudicationV1 {
+            adjudications: vec![archsig::ArchmapExtractionAdjudicationV1 {
                 key: "k".to_string(),
                 decision: "yes".to_string(),
                 basis: "basis".to_string(),

@@ -1,12 +1,21 @@
 # ArchMap supply bench guide
 
-`archsig supply-bench` は、ArchMap 供給(archmap-creater SKILL による LLM 抽出)の
+`archmap supply-bench` は、ArchMap 供給(archmap-creater SKILL による LLM 抽出)の
 再現性・精度指標を、candidate packets・拡張調停記録・reference-alignment から
 決定論的に計算して JSON 出力する。本文書はベンチの指標定義・比較系列 key・
 実行プロトコル・artifact schema・版管理規約の正本である。
 
 ベンチは記録を出す道具であり、閾値・許容帯・採否の判定規則を持たない。
 判定規則は各改善 PRD の受け入れ条件側が、このベンチの指標を参照して定める。
+
+リポジトリ checkout からの実行例:
+
+```bash
+cargo run --manifest-path tools/archmap/Cargo.toml -- supply-bench \
+  --pair baseline=tools/archmap/tests/fixtures/supply_bench/pair-01.json \
+  --pair candidate=tools/archmap/tests/fixtures/supply_bench/pair-02.json \
+  --out .tmp/archmap-supply-bench.json
+```
 
 機械層の許可操作は
 `tools/archsig/skills/archmap-creater/references/extraction-protocol.md` の
@@ -114,7 +123,7 @@
 
 ### 計量出力(`archmap-supply-bench-report/v1`)
 
-`archsig supply-bench` の出力 JSON。比較系列 key の記録、run 対ごとの指標、
+`archmap supply-bench` の出力 JSON。比較系列 key の記録、run 対ごとの指標、
 分散(最小・最大・平均)、tuned / prompt-literal-disjoint 別の内訳を持つ。
 同一入力に対する出力はバイト決定論であり、入力は runId / packet id の正準順で
 処理される(ファイル引数順に依存しない)。

@@ -5,7 +5,7 @@ and pass differences auditable without turning them into semantic verdicts.
 
 ## Extraction Consistency
 
-`archmap-extraction-consistency/v0.5.4` is produced by `archsig extraction-diff`.
+`archmap-extraction-consistency/v0.5.4` is produced by `archmap extraction-diff`.
 The command compares candidate packets by atom-match-key@2 (subject normalized
 to `<source-dir>.<Class>` from refs) and reports the atom-match-key@1 matched
 count and matchRate alongside (`atomMatchKey1Comparison`) for migration
@@ -60,7 +60,7 @@ Allowed decisions are:
 - `not-adopted`
 
 Group-structured records (required when the record feeds
-`archsig supply-bench` key-convergence computation; see
+`archmap supply-bench` key-convergence computation; see
 `docs/tool/archmap_supply_bench.md`) additionally carry `candidateAtomId` on
 every row, plus `mergeGroup` and `canonicalAtomId` on every `merged` row so
 that same-fact groups are machine-readable. Legacy rows without these fields
@@ -128,7 +128,7 @@ worklist. Scope exclusions stay in the scope manifest.
 
 ## Authoring Checks
 
-When authoring artifact flags are implemented and passed to `archsig archmap`,
+When authoring artifact flags are implemented and passed to `archmap archmap`,
 the validation layer checks:
 
 - `authoring-sources-resolve`

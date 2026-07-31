@@ -4,6 +4,14 @@ use serde::{Deserialize, Serialize};
 
 use super::validation::ValidationCheck;
 
+pub const ARCHMAP_SCOPE_MANIFEST_V1_SCHEMA: &str = "archmap-scope-manifest/v0.5.4";
+pub const ARCHMAP_CANDIDATE_PACKET_V1_SCHEMA: &str = "archmap-candidate-packet/v0.5.4";
+pub const ARCHMAP_EXTRACTION_CONSISTENCY_V1_SCHEMA: &str =
+    "archmap-extraction-consistency/v0.5.4";
+pub const ARCHMAP_COVERAGE_LEDGER_V1_SCHEMA: &str = "archmap-coverage-ledger/v0.5.4";
+pub const ARCHMAP_COVERAGE_LEDGER_CLAIM_BOUNDARY: &str =
+    "Rows record the authoring survey of the selected scope at the recorded revision. They do not assert extraction completeness.";
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ArchMapDocumentV2 {

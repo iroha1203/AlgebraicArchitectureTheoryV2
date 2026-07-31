@@ -15,8 +15,10 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
-use crate::authoring::ARCHMAP_EXTRACTION_CONSISTENCY_V1_SCHEMA;
-use crate::{ArchmapExtractionAdjudicationV1, ArchmapExtractionConsistencyV1};
+use archsig::{
+    ARCHMAP_EXTRACTION_CONSISTENCY_V1_SCHEMA, ArchmapExtractionAdjudicationV1,
+    ArchmapExtractionConsistencyV1,
+};
 
 pub const ARCHMAP_REFERENCE_SLICE_V1_SCHEMA: &str = "archmap-reference-slice/v1";
 pub const ARCHMAP_REFERENCE_ALIGNMENT_V1_SCHEMA: &str = "archmap-reference-alignment/v1";
@@ -318,7 +320,8 @@ fn check_adjudications(
             )
             .into());
         }
-        if row.decision != "merged" && (row.merge_group.is_some() || row.canonical_atom_id.is_some())
+        if row.decision != "merged"
+            && (row.merge_group.is_some() || row.canonical_atom_id.is_some())
         {
             return Err(format!(
                 "consistency {}: adjudication for key {} carries mergeGroup or \
@@ -741,8 +744,18 @@ fn reference_metrics(
         .rows
         .iter()
         .map(|row| row.key.as_str())
-        .chain(consistency.only_in_pass_a.iter().map(|row| row.key.as_str()))
-        .chain(consistency.only_in_pass_b.iter().map(|row| row.key.as_str()))
+        .chain(
+            consistency
+                .only_in_pass_a
+                .iter()
+                .map(|row| row.key.as_str()),
+        )
+        .chain(
+            consistency
+                .only_in_pass_b
+                .iter()
+                .map(|row| row.key.as_str()),
+        )
         .collect();
     let mechanically_recovered = reference
         .atoms
@@ -880,7 +893,10 @@ fn aggregate_metrics<'a>(
                 .push(recall.adjudicated);
         }
         if let Some(over) = &report.over_generation {
-            values.entry("overGenerationRate").or_default().push(over.rate);
+            values
+                .entry("overGenerationRate")
+                .or_default()
+                .push(over.rate);
         }
     }
     values
@@ -924,8 +940,7 @@ fn load_consistency(path: &PathBuf) -> Result<ArchmapExtractionConsistencyV1, Bo
         )
         .into());
     }
-    serde_json::from_value(value)
-        .map_err(|error| format!("{}: {error}", path.display()).into())
+    serde_json::from_value(value).map_err(|error| format!("{}: {error}", path.display()).into())
 }
 
 fn load_reference_slice(path: &PathBuf) -> Result<ArchmapReferenceSliceV1, Box<dyn Error>> {
@@ -939,8 +954,7 @@ fn load_reference_slice(path: &PathBuf) -> Result<ArchmapReferenceSliceV1, Box<d
         )
         .into());
     }
-    serde_json::from_value(value)
-        .map_err(|error| format!("{}: {error}", path.display()).into())
+    serde_json::from_value(value).map_err(|error| format!("{}: {error}", path.display()).into())
 }
 
 fn load_alignment(path: &PathBuf) -> Result<ArchmapReferenceAlignmentV1, Box<dyn Error>> {
@@ -954,13 +968,11 @@ fn load_alignment(path: &PathBuf) -> Result<ArchmapReferenceAlignmentV1, Box<dyn
         )
         .into());
     }
-    serde_json::from_value(value)
-        .map_err(|error| format!("{}: {error}", path.display()).into())
+    serde_json::from_value(value).map_err(|error| format!("{}: {error}", path.display()).into())
 }
 
 fn read_json_value(path: &PathBuf) -> Result<serde_json::Value, Box<dyn Error>> {
-    let file =
-        File::open(path).map_err(|error| format!("{}: {error}", path.display()))?;
+    let file = File::open(path).map_err(|error| format!("{}: {error}", path.display()))?;
     serde_json::from_reader(file)
         .map_err(|error| format!("{} is not valid JSON: {error}", path.display()).into())
 }

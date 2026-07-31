@@ -1,5 +1,9 @@
 # ArchSig Commands
 
+ArchMap authoring and standalone ArchMap validation are provided by the
+`tools/archmap` crate. See the [ArchMap command guide](../../archmap/docs/commands.md)
+for `archmap`, `scope-manifest`, `extraction-diff`, and `supply-bench`.
+
 ## Analyze
 
 ```bash
@@ -31,45 +35,6 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
 If `ag.saga-descent` is selected without `--repair-plan`, ArchSig emits a
 `not_computed` row with a `silence_by_design` boundary rather than failing
 validation.
-
-## ArchMap
-
-```bash
-cargo run --manifest-path tools/archsig/Cargo.toml -- archmap \
-  --input tools/archsig/tests/fixtures/ag_measurement/archmap_v2.json \
-  --out .archsig/archmap-validation.json
-```
-
-`archmap` validates a supplied `archmap/v0.5.4` observation artifact. With the
-optional `--scope-manifest`, `--candidate-packets`, `--extraction-consistency`,
-and `--coverage-ledger` inputs it also audits authoring survey traceability and
-adjudicated provenance closure.
-
-## Scope Manifest
-
-```bash
-cargo run --manifest-path tools/archsig/Cargo.toml -- scope-manifest \
-  --repo-root . \
-  --include "src/**/*.rs" \
-  --out .archsig/scope-manifest.json
-```
-
-`scope-manifest` builds the deterministic authoring worklist (paths, hashes,
-approved globs) that ArchMap surveys start from. `--baseline` emits only new or
-content-changed worklist rows against a previous manifest.
-
-## Extraction Diff
-
-```bash
-cargo run --manifest-path tools/archsig/Cargo.toml -- extraction-diff \
-  --pass-a .archsig/authoring/pass-a/candidate-packet.json \
-  --pass-b .archsig/authoring/pass-b/candidate-packet.json \
-  --out .archsig/extraction-consistency.json
-```
-
-`extraction-diff` compares two survey passes' candidate packets by authoring
-atom-match-key. It records agreement and divergence for the integrator to
-adjudicate; it never auto-adopts candidates.
 
 ## Law Policy
 

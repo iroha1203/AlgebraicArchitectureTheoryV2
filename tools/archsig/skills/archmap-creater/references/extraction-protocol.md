@@ -28,7 +28,7 @@ user explicitly asks.
 When available, create `<run-dir>/scope-manifest.json` with:
 
 ```bash
-archsig scope-manifest \
+archmap scope-manifest \
   --repo-root . \
   --include 'src/**/*.rs' \
   --exclude '**/target/**' \
@@ -135,6 +135,6 @@ machine-specific identifiers. Source paths in artifacts are repo-relative.
 
 ## Integration
 
-Run `archsig extraction-diff` after both passes. The integrator rereads the
+Run `archmap extraction-diff` after both passes. The integrator rereads the
 cited source for every unmatched key and records `adjudications`. Integration is
 complete only after those rereads, not after mechanical matching.

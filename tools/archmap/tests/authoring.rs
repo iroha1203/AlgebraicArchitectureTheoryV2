@@ -10,16 +10,16 @@ fn temp_dir(name: &str) -> PathBuf {
         .duration_since(UNIX_EPOCH)
         .expect("system time after epoch")
         .as_nanos();
-    let path = std::env::temp_dir().join(format!("archsig-authoring-{name}-{nanos}"));
+    let path = std::env::temp_dir().join(format!("archmap-authoring-{name}-{nanos}"));
     fs::create_dir_all(&path).expect("temporary directory can be created");
     path
 }
 
 fn run(args: &[&str]) -> Output {
-    Command::new(env!("CARGO_BIN_EXE_archsig"))
+    Command::new(env!("CARGO_BIN_EXE_archmap"))
         .args(args)
         .output()
-        .expect("archsig command runs")
+        .expect("archmap command runs")
 }
 
 fn read_json(path: &Path) -> Value {
@@ -28,7 +28,86 @@ fn read_json(path: &Path) -> Value {
 }
 
 fn fixture_root() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/ag_measurement")
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("../archsig/tests/fixtures/ag_measurement")
+}
+
+#[test]
+fn archmap_cli_help_exposes_authoring_commands() {
+    let output = run(&["--help"]);
+    assert!(output.status.success());
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    for command in [
+        "archmap",
+        "scope-manifest",
+        "extraction-diff",
+        "supply-bench",
+    ] {
+        assert!(
+            stdout.contains(command),
+            "ArchMap help must expose {command}\n{stdout}"
+        );
+    }
+}
+
+#[test]
+fn archmap_cli_rejects_context_restriction_cycle() {
+    let out_dir = temp_dir("context-cycle");
+    let mut archmap = read_json(&fixture_root().join("archmap_v2.json"));
+    archmap["contexts"][2]["restrictsTo"] =
+        Value::Array(vec![Value::String("ctx:order".to_string())]);
+    let archmap_path = out_dir.join("archmap_v2_cycle.json");
+    fs::write(
+        &archmap_path,
+        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
+    )
+    .expect("archmap fixture can be written");
+    let report = out_dir.join("archmap-validation.json");
+
+    let output = run(&[
+        "archmap",
+        "--input",
+        archmap_path.to_str().expect("path is utf-8"),
+        "--out",
+        report.to_str().expect("path is utf-8"),
+    ]);
+    assert_eq!(output.status.code(), Some(1));
+
+    let json = read_json(&report);
+    assert!(
+        json["checks"].as_array().unwrap().iter().any(|check| {
+            check["id"] == "archmap-schema052-context-poset-refs" && check["result"] == "fail"
+        }),
+        "context restriction cycle must fail finite-poset validation"
+    );
+}
+
+#[test]
+fn archmap_cli_rejects_legacy_fields() {
+    let out_dir = temp_dir("legacy-fields");
+    let mut archmap = read_json(&fixture_root().join("archmap_v2.json"));
+    archmap["mapItems"] = json!([]);
+    archmap["homomorphism"] = json!({"reading": "old compatibility input"});
+    archmap["obstructionCircuitCandidates"] = json!([]);
+    let input = out_dir.join("legacy-archmap.json");
+    fs::write(
+        &input,
+        serde_json::to_vec_pretty(&archmap).expect("json serializes"),
+    )
+    .expect("legacy fixture can be written");
+    let output = run(&[
+        "archmap",
+        "--input",
+        input.to_str().expect("legacy input path is utf-8"),
+        "--out",
+        out_dir
+            .join("validation.json")
+            .to_str()
+            .expect("validation path is utf-8"),
+    ]);
+    assert!(
+        !output.status.success(),
+        "legacy ArchMap fields must be rejected instead of accepted as compatibility input"
+    );
 }
 
 #[test]
@@ -470,8 +549,10 @@ fn archmap_cli_accepts_line_suffixed_source_refs_in_authoring_audit() {
         "--out",
         unknown_report.to_str().expect("report path is utf-8"),
     ]);
-    assert!(!unknown_output.status.success() || {
-        read_json(&unknown_report)["summary"]["result"] != "pass"
-    });
+    assert!(
+        !unknown_output.status.success() || {
+            read_json(&unknown_report)["summary"]["result"] != "pass"
+        }
+    );
     assert_eq!(read_json(&unknown_report)["summary"]["result"], "fail");
 }

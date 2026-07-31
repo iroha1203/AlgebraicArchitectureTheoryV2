@@ -81,7 +81,7 @@
 - pre-v1 workflow は Git history や historical fixtures に残るだけで、現行 ArchSig surface や compatibility input として扱わない。
 - JSON artifact / schema / report の互換性を壊す変更では、`docs/tool`、tool README、fixtures、validation tests を合わせて更新する。
 - ArchView surface を変更する場合は、`tools/archview/README.md`、`docs/tool/README.md`、release bundle、必要な visual / workflow tests を合わせて更新する。可視化の豊かさを ArchSig の測定結論へ昇格させない。
-- CLI surface を追加・変更する場合は、必要に応じて `tools/archsig/README.md`、`tools/archsig/docs/commands.md`、`tools/fieldsig/README.md`、`tools/fieldsig/docs/commands.md` を更新する。
+- CLI surface を追加・変更する場合は、責務に応じて `tools/archsig/README.md`、`tools/archsig/docs/commands.md`、`tools/archmap/README.md`、`tools/archmap/docs/commands.md`、`tools/fieldsig/README.md`、`tools/fieldsig/docs/commands.md` を更新する。
 - Rust 型共有を ArchSig / FieldSig 間の cross-tool contract として扱わない。serialized JSON artifact boundary を重視する。
 - Rust source では不用意な `unwrap`, `expect`, `panic!`、placeholder 実装、claim boundary を曖昧にする fallback を避ける。
 - Report / schema / CLI wording は「これは結論ではない」を主文にしない。結論、根拠、選ばれた入力 contract を
@@ -108,12 +108,13 @@ ArchSig の `cli` integration test target は runtime 契約だけを所有す�
 --manifest-path tools/archsig/Cargo.toml --test cli` は `analyze` / `gate` / `compare`、
 schema catalog、measurement packet、evaluator の入力・出力、CLI error、決定性を検証する。
 ArchView、release workflow、docs、SKILL、websiteをこのtargetから検査しない。
-全体の `cargo test --manifest-path tools/archsig/Cargo.toml` は、下表の専用targetも合わせて実行する。
+ArchSig と ArchMap の全体 test は、それぞれの crate で実行する。ArchSig の
+`cli` target と ArchMap の authoring / supply target は責務を混ぜない。
 
 | 対象 | source of truth | 実行経路 |
 | --- | --- | --- |
 | ArchSig runtime | `tools/archsig/src/` と `tools/archsig/tests/cli.rs` | `cargo test --manifest-path tools/archsig/Cargo.toml --test cli` |
-| ArchMap authoring | `tools/archsig/src/authoring.rs`、`archmap` CLI、`archmap-creater` | `cargo test --manifest-path tools/archsig/Cargo.toml --lib authoring::tests` と `cargo test --manifest-path tools/archsig/Cargo.toml --test authoring` |
+| ArchMap authoring / supply | `tools/archmap/src/`、`tools/archmap/tests/`、`archmap-creater` | `cargo test --manifest-path tools/archmap/Cargo.toml` |
 | ArchView | `tools/archview/` | ArchView自身が所有するbrowser / UI testで検証する。ArchMap単独読込、optional overlay、source landing、unsupported geometryの非描画、empty / malformed入力を同じsurfaceで確認する。ArchSigのRust testからArchViewのUI、scene、内部関数を検査しない |
 | release | `.github/workflows/archsig-release.yml` | `gh workflow run archsig-release.yml -f tag=<tag>` |
 | docs / skill / website | 各source fileとreview workflow | docs / skill は `git diff --check -- docs/tool tools/archsig/skills`、website は `cd website && npx @11ty/eleventy`。ArchSig runtime testには含めない |
@@ -124,6 +125,7 @@ fixtureやdocsの存在だけを確認するテストは、analyzerのgolden reg
 
 ```bash
 cargo test --manifest-path tools/archsig/Cargo.toml
+cargo test --manifest-path tools/archmap/Cargo.toml
 cargo test --manifest-path tools/fieldsig/Cargo.toml
 ```
 

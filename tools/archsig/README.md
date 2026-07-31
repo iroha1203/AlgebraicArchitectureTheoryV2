@@ -42,8 +42,7 @@ are not measured zeros.
 
 | Surface | Commands | Boundary |
 | --- | --- | --- |
-| ArchMap validation and authoring | `archmap` | ArchMap records source-grounded Atom observations over the finite-poset-site contract. Removed helper fields such as `semanticObservations`, `projectionInfo`, `operationSquareEvidence`, `concernHints`, and `observationGaps` are not positive input. Complete-first authoring should collect source support before handoff. ArchMap does not select laws or output obstruction circuits. |
-| ArchMap authoring support | `scope-manifest`, `extraction-diff` | `scope-manifest` builds the deterministic authoring worklist (paths, hashes, approved globs) that ArchMap surveys start from. `extraction-diff` compares two survey passes' candidate packets by authoring atom-match-key; it leaves adoption adjudication to the integrator and never auto-adopts. |
+| ArchMap input | `analyze` | ArchSig consumes a source-grounded `archmap/v0.5.4` artifact together with the selected policy components. ArchMap authoring, standalone validation, scope manifests, extraction comparison, and supply metrics are provided by [`tools/archmap`](../archmap/README.md). |
 | Interpretation profile | `law-policy` | LawPolicy selects evaluator manifests, explicit law / lawPair entries, basis refs, measurement profiles, and non-conclusions. It is an evaluator selector, not AAT itself. |
 | Policy bundle | `policy-bundle` | Fixes LawPolicy, law-equation-surface, and MeasurementProfile references with canonical component fingerprints for one analyze run. |
 | MeasurementProfile validation | `measurement-profile` | Validates a standalone `measurement-profile/v0.5.4` artifact, including finite bounds against evaluator registry hard caps. |

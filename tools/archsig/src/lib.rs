@@ -2,7 +2,6 @@
 
 mod ag_measurement;
 mod archmap;
-pub mod authoring;
 mod compare;
 mod gate;
 mod law_execution;
@@ -15,16 +14,6 @@ mod saga;
 mod view_model;
 
 mod schema;
-mod supply_bench;
-pub use supply_bench::{
-    ALIGNMENT_DECISION_NOT_ADOPTED, ALIGNMENT_DECISION_NOVEL_CORRECT,
-    ALIGNMENT_DECISION_REFERENCE_MATCHED, ALIGNMENT_DECISION_UNRECOVERED,
-    ARCHMAP_REFERENCE_ALIGNMENT_V1_SCHEMA, ARCHMAP_REFERENCE_SLICE_V1_SCHEMA,
-    ARCHMAP_SUPPLY_BENCH_REPORT_V1_SCHEMA, ArchmapReferenceAlignmentRowV1,
-    ArchmapReferenceAlignmentV1, ArchmapReferenceSliceAtomV1, ArchmapReferenceSliceV1,
-    ArchmapSupplyBenchReportV1, SupplyBenchOptions, SupplyBenchPairInput,
-    build_supply_bench_report_v1,
-};
 mod schema_catalog;
 mod validation;
 
@@ -34,17 +23,8 @@ pub use ag_measurement::{
     selected_measurement_profile_v1, validate_measurement_packet_value_v1,
 };
 pub use archmap::{
-    compare_archmap_v2_doctrine, static_aat_atom_binding_vocabulary_v1,
+    compare_archmap_v2_doctrine, source_ref_line_base, static_aat_atom_binding_vocabulary_v1,
     static_aat_atom_vocabulary_v1, validate_archmap_v2_report,
-};
-pub use authoring::{
-    ARCHMAP_CANDIDATE_PACKET_V1_SCHEMA, ARCHMAP_COVERAGE_LEDGER_CLAIM_BOUNDARY,
-    ARCHMAP_COVERAGE_LEDGER_V1_SCHEMA, ARCHMAP_EXTRACTION_CONSISTENCY_V1_SCHEMA,
-    ARCHMAP_SCOPE_MANIFEST_V1_SCHEMA, AuthoringAuditInputV1, ExtractionDiffOptions,
-    ScopeManifestOptions, archmap_authoring_audit_checks_v1, build_extraction_consistency_v1,
-    build_scope_manifest_v1, parse_candidate_packet_value, validate_authoring_audit_input_v1,
-    validate_candidate_packet_v1, validate_coverage_ledger_v1, validate_extraction_consistency_v1,
-    validate_scope_manifest_v1,
 };
 pub use compare::build_comparison_artifacts_v1;
 pub use gate::{build_gate_report_v1, validate_gate_policy_v1};
@@ -72,7 +52,10 @@ pub use policy_bundle::{
 pub use repair_plan::{build_repair_plan_validation_report_v1, validate_repair_plan_v1_checks};
 pub(crate) use schema::*;
 pub use schema::{
-    AAT_ATOM_VOCABULARY_V1_SCHEMA, ARCHMAP_V2_SCHEMA, ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION,
+    AAT_ATOM_VOCABULARY_V1_SCHEMA, ARCHMAP_CANDIDATE_PACKET_V1_SCHEMA,
+    ARCHMAP_COVERAGE_LEDGER_CLAIM_BOUNDARY, ARCHMAP_COVERAGE_LEDGER_V1_SCHEMA,
+    ARCHMAP_EXTRACTION_CONSISTENCY_V1_SCHEMA, ARCHMAP_SCOPE_MANIFEST_V1_SCHEMA, ARCHMAP_V2_SCHEMA,
+    ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION,
     ARCHSIG_AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE, ARCHSIG_ANALYSIS_CONCLUSION_CODES,
     ARCHSIG_ARCHMAP_DIFF_V1_SCHEMA, ARCHSIG_ATOM_VIEWER_DATA_SCHEMA_VERSION,
     ARCHSIG_BOUNDARY_STATEMENT_V1_SCHEMA, ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION,
@@ -106,7 +89,8 @@ pub use schema::{
     ArchmapCandidatePacketSelfReviewV1, ArchmapCandidatePacketSurveyRowV1,
     ArchmapCandidatePacketV1, ArchmapCoverageLedgerRowV1, ArchmapCoverageLedgerV1,
     ArchmapExtractionAdjudicationV1, ArchmapExtractionConsistencyV1,
-    ArchmapExtractionContextDiffV1, ArchmapExtractionMatchCountV1,
+    ArchmapExtractionContextDiffV1, ArchmapExtractionKeyComparisonV1,
+    ArchmapExtractionMatchCountV1,
     ArchmapExtractionMatchedCandidateV1, ArchmapExtractionOnlyInCandidateV1,
     ArchmapScopeManifestExclusionV1, ArchmapScopeManifestRepositoryV1,
     ArchmapScopeManifestScopeSpecV1, ArchmapScopeManifestV1, ArchmapScopeManifestWorklistEntryV1,
@@ -120,7 +104,7 @@ pub use schema::{
     NormalizedAtomV2, NormalizedContextV2, NormalizedCoverV2, RepairPlanComplexV1,
     RepairPlanDocumentV1, RepairPlanOverlapV1,
     RepairPlanTripleOverlapV1, SCHEMA_VERSION_CATALOG_SCHEMA_VERSION,
-    SchemaVersionCatalogV0,
+    SchemaVersionCatalogV0, ValidationCheck, ValidationExample,
 };
 pub use schema_catalog::static_schema_version_catalog;
 pub use view_model::{

@@ -37,7 +37,7 @@ direct evidence、boundary participant、candidate change point、validated repa
 | Concern | Source of truth |
 | --- | --- |
 | Tooling編集規律と検証経路 | [guideline.md](guideline.md) |
-| ArchMap authoring | [Atom handoff](atom_handoff.md)とschema / validator / fixture |
+| ArchMap authoring / supply | `tools/archmap/`、[Atom handoff](atom_handoff.md)、schema / validator / fixture |
 | LawPolicy authoring | [law_policy.md](law_policy.md) |
 | ArchSig runtime | `tools/archsig/src/`、schema catalog、CLI docs、runtime tests |
 | ArchSig artifact reading | [Artifacts and boundaries](../../tools/archsig/docs/artifacts-and-boundaries.md) |

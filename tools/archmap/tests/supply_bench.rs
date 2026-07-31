@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use archsig::{SupplyBenchOptions, SupplyBenchPairInput, build_supply_bench_report_v1};
+use archmap::{SupplyBenchOptions, SupplyBenchPairInput, build_supply_bench_report_v1};
 
 fn fixture(name: &str) -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -35,7 +35,10 @@ fn expect_error(options: &SupplyBenchOptions, fragments: &[&str]) -> String {
 fn computes_key_convergence_from_merge_groups() {
     let report = build_supply_bench_report_v1(&SupplyBenchOptions {
         id: "supply-bench:test".to_string(),
-        pairs: vec![pair("pair-01", "pair-01.json"), pair("pair-02", "pair-02.json")],
+        pairs: vec![
+            pair("pair-01", "pair-01.json"),
+            pair("pair-02", "pair-02.json"),
+        ],
         reference: None,
         series_key: None,
     })
@@ -117,7 +120,10 @@ fn computes_reference_recall_and_over_generation_from_alignment() {
     })
     .expect("reference-aligned bench report");
 
-    assert_eq!(report.reference_ref.as_deref(), Some("reference:supply-bench-fixture"));
+    assert_eq!(
+        report.reference_ref.as_deref(),
+        Some("reference:supply-bench-fixture")
+    );
     assert_eq!(report.reference_version.as_deref(), Some("1"));
     let recall = report.pairs[0]
         .reference_recall
@@ -138,7 +144,11 @@ fn computes_reference_recall_and_over_generation_from_alignment() {
     assert_eq!(over.novel_correct_atoms, 1);
     assert_eq!(over.rate, 0.0);
 
-    assert!(report.aggregate.contains_key("referenceRecallMechanicalLowerBound"));
+    assert!(
+        report
+            .aggregate
+            .contains_key("referenceRecallMechanicalLowerBound")
+    );
     assert!(report.aggregate.contains_key("referenceRecallAdjudicated"));
     assert!(report.aggregate.contains_key("overGenerationRate"));
 }
@@ -228,7 +238,11 @@ fn merge_group_integrity_violations_fail_closed() {
             reference: None,
             series_key: None,
         },
-        &["consistency:neg-mixed-group", "no mergeGroup", "mixed records"],
+        &[
+            "consistency:neg-mixed-group",
+            "no mergeGroup",
+            "mixed records",
+        ],
     );
     expect_error(
         &SupplyBenchOptions {
@@ -342,7 +356,7 @@ fn corpus_disjoint_chunk_stays_disjoint_from_prompt_pack_code_literals() {
     .expect("corpus fixture JSON");
     let prompt_pack = std::fs::read_to_string(
         PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("skills/archmap-creater/references/prompt-pack.md"),
+            .join("../archsig/skills/archmap-creater/references/prompt-pack.md"),
     )
     .expect("prompt-pack reference");
     // Odd split segments capture inline backtick spans and fenced code block
@@ -360,13 +374,20 @@ fn corpus_disjoint_chunk_stays_disjoint_from_prompt_pack_code_literals() {
         .filter(|chunk| chunk["chunkClass"] == "tuned")
         .map(|chunk| chunk["chunkId"].as_str().unwrap())
         .collect();
-    assert_eq!(tuned, vec!["chunk-04", "chunk-13"], "tuned chunk set is fixed");
+    assert_eq!(
+        tuned,
+        vec!["chunk-04", "chunk-13"],
+        "tuned chunk set is fixed"
+    );
 
     let disjoint: Vec<&serde_json::Value> = chunks
         .iter()
         .filter(|chunk| chunk["chunkClass"] == "prompt-literal-disjoint")
         .collect();
-    assert!(!disjoint.is_empty(), "corpus needs a prompt-literal-disjoint chunk");
+    assert!(
+        !disjoint.is_empty(),
+        "corpus needs a prompt-literal-disjoint chunk"
+    );
     for chunk in disjoint {
         for row in chunk["rows"].as_array().expect("chunk rows") {
             let path = row["path"].as_str().expect("row path");
@@ -380,7 +401,10 @@ fn corpus_disjoint_chunk_stays_disjoint_from_prompt_pack_code_literals() {
                 !code.contains(&route_word),
                 "prompt-pack code literal names route word {route_word} of {service}"
             );
-            if let Some(class_name) = path.rsplit('/').next().and_then(|f| f.strip_suffix(".java"))
+            if let Some(class_name) = path
+                .rsplit('/')
+                .next()
+                .and_then(|f| f.strip_suffix(".java"))
             {
                 assert!(
                     !code.contains(class_name),
@@ -401,19 +425,36 @@ fn frozen_reference_slices_parse_and_lock_accepted_shape() {
         ("reference-chunk-01.json", 135),
     ] {
         let path = fixture("reference_v1").join(name);
-        let slice: archsig::ArchmapReferenceSliceV1 = serde_json::from_reader(
-            std::fs::File::open(&path).expect("frozen reference slice"),
-        )
-        .unwrap_or_else(|error| panic!("{name} must parse as a reference slice: {error}"));
+        let slice: archmap::ArchmapReferenceSliceV1 =
+            serde_json::from_reader(std::fs::File::open(&path).expect("frozen reference slice"))
+                .unwrap_or_else(|error| panic!("{name} must parse as a reference slice: {error}"));
         assert_eq!(slice.schema, "archmap-reference-slice/v1");
         assert_eq!(slice.version, "1");
-        assert_eq!(slice.atoms.len(), expected_atoms, "{name} atom count is frozen");
-        let ids: std::collections::BTreeSet<&str> =
-            slice.atoms.iter().map(|atom| atom.atom_id.as_str()).collect();
-        assert_eq!(ids.len(), slice.atoms.len(), "{name} atom ids must be unique");
-        let keys: std::collections::BTreeSet<&str> =
-            slice.atoms.iter().map(|atom| atom.match_key.as_str()).collect();
-        assert_eq!(keys.len(), slice.atoms.len(), "{name} match keys must be unique");
+        assert_eq!(
+            slice.atoms.len(),
+            expected_atoms,
+            "{name} atom count is frozen"
+        );
+        let ids: std::collections::BTreeSet<&str> = slice
+            .atoms
+            .iter()
+            .map(|atom| atom.atom_id.as_str())
+            .collect();
+        assert_eq!(
+            ids.len(),
+            slice.atoms.len(),
+            "{name} atom ids must be unique"
+        );
+        let keys: std::collections::BTreeSet<&str> = slice
+            .atoms
+            .iter()
+            .map(|atom| atom.match_key.as_str())
+            .collect();
+        assert_eq!(
+            keys.len(),
+            slice.atoms.len(),
+            "{name} match keys must be unique"
+        );
     }
 }
 

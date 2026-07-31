@@ -6,7 +6,7 @@
   "reference:train-ticket-chunk-13": "1",
   "reference:train-ticket-chunk-01": "1"
  },
- "derivation": "Sliced from the fullbuild adjudicated ArchMap (Issue #3545 evidence bundle, 2,819 adjudications with full source rereads) by the first-ref rule: an atom belongs to a chunk when its first ref path is in the chunk's row set. Match keys are the atom-match-key@2 values computed by archsig extraction-diff self-diff over the slice packets.",
+ "derivation": "Sliced from the fullbuild adjudicated ArchMap (Issue #3545 evidence bundle, 2,819 adjudications with full source rereads) by the first-ref rule: an atom belongs to a chunk when its first ref path is in the chunk's row set. Match keys are the atom-match-key@2 values computed by archmap extraction-diff self-diff over the slice packets.",
  "independentReread": {
   "date": "2026-07-21",
   "reviewerModel": "sonnet (three independent subagents, one per chunk)",

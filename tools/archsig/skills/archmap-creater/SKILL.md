@@ -21,7 +21,7 @@ scope. Do not claim that all possible repository evidence was extracted.
 
 - A repository checkout and a user-approved scope: include globs, exclude globs,
   requested scope text, and any author-supplied evidence files.
-- An ArchSig binary. Resolve it in this order: `$ARCHSIG_BIN`, `archsig` on
+- An ArchMap binary. Resolve it in this order: `$ARCHMAP_BIN`, `archmap` on
   `PATH`, a bundled binary near the skill, then the local checkout build.
 - A run-specific authoring directory, normally under `.tmp/archmap-authoring/`.
   Do not overwrite a previous run directory unless the user explicitly asks.
@@ -57,7 +57,7 @@ add or remove support atoms to change the law universe.
 ## Workflow
 
 1. **Preflight**
-   - Resolve the ArchSig binary. If no binary is available, stop and report that
+   - Resolve the ArchMap binary. If no binary is available, stop and report that
      validation was not run. Do not replace it with an ad hoc checker.
    - Record git revision and dirty status when available.
    - Confirm the requested scope, include/exclude globs, and added evidence
@@ -66,7 +66,7 @@ add or remove support atoms to change the law universe.
      user asks to publish or commit them.
 
 2. **Scope Manifest**
-   - Run `archsig scope-manifest` to produce
+   - Run `archmap scope-manifest` to produce
      `<run-dir>/scope-manifest.json` from a deterministic file list,
      repo-relative paths, sha256 hashes, and the approved scope spec.
    - Present exclusions to the user or author for approval. Do not start the
@@ -98,7 +98,7 @@ add or remove support atoms to change the law universe.
    - Apply the same round-trip rule as Pass A.
 
 5. **Consistency**
-   - Run `archsig extraction-diff` over Pass A and Pass B candidate packets.
+   - Run `archmap extraction-diff` over Pass A and Pass B candidate packets.
    - The command applies atom-match-key and context key rules from the references
      and leaves `adjudications` empty for integrator rereading.
    - For every `onlyInPassA` or `onlyInPassB` entry, the integrator rereads the
@@ -124,11 +124,11 @@ add or remove support atoms to change the law universe.
      `unreadable`, or `tooling-error`.
 
 8. **Validate**
-   - Run the existing `archsig archmap --input archmap.json` validation.
+   - Run the existing `archmap archmap --input archmap.json` validation.
    - Run binary authoring validation with the authoring artifacts:
 
      ```bash
-     archsig archmap \
+     archmap archmap \
        --input archmap.json \
        --scope-manifest <run-dir>/scope-manifest.json \
        --candidate-packets '<run-dir>/candidates/*.json' \

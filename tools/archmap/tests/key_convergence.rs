@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use archsig::{ExtractionDiffOptions, build_extraction_consistency_v1};
+use archmap::{ExtractionDiffOptions, build_extraction_consistency_v1};
 
 fn fixture(name: &str) -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))

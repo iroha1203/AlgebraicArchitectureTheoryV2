@@ -9842,41 +9842,6 @@ fn cli_analyze_v2_selects_multiple_measurement_profiles_at_runtime() {
 }
 
 #[test]
-fn cli_rejects_archmap_v2_context_restriction_cycle() {
-    let out_dir = temp_dir("ag-measurement-context-cycle");
-    let root = ag_measurement_root();
-    let mut archmap = read_json(&root.join("archmap_v2.json"));
-    archmap["contexts"][2]["restrictsTo"] =
-        Value::Array(vec![Value::String("ctx:order".to_string())]);
-    let archmap_path = out_dir.join("archmap_v2_cycle.json");
-    fs::write(
-        &archmap_path,
-        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
-    )
-    .expect("archmap fixture can be written");
-    let report = out_dir.join("archmap-validation.json");
-
-    run_sig0_expect_code(
-        &[
-            "archmap",
-            "--input",
-            archmap_path.to_str().expect("path is utf-8"),
-            "--out",
-            report.to_str().expect("path is utf-8"),
-        ],
-        1,
-    );
-
-    let json = read_json(&report);
-    assert!(
-        json["checks"].as_array().unwrap().iter().any(|check| {
-            check["id"] == "archmap-schema052-context-poset-refs" && check["result"] == "fail"
-        }),
-        "context restriction cycle must fail finite-poset validation"
-    );
-}
-
-#[test]
 fn archmap_v2_normalize_is_byte_deterministic() {
     let out_dir_a = temp_dir("ag-normalize-a");
     let out_dir_b = temp_dir("ag-normalize-b");
@@ -10452,7 +10417,7 @@ fn cli_analyze_stamp_appends_opt_in_run_id_suffix() {
 }
 
 #[test]
-fn cli_help_exposes_only_llm_atom_archmap_surface() {
+fn cli_help_exposes_only_archsig_analysis_surface() {
     let output = run_sig0_output(&["--help"]);
     assert!(output.status.success());
     let stdout = String::from_utf8_lossy(&output.stdout);
@@ -10461,7 +10426,7 @@ fn cli_help_exposes_only_llm_atom_archmap_surface() {
         "current v1 CLI help must describe architecture distance without Part IV public wording\n{stdout}"
     );
 
-    for command in ["archmap", "law-policy", "analyze", "schema-catalog"] {
+    for command in ["law-policy", "analyze", "schema-catalog"] {
         assert!(
             stdout.contains(command),
             "ArchSig help must expose retained command {command}\n{stdout}"
@@ -10560,36 +10525,6 @@ fn removed_legacy_analyze_flags_are_not_accepted() {
             "removed analyze flag {flag} should fail as an unknown flag\n{stderr}"
         );
     }
-}
-
-#[test]
-fn cli_rejects_legacy_archmap_fields() {
-    let out_dir = temp_dir("legacy-archmap-fields");
-    let mut archmap = read_json(&ag_measurement_root().join("archmap_v2.json"));
-    archmap[["map", "Items"].concat()] = serde_json::json!([]);
-    archmap[["homo", "morphism"].concat()] =
-        serde_json::json!({"reading": "old compatibility input"});
-    archmap[["obstruction", "CircuitCandidates"].concat()] = serde_json::json!([]);
-    let input = out_dir.join("legacy-archmap.json");
-    fs::write(
-        &input,
-        serde_json::to_vec_pretty(&archmap).expect("json serializes"),
-    )
-    .expect("legacy fixture can be written");
-    let output = run_sig0_output(&[
-        "archmap",
-        "--input",
-        input.to_str().expect("legacy input path is utf-8"),
-        "--out",
-        out_dir
-            .join("validation.json")
-            .to_str()
-            .expect("validation path is utf-8"),
-    ]);
-    assert!(
-        !output.status.success(),
-        "legacy ArchMap fields must be rejected instead of accepted as compatibility input"
-    );
 }
 
 #[test]
