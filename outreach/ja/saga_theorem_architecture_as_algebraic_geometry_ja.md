@@ -238,7 +238,6 @@ SAGA 以後の AAT は、この障害クラスに対して「検出器の健全�
 ## 参考
 
 - リポジトリ: [AlgebraicArchitectureTheoryV2](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2)(MIT ライセンス)
-- SAGA 定理の証明の記録: `docs/note/aat_saga_theorem_proof_record.md`
+- SAGA 定理の証明記録兼 Lean 証拠索引(固定 source-bearing commit と退役 source 一覧を含む): `docs/note/aat_saga_theorem_proof_record.md`
 - AAT 数学本文(正典): `docs/aat/algebraic_geometric_theory/`
 - 研究 GOAL 台帳: `research/goals/G-aat-quality-surface-06.md`、証明状態の台帳: `research/reports/G-aat-quality-surface-06.md`(SAGA 定理はリポジトリ内部では `G-aat-quality-surface-06` という研究目標 ID で管理されています)
-- Lean 証拠索引(固定 source-bearing commit と退役 source 一覧を含む): `docs/note/aat_saga_theorem_proof_record.md`

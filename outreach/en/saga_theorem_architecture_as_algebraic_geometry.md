@@ -233,7 +233,6 @@ That old phenomenon — locally correct, globally broken — now has mathematics
 ## References
 
 - Repository: [AlgebraicArchitectureTheoryV2](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2) (MIT license)
-- Proof record of the SAGA theorem: `docs/note/aat_saga_theorem_proof_record.md`
+- Proof record and Lean evidence index of the SAGA theorem, including the hash-fixed source-bearing commit and retired source list: `docs/note/aat_saga_theorem_proof_record.md`
 - The AAT mathematical canon: `docs/aat/algebraic_geometric_theory/`
 - Research goal ledger: `research/goals/G-aat-quality-surface-06.md`; proof-state ledger: `research/reports/G-aat-quality-surface-06.md` (inside the repository, the SAGA theorem is tracked under the research-goal ID `G-aat-quality-surface-06`)
-- Lean evidence index, including the hash-fixed source-bearing commit and retired source list: `docs/note/aat_saga_theorem_proof_record.md`
