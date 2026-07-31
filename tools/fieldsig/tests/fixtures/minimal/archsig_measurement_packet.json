@@ -32,6 +32,30 @@
       "status": "validated",
       "checkRef": "archmap/v0.5.4-validation"
     }
+  }, {
+    "suppliedId": "supplied:law-policy",
+    "kind": "law-policy",
+    "sourceArtifactRef": "input:law-policy.json",
+    "conformance": {
+      "status": "validated",
+      "checkRef": "law-policy/v0.5.4-validation"
+    }
+  }, {
+    "suppliedId": "supplied:law-surface",
+    "kind": "law-equation-surface",
+    "sourceArtifactRef": "input:law_surface.json",
+    "conformance": {
+      "status": "validated",
+      "checkRef": "law-equation-surface/v0.5.4-validation"
+    }
+  }, {
+    "suppliedId": "supplied:measurement-profile",
+    "kind": "measurement-profile",
+    "sourceArtifactRef": "input:measurement-profile.json",
+    "conformance": {
+      "status": "validated",
+      "checkRef": "measurement-profile/v0.5.4-validation"
+    }
   }],
   "boundaryStatements": [],
   "nonConclusions": [

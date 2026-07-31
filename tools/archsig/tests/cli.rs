@@ -3200,8 +3200,8 @@ fn cli_analyze_v2_cech_h1_visible_fixture_measures_nonzero() {
                 "coverRef": "cover:order-inventory",
                 "coefficient": "F2",
                 "scopeSize": {
-                    "contexts": 1,
-                    "edges": 1,
+                    "contexts": 4,
+                    "edges": 4,
                     "triangles": 0
                 },
                 "classRef": "computedInvariants/cech-cohomology:profile:ag-default@1"
@@ -13214,6 +13214,9 @@ fn removed_commands() -> &'static [&'static str] {
         "pr-comment",
         "baseline-suppression",
         "schema-compatibility",
+        "scope-manifest",
+        "extraction-diff",
+        "supply-bench",
     ]
 }
 

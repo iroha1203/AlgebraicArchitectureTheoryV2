@@ -21,7 +21,7 @@ Analyze PR / CI architecture evidence and produce review cues. This skill simpli
 - `pr-quality-analysis-report/v0.5.0`
 - `sft-review-summary/v0.5.0` only when the user asks for SFT review judgement or future-impact review
 
-Do not use IntentMap, AlignmentMap, or planning forecast artifacts for PR merge review unless the user explicitly asks for planning context.
+Do not use planning forecast artifacts for PR merge review unless the user explicitly asks for planning context.
 
 ## Minimal Execution Rules
 

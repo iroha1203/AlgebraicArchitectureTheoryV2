@@ -364,6 +364,14 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
                 "checkRef": "law-policy/v0.5.4-validation"
             }
         }, {
+            "suppliedId": "supplied:law-surface",
+            "kind": "law-equation-surface",
+            "sourceArtifactRef": "input:law_surface.json",
+            "conformance": {
+                "status": "validated",
+                "checkRef": "law-equation-surface/v0.5.4-validation"
+            }
+        }, {
             "suppliedId": "supplied:measurement-profile",
             "kind": "measurement-profile",
             "sourceArtifactRef": "input:measurement-profile.json",
@@ -711,6 +719,30 @@ fn cli_rejects_archsig_measurement_capacity_reading_as_cech_cert_fallback() {
                 "status": "validated",
                 "checkRef": "archmap/v0.5.4-validation"
             }
+        }, {
+            "suppliedId": "supplied:law-policy",
+            "kind": "law-policy",
+            "sourceArtifactRef": "input:law-policy.json",
+            "conformance": {
+                "status": "validated",
+                "checkRef": "law-policy/v0.5.4-validation"
+            }
+        }, {
+            "suppliedId": "supplied:law-surface",
+            "kind": "law-equation-surface",
+            "sourceArtifactRef": "input:law_surface.json",
+            "conformance": {
+                "status": "validated",
+                "checkRef": "law-equation-surface/v0.5.4-validation"
+            }
+        }, {
+            "suppliedId": "supplied:measurement-profile",
+            "kind": "measurement-profile",
+            "sourceArtifactRef": "input:measurement-profile.json",
+            "conformance": {
+                "status": "validated",
+                "checkRef": "measurement-profile/v0.5.4-validation"
+            }
         }],
         "boundaryStatements": [],
         "nonConclusions": []
@@ -917,10 +949,63 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
                 "status": "validated",
                 "checkRef": "archmap/v0.5.4-validation"
             }
+        }, {
+            "suppliedId": "supplied:law-policy",
+            "kind": "law-policy",
+            "sourceArtifactRef": "input:law-policy.json",
+            "conformance": {
+                "status": "validated",
+                "checkRef": "law-policy/v0.5.4-validation"
+            }
+        }, {
+            "suppliedId": "supplied:law-surface",
+            "kind": "law-equation-surface",
+            "sourceArtifactRef": "input:law_surface.json",
+            "conformance": {
+                "status": "validated",
+                "checkRef": "law-equation-surface/v0.5.4-validation"
+            }
+        }, {
+            "suppliedId": "supplied:measurement-profile",
+            "kind": "measurement-profile",
+            "sourceArtifactRef": "input:measurement-profile.json",
+            "conformance": {
+                "status": "validated",
+                "checkRef": "measurement-profile/v0.5.4-validation"
+            }
         }],
         "boundaryStatements": [],
         "nonConclusions": []
     });
+
+    let duplicate_json_packet = out_dir.join("duplicate-json-key-measurement-packet.json");
+    let valid_packet_source = serde_json::to_string_pretty(&valid_measurement_packet)
+        .expect("valid measurement packet serializes");
+    let duplicate_key = "  \"packetId\": \"measurement:semantic-validation\",";
+    let duplicate_packet_source = valid_packet_source.replacen(
+        duplicate_key,
+        &format!("{duplicate_key}\n{duplicate_key}"),
+        1,
+    );
+    fs::write(&duplicate_json_packet, duplicate_packet_source)
+        .expect("duplicate JSON key packet fixture is written");
+    let duplicate_json = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        duplicate_json_packet
+            .to_str()
+            .expect("duplicate JSON key packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("duplicate-json-key.json")
+            .to_str()
+            .expect("duplicate JSON key output path is utf-8"),
+    ]);
+    assert!(!duplicate_json.status.success());
+    assert!(
+        String::from_utf8_lossy(&duplicate_json.stderr).contains("duplicate JSON object key packetId"),
+        "measurement-packet handoff must reject duplicate JSON object keys"
+    );
 
     let missing_source_refs_packet = out_dir.join("missing-source-refs-measurement-packet.json");
     let mut missing_source_refs_json = valid_measurement_packet.clone();
@@ -949,6 +1034,94 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
         String::from_utf8_lossy(&missing_source_refs.stderr)
             .contains("requires non-empty evidence.sourceRefs"),
         "measurement-packet handoff must reject measured verdicts without observation provenance"
+    );
+
+    let invalid_source_refs_packet = out_dir.join("invalid-source-refs-measurement-packet.json");
+    let mut invalid_source_refs_json = valid_measurement_packet.clone();
+    invalid_source_refs_json["structuralVerdict"][0]["evidence"]["sourceRefs"] =
+        serde_json::json!([null]);
+    fs::write(
+        &invalid_source_refs_packet,
+        serde_json::to_string_pretty(&invalid_source_refs_json)
+            .expect("invalid source refs packet serializes"),
+    )
+    .expect("invalid source refs packet fixture is written");
+    let invalid_source_refs = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        invalid_source_refs_packet
+            .to_str()
+            .expect("invalid source refs packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("invalid-source-refs.json")
+            .to_str()
+            .expect("invalid source refs output path is utf-8"),
+    ]);
+    assert!(!invalid_source_refs.status.success());
+    assert!(
+        String::from_utf8_lossy(&invalid_source_refs.stderr)
+            .contains("evidence.sourceRefs[0] requires non-empty string"),
+        "measurement-packet handoff must reject non-string observation provenance\n{}",
+        String::from_utf8_lossy(&invalid_source_refs.stderr)
+    );
+
+    let duplicate_source_refs_packet = out_dir.join("duplicate-source-refs-measurement-packet.json");
+    let mut duplicate_source_refs_json = valid_measurement_packet.clone();
+    duplicate_source_refs_json["structuralVerdict"][0]["evidence"]["sourceRefs"] =
+        serde_json::json!(["source:fixture:measurement", "source:fixture:measurement"]);
+    fs::write(
+        &duplicate_source_refs_packet,
+        serde_json::to_string_pretty(&duplicate_source_refs_json)
+            .expect("duplicate source refs packet serializes"),
+    )
+    .expect("duplicate source refs packet fixture is written");
+    let duplicate_source_refs = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        duplicate_source_refs_packet
+            .to_str()
+            .expect("duplicate source refs packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("duplicate-source-refs.json")
+            .to_str()
+            .expect("duplicate source refs output path is utf-8"),
+    ]);
+    assert!(!duplicate_source_refs.status.success());
+    assert!(
+        String::from_utf8_lossy(&duplicate_source_refs.stderr)
+            .contains("evidence.sourceRefs[1] duplicates source:fixture:measurement"),
+        "measurement-packet handoff must reject duplicate observation provenance"
+    );
+
+    let unknown_nested_packet = out_dir.join("unknown-nested-measurement-packet.json");
+    let mut unknown_nested_json = valid_measurement_packet.clone();
+    unknown_nested_json["structuralVerdict"][0]["evidence"]["extra"] =
+        serde_json::json!(true);
+    fs::write(
+        &unknown_nested_packet,
+        serde_json::to_string_pretty(&unknown_nested_json)
+            .expect("unknown nested packet serializes"),
+    )
+    .expect("unknown nested packet fixture is written");
+    let unknown_nested = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        unknown_nested_packet
+            .to_str()
+            .expect("unknown nested packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("unknown-nested.json")
+            .to_str()
+            .expect("unknown nested output path is utf-8"),
+    ]);
+    assert!(!unknown_nested.status.success());
+    assert!(
+        String::from_utf8_lossy(&unknown_nested.stderr)
+            .contains("rejects unknown field structuralVerdict[0].evidence.extra"),
+        "measurement-packet handoff must reject unknown nested evidence fields"
     );
 
     let mismatched_evaluator_packet = out_dir.join("mismatched-evaluator-measurement-packet.json");
@@ -1356,6 +1529,23 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
         String::from_utf8_lossy(&missing_claim_status.stderr).contains("claimStatus"),
         "measurement-packet handoff must reject analytic readings without an analytic claimStatus"
     );
+}
+
+#[test]
+fn cli_removed_archmap_authoring_commands_are_not_accepted() {
+    for command in [
+        "intent-archmap-alignment",
+        "intent-forecast",
+        "scope-manifest",
+        "extraction-diff",
+        "supply-bench",
+    ] {
+        let output = run_sig0_output(&[command, "--help"]);
+        assert!(
+            !output.status.success(),
+            "removed authoring command {command} should not be accepted"
+        );
+    }
 }
 
 #[test]

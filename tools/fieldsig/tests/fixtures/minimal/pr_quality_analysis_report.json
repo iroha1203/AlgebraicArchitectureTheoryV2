@@ -66,7 +66,7 @@
       "cueId": "cue:responsibility-mixing",
       "cueKind": "responsibilityMixing",
       "sourceRefs": [
-        "object-route-users"
+        "artifact:archsig-measurement-packet"
       ],
       "severity": "review",
       "reviewFocus": "review semantic dependency and split need before merge",
@@ -82,7 +82,7 @@
       "cueId": "cue:runtime-static-disagreement",
       "cueKind": "runtimeStaticDisagreement",
       "sourceRefs": [
-        "object-route-users"
+        "artifact:archsig-measurement-packet"
       ],
       "severity": "review",
       "reviewFocus": "compare runtime evidence need with static ArchMap refs",
@@ -98,7 +98,7 @@
       "cueId": "cue:policy-conflict",
       "cueKind": "policyConflict",
       "sourceRefs": [
-        "object-route-users"
+        "artifact:archsig-measurement-packet"
       ],
       "severity": "review",
       "reviewFocus": "review policy boundary and theorem precondition report",

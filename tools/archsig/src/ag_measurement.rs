@@ -1277,6 +1277,25 @@ pub fn build_foundation_measurement_packet_v1(
             "silence_by_design: diagnostic ceiling {ceiling} is not reached by the foundation evaluator; supply the corresponding SAGA data before emitting that stage"
         ));
     }
+    let observation_invariant_refs = structural_verdict
+        .iter()
+        .map(|row| generated_invariant_refs_for_row(row, &computed_invariants, &profile))
+        .collect::<Vec<_>>();
+    let observation_source_refs = structural_verdict
+        .iter()
+        .map(|row| {
+            generated_observation_source_refs_for_row(
+                normalized,
+                row,
+                &profile,
+                &computed_invariants,
+            )
+        })
+        .collect::<Vec<_>>();
+    let observation_scope_sizes = structural_verdict
+        .iter()
+        .map(|row| generated_observation_scope_size(row, normalized, &profile, &computed_invariants))
+        .collect::<Vec<_>>();
     let mut packet = ArchSigMeasurementPacketV1 {
         schema: ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA.to_string(),
         packet_id: format!("measurement:{}", normalized.source_archmap_id),
@@ -1297,34 +1316,189 @@ pub fn build_foundation_measurement_packet_v1(
         ),
         boundary_statements: Vec::new(),
         non_conclusions,
-        observation_source_refs: normalized_observation_source_refs(normalized),
+        observation_source_refs,
+        observation_scope_sizes,
+        observation_invariant_refs,
     };
     apply_assumption_dependency_propagation(&mut packet);
     packet.boundary_statements = boundary_statements_for_measurement_packet(&packet);
     Ok(packet)
 }
 
-fn normalized_observation_source_refs(normalized: &NormalizedArchMapV2) -> Vec<String> {
-    normalized
-        .atoms
+fn generated_invariant_refs_for_row(
+    row: &AgStructuralVerdictV1,
+    invariants: &[Value],
+    profile: &MeasurementProfileV1,
+) -> Vec<String> {
+    if let Some(cert_ref) = row
+        .verdict_data
+        .cert_ref
+        .as_deref()
+        .and_then(|cert_ref| cert_ref.strip_prefix("computedInvariants/"))
+    {
+        if invariants.iter().any(|invariant| {
+            invariant
+                .get("invariantId")
+                .and_then(Value::as_str)
+                == Some(cert_ref)
+        }) {
+            return vec![cert_ref.to_string()];
+        }
+    }
+    if !matches!(row.verdict.as_str(), "measured_zero" | "measured_nonzero") {
+        return Vec::new();
+    }
+    invariants
         .iter()
-        .flat_map(|atom| atom.source_refs.iter())
-        .chain(
-            normalized
-                .contexts
-                .iter()
-                .flat_map(|context| context.source_refs.iter()),
-        )
-        .chain(
-            normalized
-                .covers
-                .iter()
-                .flat_map(|cover| cover.source_refs.iter()),
-        )
-        .map(|source_ref| sanitize_source_ref(source_ref))
+        .filter(|invariant| {
+            invariant.get("evaluator").and_then(Value::as_str) == Some(row.evaluator.as_str())
+                && invariant
+                    .get("selectedCoverRef")
+                    .and_then(Value::as_str)
+                    .is_none_or(|cover_ref| cover_ref == profile.cover_ref)
+        })
+        .filter_map(|invariant| invariant.get("invariantId").and_then(Value::as_str))
+        .map(str::to_string)
         .collect::<BTreeSet<_>>()
         .into_iter()
         .collect()
+}
+
+fn generated_invariants_for_row<'a>(
+    row: &AgStructuralVerdictV1,
+    invariants: &'a [Value],
+    profile: &MeasurementProfileV1,
+) -> Vec<&'a Value> {
+    let refs = generated_invariant_refs_for_row(row, invariants, profile)
+        .into_iter()
+        .collect::<BTreeSet<_>>();
+    invariants
+        .iter()
+        .filter(|invariant| {
+            invariant
+                .get("invariantId")
+                .and_then(Value::as_str)
+                .is_some_and(|invariant_id| refs.contains(invariant_id))
+        })
+        .collect()
+}
+
+fn generated_observation_source_refs_for_row(
+    normalized: &NormalizedArchMapV2,
+    row: &AgStructuralVerdictV1,
+    profile: &MeasurementProfileV1,
+    invariants: &[Value],
+) -> Vec<String> {
+    if !matches!(row.verdict.as_str(), "measured_zero" | "measured_nonzero") {
+        return Vec::new();
+    }
+    let selected_contexts = selected_cover_contexts(normalized, profile);
+    let selected_context_aliases = normalized
+        .contexts
+        .iter()
+        .filter(|context| {
+            selected_contexts.contains(&context.normalized_context_id)
+                || selected_contexts.contains(&context.source_context_id)
+        })
+        .flat_map(|context| {
+            [
+                context.normalized_context_id.as_str(),
+                context.source_context_id.as_str(),
+            ]
+        })
+        .collect::<BTreeSet<_>>();
+    let row_invariants = generated_invariants_for_row(row, invariants, profile);
+    let row_invariant_values = row_invariants
+        .iter()
+        .map(|invariant| (*invariant).clone())
+        .collect::<Vec<_>>();
+    let mut atom_refs = collect_packet_refs_from_values(
+        &row_invariant_values,
+        &[
+            "supportAtomRefs",
+            "mismatchSupportRefs",
+            "witnessSupportRefs",
+            "atomRefs",
+            "atomRef",
+        ],
+    );
+    atom_refs.extend(atom_refs_for_row(normalized, row));
+    let atom_refs = normalize_atom_refs(normalized, atom_refs)
+        .into_iter()
+        .filter(|atom_ref| {
+            normalized
+                .atoms
+                .iter()
+                .find(|atom| atom.normalized_atom_id == *atom_ref)
+                .is_some_and(|atom| {
+                    atom.context_memberships.is_empty()
+                        || atom
+                            .context_memberships
+                            .iter()
+                            .any(|context| selected_context_aliases.contains(context.as_str()))
+                })
+        })
+        .collect::<Vec<_>>();
+    let mut source_refs = BTreeSet::new();
+    if let Some(cover) = normalized.covers.iter().find(|cover| {
+        cover.normalized_cover_id == profile.cover_ref || cover.source_cover_id == profile.cover_ref
+    }) {
+        source_refs.extend(cover.source_refs.iter().map(|source_ref| sanitize_source_ref(source_ref)));
+    }
+    source_refs.extend(
+        normalized
+            .contexts
+            .iter()
+            .filter(|context| selected_context_aliases.contains(context.normalized_context_id.as_str()))
+            .flat_map(|context| context.source_refs.iter())
+            .map(|source_ref| sanitize_source_ref(source_ref)),
+    );
+    source_refs.extend(source_refs_for_atoms(normalized, &atom_refs));
+    let mut invariant_source_refs = BTreeSet::new();
+    let source_ref_keys = BTreeSet::from(["sourceRefs", "sourceRef"]);
+    for invariant in row_invariants {
+        collect_packet_refs(invariant, &source_ref_keys, &mut invariant_source_refs);
+    }
+    source_refs.extend(
+        invariant_source_refs
+            .into_iter()
+            .map(|source_ref| sanitize_source_ref(&source_ref)),
+    );
+    source_refs.into_iter().collect()
+}
+
+fn generated_observation_scope_size(
+    row: &AgStructuralVerdictV1,
+    normalized: &NormalizedArchMapV2,
+    profile: &MeasurementProfileV1,
+    invariants: &[Value],
+) -> Value {
+    if !matches!(row.verdict.as_str(), "measured_zero" | "measured_nonzero") {
+        return json!({"contexts": 0, "edges": 0, "triangles": 0});
+    }
+    let row_invariants = generated_invariants_for_row(row, invariants, profile);
+    let selected_contexts = selected_cover_contexts(normalized, profile);
+    let contexts = row_invariants
+        .iter()
+        .find_map(|invariant| invariant.get("contextCount").and_then(Value::as_u64))
+        .map(|count| count as usize)
+        .unwrap_or(selected_contexts.len());
+    let edges = row_invariants
+        .iter()
+        .find_map(|invariant| invariant.get("restrictionEdgeCount").and_then(Value::as_u64))
+        .map(|count| count as usize)
+        .unwrap_or_else(|| cech_edges(normalized, &selected_contexts).len());
+    let triangles = row_invariants
+        .iter()
+        .find_map(|invariant| {
+            invariant
+                .get("coverNerveProjection")
+                .and_then(|projection| projection.get("faces"))
+                .and_then(Value::as_array)
+                .map(Vec::len)
+        })
+        .unwrap_or_default();
+    json!({"contexts": contexts, "edges": edges, "triangles": triangles})
 }
 
 fn supplied_data_ledger(

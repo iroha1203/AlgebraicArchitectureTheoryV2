@@ -165,14 +165,16 @@ pub fn validate_intent_map(
 }
 
 pub fn static_pr_quality_analysis_report() -> PrQualityAnalysisReportV0 {
+    let architecture_ref = artifact_ref(
+        "archsig-measurement-packet",
+        "archsig-measurement-packet/v0.5.4",
+        "tools/fieldsig/tests/fixtures/minimal/archsig_measurement_packet.json",
+    );
+    let architecture_source_ref = architecture_ref.artifact_id.clone();
     PrQualityAnalysisReportV0 {
         schema_version: PR_QUALITY_ANALYSIS_REPORT_SCHEMA_VERSION.to_string(),
         report_id: "fixture-pr-quality-analysis/v0.5.0".to_string(),
-        architecture_ref: artifact_ref(
-            "archsig-measurement-packet",
-            "archsig-measurement-packet/v0.5.4",
-            "tools/fieldsig/tests/fixtures/minimal/archsig_measurement_packet.json",
-        ),
+        architecture_ref,
         air_ref: Some(artifact_ref("air", "aat-air/v0.5.0", "air.json")),
         theorem_check_ref: Some(artifact_ref(
             "theorem-check",
@@ -194,16 +196,19 @@ pub fn static_pr_quality_analysis_report() -> PrQualityAnalysisReportV0 {
                 "cue:responsibility-mixing",
                 "responsibilityMixing",
                 "review semantic dependency and split need before merge",
+                &architecture_source_ref,
             ),
             pr_quality_cue(
                 "cue:runtime-static-disagreement",
                 "runtimeStaticDisagreement",
                 "compare runtime evidence need with current measurement refs",
+                &architecture_source_ref,
             ),
             pr_quality_cue(
                 "cue:policy-conflict",
                 "policyConflict",
                 "review policy boundary and theorem precondition report",
+                &architecture_source_ref,
             ),
         ],
         missing_evidence: vec![intent_boundary(
@@ -642,11 +647,16 @@ fn artifact_ref(kind: &str, schema_version: &str, path: &str) -> PrQualityArtifa
     }
 }
 
-fn pr_quality_cue(cue_id: &str, cue_kind: &str, review_focus: &str) -> PrQualityCueV0 {
+fn pr_quality_cue(
+    cue_id: &str,
+    cue_kind: &str,
+    review_focus: &str,
+    source_ref: &str,
+) -> PrQualityCueV0 {
     PrQualityCueV0 {
         cue_id: cue_id.to_string(),
         cue_kind: cue_kind.to_string(),
-        source_refs: vec!["object-route-users".to_string()],
+        source_refs: vec![source_ref.to_string()],
         severity: "review".to_string(),
         review_focus: review_focus.to_string(),
         evidence_boundary: "selected ArchSig measurement/AIR/theorem-check artifacts only".to_string(),

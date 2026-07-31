@@ -70,7 +70,6 @@
       "conceptId": "concept:architecture-object",
       "aatConcept": "ArchitectureObject / ComponentUniverse",
       "artifactRefs": [
-        "source:air:coupon",
         "source:air:coupon"
       ],
       "reportRefs": [

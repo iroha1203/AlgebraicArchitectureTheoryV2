@@ -55,7 +55,8 @@ use fieldsig::{
     build_sft_review_summary_from_consequence_envelope, build_signature_diff_report,
     build_signature_snapshot_record, build_theorem_precondition_check_report, extract_python_sig0,
     extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
-    read_architecture_policy, render_pr_comment_markdown, static_aat_observable_bundle,
+    read_architecture_policy, read_archsig_measurement_packet, render_pr_comment_markdown,
+    static_aat_observable_bundle,
     static_ai_proposal_governance, static_architecture_dynamics_metrics_report,
     static_architecture_field_snapshot, static_artifact_descriptor,
     static_calibration_review_record, static_consequence_envelope_report,
@@ -1444,7 +1445,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             out,
         }) => {
             reject_output_overwrite(&measurement_packet, out.as_deref())?;
-            let packet: serde_json::Value = read_json(&measurement_packet)?;
+            let packet = read_archsig_measurement_packet(&measurement_packet)?;
             let estimate = build_operation_support_estimate_from_archsig_measurement_packet(
                 &packet,
                 &measurement_packet.display().to_string(),

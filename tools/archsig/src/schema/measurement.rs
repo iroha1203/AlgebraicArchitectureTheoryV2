@@ -22,7 +22,11 @@ pub struct ArchSigMeasurementPacketV1 {
     pub boundary_statements: Vec<BoundaryStatementV1>,
     pub non_conclusions: Vec<String>,
     #[serde(skip)]
-    pub(crate) observation_source_refs: Vec<String>,
+    pub(crate) observation_source_refs: Vec<Vec<String>>,
+    #[serde(skip)]
+    pub(crate) observation_scope_sizes: Vec<Value>,
+    #[serde(skip)]
+    pub(crate) observation_invariant_refs: Vec<Vec<String>>,
 }
 
 impl Serialize for ArchSigMeasurementPacketV1 {
@@ -45,12 +49,29 @@ impl Serialize for ArchSigMeasurementPacketV1 {
         let structural_verdict = self
             .structural_verdict
             .iter()
-            .map(|row| {
+            .enumerate()
+            .map(|(index, row)| {
+                let invariant_refs = self
+                    .observation_invariant_refs
+                    .get(index)
+                    .cloned()
+                    .unwrap_or_else(|| supporting_invariant_refs(row, &invariants));
+                let source_refs = self
+                    .observation_source_refs
+                    .get(index)
+                    .cloned()
+                    .unwrap_or_default();
+                let scope_size = self
+                    .observation_scope_sizes
+                    .get(index)
+                    .cloned()
+                    .unwrap_or(Value::Null);
                 normalized_structural_verdict(
                     row,
-                    &invariants,
                     &self.profile,
-                    &self.observation_source_refs,
+                    &invariant_refs,
+                    &source_refs,
+                    &scope_size,
                 )
             })
             .collect::<Vec<_>>();
@@ -234,18 +255,14 @@ fn normalized_computed_invariant(invariant: &Value) -> Value {
 
 fn normalized_structural_verdict(
     row: &AgStructuralVerdictV1,
-    invariants: &[Value],
     profile: &MeasurementProfileV1,
+    observation_invariant_refs: &[String],
     observation_source_refs: &[String],
+    observation_scope_size: &Value,
 ) -> Value {
     let mut value = serde_json::to_value(row).unwrap_or_else(|_| Value::Object(Default::default()));
     let Some(object) = value.as_object_mut() else {
         return value;
-    };
-    let fallback_refs = if matches!(row.verdict.as_str(), "measured_zero" | "measured_nonzero") {
-        supporting_invariant_refs(row, invariants)
-    } else {
-        Vec::new()
     };
     let evidence = object
         .entry("evidence".to_string())
@@ -259,7 +276,9 @@ fn normalized_structural_verdict(
             evidence.insert(
                 "computedInvariantRefs".to_string(),
                 Value::Array(
-                    fallback_refs
+                    observation_invariant_refs
+                        .iter()
+                        .cloned()
                         .into_iter()
                         .map(Value::String)
                         .collect(),
@@ -310,6 +329,9 @@ fn normalized_structural_verdict(
             "coefficient".to_string(),
             Value::String(profile.coefficient.clone()),
         );
+        if observation_scope_size.is_object() {
+            target.insert("scopeSize".to_string(), observation_scope_size.clone());
+        }
     }
     value
 }
@@ -321,29 +343,16 @@ fn supporting_invariant_refs(row: &AgStructuralVerdictV1, invariants: &[Value]) 
         .as_deref()
         .and_then(|cert_ref| cert_ref.strip_prefix("computedInvariants/"))
     {
-        return vec![cert_ref.to_string()];
-    }
-    let mut refs = invariants
-        .iter()
-        .filter(|invariant| {
+        if invariants.iter().any(|invariant| {
             invariant
-                .get("evaluator")
+                .get("invariantId")
                 .and_then(Value::as_str)
-                .is_some_and(|evaluator| evaluator == row.evaluator)
-        })
-        .filter_map(|invariant| invariant.get("invariantId").and_then(Value::as_str))
-        .map(str::to_string)
-        .collect::<Vec<_>>();
-    if refs.is_empty() {
-        refs.extend(
-            invariants
-                .iter()
-                .filter_map(|invariant| invariant.get("invariantId").and_then(Value::as_str))
-                .take(1)
-                .map(str::to_string),
-        );
+                == Some(cert_ref)
+        }) {
+            return vec![cert_ref.to_string()];
+        }
     }
-    refs
+    Vec::new()
 }
 
 fn invariant_kind_for_schema(invariant_id: &str, invariant: &Value) -> String {

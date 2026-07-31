@@ -1,5 +1,8 @@
 use std::collections::BTreeSet;
+use std::fmt;
 use std::path::Path;
+
+use serde::de::{DeserializeSeed, Error as DeError, MapAccess, SeqAccess, Visitor};
 
 use crate::{
     ARTIFACT_DESCRIPTOR_SCHEMA_VERSION, ArchMapLeanPreservationVocabularyEntry,
@@ -50,6 +53,125 @@ const ARCHSIG_SUPPLIED_DATA_KINDS: [&str; 5] = [
     "law-equation-surface",
     "repair-plan",
 ];
+
+pub fn read_archsig_measurement_packet(
+    path: &Path,
+) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
+    let source = std::fs::read_to_string(path)?;
+    let mut deserializer = serde_json::Deserializer::from_str(&source);
+    let value = NoDuplicateJsonSeed.deserialize(&mut deserializer)?;
+    deserializer.end()?;
+    Ok(value)
+}
+
+struct NoDuplicateJsonSeed;
+
+impl<'de> DeserializeSeed<'de> for NoDuplicateJsonSeed {
+    type Value = serde_json::Value;
+
+    fn deserialize<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_any(NoDuplicateJsonVisitor)
+    }
+}
+
+struct NoDuplicateJsonVisitor;
+
+impl<'de> Visitor<'de> for NoDuplicateJsonVisitor {
+    type Value = serde_json::Value;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str("a JSON value with unique object keys")
+    }
+
+    fn visit_bool<E>(self, value: bool) -> Result<Self::Value, E>
+    where
+        E: DeError,
+    {
+        Ok(serde_json::Value::Bool(value))
+    }
+
+    fn visit_i64<E>(self, value: i64) -> Result<Self::Value, E>
+    where
+        E: DeError,
+    {
+        Ok(serde_json::Value::Number(value.into()))
+    }
+
+    fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
+    where
+        E: DeError,
+    {
+        Ok(serde_json::Value::Number(value.into()))
+    }
+
+    fn visit_f64<E>(self, value: f64) -> Result<Self::Value, E>
+    where
+        E: DeError,
+    {
+        let number = serde_json::Number::from_f64(value)
+            .ok_or_else(|| E::custom("JSON number must be finite"))?;
+        Ok(serde_json::Value::Number(number))
+    }
+
+    fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+    where
+        E: DeError,
+    {
+        Ok(serde_json::Value::String(value.to_string()))
+    }
+
+    fn visit_string<E>(self, value: String) -> Result<Self::Value, E>
+    where
+        E: DeError,
+    {
+        Ok(serde_json::Value::String(value))
+    }
+
+    fn visit_none<E>(self) -> Result<Self::Value, E>
+    where
+        E: DeError,
+    {
+        Ok(serde_json::Value::Null)
+    }
+
+    fn visit_unit<E>(self) -> Result<Self::Value, E>
+    where
+        E: DeError,
+    {
+        Ok(serde_json::Value::Null)
+    }
+
+    fn visit_seq<A>(self, mut access: A) -> Result<Self::Value, A::Error>
+    where
+        A: SeqAccess<'de>,
+    {
+        let mut values = Vec::new();
+        while let Some(value) = access.next_element_seed(NoDuplicateJsonSeed)? {
+            values.push(value);
+        }
+        Ok(serde_json::Value::Array(values))
+    }
+
+    fn visit_map<A>(self, mut access: A) -> Result<Self::Value, A::Error>
+    where
+        A: MapAccess<'de>,
+    {
+        let mut object = serde_json::Map::new();
+        while let Some(key) = access.next_key::<String>()? {
+            if object.contains_key(&key) {
+                return Err(A::Error::custom(format!(
+                    "duplicate JSON object key {key}"
+                )));
+            }
+            let value = access.next_value_seed(NoDuplicateJsonSeed)?;
+            object.insert(key, value);
+        }
+        Ok(serde_json::Value::Object(object))
+    }
+}
 
 pub fn build_operation_support_estimate_from_archsig_measurement_packet(
     packet: &serde_json::Value,
@@ -239,6 +361,7 @@ fn validate_archsig_measurement_packet_handoff_shape(
         );
     }
     validate_handoff_top_level_fields(packet)?;
+    validate_handoff_nested_fields(packet)?;
     let profile_id = profile
         .get("profileId")
         .and_then(|value| value.as_str())
@@ -365,12 +488,13 @@ fn validate_archsig_measurement_packet_structural_verdicts(
                     "FieldSig ArchSig measurement handoff structuralVerdict[{index}] evidence requires computedInvariantRefs array"
                 )
             })?;
-        let computed_refs = evidence["computedInvariantRefs"]
-            .as_array()
-            .into_iter()
-            .flatten()
-            .filter_map(|value| value.as_str())
-            .collect::<Vec<_>>();
+        let computed_refs = required_unique_string_array(
+            evidence,
+            "computedInvariantRefs",
+            &format!(
+                "FieldSig ArchSig measurement handoff structuralVerdict[{index}] evidence"
+            ),
+        )?;
         for computed_ref in &computed_refs {
             if !invariant_ids.contains(computed_ref) {
                 return Err(format!(
@@ -388,14 +512,13 @@ fn validate_archsig_measurement_packet_structural_verdicts(
                 .into());
             }
         }
-        let source_refs = evidence
-            .get("sourceRefs")
-            .and_then(|value| value.as_array())
-            .ok_or_else(|| {
-                format!(
-                    "FieldSig ArchSig measurement handoff structuralVerdict[{index}] evidence requires sourceRefs array"
-                )
-            })?;
+        let source_refs = required_unique_string_array(
+            evidence,
+            "sourceRefs",
+            &format!(
+                "FieldSig ArchSig measurement handoff structuralVerdict[{index}] evidence"
+            ),
+        )?;
         if matches!(verdict, "measured_zero" | "measured_nonzero") && source_refs.is_empty() {
             return Err(format!(
                 "FieldSig ArchSig measurement handoff structuralVerdict[{index}] {verdict} requires non-empty evidence.sourceRefs"
@@ -542,6 +665,7 @@ fn validate_archsig_measurement_packet_computed_invariants(
 fn validate_archsig_measurement_packet_analytic_readings(
     packet: &serde_json::Value,
 ) -> Result<(), Box<dyn std::error::Error>> {
+    let mut reading_ids = BTreeSet::new();
     for (index, row) in packet
         .get("analyticReadings")
         .and_then(|value| value.as_array())
@@ -549,9 +673,15 @@ fn validate_archsig_measurement_packet_analytic_readings(
         .flatten()
         .enumerate()
     {
-        required_string(row, "readingId").map_err(|message| {
+        let reading_id = required_string(row, "readingId").map_err(|message| {
             format!("FieldSig ArchSig measurement handoff analyticReadings[{index}] {message}")
         })?;
+        if !reading_ids.insert(reading_id) {
+            return Err(format!(
+                "FieldSig ArchSig measurement handoff analyticReadings[{index}] duplicates readingId {reading_id}"
+            )
+            .into());
+        }
         required_string(row, "evaluator").map_err(|message| {
             format!("FieldSig ArchSig measurement handoff analyticReadings[{index}] {message}")
         })?;
@@ -711,7 +841,12 @@ fn validate_archsig_measurement_packet_assumptions(
         let _theorem_ref = required_string(row, "theoremRef").map_err(|message| {
             format!("FieldSig ArchSig measurement handoff assumptions[{index}] {message}")
         })?;
-        assumption_ids.insert(assumption_id.to_string());
+        if !assumption_ids.insert(assumption_id.to_string()) {
+            return Err(format!(
+                "FieldSig ArchSig measurement handoff assumptions[{index}] duplicates assumptionId {assumption_id}"
+            )
+            .into());
+        }
         required_string(row, "assumption").map_err(|message| {
             format!("FieldSig ArchSig measurement handoff assumptions[{index}] {message}")
         })?;
@@ -838,7 +973,12 @@ fn validate_archsig_measurement_packet_supplied_data(
             .into());
         }
     }
-    for required_kind in ["archmap", "law-policy", "measurement-profile"] {
+    for required_kind in [
+        "archmap",
+        "law-policy",
+        "law-equation-surface",
+        "measurement-profile",
+    ] {
         if !supplied_kinds.contains(required_kind) {
             return Err(format!(
                 "FieldSig ArchSig measurement handoff suppliedData is missing required kind {required_kind}"
@@ -882,6 +1022,217 @@ fn validate_handoff_top_level_fields(
         .into());
     }
     Ok(())
+}
+
+fn validate_handoff_nested_fields(
+    packet: &serde_json::Value,
+) -> Result<(), Box<dyn std::error::Error>> {
+    const PROFILE_FIELDS: &[&str] = &[
+        "schema",
+        "profileId",
+        "siteRef",
+        "coverRef",
+        "coefficient",
+        "effCoeff",
+        "resolutionSelector",
+        "domain",
+        "zeroPredicate",
+        "nonZeroPredicate",
+        "certSelector",
+        "verdictDiscipline",
+        "diagnosticCeiling",
+        "analytic",
+        "finiteBounds",
+    ];
+    const STRUCTURAL_FIELDS: &[&str] = &[
+        "verdictRef",
+        "evaluator",
+        "law",
+        "target",
+        "verdict",
+        "verdictData",
+        "dependsOnAssumptions",
+        "evidence",
+        "reason",
+    ];
+    const TARGET_FIELDS: &[&str] = &[
+        "kind",
+        "coverRef",
+        "coefficient",
+        "scopeSize",
+        "classRef",
+    ];
+    const SCOPE_FIELDS: &[&str] = &["contexts", "edges", "triangles"];
+    const VERDICT_DATA_FIELDS: &[&str] = &[
+        "inScope",
+        "zero",
+        "nonZero",
+        "methodStatus",
+        "certRef",
+    ];
+    const EVIDENCE_FIELDS: &[&str] = &["computedInvariantRefs", "sourceRefs"];
+    const READING_FIELDS: &[&str] = &[
+        "readingId",
+        "evaluator",
+        "claimStatus",
+        "fidelity",
+        "value",
+        "regime",
+        "structuralVerdictRef",
+    ];
+    const ASSUMPTION_FIELDS: &[&str] = &[
+        "assumptionId",
+        "theoremRef",
+        "assumption",
+        "status",
+        "checkedBy",
+        "assumedBy",
+        "scopeRefs",
+    ];
+    const SUPPLIED_FIELDS: &[&str] = &[
+        "suppliedId",
+        "kind",
+        "sourceArtifactRef",
+        "conformance",
+    ];
+    const CONFORMANCE_FIELDS: &[&str] = &["status", "checkRef", "boundary"];
+    const BOUNDARY_FIELDS: &[&str] = &["id", "kind", "scopeRefs", "reason", "text"];
+
+    reject_unknown_object_fields(packet.get("profile"), "profile", PROFILE_FIELDS)?;
+    if let Some(profiles) = packet.get("profiles").and_then(|value| value.as_array()) {
+        for (index, profile) in profiles.iter().enumerate() {
+            reject_unknown_object_fields(
+                Some(profile),
+                &format!("profiles[{index}]"),
+                PROFILE_FIELDS,
+            )?;
+        }
+    }
+    for (index, row) in packet
+        .get("structuralVerdict")
+        .and_then(|value| value.as_array())
+        .into_iter()
+        .flatten()
+        .enumerate()
+    {
+        let prefix = format!("structuralVerdict[{index}]");
+        reject_unknown_object_fields(Some(row), &prefix, STRUCTURAL_FIELDS)?;
+        reject_unknown_object_fields(row.get("target"), &format!("{prefix}.target"), TARGET_FIELDS)?;
+        reject_unknown_object_fields(
+            row.get("target").and_then(|target| target.get("scopeSize")),
+            &format!("{prefix}.target.scopeSize"),
+            SCOPE_FIELDS,
+        )?;
+        reject_unknown_object_fields(
+            row.get("verdictData"),
+            &format!("{prefix}.verdictData"),
+            VERDICT_DATA_FIELDS,
+        )?;
+        reject_unknown_object_fields(
+            row.get("evidence"),
+            &format!("{prefix}.evidence"),
+            EVIDENCE_FIELDS,
+        )?;
+    }
+    for (index, row) in packet
+        .get("analyticReadings")
+        .and_then(|value| value.as_array())
+        .into_iter()
+        .flatten()
+        .enumerate()
+    {
+        reject_unknown_object_fields(
+            Some(row),
+            &format!("analyticReadings[{index}]"),
+            READING_FIELDS,
+        )?;
+    }
+    for (index, row) in packet
+        .get("assumptions")
+        .and_then(|value| value.as_array())
+        .into_iter()
+        .flatten()
+        .enumerate()
+    {
+        reject_unknown_object_fields(
+            Some(row),
+            &format!("assumptions[{index}]"),
+            ASSUMPTION_FIELDS,
+        )?;
+    }
+    for (index, row) in packet
+        .get("suppliedData")
+        .and_then(|value| value.as_array())
+        .into_iter()
+        .flatten()
+        .enumerate()
+    {
+        reject_unknown_object_fields(
+            Some(row),
+            &format!("suppliedData[{index}]"),
+            SUPPLIED_FIELDS,
+        )?;
+        reject_unknown_object_fields(
+            row.get("conformance"),
+            &format!("suppliedData[{index}].conformance"),
+            CONFORMANCE_FIELDS,
+        )?;
+    }
+    for (index, row) in packet
+        .get("boundaryStatements")
+        .and_then(|value| value.as_array())
+        .into_iter()
+        .flatten()
+        .enumerate()
+    {
+        reject_unknown_object_fields(
+            Some(row),
+            &format!("boundaryStatements[{index}]"),
+            BOUNDARY_FIELDS,
+        )?;
+    }
+    Ok(())
+}
+
+fn reject_unknown_object_fields(
+    value: Option<&serde_json::Value>,
+    path: &str,
+    allowed: &[&str],
+) -> Result<(), Box<dyn std::error::Error>> {
+    let Some(object) = value.and_then(|value| value.as_object()) else {
+        return Ok(());
+    };
+    if let Some(unknown) = object.keys().find(|key| !allowed.contains(&key.as_str())) {
+        return Err(format!(
+            "FieldSig ArchSig measurement handoff rejects unknown field {path}.{unknown}"
+        )
+        .into());
+    }
+    Ok(())
+}
+
+fn required_unique_string_array<'a>(
+    object: &'a serde_json::Map<String, serde_json::Value>,
+    key: &str,
+    path: &str,
+) -> Result<Vec<&'a str>, Box<dyn std::error::Error>> {
+    let values = object
+        .get(key)
+        .and_then(|value| value.as_array())
+        .ok_or_else(|| format!("{path} requires {key} array"))?;
+    let mut seen = BTreeSet::new();
+    let mut result = Vec::with_capacity(values.len());
+    for (index, value) in values.iter().enumerate() {
+        let reference = value
+            .as_str()
+            .filter(|reference| !reference.trim().is_empty())
+            .ok_or_else(|| format!("{path}.{key}[{index}] requires non-empty string"))?;
+        if !seen.insert(reference) {
+            return Err(format!("{path}.{key}[{index}] duplicates {reference}").into());
+        }
+        result.push(reference);
+    }
+    Ok(result)
 }
 
 fn required_string<'a>(
@@ -949,6 +1300,15 @@ fn archsig_measurement_packet_sft_source_refs(
             .and_then(|value| value.as_array())
             .into_iter()
             .flatten()
+            .filter_map(|entry| entry.get("sourceArtifactRef").and_then(|value| value.as_str()))
+            .map(sanitize_artifact_ref),
+    );
+    refs.extend(
+        packet
+            .get("suppliedData")
+            .and_then(|value| value.as_array())
+            .into_iter()
+            .flatten()
             .filter(|entry| {
                 entry.get("kind").and_then(|value| value.as_str()) == Some("law-equation-surface")
             })
@@ -961,7 +1321,7 @@ fn archsig_measurement_packet_sft_source_refs(
                             "archsigMeasurementLawSurface:{}",
                             sanitize_artifact_ref(source)
                         )
-                    })
+            })
             }),
     );
     refs.extend(
@@ -972,6 +1332,16 @@ fn archsig_measurement_packet_sft_source_refs(
             .flatten()
             .flat_map(|verdict| {
                 let mut refs = Vec::new();
+                refs.extend(
+                    verdict
+                        .get("evidence")
+                        .and_then(|evidence| evidence.get("sourceRefs"))
+                        .and_then(|value| value.as_array())
+                        .into_iter()
+                        .flatten()
+                        .filter_map(|value| value.as_str())
+                        .map(sanitize_artifact_ref),
+                );
                 if let Some(verdict_ref) =
                     verdict.get("verdictRef").and_then(|value| value.as_str())
                 {
@@ -1001,6 +1371,15 @@ fn archsig_measurement_packet_sft_source_refs(
             .flatten()
             .flat_map(|invariant| {
                 let mut refs = Vec::new();
+                refs.extend(
+                    invariant
+                        .get("sourceRefs")
+                        .and_then(|value| value.as_array())
+                        .into_iter()
+                        .flatten()
+                        .filter_map(|value| value.as_str())
+                        .map(sanitize_artifact_ref),
+                );
                 for key in ["invariantId", "readingId", "id"] {
                     if let Some(id) = invariant.get(key).and_then(|value| value.as_str()) {
                         refs.push(format!("archsigMeasurementComputedInvariant:{id}"));
@@ -1169,7 +1548,7 @@ fn archsig_measurement_packet_candidate_families(
                 operation_family: format!("review-ag-structural-{verdict}"),
                 support_kind: "measurement-packet-structural-verdict".to_string(),
                 action_class_candidate_ids: vec![evaluator.to_string(), law.to_string()],
-                source_ref_ids: source_ref_ids.to_vec(),
+                source_ref_ids: archsig_measurement_packet_row_source_refs(row, source_ref_ids),
                 confidence: if matches!(verdict, "measured_zero" | "measured_nonzero") {
                     "medium"
                 } else {
@@ -1235,6 +1614,28 @@ fn archsig_measurement_packet_candidate_families(
         });
     }
     families
+}
+
+fn archsig_measurement_packet_row_source_refs(
+    row: &serde_json::Value,
+    packet_source_ref_ids: &[String],
+) -> Vec<String> {
+    let mut refs = row
+        .get("evidence")
+        .and_then(|evidence| evidence.get("sourceRefs"))
+        .and_then(|value| value.as_array())
+        .into_iter()
+        .flatten()
+        .filter_map(|value| value.as_str())
+        .map(sanitize_artifact_ref)
+        .collect::<Vec<_>>();
+    refs.extend(
+        packet_source_ref_ids
+            .iter()
+            .filter(|reference| reference.starts_with("source:archsig-measurement-packet:"))
+            .cloned(),
+    );
+    unique_strings(refs)
 }
 
 fn archsig_measurement_structural_row_key(index: usize, row: &serde_json::Value) -> String {
