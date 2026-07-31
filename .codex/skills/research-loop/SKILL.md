@@ -116,8 +116,7 @@ GOAL card の必須項目や欠陥判定は [references/goal-card-contract.md](r
 合格条件:
 
 1. focused `cd research/lean && lake env lean ResearchLean/AG/<file>.lean` が通る。
-   Research packageのfull buildはCIで実行せず、必要な場合だけ統括エージェントが
-   ローカルで1回実行する。サブエージェントは実行しない。
+   Research package build の hard rule は `docs/aat/guideline.md`「Lean build 運用」に従う。
 2. 独立サブエージェントの公理検査が通る。
 3. 独立サブエージェントの Lean 形式化品質監査を通る。判定正本は
    `docs/aat/lean_quality_standard.md`(受理点への適用。同 §6)。

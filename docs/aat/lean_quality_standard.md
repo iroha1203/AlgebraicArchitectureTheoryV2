@@ -1,6 +1,6 @@
 # Lean 品質基準(mathlib 型 statement review 基準の正本)
 
-AGENTS.md「「境界」という言葉の使用を禁止する」節が採用を宣言した
+[guideline.md](guideline.md)「「境界」という言葉の使用を禁止する」節が採用を宣言した
 mathlib 型 statement review 基準の正本。AAT / Lean 形式化
 (`Formal/` の新規・変更宣言)に適用する。
 
@@ -43,7 +43,7 @@ certificate field)を、実装者が PR 本文・候補カード・GOAL ledger �
   独立に列挙して申告と突合する(refutation-checklist §3 の移植対応表と
   同じ扱い)。
 - 未放電仮定を「明示 scope」「stated scope」と呼び替えて close 根拠に
-  しない(AGENTS.md 禁止語対応表)。scope を名乗れるのは本文由来の
+  しない(guideline.md 禁止語対応表)。scope を名乗れるのは本文由来の
   仮定だけである。
 
 ### 1.2 premise 使用性 [機械: `unusedArguments`]
@@ -59,7 +59,7 @@ major finding とする(mathlib `unusedArguments` リンター相当)。
 新規 def は、mathlib の既存概念または本体既存 API への接続
 (comparison map、instance、同値定理、restriction との互換)を
 最低1つ持つ。どの既存 API とも接続しない閉じた wrapper は査読を
-通さない(AGENTS.md の宣言の具体化)。theorem は次のどちらかの
+通さない(guideline.md 禁止語規律の宣言の具体化)。theorem は次のどちらかの
 位置づけを宣言する。
 
 - 固定 statement(§5)または本文ラベルに対応する主定理
@@ -225,7 +225,7 @@ proof-use、actual APIへの接続を査読する。
 
 実装中に固定 statement(参照される def の signature を含む)の変更が
 必要になったら、その時点で**未達として停止して報告する**
-(AGENTS.md の停止規則の手続き化)。
+(guideline.md の停止規則の手続き化)。
 
 - PRD: PRD 欠陥または要求未達としてユーザーへエスカレートする。
   ループ内で PRD を編集しない。

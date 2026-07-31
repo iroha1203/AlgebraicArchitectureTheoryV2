@@ -124,7 +124,7 @@ source extraction の健全性、semantic の正しさ、global lawfulness、未
 `compare` は analyze run の比較記録を作り、`gate` は必須の measurement packet と任意の比較記録に対して gate policy を適用し、CI判断へ写像する。
 `refactor-morphism/v0.5.4` は既存 verdict の declared transport compatibility を供給し、
 `refinement-comparison/v0.5.4` は coarse-to-fine の class-zero preservation data を供給する。
-これらの供給 slot は、次段の RepairPlan explicit H¹ comparison の供給を含め、AGENTS.md「責務範囲」の入力トライアドに対する既存の負債であり、返済は供給 slot 台帳の負債告知が管理する。validator 通過は帰属の代替にならない。
+これらの供給 slot は、次段の RepairPlan explicit H¹ comparison の供給を含め、[guideline.md](guideline.md)「責務範囲(入力トライアドの正本)」の入力トライアドに対する既存の負債であり、返済は供給 slot 台帳の負債告知が管理する。validator 通過は帰属の代替にならない。
 RepairPlan の explicit H¹ comparison は、次数0/1/2の有限基底写像表、次数2の `zeroImage`、
 および変数対応を供給し、ArchSig が差保存・零保存・微分可換性を再計算する。適合条件の宣言booleanは入力として採用しない。
 
@@ -162,7 +162,7 @@ RepairPlan の explicit H¹ comparison は、次数0/1/2の有限基底写像表
 | 計測出力契約と五値 verdict | 第VIII部 定義 11.1 |
 | verdict discipline(unknown ≠ nonzero ほか) | 第VIII部 measurement verdict discipline |
 | 計測は理論内部の reading、外部妥当性を主張しない | 第VIII部 原則2.2(Measurement Is Internal) |
-| ArchSig は contract 内だけ語り沈黙する | README.md / AGENTS.md / CLAUDE.md ウィトゲンシュタイン的境界 |
+| ArchSig は contract 内だけ語り沈黙する | [guideline.md](guideline.md)「責務範囲(入力トライアドの正本)」ウィトゲンシュタイン的責務範囲 |
 
 ## 関連文書
 

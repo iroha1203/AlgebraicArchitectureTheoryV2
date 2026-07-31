@@ -2,7 +2,7 @@
 
 > 本 doc は既存 fixture の `sourceRef.section` 解決のための section 台帳であり、
 > 新しい供給入力・新 section の根拠として引用してはならない(入力トライアドの正本は
-> AGENTS.md「責務範囲」)。名称の是正は fixture / tests の参照更新と併せて
+> [guideline.md](guideline.md)「責務範囲(入力トライアドの正本)」)。名称の是正は fixture / tests の参照更新と併せて
 > 供給 slot 返済系列で扱う。
 
 この文書は、AG measurement fixtureの`sourceRef.section`が指す恒久contractである。

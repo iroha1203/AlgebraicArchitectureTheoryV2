@@ -170,9 +170,8 @@ selected object / cover / sheaf / coefficient / complex / realization layer を�
 通常 cycle の合格条件:
 
 1. focused `cd research/lean && lake env lean <target-file-relative-to-package>` が通る。
-2. Research packageのfull buildはCIで実行せず、必要な場合だけ統括エージェントが
-   `cd research/lean && lake build`をローカルで1回実行する。
-   audit subagentは実行しない。
+2. Research package build の hard rule は `docs/aat/guideline.md`「Lean build 運用」に従う
+   (audit subagentは実行しない)。
 3. 報告対象 declaration の `#print axioms` audit が通る。
 4. placeholder scan が clean。
 5. target statement を弱めていない。
