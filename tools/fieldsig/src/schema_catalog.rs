@@ -3,7 +3,7 @@ use crate::{
     AIR_SCHEMA_VERSION, ARCHITECTURE_DRIFT_LEDGER_SCHEMA_VERSION,
     ARCHITECTURE_DYNAMICS_METRICS_REPORT_SCHEMA_VERSION, ARCHITECTURE_POLICY_SCHEMA_VERSION,
     ARCHITECTURE_POLICY_VALIDATION_REPORT_SCHEMA_VERSION, ARCHMAP_SCHEMA_VERSION,
-    ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION, CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION,
+    CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION,
     CONSEQUENCE_ENVELOPE_REPORT_SCHEMA_VERSION,
     DETECTABLE_VALUES_REPORTED_AXES_CATALOG_SCHEMA_VERSION,
     FEATURE_EXTENSION_REPORT_SCHEMA_VERSION, FORECAST_CONE_SKELETON_SCHEMA_VERSION,
@@ -101,31 +101,6 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ),
             ),
             artifact(
-                "archmap-validation-report",
-                "ArchMap Validation Report",
-                ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION,
-                "validation-output",
-                "ArchMap MVP",
-                "implemented",
-                vec![
-                    "docs/tool/README.md",
-                    "tools/archsig/docs/commands.md",
-                    "tools/fieldsig/docs/commands.md",
-                ],
-                vec!["#1032", "#1034", "#1229", "#1245"],
-                compatibility_boundary(
-                    "Keep source inventory checks, source ref checks, claim boundary checks, semantic coverage checks, conflict checks, projection-separation checks, formal promotion guardrail checks, and atomic observation summary separate.",
-                    vec![],
-                    vec![
-                        "New checks must report whether they fail, warn, or pass without promoting uncertain mappings.",
-                        "Atomic observation checks must distinguish atom candidates, molecule candidates, obstruction circuit candidates, and observation gaps.",
-                    ],
-                    vec![
-                        "Validation pass does not imply semantic correctness, completeness, architecture lawfulness, certified atom truth, zero curvature, or SFT forecast correctness.",
-                    ],
-                ),
-            ),
-            artifact(
                 "architecture-policy",
                 "Architecture policy artifact",
                 ARCHITECTURE_POLICY_SCHEMA_VERSION,
@@ -187,26 +162,6 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     ],
                     vec![
                         "Layered findings are selected-universe tooling evidence and SRP cues are not tool-only violations.",
-                    ],
-                ),
-            ),
-            artifact(
-                "archmap-generation-protocol",
-                "ArchMap generation protocol",
-                "archmap-generation-protocol/v0.5.0",
-                "external-agent-protocol",
-                "ArchMap v2",
-                "implemented",
-                vec!["docs/tool/README.md", "tools/archsig/docs/commands.md"],
-                vec!["#1139"],
-                compatibility_boundary(
-                    "Map source inventory refs, prompt pack refs, model provenance, required workflow, and private / unavailable generation boundary explicitly.",
-                    vec![],
-                    vec![
-                        "New generation workflow fields must preserve model provenance and validation boundary.",
-                    ],
-                    vec![
-                        "Generation protocol does not execute the model or prove the generated ArchMap correct.",
                     ],
                 ),
             ),

@@ -16,12 +16,6 @@
       "path": ".lake/archmap-prompt.md"
     }
   ],
-  "sourceInventoryRef": {
-    "artifactId": "source-inventory-fixture",
-    "kind": "source_inventory",
-    "path": "tools/fieldsig/tests/fixtures/minimal/archmap_source_inventory.json",
-    "contentHash": "sha256-fixture-source-inventory"
-  },
   "generationBoundary": {
     "tokenBudget": "fixture",
     "scope": ["src/routes", "src/services", "docs/architecture.md"],

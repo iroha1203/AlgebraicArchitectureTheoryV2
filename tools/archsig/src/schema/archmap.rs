@@ -9,7 +9,6 @@ use super::validation::ValidationCheck;
 pub struct ArchMapDocumentV2 {
     pub schema: String,
     pub id: String,
-    #[serde(default = "canonical_archmap_extraction_doctrine_ref_v2")]
     pub extraction_doctrine_ref: ArchMapExtractionDoctrineRefV2,
     #[serde(default)]
     pub sources: BTreeMap<String, ArchMapSource>,
@@ -42,7 +41,7 @@ pub fn canonical_archmap_extraction_doctrine_ref_v2() -> ArchMapExtractionDoctri
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct AatAtomVocabularyV1 {
     pub schema: String,
     pub vocabulary_id: String,
@@ -50,6 +49,7 @@ pub struct AatAtomVocabularyV1 {
     pub required_doctrine_components: Vec<String>,
     pub entries: Vec<AatAtomVocabularyEntryV1>,
     pub axis_predicate_pairs: Vec<AatAtomVocabularyPairV1>,
+    pub allowed_non_ag_observation_axes: Vec<String>,
     pub non_conclusions: Vec<String>,
 }
 
@@ -66,6 +66,7 @@ pub struct AatAtomVocabularyEntryV1 {
 pub struct AatAtomVocabularyPairV1 {
     pub axis: String,
     pub predicates: Vec<String>,
+    pub provenance_ref: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

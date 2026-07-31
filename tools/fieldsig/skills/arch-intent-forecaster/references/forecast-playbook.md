@@ -8,7 +8,7 @@ Use this playbook for Epic / PRD / Spec planning forecast.
 | --- | --- | --- |
 | "forecast this PRD" | IntentMap, ArchMap, AlignmentMap, intent-forecast outputs | operation support and bounded consequences |
 | "what is unclear" | IntentMap validation, AlignmentMap validation | missing decisions, ambiguous intents, unsupported intents |
-| "what architecture will be touched" | AlignmentMap, ArchMap validation | aligned objects, relations, policies, test oracles |
+| "what architecture will be touched" | AlignmentMap, ArchSig input validation | aligned objects, relations, policies, test oracles |
 | "what should we decide next" | IntentMap, consequence envelope | decisions that reduce forecast uncertainty |
 | "what judgement should reviewer return" | SFT review summary | opened / closed futures, boundary failures, next actions |
 | "did forecast help" | intent calibration record | observed refs and usefulness feedback |

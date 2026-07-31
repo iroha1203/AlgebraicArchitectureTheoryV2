@@ -3,7 +3,7 @@
 | Artifact | Supports | Does not support |
 | --- | --- | --- |
 | IntentMap validation | source refs, intent items, missing decisions, ambiguity, missing evidence | correct PRD interpretation |
-| ArchMap validation | current architecture refs and semantic coverage | complete implementation model |
+| ArchSig input validation | current architecture refs and semantic coverage | complete implementation model |
 | AlignmentMap validation | intent-to-architecture links, unaligned / unsupported intent | guaranteed implementation impact |
 | operation-support-estimate | candidate operation families and known support boundary | forecast result |
 | ForecastConeSkeleton | bounded path class candidates and missing support | probability or point prediction |

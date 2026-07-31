@@ -5,7 +5,6 @@ mod air_validation;
 mod architecture_dynamics_metrics;
 mod architecture_field;
 mod architecture_policy;
-mod archmap;
 mod artifact_descriptor;
 mod artifact_retention;
 mod baseline_suppression;
@@ -22,6 +21,7 @@ mod graph;
 mod intentmap;
 mod law_policy_template;
 mod measurement;
+mod measurement_handoff;
 mod measurement_unit;
 mod no_solution_certificate;
 mod obstruction_drift;
@@ -70,11 +70,6 @@ pub use architecture_policy::{
     apply_architecture_policy_to_sig0, build_law_violation_report, read_architecture_policy,
     srp_review_cue_from_archmap_item, validate_architecture_policy_report,
 };
-pub use archmap::{
-    ArchMapSourceInventoryInput, build_air_from_archmap,
-    build_operation_support_estimate_from_archmap,
-    build_operation_support_estimate_from_archsig_measurement_packet, validate_archmap_report,
-};
 pub use artifact_descriptor::{
     build_artifact_descriptor_from_ai_proposal_json,
     build_artifact_descriptor_from_github_issue_json, build_artifact_descriptor_from_markdown,
@@ -121,6 +116,7 @@ pub use measurement::{
 pub use measurement_unit::{
     static_measurement_unit_registry, validate_measurement_unit_registry_report,
 };
+pub use measurement_handoff::build_operation_support_estimate_from_archsig_measurement_packet;
 pub use no_solution_certificate::{
     static_no_solution_certificate, validate_no_solution_certificate_report,
 };

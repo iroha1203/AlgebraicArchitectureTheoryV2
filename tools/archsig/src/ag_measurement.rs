@@ -7993,11 +7993,14 @@ fn restriction_surjectivity_witnesses_v1(
             atom.axis == "cech"
                 && atom.predicate == "restrictionSurjectivityWitness"
                 && edge_ids.contains(atom.subject.as_str())
+                && atom.object.as_deref() == Some("finite-preimage-witness")
+                && !atom.source_refs.is_empty()
         })
         .map(|atom| {
             json!({
                 "edgeRef": atom.subject,
                 "atomRef": atom.normalized_atom_id,
+                "witnessObject": atom.object,
                 "sourceRefs": atom.source_refs
             })
         })

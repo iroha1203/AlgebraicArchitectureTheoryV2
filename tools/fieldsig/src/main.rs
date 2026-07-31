@@ -8,8 +8,7 @@ use clap::{Parser, Subcommand};
 use fieldsig::{
     AatObservableBundleV0, AatObservableBundleValidationReportV0, AiProposalGovernanceV0,
     AiProposalGovernanceValidationReportV0, AirDocumentInput, AirDocumentV0, AirValidationReport,
-    ArchMapDocumentV0, ArchMapSourceInventoryInput, ArchMapSourceInventoryV0,
-    ArchMapValidationReportV0, ArchitectureDynamicsMetricsReportV0,
+    ArchMapDocumentV0, ArchitectureDynamicsMetricsReportV0,
     ArchitectureDynamicsMetricsReportValidationReportV0, ArchitectureFieldSnapshotV0,
     ArchitectureFieldSnapshotValidationReportV0, ArchitecturePolicyV0,
     ArchitecturePolicyValidationReportV0, ArtifactDescriptorV0,
@@ -44,13 +43,12 @@ use fieldsig::{
     SynthesisConstraintArtifactV0, SynthesisConstraintValidationReportV0, TeamThresholdPolicyV0,
     TheoremPreconditionCheckReportV0, apply_architecture_policy_to_sig0,
     attach_framework_adapter_evidence, build_ai_proposal_governance_from_descriptor,
-    build_air_document, build_air_from_archmap, build_artifact_descriptor_from_ai_proposal_json,
+    build_air_document, build_artifact_descriptor_from_ai_proposal_json,
     build_artifact_descriptor_from_github_issue_json, build_artifact_descriptor_from_markdown,
     build_baseline_suppression_report, build_consequence_envelope_from_forecast_cone,
     build_empirical_dataset, build_feature_extension_dataset_from_files,
     build_feature_extension_report, build_forecast_cone_skeleton_from_operation_support,
-    build_law_violation_report, build_operation_support_estimate_from_archmap,
-    build_operation_support_estimate_from_archsig_measurement_packet,
+    build_law_violation_report, build_operation_support_estimate_from_archsig_measurement_packet,
     build_operation_support_estimate_from_descriptor,
     build_operation_support_estimate_from_intent_alignment,
     build_outcome_linkage_dataset_from_files, build_policy_decision_report,
@@ -79,7 +77,7 @@ use fieldsig::{
     static_team_threshold_policy, validate_aat_observable_bundle, validate_ai_proposal_governance,
     validate_air_document_report, validate_architecture_dynamics_metrics_report,
     validate_architecture_field_snapshot, validate_architecture_policy_report,
-    validate_archmap_report, validate_artifact_descriptor_report,
+    validate_artifact_descriptor_report,
     validate_component_universe_report, validate_consequence_envelope_report,
     validate_custom_rule_plugin_registry_report, validate_dynamics_measurement_contract_report,
     validate_fieldsig_run_manifest, validate_forecast_calibration_hook,
@@ -505,55 +503,6 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Validate a supplied ArchMap v0 JSON artifact.
-    Archmap {
-        /// Input ArchMap JSON path.
-        #[arg(long)]
-        input: PathBuf,
-
-        /// Optional Sig0 JSON path used for static / semantic conflict checks.
-        #[arg(long)]
-        sig0: Option<PathBuf>,
-
-        /// Output ArchMap validation report JSON path. If omitted, JSON is written to stdout.
-        #[arg(long)]
-        out: Option<PathBuf>,
-    },
-
-    /// Emit a bounded external-agent protocol for generating ArchMap JSON.
-    ArchmapGenerate {
-        /// Source inventory JSON path used by the external agent.
-        #[arg(long = "source-inventory")]
-        source_inventory: PathBuf,
-
-        /// Prompt pack path retained as provenance.
-        #[arg(long = "prompt-pack")]
-        prompt_pack: PathBuf,
-
-        /// Model provider name retained as provenance.
-        #[arg(long, default_value = "external-agent")]
-        provider: String,
-
-        /// Model id retained as provenance.
-        #[arg(long = "model-id", default_value = "unspecified")]
-        model_id: String,
-
-        /// Output generation protocol JSON path. If omitted, JSON is written to stdout.
-        #[arg(long)]
-        out: Option<PathBuf>,
-    },
-
-    /// Project a supplied ArchMap v0 JSON artifact into SFT operation-support input.
-    ArchmapSftInput {
-        /// Input ArchMap JSON path.
-        #[arg(long)]
-        archmap: PathBuf,
-
-        /// Output operation-support-estimate/v0.5.0 JSON path. If omitted, JSON is written to stdout.
-        #[arg(long)]
-        out: Option<PathBuf>,
-    },
-
     /// Project an ArchSig measurement packet into SFT operation-support input.
     ArchsigAnalysisSftInput {
         /// Input archsig-measurement-packet/v0.5.4 JSON path.
@@ -561,25 +510,6 @@ enum Command {
         measurement_packet: PathBuf,
 
         /// Output operation-support-estimate/v0.5.0 JSON path. If omitted, JSON is written to stdout.
-        #[arg(long)]
-        out: Option<PathBuf>,
-    },
-
-    /// Project a supplied ArchMap v0 JSON artifact into AIR v0.
-    AirFromArchmap {
-        /// Input ArchMap JSON path.
-        #[arg(long)]
-        archmap: PathBuf,
-
-        /// Optional Sig0 JSON path used to preserve static / semantic conflicts.
-        #[arg(long)]
-        sig0: Option<PathBuf>,
-
-        /// Optional ArchMap validation report path recorded by callers in workflow artifacts.
-        #[arg(long)]
-        validation: Option<PathBuf>,
-
-        /// Output AIR JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -1564,104 +1494,6 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             write_json(out, &air)?;
             Ok(ExitCode::SUCCESS)
         }
-        Some(Command::Archmap { input, sig0, out }) => {
-            let document: ArchMapDocumentV0 = read_json(&input)?;
-            let sig0_document: Option<Sig0Document> = sig0.as_ref().map(read_json).transpose()?;
-            let source_inventory_path = document
-                .source_inventory_ref
-                .as_ref()
-                .and_then(|source_inventory_ref| source_inventory_ref.path.as_deref());
-            let mut source_inventory_document: Option<ArchMapSourceInventoryV0> = None;
-            let mut source_inventory_error: Option<String> = None;
-            if let Some(path) = source_inventory_path {
-                match resolve_archmap_sidecar_path(&input, path) {
-                    Some(resolved_path) => match read_json(&resolved_path) {
-                        Ok(source_inventory) => source_inventory_document = Some(source_inventory),
-                        Err(error) => {
-                            source_inventory_error = Some(format!(
-                                "source inventory artifact could not be read: {error}"
-                            ));
-                        }
-                    },
-                    None => {
-                        source_inventory_error =
-                            Some("source inventory artifact path does not exist".to_string());
-                    }
-                }
-            }
-            let source_inventory = source_inventory_path.map(|path| ArchMapSourceInventoryInput {
-                path,
-                document: source_inventory_document.as_ref(),
-                read_error: source_inventory_error.clone(),
-            });
-            let report: ArchMapValidationReportV0 = validate_archmap_report(
-                &document,
-                &input.display().to_string(),
-                sig0_document.as_ref(),
-                source_inventory,
-            );
-            let failed = report.summary.result == "fail";
-            write_json(out, &report)?;
-            Ok(if failed {
-                ExitCode::from(1)
-            } else {
-                ExitCode::SUCCESS
-            })
-        }
-        Some(Command::ArchmapGenerate {
-            source_inventory,
-            prompt_pack,
-            provider,
-            model_id,
-            out,
-        }) => {
-            let inventory: ArchMapSourceInventoryV0 = read_json(&source_inventory)?;
-            let protocol = serde_json::json!({
-                "schema": "archmap-generation-protocol/v0.5.0",
-                "protocolId": format!("archmap-generation:{}", inventory.inventory_id),
-                "sourceInventoryRef": {
-                    "artifactId": inventory.inventory_id,
-                    "kind": "source_inventory",
-                    "path": source_inventory.display().to_string()
-                },
-                "promptPackRef": {
-                    "artifactId": "archmap-prompt-pack",
-                    "kind": "prompt",
-                    "path": prompt_pack.display().to_string()
-                },
-                "modelProvenance": {
-                    "provider": provider,
-                    "modelId": model_id
-                },
-                "requiredWorkflow": [
-                    "read source inventory includedRefs / excludedRefs / privateRefs / unavailableRefs separately",
-                    "produce archmap/v0.5.0 JSON with sourceRefs, preserves, forgets, missingEvidence, and nonConclusions",
-                    "preserve invalid, dangling, unsupported, private, and unavailable evidence as boundary data"
-                ],
-                "generationBoundary": {
-                    "selectionBoundary": inventory.selection_boundary,
-                    "privateRefCount": inventory.private_refs.len(),
-                    "unavailableRefCount": inventory.unavailable_refs.len(),
-                    "nonConclusions": [
-                        "external agent output is not semantic truth",
-                        "generation protocol does not reconstruct private context",
-                        "validation pass does not prove architecture lawfulness"
-                    ]
-                }
-            });
-            write_json(out, &protocol)?;
-            Ok(ExitCode::SUCCESS)
-        }
-        Some(Command::ArchmapSftInput { archmap, out }) => {
-            let document: ArchMapDocumentV0 = read_json(&archmap)?;
-            let estimate: OperationSupportEstimateV0 =
-                build_operation_support_estimate_from_archmap(
-                    &document,
-                    &archmap.display().to_string(),
-                );
-            write_json(out, &estimate)?;
-            Ok(ExitCode::SUCCESS)
-        }
         Some(Command::ArchsigAnalysisSftInput {
             measurement_packet,
             out,
@@ -1672,25 +1504,6 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 &measurement_packet.display().to_string(),
             )?;
             write_json(out, &estimate)?;
-            Ok(ExitCode::SUCCESS)
-        }
-        Some(Command::AirFromArchmap {
-            archmap,
-            sig0,
-            validation,
-            out,
-        }) => {
-            let document: ArchMapDocumentV0 = read_json(&archmap)?;
-            let sig0_document: Option<Sig0Document> = sig0.as_ref().map(read_json).transpose()?;
-            if let Some(validation_path) = validation.as_ref() {
-                let _: ArchMapValidationReportV0 = read_json(validation_path)?;
-            }
-            let air = build_air_from_archmap(
-                &document,
-                &archmap.display().to_string(),
-                sig0_document.as_ref(),
-            );
-            write_json(out, &air)?;
             Ok(ExitCode::SUCCESS)
         }
         Some(Command::ValidateAir {
@@ -3006,33 +2819,6 @@ fn write_text(out: Option<PathBuf>, value: &str) -> Result<(), Box<dyn Error>> {
 
 fn read_json<T: serde::de::DeserializeOwned>(path: &PathBuf) -> Result<T, Box<dyn Error>> {
     Ok(serde_json::from_reader(File::open(path)?)?)
-}
-
-fn resolve_archmap_sidecar_path(archmap_path: &Path, sidecar_path: &str) -> Option<PathBuf> {
-    let raw_path = PathBuf::from(sidecar_path);
-    if raw_path.is_absolute() {
-        return raw_path.exists().then_some(raw_path);
-    }
-
-    if let Ok(current_dir) = std::env::current_dir() {
-        let candidate = current_dir.join(&raw_path);
-        if candidate.exists() {
-            return Some(candidate);
-        }
-    }
-
-    let archmap_parent = archmap_path.parent()?;
-    let local_candidate = archmap_parent.join(&raw_path);
-    if local_candidate.exists() {
-        return Some(local_candidate);
-    }
-    for ancestor in archmap_parent.ancestors() {
-        let candidate = ancestor.join(&raw_path);
-        if candidate.exists() {
-            return Some(candidate);
-        }
-    }
-    None
 }
 
 fn read_risk_dispositions(paths: &[PathBuf]) -> Result<Vec<RiskDispositionV0>, Box<dyn Error>> {

@@ -12,6 +12,7 @@
       "ctx:shared",
       "ctx:settlement"
     ],
+    "archmapCoverRef": "cover:commerce-fulfillment",
     "overlaps": [
       {
         "id": "overlap:application-settlement",

@@ -129,6 +129,22 @@ pub fn static_aat_atom_vocabulary_v1() -> AatAtomVocabularyV1 {
         })
         .collect(),
         axis_predicate_pairs: canonical_aat_atom_axis_predicate_pairs(),
+        allowed_non_ag_observation_axes: [
+            "application",
+            "boundary",
+            "cover",
+            "dataflow",
+            "effect",
+            "restriction",
+            "runtime",
+            "semantic",
+            "specification",
+            "state",
+            "static",
+        ]
+        .into_iter()
+        .map(str::to_string)
+        .collect(),
         non_conclusions: vec![
             "AAT atom vocabulary is an ArchSig input contract; it does not prove source extraction soundness or semantic correctness.".to_string(),
             "Vocabulary lint checks token membership only and does not decide whether a new atom kind or observed AG pair should be added to the doctrine.".to_string(),
@@ -169,7 +185,6 @@ fn canonical_aat_atom_axis_predicate_pairs() -> Vec<AatAtomVocabularyPairV1> {
             "period",
             ["boundaryPeriod", "dOmegaIntegral", "periodIntegral"].as_slice(),
         ),
-        ("refactor", ["functorialityWitness"].as_slice()),
         (
             "restriction-compatibility",
             ["restrictionIdealGenerator"].as_slice(),
@@ -198,6 +213,7 @@ fn canonical_aat_atom_axis_predicate_pairs() -> Vec<AatAtomVocabularyPairV1> {
             .iter()
             .map(|predicate| predicate.to_string())
             .collect(),
+        provenance_ref: "aat-theory:atom-vocabulary".to_string(),
     })
     .collect()
 }
@@ -612,9 +628,21 @@ fn check_archmap_v2_atom_axis_predicate_vocabulary(
             )
         })
         .collect::<BTreeMap<_, _>>();
+    let allowed_non_ag_axes = vocabulary
+        .allowed_non_ag_observation_axes
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
     let mut examples = Vec::new();
     for atom in &document.atoms {
         let Some(predicates) = allowed_pairs.get(atom.axis.as_str()) else {
+            if !allowed_non_ag_axes.contains(atom.axis.as_str()) {
+                examples.push(generic_validation_example(
+                    &atom.id,
+                    &atom.axis,
+                    "ArchMap v2 atom axis must be in the compiled observation-axis vocabulary",
+                ));
+            }
             continue;
         };
         let Some(predicate) = atom.predicate.as_deref() else {
@@ -883,10 +911,32 @@ mod tests {
             vocabulary.required_doctrine_components,
             ["V", "Gamma", "R", "rho", "E", "N"]
         );
+        assert_eq!(
+            vocabulary.allowed_non_ag_observation_axes,
+            [
+                "application",
+                "boundary",
+                "cover",
+                "dataflow",
+                "effect",
+                "restriction",
+                "runtime",
+                "semantic",
+                "specification",
+                "state",
+                "static",
+            ]
+        );
         assert!(vocabulary.entries.iter().all(|entry| {
             entry.doctrine_ref == "aat-theory:atom-vocabulary"
                 && entry.provenance_ref == "aat-theory:atom-vocabulary"
         }));
+        assert!(
+            vocabulary
+                .axis_predicate_pairs
+                .iter()
+                .all(|pair| { pair.provenance_ref == "aat-theory:atom-vocabulary" })
+        );
         assert!(
             vocabulary
                 .non_conclusions
@@ -899,23 +949,89 @@ mod tests {
                 .iter()
                 .any(|text| text.contains("does not prove source extraction soundness"))
         );
-        let cech_predicates = vocabulary
+        let expected_pairs = BTreeMap::from([
+            (
+                "boundary-residue".to_string(),
+                BTreeSet::from([
+                    "boundarySection".to_string(),
+                    "patchClassification".to_string(),
+                    "patchRole".to_string(),
+                    "restrictionColumn".to_string(),
+                ]),
+            ),
+            (
+                "cech".to_string(),
+                BTreeSet::from([
+                    "cocycleValue".to_string(),
+                    "restrictionSurjectivityWitness".to_string(),
+                    "sectionValue".to_string(),
+                ]),
+            ),
+            (
+                "coherence".to_string(),
+                BTreeSet::from([
+                    "coherenceSection".to_string(),
+                    "h2Section".to_string(),
+                    "tripleSection".to_string(),
+                ]),
+            ),
+            (
+                "laplacian".to_string(),
+                BTreeSet::from([
+                    "cellularBoundary".to_string(),
+                    "cellularCochain".to_string(),
+                ]),
+            ),
+            (
+                "period".to_string(),
+                BTreeSet::from([
+                    "boundaryPeriod".to_string(),
+                    "dOmegaIntegral".to_string(),
+                    "periodIntegral".to_string(),
+                ]),
+            ),
+            (
+                "restriction-compatibility".to_string(),
+                BTreeSet::from(["restrictionIdealGenerator".to_string()]),
+            ),
+            (
+                "section-factorization".to_string(),
+                BTreeSet::from([
+                    "cooccurrence".to_string(),
+                    "selectedSection".to_string(),
+                    "support".to_string(),
+                    "witnessAssignment".to_string(),
+                ]),
+            ),
+            (
+                "square-free".to_string(),
+                BTreeSet::from(["cooccurrence".to_string(), "support".to_string()]),
+            ),
+            (
+                "tor".to_string(),
+                BTreeSet::from(["commonAmbient".to_string(), "lawIdealGenerator".to_string()]),
+            ),
+            (
+                "transfer".to_string(),
+                BTreeSet::from([
+                    "groundCost".to_string(),
+                    "repairPath".to_string(),
+                    "transferPairing".to_string(),
+                ]),
+            ),
+        ]);
+        let actual_pairs = vocabulary
             .axis_predicate_pairs
             .iter()
-            .find(|pair| pair.axis == "cech")
-            .expect("cech vocabulary pair exists")
-            .predicates
-            .iter()
-            .map(|predicate| predicate.to_string())
-            .collect::<BTreeSet<_>>();
-        assert_eq!(
-            cech_predicates,
-            BTreeSet::from([
-                "cocycleValue".to_string(),
-                "restrictionSurjectivityWitness".to_string(),
-                "sectionValue".to_string(),
-            ])
-        );
+            .map(|pair| {
+                (
+                    pair.axis.clone(),
+                    pair.predicates.iter().cloned().collect::<BTreeSet<_>>(),
+                )
+            })
+            .collect::<BTreeMap<_, _>>();
+        assert_eq!(actual_pairs, expected_pairs);
+        assert!(serde_json::to_value(&vocabulary).is_ok());
     }
 
     #[test]
@@ -951,6 +1067,24 @@ mod tests {
                 .examples
                 .iter()
                 .any(|example| example.target.as_deref() == Some("cech/unregisteredPredicate"))
+        );
+
+        let mut invalid_axis = document;
+        invalid_axis.atoms[0].axis = "unregistered-axis".to_string();
+        invalid_axis.atoms[0].predicate = Some("component".to_string());
+        let invalid_axis_report =
+            validate_archmap_v2_report(&invalid_axis, "fixture:invalid-axis.json");
+        let invalid_axis_check = invalid_axis_report
+            .checks
+            .iter()
+            .find(|check| check.id == "archmap-schema052-atom-axis-predicate-vocabulary")
+            .expect("axis/predicate check exists");
+        assert_eq!(invalid_axis_check.result, "fail");
+        assert!(
+            invalid_axis_check
+                .examples
+                .iter()
+                .any(|example| example.target.as_deref() == Some("unregistered-axis"))
         );
     }
 }

@@ -183,7 +183,7 @@ fn ag_boundary_residue_manifest() -> LawEvaluatorManifestV1 {
         required_predicates: vec![
             "boundary-residue.patchRole".to_string(),
             "boundary-residue.restrictionColumn".to_string(),
-            "boundary-residue.sectionValue".to_string(),
+            "boundary-residue.boundarySection".to_string(),
         ],
         required_molecule_condition:
             "archmap/v0.5.4 selected cover with core, feature, and boundary patch roles plus finite F2 restriction columns"

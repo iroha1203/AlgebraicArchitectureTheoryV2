@@ -13,8 +13,6 @@ pub const SIGNATURE_DIFF_REPORT_SCHEMA_VERSION: &str = "signature-diff-report/v0
 pub const AIR_SCHEMA_VERSION: &str = "aat-air/v0.5.0";
 pub const AIR_VALIDATION_REPORT_SCHEMA_VERSION: &str = "aat-air-validation-report/v0.5.0";
 pub const ARCHMAP_SCHEMA_VERSION: &str = "archmap/v0.5.0";
-pub const ARCHMAP_SOURCE_INVENTORY_SCHEMA_VERSION: &str = "archmap-source-inventory/v0.5.0";
-pub const ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION: &str = "archmap-validation-report/v0.5.0";
 pub const FEATURE_EXTENSION_REPORT_SCHEMA_VERSION: &str = "feature-extension-report/v0.5.0";
 pub const OBSTRUCTION_WITNESS_SCHEMA_VERSION: &str = "obstruction-witness/v0.5.0";
 pub const ARCHITECTURE_DRIFT_LEDGER_SCHEMA_VERSION: &str = "architecture-drift-ledger/v0.5.0";
@@ -2144,8 +2142,6 @@ pub struct ArchMapDocumentV0 {
     pub generator: ArchMapGenerator,
     #[serde(default)]
     pub prompt_refs: Vec<ArchMapArtifactRef>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub source_inventory_ref: Option<ArchMapArtifactRef>,
     pub generation_boundary: ArchMapGenerationBoundary,
     pub source_universe: ArchMapSourceUniverse,
     pub target_universe: ArchMapTargetUniverse,
@@ -2225,30 +2221,6 @@ pub struct ArchMapSourceUniverse {
     #[serde(default)]
     pub known_blind_spots: Vec<String>,
     pub selection_boundary: String,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ArchMapSourceInventoryV0 {
-    #[serde(rename = "schema")]
-    pub schema_version: String,
-    pub inventory_id: String,
-    pub root: String,
-    #[serde(default)]
-    pub included_refs: Vec<ArchMapSourceRef>,
-    #[serde(default)]
-    pub excluded_refs: Vec<ArchMapSourceRef>,
-    #[serde(default)]
-    pub unavailable_refs: Vec<ArchMapSourceRef>,
-    #[serde(default)]
-    pub private_refs: Vec<ArchMapSourceRef>,
-    #[serde(default)]
-    pub hashes: Vec<ArchMapArtifactRef>,
-    #[serde(default)]
-    pub known_blind_spots: Vec<String>,
-    pub selection_boundary: String,
-    #[serde(default)]
-    pub non_conclusions: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
@@ -2436,54 +2408,6 @@ pub struct ArchMapConflict {
     pub source_refs: Vec<ArchMapSourceRef>,
     #[serde(default)]
     pub non_conclusions: Vec<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ArchMapValidationReportV0 {
-    #[serde(rename = "schema")]
-    pub schema_version: String,
-    pub archmap_ref: String,
-    pub lean_preservation_vocabulary: Vec<ArchMapLeanPreservationVocabularyEntry>,
-    pub lean_preservation_precondition_checklist: Vec<ArchMapLeanPreservationChecklistEntry>,
-    pub source_inventory_checks: Vec<ValidationCheck>,
-    pub source_ref_checks: Vec<ValidationCheck>,
-    pub claim_boundary_checks: Vec<ValidationCheck>,
-    pub semantic_coverage_checks: Vec<ValidationCheck>,
-    pub conflict_checks: Vec<ValidationCheck>,
-    pub formal_promotion_guardrail_checks: Vec<ValidationCheck>,
-    #[serde(default)]
-    pub atomic_observation_checks: Vec<ValidationCheck>,
-    #[serde(default)]
-    pub atomic_observation_summary: ArchMapAtomicObservationSummary,
-    pub summary: ArchMapValidationSummary,
-    pub non_conclusions: Vec<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ArchMapAtomicObservationSummary {
-    pub atom_candidate_count: usize,
-    pub observed_atom_count: usize,
-    pub molecule_candidate_count: usize,
-    pub observed_molecule_count: usize,
-    pub obstruction_circuit_candidate_count: usize,
-    pub observed_circuit_count: usize,
-    pub observation_gap_count: usize,
-    pub sft_handoff_ref_count: usize,
-    pub zero_curvature_reading: String,
-    pub boundary: String,
-    pub non_conclusions: Vec<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ArchMapValidationSummary {
-    pub result: String,
-    pub map_item_count: usize,
-    pub conflict_count: usize,
-    pub failed_check_count: usize,
-    pub warning_check_count: usize,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

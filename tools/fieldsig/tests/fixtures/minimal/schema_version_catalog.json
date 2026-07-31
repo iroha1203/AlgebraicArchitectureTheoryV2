@@ -101,41 +101,6 @@
       }
     },
     {
-      "artifactId": "archmap-validation-report",
-      "artifactName": "ArchMap Validation Report",
-      "schemaName": "archmap-validation-report/v0.5.0",
-      "artifactRole": "validation-output",
-      "ownerPhase": "ArchMap MVP",
-      "status": "implemented",
-      "primaryDocs": [
-        "docs/tool/README.md",
-        "tools/archsig/docs/commands.md",
-        "tools/fieldsig/docs/commands.md"
-      ],
-      "downstreamIssues": [
-        "#1032",
-        "#1034",
-        "#1229",
-        "#1245"
-      ],
-      "compatibilityBoundary": {
-        "fieldMappingPolicy": "Keep source inventory checks, source ref checks, claim boundary checks, semantic coverage checks, conflict checks, projection-separation checks, formal promotion guardrail checks, and atomic observation summary separate.",
-        "deprecatedFields": [],
-        "newRequiredAssumptions": [
-          "New checks must report whether they fail, warn, or pass without promoting uncertain mappings.",
-          "Atomic observation checks must distinguish atom candidates, molecule candidates, obstruction circuit candidates, and observation gaps."
-        ],
-        "coverageExactnessBoundary": [
-          "Validation pass does not imply semantic correctness, completeness, architecture lawfulness, certified atom truth, zero curvature, or SFT forecast correctness."
-        ],
-        "nonConclusions": [
-          "field mapping does not prove semantic preservation",
-          "missing coverage is not measured zero",
-          "renamed fields do not discharge new required assumptions"
-        ]
-      }
-    },
-    {
       "artifactId": "architecture-policy",
       "artifactName": "Architecture policy artifact",
       "schemaName": "architecture-policy/v0.5.0",
@@ -218,36 +183,6 @@
         ],
         "coverageExactnessBoundary": [
           "Layered findings are selected-universe tooling evidence and SRP cues are not tool-only violations."
-        ],
-        "nonConclusions": [
-          "field mapping does not prove semantic preservation",
-          "missing coverage is not measured zero",
-          "renamed fields do not discharge new required assumptions"
-        ]
-      }
-    },
-    {
-      "artifactId": "archmap-generation-protocol",
-      "artifactName": "ArchMap generation protocol",
-      "schemaName": "archmap-generation-protocol/v0.5.0",
-      "artifactRole": "external-agent-protocol",
-      "ownerPhase": "ArchMap v2",
-      "status": "implemented",
-      "primaryDocs": [
-        "docs/tool/README.md",
-        "tools/archsig/docs/commands.md"
-      ],
-      "downstreamIssues": [
-        "#1139"
-      ],
-      "compatibilityBoundary": {
-        "fieldMappingPolicy": "Map source inventory refs, prompt pack refs, model provenance, required workflow, and private / unavailable generation boundary explicitly.",
-        "deprecatedFields": [],
-        "newRequiredAssumptions": [
-          "New generation workflow fields must preserve model provenance and validation boundary."
-        ],
-        "coverageExactnessBoundary": [
-          "Generation protocol does not execute the model or prove the generated ArchMap correct."
         ],
         "nonConclusions": [
           "field mapping does not prove semantic preservation",

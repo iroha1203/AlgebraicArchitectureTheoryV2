@@ -1,4 +1,4 @@
-pub const AAT_ATOM_VOCABULARY_V1_SCHEMA: &str = "aat-atom-vocabulary/v0.5.4";
+pub const AAT_ATOM_VOCABULARY_V1_SCHEMA: &str = "aat-atom-vocabulary/v0.5.5";
 pub const ARCHMAP_V2_SCHEMA: &str = "archmap/v0.5.4";
 pub const ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION: &str = "archmap-validation-report/v0.5.4";
 pub const LAW_POLICY_V1_SCHEMA: &str = "law-policy/v0.5.4";

@@ -26,7 +26,6 @@ non-conclusions を落とさない。
 | Diff report | `signature-diff-report/v0.5.0` | before / after の悪化軸、改善軸、未評価軸、evidence diff、PR attribution candidate。 |
 | AIR | `aat-air/v0.5.0` | Signature artifact layer を claim / evidence / coverage / extension boundary へ正規化した中間表現。 |
 | ArchSig measurement packet | `archsig-measurement-packet/v0.5.4` | FieldSig の現行 ArchSig handoff。三つの component fingerprint と structural verdict、computed invariants、analytic readings、assumption ledger、non-conclusions を bounded SFT input として読む。 |
-| ArchMap validation report | `archmap-validation-report/v0.5.0` | ArchMap の source refs、claim boundary、semantic coverage、conflict、formal promotion guardrail、atomic observation checks / summary の検査結果。 |
 | AIR validation report | `aat-air-validation-report/v0.5.0` | AIR の dangling refs、claim boundary、measured evidence traceability の検査結果。 |
 | Theorem precondition check report | `theorem-precondition-check-report/v0.5.0` | AIR claim が `FORMAL_PROVED` へ昇格できるかの検査結果。 |
 | Feature Extension Report | `feature-extension-report/v0.5.0` | PR review 用 static report。split status、witness、coverage gap、theorem precondition checks を持つ。 |
@@ -105,9 +104,6 @@ computed invariants、analytic readings、assumption ledger、non-conclusions �
 unknown remainder として残る。analytic readings や theorem-candidate readings は structural verdict
 へ変換しない。これは certified universal atoms、zero curvature proof、PR diff analysis、
 forecast correctness、future outcome probability ではない。
-`archmap-sft-input` は legacy bounded projection であり、raw ArchMap observation を forecast truth へ
-昇格してはならない。
-
 `artifact-descriptor/v0.5.0` は B12 SFT forecasting MVP の最初の入力正規化 artifact である。
 後段では `operation-support-estimate/v0.5.0`、`forecast-cone-skeleton/v0.5.0`、
 `consequence-envelope-report/v0.5.0`、`sft-review-summary/v0.5.0`、`forecast-calibration-hook/v0.5.0`

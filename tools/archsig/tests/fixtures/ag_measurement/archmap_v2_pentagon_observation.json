@@ -1,6 +1,11 @@
 {
   "schema": "archmap/v0.5.4",
   "id": "ag-measurement-presentation-generated-triple-fixture",
+  "extractionDoctrineRef": {
+    "doctrineId": "doctrine:aat-canonical@1",
+    "fingerprint": "sha256:aat-canonical-doctrine-schema052",
+    "components": ["V", "Gamma", "R", "rho", "E", "N"]
+  },
   "sources": {
     "src:order": {
       "kind": "test-fixture",

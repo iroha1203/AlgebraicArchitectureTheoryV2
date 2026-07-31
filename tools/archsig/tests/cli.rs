@@ -966,12 +966,15 @@ fn cli_repair_plan_validates_selected_complex_boundary() {
     let out_dir = temp_dir("ag-repair-plan-stage1");
     let root = ag_measurement_root();
     let repair_plan_path = root.join("repair_plan_complete_support.json");
+    let mut archmap = read_json(&root.join("archmap_v2.json"));
+    ensure_restrictions(&mut archmap, &[("ctx:order", "ctx:inventory")]);
+    let archmap_path = write_archmap_variant(&out_dir, archmap, "archmap_repair_plan.json");
     let valid_report = out_dir.join("repair-plan-valid.json");
 
     run_sig0(&[
         "repair-plan",
         "--archmap",
-        root.join("archmap_v2.json")
+        archmap_path
             .to_str()
             .expect("path is utf-8"),
         "--repair-plan",
@@ -998,7 +1001,7 @@ fn cli_repair_plan_validates_selected_complex_boundary() {
     let output = run_sig0_raw_output(&[
         "repair-plan",
         "--archmap",
-        root.join("archmap_v2.json")
+        archmap_path
             .to_str()
             .expect("path is utf-8"),
         "--repair-plan",
@@ -1024,7 +1027,7 @@ fn cli_repair_plan_validates_selected_complex_boundary() {
     let retired_output = run_sig0_raw_output(&[
         "repair-plan",
         "--archmap",
-        root.join("archmap_v2.json")
+        archmap_path
             .to_str()
             .expect("path is utf-8"),
         "--repair-plan",
@@ -3957,8 +3960,16 @@ fn cli_analyze_v2_cech_surjectivity_witness_requires_edge_coverage() {
             .as_array()
             .expect("restriction witnesses are array")
             .len(),
-        3,
-        "duplicate witnesses are retained for audit"
+        2,
+        "only canonical finite-preimage witnesses are admitted"
+    );
+    assert!(
+        cech["theorem12_4Discharge"]["restrictionSurjectivityWitnesses"]
+            .as_array()
+            .expect("restriction witnesses are array")
+            .iter()
+            .all(|witness| witness["witnessObject"] == "finite-preimage-witness"),
+        "a non-canonical witness object must not enter the checked witness set"
     );
     assert_eq!(
         cech["theorem12_4Discharge"]["restrictionMapsSurjective"]["status"], "not_discharged",
@@ -10201,10 +10212,10 @@ fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_diges
 
     let manifest = read_json(&first_out.join("archsig-run-manifest.json"));
     assert_eq!(manifest["toolVersion"], "0.5.4");
-    assert_eq!(manifest["runId"], "run:93ee84a691f6");
+    assert_eq!(manifest["runId"], "run:865f20af161c");
     assert_eq!(
         manifest["inputDigests"]["archmap"]["sha256"],
-        "653037e1812bad367d211b926b976065d69842ec6d26cb5d4f82bdb9ac5f46e3"
+        "eb07048f1dfa6e4c919c6da43e614128b97b69578230620c778225e19d15b37e"
     );
     assert_eq!(
         manifest["inputDigests"]["lawPolicy"]["sha256"],
@@ -10234,7 +10245,7 @@ fn cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_diges
     );
     assert_eq!(
         manifest["inputDigests"]["repairPlan"]["sha256"],
-        "023a4229728cf7d14db7b82e729c266619dc0cde8959773777bb74f10b901355"
+        "a2a9fb5a32855c49309bec76b035e1569e129eac97fc98f5818dde57141f6b76"
     );
 }
 
@@ -10411,7 +10422,7 @@ fn cli_analyze_stamp_appends_opt_in_run_id_suffix() {
     assert!(
         manifest["runId"]
             .as_str()
-            .is_some_and(|run_id| run_id.starts_with("run:93ee84a691f6-stamp:")),
+            .is_some_and(|run_id| run_id.starts_with("run:865f20af161c-stamp:")),
         "stamp opt-in should append a wall-clock suffix to the deterministic input-derived prefix"
     );
 }
@@ -10562,7 +10573,7 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
         ids,
         vec![
             "archmap-current",
-            "aat-atom-vocabulary/v0.5.4",
+            "aat-atom-vocabulary/v0.5.5",
             "aat-atom-vocabulary-binding/v0.5.4",
             "law-equation-surface/v0.5.4",
             "law-policy/v0.5.4",
@@ -10592,7 +10603,7 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
     }
     assert!(
         artifacts.iter().any(|entry| {
-            entry["artifactId"] == "aat-atom-vocabulary/v0.5.4"
+            entry["artifactId"] == "aat-atom-vocabulary/v0.5.5"
                 && entry["compatibilityBoundary"]["fieldMappingPolicy"]
                     .as_str()
                     .is_some_and(|description| {
@@ -12779,7 +12790,14 @@ fn cli_compare_derives_coarse_to_fine_class_zero_from_selected_archmaps() {
     let invalid_fine = run_saga_compare_fixture(
         "derived-fine-uncontained",
         invalid_fine_archmap,
-        zero_plan_for_derived_relation_test(&root),
+        {
+            let mut plan = zero_plan_for_derived_relation_test(&root);
+            plan["complex"]["charts"]
+                .as_array_mut()
+                .expect("zero-plan charts are an array")
+                .push(json!("ctx:fine-only"));
+            plan
+        },
     );
     let invalid_out = out_dir.join("invalid-compare");
     run_sig0(&[
@@ -13133,6 +13151,7 @@ fn removed_commands() -> &'static [&'static str] {
         "diff",
         "air",
         "air-from-archmap",
+        "archmap",
         "validate-air",
         "feature-report",
         "theorem-check",
@@ -14252,6 +14271,7 @@ fn restriction_archmap(case: &str) -> Value {
     json!({
         "schema": "archmap/v0.5.4",
         "id": format!("ag-restriction-fixture-{case}"),
+        "extractionDoctrineRef": canonical_extraction_doctrine_ref(),
         "sources": {
             "src:source": {"kind": "rust", "path": "src/source.rs", "symbol": "Source", "line": 1},
             "src:target": {"kind": "rust", "path": "src/target.rs", "symbol": "Target", "line": 1},
@@ -14456,6 +14476,7 @@ fn boundary_residue_archmap(case: &str) -> Value {
     json!({
         "schema": "archmap/v0.5.4",
         "id": format!("ag-boundary-residue-fixture-{case}"),
+        "extractionDoctrineRef": canonical_extraction_doctrine_ref(),
         "sources": {
             "src:core": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M6 core patch"},
             "src:feature": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M6 feature patch"},
@@ -14559,6 +14580,7 @@ fn section_archmap(case: &str) -> Value {
     json!({
         "schema": "archmap/v0.5.4",
         "id": format!("ag-section-fixture-{case}"),
+        "extractionDoctrineRef": canonical_extraction_doctrine_ref(),
         "sources": {
             "src:section-carrier": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M3 section"},
             "src:forbidden-support": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M3 minimal forbidden support"},
@@ -15049,6 +15071,7 @@ fn archmap_with_contexts(atoms: Vec<Value>, contexts: Vec<Value>) -> Value {
     json!({
         "schema": "archmap/v0.5.4",
         "id": "ag-coherence-fixture",
+        "extractionDoctrineRef": canonical_extraction_doctrine_ref(),
         "sources": {
             "src:a": {"kind": "rust", "path": "src/a.rs", "symbol": "A", "line": 1},
             "src:b": {"kind": "rust", "path": "src/b.rs", "symbol": "B", "line": 1},
@@ -15071,6 +15094,14 @@ fn archmap_with_contexts(atoms: Vec<Value>, contexts: Vec<Value>) -> Value {
             "contexts": cover_contexts.clone(),
             "refs": cover_contexts
         }]
+    })
+}
+
+fn canonical_extraction_doctrine_ref() -> Value {
+    json!({
+        "doctrineId": "doctrine:aat-canonical@1",
+        "fingerprint": "sha256:aat-canonical-doctrine-schema052",
+        "components": ["V", "Gamma", "R", "rho", "E", "N"]
     })
 }
 
@@ -15335,6 +15366,7 @@ fn saga_derivation_fault_packet(
     mutate_archmap: impl FnOnce(&mut Value),
     mutate_plan: impl FnOnce(&mut Value),
     mutate_profile_coefficient: Option<&str>,
+    expect_validation_failure: bool,
 ) -> Value {
     let out_dir = temp_dir(case_id);
     let root = ag_measurement_root();
@@ -15363,7 +15395,7 @@ fn saga_derivation_fault_packet(
         serde_json::to_vec_pretty(&plan).expect("plan serializes"),
     )
     .expect("plan writes");
-    run_sig0(&[
+    let output = run_sig0_output(&[
         "analyze",
         "--archmap",
         archmap_path.to_str().expect("path is utf-8"),
@@ -15383,6 +15415,15 @@ fn saga_derivation_fault_packet(
         "--out-dir",
         out_dir.to_str().expect("path is utf-8"),
     ]);
+    if expect_validation_failure {
+        assert_eq!(output.status.code(), Some(2));
+        return read_json(&out_dir.join("repair-plan-validation.json"));
+    }
+    assert!(
+        output.status.success(),
+        "saga fixture analyze failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
     read_json(&out_dir.join("archsig-measurement-packet.json"))
 }
 
@@ -15442,13 +15483,14 @@ fn cli_analyze_saga_descent_faults_on_unobserved_section() {
         },
         |_| {},
         None,
+        false,
     );
     assert_derivation_fault(&packet, "unobserved cech section");
 }
 
 #[test]
-fn cli_analyze_saga_descent_faults_on_unobserved_restriction() {
-    let packet = saga_derivation_fault_packet(
+fn cli_analyze_saga_descent_rejects_unobserved_restriction() {
+    let report = saga_derivation_fault_packet(
         "ag-saga-derivation-fault-unobserved-restriction",
         |archmap| {
             archmap["contexts"]
@@ -15465,13 +15507,18 @@ fn cli_analyze_saga_descent_faults_on_unobserved_restriction() {
         },
         |_| {},
         None,
+        true,
     );
-    assert_derivation_fault(&packet, "no observed restriction");
+    assert_eq!(report["summary"]["result"], "fail");
+    assert_eq!(
+        check_by_id(&report, "repair-plan-schema052-archmap-bindings")["result"],
+        "fail"
+    );
 }
 
 #[test]
-fn cli_analyze_saga_descent_faults_on_chart_outside_selected_cover() {
-    let packet = saga_derivation_fault_packet(
+fn cli_analyze_saga_descent_rejects_chart_outside_selected_cover() {
+    let report = saga_derivation_fault_packet(
         "ag-saga-derivation-fault-chart-outside-cover",
         |archmap| {
             let mut ghost = archmap["contexts"]
@@ -15494,8 +15541,13 @@ fn cli_analyze_saga_descent_faults_on_chart_outside_selected_cover() {
                 .push(json!("ctx:ghost"));
         },
         None,
+        true,
     );
-    assert_derivation_fault(&packet, "outside the selected cover");
+    assert_eq!(report["summary"]["result"], "fail");
+    assert_eq!(
+        check_by_id(&report, "repair-plan-schema052-archmap-bindings")["result"],
+        "fail"
+    );
 }
 
 #[test]
@@ -15515,6 +15567,7 @@ fn cli_analyze_saga_descent_faults_on_unbound_mismatch_edge() {
         },
         |_| {},
         None,
+        false,
     );
     assert_derivation_fault(&packet, "no law-surface witness variable");
 }
@@ -15526,6 +15579,7 @@ fn cli_analyze_saga_descent_faults_on_non_f2_profile_coefficient() {
         |_| {},
         |_| {},
         Some("Z5"),
+        false,
     );
     assert_derivation_fault(&packet, "outside the F2 saga-descent vocabulary");
 }
@@ -15630,13 +15684,18 @@ fn cli_repair_plan_rejects_dropped_observed_chart_edge_from_mapped_cover() {
         "refs": ["src:cover"]
     });
     archmap["covers"].as_array_mut().expect("covers").push(alt);
+    archmap["contexts"]
+        .as_array_mut()
+        .expect("contexts")
+        .iter_mut()
+        .find(|context| context["id"] == "ctx:order")
+        .expect("order context exists")["restrictsTo"]
+        .as_array_mut()
+        .expect("order restrictions")
+        .retain(|target| target != "ctx:shared");
     let archmap_path = write_archmap_variant(&out_dir, archmap, "archmap_saga.json");
     let mut plan = read_json(&root.join("repair_plan_complete_support.json"));
     plan["complex"]["archmapCoverRef"] = json!("cover:alt-triangle");
-    plan["complex"]["overlaps"]
-        .as_array_mut()
-        .expect("overlaps")
-        .retain(|overlap| overlap["id"] != "overlap:order-shared");
     let plan_path = out_dir.join("repair_plan.json");
     fs::write(
         &plan_path,
@@ -15774,6 +15833,7 @@ fn cli_analyze_saga_descent_observation_first_committed_fixture() {
         "id": "repair-plan:observed-money-triangle",
         "complex": {
             "charts": ["ctx:pay-a", "ctx:pay-b", "ctx:pay-c"],
+            "archmapCoverRef": "cover:observed-money-triangle",
             "overlaps": [
                 {"id": "overlap:pay-ab", "left": "ctx:pay-a", "right": "ctx:pay-b"},
                 {"id": "overlap:pay-bc", "left": "ctx:pay-b", "right": "ctx:pay-c"},

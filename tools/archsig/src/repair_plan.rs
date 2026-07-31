@@ -8,7 +8,6 @@ use crate::{
     ARCHSIG_REPAIR_PLAN_V1_SCHEMA, ArchMapDocumentV2, RepairPlanDocumentV1, ValidationCheck,
 };
 
-
 pub fn validate_repair_plan_v1_checks(
     plan: &RepairPlanDocumentV1,
     archmap: &ArchMapDocumentV2,
@@ -126,7 +125,6 @@ pub(crate) fn complex_has_valid_finite_incidence(complex: &RepairPlanComplexV1) 
 mod tests {
     use super::*;
 
-
     use crate::schema::{RepairPlanOverlapV1, RepairPlanTripleOverlapV1};
 
     fn complex_with_edges(edges: [(&str, &str, &str); 3]) -> RepairPlanComplexV1 {
@@ -167,19 +165,20 @@ mod tests {
             "../tests/fixtures/ag_measurement/repair_plan_component_aware_one_cent.json"
         ))
         .expect("component-aware fixture parses");
-        plan.complex.triple_overlaps.push(RepairPlanTripleOverlapV1 {
-            id: "triple:consign-parcel-shipping".to_string(),
-            overlap_refs: vec![
-                "overlap:cancel-inside-payment".to_string(),
-                "overlap:inside-payment-order".to_string(),
-                "overlap:cancel-order".to_string(),
-            ],
-            archmap_context_ref: None,
-        });
+        plan.complex
+            .triple_overlaps
+            .push(RepairPlanTripleOverlapV1 {
+                id: "triple:consign-parcel-shipping".to_string(),
+                overlap_refs: vec![
+                    "overlap:cancel-inside-payment".to_string(),
+                    "overlap:inside-payment-order".to_string(),
+                    "overlap:cancel-order".to_string(),
+                ],
+                archmap_context_ref: None,
+            });
 
         assert_eq!(check_references(&plan).result, "fail");
     }
-
 }
 
 fn check_schema(plan: &RepairPlanDocumentV1) -> ValidationCheck {
@@ -313,18 +312,11 @@ fn check_archmap_bindings(
             ));
         }
     }
-    let has_archmap_complex_mapping = plan.complex.archmap_cover_ref.is_some()
-        || plan
-            .complex
-            .overlaps
-            .iter()
-            .any(|overlap| overlap.archmap_context_ref.is_some())
-        || plan
-            .complex
-            .triple_overlaps
-            .iter()
-            .any(|triple| triple.archmap_context_ref.is_some());
-    if has_archmap_complex_mapping {
+    // The selected complex is an observation-side proposal only when its cover,
+    // chart membership, and every declared edge can be resolved against ArchMap.
+    // A missing cover must therefore fail closed instead of leaving the plan as
+    // an independent third input.
+    {
         let contexts = archmap
             .contexts
             .iter()
@@ -547,11 +539,22 @@ fn check_archmap_bindings(
                                 .map(move |target| (context.id.as_str(), target.as_str()))
                         })
                         .collect::<BTreeSet<_>>();
+                    let has_mapped_intersection = !mapped_contexts.is_empty();
                     let membership_valid = if plan.complex.enumeration_complete {
-                        actual_contexts == expected_contexts
-                            && actual_direct_restrictions == expected_direct_restrictions
+                        let contexts_match = actual_contexts == expected_contexts;
+                        let restrictions_match = if has_mapped_intersection {
+                            actual_direct_restrictions == expected_direct_restrictions
+                        } else {
+                            expected_direct_restrictions
+                                .iter()
+                                .all(|restriction| actual_direct_restrictions.contains(restriction))
+                        };
+                        contexts_match && restrictions_match
                     } else {
                         expected_contexts.is_subset(&actual_contexts)
+                            && expected_direct_restrictions
+                                .iter()
+                                .all(|restriction| actual_direct_restrictions.contains(restriction))
                     };
                     if !membership_valid {
                         examples.push(generic_validation_example(
@@ -572,7 +575,7 @@ fn check_archmap_bindings(
             None => examples.push(generic_validation_example(
                 "complex.archmapCoverRef",
                 "missing",
-                "overlap or triple ArchMap mappings require complex.archmapCoverRef",
+                "every observation-side RepairPlan complex requires a source-grounded ArchMap cover",
             )),
         }
     }
@@ -617,8 +620,6 @@ fn collect_conclusion_tokens(value: &Value, path: &str, hits: &mut Vec<String>) 
         _ => {}
     }
 }
-
-
 
 fn examples_check(
     id: &str,

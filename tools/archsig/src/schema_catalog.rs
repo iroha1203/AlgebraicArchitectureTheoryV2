@@ -39,13 +39,13 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     ],
             ),
             artifact(
-                "aat-atom-vocabulary/v0.5.4",
-                "AAT atom vocabulary v0.5.4",
+                "aat-atom-vocabulary/v0.5.5",
+                "AAT atom vocabulary v0.5.5",
                 AAT_ATOM_VOCABULARY_V1_SCHEMA,
                 "primary",
                 "ArchSig v0.5.4 Algebraic Geometry Measurement",
                 vec!["archsig-contract:v0.5.4-improvement"],
-                "AAT atom vocabulary v0.5.4 is an artifact-side projection of allowed ArchMap atom kind tokens and AG measurement axis/predicate pairs with provenance refs back to the AAT doctrine. ArchMap v2 validation enforces the compiled-in fixed AAT canonical doctrine before checking atom kind and canonical AG pair membership.",
+                "AAT atom vocabulary v0.5.5 is an artifact-side projection of allowed ArchMap atom kind tokens, observation axes, and AG measurement axis/predicate pairs with per-pair provenance refs back to the AAT doctrine. ArchMap v2 validation enforces the compiled-in fixed AAT canonical doctrine before checking atom kind, observation-axis, and canonical AG pair membership.",
                 vec![
                     "Vocabulary lint checks token membership only; it does not prove source extraction soundness or semantic correctness.",
                     "The linter does not decide whether a new atom kind should be added to the doctrine.",
@@ -465,7 +465,7 @@ mod tests {
             ids,
             BTreeSet::from([
                 "archmap-current",
-                "aat-atom-vocabulary/v0.5.4",
+                "aat-atom-vocabulary/v0.5.5",
                 "aat-atom-vocabulary-binding/v0.5.4",
                 "law-equation-surface/v0.5.4",
                 "law-policy/v0.5.4",

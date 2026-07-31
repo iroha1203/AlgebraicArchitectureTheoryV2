@@ -58,8 +58,8 @@ unmeasured / not-computed support is not measured zero.
 
 Pre-Atom, v0 packet-builder, and v1 compatibility commands were removed instead
 of kept as shims. `llm-native-workflow`, `north-star-workflow`,
-`archsig-analysis`, `aat-analysis`, `analysis-summary`, `summary`,
-`codebase-inspection`, and `archmap-generate` are not current runtime surfaces.
+`archsig-analysis`, `aat-analysis`, `analysis-summary`, `summary`, and
+`codebase-inspection` are not current runtime surfaces.
 Git history is the archive for those workflows.
 
 ## Migration Surface

@@ -33,9 +33,9 @@
       }
     },
     {
-      "artifactId": "aat-atom-vocabulary/v0.5.4",
-      "artifactName": "AAT atom vocabulary v0.5.4",
-      "schemaName": "aat-atom-vocabulary/v0.5.4",
+      "artifactId": "aat-atom-vocabulary/v0.5.5",
+      "artifactName": "AAT atom vocabulary v0.5.5",
+      "schemaName": "aat-atom-vocabulary/v0.5.5",
       "artifactRole": "primary",
       "ownerPhase": "ArchSig v0.5.4 Algebraic Geometry Measurement",
       "status": "implemented",
@@ -44,7 +44,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "AAT atom vocabulary v0.5.4 is an artifact-side projection of allowed ArchMap atom kind tokens and AG measurement axis/predicate pairs with provenance refs back to the AAT doctrine. ArchMap v2 validation enforces the compiled-in fixed AAT canonical doctrine before checking atom kind and canonical AG pair membership.",
+        "fieldMappingPolicy": "AAT atom vocabulary v0.5.5 is an artifact-side projection of allowed ArchMap atom kind tokens, observation axes, and AG measurement axis/predicate pairs with per-pair provenance refs back to the AAT doctrine. ArchMap v2 validation enforces the compiled-in fixed AAT canonical doctrine before checking atom kind, observation-axis, and canonical AG pair membership.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",

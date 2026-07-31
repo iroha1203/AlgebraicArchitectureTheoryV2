@@ -235,7 +235,6 @@ sample/
     telemetry.rs    # trace and presentation surface
     scenario.rs     # executable demo scenario and reconciliation report
 archmap/
-  source_inventory.json
   archmap.json           # base observation (+ drift cells at rest)
   archmap_head.json      # head observation (three conventions, drift witness, drift cells)
   archmap_repaired.json  # repaired observation (one authoritative convention)

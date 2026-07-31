@@ -67,44 +67,6 @@ pub fn static_detectable_values_reported_axes_catalog() -> DetectableValuesRepor
             vec!["unmeasured semantic evidence is not treated as commuting"],
         ),
         axis(
-            "archMapAatProjection",
-            "semantic",
-            "candidate | blocked | assumed | unmeasured",
-            vec![
-                "ArchMap Validation Report",
-                "AIR",
-                "Theorem Precondition Check",
-            ],
-            "unmeasured",
-            vec![
-                "ArchMap mapItems preserve AAT-facing object / relation / semantic / law / flatness selectors",
-            ],
-            vec!["ArchMapModel.ArchMapPreservationPackage.aatHomomorphicRelation"],
-            vec![
-                "AAT-facing projection is a bounded preservation checklist, not JSON proof parsing",
-            ],
-        ),
-        axis(
-            "archMapSftOperationSupport",
-            "sft",
-            "candidate families + unknown remainder",
-            vec![
-                "ArchMap Validation Report",
-                "Operation Support Estimate",
-                "ForecastCone",
-            ],
-            "unmeasured",
-            vec![
-                "ArchMap SFT-facing mapItems plus atom, circuit, and observation gap refs are projected by archmap-sft-input with retained source refs",
-            ],
-            vec![],
-            vec![
-                "ArchMap-derived operation support is not a forecast result",
-                "ArchMap confidence is review priority, not probability",
-                "ArchMap atom refs are observation refs, not certified universal atoms",
-            ],
-        ),
-        axis(
             "forecastCalibrationLinkage",
             "empirical",
             "matched | unmatched | unavailable | private | notComparable",
