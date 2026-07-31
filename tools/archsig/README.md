@@ -9,10 +9,10 @@ emits `archsig-measurement-packet/v0.5.4`.
 
 ArchSig is an LLM-native tool. The intended product interface is the bundled
 LLM skills in `tools/archsig/skills`, not a human manually reading internal JSON.
-The CLI provides stable validation and analysis commands; the skills author
-ArchMaps and LawPolicies, run the CLI, read summary / viewer / manifest first,
-compare high-priority findings with source evidence, and translate the result
-into review or improvement language.
+The CLI provides stable validation and analysis commands; the skills select
+supplied ArchMap and LawPolicy inputs, run the CLI, read summary / viewer /
+manifest first, compare high-priority findings with source evidence, and
+translate the result into review or improvement language.
 
 ArchSig's responsibility is bounded structural diagnosis over supplied
 `ArchMap + LawPolicy + law-equation-surface + MeasurementProfile`: it validates the input surfaces, builds AAT-oriented
@@ -56,10 +56,6 @@ reports the conclusion, structural verdict summary, dominant findings, action
 queue, measurement basis, boundaries, and metadata. Blocked / unknown /
 unmeasured / not-computed support is not measured zero.
 
-Large ArchMaps may be authored in shards for review and parallel generation,
-but current commands consume the exported monolithic
-`archmap/v0.5.4` artifact.
-
 Pre-Atom, v0 packet-builder, and v1 compatibility commands were removed instead
 of kept as shims. `llm-native-workflow`, `north-star-workflow`,
 `archsig-analysis`, `aat-analysis`, `analysis-summary`, `summary`,
@@ -100,8 +96,8 @@ the ready-to-run tool bundle. Each archive contains:
 
 After extracting the archive, put the `archsig` executable on `PATH` or set
 `ARCHSIG_BIN` to its path. Then use the bundled `skills/` directory as the LLM
-agent interface. For normal analysis, start from the ArchMap creator, LawPolicy
-creator, ArchSig reader, or PR reviewer skill; use the RepairPlan creator when
+agent interface. For normal analysis, supply an ArchMap, select a LawPolicy,
+and use the ArchSig reader or PR reviewer skill; use the RepairPlan creator when
 a measured obstruction needs a SAGA repair route. The skills call the CLI and
 read the ArchSig output for the user.
 

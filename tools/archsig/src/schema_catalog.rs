@@ -2,17 +2,16 @@ use crate::{
     AAT_ATOM_VOCABULARY_V1_SCHEMA, ARCHMAP_V2_SCHEMA, ARCHSIG_ANALYSIS_CONCLUSION_CODES,
     ARCHSIG_ARCHMAP_DIFF_V1_SCHEMA, ARCHSIG_ATOM_VIEWER_DATA_SCHEMA_VERSION,
     ARCHSIG_BOUNDARY_STATEMENT_V1_SCHEMA, ARCHSIG_COMPARISON_CLASS_TRANSPORT_CONCLUSION_CODES,
-    ARCHSIG_COMPARISON_CONCLUSION_CODES,
-    ARCHSIG_COMPARISON_REPORT_V1_SCHEMA, ARCHSIG_GATE_POLICY_V1_SCHEMA,
-    ARCHSIG_GATE_REPORT_DECISIONS, ARCHSIG_GATE_REPORT_V1_SCHEMA,
+    ARCHSIG_COMPARISON_CONCLUSION_CODES, ARCHSIG_COMPARISON_REPORT_V1_SCHEMA,
+    ARCHSIG_GATE_POLICY_V1_SCHEMA, ARCHSIG_GATE_REPORT_DECISIONS, ARCHSIG_GATE_REPORT_V1_SCHEMA,
     ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_MEASUREMENT_VIEW_MODEL_SCHEMA_VERSION,
     ARCHSIG_POLICY_BUNDLE_V1_SCHEMA, ARCHSIG_REPAIR_PLAN_V1_SCHEMA,
-    ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION, ARCHSIG_SAGA_CONCLUSION_CODES, LAW_EQUATION_SURFACE_V1_SCHEMA, LAW_POLICY_V1_SCHEMA,
-    LAW_SURFACE_BINDING_VOCABULARY_SCHEMA, MEASUREMENT_PROFILE_V1_SCHEMA,
-    NORMALIZED_ARCHMAP_V2_SCHEMA, SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION,
-    SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaCompatibilityBoundaryV0,
-    SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0, SchemaVersionCatalogEntryV0,
-    SchemaVersionCatalogV0,
+    ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION, ARCHSIG_SAGA_CONCLUSION_CODES,
+    LAW_EQUATION_SURFACE_V1_SCHEMA, LAW_POLICY_V1_SCHEMA, LAW_SURFACE_BINDING_VOCABULARY_SCHEMA,
+    MEASUREMENT_PROFILE_V1_SCHEMA, NORMALIZED_ARCHMAP_V2_SCHEMA,
+    SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION, SCHEMA_VERSION_CATALOG_SCHEMA_VERSION,
+    SchemaCompatibilityBoundaryV0, SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0,
+    SchemaVersionCatalogEntryV0, SchemaVersionCatalogV0,
 };
 
 pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
@@ -33,7 +32,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     "archsig-contract:archmap-minimal-observation",
                     "archsig-contract:v0.5.4-ag-measurement",
                 ],
-                "ArchMap v0.5.4 records source-grounded architecture observations. Finite-poset-site inputs contain sources, subject/axis-decorated atoms, contexts, and covers for AG measurement. They reject legacy v0 root fields, unknown atom kinds or predicates, and unresolved source refs before analysis.",
+                "ArchMap v0.5.4 records source-grounded architecture observations. Finite-poset-site inputs contain sources, subject/axis-decorated atoms, contexts, and covers for AG measurement. They reject legacy v0 root fields, unknown atom kinds or compiled AAT axis/predicate pairs, and unresolved source refs before analysis.",
                 vec![
                     "ArchMap validation does not run the evaluator or measurement pipeline.",
                     "ArchMap validation does not prove architecture lawfulness, source completeness, U-adequacy, exactness, Lean theorem discharge, or global semantic truth.",
@@ -46,7 +45,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "primary",
                 "ArchSig v0.5.4 Algebraic Geometry Measurement",
                 vec!["archsig-contract:v0.5.4-improvement"],
-                "AAT atom vocabulary v0.5.4 is an artifact-side projection of allowed ArchMap atom kind tokens with provenance refs back to the AAT doctrine. ArchMap v2 validation enforces the compiled-in fixed AAT canonical doctrine before checking atoms[].kind membership.",
+                "AAT atom vocabulary v0.5.4 is an artifact-side projection of allowed ArchMap atom kind tokens and AG measurement axis/predicate pairs with provenance refs back to the AAT doctrine. ArchMap v2 validation enforces the compiled-in fixed AAT canonical doctrine before checking atom kind and canonical AG pair membership.",
                 vec![
                     "Vocabulary lint checks token membership only; it does not prove source extraction soundness or semantic correctness.",
                     "The linter does not decide whether a new atom kind should be added to the doctrine.",

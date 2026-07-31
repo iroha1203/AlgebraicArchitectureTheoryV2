@@ -1636,7 +1636,6 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 "requiredWorkflow": [
                     "read source inventory includedRefs / excludedRefs / privateRefs / unavailableRefs separately",
                     "produce archmap/v0.5.0 JSON with sourceRefs, preserves, forgets, missingEvidence, and nonConclusions",
-                    "run archsig archmap --input <archmap.json> before downstream projection",
                     "preserve invalid, dangling, unsupported, private, and unavailable evidence as boundary data"
                 ],
                 "generationBoundary": {

@@ -49,6 +49,7 @@ pub struct AatAtomVocabularyV1 {
     pub doctrine_ref: String,
     pub required_doctrine_components: Vec<String>,
     pub entries: Vec<AatAtomVocabularyEntryV1>,
+    pub axis_predicate_pairs: Vec<AatAtomVocabularyPairV1>,
     pub non_conclusions: Vec<String>,
 }
 
@@ -58,6 +59,13 @@ pub struct AatAtomVocabularyEntryV1 {
     pub kind: String,
     pub doctrine_ref: String,
     pub provenance_ref: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct AatAtomVocabularyPairV1 {
+    pub axis: String,
+    pub predicates: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

@@ -17,7 +17,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "ArchMap v0.5.4 records source-grounded architecture observations. Finite-poset-site inputs contain sources, subject/axis-decorated atoms, contexts, and covers for AG measurement. They reject legacy v0 root fields, unknown atom kinds or predicates, and unresolved source refs before analysis.",
+        "fieldMappingPolicy": "ArchMap v0.5.4 records source-grounded architecture observations. Finite-poset-site inputs contain sources, subject/axis-decorated atoms, contexts, and covers for AG measurement. They reject legacy v0 root fields, unknown atom kinds or compiled AAT axis/predicate pairs, and unresolved source refs before analysis.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -44,7 +44,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "AAT atom vocabulary v0.5.4 is an artifact-side projection of allowed ArchMap atom kind tokens with provenance refs back to the AAT doctrine. ArchMap v2 validation enforces the compiled-in fixed AAT canonical doctrine before checking atoms[].kind membership.",
+        "fieldMappingPolicy": "AAT atom vocabulary v0.5.4 is an artifact-side projection of allowed ArchMap atom kind tokens and AG measurement axis/predicate pairs with provenance refs back to the AAT doctrine. ArchMap v2 validation enforces the compiled-in fixed AAT canonical doctrine before checking atom kind and canonical AG pair membership.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",

@@ -4,9 +4,9 @@ use crate::law_surface::LawSurfaceBindingVocabularyV1;
 use crate::validation::{count_checks, duplicates, generic_validation_example, validation_check};
 use crate::{
     AAT_ATOM_VOCABULARY_V1_SCHEMA, ARCHMAP_V2_SCHEMA, AatAtomVocabularyEntryV1,
-    AatAtomVocabularyV1, ArchMapDocumentV2, ArchMapValidationReportV2, ArchMapValidationSummaryV2,
-    LAW_SURFACE_BINDING_VOCABULARY_SCHEMA, ValidationCheck, ValidationExample,
-    canonical_archmap_extraction_doctrine_ref_v2,
+    AatAtomVocabularyPairV1, AatAtomVocabularyV1, ArchMapDocumentV2, ArchMapValidationReportV2,
+    ArchMapValidationSummaryV2, LAW_SURFACE_BINDING_VOCABULARY_SCHEMA, ValidationCheck,
+    ValidationExample, canonical_archmap_extraction_doctrine_ref_v2,
 };
 
 /// Splits a `src:<path>:<line>` citation into its file-level source id and
@@ -63,6 +63,7 @@ pub fn validate_archmap_v2_report(
         check_archmap_v2_atom_ids(document),
         check_archmap_v2_no_diagnostic_shortcuts(document),
         check_archmap_v2_atom_kind_vocabulary(document),
+        check_archmap_v2_atom_axis_predicate_vocabulary(document),
         check_archmap_v2_binding_vocabulary(),
         check_archmap_v2_atom_shapes(document),
         check_archmap_v2_contexts(document),
@@ -127,11 +128,78 @@ pub fn static_aat_atom_vocabulary_v1() -> AatAtomVocabularyV1 {
             provenance_ref: doctrine_ref.to_string(),
         })
         .collect(),
+        axis_predicate_pairs: canonical_aat_atom_axis_predicate_pairs(),
         non_conclusions: vec![
             "AAT atom vocabulary is an ArchSig input contract; it does not prove source extraction soundness or semantic correctness.".to_string(),
-            "Vocabulary lint checks token membership only and does not decide whether a new atom kind should be added to the doctrine.".to_string(),
+            "Vocabulary lint checks token membership only and does not decide whether a new atom kind or observed AG pair should be added to the doctrine.".to_string(),
         ],
     }
+}
+
+fn canonical_aat_atom_axis_predicate_pairs() -> Vec<AatAtomVocabularyPairV1> {
+    [
+        (
+            "boundary-residue",
+            [
+                "boundarySection",
+                "patchClassification",
+                "patchRole",
+                "restrictionColumn",
+            ]
+            .as_slice(),
+        ),
+        (
+            "cech",
+            [
+                "cocycleValue",
+                "restrictionSurjectivityWitness",
+                "sectionValue",
+            ]
+            .as_slice(),
+        ),
+        (
+            "coherence",
+            ["coherenceSection", "h2Section", "tripleSection"].as_slice(),
+        ),
+        (
+            "laplacian",
+            ["cellularBoundary", "cellularCochain"].as_slice(),
+        ),
+        (
+            "period",
+            ["boundaryPeriod", "dOmegaIntegral", "periodIntegral"].as_slice(),
+        ),
+        ("refactor", ["functorialityWitness"].as_slice()),
+        (
+            "restriction-compatibility",
+            ["restrictionIdealGenerator"].as_slice(),
+        ),
+        (
+            "section-factorization",
+            [
+                "cooccurrence",
+                "selectedSection",
+                "support",
+                "witnessAssignment",
+            ]
+            .as_slice(),
+        ),
+        ("square-free", ["cooccurrence", "support"].as_slice()),
+        ("tor", ["commonAmbient", "lawIdealGenerator"].as_slice()),
+        (
+            "transfer",
+            ["groundCost", "repairPath", "transferPairing"].as_slice(),
+        ),
+    ]
+    .into_iter()
+    .map(|(axis, predicates)| AatAtomVocabularyPairV1 {
+        axis: axis.to_string(),
+        predicates: predicates
+            .iter()
+            .map(|predicate| predicate.to_string())
+            .collect(),
+    })
+    .collect()
 }
 
 pub fn static_aat_atom_binding_vocabulary_v1() -> LawSurfaceBindingVocabularyV1 {
@@ -527,6 +595,53 @@ fn check_archmap_v2_atom_kind_vocabulary(document: &ArchMapDocumentV2) -> Valida
     check
 }
 
+fn check_archmap_v2_atom_axis_predicate_vocabulary(
+    document: &ArchMapDocumentV2,
+) -> ValidationCheck {
+    let vocabulary = static_aat_atom_vocabulary_v1();
+    let allowed_pairs = vocabulary
+        .axis_predicate_pairs
+        .iter()
+        .map(|pair| {
+            (
+                pair.axis.as_str(),
+                pair.predicates
+                    .iter()
+                    .map(String::as_str)
+                    .collect::<BTreeSet<_>>(),
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+    let mut examples = Vec::new();
+    for atom in &document.atoms {
+        let Some(predicates) = allowed_pairs.get(atom.axis.as_str()) else {
+            continue;
+        };
+        let Some(predicate) = atom.predicate.as_deref() else {
+            examples.push(generic_validation_example(
+                &atom.id,
+                "predicate",
+                "ArchMap v2 atom predicate is required for a vocabulary-bound axis",
+            ));
+            continue;
+        };
+        if !predicates.contains(predicate) {
+            examples.push(generic_validation_example(
+                &atom.id,
+                &format!("{}/{}", atom.axis, predicate),
+                "ArchMap v2 atom axis/predicate pair must be in the compiled AAT AG measurement vocabulary",
+            ));
+        }
+    }
+    let mut check = check_from_examples(
+        "archmap-schema052-atom-axis-predicate-vocabulary",
+        "ArchMap v2 atom axis/predicate pairs are members of the compiled AAT AG measurement vocabulary",
+        examples,
+    );
+    check.metric = Some(vocabulary.vocabulary_id);
+    check
+}
+
 fn check_archmap_v2_atom_shapes(document: &ArchMapDocumentV2) -> ValidationCheck {
     let mut examples = Vec::new();
     for atom in &document.atoms {
@@ -783,6 +898,59 @@ mod tests {
                 .non_conclusions
                 .iter()
                 .any(|text| text.contains("does not prove source extraction soundness"))
+        );
+        let cech_predicates = vocabulary
+            .axis_predicate_pairs
+            .iter()
+            .find(|pair| pair.axis == "cech")
+            .expect("cech vocabulary pair exists")
+            .predicates
+            .iter()
+            .map(|predicate| predicate.to_string())
+            .collect::<BTreeSet<_>>();
+        assert_eq!(
+            cech_predicates,
+            BTreeSet::from([
+                "cocycleValue".to_string(),
+                "restrictionSurjectivityWitness".to_string(),
+                "sectionValue".to_string(),
+            ])
+        );
+    }
+
+    #[test]
+    fn archmap_input_rejects_unknown_axis_predicate_pairs() {
+        let document: ArchMapDocumentV2 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/archmap_v2.json"
+        ))
+        .expect("canonical ArchMap fixture parses");
+        let valid_report = validate_archmap_v2_report(&document, "fixture:archmap_v2.json");
+        assert_eq!(
+            valid_report
+                .checks
+                .iter()
+                .find(|check| check.id == "archmap-schema052-atom-axis-predicate-vocabulary")
+                .expect("axis/predicate check exists")
+                .result,
+            "pass"
+        );
+
+        let mut invalid_pair = document.clone();
+        invalid_pair.atoms[0].axis = "cech".to_string();
+        invalid_pair.atoms[0].predicate = Some("unregisteredPredicate".to_string());
+        let invalid_pair_report =
+            validate_archmap_v2_report(&invalid_pair, "fixture:invalid-pair.json");
+        let invalid_pair_check = invalid_pair_report
+            .checks
+            .iter()
+            .find(|check| check.id == "archmap-schema052-atom-axis-predicate-vocabulary")
+            .expect("axis/predicate check exists");
+        assert_eq!(invalid_pair_check.result, "fail");
+        assert!(
+            invalid_pair_check
+                .examples
+                .iter()
+                .any(|example| example.target.as_deref() == Some("cech/unregisteredPredicate"))
         );
     }
 }
